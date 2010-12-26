@@ -1,0 +1,647 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Template|Win32">
+      <Configuration>Template</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Template|x64">
+      <Configuration>Template</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>AirDC</ProjectName>
+    <ProjectGuid>{E82610AA-B6FD-4813-B5B9-E717CBD0F23B}</ProjectGuid>
+    <RootNamespace>StrongDC</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Template|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <UseOfAtl>false</UseOfAtl>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Template|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)compiled/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)compiled/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">D:\Projekty\STLPort GIT\stlport;D:\Projekty\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Template|x64'">D:\Projekty\STLPort GIT\stlport;D:\Projekty\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">G:\dc\includes\wtl8\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include</IncludePath>
+    <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">G:\dc\includes\stl\bin;$(ExecutablePath)</ExecutablePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">G:\dc\includes\stl\lib;$(LibraryPath)</LibraryPath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">G:\dc\includes\wtl8\include;C:\WMSDK\WMPSDK10\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
+    <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ExecutablePath)</ExecutablePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">G:\dc\includes\wtl8\include;C:\WMSDK\WMPSDK10\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>$(SolutionDir)compiled/$(ProjectName).tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
+    <Link>
+      <AdditionalOptions>/FIXED:NO /SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>unicows.lib;SHFolder.lib;ws2_32.lib;winmm.lib;powrprof.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)compiled/$(ProjectName).exe</OutputFile>
+      <AdditionalLibraryDirectories>$(SolutionDir)openssl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalManifestDependencies>type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 processorArchitecture=%27*%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <DelayLoadDLLs>uxtheme.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(SolutionDir)compiled/$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>131072</StackReserveSize>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <TypeLibraryName>$(SolutionDir)compiled/$(ProjectName).tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>HAVE_NATUPNP_H;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Command>
+      </Command>
+    </PreLinkEvent>
+    <Link>
+      <AdditionalOptions>/FIXED:NO /SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>SHFolder.lib;ws2_32.lib;winmm.lib;powrprof.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)openssl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalManifestDependencies>type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 processorArchitecture=%27*%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
+      <IgnoreSpecificDefaultLibraries>libcmt.lib kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(SolutionDir)compiled/$(ProjectName).pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>131072</StackReserveSize>
+      <TargetMachine>MachineX64</TargetMachine>
+      <OutputFile>$(SolutionDir)compiled/$(ProjectName).exe</OutputFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>$(SolutionDir)compiled/$(ProjectName).tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>HAVE_NATUPNP_H;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Message>Deleting old pdb file...</Message>
+      <Command>cmd.exe /c del "$(SolutionDir)compiled\$(ProjectName).pdb"</Command>
+    </PreLinkEvent>
+    <Link>
+      <AdditionalOptions>/FIXED:NO /SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>SHFolder.lib;unicows.lib;ws2_32.lib;winmm.lib;powrprof.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)compiled/$(ProjectName).exe</OutputFile>
+      <Version>
+      </Version>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(SolutionDir)openssl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalManifestDependencies>type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 processorArchitecture=%27*%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
+      <IgnoreSpecificDefaultLibraries>kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <DelayLoadDLLs>dbghelp.dll;oleaut32.dll;powrprof.dll;uxtheme.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(SolutionDir)compiled/$(ProjectName).pdb</ProgramDatabaseFile>
+      <MapFileName>
+      </MapFileName>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>131072</StackReserveSize>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <SetChecksum>true</SetChecksum>
+      <TargetMachine>MachineX86</TargetMachine>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>X64</TargetEnvironment>
+      <TypeLibraryName>$(SolutionDir)compiled/$(ProjectName).tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>HAVE_NATUPNP_H;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <PreLinkEvent>
+      <Message>Deleting old pdb file...</Message>
+      <Command>cmd.exe /c del "$(SolutionDir)compiled\$(ProjectName).pdb"</Command>
+    </PreLinkEvent>
+    <Link>
+      <AdditionalOptions>/FIXED:NO /SAFESEH:NO %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>SHFolder.lib;ws2_32.lib;winmm.lib;powrprof.lib;msimg32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)compiled/$(ProjectName).exe</OutputFile>
+      <Version>
+      </Version>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>$(SolutionDir)openssl/lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalManifestDependencies>type=%27win32%27 name=%27Microsoft.Windows.Common-Controls%27 version=%276.0.0.0%27 processorArchitecture=%27*%27 publicKeyToken=%276595b64144ccf1df%27 language=%27*%27;%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
+      <IgnoreSpecificDefaultLibraries>kernel32.lib advapi32.lib user32.lib gdi32.lib shell32.lib comdlg32.lib version.lib mpr.lib rasapi32.lib winmm.lib winspool.lib vfw32.lib secur32.lib oleacc.lib oledlg.lib sensapi.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <DelayLoadDLLs>dbghelp.dll;oleaut32.dll;powrprof.dll;%(DelayLoadDLLs)</DelayLoadDLLs>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(SolutionDir)compiled/$(ProjectName).pdb</ProgramDatabaseFile>
+      <MapFileName>
+      </MapFileName>
+      <SubSystem>Windows</SubSystem>
+      <StackReserveSize>131072</StackReserveSize>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <SetChecksum>true</SetChecksum>
+      <TargetMachine>MachineX64</TargetMachine>
+      <Profile>true</Profile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <ClCompile>
+      <PreprocessorDefinitions>HAVE_NATUPNP_H;</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|x64'">
+    <ClCompile>
+      <PreprocessorDefinitions>HAVE_NATUPNP_H;</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="res\ADLSearch.ico" />
+    <None Include="res\AirDCPlusPlus.ico" />
+    <None Include="res\arrows.bmp" />
+    <None Include="res\bitmap1.bmp" />
+    <None Include="res\bra.ico" />
+    <None Include="res\CDM.ico" />
+    <None Include="res\CZDCPlusPlus-about.ico" />
+    <None Include="res\CZDCPlusPlus-XP.ico" />
+    <None Include="res\CZDCPlusPlus.ico" />
+    <None Include="res\dan.ico" />
+    <None Include="res\Directory.ico" />
+    <None Include="res\emoticon.bmp" />
+    <None Include="res\eng.ico" />
+    <None Include="res\fav.bmp" />
+    <None Include="res\Favorites.ico" />
+    <None Include="res\FavoriteUser.ico" />
+    <None Include="res\fin.ico" />
+    <None Include="res\FinishedDL.ico" />
+    <None Include="res\FinishedUL.ico" />
+    <None Include="res\flags.bmp" />
+    <None Include="res\folders.bmp" />
+    <None Include="res\fr.ico" />
+    <None Include="res\holland.ico" />
+    <None Include="res\Hub.ico" />
+    <None Include="res\HubOff.ico" />
+    <None Include="res\HubOp.ico" />
+    <None Include="res\HubReg.ico" />
+    <None Include="res\hun.ico" />
+    <None Include="res\icon10.ico" />
+    <None Include="res\icon8.ico" />
+    <None Include="res\ita.ico" />
+    <None Include="res\magnet.ico" />
+    <None Include="res\netstats.ico" />
+    <None Include="res\nor.ico" />
+    <None Include="res\notepad.ico" />
+    <None Include="res\o_otools.bmp" />
+    <None Include="res\o_settings_dlg.bmp" />
+    <None Include="res\PM.ico" />
+    <None Include="res\pol.ico" />
+    <None Include="res\PublicHubs.ico" />
+    <None Include="res\queue.ico" />
+    <None Include="res\Recents.ico" />
+    <None Include="res\ro.ico" />
+    <None Include="res\rus.ico" />
+    <None Include="res\Search.ico" />
+    <None Include="res\search_icons.bmp" />
+    <None Include="res\searchspy.ico" />
+    <None Include="res\settings_dlg.bmp" />
+    <None Include="res\shutdown.ico" />
+    <None Include="res\sounds.ico" />
+    <None Include="res\speeds.bmp" />
+    <None Include="res\state.bmp" />
+    <None Include="res\stop.ico" />
+    <None Include="res\stop_ikona.ico" />
+    <None Include="res\StrongDC.ico" />
+    <None Include="res\swe.ico" />
+    <None Include="res\systemlog.ico" />
+    <None Include="res\toolbar.bmp" />
+    <None Include="res\toolbar20-highlight.bmp" />
+    <None Include="res\toolbar20.bmp" />
+    <None Include="res\transfer_compressed.ico" />
+    <None Include="res\transfer_segmented.ico" />
+    <None Include="res\transfer_tree.ico" />
+    <None Include="res\TreeNo.ico" />
+    <None Include="res\TreeYes.ico" />
+    <None Include="res\Update.ico" />
+    <None Include="res\uqueue.ico" />
+    <None Include="res\User.ico" />
+    <None Include="res\UserOff.ico" />
+    <None Include="res\users.bmp" />
+    <None Include="res\Winamp_logo.ico" />
+    <None Include="res\WinampControl.bmp" />
+    <None Include="changelog.txt" />
+    <None Include="Compile.txt" />
+    <None Include="Extensions.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="AirDC.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="windows\ADLSearchFrame.cpp" />
+    <ClCompile Include="windows\ADLSProperties.cpp" />
+    <ClCompile Include="windows\AdvancedPage.cpp" />
+    <ClCompile Include="windows\EmoticonsManager.cpp" />
+    <ClCompile Include="windows\AirAppearancePage.cpp" />
+    <ClCompile Include="windows\AirDCPage.cpp" />
+    <ClCompile Include="windows\AirDownloadsPage.cpp" />
+    <ClCompile Include="windows\AirSharingPage.cpp" />
+    <ClCompile Include="windows\AppearancePage.cpp" />
+    <ClCompile Include="windows\AutosearchDlg.cpp" />
+    <ClCompile Include="windows\AutosearchPage.cpp" />
+    <ClCompile Include="windows\AVIPreview.cpp" />
+    <ClCompile Include="windows\BarShader.cpp" />
+    <ClCompile Include="windows\CDMDebugFrame.cpp" />
+    <ClCompile Include="windows\CertificatesPage.cpp" />
+    <ClCompile Include="windows\ChatCtrl.cpp" />
+    <ClCompile Include="windows\CommandDlg.cpp" />
+    <ClCompile Include="windows\DirectoryListingFrm.cpp" />
+    <ClCompile Include="windows\DownloadPage.cpp" />
+    <ClCompile Include="windows\EmoticonsDlg.cpp" />
+    <ClCompile Include="windows\ExListViewCtrl.cpp" />
+    <ClCompile Include="windows\ExtendedTrace.cpp" />
+    <ClCompile Include="windows\FavHubGroupsDlg.cpp" />
+    <ClCompile Include="windows\FavHubProperties.cpp" />
+    <ClCompile Include="windows\FavoriteDirsPage.cpp" />
+    <ClCompile Include="windows\FavoritesFrm.cpp" />
+    <ClCompile Include="windows\FolderTree.cpp" />
+    <ClCompile Include="windows\FulHighlightDialog.cpp" />
+    <ClCompile Include="windows\FulHighlightPage.cpp" />
+    <ClCompile Include="windows\FulTabsPage.cpp" />
+    <ClCompile Include="windows\GeneralPage.cpp" />
+    <ClCompile Include="windows\HubFrame.cpp" />
+    <ClCompile Include="windows\IgnoreManager.cpp" />
+    <ClCompile Include="windows\IgnorePage.cpp" />
+    <ClCompile Include="windows\ImageDataObject.cpp" />
+    <ClCompile Include="windows\InputBox.cpp" />
+    <ClCompile Include="windows\iTunesCOMInterface_i.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="windows\LineDlg.cpp" />
+    <ClCompile Include="windows\LogPage.cpp" />
+    <ClCompile Include="windows\MagnetDlg.cpp" />
+    <ClCompile Include="windows\main.cpp" />
+    <ClCompile Include="windows\MainFrm.cpp" />
+    <ClCompile Include="windows\NetworkPage.cpp" />
+    <ClCompile Include="windows\NotepadFrame.cpp" />
+    <ClCompile Include="windows\OMenu.cpp" />
+    <ClCompile Include="windows\OperaColorsPage.cpp" />
+    <ClCompile Include="windows\PopupManager.cpp" />
+    <ClCompile Include="windows\Popups.cpp" />
+    <ClCompile Include="windows\PreviewDlg.cpp" />
+    <ClCompile Include="windows\PrivateFrame.cpp" />
+    <ClCompile Include="windows\PropertiesDlg.cpp" />
+    <ClCompile Include="windows\PropPage.cpp" />
+    <ClCompile Include="windows\PropPageTextStyles.cpp" />
+    <ClCompile Include="windows\PublicHubsFrm.cpp" />
+    <ClCompile Include="windows\QueueFrame.cpp" />
+    <ClCompile Include="windows\QueuePage.cpp" />
+    <ClCompile Include="windows\RecentsFrm.cpp" />
+    <ClCompile Include="windows\SDCPage.cpp" />
+    <ClCompile Include="windows\SearchFrm.cpp" />
+    <ClCompile Include="windows\SharePage.cpp" />
+    <ClCompile Include="windows\ShellContextMenu.cpp" />
+    <ClCompile Include="windows\Sounds.cpp" />
+    <ClCompile Include="windows\SpyFrame.cpp" />
+    <ClCompile Include="windows\StatsFrame.cpp" />
+    <ClCompile Include="windows\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="windows\SystemFrame.cpp" />
+    <ClCompile Include="windows\TextFrame.cpp" />
+    <ClCompile Include="windows\toolbarpage.cpp" />
+    <ClCompile Include="windows\TransferView.cpp" />
+    <ClCompile Include="windows\TreePropertySheet.cpp" />
+    <ClCompile Include="windows\UCPage.cpp" />
+    <ClCompile Include="windows\UpdateDlg.cpp" />
+    <ClCompile Include="windows\UploadPage.cpp" />
+    <ClCompile Include="windows\UPnP_COM.cpp" />
+    <ClCompile Include="windows\UPnP_MiniUPnPc.cpp" />
+    <ClCompile Include="windows\UserListColours.cpp" />
+    <ClCompile Include="windows\UsersFrame.cpp" />
+    <ClCompile Include="windows\WaitingUsersFrame.cpp" />
+    <ClCompile Include="windows\WindowsPage.cpp" />
+    <ClCompile Include="windows\WinUtil.cpp" />
+    <ClCompile Include="windows\WMPlayerRemoteApi.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="windows\AboutDlg.h" />
+    <ClInclude Include="windows\ADLSearchFrame.h" />
+    <ClInclude Include="windows\ADLSProperties.h" />
+    <ClInclude Include="windows\AdvancedPage.h" />
+    <ClInclude Include="windows\EmoticonsManager.h" />
+    <ClInclude Include="windows\AirAppearancePage.h" />
+    <ClInclude Include="windows\AirDCPage.h" />
+    <ClInclude Include="windows\AirDownloadsPage.h" />
+    <ClInclude Include="windows\AirSharingPage.h" />
+    <ClInclude Include="windows\AppearancePage.h" />
+    <ClInclude Include="windows\AutosearchDlg.h" />
+    <ClInclude Include="windows\AutosearchPage.h" />
+    <ClInclude Include="windows\AVIPreview.h" />
+    <ClInclude Include="windows\BarShader.h" />
+    <ClInclude Include="windows\CDMDebugFrame.h" />
+    <ClInclude Include="windows\CertificatesPage.h" />
+    <ClInclude Include="windows\ChatCtrl.h" />
+    <ClInclude Include="windows\CommandDlg.h" />
+    <ClInclude Include="windows\DimEdit.h" />
+    <ClInclude Include="windows\DirectoryListingFrm.h" />
+    <ClInclude Include="windows\DownloadPage.h" />
+    <ClInclude Include="windows\EmoticonsDlg.h" />
+    <ClInclude Include="windows\ExListViewCtrl.h" />
+    <ClInclude Include="windows\ExtendedTrace.h" />
+    <ClInclude Include="windows\FavHubGroupsDlg.h" />
+    <ClInclude Include="windows\FavHubProperties.h" />
+    <ClInclude Include="windows\FavoriteDirsPage.h" />
+    <ClInclude Include="windows\FavoritesFrm.h" />
+    <ClInclude Include="windows\FinishedFrame.h" />
+    <ClInclude Include="windows\FinishedFrameBase.h" />
+    <ClInclude Include="windows\FinishedULFrame.h" />
+    <ClInclude Include="windows\FlatTabCtrl.h" />
+    <ClInclude Include="windows\FolderTree.h" />
+    <ClInclude Include="windows\FulHighlightDialog.h" />
+    <ClInclude Include="windows\FulHighlightPage.h" />
+    <ClInclude Include="windows\FulTabsPage.h" />
+    <ClInclude Include="windows\GeneralPage.h" />
+    <ClInclude Include="windows\HashProgressDlg.h" />
+    <ClInclude Include="windows\HubFrame.h" />
+    <ClInclude Include="windows\IgnoreManager.h" />
+    <ClInclude Include="windows\IgnorePage.h" />
+    <ClInclude Include="windows\ImageDataObject.h" />
+    <ClInclude Include="windows\InputBox.h" />
+    <ClInclude Include="windows\iTunesCOMInterface.h" />
+    <ClInclude Include="windows\LineDlg.h" />
+    <ClInclude Include="windows\ListViewArrows.h" />
+    <ClInclude Include="windows\LogPage.h" />
+    <ClInclude Include="windows\MagnetDlg.h" />
+    <ClInclude Include="windows\MainFrm.h" />
+    <ClInclude Include="windows\memdc.h" />
+    <ClInclude Include="windows\NetworkPage.h" />
+    <ClInclude Include="windows\NotepadFrame.h" />
+    <ClInclude Include="windows\OMenu.h" />
+    <ClInclude Include="windows\OperaColorsPage.h" />
+    <ClInclude Include="windows\ParamDlg.h" />
+    <ClInclude Include="windows\Players.h" />
+    <ClInclude Include="windows\PopupDlg.h" />
+    <ClInclude Include="windows\PopupManager.h" />
+    <ClInclude Include="windows\Popups.h" />
+    <ClInclude Include="windows\PreviewDlg.h" />
+    <ClInclude Include="windows\PrivateFrame.h" />
+    <ClInclude Include="windows\PropertiesDlg.h" />
+    <ClInclude Include="windows\PropPage.h" />
+    <ClInclude Include="windows\PropPageTextStyles.h" />
+    <ClInclude Include="windows\PublicHubsFrm.h" />
+    <ClInclude Include="windows\PublicHubsListDlg.h" />
+    <ClInclude Include="windows\QueueFrame.h" />
+    <ClInclude Include="windows\QueuePage.h" />
+    <ClInclude Include="windows\RecentsFrm.h" />
+    <ClInclude Include="windows\resource.h" />
+    <ClInclude Include="windows\SDCPage.h" />
+    <ClInclude Include="windows\SearchFrm.h" />
+    <ClInclude Include="windows\SharePage.h" />
+    <ClInclude Include="windows\ShellContextMenu.h" />
+    <ClInclude Include="windows\SingleInstance.h" />
+    <ClInclude Include="windows\Sounds.h" />
+    <ClInclude Include="windows\SpyFrame.h" />
+    <ClInclude Include="windows\StatsFrame.h" />
+    <ClInclude Include="windows\stdafx.h" />
+    <ClInclude Include="windows\SystemFrame.h" />
+    <ClInclude Include="windows\TextFrame.h" />
+    <ClInclude Include="windows\ToolbarPage.h" />
+    <ClInclude Include="windows\TransferView.h" />
+    <ClInclude Include="windows\TreePropertySheet.h" />
+    <ClInclude Include="windows\TypedListViewCtrl.h" />
+    <ClInclude Include="windows\UCHandler.h" />
+    <ClInclude Include="windows\UCPage.h" />
+    <ClInclude Include="windows\UpdateDlg.h" />
+    <ClInclude Include="windows\UploadPage.h" />
+    <ClInclude Include="windows\UPnP_COM.h" />
+    <ClInclude Include="windows\UPnP_MiniUPnPc.h" />
+    <ClInclude Include="windows\UserListColours.h" />
+    <ClInclude Include="windows\UsersFrame.h" />
+    <ClInclude Include="windows\WaitingUsersFrame.h" />
+    <ClInclude Include="windows\Winamp.h" />
+    <ClInclude Include="windows\WindowsPage.h" />
+    <ClInclude Include="windows\WinUtil.h" />
+    <ClInclude Include="windows\WMPlayerRemoteApi.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="boost-regex.vcxproj">
+      <Project>{d1095e8a-63a5-4592-ae93-2d638f20f66a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="bzip2.vcxproj">
+      <Project>{8b162f1b-5d6c-41c1-8a80-858b379de07d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="client.vcxproj">
+      <Project>{f8d0e5fe-babd-4fc8-b3fe-b48978d23feb}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="regex.vcxproj">
+      <Project>{6b5e1154-d1fc-460a-b5f4-78acb1e96349}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="MakeDefs\MakeDefs.vcxproj">
+      <Project>{aef82786-9da2-4cdf-8602-02643cafc727}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="miniupnpc\miniupnpc.vcxproj">
+      <Project>{51015502-c27c-43cf-9fa4-12ab9db5d36e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="zlib.vcxproj">
+      <Project>{dfbbe42a-45f4-4188-89c2-17f5dfe50673}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="AirDC.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

@@ -1,0 +1,419 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F8D0E5FE-BABD-4FC8-B3FE-B48978D23FEB}</ProjectGuid>
+    <RootNamespace>client</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)compiled/</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">G:\dc\includes\wtl8\include;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">G:\dc\includes\wtl8\include;C:\WMSDK\WMPSDK10\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
+    <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ExecutablePath)</ExecutablePath>
+    <ExecutablePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ExecutablePath)</ExecutablePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">G:\dc\includes\wtl8\include;C:\WMSDK\WMPSDK10\include;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSdkDir)include;$(FrameworkSDKDir)\include</IncludePath>
+    <LibraryPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSdkDir)lib;$(FrameworkSDKDir)\lib</LibraryPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)client.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x041d</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)client.pch</PrecompiledHeaderOutputFile>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x041d</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)client.pch</PrecompiledHeaderOutputFile>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
+      <OmitFramePointers>false</OmitFramePointers>
+      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <AdditionalOptions>
+      </AdditionalOptions>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <RuntimeTypeInfo>false</RuntimeTypeInfo>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdinc.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)client.pch</PrecompiledHeaderOutputFile>
+      <AssemblerOutput>
+      </AssemblerOutput>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+    </ClCompile>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="client\AdcCommand.cpp" />
+    <ClCompile Include="client\AdcHub.cpp" />
+    <ClCompile Include="client\ADLSearch.cpp" />
+    <ClCompile Include="client\AutoSearchManager.cpp" />
+    <ClCompile Include="client\BufferedSocket.cpp" />
+    <ClCompile Include="client\BZUtils.cpp" />
+    <ClCompile Include="client\ChatMessage.cpp" />
+    <ClCompile Include="client\Client.cpp" />
+    <ClCompile Include="client\ClientManager.cpp" />
+    <ClCompile Include="client\ConnectionManager.cpp" />
+    <ClCompile Include="client\ConnectivityManager.cpp" />
+    <ClCompile Include="client\CryptoManager.cpp" />
+    <ClCompile Include="client\DCPlusPlus.cpp" />
+    <ClCompile Include="client\DirectoryListing.cpp" />
+    <ClCompile Include="client\Download.cpp" />
+    <ClCompile Include="client\DownloadManager.cpp" />
+    <ClCompile Include="client\Encoder.cpp" />
+    <ClCompile Include="client\FavoriteManager.cpp" />
+    <ClCompile Include="client\File.cpp" />
+    <ClCompile Include="client\FinishedManager.cpp" />
+    <ClCompile Include="client\HashBloom.cpp" />
+    <ClCompile Include="client\HashManager.cpp" />
+    <ClCompile Include="client\HighlightManager.cpp" />
+    <ClCompile Include="client\HttpConnection.cpp" />
+    <ClCompile Include="client\memcpy_amd.cpp" />
+    <ClCompile Include="client\NmdcHub.cpp" />
+    <ClCompile Include="client\pme.cpp" />
+    <ClCompile Include="client\QueueItem.cpp" />
+    <ClCompile Include="client\QueueManager.cpp" />
+    <ClCompile Include="client\ResourceManager.cpp" />
+    <ClCompile Include="client\SearchManager.cpp" />
+    <ClCompile Include="client\SearchQueue.cpp" />
+    <ClCompile Include="client\SearchResult.cpp" />
+    <ClCompile Include="client\ServerSocket.cpp" />
+    <ClCompile Include="client\SettingsManager.cpp" />
+    <ClCompile Include="client\ShareManager.cpp" />
+    <ClCompile Include="client\SimpleXML.cpp" />
+    <ClCompile Include="client\SimpleXMLReader.cpp" />
+    <ClCompile Include="client\Socket.cpp" />
+    <ClCompile Include="client\SSL.cpp" />
+    <ClCompile Include="client\SSLSocket.cpp" />
+    <ClCompile Include="client\stdinc.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="client\StringDefs.cpp" />
+    <ClCompile Include="client\Text.cpp" />
+    <ClCompile Include="client\Thread.cpp" />
+    <ClCompile Include="client\TigerHash.cpp" />
+    <ClCompile Include="client\TimerManager.cpp" />
+    <ClCompile Include="client\TraceManager.cpp" />
+    <ClCompile Include="client\Transfer.cpp" />
+    <ClCompile Include="client\Upload.cpp" />
+    <ClCompile Include="client\UploadManager.cpp" />
+    <ClCompile Include="client\UPnP.cpp" />
+    <ClCompile Include="client\UPnPManager.cpp" />
+    <ClCompile Include="client\User.cpp" />
+    <ClCompile Include="client\UserCommand.cpp" />
+    <ClCompile Include="client\UserConnection.cpp" />
+    <ClCompile Include="client\Util.cpp" />
+    <ClCompile Include="client\Wildcards.cpp" />
+    <ClCompile Include="client\ZUtils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="client\AdcCommand.h" />
+    <ClInclude Include="client\AdcHub.h" />
+    <ClInclude Include="client\ADLSearch.h" />
+    <ClInclude Include="client\AutoSearchManager.h" />
+    <ClInclude Include="client\BitInputStream.h" />
+    <ClInclude Include="client\BitOutputStream.h" />
+    <ClInclude Include="client\BloomFilter.h" />
+    <ClInclude Include="client\BufferedSocket.h" />
+    <ClInclude Include="client\BufferedSocketListener.h" />
+    <ClInclude Include="client\BZUtils.h" />
+    <ClInclude Include="client\ChatMessage.h" />
+    <ClInclude Include="client\CID.h" />
+    <ClInclude Include="client\Client.h" />
+    <ClInclude Include="client\ClientListener.h" />
+    <ClInclude Include="client\ClientManager.h" />
+    <ClInclude Include="client\ClientManagerListener.h" />
+    <ClInclude Include="client\ColorSettings.h" />
+    <ClInclude Include="client\ConnectionManager.h" />
+    <ClInclude Include="client\ConnectionManagerListener.h" />
+    <ClInclude Include="client\ConnectivityManager.h" />
+    <ClInclude Include="client\CryptoManager.h" />
+    <ClInclude Include="client\DCPlusPlus.h" />
+    <ClInclude Include="client\DebugManager.h" />
+    <ClInclude Include="client\DirectoryListing.h" />
+    <ClInclude Include="client\Download.h" />
+    <ClInclude Include="client\DownloadManager.h" />
+    <ClInclude Include="client\DownloadManagerListener.h" />
+    <ClInclude Include="client\Encoder.h" />
+    <ClInclude Include="client\Exception.h" />
+    <ClInclude Include="client\FastAlloc.h" />
+    <ClInclude Include="client\FavHubGroup.h" />
+    <ClInclude Include="client\FavoriteManager.h" />
+    <ClInclude Include="client\FavoriteManagerListener.h" />
+    <ClInclude Include="client\FavoriteUser.h" />
+    <ClInclude Include="client\File.h" />
+    <ClInclude Include="client\FilteredFile.h" />
+    <ClInclude Include="client\FinishedManager.h" />
+    <ClInclude Include="client\FinishedManagerListener.h" />
+    <ClInclude Include="client\Flags.h" />
+    <ClInclude Include="client\forward.h" />
+    <ClInclude Include="client\HashBloom.h" />
+    <ClInclude Include="client\HashManager.h" />
+    <ClInclude Include="client\HashValue.h" />
+    <ClInclude Include="client\HighlightManager.h" />
+    <ClInclude Include="client\HttpConnection.h" />
+    <ClInclude Include="client\HubEntry.h" />
+    <ClInclude Include="client\LogManager.h" />
+    <ClInclude Include="client\memcpy_amd.h" />
+    <ClInclude Include="client\MerkleCheckOutputStream.h" />
+    <ClInclude Include="client\MerkleTree.h" />
+    <ClInclude Include="client\NmdcHub.h" />
+    <ClInclude Include="client\pme.h" />
+    <ClInclude Include="client\Pointer.h" />
+    <ClInclude Include="client\QueueItem.h" />
+    <ClInclude Include="client\QueueManager.h" />
+    <ClInclude Include="client\QueueManagerListener.h" />
+    <ClInclude Include="client\ResourceManager.h" />
+    <ClInclude Include="client\SearchManager.h" />
+    <ClInclude Include="client\SearchManagerListener.h" />
+    <ClInclude Include="client\SearchQueue.h" />
+    <ClInclude Include="client\SearchResult.h" />
+    <ClInclude Include="client\Segment.h" />
+    <ClInclude Include="client\Semaphore.h" />
+    <ClInclude Include="client\ServerSocket.h" />
+    <ClInclude Include="client\SettingsManager.h" />
+    <ClInclude Include="client\ShareManager.h" />
+    <ClInclude Include="client\SimpleXML.h" />
+    <ClInclude Include="client\SimpleXMLReader.h" />
+    <ClInclude Include="client\Singleton.h" />
+    <ClInclude Include="client\Socket.h" />
+    <ClInclude Include="client\Speaker.h" />
+    <ClInclude Include="client\SSL.h" />
+    <ClInclude Include="client\SSLSocket.h" />
+    <ClInclude Include="client\stdinc.h" />
+    <ClInclude Include="client\Streams.h" />
+    <ClInclude Include="client\UPnP.h" />
+    <CustomBuild Include="client\StringDefs.h">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)vc10\$(Platform)\$(Configuration)\MakeDefs\MakeDefs.exe" .\client\StringDefs.h .\client\StringDefs.cpp .\EN_Example.xml</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\client\StringDefs.cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(SolutionDir)vc10\$(Platform)\$(Configuration)\MakeDefs\MakeDefs.exe" .\client\StringDefs.h .\client\StringDefs.cpp .\EN_Example.xml</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\client\StringDefs.cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)vc10\$(Platform)\$(Configuration)\MakeDefs\MakeDefs.exe" .\client\StringDefs.h .\client\StringDefs.cpp .\EN_Example.xml</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\client\StringDefs.cpp;%(Outputs)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)vc10\$(Platform)\$(Configuration)\MakeDefs\MakeDefs.exe" .\client\StringDefs.h .\client\StringDefs.cpp .\EN_Example.xml</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\client\StringDefs.cpp;%(Outputs)</Outputs>
+    </CustomBuild>
+    <ClInclude Include="client\StringSearch.h" />
+    <ClInclude Include="client\StringTokenizer.h" />
+    <ClInclude Include="client\TaskQueue.h" />
+    <ClInclude Include="client\Text.h" />
+    <ClInclude Include="client\Thread.h" />
+    <ClInclude Include="client\TigerHash.h" />
+    <ClInclude Include="client\TimerManager.h" />
+    <ClInclude Include="client\TraceManager.h" />
+    <ClInclude Include="client\Transfer.h" />
+    <ClInclude Include="client\Upload.h" />
+    <ClInclude Include="client\UploadManager.h" />
+    <ClInclude Include="client\UploadManagerListener.h" />
+    <ClInclude Include="client\UPnPManager.h" />
+    <ClInclude Include="client\User.h" />
+    <ClInclude Include="client\UserCommand.h" />
+    <ClInclude Include="client\UserConnection.h" />
+    <ClInclude Include="client\UserConnectionListener.h" />
+    <ClInclude Include="client\UserInfoBase.h" />
+    <ClInclude Include="client\Util.h" />
+    <ClInclude Include="client\version.h" />
+    <ClInclude Include="client\Wildcards.h" />
+    <ClInclude Include="client\ZUtils.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="boost-regex.vcxproj">
+      <Project>{d1095e8a-63a5-4592-ae93-2d638f20f66a}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="bzip2.vcxproj">
+      <Project>{8b162f1b-5d6c-41c1-8a80-858b379de07d}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="MakeDefs\MakeDefs.vcxproj">
+      <Project>{aef82786-9da2-4cdf-8602-02643cafc727}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="regex.vcxproj">
+      <Project>{6b5e1154-d1fc-460a-b5f4-78acb1e96349}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="zlib.vcxproj">
+      <Project>{dfbbe42a-45f4-4188-89c2-17f5dfe50673}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
