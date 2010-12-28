@@ -369,3 +369,4 @@ When you have updated you will get to play with new functions in Beta 2.
  
 #Fixed TLS transfers on nmdc
 #Added Searchmenu in filelist rightclickmenu
+#Added Possibility to copy from multiple lines in searchFrame
