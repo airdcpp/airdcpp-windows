@@ -1251,5 +1251,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SettingDontDlAlreadyQueued">Dont Download Files already in Queue</String>
 		<String Name="FileWithSameTth">File with same TTH allready exists in Queue</String>
 		<String Name="FavShowJoin">Show User Joins / Parts</String>
+		<String Name="UpnpRemovedMappings">Successfully removed port mappings</String>
+		<String Name="SettingsDownloadsExpand">Auto Expand Downloads in TransferView</String>
 	</Strings>
 </Language>

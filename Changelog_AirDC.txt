@@ -344,11 +344,6 @@ Prompts for an update, on click download, client downloads the update installer 
 user is asked to update, if user dont wish to update at that time the client will ask again when closing AirDC++.
 
 
-After Starting Beta 1, you will be asked to update.
-This is for a reason, you are Beta testers so you can now test the new updater,
-just click download and wait for it to finish. Then you will have a chance to test the installer in action.
-When you have updated you will get to play with new functions in Beta 2.
-
 2.08 Beta 2
 #Added Incoming folders refresh:
 -select incoming by checking folder in share
@@ -370,3 +365,5 @@ When you have updated you will get to play with new functions in Beta 2.
 #Fixed TLS transfers on nmdc
 #Added Searchmenu in filelist rightclickmenu
 #Added Possibility to copy from multiple lines in searchFrame
+#Add Finished files to share instantly(if shared) option in advancedpage
+#Added Auto Expand Downloads in TransferView option in queuepage

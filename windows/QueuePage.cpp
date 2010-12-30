@@ -72,6 +72,7 @@ PropPage::ListItem QueuePage::optionItems[] = {
 	{ SettingsManager::AUTO_ADD_SOURCE ,ResourceManager::AUTO_ADD_SOURCE },
 	{ SettingsManager::KEEP_FINISHED_FILES, ResourceManager::KEEP_FINISHED_FILES },
 	{ SettingsManager::DONT_DL_ALREADY_QUEUED, ResourceManager::SETTING_DONT_DL_ALREADY_QUEUED },
+	{ SettingsManager::DOWNLOADS_EXPAND, ResourceManager::SETTINGS_DOWNLOADS_EXPAND },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

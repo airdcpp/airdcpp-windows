@@ -612,7 +612,12 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			ItemInfo* ii = new ItemInfo(ui->user, ui->download);
 			ii->update(*ui);
 			if(ii->download) {
+				if(BOOLSETTING(DOWNLOADS_EXPAND)) {
+					ctrlTransfers.insertGroupedItem(ii, true);
+				}else{
 				ctrlTransfers.insertGroupedItem(ii, false);
+				}
+				
 			} else {
 				ctrlTransfers.insertItem(ii, IMAGE_UPLOAD);
 			}
