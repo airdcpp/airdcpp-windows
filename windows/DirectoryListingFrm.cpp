@@ -680,6 +680,9 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
 		fileMenu.AppendMenu(MF_SEPARATOR);
+		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+		fileMenu.AppendMenu(MF_SEPARATOR);
 		fileMenu.AppendMenu(MF_STRING,IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
 		fileMenu.AppendMenu(MF_SEPARATOR);
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
@@ -693,9 +696,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST, CTSTRING(HIGHEST));
 
 		//Search menus
-		fileMenu.AppendMenu(MF_SEPARATOR);
-		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
-		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 		
 		SearchMenu.AppendMenu(MF_STRING, IDC_URL, CTSTRING(SEARCH_URL));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));

@@ -367,3 +367,8 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Added Possibility to copy from multiple lines in searchFrame
 #Add Finished files to share instantly(if shared) option in advancedpage
 #Added Auto Expand Downloads in TransferView option in queuepage
+
+2.09 Beta 1
+#Fixed open own list before startup refresh
+#Added more search rightclick functions in Filelists //Maksalaatikko
+#Added User nick color settings in Colors & Fonts page //Maksalaatikko
