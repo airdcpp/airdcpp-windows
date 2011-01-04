@@ -176,7 +176,7 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 		} else {
 			bool isFavorite = FavoriteManager::getInstance()->isFavoriteUser(i.getUser());
 
-			if(BOOLSETTING(BOLD_AUTHOR_MESS) || isFavorite || i.isOp()) {
+			//if(isFavorite || i.isOp()) {
 				SetSel(lSelBegin, lSelBegin + iLen + 1);
 				SetSelectionCharFormat(cf);
 				SetSel(lSelBegin + iLen + 1, lSelEnd);
@@ -185,12 +185,12 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 				} else if(i.isOp()) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleOPs);
 				} else {
-					SetSelectionCharFormat(WinUtil::m_TextStyleBold);
+					SetSelectionCharFormat(WinUtil::m_TextStyleNormUsers);
 				}
-			} else {
-				SetSel(lSelBegin, lSelEnd);
-				SetSelectionCharFormat(cf);
-            }
+			//} else {
+			//	SetSel(lSelBegin, lSelEnd);
+			//	SetSelectionCharFormat(cf);
+            //}
 		}
 	} else {
 		bool thirdPerson = false;
@@ -218,7 +218,7 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 					lSelEnd += iAuthorLen;
 					sMsg.erase(0, iAuthorLen);
 
-        			if(BOOLSETTING(BOLD_AUTHOR_MESS) || isFavorite || isOp) {
+        			//if(isFavorite || isOp) {
         				SetSel(lSelBegin, lSelBegin + 1);
         				SetSelectionCharFormat(cf);
 						SetSel(lSelBegin + 1, lSelEnd);
@@ -227,12 +227,12 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 						} else if(isOp) {
 							SetSelectionCharFormat(WinUtil::m_TextStyleOPs);
 						} else {
-							SetSelectionCharFormat(WinUtil::m_TextStyleBold);
+							SetSelectionCharFormat(WinUtil::m_TextStyleNormUsers);
 						}
-        			} else {
-        				SetSel(lSelBegin, lSelEnd);
-        				SetSelectionCharFormat(cf);
-                    }
+        			//} else {
+        			//	SetSel(lSelBegin, lSelEnd);
+        			//	SetSelectionCharFormat(cf);
+                    //}
 				}
         }
 	}

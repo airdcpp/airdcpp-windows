@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Example Language" Author="BigMuscle" Version="2.08" Revision="1">
+<Language Name="Example Language" Author="BigMuscle" Version="2.09 Beta 1" Revision="1">
 	<Strings>
 		<String Name="AairdcppLanguageFile">EN_Example.xml</String>
 		<String Name="AairdcppLanguageVersion">1.00</String>
@@ -538,7 +538,6 @@
 		<String Name="SetPriority">Set priority</String>
 		<String Name="SetczdcBackColor">Back color</String>
 		<String Name="SetczdcBlackWhite">Black &amp; white</String>
-		<String Name="SetczdcBold">Bold Authors of messages in chat</String>
 		<String Name="SetczdcCzcharsDisable">Remove diacritic marks from Czech chars</String>
 		<String Name="SetczdcDefaultStyle">Default style</String>
 		<String Name="SetczdcDisconnectingEnable">Enable slow downloads disconnecting</String>
@@ -1161,8 +1160,12 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="Paste">Paste</String>
 		<String Name="SearchSites">Search Sites</String>
 		<String Name="SearchGoogle">Google</String>
+		<String Name="SearchGoogleTitle">Google (title only)</String>
+		<String Name="SearchGoogleFull">Google (full release name)</String>
+		<String Name="SearchTvcom">TV.com</String>
 		<String Name="SearchUrl">as Url</String>
 		<String Name="SearchImdb">Imdb</String>
+		<String Name="SearchMetacritic">Metacritic</String>
 		<String Name="BlackTheme">Black Theme</String>
 		<String Name="ImportTheme">Import Theme</String>
 		<String Name="ExportTheme">Export Theme</String>
@@ -1205,6 +1208,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="ProppageUrl">URL</String>
 		<String Name="ProppageFavUser">Favorite user</String>
 		<String Name="ProppageOperator">Operator</String>
+		<String Name="ProppageNorm">Other users</String>
 		<String Name="MaxResizeLines">Max resize lines</String>
 		<String Name="DontShareEmptyDirs">Don't share empty directories</String>
 		<String Name="OnlyShareFullDirs">Only share fully hashed directories</String>

@@ -812,6 +812,10 @@
 #define IDC_GOOGLE                      1527
 #define IDC_IMDB                        1528
 #define IDC_URL                         1529
+#define IDC_GOOGLE_FULL                 1530
+#define IDC_TVCOM		                1531
+#define IDC_GOOGLE_TITLE                1532
+#define IDC_METACRITIC	                1521
 #define IDC_AUTOPRIORITY                1572
 #define IDC_SETTINGS_ODC_MENUBAR        1612
 #define IDC_SETTINGS_ODC_MENUBAR_USETWO 1613

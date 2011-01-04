@@ -97,6 +97,7 @@ CHARFORMAT2 WinUtil::m_ChatTextSystem;
 CHARFORMAT2 WinUtil::m_TextStyleBold;
 CHARFORMAT2 WinUtil::m_TextStyleFavUsers;
 CHARFORMAT2 WinUtil::m_TextStyleOPs;
+CHARFORMAT2 WinUtil::m_TextStyleNormUsers;
 CHARFORMAT2 WinUtil::m_TextStyleURL;
 CHARFORMAT2 WinUtil::m_ChatTextPrivate;
 CHARFORMAT2 WinUtil::m_ChatTextLog;
@@ -608,6 +609,14 @@ void WinUtil::initColors() {
 		m_TextStyleOPs.dwEffects |= CFE_BOLD;
 	if(SETTING(TEXT_OP_ITALIC))
 		m_TextStyleOPs.dwEffects |= CFE_ITALIC;
+
+	m_TextStyleNormUsers = cf;
+	m_TextStyleNormUsers.crBackColor = SETTING(TEXT_NORM_BACK_COLOR);
+	m_TextStyleNormUsers.crTextColor = SETTING(TEXT_NORM_FORE_COLOR);
+	if(SETTING(TEXT_NORM_BOLD))
+		m_TextStyleNormUsers.dwEffects |= CFE_BOLD;
+	if(SETTING(TEXT_NORM_ITALIC))
+		m_TextStyleNormUsers.dwEffects |= CFE_ITALIC;
 
 	m_TextStyleURL = cf;
 	m_TextStyleURL.dwMask = CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_BACKCOLOR | CFM_LINK | CFM_UNDERLINE;

@@ -17,7 +17,6 @@ PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_TEXT_STYLE, ResourceManager::SETCZDC_TEXT_STYLE },
 	{ IDC_DEFAULT_STYLES, ResourceManager::SETCZDC_DEFAULT_STYLE },
 	{ IDC_BLACK_AND_WHITE, ResourceManager::SETCZDC_BLACK_WHITE },
-	{ IDC_BOLD_AUTHOR_MESS, ResourceManager::SETCZDC_BOLD },
 	{ IDC_CZDC_PREVIEW, ResourceManager::SETCZDC_PREVIEW },
 	{ IDC_SELTEXT, ResourceManager::SETTINGS_SELECT_TEXT_FACE },
 	{ IDC_RESET_TAB_COLOR, ResourceManager::SETTINGS_RESET },
@@ -30,10 +29,6 @@ PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 }; 
 
-PropPage::Item PropPageTextStyles::items[] = {
-	{ IDC_BOLD_AUTHOR_MESS, SettingsManager::BOLD_AUTHOR_MESS, PropPage::T_BOOL },
-	{ 0, 0, PropPage::T_END }
-};
 
 PropPageTextStyles::clrs PropPageTextStyles::colours[] = {
 	{ResourceManager::SETTINGS_SELECT_WINDOW_COLOR,	SettingsManager::BACKGROUND_COLOR, 0},
@@ -51,7 +46,7 @@ PropPageTextStyles::clrs PropPageTextStyles::colours[] = {
 LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
-	PropPage::read((HWND)*this, items);
+//	PropPage::read((HWND)*this, items);
 
 	m_lsbList.Attach( GetDlgItem(IDC_TEXT_STYLES) );
 	m_lsbList.ResetContent();
@@ -114,6 +109,11 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	SettingsManager::TEXT_OP_BACK_COLOR, SettingsManager::TEXT_OP_FORE_COLOR, 
 	SettingsManager::TEXT_OP_BOLD, SettingsManager::TEXT_OP_ITALIC );
 
+	TextStyles[ TS_NORM ].Init( 
+	this, settings, STRING(PROPPAGE_NORM).c_str(), STRING(PROPPAGE_NORM).c_str(),
+	SettingsManager::TEXT_NORM_BACK_COLOR, SettingsManager::TEXT_NORM_FORE_COLOR, 
+	SettingsManager::TEXT_NORM_BOLD, SettingsManager::TEXT_NORM_ITALIC );
+
 	for ( int i = 0; i < TS_LAST; i++ ) {
 		TextStyles[ i ].LoadSettings();
 		_tcscpy(TextStyles[i].szFaceName, m_Font.lfFaceName );
@@ -146,7 +146,7 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 
 void PropPageTextStyles::write()
 {
-	PropPage::write((HWND)*this, items);
+	//PropPage::write((HWND)*this, items);
 
 	tstring f = WinUtil::encodeFont(m_Font);
 	settings->set(SettingsManager::TEXT_FONT, Text::fromT(f));
@@ -275,6 +275,10 @@ LRESULT PropPageTextStyles::onDefaultStyles(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_OP ].crTextColor = RGB(0,0,0);
 	TextStyles[ TS_OP ].dwEffects = CFE_BOLD;
 
+	TextStyles[ TS_NORM ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_NORM ].crTextColor = RGB(0,0,0);
+	TextStyles[ TS_NORM ].dwEffects = CFE_BOLD;
+
 	RefreshPreview();
 	return TRUE;
 }
@@ -322,6 +326,10 @@ LRESULT PropPageTextStyles::onBlackAndWhite(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_OP ].crTextColor = RGB(37,60,121);
 	TextStyles[ TS_OP ].dwEffects = 0;
 
+	TextStyles[ TS_NORM ].crBackColor = RGB(255,255,255);
+	TextStyles[ TS_NORM ].crTextColor = RGB(37,60,121);
+	TextStyles[ TS_NORM ].dwEffects = 0;
+
 	RefreshPreview();
 	return TRUE;
 }
@@ -368,6 +376,10 @@ LRESULT PropPageTextStyles::onBlackTheme(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	TextStyles[ TS_OP ].crBackColor = 0;
 	TextStyles[ TS_OP ].crTextColor = 16744448;
 	TextStyles[ TS_OP ].dwEffects = 0;
+
+	TextStyles[ TS_NORM ].crBackColor = 0;
+	TextStyles[ TS_NORM ].crTextColor = 16744448;
+	TextStyles[ TS_NORM ].dwEffects = 0;
 
 	RefreshPreview();
 	return TRUE;
@@ -533,7 +545,6 @@ LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 			importData("TextURLForeColor", TEXT_URL_FORE_COLOR);
 			importData("TextURLBold", TEXT_URL_BOLD);
 			importData("TextURLItalic", TEXT_URL_ITALIC);
-			importData("BoldAuthorsMess", BOLD_AUTHOR_MESS);
 			importData("ProgressTextDown", PROGRESS_TEXT_COLOR_DOWN);
 			importData("ProgressTextUp", PROGRESS_TEXT_COLOR_UP);
 			importData("ErrorColor", ERROR_COLOR);
@@ -548,6 +559,10 @@ LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 			importData("TextOPForeColor", TEXT_OP_FORE_COLOR);
 			importData("TextOPBold", TEXT_OP_BOLD);
 			importData("TextOPItalic", TEXT_OP_ITALIC);
+			importData("TextNormBackColor", TEXT_NORM_BACK_COLOR);
+			importData("TextNormForeColor", TEXT_NORM_FORE_COLOR);
+			importData("TextNormBold", TEXT_NORM_BOLD);
+			importData("TextNormItalic", TEXT_NORM_ITALIC);
 			importData("SearchAlternateColour", SEARCH_ALTERNATE_COLOUR);
 			importData("ProgressBackColor", PROGRESS_BACK_COLOR);
 			importData("ProgressCompressColor", PROGRESS_COMPRESS_COLOR);
@@ -633,7 +648,6 @@ LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	exportData("TextURLForeColor", TEXT_URL_FORE_COLOR);
 	exportData("TextURLBold", TEXT_URL_BOLD);
 	exportData("TextURLItalic", TEXT_URL_ITALIC);
-	exportData("BoldAuthorsMess", BOLD_AUTHOR_MESS);
 	exportData("ProgressTextDown", PROGRESS_TEXT_COLOR_DOWN);
 	exportData("ProgressTextUp", PROGRESS_TEXT_COLOR_UP);
 	exportData("ErrorColor", ERROR_COLOR);
@@ -648,6 +662,10 @@ LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	exportData("TextOPForeColor", TEXT_OP_FORE_COLOR);
 	exportData("TextOPBold", TEXT_OP_BOLD);
 	exportData("TextOPItalic", TEXT_OP_ITALIC);
+	exportData("TextNormBackColor", TEXT_NORM_BACK_COLOR);
+	exportData("TextNormForeColor", TEXT_NORM_FORE_COLOR);
+	exportData("TextNormBold", TEXT_NORM_BOLD);
+	exportData("TextNormItalic", TEXT_NORM_ITALIC);
 	exportData("SearchAlternateColour", SEARCH_ALTERNATE_COLOUR);
 	exportData("ProgressBackColor", PROGRESS_BACK_COLOR);
 	exportData("ProgressCompressColor", PROGRESS_COMPRESS_COLOR);

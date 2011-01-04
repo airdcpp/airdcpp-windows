@@ -18,6 +18,10 @@
 
 #include "stdafx.h"
 #include "../client/DCPlusPlus.h"
+#include "boost/algorithm/string/replace.hpp"
+#include "boost/algorithm/string/trim.hpp"
+#include "../client/pme.h"
+
 
 #include "Resource.h"
 
@@ -691,12 +695,14 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		//Search menus
 		fileMenu.AppendMenu(MF_SEPARATOR);
 		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
-		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 		
 		SearchMenu.AppendMenu(MF_STRING, IDC_URL, CTSTRING(SEARCH_URL));
-		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE, CTSTRING(SEARCH_GOOGLE));
+		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
+		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
+		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
 		SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
+		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
 
 		int n = 0;
 
@@ -747,7 +753,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubs(dl->getHintedUser().user->getCID(), dl->getHintedUser().hint));
 			fileMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 		} else {
-			fileMenu.EnableMenuItem(IDC_SEARCH_BY_TTH, MF_BYCOMMAND | MFS_DISABLED);
 			fileMenu.EnableMenuItem(IDC_SEARCH_ALTERNATES, MF_BYCOMMAND | MFS_DISABLED);
 			//Append Favorite download dirs
 			StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
@@ -1557,29 +1562,24 @@ if(ctrlList.GetSelectedCount() == 1) {
 	return 0;
 }
 
-LRESULT DirectoryListingFrame::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-
-tstring searchTerm;
-if(ctrlList.GetSelectedCount() == 1) {
-		const ItemInfo* ii = ctrlList.getSelectedItem();
-		searchTerm = ii->getText(COLUMN_TTH);
-
-	WinUtil::search(searchTerm, 0, true);
-}
-	searchTerm = Util::emptyStringT;
-	return 0;
-}
 
 LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
 tstring searchTerm;
+tstring searchTermFull;
+
 if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getSelectedItem();
 		searchTerm = ii->getText(COLUMN_FILENAME);
+		searchTermFull = searchTerm;
+
+
+
 		//text until we find " - "
 		size_t pos = searchTerm.find(_T("-"));
 		if(pos > 0)
-		searchTerm = searchTerm.substr(0, pos); 
+		searchTerm = searchTerm.substr(0, pos);
+		searchTerm += ' ';
 
 		//replace . with space
 		pos = 0;
@@ -1587,18 +1587,64 @@ if(ctrlList.GetSelectedCount() == 1) {
 			searchTerm.replace(pos, 1, _T(" "));
 		}
 
+		std::transform(searchTerm.begin(), searchTerm.end(),
+		searchTerm.begin(), ::tolower);
+
+		pos = 0;
+		while ( (pos = searchTerm.find_first_of(_T("._"), pos)) != string::npos) {
+			searchTerm.replace(pos, 1, _T(" "));
+		}
+
+
+		//remove words after year/episode
+		PME regexp;
+
+		regexp.Init(_T("((19[0-9]{2})|(20[0-1][0-9]).*)|(s[0-9][0-9](e|d)[0-9][0-9].*|s[0-9]d[0-9].*)"));
+		searchTerm = regexp.sub(searchTerm, Util::emptyStringT);
+
+
+		//remove extra words
+
+		string extrawords[] = {"multisubs","multi","dvdrip","dvdr","real proper","proper","ultimate directors cut","directors cut","dircut","x264","pal","complete","limited","ntsc","bd25",
+								"bd50","bdr","bd9","retail","bluray","nordic","720p","1080p","read nfo","dts","hdtv","pdtv","hddvd","repack","internal","custom","subbed","unrated","recut",
+								"extended","dts51","finsub","swesub","dksub","nosub","remastered","2disc","rf","fi","swe","stv","r5","festival","anniversary edition","bdrip","ac3", "xvid",
+								"ws","int"};
+
+
+		pos = 0;
+		while(pos <= 53) {
+			boost::algorithm::replace_all(searchTerm, " " + extrawords[pos] + " ", " ");
+			pos++;
+		}
+
+		//trim spaces from the end
+		boost::algorithm::trim_left(searchTerm);
+
+		
+
+
 		switch (wID) {
-			case IDC_GOOGLE:
+			case IDC_GOOGLE_TITLE:
 				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
 				break;
 
+			case IDC_GOOGLE_FULL:
+				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
+				break;
+
 			case IDC_URL:
-				WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
 				break;
 
 			case IDC_IMDB:
 				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-			break;
+				break;
+			case IDC_TVCOM:
+				WinUtil::openLink(_T("http://www.tv.com/search.php?type=11&stype=all&qs=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				break;
+			case IDC_METACRITIC:
+				WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
+				break;
 		}
 }
 	searchTerm = Util::emptyStringT;

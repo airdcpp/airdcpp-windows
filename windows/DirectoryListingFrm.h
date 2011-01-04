@@ -126,8 +126,10 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN, onOpenDupe)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
-		COMMAND_ID_HANDLER(IDC_SEARCH_BY_TTH, onSearchTTH)
-		COMMAND_ID_HANDLER(IDC_GOOGLE, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_GOOGLE_TITLE, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_GOOGLE_FULL, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_TVCOM, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_METACRITIC, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_IMDB, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_URL, onSearchSite)
 		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_TARGET, IDC_DOWNLOAD_TARGET + targets.size() + WinUtil::lastDirs.size(), onDownloadTarget)
@@ -176,7 +178,7 @@ public:
 	LRESULT onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/); 
 	
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onSearchTTH(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 
