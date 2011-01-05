@@ -2069,7 +2069,7 @@ string WinUtil::generateStats() {
 			Util::formatBytes(pmc.PagefileUsage).c_str(), Util::formatBytes(pmc.PeakPagefileUsage).c_str(), 
 			Util::formatBytes(Socket::getTotalDown()).c_str(), Util::formatBytes(Socket::getTotalUp()).c_str(), 
 			Util::formatBytes(SETTING(TOTAL_DOWNLOAD)).c_str(), Util::formatBytes(SETTING(TOTAL_UPLOAD)).c_str(), 
-			formatTime(GET_TICK()/1000).c_str(), ProcSpeedCalc());
+			formatTime(GetTickCount()/1000).c_str(), ProcSpeedCalc());
 		return buf;
 	} else {
 		return "Not supported by OS";
@@ -2079,7 +2079,7 @@ string WinUtil::uptimeInfo() {
 		char buf[512]; 
 		snprintf(buf, sizeof(buf), "\n-=[ Uptime: %s]=-\r\n-=[ System Uptime: %s]=-\r\n", 
 		formatTime(Util::getUptime()).c_str(), 
-		formatTime(GET_TICK()/1000).c_str());
+		formatTime(GetTickCount()/1000).c_str());
 		return buf;
 }
 

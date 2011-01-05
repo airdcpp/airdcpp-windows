@@ -48,6 +48,8 @@ COLORREF HLS2RGB (HLSCOLOR hls);
 
 COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S);
 
+
+
 template<class T>
 class UserInfoBaseHandler {
 public:
@@ -497,6 +499,9 @@ public:
 	static string getItunesSpam(HWND playerWnd = NULL);
 	static string getMPCSpam();
 	static string getReport(const Identity& identity, HWND hwnd);
+
+
+
 private:
 	static int CALLBACK browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LPARAM pData);
 

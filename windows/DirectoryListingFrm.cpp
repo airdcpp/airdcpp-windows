@@ -1587,8 +1587,9 @@ if(ctrlList.GetSelectedCount() == 1) {
 			searchTerm.replace(pos, 1, _T(" "));
 		}
 
-		std::transform(searchTerm.begin(), searchTerm.end(),
-		searchTerm.begin(), ::tolower);
+		//std::transform(searchTerm.begin(), searchTerm.end(),
+		//searchTerm.begin(), ::tolower);
+		searchTerm = Text::toLower(searchTerm);
 
 		pos = 0;
 		while ( (pos = searchTerm.find_first_of(_T("._"), pos)) != string::npos) {
