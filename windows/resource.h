@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by G:\dc\airdc\trunk_vc10\AirDC.rc
+// Used by E:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -682,7 +682,10 @@
 #define IDC_WINAMP_HELP                 1343
 #define IDC_STATIC_M                    1343
 #define IDC_POPUP_TIME                  1344
+#define IDC_SYS_LOG                     1344
 #define IDC_POPUP_TIME_STR              1345
+#define IDC_LIST1                       1345
+#define IDC_SYSTEM_LIST                 1345
 #define IDC_WINAMP_BROWSE               1356
 #define IDC_SETTINGS_NOMINALBW2         1358
 #define IDC_HIDE_SHARE                  1359
@@ -749,7 +752,7 @@
 #define IDC_CLOSE_ALL_SEARCH_FRAME      1426
 #define IDC_SETTINGS_PORT_TLS           1427
 #define IDC_MATCH_ALL                   1428
-#define IDC_ENCODINGTEXT                1429	 
+#define IDC_ENCODINGTEXT                1429
 #define IDC_ENCODING                    1430
 #define IDC_UPDATE_VERSION              1445
 #define IDC_UPDATE_VERSION_CURRENT_LBL  1446
@@ -804,6 +807,7 @@
 #define IDC_RESIZE_LINES_SPIN           1508
 #define IDC_MAX_RESIZE_LINES_STR        1509
 #define IDC_USERLIST_COLORS             1517
+#define IDC_METACRITIC                  1521
 #define IDC_TABCOLOR_LIST               1522
 #define IDC_SELECT_TAB_COLOR            1523
 #define IDC_SAMPLE_TAB_COLOR            1524
@@ -813,9 +817,8 @@
 #define IDC_IMDB                        1528
 #define IDC_URL                         1529
 #define IDC_GOOGLE_FULL                 1530
-#define IDC_TVCOM		                1531
+#define IDC_TVCOM                       1531
 #define IDC_GOOGLE_TITLE                1532
-#define IDC_METACRITIC	                1521
 #define IDC_AUTOPRIORITY                1572
 #define IDC_SETTINGS_ODC_MENUBAR        1612
 #define IDC_SETTINGS_ODC_MENUBAR_USETWO 1613
@@ -1088,7 +1091,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        313
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1344
+#define _APS_NEXT_CONTROL_VALUE         1346
 #define _APS_NEXT_SYMED_VALUE           134
 #endif
 #endif

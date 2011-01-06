@@ -707,7 +707,9 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		SearchMenu.CreatePopupMenu();
 		SearchMenu.AppendMenu(MF_STRING, IDC_URL, CTSTRING(SEARCH_URL));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE, CTSTRING(SEARCH_GOOGLE));
+		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
 		SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
+		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
 
 		if(!selectedURL.empty()) 
   			menu.AppendMenu(MF_STRING, IDC_COPY_URL, CTSTRING(COPY_URL));
@@ -1304,6 +1306,8 @@ LRESULT ChatCtrl::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 
 LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
+	//I think we can use full searchterm here because its user selected from chat anyways.
+
 	CHARRANGE cr;
 	GetSel(cr);
 	if(cr.cpMax != cr.cpMin) {
@@ -1324,6 +1328,12 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 			case IDC_IMDB:
 				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
 			break;
+			case IDC_TVCOM:
+				WinUtil::openLink(_T("http://www.tv.com/search.php?type=11&stype=all&qs=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				break;
+			case IDC_METACRITIC:
+				WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
+				break;
 		}
 	searchTerm = Util::emptyStringT;
 	return S_OK;

@@ -373,3 +373,6 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Added more search rightclick functions in Filelists //Maksalaatikko
 #Added User nick color settings in Colors & Fonts page //Maksalaatikko
 #Fixed SystemUptime
+#Added System log options in LogPage
+#Added option to show Finished Uploads in systemlog
+#Added option to show Finished Downloads in systemlog

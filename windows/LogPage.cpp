@@ -53,11 +53,19 @@ PropPage::ListItem LogPage::listItems[] = {
 	{ 0,										ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
+PropPage::ListItem LogPage::systemItems[] = {
+	//ToDo add more options
+	//TTH searches
+	{ SettingsManager::SYSTEM_SHOW_UPLOADS,			ResourceManager::SYSTEM_SHOW_FINISHED_UPLOADS },
+	{ SettingsManager::SYSTEM_SHOW_DOWNLOADS,		ResourceManager::SYSTEM_SHOW_FINISHED_DOWNLOADS },
+	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+};
 
 LRESULT LogPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_LOG_OPTIONS));
+	PropPage::read((HWND)*this, items, systemItems, GetDlgItem(IDC_SYSTEM_LIST));
 
 	for(int i = 0; i < LogManager::LAST; ++i) {
 		TStringPair pair;
@@ -77,6 +85,7 @@ LRESULT LogPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT LogPage::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
 	logOptions.Attach(GetDlgItem(IDC_LOG_OPTIONS));
+
 	
 	getValues();
 	
@@ -119,6 +128,7 @@ void LogPage::getValues() {
 void LogPage::write()
 {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_LOG_OPTIONS));
+	PropPage::write((HWND)*this, items, systemItems, GetDlgItem(IDC_SYSTEM_LIST));
 
 	const string& s = SETTING(LOG_DIRECTORY);
 	if(s.length() > 0 && s[s.length() - 1] != '\\') {
