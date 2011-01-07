@@ -7,6 +7,7 @@
 #include "Resource.h"
 #include "UserListColours.h"
 #include "WinUtil.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem UserListColours::texts[] = {
 	{ IDC_CHANGE_COLOR, ResourceManager::SETTINGS_CHANGE },
@@ -78,6 +79,7 @@ LRESULT UserListColours::onChangeColour(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 }
 
 void UserListColours::refreshPreview() {
+
 	CHARFORMAT2 cf;
 	n_Preview.SetWindowText(_T(""));
 	cf.dwMask = CFM_COLOR;
@@ -111,6 +113,11 @@ void UserListColours::refreshPreview() {
 }
 
 void UserListColours::write() {
+	if(PropertiesDlg::needUpdate)
+	{
+		SendMessage(WM_DESTROY,0,0);
+		SendMessage(WM_INITDIALOG,0,0);
+	}
 	PropPage::write((HWND)*this, items);
 	SettingsManager::getInstance()->set(SettingsManager::NORMAL_COLOUR, normalColour);
 	SettingsManager::getInstance()->set(SettingsManager::FAVORITE_COLOR, favoriteColour);

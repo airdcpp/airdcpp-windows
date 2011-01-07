@@ -24,6 +24,7 @@
 
 #include "SDCPage.h"
 #include "WinUtil.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem SDCPage::texts[] = {
 	{ IDC_SETTINGS_WRITE_BUFFER, ResourceManager::SETTINGS_WRITE_BUFFER },
@@ -135,6 +136,7 @@ LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 void SDCPage::write()
 {
+
 	PropPage::write((HWND)*this, items);
 	SettingsManager::getInstance()->set(SettingsManager::SHUTDOWN_ACTION, ctrlShutdownAction.GetCurSel());
 

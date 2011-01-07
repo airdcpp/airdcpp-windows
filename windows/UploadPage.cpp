@@ -24,6 +24,7 @@
 
 #include "Resource.h"
 #include "UploadPage.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem UploadPage::texts[] = {
 	{ IDC_SLOTS_GROUP, ResourceManager::SLOTS },
@@ -80,6 +81,7 @@ LRESULT UploadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 }
 
 void UploadPage::write() {
+
 	PropPage::write((HWND)(*this), items);
 	
 	if(SETTING(SLOTS) < 1)

@@ -55,9 +55,9 @@ PropPage::ListItem LogPage::listItems[] = {
 
 PropPage::ListItem LogPage::systemItems[] = {
 	//ToDo add more options
-	//TTH searches
 	{ SettingsManager::SYSTEM_SHOW_UPLOADS,			ResourceManager::SYSTEM_SHOW_FINISHED_UPLOADS },
 	{ SettingsManager::SYSTEM_SHOW_DOWNLOADS,		ResourceManager::SYSTEM_SHOW_FINISHED_DOWNLOADS },
+	{ SettingsManager::REPORT_ALTERNATES,			ResourceManager::REPORT_ALTERNATES }, 
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

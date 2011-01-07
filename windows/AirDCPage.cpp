@@ -20,12 +20,14 @@
 #include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
 #include "../client/version.h"
+#include "../client/SimpleXML.h"
 #include "Resource.h"
 
 
 #include "AirDCPage.h"
 #include "WinUtil.h"
 #include "LineDlg.h"
+#include "PropertiesDlg.h"
 
 #include "../client/ResourceManager.h"
 
@@ -259,7 +261,7 @@ LRESULT AirDCPage::onChangeCont(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 
 
 LRESULT AirDCPage::OnPasswordChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	// zmena hesla pouze pokud jiz nejake existuje ;)
+
 	if((wID == IDC_PASSWD_BUTTON) /*&& !SETTING(PASSWORD).empty()*/) {
 		ChngPassDlg dlg;
 		dlg.Olddescription = _T("Old:");
@@ -292,4 +294,6 @@ void AirDCPage::fixControls() {
 	if(IsDlgButtonChecked(IDC_PASSWD_PROTECT_CHCKBOX) == BST_UNCHECKED)
 		::CheckDlgButton(*this, IDC_PASSWD_PROTECT_TRAY_CHCKBOX, BST_UNCHECKED);
 }
+
+
 

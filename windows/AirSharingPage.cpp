@@ -8,6 +8,7 @@
 #include "CommandDlg.h"
 
 #include "WinUtil.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem AirSharingPage::texts[] = {
 	{ IDC_ST_MINISLOTS_EXT, ResourceManager::ST_MINISLOTS_EXT },
@@ -42,6 +43,7 @@ LRESULT AirSharingPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 }
 
 void AirSharingPage::write() {
+	
 	PropPage::write((HWND)*this, items);
 	
 

@@ -28,6 +28,8 @@
 
 class PropertiesDlg : public TreePropertySheet
 {
+
+
 public:
 	enum { numPages = 29 };
 
@@ -43,9 +45,9 @@ public:
 	static bool needUpdate;
 
 	LRESULT onOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-
 protected:
 	void write();
+	
 
 	PropPage *pages[numPages];
 };

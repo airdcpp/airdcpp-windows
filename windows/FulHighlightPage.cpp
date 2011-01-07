@@ -29,6 +29,7 @@
 #include "FulHighlightPage.h"
 #include "FulHighlightDialog.h"
 #include "WinUtil.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem FulHighlightPage::texts[] = {
 	{ IDC_ADD,			 ResourceManager::HIGHLIGHT_ADD				},
@@ -88,6 +89,7 @@ LRESULT FulHighlightPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 
 void FulHighlightPage::write(){
+	
 	PropPage::write((HWND)*this, items);
 	HighlightManager::getInstance()->replaceList(highlights);
 

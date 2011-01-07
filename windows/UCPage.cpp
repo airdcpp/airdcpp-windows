@@ -26,6 +26,7 @@
 #include "UCPage.h"
 #include "CommandDlg.h"
 #include "WinUtil.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem UCPage::texts[] = {
 	{ IDC_MOVE_UP, ResourceManager::MOVE_UP },
@@ -202,6 +203,7 @@ void UCPage::addEntry(const UserCommand& uc, int pos) {
 }
 
 void UCPage::write() {
+
 	PropPage::write((HWND)*this, items);
 }
 

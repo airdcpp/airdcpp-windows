@@ -29,6 +29,7 @@
 #include "WinUtil.h"
 #include "HashProgressDlg.h"
 #include "LineDlg.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
@@ -143,6 +144,7 @@ LRESULT SharePage::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, 
 
 void SharePage::write()
 {
+
 	PropPage::write((HWND)*this, items);
 	
 	if(BOOLSETTING(REFRESH_VNAME_ON_SHAREPAGE) && !BOOLSETTING(DISABLE_REFRESH_ON_SHAREPAGE) && !RefreshDirs.empty()){
@@ -168,6 +170,7 @@ void SharePage::write()
 		}
 
 	RefreshDirs.clear();
+
 }
 
 LRESULT SharePage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)

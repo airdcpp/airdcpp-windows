@@ -26,6 +26,7 @@
 #include "WinUtil.h"
 #include "PublicHubsListDlg.h"
 #include "MainFrm.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem DownloadPage::texts[] = {
 	{ IDC_SETTINGS_DIRECTORIES, ResourceManager::SETTINGS_DIRECTORIES }, 
@@ -81,7 +82,6 @@ LRESULT DownloadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 
 void DownloadPage::write()
 {
-	
 	PropPage::write((HWND)*this, items);
 	if(BOOLSETTING(TESTWRITE)) {
 	MainFrame::getMainFrame()->TestWrite(true, true, false);

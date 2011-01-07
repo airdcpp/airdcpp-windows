@@ -684,8 +684,8 @@
 #define IDC_POPUP_TIME                  1344
 #define IDC_SYS_LOG                     1344
 #define IDC_POPUP_TIME_STR              1345
-#define IDC_LIST1                       1345
 #define IDC_SYSTEM_LIST                 1345
+#define IDC_SETTINGS_EXPORT             1346
 #define IDC_WINAMP_BROWSE               1356
 #define IDC_SETTINGS_NOMINALBW2         1358
 #define IDC_HIDE_SHARE                  1359
@@ -1091,7 +1091,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        313
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1346
+#define _APS_NEXT_CONTROL_VALUE         1347
 #define _APS_NEXT_SYMED_VALUE           134
 #endif
 #endif

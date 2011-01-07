@@ -26,6 +26,7 @@
 #include "AdvancedPage.h"
 #include "CommandDlg.h"
 #include "WinUtil.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem AdvancedPage::texts[] = {
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
@@ -80,6 +81,7 @@ LRESULT AdvancedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 }
 
 void AdvancedPage::write() {
+	
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_ADVANCED_BOOLEANS));
 }
 

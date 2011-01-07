@@ -24,7 +24,9 @@
 #include "AirAppearancePage.h"
 
 #include "SearchFrm.h"
+
 #include "WinUtil.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem AirAppearancePage::texts[] = {
 	{ IDC_SETTINGS_BACKGROUND_IMAGE, ResourceManager::BACKGROUND_IMAGE },
@@ -70,6 +72,7 @@ AirAppearancePage::~AirAppearancePage(){ }
 
 void AirAppearancePage::write()
 {
+
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_AIRAPPEARANCE_BOOLEANS));
 
 	settings->set(SettingsManager::DUPE_COLOR, static_cast<int>(dupeColor));

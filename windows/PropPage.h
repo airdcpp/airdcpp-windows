@@ -30,6 +30,7 @@
 
 #include "../client/ResourceManager.h"
 
+
 class PropPage
 {
 public:

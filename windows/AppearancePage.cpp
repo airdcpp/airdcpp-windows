@@ -24,6 +24,7 @@
 #include "Resource.h"
 #include "AppearancePage.h"
 #include "WinUtil.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem AppearancePage::texts[] = {
 	{ IDC_SETTINGS_APPEARANCE_OPTIONS, ResourceManager::SETTINGS_OPTIONS },
@@ -72,6 +73,7 @@ AppearancePage::~AppearancePage(){ }
 
 void AppearancePage::write()
 {
+
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_APPEARANCE_BOOLEANS));
 
 

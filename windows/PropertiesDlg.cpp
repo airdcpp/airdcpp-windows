@@ -57,8 +57,10 @@
 #include "AirAppearancePage.h"
 
 bool PropertiesDlg::needUpdate = false;
+
 PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s) : TreePropertySheet(CTSTRING(SETTINGS), 0, parent)
 {
+
 	int n = 0;
 	pages[n++] = new GeneralPage(s);
 	pages[n++] = new NetworkPage(s);
@@ -104,6 +106,7 @@ PropertiesDlg::~PropertiesDlg()
 	for(int i=0; i<numPages; i++) {
 		delete pages[i];
 	}
+	PropertiesDlg::needUpdate = false;
 }
 
 void PropertiesDlg::write()
@@ -116,6 +119,7 @@ void PropertiesDlg::write()
 		if(page != NULL)
 			pages[i]->write();	
 	}
+	
 }
 
 LRESULT PropertiesDlg::onOK(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled)

@@ -8,8 +8,8 @@
 #include "LineDlg.h"
 #include "CommandDlg.h"
 
-
 #include "WinUtil.h"
+#include "PropertiesDlg.h"
 
 PropPage::TextItem AirDownloadsPage::texts[] = {
 	{ IDC_AIRDC_ANTI_VIR, ResourceManager::SETAIRDC_ANTI_VIR },
@@ -62,6 +62,7 @@ PropPage::Item AirDownloadsPage::items[] = {
 
 LRESULT AirDownloadsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
 
@@ -88,6 +89,7 @@ LRESULT AirDownloadsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 
 void AirDownloadsPage::write() {
+
 	PropPage::write((HWND)*this, items);
 	
 	TCHAR buf[256];

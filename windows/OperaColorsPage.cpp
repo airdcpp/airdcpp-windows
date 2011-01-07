@@ -147,7 +147,6 @@ void OperaColorsPage::write()
 	{
 		SendMessage(WM_DESTROY,0,0);
 		SendMessage(WM_INITDIALOG,0,0);
-		PropertiesDlg::needUpdate = false;
 	}
 	
 	PropPage::write((HWND)*this, items);
@@ -172,7 +171,6 @@ LRESULT OperaColorsPage::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 	{
 		SendMessage(WM_DESTROY,0,0);
 		SendMessage(WM_INITDIALOG,0,0);
-		PropertiesDlg::needUpdate = false;
 	}
 	bHandled = FALSE;
 //	if (wParam == IDC_SETTINGS_ODC_MENUBAR_COLOR) {
