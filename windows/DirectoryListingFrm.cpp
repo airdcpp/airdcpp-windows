@@ -1620,8 +1620,7 @@ if(ctrlList.GetSelectedCount() == 1) {
 
 
 		//trim spaces from the end
-		boost::algorithm::trim_left(searchTerm);
-		boost::algorithm::trim_left(searchTerm);
+		boost::algorithm::trim_right(searchTerm);
 
 		
 
