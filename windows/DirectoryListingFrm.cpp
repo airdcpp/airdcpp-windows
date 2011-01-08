@@ -1600,7 +1600,7 @@ if(ctrlList.GetSelectedCount() == 1) {
 		//remove words after year/episode
 		PME regexp;
 
-		regexp.Init(_T("((19[0-9]{2})|(20[0-1][0-9]).*)|(s[0-9][0-9](e|d)[0-9][0-9].*|s[0-9]d[0-9].*)"));
+		regexp.Init(_T("(((19[0-9]{2})|(20[0-1][0-9])).*)|(s[0-9][0-9](e|d)[0-9][0-9].*|s[0-9]d[0-9].*)"));
 		searchTerm = regexp.sub(searchTerm, Util::emptyStringT);
 
 
