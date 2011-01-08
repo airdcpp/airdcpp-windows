@@ -426,6 +426,7 @@ void WinUtil::init(HWND hWnd) {
 	help.CreatePopupMenu();
 
 	help.AppendMenu(MF_STRING, ID_APP_ABOUT, CTSTRING(MENU_ABOUT));
+	help.AppendMenu(MF_STRING, ID_WIZARD, CTSTRING(WIZARD));
 	help.AppendMenu(MF_SEPARATOR);
 	help.AppendMenu(MF_STRING, IDC_HELP_HOMEPAGE, CTSTRING(MENU_HOMEPAGE));
 	help.AppendMenu(MF_STRING, IDC_HELP_GEOIPFILE, CTSTRING(MENU_HELP_GEOIPFILE));

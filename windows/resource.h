@@ -147,6 +147,8 @@
 #define IDB_USERS                       312
 #define IDD_FULHIGHLIGHTPROPERTIES      313
 #define IDD_HIGHLIGHTDIALOG             313
+#define IDD_DIALOG1                     314
+#define IDD_WIZARD                      314
 #define IDI_ICON1                       324
 #define IDI_FIN                         324
 #define IDI_ICON2                       325
@@ -540,6 +542,7 @@
 #define IDC_EDIT2                       1285
 #define IDC_AIRDC_SLOT                  1285
 #define IDC_SKIPLIST_PRESET2            1285
+#define IDC_EXPLAIN                     1285
 #define IDC_EDIT3                       1286
 #define IDC_BIND_ADDRESS                1286
 #define IDC_SKIPLIST_PRESET3            1286
@@ -635,6 +638,7 @@
 #define IDC_CONFIRM_OPTIONS             1316
 #define IDC_RADIO1                      1316
 #define IDC_PRIVATE                     1316
+#define IDC_PUBLIC                      1316
 #define IDC_SOCKET_IN_BUFFER            1317
 #define IDC_UPDATE_LANGUAGE             1317
 #define IDC_GROUP                       1317
@@ -685,7 +689,11 @@
 #define IDC_SYS_LOG                     1344
 #define IDC_POPUP_TIME_STR              1345
 #define IDC_SYSTEM_LIST                 1345
-#define IDC_SETTINGS_EXPORT             1346
+#define IDNEXT                          1347
+#define IDC_LIST1                       1348
+#define IDC_CONNECTION2                 1349
+#define IDC_RAR                         1350
+#define IDC_NON_SEGMENT                 1351
 #define IDC_WINAMP_BROWSE               1356
 #define IDC_SETTINGS_NOMINALBW2         1358
 #define IDC_HIDE_SHARE                  1359
@@ -943,6 +951,7 @@
 #define IDC_PM_LINESSPIN                10148
 #define ID_GET_TTH                      10151
 #define IDC_COPY_LINK                   10152
+#define ID_WIZARD                       10153
 #define IDC_REBUILD_TOOLBAR             10162
 #define IDC_MAGNET_SIZE                 10164
 #define IDC_MAGNET_DISP_SIZE            10165
@@ -1089,9 +1098,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        313
+#define _APS_NEXT_RESOURCE_VALUE        315
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1347
+#define _APS_NEXT_CONTROL_VALUE         1353
 #define _APS_NEXT_SYMED_VALUE           134
 #endif
 #endif

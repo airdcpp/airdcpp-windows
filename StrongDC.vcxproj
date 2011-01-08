@@ -495,9 +495,11 @@
     <ClCompile Include="windows\WaitingUsersFrame.cpp" />
     <ClCompile Include="windows\WindowsPage.cpp" />
     <ClCompile Include="windows\WinUtil.cpp" />
+    <ClCompile Include="windows\Wizard.cpp" />
     <ClCompile Include="windows\WMPlayerRemoteApi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="stdafx.h" />
     <ClInclude Include="windows\AboutDlg.h" />
     <ClInclude Include="windows\ADLSearchFrame.h" />
     <ClInclude Include="windows\ADLSProperties.h" />
@@ -595,6 +597,7 @@
     <ClInclude Include="windows\Winamp.h" />
     <ClInclude Include="windows\WindowsPage.h" />
     <ClInclude Include="windows\WinUtil.h" />
+    <ClInclude Include="windows\Wizard.h" />
     <ClInclude Include="windows\WMPlayerRemoteApi.h" />
   </ItemGroup>
   <ItemGroup>

@@ -494,6 +494,9 @@
     <ClCompile Include="windows\UPnP_MiniUPnPc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\Wizard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -788,6 +791,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\UPnP_MiniUPnPc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\Wizard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

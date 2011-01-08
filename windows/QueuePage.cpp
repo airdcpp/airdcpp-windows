@@ -85,7 +85,7 @@ LRESULT QueuePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	CUpDownCtrl spin;
 	spin.Attach(GetDlgItem(IDC_SEG_NUMBER_SPIN));
-	spin.SetRange32(2, 10);
+	spin.SetRange32(1, 10);
 	spin.Detach();
 
 	spin.Attach(GetDlgItem(IDC_SEARCH_SPIN));

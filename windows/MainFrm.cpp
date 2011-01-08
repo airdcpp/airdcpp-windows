@@ -47,6 +47,7 @@
 #include "CDMDebugFrame.h"
 #include "InputBox.h"
 #include "PopupManager.h"
+#include "Wizard.h"
 
 #include "Winamp.h"
 #include "Players.h"
@@ -681,9 +682,15 @@ LRESULT MainFrame::onHashProgress(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 LRESULT MainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	AboutDlg dlg;
 	dlg.DoModal(m_hWnd);
+
+
 	return 0;
 }
-
+LRESULT MainFrame::OnWizard(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	WizardDlg dlg;
+	dlg.DoModal(m_hWnd);
+	return 0;
+}
 LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	switch(wID) {
 		case ID_FILE_SEARCH: SearchFrame::openWindow(); break;
