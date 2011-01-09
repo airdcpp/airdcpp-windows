@@ -45,33 +45,42 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	explain.Attach(GetDlgItem(IDC_EXPLAIN));
 	ctrlDownload.Attach(GetDlgItem(IDC_DOWN_SPEED));
 	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
+	ctrlLanguage.Attach(GetDlgItem(IDC_LANGUAGE));
+
+
+		for(StringIter i = SettingsManager::Languages.begin(); i != SettingsManager::Languages.end(); ++i)
+		ctrlLanguage.AddString(Text::toT(*i).c_str());
+		
+		ctrlLanguage.SetCurSel(SETTING(LANGUAGE_SWITCH));
+
 
 		//add the Download speed strings, Using the same list as upload	
 	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
 		ctrlDownload.AddString(Text::toT(*i).c_str());
+		//if we have a custom Download speed
 	
-	//set current Download speed setting
-	ctrlDownload.SetCurSel(ctrlDownload.FindString(0, Text::toT(SETTING(DOWNLOAD_SPEED)).c_str()));
-
-	//if we have a custom Download speed
 	if(find(SettingsManager::connectionSpeeds.begin(), SettingsManager::connectionSpeeds.end(),
 			SETTING(DOWNLOAD_SPEED)) == SettingsManager::connectionSpeeds.end()) {
 		ctrlDownload.AddString(Text::toT(SETTING(DOWNLOAD_SPEED)).c_str());
 	}
+	//set current Download speed setting
+	
+	ctrlDownload.SetCurSel(ctrlDownload.FindString(0, Text::toT(SETTING(DOWNLOAD_SPEED)).c_str()));
+
+
 
 
 	//add the upload speed strings	
 	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
 		ctrlUpload.AddString(Text::toT(*i).c_str());
-	
-	//set current upload speed setting
-	ctrlUpload.SetCurSel(ctrlUpload.FindString(0, Text::toT(SETTING(UPLOAD_SPEED)).c_str()));
-
-	//if we have a custom upload speed
+		//if we have a custom upload speed
 	if(find(SettingsManager::connectionSpeeds.begin(), SettingsManager::connectionSpeeds.end(),
 			SETTING(UPLOAD_SPEED)) == SettingsManager::connectionSpeeds.end()) {
 		ctrlUpload.AddString(Text::toT(SETTING(UPLOAD_SPEED)).c_str());
 	}
+	//set current upload speed setting
+	ctrlUpload.SetCurSel(ctrlUpload.FindString(0, Text::toT(SETTING(UPLOAD_SPEED)).c_str()));
+
 
 	//Set current nick setting
 		nickline.Attach(GetDlgItem(IDC_NICK));
@@ -91,6 +100,14 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 void WizardDlg::write() {
 	//Think can keep the tchar bufs here when just have a few settings that needs it
 	
+	//set the language
+	if(SETTING(LANGUAGE_SWITCH) != ctrlLanguage.GetCurSel()) {
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, ctrlLanguage.GetCurSel());
+	//To Make this a little cleaner
+	setLang();
+	}
+
+
 	TCHAR buf[64];
 	GetDlgItemText(IDC_NICK, buf, sizeof(buf) + 1);
 	string nick = Text::fromT(buf);
@@ -229,6 +246,10 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_NONSEGMENT);
 		}
 
+		if(IsDlgButtonChecked(IDC_CHECK1)){
+			SettingsManager::getInstance()->set(SettingsManager::WIZARD_RUN, true);
+		}
+		
 }
 	
 
@@ -236,7 +257,6 @@ void WizardDlg::write() {
 LRESULT WizardDlg::onNext(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	write();
-	//bHandled = FALSE;
 	EndDialog(wID);
 	return 0;
 
@@ -262,6 +282,38 @@ void WizardDlg::fixcontrols() {
 		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
 		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
 		explain.SetWindowText(nonsegment);
+	}
+
+}
+void WizardDlg::setLang() {
+
+	if(SETTING(LANGUAGE_SWITCH) == 0) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, Util::emptyString);
+	} else if(SETTING(LANGUAGE_SWITCH) == 1) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Swedish_for_AirDc.xml"));
+	} else if(SETTING(LANGUAGE_SWITCH) == 2) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Finnish_for_AirDc.xml"));
+	} else if(SETTING(LANGUAGE_SWITCH) == 3) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Italian_for_AirDc.xml"));
+	} else if(SETTING(LANGUAGE_SWITCH) == 4) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Hungarian_for_AirDc.xml"));
+	} else if(SETTING(LANGUAGE_SWITCH) == 5) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Romanian_for_AirDc.xml"));
+	} else if(SETTING(LANGUAGE_SWITCH) == 6) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Danish_for_AirDc.xml"));
+	} else if(SETTING(LANGUAGE_SWITCH) == 7) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Norwegian_for_AirDc.xml"));
+	} else if(SETTING(LANGUAGE_SWITCH) == 8) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Port_Br_for_AirDc.xml"));
+    } else if(SETTING(LANGUAGE_SWITCH) == 9) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Polish_for_AirDc.xml"));
+	} else if(SETTING(LANGUAGE_SWITCH) == 10) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//French_for_AirDc.xml"));
+	} else if(SETTING(LANGUAGE_SWITCH) == 11) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Dutch_for_AirDc.xml"));
+	} else if(SETTING(LANGUAGE_SWITCH) == 12) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Russian_for_AirDc.xml"));
+
 	}
 
 }

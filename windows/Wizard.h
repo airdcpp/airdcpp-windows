@@ -37,9 +37,11 @@ public:
 	LRESULT OnDlgButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 		void write();
+		void setLang();
 private:
 		CComboBox ctrlUpload;	
 		CComboBox ctrlDownload;	
+		CComboBox ctrlLanguage;	
 		void fixcontrols();
 		
 protected:

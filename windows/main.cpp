@@ -44,6 +44,7 @@
 #include "MainFrm.h"
 #include "PopupManager.h"
 #include "LineDlg.h"
+#include "Wizard.h"
 #include <delayimp.h>
 CAppModule _Module;
 
@@ -335,6 +336,7 @@ void callBack(void* x, const tstring& a) {
 
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
+
 	checkCommonControls();
 
 	CMessageLoop theLoop;
@@ -388,6 +390,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	splash.RedrawWindow();
 
 	startup(callBack, (void*)splash.m_hWnd);
+	
 
 if(BOOLSETTING(PASSWD_PROTECT)) {
 		PassDlg dlg;
@@ -401,6 +404,8 @@ if(BOOLSETTING(PASSWD_PROTECT)) {
 			}
 		}
 	} 
+
+	
 
 	splash.DestroyWindow();
 	dummy.DestroyWindow();

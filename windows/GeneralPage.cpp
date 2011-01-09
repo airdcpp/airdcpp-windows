@@ -130,7 +130,7 @@ LRESULT GeneralPage::onTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl,
 
 void GeneralPage::fixControls() {
 
-	if ((SETTING(LANG_SWITCH) == 2) || (SETTING(LANG_SWITCH) == 1) || (SETTING(LANG_SWITCH) == 0)) {
+	if (SETTING(LANGUAGE_SWITCH) == 0) {
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_ITA, BST_UNCHECKED);
@@ -144,7 +144,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 3) {
+	}else if (SETTING(LANGUAGE_SWITCH) == 1) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_CHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -158,7 +158,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 4) {
+	} else if (SETTING(LANGUAGE_SWITCH) == 2) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_CHECKED);
@@ -172,7 +172,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 5) {
+	} else if (SETTING(LANGUAGE_SWITCH) == 3) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -186,7 +186,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 6) {
+	} else if (SETTING(LANGUAGE_SWITCH) == 4) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -200,7 +200,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 7) {
+	}else if (SETTING(LANGUAGE_SWITCH) == 5) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -214,7 +214,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 8) {
+	}else if (SETTING(LANGUAGE_SWITCH) == 6) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -228,7 +228,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 9) {
+	} else if (SETTING(LANGUAGE_SWITCH) == 7) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -242,7 +242,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 10) {
+	} else if (SETTING(LANGUAGE_SWITCH) == 8) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -256,7 +256,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 11) {
+	} else if (SETTING(LANGUAGE_SWITCH) == 9) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -270,7 +270,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 12) {
+	} else if (SETTING(LANGUAGE_SWITCH) == 10) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -284,7 +284,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_CHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
-	} if (SETTING(LANG_SWITCH) == 13) {
+	} else if (SETTING(LANGUAGE_SWITCH) == 11) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -298,7 +298,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_CHECKED);
-} if (SETTING(LANG_SWITCH) == 14) {
+} else if (SETTING(LANGUAGE_SWITCH) == 12) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
@@ -316,80 +316,81 @@ void GeneralPage::fixControls() {
 }
 
 LRESULT GeneralPage::onLng(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(IsDlgButtonChecked(IDC_ENG)) {
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 0);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, Util::emptyString);
+	fixControls();
+	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
+	}
 	if(IsDlgButtonChecked(IDC_LANG_SWE)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 3);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 1);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Swedish_for_AirDc.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nStarta om AirDC++ klienten!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
 	if(IsDlgButtonChecked(IDC_LANG_FIN)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 4);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 2);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Finnish_for_AirDc.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nKäynnistä AirDC++ uudelleen!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
-	if(IsDlgButtonChecked(IDC_ENG)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 1);
-	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, Util::emptyString);
-	fixControls();
-	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
-	}
+
 	if(IsDlgButtonChecked(IDC_LANG_ITA)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 5);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 3);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Italian_for_AirDc.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
 	if(IsDlgButtonChecked(IDC_LANG_HUN)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 6);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 4);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Hungarian_for_AirDc.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
 	if(IsDlgButtonChecked(IDC_LANG_RO)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 7);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 5);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Romanian_for_AirDc.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nReporneste AirDC++!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
 	if(IsDlgButtonChecked(IDC_LANG_DAN)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 8);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 6);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Danish_for_AirDc.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nGenstart Airdc++ clienten!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
 	if(IsDlgButtonChecked(IDC_LANG_NOR)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 9);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 7);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Norwegian_for_AirDC.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
 	if(IsDlgButtonChecked(IDC_LANG_POR)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 10);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 8);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Port_Br_for_AirDC.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
 	if(IsDlgButtonChecked(IDC_LANG_POL)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 11);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 9);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Polish_for_AirDc.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nZrestartuj klienta AirDC++!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
 	if(IsDlgButtonChecked(IDC_LANG_FR)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 12);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 10);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//French_for_AirDC.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
 	if(IsDlgButtonChecked(IDC_LANG_D)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 13);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 11);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Dutch_for_AirDC.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}
 if(IsDlgButtonChecked(IDC_LANG_RUS)) {
-	SettingsManager::getInstance()->set(SettingsManager::LANG_SWITCH, 14);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 12);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Russian_for_AirDC.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
