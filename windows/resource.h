@@ -694,6 +694,8 @@
 #define IDC_CONNECTION2                 1349
 #define IDC_RAR                         1350
 #define IDC_NON_SEGMENT                 1351
+#define IDC_DOWNLOAD_TEXT               1353
+#define IDC_DOWN_SPEED                  1354
 #define IDC_WINAMP_BROWSE               1356
 #define IDC_SETTINGS_NOMINALBW2         1358
 #define IDC_HIDE_SHARE                  1359
@@ -1100,7 +1102,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        315
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1353
+#define _APS_NEXT_CONTROL_VALUE         1355
 #define _APS_NEXT_SYMED_VALUE           134
 #endif
 #endif

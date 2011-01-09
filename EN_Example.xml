@@ -70,10 +70,8 @@
 		<String Name="Close">Close</String>
 		<String Name="CloseConnection">Close connection</String>
 		<String Name="CollapseAll">Collapse All</String>
-		<String Name="ColorFast">User with fireball</String>
 		<String Name="ColorOp">User is OP</String>
 		<String Name="ColorPasive">Passive user</String>
-		<String Name="ColorServer">User with server</String>
 		<String Name="CommandTooLong">Maximum command length exceeded</String>
 		<String Name="Comment">Comment</String>
 		<String Name="Compressed">Compressed</String>

@@ -38,7 +38,8 @@ public:
 	
 		void write();
 private:
-		CComboBox ctrlConnection;	
+		CComboBox ctrlUpload;	
+		CComboBox ctrlDownload;	
 		void fixcontrols();
 		
 protected:

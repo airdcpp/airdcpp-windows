@@ -9,6 +9,8 @@
 
 //Todo Make Translateable
 static const TCHAR rar[] = 
+_T("Download Slot settings are set depending download speed\r\n")
+_T("Upload Slots are set depending upload speed\r\n\r\n")
 _T("Client profile Rar-Hub\r\n")
 _T("Partial Upload slots will be set To: 1\r\n")
 _T("Enable Segmented downloading will be set To: true\r\n")
@@ -18,6 +20,8 @@ _T("Min segments size will be set To: 1024\r\n")
 _T("Expand Downloads in TransferView will be set To: false \r\n");
 
 static const TCHAR publichub[] = 
+_T("Download Slot settings are set depending download speed\r\n")
+_T("Upload Slots are set depending upload speed\r\n\r\n")
 _T("Client profile Public Hubs\r\n")
 _T("Partial Upload slots will be set To: 2\r\n")
 _T("Enable Segmented downloading will be set To: true\r\n")
@@ -27,6 +31,8 @@ _T("Min segments size will be set To: 1024\r\n")
 _T("Expand Downloads in TransferView will be set To: false \r\n");
 
 static const TCHAR nonsegment[] = 
+_T("Download Slot settings are set depending download speed\r\n")
+_T("Upload Slots are set depending upload speed\r\n\r\n")
 _T("Client profile No Segments \r\n")
 _T("Partial Upload slots will be set To: 0 \r\n")
 //_T("Enable Segmented downloading will be set To: true\r\n") Maybe not show this for the users to avoid misunderstanding it
@@ -37,20 +43,34 @@ _T("Expand Downloads in TransferView will be set To: true \r\n");
 LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		
 	explain.Attach(GetDlgItem(IDC_EXPLAIN));
+	ctrlDownload.Attach(GetDlgItem(IDC_DOWN_SPEED));
+	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
 
-	ctrlConnection.Attach(GetDlgItem(IDC_CONNECTION));
+		//add the Download speed strings, Using the same list as upload	
+	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
+		ctrlDownload.AddString(Text::toT(*i).c_str());
+	
+	//set current Download speed setting
+	ctrlDownload.SetCurSel(ctrlDownload.FindString(0, Text::toT(SETTING(DOWNLOAD_SPEED)).c_str()));
+
+	//if we have a custom Download speed
+	if(find(SettingsManager::connectionSpeeds.begin(), SettingsManager::connectionSpeeds.end(),
+			SETTING(DOWNLOAD_SPEED)) == SettingsManager::connectionSpeeds.end()) {
+		ctrlDownload.AddString(Text::toT(SETTING(DOWNLOAD_SPEED)).c_str());
+	}
+
 
 	//add the upload speed strings	
 	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
-		ctrlConnection.AddString(Text::toT(*i).c_str());
+		ctrlUpload.AddString(Text::toT(*i).c_str());
 	
 	//set current upload speed setting
-	ctrlConnection.SetCurSel(ctrlConnection.FindString(0, Text::toT(SETTING(UPLOAD_SPEED)).c_str()));
+	ctrlUpload.SetCurSel(ctrlUpload.FindString(0, Text::toT(SETTING(UPLOAD_SPEED)).c_str()));
 
 	//if we have a custom upload speed
 	if(find(SettingsManager::connectionSpeeds.begin(), SettingsManager::connectionSpeeds.end(),
 			SETTING(UPLOAD_SPEED)) == SettingsManager::connectionSpeeds.end()) {
-		ctrlConnection.AddString(Text::toT(SETTING(UPLOAD_SPEED)).c_str());
+		ctrlUpload.AddString(Text::toT(SETTING(UPLOAD_SPEED)).c_str());
 	}
 
 	//Set current nick setting
@@ -77,40 +97,97 @@ void WizardDlg::write() {
 	if(nick != Util::emptyString)
 		SettingsManager::getInstance()->set(SettingsManager::NICK, nick );
 
-
 	TCHAR buf2[64];
-	GetDlgItemText(IDC_CONNECTION, buf2, sizeof(buf) + 1);
-	string connection = Text::fromT(buf2);
-	SettingsManager::getInstance()->set(SettingsManager::UPLOAD_SPEED, connection);
+	GetDlgItemText(IDC_DOWN_SPEED, buf2, sizeof(buf2) + 1);
+	string download = Text::fromT(buf2);
+	SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SPEED, download);
 
-		int value = Util::toInt(connection); //compare as int?
+		int value = Util::toInt(download); //compare as int?
 
-		/*These are just out of the head, Will be more spesific when this is finished*/
+		int speed = value *100; // * 100 is close enough?
+		SettingsManager::getInstance()->set(SettingsManager::MAX_DOWNLOAD_SPEED, speed);
+
+		/*Any Ideas for good Download Slot settings for each download speed*/
 		if(value <= 1){
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 2);
+			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 5);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 10);
+			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 3);
             
 		}else if(value > 1 && value <= 2) {
-			   SettingsManager::getInstance()->set(SettingsManager::SLOTS, 3);
+			  SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 10);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 20);
+			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
 			
 		}else if( value > 2 && value <= 4) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 4);
+			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 12);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 25);
+			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
 
 		}else if( value > 4 && value <= 6) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 5);
+			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 15);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 28);
+			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
 
 		 }else if( value > 6 && value <= 8) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 6);
+			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 15);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 30);
+			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
 		   
-		}else if( value > 8 && value <= 10) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 8);
+		}else if( value > 8 && value <= 10) { //Setting the same counts now, if we dont change it then dont need this much conditions
+			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 15);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 30);
+			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
 		   
 		}else if( value > 10 && value <= 20) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 15);
+			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 20);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 30);
+			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
 		   
 		}else if( value > 50 && value <= 100) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 25);
+			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 25);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 35);
+			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 5);
 		  
 		}else if( value > 100) {
+			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 30);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 50);
+			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 8);
+		   }
+	
+		
+	TCHAR buf3[64];
+	GetDlgItemText(IDC_CONNECTION, buf3, sizeof(buf3) + 1);
+	string connection = Text::fromT(buf3);
+	SettingsManager::getInstance()->set(SettingsManager::UPLOAD_SPEED, connection);
+		//using different int just to be safe
+		int val = Util::toInt(connection); //compare as int?
+
+		/*These are just out of the head, Will be more spesific when this is finished*/
+		if(val <= 1){
+			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 2);
+            
+		}else if(val > 1 && val <= 2) {
+			   SettingsManager::getInstance()->set(SettingsManager::SLOTS, 3);
+			
+		}else if( val > 2 && val <= 4) {
+			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 4);
+
+		}else if( val > 4 && val <= 6) {
+			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 5);
+
+		 }else if( val > 6 && val <= 8) {
+			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 6);
+		   
+		}else if( val > 8 && val <= 10) {
+			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 8);
+		   
+		}else if( val > 10 && val <= 20) {
+			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 15);
+		   
+		}else if( val > 50 && val <= 100) {
+			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 25);
+		  
+		}else if( val > 100) {
 			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 50);
 		   }
 		
