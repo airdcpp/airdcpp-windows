@@ -1858,7 +1858,7 @@ BEGIN
 
     IDD_WIZARD, DIALOG
     BEGIN
-        MOCKUP, 0, 100, 84, 222, ".\res\airdcslwt.png"
+        MOCKUP, 0, 53, 84, 222, ".\res\airdcslwt.png"
         LEFTMARGIN, 7
         RIGHTMARGIN, 436
         TOPMARGIN, 7

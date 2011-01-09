@@ -39,8 +39,6 @@ LRESULT UserListColours::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	n_lsbList.AddString(CTSTRING(SETTINGS_COLOR_FAVORITE));	
 	n_lsbList.AddString(CTSTRING(SETTINGS_COLOR_RESERVED));
 	n_lsbList.AddString(CTSTRING(SETTINGS_COLOR_IGNORED));
-	n_lsbList.AddString(CTSTRING(COLOR_FAST));
-	n_lsbList.AddString(CTSTRING(COLOR_SERVER));
 	n_lsbList.AddString(CTSTRING(COLOR_OP));
 	n_lsbList.AddString(CTSTRING(COLOR_PASIVE));
 	n_lsbList.SetCurSel( 0 );

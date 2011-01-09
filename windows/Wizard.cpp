@@ -29,7 +29,7 @@ _T("Expand Downloads in TransferView will be set To: false \r\n");
 static const TCHAR nonsegment[] = 
 _T("Client profile No Segments \r\n")
 _T("Partial Upload slots will be set To: 0 \r\n")
-_T("Enable Segmented downloading will be set To: false\r\n")
+//_T("Enable Segmented downloading will be set To: true\r\n") Maybe not show this for the users to avoid misunderstanding it
 _T("Manual number of Segments will be set To: 1\r\n")
 _T("Min segments size will be set To: largest value \r\n")
 _T("Expand Downloads in TransferView will be set To: true \r\n");
