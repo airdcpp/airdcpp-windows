@@ -675,6 +675,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 
 	OMenu menu;
 	menu.CreatePopupMenu();
+	SearchMenu.CreatePopupMenu();
 
 	if (copyMenu.m_hMenu != NULL) {
 		// delete copy menu if it exists
@@ -704,7 +705,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 		menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
 		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-		SearchMenu.CreatePopupMenu();
+		
 		SearchMenu.AppendMenu(MF_STRING, IDC_URL, CTSTRING(SEARCH_URL));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE, CTSTRING(SEARCH_GOOGLE));
 		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));

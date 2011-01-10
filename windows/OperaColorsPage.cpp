@@ -167,11 +167,7 @@ void OperaColorsPage::write()
 }
 
 LRESULT OperaColorsPage::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
-	if(PropertiesDlg::needUpdate)
-	{
-		SendMessage(WM_DESTROY,0,0);
-		SendMessage(WM_INITDIALOG,0,0);
-	}
+
 	bHandled = FALSE;
 //	if (wParam == IDC_SETTINGS_ODC_MENUBAR_COLOR) {
 		DRAWITEMSTRUCT* dis = (DRAWITEMSTRUCT*)lParam;

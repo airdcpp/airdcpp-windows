@@ -41,11 +41,35 @@ _T("Min segments size will be set To: largest value \r\n")
 _T("Expand Downloads in TransferView will be set To: true \r\n");
 
 LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		
+			
+	//Set current nick setting
+		nickline.Attach(GetDlgItem(IDC_NICK));
+		SetDlgItemText(IDC_NICK, Text::toT(SETTING(NICK)).c_str());
+
 	explain.Attach(GetDlgItem(IDC_EXPLAIN));
 	ctrlDownload.Attach(GetDlgItem(IDC_DOWN_SPEED));
 	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
 	ctrlLanguage.Attach(GetDlgItem(IDC_LANGUAGE));
+
+	CUpDownCtrl spin;
+	spin.Attach(GetDlgItem(IDC_DOWN_SPEED_SPIN));
+	spin.SetRange32(0, 100000);
+	spin.Detach();
+
+	CUpDownCtrl spin2;
+	spin2.Attach(GetDlgItem(IDC_FILE_S_SPIN));
+	spin2.SetRange32(0, 999);
+	spin2.Detach();
+
+	CUpDownCtrl spin3;
+	spin3.Attach(GetDlgItem(IDC_DOWNLOAD_S_SPIN));
+	spin3.SetRange32(0, 999);
+	spin3.Detach();
+
+	CUpDownCtrl spin4;
+	spin4.Attach(GetDlgItem(IDC_UPLOAD_S_SPIN));
+	spin4.SetRange32(1, 100);
+	spin4.Detach();
 
 
 		for(StringIter i = SettingsManager::Languages.begin(); i != SettingsManager::Languages.end(); ++i)
@@ -82,9 +106,12 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlUpload.SetCurSel(ctrlUpload.FindString(0, Text::toT(SETTING(UPLOAD_SPEED)).c_str()));
 
 
-	//Set current nick setting
-		nickline.Attach(GetDlgItem(IDC_NICK));
-		SetDlgItemText(IDC_NICK, Text::toT(SETTING(NICK)).c_str());
+	//Set current values
+	SetDlgItemText(IDC_MAX_DOWNLOAD_SP, Text::toT(Util::toString(SETTING(MAX_DOWNLOAD_SPEED))).c_str());
+	SetDlgItemText(IDC_DOWNLOAD_SLOTS, Text::toT(Util::toString(SETTING(DOWNLOAD_SLOTS))).c_str());
+	SetDlgItemText(IDC_UPLOAD_SLOTS, Text::toT(Util::toString(SETTING(SLOTS))).c_str());
+	SetDlgItemText(IDC_FILE_SLOTS, Text::toT(Util::toString(SETTING(FILE_SLOTS))).c_str());
+
 
 		switch(SETTING(SETTINGS_PROFILE)) {
 		case SettingsManager::PROFILE_PUBLIC: CheckDlgButton(IDC_PUBLIC, BST_CHECKED); break;
@@ -92,6 +119,7 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		case SettingsManager::PROFILE_NONSEGMENT: CheckDlgButton(IDC_NON_SEGMENT, BST_CHECKED); break;
 		default: CheckDlgButton(IDC_PUBLIC, BST_CHECKED); break;
 	}
+
 		CenterWindow(GetParent());
 		fixcontrols();
 		return TRUE;
@@ -107,108 +135,40 @@ void WizardDlg::write() {
 	setLang();
 	}
 
-
+	//for Nick
 	TCHAR buf[64];
 	GetDlgItemText(IDC_NICK, buf, sizeof(buf) + 1);
 	string nick = Text::fromT(buf);
 	if(nick != Util::emptyString)
 		SettingsManager::getInstance()->set(SettingsManager::NICK, nick );
+	//end
 
-	TCHAR buf2[64];
-	GetDlgItemText(IDC_DOWN_SPEED, buf2, sizeof(buf2) + 1);
-	string download = Text::fromT(buf2);
-	SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SPEED, download);
+			//for max download speed
+			TCHAR buf2[64];
+			GetDlgItemText(IDC_MAX_DOWNLOAD_SP, buf2, sizeof(buf2) + 1);
+			string downloadspeed = Text::fromT(buf2);
+			//int value = Util::toInt(downloadspeed); 
+			SettingsManager::getInstance()->set(SettingsManager::MAX_DOWNLOAD_SPEED, downloadspeed);
+			//end
 
-		int value = Util::toInt(download); //compare as int?
 
-		int speed = value *100; // * 100 is close enough?
-		SettingsManager::getInstance()->set(SettingsManager::MAX_DOWNLOAD_SPEED, speed);
+			//File Slots
+			TCHAR buf3[64];
+			GetDlgItemText(IDC_FILE_SLOTS, buf3, sizeof(buf3) + 1);
+			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, Text::fromT(buf3));
+			//end
 
-		/*Any Ideas for good Download Slot settings for each download speed*/
-		if(value <= 1){
-			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 5);
-			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 10);
-			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 3);
-            
-		}else if(value > 1 && value <= 2) {
-			  SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 10);
-			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 20);
-			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
+			//Download Slots
+			TCHAR buf4[64];
+			GetDlgItemText(IDC_DOWNLOAD_SLOTS, buf4, sizeof(buf4) + 1);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, Text::fromT(buf4));
+			//end
 			
-		}else if( value > 2 && value <= 4) {
-			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 12);
-			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 25);
-			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
-
-		}else if( value > 4 && value <= 6) {
-			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 15);
-			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 28);
-			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
-
-		 }else if( value > 6 && value <= 8) {
-			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 15);
-			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 30);
-			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
-		   
-		}else if( value > 8 && value <= 10) { //Setting the same counts now, if we dont change it then dont need this much conditions
-			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 15);
-			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 30);
-			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
-		   
-		}else if( value > 10 && value <= 20) {
-			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 20);
-			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 30);
-			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 4);
-		   
-		}else if( value > 50 && value <= 100) {
-			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 25);
-			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 35);
-			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 5);
-		  
-		}else if( value > 100) {
-			SettingsManager::getInstance()->set(SettingsManager::FILE_SLOTS, 30);
-			SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SLOTS, 50);
-			SettingsManager::getInstance()->set(SettingsManager::EXTRA_DOWNLOAD_SLOTS, 8);
-		   }
-	
-		
-	TCHAR buf3[64];
-	GetDlgItemText(IDC_CONNECTION, buf3, sizeof(buf3) + 1);
-	string connection = Text::fromT(buf3);
-	SettingsManager::getInstance()->set(SettingsManager::UPLOAD_SPEED, connection);
-		//using different int just to be safe
-		int val = Util::toInt(connection); //compare as int?
-
-		/*These are just out of the head, Will be more spesific when this is finished*/
-		if(val <= 1){
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 2);
-            
-		}else if(val > 1 && val <= 2) {
-			   SettingsManager::getInstance()->set(SettingsManager::SLOTS, 3);
-			
-		}else if( val > 2 && val <= 4) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 4);
-
-		}else if( val > 4 && val <= 6) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 5);
-
-		 }else if( val > 6 && val <= 8) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 6);
-		   
-		}else if( val > 8 && val <= 10) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 8);
-		   
-		}else if( val > 10 && val <= 20) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 15);
-		   
-		}else if( val > 50 && val <= 100) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 25);
-		  
-		}else if( val > 100) {
-			SettingsManager::getInstance()->set(SettingsManager::SLOTS, 50);
-		   }
-		
-	
+			//Upload Slots
+			TCHAR buf5[64];
+			GetDlgItemText(IDC_UPLOAD_SLOTS, buf5, sizeof(buf5) + 1);
+			SettingsManager::getInstance()->set(SettingsManager::SLOTS, Text::fromT(buf5));
+			//end
 
 		/*Make settings depending depending selected client settings profile
 			Note that if add a setting to one profile will need to add it to other profiles too*/
@@ -267,6 +227,121 @@ LRESULT WizardDlg::OnDlgButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	fixcontrols();
 	return 0;
 }
+LRESULT WizardDlg::OnDownSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	TCHAR buf2[64];
+	//need to do it like this because we have support for custom speeds, do we really need that?
+	switch(wNotifyCode) {
+
+	case CBN_EDITCHANGE:
+	GetDlgItemText(IDC_DOWN_SPEED, buf2, sizeof(buf2) +1);
+	break;
+
+	case CBN_SELENDOK:
+	ctrlDownload.GetLBText(ctrlDownload.GetCurSel(), buf2);
+	break;
+	}
+
+	string download = Text::fromT(buf2);
+
+	//have the text in a buffer why not set it now.
+	SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SPEED, download);
+
+		double value = Util::toDouble(download); //compare as int?
+		
+		int speed = value *100; // * 100 is close enough?
+		SetDlgItemText(IDC_MAX_DOWNLOAD_SP, Text::toT(Util::toString(speed)).c_str());
+
+
+		/*Any Ideas for good Download Slot settings for each download speed*/
+		if(value <= 1){
+			SetDlgItemText(IDC_FILE_SLOTS, _T("5"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("10"));
+
+		}else if(value > 1 && value <= 2) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("10"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("20"));
+		
+		}else if( value > 2 && value <= 4) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("12"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("25"));
+
+		}else if( value > 4 && value <= 6) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("15"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("28"));
+
+		 }else if( value > 6 && value <= 10) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("15"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("30"));
+		   
+		}else if( value > 10 && value <= 20) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("20"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("32"));
+		   
+		}else if( value > 50 && value <= 100) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("25"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("35"));
+		  
+		}else if( value > 100) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("30"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("50"));
+		   }
+
+		return 0;
+}
+LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	TCHAR buf2[64];
+	//need to do it like this because we have support for custom speeds, do we really need that?
+	switch(wNotifyCode) {
+	case CBN_EDITCHANGE:
+	GetDlgItemText(IDC_CONNECTION, buf2, sizeof(buf2) +1);
+	break;
+	case CBN_SELENDOK:
+	ctrlUpload.GetLBText(ctrlUpload.GetCurSel(), buf2);
+	break;
+
+	}	
+		string upload = Text::fromT(buf2);
+
+	//have the text in a buffer why not set it now.
+	SettingsManager::getInstance()->set(SettingsManager::UPLOAD_SPEED, upload);
+
+		int value = Util::toInt(upload); //compare as int?
+		
+
+		/*Good Upload slot counts per upload speed??*/
+		if(value <= 1){
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("2"));
+
+		}else if(value > 1 && value <= 2) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("3"));
+		
+		}else if( value > 2 && value <= 4) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("4"));
+
+		}else if( value > 4 && value <= 6) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+
+		 }else if( value > 6 && value <= 8) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("6"));
+
+		 }else if( value > 6 && value <= 10) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("8"));
+		   
+		}else if( value > 10 && value <= 20) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("12"));
+		   
+		}else if( value > 50 && value <= 100) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("15"));
+		  
+		}else if( value > 100) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("30"));
+		   }
+
+		return 0;
+}
+
 void WizardDlg::fixcontrols() {
 	if(IsDlgButtonChecked(IDC_PUBLIC)){
 		CheckDlgButton(IDC_RAR, BST_UNCHECKED);

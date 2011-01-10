@@ -2393,6 +2393,8 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 
 	case CDDS_ITEMPREPAINT: {
 			OnlineUser* ui = (OnlineUser*)cd->nmcd.lItemlParam;
+			// tstring user = ui->getText(OnlineUser::COLUMN_NICK); 
+			 
 			if (FavoriteManager::getInstance()->isFavoriteUser(ui->getUser())) {
 				cd->clrText = SETTING(FAVORITE_COLOR);
 			} else if (UploadManager::getInstance()->hasReservedSlot(ui->getUser())) {
@@ -2403,6 +2405,9 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				cd->clrText = SETTING(OP_COLOR);
 			} else if(!ui->getIdentity().isTcpActive(client)) {
 				cd->clrText = SETTING(PASIVE_COLOR);
+		//	}else if(user.find(_T("[FIN]"), 0) != string::npos) { // add a regex match and a regexp string.
+			//	cd->clrText = SETTING(FAVORITE_COLOR);
+
 			} else {
 				cd->clrText = SETTING(NORMAL_COLOUR);
 			}

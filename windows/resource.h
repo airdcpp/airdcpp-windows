@@ -410,6 +410,7 @@
 #define IDC_CHUNKCOUNT                  1218
 #define IDC_REFRESH_DELAY               1218
 #define IDC_SKIPLIST_PRESET1            1218
+#define IDC_MAX_DOWNLOAD_SP             1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_CLIENT_TAG                  1220
@@ -697,15 +698,23 @@
 #define IDC_DOWNLOAD_TEXT               1353
 #define IDC_DOWN_SPEED                  1354
 #define IDC_WINAMP_BROWSE               1356
+#define IDC_DOWN_SPEED_SPIN             1356
 #define IDC_SETTINGS_NOMINALBW2         1358
 #define IDC_HIDE_SHARE                  1359
+#define IDC_DOWNLOAD_SLOTS              1359
 #define IDC_LANG_SWE                    1360
+#define IDC_DOWNLOAD_S_SPIN             1360
 #define IDC_ENG                         1361
+#define IDC_UPLOAD_SLOTS                1361
 #define IDC_LANG_FIN                    1362
+#define IDC_UPLOAD_S_SPIN               1362
 #define IDC_LANG_RO                     1363
 #define IDC_LANG_HUN                    1364
 #define IDC_POPUP_TYPE                  1364
+#define IDC_FILE_SLOTS                  1364
 #define IDC_LANG_DAN                    1365
+#define IDC_SPIN4                       1365
+#define IDC_FILE_S_SPIN                 1365
 #define IDC_LANG_ITA                    1366
 #define IDC_LANG_NOR                    1367
 #define IDC_UPDATE_BL                   1368
@@ -1102,7 +1111,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        315
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1355
+#define _APS_NEXT_CONTROL_VALUE         1366
 #define _APS_NEXT_SYMED_VALUE           134
 #endif
 #endif
