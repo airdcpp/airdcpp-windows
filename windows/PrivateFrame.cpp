@@ -421,6 +421,8 @@ void PrivateFrame::onEnter()
 					addLine (WinUtil::UselessInfo(), WinUtil::m_ChatTextSystem);
 			} else if(stricmp(s.c_str(), _T("df")) == 0) {
 					addLine (WinUtil::DiskSpaceInfo(), WinUtil::m_ChatTextSystem);
+			} else if(stricmp(s.c_str(), _T("uptime")) == 0) {
+					sendMessage(Text::toT(WinUtil::uptimeInfo()));
 
 			} else if(stricmp(s.c_str(), _T("help")) == 0) {
 				addLine(_T("*** ") + WinUtil::commands + _T(", /getlist, /clear, /grant, /close, /favorite, /winamp"), WinUtil::m_ChatTextSystem);
