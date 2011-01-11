@@ -694,7 +694,7 @@
 #define IDC_LIST1                       1348
 #define IDC_CONNECTION2                 1349
 #define IDC_RAR                         1350
-#define IDC_NON_SEGMENT                 1351
+#define IDC_PRIVATE_HUB                 1351
 #define IDC_DOWNLOAD_TEXT               1353
 #define IDC_DOWN_SPEED                  1354
 #define IDC_WINAMP_BROWSE               1356

@@ -9,19 +9,17 @@
 
 //Todo Make Translateable
 static const TCHAR rar[] = 
-_T("Download Slot settings are set depending download speed\r\n")
-_T("Upload Slots are set depending upload speed\r\n\r\n")
 _T("Client profile Rar-Hub\r\n")
-_T("Partial Upload slots will be set To: 1\r\n")
-_T("Enable Segmented downloading will be set To: true\r\n")
-_T("Manual number of Segments Enable will be set To: false\r\n")
-_T("Manual number of Segments will be set To: 3\r\n")
-_T("Min segments size will be set To: 1024\r\n")
-_T("Expand Downloads in TransferView will be set To: false \r\n");
+_T("This will disable segment downloading by setting min segment size!!\r\n")
+_T("( Safer Way to Disable segments )\r\n")
+_T("Manual number of Segments Enable will be set To: true\r\n")
+_T("Manual number of Segments will be set To: 1\r\n")
+_T("Min segments size will be set To: largest value\r\n")
+_T("Expand Downloads in TransferView will be set To: true \r\n")
+_T("Partial Upload slots will be set To: 1\r\n");
+
 
 static const TCHAR publichub[] = 
-_T("Download Slot settings are set depending download speed\r\n")
-_T("Upload Slots are set depending upload speed\r\n\r\n")
 _T("Client profile Public Hubs\r\n")
 _T("Partial Upload slots will be set To: 2\r\n")
 _T("Enable Segmented downloading will be set To: true\r\n")
@@ -30,15 +28,14 @@ _T("Manual number of Segments will be set To: 3\r\n")
 _T("Min segments size will be set To: 1024\r\n")
 _T("Expand Downloads in TransferView will be set To: false \r\n");
 
-static const TCHAR nonsegment[] = 
-_T("Download Slot settings are set depending download speed\r\n")
-_T("Upload Slots are set depending upload speed\r\n\r\n")
-_T("Client profile No Segments \r\n")
-_T("Partial Upload slots will be set To: 0 \r\n")
-//_T("Enable Segmented downloading will be set To: true\r\n") Maybe not show this for the users to avoid misunderstanding it
-_T("Manual number of Segments will be set To: 1\r\n")
-_T("Min segments size will be set To: largest value \r\n")
-_T("Expand Downloads in TransferView will be set To: true \r\n");
+static const TCHAR privatehub[] = 
+_T("Client profile Private Hub \r\n")
+_T("Partial Upload slots will be set To: 2 \r\n")
+_T("Enable Segmented downloading will be set To: true\r\n")
+_T("Manual number of Segments will be set To: 3\r\n")
+_T("Manual number of Segments Enable will be set To: false\r\n")
+_T("Min segments size will be set To: 2048 \r\n")
+_T("Expand Downloads in TransferView will be set To: false \r\n");
 
 LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 			
@@ -116,7 +113,7 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		switch(SETTING(SETTINGS_PROFILE)) {
 		case SettingsManager::PROFILE_PUBLIC: CheckDlgButton(IDC_PUBLIC, BST_CHECKED); break;
 		case SettingsManager::PROFILE_RAR: CheckDlgButton(IDC_RAR, BST_CHECKED); break;
-		case SettingsManager::PROFILE_NONSEGMENT: CheckDlgButton(IDC_NON_SEGMENT, BST_CHECKED); break;
+		case SettingsManager::PROFILE_PRIVATE: CheckDlgButton(IDC_PRIVATE_HUB, BST_CHECKED); break;
 		default: CheckDlgButton(IDC_PUBLIC, BST_CHECKED); break;
 	}
 
@@ -186,24 +183,24 @@ void WizardDlg::write() {
 		}else if(IsDlgButtonChecked(IDC_RAR)){
 			SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 1);
 			SettingsManager::getInstance()->set(SettingsManager::MULTI_CHUNK, true);
-			SettingsManager::getInstance()->set(SettingsManager::NUMBER_OF_SEGMENTS, 3);
-			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
-			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
-			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
-			//add more here
-			
-			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_RAR);
-
-		}else if(IsDlgButtonChecked(IDC_NON_SEGMENT)){
-			SettingsManager::getInstance()->set(SettingsManager::MULTI_CHUNK, true);
-			SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 0);
 			SettingsManager::getInstance()->set(SettingsManager::NUMBER_OF_SEGMENTS, 1);
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, true);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 2147483647);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, true);
 			//add more here
 			
-			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_NONSEGMENT);
+			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_RAR);
+
+		}else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
+			SettingsManager::getInstance()->set(SettingsManager::MULTI_CHUNK, true);
+			SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 2);
+			SettingsManager::getInstance()->set(SettingsManager::NUMBER_OF_SEGMENTS, 3);
+			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
+			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 2048);
+			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
+			//add more here
+			
+			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PRIVATE);
 		}
 
 		if(IsDlgButtonChecked(IDC_CHECK1)){
@@ -345,18 +342,18 @@ LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*
 void WizardDlg::fixcontrols() {
 	if(IsDlgButtonChecked(IDC_PUBLIC)){
 		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
-		CheckDlgButton(IDC_NON_SEGMENT, BST_UNCHECKED);
+		CheckDlgButton(IDC_PRIVATE_HUB, BST_UNCHECKED);
 		explain.SetWindowText(publichub);
 	}
 	if(IsDlgButtonChecked(IDC_RAR)){
-		CheckDlgButton(IDC_NON_SEGMENT, BST_UNCHECKED);
+		CheckDlgButton(IDC_PRIVATE_HUB, BST_UNCHECKED);
 		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
 		explain.SetWindowText(rar);
 	}
-	if(IsDlgButtonChecked(IDC_NON_SEGMENT)){
+	if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
 		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
 		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
-		explain.SetWindowText(nonsegment);
+		explain.SetWindowText(privatehub);
 	}
 
 }
