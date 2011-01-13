@@ -33,7 +33,7 @@ public:
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 
-		LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		EndDialog(wID);
 		return 0;
 	}
@@ -45,6 +45,8 @@ public:
 
 		void write();
 		void setLang();
+		void setDownloadSlots(int value);
+		void setUploadSlots(int value);
 private:
 		CComboBox ctrlUpload;	
 		CComboBox ctrlDownload;	

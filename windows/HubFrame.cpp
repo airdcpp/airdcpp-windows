@@ -669,6 +669,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 //Lets keep these here if someone else does the sdc merge.. they allways merge this in :)
 //			setTabColor(RGB(0, 255, 0));
 //			unsetIconState();
+			wentoffline = false;
 			setDisconnected(false);
 			UpdateIcons = true;
 			now = 0;
@@ -690,6 +691,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 //			setTabColor(RGB(255, 0, 0));
 //			setIconState();
 			setDisconnected(true);
+			wentoffline = true;
 
 			if ((!SETTING(SOUND_HUBDISCON).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
 				PlaySound(Text::toT(SETTING(SOUND_HUBDISCON)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
@@ -1826,7 +1828,11 @@ void HubFrame::on(HubUpdated, const Client*) throw() {
 	hubName += client->getHubName();
 	if(!client->getHubDescription().empty()) {
 		hubName += " - " + client->getHubDescription();
+		cachedHubname = client->getHubDescription();
 	}
+	if(wentoffline && !cachedHubname.empty())
+		hubName += " - " + cachedHubname;
+
 	hubName += " (" + client->getHubUrl() + ")";
 #ifdef _DEBUG
 	string version = client->getHubIdentity().get("VE");

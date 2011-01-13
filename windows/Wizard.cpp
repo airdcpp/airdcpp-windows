@@ -7,14 +7,13 @@
 
 #include "Wizard.h"
 
-//Todo Make Translateable
+
 static const TCHAR rar[] = 
 _T("Client profile Rar-Hub\r\n")
 _T("This will disable segment downloading by setting min segment size!!\r\n")
 _T("( Safer Way to Disable segments )\r\n")
 _T("Manual number of Segments Enable will be set To: true\r\n")
 _T("Manual number of Segments will be set To: 1\r\n")
-_T("Min segments size will be set To: largest value\r\n")
 _T("Expand Downloads in TransferView will be set To: true \r\n")
 _T("Partial Upload slots will be set To: 1\r\n");
 
@@ -167,7 +166,7 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::SLOTS, Text::fromT(buf5));
 			//end
 
-		/*Make settings depending depending selected client settings profile
+		/*Make settings depending selected client settings profile
 			Note that if add a setting to one profile will need to add it to other profiles too*/
 		if(IsDlgButtonChecked(IDC_PUBLIC)){
 			SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 2);
@@ -185,7 +184,7 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::MULTI_CHUNK, true);
 			SettingsManager::getInstance()->set(SettingsManager::NUMBER_OF_SEGMENTS, 1);
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, true);
-			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 2147483647);
+			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 10240000);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, true);
 			//add more here
 			
@@ -196,7 +195,7 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 2);
 			SettingsManager::getInstance()->set(SettingsManager::NUMBER_OF_SEGMENTS, 3);
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
-			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 2048);
+			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
 			//add more here
 			
@@ -249,40 +248,7 @@ LRESULT WizardDlg::OnDownSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/,
 		int speed = value *100; // * 100 is close enough?
 		SetDlgItemText(IDC_MAX_DOWNLOAD_SP, Text::toT(Util::toString(speed)).c_str());
 
-
-		/*Any Ideas for good Download Slot settings for each download speed*/
-		if(value <= 1){
-			SetDlgItemText(IDC_FILE_SLOTS, _T("5"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("10"));
-
-		}else if(value > 1 && value <= 2) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("10"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("20"));
-		
-		}else if( value > 2 && value <= 4) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("12"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("25"));
-
-		}else if( value > 4 && value <= 6) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("15"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("28"));
-
-		 }else if( value > 6 && value <= 10) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("15"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("30"));
-		   
-		}else if( value > 10 && value <= 20) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("20"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("32"));
-		   
-		}else if( value > 50 && value <= 100) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("25"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("35"));
-		  
-		}else if( value > 100) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("30"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("50"));
-		   }
+		setDownloadSlots(value);
 
 		return 0;
 }
@@ -306,36 +272,8 @@ LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*
 
 		int value = Util::toInt(upload); //compare as int?
 		
-
-		/*Good Upload slot counts per upload speed??*/
-		if(value <= 1){
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("2"));
-
-		}else if(value > 1 && value <= 2) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("3"));
-		
-		}else if( value > 2 && value <= 4) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("4"));
-
-		}else if( value > 4 && value <= 6) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
-
-		 }else if( value > 6 && value <= 8) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("6"));
-
-		 }else if( value > 6 && value <= 10) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("8"));
-		   
-		}else if( value > 10 && value <= 20) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("12"));
-		   
-		}else if( value > 50 && value <= 100) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("15"));
-		  
-		}else if( value > 100) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("30"));
-		   }
-
+		setUploadSlots(value);
+	
 		return 0;
 }
 
@@ -355,7 +293,15 @@ void WizardDlg::fixcontrols() {
 		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
 		explain.SetWindowText(privatehub);
 	}
+	TCHAR buf[64];
+	GetDlgItemText(IDC_CONNECTION, buf, sizeof(buf) +1);
+	int uploadvalue = Util::toInt(Text::fromT(buf));
+	setUploadSlots(uploadvalue);
 
+	TCHAR buf2[64];
+	GetDlgItemText(IDC_DOWN_SPEED, buf2, sizeof(buf2) +1);
+	int downloadvalue = Util::toInt(Text::fromT(buf2));
+	setDownloadSlots(downloadvalue);
 }
 void WizardDlg::setLang() {
 
@@ -388,4 +334,143 @@ void WizardDlg::setLang() {
 
 	}
 
+}
+void WizardDlg::setDownloadSlots(int value) {
+	
+		/*Any Ideas for good Download Slot settings for each download speed*/
+		if(IsDlgButtonChecked(IDC_RAR)) {
+			
+			//maksis Change these!  For RAR hubs!
+		if(value <= 1){
+			SetDlgItemText(IDC_FILE_SLOTS, _T("5"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("10"));
+
+		}else if(value > 1 && value <= 2) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("10"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("15"));
+		
+		}else if( value > 2 && value <= 4) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("11"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("15"));
+
+		}else if( value > 4 && value <= 6) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("15"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("20"));
+
+		 }else if( value > 6 && value <= 10) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("16"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("30"));
+		   
+		}else if( value > 10 && value <= 20) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("20"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("32"));
+		   
+		}else if( value > 50 && value <= 100) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("25"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("35"));
+		  
+		}else if( value > 100) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("30"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("50"));
+		   }
+		//for RAR hubs end
+		} else {
+		if(value <= 1){
+			SetDlgItemText(IDC_FILE_SLOTS, _T("5"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("10"));
+
+		}else if(value > 1 && value <= 2) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("10"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("20"));
+		
+		}else if( value > 2 && value <= 4) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("12"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("25"));
+
+		}else if( value > 4 && value <= 6) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("15"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("28"));
+
+		 }else if( value > 6 && value <= 10) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("15"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("30"));
+		   
+		}else if( value > 10 && value <= 20) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("20"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("32"));
+		   
+		}else if( value > 50 && value <= 100) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("25"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("35"));
+		  
+		}else if( value > 100) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("30"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("50"));
+		   }
+		}
+}
+
+void WizardDlg::setUploadSlots(int value) {
+		/*Good Upload slot counts per upload speed??*/
+
+		if(IsDlgButtonChecked(IDC_RAR)) {
+			
+			//maksis Change these!  For RAR hubs!
+		if(value <= 1){
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+
+		}else if(value > 1 && value <= 2) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		
+		}else if( value > 2 && value <= 4) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+
+		}else if( value > 4 && value <= 6) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+
+		 }else if( value > 6 && value <= 8) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+
+		 }else if( value > 6 && value <= 10) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		   
+		}else if( value > 10 && value <= 20) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		   
+		}else if( value > 50 && value <= 100) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		  
+		}else if( value > 100) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		   }
+		//RAR hubs end
+		} else {
+		if(value <= 1){
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("2"));
+
+		}else if(value > 1 && value <= 2) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("3"));
+		
+		}else if( value > 2 && value <= 4) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("4"));
+
+		}else if( value > 4 && value <= 6) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+
+		 }else if( value > 6 && value <= 8) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("6"));
+
+		 }else if( value > 6 && value <= 10) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("8"));
+		   
+		}else if( value > 10 && value <= 20) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("12"));
+		   
+		}else if( value > 50 && value <= 100) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("15"));
+		  
+		}else if( value > 100) {
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("30"));
+		   }
+		}
 }

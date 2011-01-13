@@ -397,6 +397,8 @@ private:
 
 	Client* client;
 	tstring server;
+	string cachedHubname;
+	bool wentoffline;
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow clientContainer;
 	CContainedWindow showUsersContainer;
