@@ -2,7 +2,7 @@
 
 #include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
-
+#include "../client/HighlightManager.h"
 #include "Resource.h"
 
 #include "Wizard.h"
@@ -175,6 +175,7 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
+			SettingsManager::getInstance()->set(SettingsManager::USE_HIGHLIGHT, false);
 			//add more here
 
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PUBLIC);
@@ -186,6 +187,15 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, true);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 10240000);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, true);
+			
+			SettingsManager::getInstance()->set(SettingsManager::USE_HIGHLIGHT, true);
+			ColorSettings cs;
+			cs.setMatch(_T("$Re:(\\S+\\.\\S*(?i:(?:dvdrip|xvid|dvdr|svcd|vcd|rip|hdtv))\\S*[-\\.]\\S+)"));   //this is the default there is now can change it
+			cs.setBold(true);
+			cs.setHasFgColor(true);
+			cs.setFgColor(RGB(153, 51, 153));
+			HighlightManager::getInstance()->add(cs);
+			
 			//add more here
 			
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_RAR);
@@ -197,6 +207,7 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
+			SettingsManager::getInstance()->set(SettingsManager::USE_HIGHLIGHT, false);
 			//add more here
 			
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PRIVATE);
@@ -205,7 +216,7 @@ void WizardDlg::write() {
 		if(IsDlgButtonChecked(IDC_CHECK1)){
 			SettingsManager::getInstance()->set(SettingsManager::WIZARD_RUN, true);
 		}
-		
+		SettingsManager::getInstance()->save();
 }
 	
 
