@@ -231,7 +231,7 @@ void FulHighlightPage::addPreset(int preset) {
 		case 4:
 			// i don't like this one. it fails to much
 			//cs.setMatch(_T("$Re:\\S{0,}(DVDRiP|DVDSCR|SCR|TELESYNC|T[SC]|CAM|[LP]DVD|SCREENER|R5(\\.LINE)?)\\.[xX][vV][iI][dD](\\.[Ii]NT(ERNAL)?|READNFO)?-\\w{1,15}"));
-			cs.setMatch(_T("$Re:(\\S+\\.\\S*(?i:(?:dvdrip|xvid|dvdr|svcd|vcd|rip|hdtv))\\S*[-\\.]\\S+)"));
+			cs.setMatch(_T("$Re:(\\s[A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+($|\\s))"));
 			cs.setBold(true);
 			cs.setHasFgColor(true);
 			cs.setFgColor(RGB(153, 51, 153));
