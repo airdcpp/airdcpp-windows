@@ -818,7 +818,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		directoryMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityDirMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
 		directoryMenu.AppendMenu(MF_SEPARATOR);
 		directoryMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-		directoryMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
 		directoryMenu.AppendMenu(MF_SEPARATOR);
 		directoryMenu.AppendMenu(MF_STRING,IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
 

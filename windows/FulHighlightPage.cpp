@@ -229,7 +229,7 @@ void FulHighlightPage::addPreset(int preset) {
 			cs.setFgColor(RGB(51, 102, 154));
 			break;
 		case 4:
-			cs.setMatch(_T("$Re:(((?<=\s)[A-Za-z0-9-]+(\.|_)\S+[-]\w+(\.[A-Za-z0-9]{2,4})?)|((?<=\s)\S+\.nfo)|(\S+[-]\S+\.(rar|r\d{2}|\d{3}))(?=(\W)?\s))"));
+			cs.setMatch(_T("$Re:(((?<=\s)[A-Za-z0-9-]+(\.|_)\S+[-]\w+(\.[A-Za-z0-9]{2,4})?)|((?<=\s)\S+\.nfo)|(\S+[-]\S+\.(rar|zip|r\d{2}|\d{3}))(?=(\W)?\s))"));
 			cs.setHasFgColor(true);
 			cs.setFgColor(RGB(153, 51, 153));
 			break;
