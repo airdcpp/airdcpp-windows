@@ -86,7 +86,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCH_PAUSE, onPause)
 		COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_FILENAME, onCopy)
-		//COMMAND_ID_HANDLER(IDC_COPY_FILEWDIR, onCopy)
+		COMMAND_ID_HANDLER(IDC_COPY_DIR, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy)
 		COMMAND_ID_HANDLER(IDC_FREESLOTS, onFreeSlots)
@@ -98,7 +98,13 @@ public:
 		COMMAND_ID_HANDLER(IDC_BITZI_LOOKUP, onBitziLookup)
 		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
-		COMMAND_ID_HANDLER(IDC_PURGE, onPurge)		
+		COMMAND_ID_HANDLER(IDC_PURGE, onPurge)	
+		COMMAND_ID_HANDLER(IDC_GOOGLE_TITLE, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_GOOGLE_FULL, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_TVCOM, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_METACRITIC, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_IMDB, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_URL, onSearchSite)
 		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + FavoriteManager::getInstance()->getFavoriteDirs().size(), onDownloadFavoriteDirs)
 		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + FavoriteManager::getInstance()->getFavoriteDirs().size(), onDownloadWholeFavoriteDirs)
 		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_TARGET, IDC_DOWNLOAD_TARGET + targets.size() + WinUtil::lastDirs.size(), onDownloadTarget)
@@ -176,6 +182,7 @@ public:
 	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSkiplist(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void runUserCommand(UserCommand& uc);

@@ -963,6 +963,7 @@
 #define ID_GET_TTH                      10151
 #define IDC_COPY_LINK                   10152
 #define ID_WIZARD                       10153
+#define IDC_COPY_DIR                    10154
 #define IDC_REBUILD_TOOLBAR             10162
 #define IDC_MAGNET_SIZE                 10164
 #define IDC_MAGNET_DISP_SIZE            10165

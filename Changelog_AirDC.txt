@@ -370,10 +370,13 @@ user is asked to update, if user dont wish to update at that time the client wil
 
 2.09 Beta 1
 #Fixed open own list before startup refresh
-#Added more search rightclick functions in Filelists //Maksalaatikko
+#Added more sites for site search //Maksalaatikko
+#Improved title detection for site search //Maksalaatikko
 #Added User nick color settings in Colors & Fonts page //Maksalaatikko
 #Fixed SystemUptime
 #Added Tv.com and metacritic search sites in mainchat
 #Added System log options in LogPage
 #Added option to show Finished Uploads in systemlog
 #Added option to show Finished Downloads in systemlog
+#Added Copy Directory menu item in search and filelists //Maksalaatikko
+#Added Site search in search window //Maksalaatikko

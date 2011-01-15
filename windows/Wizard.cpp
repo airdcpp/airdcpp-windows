@@ -190,7 +190,7 @@ void WizardDlg::write() {
 			
 			SettingsManager::getInstance()->set(SettingsManager::USE_HIGHLIGHT, true);
 			ColorSettings cs;
-			cs.setMatch(_T("$Re:(\\S+\\.\\S*(?i:(?:dvdrip|xvid|dvdr|svcd|vcd|rip|hdtv))\\S*[-\\.]\\S+)"));   //this is the default there is now can change it
+			cs.setMatch(_T("$Re:(((?<=\\s)[A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?(?=(\\W)?\\s))|(\\S+\\.nfo(?=(\\W)?\\s))|(\\S+[-]\\S+\\.(rar|r\\d{2}|\\d{3})(?=(\\W)?\\s)))"));   //this is the default there is now can change it
 			cs.setBold(true);
 			cs.setHasFgColor(true);
 			cs.setFgColor(RGB(153, 51, 153));

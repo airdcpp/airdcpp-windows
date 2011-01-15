@@ -300,6 +300,8 @@ public:
 	static void SetIcon(HWND hWnd, tstring file, bool big = false);
 
 	static tstring getIconPath(const tstring& filename);
+	static tstring getTitle(tstring searchTerm);
+	static tstring getDir(tstring dir);
 
 	static string getAppName() {
 		TCHAR buf[MAX_PATH+1];

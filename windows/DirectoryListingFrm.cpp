@@ -18,9 +18,7 @@
 
 #include "stdafx.h"
 #include "../client/DCPlusPlus.h"
-#include "boost/algorithm/string/replace.hpp"
-#include "boost/algorithm/string/trim.hpp"
-#include "../client/pme.h"
+
 
 
 #include "Resource.h"
@@ -668,6 +666,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_EXACT_SIZE, CTSTRING(EXACT_SIZE));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
@@ -696,7 +695,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST, CTSTRING(HIGHEST));
 
 		//Search menus
-		
+		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
 		SearchMenu.AppendMenu(MF_STRING, IDC_URL, CTSTRING(SEARCH_URL));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
@@ -804,11 +803,12 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			ctrlTree.ClientToScreen(&pt);
 		}
 
-		OMenu targetDirMenu, directoryMenu, priorityDirMenu;
+		OMenu targetDirMenu, directoryMenu, priorityDirMenu, SearchMenu;
 
 		directoryMenu.CreatePopupMenu();
 		targetDirMenu.CreatePopupMenu();
 		priorityDirMenu.CreatePopupMenu();
+		SearchMenu.CreatePopupMenu();
 
 		targetDirMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 		priorityDirMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_WITH_PRIORITY));
@@ -816,6 +816,9 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		directoryMenu.AppendMenu(MF_STRING, IDC_DOWNLOADDIR, CTSTRING(DOWNLOAD));
 		directoryMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetDirMenu, CTSTRING(DOWNLOAD_TO));
 		directoryMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityDirMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
+		directoryMenu.AppendMenu(MF_SEPARATOR);
+		directoryMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+		directoryMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
 		directoryMenu.AppendMenu(MF_SEPARATOR);
 		directoryMenu.AppendMenu(MF_STRING,IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
 
@@ -825,6 +828,14 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_NORMAL+90, CTSTRING(NORMAL));
 		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGH+90, CTSTRING(HIGH));
 		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST+90, CTSTRING(HIGHEST));
+
+		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
+		SearchMenu.AppendMenu(MF_STRING, IDC_URL, CTSTRING(SEARCH_URL));
+		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
+		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
+		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
+		SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
+		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
 
 		// Strange, windows doesn't change the selection on right-click... (!)
 
@@ -1215,6 +1226,7 @@ void DirectoryListingFrame::closeAll(){
 
 LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring sCopy;
+	tstring directory;
 	if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getSelectedItem();
 		switch (wID) {
@@ -1223,6 +1235,15 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 				break;
 			case IDC_COPY_FILENAME:
 				sCopy = ii->getText(COLUMN_FILENAME);
+				break;
+			case IDC_COPY_DIR:
+				if(ii->type == ItemInfo::FILE){
+					directory = Text::toT(ii->file->getPath());
+					sCopy = WinUtil::getDir(directory);
+					}
+				else if(ii->type == ItemInfo::DIRECTORY){
+					sCopy = ii->getText(COLUMN_FILENAME);
+				}
 				break;
 			case IDC_COPY_SIZE:
 				sCopy = ii->getText(COLUMN_SIZE);
@@ -1311,6 +1332,18 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 						}
 					}
 					break;
+				case IDC_COPY_DIR:
+					if(ii->type == ItemInfo::FILE){
+						directory = Text::toT(ii->file->getPath());
+						sCopy += WinUtil::getDir(directory);
+						sCopy += Text::toT("\r\n");
+					}
+					else if(ii->type == ItemInfo::DIRECTORY){
+						sCopy += ii->getText(COLUMN_FILENAME);
+						sCopy += Text::toT("\r\n");
+					}
+					break;
+
 
 				default:
 					dcdebug("DIRECTORYLISTINGFRAME DON'T GO HERE\n");
@@ -1570,59 +1603,11 @@ tstring searchTermFull;
 
 if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getSelectedItem();
-		searchTerm = ii->getText(COLUMN_FILENAME);
-		searchTermFull = searchTerm;
+		searchTermFull = ii->getText(COLUMN_FILENAME);
+		searchTerm = WinUtil::getTitle(searchTermFull);
 
 
 
-		//text until we find " - "
-		size_t pos = searchTerm.find(_T("-"));
-		if(pos > 0)
-		searchTerm = searchTerm.substr(0, pos);
-		searchTerm += ' ';
-
-		//replace . with space
-		pos = 0;
-		while ( (pos = searchTerm.find_first_of(_T("._"), pos)) != string::npos) {
-			searchTerm.replace(pos, 1, _T(" "));
-		}
-
-		//std::transform(searchTerm.begin(), searchTerm.end(),
-		//searchTerm.begin(), ::tolower);
-		searchTerm = Text::toLower(searchTerm);
-
-		pos = 0;
-		while ( (pos = searchTerm.find_first_of(_T("._"), pos)) != string::npos) {
-			searchTerm.replace(pos, 1, _T(" "));
-		}
-
-
-		//remove words after year/episode
-		PME regexp;
-
-		regexp.Init(_T("(((\\[)?((19[0-9]{2})|(20[0-1][0-9]))|(s[0-9]([0-9])?(e|d)[0-9]([0-9])?)|(Season(\\.)[0-9]([0-9])?)).*)"));
-		searchTerm = regexp.sub(searchTerm, Util::emptyStringT);
-
-
-		//remove extra words
-
-		string extrawords[] = {"multisubs","multi","dvdrip","dvdr","real proper","proper","ultimate directors cut","directors cut","dircut","x264","pal","complete","limited","ntsc","bd25",
-								"bd50","bdr","bd9","retail","bluray","nordic","720p","1080p","read nfo","dts","hdtv","pdtv","hddvd","repack","internal","custom","subbed","unrated","recut",
-								"extended","dts51","finsub","swesub","dksub","nosub","remastered","2disc","rf","fi","swe","stv","r5","festival","anniversary edition","bdrip","ac3", "xvid",
-								"ws","int"};
-
-
-		pos = 0;
-		while(pos <= 53) {
-			boost::algorithm::replace_all(searchTerm, " " + extrawords[pos] + " ", " ");
-			pos++;
-		}
-
-
-		//trim spaces from the end
-		boost::algorithm::trim_right(searchTerm);
-
-		
 
 
 		switch (wID) {
