@@ -688,6 +688,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		if(!selectedIP.empty()) {
 			menu.InsertSeparatorFirst(selectedIP);
 			menu.AppendMenu(MF_STRING, IDC_WHOIS_IP, (TSTRING(WHO_IS) + _T(" ") + selectedIP).c_str() );
+			prepareMenu(menu, ::UserCommand::CONTEXT_CHAT, client->getHubUrl());
 			if (client && client->isOp()) {
 				menu.AppendMenu(MF_SEPARATOR);
 				menu.AppendMenu(MF_STRING, IDC_BAN_IP, (_T("!banip ") + selectedIP).c_str());
