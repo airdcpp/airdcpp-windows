@@ -125,7 +125,7 @@ public:
 //	void setClient(Client* pClient) { client = pClient; }
 	void runUserCommand(UserCommand& uc);
 
-	void AdjustTextSize();
+	//void AdjustTextSize();
 	void AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = true);
 
 	void setSelectedUser(const tstring& s) { selectedUser = s; }
@@ -146,6 +146,7 @@ private:
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);
 	bool HitURL();
 
+	tstring WordFromPos(const POINT& p);
 	tstring LineFromPos(const POINT& p) const;
 	void FormatChatLine(const tstring& sMyNick, const tstring& sMsg, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo);
 	void FormatEmoticonsAndLinks(const tstring& sText, tstring& sTextLower, LONG lSelBegin, bool bUseEmo);
@@ -182,6 +183,7 @@ private:
 	tstring selectedIP;
 	tstring selectedUser;
 	tstring selectedURL;
+	tstring selectedWord;
 };
 
 

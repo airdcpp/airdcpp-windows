@@ -209,7 +209,7 @@ private:
 	OMenu emoMenu;
 	CButton ctrlEmoticons;
 	HBITMAP hEmoticonBmp;
-	tstring hubName;
+	//tstring hubName;
 
 	HintedUser replyTo;
 	const bool priv;

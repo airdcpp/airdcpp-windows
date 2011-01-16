@@ -490,7 +490,6 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 		else
 			CreateEx(WinUtil::mdiClient);
 	}
-	ctrlClient.AdjustTextSize();
 
 	CRect r;
 	ctrlClient.GetClientRect(r);
@@ -660,7 +659,7 @@ void PrivateFrame::updateTitle() {
 //		unsetIconState();
 //		setTabColor(RGB(0, 255,	255));
 		setDisconnected(false);
-		hubName = hubs.first;
+		//hubName = hubs.first;
 		if(isoffline) {
 			tstring status = _T(" *** ") + TSTRING(USER_WENT_ONLINE) + _T(" [") + WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint, priv) + _T(" - ") + hubs.first + _T("] ***");
 			if(BOOLSETTING(STATUS_IN_CHAT)) {

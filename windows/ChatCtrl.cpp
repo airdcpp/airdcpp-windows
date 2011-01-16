@@ -54,7 +54,7 @@ ChatCtrl::~ChatCtrl() {
 		emoticonsManager->dec();
 	}
 }
-
+/*
 void ChatCtrl::AdjustTextSize() {
 	if(GetWindowTextLength() > 25000) {
 		// We want to limit the buffer to 25000 characters...after that, w95 becomes sad...
@@ -81,7 +81,7 @@ void ChatCtrl::AdjustTextSize() {
 		scrollToEnd();
 	}
 }
-
+*/
 void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
 	SetRedraw(FALSE);
 
@@ -383,7 +383,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 				// TODO: complete regexp for URLs
 				boost::wregex reg;
 				if(isMagnet) // magnet links have totally indifferent structure than classic URL // -/?%&=~#'\\w\\.\\+\\*\\(\\)
-					reg.assign(_T("^(\\w)+=[:\\w.]+(&(\\w)+=[\\S]*)*[^\\s<>.,;!(){}\"']+"), boost::regex_constants::icase);
+					reg.assign(_T("^(\\w)+=[:\\w]+(&(\\w)+=[\\S]*)*[^\\s<>.,;!(){}\"']+"), boost::regex_constants::icase);
 				else
 					reg.assign(_T("^([@\\w-]+(\\.)*)+(:[\\d]+)?(/[\\S]*)*[^\\s<>.,;!(){}\"']+"), boost::regex_constants::icase);
 					
@@ -457,6 +457,35 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 		}
 	}
 
+}
+tstring ChatCtrl::WordFromPos(const POINT& p) {
+
+	tstring result;
+	int iCharPos = CharFromPos(p), len = LineLength(iCharPos) + 1;
+	if(len < 3)
+		return false;
+
+	long lPosBegin = FindWordBreak(WB_LEFT, iCharPos);
+	long lPosEnd = FindWordBreak(WB_RIGHTBREAK, iCharPos);
+	len = lPosEnd - lPosBegin;
+
+	tstring sText;
+	sText.resize(len);
+	GetTextRange(lPosBegin, lPosEnd, &sText[0]);
+	
+	tstring::size_type ch = iCharPos;
+        if( ch != tstring::npos ) {
+			
+			tstring::size_type start = sText.find_last_of(_T(" \t\r"), ch) + 1;
+			
+			tstring::size_type end = sText.find_first_of(_T(" \t\r"), start);
+			if(end == tstring::npos) {
+				end = sText.length();
+			}
+
+			result = sText.substr(start, end-start);
+		}
+		return result;
 }
 
 bool ChatCtrl::HitNick(const POINT& p, tstring& sNick, int& iBegin, int& iEnd) {
@@ -617,7 +646,7 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	selectedLine = LineFromPos(pt);
 	selectedUser.clear();
 	selectedIP.clear();
-
+	selectedWord = WordFromPos(pt);
 	// Po kliku dovnitr oznaceneho textu si zkusime poznamenat pripadnej nick ci ip...
 	// jinak by nam to neuznalo napriklad druhej klik na uz oznaceny nick =)
 	long lSelBegin = 0, lSelEnd = 0;
@@ -688,7 +717,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		if(!selectedIP.empty()) {
 			menu.InsertSeparatorFirst(selectedIP);
 			menu.AppendMenu(MF_STRING, IDC_WHOIS_IP, (TSTRING(WHO_IS) + _T(" ") + selectedIP).c_str() );
-			prepareMenu(menu, ::UserCommand::CONTEXT_CHAT, client->getHubUrl());
+			 prepareMenu(menu, ::UserCommand::CONTEXT_CHAT, client->getHubUrl());
 			if (client && client->isOp()) {
 				menu.AppendMenu(MF_SEPARATOR);
 				menu.AppendMenu(MF_STRING, IDC_BAN_IP, (_T("!banip ") + selectedIP).c_str());
@@ -1285,6 +1314,8 @@ LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 		GetSelText(buf);
 		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
 		delete[] buf;
+			} else {
+			searchTerm = selectedWord;
 	}
 	WinUtil::search(searchTerm, 0, false);
 	searchTerm = Util::emptyStringT;
@@ -1306,6 +1337,7 @@ LRESULT ChatCtrl::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	return 0;
 }
 
+
 LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
 	//I think we can use full searchterm here because its user selected from chat anyways.
@@ -1317,6 +1349,9 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 		GetSelText(buf);
 		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
 		delete[] buf;
+	} else {
+
+			searchTerm = selectedWord;
 	}
 		switch (wID) {
 			case IDC_GOOGLE:
