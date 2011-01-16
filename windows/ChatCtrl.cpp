@@ -371,7 +371,7 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, const tstring& sText, CHAR
 
 void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, LONG lSelBegin, bool bUseEmo) {
 	LONG lSelEnd = lSelBegin + sMsg.size();
-	bool detectMagnet;
+	bool detectMagnet=false;
 
 	// hightlight all URLs and make them clickable
 	for(size_t i = 0; i < (sizeof(protocols) / sizeof(protocols[0])); ++i) {
