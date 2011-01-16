@@ -397,6 +397,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 					linkEnd += result.length(0);
 					SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
 					if(isMagnet) {
+						detectMagnet=true;
 						tstring cURL = ((tstring)(result[0]));
 						tstring::size_type dn = cURL.find(_T("dn="));
 						if(dn != tstring::npos) {
@@ -421,18 +422,23 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 
 	//Format release names and files as URL
 
-	boost::wregex reg;
-	reg.assign(_T("(((?<=\\s)[A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?)|((?<=\\s)\\S+\\.nfo)|(\\S+[-]\\S+\\.(rar|r\\d{2}|\\d{3})))(?=(\\W)?\\s)"), boost::regex_constants::icase);
-	tstring::const_iterator start = sMsg.begin();
-	tstring::const_iterator end = sMsg.end();
-	boost::match_results<tstring::const_iterator> result;
-	int pos=0;
+	if(!detectMagnet) {
+		boost::wregex reg;
+		reg.assign(_T("(((?<=\\s)[A-Z0-9][A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?)|((?<=\\s)\\S+\\.nfo)|(\\S+[-]\\S+\\.(zip|mp3|rar|r\\d{2}|\\d{3})))(?=(\\W)?\\s)"), boost::regex_constants::icase);
+		tstring::const_iterator start = sMsg.begin();
+		tstring::const_iterator end = sMsg.end();
+		boost::match_results<tstring::const_iterator> result;
+		int pos=0;
 
-	while(boost::regex_search(start, end, result, reg, boost::match_default)) {
-				SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
-				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
-				start = result[0].second;
-				pos=pos+result.position() + result.length();
+		while(boost::regex_search(start, end, result, reg, boost::match_default)) {
+					SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
+					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+					start = result[0].second;
+					pos=pos+result.position() + result.length();
+		}
+	}
+	else {
+		detectMagnet=false;
 	}
 
 	// insert emoticons
@@ -1355,8 +1361,6 @@ LRESULT ChatCtrl::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 
 
 LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	
-	//I think we can use full searchterm here because its user selected from chat anyways.
 
 	CHARRANGE cr;
 	GetSel(cr);
@@ -1365,8 +1369,11 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 		GetSelText(buf);
 		searchTermFull = Util::replace(buf, _T("\r"), _T("\r\n"));
 		searchTerm = WinUtil::getTitle(searchTermFull);
-		searchTerm = searchTermFull;
 		delete[] buf;
+	}
+	else { 	 
+		searchTermFull = selectedWord; 
+		searchTerm = selectedWord;
 	}
 		switch (wID) {
 			case IDC_GOOGLE_TITLE:

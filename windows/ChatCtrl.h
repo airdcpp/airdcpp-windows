@@ -75,6 +75,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
 		COMMAND_ID_HANDLER(IDC_SEARCH_BY_TTH, onSearchTTH)
 		COMMAND_ID_HANDLER(IDC_GOOGLE, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_GOOGLE_FULL, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_IMDB, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_TVCOM, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_METACRITIC, onSearchSite)
@@ -145,6 +146,7 @@ private:
 	bool HitNick(const POINT& p, tstring& sNick, int& iBegin , int& iEnd);
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);
 	bool HitURL();
+	bool detectMagnet;
 
 	tstring WordFromPos(const POINT& p);
 	tstring LineFromPos(const POINT& p) const;
