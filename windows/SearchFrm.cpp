@@ -1972,6 +1972,7 @@ if(ctrlResults.GetSelectedCount() == 1) {
 		}
 }
 	searchTerm = Util::emptyStringT;
+	searchTermFull = Util::emptyStringT;
 	return S_OK;
 }
 

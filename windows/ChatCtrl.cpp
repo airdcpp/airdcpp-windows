@@ -419,6 +419,22 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 		}
 	}
 
+	//Format release names and files as URL
+
+	boost::wregex reg;
+	reg.assign(_T("(((?<=\\s)[A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?)|((?<=\\s)\\S+\\.nfo)|(\\S+[-]\\S+\\.(rar|r\\d{2}|\\d{3})))(?=(\\W)?\\s)"), boost::regex_constants::icase);
+	tstring::const_iterator start = sMsg.begin();
+	tstring::const_iterator end = sMsg.end();
+	boost::match_results<tstring::const_iterator> result;
+	int pos=0;
+
+	while(boost::regex_search(start, end, result, reg, boost::match_default)) {
+				SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
+				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+				start = result[0].second;
+				pos=pos+result.position() + result.length();
+	}
+
 	// insert emoticons
 	if(bUseEmo && emoticonsManager->getUseEmoticons()) {
 		const Emoticon::List& emoticonsList = emoticonsManager->getEmoticonsList();
@@ -1347,24 +1363,27 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	if(cr.cpMax != cr.cpMin) {
 		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
 		GetSelText(buf);
-		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
+		searchTermFull = Util::replace(buf, _T("\r"), _T("\r\n"));
+		searchTerm = WinUtil::getTitle(searchTermFull);
+		searchTerm = searchTermFull;
 		delete[] buf;
-	} else {
-
-			searchTerm = selectedWord;
 	}
 		switch (wID) {
-			case IDC_GOOGLE:
+			case IDC_GOOGLE_TITLE:
 				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
 				break;
 
+			case IDC_GOOGLE_FULL:
+				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
+				break;
+
 			case IDC_URL:
-				WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
 				break;
 
 			case IDC_IMDB:
 				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-			break;
+				break;
 			case IDC_TVCOM:
 				WinUtil::openLink(_T("http://www.tv.com/search.php?type=11&stype=all&qs=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
 				break;
@@ -1373,5 +1392,6 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 				break;
 		}
 	searchTerm = Util::emptyStringT;
+	searchTermFull = Util::emptyStringT;
 	return S_OK;
 }

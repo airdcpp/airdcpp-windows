@@ -169,6 +169,7 @@ private:
 	bool		timeStamps;
 	tstring		nick;
 	tstring		searchTerm;
+	tstring		searchTermFull;
 
     //Client* client;
 	TStringMap magnets; //ApexDC
