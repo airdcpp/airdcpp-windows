@@ -371,7 +371,7 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, const tstring& sText, CHAR
 
 void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, LONG lSelBegin, bool bUseEmo) {
 	LONG lSelEnd = lSelBegin + sMsg.size();
-	bool detectMagnet=false;
+	 bool detectMagnet=false;
 
 	// hightlight all URLs and make them clickable
 	for(size_t i = 0; i < (sizeof(protocols) / sizeof(protocols[0])); ++i) {
@@ -423,23 +423,18 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 
 	//Format release names and files as URL
 
-	if(!detectMagnet) {
-		boost::wregex reg;
-		reg.assign(_T("(((?<=\\s)[A-Z0-9][A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?)|((?<=\\s)\\S+\\.nfo)|(\\S+[-]\\S+\\.(zip|mp3|rar|r\\d{2}|\\d{3})))(?=(\\W)?\\s)"), boost::regex_constants::icase);
-		tstring::const_iterator start = sMsg.begin();
-		tstring::const_iterator end = sMsg.end();
-		boost::match_results<tstring::const_iterator> result;
-		int pos=0;
+	boost::wregex reg;
+	reg.assign(_T("(((?<=\\s)[A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?)|((?<=\\s)\\S+\\.nfo)|(\\S+[-]\\S+\\.(rar|r\\d{2}|\\d{3})))(?=(\\W)?\\s)"), boost::regex_constants::icase);
+	tstring::const_iterator start = sMsg.begin();
+	tstring::const_iterator end = sMsg.end();
+	boost::match_results<tstring::const_iterator> result;
+	int pos=0;
 
-		while(boost::regex_search(start, end, result, reg, boost::match_default)) {
-					SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
-					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
-					start = result[0].second;
-					pos=pos+result.position() + result.length();
-		}
-	}
-	else {
-		detectMagnet=false;
+	while(boost::regex_search(start, end, result, reg, boost::match_default)) {
+				SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
+				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+				start = result[0].second;
+				pos=pos+result.position() + result.length();
 	}
 
 	// insert emoticons
@@ -486,7 +481,7 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	tstring result;
 	int iCharPos = CharFromPos(p), len = LineLength(iCharPos) + 1;
 	if(len < 3)
-		return false;
+		return Util::emptyStringT;
 
 	long lPosBegin = FindWordBreak(WB_LEFT, iCharPos);
 	long lPosEnd = FindWordBreak(WB_RIGHTBREAK, iCharPos);
@@ -499,9 +494,9 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	tstring::size_type ch = iCharPos;
         if( ch != tstring::npos ) {
 			
-			tstring::size_type start = sText.find_last_of(_T(" \t\r"), ch) + 1;
+			tstring::size_type start = sText.find_last_of(_T(" \t\r\n"), ch) + 1;
 			
-			tstring::size_type end = sText.find_first_of(_T(" \t\r"), start);
+			tstring::size_type end = sText.find_first_of(_T(" \t\r\n"), start);
 			if(end == tstring::npos) {
 				end = sText.length();
 			}
@@ -1362,6 +1357,8 @@ LRESULT ChatCtrl::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 
 
 LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	
+	//I think we can use full searchterm here because its user selected from chat anyways.
 
 	CHARRANGE cr;
 	GetSel(cr);
@@ -1370,12 +1367,12 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 		GetSelText(buf);
 		searchTermFull = Util::replace(buf, _T("\r"), _T("\r\n"));
 		searchTerm = WinUtil::getTitle(searchTermFull);
+		//searchTerm = searchTermFull;
 		delete[] buf;
-	}
-	else { 	 
-		searchTermFull = selectedWord; 
-		searchTerm = selectedWord;
-	}
+	 } else if(!selectedWord.empty())  { 	 
+	              searchTermFull = selectedWord; 
+				  searchTerm = selectedWord;
+	         }
 		switch (wID) {
 			case IDC_GOOGLE_TITLE:
 				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));

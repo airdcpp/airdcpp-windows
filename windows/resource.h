@@ -699,6 +699,7 @@
 #define IDC_DOWN_SPEED                  1354
 #define IDC_WINAMP_BROWSE               1356
 #define IDC_DOWN_SPEED_SPIN             1356
+#define IDC_SEARCHDIR	                1357
 #define IDC_SETTINGS_NOMINALBW2         1358
 #define IDC_HIDE_SHARE                  1359
 #define IDC_DOWNLOAD_SLOTS              1359

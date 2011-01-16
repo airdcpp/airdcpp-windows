@@ -820,6 +820,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		directoryMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 		directoryMenu.AppendMenu(MF_SEPARATOR);
 		directoryMenu.AppendMenu(MF_STRING,IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
+		directoryMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH));
 
 		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_PAUSED+90, CTSTRING(PAUSED));
 		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOWEST+90, CTSTRING(LOWEST));
@@ -828,13 +829,14 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGH+90, CTSTRING(HIGH));
 		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST+90, CTSTRING(HIGHEST));
 
+		
 		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-		SearchMenu.AppendMenu(MF_STRING, IDC_URL, CTSTRING(SEARCH_URL));
-		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
-		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
-		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
-		SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
-		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
+		SearchMenu.AppendMenu(MF_STRING, IDC_URL+90, CTSTRING(SEARCH_URL));
+		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE+90, CTSTRING(SEARCH_GOOGLE_TITLE));
+		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL+90, CTSTRING(SEARCH_GOOGLE_FULL));
+		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM+90, CTSTRING(SEARCH_TVCOM));
+		SearchMenu.AppendMenu(MF_STRING, IDC_IMDB+90, CTSTRING(SEARCH_IMDB));
+		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC+90, CTSTRING(SEARCH_METACRITIC));
 
 		// Strange, windows doesn't change the selection on right-click... (!)
 
@@ -1589,6 +1591,13 @@ if(ctrlList.GetSelectedCount() == 1) {
 		searchTerm = ii->getText(COLUMN_FILENAME);
 
 	WinUtil::search(searchTerm, 0, false);
+}else {
+		HTREEITEM t = ctrlTree.GetSelectedItem();
+	if(t != NULL) {
+		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		searchTerm = Text::toT((dir)->getName());
+		WinUtil::search(searchTerm, 0, false);
+}
 }
 	searchTerm = Util::emptyStringT;
 	return 0;
@@ -1610,6 +1619,61 @@ if(ctrlList.GetSelectedCount() == 1) {
 
 
 		switch (wID) {
+			case IDC_GOOGLE_TITLE:
+				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				break;
+
+			case IDC_GOOGLE_FULL:
+				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
+				break;
+
+			case IDC_URL:
+				WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
+				break;
+
+			case IDC_IMDB:
+				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				break;
+			case IDC_TVCOM:
+				WinUtil::openLink(_T("http://www.tv.com/search.php?type=11&stype=all&qs=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				break;
+			case IDC_METACRITIC:
+				WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
+				break;
+		}
+}
+	searchTerm = Util::emptyStringT;
+	searchTermFull = Util::emptyStringT;
+	return S_OK;
+}
+
+LRESULT DirectoryListingFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+
+		tstring searchTerm;
+		HTREEITEM t = ctrlTree.GetSelectedItem();
+		if(t != NULL) {
+		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		searchTerm = Text::toT((dir)->getName());
+		WinUtil::search(searchTerm, 0, false);
+
+}
+	searchTerm = Util::emptyStringT;
+	return 0;
+}
+
+
+LRESULT DirectoryListingFrame::onSearchSiteDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	
+tstring searchTerm;
+tstring searchTermFull;
+
+		HTREEITEM t = ctrlTree.GetSelectedItem();
+		if(t != NULL) {
+		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		searchTermFull = Text::toT((dir)->getName());
+		searchTerm = WinUtil::getTitle(searchTermFull);
+
+		switch (wID-90) {
 			case IDC_GOOGLE_TITLE:
 				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
 				break;

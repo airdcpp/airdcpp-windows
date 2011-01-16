@@ -119,7 +119,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_FILENAME, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_DIR, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_EXACT_SIZE, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy);
@@ -133,6 +132,15 @@ public:
 		COMMAND_ID_HANDLER(IDC_METACRITIC, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_IMDB, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_URL, onSearchSite)
+
+		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
+		COMMAND_ID_HANDLER(IDC_GOOGLE_TITLE +90, onSearchSiteDir)
+		COMMAND_ID_HANDLER(IDC_GOOGLE_FULL+90, onSearchSiteDir)
+		COMMAND_ID_HANDLER(IDC_TVCOM+90, onSearchSiteDir)
+		COMMAND_ID_HANDLER(IDC_METACRITIC+90, onSearchSiteDir)
+		COMMAND_ID_HANDLER(IDC_IMDB+90, onSearchSiteDir)
+		COMMAND_ID_HANDLER(IDC_URL+90, onSearchSiteDir)
+		
 		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_TARGET, IDC_DOWNLOAD_TARGET + targets.size() + WinUtil::lastDirs.size(), onDownloadTarget)
 		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_TARGET_DIR, IDC_DOWNLOAD_TARGET_DIR + WinUtil::lastDirs.size(), onDownloadTargetDir)
 		COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onDownloadWithPrio)
@@ -182,6 +190,9 @@ public:
 
 	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+	LRESULT onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT onSearchSiteDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void downloadList(const tstring& aTarget, bool view = false,  QueueItem::Priority prio = QueueItem::DEFAULT);
 	void updateTree(DirectoryListing::Directory* tree, HTREEITEM treeItem);
