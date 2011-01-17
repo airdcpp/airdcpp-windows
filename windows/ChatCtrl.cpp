@@ -422,23 +422,29 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 	}
 
 	//Format release names and files as URL
-	 if(!detectMagnet) {
-	boost::wregex reg;
-	reg.assign(_T("(((?<=\\s)[A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?)|((?<=\\s)\\S+\\.nfo)|(\\S+[-]\\S+\\.(rar|r\\d{2}|\\d{3})))(?=(\\W)?\\s)"), boost::regex_constants::icase);
-	tstring::const_iterator start = sMsg.begin();
-	tstring::const_iterator end = sMsg.end();
-	boost::match_results<tstring::const_iterator> result;
-	int pos=0;
+	if(SETTING(FORMAT_RELEASE)) {
+		if(!detectMagnet) {
+			boost::wregex reg;
+			reg.assign(_T("(((?<=\\s)[A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?)|((?<=\\s)\\S+\\.nfo)|(\\S+[-]\\S+\\.(rar|r\\d{2}|\\d{3})))(?=(\\W)?\\s)"), boost::regex_constants::icase);
+			tstring::const_iterator start = sMsg.begin();
+			tstring::const_iterator end = sMsg.end();
+			boost::match_results<tstring::const_iterator> result;
+			int pos=0;
 
-	while(boost::regex_search(start, end, result, reg, boost::match_default)) {
+			while(boost::regex_search(start, end, result, reg, boost::match_default)) {
 				SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
 				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 				start = result[0].second;
 				pos=pos+result.position() + result.length();
-				}
-	} else { 	 
-	                 detectMagnet=false; 	 
-	 }
+			}
+		} else {
+			detectMagnet=false;
+		}
+	}
+	else {
+		detectMagnet=false;
+	}
+
 
 	// insert emoticons
 	if(bUseEmo && emoticonsManager->getUseEmoticons()) {

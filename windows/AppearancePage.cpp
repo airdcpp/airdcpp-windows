@@ -64,6 +64,7 @@ PropPage::ListItem AppearancePage::listItems[] = {
 	{ SettingsManager::TABS_ON_TOP, ResourceManager::TABS_ON_TOP },
 	{ SettingsManager::UC_SUBMENU, ResourceManager::UC_SUBMENU },
 	{ SettingsManager::USE_EXPLORER_THEME, ResourceManager::USE_EXPLORER_THEME },
+	{ SettingsManager::FORMAT_RELEASE, ResourceManager::FORMAT_RELEASE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
