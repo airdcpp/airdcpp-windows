@@ -1355,7 +1355,7 @@ void WinUtil::openLink(const tstring& url) {
 	}
 
 	boost::wregex reg;
-	reg.assign(_T("(([A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?)|((?<=\\s)\\S+\\.nfo)|(\\S+[-]\\S+\\.(rar|r\\d{2}|\\d{3})))"), boost::regex_constants::icase);
+	reg.assign(_T("(([A-Za-z0-9-]+)(\\.|_)(\\S+)[-](?=.*[A-Z].*)(\\w+))"), boost::regex_constants::icase);
 	boost::match_results<tstring::const_iterator> result;
 	if(regex_match(url, result, reg)) {
 		WinUtil::search(url, 0, false);

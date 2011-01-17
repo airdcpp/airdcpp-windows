@@ -762,7 +762,7 @@ void PrivateFrame::readLog() {
 		int i = linesCount > (SETTING(SHOW_LAST_LINES_LOG) + 1) ? linesCount - SETTING(SHOW_LAST_LINES_LOG) : 0;
 
 		for(; i < linesCount; ++i){
-			ctrlClient.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextLog, false);
+			ctrlClient.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextLog, true);
 		}
 		f.close();
 	} catch(const FileException&){
