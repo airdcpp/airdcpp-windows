@@ -423,9 +423,9 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 
 	//Format release names and files as URL
 	if(SETTING(FORMAT_RELEASE)) {
-		if(!detectMagnet) {
+		if(!detectMagnet && bUseEmo) {
 			boost::wregex reg;
-			reg.assign(_T("(((?<=\\s)[A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?)|((?<=\\s)\\S+\\.nfo)|(\\S+[-]\\S+\\.(rar|r\\d{2}|\\d{3})))(?=(\\W)?\\s)"), boost::regex_constants::icase);
+			reg.assign(_T("((((?<=\\s)[A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?)|((?<=\\s)\\S+\\.nfo)|(\\S+[-]\\S+\\.((rar)|(r\\d{2})|(\\d{3}))))(?=(\\W)?\\s))"), boost::regex_constants::icase);
 			tstring::const_iterator start = sMsg.begin();
 			tstring::const_iterator end = sMsg.end();
 			boost::match_results<tstring::const_iterator> result;

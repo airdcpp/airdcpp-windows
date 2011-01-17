@@ -728,7 +728,6 @@ LRESULT PrivateFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 void PrivateFrame::readLog() {
 	if (SETTING(SHOW_LAST_LINES_LOG) == 0) return;
-
 	StringMap params;
 	
 	const CID& cid = replyTo.user->getCID();
@@ -763,9 +762,8 @@ void PrivateFrame::readLog() {
 		int i = linesCount > (SETTING(SHOW_LAST_LINES_LOG) + 1) ? linesCount - SETTING(SHOW_LAST_LINES_LOG) : 0;
 
 		for(; i < linesCount; ++i){
-			ctrlClient.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextLog, true);
+			ctrlClient.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextLog, false);
 		}
-
 		f.close();
 	} catch(const FileException&){
 	}

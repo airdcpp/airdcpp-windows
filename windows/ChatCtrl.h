@@ -127,7 +127,7 @@ public:
 	void runUserCommand(UserCommand& uc);
 
 	//void AdjustTextSize();
-	void AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = true);
+	void AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = false);
 
 	void setSelectedUser(const tstring& s) { selectedUser = s; }
 	const tstring& getSelectedUser() { return selectedUser; }
