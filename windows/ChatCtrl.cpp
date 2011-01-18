@@ -1303,6 +1303,25 @@ void ChatCtrl::CheckAction(ColorSettings* cs, const tstring& line) {
 	if(cs->getFlashWindow())
 		WinUtil::FlashWindow();
 }
+LRESULT ChatCtrl::onDoubleClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	bHandled = isRelease(pt);
+
+	return bHandled = TRUE ? 0: 1;
+}
+
+BOOL ChatCtrl::isRelease(POINT pt) {
+tstring word = WordFromPos(pt);
+
+	boost::wregex reg;
+	reg.assign(_T("(([A-Z0-9][A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S*)))(\\S+)-(?=\\w*[A-Z]\\w*)(\\w+))"));
+	if(regex_match(word, reg)) {
+		WinUtil::search(word, 0, false);
+		return TRUE;
+	}
+	return FALSE;
+}
 
 tstring ChatCtrl::WordFromPos(const POINT& p) {
 

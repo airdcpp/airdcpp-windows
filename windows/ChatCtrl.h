@@ -44,6 +44,7 @@ public:
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, onLButtonDown)
+		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onDoubleClick)
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 		MESSAGE_HANDLER(WM_SETCURSOR, onSetCursor)
 
@@ -123,6 +124,7 @@ public:
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchTTH(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onDoubleClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 //	void setClient(Client* pClient) { client = pClient; }
 	void runUserCommand(UserCommand& uc);
 
