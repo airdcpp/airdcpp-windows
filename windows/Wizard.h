@@ -53,8 +53,5 @@ private:
 		CComboBox ctrlLanguage;	
 		void fixcontrols();
 		
-protected:
-
-	
 
 };

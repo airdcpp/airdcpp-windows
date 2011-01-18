@@ -485,35 +485,6 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 	}
 
 }
-tstring ChatCtrl::WordFromPos(const POINT& p) {
-
-	tstring result;
-	int iCharPos = CharFromPos(p), len = LineLength(iCharPos) + 1;
-	if(len < 3)
-		return Util::emptyStringT;
-
-	long lPosBegin = FindWordBreak(WB_LEFT, iCharPos);
-	long lPosEnd = FindWordBreak(WB_RIGHTBREAK, iCharPos);
-	len = lPosEnd - lPosBegin;
-
-	tstring sText;
-	sText.resize(len);
-	GetTextRange(lPosBegin, lPosEnd, &sText[0]);
-	
-	tstring::size_type ch = iCharPos;
-        if( ch != tstring::npos ) {
-			
-			tstring::size_type start = sText.find_last_of(_T(" \t\r\n"), ch) + 1;
-			
-			tstring::size_type end = sText.find_first_of(_T(" \t\r\n"), start);
-			if(end == tstring::npos) {
-				end = sText.length();
-			}
-
-			result = sText.substr(start, end-start);
-		}
-		return result;
-}
 
 bool ChatCtrl::HitNick(const POINT& p, tstring& sNick, int& iBegin, int& iEnd) {
 	if(client == NULL) return false;
@@ -1331,6 +1302,41 @@ void ChatCtrl::CheckAction(ColorSettings* cs, const tstring& line) {
 
 	if(cs->getFlashWindow())
 		WinUtil::FlashWindow();
+}
+
+tstring ChatCtrl::WordFromPos(const POINT& p) {
+
+	int iCharPos = CharFromPos(p), line = LineFromChar(iCharPos), len = LineLength(iCharPos) + 1;
+	if(len < 3)
+		return Util::emptyStringT;
+
+	long begin =  0;
+	long end  = 0;
+	
+	//Walk it thru, want the whole word / releasename instead of just until -
+	
+	int start = LineIndex(line), lineEnd = LineIndex(line) + LineLength(iCharPos);
+	
+	for( begin = iCharPos; begin >= start; begin-- ) {
+		
+		if( FindWordBreak( WB_ISDELIMITER, begin ))
+			break;
+	}
+
+	begin++;
+
+	for( end = iCharPos; end < lineEnd; end++ ) {
+		if(FindWordBreak( WB_ISDELIMITER, end ))
+			break;
+	}
+
+	len = end - begin;
+	tstring sText;
+	sText.resize(len);
+	GetTextRange(begin, end, &sText[0]);
+	
+	return sText;
+
 }
 LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
