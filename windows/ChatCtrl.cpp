@@ -425,7 +425,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 	if(SETTING(FORMAT_RELEASE)) {
 		if(!detectMagnet) {
 			boost::wregex reg;
-			reg.assign(_T("((?<=\\s)([A-Za-z0-9-]+)(\\.|_)(\\S+)[-](?=.*[A-Z].*)(\\w+)(?=(\\W)?\\s))"), boost::regex_constants::icase);
+			reg.assign(_T("((?<=\\s)([A-Z0-9][A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S*)))(\\S+)-(?=\\w*[A-Z]\\w*)(\\w+)(?=(\\W)?\\s))"));
 			tstring::const_iterator start = sMsg.begin();
 			tstring::const_iterator end = sMsg.end();
 			boost::match_results<tstring::const_iterator> result;
