@@ -687,9 +687,6 @@ LRESULT ChatCtrl::onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
-	release = false;
-	if(isRelease(pt, false) == TRUE)
-		release = true;
 
 	if(pt.x == -1 && pt.y == -1) {
 		CRect erc;
