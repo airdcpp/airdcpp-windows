@@ -645,6 +645,10 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	selectedUser.clear();
 	selectedIP.clear();
 	selectedWord = WordFromPos(pt);
+
+	release = isRelease(pt, false)? true : false;
+
+
 	// Po kliku dovnitr oznaceneho textu si zkusime poznamenat pripadnej nick ci ip...
 	// jinak by nam to neuznalo napriklad druhej klik na uz oznaceny nick =)
 	long lSelBegin = 0, lSelEnd = 0;
@@ -683,7 +687,9 @@ LRESULT ChatCtrl::onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
-	bool release = isRelease(pt, false);
+	release = false;
+	if(isRelease(pt, false) == TRUE)
+		release = true;
 
 	if(pt.x == -1 && pt.y == -1) {
 		CRect erc;

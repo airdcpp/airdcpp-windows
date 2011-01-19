@@ -170,6 +170,7 @@ private:
 	bool		logged;
 	bool		skipLog;
 	bool		timeStamps;
+	bool		release;
 	tstring		nick;
 	tstring		searchTerm;
 	tstring		searchTermFull;
