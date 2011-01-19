@@ -727,7 +727,11 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 				menu.AppendMenu(MF_STRING, IDC_UNBAN_IP, (_T("!unban ") + selectedIP).c_str());
 				menu.AppendMenu(MF_SEPARATOR);
 			}
-		} else {
+		} 
+		else if (release) {
+			menu.InsertSeparatorFirst(_T("Release"));
+		}
+		else {
 			menu.InsertSeparatorFirst(_T("Text"));
 		}
 
@@ -736,20 +740,23 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 		menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
-		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+		menu.AppendMenu(MF_SEPARATOR);
 		
 		if (release) {
-			SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
-			SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
+			menu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
+			menu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
+			menu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
+			menu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
+			menu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
 		} else {
-			SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE, CTSTRING(SEARCH_GOOGLE));
+			menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+			SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE));
+			SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
+			SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
+			SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
 		}
-		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
-		SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
-		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
 
-		if(!selectedURL.empty()) 
-  			menu.AppendMenu(MF_STRING, IDC_COPY_URL, CTSTRING(COPY_URL));
+
 	} else {
 		bool isMe = (selectedUser == Text::toT(client->getMyNick()));
 
