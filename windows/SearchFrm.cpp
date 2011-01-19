@@ -1635,18 +1635,6 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 	return S_OK;
 }
 
-LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlResults.GetSelectedCount() == 1) {
-		int pos = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
-		dcassert(pos != -1);
-
-		if ( pos >= 0 ) {
-			const SearchResultPtr& sr = ctrlResults.getItemData(pos)->sr;
-			WinUtil::search((WinUtil::getDir((Text::toT(Util::getFilePath(sr->getFile()))))), 0, false);
-		}
-	}
-	return S_OK;
-}
 
 LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	CRect rc;
@@ -1969,6 +1957,19 @@ if(ctrlResults.GetSelectedCount() == 1) {
 }
 	searchTerm = Util::emptyStringT;
 	searchTermFull = Util::emptyStringT;
+	return S_OK;
+}
+
+LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(ctrlResults.GetSelectedCount() == 1) {
+		int pos = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
+		dcassert(pos != -1);
+
+		if ( pos >= 0 ) {
+			const SearchResultPtr& sr = ctrlResults.getItemData(pos)->sr;
+			WinUtil::search((WinUtil::getDir((Text::toT(Util::getFilePath(sr->getFile()))))), 0, false);
+		}
+	}
 	return S_OK;
 }
 

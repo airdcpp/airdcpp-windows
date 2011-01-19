@@ -1259,5 +1259,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SystemShowFinishedDownloads">Show Finished Downloads in System Log</String>
 		<String Name="Wizard">Settings Wizard</String>
 		<String Name="FormatRelease">Make release names clickable in chat</String>
+		<String Name="CopyDirectory">Copy Directory</String>
+		<String Name="SearchForAlternatesDir">Search Directory for alternatives</String>
 	</Strings>
 </Language>
