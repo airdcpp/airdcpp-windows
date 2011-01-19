@@ -123,6 +123,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_EXACT_SIZE, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy);
+		COMMAND_ID_HANDLER(IDC_COPY_DIRECTORY, onCopyDir);
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(IDC_OPEN, onOpenDupe)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
@@ -132,7 +133,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_TVCOM, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_METACRITIC, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_IMDB, onSearchSite)
-		COMMAND_ID_HANDLER(IDC_URL, onSearchSite)
 
 		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
 		COMMAND_ID_HANDLER(IDC_GOOGLE_TITLE +90, onSearchSiteDir)
@@ -140,7 +140,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_TVCOM+90, onSearchSiteDir)
 		COMMAND_ID_HANDLER(IDC_METACRITIC+90, onSearchSiteDir)
 		COMMAND_ID_HANDLER(IDC_IMDB+90, onSearchSiteDir)
-		COMMAND_ID_HANDLER(IDC_URL+90, onSearchSiteDir)
 		
 		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_TARGET, IDC_DOWNLOAD_TARGET + targets.size() + WinUtil::lastDirs.size(), onDownloadTarget)
 		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_TARGET_DIR, IDC_DOWNLOAD_TARGET_DIR + WinUtil::lastDirs.size(), onDownloadTargetDir)
@@ -172,6 +171,7 @@ public:
 	LRESULT onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onCopyDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDownloadTarget(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDownloadTargetDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

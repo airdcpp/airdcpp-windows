@@ -696,7 +696,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 		//Search menus
 		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-		SearchMenu.AppendMenu(MF_STRING, IDC_URL, CTSTRING(SEARCH_URL));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
 		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
@@ -819,6 +818,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		directoryMenu.AppendMenu(MF_SEPARATOR);
 		directoryMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 		directoryMenu.AppendMenu(MF_SEPARATOR);
+		directoryMenu.AppendMenu(MF_STRING,IDC_COPY_DIRECTORY, CTSTRING(COPY_DIRECTORY));
 		directoryMenu.AppendMenu(MF_STRING,IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
 		directoryMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH));
 
@@ -831,7 +831,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 		
 		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-		SearchMenu.AppendMenu(MF_STRING, IDC_URL+90, CTSTRING(SEARCH_URL));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE+90, CTSTRING(SEARCH_GOOGLE_TITLE));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL+90, CTSTRING(SEARCH_GOOGLE_FULL));
 		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM+90, CTSTRING(SEARCH_TVCOM));
@@ -1357,6 +1356,19 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 	return S_OK;
 }
 
+LRESULT DirectoryListingFrame::onCopyDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	tstring sCopy;
+	tstring directory;
+	HTREEITEM t = ctrlTree.GetSelectedItem();
+	DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+	sCopy = Text::toT((dir)->getName());
+	if (!sCopy.empty()) {
+		WinUtil::setClipboard(sCopy);
+	}
+	return S_OK;
+}
+
+
 LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(loading) {
 		//tell the thread to abort and wait until we get a notification
@@ -1627,10 +1639,6 @@ if(ctrlList.GetSelectedCount() == 1) {
 				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
 				break;
 
-			case IDC_URL:
-				WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
-				break;
-
 			case IDC_IMDB:
 				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
 				break;
@@ -1680,10 +1688,6 @@ tstring searchTermFull;
 
 			case IDC_GOOGLE_FULL:
 				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
-				break;
-
-			case IDC_URL:
-				WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
 				break;
 
 			case IDC_IMDB:

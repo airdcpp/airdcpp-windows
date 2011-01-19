@@ -203,6 +203,7 @@
 #define IDC_NOTEPAD                     1027
 #define IDC_AWAY                        1028
 #define IDC_SEARCH_ALTERNATES           1029
+#define IDC_SEARCH_ALTERNATES_DIR       1030
 #define IDC_SELWINCOLOR                 1031
 #define IDC_SELTEXT                     1032
 #define IDC_SHAREHIDDEN                 1035
@@ -835,7 +836,6 @@
 #define IDC_SEARCH_BY_TTH               1526
 #define IDC_GOOGLE                      1527
 #define IDC_IMDB                        1528
-#define IDC_URL                         1529
 #define IDC_GOOGLE_FULL                 1530
 #define IDC_TVCOM                       1531
 #define IDC_GOOGLE_TITLE                1532
@@ -965,6 +965,7 @@
 #define IDC_COPY_LINK                   10152
 #define ID_WIZARD                       10153
 #define IDC_COPY_DIR                    10154
+#define IDC_COPY_DIRECTORY              10155
 #define IDC_REBUILD_TOOLBAR             10162
 #define IDC_MAGNET_SIZE                 10164
 #define IDC_MAGNET_DISP_SIZE            10165

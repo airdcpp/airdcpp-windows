@@ -80,7 +80,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_IMDB, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_TVCOM, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_METACRITIC, onSearchSite)
-		COMMAND_ID_HANDLER(IDC_URL, onSearchSite)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
 
 		CHAIN_COMMANDS(ucBase)
@@ -150,7 +149,7 @@ private:
 	bool HitURL();
 
 	tstring WordFromPos(const POINT& p);
-	BOOL isRelease(POINT pt);
+	BOOL isRelease(POINT pt, BOOL search);
 	tstring LineFromPos(const POINT& p) const;
 	void FormatChatLine(const tstring& sMyNick, const tstring& sMsg, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo);
 	void FormatEmoticonsAndLinks(const tstring& sText, tstring& sTextLower, LONG lSelBegin, bool bUseEmo);

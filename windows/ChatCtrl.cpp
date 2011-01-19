@@ -683,6 +683,7 @@ LRESULT ChatCtrl::onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
+	bool release = isRelease(pt, false);
 
 	if(pt.x == -1 && pt.y == -1) {
 		CRect erc;
@@ -734,8 +735,12 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
 		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 		
-		SearchMenu.AppendMenu(MF_STRING, IDC_URL, CTSTRING(SEARCH_URL));
-		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE, CTSTRING(SEARCH_GOOGLE));
+		if (release) {
+			SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
+			SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
+		} else {
+			SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE, CTSTRING(SEARCH_GOOGLE));
+		}
 		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
 		SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
 		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
@@ -1306,18 +1311,20 @@ void ChatCtrl::CheckAction(ColorSettings* cs, const tstring& line) {
 LRESULT ChatCtrl::onDoubleClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
 
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-	bHandled = isRelease(pt);
+	bHandled = isRelease(pt, true);
 
 	return bHandled = TRUE ? 0: 1;
 }
 
-BOOL ChatCtrl::isRelease(POINT pt) {
+BOOL ChatCtrl::isRelease(POINT pt, BOOL search) {
 tstring word = WordFromPos(pt);
 
 	boost::wregex reg;
 	reg.assign(_T("(([A-Z0-9][A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S*)))(\\S+)-(?=\\w*[A-Z]\\w*)(\\w+))"));
 	if(regex_match(word, reg)) {
-		WinUtil::search(word, 0, false);
+		if (search) {
+			WinUtil::search(word, 0, false);
+		}
 		return TRUE;
 	}
 	return FALSE;
@@ -1405,7 +1412,7 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 		delete[] buf;
 	 } else if(!selectedWord.empty())  { 	 
 	              searchTermFull = selectedWord; 
-				  searchTerm = selectedWord;
+				  searchTerm = WinUtil::getTitle(searchTermFull);
 	         }
 		switch (wID) {
 			case IDC_GOOGLE_TITLE:
@@ -1414,10 +1421,6 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 
 			case IDC_GOOGLE_FULL:
 				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
-				break;
-
-			case IDC_URL:
-				WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
 				break;
 
 			case IDC_IMDB:

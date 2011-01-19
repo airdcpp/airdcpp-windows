@@ -1293,12 +1293,12 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
 
 			SearchMenu.InsertSeparatorFirst(TSTRING(SEARCH_SITES));		
-			SearchMenu.AppendMenu(MF_STRING, IDC_URL, CTSTRING(SEARCH_URL));
 			SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
 			SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
 			SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
 			SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
 			SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
+			SearchMenu.AppendMenu(MF_STRING, IDC_BITZI_LOOKUP, CTSTRING(BITZI_LOOKUP));
 
 			if(ctrlResults.GetSelectedCount() > 1)
 				resultsMenu.InsertSeparatorFirst(Util::toStringW(ctrlResults.GetSelectedCount()) + _T(" ") + TSTRING(FILES));
@@ -1312,8 +1312,8 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
+			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES_DIR, CTSTRING(SEARCH_FOR_ALTERNATES_DIR));
 			resultsMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-			resultsMenu.AppendMenu(MF_STRING, IDC_BITZI_LOOKUP, CTSTRING(BITZI_LOOKUP));
 			resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)copyMenu, CTSTRING(COPY));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 			appendUserItems(resultsMenu, Util::emptyString); // TODO: hubhint
@@ -1512,7 +1512,6 @@ LRESULT SearchFrame::onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 
 LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring sCopy;
-	tstring directory;
 	if(ctrlResults.GetSelectedCount() == 1) {
 	int pos = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
 	dcassert(pos != -1);
@@ -1531,8 +1530,7 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 				}
 				break;
 			case IDC_COPY_DIR:
-				directory = (Text::toT(Util::getFilePath(sr->getFile())));
-				sCopy = WinUtil::getDir(directory);
+				sCopy = WinUtil::getDir((Text::toT(Util::getFilePath(sr->getFile()))));
 				break;
 			case IDC_COPY_PATH:
 				if(sr->getType() == SearchResult::TYPE_FILE) {
@@ -1588,8 +1586,7 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_DIR:
-					directory = Util::getFilePath(Text::toT(sr->getFile()));
-					sCopy += WinUtil::getDir(directory);
+					sCopy += WinUtil::getDir(Util::getFilePath(Text::toT(sr->getFile())));
 					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_SIZE:
@@ -1635,6 +1632,19 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 				WinUtil::setClipboard(sCopy);
 		}
 		}
+	return S_OK;
+}
+
+LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(ctrlResults.GetSelectedCount() == 1) {
+		int pos = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
+		dcassert(pos != -1);
+
+		if ( pos >= 0 ) {
+			const SearchResultPtr& sr = ctrlResults.getItemData(pos)->sr;
+			WinUtil::search((WinUtil::getDir((Text::toT(Util::getFilePath(sr->getFile()))))), 0, false);
+		}
+	}
 	return S_OK;
 }
 
@@ -1921,7 +1931,6 @@ LRESULT SearchFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	
 tstring searchTerm;
 tstring searchTermFull;
-tstring directory;
 
 
 if(ctrlResults.GetSelectedCount() == 1) {
@@ -1931,17 +1940,8 @@ if(ctrlResults.GetSelectedCount() == 1) {
 		const SearchResultPtr& sr = si->sr;
 
 
-		//if(sr->getType() == SearchResult::TYPE_FILE) {
-			directory = (Text::toT(Util::getFilePath(sr->getFile())));
-			directory = WinUtil::getDir(directory);
-		//}
-		//else {
-		//	directory = Text::toT(sr->getFile());
-		//	directory = directory.substr(directory.length()-1, directory.length());
-		//}		
-
-		searchTermFull = directory;
-		searchTerm = WinUtil::getTitle(directory);
+		searchTermFull = WinUtil::getDir(Text::toT(Util::getFilePath(sr->getFile())));
+		searchTerm = WinUtil::getTitle(WinUtil::getDir(Text::toT(Util::getFilePath(sr->getFile()))));
 
 
 
@@ -1954,10 +1954,6 @@ if(ctrlResults.GetSelectedCount() == 1) {
 
 			case IDC_GOOGLE_FULL:
 				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
-				break;
-
-			case IDC_URL:
-				WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
 				break;
 
 			case IDC_IMDB:
