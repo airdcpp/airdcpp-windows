@@ -378,36 +378,36 @@ void WizardDlg::setDownloadSlots(int value) {
 		//for RAR hubs end
 		} else {
 		if(value <= 1){
+			SetDlgItemText(IDC_FILE_SLOTS, _T("3"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("8"));
+
+		}else if(value > 1 && value <= 2) {
+			SetDlgItemText(IDC_FILE_SLOTS, _T("4"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("8"));
+		
+		}else if( value > 2 && value <= 4) {
 			SetDlgItemText(IDC_FILE_SLOTS, _T("5"));
 			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("10"));
 
-		}else if(value > 1 && value <= 2) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("10"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("20"));
-		
-		}else if( value > 2 && value <= 4) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("12"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("25"));
-
 		}else if( value > 4 && value <= 6) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("15"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("28"));
+			SetDlgItemText(IDC_FILE_SLOTS, _T("5"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("12"));
 
 		 }else if( value > 6 && value <= 10) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("15"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("30"));
+			SetDlgItemText(IDC_FILE_SLOTS, _T("6"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("15"));
 		   
 		}else if( value > 10 && value <= 20) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("20"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("32"));
+			SetDlgItemText(IDC_FILE_SLOTS, _T("10"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("15"));
 		   
 		}else if( value > 50 && value <= 100) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("25"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("35"));
+			SetDlgItemText(IDC_FILE_SLOTS, _T("30"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("40"));
 		  
 		}else if( value > 100) {
-			SetDlgItemText(IDC_FILE_SLOTS, _T("30"));
-			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("50"));
+			SetDlgItemText(IDC_FILE_SLOTS, _T("50"));
+			SetDlgItemText(IDC_DOWNLOAD_SLOTS, _T("70"));
 		   }
 		}
 }
@@ -419,31 +419,31 @@ void WizardDlg::setUploadSlots(int value) {
 			
 			//maksis Change these!  For RAR hubs!
 		if(value <= 1){
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("2"));
 
 		}else if(value > 1 && value <= 2) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("2"));
 		
 		}else if( value > 2 && value <= 4) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("3"));
 
 		}else if( value > 4 && value <= 6) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("3"));
 
 		 }else if( value > 6 && value <= 8) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("4"));
 
 		 }else if( value > 6 && value <= 10) {
 		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
 		   
 		}else if( value > 10 && value <= 20) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("6"));
 		   
 		}else if( value > 50 && value <= 100) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("9"));
 		  
 		}else if( value > 100) {
-		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("5"));
+		SetDlgItemText(IDC_UPLOAD_SLOTS, _T("12"));
 		   }
 		//RAR hubs end
 		} else {
