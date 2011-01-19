@@ -175,7 +175,6 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
-			SettingsManager::getInstance()->set(SettingsManager::USE_HIGHLIGHT, false);
 			//add more here
 
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PUBLIC);
@@ -188,14 +187,6 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 10240000);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, true);
 			
-			SettingsManager::getInstance()->set(SettingsManager::USE_HIGHLIGHT, true);
-			ColorSettings cs;
-			cs.setMatch(_T("$Re:(((?<=\\s)[A-Za-z0-9-]+(\\.|_)\\S+[-]\\w+(\\.[A-Za-z0-9]{2,4})?(?=(\\W)?\\s))|(\\S+\\.nfo(?=(\\W)?\\s))|(\\S+[-]\\S+\\.(rar|r\\d{2}|\\d{3})(?=(\\W)?\\s)))"));   //this is the default there is now can change it
-			cs.setBold(true);
-			cs.setHasFgColor(true);
-			cs.setFgColor(RGB(153, 51, 153));
-			HighlightManager::getInstance()->add(cs);
-			
 			//add more here
 			
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_RAR);
@@ -207,11 +198,17 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
-			SettingsManager::getInstance()->set(SettingsManager::USE_HIGHLIGHT, false);
 			//add more here
 			
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PRIVATE);
 		}
+
+
+			if(IsDlgButtonChecked(IDC_RELEASE_LINKS)){
+				SettingsManager::getInstance()->set(SettingsManager::FORMAT_RELEASE, true);
+			} else {
+				SettingsManager::getInstance()->set(SettingsManager::FORMAT_RELEASE, false);
+			}
 
 		if(IsDlgButtonChecked(IDC_CHECK1)){
 			SettingsManager::getInstance()->set(SettingsManager::WIZARD_RUN, true);
@@ -292,18 +289,22 @@ void WizardDlg::fixcontrols() {
 	if(IsDlgButtonChecked(IDC_PUBLIC)){
 		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
 		CheckDlgButton(IDC_PRIVATE_HUB, BST_UNCHECKED);
+		CheckDlgButton(IDC_RELEASE_LINKS, BST_UNCHECKED);
 		explain.SetWindowText(publichub);
 	}
 	if(IsDlgButtonChecked(IDC_RAR)){
 		CheckDlgButton(IDC_PRIVATE_HUB, BST_UNCHECKED);
 		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
+		CheckDlgButton(IDC_RELEASE_LINKS, BST_CHECKED);
 		explain.SetWindowText(rar);
 	}
 	if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
 		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
 		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
+		CheckDlgButton(IDC_RELEASE_LINKS, BST_UNCHECKED);
 		explain.SetWindowText(privatehub);
 	}
+
 	TCHAR buf[64];
 	GetDlgItemText(IDC_CONNECTION, buf, sizeof(buf) +1);
 	int uploadvalue = Util::toInt(Text::fromT(buf));
@@ -313,7 +314,9 @@ void WizardDlg::fixcontrols() {
 	GetDlgItemText(IDC_DOWN_SPEED, buf2, sizeof(buf2) +1);
 	int downloadvalue = Util::toInt(Text::fromT(buf2));
 	setDownloadSlots(downloadvalue);
+	
 }
+
 void WizardDlg::setLang() {
 
 	if(SETTING(LANGUAGE_SWITCH) == 0) {

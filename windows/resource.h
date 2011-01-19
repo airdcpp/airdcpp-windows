@@ -672,6 +672,7 @@
 #define IDC_CHECK2                      1331
 #define IDC_REFRESH_VNAME_ON_SHAREPAGE  1331
 #define IDC_SHOW_JOIN                   1331
+#define IDC_RELEASE_LINKS               1331
 #define IDC_ASEARCH                     1332
 #define IDC_SEARH_SKIPLIST_PRESET       1333
 #define IDC_PRE1                        1334
@@ -700,7 +701,7 @@
 #define IDC_DOWN_SPEED                  1354
 #define IDC_WINAMP_BROWSE               1356
 #define IDC_DOWN_SPEED_SPIN             1356
-#define IDC_SEARCHDIR	                1357
+#define IDC_SEARCHDIR                   1357
 #define IDC_SETTINGS_NOMINALBW2         1358
 #define IDC_HIDE_SHARE                  1359
 #define IDC_DOWNLOAD_SLOTS              1359
@@ -718,6 +719,8 @@
 #define IDC_SPIN4                       1365
 #define IDC_FILE_S_SPIN                 1365
 #define IDC_LANG_ITA                    1366
+#define IDC_CHECK3                      1366
+#define IDC_HIGHLIGHT                   1366
 #define IDC_LANG_NOR                    1367
 #define IDC_UPDATE_BL                   1368
 #define IDC_TEST                        1368
@@ -1114,7 +1117,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        315
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1366
+#define _APS_NEXT_CONTROL_VALUE         1367
 #define _APS_NEXT_SYMED_VALUE           134
 #endif
 #endif

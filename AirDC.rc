@@ -1856,9 +1856,11 @@ BEGIN
     EDITTEXT        IDC_UPLOAD_SLOTS,330,88,27,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_UPLOAD_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,348,88,10,14
     RTEXT           "Upload Slots:",IDC_STATIC,211,91,117,8
-    GROUPBOX        "These Are set depending Download and Upload Speeds",IDC_STATIC,200,18,230,103
+    GROUPBOX        "These Are set depending Download and Upload Speeds",IDC_STATIC,200,18,230,91
     EDITTEXT        IDC_FILE_SLOTS,330,53,27,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_FILE_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,348,53,10,14
+    CONTROL         "Format Release Names in chat as links",IDC_RELEASE_LINKS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,210,116,188,10
 END
 
 
