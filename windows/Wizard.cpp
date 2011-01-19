@@ -12,29 +12,21 @@ static const TCHAR rar[] =
 _T("Client profile Rar-Hub\r\n")
 _T("This will disable segment downloading by setting min segment size!!\r\n")
 _T("( Safer Way to Disable segments )\r\n")
-_T("Manual number of Segments Enable will be set To: true\r\n")
-_T("Manual number of Segments will be set To: 1\r\n")
-_T("Expand Downloads in TransferView will be set To: true \r\n")
+_T("Grouped Downloads will be automatically Expanded.\r\n")
 _T("Partial Upload slots will be set To: 1\r\n");
 
 
 static const TCHAR publichub[] = 
 _T("Client profile Public Hubs\r\n")
-_T("Partial Upload slots will be set To: 2\r\n")
-_T("Enable Segmented downloading will be set To: true\r\n")
-_T("Manual number of Segments Enable will be set To: false\r\n")
-_T("Manual number of Segments will be set To: 3\r\n")
-_T("Min segments size will be set To: 1024\r\n")
-_T("Expand Downloads in TransferView will be set To: false \r\n");
+_T("This Will Enable segmented Downloading\r\n")
+_T("Min Segments size will be set to normal default value\r\n")
+_T("Partial Upload slots will be set To: 2\r\n");
 
 static const TCHAR privatehub[] = 
 _T("Client profile Private Hub \r\n")
-_T("Partial Upload slots will be set To: 2 \r\n")
-_T("Enable Segmented downloading will be set To: true\r\n")
-_T("Manual number of Segments will be set To: 3\r\n")
-_T("Manual number of Segments Enable will be set To: false\r\n")
+_T("SegmentDownloading will be Enabled\r\n")
 _T("Min segments size will be set To: 2048 \r\n")
-_T("Expand Downloads in TransferView will be set To: false \r\n");
+_T("Partial Upload slots will be set To: 2 \r\n");
 
 LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 			
@@ -171,8 +163,6 @@ void WizardDlg::write() {
 		if(IsDlgButtonChecked(IDC_PUBLIC)){
 			SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 2);
 			SettingsManager::getInstance()->set(SettingsManager::MULTI_CHUNK, true);
-			SettingsManager::getInstance()->set(SettingsManager::NUMBER_OF_SEGMENTS, 3);
-			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
 			//add more here
@@ -182,8 +172,7 @@ void WizardDlg::write() {
 		}else if(IsDlgButtonChecked(IDC_RAR)){
 			SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 1);
 			SettingsManager::getInstance()->set(SettingsManager::MULTI_CHUNK, true);
-			SettingsManager::getInstance()->set(SettingsManager::NUMBER_OF_SEGMENTS, 1);
-			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, true);
+			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 10240000);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, true);
 			
@@ -194,7 +183,6 @@ void WizardDlg::write() {
 		}else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
 			SettingsManager::getInstance()->set(SettingsManager::MULTI_CHUNK, true);
 			SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 2);
-			SettingsManager::getInstance()->set(SettingsManager::NUMBER_OF_SEGMENTS, 3);
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
