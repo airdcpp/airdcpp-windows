@@ -380,7 +380,7 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Added Copy Directory menu item in search and filelists //Maksalaatikko
 #Added Site search in search window //Maksalaatikko
 #Built Settings Wizard
-#Added option in Appearancepage to format releasenames as links
-#Click on Release link will do a search
+#Format releasenames as links, search the release when clicking it //Maksalaatikko
 #Chat rightclick search will now search for whole word.
 #Double click on identified releasename in chat will do a search
+#Perform SFV check for files being hashed (+option to disable the check) //Maksalaatikko
