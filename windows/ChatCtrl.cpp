@@ -1329,6 +1329,7 @@ LRESULT ChatCtrl::onDoubleClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 BOOL ChatCtrl::isRelease(POINT pt, BOOL search) {
 tstring word = WordFromPos(pt);
 
+if(!word.empty()) {
 	boost::wregex reg;
 	reg.assign(_T("(([A-Z0-9][A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S*)))(\\S+)-(?=\\w*[A-Z]\\w*)(\\w+))"));
 	if(regex_match(word, reg)) {
@@ -1337,10 +1338,12 @@ tstring word = WordFromPos(pt);
 		}
 		return TRUE;
 	}
+}
 	return FALSE;
 }
 
 tstring ChatCtrl::WordFromPos(const POINT& p) {
+	if(client == NULL) Util::emptyStringT;
 
 	int iCharPos = CharFromPos(p), line = LineFromChar(iCharPos), len = LineLength(iCharPos) + 1;
 	if(len < 3)
@@ -1351,7 +1354,8 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	
 	//Walk it thru, want the whole word / releasename instead of just until -
 	
-	int start = LineIndex(line), lineEnd = LineIndex(line) + LineLength(iCharPos);
+	int start = LineIndex(line);
+	int	lineEnd = LineIndex(line) + LineLength(iCharPos);
 	
 	for( begin = iCharPos; begin >= start; begin-- ) {
 		
@@ -1367,11 +1371,18 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	}
 
 	len = end - begin;
+	
+	if(len <= 0)
+	return Util::emptyStringT;
+
 	tstring sText;
 	sText.resize(len);
 	GetTextRange(begin, end, &sText[0]);
 	
+	if(!sText.empty())
 	return sText;
+	else
+	return Util::emptyStringT;
 
 }
 LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

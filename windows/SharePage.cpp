@@ -35,7 +35,6 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
 	{ IDC_SETTINGS_SHARE_SIZE, ResourceManager::SETTINGS_SHARE_SIZE }, 
 	{ IDC_SHAREHIDDEN, ResourceManager::SETTINGS_SHARE_HIDDEN },
-	{ IDC_SHARE_SFV, ResourceManager::SETTINGS_SHARE_SFV },
 	{ IDC_REMOVE, ResourceManager::REMOVE },
 	{ IDC_ADD, ResourceManager::SETTINGS_ADD_FOLDER },
 	{ IDC_RENAME, ResourceManager::SETTINGS_RENAME_FOLDER },
@@ -46,13 +45,14 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
 	{ IDC_REFRESH_ON_SHAREPAGE, ResourceManager::DISABLE_REFRESH_ON_SHAREPAGE},
 	{ IDC_REFRESH_VNAME_ON_SHAREPAGE, ResourceManager::REFRESH_VNAME_ON_SHAREPAGE},
+	{ IDC_SHARE_SFV, ResourceManager::SETTINGS_SHARE_SFV },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item SharePage::items[] = {
 	{ IDC_SHAREHIDDEN, SettingsManager::SHARE_HIDDEN, PropPage::T_BOOL },
 	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
-	{ IDC_SHARE_SFV, SettingsManager::SHARE_SFV, PropPage::T_INT },
+	{ IDC_SHARE_SFV, SettingsManager::SHARE_SFV, PropPage::T_BOOL },
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
 	{ IDC_REFRESH_ON_SHAREPAGE, SettingsManager::DISABLE_REFRESH_ON_SHAREPAGE, PropPage::T_BOOL },	
