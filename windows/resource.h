@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by E:\projects\airsvn\trunk\AirDC.rc
+// Used by E:\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -207,6 +207,7 @@
 #define IDC_SELWINCOLOR                 1031
 #define IDC_SELTEXT                     1032
 #define IDC_SHAREHIDDEN                 1035
+#define IDC_SHARE_SFV                   1036
 #define IDC_QUEUE                       1037
 #define IDC_HUBNICK                     1041
 #define IDC_HUBPASS                     1042
@@ -674,6 +675,7 @@
 #define IDC_SHOW_JOIN                   1331
 #define IDC_RELEASE_LINKS               1331
 #define IDC_ASEARCH                     1332
+#define IDC_REFRESH_VNAME_ON_SHAREPAGE2 1332
 #define IDC_SEARH_SKIPLIST_PRESET       1333
 #define IDC_PRE1                        1334
 #define IDC_PRE2                        1335

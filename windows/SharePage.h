@@ -52,6 +52,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE, onClickedRemove)
 		COMMAND_ID_HANDLER(IDC_RENAME, onClickedRename)
 		COMMAND_ID_HANDLER(IDC_SHAREHIDDEN, onClickedShareHidden)
+		COMMAND_ID_HANDLER(IDC_SHARE_SFV, onClickedShareSFV)
 		COMMAND_ID_HANDLER(IDC_REFRESH_ON_SHAREPAGE, onClickedRefreshDisable)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
@@ -65,6 +66,7 @@ public:
 	LRESULT onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedShareHidden(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedShareSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRefreshDisable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 

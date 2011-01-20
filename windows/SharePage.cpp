@@ -35,6 +35,7 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
 	{ IDC_SETTINGS_SHARE_SIZE, ResourceManager::SETTINGS_SHARE_SIZE }, 
 	{ IDC_SHAREHIDDEN, ResourceManager::SETTINGS_SHARE_HIDDEN },
+	{ IDC_SHARE_SFV, ResourceManager::SETTINGS_SHARE_SFV },
 	{ IDC_REMOVE, ResourceManager::REMOVE },
 	{ IDC_ADD, ResourceManager::SETTINGS_ADD_FOLDER },
 	{ IDC_RENAME, ResourceManager::SETTINGS_RENAME_FOLDER },
@@ -51,6 +52,7 @@ PropPage::TextItem SharePage::texts[] = {
 PropPage::Item SharePage::items[] = {
 	{ IDC_SHAREHIDDEN, SettingsManager::SHARE_HIDDEN, PropPage::T_BOOL },
 	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
+	{ IDC_SHARE_SFV, SettingsManager::SHARE_SFV, PropPage::T_INT },
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
 	{ IDC_REFRESH_ON_SHAREPAGE, SettingsManager::DISABLE_REFRESH_ON_SHAREPAGE, PropPage::T_BOOL },	
@@ -319,6 +321,19 @@ LRESULT SharePage::onClickedShareHidden(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getShareSize()).c_str());
 	return 0;
 }
+
+LRESULT SharePage::onClickedShareSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	// Save the checkbox state so that ShareManager knows to include/exclude hidden files
+	Item i = items[1]; // The checkbox. Explicit index used - bad!
+	if(::IsDlgButtonChecked((HWND)* this, i.itemID) == BST_CHECKED){
+		settings->set((SettingsManager::IntSetting)i.setting, true);
+	} else {
+		settings->set((SettingsManager::IntSetting)i.setting, false);
+	}
+	return 0;
+}
+
 
 void SharePage::addDirectory(const tstring& aPath){
 	tstring path = aPath;

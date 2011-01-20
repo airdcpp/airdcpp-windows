@@ -188,6 +188,9 @@
     <ClCompile Include="client\ConnectivityManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\SFVReader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -482,6 +485,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\ConnectivityManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\SFVReader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
