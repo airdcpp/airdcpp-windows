@@ -1343,7 +1343,7 @@ if(!word.empty()) {
 }
 
 tstring ChatCtrl::WordFromPos(const POINT& p) {
-	if(client == NULL) Util::emptyStringT;
+	if(client == NULL) return Util::emptyStringT;
 
 	int iCharPos = CharFromPos(p), line = LineFromChar(iCharPos), len = LineLength(iCharPos) + 1;
 	if(len < 3)
@@ -1355,7 +1355,7 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	//Walk it thru, want the whole word / releasename instead of just until -
 	
 	int start = LineIndex(line);
-	int	lineEnd = LineIndex(line) + LineLength(iCharPos);
+	int lineEnd = LineIndex(line) + LineLength(iCharPos);
 	
 	for( begin = iCharPos; begin >= start; begin-- ) {
 		
@@ -1379,11 +1379,11 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	sText.resize(len);
 	GetTextRange(begin, end, &sText[0]);
 	
-	if(!sText.empty())
-	return sText;
-	else
-	return Util::emptyStringT;
-
+	if(!sText.empty()) {
+		return sText;
+	} else {
+		return Util::emptyStringT;
+	}
 }
 LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
