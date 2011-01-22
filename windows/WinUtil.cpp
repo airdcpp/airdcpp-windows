@@ -2076,23 +2076,20 @@ string WinUtil::generateStats() {
 		int64_t userTime = userTimeFT.dwLowDateTime | (((int64_t)userTimeFT.dwHighDateTime) << 32);  
 
 		string ret = boost::str(boost::format(
-"\r\n\t- %s %s [Core: %s] %s   http://www.airdcpp.net\r\n\
-\t- Uptime: %s | CPU time: %s\r\n\
-\t- Memory usage (peak): %s (%s)\r\n\
-\t- Virtual Memory usage (peak): %s (%s)\r\n\
-\t- Downloaded (session/total): %s / %s\r\n\
-\t- Uploaded (session/total): %s / %s\r\n\
-\t- System: %s (Uptime: %s)\r\n\
-\t- CPU: %s")
-#ifdef SVNBUILD
-			% APPNAME % VERSIONSTRING " SVN: " BOOST_STRINGIZE(SVN_REVISION) % DCVERSIONSTRING
-#else
-			% APPNAME % VERSIONSTRING % DCVERSIONSTRING
-#endif
+"\r\n\t-=[ %s %s %s   http://www.airdcpp.net ]=-\r\n\
+\t-=[ Uptime: %s ][ CPU time: %s ]=-\r\n\
+\t-=[ Memory usage (peak): %s (%s) ]=-\r\n\
+\t-=[ Virtual Memory usage (peak): %s (%s) ]=-\r\n\
+\t-=[ Downloaded: %s ][  Uploaded %s ]=-\r\n\
+\t-=[ Total download %s ][ Total upload %s ]=-\r\n\
+\t-=[ System: %s (Uptime: %s) ]=-\r\n\
+\t-=[ CPU: %s ]=-")
+
+			% APPNAME % VERSIONSTRING
 #ifdef _WIN64
-			% "x86-64"
+			% "64 bit"
 #else
-			% "x86-32"
+			% "32 bit"
 #endif
 			% formatTime(Util::getUptime())
 			% Text::fromT(Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64)))
@@ -2101,8 +2098,8 @@ string WinUtil::generateStats() {
 			% Util::formatBytes(pmc.PagefileUsage)
 			% Util::formatBytes(pmc.PeakPagefileUsage)
 			% Util::formatBytes(Socket::getTotalDown())
-			% Util::formatBytes(SETTING(TOTAL_DOWNLOAD))
 			% Util::formatBytes(Socket::getTotalUp())
+			% Util::formatBytes(SETTING(TOTAL_DOWNLOAD))
 			% Util::formatBytes(SETTING(TOTAL_UPLOAD))
 			% getOsVersion()
 			% formatTime(GetTickCount()/1000)

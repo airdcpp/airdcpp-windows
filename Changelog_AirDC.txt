@@ -384,3 +384,7 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Chat rightclick search will now search for whole word.
 #Double click on identified releasename in chat will do a search
 #Perform SFV check for files being hashed (+option to disable the check) //Maksalaatikko
+
+2.09 Beta 1
+#New /stats spam (RSX++) //Maksalaatikko
+#Taskbar improvements for Win7 (ApexDC++) //Maksalaatikko
