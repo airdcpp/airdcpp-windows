@@ -703,7 +703,6 @@
 #define IDC_DOWN_SPEED                  1354
 #define IDC_WINAMP_BROWSE               1356
 #define IDC_DOWN_SPEED_SPIN             1356
-#define IDC_SEARCHDIR                   1357
 #define IDC_SETTINGS_NOMINALBW2         1358
 #define IDC_HIDE_SHARE                  1359
 #define IDC_DOWNLOAD_SLOTS              1359
@@ -873,6 +872,9 @@
 #define IDC_SETTINGS_PARTIAL_SLOTS      3026
 #define IDC_PARTIAL_SLOTS               3027
 #define IDC_PARTIAL_SLOTS_SPIN          3028
+#define IDC_SEARCHLEFT                  3029
+#define IDC_SEARCHDIR                   3030
+#define IDC_SEARCHDIRLEFT               3031
 #define IDC_DOWNLOAD_TARGET             5000
 #define IDC_DOWNLOAD_TARGET_DIR         5500
 #define IDC_SELECT_WINDOW               6000

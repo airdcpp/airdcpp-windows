@@ -389,3 +389,4 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Shell menu for Own Filelist
 #New /stats spam (RSX++) //Maksalaatikko
 #Taskbar improvements for Win7 (ApexDC++) //Maksalaatikko
+#Added Search Directory for alternatives in filelist //Maksalaatikko
