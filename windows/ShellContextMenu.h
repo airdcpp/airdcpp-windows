@@ -28,6 +28,7 @@ class CShellContextMenu
 {
 	static IContextMenu2* g_IContext2;
 	static IContextMenu3* g_IContext3;
+	static WNDPROC OldWndProc;
 
 public:
 	CShellContextMenu();

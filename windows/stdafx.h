@@ -25,6 +25,8 @@
 
 using namespace dcpp;
 
+
+
 #ifdef _WIN32
 
 #define STRICT
@@ -64,7 +66,6 @@ extern CAppModule _Module;
 #include <atltheme.h>
 #include <Shellapi.h>
 #endif // _WIN32
-
 #define WM_SPEAKER (WM_APP + 500)
 #define WM_REFRESH_SETTINGS (WM_APP + 501)
 #endif

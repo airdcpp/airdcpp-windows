@@ -1399,11 +1399,11 @@ void WinUtil::parseADChubUrl(const tstring& aUrl, bool secure) {
 void WinUtil::SetIcon(HWND hWnd, long icon, bool big) {
 	
 
-	HICON hIconSm = (HICON)LoadImage((HINSTANCE)::GetWindowLong(hWnd, GWL_HINSTANCE), MAKEINTRESOURCE(icon), IMAGE_ICON, 16, 16, LR_DEFAULTSIZE);
+	HICON hIconSm = (HICON)LoadImage((HINSTANCE)::GetWindowLong(hWnd, GWLP_HINSTANCE), MAKEINTRESOURCE(icon), IMAGE_ICON, 16, 16, LR_DEFAULTSIZE);
 	::SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIconSm);
 
 	if(big){
-		HICON hIcon   = (HICON)LoadImage((HINSTANCE)::GetWindowLong(hWnd, GWL_HINSTANCE), MAKEINTRESOURCE(icon), IMAGE_ICON, 32, 32, LR_DEFAULTSIZE);
+		HICON hIcon   = (HICON)LoadImage((HINSTANCE)::GetWindowLong(hWnd, GWLP_HINSTANCE), MAKEINTRESOURCE(icon), IMAGE_ICON, 32, 32, LR_DEFAULTSIZE);
 		::SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
 	}
 	

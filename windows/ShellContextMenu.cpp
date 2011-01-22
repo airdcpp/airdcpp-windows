@@ -29,6 +29,7 @@
 
 IContextMenu2* CShellContextMenu::g_IContext2 = NULL;
 IContextMenu3* CShellContextMenu::g_IContext3 = NULL;
+WNDPROC CShellContextMenu::OldWndProc = NULL;
 
 CShellContextMenu::CShellContextMenu() :
 	bDelete(false),
@@ -142,7 +143,6 @@ UINT CShellContextMenu::ShowContextMenu(HWND hWnd, CPoint pt)
 	pContextMenu->QueryContextMenu(m_Menu->m_hMenu, m_Menu->GetMenuItemCount(), ID_SHELLCONTEXTMENU_MIN, ID_SHELLCONTEXTMENU_MAX, CMF_NORMAL | CMF_EXPLORE);
 
 	// subclass window to handle menurelated messages in CShellContextMenu 
-	WNDPROC OldWndProc;
 	if(iMenuType > 1)	// only subclass if its version 2 or 3
 	{
 		OldWndProc = (WNDPROC) SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(HookWndProc));
@@ -258,6 +258,6 @@ LRESULT CALLBACK CShellContextMenu::HookWndProc(HWND hWnd, UINT message, WPARAM 
 	}
 
 	// call original WndProc of window to prevent undefined bevhaviour of window
-	return ::CallWindowProc((WNDPROC) GetProp( hWnd, _T("OldWndProc")), hWnd, message, wParam, lParam);
+	return ::CallWindowProc(OldWndProc, hWnd, message, wParam, lParam);
 }
 

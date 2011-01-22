@@ -27,7 +27,7 @@
 #include "WinUtil.h"
 #include "LineDlg.h"
 #include "PrivateFrame.h"
-
+#include "ShellContextMenu.h"
 #include "../client/File.h"
 #include "../client/QueueManager.h"
 #include "../client/StringTokenizer.h"
@@ -651,15 +651,61 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		if(pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlList, pt);
 		}
+		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 
 		OMenu targetMenu, fileMenu, priorityMenu, copyMenu, SearchMenu;
+
+
+
+		if(BOOLSETTING(SHOW_SHELL_MENU) && mylist && (ctrlList.GetSelectedCount() == 1) && (LOBYTE(LOWORD(GetVersion())) >= 5)) {
+			tstring path; 
+			if(ii->type == ItemInfo::FILE){
+			path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+			}else if(ii->type == ItemInfo::DIRECTORY) {
+				path = Text::toT(dl->getLocalPaths(ii->dir));
+			}
+				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF) { // Check that the file still exists
+					CShellContextMenu shellMenu;
+					shellMenu.SetPath(path);
+					CMenu* pShellMenu = shellMenu.GetMenu();
+					
+					//do we need to see anything else on own list?
+					copyMenu.CreatePopupMenu();
+					SearchMenu.CreatePopupMenu();
+					pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
+					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+					pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+					pShellMenu->AppendMenu(MF_SEPARATOR);
+					//copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
+					copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
+					copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
+					copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
+					copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
+					copyMenu.AppendMenu(MF_STRING, IDC_COPY_EXACT_SIZE, CTSTRING(EXACT_SIZE));
+					copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
+					copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
+					copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
+			
+							//SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
+							SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
+							SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
+							SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
+							SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
+							SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
+
+					UINT idCommand = shellMenu.ShowContextMenu(m_hWnd, pt);
+					if(idCommand != 0) {
+						PostMessage(WM_COMMAND, idCommand);
+					}
+					
+				}
+		}else{
 
 		fileMenu.CreatePopupMenu();
 		targetMenu.CreatePopupMenu();
 		priorityMenu.CreatePopupMenu();
 		copyMenu.CreatePopupMenu();
 		SearchMenu.CreatePopupMenu();
-
 		targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 		priorityMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_WITH_PRIORITY));
 
@@ -703,8 +749,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
 
 		int n = 0;
-
-		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 
 		if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
 			fileMenu.InsertSeparatorFirst(Text::toT(Util::getFileName(ii->file->getName())));
@@ -786,7 +830,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubs(dl->getUser()->getCID(), dl->getHintedUser().hint));
 			fileMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 		}
-		
+		}
 		return TRUE; 
 	} else if(reinterpret_cast<HWND>(wParam) == ctrlTree && ctrlTree.GetSelectedItem() != NULL) { 
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
