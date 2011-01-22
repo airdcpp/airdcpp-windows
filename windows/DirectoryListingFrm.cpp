@@ -35,6 +35,7 @@
 #include "../client/MerkleTree.h"
 #include "../client/User.h"
 #include "../client/ClientManager.h"
+#include "TextFrame.h"
 
 DirectoryListingFrame::FrameMap DirectoryListingFrame::frames;
 int DirectoryListingFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_TYPE, COLUMN_EXACTSIZE, COLUMN_SIZE, COLUMN_TTH };
@@ -555,7 +556,11 @@ LRESULT DirectoryListingFrame::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, 
 }
 
 LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	downloadList(Text::toT(Util::getTempPath()), true);
+	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
+	if (mylist)
+		TextFrame::openWindow(Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH())));
+	else
+		downloadList(Text::toT(Util::getTempPath()), true);
 	return 0;
 }
 
@@ -687,6 +692,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					copyMenu.CreatePopupMenu();
 					SearchMenu.CreatePopupMenu();
 					pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
+					pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
 					pShellMenu->AppendMenu(MF_SEPARATOR);
