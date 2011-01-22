@@ -710,7 +710,7 @@
 		<String Name="SettingsShowInfoTips">Show InfoTips in lists</String>
 		<String Name="SettingsShowJoins">Show joins / parts in chat by default</String>
 		<String Name="SettingsShowProgressBars">Show progress bars for transfers (uses some CPU)</String>
-		<String Name="SettingsShowShellMenu">Show shell menu in finished transfers</String>
+		<String Name="SettingsShowShellMenu">Show shell menu in finished transfers and Own FileList</String>
 		<String Name="SettingsSkipZeroByte">Skip zero-byte files</String>
 		<String Name="SettingsSocks5">SOCKS5</String>
 		<String Name="SettingsSocks5Ip">Socks IP</String>
