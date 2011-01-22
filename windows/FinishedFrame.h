@@ -25,7 +25,7 @@
 
 #include "FinishedFrameBase.h"
 
-class FinishedFrame : public FinishedFrameBase<FinishedFrame, ResourceManager::FINISHED_DOWNLOADS, IDC_FINISHED, IDR_FINISHED_DL>
+class FinishedFrame : public FinishedFrameBase<FinishedFrame, ResourceManager::FINISHED_DOWNLOADS, IDC_FINISHED>
 {
 public:
 	FinishedFrame() {
@@ -34,6 +34,7 @@ public:
 		columnOrder = SettingsManager::FINISHED_ORDER;
 		columnWidth = SettingsManager::FINISHED_WIDTHS;
 		columnVisible = SettingsManager::FINISHED_VISIBLE;
+		Icon = _T("FinishedDL.ico");
 	}
 	~FinishedFrame() { }
 

@@ -25,7 +25,7 @@
 
 #include "FinishedFrameBase.h"
 
-class FinishedULFrame : public FinishedFrameBase<FinishedULFrame, ResourceManager::FINISHED_UPLOADS, IDC_FINISHED_UL, IDR_FINISHED_UL>
+class FinishedULFrame : public FinishedFrameBase<FinishedULFrame, ResourceManager::FINISHED_UPLOADS, IDC_FINISHED_UL>
 {
 public:
 	FinishedULFrame() {
@@ -34,6 +34,7 @@ public:
 		columnOrder = SettingsManager::FINISHED_UL_ORDER;
 		columnWidth = SettingsManager::FINISHED_UL_WIDTHS;
 		columnVisible = SettingsManager::FINISHED_UL_VISIBLE;
+		Icon = _T("FinishedUL.ico");
 	}
 
 	~FinishedULFrame() { }

@@ -36,7 +36,7 @@
 #include "../client/StringTokenizer.h"
 #include "../client/FinishedManager.h"
 
-template<class T, int title, int id, int icon>
+template<class T, int title, int id>
 class FinishedFrameBase : public MDITabChildWindowImpl<T>, public StaticFrame<T, title, id>,
 	protected FinishedManagerListener, private SettingsManagerListener
 
@@ -135,7 +135,7 @@ public:
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_TYPE, CTSTRING(TYPE));
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_ALL, CTSTRING(ALL));
 
-		WinUtil::SetIcon(m_hWnd, icon);
+		WinUtil::SetIcon(m_hWnd, Icon);
 		bHandled = FALSE;
 		return TRUE;
 	}
@@ -444,6 +444,7 @@ protected:
 	bool closed;
 
 	bool upload;
+	tstring Icon;
 	SettingsManager::IntSetting boldFinished;
 	SettingsManager::StrSetting columnWidth;
 	SettingsManager::StrSetting columnOrder;
@@ -501,12 +502,12 @@ protected:
 
 };
 
-template <class T, int title, int id, int icon>
-int FinishedFrameBase<T, title, id, icon>::columnIndexes[] = { FinishedItem::COLUMN_DONE, FinishedItem::COLUMN_FILE,
+template <class T, int title, int id>
+int FinishedFrameBase<T, title, id>::columnIndexes[] = { FinishedItem::COLUMN_DONE, FinishedItem::COLUMN_FILE,
 FinishedItem::COLUMN_PATH, FinishedItem::COLUMN_NICK, FinishedItem::COLUMN_HUB, FinishedItem::COLUMN_SIZE, FinishedItem::COLUMN_SPEED, FinishedItem::COLUMN_TYPE  };
 
-template <class T, int title, int id, int icon>
-int FinishedFrameBase<T, title, id, icon>::columnSizes[] = { 100, 110, 290, 125, 80, 80 };
+template <class T, int title, int id>
+int FinishedFrameBase<T, title, id>::columnSizes[] = { 100, 110, 290, 125, 80, 80 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILENAME, ResourceManager::TIME, ResourceManager::PATH, 
 ResourceManager::NICK, ResourceManager::HUB, ResourceManager::SIZE, ResourceManager::SPEED, ResourceManager::TYPE
 };
