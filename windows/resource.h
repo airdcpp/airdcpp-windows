@@ -874,7 +874,6 @@
 #define IDC_PARTIAL_SLOTS_SPIN          3028
 #define IDC_SEARCHLEFT                  3029
 #define IDC_SEARCHDIR                   3030
-#define IDC_SEARCHDIRLEFT               3031
 #define IDC_DOWNLOAD_TARGET             5000
 #define IDC_DOWNLOAD_TARGET_DIR         5500
 #define IDC_SELECT_WINDOW               6000
