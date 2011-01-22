@@ -115,6 +115,7 @@ public:
 		MESSAGE_HANDLER(WM_SIZE, onSize)
 		MESSAGE_HANDLER(WM_ENDSESSION, onEndSession)
 		MESSAGE_HANDLER(trayMessage, onTray)
+		MESSAGE_HANDLER(tbButtonMessage, onTaskbarButton);
 		MESSAGE_HANDLER(WM_COPYDATA, onCopyData)
 		MESSAGE_HANDLER(WMU_WHERE_ARE_YOU, onWhereAreYou)
 		MESSAGE_HANDLER(WM_ACTIVATEAPP, onActivateApp)
@@ -249,6 +250,37 @@ public:
 		bTrayIcon = false;
 		updateTray(true); 
 		return 0;
+	}
+
+	LRESULT onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	if(WinUtil::getOsMajor() < 6 || (WinUtil::getOsMajor() == 6 && WinUtil::getOsMinor() < 1))
+		return 0;
+
+	taskbarList.Release();
+	taskbarList.CoCreateInstance(CLSID_TaskbarList);
+
+	if(Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + "app.ico"))
+		taskbarList->SetOverlayIcon(m_hWnd, normalicon.hIcon, NULL);
+
+	THUMBBUTTON buttons[2];
+	buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
+	buttons[0].iId = IDC_OPEN_DOWNLOADS;
+	buttons[0].hIcon = images.GetIcon(13);
+	wcscpy(buttons[0].szTip, CWSTRING(MENU_OPEN_DOWNLOADS_DIR));
+	buttons[0].dwFlags = THBF_ENABLED;
+
+	buttons[1].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
+	buttons[1].iId = ID_FILE_SETTINGS;
+	buttons[1].hIcon = images.GetIcon(14);
+	wcscpy(buttons[1].szTip, CWSTRING(SETTINGS));
+	buttons[1].dwFlags = THBF_ENABLED;
+
+	taskbarList->ThumbBarAddButtons(m_hWnd, sizeof(buttons)/sizeof(THUMBBUTTON), buttons);
+
+	for(int i = 0; i < sizeof(buttons)/sizeof(THUMBBUTTON); ++i)
+		DestroyIcon(buttons[i].hIcon);
+
+	return 0;
 	}
 
 	LRESULT onRowsChanged(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -435,9 +467,19 @@ private:
 	HICON hShutdownIcon;
 	static bool isShutdownStatus;
 
-	CMenu trayMenu;
-
 	UINT trayMessage;
+	UINT tbButtonMessage;
+
+	CMenu trayMenu;
+	CMenu tbMenu;
+	CMenu dropMenu;
+
+	typedef BOOL (CALLBACK* LPFUNC)(UINT message, DWORD dwFlag);
+	LPFUNC _d_ChangeWindowMessageFilter;
+	HMODULE user32lib;
+
+	CComPtr<ITaskbarList3> taskbarList;
+
 	/** Was the window maximized when minimizing it? */
 	bool maximized;
 	uint64_t lastMove;
