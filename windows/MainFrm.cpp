@@ -338,9 +338,9 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	
 	// Different app icons for different instances (APEX)
 	HICON trayIcon = NULL;
-	if(Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + "app.ico")) {
-		HICON appIcon = (HICON)::LoadImage(NULL, Text::toT(Util::getPath(Util::PATH_RESOURCES) + "app.ico").c_str(), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
-		trayIcon = (HICON)::LoadImage(NULL, Text::toT(Util::getPath(Util::PATH_RESOURCES) + "app.ico").c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
+	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str()))) {
+		HICON appIcon = (HICON)::LoadImage(NULL, WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str(), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
+		trayIcon = (HICON)::LoadImage(NULL, WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
 
 		if(WinUtil::getOsMajor() < 6 || (WinUtil::getOsMajor() == 6 && WinUtil::getOsMinor() < 1))
 			DestroyIcon((HICON)SetClassLongPtr(m_hWnd, GCLP_HICON, (LONG_PTR)appIcon));
@@ -1014,7 +1014,7 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			bIsPM = false;
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd,
-					Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + "app.ico") ? normalicon.hIcon : NULL, NULL);
+					Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str())) ? normalicon.hIcon : NULL, NULL);
 			}
 
 			if (bTrayIcon == true) {
@@ -1536,7 +1536,7 @@ LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/
 
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd,
-					Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + "app.ico") ? normalicon.hIcon : NULL, NULL);
+					Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str())) ? normalicon.hIcon : NULL, NULL);
 			}
 
 			if (bTrayIcon == true) {
