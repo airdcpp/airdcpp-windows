@@ -61,6 +61,7 @@
 #include "boost/algorithm/string/replace.hpp"
 #include "boost/algorithm/string/trim.hpp"
 #include "../client/pme.h"
+#include "boost/format.hpp"
 
 
 WinUtil::ImageMap WinUtil::fileIndexes;
@@ -879,7 +880,7 @@ bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, StringMap& sm) thr
 #ifdef SVNVERSION
 #define LINE2 _T("-- http://www.airdcpp.net/  <AirDC++ ") _T(VERSIONSTRING) _T(SVNVERSION) _T(" / ") _T(DCVERSIONSTRING) _T(">")
 #else
-#define LINE2 _T("-- http://www.airdcpp.net/  <AirDC++ ") _T(VERSIONSTRING) _T(" / ") _T(DCVERSIONSTRING) _T(">")
+#define LINE2 _T("-- http://www.airdcpp.net/  <AirDC++ ") _T(VERSIONSTRING) _T(" ") _T(CONFIGURATION_TYPE) _T(" / ") _T(DCVERSIONSTRING) _T(">")
 #endif
 TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n") LINE2,
 _T("\r\n-- Is it Superman? No, its AirDC++\r\n") LINE2,
@@ -2061,9 +2062,9 @@ snprintf(buf, sizeof(buf), "\n -=Downloading: %s [%s]=- \n -=Uploading: %s [%s]=
 	return buf;
 }
 */
+
 string WinUtil::generateStats() {
 	if(LOBYTE(LOWORD(GetVersion())) >= 5) {
-		char buf[1024];
 		PROCESS_MEMORY_COUNTERS pmc;
 		pmc.cb = sizeof(pmc);
 		typedef bool (CALLBACK* LPFUNC)(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
@@ -2073,18 +2074,142 @@ string WinUtil::generateStats() {
 		GetProcessTimes(GetCurrentProcess(), &tmpa, &tmpb, &kernelTimeFT, &userTimeFT);
 		int64_t kernelTime = kernelTimeFT.dwLowDateTime | (((int64_t)kernelTimeFT.dwHighDateTime) << 32);
 		int64_t userTime = userTimeFT.dwLowDateTime | (((int64_t)userTimeFT.dwHighDateTime) << 32);  
-		snprintf(buf, sizeof(buf), "\n-=[ AirDC++ %s http://www.airdcpp.net ]=-\r\n-=[ Uptime: %s][ Cpu time: %s ]=-\r\n-=[ Memory usage (peak): %s (%s) ]=-\r\n-=[ Virtual memory usage (peak): %s (%s) ]=-\r\n-=[ Downloaded: %s ][ Uploaded: %s ]=-\r\n-=[ Total download: %s ][ Total upload: %s ]=-\r\n-=[ System Uptime: %s]=-\r\n-=[ CPU Clock: %f MHz ]=-", 
-			VERSIONSTRING, formatTime(Util::getUptime()).c_str(), Text::fromT(Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64))).c_str(), 
-			Util::formatBytes(pmc.WorkingSetSize).c_str(), Util::formatBytes(pmc.PeakWorkingSetSize).c_str(), 
-			Util::formatBytes(pmc.PagefileUsage).c_str(), Util::formatBytes(pmc.PeakPagefileUsage).c_str(), 
-			Util::formatBytes(Socket::getTotalDown()).c_str(), Util::formatBytes(Socket::getTotalUp()).c_str(), 
-			Util::formatBytes(SETTING(TOTAL_DOWNLOAD)).c_str(), Util::formatBytes(SETTING(TOTAL_UPLOAD)).c_str(), 
-			formatTime(GetTickCount()/1000).c_str(), ProcSpeedCalc());
-		return buf;
+
+		string ret = boost::str(boost::format(
+"\r\n\t- %s %s [Core: %s] %s   http://www.airdcpp.net\r\n\
+\t- Uptime: %s | CPU time: %s\r\n\
+\t- Memory usage (peak): %s (%s)\r\n\
+\t- Virtual Memory usage (peak): %s (%s)\r\n\
+\t- Downloaded (session/total): %s / %s\r\n\
+\t- Uploaded (session/total): %s / %s\r\n\
+\t- System: %s (Uptime: %s)\r\n\
+\t- CPU: %s")
+#ifdef SVNBUILD
+			% APPNAME % VERSIONSTRING " SVN: " BOOST_STRINGIZE(SVN_REVISION) % DCVERSIONSTRING
+#else
+			% APPNAME % VERSIONSTRING % DCVERSIONSTRING
+#endif
+#ifdef _WIN64
+			% "x86-64"
+#else
+			% "x86-32"
+#endif
+			% formatTime(Util::getUptime())
+			% Text::fromT(Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64)))
+			% Util::formatBytes(pmc.WorkingSetSize)
+			% Util::formatBytes(pmc.PeakWorkingSetSize)
+			% Util::formatBytes(pmc.PagefileUsage)
+			% Util::formatBytes(pmc.PeakPagefileUsage)
+			% Util::formatBytes(Socket::getTotalDown())
+			% Util::formatBytes(SETTING(TOTAL_DOWNLOAD))
+			% Util::formatBytes(Socket::getTotalUp())
+			% Util::formatBytes(SETTING(TOTAL_UPLOAD))
+			% getOsVersion()
+			% formatTime(GetTickCount()/1000)
+			% CPUInfo());
+		return ret;
 	} else {
 		return "Not supported by OS";
 	}
-} 
+}
+
+
+string WinUtil::CPUInfo() {
+	tstring result = _T("");
+
+	CRegKey key;
+	ULONG len = 255;
+
+	if(key.Open( HKEY_LOCAL_MACHINE, _T("Hardware\\Description\\System\\CentralProcessor\\0"), KEY_READ) == ERROR_SUCCESS) {
+		TCHAR buf[255];
+		if(key.QueryStringValue(_T("ProcessorNameString"), buf, &len) == ERROR_SUCCESS){
+			tstring tmp = buf;
+			result = tmp.substr( tmp.find_first_not_of(_T(" ")) );
+		}
+		DWORD speed;
+		if(key.QueryDWORDValue(_T("~MHz"), speed) == ERROR_SUCCESS){
+			result += _T(" (");
+			result += Util::toStringW((uint32_t)speed);
+			result += _T(" MHz)");
+		}
+	}
+	return result.empty() ? "Unknown" : Text::fromT(result);
+}
+
+const string WinUtil::getOsVersion() {
+#ifdef _WIN32
+	string os;
+
+	OSVERSIONINFOEX ver;
+	memset(&ver, 0, sizeof(OSVERSIONINFOEX));
+	ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+
+	if(!GetVersionEx((OSVERSIONINFO*)&ver)) {
+		ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+		if(!GetVersionEx((OSVERSIONINFO*)&ver)) {
+			os = "Windows (version unknown)";
+		}
+	}
+
+	if(os.empty()) {
+		if(ver.dwPlatformId != VER_PLATFORM_WIN32_NT) {
+			os = "Win9x/ME/Junk";
+		} else if(ver.dwMajorVersion == 4) {
+			os = "Windows NT4";
+		} else if(ver.dwMajorVersion == 5) {
+			switch(ver.dwMinorVersion) {
+				case 0: os = "Windows 2000"; break;
+				case 1: os = "Windows XP"; break;
+				case 2: os = "Windows 2003"; break;
+				default: os = "Unknown Windows NT5";
+			}
+		} else if(ver.dwMajorVersion == 6) {
+			switch(ver.dwMinorVersion) {
+				case 0: os = "Windows Vista"; break;
+				case 1: os = "Windows 7"; break;
+				default: os = "Unknown Windows 6-family";
+			}
+		}
+		if(ver.wProductType & VER_NT_WORKSTATION) {
+			switch(ver.dwMajorVersion) {
+				case 4: os += "Workstation 4.0"; break;
+				case 5: {
+					if(ver.wSuiteMask & VER_SUITE_PERSONAL)
+						os += " Home Edition";
+					else
+						os += " Professional";
+					break;
+				}
+				case 6: {
+					break;
+				}
+			}
+		} else if(ver.wProductType & VER_NT_SERVER) {
+				os += " Server";
+		} else if(ver.wProductType & VER_NT_DOMAIN_CONTROLLER) {
+				os += " Domain Controller";
+		}
+
+		tstring spver(ver.szCSDVersion);
+		if(!spver.empty()) {
+			os += " " + Text::fromT(spver);
+		}
+	}
+
+	return os;
+
+#else // _WIN32
+	utsname n;
+
+	if(uname(&n) != 0) {
+		return "unix (unknown version)";
+	}
+
+	return string(n.sysname) + " " + string(n.release) + " (" + string(n.machine) + ")";
+
+#endif // _WIN32
+}
+
 string WinUtil::uptimeInfo() {
 		char buf[512]; 
 		snprintf(buf, sizeof(buf), "\n-=[ Uptime: %s]=-\r\n-=[ System Uptime: %s]=-\r\n", 

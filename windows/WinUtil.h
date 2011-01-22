@@ -492,6 +492,7 @@ public:
 	static int setButtonPressed(int nID, bool bPressed = true);
 	static tstring UselessInfo();
 	static tstring Speedinfo();
+	static const string		getOsVersion();
 	static tstring DiskSpaceInfo(bool onlyTotal = false);
 
 	static uint8_t getFlagIndexByCode(const char* countryCode);
@@ -501,6 +502,8 @@ public:
 	static string getItunesSpam(HWND playerWnd = NULL);
 	static string getMPCSpam();
 	static string getReport(const Identity& identity, HWND hwnd);
+
+	static string CPUInfo();
 
 
 
