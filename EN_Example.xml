@@ -1157,13 +1157,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SearchByTth">Search by TTH</String>
 		<String Name="Paste">Paste</String>
 		<String Name="SearchSites">Search Sites</String>
-		<String Name="SearchGoogle">Google</String>
-		<String Name="SearchGoogleTitle">Google (title only)</String>
-		<String Name="SearchGoogleFull">Google (full release name)</String>
-		<String Name="SearchTvcom">TV.com</String>
-		<String Name="SearchUrl">as Url</String>
-		<String Name="SearchImdb">Imdb</String>
-		<String Name="SearchMetacritic">Metacritic</String>
 		<String Name="BlackTheme">Black Theme</String>
 		<String Name="ImportTheme">Import Theme</String>
 		<String Name="ExportTheme">Export Theme</String>
@@ -1264,5 +1257,11 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="ErrorHashingCrc32">calculated CRC32 does not match the one found in SFV file.</String>
 		<String Name="SettingsShareSfv">Don't perform SFV check for files being hashed into share</String>
 		<String Name="SearchDirectory">Search Directory</String>
+		<String Name="SearchGoogle">Search Google</String>
+		<String Name="SearchGoogleTitle">Search Google (title only)</String>
+		<String Name="SearchGoogleFull">Search Google (full release name)</String>
+		<String Name="SearchTvcom">Search TV.com</String>
+		<String Name="SearchImdb">Search Imdb</String>
+		<String Name="SearchMetacritic">Search Metacritic</String>
 	</Strings>
 </Language>

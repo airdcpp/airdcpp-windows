@@ -883,18 +883,16 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		directoryMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetDirMenu, CTSTRING(DOWNLOAD_TO));
 		directoryMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityDirMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
 		directoryMenu.AppendMenu(MF_SEPARATOR);
-		directoryMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+		directoryMenu.AppendMenu(MF_STRING, IDC_IMDB+90, CTSTRING(SEARCH_IMDB));
+		directoryMenu.AppendMenu(MF_STRING, IDC_TVCOM+90, CTSTRING(SEARCH_TVCOM));
+		directoryMenu.AppendMenu(MF_STRING, IDC_METACRITIC+90, CTSTRING(SEARCH_METACRITIC));
+		directoryMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE+90, CTSTRING(SEARCH_GOOGLE_TITLE));
+		directoryMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL+90, CTSTRING(SEARCH_GOOGLE_FULL));
 		directoryMenu.AppendMenu(MF_SEPARATOR);
 		directoryMenu.AppendMenu(MF_STRING,IDC_COPY_DIRECTORY, CTSTRING(COPY_DIRECTORY));
 		directoryMenu.AppendMenu(MF_STRING,IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
 		directoryMenu.AppendMenu(MF_STRING, IDC_SEARCHLEFT, CTSTRING(SEARCH));
 
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_PAUSED+90, CTSTRING(PAUSED));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOWEST+90, CTSTRING(LOWEST));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOW+90, CTSTRING(LOW));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_NORMAL+90, CTSTRING(NORMAL));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGH+90, CTSTRING(HIGH));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST+90, CTSTRING(HIGHEST));
 
 		
 		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
@@ -1685,38 +1683,39 @@ if(ctrlList.GetSelectedCount() == 1) {
 
 LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-tstring searchTerm;
-tstring searchTermFull;
+	tstring searchTerm;
+	tstring searchTermFull;
 
-if(ctrlList.GetSelectedCount() == 1) {
-		const ItemInfo* ii = ctrlList.getSelectedItem();
-		searchTermFull = ii->getText(COLUMN_FILENAME);
-		searchTerm = WinUtil::getTitle(searchTermFull);
+	if(ctrlList.GetSelectedCount() == 1) {
+			const ItemInfo* ii = ctrlList.getSelectedItem();
+
+			if(ii->type == ItemInfo::FILE && (SETTING(SETTINGS_PROFILE) == 1)){
+				searchTermFull = WinUtil::getDir(Text::toT(ii->file->getPath()));
+			}
+			else {
+				searchTermFull = ii->getText(COLUMN_FILENAME);
+			}
+			searchTerm = WinUtil::getTitle(searchTermFull);
 
 
-
-
-
-		switch (wID) {
-			case IDC_GOOGLE_TITLE:
-				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-
-			case IDC_GOOGLE_FULL:
-				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
-				break;
-
-			case IDC_IMDB:
-				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-			case IDC_TVCOM:
-				WinUtil::openLink(_T("http://www.tv.com/search.php?type=11&stype=all&qs=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-			case IDC_METACRITIC:
-				WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
-				break;
-		}
-}
+			switch (wID) {
+				case IDC_GOOGLE_TITLE:
+					WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+					break;
+				case IDC_GOOGLE_FULL:
+					WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
+					break;
+				case IDC_IMDB:
+					WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+					break;
+				case IDC_TVCOM:
+					WinUtil::openLink(_T("http://www.tv.com/search.php?type=11&stype=all&qs=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+					break;
+				case IDC_METACRITIC:
+					WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
+					break;
+				}
+			}
 	searchTerm = Util::emptyStringT;
 	searchTermFull = Util::emptyStringT;
 	return S_OK;
@@ -1744,30 +1743,28 @@ tstring searchTermFull;
 
 		HTREEITEM t = ctrlTree.GetSelectedItem();
 		if(t != NULL) {
-		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		searchTermFull = Text::toT((dir)->getName());
-		searchTerm = WinUtil::getTitle(searchTermFull);
+			DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+			searchTermFull = Text::toT((dir)->getName());
+			searchTerm = WinUtil::getTitle(searchTermFull);
 
-		switch (wID-90) {
-			case IDC_GOOGLE_TITLE:
-				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-
-			case IDC_GOOGLE_FULL:
-				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
-				break;
-
-			case IDC_IMDB:
-				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-			case IDC_TVCOM:
-				WinUtil::openLink(_T("http://www.tv.com/search.php?type=11&stype=all&qs=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-			case IDC_METACRITIC:
-				WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
-				break;
-		}
-}
+			switch (wID-90) {
+				case IDC_GOOGLE_TITLE:
+					WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+					break;
+				case IDC_GOOGLE_FULL:
+					WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
+					break;
+				case IDC_IMDB:
+					WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+					break;
+				case IDC_TVCOM:
+					WinUtil::openLink(_T("http://www.tv.com/search.php?type=11&stype=all&qs=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+					break;
+				case IDC_METACRITIC:
+					WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
+					break;
+				}
+			}
 	searchTerm = Util::emptyStringT;
 	searchTermFull = Util::emptyStringT;
 	return S_OK;
