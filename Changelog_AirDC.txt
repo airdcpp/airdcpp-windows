@@ -391,3 +391,4 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Taskbar improvements for Win7 (ApexDC++) //Maksalaatikko
 #Added Search Directory for alternatives in filelist //Maksalaatikko
 #View as text in own filelist //Maksalaatikko
+#Site Search in Queue

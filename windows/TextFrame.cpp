@@ -41,8 +41,16 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	string tmp;
 	try {
 		tmp = File(Text::fromT(file), File::READ, File::OPEN).read();
+		tmp = Text::toUtf8(tmp);
+		string::size_type i = 0;
+		while((i = tmp.find('\n', i)) != string::npos) {
+			if(i == 0 || tmp[i-1] != '\r') {
+				tmp.insert(i, 1, '\r');
+				i++;
+			}
+			i++;
+		}
 		ctrlPad.SetWindowText(Text::toT(tmp).c_str());
-
 		ctrlPad.EmptyUndoBuffer();
 		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 	} catch(const FileException& e) {
