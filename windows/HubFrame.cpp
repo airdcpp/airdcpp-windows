@@ -158,8 +158,10 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	favShowJoins = BOOLSETTING(FAV_SHOW_JOINS);
 
 	if(fhe){
-	hubshowjoins = fhe->getHubShowJoins();
-	}else{
+		logMainChat = fhe->getHubLogMainchat();
+		hubshowjoins = fhe->getHubShowJoins();
+	} else {
+		logMainChat = false;
 		hubshowjoins = false;
 	}
 
@@ -1140,7 +1142,7 @@ void HubFrame::addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = t
 void HubFrame::addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
 //	ctrlClient.AdjustTextSize();
 
-	if(BOOLSETTING(LOG_MAIN_CHAT)) {
+	if(BOOLSETTING(LOG_MAIN_CHAT) | logMainChat) {
 		StringMap params;
 		params["message"] = Text::fromT(aLine);
 		client->getHubIdentity().getParams(params, "hub", false);

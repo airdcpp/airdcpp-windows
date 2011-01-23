@@ -50,6 +50,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_HIDE_SHARE, CTSTRING(HIDE_SHARE));
 	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL, CTSTRING(MINIMUM_SEARCH_INTERVAL));
 	SetDlgItemText(IDC_FAVGROUP, CTSTRING(GROUP));
+	SetDlgItemText(IDC_LOGMAINCHAT, CTSTRING(FAV_LOG_CHAT));
 
 	// Fill in values
 	SetDlgItemText(IDC_HUBNAME, Text::toT(entry->getName()).c_str());
@@ -64,6 +65,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_SHOW_JOIN, entry->getHubShowJoins() ? BST_CHECKED : BST_UNCHECKED); //hub show joins
 	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(entry->getSearchInterval()).c_str());
+	CheckDlgButton(IDC_LOGMAINCHAT, entry->getHubLogMainchat() ? BST_CHECKED : BST_UNCHECKED);
 
 	CComboBox combo;
 	combo.Attach(GetDlgItem(IDC_FAVGROUP_BOX));
@@ -163,6 +165,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		entry->setHideShare(IsDlgButtonChecked(IDC_HIDE_SHARE) == 1); // Hide Share Mod
 		entry->setFavNoPM(IsDlgButtonChecked(IDC_FAV_NO_PM) == 1);
 		entry->setHubShowJoins(IsDlgButtonChecked(IDC_SHOW_JOIN) == 1); //show joins
+		entry->setHubLogMainchat(IsDlgButtonChecked(IDC_LOGMAINCHAT) == 1);
 		GetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, buf, 512);
 		entry->setSearchInterval(Util::toUInt32(Text::fromT(buf)));
 		
