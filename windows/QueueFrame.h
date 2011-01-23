@@ -76,6 +76,11 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
 		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
 		COMMAND_ID_HANDLER(IDC_MOVE, onMove)
+		COMMAND_ID_HANDLER(IDC_GOOGLE_TITLE, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_GOOGLE_FULL, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_TVCOM, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_METACRITIC, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_IMDB, onSearchSite)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + COLUMN_LAST-1, onCopy)
 		COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onPriority)
 		COMMAND_RANGE_HANDLER(IDC_SEGMENTONE, IDC_SEGMENTTEN, onSegments)
@@ -115,6 +120,7 @@ public:
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void removeDir(HTREEITEM ht);

@@ -726,6 +726,17 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 	priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST, CTSTRING(HIGHEST));
 	priorityMenu.AppendMenu(MF_STRING, IDC_AUTOPRIORITY, CTSTRING(AUTO));
 
+	//Search Menu
+	OMenu SearchMenu;
+	SearchMenu.CreatePopupMenu();
+	SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
+	SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
+	SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
+	SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
+	SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
+	SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
+
+
 	if (reinterpret_cast<HWND>(wParam) == ctrlQueue && ctrlQueue.GetSelectedCount() > 0) { 
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 	
@@ -783,6 +794,9 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)readdMenu, CTSTRING(READD_SOURCE));
 				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)copyMenu, CTSTRING(COPY));
 				singleMenu.AppendMenu(MF_SEPARATOR);
+				singleMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+
+				singleMenu.AppendMenu(MF_SEPARATOR);
 				singleMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE));
 				singleMenu.AppendMenu(MF_SEPARATOR);
 				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)removeMenu, CTSTRING(REMOVE_SOURCE));
@@ -791,6 +805,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				singleMenu.AppendMenu(MF_SEPARATOR);
 				singleMenu.AppendMenu(MF_STRING, IDC_RECHECK, CTSTRING(RECHECK_FILE));
 				singleMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
+
 
 				const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
 				QueueItem* qi = QueueManager::getInstance()->fileQueue.find(ii->getTarget());
@@ -948,14 +963,18 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		usingDirMenu = true;
 		
 		OMenu dirMenu;
+
 		dirMenu.CreatePopupMenu();	
 		dirMenu.InsertSeparatorFirst(TSTRING(FOLDER));
 		dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_PRIORITY));
+		dirMenu.AppendMenu(MF_SEPARATOR);
+		dirMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+		dirMenu.AppendMenu(MF_SEPARATOR);
 		dirMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE));
 		dirMenu.AppendMenu(MF_SEPARATOR);
 		dirMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 		dirMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
-	
+
 		return TRUE;
 	}
 
@@ -1587,7 +1606,50 @@ void QueueFrame::on(QueueManagerListener::RecheckAlreadyFinished, const string& 
 void QueueFrame::on(QueueManagerListener::RecheckDone, const string& target) throw() {
 	onRechecked(target, STRING(DONE));
 }
+LRESULT QueueFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
+tstring searchTerm;
+tstring searchTermFull;
+
+		if(usingDirMenu && (ctrlDirs.GetSelectedItem() != NULL)) {
+		searchTermFull = Util::getLastDir(Text::toT(getSelectedDir()));
+		}else{
+			QueueItemInfo *ii = (QueueItemInfo*)ctrlQueue.GetItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
+			
+			if(SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR){
+				searchTermFull = Util::getLastDir(ii->getText(COLUMN_PATH));
+			} else {
+				searchTermFull = ii->getText(COLUMN_TARGET);
+			}
+		}
+		
+		searchTerm = WinUtil::getTitle(searchTermFull);
+
+
+		switch (wID) {
+			case IDC_GOOGLE_TITLE:
+				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				break;
+
+			case IDC_GOOGLE_FULL:
+				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
+				break;
+
+			case IDC_IMDB:
+				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				break;
+			case IDC_TVCOM:
+				WinUtil::openLink(_T("http://www.tv.com/search.php?type=11&stype=all&qs=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				break;
+			case IDC_METACRITIC:
+				WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
+				break;
+		}
+
+	searchTerm = Util::emptyStringT;
+	searchTermFull = Util::emptyStringT;
+	return S_OK;
+}	
 /**
  * @file
  * $Id: QueueFrame.cpp 498 2010-05-08 10:49:48Z bigmuscle $
