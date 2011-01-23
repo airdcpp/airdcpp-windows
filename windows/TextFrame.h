@@ -25,6 +25,10 @@
 
 #include "FlatTabCtrl.h"
 #include "WinUtil.h"
+#include "ChatCtrl.h"
+#include "atlstr.h"
+
+
 
 class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManagerListener
 {
@@ -33,23 +37,26 @@ public:
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("TextFrame"), IDR_NOTEPAD, 0, COLOR_3DFACE);
 
-	TextFrame(const tstring& fileName) : file(fileName) {
+	TextFrame(const tstring& fileName) : file(fileName){
 		SettingsManager::getInstance()->addListener(this);
 	}
 	~TextFrame() { }
 	
 	typedef MDITabChildWindowImpl<TextFrame> baseClass;
 	BEGIN_MSG_MAP(TextFrame)
+		NOTIFY_HANDLER(IDC_CLIENT, EN_LINK, onClientEnLink)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		CHAIN_MSG_MAP(baseClass)
+		
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onClientEnLink(int idCtrl, LPNMHDR pnmh, BOOL& bHandled) { return ctrlPad.onClientEnLink(idCtrl, pnmh, bHandled); }
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -68,11 +75,11 @@ public:
 		ctrlPad.SetFocus();
 		return 0;
 	}
-	
+
 private:
 	
 	tstring file;
-	CEdit ctrlPad;
+	ChatCtrl ctrlPad;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
 };
 

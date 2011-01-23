@@ -23,6 +23,7 @@
 #include "TextFrame.h"
 #include "WinUtil.h"
 #include "../client/File.h"
+#include "../client/pme.h"
 
 #define MAX_TEXT_LEN 32768
 
@@ -34,12 +35,18 @@ void TextFrame::openWindow(const tstring& aFileName) {
 LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE);
+		WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE, IDC_CLIENT);
 
+	ctrlPad.SetAutoURLDetect(false);
+	ctrlPad.SetEventMask(ctrlPad.GetEventMask() | ENM_LINK);
+	ctrlPad.Subclass();
 	ctrlPad.LimitText(0);
 	ctrlPad.SetFont(WinUtil::font);
+	
 	string tmp;
 	try {
+		/*if Line endings are still not working will need to strip it with stringtokenizer
+		wonder how heavy it will be to open large logs and formatting text as chat :) */
 		tmp = File(Text::fromT(file), File::READ, File::OPEN).read();
 		tmp = Text::toUtf8(tmp);
 		string::size_type i = 0;
@@ -50,7 +57,8 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			}
 			i++;
 		}
-		ctrlPad.SetWindowText(Text::toT(tmp).c_str());
+		
+		ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(tmp) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
 		ctrlPad.EmptyUndoBuffer();
 		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 	} catch(const FileException& e) {
@@ -60,6 +68,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	bHandled = FALSE;
 	return 1;
 }
+
 
 LRESULT TextFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	SettingsManager::getInstance()->removeListener(this);
