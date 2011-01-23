@@ -1263,5 +1263,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SearchTvcom">Search TV.com</String>
 		<String Name="SearchImdb">Search Imdb</String>
 		<String Name="SearchMetacritic">Search Metacritic</String>
+		<String Name="FavLogChat">Log Mainchat</String>
 	</Strings>
 </Language>
