@@ -894,7 +894,7 @@ Hub Menu: Hub tab (at the bottom of the screen) right-click menu
 Chat Menu: User right-click menu in chat and PM tab menu
 Search Menu: Search right-click menu
 Parameters:
-Name: Name (use '\' to create submenus)
+Name: Name (use '/' to create submenus)
 Command: Command text (may contain parameters)
 Hub: Hub ip as typed when connecting (empty = all hubs, \"op\" = hubs where you're op)
 To: PM recipient
@@ -1264,5 +1264,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SearchImdb">Search Imdb</String>
 		<String Name="SearchMetacritic">Search Metacritic</String>
 		<String Name="FavLogChat">Log Mainchat</String>
+		<String Name="MaxLogLines">Max Log Lines To Open Internally</String>
 	</Strings>
 </Language>

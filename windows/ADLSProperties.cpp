@@ -100,10 +100,10 @@ LRESULT ADLSProperties::OnRegExpTester(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	return 0;
 }
 string ADLSProperties::matchRegExp(const string& aExp, const string& aString, const bool& caseSensitive /*= true*/) {
-	/*string str1 = aExp;
+	string str1 = aExp;
 	string str2 = aString;
 	try {
-		boost::regex reg(str1);
+		boost::regex reg(str1, caseSensitive ? boost::regex_constants::icase : boost::match_default);
 		if(boost::regex_search(str2.begin(), str2.end(), reg)){
 			return STRING(REGEXP_MATCH);
 		}else{
@@ -111,11 +111,13 @@ string ADLSProperties::matchRegExp(const string& aExp, const string& aString, co
 		};
 	} catch(...) {
 		return STRING(INVALID_REGEXP);
-	}*/
+	}
+	/*
 	PME reg(aExp, caseSensitive ? "" : "i");
 	if(!reg.IsValid()) { return STRING(INVALID_REGEXP); }
 	return reg.match(aString) ? STRING(REGEXP_MATCH) : STRING(REGEXP_MISMATCH);
-}
+	*/
+	}
 
 // Exit dialog
 LRESULT ADLSProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)

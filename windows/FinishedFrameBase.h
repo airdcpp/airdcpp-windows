@@ -278,7 +278,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FinishedItem *ii = ctrlList.getItemData(i);
 			if(ii != NULL)
-				TextFrame::openWindow(Text::toT(ii->getTarget()));
+				TextFrame::openWindow(Text::toT(ii->getTarget()), false, false);
 		}
 		return 0;
 	}

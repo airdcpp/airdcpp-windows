@@ -971,7 +971,7 @@ LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
 			} else {
-				TextFrame::openWindow(file);
+				TextFrame::openWindow(file, true, false);
 			}
 		} else {
 			MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  

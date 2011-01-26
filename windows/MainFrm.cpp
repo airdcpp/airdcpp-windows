@@ -569,7 +569,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		DirectoryListingFrame::openWindow(i->user, i->text, 0);
 	} else if(wParam == VIEW_FILE_AND_DELETE) {
 		auto_ptr<tstring> file(reinterpret_cast<tstring*>(lParam));
-		TextFrame::openWindow(*file);
+		TextFrame::openWindow(*file, false, false);
 		File::deleteFile(Text::fromT(*file));
 	} else if(wParam == STATS) {
 		auto_ptr<TStringList> pstr(reinterpret_cast<TStringList*>(lParam));
@@ -1407,7 +1407,7 @@ tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Uti
 			if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, filename.c_str(), NULL, NULL, SW_SHOWNORMAL);
 		} else {
-			TextFrame::openWindow(filename);
+			TextFrame::openWindow(filename, false, false);
 		}
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  

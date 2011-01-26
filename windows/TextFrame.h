@@ -33,11 +33,11 @@
 class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManagerListener
 {
 public:
-	static void openWindow(const tstring& aFileName);
+	static void openWindow(const tstring& aFileName, bool openlog, bool history);
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("TextFrame"), IDR_NOTEPAD, 0, COLOR_3DFACE);
 
-	TextFrame(const tstring& fileName) : file(fileName){
+	TextFrame(const tstring& fileName, bool Openlog, bool History) : file(fileName), openlog(Openlog), history(History){
 		SettingsManager::getInstance()->addListener(this);
 	}
 	~TextFrame() { }
@@ -77,7 +77,8 @@ public:
 	}
 
 private:
-	
+	bool openlog;
+	bool history;
 	tstring file;
 	ChatCtrl ctrlPad;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();

@@ -46,6 +46,7 @@ PropPage::TextItem SDCPage::texts[] = {
 	{ IDC_SETTINGS_DOWNCONN, ResourceManager::SETTINGS_DOWNCONN },
 	{ IDC_SETTINGS_SOCKET_IN_BUFFER, ResourceManager::SETTINGS_SOCKET_IN_BUFFER },
 	{ IDC_SETTINGS_SOCKET_OUT_BUFFER, ResourceManager::SETTINGS_SOCKET_OUT_BUFFER },
+	{ IDC_LOG_LINESTEXT, ResourceManager::MAX_LOG_LINES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -61,6 +62,7 @@ PropPage::Item SDCPage::items[] = {
 	{ IDC_MATCH, SettingsManager::MAX_AUTO_MATCH_SOURCES, PropPage::T_INT },
 	{ IDC_AUTO_SEARCH_LIMIT, SettingsManager::AUTO_SEARCH_LIMIT, PropPage::T_INT },
 	{ IDC_DOWNCONN, SettingsManager::DOWNCONN_PER_SEC, PropPage::T_INT },
+	{ IDC_LOG_LINES, SettingsManager::LOG_LINES, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -87,6 +89,7 @@ LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	setMinMax(IDC_MATCH_SPIN, 1, 999);
 	setMinMax(IDC_AUTO_SEARCH_LIMIT_SPIN, 1, 999);
 	setMinMax(IDC_DOWNCONN_SPIN, 0, 100);
+	setMinMax(IDC_LOG_LINES_SPIN, 0, 1000);
 
 	ctrlShutdownAction.Attach(GetDlgItem(IDC_COMBO1));
 	ctrlShutdownAction.AddString(CTSTRING(POWER_OFF));

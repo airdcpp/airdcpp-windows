@@ -130,7 +130,7 @@ tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Uti
 			if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, filename.c_str(), NULL, NULL, SW_SHOWNORMAL);
 		} else {
-			TextFrame::openWindow(filename);
+			TextFrame::openWindow(filename, false, false);
 		}
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  

@@ -23,12 +23,13 @@
 #include "TextFrame.h"
 #include "WinUtil.h"
 #include "../client/File.h"
-#include "../client/pme.h"
+#include "../client/StringTokenizer.h"
+#include "../client/LogManager.h"
 
-#define MAX_TEXT_LEN 32768
+//#define MAX_TEXT_LEN 32768
 
-void TextFrame::openWindow(const tstring& aFileName) {
-	TextFrame* frame = new TextFrame(aFileName);
+void TextFrame::openWindow(const tstring& aFileName, bool Openlog, bool History) {
+	TextFrame* frame = new TextFrame(aFileName, Openlog, History );
 	frame->CreateEx(WinUtil::mdiClient);
 }
 
@@ -45,10 +46,40 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	
 	string tmp;
 	try {
-		/*if Line endings are still not working will need to strip it with stringtokenizer
-		wonder how heavy it will be to open large logs and formatting text as chat :) */
-		tmp = File(Text::fromT(file), File::READ, File::OPEN).read();
-		tmp = Text::toUtf8(tmp);
+		File f(Text::fromT(file), File::READ, File::OPEN);
+		if(!openlog) {
+		
+			//Todo add history rightclick command for tabs etc.
+		if(history) {
+
+			//if the file is larger than 1mb dont even bother to read the whole thing
+		int64_t size = f.getSize();
+
+		if(size > 1024*1024) {
+			f.setPos(size - 1024*1024);
+		}
+			tmp = f.read(1024*1024);
+
+		StringList lines;
+
+		if(strnicmp(tmp.c_str(), "\xef\xbb\xbf", 3) == 0)
+			lines = StringTokenizer<string>(tmp.substr(3), "\r\n").getTokens();
+		else
+			lines = StringTokenizer<string>(tmp, "\r\n").getTokens();
+
+		int totalLines = lines.size();
+		int i = totalLines < (SETTING(LOG_LINES) +1) ? totalLines - SETTING(LOG_LINES) : 0;
+
+		for(; i < totalLines; ++i){
+			ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
+		}
+
+		} else {
+		
+		tmp = f.read();
+
+		Text::toUtf8(tmp);
+		 //add the line endings in nfo
 		string::size_type i = 0;
 		while((i = tmp.find('\n', i)) != string::npos) {
 			if(i == 0 || tmp[i-1] != '\r') {
@@ -58,12 +89,23 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			i++;
 		}
 		
-		ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(tmp) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
+		ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(tmp) + _T('\n'), WinUtil::m_ChatTextGeneral, false);
+		}
+
+		} else {
+			//if openlog just add the whole text
+			tmp = f.read();
+			ctrlPad.SetWindowText(Text::toT(tmp).c_str());
+		}
 		ctrlPad.EmptyUndoBuffer();
 		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
+		f.close();
 	} catch(const FileException& e) {
 		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file)) + ": " + e.getError()).c_str());
 	}
+	
+	
+	WinUtil::SetIcon(m_hWnd, _T("systemlog.ico"));
 	
 	bHandled = FALSE;
 	return 1;
