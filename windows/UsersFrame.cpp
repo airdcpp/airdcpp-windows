@@ -283,7 +283,7 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 				ShellExecute(NULL, NULL, Text::toT(file).c_str(), NULL, NULL, SW_SHOWNORMAL);
 			} else {
-				TextFrame::openWindow(Text::toT(file).c_str(), false, false);
+				TextFrame::openWindow(Text::toT(file).c_str(), true, false);
 			}
 		} else {
 			MessageBox(CTSTRING(NO_LOG_FOR_USER), CTSTRING(NO_LOG_FOR_USER), MB_OK );	  

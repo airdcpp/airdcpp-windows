@@ -931,6 +931,7 @@
 #define IDC_MANAGE_GROUPS               10037
 #define IDC_NONE                        10041
 #define IDD_TEXT_STYLES                 10042
+#define IDC_HISTORY		                10043
 #define IDD_KICK                        10044
 #define IDC_PUBLIC_MESSAGE              10050
 #define IDC_SELECT_USER                 10051
@@ -944,6 +945,7 @@
 #define IDC_CLIENT                      10059
 #define IDC_COPY_URL                    10060
 #define IDC_BOLD_AUTHOR_MESS            10061
+#define IDC_USER_HISTORY	            10062
 #define IDC_IGNORE                      10063
 #define IDC_UNIGNORE                    10064
 #define IDC_GRANTSLOT                   10080

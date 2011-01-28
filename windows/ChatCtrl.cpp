@@ -322,13 +322,10 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, const tstring& sText, CHAR
 		int pos;
 
 		//set start position for find
-		if( cs->getIncludeNick() ) {
-			pos = 0;
-		} else {
 			pos = msg.find(_T(">"));
 			if(pos == tstring::npos)
 				pos = msg.find(_T("**")) + nick.length();
-		}
+		
 
 		//prepare the charformat
 				memset(&hlcf, 0, sizeof(CHARFORMAT2));
@@ -773,6 +770,8 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		if(BOOLSETTING(LOG_PRIVATE_CHAT)) {
 			menu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG,  CTSTRING(OPEN_USER_LOG));
 			menu.AppendMenu(MF_SEPARATOR);
+			menu.AppendMenu(MF_STRING, IDC_USER_HISTORY,  CTSTRING(VIEW_HISTORY));
+			menu.AppendMenu(MF_SEPARATOR);
 		}		
 
 		menu.AppendMenu(MF_STRING, IDC_SELECT_USER, CTSTRING(SELECT_USER_LIST));
@@ -955,7 +954,7 @@ LRESULT ChatCtrl::onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	return 0;
 }
 
-LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou) {
 		StringMap params;
@@ -968,11 +967,18 @@ LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 
 		tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false)));
 		if(Util::fileExists(Text::fromT(file))) {
+		switch(wID) {
+			case IDC_OPEN_USER_LOG:
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
 			} else {
 				TextFrame::openWindow(file, true, false);
 			}
+			break;
+			case IDC_USER_HISTORY:
+				TextFrame::openWindow(file, false, true);
+				break;
+		}
 		} else {
 			MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 		}
@@ -1332,7 +1338,7 @@ tstring word = WordFromPos(pt);
 if(!word.empty()) {
 	boost::wregex reg;
 	reg.assign(_T("(([A-Z0-9][A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S*)))(\\S+)-(?=\\w*[A-Z]\\w*)(\\w+))"));
-	if(regex_match(word, reg)) {
+	if(boost::regex_match(word, reg)) {
 		if (search) {
 			WinUtil::search(word, 0, false);
 		}

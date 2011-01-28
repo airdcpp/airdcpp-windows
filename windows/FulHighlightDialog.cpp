@@ -45,7 +45,7 @@ PropPage::TextItem FulHighlightDialog::texts[] = {
 	{ IDC_STRIKEOUT,	 ResourceManager::STRIKEOUT					},
 	{ IDC_POPUP,		 ResourceManager::SETTINGS_POPUP			},
 	{ IDC_SOUND,		 ResourceManager::SETTINGS_PLAY_SOUND		},
-	{ IDC_INCLUDENICK,	 ResourceManager::SETTINGS_INCLUDE_NICK		},
+	{ IDC_INCLUDENICK,	 ResourceManager::SETTINGS_INCLUDE_NICKLIST		},
 	{ IDC_WHOLELINE,	 ResourceManager::SETTINGS_WHOLE_LINE		},
 	{ IDC_CASESENSITIVE, ResourceManager::CASE_SENSITIVE	},
 	{ IDC_WHOLEWORD,	 ResourceManager::SETTINGS_ENTIRE_WORD		},

@@ -47,37 +47,35 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	string tmp;
 	try {
 		File f(Text::fromT(file), File::READ, File::OPEN);
-		if(!openlog) {
 		
-			//Todo add history rightclick command for tabs etc.
 		if(history) {
 
-			//if the file is larger than 1mb dont even bother to read the whole thing
 		int64_t size = f.getSize();
-
-		if(size > 1024*1024) {
-			f.setPos(size - 1024*1024);
+	
+		if(size > 64*1024) {
+			f.setPos(size - 64*1024);
 		}
-			tmp = f.read(1024*1024);
+			tmp = f.read(64*1024);
 
-		StringList lines;
+			StringList lines;
 
-		if(strnicmp(tmp.c_str(), "\xef\xbb\xbf", 3) == 0)
-			lines = StringTokenizer<string>(tmp.substr(3), "\r\n").getTokens();
-		else
 			lines = StringTokenizer<string>(tmp, "\r\n").getTokens();
 
-		int totalLines = lines.size();
-		int i = totalLines < (SETTING(LOG_LINES) +1) ? totalLines - SETTING(LOG_LINES) : 0;
+		long totalLines = lines.size();
+		int i = totalLines > (SETTING(LOG_LINES) +1) ? totalLines - SETTING(LOG_LINES) : 0;
 
 		for(; i < totalLines; ++i){
 			ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
 		}
 
-		} else {
+		} else if(openlog) {
+			//if openlog just add the whole text
+			tmp = f.read();
+			ctrlPad.SetWindowText(Text::toT(tmp).c_str());
+		
+		} else if(!openlog && !history) {
 		
 		tmp = f.read();
-
 		Text::toUtf8(tmp);
 		 //add the line endings in nfo
 		string::size_type i = 0;
@@ -91,17 +89,12 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		
 		ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(tmp) + _T('\n'), WinUtil::m_ChatTextGeneral, false);
 		}
-
-		} else {
-			//if openlog just add the whole text
-			tmp = f.read();
-			ctrlPad.SetWindowText(Text::toT(tmp).c_str());
-		}
-		ctrlPad.EmptyUndoBuffer();
+		
+		
 		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 		f.close();
 	} catch(const FileException& e) {
-		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file)) + ": " + e.getError()).c_str());
+		ctrlPad.SetWindowText(Text::toT(Util::getFileName(Text::fromT(file)) + ": " + e.getError()).c_str());
 	}
 	
 	

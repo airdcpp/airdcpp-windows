@@ -535,6 +535,8 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	if(BOOLSETTING(LOG_PRIVATE_CHAT)) {
 		tabMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG,  CTSTRING(OPEN_USER_LOG));
 		tabMenu.AppendMenu(MF_SEPARATOR);
+		tabMenu.AppendMenu(MF_STRING, IDC_USER_HISTORY,  CTSTRING(VIEW_HISTORY));
+		tabMenu.AppendMenu(MF_SEPARATOR);
 	}
 	tabMenu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR));
 	tabMenu.AppendMenu(MF_SEPARATOR);
@@ -797,8 +799,28 @@ LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, Text::toT(file).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		} else {
-			TextFrame::openWindow(Text::toT(file).c_str(),false ,false);
+			TextFrame::openWindow(Text::toT(file).c_str(),true ,false);
 		}
+	} else {
+		MessageBox(CTSTRING(NO_LOG_FOR_USER), CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
+	}	
+
+	return 0;
+}
+LRESULT PrivateFrame::onUserHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
+	StringMap params;
+	const CID& cid = replyTo.user->getCID();
+	const string& hint = replyTo.hint;
+					
+	params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv));
+	params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubs(cid, hint, priv));
+	params["userCID"] = cid.toBase32(); 
+	params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
+	params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
+
+	string file = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false));
+	if(Util::fileExists(file)) {
+			TextFrame::openWindow(Text::toT(file).c_str(),false ,true);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_USER), CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 	}	

@@ -1095,7 +1095,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SettingsPopup">Display Popup</String>
 		<String Name="SettingsPlaySound">Play Sound</String>
 		<String Name="SettingsFlashWindow">Flash Window</String>
-		<String Name="SettingsIncludeNick">Include Nick</String>
+		<String Name="SettingsIncludeNicklist">Use Highlight for Nicklist (only text color)</String>
 		<String Name="SettingsWholeLine">Whole Line</String>
 		<String Name="SettingsEntireWord">Entire Word</String>
 		<String Name="SettingsTabColor">Change Tabcolor</String>
@@ -1264,6 +1264,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SearchImdb">Search Imdb</String>
 		<String Name="SearchMetacritic">Search Metacritic</String>
 		<String Name="FavLogChat">Log Mainchat</String>
-		<String Name="MaxLogLines">Max Log Lines To Open Internally</String>
+		<String Name="MaxLogLines">Max View History Lines</String>
+		<String Name="ViewHistory">View Chat History</String>
 	</Strings>
 </Language>

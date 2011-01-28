@@ -39,6 +39,8 @@
 #include "../client/ConnectionManager.h" 
 #include "../client/NmdcHub.h"
 #include "../client/Wildcards.h"
+#include "../client/ColorSettings.h"
+#include "../client/HighlightManager.h"
 
 HubFrame::FrameMap HubFrame::frames;
 HubFrame::IgnoreMap HubFrame::ignoreList;
@@ -1176,6 +1178,8 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	if(BOOLSETTING(LOG_MAIN_CHAT)) {
 		tabMenu.AppendMenu(MF_STRING, IDC_OPEN_HUB_LOG, CTSTRING(OPEN_HUB_LOG));
 		tabMenu.AppendMenu(MF_SEPARATOR);
+		tabMenu.AppendMenu(MF_STRING, IDC_HISTORY, CTSTRING(VIEW_HISTORY));
+		tabMenu.AppendMenu(MF_SEPARATOR);
 	}
 	tabMenu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR));
 	tabMenu.AppendMenu(MF_SEPARATOR);
@@ -2193,6 +2197,8 @@ bool HubFrame::PreparePopupMenu(CWindow *pCtrl, OMenu& menu ) {
 		if(BOOLSETTING(LOG_PRIVATE_CHAT)) {
 			menu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG,  CTSTRING(OPEN_USER_LOG));
 			menu.AppendMenu(MF_SEPARATOR);
+			menu.AppendMenu(MF_STRING, IDC_USER_HISTORY,  CTSTRING(VIEW_HISTORY));
+			menu.AppendMenu(MF_SEPARATOR);
 		}
 	} else {
 		menu.InsertSeparatorFirst(Util::toStringW(count) + _T(" ") + TSTRING(HUB_USERS));
@@ -2361,7 +2367,45 @@ LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	}
 	return 0;
 }
+LRESULT HubFrame::onHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	StringMap params;
+	params["hubNI"] = client->getHubName();
+	params["hubURL"] = client->getHubUrl();
+	params["myNI"] = client->getMyNick(); 
+	tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params, false)));
+	if(Util::fileExists(Text::fromT(filename))){
+			TextFrame::openWindow(filename, false, true);
+		
+	} else {
+		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
+	}
+	return 0;
+}
+LRESULT HubFrame::onUserHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	StringMap params;
+	OnlineUserPtr ui = NULL;
 
+	int i = -1;
+	if((i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		ui = ctrlUsers.getItemData(i);
+	}
+
+	if(ui == NULL) return 0;
+
+	params["userNI"] = ui->getIdentity().getNick();
+	params["hubNI"] = client->getHubName();
+	params["myNI"] = client->getMyNick();
+	params["userCID"] = ui->getUser()->getCID().toBase32();
+	params["hubURL"] = client->getHubUrl();
+	tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false)));
+	if(Util::fileExists(Text::fromT(file))) {
+			TextFrame::openWindow(file, false, true);
+	} else {
+		MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
+	}
+
+	return 0;
+}
 LRESULT HubFrame::onStyleChange(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	bHandled = FALSE;
 	if((wParam & MK_LBUTTON) && ::GetCapture() == m_hWnd) {
@@ -2400,8 +2444,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 
 	case CDDS_ITEMPREPAINT: {
 			OnlineUser* ui = (OnlineUser*)cd->nmcd.lItemlParam;
-			// tstring user = ui->getText(OnlineUser::COLUMN_NICK); 
-			 
+			 tstring user = ui->getText(OnlineUser::COLUMN_NICK); 
 			if (FavoriteManager::getInstance()->isFavoriteUser(ui->getUser())) {
 				cd->clrText = SETTING(FAVORITE_COLOR);
 			} else if (UploadManager::getInstance()->hasReservedSlot(ui->getUser())) {
@@ -2412,9 +2455,28 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				cd->clrText = SETTING(OP_COLOR);
 			} else if(!ui->getIdentity().isTcpActive(client)) {
 				cd->clrText = SETTING(PASIVE_COLOR);
-		//	}else if(user.find(_T("[FIN]"), 0) != string::npos) { // add a regex match and a regexp string.
-			//	cd->clrText = SETTING(FAVORITE_COLOR);
-
+			} else if( BOOLSETTING(USE_HIGHLIGHT) ) {
+				//work on this later if we really want this
+			ColorList *cList = HighlightManager::getInstance()->getList();
+				for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
+				ColorSettings* cs = &(*i);
+				string str;
+				if(cs->getIncludeNick()) {
+					if(cs->usingRegexp()) {
+					try {
+						str = Text::fromT(cs->getMatch()).substr(4);
+						boost::regex reg(str);
+						if(boost::regex_match(Text::fromT(user), reg))
+							cd->clrText = cs->getFgColor();
+					}catch(...) {}
+					} else {
+						str = Text::fromT(cs->getMatch());
+						if (Wildcard::patternMatch(Text::fromT(user), str)){
+							cd->clrText = cs->getFgColor();
+							}
+						}
+					}
+				}
 			} else {
 				cd->clrText = SETTING(NORMAL_COLOUR);
 			}
