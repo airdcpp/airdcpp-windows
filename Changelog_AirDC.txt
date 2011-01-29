@@ -393,7 +393,8 @@ user is asked to update, if user dont wish to update at that time the client wil
 #View as text in own filelist //Maksalaatikko
 #Site Search in Queue
 #View as Text can now handle links and releasenames
-#View History Rightclick commands
+#View Chat History Rightclick commands
+#Max View Chat History lines setting in experts only page
 #Some fixes
 #Highlight option to apply highlights in Nicklist
 #Mainchat logging option for each fav hub //Maksalaatikko

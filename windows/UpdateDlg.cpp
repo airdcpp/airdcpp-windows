@@ -47,7 +47,7 @@ UpdateDlg::~UpdateDlg() {
 	}
 	//issue the update here after the file is flushed.
 	if(updating) {
-		::ShellExecute(NULL, NULL, Text::toT(Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe").c_str(), NULL, NULL, SW_SHOWNORMAL);
+		::ShellExecute(NULL, NULL, Text::toT(Util::getPath(Util::PATH_RESOURCES) + INSTALLER).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		MainFrame::getMainFrame()->Terminate();
 	}
 };
@@ -144,9 +144,9 @@ LRESULT UpdateDlg::OnDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	
 	progress.SetPos(0);
 
-	if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe")) {
+	if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + INSTALLER)) {
 		//string filename = (Util::getPath(Util::PATH_RESOURCES) + "AirDC_2.07_client.rar");
-		File::deleteFile((Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe"));
+		File::deleteFile((Util::getPath(Util::PATH_RESOURCES) + INSTALLER));
 		if(file) { delete file; file = NULL; }
 	}
 	update = true;
@@ -182,7 +182,7 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 			try {
 				
 				if (update) {
-					if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe")) {
+					if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + INSTALLER)) {
 						if(MessageBox(CTSTRING(UPDATE_CLIENT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 						update = false;
 						updating = true;
@@ -223,8 +223,8 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 					xml.resetCurrentChild();
 				} else
 					throw Exception();
-
-				if (xml.findChild("URL")) {
+#ifdef _WIN64 
+				if (xml.findChild("URL64")) {   //remember to add this in the versionfile
 					downloadURL = xml.getChildData();
 					xml.resetCurrentChild();
 					if (latestVersion > VERSIONFLOAT)
@@ -232,6 +232,16 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 				} else
 					throw Exception();
 			
+#else
+				if (xml.findChild("URL")) {
+					downloadURL = xml.getChildData();
+					xml.resetCurrentChild();
+					if (latestVersion > VERSIONFLOAT)
+						ctrlDownload.EnableWindow(TRUE);
+				} else
+					throw Exception();
+#endif	
+
 				if((!SETTING(LANGUAGE_FILE).empty()) &&  (latestVersion == VERSIONFLOAT)) {
 						if (xml.findChild(Text::fromT(TSTRING(AAIRDCPP_LANGUAGE_FILE)))) {
 						string version = xml.getChildData();
@@ -279,7 +289,7 @@ void UpdateDlg::on(HttpConnectionListener::Data, HttpConnection* conn, const uin
 		if(file == NULL) {
 		File* f = NULL;
 		try {
-			f = new File((Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe"), File::WRITE, File::OPEN | File::CREATE | File::SHARED);
+			f = new File((Util::getPath(Util::PATH_RESOURCES) + INSTALLER), File::WRITE, File::OPEN | File::CREATE | File::SHARED);
 			f->setSize(conn->getSize());
 		} catch(const Exception&) {
 			PostMessage(WM_SPEAKER, UPDATE_CONTENT, (LPARAM)new tstring(_T("Failed to write update file.")));

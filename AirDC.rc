@@ -535,8 +535,8 @@ BEGIN
     CONTROL         "Strikeout",IDC_STRIKEOUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,55,90,10
     CONTROL         "Display Popup",IDC_POPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,94,87,10
     CONTROL         "Play Sound",IDC_SOUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,113,94,66,10
-    CONTROL         "Use Highlight for Nicklist (only text color)",IDC_INCLUDENICK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,230,94,175,10
+    CONTROL         "Use Highlight for Nicklist (Wildcards or $Re: for Regex)",IDC_INCLUDENICK,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,203,126,208,10
     CONTROL         "Whole Line",IDC_WHOLELINE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,230,23,90,10
     CONTROL         "Case Sensitive",IDC_CASESENSITIVE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,230,34,93,10
     CONTROL         "Entire word",IDC_WHOLEWORD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,230,45,95,10
@@ -1659,8 +1659,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,7,7,0
- PRODUCTVERSION 2,0,8,0
+ FILEVERSION 0,7,8,1
+ PRODUCTVERSION 2,0,9,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1677,12 +1677,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "http://www.airdcpp.net"
             VALUE "FileDescription", "AirDC++"
-            VALUE "FileVersion", "0, 7, 7"
+            VALUE "FileVersion", "0, 7, 8"
             VALUE "InternalName", "AirDC++"
             VALUE "LegalCopyright", "Based on DC++"
             VALUE "OriginalFilename", "AirDC.exe"
             VALUE "ProductName", "AirDC++"
-            VALUE "ProductVersion", "2.08"
+            VALUE "ProductVersion", "2.09"
         END
     END
     BLOCK "VarFileInfo"
@@ -1897,7 +1897,6 @@ BEGIN
 
     IDD_WIZARD, DIALOG
     BEGIN
-        MOCKUP, 0, 53, 84, 222, ".\res\airdcslwt.png"
         LEFTMARGIN, 7
         RIGHTMARGIN, 436
         TOPMARGIN, 7

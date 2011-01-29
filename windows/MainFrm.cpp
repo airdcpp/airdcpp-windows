@@ -1070,10 +1070,10 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		c = NULL;
 	}
 		if(HasUpdate) {
-					if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe")) {
+					if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + INSTALLER)) {
 						//string file = (Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe");
 					if(MessageBox(CTSTRING(UPDATE_FILE_DETECTED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-						::ShellExecute(NULL, NULL, Text::toT(Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe").c_str(), NULL, NULL, SW_SHOWNORMAL);
+						::ShellExecute(NULL, NULL, Text::toT(Util::getPath(Util::PATH_RESOURCES) + INSTALLER).c_str(), NULL, NULL, SW_SHOWNORMAL);
 						Terminate();
 					}
 			}
