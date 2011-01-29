@@ -83,7 +83,7 @@ LRESULT FulHighlightDialog::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	SetWindowText(CTSTRING(HIGHLIGHT_DIALOG_TITLE));
 
 	initControls();
-
+	fix();
 	return TRUE;
 }
 
@@ -144,7 +144,25 @@ LRESULT FulHighlightDialog::onBgColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	}
 	return 0;
 }
+void FulHighlightDialog::fix() {
+	BOOL use = IsDlgButtonChecked(IDC_INCLUDENICK) != BST_CHECKED;
+	::EnableWindow(GetDlgItem(IDC_UNDERLINE),					use);
+	::EnableWindow(GetDlgItem(IDC_ITALIC),					use);
+	::EnableWindow(GetDlgItem(IDC_BOLD),					use);
+	::EnableWindow(GetDlgItem(IDC_WHOLEWORD),					use);
+	::EnableWindow(GetDlgItem(IDC_WHOLELINE),					use);
+	::EnableWindow(GetDlgItem(IDC_POPUP),					use);
+	::EnableWindow(GetDlgItem(IDC_HAS_BG_COLOR),					use);
+	::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
+	::EnableWindow(GetDlgItem(IDC_SOUND),					use);
+	::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
 
+}
+
+LRESULT FulHighlightDialog::onApplyNicklist(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
+	fix();
+	return 0;
+}
 LRESULT FulHighlightDialog::onSelSound(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CFileDialog dlg(TRUE);
 	dlg.m_ofn.lpstrFilter = _T("Wave Files\0*.wav\0\0");

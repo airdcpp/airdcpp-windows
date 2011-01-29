@@ -319,6 +319,7 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, const tstring& sText, CHAR
 	//compare the last line against all strings in the vector
 	for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
 		ColorSettings* cs = &(*i);
+	if(!cs->getIncludeNick()) {
 		int pos;
 
 		//set start position for find
@@ -358,7 +359,8 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, const tstring& sText, CHAR
 		matchedPopup = false;
 		matchedSound = false;
 		
-	}//end for
+			}
+		}//end for
 	}
 
 

@@ -395,3 +395,4 @@ user is asked to update, if user dont wish to update at that time the client wil
 #View as Text can now handle links and releasenames
 #View History Rightclick commands
 #Some fixes
+#Highlight option to apply highlights in Nicklist

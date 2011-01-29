@@ -2444,7 +2444,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 
 	case CDDS_ITEMPREPAINT: {
 			OnlineUser* ui = (OnlineUser*)cd->nmcd.lItemlParam;
-			 tstring user = ui->getText(OnlineUser::COLUMN_NICK); 
+			// tstring user = ui->getText(OnlineUser::COLUMN_NICK); 
 			if (FavoriteManager::getInstance()->isFavoriteUser(ui->getUser())) {
 				cd->clrText = SETTING(FAVORITE_COLOR);
 			} else if (UploadManager::getInstance()->hasReservedSlot(ui->getUser())) {
@@ -2464,14 +2464,15 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				if(cs->getIncludeNick()) {
 					if(cs->usingRegexp()) {
 					try {
+						//have to have $Re:
 						str = Text::fromT(cs->getMatch()).substr(4);
-						boost::regex reg(str);
-						if(boost::regex_match(Text::fromT(user), reg))
+						boost::regex reg(str, cs->getCaseSensitive() ? boost::match_default : boost::regex_constants::icase  );
+						if(boost::regex_search(ui->getIdentity().getNick(), reg))
 							cd->clrText = cs->getFgColor();
 					}catch(...) {}
 					} else {
 						str = Text::fromT(cs->getMatch());
-						if (Wildcard::patternMatch(Text::fromT(user), str)){
+						if (Wildcard::patternMatch(ui->getIdentity().getNick(), str, '|')){
 							cd->clrText = cs->getFgColor();
 							}
 						}

@@ -47,6 +47,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_SOUND, onClickedBox)
 		COMMAND_ID_HANDLER(IDC_HAS_BG_COLOR, onClickedBox)		
 		COMMAND_ID_HANDLER(IDC_HAS_FG_COLOR, onClickedBox)
+		COMMAND_ID_HANDLER(IDC_INCLUDENICK, onApplyNicklist)
 		COMMAND_ID_HANDLER(IDOK, onOk)
 		COMMAND_ID_HANDLER(IDCANCEL, onCancel)
 	END_MSG_MAP()
@@ -59,12 +60,14 @@ public:
 	LRESULT onFgColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSelSound(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedBox(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
+	LRESULT onApplyNicklist(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	ColorSettings& getColorSetting() { return cs; }
 
 protected:
 	void getValues();
 	void initControls();
+	
+	void fix();
 
 	static PropPage::TextItem texts[];
 
