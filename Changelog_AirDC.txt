@@ -396,3 +396,5 @@ user is asked to update, if user dont wish to update at that time the client wil
 #View History Rightclick commands
 #Some fixes
 #Highlight option to apply highlights in Nicklist
+#Mainchat logging option for each fav hub //Maksalaatikko
+#Fix SFV check //Maksalaatikko
