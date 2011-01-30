@@ -351,11 +351,15 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	// Different app icons for different instances (APEX)
 	HICON trayIcon = NULL;
 	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str()))) {
-		appIcon = (HICON)::LoadImage(NULL, WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str(), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
+		//HICON appIcon = (HICON)::LoadImage(NULL, WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str(), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
 		trayIcon = (HICON)::LoadImage(NULL, WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
+		
+		//if(WinUtil::getOsMajor() > 6 || WinUtil::getOsMinor() >= 1) {
+		WinUtil::SetIcon(m_hWnd, _T("AirDCPlusPlus.ico"), true);
+		//}
 
-		if(WinUtil::getOsMajor() < 6 || (WinUtil::getOsMajor() == 6 && WinUtil::getOsMinor() < 1))
-			DestroyIcon((HICON)SetClassLongPtr(m_hWnd, GCLP_HICON, (LONG_PTR)appIcon));
+		//if(WinUtil::getOsMajor() < 6 || (WinUtil::getOsMajor() == 6 && WinUtil::getOsMinor() < 1))
+			//DestroyIcon((HICON)SetClassLongPtr(m_hWnd, GCLP_HICON, (LONG_PTR)appIcon));
 
 		DestroyIcon((HICON)SetClassLongPtr(m_hWnd, GCLP_HICONSM, (LONG_PTR)trayIcon));
 		

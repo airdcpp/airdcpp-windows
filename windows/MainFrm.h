@@ -259,7 +259,7 @@ public:
 	taskbarList.Release();
 	taskbarList.CoCreateInstance(CLSID_TaskbarList);
 
-	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str())))
+//	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str())))
 		taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);
 
 	THUMBBUTTON buttons[2];
@@ -401,7 +401,6 @@ public:
 private:
 	NOTIFYICONDATA normalicon;
 	NOTIFYICONDATA pmicon;
-	HICON appIcon;
 
 	class DirectoryListInfo {
 	public:
