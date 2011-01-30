@@ -2845,16 +2845,12 @@ tstring WinUtil::getIconPath(const tstring& filename) {
 
 tstring WinUtil::getTitle(tstring searchTerm) {
 
-		//text until we find " - "
-		//size_t pos = searchTerm.find(_T("-"));
-		//if(pos > 0)
-		//searchTerm = searchTerm.substr(0, pos);
-		//searchTerm += ' ';
-
+		//Remove group name
 		string tmp = Text::fromT(searchTerm);
 		int spos = tmp.rfind("-");
 		tmp = tmp.substr(0,spos);
 		searchTerm = Text::toT(tmp);
+		searchTerm += ' ';
 
 		//replace . with space
 		int pos = 0;
@@ -2862,37 +2858,23 @@ tstring WinUtil::getTitle(tstring searchTerm) {
 			searchTerm.replace(pos, 1, _T(" "));
 		}
 
-		//std::transform(searchTerm.begin(), searchTerm.end(),
-		//searchTerm.begin(), ::tolower);
 		searchTerm = Text::toLower(searchTerm);
-
-		pos = 0;
-		while ( (pos = searchTerm.find_first_of(_T("._"), pos)) != string::npos) {
-			searchTerm.replace(pos, 1, _T(" "));
-		}
-
 
 		//remove words after year/episode
 		PME regexp;
-
 		regexp.Init(_T("(((\\[)?((19[0-9]{2})|(20[0-1][0-9]))|(s[0-9]([0-9])?(e|d)[0-9]([0-9])?)|(Season(\\.)[0-9]([0-9])?)).*)"));
 		searchTerm = regexp.sub(searchTerm, Util::emptyStringT);
 
-
 		//remove extra words
-
 		string extrawords[] = {"multisubs","multi","dvdrip","dvdr","real proper","proper","ultimate directors cut","directors cut","dircut","x264","pal","complete","limited","ntsc","bd25",
 								"bd50","bdr","bd9","retail","bluray","nordic","720p","1080p","read nfo","dts","hdtv","pdtv","hddvd","repack","internal","custom","subbed","unrated","recut",
 								"extended","dts51","finsub","swesub","dksub","nosub","remastered","2disc","rf","fi","swe","stv","r5","festival","anniversary edition","bdrip","ac3", "xvid",
 								"ws","int"};
-
-
 		pos = 0;
 		while(pos <= 53) {
 			boost::algorithm::replace_all(searchTerm, " " + extrawords[pos] + " ", " ");
 			pos++;
 		}
-
 
 		//trim spaces from the end
 		boost::algorithm::trim_right(searchTerm);
