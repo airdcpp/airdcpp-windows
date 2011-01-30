@@ -176,6 +176,18 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	trayMessage = RegisterWindowMessage(_T("TaskbarCreated"));
 
+	if(WinUtil::getOsMajor() >= 6) {
+		// 1 == MSGFLT_ADD
+		_d_ChangeWindowMessageFilter(trayMessage, 1);
+		_d_ChangeWindowMessageFilter(WMU_WHERE_ARE_YOU, 1);
+
+		if(WinUtil::getOsMajor() > 6 || WinUtil::getOsMinor() >= 1) {
+			tbButtonMessage = RegisterWindowMessage(_T("TaskbarButtonCreated"));
+			_d_ChangeWindowMessageFilter(tbButtonMessage, 1);
+			_d_ChangeWindowMessageFilter(WM_COMMAND, 1);
+		}
+	}
+
 	TimerManager::getInstance()->start();
 
 	// Set window name
