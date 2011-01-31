@@ -967,6 +967,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		dirMenu.CreatePopupMenu();	
 		dirMenu.InsertSeparatorFirst(TSTRING(FOLDER));
 		dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_PRIORITY));
+		dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
 		dirMenu.AppendMenu(MF_SEPARATOR);
 		dirMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 		dirMenu.AppendMenu(MF_SEPARATOR);
@@ -993,10 +994,14 @@ LRESULT QueueFrame::onRecheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 
 LRESULT QueueFrame::onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlQueue.GetSelectedCount() == 1) {
-		int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
-		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
-		WinUtil::searchHash(ii->getTTH());
-	}	
+		if(usingDirMenu) {
+			WinUtil::search(Util::getLastDir(Text::toT(getSelectedDir())), 0, false);
+		} else {
+			int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
+			const QueueItemInfo* ii = ctrlQueue.getItemData(i);
+			WinUtil::searchHash(ii->getTTH());
+		}
+	}
 	return 0;
 }
 
