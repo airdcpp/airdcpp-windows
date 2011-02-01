@@ -43,7 +43,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlPad.Subclass();
 	ctrlPad.LimitText(0);
 	ctrlPad.SetFont(WinUtil::font);
-	
+	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 	string tmp;
 	try {
 		File f(Text::fromT(file), File::READ, File::OPEN);

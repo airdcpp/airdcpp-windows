@@ -2455,8 +2455,10 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				cd->clrText = SETTING(OP_COLOR);
 			} else if(!ui->getIdentity().isTcpActive(client)) {
 				cd->clrText = SETTING(PASIVE_COLOR);
-			} else if( BOOLSETTING(USE_HIGHLIGHT) ) {
-				//work on this later if we really want this
+			} else {
+				cd->clrText = SETTING(NORMAL_COLOUR);
+			if( BOOLSETTING(USE_HIGHLIGHT) ) {
+				
 			ColorList *cList = HighlightManager::getInstance()->getList();
 				for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
 				ColorSettings* cs = &(*i);
@@ -2478,8 +2480,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 						}
 					}
 				}
-			} else {
-				cd->clrText = SETTING(NORMAL_COLOUR);
+			}
 			}
 			return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 		}
