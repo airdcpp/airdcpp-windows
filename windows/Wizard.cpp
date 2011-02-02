@@ -130,7 +130,11 @@ void WizardDlg::write() {
 	if(nick != Util::emptyString)
 		SettingsManager::getInstance()->set(SettingsManager::NICK, nick );
 	//end
-
+		
+		//speed settings
+		SettingsManager::getInstance()->set(SettingsManager::UPLOAD_SPEED, upload);
+		SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SPEED, download);
+	
 			//for max download speed
 			TCHAR buf2[64];
 			GetDlgItemText(IDC_MAX_DOWNLOAD_SP, buf2, sizeof(buf2) + 1);
@@ -236,10 +240,7 @@ LRESULT WizardDlg::OnDownSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/,
 	break;
 	}
 
-	string download = Text::fromT(buf2);
-
-	//have the text in a buffer why not set it now.
-	SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_SPEED, download);
+	download = Text::fromT(buf2);
 
 		double value = Util::toDouble(download); //compare as int?
 		
@@ -263,15 +264,10 @@ LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*
 	break;
 
 	}	
-		string upload = Text::fromT(buf2);
-
-	//have the text in a buffer why not set it now.
-	SettingsManager::getInstance()->set(SettingsManager::UPLOAD_SPEED, upload);
-
+		upload = Text::fromT(buf2);
 		int value = Util::toInt(upload); //compare as int?
-		
 		setUploadSlots(value);
-	
+
 		return 0;
 }
 

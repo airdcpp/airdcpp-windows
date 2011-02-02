@@ -1868,10 +1868,13 @@ void HubFrame::on(NickTaken, const Client*) throw() {
 void HubFrame::on(SearchFlood, const Client*, const string& line) throw() {
 	speak(ADD_STATUS_LINE, STRING(SEARCH_SPAM_FROM) + " " + line);
 }
+
 void HubFrame::on(HubTopic, const Client*, const string& line) throw() {
 	speak(ADD_STATUS_LINE, STRING(HUB_TOPIC) + "\t" + line);
 }
-
+void HubFrame::on(AddLine, const Client*, const string& line) throw() {
+	speak(ADD_STATUS_LINE, line);
+}
 void HubFrame::openLinksInTopic() {
 	int length = GetWindowTextLength();
 	TCHAR* buf = new TCHAR[length + 1];
@@ -2463,7 +2466,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
 				ColorSettings* cs = &(*i);
 				string str;
-				if(cs->getIncludeNick()) {
+				if(cs->getIncludeNickList()) {
 					if(cs->usingRegexp()) {
 					try {
 						//have to have $Re:

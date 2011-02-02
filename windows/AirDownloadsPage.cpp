@@ -91,7 +91,11 @@ LRESULT AirDownloadsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 void AirDownloadsPage::write() {
 
 	PropPage::write((HWND)*this, items);
-	
+	 
+	//set to the defaults
+	if(SETTING(SKIPLIST_DOWNLOAD).empty())
+		settings->set(SettingsManager::DOWNLOAD_SKIPLIST_USE_REGEXP, false);
+
 	TCHAR buf[256];
 	GetDlgItemText(IDC_ANTIVIR_PATH, buf, 256);
 	settings->set(SettingsManager::ANTIVIR_PATH, Text::fromT(buf));

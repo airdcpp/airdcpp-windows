@@ -235,7 +235,7 @@ void FulHighlightPage::addPreset(int preset) {
 			break;
 		case 5:
 			cs.setMatch(_T("$users$"));
-			cs.setIncludeNick(true);
+			cs.setIncludeNickList(false);
 			cs.setBold(true);
 			cs.setHasFgColor(true);
 			cs.setFgColor(RGB(115, 115, 118));

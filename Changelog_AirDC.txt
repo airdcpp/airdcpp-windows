@@ -400,3 +400,4 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Mainchat logging option for each fav hub //Maksalaatikko
 #"Search for alternates" for queue directories //Maksalaatikko
 #App icon changeable in icons folder
+#AutoSearch option to post result in mainchat

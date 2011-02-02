@@ -52,6 +52,8 @@ private:
 		CComboBox ctrlDownload;	
 		CComboBox ctrlLanguage;	
 		void fixcontrols();
+		string upload;
+		string download;
 		
 
 };

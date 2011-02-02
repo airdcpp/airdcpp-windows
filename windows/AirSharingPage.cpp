@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
+#include "../client/ShareManager.h"
 #include "Resource.h"
 
 #include "AirSharingPage.h"
@@ -43,9 +44,12 @@ LRESULT AirSharingPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 }
 
 void AirSharingPage::write() {
-	
+
 	PropPage::write((HWND)*this, items);
 	
+		 //set to the defaults
+	if(SETTING(SKIPLIST_SHARE).empty())
+		settings->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
 
 }
  

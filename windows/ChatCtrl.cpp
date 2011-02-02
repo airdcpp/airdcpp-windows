@@ -319,7 +319,7 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, const tstring& sText, CHAR
 	//compare the last line against all strings in the vector
 	for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
 		ColorSettings* cs = &(*i);
-	if(!cs->getIncludeNick()) {
+	if(!cs->getIncludeNickList()) {
 		int pos;
 
 		//set start position for find

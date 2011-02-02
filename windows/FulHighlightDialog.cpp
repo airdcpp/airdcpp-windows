@@ -188,7 +188,7 @@ void FulHighlightDialog::getValues(){
 	cs.setStrikeout( IsDlgButtonChecked(IDC_STRIKEOUT) == BST_CHECKED );
 
 	cs.setCaseSensitive( IsDlgButtonChecked(IDC_CASESENSITIVE) == BST_CHECKED );
-	cs.setIncludeNick(	  IsDlgButtonChecked(IDC_INCLUDENICK)	== BST_CHECKED );
+	cs.setIncludeNickList(	  IsDlgButtonChecked(IDC_INCLUDENICK)	== BST_CHECKED );
 	cs.setWholeLine(	  IsDlgButtonChecked(IDC_WHOLELINE)		== BST_CHECKED );
 	cs.setWholeWord(	  IsDlgButtonChecked(IDC_WHOLEWORD)		== BST_CHECKED );
 	cs.setPopup(		  IsDlgButtonChecked(IDC_POPUP)			== BST_CHECKED );
@@ -218,7 +218,7 @@ void FulHighlightDialog::initControls() {
 	CheckDlgButton(IDC_ITALIC		, cs.getItalic()		 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_UNDERLINE	, cs.getUnderline()	 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_STRIKEOUT	, cs.getStrikeout()	 ? BST_CHECKED : BST_UNCHECKED);
-	CheckDlgButton(IDC_INCLUDENICK	, cs.getIncludeNick()	 ? BST_CHECKED : BST_UNCHECKED);
+	CheckDlgButton(IDC_INCLUDENICK	, cs.getIncludeNickList()	 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_WHOLELINE	, cs.getWholeLine()	 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_CASESENSITIVE, cs.getCaseSensitive() ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_WHOLEWORD	, cs.getWholeWord()	 ? BST_CHECKED : BST_UNCHECKED);

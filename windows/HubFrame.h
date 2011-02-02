@@ -499,6 +499,7 @@ private:
 	void on(NickTaken, const Client*) throw();
 	void on(SearchFlood, const Client*, const string&) throw();	
 	void on(HubTopic, const Client*, const string&) throw();
+	void on(AddLine, const Client*, const string&) throw();
 
 	void speak(Tasks s) { tasks.add(static_cast<uint8_t>(s), 0); PostMessage(WM_SPEAKER); }
 	void speak(Tasks s, const string& msg, bool inChat = true) { tasks.add(static_cast<uint8_t>(s), new StatusTask(msg, inChat)); PostMessage(WM_SPEAKER); }

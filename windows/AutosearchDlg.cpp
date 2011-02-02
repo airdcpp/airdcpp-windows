@@ -84,6 +84,7 @@ LRESULT AutosearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ATTACH(IDC_AS_ACTION, cAction);
 	cAction.AddString(CTSTRING(DOWNLOAD));
 	cAction.AddString(CTSTRING(ADD_TO_QUEUE));
+	cAction.AddString(CTSTRING(AS_REPORT));
 	cAction.SetCurSel(action);
 
 	CenterWindow(GetParent());
