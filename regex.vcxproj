@@ -150,6 +150,9 @@
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -217,6 +220,12 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="regex\config.h" />
+    <ClInclude Include="regex\pcre.h" />
+    <ClInclude Include="regex\pcre_internal.h" />
+    <ClInclude Include="regex\ucp.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="regex\pcre_chartables.c" />
     <ClCompile Include="regex\pcre_compile.c" />
     <ClCompile Include="regex\pcre_exec.c" />
@@ -229,12 +238,6 @@
     <ClCompile Include="regex\pcre_try_flipped.c" />
     <ClCompile Include="regex\pcre_valid_utf8.c" />
     <ClCompile Include="regex\pcre_xclass.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="regex\config.h" />
-    <ClInclude Include="regex\pcre.h" />
-    <ClInclude Include="regex\pcre_internal.h" />
-    <ClInclude Include="regex\ucp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -15,6 +15,20 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="regex\config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regex\pcre.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regex\pcre_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regex\ucp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="regex\pcre_chartables.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -51,19 +65,5 @@
     <ClCompile Include="regex\pcre_xclass.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="regex\config.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="regex\pcre.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="regex\pcre_internal.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="regex\ucp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

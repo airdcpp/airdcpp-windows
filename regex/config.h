@@ -162,6 +162,12 @@ them both to 0; an emulation function will be used. */
 /* Define to 1 if you have the `_strtoi64' function. */
 /* #undef HAVE__STRTOI64 */
 
+
+
+
+
+
+
 /* The value of LINK_SIZE determines the number of bytes used to store links
    as offsets within the compiled regex. The default is 2, which allows for
    compiled patterns up to 64K long. This covers the vast majority of cases.
@@ -172,6 +178,12 @@ them both to 0; an emulation function will be used. */
 #define LINK_SIZE 2
 #endif
 
+
+
+
+
+
+
 /* The value of MATCH_LIMIT determines the default number of times the
    internal match() function can be called during a single execution of
    pcre_exec(). There is a runtime interface for setting a different limit.
@@ -179,9 +191,10 @@ them both to 0; an emulation function will be used. */
    for ever to determine that they do not match. The default is set very large
    so that it does not accidentally catch legitimate cases. On systems that
    support it, "configure" can be used to override this default default. */
+#define NO_RECURSE
 #ifndef MATCH_LIMIT
 //#define MATCH_LIMIT 10000000
-#define MATCH_LIMIT 1000
+#define MATCH_LIMIT 1000000
 #endif
 
 /* The above limit applies to all calls of match(), whether or not they
@@ -246,6 +259,9 @@ them both to 0; an emulation function will be used. */
 
 /* Define to the version of this package. */
 #define PACKAGE_VERSION "7.7"
+
+
+
 
 
 /* If you are compiling for a system other than a Unix-like system or

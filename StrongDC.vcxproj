@@ -241,7 +241,7 @@
       <MapFileName>
       </MapFileName>
       <SubSystem>Windows</SubSystem>
-      <StackReserveSize>131072</StackReserveSize>
+      <StackReserveSize>100000</StackReserveSize>
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <SetChecksum>true</SetChecksum>
