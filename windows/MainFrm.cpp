@@ -192,14 +192,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	// Set window name
 
-	SetWindowText(_T(APPNAME) _T(" ") _T(VERSIONSTRING)  _T(" ") _T(CONFIGURATION_TYPE)
-#ifdef BETADATE
-		_T(" - ") _T(BETADATE)
-#endif
-#ifdef SVNVERSION
-		_T(SVNVERSION)
-#endif
-		);
+	SetWindowText(COMPLETEVERSIONSTRING);
 
 
 	// Load images

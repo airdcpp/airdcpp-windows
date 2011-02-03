@@ -32,7 +32,7 @@
 
 #include "resource.h"
 #include "OMenu.h"
-
+#include <atlcomtime.h>
 class ChatCtrl;
 
 // Some utilities for handling HLS colors, taken from Jean-Michel LE FOL's codeproject
@@ -504,7 +504,12 @@ public:
 	static string getReport(const Identity& identity, HWND hwnd);
 
 	static string CPUInfo();
-
+	
+	static string getCompileDate() {
+		COleDateTime tCompileDate; 
+		tCompileDate.ParseDateTime( _T( __DATE__ ), LOCALE_NOUSEROVERRIDE, 1033 );
+		return Text::fromT(tCompileDate.Format(_T("%d.%m.%Y")).GetString());
+	}
 
 
 private:
