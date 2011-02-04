@@ -48,7 +48,6 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	string tmp;
 	try {
-		//ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 
 		File f(Text::fromT(file), File::READ, File::OPEN);
 		

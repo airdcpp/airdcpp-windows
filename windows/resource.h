@@ -152,6 +152,8 @@
 #define IDD_DIALOG1                     314
 #define IDD_WIZARD                      314
 #define IDD_DIALOG2                     315
+#define IDI_ICON11                      318
+#define IDI_GER                         318
 #define IDI_ICON1                       324
 #define IDI_FIN                         324
 #define IDI_ICON2                       325
@@ -744,6 +746,7 @@
 #define IDC_PLAYER_COMBO                1375
 #define IDC_LANG_RUS                    1375
 #define IDC_REMOVE_FILE                 1376
+#define IDC_LANG_GER                    1377
 #define IDC_MAX_MSG_LENGTH              1391
 #define IDC_MAX_MSG_LENGTH_STR          1392
 #define IDC_POPUP_COLORS                1393
@@ -931,7 +934,7 @@
 #define IDC_MANAGE_GROUPS               10037
 #define IDC_NONE                        10041
 #define IDD_TEXT_STYLES                 10042
-#define IDC_HISTORY		                10043
+#define IDC_HISTORY                     10043
 #define IDD_KICK                        10044
 #define IDC_PUBLIC_MESSAGE              10050
 #define IDC_SELECT_USER                 10051
@@ -945,7 +948,7 @@
 #define IDC_CLIENT                      10059
 #define IDC_COPY_URL                    10060
 #define IDC_BOLD_AUTHOR_MESS            10061
-#define IDC_USER_HISTORY	            10062
+#define IDC_USER_HISTORY                10062
 #define IDC_IGNORE                      10063
 #define IDC_UNIGNORE                    10064
 #define IDC_GRANTSLOT                   10080
@@ -1127,7 +1130,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        316
+#define _APS_NEXT_RESOURCE_VALUE        319
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         1369
 #define _APS_NEXT_SYMED_VALUE           135

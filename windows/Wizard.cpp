@@ -331,7 +331,8 @@ void WizardDlg::setLang() {
 		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Dutch_for_AirDc.xml"));
 	} else if(SETTING(LANGUAGE_SWITCH) == 12) {
 		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Russian_for_AirDc.xml"));
-
+	} else if(SETTING(LANGUAGE_SWITCH) == 13) {
+		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//German_for_AirDc.xml"));
 	}
 
 }

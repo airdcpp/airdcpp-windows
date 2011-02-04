@@ -53,6 +53,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_LANG_FR, onLng)
 		COMMAND_ID_HANDLER(IDC_LANG_D, onLng)
 		COMMAND_ID_HANDLER(IDC_LANG_RUS, onLng)
+		COMMAND_ID_HANDLER(IDC_LANG_GER, onLng)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);

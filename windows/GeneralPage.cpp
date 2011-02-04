@@ -46,6 +46,7 @@ PropPage::TextItem GeneralPage::texts[] = {
 	{ IDC_LANG_FR, ResourceManager::SETTINGS_LFR },
 	{ IDC_LANG_D, ResourceManager::SETTINGS_LD },
 	{ IDC_LANG_RUS, ResourceManager::SETTINGS_LRUS },
+	{ IDC_LANG_GER, ResourceManager::SETTINGS_LGER },
 	{ IDC_SETTINGS_NOMINALBW2, ResourceManager::SETTINGS_LANGUAGE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
@@ -129,6 +130,7 @@ LRESULT GeneralPage::onTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl,
 }
 
 void GeneralPage::fixControls() {
+	//huoh.. ToDo: a dropdown menu?
 
 	if (SETTING(LANGUAGE_SWITCH) == 0) {
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -144,6 +146,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	}else if (SETTING(LANGUAGE_SWITCH) == 1) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_CHECKED);
@@ -158,6 +161,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	} else if (SETTING(LANGUAGE_SWITCH) == 2) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -172,6 +176,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	} else if (SETTING(LANGUAGE_SWITCH) == 3) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -186,6 +191,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	} else if (SETTING(LANGUAGE_SWITCH) == 4) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -200,6 +206,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	}else if (SETTING(LANGUAGE_SWITCH) == 5) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -214,6 +221,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	}else if (SETTING(LANGUAGE_SWITCH) == 6) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -228,6 +236,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	} else if (SETTING(LANGUAGE_SWITCH) == 7) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -242,6 +251,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	} else if (SETTING(LANGUAGE_SWITCH) == 8) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -256,6 +266,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	} else if (SETTING(LANGUAGE_SWITCH) == 9) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -270,6 +281,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	} else if (SETTING(LANGUAGE_SWITCH) == 10) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -284,6 +296,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_CHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 	} else if (SETTING(LANGUAGE_SWITCH) == 11) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -298,6 +311,7 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_CHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
 } else if (SETTING(LANGUAGE_SWITCH) == 12) {
 		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
@@ -312,6 +326,22 @@ void GeneralPage::fixControls() {
 		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
 		CheckDlgButton(IDC_LANG_RUS, BST_CHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_UNCHECKED);
+	} else if (SETTING(LANGUAGE_SWITCH) == 13) {
+		CheckDlgButton(IDC_ENG, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_SWE, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_FIN, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_ITA, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_HUN, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_RO, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_DAN, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_NOR, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_POR, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_POL, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_FR, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_D, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_RUS, BST_UNCHECKED);
+		CheckDlgButton(IDC_LANG_GER, BST_CHECKED);
 	}
 }
 
@@ -392,6 +422,12 @@ LRESULT GeneralPage::onLng(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 if(IsDlgButtonChecked(IDC_LANG_RUS)) {
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 12);
 	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Russian_for_AirDC.xml"));
+	fixControls();
+	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
+	}
+if(IsDlgButtonChecked(IDC_LANG_GER)) {
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, 13);
+	SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//German_for_AirDC.xml"));
 	fixControls();
 	MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	}

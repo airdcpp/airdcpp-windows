@@ -912,8 +912,10 @@ BEGIN
     ICON            IDI_HO,IDC_STATIC,94,197,20,20
     CONTROL         "Dutch",IDC_LANG_D,"Button",BS_AUTORADIOBUTTON,122,202,46,10
     CONTROL         "Russian",IDC_LANG_RUS,"Button",BS_AUTORADIOBUTTON,42,228,46,10
-    ICON            IDI_RUS,IDC_STATIC,14,224,21,20
+    CONTROL         "German",IDC_LANG_GER,"Button",BS_AUTORADIOBUTTON,122,229,47,10
+    ICON            IDI_RUS,IDC_STATIC,14,224,20,20
     ICON            IDI_FIN,IDC_STATIC,14,144,20,20
+    ICON            IDI_GER,IDC_STATIC,94,224,21,20
 END
 
 IDD_ADVANCEDPAGE DIALOGEX 0, 0, 271, 268
@@ -1923,6 +1925,7 @@ END
 // remains consistent on all systems.
 IDI_HO                  ICON                    "res\\holland.ico"
 IDI_RUS                 ICON                    "res\\rus.ico"
+IDI_GER                 ICON                    "res\\Germ.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 
