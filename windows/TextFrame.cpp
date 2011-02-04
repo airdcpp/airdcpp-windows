@@ -44,8 +44,12 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlPad.LimitText(0);
 	ctrlPad.SetFont(WinUtil::font);
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
+	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
+
 	string tmp;
 	try {
+		//ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
+
 		File f(Text::fromT(file), File::READ, File::OPEN);
 		
 		if(history) {
@@ -74,7 +78,9 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			ctrlPad.SetWindowText(Text::toT(tmp).c_str());
 		
 		} else if(!openlog && !history) {
+
 		
+
 		tmp = f.read();
 		Text::toUtf8(tmp);
 		 //add the line endings in nfo

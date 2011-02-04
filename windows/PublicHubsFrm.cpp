@@ -642,8 +642,8 @@ void PublicHubsFrame::on(DownloadFinished, const string& l, bool /*fromCoral*/) 
 	speak(FINISHED, TSTRING(HUB_LIST_DOWNLOADED) + _T(" (") + Text::toT(l) + _T(")"));
 }
 
-void PublicHubsFrame::on(LoadedFromCache, const string& l, const string& /*d*/) throw() { 
-	speak(FINISHED, TSTRING(HUB_LIST_LOADED_FROM_CACHE) + _T(" (") + Text::toT(l) + _T(")")); 
+void PublicHubsFrame::on(LoadedFromCache, const string& l, const string& d) throw() { 
+	speak(FINISHED, TSTRING(HUB_LIST_LOADED_FROM_CACHE) + _T(" (") + Text::toT(l) + _T(")") + _T(" Download Date: ") + Text::toT(d)); 
 }
 
 void PublicHubsFrame::on(Corrupted, const string& l) throw() {

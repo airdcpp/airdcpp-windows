@@ -1,10 +1,8 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Polish for AirDC++" Author="LadyStardust" Version="2.06" Revision="1">
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Language Name="Polish for AirDC++" Author="LadyStardust" Version="2.08" Revision="1">
 	<Strings>
 		<String Name="AairdcppLanguageFile">Polish_for_AirDC.xml</String>
-		<String Name="AairdcppLanguageVersion">2.061</String>
-		<String Name="AcceptedDisconnects">Akceptowane rozłączenia</String>
-		<String Name="AcceptedTimeouts">Akceptowane timeouty</String>
+		<String Name="AairdcppLanguageVersion">2.081</String>
 		<String Name="Active">Aktywny</String>
 		<String Name="ActiveSearchString">Szukany ciąg znaków</String>
 		<String Name="Add">Dodaj</String>
@@ -38,6 +36,7 @@
 -- gdyż w wynikach wyszukiwania nie będą wyświetlone pliki użytkowników w trybie pasywnym. --
 -- Zmień tryb w: Ustawieniach =&gt; Zaawansowane =&gt; Uzżywaj trybu pasywnego podczas szukania --
 </String>
+		<String Name="AllowNatTraversal">Zezwalaj na połączenia NAT Traversal dla połączeń pasywnych</String>
 		<String Name="Any">Dowolny</String>
 		<String Name="AtLeast">Przynajmniej</String>
 		<String Name="AtMost">Najwyżej</String>
@@ -64,7 +63,6 @@
 		<String Name="CertificateGenerated">Wygenerowano nowy certyfikat TSL</String>
 		<String Name="CertificateNotTrusted">Źle niewygenerowany certyfikat, nie można się połączyć</String>
 		<String Name="CertificateGenerationFailed">TLS wyłączony, nie powiodło się generowanie certyfikatu: </String>
-		<String Name="CheatingDescription">Opis oszukiwania</String>
 		<String Name="Cid">CID</String>
 		<String Name="Cipher">Szyfr</String>
 		<String Name="Clear">Wyczyść czat</String>
@@ -72,10 +70,8 @@
 		<String Name="Close">Zamknij</String>
 		<String Name="CloseConnection">Zamknij połączenie</String>
 		<String Name="CollapseAll">Zwiń wszystkie</String>
-		<String Name="ColorFast">Użytkownik z fireballem</String>
 		<String Name="ColorOp">Użytkownik jest OPem</String>
 		<String Name="ColorPasive">Pasywny użytkownik</String>
-		<String Name="ColorServer">Użytkownik z serverem</String>
 		<String Name="CommandTooLong">Maksymalna długość komendy przekroczona!</String>
 		<String Name="Comment">Komentarz</String>
 		<String Name="Compressed">Skompresowany</String>
@@ -92,6 +88,7 @@
 		<String Name="ConnectingToServer">Łacze z serwerem</String>
 		<String Name="Connection">Połączenie</String>
 		<String Name="ConnectionClosed">Połączenie zerwane</String>
+		<String Name="ConnectionDetection">Enable automatic incoming connection type detection</String>
 		<String Name="ConnectionError">Błąd połączenia</String>
 		<String Name="ConnectionTimeout">Zbyt długi czas oczekiwania na połączenie</String>
 		<String Name="ContinueSearch">Kontynuuj szukanie</String>
@@ -186,7 +183,6 @@
 		<String Name="FavoriteHubDoesNotExist">Ten hub nie jest w Ulubionych</String>
 		<String Name="FavoriteHubIdentity">Identyfikacja (pusty = domyślny)</String>
 		<String Name="FavoriteHubProperties">Ustawienia</String>
-		<String Name="FavoriteHubRaw">Raw commands</String>
 		<String Name="FavoriteHubConnection">Connection</String>
 		<String Name="FavoriteHubRemoved">Hub usunięty z Ulubionych</String>
 		<String Name="FavoriteHubs">Ulubione Huby</String>
@@ -223,7 +219,6 @@
 		<String Name="Gib">GiB</String>
 		<String Name="GenerateCertificates">Generuj certyfikaty</String>
 		<String Name="GetFileList">Pobierz listę</String>
-		<String Name="GetUserResponses">Pobierz dane o użytkowniku</String>
 		<String Name="GoToDirectory">Idz do katalogu</String>
 		<String Name="GrantExtraSlot">Przyznaj extra slot (10 min)</String>
 		<String Name="GrantExtraSlotDay">Przyznaj extra slot (dzień)</String>
@@ -258,25 +253,21 @@
 		<String Name="HubName">Nazwa</String>
 		<String Name="HubSegments">Hub/Segmenty</String>
 		<String Name="HubTopic">Temat Huba: </String>
-		<String Name="HubUsers">Uzytkownicy</String>
+		<String Name="HubUsers">Użytkownicy</String>
+		<String Name="HublistCacheCorrupted">Cache hublisty jest uszkodzone lub nie obsługiwalne...</String>
+		<String Name="HublistDownloadCorrupted">Pobrana hublista jest uszkodzona lub nie obsługiwalna...</String>
 		<String Name="Hubs">Huby</String>
 		<String Name="Chatdblclickaction">Podwójny klik na użytkownika czatu</String>
-		<String Name="CheatingUser">Znaleziono oszusta</String>
 		<String Name="Check0byteShare">rzeczywisty rozmiar to 0 B</String>
-		<String Name="CheckFilelist">Sprawdź Listę Plików</String>
 		<String Name="CheckForbidden">Udostepniony zakazany plik : %s</String>
 		<String Name="CheckInflated">lista plików zostala zawyżona %s razy</String>
-		<String Name="CheckMismatchedShareSize">Źle dopasowany rozmiar share - </String>
-		<String Name="CheckOnConnect">Sprawdż użytkownika po połączeniu</String>
-		<String Name="CheckShowRealShare"> pokazany rozmiar = %[shareshort], rzeczywisty rozmiar = %[realshareformat]</String>
-		<String Name="CheckingClient">Sprawdzanie klienta...</String>
 		<String Name="ChooseFolder">Wybierz katalog</String>
 		<String Name="IgnoreTthSearches">Ignoruj wyniki TTH</String>
 		<String Name="IgnoreUser">Ignoruj Użytkownika</String>
 		<String Name="IgnoredMessage">Zignorowana wiadomość: </String>
 		<String Name="IncompleteFavHub">Adres Huba nie może byc pusty!</String>
-		<String Name="InvalidListname">Nieprawidłowa nazwa listy plików</String>
 		<String Name="IntegrityCheck">Sprawdzanie poprawności: %s (%s)</String>
+		<String Name="InvalidListname">Nieprawidłowa nazwa listy plików</String>
 		<String Name="InvalidNumberOfSlots">Nieprawidłowa liczba slotów</String>
 		<String Name="InvalidSize">Nieprawidłowy rozmiar</String>
 		<String Name="InvalidTargetFile">Błąd pobierania pliku (brak katalogu, sprawdź domyslny katalog pobierania)</String>
@@ -289,6 +280,7 @@
 		<String Name="Joins">Dołączył: </String>
 		<String Name="Kib">KiB</String>
 		<String Name="Kbps">kB/s</String>
+		<String Name="KeepFinishedFiles">Trzymaj zakończone pliki w kolejce</String>
 		<String Name="KickUser">Kopnij użytkownika</String>
 		<String Name="KickUserFile">Kopnij użytkownika z nazwą pliku</String>
 		<String Name="LargerTargetFileExists">Plik o takim samym lub większym rozmiarze już istnieje</String>
@@ -327,6 +319,7 @@
 		<String Name="MagnetHandlerDesc">Pobierz pliki z sieci Direct Connect</String>
 		<String Name="MagnetHandlerRoot">AirDC++</String>
 		<String Name="MagnetShellDesc">URL:MAGNET URI</String>
+		<String Name="ManageGroups">Zarządzaj grupami</String>
 		<String Name="MatchQueue">Porównaj liste plików</String>
 		<String Name="MatchedFiles">Porównano %d plik(ów)</String>
 		<String Name="MaxHubs">Max Hubów</String>
@@ -400,7 +393,6 @@
 		<String Name="MoveDown">W dól</String>
 		<String Name="MoveUp">W góre</String>
 		<String Name="MynickInChat">Twój nick na czacie</String>
-		<String Name="NetlimiterWarning">NetLimiter zostal wykryty na twoim komputerze. Ten program jest czesto odpowiedzialny za bledy w AirDC tj. rozłączanie wysyłań lub niska prędkość pobierania. Prosimy odinstalować powyższy program i skorzystać z alternatywnego produktu lub z wbudowanego w AirDC Limitera.</String>
 		<String Name="NetworkStatistics">Statystyki Sieciowe</String>
 		<String Name="New">&amp;Nowy...</String>
 		<String Name="NewDisconnect">Rozłącz użytkownika, gdy prędkość poniżej</String>
@@ -411,7 +403,6 @@
 		<String Name="No">Nie</String>
 		<String Name="NoCertificateFileSet">TLS wyłączony, nie ustawiono pliku certyfikatu</String>
 		<String Name="NoDirectorySpecified">Nie wybrano katalogu</String>
-		<String Name="NoDownloadsFromPassive">Nie możesz pobierać od Pasywnych Uzytkowników, gdy sam jestes Pasywny!</String>
 		<String Name="NoDownloadsFromSelf">Próbujesz pobrac pliki od samego siebie!</String>
 		<String Name="NoErrors">Brak blędów</String>
 		<String Name="NoFreeBlock">Brak wolnych bloków</String>
@@ -458,7 +449,6 @@
 		<String Name="PopupFavoriteConnected">Pokaż dymek, gdy Ulubiony Uzytkownik połączony</String>
 		<String Name="PopupHubConnected">Pokaż dymek, gdy hub połączony</String>
 		<String Name="PopupHubDisconnected">Pokaż dymek, gdy hub rozłączony</String>
-		<String Name="PopupCheatingUser">Pokaż dymek, gdy użytkownik-oszust znaleziony</String>
 		<String Name="PopupNewPm">Pokaż dymek, przy nowej Prywatnej Wiadomości</String>
 		<String Name="PopupPm">Pokaż dymek, gdy Prywatna Wiadomość</String>
 		<String Name="PopupType">Typ okienka</String>
@@ -476,9 +466,6 @@
 		<String Name="PrivateKeyFile">Prywatny klucz pliku</String>
 		<String Name="PrivateMessage">Prywatna wiadomość</String>
 		<String Name="PrivateMessageFrom">Prywatna wiadomość od: </String>
-		<String Name="ProfileVersion">Wersja</String>
-		<String Name="ProfileCount">Liczba</String>
-		<String Name="ProfileMessage">Wiadomość</String>
 		<String Name="ProgressBack">Pasek pobierania - tło</String>
 		<String Name="ProgressCompress">Pasek pobierania - zdekompres. część</String>
 		<String Name="ProgressDone">Pasek pobierania - skończone części</String>
@@ -512,6 +499,7 @@
 		<String Name="RefreshUserList">Odswież listę użytkowników</String>
 		<String Name="Reliability">Niezawodność</String>
 		<String Name="Requesting">Zapytanie</String>
+		<String Name="RequestingList">Requesting file list</String>
 		<String Name="Remove">&amp;Usuń</String>
 		<String Name="RemoveAll">Usuń wszystko</String>
 		<String Name="RemoveExtraSlot">Usuń extra slot</String>
@@ -546,23 +534,18 @@
 		<String Name="Separator">Separator</String>
 		<String Name="Server">Serwer</String>
 		<String Name="SetPriority">Ustaw priorytet</String>
-		<String Name="SetczdcAlternateLimiting">Alternatywne Limitowanie od</String>
 		<String Name="SetczdcBackColor">Kolor tla</String>
 		<String Name="SetczdcBlackWhite">Czarno - Bialy</String>
-		<String Name="SetczdcBold">Pogrub Autorów wiadomości na czacie</String>
 		<String Name="SetczdcCzcharsDisable">Usuń znaki diakrytyczne</String>
 		<String Name="SetczdcDefaultStyle">Domyślny styl</String>
 		<String Name="SetczdcDisconnectingEnable">Włącz rozłaczanie wolno pobieranych plików</String>
 		<String Name="SetczdcDownloadSpeed">Pobieranie</String>
-		<String Name="SetczdcEnableLimiting">Włącz Limitowanie Transferów</String>
 		<String Name="SetczdcErrorColor">Kolor błędu</String>
 		<String Name="SetczdcHDownSpeed">I całkowita prędkość pobierania ponad</String>
 		<String Name="SetczdcIDownSpeed">Rozłącz pobieranie, gdy prędkość poniżej</String>
 		<String Name="SetczdcMagnetUriHandler">Instaluj na starcie obslugę Magnet Linków</String>
 		<String Name="SetczdcMinFileSize">I rozmiar pliku jest ponad</String>
-		<String Name="SetczdcNoteDownload">* Jesli Limitowanie włączone, to "Pobieranie" wynosi max. 7 x "Wysyłanie" !!!</String>
 		<String Name="SetczdcNoteSmallUp">* Minisloty Wysyłania =&gt; Sloty do wysyłania Listy plików i Małych plików.</String>
-		<String Name="SetczdcNoteUpload">* Minimalny Limit Wysyłania to 5*sloty + 4 !!!</String>
 		<String Name="SetczdcPassiveSearch">Zawsze używaj trybu pasywnego podczas szukania (użyj tylko, gdy wiesz co robisz!)</String>
 		<String Name="SetczdcPmLines">linie z LOGa w prywatnej wiadomości</String>
 		<String Name="SetczdcPreview">Podgląd</String>
@@ -570,7 +553,6 @@
 		<String Name="SetczdcProgressbarColors">Kolor Paska Postępu</String>
 		<String Name="SetczdcProgressbarText">Kolor Tekstu Paska Postępu</String>
 		<String Name="SetczdcRemoveForbidden">Usuń Zakazane (niedociągi: Kazaa, Win MX, GetRight, eMule, AirDC++)</String>
-		<String Name="SetczdcSecondaryLimiting">Drugie Limitowanie Transferów</String>
 		<String Name="SetczdcSlowDisconnect">Rozłączanie wolnych pobierań</String>
 		<String Name="SetczdcSmallFiles">Rozmiar małego pliku</String>
 		<String Name="SetczdcSmallUpSlots">Minisloty wysyłania</String>
@@ -579,7 +561,6 @@
 		<String Name="SetczdcTextStyle">Czcionka</String>
 		<String Name="SetczdcTimeDown">Ponad</String>
 		<String Name="SetczdcTo">do</String>
-		<String Name="SetczdcTransferLimiting">Limitowanie Transferów</String>
 		<String Name="SetczdcUpload">Wyślij</String>
 		<String Name="SetczdcUploadSpeed">Wysyłanie</String>
 		<String Name="SetczdcWinamp">Winamp</String>
@@ -589,7 +570,6 @@
 		<String Name="SettingsAddFolder">Dod&amp;aj folder</String>
 		<String Name="SettingsAdlsBreakOnFirst">Wstrzymaj wyszukiwanie na pierwszym pasującym wyniku ADLSearch</String>
 		<String Name="SettingsAdvanced">Zaawansowane</String>
-		<String Name="SettingsAdvancedShowShareCheckedUsers">Pokaż użytkowników ze sprawdzonym share</String>
 		<String Name="SettingsAdvancedSuppressMainChat">Nie wyświetlaj rozmów na czacie</String>
 		<String Name="SettingsAdvanced3">Dla Ekspertów</String>
 		<String Name="SettingsAllowUntrustedClients">Zezwól na połączenia TLS do klientów bez zaufanego certyfikatu</String>
@@ -615,14 +595,8 @@
 		<String Name="SettingsBoldOptions">Pogrubienie zakładki przy zmianie zawartości</String>
 		<String Name="SettingsCertificates">Certyfikat Bezpieczenstwa</String>
 		<String Name="SettingsClearSearch">Wyczyść okno wyszukiwania po każdym wyszukiwaniu</String>
-		<String Name="SettingsClients">Klienty</String>
 		<String Name="SettingsColorAlternate">Wyszukane alternatywy</String>
-		<String Name="SettingsColorBadClient">Zły klient</String>
-		<String Name="SettingsColorBadFilelist">Zła lista plików/pliki śmieci</String>
-		<String Name="SettingsColorClientChecked">Klient sprawdzony</String>
 		<String Name="SettingsColorFavorite">Ulubiony</String>
-		<String Name="SettingsColorFilelistChecked">Lista plików sprawdzona</String>
-		<String Name="SettingsColorFullChecked">Gruntownie sprawdzony</String>
 		<String Name="SettingsColorIgnored">Ignorowany</String>
 		<String Name="SettingsColorNormal">Normalny</String>
 		<String Name="SettingsColorReserved">Ma zarezerwowany slot</String>
@@ -640,7 +614,6 @@
 		<String Name="SettingsDefaultAwayMsg">Wiadomość w razie nieobecności (AWAY)</String>
 		<String Name="SettingsDirect">Połączenie bezpośrednie</String>
 		<String Name="SettingsDirectories">Katalogi</String>
-		<String Name="SettingsDisplayCheatsInMainChat">Wyświetl informacje o oszustach na czacie</String>
 		<String Name="SettingsDisplayDcUpdate">Nie powiadamiaj o nowych wersjach AirDC++ (version.xml będzie nadal pobierany)</String>
 		<String Name="SettingsDontDlAlreadyShared">Nie pobieraj plików będących już w share</String>
 		<String Name="SettingsDownconn">Pol. pobierań co (sek.)</String>
@@ -652,7 +625,6 @@
 		<String Name="SettingsExpandQueue">Automatycznie rozwijaj katalogi w Kolejce Pobierania</String>
 		<String Name="SettingsExtensions">Rozszerzenia</String>
 		<String Name="SettingsExternalIp">Zewnętrzny / WAN IP</String>
-		<String Name="SettingsFakedetect">Wykrywacz Oszustw</String>
 		<String Name="SettingsFavShowJoins">Pokaż wejścia/wyjscia TYLKO Ulubionych Uzytkowników</String>
 		<String Name="SettingsFavoriteDirs">Ulubione katalogi pobieranych plików</String>
 		<String Name="SettingsFavoriteDirsPage">Ulubione</String>
@@ -751,7 +723,7 @@
 		<String Name="SettingsSpeedsNotAccurate">UWAGA!Z powodu zmian prędkości pobierania, brak 100% skuteczności</String>
 		<String Name="SettingsStatusInChat">Pokaż wiadomości statusu w oknie głównym</String>
 		<String Name="SettingsTcpPort">TCP</String>
-		<String Name="SettingsTlsPort">TLS</String>
+		<String Name="SettingsTlsPort">TLS/TCP</String>
 		<String Name="SettingsTextStyles">Kolory i Czcionki</String>
 		<String Name="SettingsTimeStamps">Pokaż znacznik czasu na czacie</String>
 		<String Name="SettingsTimeStampsFormat">Format czasu</String>
@@ -817,8 +789,9 @@
 		<String Name="SpecifySearchString">Sprecyzuj wyszukiwany ciąg</String>
 		<String Name="SpecifyServer">Sprecyzuj serwer do połączenia</String>
 		<String Name="Speed">Predkość</String>
-		<String Name="Status">Status</String>
+		<String Name="SslError">Błąd SSL</String>
 		<String Name="Started">Rozpoczęto</String>
+		<String Name="Status">Status</String>
 		<String Name="StealthMode">Emuluj DC++ na tym hubie</String>
 		<String Name="StoredPasswordSent">Przechowywane hasło wysłane...</String>
 		<String Name="StringNotFound">Nie znaleziono szukanego ciagu: </String>
@@ -826,11 +799,11 @@
 		<String Name="Suspend">Zawieś</String>
 		<String Name="TabsOnTop">Zakładki na wierzchu</String>
 		<String Name="Tag">Tag</String>
-		<String Name="TargetRemoved">Target removed</String>
+		<String Name="TargetFileExists">Plik juz istnieje w folderze docelowym Pobierania</String>
 		<String Name="TargetFilenameTooLong">Nazwa docelowego pliku zbyt długa</String>
+		<String Name="TargetRemoved">Cel usunięto</String>
 		<String Name="Tib">TiB</String>
 		<String Name="TcpPortBusy">Nie można otworzyć portu TCP/TLS. Transfer plików nie bedzie działał poprawnie dopóki nie zmienisz ustawień lub nie wyłączysz aplikacji, która moze używać wspomniany port TCP/TLS</String>
-		<String Name="TextFakepercent">Akceptowana ilosc śmieci w %</String>
 		<String Name="TextManual">Ręczne ustawienie liczby segmentów</String>
 		<String Name="Time">Czas</String>
 		<String Name="TimeLeft">Czas pozostały</String>
@@ -862,6 +835,7 @@ Domyslnie: %H:%M:%S</String>
 		<String Name="TimestampHelpDesc">Znaczniki czasowe - Pomoc</String>
 		<String Name="TimestampsDisabled">Znaczniki czasowe wyłączone</String>
 		<String Name="TimestampsEnabled">Znaczniki czasowe włączone</String>
+		<String Name="TooLargeList">Wielkość przekracza maksymalny rozmiar listy plików (256 MB)</String>
 		<String Name="TooMuchData">Wyslono więcej danych niż oczekiwano</String>
 		<String Name="Total">Łacznie: </String>
 		<String Name="Transferlistdblclickaction">Podwójny klik na Liście Transferów</String>
@@ -893,6 +867,7 @@ Domyslnie: %H:%M:%S</String>
 		<String Name="UpnpFailedToCreateMappings">Mapowanie portu nie powiodło się. Proszę ustawić ponownie swój NAT.</String>
 		<String Name="UpnpFailedToGetExternalIp">Pobranie zewnętrznego IP przez UPnP nie powiodło się. Proszę ustawić IP samodzielnie.</String>
 		<String Name="UpnpFailedToRemoveMappings">Usuwanie zmapowanego portu nie powiodło się</String>
+		<String Name="UseExplorerTheme">Użyj motywu tła Explorera do wyświetlania list oraz drzewek</String>
 		<String Name="User">Użytkownik</String>
 		<String Name="UserCmdCommand">Komenda</String>
 		<String Name="UserCmdContext">Menu kontekstowe</String>
@@ -904,7 +879,6 @@ Domyslnie: %H:%M:%S</String>
 		<String Name="UserCmdParameters">Parametery</String>
 		<String Name="UserCmdPm">PM</String>
 		<String Name="UserCmdPreview">Tekst wysyłany do huba</String>
-		<String Name="UserCmdRaw">Raw</String>
 		<String Name="UserCmdSearchMenu">Menu Szukaj</String>
 		<String Name="UserCmdTo">Do</String>
 		<String Name="UserCmdType">Rodzaj Komendy</String>
@@ -928,12 +902,12 @@ Do: odbiorca PM
 Tylko raz: Wyslij raz dla uzytkownika z ramki szukania
 W parametrach, mozesz uzyc %[xxx] ilosci oraz wyznacznik daty/czasu (%Y, %m, ...). Dostepne parametry:
 %[myNI]: twoj wlasny nick
-%[userNI]: nick uzytkownika (uzytkownik &amp; tylko w kontekscie szukania)
-%[userTAG]: tag uzytkownika(uzytkownik &amp; tylko w kontekscie szukania)
-%[userDE]: opis uzytkownika (uzytkownik &amp; tylko  w kontekscie szukania)
-%[userEM]: email uzytkownika(uzytkownik &amp; tylkow kontekscie szukania)
-%[userSS]: dokladne share uzytkownika w bajtach (uzytkownik &amp; tylko w kontekscie szukania)
-%[userSSshort]: share uzytkownika w bajtach (sformatowane) (uzytkownik &amp; tylko w kontekscie szukania)
+%[userNI]: nick uzytkownika (uzytkownik tylko w kontekscie szukania)
+%[userTAG]: tag uzytkownika(uzytkownik tylko w kontekscie szukania)
+%[userDE]: opis uzytkownika (uzytkownik tylko  w kontekscie szukania)
+%[userEM]: email uzytkownika(uzytkownik tylkow kontekscie szukania)
+%[userSS]: dokladne share uzytkownika w bajtach (uzytkownik tylko w kontekscie szukania)
+%[userSSshort]: share uzytkownika w bajtach (sformatowane) (uzytkownik tylko w kontekscie szukania)
 %[userI4]: ip uzytkownika (jezeli dostarczone przez hub)
 %[fileFN]: nazwa pliku (tylko w kontekscie szukania)
 %[line:reason]: otwiera okno pytajac o powod \"reason\"</String>
@@ -1081,22 +1055,6 @@ Pusty = Domyślne -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</Stri
 		<String Name="UseRegexpOrWc">Użyj regexp lub wildcards</String>
 		<String Name="IgnoredUsers">Ignorowani użytkownicy</String>
 		<String Name="SettingsAirdcpage">AirDC++</String>
-		<String Name="PgBlocklist">PeerGuardian Blocklist</String>
-		<String Name="PgBlocked">Zablokowany przez PeerGuardian</String>
-		<String Name="PgNotRunning">PeerGuardian nie jest uruchomiony...</String>
-		<String Name="PgRunning">PeerGuardian dziala z % zakresów IP.</String>
-		<String Name="PgRunningIdle">PeerGuardian działa lecz nie jest aktywny.</String>
-		<String Name="PgAltSoft">Niezależny program blokujący wykryty!</String>
-		<String Name="PgLog">Rób dziennik aktywności PeerGuardian</String>
-		<String Name="PgListViewer">Podgląd Listy PeerGuardian</String>
-		<String Name="PgViewerLoading">Załądowano listę, proszę czekać...</String>
-		<String Name="PgViewerEmpty">Lista jest pusta lub format listy nie jest wspomagany.</String>
-		<String Name="PgRangeCount">Suma zakresów IP</String>
-		<String Name="PgTester">PeerGuardian Tester</String>
-		<String Name="PgTesterNoMatch">To IP nie jest blokowane</String>
-		<String Name="PgListOptions">Właściwości Blocklist</String>
-		<String Name="PgCurrentList">Obecna lista:</String>
-		<String Name="PgUpdateLocation">Aktualizuj serwer:</String>
 		<String Name="Incoming">przychodzące</String>
 		<String Name="Outgoing">wychodzące</String>
 		<String Name="Begin">Rozpocznij</String>
@@ -1170,7 +1128,7 @@ Pusty = Domyślne -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</Stri
 		<String Name="FlashWindowOnPm">Migaj oknem PM</String>
 		<String Name="FlashWindowOnNewPm">Migaj oknem PM jedynie od nowego użytkownika</String>
 		<String Name="FlashWindowOnMynick">Migaj oknem na wezwanie mojego nicku na PM/Hubie</String>
-		<String Name="SettingsAirautosearch">Auto szukanie</String>
+		<String Name="SettingsAirsearch">Search</String>
 		<String Name="AutosearchEnable">Wyłącz szukanie dla sprecyzowanych plików / TTH</String>
 		<String Name="AutosearchEnableTime">Automatycznie szukaj co</String>
 		<String Name="AutosearchRecheckText">Recheck All items after</String>
@@ -1180,34 +1138,11 @@ Pusty = Domyślne -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</Stri
 		<String Name="SearchTth">Szukaj wg TTH</String>
 		<String Name="Pause">Pauza</String>
 		<String Name="SettingsAirappearance">AirDC++\Wygląd</String>
-		<String Name="PgSetting">PeerGuardian</String>
-		<String Name="PgReload">Przeladuj Blocklist</String>
-		<String Name="PgUpdate">Zaktualizuj Blocklist</String>
-		<String Name="PgView">Pokaz Blocklist</String>
-		<String Name="PgStatRunBut">Status: Wlaczony lecz nie aktywny.</String>
-		<String Name="PgStatRunWith">Status: Aktywny z</String>
-		<String Name="PgIp"> Zakres IP.</String>
-		<String Name="PgNotRun">Status: Wylaczony</String>
-		<String Name="PgBlockReload">Status: Blocklist przeladowano, z </String>
-		<String Name="PgAbusive">Status: Wykryto nadużycie!</String>
-		<String Name="PgSoftDetect">Status: Osobne program blokujacy wykryty!</String>
-		<String Name="PgDownloading">Pobieranie...</String>
-		<String Name="PgOut">Wychodzace polaczenia</String>
-		<String Name="PgIn">Przychodzace polaczenia</String>
-		<String Name="PgSearches">Wyszukiwania</String>
-		<String Name="PgRes">!Ważne, Peerguardian zużywa źródeł, więc pomyśl czy na pewno chcesz go używać</String>
-		<String Name="PgUptodate">Your blocklist is now up-to-date.</String>
-		<String Name="PgUpdated">Blocklist zaktualizowana</String>
-		<String Name="PgFinished">Zakonczono!</String>
-		<String Name="PgDlfail">Pobieranie blocklist nie powiodlo sie.</String>
-		<String Name="PgUpdatefail">Aktualizacja blocklist nie powiodla sie.</String>
 		<String Name="GetIp">Pobież IP"</String>
 		<String Name="UseHighlight">Użyj podświetlenia</String>
 		<String Name="SettingsDupes">Oszukuj kolor tła</String>
 		<String Name="SettingsDupeDescription">Kolor tła użyty w liscie plików by pokazać pliki już udostępnione</String>
 		<String Name="SettingsShowQueueBars">Pokaż pasek stanu w kolejce</String>
-		<String Name="ExclChecks">Automatyczne sprawdzanie CDM</String>
-		<String Name="SettingsUseCdm">Użyj CDM (Swiatowe)</String>
 		<String Name="SettingsLanguage">Język</String>
 		<String Name="SettingsLswe">Szwedzki</String>
 		<String Name="SettingsLfin">Fiński</String>
@@ -1223,12 +1158,7 @@ Pusty = Domyślne -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</Stri
 		<String Name="OpenFirst">Otwórz pierwsze X hubów przy starcie</String>
 		<String Name="SearchByTth">Szukaj wg TTH</String>
 		<String Name="Paste">Wklej</String>
-		<String Name="ProtUsers">Chronieni użytkownicy</String>
-		<String Name="ProtDesc">Użyj ; jako separatora. Wildcards są możliwe.</String>
 		<String Name="SearchSites">Szukaj na stronach</String>
-		<String Name="SearchGoogle">Google</String>
-		<String Name="SearchUrl">Jako Url</String>
-		<String Name="SearchImdb">Imdb</String>
 		<String Name="BlackTheme">Czarny styl</String>
 		<String Name="ImportTheme">Importuj styl</String>
 		<String Name="ExportTheme">Eksportuj styl</String>
@@ -1247,7 +1177,6 @@ Pusty = Domyślne -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</Stri
 		<String Name="DirectoryShared">Katalog już udostępniony</String>
 		<String Name="DirectoryParent">Usuń wszystkie podkatalogi zanim dodasz ten</String>
 		<String Name="SettingsOverlapChunks">Powolna cześć będzie uzupełniona przez szybszego użytkownika przy kończeniu pliku</String>
-		<String Name="CheckFoundPgMatch">PeerGuardian znalazł: </String>
 		<String Name="OpenLogsInternal">Otwórz dzienniki plików niezleżnie (wyświetlanie może sie zmniejszyć przy otwieraniu dzienników dużych plików</String>
 		<String Name="MenuOpenSystemlog">Otwórz dziennik systemowy</String>
 		<String Name="Name">Nazwa</String>
@@ -1272,6 +1201,7 @@ Pusty = Domyślne -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</Stri
 		<String Name="ProppageUrl">URL</String>
 		<String Name="ProppageFavUser">Ulubiony użytkownik</String>
 		<String Name="ProppageOperator">Operator</String>
+		<String Name="ProppageNorm">Other users</String>
 		<String Name="MaxResizeLines">Max zmiana rozmiaru linii</String>
 		<String Name="DontShareEmptyDirs">Nie udostępniaj pustych katalogów</String>
 		<String Name="OnlyShareFullDirs">Udostępniaj jedynie w pełni zindeksowane katalogi</String>
@@ -1279,5 +1209,62 @@ Pusty = Domyślne -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</Stri
 		<String Name="StAirdcSlot">Dodatkowe sloty dla innych użytkowników AirDC++(działa od wersji 2.05 w górę)</String>
 		<String Name="SettingsDupeSearch">Użyj trefnego koloru dla wyszukiwania</String>
 		<String Name="SettingsLrus">Rosyjski</String>
+		<String Name="FileAlreadyShared">Próbujesz pobrać plik ltóry już udostępniasz. Plik: </String>
+		<String Name="PasswdProtectStatic">Ochrona klienta</String>
+		<String Name="PasswdProtectChckbox">Włącz ochronę hasłem</String>
+		<String Name="PasswordDesc">Prosze wpisać hasło:</String>
+		<String Name="PasswordTitle">Aby wykonać tę czynność potrzebna jest autoryzacja</String>
+		<String Name="Unlock">Odblokuj</String>
+		<String Name="PasswdProtectTrayChckbox">Chroń pasek</String>
+		<String Name="Note">Ważne: jeżeli wyłączysz ochronę hasłem to twoje hasło zostanie zresetowane!</String>
+		<String Name="ReaddAll">Dodaj wszystkie źródła</String>
+		<String Name="HubNotProtected">Nie wymagano/Nie podano hasła przy logowaniu, rozłączono z hubem.</String>
+		<String Name="DisallowConnectionToPassedHubs">Automatycznie rozłącz huby na których nie jesteś zarejestrowany</String>
+		<String Name="DontShareDownloadDirectory">Folder docelowy pobierania nie może zostać udostępniony</String>
+		<String Name="TotalTimeLeft">Zostało czasu</String>
+		<String Name="BoldHubTabsOnKick">Pogrub zakładki huba gdy wwyświetli się wiadomość kick</String>
+		<String Name="Skiplist">Skiplist, Wildcards, Separator | </String>
+		<String Name="SettingsSearhSkiplistPreset">Ustawienia Search Skiplist, odseparuj przy użyciu | *wildcards są dozwolone</String>
+		<String Name="SettingsAsearch">Auto Wyszukiwanie</String>
+		<String Name="Preset1">Ustawienie1</String>
+		<String Name="Preset2">Ustawienie2</String>
+		<String Name="Preset3">Ustawienie3</String>
+		<String Name="DirectoryIsHidden">Katalog jest ukryty</String>
+		<String Name="DirectoryNotFound">Katalog nie jest udostępniony</String>
+		<String Name="Group">Grupa</String>
+		<String Name="DisableRefreshOnSharepage">Wyłącz odświerzanie listy przy opuszczeniu ustawień udostępniania</String>
+		<String Name="RefreshVnameOnSharepage">Odświerzanie listy tylko w momencie opuszczania ustawień udostępniania</String>
+		<String Name="QueueSize">Rozmiar kolejki</String>
+		<String Name="AutoAddSource">Automatycznie dodaj źródła wyszukiwania</String>
+		<String Name="Update">Aktualizuj</String>
+		<String Name="UpnpNoImplementation">Brak dostępu funkcji UPnP</String>
+		<String Name="UpnpSuccessfullyCreatedMappings">Utworzono mapowanie portów</String>
+		<String Name="UpdateClient">Pliki aktualizacji zostały pobrane. Czy chcesz aktualizować? (AirDC++ zostanie zamknięte)</String>
+		<String Name="UpdateFileDetected">Updater File detected. Do you Wish to update? (AirDC++ will exit)</String>
+		<String Name="TestWrite">Test Write to AirDC++ folders on startup</String>
+		<String Name="SettingsIncomingRefreshTime">Czas odświerzania przychodzących</String>
+		<String Name="SettingsUseAdls">Use ADLSearch on Filelists</String>
+		<String Name="SettingsUseAdlsOwnList">Use ADLSearch on Own FileList</String>
+		<String Name="SettingDontDlAlreadyQueued">Dont Download Files already in Queue</String>
+		<String Name="FileWithSameTth">File with same TTH allready exists in Queue</String>
+		<String Name="FavShowJoin">Show User Joins / Parts</String>
+		<String Name="UpnpRemovedMappings">Successfully removed port mappings</String>
+		<String Name="SettingsDownloadsExpand">Auto Expand Downloads in TransferView</String>
+		<String Name="SystemShowFinishedUploads">Show Finished Uploads in System Log</String>
+		<String Name="SystemShowFinishedDownloads">Show Finished Downloads in System Log</String>
+		<String Name="Wizard">Settings Wizard</String>
+		<String Name="FormatRelease">Format Release Names as Links in chat</String>
+		<String Name="CopyDirectory">Copy Directory</String>
+		<String Name="SearchForAlternatesDir">Search Directory for alternatives</String>
+		<String Name="ErrorHashingCrc32">calculated CRC32 does not match the one found in SFV file.</String>
+		<String Name="SettingsShareSfv">Don't perform SFV check for files being hashed into share</String>
+		<String Name="SearchDirectory">Search Directory</String>
+		<String Name="SearchGoogle">Search Google</String>
+		<String Name="SearchGoogleTitle">Search Google (title only)</String>
+		<String Name="SearchGoogleFull">Search Google (full release name)</String>
+		<String Name="SearchTvcom">Search TV.com</String>
+		<String Name="SearchImdb">Search Imdb</String>
+		<String Name="SearchMetacritic">Search Metacritic</String>
+		<String Name="FavLogChat">Log Mainchat</String>
 	</Strings>
 </Language>
