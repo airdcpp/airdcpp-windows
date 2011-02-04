@@ -691,8 +691,15 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					//do we need to see anything else on own list?
 					copyMenu.CreatePopupMenu();
 					SearchMenu.CreatePopupMenu();
+					if(ii->file->getAdls())			{
+						pShellMenu->AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
+					}
+					if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE ) {				
+						pShellMenu->AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+					}
 					pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 					pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
+					pShellMenu->AppendMenu(MF_SEPARATOR);
 					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
 					pShellMenu->AppendMenu(MF_SEPARATOR);
@@ -1532,13 +1539,12 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 		if(sr != NULL) {
 			if(!mylist) {
 				//check if the file or dir is a dupe, then use the dupesetting color
-				if( ( ii->type == ItemInfo::FILE && ii->file->getDupe() ) || 
-					( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::DUPE )
-					) {
+				if ( ( ii->type == ItemInfo::FILE && ii->file->getDupe() ) || 
+					( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::DUPE )) {
 						if (BOOLSETTING(DUPE_TEXT)){
-						cd->clrText = SETTING(DUPE_COLOR);
+							cd->clrText = SETTING(DUPE_COLOR);
 						} else {
-						cd->clrTextBk = SETTING(DUPE_COLOR);
+							cd->clrTextBk = SETTING(DUPE_COLOR);
 						}
 
 				//if it's a partial dupe, try to use some simple blending to indicate that
@@ -1555,9 +1561,9 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 					
 					if (BOOLSETTING(DUPE_TEXT)){
 						cd->clrText = RGB(r, g, b);
-						} else {
+					} else {
 						cd->clrTextBk = RGB(r, g, b);
-						}
+					}
 					
 				}
 			}

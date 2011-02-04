@@ -179,8 +179,8 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 10240000);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, true);
-			SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SHARE, "*All-Files-CRC-OK*|*xCOMPLETEx*|*.srt|*.iso|*.torrent|*.banana|*.sub|*.exe|*.imdb.nfo|*.Kolla.nfo|*.ioFTPD|*.img|*.idx|*.debug|*.missing|*-missing|*.rushchk.log|*.msg|*.message|*.bin|*.mrg|*.txt|*.tmp|*.html|*.htm|*.xml|*.pls|*.lst|*.lnk|*.url|*.ogg|*.dat|*.PNG|*.sfk|*.pdf|*.sup|*.bad|*.crc|*.bmp|*.ini|*.log|*.bc!|*.cue|*.nrg|*.bat|mdb.nfo|*file_id.diz|*Setup.ini|*.ccd|*.checked|*.filled|*.permissions|*Thumbs.db*|*.complete|(incomplete)|*RaidenFTPD32*|*dFresh*|*.System Volume Information|*.RECYCLER|*.dctmp|*.getright|*.antifrag|*.jc|*.!ut|*.scn|*.asd|*.mxm|*.conflict|*.C½¬ív”|*(1)*|*(2)*&#124;*(3)*|*(4)*|*(5)*|*(6)*|*(7)*|*(8)*|* (9)*|*xnt.nu.txt*|*.!ut**|*.ts*|*.raidenftpd.acl|*.SimSfvChk.log|Descript.ion|*.upChk.log|*(1).nfo|*(1).sfv|*(2).nfo|*(2).sfv|mvstcdxx.lst|*COMPLETE ) - [VH]|*.!ut|(incomplete)|[COMPLETE|COMPLETE]|[100%]|[TK]|%]-[");
-			SettingsManager::getInstance()->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, false);
+			SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SHARE, "(.*(\\.(scn|asd|lnk|cmd|conf|dll|url|log|crc|dat|sfk|mxm|txt|message|iso|inf|sub|exe|img|bin|aac|mrg|tmp|xml|sup|ini|db|debug|pls|ac3|ape|par2|htm(l)?|bat|idx|srt|doc(x)?|ion|cue|b4s|bgl|cab|cat|bat)$))|((All-Files-CRC-OK|xCOMPLETEx|imdb.nfo|- Copy|(.*\\(\\d\).*)).*$)");
+			SettingsManager::getInstance()->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
 
 			//add more here
 			
