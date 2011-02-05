@@ -152,7 +152,6 @@
 #define IDD_DIALOG1                     314
 #define IDD_WIZARD                      314
 #define IDD_DIALOG2                     315
-#define IDI_ICON11                      318
 #define IDI_GER                         318
 #define IDI_ICON1                       324
 #define IDI_FIN                         324
@@ -736,6 +735,7 @@
 #define IDC_LANG_POL                    1368
 #define IDC_LOG_LINESTEXT               1368
 #define IDC_LANG_POR                    1369
+#define IDC_COMBOBOXEX1                 1369
 #define IDC_NATT                        1370
 #define IDC_CONNECTION_DETECTION        1371
 #define IDC_POPUP_FONT                  1372
@@ -1132,7 +1132,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        319
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1369
+#define _APS_NEXT_CONTROL_VALUE         1370
 #define _APS_NEXT_SYMED_VALUE           135
 #endif
 #endif

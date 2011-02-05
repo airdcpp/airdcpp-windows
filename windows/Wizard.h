@@ -50,10 +50,11 @@ public:
 private:
 		CComboBox ctrlUpload;	
 		CComboBox ctrlDownload;	
-		CComboBox ctrlLanguage;	
+		CComboBoxEx ctrlLanguage;	
 		void fixcontrols();
 		string upload;
 		string download;
+		CImageList Images;
 		
 
 };

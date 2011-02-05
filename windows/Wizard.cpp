@@ -4,7 +4,7 @@
 #include "../client/SettingsManager.h"
 #include "../client/HighlightManager.h"
 #include "Resource.h"
-
+#include "WinUtil.h"
 #include "Wizard.h"
 
 
@@ -58,13 +58,29 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	spin4.Attach(GetDlgItem(IDC_UPLOAD_S_SPIN));
 	spin4.SetRange32(1, 100);
 	spin4.Detach();
-
-
-		for(StringIter i = SettingsManager::Languages.begin(); i != SettingsManager::Languages.end(); ++i)
-		ctrlLanguage.AddString(Text::toT(*i).c_str());
 		
+		
+		Images.CreateFromImage(WinUtil::getIconPath(_T("flags.bmp")).c_str(), 24, 20, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
+		ctrlLanguage.SetImageList(Images);
+		
+		int count = 0;
+		int img = 0;
+		
+		for(StringIter i = SettingsManager::Languages.begin(); i != SettingsManager::Languages.end(); ++i){
+			COMBOBOXEXITEM cbli =  {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
+			CString str = Text::toT(*i).c_str();
+			 cbli.iItem =  count;
+			 cbli.pszText = (LPTSTR)(LPCTSTR) str;
+			 cbli.cchTextMax = str.GetLength();
+			 cbli.iImage = img;
+			 cbli.iSelectedImage = img;
+			ctrlLanguage.InsertItem(&cbli);
+			count = count++;
+			img = img++;
+			//ctrlLanguage.AddString(Text::toT(*i).c_str());
+		}
 		ctrlLanguage.SetCurSel(SETTING(LANGUAGE_SWITCH));
-
+		
 
 		//add the Download speed strings, Using the same list as upload	
 	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
