@@ -674,20 +674,7 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 
 	path += '\\';
 
-	LogManager::getInstance()->message(Text::fromT(path));
-
 	int missing = SFVReader::findMissing(Text::fromT(path));
-
-	string s;
-	stringstream out;
-	out << missing;
-	s = out.str();
-	LogManager::getInstance()->message(s);
-
-	tstring buf;
-	buf.resize(STRING(MISSING_FOUND).length() + 32);
-	_stprintf(&buf[0], CTSTRING(MISSING_FOUND), missing);
-	ctrlStatus.SetText(STATUS_TEXT, &buf[0]);
 	
 	return 0;
 }
