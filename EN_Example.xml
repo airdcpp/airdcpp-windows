@@ -1269,5 +1269,10 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="UnableToMove">Could not Move Finished File</String>
 		<String Name="AsReport">Report Hit in Mainchat</String>
 		<String Name="SettingsLger">German</String>
+		<String Name="FileMissing">FILE MISSING: </String>
+		<String Name="MenuScanMissing">Scan share for missing files</String>
+		<String Name="MissingFinished">Scan for missing files finished, %s missing files found</String>
+		<String Name="ScanFolderMissing">Scan folder for missing files</String>
+		<String Name="MissingFound">%s missing files found</String>
 	</Strings>
 </Language>

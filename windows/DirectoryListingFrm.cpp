@@ -35,6 +35,7 @@
 #include "../client/MerkleTree.h"
 #include "../client/User.h"
 #include "../client/ClientManager.h"
+#include "../client/SFVReader.h"
 #include "TextFrame.h"
 
 DirectoryListingFrame::FrameMap DirectoryListingFrame::frames;
@@ -641,6 +642,56 @@ LRESULT DirectoryListingFrame::onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*
 	return 0;
 }
 
+LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(ctrlList.GetSelectedCount() != 1) 
+		return 0;
+
+	tstring path;
+	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
+
+	if(ii->type == ItemInfo::FILE) {
+		path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+		wstring::size_type end = path.find_last_of(_T("\\"));
+		if(end != wstring::npos) {
+			path = path.substr(0, end);
+		}
+	} else {
+		if(ii->dir->getFileCount() > 0) {
+			DirectoryListing::File::Iter i = ii->dir->files.begin();
+			for(; i != ii->dir->files.end(); ++i) {
+				if((*i)->getDupe())
+					break;
+			}
+			if(i != ii->dir->files.end()) {
+				path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
+				wstring::size_type end = path.find_last_of(_T("\\"));
+				if(end != wstring::npos) {
+					path = path.substr(0, end);
+				}
+			}
+		}
+	}
+
+	path += '\\';
+
+	LogManager::getInstance()->message(Text::fromT(path));
+
+	int missing = SFVReader::findMissing(Text::fromT(path));
+
+	string s;
+	stringstream out;
+	out << missing;
+	s = out.str();
+	LogManager::getInstance()->message(s);
+
+	tstring buf;
+	buf.resize(STRING(MISSING_FOUND).length() + 32);
+	_stprintf(&buf[0], CTSTRING(MISSING_FOUND), missing);
+	ctrlStatus.SetText(STATUS_TEXT, &buf[0]);
+	
+	return 0;
+}
+
 HTREEITEM DirectoryListingFrame::findItem(HTREEITEM ht, const tstring& name) {
 	string::size_type i = name.find('\\');
 	if(i == string::npos)
@@ -697,6 +748,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE ) {				
 						pShellMenu->AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 					}
+					pShellMenu->AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
 					pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 					pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 					pShellMenu->AppendMenu(MF_SEPARATOR);

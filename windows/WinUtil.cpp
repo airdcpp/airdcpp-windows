@@ -353,6 +353,7 @@ void WinUtil::init(HWND hWnd) {
 	file.AppendMenu(MF_STRING, IDC_OPEN_MY_LIST, CTSTRING(MENU_OPEN_OWN_LIST));
 	file.AppendMenu(MF_STRING, IDC_MATCH_ALL, CTSTRING(MENU_OPEN_MATCH_ALL));
 	file.AppendMenu(MF_STRING, IDC_REFRESH_FILE_LIST, CTSTRING(MENU_REFRESH_FILE_LIST));
+	file.AppendMenu(MF_STRING, IDC_SCAN_MISSING, CTSTRING(MENU_SCAN_MISSING));
 	file.AppendMenu(MF_STRING, IDC_OPEN_DOWNLOADS, CTSTRING(MENU_OPEN_DOWNLOADS_DIR));
 	file.AppendMenu(MF_SEPARATOR);
 	file.AppendMenu(MF_STRING, ID_FILE_QUICK_CONNECT, CTSTRING(MENU_QUICK_CONNECT));
@@ -2076,7 +2077,7 @@ string WinUtil::generateStats() {
 		int64_t userTime = userTimeFT.dwLowDateTime | (((int64_t)userTimeFT.dwHighDateTime) << 32);  
 
 		string ret = boost::str(boost::format(
-"\r\n\t-=[ %s %s %s   http://www.airdcpp.net ]=-\r\n\
+"\r\n\t-=[ %s   http://www.airdcpp.net ]=-\r\n\
 \t-=[ Uptime: %s ][ CPU time: %s ]=-\r\n\
 \t-=[ Memory usage (peak): %s (%s) ]=-\r\n\
 \t-=[ Virtual Memory usage (peak): %s (%s) ]=-\r\n\
@@ -2085,12 +2086,7 @@ string WinUtil::generateStats() {
 \t-=[ System: %s (Uptime: %s) ]=-\r\n\
 \t-=[ CPU: %s ]=-")
 
-			% APPNAME % VERSIONSTRING
-#ifdef _WIN64
-			% "64 bit"
-#else
-			% "32 bit"
-#endif
+			% Text::fromT(COMPLETEVERSIONSTRING)
 			% formatTime(Util::getUptime())
 			% Text::fromT(Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64)))
 			% Util::formatBytes(pmc.WorkingSetSize)

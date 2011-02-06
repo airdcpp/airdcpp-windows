@@ -66,6 +66,7 @@
 #include "../client/Thread.h"
 #include "../client/FavoriteManager.h"
 #include "../client/UPnPManager.h"
+#include "../client/SFVReader.h"
 
 
 MainFrame* MainFrame::anyMF = NULL;
@@ -1275,6 +1276,28 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ShareManager::getInstance()->setDirty();
 	ShareManager::getInstance()->refresh(true);
+	return 0;
+}
+
+LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	StringPairList dirs = ShareManager::getInstance()->getDirectories(ShareManager::REFRESH_ALL);
+	int filesMissing = 0;
+	int foldersScanned = 0;
+	for(StringPairIter i = dirs.begin(); i != dirs.end();    i++) {
+		filesMissing + SFVReader::findMissing(i->second);
+		LogManager::getInstance()->message(i->second);
+		foldersScanned++;
+	}
+	string s;
+	stringstream out;
+	out << foldersScanned;
+	s = out.str();
+	LogManager::getInstance()->message(s + " folders scanned");
+
+	string tmp;
+	tmp.resize(STRING(MISSING_FINISHED).size() + 16);
+	tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(MISSING_FINISHED), filesMissing));
+	LogManager::getInstance()->message(tmp);
 	return 0;
 }
 

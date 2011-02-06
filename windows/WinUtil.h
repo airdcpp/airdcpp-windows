@@ -215,7 +215,8 @@ static const toolbarButton ToolbarButtons[] = {
 	{IDC_SHUTDOWN, 18, true, ResourceManager::SHUTDOWN},
 	{IDC_OPEN_DOWNLOADS, 19, false, ResourceManager::MENU_OPEN_DOWNLOADS_DIR},
 	{IDC_REFRESH_FILE_LIST, 20, false, ResourceManager::REFRESH_FILE_LIST},
-	{IDC_SYSTEM_LOG, 21, true, ResourceManager::SYSTEM_LOG}
+	{IDC_SYSTEM_LOG, 21, true, ResourceManager::SYSTEM_LOG},
+	{IDC_SCAN_MISSING, 22, false, ResourceManager::MENU_SCAN_MISSING},
 };
 
 struct winamptoolbarButton {

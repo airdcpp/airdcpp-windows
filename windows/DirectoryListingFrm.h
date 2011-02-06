@@ -133,6 +133,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_TVCOM, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_METACRITIC, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_IMDB, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_FINDMISSING, onFindMissing)
 
 		COMMAND_ID_HANDLER(IDC_SEARCHLEFT, onSearchLeft)
 		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
@@ -189,6 +190,7 @@ public:
 	LRESULT onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onSearchLeft(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 

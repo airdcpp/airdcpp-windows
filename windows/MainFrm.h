@@ -174,6 +174,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_RECONNECT_DISCONNECTED, onReconnectDisconnected)
 		COMMAND_ID_HANDLER(IDC_OPEN_DOWNLOADS, onOpenDownloads)
 		COMMAND_ID_HANDLER(IDC_REFRESH_FILE_LIST, onRefreshFileList)
+		COMMAND_ID_HANDLER(IDC_SCAN_MISSING, onScanMissing)
 		COMMAND_ID_HANDLER(ID_FILE_QUICK_CONNECT, onQuickConnect)
 		COMMAND_ID_HANDLER(IDC_HASH_PROGRESS, onHashProgress)
 		COMMAND_ID_HANDLER(IDC_OPEN_SYSTEMLOG, Opensyslog)
@@ -220,6 +221,7 @@ public:
 	LRESULT onReconnectDisconnected(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onServerSocket(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);	
+	LRESULT onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onActivateApp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onAppCommand(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);

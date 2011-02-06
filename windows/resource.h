@@ -399,6 +399,7 @@
 #define IDC_MOVEUP                      1209
 #define IDC_REFRESH_FILE_LIST           1210
 #define IDC_PRESET                      1210
+#define IDC_SCAN_MISSING               1212
 #define IDC_SETTINGS_ONCE               1212
 #define IDC_OPEN_DOWNLOADS              1213
 #define IDC_SETTINGS_UPLOAD_BAR_COLOR   1214
@@ -995,6 +996,7 @@
 #define IDC_CHATDBLCLICKACTION          10194
 #define IDC_CHAT_DBLCLICK               10195
 #define IDC_HEADER_MENU                 10196
+#define IDC_FINDMISSING                 10197
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
