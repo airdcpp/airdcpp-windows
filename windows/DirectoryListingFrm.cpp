@@ -647,6 +647,7 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 		return 0;
 
 	tstring path;
+	int missing=0;
 	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 
 	if(ii->type == ItemInfo::FILE) {
@@ -677,8 +678,13 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 	}
 	
 	if(path != Util::emptyStringT) {
-	path += '\\';
-	SFVReader::findMissing(Text::fromT(path));
+		path += '\\';
+		missing += SFVReader::findMissing(Text::fromT(path));
+
+		tstring buf;
+		buf.resize(STRING(MISSING_FOUND).length() + 32);
+		_stprintf(&buf[0], CTSTRING(MISSING_FOUND), missing);
+		ctrlStatus.SetText(STATUS_TEXT, &buf[0]);
 	}
 
 	return 0;
