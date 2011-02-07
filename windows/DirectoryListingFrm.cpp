@@ -655,7 +655,11 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 		if(end != wstring::npos) {
 			path = path.substr(0, end);
 		}
-	} else {
+	} else  if(ii->type == ItemInfo::DIRECTORY) {
+				path = Text::toT(dl->getLocalPaths(ii->dir));
+		
+				/* Wont work if the first file in the listing is missing
+
 		if(ii->dir->getFileCount() > 0) {
 			DirectoryListing::File::Iter i = ii->dir->files.begin();
 			for(; i != ii->dir->files.end(); ++i) {
@@ -669,13 +673,14 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 					path = path.substr(0, end);
 				}
 			}
-		}
+		}*/
+	}
+	
+	if(path != Util::emptyStringT) {
+	path += '\\';
+	SFVReader::findMissing(Text::fromT(path));
 	}
 
-	path += '\\';
-
-	int missing = SFVReader::findMissing(Text::fromT(path));
-	
 	return 0;
 }
 
@@ -720,7 +725,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 			}else if(ii->type == ItemInfo::DIRECTORY) {
 				path = Text::toT(dl->getLocalPaths(ii->dir));
-			}
+			}	//if(!path.empty()){
 				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF) { // Check that the file still exists
 					CShellContextMenu shellMenu;
 					shellMenu.SetPath(path);
@@ -767,6 +772,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					}
 					
 				}
+			//}
 		}else{
 
 		fileMenu.CreatePopupMenu();

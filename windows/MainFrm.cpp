@@ -1284,7 +1284,7 @@ LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	int filesMissing = 0;
 	int foldersScanned = 0;
 	for(StringPairIter i = dirs.begin(); i != dirs.end();    i++) {
-		filesMissing + SFVReader::findMissing(i->second);
+		filesMissing += SFVReader::findMissing(i->second);
 		LogManager::getInstance()->message(i->second);
 		foldersScanned++;
 	}
@@ -1296,7 +1296,7 @@ LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 	string tmp;
 	tmp.resize(STRING(MISSING_FINISHED).size() + 16);
-	tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(MISSING_FINISHED), filesMissing));
+	tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(MISSING_FINISHED), Util::toString(filesMissing)));
 	LogManager::getInstance()->message(tmp);
 	return 0;
 }

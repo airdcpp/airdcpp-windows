@@ -661,7 +661,7 @@ void PrivateFrame::updateTitle() {
 //		unsetIconState();
 //		setTabColor(RGB(0, 255,	255));
 		setDisconnected(false);
-		//hubName = hubs.first;
+		hubName = hubs.first;
 		if(isoffline) {
 			tstring status = _T(" *** ") + TSTRING(USER_WENT_ONLINE) + _T(" [") + WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint, priv) + _T(" - ") + hubs.first + _T("] ***");
 			if(BOOLSETTING(STATUS_IN_CHAT)) {
@@ -675,7 +675,7 @@ void PrivateFrame::updateTitle() {
 	//	setIconState();
 	//	setTabColor(RGB(255, 0, 0));
 		setDisconnected(true);
-		tstring status = _T(" *** ") + TSTRING(USER_WENT_OFFLINE);
+		tstring status = _T(" *** ") + TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubName + _T("] ");
 		if(BOOLSETTING(STATUS_IN_CHAT)) {
 			addLine(status, WinUtil::m_ChatTextServer);
 		} else {

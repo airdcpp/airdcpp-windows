@@ -221,7 +221,7 @@ private:
 
 	bool closed;
 	bool isoffline;
-
+	tstring hubName;
 	StringMap ucLineParams;
 
 	void updateTitle();
