@@ -683,7 +683,7 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 
 		tstring buf;
 		buf.resize(STRING(MISSING_FOUND).length() + 32);
-		_stprintf(&buf[0], CTSTRING(MISSING_FOUND), missing);
+		_stprintf(&buf[0], CTSTRING(MISSING_FOUND), Util::toString(missing));
 		ctrlStatus.SetText(STATUS_TEXT, &buf[0]);
 	}
 
