@@ -679,7 +679,7 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 	
 	if(path != Util::emptyStringT) {
 		path += '\\';
-		missing += SFVReader::findMissing(Text::fromT(path));
+		missing += SFVReaderManager::getInstance()->findMissing(Text::fromT(path));
 
 		tstring buf;
 		buf.resize(STRING(MISSING_FOUND).length() + 32);
