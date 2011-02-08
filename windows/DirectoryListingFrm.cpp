@@ -658,33 +658,11 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 		}
 	} else  if(ii->type == ItemInfo::DIRECTORY) {
 				path = Text::toT(dl->getLocalPaths(ii->dir));
-		
-				/* Wont work if the first file in the listing is missing
-
-		if(ii->dir->getFileCount() > 0) {
-			DirectoryListing::File::Iter i = ii->dir->files.begin();
-			for(; i != ii->dir->files.end(); ++i) {
-				if((*i)->getDupe())
-					break;
-			}
-			if(i != ii->dir->files.end()) {
-				path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
-				wstring::size_type end = path.find_last_of(_T("\\"));
-				if(end != wstring::npos) {
-					path = path.substr(0, end);
-				}
-			}
-		}*/
 	}
 	
 	if(path != Util::emptyStringT) {
 		path += '\\';
-		missing += SFVReaderManager::getInstance()->findMissing(Text::fromT(path));
-
-		tstring buf;
-		buf.resize(STRING(MISSING_FOUND).length() + 32);
-		_stprintf(&buf[0], CTSTRING(MISSING_FOUND), Util::toString(missing));
-		ctrlStatus.SetText(STATUS_TEXT, &buf[0]);
+		SFVReaderManager::getInstance()->find(Text::fromT(path));
 	}
 
 	return 0;
