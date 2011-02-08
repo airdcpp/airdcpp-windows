@@ -1280,27 +1280,10 @@ LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 }
 
 LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	StringPairList dirs = ShareManager::getInstance()->getDirectories(ShareManager::REFRESH_ALL);
-	//int filesMissing = 0;
-	//int foldersScanned = 0;
 
-	for(StringPairIter i = dirs.begin(); i != dirs.end();    i++) {
-		SFVReader::find(i->second);
-		SFVReader::findMissing(i->second);
-		LogManager::getInstance()->message("Scanned " + i->second);
-	}
-/* Dont report anything here, Do the reporting thru SFVReader
-	string s;
-	stringstream out;
-	out << foldersScanned;
-	s = out.str();
-	LogManager::getInstance()->message(s + " folders scanned");
-
-	string tmp;
-	tmp.resize(STRING(MISSING_FINISHED).size() + 16);
-	tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(MISSING_FINISHED), Util::toString(filesMissing)));
-	LogManager::getInstance()->message(tmp);
-	*/return 0;
+		SFVReader::scan();
+		
+		return 0;
 }
 
 LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
