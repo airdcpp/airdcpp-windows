@@ -420,8 +420,9 @@ private:
 	bool mylist;
 
 	int statusSizes[10];
-	
-	auto_ptr<DirectoryListing> dl;
+
+	//trying to use unique_ptr to handle it, a replacement for auto_ptr
+	unique_ptr<DirectoryListing> dl;
 
 	StringMap ucLineParams;
 
