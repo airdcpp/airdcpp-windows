@@ -646,25 +646,26 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 	if(ctrlList.GetSelectedCount() != 1) 
 		return 0;
 
-	tstring path;
-	int missing=0;
+	StringList localpaths;
+	
 	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 
 	if(ii->type == ItemInfo::FILE) {
-		path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+		tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 		wstring::size_type end = path.find_last_of(_T("\\"));
 		if(end != wstring::npos) {
 			path = path.substr(0, end);
 		}
+		path += '\\';
+		localpaths.push_back(Text::fromT(path));
+
 	} else  if(ii->type == ItemInfo::DIRECTORY) {
-				path = Text::toT(dl->getLocalPaths(ii->dir));
+			localpaths = dl->getLocalPaths(ii->dir);	
 	}
 	
-	if(path != Util::emptyStringT) {
-		path += '\\';
-		SFVReaderManager::getInstance()->find(Text::fromT(path));
-	}
-
+	
+		SFVReaderManager::getInstance()->scan(localpaths);
+	
 	return 0;
 }
 
@@ -707,9 +708,16 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			tstring path; 
 			if(ii->type == ItemInfo::FILE){
 			path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-			}else if(ii->type == ItemInfo::DIRECTORY) {
-				path = Text::toT(dl->getLocalPaths(ii->dir));
-			}	//if(!path.empty()){
+			
+			} else if(ii->type == ItemInfo::DIRECTORY) {
+				/*TODO fix this for Virtualfolders, now its only 1 paths shellmenu,
+				or Does it really matter paths are correct for files in VirtualPath*/
+				StringList localpaths = dl->getLocalPaths(ii->dir);
+				for(StringIterC i = localpaths.begin(); i != localpaths.end(); i++) {
+					path = Text::toT(*i);
+				}
+			}	
+			//if(!path.empty()){
 				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF) { // Check that the file still exists
 					CShellContextMenu shellMenu;
 					shellMenu.SetPath(path);
