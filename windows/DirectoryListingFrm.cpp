@@ -699,26 +699,27 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			WinUtil::getContextMenuPos(ctrlList, pt);
 		}
 		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-
+		int dirs = 0;
 		OMenu targetMenu, fileMenu, priorityMenu, copyMenu, SearchMenu;
 
 
 
 		if(BOOLSETTING(SHOW_SHELL_MENU) && mylist && (ctrlList.GetSelectedCount() == 1) && (LOBYTE(LOWORD(GetVersion())) >= 5)) {
-			tstring path; 
+			tstring path = Util::emptyStringT; 
 			if(ii->type == ItemInfo::FILE){
 			path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 			
 			} else if(ii->type == ItemInfo::DIRECTORY) {
-				/*TODO fix this for Virtualfolders, now its only 1 paths shellmenu,
-				or Does it really matter paths are correct for files in VirtualPath*/
+				
+				//Fix this Someway
 				StringList localpaths = dl->getLocalPaths(ii->dir);
 				for(StringIterC i = localpaths.begin(); i != localpaths.end(); i++) {
 					path = Text::toT(*i);
-				}
-			}	
-			//if(!path.empty()){
-				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF) { // Check that the file still exists
+					dirs++; //if we count more than 1 its a virtualfolder
+						}	
+					}
+			
+				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF && !path.empty() && (dirs == 1) ){ // Check that the file still exists
 					CShellContextMenu shellMenu;
 					shellMenu.SetPath(path);
 					CMenu* pShellMenu = shellMenu.GetMenu();
@@ -732,9 +733,10 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE ) {				
 						pShellMenu->AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 					}
-					pShellMenu->AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
+					
 					pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 					pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
+					pShellMenu->AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
 					pShellMenu->AppendMenu(MF_SEPARATOR);
 					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
@@ -763,10 +765,11 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 						PostMessage(WM_COMMAND, idCommand);
 					}
 					
-				}
+				} else goto clientmenu;
 			//}
 		}else{
 
+clientmenu:
 		fileMenu.CreatePopupMenu();
 		targetMenu.CreatePopupMenu();
 		priorityMenu.CreatePopupMenu();
@@ -789,6 +792,9 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
 		fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
+		if(mylist)
+		fileMenu.AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
+
 		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
 		fileMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_FOR_ALTERNATES_DIR));
 		fileMenu.AppendMenu(MF_SEPARATOR);
@@ -938,14 +944,14 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		directoryMenu.AppendMenu(MF_STRING, IDC_SEARCHLEFT, CTSTRING(SEARCH));
 
 
-		
+		/*
 		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE+90, CTSTRING(SEARCH_GOOGLE_TITLE));
 		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL+90, CTSTRING(SEARCH_GOOGLE_FULL));
 		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM+90, CTSTRING(SEARCH_TVCOM));
 		SearchMenu.AppendMenu(MF_STRING, IDC_IMDB+90, CTSTRING(SEARCH_IMDB));
 		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC+90, CTSTRING(SEARCH_METACRITIC));
-
+		*/
 		// Strange, windows doesn't change the selection on right-click... (!)
 
 		int n = 0;
