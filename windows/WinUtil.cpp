@@ -2882,9 +2882,14 @@ tstring WinUtil::getDir(tstring dir) {
 		//regexp.Init(_T("((?<=\\).+(?=\\$))"));
 		//dir = regexp.split(dir, Util::emptyStringT);
 		string directory = Text::fromT(dir);
-		directory = directory.substr(0, directory.size()-1);
-		int dpos = directory.rfind("\\");
-		directory = directory.substr(dpos+1,directory.size());
+		if (dir != Util::emptyStringT) {
+			directory = directory.substr(0, directory.size()-1);
+
+			int dpos = directory.rfind("\\");
+			if(dpos != wstring::npos) {
+				directory = directory.substr(dpos+1,directory.size());
+			}
+		}
 		return Text::toT(directory);
 }
 
