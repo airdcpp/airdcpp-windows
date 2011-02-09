@@ -1278,10 +1278,8 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SfvMissing">SFV file possibly missing: </String>
 		<String Name="MultipleNfo">Multiple NFO files found: </String>
 		<String Name="MultipleSfv">Multiple SFV files found: </String>
-		<String Name="NfoMissing">NFO file possibly missing: </String>
-		<String Name="SfvMissing">SFV file possibly missing: </String>
-		<String Name="MultipleNfo">Multiple NFO files found: </String>
-		<String Name="MultipleSfv">Multiple SFV files found: </String>
 		<String Name="ScanStarted">Scan for Missing Files Started...</String>
+		<String Name="DupeFound">Dupe found: </String>
+		<String Name="DupeIsSame">is the same as</String>
 	</Strings>
 </Language>
