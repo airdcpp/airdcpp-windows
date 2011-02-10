@@ -402,3 +402,5 @@ user is asked to update, if user dont wish to update at that time the client wil
 #App icon changeable in icons folder
 #AutoSearch option to post result in mainchat
 #Non Recursive pcre regex matches for adlsearch (still faster than boost?)
+#Scan share for missing files function in MainWindow File menu
+#Scan folder for missing files rightclick in own filelist
