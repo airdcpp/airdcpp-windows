@@ -17,7 +17,7 @@ PropPage::ListItem AirSharingPage::listItems[] = {
 	{ SettingsManager::CHECK_NFO, ResourceManager::CHECK_NFO },
 	{ SettingsManager::CHECK_MP3_DIR, ResourceManager::CHECK_MP3_DIR },
 	{ SettingsManager::CHECK_EXTRA_SFV_NFO, ResourceManager::CHECK_EXTRA_SFV_NFO },
-	{ SettingsManager::CHECK_SAMPLE_EXTRAS, ResourceManager::CHECK_SAMPLE_EXTRAS },
+	{ SettingsManager::CHECK_EXTRA_FILES, ResourceManager::CHECK_EXTRA_FILES },
 	{ SettingsManager::CHECK_DUPES, ResourceManager::CHECK_DUPES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };

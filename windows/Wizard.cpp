@@ -200,7 +200,7 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::CHECK_SFV, true);
 			SettingsManager::getInstance()->set(SettingsManager::CHECK_NFO, true);
 			SettingsManager::getInstance()->set(SettingsManager::CHECK_EXTRA_SFV_NFO, true);
-			SettingsManager::getInstance()->set(SettingsManager::CHECK_SAMPLE_EXTRAS, true);
+			SettingsManager::getInstance()->set(SettingsManager::CHECK_EXTRA_FILES, true);
 			SettingsManager::getInstance()->set(SettingsManager::CHECK_DUPES, true);
 			//add more here
 			
