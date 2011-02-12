@@ -197,7 +197,11 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, true);
 			SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SHARE, "(.*(\\.(scn|asd|lnk|cmd|conf|dll|url|log|crc|dat|sfk|mxm|txt|message|iso|inf|sub|exe|img|bin|aac|mrg|tmp|xml|sup|ini|db|debug|pls|ac3|ape|par2|htm(l)?|bat|idx|srt|doc(x)?|ion|cue|b4s|bgl|cab|cat|bat)$))|((All-Files-CRC-OK|xCOMPLETEx|imdb.nfo|- Copy|(.*\\(\\d\\).*)).*$)");
 			SettingsManager::getInstance()->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
-
+			SettingsManager::getInstance()->set(SettingsManager::CHECK_SFV, true);
+			SettingsManager::getInstance()->set(SettingsManager::CHECK_NFO, true);
+			SettingsManager::getInstance()->set(SettingsManager::CHECK_EXTRA_SFV_NFO, true);
+			SettingsManager::getInstance()->set(SettingsManager::CHECK_SAMPLE_EXTRAS, true);
+			SettingsManager::getInstance()->set(SettingsManager::CHECK_DUPES, true);
 			//add more here
 			
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_RAR);

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by E:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -47,6 +47,7 @@
 #define IDC_LOGMAINCHAT                 134
 #define IDC_FILES                       135
 #define IDC_LOGMAINCHAT2                135
+#define IDC_SETTINGS_SCAN_OPTIONS       135
 #define IDC_COPY_STATUS                 136
 #define IDC_ITEMS                       137
 #define IDC_WINAMP_BACK                 141
@@ -153,6 +154,7 @@
 #define IDD_WIZARD                      314
 #define IDD_DIALOG2                     315
 #define IDI_GER                         318
+#define IDD_DIALOG3                     319
 #define IDI_ICON1                       324
 #define IDI_FIN                         324
 #define IDI_ICON2                       325
@@ -399,7 +401,7 @@
 #define IDC_MOVEUP                      1209
 #define IDC_REFRESH_FILE_LIST           1210
 #define IDC_PRESET                      1210
-#define IDC_SCAN_MISSING               1212
+#define IDC_SCAN_MISSING                1212
 #define IDC_SETTINGS_ONCE               1212
 #define IDC_OPEN_DOWNLOADS              1213
 #define IDC_SETTINGS_UPLOAD_BAR_COLOR   1214
@@ -1103,6 +1105,7 @@
 #define IDC_ALLOW_CONNECTION_TO_PASSED_HUBS 15102
 #define IDR_HUB_OP                      15103
 #define IDR_HUB_REG                     15104
+#define IDC_SCANLIST                    15105
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_BITZI_LOOKUP                20000
 #define IDC_BROWSELIST                  21000
@@ -1132,9 +1135,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        319
+#define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         1370
-#define _APS_NEXT_SYMED_VALUE           135
+#define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

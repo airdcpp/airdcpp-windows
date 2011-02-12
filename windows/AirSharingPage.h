@@ -38,6 +38,7 @@ protected:
 
 	static Item items[];
 	static TextItem texts[];
+	static ListItem listItems[];
 	TCHAR* title;
 
 };

@@ -11,6 +11,17 @@
 #include "WinUtil.h"
 #include "PropertiesDlg.h"
 
+PropPage::ListItem AirSharingPage::listItems[] = {
+	{ SettingsManager::CHECK_MISSING, ResourceManager::CHECK_MISSING },
+	{ SettingsManager::CHECK_SFV, ResourceManager::CHECK_SFV },
+	{ SettingsManager::CHECK_NFO, ResourceManager::CHECK_NFO },
+	{ SettingsManager::CHECK_MP3_DIR, ResourceManager::CHECK_MP3_DIR },
+	{ SettingsManager::CHECK_EXTRA_SFV_NFO, ResourceManager::CHECK_EXTRA_SFV_NFO },
+	{ SettingsManager::CHECK_SAMPLE_EXTRAS, ResourceManager::CHECK_SAMPLE_EXTRAS },
+	{ SettingsManager::CHECK_DUPES, ResourceManager::CHECK_DUPES },
+	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+};
+
 PropPage::TextItem AirSharingPage::texts[] = {
 	{ IDC_ST_MINISLOTS_EXT, ResourceManager::ST_MINISLOTS_EXT },
 	{ IDC_SB_MINISLOTS, ResourceManager::SB_MINISLOTS },
@@ -20,6 +31,7 @@ PropPage::TextItem AirSharingPage::texts[] = {
 	{ IDC_ST_REFRESH_DELAY, ResourceManager::ST_REFRESH_DELAY },
 	{ IDC_MINUTES, ResourceManager::MINUTES },
 	{ IDC_ST_AIRDC_SLOT, ResourceManager::ST_AIRDC_SLOT },
+	{ IDC_SETTINGS_SCAN_OPTIONS, ResourceManager::SETTINGS_SCAN_OPTIONS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -37,7 +49,7 @@ PropPage::Item AirSharingPage::items[] = {
 LRESULT AirSharingPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
-	PropPage::read((HWND)*this, items);
+	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_SCANLIST));
 	
 	// Do specialized reading here
 	return TRUE;
@@ -45,7 +57,7 @@ LRESULT AirSharingPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 
 void AirSharingPage::write() {
 
-	PropPage::write((HWND)*this, items);
+	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SCANLIST));
 	
 		 //set to the defaults
 	if(SETTING(SKIPLIST_SHARE).empty())
