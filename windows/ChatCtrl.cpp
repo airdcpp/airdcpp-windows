@@ -424,7 +424,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 	if(SETTING(FORMAT_RELEASE)) {
 		if(!detectMagnet) {
 			boost::wregex reg;
-			reg.assign(_T("((?<=\\s)([A-Z0-9][A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S*)))(\\S+)-(?=\\w*[A-Z]\\w*)(\\w+)(?=(\\W)?\\s))"));
+			reg.assign(_T("((?<=\\s)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S*)))(\\S+)-((?=\\w*[A-Z]\\w*)|\\d{3,7})(\\w+)(?=(\\W)?\\s))"));
 			tstring::const_iterator start = sMsg.begin();
 			tstring::const_iterator end = sMsg.end();
 			boost::match_results<tstring::const_iterator> result;
@@ -1340,7 +1340,7 @@ tstring word = WordFromPos(pt);
 
 if(!word.empty()) {
 	boost::wregex reg;
-	reg.assign(_T("(([A-Z0-9][A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S*)))(\\S+)-(?=\\w*[A-Z]\\w*)(\\w+))"));
+	reg.assign(_T("((([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S*)))(\\S+)-((?=\\w*[A-Z]\\w*)|\\d{3,7})(\\w+))"));
 	if(boost::regex_match(word, reg)) {
 		if (search) {
 			WinUtil::search(word, 0, false);
