@@ -33,7 +33,9 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	
 	ctrlPad.SetReadOnly(TRUE);
 	ctrlPad.SetFont(WinUtil::font);
-
+	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
+	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
+	ctrlPad.LimitText(0);
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 
 	//might miss some messages
@@ -107,15 +109,16 @@ LRESULT SystemFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, 
 }
 
 void SystemFrame::addLine(time_t t, const tstring& msg) {
-	if(ctrlPad.GetWindowTextLength() > 25000) {
-		//Limit buffer to 25000 characters...
+	//dont know if should go over 64kb
+	if(ctrlPad.GetWindowTextLength() > (128*1024)) {
 		ctrlPad.SetRedraw(FALSE);
-		ctrlPad.SetSel(0, ctrlPad.LineIndex(ctrlPad.LineFromChar(2000)), TRUE);
+		ctrlPad.SetSel(0, ctrlPad.LineIndex(ctrlPad.LineFromChar(2000)));
 		ctrlPad.ReplaceSel(_T(""));
 		ctrlPad.SetRedraw(TRUE);
 	}
-	ctrlPad.AppendText((Text::toT("\r\n[" + Util::getTimeStamp(t) + "] ") + msg).c_str());
 
+	ctrlPad.AppendText((Text::toT("\r\n[" + Util::getTimeStamp(t) + "] ") + msg).c_str());
+	
 }
 
 LRESULT SystemFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -145,5 +148,69 @@ void SystemFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() 
 
 LRESULT SystemFrame::onRefreshSettings(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
     RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+	return 0;
+}
+
+LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
+
+	if(pt.x == -1 && pt.y == -1) {
+		CRect erc;
+		ctrlPad.GetRect(&erc);
+		pt.x = erc.Width() / 2;
+		pt.y = erc.Height() / 2;
+		ClientToScreen(&pt);
+	}
+
+	//POINT ptCl = pt;
+	//ScreenToClient(&ptCl); 
+	//OnRButtonDown(ptCl); add wordpicking etc later...
+
+	OMenu menu;
+	menu.CreatePopupMenu();
+
+		menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
+		menu.AppendMenu(MF_SEPARATOR);
+		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+		menu.AppendMenu(MF_SEPARATOR);
+		if(BOOLSETTING(LOG_SYSTEM)) {
+		menu.AppendMenu(MF_STRING, IDC_OPEN_SYSTEM_LOG, CTSTRING(OPEN_SYSTEM_LOG));
+		menu.AppendMenu(MF_SEPARATOR);
+		}
+		menu.AppendMenu(MF_STRING, ID_EDIT_SELECT_ALL, CTSTRING(SELECT_ALL));
+		menu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR));
+	
+	menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+
+	return 0;
+
+}
+LRESULT SystemFrame::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ctrlPad.Copy();
+	return 0;
+}
+LRESULT SystemFrame::onEditSelectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ctrlPad.SetSelAll();
+	return 0;
+}
+
+LRESULT SystemFrame::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ctrlPad.SetWindowText(_T(""));
+	return 0;
+}
+
+LRESULT SystemFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+
+	CHARRANGE cr;
+	ctrlPad.GetSel(cr);
+	if(cr.cpMax != cr.cpMin) {
+		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
+		ctrlPad.GetSelText(buf);
+		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
+		delete[] buf;
+	}
+
+	WinUtil::search(searchTerm, 0, false);
+	searchTerm = Util::emptyStringT;
 	return 0;
 }

@@ -40,6 +40,7 @@ public:
 	
 	typedef MDITabChildWindowImpl<SystemFrame> baseClass;
 	BEGIN_MSG_MAP(SystemFrame)
+		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
@@ -48,15 +49,21 @@ public:
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_REFRESH_SETTINGS, onRefreshSettings)
+		COMMAND_ID_HANDLER(ID_EDIT_COPY, onEditCopy)
 		COMMAND_ID_HANDLER(IDC_OPEN_SYSTEM_LOG, onSystemLog)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
+		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
+		COMMAND_ID_HANDLER(ID_EDIT_SELECT_ALL, onEditSelectAll)
+		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
 		CHAIN_MSG_MAP(baseClass)
 	ALT_MSG_MAP(SYSTEM_LOG_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onLButton)
 	END_MSG_MAP()
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
-
+	
+	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
@@ -64,7 +71,9 @@ public:
 	LRESULT onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onSystemLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRefreshSettings(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	
+	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onEditSelectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlPad.SetFocus();
@@ -91,9 +100,9 @@ public:
 private:
 	
 	CContainedWindow ctrlClientContainer;
-	CEdit ctrlPad;
+	CRichEditCtrl ctrlPad;
 	CMenu tabMenu;
-
+	tstring searchTerm;
 	virtual void on(Message, time_t t, const string& message) { PostMessage(WM_SPEAKER, (WPARAM)(new pair<time_t, tstring>(t, Text::toT(message)))); }
 	virtual void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
 	void addLine(time_t t, const tstring& msg);

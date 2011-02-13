@@ -1519,7 +1519,27 @@ int WinUtil::textUnderCursor(POINT p, CEdit& ctrl, tstring& x) {
 
 	return start;
 }
+int WinUtil::textUnderCursor(POINT p, CRichEditCtrl& ctrl, tstring& x) {
+	
+	int i = ctrl.CharFromPos(p);
+	int line = ctrl.LineFromChar(i);
+	int c = LOWORD(i) - ctrl.LineIndex(line);
+	int len = ctrl.LineLength(i) + 1;
+	if(len < 3) {
+		return 0;
+	}
 
+	x.resize(len);
+	ctrl.GetLine(line, &x[0], len);
+
+	string::size_type start = x.find_last_of(_T(" <\t\r\n"), c);
+	if(start == string::npos)
+		start = 0;
+	else
+		start++;
+
+	return start;
+}
 bool WinUtil::parseDBLClick(const tstring& aString, string::size_type start, string::size_type end) {
 	if( (strnicmp(aString.c_str() + start, _T("http://"), 7) == 0) || 
 		(strnicmp(aString.c_str() + start, _T("www."), 4) == 0) ||

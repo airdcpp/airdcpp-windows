@@ -166,13 +166,13 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		logMainChat = false;
 		hubshowjoins = false;
 	}
-
+	/*
 	for(int j=0; j<OnlineUser::COLUMN_LAST; j++) {
 		ctrlFilterSel.AddString(CTSTRING_I(columnNames[j]));
 	}
 	ctrlFilterSel.AddString(CTSTRING(ANY));
 	ctrlFilterSel.SetCurSel(0);
-
+	*/
 	WinUtil::SetIcon(m_hWnd, _T("hub.ico"));
 
 	UpdateIcons = true;
