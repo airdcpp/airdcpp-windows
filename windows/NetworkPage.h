@@ -79,49 +79,10 @@ private:
 	void fixControls();
 	void getAddresses();
 
-	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) throw() {
-		downBuf = string((const char*)buf, len);
-	}
+	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) throw();
+	void on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) throw();
+	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& /*aLine*/) throw();
 
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, const string&) throw() {
-		conn->removeListener(this);
-		if(!downBuf.empty()) {
-			SimpleXML xml;
-			xml.fromXML(downBuf);
-			if(xml.findChild("html")) {
-				xml.stepIn();
-				if(xml.findChild("body")) {
-					string x = xml.getChildData().substr(20);
-					if(Util::isPrivateIp(x)) {
-							CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
-							fixControls();
-					}
-					SetDlgItemText(IDC_SERVER, Text::toT(x).c_str());
-					//::MessageBox(NULL, _T("IP fetched: checkip.dyndns.org"), _T("Debug"), MB_OK);
-				} else {
-					if(Util::isPrivateIp(Util::getLocalIp())) {
-							CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
-							fixControls();
-					}
-					SetDlgItemText(IDC_SERVER, Text::toT(Util::getLocalIp()).c_str());
-				}
-			}
-		}
-		::EnableWindow(GetDlgItem(IDC_GETIP), true);
-	}
-
-	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& /*aLine*/) throw() {
-		conn->removeListener(this);
-		{
-			if(Util::isPrivateIp(Util::getLocalIp())) {
-					CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
-					fixControls();
-			}
-			SetDlgItemText(IDC_SERVER, Text::toT(Util::getLocalIp()).c_str());	
-		}
-		::EnableWindow(GetDlgItem(IDC_GETIP), true);
-	}
-	//END
 
 };
 

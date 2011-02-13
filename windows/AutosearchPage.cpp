@@ -124,6 +124,8 @@ LRESULT AutosearchPage::onChange(WORD , WORD , HWND , BOOL& ) {
 				ctrlAutosearch.SetItemText(sel, 2, Text::toT(STRING(DOWNLOAD)).c_str());
 			}else if(dlg.action == 1){
 				ctrlAutosearch.SetItemText(sel, 2, Text::toT(STRING(ADD_TO_QUEUE)).c_str());
+			}else if(dlg.action == 2){
+				ctrlAutosearch.SetItemText(sel, 2, Text::toT(STRING(AS_REPORT)).c_str());
 			}
 
 
@@ -278,6 +280,8 @@ void AutosearchPage::addEntry(const Autosearch::Ptr as, int pos) {
 		lst.push_back(Text::toT("Download"));
 	}else if(as->getAction() == 1){
 		lst.push_back(Text::toT("Add to Queue"));
+	}else if(as->getAction() == 2){
+		lst.push_back(Text::toT("Report Hit in Mainchat"));
 	}
 	int i = ctrlAutosearch.insert(pos, lst, 0, (LPARAM)as->getEnabled());
 	ctrlAutosearch.SetCheckState(i, as->getEnabled());

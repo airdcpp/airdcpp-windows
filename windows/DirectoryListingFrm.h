@@ -486,7 +486,7 @@ private:
 		}
 
 		//cleanup the thread object
-		delete this;
+		delete[] this;
 
 		return 0;
 	}
