@@ -827,9 +827,15 @@ void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, 
 		double LangVersion;
 
 		string url;
+#		ifdef _WIN64
+			if(xml.findChild("URL64")) {
+			url = xml.getChildData();
+		}
+#		else
 		if(xml.findChild("URL")) {
 			url = xml.getChildData();
 		}
+#		endif
 
 		//ApexDC
 		xml.resetCurrentChild();
