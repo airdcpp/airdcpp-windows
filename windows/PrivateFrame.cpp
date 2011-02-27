@@ -175,7 +175,7 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 }
 
 LRESULT PrivateFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if (uMsg != WM_KEYDOWN && uMsg != WM_CUT && uMsg != WM_PASTE) { //ApexDC
+	if (uMsg != WM_KEYDOWN) {
 		switch(wParam) {
 			case VK_RETURN:
 				if( WinUtil::isShift() || WinUtil::isCtrl() ||  WinUtil::isAlt() ) {

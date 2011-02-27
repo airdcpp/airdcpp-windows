@@ -211,7 +211,7 @@ private:
 	OMenu emoMenu;
 	CButton ctrlEmoticons;
 	HBITMAP hEmoticonBmp;
-	//tstring hubName;
+
 
 	HintedUser replyTo;
 	const bool priv;

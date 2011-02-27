@@ -243,6 +243,7 @@
     <ClCompile Include="client\ServerSocket.cpp" />
     <ClCompile Include="client\SettingsManager.cpp" />
     <ClCompile Include="client\SFVReader.cpp" />
+    <ClCompile Include="client\SharedFileStream.cpp" />
     <ClCompile Include="client\ShareManager.cpp" />
     <ClCompile Include="client\SimpleXML.cpp" />
     <ClCompile Include="client\SimpleXMLReader.cpp" />
@@ -340,6 +341,7 @@
     <ClInclude Include="client\ServerSocket.h" />
     <ClInclude Include="client\SettingsManager.h" />
     <ClInclude Include="client\SFVReader.h" />
+    <ClInclude Include="client\SharedFileStream.h" />
     <ClInclude Include="client\ShareManager.h" />
     <ClInclude Include="client\SimpleXML.h" />
     <ClInclude Include="client\SimpleXMLReader.h" />

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by E:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101

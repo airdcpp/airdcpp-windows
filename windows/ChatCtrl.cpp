@@ -54,34 +54,7 @@ ChatCtrl::~ChatCtrl() {
 		emoticonsManager->dec();
 	}
 }
-/*
-void ChatCtrl::AdjustTextSize() {
-	if(GetWindowTextLength() > 25000) {
-		// We want to limit the buffer to 25000 characters...after that, w95 becomes sad...
-		tstring buf;
-		SetRedraw(FALSE);
-		//SetSel(0, LineIndex(LineFromChar(2000)));
-		//ApexDC
-		buf.resize(SetSel(0, LineIndex(LineFromChar(2000))));
-		buf.resize(GetSelText(&buf[0]));
 
-		for(TStringMap::iterator i = magnets.begin(); i != magnets.end();) {
-			tstring::size_type j = 0;
-			if((j = buf.find(i->first)) != tstring::npos) {
-				if(buf[j + i->first.size()] == _T(' ') || buf[j + i->first.size()] == _T('\n')) {
-					magnets.erase(i++);
-					continue;
-				}
-			}
-			++i;
-		}
-		ReplaceSel(_T(""));
-		SetRedraw(TRUE);
-
-		scrollToEnd();
-	}
-}
-*/
 void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
 	SetRedraw(FALSE);
 

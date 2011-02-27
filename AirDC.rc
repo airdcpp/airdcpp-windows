@@ -1668,7 +1668,7 @@ END
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 0,7,8,1
- PRODUCTVERSION 2,0,9,0
+ PRODUCTVERSION 2,1,0,0
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -1690,7 +1690,7 @@ BEGIN
             VALUE "LegalCopyright", "Based on DC++"
             VALUE "OriginalFilename", "AirDC.exe"
             VALUE "ProductName", "AirDC++"
-            VALUE "ProductVersion", "2.09"
+            VALUE "ProductVersion", "2.10"
         END
     END
     BLOCK "VarFileInfo"
@@ -1857,7 +1857,7 @@ BEGIN
     CTEXT           "*Note: Connection speeds will accept custom speed\r\n For ex. 8/1 set Download 8 and Upload 1",IDC_STATIC,8,89,185,26
     LTEXT           "Language:",IDC_STATIC,16,113,137,8
     CONTROL         "Check this to run Wizard on startup, this is here FOR TESTING",IDC_CHECK1,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,249,230,10
+                    "Button",BS_AUTOCHECKBOX | NOT WS_VISIBLE | WS_TABSTOP,14,249,230,10
     EDITTEXT        IDC_MAX_DOWNLOAD_SP,331,36,39,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_DOWN_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,368,35,11,14
     RTEXT           "No new Downloads if speed is over:",IDC_STATIC,211,39,116,8
