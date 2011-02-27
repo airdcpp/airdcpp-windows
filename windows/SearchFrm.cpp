@@ -1311,6 +1311,10 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetDirMenu, CTSTRING(DOWNLOAD_WHOLE_DIR_TO));
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
+			if((SearchInfo*)ctrlResults.getSelectedItem()->isDupe()) {
+			resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+			resultsMenu.AppendMenu(MF_SEPARATOR);
+			}
 			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
 			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES_DIR, CTSTRING(SEARCH_FOR_ALTERNATES_DIR));
 			resultsMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
@@ -1972,7 +1976,25 @@ LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	}
 	return S_OK;
 }
+LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	
+if(ctrlResults.GetSelectedCount() == 1) {
+		const SearchInfo* si = ctrlResults.getSelectedItem();
 
+	try {
+		tstring path;
+		
+		if(si->sr->getType() == SearchResult::TYPE_FILE) {
+			path = Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
+		
+			WinUtil::openFolder(path);
+		}
+	} catch(const ShareException& /*se*/) {
+		//error = Text::toT(se.getError());
+	}
+}
+	return 0;
+}
 /**
  * @file
  * $Id: SearchFrm.cpp 500 2010-06-25 22:08:18Z bigmuscle $
