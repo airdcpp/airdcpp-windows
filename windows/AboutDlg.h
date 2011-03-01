@@ -33,13 +33,16 @@ _T("Ice, Jove, King Wenceslas, Lee, Legolas, Liny, MaynardK, Mlok, Naga, Patrol,
 _T("Testament, Warrior, WereWiking, xAyiDe, XiND and ToH for very nice betatesting :-) and to all donators who support me: ")
 _T("Kulmegil, Michal Seckar, k3dt, majki, mazeboy, Fino, Architect, Ujep, Jeepo, mlok, redsaq, anton009, Lee, share2all");
 static const TCHAR Airthanks[] = 
+_T("Thanks Zinden for Making me part of the project :D\r\n")
 _T("Thanks to Myth for his work on the airdcpp.com site.\r\n")
+_T("Thanks Northwind for the toolbars for 1.0x versions.\r\n")
 _T("Thanks to my GirlFriend to not getting too mad about all spent hours on PC ;).\r\n")
-_T("Thanks to Yada & en_dator for Testing the client and helping to make it better.\r\n")
-_T("Thanks also to all other Test users for making the client better.\r\n")
-_T("Thanks Northwind for the toolbars.\r\n")
+_T("Thanks to Yada & en_dator, Vimmer & Charlie for Testing the client and helping to make it better.\r\n")
+_T("Thanks also to all other Test users.\r\n")
+_T("Thanks savone for the graphic works.\r\n")
+_T("Thanks NT and Yada for the work on the code\r\n")
 _T("Thanks to Translators: \r\n")
-_T("xaozon, kryppy, B1ackBoX, shuttle, ICU2M8, en_dator, NT, Bl0m5t3r, Shuttle, LadyStardust, savone, aLti, MMWST.\r\n");
+_T("xaozon, kryppy, B1ackBoX, shuttle, ICU2M8, en_dator, NT, Bl0m5t3r, Shuttle, LadyStardust, savone, aLti, MMWST, Lleexxii.\r\n");
 
 
 class AboutDlg : public CDialogImpl<AboutDlg>, private HttpConnectionListener
@@ -59,7 +62,7 @@ public:
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		SetDlgItemText(IDC_VERSION, _T("AirDC++ v") _T(VERSIONSTRING) _T(" By Night, Yada, NT and Zinden\n http://www.airdcpp.net") _T("\n Based on: StrongDC++ \n Copyright 2004-2010 Big Muscle"));
+		SetDlgItemText(IDC_VERSION, _T("AirDC++ v") _T(VERSIONSTRING) _T(" By Night, Maksis\n http://www.airdcpp.net") _T("\n Based on: StrongDC++ \n Copyright 2004-2011 Big Muscle"));
 		CEdit ctrlThanks(GetDlgItem(IDC_THANKS));
 		ctrlThanks.FmtLines(TRUE);
 		ctrlThanks.AppendText(thanks, TRUE);

@@ -1299,10 +1299,16 @@ void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) 
 			ui->setTimeLeft((totalSpeed > 0) ? ((ui->size - ui->pos) / totalSpeed) : 0);
 			/*ttlf*/
 			//Original version freezed here, split up, removed lockqueue
+			/*Folder averages added, so its correct now -Night */
 			uint64_t timeleft = 0;
 			if(totalSpeed > 0){
+				int64_t avg = DownloadManager::getInstance()->getAverageSpeed(qi->getTarget());
+				uint64_t pos = DownloadManager::getInstance()->getAveragePos(qi->getTarget());
 				uint64_t totalsize = QueueManager::getInstance()->fileQueue.getTotalSize(qi->getTarget());
-				timeleft = ((totalsize - ui->pos) / totalSpeed);
+				if(totalsize == 0)
+				totalsize = pos;
+				
+				timeleft =  (avg > 0) ? ((totalsize - pos) / avg) : 0;
 			}
 			if(timeleft >= 0){
 				ui->setTotalTimeLeft(timeleft);
@@ -1310,9 +1316,6 @@ void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) 
 				ui->setTotalTimeLeft(0);
 			}
 
-			//ui->setTotalTimeLeft((totalSpeed > 0) ? ( (QueueManager::getInstance()->fileQueue.getTotalSize(qi->getTarget(),QueueManager::getInstance()->lockQueue() ) - ui->pos) / totalSpeed) : 0);
-			//QueueManager::getInstance()->unlockQueue();
-			
 			ui->setSpeed(totalSpeed);
 
 			if(qi->getFileBegin() == 0) {

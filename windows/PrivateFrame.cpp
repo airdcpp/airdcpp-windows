@@ -358,7 +358,9 @@ LRESULT PrivateFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& 
 }
 
 void PrivateFrame::onEnter()
-{
+{ 
+	
+
 	bool resetText = true;
 
 	if(ctrlMessage.GetWindowTextLength() > 0) {
@@ -452,6 +454,7 @@ void PrivateFrame::onEnter()
 		if(resetText)
 			ctrlMessage.SetWindowText(_T(""));
 	} 
+	
 }
 
 void PrivateFrame::sendMessage(const tstring& msg, bool thirdPerson) {

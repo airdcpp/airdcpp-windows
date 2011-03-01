@@ -404,3 +404,8 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Non Recursive pcre regex matches for adlsearch (still faster than boost?)
 #Scan share for missing files function in MainWindow File menu
 #Scan folder for missing files rightclick in own filelist
+
+2.10
+#Open folder righclick on a dupe file in search window
+#sdc merge
+#some fixes
