@@ -993,7 +993,8 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(param))));
 		}
 	} else if(stricmp(cmd.c_str(), _T("rebuild")) == 0) {
-		HashManager::getInstance()->rebuild();
+		ShareManager::getInstance()->Rebuild();
+		//HashManager::getInstance()->rebuild();
 	} else if(stricmp(cmd.c_str(), _T("shutdown")) == 0) {
 		MainFrame::setShutDown(!(MainFrame::getShutDown()));
 		if (MainFrame::getShutDown()) {

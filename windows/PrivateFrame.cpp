@@ -178,7 +178,7 @@ LRESULT PrivateFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& 
 	if (uMsg != WM_KEYDOWN) {
 		switch(wParam) {
 			case VK_RETURN:
-				if( WinUtil::isShift() || WinUtil::isCtrl() ||  WinUtil::isAlt() ) {
+				if((GetKeyState(VK_SHIFT) & 0x8000) || (GetKeyState(VK_CONTROL) & 0x8000) || (GetKeyState(VK_MENU) & 0x8000)  ) {
 					bHandled = FALSE;
 				}
 				break;
@@ -360,7 +360,6 @@ LRESULT PrivateFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& 
 void PrivateFrame::onEnter()
 { 
 	
-
 	bool resetText = true;
 
 	if(ctrlMessage.GetWindowTextLength() > 0) {
