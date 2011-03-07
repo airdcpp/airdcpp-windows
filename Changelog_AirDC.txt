@@ -409,3 +409,6 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Open folder righclick on a dupe file in search window
 #sdc merge
 #some fixes
+#Fixed Total time left to work correctly, show total time of a download folder
+#fixed rebuild
+#Fix own list shellmenu for files

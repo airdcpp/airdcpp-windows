@@ -55,6 +55,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
 		COMMAND_ID_HANDLER(ID_EDIT_SELECT_ALL, onEditSelectAll)
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
+		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenFolder)
 		CHAIN_MSG_MAP(baseClass)
 	ALT_MSG_MAP(SYSTEM_LOG_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onLButton)
@@ -62,6 +63,7 @@ public:
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	
+	LRESULT OnRButtonDown(POINT pt);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -74,6 +76,7 @@ public:
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onEditSelectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlPad.SetFocus();
@@ -106,6 +109,13 @@ private:
 	virtual void on(Message, time_t t, const string& message) { PostMessage(WM_SPEAKER, (WPARAM)(new pair<time_t, tstring>(t, Text::toT(message)))); }
 	virtual void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
 	void addLine(time_t t, const tstring& msg);
+
+	tstring LineFromPos(const POINT& p) const;
+	tstring selLine;
+	tstring selPath;
+	tstring getPath(tstring line);
+	tstring FileName;
+	tstring getFile(tstring path);
 };
 
 #endif // !defined(SYSTEM_FRAME_H)

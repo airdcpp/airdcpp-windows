@@ -719,7 +719,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 						}	
 					}
 			
-				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF && !path.empty() && (dirs == 1) ){ // Check that the file still exists
+				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF && !path.empty() && (dirs <= 1) ){ // Check that the file still exists
 					CShellContextMenu shellMenu;
 					shellMenu.SetPath(path);
 					CMenu* pShellMenu = shellMenu.GetMenu();

@@ -25,6 +25,7 @@
 #include "TextFrame.h"
 #include "../client/File.h"
 #include "../client/LogManager.h"
+#include "../client/ShareManager.h"
 
 LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -162,9 +163,9 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		ClientToScreen(&pt);
 	}
 
-	//POINT ptCl = pt;
-	//ScreenToClient(&ptCl); 
-	//OnRButtonDown(ptCl); add wordpicking etc later...
+	POINT ptCl = pt;
+	ScreenToClient(&ptCl); 
+	OnRButtonDown(ptCl); 
 
 	OMenu menu;
 	menu.CreatePopupMenu();
@@ -172,6 +173,10 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+		
+		menu.AppendMenu(MF_SEPARATOR);
+		menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+
 		menu.AppendMenu(MF_SEPARATOR);
 		if(BOOLSETTING(LOG_SYSTEM)) {
 		menu.AppendMenu(MF_STRING, IDC_OPEN_SYSTEM_LOG, CTSTRING(OPEN_SYSTEM_LOG));
@@ -184,6 +189,104 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 	return 0;
 
+}
+LRESULT SystemFrame::OnRButtonDown(POINT pt) {
+	selLine.clear();
+	selPath.clear();
+	FileName.clear();
+
+	selLine = LineFromPos(pt);
+	selPath = getPath(selLine);
+	FileName = getFile(selPath);
+	
+	return 0;
+}
+tstring SystemFrame::getFile(tstring path){
+	tstring file = Util::emptyStringT;
+	
+	if(!path.empty()) {
+
+		int end = path.length();
+		
+		file = path.substr(path.find_last_of(PATH_SEPARATOR) +1, end);
+		
+		if(file.empty()) //we only have a path, return the last dir if dont have a file?
+			return Util::getLastDir(selPath);
+
+		end = file.find_first_of(_T(".")) + 4; //shouldnt have double dots in filenames?
+		
+		if(end == tstring::npos)
+			return Util::getLastDir(selPath); //take the last dir if dont have a file?
+
+
+		file = file.substr(0, end);
+	}
+
+	return file;
+}
+tstring SystemFrame::getPath(tstring line) {
+	
+	tstring::size_type start = line.find_first_of(PATH_SEPARATOR); 
+	tstring::size_type end = line.length();
+	
+	if(start == tstring::npos)   //no path, return
+		return Util::emptyStringT;
+
+	start = line.rfind(_T(" "), start) +1; //find the drive
+	
+	if(start == tstring::npos) //this shouldnt happen.
+		return Util::emptyStringT;
+
+		
+	tstring path = line.substr(start, end);
+	
+	//LogManager::getInstance()->message(Text::fromT(path));
+	
+	/* Yes ofc regex match would be better, just need to know how to make a match :) 
+
+			tstring path;
+			try{
+			
+			boost::wregex reg;
+			reg.assign(_T(^([a-zA-Z]\:|\\\\[^\/\\:*?"<>|]+\\[^\/\\:*?"<>|]+)(\\[^\/\\:*?"<>|]+)+(\.[^\/\\:*?"<>|]+)$));
+			boost::match_results<tstring::const_iterator> result;
+			
+			if(boost::regex_search(line, result, reg, boost::match_default)) {
+				path = path.substr(result.position(), result.length());
+			}
+			}catch(...) {
+			
+			}
+			*/
+
+	if(!path.empty())
+		return path;
+	else
+		return Util::emptyStringT;
+}
+
+tstring SystemFrame::LineFromPos(const POINT& p) const {
+	int iCharPos = ctrlPad.CharFromPos(p);
+	int len = ctrlPad.LineLength(iCharPos);
+
+	if(len < 3) {
+		return Util::emptyStringT;
+	}
+
+	tstring tmp;
+	tmp.resize(len);
+
+	ctrlPad.GetLine(ctrlPad.LineFromChar(iCharPos), &tmp[0], len);
+
+	return tmp;
+}
+
+LRESULT SystemFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	tstring tmp = Util::getFilePath(selPath); //need to pick up the path here if we have a missing file, they dont exist :)
+	if(Util::fileExists(Text::fromT(tmp)))
+		WinUtil::openFolder(tmp);
+
+	return 0;
 }
 LRESULT SystemFrame::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlPad.Copy();
@@ -200,6 +303,7 @@ LRESULT SystemFrame::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 }
 
 LRESULT SystemFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	
 
 	CHARRANGE cr;
 	ctrlPad.GetSel(cr);
@@ -208,6 +312,9 @@ LRESULT SystemFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		ctrlPad.GetSelText(buf);
 		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
 		delete[] buf;
+		} else if(!FileName.empty()) {
+			searchTerm = FileName;
+
 	}
 
 	WinUtil::search(searchTerm, 0, false);
