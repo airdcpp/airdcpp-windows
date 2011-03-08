@@ -116,6 +116,8 @@ private:
 	tstring getPath(tstring line);
 	tstring FileName;
 	tstring getFile(tstring path);
+	tstring selWord;
+	tstring WordFromPos(const POINT& p);
 };
 
 #endif // !defined(SYSTEM_FRAME_H)

@@ -198,8 +198,64 @@ LRESULT SystemFrame::OnRButtonDown(POINT pt) {
 	selLine = LineFromPos(pt);
 	selPath = getPath(selLine);
 	FileName = getFile(selPath);
+	selWord = WordFromPos(pt);
 	
 	return 0;
+}
+
+tstring SystemFrame::WordFromPos(const POINT& p) {
+	HWND focus = GetFocus();
+	
+	if(focus != ctrlPad.m_hWnd)
+		return Util::emptyStringT;
+
+	int iCharPos = ctrlPad.CharFromPos(p);
+	int line = ctrlPad.LineFromChar(iCharPos);
+	int	len = ctrlPad.LineLength(iCharPos) + 1;
+	int c = LOWORD(iCharPos) - ctrlPad.LineIndex(line);
+
+	if(len < 3)
+		return Util::emptyStringT;
+
+	tstring x;
+	x.resize(len);
+	ctrlPad.GetLine(line, &x[0], len);
+
+	string::size_type begin = 0;
+	
+	if(!selPath.empty())
+		begin = x.find_last_of(_T("\\"), c);
+	else
+		begin = x.find_last_of(_T(" ]\t\r\n"), c);
+
+	if(begin == string::npos)
+		begin = 0;
+	else
+		begin++; 
+
+	tstring::size_type end = 0;
+	
+	if(!selPath.empty())
+		end = x.find(_T("\\"), begin);
+	else
+		end = x.find(_T(" "), begin);
+
+	if(end == tstring::npos)
+		end = x.length();
+	
+	len = end - begin;
+	
+	if(len <= 0)
+	return Util::emptyStringT;
+
+	tstring sText;
+	sText = x.substr(begin, end-begin);
+
+	if(!sText.empty()) {
+		return sText;
+	} else {
+		return Util::emptyStringT;
+	}
 }
 tstring SystemFrame::getFile(tstring path){
 	tstring file = Util::emptyStringT;
@@ -210,20 +266,22 @@ tstring SystemFrame::getFile(tstring path){
 		
 		file = path.substr(path.find_last_of(PATH_SEPARATOR) +1, end);
 		
-		if(file.empty()) //we only have a path, return the last dir if dont have a file?
-			return Util::getLastDir(selPath);
+		if(file.empty()) //we only have a path
+			return Util::emptyStringT;
 
 		end = file.find_first_of(_T(".")) + 4; //shouldnt have double dots in filenames?
 		
-		if(end == tstring::npos)
-			return Util::getLastDir(selPath); //take the last dir if dont have a file?
-
+		if(end == tstring::npos) 
+			return  Util::emptyStringT;
+		
+			
 
 		file = file.substr(0, end);
 	}
 
 	return file;
 }
+
 tstring SystemFrame::getPath(tstring line) {
 	
 	tstring::size_type start = line.find_first_of(PATH_SEPARATOR); 
@@ -313,8 +371,9 @@ LRESULT SystemFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
 		delete[] buf;
 		} else if(!FileName.empty()) {
-			searchTerm = FileName;
-
+			searchTerm = FileName;     //use the filename as a search string if we find a file, or is this too confusing.
+	}else{
+		searchTerm = selWord;
 	}
 
 	WinUtil::search(searchTerm, 0, false);
