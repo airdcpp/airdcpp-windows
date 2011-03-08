@@ -38,6 +38,7 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 	ctrlPad.LimitText(0);
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
+	
 
 	//might miss some messages
 	deque<pair<time_t, string> > oldMessages = LogManager::getInstance()->getLastLogs();
@@ -110,16 +111,47 @@ LRESULT SystemFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, 
 }
 
 void SystemFrame::addLine(time_t t, const tstring& msg) {
+	ctrlPad.SetRedraw(FALSE);
+	
 	//dont know if should go over 64kb
 	if(ctrlPad.GetWindowTextLength() > (128*1024)) {
-		ctrlPad.SetRedraw(FALSE);
 		ctrlPad.SetSel(0, ctrlPad.LineIndex(ctrlPad.LineFromChar(2000)));
 		ctrlPad.ReplaceSel(_T(""));
-		ctrlPad.SetRedraw(TRUE);
 	}
 
+	SCROLLINFO si = { 0 };
+	POINT pt = { 0 };
+
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+	ctrlPad.GetScrollInfo(SB_VERT, &si);
+	ctrlPad.GetScrollPos(&pt);
+
 	ctrlPad.AppendText((Text::toT("\r\n[" + Util::getTimeStamp(t) + "] ") + msg).c_str());
+
+	if(	(si.nPage == 0 || (size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5)) {
+		ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
+	} else {
+		ctrlPad.SetScrollPos(&pt);
+		}
+
+	ctrlPad.SetRedraw(TRUE);
+	ctrlPad.InvalidateRect(NULL);
+}
+
+void SystemFrame::scrollToEnd() {
+	SCROLLINFO si = { 0 };
+	POINT pt = { 0 };
+
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+	ctrlPad.GetScrollInfo(SB_VERT, &si);
+	ctrlPad.GetScrollPos(&pt);
 	
+	ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
+	ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
+
+	ctrlPad.SetScrollPos(&pt);
 }
 
 LRESULT SystemFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -337,6 +369,15 @@ tstring SystemFrame::LineFromPos(const POINT& p) const {
 	ctrlPad.GetLine(ctrlPad.LineFromChar(iCharPos), &tmp[0], len);
 
 	return tmp;
+}
+
+LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	if(wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0) {
+		scrollToEnd();
+	}
+
+	bHandled = FALSE;
+	return 0;
 }
 
 LRESULT SystemFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

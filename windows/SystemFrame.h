@@ -41,6 +41,7 @@ public:
 	typedef MDITabChildWindowImpl<SystemFrame> baseClass;
 	BEGIN_MSG_MAP(SystemFrame)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
+		MESSAGE_HANDLER(WM_SIZE, onSize)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
@@ -62,8 +63,9 @@ public:
 	END_MSG_MAP()
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
-	
+
 	LRESULT OnRButtonDown(POINT pt);
+	LRESULT onSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -103,6 +105,7 @@ public:
 private:
 	
 	CContainedWindow ctrlClientContainer;
+
 	CRichEditCtrl ctrlPad;
 	CMenu tabMenu;
 	tstring searchTerm;
@@ -110,6 +113,7 @@ private:
 	virtual void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
 	void addLine(time_t t, const tstring& msg);
 
+	void scrollToEnd();
 	tstring LineFromPos(const POINT& p) const;
 	tstring selLine;
 	tstring selPath;
