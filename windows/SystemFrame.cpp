@@ -113,28 +113,57 @@ LRESULT SystemFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, 
 void SystemFrame::addLine(time_t t, const tstring& msg) {
 	ctrlPad.SetRedraw(FALSE);
 	
+	LONG SavedBegin, SavedEnd;
+	LONG Begin = 0; 
+	LONG End = 0;
+
+	ctrlPad.GetSel(SavedBegin, SavedEnd);
+
+	End = Begin = ctrlPad.GetTextLengthEx(GTL_NUMCHARS);
+
 	//dont know if should go over 64kb
 	if(ctrlPad.GetWindowTextLength() > (128*1024)) {
-		ctrlPad.SetSel(0, ctrlPad.LineIndex(ctrlPad.LineFromChar(2000)));
+		LONG RemoveEnd = 0;
+		RemoveEnd = ctrlPad.LineIndex(ctrlPad.LineFromChar(2000));
+		End = Begin -=RemoveEnd;
+		SavedBegin -= RemoveEnd;
+		SavedEnd -= RemoveEnd;
+		ctrlPad.SetSel(0, RemoveEnd);
 		ctrlPad.ReplaceSel(_T(""));
+		
 	}
+
 
 	SCROLLINFO si = { 0 };
 	POINT pt = { 0 };
-
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
 	ctrlPad.GetScrollInfo(SB_VERT, &si);
 	ctrlPad.GetScrollPos(&pt);
 
-	ctrlPad.AppendText((Text::toT("\r\n[" + Util::getTimeStamp(t) + "] ") + msg).c_str());
 
-	if(	(si.nPage == 0 || (size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5)) {
+	tstring time = Text::toT("[" + Util::getTimeStamp(t) + "] ");
+	tstring line = time + msg + _T("\r\n");
+
+
+	ctrlPad.AppendText(line.c_str());
+
+	
+	End += time.size();
+	ctrlPad.SetSel(Begin, End -1);
+	ctrlPad.SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
+
+	ctrlPad.SetSel(SavedBegin, SavedEnd); //restore the user selection
+
+	if(	(si.nPage == 0 || 
+		(size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) && 
+		(SavedBegin == SavedEnd)) {   //dont scroll if we are looking at something                 
 		ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
-	} else {
+		} else {
 		ctrlPad.SetScrollPos(&pt);
 		}
 
+	
 	ctrlPad.SetRedraw(TRUE);
 	ctrlPad.InvalidateRect(NULL);
 }
@@ -301,8 +330,9 @@ tstring SystemFrame::getFile(tstring path){
 		if(file.empty()) //we only have a path
 			return Util::emptyStringT;
 
-		end = file.find_first_of(_T(".")) + 4; //shouldnt have double dots in filenames?
-		
+		//end = file.find_first_of(_T(".")) + 4; //shouldnt have double dots in filenames?
+		end = file.rfind(_T(".")) + 4; 
+
 		if(end == tstring::npos) 
 			return  Util::emptyStringT;
 		
