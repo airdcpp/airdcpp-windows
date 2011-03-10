@@ -132,8 +132,7 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 		ctrlPad.ReplaceSel(_T(""));
 		
 	}
-
-
+	
 	SCROLLINFO si = { 0 };
 	POINT pt = { 0 };
 	si.cbSize = sizeof(si);
@@ -142,16 +141,16 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 	ctrlPad.GetScrollPos(&pt);
 
 
-	tstring time = Text::toT("[" + Util::getTimeStamp(t) + "] ");
-	tstring line = time + msg + _T("\r\n");
-
+	tstring time = Text::toT(" [" + Util::getTimeStamp(t) + "] ");
+	tstring line = time + msg +_T(" \r\n");
 
 	ctrlPad.AppendText(line.c_str());
 
-	
 	End += time.size();
 	ctrlPad.SetSel(Begin, End -1);
 	ctrlPad.SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
+
+	Colorize(msg, End); //timestamps should always be timestamps right?
 
 	ctrlPad.SetSel(SavedBegin, SavedEnd); //restore the user selection
 
@@ -166,6 +165,25 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 	
 	ctrlPad.SetRedraw(TRUE);
 	ctrlPad.InvalidateRect(NULL);
+}
+
+void SystemFrame::Colorize(const tstring& line, LONG Begin){
+	//Just an example, any coloring can be done.
+
+	LONG End = Begin + line.size();
+	
+	int pos = line.find(_T(":\\"));
+	if(pos != tstring::npos ) {
+		ctrlPad.SetSel(Begin + pos - 1, End);
+		ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextServer);
+	}
+
+	//line = Text::toLower(line);
+	if(line.find(_T("refresh")) != tstring::npos ) {
+		ctrlPad.SetSel(Begin, End);
+		ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextSystem);
+	}
+
 }
 
 void SystemFrame::scrollToEnd() {

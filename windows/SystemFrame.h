@@ -116,6 +116,9 @@ private:
 	void addLine(time_t t, const tstring& msg);
 
 	void scrollToEnd();
+
+	void Colorize(const tstring& line, LONG Begin);
+
 	tstring LineFromPos(const POINT& p) const;
 	tstring selLine;
 	tstring selPath;
