@@ -140,17 +140,17 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 	ctrlPad.GetScrollInfo(SB_VERT, &si);
 	ctrlPad.GetScrollPos(&pt);
 
-
-	tstring time = Text::toT(" [" + Util::getTimeStamp(t) + "] ");
-	tstring line = time + msg +_T(" \r\n");
+	tstring Text = msg + _T(" "); //kinda strange, but adding line endings in the start of new line makes it that way.
+	tstring time = Text::toT("\r\n [" + Util::getTimeStamp(t) + "] ");
+	tstring line = time + Text;
 
 	ctrlPad.AppendText(line.c_str());
 
-	End += time.size();
-	ctrlPad.SetSel(Begin, End -1);
+	End += time.size() -1;
+	ctrlPad.SetSel(Begin, End);
 	ctrlPad.SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
 
-	Colorize(msg, End); //timestamps should always be timestamps right?
+	Colorize(Text, End); //timestamps should always be timestamps right?
 
 	ctrlPad.SetSel(SavedBegin, SavedEnd); //restore the user selection
 
@@ -169,8 +169,8 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 
 void SystemFrame::Colorize(const tstring& line, LONG Begin){
 	//Just an example, any coloring can be done.
-
-	LONG End = Begin + line.size();
+	
+	LONG End = Begin + line.size() -1;
 	
 	int pos = line.find(_T(":\\"));
 	if(pos != tstring::npos ) {
@@ -316,7 +316,7 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 			end = x.rfind(_T("\\"), end);
 
 		selPath = x.substr(begin, end-begin +1);
-		LogManager::getInstance()->message(Text::fromT(selPath));
+		
 	} else {
 		begin = x.find_first_of(_T("\\"));
 		if(begin != string::npos) {
