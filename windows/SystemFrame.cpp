@@ -270,13 +270,13 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 }
 LRESULT SystemFrame::OnRButtonDown(POINT pt) {
-	selLine.clear();
+	//selLine.clear();
 	selPath.clear();
-	FileName.clear();
+	//FileName.clear();
 
-	selLine = LineFromPos(pt);
-	selPath = getPath(selLine);
-	FileName = getFile(selPath);
+	//selLine = LineFromPos(pt);
+	//selPath = getPath(selLine);
+	//FileName = getFile(selPath);
 	selWord = WordFromPos(pt);
 	
 	return 0;
@@ -301,22 +301,52 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 	ctrlPad.GetLine(line, &x[0], len);
 
 	string::size_type begin = 0;
+	tstring::size_type end = 0;
 	
+	begin = x.rfind(_T(":\\"), c);
+	if(begin != string::npos) { //found atleast 1 fullpath
+		begin = begin - 1;		
+		int pos = begin +2;
+		end = x.find(_T(":\\"), pos);  //this happens with dupedirs
+		if(end == string::npos) {
+			end = x.rfind(_T("\\"));
+			if(end == string::npos)
+				end = x.length();
+		}else
+			end = x.rfind(_T("\\"), end);
+
+		selPath = x.substr(begin, end-begin +1);
+		LogManager::getInstance()->message(Text::fromT(selPath));
+	} else {
+		begin = x.find_first_of(_T("\\"));
+		if(begin != string::npos) {
+			
+		
+		end = x.rfind(_T("\\"));
+			if(end == string::npos)  //doing it like this means if we have one \ we will have a path.
+				end = x.length();	//remove if it causes weird things, tho all paths in systemlog should contain \ at the end too.
+
+			selPath = x.substr(begin, end-begin +1);
+			
+		} else begin = 0, end = 0;
+	}
 	if(!selPath.empty())
 		begin = x.find_last_of(_T("\\"), c);
 	else
-		begin = x.find_last_of(_T(" ]\t\r\n"), c);
+		begin = x.find_last_of(_T(" \t\r\n"), c);
 
 	if(begin == string::npos)
 		begin = 0;
 	else
 		begin++; 
 
-	tstring::size_type end = 0;
+
 	
-	if(!selPath.empty())
+	if(!selPath.empty()) {
 		end = x.find(_T("\\"), begin);
-	else
+		if(end == string::npos)
+			end = x.find_last_of(_T("."))+4; // a filename, crappy filenames can contain spaces or anything else weird so.
+	} else
 		end = x.find(_T(" "), begin);
 
 	if(end == tstring::npos)
@@ -335,7 +365,7 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 	} else {
 		return Util::emptyStringT;
 	}
-}
+}/*
 tstring SystemFrame::getFile(tstring path){
 	tstring file = Util::emptyStringT;
 	
@@ -396,7 +426,7 @@ tstring SystemFrame::getPath(tstring line) {
 			
 			}
 			*/
-
+/*
 	if(!path.empty())
 		return path;
 	else
@@ -418,7 +448,7 @@ tstring SystemFrame::LineFromPos(const POINT& p) const {
 
 	return tmp;
 }
-
+*/
 LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if(wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0) {
 		scrollToEnd();
@@ -459,8 +489,8 @@ LRESULT SystemFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		ctrlPad.GetSelText(buf);
 		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
 		delete[] buf;
-		} else if(!FileName.empty()) {
-			searchTerm = FileName;     //use the filename as a search string if we find a file, or is this too confusing.
+		//} else if(!FileName.empty()) {
+			//searchTerm = FileName;     //use the filename as a search string if we find a file, or is this too confusing.
 	}else{
 		searchTerm = selWord;
 	}

@@ -119,12 +119,12 @@ private:
 
 	void Colorize(const tstring& line, LONG Begin);
 
-	tstring LineFromPos(const POINT& p) const;
-	tstring selLine;
+	//tstring LineFromPos(const POINT& p) const;
+	//tstring selLine;
 	tstring selPath;
-	tstring getPath(tstring line);
-	tstring FileName;
-	tstring getFile(tstring path);
+	//tstring getPath(tstring line);
+	//tstring FileName;
+	//tstring getFile(tstring path);
 	tstring selWord;
 	tstring WordFromPos(const POINT& p);
 };
