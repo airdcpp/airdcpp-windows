@@ -412,3 +412,5 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Fixed Total time left to work correctly, show total time of a download folder
 #fixed rebuild
 #Fix own list shellmenu for files
+#Systemlog improvments
+# CTRL + W suppost for closing tabs

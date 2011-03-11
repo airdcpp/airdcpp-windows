@@ -69,6 +69,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_SPEED, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_TYPE, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_ALL, onCopy);
+		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		NOTIFY_HANDLER(id, LVN_GETDISPINFO, ctrlList.onGetDispInfo)
 		NOTIFY_HANDLER(id, LVN_COLUMNCLICK, ctrlList.onColumnClick)
 		NOTIFY_HANDLER(id, LVN_KEYDOWN, onKeyDown)
@@ -140,6 +141,10 @@ public:
 		return TRUE;
 	}
 
+LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		PostMessage(WM_CLOSE);
+		return 0;
+	}
 LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string sCopy;
 	int i;
