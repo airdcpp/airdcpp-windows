@@ -194,12 +194,6 @@ void SystemFrame::Colorize(const tstring& line, LONG Begin){
 		ctrlPad.SetSel(Begin, End);
 		ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextServer);
 		}
-		}
-	
-	//line = Text::toLower(line);
-	if(line.find(_T("refresh")) != tstring::npos ) {
-		ctrlPad.SetSel(Begin, End);
-		ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextSystem);
 	}
 
 }
