@@ -174,10 +174,28 @@ void SystemFrame::Colorize(const tstring& line, LONG Begin){
 	
 	int pos = line.find(_T(":\\"));
 	if(pos != tstring::npos ) {
-		ctrlPad.SetSel(Begin + pos - 1, End);
+		ctrlPad.SetSel(Begin + pos - 1, End); // for dupe dirs this will highlight all but hell with it.
 		ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextServer);
-	}
-
+	} else {
+		pos = line.find_first_of(_T("\\"));
+		if(pos != tstring::npos ) {
+			Begin = Begin + pos -1;
+			
+			pos = line.rfind(_T("\\"));
+			if(pos != tstring::npos) {
+				int end = 0;
+				end = line.rfind(_T(".")) +4;  //set the end on the file, or does it matter to color the hash speed aswell.
+				if(end != tstring::npos) {
+					if(end > pos)
+					End = End - line.size() + end +1;
+				}
+			}
+		
+		ctrlPad.SetSel(Begin, End);
+		ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextServer);
+		}
+		}
+	
 	//line = Text::toLower(line);
 	if(line.find(_T("refresh")) != tstring::npos ) {
 		ctrlPad.SetSel(Begin, End);
