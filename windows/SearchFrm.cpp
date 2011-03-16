@@ -1989,8 +1989,8 @@ if(ctrlResults.GetSelectedCount() == 1) {
 		
 			WinUtil::openFolder(path);
 		}
-	} catch(const ShareException& /*se*/) {
-		//error = Text::toT(se.getError());
+	} catch(const ShareException& se) {
+		LogManager::getInstance()->message(se.getError());
 	}
 }
 	return 0;
