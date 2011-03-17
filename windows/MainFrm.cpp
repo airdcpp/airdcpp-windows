@@ -998,8 +998,12 @@ void MainFrame::updateTray(bool add /* = true */) {
 LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	if(wParam == SIZE_MINIMIZED) {
-		SetProcessWorkingSetSize(GetCurrentProcess(), 0xffffffff, 0xffffffff);
-		if(BOOLSETTING(AUTO_AWAY)) {
+		/*maybe make this an option? with large amount of ram this is kinda obsolete,
+		will look good in taskmanager ram usage tho :) */
+		if(!SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T)-1, (SIZE_T)-1))
+		LogManager::getInstance()->message("Minimize Process WorkingSet Failed: "+ Util::translateError(GetLastError()));
+		
+			if(BOOLSETTING(AUTO_AWAY)) {
 			if(bAppMinimized == false)
 			if(Util::getAway() == true) {
 				awaybyminimize = false;
