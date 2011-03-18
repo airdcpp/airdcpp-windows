@@ -121,6 +121,13 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 
 	End = Begin = ctrlPad.GetTextLengthEx(GTL_NUMCHARS);
 
+	SCROLLINFO si = { 0 };
+	POINT pt = { 0 };
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+	ctrlPad.GetScrollInfo(SB_VERT, &si);
+	ctrlPad.GetScrollPos(&pt);
+
 	//dont know if should go over 64kb
 	if(ctrlPad.GetWindowTextLength() > (128*1024)) {
 		LONG RemoveEnd = 0;
@@ -128,17 +135,13 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 		End = Begin -=RemoveEnd;
 		SavedBegin -= RemoveEnd;
 		SavedEnd -= RemoveEnd;
+		//fix the scroll position if text was removed from the start
+		pt.y -= ctrlPad.PosFromChar(RemoveEnd).y;
+
 		ctrlPad.SetSel(0, RemoveEnd);
 		ctrlPad.ReplaceSel(_T(""));
-		
+
 	}
-	
-	SCROLLINFO si = { 0 };
-	POINT pt = { 0 };
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
-	ctrlPad.GetScrollInfo(SB_VERT, &si);
-	ctrlPad.GetScrollPos(&pt);
 
 	tstring Text = msg + _T(" "); //kinda strange, but adding line endings in the start of new line makes it that way.
 	tstring time = Text::toT("\r\n [" + Util::getTimeStamp(t) + "] ");
