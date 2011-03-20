@@ -740,6 +740,7 @@
 #define IDC_LANG_POR                    1369
 #define IDC_COMBOBOXEX1                 1369
 #define IDC_NATT                        1370
+#define IDC_SORT_DIRS                   1370
 #define IDC_CONNECTION_DETECTION        1371
 #define IDC_POPUP_FONT                  1372
 #define IDC_CURRENT_LIST_BROWSE         1372
@@ -1137,7 +1138,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1370
+#define _APS_NEXT_CONTROL_VALUE         1371
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

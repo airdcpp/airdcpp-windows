@@ -1291,5 +1291,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="CheckDupes">Check duplicate directory names</String>
 		<String Name="SettingsScanOptions">Scanning options for missing/extra files</String>
 		<String Name="RebuildStarted">Hash Database rebuild Started</String>
+		<String Name="SortDirs">Sort Directories First in SearchWindow</String>
 	</Strings>
 </Language>

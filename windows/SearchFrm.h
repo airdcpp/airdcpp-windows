@@ -436,6 +436,13 @@ private:
 				return 0;
 	
 			switch(col) {
+				// I think its nicer to sort the names too, otherwise could do it with typecolumn
+				case COLUMN_FILENAME: 
+					if(a->sr->getType() == b->sr->getType())
+						return lstrcmpi(a->getText(COLUMN_FILENAME).c_str(), b->getText(COLUMN_FILENAME).c_str());
+					else 
+						return ( a->sr->getType() == SearchResult::TYPE_DIRECTORY ) ? -1 : 1;
+
 				case COLUMN_TYPE: 
 					if(a->sr->getType() == b->sr->getType())
 						return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());

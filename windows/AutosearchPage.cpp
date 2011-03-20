@@ -47,6 +47,7 @@ PropPage::TextItem AutosearchPage::texts[] = {
 	{ IDC_PRE1,					ResourceManager::PRESET1 },
 	{ IDC_PRE2,					ResourceManager::PRESET2 },
 	{ IDC_PRE3,					ResourceManager::PRESET3 },
+	{ IDC_SORT_DIRS,					ResourceManager::SORT_DIRS },
 	{ 0,							ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -58,6 +59,7 @@ PropPage::Item AutosearchPage::items[] = {
 	{ IDC_SKIPLIST_PRESET1, SettingsManager::SKIP_MSG_01, PropPage::T_STR },
 	{ IDC_SKIPLIST_PRESET2, SettingsManager::SKIP_MSG_02, PropPage::T_STR },
 	{ IDC_SKIPLIST_PRESET3, SettingsManager::SKIP_MSG_03, PropPage::T_STR },
+	{ IDC_SORT_DIRS,		SettingsManager::SORT_DIRS,	PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 

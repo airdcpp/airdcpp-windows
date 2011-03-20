@@ -255,10 +255,15 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	}
 
 	ctrlResults.setColumnOrderArray(COLUMN_LAST, columnIndexes);
-	ctrlResults.setAscending(false);
-	ctrlResults.setVisible(SETTING(SEARCHFRAME_VISIBLE));
-	ctrlResults.setSortColumn(COLUMN_HITS);
 
+	ctrlResults.setVisible(SETTING(SEARCHFRAME_VISIBLE));
+	
+	if(BOOLSETTING(SORT_DIRS)) {
+		ctrlResults.setSortColumn(COLUMN_FILENAME);
+	} else {
+		ctrlResults.setSortColumn(COLUMN_HITS);
+		ctrlResults.setAscending(false);
+	}
 	ctrlResults.SetBkColor(WinUtil::bgColor);
 	ctrlResults.SetTextBkColor(WinUtil::bgColor);
 	ctrlResults.SetTextColor(WinUtil::textColor);
@@ -625,6 +630,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		PostMessage(WM_SPEAKER, FILTER_RESULT);
 		return;
 	}
+
 
 	SearchInfo* i = new SearchInfo(aResult);
 	PostMessage(WM_SPEAKER, ADD_RESULT, (LPARAM)i);
