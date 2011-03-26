@@ -47,6 +47,7 @@ PropPage::TextItem SDCPage::texts[] = {
 	{ IDC_SETTINGS_SOCKET_IN_BUFFER, ResourceManager::SETTINGS_SOCKET_IN_BUFFER },
 	{ IDC_SETTINGS_SOCKET_OUT_BUFFER, ResourceManager::SETTINGS_SOCKET_OUT_BUFFER },
 	{ IDC_LOG_LINESTEXT, ResourceManager::MAX_LOG_LINES },
+	{ IDC_DECREASE_RAM, ResourceManager::DECREASE_RAM },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -63,6 +64,7 @@ PropPage::Item SDCPage::items[] = {
 	{ IDC_AUTO_SEARCH_LIMIT, SettingsManager::AUTO_SEARCH_LIMIT, PropPage::T_INT },
 	{ IDC_DOWNCONN, SettingsManager::DOWNCONN_PER_SEC, PropPage::T_INT },
 	{ IDC_LOG_LINES, SettingsManager::LOG_LINES, PropPage::T_INT },
+	{ IDC_DECREASE_RAM, SettingsManager::DECREASE_RAM, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 

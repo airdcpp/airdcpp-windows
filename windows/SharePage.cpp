@@ -99,7 +99,7 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		}
 
 	}
-
+	ctrlDirectories.setSort(0, ExListViewCtrl::SORT_STRING);
 	ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getShareSize()).c_str());
 
 	CUpDownCtrl updown;
@@ -357,6 +357,7 @@ void SharePage::addDirectory(const tstring& aPath){
 	} catch(const ShareException& e) {
 		MessageBox(Text::toT(e.getError()).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);
 	}
+	ctrlDirectories.resort();
 }
 void SharePage::fixControls(){
 	

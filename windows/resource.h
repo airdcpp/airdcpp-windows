@@ -681,6 +681,7 @@
 #define IDC_REFRESH_VNAME_ON_SHAREPAGE  1331
 #define IDC_SHOW_JOIN                   1331
 #define IDC_RELEASE_LINKS               1331
+#define IDC_DECREASE_RAM                1331
 #define IDC_ASEARCH                     1332
 #define IDC_REFRESH_VNAME_ON_SHAREPAGE2 1332
 #define IDC_SEARH_SKIPLIST_PRESET       1333

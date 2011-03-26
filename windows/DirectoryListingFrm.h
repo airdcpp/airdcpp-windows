@@ -83,7 +83,7 @@ public:
 	};
 	
 	DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed);
-	~DirectoryListingFrame() { 
+	virtual ~DirectoryListingFrame() { 
 		dcassert(lists.find(dl->getUser()) != lists.end());
 		lists.erase(dl->getUser());
 	}
