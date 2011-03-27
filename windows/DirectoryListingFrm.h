@@ -422,7 +422,7 @@ private:
 	int statusSizes[10];
 
 	
-	auto_ptr<DirectoryListing> dl;
+	unique_ptr<DirectoryListing> dl;
 
 	StringMap ucLineParams;
 
