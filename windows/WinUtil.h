@@ -250,7 +250,7 @@ public:
 		ResourceManager::Strings translatedString;
 	};
 
-	typedef unordered_map<tstring, int> ImageMap;
+	typedef std::map<tstring, int> ImageMap;
 	typedef ImageMap::const_iterator ImageIter;
 	static ImageMap fileIndexes;
 	static HBRUSH bgBrush;
