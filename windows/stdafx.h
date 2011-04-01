@@ -32,17 +32,7 @@ using namespace dcpp;
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
 #define _WTL_NO_CSTRING
-/*
- #define _ATL_NO_OPENGL 	 
-	 #define _ATL_NO_MSIMG 	 
-	 #define _ATL_NO_COM 	 
-	 #define _ATL_NO_HOSTING 	 
-	 #define _ATL_NO_OLD_NAMES 	 
-	 #define _ATL_NO_COM_SUPPORT 	 
-	 #define _ATL_NO_PERF_SUPPORT 	 
-	 #define _ATL_NO_SERVICE 	 
-	 #define _ATL_NO_DOCHOSTUIHANDLER
-*/
+
 #include <winsock2.h>
 
 // Fix nt4 startup
