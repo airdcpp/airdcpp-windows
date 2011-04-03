@@ -414,3 +414,4 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Fix own list shellmenu for files
 #Systemlog improvments
 # CTRL + W suppost for closing tabs
+# Improved OS version detection //maksalaatikko
