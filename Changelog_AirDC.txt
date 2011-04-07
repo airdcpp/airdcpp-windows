@@ -413,5 +413,6 @@ user is asked to update, if user dont wish to update at that time the client wil
 #fixed rebuild
 #Fix own list shellmenu for files
 #Systemlog improvments
-# CTRL + W suppost for closing tabs
-# Improved OS version detection //maksalaatikko
+#CTRL + W suppost for closing tabs
+#Improved OS version detection //maksalaatikko
+#The scanner won't report any files in subfolders as missing now //maksalaatikko

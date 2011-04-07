@@ -2288,8 +2288,6 @@ const string WinUtil::getOsVersion() {
             case PRODUCT_WEB_SERVER:
                os += " Web Server Edition";
                break;
-			default:
-				break;
          }
 
 		if ( ver.dwMajorVersion >= 6 ) {
