@@ -85,7 +85,7 @@ bTrayIcon(false), bAppMinimized(false), bIsPM(false)
 			_d_ChangeWindowMessageFilter = (LPFUNC)GetProcAddress(user32lib, "ChangeWindowMessageFilter");
 		}
 
-	
+
 		memzero(statusSizes, sizeof(statusSizes));
 		anyMF = this;
 }
@@ -117,6 +117,7 @@ DWORD WINAPI MainFrame::stopper(void* p) {
 	}
 
 	mf->PostMessage(WM_CLOSE);	
+
 	return 0;
 }
 
@@ -165,6 +166,8 @@ void MainFrame::Terminate() {
 	HasUpdate = false; // avoid update question if user double downloads update
 	oldshutdown = true;
 	PostMessage(WM_CLOSE);
+	
+
 }
 LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	TimerManager::getInstance()->addListener(this);

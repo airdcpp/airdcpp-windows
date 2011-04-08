@@ -20,6 +20,13 @@
 #ifndef DCPLUSPLUS_WIN32_STDAFX_H
 #define DCPLUSPLUS_WIN32_STDAFX_H
 
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC //if in use preprocessor definitions comment this out
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
+
+
 #include "../client/stdinc.h"
 #include "../client/ResourceManager.h"
 
@@ -59,6 +66,7 @@ extern CAppModule _Module;
 #define WM_SPEAKER (WM_APP + 500)
 #define WM_REFRESH_SETTINGS (WM_APP + 501)
 #endif
+
 
 /**
  * @file

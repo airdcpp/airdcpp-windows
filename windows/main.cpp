@@ -24,12 +24,15 @@
 	You can remove following 3 lines if you don't want to detect memory leaks.
 	Ignore STL pseudo-leaks, we can avoid them with _STLP_LEAKS_PEDANTIC, but it only slows down everything.
  */
+
+
 #define VLD_MAX_DATA_DUMP 0
 #define VLD_AGGREGATE_DUPLICATES
 //#include <vld.h>
 #endif
 
 #include "../client/DCPlusPlus.h"
+
 #include "SingleInstance.h"
 #include "WinUtil.h"
 #include "UPnP_COM.h"
@@ -56,6 +59,7 @@ static char tth[192*8/(5*8)+2];
 static bool firstException = true;
 
 static char buf[DEBUG_BUFSIZE];
+
 
 #ifndef _DEBUG
 
@@ -97,6 +101,8 @@ string getExceptionName(DWORD code) {
 	return "";
 }
 */
+
+
 LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 {	
 	Lock l(cs);

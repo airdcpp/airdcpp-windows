@@ -36,6 +36,7 @@
 #include "../client/ADLSearch.h"
 #include "../client/LogManager.h"
 
+
 class ThreadedDirectoryListing;
 
 #define STATUS_MESSAGE_MAP 9
@@ -422,7 +423,7 @@ private:
 	int statusSizes[10];
 
 	
-	unique_ptr<DirectoryListing> dl;
+	boost::shared_ptr<DirectoryListing> dl;
 
 	StringMap ucLineParams;
 
