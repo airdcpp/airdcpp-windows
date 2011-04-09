@@ -45,6 +45,7 @@ public:
 		// KUL - hash progress dialog patch
 		COMMAND_HANDLER(IDC_MAX_HASH_SPEED, EN_UPDATE ,onMaxHashSpeed)
 		COMMAND_ID_HANDLER(IDC_PAUSE, onPause)
+		COMMAND_ID_HANDLER(IDC_CLEAR, onClear)
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -57,6 +58,7 @@ public:
 		SetDlgItemText(IDC_SETTINGS_MAX_HASH_SPEED, CTSTRING(SETTINGS_MAX_HASH_SPEED));
 		SetDlgItemText(IDC_MAX_HASH_SPEED, Text::toT(Util::toString(SETTING(MAX_HASH_SPEED))).c_str());
 		SetDlgItemText(IDC_PAUSE, HashManager::getInstance()->isHashingPaused() ? CTSTRING(RESUME) : CTSTRING(PAUSE));
+		SetDlgItemText(IDC_STOP, CTSTRING(STOP));
 		init = true;
 		// KUL - hash progress dialog patch (end)
 
@@ -100,7 +102,12 @@ public:
 		return 0;
 	}
 	// KUL - hash progress dialog patch (end)
-	
+		
+	LRESULT onClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		HashManager::getInstance()->Stop();
+		::EnableWindow(GetDlgItem(IDC_STOP), false);	
+		return 0;
+	}
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		updateStats();
 		return 0;

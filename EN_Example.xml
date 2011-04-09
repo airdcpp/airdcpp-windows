@@ -1293,5 +1293,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="RebuildStarted">Hash Database rebuild Started</String>
 		<String Name="SortDirs">Sort Directories First in SearchWindow</String>
 		<String Name="DecreaseRam">Decrease Ram WorkingSet size on minimize</String>
+		<String Name="Stop">Stop</String>
 	</Strings>
 </Language>

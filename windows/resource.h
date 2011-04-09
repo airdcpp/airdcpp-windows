@@ -34,6 +34,7 @@
 #define IDC_COLLAPSED                   125
 #define IDC_USER_CMD_PREVIEW            126
 #define IDC_CLEAR                       127
+#define IDC_STOP                        127
 #define IDC_COPY                        128
 #define IDR_HUB                         129
 #define IDC_PUB_LIST_DROPDOWN           130
