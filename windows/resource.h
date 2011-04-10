@@ -994,6 +994,7 @@
 #define IDC_MAGNET_SIZE                 10164
 #define IDC_MAGNET_DISP_SIZE            10165
 #define IDC_TIMESTAMP_HELP              10167
+#define IDC_CHECKSFV	                10168
 #define IDC_USERLIST_DBLCLICK           10190
 #define IDC_TRANSFERLIST_DBLCLICK       10191
 #define IDC_USERLISTDBLCLICKACTION      10192

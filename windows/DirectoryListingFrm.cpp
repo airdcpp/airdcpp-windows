@@ -669,6 +669,34 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 	return 0;
 }
 
+LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(ctrlList.GetSelectedCount() != 1) 
+		return 0;
+	
+	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
+	tstring path;
+
+	if(ii->type == ItemInfo::FILE) {
+		path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+		wstring::size_type end = path.find_last_of(_T("\\"));
+		if(end != wstring::npos) {
+			path = path.substr(0, end);
+		}
+		path += '\\';
+
+	} else  if(ii->type == ItemInfo::DIRECTORY) {
+		if(!(ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()))
+			return 0;
+		path = Text::toT(((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath());	
+	}
+	
+	
+	SFVReaderManager::getInstance()->checkSFV(Text::fromT(path));
+	
+	return 0;
+}
+
+
 HTREEITEM DirectoryListingFrame::findItem(HTREEITEM ht, const tstring& name) {
 	string::size_type i = name.find('\\');
 	if(i == string::npos)
@@ -737,6 +765,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 					pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 					pShellMenu->AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
+					pShellMenu->AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK));
 					pShellMenu->AppendMenu(MF_SEPARATOR);
 					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
