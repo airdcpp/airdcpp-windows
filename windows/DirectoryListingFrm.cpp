@@ -699,6 +699,8 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 					SFVReaderManager::getInstance()->checkFolderSFV(Text::fromT(path));
 				}
 			}
+		} else {
+			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER));
 		}
 	}
 	
