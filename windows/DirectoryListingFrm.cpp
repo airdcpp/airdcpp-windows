@@ -674,59 +674,50 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	//if(ctrlList.GetSelectedCount() != 1) 
 		//return 0;
-	
 	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
 
+	const ItemInfo* ii = ctrlList.getSelectedItem();
+
+	StringList scanList;
 	tstring path;
 	//ignore directories selected when selecting multiple for now.
-	if(ctrlList.GetSelectedCount() > 1) {
-		StringList files;
+	if(ctrlList.GetSelectedCount() >= 1) {
 		int sel = -1;
 		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-		const ItemInfo* ii = ctrlList.getItemData(sel);
+			const ItemInfo* ii = ctrlList.getItemData(sel);
 		
-		if (ii->type == ItemInfo::FILE) {
-		files.push_back(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-		} 
-	}
-	if(!files.empty())
-		SFVReaderManager::getInstance()->scan(files, true, true);
-
-	}else if(ctrlList.GetSelectedCount() == 1) {
-		const ItemInfo* ii = ctrlList.getSelectedItem();
-		
-		if (ii->type == ItemInfo::FILE) {
-		StringList files;
-		files.push_back(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-
-		SFVReaderManager::getInstance()->scan(files, true, true);
-		} 
-	else if (ii->type == ItemInfo::DIRECTORY)  {
-		if(ii->dir->getFileCount() > 0) {
-			DirectoryListing::File::Iter i = ii->dir->files.begin();
-			for(; i != ii->dir->files.end(); ++i) {
-				if((*i)->getDupe())
-					break;
+			if (ii->type == ItemInfo::FILE) {
+				scanList.push_back(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 			}
-			if(i != ii->dir->files.end()) {
-				/*dl->getLocalPaths(ii->dir);	
-				proboly better than search for files in dir but would need a recursive scan for sfv files in sfvreader,
-				if wanted to check like whole \movies\ share path(a bit too much to check maybe),
-				would also be nice to select multiple release directories
-				*/
-				path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
-				tstring::size_type end = path.find_last_of(_T("\\"));
-				if(end != string::npos) {
-					path = path.substr(0, end+1);
-					StringList paths;
-					paths.push_back(Text::fromT(path));
-					SFVReaderManager::getInstance()->scan(paths, true);
+			if (ii->type == ItemInfo::DIRECTORY)  {
+				if(ii->dir->getFileCount() > 0) {
+					DirectoryListing::File::Iter i = ii->dir->files.begin();
+					for(; i != ii->dir->files.end(); ++i) {
+						if((*i)->getDupe())
+								break;
+					}
+					if(i != ii->dir->files.end()) {
+						/*dl->getLocalPaths(ii->dir);	
+						proboly better than search for files in dir but would need a recursive scan for sfv files in sfvreader,
+						if wanted to check like whole \movies\ share path(a bit too much to check maybe),
+						would also be nice to select multiple release directories
+						*/
+						path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
+						tstring::size_type end = path.find_last_of(_T("\\"));
+						if(end != string::npos) {
+							path = path.substr(0, end+1);
+							scanList.push_back(Text::fromT(path));
 				}
 			}
 		} else {
-			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER));
+			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER) + ": " + Text::fromT(path));
+		}
 		}
 	}
+
+		}
+	if (!scanList.empty()) {
+		SFVReaderManager::getInstance()->scan(scanList, true);
 	}
 	return 0;
 }
@@ -839,6 +830,8 @@ clientmenu:
 		priorityMenu.CreatePopupMenu();
 		copyMenu.CreatePopupMenu();
 		SearchMenu.CreatePopupMenu();
+		if (mylist) //needed when selecting multiple files/folders
+			fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK));
 		targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 		priorityMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_WITH_PRIORITY));
 
