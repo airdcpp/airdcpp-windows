@@ -646,6 +646,8 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 	if(ctrlList.GetSelectedCount() != 1) 
 		return 0;
 
+	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
+
 	StringList localpaths;
 	
 	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
@@ -673,6 +675,8 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	if(ctrlList.GetSelectedCount() != 1) 
 		return 0;
 	
+	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
+
 	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 	tstring path;
 

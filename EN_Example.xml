@@ -1301,6 +1301,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="CrcFileError">Unable to check file: </String>
 		<String Name="NoSfvFile">No SFV file found</String>
 		<String Name="CantOpenSfv">Failed to open SFV file: </String>
+		<String Name="SeeSyslogForResults">Open System Log to see the scan results</String>
 		<String Name="Stop">Stop</String>
 	</Strings>
 </Language>
