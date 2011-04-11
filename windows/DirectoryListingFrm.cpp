@@ -672,18 +672,35 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 }
 
 LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlList.GetSelectedCount() != 1) 
-		return 0;
+	//if(ctrlList.GetSelectedCount() != 1) 
+		//return 0;
 	
 	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
 
-	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 	tstring path;
+	//ignore directories selected when selecting multiple for now.
+	if(ctrlList.GetSelectedCount() > 1) {
+		StringList files;
+		int sel = -1;
+		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+		const ItemInfo* ii = ctrlList.getItemData(sel);
+		
+		if (ii->type == ItemInfo::FILE) {
+		files.push_back(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+		} 
+	}
+	if(!files.empty())
+		SFVReaderManager::getInstance()->scan(files, true, true);
 
-	if (ii->type == ItemInfo::FILE) {
-		path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-		SFVReaderManager::getInstance()->checkFileSFV(Text::fromT(path));
-	} 
+	}else if(ctrlList.GetSelectedCount() == 1) {
+		const ItemInfo* ii = ctrlList.getSelectedItem();
+		
+		if (ii->type == ItemInfo::FILE) {
+		StringList files;
+		files.push_back(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+
+		SFVReaderManager::getInstance()->scan(files, true, true);
+		} 
 	else if (ii->type == ItemInfo::DIRECTORY)  {
 		if(ii->dir->getFileCount() > 0) {
 			DirectoryListing::File::Iter i = ii->dir->files.begin();
@@ -692,18 +709,25 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 					break;
 			}
 			if(i != ii->dir->files.end()) {
+				/*dl->getLocalPaths(ii->dir);	
+				proboly better than search for files in dir but would need a recursive scan for sfv files in sfvreader,
+				if wanted to check like whole \movies\ share path(a bit too much to check maybe),
+				would also be nice to select multiple release directories
+				*/
 				path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
-				wstring::size_type end = path.find_last_of(_T("\\"));
-				if(end != wstring::npos) {
+				tstring::size_type end = path.find_last_of(_T("\\"));
+				if(end != string::npos) {
 					path = path.substr(0, end+1);
-					SFVReaderManager::getInstance()->checkFolderSFV(Text::fromT(path));
+					StringList paths;
+					paths.push_back(Text::fromT(path));
+					SFVReaderManager::getInstance()->scan(paths, true);
 				}
 			}
 		} else {
 			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER));
 		}
 	}
-	
+	}
 	return 0;
 }
 
@@ -832,9 +856,10 @@ clientmenu:
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
 		fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
-		if(mylist)
+		if(mylist){
 		fileMenu.AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
-
+		fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK));
+		}
 		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
 		fileMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_FOR_ALTERNATES_DIR));
 		fileMenu.AppendMenu(MF_SEPARATOR);

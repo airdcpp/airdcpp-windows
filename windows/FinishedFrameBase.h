@@ -313,22 +313,30 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 	}
 
 	LRESULT onCheckFolderSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		//Todo Select multiple
 		int i;
 		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FinishedItem *ii = ctrlList.getItemData(i);
-			if(ii != NULL)
-				SFVReaderManager::getInstance()->checkFolderSFV(Util::getFilePath(ii->getTarget()));
+			if(ii != NULL) {
+				StringList paths;
+				paths.push_back(Util::getFilePath(ii->getTarget()));
+				SFVReaderManager::getInstance()->scan(paths, true);
+			}
 		}
 		return 0;
 	}
 
 	LRESULT onCheckFileSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		//Todo so we can select multiple files at once.
 		int i;
 		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FinishedItem *ii = ctrlList.getItemData(i);
-			if(ii != NULL)
-				SFVReaderManager::getInstance()->checkFileSFV(ii->getTarget());
-		}
+			if(ii != NULL){
+				StringList files;
+				files.push_back(ii->getTarget());
+				SFVReaderManager::getInstance()->scan(files, true, true);
+				}
+			}
 		return 0;
 	}
 
