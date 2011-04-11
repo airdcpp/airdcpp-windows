@@ -676,22 +676,27 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 	tstring path;
 
-	if(ii->type == ItemInfo::FILE) {
+	if (ii->type == ItemInfo::FILE) {
 		path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-		wstring::size_type end = path.find_last_of(_T("\\"));
-		if(end != wstring::npos) {
-			path = path.substr(0, end);
+		SFVReaderManager::getInstance()->checkFileSFV(Text::fromT(path));
+	} 
+	else if (ii->type == ItemInfo::DIRECTORY)  {
+		if(ii->dir->getFileCount() > 0) {
+			DirectoryListing::File::Iter i = ii->dir->files.begin();
+			for(; i != ii->dir->files.end(); ++i) {
+				if((*i)->getDupe())
+					break;
+			}
+			if(i != ii->dir->files.end()) {
+				path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
+				wstring::size_type end = path.find_last_of(_T("\\"));
+				if(end != wstring::npos) {
+					path = path.substr(0, end+1);
+					SFVReaderManager::getInstance()->checkFolderSFV(Text::fromT(path));
+				}
+			}
 		}
-		path += '\\';
-
-	} else  if(ii->type == ItemInfo::DIRECTORY) {
-		if(!(ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()))
-			return 0;
-		path = Text::toT(((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath());	
 	}
-	
-	
-	SFVReaderManager::getInstance()->checkSFV(Text::fromT(path));
 	
 	return 0;
 }

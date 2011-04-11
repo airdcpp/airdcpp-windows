@@ -57,6 +57,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_TOTAL, onRemove)
 		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
 		COMMAND_ID_HANDLER(IDC_OPEN_FILE, onOpenFile)
+		COMMAND_ID_HANDLER(IDC_SFV_CHECH_FOLDER, onCheckFolderSFV)
+		COMMAND_ID_HANDLER(IDC_SFV_CHECH_FILE, onCheckFileSFV)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenFolder)
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
 		COMMAND_ID_HANDLER(IDC_GRANTSLOT, onGrant)		
@@ -115,6 +117,8 @@ public:
 		ctxMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 		ctxMenu.AppendMenu(MF_STRING, IDC_OPEN_FILE, CTSTRING(OPEN));
 		ctxMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+		ctxMenu.AppendMenu(MF_STRING, IDC_SFV_CHECH_FOLDER, CTSTRING(SFV_CHECK_FOLDER));
+		ctxMenu.AppendMenu(MF_STRING, IDC_SFV_CHECH_FILE, CTSTRING(SFV_CHECK_FILE));
 		ctxMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT, CTSTRING(GRANT_EXTRA_SLOT));
 		ctxMenu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
 		ctxMenu.AppendMenu(MF_SEPARATOR);
@@ -307,6 +311,27 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 		}
 		return 0;
 	}
+
+	LRESULT onCheckFolderSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		int i;
+		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
+			FinishedItem *ii = ctrlList.getItemData(i);
+			if(ii != NULL)
+				SFVReaderManager::getInstance()->checkFolderSFV(Util::getFilePath(ii->getTarget()));
+		}
+		return 0;
+	}
+
+	LRESULT onCheckFileSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		int i;
+		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
+			FinishedItem *ii = ctrlList.getItemData(i);
+			if(ii != NULL)
+				SFVReaderManager::getInstance()->checkFileSFV(ii->getTarget());
+		}
+		return 0;
+	}
+
 
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 		if (reinterpret_cast<HWND>(wParam) == ctrlList && ctrlList.GetSelectedCount() > 0) { 
