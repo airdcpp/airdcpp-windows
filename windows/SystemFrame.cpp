@@ -319,11 +319,17 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 	tstring::size_type end = 0;
 	
 	begin = x.rfind(_T(":\\"), c);
+	
+	if(begin == string::npos) 
+		begin = x.rfind(_T("\\\\"), c);
+
 	if(begin != string::npos) { //found atleast 1 fullpath
 		begin = begin - 1;		
 		int pos = begin +2;
 		end = x.find(_T(":\\"), pos);  //this happens with dupedirs
 		if(end == string::npos) {
+			end = x.find(_T("\\\\"), pos);  //this happens with dupedirs
+			if(end == string::npos)
 			end = x.rfind(_T("\\"));
 			if(end == string::npos)
 				end = x.length();

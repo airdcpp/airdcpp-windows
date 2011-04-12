@@ -676,8 +676,6 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		//return 0;
 	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
 
-	const ItemInfo* ii = ctrlList.getSelectedItem();
-
 	StringList scanList;
 	tstring path;
 	//ignore directories selected when selecting multiple for now.

@@ -334,7 +334,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 			if(ii != NULL){
 				StringList files;
 				files.push_back(ii->getTarget());
-				SFVReaderManager::getInstance()->scan(files, true, true);
+				SFVReaderManager::getInstance()->scan(files, true);
 				}
 			}
 		return 0;
