@@ -708,7 +708,7 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 				}
 			}
 		} else {
-			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER) + ": " + Text::fromT(path));
+			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER) + " \\" + ii->dir->getPath());
 		}
 		}
 	}
@@ -828,8 +828,6 @@ clientmenu:
 		priorityMenu.CreatePopupMenu();
 		copyMenu.CreatePopupMenu();
 		SearchMenu.CreatePopupMenu();
-		if (mylist) //needed when selecting multiple files/folders
-			fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK));
 		targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 		priorityMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_WITH_PRIORITY));
 
@@ -849,7 +847,7 @@ clientmenu:
 		fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 		if(mylist){
 		fileMenu.AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
-		fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK));
+		fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK)); //sfv checker
 		}
 		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
 		fileMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_FOR_ALTERNATES_DIR));
