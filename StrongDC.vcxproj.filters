@@ -250,6 +250,9 @@
     <None Include="res\GERM.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\message.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AirDC.rc">

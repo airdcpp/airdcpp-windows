@@ -913,6 +913,7 @@
 #define IDC_LINE3                       8678
 #define IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS 9000
 #define IDR_TRAY_PM                     10000
+#define IDR_TRAY_HUB                     10001
 #define IDC_EXTRASLOTSSPIN              10002
 #define IDC_EXTRA_DOWN_SLOT             10003
 #define IDC_EXTRA_DOWNLOADS_MAX         10004

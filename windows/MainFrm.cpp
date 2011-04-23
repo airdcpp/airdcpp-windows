@@ -364,6 +364,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	normalicon.hIcon = (!trayIcon) ? (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR) : trayIcon;
 	pmicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_PM), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	hubicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_HUB), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
 	//updateTray( BOOLSETTING( MINIMIZE_TRAY ) );
 	updateTray(true);
@@ -680,6 +681,22 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 				nid.uID = 0;
 				nid.uFlags = NIF_ICON;
 				nid.hIcon = pmicon.hIcon;
+				::Shell_NotifyIcon(NIM_MODIFY, &nid);
+			}
+		}
+    } else if(wParam == SET_HUB_TRAY_ICON) {
+		if(bIsPM == false && (!WinUtil::isAppActive || bAppMinimized)) { //using IsPM to avoid the 2 icons getting mixed up
+			bIsPM = true;
+			if(taskbarList) {
+				taskbarList->SetOverlayIcon(m_hWnd, hubicon.hIcon, NULL);
+			}
+			if(bTrayIcon == true) {
+				NOTIFYICONDATA nid;
+				nid.cbSize = sizeof(NOTIFYICONDATA);
+				nid.hWnd = m_hWnd;
+				nid.uID = 0;
+				nid.uFlags = NIF_ICON;
+				nid.hIcon = hubicon.hIcon;
 				::Shell_NotifyIcon(NIM_MODIFY, &nid);
 			}
 		}
@@ -1148,6 +1165,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		DestroyIcon(normalicon.hIcon);
 		DestroyIcon(hShutdownIcon); 	
 		DestroyIcon(pmicon.hIcon);
+		DestroyIcon(hubicon.hIcon);
 		bHandled = FALSE;
 	}
 

@@ -76,7 +76,8 @@ public:
 		STATUS_MESSAGE,
 		SHOW_POPUP,
 		REMOVE_POPUP,
-		SET_PM_TRAY_ICON
+		SET_PM_TRAY_ICON,
+		SET_HUB_TRAY_ICON
 	};
 
 	BOOL PreTranslateMessage(MSG* pMsg)
@@ -403,6 +404,7 @@ public:
 private:
 	NOTIFYICONDATA normalicon;
 	NOTIFYICONDATA pmicon;
+	NOTIFYICONDATA hubicon;
 
 	class DirectoryListInfo {
 	public:

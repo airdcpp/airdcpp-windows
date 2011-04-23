@@ -365,6 +365,7 @@
     <None Include="res\icon8.ico" />
     <None Include="res\ita.ico" />
     <None Include="res\magnet.ico" />
+    <None Include="res\message.ico" />
     <None Include="res\netstats.ico" />
     <None Include="res\nor.ico" />
     <None Include="res\notepad.ico" />

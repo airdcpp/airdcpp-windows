@@ -720,7 +720,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
         	}
 				if(showchaticon) {
 					HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;
-					::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_PM_TRAY_ICON, NULL); //same icon as pm for now
+					::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_HUB_TRAY_ICON, NULL);
 				}
 		} else if(i->first == ADD_STATUS_LINE) {
 			const StatusTask& status = *static_cast<StatusTask*>(i->second);
