@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by E:\projects\airsvn\trunk\AirDC.rc
+// Used by H:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -731,6 +731,7 @@
 #define IDC_LANG_ITA                    1366
 #define IDC_CHECK3                      1366
 #define IDC_HIGHLIGHT                   1366
+#define IDC_CHAT_NOTIFY                 1366
 #define IDC_LANG_NOR                    1367
 #define IDC_SPIN1                       1367
 #define IDC_LOG_LINES_SPIN              1367
@@ -990,13 +991,13 @@
 #define ID_WIZARD                       10153
 #define IDC_COPY_DIR                    10154
 #define IDC_COPY_DIRECTORY              10155
-#define IDC_SFV_CHECH_FOLDER	        10161
+#define IDC_SFV_CHECH_FOLDER            10161
 #define IDC_REBUILD_TOOLBAR             10162
 #define IDC_MAGNET_SIZE                 10164
 #define IDC_MAGNET_DISP_SIZE            10165
 #define IDC_TIMESTAMP_HELP              10167
-#define IDC_CHECKSFV	                10168
-#define IDC_SFV_CHECH_FILE	            10169
+#define IDC_CHECKSFV                    10168
+#define IDC_SFV_CHECH_FILE              10169
 #define IDC_USERLIST_DBLCLICK           10190
 #define IDC_TRANSFERLIST_DBLCLICK       10191
 #define IDC_USERLISTDBLCLICKACTION      10192

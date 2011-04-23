@@ -327,9 +327,11 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 		begin = begin - 1;		
 		int pos = begin +2;
 		end = x.find(_T(":\\"), pos);  //this happens with dupedirs
+		
+		if(end == string::npos)
+		end = x.find(_T("\\\\"), pos);  //this happens with dupedirs
+
 		if(end == string::npos) {
-			end = x.find(_T("\\\\"), pos);  //this happens with dupedirs
-			if(end == string::npos)
 			end = x.rfind(_T("\\"));
 			if(end == string::npos)
 				end = x.length();

@@ -381,6 +381,7 @@ private:
 	bool favShowJoins;
 	bool hubshowjoins; //favorite hub show joins
 	bool logMainChat;
+	bool showchaticon;
 	tstring complete;
 	int menuItems;
 	int lineCount; //ApexDC

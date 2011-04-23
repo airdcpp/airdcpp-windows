@@ -1305,5 +1305,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="CantOpenSfv">Failed to open SFV file: </String>
 		<String Name="SeeSyslogForResults">Open System Log to see the scan results</String>
 		<String Name="Stop">Stop</String>
+		<String Name="ChatNotify">Show Notify Icon on chat messages</String>
 	</Strings>
 </Language>

@@ -162,9 +162,11 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	if(fhe){
 		logMainChat = fhe->getHubLogMainchat();
 		hubshowjoins = fhe->getHubShowJoins();
+		showchaticon = fhe->getChatNotify();
 	} else {
 		logMainChat = false;
 		hubshowjoins = false;
+		showchaticon = false;
 	}
 	/*
 	for(int j=0; j<OnlineUser::COLUMN_LAST; j++) {
@@ -716,6 +718,10 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 	          (msg.from.isOp() && !client->isOp())) {
 				  addLine(msg.from, Text::toT(msg.str), WinUtil::m_ChatTextGeneral);
         	}
+				if(showchaticon) {
+					HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;
+					::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_PM_TRAY_ICON, NULL); //same icon as pm for now
+				}
 		} else if(i->first == ADD_STATUS_LINE) {
 			const StatusTask& status = *static_cast<StatusTask*>(i->second);
 			addStatus(Text::toT(status.str), WinUtil::m_ChatTextServer, status.inChat);
