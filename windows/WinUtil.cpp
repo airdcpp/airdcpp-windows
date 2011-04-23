@@ -1852,32 +1852,9 @@ tstring WinUtil::UselessInfo() {
 		result += _T("\n\n");
 	}
 
-	OSVERSIONINFOEX ver;
-	if(WinUtil::getVersionInfo(ver) ) {
-		tstring platform;
-		if(ver.dwPlatformId == VER_PLATFORM_WIN32_NT)
-			platform = _T("Win32 NT");
-		else if( ver.dwPlatformId == VER_PLATFORM_WIN32_WINDOWS)
-			platform = _T("Win32 Windows");
-		else
-			platform = _T("Win32");
-		
-		tstring type;
-		if( ver.wProductType == VER_NT_WORKSTATION )
-			type = _T("Workstation");
-		else if( ver.wProductType == VER_NT_DOMAIN_CONTROLLER )
-			type = _T("Domain Controller");
-		else
-			type = _T("Server");
-
-		_stprintf(buf, _T("%d.%d.%d SP: %d\nPlatform: %s Type: %s"),
-			(DWORD)ver.dwMajorVersion, (DWORD)ver.dwMinorVersion, (DWORD)ver.dwBuildNumber,
-			(DWORD)ver.wServicePackMajor, platform.c_str(), type.c_str());
-
-		result += _T("OS\n");
-		result += buf;
-		result += _T("\n");
-	}
+	result += _T("OS\n");
+	result += Text::toT(getOsVersion());
+	result += _T("\n");
 
 	result += _T("\nDisk\n");
 	result += _T("Disk space(free/total): ");
