@@ -206,6 +206,7 @@
 #define IDC_VERSION                     1021
 #define IDC_GETLIST                     1022
 #define IDC_ROLLBACK                    1022
+#define IDC_NOTIFY                      1023
 #define IDC_EDIT                        1026
 #define IDC_NOTEPAD                     1027
 #define IDC_AWAY                        1028
