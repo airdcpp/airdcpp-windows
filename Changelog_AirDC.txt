@@ -417,3 +417,4 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Improved OS version detection //maksalaatikko
 #The scanner won't report any files in subfolders as missing now //maksalaatikko
 #SFV checker for an own filelist and finished downloads window //maksalaatikko
+#"View NFO" for search window //maksalaatikko

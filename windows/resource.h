@@ -1115,6 +1115,7 @@
 #define IDR_HUB_OP                      15103
 #define IDR_HUB_REG                     15104
 #define IDC_SCANLIST                    15105
+#define IDC_VIEW_NFO                    15106
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_BITZI_LOOKUP                20000
 #define IDC_BROWSELIST                  21000

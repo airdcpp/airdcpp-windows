@@ -663,6 +663,14 @@ void SearchFrame::SearchInfo::view() {
 	}
 }
 
+void SearchFrame::SearchInfo::viewNfo() {
+	try {
+			QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST, Text::fromT(getText(COLUMN_PATH)));
+	} catch(const Exception&) {
+		// Ignore for now...
+	}
+}
+
 void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 	try {
 		if(si->sr->getType() == SearchResult::TYPE_FILE) {
@@ -1316,6 +1324,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.AppendMenu(MF_STRING, IDC_DOWNLOADDIR, CTSTRING(DOWNLOAD_WHOLE_DIR));
 			resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetDirMenu, CTSTRING(DOWNLOAD_WHOLE_DIR_TO));
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
+			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 			if((SearchInfo*)ctrlResults.getSelectedItem()->isDupe()) {
 			resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
