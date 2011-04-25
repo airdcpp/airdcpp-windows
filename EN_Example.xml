@@ -1298,6 +1298,10 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SfvCheckFile">Perform SFV check (file only)</String>
 		<String Name="CrcFailed">CRC Mismatch: </String>
 		<String Name="CrcOk">CRC OK: </String>
+		<String Name="CrcRemaining">files remaining: </String>
+		<String Name="CrcFinished">SFV check finished</String>
+		<String Name="CrcStarted">SFV check started, type /stop in chat to stop it</String>
+		<String Name="CrcStopped">SFV check stopped</String>
 		<String Name="CrcFileError">Unable to check file: </String>
 		<String Name="NoSfvFile">No SFV file found</String>
 		<String Name="NoCrc32">No SFV file found or the selected file isn't listed in it</String>
@@ -1309,5 +1313,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="Notify">Use Chat Notify Icon</String>
 		<String Name="ViewNfo">View NFO</String>
 		<String Name="NoNfoFound">No NFO files found!</String>
+		<String Name="ScanRunning">Scan in progress</String>
 	</Strings>
 </Language>

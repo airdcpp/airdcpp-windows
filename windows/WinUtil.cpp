@@ -2978,7 +2978,8 @@ tstring WinUtil::getDir(tstring dir) {
 		//dir = regexp.split(dir, Util::emptyStringT);
 		string directory = Text::fromT(dir);
 		if (dir != Util::emptyStringT) {
-			directory = directory.substr(0, directory.size()-1);
+			if(dir[dir.size() -1] == '\\')
+				directory = directory.substr(0, directory.size()-1);
 
 			int dpos = directory.rfind("\\");
 			if(dpos != wstring::npos) {
@@ -2986,6 +2987,23 @@ tstring WinUtil::getDir(tstring dir) {
 			}
 		}
 		return Text::toT(directory);
+}
+
+tstring WinUtil::validateDir(tstring dir) {
+	boost::wregex reg;
+	string directory = Text::fromT(dir);
+	if (dir != Util::emptyStringT) {
+		reg.assign(_T("(.*\\\\((((DVD)|(CD)|(DIS(K|C)))(_)?([0-9](0-9)?))|(Sample)|(Cover(s)?)|(.{0,5}Sub(s)?))\\\\)"), boost::regex_constants::icase);
+		if (regex_match(Text::toT(directory), reg)) {
+			if(dir[dir.size() -1] == '\\')
+				directory = directory.substr(0, directory.size()-1);
+			int dpos = directory.rfind("\\");
+			if(dpos != wstring::npos) {
+				directory = directory.substr(0,dpos+1);
+			}
+		}
+	}
+	return Text::toT(directory);
 }
 
 /**

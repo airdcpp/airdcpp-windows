@@ -303,6 +303,7 @@ public:
 	static tstring getIconPath(const tstring& filename);
 	static tstring getTitle(tstring searchTerm);
 	static tstring getDir(tstring dir);
+	static tstring validateDir(tstring dir);
 
 	static string getAppName() {
 		TCHAR buf[MAX_PATH+1];

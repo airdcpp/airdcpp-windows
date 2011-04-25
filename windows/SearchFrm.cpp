@@ -664,8 +664,10 @@ void SearchFrame::SearchInfo::view() {
 }
 
 void SearchFrame::SearchInfo::viewNfo() {
+	tstring path = WinUtil::validateDir(getText(COLUMN_PATH));
+
 	try {
-			QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST, Text::fromT(getText(COLUMN_PATH)));
+			QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST, Text::fromT(path));
 	} catch(const Exception&) {
 		// Ignore for now...
 	}
@@ -1946,9 +1948,10 @@ if(ctrlResults.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.getItemData(i);
 		const SearchResultPtr& sr = si->sr;
 
+		searchTerm = WinUtil::validateDir(Text::toT(Util::getFilePath(sr->getFile())));
 
-		searchTermFull = WinUtil::getDir(Text::toT(Util::getFilePath(sr->getFile())));
-		searchTerm = WinUtil::getTitle(WinUtil::getDir(Text::toT(Util::getFilePath(sr->getFile()))));
+		searchTermFull = WinUtil::getDir(searchTerm);
+		searchTerm = WinUtil::getTitle(WinUtil::getDir(searchTerm));
 
 
 
