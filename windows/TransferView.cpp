@@ -878,7 +878,11 @@ void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueIt
 	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getDownload());
 	if(aCqi->getUser().user->isSet(User::OLD_CLIENT)) {
 		ui->setStatusString(TSTRING(SOURCE_TOO_OLD));
-	} else {
+	} 
+	if(aCqi->getUser().user->isSet(User::NO_PARTIAL)) {
+		ui->setStatusString(TSTRING(NO_PARTIAL_SUPPORT));
+	} 
+	else {
 		ui->setStatusString(Text::toT(aReason));
 	}
 	ui->setStatus(ItemInfo::STATUS_WAITING);

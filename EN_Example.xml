@@ -1314,5 +1314,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="ViewNfo">View NFO</String>
 		<String Name="NoNfoFound">No NFO files found!</String>
 		<String Name="ScanRunning">Scan in progress</String>
+		<String Name="NoPartialSupport">The remote client doesn't support this feature</String>
 	</Strings>
 </Language>
