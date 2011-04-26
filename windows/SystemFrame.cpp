@@ -171,34 +171,21 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 }
 
 void SystemFrame::Colorize(const tstring& line, LONG Begin){
-	//Just an example, any coloring can be done.
-	
-	LONG End = Begin + line.size() -1;
-	
-	int pos = line.find(_T(":\\"));
-	if(pos != tstring::npos ) {
-		ctrlPad.SetSel(Begin + pos - 1, End); // for dupe dirs this will highlight all but hell with it.
-		ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextServer);
-	} else {
-		pos = line.find_first_of(_T("\\"));
-		if(pos != tstring::npos ) {
-			Begin = Begin + pos -1;
-			
-			pos = line.rfind(_T("\\"));
-			if(pos != tstring::npos) {
-				int end = 0;
-				end = line.rfind(_T(".")) +4;  //set the end on the file, or does it matter to color the hash speed aswell.
-				if(end != tstring::npos) {
-					if(end > pos)
-					End = End - line.size() + end +1;
-				}
-			}
-		
-		ctrlPad.SetSel(Begin, End);
-		ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextServer);
-		}
-	}
+	boost::wregex reg;
 
+	reg.assign(_T("((?<=\\s)((([A-Za-z0-9]:)|(\\\\))\\\\.*((\\.[a-z0-9]{2,7})|(\\\\)))(?=(\\s|$)))"));
+
+	tstring::const_iterator start = line.begin();
+	tstring::const_iterator end = line.end();
+	boost::match_results<tstring::const_iterator> result;
+	int pos=0;
+
+	while(boost::regex_search(start, end, result, reg, boost::match_default)) {
+		ctrlPad.SetSel(pos + Begin + result.position(), pos + Begin + result.position() + result.length());
+		ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextServer);
+		start = result[0].second;
+		pos=pos+result.position() + result.length();
+	}
 }
 
 void SystemFrame::scrollToEnd() {
