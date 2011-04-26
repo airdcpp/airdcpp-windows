@@ -1551,7 +1551,7 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 				}
 				break;
 			case IDC_COPY_DIR:
-				sCopy = Util::validateDir(Util::getDir((Text::toT(Util::getFilePath(sr->getFile())))));
+				sCopy = Util::getDir(Util::validateDir((Text::toT(Util::getFilePath(sr->getFile())))));
 				break;
 			case IDC_COPY_PATH:
 				if(sr->getType() == SearchResult::TYPE_FILE) {
@@ -1607,7 +1607,7 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_DIR:
-					sCopy += Util::validateDir(Util::getDir(Util::getFilePath(Text::toT(sr->getFile()))));
+					sCopy += Util::getDir(Util::validateDir(Util::getFilePath(Text::toT(sr->getFile()))));
 					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_SIZE:
@@ -1989,7 +1989,7 @@ LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 
 		if ( pos >= 0 ) {
 			const SearchResultPtr& sr = ctrlResults.getItemData(pos)->sr;
-			WinUtil::search((Util::validateDir(Util::getDir((Text::toT(Util::getFilePath(sr->getFile())))))), 0, false);
+			WinUtil::search((Util::getDir(Util::validateDir((Text::toT(Util::getFilePath(sr->getFile())))))), 0, false);
 		}
 	}
 	return S_OK;
