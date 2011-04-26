@@ -664,7 +664,7 @@ void SearchFrame::SearchInfo::view() {
 }
 
 void SearchFrame::SearchInfo::viewNfo() {
-	tstring path = WinUtil::validateDir(getText(COLUMN_PATH));
+	tstring path = Util::validateDir(getText(COLUMN_PATH));
 
 	try {
 			QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST, Text::fromT(path));
@@ -1551,7 +1551,7 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 				}
 				break;
 			case IDC_COPY_DIR:
-				sCopy = WinUtil::getDir((Text::toT(Util::getFilePath(sr->getFile()))));
+				sCopy = Util::validateDir(Util::getDir((Text::toT(Util::getFilePath(sr->getFile())))));
 				break;
 			case IDC_COPY_PATH:
 				if(sr->getType() == SearchResult::TYPE_FILE) {
@@ -1607,7 +1607,7 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_DIR:
-					sCopy += WinUtil::getDir(Util::getFilePath(Text::toT(sr->getFile())));
+					sCopy += Util::validateDir(Util::getDir(Util::getFilePath(Text::toT(sr->getFile()))));
 					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_SIZE:
@@ -1948,10 +1948,10 @@ if(ctrlResults.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.getItemData(i);
 		const SearchResultPtr& sr = si->sr;
 
-		searchTerm = WinUtil::validateDir(Text::toT(Util::getFilePath(sr->getFile())));
+		searchTerm = Util::validateDir(Text::toT(Util::getFilePath(sr->getFile())));
 
-		searchTermFull = WinUtil::getDir(searchTerm);
-		searchTerm = WinUtil::getTitle(WinUtil::getDir(searchTerm));
+		searchTermFull = Util::getDir(searchTerm);
+		searchTerm = WinUtil::getTitle(Util::getDir(searchTerm));
 
 
 
@@ -1989,7 +1989,7 @@ LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 
 		if ( pos >= 0 ) {
 			const SearchResultPtr& sr = ctrlResults.getItemData(pos)->sr;
-			WinUtil::search((WinUtil::getDir((Text::toT(Util::getFilePath(sr->getFile()))))), 0, false);
+			WinUtil::search((Util::validateDir(Util::getDir((Text::toT(Util::getFilePath(sr->getFile())))))), 0, false);
 		}
 	}
 	return S_OK;

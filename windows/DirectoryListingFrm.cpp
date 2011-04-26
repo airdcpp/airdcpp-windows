@@ -577,7 +577,7 @@ LRESULT DirectoryListingFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	const ItemInfo* ii = ctrlList.getSelectedItem();
 	tstring dir;
 	if(ii->type == ItemInfo::FILE){
-		dir = WinUtil::getDir(Text::toT(ii->file->getPath()));
+		dir = Util::getDir(Text::toT(ii->file->getPath()));
 		WinUtil::search(dir, 0, false);
 	}
 	else if(ii->type == ItemInfo::DIRECTORY){
@@ -1408,7 +1408,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 			case IDC_COPY_DIR:
 				if(ii->type == ItemInfo::FILE){
 					directory = Text::toT(ii->file->getPath());
-					sCopy = WinUtil::getDir(directory);
+					sCopy = Util::getDir(directory);
 					}
 				else if(ii->type == ItemInfo::DIRECTORY){
 					sCopy = ii->getText(COLUMN_FILENAME);
@@ -1504,7 +1504,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 				case IDC_COPY_DIR:
 					if(ii->type == ItemInfo::FILE){
 						directory = Text::toT(ii->file->getPath());
-						sCopy += WinUtil::getDir(directory);
+						sCopy += Util::getDir(directory);
 						sCopy += Text::toT("\r\n");
 					}
 					else if(ii->type == ItemInfo::DIRECTORY){
@@ -1793,7 +1793,7 @@ LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND
 			const ItemInfo* ii = ctrlList.getSelectedItem();
 
 			if(ii->type == ItemInfo::FILE && (SETTING(SETTINGS_PROFILE) == 1)){
-				searchTermFull = WinUtil::getDir(Text::toT(ii->file->getPath()));
+				searchTermFull = Util::getDir(Text::toT(ii->file->getPath()));
 			}
 			else {
 				searchTermFull = ii->getText(COLUMN_FILENAME);

@@ -50,6 +50,12 @@
 #include "../client/HashManager.h"
 #include "../client/LogManager.h"
 #include "../client/version.h"
+#include "../client/pme.h"
+#include "../client/SFVReader.h"
+
+#include "boost/algorithm/string/replace.hpp"
+#include "boost/algorithm/string/trim.hpp"
+#include "boost/format.hpp"
 
 #include "iTunesCOMInterface.h"
 #include "WMPlayerRemoteApi.h"
@@ -57,13 +63,6 @@
 #include "MagnetDlg.h"
 #include "winamp.h"
 #include "BarShader.h"
-#include "../client/SFVReader.h"
-
-#include "boost/algorithm/string/replace.hpp"
-#include "boost/algorithm/string/trim.hpp"
-#include "../client/pme.h"
-#include "boost/format.hpp"
-
 
 WinUtil::ImageMap WinUtil::fileIndexes;
 int WinUtil::fileImageCount;
@@ -2932,7 +2931,7 @@ tstring WinUtil::getIconPath(const tstring& filename) {
 	//but keeping it like this, ToDo different icons sets from iconpaths
 
 	return _T("icons\\") + filename;
-}	
+}
 
 tstring WinUtil::getTitle(tstring searchTerm) {
 
@@ -2970,40 +2969,6 @@ tstring WinUtil::getTitle(tstring searchTerm) {
 		//trim spaces from the end
 		boost::algorithm::trim_right(searchTerm);
 		return searchTerm;
-}
-
-tstring WinUtil::getDir(tstring dir) {
-		//PME regexp;
-		//regexp.Init(_T("((?<=\\).+(?=\\$))"));
-		//dir = regexp.split(dir, Util::emptyStringT);
-		string directory = Text::fromT(dir);
-		if (dir != Util::emptyStringT) {
-			if(dir[dir.size() -1] == '\\')
-				directory = directory.substr(0, directory.size()-1);
-
-			int dpos = directory.rfind("\\");
-			if(dpos != wstring::npos) {
-				directory = directory.substr(dpos+1,directory.size());
-			}
-		}
-		return Text::toT(directory);
-}
-
-tstring WinUtil::validateDir(tstring dir) {
-	boost::wregex reg;
-	string directory = Text::fromT(dir);
-	if (dir != Util::emptyStringT) {
-		reg.assign(_T("(.*\\\\((((DVD)|(CD)|(DIS(K|C)))(_)?([0-9](0-9)?))|(Sample)|(Cover(s)?)|(.{0,5}Sub(s)?))\\\\)"), boost::regex_constants::icase);
-		if (regex_match(Text::toT(directory), reg)) {
-			if(dir[dir.size() -1] == '\\')
-				directory = directory.substr(0, directory.size()-1);
-			int dpos = directory.rfind("\\");
-			if(dpos != wstring::npos) {
-				directory = directory.substr(0,dpos+1);
-			}
-		}
-	}
-	return Text::toT(directory);
 }
 
 /**
