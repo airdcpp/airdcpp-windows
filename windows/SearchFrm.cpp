@@ -665,11 +665,21 @@ void SearchFrame::SearchInfo::view() {
 
 void SearchFrame::SearchInfo::viewNfo() {
 	tstring path = Util::validateDir(getText(COLUMN_PATH));
-
-	try {
-			QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST, Text::fromT(path));
-	} catch(const Exception&) {
-		// Ignore for now...
+	boost::wregex reg;
+	reg.assign(_T("(.+\\.nfo)"), boost::regex_constants::icase);
+	if ((sr->getType() == SearchResult::TYPE_FILE) && (regex_match(Text::toT(sr->getFileName()), reg))) {
+		try {
+			QueueManager::getInstance()->add(Util::getTempPath() + sr->getFileName(),
+				sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()),
+				QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_TEXT);
+		} catch(const Exception&) {
+		}
+	} else {
+		try {
+				QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST, Text::fromT(path));
+		} catch(const Exception&) {
+			// Ignore for now...
+		}
 	}
 }
 
