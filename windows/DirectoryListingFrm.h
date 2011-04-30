@@ -35,7 +35,7 @@
 #include "../client/StringSearch.h"
 #include "../client/ADLSearch.h"
 #include "../client/LogManager.h"
-
+#include "../client/ShareManager.h"
 
 class ThreadedDirectoryListing;
 
@@ -465,11 +465,17 @@ private:
 		try {
 			if(!mFile.empty()) {
 				bool mylist = false;
+				tstring filename = Text::toT(Util::getFileName(mFile));
+
+				if( stricmp(filename, _T("files.xml.bz2")) == 0 ){
+				mylist = true;
+				// if its own list regenerate it before opening, but only if its dirty
+				ShareManager::getInstance()->generateOwnList();
+				}
 				mWindow->dl->loadFile(mFile);
 				
-				tstring filename = Text::toT(Util::getFileName(mFile));
-				if( stricmp(filename, _T("files.xml.bz2")) == 0 )
-				mylist = true;
+				
+
 
 				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {
 				ADLSearchManager::getInstance()->matchListing(*mWindow->dl);

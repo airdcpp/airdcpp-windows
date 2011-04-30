@@ -308,7 +308,7 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 	begin = x.rfind(_T(":\\"), c);
 	
 	if(begin == string::npos) 
-		begin = x.rfind(_T("\\\\"), c) +1;
+		begin = x.rfind(_T("\\\\"), c);
 
 	if(begin != string::npos) { //found atleast 1 fullpath
 		begin = begin - 1;		
