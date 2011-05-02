@@ -405,16 +405,26 @@ user is asked to update, if user dont wish to update at that time the client wil
 #Scan share for missing files function in MainWindow File menu
 #Scan folder for missing files rightclick in own filelist
 
+
+
 2.10
-#Open folder righclick on a dupe file in search window
-#sdc merge
-#some fixes
-#Fixed Total time left to work correctly, show total time of a download folder
-#fixed rebuild
-#Fix own list shellmenu for files
-#Systemlog improvments
-#CTRL + W suppost for closing tabs
-#Improved OS version detection //maksalaatikko
-#The scanner won't report any files in subfolders as missing now //maksalaatikko
+
+Added:
+
 #SFV checker for an own filelist and finished downloads window //maksalaatikko
 #"View NFO" for search window //maksalaatikko
+#Path coloring and possibility to open folder in systemlog
+#CTRL + W suppost for closing tabs
+
+Changed:
+
+#sdc merge
+#Total time left shows the total time of a download folder
+#Improved OS version detection //maksalaatikko
+
+Fixed:
+
+#Open folder righclick on a dupe file in search window
+#fixed rebuild
+#Fix own list shellmenu for files
+#The scanner won't report any files in subfolders as missing now //maksalaatikko
