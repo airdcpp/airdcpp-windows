@@ -411,20 +411,28 @@ user is asked to update, if user dont wish to update at that time the client wil
 
 Added:
 
+#Chat notification icon for hub mainchat messages + rightclick select on tab
 #SFV checker for an own filelist and finished downloads window //maksalaatikko
 #"View NFO" for search window //maksalaatikko
 #Path coloring and possibility to open folder in systemlog
 #CTRL + W suppost for closing tabs
+# /ratio /r Commands (Thanks Alehk)
+#Sort directories First in search option in searchpage settings
+#Stop button to Hashing progress dialog
+#Open folder righclick on a dupe file in search window
 
 Changed:
 
 #sdc merge
 #Total time left shows the total time of a download folder
-#Improved OS version detection //maksalaatikko
+#Sort by virtualnames in sharingpage settings
+#Improved os version detection in /stats
+#Links revised in the help menu
 
 Fixed:
 
-#Open folder righclick on a dupe file in search window
-#fixed rebuild
+#Many mainwindow freezes with big shares
+#Hideshare on partial filelist ( thanks iceman50)
+#Fixed rebuild
 #Fix own list shellmenu for files
 #The scanner won't report any files in subfolders as missing now //maksalaatikko

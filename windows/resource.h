@@ -250,7 +250,7 @@
 #define IDC_LOG_DIRECTORY               1065
 #define IDC_BROWSE_LOG                  1066
 #define IDC_HELP_DISCUSS                1067
-#define IDC_HELP_FAQ                    1069
+#define IDC_HELP_CUSTOMIZE              1069
 #define IDC_SEARCH_SPY                  1070
 #define IDC_LATEST                      1071
 #define IDC_PRIVATE_MESSAGE_BEEP        1072
@@ -674,7 +674,7 @@
 #define IDC_BW_BOTH                     1325
 #define IDC_BACKUP                      1325
 #define IDC_SETTINGS_NOMINALBW          1326
-#define IDC_HELP_TRANSLATIONS           1327
+#define IDC_HELP_GUIDES		            1327
 #define IDC_ST_AIRDC_SLOT               1327
 #define IDC_DUPE_SEARCH                 1328
 #define IDC_NOTE                        1329
@@ -1116,6 +1116,7 @@
 #define IDR_HUB_REG                     15104
 #define IDC_SCANLIST                    15105
 #define IDC_VIEW_NFO                    15106
+#define IDC_HELP_FAQ                    15107
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_BITZI_LOOKUP                20000
 #define IDC_BROWSELIST                  21000
