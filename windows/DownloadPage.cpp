@@ -83,9 +83,6 @@ LRESULT DownloadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 void DownloadPage::write()
 {
 	PropPage::write((HWND)*this, items);
-	if(BOOLSETTING(TESTWRITE)) {
-	MainFrame::getMainFrame()->TestWrite(true, true, false);
-	}
 
 	const string& s = SETTING(DOWNLOAD_DIRECTORY);
 	if(s.length() > 0 && s[s.length() - 1] != '\\') {
