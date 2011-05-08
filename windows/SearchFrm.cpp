@@ -1992,7 +1992,7 @@ if(ctrlResults.GetSelectedCount() == 1) {
 	return S_OK;
 }
 
-LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlResults.GetSelectedCount() == 1) {
 		int pos = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
 		dcassert(pos != -1);
@@ -2004,7 +2004,7 @@ LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	}
 	return S_OK;
 }
-LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
 if(ctrlResults.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.getSelectedItem();
