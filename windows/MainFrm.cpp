@@ -951,7 +951,7 @@ LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 
 void MainFrame::autoConnect(const FavoriteHubEntry::List& fl) {
 		
-	if(BOOLSETTING(FIRST_RUN)) {
+	if(BOOLSETTING(FIRST_RUN) && (SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_PUBLIC)) {
 		FavoriteHubEntry e;
 			
 		e.setName("FXR Team AirDC++ support hub");
