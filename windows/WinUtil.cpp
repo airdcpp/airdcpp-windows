@@ -83,6 +83,7 @@ CImageList WinUtil::flagImages;
 int WinUtil::dirIconIndex = 0;
 int WinUtil::dirMaskedIndex = 0;
 TStringList WinUtil::lastDirs;
+TStringList WinUtil::volumes;
 HWND WinUtil::mainWnd = NULL;
 HWND WinUtil::mdiClient = NULL;
 FlatTabCtrl* WinUtil::tabCtrl = NULL;
@@ -1870,15 +1871,15 @@ tstring WinUtil::UselessInfo() {
 }
 
 tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
-	ULONG drives = _getdrives();
-	TCHAR drive[3] = { _T('A'), _T(':'), _T('\0') };
+
+	volumes.clear();
 	tstring ret = Util::emptyStringT;
 	int64_t free = 0, totalFree = 0, size = 0, totalSize = 0;
 
 	//drives = ( drives >> 2);
-	
+/*	
 	while(drives != 0) {
-		if(drives & 1 && ( GetDriveType(drive) != DRIVE_CDROM && GetDriveType(drive) != DRIVE_REMOVABLE) ){
+		if(drives & 1 && ( GetDriveType(drive) != DRIVE_CDROM  && GetDriveType(drive) != DRIVE_REMOVABLE) ){
 			if(GetDiskFreeSpaceEx(drive, NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
 				totalFree += free;
 				totalSize += size;
@@ -1888,7 +1889,36 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 		++drive[0];
 		drives = (drives >> 1);
 	}
+	*/
+	
+   TCHAR   buf[MAX_PATH];  
+   HANDLE  hVol;    
+   BOOL    found;
 
+   // lookup drive volumes.
+   hVol = FindFirstVolume(buf, MAX_PATH);
+
+   if(hVol != INVALID_HANDLE_VALUE)
+   {
+
+   found = FindVolume(hVol, buf, MAX_PATH);
+
+   //while we find drive volumes.
+   while(found) { 
+	   found = FindVolume(hVol, buf, MAX_PATH); 
+   }
+
+   found = FindVolumeClose(hVol);
+   }
+
+   for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
+	   if(GetDriveType((*i).c_str()) == DRIVE_CDROM)
+		   continue;
+	   if(GetDiskFreeSpaceEx((*i).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
+				totalFree += free;
+				totalSize += size;
+			}
+   }
 	if(totalSize != 0)
 		if( !onlyTotal )
 			ret += _T("HDD space (free/total): ") + Util::formatBytesW(totalFree) + _T("/") + Util::formatBytesW(totalSize);
@@ -1897,6 +1927,21 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 
 	return ret;
 }
+
+BOOL WinUtil::FindVolume(HANDLE hVol, TCHAR *Buf, int bufSize) {
+
+  DWORD dwSysFlags;
+  BOOL  found;
+
+  GetVolumeInformation(Buf,NULL,MAX_PATH,NULL,NULL,&dwSysFlags,NULL,NULL);
+
+  volumes.push_back(Buf);
+
+  found = FindNextVolume( hVol, Buf, bufSize );
+
+    return (found);
+}
+
 string WinUtil::formatTime(uint64_t rest) {
 	char buf[128];
 	string formatedTime;

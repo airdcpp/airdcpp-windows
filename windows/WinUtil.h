@@ -33,6 +33,7 @@
 #include "resource.h"
 #include "OMenu.h"
 #include <atlcomtime.h>
+
 class ChatCtrl;
 
 // Some utilities for handling HLS colors, taken from Jean-Michel LE FOL's codeproject
@@ -223,6 +224,7 @@ struct winamptoolbarButton {
 	int id, image;
 	ResourceManager::Strings tooltip;
 };
+
 
 static const winamptoolbarButton WinampToolbarButtons[] = {
 	{IDC_WINAMP_START, 0, ResourceManager::WINAMP_START},
@@ -505,6 +507,10 @@ public:
 
 	static string CPUInfo();
 	
+	static TStringList volumes;
+	static BOOL FindVolume(HANDLE hVol, TCHAR *Buf, int bufSize);
+
+
 	static string getCompileDate() {
 		COleDateTime tCompileDate; 
 		tCompileDate.ParseDateTime( _T( __DATE__ ), LOCALE_NOUSEROVERRIDE, 1033 );
