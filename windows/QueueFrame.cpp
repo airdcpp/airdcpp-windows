@@ -993,7 +993,7 @@ LRESULT QueueFrame::onRecheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 }
 
 LRESULT QueueFrame::onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlQueue.GetSelectedCount() == 1) {
+	if(ctrlQueue.GetSelectedCount() == 1 || ctrlDirs.GetSelectedItem() != NULL) {
 		if(usingDirMenu) {
 			WinUtil::search(Util::getLastDir(Text::toT(getSelectedDir())), 0, false);
 		} else {

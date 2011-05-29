@@ -480,7 +480,9 @@ private:
 				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {
 				ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
 				} 
+				if(!mylist)
 				mWindow->dl->checkDupes();
+
 				mWindow->refreshTree(mDir);
 			} else {
 				mWindow->refreshTree(Text::toT(Util::toNmdcFile(mWindow->dl->updateXML(mTxt))));

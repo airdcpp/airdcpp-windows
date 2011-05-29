@@ -758,6 +758,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 		if(BOOLSETTING(SHOW_SHELL_MENU) && mylist && (ctrlList.GetSelectedCount() == 1) && (LOBYTE(LOWORD(GetVersion())) >= 5)) {
 			tstring path = Util::emptyStringT; 
+	
 			if(ii->type == ItemInfo::FILE){
 			path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 			

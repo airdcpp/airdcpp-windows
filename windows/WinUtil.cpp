@@ -1876,21 +1876,6 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 	tstring ret = Util::emptyStringT;
 	int64_t free = 0, totalFree = 0, size = 0, totalSize = 0;
 
-	//drives = ( drives >> 2);
-/*	
-	while(drives != 0) {
-		if(drives & 1 && ( GetDriveType(drive) != DRIVE_CDROM  && GetDriveType(drive) != DRIVE_REMOVABLE) ){
-			if(GetDiskFreeSpaceEx(drive, NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
-				totalFree += free;
-				totalSize += size;
-			}
-		}
-
-		++drive[0];
-		drives = (drives >> 1);
-	}
-	*/
-	
    TCHAR   buf[MAX_PATH];  
    HANDLE  hVol;    
    BOOL    found;
@@ -1912,7 +1897,7 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
    }
 
    for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
-	   if(GetDriveType((*i).c_str()) == DRIVE_CDROM)
+	   if(GetDriveType((*i).c_str()) == DRIVE_CDROM/* || GetDriveType((*i).c_str()) == DRIVE_REMOVABLE*/)
 		   continue;
 	   if(GetDiskFreeSpaceEx((*i).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
 				totalFree += free;
