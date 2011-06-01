@@ -168,8 +168,10 @@ public:
 			cmd = _T("/itunes");
 		} else if(SETTING(MEDIA_PLAYER) == 2) {
 			cmd = _T("/mpc");
-	} else if(SETTING(MEDIA_PLAYER) == 3) {
+		} else if(SETTING(MEDIA_PLAYER) == 3) {
 			cmd = _T("/wmp");
+		} else if(SETTING(MEDIA_PLAYER) == 4) {
+			cmd = _T("/spotify");
 		} else {
 			addStatus(CTSTRING(NO_MEDIA_SPAM));
 			return 0;

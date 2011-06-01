@@ -504,6 +504,21 @@ LRESULT MainFrame::onWinampButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			}
 		}
 	 }
+	 else if(SETTING(MEDIA_PLAYER) == 4) {
+		HWND hwndSpotify = FindWindow(_T("SpotifyMainWindow"), NULL);
+		if (::IsWindow(hwndSpotify)) {
+			switch(wID) {
+				case IDC_WINAMP_BACK: SendMessage(hwndSpotify, 0x319, 0, 0xc0000L); break;
+				case IDC_WINAMP_PLAY: SendMessage(hwndSpotify, 0x319, 0, 0xe0000L); break;
+				case IDC_WINAMP_STOP: SendMessage(hwndSpotify, 0x319, 0, 0xd0000L); break;
+				case IDC_WINAMP_PAUSE: SendMessage(hwndSpotify, 0x319, 0, 0xe0000L); break;	
+				case IDC_WINAMP_NEXT: SendMessage(hwndSpotify, 0x319, 0, 0xb0000L); break;
+				case IDC_WINAMP_VOL_UP: SendMessage(hwndSpotify, 0x319, 0, 0xa0000L); break;
+				case IDC_WINAMP_VOL_DOWN: SendMessage(hwndSpotify, 0x319, 0, 0x90000L); break;
+				case IDC_WINAMP_VOL_HALF: SendMessage(hwndSpotify, 0x319, 0, 0x80000L); break;
+			}
+		}
+	 }
        return 0;
 }
 

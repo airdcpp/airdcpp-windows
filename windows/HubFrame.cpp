@@ -1259,8 +1259,6 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 
 		if(PreparePopupMenu(&ctrlUsers, Mnu)) {
 			prepareMenu(Mnu, ::UserCommand::CONTEXT_CHAT, client->getHubUrl());
-			Mnu.AppendMenu(MF_SEPARATOR);
-			Mnu.AppendMenu(MF_STRING, IDC_REFRESH, CTSTRING(REFRESH_USER_LIST));
 			Mnu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 		}
 	} else if(reinterpret_cast<HWND>(wParam) == ctrlEmoticons) {

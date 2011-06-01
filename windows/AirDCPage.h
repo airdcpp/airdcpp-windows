@@ -75,6 +75,7 @@ private:
 	tstring iTunesStr;
 	tstring MPCStr;
 	tstring WMPlayerStr;
+	tstring SpotifyStr;
 	int CurSel;
 
 

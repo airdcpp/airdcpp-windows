@@ -67,12 +67,14 @@ LRESULT AirDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	iTunesStr = Text::toT(SETTING(ITUNES_FORMAT));
 	MPCStr = Text::toT(SETTING(MPLAYERC_FORMAT));
 	WMPlayerStr = Text::toT(SETTING(WMP_FORMAT));
+	SpotifyStr = Text::toT(SETTING(SPOTIFY_FORMAT));
 
 	ctrlPlayer.Attach(GetDlgItem(IDC_PLAYER_COMBO));
 	ctrlPlayer.AddString(_T("Winamp"));
 	ctrlPlayer.AddString(_T("iTunes"));
 	ctrlPlayer.AddString(_T("Media Player Classic"));
 	ctrlPlayer.AddString(_T("Windows Media Player"));
+	ctrlPlayer.AddString(_T("Spotify"));
 	ctrlPlayer.SetCurSel(CurSel);
 
 	if(CurSel == 0) {
@@ -84,6 +86,8 @@ LRESULT AirDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		SetDlgItemText(IDC_WINAMP, MPCStr.c_str());
 	} else if(CurSel == 3) {
 		SetDlgItemText(IDC_WINAMP, WMPlayerStr.c_str());
+	} else if(CurSel == 4) {
+		SetDlgItemText(IDC_WINAMP, SpotifyStr.c_str());
 	} else {
 		SetDlgItemText(IDC_WINAMP, CTSTRING(NO_MEDIA_SPAM));
 		::EnableWindow(GetDlgItem(IDC_WINAMP), false);
@@ -130,6 +134,12 @@ void AirDCPage::write() {
 		GetDlgItemText(IDC_WINAMP, buf, len);
 		WMPlayerStr = buf;
 	}
+	else if(CurSel == 4) {
+		int len = ctrlFormat.GetWindowTextLength() + 1;
+		TCHAR buf[256];
+		GetDlgItemText(IDC_WINAMP, buf, len);
+		SpotifyStr = buf;
+	}
 	ctrlFormat.Detach();
 
 	SettingsManager::getInstance()->set(SettingsManager::MEDIA_PLAYER, ctrlPlayer.GetCurSel());
@@ -137,6 +147,7 @@ void AirDCPage::write() {
 	SettingsManager::getInstance()->set(SettingsManager::WMP_FORMAT, Text::fromT(WMPlayerStr).c_str());
 	SettingsManager::getInstance()->set(SettingsManager::ITUNES_FORMAT, Text::fromT(iTunesStr).c_str());
 	SettingsManager::getInstance()->set(SettingsManager::MPLAYERC_FORMAT, Text::fromT(MPCStr).c_str());
+	SettingsManager::getInstance()->set(SettingsManager::SPOTIFY_FORMAT, Text::fromT(SpotifyStr).c_str());
 
 }
 LRESULT AirDCPage::onClickedWinampHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
@@ -147,8 +158,11 @@ LRESULT AirDCPage::onClickedWinampHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWN
 	} else if(CurSel == 2) {
 		MessageBox(CTSTRING(MPC_HELP), CTSTRING(MPC_HELP_DESC), MB_OK | MB_ICONINFORMATION);
 	}
-	  else if(CurSel == 3) {
+	else if(CurSel == 3) {
 		MessageBox(CTSTRING(WMP_HELP), CTSTRING(WMP_HELP_DESC), MB_OK | MB_ICONINFORMATION);
+	}
+	else if(CurSel == 4) {
+		MessageBox(CTSTRING(SPOTIFY_HELP), CTSTRING(SPOTIFY_HELP_DESC), MB_OK | MB_ICONINFORMATION);
 	}
 	return S_OK;
 }
@@ -188,6 +202,12 @@ LRESULT AirDCPage::onSelChange(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWn
 		GetDlgItemText(IDC_WINAMP, buf, len);
 		WMPlayerStr = buf;
 	}
+	else if(CurSel == 4) {
+		int len = ctrlFormat.GetWindowTextLength() + 1;
+		TCHAR buf[256];
+		GetDlgItemText(IDC_WINAMP, buf, len);
+		SpotifyStr = buf;
+	}
 	ctrlFormat.Detach();
 
 	CurSel = ctrlPlayer.GetCurSel();
@@ -207,6 +227,11 @@ LRESULT AirDCPage::onSelChange(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWn
 	} 
 	else if(CurSel == 3) {
 		SetDlgItemText(IDC_WINAMP, WMPlayerStr.c_str());
+		::EnableWindow(GetDlgItem(IDC_WINAMP), true);
+		::EnableWindow(GetDlgItem(IDC_WINAMP_HELP), true);
+	} 
+	else if(CurSel == 4) {
+		SetDlgItemText(IDC_WINAMP, SpotifyStr.c_str());
 		::EnableWindow(GetDlgItem(IDC_WINAMP), true);
 		::EnableWindow(GetDlgItem(IDC_WINAMP_HELP), true);
 	} else {

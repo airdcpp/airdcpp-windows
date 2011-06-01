@@ -64,6 +64,11 @@
 #include "winamp.h"
 #include "BarShader.h"
 
+#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <cstring>
+
 WinUtil::ImageMap WinUtil::fileIndexes;
 int WinUtil::fileImageCount;
 HBRUSH WinUtil::bgBrush = NULL;
@@ -1024,6 +1029,18 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			}
 		} else {
 			status = _T("Supported version of Windows Media Player is not running");
+		}
+
+	} else if((stricmp(cmd.c_str(), _T("spotify")) == 0) || (stricmp(cmd.c_str(), _T("s")) == 0)) {
+		string spam = WinUtil::getSpotifySpam(FindWindow(_T("SpotifyMainWindow"), NULL));
+		if(!spam.empty()) {
+			if(spam != "no_media") {
+				message = Text::toT(spam);
+			} else {
+				status = _T("You have no media playing in Spotify");
+			}
+		} else {
+			status = _T("Supported version of Spotify is not running");
 		}
 
 	} else if(stricmp(cmd.c_str(), _T("itunes")) == 0) {
@@ -2492,6 +2509,55 @@ string WinUtil::getMPCSpam() {
 		return Util::formatParams(SETTING(MPLAYERC_FORMAT), params, false);
 	} else {
 		 return "";
+	}
+}
+
+string WinUtil::getSpotifySpam(HWND playerWnd /*= NULL*/) {
+	if(playerWnd != NULL) {
+		StringMap params;
+			TCHAR titleBuffer[2048];
+			int buffLength = sizeof(titleBuffer);
+			GetWindowText(playerWnd, titleBuffer, buffLength);
+			tstring title = titleBuffer;
+			if (strcmpi(Text::fromT(title).c_str(), "Spotify") == 0)
+				return "no_media";
+			boost::algorithm::replace_first(title, "Spotify - ", "");
+			params["title"] = Text::fromT(title);
+
+			TCHAR appDataPath[MAX_PATH];
+			::SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, appDataPath);
+			string line;
+			boost::wregex reg;
+
+			string path = Text::fromT(appDataPath) + "\\Spotify\\Users\\";
+			ifstream guistate;
+			StringList userFiles;
+			StringIterC i;
+			//reg.assign(_T("((?<=:)\\S{22}(?=.{5}current_view))"));
+			reg.assign(_T("([^:]+(?=\"\\}\\],\"current_view))"));
+			string hash = "";
+
+			StringList usersList = File::findFiles(path, "*");
+
+			for(i = usersList.begin(); i != usersList.end(); ++i) {
+				userFiles = File::findFiles(*i, "guistate");
+				for(StringIterC s = userFiles.begin(); s != userFiles.end(); ++s) {
+					guistate.open(Text::utf8ToAcp(*s));
+					while (getline(guistate, line)) {
+						tstring::const_iterator  begin = Text::toT(line).begin(), end = Text::toT(line).end();
+						boost::match_results<tstring::const_iterator> result;
+						if (boost::regex_search(begin, end, result, reg, boost::match_default)) {
+							hash = line.substr(result.position(), result.length());
+							LogManager::getInstance()->message(hash);
+							params["link"] = "spotify:track:" + hash;
+						}
+					}
+				}
+			}
+
+			return Util::formatParams(SETTING(SPOTIFY_FORMAT), params, false);
+	} else {
+		return "";
 	}
 }
 

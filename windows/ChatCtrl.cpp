@@ -35,7 +35,7 @@ EmoticonsManager* emoticonsManager = NULL;
 
 static const tstring protocols[] = { _T("http://"), _T("https://"), _T("www."), _T("ftp://"), 
 	_T("magnet:?"), _T("dchub://"), _T("irc://"), _T("ed2k://"), _T("mms://"), _T("file://"),
-	_T("adc://"), _T("adcs://"), _T("nmdcs://"), _T("svn://") };
+	_T("adc://"), _T("adcs://"), _T("nmdcs://"), _T("spotify:"), _T("svn://") };
 
 ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false) {
 	if(emoticonsManager == NULL) {
@@ -46,7 +46,7 @@ ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false) 
 }
 
 ChatCtrl::~ChatCtrl() {
-	magnets.clear();//ApexDC
+	shortLinks.clear();//ApexDC
 	if(emoticonsManager->unique()) {
 		emoticonsManager->dec();
 		emoticonsManager = NULL;
@@ -349,6 +349,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 	for(size_t i = 0; i < (sizeof(protocols) / sizeof(protocols[0])); ++i) {
 		size_t linkStart = sMsgLower.find(protocols[i]);
 		bool isMagnet = (protocols[i] == _T("magnet:?"));
+		bool isSpotify = (protocols[i] == _T("spotify:"));
 		while(linkStart != tstring::npos) {
 			size_t linkEnd = linkStart + protocols[i].size();
 			
@@ -381,9 +382,84 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 							sMsgLower = sMsgLower.substr(0, linkStart) + shortLink + sMsgLower.substr(linkEnd);
 							linkEnd = linkStart + shortLink.length();
 							SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
-							magnets[shortLink] = _T("magnet:?") + cURL;
+							shortLinks[shortLink] = _T("magnet:?") + cURL;
 						}
+					} else if (isSpotify) {
+						string type = "";
+						string hash = "";
+						tstring cURL = ((tstring)(result[0]));
+						size_t found=Text::fromT(cURL).find_first_of(":");
+						if (found != string::npos) {
+							type = Text::fromT(cURL).substr(0,found);
+							hash = Text::fromT(cURL).substr(found+1,cURL.length());
 						}
+						string shortLink = "Play this " + type + " on Spotify (" + hash + ")";
+						ReplaceSel(Text::toT(shortLink).c_str(), false);
+						sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
+						linkEnd = linkStart + shortLink.length();
+						SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
+						shortLinks[Text::toT(shortLink)] = _T("spotify:") + cURL;
+					/* else if (isSpotify) {
+						string type = "";
+						string hash = "";
+						tstring cURL = ((tstring)(result[0]));
+						size_t found=Text::fromT(cURL).find_first_of(":");
+						if (found != string::npos) {
+							type = Text::fromT(cURL).substr(0,found);
+							hash = Text::fromT(cURL).substr(found+1,cURL.length());
+						}
+						unfinished=true;
+						hc = new HttpConnection();
+						hc->addListener(this);
+						hc->setCoralizeState(HttpConnection::CST_NOCORALIZE);
+						hc->downloadFile("http://ws.spotify.com/lookup/1/?uri=spotify:" + type + ":" + hash);
+						uint64_t downloadstart = GET_TICK();
+						while (unfinished || downloadstart < 10000) {
+							//do nothing
+						}
+						
+						if (!downBuf.empty()) {
+							string album = "";
+							string track = "";
+							string artist = "";
+							try {
+								SimpleXML xml;
+								xml.fromXML(downBuf);
+								if(xml.findChild("album")) {
+									xml.stepIn();
+									if(xml.findChild("name")) {
+										album = xml.getChildData();
+									}
+
+									if(xml.findChild("artist")) {
+										xml.stepIn();
+										if(xml.findChild("name")) {
+											artist = xml.getChildData();
+										}
+										xml.stepOut();
+									}
+
+									if(xml.findChild("tracks")) {
+										xml.stepIn();
+										if(xml.findChild("track")) {
+											xml.stepIn();
+											if(xml.findChild("name")) {
+												track = xml.getChildData();
+											}
+										}
+									}
+								}
+							} catch(const SimpleXMLException&) { }
+							string shortLink = artist + " - " + track + "(" + album + ")";
+							ReplaceSel(Text::toT(shortLink).c_str(), false);
+							sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
+							linkEnd = linkStart + shortLink.length();
+							SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
+							spotifyLinks[Text::toT(shortLink)] = _T("spotify:") + cURL;
+						}
+					} */
+					}
+					
 					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 				}
 			} catch(...) {
@@ -846,10 +922,16 @@ LRESULT ChatCtrl::onClientEnLink(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*
 			GetTextRange(lBegin, lEnd, sURLTemp);
 			tstring sURL = sURLTemp;
 			//ApexDC
-			if(magnets.find(sURL) == magnets.end()) {
+			if(shortLinks.find(sURL) == shortLinks.end()) {
 				WinUtil::openLink(sURL);
 			} else {
-				WinUtil::parseMagnetUri(magnets[sURL]);
+				LogManager::getInstance()->message(Text::fromT(shortLinks[sURL]));
+				size_t found = Text::fromT(shortLinks[sURL]).find("magnet:?");
+				if (found != string::npos) {
+					WinUtil::parseMagnetUri(shortLinks[sURL]);
+				} else {
+					WinUtil::openLink(shortLinks[sURL]);
+				}
 			}
 
 			delete[] sURLTemp;
@@ -861,10 +943,10 @@ LRESULT ChatCtrl::onClientEnLink(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*
 		if(sURLTemp) {
 			GetTextRange(lBegin, lEnd, sURLTemp);
 			//ApexDC
-			if(magnets.find(sURLTemp) == magnets.end()) {
+			if(shortLinks.find(sURLTemp) == shortLinks.end()) {
 				selectedURL = sURLTemp;
 			} else {
-				selectedURL = magnets[sURLTemp];
+				selectedURL = shortLinks[sURLTemp];
 			}
 
 			delete[] sURLTemp;

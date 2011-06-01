@@ -48,4 +48,15 @@
 #define MPC_OPEN 800			// Open "File Open" dialog
 #define MPC_OPT 886				// Open "Options" dialog
 
+/* Spotify */
+
+#define S_PLAY 0xd0000L			// Play
+#define S_PAUSE 0xd0000L		// Pause
+#define S_STOP 0xd0000L			// Stop 
+#define S_PREV 0xc0000L			// Previous
+#define S_NEXT 0xb0000L			// Next
+#define S_VOLUP 0xa0000L		// Volume: Up
+#define S_VOLDOWN 0x90000L		// Volume: Down
+#define S_MUTE 0x80000L			// Volume: Mute
+
 #endif

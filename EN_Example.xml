@@ -1318,5 +1318,11 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="NoPartialSupportRetry">The remote client is too old, retrying soon with full list...</String>
 		<String Name="MenuCustomize">Download customizations</String>
 		<String Name="MenuGuides">Guides</String>
+		<String Name="SpotifyHelp">/spotify - For Spotify media spamming
+- %[title]		Artist and the title of the currently playing item
+- %[link]		Spotify link to the track being played
+
+Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
+		<String Name="SpotifyHelpDesc">Spotify Help</String>
 	</Strings>
 </Language>

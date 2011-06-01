@@ -177,7 +177,7 @@ private:
 	tstring		searchTermFull;
 
     //Client* client;
-	TStringMap magnets; //ApexDC
+	TStringMap shortLinks; //ApexDC
 	
 	bool m_bPopupMenu;
 	
