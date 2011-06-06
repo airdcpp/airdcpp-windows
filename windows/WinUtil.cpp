@@ -906,7 +906,47 @@ _T("\r\n-- Keep your downloads close, but keep your uploads even closer\r\n") LI
 
 #define MSGS 18
 
-tstring WinUtil::commands = _T("\n\t\t\t\t\tHELP\t\t\t\t\t\t\t\t\n------------------------------------------------------------------------------------------------------------------------------------------------------------\n/refresh\t\t\t\t\t(refresh share)\n/rebuild\t\t\t\t\t(rebuild hash data)\n/savequeue\t\t\t\t(save Download Queue)\n------------------------------------------------------------------------------------------------------------------------------------------------------------\n/search <string>\t\t\t\t(search for...)\n/g <searchstring>\t\t\t\t(Google search)\n/imdb <imdbquery>\t\t\t\t(search film from IMDB database)\n/whois [IP]\t\t\t\t(find info about user from the ip address)\n------------------------------------------------------------------------------------------------------------------------------------------------------------\n/slots # \t\t\t\t\t(upload slots)\n/extraslots # \t\t\t\t(set extra slots)\n/smallfilesize # \t\t\t\t(set smallfile size)\n/ts \t\t\t\t\t(show timestamp in mainchat)\n/connection \t\t\t\t(Show connection settings, IP & ports)\n/showjoins \t\t\t\t(show user joins in mainchat)\n/shutdown \t\t\t\t(system shutdown)\n------------------------------------------------------------------------------------------------------------------------------------------------------------\n/AirDC++ \t\t\t\t\t(Show AirDC++ version in mainchat)\n------------------------------------------------------------------------------------------------------------------------------------------------------------\n/away <msg>\t\t\t\t(set away message)\n/winamp\t\t\t\t\t(Shows Winamp spam in mainchat)\n/w\t\t\t\t\t(Shows Winamp spam in mainchat)\n/clear,/c\t\t\t\t\t(Clears mainchat)\n/speed\t\t\t\t\t(show download/upload speeds in mainchat)\n/stats\t\t\t\t\t(Show stats in mainchat)\n/prvstats\t\t\t\t\t(View stats visible only to yourself)\n/info\t\t\t\t\t(View system info visible only to yourself)\n/log system\t\t\t\t(open system log)\n/log downloads \t\t\t\t(open downloads log)\n/log uploads\t\t\t\t(open uploads log)\n/df \t\t\t\t\tShow Disk Space info\n/uptime \t\t\t\t\tShow Uptime Info\n/topic\t\t\t\t\tShow Topic\n/ctopic\t\t\t\t\tOpen Link in Topic\n/ratio, /r\t\t\t\t\tShow Ratio in chat\n\n");
+tstring WinUtil::commands = Text::toT("\n\t\t\t\t\tHELP\n\
+------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
+/refresh\t\t\t\t\t(refresh share)\n\
+/rebuild\t\t\t\t\t(rebuild hash data)\n\
+/savequeue\t\t\t\t(save Download Queue)\n\
+/stop\t\t\t\t\t(stop SFV check)\n\
+------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
+/search <string>\t\t\t\t(search for...)\n\
+/g <searchstring>\t\t\t\t(Google search)\n\
+/imdb <imdbquery>\t\t\t\t(search film from IMDB database)\n\
+/whois [IP]\t\t\t\t(find info about user from the ip address)\n\
+------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
+/slots # \t\t\t\t\t(upload slots)\n\
+/extraslots # \t\t\t\t(set extra slots)\n\
+/smallfilesize # \t\t\t\t(set smallfile size)\n\
+/ts \t\t\t\t\t(show timestamp in mainchat)\n\
+/connection \t\t\t\t(Show connection settings, IP & ports)\n\
+/showjoins \t\t\t\t(show user joins in mainchat)\n\
+/shutdown \t\t\t\t(system shutdown)\n\
+------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
+/AirDC++ \t\t\t\t\t(Show AirDC++ version in mainchat)\n\
+------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
+/away <msg>\t\t\t\t(set away message)\n\
+/winamp, /w\t\t\t\t(Shows Winamp spam in mainchat)\n\
+/spotify, /s\t\t\t\t(Shows Spotify spam in mainchat)\n\
+/itunes\t\t\t\t\t(Shows iTunes spam in mainchat)\n\
+/wmp\t\t\t\t\t(Shows Windows Media Player spam in mainchat)\n\
+/mpc\t\t\t\t\t(Shows Media Player Classic spam in mainchat)\n\
+/clear,/c\t\t\t\t\t(Clears mainchat)\n\
+/speed\t\t\t\t\t(show download/upload speeds in mainchat)\n\
+/stats\t\t\t\t\t(Show stats in mainchat)\n\
+/prvstats\t\t\t\t\t(View stats visible only to yourself)\n\
+/info\t\t\t\t\t(View system info visible only to yourself)\n\
+/log system\t\t\t\t(open system log)\n\
+/log downloads \t\t\t\t(open downloads log)\n\
+/log uploads\t\t\t\t(open uploads log)\n\
+/df \t\t\t\t\tShow Disk Space info\n\
+/uptime \t\t\t\t\tShow Uptime Info\n\
+/topic\t\t\t\t\tShow Topic\n\
+/ctopic\t\t\t\t\tOpen Link in Topic\n\
+/ratio, /r\t\t\t\t\tShow Ratio in chat\n\n");
 
 bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) {
 	string::size_type i = cmd.find(' ');
