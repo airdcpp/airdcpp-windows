@@ -420,6 +420,7 @@ Added:
 #Sort directories First in search option in searchpage settings
 #Stop button to Hashing progress dialog
 #Open folder righclick on a dupe file in search window
+#Detection for Spotify links, Spotify toolbar and Spotify spam //maksalaatikko
 
 Changed:
 

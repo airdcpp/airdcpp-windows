@@ -883,11 +883,7 @@ bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, StringMap& sm) thr
 	return true;
 }
 
-#ifdef SVNVERSION
-#define LINE2 _T("-- http://www.airdcpp.net/  <AirDC++ ") _T(VERSIONSTRING) _T(SVNVERSION) _T(" / ") _T(DCVERSIONSTRING) _T(">")
-#else
-#define LINE2 _T("-- http://www.airdcpp.net/  <AirDC++ ") _T(VERSIONSTRING) _T(" ") _T(CONFIGURATION_TYPE) _T(" / ") _T(DCVERSIONSTRING) _T(">")
-#endif
+#define LINE2 _T("-- http://www.airdcpp.net/  <AirDC++ ") _T(VERSIONSTRING) _T(" / ") _T(DCVERSIONSTRING) _T(">")
 TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n") LINE2,
 _T("\r\n-- Is it Superman? No, its AirDC++\r\n") LINE2,
 _T("\r\n-- My files are burning in my computer...Download are way too fast\r\n") LINE2,
@@ -2527,29 +2523,49 @@ string WinUtil::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 			TCHAR appDataPath[MAX_PATH];
 			::SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, appDataPath);
 			string line;
-			boost::wregex reg;
+			boost::regex ritem;
+			boost::regex rname;
+			boost::regex rhash;
 
 			string path = Text::fromT(appDataPath) + "\\Spotify\\Users\\";
 			ifstream guistate;
 			StringList userFiles;
 			StringIterC i;
-			//reg.assign(_T("((?<=:)\\S{22}(?=.{5}current_view))"));
-			reg.assign(_T("([^:]+(?=\"\\}\\],\"current_view))"));
-			string hash = "";
+
+			ritem.assign("\"name\":\"([^\"]+)\",\"uri\":\"([^\"]+)");
+			rname.assign("(?<=\"name\":\")([^\"]+)");
+			rhash.assign("(?<=spotify:track:)([^\"]+)");
+			params["link"] = "";
 
 			StringList usersList = File::findFiles(path, "*");
 
+			//find the file containing the latest songs played
 			for(i = usersList.begin(); i != usersList.end(); ++i) {
 				userFiles = File::findFiles(*i, "guistate");
 				for(StringIterC s = userFiles.begin(); s != userFiles.end(); ++s) {
 					guistate.open(Text::utf8ToAcp(*s));
 					while (getline(guistate, line)) {
-						tstring::const_iterator  begin = Text::toT(line).begin(), end = Text::toT(line).end();
-						boost::match_results<tstring::const_iterator> result;
-						if (boost::regex_search(begin, end, result, reg, boost::match_default)) {
-							hash = line.substr(result.position(), result.length());
-							LogManager::getInstance()->message(hash);
-							params["link"] = "spotify:track:" + hash;
+						boost::smatch result;
+						string::const_iterator  begin = line.begin(), end = line.end();
+						//find each song
+						while (regex_search(begin, end, result, ritem)) {
+							std::string item( result[0].first, result[0].second );
+							boost::smatch nresult;
+							//compare the name with the song being played now
+							if (regex_search(item, nresult, rname)) {
+								std::string song( nresult[0].first, nresult[0].second );
+								size_t found = Text::fromT(title).find(song);
+								if (found != string::npos) {
+									//current song found, get the hash
+									boost::smatch hresult;
+									if (regex_search(item, hresult, rhash)) {
+										std::string hash( hresult[0].first, hresult[0].second );
+										params["link"] = "spotify:track:" + hash;
+										break;
+									}
+								}
+							}
+							begin = result[0].second;
 						}
 					}
 				}
