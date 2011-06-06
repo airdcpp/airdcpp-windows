@@ -1324,5 +1324,8 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 
 Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SpotifyHelpDesc">Spotify Help</String>
+		<String Name="SpotifyTrack">Play this track on Spotify</String>
+		<String Name="SpotifyArtist">View this artist on Spotify</String>
+		<String Name="SpotifyAlbum">View this album on Spotify</String>
 	</Strings>
 </Language>

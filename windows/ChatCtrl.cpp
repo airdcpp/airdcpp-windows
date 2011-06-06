@@ -387,77 +387,25 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 					} else if (isSpotify) {
 						string type = "";
 						string hash = "";
+						string shortLink = "Open on Spotify";
 						tstring cURL = ((tstring)(result[0]));
 						size_t found=Text::fromT(cURL).find_first_of(":");
 						if (found != string::npos) {
 							type = Text::fromT(cURL).substr(0,found);
 							hash = Text::fromT(cURL).substr(found+1,cURL.length());
 						}
-						string shortLink = "Play this " + type + " on Spotify (" + hash + ")";
+						if (strcmpi(type.c_str(), "track") == 0) {
+							shortLink = STRING(SPOTIFY_TRACK) + " (" + hash + ")";
+						} else if (strcmpi(type.c_str(), "artist") == 0) {
+							shortLink = STRING(SPOTIFY_ARTIST) + " (" + hash + ")";
+						} else {
+							shortLink = STRING(SPOTIFY_ALBUM) + " (" + hash + ")";
+						}
 						ReplaceSel(Text::toT(shortLink).c_str(), false);
 						sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
 						linkEnd = linkStart + shortLink.length();
 						SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
 						shortLinks[Text::toT(shortLink)] = _T("spotify:") + cURL;
-					/* else if (isSpotify) {
-						string type = "";
-						string hash = "";
-						tstring cURL = ((tstring)(result[0]));
-						size_t found=Text::fromT(cURL).find_first_of(":");
-						if (found != string::npos) {
-							type = Text::fromT(cURL).substr(0,found);
-							hash = Text::fromT(cURL).substr(found+1,cURL.length());
-						}
-						unfinished=true;
-						hc = new HttpConnection();
-						hc->addListener(this);
-						hc->setCoralizeState(HttpConnection::CST_NOCORALIZE);
-						hc->downloadFile("http://ws.spotify.com/lookup/1/?uri=spotify:" + type + ":" + hash);
-						uint64_t downloadstart = GET_TICK();
-						while (unfinished || downloadstart < 10000) {
-							//do nothing
-						}
-						
-						if (!downBuf.empty()) {
-							string album = "";
-							string track = "";
-							string artist = "";
-							try {
-								SimpleXML xml;
-								xml.fromXML(downBuf);
-								if(xml.findChild("album")) {
-									xml.stepIn();
-									if(xml.findChild("name")) {
-										album = xml.getChildData();
-									}
-
-									if(xml.findChild("artist")) {
-										xml.stepIn();
-										if(xml.findChild("name")) {
-											artist = xml.getChildData();
-										}
-										xml.stepOut();
-									}
-
-									if(xml.findChild("tracks")) {
-										xml.stepIn();
-										if(xml.findChild("track")) {
-											xml.stepIn();
-											if(xml.findChild("name")) {
-												track = xml.getChildData();
-											}
-										}
-									}
-								}
-							} catch(const SimpleXMLException&) { }
-							string shortLink = artist + " - " + track + "(" + album + ")";
-							ReplaceSel(Text::toT(shortLink).c_str(), false);
-							sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
-							linkEnd = linkStart + shortLink.length();
-							SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
-							spotifyLinks[Text::toT(shortLink)] = _T("spotify:") + cURL;
-						}
-					} */
 					}
 					
 					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
