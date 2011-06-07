@@ -46,8 +46,8 @@ class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame
 
 {
 public:
-	static void openWindow(const tstring& aFile, const tstring& aDir, const HintedUser& aUser, int64_t aSpeed);
-	static void openWindow(const HintedUser& aUser, const string& txt, int64_t aSpeed);
+	static void openWindow(const tstring& aFile, const tstring& aDir, const HintedUser& aUser, int64_t aSpeed, bool myList = false);
+	static void openWindow(const HintedUser& aUser, const string& txt, int64_t aSpeed, bool myList = false);
 	static void closeAll();
 
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
@@ -83,7 +83,7 @@ public:
 		STATUS_LAST
 	};
 	
-	DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed);
+	DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed, bool myList = false);
 	 ~DirectoryListingFrame() { 
 		dcassert(lists.find(dl->getUser()) != lists.end());
 		lists.erase(dl->getUser());
@@ -450,8 +450,8 @@ class ThreadedDirectoryListing : public Thread
 {
 public:
 	ThreadedDirectoryListing(DirectoryListingFrame* pWindow, 
-		const string& pFile, const string& pTxt, const tstring& aDir = Util::emptyStringT) : mWindow(pWindow),
-		mFile(pFile), mTxt(pTxt), mDir(aDir)
+		const string& pFile, const string& pTxt, const tstring& aDir = Util::emptyStringT, bool myList = false) : mWindow(pWindow),
+		mFile(pFile), mTxt(pTxt), mDir(aDir), mylist(myList)
 	{ }
 
 protected:
@@ -459,23 +459,18 @@ protected:
 	string mFile;
 	string mTxt;
 	tstring mDir;
-
+	bool mylist;
 private:
 	int run() {
 		try {
 			if(!mFile.empty()) {
-				bool mylist = false;
-				tstring filename = Text::toT(Util::getFileName(mFile));
-
-				if( stricmp(filename, _T("files.xml.bz2")) == 0 ){
-				mylist = true;
+				
+				if(mylist){
 				// if its own list regenerate it before opening, but only if its dirty
-				ShareManager::getInstance()->generateOwnList();
+				mFile = ShareManager::getInstance()->generateOwnList();
 				}
 				mWindow->dl->loadFile(mFile);
 				
-				
-
 
 				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {
 				ADLSearchManager::getInstance()->matchListing(*mWindow->dl);

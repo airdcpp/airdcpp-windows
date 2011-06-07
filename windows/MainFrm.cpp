@@ -1304,7 +1304,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	if(wID == IDC_OPEN_MY_LIST){
 		string ownlist = ShareManager::getInstance()->getOwnListFile();
 		if(!ownlist.empty()){
-			DirectoryListingFrame::openWindow(Text::toT(ownlist), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString), 0);
+			DirectoryListingFrame::openWindow(Text::toT(ownlist), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString), 0, true);
 		}
 		return 0;
 	}

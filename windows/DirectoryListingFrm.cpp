@@ -46,7 +46,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, Resourc
 
 DirectoryListingFrame::UserMap DirectoryListingFrame::lists;
 
-void DirectoryListingFrame::openWindow(const tstring& aFile, const tstring& aDir, const HintedUser& aUser, int64_t aSpeed) {
+void DirectoryListingFrame::openWindow(const tstring& aFile, const tstring& aDir, const HintedUser& aUser, int64_t aSpeed, bool myList) {
 	UserIter i = lists.find(aUser);
 	if(i != lists.end()) {
 		if(!BOOLSETTING(POPUNDER_FILELIST)) {
@@ -55,7 +55,7 @@ void DirectoryListingFrame::openWindow(const tstring& aFile, const tstring& aDir
 		}
 	} else {
 		HWND aHWND = NULL;
-		DirectoryListingFrame* frame = new DirectoryListingFrame(aUser, aSpeed);
+		DirectoryListingFrame* frame = new DirectoryListingFrame(aUser, aSpeed, myList);
 		if(BOOLSETTING(POPUNDER_FILELIST)) {
 			aHWND = WinUtil::hiddenCreateEx(frame);
 		} else {
@@ -70,13 +70,13 @@ void DirectoryListingFrame::openWindow(const tstring& aFile, const tstring& aDir
 	}
 }
 
-void DirectoryListingFrame::openWindow(const HintedUser& aUser, const string& txt, int64_t aSpeed) {
+void DirectoryListingFrame::openWindow(const HintedUser& aUser, const string& txt, int64_t aSpeed, bool myList) {
 	UserIter i = lists.find(aUser);
 	if(i != lists.end()) {
 		i->second->speed = aSpeed;
 		i->second->loadXML(txt);
 	} else {
-		DirectoryListingFrame* frame = new DirectoryListingFrame(aUser, aSpeed);
+		DirectoryListingFrame* frame = new DirectoryListingFrame(aUser, aSpeed, myList);
 		if(BOOLSETTING(POPUNDER_FILELIST)) {
 			WinUtil::hiddenCreateEx(frame);
 		} else {
@@ -87,10 +87,10 @@ void DirectoryListingFrame::openWindow(const HintedUser& aUser, const string& tx
 	}
 }
 
-DirectoryListingFrame::DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed) :
+DirectoryListingFrame::DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed, bool myList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0), loading(true),
-		treeRoot(NULL), skipHits(0), files(0), speed(aSpeed), updating(false), dl(new DirectoryListing(aUser)), searching(false), mylist(false)
+		treeRoot(NULL), skipHits(0), files(0), speed(aSpeed), updating(false), dl(new DirectoryListing(aUser)), searching(false), mylist(myList)
 {
 	lists.insert(make_pair(aUser, this));
 }
@@ -98,21 +98,16 @@ DirectoryListingFrame::DirectoryListingFrame(const HintedUser& aUser, int64_t aS
 void DirectoryListingFrame::loadFile(const tstring& name, const tstring& dir) {
 	ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 	//don't worry about cleanup, the object will delete itself once the thread has finished it's job
-	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(name), Util::emptyString, dir);
+	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(name), Util::emptyString, dir, mylist);
 	loading = true;
 	tdl->start();
 
-	tstring filename = Util::getFileName(name);
-	if( stricmp(filename, _T("files.xml.bz2")) == 0 )
-		mylist = true;
-	else if ( strnicmp(filename, _T("MyList"), 6) == 0 )
-		mylist = true;
 }
 
 void DirectoryListingFrame::loadXML(const string& txt) {
 	ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 	//don't worry about cleanup, the object will delete itself once the thread has finished it's job
-	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Util::emptyString, txt);
+	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Util::emptyString, txt, Util::emptyStringT, mylist);
 	loading = true;
 	tdl->start();
 }
