@@ -882,7 +882,6 @@ LRESULT ChatCtrl::onClientEnLink(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*
 			if(shortLinks.find(sURL) == shortLinks.end()) {
 				WinUtil::openLink(sURL);
 			} else {
-				LogManager::getInstance()->message(Text::fromT(shortLinks[sURL]));
 				size_t found = Text::fromT(shortLinks[sURL]).find("magnet:?");
 				if (found != string::npos) {
 					WinUtil::parseMagnetUri(shortLinks[sURL]);
