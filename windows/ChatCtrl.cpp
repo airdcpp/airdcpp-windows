@@ -387,25 +387,34 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 					} else if (isSpotify) {
 						string type = "";
 						string hash = "";
-						string shortLink = "Open on Spotify";
+						string shortLink;
 						tstring cURL = ((tstring)(result[0]));
-						size_t found=Text::fromT(cURL).find_first_of(":");
-						if (found != string::npos) {
-							type = Text::fromT(cURL).substr(0,found);
-							hash = Text::fromT(cURL).substr(found+1,cURL.length());
-						}
-						if (strcmpi(type.c_str(), "track") == 0) {
-							shortLink = STRING(SPOTIFY_TRACK) + " (" + hash + ")";
-						} else if (strcmpi(type.c_str(), "artist") == 0) {
-							shortLink = STRING(SPOTIFY_ARTIST) + " (" + hash + ")";
+						boost::regex regSpotify;
+						regSpotify.assign("((artist|track|album):[A-Z0-9]{22})", boost::regex_constants::icase);
+
+						if (boost::regex_match(Text::fromT(cURL), regSpotify)) {
+
+							size_t found=Text::fromT(cURL).find_first_of(":");
+							if (found != string::npos) {
+								type = Text::fromT(cURL).substr(0,found);
+								hash = Text::fromT(cURL).substr(found+1,cURL.length());
+							}
+
+							if (strcmpi(type.c_str(), "track") == 0) {
+								shortLink = STRING(SPOTIFY_TRACK) + " (" + hash + ")";
+							} else if (strcmpi(type.c_str(), "artist") == 0) {
+								shortLink = STRING(SPOTIFY_ARTIST) + " (" + hash + ")";
+							} else if (strcmpi(type.c_str(), "album") == 0) {
+								shortLink = STRING(SPOTIFY_ALBUM) + " (" + hash + ")";
+							}
+							ReplaceSel(Text::toT(shortLink).c_str(), false);
+							sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
+							linkEnd = linkStart + shortLink.length();
+							shortLinks[Text::toT(shortLink)] = _T("spotify:") + cURL;
 						} else {
-							shortLink = STRING(SPOTIFY_ALBUM) + " (" + hash + ")";
+							//some other spotify link, just show the original url
 						}
-						ReplaceSel(Text::toT(shortLink).c_str(), false);
-						sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
-						linkEnd = linkStart + shortLink.length();
 						SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
-						shortLinks[Text::toT(shortLink)] = _T("spotify:") + cURL;
 					}
 					
 					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
