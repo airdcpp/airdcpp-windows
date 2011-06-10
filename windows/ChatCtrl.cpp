@@ -33,9 +33,6 @@ EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48
 
-static const tstring protocols[] = { _T("http://"), _T("https://"), _T("www."), _T("ftp://"), 
-	_T("magnet:?"), _T("dchub://"), _T("irc://"), _T("ed2k://"), _T("mms://"), _T("file://"),
-	_T("adc://"), _T("adcs://"), _T("nmdcs://"), _T("spotify:"), _T("svn://") };
 
 ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false) {
 	if(emoticonsManager == NULL) {
@@ -90,9 +87,36 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 
 		if(lNewTextLen >= lTextLimit) {
 			lRemoveChars = lSelEnd;
+			shortLinks.clear();
 		} else {
 			while(lRemoveChars < lNewTextLen)
 				lRemoveChars = LineIndex(LineFromChar(multiplier++ * lTextLimit / 10));
+		}
+
+		if(shortLinks.size()) {
+			tstring buf;
+			buf.resize(lRemoveChars);
+			GetTextRange(0, lRemoveChars, &buf[0]);
+
+			CHARFORMAT2 cfSel;
+			cfSel.cbSize = sizeof(CHARFORMAT2);
+
+			for(TStringMap::iterator i = shortLinks.begin(); i != shortLinks.end();) {
+				tstring::size_type j = 0;
+				while((j = buf.find(i->first, j)) != tstring::npos) {
+					SetSel(j, j + i->first.size());
+					GetSelectionCharFormat(cfSel);
+					if(cfSel.dwEffects & CFE_LINK) {
+						shortLinks.erase(i++);
+						j = 0;
+						break;
+					}
+					j += i->first.size();
+				} if(j == tstring::npos) {
+					j = 0;
+					++i;
+				}
+			}
 		}
 
 		// Update selection ranges
@@ -227,7 +251,7 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 	InvalidateRect(NULL);
 }
 
-void ChatCtrl::FormatChatLine(const tstring& sMyNick, const tstring& sText, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo) {
+void ChatCtrl::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo) {
 	// Set text format
 	tstring sMsgLower(sText.length(), NULL);
 	std::transform(sText.begin(), sText.end(), sMsgLower.begin(), _totlower);
@@ -341,88 +365,99 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, const tstring& sText, CHAR
 	FormatEmoticonsAndLinks(sText, sMsgLower, lSelBegin, bUseEmo);
 }
 
-void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, LONG lSelBegin, bool bUseEmo) {
+void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, tstring& sMsgLower, LONG lSelBegin, bool bUseEmo) {
 	LONG lSelEnd = lSelBegin + sMsg.size();
 	 bool detectMagnet=false;
 
-	// hightlight all URLs and make them clickable
-	for(size_t i = 0; i < (sizeof(protocols) / sizeof(protocols[0])); ++i) {
-		size_t linkStart = sMsgLower.find(protocols[i]);
-		bool isMagnet = (protocols[i] == _T("magnet:?"));
-		bool isSpotify = (protocols[i] == _T("spotify:"));
-		while(linkStart != tstring::npos) {
-			size_t linkEnd = linkStart + protocols[i].size();
-			
-			try {
-				// TODO: complete regexp for URLs
-				boost::wregex reg;
-				if(isMagnet) // magnet links have totally indifferent structure than classic URL // -/?%&=~#'\\w\\.\\+\\*\\(\\)
-					reg.assign(_T("^(\\w)+=[:\\w]+(&(\\w)+=[\\S]*)*[^\\s<>.,;!(){}\"']+"), boost::regex_constants::icase);
-				else
-					reg.assign(_T("^([@\\w-]+(\\.)*)+(:[\\d]+)?(/[\\S]*)*[^\\s<>.,;!(){}\"']+"), boost::regex_constants::icase);
-					
-				tstring::const_iterator start = sMsg.begin();
-				tstring::const_iterator end = sMsg.end();
-				boost::match_results<tstring::const_iterator> result;
+	//Format URLs
+		string::size_type isMagnet, isSpotify;
+		boost::wregex reg;
+		reg.assign(_T("((?<=\\s)(magnet:\\?([a-z]){1,5}=)?(?i)\\b((?:[a-z][\\w-]+:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’])))"));
+		tstring::const_iterator start = sMsg.begin();
+		tstring::const_iterator end = sMsg.end();
+		boost::match_results<tstring::const_iterator> result;
+		int pos=0;
 
-				if(boost::regex_search(start + linkEnd, end, result, reg, boost::match_default)) {
-					dcassert(!result.empty());
-					
-					linkEnd += result.length(0);
-					SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
-					if(isMagnet) {
-						detectMagnet=true;
-						tstring cURL = ((tstring)(result[0]));
-						tstring::size_type dn = cURL.find(_T("dn="));
-						if(dn != tstring::npos) {
-							string sFileName = Util::encodeURI(Text::fromT(cURL).substr(dn + 3), true);
-							int64_t filesize = Util::toInt64(Text::fromT(cURL.substr(cURL.find(_T("xl=")) + 3, cURL.find(_T("&")) - cURL.find(_T("xl=")))));
-							tstring shortLink = Text::toT(sFileName) + _T(" (") + Util::formatBytesW(filesize) + _T(")");
-							ReplaceSel(shortLink.c_str(), false);
-							sMsgLower = sMsgLower.substr(0, linkStart) + shortLink + sMsgLower.substr(linkEnd);
-							linkEnd = linkStart + shortLink.length();
-							SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
-							shortLinks[shortLink] = _T("magnet:?") + cURL;
-						}
-					} else if (isSpotify) {
-						string type = "";
-						string hash = "";
-						string shortLink;
-						tstring cURL = ((tstring)(result[0]));
-						boost::regex regSpotify;
-						regSpotify.assign("((artist|track|album):[A-Z0-9]{22})", boost::regex_constants::icase);
+		while(boost::regex_search(start, end, result, reg, boost::match_default)) {
+			size_t linkStart = pos + lSelBegin + result.position();
+			size_t linkEnd = pos + lSelBegin + result.position() + result.length();
+			SetSel(linkStart, linkEnd);
+			std::string link( result[0].first, result[0].second );
+			isMagnet = link.find("magnet:?");
+			isSpotify = link.find("spotify:");
+			tstring shortLink;
 
-						if (boost::regex_match(Text::fromT(cURL), regSpotify)) {
-
-							size_t found=Text::fromT(cURL).find_first_of(":");
-							if (found != string::npos) {
-								type = Text::fromT(cURL).substr(0,found);
-								hash = Text::fromT(cURL).substr(found+1,cURL.length());
-							}
-
-							if (strcmpi(type.c_str(), "track") == 0) {
-								shortLink = STRING(SPOTIFY_TRACK) + " (" + hash + ")";
-							} else if (strcmpi(type.c_str(), "artist") == 0) {
-								shortLink = STRING(SPOTIFY_ARTIST) + " (" + hash + ")";
-							} else if (strcmpi(type.c_str(), "album") == 0) {
-								shortLink = STRING(SPOTIFY_ALBUM) + " (" + hash + ")";
-							}
-							ReplaceSel(Text::toT(shortLink).c_str(), false);
-							sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
-							linkEnd = linkStart + shortLink.length();
-							shortLinks[Text::toT(shortLink)] = _T("spotify:") + cURL;
-						} else {
-							//some other spotify link, just show the original url
-						}
-						SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
-					}
-					
-					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+			if(isMagnet != string::npos) {
+				detectMagnet=true;
+				string::size_type dn = link.find("dn=");
+				if(dn != tstring::npos) {
+					string sFileName = Util::encodeURI(link.substr(dn + 3), true);
+					int64_t filesize = Util::toInt64(link.substr(link.find("xl=") + 3, link.find("&") - link.find("xl=")));
+					shortLink = Text::toT(sFileName) + _T(" (") + Util::formatBytesW(filesize) + _T(")");
+					//ReplaceSel(Text::toT(shortLink).c_str(), false);
+					//sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
+					//linkEnd = linkStart + shortLink.length();
+					//SetSel(linkStart, linkEnd);
+					shortLinks[shortLink] = Text::toT(link);
 				}
-			} catch(...) {
+			} else if (isSpotify != string::npos) {
+				string type = "";
+				string hash = "";
+				boost::regex regSpotify;
+				regSpotify.assign("(spotify:(artist|track|album):[A-Z0-9]{22})", boost::regex_constants::icase);
+
+				if (boost::regex_match(link, regSpotify)) {
+					size_t found = link.find_first_of(":");
+					string tmp = link.substr(found+1,link.length());
+					found = tmp.find_first_of(":");
+					if (found != string::npos) {
+						type = tmp.substr(0,found);
+						hash = tmp.substr(found+1,tmp.length());
+					}
+
+					if (strcmpi(type.c_str(), "track") == 0) {
+						shortLink = Text::toT(STRING(SPOTIFY_TRACK) + " (" + hash + ")");
+					} else if (strcmpi(type.c_str(), "artist") == 0) {
+						shortLink = Text::toT(STRING(SPOTIFY_ARTIST) + " (" + hash + ")");
+					} else if (strcmpi(type.c_str(), "album") == 0) {
+						shortLink = Text::toT(STRING(SPOTIFY_ALBUM) + " (" + hash + ")");
+					}
+					//ReplaceSel(Text::toT(shortLink).c_str(), false);
+					//sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
+					//linkEnd = linkStart + shortLink.length();
+					//SetSel(linkStart, linkEnd);
+					shortLinks[shortLink] = Text::toT(link);
+				} else {
+						//some other spotify link, just show the original url
+				}
 			}
-			
-			linkStart = sMsgLower.find(protocols[i], linkEnd);			
+
+			SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+
+			pos=pos+result.position() + result.length();
+			start = result[0].second;
+		}
+
+	//replace shortlinks
+	for(TStringMapIter p = shortLinks.begin(); p != shortLinks.end(); p++) {
+		//tstring::size_type found = sMsg.find(p->second);
+		tstring::size_type found = 0;
+		while((found = sMsg.find(p->second, found)) != tstring::npos) {
+			size_t linkStart =  found;
+			size_t linkEnd =  found + p->second.length();
+
+			SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
+			sMsg.replace(linkStart, linkEnd - linkStart, p->first.c_str());
+			//std::transform(&sMsgLower.replace(linkStart, linkEnd - linkStart, p->first.c_str())[linkStart], &sMsgLower[linkEnd], &sMsgLower[linkStart], _totlower);
+
+			setText(p->first);
+
+			//SetSel(lSelBegin + found, lSelBegin + found + p->second.tstring::length());
+			//ReplaceSel(p->first.c_str(), false);
+			//sMsgLower = sMsgLower.substr(0, lSelBegin + found) + p->first + sMsgLower.substr(lSelBegin + found + Text::fromT(p->first).length());
+			linkEnd = linkStart + p->first.size();
+			SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
+			SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 		}
 	}
 
@@ -442,14 +477,10 @@ void ChatCtrl::FormatEmoticonsAndLinks(const tstring& sMsg, tstring& sMsgLower, 
 				start = result[0].second;
 				pos=pos+result.position() + result.length();
 			}
-		} else {
-			detectMagnet=false;
 		}
 	}
-	else {
-		detectMagnet=false;
-	}
 
+	detectMagnet=false;
 
 	// insert emoticons
 	if(bUseEmo && emoticonsManager->getUseEmoticons()) {
@@ -870,46 +901,35 @@ LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 LRESULT ChatCtrl::onClientEnLink(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	ENLINK* pEL = (ENLINK*)pnmh;
-
-	if ( pEL->msg == WM_LBUTTONUP ) {
-		long lBegin = pEL->chrg.cpMin, lEnd = pEL->chrg.cpMax;
-		TCHAR* sURLTemp = new TCHAR[(lEnd - lBegin)+1];
-		if(sURLTemp) {
-			GetTextRange(lBegin, lEnd, sURLTemp);
-			tstring sURL = sURLTemp;
-			//ApexDC
-			if(shortLinks.find(sURL) == shortLinks.end()) {
-				WinUtil::openLink(sURL);
+	ENLINK* enlink = (ENLINK*)pnmh;
+	switch(enlink->msg) {
+		case WM_LBUTTONUP:
+		{
+			tstring url;
+			url.resize(enlink->chrg.cpMax - enlink->chrg.cpMin);
+			GetTextRange(enlink->chrg.cpMin, enlink->chrg.cpMax, &url[0]);
+			if(shortLinks.find(url) == shortLinks.end()) {
+				WinUtil::openLink(url);
 			} else {
-				size_t found = Text::fromT(shortLinks[sURL]).find("magnet:?");
+				size_t found = Text::fromT(shortLinks[url]).find("magnet:?");
 				if (found != string::npos) {
-					WinUtil::parseMagnetUri(shortLinks[sURL]);
+					WinUtil::parseMagnetUri(shortLinks[url]);
 				} else {
-					WinUtil::openLink(shortLinks[sURL]);
+					WinUtil::openLink(shortLinks[url]);
 				}
 			}
-
-			delete[] sURLTemp;
+			break;
 		}
-	} else if(pEL->msg == WM_RBUTTONUP) {
-		selectedURL = Util::emptyStringT;
-		long lBegin = pEL->chrg.cpMin, lEnd = pEL->chrg.cpMax;
-		TCHAR* sURLTemp = new TCHAR[(lEnd - lBegin)+1];
-		if(sURLTemp) {
-			GetTextRange(lBegin, lEnd, sURLTemp);
-			//ApexDC
-			if(shortLinks.find(sURLTemp) == shortLinks.end()) {
-				selectedURL = sURLTemp;
-			} else {
-				selectedURL = shortLinks[sURLTemp];
-			}
-
-			delete[] sURLTemp;
+		case WM_RBUTTONUP:
+		{
+			selectedURL.resize(enlink->chrg.cpMax - enlink->chrg.cpMin);
+			GetTextRange(enlink->chrg.cpMin, enlink->chrg.cpMax, &selectedURL[0]);
+			if(shortLinks.find(selectedURL) != shortLinks.end())
+				selectedURL = shortLinks[selectedURL];
+			SetSel(enlink->chrg.cpMin, enlink->chrg.cpMax);
+			InvalidateRect(NULL);
+			break;
 		}
-
-		SetSel(lBegin, lEnd);
-		InvalidateRect(NULL);
 	}
 
 	return 0;
