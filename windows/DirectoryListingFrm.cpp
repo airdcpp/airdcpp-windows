@@ -778,7 +778,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					if(ii->file->getAdls())			{
 						pShellMenu->AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
 					}
-					if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE ) {				
+					if(ctrlList.GetSelectedCount() == 1/* && ii->type == ItemInfo::FILE*/ ) {				
 						pShellMenu->AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 					}
 					
@@ -841,10 +841,15 @@ clientmenu:
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
 		fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
-		if(mylist){
+		
+		if(mylist) {
 		fileMenu.AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
 		fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK)); //sfv checker
+		if(ctrlList.GetSelectedCount() == 1 /*&& ii->type == ItemInfo::FILE */) {				
+					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+				}
 		}
+
 		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
 		fileMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_FOR_ALTERNATES_DIR));
 		fileMenu.AppendMenu(MF_SEPARATOR);
@@ -1734,13 +1739,15 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 		} else {
 			if(ii->dir->getFileCount() > 0) {
 				DirectoryListing::File::Iter i = ii->dir->files.begin();
+				if(!mylist) {
 				for(; i != ii->dir->files.end(); ++i) {
 					if((*i)->getDupe())
 						break;
 				}
+				}
 				if(i != ii->dir->files.end()) {
 					path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
-					wstring::size_type end = path.find_last_of(_T("\\"));
+					wstring::size_type end = path.find_last_of(_T("\\")); //makes it open the above folder if dir is selected with open folder
 					if(end != wstring::npos) {
 						path = path.substr(0, end);
 					}

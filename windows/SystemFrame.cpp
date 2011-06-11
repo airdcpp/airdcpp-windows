@@ -274,11 +274,9 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 LRESULT SystemFrame::OnRButtonDown(POINT pt) {
 	//selLine.clear();
 	selPath.clear();
-	//FileName.clear();
 
 	//selLine = LineFromPos(pt);
 	//selPath = getPath(selLine);
-	//FileName = getFile(selPath);
 	selWord = WordFromPos(pt);
 	
 	return 0;
@@ -340,6 +338,8 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 			
 		} else begin = 0, end = 0;
 	}
+
+
 	if(!selPath.empty())
 		begin = x.find_last_of(_T("\\"), c);
 	else
@@ -370,38 +370,13 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 	tstring sText;
 	sText = x.substr(begin, end-begin);
 
-	if(!sText.empty()) {
+	if(!sText.empty()) 
 		return sText;
-	} else {
-		return Util::emptyStringT;
-	}
-}/*
-tstring SystemFrame::getFile(tstring path){
-	tstring file = Util::emptyStringT;
 	
-	if(!path.empty()) {
-
-		int end = path.length();
 		
-		file = path.substr(path.find_last_of(PATH_SEPARATOR) +1, end);
-		
-		if(file.empty()) //we only have a path
-			return Util::emptyStringT;
-
-		//end = file.find_first_of(_T(".")) + 4; //shouldnt have double dots in filenames?
-		end = file.rfind(_T(".")) + 4; 
-
-		if(end == tstring::npos) 
-			return  Util::emptyStringT;
-		
-			
-
-		file = file.substr(0, end);
-	}
-
-	return file;
-}
-
+	return Util::emptyStringT;
+	
+}/*
 tstring SystemFrame::getPath(tstring line) {
 	
 	tstring::size_type start = line.find_first_of(PATH_SEPARATOR); 
