@@ -372,7 +372,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, tstring& sMsgLower, LONG l
 	//Format URLs
 		string::size_type isMagnet, isSpotify;
 		boost::wregex reg;
-		reg.assign(_T("((?<=\\s)(magnet:\\?([a-z]){1,5}=)?(?i)\\b((?:[a-z][\\w-]+:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’])))"));
+		reg.assign(_T("((?<=\\s)(magnet:\\?[^\\s=]+=)?(?i)\\b((?:[a-z][\\w-]{1,10}:(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]{3,}|\\(([^\\s()<>]{3,}|(\\([^\\s()<>]{3,}\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’])[^:])(?=\\s|$))"));
 		tstring::const_iterator start = sMsg.begin();
 		tstring::const_iterator end = sMsg.end();
 		boost::match_results<tstring::const_iterator> result;
@@ -394,10 +394,6 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, tstring& sMsgLower, LONG l
 					string sFileName = Util::encodeURI(link.substr(dn + 3), true);
 					int64_t filesize = Util::toInt64(link.substr(link.find("xl=") + 3, link.find("&") - link.find("xl=")));
 					shortLink = Text::toT(sFileName) + _T(" (") + Util::formatBytesW(filesize) + _T(")");
-					//ReplaceSel(Text::toT(shortLink).c_str(), false);
-					//sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
-					//linkEnd = linkStart + shortLink.length();
-					//SetSel(linkStart, linkEnd);
 					shortLinks[shortLink] = Text::toT(link);
 				}
 			} else if (isSpotify != string::npos) {
@@ -422,10 +418,6 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, tstring& sMsgLower, LONG l
 					} else if (strcmpi(type.c_str(), "album") == 0) {
 						shortLink = Text::toT(STRING(SPOTIFY_ALBUM) + " (" + hash + ")");
 					}
-					//ReplaceSel(Text::toT(shortLink).c_str(), false);
-					//sMsgLower = sMsgLower.substr(0, linkStart) + Text::toT(shortLink) + sMsgLower.substr(linkEnd);
-					//linkEnd = linkStart + shortLink.length();
-					//SetSel(linkStart, linkEnd);
 					shortLinks[shortLink] = Text::toT(link);
 				} else {
 						//some other spotify link, just show the original url
@@ -440,7 +432,6 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, tstring& sMsgLower, LONG l
 
 	//replace shortlinks
 	for(TStringMapIter p = shortLinks.begin(); p != shortLinks.end(); p++) {
-		//tstring::size_type found = sMsg.find(p->second);
 		tstring::size_type found = 0;
 		while((found = sMsg.find(p->second, found)) != tstring::npos) {
 			size_t linkStart =  found;
@@ -448,13 +439,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, tstring& sMsgLower, LONG l
 
 			SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
 			sMsg.replace(linkStart, linkEnd - linkStart, p->first.c_str());
-			//std::transform(&sMsgLower.replace(linkStart, linkEnd - linkStart, p->first.c_str())[linkStart], &sMsgLower[linkEnd], &sMsgLower[linkStart], _totlower);
-
 			setText(p->first);
-
-			//SetSel(lSelBegin + found, lSelBegin + found + p->second.tstring::length());
-			//ReplaceSel(p->first.c_str(), false);
-			//sMsgLower = sMsgLower.substr(0, lSelBegin + found) + p->first + sMsgLower.substr(lSelBegin + found + Text::fromT(p->first).length());
 			linkEnd = linkStart + p->first.size();
 			SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
 			SetSelectionCharFormat(WinUtil::m_TextStyleURL);

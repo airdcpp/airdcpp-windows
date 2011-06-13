@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by H:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -425,6 +425,8 @@
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_CLIENT_TAG                  1220
+#define IDC_REFRESH_DELAY3              1220
+#define IDC_DONT_SHARE_BIGGER_VALUE     1220
 #define IDC_STATIC2                     1221
 #define IDC_TOOLBAR_ACTUAL              1221
 #define IDC_CLIENT_EXTENDED_TAG         1221
@@ -674,7 +676,7 @@
 #define IDC_BW_BOTH                     1325
 #define IDC_BACKUP                      1325
 #define IDC_SETTINGS_NOMINALBW          1326
-#define IDC_HELP_GUIDES		            1327
+#define IDC_HELP_GUIDES                 1327
 #define IDC_ST_AIRDC_SLOT               1327
 #define IDC_DUPE_SEARCH                 1328
 #define IDC_NOTE                        1329
@@ -746,9 +748,11 @@
 #define IDC_NATT                        1370
 #define IDC_SORT_DIRS                   1370
 #define IDC_CONNECTION_DETECTION        1371
+#define IDC_DONT_SHARE_BIGGER_THAN      1371
 #define IDC_POPUP_FONT                  1372
 #define IDC_CURRENT_LIST_BROWSE         1372
 #define IDC_VIEW_BL                     1372
+#define IDC_SETTINGS_MB2                1372
 #define IDC_LANG_FR                     1373
 #define IDC_LANG_D                      1374
 #define IDC_PLAYER_COMBO                1375
@@ -914,7 +918,7 @@
 #define IDC_LINE3                       8678
 #define IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS 9000
 #define IDR_TRAY_PM                     10000
-#define IDR_TRAY_HUB                     10001
+#define IDR_TRAY_HUB                    10001
 #define IDC_EXTRASLOTSSPIN              10002
 #define IDC_EXTRA_DOWN_SLOT             10003
 #define IDC_EXTRA_DOWNLOADS_MAX         10004
@@ -1148,7 +1152,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1371
+#define _APS_NEXT_CONTROL_VALUE         1373
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

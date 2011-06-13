@@ -10,23 +10,20 @@
 
 static const TCHAR rar[] = 
 _T("Client profile Rar-Hub\r\n")
-_T("This will disable segment downloading by setting min segment size!!\r\n")
-_T("( Safer Way to Disable segments )\r\n")
+_T("This will disable segment downloading by setting the minimum segment size!\r\n")
+_T("(safer way to disable segments )\r\n")
 _T("Grouped Downloads will be automatically Expanded.\r\n")
-_T("Partial Upload slots will be set To: 1\r\n");
+_T("Files bigger than 600 MB and File types not belonging to original release won't be shared.\r\n")
+_T("(these can be changed from the AirSharing page)\r\n");
 
 
 static const TCHAR publichub[] = 
 _T("Client profile Public Hubs\r\n")
-_T("This Will Enable segmented Downloading\r\n")
-_T("Min Segments size will be set to normal default value\r\n")
-_T("Partial Upload slots will be set To: 2\r\n");
+_T("This Will Enable segmented Downloading\r\n");
 
 static const TCHAR privatehub[] = 
 _T("Client profile Private Hub \r\n")
-_T("SegmentDownloading will be Enabled\r\n")
-_T("Min segments size will be set To: 2048 \r\n")
-_T("Partial Upload slots will be set To: 2 \r\n");
+_T("Segmented Downloading will be Enabled\r\n");
 
 LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 			
@@ -202,6 +199,7 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::CHECK_EXTRA_SFV_NFO, true);
 			SettingsManager::getInstance()->set(SettingsManager::CHECK_EXTRA_FILES, true);
 			SettingsManager::getInstance()->set(SettingsManager::CHECK_DUPES, true);
+			SettingsManager::getInstance()->set(SettingsManager::MAX_FILE_SIZE_SHARED, 600);
 			//add more here
 			
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_RAR);

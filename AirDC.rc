@@ -1307,13 +1307,16 @@ BEGIN
     GROUPBOX        "Minislots",IDC_SB_MINISLOTS,6,7,270,55
     LTEXT           "Grant minislot automatically for the following file extensions: (separate extensions with '|', wildcards allowed)",IDC_ST_MINISLOTS_EXT,12,17,239,18
     CONTROL         "Regexp",IDC_SHARE_SKIPLIST_USE_REGEXP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,76,70,8
-    EDITTEXT        IDC_REFRESH_DELAY,203,153,21,14,ES_AUTOHSCROLL | ES_NUMBER
-    RTEXT           "Refresh delay",IDC_ST_REFRESH_DELAY,17,153,182,8
+    EDITTEXT        IDC_REFRESH_DELAY,203,148,21,14,ES_AUTOHSCROLL | ES_NUMBER
+    RTEXT           "Refresh delay",IDC_ST_REFRESH_DELAY,16,150,182,8
     LTEXT           "Static",IDC_MINUTES,229,153,47,8
     EDITTEXT        IDC_AIRDC_SLOT,203,129,21,14,ES_AUTOHSCROLL
     RTEXT           "Extraslot for fellow AirDC++ users(version 2.05 ->)",IDC_ST_AIRDC_SLOT,9,132,189,8
-    GROUPBOX        "Options for scan for missing/extra files",IDC_SETTINGS_SCAN_OPTIONS,6,169,270,93
-    CONTROL         "",IDC_SCANLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,12,180,257,78
+    GROUPBOX        "Options for scan for missing/extra files",IDC_SETTINGS_SCAN_OPTIONS,6,182,270,80
+    CONTROL         "",IDC_SCANLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,12,194,257,64
+    RTEXT           "Don't share files bigger than",IDC_DONT_SHARE_BIGGER_THAN,17,169,182,8,NOT WS_GROUP
+    EDITTEXT        IDC_DONT_SHARE_BIGGER_VALUE,203,167,21,14,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "MB",IDC_SETTINGS_MB2,231,170,29,8
 END
 
 IDD_AUTOSEARCH_DLG DIALOGEX 0, 0, 278, 73
@@ -1630,7 +1633,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_TRAY_PM             ICON                    "res\\PM.ico"
-IDR_TRAY_HUB             ICON                    "res\\message.ico"
+IDR_TRAY_HUB            ICON                    "res\\message.ico"
 IDR_PRIVATE             ICON                    "res\\User.ico"
 IDR_FINISHED_DL         ICON                    "res\\FinishedDL.ico"
 IDR_FINISHED_UL         ICON                    "res\\FinishedUL.ico"

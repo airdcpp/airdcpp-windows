@@ -421,9 +421,12 @@ Added:
 #Stop button to Hashing progress dialog
 #Open folder righclick on a dupe file in search window
 #Detection for Spotify links, Spotify toolbar and Spotify spam //maksalaatikko
+#Added settings "Don't share files bigger than X MB" (set to 600MB by default for RAR users)
 
 Changed:
 
+#Rewritten link detection code: links with all protocols will be detected with regex without hardcoded protocol
+ (using modified regex from http://daringfireball.net/2010/07/improved_regex_for_matching_urls )
 #sdc merge
 #Total time left shows the total time of a download folder
 #Sort by virtualnames in sharingpage settings
