@@ -1925,7 +1925,7 @@ tstring WinUtil::UselessInfo() {
 
 tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 
-	volumes.clear();
+	
 	tstring ret = Util::emptyStringT;
 	int64_t free = 0, totalFree = 0, size = 0, totalSize = 0;
 
@@ -1963,6 +1963,7 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 		else
 			ret += Util::formatBytesW(totalFree) + _T("/") + Util::formatBytesW(totalSize);
 
+	volumes.clear();
 	return ret;
 }
 
