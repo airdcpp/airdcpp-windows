@@ -1792,10 +1792,13 @@ void WinUtil::getContextMenuPos(CEdit& aEdit, POINT& aPt) {
 }
 
 void WinUtil::openFolder(const tstring& file) {
+	if(Util::fileExists(Text::fromT(file))) {
 	if (File::getSize(Text::fromT(file)) != -1)
 		::ShellExecute(NULL, NULL, Text::toT("explorer.exe").c_str(), Text::toT("/e, /select, \"" + (Text::fromT(file)) + "\"").c_str(), NULL, SW_SHOWNORMAL);
 	else
 		::ShellExecute(NULL, NULL, Text::toT("explorer.exe").c_str(), Text::toT("/e, \"" + Util::getFilePath(Text::fromT(file)) + "\"").c_str(), NULL, SW_SHOWNORMAL);
+
+	}
 }
 void WinUtil::FlashWindow() {
 	if( GetForegroundWindow() != WinUtil::mainWnd ) {

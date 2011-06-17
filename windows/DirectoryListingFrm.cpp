@@ -632,7 +632,8 @@ LRESULT DirectoryListingFrame::onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*
 		fullPath = Text::toT(((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath());
 	}
 
-	selectItem(fullPath);
+	if(!fullPath.empty())
+		selectItem(fullPath);
 	
 	return 0;
 }

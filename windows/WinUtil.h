@@ -408,6 +408,7 @@ public:
 	static int textUnderCursor(POINT p, CRichEditCtrl& ctrl, tstring& x);
 	static void openLink(const tstring& url);
 	static void openFile(const tstring& file) {
+	if(Util::fileExists(Text::fromT(file)))
 		::ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
 	}
 	static void openFolder(const tstring& file);
