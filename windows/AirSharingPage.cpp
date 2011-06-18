@@ -19,6 +19,8 @@ PropPage::ListItem AirSharingPage::listItems[] = {
 	{ SettingsManager::CHECK_EXTRA_SFV_NFO, ResourceManager::CHECK_EXTRA_SFV_NFO },
 	{ SettingsManager::CHECK_EXTRA_FILES, ResourceManager::CHECK_EXTRA_FILES },
 	{ SettingsManager::CHECK_DUPES, ResourceManager::CHECK_DUPES },
+	{ SettingsManager::CHECK_EMPTY_DIRS, ResourceManager::CHECK_EMPTY_DIRS },
+	{ SettingsManager::CHECK_EMPTY_DIRS, ResourceManager::CHECK_EMPTY_RELEASES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
