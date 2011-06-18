@@ -898,10 +898,13 @@ _T("\r\n-- Sometimes we download so fast that we accidently get the whole person
 _T("\r\n-- Holy crap, my download speed is sooooo fast that it made a hole in the harddrive\r\n") LINE2,
 _T("\r\n-- Once you got access to it, dont let it go...\r\n") LINE2,
 _T("\r\n-- Do you feel the wind? Its the download that goes too fast..\r\n") LINE2,
+_T("\r\n-- No matter what, no matter where, it's always home if AirDC++ is there\r\n") LINE2,
 _T("\r\n-- Knock, knock...We are leaving back the trousers we accidently downloaded...\r\n") LINE2,
 _T("\r\n-- Are you blind? you already downloaded that movie 4 times already\r\n") LINE2,
 _T("\r\n-- My client has been in jail twice, has  yours?\r\n") LINE2,
 _T("\r\n-- Keep your downloads close, but keep your uploads even closer\r\n") LINE2
+
+
 };
 
 #define MSGS 18
