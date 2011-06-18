@@ -422,6 +422,7 @@ Added:
 #Open folder righclick on a dupe file in search window
 #Detection for Spotify links, Spotify toolbar and Spotify spam //maksalaatikko
 #Added settings "Don't share files bigger than X MB" (set to 600MB by default for RAR users)
+#The share scanner will report empty folders
 
 Changed:
 
@@ -432,6 +433,7 @@ Changed:
 #Sort by virtualnames in sharingpage settings
 #Improved os version detection in /stats
 #Links revised in the help menu
+#The share scanner will detect missing NFO files and extra files in Sample folders better + a bit better performance
 
 Fixed:
 

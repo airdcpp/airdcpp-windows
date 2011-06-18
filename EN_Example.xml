@@ -1331,5 +1331,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="DontShareBiggerThan">Don't share files bigger than (0=disable)</String>
 		<String Name="DirEmpty">The directory is empty:</String>
 		<String Name="SearchForAlternatesFile">Search File for alternates</String>
+		<String Name="ReleaseFilesMissing">NFO/SFV found but there are no other files in the folder:</String>
 	</Strings>
 </Language>
