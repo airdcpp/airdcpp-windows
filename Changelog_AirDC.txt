@@ -423,6 +423,7 @@ Added:
 #Detection for Spotify links, Spotify toolbar and Spotify spam //maksalaatikko
 #Added settings "Don't share files bigger than X MB" (set to 600MB by default for RAR users)
 #The share scanner will report empty folders
+#Open Folder rightclick in queue
 
 Changed:
 
@@ -434,11 +435,17 @@ Changed:
 #Improved os version detection in /stats
 #Links revised in the help menu
 #The share scanner will detect missing NFO files and extra files in Sample folders better + a bit better performance
+#/df works with folder mounted disks, and shows network mounted disks separately
+#Alternate search adds source to all rars in same folder with 1 search
 
 Fixed:
 
+#Open Folder rightclicks in own filelist
 #Many mainwindow freezes with big shares
 #Hideshare on partial filelist ( thanks iceman50)
 #Fixed rebuild
 #Fix own list shellmenu for files
 #The scanner won't report any files in subfolders as missing now //maksalaatikko
+#Fix autosearch for directory types
+#fix alternate search with queue dir menu
+

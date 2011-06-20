@@ -1933,7 +1933,7 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 
 	
 	tstring ret = Util::emptyStringT;
-	int64_t free = 0, totalFree = 0, size = 0, totalSize = 0;
+	int64_t free = 0, totalFree = 0, size = 0, totalSize = 0, netFree = 0, netSize = 0;
 
    TCHAR   buf[MAX_PATH];  
    HANDLE  hVol;    
@@ -1963,11 +1963,33 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 				totalSize += size;
 			}
    }
+
+   //check for mounted Network drives
+   ULONG drives = _getdrives();
+   TCHAR drive[3] = { _T('A'), _T(':'), _T('\0') };
+    while(drives != 0) {
+    if(drives & 1 && ( GetDriveType(drive) == DRIVE_REMOTE)){
+		if(GetDiskFreeSpaceEx(drive, NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
+				netFree += free;
+				netSize += size;
+		}
+	}
+		 ++drive[0];
+		 drives = (drives >> 1);
+	}
+
+	
 	if(totalSize != 0)
-		if( !onlyTotal )
-			ret += _T("HDD space (free/total): ") + Util::formatBytesW(totalFree) + _T("/") + Util::formatBytesW(totalSize);
+		if( !onlyTotal ) {
+			ret += _T("\r\n Local HDD space (free/total): ") + Util::formatBytesW(totalFree) + _T("/") + Util::formatBytesW(totalSize);
+		if(netSize != 0) {
+				ret +=  _T("\r\n Network HDD space (free/total): ") + Util::formatBytesW(netFree) + _T("/") + Util::formatBytesW(netSize);
+				ret +=  _T("\r\n Total HDD space (free/total): ") + Util::formatBytesW((netFree+totalFree)) + _T("/") + Util::formatBytesW(netSize+totalSize);
+		}
+		}		
 		else
 			ret += Util::formatBytesW(totalFree) + _T("/") + Util::formatBytesW(totalSize);
+		
 
 	volumes.clear();
 	return ret;
