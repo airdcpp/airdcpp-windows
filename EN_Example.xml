@@ -634,7 +634,7 @@
 		<String Name="SettingsFilterEnter">Activate search/userlist filter by pressing Enter</String>
 		<String Name="SettingsFirewallNat">Firewall with manual port forwarding</String>
 		<String Name="SettingsFirewallPassive">Firewall (passive, worst case)</String>
-		<String Name="SettingsFirewallUpnp">Firewall with UPnP (WinXP+ only)</String>
+		<String Name="SettingsFirewallUpnp">Firewall with UPnP</String>
 		<String Name="SettingsFormat">Format</String>
 		<String Name="SettingsGeneral">General</String>
 		<String Name="SettingsGetUserCountry">Get User Country</String>

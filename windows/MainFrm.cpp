@@ -874,6 +874,7 @@ void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, 
 
 		//ApexDC
 		xml.resetCurrentChild();
+		if(!BOOLSETTING(AUTO_DETECT_CONNECTION)) {
 		if(BOOLSETTING(IP_UPDATE) && xml.findChild("IP")) {
 			string ip = xml.getChildData();
 			SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, (!ip.empty() ? ip : Util::getLocalIp()));
@@ -881,6 +882,7 @@ void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, 
 			SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, Util::getLocalIp());
 		}
 		xml.resetCurrentChild();
+		}
 		if(xml.findChild("Version")) {
 			if(Util::toDouble(xml.getChildData()) > VERSIONFLOAT) {
 				xml.resetCurrentChild();
