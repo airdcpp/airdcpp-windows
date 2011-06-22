@@ -153,7 +153,7 @@ private:
 	BOOL isRelease(POINT pt, BOOL search);
 	tstring LineFromPos(const POINT& p) const;
 	void FormatChatLine(const tstring& sMyNick, tstring& sMsg, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo);
-	void FormatEmoticonsAndLinks(tstring& sText, tstring& sTextLower, LONG lSelBegin, bool bUseEmo);
+	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);
 
 	static string escapeUnicode(tstring str);
 	static tstring rtfEscape(tstring str);

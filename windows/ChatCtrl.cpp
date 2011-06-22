@@ -142,6 +142,9 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 	SetSel(0, sLine.length());
 	SetSelectionCharFormat(enc);
 
+	tstring msg = sLine;
+	LONG hBegin = lSelEnd;
+
 	// Format TimeStamp
 	if(!sTime.empty()) {
 		lSelEnd += sTime.size();
@@ -237,6 +240,62 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 	// Format the message part
 	FormatChatLine(sMyNick, sMsg, cf, isMyMessage, sAuthor, lSelEnd, bUseEmo);
 
+	//just moved highlights here as a test, so they can change nick color and override other colors
+	if(BOOLSETTING(USE_HIGHLIGHT)) {
+	
+	ColorList *cList = HighlightManager::getInstance()->getList();
+	CHARFORMAT2 hlcf;
+
+	logged = false;
+
+	//compare the last line against all strings in the vector
+	for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
+		ColorSettings* cs = &(*i);
+	if(!cs->getIncludeNickList()) {
+		int pos;
+
+		//set start position for find
+			pos = msg.find(_T(">"));
+			if(pos == tstring::npos)
+				pos = msg.find(_T("**")) + nick.length();
+		
+
+		//prepare the charformat
+				memset(&hlcf, 0, sizeof(CHARFORMAT2));
+				hlcf.cbSize = sizeof(hlcf);
+				hlcf.dwReserved = 0;
+				hlcf.dwMask = CFM_BACKCOLOR | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
+
+		if(cs->getBold())		hlcf.dwEffects |= CFE_BOLD;
+		if(cs->getItalic())		hlcf.dwEffects |= CFE_ITALIC;
+		if(cs->getUnderline())	hlcf.dwEffects |= CFM_UNDERLINE;
+		if(cs->getStrikeout())	hlcf.dwEffects |= CFM_STRIKEOUT;
+		
+		if(cs->getHasBgColor())
+			hlcf.crBackColor = cs->getBgColor();
+		else
+			hlcf.crBackColor = SETTING(TEXT_GENERAL_BACK_COLOR);
+	
+		if(cs->getHasFgColor())
+			hlcf.crTextColor = cs->getFgColor();
+		else
+			hlcf.crTextColor = SETTING(TEXT_GENERAL_FORE_COLOR);
+		
+		while( pos != string::npos ){
+			if(cs->usingRegexp()) 
+				pos = RegExpMatch(cs, hlcf, msg, hBegin);
+			else 
+				pos = FullTextMatch(cs, hlcf, msg, pos, hBegin);
+		}
+
+		matchedPopup = false;
+		matchedSound = false;
+		
+			}
+		}//end for
+	}
+
+
 	SetSel(lSelBeginSaved, lSelEndSaved);
 	if(	isMyMessage || ((si.nPage == 0 || (size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) &&
 		(lSelBeginSaved == lSelEndSaved || !selectedUser.empty() || !selectedIP.empty() || !selectedURL.empty())))
@@ -301,71 +360,14 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT
 			lSearchFrom = lMyNickEnd;
 		}
 	}
-	if (BOOLSETTING(USE_HIGHLIGHT)) {
-	
 
-
-	ColorList *cList = HighlightManager::getInstance()->getList();
-	CHARFORMAT2 hlcf;
-
-			tstring msg = sText;
-
-
-	logged = false;
-
-	//compare the last line against all strings in the vector
-	for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
-		ColorSettings* cs = &(*i);
-	if(!cs->getIncludeNickList()) {
-		int pos;
-
-		//set start position for find
-			pos = msg.find(_T(">"));
-			if(pos == tstring::npos)
-				pos = msg.find(_T("**")) + nick.length();
-		
-
-		//prepare the charformat
-				memset(&hlcf, 0, sizeof(CHARFORMAT2));
-				hlcf.cbSize = sizeof(hlcf);
-				hlcf.dwReserved = 0;
-				hlcf.dwMask = CFM_BACKCOLOR | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
-
-		if(cs->getBold())		hlcf.dwEffects |= CFE_BOLD;
-		if(cs->getItalic())		hlcf.dwEffects |= CFE_ITALIC;
-		if(cs->getUnderline())	hlcf.dwEffects |= CFM_UNDERLINE;
-		if(cs->getStrikeout())	hlcf.dwEffects |= CFM_STRIKEOUT;
-		
-		if(cs->getHasBgColor())
-			hlcf.crBackColor = cs->getBgColor();
-		else
-			hlcf.crBackColor = SETTING(TEXT_GENERAL_BACK_COLOR);
-	
-		if(cs->getHasFgColor())
-			hlcf.crTextColor = cs->getFgColor();
-		else
-			hlcf.crTextColor = SETTING(TEXT_GENERAL_FORE_COLOR);
-		
-		while( pos != string::npos ){
-			if(cs->usingRegexp()) 
-				pos = RegExpMatch(cs, hlcf, msg, lSelBegin);
-			else 
-				pos = FullTextMatch(cs, hlcf, msg, pos, lSelBegin);
-		}
-
-		matchedPopup = false;
-		matchedSound = false;
-		
-			}
-		}//end for
-	}
 
 
 	// Links and smilies
-	FormatEmoticonsAndLinks(sText, sMsgLower, lSelBegin, bUseEmo);
+	FormatEmoticonsAndLinks(sText, /*sMsgLower,*/ lSelBegin, bUseEmo);
 }
 
-void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, tstring& sMsgLower, LONG lSelBegin, bool bUseEmo) {
+void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LONG lSelBegin, bool bUseEmo) {
 	LONG lSelEnd = lSelBegin + sMsg.size();
 	 bool detectMagnet=false;
 
@@ -1241,13 +1243,14 @@ int ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring 
 		if( pos == tstring::npos ) 
 			return tstring::npos;  //hmm no ]? this can't be right, return
 		
-		begin += index +1;
-		end = begin + pos -1;
+		begin += index;
+		end = begin + pos +1;
 	} else if( cs->getUsers() ) {
-		end = begin + line.find(_T(">"));
-		begin += index +1;
+		
+		end = begin + line.find(_T(">")) +1;
+		begin += index;
 	} else if( cs->getWholeLine() ) {
-		end = begin + line.length();
+		end = begin + line.length() -1;
 	} else if( cs->getWholeWord() ) {
 		int tmp;
 
