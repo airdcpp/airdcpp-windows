@@ -142,8 +142,6 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 	SetSel(0, sLine.length());
 	SetSelectionCharFormat(enc);
 
-	tstring msg = sLine;
-	LONG hBegin = lSelEnd;
 
 	// Format TimeStamp
 	if(!sTime.empty()) {
@@ -240,62 +238,6 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 	// Format the message part
 	FormatChatLine(sMyNick, sMsg, cf, isMyMessage, sAuthor, lSelEnd, bUseEmo);
 
-	//just moved highlights here as a test, so they can change nick color and override other colors
-	if(BOOLSETTING(USE_HIGHLIGHT)) {
-	
-	ColorList *cList = HighlightManager::getInstance()->getList();
-	CHARFORMAT2 hlcf;
-
-	logged = false;
-
-	//compare the last line against all strings in the vector
-	for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
-		ColorSettings* cs = &(*i);
-	if(!cs->getIncludeNickList()) {
-		int pos;
-
-		//set start position for find
-			pos = msg.find(_T(">"));
-			if(pos == tstring::npos)
-				pos = msg.find(_T("**")) + nick.length();
-		
-
-		//prepare the charformat
-				memset(&hlcf, 0, sizeof(CHARFORMAT2));
-				hlcf.cbSize = sizeof(hlcf);
-				hlcf.dwReserved = 0;
-				hlcf.dwMask = CFM_BACKCOLOR | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
-
-		if(cs->getBold())		hlcf.dwEffects |= CFE_BOLD;
-		if(cs->getItalic())		hlcf.dwEffects |= CFE_ITALIC;
-		if(cs->getUnderline())	hlcf.dwEffects |= CFM_UNDERLINE;
-		if(cs->getStrikeout())	hlcf.dwEffects |= CFM_STRIKEOUT;
-		
-		if(cs->getHasBgColor())
-			hlcf.crBackColor = cs->getBgColor();
-		else
-			hlcf.crBackColor = SETTING(TEXT_GENERAL_BACK_COLOR);
-	
-		if(cs->getHasFgColor())
-			hlcf.crTextColor = cs->getFgColor();
-		else
-			hlcf.crTextColor = SETTING(TEXT_GENERAL_FORE_COLOR);
-		
-		while( pos != string::npos ){
-			if(cs->usingRegexp()) 
-				pos = RegExpMatch(cs, hlcf, msg, hBegin);
-			else 
-				pos = FullTextMatch(cs, hlcf, msg, pos, hBegin);
-		}
-
-		matchedPopup = false;
-		matchedSound = false;
-		
-			}
-		}//end for
-	}
-
-
 	SetSel(lSelBeginSaved, lSelEndSaved);
 	if(	isMyMessage || ((si.nPage == 0 || (size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) &&
 		(lSelBeginSaved == lSelEndSaved || !selectedUser.empty() || !selectedIP.empty() || !selectedURL.empty())))
@@ -360,7 +302,62 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT
 			lSearchFrom = lMyNickEnd;
 		}
 	}
+	
 
+	if(BOOLSETTING(USE_HIGHLIGHT)) {
+	
+	ColorList *cList = HighlightManager::getInstance()->getList();
+	CHARFORMAT2 hlcf;
+
+	logged = false;
+
+	//compare the last line against all strings in the vector
+	for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
+		ColorSettings* cs = &(*i);
+	if(!cs->getIncludeNickList()) {
+		int pos;
+		 tstring msg = sText;
+
+		//set start position for find
+			pos = msg.find(_T(">"));
+			if(pos == tstring::npos)
+				pos = msg.find(_T("**")) + nick.length();
+		
+
+		//prepare the charformat
+				memset(&hlcf, 0, sizeof(CHARFORMAT2));
+				hlcf.cbSize = sizeof(hlcf);
+				hlcf.dwReserved = 0;
+				hlcf.dwMask = CFM_BACKCOLOR | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
+
+		if(cs->getBold())		hlcf.dwEffects |= CFE_BOLD;
+		if(cs->getItalic())		hlcf.dwEffects |= CFE_ITALIC;
+		if(cs->getUnderline())	hlcf.dwEffects |= CFM_UNDERLINE;
+		if(cs->getStrikeout())	hlcf.dwEffects |= CFM_STRIKEOUT;
+		
+		if(cs->getHasBgColor())
+			hlcf.crBackColor = cs->getBgColor();
+		else
+			hlcf.crBackColor = SETTING(TEXT_GENERAL_BACK_COLOR);
+	
+		if(cs->getHasFgColor())
+			hlcf.crTextColor = cs->getFgColor();
+		else
+			hlcf.crTextColor = SETTING(TEXT_GENERAL_FORE_COLOR);
+		
+		while( pos != string::npos ){
+			if(cs->usingRegexp()) 
+				pos = RegExpMatch(cs, hlcf, msg, lSelBegin);
+			else 
+				pos = FullTextMatch(cs, hlcf, msg, pos, lSelBegin);
+		}
+
+		matchedPopup = false;
+		matchedSound = false;
+		
+			}
+		}//end for
+	}
 
 
 	// Links and smilies
@@ -1155,6 +1152,8 @@ void ChatCtrl::scrollToEnd() {
 }
 
 int ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring &line, int pos, long &lineIndex) {
+	//this shit needs a total cleanup, we cant highlight authors or timestamps this way and we dont need to.
+	
 	int index = tstring::npos;
 	tstring searchString;
 
@@ -1173,7 +1172,7 @@ int ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring 
 	if(searchString.empty())
 		return tstring::npos;
 
-
+	
 	//do we want to highlight the timestamps?
 	if( cs->getTimestamps() ) {
 		if( line[0] != _T('[') )
@@ -1237,7 +1236,7 @@ int ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring 
 	long begin, end;
 
 	begin = lineIndex;
-		
+	
 	if( cs->getTimestamps() ) {
 		tstring::size_type pos = line.find(_T("]"));
 		if( pos == tstring::npos ) 
@@ -1274,7 +1273,7 @@ int ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring 
 
 
 	CheckAction(cs, line);
-
+	
 	if( cs->getTimestamps() || cs->getUsers() )
 		return tstring::npos;
 	
