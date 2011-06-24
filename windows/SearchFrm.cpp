@@ -32,7 +32,6 @@
 #include "../client/TimerManager.h"
 #include "../client/SearchManager.h"
 
-std::set<tstring> SearchFrame::lastSearches;
 
 int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_HITS, COLUMN_NICK, COLUMN_TYPE, COLUMN_SIZE,
 	COLUMN_PATH, COLUMN_SLOTS, COLUMN_CONNECTION, COLUMN_HUB, COLUMN_EXACT_SIZE, COLUMN_IP, COLUMN_TTH };
@@ -66,9 +65,12 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	ctrlSearchBox.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
-	for(std::set<tstring>::const_iterator i = lastSearches.begin(); i != lastSearches.end(); ++i) {
+
+	lastSearches = SettingsManager::getInstance()->getSearchHistory();
+	for(TStringIter i = lastSearches.begin(); i != lastSearches.end(); ++i) {
 		ctrlSearchBox.InsertString(0, i->c_str());
 	}
+
 	searchBoxContainer.SubclassWindow(ctrlSearchBox.m_hWnd);
 	ctrlSearchBox.SetExtendedUI();
 	
@@ -281,8 +283,8 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	UpdateLayout();
 
 	if(!initialString.empty()) {
-		lastSearches.insert(initialString);
-		ctrlSearchBox.InsertString(0, initialString.c_str());
+		if(SettingsManager::getInstance()->addSearchToHistory(initialString))
+			ctrlSearchBox.InsertString(0, initialString.c_str());
 		ctrlSearchBox.SetCurSel(0);
 		ctrlMode.SetCurSel(initialMode);
 		ctrlSize.SetWindowText(Util::toStringW(initialSize).c_str());
@@ -522,20 +524,12 @@ void SearchFrame::onEnter() {
 	running = true;
 
 	isHash = (ftype == SearchManager::TYPE_TTH);
-	
+
 	// Add new searches to the last-search dropdown list
-	if(find(lastSearches.begin(), lastSearches.end(), s) == lastSearches.end()) 
-	{
-		int i = max(SETTING(SEARCH_HISTORY)-1, 0);
-
-		if(ctrlSearchBox.GetCount() > i) 
-			ctrlSearchBox.DeleteString(i);
+	if(SettingsManager::getInstance()->addSearchToHistory(s)) {
+		if(ctrlSearchBox.GetCount() > SETTING(SEARCH_HISTORY)) 
+			ctrlSearchBox.DeleteString(ctrlSearchBox.GetCount()-1);
 		ctrlSearchBox.InsertString(0, s.c_str());
-
-		while(lastSearches.size() > (TStringList::size_type)i) {
-			lastSearches.erase(lastSearches.begin());
-		}
-		lastSearches.insert(s);
 	}
 	
 	SetWindowText((TSTRING(SEARCH) + _T(" - ") + s).c_str());
@@ -1538,6 +1532,7 @@ LRESULT SearchFrame::onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 {
 	ctrlSearchBox.ResetContent();
 	lastSearches.clear();
+	SettingsManager::getInstance()->clearSearchHistory();
 	return 0;
 }
 

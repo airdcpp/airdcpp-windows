@@ -413,7 +413,7 @@ Added:
 
 #Chat notification icon for hub mainchat messages + rightclick select on tab
 #SFV checker for an own filelist and finished downloads window //maksalaatikko
-#"View NFO" for search window //maksalaatikko
+#"Find and view NFO" for search window //maksalaatikko
 #Path coloring and possibility to open folder in systemlog
 #CTRL + W suppost for closing tabs
 # /ratio /r Commands (Thanks Alehk)
@@ -421,20 +421,22 @@ Added:
 #Stop button to Hashing progress dialog
 #Open folder righclick on a dupe file in search window
 #Detection for Spotify links, Spotify toolbar and Spotify spam //maksalaatikko
-#Added settings "Don't share files bigger than X MB" (set to 600MB by default for RAR users)
-#The share scanner will report empty folders
+#Added settings "Don't share files bigger than X MB" (set to 600MB by default for RAR users) //maksalaatikko
+#The share scanner will now report empty folders //maksalaatikko
 #Open Folder rightclick in queue
+#Save the search history into config file //maksalaatikko
 
 Changed:
 
-#Rewritten link detection code: links with all protocols will be detected with regex without hardcoded protocol
- (using modified regex from http://daringfireball.net/2010/07/improved_regex_for_matching_urls )
+#Rewritten link detection code: links with all protocols will be detected with regex without hardcoded protocols
+ (using modified regex from http://daringfireball.net/2010/07/improved_regex_for_matching_urls ) //maksalaatikko
 #sdc merge
 #Total time left shows the total time of a download folder
 #Sort by virtualnames in sharingpage settings
-#Improved os version detection in /stats
-#Links revised in the help menu
-#The share scanner will detect missing NFO files and extra files in Sample folders better + a bit better performance
+#Improved os version detection in /stats  //maksalaatikko
+#Links revised in the help menu //maksalaatikko
+#The share scanner will detect missing NFO files and extra files in Sample folders better + a bit better performance //maksalaatikko
+#Better support for the following release types in the share scanner: apps/0day, lossless audio, audiobooks, mvids //maksalaatikko
 #/df works with folder mounted disks, and shows network mounted disks separately
 #Alternate search adds source to all rars in same folder with 1 search
 

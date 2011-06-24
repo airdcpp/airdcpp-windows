@@ -275,8 +275,6 @@ public:
 	}
 
 	
-	static const std::set<tstring>& getLastSearches() { return lastSearches; }
-	
 private:
 	class SearchInfo;
 	
@@ -608,8 +606,7 @@ private:
 	tstring target;
 	
 	CriticalSection cs;
-
-	static std::set<tstring> lastSearches;
+	TStringList lastSearches;
 	size_t droppedResults;
 
 	bool closed;
