@@ -330,6 +330,9 @@ private:
 		SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0) { 
 			
 			if(BOOLSETTING(DUPE_SEARCH)) {
+			if(sr->getType() == SearchResult::TYPE_DIRECTORY)
+				dupe = ShareManager::getInstance()->isDirShared(sr->getFileName());
+			else
 			dupe = ShareManager::getInstance()->isTTHShared(sr->getTTH());
 			}
 
