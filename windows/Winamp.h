@@ -30,6 +30,53 @@
 ** SendMessage.
 */
 
+
+#define IPC_PLAYING_FILE 3003 
+/* (requires Winamp 5.0+)
+** This is a notification message sent to the main Winamp window when playback begins for
+** a file. This passes the full filepath in the wParam of the message received.
+**
+** if(uMsg == WM_WA_IPC && lParam == IPC_PLAYING_FILE)
+** {
+**   // do what you need to do here, e.g.
+**   process_file((char*)wParam);
+** }
+*/
+
+#define IPC_PLAYING_FILEW 13003 
+/* (requires Winamp 5.0+)
+** This is a notification message sent to the main Winamp window when playback begins for
+** a file. This passes the full filepath in the wParam of the message received.
+**
+** if(uMsg == WM_WA_IPC && lParam == IPC_PLAYING_FILEW)
+** {
+**   // do what you need to do here, e.g.
+**   process_file((wchar_t*)wParam);
+** }
+*/
+
+#define IPC_GET_PLAYING_FILENAME 3031
+// returns wchar_t * of the currently playing filename
+
+typedef struct {
+  const wchar_t *filename;
+  const wchar_t *metadata;
+  wchar_t *ret;
+  size_t retlen;
+} extendedFileInfoStructW;
+
+#define IPC_GET_EXTENDED_FILE_INFOW 3026 
+/* (requires Winamp 5.13+)
+** Pass a pointer to the above struct in wParam
+*/
+
+
+#define IPC_GET_EXTENDED_FILE_INFOW_HOOKABLE 3027
+#define IPC_SET_EXTENDED_FILE_INFOW 3028 
+/* (requires Winamp 5.13+)
+** Pass a pointer to the above struct in wParam
+*/
+
 #define WM_WA_IPC WM_USER
 
 /**************************************************************************/

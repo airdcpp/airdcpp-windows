@@ -342,7 +342,7 @@ static LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
 void WinUtil::reLoadImages(){
 	userImages.Destroy();
 	if(SETTING(USERLIST_IMAGE).empty())
-		userImages.CreateFromImage(IDB_USERS, 16, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+		userImages.CreateFromImage(IDB_USERS, 16, 9, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 	else
 		userImages.CreateFromImage(Text::toT(SETTING(USERLIST_IMAGE)).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 }
@@ -472,7 +472,7 @@ void WinUtil::init(HWND hWnd) {
 	flagImages.CreateFromImage(IDB_FLAGS, 25, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 
 	if(SETTING(USERLIST_IMAGE) == "")
-		userImages.CreateFromImage(IDB_USERS, 16, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+		userImages.CreateFromImage(IDB_USERS, 16, 9, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 	else
 		userImages.CreateFromImage(Text::toT(SETTING(USERLIST_IMAGE)).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE); 
 	
@@ -1147,6 +1147,12 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			}
 		int listlength = SendMessage(hwndWinamp, WM_WA_IPC, 0, IPC_GETLISTLENGTH);
 		int waListPosition = SendMessage(hwndWinamp,WM_WA_IPC,0,IPC_GETLISTPOS);
+		//wchar_t *filename = (wchar_t*)SendMessage(hwndWinamp,WM_WA_IPC,0,IPC_GET_PLAYING_FILENAME);
+		wchar_t *filename = (wchar_t*)SendMessage(hwndWinamp, WM_WA_IPC, waListPosition, IPC_GET_PLAYING_FILENAME);
+		//std::string folder = std::string(filename);
+
+		//params["directory"] = folder;
+
 		// Could be used like; track %[listpos]/%[listlength]
 		params["listlength"] = Util::toString(listlength);
 		params["listpos"] = Util::toString(waListPosition);
