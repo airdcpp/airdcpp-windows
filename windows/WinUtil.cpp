@@ -1148,7 +1148,7 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		int listlength = SendMessage(hwndWinamp, WM_WA_IPC, 0, IPC_GETLISTLENGTH);
 		int waListPosition = SendMessage(hwndWinamp,WM_WA_IPC,0,IPC_GETLISTPOS);
 		//wchar_t *filename = (wchar_t*)SendMessage(hwndWinamp,WM_WA_IPC,0,IPC_GET_PLAYING_FILENAME);
-		wchar_t *filename = (wchar_t*)SendMessage(hwndWinamp, WM_WA_IPC, waListPosition, IPC_GET_PLAYING_FILENAME);
+		//wchar_t *filename = (wchar_t*)SendMessage(hwndWinamp, WM_WA_IPC, waListPosition, IPC_GET_PLAYING_FILENAME);
 		//std::string folder = std::string(filename);
 
 		//params["directory"] = folder;
