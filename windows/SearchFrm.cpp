@@ -658,10 +658,10 @@ void SearchFrame::SearchInfo::view() {
 }
 
 void SearchFrame::SearchInfo::viewNfo() {
-	tstring path = Util::getDir(getText(COLUMN_PATH), true, false);
-	boost::wregex reg;
-	reg.assign(_T("(.+\\.nfo)"), boost::regex_constants::icase);
-	if ((sr->getType() == SearchResult::TYPE_FILE) && (regex_match(Text::toT(sr->getFileName()), reg))) {
+	string path = Util::getDir(Text::fromT(getText(COLUMN_PATH)), true, false);
+	boost::regex reg;
+	reg.assign("(.+\\.nfo)", boost::regex_constants::icase);
+	if ((sr->getType() == SearchResult::TYPE_FILE) && (regex_match(sr->getFileName(), reg))) {
 		try {
 			QueueManager::getInstance()->add(Util::getTempPath() + sr->getFileName(),
 				sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()),
@@ -670,7 +670,7 @@ void SearchFrame::SearchInfo::viewNfo() {
 		}
 	} else {
 		try {
-				QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST, Text::fromT(path));
+				QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST, path);
 		} catch(const Exception&) {
 			// Ignore for now...
 		}
@@ -695,7 +695,11 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 			if(WinUtil::isShift())
 				QueueManager::getInstance()->setPriority(target, QueueItem::HIGHEST);
 		} else {
-			QueueManager::getInstance()->addDirectorySearch(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt),
+			bool adc=false;
+			if ((si->sr->getHubURL().find("adc://") != string::npos) || (si->sr->getHubURL().find("adcs://") != string::npos)) {
+				adc=true;
+			}
+			QueueManager::getInstance()->addDirectorySearch(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt), adc,
 				WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 		}
 	} catch(const Exception&) {
@@ -704,13 +708,17 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 
 void SearchFrame::SearchInfo::DownloadWhole::operator()(SearchInfo* si) {
 	try {
+		bool adc=false;
+		if ((si->sr->getHubURL().find("adc://") != string::npos) || (si->sr->getHubURL().find("adcs://") != string::npos)) {
+			adc=true;
+		}
 		QueueItem::Priority prio = WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT;
 		if(si->sr->getType() == SearchResult::TYPE_FILE) {
 			QueueManager::getInstance()->addDirectorySearch(Text::fromT(si->getText(COLUMN_PATH)),
-				HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt), prio);
+				HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt), adc, prio);
 		} else {
 			QueueManager::getInstance()->addDirectorySearch(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), 
-				Text::fromT(tgt), prio);
+				Text::fromT(tgt), adc, prio);
 		}
 	} catch(const Exception&) {
 	}
@@ -726,7 +734,11 @@ void SearchFrame::SearchInfo::DownloadTarget::operator()(SearchInfo* si) {
 			if(WinUtil::isShift())
 				QueueManager::getInstance()->setPriority(target, QueueItem::HIGHEST);
 		} else {
-			QueueManager::getInstance()->addDirectorySearch(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt),
+			bool adc=false;
+			if ((si->sr->getHubURL().find("adc://") != string::npos) || (si->sr->getHubURL().find("adcs://") != string::npos)) {
+				adc=true;
+			}
+			QueueManager::getInstance()->addDirectorySearch(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt), adc,
 				WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 		}
 	} catch(const Exception&) {
@@ -1556,7 +1568,7 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 				}
 				break;
 			case IDC_COPY_DIR:
-				sCopy = Util::getDir(Text::toT(Util::getFilePath(sr->getFile())), true, true);
+				sCopy = Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true));
 				break;
 			case IDC_COPY_PATH:
 				if(sr->getType() == SearchResult::TYPE_FILE) {
@@ -1612,7 +1624,7 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_DIR:
-					sCopy += Util::getDir(Util::getFilePath(Text::toT(sr->getFile())), true, true);
+					sCopy += Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true));
 					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_SIZE:
@@ -1953,7 +1965,7 @@ if(ctrlResults.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.getItemData(i);
 		const SearchResultPtr& sr = si->sr;
 
-		searchTermFull = Util::getDir(Text::toT(Util::getFilePath(sr->getFile())), true, true);
+		searchTermFull = Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true));
 		searchTerm = WinUtil::getTitle(searchTermFull);
 
 
@@ -1992,7 +2004,7 @@ LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 		if ( pos >= 0 ) {
 			const SearchResultPtr& sr = ctrlResults.getItemData(pos)->sr;
-			WinUtil::search((Util::getDir(Text::toT(Util::getFilePath(sr->getFile())), true, true)), 0, false);
+			WinUtil::search(Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true)), 0, false);
 		}
 	}
 	return S_OK;

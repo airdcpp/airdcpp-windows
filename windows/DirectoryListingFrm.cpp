@@ -572,7 +572,7 @@ LRESULT DirectoryListingFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	const ItemInfo* ii = ctrlList.getSelectedItem();
 	tstring dir;
 	if(ii->type == ItemInfo::FILE){
-		dir = Util::getDir(Text::toT(ii->file->getPath()), true, true);
+		dir = Text::toT(Util::getDir(ii->file->getPath(), true, true));
 		WinUtil::search(dir, 0, false);
 	}
 	else if(ii->type == ItemInfo::DIRECTORY){
@@ -1386,7 +1386,6 @@ void DirectoryListingFrame::closeAll(){
 
 LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring sCopy;
-	tstring directory;
 	if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getSelectedItem();
 		switch (wID) {
@@ -1398,8 +1397,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 				break;
 			case IDC_COPY_DIR:
 				if(ii->type == ItemInfo::FILE){
-					directory = Text::toT(ii->file->getPath());
-					sCopy = Util::getDir(directory, true, true);
+					sCopy = Text::toT(Util::getDir(ii->file->getPath(), true, true));
 					}
 				else if(ii->type == ItemInfo::DIRECTORY){
 					sCopy = ii->getText(COLUMN_FILENAME);
@@ -1494,8 +1492,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 					break;
 				case IDC_COPY_DIR:
 					if(ii->type == ItemInfo::FILE){
-						directory = Text::toT(ii->file->getPath());
-						sCopy += Util::getDir(directory, true, true);
+						sCopy += Text::toT(Util::getDir(ii->file->getPath(), true, true));
 						sCopy += Text::toT("\r\n");
 					}
 					else if(ii->type == ItemInfo::DIRECTORY){
@@ -1791,7 +1788,7 @@ LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND
 			const ItemInfo* ii = ctrlList.getSelectedItem();
 
 			if(ii->type == ItemInfo::FILE && (SETTING(SETTINGS_PROFILE) == 1)){
-				searchTermFull = Util::getDir(Text::toT(ii->file->getPath()), true, true);
+				searchTermFull = Text::toT(Util::getDir(ii->file->getPath(), true, true));
 			}
 			else {
 				searchTermFull = ii->getText(COLUMN_FILENAME);
