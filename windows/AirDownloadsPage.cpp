@@ -27,8 +27,6 @@ PropPage::TextItem AirDownloadsPage::texts[] = {
 	{ IDC_CZDC_MIN_FILE_SIZE, ResourceManager::SETCZDC_MIN_FILE_SIZE },
 	{ IDC_SETTINGS_MB, ResourceManager::MiB },
 	{ IDC_REMOVE_IF, ResourceManager::NEW_DISCONNECT },
-	{ IDC_SETTINGS_SEGMENTS, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT },
-	{ IDC_MIN_SEGMENT_SIZE_LABEL, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT_SIZE },
 	{ IDC_SB_SKIPLIST_DOWNLOAD,	ResourceManager::SETTINGS_SB_SKIPLIST_DOWNLOAD	},
 	{ IDC_ST_SKIPLIST_DOWNLOAD,	ResourceManager::SETTINGS_ST_PATHS	},
 	{ IDC_ST_HIGH_PRIO_FILES, ResourceManager::SETTINGS_ST_PATHS	},
@@ -47,7 +45,7 @@ PropPage::Item AirDownloadsPage::items[] = {
 	{ IDC_H_DOWN_SPEED, SettingsManager::DISCONNECT_FILE_SPEED, PropPage::T_INT },
 	{ IDC_MIN_FILE_SIZE, SettingsManager::DISCONNECT_FILESIZE, PropPage::T_INT },
 	{ IDC_REMOVE_IF_BELOW, SettingsManager::REMOVE_SPEED, PropPage::T_INT },
-	{ IDC_MIN_SEGMENT_SIZE, SettingsManager::MIN_SEGMENT_SIZE, PropPage::T_INT },
+
 
 	{ IDC_SKIPLIST_DOWNLOAD, SettingsManager::SKIPLIST_DOWNLOAD, PropPage::T_STR },
 	{ IDC_HIGH_PRIO_FILES,	SettingsManager::HIGH_PRIO_FILES, PropPage::T_STR },
@@ -100,8 +98,7 @@ void AirDownloadsPage::write() {
 	GetDlgItemText(IDC_ANTIVIR_PATH, buf, 256);
 	settings->set(SettingsManager::ANTIVIR_PATH, Text::fromT(buf));
 
-	if(SETTING(MIN_SEGMENT_SIZE) < 1024)
-		settings->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
+	
 }
 
 LRESULT AirDownloadsPage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

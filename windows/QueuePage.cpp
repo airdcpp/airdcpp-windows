@@ -44,6 +44,8 @@ PropPage::TextItem QueuePage::texts[] = {
 	{ IDC_MINUTES, ResourceManager::MINUTES },
 	{ IDC_KBPS, ResourceManager::KBPS },
 	{ IDC_CHUNKCOUNT, ResourceManager::TEXT_MANUAL },
+	{ IDC_SETTINGS_SEGMENTS, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT },
+	{ IDC_MIN_SEGMENT_SIZE_LABEL, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT_SIZE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -58,6 +60,7 @@ PropPage::Item QueuePage::items[] = {
 	{ IDC_SEARCH_EDIT, SettingsManager::SEARCH_TIME, PropPage::T_INT },
 	{ IDC_CHUNKCOUNT, SettingsManager::SEGMENTS_MANUAL, PropPage::T_BOOL },
 	{ IDC_SEG_NUMBER, SettingsManager::NUMBER_OF_SEGMENTS, PropPage::T_INT },
+	{ IDC_MIN_SEGMENT_SIZE, SettingsManager::MIN_SEGMENT_SIZE, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -101,6 +104,9 @@ LRESULT QueuePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 void QueuePage::write() {
+
+	if(SETTING(MIN_SEGMENT_SIZE) < 1024)
+		settings->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
 
 	PropPage::write((HWND)*this, items, 0, 0);
 	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_QUEUE_OPTIONS));

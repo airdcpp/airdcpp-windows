@@ -610,7 +610,6 @@
 		<String Name="SettingsConfirmItemRemoval">Confirm item removal in download queue</String>
 		<String Name="SettingsCzdc">AirDC++</String>
 		<String Name="SettingsCzdcExtraDownloads">Highest Priority Extra Download Slots</String>
-		<String Name="SettingsDebugCommands">Debug commands</String>
 		<String Name="SettingsDefaultAwayMsg">Default away message</String>
 		<String Name="SettingsDirect">Direct connection</String>
 		<String Name="SettingsDirectories">Directories</String>
