@@ -754,6 +754,7 @@
 #define IDC_VIEW_BL                     1372
 #define IDC_SETTINGS_MB2                1372
 #define IDC_LANG_FR                     1373
+#define IDC_SETTINGS_KIB                1373
 #define IDC_LANG_D                      1374
 #define IDC_PLAYER_COMBO                1375
 #define IDC_LANG_RUS                    1375
@@ -1152,7 +1153,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1373
+#define _APS_NEXT_CONTROL_VALUE         1374
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

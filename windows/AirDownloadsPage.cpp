@@ -34,6 +34,7 @@ PropPage::TextItem AirDownloadsPage::texts[] = {
 
 	{ IDC_HIGHEST_PRIORITY_USE_REGEXP, ResourceManager::USE_REGEXP },
 	{ IDC_DOWNLOAD_SKIPLIST_USE_REGEXP, ResourceManager::USE_REGEXP },
+	
 
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };

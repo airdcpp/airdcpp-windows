@@ -46,6 +46,7 @@ PropPage::TextItem QueuePage::texts[] = {
 	{ IDC_CHUNKCOUNT, ResourceManager::TEXT_MANUAL },
 	{ IDC_SETTINGS_SEGMENTS, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT },
 	{ IDC_MIN_SEGMENT_SIZE_LABEL, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT_SIZE },
+	{ IDC_SETTINGS_KIB, ResourceManager::KiB },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

@@ -425,6 +425,7 @@ Added:
 #The share scanner will now report empty folders //maksalaatikko
 #Open Folder rightclick in queue
 #Save the search history into config file //maksalaatikko
+#Dupe color release folders in search
 
 Changed:
 
@@ -439,6 +440,9 @@ Changed:
 #Better support for the following release types in the share scanner: apps/0day, lossless audio, audiobooks, mvids //maksalaatikko
 #/df works with folder mounted disks, and shows network mounted disks separately
 #Alternate search adds source to all rars in same folder with 1 search
+
+#Minimium segment size setting is moved to Queue Page in settings!!!
+#user Icons state if user is detected using airdc++
 
 Fixed:
 
