@@ -583,6 +583,9 @@ LRESULT DirectoryListingFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, H
 }
 
 LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(loading)
+		return 0;
+	
 	int x = QueueManager::getInstance()->matchListing(*dl);
 
 	tstring buf;
