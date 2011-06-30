@@ -78,12 +78,13 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		}
 		ctrlLanguage.SetCurSel(SETTING(LANGUAGE_SWITCH));
 		
+		download = SETTING(DOWNLOAD_SPEED);
 
 		//add the Download speed strings, Using the same list as upload	
-	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
+	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i) {
 		ctrlDownload.AddString(Text::toT(*i).c_str());
 		//if we have a custom Download speed
-	
+	}
 	if(find(SettingsManager::connectionSpeeds.begin(), SettingsManager::connectionSpeeds.end(),
 			SETTING(DOWNLOAD_SPEED)) == SettingsManager::connectionSpeeds.end()) {
 		ctrlDownload.AddString(Text::toT(SETTING(DOWNLOAD_SPEED)).c_str());
@@ -93,11 +94,12 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlDownload.SetCurSel(ctrlDownload.FindString(0, Text::toT(SETTING(DOWNLOAD_SPEED)).c_str()));
 
 
-
+	upload = SETTING(UPLOAD_SPEED);
 
 	//add the upload speed strings	
-	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
+	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i){
 		ctrlUpload.AddString(Text::toT(*i).c_str());
+	}
 		//if we have a custom upload speed
 	if(find(SettingsManager::connectionSpeeds.begin(), SettingsManager::connectionSpeeds.end(),
 			SETTING(UPLOAD_SPEED)) == SettingsManager::connectionSpeeds.end()) {
