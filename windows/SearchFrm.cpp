@@ -696,7 +696,7 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 				QueueManager::getInstance()->setPriority(target, QueueItem::HIGHEST);
 		} else {
 			bool adc=false;
-			if ((si->sr->getHubURL().find("adc://") != string::npos) || (si->sr->getHubURL().find("adcs://") != string::npos)) {
+			if (!si->sr->getUser()->isSet(User::NMDC)) {
 				adc=true;
 			}
 			QueueManager::getInstance()->addDirectorySearch(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt), adc,
@@ -709,7 +709,7 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 void SearchFrame::SearchInfo::DownloadWhole::operator()(SearchInfo* si) {
 	try {
 		bool adc=false;
-		if ((si->sr->getHubURL().find("adc://") != string::npos) || (si->sr->getHubURL().find("adcs://") != string::npos)) {
+		if (!si->sr->getUser()->isSet(User::NMDC)) {
 			adc=true;
 		}
 		QueueItem::Priority prio = WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT;
@@ -735,7 +735,7 @@ void SearchFrame::SearchInfo::DownloadTarget::operator()(SearchInfo* si) {
 				QueueManager::getInstance()->setPriority(target, QueueItem::HIGHEST);
 		} else {
 			bool adc=false;
-			if ((si->sr->getHubURL().find("adc://") != string::npos) || (si->sr->getHubURL().find("adcs://") != string::npos)) {
+			if (!si->sr->getUser()->isSet(User::NMDC)) {
 				adc=true;
 			}
 			QueueManager::getInstance()->addDirectorySearch(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt), adc,
