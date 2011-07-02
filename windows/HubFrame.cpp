@@ -180,6 +180,15 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	UpdateIcons = true;
 	now = 0;
 
+	if(fhe != NULL){
+		//retrieve window position
+		CRect rc(fhe->getLeft(), fhe->getTop(), fhe->getRight(), fhe->getBottom());
+		
+		//check that we have a window position stored
+		if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
+			MoveWindow(rc, TRUE);
+	}
+
 	UserlistUpdated = false;
 	
 	bHandled = FALSE;
@@ -957,6 +966,22 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 
 		FavoriteHubEntry *fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
 		if(fhe != NULL) {
+			CRect rc;
+			if(!IsIconic()){
+				//Get position of window
+				GetWindowRect(&rc);
+				
+				//convert the position so it's relative to main window
+				::ScreenToClient(GetParent(), &rc.TopLeft());
+				::ScreenToClient(GetParent(), &rc.BottomRight());
+				
+				//save the position
+				fhe->setBottom((uint16_t)(rc.bottom > 0 ? rc.bottom : 0));
+				fhe->setTop((uint16_t)(rc.top > 0 ? rc.top : 0));
+				fhe->setLeft((uint16_t)(rc.left > 0 ? rc.left : 0));
+				fhe->setRight((uint16_t)(rc.right > 0 ? rc.right : 0));
+			}
+
 			fhe->setChatUserSplit(m_nProportionalPos);
 			fhe->setUserListState(showUsers);
 			fhe->setHeaderOrder(tmp);
