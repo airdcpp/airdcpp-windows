@@ -102,6 +102,9 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ctrlPad.SetWindowText(Text::toT(Util::getFileName(Text::fromT(file)) + ": " + e.getError()).c_str());
 	}
 	
+	CRect rc(SETTING(TEXT_LEFT), SETTING(TEXT_TOP), SETTING(TEXT_RIGHT), SETTING(TEXT_BOTTOM));
+	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
+		MoveWindow(rc, TRUE);
 	
 	WinUtil::SetIcon(m_hWnd, _T("systemlog.ico"));
 	
@@ -111,6 +114,21 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 
 LRESULT TextFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	CRect rc;
+	if(!IsIconic()){
+		//Get position of window
+		GetWindowRect(&rc);
+				
+		//convert the position so it's relative to main window
+		::ScreenToClient(GetParent(), &rc.TopLeft());
+		::ScreenToClient(GetParent(), &rc.BottomRight());
+				
+		//save the position
+		SettingsManager::getInstance()->set(SettingsManager::TEXT_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
+		SettingsManager::getInstance()->set(SettingsManager::TEXT_TOP, (rc.top > 0 ? rc.top : 0));
+		SettingsManager::getInstance()->set(SettingsManager::TEXT_LEFT, (rc.left > 0 ? rc.left : 0));
+		SettingsManager::getInstance()->set(SettingsManager::TEXT_RIGHT, (rc.right > 0 ? rc.right : 0));
+	}
 	SettingsManager::getInstance()->removeListener(this);
 	bHandled = FALSE;
 	return 0;

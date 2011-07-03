@@ -65,7 +65,9 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		addUser(i->second);
 	}
 	ctrlUsers.SetRedraw(TRUE);
-
+	CRect rc(SETTING(USERS_LEFT), SETTING(USERS_TOP), SETTING(USERS_RIGHT), SETTING(USERS_BOTTOM));
+	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
+		MoveWindow(rc, TRUE);
 
 	WinUtil::SetIcon(m_hWnd, _T("FavoriteUser.ico"));
 
@@ -239,6 +241,21 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		PostMessage(WM_CLOSE);
 		return 0;
 	} else {
+		CRect rc;
+		if(!IsIconic()){
+			//Get position of window
+			GetWindowRect(&rc);
+				
+			//convert the position so it's relative to main window
+			::ScreenToClient(GetParent(), &rc.TopLeft());
+			::ScreenToClient(GetParent(), &rc.BottomRight());
+				
+			//save the position
+			SettingsManager::getInstance()->set(SettingsManager::USERS_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
+			SettingsManager::getInstance()->set(SettingsManager::USERS_TOP, (rc.top > 0 ? rc.top : 0));
+			SettingsManager::getInstance()->set(SettingsManager::USERS_LEFT, (rc.left > 0 ? rc.left : 0));
+			SettingsManager::getInstance()->set(SettingsManager::USERS_RIGHT, (rc.right > 0 ? rc.right : 0));
+		}
 		WinUtil::saveHeaderOrder(ctrlUsers, SettingsManager::USERSFRAME_ORDER, 
 			SettingsManager::USERSFRAME_WIDTHS, COLUMN_LAST, columnIndexes, columnSizes);
 	

@@ -41,6 +41,11 @@ LRESULT NotepadFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlPad.SetWindowText(Text::toT(tmp).c_str());
 	ctrlPad.EmptyUndoBuffer();
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
+
+	CRect rc(SETTING(NOTEPAD_LEFT), SETTING(NOTEPAD_TOP), SETTING(NOTEPAD_RIGHT), SETTING(NOTEPAD_BOTTOM));
+	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
+		MoveWindow(rc, TRUE);
+
 	WinUtil::SetIcon(m_hWnd, _T("notepad.ico"));
 	bHandled = FALSE;
 	return 1;
@@ -66,6 +71,21 @@ LRESULT NotepadFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		PostMessage(WM_CLOSE);
 		return 0;
 	} else {
+		CRect rc;
+		if(!IsIconic()){
+			//Get position of window
+			GetWindowRect(&rc);
+				
+			//convert the position so it's relative to main window
+			::ScreenToClient(GetParent(), &rc.TopLeft());
+			::ScreenToClient(GetParent(), &rc.BottomRight());
+				
+			//save the position
+			SettingsManager::getInstance()->set(SettingsManager::NOTEPAD_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
+			SettingsManager::getInstance()->set(SettingsManager::NOTEPAD_TOP, (rc.top > 0 ? rc.top : 0));
+			SettingsManager::getInstance()->set(SettingsManager::NOTEPAD_LEFT, (rc.left > 0 ? rc.left : 0));
+			SettingsManager::getInstance()->set(SettingsManager::NOTEPAD_RIGHT, (rc.right > 0 ? rc.right : 0));
+		}
 		bHandled = FALSE;
 		return 0;
 	}

@@ -109,6 +109,10 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	readdMenu.AppendMenu(MF_STRING, IDC_READD, CTSTRING(ALL));
 	readdMenu.AppendMenu(MF_SEPARATOR);
 
+	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
+	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
+		MoveWindow(rc, TRUE);
+
 	addQueueList(QueueManager::getInstance()->lockQueue());
 	QueueManager::getInstance()->unlockQueue();
 	QueueManager::getInstance()->addListener(this);
@@ -1361,6 +1365,22 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			}
 		directories.clear();
 		ctrlQueue.DeleteAllItems();
+
+		CRect rc;
+		if(!IsIconic()){
+			//Get position of window
+			GetWindowRect(&rc);
+				
+			//convert the position so it's relative to main window
+			::ScreenToClient(GetParent(), &rc.TopLeft());
+			::ScreenToClient(GetParent(), &rc.BottomRight());
+				
+			//save the position
+			SettingsManager::getInstance()->set(SettingsManager::QUEUE_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
+			SettingsManager::getInstance()->set(SettingsManager::QUEUE_TOP, (rc.top > 0 ? rc.top : 0));
+			SettingsManager::getInstance()->set(SettingsManager::QUEUE_LEFT, (rc.left > 0 ? rc.left : 0));
+			SettingsManager::getInstance()->set(SettingsManager::QUEUE_RIGHT, (rc.right > 0 ? rc.right : 0));
+		}
 
 		ctrlQueue.saveHeaderOrder(SettingsManager::QUEUEFRAME_ORDER, 
 			SettingsManager::QUEUEFRAME_WIDTHS, SettingsManager::QUEUEFRAME_VISIBLE);

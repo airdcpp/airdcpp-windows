@@ -115,6 +115,10 @@ LRESULT FavoriteHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	hubsMenu.AppendMenu(MF_STRING, IDC_EDIT, CTSTRING(PROPERTIES));
 	hubsMenu.SetMenuDefaultItem(IDC_CONNECT);
 
+	CRect rc(SETTING(FAV_LEFT), SETTING(FAV_TOP), SETTING(FAV_RIGHT), SETTING(FAV_BOTTOM));
+	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
+		MoveWindow(rc, TRUE);
+
 	nosave = false;
 	WinUtil::SetIcon(m_hWnd,  _T("favorites.ico"));
 	bHandled = FALSE;
@@ -467,6 +471,22 @@ LRESULT FavoriteHubsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	} else {
 		WinUtil::saveHeaderOrder(ctrlHubs, SettingsManager::FAVORITESFRAME_ORDER, 
 		SettingsManager::FAVORITESFRAME_WIDTHS, COLUMN_LAST, columnIndexes, columnSizes);
+
+		CRect rc;
+		if(!IsIconic()){
+			//Get position of window
+			GetWindowRect(&rc);
+				
+			//convert the position so it's relative to main window
+			::ScreenToClient(GetParent(), &rc.TopLeft());
+			::ScreenToClient(GetParent(), &rc.BottomRight());
+				
+			//save the position
+			SettingsManager::getInstance()->set(SettingsManager::FAV_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
+			SettingsManager::getInstance()->set(SettingsManager::FAV_TOP, (rc.top > 0 ? rc.top : 0));
+			SettingsManager::getInstance()->set(SettingsManager::FAV_LEFT, (rc.left > 0 ? rc.left : 0));
+			SettingsManager::getInstance()->set(SettingsManager::FAV_RIGHT, (rc.right > 0 ? rc.right : 0));
+		}
 
 		bHandled = FALSE;
 		return 0;

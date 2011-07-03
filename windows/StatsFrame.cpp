@@ -31,6 +31,10 @@ LRESULT StatsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	
 	SetFont(WinUtil::font);
 
+	CRect rc(SETTING(STATS_LEFT), SETTING(STATS_TOP), SETTING(STATS_RIGHT), SETTING(STATS_BOTTOM));
+	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
+		MoveWindow(rc, TRUE);
+
 	WinUtil::SetIcon(m_hWnd, _T("netstats.ico"));
 	bHandled = FALSE;
 	return 1;
@@ -46,6 +50,21 @@ LRESULT StatsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		PostMessage(WM_CLOSE);
 		return 0;
 	} else {
+		CRect rc;
+		if(!IsIconic()){
+			//Get position of window
+			GetWindowRect(&rc);
+				
+			//convert the position so it's relative to main window
+			::ScreenToClient(GetParent(), &rc.TopLeft());
+			::ScreenToClient(GetParent(), &rc.BottomRight());
+				
+			//save the position
+			SettingsManager::getInstance()->set(SettingsManager::STATS_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
+			SettingsManager::getInstance()->set(SettingsManager::STATS_TOP, (rc.top > 0 ? rc.top : 0));
+			SettingsManager::getInstance()->set(SettingsManager::STATS_LEFT, (rc.left > 0 ? rc.left : 0));
+			SettingsManager::getInstance()->set(SettingsManager::STATS_RIGHT, (rc.right > 0 ? rc.right : 0));
+		}
 		bHandled = FALSE;
 		return 0;
 	}	

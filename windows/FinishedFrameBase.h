@@ -130,15 +130,19 @@ public:
 		
 		ctxMenu.SetMenuDefaultItem(IDC_OPEN_FILE);
 
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_TIME, CTSTRING(TIME));
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_HUB, CTSTRING(HUB));
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_SPEED, CTSTRING(SPEED));
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_TYPE, CTSTRING(TYPE));
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_ALL, CTSTRING(ALL));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_TIME, CTSTRING(TIME));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_HUB, CTSTRING(HUB));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SPEED, CTSTRING(SPEED));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_TYPE, CTSTRING(TYPE));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_ALL, CTSTRING(ALL));
+
+		CRect rc(SETTING(FINISHED_LEFT), SETTING(FINISHED_TOP), SETTING(FINISHED_RIGHT), SETTING(FINISHED_BOTTOM));
+		if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
+			MoveWindow(rc, TRUE);
 
 		WinUtil::SetIcon(m_hWnd, Icon);
 		bHandled = FALSE;
@@ -220,6 +224,22 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 			ctrlList.saveHeaderOrder(columnOrder, columnWidth, columnVisible);
 			frame = NULL;
 			ctrlList.DeleteAllItems();
+	
+			CRect rc;
+			if(!IsIconic()){
+				//Get position of window
+				GetWindowRect(&rc);
+					
+				//convert the position so it's relative to main window
+				::ScreenToClient(GetParent(), &rc.TopLeft());
+				::ScreenToClient(GetParent(), &rc.BottomRight());
+				
+				//save the position
+				SettingsManager::getInstance()->set(SettingsManager::FINISHED_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
+				SettingsManager::getInstance()->set(SettingsManager::FINISHED_TOP, (rc.top > 0 ? rc.top : 0));
+				SettingsManager::getInstance()->set(SettingsManager::FINISHED_LEFT, (rc.left > 0 ? rc.left : 0));
+				SettingsManager::getInstance()->set(SettingsManager::FINISHED_RIGHT, (rc.right > 0 ? rc.right : 0));
+			}
 
 			bHandled = FALSE;
 			return 0;

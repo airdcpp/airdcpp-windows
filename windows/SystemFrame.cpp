@@ -55,7 +55,11 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		tabMenu.AppendMenu(MF_SEPARATOR);
 	}
 	tabMenu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
-	
+
+	CRect rc(SETTING(SYSLOG_LEFT), SETTING(SYSLOG_TOP), SETTING(SYSLOG_RIGHT), SETTING(SYSLOG_BOTTOM));
+	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
+		MoveWindow(rc, TRUE);
+
 	SettingsManager::getInstance()->addListener(this);
 	WinUtil::SetIcon(m_hWnd, _T("systemlog.ico"));
 	bHandled = FALSE;
@@ -63,6 +67,21 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 }
 
 LRESULT SystemFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	CRect rc;
+	if(!IsIconic()){
+		//Get position of window
+		GetWindowRect(&rc);
+				
+		//convert the position so it's relative to main window
+		::ScreenToClient(GetParent(), &rc.TopLeft());
+		::ScreenToClient(GetParent(), &rc.BottomRight());
+				
+		//save the position
+		SettingsManager::getInstance()->set(SettingsManager::SYSLOG_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
+		SettingsManager::getInstance()->set(SettingsManager::SYSLOG_TOP, (rc.top > 0 ? rc.top : 0));
+		SettingsManager::getInstance()->set(SettingsManager::SYSLOG_LEFT, (rc.left > 0 ? rc.left : 0));
+		SettingsManager::getInstance()->set(SettingsManager::SYSLOG_RIGHT, (rc.right > 0 ? rc.right : 0));
+	}
 	LogManager::getInstance()->removeListener(this);
 	SettingsManager::getInstance()->removeListener(this);
 	bHandled = FALSE;
