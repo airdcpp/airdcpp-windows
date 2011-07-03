@@ -168,7 +168,8 @@ void SharePage::write()
 	for(int i = 0; i < size; ++i){
 			ctrlDirectories.GetItemText(i, 1, buf, MAX_PATH);
 			string tmp = Text::fromT(buf);
-		ShareManager::getInstance()->setIncoming(tmp, ctrlDirectories.GetCheckState(i) ? true : false);
+			if(ctrlDirectories.GetCheckState(i) == true)
+			ShareManager::getInstance()->setIncoming(tmp);
 		}
 
 	RefreshDirs.clear();
