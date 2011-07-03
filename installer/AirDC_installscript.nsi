@@ -45,9 +45,9 @@ ShowUninstDetails show
 
 ; The default installation directory
 !ifdef X64
-  InstallDir $EXEDIR
+  InstallDir "$PROGRAMFILES64\AirDC++"
 !else
-  InstallDir $EXEDIR
+  InstallDir "$PROGRAMFILES\AirDC++"
 !endif
 
 ; Registry key to check for directory (so if you install again, it will 
@@ -170,6 +170,9 @@ Section "Language Translations"
 SectionEnd
 
 Function .onInit
+  IfFileExists "$EXEDIR\AirDC.exe" 0 checkos
+  StrCpy $INSTDIR $EXEDIR
+checkos:
   ; Check for Vista+
   ReadRegStr $R8 HKLM "SOFTWARE\Microsoft\Windows NT\CurrentVersion" CurrentVersion
   IfErrors xp_or_below nt
