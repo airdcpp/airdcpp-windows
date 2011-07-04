@@ -455,3 +455,22 @@ Fixed:
 #Fix autosearch for directory types
 #fix alternate search with queue dir menu
 
+
+
+
+2.11
+
+Added:
+
+#The window positions are now being saved
+
+
+Changed:
+
+#The program will now be installed to Program Files\AirDC++ by default, if an old installation isn't being found
+
+
+Fixed:
+
+#The option to disable SFV check for hashed files is working now
+#The scanner will ignore oversized SFV files and too short filenames in SFV files
