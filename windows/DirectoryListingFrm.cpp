@@ -679,7 +679,7 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER) + " \\" + ii->dir->getPath());
 		}
 	}
-
+		if(!localpaths.empty())
 		SFVReaderManager::getInstance()->scan(localpaths);
 	
 	return 0;
