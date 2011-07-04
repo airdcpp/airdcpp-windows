@@ -652,11 +652,12 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
 
 	StringList localpaths;
-	
+	tstring path;
+
 	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 
 	if(ii->type == ItemInfo::FILE) {
-		tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+		path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 		wstring::size_type end = path.find_last_of(_T("\\"));
 		if(end != wstring::npos) {
 			path = path.substr(0, end);
@@ -665,10 +666,20 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 		localpaths.push_back(Text::fromT(path));
 
 	} else  if(ii->type == ItemInfo::DIRECTORY) {
-			localpaths = dl->getLocalPaths(ii->dir);	
+			if(ii->dir->getFileCount() > 0) {
+					DirectoryListing::File::Iter i = ii->dir->files.begin();
+						if(i != ii->dir->files.end()) {
+							try {
+								path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
+								localpaths.push_back(Text::fromT(path));
+						} catch(...) { }
+				}
+					
+			} else {
+			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER) + " \\" + ii->dir->getPath());
+		}
 	}
-	
-	
+
 		SFVReaderManager::getInstance()->scan(localpaths);
 	
 	return 0;
@@ -688,15 +699,23 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 			const ItemInfo* ii = ctrlList.getItemData(sel);
 		
 			if (ii->type == ItemInfo::FILE) {
-						temp = dl->getLocalPaths(ii->file);
-						scanList.insert(scanList.end(), temp.begin(), temp.end());	
-						temp.clear();
+				tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+				scanList.push_back(Text::fromT(path));
 			}
 			if (ii->type == ItemInfo::DIRECTORY)  {
-				if(ii->dir->getFileCount() > 0) {
-						temp = dl->getLocalPaths(ii->dir);
-						scanList.insert(scanList.end(), temp.begin(), temp.end());	
-						temp.clear();
+					if(ii->dir->getFileCount() > 0) {
+							DirectoryListing::File::Iter i = ii->dir->files.begin();
+					if(i != ii->dir->files.end()) {
+						try{
+							path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
+							wstring::size_type end = path.find_last_of(_T("\\")); 
+								if(end != wstring::npos) {
+									path = path.substr(0, end);
+								}
+								path += '\\'; 
+							scanList.push_back(Text::fromT(path));
+						}catch(...) {}
+				}
 					
 			} else {
 			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER) + " \\" + ii->dir->getPath());
