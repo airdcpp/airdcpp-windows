@@ -47,8 +47,8 @@ LRESULT FavoriteDirsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	ctrlDirectories.GetClientRect(rc); 
 	ctrlDirectories.InsertColumn(0, CTSTRING(FAVORITE_DIR_NAME), LVCFMT_LEFT, rc.Width()/4, 0); 
 	ctrlDirectories.InsertColumn(1, CTSTRING(DIRECTORY), LVCFMT_LEFT, rc.Width()*3 /4, 1);
-	StringPairList directories = FavoriteManager::getInstance()->getFavoriteDirs();
-	for(StringPairIter j = directories.begin(); j != directories.end(); j++)
+	favoriteDirs = FavoriteManager::getInstance()->getFavoriteDirs();
+	for(StringPairIter j = favoriteDirs.begin(); j != favoriteDirs.end(); j++)
 	{
 		int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(j->second));
 		ctrlDirectories.SetItemText(i, 1, Text::toT(j->first).c_str());
@@ -61,6 +61,7 @@ LRESULT FavoriteDirsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 void FavoriteDirsPage::write()
 {
 //	PropPage::write((HWND)*this, items);
+	FavoriteManager::getInstance()->saveFavoriteDirs(favoriteDirs);
 }
 
 LRESULT FavoriteDirsPage::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
@@ -89,6 +90,8 @@ LRESULT FavoriteDirsPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh,
 	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
 	::EnableWindow(GetDlgItem(IDC_REMOVE), (lv->uNewState & LVIS_FOCUSED));
 	::EnableWindow(GetDlgItem(IDC_RENAME), (lv->uNewState & LVIS_FOCUSED));
+	::EnableWindow(GetDlgItem(IDC_MOVEUP), (lv->uNewState & LVIS_FOCUSED));
+	::EnableWindow(GetDlgItem(IDC_MOVEDOWN), (lv->uNewState & LVIS_FOCUSED));
 	return 0;		
 }
 
@@ -142,7 +145,7 @@ LRESULT FavoriteDirsPage::onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		item.iItem = i;
 		item.iSubItem = 1;
 		ctrlDirectories.GetItem(&item);
-		if(FavoriteManager::getInstance()->removeFavoriteDir(Text::fromT(buf)))
+		if(removeFavoriteDir(Text::fromT(buf)))
 			ctrlDirectories.DeleteItem(i);
 	}
 	
@@ -168,7 +171,7 @@ LRESULT FavoriteDirsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		virt.description = TSTRING(FAVORITE_DIR_NAME_LONG);
 		virt.line = tstring(buf);
 		if(virt.DoModal(m_hWnd) == IDOK) {
-			if (FavoriteManager::getInstance()->renameFavoriteDir(Text::fromT(buf), Text::fromT(virt.line))) {
+			if (renameFavoriteDir(Text::fromT(buf), Text::fromT(virt.line))) {
 				ctrlDirectories.SetItemText(i, 0, virt.line.c_str());
 			} else {
 				MessageBox(CTSTRING(DIRECTORY_ADD_ERROR));
@@ -178,6 +181,47 @@ LRESULT FavoriteDirsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	return 0;
 }
 
+LRESULT FavoriteDirsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	
+	int i = ctrlDirectories.GetSelectedIndex();
+	
+	if(wID == IDC_MOVEUP && i > 0){
+		StringPair j  = favoriteDirs[i];
+
+		favoriteDirs[i] = favoriteDirs[i-1];
+		favoriteDirs[i-1] = j;
+
+		ctrlDirectories.DeleteItem(i);
+		ctrlDirectories.insert(i-1, Text::toT(j.second));
+		ctrlDirectories.SetItemText(i-1, 1, Text::toT(j.first).c_str());
+		ctrlDirectories.SelectItem(i-1);
+	
+	} else if( wID == IDC_MOVEDOWN && i < ctrlDirectories.GetItemCount()-1 ) {
+		StringPair j = favoriteDirs[i];
+
+		favoriteDirs[i] = favoriteDirs[i+1];
+		favoriteDirs[i+1] = j;
+
+		ctrlDirectories.DeleteItem(i);
+		ctrlDirectories.insert(i+1, Text::toT(j.second));
+		ctrlDirectories.SetItemText(i+1, 1, Text::toT(j.first).c_str());
+		ctrlDirectories.SelectItem(i+1);
+	}
+
+	return 0;
+}
+
+
+bool FavoriteDirsPage::renameFavoriteDir(const string& aName, const string& anotherName) {
+
+	for(StringPairIter j = favoriteDirs.begin(); j != favoriteDirs.end(); ++j) {
+		if(stricmp(j->second.c_str(), aName.c_str()) == 0) {
+			j->second = anotherName;
+			return true;
+		}
+	}
+	return false;
+}
 
 void FavoriteDirsPage::addDirectory(const tstring& aPath){
 	tstring path = aPath;
@@ -189,13 +233,47 @@ void FavoriteDirsPage::addDirectory(const tstring& aPath){
 	virt.description = TSTRING(FAVORITE_DIR_NAME_LONG);
 	virt.line = Util::getLastDir(path);
 	if(virt.DoModal(m_hWnd) == IDOK) {
-		if (FavoriteManager::getInstance()->addFavoriteDir(Text::fromT(path), Text::fromT(virt.line))) {
+		if (addFavoriteDir(Text::fromT(path), Text::fromT(virt.line))) {
 			int j = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), virt.line );
 			ctrlDirectories.SetItemText(j, 1, path.c_str());
 		} else {
 			MessageBox(CTSTRING(DIRECTORY_ADD_ERROR));
 		}
 	}
+}
+
+bool FavoriteDirsPage::addFavoriteDir(const string& aDirectory, const string & aName){
+	string path = aDirectory;
+
+	if( path[ path.length() -1 ] != PATH_SEPARATOR )
+		path += PATH_SEPARATOR;
+
+	for(StringPairIter i = favoriteDirs.begin(); i != favoriteDirs.end(); ++i) {
+		if((strnicmp(path, i->first, i->first.length()) == 0) && (strnicmp(path, i->first, path.length()) == 0)) {
+			return false;
+		}
+		if(stricmp(aName, i->second) == 0) {
+			return false;
+		}
+	}
+	favoriteDirs.push_back(make_pair(aDirectory, aName));
+	return true;
+}
+
+
+bool FavoriteDirsPage::removeFavoriteDir(const string& aName) {
+	string d(aName);
+
+	if(d[d.length() - 1] != PATH_SEPARATOR)
+		d += PATH_SEPARATOR;
+
+	for(StringPairIter j = favoriteDirs.begin(); j != favoriteDirs.end(); ++j) {
+		if(stricmp(j->first.c_str(), d.c_str()) == 0) {
+			favoriteDirs.erase(j);
+			return true;
+		}
+	}
+	return false;
 }
 
 /**

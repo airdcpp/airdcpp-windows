@@ -50,6 +50,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_ADD, onClickedAdd)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onClickedRemove)
 		COMMAND_ID_HANDLER(IDC_RENAME, onClickedRename)
+		COMMAND_ID_HANDLER(IDC_MOVEUP, onMove)
+		COMMAND_ID_HANDLER(IDC_MOVEDOWN, onMove)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -60,6 +62,7 @@ public:
 	LRESULT onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onMove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
@@ -69,8 +72,12 @@ protected:
 	static TextItem texts[];
 	ExListViewCtrl ctrlDirectories;
 	TCHAR* title;
+	StringPairList favoriteDirs;
 
 	void addDirectory(const tstring& aPath);
+	bool renameFavoriteDir(const string& aName, const string& anotherName);
+	bool addFavoriteDir(const string& aDirectory, const string & aName);
+	bool removeFavoriteDir(const string& aName);
 };
 
 #endif // !defined(FAVORITE_DIR_SPAGE_H)
