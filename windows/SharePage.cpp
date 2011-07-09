@@ -43,7 +43,6 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
 	{ IDC_SETTINGS_MAX_HASH_SPEED, ResourceManager::SETTINGS_MAX_HASH_SPEED },
 	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
-	{ IDC_REFRESH_ON_SHAREPAGE, ResourceManager::DISABLE_REFRESH_ON_SHAREPAGE},
 	{ IDC_REFRESH_VNAME_ON_SHAREPAGE, ResourceManager::REFRESH_VNAME_ON_SHAREPAGE},
 	{ IDC_SHARE_SFV, ResourceManager::SETTINGS_SHARE_SFV },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
@@ -55,7 +54,6 @@ PropPage::Item SharePage::items[] = {
 	{ IDC_SHARE_SFV, SettingsManager::SHARE_SFV, PropPage::T_BOOL },
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
-	{ IDC_REFRESH_ON_SHAREPAGE, SettingsManager::DISABLE_REFRESH_ON_SHAREPAGE, PropPage::T_BOOL },	
 	{ IDC_REFRESH_VNAME_ON_SHAREPAGE, SettingsManager::REFRESH_VNAME_ON_SHAREPAGE, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
@@ -120,7 +118,6 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	if(!BOOLSETTING(USE_OLD_SHARING_UI))
 		ft.PopulateTree();
 
-	fixControls();
 
 	return TRUE;
 }
@@ -149,19 +146,12 @@ void SharePage::write()
 
 	PropPage::write((HWND)*this, items);
 	
-	if(BOOLSETTING(REFRESH_VNAME_ON_SHAREPAGE) && !BOOLSETTING(DISABLE_REFRESH_ON_SHAREPAGE) && !RefreshDirs.empty()){
-	ShareManager::getInstance()->refreshDirs(RefreshDirs);
+	if(BOOLSETTING(REFRESH_VNAME_ON_SHAREPAGE) && !RefreshDirs.empty()){
+		ShareManager::getInstance()->setDirty();
+		ShareManager::getInstance()->refreshDirs(RefreshDirs);
 	}
 
-	if(!BOOLSETTING(DISABLE_REFRESH_ON_SHAREPAGE) && !BOOLSETTING(REFRESH_VNAME_ON_SHAREPAGE)) {
-	if(!BOOLSETTING(USE_OLD_SHARING_UI) && ft.IsDirty()) {
-		ShareManager::getInstance()->setDirty();
-		ShareManager::getInstance()->refresh(ShareManager::REFRESH_ALL | ShareManager::REFRESH_UPDATE);
-	} else {
-		ShareManager::getInstance()->refresh(ShareManager::REFRESH_ALL | ShareManager::REFRESH_UPDATE);
-	}
-	
-	}
+
 	ShareManager::getInstance()->DelIncoming();
 	int size = ctrlDirectories.GetItemCount();
 	TCHAR buf[MAX_PATH];
@@ -360,20 +350,7 @@ void SharePage::addDirectory(const tstring& aPath){
 	}
 	ctrlDirectories.resort();
 }
-void SharePage::fixControls(){
-	
-	BOOL use = IsDlgButtonChecked(IDC_REFRESH_ON_SHAREPAGE) == BST_UNCHECKED;
-	
-	::EnableWindow(GetDlgItem(IDC_REFRESH_VNAME_ON_SHAREPAGE),					use);
-	}
 
-
-LRESULT SharePage::onClickedRefreshDisable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	
-	fixControls();
-
-return 0;
-}
 
 
 

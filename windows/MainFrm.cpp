@@ -342,7 +342,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	try {
 		ConnectivityManager::getInstance()->setup(true, SettingsManager::INCOMING_DIRECT);
 	} catch (const Exception& e) {
-		// TODO showPortsError(e.getError());
+		LogManager::getInstance()->message(e.getError());
 	}
 	
 	// Different app icons for different instances (APEX)
@@ -811,7 +811,7 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		try {
 			ConnectivityManager::getInstance()->setup(SETTING(INCOMING_CONNECTIONS) != lastConn || SETTING(TCP_PORT) != lastTCP || SETTING(UDP_PORT) != lastUDP || SETTING(TLS_PORT) != lastTLS, lastConn );
 		} catch (const Exception& e) {
-			// TODO: showPortsError(e.getError());
+			LogManager::getInstance()->message(e.getError());
 		}
  
 		if(BOOLSETTING(SORT_FAVUSERS_FIRST) != lastSortFavUsersFirst)

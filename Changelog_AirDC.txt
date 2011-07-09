@@ -463,12 +463,16 @@ Fixed:
 Added:
 
 #The window positions are now being saved
-
+#/refresh "realpath" (for ex. /refresh c:\share\)
+#Favorite Download directories can be ordered in settings
 
 Changed:
 
 #The program will now be installed to Program Files\AirDC++ by default, if an old installation isn't being found
-
+#Settings sharingpage shows now "correct" sizes of realpaths
+#refresh incoming refreshes only the selected realpath
+#Option to expand downloads in transferview = option to not group downloads
+#removed some nowadays useless refresh settings
 
 Fixed:
 

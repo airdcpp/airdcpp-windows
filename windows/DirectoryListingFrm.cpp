@@ -666,19 +666,11 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 		localpaths.push_back(Text::fromT(path));
 
 	} else  if(ii->type == ItemInfo::DIRECTORY) {
-			if(ii->dir->getFileCount() > 0) {
-					DirectoryListing::File::Iter i = ii->dir->files.begin();
-						if(i != ii->dir->files.end()) {
-							try {
-								path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
-								localpaths.push_back(Text::fromT(path));
-						} catch(...) { }
-				}
-					
-			} else {
-			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER) + " \\" + ii->dir->getPath());
+			localpaths = dl->getLocalPaths(ii->dir);
+
 		}
-	}
+
+	
 		if(!localpaths.empty())
 		SFVReaderManager::getInstance()->scan(localpaths);
 	

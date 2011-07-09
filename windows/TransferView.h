@@ -330,6 +330,7 @@ private:
 
 	StringMap ucLineParams;
 	int PreviewAppsSize;
+	bool noGroup;
 
 	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) throw();
 	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) throw();

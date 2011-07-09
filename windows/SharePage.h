@@ -53,7 +53,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_RENAME, onClickedRename)
 		COMMAND_ID_HANDLER(IDC_SHAREHIDDEN, onClickedShareHidden)
 		COMMAND_ID_HANDLER(IDC_SHARE_SFV, onClickedShareSFV)
-		COMMAND_ID_HANDLER(IDC_REFRESH_ON_SHAREPAGE, onClickedRefreshDisable)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 
@@ -83,7 +82,6 @@ protected:
 
 	void addDirectory(const tstring& aPath);
 	FolderTree ft;
-	void fixControls();
 };
 
 #endif // !defined(SHARE_PAGE_H)
