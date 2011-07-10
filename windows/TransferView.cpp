@@ -72,8 +72,6 @@ LRESULT TransferView::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlTransfers.SetImageList(arrows, LVSIL_SMALL);
 	ctrlTransfers.setSortColumn(COLUMN_USER);
 
-	noGroup = BOOLSETTING(DOWNLOADS_EXPAND);
-
 	ConnectionManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
 	UploadManager::getInstance()->addListener(this);
@@ -274,11 +272,11 @@ LRESULT TransferView::onForce(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 					ctrlTransfers.SetItemText(h, COLUMN_STATUS, CTSTRING(CONNECTING_FORCED));
 
 				ii->transferFailed = false;
-				ConnectionManager::getInstance()->force(ii->user);
+				ConnectionManager::getInstance()->force(ii->token);
 			}
 		} else {
 			ii->transferFailed = false;
-			ConnectionManager::getInstance()->force(ii->user);
+			ConnectionManager::getInstance()->force(ii->token);
 		}
 	}
 	return 0;
@@ -585,19 +583,20 @@ int TransferView::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, u
 TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) const {
 	for(int j = 0; j < ctrlTransfers.GetItemCount(); ++j) {
 		ItemInfo* ii = ctrlTransfers.getItemData(j);
-		if(ui == *ii) {
+		if(ui.token == ii->token) {
 			pos = j;
 			return ii;
 		} else if(ui.download && ii->download && ii->parent == NULL) {
 			const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
 			for(vector<ItemInfo*>::const_iterator k = children.begin(); k != children.end(); k++) {
 				ItemInfo* ii = *k;
-				if(ui == *ii) {
+				if(ui.token == ii->token) {
 					return ii;
 				}
 			}
 		}
 	}
+	LogManager::getInstance()->message("TrasferView::findItem not found: " + ui.token);
 	return NULL;
 }
 
@@ -611,11 +610,11 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	for(TaskQueue::Iter i = t.begin(); i != t.end(); ++i) {
 		if(i->first == ADD_ITEM) {
 			auto_ptr<UpdateInfo> ui(reinterpret_cast<UpdateInfo*>(i->second));
-			ItemInfo* ii = new ItemInfo(ui->user, ui->download);
+			ItemInfo* ii = new ItemInfo(ui->user, ui->token, ui->download);
 			ii->update(*ui);
 			if(ii->download) {
-				if(noGroup) {
-					ctrlTransfers.insertItem(ii, IMAGE_DOWNLOAD);
+				if(BOOLSETTING(DOWNLOADS_EXPAND)) {
+					ctrlTransfers.insertGroupedItem(ii, true);
 				}else{
 				ctrlTransfers.insertGroupedItem(ii, false);
 				}
@@ -636,52 +635,56 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 					ctrlTransfers.DeleteItem(pos);
 					delete ii;
 				}
+			} else {
+					LogManager::getInstance()->message("TrasferView REMOVE_ITEM, item not found: " + ui->token);
 			}
 		} else if(i->first == UPDATE_ITEM) {
 			auto_ptr<UpdateInfo> ui(reinterpret_cast<UpdateInfo*>(i->second));
-
+			LogManager::getInstance()->message("TrasferView UPDATE_ITEM: " + ui->token);
 			int pos = -1;
 			ItemInfo* ii = findItem(*ui, pos);
 			if(ii) {
-				if(ui->download && !noGroup)  {
+				if(ui->download) {
 					ItemInfo* parent = ii->parent ? ii->parent : ii;
 
-					if(ui->type == Transfer::TYPE_FILE || ui->type == Transfer::TYPE_TREE)
-					{
+					if(ui->type == Transfer::TYPE_FILE || ui->type == Transfer::TYPE_TREE) {
 						/* parent item must be updated with correct info about whole file */
-						if(ui->status == ItemInfo::STATUS_RUNNING && parent->status == ItemInfo::STATUS_RUNNING && parent->hits == -1)
-						{
-					ui->updateMask &= ~UpdateInfo::MASK_POS;
-						ui->updateMask &= ~UpdateInfo::MASK_ACTUAL;
-						ui->updateMask &= ~UpdateInfo::MASK_SIZE;
-						ui->updateMask &= ~UpdateInfo::MASK_STATUS_STRING;
-						ui->updateMask &= ~UpdateInfo::MASK_TIMELEFT;
-						ui->updateMask &= ~UpdateInfo::MASK_TOTALTIMELEFT; /*ttlf*/
-					}
+						if(ui->status == ItemInfo::STATUS_RUNNING && parent->status == ItemInfo::STATUS_RUNNING && parent->hits == -1) {
+							ui->updateMask &= ~UpdateInfo::MASK_POS;
+							ui->updateMask &= ~UpdateInfo::MASK_ACTUAL;
+							ui->updateMask &= ~UpdateInfo::MASK_SIZE;
+							ui->updateMask &= ~UpdateInfo::MASK_STATUS_STRING;
+							ui->updateMask &= ~UpdateInfo::MASK_TIMELEFT;
+							ui->updateMask &= ~UpdateInfo::MASK_TOTALTIMELEFT; /*ttlf*/
+						}
 					}
 
 					/* if target has changed, regroup the item */
 					bool changeParent = (ui->updateMask & UpdateInfo::MASK_FILE) && (ui->target != ii->target);
 					if(changeParent)
 						ctrlTransfers.removeGroupedItem(ii, false);
-
+					LogManager::getInstance()->message("TrasferView UPDATE_ITEM update, ui: " + ui->token + " ii: " + ii->token);
 					ii->update(*ui);
 
 					if(changeParent) {
 						ctrlTransfers.insertGroupedItem(ii, false);
 						parent = ii->parent ? ii->parent : ii;
+						LogManager::getInstance()->message("TrasferView UPDATE_ITEM changeParent, ui: " + ui->token + " ii: " + ii->token);
 					} else if(ii == parent || !parent->collapsed) {
 						updateItem(ctrlTransfers.findItem(ii), ui->updateMask);
+						LogManager::getInstance()->message("TrasferView UPDATE_ITEM updateItem, ui: " + ui->token + " ii: " + ii->token);
 					}
 					continue;
 				}
+				LogManager::getInstance()->message("TrasferView UPDATE_ITEM, ui: " + ui->token + " ii: " + ii->token);
 				ii->update(*ui);
 				dcassert(pos != -1);
 				updateItem(pos, ui->updateMask);
+			} else {
+					LogManager::getInstance()->message("TrasferView UPDATE_PARENT, item not found: " + ui->token);
 			}
 		} else if(i->first == UPDATE_PARENT) {
 			auto_ptr<UpdateInfo> ui(reinterpret_cast<UpdateInfo*>(i->second));
-			
 			ItemInfoList::ParentPair* pp = ctrlTransfers.findParentPair(ui->target);
 			
 			if(!pp) 
@@ -697,14 +700,15 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 					if(!pp->parent->collapsed) {
 						updateItem(ctrlTransfers.findItem(ii), ui->updateMask);
 					}
+				} else {
+					LogManager::getInstance()->message("TrasferView UPDATE_PARENT, item not found: " + ui->token);
 				}
 			}
 
 			pp->parent->update(*ui);
 			updateItem(ctrlTransfers.findItem(pp->parent), ui->updateMask);
-			}
 		}
-	
+	}
 
 	if(!t.empty()) {
 		ctrlTransfers.resort();
@@ -743,9 +747,9 @@ LRESULT TransferView::onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	return 0;
 }
 	
-TransferView::ItemInfo::ItemInfo(const HintedUser& u, bool aDownload) : user(u), download(aDownload), transferFailed(false),
+TransferView::ItemInfo::ItemInfo(const HintedUser& u, string aToken, bool aDownload) : user(u), download(aDownload), transferFailed(false),
 	status(STATUS_WAITING), pos(0), size(0), actual(0), speed(0), timeLeft(0), totalTimeLeft(0)/*ttlf*/, ip(Util::emptyStringT), target(Util::emptyStringT),
-	flagIndex(0), collapsed(true), parent(NULL), hits(-1), statusString(Util::emptyStringT), running(0) { }
+	flagIndex(0), collapsed(true), parent(NULL), hits(-1), statusString(Util::emptyStringT), running(0), token(aToken) { }
 
 void TransferView::ItemInfo::update(const UpdateInfo& ui) {
 	if(ui.type != Transfer::TYPE_LAST)
@@ -829,7 +833,8 @@ void TransferView::updateItem(int ii, uint32_t updateMask) {
 }
 
 void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getDownload());
+	LogManager::getInstance()->message("ConnectionManagerListener::Added: " + aCqi->getToken());
+	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
 
 	if(ui->download) {
 		string aTarget; int64_t aSize; int aFlags;
@@ -852,8 +857,15 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 	speak(ADD_ITEM, ui);
 }
 
+/* void TransferView::on(ConnectionManagerListener::TokenChanged, const ConnectionQueueItem* aCqi, string newToken) {
+	LogManager::getInstance()->message("ConnectionManagerListener::TokenChanged: " + aCqi->getToken());
+	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
+	ui->
+} */
+
 void TransferView::on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getDownload());
+	LogManager::getInstance()->message("ConnectionManagerListener::StatusChanged: " + aCqi->getToken());
+	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
 	string aTarget;	int64_t aSize; int aFlags = 0;
 
 	if(QueueManager::getInstance()->getQueueInfo(aCqi->getUser(), aTarget, aSize, aFlags)) {
@@ -875,11 +887,13 @@ void TransferView::on(ConnectionManagerListener::StatusChanged, const Connection
 }
 
 void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) {
-	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getUser(), aCqi->getDownload()));
+	LogManager::getInstance()->message("ConnectionManagerListener::Removed: " + aCqi->getToken());
+	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload()));
 }
 
 void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getDownload());
+	LogManager::getInstance()->message("ConnectionManagerListener::Failed: " + aCqi->getToken());
+	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
 	if(aCqi->getUser().user->isSet(User::OLD_CLIENT)) {
 		ui->setStatusString(TSTRING(SOURCE_TOO_OLD));
 	} 
@@ -939,7 +953,8 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 }
 
 void TransferView::on(DownloadManagerListener::Requesting, const Download* d) throw() {
-	UpdateInfo* ui = new UpdateInfo(d->getHintedUser(), true);
+	LogManager::getInstance()->message("DownloadManagerListener::Requesting: " + d->getUserConnection().getToken());
+	UpdateInfo* ui = new UpdateInfo(d->getHintedUser(), d->getUserConnection().getToken(), true);
 	
 	starting(ui, d);
 	
@@ -952,7 +967,8 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d) th
 }
 
 void TransferView::on(DownloadManagerListener::Starting, const Download* aDownload) {
-	UpdateInfo* ui = new UpdateInfo(aDownload->getHintedUser(), true);
+	LogManager::getInstance()->message("DownloadManagerListener::Starting: " + aDownload->getUserConnection().getToken());
+	UpdateInfo* ui = new UpdateInfo(aDownload->getHintedUser(), aDownload->getUserConnection().getToken(), true);
 	
 	ui->setStatus(ItemInfo::STATUS_RUNNING);
 	ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
@@ -965,30 +981,15 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 	for(DownloadList::const_iterator j = dl.begin(); j != dl.end(); ++j) {
 		Download* d = *j;
-		
-		UpdateInfo* ui = new UpdateInfo(d->getHintedUser(), true);
+		LogManager::getInstance()->message("DownloadManagerListener::Tick: " + d->getUserConnection().getToken());
+		UpdateInfo* ui = new UpdateInfo(d->getHintedUser(), d->getUserConnection().getToken(), true);
 		ui->setStatus(ItemInfo::STATUS_RUNNING);
 		ui->setActual(d->getActual());
 		ui->setPos(d->getPos());
 		ui->setSize(d->getSize());
 		ui->setTimeLeft(d->getSecondsLeft());
-		uint64_t timeleft = 0;
-			/* ttlf */
-				int64_t avg = DownloadManager::getInstance()->getAverageSpeed(d->getPath());
-				uint64_t avgpos = DownloadManager::getInstance()->getAveragePos(d->getPath());
-				uint64_t totalsize = QueueManager::getInstance()->fileQueue.getTotalSize(d->getPath());
-				if(totalsize == 0)
-				totalsize = avgpos;
-				
-				timeleft =  (avg > 0) ? ((totalsize - avgpos) / avg) : 0;
-			
-			if(timeleft >= 0){
-				ui->setTotalTimeLeft(timeleft);
-			}else{
-				ui->setTotalTimeLeft(0);
-			}
-	
-	
+		/* ttlf */
+		//maybe I should add something here?
 		
 		ui->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
 		ui->setType(d->getType());
@@ -1018,6 +1019,9 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 		if(d->isSet(Download::FLAG_CHUNKED)) {
 			statusString += _T("[C]");
 		}
+		if(d->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
+			statusString += _T("[M]");
+		}
 		if(!statusString.empty()) {
 			statusString += _T(" ");
 		}
@@ -1031,7 +1035,8 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 }
 
 void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) {
-	UpdateInfo* ui = new UpdateInfo(aDownload->getHintedUser(), true, true);
+	LogManager::getInstance()->message("DownloadManagerListener::Failed: " + aDownload->getUserConnection().getToken());
+	UpdateInfo* ui = new UpdateInfo(aDownload->getHintedUser(), aDownload->getUserConnection().getToken(), true, true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
 	ui->setSize(aDownload->getSize());
@@ -1058,7 +1063,8 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 }
 
 void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc, const string& aReason) {
-	UpdateInfo* ui = new UpdateInfo(uc->getHintedUser(), true);
+	LogManager::getInstance()->message("DownloadManagerListener::Status: " + uc->getToken());
+	UpdateInfo* ui = new UpdateInfo(uc->getHintedUser(), uc->getToken(), true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
 	ui->setStatusString(Text::toT(aReason));
@@ -1067,7 +1073,8 @@ void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc,
 }
 
 void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
-	UpdateInfo* ui = new UpdateInfo(aUpload->getHintedUser(), false);
+	LogManager::getInstance()->message("DownloadManagerListener::Failed: " + aUpload->getUserConnection().getToken());
+	UpdateInfo* ui = new UpdateInfo(aUpload->getHintedUser(), aUpload->getUserConnection().getToken(), false);
 
 	starting(ui, aUpload);
 	
@@ -1089,7 +1096,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 
 		if (u->getPos() == 0) continue;
 
-		UpdateInfo* ui = new UpdateInfo(u->getHintedUser(), false);
+		UpdateInfo* ui = new UpdateInfo(u->getHintedUser(), u->getUserConnection().getToken(), false);
 		ui->setActual(u->getStartPos() + u->getActual());
 		ui->setPos(u->getStartPos() + u->getPos());
 		ui->setTimeLeft(u->getSecondsLeft(true)); // we are interested when whole file is finished and not only one chunk
@@ -1118,7 +1125,10 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 		}
 		if(u->isSet(Upload::FLAG_CHUNKED)) {
 			statusString += _T("[C]");
-		}		
+		}
+		if(u->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
+			statusString += _T("[M]");
+		}
 		if(!statusString.empty()) {
 			statusString += _T(" ");
 		}			
@@ -1133,7 +1143,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 }
 
 void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree) {
-	UpdateInfo* ui = new UpdateInfo(aTransfer->getHintedUser(), !isUpload);
+	UpdateInfo* ui = new UpdateInfo(aTransfer->getHintedUser(), aTransfer->getUserConnection().getToken(), !isUpload);
 
 	ui->setStatus(ItemInfo::STATUS_WAITING);	
 	ui->setPos(0);
@@ -1150,7 +1160,7 @@ void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, 
 }
 
 void TransferView::ItemInfo::disconnect() {
-	ConnectionManager::getInstance()->disconnect(user, download);
+	ConnectionManager::getInstance()->disconnect(token);
 }
 		
 LRESULT TransferView::onPreviewCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
@@ -1253,10 +1263,6 @@ void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw()
 		ctrlTransfers.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
-
-	if(noGroup != BOOLSETTING(DOWNLOADS_EXPAND))
-		refresh = true;
-
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
@@ -1279,7 +1285,7 @@ void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) 
 		int64_t totalSpeed = 0;
 		int16_t segs = 0;
 		
-		bool partial = false, trusted = false, untrusted = false, tthcheck = false, zdownload = false, chunked = false;
+		bool partial = false, trusted = false, untrusted = false, tthcheck = false, zdownload = false, chunked = false, mcn = false;
 
 		for(DownloadList::const_iterator i = qi->getDownloads().begin(); i != qi->getDownloads().end(); i++) {
 			Download *d = *i;
@@ -1305,6 +1311,9 @@ void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) 
 				}
 				if(d->isSet(Download::FLAG_CHUNKED)) {
 					chunked = true;
+				}
+				if(d->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
+					mcn=true;
 				}
 		
 				totalSpeed += static_cast<int64_t>(d->getAverageSpeed());
@@ -1378,7 +1387,10 @@ void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) 
 					}
 					if(chunked) {
 						flag += _T("[C]");
-					}					
+					}
+					if(mcn) {
+						flag += _T("[M]");
+					}
 
 					if(!flag.empty()) {
 						flag += _T(" ");
@@ -1401,7 +1413,7 @@ void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) 
 
 void TransferView::on(QueueManagerListener::Finished, const QueueItem* qi, const string&, const Download* download) throw() {
 	// update download item
-	UpdateInfo* ui = new UpdateInfo(download->getHintedUser(), true);
+	UpdateInfo* ui = new UpdateInfo(download->getHintedUser(), download->getUserConnection().getToken(), true);
 
 	ui->setStatus(ItemInfo::STATUS_WAITING);	
 	ui->setPos(0);
@@ -1412,6 +1424,7 @@ void TransferView::on(QueueManagerListener::Finished, const QueueItem* qi, const
 	// update file item
 	ui = new UpdateInfo(const_cast<QueueItem*>(qi), true, true);
 	ui->user = download->getHintedUser();
+	ui->token = download->getUserConnection().getToken();
 
 	ui->setTarget(Text::toT(qi->getTarget()));
 	ui->setPos(0);

@@ -198,7 +198,7 @@ private:
 			
 		};
 		
-		ItemInfo(const HintedUser& u, bool aDownload);
+		ItemInfo(const HintedUser& u, string aToken, bool aDownload);
 
 		bool download;
 		bool transferFailed;
@@ -210,6 +210,7 @@ private:
 
 		ItemInfo* parent;
 		HintedUser user;
+		string token;
 		Status status;
 		Transfer::Type type;
 		
@@ -240,7 +241,7 @@ private:
 		uint8_t getImageIndex() const { return static_cast<uint8_t>(!download ? IMAGE_UPLOAD : (!parent ? IMAGE_DOWNLOAD : IMAGE_SEGMENT)); }
 
 		ItemInfo* createParent() {
-	  		ItemInfo* ii = new ItemInfo(HintedUser(NULL, Util::emptyString), true);
+	  		ItemInfo* ii = new ItemInfo(HintedUser(NULL, Util::emptyString), Util::emptyString, true);
 			ii->running = 0;
 			ii->hits = 0;
 			ii->target = target;
@@ -248,7 +249,9 @@ private:
 			return ii;
 		}
 
-		inline const tstring& getGroupCond() const { return target; }
+		inline const tstring& getGroupCond() const {
+			return target;
+		}
 	};
 
 	struct UpdateInfo : public Task {
@@ -269,18 +272,19 @@ private:
 
 		bool operator==(const ItemInfo& ii) const { return download == ii.download && user == ii.user; }
 
-		UpdateInfo(const HintedUser& aUser, bool isDownload, bool isTransferFailed = false) : 
-			updateMask(0), user(aUser), queueItem(NULL), download(isDownload), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
+		UpdateInfo(const HintedUser& aUser, string aToken, bool isDownload, bool isTransferFailed = false) : 
+			updateMask(0), user(aUser), queueItem(NULL), download(isDownload), token(aToken), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
 		{ }
 		
 		UpdateInfo(QueueItem* qi, bool isDownload, bool isTransferFailed = false) : 
-			updateMask(0), queueItem(qi), user(HintedUser(NULL, Util::emptyString)), download(isDownload), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST) 
+			updateMask(0), queueItem(qi), user(HintedUser(NULL, Util::emptyString)), download(isDownload), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST), token(Util::emptyString)
 		{ qi->inc(); }
 
 		~UpdateInfo() { if(queueItem) queueItem->dec(); }
 
 		uint32_t updateMask;
 
+		string token;
 		HintedUser user;
 
 		bool download;
@@ -330,12 +334,12 @@ private:
 
 	StringMap ucLineParams;
 	int PreviewAppsSize;
-	bool noGroup;
 
 	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) throw();
 	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) throw();
 	void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) throw();
 	void on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) throw();
+	//void on(ConnectionManagerListener::TokenChanged, const ConnectionQueueItem* aCqi, string newToken) {
 
 	void on(DownloadManagerListener::Requesting, const Download* aDownload) throw();	
 	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) throw() { onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree);}
