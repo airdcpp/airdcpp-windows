@@ -72,6 +72,8 @@ LRESULT TransferView::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlTransfers.SetImageList(arrows, LVSIL_SMALL);
 	ctrlTransfers.setSortColumn(COLUMN_USER);
 
+	noGroup = BOOLSETTING(DOWNLOADS_EXPAND);
+
 	ConnectionManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
 	UploadManager::getInstance()->addListener(this);
@@ -613,8 +615,8 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			ItemInfo* ii = new ItemInfo(ui->user, ui->token, ui->download);
 			ii->update(*ui);
 			if(ii->download) {
-				if(BOOLSETTING(DOWNLOADS_EXPAND)) {
-					ctrlTransfers.insertGroupedItem(ii, true);
+				if(noGroup) {
+					ctrlTransfers.insertItem(ii, IMAGE_DOWNLOAD);
 				}else{
 				ctrlTransfers.insertGroupedItem(ii, false);
 				}
@@ -644,7 +646,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			int pos = -1;
 			ItemInfo* ii = findItem(*ui, pos);
 			if(ii) {
-				if(ui->download) {
+				if(ui->download && !noGroup)  {
 					ItemInfo* parent = ii->parent ? ii->parent : ii;
 
 					if(ui->type == Transfer::TYPE_FILE || ui->type == Transfer::TYPE_TREE) {
@@ -707,8 +709,9 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 			pp->parent->update(*ui);
 			updateItem(ctrlTransfers.findItem(pp->parent), ui->updateMask);
+			}
 		}
-	}
+	
 
 	if(!t.empty()) {
 		ctrlTransfers.resort();
@@ -988,8 +991,21 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 		ui->setPos(d->getPos());
 		ui->setSize(d->getSize());
 		ui->setTimeLeft(d->getSecondsLeft());
+		uint64_t timeleft = 0;
 		/* ttlf */
-		//maybe I should add something here?
+		int64_t avg = DownloadManager::getInstance()->getAverageSpeed(d->getPath());	 
+		uint64_t avgpos = DownloadManager::getInstance()->getAveragePos(d->getPath());	 
+		uint64_t totalsize = QueueManager::getInstance()->fileQueue.getTotalSize(d->getPath());	 
+		if(totalsize == 0)	 
+			totalsize = avgpos;	 
+
+		timeleft =  (avg > 0) ? ((totalsize - avgpos) / avg) : 0;	 
+ 	 
+		if(timeleft >= 0){	 
+			ui->setTotalTimeLeft(timeleft);	 
+		}else{	 
+			ui->setTotalTimeLeft(0);	 
+		}
 		
 		ui->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
 		ui->setType(d->getType());
@@ -1263,6 +1279,10 @@ void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw()
 		ctrlTransfers.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
+
+	if(noGroup != BOOLSETTING(DOWNLOADS_EXPAND))
+		refresh = true;
+
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
