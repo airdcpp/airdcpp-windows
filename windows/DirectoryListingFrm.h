@@ -60,6 +60,7 @@ public:
 		COLUMN_EXACTSIZE,
 		COLUMN_SIZE,
 		COLUMN_TTH,
+		COLUMN_DATE,
 		COLUMN_LAST
 	};
 
@@ -345,6 +346,7 @@ private:
 				case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize()) : Util::formatExactSize(file->getSize());
 				case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize()) : Util::formatBytesW(file->getSize());
 				case COLUMN_TTH: return type == FILE ? Text::toT(file->getTTH().toBase32()) : Util::emptyStringT;
+				case COLUMN_DATE: return type == DIRECTORY ? Text::toT(dir->getDirDate()) : Util::emptyStringT;
 				default: return Util::emptyStringT;
 			}
 		}

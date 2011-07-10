@@ -1329,5 +1329,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ReleaseFilesMissing">NFO/SFV found but there are no other files in the folder:</String>
 		<String Name="CheckEmptyReleases">Check if the folder only contains NFO/SFV file</String>
 		<String Name="CheckEmptyDirs">Check if the directory is empty</String>
+		<String Name="Date">Date</String>
 	</Strings>
 </Language>

@@ -39,10 +39,10 @@
 #include "TextFrame.h"
 
 DirectoryListingFrame::FrameMap DirectoryListingFrame::frames;
-int DirectoryListingFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_TYPE, COLUMN_EXACTSIZE, COLUMN_SIZE, COLUMN_TTH };
-int DirectoryListingFrame::columnSizes[] = { 300, 60, 100, 100, 200 };
+int DirectoryListingFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_TYPE, COLUMN_EXACTSIZE, COLUMN_SIZE, COLUMN_TTH, COLUMN_DATE };
+int DirectoryListingFrame::columnSizes[] = { 300, 60, 100, 100, 200, 100 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::TYPE, ResourceManager::EXACT_SIZE, ResourceManager::SIZE, ResourceManager::TTH_ROOT };
+static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::TYPE, ResourceManager::EXACT_SIZE, ResourceManager::SIZE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 
 DirectoryListingFrame::UserMap DirectoryListingFrame::lists;
 

@@ -9,6 +9,8 @@
 ;!include "Sections.nsh"
  !include "MUI2.nsh"
 
+ ;!define X64
+ 
 SetCompressor "lzma"
 
 ; The name of the installer
