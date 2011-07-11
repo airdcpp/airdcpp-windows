@@ -598,7 +598,6 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 			}
 		}
 	}
-	LogManager::getInstance()->message("TrasferView::findItem not found: " + ui.token);
 	return NULL;
 }
 
@@ -637,12 +636,9 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 					ctrlTransfers.DeleteItem(pos);
 					delete ii;
 				}
-			} else {
-					LogManager::getInstance()->message("TrasferView REMOVE_ITEM, item not found: " + ui->token);
 			}
 		} else if(i->first == UPDATE_ITEM) {
 			auto_ptr<UpdateInfo> ui(reinterpret_cast<UpdateInfo*>(i->second));
-			LogManager::getInstance()->message("TrasferView UPDATE_ITEM: " + ui->token);
 			int pos = -1;
 			ItemInfo* ii = findItem(*ui, pos);
 			if(ii) {
@@ -665,25 +661,19 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 					bool changeParent = (ui->updateMask & UpdateInfo::MASK_FILE) && (ui->target != ii->target);
 					if(changeParent)
 						ctrlTransfers.removeGroupedItem(ii, false);
-					LogManager::getInstance()->message("TrasferView UPDATE_ITEM update, ui: " + ui->token + " ii: " + ii->token);
 					ii->update(*ui);
 
 					if(changeParent) {
 						ctrlTransfers.insertGroupedItem(ii, false);
 						parent = ii->parent ? ii->parent : ii;
-						LogManager::getInstance()->message("TrasferView UPDATE_ITEM changeParent, ui: " + ui->token + " ii: " + ii->token);
 					} else if(ii == parent || !parent->collapsed) {
 						updateItem(ctrlTransfers.findItem(ii), ui->updateMask);
-						LogManager::getInstance()->message("TrasferView UPDATE_ITEM updateItem, ui: " + ui->token + " ii: " + ii->token);
 					}
 					continue;
 				}
-				LogManager::getInstance()->message("TrasferView UPDATE_ITEM, ui: " + ui->token + " ii: " + ii->token);
 				ii->update(*ui);
 				dcassert(pos != -1);
 				updateItem(pos, ui->updateMask);
-			} else {
-					LogManager::getInstance()->message("TrasferView UPDATE_PARENT, item not found: " + ui->token);
 			}
 		} else if(i->first == UPDATE_PARENT) {
 			auto_ptr<UpdateInfo> ui(reinterpret_cast<UpdateInfo*>(i->second));
@@ -702,8 +692,6 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 					if(!pp->parent->collapsed) {
 						updateItem(ctrlTransfers.findItem(ii), ui->updateMask);
 					}
-				} else {
-					LogManager::getInstance()->message("TrasferView UPDATE_PARENT, item not found: " + ui->token);
 				}
 			}
 
@@ -836,7 +824,6 @@ void TransferView::updateItem(int ii, uint32_t updateMask) {
 }
 
 void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) {
-	LogManager::getInstance()->message("ConnectionManagerListener::Added: " + aCqi->getToken());
 	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
 
 	if(ui->download) {
@@ -860,14 +847,7 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 	speak(ADD_ITEM, ui);
 }
 
-/* void TransferView::on(ConnectionManagerListener::TokenChanged, const ConnectionQueueItem* aCqi, string newToken) {
-	LogManager::getInstance()->message("ConnectionManagerListener::TokenChanged: " + aCqi->getToken());
-	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
-	ui->
-} */
-
 void TransferView::on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) {
-	LogManager::getInstance()->message("ConnectionManagerListener::StatusChanged: " + aCqi->getToken());
 	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
 	string aTarget;	int64_t aSize; int aFlags = 0;
 
@@ -890,12 +870,10 @@ void TransferView::on(ConnectionManagerListener::StatusChanged, const Connection
 }
 
 void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) {
-	LogManager::getInstance()->message("ConnectionManagerListener::Removed: " + aCqi->getToken());
 	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload()));
 }
 
 void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) {
-	LogManager::getInstance()->message("ConnectionManagerListener::Failed: " + aCqi->getToken());
 	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
 	if(aCqi->getUser().user->isSet(User::OLD_CLIENT)) {
 		ui->setStatusString(TSTRING(SOURCE_TOO_OLD));
@@ -956,7 +934,6 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 }
 
 void TransferView::on(DownloadManagerListener::Requesting, const Download* d) throw() {
-	LogManager::getInstance()->message("DownloadManagerListener::Requesting: " + d->getUserConnection().getToken());
 	UpdateInfo* ui = new UpdateInfo(d->getHintedUser(), d->getUserConnection().getToken(), true);
 	
 	starting(ui, d);
@@ -970,7 +947,6 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d) th
 }
 
 void TransferView::on(DownloadManagerListener::Starting, const Download* aDownload) {
-	LogManager::getInstance()->message("DownloadManagerListener::Starting: " + aDownload->getUserConnection().getToken());
 	UpdateInfo* ui = new UpdateInfo(aDownload->getHintedUser(), aDownload->getUserConnection().getToken(), true);
 	
 	ui->setStatus(ItemInfo::STATUS_RUNNING);
@@ -984,7 +960,6 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 	for(DownloadList::const_iterator j = dl.begin(); j != dl.end(); ++j) {
 		Download* d = *j;
-		LogManager::getInstance()->message("DownloadManagerListener::Tick: " + d->getUserConnection().getToken());
 		UpdateInfo* ui = new UpdateInfo(d->getHintedUser(), d->getUserConnection().getToken(), true);
 		ui->setStatus(ItemInfo::STATUS_RUNNING);
 		ui->setActual(d->getActual());
@@ -1051,7 +1026,6 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 }
 
 void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) {
-	LogManager::getInstance()->message("DownloadManagerListener::Failed: " + aDownload->getUserConnection().getToken());
 	UpdateInfo* ui = new UpdateInfo(aDownload->getHintedUser(), aDownload->getUserConnection().getToken(), true, true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
@@ -1079,7 +1053,6 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 }
 
 void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc, const string& aReason) {
-	LogManager::getInstance()->message("DownloadManagerListener::Status: " + uc->getToken());
 	UpdateInfo* ui = new UpdateInfo(uc->getHintedUser(), uc->getToken(), true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
@@ -1089,7 +1062,6 @@ void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc,
 }
 
 void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
-	LogManager::getInstance()->message("DownloadManagerListener::Failed: " + aUpload->getUserConnection().getToken());
 	UpdateInfo* ui = new UpdateInfo(aUpload->getHintedUser(), aUpload->getUserConnection().getToken(), false);
 
 	starting(ui, aUpload);

@@ -36,6 +36,7 @@ PropPage::TextItem DownloadPage::texts[] = {
 	{ IDC_BROWSETEMPDIR, ResourceManager::BROWSE }, 
 	{ IDC_SETTINGS_DOWNLOAD_LIMITS, ResourceManager::SETTINGS_DOWNLOAD_LIMITS },
 	{ IDC_SETTINGS_DOWNLOADS_MAX, ResourceManager::SETTINGS_DOWNLOADS_MAX },
+	{ IDC_SETTINGS_MAX_MCN, ResourceManager::SETTINGS_MAX_MCN },
 	{ IDC_SETTINGS_FILES_MAX, ResourceManager::SETTINGS_FILES_MAX },
 	{ IDC_EXTRA_DOWNLOADS_MAX, ResourceManager::SETTINGS_CZDC_EXTRA_DOWNLOADS },
 	{ IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE, ResourceManager::SETTINGS_DOWNLOADS_SPEED_PAUSE },
@@ -53,6 +54,7 @@ PropPage::Item DownloadPage::items[] = {
 	{ IDC_DOWNLOADS, SettingsManager::DOWNLOAD_SLOTS, PropPage::T_INT },
 	{ IDC_FILES, SettingsManager::FILE_SLOTS, PropPage::T_INT },
 	{ IDC_MAXSPEED, SettingsManager::MAX_DOWNLOAD_SPEED, PropPage::T_INT },
+	{ IDC_MCNDLSLOTS, SettingsManager::MAX_MCN_DOWNLOADS, PropPage::T_INT },
 	{ IDC_EXTRA_DOWN_SLOT, SettingsManager::EXTRA_DOWNLOAD_SLOTS, PropPage::T_INT },
 	{ IDC_PROXY, SettingsManager::HTTP_PROXY, PropPage::T_STR },
 	{ 0, 0, PropPage::T_END }
@@ -74,6 +76,9 @@ LRESULT DownloadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	spin.SetRange32(0, 10000);
 	spin.Detach();
 	spin.Attach(GetDlgItem(IDC_EXTRASLOTSSPIN));
+	spin.SetRange32(0, 100);
+	spin.Detach();
+	spin.Attach(GetDlgItem(IDC_MCN_SPIN));
 	spin.SetRange32(0, 100);
 	spin.Detach();
 	// Do specialized reading here
