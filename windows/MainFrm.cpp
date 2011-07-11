@@ -1667,9 +1667,10 @@ int MainFrame::FileListQueue::run() {
 			DirectoryListing* dl = new DirectoryListing(i->user);
 			try {
 				dl->loadFile(Text::fromT(i->file));
+				/*WHY are we matching adlsearch here???
 				if(BOOLSETTING(USE_ADLS)) {
 				ADLSearchManager::getInstance()->matchListing(*dl);
-				}
+				}*/
 			} catch(...) {
 			}
 			delete dl;
