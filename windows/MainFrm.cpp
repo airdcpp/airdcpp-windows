@@ -1047,7 +1047,7 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				awaybyminimize = false;
 			} else {
 				awaybyminimize = true;
-				Util::setAway(true);
+				Util::setAway(true, true);
 				setAwayButton(true);
 				ClientManager::getInstance()->infoUpdated();
 			}
@@ -1064,7 +1064,7 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 		if(BOOLSETTING(AUTO_AWAY)) {
 			if(awaybyminimize == true) {
 				awaybyminimize = false;
-				Util::setAway(false);
+				Util::setAway(false, true);
 				setAwayButton(false);
 				ClientManager::getInstance()->infoUpdated();
 			}
