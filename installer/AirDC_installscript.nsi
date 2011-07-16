@@ -9,7 +9,7 @@
 ;!include "Sections.nsh"
  !include "MUI2.nsh"
 
- ;!define X64
+ !define X64
  
 SetCompressor "lzma"
 
@@ -22,6 +22,10 @@ ShowUninstDetails show
   !define MUI_HEADERIMAGE
   !define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis.bmp" ; optional
   !define MUI_ABORTWARNING
+  
+  !define MUI_FINISHPAGE_RUN
+  !define MUI_FINISHPAGE_RUN_TEXT "Launch AirDC++"
+  !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
 
 ;Page components
 ;Page directory
@@ -38,6 +42,8 @@ ShowUninstDetails show
   !insertmacro MUI_UNPAGE_FINISH
 
    !insertmacro MUI_LANGUAGE "English"
+   
+   
 ; The file to write
 !ifdef X64
   OutFile "AirDC_Installer64.exe"
@@ -190,6 +196,10 @@ end:
   ; Set the program component really required (read only)
   IntOp $0 ${SF_SELECTED} | ${SF_RO}
   SectionSetFlags ${dcpp} $0
+FunctionEnd
+
+Function LaunchLink
+  ExecShell "" "$INSTDIR\AirDC.exe"
 FunctionEnd
 
 ; uninstall stuff
