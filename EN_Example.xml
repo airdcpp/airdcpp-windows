@@ -1331,5 +1331,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="CheckEmptyDirs">Check if the directory is empty</String>
 		<String Name="Date">Date Modified</String>
 		<String Name="SettingsMaxMcn">Maximum number of downloads per user</String>
+		<String Name="AutoSearchAutoMatch">Add sources by using recursive partial lists (ADC only)</String>
 	</Strings>
 </Language>
