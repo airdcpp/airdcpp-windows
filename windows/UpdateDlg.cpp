@@ -243,7 +243,7 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 					throw Exception();
 #endif	
 
-				if((!SETTING(LANGUAGE_FILE).empty()) &&  (latestVersion == VERSIONFLOAT)) {
+				if((!SETTING(LANGUAGE_FILE).empty())) {
 						if (xml.findChild(Text::fromT(TSTRING(AAIRDCPP_LANGUAGE_FILE)))) {
 						string version = xml.getChildData();
 						
