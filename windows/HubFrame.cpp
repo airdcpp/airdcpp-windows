@@ -736,7 +736,9 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 			addStatus(Text::toT(status.str), WinUtil::m_ChatTextServer, status.inChat);
 		} else if(i->first == SET_WINDOW_TITLE) {
 			SetWindowText(Text::toT(static_cast<StatusTask*>(i->second)->str).c_str());
-			SetMDIFrameMenu();
+			//SetMDIFrameMenu();	
+			MDIRefreshMenu();
+
 		} else if(i->first == STATS) {
 			size_t AllUsers = client->getUserCount();
 			size_t ShownUsers = ctrlUsers.GetItemCount();
