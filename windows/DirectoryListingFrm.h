@@ -466,19 +466,20 @@ private:
 	int run() {
 		try {
 			if(!mFile.empty()) {
-				
-				if(mylist){
-				// if its own list regenerate it before opening, but only if its dirty
-				mFile = ShareManager::getInstance()->generateOwnList();
+
+				if(mylist) {
+					// if its own list regenerate it before opening, but only if its dirty
+					mFile = ShareManager::getInstance()->generateOwnList();
 				}
 				mWindow->dl->loadFile(mFile);
 				
 
 				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {
-				ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
+					ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
 				} 
-				if(!mylist)
-				mWindow->dl->checkDupes();
+				if(!mylist) {
+					mWindow->dl->checkDupes();
+				}
 
 				mWindow->refreshTree(mDir);
 			} else {

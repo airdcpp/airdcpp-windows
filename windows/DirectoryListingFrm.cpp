@@ -232,7 +232,6 @@ void DirectoryListingFrame::refreshTree(const tstring& root) {
 	if(!loading) {
 		throw AbortException();
 	}
-	
 	ctrlTree.SetRedraw(FALSE);
 
 	HTREEITEM ht = findItem(treeRoot, root);
@@ -246,7 +245,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root) {
 	while((next = ctrlTree.GetChildItem(ht)) != NULL) {
 		ctrlTree.DeleteItem(next);
 	}
-
+	d->checkDupes();
 	updateTree(d, ht);
 
 	ctrlTree.Expand(treeRoot);
