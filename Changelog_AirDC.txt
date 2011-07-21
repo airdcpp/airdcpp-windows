@@ -458,7 +458,7 @@ Fixed:
 
 
 
-2.11
+2.20
 
 Added:
 
@@ -480,9 +480,16 @@ Changed:
 #Better performance for detecting dupe folders in search
 #Don't show "Matched X files" when matching partial lists
 #Option expand downloads in transferview => not group them
+#Updated pcre regex
 
 Fixed:
 
+#A few crashes
+#Probably fix the auto away "bug"
 #The option to disable SFV check for hashed files is working now
 #The scanner will ignore oversized SFV files and too short filenames in SFV files and won't check hidden system folders
 #Hidden system folders are also considered as hidden now
+
+Removed:
+
+#Refresh delay setting (client wont refresh on startup unless couldnt load share cache)
