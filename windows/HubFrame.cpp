@@ -717,6 +717,9 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 			
 
 		} else if(i->first == ADD_CHAT_LINE) {
+			if (!i->second)
+				continue;
+
     		const MessageTask& msg = *static_cast<MessageTask*>(i->second);
          if(IgnoreManager::getInstance()->isIgnored(msg.from.getNick())) {
             ignoreList.insert(msg.from.getUser());

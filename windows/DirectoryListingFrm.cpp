@@ -240,6 +240,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root) {
 	}
 
 	DirectoryListing::Directory* d = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
+	ctrlTree.SelectItem(NULL);
 
 	HTREEITEM next = NULL;
 	while((next = ctrlTree.GetChildItem(ht)) != NULL) {
@@ -480,7 +481,7 @@ LRESULT DirectoryListingFrame::onDownloadDirTo(WORD , WORD , HWND , BOOL& ) {
 
 void DirectoryListingFrame::downloadList(const tstring& aTarget, bool view /* = false */, QueueItem::Priority prio /* = QueueItem::Priority::DEFAULT */) {
 	string target = aTarget.empty() ? SETTING(DOWNLOAD_DIRECTORY) : Text::fromT(aTarget);
-
+	if(ctrlList.GetSelectedCount() >= 1) {
 	int i=-1;
 	while( (i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const ItemInfo* ii = ctrlList.getItemData(i);
@@ -496,6 +497,7 @@ void DirectoryListingFrame::downloadList(const tstring& aTarget, bool view /* = 
 			} 
 		} catch(const Exception& e) {
 			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+			}
 		}
 	}
 }

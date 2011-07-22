@@ -176,6 +176,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	HasUpdate = false; 
 	
+
+
 	WinUtil::init(m_hWnd);
 
 	trayMessage = RegisterWindowMessage(_T("TaskbarCreated"));
@@ -202,13 +204,14 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	// Load images
 	// create command bar window
 	HWND hWndCmdBar = m_CmdBar.Create(m_hWnd, rcDefault, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE);
-
+	
 	m_hMenu = WinUtil::mainMenu;
 
 	hShutdownIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_SHUTDOWN), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
 	// attach menu
 	m_CmdBar.AttachMenu(m_hMenu);
+
 	// load command bar images
 	images.CreateFromImage(IDB_TOOLBAR, 16, 16, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 	m_CmdBar.m_hImageList = images;
@@ -242,7 +245,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(WinUtil::getOsMajor() >= 6)
 		m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());
 
-	// remove old menu
+		// remove old menu
 	SetMenu(NULL);
 
 	tbarcreated = false;

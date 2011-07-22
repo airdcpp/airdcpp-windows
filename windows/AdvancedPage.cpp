@@ -67,6 +67,7 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::	TESTWRITE, ResourceManager::TEST_WRITE }, 
 	{ SettingsManager::USE_ADLS, ResourceManager::SETTINGS_USE_ADLS },
 	{ SettingsManager::USE_ADLS_OWN_LIST, ResourceManager::SETTINGS_USE_ADLS_OWN_LIST },
+	{ SettingsManager::NO_ZERO_BYTE, ResourceManager::SETTINGS_NO_ZERO_BYTE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
