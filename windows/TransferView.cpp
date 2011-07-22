@@ -1083,6 +1083,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 		Upload* u = *j;
 
 		if (u->getPos() == 0) continue;
+		if (u->getUserConnection().getToken().empty()) continue;
 
 		UpdateInfo* ui = new UpdateInfo(u->getHintedUser(), u->getUserConnection().getToken(), false);
 		ui->setActual(u->getStartPos() + u->getActual());
