@@ -246,7 +246,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root) {
 	while((next = ctrlTree.GetChildItem(ht)) != NULL) {
 		ctrlTree.DeleteItem(next);
 	}
-	d->checkDupes();
+	//d->checkDupes();
 	updateTree(d, ht);
 
 	ctrlTree.Expand(treeRoot);
