@@ -56,7 +56,6 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	spin4.SetRange32(1, 100);
 	spin4.Detach();
 		
-		
 		Images.CreateFromImage(WinUtil::getIconPath(_T("flags.bmp")).c_str(), 24, 20, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 		ctrlLanguage.SetImageList(Images);
 		
@@ -209,6 +208,7 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::AUTO_SEARCH_AUTO_MATCH, false);
 			SettingsManager::getInstance()->set(SettingsManager::SEARCH_TIME, 5);
 			SettingsManager::getInstance()->set(SettingsManager::AUTO_SEARCH_LIMIT, 10);
+			SettingsManager::getInstance()->set(SettingsManager::AUTO_FOLLOW, false);
 			//add more here
 			
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_RAR);
@@ -219,6 +219,7 @@ void WizardDlg::write() {
 			SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
 			SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
 			SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
+			SettingsManager::getInstance()->set(SettingsManager::AUTO_FOLLOW, false);
 			//add more here
 			
 			SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PRIVATE);

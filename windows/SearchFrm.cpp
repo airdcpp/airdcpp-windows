@@ -903,10 +903,10 @@ LRESULT SearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		// delete all results which came in paused state
 		for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
 
-		for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
-			delete ctrlHubs.getItemData(i);
-		}
-		ctrlHubs.DeleteAllItems();
+	//	for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
+		//	delete ctrlHubs.getItemData(i);
+		//}
+		ctrlHubs.DestroyAllItems();
 
 		CRect rc;
 		if(!IsIconic()){

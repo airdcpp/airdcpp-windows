@@ -20,7 +20,7 @@ public:
 	}
 
 	~AirSharingPage() {
-//		free(title);
+		free(title);
 	}
 
 	BEGIN_MSG_MAP(AirSharingPage)

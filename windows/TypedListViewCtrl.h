@@ -336,6 +336,15 @@ public:
 		headerMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 	}
 		
+	void DestroyAllItems() {
+		const int count = GetItemCount();
+		for(int i = 0; i < count; i++) {
+			T* p = getItemData(i);
+			delete p;
+		}
+			DeleteAllItems();
+	}
+
 	LRESULT onEraseBkgnd(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 		bHandled = FALSE;
 		if(!leftMargin || !hBrBg) 

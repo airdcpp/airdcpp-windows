@@ -223,7 +223,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 		} else {
 			ctrlList.saveHeaderOrder(columnOrder, columnWidth, columnVisible);
 			frame = NULL;
-			ctrlList.DeleteAllItems();
+			ctrlList.DestroyAllItems();
 	
 			CRect rc;
 			if(!IsIconic()){
@@ -289,10 +289,10 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 		case IDC_TOTAL:
 			FinishedManager::getInstance()->removeAll(upload);
 			
-			ctrlList.DeleteAllItems();
-			for(int i = 0; i < ctrlList.GetItemCount(); ++i) {
-				delete ctrlList.getItemData(i);
-			}
+			ctrlList.DestroyAllItems();
+			//for(int i = 0; i < ctrlList.GetItemCount(); ++i) {
+				//delete ctrlList.getItemData(i);
+			//}
 			
 			totalBytes = 0;
 			totalSpeed = 0;

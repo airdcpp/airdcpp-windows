@@ -236,11 +236,7 @@ public:
 	}
 
 	void clearList() {
-		int j = ctrlList.GetItemCount();
-		for(int i = 0; i < j; i++) {
-			delete ctrlList.getItemData(i);
-		}
-		ctrlList.DeleteAllItems();
+		ctrlList.DestroyAllItems();
 	}
 
 	LRESULT onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

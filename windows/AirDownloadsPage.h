@@ -21,9 +21,9 @@ public:
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}
 
-//	~AirDownloadsPage() {
-//		free(title);
-//	}
+	~AirDownloadsPage() {
+		free(title);
+	}
 
 	BEGIN_MSG_MAP(AirDownloadsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
