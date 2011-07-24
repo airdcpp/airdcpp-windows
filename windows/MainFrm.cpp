@@ -135,7 +135,7 @@ public:
 			HintedUser user(u, Util::emptyString);
 			DirectoryListing dl(user);
 			try {
-				dl.loadFile(*i);
+				dl.loadFile(*i, false);
 				string tmp;
 				tmp.resize(STRING(MATCHED_FILES).size() + 16);
 				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(MATCHED_FILES), QueueManager::getInstance()->matchListing(dl)));
@@ -1669,7 +1669,7 @@ int MainFrame::FileListQueue::run() {
 		if(Util::fileExists(Text::fromT(i->file))) {
 			DirectoryListing* dl = new DirectoryListing(i->user);
 			try {
-				dl->loadFile(Text::fromT(i->file));
+				dl->loadFile(Text::fromT(i->file), false);
 				/*WHY are we matching adlsearch here???
 				if(BOOLSETTING(USE_ADLS)) {
 				ADLSearchManager::getInstance()->matchListing(*dl);

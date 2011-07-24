@@ -462,12 +462,13 @@ private:
 	int run() {
 		try {
 			if(!mFile.empty()) {
-
+				bool checkdupe = true;
 				if(mylist) {
 					// if its own list regenerate it before opening, but only if its dirty
 					mFile = ShareManager::getInstance()->generateOwnList();
+					checkdupe = false;
 				}
-				mWindow->dl->loadFile(mFile);
+				mWindow->dl->loadFile(mFile, checkdupe);
 				
 
 				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {
@@ -479,7 +480,7 @@ private:
 
 				mWindow->refreshTree(mDir);
 			} else {
-				mWindow->refreshTree(Text::toT(Util::toNmdcFile(mWindow->dl->updateXML(mTxt))));
+				mWindow->refreshTree(Text::toT(Util::toNmdcFile(mWindow->dl->updateXML(mTxt, true))));
 			}
 
 			mWindow->PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED);

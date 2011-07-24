@@ -606,7 +606,7 @@ LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), _T("File Lists\0*.xml.bz2\0All Files\0*.*\0"))) {
 		DirectoryListing dirList(dl->getHintedUser());
 		try {
-			dirList.loadFile(Text::fromT(file));
+			dirList.loadFile(Text::fromT(file), true);
 			dl->getRoot()->filterList(dirList);
 			loading = true;
 			refreshTree(Util::emptyStringT);
@@ -1643,7 +1643,6 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*
 
 LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 
-	CRect rc;
 	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
 	switch(cd->nmcd.dwDrawStage) {
 
@@ -1652,10 +1651,9 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 
 	case CDDS_ITEMPREPAINT: {
 			
-		SearchResult* sr = (SearchResult*)cd->nmcd.lItemlParam;
 		ItemInfo *ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
 
-		if(sr != NULL) {
+		if(ii != NULL) {
 			if(!mylist) {
 				//check if the file or dir is a dupe, then use the dupesetting color
 				if ( ( ii->type == ItemInfo::FILE && ii->file->getDupe() ) || 
@@ -1697,7 +1695,6 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 
 LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 
-	CRect rc;
 	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
 	switch(cd->nmcd.dwDrawStage) {
 
@@ -1706,10 +1703,9 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 
 	case CDDS_ITEMPREPAINT: {
 		
-		SearchResult* sr = (SearchResult*)cd->nmcd.lItemlParam;
-		DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(sr);
+		DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(cd->nmcd.lItemlParam);
 
-		if(sr != NULL) {
+		if(dir != NULL) {
 			if(!mylist) {
 				//check if the dir is a dupe, then use the dupesetting color
 				if( dir->getDupe() == DirectoryListing::Directory::DUPE ) {
