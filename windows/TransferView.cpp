@@ -824,7 +824,8 @@ void TransferView::updateItem(int ii, uint32_t updateMask) {
 }
 
 void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
+	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
+	//LogManager::getInstance()->message("Added " + aCqi->getToken());
 
 	if(ui->download) {
 		string aTarget; int64_t aSize; int aFlags;
@@ -841,6 +842,7 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 		}
 	}
 
+	ui->setUser(aCqi->getUser());
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setStatusString(TSTRING(CONNECTING));
 
@@ -848,8 +850,9 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 }
 
 void TransferView::on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
+	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
 	string aTarget;	int64_t aSize; int aFlags = 0;
+	//LogManager::getInstance()->message("Status changed " + aCqi->getToken());
 
 	if(QueueManager::getInstance()->getQueueInfo(aCqi->getUser(), aTarget, aSize, aFlags)) {
 		Transfer::Type type = Transfer::TYPE_FILE;
@@ -870,11 +873,12 @@ void TransferView::on(ConnectionManagerListener::StatusChanged, const Connection
 }
 
 void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) {
-	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload()));
+	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getToken(), aCqi->getDownload()));
 }
 
 void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getUser(), aCqi->getToken(), aCqi->getDownload());
+	//LogManager::getInstance()->message("Failed " + aCqi->getToken());
+	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
 	if(aCqi->getUser().user->isSet(User::OLD_CLIENT)) {
 		ui->setStatusString(TSTRING(SOURCE_TOO_OLD));
 	} 
@@ -919,6 +923,7 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 }
 		
 void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
+	//LogManager::getInstance()->message("Starting2 " + t->getUserConnection().getToken());
 	ui->setPos(t->getPos());
 	ui->setTarget(Text::toT(t->getPath()));
 	ui->setType(t->getType());
@@ -934,7 +939,7 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 }
 
 void TransferView::on(DownloadManagerListener::Requesting, const Download* d) throw() {
-	UpdateInfo* ui = new UpdateInfo(d->getHintedUser(), d->getUserConnection().getToken(), true);
+	UpdateInfo* ui = new UpdateInfo(d->getUserConnection().getToken(), true);
 	
 	starting(ui, d);
 	
@@ -947,7 +952,7 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d) th
 }
 
 void TransferView::on(DownloadManagerListener::Starting, const Download* aDownload) {
-	UpdateInfo* ui = new UpdateInfo(aDownload->getHintedUser(), aDownload->getUserConnection().getToken(), true);
+	UpdateInfo* ui = new UpdateInfo(aDownload->getUserConnection().getToken(), true);
 	
 	ui->setStatus(ItemInfo::STATUS_RUNNING);
 	ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
@@ -960,7 +965,7 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 	for(DownloadList::const_iterator j = dl.begin(); j != dl.end(); ++j) {
 		Download* d = *j;
-		UpdateInfo* ui = new UpdateInfo(d->getHintedUser(), d->getUserConnection().getToken(), true);
+		UpdateInfo* ui = new UpdateInfo(d->getUserConnection().getToken(), true);
 		ui->setStatus(ItemInfo::STATUS_RUNNING);
 		ui->setActual(d->getActual());
 		ui->setPos(d->getPos());
@@ -1026,7 +1031,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 }
 
 void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) {
-	UpdateInfo* ui = new UpdateInfo(aDownload->getHintedUser(), aDownload->getUserConnection().getToken(), true, true);
+	UpdateInfo* ui = new UpdateInfo(aDownload->getUserConnection().getToken(), true, true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
 	ui->setSize(aDownload->getSize());
@@ -1053,7 +1058,8 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 }
 
 void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc, const string& aReason) {
-	UpdateInfo* ui = new UpdateInfo(uc->getHintedUser(), uc->getToken(), true);
+	dcassert(!uc->getToken().empty());
+	UpdateInfo* ui = new UpdateInfo(uc->getToken(), true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
 	ui->setStatusString(Text::toT(aReason));
@@ -1062,8 +1068,10 @@ void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc,
 }
 
 void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
-	UpdateInfo* ui = new UpdateInfo(aUpload->getHintedUser(), aUpload->getUserConnection().getToken(), false);
+	UpdateInfo* ui = new UpdateInfo(aUpload->getUserConnection().getToken(), false);
+	//LogManager::getInstance()->message(aUpload->getToken());
 
+	//LogManager::getInstance()->message("Starting1 " + aUpload->getUserConnection().getToken());
 	starting(ui, aUpload);
 	
 	ui->setStatus(ItemInfo::STATUS_RUNNING);
@@ -1083,9 +1091,13 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 		Upload* u = *j;
 
 		if (u->getPos() == 0) continue;
-		if (u->getUserConnection().getToken().empty()) continue;
+		if (u->getUserConnection().getToken().empty()) {
+			//LogManager::getInstance()->message("Tick, empty token");
+			continue;
+		}
 
-		UpdateInfo* ui = new UpdateInfo(u->getHintedUser(), u->getUserConnection().getToken(), false);
+		//LogManager::getInstance()->message("Tick " + u->getUserConnection().getToken());
+		UpdateInfo* ui = new UpdateInfo(u->getUserConnection().getToken(), false);
 		ui->setActual(u->getStartPos() + u->getActual());
 		ui->setPos(u->getStartPos() + u->getPos());
 		ui->setTimeLeft(u->getSecondsLeft(true)); // we are interested when whole file is finished and not only one chunk
@@ -1132,8 +1144,9 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 }
 
 void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree) {
-	UpdateInfo* ui = new UpdateInfo(aTransfer->getHintedUser(), aTransfer->getUserConnection().getToken(), !isUpload);
+	UpdateInfo* ui = new UpdateInfo(aTransfer->getUserConnection().getToken(), !isUpload);
 
+	//LogManager::getInstance()->message("Complete " + aTransfer->getUserConnection().getToken());
 	ui->setStatus(ItemInfo::STATUS_WAITING);	
 	ui->setPos(0);
 	ui->setStatusString(isUpload ? TSTRING(UPLOAD_FINISHED_IDLE) : TSTRING(DOWNLOAD_FINISHED_IDLE));
@@ -1406,7 +1419,7 @@ void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) 
 
 void TransferView::on(QueueManagerListener::Finished, const QueueItem* qi, const string&, const Download* download) throw() {
 	// update download item
-	UpdateInfo* ui = new UpdateInfo(download->getHintedUser(), download->getUserConnection().getToken(), true);
+	UpdateInfo* ui = new UpdateInfo(download->getUserConnection().getToken(), true);
 
 	ui->setStatus(ItemInfo::STATUS_WAITING);	
 	ui->setPos(0);

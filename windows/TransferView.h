@@ -272,8 +272,8 @@ private:
 
 		bool operator==(const ItemInfo& ii) const { return download == ii.download && user == ii.user; }
 
-		UpdateInfo(const HintedUser& aUser, string aToken, bool isDownload, bool isTransferFailed = false) : 
-			updateMask(0), user(aUser), queueItem(NULL), download(isDownload), token(aToken), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
+		UpdateInfo(string aToken, bool isDownload, bool isTransferFailed = false) : 
+			updateMask(0), user(HintedUser(NULL, Util::emptyString)), queueItem(NULL), download(isDownload), token(aToken), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
 		{ }
 		
 		UpdateInfo(QueueItem* qi, bool isDownload, bool isTransferFailed = false) : 
@@ -286,6 +286,10 @@ private:
 
 		string token;
 		HintedUser user;
+		void setUser(const HintedUser aUser) {
+			user = aUser;
+		}
+		//const HintedUser getUser() const { return HintedUser(user); }
 
 		bool download;
 		bool transferFailed;
