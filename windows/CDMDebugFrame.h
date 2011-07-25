@@ -160,13 +160,13 @@ private:
 	tstring sFilterIp;
 	bool closed;
 	
-	void on(DebugManagerListener::DebugDetection, const string& aLine) throw() {
+	void on(DebugManagerListener::DebugDetection, const string& aLine) noexcept {
 		if(!showDetection)
 			return;
 
 		addCmd(aLine);
 	}
-	void on(DebugManagerListener::DebugCommand, const string& aLine, int typeDir, const string& ip) throw() {
+	void on(DebugManagerListener::DebugCommand, const string& aLine, int typeDir, const string& ip) noexcept {
 			switch(typeDir) {
 				case DebugManager::HUB_IN:
 					if(!showHubCommands)

@@ -566,7 +566,7 @@ LRESULT FavoriteHubsFrame::onManageGroups(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	return 0;
 }
 
-void FavoriteHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void FavoriteHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlHubs.GetBkColor() != WinUtil::bgColor) {
 		ctrlHubs.SetBkColor(WinUtil::bgColor);

@@ -108,11 +108,11 @@ private:
 
 	AboutDlg(const AboutDlg&) { dcassert(0); }
 	
-	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) throw() {
+	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept {
 		downBuf.append((char*)buf, len);
 	}
 
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool /*fromCoral*/) throw() {
+	void on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool /*fromCoral*/) noexcept {
 		if(!downBuf.empty()) {
 			try {
 				SimpleXML xml;
@@ -129,7 +129,7 @@ private:
 		conn->removeListener(this);
 	}
 
-	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) throw() {
+	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) noexcept {
 		tstring* x = new tstring(Text::toT(aLine));
 		PostMessage(WM_VERSIONDATA, (WPARAM) x);
 		conn->removeListener(this);

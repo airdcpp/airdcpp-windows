@@ -46,8 +46,8 @@ private:
 	void save(SimpleXML& aXml);
 	GETSET(UserPtr, user, User);
 	// SettingsManagerListener
-	virtual void on(SettingsManagerListener::Load, SimpleXML& xml) throw();
-	virtual void on(SettingsManagerListener::Save, SimpleXML& xml) throw();
+	virtual void on(SettingsManagerListener::Load, SimpleXML& xml) noexcept;
+	virtual void on(SettingsManagerListener::Save, SimpleXML& xml) noexcept;
 
 	// contains the ignored nicks and patterns 
 	TStringHash ignoredUsers;

@@ -96,8 +96,10 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)compiled\$(Platform)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\airsvn\trunk\WTL;E:\projects\includes\wtl8\include;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -108,7 +110,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\zlib;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -152,7 +154,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -201,7 +203,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\zlib;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -268,7 +270,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -464,6 +466,8 @@
     <ClCompile Include="windows\MagnetDlg.cpp" />
     <ClCompile Include="windows\main.cpp" />
     <ClCompile Include="windows\MainFrm.cpp" />
+    <ClCompile Include="windows\Mapper_MiniUPnPc.cpp" />
+    <ClCompile Include="windows\Mapper_WinUPnP.cpp" />
     <ClCompile Include="windows\NetworkPage.cpp" />
     <ClCompile Include="windows\NotepadFrame.cpp" />
     <ClCompile Include="windows\OMenu.cpp" />
@@ -500,8 +504,6 @@
     <ClCompile Include="windows\UCPage.cpp" />
     <ClCompile Include="windows\UpdateDlg.cpp" />
     <ClCompile Include="windows\UploadPage.cpp" />
-    <ClCompile Include="windows\UPnP_COM.cpp" />
-    <ClCompile Include="windows\UPnP_MiniUPnPc.cpp" />
     <ClCompile Include="windows\UserListColours.cpp" />
     <ClCompile Include="windows\UsersFrame.cpp" />
     <ClCompile Include="windows\WaitingUsersFrame.cpp" />
@@ -561,6 +563,8 @@
     <ClInclude Include="windows\LogPage.h" />
     <ClInclude Include="windows\MagnetDlg.h" />
     <ClInclude Include="windows\MainFrm.h" />
+    <ClInclude Include="windows\Mapper_MiniUPnPc.h" />
+    <ClInclude Include="windows\Mapper_WinUPnP.h" />
     <ClInclude Include="windows\memdc.h" />
     <ClInclude Include="windows\NetworkPage.h" />
     <ClInclude Include="windows\NotepadFrame.h" />
@@ -601,8 +605,6 @@
     <ClInclude Include="windows\UCPage.h" />
     <ClInclude Include="windows\UpdateDlg.h" />
     <ClInclude Include="windows\UploadPage.h" />
-    <ClInclude Include="windows\UPnP_COM.h" />
-    <ClInclude Include="windows\UPnP_MiniUPnPc.h" />
     <ClInclude Include="windows\UserListColours.h" />
     <ClInclude Include="windows\UsersFrame.h" />
     <ClInclude Include="windows\WaitingUsersFrame.h" />

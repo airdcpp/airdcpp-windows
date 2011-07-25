@@ -365,9 +365,6 @@
     <ClCompile Include="windows\InputBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\iTunesCOMInterface_i.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\LineDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -476,9 +473,6 @@
     <ClCompile Include="windows\UploadPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\UPnP_COM.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\UserListColours.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -500,10 +494,16 @@
     <ClCompile Include="windows\EmoticonsManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\UPnP_MiniUPnPc.cpp">
+    <ClCompile Include="windows\Wizard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\Wizard.cpp">
+    <ClCompile Include="windows\iTunesCOMInterface_i.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\Mapper_MiniUPnPc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\Mapper_WinUPnP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -632,9 +632,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\InputBox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\iTunesCOMInterface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\LineDlg.h">
@@ -772,9 +769,6 @@
     <ClInclude Include="windows\UploadPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\UPnP_COM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\UserListColours.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -799,13 +793,19 @@
     <ClInclude Include="windows\EmoticonsManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\UPnP_MiniUPnPc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\Wizard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\iTunesCOMInterface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\Mapper_MiniUPnPc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\Mapper_WinUPnP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

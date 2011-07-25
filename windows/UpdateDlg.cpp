@@ -169,14 +169,14 @@ LRESULT UpdateDlg::OnLangDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 
-void UpdateDlg::on(HttpConnectionListener::Failed, HttpConnection* /*conn*/, const string& aLine) throw() {
+void UpdateDlg::on(HttpConnectionListener::Failed, HttpConnection* /*conn*/, const string& aLine) noexcept {
 	PostMessage(WM_SPEAKER, UPDATE_STATUS, (LPARAM)new tstring(TSTRING(CONNECTION_ERROR) + _T(": ") + Text::toT(aLine) + _T("!")));
 	PostMessage(WM_SPEAKER, UPDATE_CONTENT, (LPARAM)new tstring(_T("Update Download Failed...")));
 	if(update)
 		ctrlDownload.EnableWindow(TRUE);
 }
 
-void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, string const& /*aLine*/, bool /*fromCoral*/) throw() {
+void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, string const& /*aLine*/, bool /*fromCoral*/) noexcept {
 	//hc->removeListener(this);
 	PostMessage(WM_SPEAKER, UPDATE_STATUS, (LPARAM)new tstring(TSTRING(DATA_RETRIEVED) + _T("!")));
 			string sText;
@@ -281,7 +281,7 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 			
 }
 
-void UpdateDlg::on(HttpConnectionListener::Data, HttpConnection* conn, const uint8_t* buf, size_t len) throw() {
+void UpdateDlg::on(HttpConnectionListener::Data, HttpConnection* conn, const uint8_t* buf, size_t len) noexcept {
 		//Todo Fix Exceptions
 		
 	

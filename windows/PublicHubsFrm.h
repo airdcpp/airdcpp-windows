@@ -180,13 +180,13 @@ private:
 	bool parseFilter(FilterModes& mode, double& size);
 	bool matchFilter(const HubEntry& entry, const int& sel, bool doSizeCompare, const FilterModes& mode, const double& size);
 
-	void on(DownloadStarting, const string& l) throw();
-	void on(DownloadFailed, const string& l) throw();
-	void on(DownloadFinished, const string& l, bool /*fromCoral*/) throw();
-	void on(LoadedFromCache, const string& l, const string& /*d*/) throw();
-	void on(Corrupted, const string& l) throw();
+	void on(DownloadStarting, const string& l) noexcept;
+	void on(DownloadFailed, const string& l) noexcept;
+	void on(DownloadFinished, const string& l, bool /*fromCoral*/) noexcept;
+	void on(LoadedFromCache, const string& l, const string& /*d*/) noexcept;
+	void on(Corrupted, const string& l) noexcept;
 
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 };
 

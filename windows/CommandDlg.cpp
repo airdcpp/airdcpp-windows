@@ -104,7 +104,7 @@ LRESULT CommandDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
 	if(ctx & UserCommand::CONTEXT_HUB)
 		ctrlHubMenu.SetCheck(BST_CHECKED);
-	if(ctx & UserCommand::CONTEXT_CHAT)
+	if(ctx & UserCommand::CONTEXT_USER)
 		ctrlUserMenu.SetCheck(BST_CHECKED);
 	if(ctx & UserCommand::CONTEXT_SEARCH)
 		ctrlSearchMenu.SetCheck(BST_CHECKED);
@@ -178,7 +178,7 @@ void CommandDlg::updateContext() {
 	if(ctrlHubMenu.GetCheck() & BST_CHECKED)
 		ctx |= UserCommand::CONTEXT_HUB;
 	if(ctrlUserMenu.GetCheck() & BST_CHECKED)
-		ctx |= UserCommand::CONTEXT_CHAT;
+		ctx |= UserCommand::CONTEXT_USER;
 	if(ctrlSearchMenu.GetCheck() & BST_CHECKED)
 		ctx |= UserCommand::CONTEXT_SEARCH;
 	if(ctrlFilelistMenu.GetCheck() & BST_CHECKED)

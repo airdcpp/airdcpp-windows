@@ -29,6 +29,7 @@
 
 #include "../client/FavoriteManager.h"
 #include "../client/File.h"
+#include "../client/OnlineUser.h"
 
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::FAVORITE_USERS, IDC_FAVUSERS>,
 	private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, private SettingsManagerListener {
@@ -133,11 +134,11 @@ private:
 	static int columnIndexes[COLUMN_LAST];
 
 	// FavoriteManagerListener
-	void on(UserAdded, const FavoriteUser& aUser) throw() { addUser(aUser); }
-	void on(UserRemoved, const FavoriteUser& aUser) throw() { removeUser(aUser); }
-	void on(StatusChanged, const UserPtr& aUser) throw() { PostMessage(WM_SPEAKER, (WPARAM)USER_UPDATED, (LPARAM)new Identity(aUser, 0)); }
+	void on(UserAdded, const FavoriteUser& aUser) noexcept { addUser(aUser); }
+	void on(UserRemoved, const FavoriteUser& aUser) noexcept { removeUser(aUser); }
+	void on(StatusChanged, const UserPtr& aUser) noexcept { PostMessage(WM_SPEAKER, (WPARAM)USER_UPDATED, (LPARAM)new Identity(aUser, 0)); }
 
-	void on(SettingsManagerListener::Save, SimpleXML&s /*xml*/) throw();
+	void on(SettingsManagerListener::Save, SimpleXML&s /*xml*/) noexcept;
 
 	void addUser(const FavoriteUser& aUser);
 	void updateUser(const UserPtr& aUser);
@@ -148,5 +149,5 @@ private:
 
 /**
  * @file
- * $Id: UsersFrame.h 500 2010-06-25 22:08:18Z bigmuscle $
+ * $Id: UsersFrame.h 568 2011-07-24 18:28:43Z bigmuscle $
  */

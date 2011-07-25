@@ -231,23 +231,23 @@ private:
 	TStringList::size_type curCommandPosition;
 	
 	// ClientManagerListener
-	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) throw() {
+	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
 		if(aUser.getUser() == replyTo.user) {
 			ctrlClient.setClient(const_cast<Client*>(&aUser.getClient()));
 			PostMessage(WM_SPEAKER, USER_UPDATED);
 		}
 	}
-	void on(ClientManagerListener::UserConnected, const UserPtr& aUser) throw() {
+	void on(ClientManagerListener::UserConnected, const UserPtr& aUser) noexcept {
 		if(aUser == replyTo.user)
 			PostMessage(WM_SPEAKER, USER_UPDATED);
 	}
-	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) throw() {
+	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept {
 		if(aUser == replyTo.user) {
 			ctrlClient.setClient(NULL);
 			PostMessage(WM_SPEAKER, USER_UPDATED);
 		}
 	}
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 
 #endif // !defined(PRIVATE_FRAME_H)

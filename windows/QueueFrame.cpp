@@ -554,16 +554,16 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	tasks.get(t);
 	spoken = false;
 
-	for(TaskQueue::Iter ti = t.begin(); ti != t.end(); ++ti) {
+	for(auto ti = t.begin(); ti != t.end(); ++ti) {
 		if(ti->first == ADD_ITEM) {
-			auto_ptr<QueueItemInfoTask> iit(static_cast<QueueItemInfoTask*>(ti->second));
+			auto &iit = static_cast<QueueItemInfoTask&>(*ti->second);
 			
-			dcassert(ctrlQueue.findItem(iit->ii) == -1);
-			addQueueItem(iit->ii, false);
+			dcassert(ctrlQueue.findItem(iit.ii) == -1);
+			addQueueItem(iit.ii, false);
 			updateStatus();
 		} else if(ti->first == REMOVE_ITEM) {
-			auto_ptr<StringTask> target(static_cast<StringTask*>(ti->second));
-			const QueueItemInfo* ii = getItemInfo(target->str);
+			auto &target = static_cast<StringTask&>(*ti->second);
+			const QueueItemInfo* ii = getItemInfo(target.str);
 			if(!ii) {
 				dcassert(ii);
 				continue;
@@ -604,8 +604,8 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			}
 			dirty = true;
 		} else if(ti->first == UPDATE_ITEM) {
-			auto_ptr<UpdateTask> ui(reinterpret_cast<UpdateTask*>(ti->second));
-            QueueItemInfo* ii = getItemInfo(ui->target);
+			auto &ui = static_cast<UpdateTask&>(*ti->second);
+            QueueItemInfo* ii = getItemInfo(ui.target);
 			if(!ii)
 				continue;
 
@@ -622,8 +622,8 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 				}
 			}
 		} else if(ti->first == UPDATE_STATUS) {
-			auto_ptr<StringTask> status(static_cast<StringTask*>(ti->second));
-			ctrlStatus.SetText(1, Text::toT(status->str).c_str());
+			auto &status = static_cast<StringTask&>(*ti->second);
+			ctrlStatus.SetText(1, Text::toT(status.str).c_str());
 		}
 	}
 
@@ -632,7 +632,7 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 void QueueFrame::removeSelected() {
 	if(!BOOLSETTING(CONFIRM_DELETE) || MessageBox(CTSTRING(REALLY_REMOVE), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
-	ctrlQueue.forEachSelected(&QueueItemInfo::remove);
+		ctrlQueue.forEachSelected(&QueueItemInfo::remove);
 }
 	
 void QueueFrame::removeSelectedDir() { 
@@ -1585,7 +1585,7 @@ LRESULT QueueFrame::onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 			}
 return 0; 
 }
-void QueueFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void QueueFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlQueue.GetBkColor() != WinUtil::bgColor) {
 		ctrlQueue.SetBkColor(WinUtil::bgColor);
@@ -1612,31 +1612,31 @@ void QueueFrame::onRechecked(const string& target, const string& message) {
 	speak(UPDATE_STATUS, new StringTask(&buf[0]));
 }
 
-void QueueFrame::on(QueueManagerListener::RecheckStarted, const string& target) throw() {
+void QueueFrame::on(QueueManagerListener::RecheckStarted, const string& target) noexcept {
 	onRechecked(target, STRING(STARTED));
 }
 
-void QueueFrame::on(QueueManagerListener::RecheckNoFile, const string& target) throw() {
+void QueueFrame::on(QueueManagerListener::RecheckNoFile, const string& target) noexcept {
 	onRechecked(target, STRING(UNFINISHED_FILE_NOT_FOUND));
 }
 
-void QueueFrame::on(QueueManagerListener::RecheckFileTooSmall, const string& target) throw() {
+void QueueFrame::on(QueueManagerListener::RecheckFileTooSmall, const string& target) noexcept {
 	onRechecked(target, STRING(UNFINISHED_FILE_TOO_SMALL));
 }
 
-void QueueFrame::on(QueueManagerListener::RecheckDownloadsRunning, const string& target) throw() {
+void QueueFrame::on(QueueManagerListener::RecheckDownloadsRunning, const string& target) noexcept {
 	onRechecked(target, STRING(DOWNLOADS_RUNNING));
 }
 
-void QueueFrame::on(QueueManagerListener::RecheckNoTree, const string& target) throw() {
+void QueueFrame::on(QueueManagerListener::RecheckNoTree, const string& target) noexcept {
 	onRechecked(target, STRING(NO_FULL_TREE));
 }
 
-void QueueFrame::on(QueueManagerListener::RecheckAlreadyFinished, const string& target) throw() {
+void QueueFrame::on(QueueManagerListener::RecheckAlreadyFinished, const string& target) noexcept {
 	onRechecked(target, STRING(FILE_ALREADY_FINISHED));
 }
 
-void QueueFrame::on(QueueManagerListener::RecheckDone, const string& target) throw() {
+void QueueFrame::on(QueueManagerListener::RecheckDone, const string& target) noexcept {
 	onRechecked(target, STRING(DONE));
 }
 LRESULT QueueFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

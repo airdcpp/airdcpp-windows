@@ -122,7 +122,7 @@ LRESULT NotepadFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 	return 0;
 }
 
-void NotepadFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void NotepadFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
 

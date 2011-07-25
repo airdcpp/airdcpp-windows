@@ -574,7 +574,7 @@ void SearchFrame::onEnter() {
 
 }
 
-void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) throw() {
+void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept {
 	// Check that this is really a relevant search result...
 	{
 		Lock l(cs);
@@ -634,7 +634,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 	PostMessage(WM_SPEAKER, ADD_RESULT, (LPARAM)i);
 }
 
-void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) throw() {
+void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	Lock l(cs);
 	
 	if(waiting) {
@@ -1956,7 +1956,7 @@ LRESULT SearchFrame::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	return 0;
 }
 
-void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlResults.GetBkColor() != WinUtil::bgColor) {
 		ctrlResults.SetBkColor(WinUtil::bgColor);

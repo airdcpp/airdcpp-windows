@@ -17,9 +17,6 @@
     <ClCompile Include="MakeDefs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\client\memcpy_amd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\client\SimpleXML.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

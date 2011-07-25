@@ -351,7 +351,7 @@ private:
 	 * something, they're not correctly processed anyway...thanks windows.
 	 */
 	void speak(Tasks t, Task* p) {
-        tasks.add(static_cast<uint8_t>(t), p);
+        tasks.add(static_cast<uint8_t>(t), unique_ptr<Task>(p));
 		if(!spoken) {
 			spoken = true;
 			PostMessage(WM_SPEAKER);
@@ -383,27 +383,27 @@ private:
 	
 	const string& getDir(HTREEITEM ht) const { dcassert(ht != NULL); return *reinterpret_cast<string*>(ctrlDirs.GetItemData(ht)); }
 
-	void on(QueueManagerListener::Added, QueueItem* aQI) throw();
-	void on(QueueManagerListener::Moved, const QueueItem* aQI, const string& oldTarget) throw();
-	void on(QueueManagerListener::Removed, const QueueItem* aQI) throw();
-	void on(QueueManagerListener::SourcesUpdated, const QueueItem* aQI) throw();
-	void on(QueueManagerListener::StatusUpdated, const QueueItem* aQI) throw() { on(QueueManagerListener::SourcesUpdated(), aQI); }
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(QueueManagerListener::Added, QueueItem* aQI) noexcept;
+	void on(QueueManagerListener::Moved, const QueueItem* aQI, const string& oldTarget) noexcept;
+	void on(QueueManagerListener::Removed, const QueueItem* aQI) noexcept;
+	void on(QueueManagerListener::SourcesUpdated, const QueueItem* aQI) noexcept;
+	void on(QueueManagerListener::StatusUpdated, const QueueItem* aQI) noexcept { on(QueueManagerListener::SourcesUpdated(), aQI); }
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 	
 	void onRechecked(const string& target, const string& message);
 	
-	void on(QueueManagerListener::RecheckStarted, const string& target) throw();
-	void on(QueueManagerListener::RecheckNoFile, const string& target) throw();
-	void on(QueueManagerListener::RecheckFileTooSmall, const string& target) throw();
-	void on(QueueManagerListener::RecheckDownloadsRunning, const string& target) throw();
-	void on(QueueManagerListener::RecheckNoTree, const string& target) throw();
-	void on(QueueManagerListener::RecheckAlreadyFinished, const string& target) throw();
-	void on(QueueManagerListener::RecheckDone, const string& target) throw();
+	void on(QueueManagerListener::RecheckStarted, const string& target) noexcept;
+	void on(QueueManagerListener::RecheckNoFile, const string& target) noexcept;
+	void on(QueueManagerListener::RecheckFileTooSmall, const string& target) noexcept;
+	void on(QueueManagerListener::RecheckDownloadsRunning, const string& target) noexcept;
+	void on(QueueManagerListener::RecheckNoTree, const string& target) noexcept;
+	void on(QueueManagerListener::RecheckAlreadyFinished, const string& target) noexcept;
+	void on(QueueManagerListener::RecheckDone, const string& target) noexcept;
 };
 
 #endif // !defined(QUEUE_FRAME_H)
 
 /**
  * @file
- * $Id: QueueFrame.h 500 2010-06-25 22:08:18Z bigmuscle $
+ * $Id: QueueFrame.h 568 2011-07-24 18:28:43Z bigmuscle $
  */

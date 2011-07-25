@@ -236,7 +236,7 @@ void WaitingUsersFrame::LoadAll() {
 	ctrlQueued.SetRedraw(FALSE);	
 	
 	// Load queue
-	UploadQueueItem::SlotQueue users = UploadManager::getInstance()->getWaitingUsers();
+	UploadQueueItem::SlotQueue users = UploadManager::getInstance()->getUploadQueue();
 	for(UploadQueueItem::SlotQueue::const_iterator uit = users.begin(); uit != users.end(); ++uit) {
 		//ctrlQueued.InsertItem(TVIF_PARAM | TVIF_TEXT, (Text::toT(uit->first->getFirstNick()) + _T(" - ") + WinUtil::getHubNames(uit->first).first).c_str(), 
 		//	0, 0, 0, 0, (LPARAM)(new UserItem(uit->first)), rootItem, TVI_LAST);
@@ -284,7 +284,7 @@ LRESULT WaitingUsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOO
 		ctrlList.DeleteAllItems();
 		UserItem *u = reinterpret_cast<UserItem *>(ctrlQueued.GetItemData(userNode));
 		if(u) {
-			UploadQueueItem::SlotQueue users = UploadManager::getInstance()->getWaitingUsers();
+			UploadQueueItem::SlotQueue users = UploadManager::getInstance()->getUploadQueue();
 			UploadQueueItem::SlotQueue::const_iterator it = find_if(users.begin(), users.end(), CompareFirst<UserPtr, UploadQueueItem::List>(u->u));
 			if(it != users.end()) {
 				ctrlList.SetRedraw(FALSE);
@@ -424,7 +424,7 @@ LRESULT WaitingUsersFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 	return 0;
 }
 
-void WaitingUsersFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void WaitingUsersFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlList.GetBkColor() != WinUtil::bgColor) {
 		ctrlList.SetBkColor(WinUtil::bgColor);

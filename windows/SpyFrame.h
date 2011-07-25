@@ -107,11 +107,11 @@ private:
 	bool ignoreTth;
 	
   	// ClientManagerListener
-	void on(ClientManagerListener::IncomingSearch, const string& s) throw();
+	void on(ClientManagerListener::IncomingSearch, const string& s) noexcept;
 	
 	// TimerManagerListener
-	void on(TimerManagerListener::Second, uint64_t) throw();
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(TimerManagerListener::Second, uint64_t) noexcept;
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 
 #endif // !defined(SPY_FRAME_H)

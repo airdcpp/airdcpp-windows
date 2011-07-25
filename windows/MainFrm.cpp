@@ -65,7 +65,7 @@
 #include "../client/LogManager.h"
 #include "../client/Thread.h"
 #include "../client/FavoriteManager.h"
-#include "../client/UPnPManager.h"
+#include "../client/MappingManager.h"
 #include "../client/SFVReader.h"
 
 
@@ -343,7 +343,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	} catch (const FileException) {	}
 
 	try {
-		ConnectivityManager::getInstance()->setup(true, SettingsManager::INCOMING_DIRECT);
+		ConnectivityManager::getInstance()->setup(true);
 	} catch (const Exception& e) {
 		LogManager::getInstance()->message(e.getError());
 	}
@@ -801,6 +801,8 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	unsigned short lastTLS = static_cast<unsigned short>(SETTING(TLS_PORT));
 
 	int lastConn = SETTING(INCOMING_CONNECTIONS);
+	string lastMapper = SETTING(MAPPER);
+	string lastBind = SETTING(BIND_ADDRESS);
 
 	bool lastSortFavUsersFirst = BOOLSETTING(SORT_FAVUSERS_FIRST);
 
@@ -812,7 +814,7 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		}
 
 		try {
-			ConnectivityManager::getInstance()->setup(SETTING(INCOMING_CONNECTIONS) != lastConn || SETTING(TCP_PORT) != lastTCP || SETTING(UDP_PORT) != lastUDP || SETTING(TLS_PORT) != lastTLS, lastConn );
+			ConnectivityManager::getInstance()->setup(SETTING(INCOMING_CONNECTIONS) != lastConn || SETTING(TCP_PORT) != lastTCP || SETTING(UDP_PORT) != lastUDP || SETTING(TLS_PORT) != lastTLS || SETTING(MAPPER) != lastMapper || SETTING(BIND_ADDRESS) != lastBind );
 		} catch (const Exception& e) {
 			LogManager::getInstance()->message(e.getError());
 		}
@@ -856,7 +858,7 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	return 0;
 }
 
-void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, const string&, bool /*fromCoral*/) throw() {
+void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, const string&, bool /*fromCoral*/) noexcept {
 	try {
 		SimpleXML xml;
 		xml.fromXML(versionInfo);
@@ -1516,7 +1518,7 @@ LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	return 0;
 }
 
-void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) throw() {
+void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		if(aTick == lastUpdate)	// FIXME: temp fix for new TimerManager
 		return;
 
@@ -1559,19 +1561,19 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) throw() {
 			
 }
 
-void MainFrame::on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) throw() {
+void MainFrame::on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept {
 	versionInfo += string((const char*)buf, len);
 }
 
-void MainFrame::on(HttpConnectionListener::Retried, HttpConnection* /*conn*/, const bool Connected) throw() {
+void MainFrame::on(HttpConnectionListener::Retried, HttpConnection* /*conn*/, const bool Connected) noexcept {
  	if (Connected)
  		versionInfo = Util::emptyString;
 }
-void MainFrame::on(PartialList, const HintedUser& aUser, const string& text) throw() {
+void MainFrame::on(PartialList, const HintedUser& aUser, const string& text) noexcept {
 	PostMessage(WM_SPEAKER, BROWSE_LISTING, (LPARAM)new DirectoryBrowseInfo(aUser, text));
 }
 
-void MainFrame::on(QueueManagerListener::Finished, const QueueItem* qi, const string& dir, const Download* download) throw() {
+void MainFrame::on(QueueManagerListener::Finished, const QueueItem* qi, const string& dir, const Download* download) noexcept {
 	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW)) {
 		if(qi->isSet(QueueItem::FLAG_USER_LIST)) {
 			// This is a file listing, show it...

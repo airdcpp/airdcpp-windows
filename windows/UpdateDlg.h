@@ -105,9 +105,9 @@ private:
 
 	CProgressBarCtrl progress;
 
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) throw();
-	void on(HttpConnectionListener::Data, HttpConnection* conn, const uint8_t* buf, size_t len) throw();	
-	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) throw();
+	void on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) noexcept;
+	void on(HttpConnectionListener::Data, HttpConnection* conn, const uint8_t* buf, size_t len) noexcept;	
+	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) noexcept;
 
 };
 

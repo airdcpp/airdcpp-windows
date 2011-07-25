@@ -603,7 +603,7 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	ctrlList.SetCheckState(index, search.isActive);
 }
 
-void ADLSearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void ADLSearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlList.GetBkColor() != WinUtil::bgColor) {
 		ctrlList.SetBkColor(WinUtil::bgColor);

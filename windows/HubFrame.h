@@ -400,7 +400,7 @@ private:
 
 	tstring currentNeedle;		// search in chat window
 	long currentNeedlePos;		// search in chat window
-	void findText(tstring const& needle) throw();
+	void findText(tstring const& needle) noexcept;
 	tstring findTextPopup();
 
 	CFindReplaceDialog findDlg;
@@ -481,38 +481,37 @@ private:
 	void updateStatusBar() { if(m_hWnd) speak(STATS); }
 
 	// FavoriteManagerListener
-	void on(FavoriteManagerListener::UserAdded, const FavoriteUser& /*aUser*/) throw();
-	void on(FavoriteManagerListener::UserRemoved, const FavoriteUser& /*aUser*/) throw();
+	void on(FavoriteManagerListener::UserAdded, const FavoriteUser& /*aUser*/) noexcept;
+	void on(FavoriteManagerListener::UserRemoved, const FavoriteUser& /*aUser*/) noexcept;
 	void resortForFavsFirst(bool justDoIt = false);
 
 	// TimerManagerListener
-	void on(TimerManagerListener::Second, uint64_t /*aTick*/) throw();
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(TimerManagerListener::Second, uint64_t /*aTick*/) noexcept;
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	// ClientListener
-	void on(Connecting, const Client*) throw();
-	void on(Connected, const Client*) throw();
-	void on(UserUpdated, const Client*, const OnlineUserPtr&) throw();
-	void on(UsersUpdated, const Client*, const OnlineUserList&) throw();
-	void on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr&) throw();
-	void on(Redirect, const Client*, const string&) throw();
-	void on(Failed, const Client*, const string&) throw();
-	void on(GetPassword, const Client*) throw();
-	void on(HubUpdated, const Client*) throw();
-	void on(Message, const Client*, const ChatMessage&) throw();
-	void on(StatusMessage, const Client*, const string&, int = ClientListener::FLAG_NORMAL) throw();
-	void on(NickTaken, const Client*) throw();
-	void on(SearchFlood, const Client*, const string&) throw();	
-	void on(HubTopic, const Client*, const string&) throw();
-	void on(AddLine, const Client*, const string&) throw();
+	void on(Connecting, const Client*) noexcept;
+	void on(Connected, const Client*) noexcept;
+	void on(UserUpdated, const Client*, const OnlineUserPtr&) noexcept;
+	void on(UsersUpdated, const Client*, const OnlineUserList&) noexcept;
+	void on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr&) noexcept;
+	void on(Redirect, const Client*, const string&) noexcept;
+	void on(Failed, const Client*, const string&) noexcept;
+	void on(GetPassword, const Client*) noexcept;
+	void on(HubUpdated, const Client*) noexcept;
+	void on(Message, const Client*, const ChatMessage&) noexcept;
+	void on(StatusMessage, const Client*, const string&, int = ClientListener::FLAG_NORMAL) noexcept;
+	void on(NickTaken, const Client*) noexcept;
+	void on(SearchFlood, const Client*, const string&) noexcept;	
+	void on(HubTopic, const Client*, const string&) noexcept;
+	void on(AddLine, const Client*, const string&) noexcept;
 
 	void speak(Tasks s) { tasks.add(static_cast<uint8_t>(s), 0); PostMessage(WM_SPEAKER); }
-	void speak(Tasks s, const string& msg, bool inChat = true) { tasks.add(static_cast<uint8_t>(s), new StatusTask(msg, inChat)); PostMessage(WM_SPEAKER); }
-	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), new UserTask(u)); updateUsers = true; }
-	void speak(Tasks s, const Identity& from, const string& line) { tasks.add(static_cast<uint8_t>(s), new MessageTask(from, line)); PostMessage(WM_SPEAKER); }
-	void speak(Tasks s, const OnlineUserPtr& from, const OnlineUserPtr& to, const OnlineUserPtr& replyTo, const string& line) { tasks.add(static_cast<uint8_t>(s), new MessageTask(from->getIdentity(), to, replyTo, line)); PostMessage(WM_SPEAKER); }
+	void speak(Tasks s, const string& msg, bool inChat = true) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new StatusTask(msg, inChat))); PostMessage(WM_SPEAKER); }
+	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
+	void speak(Tasks s, const Identity& from, const string& line) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new MessageTask(from, line))); PostMessage(WM_SPEAKER); }
+	void speak(Tasks s, const OnlineUserPtr& from, const OnlineUserPtr& to, const OnlineUserPtr& replyTo, const string& line) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new MessageTask(from->getIdentity(), to, replyTo, line))); PostMessage(WM_SPEAKER); }
 	void openLinksInTopic();
-
 };
 
 #endif // !defined(HUB_FRAME_H)

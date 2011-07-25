@@ -218,13 +218,13 @@ private:
 	void updateStatus();
 
 	// UploadManagerListener
-	void on(UploadManagerListener::QueueAdd, UploadQueueItem* aUQI) throw() { PostMessage(WM_SPEAKER, ADD_ITEM, (LPARAM)aUQI); }
-	void on(UploadManagerListener::QueueRemove, const UserPtr& aUser) throw() { PostMessage(WM_SPEAKER, REMOVE, (LPARAM)new UserItem(aUser));	}
-	void on(UploadManagerListener::QueueItemRemove, UploadQueueItem* aUQI) throw() { aUQI->inc(); PostMessage(WM_SPEAKER, REMOVE_ITEM, (LPARAM)aUQI); }
-	void on(UploadManagerListener::QueueUpdate) throw() { PostMessage(WM_SPEAKER, UPDATE_ITEMS, NULL); }
+	void on(UploadManagerListener::QueueAdd, UploadQueueItem* aUQI) noexcept { PostMessage(WM_SPEAKER, ADD_ITEM, (LPARAM)aUQI); }
+	void on(UploadManagerListener::QueueRemove, const UserPtr& aUser) noexcept { PostMessage(WM_SPEAKER, REMOVE, (LPARAM)new UserItem(aUser));	}
+	void on(UploadManagerListener::QueueItemRemove, UploadQueueItem* aUQI) noexcept { aUQI->inc(); PostMessage(WM_SPEAKER, REMOVE_ITEM, (LPARAM)aUQI); }
+	void on(UploadManagerListener::QueueUpdate) noexcept { PostMessage(WM_SPEAKER, UPDATE_ITEMS, NULL); }
 
 	// SettingsManagerListener
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 
 #endif

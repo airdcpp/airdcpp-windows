@@ -268,7 +268,6 @@
   <ItemGroup>
     <ClCompile Include="..\client\File.cpp" />
     <ClCompile Include="MakeDefs.cpp" />
-    <ClCompile Include="..\client\memcpy_amd.cpp" />
     <ClCompile Include="..\client\SimpleXML.cpp" />
     <ClCompile Include="..\client\SimpleXMLReader.cpp" />
     <ClCompile Include="StdAfx.cpp" />

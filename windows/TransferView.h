@@ -326,7 +326,7 @@ private:
 		QueueItem* queueItem;
 	};
 
-	void speak(uint8_t type, UpdateInfo* ui) { tasks.add(type, ui); PostMessage(WM_SPEAKER); }
+	void speak(uint8_t type, UpdateInfo* ui) { tasks.add(type, unique_ptr<Task>(ui)); PostMessage(WM_SPEAKER); }
 
 	ItemInfoList ctrlTransfers;
 	static int columnIndexes[];
@@ -340,28 +340,28 @@ private:
 	int PreviewAppsSize;
 	bool noGroup;
 
-	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) throw();
-	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) throw();
-	void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) throw();
-	void on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) throw();
+	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept;
+	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept;
+	void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) noexcept;
+	void on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) noexcept;
 	//void on(ConnectionManagerListener::TokenChanged, const ConnectionQueueItem* aCqi, string newToken) {
 
-	void on(DownloadManagerListener::Requesting, const Download* aDownload) throw();	
-	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) throw() { onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree);}
-	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) throw();
-	void on(DownloadManagerListener::Starting, const Download* aDownload) throw();
-	void on(DownloadManagerListener::Tick, const DownloadList& aDownload) throw();
-	void on(DownloadManagerListener::Status, const UserConnection*, const string&) throw();
+	void on(DownloadManagerListener::Requesting, const Download* aDownload) noexcept;	
+	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree);}
+	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept;
+	void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept;
+	void on(DownloadManagerListener::Tick, const DownloadList& aDownload) noexcept;
+	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
 
-	void on(UploadManagerListener::Starting, const Upload* aUpload) throw();
-	void on(UploadManagerListener::Tick, const UploadList& aUpload) throw();
-	void on(UploadManagerListener::Complete, const Upload* aUpload) throw() { onTransferComplete(aUpload, true, aUpload->getPath(), false); }
+	void on(UploadManagerListener::Starting, const Upload* aUpload) noexcept;
+	void on(UploadManagerListener::Tick, const UploadList& aUpload) noexcept;
+	void on(UploadManagerListener::Complete, const Upload* aUpload) noexcept { onTransferComplete(aUpload, true, aUpload->getPath(), false); }
 
-	void on(QueueManagerListener::StatusUpdated, const QueueItem*) throw();
-	void on(QueueManagerListener::Removed, const QueueItem*) throw();
-	void on(QueueManagerListener::Finished, const QueueItem*, const string&, const Download*) throw();
+	void on(QueueManagerListener::StatusUpdated, const QueueItem*) noexcept;
+	void on(QueueManagerListener::Removed, const QueueItem*) noexcept;
+	void on(QueueManagerListener::Finished, const QueueItem*, const string&, const Download*) noexcept;
 
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree);
 	void starting(UpdateInfo* ui, const Transfer* t);

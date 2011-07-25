@@ -810,7 +810,7 @@ void WinUtil::setClipboard(const tstring& str) {
 	CloseClipboard();
 }
 
-void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1 */) throw() {
+void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1 */) noexcept {
 	StringTokenizer<string> t(tokens, _T(','));
 	StringList& l = t.getTokens();
 	if(maxItems == -1)
@@ -822,7 +822,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 	}
 }
 
-bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, StringMap& sm) throw() {
+bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, StringMap& sm) noexcept {
 	string::size_type i = 0;
 	StringMap done;
 
@@ -1442,12 +1442,12 @@ void WinUtil::openLink(const tstring& url) {
 }
 
 void WinUtil::parseDchubUrl(const tstring& aUrl, bool secure) {
-	string server, file;
 	uint16_t port = 411;
-	Util::decodeUrl(Text::fromT(aUrl), server, port, file);
-	string url = server + ":" + Util::toString(port);
-	if(!server.empty()) {
-		HubFrame::openWindow((secure ? _T("nmdcs://") : _T("")) + Text::toT(server) + _T(":") + Util::toStringW(port));
+	string proto, host, file, query, fragment;
+	Util::decodeUrl(Text::fromT(aUrl), proto, host, port, file, query, fragment);
+	string url = host + ":" + Util::toString(port);
+	if(!host.empty()) {
+		HubFrame::openWindow((secure ? _T("nmdcs://") : _T("")) + Text::toT(host) + _T(":") + Util::toStringW(port));
 	}
 	if(!file.empty()) {
 		if(file[0] == '/') // Remove any '/' in from of the file
@@ -1466,11 +1466,11 @@ void WinUtil::parseDchubUrl(const tstring& aUrl, bool secure) {
 }
 
 void WinUtil::parseADChubUrl(const tstring& aUrl, bool secure) {
-	string server, file;
+	string proto, host, file, query, fragment;
 	uint16_t port = 0; //make sure we get a port since adc doesn't have a standard one
-	Util::decodeUrl(Text::fromT(aUrl), server, port, file);
-	if(!server.empty() && port > 0) {
-		HubFrame::openWindow((secure ? _T("adcs://") : _T("adc://")) + Text::toT(server) + _T(":") + Util::toStringW(port));
+	Util::decodeUrl(Text::fromT(aUrl), proto, host, port, file, query, fragment);
+	if(!host.empty() && port > 0) {
+		HubFrame::openWindow((secure ? _T("adcs://") : _T("adc://")) + Text::toT(host) + _T(":") + Util::toStringW(port));
 	}
 }
 
@@ -1649,7 +1649,7 @@ bool WinUtil::parseDBLClick(const tstring& aString, string::size_type start, str
 
 void WinUtil::saveHeaderOrder(CListViewCtrl& ctrl, SettingsManager::StrSetting order, 
 							  SettingsManager::StrSetting widths, int n, 
-							  int* indexes, int* sizes) throw() {
+							  int* indexes, int* sizes) noexcept {
 	string tmp;
 
 	ctrl.GetColumnOrderArray(n, indexes);

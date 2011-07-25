@@ -217,7 +217,7 @@ LRESULT SpyFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 	return 0;
 }
 
-void SpyFrame::on(ClientManagerListener::IncomingSearch, const string& s) throw() {
+void SpyFrame::on(ClientManagerListener::IncomingSearch, const string& s) noexcept {
 	if(ignoreTth && s.compare(0, 4, "TTH:") == 0)
 		return;
 	tstring* x = new tstring(Text::toT(s));
@@ -228,7 +228,7 @@ void SpyFrame::on(ClientManagerListener::IncomingSearch, const string& s) throw(
 	PostMessage(WM_SPEAKER, SEARCH, (LPARAM)x);
 }
 
-void SpyFrame::on(TimerManagerListener::Second, uint64_t) throw() {
+void SpyFrame::on(TimerManagerListener::Second, uint64_t) noexcept {
 	float* f = new float(0.0);
 	for(int i = 0; i < AVG_TIME; ++i) {
 		(*f) += (float)perSecond[i];
@@ -240,7 +240,7 @@ void SpyFrame::on(TimerManagerListener::Second, uint64_t) throw() {
 	PostMessage(WM_SPEAKER, TICK_AVG, (LPARAM)f);
 }
 
-void SpyFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void SpyFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlSearches.GetBkColor() != WinUtil::bgColor) {
 		ctrlSearches.SetBkColor(WinUtil::bgColor);

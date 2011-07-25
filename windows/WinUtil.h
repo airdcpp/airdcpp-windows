@@ -27,6 +27,8 @@
 #include "../client/SettingsManager.h"
 #include "../client/User.h"
 #include "../client/MerkleTree.h"
+#include "../client/HintedUser.h"
+#include "../client/UserInfoBase.h"
 
 #include <boost/bind.hpp>
 
@@ -430,7 +432,7 @@ public:
 	static void getContextMenuPos(CTreeViewCtrl& aTree, POINT& aPt);
 	static void getContextMenuPos(CEdit& aEdit,			POINT& aPt);
 	
-	static bool getUCParams(HWND parent, const UserCommand& cmd, StringMap& sm) throw();
+	static bool getUCParams(HWND parent, const UserCommand& cmd, StringMap& sm) noexcept;
 
 	static tstring getNicks(const CID& cid, const string& hintUrl);
 	static tstring getNicks(const UserPtr& u, const string& hintUrl);
@@ -443,9 +445,9 @@ public:
 	static pair<tstring, bool> getHubNames(const CID& cid, const string& hintUrl, bool priv);
 	static pair<tstring, bool> getHubNames(const HintedUser& user) { return getHubNames(user.user->getCID(), user.hint); }
 	
-	static void splitTokens(int* array, const string& tokens, int maxItems = -1) throw();
+	static void splitTokens(int* array, const string& tokens, int maxItems = -1) noexcept;
 	static void saveHeaderOrder(CListViewCtrl& ctrl, SettingsManager::StrSetting order, 
-		SettingsManager::StrSetting widths, int n, int* indexes, int* sizes) throw();
+		SettingsManager::StrSetting widths, int n, int* indexes, int* sizes) noexcept;
 
 
 	
@@ -461,7 +463,7 @@ public:
 		}
 		return str;
 	}
-	template<class T> static HWND hiddenCreateEx(T& p) throw() {
+	template<class T> static HWND hiddenCreateEx(T& p) noexcept {
 		HWND active = (HWND)::SendMessage(mdiClient, WM_MDIGETACTIVE, 0, 0);
 		::LockWindowUpdate(mdiClient);
 		HWND ret = p.CreateEx(mdiClient);
@@ -470,7 +472,7 @@ public:
 		::LockWindowUpdate(0);
 		return ret;
 	}
-	template<class T> static HWND hiddenCreateEx(T* p) throw() {
+	template<class T> static HWND hiddenCreateEx(T* p) noexcept {
 		return hiddenCreateEx(*p);
 	}
 	

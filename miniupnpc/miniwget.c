@@ -140,35 +140,35 @@ getHTTPResponse(int s, int * size)
 						{
 							while(i<header_buf_used)
 							{
-								while(i<header_buf_used && isxdigit(header_buf[i]))
-								{
-									if(header_buf[i] >= '0' && header_buf[i] <= '9')
-										chunksize = (chunksize << 4) + (header_buf[i] - '0');
-									else
-										chunksize = (chunksize << 4) + ((header_buf[i] | 32) - 'a' + 10);
-									i++;
-								}
-								/* discarding chunk-extension */
-								while(i < header_buf_used && header_buf[i] != '\r') i++;
-								if(i < header_buf_used && header_buf[i] == '\r') i++;
-								if(i < header_buf_used && header_buf[i] == '\n') i++;
+							while(i<header_buf_used && isxdigit(header_buf[i]))
+							{
+								if(header_buf[i] >= '0' && header_buf[i] <= '9')
+									chunksize = (chunksize << 4) + (header_buf[i] - '0');
+								else
+									chunksize = (chunksize << 4) + ((header_buf[i] | 32) - 'a' + 10);
+								i++;
+							}
+							/* discarding chunk-extension */
+							while(i < header_buf_used && header_buf[i] != '\r') i++;
+							if(i < header_buf_used && header_buf[i] == '\r') i++;
+							if(i < header_buf_used && header_buf[i] == '\n') i++;
 #ifdef DEBUG
-								printf("chunksize = %u (%x)\n", chunksize, chunksize);
+							printf("chunksize = %u (%x)\n", chunksize, chunksize);
 #endif
-								if(chunksize == 0)
-								{
+							if(chunksize == 0)
+							{
 #ifdef DEBUG
 									printf("end of HTTP content !\n");
 #endif
-									goto end_of_stream;	
-								}
+								goto end_of_stream;	
+							}
 								bytestocopy = ((int)chunksize < header_buf_used - i)?chunksize:(header_buf_used - i);
 #ifdef DEBUG
 								printf("chunksize=%u bytestocopy=%u (i=%d header_buf_used=%d)\n",
 								       chunksize, bytestocopy, i, header_buf_used);
 #endif
 								if(content_buf_len < (int)(content_buf_used + bytestocopy))
-								{
+							{
 									content_buf = realloc(content_buf, content_buf_used + bytestocopy);
 									content_buf_len = content_buf_used + bytestocopy;
 								}

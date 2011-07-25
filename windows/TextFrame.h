@@ -86,7 +86,7 @@ private:
 	bool history;
 	tstring file;
 	ChatCtrl ctrlPad;
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 
 #endif // !defined(TEXT_FRAME_H)

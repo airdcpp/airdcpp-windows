@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2001-2010 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2011 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,27 +16,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_WIN32_UPNP_MINIUPNPC_H
-#define DCPLUSPLUS_WIN32_UPNP_MINIUPNPC_H
+#include "stdinc.h"
+#include "CID.h"
 
-#include "../client/UPnP.h"
+#include "Util.h"
 
-class UPnP_MiniUPnPc : public UPnP
-{
-public:
-	UPnP_MiniUPnPc() : UPnP() { }
+namespace dcpp {
 
-private:
-	bool init();
-
-	bool add(const unsigned short port, const Protocol protocol, const string& description);
-	bool remove(const unsigned short port, const Protocol protocol);
-	const string& getName() const {
-		return name;
+CID CID::generate() {
+	uint8_t data[CID::SIZE];
+	for(size_t i = 0; i < sizeof(data); ++i) {
+		data[i] = (uint8_t)Util::rand();
 	}
+	return CID(data);
+}
 
-	string getExternalIP();
-	static const string name;
-};
 
-#endif
+}

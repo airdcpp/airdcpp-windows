@@ -147,7 +147,7 @@ void TextFrame::UpdateLayout(BOOL /*bResizeBars*/ /* = TRUE */)
 	ctrlPad.MoveWindow(rc);
 }
 
-void TextFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void TextFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
 

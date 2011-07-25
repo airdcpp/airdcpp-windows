@@ -631,14 +631,14 @@ private:
 
 	void download(const SearchResultPtr& aSR, const tstring& aDir, bool view);
 	
-	void on(SearchManagerListener::SR, const SearchResultPtr& aResult) throw();
-	void on(TimerManagerListener::Second, uint64_t aTick) throw();
+	void on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept;
+	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 
 	// ClientManagerListener
-	void on(ClientConnected, const Client* c) throw() { speak(HUB_ADDED, c); }
-	void on(ClientUpdated, const Client* c) throw() { speak(HUB_CHANGED, c); }
-	void on(ClientDisconnected, const Client* c) throw() { speak(HUB_REMOVED, c); }
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(ClientConnected, const Client* c) noexcept { speak(HUB_ADDED, c); }
+	void on(ClientUpdated, const Client* c) noexcept { speak(HUB_CHANGED, c); }
+	void on(ClientDisconnected, const Client* c) noexcept { speak(HUB_REMOVED, c); }
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void initHubs();
 	void onHubAdded(HubInfo* info);

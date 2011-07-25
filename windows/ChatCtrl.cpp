@@ -741,7 +741,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		if(!selectedIP.empty()) {
 			menu.InsertSeparatorFirst(selectedIP);
 			menu.AppendMenu(MF_STRING, IDC_WHOIS_IP, (TSTRING(WHO_IS) + _T(" ") + selectedIP).c_str() );
-			 prepareMenu(menu, ::UserCommand::CONTEXT_CHAT, client->getHubUrl());
+			 prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
 			if (client && client->isOp()) {
 				menu.AppendMenu(MF_SEPARATOR);
 				menu.AppendMenu(MF_STRING, IDC_BAN_IP, (_T("!banip ") + selectedIP).c_str());
@@ -832,7 +832,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			//prepareMenu(menu, ::UserCommand::CONTEXT_CHAT, client->getHubUrl());
 		}
 			// add user commands on self req by endator
-			prepareMenu(menu, ::UserCommand::CONTEXT_CHAT, client->getHubUrl());
+			prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
 		// default doubleclick action
 		switch(SETTING(CHAT_DBLCLICK)) {
         case 0:

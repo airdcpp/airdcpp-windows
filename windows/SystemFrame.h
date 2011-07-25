@@ -112,7 +112,7 @@ private:
 	CMenu tabMenu;
 	tstring searchTerm;
 	virtual void on(Message, time_t t, const string& message) { PostMessage(WM_SPEAKER, (WPARAM)(new pair<time_t, tstring>(t, Text::toT(message)))); }
-	virtual void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	virtual void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 	void addLine(time_t t, const tstring& msg);
 
 	void scrollToEnd();

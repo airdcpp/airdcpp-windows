@@ -243,7 +243,7 @@ tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Uti
 	return 0; 
 }
 
-void SystemFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void SystemFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
     PostMessage(WM_REFRESH_SETTINGS);
 }
 

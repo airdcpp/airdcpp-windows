@@ -41,7 +41,7 @@ public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("FinishedFrame"), IDR_FINISHED_DL, 0, COLOR_3DFACE);
 		
 private:
-	void on(AddedDl, FinishedItem* entry) throw() {
+	void on(AddedDl, FinishedItem* entry) noexcept {
 		PostMessage(WM_SPEAKER, SPEAK_ADD_LINE, (WPARAM)entry);
 	}
 };

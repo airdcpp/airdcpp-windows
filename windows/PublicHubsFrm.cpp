@@ -630,23 +630,23 @@ bool PublicHubsFrame::matchFilter(const HubEntry& entry, const int& sel, bool do
 	return insert;
 }
 
-void PublicHubsFrame::on(DownloadStarting, const string& l) throw() { 
+void PublicHubsFrame::on(DownloadStarting, const string& l) noexcept { 
 	speak(SET_TEXT, TSTRING(DOWNLOADING_HUB_LIST) + _T(" (") + Text::toT(l) + _T(")")); 
 }
 
-void PublicHubsFrame::on(DownloadFailed, const string& l) throw() { 
+void PublicHubsFrame::on(DownloadFailed, const string& l) noexcept { 
 	speak(SET_TEXT, TSTRING(DOWNLOAD_FAILED) + _T(" ") + Text::toT(l)); 
 }
 
-void PublicHubsFrame::on(DownloadFinished, const string& l, bool /*fromCoral*/) throw() { 
+void PublicHubsFrame::on(DownloadFinished, const string& l, bool /*fromCoral*/) noexcept { 
 	speak(FINISHED, TSTRING(HUB_LIST_DOWNLOADED) + _T(" (") + Text::toT(l) + _T(")"));
 }
 
-void PublicHubsFrame::on(LoadedFromCache, const string& l, const string& d) throw() { 
+void PublicHubsFrame::on(LoadedFromCache, const string& l, const string& d) noexcept { 
 	speak(FINISHED, TSTRING(HUB_LIST_LOADED_FROM_CACHE) + _T(" (") + Text::toT(l) + _T(")") + _T(" Download Date: ") + Text::toT(d)); 
 }
 
-void PublicHubsFrame::on(Corrupted, const string& l) throw() {
+void PublicHubsFrame::on(Corrupted, const string& l) noexcept {
 	if (l.empty()) {
 		speak(FINISHED, TSTRING(HUBLIST_CACHE_CORRUPTED));
 	} else {	
@@ -654,7 +654,7 @@ void PublicHubsFrame::on(Corrupted, const string& l) throw() {
 	}
 }
 
-void PublicHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void PublicHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlHubs.GetBkColor() != WinUtil::bgColor) {
 		ctrlHubs.SetBkColor(WinUtil::bgColor);

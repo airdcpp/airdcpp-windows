@@ -240,11 +240,11 @@ LRESULT NetworkPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	fixControls();
 	return 0;
 }
-void NetworkPage::on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) throw() {
+void NetworkPage::on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept {
 		downBuf = string((const char*)buf, len);
 	}
 
-void NetworkPage::on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) throw() {
+void NetworkPage::on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) noexcept {
 		conn->removeListener(this);
 		if(!downBuf.empty()) {
 			SimpleXML xml;
@@ -271,7 +271,7 @@ void NetworkPage::on(HttpConnectionListener::Complete, HttpConnection* conn, str
 		::EnableWindow(GetDlgItem(IDC_GETIP), true);
 	}
 
-void NetworkPage::on(HttpConnectionListener::Failed, HttpConnection* conn, const string& /*aLine*/) throw() {
+void NetworkPage::on(HttpConnectionListener::Failed, HttpConnection* conn, const string& /*aLine*/) noexcept {
 		conn->removeListener(this);
 		{
 			if(Util::isPrivateIp(Util::getLocalIp())) {

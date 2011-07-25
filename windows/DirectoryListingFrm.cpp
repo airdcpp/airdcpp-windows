@@ -1602,7 +1602,7 @@ LRESULT DirectoryListingFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/
 	return TRUE;
 }
 
-void DirectoryListingFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void DirectoryListingFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlList.GetBkColor() != WinUtil::bgColor) {
 		ctrlList.SetBkColor(WinUtil::bgColor);

@@ -140,7 +140,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				const ItemInfo* itemI = ctrlTransfers.getItemData(i);
 				
 				if(itemI->user.user)
-					prepareMenu(transferMenu, UserCommand::CONTEXT_CHAT, ClientManager::getInstance()->getHubs(itemI->user.user->getCID(), itemI->user.hint));
+					prepareMenu(transferMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubs(itemI->user.user->getCID(), itemI->user.hint));
 			}
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 			transferMenu.AppendMenu(MF_SEPARATOR);
@@ -214,7 +214,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 				const QueueItem::StringMap& queue = QueueManager::getInstance()->lockQueue();
 
-				QueueItem::StringIter qi = queue.find(&target);
+				auto qi = queue.find(&target);
 
 				bool slowDisconnect = false;
 				if(qi != queue.end())
@@ -608,11 +608,11 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		ctrlTransfers.SetRedraw(FALSE);
 	}
 
-	for(TaskQueue::Iter i = t.begin(); i != t.end(); ++i) {
+	for(auto i = t.begin(); i != t.end(); ++i) {
 		if(i->first == ADD_ITEM) {
-			auto_ptr<UpdateInfo> ui(reinterpret_cast<UpdateInfo*>(i->second));
-			ItemInfo* ii = new ItemInfo(ui->user, ui->token, ui->download);
-			ii->update(*ui);
+			auto &ui = static_cast<UpdateInfo&>(*i->second);
+			ItemInfo* ii = new ItemInfo(ui.user, ui.token, ui.download);
+			ii->update(ui);
 			if(ii->download) {
 				if(noGroup) {
 					ctrlTransfers.insertItem(ii, IMAGE_DOWNLOAD);
@@ -624,12 +624,12 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 				ctrlTransfers.insertItem(ii, IMAGE_UPLOAD);
 			}
 		} else if(i->first == REMOVE_ITEM) {
-			auto_ptr<UpdateInfo> ui(reinterpret_cast<UpdateInfo*>(i->second));
+			auto &ui = static_cast<UpdateInfo&>(*i->second);
 
 			int pos = -1;
-			ItemInfo* ii = findItem(*ui, pos);
+			ItemInfo* ii = findItem(ui, pos);
 			if(ii) {
-				if(ui->download) {
+				if(ui.download) {
 					ctrlTransfers.removeGroupedItem(ii);
 				} else {
 					dcassert(pos != -1);
@@ -638,65 +638,65 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 				}
 			}
 		} else if(i->first == UPDATE_ITEM) {
-			auto_ptr<UpdateInfo> ui(reinterpret_cast<UpdateInfo*>(i->second));
+			auto &ui = static_cast<UpdateInfo&>(*i->second);
 			int pos = -1;
-			ItemInfo* ii = findItem(*ui, pos);
+			ItemInfo* ii = findItem(ui, pos);
 			if(ii) {
-				if(ui->download && !noGroup)  {
+				if(ui.download && !noGroup)  {
 					ItemInfo* parent = ii->parent ? ii->parent : ii;
 
-					if(ui->type == Transfer::TYPE_FILE || ui->type == Transfer::TYPE_TREE) {
+					if(ui.type == Transfer::TYPE_FILE || ui.type == Transfer::TYPE_TREE) {
 						/* parent item must be updated with correct info about whole file */
-						if(ui->status == ItemInfo::STATUS_RUNNING && parent->status == ItemInfo::STATUS_RUNNING && parent->hits == -1) {
-							ui->updateMask &= ~UpdateInfo::MASK_POS;
-							ui->updateMask &= ~UpdateInfo::MASK_ACTUAL;
-							ui->updateMask &= ~UpdateInfo::MASK_SIZE;
-							ui->updateMask &= ~UpdateInfo::MASK_STATUS_STRING;
-							ui->updateMask &= ~UpdateInfo::MASK_TIMELEFT;
-							ui->updateMask &= ~UpdateInfo::MASK_TOTALTIMELEFT; /*ttlf*/
+						if(ui.status == ItemInfo::STATUS_RUNNING && parent->status == ItemInfo::STATUS_RUNNING && parent->hits == -1) {
+							ui.updateMask &= ~UpdateInfo::MASK_POS;
+							ui.updateMask &= ~UpdateInfo::MASK_ACTUAL;
+							ui.updateMask &= ~UpdateInfo::MASK_SIZE;
+							ui.updateMask &= ~UpdateInfo::MASK_STATUS_STRING;
+							ui.updateMask &= ~UpdateInfo::MASK_TIMELEFT;
+							ui.updateMask &= ~UpdateInfo::MASK_TOTALTIMELEFT; /*ttlf*/
 						}
 					}
 
 					/* if target has changed, regroup the item */
-					bool changeParent = (ui->updateMask & UpdateInfo::MASK_FILE) && (ui->target != ii->target);
+					bool changeParent = (ui.updateMask & UpdateInfo::MASK_FILE) && (ui.target != ii->target);
 					if(changeParent)
 						ctrlTransfers.removeGroupedItem(ii, false);
-					ii->update(*ui);
+					ii->update(ui);
 
 					if(changeParent) {
 						ctrlTransfers.insertGroupedItem(ii, false);
 						parent = ii->parent ? ii->parent : ii;
 					} else if(ii == parent || !parent->collapsed) {
-						updateItem(ctrlTransfers.findItem(ii), ui->updateMask);
+						updateItem(ctrlTransfers.findItem(ii), ui.updateMask);
 					}
 					continue;
 				}
-				ii->update(*ui);
+				ii->update(ui);
 				dcassert(pos != -1);
-				updateItem(pos, ui->updateMask);
+				updateItem(pos, ui.updateMask);
 			}
 		} else if(i->first == UPDATE_PARENT) {
-			auto_ptr<UpdateInfo> ui(reinterpret_cast<UpdateInfo*>(i->second));
-			ItemInfoList::ParentPair* pp = ctrlTransfers.findParentPair(ui->target);
+			auto &ui = static_cast<UpdateInfo&>(*i->second);
+			ItemInfoList::ParentPair* pp = ctrlTransfers.findParentPair(ui.target);
 			
 			if(!pp) 
 				continue;
 
-			if(ui->user.user) {
+			if(ui.user.user) {
 				int pos = -1;
-				ItemInfo* ii = findItem(*ui, pos);
+				ItemInfo* ii = findItem(ui, pos);
 				if(ii) {
-					ii->status = ui->status;
-					ii->statusString = ui->statusString;
+					ii->status = ui.status;
+					ii->statusString = ui.statusString;
 
 					if(!pp->parent->collapsed) {
-						updateItem(ctrlTransfers.findItem(ii), ui->updateMask);
+						updateItem(ctrlTransfers.findItem(ii), ui.updateMask);
 					}
 				}
 			}
 
-			pp->parent->update(*ui);
-			updateItem(ctrlTransfers.findItem(pp->parent), ui->updateMask);
+			pp->parent->update(ui);
+			updateItem(ctrlTransfers.findItem(pp->parent), ui.updateMask);
 			}
 		}
 	
@@ -938,7 +938,7 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 	}
 }
 
-void TransferView::on(DownloadManagerListener::Requesting, const Download* d) throw() {
+void TransferView::on(DownloadManagerListener::Requesting, const Download* d) noexcept {
 	UpdateInfo* ui = new UpdateInfo(d->getUserConnection().getToken(), true);
 	
 	starting(ui, d);
@@ -1024,7 +1024,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 		statusString += Text::tformat(TSTRING(DOWNLOADED_BYTES), pos.c_str(), percent, elapsed.c_str());
 		ui->setStatusString(statusString);
 			
-		tasks.add(UPDATE_ITEM, ui);
+		tasks.add(UPDATE_ITEM, unique_ptr<Task>(ui));
 	}
 
 	PostMessage(WM_SPEAKER);
@@ -1137,7 +1137,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 
 		ui->setStatusString(statusString);
 					
-		tasks.add(UPDATE_ITEM, ui);
+		tasks.add(UPDATE_ITEM, unique_ptr<Task>(ui));
 	}
 
 	PostMessage(WM_SPEAKER);
@@ -1173,7 +1173,7 @@ LRESULT TransferView::onPreviewCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hW
 		const QueueItem::StringMap& queue = QueueManager::getInstance()->lockQueue();
 
 		string tmp = Text::fromT(ii->target);
-		QueueItem::StringIter qi = queue.find(&tmp);
+		auto qi = queue.find(&tmp);
 
 		string aTempTarget;
 		if(qi != queue.end())
@@ -1237,7 +1237,7 @@ LRESULT TransferView::onSlowDisconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 		const QueueItem::StringMap& queue = QueueManager::getInstance()->lockQueue();
 
 		string tmp = Text::fromT(ii->target);
-		QueueItem::StringIter qi = queue.find(&tmp);
+		auto qi = queue.find(&tmp);
 
 		if(qi != queue.end()) {
 			if(qi->second->isSet(QueueItem::FLAG_AUTODROP)) {
@@ -1253,7 +1253,7 @@ LRESULT TransferView::onSlowDisconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	return 0;
 }
 
-void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw() {
+void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlTransfers.GetBkColor() != WinUtil::bgColor) {
 		ctrlTransfers.SetBkColor(WinUtil::bgColor);
@@ -1274,7 +1274,7 @@ void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw()
 	}
 }
 
-void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) throw() {
+void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) noexcept {
 	UpdateInfo* ui = new UpdateInfo(const_cast<QueueItem*>(qi), true);
 	ui->setTarget(Text::toT(qi->getTarget()));
 
@@ -1417,7 +1417,7 @@ void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) 
 	speak(UPDATE_PARENT, ui);
 }
 
-void TransferView::on(QueueManagerListener::Finished, const QueueItem* qi, const string&, const Download* download) throw() {
+void TransferView::on(QueueManagerListener::Finished, const QueueItem* qi, const string&, const Download* download) noexcept {
 	// update download item
 	UpdateInfo* ui = new UpdateInfo(download->getUserConnection().getToken(), true);
 
@@ -1448,7 +1448,7 @@ void TransferView::on(QueueManagerListener::Finished, const QueueItem* qi, const
 	speak(UPDATE_PARENT, ui);
 }
 
-void TransferView::on(QueueManagerListener::Removed, const QueueItem* qi) throw() {
+void TransferView::on(QueueManagerListener::Removed, const QueueItem* qi) noexcept {
 	UpdateInfo* ui = new UpdateInfo(const_cast<QueueItem*>(qi), true);
 	ui->setTarget(Text::toT(qi->getTarget()));
 	ui->setPos(0);

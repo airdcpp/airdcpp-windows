@@ -170,9 +170,9 @@ private:
 	}
 
 	
-	void on(RecentAdded, const RecentHubEntry* entry) throw() { addEntry(entry, ctrlHubs.GetItemCount()); }
-	void on(RecentRemoved, const RecentHubEntry* entry) throw() { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)entry)); }
-	void on(RecentUpdated, const RecentHubEntry* entry) throw() {
+	void on(RecentAdded, const RecentHubEntry* entry) noexcept { addEntry(entry, ctrlHubs.GetItemCount()); }
+	void on(RecentRemoved, const RecentHubEntry* entry) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)entry)); }
+	void on(RecentUpdated, const RecentHubEntry* entry) noexcept {
 		int i = -1;
 		if((i = ctrlHubs.find((LPARAM)entry)) != -1) {
 			ctrlHubs.SetItemText(i, COLUMN_NAME, Text::toT(entry->getName()).c_str());
@@ -182,7 +182,7 @@ private:
 			ctrlHubs.SetItemText(i, COLUMN_SERVER, Text::toT(entry->getServer()).c_str());
 		}
 	}
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 
 #endif

@@ -35,11 +35,11 @@
 
 #include "SingleInstance.h"
 #include "WinUtil.h"
-#include "UPnP_COM.h"
-#include "UPnP_MiniUPnPc.h"
+#include "Mapper_WinUPnP.h"
+#include "Mapper_MiniUPnPc.h"
 
 #include "../client/MerkleTree.h"
-#include "../client/UPnPManager.h"
+#include "../client/MappingManager.h"
 
 #include "Resource.h"
 #include "ExtendedTrace.h"
@@ -372,25 +372,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	splash.SetWindowLongPtr(GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&splashCallback));
 	splash.CenterWindow();
 
-	sTitle = _T(VERSIONSTRING);
-	
-#ifndef _WIN64	
-	switch (get_cpu_type())
-	{
-		case 2:
-			sTitle += _T(" MMX");
-			break;
-		case 3:
-			sTitle += _T(" AMD");
-			break;
-		case 4:
-		case 5:
-			sTitle += _T(" SSE");
-			break;
-	}
-#else
-	sTitle += _T(" x64");
-#endif
+	sTitle = _T(VERSIONSTRING) _T(" ") _T(CONFIGURATION_TYPE);
 
 	splash.SetFocus();
 	splash.RedrawWindow();
@@ -420,8 +402,8 @@ if(BOOLSETTING(PASSWD_PROTECT)) {
 		SetProcessDefaultLayout(LAYOUT_RTL);
 	}
 
-	UPnPManager::getInstance()->addImplementation(new UPnP_MiniUPnPc());
-	UPnPManager::getInstance()->addImplementation(new UPnP_COM());
+	MappingManager::getInstance()->addMapper<Mapper_MiniUPnPc>();
+	MappingManager::getInstance()->addMapper<Mapper_WinUPnP>();
 
 	MainFrame wndMain;
 

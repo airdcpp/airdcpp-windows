@@ -149,9 +149,9 @@ private:
 	void fillList();
 	void openSelected();
 
-	void on(FavoriteAdded, const FavoriteHubEntry* /*e*/)  throw() { StateKeeper keeper(ctrlHubs); fillList(); }
-	void on(FavoriteRemoved, const FavoriteHubEntry* e) throw() { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)e)); }
-	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) throw();
+	void on(FavoriteAdded, const FavoriteHubEntry* /*e*/)  noexcept { StateKeeper keeper(ctrlHubs); fillList(); }
+	void on(FavoriteRemoved, const FavoriteHubEntry* e) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)e)); }
+	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 
 #endif // !defined(FAVORITE_HUBS_FRM_H)

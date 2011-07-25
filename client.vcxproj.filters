@@ -80,9 +80,6 @@
     <ClCompile Include="client\HttpConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="client\memcpy_amd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="client\NmdcHub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -179,12 +176,6 @@
     <ClCompile Include="client\ZUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="client\UPnP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="client\UPnPManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="client\ConnectivityManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -192,6 +183,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="client\SharedFileStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\Mapper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\MappingManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\CID.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -332,9 +332,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\LogManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\memcpy_amd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\MerkleCheckOutputStream.h">
@@ -481,12 +478,6 @@
     <ClInclude Include="client\ZUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="client\UPnP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\UPnPManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="client\ConnectivityManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -494,6 +485,36 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\SharedFileStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\noexcept.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\typedefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\HintedUser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\Mapper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\MappingManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\OnlineUser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\ScopedFunctor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\compiler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\debug.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\w.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

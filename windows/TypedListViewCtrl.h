@@ -457,7 +457,7 @@ public:
 		SettingsManager::getInstance()->set(visible, tmp3);
 	}
 
-	void saveHeaderOrder(string& order, string& widths, string& visible) throw() {
+	void saveHeaderOrder(string& order, string& widths, string& visible) noexcept {
 /*		int size = GetHeader().GetItemCount();
 
 		std::vector<int> ret(size);

@@ -428,7 +428,7 @@ private:
 		list<DirectoryListInfo*> fileLists;
 
 		FileListQueue() : stop(true) {}
-		~FileListQueue() throw() {
+		~FileListQueue() noexcept {
 			shutdown();
 		}
 
@@ -539,19 +539,19 @@ private:
 	MainFrame(const MainFrame&) { dcassert(0); }
 
 	// LogManagerListener
-	virtual void on(LogManagerListener::Message, time_t t, const string& m) throw() { PostMessage(WM_SPEAKER, STATUS_MESSAGE, (LPARAM)new pair<time_t, tstring>(t, tstring(Text::toT(m)))); }
+	virtual void on(LogManagerListener::Message, time_t t, const string& m) noexcept { PostMessage(WM_SPEAKER, STATUS_MESSAGE, (LPARAM)new pair<time_t, tstring>(t, tstring(Text::toT(m)))); }
 
 	// TimerManagerListener
-	void on(TimerManagerListener::Second, uint64_t aTick) throw();
+	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 	
 	// HttpConnectionListener
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) throw();
-	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) throw();	
-	void on(HttpConnectionListener::Retried, HttpConnection* /*conn*/, const bool Connected) throw();		
+	void on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) noexcept;
+	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept;	
+	void on(HttpConnectionListener::Retried, HttpConnection* /*conn*/, const bool Connected) noexcept;		
 
 	// QueueManagerListener
-	void on(QueueManagerListener::Finished, const QueueItem* qi, const string& dir, const Download*) throw();
-	void on(PartialList, const HintedUser&, const string& text) throw();
+	void on(QueueManagerListener::Finished, const QueueItem* qi, const string& dir, const Download*) noexcept;
+	void on(PartialList, const HintedUser&, const string& text) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)

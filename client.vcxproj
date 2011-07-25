@@ -71,13 +71,15 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">E:\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">E:\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -104,7 +106,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\bzip2;$(SolutionDir)\openssl\include;$(SolutionDir)\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -133,7 +135,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -175,7 +177,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -214,6 +216,7 @@
     <ClCompile Include="client\BufferedSocket.cpp" />
     <ClCompile Include="client\BZUtils.cpp" />
     <ClCompile Include="client\ChatMessage.cpp" />
+    <ClCompile Include="client\CID.cpp" />
     <ClCompile Include="client\Client.cpp" />
     <ClCompile Include="client\ClientManager.cpp" />
     <ClCompile Include="client\ConnectionManager.cpp" />
@@ -231,7 +234,8 @@
     <ClCompile Include="client\HashManager.cpp" />
     <ClCompile Include="client\HighlightManager.cpp" />
     <ClCompile Include="client\HttpConnection.cpp" />
-    <ClCompile Include="client\memcpy_amd.cpp" />
+    <ClCompile Include="client\Mapper.cpp" />
+    <ClCompile Include="client\MappingManager.cpp" />
     <ClCompile Include="client\NmdcHub.cpp" />
     <ClCompile Include="client\pme.cpp" />
     <ClCompile Include="client\QueueItem.cpp" />
@@ -265,8 +269,6 @@
     <ClCompile Include="client\Transfer.cpp" />
     <ClCompile Include="client\Upload.cpp" />
     <ClCompile Include="client\UploadManager.cpp" />
-    <ClCompile Include="client\UPnP.cpp" />
-    <ClCompile Include="client\UPnPManager.cpp" />
     <ClCompile Include="client\User.cpp" />
     <ClCompile Include="client\UserCommand.cpp" />
     <ClCompile Include="client\UserConnection.cpp" />
@@ -292,11 +294,13 @@
     <ClInclude Include="client\ClientManager.h" />
     <ClInclude Include="client\ClientManagerListener.h" />
     <ClInclude Include="client\ColorSettings.h" />
+    <ClInclude Include="client\compiler.h" />
     <ClInclude Include="client\ConnectionManager.h" />
     <ClInclude Include="client\ConnectionManagerListener.h" />
     <ClInclude Include="client\ConnectivityManager.h" />
     <ClInclude Include="client\CryptoManager.h" />
     <ClInclude Include="client\DCPlusPlus.h" />
+    <ClInclude Include="client\debug.h" />
     <ClInclude Include="client\DebugManager.h" />
     <ClInclude Include="client\DirectoryListing.h" />
     <ClInclude Include="client\Download.h" />
@@ -319,19 +323,24 @@
     <ClInclude Include="client\HashManager.h" />
     <ClInclude Include="client\HashValue.h" />
     <ClInclude Include="client\HighlightManager.h" />
+    <ClInclude Include="client\HintedUser.h" />
     <ClInclude Include="client\HttpConnection.h" />
     <ClInclude Include="client\HubEntry.h" />
     <ClInclude Include="client\LogManager.h" />
-    <ClInclude Include="client\memcpy_amd.h" />
+    <ClInclude Include="client\Mapper.h" />
+    <ClInclude Include="client\MappingManager.h" />
     <ClInclude Include="client\MerkleCheckOutputStream.h" />
     <ClInclude Include="client\MerkleTree.h" />
     <ClInclude Include="client\NmdcHub.h" />
+    <ClInclude Include="client\noexcept.h" />
+    <ClInclude Include="client\OnlineUser.h" />
     <ClInclude Include="client\pme.h" />
     <ClInclude Include="client\Pointer.h" />
     <ClInclude Include="client\QueueItem.h" />
     <ClInclude Include="client\QueueManager.h" />
     <ClInclude Include="client\QueueManagerListener.h" />
     <ClInclude Include="client\ResourceManager.h" />
+    <ClInclude Include="client\ScopedFunctor.h" />
     <ClInclude Include="client\SearchManager.h" />
     <ClInclude Include="client\SearchManagerListener.h" />
     <ClInclude Include="client\SearchQueue.h" />
@@ -352,7 +361,7 @@
     <ClInclude Include="client\SSLSocket.h" />
     <ClInclude Include="client\stdinc.h" />
     <ClInclude Include="client\Streams.h" />
-    <ClInclude Include="client\UPnP.h" />
+    <ClInclude Include="client\typedefs.h" />
     <CustomBuild Include="client\StringDefs.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
       <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)vc10\$(Platform)\$(Configuration)\MakeDefs\MakeDefs.exe" .\client\StringDefs.h .\client\StringDefs.cpp .\EN_Example.xml</Command>
@@ -379,7 +388,6 @@
     <ClInclude Include="client\Upload.h" />
     <ClInclude Include="client\UploadManager.h" />
     <ClInclude Include="client\UploadManagerListener.h" />
-    <ClInclude Include="client\UPnPManager.h" />
     <ClInclude Include="client\User.h" />
     <ClInclude Include="client\UserCommand.h" />
     <ClInclude Include="client\UserConnection.h" />
@@ -387,6 +395,7 @@
     <ClInclude Include="client\UserInfoBase.h" />
     <ClInclude Include="client\Util.h" />
     <ClInclude Include="client\version.h" />
+    <ClInclude Include="client\w.h" />
     <ClInclude Include="client\Wildcards.h" />
     <ClInclude Include="client\ZUtils.h" />
   </ItemGroup>
