@@ -3,6 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AirDC", "StrongDC.vcxproj", "{E82610AA-B6FD-4813-B5B9-E717CBD0F23B}"
 	ProjectSection(ProjectDependencies) = postProject
 		{51015502-C27C-43CF-9FA4-12AB9DB5D36E} = {51015502-C27C-43CF-9FA4-12AB9DB5D36E}
+		{05F574BE-57B1-3F27-280B-5DEBE2228086} = {05F574BE-57B1-3F27-280B-5DEBE2228086}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bzip2", "bzip2.vcxproj", "{8B162F1B-5D6C-41C1-8A80-858B379DE07D}"
@@ -21,6 +22,8 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "regex", "regex.vcxproj", "{6B5E1154-D1FC-460A-B5F4-78ACB1E96349}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "miniupnpc", "miniupnpc\miniupnpc.vcxproj", "{51015502-C27C-43CF-9FA4-12AB9DB5D36E}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "natpmp", "natpmp\natpmp.vcxproj", "{05F574BE-57B1-3F27-280B-5DEBE2228086}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -94,6 +97,14 @@ Global
 		{51015502-C27C-43CF-9FA4-12AB9DB5D36E}.Release|Win32.Build.0 = Release|Win32
 		{51015502-C27C-43CF-9FA4-12AB9DB5D36E}.Release|x64.ActiveCfg = Release|x64
 		{51015502-C27C-43CF-9FA4-12AB9DB5D36E}.Release|x64.Build.0 = Release|x64
+		{05F574BE-57B1-3F27-280B-5DEBE2228086}.Debug|Win32.ActiveCfg = Debug|Win32
+		{05F574BE-57B1-3F27-280B-5DEBE2228086}.Debug|Win32.Build.0 = Debug|Win32
+		{05F574BE-57B1-3F27-280B-5DEBE2228086}.Debug|x64.ActiveCfg = Debug|x64
+		{05F574BE-57B1-3F27-280B-5DEBE2228086}.Debug|x64.Build.0 = Debug|x64
+		{05F574BE-57B1-3F27-280B-5DEBE2228086}.Release|Win32.ActiveCfg = Release|Win32
+		{05F574BE-57B1-3F27-280B-5DEBE2228086}.Release|Win32.Build.0 = Release|Win32
+		{05F574BE-57B1-3F27-280B-5DEBE2228086}.Release|x64.ActiveCfg = Release|x64
+		{05F574BE-57B1-3F27-280B-5DEBE2228086}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

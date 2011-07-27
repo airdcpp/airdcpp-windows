@@ -24,19 +24,18 @@
 	You can remove following 3 lines if you don't want to detect memory leaks.
 	Ignore STL pseudo-leaks, we can avoid them with _STLP_LEAKS_PEDANTIC, but it only slows down everything.
  */
-
-
 #define VLD_MAX_DATA_DUMP 0
 #define VLD_AGGREGATE_DUPLICATES
 //#include <vld.h>
 #endif
 
 #include "../client/DCPlusPlus.h"
-
 #include "SingleInstance.h"
 #include "WinUtil.h"
-#include "Mapper_WinUPnP.h"
+
+#include "Mapper_NATPMP.h"
 #include "Mapper_MiniUPnPc.h"
+#include "Mapper_WinUPnP.h"
 
 #include "../client/MerkleTree.h"
 #include "../client/MappingManager.h"
@@ -101,8 +100,6 @@ string getExceptionName(DWORD code) {
 	return "";
 }
 */
-
-
 LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 {	
 	Lock l(cs);
@@ -342,7 +339,6 @@ void callBack(void* x, const tstring& a) {
 
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
-
 	checkCommonControls();
 
 	CMessageLoop theLoop;
@@ -402,6 +398,7 @@ if(BOOLSETTING(PASSWD_PROTECT)) {
 		SetProcessDefaultLayout(LAYOUT_RTL);
 	}
 
+	MappingManager::getInstance()->addMapper<Mapper_NATPMP>();
 	MappingManager::getInstance()->addMapper<Mapper_MiniUPnPc>();
 	MappingManager::getInstance()->addMapper<Mapper_WinUPnP>();
 
@@ -481,7 +478,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	
 	
 	// For SHBrowseForFolder, UPnP_COM
-	HRESULT hRes = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED); 
+	HRESULT hRes = ::CoInitializeEx(NULL, COINIT_MULTITHREADED); 
 #ifdef _DEBUG
 	EXTENDEDTRACEINITIALIZE(Util::getPath(Util::PATH_RESOURCES).c_str());
 #endif
@@ -534,5 +531,5 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 /**
  * @file
- * $Id: main.cpp 500 2010-06-25 22:08:18Z bigmuscle $
+ * $Id: main.cpp 571 2011-07-27 19:18:04Z bigmuscle $
  */

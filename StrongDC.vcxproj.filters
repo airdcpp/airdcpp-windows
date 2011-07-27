@@ -506,6 +506,9 @@
     <ClCompile Include="windows\Mapper_WinUPnP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\Mapper_NATPMP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -806,6 +809,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\Mapper_WinUPnP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\Mapper_NATPMP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

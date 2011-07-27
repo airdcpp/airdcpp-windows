@@ -1,0 +1,10 @@
+Import('dev source_path')
+
+env, target, sources = dev.prepare_build(source_path, 'natpmp', source_glob = '*.c', in_bin = False)
+
+if dev.is_win32():
+	env.Append(CPPDEFINES = ['errno="WSAGetLastError()"', 'STATICLIB', 'WIN32', '_WIN32_WINNT=0x501', '_WIN32_IE=0x501', 'WINVER=0x501', 'WIN32_LEAN_AND_MEAN'])
+
+ret = env.StaticLibrary(target, sources)
+
+Return('ret')
