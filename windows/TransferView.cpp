@@ -934,7 +934,7 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 	if(country.empty()) {
 		ui->setIP(Text::toT(ip), 0);
 	} else {
-		ui->setIP(Text::toT(country + " (" + ip + ")"), WinUtil::getFlagIndexByCode(country.c_str()));
+		ui->setIP(Text::toT(country + " (" + ip + ")"), WinUtil::getFlagIndexByName(country.c_str()));
 	}
 }
 
