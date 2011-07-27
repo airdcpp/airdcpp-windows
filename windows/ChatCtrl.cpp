@@ -33,7 +33,6 @@ EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48
 
-
 ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();

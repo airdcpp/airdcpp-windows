@@ -462,6 +462,7 @@ private:
 	int run() {
 		try {
 			if(!mFile.empty()) {
+				
 				bool checkdupe = true;
 				if(mylist) {
 					// if its own list regenerate it before opening, but only if its dirty
@@ -490,7 +491,7 @@ private:
 			mWindow->error = Text::toT(ClientManager::getInstance()->getNicks(mWindow->dl->getUser()->getCID(), mWindow->dl->getHintedUser().hint)[0] + ": " + e.getError());
 			mWindow->PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED);
 		}
-
+		
 		//cleanup the thread object
 		delete this;
 
