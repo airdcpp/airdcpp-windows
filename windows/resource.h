@@ -183,6 +183,8 @@
 #define IDC_ACTIVE                      1006
 #define IDC_CONNECTION                  1006
 #define IDC_PASSIVE                     1007
+#define IDC_CONNECTION3                 1007
+#define IDC_DL_SPEED                    1007
 #define IDC_PORT                        1008
 #define IDC_DIRECTORIES                 1009
 #define IDC_PORT_TCP                    1009
@@ -344,6 +346,7 @@
 #define IDC_SETTINGS_DIRECTORIES        1144
 #define IDC_SETTINGS_INCOMING           1144
 #define IDC_SETTINGS_UPLOAD_SPEED2      1144
+#define IDC_SETTINGS_DOWNLOAD_LINE_SPEED 1144
 #define IDC_SETTINGS_DOWNLOAD_DIRECTORY 1145
 #define IDC_SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY 1146
 #define IDC_SETTINGS_PORT_TCP           1146
@@ -779,6 +782,7 @@
 #define IDC_FILELIST_DIFF               1406
 #define IDC_SETTINGS_MEBIBYES           1406
 #define IDC_SETTINGS_MEBIBITS           1406
+#define IDC_SETTINGS_MEBIBITS2          1407
 #define IDC_STYLES                      1408
 #define IDC_AVAILABLE_STYLES            1409
 #define IDC_SYSTEM_LOG                  1412

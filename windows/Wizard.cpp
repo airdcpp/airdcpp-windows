@@ -253,19 +253,20 @@ LRESULT WizardDlg::OnDlgButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	fixcontrols();
 	return 0;
 }
-LRESULT WizardDlg::OnDownSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT WizardDlg::OnDownSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
+	onSpeedChanged(wNotifyCode, wID, hWndCtl, bHandled);
 	TCHAR buf2[64];
 	//need to do it like this because we have support for custom speeds, do we really need that?
 	switch(wNotifyCode) {
 
-	case CBN_EDITCHANGE:
-	GetDlgItemText(IDC_DOWN_SPEED, buf2, sizeof(buf2) +1);
-	break;
+		case CBN_EDITCHANGE:
+			GetDlgItemText(IDC_DOWN_SPEED, buf2, sizeof(buf2) +1);
+			break;
 
-	case CBN_SELENDOK:
-	ctrlDownload.GetLBText(ctrlDownload.GetCurSel(), buf2);
-	break;
+		case CBN_SELENDOK:
+			ctrlDownload.GetLBText(ctrlDownload.GetCurSel(), buf2);
+			break;
 	}
 
 	download = Text::fromT(buf2);
@@ -279,17 +280,18 @@ LRESULT WizardDlg::OnDownSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/,
 
 		return 0;
 }
-LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
 {
+	onSpeedChanged(wNotifyCode, wID, hWndCtl, bHandled);
 	TCHAR buf2[64];
 	//need to do it like this because we have support for custom speeds, do we really need that?
 	switch(wNotifyCode) {
-	case CBN_EDITCHANGE:
-	GetDlgItemText(IDC_CONNECTION, buf2, sizeof(buf2) +1);
-	break;
-	case CBN_SELENDOK:
-	ctrlUpload.GetLBText(ctrlUpload.GetCurSel(), buf2);
-	break;
+		case CBN_EDITCHANGE:
+			GetDlgItemText(IDC_CONNECTION, buf2, sizeof(buf2) +1);
+			break;
+		case CBN_SELENDOK:
+			ctrlUpload.GetLBText(ctrlUpload.GetCurSel(), buf2);
+			break;
 
 	}	
 		upload = Text::fromT(buf2);
@@ -297,6 +299,34 @@ LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*
 		setUploadSlots(value);
 
 		return 0;
+}
+
+LRESULT WizardDlg::onSpeedChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/)
+{
+	tstring speed;
+	speed.resize(1024);
+	speed.resize(GetDlgItemText(wID, &speed[0], 1024));
+	if (!speed.empty()) {
+		boost::wregex reg;
+		if(speed[speed.size() -1] == '.')
+			reg.assign(_T("(\\d+\\.)"));
+		else
+			reg.assign(_T("(\\d+(\\.\\d+)?)"));
+		if (!regex_match(speed, reg)) {
+			CComboBox tmp;
+			tmp.Attach(hWndCtl);
+			DWORD dwSel;
+			if ((dwSel = tmp.GetEditSel()) != CB_ERR) {
+				tstring::iterator it = speed.begin() +  HIWORD(dwSel)-1;
+				speed.erase(it);
+				tmp.SetEditSel(0,-1);
+				tmp.SetWindowText(speed.c_str());
+				tmp.SetEditSel(HIWORD(dwSel)-1, HIWORD(dwSel)-1);
+				tmp.Detach();
+			}
+		}
+	}
+	return TRUE;
 }
 
 void WizardDlg::fixcontrols() {

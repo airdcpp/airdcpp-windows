@@ -40,6 +40,8 @@ public:
 		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, onTextChanged)
 		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, onTextChanged)
 		COMMAND_HANDLER(IDC_DESCRIPTION, EN_CHANGE, onTextChanged)
+		COMMAND_HANDLER(IDC_DL_SPEED, CBN_EDITCHANGE, onSpeedChanged)
+		COMMAND_HANDLER(IDC_CONNECTION, CBN_EDITCHANGE, onSpeedChanged)
 		COMMAND_ID_HANDLER(IDC_ENG, onLng)
 		COMMAND_ID_HANDLER(IDC_LANG_SWE, onLng)
 		COMMAND_ID_HANDLER(IDC_LANG_FIN, onLng)
@@ -59,6 +61,7 @@ public:
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onTextChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSpeedChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRadioButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onLng(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
@@ -69,7 +72,8 @@ public:
 private:
 	static Item items[];
 	static TextItem texts[];
-	CComboBox ctrlConnection;	
+	CComboBox ctrlUpload;
+	CComboBox ctrlDownload;
 	CEdit nick;
 	CEdit desc;
 	void fixControls();
