@@ -221,10 +221,10 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 			PostMessage(WM_CLOSE);
 			return 0;
 		} else {
+			
 			ctrlList.saveHeaderOrder(columnOrder, columnWidth, columnVisible);
+		
 			frame = NULL;
-			ctrlList.DestroyAllItems();
-	
 			CRect rc;
 			if(!IsIconic()){
 				//Get position of window
@@ -241,6 +241,8 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 				SettingsManager::getInstance()->set(SettingsManager::FINISHED_RIGHT, (rc.right > 0 ? rc.right : 0));
 			}
 
+			ctrlList.DeleteAllItems();
+			
 			bHandled = FALSE;
 			return 0;
 		}
