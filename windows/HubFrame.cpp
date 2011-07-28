@@ -45,12 +45,12 @@
 HubFrame::FrameMap HubFrame::frames;
 HubFrame::IgnoreMap HubFrame::ignoreList;
 
-int HubFrame::columnSizes[] = { 100, 75, 75, 75, 100, 75, 130, 100, 50, 40, 40, 40, 300 };
+int HubFrame::columnSizes[] = { 100, 75, 75, 75, 100, 75, 130, 100, 50, 40, 40, 40, 40, 300 };
 int HubFrame::columnIndexes[] = { OnlineUser::COLUMN_NICK, OnlineUser::COLUMN_SHARED, OnlineUser::COLUMN_EXACT_SHARED,
-	OnlineUser::COLUMN_DESCRIPTION, OnlineUser::COLUMN_TAG,	OnlineUser::COLUMN_CONNECTION, OnlineUser::COLUMN_IP, OnlineUser::COLUMN_EMAIL,
+	OnlineUser::COLUMN_DESCRIPTION, OnlineUser::COLUMN_TAG,	OnlineUser::COLUMN_ULSPEED, OnlineUser::COLUMN_DLSPEED, OnlineUser::COLUMN_IP, OnlineUser::COLUMN_EMAIL,
 	OnlineUser::COLUMN_VERSION, OnlineUser::COLUMN_MODE, OnlineUser::COLUMN_HUBS, OnlineUser::COLUMN_SLOTS, OnlineUser::COLUMN_CID };
 ResourceManager::Strings HubFrame::columnNames[] = { ResourceManager::NICK, ResourceManager::SHARED, ResourceManager::EXACT_SHARED, 
-	ResourceManager::DESCRIPTION, ResourceManager::TAG, ResourceManager::CONNECTION, ResourceManager::IP_BARE, ResourceManager::EMAIL,
+	ResourceManager::DESCRIPTION, ResourceManager::TAG, ResourceManager::SETCZDC_UPLOAD_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED, ResourceManager::IP_BARE, ResourceManager::EMAIL,
 	ResourceManager::VERSION, ResourceManager::MODE, ResourceManager::HUBS, ResourceManager::SLOTS, ResourceManager::CID };
 
 extern EmoticonsManager* emoticonsManager;
@@ -527,7 +527,8 @@ LRESULT HubFrame::onCopyAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 		Copy += "\r\nShared :          " + Util::formatBytes(ou->getIdentity().getBytesShared());
 		Copy += "\r\nDescription :    " + ou->getIdentity().getDescription();
 		Copy += "\r\nTag :               " + ou->getIdentity().getTag();
-		Copy += "\r\nConnection :   " + ou->getIdentity().getConnection();
+		Copy += "\r\nUpload Speed :   " + ou->getIdentity().getConnection();
+		Copy += "\r\nDownload Speed :   " + ou->getIdentity().getDLSpeed();
 		Copy += "\r\nIp :                  " + ou->getIdentity().getIp();
 		Copy += "\r\nEmail :             " + ou->getIdentity().getEmail();
 		Copy += "\r\nSlots :             " + ou->getIdentity().get("SL");
