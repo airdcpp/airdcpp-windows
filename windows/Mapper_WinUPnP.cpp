@@ -31,6 +31,8 @@ const string Mapper_WinUPnP::name = "Windows UPnP";
 #include <natupnp.h>
 	
 bool Mapper_WinUPnP::init() {
+	CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+
 	if(pUN)
 		return true;
 
@@ -49,6 +51,7 @@ bool Mapper_WinUPnP::init() {
 }
 
 void Mapper_WinUPnP::uninit() {
+	CoUninitialize();
 }
 
 bool Mapper_WinUPnP::add(const unsigned short port, const Protocol protocol, const string& description) {

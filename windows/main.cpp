@@ -478,7 +478,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	
 	
 	// For SHBrowseForFolder, UPnP_COM
-	HRESULT hRes = ::CoInitializeEx(NULL, COINIT_MULTITHREADED); 
+	HRESULT hRes = ::CoInitializeEx(NULL, COINIT_APARTMENTTHREADED); 
 #ifdef _DEBUG
 	EXTENDEDTRACEINITIALIZE(Util::getPath(Util::PATH_RESOURCES).c_str());
 #endif

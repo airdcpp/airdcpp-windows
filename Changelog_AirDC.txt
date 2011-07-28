@@ -467,6 +467,7 @@ Added:
 #The window positions are now being saved
 #Favorite Download directories can be ordered in settings
 #An option to choose if recursive partial lists are always being used for adding sources for the whole release
+#An option to set the download speed in settings + validation for all line speed values
 
 Changed:
 
@@ -481,6 +482,7 @@ Changed:
 #Don't show "Matched X files" when matching partial lists
 #Option expand downloads in transferview => not group them
 #Updated pcre regex
+#SDC merge
 
 Fixed:
 
