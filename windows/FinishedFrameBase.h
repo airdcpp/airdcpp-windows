@@ -290,10 +290,11 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 		case IDC_TOTAL:
 			FinishedManager::getInstance()->removeAll(upload);
 			
-			ctrlList.DestroyAllItems();
-			//for(int i = 0; i < ctrlList.GetItemCount(); ++i) {
-				//delete ctrlList.getItemData(i);
-			//}
+			ctrlList.DeleteAllItems();
+
+			for( int i = 0; i < ctrlList.GetItemCount(); ++i ) {
+					delete ctrlList.getItemData(i);
+			}
 			
 			totalBytes = 0;
 			totalSpeed = 0;

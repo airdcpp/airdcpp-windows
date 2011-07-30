@@ -897,16 +897,18 @@ LRESULT SearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		return 0;
 	} else {
 		ctrlResults.SetRedraw(FALSE);
+		
 		ctrlResults.deleteAllItems();
+		
 		ctrlResults.SetRedraw(TRUE);
 
 		// delete all results which came in paused state
 		for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
 
-	//	for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
-		//	delete ctrlHubs.getItemData(i);
-		//}
-		ctrlHubs.DestroyAllItems();
+		for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
+			delete ctrlHubs.getItemData(i);
+			}
+		ctrlHubs.DeleteAllItems();
 
 		CRect rc;
 		if(!IsIconic()){
