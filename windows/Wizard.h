@@ -48,8 +48,8 @@ public:
 
 	void write();
 	void setLang();
-	void setDownloadLimits(int value);
-	void setUploadLimits(int value);
+	void setDownloadLimits(double value);
+	void setUploadLimits(double value);
 
 private:
 	CComboBox ctrlUpload;	

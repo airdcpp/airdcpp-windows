@@ -185,7 +185,7 @@ void WizardDlg::write() {
 	GetDlgItemText(IDC_MAX_AUTO_OPENED, buf3, sizeof(buf3) + 1);
 	string uploadLimit = Text::fromT(buf3);
 	//int value = Util::toInt(downloadspeed); 
-	SettingsManager::getInstance()->set(SettingsManager::EXTRA_SLOTS, uploadLimit);
+	SettingsManager::getInstance()->set(SettingsManager::AUTO_SLOTS, uploadLimit);
 
 
 	//max auto opened
@@ -342,7 +342,7 @@ LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL&
 	}
 
 	upload = Text::fromT(buf2);
-	int value = Util::toInt(upload); //compare as int?
+	double value = Util::toInt(upload); //compare as int?
 	setUploadLimits(value);
 
 	return 0;
@@ -404,12 +404,12 @@ void WizardDlg::fixcontrols() {
 
 	TCHAR buf[64];
 	GetDlgItemText(IDC_CONNECTION, buf, sizeof(buf) +1);
-	int uploadvalue = Util::toInt(Text::fromT(buf));
+	double uploadvalue = Util::toDouble(Text::fromT(buf));
 	setUploadLimits(uploadvalue);
 
 	TCHAR buf2[64];
 	GetDlgItemText(IDC_DOWN_SPEED, buf2, sizeof(buf2) +1);
-	int downloadvalue = Util::toInt(Text::fromT(buf2));
+	double downloadvalue = Util::toDouble(Text::fromT(buf2));
 	setDownloadLimits(downloadvalue);
 	
 }
@@ -447,7 +447,7 @@ void WizardDlg::setLang() {
 	}
 
 }
-void WizardDlg::setDownloadLimits(int value) {
+void WizardDlg::setDownloadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ)) {
 		int dlSlots=Util::getSlots(true, value, IsDlgButtonChecked(IDC_RAR));
@@ -458,7 +458,7 @@ void WizardDlg::setDownloadLimits(int value) {
 	}
 }
 
-void WizardDlg::setUploadLimits(int value) {
+void WizardDlg::setUploadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ)) {
 
