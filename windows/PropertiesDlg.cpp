@@ -28,7 +28,7 @@
 #include "GeneralPage.h"
 #include "DownloadPage.h"
 #include "SharePage.h"
-#include "UploadPage.h"
+#include "SpeedPage.h"
 #include "AppearancePage.h"
 #include "AdvancedPage.h"
 #include "LogPage.h"
@@ -69,7 +69,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s) : TreePropertyShee
 	pages[n++] = new FavoriteDirsPage(s);
 	pages[n++] = new AVIPreview(s);	
 	pages[n++] = new QueuePage(s);
-	pages[n++] = new UploadPage(s);
+	pages[n++] = new SpeedPage(s);
 	pages[n++] = new AppearancePage(s);
 	pages[n++] = new PropPageTextStyles(s);
 	pages[n++] = new OperaColorsPage(s);

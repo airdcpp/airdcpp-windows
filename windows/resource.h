@@ -72,6 +72,7 @@
 #define IDD_ADVANCEDPAGE                210
 #define IDD_DOWNLOADPAGE                211
 #define IDD_UPLOADPAGE                  212
+#define IDD_SPEEDPAGE                   212
 #define IDB_TOOLBAR                     213
 #define IDD_APPEARANCEPAGE              213
 #define IDR_FLATTAB                     214
@@ -250,6 +251,7 @@
 #define IDC_FILESPIN                    1062
 #define IDC_HELP_HOMEPAGE               1063
 #define IDC_MCNDLSLOTS                  1063
+#define IDC_MCNULSLOTS                  1064
 #define IDC_LOG_DIRECTORY               1065
 #define IDC_BROWSE_LOG                  1066
 #define IDC_HELP_DISCUSS                1067
@@ -428,6 +430,7 @@
 #define IDC_MAX_DOWNLOAD_SP             1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
+#define IDC_MAX_UPLOAD_SP               1219
 #define IDC_CLIENT_TAG                  1220
 #define IDC_REFRESH_DELAY3              1220
 #define IDC_DONT_SHARE_BIGGER_VALUE     1220
@@ -651,8 +654,10 @@
 #define IDC_SETTINGS_BOLD_CONTENTS      1314
 #define IDC_SHARE_SKIPLIST_USE_REGEXP   1314
 #define IDC_UPDATE_CLIENTS              1314
+#define IDC_SETTINGS_MCNSLOTS           1314
 #define IDC_SETTINGS_CONFIRM_OPTIONS    1315
 #define IDC_FAV_DL                      1315
+#define IDC_LINE_SPEED                  1315
 #define IDC_CONFIRM_OPTIONS             1316
 #define IDC_RADIO1                      1316
 #define IDC_PRIVATE                     1316
@@ -719,6 +724,7 @@
 #define IDC_DOWN_SPEED                  1354
 #define IDC_WINAMP_BROWSE               1356
 #define IDC_DOWN_SPEED_SPIN             1356
+#define IDC_UP_SPEED_SPIN               1357
 #define IDC_SETTINGS_NOMINALBW2         1358
 #define IDC_HIDE_SHARE                  1359
 #define IDC_DOWNLOAD_SLOTS              1359
@@ -729,6 +735,7 @@
 #define IDC_LANG_FIN                    1362
 #define IDC_UPLOAD_S_SPIN               1362
 #define IDC_LANG_RO                     1363
+#define IDC_MAX_AUTO_OPENED             1363
 #define IDC_LANG_HUN                    1364
 #define IDC_POPUP_TYPE                  1364
 #define IDC_FILE_SLOTS                  1364
@@ -765,8 +772,16 @@
 #define IDC_LANG_RUS                    1375
 #define IDC_MCN_SPIN                    1375
 #define IDC_REMOVE_FILE                 1376
+#define IDC_MCN_SPIN2                   1376
 #define IDC_LANG_GER                    1377
 #define IDC_SETTINGS_MAX_MCN            1377
+#define IDC_SETTINGS_MAX_MCN_UL         1378
+#define IDC_MCN_AUTODETECT              1379
+#define IDC_SETTINGS_MAX_MCN_DL         1380
+#define IDC_DL_AUTODETECT               1381
+#define IDC_UL_AUTODETECT               1382
+#define IDC_UL_AUTODETECT_WIZ           1383
+#define IDC_DL_AUTODETECT_WIZ           1384
 #define IDC_MAX_MSG_LENGTH              1391
 #define IDC_MAX_MSG_LENGTH_STR          1392
 #define IDC_POPUP_COLORS                1393
@@ -1161,7 +1176,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1378
+#define _APS_NEXT_CONTROL_VALUE         1385
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

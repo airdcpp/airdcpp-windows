@@ -32,10 +32,6 @@ PropPage::TextItem GeneralPage::texts[] = {
 	{ IDC_SETTINGS_NICK, ResourceManager::NICK },
 	{ IDC_SETTINGS_EMAIL, ResourceManager::EMAIL },
 	{ IDC_SETTINGS_DESCRIPTION, ResourceManager::DESCRIPTION },
-	{ IDC_SETTINGS_UPLOAD_LINE_SPEED, ResourceManager::SETTINGS_UPLOAD_LINE_SPEED },
-	{ IDC_SETTINGS_DOWNLOAD_LINE_SPEED, ResourceManager::SETTINGS_DOWNLOAD_LINE_SPEED },
-	{ IDC_SETTINGS_MEBIBITS, ResourceManager::MBITSPS },
-	{ IDC_SETTINGS_MEBIBITS2, ResourceManager::MBITSPS },
 	{ IDC_ENG, ResourceManager::SETTINGS_LENG },
 	{ IDC_LANG_SWE, ResourceManager::SETTINGS_LSWE },
 	{ IDC_LANG_FIN, ResourceManager::SETTINGS_LFIN },
@@ -58,8 +54,6 @@ PropPage::Item GeneralPage::items[] = {
 	{ IDC_NICK,			SettingsManager::NICK,			PropPage::T_STR }, 
 	{ IDC_EMAIL,		SettingsManager::EMAIL,			PropPage::T_STR }, 
 	{ IDC_DESCRIPTION,	SettingsManager::DESCRIPTION,	PropPage::T_STR }, 
-	{ IDC_CONNECTION,	SettingsManager::UPLOAD_SPEED,	PropPage::T_STR },
-	{ IDC_DL_SPEED,		SettingsManager::DOWNLOAD_SPEED,	PropPage::T_STR },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -71,29 +65,7 @@ void GeneralPage::write()
 LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
-
-	ctrlDownload.Attach(GetDlgItem(IDC_DL_SPEED));
-	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
-		ctrlDownload.AddString(Text::toT(*i).c_str());
-
-		if(find(SettingsManager::connectionSpeeds.begin(), SettingsManager::connectionSpeeds.end(),
-			SETTING(DOWNLOAD_SPEED)) == SettingsManager::connectionSpeeds.end()) {
-		ctrlDownload.AddString(Text::toT(SETTING(DOWNLOAD_SPEED)).c_str());
-	}
-
-	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
-	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
-		ctrlUpload.AddString(Text::toT(*i).c_str());
-
-		if(find(SettingsManager::connectionSpeeds.begin(), SettingsManager::connectionSpeeds.end(),
-			SETTING(UPLOAD_SPEED)) == SettingsManager::connectionSpeeds.end()) {
-		ctrlUpload.AddString(Text::toT(SETTING(UPLOAD_SPEED)).c_str());
-	}
-
 	PropPage::read((HWND)(*this), items);
-
-	ctrlUpload.SetCurSel(ctrlUpload.FindString(0, Text::toT(SETTING(UPLOAD_SPEED)).c_str()));
-	ctrlDownload.SetCurSel(ctrlDownload.FindString(0, Text::toT(SETTING(DOWNLOAD_SPEED)).c_str()));
 
 	fixControls();
 	nick.Attach(GetDlgItem(IDC_NICK));
@@ -106,34 +78,6 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	desc.Attach(GetDlgItem(IDC_SETTINGS_EMAIL));
 	desc.LimitText(35);
 	desc.Detach();
-	return TRUE;
-}
-
-LRESULT GeneralPage::onSpeedChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/)
-{
-	tstring speed;
-	speed.resize(1024);
-	speed.resize(GetDlgItemText(wID, &speed[0], 1024));
-	if (!speed.empty()) {
-		boost::wregex reg;
-		if(speed[speed.size() -1] == '.')
-			reg.assign(_T("(\\d+\\.)"));
-		else
-			reg.assign(_T("(\\d+(\\.\\d+)?)"));
-		if (!regex_match(speed, reg)) {
-			CComboBox tmp;
-			tmp.Attach(hWndCtl);
-			DWORD dwSel;
-			if ((dwSel = tmp.GetEditSel()) != CB_ERR) {
-				tstring::iterator it = speed.begin() +  HIWORD(dwSel)-1;
-				speed.erase(it);
-				tmp.SetEditSel(0,-1);
-				tmp.SetWindowText(speed.c_str());
-				tmp.SetEditSel(HIWORD(dwSel)-1, HIWORD(dwSel)-1);
-				tmp.Detach();
-			}
-		}
-	}
 	return TRUE;
 }
 

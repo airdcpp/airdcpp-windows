@@ -1330,9 +1330,14 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="CheckEmptyReleases">Check if the folder only contains NFO/SFV file</String>
 		<String Name="CheckEmptyDirs">Check if the directory is empty</String>
 		<String Name="Date">Date Modified</String>
-		<String Name="SettingsMaxMcn">Maximum number of downloads per user</String>
+		<String Name="SettingsMcnslots">Per user limits</String>
+		<String Name="SettingsMaxMcnDl">Maximum number of downloads per user</String>
+		<String Name="SettingsMaxMcnUl">Maximum number of uploads per user</String>
 		<String Name="PartialMatchAdc">Add sources by using recursive partial lists (ADC only)</String>
 		<String Name="SettingsNoZeroByte">Don't share 0 Byte files</String>
 		<String Name="SettingsDownloadLineSpeed">Line Speed (download)</String>
+		<String Name="Autodetect">Detect automatically</String>
+		<String Name="LineSpeed">Line Speed</String>
+		<String Name="SettingsSpeedLimits">Speed &amp; Limits</String>
 	</Strings>
 </Language>

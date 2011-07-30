@@ -22,6 +22,8 @@ public:
 	COMMAND_ID_HANDLER(IDC_PUBLIC, OnDlgButton)
 	COMMAND_ID_HANDLER(IDC_RAR, OnDlgButton)
 	COMMAND_ID_HANDLER(IDC_PRIVATE_HUB, OnDlgButton)
+	COMMAND_ID_HANDLER(IDC_DL_AUTODETECT_WIZ, OnDlgButton)
+	COMMAND_ID_HANDLER(IDC_UL_AUTODETECT_WIZ, OnDlgButton)
 	END_MSG_MAP()
 
 
@@ -44,18 +46,17 @@ public:
 	LRESULT OnUploadSpeed(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSpeedChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-		void write();
-		void setLang();
-		void setDownloadSlots(int value);
-		void setUploadSlots(int value);
-private:
-		CComboBox ctrlUpload;	
-		CComboBox ctrlDownload;	
-		CComboBoxEx ctrlLanguage;	
-		void fixcontrols();
-		string upload;
-		string download;
-		CImageList Images;
-		
+	void write();
+	void setLang();
+	void setDownloadLimits(int value);
+	void setUploadLimits(int value);
 
+private:
+	CComboBox ctrlUpload;	
+	CComboBox ctrlDownload;	
+	CComboBoxEx ctrlLanguage;	
+	void fixcontrols();
+	string upload;
+	string download;
+	CImageList Images;
 };

@@ -504,7 +504,7 @@
     <ClCompile Include="windows\TreePropertySheet.cpp" />
     <ClCompile Include="windows\UCPage.cpp" />
     <ClCompile Include="windows\UpdateDlg.cpp" />
-    <ClCompile Include="windows\UploadPage.cpp" />
+    <ClCompile Include="windows\SpeedPage.cpp" />
     <ClCompile Include="windows\UserListColours.cpp" />
     <ClCompile Include="windows\UsersFrame.cpp" />
     <ClCompile Include="windows\WaitingUsersFrame.cpp" />
@@ -606,7 +606,7 @@
     <ClInclude Include="windows\UCHandler.h" />
     <ClInclude Include="windows\UCPage.h" />
     <ClInclude Include="windows\UpdateDlg.h" />
-    <ClInclude Include="windows\UploadPage.h" />
+    <ClInclude Include="windows\SpeedPage.h" />
     <ClInclude Include="windows\UserListColours.h" />
     <ClInclude Include="windows\UsersFrame.h" />
     <ClInclude Include="windows\WaitingUsersFrame.h" />
