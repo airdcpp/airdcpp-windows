@@ -662,6 +662,7 @@
 #define IDC_RADIO1                      1316
 #define IDC_PRIVATE                     1316
 #define IDC_PUBLIC                      1316
+#define IDC_SLOTS_GROUP2                1316
 #define IDC_SOCKET_IN_BUFFER            1317
 #define IDC_UPDATE_LANGUAGE             1317
 #define IDC_GROUP                       1317
@@ -782,6 +783,7 @@
 #define IDC_UL_AUTODETECT               1382
 #define IDC_UL_AUTODETECT_WIZ           1383
 #define IDC_DL_AUTODETECT_WIZ           1384
+#define IDC_SETTINGS_PROFILE            1385
 #define IDC_MAX_MSG_LENGTH              1391
 #define IDC_MAX_MSG_LENGTH_STR          1392
 #define IDC_POPUP_COLORS                1393
@@ -1176,7 +1178,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1385
+#define _APS_NEXT_CONTROL_VALUE         1386
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

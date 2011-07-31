@@ -32,6 +32,10 @@ PropPage::TextItem GeneralPage::texts[] = {
 	{ IDC_SETTINGS_NICK, ResourceManager::NICK },
 	{ IDC_SETTINGS_EMAIL, ResourceManager::EMAIL },
 	{ IDC_SETTINGS_DESCRIPTION, ResourceManager::DESCRIPTION },
+	{ IDC_SETTINGS_PROFILE, ResourceManager::SETTINGS_PROFILE },
+	{ IDC_PUBLIC, ResourceManager::PROFILE_PUBLIC },
+	{ IDC_RAR, ResourceManager::PROFILE_RAR },
+	{ IDC_PRIVATE, ResourceManager::PROFILE_PRIVATE },
 	{ IDC_ENG, ResourceManager::SETTINGS_LENG },
 	{ IDC_LANG_SWE, ResourceManager::SETTINGS_LSWE },
 	{ IDC_LANG_FIN, ResourceManager::SETTINGS_LFIN },
@@ -59,6 +63,14 @@ PropPage::Item GeneralPage::items[] = {
 
 void GeneralPage::write()
 {
+	if (IsDlgButtonChecked(IDC_PUBLIC)) {
+		SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PUBLIC);
+	} else if(IsDlgButtonChecked(IDC_RAR)) {
+		SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_RAR);
+	} else {
+		SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PRIVATE);
+	}
+
 	PropPage::write((HWND)(*this), items);
 }
 
@@ -66,6 +78,26 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)(*this), items);
+
+
+	switch(SETTING(SETTINGS_PROFILE)) {
+		case SettingsManager::PROFILE_PUBLIC: 
+			CheckDlgButton(IDC_PUBLIC, BST_CHECKED);
+			//setRarProfile(false);
+			break;
+		case SettingsManager::PROFILE_RAR: 
+			CheckDlgButton(IDC_RAR, BST_CHECKED);
+			//setRarProfile(true);
+			break;
+		case SettingsManager::PROFILE_PRIVATE: 
+			CheckDlgButton(IDC_PRIVATE_HUB, BST_CHECKED); 
+			//setRarProfile(false);
+			break;
+		default: 
+			CheckDlgButton(IDC_PUBLIC, BST_CHECKED);
+			//setRarProfile(false);
+			break;
+	}
 
 	fixControls();
 	nick.Attach(GetDlgItem(IDC_NICK));
@@ -113,6 +145,25 @@ LRESULT GeneralPage::onTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl,
 		tmp.Detach();
 	}
 
+	return TRUE;
+}
+
+LRESULT GeneralPage::onProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(IsDlgButtonChecked(IDC_PUBLIC)){
+		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
+		CheckDlgButton(IDC_PRIVATE_HUB, BST_UNCHECKED);
+		//setRarProfile(false);
+	}
+	else if(IsDlgButtonChecked(IDC_RAR)){
+		CheckDlgButton(IDC_PRIVATE_HUB, BST_UNCHECKED);
+		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
+		//setRarProfile(true);
+	}
+	else {
+		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
+		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
+		//setRarProfile(false);
+	}
 	return TRUE;
 }
 

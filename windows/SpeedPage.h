@@ -44,11 +44,21 @@ public:
 		COMMAND_ID_HANDLER(IDC_MCN_AUTODETECT, onEnable)
 		COMMAND_HANDLER(IDC_DL_SPEED, CBN_EDITCHANGE, onSpeedChanged)
 		COMMAND_HANDLER(IDC_CONNECTION, CBN_EDITCHANGE, onSpeedChanged)
+		COMMAND_HANDLER(IDC_DL_SPEED, CBN_SELENDOK , onSpeedChanged)
+		COMMAND_HANDLER(IDC_CONNECTION, CBN_SELENDOK, onSpeedChanged)
+		COMMAND_HANDLER(IDC_MCNDLSLOTS, EN_UPDATE, checkMCN)
+		COMMAND_HANDLER(IDC_MCNULSLOTS, EN_UPDATE, checkMCN)
 	END_MSG_MAP()
 
-	LRESULT onSpeedChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSpeedChanged(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onEnable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onEnable(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT checkMCN(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	void setDownloadLimits(double value);
+	void setUploadLimits(double value);
+	void updateValues(WORD wNotifyCode, bool download);
+	void validateMCNLimits(WORD wNotifyCode);
 		
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
@@ -58,6 +68,7 @@ protected:
 	CComboBox ctrlUpload;
 	CComboBox ctrlDownload;
 	void fixControls();
+	int maxMCNExtras(double speed);
 	static Item items[];
 	static TextItem texts[];
 };

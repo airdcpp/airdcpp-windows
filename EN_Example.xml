@@ -617,7 +617,6 @@
 		<String Name="SettingsDontDlAlreadyShared">Don't download files already in share</String>
 		<String Name="SettingsDownconn">Dwnld attempts/second</String>
 		<String Name="SettingsDownloadDirectory">Default download directory</String>
-		<String Name="SettingsDownloadLimits">Limits</String>
 		<String Name="SettingsDownloads">Downloads</String>
 		<String Name="SettingsDownloadsMax">Maximum simultaneous downloads (0 = infinite)</String>
 		<String Name="SettingsDownloadsSpeedPause">No new downloads if speed exceeds (kB/s, 0 = disable)</String>
@@ -1200,7 +1199,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="MaxResizeLines">Max resize lines</String>
 		<String Name="DontShareEmptyDirs">Don't share empty directories</String>
 		<String Name="OnlyShareFullDirs">Only share fully hashed directories</String>
-		<String Name="StAirdcSlot">Extraslots to fellow AirDC++ users(version 2.05-&gt;)</String>
 		<String Name="SettingsDupeSearch">Use Dupe Color in Search</String>
 		<String Name="SettingsLrus">Russian</String>
 		<String Name="FileAlreadyShared">Trying to Download File already shared! File: </String>
@@ -1339,5 +1337,12 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="Autodetect">Detect automatically</String>
 		<String Name="LineSpeed">Line Speed</String>
 		<String Name="SettingsSpeedLimits">Speed &amp; Limits</String>
+		<String Name="UploadLimits">Upload Limits</String>
+		<String Name="UploadLimitsAdd">Upload Limits (additional)</String>
+		<String Name="DownloadLimits">Download Limits</String>
+		<String Name="SettingsProfile">Settings Profile</String>
+		<String Name="ProfilePublic">Public Hubs (default)</String>
+		<String Name="ProfileRar">Rar Hubs</String>
+		<String Name="ProfilePrivate">Private Hubs</String>
 	</Strings>
 </Language>
