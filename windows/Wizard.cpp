@@ -342,7 +342,7 @@ LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL&
 	}
 
 	upload = Text::fromT(buf2);
-	double value = Util::toInt(upload); //compare as int?
+	double value = Util::toDouble(upload); //compare as int?
 	setUploadLimits(value);
 
 	return 0;

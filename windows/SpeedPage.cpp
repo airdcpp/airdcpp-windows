@@ -246,7 +246,7 @@ int SpeedPage::maxMCNExtras(double speed) {
 void SpeedPage::setDownloadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_DL_AUTODETECT)) {
-		int dlSlots=Util::getSlots(true, value, IsDlgButtonChecked(IDC_RAR));
+		int dlSlots=Util::getSlots(true, value, SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR);
 		SetDlgItemText(IDC_DOWNLOADS, Util::toStringW(dlSlots).c_str());
 	
 		int dlLimit=Util::getSpeedLimit(true, value);
@@ -263,7 +263,7 @@ void SpeedPage::setUploadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_UL_AUTODETECT)) {
 
-		int ulSlots=Util::getSlots(false, value, IsDlgButtonChecked(IDC_RAR));
+		int ulSlots=Util::getSlots(false, value, SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR);
 		SetDlgItemText(IDC_SLOTS, Util::toStringW(ulSlots).c_str());
 	
 		int ulLimit=Util::getSpeedLimit(false, value);
