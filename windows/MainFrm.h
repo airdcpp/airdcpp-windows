@@ -508,20 +508,26 @@ private:
 	HWND createToolbar();
 	HWND createWinampToolbar();
 	void updateTray(bool add = true);
+	bool hasPassdlg;
 
 	LRESULT onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/) {
 		if (::IsIconic(m_hWnd)) {
 	if(BOOLSETTING(PASSWD_PROTECT_TRAY)) {
-		PassDlg dlg;
-		dlg.description = TSTRING(PASSWORD_DESC);
-		dlg.title = TSTRING(PASSWORD_TITLE);
-		dlg.ok = TSTRING(UNLOCK);
-		if(dlg.DoModal(/*m_hWnd*/) == IDOK){
-			tstring tmp = dlg.line;
+		if(hasPassdlg)
+			return 0;
+
+		hasPassdlg = true;
+		PassDlg passdlg;
+		passdlg.description = TSTRING(PASSWORD_DESC);
+		passdlg.title = TSTRING(PASSWORD_TITLE);
+		passdlg.ok = TSTRING(UNLOCK);
+		if(passdlg.DoModal(/*m_hWnd*/) == IDOK){
+			tstring tmp = passdlg.line;
 			if (tmp == Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
 			ShowWindow(SW_SHOW);
 			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
 			}
+			hasPassdlg = false;
 		}
 	} else {
 			ShowWindow(SW_SHOW);

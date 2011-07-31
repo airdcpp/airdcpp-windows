@@ -429,7 +429,7 @@ private:
 	int statusSizes[10];
 
 	
-	boost::shared_ptr<DirectoryListing> dl;
+	unique_ptr<DirectoryListing> dl;
 
 	StringMap ucLineParams;
 

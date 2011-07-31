@@ -242,14 +242,14 @@ public:
 
 	enum { IDD = IDD_PASS };
 	
-	BEGIN_MSG_MAP(LineDlg)
+	BEGIN_MSG_MAP(PassDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 	END_MSG_MAP()
 	
 	PassDlg() : password(true) { };
-	
+
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlLine.SetFocus();
 		return FALSE;
@@ -289,6 +289,7 @@ public:
 			GetDlgItemText(IDC_LINE, buf, len);
 			line = buf;
 		}
+
 		EndDialog(wID);
 		return 0;
 	}

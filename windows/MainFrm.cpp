@@ -77,7 +77,7 @@ bool MainFrame::isShutdownStatus = false;
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL), c(new HttpConnection()), 
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
-bTrayIcon(false), bAppMinimized(false), bIsPM(false) 
+bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false)
 
 { 
 		if(WinUtil::getOsMajor() >= 6) {
@@ -1343,17 +1343,23 @@ LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	if (lParam == WM_LBUTTONUP) {
 		if(bAppMinimized) {
+	
 	if(BOOLSETTING(PASSWD_PROTECT_TRAY)) {
-		PassDlg dlg;
-		dlg.description = TSTRING(PASSWORD_DESC);
-		dlg.title = TSTRING(PASSWORD_TITLE);
-		dlg.ok = TSTRING(UNLOCK);
-		if(dlg.DoModal(/*m_hWnd*/) == IDOK){
-			tstring tmp = dlg.line;
+		if(hasPassdlg) //prevent dialog from showing twice, findwindow doesnt seem to work with this??
+			return 0;
+
+		hasPassdlg = true;
+		PassDlg passdlg;
+		passdlg.description = TSTRING(PASSWORD_DESC);
+		passdlg.title = TSTRING(PASSWORD_TITLE);
+		passdlg.ok = TSTRING(UNLOCK);
+		if(passdlg.DoModal(/*m_hWnd*/) == IDOK){
+			tstring tmp = passdlg.line;
 			if (tmp == Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
 			ShowWindow(SW_SHOW);
 			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
 			}
+			hasPassdlg = false;
 		}
 	} else {
 			ShowWindow(SW_SHOW);

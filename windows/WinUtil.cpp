@@ -915,6 +915,7 @@ tstring WinUtil::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /rebuild\t\t\t\t\t(rebuild hash data)\n\
 /savequeue\t\t\t\t(save Download Queue)\n\
 /stop\t\t\t\t\t(stop SFV check)\n\
+/save\t\t\t\t\t(save share cache share.xml)\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /search <string>\t\t\t\t(search for...)\n\
 /g <searchstring>\t\t\t\t(Google search)\n\
