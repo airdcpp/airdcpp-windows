@@ -17,21 +17,12 @@ _T("Files bigger than 600 MB and File types not belonging to original release wo
 _T("(these can be changed from the AirSharing page)\r\n");
 
 
-static const TCHAR publichub[] = 
-_T("Client profile Public Hubs\r\n")
-_T("This Will Enable segmented Downloading\r\n");
-
-static const TCHAR privatehub[] = 
-_T("Client profile Private Hub \r\n")
-_T("Segmented Downloading will be Enabled\r\n");
-
 LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 			
 	//Set current nick setting
 	nickline.Attach(GetDlgItem(IDC_NICK));
 	SetDlgItemText(IDC_NICK, Text::toT(SETTING(NICK)).c_str());
 
-	explain.Attach(GetDlgItem(IDC_EXPLAIN));
 	ctrlDownload.Attach(GetDlgItem(IDC_DOWN_SPEED));
 	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
 	ctrlLanguage.Attach(GetDlgItem(IDC_LANGUAGE));
@@ -225,7 +216,6 @@ void WizardDlg::write() {
 		SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
 		SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 10240000);
 		SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, true);
-		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SHARE, "(.*(\\.(scn|asd|lnk|cmd|conf|dll|url|log|crc|dat|sfk|mxm|txt|message|iso|inf|sub|exe|img|bin|aac|mrg|tmp|xml|sup|ini|db|debug|pls|ac3|ape|par2|htm(l)?|bat|idx|srt|doc(x)?|ion|cue|b4s|bgl|cab|cat|bat)$))|((All-Files-CRC-OK|xCOMPLETEx|imdb.nfo|- Copy|(.*\\(\\d\\).*)).*$)");
 		SettingsManager::getInstance()->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
 		SettingsManager::getInstance()->set(SettingsManager::CHECK_SFV, true);
 		SettingsManager::getInstance()->set(SettingsManager::CHECK_NFO, true);
@@ -271,13 +261,20 @@ void WizardDlg::write() {
 		SettingsManager::getInstance()->set(SettingsManager::UL_AUTODETECT, false);
 	}
 
+	if(IsDlgButtonChecked(IDC_WIZARD_SKIPLIST)){
+		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SHARE, "(.*(\\.(scn|asd|lnk|cmd|conf|dll|url|log|crc|dat|sfk|mxm|txt|message|iso|inf|sub|exe|img|bin|aac|mrg|tmp|xml|sup|ini|db|debug|pls|ac3|ape|par2|htm(l)?|bat|idx|srt|doc(x)?|ion|cue|b4s|bgl|cab|cat|bat)$))|((All-Files-CRC-OK|xCOMPLETEx|imdb.nfo|- Copy|(.*\\(\\d\\).*)).*$)");
+	}
+
 	if (IsDlgButtonChecked(IDC_CHECK1)) {
-		SettingsManager::getInstance()->set(SettingsManager::WIZARD_RUN, true);
+		SettingsManager::getInstance()->set(SettingsManager::WIZARD_RUN_NEW, true);
 	}
 	SettingsManager::getInstance()->save();
 }
 	
-
+LRESULT WizardDlg::onSpeedtest(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	WinUtil::openLink(_T("http://www.speedtest.net"));
+	return 0;
+}
 
 LRESULT WizardDlg::onNext(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
@@ -286,9 +283,11 @@ LRESULT WizardDlg::onNext(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 	return 0;
 
 }
-LRESULT WizardDlg::OnDlgButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+
+LRESULT WizardDlg::OnDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	fixcontrols();
+	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
 	TCHAR buf1[64];
 	GetDlgItemText(IDC_DOWN_SPEED, buf1, sizeof(buf1) +1);
 	double valueDL = Util::toDouble(Text::fromT(buf1));
@@ -298,7 +297,12 @@ LRESULT WizardDlg::OnDlgButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	GetDlgItemText(IDC_CONNECTION, buf2, sizeof(buf2) +1);
 	double valueUL = Util::toDouble(Text::fromT(buf2));
 	setUploadLimits(valueUL);
+	return 0;
+}
 
+LRESULT WizardDlg::OnDlgButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	fixcontrols();
 	return 0;
 }
 LRESULT WizardDlg::OnDownSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
@@ -376,21 +380,47 @@ LRESULT WizardDlg::onSpeedChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, 
 	return TRUE;
 }
 
+LRESULT WizardDlg::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+	BOOL dl = IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ) != BST_CHECKED;
+	BOOL ul = IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ) != BST_CHECKED;
+	HDC hDC = (HDC)wParam;
+
+	if((HWND) lParam == GetDlgItem(IDC_MAX_AUTO_WIZ) || (HWND) lParam == GetDlgItem(IDC_OPEN_EXTRA_WIZ) || (HWND) lParam == GetDlgItem(IDC_UPLOAD_SLOTS_WIZ)) {
+		if (ul)
+			::SetTextColor(hDC, RGB(0,0,0));
+		else
+			::SetTextColor(hDC, RGB(100,100,100));
+	}
+
+
+	if(((HWND) lParam == GetDlgItem(IDC_MAX_DL_WIZ) || (HWND) lParam == GetDlgItem(IDC_MAX_DL_SPEED_WIZ))) {
+		::SetBkMode(hDC, TRANSPARENT);
+		if (dl)
+			::SetTextColor(hDC, RGB(0,0,0));
+		else
+			::SetTextColor(hDC, RGB(100,100,100));
+	}
+
+
+	::SetBkMode(hDC, TRANSPARENT);
+	return (LRESULT)GetStockObject(HOLLOW_BRUSH);
+}
+
 void WizardDlg::fixcontrols() {
 	if(IsDlgButtonChecked(IDC_PUBLIC)){
 		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
 		CheckDlgButton(IDC_PRIVATE_HUB, BST_UNCHECKED);
-		explain.SetWindowText(publichub);
+		::EnableWindow(GetDlgItem(IDC_WIZARD_SKIPLIST),	0);
 	}
 	if(IsDlgButtonChecked(IDC_RAR)){
 		CheckDlgButton(IDC_PRIVATE_HUB, BST_UNCHECKED);
 		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
-		explain.SetWindowText(rar);
+		::EnableWindow(GetDlgItem(IDC_WIZARD_SKIPLIST),	1);
 	}
 	if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
 		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
 		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
-		explain.SetWindowText(privatehub);
+		::EnableWindow(GetDlgItem(IDC_WIZARD_SKIPLIST),	0);
 	}
 
 	BOOL dl = IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ) != BST_CHECKED;
@@ -400,7 +430,8 @@ void WizardDlg::fixcontrols() {
 	BOOL ul = IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ) != BST_CHECKED;
 	::EnableWindow(GetDlgItem(IDC_UPLOAD_SLOTS),				ul);
 	::EnableWindow(GetDlgItem(IDC_MAX_UPLOAD_SP),				ul);
-	::EnableWindow(GetDlgItem(IDC_MAX_AUTO_OPENED),			dl);
+	::EnableWindow(GetDlgItem(IDC_MAX_AUTO_OPENED),				ul);
+
 
 	TCHAR buf[64];
 	GetDlgItemText(IDC_CONNECTION, buf, sizeof(buf) +1);

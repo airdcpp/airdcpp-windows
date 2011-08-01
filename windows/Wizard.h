@@ -22,8 +22,10 @@ public:
 	COMMAND_ID_HANDLER(IDC_PUBLIC, OnDlgButton)
 	COMMAND_ID_HANDLER(IDC_RAR, OnDlgButton)
 	COMMAND_ID_HANDLER(IDC_PRIVATE_HUB, OnDlgButton)
-	COMMAND_ID_HANDLER(IDC_DL_AUTODETECT_WIZ, OnDlgButton)
-	COMMAND_ID_HANDLER(IDC_UL_AUTODETECT_WIZ, OnDlgButton)
+	COMMAND_ID_HANDLER(IDC_DL_AUTODETECT_WIZ, OnDetect)
+	COMMAND_ID_HANDLER(IDC_UL_AUTODETECT_WIZ, OnDetect)
+	COMMAND_ID_HANDLER(IDC_SPEEDTEST, onSpeedtest)
+	MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)	
 	END_MSG_MAP()
 
 
@@ -42,9 +44,12 @@ public:
 
 	LRESULT onNext(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnDlgButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnDownSpeed(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnUploadSpeed(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSpeedChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSpeedtest(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onCtlColor(UINT, WPARAM, LPARAM, BOOL&);
 
 	void write();
 	void setLang();

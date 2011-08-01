@@ -235,6 +235,7 @@
 #define IDC_SETTINGS_LIST_CONFIG        1049
 #define IDC_FORCE                       1050
 #define IDC_RAW_FIVE                    1050
+#define IDC_SETTINGS_BTN_TARGETDRIVE    1050
 #define IDC_BUFFERSIZE                  1051
 #define IDC_LANGUAGE                    1052
 #define IDC_BROWSE                      1053
@@ -353,6 +354,7 @@
 #define IDC_SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY 1146
 #define IDC_SETTINGS_PORT_TCP           1146
 #define IDC_SETTINGS_DOWNLOAD_LIMITS    1147
+#define IDC_SETTINGS_TARGETDRIVE_NOTE   1147
 #define IDC_SETTINGS_DOWNLOADS_MAX      1148
 #define IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE 1149
 #define IDC_SETTINGS_SPEEDS_NOT_ACCURATE 1150
@@ -784,8 +786,15 @@
 #define IDC_UL_AUTODETECT_WIZ           1383
 #define IDC_DL_AUTODETECT_WIZ           1384
 #define IDC_SETTINGS_PROFILE            1385
+#define IDC_WIZARD_SKIPLIST             1385
+#define IDC_SPEEDTEST                   1386
+#define IDC_MAX_DL_WIZ                  1388
+#define IDC_MAX_DL_SPEED_WIZ            1389
+#define IDC_UPLOAD_SLOTS_WIZ            1390
 #define IDC_MAX_MSG_LENGTH              1391
+#define IDC_OPEN_EXTRA_WIZ              1391
 #define IDC_MAX_MSG_LENGTH_STR          1392
+#define IDC_MAX_AUTO_WIZ                1392
 #define IDC_POPUP_COLORS                1393
 #define IDC_POPUP_BACKCOLOR             1394
 #define IDC_POPUPFILE                   1395
@@ -1009,6 +1018,7 @@
 #define IDC_CZDC_SMALL_SLOTS            10130
 #define IDC_CZDC_SMALL_SIZE             10131
 #define IDC_CZDC_NOTE_SMALL             10132
+#define IDC_SETTINGS_MCN_NOTE           10133
 #define IDC_USER_CMD_DESCRIPTION        10140
 #define IDC_USER_CMD_EXAMPLE            10141
 #define IDC_COPY_EXACT_SHARE            10145
@@ -1178,7 +1188,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1386
+#define _APS_NEXT_CONTROL_VALUE         1393
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

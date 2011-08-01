@@ -57,7 +57,7 @@ public:
 
 	void setDownloadLimits(double value);
 	void setUploadLimits(double value);
-	void updateValues(WORD wNotifyCode, bool download);
+	void updateValues(WORD wNotifyCode);
 	void validateMCNLimits(WORD wNotifyCode);
 		
 	// Common PropPage interface

@@ -1329,8 +1329,8 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="CheckEmptyDirs">Check if the directory is empty</String>
 		<String Name="Date">Date Modified</String>
 		<String Name="SettingsMcnslots">Per user limits</String>
-		<String Name="SettingsMaxMcnDl">Maximum number of downloads per user</String>
-		<String Name="SettingsMaxMcnUl">Maximum number of uploads per user</String>
+		<String Name="SettingsMaxMcnDl">Max downloads per user</String>
+		<String Name="SettingsMaxMcnUl">Max uploads per user</String>
 		<String Name="PartialMatchAdc">Add sources by using recursive partial lists (ADC only)</String>
 		<String Name="SettingsNoZeroByte">Don't share 0 Byte files</String>
 		<String Name="SettingsDownloadLineSpeed">Line Speed (download)</String>
@@ -1344,5 +1344,8 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ProfilePublic">Public Hubs (default)</String>
 		<String Name="ProfileRar">Rar Hubs</String>
 		<String Name="ProfilePrivate">Private Hubs</String>
+		<String Name="SettingsMcnNote">* Lowering the upload connections from the default value will result the download connections to be set to the same value</String>
+		<String Name="SettingsTargetdriveNote">* Using target drive means that unfinished files are always being saved to an own folder on the same drive where the final destination is</String>
+		<String Name="SettingsUseTargetdrive">Use Target Drive for unfinished files</String>
 	</Strings>
 </Language>

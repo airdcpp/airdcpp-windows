@@ -35,7 +35,7 @@ PropPage::TextItem GeneralPage::texts[] = {
 	{ IDC_SETTINGS_PROFILE, ResourceManager::SETTINGS_PROFILE },
 	{ IDC_PUBLIC, ResourceManager::PROFILE_PUBLIC },
 	{ IDC_RAR, ResourceManager::PROFILE_RAR },
-	{ IDC_PRIVATE, ResourceManager::PROFILE_PRIVATE },
+	{ IDC_PRIVATE_HUB, ResourceManager::PROFILE_PRIVATE },
 	{ IDC_ENG, ResourceManager::SETTINGS_LENG },
 	{ IDC_LANG_SWE, ResourceManager::SETTINGS_LSWE },
 	{ IDC_LANG_FIN, ResourceManager::SETTINGS_LFIN },

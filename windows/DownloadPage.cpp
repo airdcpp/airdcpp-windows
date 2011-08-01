@@ -33,8 +33,9 @@ PropPage::TextItem DownloadPage::texts[] = {
 	{ IDC_SETTINGS_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_DOWNLOAD_DIRECTORY },
 	{ IDC_BROWSEDIR, ResourceManager::BROWSE_ACCEL },
 	{ IDC_SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY }, 
-	{ IDC_BROWSETEMPDIR, ResourceManager::BROWSE }, 
-	{ IDC_SETTINGS_SPEEDS_NOT_ACCURATE, ResourceManager::SETTINGS_SPEEDS_NOT_ACCURATE },
+	{ IDC_BROWSETEMPDIR, ResourceManager::BROWSE },
+	{ IDC_SETTINGS_BTN_TARGETDRIVE, ResourceManager::SETTINGS_USE_TARGETDRIVE }, 
+	{ IDC_SETTINGS_TARGETDRIVE_NOTE, ResourceManager::SETTINGS_TARGETDRIVE_NOTE }, 
 	{ IDC_SETTINGS_PUBLIC_HUB_LIST, ResourceManager::SETTINGS_PUBLIC_HUB_LIST },
 	{ IDC_SETTINGS_PUBLIC_HUB_LIST_URL, ResourceManager::SETTINGS_PUBLIC_HUB_LIST_URL },
 	{ IDC_SETTINGS_LIST_CONFIG, ResourceManager::SETTINGS_CONFIGURE_HUB_LISTS },
@@ -98,6 +99,11 @@ LRESULT DownloadPage::onClickedBrowseTempDir(WORD /*wNotifyCode*/, WORD /*wID*/,
 
 		SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, dir.c_str());
 	}
+	return 0;
+}
+
+LRESULT DownloadPage::onClickedTargetdrive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, _T("%[targetdrive]DCUnfinished"));
 	return 0;
 }
 

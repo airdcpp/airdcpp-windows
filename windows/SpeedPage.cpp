@@ -79,10 +79,7 @@ PropPage::Item SpeedPage::items[] = {
 LRESULT SpeedPage::onEnable(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	fixControls();
 
-	bool download=false;
-	if (wID == IDC_DL_SPEED)
-		download=true;
-	updateValues(wNotifyCode, download);
+	updateValues(wNotifyCode);
 
 	return 0;
 }
@@ -129,17 +126,13 @@ LRESULT SpeedPage::onSpeedChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 		}
 	}
 
-	bool download=false;
-	if (wID == IDC_DL_SPEED)
-		download=true;
-	updateValues(wNotifyCode, download);
+	updateValues(wNotifyCode);
 	validateMCNLimits(wNotifyCode);
 	return TRUE;
 }
 
-void SpeedPage::updateValues(WORD wNotifyCode, bool download) {
+void SpeedPage::updateValues(WORD wNotifyCode) {
 
-	if (!download) {
 		//upload
 		TCHAR buf[64];
 		if (wNotifyCode == CBN_SELENDOK) {
@@ -150,7 +143,7 @@ void SpeedPage::updateValues(WORD wNotifyCode, bool download) {
 
 		double uploadvalue = Util::toDouble(Text::fromT(buf));
 		setUploadLimits(uploadvalue);
-	} else {
+
 		//download
 		TCHAR buf2[64];
 		if (wNotifyCode == CBN_SELENDOK) {
@@ -161,7 +154,6 @@ void SpeedPage::updateValues(WORD wNotifyCode, bool download) {
 
 		double downloadvalue = Util::toDouble(Text::fromT(buf2));
 		setDownloadLimits(downloadvalue);
-	}
 }
 
 LRESULT SpeedPage::checkMCN(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
