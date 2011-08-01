@@ -287,6 +287,8 @@ LRESULT WizardDlg::onNext(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 LRESULT WizardDlg::OnDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	fixcontrols();
+	//GetDlgItem(IDC_MAX_DL_WIZ).RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW); 
+	//GetDlgItem(IDC_MAX_DL_SPEED_WIZ).RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW); 
 	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
 	TCHAR buf1[64];
 	GetDlgItemText(IDC_DOWN_SPEED, buf1, sizeof(buf1) +1);
@@ -390,20 +392,22 @@ LRESULT WizardDlg::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 			::SetTextColor(hDC, RGB(0,0,0));
 		else
 			::SetTextColor(hDC, RGB(100,100,100));
+
+		::SetBkMode(hDC, TRANSPARENT);
+		return (LRESULT)GetStockObject(HOLLOW_BRUSH);
 	}
 
 
 	if(((HWND) lParam == GetDlgItem(IDC_MAX_DL_WIZ) || (HWND) lParam == GetDlgItem(IDC_MAX_DL_SPEED_WIZ))) {
-		::SetBkMode(hDC, TRANSPARENT);
 		if (dl)
 			::SetTextColor(hDC, RGB(0,0,0));
 		else
 			::SetTextColor(hDC, RGB(100,100,100));
+
+		::SetBkMode(hDC, TRANSPARENT);
+		return (LRESULT)GetStockObject(HOLLOW_BRUSH);
 	}
-
-
-	::SetBkMode(hDC, TRANSPARENT);
-	return (LRESULT)GetStockObject(HOLLOW_BRUSH);
+	return FALSE;
 }
 
 void WizardDlg::fixcontrols() {
