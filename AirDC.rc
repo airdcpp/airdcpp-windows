@@ -1892,7 +1892,7 @@ BEGIN
     COMBOBOX        IDC_DOWN_SPEED,227,40,48,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Mbits/s",IDC_STATIC,278,42,24,8
     LTEXT           "Download Speed",IDC_DOWNLOAD_TEXT,165,42,58,8,0,WS_EX_RIGHT
-    LTEXT           "Please set the ACTUAL speed of your connection (click the test button below if you are unsure). You can also write the speed manually if it's not listed.",IDC_STATIC,169,59,272,17
+    LTEXT           "Please set the ACTUAL speed of your connection (click the test button below if you are unsure). You can also write the speed manually if it's not listed.",IDC_WIZARD_NOTESPEED,169,59,272,17
     EDITTEXT        IDC_MAX_DOWNLOAD_SP,329,156,39,14,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_DOWN_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,365,156,11,14
     RTEXT           "No new Downloads if speed is over:",IDC_MAX_DL_SPEED_WIZ,209,157,116,8
@@ -1924,7 +1924,7 @@ BEGIN
     CONTROL         "Install the rar profile skiplist",IDC_WIZARD_SKIPLIST,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,153,137,10
     LTEXT           "For private hub users (segment downloading will be enabled)",IDC_STATIC,23,193,122,18
-    LTEXT           "*** NOTE: Not completing this wizard will lower your transfer speeds and affect the usability of the client ***",IDC_STATIC,43,7,352,10
+    LTEXT           "*** NOTE: Not completing this wizard will lower your transfer speeds and affect the usability of the client ***",IDC_WIZARD_NOTETOP,43,7,352,10
     GROUPBOX        "Nickname shown to other users",IDC_STATIC,7,28,145,34
     GROUPBOX        "Language",IDC_STATIC,7,225,145,37
 END

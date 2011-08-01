@@ -131,6 +131,14 @@ LRESULT SpeedPage::onSpeedChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 	return TRUE;
 }
 
+LRESULT SpeedPage::onSlotsChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if ((wID == IDC_DOWNLOADS && IsDlgButtonChecked(IDC_DL_AUTODETECT)) || (wID == IDC_SLOTS && IsDlgButtonChecked(IDC_UL_AUTODETECT))) {
+		return FALSE;
+	}
+	updateValues(wNotifyCode);
+	return TRUE;
+}
+
 void SpeedPage::updateValues(WORD wNotifyCode) {
 
 		//upload
@@ -201,17 +209,23 @@ void SpeedPage::validateMCNLimits(WORD wNotifyCode) {
 
 	if ((Util::toInt(Text::fromT(aSlotsDL)) > downloadAutoSlots + mcnExtrasDL)) {
 		//LogManager::getInstance()->message("Change1");
-		SetDlgItemText(IDC_MCNDLSLOTS, Util::toStringW(downloadAutoSlots + mcnExtrasDL).c_str());
+		if ((downloadAutoSlots + mcnExtrasDL) > 0) {
+			SetDlgItemText(IDC_MCNDLSLOTS, Util::toStringW(downloadAutoSlots + mcnExtrasDL).c_str());
+		}
 	}
 
 	if ((Util::toInt(Text::fromT(aSlotsUL)) > uploadAutoSlots + mcnExtrasUL)) {
 		//LogManager::getInstance()->message("Change2");
-		SetDlgItemText(IDC_MCNULSLOTS, Util::toStringW(uploadAutoSlots + mcnExtrasUL).c_str());
+		if ((uploadAutoSlots + mcnExtrasUL) > 0) {
+			SetDlgItemText(IDC_MCNULSLOTS, Util::toStringW(uploadAutoSlots + mcnExtrasUL).c_str());
+		}
 	}
 
 	if ((Util::toInt(Text::fromT(aSlotsDL)) > Util::toInt(Text::fromT(aSlotsUL))) && (Util::toInt(Text::fromT(aSlotsUL)) < uploadAutoSlots)) {
 		//LogManager::getInstance()->message("Change3");
-		SetDlgItemText(IDC_MCNDLSLOTS, aSlotsUL.c_str());
+		if (Util::toInt(Text::fromT(aSlotsUL)) > 0) {
+			SetDlgItemText(IDC_MCNDLSLOTS, aSlotsUL.c_str());
+		}
 	}
 
 	return;
@@ -236,26 +250,31 @@ int SpeedPage::maxMCNExtras(double speed) {
 }
 
 void SpeedPage::setDownloadLimits(double value) {
-
+	int dlSlots=0;
 	if (IsDlgButtonChecked(IDC_DL_AUTODETECT)) {
-		int dlSlots=Util::getSlots(true, value, SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR);
+		dlSlots=Util::getSlots(true, value, SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR);
 		SetDlgItemText(IDC_DOWNLOADS, Util::toStringW(dlSlots).c_str());
 	
 		int dlLimit=Util::getSpeedLimit(true, value);
 		SetDlgItemText(IDC_MAXSPEED, Util::toStringW(dlLimit).c_str());
+	} else {
+		tstring slots;
+		slots.resize(40);
+		slots.resize(GetDlgItemText(IDC_DOWNLOADS, &slots[0], 40));
+		dlSlots = Util::toInt(Text::fromT(slots));
 	}
 
 	if (IsDlgButtonChecked(IDC_MCN_AUTODETECT)) {
-		int mcnDls=Util::getSlotsPerUser(true, value);
+		int mcnDls=Util::getSlotsPerUser(true, value, dlSlots);
 		SetDlgItemText(IDC_MCNDLSLOTS, Util::toStringW(mcnDls).c_str());
 	}
 }
 
 void SpeedPage::setUploadLimits(double value) {
-
+	int ulSlots=0;
 	if (IsDlgButtonChecked(IDC_UL_AUTODETECT)) {
 
-		int ulSlots=Util::getSlots(false, value, SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR);
+		ulSlots=Util::getSlots(false, value, SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR);
 		SetDlgItemText(IDC_SLOTS, Util::toStringW(ulSlots).c_str());
 	
 		int ulLimit=Util::getSpeedLimit(false, value);
@@ -263,10 +282,15 @@ void SpeedPage::setUploadLimits(double value) {
 
 		int autoOpened=Util::getMaxAutoOpened(value);
 		SetDlgItemText(IDC_AUTO_SLOTS, Util::toStringW(autoOpened).c_str());
+	} else {
+		tstring slots;
+		slots.resize(40);
+		slots.resize(GetDlgItemText(IDC_SLOTS, &slots[0], 40));
+		ulSlots = Util::toInt(Text::fromT(slots));
 	}
 
 	if (IsDlgButtonChecked(IDC_MCN_AUTODETECT)) {
-		int mcnUls=Util::getSlotsPerUser(false, value);
+		int mcnUls=Util::getSlotsPerUser(false, value, ulSlots);
 		SetDlgItemText(IDC_MCNULSLOTS, Util::toStringW(mcnUls).c_str());
 	}
 }

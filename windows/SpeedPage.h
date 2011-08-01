@@ -48,9 +48,12 @@ public:
 		COMMAND_HANDLER(IDC_CONNECTION, CBN_SELENDOK, onSpeedChanged)
 		COMMAND_HANDLER(IDC_MCNDLSLOTS, EN_UPDATE, checkMCN)
 		COMMAND_HANDLER(IDC_MCNULSLOTS, EN_UPDATE, checkMCN)
+		COMMAND_HANDLER(IDC_SLOTS, EN_UPDATE, onSlotsChanged)
+		COMMAND_HANDLER(IDC_DOWNLOADS, EN_UPDATE, onSlotsChanged)
 	END_MSG_MAP()
 
-	LRESULT onSpeedChanged(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSpeedChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSlotsChanged(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onEnable(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT checkMCN(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

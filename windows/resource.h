@@ -796,7 +796,9 @@
 #define IDC_MAX_MSG_LENGTH_STR          1392
 #define IDC_MAX_AUTO_WIZ                1392
 #define IDC_POPUP_COLORS                1393
+#define IDC_WIZARD_NOTETOP              1393
 #define IDC_POPUP_BACKCOLOR             1394
+#define IDC_WIZARD_NOTESPEED            1394
 #define IDC_POPUPFILE                   1395
 #define IDC_POPUP_IMAGE_GP              1396
 #define IDC_POPUPBROWSE                 1397
@@ -1191,7 +1193,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1393
+#define _APS_NEXT_CONTROL_VALUE         1395
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

@@ -287,9 +287,7 @@ LRESULT WizardDlg::onNext(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 LRESULT WizardDlg::OnDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	fixcontrols();
-	//GetDlgItem(IDC_MAX_DL_WIZ).RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW); 
-	//GetDlgItem(IDC_MAX_DL_SPEED_WIZ).RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW); 
-	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW);
+
 	TCHAR buf1[64];
 	GetDlgItemText(IDC_DOWN_SPEED, buf1, sizeof(buf1) +1);
 	double valueDL = Util::toDouble(Text::fromT(buf1));
@@ -383,6 +381,13 @@ LRESULT WizardDlg::onSpeedChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, 
 }
 
 LRESULT WizardDlg::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+	if((HWND) lParam == GetDlgItem(IDC_WIZARD_NOTETOP)) {
+		HDC hDC = (HDC)wParam;
+		::SetTextColor(hDC, RGB(251,69,69));
+		::SetBkMode(hDC, TRANSPARENT);
+		return (LRESULT)GetStockObject(HOLLOW_BRUSH);
+	}
+	/*
 	BOOL dl = IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ) != BST_CHECKED;
 	BOOL ul = IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ) != BST_CHECKED;
 	HDC hDC = (HDC)wParam;
@@ -407,6 +412,7 @@ LRESULT WizardDlg::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 		::SetBkMode(hDC, TRANSPARENT);
 		return (LRESULT)GetStockObject(HOLLOW_BRUSH);
 	}
+	*/
 	return FALSE;
 }
 
@@ -430,11 +436,16 @@ void WizardDlg::fixcontrols() {
 	BOOL dl = IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ) != BST_CHECKED;
 	::EnableWindow(GetDlgItem(IDC_DOWNLOAD_SLOTS),				dl);
 	::EnableWindow(GetDlgItem(IDC_MAX_DOWNLOAD_SP),				dl);
+	::EnableWindow(GetDlgItem(IDC_MAX_DL_WIZ),				dl);
+	::EnableWindow(GetDlgItem(IDC_MAX_DL_SPEED_WIZ),				dl);
 
 	BOOL ul = IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ) != BST_CHECKED;
 	::EnableWindow(GetDlgItem(IDC_UPLOAD_SLOTS),				ul);
 	::EnableWindow(GetDlgItem(IDC_MAX_UPLOAD_SP),				ul);
 	::EnableWindow(GetDlgItem(IDC_MAX_AUTO_OPENED),				ul);
+	::EnableWindow(GetDlgItem(IDC_MAX_AUTO_WIZ),				ul);
+	::EnableWindow(GetDlgItem(IDC_OPEN_EXTRA_WIZ),				ul);
+	::EnableWindow(GetDlgItem(IDC_UPLOAD_SLOTS_WIZ),			ul);
 
 
 	TCHAR buf[64];
