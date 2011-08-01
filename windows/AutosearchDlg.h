@@ -27,9 +27,10 @@
 
 class AutosearchPageDlg : public CDialogImpl<AutosearchPageDlg> {
 public:
-	tstring	search, comment;
+	tstring	search, comment, target;
 	int fileType, action, rawToSend;
 	bool display;
+	bool remove;
 
 	enum { IDD = IDD_AUTOSEARCH_DLG };
 
@@ -42,6 +43,7 @@ public:
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDC_AS_ACTION, onAction)
+		COMMAND_HANDLER(IDC_BROWSE, BN_CLICKED, onBrowse)
 	END_MSG_MAP()
 
 
@@ -53,12 +55,13 @@ public:
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
 private:
 //	enum { BUF_LEN = 1024 };
 	CImageList ftImage;
 
-	CEdit ctrlSearch, ctrlCheatingDescription;
+	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget;
 	CComboBox cRaw;
 	CComboBoxEx ctrlFileType;
 	CComboBox cAction;

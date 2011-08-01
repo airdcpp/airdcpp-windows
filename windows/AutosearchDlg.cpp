@@ -31,6 +31,8 @@ AutosearchPageDlg::AutosearchPageDlg() {
 	fileType = 0;
 	action = 0;
 	comment = _T("");
+	remove = false;
+	target = Util::emptyStringT;
 }
 
 AutosearchPageDlg::~AutosearchPageDlg() {
@@ -38,6 +40,8 @@ AutosearchPageDlg::~AutosearchPageDlg() {
 	ctrlFileType.Detach();
 	cAction.Detach();
 	ftImage.Destroy();
+	ctrlTarget.Detach();
+
 }
 
 LRESULT AutosearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -46,6 +50,7 @@ LRESULT AutosearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 
 	ctrlSearch.SetWindowText(search.c_str());
 	ctrlCheatingDescription.SetWindowText(comment.c_str());
+	SetWindowText(target.c_str());
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);
 	ftImage.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
@@ -55,6 +60,9 @@ LRESULT AutosearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	::SetWindowText(GetDlgItem(IDC_SEARCH_FAKE_DLG_SEARCH_STRING), (TSTRING(SEARCH_STRING)).c_str());
 	::SetWindowText(GetDlgItem(IDC_AS_ACTION_STATIC), (TSTRING(ACTION)).c_str());
 	::SetWindowText(GetDlgItem(IDC_ADD_SRCH_STR_TYPE_STATIC), (TSTRING(FILE_TYPE)).c_str());
+	::SetWindowText(GetDlgItem(IDC_REMOVE_ON_HIT), (TSTRING(REMOVE_ON_HIT)).c_str());
+	::SetWindowText(GetDlgItem(IDC_DL_TO), TSTRING(DOWNLOAD_TO).c_str());
+
 	int q = 0;
 	for(size_t i = 0; i < 10; i++) {
 		COMBOBOXEXITEM cbitem = {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
@@ -87,14 +95,29 @@ LRESULT AutosearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	cAction.AddString(CTSTRING(AS_REPORT));
 	cAction.SetCurSel(action);
 
+	CheckDlgButton(IDC_REMOVE_ON_HIT, remove);
+
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(AUTOSEARCH_DLG));
 	return TRUE;
 }
 
+LRESULT AutosearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	TCHAR buf[MAX_PATH];
+
+	GetDlgItemText(IDC_TARGET_PATH, buf, MAX_PATH);
+	tstring x = buf;
+
+	if(WinUtil::browseDirectory(x, m_hWnd) == IDOK) {
+		SetDlgItemText(IDC_TARGET_PATH, x.c_str());
+	}
+	return 0;
+}
+
 LRESULT AutosearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(wID == IDOK) {
 		TCHAR buf[512];
+		TCHAR buf2[MAX_PATH];
 		if (ctrlSearch.GetWindowTextLength() == 0) {
 			MessageBox(CTSTRING(LINE_EMPTY));
 			return 0;
@@ -103,6 +126,11 @@ LRESULT AutosearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 		search = buf;
 		fileType = ctrlFileType.GetCurSel();
 		action = cAction.GetCurSel();
+		remove = IsDlgButtonChecked(IDC_REMOVE_ON_HIT) ? true : false;
+		GetDlgItemText(IDC_TARGET_PATH, buf2, MAX_PATH);
+		target = buf2;
+		if( target[ target.length() -1 ] != _T('\\') )
+			target += _T('\\');
 	}
 	EndDialog(wID);
 	return 0;

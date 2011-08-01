@@ -899,6 +899,9 @@
 #define IDC_GOOGLE_FULL                 1530
 #define IDC_TVCOM                       1531
 #define IDC_GOOGLE_TITLE                1532
+#define IDC_REMOVE_ON_HIT               1533
+#define IDC_DL_TO                       1534
+#define IDC_TARGET_PATH                 1535
 #define IDC_AUTOPRIORITY                1572
 #define IDC_SETTINGS_ODC_MENUBAR        1612
 #define IDC_SETTINGS_ODC_MENUBAR_USETWO 1613

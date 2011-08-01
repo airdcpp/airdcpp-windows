@@ -81,6 +81,7 @@ LRESULT AutosearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	ctrlAutosearch.InsertColumn(0, CTSTRING(SETTINGS_VALUE),		LVCFMT_LEFT, rc.Width() / 3, 0);
 	ctrlAutosearch.InsertColumn(1, CTSTRING(TYPE),					LVCFMT_LEFT, rc.Width() / 8, 0);
 	ctrlAutosearch.InsertColumn(2, CTSTRING(ACTION),				LVCFMT_LEFT, rc.Width() / 6, 0);
+	ctrlAutosearch.InsertColumn(3, CTSTRING(PATH),					LVCFMT_LEFT, rc.Width() / 3, 0);
 	ctrlAutosearch.SetExtendedListViewStyle(LVS_EX_CHECKBOXES | LVS_EX_INFOTIP | LVS_EX_FULLROWSELECT);
 
 	Autosearch::List lst = AutoSearchManager::getInstance()->getAutosearch();
@@ -96,7 +97,7 @@ LRESULT AutosearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 LRESULT AutosearchPage::onAdd(WORD , WORD , HWND , BOOL& ) {
 	AutosearchPageDlg dlg;
 	if(dlg.DoModal() == IDOK) {
-		addEntry(AutoSearchManager::getInstance()->addAutosearch(true, Text::fromT(dlg.search), dlg.fileType, dlg.action), ctrlAutosearch.GetItemCount());
+		addEntry(AutoSearchManager::getInstance()->addAutosearch(true, Text::fromT(dlg.search), dlg.fileType, dlg.action, dlg.remove, Text::fromT(dlg.target)), ctrlAutosearch.GetItemCount());
 	}
 	return 0;
 }
@@ -111,11 +112,15 @@ LRESULT AutosearchPage::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.search = Text::toT(as.getSearchString());
 		dlg.fileType = as.getFileType();
 		dlg.action = as.getAction();
+		dlg.remove = as.getRemove();
+		dlg.target = Text::toT(as.getTarget());
 
 		if(dlg.DoModal() == IDOK) {
 			as.setSearchString(Text::fromT(dlg.search));
 			as.setFileType(dlg.fileType);
 			as.setAction(dlg.action);
+			as.setRemove(dlg.remove);
+			as.setTarget(Text::fromT(dlg.target));
 
 			AutoSearchManager::getInstance()->updateAutosearch(sel, as);
 
@@ -129,7 +134,7 @@ LRESULT AutosearchPage::onChange(WORD , WORD , HWND , BOOL& ) {
 			}else if(dlg.action == 2){
 				ctrlAutosearch.SetItemText(sel, 2, Text::toT(STRING(AS_REPORT)).c_str());
 			}
-
+			ctrlAutosearch.SetItemText(sel, 3, dlg.target.c_str());
 
 		}
 	}
@@ -285,6 +290,7 @@ void AutosearchPage::addEntry(const Autosearch::Ptr as, int pos) {
 	}else if(as->getAction() == 2){
 		lst.push_back(Text::toT("Report Hit in Mainchat"));
 	}
+	lst.push_back(Text::toT(as->getTarget()));
 	int i = ctrlAutosearch.insert(pos, lst, 0, (LPARAM)as->getEnabled());
 	ctrlAutosearch.SetCheckState(i, as->getEnabled());
 }

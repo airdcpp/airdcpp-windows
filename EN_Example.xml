@@ -1347,5 +1347,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SettingsMcnNote">* Lowering the upload connections from the default value will result the download connections to be set to the same value</String>
 		<String Name="SettingsTargetdriveNote">* Using target drive means that unfinished files are always being saved to an own folder on the same drive where the final destination is</String>
 		<String Name="SettingsUseTargetdrive">Use Target Drive for unfinished files</String>
+		<String Name="RemoveOnHit">Remove after found</String>
 	</Strings>
 </Language>
