@@ -209,9 +209,9 @@ void SpeedPage::validateMCNLimits(WORD wNotifyCode) {
 		SetDlgItemText(IDC_MCNULSLOTS, Util::toStringW(uploadAutoSlots + mcnExtrasUL).c_str());
 	}
 
-	if ((Util::toInt(Text::fromT(aSlotsDL)) > uploadAutoSlots) && (Util::toInt(Text::fromT(aSlotsUL)) < uploadAutoSlots)) {
+	if ((Util::toInt(Text::fromT(aSlotsDL)) > Util::toInt(Text::fromT(aSlotsUL))) && (Util::toInt(Text::fromT(aSlotsUL)) < uploadAutoSlots)) {
 		//LogManager::getInstance()->message("Change3");
-		SetDlgItemText(IDC_MCNDLSLOTS, Util::toStringW(uploadAutoSlots).c_str());
+		SetDlgItemText(IDC_MCNDLSLOTS, aSlotsUL.c_str());
 	}
 
 	return;
