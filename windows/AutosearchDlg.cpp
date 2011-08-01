@@ -47,10 +47,11 @@ AutosearchPageDlg::~AutosearchPageDlg() {
 LRESULT AutosearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
+	ATTACH(IDC_TARGET_PATH, ctrlTarget);
 
 	ctrlSearch.SetWindowText(search.c_str());
 	ctrlCheatingDescription.SetWindowText(comment.c_str());
-	SetWindowText(target.c_str());
+	ctrlTarget.SetWindowText(target.c_str());
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);
 	ftImage.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
@@ -129,8 +130,10 @@ LRESULT AutosearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 		remove = IsDlgButtonChecked(IDC_REMOVE_ON_HIT) ? true : false;
 		GetDlgItemText(IDC_TARGET_PATH, buf2, MAX_PATH);
 		target = buf2;
+		if(!target.empty()) {
 		if( target[ target.length() -1 ] != _T('\\') )
 			target += _T('\\');
+		}
 	}
 	EndDialog(wID);
 	return 0;
