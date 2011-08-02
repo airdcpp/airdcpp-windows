@@ -480,11 +480,7 @@ Changed:
 
 #The program will now be installed to Program Files\AirDC++ by default, if an old installation isn't being found
 #The program is being launched by default when the installation has been finished
-#Settings sharingpage shows now "correct" sizes of realpaths
-#refresh incoming refreshes only the selected realpath
-#Option to expand downloads in transferview = option to not group downloads
 #removed some nowadays useless refresh settings
-#Use recursive partial lists when downloading folders from a partial lists if the content of all subfolders isn't known
 #Better performance for detecting dupe folders in search
 #Don't show "Matched X files" when matching partial lists
 #Option expand downloads in transferview => not group them
