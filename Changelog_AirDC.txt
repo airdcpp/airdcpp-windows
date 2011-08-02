@@ -464,10 +464,12 @@ Added:
 
 #Multiple connections per user and a dedicated slot for partial lists and small files (ADC only)
 #Show modify dates, folder sizes and dupes in partial lists
+#Automatic detection for download/upload limits
 #The window positions are now being saved
 #Favorite Download directories can be ordered in settings
 #An option to choose if recursive partial lists are always being used for adding sources for the whole release
 #An option to set the download speed in settings + validation for all line speed values
+#Broadcast the download speed for all users in ADC hubs
 
 Changed:
 
@@ -482,7 +484,10 @@ Changed:
 #Don't show "Matched X files" when matching partial lists
 #Option expand downloads in transferview => not group them
 #Updated pcre regex
-#SDC merge
+#SDC (DC++ core) merge (connection auto detection improvements, the KEYP ADC extension etc.)
+#New wizard layout
+#Show the formated size for folders in ADC searches
+#Use recursive partial list for downloading incomplete folders from partial lists
 
 Fixed:
 
@@ -495,3 +500,4 @@ Fixed:
 Removed:
 
 #Refresh delay setting (client wont refresh on startup unless couldnt load share cache)
+#The options "Extra slots for fellow AirDC users" and "Maximum simultaneous files" 

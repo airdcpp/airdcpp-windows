@@ -410,6 +410,8 @@ private:
 				case COLUMN_SIZE: 
 					if(sr->getType() == SearchResult::TYPE_FILE) {
 						return Util::formatBytesW(sr->getSize());
+					} else if (SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR) {
+						return sr->getSize() > 0 ? Util::formatBytesW(sr->getSize()) : Util::emptyStringT;
 					} else {
 						return Util::emptyStringT;
 					}					
