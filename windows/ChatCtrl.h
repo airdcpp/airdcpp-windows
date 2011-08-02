@@ -81,6 +81,10 @@ public:
 		COMMAND_ID_HANDLER(IDC_IMDB, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_TVCOM, onSearchSite)
 		COMMAND_ID_HANDLER(IDC_METACRITIC, onSearchSite)
+		COMMAND_ID_HANDLER(IDC_DOWNLOAD, onDownload)
+		COMMAND_ID_HANDLER(IDC_DOWNLOADTO, onDownloadTo)
+		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + FavoriteManager::getInstance()->getFavoriteDirs().size(), onDownloadFavoriteDirs)
+		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_TARGET, IDC_DOWNLOAD_TARGET + WinUtil::lastDirs.size(), onDownloadTarget)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
 
 		CHAIN_COMMANDS(ucBase)
@@ -126,6 +130,12 @@ public:
 	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDoubleClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 //	void setClient(Client* pClient) { client = pClient; }
+
+	LRESULT onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onDownloadTarget(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) ;
+
 	void runUserCommand(UserCommand& uc);
 
 	//void AdjustTextSize();
@@ -149,6 +159,14 @@ private:
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);
 	bool HitURL();
 
+	void enableAutosearch() {
+		//enable the autosearch once added something for it.. will change when move autosearch into frame anyway.
+		if(!BOOLSETTING(AUTOSEARCH_ENABLED)) 
+		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_ENABLED, true);
+		if(!BOOLSETTING(AUTOSEARCH_ENABLED_TIME)) 
+		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_ENABLED_TIME, true);
+	}
+	tstring getSearchString();
 	tstring WordFromPos(const POINT& p);
 	BOOL isRelease(POINT pt, BOOL search);
 	tstring LineFromPos(const POINT& p) const;
@@ -183,6 +201,7 @@ private:
 	
 	OMenu copyMenu;
 	OMenu SearchMenu;
+	OMenu targetMenu;
 	CContainedWindow ccw;
 
 	tstring selectedLine;

@@ -496,7 +496,7 @@ void WizardDlg::setLang() {
 void WizardDlg::setDownloadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ)) {
-		int dlSlots=Util::getSlots(true, value, IsDlgButtonChecked(IDC_RAR));
+		int dlSlots=Util::getSlots(true, value, IsDlgButtonChecked(IDC_RAR) ? true : false);
 		SetDlgItemText(IDC_DOWNLOAD_SLOTS, Util::toStringW(dlSlots).c_str());
 	
 		int dlLimit=Util::getSpeedLimit(true, value);
@@ -508,7 +508,7 @@ void WizardDlg::setUploadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ)) {
 
-		int ulSlots=Util::getSlots(false, value, IsDlgButtonChecked(IDC_RAR));
+		int ulSlots=Util::getSlots(false, value, IsDlgButtonChecked(IDC_RAR) ? true : false);
 		SetDlgItemText(IDC_UPLOAD_SLOTS, Util::toStringW(ulSlots).c_str());
 	
 		int ulLimit=Util::getSpeedLimit(false, value);

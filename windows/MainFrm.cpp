@@ -1046,23 +1046,24 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 		if(!SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T)-1, (SIZE_T)-1))
 		LogManager::getInstance()->message("Minimize Process WorkingSet Failed: "+ Util::translateError(GetLastError()));
 		}
-			if(BOOLSETTING(AUTO_AWAY)) {
-			if(bAppMinimized == false)
-			if(Util::getAway() == true) {
+			if(BOOLSETTING(AUTO_AWAY) && (bAppMinimized == false) ) {
+			
+			if(Util::getAway()) {
 				awaybyminimize = false;
 			} else {
 				awaybyminimize = true;
 				Util::setAway(true, true);
 				setAwayButton(true);
 				ClientManager::getInstance()->infoUpdated();
-			}
-		}
+					}
+				}
+			bAppMinimized = true; //set this here, on size is called twice if minimize to tray.
 
 		if(BOOLSETTING(MINIMIZE_TRAY) != WinUtil::isShift()) {
 			ShowWindow(SW_HIDE);
 			SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS);
 		}
-		bAppMinimized = true;
+		
 		maximized = IsZoomed() > 0;
 	} else if( (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED) ) {
 		SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);

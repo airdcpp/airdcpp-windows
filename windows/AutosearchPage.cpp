@@ -280,6 +280,9 @@ void AutosearchPage::write() {
 }
 
 void AutosearchPage::addEntry(const Autosearch::Ptr as, int pos) {
+	if(as == NULL)
+		return;
+
 	TStringList lst;
 	lst.push_back(Text::toT(as->getSearchString()));
 	lst.push_back(Text::toT(getType(as->getFileType())));
