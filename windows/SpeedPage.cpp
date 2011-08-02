@@ -89,15 +89,25 @@ void SpeedPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_SLOTS),					ul);
 	::EnableWindow(GetDlgItem(IDC_MIN_UPLOAD_SPEED),		ul);
 	::EnableWindow(GetDlgItem(IDC_AUTO_SLOTS),				ul);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_UPLOADS_SLOTS),	ul);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_AUTO_SLOTS),		ul);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_UPLOADS_MIN_SPEED),	ul);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_KBPS),			ul);
 
 	BOOL dl = IsDlgButtonChecked(IDC_DL_AUTODETECT) != BST_CHECKED;
 	::EnableWindow(GetDlgItem(IDC_DOWNLOADS),				dl);
 	::EnableWindow(GetDlgItem(IDC_MAXSPEED),				dl);
 	::EnableWindow(GetDlgItem(IDC_EXTRA_DOWN_SLOT),			dl);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_DOWNLOADS_MAX),	dl);
+	::EnableWindow(GetDlgItem(IDC_EXTRA_DOWNLOADS_MAX),		dl);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE),	dl);
 
 	BOOL mcn = IsDlgButtonChecked(IDC_MCN_AUTODETECT) != BST_CHECKED;
 	::EnableWindow(GetDlgItem(IDC_MCNDLSLOTS),				mcn);
 	::EnableWindow(GetDlgItem(IDC_MCNULSLOTS),				mcn);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_MAX_MCN_DL),		mcn);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_MAX_MCN_UL),		mcn);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_MCN_NOTE),		mcn);
 }
 
 LRESULT SpeedPage::onSpeedChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/)
