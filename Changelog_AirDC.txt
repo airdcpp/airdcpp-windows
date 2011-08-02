@@ -470,6 +470,11 @@ Added:
 #An option to choose if recursive partial lists are always being used for adding sources for the whole release
 #An option to set the download speed in settings + validation for all line speed values
 #Broadcast the download speed for all users in ADC hubs
+#/save command for saving share cache ( for big sharing users )
+#Autosearch option to spesify "download to" path
+#Autosearch option to remove item after found
+#Download & Download to rightclick for releasenames in chat ( release is added to autosearch list! )
+!!Warning Adding Release to autosearch list enables AUTOSEARCH, so check old items in the list!!
 
 Changed:
 
@@ -488,14 +493,17 @@ Changed:
 #New wizard layout
 #Show the formated size for folders in ADC searches
 #Use recursive partial list for downloading incomplete folders from partial lists
+#cache share to share.xml instead of bzipping it(faster)
 
 Fixed:
 
 #A few crashes
-#Probably fix the auto away "bug"
 #The option to disable SFV check for hashed files is working now
 #The scanner will ignore oversized SFV files and too short filenames in SFV files and won't check hidden system folders
 #Hidden system folders are also considered as hidden now
+#Auto Away mode with minimized to tray
+#prevent the password protect dialog from showing multiple times
+#fix finishedframe crash
 
 Removed:
 
