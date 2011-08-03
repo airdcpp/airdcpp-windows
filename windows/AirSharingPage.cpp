@@ -20,7 +20,9 @@ PropPage::ListItem AirSharingPage::listItems[] = {
 	{ SettingsManager::CHECK_EXTRA_FILES, ResourceManager::CHECK_EXTRA_FILES },
 	{ SettingsManager::CHECK_DUPES, ResourceManager::CHECK_DUPES },
 	{ SettingsManager::CHECK_EMPTY_DIRS, ResourceManager::CHECK_EMPTY_DIRS },
-	{ SettingsManager::CHECK_EMPTY_DIRS, ResourceManager::CHECK_EMPTY_RELEASES },
+	{ SettingsManager::CHECK_EMPTY_RELEASES, ResourceManager::CHECK_EMPTY_RELEASES },
+	{ SettingsManager::CHECK_USE_SKIPLIST, ResourceManager::CHECK_USE_SKIPLIST },
+	{ SettingsManager::CHECK_IGNORE_ZERO_BYTE, ResourceManager::CHECK_IGNORE_ZERO_BYTE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

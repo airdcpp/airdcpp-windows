@@ -1349,5 +1349,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SettingsUseTargetdrive">Use Target Drive for unfinished files</String>
 		<String Name="RemoveOnHit">Remove after found</String>
 		<String Name="SearchAdded">Search Added to Autosearch List: </String>
+		<String Name="CheckUseSkiplist">Ignore items matching the share skiplist</String>
+		<String Name="CheckIgnoreZeroByte">Ignore zero byte files</String>
 	</Strings>
 </Language>
