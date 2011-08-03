@@ -699,11 +699,7 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 			if(WinUtil::isShift())
 				QueueManager::getInstance()->setPriority(target, QueueItem::HIGHEST);
 		} else {
-			bool adc=false;
-			if (!si->sr->getUser()->isSet(User::NMDC)) {
-				adc=true;
-			}
-			QueueManager::getInstance()->addDirectorySearch(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt), adc,
+			QueueManager::getInstance()->addDirectory(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt),
 				WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 		}
 	} catch(const Exception&) {
@@ -712,17 +708,13 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 
 void SearchFrame::SearchInfo::DownloadWhole::operator()(SearchInfo* si) {
 	try {
-		bool adc=false;
-		if (!si->sr->getUser()->isSet(User::NMDC)) {
-			adc=true;
-		}
 		QueueItem::Priority prio = WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT;
 		if(si->sr->getType() == SearchResult::TYPE_FILE) {
-			QueueManager::getInstance()->addDirectorySearch(Text::fromT(si->getText(COLUMN_PATH)),
-				HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt), adc, prio);
+			QueueManager::getInstance()->addDirectory(Text::fromT(si->getText(COLUMN_PATH)),
+				HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt), prio);
 		} else {
-			QueueManager::getInstance()->addDirectorySearch(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), 
-				Text::fromT(tgt), adc, prio);
+			QueueManager::getInstance()->addDirectory(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), 
+				Text::fromT(tgt), prio);
 		}
 	} catch(const Exception&) {
 	}
@@ -742,7 +734,7 @@ void SearchFrame::SearchInfo::DownloadTarget::operator()(SearchInfo* si) {
 			if (!si->sr->getUser()->isSet(User::NMDC)) {
 				adc=true;
 			}
-			QueueManager::getInstance()->addDirectorySearch(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt), adc,
+			QueueManager::getInstance()->addDirectory(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt),
 				WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 		}
 	} catch(const Exception&) {
