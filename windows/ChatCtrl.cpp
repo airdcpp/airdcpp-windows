@@ -997,6 +997,7 @@ LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	selectedIP.clear();
 	selectedUser.clear();
 	selectedURL.clear();
+	selectedWord.clear();
 
 	bHandled = FALSE;
 	return 0;
@@ -1038,7 +1039,13 @@ LRESULT ChatCtrl::onClientEnLink(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*
 }
 
 LRESULT ChatCtrl::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	Copy();
+	CHARRANGE cr;
+	GetSel(cr);
+	if(cr.cpMax != cr.cpMin)
+		Copy();
+	else
+		WinUtil::setClipboard(selectedWord);
+	
 	return 0;
 }
 
@@ -1494,41 +1501,51 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	if(len < 3)
 		return Util::emptyStringT;
 
-	long begin =  0;
-	long end  = 0;
+	int begin =  0;
+	int end  = 0;
 	
-	//Walk it thru, want the whole word / releasename instead of just until -
+	long l_Start = LineIndex(line);
+	long l_End = LineIndex(line) + LineLength(iCharPos);
 	
-	int start = LineIndex(line);
-	int lineEnd = LineIndex(line) + LineLength(iCharPos);
 	
+	tstring Line;
+	len = l_End - l_Start;
+	Line.resize(len);
+	GetTextRange(l_Start, l_End, &Line[0]); //pick the current line from text for starters
+
+	iCharPos = iCharPos - l_Start; //modify the charpos within the range of our new line.
+
+	begin = Line.find_last_of(_T(" \t\r"), iCharPos) + 1;	
+	end = Line.find_first_of(_T(" \t\r"), begin);
+			if(end == tstring::npos) {
+				end = Line.length();
+			}
+	/*	
 	for( begin = iCharPos; begin >= start; begin-- ) {
-		
 		if( FindWordBreak( WB_ISDELIMITER, begin ))
 			break;
 	}
-
 	begin++;
-
 	for( end = iCharPos; end < lineEnd; end++ ) {
 		if(FindWordBreak( WB_ISDELIMITER, end ))
 			break;
 	}
-
+	*/
 	len = end - begin;
 	
-	if(len <= 0)
+	if(len <= 3)
 	return Util::emptyStringT;
 
 	tstring sText;
-	sText.resize(len);
-	GetTextRange(begin, end, &sText[0]);
+	sText = Line.substr(begin, end-begin);
+	//sText.resize(len);
+	//GetTextRange(begin, end, &sText[0]);
 	
-	if(!sText.empty()) {
+	if(!sText.empty()) 
 		return sText;
-	} else {
+	
 		return Util::emptyStringT;
-	}
+	
 }
 LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
