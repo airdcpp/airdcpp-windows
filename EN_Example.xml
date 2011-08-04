@@ -294,7 +294,7 @@
 		<String Name="LibCrash">Application ""%s"" caused an unhandled exception in AirDC++. Please uninstall it, upgrade it or use an alternate product.</String>
 		<String Name="Limit">Upload Limit</String>
 		<String Name="ListenerFailed">Listening socket failed (you need to restart AirDC++): </String>
-		<String Name="LoadedFileList">File list loaded.</String>
+		<String Name="LoadedFileList">File list loaded in </String>
 		<String Name="Loading">Loading AirDC++, please wait...</String>
 		<String Name="LoadingFileList">Loading file list, this may take a while if the list is large.</String>
 		<String Name="Lock">Lock</String>

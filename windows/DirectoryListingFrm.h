@@ -318,6 +318,8 @@ private:
 	void back();
 	void forward();
 
+	int64_t loadTime;
+
 	class ItemInfo : public FastAlloc<ItemInfo> {
 	public:
 		enum ItemType {
@@ -467,7 +469,10 @@ protected:
 private:
 	int run() {
 		try {
+			mWindow->loadTime = 0;
+			int64_t start = GET_TICK();
 			if(!mFile.empty()) {
+				
 				
 				bool checkdupe = true;
 				if(mylist) {
@@ -490,6 +495,8 @@ private:
 				mWindow->refreshTree(Text::toT(Util::toNmdcFile(mWindow->dl->updateXML(mTxt, true))));
 			}
 
+			int64_t end = GET_TICK();
+			mWindow->loadTime = (end - start) / 1000;
 			mWindow->PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED);
 		} catch(const AbortException) {
 			mWindow->PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED);

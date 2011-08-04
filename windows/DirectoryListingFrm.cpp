@@ -1626,7 +1626,10 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*
 			loading = false;
 			initStatus();
 			ctrlStatus.SetFont(WinUtil::systemFont);
-			ctrlStatus.SetText(0, CTSTRING(LOADED_FILE_LIST));
+			//tstring tmp = TSTRING(LOADED_FILE_LIST) + Util::formatSeconds(loadTime);
+			//tmp.resize(STRING(LOADED_FILE_LIST).size() + 16);
+			//tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(LOADED_FILE_LIST), Util::formatSeconds(loadTime)));
+			ctrlStatus.SetText(0, (TSTRING(LOADED_FILE_LIST) + Util::formatSeconds(loadTime, true)).c_str());
 			ctrlTree.EnableWindow(TRUE);
 
 			//notify the user that we've loaded the list
