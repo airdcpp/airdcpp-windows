@@ -47,8 +47,11 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, Resourc
 DirectoryListingFrame::UserMap DirectoryListingFrame::lists;
 
 void DirectoryListingFrame::openWindow(const tstring& aFile, const tstring& aDir, const HintedUser& aUser, int64_t aSpeed, bool myList) {
+
 	UserIter i = lists.find(aUser);
 	if(i != lists.end()) {
+		if(i->second->loading)
+			return;
 		if(!BOOLSETTING(POPUNDER_FILELIST)) {
 			i->second->speed = aSpeed;
 			i->second->MDIActivate(i->second->m_hWnd);
@@ -71,8 +74,11 @@ void DirectoryListingFrame::openWindow(const tstring& aFile, const tstring& aDir
 }
 
 void DirectoryListingFrame::openWindow(const HintedUser& aUser, const string& txt, int64_t aSpeed, bool myList) {
+
 	UserIter i = lists.find(aUser);
 	if(i != lists.end()) {
+		if(i->second->loading)
+			return;
 		i->second->speed = aSpeed;
 		i->second->loadXML(txt);
 	} else {
@@ -96,6 +102,7 @@ DirectoryListingFrame::DirectoryListingFrame(const HintedUser& aUser, int64_t aS
 }
 
 void DirectoryListingFrame::loadFile(const tstring& name, const tstring& dir) {
+	
 	ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 	//don't worry about cleanup, the object will delete itself once the thread has finished it's job
 	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(name), Util::emptyString, dir, mylist);
