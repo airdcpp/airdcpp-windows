@@ -474,6 +474,7 @@ Added:
 #Autosearch option to spesify "download to" path
 #Autosearch option to remove item after found
 #Download & Download to rightclick for releasenames in chat ( release is added to autosearch list! )
+#Added options for ignoring files in skiplist and empty files when scanning the share
 !!Warning Adding Release to autosearch list enables AUTOSEARCH, so check old items in the list!!
 
 Changed:
@@ -490,6 +491,7 @@ Changed:
 #Show the formated size for folders in ADC searches
 #Use recursive partial list for downloading incomplete folders from partial lists
 #cache share to share.xml instead of bzipping it(faster)
+#Allow adding multiple partial filelists from the same user in the queue
 
 Fixed:
 
@@ -499,7 +501,9 @@ Fixed:
 #Hidden system folders are also considered as hidden now
 #Auto Away mode with minimized to tray
 #prevent the password protect dialog from showing multiple times
-#fix finishedframe crash
+#Detect invalid SFV files when scanning the share
+#Detect quoted file names in SFV files
+#Download all folders with an unknown content from partial file lists (not just the first one selected)
 
 Removed:
 

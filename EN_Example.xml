@@ -1351,6 +1351,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SearchAdded">Search Added to Autosearch List: </String>
 		<String Name="CheckUseSkiplist">Ignore items matching the share skiplist</String>
 		<String Name="CheckIgnoreZeroByte">Ignore zero byte files</String>
-		<String Name="NoFilesAvailable">No files available</String>
+		<String Name="NoFilesAvailable">No files to download</String>
 	</Strings>
 </Language>
