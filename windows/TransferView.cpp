@@ -629,7 +629,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			int pos = -1;
 			ItemInfo* ii = findItem(ui, pos);
 			if(ii) {
-				if(ui.download) {
+				if(ui.download &&  !noGroup) {
 					ctrlTransfers.removeGroupedItem(ii);
 				} else {
 					dcassert(pos != -1);
