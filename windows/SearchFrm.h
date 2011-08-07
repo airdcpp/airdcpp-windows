@@ -329,7 +329,7 @@ private:
 			
 			if(BOOLSETTING(DUPE_SEARCH)) {
 			if(sr->getType() == SearchResult::TYPE_DIRECTORY)
-				dupe = ShareManager::getInstance()->isDirShared(sr->getFileName());
+				dupe = ShareManager::getInstance()->isDirShared(sr->getFile());
 			else
 			dupe = ShareManager::getInstance()->isTTHShared(sr->getTTH());
 			}
