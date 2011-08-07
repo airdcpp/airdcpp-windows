@@ -243,6 +243,21 @@ LRESULT FavHubProperties::OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWn
 		tmp.Detach();
 	}
 
+	
+	CComboBox combo;
+	combo.Attach(GetDlgItem(IDC_ENCODING));
+	tstring address;
+	address.resize(1024);
+	address.resize(GetDlgItemText(IDC_HUBADDR, &address[0], 1024));
+
+	if(strnicmp("adc://", Text::fromT(address).c_str(), 6) == 0 || strnicmp("adcs://", Text::fromT(address).c_str(), 7) == 0) {
+		combo.SetCurSel(4); // select UTF-8 for ADC hubs
+		combo.EnableWindow(false);
+	} else {
+		combo.EnableWindow(true);
+	}
+	combo.Detach();
+
 	return TRUE;
 }
 
