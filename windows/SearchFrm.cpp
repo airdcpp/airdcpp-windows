@@ -730,10 +730,6 @@ void SearchFrame::SearchInfo::DownloadTarget::operator()(SearchInfo* si) {
 			if(WinUtil::isShift())
 				QueueManager::getInstance()->setPriority(target, QueueItem::HIGHEST);
 		} else {
-			bool adc=false;
-			if (!si->sr->getUser()->isSet(User::NMDC)) {
-				adc=true;
-			}
 			QueueManager::getInstance()->addDirectory(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt),
 				WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 		}

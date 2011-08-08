@@ -1804,7 +1804,9 @@ void WinUtil::getContextMenuPos(CEdit& aEdit, POINT& aPt) {
 }
 
 void WinUtil::openFolder(const tstring& file) {
-	if(file.empty())
+	if(file.empty() )
+		return;
+	if(!Util::fileExists(Text::fromT(file)))
 		return;
 
 	if (File::getSize(Text::fromT(file)) != -1)
