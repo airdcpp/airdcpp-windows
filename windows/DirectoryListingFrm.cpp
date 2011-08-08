@@ -771,17 +771,26 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			tstring path = Util::emptyStringT; 
 	
 			if(ii->type == ItemInfo::FILE){
+			try {
 			path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-			
+			}catch(...) {
+				path = Util::emptyStringT;
+				goto clientmenu;
+			}
+
 			} else if(ii->type == ItemInfo::DIRECTORY) {
-				
+				try {
 				//Fix this Someway
 				StringList localpaths = dl->getLocalPaths(ii->dir);
 				for(StringIterC i = localpaths.begin(); i != localpaths.end(); i++) {
 					path = Text::toT(*i);
 					dirs++; //if we count more than 1 its a virtualfolder
 						}	
-					}
+				}catch(...) {
+				path = Util::emptyStringT;
+				goto clientmenu;
+				}
+			}
 			
 				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF && !path.empty() && (dirs <= 1) ){ // Check that the file still exists
 					CShellContextMenu shellMenu;
@@ -1769,17 +1778,23 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 		
 		if(ii->type == ItemInfo::FILE) {
 			try{
-			path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-			}catch(...) {
-			}
-			} else {
-			if(ii->dir->getFileCount() > 0) {
+			
+				path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+			
+				}catch(...) { }
+
+			} else if(mylist && ii->type == ItemInfo::DIRECTORY){
+				StringList tmp = dl->getLocalPaths(ii->dir);
+				if(tmp.empty())
+					return 0;
+				
+				path = Text::toT(*tmp.begin());  //could open all virtualfolders but some have so many.
+
+			} else if(ii->dir->getFileCount() > 0) {
 				DirectoryListing::File::Iter i = ii->dir->files.begin();
-				if(!mylist) {
 				for(; i != ii->dir->files.end(); ++i) {
 					if((*i)->getDupe())
 						break;
-				}
 				}
 				if(i != ii->dir->files.end()) {
 					try{
@@ -1791,7 +1806,6 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 					}catch(...) {}
 				}
 			}
-		}
 
 		if(wID == IDC_OPEN) {
 			WinUtil::openFile(path);
