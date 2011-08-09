@@ -39,7 +39,7 @@ bool Mapper_MiniUPnPc::init() {
 
 	UPNPDev* devices = upnpDiscover(2000,
 		SettingsManager::getInstance()->isDefault(SettingsManager::BIND_ADDRESS) ? nullptr : SETTING(BIND_ADDRESS).c_str(),
-		0, 0);
+		0, 0, 0, 0);
 	if(!devices)
 		return false;
 
@@ -65,7 +65,7 @@ void Mapper_MiniUPnPc::uninit() {
 bool Mapper_MiniUPnPc::add(const unsigned short port, const Protocol protocol, const string& description) {
 	const string port_ = Util::toString(port);
 	return UPNP_AddPortMapping(url.c_str(), service.c_str(), port_.c_str(), port_.c_str(),
-		Util::getLocalIp().c_str(), description.c_str(), protocols[protocol], 0) == UPNPCOMMAND_SUCCESS;
+		Util::getLocalIp().c_str(), description.c_str(), protocols[protocol], 0, 0) == UPNPCOMMAND_SUCCESS;
 }
 
 bool Mapper_MiniUPnPc::remove(const unsigned short port, const Protocol protocol) {

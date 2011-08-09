@@ -183,11 +183,10 @@ public:
         pn.swap(other.pn);
     }
 
-    template<typename Y>
-    void _internal_aliasing_assign(weak_ptr<Y> const & r, T * px2)
+    void _internal_assign(T * px2, boost::detail::shared_count const & pn2)
     {
         px = px2;
-        pn = r.pn;
+        pn = pn2;
     }
 
     template<class Y> bool _internal_less(weak_ptr<Y> const & rhs) const
@@ -226,6 +225,6 @@ template<class T> void swap(weak_ptr<T> & a, weak_ptr<T> & b)
 
 #ifdef BOOST_MSVC
 # pragma warning(pop)
-#endif
+#endif    
 
 #endif  // #ifndef BOOST_SMART_PTR_WEAK_PTR_HPP_INCLUDED

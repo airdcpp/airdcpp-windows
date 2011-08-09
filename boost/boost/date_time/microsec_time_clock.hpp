@@ -6,7 +6,7 @@
  * Boost Software License, Version 1.0. (See accompanying
  * file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
  * Author: Jeff Garland, Bart Garst
- * $Date: 2010-04-15 18:23:56 +0300 (to, 15 huhti 2010) $
+ * $Date: 2010-05-10 05:15:48 -0400 (Mon, 10 May 2010) $
  */
 
 

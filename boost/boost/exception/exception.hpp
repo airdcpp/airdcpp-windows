@@ -132,7 +132,17 @@ boost
             }
         };
 
+#if defined(__GNUC__)
+# if (__GNUC__ == 4 && __GNUC_MINOR__ >= 1) || (__GNUC__ > 4)
+#  pragma GCC visibility push (default)
+# endif
+#endif
     class exception;
+#if defined(__GNUC__)
+# if (__GNUC__ == 4 && __GNUC_MINOR__ >= 1) || (__GNUC__ > 4)
+#  pragma GCC visibility pop
+# endif
+#endif
 
     template <class T>
     class shared_ptr;
@@ -224,8 +234,7 @@ boost
 #endif
             ;
 
-#if (defined(__MWERKS__) && __MWERKS__<=0x3207) || (defined(_MSC_VER) && _MSC_VER<=1310) || \
-  defined(__BORLANDC__)  // Tested at Embarcadero/CodeGear C++ version 6.21.
+#if (defined(__MWERKS__) && __MWERKS__<=0x3207) || (defined(_MSC_VER) && _MSC_VER<=1310)
         public:
 #else
         private:
@@ -345,7 +354,7 @@ boost
         struct
         enable_error_info_return_type
             {
-            typedef typename enable_error_info_helper<T,sizeof(exception_detail::dispatch_boost_exception((T*)0))>::type type;
+            typedef typename enable_error_info_helper<T,sizeof(exception_detail::dispatch_boost_exception(static_cast<T *>(0)))>::type type;
             };
         }
 

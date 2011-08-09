@@ -172,6 +172,8 @@
     <ClCompile Include="miniupnpc.c" />
     <ClCompile Include="miniwget.c" />
     <ClCompile Include="minixml.c" />
+    <ClCompile Include="portlistingparse.c" />
+    <ClCompile Include="receivedata.c" />
     <ClCompile Include="upnpcommands.c" />
     <ClCompile Include="upnperrors.c" />
     <ClCompile Include="upnpreplyparse.c" />
@@ -186,8 +188,11 @@
     <ClInclude Include="minissdpc.h" />
     <ClInclude Include="miniupnpc.h" />
     <ClInclude Include="miniupnpcstrings.h" />
+    <ClInclude Include="miniupnpctypes.h" />
     <ClInclude Include="miniwget.h" />
     <ClInclude Include="minixml.h" />
+    <ClInclude Include="portlistingparse.h" />
+    <ClInclude Include="receivedata.h" />
     <ClInclude Include="upnpcommands.h" />
     <ClInclude Include="upnperrors.h" />
     <ClInclude Include="upnpreplyparse.h" />

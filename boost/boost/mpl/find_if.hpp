@@ -10,9 +10,9 @@
 //
 // See http://www.boost.org/libs/mpl for documentation.
 
-// $Id: find_if.hpp 49239 2008-10-10 09:10:26Z agurtovoy $
-// $Date: 2008-10-10 12:10:26 +0300 (pe, 10 loka 2008) $
-// $Revision: 49239 $
+// $Id: find_if.hpp 49274 2008-10-11 07:22:05Z agurtovoy $
+// $Date: 2008-10-11 03:22:05 -0400 (Sat, 11 Oct 2008) $
+// $Revision: 49274 $
 
 #include <boost/mpl/aux_/find_if_pred.hpp>
 #include <boost/mpl/arg.hpp>
