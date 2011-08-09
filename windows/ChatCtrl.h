@@ -219,6 +219,7 @@ private:
 	PME regUrl, regRelease;
 	int64_t lastTick;
 	bool isLink(POINT pt);
+	tstring getShortLink(POINT pt);
 	bool handCursor;
 };
 

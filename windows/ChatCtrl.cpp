@@ -43,6 +43,7 @@ ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false) 
 	regUrl.Init(_T("(((?:[a-z][\\w-]{0,10})?:/{1,3}|www\\d{0,3}[.]|magnet:\\?[^\\s=]+=|spotify:|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"), boost::regex_constants::icase);
 	regUrl.study();
 	handCursor=false;
+	lastTick = GET_TICK();
 	emoticonsManager->inc();
 }
 
@@ -712,6 +713,11 @@ LRESULT ChatCtrl::onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
         SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW))) ;
 		return 1;
     }
+
+	if (handCursor) {
+		SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_HAND)));
+		return 1;
+	}
     bHandled = FALSE;
 	return 0;
 }
@@ -1014,34 +1020,39 @@ LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 
 LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	if (lastTick+100 > GET_TICK())
+		return TRUE;
+	lastTick=GET_TICK();
+
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
 	if (isLink(pt)) {
-		handCursor=true;
-		SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_HAND)));
+		if (!handCursor) {
+			handCursor=true;
+			SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_HAND)));
+		}
+		return TRUE;
 	} else if (handCursor) {
 		handCursor=false;
 		SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+		return TRUE;
 	}
 
-	return 1;
+	return FALSE;
 }
 
 bool ChatCtrl::isLink(POINT pt) {
-	//int64_t start = GET_TICK();
 	bool found=false;
 	tstring word = WordFromPos(pt);
+	if (word.empty())
+		return false;
 
 	if (regUrl.match(word) > 0) {
 		found=true;
 	} else if (regRelease.match(word) > 0) {
 		found=true;
 	} else {
-		tstring line=LineFromPos(pt);
-		for(TStringMap::iterator i = shortLinks.begin(); i != shortLinks.end(); i++) {
-			if(line.find(i->first) != tstring::npos) {
-				found=true;
-				break;
-			}
+		if (!getShortLink(pt).empty()) {
+			found=true;
 		}
 	}
 
@@ -1049,8 +1060,6 @@ bool ChatCtrl::isLink(POINT pt) {
 		return true;
 	else 
 		return false;
-
-	//int64_t end = GET_TICK();
 }
 
 LRESULT ChatCtrl::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -1102,27 +1111,45 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 	tstring sText;
 	sText = Line.substr(begin, end-begin);
 
-
+	tstring link;
+	link=getShortLink(pt);
 	if (!rightButton) {
-		if(shortLinks.find(sText) == shortLinks.end()) {
+		if(link.empty()) {
 			WinUtil::openLink(sText);
 		} else {
-			size_t found = Text::fromT(shortLinks[sText]).find("magnet:?");
-			if (found != string::npos) {
-				WinUtil::parseMagnetUri(shortLinks[sText]);
+			if (Text::fromT(link.substr(0,8)) == "magnet:?") {
+				WinUtil::parseMagnetUri(shortLinks[link]);
 			} else {
-				WinUtil::openLink(shortLinks[sText]);
+				WinUtil::openLink(shortLinks[link]);
 			}
 		}
 		return 1;
 	} else {
-		if(shortLinks.find(sText) != shortLinks.end())
-			selectedURL = shortLinks[sText];
-		SetSel(l_Start+begin, l_Start+begin+sText.length());
+		if (link.empty()) {
+			SetSel(l_Start+begin, l_Start+begin+sText.length());
+		} else {
+			SetSel(l_Start+begin, l_Start+begin+link.length());
+		}
 		InvalidateRect(NULL);
 	}
 
 	return 0;
+}
+
+tstring ChatCtrl::getShortLink(POINT pt) {
+	tstring line=LineFromPos(pt);
+	tstring word;
+	bool found=false;
+	for(TStringMap::iterator i = shortLinks.begin(); i != shortLinks.end(); i++) {
+		if(line.find(i->first) != tstring::npos) {
+			//if there are multiple shortlinks on the same line.. this should be accurate enough
+			word=WordFromPos(pt);
+			if (!word.empty() && i->first.find(word) != tstring::npos) {
+				return i->first;
+			}
+		}
+	}
+	return Util::emptyStringT;
 }
 
 LRESULT ChatCtrl::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
