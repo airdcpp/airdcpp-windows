@@ -177,8 +177,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	*/
 	WinUtil::SetIcon(m_hWnd, _T("hub.ico"));
 
-	UpdateIcons = true;
-	now = 0;
 
 	if(fhe != NULL){
 		//retrieve window position
@@ -188,8 +186,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 			MoveWindow(rc, TRUE);
 	}
-
-	UserlistUpdated = false;
 	
 	bHandled = FALSE;
 	client->connect();
@@ -687,8 +683,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 //			unsetIconState();
 			wentoffline = false;
 			setDisconnected(false);
-			UpdateIcons = true;
-			now = 0;
+			
 
 			
 			tstring text = Text::toT(client->getCipherName());
@@ -1796,15 +1791,15 @@ void HubFrame::resortForFavsFirst(bool justDoIt /* = false */) {
 	}
 }
 
-void HubFrame::on(Second, uint64_t aTick) noexcept {
-	if((UpdateIcons == true) && (UserlistUpdated == true)){	// do this only the one time
-		if(client->isConnected() == true){
-			//start timer only set when client is fully connected
-			if(now == 0){
-				now = GET_TICK();
-			}else{
-		if(now + 5*1000 <= aTick) { // a Small delay for the late myinfos in some hubs
+void HubFrame::on(Second, uint64_t /*aTick*/) noexcept {
+	if(updateUsers) {
+		updateStatusBar();
+		updateUsers = false;
+		PostMessage(WM_SPEAKER);
+	}
+}
 
+void HubFrame::on(HubCounts, const Client*) noexcept { 
 		HICON setIconVal = NULL;
 		
 		if(client->getMyIdentity().isOp()){	
@@ -1821,19 +1816,6 @@ void HubFrame::on(Second, uint64_t aTick) noexcept {
 		}
 		
 		setIcon(setIconVal);
-		UpdateIcons = false;
-		UserlistUpdated = false;
-		now = 0;
-		}
-		
-			}
-		}
-	}
-	if(updateUsers) {
-		updateStatusBar();
-		updateUsers = false;
-		PostMessage(WM_SPEAKER);
-	}
 }
 
 void HubFrame::on(Connecting, const Client*) noexcept { 
@@ -2143,7 +2125,6 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		}
 		ctrlUsers.SetRedraw(TRUE);
 	}
-	UserlistUpdated = true;
 }
 
 void HubFrame::handleTab(bool reverse) {

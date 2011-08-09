@@ -1324,17 +1324,17 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     EDITTEXT        IDC_SKIPLIST_SHARE,13,103,239,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_MINISLOTS_EXTENSIONS,13,41,239,14,ES_AUTOHSCROLL
-    GROUPBOX        "Skiplist Share",IDC_SB_SKIPLIST_SHARE,6,64,270,61
+    GROUPBOX        "Skiplist Share",IDC_SB_SKIPLIST_SHARE,1,64,278,61
     LTEXT           "Don't share the following files (separate files with '|', wildcards allowed):",IDC_ST_SKIPLIST_SHARE_EXT,12,87,239,13
-    GROUPBOX        "Minislots",IDC_SB_MINISLOTS,6,7,270,55
+    GROUPBOX        "Minislots",IDC_SB_MINISLOTS,1,7,278,55
     LTEXT           "Grant minislot automatically for the following file extensions: (separate extensions with '|', wildcards allowed)",IDC_ST_MINISLOTS_EXT,12,17,239,18
     CONTROL         "Regexp",IDC_SHARE_SKIPLIST_USE_REGEXP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,76,70,8
-    GROUPBOX        "Options for scan for missing/extra files",IDC_SETTINGS_SCAN_OPTIONS,6,172,270,90
+    GROUPBOX        "Options for scan for missing/extra files",IDC_SETTINGS_SCAN_OPTIONS,1,172,278,90
     CONTROL         "",IDC_SCANLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,12,186,257,70
     RTEXT           "Don't share files bigger than",IDC_DONT_SHARE_BIGGER_THAN,17,147,182,8,NOT WS_GROUP
     EDITTEXT        IDC_DONT_SHARE_BIGGER_VALUE,203,145,21,14,ES_AUTOHSCROLL | ES_NUMBER
     LTEXT           "MB",IDC_SETTINGS_MB2,231,148,29,8
-    RTEXT           "Subtract Filelist: Skip Files smaller than ",IDC_SKIP_SUBTRACT_TEXT,52,132,149,8
+    RTEXT           "Subtract list: Skip Dirs with ONLY 2 or less files smaller than",IDC_SKIP_SUBTRACT_TEXT,5,132,193,8
     EDITTEXT        IDC_SKIP_SUBTRACT,203,129,21,14,ES_AUTOHSCROLL
     LTEXT           "KB",IDC_STATIC,231,133,15,8
 END
@@ -1619,8 +1619,8 @@ BEGIN
 
     IDD_AIRSHARINGPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 6
-        RIGHTMARGIN, 276
+        LEFTMARGIN, 1
+        RIGHTMARGIN, 279
         VERTGUIDE, 203
         VERTGUIDE, 260
         TOPMARGIN, 7

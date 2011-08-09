@@ -443,8 +443,6 @@ private:
 	TaskQueue tasks;
 	bool updateUsers;
 	bool resort;
-	uint64_t now;
-	bool UserlistUpdated;
 
 	StringMap ucLineParams;
 
@@ -468,8 +466,6 @@ private:
 
 	void clearUserList();
 	void clearTaskList();
-	bool UpdateIcons;
-
 
 	int hubchatusersplit;
 
@@ -505,6 +501,7 @@ private:
 	void on(SearchFlood, const Client*, const string&) noexcept;	
 	void on(HubTopic, const Client*, const string&) noexcept;
 	void on(AddLine, const Client*, const string&) noexcept;
+	void on(HubCounts, const Client*) noexcept;
 
 	void speak(Tasks s) { tasks.add(static_cast<uint8_t>(s), 0); PostMessage(WM_SPEAKER); }
 	void speak(Tasks s, const string& msg, bool inChat = true) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new StatusTask(msg, inChat))); PostMessage(WM_SPEAKER); }

@@ -477,6 +477,8 @@ Added:
 #Added options for ignoring files in skiplist and empty files when scanning the share
 !!Warning Adding Release to autosearch list enables AUTOSEARCH, so check old items in the list!!
 
+#"Skip files smaller than" setting for subtract filelist in airsharingpage (will only skip if 2 or less files in dir)
+
 Changed:
 
 #The program will now be installed to Program Files\AirDC++ by default, if an old installation isn't being found
@@ -504,6 +506,7 @@ Fixed:
 #Detect invalid SFV files when scanning the share
 #Detect quoted file names in SFV files
 #Download all folders with an unknown content from partial file lists (not just the first one selected)
+Fix Many crashes on ownlist functions
 
 Removed:
 
