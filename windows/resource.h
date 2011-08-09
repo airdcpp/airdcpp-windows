@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -430,6 +430,7 @@
 #define IDC_REFRESH_DELAY               1218
 #define IDC_SKIPLIST_PRESET1            1218
 #define IDC_MAX_DOWNLOAD_SP             1218
+#define IDC_SKIP_SUBTRACT               1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_MAX_UPLOAD_SP               1219
@@ -800,6 +801,7 @@
 #define IDC_POPUP_BACKCOLOR             1394
 #define IDC_WIZARD_NOTESPEED            1394
 #define IDC_POPUPFILE                   1395
+#define IDC_SKIP_SUBTRACT_TEXT          1395
 #define IDC_POPUP_IMAGE_GP              1396
 #define IDC_POPUPBROWSE                 1397
 #define IDC_POPUP_TIME_SPIN             1399
@@ -1193,7 +1195,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1395
+#define _APS_NEXT_CONTROL_VALUE         1396
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

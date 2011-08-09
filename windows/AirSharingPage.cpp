@@ -36,6 +36,7 @@ PropPage::TextItem AirSharingPage::texts[] = {
 	{ IDC_SETTINGS_MB2, ResourceManager::MiB },
 	{ IDC_MINUTES, ResourceManager::MINUTES },
 	{ IDC_SETTINGS_SCAN_OPTIONS, ResourceManager::SETTINGS_SCAN_OPTIONS },
+	{ IDC_SKIP_SUBTRACT_TEXT, ResourceManager::SKIP_SUBTRACT_TEXT },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -44,6 +45,7 @@ PropPage::Item AirSharingPage::items[] = {
 	{ IDC_MINISLOTS_EXTENSIONS, SettingsManager::FREE_SLOTS_EXTENSIONS, PropPage::T_STR },
 	{ IDC_SHARE_SKIPLIST_USE_REGEXP, SettingsManager::SHARE_SKIPLIST_USE_REGEXP, PropPage::T_BOOL },
 	{ IDC_DONT_SHARE_BIGGER_VALUE, SettingsManager::MAX_FILE_SIZE_SHARED, PropPage::T_INT },
+	{ IDC_SKIP_SUBTRACT, SettingsManager::SKIP_SUBTRACT, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 

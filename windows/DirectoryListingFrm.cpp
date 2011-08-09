@@ -341,6 +341,7 @@ void DirectoryListingFrame::addHistory(const string& name) {
 }
 
 void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enableRedraw)
+
 {
 	ctrlList.SetRedraw(FALSE);
 	updating = true;
@@ -565,9 +566,12 @@ LRESULT DirectoryListingFrame::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, 
 
 LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-	if (mylist)
-		TextFrame::openWindow(Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH())), false, false);
-	else
+	if (mylist){
+		try{
+		tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+		TextFrame::openWindow(path, false, false);
+		}catch(...) {} //file deleted no path
+	}else
 		downloadList(Text::toT(Util::getTempPath()), true);
 	return 0;
 }
@@ -609,10 +613,17 @@ LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, 
 }
 
 LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(loading)
+		return 0;
+
 	tstring file;
 	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), _T("File Lists\0*.xml.bz2\0All Files\0*.*\0"))) {
-		DirectoryListing dirList(dl->getHintedUser());
-		try {
+			ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
+			ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(file), Util::emptyString, Util::emptyStringT, mylist, true);
+			loading = true;
+			tdl->start();
+		//DirectoryListing dirList(dl->getHintedUser());
+		/*try {
 			dirList.loadFile(Text::fromT(file), true);
 			dl->getRoot()->filterList(dirList);
 			loading = true;
@@ -622,7 +633,7 @@ LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 			updateStatus();
 		} catch(const Exception&) {
 			/// @todo report to user?
-		}
+		}*/
 	}
 	return 0;
 }
@@ -665,6 +676,7 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 
 	if(ii->type == ItemInfo::FILE) {
+		try{
 		path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 		wstring::size_type end = path.find_last_of(_T("\\"));
 		if(end != wstring::npos) {
@@ -672,7 +684,7 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 		}
 		path += '\\';
 		localpaths.push_back(Text::fromT(path));
-
+		}catch(...) {} //file deleted no path
 	} else  if(ii->type == ItemInfo::DIRECTORY) {
 			localpaths = dl->getLocalPaths(ii->dir);
 
@@ -699,8 +711,10 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 			const ItemInfo* ii = ctrlList.getItemData(sel);
 		
 			if (ii->type == ItemInfo::FILE) {
+				try{
 				tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 				scanList.push_back(Text::fromT(path));
+				}catch(...) {}
 			}
 			if (ii->type == ItemInfo::DIRECTORY)  {
 					if(ii->dir->getFileCount() > 0) {
@@ -1653,7 +1667,7 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*
 			//tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(LOADED_FILE_LIST), Util::formatSeconds(loadTime)));
 			ctrlStatus.SetText(0, (TSTRING(LOADED_FILE_LIST) + Util::formatSeconds(loadTime, true)).c_str());
 			ctrlTree.EnableWindow(TRUE);
-
+			ctrlList.EnableWindow(TRUE);
 			//notify the user that we've loaded the list
 			setDirty();
 			break;

@@ -246,6 +246,9 @@ public:
 	}
 
 	LRESULT onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		if(loading)
+			return 0;
+
 		searching = true;
 		findFile(false);
 		searching = false;
@@ -253,6 +256,9 @@ public:
 		return 0;
 	}
 	LRESULT onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		if(loading)
+			return 0;
+
 		searching = true;
 		findFile(true);
 		searching = false;
@@ -448,7 +454,16 @@ private:
 	typedef FrameMap::iterator FrameIter;
 
 	static FrameMap frames;
-	
+	void DisableWindow(){
+		ctrlTree.EnableWindow(FALSE);
+		ctrlList.EnableWindow(FALSE);
+	}
+	void EnableWindow(){
+		ctrlTree.EnableWindow(TRUE);
+		ctrlList.EnableWindow(TRUE);
+	}
+
+
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 
@@ -456,8 +471,8 @@ class ThreadedDirectoryListing : public Thread
 {
 public:
 	ThreadedDirectoryListing(DirectoryListingFrame* pWindow, 
-		const string& pFile, const string& pTxt, const tstring& aDir = Util::emptyStringT, bool myList = false) : mWindow(pWindow),
-		mFile(pFile), mTxt(pTxt), mDir(aDir), mylist(myList)
+		const string& pFile, const string& pTxt, const tstring& aDir = Util::emptyStringT, bool myList = false, bool listDiff = false) : mWindow(pWindow),
+		mFile(pFile), mTxt(pTxt), mDir(aDir), mylist(myList), listdiff(listDiff)
 	{ }
 
 protected:
@@ -466,12 +481,22 @@ protected:
 	string mTxt;
 	tstring mDir;
 	bool mylist;
+	bool listdiff;
 private:
 	int run() {
 		try {
 			mWindow->loadTime = 0;
 			int64_t start = GET_TICK();
-			if(!mFile.empty()) {
+				
+			if(listdiff) {
+				mWindow->DisableWindow();
+				DirectoryListing dirList(mWindow->dl->getHintedUser());
+				dirList.loadFile(mFile, true);
+				mWindow->dl->getRoot()->filterList(dirList);
+			
+				mWindow->refreshTree(Util::emptyStringT);
+		
+			} else if(!mFile.empty()) {
 				
 				
 				bool checkdupe = true;
