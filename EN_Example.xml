@@ -1354,5 +1354,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="NoFilesAvailable">No files to download</String>
 		<String Name="MatchingFileList">Matching File lists, this may take a while if the lists are large.</String>
 		<String Name="SkipSubtractText">Subtract list: Skip Dirs with ONLY 2 or less files smaller than</String>
+		<String Name="ProppageDupeText">Dupe folders/files</String>
+		<String Name="ProppageDupeMsg">Release.Example-AIRDC</String>
 	</Strings>
 </Language>

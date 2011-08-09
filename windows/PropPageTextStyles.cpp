@@ -99,6 +99,11 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	SettingsManager::TEXT_URL_BACK_COLOR, SettingsManager::TEXT_URL_FORE_COLOR, 
 	SettingsManager::TEXT_URL_BOLD, SettingsManager::TEXT_URL_ITALIC );
 
+	TextStyles[ TS_DUPE ].Init(
+	this, settings, STRING(PROPPAGE_DUPE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
+	SettingsManager::TEXT_DUPE_BACK_COLOR, SettingsManager::DUPE_COLOR, 
+	SettingsManager::TEXT_DUPE_BOLD, SettingsManager::TEXT_DUPE_ITALIC );
+
 	TextStyles[ TS_FAVORITE ].Init( 
 	this, settings, STRING(PROPPAGE_FAV_USER).c_str(), STRING(PROPPAGE_FAV_USER).c_str(),
 	SettingsManager::TEXT_FAV_BACK_COLOR, SettingsManager::TEXT_FAV_FORE_COLOR, 
@@ -267,6 +272,10 @@ LRESULT PropPageTextStyles::onDefaultStyles(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_URL ].crTextColor = RGB(0,0,255);
 	TextStyles[ TS_URL ].dwEffects = 0;
 
+	TextStyles[ TS_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_DUPE ].crTextColor = RGB(255,128,255);
+	TextStyles[ TS_DUPE ].dwEffects = 0;
+
 	TextStyles[ TS_FAVORITE ].crBackColor = RGB(255, 255, 255);
 	TextStyles[ TS_FAVORITE ].crTextColor = RGB(0,0,0);
 	TextStyles[ TS_FAVORITE ].dwEffects = CFE_BOLD | CFE_ITALIC;
@@ -318,6 +327,10 @@ LRESULT PropPageTextStyles::onBlackAndWhite(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_URL ].crTextColor = RGB(37,60,121);
 	TextStyles[ TS_URL ].dwEffects = 0;
 
+	TextStyles[ TS_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_DUPE ].crTextColor = RGB(255,128,255);
+	TextStyles[ TS_DUPE ].dwEffects = 0;
+
 	TextStyles[ TS_FAVORITE ].crBackColor = RGB(255,255,255);
 	TextStyles[ TS_FAVORITE ].crTextColor = RGB(37,60,121);
 	TextStyles[ TS_FAVORITE ].dwEffects = 0;
@@ -368,6 +381,10 @@ LRESULT PropPageTextStyles::onBlackTheme(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	TextStyles[ TS_URL ].crBackColor = RGB(255,255,255);
 	TextStyles[ TS_URL ].crTextColor = RGB(0,0,255);
 	TextStyles[ TS_URL ].dwEffects = 0;
+
+	TextStyles[ TS_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_DUPE ].crTextColor = RGB(255,128,255);
+	TextStyles[ TS_DUPE ].dwEffects = 0;
 
 	TextStyles[ TS_FAVORITE ].crBackColor = 0;
 	TextStyles[ TS_FAVORITE ].crTextColor = 16431749;
@@ -545,6 +562,10 @@ LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 			importData("TextURLForeColor", TEXT_URL_FORE_COLOR);
 			importData("TextURLBold", TEXT_URL_BOLD);
 			importData("TextURLItalic", TEXT_URL_ITALIC);
+			importData("TextDupeBackColor", TEXT_DUPE_BACK_COLOR);
+			importData("TextDupeColor", DUPE_COLOR);
+			importData("TextDupeBold", TEXT_DUPE_BOLD);
+			importData("TextDupeItalic", TEXT_DUPE_ITALIC);
 			importData("ProgressTextDown", PROGRESS_TEXT_COLOR_DOWN);
 			importData("ProgressTextUp", PROGRESS_TEXT_COLOR_UP);
 			importData("ErrorColor", ERROR_COLOR);

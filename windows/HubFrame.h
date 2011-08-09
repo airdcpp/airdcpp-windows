@@ -66,7 +66,6 @@ public:
 		NOTIFY_HANDLER(IDC_USERS, NM_DBLCLK, onDoubleClickUsers)
 		NOTIFY_HANDLER(IDC_USERS, NM_RETURN, onEnterUsers)
 		NOTIFY_HANDLER(IDC_USERS, NM_CUSTOMDRAW, onCustomDraw)
-		NOTIFY_HANDLER(IDC_CLIENT, EN_LINK, onClientEnLink)
 		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
@@ -142,7 +141,7 @@ public:
 	LRESULT onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onClientEnLink(int idCtrl, LPNMHDR pnmh, BOOL& bHandled) { return ctrlClient.onClientEnLink(idCtrl, pnmh, bHandled); }
+	LRESULT onClientEnLink(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) { return ctrlClient.onClientEnLink(uMsg, wParam, lParam, bHandled); }
 	LRESULT onSelectUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

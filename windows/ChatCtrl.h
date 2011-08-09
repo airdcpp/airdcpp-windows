@@ -27,6 +27,7 @@
 #include "TypedListViewCtrl.h"
 #include "ImageDataObject.h"
 #include "UCHandler.h"
+#include "../client/pme.h"
 
 #ifndef _RICHEDIT_VER
 # define _RICHEDIT_VER 0x0300
@@ -47,6 +48,10 @@ public:
 		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onDoubleClick)
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 		MESSAGE_HANDLER(WM_SETCURSOR, onSetCursor)
+		MESSAGE_HANDLER(WM_MOUSEMOVE, onMouseMove)
+
+		MESSAGE_HANDLER(WM_LBUTTONUP, onLeftButtonUp)
+		MESSAGE_HANDLER(WM_RBUTTONUP, onRightButtonUp)
 
 		MESSAGE_HANDLER_HWND(WM_INITMENUPOPUP, OMenu::onInitMenuPopup)
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
@@ -95,13 +100,15 @@ public:
 	ChatCtrl();
 	~ChatCtrl();
 
-
+	LRESULT onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnRButtonDown(POINT pt);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onCommand(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) { return SendMessage(GetParent(), uMsg, wParam, lParam); }
-	LRESULT onClientEnLink(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT onRightButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	bool onClientEnLink(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled, bool rightButton=false);
 	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
@@ -209,6 +216,10 @@ private:
 	tstring selectedUser;
 	tstring selectedURL;
 	tstring selectedWord;
+	PME regUrl, regRelease;
+	int64_t lastTick;
+	bool isLink(POINT pt);
+	bool handCursor;
 };
 
 

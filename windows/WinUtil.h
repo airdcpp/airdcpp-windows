@@ -290,6 +290,7 @@ public:
 	static CHARFORMAT2 m_TextStyleOPs;
 	static CHARFORMAT2 m_TextStyleNormUsers;
 	static CHARFORMAT2 m_TextStyleURL;
+	static CHARFORMAT2 m_TextStyleDupe;
 	static CHARFORMAT2 m_ChatTextPrivate;
 	static CHARFORMAT2 m_ChatTextLog;
 	static bool mutesounds;

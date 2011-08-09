@@ -38,7 +38,11 @@ ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false) 
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
 	}
-	
+	regRelease.Init(_T("((?=\\S*[A-Z]\\S*)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S+)))(\\S+)-(\\w{2,}))"));
+	regRelease.study();
+	regUrl.Init(_T("(((?:[a-z][\\w-]{0,10})?:/{1,3}|www\\d{0,3}[.]|magnet:\\?[^\\s=]+=|spotify:|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"), boost::regex_constants::icase);
+	regUrl.study();
+	handCursor=false;
 	emoticonsManager->inc();
 }
 
@@ -459,7 +463,12 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 
 			while(boost::regex_search(start, end, result, reg, boost::match_default)) {
 				SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
-				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+				std::string link (result[0].first, result[0].second);
+				if (ShareManager::getInstance()->isDirShared(link)) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+				} else {
+					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+				}
 				start = result[0].second;
 				pos=pos+result.position() + result.length();
 			}
@@ -1003,36 +1012,114 @@ LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	return 0;
 }
 
-LRESULT ChatCtrl::onClientEnLink(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	ENLINK* enlink = (ENLINK*)pnmh;
-	switch(enlink->msg) {
-		case WM_LBUTTONUP:
-		{
-			tstring url;
-			url.resize(enlink->chrg.cpMax - enlink->chrg.cpMin);
-			GetTextRange(enlink->chrg.cpMin, enlink->chrg.cpMax, &url[0]);
-			if(shortLinks.find(url) == shortLinks.end()) {
-				WinUtil::openLink(url);
-			} else {
-				size_t found = Text::fromT(shortLinks[url]).find("magnet:?");
-				if (found != string::npos) {
-					WinUtil::parseMagnetUri(shortLinks[url]);
-				} else {
-					WinUtil::openLink(shortLinks[url]);
-				}
+
+LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
+	if (isLink(pt)) {
+		handCursor=true;
+		SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_HAND)));
+	} else if (handCursor) {
+		handCursor=false;
+		SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+	}
+
+	return 1;
+}
+
+bool ChatCtrl::isLink(POINT pt) {
+	//int64_t start = GET_TICK();
+	bool found=false;
+	tstring word = WordFromPos(pt);
+
+	if (regUrl.match(word) > 0) {
+		found=true;
+	} else if (regRelease.match(word) > 0) {
+		found=true;
+	} else {
+		tstring line=LineFromPos(pt);
+		for(TStringMap::iterator i = shortLinks.begin(); i != shortLinks.end(); i++) {
+			if(line.find(i->first) != tstring::npos) {
+				found=true;
+				break;
 			}
-			break;
 		}
-		case WM_RBUTTONUP:
-		{
-			selectedURL.resize(enlink->chrg.cpMax - enlink->chrg.cpMin);
-			GetTextRange(enlink->chrg.cpMin, enlink->chrg.cpMax, &selectedURL[0]);
-			if(shortLinks.find(selectedURL) != shortLinks.end())
-				selectedURL = shortLinks[selectedURL];
-			SetSel(enlink->chrg.cpMin, enlink->chrg.cpMax);
-			InvalidateRect(NULL);
-			break;
+	}
+
+	if (found)
+		return true;
+	else 
+		return false;
+
+	//int64_t end = GET_TICK();
+}
+
+LRESULT ChatCtrl::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	bHandled = onClientEnLink(uMsg, wParam, lParam, bHandled, false);
+	return bHandled = TRUE ? 0: 1;
+}
+
+LRESULT ChatCtrl::onRightButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	bHandled = onClientEnLink(uMsg, wParam, lParam, bHandled, true);
+	return bHandled = TRUE ? 0: 1;
+}
+
+bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled, bool rightButton) {
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	if (!isLink(pt)) {
+		return 0;
+	}
+
+	int iCharPos2 = CharFromPos(pt), line = LineFromChar(iCharPos2), len = LineLength(iCharPos2) + 1;
+	if(len < 3) {
+		return 0;
+	}
+
+	int begin =  0;
+	int end  = 0;
+	
+	long l_Start = LineIndex(line);
+	long l_End = LineIndex(line) + LineLength(iCharPos2);
+	
+	
+	tstring Line;
+	len = l_End - l_Start;
+	Line.resize(len);
+	GetTextRange(l_Start, l_End, &Line[0]); //pick the current line from text for starters
+
+	int iCharPos = iCharPos2 - l_Start; //modify the charpos within the range of our new line.
+
+	begin = Line.find_last_of(_T(" \t\r"), iCharPos) + 1;	
+	end = Line.find_first_of(_T(" \t\r"), begin);
+			if(end == tstring::npos) {
+				end = Line.length();
+			}
+	len = end - begin;
+	
+	if(len <= 3) {
+		return 0;
+	}
+
+	tstring sText;
+	sText = Line.substr(begin, end-begin);
+
+
+	if (!rightButton) {
+		if(shortLinks.find(sText) == shortLinks.end()) {
+			WinUtil::openLink(sText);
+		} else {
+			size_t found = Text::fromT(shortLinks[sText]).find("magnet:?");
+			if (found != string::npos) {
+				WinUtil::parseMagnetUri(shortLinks[sText]);
+			} else {
+				WinUtil::openLink(shortLinks[sText]);
+			}
 		}
+		return 1;
+	} else {
+		if(shortLinks.find(sText) != shortLinks.end())
+			selectedURL = shortLinks[sText];
+		SetSel(l_Start+begin, l_Start+begin+sText.length());
+		InvalidateRect(NULL);
 	}
 
 	return 0;
@@ -1112,12 +1199,12 @@ LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 		if(Util::fileExists(Text::fromT(file))) {
 		switch(wID) {
 			case IDC_OPEN_USER_LOG:
-		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
-			ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
-			} else {
-				TextFrame::openWindow(file, true, false);
-			}
-			break;
+				if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
+					ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
+				} else {
+					TextFrame::openWindow(file, true, false);
+				}
+				break;
 			case IDC_USER_HISTORY:
 				TextFrame::openWindow(file, false, true);
 				break;
@@ -1425,13 +1512,13 @@ int ChatCtrl::RegExpMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring &l
 						begin = lineIndex + iter->position();
 						end = lineIndex + iter->position() + iter->length();
 
-	if( cs->getWholeLine() ) {
-		end = begin + line.length();
-	} 
-						SetSel(begin, end);
-						SetSelectionCharFormat(hlcf);
+			if( cs->getWholeLine() ) {
+				end = begin + line.length();
+			} 
+			SetSel(begin, end);
+			SetSelectionCharFormat(hlcf);
 		
-						found = true;
+			found = true;
 		}
 	} catch(...) {
 	}
@@ -1520,17 +1607,6 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 			if(end == tstring::npos) {
 				end = Line.length();
 			}
-	/*	
-	for( begin = iCharPos; begin >= start; begin-- ) {
-		if( FindWordBreak( WB_ISDELIMITER, begin ))
-			break;
-	}
-	begin++;
-	for( end = iCharPos; end < lineEnd; end++ ) {
-		if(FindWordBreak( WB_ISDELIMITER, end ))
-			break;
-	}
-	*/
 	len = end - begin;
 	
 	if(len <= 3)
@@ -1538,15 +1614,13 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 
 	tstring sText;
 	sText = Line.substr(begin, end-begin);
-	//sText.resize(len);
-	//GetTextRange(begin, end, &sText[0]);
 	
 	if(!sText.empty()) 
 		return sText;
 	
-		return Util::emptyStringT;
-	
+	return Util::emptyStringT;
 }
+
 LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
 	CHARRANGE cr;
