@@ -505,19 +505,21 @@ private:
 					mFile = ShareManager::getInstance()->generateOwnList();
 					checkdupe = false;
 				}
+				if (!SETTING(DUPES_IN_FILELIST))
+					checkdupe = false;
 				mWindow->dl->loadFile(mFile, checkdupe);
 				
 
 				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {
 					ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
 				} 
-				if(!mylist) {
+				if(!mylist && SETTING(DUPES_IN_FILELIST)) {
 					mWindow->dl->checkDupes();
 				}
 
 				mWindow->refreshTree(mDir);
 			} else {
-				mWindow->refreshTree(Text::toT(Util::toNmdcFile(mWindow->dl->updateXML(mTxt, true))));
+				mWindow->refreshTree(Text::toT(Util::toNmdcFile(mWindow->dl->updateXML(mTxt, BOOLSETTING(DUPES_IN_FILELIST)))));
 			}
 
 			int64_t end = GET_TICK();

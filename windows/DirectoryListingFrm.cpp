@@ -253,7 +253,6 @@ void DirectoryListingFrame::refreshTree(const tstring& root) {
 	while((next = ctrlTree.GetChildItem(ht)) != NULL) {
 		ctrlTree.DeleteItem(next);
 	}
-	//d->checkDupes();
 	updateTree(d, ht);
 
 	ctrlTree.Expand(treeRoot);
@@ -1689,43 +1688,37 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
-			
-		ItemInfo *ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
+		
+		if (SETTING(DUPES_IN_FILELIST)) {
+			ItemInfo *ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
 
-		if(ii != NULL) {
-			if(!mylist) {
-				//check if the file or dir is a dupe, then use the dupesetting color
-				if ( ( ii->type == ItemInfo::FILE && ii->file->getDupe() ) || 
-					( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::DUPE )) {
-						if (BOOLSETTING(DUPE_TEXT)){
-							cd->clrText = SETTING(DUPE_COLOR);
-						} else {
-							cd->clrTextBk = SETTING(DUPE_COLOR);
-						}
+			if(ii != NULL) {
+				if(!mylist) {
+					DWORD bg = SETTING(TEXT_DUPE_BACK_COLOR);
+					//check if the file or dir is a dupe, then use the dupesetting color
+					if ( ( ii->type == ItemInfo::FILE && ii->file->getDupe() ) || 
+						( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::DUPE )) {
+						cd->clrText = SETTING(DUPE_COLOR);
 
-				//if it's a partial dupe, try to use some simple blending to indicate that
-				//a dupe exists somewhere down the directory tree.
-				} else if(ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::PARTIAL_DUPE) {
-					BYTE r, b, g;
-					//cache these to avoid unnecessary calls.
-					DWORD dupe = SETTING(DUPE_COLOR);
-					DWORD bg = SETTING(BACKGROUND_COLOR);
+					//if it's a partial dupe, try to use some simple blending to indicate that
+					//a dupe exists somewhere down the directory tree.
+					} else if(ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::PARTIAL_DUPE) {
+						BYTE r, b, g;
+						//cache these to avoid unnecessary calls.
+						DWORD dupe = SETTING(DUPE_COLOR);
 
-					r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(dupe)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
-					g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(dupe)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
-					b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(dupe)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
+						r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(dupe)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
+						g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(dupe)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
+						b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(dupe)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
 					
-					if (BOOLSETTING(DUPE_TEXT)){
 						cd->clrText = RGB(r, g, b);
-					} else {
-						cd->clrTextBk = RGB(r, g, b);
 					}
-					
+					cd->clrTextBk = bg;
 				}
 			}
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
-		}
+	}
 
 	default:
 		return CDRF_DODEFAULT;
@@ -1741,37 +1734,30 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
-		
-		DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(cd->nmcd.lItemlParam);
 
-		if(dir != NULL) {
-			if(!mylist) {
-				//check if the dir is a dupe, then use the dupesetting color
-				if( dir->getDupe() == DirectoryListing::Directory::DUPE ) {
-					
-					if (BOOLSETTING(DUPE_TEXT)){
+		if (SETTING(DUPES_IN_FILELIST)) {
+			DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(cd->nmcd.lItemlParam);
+			if(dir != NULL) {
+				if(!mylist) {
+					DWORD bg = SETTING(TEXT_DUPE_BACK_COLOR);
+					//check if the dir is a dupe, then use the dupesetting color
+					if( dir->getDupe() == DirectoryListing::Directory::DUPE ) {
 						cd->clrText = SETTING(DUPE_COLOR);
-						} else {
-						cd->clrTextBk = SETTING(DUPE_COLOR);
-						}
 
-				//if it's a partial dupe, try to use some simple blending to indicate that
-				//a dupe exists somewhere down the directory tree.
-				} else if(dir->getDupe() == DirectoryListing::Directory::PARTIAL_DUPE) {
-					BYTE r, b, g;
-					//cache these to avoid unnecessary calls.
-					DWORD dupe = SETTING(DUPE_COLOR);
-					DWORD bg = SETTING(BACKGROUND_COLOR);
+					//if it's a partial dupe, try to use some simple blending to indicate that
+					//a dupe exists somewhere down the directory tree.
+					} else if(dir->getDupe() == DirectoryListing::Directory::PARTIAL_DUPE) {
+						BYTE r, b, g;
+						//cache these to avoid unnecessary calls.
+						DWORD dupe = SETTING(DUPE_COLOR);
 
-					r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(dupe)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
-					g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(dupe)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
-					b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(dupe)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
+						r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(dupe)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
+						g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(dupe)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
+						b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(dupe)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
 					
-					if (BOOLSETTING(DUPE_TEXT)){
 						cd->clrText = RGB(r, g, b);
-						} else {
-						cd->clrTextBk = RGB(r, g, b);
-						}
+					}
+					cd->clrTextBk = bg;
 				}
 			}
 		}
@@ -1832,26 +1818,26 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 
 	return 0;
 }
+
 LRESULT DirectoryListingFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
 tstring searchTerm;
-if(ctrlList.GetSelectedCount() == 1) {
+	if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getSelectedItem();
 		searchTerm = ii->getText(COLUMN_FILENAME);
 
-	WinUtil::search(searchTerm, 0, false);
-}else {
-		HTREEITEM t = ctrlTree.GetSelectedItem();
-	if(t != NULL) {
-		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		searchTerm = Text::toT((dir)->getName());
 		WinUtil::search(searchTerm, 0, false);
-}
-}
+	} else {
+		HTREEITEM t = ctrlTree.GetSelectedItem();
+		if(t != NULL) {
+			DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+			searchTerm = Text::toT((dir)->getName());
+			WinUtil::search(searchTerm, 0, false);
+		}
+	}
 	searchTerm = Util::emptyStringT;
 	return 0;
 }
-
 
 LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	

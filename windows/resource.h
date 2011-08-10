@@ -694,7 +694,10 @@
 #define IDC_ST_AIRDC_SLOT               1327
 #define IDC_DUPE_SEARCH                 1328
 #define IDC_NOTE                        1329
+#define IDC_DUPE_CHAT                   1329
 #define IDC_SETTING_ALLOW_CONNECTION_TO_PASSED_HUBS 1330
+#define IDC_DUPE_CHAT2                  1330
+#define IDC_DUPE_FILELISTS              1330
 #define IDC_CHECK2                      1331
 #define IDC_REFRESH_VNAME_ON_SHAREPAGE  1331
 #define IDC_SHOW_JOIN                   1331
@@ -806,7 +809,6 @@
 #define IDC_POPUP_IMAGE_GP              1396
 #define IDC_UNDERLINE_LINKS             1396
 #define IDC_POPUPBROWSE                 1397
-#define IDC_UNDERLINE_LINKS2            1397
 #define IDC_UNDERLINE_DUPES             1397
 #define IDC_POPUP_TIME_SPIN             1399
 #define IDC_OTHER_QUEUE_OPTIONS         1400

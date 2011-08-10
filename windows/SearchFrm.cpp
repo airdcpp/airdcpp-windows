@@ -1701,12 +1701,9 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		
 		if(BOOLSETTING(DUPE_SEARCH)) {
 			if(si->isDupe()) {
-					if (BOOLSETTING(DUPE_TEXT)){
-						cd->clrText = SETTING(DUPE_COLOR);
-						} else {
-						cd->clrTextBk = SETTING(DUPE_COLOR);
-						}
-				}
+				cd->clrText = SETTING(DUPE_COLOR);
+				cd->clrTextBk = SETTING(TEXT_DUPE_BACK_COLOR);
+			}
 		}
 
 		if(si->sr != NULL) {

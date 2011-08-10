@@ -29,23 +29,23 @@
 #include "PropertiesDlg.h"
 
 PropPage::TextItem AirAppearancePage::texts[] = {
-	{ IDC_SETTINGS_BACKGROUND_IMAGE, ResourceManager::BACKGROUND_IMAGE },
-	{ IDC_IMAGEBROWSE, ResourceManager::BROWSE },
-	{ IDC_DUPE_SEARCH,	  ResourceManager::SETTINGS_DUPE_SEARCH		 },
-	{ IDC_DUPE_COLOR,		  ResourceManager::SETTINGS_BTN_COLOR			 },
-	{ IDC_DUPES,			  ResourceManager::SETTINGS_DUPES				 },
-	{ IDC_DUPE_DESCRIPTION,	  ResourceManager::SETTINGS_DUPE_DESCRIPTION	 },
-	{ IDC_DUPE_TEXT,		  ResourceManager::SETTINGS_DUPE_TEXT			 },
-	{ IDC_MAX_RESIZE_LINES_STR, ResourceManager::MAX_RESIZE_LINES			 },//ApexDC
+	{ IDC_SETTINGS_BACKGROUND_IMAGE,	ResourceManager::BACKGROUND_IMAGE },
+	{ IDC_IMAGEBROWSE,			ResourceManager::BROWSE },
+	{ IDC_DUPE_SEARCH,			ResourceManager::SETTINGS_DUPE_SEARCH },
+	{ IDC_DUPE_CHAT,			ResourceManager::SETTINGS_DUPE_CHAT	},
+	{ IDC_DUPE_FILELISTS,		ResourceManager::SETTINGS_DUPE_FILELIST	},
+	{ IDC_DUPES,				ResourceManager::SETTINGS_DUPES	},
+	{ IDC_MAX_RESIZE_LINES_STR, ResourceManager::MAX_RESIZE_LINES },//ApexDC
 
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item AirAppearancePage::items[] = {
 	{ IDC_BACKGROUND_IMAGE, SettingsManager::BACKGROUND_IMAGE, PropPage::T_STR },
-	{ IDC_DUPE_TEXT, SettingsManager::DUPE_TEXT, PropPage::T_BOOL },
 	{ IDC_RESIZE_LINES, SettingsManager::MAX_RESIZE_LINES, PropPage::T_INT },//ApexDC
 	{ IDC_DUPE_SEARCH, SettingsManager::DUPE_SEARCH, PropPage::T_BOOL },
+	{ IDC_DUPE_CHAT,		SettingsManager::DUPES_IN_CHAT, PropPage::T_BOOL	},
+	{ IDC_DUPE_FILELISTS,	SettingsManager::DUPES_IN_FILELIST, PropPage::T_BOOL	},
 	{ 0, 0, PropPage::T_END }
  //ApexDC
 	#define setMinMax(x, y, z) \
@@ -70,22 +70,8 @@ PropPage::ListItem AirAppearancePage::listItems[] = {
 
 AirAppearancePage::~AirAppearancePage(){ }
 
-void AirAppearancePage::write()
-{
-
+void AirAppearancePage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_AIRAPPEARANCE_BOOLEANS));
-
-	settings->set(SettingsManager::DUPE_COLOR, static_cast<int>(dupeColor));
-//	settings->set(SettingsManager::NO_TTH_COLOR, static_cast<int>(noTTHColor));
-
-}
-
-LRESULT AirAppearancePage::onDupeColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	CColorDialog c(dupeColor, CC_FULLOPEN);
-	if( c.DoModal() == IDOK )
-		dupeColor = c.GetColor();
-
-	return 0;
 }
 
 
@@ -94,9 +80,6 @@ LRESULT AirAppearancePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	PropPage::translate((HWND)(*this), texts);
 
 	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_AIRAPPEARANCE_BOOLEANS));
-
-	dupeColor = SETTING(DUPE_COLOR);
-//	noTTHColor = SETTING(NO_TTH_COLOR);
 	
 	CUpDownCtrl updown; //ApexDC
 	setMinMax(IDC_RESIZE_LINES_SPIN, 1, 10); //ApexDC

@@ -453,7 +453,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 	}
 
 	//Format release names and files as URL
-	if(SETTING(FORMAT_RELEASE)) {
+	if(SETTING(FORMAT_RELEASE) || SETTING(DUPES_IN_CHAT)) {
 		if(!detectMagnet) {
 			tstring::const_iterator start = sMsg.begin();
 			tstring::const_iterator end = sMsg.end();
@@ -463,9 +463,9 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 			while(boost::regex_search(start, end, result, regReleaseBoost, boost::match_default)) {
 				SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
 				std::string link (result[0].first, result[0].second);
-				if (ShareManager::getInstance()->isDirShared(link)) {
+				if (SETTING(DUPES_IN_CHAT) && ShareManager::getInstance()->isDirShared(link)) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-				} else {
+				} else if (SETTING(FORMAT_RELEASE)) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 				}
 				start = result[0].second;
