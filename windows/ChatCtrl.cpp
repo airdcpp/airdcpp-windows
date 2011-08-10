@@ -783,15 +783,15 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 		
 		if (release) {
-			//autosearch menus
-			menu.AppendMenu(MF_SEPARATOR);
-			menu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
-			menu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
-
 			if (dupe) {
 				menu.AppendMenu(MF_SEPARATOR);
 				menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 			}
+
+			//autosearch menus
+			menu.AppendMenu(MF_SEPARATOR);
+			menu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
+			menu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
 
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
