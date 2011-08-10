@@ -874,9 +874,11 @@ clientmenu:
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
-	
-		if (ShareManager::getInstance()->isDirShared(ii->dir->getPath())) {
-			fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+		
+		if (ii->type == ItemInfo::DIRECTORY) {
+			if (ShareManager::getInstance()->isDirShared(ii->dir->getPath())) {
+				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+			}
 		}
 		fileMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
@@ -1760,7 +1762,6 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 					
 						cd->clrText = RGB(r, g, b);
 					}
-					cd->clrTextBk = bg;
 				}
 			}
 		}

@@ -1131,24 +1131,40 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 	tstring sText;
 	sText = Line.substr(begin, end-begin);
 
-	tstring link;
-	link=getShortLink(pt);
+	std::string link;
+	boost::wregex enlinkReg;
+	enlinkReg.assign(_T("(?=\\S*[A-Z]\\S*)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S+)))(\\S+)-(\\w{2,})(?=(\\W))"));
+	boost::match_results<tstring::const_iterator> result;
+	if(boost::regex_search(sText, result, enlinkReg, boost::match_default)) {
+		std::string link (result[0].first, result[0].second);
+		sText=Text::toT(link);
+		begin = begin+result.position();
+	} else if (boost::regex_search(sText, result, regUrlBoost, boost::match_default)) {
+		std::string link (result[0].first, result[0].second);
+		sText=Text::toT(link);
+		begin = begin+result.position();
+	}
+
+
+
+	tstring shortLink=getShortLink(pt);
+	bool magnet=false;
 	if (!rightButton) {
-		if(link.empty()) {
+		if(shortLink.empty()) {
 			WinUtil::openLink(sText);
 		} else {
-			if (Text::fromT(link.substr(0,8)) == "magnet:?") {
-				WinUtil::parseMagnetUri(shortLinks[link]);
+			if (shortLink.find(_T("magnet:?")) != tstring::npos) {
+				WinUtil::parseMagnetUri(shortLinks[shortLink]);
 			} else {
-				WinUtil::openLink(shortLinks[link]);
+				WinUtil::openLink(shortLinks[shortLink]);
 			}
 		}
 		return 1;
 	} else {
-		if (link.empty()) {
+		if (shortLink.empty()) {
 			SetSel(l_Start+begin, l_Start+begin+sText.length());
 		} else {
-			SetSel(l_Start+begin, l_Start+begin+link.length());
+			SetSel(l_Start+begin, l_Start+begin+shortLink.length());
 		}
 		InvalidateRect(NULL);
 	}
