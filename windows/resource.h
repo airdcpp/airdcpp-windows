@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -155,6 +155,7 @@
 #define IDD_DIALOG1                     314
 #define IDD_WIZARD                      314
 #define IDD_DIALOG2                     315
+#define IDD_DIRLIST_DLG                 316
 #define IDI_GER                         318
 #define IDD_DIALOG3                     319
 #define IDI_ICON1                       324
@@ -803,7 +804,10 @@
 #define IDC_POPUPFILE                   1395
 #define IDC_SKIP_SUBTRACT_TEXT          1395
 #define IDC_POPUP_IMAGE_GP              1396
+#define IDC_UNDERLINE_LINKS             1396
 #define IDC_POPUPBROWSE                 1397
+#define IDC_UNDERLINE_LINKS2            1397
+#define IDC_UNDERLINE_DUPES             1397
 #define IDC_POPUP_TIME_SPIN             1399
 #define IDC_OTHER_QUEUE_OPTIONS         1400
 #define IDC_COPY_EXACT_SIZE             1401
@@ -1164,6 +1168,10 @@
 #define IDC_SCANLIST                    15105
 #define IDC_VIEW_NFO                    15106
 #define IDC_HELP_FAQ                    15107
+#define IDC_DL_SEARCH_DESC              15108
+#define IDC_DL_FILETYPE                 15109
+#define IDC_DL_SEARCH_STRING            15110
+#define IDC_DL_TYPE_TEXT                15111
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_BITZI_LOOKUP                20000
 #define IDC_BROWSELIST                  21000
@@ -1195,7 +1203,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1396
+#define _APS_NEXT_CONTROL_VALUE         1397
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

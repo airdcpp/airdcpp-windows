@@ -509,6 +509,9 @@
     <ClCompile Include="windows\SpeedPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\DirectoryListingDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -563,9 +566,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\DimEdit.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\DirectoryListingFrm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\DownloadPage.h">
@@ -812,6 +812,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\SpeedPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\DirectoryListingFrm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\DirectoryListingDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

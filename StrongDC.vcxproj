@@ -420,6 +420,7 @@
     <ClCompile Include="windows\ADLSearchFrame.cpp" />
     <ClCompile Include="windows\ADLSProperties.cpp" />
     <ClCompile Include="windows\AdvancedPage.cpp" />
+    <ClCompile Include="windows\DirectoryListingDlg.cpp" />
     <ClCompile Include="windows\EmoticonsManager.cpp" />
     <ClCompile Include="windows\AirAppearancePage.cpp" />
     <ClCompile Include="windows\AirDCPage.cpp" />
@@ -519,6 +520,8 @@
     <ClInclude Include="windows\ADLSearchFrame.h" />
     <ClInclude Include="windows\ADLSProperties.h" />
     <ClInclude Include="windows\AdvancedPage.h" />
+    <ClInclude Include="windows\DirectoryListingDlg.h" />
+    <ClInclude Include="windows\DirectoryListingFrm.h" />
     <ClInclude Include="windows\EmoticonsManager.h" />
     <ClInclude Include="windows\AirAppearancePage.h" />
     <ClInclude Include="windows\AirDCPage.h" />
@@ -534,7 +537,6 @@
     <ClInclude Include="windows\ChatCtrl.h" />
     <ClInclude Include="windows\CommandDlg.h" />
     <ClInclude Include="windows\DimEdit.h" />
-    <ClInclude Include="windows\DirectoryListingFrm.h" />
     <ClInclude Include="windows\DownloadPage.h" />
     <ClInclude Include="windows\EmoticonsDlg.h" />
     <ClInclude Include="windows\ExListViewCtrl.h" />

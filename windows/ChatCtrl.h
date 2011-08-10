@@ -217,6 +217,7 @@ private:
 	tstring selectedURL;
 	tstring selectedWord;
 	PME regUrl, regRelease;
+	boost::wregex regUrlBoost, regReleaseBoost;
 	int64_t lastTick;
 	bool isLink(POINT pt);
 	tstring getShortLink(POINT pt);

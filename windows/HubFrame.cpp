@@ -1822,7 +1822,7 @@ void HubFrame::on(Connecting, const Client*) noexcept {
 	if(BOOLSETTING(SEARCH_PASSIVE) && ClientManager::getInstance()->isActive(client->getHubUrl())) {
 		addLine(TSTRING(ANTI_PASSIVE_SEARCH), WinUtil::m_ChatTextSystem);
 	}
-	speak(ADD_STATUS_LINE, STRING(CONNECTING_TO) + " " + client->getHubUrl() + "...");
+	speak(ADD_STATUS_LINE, STRING(CONNECTING_TO) + " " + client->getHubUrl() + " ...");
 	speak(SET_WINDOW_TITLE, client->getHubUrl());
 }
 void HubFrame::on(Connected, const Client*) noexcept { 

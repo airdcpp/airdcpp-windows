@@ -26,6 +26,8 @@ PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_BLACK, ResourceManager::BLACK_THEME },
 	{ IDC_IMPORT, ResourceManager::IMPORT_THEME },
 	{ IDC_EXPORT, ResourceManager::EXPORT_THEME },
+	{ IDC_UNDERLINE_LINKS, ResourceManager::PROPPAGE_UNDERLINE_LINKS },
+	{ IDC_UNDERLINE_DUPES, ResourceManager::PROPPAGE_UNDERLINE_DUPES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 }; 
 
@@ -42,11 +44,16 @@ PropPageTextStyles::clrs PropPageTextStyles::colours[] = {
 	{ResourceManager::PROGRESS_DONE,	SettingsManager::COLOR_DONE, 0},
 };
 
+PropPage::Item PropPageTextStyles::items[] = {	 
+         { IDC_UNDERLINE_LINKS, SettingsManager::UNDERLINE_LINKS, PropPage::T_BOOL },
+		 { IDC_UNDERLINE_DUPES, SettingsManager::UNDERLINE_DUPES, PropPage::T_BOOL },
+         { 0, 0, PropPage::T_END }	 
+ };
 
 LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
-//	PropPage::read((HWND)*this, items);
+	PropPage::read((HWND)*this, items);
 
 	m_lsbList.Attach( GetDlgItem(IDC_TEXT_STYLES) );
 	m_lsbList.ResetContent();
@@ -151,7 +158,7 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 
 void PropPageTextStyles::write()
 {
-	//PropPage::write((HWND)*this, items);
+	PropPage::write((HWND)*this, items);
 
 	tstring f = WinUtil::encodeFont(m_Font);
 	settings->set(SettingsManager::TEXT_FONT, Text::fromT(f));
@@ -472,7 +479,7 @@ void PropPageTextStyles::TextStyleSettings::EditTextStyle() {
 	else
 		font.lfItalic = false;
 
-	CFontDialog d( &font, CF_SCREENFONTS, NULL, *m_pParent );
+	CFontDialog d( &font, CF_EFFECTS | CF_SCREENFONTS, NULL, *m_pParent );
 	d.m_cf.rgbColors = crTextColor;
 	if (d.DoModal() == IDOK) {
   	_tcscpy( szFaceName, font.lfFaceName );
@@ -598,6 +605,8 @@ LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 			importData("PasiveColor", PASIVE_COLOR);
 			importData("OpColor", OP_COLOR);
 			importData("ProgressbaroDCStyle", PROGRESSBAR_ODC_STYLE);
+			importData("UnderlineLinks", UNDERLINE_LINKS);
+			importData("UnderlineDupes", UNDERLINE_DUPES);
 		}
 		xml.resetCurrentChild();
 		xml.stepOut();
@@ -701,6 +710,8 @@ LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	exportData("PasiveColor", PASIVE_COLOR);
 	exportData("OpColor", OP_COLOR);
 	exportData("ProgressbaroDCStyle", PROGRESSBAR_ODC_STYLE);
+	exportData("UnderlineLinks", UNDERLINE_LINKS);
+	exportData("UnderlineDupes", UNDERLINE_DUPES);
 	
 	try {
 		File ff(Text::fromT(x) , File::WRITE, File::CREATE | File::TRUNCATE);

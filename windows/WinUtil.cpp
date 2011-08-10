@@ -631,7 +631,6 @@ void WinUtil::initColors() {
 		m_TextStyleNormUsers.dwEffects |= CFE_ITALIC;
 
 	m_TextStyleURL = cf;
-	m_TextStyleURL.dwMask = CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_BACKCOLOR | CFM_UNDERLINE;
 	m_TextStyleURL.crBackColor = SETTING(TEXT_URL_BACK_COLOR);
 	m_TextStyleURL.crTextColor = SETTING(TEXT_URL_FORE_COLOR);
 	m_TextStyleURL.dwEffects = CFE_LINK | CFE_UNDERLINE;
@@ -639,9 +638,10 @@ void WinUtil::initColors() {
 		m_TextStyleURL.dwEffects |= CFE_BOLD;
 	if(SETTING(TEXT_URL_ITALIC))
 		m_TextStyleURL.dwEffects |= CFE_ITALIC;
+	if(SETTING(UNDERLINE_LINKS))
+		m_TextStyleURL.dwMask |= CFE_UNDERLINE;
 
 	m_TextStyleDupe = cf;
-	m_TextStyleDupe.dwMask = CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_BACKCOLOR | CFM_UNDERLINE;
 	m_TextStyleDupe.crBackColor = SETTING(TEXT_DUPE_BACK_COLOR);
 	m_TextStyleDupe.crTextColor = SETTING(DUPE_COLOR);
 	m_TextStyleDupe.dwEffects = CFE_LINK | CFE_UNDERLINE;
@@ -649,6 +649,8 @@ void WinUtil::initColors() {
 		m_TextStyleDupe.dwEffects |= CFE_BOLD;
 	if(SETTING(TEXT_DUPE_ITALIC))
 		m_TextStyleDupe.dwEffects |= CFE_ITALIC;
+	if(SETTING(UNDERLINE_DUPES))
+		m_TextStyleDupe.dwMask |= CFE_UNDERLINE;
 }
 
 void WinUtil::uninit() {

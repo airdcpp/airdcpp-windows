@@ -1241,7 +1241,7 @@ BEGIN
     PUSHBUTTON      "Default styles",IDC_DEFAULT_STYLES,198,134,64,14
     PUSHBUTTON      "Black && white",IDC_BLACK_AND_WHITE,198,151,64,14
     LTEXT           "Preview",IDC_CZDC_PREVIEW,144,19,64,8
-    CONTROL         "",IDC_PREVIEW,"RichEdit20W",WS_BORDER | WS_VSCROLL | WS_TABSTOP | 0x804,142,27,120,91
+    CONTROL         "",IDC_PREVIEW,"RichEdit20W",ES_MULTILINE | ES_READONLY | WS_BORDER | WS_VSCROLL | WS_TABSTOP,142,27,120,91
     LISTBOX         IDC_TEXT_STYLES,12,28,120,89,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Tab Colours, Progress Bars and Misc",IDC_CHATCOLORS,7,188,143,48
     COMBOBOX        IDC_TABCOLOR_LIST,13,199,129,65,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -1250,6 +1250,8 @@ BEGIN
     PUSHBUTTON      "Reset",IDC_RESET_TAB_COLOR,15,217,46,14
     PUSHBUTTON      "&Text style",IDC_SELTEXT,212,195,50,14
     PUSHBUTTON      "Black Theme",IDC_BLACK,198,168,64,14
+    CONTROL         "Underline links",IDC_UNDERLINE_LINKS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,154,131,10
+    CONTROL         "Underline dupes",IDC_UNDERLINE_DUPES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,170,133,10
 END
 
 IDD_KICK DIALOGEX 0, 0, 238, 62
@@ -1416,6 +1418,13 @@ BEGIN
     CONTROL         "Use Dupecolor in search",IDC_DUPE_SEARCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,200,233,10
 END
 
+IDD_FORMVIEW DIALOGEX 0, 0, 185, 93
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
+FONT 8, "MS Shell Dlg", 400, 0, 0x0
+BEGIN
+    LTEXT           "TODO: layout formview",IDC_STATIC,55,42,74,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1427,225 +1436,116 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 503
-        VERTGUIDE, 13
-        VERTGUIDE, 192
-        TOPMARGIN, 7
+        , 50
     END
 
     IDD_LINE, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 232
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 39
     END
 
     IDD_GENERALPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 270
-        VERTGUIDE, 14
-        VERTGUIDE, 88
-        VERTGUIDE, 94
-        VERTGUIDE, 180
-        VERTGUIDE, 258
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 287
-        HORZGUIDE, 132
-        HORZGUIDE, 142
-        HORZGUIDE, 169
-        HORZGUIDE, 197
+        , 50
     END
 
     IDD_ADVANCEDPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 288
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 265
+        , 50
     END
 
     IDD_DOWNLOADPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 268
-        VERTGUIDE, 14
-        VERTGUIDE, 55
-        VERTGUIDE, 58
-        VERTGUIDE, 211
-        VERTGUIDE, 217
-        VERTGUIDE, 230
-        VERTGUIDE, 234
-        VERTGUIDE, 261
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 265
+        , 50
     END
 
     IDD_SHAREPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 5
-        RIGHTMARGIN, 291
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 268
+        , 50
     END
 
     IDD_APPEARANCEPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 268
-        VERTGUIDE, 16
-        VERTGUIDE, 260
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 267
+        , 50
     END
 
     IDD_LOGPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 268
-        VERTGUIDE, 18
-        VERTGUIDE, 124
-        VERTGUIDE, 261
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 257
+        , 50
     END
 
     IDD_USER_COMMAND, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 428
-        VERTGUIDE, 14
-        VERTGUIDE, 103
-        VERTGUIDE, 181
-        VERTGUIDE, 188
-        VERTGUIDE, 195
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 275
-        HORZGUIDE, 18
-        HORZGUIDE, 28
-        HORZGUIDE, 44
-        HORZGUIDE, 55
-        HORZGUIDE, 67
-        HORZGUIDE, 82
-        HORZGUIDE, 257
+        , 50
     END
 
     IDD_ADLS_PROPERTIES, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 182
-        VERTGUIDE, 151
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 194
+        , 50
     END
 
     IDD_UCPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 268
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 261
+        , 50
     END
 
     IDD_FULTABSPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 260
-        VERTGUIDE, 14
-        VERTGUIDE, 79
-        VERTGUIDE, 124
-        VERTGUIDE, 255
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 259
-        HORZGUIDE, 51
-        HORZGUIDE, 93
-        HORZGUIDE, 97
+        , 50
     END
 
     IDD_IGNOREPAGE, DIALOG
     BEGIN
-        BOTTOMMARGIN, 223
+        , 50
     END
 
     IDD_FAVORITEHUB, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 456
-        VERTGUIDE, 12
-        VERTGUIDE, 52
-        VERTGUIDE, 54
-        VERTGUIDE, 203
-        VERTGUIDE, 211
-        VERTGUIDE, 420
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 189
+        , 50
     END
 
     IDD_TEXT_STYLES, DIALOG
     BEGIN
-        RIGHTMARGIN, 274
-        BOTTOMMARGIN, 234
+        , 50
     END
 
     IDD_KICK, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 231
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 55
+        , 50
     END
 
     IDD_AIRDOWNLOADSPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 6
-        RIGHTMARGIN, 278
-        VERTGUIDE, 203
-        VERTGUIDE, 250
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 266
+        , 50
     END
 
     IDD_PARAM_DLG, DIALOG
     BEGIN
-        LEFTMARGIN, 5
-        RIGHTMARGIN, 262
-        TOPMARGIN, 5
-        BOTTOMMARGIN, 55
-        HORZGUIDE, 13
-        HORZGUIDE, 28
+        , 50
     END
 
     IDD_AIRSHARINGPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 1
-        RIGHTMARGIN, 279
-        VERTGUIDE, 203
-        VERTGUIDE, 260
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 262
+        , 50
     END
 
     IDD_AUTOSEARCH_DLG, DIALOG
     BEGIN
-        RIGHTMARGIN, 299
-        BOTTOMMARGIN, 94
+        , 50
     END
 
     IDD_AUTOSEARCH, DIALOG
     BEGIN
-        BOTTOMMARGIN, 248
+        , 50
     END
 
     IDD_AIRAPPEARANCEPAGE, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 268
-        VERTGUIDE, 16
-        VERTGUIDE, 260
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 261
+        , 50
+    END
+
+    "IDD_FORMVIEW", DIALOG
+    BEGIN
+        , 50
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1950,6 +1850,19 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,259,162,50,14
 END
 
+IDD_DIRLIST_DLG DIALOGEX 0, 0, 288, 66
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Search",IDOK,174,45,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,231,45,50,14
+    RTEXT           "Search string",IDC_DL_SEARCH_DESC,5,15,49,9
+    EDITTEXT        IDC_DL_SEARCH_STRING,60,13,221,12,ES_AUTOHSCROLL
+    RTEXT           "File type",IDC_DL_TYPE_TEXT,27,32,31,8
+    CONTROL         "",IDC_DL_FILETYPE,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,61,30,79,130
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1989,6 +1902,14 @@ BEGIN
         RIGHTMARGIN, 309
         TOPMARGIN, 7
         BOTTOMMARGIN, 176
+    END
+
+    IDD_DIRLIST_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 281
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 59
     END
 END
 #endif    // APSTUDIO_INVOKED

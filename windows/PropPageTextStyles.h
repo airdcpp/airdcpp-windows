@@ -109,7 +109,7 @@ private:
 };
 
 protected:
-	//static Item items[];
+	static Item items[];
 	static TextItem texts[];
 	enum TextStyles {
 		TS_GENERAL, TS_MYNICK, TS_MYMSG, TS_PRIVATE, TS_SYSTEM, TS_SERVER, TS_TIMESTAMP, TS_URL, TS_DUPE, TS_FAVORITE, TS_OP, TS_NORM, 

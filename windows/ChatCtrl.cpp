@@ -42,6 +42,8 @@ ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false) 
 	regRelease.study();
 	regUrl.Init(_T("(((?:[a-z][\\w-]{0,10})?:/{1,3}|www\\d{0,3}[.]|magnet:\\?[^\\s=]+=|spotify:|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"), boost::regex_constants::icase);
 	regUrl.study();
+	regReleaseBoost.assign(_T("((?<=\\s)(?=\\S*[A-Z]\\S*)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S+)))(\\S+)-(\\w{2,})(?=(\\W)?\\s))"));
+	regUrlBoost.assign(_T("(((?:[a-z][\\w-]{0,10})?:/{1,3}|www\\d{0,3}[.]|magnet:\\?[^\\s=]+=|spotify:|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"), boost::regex_constants::icase);
 	handCursor=false;
 	lastTick = GET_TICK();
 	emoticonsManager->inc();
@@ -375,16 +377,14 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 
 	//Format URLs
 		string::size_type isMagnet, isSpotify;
-		boost::wregex reg;
-		//reg.assign(_T("((?<=\\s|:|\\()(magnet:\\?[^\\s=]+=)?(?i)\\b((?:[a-z][\\w-]{2,10}:(?!\\S+:\\s)(?!([A-Za-zÖÄÅöäå]+|[0-9]+)(\\s|$))(?:/{1,3}|[a-z0-9%])|www\\d{0,3}[.]|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’])))"));
-		reg.assign(_T("(((?:[a-z][\\w-]{0,10})?:/{1,3}|www\\d{0,3}[.]|magnet:\\?[^\\s=]+=|spotify:|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`!()\\[\\]{};:'\".,<>?«»“”‘’]))"), boost::regex_constants::icase);
+
 
 		tstring::const_iterator start = sMsg.begin();
 		tstring::const_iterator end = sMsg.end();
 		boost::match_results<tstring::const_iterator> result;
 		int pos=0;
 
-		while(boost::regex_search(start, end, result, reg, boost::match_default)) {
+		while(boost::regex_search(start, end, result, regUrlBoost, boost::match_default)) {
 			size_t linkStart = pos + lSelBegin + result.position();
 			size_t linkEnd = pos + lSelBegin + result.position() + result.length();
 			SetSel(linkStart, linkEnd);
@@ -455,14 +455,12 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 	//Format release names and files as URL
 	if(SETTING(FORMAT_RELEASE)) {
 		if(!detectMagnet) {
-			boost::wregex reg;
-			reg.assign(_T("((?<=\\s)(?=\\S*[A-Z]\\S*)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S+)))(\\S+)-(\\w{2,})(?=(\\W)?\\s))"));
 			tstring::const_iterator start = sMsg.begin();
 			tstring::const_iterator end = sMsg.end();
 			boost::match_results<tstring::const_iterator> result;
 			int pos=0;
 
-			while(boost::regex_search(start, end, result, reg, boost::match_default)) {
+			while(boost::regex_search(start, end, result, regReleaseBoost, boost::match_default)) {
 				SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
 				std::string link (result[0].first, result[0].second);
 				if (ShareManager::getInstance()->isDirShared(link)) {
@@ -1020,8 +1018,9 @@ LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 
 LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	bHandled=FALSE;
 	if (lastTick+100 > GET_TICK())
-		return TRUE;
+		return FALSE;
 	lastTick=GET_TICK();
 
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
@@ -1139,7 +1138,6 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 tstring ChatCtrl::getShortLink(POINT pt) {
 	tstring line=LineFromPos(pt);
 	tstring word;
-	bool found=false;
 	for(TStringMap::iterator i = shortLinks.begin(); i != shortLinks.end(); i++) {
 		if(line.find(i->first) != tstring::npos) {
 			//if there are multiple shortlinks on the same line.. this should be accurate enough
@@ -1596,9 +1594,7 @@ BOOL ChatCtrl::isRelease(POINT pt, BOOL search) {
 tstring word = WordFromPos(pt);
 
 if(!word.empty()) {
-	boost::wregex reg;
-	reg.assign(_T("((([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S*)))(\\S+)-((?=\\w*[A-Z]\\w*)|\\d{3,7})(\\w+))"));
-	if(boost::regex_match(word, reg)) {
+	if (regRelease.match(word) > 0) {
 		if (search) {
 			WinUtil::search(word, 0, false);
 		}
