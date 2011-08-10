@@ -677,6 +677,12 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	selectedWord = WordFromPos(pt);
 
 	release = isRelease(pt, false)? true : false;
+	dupe=false;
+	if (release) {
+		if (ShareManager::getInstance()->isDirShared(Text::fromT(WordFromPos(pt)))) {
+			dupe=true;
+		}
+	}
 
 
 	// Po kliku dovnitr oznaceneho textu si zkusime poznamenat pripadnej nick ci ip...
@@ -781,6 +787,11 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
 			menu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
+
+			if (dupe) {
+				menu.AppendMenu(MF_SEPARATOR);
+				menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+			}
 
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
@@ -927,6 +938,16 @@ tstring ChatCtrl::getSearchString() {
 	return term;
 
 }
+
+LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	tstring path = ShareManager::getInstance()->getDirPath(Text::fromT(getSearchString()));
+	if (path.empty())
+		return 0;
+
+	WinUtil::openFolder(path);
+	return 0;
+}
+
 LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		tstring searchterm = getSearchString();
 		
@@ -1591,16 +1612,16 @@ LRESULT ChatCtrl::onDoubleClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 }
 
 BOOL ChatCtrl::isRelease(POINT pt, BOOL search) {
-tstring word = WordFromPos(pt);
+	tstring word = WordFromPos(pt);
 
-if(!word.empty()) {
-	if (regRelease.match(word) > 0) {
-		if (search) {
-			WinUtil::search(word, 0, false);
+	if(!word.empty()) {
+		if (regRelease.match(word) > 0) {
+			if (search) {
+				WinUtil::search(word, 0, false);
+			}
+			return TRUE;
 		}
-		return TRUE;
 	}
-}
 	return FALSE;
 }
 

@@ -840,12 +840,12 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
 					copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
 			
-							//SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-							SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
-							SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
-							SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
-							SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
-							SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
+					//SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
+					SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
+					SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
+					SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
+					SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
+					SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
 
 					UINT idCommand = shellMenu.ShowContextMenu(m_hWnd, pt);
 					if(idCommand != 0) {
@@ -875,6 +875,9 @@ clientmenu:
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
 	
+		if (ShareManager::getInstance()->isDirShared(ii->dir->getPath())) {
+			fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+		}
 		fileMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
@@ -1776,34 +1779,36 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 	try {
 		tstring path;
 		
-		if(ii->type == ItemInfo::FILE) {
-			try{
-			
-				path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-			
-				}catch(...) { }
-
-			} else if(mylist && ii->type == ItemInfo::DIRECTORY){
-				StringList tmp = dl->getLocalPaths(ii->dir);
-				if(tmp.empty())
-					return 0;
-				
-				path = Text::toT(*tmp.begin());  //could open all virtualfolders but some have so many.
-
+			if(ii->type == ItemInfo::FILE) {
+				try {
+					path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+				} catch(...) { }
+			} else if(ii->type == ItemInfo::DIRECTORY){
+				if (mylist) {
+					StringList tmp = dl->getLocalPaths(ii->dir);
+					if(tmp.empty())
+						return 0;
+					path = Text::toT(*tmp.begin());  //could open all virtualfolders but some have so many.
+				} else {
+					path = ShareManager::getInstance()->getDirPath(ii->dir->getPath());
+					if (path.empty()) {
+						return 0;
+					}
+				}
 			} else if(ii->dir->getFileCount() > 0) {
 				DirectoryListing::File::Iter i = ii->dir->files.begin();
-				for(; i != ii->dir->files.end(); ++i) {
+				for (; i != ii->dir->files.end(); ++i) {
 					if((*i)->getDupe())
 						break;
 				}
 				if(i != ii->dir->files.end()) {
-					try{
-					path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
-					wstring::size_type end = path.find_last_of(_T("\\")); //makes it open the above folder if dir is selected with open folder
-					if(end != wstring::npos) {
-						path = path.substr(0, end);
-					}
-					}catch(...) {}
+					try {
+						path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
+						wstring::size_type end = path.find_last_of(_T("\\")); //makes it open the above folder if dir is selected with open folder
+						if (end != wstring::npos) {
+							path = path.substr(0, end);
+						}
+					} catch(...) {}
 				}
 			}
 

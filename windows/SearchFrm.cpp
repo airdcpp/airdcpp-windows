@@ -1355,11 +1355,8 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 			if((SearchInfo*)ctrlResults.getSelectedItem()->isDupe()) {
-				const SearchInfo* si = ctrlResults.getSelectedItem();
-			if(si->sr->getType() == SearchResult::TYPE_FILE) {
 				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 				resultsMenu.AppendMenu(MF_SEPARATOR);
-				}
 			}
 			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES_FILE));
 			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES_DIR, CTSTRING(SEARCH_FOR_ALTERNATES_DIR));
@@ -2021,21 +2018,25 @@ LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 }
 LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-if(ctrlResults.GetSelectedCount() == 1) {
+	if(ctrlResults.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.getSelectedItem();
 
-	try {
-		tstring path;
+		try {
+			tstring path;
 		
-		if(si->sr->getType() == SearchResult::TYPE_FILE) {
-			path = Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
+			if(si->sr->getType() == SearchResult::TYPE_FILE) {
+				path = Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
 		
-			WinUtil::openFolder(path);
+				WinUtil::openFolder(path);
+			} else {
+				path=ShareManager::getInstance()->getDirPath(si->sr->getFile());
+				if (!path.empty())
+					WinUtil::openFolder(path);
+			}
+		} catch(const ShareException& se) {
+			LogManager::getInstance()->message(se.getError());
 		}
-	} catch(const ShareException& se) {
-		LogManager::getInstance()->message(se.getError());
 	}
-}
 	return 0;
 }
 /**

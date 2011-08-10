@@ -84,7 +84,7 @@
 		<String Name="Connected">Connected</String>
 		<String Name="Connecting">Connecting...</String>
 		<String Name="ConnectingForced">Connecting (forced)...</String>
-		<String Name="ConnectingTo">Connecting to </String>
+		<String Name="ConnectingTo">Connecting to</String>
 		<String Name="ConnectingToServer">Connecting to server</String>
 		<String Name="Connection">Connection</String>
 		<String Name="ConnectionClosed">Connection closed</String>
