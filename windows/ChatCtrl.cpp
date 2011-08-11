@@ -1660,7 +1660,7 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 		return Util::emptyStringT;
 	}
 
-	if(p.y > (p_ichar.y +  (t_height*1.5))) { //time 1.5 so dont need to be totally exact
+	if(p.y > (p_ichar.y +  (t_height*1.5))) { //times 1.5 so dont need to be totally exact
 		return Util::emptyStringT;
 	}
 
