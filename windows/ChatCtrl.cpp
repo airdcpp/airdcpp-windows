@@ -209,10 +209,10 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 				if(iAuthorLen != tstring::npos) {
                     bool isOp = false, isFavorite = false;
 
-                    if(client != NULL) {
+                    
 						tstring nick(sMsg.c_str() + 1);
 						nick.erase(iAuthorLen - 1);
-						
+						if(client != NULL) {
 						const OnlineUserPtr ou = client->findUser(Text::fromT(nick));
 						if(ou != NULL) {
 							isFavorite = FavoriteManager::getInstance()->isFavoriteUser(ou->getUser());
@@ -1646,7 +1646,7 @@ BOOL ChatCtrl::isRelease(POINT pt, BOOL search) {
 }
 
 tstring ChatCtrl::WordFromPos(const POINT& p) {
-	if(client == NULL) return Util::emptyStringT;
+	//if(client == NULL) return Util::emptyStringT;
 
 	int iCharPos = CharFromPos(p), line = LineFromChar(iCharPos), len = LineLength(iCharPos) + 1;
 	if(len < 3)

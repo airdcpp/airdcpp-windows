@@ -83,7 +83,6 @@ public:
 	}
 
 private:
-	Client* client;
 	bool openlog;
 	bool history;
 	tstring file;
