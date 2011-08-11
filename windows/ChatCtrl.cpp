@@ -1039,7 +1039,7 @@ LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 
-LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
 	
 
 	bHandled=FALSE;
@@ -1096,7 +1096,7 @@ LRESULT ChatCtrl::onRightButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL&
 	return bHandled = TRUE ? 0: 1;
 }
 
-bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled, bool rightButton) {
+bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/, bool rightButton) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 	if (!isLink(pt)) {
 		return 0;
@@ -1152,7 +1152,6 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 
 
 	tstring shortLink=getShortLink(pt);
-	bool magnet=false;
 	if (!rightButton) {
 		if(shortLink.empty()) {
 			WinUtil::openLink(sText);

@@ -76,7 +76,7 @@ PropPage::Item SpeedPage::items[] = {
 };
 
 
-LRESULT SpeedPage::onEnable(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT SpeedPage::onEnable(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	fixControls();
 
 	updateValues(wNotifyCode);
