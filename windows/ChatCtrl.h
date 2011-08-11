@@ -203,6 +203,7 @@ private:
 	tstring		nick;
 	tstring		searchTerm;
 	tstring		searchTermFull;
+	int t_height; //text height
 
     //Client* client;
 	TStringMap shortLinks; //ApexDC

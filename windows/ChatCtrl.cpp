@@ -47,6 +47,7 @@ ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false) 
 	handCursor=false;
 	lastTick = GET_TICK();
 	emoticonsManager->inc();
+	t_height = WinUtil::getTextHeight(m_hWnd, WinUtil::font); //? right height?
 }
 
 ChatCtrl::~ChatCtrl() {
@@ -1039,6 +1040,8 @@ LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 
 LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	
+
 	bHandled=FALSE;
 	if (lastTick+100 > GET_TICK())
 		return FALSE;
@@ -1061,6 +1064,7 @@ LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 }
 
 bool ChatCtrl::isLink(POINT pt) {
+
 	bool found=false;
 	tstring word = WordFromPos(pt);
 	if (word.empty())
@@ -1647,6 +1651,18 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	int iCharPos = CharFromPos(p), line = LineFromChar(iCharPos), len = LineLength(iCharPos) + 1;
 	if(len < 3)
 		return Util::emptyStringT;
+
+	POINT p_ichar = PosFromChar(iCharPos);
+	
+	//check the mouse positions again, to avoid getting the word even if we are past the end of text.
+	//better way to do this?
+	if(p.x > (p_ichar.x + 5)) { //+5 is close enough, dont want to be too strict about it?
+		return Util::emptyStringT;
+	}
+
+	if(p.y > (p_ichar.y +  (t_height*1.5))) { //time 1.5 so dont need to be totally exact
+		return Util::emptyStringT;
+	}
 
 	int begin =  0;
 	int end  = 0;
