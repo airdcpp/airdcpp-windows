@@ -1137,7 +1137,7 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 
 	std::string link;
 	boost::wregex enlinkReg;
-	enlinkReg.assign(_T("(?=\\S*[A-Z]\\S*)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S+)))(\\S+)-(\\w{2,})(?=(\\W))"));
+	enlinkReg.assign(_T("(?=\\S*[A-Z]\\S*)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S+)))(\\S+)-(\\w{2,})(?=(\\W)?$)"));
 	boost::match_results<tstring::const_iterator> result;
 	if(boost::regex_search(sText, result, enlinkReg, boost::match_default)) {
 		std::string link (result[0].first, result[0].second);
@@ -1168,7 +1168,12 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 		if (shortLink.empty()) {
 			SetSel(l_Start+begin, l_Start+begin+sText.length());
 		} else {
-			SetSel(l_Start+begin, l_Start+begin+shortLink.length());
+			//need to check the starting position from the line first
+			tstring shortLine=LineFromPos(pt);
+			size_t pos = shortLine.find(shortLink);
+			if (pos != tstring::npos) {
+				SetSel(l_Start+pos, l_Start+pos+shortLink.length());
+			}
 		}
 		InvalidateRect(NULL);
 	}
