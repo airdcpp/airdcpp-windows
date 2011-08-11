@@ -45,6 +45,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlPad.SetFont(WinUtil::font);
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
+	ctrlPad.setClient(client);
 
 	string tmp;
 	try {
