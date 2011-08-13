@@ -833,8 +833,25 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 					::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_PM_TRAY_ICON, NULL);
 				}
 			}
+		} else if(i->first == UPDATE_ICONS) {
+			if(client->isConnected() == true) {
+				if(client->getMyIdentity().isOp()){	
+					setIcon(HubOpIcon);
+			
+				} else if(client->getMyIdentity().isRegistered()){
+					setIcon(HubRegIcon);
+			
+				} else {
+					setIcon(HubIcon);
+					//could move this to Client and just set the icons here, but only need to check after connecting
+					if(BOOLSETTING(DISALLOW_CONNECTION_TO_PASSED_HUBS)) {
+						addStatus(TSTRING(HUB_NOT_PROTECTED));
+						client->disconnect(false);
+						client->setAutoReconnect(false);
+					}
+				}
+			}
 		}
-
 	}
 	
 	if(resort && showUsers) {
@@ -1803,22 +1820,9 @@ void HubFrame::on(Second, uint64_t /*aTick*/) noexcept {
 }
 
 void HubFrame::on(ClientListener::HubCounts, const Client*) noexcept { 
-	//todo transfer the CountType from client with the listener.
-	if((client->isConnected() == true) && seticons < 2){ //need to set more than once so we get it correct in some nmdc hubs, but dont need to update reg status after that.
+	if(seticons < 2){ //need to set more than once so we get it correct in some nmdc hubs, but dont need to update reg status after that.
 		seticons++;
-		if(client->getMyIdentity().isOp()){	
-			setIcon(HubOpIcon);
-		}else if(client->getMyIdentity().isRegistered()){
-			setIcon(HubRegIcon);
-		}else{
-			setIcon(HubIcon);
-			//could move this to Client and just set the icons here, but only need to check after connecting
-			if(BOOLSETTING(DISALLOW_CONNECTION_TO_PASSED_HUBS)) {
-						speak(ADD_STATUS_LINE, STRING(HUB_NOT_PROTECTED));
-						client->disconnect(false);
-						client->setAutoReconnect(false);
-			}
-		}
+		speak(UPDATE_ICONS);
 	} 	
 }
 

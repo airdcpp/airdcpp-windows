@@ -105,7 +105,7 @@ void DirectoryListingFrame::loadFile(const tstring& name, const tstring& dir) {
 	
 	ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 	//don't worry about cleanup, the object will delete itself once the thread has finished it's job
-	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(name), Util::emptyString, dir, mylist);
+	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(name), Util::emptyString, dir, mylist, false);
 	loading = true;
 	tdl->start();
 
@@ -114,7 +114,7 @@ void DirectoryListingFrame::loadFile(const tstring& name, const tstring& dir) {
 void DirectoryListingFrame::loadXML(const string& txt) {
 	ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 	//don't worry about cleanup, the object will delete itself once the thread has finished it's job
-	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Util::emptyString, txt, Util::emptyStringT, mylist);
+	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Util::emptyString, txt, Util::emptyStringT, mylist, false);
 	loading = true;
 	tdl->start();
 }
