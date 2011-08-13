@@ -177,6 +177,9 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	*/
 	WinUtil::SetIcon(m_hWnd, _T("hub.ico"));
 
+	HubOpIcon = (HICON) ::LoadImage(_Module.get_m_hInst(),  WinUtil::getIconPath(_T("hubop.ico")).c_str(), IMAGE_ICON, 0, 0, LR_SHARED | LR_LOADFROMFILE);
+	HubRegIcon = (HICON) ::LoadImage(_Module.get_m_hInst(),  WinUtil::getIconPath(_T("hubreg.ico")).c_str(), IMAGE_ICON, 0, 0, LR_SHARED | LR_LOADFROMFILE);
+	HubIcon = (HICON) ::LoadImage(_Module.get_m_hInst(), WinUtil::getIconPath(_T("hub.ico")).c_str(), IMAGE_ICON, 0, 0, LR_SHARED | LR_LOADFROMFILE);
 
 	if(fhe != NULL){
 		//retrieve window position
@@ -1799,23 +1802,24 @@ void HubFrame::on(Second, uint64_t /*aTick*/) noexcept {
 	}
 }
 
-void HubFrame::on(HubCounts, const Client*) noexcept { 
-		HICON setIconVal = NULL;
-		
+void HubFrame::on(ClientListener::HubCounts, const Client*) noexcept { 
+	//todo transfer the CountType from client with the listener.
+	if((client->isConnected() == true) && seticons < 2){ //need to set more than once so we get it correct in some nmdc hubs, but dont need to update reg status after that.
+		seticons++;
 		if(client->getMyIdentity().isOp()){	
-			setIconVal = (HICON) ::LoadImage(_Module.get_m_hInst(),  WinUtil::getIconPath(_T("hubop.ico")).c_str(), IMAGE_ICON, 0, 0, LR_SHARED | LR_LOADFROMFILE);
+			setIcon(HubOpIcon);
 		}else if(client->getMyIdentity().isRegistered()){
-			setIconVal = (HICON) ::LoadImage(_Module.get_m_hInst(),  WinUtil::getIconPath(_T("hubreg.ico")).c_str(), IMAGE_ICON, 0, 0, LR_SHARED | LR_LOADFROMFILE);
+			setIcon(HubRegIcon);
 		}else{
-			setIconVal = (HICON) ::LoadImage(_Module.get_m_hInst(), WinUtil::getIconPath(_T("hub.ico")).c_str(), IMAGE_ICON, 0, 0, LR_SHARED | LR_LOADFROMFILE);
+			setIcon(HubIcon);
+			//could move this to Client and just set the icons here, but only need to check after connecting
 			if(BOOLSETTING(DISALLOW_CONNECTION_TO_PASSED_HUBS)) {
-						addStatus(TSTRING(HUB_NOT_PROTECTED), WinUtil::m_ChatTextSystem);
+						speak(ADD_STATUS_LINE, STRING(HUB_NOT_PROTECTED));
 						client->disconnect(false);
 						client->setAutoReconnect(false);
 			}
 		}
-		
-		setIcon(setIconVal);
+	} 	
 }
 
 void HubFrame::on(Connecting, const Client*) noexcept { 
@@ -1827,6 +1831,7 @@ void HubFrame::on(Connecting, const Client*) noexcept {
 }
 void HubFrame::on(Connected, const Client*) noexcept { 
 	speak(CONNECTED);
+	seticons = 0;
 }
 void HubFrame::on(UserUpdated, const Client*, const OnlineUserPtr& user) noexcept {
 	speak(UPDATE_USER_JOIN, user);
@@ -1858,6 +1863,7 @@ void HubFrame::on(Redirect, const Client*, const string& line) noexcept {
 void HubFrame::on(Failed, const Client*, const string& line) noexcept { 
 	speak(ADD_STATUS_LINE, line); 
 	speak(DISCONNECTED); 
+	seticons = 0;
 }
 void HubFrame::on(GetPassword, const Client*) noexcept { 
 	speak(GET_PASSWORD);

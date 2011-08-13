@@ -254,7 +254,7 @@ private:
 		}
 	};
 
-	struct UpdateInfo : FastAlloc<UpdateInfo>, public Task {
+	struct UpdateInfo : public Task {
 		enum {
 			MASK_POS			= 0x01,
 			MASK_SIZE			= 0x02,
