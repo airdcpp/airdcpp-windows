@@ -168,13 +168,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		hubshowjoins = false;
 		showchaticon = false;
 	}
-	/*
-	for(int j=0; j<OnlineUser::COLUMN_LAST; j++) {
-		ctrlFilterSel.AddString(CTSTRING_I(columnNames[j]));
-	}
-	ctrlFilterSel.AddString(CTSTRING(ANY));
-	ctrlFilterSel.SetCurSel(0);
-	*/
+
 	WinUtil::SetIcon(m_hWnd, _T("hub.ico"));
 
 	HubOpIcon = (HICON) ::LoadImage(_Module.get_m_hInst(),  WinUtil::getIconPath(_T("hubop.ico")).c_str(), IMAGE_ICON, 0, 0, LR_SHARED | LR_LOADFROMFILE);
@@ -843,12 +837,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 			
 				} else {
 					setIcon(HubIcon);
-					//could move this to Client and just set the icons here, but only need to check after connecting
-					if(BOOLSETTING(DISALLOW_CONNECTION_TO_PASSED_HUBS)) {
-						addStatus(TSTRING(HUB_NOT_PROTECTED));
-						client->disconnect(false);
-						client->setAutoReconnect(false);
-					}
+					
 				}
 			}
 		}
@@ -1819,11 +1808,9 @@ void HubFrame::on(Second, uint64_t /*aTick*/) noexcept {
 	}
 }
 
-void HubFrame::on(ClientListener::HubCounts, const Client*) noexcept { 
-	if(seticons < 2){ //need to set more than once so we get it correct in some nmdc hubs, but dont need to update reg status after that.
-		seticons++;
-		speak(UPDATE_ICONS);
-	} 	
+void HubFrame::on(ClientListener::SetIcons, const Client*) noexcept { 
+		//speak(UPDATE_ICONS);
+		tasks.add(UPDATE_ICONS, 0);
 }
 
 void HubFrame::on(Connecting, const Client*) noexcept { 
@@ -1835,7 +1822,6 @@ void HubFrame::on(Connecting, const Client*) noexcept {
 }
 void HubFrame::on(Connected, const Client*) noexcept { 
 	speak(CONNECTED);
-	seticons = 0;
 }
 void HubFrame::on(UserUpdated, const Client*, const OnlineUserPtr& user) noexcept {
 	speak(UPDATE_USER_JOIN, user);
@@ -1867,7 +1853,6 @@ void HubFrame::on(Redirect, const Client*, const string& line) noexcept {
 void HubFrame::on(Failed, const Client*, const string& line) noexcept { 
 	speak(ADD_STATUS_LINE, line); 
 	speak(DISCONNECTED); 
-	seticons = 0;
 }
 void HubFrame::on(GetPassword, const Client*) noexcept { 
 	speak(GET_PASSWORD);

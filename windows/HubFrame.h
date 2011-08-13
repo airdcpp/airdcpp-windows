@@ -350,8 +350,7 @@ private:
 		showUsersContainer(WC_BUTTON, this, EDIT_MESSAGE_MAP),
 		clientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
-		seticons(0)
+		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP)
 	{
 		client = ClientManager::getInstance()->getClient(Text::fromT(aServer));
 		client->addListener(this);
@@ -366,7 +365,6 @@ private:
 	}
 
 	~HubFrame() {
-		seticons = 3;
 		ClientManager::getInstance()->putClient(client);
 
 		dcassert(frames.find(server) != frames.end());
@@ -395,7 +393,6 @@ private:
 
 	bool waitingForPW;
 	bool extraSort;
-	int seticons;
 
 	TStringList prevCommands;
 	tstring currentCommand;
@@ -504,7 +501,7 @@ private:
 	void on(SearchFlood, const Client*, const string&) noexcept;	
 	void on(HubTopic, const Client*, const string&) noexcept;
 	void on(AddLine, const Client*, const string&) noexcept;
-	void on(ClientListener::HubCounts, const Client*) noexcept;
+	void on(ClientListener::SetIcons, const Client*) noexcept;
 
 	void speak(Tasks s) { tasks.add(static_cast<uint8_t>(s), 0); PostMessage(WM_SPEAKER); }
 	void speak(Tasks s, const string& msg, bool inChat = true) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new StatusTask(msg, inChat))); PostMessage(WM_SPEAKER); }
