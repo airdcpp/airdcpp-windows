@@ -1070,11 +1070,15 @@ bool ChatCtrl::isLink(POINT pt) {
 	if (word.empty())
 		return false;
 
-	if (regUrl.match(word) > 0) {
-		found=true;
-	} else if (regRelease.match(word) > 0) {
-		found=true;
-	} else {
+	if (word.length() > 7) {
+		if (regUrl.match(word) > 0) {
+			found=true;
+		} else if (regRelease.match(word) > 0) {
+			found=true;
+		}
+	}
+
+	if (!found) {
 		if (!getShortLink(pt).empty()) {
 			found=true;
 		}
