@@ -67,9 +67,14 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_CURRENT_LBL), (TSTRING(CURRENT_VERSION) + _T(":")).c_str());
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_LATEST_LBL), (TSTRING(LATEST_VERSION) + _T(":")).c_str());
-	PostMessage(WM_SPEAKER, UPDATE_CURRENT_VERSION, (LPARAM)new tstring(_T(VERSIONSTRING)));
-	PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(_T("")));
 
+#ifdef BETADATE
+	PostMessage(WM_SPEAKER, UPDATE_CURRENT_VERSION, (LPARAM)new tstring(_T(VERSIONFLOAT)));
+#else
+	PostMessage(WM_SPEAKER, UPDATE_CURRENT_VERSION, (LPARAM)new tstring(_T(VERSIONSTRING)));
+#endif
+
+	PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(_T("")));
 	::SetWindowText(GetDlgItem(IDC_UPDATE_LANGUAGELANG_CURRENT_LBL), (TSTRING(CURRENT_LANGUAGE) + _T(":")).c_str());
 	::SetWindowText(GetDlgItem(IDC_UPDATE_LANGUAGE_CURRENT_LBL), (TSTRING(CURRENT_VERSION) + _T(":")).c_str());
 	::SetWindowText(GetDlgItem(IDC_UPDATE_LANGUAGE_LATEST_LBL), (TSTRING(LATEST_VERSION) + _T(":")).c_str());
@@ -90,7 +95,8 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlClose.SetWindowText(CTSTRING(CLOSE));
 	ctrlStatus.SetWindowText((TSTRING(CONNECTING_TO_SERVER) + _T("...")).c_str());
 
-	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION), CTSTRING(VERSION));
+	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION), CTSTRING(CLIENT_VERSION));
+	::SetWindowText(GetDlgItem(IDC_UPDATE_LANGUAGE), CTSTRING(LANGUAGE_VERSION));
 	::SetWindowText(GetDlgItem(IDC_UPDATE_HISTORY), CTSTRING(HISTORY));
 
 	hc = new HttpConnection;
@@ -217,8 +223,13 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 
 				if (xml.findChild("Version")) {
 					string ver = xml.getChildData();
+#ifndef BETADATE
+					if (ver.length() > 4)
+						ver = ver.substr(0,4);
+#endif
 					
 					PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(Text::toT(ver)));
+
 
 					latestVersion = Util::toDouble(ver);
 					xml.resetCurrentChild();
@@ -228,7 +239,7 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 				if (xml.findChild("URL64")) {   //remember to add this in the versionfile
 					downloadURL = xml.getChildData();
 					xml.resetCurrentChild();
-					if (latestVersion > VERSIONFLOAT)
+					if (latestVersion > Util::toDouble(VERSIONFLOAT))
 						ctrlDownload.EnableWindow(TRUE);
 				} else
 					throw Exception();
@@ -237,7 +248,7 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 				if (xml.findChild("URL")) {
 					downloadURL = xml.getChildData();
 					xml.resetCurrentChild();
-					if (latestVersion > VERSIONFLOAT)
+					if (latestVersion > Util::toDouble(VERSIONFLOAT))
 						ctrlDownload.EnableWindow(TRUE);
 				} else
 					throw Exception();

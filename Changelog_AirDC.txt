@@ -465,6 +465,8 @@ Added:
 #Multiple connections per user and a dedicated slot for partial lists and small files (ADC only)
 #Show modify dates, folder sizes and dupes in partial lists
 #Automatic detection for download/upload limits
+#IPv6 support for recent Windows versions (StrongDC++)
+#New ADC extensions: ZLIF (Dice!++), KP (DC++) and LC
 #The window positions are now being saved
 #Favorite Download directories can be ordered in settings
 #An option to choose if recursive partial lists are always being used for adding sources for the whole release
@@ -478,6 +480,7 @@ Added:
 !!Warning Adding Release to autosearch list enables AUTOSEARCH, so check old items in the list!!
 
 #"Skip files smaller than" setting for subtract filelist in airsharingpage (will only skip if 2 or less files in dir)
+#Dupe releases are also being detected in chat
 
 Changed:
 
@@ -494,6 +497,10 @@ Changed:
 #Use recursive partial list for downloading incomplete folders from partial lists
 #cache share to share.xml instead of bzipping it(faster)
 #Allow adding multiple partial filelists from the same user in the queue
+#Dupe folder check is also performed for release subfolders
+#New link formating which allows changing the link color and style
+#Rearranged update dialog
+#Imporoved loading speed for partial lists
 
 Fixed:
 
@@ -507,6 +514,7 @@ Fixed:
 #Detect quoted file names in SFV files
 #Download all folders with an unknown content from partial file lists (not just the first one selected)
 Fix Many crashes on ownlist functions
+#Show the correct version number in update dialog for stable releases
 
 Removed:
 

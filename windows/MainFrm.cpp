@@ -889,7 +889,7 @@ void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, 
 		xml.resetCurrentChild();
 		}
 		if(xml.findChild("Version")) {
-			if(Util::toDouble(xml.getChildData()) > VERSIONFLOAT) {
+			if(Util::toDouble(xml.getChildData()) > Util::toDouble(VERSIONFLOAT)) {
 				xml.resetCurrentChild();
 				xml.resetCurrentChild();
 				if(xml.findChild("Title")) {
@@ -908,7 +908,7 @@ void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, 
 				}
 				xml.resetCurrentChild();
 				if(xml.findChild("VeryOldVersion")) {
-					if(Util::toDouble(xml.getChildData()) >= VERSIONFLOAT) {
+					if(Util::toDouble(xml.getChildData()) >= Util::toDouble(VERSIONFLOAT)) {
 						string msg = xml.getChildAttrib("Message", "Your version of AirDC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
 						MessageBox(Text::toT(msg + "\r\nPlease get a new one at " + url).c_str());
 						oldshutdown = true;
@@ -920,7 +920,7 @@ void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, 
 					xml.stepIn();
 					while(xml.findChild("BadVersion")) {
 						double v = Util::toDouble(xml.getChildAttrib("Version"));
-						if(v == VERSIONFLOAT) {
+						if(v == Util::toDouble(VERSIONFLOAT)) {
 							string msg = xml.getChildAttrib("Message", "Your version of DC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
 							MessageBox(Text::toT(msg + "\r\nPlease get a new one at " + url).c_str(), _T("Bad DC++ version"), MB_OK | MB_ICONEXCLAMATION);
 							oldshutdown = true;
