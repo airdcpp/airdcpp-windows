@@ -1664,7 +1664,7 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	
 	//check the mouse positions again, to avoid getting the word even if we are past the end of text.
 	//better way to do this?
-	if(p.x > (p_ichar.x + 5)) { //+5 is close enough, dont want to be too strict about it?
+	if(p.x > (p_ichar.x + 3)) { //+3 is close enough, dont want to be too strict about it?
 		return Util::emptyStringT;
 	}
 
