@@ -1106,7 +1106,7 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		return 0;
 	}
 
-	int iCharPos2 = CharFromPos(pt), line = LineFromChar(iCharPos2), len = LineLength(iCharPos2) + 1;
+	int iCharPos2 = CharFromPos(pt), /*line = LineFromChar(iCharPos2),*/ len = LineLength(iCharPos2) + 1;
 	if(len < 3) {
 		return 0;
 	}
@@ -1114,8 +1114,23 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 	int begin =  0;
 	int end  = 0;
 	
-	long l_Start = LineIndex(line);
-	long l_End = LineIndex(line) + LineLength(iCharPos2);
+	FINDTEXT ft;
+	ft.chrg.cpMin = iCharPos2;
+	ft.chrg.cpMax = -1;
+	ft.lpstrText = _T("\r");
+
+	long l_Start = SendMessage(EM_FINDTEXT, 0, (LPARAM)&ft) + 1;
+	long l_End = SendMessage(EM_FINDTEXT, FR_DOWN, (LPARAM)&ft);
+
+	if(l_Start < 0)
+		l_Start = 0;
+
+	if(l_End == -1)
+		l_End =  GetTextLengthEx(GTL_NUMCHARS);
+
+
+	//long l_Start = LineIndex(line);
+	//long l_End = LineIndex(line) + LineLength(iCharPos2);
 	
 	
 	tstring Line;
@@ -1662,7 +1677,7 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 
 	POINT p_ichar = PosFromChar(iCharPos);
 	
-	//check the mouse positions again, to avoid getting the word even if we are past the end of text.
+	//check the mouse positions again, to avoid getting the word even if we are past the end of text. 
 	//better way to do this?
 	if(p.x > (p_ichar.x + 3)) { //+3 is close enough, dont want to be too strict about it?
 		return Util::emptyStringT;
@@ -1674,13 +1689,30 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 
 	int begin =  0;
 	int end  = 0;
-	
+	/* If use this here need to fix the crap that gets picked up when select from the end of line (mostly in motd).
+	FINDTEXT findt;
+	findt.chrg.cpMin = iCharPos;
+	findt.chrg.cpMax = -1;
+	findt.lpstrText = _T("\r");
+
+	long l_Start = SendMessage(EM_FINDTEXT, 0, (LPARAM)&findt) + 1;
+	long l_End = SendMessage(EM_FINDTEXT, FR_DOWN, (LPARAM)&findt);
+
+	if(l_Start < 0)
+		l_Start = 0;
+
+	if(l_End == -1)
+		l_End =  GetTextLengthEx(GTL_NUMCHARS);
+		*/
 	long l_Start = LineIndex(line);
 	long l_End = LineIndex(line) + LineLength(iCharPos);
 	
 	
 	tstring Line;
 	len = l_End - l_Start;
+	if(len < 3)
+		return Util::emptyStringT;
+
 	Line.resize(len);
 	GetTextRange(l_Start, l_End, &Line[0]); //pick the current line from text for starters
 
@@ -1696,6 +1728,7 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	if(len <= 3)
 	return Util::emptyStringT;
 
+	//end = end -1;
 	tstring sText;
 	sText = Line.substr(begin, end-begin);
 	
