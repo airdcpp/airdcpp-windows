@@ -685,8 +685,9 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 		localpaths.push_back(Text::fromT(path));
 		}catch(...) {} //file deleted no path
 	} else  if(ii->type == ItemInfo::DIRECTORY) {
+		try{
 			localpaths = dl->getLocalPaths(ii->dir);
-
+		}catch(...) {}
 		}
 
 	
@@ -1786,10 +1787,20 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 				} catch(...) { }
 			} else if(ii->type == ItemInfo::DIRECTORY){
 				if (mylist) {
-					StringList tmp = dl->getLocalPaths(ii->dir);
+					StringList tmp;
+
+					if(ii->dir->getAdls())
+						return 0;
+
+					try {
+						tmp = dl->getLocalPaths(ii->dir);
+					}catch(...) { }
+
 					if(tmp.empty())
 						return 0;
+
 					path = Text::toT(*tmp.begin());  //could open all virtualfolders but some have so many.
+
 				} else {
 					path = ShareManager::getInstance()->getDirPath(ii->dir->getPath());
 					if (path.empty()) {

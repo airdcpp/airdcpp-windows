@@ -1434,7 +1434,7 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_ABOUTBOX, DIALOG
     BEGIN
-        , 50
+     //   , 50
     END
 
     IDD_LINE, DIALOG
@@ -1443,107 +1443,107 @@ BEGIN
 
     IDD_GENERALPAGE, DIALOG
     BEGIN
-        , 50
+     //   , 50
     END
 
     IDD_ADVANCEDPAGE, DIALOG
     BEGIN
-        , 50
+       // , 50
     END
 
     IDD_DOWNLOADPAGE, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_SHAREPAGE, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_APPEARANCEPAGE, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_LOGPAGE, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_USER_COMMAND, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_ADLS_PROPERTIES, DIALOG
     BEGIN
-        , 50
+       // , 50
     END
 
     IDD_UCPAGE, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_FULTABSPAGE, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_IGNOREPAGE, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_FAVORITEHUB, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_TEXT_STYLES, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_KICK, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_AIRDOWNLOADSPAGE, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_PARAM_DLG, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_AIRSHARINGPAGE, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_AUTOSEARCH_DLG, DIALOG
     BEGIN
-        , 50
+       // , 50
     END
 
     IDD_AUTOSEARCH, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
     IDD_AIRAPPEARANCEPAGE, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 
-    "IDD_FORMVIEW", DIALOG
+    IDD_FORMVIEW, DIALOG
     BEGIN
-        , 50
+        //, 50
     END
 END
 #endif    // APSTUDIO_INVOKED
