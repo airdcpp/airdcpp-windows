@@ -1140,8 +1140,8 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 
 	int iCharPos = iCharPos2 - l_Start; //modify the charpos within the range of our new line.
 
-	begin = Line.find_last_of(_T(" \t\r"), iCharPos) + 1;	
-	end = Line.find_first_of(_T(" \t\r"), begin);
+	begin = Line.find_last_of(_T(" \t\r\n"), iCharPos) + 1;	
+	end = Line.find_first_of(_T(" \t\r\n"), begin);
 			if(end == tstring::npos) {
 				end = Line.length();
 			}
@@ -1429,7 +1429,8 @@ tstring ChatCtrl::rtfEscape(tstring str) {
 	while((i = str.find_first_of(_T("{}\\\n"), i)) != tstring::npos) {
 		switch(str[i]) {
 			// no need to process \r handled elsewhere
-			case '\n': str.replace(i, 1, _T("\\line\n")); i+=6; break;
+			//case '\n': str.replace(i, 1, _T("\\line\n")); i+=6; break; hmm...
+			case '\n': str.insert(i, _T("\\")); i+=2; break;  //do we need to put the /line in there? messes everything up
 			default: str.insert(i, _T("\\")); i+=2;
 		}
 	}
@@ -1671,7 +1672,7 @@ BOOL ChatCtrl::isRelease(POINT pt, BOOL search) {
 tstring ChatCtrl::WordFromPos(const POINT& p) {
 	//if(client == NULL) return Util::emptyStringT;
 
-	int iCharPos = CharFromPos(p), line = LineFromChar(iCharPos), len = LineLength(iCharPos) + 1;
+	int iCharPos = CharFromPos(p), /*line = LineFromChar(iCharPos),*/ len = LineLength(iCharPos) + 1;
 	if(len < 3)
 		return Util::emptyStringT;
 
@@ -1689,7 +1690,7 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 
 	int begin =  0;
 	int end  = 0;
-	/* If use this here need to fix the crap that gets picked up when select from the end of line (mostly in motd).
+	
 	FINDTEXT findt;
 	findt.chrg.cpMin = iCharPos;
 	findt.chrg.cpMax = -1;
@@ -1703,9 +1704,9 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 
 	if(l_End == -1)
 		l_End =  GetTextLengthEx(GTL_NUMCHARS);
-		*/
-	long l_Start = LineIndex(line);
-	long l_End = LineIndex(line) + LineLength(iCharPos);
+		
+	//long l_Start = LineIndex(line);
+	//long l_End = LineIndex(line) + LineLength(iCharPos);
 	
 	
 	tstring Line;
@@ -1728,7 +1729,6 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	if(len <= 3)
 	return Util::emptyStringT;
 
-	//end = end -1;
 	tstring sText;
 	sText = Line.substr(begin, end-begin);
 	

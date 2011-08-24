@@ -149,6 +149,9 @@ public:
 	void setDirty(HWND aWnd) {
 		TabInfo* ti = getTabInfo(aWnd);
 		dcassert(ti != NULL);
+		if(ti == NULL)
+			return;
+
 		bool inval = ti->update();
 
 		if(active != ti) {
