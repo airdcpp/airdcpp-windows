@@ -496,15 +496,11 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 			if(curReplace != tstring::npos && smiles < MAX_EMOTICONS) {
 				//check the position
 				if ((curReplace != lastReplace) && (curReplace > 0)) {
-					LogManager::getInstance()->message("FOUND");
 					//char previousChar = sMsg[idxFound-1];
 					int pos=curReplace-1;
 					if (isgraph(sMsg[pos])) {
-						LogManager::getInstance()->message("FOUNDPRINT");
 						lastReplace = curReplace + foundEmoticon->getEmoticonText().size();
 						continue;
-					} else {
-						LogManager::getInstance()->message("NOTGRAPH");
 					}
 				}
 
@@ -676,10 +672,10 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	selectedIP.clear();
 	selectedWord = WordFromPos(pt);
 
-	release = (regRelease.match(WordFromPos(pt)) > 0) ? true : false;
+	release = (regRelease.match(selectedWord) > 0) ? true : false;
 	dupe=false;
 	if (release) {
-		if (ShareManager::getInstance()->isDirShared(Text::fromT(WordFromPos(pt)))) {
+		if (ShareManager::getInstance()->isDirShared(Text::fromT(selectedWord))) {
 			dupe=true;
 		}
 	}
@@ -1037,7 +1033,7 @@ LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 	
 
 	bHandled=FALSE;
-	if (lastTick+100 > GET_TICK())
+	if (lastTick+50 > GET_TICK())
 		return FALSE;
 	lastTick=GET_TICK();
 
