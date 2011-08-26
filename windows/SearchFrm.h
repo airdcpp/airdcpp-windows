@@ -338,7 +338,7 @@ private:
 				// Only attempt to grab a country mapping if we actually have an IP address
 				string tmpCountry = Util::getIpCountry(sr->getIP());
 				if(!tmpCountry.empty()) {
-					flagIndex = WinUtil::getFlagIndexByName(tmpCountry.c_str());
+					flagIndex = WinUtil::getFlagIndexByCode(tmpCountry.c_str());
 				}
 			}
 		}

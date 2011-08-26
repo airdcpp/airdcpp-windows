@@ -45,7 +45,6 @@ public:
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, onLButtonDown)
-		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onDoubleClick)
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 		MESSAGE_HANDLER(WM_SETCURSOR, onSetCursor)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, onMouseMove)
@@ -136,7 +135,6 @@ public:
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchTTH(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDoubleClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 //	void setClient(Client* pClient) { client = pClient; }
 
 	LRESULT onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -177,7 +175,6 @@ private:
 	}
 	tstring getSearchString();
 	tstring WordFromPos(const POINT& p);
-	BOOL isRelease(POINT pt, BOOL search);
 	tstring LineFromPos(const POINT& p) const;
 	void FormatChatLine(const tstring& sMyNick, tstring& sMsg, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo);
 	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);

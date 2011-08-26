@@ -802,7 +802,7 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 	int lastConn = SETTING(INCOMING_CONNECTIONS);
 	string lastMapper = SETTING(MAPPER);
-	string lastBind = SETTING(BIND_ADDRESS);
+	string lastBind = SETTING(BIND_INTERFACE);
 
 	bool lastSortFavUsersFirst = BOOLSETTING(SORT_FAVUSERS_FIRST);
 
@@ -814,7 +814,7 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		}
 
 		try {
-			ConnectivityManager::getInstance()->setup(SETTING(INCOMING_CONNECTIONS) != lastConn || SETTING(TCP_PORT) != lastTCP || SETTING(UDP_PORT) != lastUDP || SETTING(TLS_PORT) != lastTLS || SETTING(MAPPER) != lastMapper || SETTING(BIND_ADDRESS) != lastBind );
+			ConnectivityManager::getInstance()->setup(SETTING(INCOMING_CONNECTIONS) != lastConn || SETTING(TCP_PORT) != lastTCP || SETTING(UDP_PORT) != lastUDP || SETTING(TLS_PORT) != lastTLS || SETTING(MAPPER) != lastMapper || SETTING(BIND_INTERFACE) != lastBind );
 		} catch (const Exception& e) {
 			LogManager::getInstance()->message(e.getError());
 		}

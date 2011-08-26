@@ -71,9 +71,9 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -363,18 +363,12 @@
     <ClInclude Include="client\Streams.h" />
     <ClInclude Include="client\typedefs.h" />
     <CustomBuild Include="client\StringDefs.h">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">"$(SolutionDir)vc10\$(Platform)\$(Configuration)\MakeDefs\MakeDefs.exe" .\client\StringDefs.h .\client\StringDefs.cpp .\EN_Example.xml</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\client\StringDefs.cpp;%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">"$(SolutionDir)vc10\$(Platform)\$(Configuration)\MakeDefs\MakeDefs.exe" .\client\StringDefs.h .\client\StringDefs.cpp .\EN_Example.xml</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\client\StringDefs.cpp;%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">"$(SolutionDir)vc10\$(Platform)\$(Configuration)\MakeDefs\MakeDefs.exe" .\client\StringDefs.h .\client\StringDefs.cpp .\EN_Example.xml</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\client\StringDefs.cpp;%(Outputs)</Outputs>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">"$(SolutionDir)vc10\$(Platform)\$(Configuration)\MakeDefs\MakeDefs.exe" .\client\StringDefs.h .\client\StringDefs.cpp .\EN_Example.xml</Command>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\client\StringDefs.cpp;%(Outputs)</Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </Outputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </Outputs>
     </CustomBuild>
     <ClInclude Include="client\StringSearch.h" />
     <ClInclude Include="client\StringTokenizer.h" />
@@ -406,14 +400,6 @@
     </ProjectReference>
     <ProjectReference Include="bzip2.vcxproj">
       <Project>{8b162f1b-5d6c-41c1-8a80-858b379de07d}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="MakeDefs\MakeDefs.vcxproj">
-      <Project>{aef82786-9da2-4cdf-8602-02643cafc727}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="regex.vcxproj">
-      <Project>{6b5e1154-d1fc-460a-b5f4-78acb1e96349}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="zlib.vcxproj">

@@ -17,17 +17,14 @@
  */
 
 #include "stdafx.h"
+
 #include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
 #include "../client/Socket.h"
 
 #include "Resource.h"
-
 #include "NetworkPage.h"
 #include "WinUtil.h"
-
-#include <IPHlpApi.h>
-#pragma comment(lib, "iphlpapi.lib")
 
 PropPage::TextItem NetworkPage::texts[] = {
 		{ IDC_CONNECTION_DETECTION,			ResourceManager::CONNECTION_DETECTION		},
@@ -70,7 +67,7 @@ PropPage::Item NetworkPage::items[] = {
 	{ IDC_SOCKS_USER,	SettingsManager::SOCKS_USER,	PropPage::T_STR },
 	{ IDC_SOCKS_PASSWORD, SettingsManager::SOCKS_PASSWORD, PropPage::T_STR },
 	{ IDC_SOCKS_RESOLVE, SettingsManager::SOCKS_RESOLVE, PropPage::T_BOOL },
-	{ IDC_BIND_ADDRESS, SettingsManager::BIND_ADDRESS, PropPage::T_STR },
+	//{ IDC_BIND_ADDRESS, SettingsManager::BIND_INTERFACE, PropPage::T_STR },
 	{ IDC_IPUPDATE, SettingsManager::IP_UPDATE, PropPage::T_BOOL },
 	{ IDC_NATT,				SettingsManager::ALLOW_NAT_TRAVERSAL,	PropPage::T_BOOL	},
 	{ 0, 0, PropPage::T_END }
@@ -120,6 +117,12 @@ void NetworkPage::write()
 		settings->set(SettingsManager::OUTGOING_CONNECTIONS, ct);
 		Socket::socksUpdated();
 	}
+
+	PIP_ADAPTER_ADDRESSES adapter = (PIP_ADAPTER_ADDRESSES)BindCombo.GetItemDataPtr(BindCombo.GetCurSel());
+	if(adapter)
+		settings->set(SettingsManager::BIND_INTERFACE, adapter->AdapterName);
+	else
+		settings->unset(SettingsManager::BIND_INTERFACE);
 }
 
 LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -163,14 +166,11 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	desc.Detach();
 
 	BindCombo.Attach(GetDlgItem(IDC_BIND_ADDRESS));
-	//BindCombo.AddString(_T("0.0.0.0"));
+	BindCombo.AddString((TSTRING(ANY) + _T(" (IPv4 & IPv6)")).c_str());
 	getAddresses();
-	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(SETTING(BIND_ADDRESS)).c_str()));
-	
-	if(BindCombo.GetCurSel() == -1) {
-		BindCombo.AddString(Text::toT(SETTING(BIND_ADDRESS)).c_str());
-		BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(SETTING(BIND_ADDRESS)).c_str()));
-	}
+
+	if(BindCombo.GetCurSel() == -1)
+		BindCombo.SetCurSel(0);
 
 	return TRUE;
 }
@@ -187,6 +187,7 @@ void NetworkPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_FIREWALL_NAT), !auto_detect);
 	::EnableWindow(GetDlgItem(IDC_FIREWALL_PASSIVE), !auto_detect);
 	::EnableWindow(GetDlgItem(IDC_SETTINGS_IP), !auto_detect);
+	::EnableWindow(GetDlgItem(IDC_BIND_ADDRESS), !auto_detect);
 
 	::EnableWindow(GetDlgItem(IDC_EXTERNAL_IP), !auto_detect && (direct || upnp || nat || nat_traversal));
 	::EnableWindow(GetDlgItem(IDC_OVERRIDE), !auto_detect && (direct || upnp || nat || nat_traversal));
@@ -211,29 +212,50 @@ void NetworkPage::fixControls() {
 }
 
 void NetworkPage::getAddresses() {
-	IP_ADAPTER_INFO* AdapterInfo = NULL;
-	DWORD dwBufLen = NULL;
 
-	DWORD dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);
-	if(dwStatus == ERROR_BUFFER_OVERFLOW) {
-		AdapterInfo = (IP_ADAPTER_INFO*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, dwBufLen);
-		dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);		
+	// trunk with win32 solution only... multiplatform solution in wx build
+
+#define WORKING_BUFFER_SIZE 8192
+#define MAX_TRIES 3
+
+	ULONG len = WORKING_BUFFER_SIZE;
+	ULONG ret = 0;
+	int iterations = 0;
+
+	do
+	{
+		adapterInfo = (IP_ADAPTER_ADDRESSES*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, len);
+		ret = GetAdaptersAddresses(AF_INET, GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST, NULL, adapterInfo, &len);
+
+		if(ret != ERROR_BUFFER_OVERFLOW)
+			break;
+
+		HeapFree(GetProcessHeap(), 0, adapterInfo);
+
+		++iterations;
 	}
+	while (ret == ERROR_BUFFER_OVERFLOW && iterations < MAX_TRIES);
 
-	if(dwStatus == ERROR_SUCCESS) {
-		PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
-		while (pAdapterInfo) {
-			IP_ADDR_STRING* pIpList = &(pAdapterInfo->IpAddressList);
-			while (pIpList) {
-				BindCombo.AddString(Text::toT(pIpList->IpAddress.String).c_str());
-				pIpList = pIpList->Next;
+	if(ret == ERROR_SUCCESS)
+	{
+		PIP_ADAPTER_ADDRESSES  pAdapterInfo = adapterInfo;
+		while (pAdapterInfo)
+		{
+			// we want only enabled ethernet interfaces
+			if(pAdapterInfo->OperStatus == IfOperStatusUp && (pAdapterInfo->IfType == IF_TYPE_ETHERNET_CSMACD || pAdapterInfo->IfType == IF_TYPE_IEEE80211))
+			{
+				if(pAdapterInfo->FirstUnicastAddress)	// only if interface has at least one unicast address (don't care about its type now)
+				{
+					int n = BindCombo.AddString((tstring(pAdapterInfo->FriendlyName) + _T(" (IPv4 only)")).c_str());
+					BindCombo.SetItemDataPtr(n, pAdapterInfo);
+
+					if(SETTING(BIND_INTERFACE) == pAdapterInfo->AdapterName)
+						BindCombo.SetCurSel(n);
+				}
 			}
 			pAdapterInfo = pAdapterInfo->Next;
 		}
 	}
-	
-	if(AdapterInfo)
-		HeapFree(GetProcessHeap(), 0, AdapterInfo);	
 }
 
 LRESULT NetworkPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

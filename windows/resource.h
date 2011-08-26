@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by C:\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -175,7 +175,7 @@
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
-#define IDD_FORMVIEW					500
+#define IDD_FORMVIEW                    500
 #define IDC_REFRESH                     1000
 #define IDC_NICK                        1001
 #define IDC_EMAIL                       1002
@@ -575,6 +575,7 @@
 #define IDC_STATIC1                     1287
 #define IDC_SETTINGS_BIND_ADDRESS_HELP  1287
 #define IDC_REGEXP_TESTER_BUTTON        1288
+#define IDC_BIND_ADDRESS2               1288
 #define IDC_S                           1290
 #define IDC_FLAT                        1291
 #define IDC_S2                          1291

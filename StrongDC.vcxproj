@@ -96,9 +96,9 @@
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)compiled\$(Platform)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -340,9 +340,6 @@
     <None Include="res\bitmap1.bmp" />
     <None Include="res\bra.ico" />
     <None Include="res\CDM.ico" />
-    <None Include="res\CZDCPlusPlus-about.ico" />
-    <None Include="res\CZDCPlusPlus-XP.ico" />
-    <None Include="res\CZDCPlusPlus.ico" />
     <None Include="res\dan.ico" />
     <None Include="res\Directory.ico" />
     <None Include="res\emoticon.bmp" />
@@ -636,10 +633,6 @@
     </ProjectReference>
     <ProjectReference Include="regex.vcxproj">
       <Project>{6b5e1154-d1fc-460a-b5f4-78acb1e96349}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="MakeDefs\MakeDefs.vcxproj">
-      <Project>{aef82786-9da2-4cdf-8602-02643cafc727}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="miniupnpc\miniupnpc.vcxproj">

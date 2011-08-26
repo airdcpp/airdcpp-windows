@@ -677,7 +677,7 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	selectedIP.clear();
 	selectedWord = WordFromPos(pt);
 
-	release = isRelease(pt, false)? true : false;
+	release = (regRelease.match(WordFromPos(pt)) > 0) ? true : false;
 	dupe=false;
 	if (release) {
 		if (ShareManager::getInstance()->isDirShared(Text::fromT(WordFromPos(pt)))) {
@@ -1154,23 +1154,23 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 	tstring sText;
 	sText = Line.substr(begin, end-begin);
 
-	std::string link;
-	boost::wregex enlinkReg;
-	enlinkReg.assign(_T("(?=\\S*[A-Z]\\S*)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S+)))(\\S+)-(\\w{2,})(?=(\\W)?$)"));
-	boost::match_results<tstring::const_iterator> result;
-	if(boost::regex_search(sText, result, enlinkReg, boost::match_default)) {
-		std::string link (result[0].first, result[0].second);
-		sText=Text::toT(link);
-		begin = begin+result.position();
-	} else if (boost::regex_search(sText, result, regUrlBoost, boost::match_default)) {
-		std::string link (result[0].first, result[0].second);
-		sText=Text::toT(link);
-		begin = begin+result.position();
+	tstring shortLink=getShortLink(pt);
+	if (shortLink.empty()) {
+		std::string link;
+		boost::wregex enlinkReg;
+		enlinkReg.assign(_T("(?=\\S*[A-Z]\\S*)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S+)))(\\S+)-(\\w{2,})(?=(\\W)?$)"));
+		boost::match_results<tstring::const_iterator> result;
+		if(boost::regex_search(sText, result, regUrlBoost, boost::match_default)) {
+			std::string link (result[0].first, result[0].second);
+			sText=Text::toT(link);
+			begin = begin+result.position();
+		} else if (boost::regex_search(sText, result, enlinkReg, boost::match_default)) {
+			std::string link (result[0].first, result[0].second);
+			sText=Text::toT(link);
+			begin = begin+result.position();
+		}
 	}
 
-
-
-	tstring shortLink=getShortLink(pt);
 	if (!rightButton) {
 		if(shortLink.empty()) {
 			WinUtil::openLink(sText);
@@ -1646,27 +1646,6 @@ void ChatCtrl::CheckAction(ColorSettings* cs, const tstring& line) {
 
 	if(cs->getFlashWindow())
 		WinUtil::FlashWindow();
-}
-LRESULT ChatCtrl::onDoubleClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
-
-	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-	bHandled = isRelease(pt, true);
-
-	return bHandled = TRUE ? 0: 1;
-}
-
-BOOL ChatCtrl::isRelease(POINT pt, BOOL search) {
-	tstring word = WordFromPos(pt);
-
-	if(!word.empty()) {
-		if (regRelease.match(word) > 0) {
-			if (search) {
-				WinUtil::search(word, 0, false);
-			}
-			return TRUE;
-		}
-	}
-	return FALSE;
 }
 
 tstring ChatCtrl::WordFromPos(const POINT& p) {
