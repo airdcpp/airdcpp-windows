@@ -62,7 +62,6 @@ public:
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
 		COMMAND_ID_HANDLER(IDC_BAN_IP, onBanIP)
 		COMMAND_ID_HANDLER(IDC_UNBAN_IP, onUnBanIP)
-		COMMAND_ID_HANDLER(IDC_COPY_URL, onCopyURL)
 		COMMAND_ID_HANDLER(IDC_WHOIS_IP, onWhoisIP)
 
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
@@ -118,7 +117,6 @@ public:
 	LRESULT onCopyActualLine(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onCopyURL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -164,7 +162,6 @@ public:
 private:
 	bool HitNick(const POINT& p, tstring& sNick, int& iBegin , int& iEnd);
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);
-	bool HitURL();
 
 	void enableAutosearch() {
 		//enable the autosearch once added something for it.. will change when move autosearch into frame anyway.
@@ -215,7 +212,6 @@ private:
 	tstring selectedLine;
 	tstring selectedIP;
 	tstring selectedUser;
-	tstring selectedURL;
 	tstring selectedWord;
 	PME regUrl, regRelease;
 	boost::wregex regUrlBoost, regReleaseBoost;

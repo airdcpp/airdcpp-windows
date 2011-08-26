@@ -20,6 +20,7 @@
 #include "../client/DCPlusPlus.h"
 #include "../client/SimpleXML.h"
 #include "../client/Pointer.h"
+#include "boost/algorithm/string/replace.hpp"
 
 #include "EmoticonsManager.h"
 #include <math.h>
@@ -121,6 +122,7 @@ void EmoticonsManager::Load() {
 					strEmotionText = Text::toT(xml.getChildAttrib("Expression"));
 				}
 				
+				boost::algorithm::replace_all(strEmotionText, " ", "");
 				string strEmotionBmpPath = xml.getChildAttrib("Bitmap");
 				if (!strEmotionBmpPath.empty()) {
 					if (strEmotionBmpPath[0] == '.') {

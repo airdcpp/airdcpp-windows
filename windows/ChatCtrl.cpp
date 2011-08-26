@@ -248,7 +248,7 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 
 	SetSel(lSelBeginSaved, lSelEndSaved);
 	if(	isMyMessage || ((si.nPage == 0 || (size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) &&
-		(lSelBeginSaved == lSelEndSaved || !selectedUser.empty() || !selectedIP.empty() || !selectedURL.empty())))
+		(lSelBeginSaved == lSelEndSaved || !selectedUser.empty() || !selectedIP.empty())))
 	{
 		PostMessage(EM_SCROLL, SB_BOTTOM, 0);
 	} else {
@@ -453,7 +453,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 		}
 	}
 
-	//Format release names and files as URL
+	//Format release names
 	if(SETTING(FORMAT_RELEASE) || SETTING(DUPES_IN_CHAT)) {
 		if(!detectMagnet) {
 			tstring::const_iterator start = sMsg.begin();
@@ -475,8 +475,6 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 		}
 	}
 
-	detectMagnet=false;
-
 	// insert emoticons
 	if(bUseEmo && emoticonsManager->getUseEmoticons()) {
 		const Emoticon::List& emoticonsList = emoticonsManager->getEmoticonsList();
@@ -496,6 +494,20 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 			}
 
 			if(curReplace != tstring::npos && smiles < MAX_EMOTICONS) {
+				//check the position
+				if ((curReplace != lastReplace) && (curReplace > 0)) {
+					LogManager::getInstance()->message("FOUND");
+					//char previousChar = sMsg[idxFound-1];
+					int pos=curReplace-1;
+					if (isgraph(sMsg[pos])) {
+						LogManager::getInstance()->message("FOUNDPRINT");
+						lastReplace = curReplace + foundEmoticon->getEmoticonText().size();
+						continue;
+					} else {
+						LogManager::getInstance()->message("NOTGRAPH");
+					}
+				}
+
 				CHARFORMAT2 cfSel;
 				cfSel.cbSize = sizeof(cfSel);
 
@@ -504,12 +516,10 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 				SetSel(lSelBegin, lSelEnd);
 
 				GetSelectionCharFormat(cfSel);
-				if(!(cfSel.dwEffects & CFE_LINK)) {
-					CImageDataObject::InsertBitmap(GetOleInterface(), foundEmoticon->getEmoticonBmp(cfSel.crBackColor));
+				CImageDataObject::InsertBitmap(GetOleInterface(), foundEmoticon->getEmoticonBmp(cfSel.crBackColor));
+				++smiles;
+				++lSelBegin;
 
-					++smiles;
-					++lSelBegin;
-				} else lSelBegin = lSelEnd;
 				lastReplace = curReplace + foundEmoticon->getEmoticonText().size();
 			} else break;
 		}
@@ -644,17 +654,6 @@ bool ChatCtrl::HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd) {
 	return true;
 }
 
-bool ChatCtrl::HitURL() {
-	long lSelBegin = 0, lSelEnd = 0;
-	GetSel(lSelBegin, lSelEnd);
-
-	CHARFORMAT2 cfSel;
-	cfSel.cbSize = sizeof(cfSel);
-    GetSelectionCharFormat(cfSel);
-
-	return (cfSel.dwEffects & CFE_LINK) == CFE_LINK;
-}
-
 tstring ChatCtrl::LineFromPos(const POINT& p) const {
 	int iCharPos = CharFromPos(p);
 	int len = LineLength(iCharPos);
@@ -741,10 +740,6 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 	POINT ptCl = pt;
 	ScreenToClient(&ptCl); 
 	OnRButtonDown(ptCl);
-
-	bool boHitURL = HitURL();
-	if (!boHitURL)
-		selectedURL.clear();
 
 	OMenu menu;
 	menu.CreatePopupMenu();
@@ -1031,7 +1026,6 @@ LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	selectedLine.clear();
 	selectedIP.clear();
 	selectedUser.clear();
-	selectedURL.clear();
 	selectedWord.clear();
 
 	bHandled = FALSE;
@@ -1254,13 +1248,6 @@ LRESULT ChatCtrl::onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	if(!selectedIP.empty()) {
 		tstring s = _T("!unban ") + selectedIP;
 		client->hubMessage(Text::fromT(s));
-	}
-	return 0;
-}
-
-LRESULT ChatCtrl::onCopyURL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(!selectedURL.empty()) {
-		WinUtil::setClipboard(selectedURL);
 	}
 	return 0;
 }
