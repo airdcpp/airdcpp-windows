@@ -17,20 +17,26 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
+
+#include "../client/SettingsManager.h"
 #include "../client/SimpleXML.h"
 #include "../client/Pointer.h"
+#include "../client/File.h"
+#include "../client/LogManager.h"
 #include "boost/algorithm/string/replace.hpp"
 
 #include "EmoticonsManager.h"
-#include <math.h>
+#include <cmath>
 
 Emoticon::Emoticon(const tstring& _emoticonText, const string& _imagePath) : 
 	emoticonText(_emoticonText), imagePath(_imagePath)
 {
-	emoticonBitmap = (HBITMAP) ::LoadImage(0, Text::toT(imagePath).c_str(), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
-	if(!emoticonBitmap)
+	emoticonBitmap.Load(Text::toT(_imagePath).c_str());
+
+	if(emoticonBitmap.IsNull()) {
+		LogManager::getInstance()->message("RET: " + _imagePath);
 		return;
+	}
 	
 	BITMAP bm = { 0 };
 	GetObject(emoticonBitmap, sizeof(bm), &bm);
@@ -54,15 +60,37 @@ Emoticon::Emoticon(const tstring& _emoticonText, const string& _imagePath) :
 		SetBitmapBits(emoticonBitmap, bm.bmWidth * bm.bmHeight * 4, pBits);
 	    
 		delete[] pBits;
+	} else if(bm.bmBitsPixel <= 8) {
+		// Let's convert to a bitmap TransparentBlt can handle
+		HDC fixDC = CreateCompatibleDC(NULL);
+
+		BITMAPINFO bmi;
+		ZeroMemory(&bmi, sizeof(BITMAPINFO));
+		bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+		bmi.bmiHeader.biWidth = bm.bmWidth;
+		bmi.bmiHeader.biHeight = bm.bmHeight;
+		bmi.bmiHeader.biPlanes = 1;
+		bmi.bmiHeader.biBitCount = 16;
+		bmi.bmiHeader.biCompression = BI_RGB;
+		bmi.bmiHeader.biSizeImage = bm.bmWidth * bm.bmHeight * 2;
+
+		VOID *pvBits;
+		HBITMAP oldFixBitmap = (HBITMAP)SelectObject(fixDC, CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0));
+
+		emoticonBitmap.BitBlt(fixDC, 0, 0, SRCCOPY);
+		emoticonBitmap.Destroy();
+
+		emoticonBitmap.Attach((HBITMAP)SelectObject(fixDC, oldFixBitmap));
+		DeleteDC(fixDC);
 	}
 }
 
 HBITMAP Emoticon::getEmoticonBmp(const COLORREF &clrBkColor) {
-	if(!emoticonBitmap)
+	if(emoticonBitmap.IsNull())
 		return NULL;
 
 	HDC DirectDC = CreateCompatibleDC(NULL);
-	HDC memDC = CreateCompatibleDC(DirectDC);
+	HDC memDC = emoticonBitmap.GetDC();
 	
 	BITMAP bm = { 0 };
 	GetObject(emoticonBitmap, sizeof(bm), &bm);
@@ -80,9 +108,7 @@ HBITMAP Emoticon::getEmoticonBmp(const COLORREF &clrBkColor) {
 	VOID *pvBits;
 	HBITMAP DirectBitmap = CreateDIBSection(memDC, &bmi, DIB_RGB_COLORS, &pvBits, NULL, 0);
 
-	SelectObject(memDC, emoticonBitmap);
 	SelectObject(DirectDC, DirectBitmap);
-
 	SetBkColor(DirectDC, clrBkColor);
 	
 	RECT rc = { 0, 0, bm.bmWidth, bm.bmHeight };
@@ -95,7 +121,7 @@ HBITMAP Emoticon::getEmoticonBmp(const COLORREF &clrBkColor) {
 		TransparentBlt(DirectDC, 0, 0, bm.bmWidth, bm.bmHeight, memDC, 0, 0, bm.bmWidth, bm.bmHeight, GetPixel(memDC, 0, 0));	
 	}
 
-	DeleteDC(memDC);
+	emoticonBitmap.ReleaseDC();
 	DeleteDC(DirectDC);
 
     return DirectBitmap;

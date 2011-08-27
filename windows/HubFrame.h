@@ -40,6 +40,7 @@
 #include "atlstr.h"
 #include "WinUtil.h"
 #include "UCHandler.h"
+#include "ResourceLoader.h"
 
 #define EDIT_MESSAGE_MAP 10		// This could be any number, really...
 #define FILTER_MESSAGE_MAP 8
@@ -433,7 +434,7 @@ private:
 	
 	tstring filter;
 
-	HBITMAP hEmoticonBmp;
+	ExCImage hEmoticonBmp;
 	bool closed;
 	bool showUsers;
 

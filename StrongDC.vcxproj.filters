@@ -37,15 +37,6 @@
     <None Include="res\CDM.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\CZDCPlusPlus-about.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\CZDCPlusPlus-XP.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\CZDCPlusPlus.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\dan.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -253,6 +244,7 @@
     <None Include="res\message.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\emoticon.png" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AirDC.rc">

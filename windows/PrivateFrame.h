@@ -34,6 +34,7 @@
 #include "HubFrame.h"
 
 #include "ChatCtrl.h"
+#include "ResourceLoader.h"
 
 #define PM_MESSAGE_MAP 8		// This could be any number, really...
 
@@ -209,7 +210,7 @@ private:
 	int lineCount; //ApexDC
 	OMenu emoMenu;
 	CButton ctrlEmoticons;
-	HBITMAP hEmoticonBmp;
+	ExCImage hEmoticonBmp;
 
 
 	HintedUser replyTo;

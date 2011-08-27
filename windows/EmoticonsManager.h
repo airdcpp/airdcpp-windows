@@ -22,6 +22,8 @@
 #include "../client/FastAlloc.h"
 #include "../client/Util.h"
 
+#include "ResourceLoader.h"
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
@@ -34,7 +36,7 @@ public:
 	typedef List::const_iterator Iter;
 
 	Emoticon(const tstring& _emoticonText, const string& _imagePath);
-	~Emoticon() {	}
+	~Emoticon() { emoticonBitmap.Destroy(); }
 	
 	const tstring& getEmoticonText() const { return emoticonText; }
 	HBITMAP getEmoticonBmp() const {	return emoticonBitmap; }
@@ -44,7 +46,7 @@ public:
 private:
 	tstring		emoticonText;
 	string		imagePath;
-	HBITMAP		emoticonBitmap;
+	ExCImage	emoticonBitmap;
 };
 
 /**

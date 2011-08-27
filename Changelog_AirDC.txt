@@ -517,6 +517,7 @@ Fixed:
 Fix Many crashes on ownlist functions
 #Show the correct version number in update dialog for stable releases
 #Don't change the settings when clicking OK in the wizard if the profile hasn't been changed
+#Display the Emoticon colors correctly (ApexDC++)
 
 Removed:
 

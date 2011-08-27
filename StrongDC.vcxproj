@@ -343,6 +343,7 @@
     <None Include="res\dan.ico" />
     <None Include="res\Directory.ico" />
     <None Include="res\emoticon.bmp" />
+    <None Include="res\emoticon.png" />
     <None Include="res\eng.ico" />
     <None Include="res\fav.bmp" />
     <None Include="res\Favorites.ico" />

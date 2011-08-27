@@ -517,6 +517,9 @@
     <ClInclude Include="client\w.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\ResourceLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="client\StringDefs.h">
