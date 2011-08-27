@@ -81,8 +81,10 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	//add the Download speed strings, Using the same list as upload	
 	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i) {
-		if (download < (*i) && !found) {
+		if (Util::toDouble(download) < Util::toDouble(*i) && !found) {
 			ctrlDownload.AddString(Text::toT(SETTING(DOWNLOAD_SPEED)).c_str());
+			found=true;
+		} else if (download == (*i)) {
 			found=true;
 		}
 		ctrlDownload.AddString(Text::toT(*i).c_str());
@@ -96,8 +98,10 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	found=false;
 	//add the upload speed strings	
 	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i) {
-		if (upload < (*i) && !found) {
+		if (Util::toDouble(upload) < Util::toDouble(*i) && !found) {
 			ctrlUpload.AddString(Text::toT(SETTING(UPLOAD_SPEED)).c_str());
+			found=true;
+		} else if (upload == (*i)) {
 			found=true;
 		}
 		ctrlUpload.AddString(Text::toT(*i).c_str());
@@ -125,7 +129,6 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		CheckDlgButton(IDC_DL_AUTODETECT_WIZ, BST_CHECKED);
 	else
 		CheckDlgButton(IDC_DL_AUTODETECT_WIZ, BST_UNCHECKED);
-
 
 	if (SETTING(UL_AUTODETECT))
 		CheckDlgButton(IDC_UL_AUTODETECT_WIZ, BST_CHECKED);

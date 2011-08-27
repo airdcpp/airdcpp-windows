@@ -1797,7 +1797,7 @@ BEGIN
     RTEXT           "Maximum auto opened",IDC_MAX_AUTO_WIZ,209,243,117,8
     GROUPBOX        "Upload slots and limits",IDC_STATIC,180,179,233,82
     GROUPBOX        "Download slots and limits",IDC_STATIC,181,107,232,68
-    DEFPUSHBUTTON   "Test your speed online",IDC_SPEEDTEST,241,80,126,14
+    PUSHBUTTON      "Test your speed online",IDC_SPEEDTEST,241,80,126,14
     LTEXT           "Use this profile if unsure. This will enable segment downloading",IDC_STATIC,23,98,119,18
     LTEXT           "This will disable segment downloads",IDC_STATIC,20,140,118,13
     CONTROL         "Install the rar profile skiplist",IDC_WIZARD_SKIPLIST,
@@ -1901,6 +1901,13 @@ END
 IDI_HO                  ICON                    "res\\holland.ico"
 IDI_RUS                 ICON                    "res\\rus.ico"
 IDI_GER                 ICON                    "res\\Germ.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// PNG
+//
+
+IDR_EMOTICON            PNG                     "res\\emoticon.png"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 

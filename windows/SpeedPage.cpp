@@ -311,8 +311,10 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	ctrlDownload.Attach(GetDlgItem(IDC_DL_SPEED));
 	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i) {
-		if (SETTING(DOWNLOAD_SPEED) < (*i) && !found) {
+		if (Util::toDouble(SETTING(DOWNLOAD_SPEED)) < Util::toDouble(*i) && !found) {
 			ctrlDownload.AddString(Text::toT(SETTING(DOWNLOAD_SPEED)).c_str());
+			found=true;
+		} else if (SETTING(DOWNLOAD_SPEED) == (*i)) {
 			found=true;
 		}
 		ctrlDownload.AddString(Text::toT(*i).c_str());
@@ -322,8 +324,10 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	found=false;
 	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
 	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i) {
-		if ((SETTING(UPLOAD_SPEED) < (*i)) && !found) {
+		if (Util::toDouble(SETTING(UPLOAD_SPEED)) < Util::toDouble(*i) && !found) {
 			ctrlUpload.AddString(Text::toT(SETTING(UPLOAD_SPEED)).c_str());
+			found=true;
+		} else if (SETTING(UPLOAD_SPEED) == (*i)) {
 			found=true;
 		}
 		ctrlUpload.AddString(Text::toT(*i).c_str());
