@@ -501,6 +501,7 @@ Changed:
 #New link formating which allows changing the link color and style
 #Rearranged update dialog
 #Imporoved loading speed for partial lists
+#Don't insert Emoticons in the middle of words
 
 Fixed:
 
@@ -515,6 +516,7 @@ Fixed:
 #Download all folders with an unknown content from partial file lists (not just the first one selected)
 Fix Many crashes on ownlist functions
 #Show the correct version number in update dialog for stable releases
+#Don't change the settings when clicking OK in the wizard if the profile hasn't been changed
 
 Removed:
 

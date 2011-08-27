@@ -170,6 +170,7 @@
 #define IDI_RO                          332
 #define IDI_POL                         333
 #define IDI_FR                          334
+#define IDR_EMOTICON                    335
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDR_WINAMP                      474

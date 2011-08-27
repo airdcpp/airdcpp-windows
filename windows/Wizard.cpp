@@ -198,53 +198,12 @@ void WizardDlg::write() {
 	SettingsManager::getInstance()->set(SettingsManager::SLOTS, Text::fromT(buf6));
 
 
-
-	/*Make settings depending selected client settings profile
-	Note that if add a setting to one profile will need to add it to other profiles too*/
 	if(IsDlgButtonChecked(IDC_PUBLIC)){
-		SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 2);
-		SettingsManager::getInstance()->set(SettingsManager::MULTI_CHUNK, true);
-		SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
-		SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
-		//add more here
-
-		SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PUBLIC);
-
+		Util::setProfile(0);
 	} else if(IsDlgButtonChecked(IDC_RAR)) {
-		SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 1);
-		SettingsManager::getInstance()->set(SettingsManager::MULTI_CHUNK, true);
-		SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
-		SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 10240000);
-		SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, true);
-		SettingsManager::getInstance()->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
-		SettingsManager::getInstance()->set(SettingsManager::CHECK_SFV, true);
-		SettingsManager::getInstance()->set(SettingsManager::CHECK_NFO, true);
-		SettingsManager::getInstance()->set(SettingsManager::CHECK_EXTRA_SFV_NFO, true);
-		SettingsManager::getInstance()->set(SettingsManager::CHECK_EXTRA_FILES, true);
-		SettingsManager::getInstance()->set(SettingsManager::CHECK_DUPES, true);
-		SettingsManager::getInstance()->set(SettingsManager::MAX_FILE_SIZE_SHARED, 600);
-		/*with rar hubs we dont need the matching, will lower ram usage not use that
-		since autosearch adds sources to all rars. 
-		But a good settings for max sources for autosearch depending download connection ?? 
-		or well most users are found with 1 search anyway so second search wont find much more anyway*/
-		SettingsManager::getInstance()->set(SettingsManager::AUTO_SEARCH_AUTO_MATCH, false);
-		SettingsManager::getInstance()->set(SettingsManager::SEARCH_TIME, 5);
-		SettingsManager::getInstance()->set(SettingsManager::AUTO_SEARCH_LIMIT, 10);
-		SettingsManager::getInstance()->set(SettingsManager::AUTO_FOLLOW, false);
-		//add more here
-			
-		SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_RAR);
-
+		Util::setProfile(1);
 	} else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
-		SettingsManager::getInstance()->set(SettingsManager::MULTI_CHUNK, true);
-		SettingsManager::getInstance()->set(SettingsManager::EXTRA_PARTIAL_SLOTS, 2);
-		SettingsManager::getInstance()->set(SettingsManager::SEGMENTS_MANUAL, false);
-		SettingsManager::getInstance()->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
-		SettingsManager::getInstance()->set(SettingsManager::DOWNLOADS_EXPAND, false);
-		SettingsManager::getInstance()->set(SettingsManager::AUTO_FOLLOW, false);
-		//add more here
-			
-		SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PRIVATE);
+		Util::setProfile(2);
 	}
 
 
@@ -261,7 +220,7 @@ void WizardDlg::write() {
 		SettingsManager::getInstance()->set(SettingsManager::UL_AUTODETECT, false);
 	}
 
-	if(IsDlgButtonChecked(IDC_WIZARD_SKIPLIST)){
+	if(IsDlgButtonChecked(IDC_WIZARD_SKIPLIST)) {
 		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SHARE, "(.*(\\.(scn|asd|lnk|cmd|conf|dll|url|log|crc|dat|sfk|mxm|txt|message|iso|inf|sub|exe|img|bin|aac|mrg|tmp|xml|sup|ini|db|debug|pls|ac3|ape|par2|htm(l)?|bat|idx|srt|doc(x)?|ion|cue|b4s|bgl|cab|cat|bat)$))|((All-Files-CRC-OK|xCOMPLETEx|imdb.nfo|- Copy|(.*\\(\\d\\).*)).*$)");
 	}
 

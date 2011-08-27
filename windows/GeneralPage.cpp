@@ -63,12 +63,12 @@ PropPage::Item GeneralPage::items[] = {
 
 void GeneralPage::write()
 {
-	if (IsDlgButtonChecked(IDC_PUBLIC)) {
-		SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PUBLIC);
+	if(IsDlgButtonChecked(IDC_PUBLIC)){
+		Util::setProfile(0);
 	} else if(IsDlgButtonChecked(IDC_RAR)) {
-		SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_RAR);
-	} else {
-		SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, SettingsManager::PROFILE_PRIVATE);
+		Util::setProfile(1);
+	} else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
+		Util::setProfile(2);
 	}
 
 	PropPage::write((HWND)(*this), items);
