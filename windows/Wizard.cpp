@@ -167,7 +167,6 @@ void WizardDlg::write() {
 	TCHAR buf2[64];
 	GetDlgItemText(IDC_MAX_DOWNLOAD_SP, buf2, sizeof(buf2) + 1);
 	string downloadLimit = Text::fromT(buf2);
-	//int value = Util::toInt(downloadspeed); 
 	SettingsManager::getInstance()->set(SettingsManager::MAX_DOWNLOAD_SPEED, downloadLimit);
 
 
@@ -175,7 +174,6 @@ void WizardDlg::write() {
 	TCHAR buf3[64];
 	GetDlgItemText(IDC_MAX_AUTO_OPENED, buf3, sizeof(buf3) + 1);
 	string uploadLimit = Text::fromT(buf3);
-	//int value = Util::toInt(downloadspeed); 
 	SettingsManager::getInstance()->set(SettingsManager::AUTO_SLOTS, uploadLimit);
 
 
@@ -183,7 +181,6 @@ void WizardDlg::write() {
 	TCHAR buf4[64];
 	GetDlgItemText(IDC_MAX_UPLOAD_SP, buf4, sizeof(buf4) + 1);
 	string autoOpened = Text::fromT(buf4);
-	//int value = Util::toInt(downloadspeed); 
 	SettingsManager::getInstance()->set(SettingsManager::MIN_UPLOAD_SPEED, autoOpened);
 
 
@@ -201,7 +198,7 @@ void WizardDlg::write() {
 	if(IsDlgButtonChecked(IDC_PUBLIC)){
 		Util::setProfile(0);
 	} else if(IsDlgButtonChecked(IDC_RAR)) {
-		Util::setProfile(1);
+		Util::setProfile(1, IsDlgButtonChecked(IDC_WIZARD_SKIPLIST) ? true : false);
 	} else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
 		Util::setProfile(2);
 	}
@@ -218,10 +215,6 @@ void WizardDlg::write() {
 		SettingsManager::getInstance()->set(SettingsManager::UL_AUTODETECT, true);
 	} else {
 		SettingsManager::getInstance()->set(SettingsManager::UL_AUTODETECT, false);
-	}
-
-	if(IsDlgButtonChecked(IDC_WIZARD_SKIPLIST)) {
-		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SHARE, "(.*(\\.(scn|asd|lnk|cmd|conf|dll|url|log|crc|dat|sfk|mxm|txt|message|iso|inf|sub|exe|img|bin|aac|mrg|tmp|xml|sup|ini|db|debug|pls|ac3|ape|par2|htm(l)?|bat|idx|srt|doc(x)?|ion|cue|b4s|bgl|cab|cat|bat)$))|((All-Files-CRC-OK|xCOMPLETEx|imdb.nfo|- Copy|(.*\\(\\d\\).*)).*$)");
 	}
 
 	//if (IsDlgButtonChecked(IDC_CHECK1)) {
@@ -268,9 +261,7 @@ LRESULT WizardDlg::OnDownSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& b
 {
 	onSpeedChanged(wNotifyCode, wID, hWndCtl, bHandled);
 	TCHAR buf2[64];
-	//need to do it like this because we have support for custom speeds, do we really need that?
 	switch(wNotifyCode) {
-
 		case CBN_EDITCHANGE:
 			GetDlgItemText(IDC_DOWN_SPEED, buf2, sizeof(buf2) +1);
 			break;
@@ -282,7 +273,7 @@ LRESULT WizardDlg::OnDownSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& b
 
 	download = Text::fromT(buf2);
 
-	double value = Util::toDouble(download); //compare as int?
+	double value = Util::toDouble(download);
 
 	setDownloadLimits(value);
 
@@ -293,7 +284,6 @@ LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL&
 {
 	onSpeedChanged(wNotifyCode, wID, hWndCtl, bHandled);
 	TCHAR buf2[64];
-	//need to do it like this because we have support for custom speeds, do we really need that?
 	switch(wNotifyCode) {
 		case CBN_EDITCHANGE:
 			GetDlgItemText(IDC_CONNECTION, buf2, sizeof(buf2) +1);
@@ -305,7 +295,7 @@ LRESULT WizardDlg::OnUploadSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL&
 	}
 
 	upload = Text::fromT(buf2);
-	double value = Util::toDouble(upload); //compare as int?
+	double value = Util::toDouble(upload);
 	setUploadLimits(value);
 
 	return 0;
