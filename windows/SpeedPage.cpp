@@ -307,30 +307,31 @@ void SpeedPage::setUploadLimits(double value) {
 
 LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	PropPage::translate((HWND)(*this), texts);
+	bool found=false;
 
 	ctrlDownload.Attach(GetDlgItem(IDC_DL_SPEED));
-	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
+	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i) {
+		if (SETTING(DOWNLOAD_SPEED) < (*i) && !found) {
+			ctrlDownload.AddString(Text::toT(SETTING(DOWNLOAD_SPEED)).c_str());
+			found=true;
+		}
 		ctrlDownload.AddString(Text::toT(*i).c_str());
-
-		if(find(SettingsManager::connectionSpeeds.begin(), SettingsManager::connectionSpeeds.end(),
-			SETTING(DOWNLOAD_SPEED)) == SettingsManager::connectionSpeeds.end()) {
-		ctrlDownload.AddString(Text::toT(SETTING(DOWNLOAD_SPEED)).c_str());
 	}
+	ctrlDownload.SetCurSel(ctrlDownload.FindString(0, Text::toT(SETTING(DOWNLOAD_SPEED)).c_str()));
 
+	found=false;
 	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
-	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i)
+	for(StringIter i = SettingsManager::connectionSpeeds.begin(); i != SettingsManager::connectionSpeeds.end(); ++i) {
+		if ((SETTING(UPLOAD_SPEED) < (*i)) && !found) {
+			ctrlUpload.AddString(Text::toT(SETTING(UPLOAD_SPEED)).c_str());
+			found=true;
+		}
 		ctrlUpload.AddString(Text::toT(*i).c_str());
-
-		if(find(SettingsManager::connectionSpeeds.begin(), SettingsManager::connectionSpeeds.end(),
-			SETTING(UPLOAD_SPEED)) == SettingsManager::connectionSpeeds.end()) {
-		ctrlUpload.AddString(Text::toT(SETTING(UPLOAD_SPEED)).c_str());
 	}
+	ctrlUpload.SetCurSel(ctrlUpload.FindString(0, Text::toT(SETTING(UPLOAD_SPEED)).c_str()));
+
 
 	PropPage::read((HWND)*this, items);
-
-
-	ctrlUpload.SetCurSel(ctrlUpload.FindString(0, Text::toT(SETTING(UPLOAD_SPEED)).c_str()));
-	ctrlDownload.SetCurSel(ctrlDownload.FindString(0, Text::toT(SETTING(DOWNLOAD_SPEED)).c_str()));
 
 	CUpDownCtrl updown;
 	updown.Attach(GetDlgItem(IDC_SLOTSPIN));
