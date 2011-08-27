@@ -494,16 +494,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 			}
 
 			if(curReplace != tstring::npos && smiles < MAX_EMOTICONS) {
-				//check the position
-				if ((curReplace != lastReplace) && (curReplace > 0)) {
-					//char previousChar = sMsg[idxFound-1];
-					int pos=curReplace-1;
-					if (isgraph(sMsg[pos])) {
-						lastReplace = curReplace + foundEmoticon->getEmoticonText().size();
-						continue;
-					}
-				}
-
+				bool insert=true;
 				CHARFORMAT2 cfSel;
 				cfSel.cbSize = sizeof(cfSel);
 
@@ -511,11 +502,22 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 				lSelEnd = lSelBegin + foundEmoticon->getEmoticonText().size();
 				SetSel(lSelBegin, lSelEnd);
 
-				GetSelectionCharFormat(cfSel);
-				CImageDataObject::InsertBitmap(GetOleInterface(), foundEmoticon->getEmoticonBmp(cfSel.crBackColor));
-				++smiles;
-				++lSelBegin;
+				//check the position
+				if ((curReplace != lastReplace) && (curReplace > 0)) {
+					//char previousChar = sMsg[idxFound-1];
+					int pos=curReplace-1;
+					if (isgraph(sMsg[pos])) {
+						insert=false;
+					}
+				}
 
+				GetSelectionCharFormat(cfSel);
+
+				if (insert) {
+					CImageDataObject::InsertBitmap(GetOleInterface(), foundEmoticon->getEmoticonBmp(cfSel.crBackColor));
+					++smiles;
+					++lSelBegin;
+				} else lSelBegin = lSelEnd;
 				lastReplace = curReplace + foundEmoticon->getEmoticonText().size();
 			} else break;
 		}
