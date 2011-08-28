@@ -34,7 +34,6 @@ Emoticon::Emoticon(const tstring& _emoticonText, const string& _imagePath) :
 	emoticonBitmap.Load(Text::toT(_imagePath).c_str());
 
 	if(emoticonBitmap.IsNull()) {
-		LogManager::getInstance()->message("RET: " + _imagePath);
 		return;
 	}
 	

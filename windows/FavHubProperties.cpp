@@ -252,8 +252,10 @@ LRESULT FavHubProperties::OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWn
 
 	if(strnicmp("adc://", Text::fromT(address).c_str(), 6) == 0 || strnicmp("adcs://", Text::fromT(address).c_str(), 7) == 0) {
 		combo.SetCurSel(4); // select UTF-8 for ADC hubs
+		::EnableWindow(GetDlgItem(IDC_STEALTH),	0);
 		combo.EnableWindow(false);
 	} else {
+		::EnableWindow(GetDlgItem(IDC_STEALTH),	1);
 		combo.EnableWindow(true);
 	}
 	combo.Detach();
