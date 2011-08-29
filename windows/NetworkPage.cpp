@@ -182,7 +182,7 @@ void NetworkPage::fixControls() {
 	BOOL nat = IsDlgButtonChecked(IDC_FIREWALL_NAT) == BST_CHECKED;
 	BOOL nat_traversal = IsDlgButtonChecked(IDC_NATT) == BST_CHECKED;
 
-		::EnableWindow(GetDlgItem(IDC_DIRECT), !auto_detect);
+	::EnableWindow(GetDlgItem(IDC_DIRECT), !auto_detect);
 	::EnableWindow(GetDlgItem(IDC_FIREWALL_UPNP), !auto_detect);
 	::EnableWindow(GetDlgItem(IDC_FIREWALL_NAT), !auto_detect);
 	::EnableWindow(GetDlgItem(IDC_FIREWALL_PASSIVE), !auto_detect);
@@ -214,47 +214,35 @@ void NetworkPage::fixControls() {
 void NetworkPage::getAddresses() {
 
 	// trunk with win32 solution only... multiplatform solution in wx build
-
-#define WORKING_BUFFER_SIZE 8192
-#define MAX_TRIES 3
-
-	ULONG len = WORKING_BUFFER_SIZE;
-	ULONG ret = 0;
-	int iterations = 0;
-
-	do
+	ULONG len =	8192; // begin with 8 kB, it should be enough in most of cases
+	for(int i = 0; i < 3; ++i)
 	{
-		adapterInfo = (IP_ADAPTER_ADDRESSES*)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, len);
-		ret = GetAdaptersAddresses(AF_INET, GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST, NULL, adapterInfo, &len);
+		PIP_ADAPTER_ADDRESSES adapterInfo = (PIP_ADAPTER_ADDRESSES)HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, len);
+		ULONG ret = GetAdaptersAddresses(AF_INET, GAA_FLAG_SKIP_DNS_SERVER | GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_MULTICAST, NULL, adapterInfo, &len);
+		bool freeObject = true;
 
-		if(ret != ERROR_BUFFER_OVERFLOW)
-			break;
-
-		HeapFree(GetProcessHeap(), 0, adapterInfo);
-
-		++iterations;
-	}
-	while (ret == ERROR_BUFFER_OVERFLOW && iterations < MAX_TRIES);
-
-	if(ret == ERROR_SUCCESS)
-	{
-		PIP_ADAPTER_ADDRESSES  pAdapterInfo = adapterInfo;
-		while (pAdapterInfo)
+		if(ret == ERROR_SUCCESS)
 		{
-			// we want only enabled ethernet interfaces
-			if(pAdapterInfo->OperStatus == IfOperStatusUp && (pAdapterInfo->IfType == IF_TYPE_ETHERNET_CSMACD || pAdapterInfo->IfType == IF_TYPE_IEEE80211))
+			for(PIP_ADAPTER_ADDRESSES pAdapterInfo = adapterInfo; pAdapterInfo != NULL; pAdapterInfo = pAdapterInfo->Next)
 			{
-				if(pAdapterInfo->FirstUnicastAddress)	// only if interface has at least one unicast address (don't care about its type now)
+				// we want only enabled ethernet interfaces
+				if(pAdapterInfo->FirstUnicastAddress && pAdapterInfo->OperStatus == IfOperStatusUp && (pAdapterInfo->IfType == IF_TYPE_ETHERNET_CSMACD || pAdapterInfo->IfType == IF_TYPE_IEEE80211))
 				{
 					int n = BindCombo.AddString((tstring(pAdapterInfo->FriendlyName) + _T(" (IPv4 only)")).c_str());
 					BindCombo.SetItemDataPtr(n, pAdapterInfo);
+					freeObject = false;
 
 					if(SETTING(BIND_INTERFACE) == pAdapterInfo->AdapterName)
 						BindCombo.SetCurSel(n);
 				}
 			}
-			pAdapterInfo = pAdapterInfo->Next;
 		}
+
+		if(freeObject)
+			HeapFree(GetProcessHeap(), 0, adapterInfo);
+
+		if(ret != ERROR_BUFFER_OVERFLOW)
+			break;
 	}
 }
 
