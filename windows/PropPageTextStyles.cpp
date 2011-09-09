@@ -126,6 +126,11 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	SettingsManager::TEXT_NORM_BACK_COLOR, SettingsManager::TEXT_NORM_FORE_COLOR, 
 	SettingsManager::TEXT_NORM_BOLD, SettingsManager::TEXT_NORM_ITALIC );
 
+	TextStyles[ TS_LIST_HL ].Init(
+	this, settings, STRING(PROPPAGE_LIST_HL).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
+	SettingsManager::LIST_HL_BG_COLOR, SettingsManager::LIST_HL_COLOR, 
+	SettingsManager::LIST_HL_BOLD, SettingsManager::LIST_HL_ITALIC );
+
 	for ( int i = 0; i < TS_LAST; i++ ) {
 		TextStyles[ i ].LoadSettings();
 		_tcscpy(TextStyles[i].szFaceName, m_Font.lfFaceName );
@@ -283,6 +288,10 @@ LRESULT PropPageTextStyles::onDefaultStyles(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_DUPE ].crTextColor = RGB(255,128,255);
 	TextStyles[ TS_DUPE ].dwEffects = 0;
 
+	TextStyles[ TS_LIST_HL ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_LIST_HL ].crTextColor = RGB(255,189,202);
+	TextStyles[ TS_LIST_HL ].dwEffects = 0;
+
 	TextStyles[ TS_FAVORITE ].crBackColor = RGB(255, 255, 255);
 	TextStyles[ TS_FAVORITE ].crTextColor = RGB(0,0,0);
 	TextStyles[ TS_FAVORITE ].dwEffects = CFE_BOLD | CFE_ITALIC;
@@ -338,6 +347,10 @@ LRESULT PropPageTextStyles::onBlackAndWhite(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_DUPE ].crTextColor = RGB(255,128,255);
 	TextStyles[ TS_DUPE ].dwEffects = 0;
 
+	TextStyles[ TS_LIST_HL ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_LIST_HL ].crTextColor = RGB(255,189,202);
+	TextStyles[ TS_LIST_HL ].dwEffects = 0;
+
 	TextStyles[ TS_FAVORITE ].crBackColor = RGB(255,255,255);
 	TextStyles[ TS_FAVORITE ].crTextColor = RGB(37,60,121);
 	TextStyles[ TS_FAVORITE ].dwEffects = 0;
@@ -392,6 +405,10 @@ LRESULT PropPageTextStyles::onBlackTheme(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	TextStyles[ TS_DUPE ].crBackColor = RGB(255, 255, 255);
 	TextStyles[ TS_DUPE ].crTextColor = RGB(255,128,255);
 	TextStyles[ TS_DUPE ].dwEffects = 0;
+
+	TextStyles[ TS_LIST_HL ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_LIST_HL ].crTextColor = RGB(255,189,202);
+	TextStyles[ TS_LIST_HL ].dwEffects = 0;
 
 	TextStyles[ TS_FAVORITE ].crBackColor = 0;
 	TextStyles[ TS_FAVORITE ].crTextColor = 16431749;
@@ -573,6 +590,10 @@ LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 			importData("TextDupeColor", DUPE_COLOR);
 			importData("TextDupeBold", TEXT_DUPE_BOLD);
 			importData("TextDupeItalic", TEXT_DUPE_ITALIC);
+			importData("ListHighlightBackColor", LIST_HL_BG_COLOR);
+			importData("ListHighlightColor", LIST_HL_COLOR);
+			importData("ListHighlightBold", LIST_HL_BOLD);
+			importData("ListHighlightItalic", LIST_HL_ITALIC);
 			importData("ProgressTextDown", PROGRESS_TEXT_COLOR_DOWN);
 			importData("ProgressTextUp", PROGRESS_TEXT_COLOR_UP);
 			importData("ErrorColor", ERROR_COLOR);
@@ -712,6 +733,14 @@ LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	exportData("ProgressbaroDCStyle", PROGRESSBAR_ODC_STYLE);
 	exportData("UnderlineLinks", UNDERLINE_LINKS);
 	exportData("UnderlineDupes", UNDERLINE_DUPES);
+	exportData("TextDupeBackColor", TEXT_DUPE_BACK_COLOR);
+	exportData("TextDupeColor", DUPE_COLOR);
+	exportData("TextDupeBold", TEXT_DUPE_BOLD);
+	exportData("TextDupeItalic", TEXT_DUPE_ITALIC);
+	exportData("ListHighlightBackColor", LIST_HL_BG_COLOR);
+	exportData("ListHighlightColor", LIST_HL_COLOR);
+	exportData("ListHighlightBold", LIST_HL_BOLD);
+	exportData("ListHighlightItalic", LIST_HL_ITALIC);
 	
 	try {
 		File ff(Text::fromT(x) , File::WRITE, File::CREATE | File::TRUNCATE);

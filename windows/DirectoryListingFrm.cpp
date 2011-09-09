@@ -36,7 +36,9 @@
 #include "../client/User.h"
 #include "../client/ClientManager.h"
 #include "../client/SFVReader.h"
+#include "../client/Wildcards.h"
 #include "TextFrame.h"
+
 
 DirectoryListingFrame::FrameMap DirectoryListingFrame::frames;
 int DirectoryListingFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_TYPE, COLUMN_EXACTSIZE, COLUMN_SIZE, COLUMN_TTH, COLUMN_DATE };
@@ -1694,9 +1696,26 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
+		ItemInfo *ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
+
+			if(!SETTING(HIGHLIGHT_LIST).empty() && !mylist){
+				string name;
+			
+				if(ii->type == ItemInfo::DIRECTORY) {
+					name = ii->dir->getName();
+					/*only for dirs
+				else if(ii->type == ItemInfo::FILE)
+					name = ii->file->getName();
+				*/
+					//Todo Regex string?
+				if(Wildcard::patternMatch(name, SETTING(HIGHLIGHT_LIST), '|')) {
+					cd->clrText = SETTING(LIST_HL_COLOR);
+					cd->clrTextBk = SETTING(LIST_HL_BG_COLOR);
+						}
+					}
+				}
 		
 		if (SETTING(DUPES_IN_FILELIST)) {
-			ItemInfo *ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
 
 			if(ii != NULL) {
 				if(!mylist) {
@@ -1721,6 +1740,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 					}
 					cd->clrTextBk = bg;
 				}
+
 			}
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;

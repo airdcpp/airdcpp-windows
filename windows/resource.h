@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -434,6 +434,7 @@
 #define IDC_SKIPLIST_PRESET1            1218
 #define IDC_MAX_DOWNLOAD_SP             1218
 #define IDC_SKIP_SUBTRACT               1218
+#define IDC_FILELIST_HL                 1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_MAX_UPLOAD_SP               1219
@@ -813,6 +814,8 @@
 #define IDC_UNDERLINE_LINKS             1396
 #define IDC_POPUPBROWSE                 1397
 #define IDC_UNDERLINE_DUPES             1397
+#define IDC_LIST_HL_TEXT                1397
+#define IDC_LIST_HL_EXAMPLE             1398
 #define IDC_POPUP_TIME_SPIN             1399
 #define IDC_OTHER_QUEUE_OPTIONS         1400
 #define IDC_COPY_EXACT_SIZE             1401
@@ -1208,7 +1211,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1397
+#define _APS_NEXT_CONTROL_VALUE         1399
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif
