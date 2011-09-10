@@ -23,6 +23,7 @@
 #include "../client/SettingsManager.h"
 #include "../client/Socket.h"
 #include "../client/Util.h"
+#include "../client/AirUtil.h"
 
 extern "C" {
 #ifndef STATICLIB
@@ -66,7 +67,7 @@ void Mapper_MiniUPnPc::uninit() {
 bool Mapper_MiniUPnPc::add(const unsigned short port, const Protocol protocol, const string& description) {
 	const string port_ = Util::toString(port);
 	return UPNP_AddPortMapping(url.c_str(), service.c_str(), port_.c_str(), port_.c_str(),
-		Util::getLocalIp().c_str(), description.c_str(), protocols[protocol], 0, 0) == UPNPCOMMAND_SUCCESS;
+		AirUtil::getLocalIp().c_str(), description.c_str(), protocols[protocol], 0, 0) == UPNPCOMMAND_SUCCESS;
 }
 
 bool Mapper_MiniUPnPc::remove(const unsigned short port, const Protocol protocol) {

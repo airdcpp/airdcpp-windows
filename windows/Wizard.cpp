@@ -3,6 +3,7 @@
 #include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
 #include "../client/HighlightManager.h"
+#include "../client/AirUtil.h"
 #include "Resource.h"
 #include "WinUtil.h"
 #include "Wizard.h"
@@ -112,11 +113,11 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 
 	//Set current values
-	SetDlgItemText(IDC_MAX_DOWNLOAD_SP, Text::toT(Util::toString(Util::getSpeedLimit(true))).c_str());
-	SetDlgItemText(IDC_DOWNLOAD_SLOTS, Text::toT(Util::toString(Util::getSlots(true))).c_str());
-	SetDlgItemText(IDC_UPLOAD_SLOTS, Text::toT(Util::toString(Util::getSlots(false))).c_str());
-	SetDlgItemText(IDC_MAX_UPLOAD_SP, Text::toT(Util::toString(Util::getSpeedLimit(false))).c_str());
-	SetDlgItemText(IDC_MAX_AUTO_OPENED, Text::toT(Util::toString(Util::getMaxAutoOpened())).c_str());
+	SetDlgItemText(IDC_MAX_DOWNLOAD_SP, Text::toT(Util::toString(AirUtil::getSpeedLimit(true))).c_str());
+	SetDlgItemText(IDC_DOWNLOAD_SLOTS, Text::toT(Util::toString(AirUtil::getSlots(true))).c_str());
+	SetDlgItemText(IDC_UPLOAD_SLOTS, Text::toT(Util::toString(AirUtil::getSlots(false))).c_str());
+	SetDlgItemText(IDC_MAX_UPLOAD_SP, Text::toT(Util::toString(AirUtil::getSpeedLimit(false))).c_str());
+	SetDlgItemText(IDC_MAX_AUTO_OPENED, Text::toT(Util::toString(AirUtil::getMaxAutoOpened())).c_str());
 
 	switch(SETTING(SETTINGS_PROFILE)) {
 		case SettingsManager::PROFILE_PUBLIC: CheckDlgButton(IDC_PUBLIC, BST_CHECKED); break;
@@ -196,11 +197,11 @@ void WizardDlg::write() {
 
 
 	if(IsDlgButtonChecked(IDC_PUBLIC)){
-		Util::setProfile(0);
+		AirUtil::setProfile(0);
 	} else if(IsDlgButtonChecked(IDC_RAR)) {
-		Util::setProfile(1, IsDlgButtonChecked(IDC_WIZARD_SKIPLIST) ? true : false);
+		AirUtil::setProfile(1, IsDlgButtonChecked(IDC_WIZARD_SKIPLIST) ? true : false);
 	} else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
-		Util::setProfile(2);
+		AirUtil::setProfile(2);
 	}
 
 
@@ -445,10 +446,10 @@ void WizardDlg::setLang() {
 void WizardDlg::setDownloadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ)) {
-		int dlSlots=Util::getSlots(true, value, IsDlgButtonChecked(IDC_RAR) ? true : false);
+		int dlSlots=AirUtil::getSlots(true, value, IsDlgButtonChecked(IDC_RAR) ? true : false);
 		SetDlgItemText(IDC_DOWNLOAD_SLOTS, Util::toStringW(dlSlots).c_str());
 	
-		int dlLimit=Util::getSpeedLimit(true, value);
+		int dlLimit=AirUtil::getSpeedLimit(true, value);
 		SetDlgItemText(IDC_MAX_DOWNLOAD_SP, Util::toStringW(dlLimit).c_str());
 	}
 }
@@ -457,13 +458,13 @@ void WizardDlg::setUploadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ)) {
 
-		int ulSlots=Util::getSlots(false, value, IsDlgButtonChecked(IDC_RAR) ? true : false);
+		int ulSlots=AirUtil::getSlots(false, value, IsDlgButtonChecked(IDC_RAR) ? true : false);
 		SetDlgItemText(IDC_UPLOAD_SLOTS, Util::toStringW(ulSlots).c_str());
 	
-		int ulLimit=Util::getSpeedLimit(false, value);
+		int ulLimit=AirUtil::getSpeedLimit(false, value);
 		SetDlgItemText(IDC_MAX_UPLOAD_SP, Util::toStringW(ulLimit).c_str());
 
-		int autoOpened=Util::getMaxAutoOpened(value);
+		int autoOpened=AirUtil::getMaxAutoOpened(value);
 		SetDlgItemText(IDC_MAX_AUTO_OPENED, Util::toStringW(autoOpened).c_str());
 	}
 }

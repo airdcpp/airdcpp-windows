@@ -127,7 +127,7 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	SettingsManager::TEXT_NORM_BOLD, SettingsManager::TEXT_NORM_ITALIC );
 
 	TextStyles[ TS_LIST_HL ].Init(
-	this, settings, STRING(PROPPAGE_LIST_HL).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
+	this, settings, STRING(PROPPAGE_LIST_HL).c_str(), STRING(PROPPAGE_LIST_HL_MSG).c_str(),
 	SettingsManager::LIST_HL_BG_COLOR, SettingsManager::LIST_HL_COLOR, 
 	SettingsManager::LIST_HL_BOLD, SettingsManager::LIST_HL_ITALIC );
 

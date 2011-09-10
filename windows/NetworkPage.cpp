@@ -21,6 +21,7 @@
 #include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
 #include "../client/Socket.h"
+#include "../client/AirUtil.h"
 
 #include "Resource.h"
 #include "NetworkPage.h"
@@ -270,11 +271,11 @@ void NetworkPage::on(HttpConnectionListener::Complete, HttpConnection* conn, str
 					SetDlgItemText(IDC_SERVER, Text::toT(x).c_str());
 					//::MessageBox(NULL, _T("IP fetched: checkip.dyndns.org"), _T("Debug"), MB_OK);
 				} else {
-					if(Util::isPrivateIp(Util::getLocalIp())) {
+					if(Util::isPrivateIp(AirUtil::getLocalIp())) {
 							CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
 							fixControls();
 					}
-					SetDlgItemText(IDC_SERVER, Text::toT(Util::getLocalIp()).c_str());
+					SetDlgItemText(IDC_SERVER, Text::toT(AirUtil::getLocalIp()).c_str());
 				}
 			}
 		}
@@ -284,11 +285,11 @@ void NetworkPage::on(HttpConnectionListener::Complete, HttpConnection* conn, str
 void NetworkPage::on(HttpConnectionListener::Failed, HttpConnection* conn, const string& /*aLine*/) noexcept {
 		conn->removeListener(this);
 		{
-			if(Util::isPrivateIp(Util::getLocalIp())) {
+			if(Util::isPrivateIp(AirUtil::getLocalIp())) {
 					CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
 					fixControls();
 			}
-			SetDlgItemText(IDC_SERVER, Text::toT(Util::getLocalIp()).c_str());	
+			SetDlgItemText(IDC_SERVER, Text::toT(AirUtil::getLocalIp()).c_str());	
 		}
 		::EnableWindow(GetDlgItem(IDC_GETIP), true);
 	}

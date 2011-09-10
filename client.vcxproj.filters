@@ -194,6 +194,9 @@
     <ClCompile Include="client\CID.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\AirUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -518,6 +521,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\ResourceLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\AirUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

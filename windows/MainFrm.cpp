@@ -67,7 +67,7 @@
 #include "../client/FavoriteManager.h"
 #include "../client/MappingManager.h"
 #include "../client/SFVReader.h"
-
+#include "../client/AirUtil.h"
 
 MainFrame* MainFrame::anyMF = NULL;
 bool MainFrame::bShutdown = false;
@@ -882,9 +882,9 @@ void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, 
 		if(!BOOLSETTING(AUTO_DETECT_CONNECTION)) {
 		if(BOOLSETTING(IP_UPDATE) && xml.findChild("IP")) {
 			string ip = xml.getChildData();
-			SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, (!ip.empty() ? ip : Util::getLocalIp()));
+			SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, (!ip.empty() ? ip : AirUtil::getLocalIp()));
 		} else if(BOOLSETTING(IP_UPDATE)) {
-			SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, Util::getLocalIp());
+			SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, AirUtil::getLocalIp());
 		}
 		xml.resetCurrentChild();
 		}

@@ -22,6 +22,7 @@
 
 #include "../client/Util.h"
 #include "../client/Text.h"
+#include "../client/AirUtil.h"
 
 #include <ole2.h>
 
@@ -62,7 +63,7 @@ bool Mapper_WinUPnP::add(const unsigned short port, const Protocol protocol, con
 	/// @todo use a BSTR wrapper
 	BSTR protocol_ = SysAllocString(Text::toT(protocols[protocol]).c_str());
 	BSTR description_ = SysAllocString(Text::toT(description).c_str());
-	BSTR localIP = SysAllocString(Text::toT(Util::getLocalIp()).c_str());
+	BSTR localIP = SysAllocString(Text::toT(AirUtil::getLocalIp()).c_str());
 
 	IStaticPortMapping* pSPM = 0;
 	HRESULT hr = pSPMC->Add(port, protocol_, port, localIP, VARIANT_TRUE, description_, &pSPM);

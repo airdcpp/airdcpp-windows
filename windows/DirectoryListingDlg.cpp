@@ -103,14 +103,13 @@ LRESULT DirectoryListingDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(wID == IDOK) {
 		TCHAR buf[512];
-		TCHAR buf2[MAX_PATH];
 		if (ctrlSearch.GetWindowTextLength() == 0) {
 			MessageBox(CTSTRING(LINE_EMPTY));
 			return 0;
 		}
 		GetDlgItemText(IDC_AS_SEARCH_STRING, buf, 512);
 		tstring searchWord = buf;
-		int fileType = ctrlFileType.GetCurSel();
+		//int fileType = ctrlFileType.GetCurSel();
 	}
 	EndDialog(wID);
 	return 0;

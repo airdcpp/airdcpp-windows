@@ -22,6 +22,7 @@
 #include "../client/Socket.h"
 #include "../client/version.h"
 #include "../client/LogManager.h"
+#include "../client/AirUtil.h"
 #include "Resource.h"
 
 #include "GeneralPage.h"
@@ -64,11 +65,11 @@ PropPage::Item GeneralPage::items[] = {
 void GeneralPage::write()
 {
 	if(IsDlgButtonChecked(IDC_PUBLIC)){
-		Util::setProfile(0);
+		AirUtil::setProfile(0);
 	} else if(IsDlgButtonChecked(IDC_RAR)) {
-		Util::setProfile(1);
+		AirUtil::setProfile(1);
 	} else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
-		Util::setProfile(2);
+		AirUtil::setProfile(2);
 	}
 
 	PropPage::write((HWND)(*this), items);
