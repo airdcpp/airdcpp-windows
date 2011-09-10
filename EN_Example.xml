@@ -1363,7 +1363,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ClientVersion">Client version</String>
 		<String Name="LanguageVersion">Language version</String>
 		<String Name="ProppageListHl">FileList Highlight</String>
-		<String Name="ProppageListHlMsg">Highlight.Example-AIRDC</String>
+		<String Name="ProppageListHlMsg">Highlight-AIRDC</String>
 		<String Name="ListHlText">HighLight matches in Filelists (wildcards, | separate)</String>
 		<String Name="ListHlExample">Example, *NORDIC* (this may slow down filelist loading...)</String>
 	</Strings>
