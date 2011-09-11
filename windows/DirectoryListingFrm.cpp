@@ -1719,7 +1719,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 
 			if(ii != NULL) {
 				if(!mylist) {
-					DWORD bg = SETTING(TEXT_DUPE_BACK_COLOR);
+					DWORD bg = SETTING(BACKGROUND_COLOR);
 					//check if the file or dir is a dupe, then use the dupesetting color
 					if ( ( ii->type == ItemInfo::FILE && ii->file->getDupe() ) || 
 						( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::DUPE )) {
@@ -1738,7 +1738,6 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 					
 						cd->clrText = RGB(r, g, b);
 					}
-					cd->clrTextBk = bg;
 				}
 
 			}
@@ -1765,7 +1764,7 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 			DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(cd->nmcd.lItemlParam);
 			if(dir != NULL) {
 				if(!mylist) {
-					DWORD bg = SETTING(TEXT_DUPE_BACK_COLOR);
+					DWORD bg = SETTING(BACKGROUND_COLOR);
 					//check if the dir is a dupe, then use the dupesetting color
 					if( dir->getDupe() == DirectoryListing::Directory::DUPE ) {
 						cd->clrText = SETTING(DUPE_COLOR);
