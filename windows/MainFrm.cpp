@@ -1714,6 +1714,7 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 
 	if(downloads) {
 		try {
+
 			File::ensureDirectory(SETTING(DOWNLOAD_DIRECTORY));
 			File::copyFile((filename), (SETTING(DOWNLOAD_DIRECTORY) + "testwrite.tmp"));
 			if (Util::fileExists(SETTING(DOWNLOAD_DIRECTORY) + "testwrite.tmp")) {
@@ -1724,7 +1725,7 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 				error += _T("Error: test write to Downloads folder failed. \r\n");
 			}
 	}
-		if(incomplete) {
+		if(incomplete && (SETTING(TEMP_DOWNLOAD_DIRECTORY).find("%[targetdrive]") == string::npos)) {
 		try {
 			File::ensureDirectory(SETTING(TEMP_DOWNLOAD_DIRECTORY));
 			File::copyFile((filename), (SETTING(TEMP_DOWNLOAD_DIRECTORY) + "testwrite.tmp"));
