@@ -480,7 +480,7 @@ Added:
 !!Warning Adding Release to autosearch list enables AUTOSEARCH, so check old items in the list!!
 
 #"Skip files smaller than" setting for subtract filelist in airsharingpage (will only skip if 2 or less files in dir)
-#Dupe releases are also being detected in chat
+#Dupe releases and magnet links are also being detected in chat
 
 Changed:
 

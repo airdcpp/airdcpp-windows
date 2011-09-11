@@ -449,7 +449,19 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 			setText(p->first);
 			linkEnd = linkStart + p->first.size();
 			SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
-			SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+
+			//dupe check and formating
+			string link = Text::fromT(p->second.c_str());
+			string::size_type tth = link.find("urn:tree:tiger:");
+			if(tth != tstring::npos && link.length() > tth+54) {
+				link=link.substr(tth+15, 39);
+				if (ShareManager::getInstance()->isTTHShared(TTHValue(link))) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+				} else {
+					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+				}
+			}
+
 		}
 	}
 
