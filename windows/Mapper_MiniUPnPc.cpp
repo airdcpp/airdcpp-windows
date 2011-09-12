@@ -21,7 +21,6 @@
 #include "Mapper_MiniUPnPc.h"
 
 #include "../client/SettingsManager.h"
-#include "../client/Socket.h"
 #include "../client/Util.h"
 #include "../client/AirUtil.h"
 
@@ -40,7 +39,7 @@ bool Mapper_MiniUPnPc::init() {
 		return true;
 
 	UPNPDev* devices = upnpDiscover(2000,
-		SettingsManager::getInstance()->isDefault(SettingsManager::BIND_INTERFACE) ? nullptr : Socket::getBindAddress().c_str(),
+		SettingsManager::getInstance()->isDefault(SettingsManager::BIND_ADDRESS) ? nullptr : SETTING(BIND_ADDRESS).c_str(),
 		0, 0, 0, 0);
 	if(!devices)
 		return false;

@@ -1719,11 +1719,11 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 
 			if(ii != NULL) {
 				if(!mylist) {
-					DWORD bg = SETTING(BACKGROUND_COLOR);
 					//check if the file or dir is a dupe, then use the dupesetting color
 					if ( ( ii->type == ItemInfo::FILE && ii->file->getDupe() ) || 
 						( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::DUPE )) {
 						cd->clrText = SETTING(DUPE_COLOR);
+						cd->clrTextBk = SETTING(TEXT_DUPE_BACK_COLOR);
 
 					//if it's a partial dupe, try to use some simple blending to indicate that
 					//a dupe exists somewhere down the directory tree.
@@ -1731,12 +1731,14 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 						BYTE r, b, g;
 						//cache these to avoid unnecessary calls.
 						DWORD dupe = SETTING(DUPE_COLOR);
+						DWORD bg = SETTING(TEXT_DUPE_BACK_COLOR);
 
 						r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(dupe)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
 						g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(dupe)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
 						b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(dupe)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
 					
 						cd->clrText = RGB(r, g, b);
+						cd->clrTextBk = bg;
 					}
 				}
 
@@ -1764,10 +1766,10 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 			DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(cd->nmcd.lItemlParam);
 			if(dir != NULL) {
 				if(!mylist) {
-					DWORD bg = SETTING(BACKGROUND_COLOR);
 					//check if the dir is a dupe, then use the dupesetting color
 					if( dir->getDupe() == DirectoryListing::Directory::DUPE ) {
 						cd->clrText = SETTING(DUPE_COLOR);
+						cd->clrTextBk = SETTING(TEXT_DUPE_BACK_COLOR);
 
 					//if it's a partial dupe, try to use some simple blending to indicate that
 					//a dupe exists somewhere down the directory tree.
@@ -1775,12 +1777,14 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 						BYTE r, b, g;
 						//cache these to avoid unnecessary calls.
 						DWORD dupe = SETTING(DUPE_COLOR);
+						DWORD bg = SETTING(TEXT_DUPE_BACK_COLOR);
 
 						r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(dupe)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
 						g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(dupe)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
 						b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(dupe)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
 					
 						cd->clrText = RGB(r, g, b);
+						cd->clrTextBk = bg;
 					}
 				}
 			}
