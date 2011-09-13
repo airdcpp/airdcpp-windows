@@ -364,7 +364,7 @@ void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enabl
 		if(dl->getUser()->isOnline()) {
 			try {
 				// TODO provide hubHint?
-				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST, dl->getPath(d));
+				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
 				ctrlStatus.SetText(STATUS_TEXT, CTSTRING(DOWNLOADING_LIST));
 			} catch(const QueueException& e) {
 				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
