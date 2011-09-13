@@ -519,7 +519,9 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 					//char previousChar = sMsg[idxFound-1];
 					int pos=curReplace-1;
 					if (isgraph(sMsg[pos])) {
-						insert=false;
+						if (isgraph(sMsg[curReplace + foundEmoticon->getEmoticonText().size()])) {
+							insert=false;
+						}
 					}
 				}
 
