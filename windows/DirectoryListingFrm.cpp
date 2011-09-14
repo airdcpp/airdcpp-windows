@@ -940,7 +940,7 @@ clientmenu:
 			n = 0;
 			targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOADTO, CTSTRING(BROWSE));
 			targets.clear();
-			QueueManager::getInstance()->getTargets(ii->file->getTTH(), targets);
+			targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
 
 			if(targets.size() > 0) {
 				targetMenu.AppendMenu(MF_SEPARATOR);

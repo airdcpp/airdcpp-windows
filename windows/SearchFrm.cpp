@@ -1394,7 +1394,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			if(cs.hasTTH) {
 				targets.clear();
-				QueueManager::getInstance()->getTargets(TTHValue(Text::fromT(cs.tth)), targets);
+				targets = QueueManager::getInstance()->getTargets(TTHValue(Text::fromT(cs.tth)));
 
 				if(targets.size() > 0) {
 					targetMenu.InsertSeparatorLast(TSTRING(ADD_AS_SOURCE));
@@ -1705,7 +1705,7 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 
 		if(si->sr != NULL) {
 			targets.clear();
-			QueueManager::getInstance()->getTargets(TTHValue(si->sr->getTTH().toBase32()), targets);
+			targets = QueueManager::getInstance()->getTargets(TTHValue(si->sr->getTTH().toBase32()));
 			if(si->sr->getType() == SearchResult::TYPE_FILE && targets.size() > 0) {		
 				cd->clrText = SETTING(SEARCH_ALTERNATE_COLOUR);	
 			}
