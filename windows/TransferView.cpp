@@ -970,23 +970,17 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 		ui->setActual(d->getActual());
 		ui->setPos(d->getPos());
 		ui->setSize(d->getSize());
-		ui->setTimeLeft(d->getSecondsLeft());
-		uint64_t timeleft = 0;
-		/* ttlf */
-		int64_t avg = DownloadManager::getInstance()->getAverageSpeed(d->getPath());	 
-		uint64_t avgpos = DownloadManager::getInstance()->getAveragePos(d->getPath());	 
-		uint64_t totalsize = QueueManager::getInstance()->fileQueue.getTotalSize(d->getPath());	 
-		if(totalsize == 0)	 
-			totalsize = avgpos;	 
-
-		timeleft =  (avg > 0) ? ((totalsize - avgpos) / avg) : 0;	 
- 	 
-		if(timeleft >= 0){	 
-			ui->setTotalTimeLeft(timeleft);	 
-		}else{	 
-			ui->setTotalTimeLeft(0);	 
-		}
+		uint64_t timeleft = d->getSecondsLeft();
+		ui->setTimeLeft(timeleft);
 		
+		
+
+		/* ttlf */
+		if(d->getType() == Transfer::TYPE_FILE) {
+		ui->setTotalTimeLeft(DownloadManager::getInstance()->getTotalTime(d->getPath()));
+		} else {
+		ui->setTotalTimeLeft(timeleft);
+		}
 		ui->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
 		ui->setType(d->getType());
 
@@ -1335,25 +1329,15 @@ void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) 
 			ui->setSize(qi->getSize());
 			ui->setPos(qi->getDownloadedBytes());
 			ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
-			ui->setTimeLeft((totalSpeed > 0) ? ((ui->size - ui->pos) / totalSpeed) : 0);
+			uint64_t timeleft = (totalSpeed > 0) ? ((ui->size - ui->pos) / totalSpeed) : 0;
+			ui->setTimeLeft(timeleft);
 			/*ttlf*/
 			//Original version freezed here, split up, removed lockqueue
 			/*Folder averages added, so its correct now -Night */
-			uint64_t timeleft = 0;
-			if(totalSpeed > 0){
-				int64_t avg = DownloadManager::getInstance()->getAverageSpeed(qi->getTarget());
-				uint64_t pos = DownloadManager::getInstance()->getAveragePos(qi->getTarget());
-				uint64_t totalsize = QueueManager::getInstance()->fileQueue.getTotalSize(qi->getTarget());
-				if(totalsize == 0)
-				totalsize = pos;
-				
-				timeleft =  (avg > 0) ? ((totalsize - pos) / avg) : 0;
-			}
-			if(timeleft >= 0){
-				ui->setTotalTimeLeft(timeleft);
-			}else{
-				ui->setTotalTimeLeft(0);
-			}
+			if((type == Transfer::TYPE_FILE) && (totalSpeed > 0))
+			ui->setTotalTimeLeft(DownloadManager::getInstance()->getTotalTime(qi->getTarget()));
+			else
+			ui->setTotalTimeLeft(timeleft);
 
 			ui->setSpeed(totalSpeed);
 

@@ -991,7 +991,7 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		message = param;
 		thirdPerson = true;
 	} else if((stricmp(cmd.c_str(), _T("ratio")) == 0) || (stricmp(cmd.c_str(), _T("r")) == 0)) {
-		char ratio[256];
+		char ratio[512];
 		//thirdPerson = true;
 		snprintf(ratio, sizeof(ratio), "Ratio: %s (Uploaded: %s | Downloaded: %s)",
 			(SETTING(TOTAL_DOWNLOAD) > 0) ? Util::toString(((double)SETTING(TOTAL_UPLOAD)) / ((double)SETTING(TOTAL_DOWNLOAD))).c_str() : "inf.",
@@ -2197,19 +2197,6 @@ result += _T(" =-");
 return result;
 
 }
-/*
-string WinUtil::Speedinfo() {
-	char buf[1024];
-
-snprintf(buf, sizeof(buf), "\n -=Downloading: %s [%s]=- \n -=Uploading: %s [%s]=-");
-	Util::formatBytes(DownloadManager::getInstance()->getRunningAverage()).c_str(),
-	Util::toString(DownloadManager::getInstance()->getDownloadCount()).c_str(),
-	Util::formatBytes(UploadManager::getInstance()->getRunningAverage()).c_str(),
-	Util::toString(UploadManager::getInstance()->getUploadCount()).c_str();
-
-	return buf;
-}
-*/
 
 string WinUtil::generateStats() {
 	if(LOBYTE(LOWORD(GetVersion())) >= 5) {
@@ -2251,6 +2238,7 @@ string WinUtil::generateStats() {
 	} else {
 		return "Not supported by OS";
 	}
+
 }
 
 
