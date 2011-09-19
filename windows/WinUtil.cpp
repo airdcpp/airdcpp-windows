@@ -2197,12 +2197,23 @@ result += _T(" =-");
 return result;
 
 }
+string WinUtil::getSysUptime(){
+			//apexdc
+		typedef ULONGLONG (CALLBACK* LPFUNC2)(void);
+		LPFUNC2 _GetTickCount64 = (LPFUNC2)GetProcAddress(LoadLibrary(_T("kernel32")), "GetTickCount64");
+		time_t sysUptime = (_GetTickCount64 ? _GetTickCount64() : GetTickCount()) / 1000;
+
+		return formatTime(sysUptime);
+
+}
+
 
 string WinUtil::generateStats() {
 	if(LOBYTE(LOWORD(GetVersion())) >= 5) {
 		PROCESS_MEMORY_COUNTERS pmc;
 		pmc.cb = sizeof(pmc);
 		typedef bool (CALLBACK* LPFUNC)(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
+		
 		LPFUNC _GetProcessMemoryInfo = (LPFUNC)GetProcAddress(LoadLibrary(_T("psapi")), "GetProcessMemoryInfo");
 		_GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
 		FILETIME tmpa, tmpb, kernelTimeFT, userTimeFT;
@@ -2232,7 +2243,7 @@ string WinUtil::generateStats() {
 			% Util::formatBytes(SETTING(TOTAL_DOWNLOAD))
 			% Util::formatBytes(SETTING(TOTAL_UPLOAD))
 			% Util::getOsVersion()
-			% formatTime(GetTickCount()/1000)
+			% getSysUptime()
 			% CPUInfo());
 		return ret;
 	} else {
@@ -2265,11 +2276,15 @@ string WinUtil::CPUInfo() {
 }
 
 string WinUtil::uptimeInfo() {
+	if(LOBYTE(LOWORD(GetVersion())) >= 5) {
 		char buf[512]; 
 		snprintf(buf, sizeof(buf), "\n-=[ Uptime: %s]=-\r\n-=[ System Uptime: %s]=-\r\n", 
 		formatTime(Util::getUptime()).c_str(), 
-		formatTime(GetTickCount()/1000).c_str());
+		getSysUptime().c_str());
 		return buf;
+	} else {
+		return "Not supported by OS";
+	}
 }
 
 bool WinUtil::shutDown(int action) {

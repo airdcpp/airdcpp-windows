@@ -491,6 +491,7 @@ public:
 	static int SetupPreviewMenu(CMenu &previewMenu, string extension);
 	static void RunPreviewCommand(unsigned int index, const string& target);
 	static string formatTime(uint64_t rest);
+	static string getSysUptime();
 	static string generateStats();
 	static string uptimeInfo();
 	static const tstring& disableCzChars(tstring& message);
