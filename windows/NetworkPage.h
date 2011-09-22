@@ -29,15 +29,21 @@
 #include "../client/SimpleXML.h"
 #include "../client/version.h"
 
+#include <IPHlpApi.h>
+#pragma comment(lib, "iphlpapi.lib")
+
 class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage, private HttpConnectionListener
 {
 public:
-	NetworkPage(SettingsManager *s) : PropPage(s) {
+	NetworkPage(SettingsManager *s) : PropPage(s), adapterInfo(NULL) {
 		SetTitle(CTSTRING(SETTINGS_NETWORK));
 		m_psp.dwFlags |= PSP_RTLREADING;
 		c = new HttpConnection;
 	}
-	~NetworkPage() { 		
+	~NetworkPage() {
+		if(adapterInfo)
+			HeapFree(GetProcessHeap(), 0, adapterInfo);
+
 		if(c != NULL) {
 			delete c;
 			c = NULL;
@@ -78,6 +84,8 @@ private:
 
 	void fixControls();
 	void getAddresses();
+
+	IP_ADAPTER_ADDRESSES* adapterInfo;
 
 	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept;
 	void on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) noexcept;
