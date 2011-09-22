@@ -959,7 +959,9 @@ tstring WinUtil::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /log system\t\t\t\t(open system log)\n\
 /log downloads \t\t\t\t(open downloads log)\n\
 /log uploads\t\t\t\t(open uploads log)\n\
-/df \t\t\t\t\tShow Disk Space info\n\
+/df \t\t\t\t\tShow Disk Space info (Only Visible to yourself)\n\
+/dfs \t\t\t\t\tShow Disk Space info (as Public message)\n\
+/disks, /di \t\t\t\t\tShow Detailed Disk Info about all mounted disks\n\
 /uptime \t\t\t\t\tShow Uptime Info\n\
 /topic\t\t\t\t\tShow Topic\n\
 /ctopic\t\t\t\t\tOpen Link in Topic\n\
@@ -986,7 +988,6 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		}
 	} else if(stricmp(cmd.c_str(), _T("stop")) == 0) {
 		SFVReaderManager::getInstance()->Stop();
-	
 	} else if(stricmp(cmd.c_str(), _T("me")) == 0) {
 		message = param;
 		thirdPerson = true;
@@ -2024,10 +2025,7 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 
 BOOL WinUtil::FindVolume(HANDLE hVol, TCHAR *Buf, int bufSize) {
 
-  DWORD dwSysFlags;
   BOOL  found;
-
-  GetVolumeInformation(Buf,NULL,MAX_PATH,NULL,NULL,&dwSysFlags,NULL,NULL);
 
   volumes.push_back(Buf);
 
@@ -2036,6 +2034,74 @@ BOOL WinUtil::FindVolume(HANDLE hVol, TCHAR *Buf, int bufSize) {
     return (found);
 }
 
+tstring WinUtil::diskInfo() {
+	
+   TCHAR   buf[MAX_PATH];  
+   HANDLE  hVol;    
+   BOOL    found;
+   TCHAR   buf2[MAX_PATH];
+   int64_t free = 0, size = 0 , totalFree = 0, totalSize = 0;
+   tstring result = Util::emptyStringT;
+   
+   std::vector<tstring> results; //add in vector for sorting, nicer to look at :)
+   // lookup drive volumes.
+   hVol = FindFirstVolume(buf, MAX_PATH);
+
+   if(hVol != INVALID_HANDLE_VALUE)
+   {
+	  
+   found = FindVolume(hVol, buf, MAX_PATH);
+
+   //while we find drive volumes.
+   while(found) { 
+	   found = FindVolume(hVol, buf, MAX_PATH); 
+   }
+   
+   found = FindVolumeClose(hVol);
+   }
+
+   for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
+	   if(GetDriveType((*i).c_str()) == DRIVE_CDROM || GetDriveType((*i).c_str()) == DRIVE_REMOVABLE)
+		   continue;
+	    
+	   if((GetVolumePathNamesForVolumeName((*i).c_str(), buf2,256, NULL) != 0) &&
+		(GetDiskFreeSpaceEx((*i).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free) !=0)){
+			tstring mountpath = buf2; 
+			if(!mountpath.empty()) {
+				totalFree += free;
+				totalSize += size;
+				results.push_back((_T("MountPath: ") + mountpath + _T(" Disk Space (free/total) ") + Util::formatBytesW(free) + _T("/") +  Util::formatBytesW(size)));
+			}
+	   }
+   }
+      // and a check for mounted Network drives, todo fix a better way for network space
+   ULONG drives = _getdrives();
+   TCHAR drive[3] = { _T('A'), _T(':'), _T('\0') };
+   
+	while(drives != 0) {
+		if(drives & 1 && ( GetDriveType(drive) != DRIVE_CDROM && GetDriveType(drive) != DRIVE_REMOVABLE && GetDriveType(drive) == DRIVE_REMOTE) ){
+			if(GetDiskFreeSpaceEx(drive, NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
+				totalFree += free;
+				totalSize += size;
+				results.push_back((_T("Network MountPath: ") + (tstring)drive + _T(" Disk Space (free/total) ") + Util::formatBytesW(free) + _T("/") +  Util::formatBytesW(size)));
+			}
+		}
+
+		++drive[0];
+		drives = (drives >> 1);
+	}
+
+
+   sort(results.begin(), results.end()); //sort it
+   for(std::vector<tstring>::iterator i = results.begin(); i != results.end(); ++i)
+	   result += _T("\r\n ") + *i; 
+
+   result +=  _T("\r\n\r\n Total HDD space (free/total): ") + Util::formatBytesW((totalFree)) + _T("/") + Util::formatBytesW(totalSize);
+   
+   results.clear();
+   volumes.clear();
+   return result;
+}
 string WinUtil::formatTime(uint64_t rest) {
 	char buf[128];
 	string formatedTime;

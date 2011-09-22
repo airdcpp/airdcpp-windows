@@ -492,6 +492,7 @@ public:
 	static void RunPreviewCommand(unsigned int index, const string& target);
 	static string formatTime(uint64_t rest);
 	static string getSysUptime();
+	static tstring diskInfo();
 	static string generateStats();
 	static string uptimeInfo();
 	static const tstring& disableCzChars(tstring& message);

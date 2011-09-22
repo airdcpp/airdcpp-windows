@@ -420,8 +420,12 @@ void PrivateFrame::onEnter()
 					addLine (WinUtil::Speedinfo(), WinUtil::m_ChatTextSystem);
 			} else if(stricmp(s.c_str(), _T("info")) == 0) {
 					addLine (WinUtil::UselessInfo(), WinUtil::m_ChatTextSystem);
+			} else if((stricmp(s.c_str(), _T("disks")) == 0) || (stricmp(s.c_str(), _T("di")) == 0)){
+					addLine (WinUtil::diskInfo(), WinUtil::m_ChatTextSystem);
 			} else if(stricmp(s.c_str(), _T("df")) == 0) {
 					addLine (WinUtil::DiskSpaceInfo(), WinUtil::m_ChatTextSystem);
+			} else if(stricmp(s.c_str(), _T("dfs")) == 0) {
+					sendMessage(WinUtil::DiskSpaceInfo());
 			} else if(stricmp(s.c_str(), _T("uptime")) == 0) {
 					sendMessage(Text::toT(WinUtil::uptimeInfo()));
 

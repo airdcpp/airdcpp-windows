@@ -393,6 +393,8 @@ void HubFrame::onEnter() {
 					client->hubMessage(WinUtil::generateStats());
 			    else
 					addLine(Text::toT(WinUtil::generateStats()));
+			} else if((stricmp(cmd.c_str(), _T("disks")) == 0) || (stricmp(cmd.c_str(), _T("di")) == 0)) {
+					addStatus(WinUtil::diskInfo());
 			} else if(stricmp(cmd.c_str(), _T("prvstats")) == 0) {
 					addStatus(Text::toT(WinUtil::generateStats()));
 			} else if(stricmp(cmd.c_str(), _T("speed")) == 0) {
@@ -401,6 +403,8 @@ void HubFrame::onEnter() {
 					addLine (WinUtil::UselessInfo(), WinUtil::m_ChatTextSystem);
 			} else if(stricmp(cmd.c_str(), _T("df")) == 0) {
 					addLine (WinUtil::DiskSpaceInfo(), WinUtil::m_ChatTextSystem);
+			} else if(stricmp(cmd.c_str(), _T("dfs")) == 0) {
+					client->hubMessage(Text::fromT(WinUtil::DiskSpaceInfo()));
 			} else if(stricmp(cmd.c_str(), _T("uptime")) == 0) {
 					client->hubMessage(WinUtil::uptimeInfo());
 			} else {
