@@ -700,7 +700,7 @@ int CALLBACK WinUtil::browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LP
 }
 
 bool WinUtil::browseDirectory(tstring& target, HWND owner /* = NULL */) {
-	TCHAR buf[MAX_PATH];
+	TCHAR buf[UNC_MAX_PATH];
 	BROWSEINFO bi;
 	LPMALLOC ma;
 	
@@ -730,7 +730,7 @@ bool WinUtil::browseDirectory(tstring& target, HWND owner /* = NULL */) {
 }
 
 bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* = true */, const tstring& initialDir /* = Util::emptyString */, const TCHAR* types /* = NULL */, const TCHAR* defExt /* = NULL */) {
-	TCHAR buf[MAX_PATH];
+	TCHAR buf[UNC_MAX_PATH];
 	OPENFILENAME ofn = { 0 };       // common dialog box structure
 	target = Text::toT(Util::validateFileName(Text::fromT(target)));
 	_tcscpy(buf, target.c_str());
@@ -1823,10 +1823,7 @@ void WinUtil::openFolder(const tstring& file) {
 	if(!Util::fileExists(Text::fromT(file)))
 		return;
 
-	if (File::getSize(Text::fromT(file)) != -1)
-		::ShellExecute(NULL, NULL, Text::toT("explorer.exe").c_str(), Text::toT("/e, /select, \"" + (Text::fromT(file)) + "\"").c_str(), NULL, SW_SHOWNORMAL);
-	else
-		::ShellExecute(NULL, NULL, Text::toT("explorer.exe").c_str(), Text::toT("/e, \"" + Util::getFilePath(Text::fromT(file)) + "\"").c_str(), NULL, SW_SHOWNORMAL);
+	::ShellExecute(NULL, Text::toT("explore").c_str(), Text::toT(Util::FormatPath(Util::getFilePath(Text::fromT(file)))).c_str(), NULL, NULL, SW_SHOWNORMAL);
 }
 void WinUtil::FlashWindow() {
 	if( GetForegroundWindow() != WinUtil::mainWnd ) {

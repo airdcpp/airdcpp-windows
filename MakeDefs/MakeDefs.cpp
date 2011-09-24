@@ -37,9 +37,9 @@ int __cdecl main(int argc, char* argv[])
 	
 	try {
 		string tmp;
-		File src(argv[1], File::READ, File::OPEN);
-		File tgt(argv[2], File::WRITE, File::CREATE | File::TRUNCATE);
-		File example(argv[3], File::WRITE, File::CREATE | File::TRUNCATE);
+		File src(argv[1], File::READ, File::OPEN, false);
+		File tgt(argv[2], File::WRITE, File::CREATE | File::TRUNCATE, false);
+		File example(argv[3], File::WRITE, File::CREATE | File::TRUNCATE, false);
 		string x = src.read();
 		x = Text::acpToUtf8(x);
 		string::size_type k;

@@ -1005,6 +1005,7 @@ LRESULT QueueFrame::onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 		} else {
 			int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
 			const QueueItemInfo* ii = ctrlQueue.getItemData(i);
+			if(ii != NULL)
 			WinUtil::searchHash(ii->getTTH());
 		}
 	}

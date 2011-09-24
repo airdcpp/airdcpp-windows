@@ -1334,11 +1334,12 @@ void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi) 
 			/*ttlf*/
 			//Original version freezed here, split up, removed lockqueue
 			/*Folder averages added, so its correct now -Night */
+			if(!noGroup) {
 			if((type == Transfer::TYPE_FILE) && (totalSpeed > 0))
 			ui->setTotalTimeLeft(DownloadManager::getInstance()->getTotalTime(qi->getTarget()));
 			else
 			ui->setTotalTimeLeft(timeleft);
-
+			}
 			ui->setSpeed(totalSpeed);
 
 			if(qi->getFileBegin() == 0) {
