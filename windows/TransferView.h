@@ -388,9 +388,7 @@ private:
 	void ExpandAll();
 
 	ItemInfo* findItem(const UpdateInfo& ui, int& pos) const;
-	bool findBundle(const string aToken) const;
 	void updateItem(int ii, uint32_t updateMask);
-	void createBundle(const BundlePtr aBundle);
 };
 
 #endif // !defined(TRANSFER_VIEW_H)
