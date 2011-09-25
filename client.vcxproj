@@ -215,6 +215,7 @@
     <ClCompile Include="client\AirUtil.cpp" />
     <ClCompile Include="client\AutoSearchManager.cpp" />
     <ClCompile Include="client\BufferedSocket.cpp" />
+    <ClCompile Include="client\Bundle.cpp" />
     <ClCompile Include="client\BZUtils.cpp" />
     <ClCompile Include="client\ChatMessage.cpp" />
     <ClCompile Include="client\CID.cpp" />
@@ -288,6 +289,7 @@
     <ClInclude Include="client\BloomFilter.h" />
     <ClInclude Include="client\BufferedSocket.h" />
     <ClInclude Include="client\BufferedSocketListener.h" />
+    <ClInclude Include="client\Bundle.h" />
     <ClInclude Include="client\BZUtils.h" />
     <ClInclude Include="client\ChatMessage.h" />
     <ClInclude Include="client\CID.h" />

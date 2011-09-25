@@ -251,7 +251,7 @@
 		<String Name="HubListEdit">Edit the hublist</String>
 		<String Name="HubListLoadedFromCache">Hub list loaded from cache...</String>
 		<String Name="HubName">Name</String>
-		<String Name="HubSegments">Hub / Segments</String>
+		<String Name="HubSegments">Hub / Connections</String>
 		<String Name="HubTopic">Hub Topic :</String>
 		<String Name="HubUsers">Users</String>
 		<String Name="HublistCacheCorrupted">Cached hub list is corrupted or unsupported...</String>
@@ -1212,7 +1212,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="HubNotProtected">No password was required/provided at login, disconnecting hub. (Setting @ AirDCpage)</String>
 		<String Name="DisallowConnectionToPassedHubs">Automatically disconnect hubs if not registered</String>
 		<String Name="DontShareDownloadDirectory">The download directory cannot be shared</String>
-		<String Name="TotalTimeLeft">Total Time left</String>
 		<String Name="BoldHubTabsOnKick">Bold hub's tabs on kick messages</String>
 		<String Name="Skiplist">Skiplist, Wildcards, Separate | </String>
 		<String Name="SettingsSearhSkiplistPreset">Presets for Search Skiplist, Separate with | *wildcards allowed</String>
@@ -1367,5 +1366,11 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ListHlExample">Example, *NORDIC* (this may slow down filelist loading...)</String>
 		<String Name="SettingsDupes">Dupes Settings</String>
 		<String Name="ReportSkiplist">Show Skiplist blocked files in systemlog</String>
+		<String Name="NumberOfUsers">user(s)</String>
+		<String Name="NumberOfConnections">connection(s)</String>
+		<String Name="BundleFilename">Bundle / Filename</String>
+		<String Name="Bundle">Bundle</String>
+		<String Name="RemoveBundle">Remove bundle</String>
+		<String Name="BundleRemoved">Bundle removed</String>
 	</Strings>
 </Language>

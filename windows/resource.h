@@ -1180,6 +1180,7 @@
 #define IDC_DL_FILETYPE                 15109
 #define IDC_DL_SEARCH_STRING            15110
 #define IDC_DL_TYPE_TEXT                15111
+#define IDC_REMOVE_BUNDLE               15112
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_BITZI_LOOKUP                20000
 #define IDC_BROWSELIST                  21000

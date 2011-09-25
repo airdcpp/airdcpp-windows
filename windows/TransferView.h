@@ -71,6 +71,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_REMOVEALL, onRemoveAll)
+		COMMAND_ID_HANDLER(IDC_REMOVE_BUNDLE, onRemoveBundle)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
 		COMMAND_ID_HANDLER(IDC_DISCONNECT_ALL, onDisconnectAll)
 		COMMAND_ID_HANDLER(IDC_COLLAPSE_ALL, onCollapseAll)
@@ -140,6 +141,11 @@ public:
 		return 0;
 	}
 
+	LRESULT onRemoveBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		ctrlTransfers.forEachSelected(&ItemInfo::removeBundle);
+		return 0;
+	}
+
 	LRESULT onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlTransfers.deleteAllItems();
 		return 0;
@@ -161,6 +167,7 @@ public:
 private:
 	enum {
 		ADD_ITEM,
+		ADD_BUNDLE,
 		REMOVE_ITEM,
 		UPDATE_ITEM,
 		UPDATE_PARENT
@@ -172,7 +179,6 @@ private:
 		COLUMN_HUB,
 		COLUMN_STATUS,
 		COLUMN_TIMELEFT,
-		COLUMN_TOTALTIMELEFT, /* ttlf */
 		COLUMN_SPEED,
 		COLUMN_FILE,
 		COLUMN_SIZE,
@@ -198,8 +204,12 @@ private:
 			
 		};
 		
-		ItemInfo(const HintedUser& u, string aToken, bool aDownload);
+		ItemInfo(const HintedUser& u, const string aToken, bool aDownload, bool aBundle = false) : user(u), download(aDownload), transferFailed(false),
+			status(STATUS_WAITING), pos(0), size(0), actual(0), speed(0), timeLeft(0), totalSpeed(0)/*ttlf*/, ip(Util::emptyStringT), target(Util::emptyStringT),
+			flagIndex(0), collapsed(true), parent(NULL), hits(-1), statusString(Util::emptyStringT), running(0), token(aToken), isBundle(aBundle), bundle(Util::emptyStringT),
+			users(0) { }
 
+		bool isBundle;
 		bool download;
 		bool transferFailed;
 		bool collapsed;
@@ -207,10 +217,12 @@ private:
 		uint8_t flagIndex;
 		int16_t running;
 		int16_t hits;
+		int16_t users;
 
 		ItemInfo* parent;
 		HintedUser user;
 		string token;
+		tstring bundle;
 		Status status;
 		Transfer::Type type;
 		
@@ -219,7 +231,7 @@ private:
 		int64_t actual;
 		int64_t speed;
 		int64_t timeLeft;
-		int64_t totalTimeLeft; /* ttlf */
+		int64_t totalSpeed;
 		
 		tstring ip;
 		tstring statusString;
@@ -232,6 +244,7 @@ private:
 
 		void disconnect();
 		void removeAll();
+		void removeBundle();
 
 		double getRatio() const { return (pos > 0) ? (double)actual / (double)pos : 1.0; }
 
@@ -240,18 +253,9 @@ private:
 
 		uint8_t getImageIndex() const { return static_cast<uint8_t>(!download ? IMAGE_UPLOAD : (!parent ? IMAGE_DOWNLOAD : IMAGE_SEGMENT)); }
 
-		ItemInfo* createParent() {
-	  		ItemInfo* ii = new ItemInfo(HintedUser(NULL, Util::emptyString), Util::emptyString, true);
-			ii->running = 0;
-			ii->hits = 0;
-			ii->target = target;
-			ii->statusString = TSTRING(CONNECTING);
-			return ii;
-		}
+		ItemInfo* createParent();
 
-		inline const tstring& getGroupCond() const {
-			return target;
-		}
+		inline const tstring& getGroupCond() const;
 	};
 
 	struct UpdateInfo : public Task {
@@ -267,17 +271,21 @@ private:
 			MASK_STATUS_STRING	= 0x100,
 			MASK_SEGMENT		= 0x200,
 			MASK_CIPHER			= 0x400,
-			MASK_TOTALTIMELEFT	= 0x800 /* ttlf */
+			MASK_TOTALSPEED		= 0x800, /* ttlf */
+			MASK_BUNDLE         = 0x1000,
+			MASK_USERS          = 0x2000
 		};
 
-		bool operator==(const ItemInfo& ii) const { return download == ii.download && user == ii.user; }
+		bool operator==(const ItemInfo& ii) const {
+			return download == ii.download && token == ii.token; 
+		}
 
 		UpdateInfo(string aToken, bool isDownload, bool isTransferFailed = false) : 
 			updateMask(0), user(HintedUser(NULL, Util::emptyString)), queueItem(NULL), download(isDownload), token(aToken), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
 		{ }
 		
 		UpdateInfo(QueueItem* qi, bool isDownload, bool isTransferFailed = false) : 
-			updateMask(0), queueItem(qi), user(HintedUser(NULL, Util::emptyString)), download(isDownload), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST), token(Util::emptyString)
+			updateMask(0), queueItem(qi), user(HintedUser(NULL, Util::emptyString)), download(isDownload), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST), token(Util::emptyString), bundle(Util::emptyStringT)
 		{ qi->inc(); }
 
 		~UpdateInfo() { if(queueItem) queueItem->dec(); }
@@ -309,8 +317,8 @@ private:
 		void setTimeLeft(int64_t aTimeLeft) { timeLeft = aTimeLeft; updateMask |= MASK_TIMELEFT; }
 		int64_t timeLeft;
 		 /* ttlf */
-		void setTotalTimeLeft(int64_t aTotalTimeLeft) { totalTimeLeft = aTotalTimeLeft; updateMask |= MASK_TOTALTIMELEFT; }
-		int64_t totalTimeLeft;
+		void setTotalSpeed(int64_t aTotalSpeed) { totalSpeed = aTotalSpeed; updateMask |= MASK_TOTALSPEED; }
+		int64_t totalSpeed;
 		void setStatusString(const tstring& aStatusString) { statusString = aStatusString; updateMask |= MASK_STATUS_STRING; }
 		tstring statusString;
 		void setTarget(const tstring& aTarget) { target = aTarget; updateMask |= MASK_FILE; }
@@ -320,7 +328,11 @@ private:
 		void setCipher(const tstring& aCipher) { cipher = aCipher; updateMask |= MASK_CIPHER; }
 		tstring cipher;
 		void setType(const Transfer::Type& aType) { type = aType; }
-		Transfer::Type type;	
+		Transfer::Type type;
+		void setBundle(const string& aBundle) { bundle = Text::toT(aBundle); updateMask |= MASK_BUNDLE; }
+		tstring bundle;
+		void setUsers(const int16_t aUsers) { users = aUsers; updateMask |= MASK_USERS; }
+		int16_t users;
 
 	private:
 		QueueItem* queueItem;
@@ -338,7 +350,6 @@ private:
 
 	StringMap ucLineParams;
 	int PreviewAppsSize;
-	bool noGroup;
 
 	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept;
 	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept;
@@ -350,19 +361,26 @@ private:
 	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree);}
 	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept;
 	void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept;
-	void on(DownloadManagerListener::Tick, const DownloadList& aDownload) noexcept;
+	void on(DownloadManagerListener::Tick, const DownloadList& aDownload, const BundleList& aBundle) noexcept;
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
+	void on(DownloadManagerListener::BundleFinished, const string& bundleToken) noexcept { onBundleComplete(bundleToken, false); }
 
 	void on(UploadManagerListener::Starting, const Upload* aUpload) noexcept;
-	void on(UploadManagerListener::Tick, const UploadList& aUpload) noexcept;
+	void on(UploadManagerListener::Tick, const UploadList& aUpload, const BundleList& bundles) noexcept;
 	void on(UploadManagerListener::Complete, const Upload* aUpload) noexcept { onTransferComplete(aUpload, true, aUpload->getPath(), false); }
+	void on(UploadManagerListener::BundleComplete, const string& bundleToken) noexcept { onBundleComplete(bundleToken, true); }
 
-	void on(QueueManagerListener::StatusUpdated, const QueueItem*) noexcept;
+	void on(QueueManagerListener::StatusUpdated, const QueueItem*, bool) noexcept;
 	void on(QueueManagerListener::Removed, const QueueItem*) noexcept;
 	void on(QueueManagerListener::Finished, const QueueItem*, const string&, const Download*) noexcept;
+	void on(QueueManagerListener::BundleFinished, const string& bundleToken) noexcept { onBundleComplete(bundleToken, false); }
+	void on(QueueManagerListener::BundleWaiting, const string& bundleToken) noexcept { onBundleStatus(bundleToken, false); }
+	void on(QueueManagerListener::BundleRemoved, const string& bundleToken) noexcept { onBundleStatus(bundleToken, true); }
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
+	void onBundleComplete(const string bundleToken, bool isUpload);
+	void onBundleStatus(const string bundleToken, bool removed);
 	void onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree);
 	void starting(UpdateInfo* ui, const Transfer* t);
 	
@@ -370,7 +388,9 @@ private:
 	void ExpandAll();
 
 	ItemInfo* findItem(const UpdateInfo& ui, int& pos) const;
+	bool findBundle(const string aToken) const;
 	void updateItem(int ii, uint32_t updateMask);
+	void createBundle(const BundlePtr aBundle);
 };
 
 #endif // !defined(TRANSFER_VIEW_H)

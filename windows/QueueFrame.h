@@ -387,7 +387,7 @@ private:
 	void on(QueueManagerListener::Moved, const QueueItem* aQI, const string& oldTarget) noexcept;
 	void on(QueueManagerListener::Removed, const QueueItem* aQI) noexcept;
 	void on(QueueManagerListener::SourcesUpdated, const QueueItem* aQI) noexcept;
-	void on(QueueManagerListener::StatusUpdated, const QueueItem* aQI) noexcept { on(QueueManagerListener::SourcesUpdated(), aQI); }
+	void on(QueueManagerListener::StatusUpdated, const QueueItem* aQI, bool timerManager) noexcept { on(QueueManagerListener::SourcesUpdated(), aQI); }
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 	
 	void onRechecked(const string& target, const string& message);
