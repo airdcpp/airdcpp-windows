@@ -538,4 +538,9 @@
       <Filter>Header Files</Filter>
     </CustomBuild>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="client\version.h.template">
+      <Filter>Header Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>

@@ -90,7 +90,7 @@ LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	setMinMax(IDC_INTERVAL_SPIN, 5, 9999);
 	setMinMax(IDC_MATCH_SPIN, 1, 999);
 	setMinMax(IDC_AUTO_SEARCH_LIMIT_SPIN, 1, 999);
-	setMinMax(IDC_DOWNCONN_SPIN, 0, 100);
+	setMinMax(IDC_DOWNCONN_SPIN, 0, 5);
 	setMinMax(IDC_LOG_LINES_SPIN, 0, 1000);
 
 	ctrlShutdownAction.Attach(GetDlgItem(IDC_COMBO1));
@@ -154,6 +154,9 @@ void SDCPage::write()
 	userlistaction.Detach();
 	transferlistaction.Detach(); 
 	chataction.Detach(); 
+
+	if(SETTING(DOWNCONN_PER_SEC) > 5) 
+		settings->set(SettingsManager::DOWNCONN_PER_SEC, 5);
 
 	if(SETTING(AUTO_SEARCH_LIMIT) < 1)
 		settings->set(SettingsManager::AUTO_SEARCH_LIMIT, 1);	

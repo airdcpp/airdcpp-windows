@@ -81,6 +81,10 @@ public:
 		}
 
 		dcassert(i != tabs.end());
+		
+		if (i == tabs.end())
+				return;
+
 		TabInfo* ti = *i;
 		if(active == ti)
 			active = NULL;

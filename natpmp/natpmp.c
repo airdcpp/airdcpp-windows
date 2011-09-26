@@ -39,8 +39,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <io.h>
+#if _MSC_VER < 1600
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #define ECONNREFUSED WSAECONNREFUSED
+#endif
 #include "wingettimeofday.h"
 #else
 #include <errno.h>

@@ -644,7 +644,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			auto &ui = static_cast<UpdateInfo&>(*i->second);
 			ItemInfo* ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
-			ctrlTransfers.insertGroupedItem(ii, false);	
+			ctrlTransfers.insertGroupedItem(ii, false, !ii->bundle.empty());	
 		} else if(i->first == REMOVE_ITEM) {
 			//LogManager::getInstance()->message("REMOVE_ITEM2");
 			auto &ui = static_cast<UpdateInfo&>(*i->second);
@@ -859,8 +859,8 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
 
 	if(ui->download) {
-		string aTarget; int64_t aSize; int aFlags;
-		if(QueueManager::getInstance()->getQueueInfo(aCqi->getUser(), aTarget, aSize, aFlags)) {
+		string aTarget, bundleToken; int64_t aSize; int aFlags;
+		if(QueueManager::getInstance()->getQueueInfo(aCqi->getUser(), aTarget, aSize, aFlags, bundleToken)) {
 			Transfer::Type type = Transfer::TYPE_FILE;
 			if(aFlags & QueueItem::FLAG_USER_LIST)
 				type = Transfer::TYPE_FULL_LIST;
@@ -870,6 +870,7 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 			ui->setType(type);
 			ui->setTarget(Text::toT(aTarget));
 			ui->setSize(aSize);
+			ui->setBundle(bundleToken);
 		}
 	}
 
@@ -882,9 +883,9 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 
 void TransferView::on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) {
 	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
-	string aTarget;	int64_t aSize; int aFlags = 0;
+	string aTarget, bundleToken;	int64_t aSize; int aFlags = 0;
 
-	if(QueueManager::getInstance()->getQueueInfo(aCqi->getUser(), aTarget, aSize, aFlags)) {
+	if(QueueManager::getInstance()->getQueueInfo(aCqi->getUser(), aTarget, aSize, aFlags, bundleToken)) {
 		Transfer::Type type = Transfer::TYPE_FILE;
 		if(aFlags & QueueItem::FLAG_USER_LIST)
 			type = Transfer::TYPE_FULL_LIST;
@@ -894,6 +895,7 @@ void TransferView::on(ConnectionManagerListener::StatusChanged, const Connection
 		ui->setType(type);
 		ui->setTarget(Text::toT(aTarget));
 		ui->setSize(aSize);
+		ui->setBundle(bundleToken);
 	}
 
 	ui->setStatusString(TSTRING(CONNECTING));
@@ -1649,7 +1651,7 @@ void TransferView::on(QueueManagerListener::Removed, const QueueItem* qi) noexce
 	ui->setRunning(0);
 	if (qi->getBundle()) {
 		//LogManager::getInstance()->message("QueueManagerListener::Removed, bundle");
-		ui->setBundle(qi->getBundle()->getToken());
+		//ui->setBundle(qi->getBundle()->getToken());
 		speak(UPDATE_ITEM, ui);
 	} else {
 		//LogManager::getInstance()->message("QueueManagerListener::Removed, no bundle");

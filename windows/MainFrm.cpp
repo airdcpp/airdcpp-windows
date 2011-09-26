@@ -880,17 +880,30 @@ void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, 
 		//ApexDC
 		xml.resetCurrentChild();
 		if(!BOOLSETTING(AUTO_DETECT_CONNECTION)) {
-		if(BOOLSETTING(IP_UPDATE) && xml.findChild("IP")) {
-			string ip = xml.getChildData();
-			SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, (!ip.empty() ? ip : AirUtil::getLocalIp()));
-		} else if(BOOLSETTING(IP_UPDATE)) {
-			SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, AirUtil::getLocalIp());
+			if(BOOLSETTING(IP_UPDATE) && xml.findChild("IP")) {
+				string ip = xml.getChildData();
+				SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, (!ip.empty() ? ip : AirUtil::getLocalIp()));
+			} else if(BOOLSETTING(IP_UPDATE)) {
+				SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, AirUtil::getLocalIp());
+			}
+			xml.resetCurrentChild();
 		}
-		xml.resetCurrentChild();
-		}
+
 		if(xml.findChild("Version")) {
-			if(Util::toDouble(xml.getChildData()) > Util::toDouble(VERSIONFLOAT)) {
+			double remoteVer = Util::toDouble(xml.getChildData());
+			xml.resetCurrentChild();
+			double ownVersion = Util::toDouble(VERSIONFLOAT);
+
+#ifdef SVNVERSION
+			if (xml.findChild("SVNrev")) {
+				remoteVer = Util::toDouble(xml.getChildData());
 				xml.resetCurrentChild();
+			}
+			string tmp = SVNVERSION;
+			ownVersion = Util::toDouble(tmp.substr(1, tmp.length()-1));
+#endif
+
+			if(remoteVer > ownVersion) {
 				xml.resetCurrentChild();
 				if(xml.findChild("Title")) {
 					const string& title = xml.getChildData();

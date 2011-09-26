@@ -38,7 +38,12 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 #ifdef WIN32
 #include <winsock2.h>
+#if !defined(_MSC_VER) || _MSC_VER >= 1600
 #include <stdint.h>
+#else
+typedef unsigned long uint32_t;
+typedef unsigned short uint16_t;
+#endif
 #define in_addr_t uint32_t
 #include "declspec.h"
 #else

@@ -17,8 +17,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../client/DCPlusPlus.h"
-
 class CImageDataObject : IDataObject {
 public:
 	static void InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap);

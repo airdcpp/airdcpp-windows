@@ -68,8 +68,8 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_CURRENT_LBL), (TSTRING(CURRENT_VERSION) + _T(":")).c_str());
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_LATEST_LBL), (TSTRING(LATEST_VERSION) + _T(":")).c_str());
 
-#ifdef BETADATE
-	PostMessage(WM_SPEAKER, UPDATE_CURRENT_VERSION, (LPARAM)new tstring(_T(VERSIONFLOAT)));
+#ifdef SVNVERSION
+	PostMessage(WM_SPEAKER, UPDATE_CURRENT_VERSION, (LPARAM)new tstring(Text::toT((string)VERSIONFLOAT + ' ' + (string)SVNVERSION)));
 #else
 	PostMessage(WM_SPEAKER, UPDATE_CURRENT_VERSION, (LPARAM)new tstring(_T(VERSIONSTRING)));
 #endif
@@ -215,6 +215,7 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 				} else {
 
 				double latestVersion;
+				double ownVersion;
 				double LangVersion;
 
 				SimpleXML xml;
@@ -222,24 +223,30 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 				xml.stepIn();
 
 				if (xml.findChild("Version")) {
-					string ver = xml.getChildData();
-#ifndef BETADATE
-					if (ver.length() > 4)
-						ver = ver.substr(0,4);
-#endif
-					
-					PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(Text::toT(ver)));
-
-
-					latestVersion = Util::toDouble(ver);
+					string remoteVer = xml.getChildData();
 					xml.resetCurrentChild();
+					string svn;
+#ifdef SVNVERSION
+					if (xml.findChild("SVNrev")) {
+						string svn = xml.getChildData();
+						latestVersion = Util::toDouble(svn);
+						xml.resetCurrentChild();
+						PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(Text::toT(remoteVer + " r" + svn)));
+					}
+					string tmp = SVNVERSION;
+					ownVersion = Util::toDouble(tmp.substr(1, tmp.length()-1));
+#else
+					latestVersion = Util::toDouble(ver);
+					PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(Text::toT(remoteVer)));
+					ownVersion = Util::toDouble(VERSIONFLOAT);
+#endif
 				} else
 					throw Exception();
 #ifdef _WIN64 
 				if (xml.findChild("URL64")) {   //remember to add this in the versionfile
 					downloadURL = xml.getChildData();
 					xml.resetCurrentChild();
-					if (latestVersion > Util::toDouble(VERSIONFLOAT))
+					if (latestVersion > ownVersion)
 						ctrlDownload.EnableWindow(TRUE);
 				} else
 					throw Exception();
@@ -248,7 +255,7 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 				if (xml.findChild("URL")) {
 					downloadURL = xml.getChildData();
 					xml.resetCurrentChild();
-					if (latestVersion > Util::toDouble(VERSIONFLOAT))
+					if (latestVersion > ownVersion)
 						ctrlDownload.EnableWindow(TRUE);
 				} else
 					throw Exception();

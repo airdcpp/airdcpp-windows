@@ -1,7 +1,8 @@
 #include "StdAfx.h"
 #include "barshader.h"
-#include "math.h"
-#include "../client/DCPlusPlus.h"
+
+#include <cmath>
+
 #include "../client/StringTokenizer.h"
 #include "MainFrm.h"
 

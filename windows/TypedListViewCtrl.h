@@ -764,14 +764,9 @@ public:
 				pp = &(parents.insert(make_pair(const_cast<K*>(&parent->getGroupCond()), newPP)).first->second);
 
 				parent->parent = NULL; // ensure that parent of this item is really NULL
-				//item->parent = parent;
-				//pp->children.push_back(item);
 				parent->hits++;
 
 				pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
-				//item->parent = parent;
-				//pp->children.push_back(item);
-				//parent->hits++;
 
 				if(pos != -1) {
 					if(autoExpand){

@@ -896,7 +896,12 @@ bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, StringMap& sm) noe
 	return true;
 }
 
-#define LINE2 _T("-- http://www.airdcpp.net/  <AirDC++ ") _T(VERSIONSTRING) _T(" / ") _T(DCVERSIONSTRING) _T(">")
+#ifdef SVNVERSION
+#define LINE2 _T("-- http://www.airdcpp.net  <AirDC++ ") _T(VERSIONSTRING) _T(SVNVERSION) _T(" / ") _T(DCVERSIONSTRING) _T(">")
+#else
+#define LINE2 _T("-- http://www.airdcpp.net  <AirDC++ ") _T(VERSIONSTRING) _T(" / ") _T(DCVERSIONSTRING) _T(">")
+#endif
+
 TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n") LINE2,
 _T("\r\n-- Is it Superman? No, its AirDC++\r\n") LINE2,
 _T("\r\n-- My files are burning in my computer...Download are way too fast\r\n") LINE2,

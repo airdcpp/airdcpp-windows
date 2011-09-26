@@ -171,9 +171,9 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	WinUtil::SetIcon(m_hWnd, _T("hub.ico"));
 
-	HubOpIcon = (HICON) ::LoadImage(_Module.get_m_hInst(),  WinUtil::getIconPath(_T("hubop.ico")).c_str(), IMAGE_ICON, 0, 0, LR_SHARED | LR_LOADFROMFILE);
-	HubRegIcon = (HICON) ::LoadImage(_Module.get_m_hInst(),  WinUtil::getIconPath(_T("hubreg.ico")).c_str(), IMAGE_ICON, 0, 0, LR_SHARED | LR_LOADFROMFILE);
-	HubIcon = (HICON) ::LoadImage(_Module.get_m_hInst(), WinUtil::getIconPath(_T("hub.ico")).c_str(), IMAGE_ICON, 0, 0, LR_SHARED | LR_LOADFROMFILE);
+	HubOpIcon = (HICON) ::LoadImage(NULL,  WinUtil::getIconPath(_T("hubop.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_SHARED);
+	HubRegIcon = (HICON) ::LoadImage(NULL,  WinUtil::getIconPath(_T("hubreg.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_SHARED);
+	HubIcon = (HICON) ::LoadImage(NULL, WinUtil::getIconPath(_T("hub.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_SHARED);
 
 	if(fhe != NULL){
 		//retrieve window position
@@ -832,7 +832,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 				}
 			}
 		} else if(i->first == UPDATE_ICONS) {
-			if(client->isConnected() == true) {
+			if(client->isReady() == true) {
 				if(client->getMyIdentity().isOp()){	
 					setIcon(HubOpIcon);
 			
