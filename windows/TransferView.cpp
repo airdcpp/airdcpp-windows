@@ -614,7 +614,7 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 		//for QI updates
 		for(int j = 0; j < ctrlTransfers.GetItemCount(); ++j) {
 			ItemInfo* ii = ctrlTransfers.getItemData(j);
-			if((ui.target == ii->target || ii->target.empty()) && ui.user == ii->user) {
+			if((ui.target == ii->target || ii->target.empty()) && ui.user == ii->user && !ii->isBundle) {
 				//LogManager::getInstance()->message("FOUND, uitoken: " + ui.token + " ii token: " + ii->token);
 				pos = j;
 				return ii;
@@ -676,11 +676,11 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 					}
 
 					/* if target has changed, regroup the item */
-					bool changeParent;
+					bool changeParent=false;
 					if (hasBundle) {
 						//LogManager::getInstance()->message("CHANGEPARENT CHECK HASBUNDLE");
 						changeParent = (ui.bundle != ii->bundle);
-					} else {
+					} else if (ui.download) {
 						//LogManager::getInstance()->message("CHANGEPARENT CHECK NO BUNDLE");
 						changeParent = (ui.updateMask & UpdateInfo::MASK_FILE) && (ui.target != ii->target);
 					}
@@ -970,7 +970,7 @@ inline const tstring& TransferView::ItemInfo::getGroupCond() const {
 	if (!bundle.empty()) {
 		return bundle;
 	//} else if (!download) {
-	//	return Text::toT(token);
+	//	return Text::toT(Util::toString(Util::rand()));
 	} else {
 		return target;
 	}
@@ -980,7 +980,7 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 	switch(col) {
 		case COLUMN_USER:
 			if (isBundle && (download || !user.user))
-				return Util::toStringW(users) + _T(' ') + TSTRING(NUMBER_OF_USERS);
+				return Util::toStringW(users) + _T(" ") + TSTRING(NUMBER_OF_USERS) + _T(" (") + Util::toStringW(hits-running-1) + _T(" waiting)");
 			else if (hits == -1 || isBundle)
 				return WinUtil::getNicks(user);
 			else
@@ -1337,9 +1337,11 @@ void TransferView::onBundleComplete(const string bundleToken, bool isUpload) {
 	UpdateInfo* ui = new UpdateInfo(bundleToken, !isUpload);
 
 	ui->setStatus(ItemInfo::STATUS_WAITING);	
+
 	ui->setPos(0);
 	ui->setStatusString(isUpload ? TSTRING(UPLOAD_FINISHED_IDLE) : TSTRING(DOWNLOAD_FINISHED_IDLE));
 	ui->setRunning(0);
+	ui->setUsers(0);
 	ui->setBundle(bundleToken);
 	
 	speak(UPDATE_PARENT, ui);
@@ -1353,6 +1355,8 @@ void TransferView::onBundleStatus(const string bundleToken, bool removed) {
 	} else {
 		ui->setStatusString(TSTRING(WAITING));
 	}
+	ui->setUsers(0);
+	ui->setRunning(0);
 	ui->setBundle(bundleToken);
 	speak(UPDATE_PARENT, ui);
 }

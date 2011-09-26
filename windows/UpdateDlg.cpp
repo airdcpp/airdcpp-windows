@@ -225,6 +225,8 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 				if (xml.findChild("Version")) {
 					string remoteVer = xml.getChildData();
 					xml.resetCurrentChild();
+					latestVersion = Util::toDouble(remoteVer);
+					ownVersion = Util::toDouble(VERSIONFLOAT);
 					string svn;
 #ifdef SVNVERSION
 					if (xml.findChild("SVNrev")) {
@@ -232,13 +234,11 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 						latestVersion = Util::toDouble(svn);
 						xml.resetCurrentChild();
 						PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(Text::toT(remoteVer + " r" + svn)));
+						string tmp = SVNVERSION;
+						ownVersion = Util::toDouble(tmp.substr(1, tmp.length()-1));
 					}
-					string tmp = SVNVERSION;
-					ownVersion = Util::toDouble(tmp.substr(1, tmp.length()-1));
 #else
-					latestVersion = Util::toDouble(ver);
 					PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(Text::toT(remoteVer)));
-					ownVersion = Util::toDouble(VERSIONFLOAT);
 #endif
 				} else
 					throw Exception();
