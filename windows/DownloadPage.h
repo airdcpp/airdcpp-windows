@@ -56,6 +56,7 @@ public:
 protected:
 	static Item items[];
 	static TextItem texts[];
+	static ListItem optionItems[];
 };
 
 #endif //  !defined(DOWNLOAD_PAGE_H)

@@ -273,7 +273,8 @@ private:
 			MASK_CIPHER			= 0x400,
 			MASK_TOTALSPEED		= 0x800, /* ttlf */
 			MASK_BUNDLE         = 0x1000,
-			MASK_USERS          = 0x2000
+			MASK_USERS          = 0x2000,
+			MASK_USER           = 0x4000
 		};
 
 		bool operator==(const ItemInfo& ii) const {
@@ -293,11 +294,6 @@ private:
 		uint32_t updateMask;
 
 		string token;
-		HintedUser user;
-		void setUser(const HintedUser aUser) {
-			user = aUser;
-		}
-		//const HintedUser getUser() const { return HintedUser(user); }
 
 		bool download;
 		bool transferFailed;
@@ -333,6 +329,8 @@ private:
 		tstring bundle;
 		void setUsers(const int16_t aUsers) { users = aUsers; updateMask |= MASK_USERS; }
 		int16_t users;
+		void setUser(const HintedUser aUser) { user = aUser; updateMask |= MASK_USER; }
+		HintedUser user;
 
 	private:
 		QueueItem* queueItem;
@@ -364,6 +362,7 @@ private:
 	void on(DownloadManagerListener::Tick, const DownloadList& aDownload, const BundleList& aBundle) noexcept;
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
 	void on(DownloadManagerListener::BundleFinished, const string& bundleToken) noexcept { onBundleComplete(bundleToken, false); }
+	void on(DownloadManagerListener::BundleMode, const string& bundleToken, const HintedUser& aUser) noexcept;
 
 	void on(UploadManagerListener::Starting, const Upload* aUpload) noexcept;
 	void on(UploadManagerListener::Tick, const UploadList& aUpload, const BundleList& bundles) noexcept;

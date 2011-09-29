@@ -50,10 +50,18 @@ PropPage::Item DownloadPage::items[] = {
 	{ 0, 0, PropPage::T_END }
 };
 
+
+PropPage::ListItem DownloadPage::optionItems[] = {
+	{ SettingsManager::ENABLE_BUNDLES, ResourceManager::SETTINGS_ENABLE_BUNDLES },
+	{ SettingsManager::SCAN_DL_BUNDLES, ResourceManager::SETTINGS_SCAN_FINISHED_BUNDLES },
+	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+};
+
 LRESULT DownloadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
+	PropPage::read((HWND)*this, items, optionItems, GetDlgItem(IDC_DOWNLOAD_OPTIONS));
 	// Do specialized reading here
 	return TRUE;
 }
@@ -61,6 +69,7 @@ LRESULT DownloadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 void DownloadPage::write()
 {
 	PropPage::write((HWND)*this, items);
+	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_DOWNLOAD_OPTIONS));
 
 	const string& s = SETTING(DOWNLOAD_DIRECTORY);
 	if(s.length() > 0 && s[s.length() - 1] != '\\') {

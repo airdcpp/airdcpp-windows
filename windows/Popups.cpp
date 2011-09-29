@@ -62,6 +62,8 @@ Popups::ListItem Popups::listItems[] = {
 	{ SettingsManager::POPUP_AWAY, ResourceManager::SHOW_POPUP_AWAY },
 	{ SettingsManager::POPUP_MINIMIZED, ResourceManager::SHOW_POPUP_MINIMIZED },
 	{ SettingsManager::PM_PREVIEW, ResourceManager::PM_PREVIEW },
+	{ SettingsManager::POPUP_BUNDLE_DLS, ResourceManager::SETTINGS_BUNDLE_DL_POPUP },
+	{ SettingsManager::POPUP_BUNDLE_ULS, ResourceManager::SETTINGS_BUNDLE_UL_POPUP },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

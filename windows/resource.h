@@ -817,6 +817,7 @@
 #define IDC_LIST_HL_TEXT                1397
 #define IDC_LIST_HL_EXAMPLE             1398
 #define IDC_POPUP_TIME_SPIN             1399
+#define IDC_DOWNLOAD_OPTIONS            1399
 #define IDC_OTHER_QUEUE_OPTIONS         1400
 #define IDC_COPY_EXACT_SIZE             1401
 #define IDC_DUPE_TEXT                   1402
@@ -1212,7 +1213,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1399
+#define _APS_NEXT_CONTROL_VALUE         1400
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif
