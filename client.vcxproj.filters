@@ -200,6 +200,12 @@
     <ClCompile Include="client\Bundle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\UploadBundle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\DownloadBundle.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -530,6 +536,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\Bundle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\UploadBundle.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\DownloadBundle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

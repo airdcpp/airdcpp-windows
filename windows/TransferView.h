@@ -356,7 +356,9 @@ private:
 	//void on(ConnectionManagerListener::TokenChanged, const ConnectionQueueItem* aCqi, string newToken) {
 
 	void on(DownloadManagerListener::Requesting, const Download* aDownload) noexcept;	
-	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree);}
+	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { 
+		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, (aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString));
+	}
 	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept;
 	void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept;
 	void on(DownloadManagerListener::Tick, const DownloadList& aDownload, const BundleList& aBundle) noexcept;
@@ -365,8 +367,10 @@ private:
 	void on(DownloadManagerListener::BundleMode, const string& bundleToken, const HintedUser& aUser) noexcept;
 
 	void on(UploadManagerListener::Starting, const Upload* aUpload) noexcept;
-	void on(UploadManagerListener::Tick, const UploadList& aUpload, const BundleList& bundles) noexcept;
-	void on(UploadManagerListener::Complete, const Upload* aUpload) noexcept { onTransferComplete(aUpload, true, aUpload->getPath(), false); }
+	void on(UploadManagerListener::Tick, const UploadList& aUpload, const UploadBundleList& bundles) noexcept;
+	void on(UploadManagerListener::Complete, const Upload* aUpload) noexcept { 
+		onTransferComplete(aUpload, true, aUpload->getPath(), false, (aUpload->getBundle() ? aUpload->getBundle()->getToken() : Util::emptyString)); 
+	}
 	void on(UploadManagerListener::BundleComplete, const string& bundleToken) noexcept { onBundleComplete(bundleToken, true); }
 
 	void on(QueueManagerListener::StatusUpdated, const QueueItem*, bool) noexcept;
@@ -380,7 +384,7 @@ private:
 
 	void onBundleComplete(const string bundleToken, bool isUpload);
 	void onBundleStatus(const string bundleToken, bool removed);
-	void onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree);
+	void onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree, const string& bundleToken);
 	void starting(UpdateInfo* ui, const Transfer* t);
 	
 	void CollapseAll();

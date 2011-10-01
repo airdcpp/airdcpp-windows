@@ -30,8 +30,15 @@
 
 Emoticon::Emoticon(const tstring& _emoticonText, const string& _imagePath) : 
 	emoticonText(_emoticonText), imagePath(_imagePath)
-{
-	emoticonBitmap.Load(Text::toT(_imagePath).c_str());
+{	
+	if(!emoticonBitmap.IsNull()) 
+		emoticonBitmap.Destroy();
+	
+	if(emoticonBitmap.Load(Text::toT(_imagePath).c_str()) != S_OK) {
+		dcdebug("Emoticon load Error: %s \n", Util::translateError(GetLastError()));
+		return;
+	}
+		
 
 	if(emoticonBitmap.IsNull()) {
 		return;
@@ -56,7 +63,7 @@ Emoticon::Emoticon(const tstring& _emoticonText, const string& _imagePath) :
 				pPixel += 4;
 			}
 		}
-		SetBitmapBits(emoticonBitmap, bm.bmWidth * bm.bmHeight * 4, pBits);
+		SetBitmapBits((HBITMAP)emoticonBitmap, bm.bmWidth * bm.bmHeight * 4, pBits);
 	    
 		delete[] pBits;
 	} else if(bm.bmBitsPixel <= 8) {
@@ -92,7 +99,7 @@ HBITMAP Emoticon::getEmoticonBmp(const COLORREF &clrBkColor) {
 	HDC memDC = emoticonBitmap.GetDC();
 	
 	BITMAP bm = { 0 };
-	GetObject(emoticonBitmap, sizeof(bm), &bm);
+	GetObject((HBITMAP)emoticonBitmap, sizeof(bm), &bm);
 
 	BITMAPINFO bmi;
 	ZeroMemory(&bmi, sizeof(BITMAPINFO));
@@ -150,12 +157,8 @@ void EmoticonsManager::Load() {
 				boost::algorithm::replace_all(strEmotionText, " ", "");
 				string strEmotionBmpPath = xml.getChildAttrib("Bitmap");
 				if (!strEmotionBmpPath.empty()) {
-					if (strEmotionBmpPath[0] == '.') {
-						// change relative path
+
 						strEmotionBmpPath = Util::getPath(Util::PATH_EMOPACKS) + strEmotionBmpPath;
-					} else {
-						strEmotionBmpPath = "EmoPacks\\" + strEmotionBmpPath;
-					}
 				}
 
 				emoticons.push_back(new Emoticon(strEmotionText, strEmotionBmpPath));

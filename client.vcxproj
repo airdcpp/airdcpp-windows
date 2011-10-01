@@ -236,6 +236,7 @@
     <ClCompile Include="client\DCPlusPlus.cpp" />
     <ClCompile Include="client\DirectoryListing.cpp" />
     <ClCompile Include="client\Download.cpp" />
+    <ClCompile Include="client\DownloadBundle.cpp" />
     <ClCompile Include="client\DownloadManager.cpp" />
     <ClCompile Include="client\Encoder.cpp" />
     <ClCompile Include="client\FavoriteManager.cpp" />
@@ -279,6 +280,7 @@
     <ClCompile Include="client\TraceManager.cpp" />
     <ClCompile Include="client\Transfer.cpp" />
     <ClCompile Include="client\Upload.cpp" />
+    <ClCompile Include="client\UploadBundle.cpp" />
     <ClCompile Include="client\UploadManager.cpp" />
     <ClCompile Include="client\User.cpp" />
     <ClCompile Include="client\UserCommand.cpp" />
@@ -317,6 +319,7 @@
     <ClInclude Include="client\DebugManager.h" />
     <ClInclude Include="client\DirectoryListing.h" />
     <ClInclude Include="client\Download.h" />
+    <ClInclude Include="client\DownloadBundle.h" />
     <ClInclude Include="client\DownloadManager.h" />
     <ClInclude Include="client\DownloadManagerListener.h" />
     <ClInclude Include="client\Encoder.h" />
@@ -375,6 +378,7 @@
     <ClInclude Include="client\stdinc.h" />
     <ClInclude Include="client\Streams.h" />
     <ClInclude Include="client\typedefs.h" />
+    <ClInclude Include="client\UploadBundle.h" />
     <ClInclude Include="windows\ResourceLoader.h" />
     <CustomBuild Include="client\StringDefs.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>

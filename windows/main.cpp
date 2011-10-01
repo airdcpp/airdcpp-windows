@@ -42,7 +42,7 @@
 
 #include "Resource.h"
 #include "ExtendedTrace.h"
-
+#include "ResourceLoader.h"
 #include "MainFrm.h"
 #include "PopupManager.h"
 #include "LineDlg.h"
@@ -354,6 +354,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	rc.right = GetSystemMetrics(SM_CXFULLSCREEN);
 	rc.left = rc.right / 2 - 85;
 	
+	
 	dummy.Create(NULL, rc, _T(APPNAME) _T(" ") _T(VERSIONSTRING), WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		ES_CENTER | ES_READONLY, WS_EX_STATICEDGE);
 	splash.Create(_T("Static"), GetDesktopWindow(), splash.rcDefault, NULL, WS_POPUP | WS_VISIBLE | SS_USERITEM | WS_EX_TOOLWINDOW);
@@ -437,6 +438,7 @@ if(BOOLSETTING(PASSWD_PROTECT)) {
 	_Module.RemoveMessageLoop();
 
 	shutdown();
+	ExCImage::ReleaseGDIPlus();
 
 	return nRet;
 }

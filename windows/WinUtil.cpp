@@ -730,7 +730,7 @@ bool WinUtil::browseDirectory(tstring& target, HWND owner /* = NULL */) {
 }
 
 bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* = true */, const tstring& initialDir /* = Util::emptyString */, const TCHAR* types /* = NULL */, const TCHAR* defExt /* = NULL */) {
-	TCHAR buf[UNC_MAX_PATH];
+	TCHAR buf[MAX_PATH];
 	OPENFILENAME ofn = { 0 };       // common dialog box structure
 	target = Text::toT(Util::validateFileName(Text::fromT(target)));
 	_tcscpy(buf, target.c_str());

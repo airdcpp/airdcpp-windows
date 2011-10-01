@@ -29,7 +29,7 @@
 #include "TextFrame.h"
 #include "../client/highlightmanager.h"
 #include "../client/AutoSearchManager.h"
-
+#include "ResourceLoader.h"
 EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48

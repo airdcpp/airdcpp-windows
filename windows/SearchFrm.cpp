@@ -818,18 +818,20 @@ LRESULT SearchFrame::onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 	dcassert(wID >= IDC_DOWNLOAD_TARGET);
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_TARGET;
 
-	if(newId < WinUtil::lastDirs.size()) {
+	if(newId < (int)WinUtil::lastDirs.size()) {
 		ctrlResults.forEachSelectedT(SearchInfo::Download(WinUtil::lastDirs[newId], this));
 	} else {
-		dcassert((newId - WinUtil::lastDirs.size()) < targets.size());
-		ctrlResults.forEachSelectedT(SearchInfo::DownloadTarget(Text::toT(targets[newId - WinUtil::lastDirs.size()])));
+		dcassert((newId - (int)WinUtil::lastDirs.size()) < targets.size());
+		string tgt = targets[newId - (int)WinUtil::lastDirs.size()];
+		if(!tgt.empty()) //if we for some reason counted wrong picking the target, dont bother to use empty string.
+		ctrlResults.forEachSelectedT(SearchInfo::DownloadTarget(Text::toT(tgt)));
 	}
 	return 0;
 }
 
 LRESULT SearchFrame::onDownloadWholeTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	dcassert((wID-IDC_DOWNLOAD_WHOLE_TARGET) < (int)WinUtil::lastDirs.size());
-	ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(WinUtil::lastDirs[wID-IDC_DOWNLOAD_WHOLE_TARGET]));
+	ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole((WinUtil::lastDirs[wID-IDC_DOWNLOAD_WHOLE_TARGET])));
 	return 0;
 }
 
@@ -838,11 +840,13 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 
 	StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
-	if(newId < spl.size()) {
+	if(newId < (int)spl.size()) {
 		ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(spl[newId].first), this));
 	} else {
 		dcassert((newId - spl.size()) < targets.size());
-		ctrlResults.forEachSelectedT(SearchInfo::DownloadTarget(Text::toT(targets[newId - spl.size()])));
+		string tgt = targets[newId - spl.size()];
+		if(!tgt.empty())
+		ctrlResults.forEachSelectedT(SearchInfo::DownloadTarget(Text::toT(tgt)));
 	}
 	return 0;
 }

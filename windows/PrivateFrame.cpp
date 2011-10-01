@@ -473,7 +473,9 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		PostMessage(WM_CLOSE);
 		return 0;
 	} else {
-		frames.erase(replyTo);
+		FrameIter i = frames.find(replyTo);
+		if(i != frames.end())
+			frames.erase(i);
 
 		bHandled = FALSE;
 		return 0;

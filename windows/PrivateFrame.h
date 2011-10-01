@@ -44,7 +44,7 @@ class PrivateFrame : public MDITabChildWindowImpl<PrivateFrame>,
 public:
 	static void gotMessage(const Identity& from, const UserPtr& to, const UserPtr& replyTo, const tstring& aMessage, Client* c);
 	static void openWindow(const HintedUser& replyTo, const tstring& aMessage = Util::emptyStringT, Client* c = NULL);
-	static bool isOpen(const UserPtr u) { return frames.find(u) != frames.end(); }
+	static bool isOpen(const UserPtr& u) { return frames.find(u) != frames.end(); }
 	static void closeAll();
 	static void closeAllOffline();
 
@@ -189,7 +189,7 @@ public:
 private:
 	PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
 		priv(FavoriteManager::getInstance()->isPrivate(replyTo_.hint)),
-		created(false), closed(false), isoffline(false), curCommandPosition(0),  
+		created(false), closed(false), isoffline(false), curCommandPosition(0), hubName(Util::emptyStringT), 
 		ctrlMessageContainer(WC_EDIT, this, PM_MESSAGE_MAP),
 		ctrlClientContainer(WC_EDIT, this, PM_MESSAGE_MAP), menuItems(0)
 	{

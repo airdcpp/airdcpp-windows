@@ -705,16 +705,14 @@ public:
 	void Expand(T* parent, int itemPos) {
 		SetRedraw(false);
 		const vector<T*>& children = findChildren(parent->getGroupCond());
-		//if(children.size() > (size_t)(uniqueParent ? 1 : 0)) {
+		if(children.size() > (size_t)(uniqueParent ? 1 : 0)) {
 			parent->collapsed = false;
 			for(vector<T*>::const_iterator i = children.begin(); i != children.end(); i++) {
 				insertChild(*i, itemPos + 1);
 			}
 			SetItemState(itemPos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
 			resort();
-		//} else {
-		//	LogManager::getInstance()->message("EXPANDFAIL");
-		//}
+		}
 		SetRedraw(true);
 	}
 
@@ -758,7 +756,7 @@ public:
 			if (bundle) {
 				//LogManager::getInstance()->message("insertGroupedItem pp NULL BUNDLE");
 				parent  = item->createParent();
-				uniqueParent = true;
+				uniqueParent = false;
 
 				ParentPair newPP = { parent };
 				pp = &(parents.insert(make_pair(const_cast<K*>(&parent->getGroupCond()), newPP)).first->second);
@@ -792,7 +790,8 @@ public:
 			T* oldParent = pp->parent;
 			parent = oldParent->createParent();
 			if(parent != oldParent) {
-				uniqueParent = true;
+				if (!bundle)
+					uniqueParent = true;
 				parents.erase(const_cast<K*>(&oldParent->getGroupCond()));
 				deleteItem(oldParent);
 
@@ -867,7 +866,7 @@ public:
 				pp->parent->hits--;
 			}
 	
-			if(uniqueParent) {
+			if(uniqueParent || bundle) {
 				//LogManager::getInstance()->message("remove unique parent");
 				//dcassert(!pp->children.empty());
 				if(pp->children.size() == 1 && !bundle) {
