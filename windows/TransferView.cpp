@@ -1145,7 +1145,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl, con
 		ui->setBundle(bundle->getToken());
 		ui->setTarget(Text::toT(bundle->getTarget()));
 		ui->setRunning(bundle->getRunning());
-		ui->setUsers(bundle->runningUsers.size());
+		ui->setUsers(bundle->getRunningUsers().size());
 
 		tstring pos = Util::formatBytesW(downloaded);
 		double percent = (double)downloaded*100.0/(double)bundle->getSize();
