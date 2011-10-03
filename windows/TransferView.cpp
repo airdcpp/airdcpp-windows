@@ -647,10 +647,14 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			auto &ui = static_cast<UpdateInfo&>(*i->second);
 			ItemInfo* ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
-			if (ii->download || !ii->bundle.empty()) {
+			if (!ii->bundle.empty() && !ii->target.empty()) {
 				ctrlTransfers.insertGroupedItem(ii, false, !ii->bundle.empty());
 			} else {
-				ctrlTransfers.insertItem(ii, IMAGE_UPLOAD);
+				if (ii->download) {
+					ctrlTransfers.insertItem(ii, IMAGE_DOWNLOAD);
+				} else {
+					ctrlTransfers.insertItem(ii, IMAGE_UPLOAD);
+				}
 			}
 		} else if(i->first == REMOVE_ITEM) {
 			//LogManager::getInstance()->message("REMOVE_ITEM2");
@@ -704,13 +708,8 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 					if(changeParent) {
 						//LogManager::getInstance()->message("CHANGEPARENT, REMOVE");
-						if (!ii->download && ii->bundle.empty()) {
-							int pos = -1;
-							ItemInfo* iiB = findItem(ui, pos);
-							if(iiB) {
-								//LogManager::getInstance()->message("CHANGEPARENT, REMOVE SINGE UPLOAD");
-								ctrlTransfers.DeleteItem(pos);
-							}
+						if ((!ii->download && ii->bundle.empty()) || ii->target.empty()) {
+							ctrlTransfers.DeleteItem(pos);
 						} else {
 							ctrlTransfers.removeGroupedItem(ii, false, !ii->bundle.empty());
 						}
