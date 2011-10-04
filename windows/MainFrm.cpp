@@ -39,7 +39,7 @@
 #include "TextFrame.h"
 #include "UpdateDlg.h"
 #include "StatsFrame.h"
-#include "WaitingUsersFrame.h"
+#include "UploadQueueFrame.h"
 #include "LineDlg.h"
 #include "HashProgressDlg.h"
 #include "PrivateFrame.h"
@@ -781,7 +781,7 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		case IDC_NET_STATS: StatsFrame::openWindow(); break; 
 		case IDC_FINISHED: FinishedFrame::openWindow(); break;
 		case IDC_FINISHED_UL: FinishedULFrame::openWindow(); break;
-		case IDC_UPLOAD_QUEUE: WaitingUsersFrame::openWindow(); break;
+		case IDC_UPLOAD_QUEUE: UploadQueueFrame::openWindow(); break;
 		case IDC_CDMDEBUG_WINDOW: CDMDebugFrame::openWindow(); break;
 		case IDC_RECENTS: RecentHubsFrame::openWindow(); break;
 		case IDC_SYSTEM_LOG: SystemFrame::openWindow(); break;

@@ -178,7 +178,9 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			transferMenu.AppendMenu(MF_STRING, IDC_EXPAND_ALL, CTSTRING(EXPAND_ALL));
 			transferMenu.AppendMenu(MF_STRING, IDC_COLLAPSE_ALL, CTSTRING(COLLAPSE_ALL));
 			transferMenu.AppendMenu(MF_SEPARATOR);
+			transferMenu.AppendMenu(MF_STRING, IDC_OPEN_BUNDLE_FOLDER, CTSTRING(OPEN_FOLDER));
 			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE, CTSTRING(REMOVE_BUNDLE));
+			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE_FINISHED, CTSTRING(REMOVE_BUNDLE_FINISHED));
 		} else {
 			transferMenu.InsertSeparatorFirst(TSTRING(SETTINGS_SEGMENT));
 			transferMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
@@ -302,7 +304,21 @@ void TransferView::ItemInfo::removeAll() {
 }
 
 void TransferView::ItemInfo::removeBundle() {
-	QueueManager::getInstance()->removeBundle(Text::fromT(bundle), true);
+	if(!BOOLSETTING(CONFIRM_DELETE) || ::MessageBox(0, _T("Do you really want to remove this bundle?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
+		QueueManager::getInstance()->removeBundle(Text::fromT(bundle), false);
+}
+
+void TransferView::ItemInfo::removeBundleFinished() {
+	if(!BOOLSETTING(CONFIRM_DELETE) || ::MessageBox(0, _T("Do you really want to remove this bundle and all of its items?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
+		QueueManager::getInstance()->removeBundle(Text::fromT(bundle), true);
+}
+
+LRESULT TransferView::onOpenBundleFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
+	if (ii) {
+		WinUtil::openFolder(ii->target);
+	}
+	return 0;
 }
 
 LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
@@ -1134,6 +1150,12 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl, con
 		BundlePtr bundle = *j;
 		string bundleToken = bundle->getToken();
 		int64_t downloaded = bundle->getDownloaded();
+		double percent = (double)downloaded*100.0/(double)bundle->getSize();
+		if (percent > 100) {
+			//hack, prevents updates for removed bundles
+			continue;
+		}
+
 		UpdateInfo* ui = new UpdateInfo(bundle->getToken(), true);
 		ui->setStatus(ItemInfo::STATUS_RUNNING);
 		ui->setPos(downloaded);
@@ -1147,7 +1169,6 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl, con
 		ui->setUsers(bundle->getRunningUsers().size());
 
 		tstring pos = Util::formatBytesW(downloaded);
-		double percent = (double)downloaded*100.0/(double)bundle->getSize();
 		tstring elapsed = Util::formatSeconds((GET_TICK() - bundle->getStart())/1000);
 
 		tstring statusString;

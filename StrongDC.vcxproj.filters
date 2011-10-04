@@ -468,9 +468,6 @@
     <ClCompile Include="windows\UsersFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\WaitingUsersFrame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\WindowsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -502,6 +499,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\DirectoryListingDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\UploadQueueFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -767,9 +767,6 @@
     <ClInclude Include="windows\UsersFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\WaitingUsersFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\Winamp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -810,6 +807,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\DirectoryListingDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\UploadQueueFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

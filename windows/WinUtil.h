@@ -205,7 +205,7 @@ static const toolbarButton ToolbarButtons[] = {
 	{IDC_RECENTS, 5, true, ResourceManager::MENU_FILE_RECENT_HUBS},
 	{IDC_QUEUE, 6, true, ResourceManager::MENU_DOWNLOAD_QUEUE},
 	{IDC_FINISHED, 7, true, ResourceManager::FINISHED_DOWNLOADS},
-	{IDC_UPLOAD_QUEUE, 8, true, ResourceManager::WAITING_USERS},
+	{IDC_UPLOAD_QUEUE, 8, true, ResourceManager::UPLOAD_QUEUE},
 	{IDC_FINISHED_UL, 9, true, ResourceManager::FINISHED_UPLOADS},
 	{ID_FILE_SEARCH, 10, false, ResourceManager::MENU_SEARCH},
 	{IDC_FILE_ADL_SEARCH, 11, true, ResourceManager::MENU_ADL_SEARCH},

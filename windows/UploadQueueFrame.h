@@ -18,8 +18,8 @@
  */
 
 
-#if !defined(WAITING_QUEUE_FRAME_H)
-#define WAITING_QUEUE_FRAME_H
+#if !defined(UPLOAD_QUEUE_FRAME_H)
+#define UPLOAD_QUEUE_FRAME_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -33,16 +33,16 @@
 
 #define SHOWTREE_MESSAGE_MAP 12
 
-class WaitingUsersFrame : public MDITabChildWindowImpl<WaitingUsersFrame>, public StaticFrame<WaitingUsersFrame, ResourceManager::WAITING_USERS, IDC_UPLOAD_QUEUE>,
-	private UploadManagerListener, public CSplitterImpl<WaitingUsersFrame>, private SettingsManagerListener, public UserInfoBaseHandler<WaitingUsersFrame>
+class UploadQueueFrame : public MDITabChildWindowImpl<UploadQueueFrame>, public StaticFrame<UploadQueueFrame, ResourceManager::UPLOAD_QUEUE, IDC_UPLOAD_QUEUE>,
+	private UploadManagerListener, public CSplitterImpl<UploadQueueFrame>, private SettingsManagerListener, public UserInfoBaseHandler<UploadQueueFrame>
 {
 public:
-	DECLARE_FRAME_WND_CLASS_EX(_T("WaitingUsersFrame"), IDR_UPLOAD_QUEUE, 0, COLOR_3DFACE);
+	DECLARE_FRAME_WND_CLASS_EX(_T("UploadQueueFrame"), IDR_UPLOAD_QUEUE, 0, COLOR_3DFACE);
 
-	WaitingUsersFrame() : showTree(true), closed(false), usingUserMenu(false), 
+	UploadQueueFrame() : showTree(true), closed(false), usingUserMenu(false), 
 		showTreeContainer(_T("BUTTON"), this, SHOWTREE_MESSAGE_MAP) { }
 	
-	~WaitingUsersFrame() { }
+	~UploadQueueFrame() { }
 
 	enum {
 		ADD_ITEM,
@@ -51,18 +51,17 @@ public:
 		UPDATE_ITEMS
 	};
 
-	typedef MDITabChildWindowImpl<WaitingUsersFrame> baseClass;
-	typedef CSplitterImpl<WaitingUsersFrame> splitBase;
-	typedef UserInfoBaseHandler<WaitingUsersFrame> uibBase;
+	typedef MDITabChildWindowImpl<UploadQueueFrame> baseClass;
+	typedef CSplitterImpl<UploadQueueFrame> splitBase;
+	typedef UserInfoBaseHandler<UploadQueueFrame> uibBase;
 
 	// Inline message map
-	BEGIN_MSG_MAP(WaitingUsersFrame)
+	BEGIN_MSG_MAP(UploadQueueFrame)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		COMMAND_HANDLER(IDC_REMOVE, BN_CLICKED, onRemove)
-		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		NOTIFY_HANDLER(IDC_UPLOAD_QUEUE, LVN_GETDISPINFO, ctrlList.onGetDispInfo)
 		NOTIFY_HANDLER(IDC_UPLOAD_QUEUE, LVN_COLUMNCLICK, ctrlList.onColumnClick)
 //		NOTIFY_HANDLER(IDC_UPLOAD_QUEUE, LVN_ITEMCHANGED, onItemChangedQueue)
@@ -94,11 +93,7 @@ public:
 		LoadAll();
 		return 0;
 	}
-	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		PostMessage(WM_CLOSE);
-		return 0;
-	}
-
+	
 	// Update control layouts
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	

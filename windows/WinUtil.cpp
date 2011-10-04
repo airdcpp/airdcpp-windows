@@ -406,7 +406,7 @@ void WinUtil::init(HWND hWnd) {
 	transfers.AppendMenu(MF_STRING, IDC_QUEUE, CTSTRING(MENU_DOWNLOAD_QUEUE));
 	transfers.AppendMenu(MF_STRING, IDC_FINISHED, CTSTRING(FINISHED_DOWNLOADS));
 	transfers.AppendMenu(MF_SEPARATOR);
-	transfers.AppendMenu(MF_STRING, IDC_UPLOAD_QUEUE, CTSTRING(WAITING_USERS));
+	transfers.AppendMenu(MF_STRING, IDC_UPLOAD_QUEUE, CTSTRING(UPLOAD_QUEUE));
 	transfers.AppendMenu(MF_STRING, IDC_FINISHED_UL, CTSTRING(FINISHED_UPLOADS));
 	transfers.AppendMenu(MF_SEPARATOR);
 	transfers.AppendMenu(MF_STRING, IDC_NET_STATS, CTSTRING(MENU_NETWORK_STATISTICS));
@@ -2189,9 +2189,11 @@ uint8_t WinUtil::getFlagIndexByCode(const char* countryCode) {
 
 uint8_t WinUtil::getFlagIndexByName(const char* countryName) {
 	// country codes are not sorted, use linear searching (it is not used so often)
-	for(uint8_t i = 0; i < (sizeof(countryNames) / sizeof(countryNames[0])); ++i)
-		if(_stricmp(countryName, countryNames[i]) == 0)
-			return i + 1;
+	const char** first = countryNames;
+	const char** last = countryNames + (sizeof(countryNames) / sizeof(countryNames[0]));
+	const char** i = find_if(first, last, [&](const char* cn) { return stricmp(countryName, cn) == 0; });
+	if(i != last)
+		return i - countryNames + 1;
 
 	return 0;
 }

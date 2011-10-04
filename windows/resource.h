@@ -1182,6 +1182,8 @@
 #define IDC_DL_SEARCH_STRING            15110
 #define IDC_DL_TYPE_TEXT                15111
 #define IDC_REMOVE_BUNDLE               15112
+#define IDC_REMOVE_BUNDLE_FINISHED      15113
+#define IDC_OPEN_BUNDLE_FOLDER			15114
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_BITZI_LOOKUP                20000
 #define IDC_BROWSELIST                  21000

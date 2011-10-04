@@ -167,7 +167,7 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	desc.Detach();
 
 	BindCombo.Attach(GetDlgItem(IDC_BIND_ADDRESS));
-	BindCombo.AddString((TSTRING(ANY) + _T(" (IPv4 & IPv6)")).c_str());
+	BindCombo.AddString((TSTRING(ANY) + (Socket::getFamily() == AF_INET6 ? _T(" (IPv4 & IPv6)") : _T(" (IPv4 only)"))).c_str());
 	getAddresses();
 
 	if(BindCombo.GetCurSel() == -1)

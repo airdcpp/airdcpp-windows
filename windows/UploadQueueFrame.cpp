@@ -1,4 +1,5 @@
 /* 
+ * Copyright (C) 2001-2003 BlackClaw, blackclaw@parsoma.net
  * Copyright (C) 2001-2006 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,19 +24,19 @@
 #include "../client/ClientManager.h"
 #include "../client/FavoriteManager.h"
 #include "../client/QueueManager.h"
-#include "WaitingUsersFrame.h"
+#include "UploadQueueFrame.h"
 #include "PrivateFrame.h"
 
 #include "BarShader.h"
 
-int WaitingUsersFrame::columnSizes[] = { 250, 100, 75, 75, 75, 75, 100, 100 };
-int WaitingUsersFrame::columnIndexes[] = { UploadQueueItem::COLUMN_FILE, UploadQueueItem::COLUMN_PATH, UploadQueueItem::COLUMN_NICK,
+int UploadQueueFrame::columnSizes[] = { 250, 100, 75, 75, 75, 75, 100, 100 };
+int UploadQueueFrame::columnIndexes[] = { UploadQueueItem::COLUMN_FILE, UploadQueueItem::COLUMN_PATH, UploadQueueItem::COLUMN_NICK,
 	UploadQueueItem::COLUMN_HUB, UploadQueueItem::COLUMN_TRANSFERRED, UploadQueueItem::COLUMN_SIZE, UploadQueueItem::COLUMN_ADDED,
 	UploadQueueItem::COLUMN_WAITING };
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILENAME, ResourceManager::PATH, ResourceManager::NICK, 
 	ResourceManager::HUB, ResourceManager::TRANSFERRED, ResourceManager::SIZE, ResourceManager::ADDED, ResourceManager::WAITING_TIME };
 
-LRESULT WaitingUsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	showTree = BOOLSETTING(UPLOADQUEUEFRAME_SHOW_TREE);
 
 	// status bar
@@ -106,7 +107,7 @@ LRESULT WaitingUsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	return TRUE;
 }
 
-LRESULT WaitingUsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT UploadQueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		UploadManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
@@ -126,7 +127,7 @@ LRESULT WaitingUsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	}
 }
 
-void WaitingUsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
+void UploadQueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	RECT rect;
 	GetClientRect(&rect);
 	// position bars and offset their dimensions
@@ -160,7 +161,7 @@ void WaitingUsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	SetSplitterRect(rc);
 }
 
-LRESULT WaitingUsersFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT UploadQueueFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(usingUserMenu) {
 		UserPtr User = getSelectedUser();
 		if(User) {
@@ -180,7 +181,7 @@ LRESULT WaitingUsersFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
-LRESULT WaitingUsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT UploadQueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	RECT rc;
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 	ctrlList.GetHeader().GetWindowRect(&rc);
@@ -193,7 +194,7 @@ LRESULT WaitingUsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 	
 	OMenu contextMenu;
 	contextMenu.CreatePopupMenu();
-	contextMenu.InsertSeparatorFirst(CTSTRING(WAITING_USERS));
+	contextMenu.InsertSeparatorFirst(CTSTRING(UPLOAD_QUEUE));
 
 	if(reinterpret_cast<HWND>(wParam) == ctrlList && ctrlList.GetSelectedCount() > 0) {
      	if(pt.x == -1 && pt.y == -1) {
@@ -231,16 +232,16 @@ LRESULT WaitingUsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 	return FALSE; 
 }
 
-void WaitingUsersFrame::LoadAll() {
+void UploadQueueFrame::LoadAll() {
 	ctrlList.SetRedraw(FALSE);
 	ctrlQueued.SetRedraw(FALSE);	
 	
 	// Load queue
-	UploadQueueItem::SlotQueue users = UploadManager::getInstance()->getUploadQueue();
-	for(UploadQueueItem::SlotQueue::const_iterator uit = users.begin(); uit != users.end(); ++uit) {
+	UploadManager::SlotQueue users = UploadManager::getInstance()->getUploadQueue();
+	for(UploadManager::SlotQueue::const_iterator uit = users.begin(); uit != users.end(); ++uit) {
 		//ctrlQueued.InsertItem(TVIF_PARAM | TVIF_TEXT, (Text::toT(uit->first->getFirstNick()) + _T(" - ") + WinUtil::getHubNames(uit->first).first).c_str(), 
 		//	0, 0, 0, 0, (LPARAM)(new UserItem(uit->first)), rootItem, TVI_LAST);
-		for(UploadQueueItem::List::const_iterator i = uit->second.begin(); i != uit->second.end(); ++i) {
+		for(auto i = uit->files.cbegin(); i != uit->files.cend(); ++i) {
 			AddFile(*i);
 		}
 	}
@@ -251,7 +252,7 @@ void WaitingUsersFrame::LoadAll() {
 	updateStatus();
 }
 
-void WaitingUsersFrame::DeleteAll() {
+void UploadQueueFrame::DeleteAll() {
 	HTREEITEM userNode = ctrlQueued.GetChildItem(rootItem);
 	while (userNode) {
 		delete reinterpret_cast<UserItem *>(ctrlQueued.GetItemData(userNode));
@@ -262,7 +263,7 @@ void WaitingUsersFrame::DeleteAll() {
 	//ctrlQueued.DeleteAllItems();
 }
 
-void WaitingUsersFrame::RemoveUser(const UserPtr& aUser) {
+void UploadQueueFrame::RemoveUser(const UserPtr& aUser) {
 	HTREEITEM userNode = ctrlQueued.GetChildItem(rootItem);
 
 	while(userNode) {
@@ -277,19 +278,19 @@ void WaitingUsersFrame::RemoveUser(const UserPtr& aUser) {
 	updateStatus();
 }
 
-LRESULT WaitingUsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
+LRESULT UploadQueueFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
 	HTREEITEM userNode = ctrlQueued.GetSelectedItem();
 
 	while(userNode) {
 		ctrlList.DeleteAllItems();
-		UserItem *u = reinterpret_cast<UserItem *>(ctrlQueued.GetItemData(userNode));
-		if(u) {
-			UploadQueueItem::SlotQueue users = UploadManager::getInstance()->getUploadQueue();
-			UploadQueueItem::SlotQueue::const_iterator it = find_if(users.begin(), users.end(), CompareFirst<UserPtr, UploadQueueItem::List>(u->u));
+		UserItem* ui = reinterpret_cast<UserItem *>(ctrlQueued.GetItemData(userNode));
+		if(ui) {
+			auto users = UploadManager::getInstance()->getUploadQueue();
+			auto it = find_if(users.begin(), users.end(), [&](const UserPtr& u) { return u == ui->u; });
 			if(it != users.end()) {
 				ctrlList.SetRedraw(FALSE);
 				ctrlQueued.SetRedraw(FALSE);
-				for(UploadQueueItem::List::const_iterator i = it->second.begin(); i != it->second.end(); ++i) {
+				for(auto i = it->files.cbegin(); i != it->files.cend(); ++i) {
 					AddFile(*i);
 				}
 				ctrlList.resort();
@@ -307,7 +308,7 @@ LRESULT WaitingUsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOO
 	return 0;
 }
 
-void WaitingUsersFrame::AddFile(UploadQueueItem* aUQI) { 
+void UploadQueueFrame::AddFile(UploadQueueItem* aUQI) { 
 	HTREEITEM userNode = ctrlQueued.GetChildItem(rootItem);
 	bool add = true;
 
@@ -336,7 +337,7 @@ void WaitingUsersFrame::AddFile(UploadQueueItem* aUQI) {
 	ctrlList.insertItem(ctrlList.GetItemCount(), aUQI, aUQI->getImageIndex());
 }
 
-void WaitingUsersFrame::updateStatus() {
+void UploadQueueFrame::updateStatus() {
 	if(ctrlStatus.IsWindow()) {
 
 		int cnt = ctrlList.GetItemCount();
@@ -384,7 +385,7 @@ const tstring UploadQueueItem::getText(uint8_t col) const {
 	}
 }
 
-LRESULT WaitingUsersFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT UploadQueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	ctrlList.SetRedraw(FALSE);
 	switch(wParam) {
 	case REMOVE_ITEM: 
@@ -424,7 +425,7 @@ LRESULT WaitingUsersFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 	return 0;
 }
 
-void WaitingUsersFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
+void UploadQueueFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlList.GetBkColor() != WinUtil::bgColor) {
 		ctrlList.SetBkColor(WinUtil::bgColor);
@@ -442,8 +443,8 @@ void WaitingUsersFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) no
 	}
 }
 
-LRESULT WaitingUsersFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
-	if(!BOOLSETTING(SHOW_PROGRESS_BARS) || !BOOLSETTING(SHOW_QUEUE_BARS)) {
+LRESULT UploadQueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+	if(!BOOLSETTING(SHOW_PROGRESS_BARS)) {
 		bHandled = FALSE;
 		return 0;
 	}
@@ -506,5 +507,5 @@ LRESULT WaitingUsersFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHan
 
 /**
  * @file
- * $Id: WaitingUsersFrame.cpp,v 1.4 2003/05/13 11:34:07
+ * $Id: UploadQueueFrame.cpp,v 1.4 2003/05/13 11:34:07
  */

@@ -1779,7 +1779,7 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
 				break;
 			case IDC_TVCOM:
-				WinUtil::openLink(_T("http://www.tv.com/search.php?type=11&stype=all&qs=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+				WinUtil::openLink(_T("http://www.tv.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
 				break;
 			case IDC_METACRITIC:
 				WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));

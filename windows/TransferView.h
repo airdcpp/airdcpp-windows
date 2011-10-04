@@ -71,7 +71,9 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_REMOVEALL, onRemoveAll)
+		COMMAND_ID_HANDLER(IDC_OPEN_BUNDLE_FOLDER, onOpenBundleFolder)
 		COMMAND_ID_HANDLER(IDC_REMOVE_BUNDLE, onRemoveBundle)
+		COMMAND_ID_HANDLER(IDC_REMOVE_BUNDLE_FINISHED, onRemoveBundleFinished)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
 		COMMAND_ID_HANDLER(IDC_DISCONNECT_ALL, onDisconnectAll)
 		COMMAND_ID_HANDLER(IDC_COLLAPSE_ALL, onCollapseAll)
@@ -109,6 +111,7 @@ public:
 	LRESULT onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemoveFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onOpenBundleFolder(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void runUserCommand(UserCommand& uc);
 	void prepareClose();
@@ -143,6 +146,11 @@ public:
 
 	LRESULT onRemoveBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		ctrlTransfers.forEachSelected(&ItemInfo::removeBundle);
+		return 0;
+	}
+
+	LRESULT onRemoveBundleFinished(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		ctrlTransfers.forEachSelected(&ItemInfo::removeBundleFinished);
 		return 0;
 	}
 
@@ -245,6 +253,7 @@ private:
 		void disconnect();
 		void removeAll();
 		void removeBundle();
+		void removeBundleFinished();
 
 		double getRatio() const { return (pos > 0) ? (double)actual / (double)pos : 1.0; }
 

@@ -929,7 +929,6 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 		<String Name="WaitingTime">Waiting time</String>
 		<String Name="WaitingToRetry">Waiting to retry...</String>
 		<String Name="WaitingUserOnline">Waiting (User online)</String>
-		<String Name="WaitingUsers">Waiting Users</String>
 		<String Name="WaitingUsersOnline">Waiting (%d of %d users online)</String>
 		<String Name="WhatsThis">What's &amp;this?</String>
 		<String Name="WhoIs">Whois </String>
@@ -1370,7 +1369,8 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="NumberOfConnections">connection(s)</String>
 		<String Name="BundleFilename">Bundle / Filename</String>
 		<String Name="Bundle">Bundle</String>
-		<String Name="RemoveBundle">Remove bundle</String>
+		<String Name="RemoveBundle">Remove bundle from queue</String>
+		<String Name="RemoveBundleFinished">Remove bundle, including finished files</String>
 		<String Name="BundleRemoved">Bundle removed</String>
 		<String Name="PartialSharing">Enable partial bundle/file sharing</String>
 		<String Name="SettingsEnableBundles">Enable bundles</String>
@@ -1381,5 +1381,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="DlBundleFinishedScan">The bundle %s has finished downloading and will be scanned for missing/extra files</String>
 		<String Name="BundleScanFinished">The bundle %s has finished downloading and has been scanned for missing/extra files, no problems found</String>
 		<String Name="BundleScanMissing">The bundle %s has finished downloading and has been checked for missing/extra files: found %d missing release files, %d dupe folders, %d missing SFV files, %d missing NFO files and %d folders with extra files</String>
+		<String Name="UploadQueue">Upload queue</String>
 	</Strings>
 </Language>

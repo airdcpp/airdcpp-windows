@@ -58,7 +58,7 @@ PropPage::ListItem FulTabsPage::listItems[] = {
 	{ SettingsManager::BOLD_HUB, ResourceManager::HUB },
 	{ SettingsManager::BOLD_PM, ResourceManager::PRIVATE_MESSAGE },
 	{ SettingsManager::BOLD_SEARCH, ResourceManager::SEARCH },
-	{ SettingsManager::BOLD_WAITING_USERS, ResourceManager::WAITING_USERS },
+	{ SettingsManager::BOLD_WAITING_USERS, ResourceManager::UPLOAD_QUEUE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
