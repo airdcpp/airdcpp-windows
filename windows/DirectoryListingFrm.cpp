@@ -603,7 +603,7 @@ LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	if(loading)
 		return 0;
 	
-	int x = QueueManager::getInstance()->matchListing(*dl);
+	int x = QueueManager::getInstance()->matchListing(*dl, false);
 
 	tstring buf;
 	buf.resize(STRING(MATCHED_FILES).length() + 32);
