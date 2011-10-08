@@ -108,7 +108,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			WinUtil::getContextMenuPos(ctrlTransfers, pt);
 		}
 
-		OMenu transferMenu, previewMenu, copyMenu;
+		OMenu transferMenu, previewMenu, copyMenu, priorityMenu;
 		const ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
 		bool parent = !ii->parent && ctrlTransfers.findChildren(ii->getGroupCond()).size() > 0;
 		bool bundle = ii->isBundle;
@@ -116,6 +116,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		transferMenu.CreatePopupMenu();
 		previewMenu.CreatePopupMenu();
 		copyMenu.CreatePopupMenu();
+		priorityMenu.CreatePopupMenu();
 		previewMenu.InsertSeparatorFirst(TSTRING(PREVIEW_MENU));
 		
 		if(!parent) {
@@ -128,6 +129,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			if(ii->download) {
 				transferMenu.AppendMenu(MF_SEPARATOR);
+				transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE_SOURCE, CTSTRING(REMOVE_BUNDLE_SOURCE));
 				transferMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
 				transferMenu.AppendMenu(MF_STRING, IDC_MENU_SLOWDISCONNECT, CTSTRING(SETCZDC_DISCONNECTING_ENABLE));
 				transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)previewMenu, CTSTRING(PREVIEW_MENU));
@@ -181,6 +183,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			transferMenu.AppendMenu(MF_STRING, IDC_OPEN_BUNDLE_FOLDER, CTSTRING(OPEN_FOLDER));
 			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE, CTSTRING(REMOVE_BUNDLE));
 			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE_FINISHED, CTSTRING(REMOVE_BUNDLE_FINISHED));
+			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(BUNDLE_PRIORITY));
 		} else {
 			transferMenu.InsertSeparatorFirst(TSTRING(SETTINGS_SEGMENT));
 			transferMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
@@ -210,6 +213,15 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_STATUS, CTSTRING(STATUS));
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_ALL, CTSTRING(ALL));
 
+	priorityMenu.InsertSeparatorFirst(TSTRING(PRIORITY));
+	priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_PAUSED, CTSTRING(PAUSED));
+	priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOWEST, CTSTRING(LOWEST));
+	priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOW, CTSTRING(LOW));
+	priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_NORMAL, CTSTRING(NORMAL));
+	priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGH, CTSTRING(HIGH));
+	priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST, CTSTRING(HIGHEST));
+	priorityMenu.AppendMenu(MF_STRING, IDC_AUTOPRIORITY, CTSTRING(AUTO));
+
 		if(ii->download) {
 			if(!ii->target.empty()) {
 				string target = Text::fromT(ii->target);
@@ -223,7 +235,6 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				}
 
 				const QueueItem::StringMap& queue = QueueManager::getInstance()->lockQueue();
-
 				auto qi = queue.find(&target);
 
 				bool slowDisconnect = false;
@@ -234,6 +245,17 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 				if(slowDisconnect) {
 					transferMenu.CheckMenuItem(IDC_MENU_SLOWDISCONNECT, MF_BYCOMMAND | MF_CHECKED);
+				}
+			} 
+			if (bundle) {
+				//LogManager::getInstance()->message("PRIOBUNDLE1");
+				BundlePtr aBundle = QueueManager::getInstance()->findBundle(Text::fromT(ii->bundle));
+				if (aBundle) {
+					//LogManager::getInstance()->message("PRIOBUNDLE2");
+					Bundle::Priority p = aBundle->getPriority();
+					priorityMenu.CheckMenuItem(p + 1, MF_BYPOSITION | MF_CHECKED);
+					if(aBundle->getAutoPriority())
+						priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
 				}
 			}
 		}
@@ -1445,6 +1467,53 @@ void TransferView::on(DownloadManagerListener::BundleMode, const string& bundleT
 	ui->setBundle(bundleToken);
 	ui->setUser(aUser);
 	speak(UPDATE_PARENT, ui);
+}
+
+
+LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	QueueItem::Priority p;
+
+	switch(wID) {
+		case IDC_PRIORITY_PAUSED: p = QueueItem::PAUSED; break;
+		case IDC_PRIORITY_LOWEST: p = QueueItem::LOWEST; break;
+		case IDC_PRIORITY_LOW: p = QueueItem::LOW; break;
+		case IDC_PRIORITY_NORMAL: p = QueueItem::NORMAL; break;
+		case IDC_PRIORITY_HIGH: p = QueueItem::HIGH; break;
+		case IDC_PRIORITY_HIGHEST: p = QueueItem::HIGHEST; break;
+		default: p = QueueItem::DEFAULT; break;
+	}
+
+	int i = -1;
+	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		const ItemInfo *ii = ctrlTransfers.getItemData(i);
+		//QueueManager::getInstance()->setAutoPriority(ctrlQueue.getItemData(i)->getTarget(), false);
+		//QueueManager::getInstance()->setPriority(ctrlQueue.getItemData(i)->getTarget(), p);
+		if (ii->isBundle) {
+			QueueManager::getInstance()->setBundlePriority(Text::fromT(ii->bundle), p);
+		}
+	}
+
+	return 0;
+}
+
+LRESULT TransferView::onAutoPriority(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
+
+
+	int i = -1;
+	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		const ItemInfo *ii = ctrlTransfers.getItemData(i);
+		if (ii->isBundle) {
+			QueueManager::getInstance()->setBundleAutoPriority(Text::fromT(ii->bundle));
+		}
+	}
+	return 0;
+}
+
+
+void TransferView::ItemInfo::removeBundleSource() {
+	if (!bundle.empty()) {
+		QueueManager::getInstance()->removeBundleSource(Text::fromT(bundle), user);
+	}
 }
 
 void TransferView::ItemInfo::disconnect() {

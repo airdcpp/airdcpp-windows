@@ -74,6 +74,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN_BUNDLE_FOLDER, onOpenBundleFolder)
 		COMMAND_ID_HANDLER(IDC_REMOVE_BUNDLE, onRemoveBundle)
 		COMMAND_ID_HANDLER(IDC_REMOVE_BUNDLE_FINISHED, onRemoveBundleFinished)
+		COMMAND_ID_HANDLER(IDC_REMOVE_BUNDLE_SOURCE, onRemoveBundleSource)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
 		COMMAND_ID_HANDLER(IDC_DISCONNECT_ALL, onDisconnectAll)
 		COMMAND_ID_HANDLER(IDC_COLLAPSE_ALL, onCollapseAll)
@@ -89,10 +90,12 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_SPEED, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_STATUS, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_ALL, onCopy);
+		COMMAND_ID_HANDLER(IDC_AUTOPRIORITY, onAutoPriority)
 		MESSAGE_HANDLER_HWND(WM_INITMENUPOPUP, OMenu::onInitMenuPopup)
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
 		COMMAND_RANGE_HANDLER(IDC_PREVIEW_APP, IDC_PREVIEW_APP + PreviewAppsSize, onPreviewCommand)
+		COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onPriority)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 	END_MSG_MAP()
@@ -112,6 +115,8 @@ public:
 	LRESULT onRemoveFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenBundleFolder(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onAutoPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void runUserCommand(UserCommand& uc);
 	void prepareClose();
@@ -136,6 +141,11 @@ public:
 
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		ctrlTransfers.forEachSelected(&ItemInfo::disconnect);
+		return 0;
+	}
+
+	LRESULT onRemoveBundleSource(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		ctrlTransfers.forEachSelected(&ItemInfo::removeBundleSource);
 		return 0;
 	}
 
@@ -254,6 +264,7 @@ private:
 		void removeAll();
 		void removeBundle();
 		void removeBundleFinished();
+		void removeBundleSource();
 
 		double getRatio() const { return (pos > 0) ? (double)actual / (double)pos : 1.0; }
 

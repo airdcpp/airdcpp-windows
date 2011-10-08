@@ -177,8 +177,7 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 	ctrlPad.SetSel(SavedBegin, SavedEnd); //restore the user selection
 
 	if(	(si.nPage == 0 || 
-		(size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) && 
-		(SavedBegin == SavedEnd)) {   //dont scroll if we are looking at something                 
+		(size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) ) {   //dont scroll if we are looking at something                 
 		ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
 		} else {
 		ctrlPad.SetScrollPos(&pt);
