@@ -685,10 +685,10 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			auto &ui = static_cast<UpdateInfo&>(*i->second);
 			ItemInfo* ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
-			if (!ii->bundle.empty() || ii->download) {
+			if (!ii->bundle.empty()) {
 				ctrlTransfers.insertGroupedItem(ii, false, !ii->bundle.empty());
 			} else {
-				ctrlTransfers.insertItem(ii, IMAGE_UPLOAD);
+				ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 			}
 		} else if(i->first == REMOVE_ITEM) {
 			//LogManager::getInstance()->message("REMOVE_ITEM2");
@@ -697,7 +697,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			int pos = -1;
 			ItemInfo* ii = findItem(ui, pos);
 			if(ii) {
-				if (ii->download || !ii->bundle.empty()) {
+				if (!ii->bundle.empty()) {
 					ctrlTransfers.removeGroupedItem(ii, true, !ii->bundle.empty());
 				} else {
 					dcassert(pos != -1);
@@ -712,26 +712,15 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			bool isBundleMember = false;
 			ItemInfo* ii = findItem(ui, pos);
 			if(ii) {
-				if((ui.download && ii->type == Transfer::TYPE_FILE) || !ui.bundle.empty())  {
-					bool hasBundle = !ui.bundle.empty();
+				if(!ii->bundle.empty() || !ui.bundle.empty())  {
+					//bool hasBundle = !ui.bundle.empty();
 					//if(ui.download || !ii->bundle.empty()) {
 					ItemInfo* parent = ii->parent ? ii->parent : ii;
-
-					if(ui.type == Transfer::TYPE_FILE || ui.type == Transfer::TYPE_TREE) {
-						/* parent item must be updated with correct info about whole file */
-						if(ui.status == ItemInfo::STATUS_RUNNING && parent->status == ItemInfo::STATUS_RUNNING && parent->hits == -1) {
-							ui.updateMask &= ~UpdateInfo::MASK_POS;
-							ui.updateMask &= ~UpdateInfo::MASK_ACTUAL;
-							ui.updateMask &= ~UpdateInfo::MASK_SIZE;
-							ui.updateMask &= ~UpdateInfo::MASK_STATUS_STRING;
-							ui.updateMask &= ~UpdateInfo::MASK_TIMELEFT;
-						}
-					}
 
 					/* if target has changed, regroup the item */
 					bool changeParent=false;
 					//if (!ii->isBundle) {
-						if ((hasBundle || !ii->bundle.empty())) {
+						if ((!ui.bundle.empty() || !ii->bundle.empty())) {
 							//LogManager::getInstance()->message("CHANGEPARENT CHECK HASBUNDLE");
 							changeParent = (ui.bundle != ii->bundle);
 						}
@@ -740,7 +729,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 					if(changeParent) {
 						//LogManager::getInstance()->message("CHANGEPARENT, REMOVE");
-						if (!ii->download && ii->bundle.empty()) {
+						if (ii->bundle.empty()) {
 							ctrlTransfers.DeleteItem(pos);
 						} else {
 							ctrlTransfers.removeGroupedItem(ii, false, !ii->bundle.empty());
@@ -750,8 +739,12 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 					if(changeParent) {
 						//LogManager::getInstance()->message("CHANGEPARENT, INSERT");
-						ctrlTransfers.insertGroupedItem(ii, false, !ii->bundle.empty());
-						parent = ii->parent ? ii->parent : ii;
+						if (ii->bundle.empty()) {
+							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
+						} else {
+							ctrlTransfers.insertGroupedItem(ii, false, !ii->bundle.empty());
+							parent = ii->parent ? ii->parent : ii;
+						}
 					} else if(ii == parent || !parent->collapsed) {
 						//LogManager::getInstance()->message("CHANGEPARENT, ELSE");
 						updateItem(ctrlTransfers.findItem(ii), ui.updateMask);
@@ -1033,11 +1026,9 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 }
 
 inline const tstring& TransferView::ItemInfo::getGroupCond() const {
-	//dcassert(!bundle.empty());
+	dcassert(!bundle.empty());
 	if (!bundle.empty())
 		return bundle;
-	else
-		return target;
 }
 
 const tstring TransferView::ItemInfo::getText(uint8_t col) const {
