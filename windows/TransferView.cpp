@@ -638,7 +638,7 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 			if(ui.token == ii->token) {
 				pos = j;
 				return ii;
-			} else if(ii->parent == NULL) {
+			} else if(ii->parent == NULL && ii->isBundle) {
 				const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
 				for(vector<ItemInfo*>::const_iterator k = children.begin(); k != children.end(); k++) {
 					ItemInfo* ii = *k;
@@ -648,28 +648,7 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 				}
 			}
 		}
-	} /* else {
-		//dcassert(!ui.target.empty());
-		//for QI updates
-		for(int j = 0; j < ctrlTransfers.GetItemCount(); ++j) {
-			ItemInfo* ii = ctrlTransfers.getItemData(j);
-			if ((ui.target == ii->target || ii->target.empty()) && ui.user == ii->user) {
-				//LogManager::getInstance()->message("FOUND, uitoken: " + ui.token + " ii token: " + ii->token);
-				pos = j;
-				dcassert(!ii->isBundle);
-				return ii;
-			} else if(ii->parent == NULL) {
-				const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
-				for(vector<ItemInfo*>::const_iterator k = children.begin(); k != children.end(); k++) {
-					ItemInfo* ii = *k;
-					if((ui.target == ii->target || ii->target.empty()) && ui.user == ii->user) {
-						dcassert(!ii->isBundle);
-						return ii;
-					}
-				}
-			}
-		}
-	} */
+	}
 	return NULL;
 }
 
