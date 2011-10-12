@@ -110,8 +110,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 		OMenu transferMenu, previewMenu, copyMenu, priorityMenu;
 		const ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
-		bool parent = !ii->parent && ctrlTransfers.findChildren(ii->getGroupCond()).size() > 0;
-		bool bundle = ii->isBundle;
+		bool parent = ii->isBundle;
 
 		transferMenu.CreatePopupMenu();
 		previewMenu.CreatePopupMenu();
@@ -169,7 +168,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		          break;
 			  
 			}
-		} else if (bundle) {
+		} else {
 			transferMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 			transferMenu.AppendMenu(MF_STRING, IDC_MENU_SLOWDISCONNECT, CTSTRING(SETCZDC_DISCONNECTING_ENABLE));
@@ -184,21 +183,6 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE, CTSTRING(REMOVE_BUNDLE));
 			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE_FINISHED, CTSTRING(REMOVE_BUNDLE_FINISHED));
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(BUNDLE_PRIORITY));
-		} else {
-			transferMenu.InsertSeparatorFirst(TSTRING(SETTINGS_SEGMENT));
-			transferMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
-			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)previewMenu, CTSTRING(PREVIEW_MENU));
-			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
-			transferMenu.AppendMenu(MF_STRING, IDC_MENU_SLOWDISCONNECT, CTSTRING(SETCZDC_DISCONNECTING_ENABLE));
-			transferMenu.AppendMenu(MF_SEPARATOR);
-			transferMenu.AppendMenu(MF_STRING, IDC_FORCE, CTSTRING(CONNECT_ALL));
-			transferMenu.AppendMenu(MF_STRING, IDC_DISCONNECT_ALL, CTSTRING(DISCONNECT_ALL));
-			transferMenu.AppendMenu(MF_SEPARATOR);
-			transferMenu.AppendMenu(MF_STRING, IDC_EXPAND_ALL, CTSTRING(EXPAND_ALL));
-			transferMenu.AppendMenu(MF_STRING, IDC_COLLAPSE_ALL, CTSTRING(COLLAPSE_ALL));
-			transferMenu.AppendMenu(MF_SEPARATOR);
-			transferMenu.AppendMenu(MF_STRING, IDC_REMOVEALL, CTSTRING(REMOVE_ALL));
-			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_FILE, CTSTRING(REMOVE_FILE));
 		}
 			
 
@@ -247,7 +231,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 					transferMenu.CheckMenuItem(IDC_MENU_SLOWDISCONNECT, MF_BYCOMMAND | MF_CHECKED);
 				}
 			} 
-			if (bundle) {
+			if (parent) {
 				//LogManager::getInstance()->message("PRIOBUNDLE1");
 				BundlePtr aBundle = QueueManager::getInstance()->findBundle(Text::fromT(ii->bundle));
 				if (aBundle) {
@@ -296,7 +280,7 @@ LRESULT TransferView::onForce(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		ItemInfo* ii = ctrlTransfers.getItemData(i);
 		ctrlTransfers.SetItemText(i, COLUMN_STATUS, CTSTRING(CONNECTING_FORCED));
 
-		if(ii->parent == NULL && ii->hits != -1) {
+		if(ii->isBundle) {
 			const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
 			for(vector<ItemInfo*>::const_iterator j = children.begin(); j != children.end(); ++j) {
 				ItemInfo* ii = *j;
@@ -576,8 +560,7 @@ LRESULT TransferView::onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR pnmh, BOOL&
 			return 0;
 
 		ItemInfo* i = ctrlTransfers.getItemData(item->iItem);
-		const vector<ItemInfo*>& children = ctrlTransfers.findChildren(i->getGroupCond());
-		if(i->parent != NULL || children.size() <= 1) {
+		if (!i->isBundle) {
 			switch(SETTING(TRANSFERLIST_DBLCLICK)) {
 				case 0:
 					i->pm(Util::emptyString);
@@ -638,7 +621,7 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 			if(ui.token == ii->token) {
 				pos = j;
 				return ii;
-			} else if(ii->parent == NULL && ii->isBundle) {
+			} else if(ii->isBundle) {
 				const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
 				for(vector<ItemInfo*>::const_iterator k = children.begin(); k != children.end(); k++) {
 					ItemInfo* ii = *k;
@@ -1006,8 +989,8 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 
 inline const tstring& TransferView::ItemInfo::getGroupCond() const {
 	dcassert(!bundle.empty());
-	if (!bundle.empty())
-		return bundle;
+	//if (!bundle.empty())
+	return bundle;
 }
 
 const tstring TransferView::ItemInfo::getText(uint8_t col) const {
