@@ -362,12 +362,8 @@ private:
 
 	void moveSelected();	
 	void moveSelectedDir();
-	void moveDir(HTREEITEM ht, const string& target);
 
 	void moveNode(HTREEITEM item, HTREEITEM parent);
-
-	// temporary vector for moving directories
-	vector<pair<QueueItemInfo*, string>> tmp;
 
 	void clearTree(HTREEITEM item);
 

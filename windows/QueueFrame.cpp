@@ -660,7 +660,10 @@ void QueueFrame::moveSelected() {
 
 		tstring path = Text::toT(ii->getPath());
 		if(WinUtil::browseFile(target, m_hWnd, true, path, ext2.c_str(), ext.empty() ? NULL : ext.c_str())) {
-			QueueManager::getInstance()->move(ii->getTarget(), Text::fromT(target));
+			StringPairList ret;
+			ret.push_back(make_pair(ii->getTarget(), Text::fromT(target)));
+			QueueManager::getInstance()->move(ret);
+			//QueueManager::getInstance()->move(ii->getTarget(), Text::fromT(target));
 		}
 	} else if(n > 1) {
 		tstring name;
@@ -670,10 +673,12 @@ void QueueFrame::moveSelected() {
 
 		if(WinUtil::browseDirectory(name, m_hWnd)) {
 			int i = -1;
+			StringPairList ret;
 			while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
 				const QueueItemInfo* ii = ctrlQueue.getItemData(i);
-				QueueManager::getInstance()->move(ii->getTarget(), Text::fromT(name) + Util::getFileName(ii->getTarget()));
-			}			
+				ret.push_back(make_pair(ii->getTarget(), Text::fromT(name) + Util::getFileName(ii->getTarget())));
+			}
+			QueueManager::getInstance()->move(ret);
 		}
 	}
 }
@@ -684,19 +689,27 @@ void QueueFrame::moveSelectedDir() {
 
 	dcassert(!curDir.empty());
 	tstring name = Text::toT(curDir);
+	QueueItemList finishedItems;
+	BundlePtr bundle = QueueManager::getInstance()->findBundleFinished(curDir, finishedItems);;
 	
 	if(WinUtil::browseDirectory(name, m_hWnd)) {
-		tmp.clear();
+		if (!finishedItems.empty()) {
+			if(MessageBox(_T("Do you also want to move finished files of this bundle?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+				finishedItems.clear();
+			}
+		}
+		QueueManager::getInstance()->moveDir(curDir, Text::fromT(name) + Util::getLastDir(curDir) + "\\", bundle, finishedItems);
+		/*//tmp.clear();
 		moveDir(ctrlDirs.GetSelectedItem(), Text::fromT(name));
 
 		for(vector<pair<QueueItemInfo*, string>>::const_iterator i = tmp.begin(); i != tmp.end(); ++i) {
 			QueueManager::getInstance()->move((*i).first->getTarget(), (*i).second + Util::getFileName((*i).first->getTarget()));
 		}
 
-		tmp.clear();
+		tmp.clear(); */
 	}
 }
-
+/*
 void QueueFrame::moveDir(HTREEITEM ht, const string& target) {
 
 	HTREEITEM next = ctrlDirs.GetChildItem(ht);
@@ -714,7 +727,7 @@ void QueueFrame::moveDir(HTREEITEM ht, const string& target) {
 		tmp.push_back(make_pair(i->second, target));
 	}
 }
-
+*/
 QueueItem::SourceList sources;
 QueueItem::SourceList badSources;
 LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {

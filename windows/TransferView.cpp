@@ -1069,19 +1069,6 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d) no
 	}
 
 	speak(UPDATE_ITEM, ui);
-
-	if (bundle) {
-		if (bundle->getRunning() == 0) {
-			ui = new UpdateInfo(bundle->getToken(), true);
-			ui->setBundle(bundle->getToken());
-			ui->setPos(bundle->getDownloaded());
-			ui->setTarget(Text::toT(bundle->getTarget()));
-
-			ui->setStatus(ItemInfo::STATUS_RUNNING);	//uiB->updateMask &= ~UpdateInfo::MASK_STATUS; // hack to avoid changing item status
-			ui->setStatusString((TSTRING(REQUESTING)) + _T("..."));
-			speak(UPDATE_PARENT, ui);
-		}
-	}
 }
 
 void TransferView::on(DownloadManagerListener::Starting, const Download* aDownload) {
@@ -1096,17 +1083,6 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 		ui->setBundle(bundle->getToken());
 	}
 	speak(UPDATE_ITEM, ui);
-
-	if (bundle) {
-		if (bundle->getRunning() == 0) {
-			ui = new UpdateInfo(bundle->getToken(), true);
-			ui->setBundle(bundle->getToken());
-			UpdateInfo* uiB = new UpdateInfo(bundle->getToken(), true);
-			uiB->setStatus(ItemInfo::STATUS_RUNNING);
-			uiB->setStatusString(TSTRING(DOWNLOAD_STARTING));
-			speak(UPDATE_PARENT, ui);
-		}
-	}
 }
 
 void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl, const BundleList& bundles) {
@@ -1378,7 +1354,7 @@ void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, 
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::onBundleComplete(const string bundleToken, bool isUpload) {
+void TransferView::onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload) {
 	UpdateInfo* ui = new UpdateInfo(bundleToken, !isUpload);
 
 	ui->setStatus(ItemInfo::STATUS_WAITING);	
@@ -1390,16 +1366,16 @@ void TransferView::onBundleComplete(const string bundleToken, bool isUpload) {
 	ui->setBundle(bundleToken);
 
 	if(BOOLSETTING(POPUP_BUNDLE_DLS) && !isUpload) {
-		MainFrame::getMainFrame()->ShowBalloonTip(TSTRING(FILE) + _T(": ") + Util::getFileName(ui->target), TSTRING(DOWNLOAD_FINISHED_IDLE));
+		MainFrame::getMainFrame()->ShowBalloonTip(_T("The following bundle has finished downloading: ") + Text::toT(bundleName), TSTRING(DOWNLOAD_FINISHED_IDLE));
 	} else if(BOOLSETTING(POPUP_BUNDLE_ULS) && isUpload) {
-		MainFrame::getMainFrame()->ShowBalloonTip(TSTRING(FILE) + _T(": ") + Util::getFileName(ui->target), TSTRING(DOWNLOAD_FINISHED_IDLE));
+		MainFrame::getMainFrame()->ShowBalloonTip(_T("The following bundle has finished uploading: ") + Text::toT(bundleName), TSTRING(UPLOAD_FINISHED_IDLE));
 	}
 	
 	speak(UPDATE_PARENT, ui);
 }
 
-void TransferView::onBundleStatus(const string bundleToken, bool removed) {
-	UpdateInfo* ui = new UpdateInfo(bundleToken, true);
+void TransferView::onBundleStatus(const BundlePtr aBundle, bool removed) {
+	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	if (removed) {
 		ui->setStatusString(TSTRING(BUNDLE_REMOVED));
@@ -1408,7 +1384,7 @@ void TransferView::onBundleStatus(const string bundleToken, bool removed) {
 	}
 	ui->setUsers(0);
 	ui->setRunning(0);
-	ui->setBundle(bundleToken);
+	ui->setBundle(aBundle->getToken());
 	speak(UPDATE_PARENT, ui);
 }
 

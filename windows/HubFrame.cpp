@@ -343,7 +343,7 @@ void HubFrame::onEnter() {
 					addStatus(TSTRING(INVALID_SIZE), WinUtil::m_ChatTextSystem );
 				}
 			} else if(stricmp(cmd.c_str(), _T("savequeue")) == 0) {
-				QueueManager::getInstance()->saveQueue();
+				QueueManager::getInstance()->saveQueue(true);
 				addStatus(_T("Queue saved."), WinUtil::m_ChatTextSystem );
 			} else if(stricmp(cmd.c_str(), _T("whois")) == 0) {
 				WinUtil::openLink(_T("http://www.ripe.net/perl/whois?form_type=simple&full_query_string=&searchtext=") + Text::toT(Util::encodeURI(Text::fromT(param))));

@@ -1134,7 +1134,7 @@ LRESULT MainFrame::onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	if(wp.showCmd == SW_SHOWNORMAL || wp.showCmd == SW_SHOW || wp.showCmd == SW_SHOWMAXIMIZED || wp.showCmd == SW_MAXIMIZE)
 		SettingsManager::getInstance()->set(SettingsManager::MAIN_WINDOW_STATE, (int)wp.showCmd);
 	
-	QueueManager::getInstance()->saveQueue();
+	QueueManager::getInstance()->saveQueue(true);
 	SettingsManager::getInstance()->save();
 	
 	return 0;

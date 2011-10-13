@@ -48,15 +48,19 @@ bool Mapper_MiniUPnPc::init() {
 	UPNPUrls urls;
 	IGDdatas data;
 
-	initialized = UPNP_GetValidIGD(devices, &urls, &data, 0, 0) == 1;
+	auto res = UPNP_GetValidIGD(devices, &urls, &data, 0, 0);
+
+	initialized = res == 1;
 	if(initialized) {
 		url = urls.controlURL;
 		service = data.first.servicetype;
 		device = data.CIF.friendlyName;
 	}
 
-	FreeUPNPUrls(&urls);
-	freeUPNPDevlist(devices);
+	if(res) {
+		FreeUPNPUrls(&urls);
+		freeUPNPDevlist(devices);
+	}
 
 	return initialized;
 }
