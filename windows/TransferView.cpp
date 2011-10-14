@@ -671,22 +671,17 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			auto &ui = static_cast<UpdateInfo&>(*i->second);
 			//dcassert(!ui.target.empty());
 			int pos = -1;
-			bool isBundleMember = false;
 			ItemInfo* ii = findItem(ui, pos);
 			if(ii) {
 				if(!ii->bundle.empty() || !ui.bundle.empty())  {
-					//bool hasBundle = !ui.bundle.empty();
-					//if(ui.download || !ii->bundle.empty()) {
 					ItemInfo* parent = ii->parent ? ii->parent : ii;
 
 					/* if target has changed, regroup the item */
 					bool changeParent=false;
-					//if (!ii->isBundle) {
-						if ((!ui.bundle.empty() || !ii->bundle.empty())) {
-							//LogManager::getInstance()->message("CHANGEPARENT CHECK HASBUNDLE");
-							changeParent = (ui.bundle != ii->bundle);
-						}
-					//}
+					if ((!ui.bundle.empty() || !ii->bundle.empty())) {
+						//LogManager::getInstance()->message("CHANGEPARENT CHECK HASBUNDLE");
+						changeParent = (ui.bundle != ii->bundle);
+					}
 
 
 					if(changeParent) {
