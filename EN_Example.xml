@@ -1384,5 +1384,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="UploadQueue">Upload queue</String>
 		<String Name="RemoveBundleSource">Remove user from this bundle</String>
 		<String Name="BundlePriority">Bundle Priority</String>
+		<String Name="Reload">Reload</String>
 	</Strings>
 </Language>

@@ -114,6 +114,11 @@ LRESULT ADLSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	ctrlMoveDown.SetWindowText(CTSTRING(MOVE_DOWN));
 	ctrlMoveDown.SetFont(WinUtil::font);
 
+	ctrlReload.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON , 0, IDC_RELOAD);
+	ctrlReload.SetWindowText(CTSTRING(RELOAD));
+	ctrlReload.SetFont(WinUtil::font);
+
 	ctrlHelp.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_HELP_FAQ);
 	ctrlHelp.SetWindowText(CTSTRING(WHATS_THIS));
@@ -204,6 +209,12 @@ void ADLSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 	rc.left += bwidth + 2;
 	rc.right = rc.left + bwidth;
 	ctrlMoveDown.MoveWindow(rc);
+
+	rc.left += bspace;
+
+	rc.left += bwidth + 2;
+	rc.right = rc.left + bwidth;
+	ctrlReload.MoveWindow(rc);
 
 	rc.left += bspace;
 
@@ -330,6 +341,13 @@ LRESULT ADLSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 		collection.erase(collection.begin() + i);
 		ctrlList.DeleteItem(i);
 	}
+	return 0;
+}
+
+LRESULT ADLSearchFrame::onReload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) 
+{
+	ADLSearchManager::getInstance()->Load();
+	LoadAll();
 	return 0;
 }
 

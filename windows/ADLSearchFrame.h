@@ -67,6 +67,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_HELP_FAQ, onHelp)
 		COMMAND_ID_HANDLER(IDC_MOVE_UP, onMoveUp)
 		COMMAND_ID_HANDLER(IDC_MOVE_DOWN, onMoveDown)
+		COMMAND_ID_HANDLER(IDC_RELOAD, onReload)
 		NOTIFY_HANDLER(IDC_ADLLIST, NM_DBLCLK, onDoubleClickList)
 		NOTIFY_HANDLER(IDC_ADLLIST, LVN_ITEMCHANGED, onItemChanged)
 		NOTIFY_HANDLER(IDC_ADLLIST, LVN_KEYDOWN, onKeyDown)
@@ -87,6 +88,7 @@ public:
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onReload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 	// Update colors
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) 
@@ -120,6 +122,7 @@ private:
 	CButton ctrlRemove;
 	CButton ctrlMoveUp;
 	CButton ctrlMoveDown;
+	CButton ctrlReload;
 	CButton ctrlHelp;
 	CMenu contextMenu;
 
