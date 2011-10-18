@@ -106,10 +106,15 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	SettingsManager::TEXT_URL_BACK_COLOR, SettingsManager::TEXT_URL_FORE_COLOR, 
 	SettingsManager::TEXT_URL_BOLD, SettingsManager::TEXT_URL_ITALIC );
 
-	TextStyles[ TS_DUPE ].Init(
-	this, settings, STRING(PROPPAGE_DUPE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
+	TextStyles[ TS_SHARE_DUPE ].Init(
+	this, settings, STRING(PROPPAGE_SHARE_DUPE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
 	SettingsManager::TEXT_DUPE_BACK_COLOR, SettingsManager::DUPE_COLOR, 
 	SettingsManager::TEXT_DUPE_BOLD, SettingsManager::TEXT_DUPE_ITALIC );
+
+	TextStyles[ TS_QUEUE_DUPE ].Init(
+	this, settings, STRING(PROPPAGE_QUEUE_DUPE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
+	SettingsManager::TEXT_QUEUE_BACK_COLOR, SettingsManager::DUPE_COLOR, 
+	SettingsManager::TEXT_QUEUE_BOLD, SettingsManager::TEXT_DUPE_ITALIC );
 
 	TextStyles[ TS_FAVORITE ].Init( 
 	this, settings, STRING(PROPPAGE_FAV_USER).c_str(), STRING(PROPPAGE_FAV_USER).c_str(),
@@ -284,9 +289,13 @@ LRESULT PropPageTextStyles::onDefaultStyles(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_URL ].crTextColor = RGB(0,0,255);
 	TextStyles[ TS_URL ].dwEffects = 0;
 
-	TextStyles[ TS_DUPE ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_DUPE ].crTextColor = RGB(255,128,255);
-	TextStyles[ TS_DUPE ].dwEffects = 0;
+	TextStyles[ TS_SHARE_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_SHARE_DUPE ].crTextColor = RGB(255,128,255);
+	TextStyles[ TS_SHARE_DUPE ].dwEffects = 0;
+
+	TextStyles[ TS_QUEUE_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_QUEUE_DUPE ].crTextColor = RGB(255,200,0);
+	TextStyles[ TS_QUEUE_DUPE ].dwEffects = 0;
 
 	TextStyles[ TS_LIST_HL ].crBackColor = RGB(255, 255, 255);
 	TextStyles[ TS_LIST_HL ].crTextColor = RGB(255,189,202);
@@ -343,9 +352,13 @@ LRESULT PropPageTextStyles::onBlackAndWhite(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_URL ].crTextColor = RGB(37,60,121);
 	TextStyles[ TS_URL ].dwEffects = 0;
 
-	TextStyles[ TS_DUPE ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_DUPE ].crTextColor = RGB(255,128,255);
-	TextStyles[ TS_DUPE ].dwEffects = 0;
+	TextStyles[ TS_SHARE_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_SHARE_DUPE ].crTextColor = RGB(255,128,255);
+	TextStyles[ TS_SHARE_DUPE ].dwEffects = 0;
+
+	TextStyles[ TS_QUEUE_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_QUEUE_DUPE ].crTextColor = RGB(255,200,0);
+	TextStyles[ TS_QUEUE_DUPE ].dwEffects = 0;
 
 	TextStyles[ TS_LIST_HL ].crBackColor = RGB(255, 255, 255);
 	TextStyles[ TS_LIST_HL ].crTextColor = RGB(255,189,202);
@@ -402,9 +415,14 @@ LRESULT PropPageTextStyles::onBlackTheme(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	TextStyles[ TS_URL ].crTextColor = RGB(0,0,255);
 	TextStyles[ TS_URL ].dwEffects = 0;
 
-	TextStyles[ TS_DUPE ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_DUPE ].crTextColor = RGB(255,128,255);
-	TextStyles[ TS_DUPE ].dwEffects = 0;
+
+	TextStyles[ TS_SHARE_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_SHARE_DUPE ].crTextColor = RGB(255,128,255);
+	TextStyles[ TS_SHARE_DUPE ].dwEffects = 0;
+
+	TextStyles[ TS_QUEUE_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_QUEUE_DUPE ].crTextColor = RGB(255,200,0);
+	TextStyles[ TS_QUEUE_DUPE ].dwEffects = 0;
 
 	TextStyles[ TS_LIST_HL ].crBackColor = RGB(255, 255, 255);
 	TextStyles[ TS_LIST_HL ].crTextColor = RGB(255,189,202);

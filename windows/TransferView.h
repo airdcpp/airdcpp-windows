@@ -384,7 +384,7 @@ private:
 	void on(DownloadManagerListener::Tick, const DownloadList& aDownload, const BundleList& aBundle) noexcept;
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
 	void on(DownloadManagerListener::BundleFinished, const string& bundleToken) noexcept { onBundleComplete(bundleToken, bundleToken, false); }
-	void on(DownloadManagerListener::BundleMode, const string& bundleToken, const HintedUser& aUser) noexcept;
+	void on(DownloadManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) noexcept;
 
 	void on(UploadManagerListener::Starting, const Upload* aUpload) noexcept;
 	void on(UploadManagerListener::Tick, const UploadList& aUpload, const UploadBundleList& bundles) noexcept;
@@ -392,6 +392,7 @@ private:
 		onTransferComplete(aUpload, true, aUpload->getPath(), false, (aUpload->getBundle() ? aUpload->getBundle()->getToken() : Util::emptyString)); 
 	}
 	void on(UploadManagerListener::BundleComplete, const string& bundleToken, const string& bundleName) noexcept { onBundleComplete(bundleToken, bundleName, true); }
+	void on(UploadManagerListener::BundleRenamed, const string& bundleToken, const string& bundleTarget) noexcept { onBundleName(bundleToken, bundleTarget, true); }
 
 	void on(QueueManagerListener::StatusUpdated, const QueueItem*, bool) noexcept;
 	void on(QueueManagerListener::Removed, const QueueItem*) noexcept;
@@ -399,11 +400,14 @@ private:
 	void on(QueueManagerListener::BundleFinished, const BundlePtr aBundle) noexcept { onBundleComplete(aBundle->getToken(), aBundle->getName(), false); }
 	void on(QueueManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, false); }
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, true); }
+	void on(QueueManagerListener::BundleRenamed, const BundlePtr aBundle) noexcept { onBundleName(aBundle->getToken(), aBundle->getTarget(), false); }
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload);
 	void onBundleStatus(const BundlePtr aBundle, bool removed);
+	void onBundleUser(const BundlePtr aBundle);
+	void onBundleName(const string& bundleToken, const string& aTarget, bool isUpload);
 	void onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree, const string& bundleToken);
 	void starting(UpdateInfo* ui, const Transfer* t);
 	

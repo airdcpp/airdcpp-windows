@@ -478,6 +478,8 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 				std::string link (result[0].first, result[0].second);
 				if (SETTING(DUPES_IN_CHAT) && ShareManager::getInstance()->isDirShared(link)) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+				} else if (QueueManager::getInstance()->isDirQueued(link)) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleQueue);	
 				} else if (SETTING(FORMAT_RELEASE)) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 				}
@@ -689,10 +691,12 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	selectedWord = WordFromPos(pt);
 
 	release = (regRelease.match(selectedWord) > 0) ? true : false;
-	dupe=false;
+	shareDupe=false, queueDupe=false;
 	if (release) {
 		if (ShareManager::getInstance()->isDirShared(Text::fromT(selectedWord))) {
-			dupe=true;
+			shareDupe=true;
+		} else if (QueueManager::getInstance()->isDirQueued(Text::fromT(selectedWord))) {
+			queueDupe=true;
 		}
 	}
 
@@ -791,7 +795,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 		
 		if (release) {
-			if (dupe) {
+			if (shareDupe || queueDupe) {
 				menu.AppendMenu(MF_SEPARATOR);
 				menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 			}
@@ -948,7 +952,12 @@ tstring ChatCtrl::getSearchString() {
 }
 
 LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring path = ShareManager::getInstance()->getDirPath(Text::fromT(getSearchString()));
+	tstring path;
+	if (shareDupe) {
+		path = ShareManager::getInstance()->getDirPath(Text::fromT(getSearchString()));
+	} else {
+		path = QueueManager::getInstance()->getDirPath(Text::fromT(getSearchString()));
+	}
 	if (path.empty())
 		return 0;
 

@@ -1358,7 +1358,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
-			if((SearchInfo*)ctrlResults.getSelectedItem()->isDupe()) {
+			if((SearchInfo*)ctrlResults.getSelectedItem()->isShareDupe() || (SearchInfo*)ctrlResults.getSelectedItem()->isQueueDupe()) {
 				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 				resultsMenu.AppendMenu(MF_SEPARATOR);
 			}
@@ -1701,17 +1701,15 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		SearchInfo* si = (SearchInfo*)cd->nmcd.lItemlParam;
 		
 		if(BOOLSETTING(DUPE_SEARCH)) {
-			if(si->isDupe()) {
+			if(si->isShareDupe()) {
 				cd->clrText = SETTING(DUPE_COLOR);
 				cd->clrTextBk = SETTING(TEXT_DUPE_BACK_COLOR);
-			}
-		}
-
-		if(si->sr != NULL) {
-			targets.clear();
-			targets = QueueManager::getInstance()->getTargets(TTHValue(si->sr->getTTH().toBase32()));
-			if(si->sr->getType() == SearchResult::TYPE_FILE && targets.size() > 0) {		
-				cd->clrText = SETTING(SEARCH_ALTERNATE_COLOUR);	
+			} else if (si->isQueueDupe()) {
+				cd->clrText = SETTING(QUEUE_COLOR);
+				cd->clrTextBk = SETTING(TEXT_QUEUE_BACK_COLOR);
+				if(si->sr->getType() == SearchResult::TYPE_FILE) {		
+					targets = QueueManager::getInstance()->getTargets(TTHValue(si->sr->getTTH().toBase32()));
+				}
 			}
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
@@ -2029,11 +2027,21 @@ LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 			tstring path;
 		
 			if(si->sr->getType() == SearchResult::TYPE_FILE) {
-				path = Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
-		
-				WinUtil::openFolder(path);
+				if (si->isShareDupe()) {
+					path = Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
+				} else {
+					path = Text::toT(QueueManager::getInstance()->getTargets(si->sr->getTTH())[0]);
+				}
+
+				if (!path.empty())
+					WinUtil::openFolder(path);
 			} else {
-				path=ShareManager::getInstance()->getDirPath(si->sr->getFile());
+				if (si->isShareDupe()) {
+					path=ShareManager::getInstance()->getDirPath(si->sr->getFile());
+				} else {
+					path=QueueManager::getInstance()->getDirPath(si->sr->getFile());
+				}
+
 				if (!path.empty())
 					WinUtil::openFolder(path);
 			}

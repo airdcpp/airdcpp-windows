@@ -648,7 +648,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			ItemInfo* ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
 			if (!ii->bundle.empty()) {
-				ctrlTransfers.insertGroupedItem(ii, false, !ii->bundle.empty());
+				ctrlTransfers.insertGroupedItem(ii, false, true);
 			} else {
 				ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 			}
@@ -715,7 +715,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			}
 		} else if(i->first == UPDATE_PARENT) {
 			auto &ui = static_cast<UpdateInfo&>(*i->second);
-			ItemInfoList::ParentPair* pp = ctrlTransfers.findParentPair(!ui.bundle.empty() ? ui.bundle : ui.target);
+			ItemInfoList::ParentPair* pp = ctrlTransfers.findParentPair(ui.bundle);
 			
 			if(!pp) {
 				continue;
@@ -1005,10 +1005,7 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 			//return (hits == -1 || isBundle) ? WinUtil::getNicks(user) : (Util::toStringW(hits) + _T(' ') + TSTRING(USERS));
 		case COLUMN_HUB: 
 			if (isBundle)
-				//if (download)
-				//	return (Util::toStringW(running) + _T(' ') + TSTRING(NUMBER_OF_USERS));
-				//else
-					return (Util::toStringW(running) + _T(' ') + TSTRING(NUMBER_OF_CONNECTIONS));
+				return (Util::toStringW(running) + _T(' ') + TSTRING(NUMBER_OF_CONNECTIONS));
 			else if (hits == -1)
 				return WinUtil::getHubNames(user).first;
 			else
@@ -1021,10 +1018,11 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 			}
 			return (status == STATUS_RUNNING) ? (Util::formatBytesW(speed) + _T("/s")) : Util::emptyStringT;
 		case COLUMN_FILE:
-			if (isBundle)
+			if (isBundle && target[target.size() -1] == '\\') {
 				return Text::toT(Util::getDir(Text::fromT(target), false, true));
-			else
+			} else {
 				return getFile(type, Util::getFileName(target));
+			}
 		case COLUMN_SIZE: return Util::formatBytesW(size); 
 		case COLUMN_PATH: return Util::getFilePath(target);
 		case COLUMN_IP: return ip;
@@ -1250,11 +1248,9 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul, const U
 		ui->setStatus(ItemInfo::STATUS_RUNNING);
 		ui->setPos(uploaded);
 		ui->setActual(uploaded);
-		ui->setSize(bundle->getSize());
 		ui->setTimeLeft(bundle->getSecondsLeft());
 		ui->setSpeed(static_cast<int64_t>(bundle->getSpeed()));
 		ui->setBundle(bundle->getToken());
-		ui->setTarget(Text::toT(bundle->getTarget()));
 		ui->setRunning(bundle->getRunning());
 		ui->setTotalSpeed(bundle->getTotalSpeed());
 
@@ -1383,8 +1379,14 @@ void TransferView::onBundleStatus(const BundlePtr aBundle, bool removed) {
 	speak(UPDATE_PARENT, ui);
 }
 
+void TransferView::onBundleName(const string& bundleToken, const string& aTarget, bool isUpload) {
+	UpdateInfo* ui = new UpdateInfo(bundleToken, !isUpload);
+	ui->setBundle(bundleToken);
+	ui->setTarget(Text::toT(aTarget));
+	speak(UPDATE_PARENT, ui);
+}
 
-void TransferView::on(DownloadManagerListener::BundleMode, const string& bundleToken, const HintedUser& aUser) {
+void TransferView::on(DownloadManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) {
 	//LogManager::getInstance()->message("SINGLEUSER LAUKES2: " + aUser.user->getCID().toBase32());
 	UpdateInfo* ui = new UpdateInfo(bundleToken, true);
 	ui->setUsers(1);
@@ -1392,7 +1394,6 @@ void TransferView::on(DownloadManagerListener::BundleMode, const string& bundleT
 	ui->setUser(aUser);
 	speak(UPDATE_PARENT, ui);
 }
-
 
 LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	QueueItem::Priority p;

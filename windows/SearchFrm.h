@@ -328,17 +328,20 @@ private:
 		SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0) { 
 			
 			if(BOOLSETTING(DUPE_SEARCH)) {
-			if(sr->getType() == SearchResult::TYPE_DIRECTORY)
-				dupe = ShareManager::getInstance()->isDirShared(sr->getFile());
-			else
-			dupe = ShareManager::getInstance()->isTTHShared(sr->getTTH());
-			}
+				if(sr->getType() == SearchResult::TYPE_DIRECTORY) {
+					shareDupe = ShareManager::getInstance()->isDirShared(sr->getFile());
+					queueDupe = QueueManager::getInstance()->isDirQueued(sr->getFile());
+				} else {
+					shareDupe = ShareManager::getInstance()->isTTHShared(sr->getTTH());
+					queueDupe = QueueManager::getInstance()->isTTHQueued(sr->getTTH());
+				}
 
-			if (!sr->getIP().empty()) {
-				// Only attempt to grab a country mapping if we actually have an IP address
-				string tmpCountry = Util::getIpCountry(sr->getIP());
-				if(!tmpCountry.empty()) {
-					flagIndex = WinUtil::getFlagIndexByCode(tmpCountry.c_str());
+				if (!sr->getIP().empty()) {
+					// Only attempt to grab a country mapping if we actually have an IP address
+					string tmpCountry = Util::getIpCountry(sr->getIP());
+					if(!tmpCountry.empty()) {
+						flagIndex = WinUtil::getFlagIndexByCode(tmpCountry.c_str());
+					}
 				}
 			}
 		}
@@ -500,12 +503,14 @@ private:
 		inline SearchInfo* createParent() { return this; }
 		inline const TTHValue& getGroupCond() const { return sr->getTTH(); }
 		
-		bool isDupe() const { return dupe; }
+		bool isShareDupe() const { return shareDupe; }
+		bool isQueueDupe() const { return queueDupe; }
 
 		SearchResultPtr sr;
 		GETSET(uint8_t, flagIndex, FlagIndex);
 	private:
-		bool dupe;
+		bool shareDupe;
+		bool queueDupe;
 	};
 	
 	struct HubInfo : public FastAlloc<HubInfo> {

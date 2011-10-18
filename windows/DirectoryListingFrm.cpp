@@ -84,7 +84,7 @@ void DirectoryListingFrame::openWindow(const HintedUser& aUser, const string& tx
 		i->second->speed = aSpeed;
 		i->second->loadXML(txt);
 	} else {
-		DirectoryListingFrame* frame = new DirectoryListingFrame(aUser, aSpeed, myList);
+		DirectoryListingFrame* frame = new DirectoryListingFrame(aUser, aSpeed, myList, true);
 		if(BOOLSETTING(POPUNDER_FILELIST)) {
 			WinUtil::hiddenCreateEx(frame);
 		} else {
@@ -95,10 +95,10 @@ void DirectoryListingFrame::openWindow(const HintedUser& aUser, const string& tx
 	}
 }
 
-DirectoryListingFrame::DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed, bool myList) :
+DirectoryListingFrame::DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed, bool myList, bool partialList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0), loading(true),
-		treeRoot(NULL), skipHits(0), files(0), speed(aSpeed), updating(false), dl(new DirectoryListing(aUser)), searching(false), mylist(myList)
+		treeRoot(NULL), skipHits(0), files(0), speed(aSpeed), updating(false), dl(new DirectoryListing(aUser)), searching(false), mylist(myList), partialList(partialList)
 {
 	lists.insert(make_pair(aUser, this));
 }
@@ -955,8 +955,7 @@ clientmenu:
 				}
 			}
 
-			if(ctrlList.GetSelectedCount() == 1 && ii->file->getDupe() && ii->type == ItemInfo::FILE ) {
-				
+			if(ctrlList.GetSelectedCount() == 1 && ii->file->getShareDupe() && ii->type == ItemInfo::FILE ) {
 				fileMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 			}
@@ -1721,13 +1720,16 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 				if(!mylist) {
 					DWORD bg = SETTING(BACKGROUND_COLOR);
 					//check if the file or dir is a dupe, then use the dupesetting color
-					if ( ( ii->type == ItemInfo::FILE && ii->file->getDupe() ) || 
-						( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::DUPE )) {
+					if ( ( ii->type == ItemInfo::FILE && ii->file->getShareDupe() ) || 
+						( ii->type == ItemInfo::DIRECTORY && ii->dir->getShareDupe() == DirectoryListing::Directory::SHARE_DUPE )) {
 						cd->clrText = SETTING(DUPE_COLOR);
 
-					//if it's a partial dupe, try to use some simple blending to indicate that
-					//a dupe exists somewhere down the directory tree.
-					} else if(ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::PARTIAL_DUPE) {
+					} else if ((ii->type == ItemInfo::FILE && ii->file->getQueueDupe() ) || 
+						( ii->type == ItemInfo::DIRECTORY && ii->dir->getQueueDupe())) {
+						cd->clrText = SETTING(QUEUE_COLOR);
+					} else if(ii->type == ItemInfo::DIRECTORY && ii->dir->getShareDupe() == DirectoryListing::Directory::PARTIAL_DUPE) {
+						//if it's a partial dupe, try to use some simple blending to indicate that
+						//a dupe exists somewhere down the directory tree.
 						BYTE r, b, g;
 						//cache these to avoid unnecessary calls.
 						DWORD dupe = SETTING(DUPE_COLOR);
@@ -1766,12 +1768,13 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 				if(!mylist) {
 					DWORD bg = SETTING(BACKGROUND_COLOR);
 					//check if the dir is a dupe, then use the dupesetting color
-					if( dir->getDupe() == DirectoryListing::Directory::DUPE ) {
+					if( dir->getShareDupe() == DirectoryListing::Directory::SHARE_DUPE ) {
 						cd->clrText = SETTING(DUPE_COLOR);
-
-					//if it's a partial dupe, try to use some simple blending to indicate that
-					//a dupe exists somewhere down the directory tree.
-					} else if(dir->getDupe() == DirectoryListing::Directory::PARTIAL_DUPE) {
+					} else if (dir->getQueueDupe()) {
+						cd->clrText = SETTING(QUEUE_COLOR);
+					} else if(dir->getShareDupe() == DirectoryListing::Directory::PARTIAL_DUPE) {
+						//if it's a partial dupe, try to use some simple blending to indicate that
+						//a dupe exists somewhere down the directory tree.
 						BYTE r, b, g;
 						//cache these to avoid unnecessary calls.
 						DWORD dupe = SETTING(DUPE_COLOR);
@@ -1829,7 +1832,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 			} else if(ii->dir->getFileCount() > 0) {
 				DirectoryListing::File::Iter i = ii->dir->files.begin();
 				for (; i != ii->dir->files.end(); ++i) {
-					if((*i)->getDupe())
+					if((*i)->getShareDupe())
 						break;
 				}
 				if(i != ii->dir->files.end()) {

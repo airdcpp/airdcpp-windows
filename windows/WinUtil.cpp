@@ -110,6 +110,7 @@ CHARFORMAT2 WinUtil::m_TextStyleOPs;
 CHARFORMAT2 WinUtil::m_TextStyleNormUsers;
 CHARFORMAT2 WinUtil::m_TextStyleURL;
 CHARFORMAT2 WinUtil::m_TextStyleDupe;
+CHARFORMAT2 WinUtil::m_TextStyleQueue;
 CHARFORMAT2 WinUtil::m_ChatTextPrivate;
 CHARFORMAT2 WinUtil::m_ChatTextLog;
 
@@ -651,6 +652,17 @@ void WinUtil::initColors() {
 		m_TextStyleDupe.dwEffects |= CFE_ITALIC;
 	if(SETTING(UNDERLINE_DUPES))
 		m_TextStyleDupe.dwMask |= CFE_UNDERLINE;
+
+	m_TextStyleQueue = cf;
+	m_TextStyleQueue.crBackColor = SETTING(TEXT_QUEUE_BACK_COLOR);
+	m_TextStyleQueue.crTextColor = SETTING(QUEUE_COLOR);
+	m_TextStyleQueue.dwEffects = CFE_LINK | CFE_UNDERLINE;
+	if(SETTING(TEXT_QUEUE_BOLD))
+		m_TextStyleQueue.dwEffects |= CFE_BOLD;
+	if(SETTING(TEXT_QUEUE_ITALIC))
+		m_TextStyleQueue.dwEffects |= CFE_ITALIC;
+	if(SETTING(UNDERLINE_QUEUE))
+		m_TextStyleQueue.dwMask |= CFE_UNDERLINE;
 }
 
 void WinUtil::uninit() {

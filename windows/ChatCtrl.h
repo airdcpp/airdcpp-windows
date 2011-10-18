@@ -193,7 +193,8 @@ private:
 	bool		skipLog;
 	bool		timeStamps;
 	bool		release;
-	bool		dupe;
+	bool		shareDupe;
+	bool		queueDupe;
 	tstring		nick;
 	tstring		searchTerm;
 	tstring		searchTermFull;

@@ -84,7 +84,7 @@ public:
 		STATUS_LAST
 	};
 	
-	DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed, bool myList = false);
+	DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed, bool myList = false, bool partialList = false);
 	 ~DirectoryListingFrame() { 
 		dcassert(lists.find(dl->getUser()) != lists.end());
 		lists.erase(dl->getUser());
@@ -433,6 +433,7 @@ private:
 	bool closed;
 	bool loading;
 	bool mylist;
+	bool partialList;
 
 	int statusSizes[10];
 
@@ -481,6 +482,7 @@ protected:
 	string mTxt;
 	tstring mDir;
 	bool mylist;
+	bool partialList;
 	bool listdiff;
 private:
 	int run() {
@@ -491,7 +493,7 @@ private:
 			if(listdiff) {
 				mWindow->DisableWindow();
 				DirectoryListing dirList(mWindow->dl->getHintedUser());
-				dirList.loadFile(mFile, true);
+				dirList.loadFile(mFile, true, partialList);
 				mWindow->dl->getRoot()->filterList(dirList);
 			
 				mWindow->refreshTree(Util::emptyStringT);
@@ -499,22 +501,22 @@ private:
 			} else if(!mFile.empty()) {
 				
 				
-				bool checkdupe = true;
+				bool checkShareDupe = true;
 				if(mylist) {
 					// if its own list regenerate it before opening, but only if its dirty
 					mFile = ShareManager::getInstance()->generateOwnList();
-					checkdupe = false;
+					checkShareDupe = false;
 				}
 				if (!SETTING(DUPES_IN_FILELIST))
-					checkdupe = false;
-				mWindow->dl->loadFile(mFile, checkdupe);
+					checkShareDupe = false;
+				mWindow->dl->loadFile(mFile, checkShareDupe, partialList);
 				
 
 				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {
 					ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
 				} 
 				if(!mylist && SETTING(DUPES_IN_FILELIST)) {
-					mWindow->dl->checkDupes();
+					mWindow->dl->checkShareDupes();
 				}
 
 				mWindow->refreshTree(mDir);

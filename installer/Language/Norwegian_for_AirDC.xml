@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Norwegian for AirDC++" Author="Toans" Version="2.10" Revision="1.01">
+<Language Name="Norwegian for AirDC++" Author="Toans" Version="2.10" Revision="1.03">
 	<Strings>
 		<String Name="AairdcppLanguageFile">Norwegian_for_AirDC.xml</String>
 		<String Name="AairdcppLanguageVersion">2.10</String>
@@ -59,7 +59,7 @@
 		<String Name="BrowseAccel">Bla gjennom</String>
 		<String Name="BrowseFileList">Se bruker fil-liste</String>
 		<String Name="Bumped">Blandet</String>
-		<String Name="Cancel">Kanseller</String>
+		<String Name="Cancel">Avbryt</String>
 		<String Name="CertificateGenerated">Lag nytt TLS Sertifikat</String>
 		<String Name="CertificateNotTrusted">Sertifikatet er ikke sikkert, kan ikke koble til</String>
 		<String Name="CertificateGenerationFailed">TLS avslått, feilet med å lage sertifikatet: </String>
@@ -792,7 +792,7 @@
 		<String Name="SslError">SSL Error</String>
 		<String Name="Started">Startet</String>
 		<String Name="Status">Status</String>
-		<String Name="StealthMode">Vis som DC++ i denna hubben</String>
+		<String Name="StealthMode">Vis som DC++ i denne hubben</String>
 		<String Name="StoredPasswordSent">Lagret passord sendt...</String>
 		<String Name="StringNotFound">Strengen ble ikke funnet: </String>
 		<String Name="Supports">Støtter</String>
@@ -911,14 +911,14 @@ Disse er tilgjengelige:
 %[line:reason]: Åpner et vindu som spør for \"reason\"</String>
 		<String Name="UserDescription">Bruker Beskrivelse</String>
 		<String Name="UserOffline">Bruker frakoblet</String>
-		<String Name="UserOnline">Nedlaster... (bruker påkoblet)</String>
+		<String Name="UserOnline">Laster ned... (bruker påkoblet)</String>
 		<String Name="UserWentOffline">Brukeren logget av</String>
 		<String Name="UserWentOnline">Brukeren logget på</String>
 		<String Name="Userinfo">Bruker Info</String>
 		<String Name="UserlistIcons">Bruker-liste ikoner</String>
 		<String Name="Userlistdblclickaction">Brukerliste dobbel klikk hendelse</String>
 		<String Name="Users">Brukere</String>
-		<String Name="UsersOnline">Nedlaster... (%d av %d brukerne er påkoblet)</String>
+		<String Name="UsersOnline">Laster ned... (%d av %d brukerne er påkoblet)</String>
 		<String Name="Version">Versjon</String>
 		<String Name="Video">Video</String>
 		<String Name="ViewAsText">Se som tekst</String>
@@ -972,7 +972,7 @@ Tom = Standard Streng -&gt; winamp(%[version]) %[state](%[title]) status(%[perce
 		<String Name="TabInactiveBorder">Inaktiv kant farge</String>
 		<String Name="TabInactiveBgNotify">Inaktiv innformerings farge</String>
 		<String Name="FavNoPm">Ignorer private meldinger</String>
-		<String Name="HideShare">Hjem deling i denna hubben</String>
+		<String Name="HideShare">Gjem deling i denne hubben</String>
 		<String Name="WinampBack">Tilbake</String>
 		<String Name="WinampPlay">Spill av</String>
 		<String Name="WinampPause">Pause</String>
@@ -1000,7 +1000,7 @@ Tom = Standard Streng -&gt; winamp(%[version]) %[state](%[title]) status(%[perce
 - %[bar]		ASCII progressjons bar, 10 symboler bred, ingen klemmer innkludert (eks. [----|-----])
 - %[length]	Den totale lengden på det som avspilles i (HH:)MM:SS
 - %[artist]	Navnet på artisten på det som avspilles
-- %[album]	Navnet på albumet denna sangen er fra
+- %[album]	Navnet på albumet denne sangen er fra
 - %[genre]	Sjanger for det som avspilles
 - %[bitrate]	Kvaliteten på det som avspilles
 - %[year]	Utgivelses år for albumet (ingen WMP9 støtte)
@@ -1264,6 +1264,6 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="SearchTvcom">Søk på TV.com</String>
 		<String Name="SearchImdb">Søk på Imdb</String>
 		<String Name="SearchMetacritic">Søk med Metacritic</String>
-		<String Name="FavLogChat">Logg Mainchat</String>
+		<String Name="FavLogChat">Logg Hovedchatten</String>
 	</Strings>
 </Language>
