@@ -113,8 +113,8 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 
 	TextStyles[ TS_QUEUE_DUPE ].Init(
 	this, settings, STRING(PROPPAGE_QUEUE_DUPE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
-	SettingsManager::TEXT_QUEUE_BACK_COLOR, SettingsManager::DUPE_COLOR, 
-	SettingsManager::TEXT_QUEUE_BOLD, SettingsManager::TEXT_DUPE_ITALIC );
+	SettingsManager::TEXT_QUEUE_BACK_COLOR, SettingsManager::QUEUE_COLOR, 
+	SettingsManager::TEXT_QUEUE_BOLD, SettingsManager::TEXT_QUEUE_ITALIC );
 
 	TextStyles[ TS_FAVORITE ].Init( 
 	this, settings, STRING(PROPPAGE_FAV_USER).c_str(), STRING(PROPPAGE_FAV_USER).c_str(),

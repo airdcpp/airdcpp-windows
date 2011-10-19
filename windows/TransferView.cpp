@@ -34,11 +34,11 @@
 
 #include "BarShader.h"
 
-int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_HUB, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_FILE, COLUMN_SIZE, COLUMN_PATH, COLUMN_CIPHER, COLUMN_IP, COLUMN_RATIO };
+int TransferView::columnIndexes[] = { COLUMN_FILE, COLUMN_USER, COLUMN_HUB, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_CIPHER, COLUMN_IP, COLUMN_RATIO };
 int TransferView::columnSizes[] = { 150, 150, 250, 75, 75, 175, 100, 200, 100, 150, 50 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::USER, ResourceManager::HUB_SEGMENTS, ResourceManager::STATUS,
-	ResourceManager::TIME_LEFT, ResourceManager::SPEED, ResourceManager::BUNDLE_FILENAME, ResourceManager::SIZE, ResourceManager::PATH,
+static ResourceManager::Strings columnNames[] = { ResourceManager::BUNDLE_FILENAME, ResourceManager::USER, ResourceManager::HUB_SEGMENTS, ResourceManager::STATUS,
+	ResourceManager::TIME_LEFT, ResourceManager::SPEED, ResourceManager::SIZE, ResourceManager::PATH,
 	ResourceManager::CIPHER, ResourceManager::IP_BARE, ResourceManager::RATIO};
 
 TransferView::~TransferView() {
@@ -1387,7 +1387,6 @@ void TransferView::onBundleName(const string& bundleToken, const string& aTarget
 }
 
 void TransferView::on(DownloadManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) {
-	//LogManager::getInstance()->message("SINGLEUSER LAUKES2: " + aUser.user->getCID().toBase32());
 	UpdateInfo* ui = new UpdateInfo(bundleToken, true);
 	ui->setUsers(1);
 	ui->setBundle(bundleToken);
@@ -1411,8 +1410,6 @@ LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	int i = -1;
 	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
-		//QueueManager::getInstance()->setAutoPriority(ctrlQueue.getItemData(i)->getTarget(), false);
-		//QueueManager::getInstance()->setPriority(ctrlQueue.getItemData(i)->getTarget(), p);
 		if (ii->isBundle) {
 			QueueManager::getInstance()->setBundlePriority(Text::fromT(ii->bundle), p);
 		}
@@ -1548,204 +1545,6 @@ void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-	}
-}
-
-void TransferView::on(QueueManagerListener::StatusUpdated, const QueueItem* qi, bool timerManager) noexcept {
-	return;
-	if (!qi->getBundleToken().empty() && timerManager) {
-		return;
-	}
-	UpdateInfo* ui = new UpdateInfo(const_cast<QueueItem*>(qi), true);
-	ui->setTarget(Text::toT(qi->getTarget()));
-
-	Transfer::Type type = Transfer::TYPE_FILE;
-	if(qi->getFlags() & QueueItem::FLAG_USER_LIST)
-		type = Transfer::TYPE_FULL_LIST;
-	else if(qi->getFlags() & QueueItem::FLAG_PARTIAL_LIST)
-		type = Transfer::TYPE_PARTIAL_LIST;
-
-	ui->setType(type);
-
-	if(qi->isRunning() ) {
-		double ratio = 0;
-		int64_t totalSpeed = 0;
-		int16_t segs = 0;
-		
-		bool partial = false, trusted = false, untrusted = false, tthcheck = false, zdownload = false, chunked = false, mcn = false;
-
-		for(DownloadList::const_iterator i = qi->getDownloads().begin(); i != qi->getDownloads().end(); i++) {
-			Download *d = *i;
-
-			if(d->getStart() > 0) {
-				segs++;
-
-				if(d->isSet(Download::FLAG_PARTIAL)) {
-					partial = true;
-				}
-				if(d->getUserConnection().isSecure()) {
-					if(d->getUserConnection().isTrusted()) {
-						trusted = true;
-					} else {
-						untrusted = true;
-					}
-				}
-				if(d->isSet(Download::FLAG_TTH_CHECK)) {
-					tthcheck = true;
-				}
-				if(d->isSet(Download::FLAG_ZDOWNLOAD)) {
-					zdownload = true;
-				}
-				if(d->isSet(Download::FLAG_CHUNKED)) {
-					chunked = true;
-				}
-				if(d->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
-					mcn=true;
-				}
-		
-				totalSpeed += static_cast<int64_t>(d->getAverageSpeed());
-				ratio += d->getPos() > 0 ? (double)d->getActual() / (double)d->getPos() : 1.00;
-			}
-		}
-
-		ui->setRunning(segs);
-		if(segs > 0) {
-			ratio = ratio / segs;
-
-			ui->setStatus(ItemInfo::STATUS_RUNNING);
-			ui->setSize(qi->getSize());
-			ui->setPos(qi->getDownloadedBytes());
-			ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
-
-			uint64_t timeleft = (totalSpeed > 0) ? ((ui->size - ui->pos) / totalSpeed) : 0;
-			ui->setTimeLeft(timeleft);
-
-			ui->setSpeed(totalSpeed);
-
-			if(qi->getFileBegin() == 0) {
-				// file is starting
-				const_cast<QueueItem*>(qi)->setFileBegin(GET_TICK());
-
-				ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
-				if ((!SETTING(BEGINFILE).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
-					PlaySound(Text::toT(SETTING(BEGINFILE)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
-
-				if(BOOLSETTING(POPUP_DOWNLOAD_START)) {
-					MainFrame::getMainFrame()->ShowBalloonTip(TSTRING(FILE) + _T(": ") + Util::getFileName(ui->target), TSTRING(DOWNLOAD_STARTING));
-				}
-			} else {
-				uint64_t time = GET_TICK() - qi->getFileBegin();
-				if(time > 1000) {
-					tstring pos = Util::formatBytesW(ui->pos);
-					double percent = (double)ui->pos*100.0/(double)ui->size;
-					tstring elapsed = Util::formatSeconds(time/1000);
-					tstring flag;
-					
-					if(partial) {
-						flag += _T("[P]");
-					}
-					if(trusted) {
-						flag += _T("[S]");
-					}
-					if(untrusted) {
-						flag += _T("[U]");
-					}
-					if(tthcheck) {
-						flag += _T("[T]");
-					}
-					if(zdownload) {
-						flag += _T("[Z]");
-					}
-					if(chunked) {
-						flag += _T("[C]");
-					}
-					if(mcn) {
-						flag += _T("[M]");
-					}
-
-					if(!flag.empty()) {
-						flag += _T(" ");
-					}
-					
-					ui->setStatusString(flag + Text::tformat(TSTRING(DOWNLOADED_BYTES), pos.c_str(), percent, elapsed.c_str()));
-				}
-			}
-		}
-	} else {
-		const_cast<QueueItem*>(qi)->setFileBegin(0);
-
-		ui->setSize(qi->getSize());
-		ui->setStatus(ItemInfo::STATUS_WAITING);
-		ui->setRunning(0);
-	}
-
-
-	if (!qi->getBundleToken().empty()) {
-		ui->setBundle(qi->getBundleToken());
-		speak(UPDATE_ITEM, ui);
-	} else {
-		speak(UPDATE_PARENT, ui);
-	}
-}
-
-void TransferView::on(QueueManagerListener::Finished, const QueueItem* qi, const string&, const Download* download) noexcept {
-	return;
-	UpdateInfo* ui;
-	if (!download->getBundle()) {
-		// update download item
-		ui = new UpdateInfo(download->getUserConnection().getToken(), true);
-
-		ui->setStatus(ItemInfo::STATUS_WAITING);	
-		ui->setPos(0);
-		ui->setStatusString( TSTRING(DOWNLOAD_FINISHED_IDLE));
-
-		speak(UPDATE_ITEM, ui);
-	}
-
-	// update file item
-	ui = new UpdateInfo(const_cast<QueueItem*>(qi), true, true);
-	ui->user = download->getHintedUser();
-	ui->token = download->getUserConnection().getToken();
-
-	ui->setTarget(Text::toT(qi->getTarget()));
-	ui->setPos(0);
-	ui->setActual(0);
-	ui->setTimeLeft(0);
-	ui->setStatusString(TSTRING(DOWNLOAD_FINISHED_IDLE));
-	ui->setStatus(ItemInfo::STATUS_WAITING);
-	ui->setRunning(0);
-	if (!qi->getBundleToken().empty())
-		ui->setBundle(qi->getBundleToken());
-	
-	if(BOOLSETTING(POPUP_DOWNLOAD_FINISHED)) {
-		MainFrame::getMainFrame()->ShowBalloonTip(TSTRING(FILE) + _T(": ") + Util::getFileName(ui->target), TSTRING(DOWNLOAD_FINISHED_IDLE));
-	}
-
-	if (!qi->getBundleToken().empty()) {
-		ui->setBundle(qi->getBundleToken());
-		speak(UPDATE_ITEM, ui);
-	} else {
-		speak(UPDATE_PARENT, ui);
-	}
-}
-
-void TransferView::on(QueueManagerListener::Removed, const QueueItem* qi) noexcept {
-	return;
-	UpdateInfo* ui = new UpdateInfo(const_cast<QueueItem*>(qi), true);
-	ui->setTarget(Text::toT(qi->getTarget()));
-	ui->setPos(0);
-	ui->setActual(0);
-	ui->setTimeLeft(0);
-	ui->setStatusString(TSTRING(DISCONNECTED));
-	ui->setStatus(ItemInfo::STATUS_WAITING);
-	ui->setRunning(0);
-	if (!qi->getBundleToken().empty()) {
-		//LogManager::getInstance()->message("QueueManagerListener::Removed, bundle");
-		//ui->setBundle(qi->getBundle()->getToken());
-		speak(UPDATE_ITEM, ui);
-	} else {
-		//LogManager::getInstance()->message("QueueManagerListener::Removed, no bundle");
-		speak(UPDATE_PARENT, ui);
 	}
 }
 

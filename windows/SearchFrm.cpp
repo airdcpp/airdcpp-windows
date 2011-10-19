@@ -1358,7 +1358,8 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
-			if((SearchInfo*)ctrlResults.getSelectedItem()->isShareDupe() || (SearchInfo*)ctrlResults.getSelectedItem()->isQueueDupe()) {
+			if((ctrlResults.GetSelectedCount() == 1) && ((SearchInfo*)ctrlResults.getSelectedItem()->isShareDupe() || (SearchInfo*)ctrlResults.getSelectedItem()->isQueueDupe() ||
+				(SearchInfo*)ctrlResults.getSelectedItem()->isFinishedDupe())) {
 				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 				resultsMenu.AppendMenu(MF_SEPARATOR);
 			}
@@ -1710,6 +1711,17 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 				if(si->sr->getType() == SearchResult::TYPE_FILE) {		
 					targets = QueueManager::getInstance()->getTargets(TTHValue(si->sr->getTTH().toBase32()));
 				}
+			} else if (si->isFinishedDupe()) {
+				BYTE r, b, g;
+				DWORD textColor = SETTING(QUEUE_COLOR);
+				DWORD bg = SETTING(TEXT_QUEUE_BACK_COLOR);
+
+				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(textColor)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
+				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(textColor)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
+				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(textColor)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
+					
+				cd->clrText = RGB(r, g, b);
+				cd->clrTextBk = bg;
 			}
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
@@ -2029,8 +2041,10 @@ LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 			if(si->sr->getType() == SearchResult::TYPE_FILE) {
 				if (si->isShareDupe()) {
 					path = Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
-				} else {
+				} else if (si->isQueueDupe()) {
 					path = Text::toT(QueueManager::getInstance()->getTargets(si->sr->getTTH())[0]);
+				} else {
+					path = QueueManager::getInstance()->getFinishedTTHPath(si->sr->getTTH());
 				}
 
 				if (!path.empty())

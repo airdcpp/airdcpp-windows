@@ -185,7 +185,6 @@ public:
 private:
 	enum {
 		ADD_ITEM,
-		ADD_BUNDLE,
 		REMOVE_ITEM,
 		UPDATE_ITEM,
 		UPDATE_PARENT
@@ -193,12 +192,12 @@ private:
 
 	enum {
 		COLUMN_FIRST,
-		COLUMN_USER = COLUMN_FIRST,
+		COLUMN_FILE = COLUMN_FIRST,
+		COLUMN_USER,
 		COLUMN_HUB,
 		COLUMN_STATUS,
 		COLUMN_TIMELEFT,
 		COLUMN_SPEED,
-		COLUMN_FILE,
 		COLUMN_SIZE,
 		COLUMN_PATH,
 		COLUMN_CIPHER,
@@ -302,14 +301,8 @@ private:
 		}
 
 		UpdateInfo(string aToken, bool isDownload, bool isTransferFailed = false) : 
-			updateMask(0), user(HintedUser(NULL, Util::emptyString)), queueItem(NULL), download(isDownload), token(aToken), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
+			updateMask(0), user(HintedUser(NULL, Util::emptyString)), download(isDownload), token(aToken), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
 		{ }
-		
-		UpdateInfo(QueueItem* qi, bool isDownload, bool isTransferFailed = false) : 
-			updateMask(0), queueItem(qi), user(HintedUser(NULL, Util::emptyString)), download(isDownload), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST), token(Util::emptyString), bundle(Util::emptyStringT)
-		{ qi->inc(); }
-
-		~UpdateInfo() { if(queueItem) queueItem->dec(); }
 
 		uint32_t updateMask;
 
@@ -332,7 +325,6 @@ private:
 		int64_t speed;
 		void setTimeLeft(int64_t aTimeLeft) { timeLeft = aTimeLeft; updateMask |= MASK_TIMELEFT; }
 		int64_t timeLeft;
-		 /* ttlf */
 		void setTotalSpeed(int64_t aTotalSpeed) { totalSpeed = aTotalSpeed; updateMask |= MASK_TOTALSPEED; }
 		int64_t totalSpeed;
 		void setStatusString(const tstring& aStatusString) { statusString = aStatusString; updateMask |= MASK_STATUS_STRING; }
@@ -351,9 +343,6 @@ private:
 		int16_t users;
 		void setUser(const HintedUser aUser) { user = aUser; updateMask |= MASK_USER; }
 		HintedUser user;
-
-	private:
-		QueueItem* queueItem;
 	};
 
 	void speak(uint8_t type, UpdateInfo* ui) { tasks.add(type, unique_ptr<Task>(ui)); PostMessage(WM_SPEAKER); }
@@ -394,9 +383,6 @@ private:
 	void on(UploadManagerListener::BundleComplete, const string& bundleToken, const string& bundleName) noexcept { onBundleComplete(bundleToken, bundleName, true); }
 	void on(UploadManagerListener::BundleRenamed, const string& bundleToken, const string& bundleTarget) noexcept { onBundleName(bundleToken, bundleTarget, true); }
 
-	void on(QueueManagerListener::StatusUpdated, const QueueItem*, bool) noexcept;
-	void on(QueueManagerListener::Removed, const QueueItem*) noexcept;
-	void on(QueueManagerListener::Finished, const QueueItem*, const string&, const Download*) noexcept;
 	void on(QueueManagerListener::BundleFinished, const BundlePtr aBundle) noexcept { onBundleComplete(aBundle->getToken(), aBundle->getName(), false); }
 	void on(QueueManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, false); }
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, true); }

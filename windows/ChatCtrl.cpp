@@ -457,6 +457,8 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 				link=link.substr(tth+15, 39);
 				if (ShareManager::getInstance()->isTTHShared(TTHValue(link))) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+				} else if (QueueManager::getInstance()->isTTHQueued(TTHValue(link)) > 0) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
 				} else {
 					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 				}

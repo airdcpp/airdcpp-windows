@@ -325,15 +325,24 @@ private:
 
 		SearchInfo::List subItems;
 
-		SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0) { 
+		SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), queueDupe(false), shareDupe(false), finishedDupe(false) { 
 			
 			if(BOOLSETTING(DUPE_SEARCH)) {
 				if(sr->getType() == SearchResult::TYPE_DIRECTORY) {
 					shareDupe = ShareManager::getInstance()->isDirShared(sr->getFile());
-					queueDupe = QueueManager::getInstance()->isDirQueued(sr->getFile());
+					if (!shareDupe) {
+						queueDupe = QueueManager::getInstance()->isDirQueued(sr->getFile());
+					}
 				} else {
 					shareDupe = ShareManager::getInstance()->isTTHShared(sr->getTTH());
-					queueDupe = QueueManager::getInstance()->isTTHQueued(sr->getTTH());
+					if (!shareDupe) {
+						int tmp = QueueManager::getInstance()->isTTHQueued(sr->getTTH());
+						if (tmp == 1) {
+							queueDupe = true;
+						} else if (tmp == 2) {
+							finishedDupe = true;
+						}
+					}
 				}
 
 				if (!sr->getIP().empty()) {
@@ -505,12 +514,14 @@ private:
 		
 		bool isShareDupe() const { return shareDupe; }
 		bool isQueueDupe() const { return queueDupe; }
+		bool isFinishedDupe() const { return finishedDupe; }
 
 		SearchResultPtr sr;
 		GETSET(uint8_t, flagIndex, FlagIndex);
 	private:
 		bool shareDupe;
 		bool queueDupe;
+		bool finishedDupe;
 	};
 	
 	struct HubInfo : public FastAlloc<HubInfo> {
