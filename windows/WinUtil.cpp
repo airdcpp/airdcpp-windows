@@ -945,7 +945,7 @@ tstring WinUtil::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /rebuild\t\t\t\t\t(rebuild hash data)\n\
 /savequeue\t\t\t\t(save Download Queue)\n\
 /stop\t\t\t\t\t(stop SFV check)\n\
-/save\t\t\t\t\t(save share cache share.xml)\n\
+/save\t\t\t\t\t(save share cache shares.xml)\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /search <string>\t\t\t\t(search for...)\n\
 /g <searchstring>\t\t\t\t(Google search)\n\
@@ -1082,8 +1082,8 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(param))));
 		}
 	} else if(stricmp(cmd.c_str(), _T("rebuild")) == 0) {
-		ShareManager::getInstance()->Rebuild();
-		//HashManager::getInstance()->rebuild();
+		LogManager::getInstance()->message(STRING(REBUILD_STARTED));
+		HashManager::getInstance()->rebuild();
 	} else if(stricmp(cmd.c_str(), _T("shutdown")) == 0) {
 		MainFrame::setShutDown(!(MainFrame::getShutDown()));
 		if (MainFrame::getShutDown()) {

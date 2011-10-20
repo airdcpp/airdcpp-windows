@@ -137,6 +137,8 @@ public:
 
 		TabInfo* ti = getTabInfo(aWnd);
 		dcassert(ti != NULL);
+		if(ti == NULL)
+			return;
 		active = ti;
 		ti->dirty = false;
 		ti->notification = false;
@@ -578,6 +580,8 @@ private:
 
 		bool updateText(LPCTSTR text) {
 			len = _tcslen(text);
+			if(len <= 0)
+				return false;
 			if(len >= MAX_LENGTH && MAX_LENGTH > 7) {
 				name.assign(text, MAX_LENGTH - 3);
 				name.append(_T("..."));

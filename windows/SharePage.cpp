@@ -122,6 +122,25 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	return TRUE;
 }
 
+LRESULT SharePage::onColumnClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	
+	NMLISTVIEW* l = (NMLISTVIEW*)pnmh;
+	
+	if(l->iSubItem == ctrlDirectories.getSortColumn()) {
+		if(!ctrlDirectories.isAscending()) { //change the direction of sorting by clicking on a already sorted column
+			ctrlDirectories.setSort(-1, ctrlDirectories.getSortType());
+		} else {
+			ctrlDirectories.setSortDirection(false);
+		}
+	} else {
+		if(l->iSubItem == 0 || l->iSubItem == 1) //realpath or vname
+			ctrlDirectories.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING);
+		else if(l->iSubItem == 2) //size
+			ctrlDirectories.setSort(l->iSubItem, ExListViewCtrl::SORT_BYTES);
+	}
+	return 0;
+}
+
 LRESULT SharePage::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
 	HDROP drop = (HDROP)wParam;
 	TCHAR buf[MAX_PATH];
