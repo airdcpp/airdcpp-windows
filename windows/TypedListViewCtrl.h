@@ -874,7 +874,7 @@ public:
 			}
 	
 
-			if (pp->children.size() == 0) {
+			if (pp->children.empty()) {
 				//LogManager::getInstance()->message("remove unique parent else");
 				deleteItem(parent);
 				parents.erase(const_cast<K*>(&parent->getGroupCond()));

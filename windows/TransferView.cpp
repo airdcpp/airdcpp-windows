@@ -951,29 +951,27 @@ static tstring getFile(const Transfer::Type& type, const tstring& fileName) {
 
 TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	//LogManager::getInstance()->message("create parent with bundle " + Text::fromT(bundle));
-	ItemInfo* ii = new ItemInfo(HintedUser(NULL, Util::emptyString), Util::emptyString, download);
+	ItemInfo* ii = new ItemInfo(user, Text::fromT(bundle), download);
 	ii->running = 0;
 	ii->hits = 0;
 	dcassert(!bundle.empty());
-	//if (!bundle.empty()) {
-		ii->isBundle = true;
-		ii->bundle = bundle;
-		if (download) {
-			BundlePtr b = QueueManager::getInstance()->findBundle(Text::fromT(bundle));
-			if (b) {
-				ii->target = Text::toT(b->getTarget());
-				ii->size = b->getSize();
-				ii->user = user;
-			}
-		} else {
-			UploadBundlePtr b = UploadManager::getInstance()->findBundle(Text::fromT(bundle));
-			if (b) {
-				ii->target = Text::toT(b->getTarget());
-				ii->size = b->getSize();
-				ii->user = user;
-			}
+	ii->isBundle = true;
+	ii->bundle = bundle;
+
+	if (download) {
+		BundlePtr b = QueueManager::getInstance()->findBundle(Text::fromT(bundle));
+		if (b) {
+			ii->target = Text::toT(b->getTarget());
+			ii->size = b->getSize();
 		}
-	//}
+	} else {
+		UploadBundlePtr b = UploadManager::getInstance()->findBundle(Text::fromT(bundle));
+		if (b) {
+			ii->target = Text::toT(b->getTarget());
+			ii->size = b->getSize();
+		}
+	}
+
 	ii->statusString = TSTRING(CONNECTING);
 	return ii;
 }
@@ -1391,12 +1389,24 @@ void TransferView::on(DownloadManagerListener::BundleUser, const string& bundleT
 }
 
 
-void TransferView::on(DownloadManagerListener::Target, const string& aToken, const string& aBundle, const string& aTarget) {
+void TransferView::on(DownloadManagerListener::Target, const UserPtr& user, const string& aToken) {
 	UpdateInfo* ui = new UpdateInfo(aToken, true);
-	ui->setTarget(Text::toT(aTarget));
-	//if (!aBundle.empty()) {
-		ui->setBundle(aBundle);
-	//}
+	//ui->setTarget(Text::toT(aTarget));
+	//ui->setSize(aSize);
+	//ui->setBundle(aBundle);
+	string aTarget, bundleToken;	int64_t aSize; int aFlags = 0;
+	if(QueueManager::getInstance()->getQueueInfo(user, aTarget, aSize, aFlags, bundleToken)) {
+		Transfer::Type type = Transfer::TYPE_FILE;
+		if(aFlags & QueueItem::FLAG_USER_LIST)
+			type = Transfer::TYPE_FULL_LIST;
+		else if(aFlags & QueueItem::FLAG_PARTIAL_LIST)
+			type = Transfer::TYPE_PARTIAL_LIST;
+	
+		ui->setType(type);
+		ui->setTarget(Text::toT(aTarget));
+		ui->setSize(aSize);
+		ui->setBundle(bundleToken);
+	}
 	speak(UPDATE_ITEM, ui);
 }
 
