@@ -192,8 +192,8 @@ private:
 
 	enum {
 		COLUMN_FIRST,
-		COLUMN_FILE = COLUMN_FIRST,
-		COLUMN_USER,
+		COLUMN_USER = COLUMN_FIRST,
+		COLUMN_FILE,
 		COLUMN_HUB,
 		COLUMN_STATUS,
 		COLUMN_TIMELEFT,
@@ -374,6 +374,7 @@ private:
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
 	void on(DownloadManagerListener::BundleFinished, const string& bundleToken) noexcept { onBundleComplete(bundleToken, bundleToken, false); }
 	void on(DownloadManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) noexcept;
+	void on(DownloadManagerListener::Target, const string& aToken, const string& aBundle, const string& aTarget) noexcept;
 
 	void on(UploadManagerListener::Starting, const Upload* aUpload) noexcept;
 	void on(UploadManagerListener::Tick, const UploadList& aUpload, const UploadBundleList& bundles) noexcept;

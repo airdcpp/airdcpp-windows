@@ -34,10 +34,10 @@
 
 #include "BarShader.h"
 
-int TransferView::columnIndexes[] = { COLUMN_FILE, COLUMN_USER, COLUMN_HUB, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_CIPHER, COLUMN_IP, COLUMN_RATIO };
-int TransferView::columnSizes[] = { 150, 150, 250, 75, 75, 175, 100, 200, 100, 150, 50 };
+int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_FILE, COLUMN_HUB, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_CIPHER, COLUMN_IP, COLUMN_RATIO };
+int TransferView::columnSizes[] = { 150, 175, 150, 250, 75, 75, 100, 200, 100, 150, 50 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::BUNDLE_FILENAME, ResourceManager::USER, ResourceManager::HUB_SEGMENTS, ResourceManager::STATUS,
+static ResourceManager::Strings columnNames[] = { ResourceManager::USER, ResourceManager::BUNDLE_FILENAME, ResourceManager::HUB_SEGMENTS, ResourceManager::STATUS,
 	ResourceManager::TIME_LEFT, ResourceManager::SPEED, ResourceManager::SIZE, ResourceManager::PATH,
 	ResourceManager::CIPHER, ResourceManager::IP_BARE, ResourceManager::RATIO};
 
@@ -648,7 +648,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			ItemInfo* ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
 			if (!ii->bundle.empty()) {
-				ctrlTransfers.insertGroupedItem(ii, false, true);
+				ctrlTransfers.insertBundle(ii, false);
 			} else {
 				ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 			}
@@ -660,7 +660,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			ItemInfo* ii = findItem(ui, pos);
 			if(ii) {
 				if (!ii->bundle.empty()) {
-					ctrlTransfers.removeGroupedItem(ii, true, !ii->bundle.empty());
+					ctrlTransfers.removeBundle(ii, true);
 				} else {
 					dcassert(pos != -1);
 					ctrlTransfers.DeleteItem(pos);
@@ -676,12 +676,8 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 				if(!ii->bundle.empty() || !ui.bundle.empty())  {
 					ItemInfo* parent = ii->parent ? ii->parent : ii;
 
-					/* if target has changed, regroup the item */
-					bool changeParent=false;
-					if ((!ui.bundle.empty() || !ii->bundle.empty())) {
-						//LogManager::getInstance()->message("CHANGEPARENT CHECK HASBUNDLE");
-						changeParent = (ui.bundle != ii->bundle);
-					}
+					/* if bundle has changed, regroup the item */
+					bool changeParent = (ui.bundle != ii->bundle);
 
 
 					if(changeParent) {
@@ -689,7 +685,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 						if (ii->bundle.empty()) {
 							ctrlTransfers.DeleteItem(pos);
 						} else {
-							ctrlTransfers.removeGroupedItem(ii, false, !ii->bundle.empty());
+							ctrlTransfers.removeBundle(ii, false);
 						}
 					}
 					ii->update(ui);
@@ -699,8 +695,8 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 						if (ii->bundle.empty()) {
 							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 						} else {
-							ctrlTransfers.insertGroupedItem(ii, false, !ii->bundle.empty());
-							parent = ii->parent ? ii->parent : ii;
+							ctrlTransfers.insertBundle(ii, false);
+							//parent = ii->parent ? ii->parent : ii;
 						}
 					} else if(ii == parent || !parent->collapsed) {
 						//LogManager::getInstance()->message("CHANGEPARENT, ELSE");
@@ -1392,6 +1388,16 @@ void TransferView::on(DownloadManagerListener::BundleUser, const string& bundleT
 	ui->setBundle(bundleToken);
 	ui->setUser(aUser);
 	speak(UPDATE_PARENT, ui);
+}
+
+
+void TransferView::on(DownloadManagerListener::Target, const string& aToken, const string& aBundle, const string& aTarget) {
+	UpdateInfo* ui = new UpdateInfo(aToken, true);
+	ui->setTarget(Text::toT(aTarget));
+	//if (!aBundle.empty()) {
+		ui->setBundle(aBundle);
+	//}
+	speak(UPDATE_ITEM, ui);
 }
 
 LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

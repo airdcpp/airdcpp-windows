@@ -746,52 +746,26 @@ public:
 		return i != parents.end() ? &((*i).second) : NULL;
 	}
 
-	void insertGroupedItem(T* item, bool autoExpand, bool bundle = false) {
+	void insertGroupedItem(T* item, bool autoExpand) {
 		T* parent = NULL;
 		ParentPair* pp = findParentPair(item->getGroupCond());
 
 		int pos = -1;
 
 		if(pp == NULL) {
-			if (bundle) {
-				//LogManager::getInstance()->message("insertGroupedItem pp NULL BUNDLE");
-				parent  = item->createParent();
-				uniqueParent = false;
+			parent = item;
 
-				ParentPair newPP = { parent };
-				pp = &(parents.insert(make_pair(const_cast<K*>(&parent->getGroupCond()), newPP)).first->second);
+			ParentPair newPP = { parent };
+			parents.insert(make_pair(const_cast<K*>(&parent->getGroupCond()), newPP));
 
-				parent->parent = NULL; // ensure that parent of this item is really NULL
-				parent->hits++;
-
-				pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
-
-				if(pos != -1) {
-					if(autoExpand){
-						SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
-						parent->collapsed = false;
-					} else {
-						SetItemState(pos, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
-					}
-				}
-			} else {
-				//LogManager::getInstance()->message("insertGroupedItem pp NULL TARGET");
-				parent = item;
-
-				ParentPair newPP = { parent };
-				parents.insert(make_pair(const_cast<K*>(&parent->getGroupCond()), newPP));
-
-				parent->parent = NULL; // ensure that parent of this item is really NULL
-				insertItem(getSortPos(parent), parent, parent->getImageIndex());
-				return;
-			}
+			parent->parent = NULL; // ensure that parent of this item is really NULL
+			insertItem(getSortPos(parent), parent, parent->getImageIndex());
+			return;
 		} else if(pp->children.empty()) {
-			//LogManager::getInstance()->message("insertGroupedItem children empty");
 			T* oldParent = pp->parent;
 			parent = oldParent->createParent();
 			if(parent != oldParent) {
-				if (!bundle)
-					uniqueParent = true;
+				uniqueParent = true;
 				parents.erase(const_cast<K*>(&oldParent->getGroupCond()));
 				deleteItem(oldParent);
 
@@ -819,6 +793,51 @@ public:
 				}
 			}
 		} else {
+			parent = pp->parent;
+			pos = findItem(parent);
+		}
+
+		pp->children.push_back(item);
+		parent->hits++;
+		item->parent = parent;
+
+		if(pos != -1) {
+			if(!parent->collapsed) {
+				insertChild(item, pos + pp->children.size());
+			}
+			updateItem(pos);
+		}
+	}
+
+
+	void insertBundle(T* item, bool autoExpand) {
+		T* parent = NULL;
+		ParentPair* pp = findParentPair(item->getGroupCond());
+
+		int pos = -1;
+
+		if(pp == NULL) {
+			//LogManager::getInstance()->message("insertGroupedItem pp NULL BUNDLE");
+			parent  = item->createParent();
+			uniqueParent = false;
+
+			ParentPair newPP = { parent };
+			pp = &(parents.insert(make_pair(const_cast<K*>(&parent->getGroupCond()), newPP)).first->second);
+
+			parent->parent = NULL; // ensure that parent of this item is really NULL
+			parent->hits++;
+
+			pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
+
+			if(pos != -1) {
+				if(autoExpand){
+					SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
+					parent->collapsed = false;
+				} else {
+					SetItemState(pos, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
+				}
+			}
+		} else {
 			//LogManager::getInstance()->message("insertGroupedItem else");
 			parent = pp->parent;
 			pos = findItem(parent);
@@ -836,20 +855,8 @@ public:
 		}
 	}
 
-	void removeParent(T* parent) {
-		ParentPair* pp = findParentPair(parent->getGroupCond());
-		if(pp) {
-			for(vector<T*>::iterator i = pp->children.begin(); i != pp->children.end(); i++) {
-				deleteItem(*i);
-				delete *i;
-			}
-			pp->children.clear();
-			parents.erase(const_cast<K*>(&parent->getGroupCond()));
-		}
-		deleteItem(parent);
-	}
 
-	void removeGroupedItem(T* item, bool removeFromMemory = true, bool bundle = false) {
+	void removeBundle(T* item, bool removeFromMemory = true) {
 		if(!item->parent) {
 			//LogManager::getInstance()->message("remove if");
 			removeParent(item);
@@ -866,11 +873,53 @@ public:
 				pp->parent->hits--;
 			}
 	
-			if(uniqueParent || bundle) {
-				//LogManager::getInstance()->message("remove unique parent");
-				//dcassert(!pp->children.empty());
-				if(pp->children.size() == 1 && !bundle) {
-					//LogManager::getInstance()->message("remove unique parent if");
+
+			if (pp->children.size() == 0) {
+				//LogManager::getInstance()->message("remove unique parent else");
+				deleteItem(parent);
+				parents.erase(const_cast<K*>(&parent->getGroupCond()));
+				delete parent;
+			}
+
+			updateItem(parent);
+		}
+
+		if(removeFromMemory)
+			delete item;
+	}
+
+
+	void removeParent(T* parent) {
+		ParentPair* pp = findParentPair(parent->getGroupCond());
+		if(pp) {
+			for(vector<T*>::iterator i = pp->children.begin(); i != pp->children.end(); i++) {
+				deleteItem(*i);
+				delete *i;
+			}
+			pp->children.clear();
+			parents.erase(const_cast<K*>(&parent->getGroupCond()));
+		}
+		deleteItem(parent);
+	}
+
+	void removeGroupedItem(T* item, bool removeFromMemory = true) {
+		if(!item->parent) {
+			removeParent(item);
+		} else {
+			T* parent = item->parent;
+			ParentPair* pp = findParentPair(parent->getGroupCond());
+
+			deleteItem(item);
+
+			vector<T*>::iterator n = find(pp->children.begin(), pp->children.end(), item);
+			if(n != pp->children.end()) {
+				pp->children.erase(n);
+				pp->parent->hits--;
+			}
+	
+			if(uniqueParent) {
+				dcassert(!pp->children.empty());
+				if(pp->children.size() == 1) {
 					const T* oldParent = parent;
 					parent = pp->children.front();
 
@@ -884,15 +933,9 @@ public:
 					parent->parent = NULL; // ensure that parent of this item is really NULL
 					deleteItem(parent);
 					insertItem(getSortPos(parent), parent, parent->getImageIndex());
-				} else if (pp->children.size() == 0) {
-					//LogManager::getInstance()->message("remove unique parent else");
-					deleteItem(parent);
-					parents.erase(const_cast<K*>(&parent->getGroupCond()));
-					delete parent;
 				}
 			} else {
 				if(pp->children.empty()) {
-					//LogManager::getInstance()->message("remove CHILDREN EMPTY");
 					SetItemState(findItem(parent), INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);
 				}
 			}
