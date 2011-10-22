@@ -342,7 +342,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 			if(ii != NULL) {
 				StringList paths;
 				paths.push_back(Util::getFilePath(ii->getTarget()));
-				SFVReaderManager::getInstance()->scan(paths, true);
+				ShareScannerManager::getInstance()->scan(paths, true);
 			}
 		}
 		return 0;
@@ -356,7 +356,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 			if(ii != NULL){
 				StringList files;
 				files.push_back(ii->getTarget());
-				SFVReaderManager::getInstance()->scan(files, true);
+				ShareScannerManager::getInstance()->scan(files, true);
 				}
 			}
 		return 0;

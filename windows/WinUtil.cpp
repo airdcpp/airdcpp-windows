@@ -51,7 +51,7 @@
 #include "../client/LogManager.h"
 #include "../client/version.h"
 #include "../client/pme.h"
-#include "../client/SFVReader.h"
+#include "../client/ShareScannerManager.h"
 
 #include "boost/algorithm/string/replace.hpp"
 #include "boost/algorithm/string/trim.hpp"
@@ -1004,7 +1004,7 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			return false;
 		}
 	} else if(stricmp(cmd.c_str(), _T("stop")) == 0) {
-		SFVReaderManager::getInstance()->Stop();
+		ShareScannerManager::getInstance()->Stop();
 	} else if(stricmp(cmd.c_str(), _T("me")) == 0) {
 		message = param;
 		thirdPerson = true;

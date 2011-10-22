@@ -35,7 +35,7 @@
 #include "../client/MerkleTree.h"
 #include "../client/User.h"
 #include "../client/ClientManager.h"
-#include "../client/SFVReader.h"
+#include "../client/ShareScannerManager.h"
 #include "../client/Wildcards.h"
 #include "TextFrame.h"
 
@@ -694,7 +694,7 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 
 	
 		if(!localpaths.empty())
-		SFVReaderManager::getInstance()->scan(localpaths);
+		ShareScannerManager::getInstance()->scan(localpaths);
 	
 	return 0;
 }
@@ -742,7 +742,7 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	}
 
 	if (!scanList.empty()) {
-		SFVReaderManager::getInstance()->scan(scanList, true);
+		ShareScannerManager::getInstance()->scan(scanList, true);
 	}
 	return 0;
 }
@@ -1850,13 +1850,12 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 	try {
 		tstring path;
 		if(ii->type == ItemInfo::FILE) {
-			if (ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE) {
+			if (ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE || mylist) {
 				try {
 					path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 				} catch(...) { }
 			} else {
 				path = QueueManager::getInstance()->getFinishedTTHPath(ii->file->getTTH());
-				LogManager::getInstance()->message("Path: " + Text::fromT(path));
 			}
 
 			if (path.empty()) {

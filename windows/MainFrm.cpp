@@ -66,7 +66,7 @@
 #include "../client/Thread.h"
 #include "../client/FavoriteManager.h"
 #include "../client/MappingManager.h"
-#include "../client/SFVReader.h"
+#include "../client/ShareScannerManager.h"
 #include "../client/AirUtil.h"
 
 MainFrame* MainFrame::anyMF = NULL;
@@ -1349,7 +1349,7 @@ LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
-		SFVReaderManager::getInstance()->scan();
+		ShareScannerManager::getInstance()->scan();
 		
 		return 0;
 }
