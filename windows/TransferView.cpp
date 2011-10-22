@@ -22,7 +22,6 @@
 
 #include "../client/ResourceManager.h"
 #include "../client/SettingsManager.h"
-#include "../client/ConnectionManager.h"
 #include "../client/DownloadManager.h"
 #include "../client/UploadManager.h"
 #include "../client/QueueManager.h"
@@ -893,11 +892,11 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 	speak(ADD_ITEM, ui);
 }
 
-void TransferView::on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
+void TransferView::onUpdateFileInfo(const UserPtr& aUser, const string& aToken, bool updateStatus) {
+	UpdateInfo* ui = new UpdateInfo(aToken, true);
 	string aTarget, bundleToken;	int64_t aSize; int aFlags = 0;
 
-	if(QueueManager::getInstance()->getQueueInfo(aCqi->getUser(), aTarget, aSize, aFlags, bundleToken)) {
+	if(QueueManager::getInstance()->getQueueInfo(aUser, aTarget, aSize, aFlags, bundleToken)) {
 		Transfer::Type type = Transfer::TYPE_FILE;
 		if(aFlags & QueueItem::FLAG_USER_LIST)
 			type = Transfer::TYPE_FULL_LIST;
@@ -910,8 +909,10 @@ void TransferView::on(ConnectionManagerListener::StatusChanged, const Connection
 		ui->setBundle(bundleToken);
 	}
 
-	ui->setStatusString(TSTRING(CONNECTING));
-	ui->setStatus(ItemInfo::STATUS_WAITING);
+	if (updateStatus) {
+		ui->setStatusString(TSTRING(CONNECTING));
+		ui->setStatus(ItemInfo::STATUS_WAITING);
+	}
 
 	speak(UPDATE_ITEM, ui);
 }
@@ -1386,28 +1387,6 @@ void TransferView::on(DownloadManagerListener::BundleUser, const string& bundleT
 	ui->setBundle(bundleToken);
 	ui->setUser(aUser);
 	speak(UPDATE_PARENT, ui);
-}
-
-
-void TransferView::on(DownloadManagerListener::Target, const UserPtr& user, const string& aToken) {
-	UpdateInfo* ui = new UpdateInfo(aToken, true);
-	//ui->setTarget(Text::toT(aTarget));
-	//ui->setSize(aSize);
-	//ui->setBundle(aBundle);
-	string aTarget, bundleToken;	int64_t aSize; int aFlags = 0;
-	if(QueueManager::getInstance()->getQueueInfo(user, aTarget, aSize, aFlags, bundleToken)) {
-		Transfer::Type type = Transfer::TYPE_FILE;
-		if(aFlags & QueueItem::FLAG_USER_LIST)
-			type = Transfer::TYPE_FULL_LIST;
-		else if(aFlags & QueueItem::FLAG_PARTIAL_LIST)
-			type = Transfer::TYPE_PARTIAL_LIST;
-	
-		ui->setType(type);
-		ui->setTarget(Text::toT(aTarget));
-		ui->setSize(aSize);
-		ui->setBundle(bundleToken);
-	}
-	speak(UPDATE_ITEM, ui);
 }
 
 LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

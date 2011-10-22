@@ -25,6 +25,7 @@
 
 #include "..\client\DownloadManagerListener.h"
 #include "..\client\UploadManagerListener.h"
+#include "..\client\ConnectionManager.h"
 #include "..\client\ConnectionManagerListener.h"
 #include "..\client\QueueManagerListener.h"
 #include "..\client\TaskQueue.h"
@@ -361,7 +362,7 @@ private:
 	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept;
 	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept;
 	void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) noexcept;
-	void on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) noexcept;
+	void on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) noexcept { onUpdateFileInfo(aCqi->getUser(), aCqi->getToken(), true); };
 	//void on(ConnectionManagerListener::TokenChanged, const ConnectionQueueItem* aCqi, string newToken) {
 
 	void on(DownloadManagerListener::Requesting, const Download* aDownload) noexcept;	
@@ -374,7 +375,7 @@ private:
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
 	void on(DownloadManagerListener::BundleFinished, const string& bundleToken) noexcept { onBundleComplete(bundleToken, bundleToken, false); }
 	void on(DownloadManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) noexcept;
-	void on(DownloadManagerListener::Target, const UserPtr& user, const string& aToken) noexcept;
+	void on(DownloadManagerListener::Target, const UserPtr& user, const string& aToken) noexcept { onUpdateFileInfo(user, aToken, false); }
 
 	void on(UploadManagerListener::Starting, const Upload* aUpload) noexcept;
 	void on(UploadManagerListener::Tick, const UploadList& aUpload, const UploadBundleList& bundles) noexcept;
@@ -390,6 +391,8 @@ private:
 	void on(QueueManagerListener::BundleRenamed, const BundlePtr aBundle) noexcept { onBundleName(aBundle->getToken(), aBundle->getTarget(), false); }
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+
+	void onUpdateFileInfo(const UserPtr& aUser, const string& aToken, bool updateStatus);
 
 	void onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload);
 	void onBundleStatus(const BundlePtr aBundle, bool removed);
