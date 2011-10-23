@@ -7,7 +7,7 @@
 		<String Name="ActiveSearchString">Enabled / Search String</String>
 		<String Name="Add">&amp;Add</String>
 		<String Name="AddAsSource">Add as source</String>
-		<String Name="AddFinishedInstantly">Add finished files to share instantly (if shared)</String>
+		<String Name="AddFinishedInstantly">Add finished Bundles to share instantly (if shared)</String>
 		<String Name="AddToFavorites">Add To Favorites</String>
 		<String Name="AddToQueue">Add to Queue</String>
 		<String Name="Added">Added</String>
