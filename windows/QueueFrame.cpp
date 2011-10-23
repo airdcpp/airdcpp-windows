@@ -635,9 +635,65 @@ void QueueFrame::removeSelected() {
 		ctrlQueue.forEachSelected(&QueueItemInfo::remove);
 }
 	
-void QueueFrame::removeSelectedDir() { 
-	if(!BOOLSETTING(CONFIRM_DELETE) || MessageBox(CTSTRING(REALLY_REMOVE), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)	
-		removeDir(ctrlDirs.GetSelectedItem()); 
+void QueueFrame::removeSelectedDir() {
+	if(ctrlDirs.GetSelectedItem() == NULL)
+		return;
+
+	dcassert(!curDir.empty());
+	tstring name = Text::toT(curDir);
+	int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
+	BundleList bundles = QueueManager::getInstance()->findBundleFinished(curDir, finishedFiles, dirBundles, fileBundles);
+	bool moveFinished = (finishedFiles > 0);
+	
+		string tmp;
+		if (bundles.size() == 1) {
+			BundlePtr bundle = bundles.front();
+			if (stricmp(bundle->getTarget(), curDir) != 0) {
+				tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE_PART).size() + 256);
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE_PART), Util::getLastDir(curDir), bundle->getName()));
+				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+					return;
+				} else {
+					if (moveFinished) {
+						tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE_PART).size() + 256);
+						tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE_PART), finishedFiles));
+						if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+							moveFinished = false;
+						}
+					}
+				}
+			} else {
+				tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE).size() + 256);
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE), bundle->getName()));
+				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+					return;
+				} else {
+					if (moveFinished) {
+						tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE).size() + 256);
+						tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE), finishedFiles));
+						if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+							moveFinished = false;
+						}
+					}
+				}
+			}
+		} else {
+			tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_MULTIPLE).size() + 256);
+			tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_MULTIPLE), dirBundles, fileBundles));
+			if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+				return;
+			} else {
+				if (moveFinished) {
+					tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE).size() + 256);
+					tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE), finishedFiles));
+					if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+						moveFinished = false;
+					}
+				}
+			}
+		}
+
+		QueueManager::getInstance()->removeDir(curDir, bundles, moveFinished);
 }
 
 void QueueFrame::moveSelected() {
@@ -694,20 +750,55 @@ void QueueFrame::moveSelectedDir() {
 	bool moveFinished = (finishedFiles > 0);
 	
 	if(WinUtil::browseDirectory(name, m_hWnd)) {
-		if (moveFinished) {
-			if(MessageBox(_T("Do you also want to move finished files of this bundle?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
-				moveFinished = false;
+		string newDir = Text::fromT(name) + Util::getLastDir(curDir) + "\\";
+		string tmp;
+		if (bundles.size() == 1) {
+			BundlePtr bundle = bundles.front();
+			if (stricmp(bundle->getTarget(), curDir) != 0) {
+				tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_BUNDLE_PART).size() + 256);
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_BUNDLE_PART), Util::getLastDir(curDir), bundle->getName(), newDir));
+				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+					return;
+				} else {
+					if (moveFinished) {
+						tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_FINISHED_BUNDLE_PART).size() + 256);
+						tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_FINISHED_BUNDLE_PART), finishedFiles));
+						if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+							moveFinished = false;
+						}
+					}
+				}
+			} else {
+				tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_BUNDLE).size() + 256);
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_BUNDLE), bundle->getName(), newDir));
+				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+					return;
+				} else {
+					if (moveFinished) {
+						tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_FINISHED_BUNDLE).size() + 256);
+						tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_FINISHED_BUNDLE), finishedFiles));
+						if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+							moveFinished = false;
+						}
+					}
+				}
+			}
+		} else {
+			tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_MULTIPLE).size() + 256);
+			tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_MULTIPLE), dirBundles, fileBundles, newDir));
+			if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+				return;
+			} else {
+				if (moveFinished) {
+					tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_FINISHED_MULTIPLE).size() + 256);
+					tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_FINISHED_MULTIPLE), finishedFiles));
+					if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+						moveFinished = false;
+					}
+				}
 			}
 		}
-		QueueManager::getInstance()->moveDir(curDir, Text::fromT(name) + Util::getLastDir(curDir) + "\\", bundles, moveFinished);
-		/*//tmp.clear();
-		moveDir(ctrlDirs.GetSelectedItem(), Text::fromT(name));
-
-		for(vector<pair<QueueItemInfo*, string>>::const_iterator i = tmp.begin(); i != tmp.end(); ++i) {
-			QueueManager::getInstance()->move((*i).first->getTarget(), (*i).second + Util::getFileName((*i).first->getTarget()));
-		}
-
-		tmp.clear(); */
+		QueueManager::getInstance()->moveDir(curDir, newDir, bundles, moveFinished);
 	}
 }
 /*

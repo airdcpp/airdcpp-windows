@@ -1394,5 +1394,17 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="XFoldersExtras">%d folders with extra files</String>
 		<String Name="XEmptyFolders">%d empty folders</String>
 		<String Name="XDupeFolders">%d duplicate folders</String>
+		<String Name="ConfirmRemoveDirMultiple">The selected folder contains %d directory bundles and %d file bundles. Are you sure want to remove them?</String>
+		<String Name="ConfirmRemoveDirBundle">Are you sure want to remove the bundle %s?</String>
+		<String Name="ConfirmRemoveDirBundlePart">Are you sure want to remove the directory %s in the bundle %s?</String>
+		<String Name="ConfirmRemoveDirFinishedMultiple">The bundles in the selected directory contain total of %d finished files. Do you also want to remove them?</String>
+		<String Name="ConfirmRemoveDirFinishedBundle">The selected bundle contains total of %d finished files. Do you also want to remove them?</String>
+		<String Name="ConfirmRemoveDirFinishedBundlePart">The selected bundle directory contains total of %d finished files. Do you also want to remove them?</String>
+		<String Name="ConfirmMoveDirMultiple">The selected folder contains %d directory bundles and %d file bundles. Are you sure want to move them to %s?</String>
+		<String Name="ConfirmMoveDirBundle">Are you sure want to move the bundle %s to %s?</String>
+		<String Name="ConfirmMoveDirBundlePart">Are you sure want to move the directory %s in the bundle %s to %s?</String>
+		<String Name="ConfirmMoveDirFinishedMultiple">The bundles in the selected directory contain total of %d finished files. Do you also want to move them?</String>
+		<String Name="ConfirmMoveDirFinishedBundle">The selected bundle contains total of %d finished files. Do you also want to move them?</String>
+		<String Name="ConfirmMoveDirFinishedBundlePart">The selected bundle directory contains total of %d finished files. Do you also want to move them?</String>
 	</Strings>
 </Language>
