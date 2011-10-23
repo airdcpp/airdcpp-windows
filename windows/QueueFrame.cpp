@@ -689,16 +689,17 @@ void QueueFrame::moveSelectedDir() {
 
 	dcassert(!curDir.empty());
 	tstring name = Text::toT(curDir);
-	QueueItemList finishedItems;
-	BundlePtr bundle = QueueManager::getInstance()->findBundleFinished(curDir, finishedItems);;
+	int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
+	BundleList bundles = QueueManager::getInstance()->findBundleFinished(curDir, finishedFiles, dirBundles, fileBundles);
+	bool moveFinished = (finishedFiles > 0);
 	
 	if(WinUtil::browseDirectory(name, m_hWnd)) {
-		if (!finishedItems.empty()) {
+		if (moveFinished) {
 			if(MessageBox(_T("Do you also want to move finished files of this bundle?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
-				finishedItems.clear();
+				moveFinished = false;
 			}
 		}
-		QueueManager::getInstance()->moveDir(curDir, Text::fromT(name) + Util::getLastDir(curDir) + "\\", bundle, finishedItems);
+		QueueManager::getInstance()->moveDir(curDir, Text::fromT(name) + Util::getLastDir(curDir) + "\\", bundles, moveFinished);
 		/*//tmp.clear();
 		moveDir(ctrlDirs.GetSelectedItem(), Text::fromT(name));
 

@@ -929,7 +929,6 @@ void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueIt
 	else {
 		ui->setStatusString(Text::toT(aReason));
 	}
-	ui->setBundle(Util::emptyString);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	speak(UPDATE_ITEM, ui);
 }
