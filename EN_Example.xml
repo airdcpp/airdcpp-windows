@@ -1406,5 +1406,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ConfirmMoveDirFinishedMultiple">The bundles in the selected directory contain total of %d finished files. Do you also want to move them?</String>
 		<String Name="ConfirmMoveDirFinishedBundle">The selected bundle contains total of %d finished files. Do you also want to move them?</String>
 		<String Name="ConfirmMoveDirFinishedBundlePart">The selected bundle directory contains total of %d finished files. Do you also want to move them?</String>
+		<String Name="MatchAdl">ADLSearch</String>
+		<String Name="MatchingAdl">Matching Filelist with ADLSearch, this might take a while if the list is large...</String>
 	</Strings>
 </Language>

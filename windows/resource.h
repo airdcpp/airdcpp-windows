@@ -828,6 +828,7 @@
 #define IDC_SETTINGS_MEBIBITS2          1407
 #define IDC_STYLES                      1408
 #define IDC_AVAILABLE_STYLES            1409
+#define IDC_MATCH_ADL					1410
 #define IDC_SYSTEM_LOG                  1412
 #define IDC_OPEN_SYSTEM_LOG             1413
 #define IDC_TLS_PRIVATE_KEY_FILE        1414

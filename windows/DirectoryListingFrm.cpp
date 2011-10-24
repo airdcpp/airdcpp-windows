@@ -107,7 +107,7 @@ void DirectoryListingFrame::loadFile(const tstring& name, const tstring& dir) {
 	
 	ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 	//don't worry about cleanup, the object will delete itself once the thread has finished it's job
-	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(name), Util::emptyString, dir, mylist, false);
+	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(name), Util::emptyString, dir, mylist, false, false);
 	loading = true;
 	tdl->start();
 
@@ -116,7 +116,7 @@ void DirectoryListingFrame::loadFile(const tstring& name, const tstring& dir) {
 void DirectoryListingFrame::loadXML(const string& txt) {
 	ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 	//don't worry about cleanup, the object will delete itself once the thread has finished it's job
-	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Util::emptyString, txt, Util::emptyStringT, mylist, false);
+	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Util::emptyString, txt, Util::emptyStringT, mylist, false, false);
 	loading = true;
 	tdl->start();
 }
@@ -185,6 +185,11 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlListDiff.SetWindowText(CTSTRING(FILE_LIST_DIFF));
 	ctrlListDiff.SetFont(WinUtil::systemFont);
 
+	ctrlADLMatch.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+	BS_PUSHBUTTON, 0, IDC_MATCH_ADL);
+	ctrlADLMatch.SetWindowText(CTSTRING(MATCH_ADL));
+	ctrlADLMatch.SetFont(WinUtil::systemFont);
+	
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlList.m_hWnd);
 	m_nProportionalPos = 2500;
@@ -197,6 +202,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	statusSizes[STATUS_MATCH_QUEUE] = WinUtil::getTextWidth(TSTRING(MATCH_QUEUE), m_hWnd) + 8;
 	statusSizes[STATUS_FIND] = WinUtil::getTextWidth(TSTRING(FIND), m_hWnd) + 8;
 	statusSizes[STATUS_NEXT] = WinUtil::getTextWidth(TSTRING(NEXT), m_hWnd) + 8;
+	statusSizes[STATUS_MATCH_ADL] = WinUtil::getTextWidth(TSTRING(MATCH_ADL), m_hWnd) + 8;
 
 	ctrlStatus.SetParts(STATUS_LAST, statusSizes);
 
@@ -620,7 +626,7 @@ LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	tstring file;
 	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), _T("File Lists\0*.xml.bz2\0All Files\0*.*\0"))) {
 			ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
-			ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(file), Util::emptyString, Util::emptyStringT, mylist, true);
+			ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(file), Util::emptyString, Util::emptyStringT, mylist, true, false);
 			loading = true;
 			tdl->start();
 		//DirectoryListing dirList(dl->getHintedUser());
@@ -636,6 +642,18 @@ LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 			/// @todo report to user?
 		}*/
 	}
+	return 0;
+}
+LRESULT DirectoryListingFrame::onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(loading)
+		return 0;
+
+
+	ctrlStatus.SetText(0, CTSTRING(MATCHING_ADL));
+	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Util::emptyString, Util::emptyString, Util::emptyStringT, mylist, false, true);
+	loading = true;
+	tdl->start();
+	
 	return 0;
 }
 
@@ -1250,6 +1268,10 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 		ctrlStatus.SetParts(STATUS_LAST, w);
 		ctrlStatus.GetRect(0, sr);
+
+		sr.left = w[STATUS_MATCH_ADL - 1];
+		sr.right = w[STATUS_MATCH_ADL];
+		ctrlADLMatch.MoveWindow(sr);
 
 		sr.left = w[STATUS_FILE_LIST_DIFF - 1];
 		sr.right = w[STATUS_FILE_LIST_DIFF];

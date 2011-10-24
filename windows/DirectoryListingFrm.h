@@ -76,6 +76,7 @@ public:
 		STATUS_TOTAL_SIZE,
 		STATUS_SELECTED_FILES,
 		STATUS_SELECTED_SIZE,
+		STATUS_MATCH_ADL,
 		STATUS_FILE_LIST_DIFF,
 		STATUS_MATCH_QUEUE,
 		STATUS_FIND,
@@ -161,6 +162,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_NEXT, onNext)
 		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
 		COMMAND_ID_HANDLER(IDC_FILELIST_DIFF, onListDiff)
+		COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
 	ALT_MSG_MAP(CONTROL_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_XBUTTONUP, onXButtonUp)
 	END_MSG_MAP()
@@ -195,7 +197,8 @@ public:
 	LRESULT onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	
+	LRESULT onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -418,6 +421,7 @@ private:
 	CButton ctrlFind, ctrlFindNext;
 	CButton ctrlListDiff;
 	CButton ctrlMatchQueue;
+	CButton ctrlADLMatch;
 
 	string findStr;
 	tstring error;
@@ -435,7 +439,7 @@ private:
 	bool mylist;
 	bool partialList;
 
-	int statusSizes[10];
+	int statusSizes[11];
 
 	
 	unique_ptr<DirectoryListing> dl;
@@ -472,8 +476,8 @@ class ThreadedDirectoryListing : public Thread
 {
 public:
 	ThreadedDirectoryListing(DirectoryListingFrame* pWindow, 
-		const string& pFile, const string& pTxt, const tstring& aDir = Util::emptyStringT, bool myList = false, bool listDiff = false) : mWindow(pWindow),
-		mFile(pFile), mTxt(pTxt), mDir(aDir), mylist(myList), listdiff(listDiff)
+		const string& pFile, const string& pTxt, const tstring& aDir = Util::emptyStringT, bool myList = false, bool listDiff = false, bool adlSearch = false) : mWindow(pWindow),
+		mFile(pFile), mTxt(pTxt), mDir(aDir), mylist(myList), listdiff(listDiff), adlsearch(adlSearch)
 	{ }
 
 protected:
@@ -484,6 +488,7 @@ protected:
 	bool mylist;
 	bool partialList;
 	bool listdiff;
+	bool adlsearch;
 private:
 	int run() {
 		try {
@@ -497,7 +502,11 @@ private:
 				mWindow->dl->getRoot()->filterList(dirList);
 			
 				mWindow->refreshTree(Util::emptyStringT);
-		
+			}else if(adlsearch) {
+				mWindow->DisableWindow();
+				ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
+				mWindow->refreshTree(Util::emptyStringT);
+
 			} else if(!mFile.empty()) {
 				
 				
