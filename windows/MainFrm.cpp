@@ -986,16 +986,6 @@ LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 
 void MainFrame::autoConnect(const FavoriteHubEntry::List& fl) {
 		
-	if(BOOLSETTING(FIRST_RUN) && (SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_PUBLIC)) {
-		FavoriteHubEntry e;
-			
-		e.setName("FXR Team AirDC++ support hub");
-		e.setDescription("AirDC++");
-		e.setServer("fxr.airdcpp.net");
-			FavoriteManager::getInstance()->addFavorite(e);
-		SettingsManager::getInstance()->set(SettingsManager::FIRST_RUN, false);
-	}
-
 	int left = SETTING(OPEN_FIRST_X_HUBS);
 	FavoriteHubEntry::List& fh = FavoriteManager::getInstance()->getFavoriteHubs();
 	if(left > (int)fh.size()) {

@@ -486,7 +486,7 @@ protected:
 	string mTxt;
 	tstring mDir;
 	bool mylist;
-	bool partialList;
+	//bool partialList;
 	bool listdiff;
 	bool adlsearch;
 private:
@@ -498,7 +498,7 @@ private:
 			if(listdiff) {
 				mWindow->DisableWindow();
 				DirectoryListing dirList(mWindow->dl->getHintedUser());
-				dirList.loadFile(mFile, true, partialList);
+				dirList.loadFile(mFile, true, mWindow->partialList);
 				mWindow->dl->getRoot()->filterList(dirList);
 			
 				mWindow->refreshTree(Util::emptyStringT);
@@ -518,7 +518,7 @@ private:
 				}
 				if (!SETTING(DUPES_IN_FILELIST))
 					checkShareDupe = false;
-				mWindow->dl->loadFile(mFile, checkShareDupe, partialList);
+				mWindow->dl->loadFile(mFile, checkShareDupe, mWindow->partialList);
 				
 
 				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {
