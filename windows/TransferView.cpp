@@ -180,7 +180,6 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			transferMenu.AppendMenu(MF_SEPARATOR);
 			transferMenu.AppendMenu(MF_STRING, IDC_OPEN_BUNDLE_FOLDER, CTSTRING(OPEN_FOLDER));
 			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE, CTSTRING(REMOVE_BUNDLE));
-			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE_FINISHED, CTSTRING(REMOVE_BUNDLE_FINISHED));
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(BUNDLE_PRIORITY));
 		}
 			
@@ -309,13 +308,25 @@ void TransferView::ItemInfo::removeAll() {
 }
 
 void TransferView::ItemInfo::removeBundle() {
-	if(!BOOLSETTING(CONFIRM_DELETE) || ::MessageBox(0, _T("Do you really want to remove this bundle?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
-		QueueManager::getInstance()->removeBundle(Text::fromT(bundle), false);
-}
-
-void TransferView::ItemInfo::removeBundleFinished() {
-	if(!BOOLSETTING(CONFIRM_DELETE) || ::MessageBox(0, _T("Do you really want to remove this bundle and all of its items?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
-		QueueManager::getInstance()->removeBundle(Text::fromT(bundle), true);
+	BundlePtr aBundle = QueueManager::getInstance()->findBundle(Text::fromT(bundle));
+	if (aBundle) {
+		bool moveFinished = !aBundle->getFinishedFiles().empty();
+		string tmp;
+		tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE).size() + 1024);
+		tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE), aBundle->getName()));
+		if(::MessageBox(0, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+			return;
+		} else {
+			if (moveFinished) {
+				tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE).size() + 1024);
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE), aBundle->getFinishedFiles().size()));
+				if(::MessageBox(0, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+					moveFinished = false;
+				}
+			}
+		}
+		QueueManager::getInstance()->removeBundleFiles(aBundle, moveFinished);
+	}
 }
 
 LRESULT TransferView::onOpenBundleFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

@@ -647,7 +647,7 @@ void QueueFrame::removeSelectedDir() {
 	}
 
 	int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
-	BundleList bundles = QueueManager::getInstance()->findBundleFinished(curDir, finishedFiles, dirBundles, fileBundles);
+	BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, finishedFiles, dirBundles, fileBundles);
 	bool moveFinished = (finishedFiles > 0);
 	
 		string tmp;
@@ -751,7 +751,7 @@ void QueueFrame::moveSelectedDir() {
 	dcassert(!curDir.empty());
 	tstring name = Text::toT(curDir);
 	int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
-	BundleList bundles = QueueManager::getInstance()->findBundleFinished(curDir, finishedFiles, dirBundles, fileBundles);
+	BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, finishedFiles, dirBundles, fileBundles);
 	bool moveFinished = (finishedFiles > 0);
 	
 	if(WinUtil::browseDirectory(name, m_hWnd)) {
@@ -803,7 +803,8 @@ void QueueFrame::moveSelectedDir() {
 				}
 			}
 		}
-		QueueManager::getInstance()->moveDir(curDir, newDir, bundles, moveFinished);
+		string tmp2 = curDir;
+		QueueManager::getInstance()->moveDir(tmp2, newDir, bundles, moveFinished);
 	}
 }
 /*

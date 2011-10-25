@@ -1368,7 +1368,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="BundleFilename">Bundle / Filename</String>
 		<String Name="Bundle">Bundle</String>
 		<String Name="RemoveBundle">Remove bundle from queue</String>
-		<String Name="RemoveBundleFinished">Remove bundle, including finished files</String>
 		<String Name="BundleRemoved">Bundle removed</String>
 		<String Name="PartialSharing">Enable partial bundle/file sharing</String>
 		<String Name="SettingsEnableBundles">Enable bundles</String>
