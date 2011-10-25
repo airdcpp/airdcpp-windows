@@ -641,6 +641,11 @@ void QueueFrame::removeSelectedDir() {
 
 	dcassert(!curDir.empty());
 	tstring name = Text::toT(curDir);
+	if (curDir == Util::getListPath()) {
+		removeDir(ctrlDirs.GetSelectedItem());
+		return;
+	}
+
 	int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
 	BundleList bundles = QueueManager::getInstance()->findBundleFinished(curDir, finishedFiles, dirBundles, fileBundles);
 	bool moveFinished = (finishedFiles > 0);
