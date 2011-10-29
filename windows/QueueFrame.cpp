@@ -1080,9 +1080,20 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		usingDirMenu = true;
 		
 		OMenu dirMenu;
-
 		dirMenu.CreatePopupMenu();	
-		dirMenu.InsertSeparatorFirst(TSTRING(FOLDER));
+
+		int tmp1=0, tmp2=0, tmp3=0;
+		BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, tmp1, tmp2, tmp3);
+		if (!bundles.empty()) {
+			if (bundles.size() == 1) {
+				dirMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
+			} else {
+				dirMenu.InsertSeparatorFirst(Util::toStringW(bundles.size()) + _T(" bundles"));
+			}
+		} else {
+			dirMenu.InsertSeparatorFirst(TSTRING(FOLDER));
+		}
+
 		dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_PRIORITY));
 		dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
 		dirMenu.AppendMenu(MF_SEPARATOR);
@@ -1091,8 +1102,14 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		dirMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE));
 		dirMenu.AppendMenu(MF_SEPARATOR);
 		dirMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-		dirMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 
+		if (bundles.size() == 1) {
+			priorityMenu.CheckMenuItem(bundles.front()->getPriority() + 1, MF_BYPOSITION | MF_CHECKED);
+			if(bundles.front()->getAutoPriority())
+				priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
+		}
+
+		dirMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 		return TRUE;
 	}
 
@@ -1267,7 +1284,12 @@ LRESULT QueueFrame::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	}
 
 	if(usingDirMenu) {
-		setPriority(ctrlDirs.GetSelectedItem(), p);
+		int tmp1=0, tmp2=0, tmp3=0;
+		BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, tmp1, tmp2, tmp3);
+		if (!bundles.empty()) {
+			QueueManager::getInstance()->setBundlePriorities(curDir, bundles, (Bundle::Priority)p);
+		}
+		//setPriority(ctrlDirs.GetSelectedItem(), p);
 	} else {
 		int i = -1;
 		while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
