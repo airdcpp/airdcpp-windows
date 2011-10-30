@@ -36,7 +36,7 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlPad.SetFont(WinUtil::font);
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
-	ctrlPad.LimitText(0);
+	ctrlPad.LimitText(128*1024);
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 	
 
@@ -147,8 +147,15 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 	ctrlPad.GetScrollInfo(SB_VERT, &si);
 	ctrlPad.GetScrollPos(&pt);
 
-	//dont know if should go over 64kb
-	if(ctrlPad.GetWindowTextLength() > (128*1024)) {
+	tstring Text = msg + _T(" "); //kinda strange, but adding line endings in the start of new line makes it that way.
+	tstring time = Text::toT("\r\n [" + Util::getTimeStamp(t) + "] ");
+	tstring line = time + Text;
+
+	LONG limitText = ctrlPad.GetLimitText();
+	LONG TextLength = End + line.size();
+
+	if((TextLength +1) > limitText) {
+		dcdebug("textlength %s \n", Util::toString(TextLength).c_str());
 		LONG RemoveEnd = 0;
 		RemoveEnd = ctrlPad.LineIndex(ctrlPad.LineFromChar(2000));
 		End = Begin -=RemoveEnd;
@@ -161,10 +168,6 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 		ctrlPad.ReplaceSel(_T(""));
 
 	}
-
-	tstring Text = msg + _T(" "); //kinda strange, but adding line endings in the start of new line makes it that way.
-	tstring time = Text::toT("\r\n [" + Util::getTimeStamp(t) + "] ");
-	tstring line = time + Text;
 
 	ctrlPad.AppendText(line.c_str());
 

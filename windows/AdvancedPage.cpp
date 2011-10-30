@@ -62,8 +62,6 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::OPEN_LOGS_INTERNAL, ResourceManager::OPEN_LOGS_INTERNAL },
 	{ SettingsManager::CORAL, ResourceManager::CORAL },
 	{ SettingsManager::FAST_HASH, ResourceManager::FAST_HASH },
-	{ SettingsManager::DONT_SHARE_EMPTY_DIRS, ResourceManager::DONT_SHARE_EMPTY_DIRS }, //ApexDC
-	{ SettingsManager::ONLY_SHARE_FULL_DIRS, ResourceManager::ONLY_SHARE_FULL_DIRS }, //ApexDC
 	{ SettingsManager::	TESTWRITE, ResourceManager::TEST_WRITE }, 
 	{ SettingsManager::USE_ADLS, ResourceManager::SETTINGS_USE_ADLS },
 	{ SettingsManager::USE_ADLS_OWN_LIST, ResourceManager::SETTINGS_USE_ADLS_OWN_LIST },

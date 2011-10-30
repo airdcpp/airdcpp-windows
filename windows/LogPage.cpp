@@ -59,6 +59,8 @@ PropPage::ListItem LogPage::systemItems[] = {
 	{ SettingsManager::SYSTEM_SHOW_DOWNLOADS,		ResourceManager::SYSTEM_SHOW_FINISHED_DOWNLOADS },
 	{ SettingsManager::REPORT_ALTERNATES,			ResourceManager::REPORT_ALTERNATES }, 
 	{ SettingsManager::REPORT_SKIPLIST,				ResourceManager::REPORT_SKIPLIST }, 
+	{ SettingsManager::LOG_HASHING,					ResourceManager::LOG_HASHING }, 
+	
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
