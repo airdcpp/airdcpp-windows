@@ -655,7 +655,7 @@ void QueueFrame::removeSelectedDir() {
 			BundlePtr bundle = bundles.front();
 			if (stricmp(bundle->getTarget(), curDir) != 0) {
 				tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE_PART).size() + 1024);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE_PART), Util::getLastDir(curDir), bundle->getName()));
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE_PART), Util::getLastDir(curDir).c_str(), bundle->getName().c_str()));
 				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 					return;
 				} else {
@@ -669,7 +669,7 @@ void QueueFrame::removeSelectedDir() {
 				}
 			} else {
 				tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE).size() + 1024);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE), bundle->getName()));
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE), bundle->getName().c_str()));
 				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 					return;
 				} else {

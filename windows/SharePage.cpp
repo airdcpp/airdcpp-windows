@@ -85,7 +85,7 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		for(StringPairIter j = directories.begin(); j != directories.end(); j++)
 		{
 			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(j->first));
-			ctrlDirectories.SetItemText(i, 1, Text::toT(j->second).c_str() );
+			ctrlDirectories.SetItemText(i, 1, Text::toT(j->second).c_str());
 			ctrlDirectories.SetItemText(i, 2, Util::formatBytesW(ShareManager::getInstance()->getShareSize(j->second)).c_str());
 			StringList incoming =  ShareManager::getInstance()->getIncoming();
 			for(StringIter k = incoming.begin(); k != incoming.end(); ++k) {

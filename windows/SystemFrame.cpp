@@ -495,8 +495,6 @@ LRESULT SystemFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		ctrlPad.GetSelText(buf);
 		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
 		delete[] buf;
-		//} else if(!FileName.empty()) {
-			//searchTerm = FileName;     //use the filename as a search string if we find a file, or is this too confusing.
 	}else{
 		searchTerm = selWord;
 	}
