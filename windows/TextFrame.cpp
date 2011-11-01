@@ -42,10 +42,11 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlPad.SetEventMask(ctrlPad.GetEventMask() | ENM_LINK);
 	ctrlPad.Subclass();
 	ctrlPad.LimitText(0);
+	if(history || openlog) {
 	ctrlPad.SetFont(WinUtil::font);
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
-
+	}
 	string tmp;
 	try {
 
@@ -76,7 +77,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		
 		} else if(!openlog && !history) {
 
-			tmp = f.read();
+			tmp = Text::toDOS(f.read());
 			tmp = Text::toUtf8(tmp);
 		
 			//add the line endings in nfo
@@ -90,10 +91,12 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			}
 
 		//edit the normal text style, disable dwEffects, bold, italic etc. looks really bad with bold font.
-		CHARFORMAT2 cf = WinUtil::m_ChatTextGeneral;
-		cf.cbSize = sizeof (cf);
+		CHARFORMAT2 cf;
+		cf.cbSize = 9;  //use fixed size for testing.
 		cf.dwEffects = 0;
-		//cf.dwMask = CFM_CHARSET;
+		cf.dwMask = CFM_BACKCOLOR | CFM_COLOR;
+		cf.crBackColor = SETTING(BACKGROUND_COLOR);
+		cf.crTextColor = SETTING(TEXT_COLOR);
 		//lstrcpy (cf.szFaceName, TEXT("Terminal"));
 		//cf.bCharSet = OEM_CHARSET;
 		//ctrlPad.SetDefaultCharFormat(cf);
@@ -103,9 +106,9 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 		ctrlPad.SetDefaultCharFormat(cf);
 		//We need to disable autofont, otherwise it will mess up our new font.
-		LRESULT lres = SendMessage(ctrlPad, EM_GETLANGOPTIONS, 0, 0);
+		LRESULT lres = ctrlPad.SendMessage(ctrlPad.m_hWnd, EM_GETLANGOPTIONS, 0, 0);
 		lres &= ~IMF_AUTOFONT;
-		SendMessage(ctrlPad, EM_SETLANGOPTIONS, 0, lres);
+		ctrlPad.SendMessage(ctrlPad.m_hWnd, EM_SETLANGOPTIONS, 0, lres);
 
 		ctrlPad.SetWindowText(Text::toT(tmp).c_str()); 
 		//ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(tmp) + _T('\n'), WinUtil::m_ChatTextGeneral, false);
