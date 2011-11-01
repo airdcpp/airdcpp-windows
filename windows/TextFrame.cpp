@@ -99,18 +99,18 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		cf.crTextColor = SETTING(TEXT_COLOR);
 		cf.bCharSet = OEM_CHARSET;
 
-		ctrlPad.SetFont(WinUtil::OEMFont);
-		//set the colors...
-		ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
-		ctrlPad.SetDefaultCharFormat(cf);
-		
 		//We need to disable autofont, otherwise it will mess up our new font.
 		LRESULT lres = ::SendMessage(ctrlPad.m_hWnd, EM_GETLANGOPTIONS, 0, 0);
 		lres &= ~IMF_AUTOFONT;
 		::SendMessage(ctrlPad.m_hWnd, EM_SETLANGOPTIONS, 0, lres);
 		
-		ctrlPad.SetTextEx((LPCTSTR)tmp.c_str(), ST_SELECTION, CP_UTF8);
-		//ctrlPad.SetWindowText(Text::toT(tmp).c_str()); 
+		ctrlPad.SetFont(WinUtil::OEMFont);
+		//set the colors...
+		ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
+		ctrlPad.SetDefaultCharFormat(cf);
+		
+		//ctrlPad.SetTextEx((LPCTSTR)tmp.c_str(), ST_SELECTION, CP_UTF8);
+		ctrlPad.SetWindowText(Text::toT(tmp).c_str()); 
 		}
 		
 		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());

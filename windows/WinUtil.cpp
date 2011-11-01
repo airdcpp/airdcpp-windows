@@ -502,17 +502,7 @@ void WinUtil::init(HWND hWnd) {
 	tabFont = ::CreateFontIndirect(&lf);
 	systemFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
 	
-	LOGFONT lf3;
-
-	::GetObject((HFONT)::GetStockObject(OEM_FIXED_FONT), sizeof(lf3), &lf3);
-	tstring fontnm = _T("Terminal");
-	lf3.lfHeight = lf.lfHeight;
-	lf3.lfWeight = lf.lfWeight;
-	lf3.lfCharSet = OEM_CHARSET;
-	memzero(lf3.lfFaceName, LF_FACESIZE);
-	_tcscpy(lf3.lfFaceName, fontnm.c_str());
-
-	OEMFont =  ::CreateFontIndirect(&lf3);
+	OEMFont = (HFONT)::GetStockObject(OEM_FIXED_FONT);
 
 	if(BOOLSETTING(URL_HANDLER)) {
 		registerDchubHandler();
