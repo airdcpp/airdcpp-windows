@@ -89,18 +89,19 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 				i++;
 			}
 
-		/*CHARFORMAT2 cf;
+		//edit the normal text style, disable dwEffects, bold, italic etc. looks really bad with bold font.
+		CHARFORMAT2 cf = WinUtil::m_ChatTextGeneral;
 		cf.cbSize = sizeof (cf);
-		cf.dwMask = CFM_CHARSET;
 		cf.dwEffects = 0;
-		lstrcpy (cf.szFaceName, TEXT("Terminal"));
-		cf.bCharSet = OEM_CHARSET;
-		ctrlPad.SetDefaultCharFormat(cf);
-		*/
+		//cf.dwMask = CFM_CHARSET;
+		//lstrcpy (cf.szFaceName, TEXT("Terminal"));
+		//cf.bCharSet = OEM_CHARSET;
+		//ctrlPad.SetDefaultCharFormat(cf);
+		
 		ctrlPad.SetFont((HFONT)::GetStockObject(OEM_FIXED_FONT));
 		//set the colors again...
 		ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
-		ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
+		ctrlPad.SetDefaultCharFormat(cf);
 		//We need to disable autofont, otherwise it will mess up our new font.
 		LRESULT lres = SendMessage(ctrlPad, EM_GETLANGOPTIONS, 0, 0);
 		lres &= ~IMF_AUTOFONT;
