@@ -1381,7 +1381,7 @@ void TransferView::onBundleName(const string& bundleToken, const string& aTarget
 	speak(UPDATE_PARENT, ui);
 }
 
-void TransferView::on(DownloadManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) {
+void TransferView::onBundleUser(const string& bundleToken, const HintedUser& aUser) {
 	UpdateInfo* ui = new UpdateInfo(bundleToken, true);
 	ui->setUsers(1);
 	ui->setBundle(bundleToken);
