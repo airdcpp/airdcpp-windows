@@ -79,7 +79,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 			tmp = Text::toDOS(f.read());
 			tmp = Text::toUtf8(tmp);
-		
+
 			//add the line endings in nfo
 			string::size_type i = 0;
 			while((i = tmp.find('\n', i)) != string::npos) {
@@ -99,8 +99,8 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		cf.crTextColor = SETTING(TEXT_COLOR);
 		cf.bCharSet = OEM_CHARSET;
 
-		ctrlPad.SetFont((HFONT)::GetStockObject(OEM_FIXED_FONT));
-		//set the colors again...
+		ctrlPad.SetFont(WinUtil::OEMFont);
+		//set the colors...
 		ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 		ctrlPad.SetDefaultCharFormat(cf);
 		
@@ -108,8 +108,9 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		LRESULT lres = ::SendMessage(ctrlPad.m_hWnd, EM_GETLANGOPTIONS, 0, 0);
 		lres &= ~IMF_AUTOFONT;
 		::SendMessage(ctrlPad.m_hWnd, EM_SETLANGOPTIONS, 0, lres);
-
-		ctrlPad.SetWindowText(Text::toT(tmp).c_str()); 
+		
+		ctrlPad.SetTextEx((LPCTSTR)tmp.c_str(), ST_SELECTION, CP_UTF8);
+		//ctrlPad.SetWindowText(Text::toT(tmp).c_str()); 
 		}
 		
 		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());

@@ -266,6 +266,7 @@ public:
 	static HFONT systemFont;
 	static HFONT smallBoldFont;
 	static HFONT tabFont;
+	static HFONT OEMFont;
 	static CMenu mainMenu;
 	static OMenu grantMenu;
 	static int dirIconIndex;
