@@ -90,28 +90,26 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 				i++;
 			}
 
-		//edit the normal text style, disable dwEffects, bold, italic etc. looks really bad with bold font.
+		//edit text style, disable dwEffects, bold, italic etc. looks really bad with bold font.
 		CHARFORMAT2 cf;
 		cf.cbSize = 9;  //use fixed size for testing.
 		cf.dwEffects = 0;
 		cf.dwMask = CFM_BACKCOLOR | CFM_COLOR;
 		cf.crBackColor = SETTING(BACKGROUND_COLOR);
 		cf.crTextColor = SETTING(TEXT_COLOR);
-		//lstrcpy (cf.szFaceName, TEXT("Terminal"));
-		//cf.bCharSet = OEM_CHARSET;
-		//ctrlPad.SetDefaultCharFormat(cf);
-		
+		cf.bCharSet = OEM_CHARSET;
+
 		ctrlPad.SetFont((HFONT)::GetStockObject(OEM_FIXED_FONT));
 		//set the colors again...
 		ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 		ctrlPad.SetDefaultCharFormat(cf);
+		
 		//We need to disable autofont, otherwise it will mess up our new font.
-		LRESULT lres = ctrlPad.SendMessage(ctrlPad.m_hWnd, EM_GETLANGOPTIONS, 0, 0);
+		LRESULT lres = ::SendMessage(ctrlPad.m_hWnd, EM_GETLANGOPTIONS, 0, 0);
 		lres &= ~IMF_AUTOFONT;
-		ctrlPad.SendMessage(ctrlPad.m_hWnd, EM_SETLANGOPTIONS, 0, lres);
+		::SendMessage(ctrlPad.m_hWnd, EM_SETLANGOPTIONS, 0, lres);
 
 		ctrlPad.SetWindowText(Text::toT(tmp).c_str()); 
-		//ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(tmp) + _T('\n'), WinUtil::m_ChatTextGeneral, false);
 		}
 		
 		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
