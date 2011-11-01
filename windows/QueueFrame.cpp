@@ -761,7 +761,7 @@ void QueueFrame::moveSelectedDir() {
 			BundlePtr bundle = bundles.front();
 			if (stricmp(bundle->getTarget(), curDir) != 0) {
 				tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_BUNDLE_PART).size() + 1024);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_BUNDLE_PART), Util::getLastDir(curDir), bundle->getName(), newDir));
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_BUNDLE_PART), Util::getLastDir(curDir).c_str(), bundle->getName(), newDir.c_str()));
 				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 					return;
 				} else {
@@ -775,7 +775,7 @@ void QueueFrame::moveSelectedDir() {
 				}
 			} else {
 				tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_BUNDLE).size() + 1024);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_BUNDLE), bundle->getName(), newDir));
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_BUNDLE), bundle->getName().c_str(), newDir));
 				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 					return;
 				} else {
@@ -790,7 +790,7 @@ void QueueFrame::moveSelectedDir() {
 			}
 		} else {
 			tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_MULTIPLE).size() + 1024);
-			tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_MULTIPLE), dirBundles, fileBundles, newDir));
+			tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_MULTIPLE), dirBundles, fileBundles, newDir.c_str()));
 			if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 				return;
 			} else {
