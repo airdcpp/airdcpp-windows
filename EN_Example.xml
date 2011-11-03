@@ -944,7 +944,10 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 - %[bitrate]	Bitrate (ex. 128kbps)
 - %[sample]	Sample frequency (ex. 22kHz)
 - %[channels]	Number of channels (ex. stereo / mono)
-Empty = Default String -&gt; winamp(%[version]) %[state](%[title]) stats(%[percent] of %[length] %[bar])</String>
+- %[path]	Playing full Filepath
+- %[directory]	Playing DirectoryName
+- %[filename]	Playing FileName
+ Empty = Default String -&gt; winamp(%[version]) %[state](%[title]) stats(%[percent] of %[length] %[bar])</String>
 		<String Name="WinampHelpDesc">Winamp Help</String>
 		<String Name="Yes">Yes</String>
 		<String Name="ZonealarmWarning">ZoneAlarm was detected in your computer.  It is frequently responsible for corrupted downloads and is the cause of many \"rollback inconsistency\" errors.  Please uninstall it and use an alternate product.  </String>

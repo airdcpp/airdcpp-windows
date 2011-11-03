@@ -313,6 +313,15 @@ LRESULT PropPageTextStyles::onDefaultStyles(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_NORM ].crTextColor = RGB(0,0,0);
 	TextStyles[ TS_NORM ].dwEffects = CFE_BOLD;
 
+	
+	SettingsManager::getInstance()->set(SettingsManager::NORMAL_COLOUR, (int)RGB(0,0,0));
+	SettingsManager::getInstance()->set(SettingsManager::FAVORITE_COLOR, (int)RGB(51,51,255));
+	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, (int)RGB(0,0,205));
+	SettingsManager::getInstance()->set(SettingsManager::RESERVED_SLOT_COLOR, (int)RGB(0,51,0));
+	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, (int)RGB(192,192,192));
+	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, (int)RGB(132,132,132));
+	PropertiesDlg::needUpdate = true;
+
 	RefreshPreview();
 	return TRUE;
 }
@@ -376,6 +385,14 @@ LRESULT PropPageTextStyles::onBlackAndWhite(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_NORM ].crTextColor = RGB(37,60,121);
 	TextStyles[ TS_NORM ].dwEffects = 0;
 
+		
+	SettingsManager::getInstance()->set(SettingsManager::NORMAL_COLOUR, (int)RGB(0,0,0));
+	SettingsManager::getInstance()->set(SettingsManager::FAVORITE_COLOR, (int)RGB(51,51,255));
+	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, (int)RGB(0,0,205));
+	SettingsManager::getInstance()->set(SettingsManager::RESERVED_SLOT_COLOR, (int)RGB(0,51,0));
+	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, (int)RGB(192,192,192));
+	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, (int)RGB(132,132,132));
+	PropertiesDlg::needUpdate = true;
 	RefreshPreview();
 	return TRUE;
 }
@@ -411,35 +428,42 @@ LRESULT PropPageTextStyles::onBlackTheme(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	TextStyles[ TS_TIMESTAMP ].crTextColor = 16431749;
 	TextStyles[ TS_TIMESTAMP ].dwEffects = 0;
 
-	TextStyles[ TS_URL ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_URL ].crTextColor = RGB(0,0,255);
+	TextStyles[ TS_URL ].crBackColor = 0;
+	TextStyles[ TS_URL ].crTextColor = RGB(248,248,255);
 	TextStyles[ TS_URL ].dwEffects = 0;
 
 
-	TextStyles[ TS_SHARE_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_SHARE_DUPE ].crBackColor = 0;
 	TextStyles[ TS_SHARE_DUPE ].crTextColor = RGB(255,128,255);
 	TextStyles[ TS_SHARE_DUPE ].dwEffects = 0;
 
-	TextStyles[ TS_QUEUE_DUPE ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_QUEUE_DUPE ].crBackColor = 0;
 	TextStyles[ TS_QUEUE_DUPE ].crTextColor = RGB(255,200,0);
 	TextStyles[ TS_QUEUE_DUPE ].dwEffects = 0;
 
-	TextStyles[ TS_LIST_HL ].crBackColor = RGB(255, 255, 255);
+	TextStyles[ TS_LIST_HL ].crBackColor = 0;
 	TextStyles[ TS_LIST_HL ].crTextColor = RGB(255,189,202);
 	TextStyles[ TS_LIST_HL ].dwEffects = 0;
 
 	TextStyles[ TS_FAVORITE ].crBackColor = 0;
-	TextStyles[ TS_FAVORITE ].crTextColor = 16431749;
+	TextStyles[ TS_FAVORITE ].crTextColor = RGB(255,165,79);
 	TextStyles[ TS_FAVORITE ].dwEffects = 0;
 
 	TextStyles[ TS_OP ].crBackColor = 0;
-	TextStyles[ TS_OP ].crTextColor = 16744448;
+	TextStyles[ TS_OP ].crTextColor = RGB(50,205,50);
 	TextStyles[ TS_OP ].dwEffects = 0;
 
 	TextStyles[ TS_NORM ].crBackColor = 0;
-	TextStyles[ TS_NORM ].crTextColor = 16744448;
+	TextStyles[ TS_NORM ].crTextColor = RGB(100,149,237);
 	TextStyles[ TS_NORM ].dwEffects = 0;
 
+	SettingsManager::getInstance()->set(SettingsManager::NORMAL_COLOUR, (int)RGB(255,255,255));
+	SettingsManager::getInstance()->set(SettingsManager::FAVORITE_COLOR, (int)RGB(255,165,79));
+	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, (int)RGB(50,205,50));
+	SettingsManager::getInstance()->set(SettingsManager::RESERVED_SLOT_COLOR, (int)RGB(193,205,205));
+	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, (int)RGB(205,205,193));
+	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, (int)RGB(141,182,205));
+	PropertiesDlg::needUpdate = true;
 	RefreshPreview();
 	return TRUE;
 }
