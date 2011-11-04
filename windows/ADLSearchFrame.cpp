@@ -267,8 +267,13 @@ LRESULT ADLSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPara
 LRESULT ADLSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) 
 {
 	// Invoke edit dialog with fresh search
-	ADLSearch search;
-	ADLSProperties dlg(&search);
+	if (ADLSearchManager::getInstance()->getRunning() > 0) {
+		LogManager::getInstance()->message(CSTRING(ADLSEARCH_IN_PROGRESS));
+		return 0;
+	}
+
+	ADLSearch* search = new ADLSearch();
+	ADLSProperties dlg(search);
 	if(dlg.DoModal((HWND)*this) == IDOK)
 	{
 		// Add new search to the end or if selected, just before
@@ -279,13 +284,17 @@ LRESULT ADLSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		if(i < 0)
 		{
 			// Add to end
-			collection.push_back(search);
+			if (!ADLSearchManager::getInstance()->addCollection(search, true, true)) {
+				return 0;
+			}
 			i = collection.size() - 1;
 		}
 		else
 		{
 			// Add before selection
-			collection.insert(collection.begin() + i, search);
+			if (!ADLSearchManager::getInstance()->addCollection(search, true, true, true, i)) {
+				return 0;
+			}
 		}
 
 		// Update list control
@@ -313,10 +322,10 @@ LRESULT ADLSearchFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 	// Edit existing
 	ADLSearchManager::SearchCollection& collection = ADLSearchManager::getInstance()->collection;
-	ADLSearch search = collection[i];
+	ADLSearch* search = collection[i];
 
 	// Invoke dialog with selected search
-	ADLSProperties dlg(&search);
+	ADLSProperties dlg(search);
 	if(dlg.DoModal((HWND)*this) == IDOK)
 	{
 		// Update search collection
@@ -332,13 +341,14 @@ LRESULT ADLSearchFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 // Remove searches
 LRESULT ADLSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) 
 {
-	ADLSearchManager::SearchCollection& collection = ADLSearchManager::getInstance()->collection;
-
 	// Loop over all selected items
 	int i;
 	while((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) >= 0)
 	{
-		collection.erase(collection.begin() + i);
+		if (!ADLSearchManager::getInstance()->removeCollection(i, false)) {
+			return 0;
+		}
+		//collection.erase(collection.begin() + i);
 		ctrlList.DeleteItem(i);
 	}
 	return 0;
@@ -431,13 +441,19 @@ LRESULT ADLSearchFrame::onMoveUp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	// Erase selected searches
 	for(i = sel.size() - 1; i >= 0; --i)
 	{
-		collection.erase(collection.begin() + sel[i]);
+		if (!ADLSearchManager::getInstance()->removeCollection(sel[i], true)) {
+			return 0;
+		}
+		//collection.erase(collection.begin() + sel[i]);
 	}
 
 	// Insert (grouped together)
 	for(i = 0; i < (int)sel.size(); ++i)
 	{
-		collection.insert(collection.begin() + i0 + i, backup[i]);
+		if (!ADLSearchManager::getInstance()->addCollection(backup[i], true, false, true, i0 + i)) {
+			return 0;
+		}
+		//collection.insert(collection.begin() + i0 + i, backup[i]);
 	}
 
 	// Update UI
@@ -486,7 +502,9 @@ LRESULT ADLSearchFrame::onMoveDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	// Erase selected searches
 	for(i = sel.size() - 1; i >= 0; --i)
 	{
-		collection.erase(collection.begin() + sel[i]);
+		if (!ADLSearchManager::getInstance()->removeCollection(sel[i], true)) {
+			return 0;
+		}
 		if(i < i0)
 		{
 			i0--;
@@ -496,7 +514,9 @@ LRESULT ADLSearchFrame::onMoveDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	// Insert (grouped together)
 	for(i = 0; i < (int)sel.size(); ++i)
 	{
-		collection.insert(collection.begin() + i0 + i, backup[i]);
+		if (!ADLSearchManager::getInstance()->addCollection(backup[i], true, false, true, i0 + i)) {
+			return 0;
+		}
 	}
 
 	// Update UI
@@ -532,8 +552,8 @@ LRESULT ADLSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 	{
 		// Set new active status check box
 		ADLSearchManager::SearchCollection& collection = ADLSearchManager::getInstance()->collection;
-		ADLSearch& search = collection[item->iItem];
-		search.isActive = (ctrlList.GetCheckState(item->iItem) != 0);
+		ADLSearch* search = collection[item->iItem];
+		search->isActive = (ctrlList.GetCheckState(item->iItem) != 0);
 	}
 	return 0;
 }
@@ -577,7 +597,7 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	{
 		return;
 	}
-	ADLSearch& search = collection[index];
+	ADLSearch* search = collection[index];
 
 	// Delete from list control
 	if(doDelete)
@@ -588,37 +608,37 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	// Generate values
 	TStringList line;
 	tstring fs;
-	line.push_back(Text::toT(search.searchString));
-	line.push_back(search.SourceTypeToDisplayString(search.sourceType));
-	line.push_back(Text::toT(search.destDir));
+	line.push_back(Text::toT(search->searchString));
+	line.push_back(search->SourceTypeToDisplayString(search->sourceType));
+	line.push_back(Text::toT(search->destDir));
 
 	fs = _T("");
-	if(search.minFileSize >= 0)
+	if(search->minFileSize >= 0)
 	{
-		fs = Util::toStringW(search.minFileSize);
+		fs = Util::toStringW(search->minFileSize);
 		fs += _T(" ");
-		fs += search.SizeTypeToDisplayString(search.typeFileSize);
+		fs += search->SizeTypeToDisplayString(search->typeFileSize);
 	}
 	line.push_back(fs);
 
 	fs = _T("");
-	if(search.maxFileSize >= 0)
+	if(search->maxFileSize >= 0)
 	{
-		fs = Util::toStringW(search.maxFileSize);
+		fs = Util::toStringW(search->maxFileSize);
 		fs += _T(" ");
-		fs += search.SizeTypeToDisplayString(search.typeFileSize);
+		fs += search->SizeTypeToDisplayString(search->typeFileSize);
 	}
 	line.push_back(fs);
 
-	line.push_back(Text::toT(search.adlsComment));
-	line.push_back(Util::toStringW(search.isRegexp));
+	line.push_back(Text::toT(search->adlsComment));
+	line.push_back(Util::toStringW(search->isRegexp));
 
 
 	// Insert in list control
 	ctrlList.insert(index, line);
 
 	// Update 'Active' check box
-	ctrlList.SetCheckState(index, search.isActive);
+	ctrlList.SetCheckState(index, search->isActive);
 }
 
 void ADLSearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {

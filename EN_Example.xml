@@ -1409,5 +1409,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="MatchAdl">ADLSearch</String>
 		<String Name="MatchingAdl">Matching Filelist with ADLSearch, this might take a while if the list is large...</String>
 		<String Name="LogHashing">Show Hashing Files in systemlog</String>
+		<String Name="AdlsearchInProgress">The ADLSearch list can't be modified while matching is in progress!</String>
 	</Strings>
 </Language>
