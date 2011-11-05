@@ -364,7 +364,7 @@ private:
 	}
 	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept;
 	void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept;
-	void on(DownloadManagerListener::Tick, const DownloadList& aDownload, const BundleList& aBundle) noexcept;
+	void on(DownloadManagerListener::Tick, const DownloadList& aDownload) noexcept;
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
 	void on(DownloadManagerListener::BundleFinished, const string& bundleToken) noexcept { onBundleComplete(bundleToken, bundleToken, false); }
 	void on(DownloadManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) noexcept { onBundleUser(bundleToken, aUser); }
@@ -379,6 +379,7 @@ private:
 	void on(UploadManagerListener::BundleRenamed, const string& bundleToken, const string& bundleTarget) noexcept { onBundleName(bundleToken, bundleTarget, true); }
 
 	void on(QueueManagerListener::BundleFinished, const BundlePtr aBundle) noexcept { onBundleComplete(aBundle->getToken(), aBundle->getName(), false); }
+	void on(QueueManagerListener::BundleTick, const BundlePtr aBundle) noexcept;
 	void on(QueueManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, false); }
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, true); }
 	void on(QueueManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) noexcept { onBundleUser(bundleToken, aUser); }

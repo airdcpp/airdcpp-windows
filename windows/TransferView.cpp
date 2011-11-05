@@ -1079,38 +1079,37 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl, const BundleList& bundles) {
-	for(BundleList::const_iterator j = bundles.begin(); j != bundles.end(); ++j) {
-		BundlePtr bundle = *j;
-		string bundleToken = bundle->getToken();
-		int64_t downloaded = bundle->getDownloaded();
-		double percent = (double)downloaded*100.0/(double)bundle->getSize();
-		if (percent > 100) {
-			//hack, prevents updates for removed bundles
-			continue;
-		}
-
-		UpdateInfo* ui = new UpdateInfo(bundle->getToken(), true);
-		ui->setStatus(ItemInfo::STATUS_RUNNING);
-		ui->setPos(downloaded);
-		ui->setActual(downloaded);
-		ui->setSize(bundle->getSize());
-		ui->setTimeLeft(bundle->getSecondsLeft());
-		ui->setSpeed(static_cast<int64_t>(bundle->getSpeed()));
-		ui->setBundle(bundle->getToken());
-		ui->setTarget(Text::toT(bundle->getTarget()));
-		ui->setRunning(bundle->getRunning());
-		ui->setUsers(bundle->getRunningUsers().size());
-
-		tstring pos = Util::formatBytesW(downloaded);
-		tstring elapsed = Util::formatSeconds((GET_TICK() - bundle->getStart())/1000);
-
-		tstring statusString;
-		statusString += Text::tformat(TSTRING(DOWNLOADED_BYTES), pos.c_str(), percent, elapsed.c_str());
-		ui->setStatusString(statusString);
-			
-		speak(UPDATE_PARENT, ui);
+void TransferView::on(QueueManagerListener::BundleTick, const BundlePtr aBundle) {
+	string bundleToken = aBundle->getToken();
+	int64_t pos = aBundle->getDownloadedBytes();
+	double percent = (double)pos*100.0/(double)aBundle->getSize();
+	if (percent >= 100) {
+		//hack, prevents updates for removed bundles
+		return;
 	}
+
+	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
+	ui->setStatus(ItemInfo::STATUS_RUNNING);
+	ui->setPos(pos);
+	ui->setActual(aBundle->getActual());
+	ui->setSize(aBundle->getSize());
+	ui->setTimeLeft(aBundle->getSecondsLeft());
+	ui->setSpeed(static_cast<int64_t>(aBundle->getSpeed()));
+	ui->setBundle(aBundle->getToken());
+	ui->setTarget(Text::toT(aBundle->getTarget()));
+	ui->setRunning(aBundle->getRunning());
+	ui->setUsers(aBundle->getRunningUsers().size());
+
+	tstring elapsed = Util::formatSeconds((GET_TICK() - aBundle->getStart())/1000);
+
+	tstring statusString;
+	statusString += Text::tformat(TSTRING(DOWNLOADED_BYTES), Util::formatBytesW(pos).c_str(), percent, elapsed.c_str());
+	ui->setStatusString(statusString);
+			
+	speak(UPDATE_PARENT, ui);
+}
+
+void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 	for(DownloadList::const_iterator j = dl.begin(); j != dl.end(); ++j) {
 		Download* d = *j;
 		UpdateInfo* ui = new UpdateInfo(d->getUserConnection().getToken(), true);
