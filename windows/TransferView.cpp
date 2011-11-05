@@ -670,6 +670,10 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			ItemInfo* ii = findItem(ui, pos);
 			if(ii) {
 				if (!ii->bundle.empty()) {
+					const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
+					if (children.size() == 2) {
+						ii->parent->user = (children.front()->getHintedUser() == ui.user) ? children.back()->getHintedUser() : children.front()->getHintedUser();
+					}
 					ctrlTransfers.removeBundle(ii, true);
 				} else {
 					dcassert(pos != -1);
@@ -695,6 +699,10 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 						if (ii->bundle.empty()) {
 							ctrlTransfers.DeleteItem(pos);
 						} else {
+							const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
+							if (children.size() == 2) {
+								ii->parent->user = (children.front()->getHintedUser() == ui.user) ? children.back()->getHintedUser() : children.front()->getHintedUser();
+							}
 							ctrlTransfers.removeBundle(ii, false);
 						}
 					}
@@ -726,7 +734,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 				continue;
 			}
 
-			if(ui.user.user || !ui.bundle.empty()) {
+			/*if(ui.user.user || !ui.bundle.empty()) {
 				int pos = -1;
 				ItemInfo* ii = findItem(ui, pos);
 				if(ii) {
@@ -737,7 +745,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 						updateItem(ctrlTransfers.findItem(ii), ui.updateMask);
 					}
 				}
-			}
+			} */
 
 			pp->parent->update(ui);
 			updateItem(ctrlTransfers.findItem(pp->parent), ui.updateMask);
