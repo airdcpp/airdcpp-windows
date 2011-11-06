@@ -472,6 +472,7 @@
     <ClCompile Include="windows\PopupManager.cpp" />
     <ClCompile Include="windows\Popups.cpp" />
     <ClCompile Include="windows\PreviewDlg.cpp" />
+    <ClCompile Include="windows\PriorityPage.cpp" />
     <ClCompile Include="windows\PrivateFrame.cpp" />
     <ClCompile Include="windows\PropertiesDlg.cpp" />
     <ClCompile Include="windows\PropPage.cpp" />
@@ -575,6 +576,7 @@
     <ClInclude Include="windows\PopupManager.h" />
     <ClInclude Include="windows\Popups.h" />
     <ClInclude Include="windows\PreviewDlg.h" />
+    <ClInclude Include="windows\PriorityPage.h" />
     <ClInclude Include="windows\PrivateFrame.h" />
     <ClInclude Include="windows\PropertiesDlg.h" />
     <ClInclude Include="windows\PropPage.h" />

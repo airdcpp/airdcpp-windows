@@ -1054,6 +1054,8 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		message = msgs[GET_TICK() % MSGS];
 	} else if(stricmp(cmd.c_str(), _T("save")) == 0) {
 		ShareManager::getInstance()->save();
+	} else if(stricmp(cmd.c_str(), _T("calcprio")) == 0) {
+		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if(stricmp(cmd.c_str(), _T("away")) == 0) {
 		if(Util::getAway() && param.empty()) {
 			Util::setAway(false);

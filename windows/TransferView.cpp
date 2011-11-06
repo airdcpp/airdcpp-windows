@@ -1413,7 +1413,7 @@ LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
 		if (ii->isBundle) {
-			QueueManager::getInstance()->setBundlePriority(Text::fromT(ii->bundle), p);
+			QueueManager::getInstance()->setBundlePriority(Text::fromT(ii->bundle), (Bundle::Priority)p);
 		}
 	}
 

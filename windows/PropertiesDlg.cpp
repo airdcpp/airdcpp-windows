@@ -44,6 +44,7 @@
 #include "NetworkPage.h"
 #include "WindowsPage.h"
 #include "QueuePage.h"
+#include "PriorityPage.h"
 #include "CertificatesPage.h"
 
 #include "AirDCPage.h"
@@ -69,6 +70,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s) : TreePropertyShee
 	pages[n++] = new FavoriteDirsPage(s);
 	pages[n++] = new AVIPreview(s);	
 	pages[n++] = new QueuePage(s);
+	//pages[n++] = new PriorityPage(s);
 	pages[n++] = new SpeedPage(s);
 	pages[n++] = new AppearancePage(s);
 	pages[n++] = new PropPageTextStyles(s);

@@ -52,7 +52,6 @@ PropPage::Item DownloadPage::items[] = {
 
 
 PropPage::ListItem DownloadPage::optionItems[] = {
-	{ SettingsManager::ENABLE_BUNDLES, ResourceManager::SETTINGS_ENABLE_BUNDLES },
 	{ SettingsManager::SCAN_DL_BUNDLES, ResourceManager::SETTINGS_SCAN_FINISHED_BUNDLES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };

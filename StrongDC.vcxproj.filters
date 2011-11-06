@@ -504,6 +504,9 @@
     <ClCompile Include="windows\UploadQueueFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\PriorityPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -810,6 +813,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\UploadQueueFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\PriorityPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

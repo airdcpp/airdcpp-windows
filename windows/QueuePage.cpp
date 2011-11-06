@@ -28,33 +28,19 @@
 #include "PropertiesDlg.h"
 
 PropPage::TextItem QueuePage::texts[] = {
-	{ IDC_SETTINGS_AUTOPRIO, ResourceManager::SETTINGS_PRIO_AUTOPRIO },
-	{ IDC_SETTINGS_PRIO_HIGHEST, ResourceManager::SETTINGS_PRIO_HIGHEST },
-	{ IDC_SETTINGS_KB3, ResourceManager::KiB },
-	{ IDC_SETTINGS_PRIO_HIGH, ResourceManager::SETTINGS_PRIO_HIGH },
-	{ IDC_SETTINGS_KB4, ResourceManager::KiB },
-	{ IDC_SETTINGS_PRIO_NORMAL, ResourceManager::SETTINGS_PRIO_NORMAL },
-	{ IDC_SETTINGS_KB5, ResourceManager::KiB },
-	{ IDC_SETTINGS_PRIO_LOW, ResourceManager::SETTINGS_PRIO_LOW },
-	{ IDC_SETTINGS_KB6, ResourceManager::KiB },
-	{ IDC_SETTINGS_SEGMENT, ResourceManager::SETTINGS_SEGMENT },
 	{ IDC_AUTOSEGMENT, ResourceManager::SETTINGS_AUTO_SEARCH },
 	{ IDC_DONTBEGIN, ResourceManager::DONT_ADD_SEGMENT_TEXT },
 	{ IDC_MULTISOURCE, ResourceManager::ENABLE_MULTI_SOURCE },
 	{ IDC_MINUTES, ResourceManager::MINUTES },
 	{ IDC_KBPS, ResourceManager::KBPS },
 	{ IDC_CHUNKCOUNT, ResourceManager::TEXT_MANUAL },
-	{ IDC_SETTINGS_SEGMENTS, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT },
+	{ IDC_SETTINGS_SEGMENTS, ResourceManager::QUEUE_OPTIONS },
 	{ IDC_MIN_SEGMENT_SIZE_LABEL, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT_SIZE },
 	{ IDC_SETTINGS_KIB, ResourceManager::KiB },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item QueuePage::items[] = {
-	{ IDC_PRIO_HIGHEST_SIZE, SettingsManager::PRIO_HIGHEST_SIZE, PropPage::T_INT },
-	{ IDC_PRIO_HIGH_SIZE, SettingsManager::PRIO_HIGH_SIZE, PropPage::T_INT },
-	{ IDC_PRIO_NORMAL_SIZE, SettingsManager::PRIO_NORMAL_SIZE, PropPage::T_INT },
-	{ IDC_PRIO_LOW_SIZE, SettingsManager::PRIO_LOW_SIZE, PropPage::T_INT },
 	{ IDC_AUTOSEGMENT, SettingsManager::AUTO_SEARCH, PropPage::T_BOOL },
 	{ IDC_DONTBEGIN, SettingsManager::DONT_BEGIN_SEGMENT, PropPage::T_BOOL },
 	{ IDC_BEGIN_EDIT, SettingsManager::DONT_BEGIN_SEGMENT_SPEED, PropPage::T_INT },

@@ -1246,7 +1246,12 @@ LRESULT QueueFrame::onPM(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL&
 LRESULT QueueFrame::onAutoPriority(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 
 	if(usingDirMenu) {
-		setAutoPriority(ctrlDirs.GetSelectedItem(), true);
+		//setAutoPriority(ctrlDirs.GetSelectedItem(), true);
+		int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
+		BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, finishedFiles, dirBundles, fileBundles);
+		if (!bundles.empty()) {
+			QueueManager::getInstance()->setBundlePriorities(curDir, bundles, Bundle::DEFAULT, true);
+		}
 	} else {
 		int i = -1;
 		while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
