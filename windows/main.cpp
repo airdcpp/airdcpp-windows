@@ -390,8 +390,6 @@ if(BOOLSETTING(PASSWD_PROTECT)) {
 		}
 	} 
 
-	
-
 	splash.DestroyWindow();
 	dummy.DestroyWindow();
 
@@ -438,7 +436,6 @@ if(BOOLSETTING(PASSWD_PROTECT)) {
 	_Module.RemoveMessageLoop();
 
 	shutdown();
-	ExCImage::ReleaseGDIPlus();
 
 	return nRet;
 }
