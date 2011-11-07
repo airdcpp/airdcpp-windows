@@ -43,6 +43,7 @@
 #include "TransferView.h"
 #include "WinUtil.h"
 #include "LineDlg.h"
+#include "HashProgressDlg.h"
 
 #include "picturewindow.h"
 
@@ -465,6 +466,7 @@ private:
 	bool bAppMinimized;
 	bool bIsPM;
 
+	HashProgressDlg hashProgress;
 
 	static bool bShutdown;
 	static uint64_t iCurrentShutdownTime;

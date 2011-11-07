@@ -41,7 +41,6 @@
 #include "StatsFrame.h"
 #include "UploadQueueFrame.h"
 #include "LineDlg.h"
-#include "HashProgressDlg.h"
 #include "PrivateFrame.h"
 #include "WinUtil.h"
 #include "CDMDebugFrame.h"
@@ -77,7 +76,7 @@ bool MainFrame::isShutdownStatus = false;
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL), c(new HttpConnection()), 
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
-bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false)
+bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false)
 
 { 
 		if(WinUtil::getOsMajor() >= 6) {
@@ -752,7 +751,11 @@ LRESULT MainFrame::onCopyData(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 }
 
 LRESULT MainFrame::onHashProgress(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	HashProgressDlg(false).DoModal(m_hWnd);
+	//HashProgressDlg(false).DoModal(m_hWnd);
+	if( !hashProgress.IsWindow() ){
+		hashProgress.Create( m_hWnd );
+		hashProgress.ShowWindow( SW_SHOW );
+	}
 	return 0;
 }
 
@@ -1151,6 +1154,9 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			updateTray(false);
 			string tmp1;
 			string tmp2;
+
+			if( hashProgress.IsWindow() )
+				hashProgress.DestroyWindow();
 
 			WINDOWPLACEMENT wp;
 			wp.length = sizeof(wp);

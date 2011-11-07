@@ -225,7 +225,8 @@ LRESULT SharePage::onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	tstring target;
 	if(WinUtil::browseDirectory(target, m_hWnd)) {
 		addDirectory(target);
-		HashProgressDlg(true).DoModal();
+		::PostMessage( WinUtil::mainWnd, WM_COMMAND, IDC_HASH_PROGRESS, 0);
+		//HashProgressDlg(true).DoModal();
 	}
 	
 	return 0;

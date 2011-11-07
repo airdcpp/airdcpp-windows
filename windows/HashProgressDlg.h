@@ -31,10 +31,10 @@ public:
 	enum { IDD = IDD_HASH_PROGRESS };
 	enum { WM_VERSIONDATA = WM_APP + 53 };
 
-	HashProgressDlg(bool aAutoClose) : autoClose(aAutoClose), startTime(GET_TICK()), startBytes(0), startFiles(0), init(false) { // KUL - hash progress dialog patch
+	HashProgressDlg(bool aAutoClose = false) : autoClose(aAutoClose), startTime(GET_TICK()), startBytes(0), startFiles(0), init(false) { // KUL - hash progress dialog patch
 
 	}
-	~HashProgressDlg() { }
+	virtual ~HashProgressDlg() { }
 
 	BEGIN_MSG_MAP(HashProgressDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
@@ -180,13 +180,15 @@ public:
 		SetDlgItemText(IDC_PAUSE, paused ? CTSTRING(RESUME) : CTSTRING(PAUSE)); // KUL - hash progress dialog patch
 	}
 
-	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		EndDialog(wID);
+	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD/* wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		//EndDialog(wID);
+		if( IsWindow() )
+			DestroyWindow();
 		return 0;
 	}
 
 private:
-	HashProgressDlg(const HashProgressDlg&);
+	//HashProgressDlg(const HashProgressDlg&);
 	
 	bool autoClose;
 	int64_t startBytes;
