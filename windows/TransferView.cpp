@@ -26,6 +26,7 @@
 #include "../client/UploadManager.h"
 #include "../client/QueueManager.h"
 #include "../client/QueueItem.h"
+#include "../client/AirUtil.h"
 
 #include "WinUtil.h"
 #include "TransferView.h"
@@ -980,7 +981,8 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	if (download) {
 		BundlePtr b = QueueManager::getInstance()->findBundle(Text::fromT(bundle));
 		if (b) {
-			ii->target = Text::toT(b->getTarget());
+			ii->target = Text::toT(b->getName() + " (" + AirUtil::getPrioText((int)b->getPriority()) + ")");
+			//ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
 		}
 	} else {
@@ -1104,7 +1106,6 @@ void TransferView::on(QueueManagerListener::BundleTick, const BundlePtr aBundle)
 	ui->setTimeLeft(aBundle->getSecondsLeft());
 	ui->setSpeed(static_cast<int64_t>(aBundle->getSpeed()));
 	ui->setBundle(aBundle->getToken());
-	ui->setTarget(Text::toT(aBundle->getTarget()));
 	ui->setRunning(aBundle->getRunning());
 	ui->setUsers(aBundle->getRunningUsers().size());
 
@@ -1393,6 +1394,13 @@ void TransferView::onBundleUser(const string& bundleToken, const HintedUser& aUs
 	ui->setUsers(1);
 	ui->setBundle(bundleToken);
 	ui->setUser(aUser);
+	speak(UPDATE_PARENT, ui);
+}
+
+void TransferView::on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept {
+	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
+	ui->setBundle(aBundle->getToken());
+	ui->setTarget(Text::toT(aBundle->getName() + " (" + AirUtil::getPrioText((int)aBundle->getPriority()) + ")"));
 	speak(UPDATE_PARENT, ui);
 }
 

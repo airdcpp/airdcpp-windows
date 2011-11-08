@@ -395,6 +395,8 @@ private:
 	void on(QueueManagerListener::RecheckNoTree, const string& target) noexcept;
 	void on(QueueManagerListener::RecheckAlreadyFinished, const string& target) noexcept;
 	void on(QueueManagerListener::RecheckDone, const string& target) noexcept;
+
+	void on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept;
 };
 
 #endif // !defined(QUEUE_FRAME_H)

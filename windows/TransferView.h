@@ -385,6 +385,7 @@ private:
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, true); }
 	void on(QueueManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) noexcept { onBundleUser(bundleToken, aUser); }
 	void on(QueueManagerListener::BundleRenamed, const BundlePtr aBundle) noexcept { onBundleName(aBundle->getToken(), aBundle->getTarget(), false); }
+	void on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 

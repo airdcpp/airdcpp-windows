@@ -25,6 +25,7 @@
 #include "PrivateFrame.h"
 #include "LineDlg.h"
 
+#include "../client/AirUtil.h"
 #include "../client/StringTokenizer.h"
 #include "../client/ShareManager.h"
 #include "../client/ClientManager.h"
@@ -546,6 +547,10 @@ void QueueFrame::on(QueueManagerListener::Moved, const QueueItem*, const string&
 
 void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItem* aQI) {
 	speak(UPDATE_ITEM, new UpdateTask(*aQI));
+}
+
+void QueueFrame::on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) {
+	//hmm..
 }
 
 LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -1101,12 +1106,96 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		dirMenu.AppendMenu(MF_SEPARATOR);
 		dirMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE));
 		dirMenu.AppendMenu(MF_SEPARATOR);
+		dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)removeMenu, CTSTRING(REMOVE_SOURCE));
 		dirMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 
 		if (bundles.size() == 1) {
-			priorityMenu.CheckMenuItem(bundles.front()->getPriority() + 1, MF_BYPOSITION | MF_CHECKED);
-			if(bundles.front()->getAutoPriority())
+			BundlePtr b = bundles.front();
+			priorityMenu.CheckMenuItem(b->getPriority() + 1, MF_BYPOSITION | MF_CHECKED);
+			if(b->getAutoPriority()) {
 				priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
+			}
+			CMenuItemInfo mi;
+		
+			/*while(browseMenu.GetMenuItemCount() > 0) {
+				browseMenu.RemoveMenu(0, MF_BYPOSITION);
+			} */
+			while(removeMenu.GetMenuItemCount() > 2) {
+				removeMenu.RemoveMenu(2, MF_BYPOSITION);
+			}
+
+			//int pmItems = 0;
+			//sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
+			for(auto i = b->getSources().begin(); i != b->getSources().end(); ++i) {
+				tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(i->first));
+				// add hub hint to menu
+				bool addHint = !i->first.hint.empty(), addSpeed = i->first.user->getSpeed() > 0;
+				if(addHint || addSpeed) {
+					nick += _T(" (");
+					if (addSpeed) {
+						nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(i->first.user->getSpeed()) + _T("/s") + _T(")");
+					}
+					if(addHint) {
+						if(addSpeed) {
+							nick += _T(", ");
+						}
+						nick += TSTRING(HUB) + _T(": ") + Text::toT(i->first.hint);
+					}
+					nick += _T(")");
+				}
+
+				mi.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
+				mi.fType = MFT_STRING;
+				mi.dwTypeData = (LPTSTR)nick.c_str();
+				mi.dwItemData = (ULONG_PTR)&(*i);
+				//mi.wID = IDC_BROWSELIST + menuItems;
+				//browseMenu.InsertMenuItem(menuItems, TRUE, &mi);
+				mi.wID = IDC_REMOVE_SOURCE + 1 + menuItems; // "All" is before sources
+				removeMenu.InsertMenuItem(menuItems + 2, TRUE, &mi); // "All" and separator come first
+				//mi.wID = IDC_REMOVE_SOURCES + menuItems;
+				//removeAllMenu.InsertMenuItem(menuItems, TRUE, &mi);
+				/*if(i->first.user->isOnline()) {
+					mi.wID = IDC_PM + menuItems;
+					pmMenu.InsertMenuItem(menuItems, TRUE, &mi);
+					pmItems++;
+				} */
+				menuItems++;
+			}
+
+			/*
+			readdItems = 0;
+					
+			badSources = QueueManager::getInstance()->getBadSources(ii->getQueueItem());
+			for(QueueItem::SourceConstIter i = badSources.begin(); i != badSources.end(); ++i) {
+				tstring nick = WinUtil::getNicks(i->getUser());
+				if(i->isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
+					nick += _T(" (") + TSTRING(FILE_NOT_AVAILABLE) + _T(")");
+				} else if(i->isSet(QueueItem::Source::FLAG_PASSIVE)) {
+					nick += _T(" (") + TSTRING(PASSIVE_USER) + _T(")");
+				} else if(i->isSet(QueueItem::Source::FLAG_BAD_TREE)) {
+					nick += _T(" (") + TSTRING(INVALID_TREE) + _T(")");
+				} else if(i->isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {
+					nick += _T(" (") + TSTRING(NO_NEEDED_PART) + _T(")");
+				} else if(i->isSet(QueueItem::Source::FLAG_NO_TTHF)) {
+					nick += _T(" (") + TSTRING(SOURCE_TOO_OLD) + _T(")");
+				} else if(i->isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
+					nick += _T(" (") + TSTRING(SLOW_USER) + _T(")");
+				} else if(i->isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
+					nick += _T(" (") + TSTRING(CERTIFICATE_NOT_TRUSTED) + _T(")");
+				}
+
+				// add hub hint to menu
+				if(!i->getUser().hint.empty())
+					nick += _T(" (") + Text::toT(i->getUser().hint) + _T(")");
+
+				mi.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
+				mi.fType = MFT_STRING;
+				mi.dwTypeData = (LPTSTR)nick.c_str();
+				mi.dwItemData = (ULONG_PTR)&(*i);
+				mi.wID = IDC_READD + 1 + readdItems;  // "All" is before sources
+				readdMenu.InsertMenuItem(readdItems + 2, TRUE, &mi);  // "All" and separator come first
+				readdItems++;
+			} */
 		}
 
 		dirMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
@@ -1199,7 +1288,29 @@ LRESULT QueueFrame::onReadd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 
 LRESULT QueueFrame::onRemoveSource(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-	if(ctrlQueue.GetSelectedCount() == 1) {
+	if(usingDirMenu) {
+		int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
+		BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, finishedFiles, dirBundles, fileBundles);
+		BundlePtr b = bundles.front();
+
+		if(wID == IDC_REMOVE_SOURCE) {
+			Bundle::SourceIntList sources = b->getSources();
+			for(auto si = sources.begin(); si != sources.end(); si++) {
+				QueueManager::getInstance()->removeBundleSource(b, si->first);
+			}
+		} else {
+			CMenuItemInfo mi;
+			mi.fMask = MIIM_DATA;
+			removeMenu.GetMenuItemInfo(wID, FALSE, &mi);
+			OMenuItem* omi = (OMenuItem*)mi.dwItemData;
+			Bundle::UserRunningPair* urp = (Bundle::UserRunningPair*)omi->data;
+			dcassert(urp);
+
+			if (!bundles.empty()) {
+				QueueManager::getInstance()->removeBundleSource(b, urp->first.user);
+			}
+		}
+	} else if(ctrlQueue.GetSelectedCount() == 1) {
 		int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
 		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
 		if(wID == IDC_REMOVE_SOURCE) {
