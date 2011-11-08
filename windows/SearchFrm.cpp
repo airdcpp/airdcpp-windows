@@ -562,7 +562,7 @@ void SearchFrame::onEnter() {
 		searchStartTime = GET_TICK();
 		// more 5 seconds for transfering results
 		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, Text::fromT(s), llsize, 
-			(SearchManager::TypeModes)ftype, mode, token, extList, (void*)this) + 5000;
+			(SearchManager::TypeModes)ftype, mode, token, extList, Search::MANUAL, (void*)this) + 5000;
 
 		waiting = true;
 	}
