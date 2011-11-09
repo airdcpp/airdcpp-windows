@@ -45,6 +45,7 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
 	{ IDC_REFRESH_VNAME_ON_SHAREPAGE, ResourceManager::REFRESH_VNAME_ON_SHAREPAGE},
 	{ IDC_SHARE_SFV, ResourceManager::SETTINGS_SHARE_SFV },
+	{ IDC_SHARE_SAVE, ResourceManager::SAVE_SHARE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -55,6 +56,7 @@ PropPage::Item SharePage::items[] = {
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
 	{ IDC_REFRESH_VNAME_ON_SHAREPAGE, SettingsManager::REFRESH_VNAME_ON_SHAREPAGE, PropPage::T_BOOL },
+	{ IDC_SHARE_SAVE_TIME, SettingsManager::SHARE_SAVE_TIME, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -113,6 +115,10 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	updown.SetRange32(0, 999);
 	updown.Detach();
 	
+	updown.Attach(GetDlgItem(IDC_SAVE_SPIN));
+	updown.SetRange32(0, 3000); 
+	updown.Detach();
+
 	ft.SubclassWindow(GetDlgItem(IDC_TREE1));
 	ft.SetStaticCtrl(&ctrlTotal);
 	if(!BOOLSETTING(USE_OLD_SHARING_UI))

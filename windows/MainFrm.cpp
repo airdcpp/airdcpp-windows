@@ -132,16 +132,18 @@ public:
 				continue;
 				
 			HintedUser user(u, Util::emptyString);
-			DirectoryListing dl(user);
+			DirectoryListing* dl = new DirectoryListing(user);
 			try {
-				dl.loadFile(*i, false, false);
+				dl->loadFile(*i, false, false);
 				string tmp;
+				int x = QueueManager::getInstance()->matchListing(*dl, false);
 				tmp.resize(STRING(MATCHED_FILES).size() + 16);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(MATCHED_FILES), QueueManager::getInstance()->matchListing(dl, false)));
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(MATCHED_FILES), x));
 				LogManager::getInstance()->message(Util::toString(ClientManager::getInstance()->getNicks(user)) + ": " + tmp);
 			} catch(const Exception&) {
 
 			}
+			delete dl;
 		}
 		delete this;
 		return 0;

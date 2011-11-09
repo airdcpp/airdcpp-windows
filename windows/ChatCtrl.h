@@ -149,8 +149,8 @@ public:
 	void setSelectedUser(const tstring& s) { selectedUser = s; }
 	const tstring& getSelectedUser() { return selectedUser; }
 
-	int		FullTextMatch(ColorSettings* cs, CHARFORMAT2 &cf, const tstring &line, int pos, long &lineIndex);
-	int		RegExpMatch(ColorSettings* cs, CHARFORMAT2 &cf, const tstring &line, long &lineIndex);
+	size_t	FullTextMatch(ColorSettings* cs, CHARFORMAT2 &cf, const tstring &line, size_t pos, long &lineIndex);
+	size_t	RegExpMatch(ColorSettings* cs, CHARFORMAT2 &cf, const tstring &line, long &lineIndex);
 	void	CheckAction(ColorSettings* cs, const tstring& line);
 	void Subclass() {
 		ccw.SubclassWindow(this->CRichEditCtrl::m_hWnd);

@@ -1416,5 +1416,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="QueueOptions">Queue options</String>
 		<String Name="DownloadOrder">Download order</String>
 		<String Name="Priorities">Priorities</String>
+		<String Name="SaveShare">Automatically save shares every </String>
 	</Strings>
 </Language>

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -433,6 +433,7 @@
 #define IDC_MAX_DOWNLOAD_SP             1218
 #define IDC_SKIP_SUBTRACT               1218
 #define IDC_FILELIST_HL                 1218
+#define IDC_SHARE_SAVE_TIME             1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_MAX_UPLOAD_SP               1219
@@ -764,6 +765,7 @@
 #define IDC_LANG_NOR                    1367
 #define IDC_SPIN1                       1367
 #define IDC_LOG_LINES_SPIN              1367
+#define IDC_SAVE_SPIN                   1367
 #define IDC_UPDATE_BL                   1368
 #define IDC_TEST                        1368
 #define IDC_POPUP_TITLE_FONT            1368
@@ -830,6 +832,7 @@
 #define IDC_GROUPS                      1403
 #define IDC_PRIO_RANDOM2                1403
 #define IDC_DOWNLOAD_ORDER              1404
+#define IDC_SHARE_SAVE                  1405
 #define IDC_FILELIST_DIFF               1406
 #define IDC_SETTINGS_MEBIBYES           1406
 #define IDC_SETTINGS_MEBIBITS           1406
@@ -1228,7 +1231,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1405
+#define _APS_NEXT_CONTROL_VALUE         1406
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

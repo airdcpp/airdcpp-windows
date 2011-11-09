@@ -323,7 +323,7 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT
 	for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
 		ColorSettings* cs = &(*i);
 	if(!cs->getIncludeNickList()) {
-		int pos;
+		size_t pos;
 		 tstring msg = sText;
 
 		//set start position for find
@@ -1463,10 +1463,10 @@ void ChatCtrl::scrollToEnd() {
 	SetScrollPos(&pt);
 }
 
-int ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring &line, int pos, long &lineIndex) {
+size_t ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring &line, size_t pos, long &lineIndex) {
 	//this shit needs a total cleanup, we cant highlight authors or timestamps this way and we dont need to.
 	
-	int index = tstring::npos;
+	size_t index = tstring::npos;
 	tstring searchString;
 
 	if( cs->getMyNick() ) {
@@ -1591,7 +1591,7 @@ int ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring 
 	
 	return pos;
 }
-int ChatCtrl::RegExpMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring &line, long &lineIndex) {
+size_t ChatCtrl::RegExpMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring &line, long &lineIndex) {
 	//TODO: Clean it up a bit
 	
 	long begin, end;	
