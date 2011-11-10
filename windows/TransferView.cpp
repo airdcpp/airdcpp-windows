@@ -1197,7 +1197,7 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 	if(BOOLSETTING(POPUP_DOWNLOAD_FAILED)) {
 		MainFrame::getMainFrame()->ShowBalloonTip(
 			TSTRING(FILE) + _T(": ") + Util::getFileName(ui->target) + _T("\n")+
-			TSTRING(USER) + _T(": ") + WinUtil::getNicks(ui->user) + _T("\n")+
+			TSTRING(USER) + _T(": ") + WinUtil::getNicks(aDownload->getHintedUser()) + _T("\n")+
 			TSTRING(REASON) + _T(": ") + Text::toT(aReason), TSTRING(DOWNLOAD_FAILED), NIIF_WARNING);
 	}
 
