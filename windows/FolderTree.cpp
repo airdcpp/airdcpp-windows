@@ -18,7 +18,7 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 #include "../client/version.h"
 #include "HashProgressDlg.h"
 #include "LineDlg.h"
-
+#include "WinUtil.h"
 #include "foldertree.h"
 
 //Pull in the WNet Lib automatically
@@ -1417,7 +1417,8 @@ LRESULT FolderTree::OnChecked(HTREEITEM hItem, BOOL &bHandled)
 			if(virt.DoModal() == IDOK) {
 				ShareManager::getInstance()->addDirectory(Text::fromT(path), Text::fromT(virt.line));
 			}
-			HashProgressDlg(true).DoModal();
+			//HashProgressDlg(true).DoModal();
+			::PostMessage( WinUtil::mainWnd, WM_COMMAND, IDC_HASH_PROGRESS, 0);
 			UpdateParentItems(hItem);
 		} catch(const ShareException& e) {
 			MessageBox(Text::toT(e.getError()).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);
