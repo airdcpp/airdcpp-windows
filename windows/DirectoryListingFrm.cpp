@@ -1877,7 +1877,10 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 					path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 				} catch(...) { }
 			} else {
-				path = QueueManager::getInstance()->getFinishedTTHPath(ii->file->getTTH());
+				StringList targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
+				if (!targets.empty()) {
+					path = Text::toT(targets.front());
+				}
 			}
 
 			if (path.empty()) {

@@ -2041,10 +2041,11 @@ LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 			if(si->sr->getType() == SearchResult::TYPE_FILE) {
 				if (si->isShareDupe()) {
 					path = Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
-				} else if (si->isQueueDupe()) {
-					path = Text::toT(QueueManager::getInstance()->getTargets(si->sr->getTTH())[0]);
-				} else {
-					path = QueueManager::getInstance()->getFinishedTTHPath(si->sr->getTTH());
+				} else if (si->isQueueDupe() || si->isFinishedDupe()) {
+					StringList targets = QueueManager::getInstance()->getTargets(si->sr->getTTH());
+					if (!targets.empty()) {
+						path = Text::toT(targets.front());
+					}
 				}
 
 				if (!path.empty())
