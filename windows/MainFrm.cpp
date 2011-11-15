@@ -1544,6 +1544,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		int64_t diff = (int64_t)((lastUpdate == 0) ? aTick - 1000 : aTick - lastUpdate);
 		int64_t updiff = Socket::getTotalUp() - lastUp;
 		int64_t downdiff = Socket::getTotalDown() - lastDown;
+		uint64_t queueSize = QueueManager::getInstance()->fileQueue.getTotalQueueSize();
 
 		TStringList* str = new TStringList();
 		str->push_back(Util::getAway() ? TSTRING(AWAY) : _T(""));
@@ -1554,7 +1555,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		str->push_back(_T("U: ") + Util::formatBytesW(Socket::getTotalUp()));
 		str->push_back(_T("D: [") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("]") + Util::formatBytesW(downdiff*1000I64/diff) + _T("/s"));
 		str->push_back(_T("U: [") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("]") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
-		str->push_back(TSTRING(QUEUE_SIZE) + _T(": ")  + Util::formatBytesW(QueueManager::getInstance()->fileQueue.getTotalQueueSize()));
+		str->push_back(TSTRING(QUEUE_SIZE) + _T(": ")  + Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
 
 		PostMessage(WM_SPEAKER, STATS, (LPARAM)str);
 		SettingsManager::getInstance()->set(SettingsManager::TOTAL_UPLOAD, SETTING(TOTAL_UPLOAD) + updiff);
