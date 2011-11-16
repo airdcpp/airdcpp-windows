@@ -301,7 +301,7 @@ QueueFrame::QueueItemInfo* QueueFrame::getItemInfo(const string& target) const {
 	string path = Util::getFilePath(target);
 	DirectoryPairC items = directories.equal_range(path);
 	for(DirectoryIterC i = items.first; i != items.second; ++i) {
-		if(i->second->getTarget() == target) {
+		if(compare(i->second->getTarget(), target) == 0) {
 			return i->second;
 		}
 	}
