@@ -761,8 +761,18 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 
 	OMenu menu;
 	menu.CreatePopupMenu();
-	SearchMenu.CreatePopupMenu();
-	targetMenu.CreatePopupMenu();
+
+	if (targetMenu.m_hMenu != NULL) {
+		// delete target menu
+		targetMenu.DestroyMenu();
+		targetMenu.m_hMenu = NULL;
+	}
+
+	if (SearchMenu.m_hMenu != NULL) {
+		// delete search menu
+		SearchMenu.DestroyMenu();
+		SearchMenu.m_hMenu = NULL;
+	}
 
 	if (copyMenu.m_hMenu != NULL) {
 		// delete copy menu if it exists
@@ -815,6 +825,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
 
 			int n = 0;
+			targetMenu.CreatePopupMenu();
 
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
 			//Append favorite download dirs
@@ -837,6 +848,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 				}
 			}
 		} else {
+			SearchMenu.CreatePopupMenu();
 			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));

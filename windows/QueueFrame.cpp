@@ -461,14 +461,14 @@ HTREEITEM QueueFrame::addDirectory(const string& dir, bool isFileList /* = false
 
 			parent = ctrlDirs.InsertItem(&tvi);
 			
-			// sort
+			/*// sort
 			if(BOOLSETTING(NAT_SORT)) {
 				TVSORTCB tvsortcb;
 				tvsortcb.hParent = tvi.hParent;
 				tvsortcb.lpfnCompare = DefaultSort;
 				tvsortcb.lParam = 0;
 				ctrlDirs.SortChildrenCB(&tvsortcb);
-			}
+			}*/
 
 			i = j + 1;
 		}
