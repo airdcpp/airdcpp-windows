@@ -29,6 +29,7 @@
 #include "../client/QueueManager.h"
 #include "../client/FastAlloc.h"
 #include "../client/TaskQueue.h"
+#include "boost/unordered_map.hpp"
 
 #define SHOWTREE_MESSAGE_MAP 12
 
@@ -215,7 +216,8 @@ private:
 		ADD_ITEM,
 		REMOVE_ITEM,
 		UPDATE_ITEM,
-		UPDATE_STATUS
+		UPDATE_STATUS,
+		UPDATE_STATUS_ITEMS
 	};
 	
 	class QueueItemInfo;
@@ -315,7 +317,7 @@ private:
 
 	HTREEITEM fileLists;
 
-	typedef unordered_multimap<string, QueueItemInfo*, noCaseStringHash, noCaseStringEq> DirectoryMap;
+	typedef boost::unordered_multimap<string, QueueItemInfo*> DirectoryMap;
 	typedef DirectoryMap::iterator DirectoryIter;
 	typedef DirectoryMap::const_iterator DirectoryIterC;
 	typedef pair<DirectoryIterC, DirectoryIterC> DirectoryPairC;
@@ -397,6 +399,9 @@ private:
 	void on(QueueManagerListener::RecheckDone, const string& target) noexcept;
 
 	void on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept;
+	void on(QueueManagerListener::BundleAdded, const BundlePtr aBundle) noexcept;
+	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept;
+	void on(QueueManagerListener::BundleFinished, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundleRemoved(), aBundle); }
 };
 
 #endif // !defined(QUEUE_FRAME_H)

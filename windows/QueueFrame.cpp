@@ -272,6 +272,7 @@ void QueueFrame::on(QueueManagerListener::Added, QueueItem* aQI) {
 	QueueItemInfo* ii = new QueueItemInfo(aQI);
 
 	speak(ADD_ITEM,	new QueueItemInfoTask(ii));
+	speak(UPDATE_STATUS_ITEMS, new StringTask(aQI->getTarget()));
 }
 
 void QueueFrame::addQueueItem(QueueItemInfo* ii, bool noSort) {
@@ -536,6 +537,7 @@ void QueueFrame::removeDirectories(HTREEITEM ht) {
 
 void QueueFrame::on(QueueManagerListener::Removed, const QueueItem* aQI) {
 	speak(REMOVE_ITEM, new StringTask(aQI->getTarget()));
+	speak(UPDATE_STATUS_ITEMS, new StringTask(aQI->getTarget()));
 }
 
 void QueueFrame::on(QueueManagerListener::Moved, const QueueItem*, const string& oldTarget) {
@@ -553,6 +555,25 @@ void QueueFrame::on(QueueManagerListener::BundlePriority, const BundlePtr aBundl
 	//hmm..
 }
 
+void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr aBundle) {
+	for (auto i = aBundle->getQueueItems().begin(); i != aBundle->getQueueItems().end(); ++i) {
+		QueueItemInfo* ii = new QueueItemInfo(*i);
+		speak(ADD_ITEM,	new QueueItemInfoTask(ii));
+	}
+	speak(UPDATE_STATUS_ITEMS, new StringTask(aBundle->getTarget()));
+}
+
+void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) {
+	if (aBundle->getQueueItems().empty()) {
+		return;
+	}
+
+	for (auto i = aBundle->getQueueItems().begin(); i != aBundle->getQueueItems().end(); ++i) {
+		speak(REMOVE_ITEM, new StringTask((*i)->getTarget()));
+	}
+	speak(UPDATE_STATUS_ITEMS, new StringTask(aBundle->getTarget()));
+}
+
 LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	TaskQueue::List t;
 
@@ -565,7 +586,7 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			
 			dcassert(ctrlQueue.findItem(iit.ii) == -1);
 			addQueueItem(iit.ii, false);
-			updateStatus();
+			//updateStatus();
 		} else if(ti->first == REMOVE_ITEM) {
 			auto &target = static_cast<StringTask&>(*ti->second);
 			const QueueItemInfo* ii = getItemInfo(target.str);
@@ -603,7 +624,7 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			}
 			
 			delete ii;
-			updateStatus();
+			//updateStatus();
 			if (!userList && BOOLSETTING(BOLD_QUEUE)) {
 				setDirty();
 			}
@@ -629,6 +650,8 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		} else if(ti->first == UPDATE_STATUS) {
 			auto &status = static_cast<StringTask&>(*ti->second);
 			ctrlStatus.SetText(1, Text::toT(status.str).c_str());
+		} else if(ti->first == UPDATE_STATUS_ITEMS) {
+			updateStatus();
 		}
 	}
 
