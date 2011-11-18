@@ -1,4 +1,5 @@
 #include "atlcoll.h"
+#include <stdint.h>
 
 class CBarShader
 {

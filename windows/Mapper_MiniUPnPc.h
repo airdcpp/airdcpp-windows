@@ -19,6 +19,7 @@
 #ifndef DCPLUSPLUS_WIN32_MAPPER_MINIUPNPC_H
 #define DCPLUSPLUS_WIN32_MAPPER_MINIUPNPC_H
 
+#include <stdint.h>
 #include "../client/Mapper.h"
 
 class Mapper_MiniUPnPc : public Mapper

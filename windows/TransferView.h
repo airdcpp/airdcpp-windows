@@ -361,7 +361,7 @@ private:
 
 	void on(DownloadManagerListener::Requesting, const Download* aDownload) noexcept;	
 	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { 
-		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, (aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString));
+		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, (aDownload->getBundleToken()));
 	}
 	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept;
 	void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept;

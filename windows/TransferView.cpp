@@ -1071,7 +1071,7 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d) no
 	ui->setSize(d->getSize());
 	ui->setStatus(ItemInfo::STATUS_RUNNING);	ui->updateMask &= ~UpdateInfo::MASK_STATUS; // hack to avoid changing item status
 	ui->setStatusString(TSTRING(REQUESTING) + _T(" ") + getFile(d->getType(), Text::toT(Util::getFileName(d->getPath()))) + _T("..."));
-	ui->setBundle(d->getBundle() ? d->getBundle()->getToken() : Util::emptyString);
+	ui->setBundle(d->getBundleToken());
 
 	speak(UPDATE_ITEM, ui);
 }
@@ -1085,7 +1085,7 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 	ui->setTarget(Text::toT(aDownload->getPath()));
 	ui->setType(aDownload->getType());
 
-	ui->setBundle(aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString);
+	ui->setBundle(aDownload->getBundleToken());
 	speak(UPDATE_ITEM, ui);
 }
 
@@ -1128,7 +1128,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 		ui->setSize(d->getSize());
 		uint64_t timeleft = d->getSecondsLeft();
 		ui->setTimeLeft(timeleft);
-		ui->setBundle(d->getBundle() ? d->getBundle()->getToken() : Util::emptyString);
+		ui->setBundle(d->getBundleToken());
 		
 		
 		ui->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
@@ -1182,8 +1182,7 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 	ui->setSize(aDownload->getSize());
 	ui->setTarget(Text::toT(aDownload->getPath()));
 	ui->setType(aDownload->getType());
-	BundlePtr bundle = aDownload->getBundle();
-	ui->setBundle(aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString);
+	ui->setBundle(aDownload->getBundleToken());
 
 	tstring tmpReason = Text::toT(aReason);
 	if(aDownload->isSet(Download::FLAG_SLOWUSER)) {
