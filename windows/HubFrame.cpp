@@ -1814,7 +1814,7 @@ void HubFrame::on(Second, uint64_t /*aTick*/) noexcept {
 
 void HubFrame::on(ClientListener::SetIcons, const Client*) noexcept { 
 		//speak(UPDATE_ICONS);
-		tasks.add(UPDATE_ICONS, 0);
+		tasks.add(UPDATE_ICONS, nullptr);
 }
 
 void HubFrame::on(Connecting, const Client*) noexcept { 

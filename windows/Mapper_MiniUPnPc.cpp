@@ -40,7 +40,7 @@ bool Mapper_MiniUPnPc::init() {
 		return true;
 
 	UPNPDev* devices = upnpDiscover(2000,
-		SettingsManager::getInstance()->isDefault(SettingsManager::BIND_INTERFACE) ? NULL : Socket::getBindAddress().c_str(),
+		SettingsManager::getInstance()->isDefault(SettingsManager::BIND_INTERFACE) ? nullptr : Socket::getBindAddress().c_str(),
 		0, 0, 0, 0);
 	if(!devices)
 		return false;

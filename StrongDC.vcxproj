@@ -162,6 +162,7 @@
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>HAVE_NATUPNP_H;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>

@@ -504,7 +504,7 @@ private:
 	void on(AddLine, const Client*, const string&) noexcept;
 	void on(ClientListener::SetIcons, const Client*) noexcept;
 
-	void speak(Tasks s) { tasks.add(static_cast<uint8_t>(s), 0); PostMessage(WM_SPEAKER); }
+	void speak(Tasks s) { tasks.add(static_cast<uint8_t>(s), nullptr); PostMessage(WM_SPEAKER); }
 	void speak(Tasks s, const string& msg, bool inChat = true) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new StatusTask(msg, inChat))); PostMessage(WM_SPEAKER); }
 	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
 	void speak(Tasks s, const Identity& from, const string& line) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new MessageTask(from, line))); PostMessage(WM_SPEAKER); }
