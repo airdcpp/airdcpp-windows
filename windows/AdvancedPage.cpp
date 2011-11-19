@@ -66,6 +66,7 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::USE_ADLS, ResourceManager::SETTINGS_USE_ADLS },
 	{ SettingsManager::USE_ADLS_OWN_LIST, ResourceManager::SETTINGS_USE_ADLS_OWN_LIST },
 	{ SettingsManager::NO_ZERO_BYTE, ResourceManager::SETTINGS_NO_ZERO_BYTE },
+	{ SettingsManager::USE_FTP_LOGGER, ResourceManager::USE_FTP_LOGGER },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

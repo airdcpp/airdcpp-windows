@@ -813,6 +813,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			}
 
 			//autosearch menus
+			targetMenu.CreatePopupMenu();
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
 			menu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
@@ -825,7 +826,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
 
 			int n = 0;
-			targetMenu.CreatePopupMenu();
+
 
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
 			//Append favorite download dirs
