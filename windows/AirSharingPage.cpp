@@ -2,6 +2,7 @@
 #include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
 #include "../client/ShareManager.h"
+#include "../client/AirUtil.h"
 #include "Resource.h"
 
 #include "AirSharingPage.h"
@@ -10,6 +11,7 @@
 
 #include "WinUtil.h"
 #include "PropertiesDlg.h"
+
 
 PropPage::ListItem AirSharingPage::listItems[] = {
 	{ SettingsManager::CHECK_MISSING, ResourceManager::CHECK_MISSING },
@@ -67,6 +69,8 @@ void AirSharingPage::write() {
 		 //set to the defaults
 	if(SETTING(SKIPLIST_SHARE).empty())
 		settings->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
+
+	AirUtil::setSkiplist();
 
 }
  
