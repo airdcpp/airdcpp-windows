@@ -172,6 +172,11 @@ Section "Radox Emoticon Pack"
   File /r /x .svn EmoPacks
 SectionEnd
 
+Section "Themes" 
+  SetOutPath $INSTDIR
+  File /r /x .svn Themes
+SectionEnd
+
 Section "Language Translations" 
   SetOutPath $INSTDIR
   File /r /x .svn Language

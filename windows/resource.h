@@ -221,6 +221,7 @@
 #define IDC_SHAREHIDDEN                 1035
 #define IDC_SHARE_SFV                   1036
 #define IDC_QUEUE                       1037
+#define IDC_SET_FONTS                   1038
 #define IDC_HUBNICK                     1041
 #define IDC_HUBPASS                     1042
 #define IDC_NEWFAV                      1042
@@ -785,6 +786,7 @@
 #define IDC_SETTINGS_KIB                1373
 #define IDC_LANG_D                      1374
 #define IDC_BUTTON2                     1374
+#define IDC_ICONS_RESTORE               1374
 #define IDC_PLAYER_COMBO                1375
 #define IDC_LANG_RUS                    1375
 #define IDC_MCN_SPIN                    1375
@@ -836,6 +838,7 @@
 #define IDC_FILELIST_DIFF               1406
 #define IDC_SETTINGS_MEBIBYES           1406
 #define IDC_SETTINGS_MEBIBITS           1406
+#define IDC_THEME_TEXT                  1406
 #define IDC_SETTINGS_MEBIBITS2          1407
 #define IDC_STYLES                      1408
 #define IDC_AVAILABLE_STYLES            1409
@@ -923,6 +926,7 @@
 #define IDC_SAMPLE_TAB_COLOR            1524
 #define IDC_RESET_TAB_COLOR             1525
 #define IDC_SEARCH_BY_TTH               1526
+#define IDC_THEMES                      1526
 #define IDC_GOOGLE                      1527
 #define IDC_IMDB                        1528
 #define IDC_GOOGLE_FULL                 1530
@@ -1231,7 +1235,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1406
+#define _APS_NEXT_CONTROL_VALUE         1407
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

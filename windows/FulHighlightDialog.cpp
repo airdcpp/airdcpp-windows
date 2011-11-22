@@ -49,8 +49,8 @@ PropPage::TextItem FulHighlightDialog::texts[] = {
 	{ IDC_WHOLELINE,	 ResourceManager::SETTINGS_WHOLE_LINE		},
 	{ IDC_CASESENSITIVE, ResourceManager::CASE_SENSITIVE	},
 	{ IDC_WHOLEWORD,	 ResourceManager::SETTINGS_ENTIRE_WORD		},
-	{ IDC_TABCOLOR,		 ResourceManager::SETTINGS_TAB_COLOR		},
-	{ IDC_LASTLOG,		 ResourceManager::SETTINGS_LASTLOG			},
+	//{ IDC_TABCOLOR,		 ResourceManager::SETTINGS_TAB_COLOR		},
+	//{ IDC_LASTLOG,		 ResourceManager::SETTINGS_LASTLOG			},
 	{ IDOK,				 ResourceManager::OK						},
 	{ IDCANCEL,			 ResourceManager::CANCEL					},
 	{ 0,				 ResourceManager::SETTINGS_AUTO_AWAY		}
@@ -192,9 +192,9 @@ void FulHighlightDialog::getValues(){
 	cs.setWholeLine(	  IsDlgButtonChecked(IDC_WHOLELINE)		== BST_CHECKED );
 	cs.setWholeWord(	  IsDlgButtonChecked(IDC_WHOLEWORD)		== BST_CHECKED );
 	cs.setPopup(		  IsDlgButtonChecked(IDC_POPUP)			== BST_CHECKED );
-	cs.setTab(			  IsDlgButtonChecked(IDC_TABCOLOR)		== BST_CHECKED );
+	//cs.setTab(			  IsDlgButtonChecked(IDC_TABCOLOR)		== BST_CHECKED );
 	cs.setPlaySound(	  IsDlgButtonChecked(IDC_SOUND)			== BST_CHECKED );
-	cs.setLog(			  IsDlgButtonChecked(IDC_LASTLOG)		== BST_CHECKED );
+	//cs.setLog(			  IsDlgButtonChecked(IDC_LASTLOG)		== BST_CHECKED );
 	cs.setHasBgColor(	  IsDlgButtonChecked(IDC_HAS_BG_COLOR)	== BST_CHECKED );
 	cs.setHasFgColor(	  IsDlgButtonChecked(IDC_HAS_FG_COLOR)	== BST_CHECKED );
 
@@ -223,9 +223,9 @@ void FulHighlightDialog::initControls() {
 	CheckDlgButton(IDC_CASESENSITIVE, cs.getCaseSensitive() ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_WHOLEWORD	, cs.getWholeWord()	 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_POPUP		, cs.getPopup()		 ? BST_CHECKED : BST_UNCHECKED);
-	CheckDlgButton(IDC_TABCOLOR		, cs.getTab()			 ? BST_CHECKED : BST_UNCHECKED);
+	//CheckDlgButton(IDC_TABCOLOR		, cs.getTab()			 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_SOUND		, cs.getPlaySound()	 ? BST_CHECKED : BST_UNCHECKED);
-	CheckDlgButton(IDC_LASTLOG		, cs.getLog()			 ? BST_CHECKED : BST_UNCHECKED);
+	//CheckDlgButton(IDC_LASTLOG		, cs.getLog()			 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_HAS_BG_COLOR , cs.getHasBgColor()	 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_HAS_FG_COLOR , cs.getHasFgColor()	 ? BST_CHECKED : BST_UNCHECKED);
 

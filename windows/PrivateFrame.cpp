@@ -210,6 +210,10 @@ LRESULT PrivateFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& 
 		}	
 	}
 	
+	if((GetFocus() == ctrlMessage.m_hWnd) && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000) && (wParam == 'A')){
+				ctrlMessage.SetSelAll();
+				return 0;
+	 }
 	// don't handle these keys unless the user is entering a message
 	if (GetFocus() != ctrlMessage.m_hWnd) {
 		bHandled = FALSE;

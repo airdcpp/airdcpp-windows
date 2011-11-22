@@ -1471,7 +1471,8 @@ LRESULT HubFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHan
   				bHandled = FALSE;
 				break;
 		}
-		if ((uMsg == WM_CHAR) && (GetFocus() == ctrlMessage.m_hWnd) && (wParam != VK_RETURN) && (wParam != VK_TAB) && (wParam != VK_BACK)) {
+
+		 if ((uMsg == WM_CHAR) && (GetFocus() == ctrlMessage.m_hWnd) && (wParam != VK_RETURN) && (wParam != VK_TAB) && (wParam != VK_BACK)) {
 			if ((!SETTING(SOUND_TYPING_NOTIFY).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
 				PlaySound(Text::toT(SETTING(SOUND_TYPING_NOTIFY)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
 		}
@@ -1481,6 +1482,9 @@ LRESULT HubFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHan
 	if(wParam == VK_TAB) {
 		onTab();
 		return 0;
+	}else if((GetFocus() == ctrlMessage.m_hWnd) && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000) && (wParam == 'A')){
+				ctrlMessage.SetSelAll();
+				return 0;
 	} else if (wParam == VK_ESCAPE) {
 		// Clear find text and give the focus back to the message box
 		ctrlMessage.SetFocus();
@@ -1495,7 +1499,7 @@ LRESULT HubFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHan
 	} else if(wParam == VK_F3) {
 		findText(currentNeedle.empty() ? findTextPopup() : currentNeedle);
 		return 0;
-	}
+	} 
 
 	// don't handle these keys unless the user is entering a message
 	if (GetFocus() != ctrlMessage.m_hWnd) {
@@ -1777,6 +1781,13 @@ void HubFrame::closeDisconnected() {
 		if (!(i->second->client->isConnected())) {
 			i->second->PostMessage(WM_CLOSE);
 		}
+	}
+}
+
+void HubFrame::updateFonts() {
+	for(FrameIter i=frames.begin(); i!= frames.end(); ++i) {
+		i->second->setFonts();
+		i->second->UpdateLayout();
 	}
 }
 
@@ -2462,18 +2473,22 @@ LRESULT HubFrame::onStyleChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 }
 
 void HubFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
+	bool needRedraw = false;
 	ctrlUsers.SetImageList(WinUtil::userImages, LVSIL_SMALL);
 	//ctrlUsers.Invalidate();
 	if(ctrlUsers.GetBkColor() != WinUtil::bgColor) {
+		needRedraw = true;
 		ctrlClient.SetBackgroundColor(WinUtil::bgColor);
 		ctrlUsers.SetBkColor(WinUtil::bgColor);
 		ctrlUsers.SetTextBkColor(WinUtil::bgColor);
 		ctrlUsers.setFlickerFree(WinUtil::bgBrush);
 	}
 	if(ctrlUsers.GetTextColor() != WinUtil::textColor) {
+		needRedraw = true;
 		ctrlUsers.SetTextColor(WinUtil::textColor);
 	}
-	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+	if(needRedraw)
+		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
 
 LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {

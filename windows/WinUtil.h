@@ -296,12 +296,14 @@ public:
 	static CHARFORMAT2 m_ChatTextPrivate;
 	static CHARFORMAT2 m_ChatTextLog;
 	static bool mutesounds;
-	static DWORD comCtlVersion;	
+	static DWORD comCtlVersion;
+	static tstring m_IconPath;
 
 	static void init(HWND hWnd);
 	static void uninit();
 	static void SetIcon(HWND hWnd, long icon, bool big = false);
 	static void initColors();
+	static void setFonts();
 	static void reLoadImages(); // User Icon Begin / User Icon End
 	static void FlashWindow();
 	static void search(tstring searchTerm, int searchMode, bool tth = false);

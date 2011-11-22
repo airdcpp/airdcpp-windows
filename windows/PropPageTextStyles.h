@@ -33,12 +33,14 @@ public:
 		COMMAND_HANDLER(IDC_DEFAULT_STYLES, BN_CLICKED, onDefaultStyles)
 		COMMAND_HANDLER(IDC_BLACK_AND_WHITE, BN_CLICKED, onBlackAndWhite)
 		COMMAND_HANDLER(IDC_BLACK, BN_CLICKED, onBlackTheme)
+		COMMAND_HANDLER(IDC_ICONS_RESTORE, BN_CLICKED, onRestoreIcons)
 		//COMMAND_HANDLER(IDC_SELWINCOLOR, BN_CLICKED, onEditBackground)
 		//COMMAND_HANDLER(IDC_ERROR_COLOR, BN_CLICKED, onEditError)
 		//COMMAND_HANDLER(IDC_ALTERNATE_COLOR, BN_CLICKED, onEditAlternate)
 		COMMAND_ID_HANDLER(IDC_SELTEXT, onClickedText)
 
 		COMMAND_HANDLER(IDC_TABCOLOR_LIST, LBN_SELCHANGE, onTabListChange)
+		COMMAND_HANDLER(IDC_THEMES, CBN_SELENDOK , onTheme)
 		COMMAND_HANDLER(IDC_RESET_TAB_COLOR, BN_CLICKED, onClickedResetTabColor)
 		COMMAND_HANDLER(IDC_SELECT_TAB_COLOR, BN_CLICKED, onClientSelectTabColor)
 
@@ -61,6 +63,9 @@ public:
 	LRESULT onTabListChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedResetTabColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClientSelectTabColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onTheme(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT onRestoreIcons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onBlackTheme(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
@@ -78,6 +83,10 @@ public:
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
+	
+	typedef std::map<string, string> themeMap;
+	themeMap themes;
+	void LoadTheme(const string& path);
 
 private:
 	void RefreshPreview();
@@ -132,10 +141,14 @@ protected:
 	COLORREF m_ForeColor;
 	COLORREF fg, bg;//, err, alt;
 
+
 	CComboBox ctrlTabList;
+	CComboBox ctrlTheme;
 	CButton cmdResetTab;
 	CButton cmdSetTabColor;
 	CEdit ctrlTabExample;
+	bool fontdirty;
+	void PopulateThemes();
 
 };
 

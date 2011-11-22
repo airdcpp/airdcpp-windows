@@ -3,12 +3,16 @@
 #include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
 #include "../client/SimpleXML.h"
+#include "../client/version.h"
 
 #include "Resource.h"
 #include "PropPageTextStyles.h"
 #include "WinUtil.h"
 #include "OperaColorsPage.h"
 #include "PropertiesDlg.h"
+#include "FlatTabCtrl.h"
+
+#include "../client/ResourceManager.h"
 
 PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_AVAILABLE_STYLES, ResourceManager::SETCZDC_STYLES },
@@ -28,6 +32,8 @@ PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_EXPORT, ResourceManager::EXPORT_THEME },
 	{ IDC_UNDERLINE_LINKS, ResourceManager::PROPPAGE_UNDERLINE_LINKS },
 	{ IDC_UNDERLINE_DUPES, ResourceManager::PROPPAGE_UNDERLINE_DUPES },
+	{ IDC_THEME_TEXT, ResourceManager::THEME_TEXT },
+	{ IDC_ICONS_RESTORE, ResourceManager::ICONS_DEFAULT },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 }; 
 
@@ -149,6 +155,9 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	cmdResetTab.Attach(GetDlgItem(IDC_RESET_TAB_COLOR));
 	cmdSetTabColor.Attach(GetDlgItem(IDC_SELECT_TAB_COLOR));
 	ctrlTabExample.Attach(GetDlgItem(IDC_SAMPLE_TAB_COLOR));
+	ctrlTheme.Attach(GetDlgItem(IDC_THEMES));
+	
+	PopulateThemes();
 
 	ctrlTabList.ResetContent();
 	for(int i=0; i < sizeof(colours) / sizeof(clrs); i++){				
@@ -161,11 +170,43 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	ctrlTabList.SetCurSel(0);
 	BOOL bTmp;
 	onTabListChange(0,0,0,bTmp);
+	fontdirty = false;
 
 	RefreshPreview();
 	return TRUE;
 }
 
+void PropPageTextStyles::PopulateThemes() {
+	ctrlTheme.ResetContent();
+	
+	if(themes.empty()) {
+		string path = Util::getPath(Util::PATH_THEMES);
+		for(FileFindIter i(path + "*.dctheme"); i != FileFindIter(); ++i) {
+			string filepath = path + i->getFileName();
+			themes.insert(make_pair(i->getFileName(), filepath));
+		}
+	}
+	
+	ctrlTheme.AddString(_T("[Select Theme]"));
+	
+	for(themeMap::const_iterator m = themes.begin(); m != themes.end(); ++m) {
+		ctrlTheme.AddString(Text::toT(m->first).c_str());
+	}
+
+	ctrlTheme.SetCurSel(0);
+}
+LRESULT PropPageTextStyles::onTheme(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	string sel;
+	TCHAR buf[128];
+	ctrlTheme.GetLBText(ctrlTheme.GetCurSel(), buf);
+
+	sel = Text::fromT(buf);
+	themeMap::iterator i = themes.find(sel);
+	if( i != themes.end() )
+		LoadTheme(i->second);
+
+	return 0;
+}
 void PropPageTextStyles::write()
 {
 	PropPage::write((HWND)*this, items);
@@ -186,8 +227,14 @@ void PropPageTextStyles::write()
 	for ( int i = 0; i < TS_LAST; i++ ) {
 		TextStyles[ i ].SaveSettings();
 	}
+
 	WinUtil::initColors();
+	if(fontdirty) {
+		WinUtil::setFonts();
+		::SendMessage(WinUtil::mainWnd, IDC_SET_FONTS, 0, 0);
+	}
 }
+
 
 LRESULT PropPageTextStyles::onEditBackColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
@@ -227,7 +274,7 @@ LRESULT PropPageTextStyles::onEditTextStyle(WORD /*wNotifyCode*/, WORD /*wID*/, 
 		TextStyles[ i ].yHeight = m_Font.lfHeight;
 // TODO		m_Preview.AppendText(_T("My nick"), _T("12:34 "), Text::toT(TextStyles[i].m_sPreviewText).c_str(), TextStyles[i]);
 	}
-
+	fontdirty = true;
 	RefreshPreview();
 	return TRUE;
 }
@@ -320,8 +367,19 @@ LRESULT PropPageTextStyles::onDefaultStyles(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	SettingsManager::getInstance()->set(SettingsManager::RESERVED_SLOT_COLOR, (int)RGB(0,51,0));
 	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, (int)RGB(192,192,192));
 	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, (int)RGB(132,132,132));
+	SettingsManager::getInstance()->set(SettingsManager::TAB_ACTIVE_BG, (int)RGB(130, 211, 244));
+	SettingsManager::getInstance()->set(SettingsManager::TAB_ACTIVE_TEXT, (int)RGB(0, 0, 0));
+	SettingsManager::getInstance()->set(SettingsManager::TAB_ACTIVE_BORDER, (int)RGB(0, 0, 0));
+	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_BG, (int)RGB(255, 255, 255));
+	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_BG_DISCONNECTED, (int)RGB(126, 154, 194));
+	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_TEXT, (int)RGB(82, 82, 82));
+	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_BORDER, (int)RGB(157, 157, 161));
+	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_BG_NOTIFY, (int)RGB(176, 169, 185));
+	SettingsManager::getInstance()->set(SettingsManager::TAB_DIRTY_BLEND, 10);
+	SettingsManager::getInstance()->set(SettingsManager::BLEND_TABS, true);
 	PropertiesDlg::needUpdate = true;
 
+	fontdirty = true;
 	RefreshPreview();
 	return TRUE;
 }
@@ -393,6 +451,8 @@ LRESULT PropPageTextStyles::onBlackAndWhite(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, (int)RGB(192,192,192));
 	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, (int)RGB(132,132,132));
 	PropertiesDlg::needUpdate = true;
+	
+	fontdirty = true;
 	RefreshPreview();
 	return TRUE;
 }
@@ -464,6 +524,8 @@ LRESULT PropPageTextStyles::onBlackTheme(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, (int)RGB(205,205,193));
 	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, (int)RGB(141,182,205));
 	PropertiesDlg::needUpdate = true;
+	
+	fontdirty = true;
 	RefreshPreview();
 	return TRUE;
 }
@@ -566,6 +628,7 @@ LRESULT PropPageTextStyles::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	cmdResetTab.Detach();
 	cmdSetTabColor.Detach();
 	ctrlTabExample.Detach();
+	ctrlTheme.Detach();
 
 	return 1;
 }
@@ -577,11 +640,11 @@ static const TCHAR defExt[] = _T(".dctheme");
 		if(xml.findChild(x)) { SettingsManager::getInstance()->set(SettingsManager::y, xml.getChildData());} \
 		xml.resetCurrentChild();
 
-LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring x = _T("");	
-	if(WinUtil::browseFile(x, m_hWnd, false, x, types, defExt) == IDOK) {
+
+void PropPageTextStyles::LoadTheme(const string& path) {
+		
 		SimpleXML xml;
-		xml.fromXML(File(Text::fromT(x), File::READ, File::OPEN).read());
+		xml.fromXML(File(path, File::READ, File::OPEN, false).read());
 		xml.resetCurrentChild();
 		xml.stepIn();
 		if(xml.findChild(("Settings"))) {
@@ -670,16 +733,65 @@ LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 			importData("ProgressbaroDCStyle", PROGRESSBAR_ODC_STYLE);
 			importData("UnderlineLinks", UNDERLINE_LINKS);
 			importData("UnderlineDupes", UNDERLINE_DUPES);
+			importData("TextQueueBackColor", TEXT_QUEUE_BACK_COLOR);
+			importData("QueueColor", QUEUE_COLOR);
+			importData("TextQueueBold", TEXT_QUEUE_BOLD);
+			importData("TextQueueItalic", TEXT_QUEUE_ITALIC);
+			importData("UnderlineQueue", UNDERLINE_QUEUE);
+
+			//tabs
+			importData("tabactivebg", TAB_ACTIVE_BG);
+			importData("TabActiveText", TAB_ACTIVE_TEXT);
+			importData("TabActiveBorder", TAB_ACTIVE_BORDER);
+			importData("TabInactiveBg", TAB_INACTIVE_BG);
+			importData("TabInactiveBgDisconnected", TAB_INACTIVE_BG_DISCONNECTED);
+			importData("TabInactiveText", TAB_INACTIVE_TEXT);
+			importData("TabInactiveBorder", TAB_INACTIVE_BORDER);
+			importData("TabInactiveBgNotify", TAB_INACTIVE_BG_NOTIFY);
+			importData("TabDirtyBlend", TAB_DIRTY_BLEND);
+			importData("BlendTabs", BLEND_TABS);
 		}
-		xml.resetCurrentChild();
-		xml.stepOut();
-	}
+			xml.stepOut();
+
+			if(xml.findChild("Icons")) {
+				if(MessageBox(CTSTRING(ICONS_IN_THEME), _T("AirDC++") _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+					xml.stepIn();
+					importData("IconPath", ICON_PATH);
+					//toolbars not exported to avoid absolute local paths in toolbar settings.
+					importData("ToolbarImage", TOOLBARIMAGE);
+					importData("ToolbarHot", TOOLBARHOTIMAGE);
+					xml.resetCurrentChild();
+					xml.stepOut();
+				}
+			}
+
+			xml.resetCurrentChild();
+			
+	
+
 
 	SendMessage(WM_DESTROY,0,0);
 	//SettingsManager::getInstance()->save();
+
 	PropertiesDlg::needUpdate = true;
 	SendMessage(WM_INITDIALOG,0,0);
+	
+	fontdirty = true;
 
+}
+LRESULT PropPageTextStyles::onRestoreIcons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
+	if(MessageBox(CTSTRING(ICONS_RESTORE), _T("AirDC++") _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+		SettingsManager::getInstance()->set(SettingsManager::TOOLBARIMAGE, "");
+		SettingsManager::getInstance()->set(SettingsManager::ICON_PATH, "icons");
+		SettingsManager::getInstance()->set(SettingsManager::TOOLBARHOTIMAGE, "");
+	}
+	return 0;
+}
+LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	tstring x = _T("");	
+	if(WinUtil::browseFile(x, m_hWnd, false, x, types, defExt) == IDOK) {
+		LoadTheme(Text::fromT(x));
+	}
 //	RefreshPreview();
 	return 0;
 }
@@ -783,7 +895,38 @@ LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	exportData("ListHighlightColor", LIST_HL_COLOR);
 	exportData("ListHighlightBold", LIST_HL_BOLD);
 	exportData("ListHighlightItalic", LIST_HL_ITALIC);
+	exportData("TextQueueBackColor", TEXT_QUEUE_BACK_COLOR);
+	exportData("QueueColor", QUEUE_COLOR);
+	exportData("TextQueueBold", TEXT_QUEUE_BOLD);
+	exportData("TextQueueItalic", TEXT_QUEUE_ITALIC);
+	exportData("UnderlineQueue", UNDERLINE_QUEUE);
+	//tabs
+	exportData("tabactivebg", TAB_ACTIVE_BG);
+	exportData("TabActiveText", TAB_ACTIVE_TEXT);
+	exportData("TabActiveBorder", TAB_ACTIVE_BORDER);
+	exportData("TabInactiveBg", TAB_INACTIVE_BG);
+	exportData("TabInactiveBgDisconnected", TAB_INACTIVE_BG_DISCONNECTED);
+	exportData("TabInactiveText", TAB_INACTIVE_TEXT);
+	exportData("TabInactiveBorder", TAB_INACTIVE_BORDER);
+	exportData("TabInactiveBgNotify", TAB_INACTIVE_BG_NOTIFY);
+	exportData("TabDirtyBlend", TAB_DIRTY_BLEND);
+	exportData("BlendTabs", BLEND_TABS);
 	
+	xml.stepOut();
+	/*
+	Don't export icon stuff, user might have absolute path for toolbars. Icon packs can be included by editing the .dctheme example.
+	curType = "string";
+	string empty = "";
+	xml.addTag("Icons");
+	xml.stepIn();
+	exportData("IconPath", ICON_PATH);
+	xml.addTag("ToolbarImage", empty);
+	xml.addChildAttrib(curType, curType);
+	xml.addTag("ToolbarHot", empty);
+	xml.addChildAttrib(type, curType);
+	xml.stepOut();
+	*/
+
 	try {
 		File ff(Text::fromT(x) , File::WRITE, File::CREATE | File::TRUNCATE);
 		BufferedOutputStream<false> f(&ff);
@@ -796,6 +939,7 @@ LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	}
 
 	}
+
 	return 0;
 }
 
@@ -838,6 +982,7 @@ LRESULT PropPageTextStyles::onClickedText(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	{
 		m_Font = tmp;
 		fg = d.GetColor();
+		fontdirty = true;
 	}
 	RefreshPreview();
 	return TRUE;

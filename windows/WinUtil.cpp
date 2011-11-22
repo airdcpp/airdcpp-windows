@@ -114,6 +114,7 @@ CHARFORMAT2 WinUtil::m_TextStyleDupe;
 CHARFORMAT2 WinUtil::m_TextStyleQueue;
 CHARFORMAT2 WinUtil::m_ChatTextPrivate;
 CHARFORMAT2 WinUtil::m_ChatTextLog;
+tstring WinUtil::m_IconPath;
 
 static const char* countryNames[] = { "ANDORRA", "UNITED ARAB EMIRATES", "AFGHANISTAN", "ANTIGUA AND BARBUDA", 
 "ANGUILLA", "ALBANIA", "ARMENIA", "NETHERLANDS ANTILLES", "ANGOLA", "ANTARCTICA", "ARGENTINA", "AMERICAN SAMOA", 
@@ -478,7 +479,7 @@ void WinUtil::init(HWND hWnd) {
 		userImages.CreateFromImage(IDB_USERS, 16, 9, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 	else
 		userImages.CreateFromImage(Text::toT(SETTING(USERLIST_IMAGE)).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE); 
-	
+
 	LOGFONT lf, lf2;
 	::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
 	SettingsManager::getInstance()->setDefault(SettingsManager::TEXT_FONT, Text::fromT(encodeFont(lf)));
@@ -531,9 +532,34 @@ void WinUtil::init(HWND hWnd) {
 	grantMenu.AppendMenu(MF_SEPARATOR);
 	grantMenu.AppendMenu(MF_STRING, IDC_UNGRANTSLOT, CTSTRING(REMOVE_EXTRA_SLOT));
 
+	m_IconPath = Text::toT(SETTING(ICON_PATH));
 	initColors();
 }
 
+void WinUtil::setFonts() {
+		
+	LOGFONT lf, lf2;
+	::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
+	decodeFont(Text::toT(SETTING(TEXT_FONT)), lf);
+	::GetObject((HFONT)GetStockObject(ANSI_FIXED_FONT), sizeof(lf2), &lf2);
+	
+	lf2.lfHeight = lf.lfHeight;
+	lf2.lfWeight = lf.lfWeight;
+	lf2.lfItalic = lf.lfItalic;
+
+	font = ::CreateFontIndirect(&lf);
+	fontHeight = WinUtil::getTextHeight(mainWnd, font);
+	lf.lfWeight = FW_BOLD;
+	boldFont = ::CreateFontIndirect(&lf);
+	lf.lfHeight *= 5;
+	lf.lfHeight /= 6;
+	smallBoldFont = ::CreateFontIndirect(&lf);
+	tabFont = ::CreateFontIndirect(&lf);
+	systemFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
+	
+	OEMFont = (HFONT)::GetStockObject(OEM_FIXED_FONT);
+
+}
 void WinUtil::initColors() {
 	bgBrush = CreateSolidBrush(SETTING(BACKGROUND_COLOR));
 	textColor = SETTING(TEXT_COLOR);
@@ -3099,7 +3125,7 @@ tstring WinUtil::getIconPath(const tstring& filename) {
 */
 	//but keeping it like this, ToDo different icons sets from iconpaths
 
-	return _T("icons\\") + filename;
+	return m_IconPath + _T("\\") + filename;
 }
 
 tstring WinUtil::getTitle(tstring searchTerm) {

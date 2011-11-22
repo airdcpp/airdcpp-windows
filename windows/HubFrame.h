@@ -223,6 +223,21 @@ public:
 	static void resortUsers();	
 	static void closeDisconnected();
 	static void reconnectDisconnected();
+	static void updateFonts();
+
+	void setFonts() {
+		/* 
+		Pretty brave attemp to switch font on an open window, hope it dont cause any trouble.
+		Reset the fonts. This will reset the charformats in the window too :( 
+			they will apply again with new text..
+		 */
+		ctrlClient.SetFont(WinUtil::font, FALSE);
+		ctrlMessage.SetFont(WinUtil::font, FALSE);
+		ctrlFilter.SetFont(WinUtil::font, FALSE);
+		ctrlFilterSel.SetFont(WinUtil::font, FALSE);
+		
+		addStatus(_T("New Font & TextStyles Applied, TextMatching colors will apply after this line"), WinUtil::m_ChatTextSystem);
+	}
 
 	static HubFrame* getHub(Client* aClient) {
 		for(FrameIter i = frames.begin() ; i != frames.end() ; i++) {

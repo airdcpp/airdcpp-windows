@@ -527,6 +527,15 @@ public:
 		return 0;
 	}
 
+	void redraw() {
+		height = WinUtil::getTextHeight(GetParent(), WinUtil::font) + 7;
+		for(TabInfo::ListIter i = tabs.begin(); i != tabs.end(); ++i) {
+			(*i)->update();
+			::SendMessage((*i)->hWnd, WM_PAINT, 0, 0);
+		}
+		Invalidate();
+	}
+
 	void update(){
 		TabInfo::ListIter i = tabs.begin();
 		int j = 1;

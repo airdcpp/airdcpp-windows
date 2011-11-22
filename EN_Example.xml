@@ -1417,5 +1417,11 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="Priorities">Priorities</String>
 		<String Name="SaveShare">Automatically save shares every </String>
 		<String Name="UseFtpLogger">Use external sfv checking (ex. FTPLogger, Enable this only if you know what you are doing)  </String>
+		<String Name="IconsInTheme">The selected Theme has custom icons, do you wish to load them?
+ You will need to restart airdc++ for the icons to load.</String>
+		<String Name="IconsRestore">Restore Default icons?
+ You will need to restart airdc++ for the icons to load.</String>
+		<String Name="IconsDefault">Default Icons</String>
+		<String Name="ThemeText">Themes: </String>
 	</Strings>
 </Language>
