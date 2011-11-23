@@ -10,9 +10,7 @@
 #include "WinUtil.h"
 #include "OperaColorsPage.h"
 #include "PropertiesDlg.h"
-#include "FlatTabCtrl.h"
 
-#include "../client/ResourceManager.h"
 
 PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_AVAILABLE_STYLES, ResourceManager::SETCZDC_STYLES },
@@ -20,14 +18,12 @@ PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_TEXT_COLOR, ResourceManager::SETCZDC_TEXT_COLOR },
 	{ IDC_TEXT_STYLE, ResourceManager::SETCZDC_TEXT_STYLE },
 	{ IDC_DEFAULT_STYLES, ResourceManager::SETCZDC_DEFAULT_STYLE },
-	{ IDC_BLACK_AND_WHITE, ResourceManager::SETCZDC_BLACK_WHITE },
 	{ IDC_CZDC_PREVIEW, ResourceManager::SETCZDC_PREVIEW },
 	{ IDC_SELTEXT, ResourceManager::SETTINGS_SELECT_TEXT_FACE },
 	{ IDC_RESET_TAB_COLOR, ResourceManager::SETTINGS_RESET },
 	{ IDC_SELECT_TAB_COLOR, ResourceManager::SETTINGS_SELECT_COLOR },
 	{ IDC_STYLES, ResourceManager::SETTINGS_TEXT_STYLES },
 	{ IDC_CHATCOLORS, ResourceManager::SETTINGS_COLORS },
-	{ IDC_BLACK, ResourceManager::BLACK_THEME },
 	{ IDC_IMPORT, ResourceManager::IMPORT_THEME },
 	{ IDC_EXPORT, ResourceManager::EXPORT_THEME },
 	{ IDC_UNDERLINE_LINKS, ResourceManager::PROPPAGE_UNDERLINE_LINKS },
@@ -36,7 +32,6 @@ PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_ICONS_RESTORE, ResourceManager::ICONS_DEFAULT },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 }; 
-
 
 PropPageTextStyles::clrs PropPageTextStyles::colours[] = {
 	{ResourceManager::SETTINGS_SELECT_WINDOW_COLOR,	SettingsManager::BACKGROUND_COLOR, 0},
@@ -377,154 +372,9 @@ LRESULT PropPageTextStyles::onDefaultStyles(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_BG_NOTIFY, (int)RGB(176, 169, 185));
 	SettingsManager::getInstance()->set(SettingsManager::TAB_DIRTY_BLEND, 10);
 	SettingsManager::getInstance()->set(SettingsManager::BLEND_TABS, true);
+	SettingsManager::getInstance()->set(SettingsManager::TAB_SIZE, 25);
 	PropertiesDlg::needUpdate = true;
 
-	fontdirty = true;
-	RefreshPreview();
-	return TRUE;
-}
-
-LRESULT PropPageTextStyles::onBlackAndWhite(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	bg = RGB(255,255,255);
-	fg = RGB(0,0,0);
-	TextStyles[ TS_GENERAL ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_GENERAL ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_GENERAL ].dwEffects = 0;
-
-	TextStyles[ TS_MYNICK ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_MYNICK ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_MYNICK ].dwEffects = 0;
-
-	TextStyles[ TS_MYMSG ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_MYMSG ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_MYMSG ].dwEffects = 0;
-
-	TextStyles[ TS_PRIVATE ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_PRIVATE ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_PRIVATE ].dwEffects = 0;
-
-	TextStyles[ TS_SYSTEM ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_SYSTEM ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_SYSTEM ].dwEffects = 0;
-
-	TextStyles[ TS_SERVER ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_SERVER ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_SERVER ].dwEffects = 0;
-
-	TextStyles[ TS_TIMESTAMP ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_TIMESTAMP ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_TIMESTAMP ].dwEffects = 0;
-
-	TextStyles[ TS_URL ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_URL ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_URL ].dwEffects = 0;
-
-	TextStyles[ TS_SHARE_DUPE ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_SHARE_DUPE ].crTextColor = RGB(255,128,255);
-	TextStyles[ TS_SHARE_DUPE ].dwEffects = 0;
-
-	TextStyles[ TS_QUEUE_DUPE ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_QUEUE_DUPE ].crTextColor = RGB(255,200,0);
-	TextStyles[ TS_QUEUE_DUPE ].dwEffects = 0;
-
-	TextStyles[ TS_LIST_HL ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_LIST_HL ].crTextColor = RGB(255,189,202);
-	TextStyles[ TS_LIST_HL ].dwEffects = 0;
-
-	TextStyles[ TS_FAVORITE ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_FAVORITE ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_FAVORITE ].dwEffects = 0;
-
-	TextStyles[ TS_OP ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_OP ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_OP ].dwEffects = 0;
-
-	TextStyles[ TS_NORM ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_NORM ].crTextColor = RGB(37,60,121);
-	TextStyles[ TS_NORM ].dwEffects = 0;
-
-		
-	SettingsManager::getInstance()->set(SettingsManager::NORMAL_COLOUR, (int)RGB(0,0,0));
-	SettingsManager::getInstance()->set(SettingsManager::FAVORITE_COLOR, (int)RGB(51,51,255));
-	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, (int)RGB(0,0,205));
-	SettingsManager::getInstance()->set(SettingsManager::RESERVED_SLOT_COLOR, (int)RGB(0,51,0));
-	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, (int)RGB(192,192,192));
-	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, (int)RGB(132,132,132));
-	PropertiesDlg::needUpdate = true;
-	
-	fontdirty = true;
-	RefreshPreview();
-	return TRUE;
-}
-
-LRESULT PropPageTextStyles::onBlackTheme(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	bg = 0;
-	fg = 12632256;
-	TextStyles[ TS_GENERAL ].crBackColor = 0;
-	TextStyles[ TS_GENERAL ].crTextColor = 16431749;
-	TextStyles[ TS_GENERAL ].dwEffects = 0;
-
-	TextStyles[ TS_MYNICK ].crBackColor = 0;
-	TextStyles[ TS_MYNICK ].crTextColor = 12615680;
-	TextStyles[ TS_MYNICK ].dwEffects = 0;
-
-	TextStyles[ TS_MYMSG ].crBackColor = 0;
-	TextStyles[ TS_MYMSG ].crTextColor = 12615680;
-	TextStyles[ TS_MYMSG ].dwEffects = 0;
-
-	TextStyles[ TS_PRIVATE ].crBackColor = 0;
-	TextStyles[ TS_PRIVATE ].crTextColor = 16431749;
-	TextStyles[ TS_PRIVATE ].dwEffects = 0;
-
-	TextStyles[ TS_SYSTEM ].crBackColor = 0;
-	TextStyles[ TS_SYSTEM ].crTextColor = 12632256;
-	TextStyles[ TS_SYSTEM ].dwEffects = CFE_BOLD | CFE_ITALIC;
-
-	TextStyles[ TS_SERVER ].crBackColor = 0;
-	TextStyles[ TS_SERVER ].crTextColor = 8454016;
-	TextStyles[ TS_SERVER ].dwEffects = CFE_BOLD;
-
-	TextStyles[ TS_TIMESTAMP ].crBackColor = 0;
-	TextStyles[ TS_TIMESTAMP ].crTextColor = 16431749;
-	TextStyles[ TS_TIMESTAMP ].dwEffects = 0;
-
-	TextStyles[ TS_URL ].crBackColor = 0;
-	TextStyles[ TS_URL ].crTextColor = RGB(248,248,255);
-	TextStyles[ TS_URL ].dwEffects = 0;
-
-
-	TextStyles[ TS_SHARE_DUPE ].crBackColor = 0;
-	TextStyles[ TS_SHARE_DUPE ].crTextColor = RGB(255,128,255);
-	TextStyles[ TS_SHARE_DUPE ].dwEffects = 0;
-
-	TextStyles[ TS_QUEUE_DUPE ].crBackColor = 0;
-	TextStyles[ TS_QUEUE_DUPE ].crTextColor = RGB(255,200,0);
-	TextStyles[ TS_QUEUE_DUPE ].dwEffects = 0;
-
-	TextStyles[ TS_LIST_HL ].crBackColor = 0;
-	TextStyles[ TS_LIST_HL ].crTextColor = RGB(255,189,202);
-	TextStyles[ TS_LIST_HL ].dwEffects = 0;
-
-	TextStyles[ TS_FAVORITE ].crBackColor = 0;
-	TextStyles[ TS_FAVORITE ].crTextColor = RGB(255,165,79);
-	TextStyles[ TS_FAVORITE ].dwEffects = 0;
-
-	TextStyles[ TS_OP ].crBackColor = 0;
-	TextStyles[ TS_OP ].crTextColor = RGB(50,205,50);
-	TextStyles[ TS_OP ].dwEffects = 0;
-
-	TextStyles[ TS_NORM ].crBackColor = 0;
-	TextStyles[ TS_NORM ].crTextColor = RGB(100,149,237);
-	TextStyles[ TS_NORM ].dwEffects = 0;
-
-	SettingsManager::getInstance()->set(SettingsManager::NORMAL_COLOUR, (int)RGB(255,255,255));
-	SettingsManager::getInstance()->set(SettingsManager::FAVORITE_COLOR, (int)RGB(255,165,79));
-	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, (int)RGB(50,205,50));
-	SettingsManager::getInstance()->set(SettingsManager::RESERVED_SLOT_COLOR, (int)RGB(193,205,205));
-	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, (int)RGB(205,205,193));
-	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, (int)RGB(141,182,205));
-	PropertiesDlg::needUpdate = true;
-	
 	fontdirty = true;
 	RefreshPreview();
 	return TRUE;
@@ -644,7 +494,11 @@ static const TCHAR defExt[] = _T(".dctheme");
 void PropPageTextStyles::LoadTheme(const string& path) {
 		
 		SimpleXML xml;
+		try {
 		xml.fromXML(File(path, File::READ, File::OPEN, false).read());
+		}catch(...) {
+			return;
+		}
 		xml.resetCurrentChild();
 		xml.stepIn();
 		if(xml.findChild(("Settings"))) {
@@ -750,6 +604,8 @@ void PropPageTextStyles::LoadTheme(const string& path) {
 			importData("TabInactiveBgNotify", TAB_INACTIVE_BG_NOTIFY);
 			importData("TabDirtyBlend", TAB_DIRTY_BLEND);
 			importData("BlendTabs", BLEND_TABS);
+			importData("TabSize", TAB_SIZE);
+
 		}
 			xml.stepOut();
 
@@ -911,6 +767,7 @@ LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	exportData("TabInactiveBgNotify", TAB_INACTIVE_BG_NOTIFY);
 	exportData("TabDirtyBlend", TAB_DIRTY_BLEND);
 	exportData("BlendTabs", BLEND_TABS);
+	exportData("TabSize", TAB_SIZE);
 	
 	xml.stepOut();
 	/*

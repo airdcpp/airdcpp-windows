@@ -535,7 +535,6 @@
 		<String Name="Server">Server</String>
 		<String Name="SetPriority">Set priority</String>
 		<String Name="SetczdcBackColor">Back color</String>
-		<String Name="SetczdcBlackWhite">Black &amp; white</String>
 		<String Name="SetczdcCzcharsDisable">Remove diacritic marks from Czech chars</String>
 		<String Name="SetczdcDefaultStyle">Default style</String>
 		<String Name="SetczdcDisconnectingEnable">Enable slow downloads disconnecting</String>
@@ -1155,7 +1154,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SearchByTth">Search by TTH</String>
 		<String Name="Paste">Paste</String>
 		<String Name="SearchSites">Search Sites</String>
-		<String Name="BlackTheme">Black Theme</String>
 		<String Name="ImportTheme">Import Theme</String>
 		<String Name="ExportTheme">Export Theme</String>
 		<String Name="SettingsLnor">Norwegian</String>

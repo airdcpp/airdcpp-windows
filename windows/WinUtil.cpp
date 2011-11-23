@@ -78,7 +78,6 @@ HFONT WinUtil::font = NULL;
 int WinUtil::fontHeight = 0;
 HFONT WinUtil::boldFont = NULL;
 HFONT WinUtil::systemFont = NULL;
-HFONT WinUtil::smallBoldFont = NULL;
 HFONT WinUtil::tabFont = NULL;
 HFONT WinUtil::OEMFont = NULL;
 CMenu WinUtil::mainMenu;
@@ -499,7 +498,6 @@ void WinUtil::init(HWND hWnd) {
 	boldFont = ::CreateFontIndirect(&lf);
 	lf.lfHeight *= 5;
 	lf.lfHeight /= 6;
-	smallBoldFont = ::CreateFontIndirect(&lf);
 	tabFont = ::CreateFontIndirect(&lf);
 	systemFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
 	
@@ -553,7 +551,6 @@ void WinUtil::setFonts() {
 	boldFont = ::CreateFontIndirect(&lf);
 	lf.lfHeight *= 5;
 	lf.lfHeight /= 6;
-	smallBoldFont = ::CreateFontIndirect(&lf);
 	tabFont = ::CreateFontIndirect(&lf);
 	systemFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
 	
@@ -700,12 +697,13 @@ void WinUtil::uninit() {
 	flagImages.Destroy();
 	::DeleteObject(font);
 	::DeleteObject(boldFont);
-	::DeleteObject(smallBoldFont);
 	::DeleteObject(bgBrush);
 	::DeleteObject(tabFont);
 
 	mainMenu.DestroyMenu();
 	grantMenu.DestroyMenu();
+	::DeleteObject(OEMFont);
+	::DeleteObject(systemFont);
 
 	UnhookWindowsHookEx(hook);	
 
@@ -3114,16 +3112,6 @@ void WinUtil::search(tstring searchTerm, int searchMode, bool tth) {
 	}
 
 tstring WinUtil::getIconPath(const tstring& filename) {
-
-/*	Dont think we need to change it by os anymore.
-		if(stricmp(Util::getFileExt(filename), _T(".bmp")) == 0) {
-		if (getOsMajor() == 5 && getOsMinor() == 0)
-			return _T("icons\\24bpp\\") + filename;
-		else
-			return _T("icons\\32bpp\\") + filename;
-	}
-*/
-	//but keeping it like this, ToDo different icons sets from iconpaths
 
 	return m_IconPath + _T("\\") + filename;
 }

@@ -1418,7 +1418,7 @@ LRESULT FolderTree::OnChecked(HTREEITEM hItem, BOOL &bHandled)
 				ShareManager::getInstance()->addDirectory(Text::fromT(path), Text::fromT(virt.line));
 			}
 			//HashProgressDlg(true).DoModal();
-			::PostMessage( WinUtil::mainWnd, WM_COMMAND, IDC_HASH_PROGRESS, 0);
+			::PostMessage( WinUtil::mainWnd, WM_COMMAND, IDC_HASH_PROGRESS_AUTO_CLOSE, 0);
 			UpdateParentItems(hItem);
 		} catch(const ShareException& e) {
 			MessageBox(Text::toT(e.getError()).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);

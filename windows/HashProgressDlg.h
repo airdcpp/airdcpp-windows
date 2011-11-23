@@ -80,6 +80,10 @@ public:
 		SetTimer(1, 1000);
 		return TRUE;
 	}
+	void setAutoClose(bool val) {
+		autoClose = val;
+	}
+
 
 	// KUL - hash progress dialog patch (begin)
 	LRESULT onMaxHashSpeed(WORD /*wNotifyCode*/, WORD, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

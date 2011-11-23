@@ -264,7 +264,6 @@ public:
 	static int fontHeight;
 	static HFONT boldFont;
 	static HFONT systemFont;
-	static HFONT smallBoldFont;
 	static HFONT tabFont;
 	static HFONT OEMFont;
 	static CMenu mainMenu;
