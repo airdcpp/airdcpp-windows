@@ -1243,7 +1243,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="CopyDirectory">Copy Directory</String>
 		<String Name="SearchForAlternatesDir">Search Directory for alternates</String>
 		<String Name="ErrorHashingCrc32">calculated CRC32 does not match the one found in SFV file.</String>
-		<String Name="SettingsShareSfv">Don't perform SFV check for files being hashed into share</String>
 		<String Name="SearchDirectory">Search Directory</String>
 		<String Name="SearchGoogle">Search Google</String>
 		<String Name="SearchGoogleTitle">Search Google (title only)</String>
