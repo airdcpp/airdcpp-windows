@@ -912,10 +912,9 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 }
 
 void TransferView::onUpdateFileInfo(const UserPtr& aUser, const string& aToken, bool updateStatus) {
-	UpdateInfo* ui = new UpdateInfo(aToken, true);
 	string aTarget, bundleToken;	int64_t aSize; int aFlags = 0;
-
 	if(QueueManager::getInstance()->getQueueInfo(aUser, aTarget, aSize, aFlags, bundleToken)) {
+		UpdateInfo* ui = new UpdateInfo(aToken, true);
 		Transfer::Type type = Transfer::TYPE_FILE;
 		if(aFlags & QueueItem::FLAG_USER_LIST)
 			type = Transfer::TYPE_FULL_LIST;
@@ -926,14 +925,12 @@ void TransferView::onUpdateFileInfo(const UserPtr& aUser, const string& aToken, 
 		ui->setTarget(Text::toT(aTarget));
 		ui->setSize(aSize);
 		ui->setBundle(bundleToken);
+		if (updateStatus) {
+			ui->setStatusString(TSTRING(CONNECTING));
+			ui->setStatus(ItemInfo::STATUS_WAITING);
+		}
+		speak(UPDATE_ITEM, ui);
 	}
-
-	if (updateStatus) {
-		ui->setStatusString(TSTRING(CONNECTING));
-		ui->setStatus(ItemInfo::STATUS_WAITING);
-	}
-
-	speak(UPDATE_ITEM, ui);
 }
 
 void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) {

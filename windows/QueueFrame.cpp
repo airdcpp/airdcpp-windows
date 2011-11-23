@@ -314,6 +314,9 @@ void QueueFrame::addQueueList(const QueueItem::StringMap& li) {
 	ctrlDirs.SetRedraw(FALSE);
 	for(QueueItem::StringMap::const_iterator j = li.begin(); j != li.end(); ++j) {
 		QueueItem* aQI = j->second;
+		if (aQI->isFinished() && !BOOLSETTING(KEEP_FINISHED_FILES)) {
+			continue;
+		}
 		QueueItemInfo* ii = new QueueItemInfo(aQI);
 		addQueueItem(ii, true);
 	}
