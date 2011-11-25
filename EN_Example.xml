@@ -1380,6 +1380,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ScanShareFinished">The share has been scanned for missing/extra files</String>
 		<String Name="ScanFolderFinished">The selected folders have been scanned for missing/extra files</String>
 		<String Name="ScanBundleFinished">The bundle %s has finished downloading and has been scanned for missing/extra files</String>
+		<String Name="ScanFailedBundleFinished">The bundle %s won't be shared because the following problems were found: </String>
 		<String Name="ScanNoProblems">no problems were found</String>
 		<String Name="ScanProblemsFound">and the following problems were found</String>
 		<String Name="XMissingReleaseFiles">%d missing release files</String>

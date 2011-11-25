@@ -230,7 +230,7 @@ private:
 			qi->inc();
 		}
 
-		~QueueItemInfo() { 
+		~QueueItemInfo() {
 			qi->dec();
 		}
 
