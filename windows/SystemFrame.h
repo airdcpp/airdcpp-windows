@@ -118,6 +118,7 @@ private:
 	void scrollToEnd();
 
 	void Colorize(const tstring& line, LONG Begin);
+	boost::wregex reg;
 
 	//tstring LineFromPos(const POINT& p) const;
 	//tstring selLine;

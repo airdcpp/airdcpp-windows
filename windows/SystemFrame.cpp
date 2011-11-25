@@ -39,6 +39,7 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlPad.LimitText(128*1024);
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 	
+	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s])([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:)))"));
 
 	//might miss some messages
 	deque<pair<time_t, string> > oldMessages = LogManager::getInstance()->getLastLogs();
@@ -192,9 +193,6 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 }
 
 void SystemFrame::Colorize(const tstring& line, LONG Begin){
-	boost::wregex reg;
-
-	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s])([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:)))"));
 
 	tstring::const_iterator start = line.begin();
 	tstring::const_iterator end = line.end();
