@@ -697,7 +697,7 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 				}
 			}
 			if(WinUtil::isShift())
-				QueueManager::getInstance()->setPriority(target, QueueItem::HIGHEST);
+				QueueManager::getInstance()->setQIPriority(target, QueueItem::HIGHEST);
 		} else {
 			QueueManager::getInstance()->addDirectory(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt),
 				WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
@@ -728,7 +728,7 @@ void SearchFrame::SearchInfo::DownloadTarget::operator()(SearchInfo* si) {
 				si->sr->getTTH(), HintedUser(si->sr->getUser(), si->sr->getHubURL()));
 
 			if(WinUtil::isShift())
-				QueueManager::getInstance()->setPriority(target, QueueItem::HIGHEST);
+				QueueManager::getInstance()->setQIPriority(target, QueueItem::HIGHEST);
 		} else {
 			QueueManager::getInstance()->addDirectory(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), Text::fromT(tgt),
 				WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);

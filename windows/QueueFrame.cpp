@@ -1436,7 +1436,7 @@ LRESULT QueueFrame::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 		int i = -1;
 		while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			QueueManager::getInstance()->setAutoPriority(ctrlQueue.getItemData(i)->getTarget(), false);
-			QueueManager::getInstance()->setPriority(ctrlQueue.getItemData(i)->getTarget(), p);
+			QueueManager::getInstance()->setQIPriority(ctrlQueue.getItemData(i)->getTarget(), p);
 		}
 	}
 
@@ -1481,7 +1481,7 @@ void QueueFrame::changePriority(bool inc){
 			case QueueItem::PAUSED:  p = QueueItem::LOWEST; break;
 		}
 		QueueManager::getInstance()->setAutoPriority(ctrlQueue.getItemData(i)->getTarget(), false);
-		QueueManager::getInstance()->setPriority(ctrlQueue.getItemData(i)->getTarget(), p);
+		QueueManager::getInstance()->setQIPriority(ctrlQueue.getItemData(i)->getTarget(), p);
 	}
 }
 
@@ -1497,7 +1497,7 @@ void QueueFrame::setPriority(HTREEITEM ht, const QueueItem::Priority& p) {
 	DirectoryPairC dp = directories.equal_range(name);
 	for(DirectoryIterC i = dp.first; i != dp.second; ++i) {
 		QueueManager::getInstance()->setAutoPriority(i->second->getTarget(), false);
-		QueueManager::getInstance()->setPriority(i->second->getTarget(), p);
+		QueueManager::getInstance()->setQIPriority(i->second->getTarget(), p);
 	}
 }
 

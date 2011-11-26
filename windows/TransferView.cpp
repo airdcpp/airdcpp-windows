@@ -629,14 +629,14 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 	if (!ui.token.empty()) {
 		for(int j = 0; j < ctrlTransfers.GetItemCount(); ++j) {
 			ItemInfo* ii = ctrlTransfers.getItemData(j);
-			if(ui.token == ii->token) {
+			if(compare(ui.token, ii->token) == 0) {
 				pos = j;
 				return ii;
 			} else if(ii->isBundle) {
 				const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
 				for(vector<ItemInfo*>::const_iterator k = children.begin(); k != children.end(); k++) {
 					ItemInfo* ii = *k;
-					if(ui.token == ii->token) {
+					if(compare(ui.token, ii->token) == 0) {
 						return ii;
 					}
 				}
