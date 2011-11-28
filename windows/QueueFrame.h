@@ -40,7 +40,7 @@ public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE, 0, COLOR_3DFACE);
 
 	QueueFrame() : menuItems(0), queueSize(0), queueItems(0), spoken(false), dirty(false), 
-		usingDirMenu(false),  readdItems(0), fileLists(NULL), showTree(true), closed(false), PreviewAppsSize(0),
+		usingDirMenu(false),  readdItems(0), fileLists(NULL), tempItems(NULL), showTree(true), closed(false), PreviewAppsSize(0),
 		showTreeContainer(WC_BUTTON, this, SHOWTREE_MESSAGE_MAP) 
 	{
 	}
@@ -214,12 +214,60 @@ private:
 	};
 	enum Tasks {
 		ADD_ITEM,
+		ADD_BUNDLE,
 		REMOVE_ITEM,
+		REMOVE_BUNDLE,
 		UPDATE_ITEM,
+		UPDATE_BUNDLE,
 		UPDATE_STATUS,
-		UPDATE_STATUS_ITEMS
+		UPDATE_STATUS_ITEMS,
+	};
+
+
+	class BundleItemInfo;
+	friend class BundleItemInfo;
+
+	class BundleItemInfo : public FastAlloc<BundleItemInfo> {
+	public:
+		BundleItemInfo(BundlePtr aBundle, const string dir) : directory(dir)	{ 
+			bundles.push_back(aBundle);
+		}
+		~BundleItemInfo() { }
+
+		const string& getDir() const { return directory; }
+		void addBundle(BundlePtr aBundle);
+		void removeBundle(BundlePtr aBundle);
+		tstring getBundleName(bool remove);
+		int countFileBundles();
+		const BundleList& getBundles() const { return bundles; }
+
+		/*const BundlePtr getBundle() const { return b; }
+		string getPath() const { return Util::getFilePath(getTarget()); }
+
+		bool isSet(Flags::MaskType aFlag) const { return (b->getFlags() & aFlag) == aFlag; }
+
+		const string& getTarget() const { return b->getTarget(); }
+
+		int64_t getSize() const { return b->getSize(); }
+		int64_t getDownloadedBytes() const { return b->getDownloadedBytes(); }
+
+		time_t getAdded() const { return b->getAdded(); }
+
+		Bundle::Priority getPriority() const { return b->getPriority(); }
+		//bool isWaiting() const { return b->isRunning(); }
+		bool isFinished() const { return b->isFinished(); }
+
+		bool getAutoPriority() const { return b->getAutoPriority(); } */
+	private:
+		//BundlePtr b;
+		BundleList bundles;
+		string directory;
+
+		BundleItemInfo(const BundleItemInfo&);
+		BundleItemInfo& operator=(const BundleItemInfo&);
 	};
 	
+
 	class QueueItemInfo;
 	friend class QueueItemInfo;
 	
@@ -250,6 +298,7 @@ private:
 		}
 		int getImageIndex() const { return WinUtil::getIconIndex(Text::toT(getTarget()));	}
 
+		const BundlePtr getBundle() const { return qi->getBundle(); }
 		const QueueItem* getQueueItem() const { return qi; }
 		string getPath() const { return Util::getFilePath(getTarget()); }
 
@@ -279,6 +328,11 @@ private:
 	struct QueueItemInfoTask : FastAlloc<QueueItemInfoTask>, public Task {
 		QueueItemInfoTask(QueueItemInfo* ii_) : ii(ii_) { }
 		QueueItemInfo* ii;
+	};
+
+	struct BundleItemInfoTask : FastAlloc<BundleItemInfoTask>, public Task {
+		BundleItemInfoTask(BundleItemInfo* ii_) : ii(ii_) { }
+		BundleItemInfo* ii;
 	};
 
 	struct UpdateTask : FastAlloc<UpdateTask>, public Task {
@@ -316,12 +370,15 @@ private:
 	int readdItems;
 
 	HTREEITEM fileLists;
+	HTREEITEM tempItems;
 
 	typedef boost::unordered_multimap<string, QueueItemInfo*> DirectoryMap;
+	typedef boost::unordered_map<string, HTREEITEM> BundleMap;
 	typedef DirectoryMap::iterator DirectoryIter;
 	typedef DirectoryMap::const_iterator DirectoryIterC;
 	typedef pair<DirectoryIterC, DirectoryIterC> DirectoryPairC;
 	DirectoryMap directories;
+	BundleMap bundleMap;
 	string curDir;
 
 	TypedListViewCtrl<QueueItemInfo, IDC_QUEUE> ctrlQueue;
@@ -340,9 +397,12 @@ private:
 
 	void addQueueList(const QueueItem::StringMap& l);
 	void addQueueItem(QueueItemInfo* qi, bool noSort);
-	HTREEITEM addDirectory(const string& dir, bool isFileList = false, HTREEITEM startAt = NULL);
-	void removeDirectory(const string& dir, bool isFileList = false);
-	void removeDirectories(HTREEITEM ht);
+	HTREEITEM addItemDir(bool isFileList);
+	HTREEITEM addBundleDir(const string& dir, const BundlePtr aBundle, HTREEITEM startAt = NULL);
+	void removeQueueItem(QueueItemInfo* ii, bool noSort);
+	void removeItemDir(bool isFileList);
+	void removeBundleDir(const string& dir, const BundlePtr aBundle);
+	void QueueFrame::removeBundle(const BundlePtr aBundle);
 
 	void updateQueue();
 	void updateStatus();
@@ -379,7 +439,7 @@ private:
 		return ht == NULL ? Util::emptyString : getDir(ctrlDirs.GetSelectedItem());
 	}
 	
-	const string& getDir(HTREEITEM ht) const { dcassert(ht != NULL); return *reinterpret_cast<string*>(ctrlDirs.GetItemData(ht)); }
+	const string& getDir(HTREEITEM ht) const { dcassert(ht != NULL); return ((BundleItemInfo*)(ctrlDirs.GetItemData(ht)))->getDir(); }
 
 	void on(QueueManagerListener::Added, QueueItem* aQI) noexcept;
 	void on(QueueManagerListener::Moved, const QueueItem* aQI, const string& oldTarget) noexcept;
@@ -398,7 +458,9 @@ private:
 	void on(QueueManagerListener::RecheckAlreadyFinished, const string& target) noexcept;
 	void on(QueueManagerListener::RecheckDone, const string& target) noexcept;
 
+	void on(QueueManagerListener::BundleSources, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundlePriority(), aBundle); };
 	void on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept;
+	void on(QueueManagerListener::BundleTick, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundlePriority(), aBundle); }
 	void on(QueueManagerListener::BundleAdded, const BundlePtr aBundle) noexcept;
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept;
 	void on(QueueManagerListener::BundleFinished, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundleRemoved(), aBundle); }

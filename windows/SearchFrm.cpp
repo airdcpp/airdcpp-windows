@@ -674,7 +674,7 @@ void SearchFrame::SearchInfo::viewNfo() {
 		}
 	} else {
 		try {
-				QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST, path);
+			QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST, path);
 		} catch(const Exception&) {
 			// Ignore for now...
 		}

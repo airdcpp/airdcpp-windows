@@ -326,7 +326,7 @@ void TransferView::ItemInfo::removeBundle() {
 				}
 			}
 		}
-		QueueManager::getInstance()->removeBundleFiles(aBundle, moveFinished);
+		QueueManager::getInstance()->removeBundle(aBundle, false, moveFinished);
 	}
 }
 
