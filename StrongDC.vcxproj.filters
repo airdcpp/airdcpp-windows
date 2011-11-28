@@ -507,6 +507,9 @@
     <ClCompile Include="windows\PriorityPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\AutoSearchFrm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -816,6 +819,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\PriorityPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\AutoSearchFrm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -47,6 +47,7 @@
 #include "InputBox.h"
 #include "PopupManager.h"
 #include "Wizard.h"
+#include "AutoSearchFrm.h"
 
 #include "Winamp.h"
 #include "Players.h"
@@ -236,6 +237,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(IDC_NET_STATS);
 	m_CmdBar.m_arrCommand.Add(IDC_CDMDEBUG_WINDOW);
 	m_CmdBar.m_arrCommand.Add(IDC_SYSTEM_LOG);
+	m_CmdBar.m_arrCommand.Add(IDC_AUTOSEARCH);
 	m_CmdBar.m_arrCommand.Add(ID_WINDOW_CASCADE);
 	m_CmdBar.m_arrCommand.Add(ID_WINDOW_TILE_HORZ);
 	m_CmdBar.m_arrCommand.Add(ID_WINDOW_TILE_VERT);
@@ -804,6 +806,7 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		case IDC_CDMDEBUG_WINDOW: CDMDebugFrame::openWindow(); break;
 		case IDC_RECENTS: RecentHubsFrame::openWindow(); break;
 		case IDC_SYSTEM_LOG: SystemFrame::openWindow(); break;
+		case IDC_AUTOSEARCH: AutoSearchFrame::openWindow(); break;
 
 	
 		default: dcassert(0); break;

@@ -163,13 +163,6 @@ private:
 	bool HitNick(const POINT& p, tstring& sNick, int& iBegin , int& iEnd);
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);
 
-	void enableAutosearch() {
-		//enable the autosearch once added something for it.. will change when move autosearch into frame anyway.
-		if(!BOOLSETTING(AUTOSEARCH_ENABLED)) 
-		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_ENABLED, true);
-		if(!BOOLSETTING(AUTOSEARCH_ENABLED_TIME)) 
-		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_ENABLED_TIME, true);
-	}
 	tstring getSearchString();
 	tstring WordFromPos(const POINT& p);
 	tstring LineFromPos(const POINT& p) const;

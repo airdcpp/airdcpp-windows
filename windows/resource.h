@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -97,6 +97,7 @@
 #define IDD_UCPAGE                      236
 #define IDR_NET_STATS                   237
 #define IDR_RECENTS                     238
+#define IDR_AUTOSEARCH                  239
 #define IDB_SPLASH                      240
 #define IDD_HIGHLIGHTPAGE               240
 #define IDR_UPLOAD_QUEUE                241
@@ -967,6 +968,9 @@
 #define IDC_PARTIAL_SLOTS_SPIN          3028
 #define IDC_SEARCHLEFT                  3029
 #define IDC_SEARCHDIR                   3030
+#define IDC_AUTOSEARCHFRM				3031
+#define IDC_ENABLE						3032
+#define IDC_DISABLE						3033
 #define IDC_DOWNLOAD_TARGET             5000
 #define IDC_DOWNLOAD_TARGET_DIR         5500
 #define IDC_SELECT_WINDOW               6000
@@ -1224,6 +1228,7 @@
 #define IDC_FOLLOW                      32784
 #define IDC_SEND_MESSAGE                32786
 #define IDC_FILTER_FOCUS                32788
+#define IDC_AUTOSEARCH					32789
 #define ID_WINDOW_MINIMIZE_ALL          57654
 #define ID_WINDOW_RESTORE_ALL           57655
 #define IDC_WINAMP_START                57666

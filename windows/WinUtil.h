@@ -220,6 +220,7 @@ static const toolbarButton ToolbarButtons[] = {
 	{IDC_REFRESH_FILE_LIST, 20, false, ResourceManager::REFRESH_FILE_LIST},
 	{IDC_SYSTEM_LOG, 21, true, ResourceManager::SYSTEM_LOG},
 	{IDC_SCAN_MISSING, 22, false, ResourceManager::MENU_SCAN_MISSING},
+	{IDC_AUTOSEARCH, 23, false, ResourceManager::AUTOSEARCH},
 };
 
 struct winamptoolbarButton {
