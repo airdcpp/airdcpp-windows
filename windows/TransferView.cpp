@@ -1090,10 +1090,11 @@ void TransferView::on(QueueManagerListener::BundleTick, const BundlePtr aBundle)
 	string bundleToken = aBundle->getToken();
 	int64_t pos = aBundle->getDownloadedBytes();
 	double percent = (double)pos*100.0/(double)aBundle->getSize();
-	if (percent >= 100) {
+	dcassert(percent <= 100.00);
+	/*if (percent >= 100) {
 		//hack, prevents updates for removed bundles
 		return;
-	}
+	} */
 
 	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setStatus(ItemInfo::STATUS_RUNNING);

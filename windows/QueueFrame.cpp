@@ -550,6 +550,12 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 			tvi.item.pszText = const_cast<TCHAR*>(name.c_str());
 			tvi.hParent = parent;
 			parent = ctrlDirs.InsertItem(&tvi);
+			if (mainBundle) {
+				//LogManager::getInstance()->message("MAINBUNDLE ADD: " + aBundle->getName() + ", dir: " + ((BundleItemInfo*)ctrlDirs.GetItemData(parent))->getDir());
+				dcassert(bundleMap.find(dir) == bundleMap.end());
+				bundleMap.insert(make_pair(aBundle->getTarget(), parent));
+				mainBundle = false;
+			}
 
 			if (resetFormating) {
 				//in case we need to add more dirs
@@ -570,10 +576,6 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 		}
 	}
 
-	if (mainBundle) {
-		dcassert(bundleMap.find(dir) == bundleMap.end());
-		bundleMap.insert(make_pair(dir, parent));
-	}
 	return parent;
 }
 
@@ -843,6 +845,7 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			//BundleItemInfo* bii = 
 			const string& path = ui.ii->getDir();
 			auto i = bundleMap.find(path);
+			dcassert(i != bundleMap.end());
 			if (i != bundleMap.end()) {
 				//((BundleItemInfo*)ctrlDirs.GetItemData(i->second))->getBundles();
 				ctrlDirs.SetItemText(i->second, const_cast<TCHAR*>(ui.ii->getBundles().front()->getBundleText().c_str()));
