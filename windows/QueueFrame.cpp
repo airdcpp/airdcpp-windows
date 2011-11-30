@@ -530,12 +530,13 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 			j = dir.find('\\', i);
 			dcassert(j != string::npos);
 			string tmp = dir.substr(0, j+1);
-			tvi.item.lParam = (LPARAM)new BundleItemInfo(aBundle, dir.substr(0, j+1));
+			BundleItemInfo* bii = new BundleItemInfo(aBundle, dir.substr(0, j+1));
+			tvi.item.lParam = (LPARAM)bii;
 			tstring name;
 			bool resetFormating = false;
 			if (dir.substr(0, j+1) == Util::getDir(aBundle->getTarget(), false, false)) {
 				if (aBundle->getFileBundle()) {
-					name = ((BundleItemInfo*)ctrlDirs.GetItemData(next))->getBundleName(false);
+					name = bii->getBundleName(false);
 				} else {
 					mainBundle=true;
 					name = aBundle->getBundleText();
