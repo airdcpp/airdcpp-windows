@@ -34,7 +34,7 @@
 #define SHOWTREE_MESSAGE_MAP 12
 
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
-	private QueueManagerListener, public CSplitterImpl<QueueFrame>, private SettingsManagerListener
+	private QueueManagerListener, private DownloadManagerListener, public CSplitterImpl<QueueFrame>, private SettingsManagerListener
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE, 0, COLOR_3DFACE);
@@ -70,6 +70,7 @@ public:
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
+		COMMAND_ID_HANDLER(IDC_SEARCH_BUNDLE, onSearchBundle)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
 		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopyMagnet)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
@@ -111,6 +112,7 @@ public:
 	LRESULT onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRecheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSearchBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopyMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onItemChanged(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
@@ -399,6 +401,7 @@ private:
 	void addQueueItem(QueueItemInfo* qi, bool noSort);
 	HTREEITEM addItemDir(bool isFileList);
 	HTREEITEM addBundleDir(const string& dir, const BundlePtr aBundle, HTREEITEM startAt = NULL);
+	HTREEITEM createDir(TVINSERTSTRUCT& tvi, const string& dir, const BundlePtr aBundle, HTREEITEM parent, bool subDir=false);
 	void removeQueueItem(QueueItemInfo* ii, bool noSort);
 	void removeItemDir(bool isFileList);
 	void removeBundleDir(const string& dir, const BundlePtr aBundle);
@@ -460,10 +463,11 @@ private:
 
 	void on(QueueManagerListener::BundleSources, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundlePriority(), aBundle); };
 	void on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept;
-	void on(QueueManagerListener::BundleTick, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundlePriority(), aBundle); }
 	void on(QueueManagerListener::BundleAdded, const BundlePtr aBundle) noexcept;
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept;
 	void on(QueueManagerListener::BundleFinished, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundleRemoved(), aBundle); }
+
+	void on(DownloadManagerListener::BundleTick, const BundleList& tickBundles) noexcept;
 };
 
 #endif // !defined(QUEUE_FRAME_H)

@@ -1424,5 +1424,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="Autosearch">AutoSearch</String>
 		<String Name="EnableAutosearch">Enable Item(s)</String>
 		<String Name="DisableAutosearch">Disable Item(s)</String>
+		<String Name="SearchBundleAlt">Search bundle for alternatives</String>
 	</Strings>
 </Language>

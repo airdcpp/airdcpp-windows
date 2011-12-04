@@ -232,7 +232,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			} 
 			if (parent) {
 				//LogManager::getInstance()->message("PRIOBUNDLE1");
-				BundlePtr aBundle = QueueManager::getInstance()->findBundle(Text::fromT(ii->bundle));
+				BundlePtr aBundle = QueueManager::getInstance()->getBundle(Text::fromT(ii->bundle));
 				if (aBundle) {
 					//LogManager::getInstance()->message("PRIOBUNDLE2");
 					Bundle::Priority p = aBundle->getPriority();
@@ -309,7 +309,7 @@ void TransferView::ItemInfo::removeAll() {
 }
 
 void TransferView::ItemInfo::removeBundle() {
-	BundlePtr aBundle = QueueManager::getInstance()->findBundle(Text::fromT(bundle));
+	BundlePtr aBundle = QueueManager::getInstance()->getBundle(Text::fromT(bundle));
 	if (aBundle) {
 		bool moveFinished = !aBundle->getFinishedFiles().empty();
 		string tmp;
@@ -976,7 +976,7 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	ii->bundle = bundle;
 
 	if (download) {
-		BundlePtr b = QueueManager::getInstance()->findBundle(Text::fromT(bundle));
+		BundlePtr b = QueueManager::getInstance()->getBundle(Text::fromT(bundle));
 		if (b) {
 			ii->target = Text::toT(b->getName() + " (" + AirUtil::getPrioText((int)b->getPriority()) + ")");
 			//ii->target = Text::toT(b->getTarget());
@@ -1068,7 +1068,7 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d) no
 	ui->setSize(d->getSize());
 	ui->setStatus(ItemInfo::STATUS_RUNNING);	ui->updateMask &= ~UpdateInfo::MASK_STATUS; // hack to avoid changing item status
 	ui->setStatusString(TSTRING(REQUESTING) + _T(" ") + getFile(d->getType(), Text::toT(Util::getFileName(d->getPath()))) + _T("..."));
-	ui->setBundle(d->getBundleToken());
+	ui->setBundle(d->getBundle() ? d->getBundle()->getToken() : Util::emptyString);
 
 	speak(UPDATE_ITEM, ui);
 }
@@ -1082,38 +1082,41 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 	ui->setTarget(Text::toT(aDownload->getPath()));
 	ui->setType(aDownload->getType());
 
-	ui->setBundle(aDownload->getBundleToken());
+	ui->setBundle(aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString);
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(QueueManagerListener::BundleTick, const BundlePtr aBundle) {
-	string bundleToken = aBundle->getToken();
-	int64_t pos = aBundle->getDownloadedBytes();
-	double percent = (double)pos*100.0/(double)aBundle->getSize();
-	dcassert(percent <= 100.00);
-	/*if (percent >= 100) {
-		//hack, prevents updates for removed bundles
-		return;
-	} */
+void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bundles) {
+	for(auto j = bundles.begin(); j != bundles.end(); ++j) {
+		BundlePtr b = *j;
+		string bundleToken = b->getToken();
+		int64_t pos = b->getDownloadedBytes();
+		double percent = (double)pos*100.0/(double)b->getSize();
+		dcassert(percent <= 100.00);
+		/*if (percent >= 100) {
+			//hack, prevents updates for removed bundles
+			return;
+		} */
 
-	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
-	ui->setStatus(ItemInfo::STATUS_RUNNING);
-	ui->setPos(pos);
-	ui->setActual(aBundle->getActual());
-	ui->setSize(aBundle->getSize());
-	ui->setTimeLeft(aBundle->getSecondsLeft());
-	ui->setSpeed(static_cast<int64_t>(aBundle->getSpeed()));
-	ui->setBundle(aBundle->getToken());
-	ui->setRunning(aBundle->getRunning());
-	ui->setUsers(aBundle->getRunningUsers().size());
+		UpdateInfo* ui = new UpdateInfo(b->getToken(), true);
+		ui->setStatus(ItemInfo::STATUS_RUNNING);
+		ui->setPos(pos);
+		ui->setActual(b->getActual());
+		ui->setSize(b->getSize());
+		ui->setTimeLeft(b->getSecondsLeft());
+		ui->setSpeed(static_cast<int64_t>(b->getSpeed()));
+		ui->setBundle(b->getToken());
+		ui->setRunning(b->getRunning());
+		ui->setUsers(b->getRunningUsers().size());
 
-	tstring elapsed = Util::formatSeconds((GET_TICK() - aBundle->getStart())/1000);
+		tstring elapsed = Util::formatSeconds((GET_TICK() - b->getStart())/1000);
 
-	tstring statusString;
-	statusString += Text::tformat(TSTRING(DOWNLOADED_BYTES), Util::formatBytesW(pos).c_str(), percent, elapsed.c_str());
-	ui->setStatusString(statusString);
+		tstring statusString;
+		statusString += Text::tformat(TSTRING(DOWNLOADED_BYTES), Util::formatBytesW(pos).c_str(), percent, elapsed.c_str());
+		ui->setStatusString(statusString);
 			
-	speak(UPDATE_PARENT, ui);
+		speak(UPDATE_PARENT, ui);
+	}
 }
 
 void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
@@ -1126,7 +1129,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 		ui->setSize(d->getSize());
 		uint64_t timeleft = d->getSecondsLeft();
 		ui->setTimeLeft(timeleft);
-		ui->setBundle(d->getBundleToken());
+		ui->setBundle(d->getBundle() ? d->getBundle()->getToken() : Util::emptyString);
 		
 		
 		ui->setSpeed(static_cast<int64_t>(d->getAverageSpeed()));
@@ -1180,7 +1183,7 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 	ui->setSize(aDownload->getSize());
 	ui->setTarget(Text::toT(aDownload->getPath()));
 	ui->setType(aDownload->getType());
-	ui->setBundle(aDownload->getBundleToken());
+	ui->setBundle(aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString);
 
 	tstring tmpReason = Text::toT(aReason);
 	if(aDownload->isSet(Download::FLAG_SLOWUSER)) {

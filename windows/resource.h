@@ -1209,6 +1209,7 @@
 #define IDC_BUNDLE_PRIORITY             15115
 #define IDC_REMOVE_BUNDLE_SOURCE        15116
 #define IDC_RELOAD                      15117
+#define IDC_SEARCH_BUNDLE               15118
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_BITZI_LOOKUP                20000
 #define IDC_BROWSELIST                  21000

@@ -361,15 +361,16 @@ private:
 
 	void on(DownloadManagerListener::Requesting, const Download* aDownload) noexcept;	
 	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { 
-		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, (aDownload->getBundleToken()));
+		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, (aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString));
 	}
 	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept;
 	void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept;
 	void on(DownloadManagerListener::Tick, const DownloadList& aDownload) noexcept;
+	void on(DownloadManagerListener::BundleTick, const BundleList& bundles) noexcept;
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
-	void on(DownloadManagerListener::BundleFinished, const string& bundleToken) noexcept { onBundleComplete(bundleToken, bundleToken, false); }
 	void on(DownloadManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) noexcept { onBundleUser(bundleToken, aUser); }
 	void on(DownloadManagerListener::Target, const UserPtr& user, const string& aToken) noexcept { onUpdateFileInfo(user, aToken, false); }
+	void on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, false); }
 
 	void on(UploadManagerListener::Starting, const Upload* aUpload) noexcept;
 	void on(UploadManagerListener::Tick, const UploadList& aUpload, const UploadBundleList& bundles) noexcept;
@@ -380,8 +381,6 @@ private:
 	void on(UploadManagerListener::BundleRenamed, const string& bundleToken, const string& bundleTarget) noexcept { onBundleName(bundleToken, bundleTarget, true); }
 
 	void on(QueueManagerListener::BundleFinished, const BundlePtr aBundle) noexcept { onBundleComplete(aBundle->getToken(), aBundle->getName(), false); }
-	void on(QueueManagerListener::BundleTick, const BundlePtr aBundle) noexcept;
-	void on(QueueManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, false); }
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, true); }
 	void on(QueueManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) noexcept { onBundleUser(bundleToken, aUser); }
 	void on(QueueManagerListener::BundleRenamed, const BundlePtr aBundle) noexcept { onBundleName(aBundle->getToken(), aBundle->getTarget(), false); }
