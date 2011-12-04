@@ -102,8 +102,6 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	AutoSearchManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
-
-
 	//fill the list
 	updateList();
 
