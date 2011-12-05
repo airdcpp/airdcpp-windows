@@ -1242,9 +1242,9 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 	switch(wID) {
 		case IDC_HELP_HOMEPAGE: site = _T("http://www.airdcpp.net"); break;
 		case IDC_HELP_GEOIPFILE: site = _T("http://www.maxmind.com/download/geoip/database/GeoIPCountryCSV.zip"); break;
-		case IDC_HELP_GUIDES: site = _T("http://www.airdcpp.net/Guides/guides.html"); break;
-		case IDC_HELP_DISCUSS: site = _T("http://www.airdcpp.net/forum.html"); break;
-		case IDC_HELP_CUSTOMIZE: site = _T("http://www.airdcpp.net/Customizations/"); break;
+		case IDC_HELP_GUIDES: site = _T("http://www.airdcpp.net/guides"); break;
+		case IDC_HELP_DISCUSS: site = _T("http://www.airdcpp.net/forum"); break;
+		case IDC_HELP_CUSTOMIZE: site = _T("http://www.airdcpp.net/c/customizations"); break;
 		default: dcassert(0);
 	}
 
