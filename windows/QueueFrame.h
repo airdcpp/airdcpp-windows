@@ -231,8 +231,10 @@ private:
 
 	class BundleItemInfo : public FastAlloc<BundleItemInfo> {
 	public:
-		BundleItemInfo(BundlePtr aBundle, const string dir) : directory(dir)	{ 
-			bundles.push_back(aBundle);
+		BundleItemInfo(const string dir, BundlePtr aBundle = NULL) : directory(dir)	{
+			if (aBundle) {
+				bundles.push_back(aBundle);
+			}
 		}
 		~BundleItemInfo() { }
 
@@ -241,7 +243,7 @@ private:
 		void removeBundle(BundlePtr aBundle);
 		tstring getBundleName(bool remove);
 		int countFileBundles();
-		const BundleList& getBundles() const { return bundles; }
+		BundleList& getBundles() { return bundles; }
 
 		/*const BundlePtr getBundle() const { return b; }
 		string getPath() const { return Util::getFilePath(getTarget()); }
@@ -402,6 +404,7 @@ private:
 	HTREEITEM addItemDir(bool isFileList);
 	HTREEITEM addBundleDir(const string& dir, const BundlePtr aBundle, HTREEITEM startAt = NULL);
 	HTREEITEM createDir(TVINSERTSTRUCT& tvi, const string& dir, const BundlePtr aBundle, HTREEITEM parent, bool subDir=false);
+	HTREEITEM createSplitDir(TVINSERTSTRUCT& tvi, const string& dir, HTREEITEM parent, BundleItemInfo* bii, bool subDir=false);
 	void removeQueueItem(QueueItemInfo* ii, bool noSort);
 	void removeItemDir(bool isFileList);
 	void removeBundleDir(const string& dir, const BundlePtr aBundle);

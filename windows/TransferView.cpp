@@ -1257,6 +1257,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul, const U
 		ui->setBundle(bundle->getToken());
 		ui->setRunning(bundle->getRunning());
 		ui->setTotalSpeed(bundle->getTotalSpeed());
+		ui->setSize(bundle->getSize());
 
 		if (bundle->getSingleUser()) {
 			ui->setUsers(1);

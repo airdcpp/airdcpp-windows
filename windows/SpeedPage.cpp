@@ -380,6 +380,22 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	updown.Detach();
 
 	fixControls();
+
+	//update auto detection values
+	if (SETTING(DL_AUTODETECT)) {
+		SetDlgItemText(IDC_DOWNLOADS, Util::toStringW(AirUtil::getSlots(true)).c_str());
+		SetDlgItemText(IDC_MAXSPEED, Util::toStringW(AirUtil::getSpeedLimit(true)).c_str());
+	}
+	if (SETTING(UL_AUTODETECT)) {
+		SetDlgItemText(IDC_SLOTS, Util::toStringW(AirUtil::getSlots(false)).c_str());
+		SetDlgItemText(IDC_MIN_UPLOAD_SPEED, Util::toStringW(AirUtil::getSpeedLimit(false)).c_str());
+		SetDlgItemText(IDC_AUTO_SLOTS, Util::toStringW(AirUtil::getMaxAutoOpened()).c_str());
+	}
+	if (SETTING(MCN_AUTODETECT)) {
+		SetDlgItemText(IDC_MCNDLSLOTS, Util::toStringW(AirUtil::getSlotsPerUser(true)).c_str());
+		SetDlgItemText(IDC_MCNULSLOTS, Util::toStringW(AirUtil::getSlotsPerUser(false)).c_str());
+	}
+
 	return TRUE;
 }
 

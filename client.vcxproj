@@ -237,7 +237,6 @@
     <ClCompile Include="client\DCPlusPlus.cpp" />
     <ClCompile Include="client\DirectoryListing.cpp" />
     <ClCompile Include="client\Download.cpp" />
-    <ClCompile Include="client\DownloadBundle.cpp" />
     <ClCompile Include="client\DownloadManager.cpp" />
     <ClCompile Include="client\Encoder.cpp" />
     <ClCompile Include="client\FavoriteManager.cpp" />
@@ -322,7 +321,6 @@
     <ClInclude Include="client\DebugManager.h" />
     <ClInclude Include="client\DirectoryListing.h" />
     <ClInclude Include="client\Download.h" />
-    <ClInclude Include="client\DownloadBundle.h" />
     <ClInclude Include="client\DownloadManager.h" />
     <ClInclude Include="client\DownloadManagerListener.h" />
     <ClInclude Include="client\Encoder.h" />

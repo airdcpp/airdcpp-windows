@@ -203,9 +203,6 @@
     <ClCompile Include="client\UploadBundle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="client\DownloadBundle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="client\ShareScannerManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -539,9 +536,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\UploadBundle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\DownloadBundle.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\ShareScannerManager.h">
