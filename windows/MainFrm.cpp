@@ -532,12 +532,12 @@ LRESULT MainFrame::onWinampButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 HWND MainFrame::createToolbar() {
 	if(!tbarcreated) {
 		if(SETTING(TOOLBARIMAGE) == "")
-			largeImages.CreateFromImage(IDB_TOOLBAR20, 22, 22, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+			largeImages.CreateFromImage(IDB_TOOLBAR20, 32, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 		else   //do we need a size setting? it will auto adjust with 0.
 			largeImages.CreateFromImage(Text::toT(SETTING(TOOLBARIMAGE)).c_str(), 0/*SETTING(TB_IMAGE_SIZE)*/, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 
 		if(SETTING(TOOLBARHOTIMAGE) == "")
-			largeImagesHot.CreateFromImage(IDB_TOOLBAR20_HOT, 22, 22, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+			largeImagesHot.CreateFromImage(IDB_TOOLBAR20_HOT, 32, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 		else
 			largeImagesHot.CreateFromImage(Text::toT(SETTING(TOOLBARHOTIMAGE)).c_str(), 0/*SETTING(TB_IMAGE_SIZE_HOT)*/, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 
