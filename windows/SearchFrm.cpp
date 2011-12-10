@@ -680,6 +680,16 @@ void SearchFrame::SearchInfo::viewNfo() {
 		}
 	}
 }
+void SearchFrame::SearchInfo::matchPartial() {
+	string path = Util::getDir(Text::fromT(getText(COLUMN_PATH)), true, false);
+	bool nmdc = sr->getUser()->isNMDC();
+		try {
+			QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_MATCH_QUEUE | (nmdc? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST, path);
+		} catch(const Exception&) {
+			//...
+		}
+}
+
 
 void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 	try {
@@ -1357,6 +1367,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetDirMenu, CTSTRING(DOWNLOAD_WHOLE_DIR_TO));
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
+			resultsMenu.AppendMenu(MF_STRING, IDC_MATCH, CTSTRING(MATCH_PARTIAL));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 			if((ctrlResults.GetSelectedCount() == 1) && ((SearchInfo*)ctrlResults.getSelectedItem()->isShareDupe() || (SearchInfo*)ctrlResults.getSelectedItem()->isQueueDupe() ||
 				(SearchInfo*)ctrlResults.getSelectedItem()->isFinishedDupe())) {

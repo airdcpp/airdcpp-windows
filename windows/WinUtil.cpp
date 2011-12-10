@@ -1210,24 +1210,25 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			}
 		int listlength = SendMessage(hwndWinamp, WM_WA_IPC, 0, IPC_GETLISTLENGTH);
 		int waListPosition = SendMessage(hwndWinamp,WM_WA_IPC,0,IPC_GETLISTPOS);
-
+		if(waListPosition >= 0) {
 		/*Need to read the filepath from the process memory*/
 		DWORD dw_handle = 0;
 		char buf[MAX_PATH];
 		GetWindowThreadProcessId(hwndWinamp, &dw_handle);
 		HANDLE w_hHandle = OpenProcess(PROCESS_ALL_ACCESS, false, dw_handle);
-
+		if(w_hHandle !=INVALID_HANDLE_VALUE) {
 		LPCVOID lpath = (LPCVOID)SendMessage(hwndWinamp, WM_WA_IPC, waListPosition, IPC_GETPLAYLISTFILE);
 		if(lpath)
 			ReadProcessMemory(w_hHandle, lpath, &buf, MAX_PATH, 0);
-
-		CloseHandle(w_hHandle);
-
+		
 		string fpath = Text::acpToUtf8(buf);
 		params["path"] = fpath; //full filepath, probobly not even needed.
 		params["filename"] = Util::getFileName(fpath); //only filename
 		params["directory"] = Util::getDir(fpath,true,true); //show only release dir? , -maksis feel free to modify, just made it work.
-
+		}
+		
+		CloseHandle(w_hHandle);
+		}
 		// Could be used like; track %[listpos]/%[listlength]
 		params["listlength"] = Util::toString(listlength);
 		params["listpos"] = Util::toString(waListPosition);

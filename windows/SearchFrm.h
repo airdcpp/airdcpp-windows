@@ -82,6 +82,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_DOWNLOADDIRTO, onDownloadWholeTo)
 		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
 		COMMAND_ID_HANDLER(IDC_VIEW_NFO, onViewNfo)
+		COMMAND_ID_HANDLER(IDC_MATCH, onMatchPartial)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
 		COMMAND_ID_HANDLER(IDC_SEARCH_PAUSE, onPause)
@@ -216,6 +217,11 @@ public:
 
 	LRESULT onViewNfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		ctrlResults.forEachSelected(&SearchInfo::viewNfo);
+		return 0;
+	}
+	
+	LRESULT onMatchPartial(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		ctrlResults.forEachSelected(&SearchInfo::matchPartial);
 		return 0;
 	}
 
@@ -369,6 +375,7 @@ private:
 
 		void view();
 		void viewNfo();
+		void matchPartial();
 		struct Download {
 			Download(const tstring& aTarget, SearchFrame* aSf) : tgt(aTarget), sf(aSf) { }
 			void operator()(SearchInfo* si);

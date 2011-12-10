@@ -25,7 +25,7 @@ If you have your own Toolbars or custom icons and you want to share them with th
 	-Make sure the paths exist in the themes directory, otherwise the client can't load any icons!!
 	<Icons>
 		<IconPath type="string">Themes\Example_iconPack\icons</IconPath>
-		<ToolbarImage string="string">Themes\Example_iconPack\icons\toolbar.bmp</ToolbarImage>
+		<ToolbarImage type="string">Themes\Example_iconPack\icons\toolbar.bmp</ToolbarImage>
 		<ToolbarHot type="string">Themes\Example_iconPack\icons\toolbarHot.bmp</ToolbarHot>
 	</Icons>
 </DCPlusPlus>

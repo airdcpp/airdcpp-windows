@@ -97,12 +97,12 @@
 		<TabInactiveText type="int">16777215</TabInactiveText>
 		<TabInactiveBorder type="int">65280</TabInactiveBorder>
 		<TabInactiveBgNotify type="int">8421504</TabInactiveBgNotify>
-		<TabDirtyBlend type="int">10</TabDirtyBlend>
+		<TabDirtyBlend type="int">30</TabDirtyBlend>
 		<BlendTabs type="int">1</BlendTabs>
 	</Settings>
 	<Icons>
 		<IconPath type="string">Themes\Example_iconPack\icons</IconPath>
-		<ToolbarImage string="string">Themes\Example_iconPack\icons\toolbar.bmp</ToolbarImage>
+		<ToolbarImage type="string">Themes\Example_iconPack\icons\toolbar.bmp</ToolbarImage>
 		<ToolbarHot type="string">Themes\Example_iconPack\icons\toolbarHot.bmp</ToolbarHot>
 	</Icons>
 </DCPlusPlus>

@@ -43,13 +43,14 @@ public:
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		// KUL - hash progress dialog patch
-		COMMAND_HANDLER(IDC_MAX_HASH_SPEED, EN_UPDATE ,onMaxHashSpeed)
+		COMMAND_HANDLER(IDC_MAX_HASH_SPEED, EN_CHANGE ,onMaxHashSpeed)
 		COMMAND_ID_HANDLER(IDC_PAUSE, onPause)
 		COMMAND_ID_HANDLER(IDC_CLEAR, onClear)
 	END_MSG_MAP()
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		// Translate static strings
+		init = false;
 		SetWindowText(CTSTRING(HASH_PROGRESS));
 		SetDlgItemText(IDOK, CTSTRING(HASH_PROGRESS_BACKGROUND));
 		SetDlgItemText(IDC_STATISTICS, CTSTRING(HASH_PROGRESS_STATS));
@@ -59,7 +60,7 @@ public:
 		SetDlgItemText(IDC_MAX_HASH_SPEED, Text::toT(Util::toString(SETTING(MAX_HASH_SPEED))).c_str());
 		SetDlgItemText(IDC_PAUSE, HashManager::getInstance()->isHashingPaused() ? CTSTRING(RESUME) : CTSTRING(PAUSE));
 		SetDlgItemText(IDC_STOP, CTSTRING(STOP));
-		init = true;
+
 		// KUL - hash progress dialog patch (end)
 
 		string tmp;
@@ -78,6 +79,7 @@ public:
 		HashManager::getInstance()->setPriority(Thread::NORMAL);
 		
 		SetTimer(1, 1000);
+		init = true;
 		return TRUE;
 	}
 	void setAutoClose(bool val) {
@@ -87,11 +89,13 @@ public:
 
 	// KUL - hash progress dialog patch (begin)
 	LRESULT onMaxHashSpeed(WORD /*wNotifyCode*/, WORD, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		if(init) {
+		if(!init)
+			return 0;
+
 			TCHAR buf[256];
 			GetDlgItemText(IDC_MAX_HASH_SPEED, buf, 256);
 			SettingsManager::getInstance()->set(SettingsManager::MAX_HASH_SPEED, Util::toInt(Text::fromT(buf)));
-		}
+		
 		return 0;
 	}
 
@@ -118,6 +122,7 @@ public:
 	}
 	LRESULT onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		HashManager::getInstance()->setPriority(Thread::IDLE);
+		init = false;
 		progress.Detach();
 		KillTimer(1);
 		return 0;
@@ -186,6 +191,7 @@ public:
 
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD/* wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		//EndDialog(wID);
+		init = false;
 		if( IsWindow() )
 			DestroyWindow();
 		return 0;
