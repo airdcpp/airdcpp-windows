@@ -1069,13 +1069,20 @@ LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 
-LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	
 
 	bHandled=FALSE;
-	if (lastTick+50 > GET_TICK())
+	if (lastTick+75 > GET_TICK())
 		return FALSE;
 	lastTick=GET_TICK();
+
+	if(wParam != 0) { //dont update cursor and check for links when marking something.
+		if (handCursor)
+				SetCursor(LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW)));
+		handCursor=false;
+		return TRUE;
+	}
 
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
 	if (isLink(pt)) {
@@ -1097,6 +1104,7 @@ bool ChatCtrl::isLink(POINT pt) {
 
 	bool found=false;
 	tstring word = WordFromPos(pt);
+
 	if (word.empty())
 		return false;
 
@@ -1728,8 +1736,10 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 			}
 	len = end - begin;
 	
-	if(len <= 3)
-	return Util::emptyStringT;
+	/*a hack, limit to 512, scrolling becomes sad with long words...
+	links longer than 512? set ít higher or maybe just limit the cursor detecting?*/
+	if((len <= 3) || (len >= 512)) 
+		return Util::emptyStringT;
 
 	tstring sText;
 	sText = Line.substr(begin, end-begin);
