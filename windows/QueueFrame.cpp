@@ -898,7 +898,7 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			//BundleItemInfo* bii = 
 			const string& path = ui.ii->getDir();
 			auto i = bundleMap.find(path);
-			dcassert(i != bundleMap.end());
+			//dcassert(i != bundleMap.end());
 			if (i != bundleMap.end()) {
 				//((BundleItemInfo*)ctrlDirs.GetItemData(i->second))->getBundles();
 				ctrlDirs.SetItemText(i->second, const_cast<TCHAR*>(ui.ii->getBundles().front()->getBundleText().c_str()));
@@ -1411,6 +1411,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			dirMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 			dirMenu.AppendMenu(MF_SEPARATOR);
+			dirMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 			dirMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE));
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			if (mainBundle) {
@@ -2199,10 +2200,14 @@ LRESULT QueueFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 	return 0;
 }
 LRESULT QueueFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-	if(ii != NULL)
-		WinUtil::openFolder(ii->getText(COLUMN_PATH));
-
+	if(usingDirMenu) {
+		//..
+		WinUtil::openFolder(Text::toT(curDir));
+	} else {
+		const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
+		if(ii != NULL)
+			WinUtil::openFolder(ii->getText(COLUMN_PATH));
+	}
 	return 0;
 }
 LRESULT QueueFrame::onPreviewCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	

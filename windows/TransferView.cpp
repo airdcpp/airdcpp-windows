@@ -232,7 +232,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			} 
 			if (parent) {
 				//LogManager::getInstance()->message("PRIOBUNDLE1");
-				BundlePtr aBundle = QueueManager::getInstance()->getBundle(Text::fromT(ii->bundle));
+				BundlePtr aBundle = QueueManager::getInstance()->getBundle(ii->bundle);
 				if (aBundle) {
 					//LogManager::getInstance()->message("PRIOBUNDLE2");
 					Bundle::Priority p = aBundle->getPriority();
@@ -309,7 +309,7 @@ void TransferView::ItemInfo::removeAll() {
 }
 
 void TransferView::ItemInfo::removeBundle() {
-	BundlePtr aBundle = QueueManager::getInstance()->getBundle(Text::fromT(bundle));
+	BundlePtr aBundle = QueueManager::getInstance()->getBundle(bundle);
 	if (aBundle) {
 		bool moveFinished = !aBundle->getFinishedFiles().empty();
 		string tmp;
@@ -968,7 +968,7 @@ static tstring getFile(const Transfer::Type& type, const tstring& fileName) {
 
 TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	//LogManager::getInstance()->message("create parent with bundle " + Text::fromT(bundle));
-	ItemInfo* ii = new ItemInfo(user, Text::fromT(bundle), download);
+	ItemInfo* ii = new ItemInfo(user, bundle, download);
 	ii->running = 0;
 	ii->hits = 0;
 	dcassert(!bundle.empty());
@@ -976,14 +976,14 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	ii->bundle = bundle;
 
 	if (download) {
-		BundlePtr b = QueueManager::getInstance()->getBundle(Text::fromT(bundle));
+		BundlePtr b = QueueManager::getInstance()->getBundle(bundle);
 		if (b) {
 			ii->target = Text::toT(b->getName() + " (" + AirUtil::getPrioText((int)b->getPriority()) + ")");
 			//ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
 		}
 	} else {
-		UploadBundlePtr b = UploadManager::getInstance()->findBundle(Text::fromT(bundle));
+		UploadBundlePtr b = UploadManager::getInstance()->findBundle(bundle);
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
@@ -994,10 +994,13 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	return ii;
 }
 
-inline const tstring& TransferView::ItemInfo::getGroupCond() const {
+inline const string& TransferView::ItemInfo::getGroupCond() const {
 	dcassert(!bundle.empty());
-	//if (!bundle.empty())
-	return bundle;
+	if (!bundle.empty()) {
+		return bundle;
+	} else {
+		return token;
+	}
 }
 
 const tstring TransferView::ItemInfo::getText(uint8_t col) const {
@@ -1422,7 +1425,7 @@ LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
 		if (ii->isBundle) {
-			QueueManager::getInstance()->setBundlePriority(Text::fromT(ii->bundle), (Bundle::Priority)p);
+			QueueManager::getInstance()->setBundlePriority(ii->bundle, (Bundle::Priority)p);
 		}
 	}
 
@@ -1436,7 +1439,7 @@ LRESULT TransferView::onAutoPriority(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
 		if (ii->isBundle) {
-			QueueManager::getInstance()->setBundleAutoPriority(Text::fromT(ii->bundle));
+			QueueManager::getInstance()->setBundleAutoPriority(ii->bundle);
 		}
 	}
 	return 0;
@@ -1445,7 +1448,7 @@ LRESULT TransferView::onAutoPriority(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 void TransferView::ItemInfo::removeBundleSource() {
 	if (!bundle.empty()) {
-		QueueManager::getInstance()->removeBundleSource(Text::fromT(bundle), user);
+		QueueManager::getInstance()->removeBundleSource(bundle, user);
 	}
 }
 

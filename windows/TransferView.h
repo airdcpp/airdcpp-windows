@@ -175,7 +175,7 @@ public:
 private:
 	class ItemInfo;	
 public:
-	typedef TypedTreeListViewCtrl<ItemInfo, IDC_TRANSFERS, tstring, noCaseStringHash, noCaseStringEq> ItemInfoList;
+	typedef TypedTreeListViewCtrl<ItemInfo, IDC_TRANSFERS, string, noCaseStringHash, noCaseStringEq> ItemInfoList;
 	ItemInfoList& getUserList() { return ctrlTransfers; }
 private:
 	enum {
@@ -218,7 +218,7 @@ private:
 		
 		ItemInfo(const HintedUser& u, const string aToken, bool aDownload, bool aBundle = false) : user(u), download(aDownload), transferFailed(false),
 			status(STATUS_WAITING), pos(0), size(0), actual(0), speed(0), timeLeft(0), totalSpeed(0)/*ttlf*/, ip(Util::emptyStringT), target(Util::emptyStringT),
-			flagIndex(0), collapsed(true), parent(NULL), hits(-1), statusString(Util::emptyStringT), running(0), token(aToken), isBundle(aBundle), bundle(Util::emptyStringT),
+			flagIndex(0), collapsed(true), parent(NULL), hits(-1), statusString(Util::emptyStringT), running(0), token(aToken), isBundle(aBundle), bundle(Util::emptyString),
 			users(0) { }
 
 		bool isBundle;
@@ -234,7 +234,7 @@ private:
 		ItemInfo* parent;
 		HintedUser user;
 		string token;
-		tstring bundle;
+		string bundle;
 		Status status;
 		Transfer::Type type;
 		
@@ -269,7 +269,7 @@ private:
 
 		ItemInfo* createParent();
 
-		inline const tstring& getGroupCond() const;
+		inline const string& getGroupCond() const;
 	};
 
 	struct UpdateInfo : public Task {
@@ -332,8 +332,8 @@ private:
 		tstring cipher;
 		void setType(const Transfer::Type& aType) { type = aType; }
 		Transfer::Type type;
-		void setBundle(const string& aBundle) { bundle = Text::toT(aBundle); updateMask |= MASK_BUNDLE; }
-		tstring bundle;
+		void setBundle(const string& aBundle) { bundle = aBundle; updateMask |= MASK_BUNDLE; }
+		string bundle;
 		void setUsers(const int16_t aUsers) { users = aUsers; updateMask |= MASK_USERS; }
 		int16_t users;
 		void setUser(const HintedUser aUser) { user = aUser; updateMask |= MASK_USER; }

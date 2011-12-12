@@ -1230,7 +1230,7 @@ LRESULT SearchFrame::onBitziLookup(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 void SearchFrame::addSearchResult(SearchInfo* si) {
 	const SearchResultPtr& sr = si->sr;
     // Check previous search results for dupes
-	if(!si->getText(COLUMN_TTH).empty() && useGrouping) {
+	if(si->sr->getTTH().data > 0 && useGrouping) {
 		SearchInfoList::ParentPair* pp = ctrlResults.findParentPair(sr->getTTH());
 		if(pp) {
 			if((sr->getUser()->getCID() == pp->parent->getUser()->getCID()) && (sr->getFile() == pp->parent->sr->getFile())) {	 	
@@ -1263,7 +1263,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 			resort = true;
 		}
 
-		if(!si->getText(COLUMN_TTH).empty() && useGrouping) {
+		if(si->sr->getTTH().data > 0 && useGrouping) {
 			ctrlResults.insertGroupedItem(si, expandSR);
 		} else {
 			SearchInfoList::ParentPair pp = { si, SearchInfoList::emptyVector };

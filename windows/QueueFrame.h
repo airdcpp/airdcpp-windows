@@ -278,13 +278,9 @@ private:
 	class QueueItemInfo : public FastAlloc<QueueItemInfo> {
 	public:
 
-		QueueItemInfo(QueueItem* aQI) : qi(aQI)	{
-			qi->inc();
-		}
+		QueueItemInfo(QueueItem* aQI) : qi(aQI)	{ }
 
-		~QueueItemInfo() {
-			qi->dec();
-		}
+		~QueueItemInfo() { }
 
 		void remove() { QueueManager::getInstance()->remove(getTarget()); }
 
