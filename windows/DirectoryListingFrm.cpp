@@ -1172,7 +1172,6 @@ LRESULT DirectoryListingFrame::onDownloadTargetDir(WORD /*wNotifyCode*/, WORD wI
 LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int newId = wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 	dcassert(newId >= 0);
-	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 	
 	if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
@@ -1190,12 +1189,12 @@ LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD
 				downloadList(Text::toT(target));
 			}
 		} else {
-			dcassert(newId < (int)spl.size());
-			downloadList(Text::toT(spl[newId].first));
+			string target = FavoriteManager::getInstance()->getFavoriteTarget(newId);
+			downloadList(Text::toT(target));
 		}
 	} else if(ctrlList.GetSelectedCount() > 1) {
-		dcassert(newId < (int)spl.size());
-		downloadList(Text::toT(spl[newId].first));
+		string target = FavoriteManager::getInstance()->getFavoriteTarget(newId);
+		downloadList(Text::toT(target));
 	}
 	return 0;
 }

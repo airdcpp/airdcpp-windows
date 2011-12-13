@@ -2085,12 +2085,10 @@ void QueueFrame::moveNode(HTREEITEM item, HTREEITEM parent) {
 	//check if we need to modify the bundlemap
 	for (auto i = bundles.begin(); i != bundles.end(); ++i) {
 		if ((*i)->getTarget() == bii->getDir()) {
-			//name = (*i)->getBundleText();
 			updateMap = true;
 			setBold=true;
 			break;
-		} else if ((*i)->getFileBundle()) {
-			//name = bii->getBundleName(false);
+		} else if ((*i)->getFileBundle() && (Util::getDir((*i)->getTarget(), false, false) == bii->getDir())) {
 			setBold=true;
 			break;
 		}
@@ -2118,15 +2116,6 @@ void QueueFrame::moveNode(HTREEITEM item, HTREEITEM parent) {
 		next = ctrlDirs.GetChildItem(item);
 	}
 	ctrlDirs.DeleteItem(item);
-
-	// sort
-	/*if(BOOLSETTING(NAT_SORT)) {
-		TVSORTCB tvsortcb;
-		tvsortcb.hParent = parent;
-		tvsortcb.lpfnCompare = DefaultSort;
-		tvsortcb.lParam = 0;
-		ctrlDirs.SortChildrenCB(&tvsortcb);
-	} */
 }
 
 LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
