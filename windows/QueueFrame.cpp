@@ -292,7 +292,7 @@ void QueueFrame::addQueueItem(QueueItemInfo* ii, bool noSort) {
 		addItemDir(ii->isSet(QueueItem::FLAG_USER_LIST));
 	} else if (updateDir) {
 		//make sure that the bundle dir is being added
-		if (bundleMap.find(b->getTarget()) == bundleMap.end()) {
+		if (stricmp(dir, b->getTarget()) != 0 && !b->getFileBundle() && bundleMap.find(b->getTarget()) == bundleMap.end()) {
 			addBundleDir(b->getTarget(), b);
 		}
 		addBundleDir(dir, b);
