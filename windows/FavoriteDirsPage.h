@@ -69,10 +69,11 @@ public:
 	void write();
 	
 protected:
+	static Item items[];
 	static TextItem texts[];
 	ExListViewCtrl ctrlDirectories;
 	TCHAR* title;
-	StringPairList favoriteDirs;
+	FavoriteManager::FavDirList favoriteDirs;
 
 	void addDirectory(const tstring& aPath);
 	bool renameFavoriteDir(const string& aName, const string& anotherName);

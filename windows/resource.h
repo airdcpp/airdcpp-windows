@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -943,6 +943,7 @@
 #define IDC_SETTINGS_ODC_MENUBAR2       1615
 #define IDC_PROGRESS_COLOR_DOWN_SHOW    1616
 #define IDC_PROGRESS_COLOR_UP_SHOW      1617
+#define IDC_FAVDIRS_SHOW_SHARED         1619
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -968,9 +969,9 @@
 #define IDC_PARTIAL_SLOTS_SPIN          3028
 #define IDC_SEARCHLEFT                  3029
 #define IDC_SEARCHDIR                   3030
-#define IDC_AUTOSEARCHFRM				3031
-#define IDC_ENABLE						3032
-#define IDC_DISABLE						3033
+#define IDC_AUTOSEARCHFRM               3031
+#define IDC_ENABLE                      3032
+#define IDC_DISABLE                     3033
 #define IDC_DOWNLOAD_TARGET             5000
 #define IDC_DOWNLOAD_TARGET_DIR         5500
 #define IDC_SELECT_WINDOW               6000
@@ -1229,7 +1230,7 @@
 #define IDC_FOLLOW                      32784
 #define IDC_SEND_MESSAGE                32786
 #define IDC_FILTER_FOCUS                32788
-#define IDC_AUTOSEARCH					32789
+#define IDC_AUTOSEARCH                  32789
 #define ID_WINDOW_MINIMIZE_ALL          57654
 #define ID_WINDOW_RESTORE_ALL           57655
 #define IDC_WINAMP_START                57666
@@ -1242,7 +1243,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1619
+#define _APS_NEXT_CONTROL_VALUE         1620
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

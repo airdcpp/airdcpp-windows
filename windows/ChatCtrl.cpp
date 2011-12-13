@@ -830,10 +830,10 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
 			//Append favorite download dirs
-			StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
+			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 			if (spl.size() > 0) {
-				for(StringPairIter i = spl.begin(); i != spl.end(); i++) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->second).c_str());
+				for(auto i = spl.begin(); i != spl.end(); i++) {
+					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
 					n++;
 				}
 				targetMenu.AppendMenu(MF_SEPARATOR);
@@ -1010,18 +1010,16 @@ LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring searchterm = getSearchString();
 		
-		if(searchterm.size() < 5) //we dont accept anything under 5 chars
-			return 0;
+	if(searchterm.size() < 5) //we dont accept anything under 5 chars
+		return 0;
 
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 
-	StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
+	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 	if(newId < spl.size()) {
-		//enableAutosearch();
 		AutoSearchManager::getInstance()->addAutosearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, spl[newId].first);
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	} else {
-		//enableAutosearch();
 		//download to default download path
 		AutoSearchManager::getInstance()->addAutosearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString);
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));

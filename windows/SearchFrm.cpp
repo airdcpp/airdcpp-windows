@@ -849,7 +849,7 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 	dcassert(wID >= IDC_DOWNLOAD_FAVORITE_DIRS);
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 
-	StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
+	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 	if(newId < (int)spl.size()) {
 		ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(spl[newId].first), this));
 	} else {
@@ -862,9 +862,8 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 }
 
 LRESULT SearchFrame::onDownloadWholeFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
-	dcassert((wID-IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS) < (int)spl.size());
-	ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(Text::toT(spl[wID-IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS].first)));
+	string target = FavoriteManager::getInstance()->getFavoriteTarget(wID-IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS);
+	ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(Text::toT(target)));
 	return 0;
 }
 
@@ -1389,10 +1388,10 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
 			//Append favorite download dirs
-			StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
+			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 			if (spl.size() > 0) {
-				for(StringPairIter i = spl.begin(); i != spl.end(); i++) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->second).c_str());
+				for(auto i = spl.begin(); i != spl.end(); i++) {
+					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
 					n++;
 				}
 				targetMenu.AppendMenu(MF_SEPARATOR);
@@ -1425,8 +1424,8 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			targetDirMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_WHOLE_DIR_TO));
 			//Append favorite download dirs
 			if (spl.size() > 0) {
-				for(StringPairIter i = spl.begin(); i != spl.end(); ++i) {
-					targetDirMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + n, Text::toT(i->second).c_str());
+				for(auto i = spl.begin(); i != spl.end(); ++i) {
+					targetDirMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
 					n++;
 				}
 				targetDirMenu.AppendMenu(MF_SEPARATOR);

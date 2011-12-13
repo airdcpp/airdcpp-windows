@@ -946,10 +946,10 @@ clientmenu:
 			fileMenu.InsertSeparatorFirst(Text::toT(Util::getFileName(ii->file->getName())));
 			
 			//Append Favorite download dirs
-			StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
+			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 			if (spl.size() > 0) {
-				for(StringPairIter i = spl.begin(); i != spl.end(); i++) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->second).c_str());
+				for(auto i = spl.begin(); i != spl.end(); i++) {
+					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
 					n++;
 				}
 				targetMenu.AppendMenu(MF_SEPARATOR);
@@ -989,10 +989,10 @@ clientmenu:
 		} else {
 			fileMenu.EnableMenuItem(IDC_SEARCH_ALTERNATES, MF_BYCOMMAND | MFS_DISABLED);
 			//Append Favorite download dirs
-			StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
+			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 			if (spl.size() > 0) {
-				for(StringPairIter i = spl.begin(); i != spl.end(); i++) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->second).c_str());
+				for(auto i = spl.begin(); i != spl.end(); i++) {
+					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
 					n++;
 				}
 				targetMenu.AppendMenu(MF_SEPARATOR);
@@ -1081,10 +1081,10 @@ clientmenu:
 
 		int n = 0;
 		//Append Favorite download dirs
-		StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
+		auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 		if (spl.size() > 0) {
-			for(StringPairIter i = spl.begin(); i != spl.end(); i++) {
-				targetDirMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + n, Text::toT(i->second).c_str());
+			for(auto i = spl.begin(); i != spl.end(); i++) {
+				targetDirMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
 				n++;
 			}
 			targetDirMenu.AppendMenu(MF_SEPARATOR);
@@ -1172,7 +1172,7 @@ LRESULT DirectoryListingFrame::onDownloadTargetDir(WORD /*wNotifyCode*/, WORD wI
 LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int newId = wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 	dcassert(newId >= 0);
-	StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
+	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 	
 	if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
@@ -1186,8 +1186,8 @@ LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD
 				}
 			} else {
 				newId -= (int)targets.size();
-				dcassert(newId < (int)spl.size());
-				downloadList(Text::toT(spl[newId].first));
+				string target = FavoriteManager::getInstance()->getFavoriteTarget(newId);
+				downloadList(Text::toT(target));
 			}
 		} else {
 			dcassert(newId < (int)spl.size());
@@ -1207,11 +1207,10 @@ LRESULT DirectoryListingFrame::onDownloadWholeFavoriteDirs(WORD /*wNotifyCode*/,
 	HTREEITEM t = ctrlTree.GetSelectedItem();
 	if(t != NULL) {
 		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		string target = SETTING(DOWNLOAD_DIRECTORY);
+		string target = FavoriteManager::getInstance()->getFavoriteTarget(newId);
+		//string target = SETTING(DOWNLOAD_DIRECTORY);
 		try {
-			StringPairList spl = FavoriteManager::getInstance()->getFavoriteDirs();
-			dcassert(newId < (int)spl.size());
-			dl->download(dir, spl[newId].first, WinUtil::isShift(), QueueItem::DEFAULT);
+			dl->download(dir, target, WinUtil::isShift(), QueueItem::DEFAULT);
 		} catch(const Exception& e) {
 			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 		}

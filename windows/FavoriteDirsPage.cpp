@@ -33,12 +33,20 @@ PropPage::TextItem FavoriteDirsPage::texts[] = {
 	{ IDC_REMOVE, ResourceManager::REMOVE },
 	{ IDC_ADD, ResourceManager::SETTINGS_ADD_FOLDER },
 	{ IDC_RENAME, ResourceManager::SETTINGS_RENAME_FOLDER },
+	{ IDC_FAVDIRS_SHOW_SHARED, ResourceManager::FAVDIRS_SHOW_SHARED },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+};
+
+
+PropPage::Item FavoriteDirsPage::items[] = {
+	{ IDC_FAVDIRS_SHOW_SHARED, SettingsManager::SHOW_SHARED_DIRS_FAV, PropPage::T_BOOL },
+	{ 0, 0, PropPage::T_END }
 };
 
 LRESULT FavoriteDirsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
+	PropPage::read((HWND)*this, items);
 	ctrlDirectories.Attach(GetDlgItem(IDC_FAVORITE_DIRECTORIES));
 	ctrlDirectories.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 		
@@ -48,10 +56,12 @@ LRESULT FavoriteDirsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	ctrlDirectories.InsertColumn(0, CTSTRING(FAVORITE_DIR_NAME), LVCFMT_LEFT, rc.Width()/4, 0); 
 	ctrlDirectories.InsertColumn(1, CTSTRING(DIRECTORY), LVCFMT_LEFT, rc.Width()*3 /4, 1);
 	favoriteDirs = FavoriteManager::getInstance()->getFavoriteDirs();
-	for(StringPairIter j = favoriteDirs.begin(); j != favoriteDirs.end(); j++)
-	{
-		int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(j->second));
-		ctrlDirectories.SetItemText(i, 1, Text::toT(j->first).c_str());
+	for(auto j = favoriteDirs.begin(); j != favoriteDirs.end(); j++) {
+		tstring vname = Text::toT(j->first);
+		for (auto s = j->second.begin(); s != j->second.end(); ++s) {
+			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), vname);
+			ctrlDirectories.SetItemText(i, 1, Text::toT(*s).c_str());
+		}
 	}
 	
 	return TRUE;
@@ -60,7 +70,7 @@ LRESULT FavoriteDirsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 
 void FavoriteDirsPage::write()
 {
-//	PropPage::write((HWND)*this, items);
+	PropPage::write((HWND)*this, items);
 	FavoriteManager::getInstance()->saveFavoriteDirs(favoriteDirs);
 }
 
@@ -185,7 +195,7 @@ LRESULT FavoriteDirsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	
 	int i = ctrlDirectories.GetSelectedIndex();
 	
-	if(wID == IDC_MOVEUP && i > 0){
+	/*if(wID == IDC_MOVEUP && i > 0){
 		StringPair j  = favoriteDirs[i];
 
 		favoriteDirs[i] = favoriteDirs[i-1];
@@ -206,7 +216,7 @@ LRESULT FavoriteDirsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		ctrlDirectories.insert(i+1, Text::toT(j.second));
 		ctrlDirectories.SetItemText(i+1, 1, Text::toT(j.first).c_str());
 		ctrlDirectories.SelectItem(i+1);
-	}
+	} */
 
 	return 0;
 }
@@ -214,9 +224,9 @@ LRESULT FavoriteDirsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 
 bool FavoriteDirsPage::renameFavoriteDir(const string& aName, const string& anotherName) {
 
-	for(StringPairIter j = favoriteDirs.begin(); j != favoriteDirs.end(); ++j) {
-		if(stricmp(j->second.c_str(), aName.c_str()) == 0) {
-			j->second = anotherName;
+	for(auto j = favoriteDirs.begin(); j != favoriteDirs.end(); ++j) {
+		if(stricmp(j->first.c_str(), j->first.c_str()) == 0) {
+			j->first = anotherName;
 			return true;
 		}
 	}
@@ -248,29 +258,42 @@ bool FavoriteDirsPage::addFavoriteDir(const string& aDirectory, const string & a
 	if( path[ path.length() -1 ] != PATH_SEPARATOR )
 		path += PATH_SEPARATOR;
 
-	for(StringPairIter i = favoriteDirs.begin(); i != favoriteDirs.end(); ++i) {
-		if((strnicmp(path, i->first, i->first.length()) == 0) && (strnicmp(path, i->first, path.length()) == 0)) {
-			return false;
-		}
-		if(stricmp(aName, i->second) == 0) {
-			return false;
+	for(auto i = favoriteDirs.begin(); i != favoriteDirs.end(); ++i) {
+		if(stricmp(aName, i->first) == 0) {
+			//virtual name exists
+			for (auto s = i->second.begin(); s != i->second.end(); ++s) {
+				if((strnicmp(path, *s, (*s).length()) == 0) && (strnicmp(path, (*s), path.length()) == 0)) {
+					return false;
+				}
+			}
+			i->second.push_back(path);
+			return true;
 		}
 	}
-	favoriteDirs.push_back(make_pair(aDirectory, aName));
+
+	//new virtual name
+	StringList tmp;
+	tmp.push_back(path);
+	favoriteDirs.push_back(make_pair(aName, tmp));
 	return true;
 }
 
 
-bool FavoriteDirsPage::removeFavoriteDir(const string& aName) {
-	string d(aName);
+bool FavoriteDirsPage::removeFavoriteDir(const string& aTarget) {
+	string d(aTarget);
 
 	if(d[d.length() - 1] != PATH_SEPARATOR)
 		d += PATH_SEPARATOR;
 
-	for(StringPairIter j = favoriteDirs.begin(); j != favoriteDirs.end(); ++j) {
-		if(stricmp(j->first.c_str(), d.c_str()) == 0) {
-			favoriteDirs.erase(j);
-			return true;
+	for(auto i = favoriteDirs.begin(); i != favoriteDirs.end(); ++i) {
+		for (auto s = i->second.begin(); s != i->second.end(); ++s) {
+			if(stricmp((*s).c_str(), d.c_str()) == 0) {
+				i->second.erase(s);
+				if (i->second.empty()) {
+					favoriteDirs.erase(i);
+				}
+				return true;
+			}
 		}
 	}
 	return false;
