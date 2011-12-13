@@ -291,6 +291,10 @@ void QueueFrame::addQueueItem(QueueItemInfo* ii, bool noSort) {
 	if (!b) {
 		addItemDir(ii->isSet(QueueItem::FLAG_USER_LIST));
 	} else if (updateDir) {
+		//make sure that the bundle dir is being added
+		if (bundleMap.find(b->getTarget()) == bundleMap.end()) {
+			addBundleDir(b->getTarget(), b);
+		}
 		addBundleDir(dir, b);
 	} else if (b->getFileBundle()) {
 		//even though the folder exists, we need to update the name and add the bundle in the tree
