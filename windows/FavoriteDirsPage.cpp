@@ -145,17 +145,13 @@ LRESULT FavoriteDirsPage::onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 LRESULT FavoriteDirsPage::onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	TCHAR buf[MAX_PATH];
-	LVITEM item = { 0 };
-	item.mask = LVIF_TEXT;
-	item.cchTextMax = sizeof(buf);
-	item.pszText = buf;
+	TCHAR buf2[MAX_PATH];
 
 	int i = -1;
 	while((i = ctrlDirectories.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-		item.iItem = i;
-		item.iSubItem = 1;
-		ctrlDirectories.GetItem(&item);
-		if(removeFavoriteDir(Text::fromT(buf)))
+		ctrlDirectories.GetItemText(i, 0, buf, MAX_PATH); //vname
+		ctrlDirectories.GetItemText(i, 1, buf2, MAX_PATH); //path
+		if(removeFavoriteDir(Text::fromT(buf), Text::fromT(buf2)))
 			ctrlDirectories.DeleteItem(i);
 	}
 	
@@ -165,23 +161,19 @@ LRESULT FavoriteDirsPage::onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 LRESULT FavoriteDirsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	TCHAR buf[MAX_PATH];
-	LVITEM item = { 0 };
-	item.mask = LVIF_TEXT;
-	item.cchTextMax = sizeof(buf);
-	item.pszText = buf;
+	TCHAR buf2[MAX_PATH];
 
 	int i = -1;
 	while((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		item.iItem = i;
-		item.iSubItem = 0;
-		ctrlDirectories.GetItem(&item);
+		ctrlDirectories.GetItemText(i, 0, buf, MAX_PATH); //vname
+		ctrlDirectories.GetItemText(i, 1, buf2, MAX_PATH); //path
 
 		LineDlg virt;
 		virt.title = TSTRING(FAVORITE_DIR_NAME);
 		virt.description = TSTRING(FAVORITE_DIR_NAME_LONG);
 		virt.line = tstring(buf);
 		if(virt.DoModal(m_hWnd) == IDOK) {
-			if (renameFavoriteDir(Text::fromT(buf), Text::fromT(virt.line))) {
+			if (renameFavoriteDir(Text::fromT(buf), Text::fromT(virt.line), Text::fromT(buf2))) {
 				ctrlDirectories.SetItemText(i, 0, virt.line.c_str());
 			} else {
 				MessageBox(CTSTRING(DIRECTORY_ADD_ERROR));
@@ -193,9 +185,9 @@ LRESULT FavoriteDirsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 
 LRESULT FavoriteDirsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-	int i = ctrlDirectories.GetSelectedIndex();
+	/*int i = ctrlDirectories.GetSelectedIndex();
 	
-	/*if(wID == IDC_MOVEUP && i > 0){
+	if(wID == IDC_MOVEUP && i > 0){
 		StringPair j  = favoriteDirs[i];
 
 		favoriteDirs[i] = favoriteDirs[i-1];
@@ -222,15 +214,11 @@ LRESULT FavoriteDirsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 }
 
 
-bool FavoriteDirsPage::renameFavoriteDir(const string& aName, const string& anotherName) {
-
-	for(auto j = favoriteDirs.begin(); j != favoriteDirs.end(); ++j) {
-		if(stricmp(j->first.c_str(), j->first.c_str()) == 0) {
-			j->first = anotherName;
-			return true;
-		}
+bool FavoriteDirsPage::renameFavoriteDir(const string& aName, const string& anotherName, const string& aPath) {
+	if (!removeFavoriteDir(aName, aPath)) {
+		return false;
 	}
-	return false;
+	return addFavoriteDir(aPath, anotherName);
 }
 
 void FavoriteDirsPage::addDirectory(const tstring& aPath){
@@ -279,20 +267,22 @@ bool FavoriteDirsPage::addFavoriteDir(const string& aDirectory, const string & a
 }
 
 
-bool FavoriteDirsPage::removeFavoriteDir(const string& aTarget) {
+bool FavoriteDirsPage::removeFavoriteDir(const string& aName, const string& aTarget) {
 	string d(aTarget);
 
 	if(d[d.length() - 1] != PATH_SEPARATOR)
 		d += PATH_SEPARATOR;
 
 	for(auto i = favoriteDirs.begin(); i != favoriteDirs.end(); ++i) {
-		for (auto s = i->second.begin(); s != i->second.end(); ++s) {
-			if(stricmp((*s).c_str(), d.c_str()) == 0) {
-				i->second.erase(s);
-				if (i->second.empty()) {
-					favoriteDirs.erase(i);
+		if(stricmp(aName, i->first) == 0) {
+			for (auto s = i->second.begin(); s != i->second.end(); ++s) {
+				if(stricmp((*s).c_str(), d.c_str()) == 0) {
+					i->second.erase(s);
+					if (i->second.empty()) {
+						favoriteDirs.erase(i);
+					}
+					return true;
 				}
-				return true;
 			}
 		}
 	}
