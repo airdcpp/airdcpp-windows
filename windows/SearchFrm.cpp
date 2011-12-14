@@ -850,8 +850,24 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 
 	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-	if(newId < (int)spl.size()) {
-		ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(spl[newId].first), this));
+	auto shareDirs = ShareManager::getInstance()->getGroupedDirectories();
+
+	if(newId < (int)spl.size() + (int)shareDirs.size()) {
+		int64_t size = 0;
+		int sel = -1;
+		std::unordered_set<string> countedDirs;
+		while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+			const SearchResultPtr& sr = ctrlResults.getItemData(sel)->sr;
+			if (countedDirs.find(sr->getFileName()) == countedDirs.end()) {
+				size += sr->getSize();
+				countedDirs.insert(sr->getFileName());
+			}
+		}
+
+		string target;
+		if (WinUtil::getTarget(newId, target, size)) {
+			ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(target), this));
+		}
 	} else {
 		dcassert((newId - spl.size()) < targets.size());
 		string tgt = targets[newId - spl.size()];
@@ -862,8 +878,22 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 }
 
 LRESULT SearchFrame::onDownloadWholeFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	string target = FavoriteManager::getInstance()->getFavoriteTarget(wID-IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS);
-	ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(Text::toT(target)));
+	int64_t size = 0;
+	int sel = -1;
+	std::unordered_set<string> countedDirs;
+	while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+		const SearchResultPtr& sr = ctrlResults.getItemData(sel)->sr;
+		if (countedDirs.find(sr->getFileName()) == countedDirs.end()) {
+			size += sr->getSize();
+			countedDirs.insert(sr->getFileName());
+		}
+	}
+
+	string target;
+	int newId = wID-IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS;
+	if (WinUtil::getTarget(newId, target, size)) {
+		ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(Text::toT(target)));
+	}
 	return 0;
 }
 
@@ -1387,6 +1417,19 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			int n = 0;
 
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
+
+			//Append shared directories
+			if (SETTING(SHOW_SHARED_DIRS_FAV)) {
+				auto directories = ShareManager::getInstance()->getGroupedDirectories();
+				if (!directories.empty()) {
+					for(auto i = directories.begin(); i != directories.end(); i++) {
+						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
+						n++;
+					}
+					targetMenu.AppendMenu(MF_SEPARATOR);
+				}
+			}
+
 			//Append favorite download dirs
 			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 			if (spl.size() > 0) {

@@ -18,7 +18,7 @@
 #include "../client/DCPlusPlus.h"
 #include "Resource.h"
 #include "WinUtil.h"
-#include "AutosearchDlg.h"
+#include "AutoSearchDlg.h"
 
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \
@@ -26,7 +26,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-AutosearchPageDlg::AutosearchPageDlg() {
+AutoSearchPageDlg::AutoSearchPageDlg() {
 	search = _T("");
 	fileType = 0;
 	action = 0;
@@ -35,7 +35,7 @@ AutosearchPageDlg::AutosearchPageDlg() {
 	target = Util::emptyStringT;
 }
 
-AutosearchPageDlg::~AutosearchPageDlg() {
+AutoSearchPageDlg::~AutoSearchPageDlg() {
 	ctrlSearch.Detach();
 	ctrlFileType.Detach();
 	cAction.Detach();
@@ -44,7 +44,7 @@ AutosearchPageDlg::~AutosearchPageDlg() {
 
 }
 
-LRESULT AutosearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
 	ATTACH(IDC_TARGET_PATH, ctrlTarget);
@@ -103,7 +103,7 @@ LRESULT AutosearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	return TRUE;
 }
 
-LRESULT AutosearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	TCHAR buf[MAX_PATH];
 
 	GetDlgItemText(IDC_TARGET_PATH, buf, MAX_PATH);
@@ -115,7 +115,7 @@ LRESULT AutosearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
-LRESULT AutosearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(wID == IDOK) {
 		TCHAR buf[512];
 		TCHAR buf2[MAX_PATH];
@@ -138,7 +138,7 @@ LRESULT AutosearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 	EndDialog(wID);
 	return 0;
 }
-LRESULT AutosearchPageDlg::onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchPageDlg::onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	return 0;
 }
 

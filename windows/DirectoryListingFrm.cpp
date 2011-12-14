@@ -944,6 +944,18 @@ clientmenu:
 
 		if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
 			fileMenu.InsertSeparatorFirst(Text::toT(Util::getFileName(ii->file->getName())));
+
+			//Append shared directories
+			if (SETTING(SHOW_SHARED_DIRS_FAV)) {
+				auto directories = ShareManager::getInstance()->getGroupedDirectories();
+				if (!directories.empty()) {
+					for(auto i = directories.begin(); i != directories.end(); i++) {
+						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
+						n++;
+					}
+					targetMenu.AppendMenu(MF_SEPARATOR);
+				}
+			}
 			
 			//Append Favorite download dirs
 			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
@@ -988,6 +1000,19 @@ clientmenu:
 			fileMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 		} else {
 			fileMenu.EnableMenuItem(IDC_SEARCH_ALTERNATES, MF_BYCOMMAND | MFS_DISABLED);
+
+			//Append shared directories
+			if (SETTING(SHOW_SHARED_DIRS_FAV)) {
+				auto directories = ShareManager::getInstance()->getGroupedDirectories();
+				if (!directories.empty()) {
+					for(auto i = directories.begin(); i != directories.end(); i++) {
+						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
+						n++;
+					}
+					targetMenu.AppendMenu(MF_SEPARATOR);
+				}
+			}
+
 			//Append Favorite download dirs
 			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 			if (spl.size() > 0) {
@@ -1080,6 +1105,19 @@ clientmenu:
 		// Strange, windows doesn't change the selection on right-click... (!)
 
 		int n = 0;
+
+		//Append shared directories
+		if (SETTING(SHOW_SHARED_DIRS_FAV)) {
+			auto directories = ShareManager::getInstance()->getGroupedDirectories();
+			if (!directories.empty()) {
+				for(auto i = directories.begin(); i != directories.end(); i++) {
+					targetDirMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
+					n++;
+				}
+				targetDirMenu.AppendMenu(MF_SEPARATOR);
+			}
+		}
+
 		//Append Favorite download dirs
 		auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 		if (spl.size() > 0) {
@@ -1185,16 +1223,35 @@ LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD
 				}
 			} else {
 				newId -= (int)targets.size();
-				string target = FavoriteManager::getInstance()->getFavoriteTarget(newId);
-				downloadList(Text::toT(target));
+				string target;
+				if (WinUtil::getTarget(newId, target, ii->file->getSize())) {
+					downloadList(Text::toT(target));
+				}
 			}
 		} else {
-			string target = FavoriteManager::getInstance()->getFavoriteTarget(newId);
-			downloadList(Text::toT(target));
+			string target;
+			if (WinUtil::getTarget(newId, target, ii->dir->getSize())) {
+				downloadList(Text::toT(target));
+			}
 		}
 	} else if(ctrlList.GetSelectedCount() > 1) {
-		string target = FavoriteManager::getInstance()->getFavoriteTarget(newId);
-		downloadList(Text::toT(target));
+		int64_t size = 0;
+
+		//count the total size
+		int i=-1;
+		while( (i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
+			const ItemInfo* ii = ctrlList.getItemData(i);
+			if (ii->type == ItemInfo::DIRECTORY) {
+				size += ii->dir->getSize();
+			} else {
+				size += ii->file->getSize();
+			}
+		}
+
+		string target;
+		if (WinUtil::getTarget(newId, target, size)) {
+			downloadList(Text::toT(target));
+		}
 	}
 	return 0;
 }
@@ -1206,12 +1263,13 @@ LRESULT DirectoryListingFrame::onDownloadWholeFavoriteDirs(WORD /*wNotifyCode*/,
 	HTREEITEM t = ctrlTree.GetSelectedItem();
 	if(t != NULL) {
 		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		string target = FavoriteManager::getInstance()->getFavoriteTarget(newId);
-		//string target = SETTING(DOWNLOAD_DIRECTORY);
-		try {
-			dl->download(dir, target, WinUtil::isShift(), QueueItem::DEFAULT);
-		} catch(const Exception& e) {
-			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+		string target;
+		if (WinUtil::getTarget(newId, target, dir->getSize())) {
+			try {
+				dl->download(dir, target, WinUtil::isShift(), QueueItem::DEFAULT);
+			} catch(const Exception& e) {
+				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+			}
 		}
 	}
 	return 0;

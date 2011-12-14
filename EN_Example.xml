@@ -1427,5 +1427,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SearchBundleAlt">Search bundle for alternatives</String>
 		<String Name="MatchPartial">Match partialList</String>
 		<String Name="FavdirsShowShared">Show shared directories in the ""Download to"" menu</String>
+		<String Name="ConfirmSizeWarning">There is only %s remaining in the directory %s while %s is needed. Do you want to continue?</String>
 	</Strings>
 </Language>

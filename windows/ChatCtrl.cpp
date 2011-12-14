@@ -829,6 +829,19 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 
 
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
+
+			//Append shared directories
+			if (SETTING(SHOW_SHARED_DIRS_FAV)) {
+				auto directories = ShareManager::getInstance()->getGroupedDirectories();
+				if (!directories.empty()) {
+					for(auto i = directories.begin(); i != directories.end(); i++) {
+						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
+						n++;
+					}
+					targetMenu.AppendMenu(MF_SEPARATOR);
+				}
+			}
+
 			//Append favorite download dirs
 			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 			if (spl.size() > 0) {
@@ -981,32 +994,30 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 }
 
 LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		tstring searchterm = getSearchString();
-		
-		if(searchterm.size() < 5) //we dont accept anything under 5 chars
-			return 0;
-
-		//enableAutosearch();
-		AutoSearchManager::getInstance()->addAutosearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString);
-		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+	tstring searchterm = getSearchString();
+	if(searchterm.size() < 5) //we dont accept anything under 5 chars
 		return 0;
-	}
+
+	AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString);
+	LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+	return 0;
+}
 
 LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		tstring searchterm = getSearchString();
+	tstring searchterm = getSearchString();
 
-		if(searchterm.size() < 5) //we dont accept anything under 5 chars
-			return 0;
-
-		tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
-		if(WinUtil::browseDirectory(target, m_hWnd)) {
-				WinUtil::addLastDir(target);
-				//enableAutosearch();
-				AutoSearchManager::getInstance()->addAutosearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(target));
-				LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
-		}
+	if(searchterm.size() < 5) //we dont accept anything under 5 chars
 		return 0;
+
+	tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
+	if(WinUtil::browseDirectory(target, m_hWnd)) {
+		WinUtil::addLastDir(target);
+		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(target));
+		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	}
+	return 0;
+}
+
 LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring searchterm = getSearchString();
 		
@@ -1016,37 +1027,42 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 
 	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-	if(newId < spl.size()) {
-		AutoSearchManager::getInstance()->addAutosearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, spl[newId].first);
-		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
-	} else {
+	auto shareDirs = ShareManager::getInstance()->getGroupedDirectories();
+	dcassert(newId < (int)(spl.size() + shareDirs.size()));
+	AutoSearch::targetType targetType = (newId < shareDirs.size()) ? AutoSearch::TARGET_SHARE : AutoSearch::TARGET_FAVORITE;
+	string target = (newId < shareDirs.size()) ? shareDirs[newId].first : spl[newId-shareDirs.size()].first;
+
+	AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, target, targetType);
+	LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+
+	/*} else {
 		//download to default download path
-		AutoSearchManager::getInstance()->addAutosearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString);
+		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7, 0, true, Util::emptyString);
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
-	}
+	} */
 	return 0;
 }
+
 LRESULT ChatCtrl::onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		tstring searchterm = getSearchString();
-		
-		if(searchterm.size() < 5) //we dont accept anything under 5 chars
-			return 0;
+	tstring searchterm = getSearchString();
+	if(searchterm.size() < 5) //we dont accept anything under 5 chars
+		return 0;
 
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_TARGET;
 
 	if(newId < WinUtil::lastDirs.size()) {
-		//enableAutosearch();
-		AutoSearchManager::getInstance()->addAutosearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(WinUtil::lastDirs[newId]));
+		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(WinUtil::lastDirs[newId]));
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	} else {
 		dcassert((newId - WinUtil::lastDirs.size()));
 		//download to default download path
-		//enableAutosearch();
-		AutoSearchManager::getInstance()->addAutosearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString);
+		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString);
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	}
+
 	return 0;
 }
+
 LRESULT ChatCtrl::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if(wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0) {
 		scrollToEnd();

@@ -25,11 +25,11 @@
 #include "FlatTabCtrl.h"
 #include "ExListViewCtrl.h"
 
-#include "AutosearchDlg.h"
+#include "AutoSearchDlg.h"
 #include "../client/AutoSearchManager.h"
 
 class AutoSearchFrame : public MDITabChildWindowImpl<AutoSearchFrame>, public StaticFrame<AutoSearchFrame, ResourceManager::AUTOSEARCH, IDC_AUTOSEARCH>,
-	 private AutosearchManagerListener, private SettingsManagerListener
+	 private AutoSearchManagerListener, private SettingsManagerListener
 {
 public:
 	
@@ -71,22 +71,22 @@ public:
 	LRESULT onEnable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		//just set the checkstate, onitemchanged will handle it from there
 		int i = -1;
-		while( (i = ctrlAutosearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			ctrlAutosearch.SetCheckState(i, TRUE);
+		while( (i = ctrlAutoSearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
+			ctrlAutoSearch.SetCheckState(i, TRUE);
 		}
 		return 0;
 	}
 	LRESULT onDisable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		//just set the checkstate, onitemchanged will handle it from there
 		int i = -1;
-		while( (i = ctrlAutosearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			ctrlAutosearch.SetCheckState(i, FALSE);
+		while( (i = ctrlAutoSearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
+			ctrlAutoSearch.SetCheckState(i, FALSE);
 		}
 		return 0;
 	}
 
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		ctrlAutosearch.SetFocus();
+		ctrlAutoSearch.SetFocus();
 		return 0;
 	}
 
@@ -125,29 +125,29 @@ private:
 
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
-	ExListViewCtrl ctrlAutosearch;
+	ExListViewCtrl ctrlAutoSearch;
 
 	void updateList() {
 
-		ctrlAutosearch.SetRedraw(FALSE);
+		ctrlAutoSearch.SetRedraw(FALSE);
 		
-		Autosearch::List lst = AutoSearchManager::getInstance()->getAutosearch();
+		AutoSearch::List lst = AutoSearchManager::getInstance()->getAutoSearch();
 		
-		for(Autosearch::List::const_iterator i = lst.begin(); i != lst.end(); ++i) {
-			const AutosearchPtr as = *i;	
-			addEntry(as, ctrlAutosearch.GetItemCount());
+		for(AutoSearch::List::const_iterator i = lst.begin(); i != lst.end(); ++i) {
+			const AutoSearchPtr as = *i;	
+			addEntry(as, ctrlAutoSearch.GetItemCount());
 			}
 
-		ctrlAutosearch.SetRedraw(TRUE);
-		ctrlAutosearch.Invalidate();
+		ctrlAutoSearch.SetRedraw(TRUE);
+		ctrlAutoSearch.Invalidate();
 		
 	}
 
 	void save() {
-		AutoSearchManager::getInstance()->AutosearchSave();
+		AutoSearchManager::getInstance()->AutoSearchSave();
 	}
 
-	void addEntry(const AutosearchPtr as, int pos);
+	void addEntry(const AutoSearchPtr as, int pos);
 
 
 	string getType(int i) {
@@ -180,8 +180,8 @@ private:
 	bool closed;
 	bool loading;
 
-	virtual void on(AutosearchManagerListener::RemoveItem, const string item) noexcept { ctrlAutosearch.deleteItem(Text::toT(item)); setDirty(); }
-	virtual void on(AutosearchManagerListener::AddItem, const AutosearchPtr& as) noexcept { addEntry(as, ctrlAutosearch.GetItemCount()); setDirty(); }
+	virtual void on(AutoSearchManagerListener::RemoveItem, const string item) noexcept { ctrlAutoSearch.deleteItem(Text::toT(item)); setDirty(); }
+	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept { addEntry(as, ctrlAutoSearch.GetItemCount()); setDirty(); }
 
 };
 #endif // !defined(AUTOSEARCH_FRM_H)
