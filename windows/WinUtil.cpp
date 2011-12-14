@@ -3157,12 +3157,12 @@ tstring WinUtil::getTitle(tstring searchTerm) {
 
 
 bool WinUtil::getTarget(int ID, string& target, int64_t aSize) {
-	uint64_t freeSpace = 0;
-	auto directories = ShareManager::getInstance()->getGroupedDirectories();
-	if (SETTING(SHOW_SHARED_DIRS_FAV) && ID < directories.size()) {
-		AirUtil::getTarget(directories[ID].second, target, freeSpace);
+	int64_t freeSpace = 0;
+	auto shareDirs = ShareManager::getInstance()->getGroupedDirectories();
+	if (SETTING(SHOW_SHARED_DIRS_FAV) && ID < shareDirs.size()) {
+		AirUtil::getTarget(shareDirs[ID].second, target, freeSpace);
 	} else {
-		FavoriteManager::getInstance()->getFavoriteTarget(ID-directories.size(), target, freeSpace);
+		FavoriteManager::getInstance()->getFavoriteTarget(ID-(SETTING(SHOW_SHARED_DIRS_FAV) ? shareDirs.size() : 0), target, freeSpace);
 	}
 
 	if (target.empty()) {
@@ -3171,7 +3171,7 @@ bool WinUtil::getTarget(int ID, string& target, int64_t aSize) {
 		GetDiskFreeSpaceEx(Text::toT(target).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&freeSpace);
 	}
 
-	if ((uint64_t)aSize > freeSpace) {
+	if (aSize > freeSpace) {
 		string tmp;
 		tmp.resize(tmp.size() + STRING(CONFIRM_SIZE_WARNING).size() + 1024);
 		tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_SIZE_WARNING), Util::formatBytes(freeSpace), target, Util::formatBytes(aSize)));

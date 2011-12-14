@@ -1028,9 +1028,15 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 
 	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 	auto shareDirs = ShareManager::getInstance()->getGroupedDirectories();
-	dcassert(newId < (int)(spl.size() + shareDirs.size()));
-	AutoSearch::targetType targetType = (newId < shareDirs.size()) ? AutoSearch::TARGET_SHARE : AutoSearch::TARGET_FAVORITE;
-	string target = (newId < shareDirs.size()) ? shareDirs[newId].first : spl[newId-shareDirs.size()].first;
+	dcassert(newId <= (spl.size() + (SETTING(SHOW_SHARED_DIRS_FAV) ? shareDirs.size() : 0)));
+
+	AutoSearch::targetType targetType = AutoSearch::TARGET_FAVORITE;
+	string target = spl[newId - (SETTING(SHOW_SHARED_DIRS_FAV) ? shareDirs.size() : 0)].first;
+
+	if (SETTING(SHOW_SHARED_DIRS_FAV) && (newId < shareDirs.size())) {
+		targetType = AutoSearch::TARGET_SHARE;
+		target = shareDirs[newId].first;
+	}
 
 	AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, target, targetType);
 	LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));

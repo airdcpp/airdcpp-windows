@@ -849,10 +849,12 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 	dcassert(wID >= IDC_DOWNLOAD_FAVORITE_DIRS);
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 
-	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-	auto shareDirs = ShareManager::getInstance()->getGroupedDirectories();
+	int favShareSize = (int)FavoriteManager::getInstance()->getFavoriteDirs().size();
+	if (SETTING(SHOW_SHARED_DIRS_FAV)) {
+		favShareSize += (int)ShareManager::getInstance()->getGroupedDirectories().size();
+	}
 
-	if(newId < (int)spl.size() + (int)shareDirs.size()) {
+	if(newId < favShareSize) {
 		int64_t size = 0;
 		int sel = -1;
 		std::unordered_set<string> countedDirs;
@@ -869,8 +871,8 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 			ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(target), this));
 		}
 	} else {
-		dcassert((newId - spl.size()) < targets.size());
-		string tgt = targets[newId - spl.size()];
+		dcassert((newId - favShareSize) < targets.size());
+		string tgt = targets[newId - favShareSize];
 		if(!tgt.empty())
 		ctrlResults.forEachSelectedT(SearchInfo::DownloadTarget(Text::toT(tgt)));
 	}
@@ -1419,10 +1421,10 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
 
 			//Append shared directories
+			auto sharedDirs = ShareManager::getInstance()->getGroupedDirectories();
 			if (SETTING(SHOW_SHARED_DIRS_FAV)) {
-				auto directories = ShareManager::getInstance()->getGroupedDirectories();
-				if (!directories.empty()) {
-					for(auto i = directories.begin(); i != directories.end(); i++) {
+				if (!sharedDirs.empty()) {
+					for(auto i = sharedDirs.begin(); i != sharedDirs.end(); i++) {
 						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
 						n++;
 					}
@@ -1465,6 +1467,17 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			n = 0;
 			targetDirMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_WHOLE_DIR_TO));
+
+			//Append shared directories
+			if (SETTING(SHOW_SHARED_DIRS_FAV)) {
+				if (!sharedDirs.empty()) {
+					for(auto i = sharedDirs.begin(); i != sharedDirs.end(); i++) {
+						targetDirMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
+						n++;
+					}
+					targetDirMenu.AppendMenu(MF_SEPARATOR);
+				}
+			}
 			//Append favorite download dirs
 			if (spl.size() > 0) {
 				for(auto i = spl.begin(); i != spl.end(); ++i) {
