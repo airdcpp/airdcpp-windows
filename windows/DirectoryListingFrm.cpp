@@ -674,7 +674,7 @@ LRESULT DirectoryListingFrame::onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*
 	} else if(ii->type == ItemInfo::DIRECTORY)	{
 		if(!(ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()))
 			return 0;
-		fullPath = Text::toT(((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath());
+		fullPath = Text::toT(((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath()).substr(1);
 	}
 
 	if(!fullPath.empty())
@@ -896,7 +896,7 @@ clientmenu:
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
 		
-		if (ii->type == ItemInfo::DIRECTORY && ctrlList.GetSelectedCount() == 1) {
+		if (ii->type == ItemInfo::DIRECTORY && (ctrlList.GetSelectedCount() == 1) && !mylist) {
 			if (ShareManager::getInstance()->isDirShared(ii->dir->getPath()) || ii->dir->getDupe() == DirectoryListing::Directory::QUEUE_DUPE) {
 				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 			}
@@ -906,7 +906,7 @@ clientmenu:
 		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
 		fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 		
-		if(mylist) {
+		if(mylist && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
 			fileMenu.AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
 			fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK)); //sfv checker
 			if(ctrlList.GetSelectedCount() == 1 /*&& ii->type == ItemInfo::FILE */) {				
