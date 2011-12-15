@@ -2113,18 +2113,17 @@ tstring WinUtil::diskInfo() {
    // lookup drive volumes.
    hVol = FindFirstVolume(buf, MAX_PATH);
 
-   if(hVol != INVALID_HANDLE_VALUE)
-   {
+	if(hVol != INVALID_HANDLE_VALUE) {
 	  
-   found = FindVolume(hVol, buf, MAX_PATH);
+		found = FindVolume(hVol, buf, MAX_PATH);
 
-   //while we find drive volumes.
-   while(found) { 
-	   found = FindVolume(hVol, buf, MAX_PATH); 
-   }
+		//while we find drive volumes.
+		while(found) { 
+			found = FindVolume(hVol, buf, MAX_PATH); 
+		}
    
-   found = FindVolumeClose(hVol);
-   }
+		found = FindVolumeClose(hVol);
+	}
 
    for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
 	   if(GetDriveType((*i).c_str()) == DRIVE_CDROM || GetDriveType((*i).c_str()) == DRIVE_REMOVABLE)
