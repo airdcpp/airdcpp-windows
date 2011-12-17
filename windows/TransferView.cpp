@@ -1229,6 +1229,13 @@ void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc,
 	speak(UPDATE_ITEM, ui);
 }
 
+void TransferView::on(DownloadManagerListener::TargetChanged, const string& aTarget, const string& aToken, const string& bundleToken) noexcept {
+	UpdateInfo* ui = new UpdateInfo(aToken, true);
+	ui->setTarget(Text::toT(aTarget));
+	ui->setBundle(bundleToken);
+	speak(UPDATE_ITEM, ui);
+}
+
 void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
 	UpdateInfo* ui = new UpdateInfo(aUpload->getUserConnection().getToken(), false);
 	starting(ui, aUpload);

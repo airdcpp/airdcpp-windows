@@ -292,7 +292,7 @@ void QueueFrame::addQueueItem(QueueItemInfo* ii, bool noSort) {
 		addItemDir(ii->isSet(QueueItem::FLAG_USER_LIST));
 	} else if (updateDir) {
 		//make sure that the bundle dir is being added
-		if (stricmp(dir, b->getTarget()) != 0 && !b->getFileBundle() && bundleMap.find(b->getTarget()) == bundleMap.end()) {
+		if (stricmp(dir, b->getTarget()) != 0 && !b->getFileBundle() && bundleMap.find(b->getTarget()) == bundleMap.end() && directories.find(b->getTarget()) == directories.end()) {
 			addBundleDir(b->getTarget(), b);
 		}
 		addBundleDir(dir, b);
@@ -558,10 +558,11 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 
 			// Create a new root
 			BundleItemInfo* bii = ((BundleItemInfo*)ctrlDirs.GetItemData(next));
+			//bii->addBundle(aBundle);
 			HTREEITEM newRoot = next = createSplitDir(tvi, rootStr.substr(0, i), NULL, bii, false);
 
 			parent = addBundleDir(rootStr, aBundle, newRoot);
-
+			((BundleItemInfo*)ctrlDirs.GetItemData(newRoot))->addBundle(aBundle);
 			next = ctrlDirs.GetChildItem(oldRoot);
 			while(next != NULL) {
 				moveNode(next, parent);
@@ -615,7 +616,8 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 			dcassert(j != string::npos);
 			if (startAt != NULL) {
 				BundleItemInfo* bii = ((BundleItemInfo*)ctrlDirs.GetItemData(startAt));
-				parent = createSplitDir(tvi, dir.substr(0, j+1), parent, bii, false);
+				//bii->addBundle(aBundle);
+				parent = createSplitDir(tvi, dir.substr(0, j+1), parent, bii, true);
 				//delete bii;
 			} else {
 				parent = createDir(tvi, dir.substr(0, j+1), aBundle, parent, true);
@@ -630,6 +632,7 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 
 void QueueFrame::BundleItemInfo::addBundle(BundlePtr aBundle) {
 	if (find(bundles.begin(), bundles.end(), aBundle) == bundles.end()) {
+		//LogManager::getInstance()->message("BUNDLE " + aBundle->getName() + " added for dir " + this->getDir());
 		bundles.push_back(aBundle);
 	}
 }
@@ -745,7 +748,8 @@ void QueueFrame::removeBundle(const BundlePtr aBundle) {
 						}
 						ctrlDirs.SetItemText(next, const_cast<TCHAR*>(text.c_str()));
 					}
-					((BundleItemInfo*)ctrlDirs.GetItemData(next))->removeBundle(aBundle);
+					BundleItemInfo* bii = (BundleItemInfo*)ctrlDirs.GetItemData(next);
+					bii->removeBundle(aBundle);
 					next = ctrlDirs.GetChildItem(next);
 					i = n.length();
 					break;
@@ -779,10 +783,13 @@ void QueueFrame::on(QueueManagerListener::Removed, const QueueItem* aQI) {
 	speak(UPDATE_STATUS_ITEMS, new StringTask(aQI->getTarget()));
 }
 
-void QueueFrame::on(QueueManagerListener::Moved, const QueueItem*, const string& oldTarget) {
-	speak(REMOVE_ITEM, new StringTask(oldTarget));
+void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) {
+	for (auto i = aBundle->getQueueItems().begin(); i != aBundle->getQueueItems().end(); ++i) {
+		speak(REMOVE_ITEM, new StringTask((*i)->getTarget()));
+	}
+	speak(REMOVE_BUNDLE, new BundleItemInfoTask(new BundleItemInfo(aBundle->getTarget(), aBundle)));
 	
-	// we need to call speaker now to properly remove item before other actions
+	// we need to call speaker now to properly remove items before other actions
 	onSpeaker(0, 0, 0, *reinterpret_cast<BOOL*>(NULL));
 }
 
@@ -952,64 +959,100 @@ void QueueFrame::removeSelectedDir() {
 		return;
 	}
 
-	int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
-	BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, finishedFiles, dirBundles, fileBundles);
+	int finishedFiles = 0, fileBundles = 0;
+	string tmp;
+	BundleList bundles;
+	QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
+	int dirBundles = bundles.size() - fileBundles;
 	bool moveFinished = (finishedFiles > 0);
 	
-		string tmp;
-		if (bundles.size() == 1) {
-			BundlePtr bundle = bundles.front();
-			if (stricmp(bundle->getTarget(), curDir) != 0) {
-				tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE_PART).size() + 1024);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE_PART), Util::getLastDir(curDir).c_str(), bundle->getName().c_str()));
-				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
-					return;
-				} else {
-					if (moveFinished) {
-						tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE_PART).size() + 1024);
-						tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE_PART), finishedFiles));
-						if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
-							moveFinished = false;
-						}
-					}
-				}
-			} else {
-				tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE).size() + 1024);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE), bundle->getName().c_str()));
-				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
-					return;
-				} else {
-					if (moveFinished) {
-						tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE).size() + 1024);
-						tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE), finishedFiles));
-						if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
-							moveFinished = false;
-						}
-					}
-				}
-			}
-		} else {
-			tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_MULTIPLE).size() + 1024);
-			tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_MULTIPLE), dirBundles, fileBundles));
+	if (bundles.size() == 1) {
+		BundlePtr bundle = bundles.front();
+		if (stricmp(bundle->getTarget(), curDir) != 0) {
+			tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE_PART).size() + 1024);
+			tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE_PART), Util::getLastDir(curDir).c_str(), bundle->getName().c_str()));
 			if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 				return;
 			} else {
 				if (moveFinished) {
-					tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE).size() + 1024);
-					tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE), finishedFiles));
+					tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE_PART).size() + 1024);
+					tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE_PART), finishedFiles));
+					if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+						moveFinished = false;
+					}
+				}
+			}
+		} else {
+			tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE).size() + 1024);
+			tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE), bundle->getName().c_str()));
+			if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+				return;
+			} else {
+				if (moveFinished) {
+					tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE).size() + 1024);
+					tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE), finishedFiles));
 					if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 						moveFinished = false;
 					}
 				}
 			}
 		}
+	} else {
+		tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_MULTIPLE).size() + 1024);
+		tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_MULTIPLE), dirBundles, fileBundles));
+		if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+			return;
+		} else {
+			if (moveFinished) {
+				tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE).size() + 1024);
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE), finishedFiles));
+				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+					moveFinished = false;
+				}
+			}
+		}
+	}
 
-		QueueManager::getInstance()->removeDir(curDir, bundles, moveFinished);
+	QueueManager::getInstance()->removeDir(curDir, bundles, moveFinished);
 }
 
 void QueueFrame::moveSelected() {
+	BundleList bundles;
+	int finishedFiles = 0, fileBundles = 0;
+	int totalBundleQueued = QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
 
+	bool moveWhole = false;
 	int n = ctrlQueue.GetSelectedCount();
+	if (bundles.size() == 1 && fileBundles != 1) {
+		if (n == totalBundleQueued) {
+			bool moveFinished = (finishedFiles > 0);
+			//we are moving all files in a directory bundle
+			BundlePtr bundle = bundles.front();
+			string tmp;
+			tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_ALL_FILES).size() + 1024);
+			tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_ALL_FILES), bundle->getName().c_str()));
+			if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+				if (moveFinished) {
+					tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_FINISHED_BUNDLE).size() + 1024);
+					tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_FINISHED_BUNDLE), finishedFiles));
+					if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+						moveFinished = false;
+					}
+				}
+				tstring name;
+				if(showTree) {
+					name = Text::toT(curDir);
+				}
+
+				if(WinUtil::browseDirectory(name, m_hWnd)) {
+					string newDir = Text::fromT(name) + Util::getLastDir(bundle->getTarget()) + "\\";
+					QueueManager::getInstance()->moveDir(bundle->getTarget(), newDir, bundles, moveFinished);
+				}
+				return;
+			}
+		}
+	}
+
 	if(n == 1) {
 		// Single file, get the full filename and move...
 		const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
@@ -1056,8 +1099,10 @@ void QueueFrame::moveSelectedDir() {
 
 	dcassert(!curDir.empty());
 	tstring name = Text::toT(curDir);
-	int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
-	BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, finishedFiles, dirBundles, fileBundles);
+	int finishedFiles = 0, fileBundles = 0;
+	BundleList bundles;
+	QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
+	int dirBundles = bundles.size() - fileBundles;
 	bool moveFinished = (finishedFiles > 0);
 	
 	if(WinUtil::browseDirectory(name, m_hWnd)) {
@@ -1067,7 +1112,7 @@ void QueueFrame::moveSelectedDir() {
 			BundlePtr bundle = bundles.front();
 			if (stricmp(bundle->getTarget(), curDir) != 0) {
 				tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_BUNDLE_PART).size() + 1024);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_BUNDLE_PART), Util::getLastDir(curDir).c_str(), bundle->getName(), newDir.c_str()));
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_BUNDLE_PART), Util::getLastDir(curDir).c_str(), bundle->getName().c_str(), newDir.c_str()));
 				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 					return;
 				} else {
@@ -1081,7 +1126,7 @@ void QueueFrame::moveSelectedDir() {
 				}
 			} else {
 				tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_BUNDLE).size() + 1024);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_BUNDLE), bundle->getName().c_str(), newDir));
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_BUNDLE), bundle->getName().c_str(), newDir.c_str()));
 				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 					return;
 				} else {
@@ -1618,8 +1663,9 @@ LRESULT QueueFrame::onBrowseList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 LRESULT QueueFrame::onReadd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
 	if(usingDirMenu) {
-		int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
-		BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, finishedFiles, dirBundles, fileBundles);
+		int finishedFiles = 0, fileBundles = 0;
+		BundleList bundles;
+		QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
 		BundlePtr b = bundles.front();
 
 		if(wID == IDC_READD) {
@@ -1670,8 +1716,9 @@ LRESULT QueueFrame::onReadd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 LRESULT QueueFrame::onRemoveSource(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
 	if(usingDirMenu) {
-		int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
-		BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, finishedFiles, dirBundles, fileBundles);
+		int finishedFiles = 0, fileBundles = 0;
+		BundleList bundles;
+		QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
 		BundlePtr b = bundles.front();
 
 		if(wID == IDC_REMOVE_SOURCE) {
@@ -1737,8 +1784,9 @@ LRESULT QueueFrame::onAutoPriority(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 	if(usingDirMenu) {
 		//setAutoPriority(ctrlDirs.GetSelectedItem(), true);
-		int finishedFiles = 0, dirBundles = 0, fileBundles = 0;
-		BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, finishedFiles, dirBundles, fileBundles);
+		int finishedFiles = 0, fileBundles = 0;
+		BundleList bundles;
+		QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
 		if (!bundles.empty()) {
 			QueueManager::getInstance()->setBundlePriorities(curDir, bundles, Bundle::DEFAULT, true);
 		}
@@ -1779,8 +1827,9 @@ LRESULT QueueFrame::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	}
 
 	if(usingDirMenu) {
-		int tmp1=0, tmp2=0, tmp3=0;
-		BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, tmp1, tmp2, tmp3);
+		int tmp1=0, tmp2=0;
+		BundleList bundles;
+		QueueManager::getInstance()->getBundleInfo(curDir, bundles, tmp1, tmp2);
 		if (!bundles.empty()) {
 			QueueManager::getInstance()->setBundlePriorities(curDir, bundles, (Bundle::Priority)p);
 		}

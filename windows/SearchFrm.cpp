@@ -855,16 +855,21 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 	}
 
 	if(newId < favShareSize) {
-		int64_t size = 0;
 		int sel = -1;
-		std::unordered_set<string> countedDirs;
+		map<string, int64_t> countedDirs;
 		while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
 			const SearchResultPtr& sr = ctrlResults.getItemData(sel)->sr;
-			if (countedDirs.find(sr->getFileName()) == countedDirs.end()) {
-				size += sr->getSize();
-				countedDirs.insert(sr->getFileName());
+			auto s = countedDirs.find(sr->getFileName());
+			if (s != countedDirs.end()) {
+				if (s->second < sr->getSize()) {
+					s->second = sr->getSize();
+				}
+			} else {
+				countedDirs[sr->getFileName()] = sr->getSize();
 			}
 		}
+		int64_t size = 0;
+		for_each(countedDirs.begin(), countedDirs.end(), [&](pair<string, int64_t> p) { size += p.second; } );
 
 		string target;
 		if (WinUtil::getTarget(newId, target, size)) {
@@ -880,16 +885,22 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 }
 
 LRESULT SearchFrame::onDownloadWholeFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int64_t size = 0;
+	/* the space calculation isn't accurate because the size of the folder isn't known with files (but it works with folders) */
 	int sel = -1;
-	std::unordered_set<string> countedDirs;
+	map<string, int64_t> countedDirs;
 	while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
 		const SearchResultPtr& sr = ctrlResults.getItemData(sel)->sr;
-		if (countedDirs.find(sr->getFileName()) == countedDirs.end()) {
-			size += sr->getSize();
-			countedDirs.insert(sr->getFileName());
+		auto s = countedDirs.find(sr->getFileName());
+		if (s != countedDirs.end()) {
+			if (s->second < sr->getSize()) {
+				s->second = sr->getSize();
+			}
+		} else {
+			countedDirs[sr->getFileName()] = sr->getSize();
 		}
 	}
+	int64_t size = 0;
+	for_each(countedDirs.begin(), countedDirs.end(), [&](pair<string, int64_t> p) { size += p.second; } );
 
 	string target;
 	int newId = wID-IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS;

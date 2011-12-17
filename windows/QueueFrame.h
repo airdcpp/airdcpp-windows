@@ -444,7 +444,7 @@ private:
 	const string& getDir(HTREEITEM ht) const { dcassert(ht != NULL); return ((BundleItemInfo*)(ctrlDirs.GetItemData(ht)))->getDir(); }
 
 	void on(QueueManagerListener::Added, QueueItem* aQI) noexcept;
-	void on(QueueManagerListener::Moved, const QueueItem* aQI, const string& oldTarget) noexcept;
+	void on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) noexcept;
 	void on(QueueManagerListener::Removed, const QueueItem* aQI) noexcept;
 	void on(QueueManagerListener::SourcesUpdated, const QueueItem* aQI) noexcept;
 	void on(QueueManagerListener::StatusUpdated, const QueueItem* aQI) noexcept { on(QueueManagerListener::SourcesUpdated(), aQI); }
