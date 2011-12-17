@@ -1444,5 +1444,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="BundleSharingFailed">Failed to add the bundle %s in share</String>
 		<String Name="BundleHashed">The bundle %s has finished hashing</String>
 		<String Name="BundleShared">The bundle %s has finished hashing and it has been added into shared</String>
+		<String Name="AsUserMatch">Only from users with nick Matching:  (Wildcards, | separate)</String>
+		<String Name="UserMatch">User Match</String>
 	</Strings>
 </Language>

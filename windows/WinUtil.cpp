@@ -88,7 +88,6 @@ CImageList WinUtil::flagImages;
 int WinUtil::dirIconIndex = 0;
 int WinUtil::dirMaskedIndex = 0;
 TStringList WinUtil::lastDirs;
-TStringList WinUtil::volumes;
 HWND WinUtil::mainWnd = NULL;
 HWND WinUtil::mdiClient = NULL;
 FlatTabCtrl* WinUtil::tabCtrl = NULL;
@@ -2013,30 +2012,11 @@ tstring WinUtil::UselessInfo() {
 tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 	tstring ret = Util::emptyStringT;
 	//support XP and higher
-	if((LOBYTE(LOWORD(GetVersion())) >= 5 && WinUtil::getOsMinor() >= 1) 
-		|| (WinUtil::getOsMajor() >= 6)) {
+	if((LOBYTE(LOWORD(GetVersion())) >= 5 && WinUtil::getOsMinor() >= 1) || (WinUtil::getOsMajor() >= 6)) {
 
 	int64_t free = 0, totalFree = 0, size = 0, totalSize = 0, netFree = 0, netSize = 0;
 
-   TCHAR   buf[MAX_PATH];  
-   HANDLE  hVol;    
-   BOOL    found;
-
-   // lookup drive volumes.
-   hVol = FindFirstVolume(buf, MAX_PATH);
-
-   if(hVol != INVALID_HANDLE_VALUE)
-   {
-
-   found = FindVolume(hVol, buf, MAX_PATH);
-
-   //while we find drive volumes.
-   while(found) { 
-	   found = FindVolume(hVol, buf, MAX_PATH); 
-   }
-
-   found = FindVolumeClose(hVol);
-   }
+   TStringList volumes = FindVolumes();
 
    for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
 	   if(GetDriveType((*i).c_str()) == DRIVE_CDROM || GetDriveType((*i).c_str()) == DRIVE_REMOVABLE)
@@ -2044,7 +2024,7 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 	   if(GetDiskFreeSpaceEx((*i).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
 				totalFree += free;
 				totalSize += size;
-			}
+		}
    }
 
    //check for mounted Network drives
@@ -2058,13 +2038,10 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 				netSize += size;
 			}
 		}
-
 		++drive[0];
 		drives = (drives >> 1);
 	}
    
-
-	
 	if(totalSize != 0)
 		if( !onlyTotal ) {
 			ret += _T("\r\n Local HDD space (free/total): ") + Util::formatBytesW(totalFree) + _T("/") + Util::formatBytesW(totalSize);
@@ -2076,70 +2053,70 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 		else
 			ret += Util::formatBytesW(totalFree) + _T("/") + Util::formatBytesW(totalSize);
 		
-
-	volumes.clear();
 	}else{
 		ret+=_T("Not Supported by OS");
 	}
 	return ret;
 }
 
-BOOL WinUtil::FindVolume(HANDLE hVol, TCHAR *Buf, int bufSize) {
+TStringList WinUtil::FindVolumes() {
 
   BOOL  found;
+  TCHAR   buf[MAX_PATH];  
+  HANDLE  hVol;
+  TStringList volumes;
 
-  volumes.push_back(Buf);
+   hVol = FindFirstVolume(buf, MAX_PATH);
 
-  found = FindNextVolume( hVol, Buf, bufSize );
+   if(hVol != INVALID_HANDLE_VALUE) {
+	  
+		found = FindNextVolume(hVol, buf, MAX_PATH);
 
-    return (found);
+		//while we find drive volumes.
+		while(found) { 
+			volumes.push_back(buf);
+			found = FindNextVolume(hVol, buf, MAX_PATH); 
+		}
+   
+	found = FindVolumeClose(hVol);
+   }
+
+    return volumes;
 }
 
 tstring WinUtil::diskInfo() {
 
 	tstring result = Util::emptyStringT;
 	
-	if((LOBYTE(LOWORD(GetVersion())) >= 5 && WinUtil::getOsMinor() >= 1) 
-		|| (WinUtil::getOsMajor() >= 6)) {
-
-   TCHAR   buf[MAX_PATH];  
-   HANDLE  hVol;    
-   BOOL    found;
-   TCHAR   buf2[MAX_PATH];
-   int64_t free = 0, size = 0 , totalFree = 0, totalSize = 0;
-   int disk_count = 0;
-   
-   std::vector<tstring> results; //add in vector for sorting, nicer to look at :)
-   // lookup drive volumes.
-   hVol = FindFirstVolume(buf, MAX_PATH);
-
-	if(hVol != INVALID_HANDLE_VALUE) {
-	  
-		found = FindVolume(hVol, buf, MAX_PATH);
-
-		//while we find drive volumes.
-		while(found) { 
-			found = FindVolume(hVol, buf, MAX_PATH); 
-		}
-   
-		found = FindVolumeClose(hVol);
+	if(!(LOBYTE(LOWORD(GetVersion())) >= 5 && WinUtil::getOsMinor() >= 1) || !(WinUtil::getOsMajor() >= 6)){ 
+		result += _T("Not Supported by OS");
+		return result;	
 	}
+		
+	TCHAR   buf[MAX_PATH];
+	int64_t free = 0, size = 0 , totalFree = 0, totalSize = 0;
+	int disk_count = 0;
+   
+	std::vector<tstring> results; //add in vector for sorting, nicer to look at :)
+	// lookup drive volumes.
+	TStringList volumes = FindVolumes();
 
-   for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
-	   if(GetDriveType((*i).c_str()) == DRIVE_CDROM || GetDriveType((*i).c_str()) == DRIVE_REMOVABLE)
-		   continue;
+	for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
+		if(GetDriveType((*i).c_str()) == DRIVE_CDROM || GetDriveType((*i).c_str()) == DRIVE_REMOVABLE)
+			continue;
 	    
-	   if((GetVolumePathNamesForVolumeName((*i).c_str(), buf2,256, NULL) != 0) &&
-		(GetDiskFreeSpaceEx((*i).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free) !=0)){
-			tstring mountpath = buf2; 
+		if((GetVolumePathNamesForVolumeName((*i).c_str(), buf, 256, NULL) != 0) &&
+			(GetDiskFreeSpaceEx((*i).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free) !=0)){
+			tstring mountpath = buf; 
 			if(!mountpath.empty()) {
 				totalFree += free;
 				totalSize += size;
 				results.push_back((_T("MountPath: ") + mountpath + _T(" Disk Space (free/total) ") + Util::formatBytesW(free) + _T("/") +  Util::formatBytesW(size)));
 			}
-	   }
-   }
-      // and a check for mounted Network drives, todo fix a better way for network space
+		}
+	}
+      
+	// and a check for mounted Network drives, todo fix a better way for network space
    ULONG drives = _getdrives();
    TCHAR drive[3] = { _T('A'), _T(':'), _T('\0') };
    
@@ -2156,7 +2133,6 @@ tstring WinUtil::diskInfo() {
 		drives = (drives >> 1);
 	}
 
-
    sort(results.begin(), results.end()); //sort it
    for(std::vector<tstring>::iterator i = results.begin(); i != results.end(); ++i) {
 	   disk_count++;
@@ -2164,11 +2140,9 @@ tstring WinUtil::diskInfo() {
    }
    result +=  _T("\r\n\r\n Total HDD space (free/total): ") + Util::formatBytesW((totalFree)) + _T("/") + Util::formatBytesW(totalSize);
    result += _T("\r\n Total Drives count: ") + Text::toT(Util::toString(disk_count));
+   
    results.clear();
-   volumes.clear();
-	}else{
-	result += _T("Not Supported by OS");
-	}
+
    return result;
 }
 string WinUtil::formatTime(uint64_t rest) {

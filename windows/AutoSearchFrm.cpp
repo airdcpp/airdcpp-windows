@@ -23,10 +23,10 @@
 #include "../client/StringTokenizer.h"
 #include "../client/AutoSearchManager.h"
 
-int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_ACTION, COLUMN_PATH, COLUMN_REMOVE};
-int AutoSearchFrame::columnSizes[] = { 450, 100, 125, 400, 100 };
+int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_ACTION, COLUMN_PATH, COLUMN_REMOVE, COLUMN_MATCH };
+int AutoSearchFrame::columnSizes[] = { 450, 100, 125, 400, 100, 200 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, 
-ResourceManager::ACTION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT };
+ResourceManager::ACTION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT, ResourceManager::USER_MATCH };
 
 LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	
@@ -54,7 +54,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlAsTime.SetFont(WinUtil::systemFont);
 
 	Timespin.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	Timespin.SetRange(0, 999);
+	Timespin.SetRange(3, 999);
 	ctrlAsTimeLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | SS_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	ctrlAsTimeLabel.SetFont(WinUtil::systemFont, FALSE);
 	ctrlAsTimeLabel.SetWindowText(CTSTRING(AUTOSEARCH_ENABLE_TIME));
@@ -66,7 +66,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlAsRTime.SetFont(WinUtil::systemFont);
 
 	RTimespin.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	RTimespin.SetRange(0, 999);
+	RTimespin.SetRange(1, 999);
 	ctrlAsRTimeLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | SS_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	ctrlAsRTimeLabel.SetFont(WinUtil::systemFont, FALSE);
 	ctrlAsRTimeLabel.SetWindowText(CTSTRING(AUTOSEARCH_RECHECK_TEXT));
@@ -243,7 +243,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		//make a menu title from the search string, its probobly too long to fit but atleast it shows something.
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
-			AutoSearchPtr as = (AutoSearchPtr)ctrlAutoSearch.GetItemData(WinUtil::getFirstSelectedIndex(ctrlAutoSearch));
+			AutoSearch* as = (AutoSearch*)ctrlAutoSearch.GetItemData(WinUtil::getFirstSelectedIndex(ctrlAutoSearch));
 			title = Text::toT(as->getSearchString());
 		} else {
 			title = _T("");
@@ -276,7 +276,7 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 			string str = search.substr(j, i-j);
 			j = i +2;
 			if(str.size() >= 5) //dont accept shorter search strings than 5 chars
-				AutoSearchManager::getInstance()->addAutoSearch(true, str, dlg.fileType, dlg.action, dlg.remove, Text::fromT(dlg.target));
+				AutoSearchManager::getInstance()->addAutoSearch(true, str, dlg.fileType, dlg.action, dlg.remove, Text::fromT(dlg.target), AutoSearch::TARGET_PATH, Text::fromT(dlg.userMatch));
 		}
 	}
 	return 0;
@@ -285,26 +285,28 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 	if(ctrlAutoSearch.GetSelectedCount() == 1) {
 		int sel = ctrlAutoSearch.GetSelectedIndex();
-		AutoSearch as;
+		AutoSearchPtr as;
 		AutoSearchManager::getInstance()->getAutoSearch(sel, as);
 
 		AutoSearchPageDlg dlg;
-		dlg.search = Text::toT(as.getSearchString());
-		dlg.fileType = as.getFileType();
-		dlg.action = as.getAction();
-		dlg.remove = as.getRemove();
-		dlg.target = Text::toT(as.getTarget());
+		dlg.search = Text::toT(as->getSearchString());
+		dlg.fileType = as->getFileType();
+		dlg.action = as->getAction();
+		dlg.remove = as->getRemove();
+		dlg.target = Text::toT(as->getTarget());
+		dlg.userMatch = Text::toT(as->getUserMatch());
 
 		if(dlg.DoModal() == IDOK) {
-			as.setSearchString(Text::fromT(dlg.search));
-			as.setFileType(dlg.fileType);
-			as.setAction(dlg.action);
-			as.setRemove(dlg.remove);
-			as.setTarget(Text::fromT(dlg.target));
+			as->setSearchString(Text::fromT(dlg.search));
+			as->setFileType(dlg.fileType);
+			as->setAction(dlg.action);
+			as->setRemove(dlg.remove);
+			as->setTarget(Text::fromT(dlg.target));
+			as->setUserMatch(Text::fromT(dlg.userMatch));
 
 			AutoSearchManager::getInstance()->updateAutoSearch(sel, as);
 
-			ctrlAutoSearch.SetCheckState(sel, as.getEnabled());
+			ctrlAutoSearch.SetCheckState(sel, as->getEnabled());
 			ctrlAutoSearch.SetItemText(sel, 0, dlg.search.c_str());
 			ctrlAutoSearch.SetItemText(sel, 1, Text::toT(getType(dlg.fileType)).c_str());
 			if(dlg.action == 0){
@@ -315,6 +317,8 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 				ctrlAutoSearch.SetItemText(sel, 2, Text::toT(STRING(AS_REPORT)).c_str());
 			}
 			ctrlAutoSearch.SetItemText(sel, 3, dlg.target.c_str());
+			ctrlAutoSearch.SetItemText(sel, 4, dlg.remove? _T("Yes") : _T("No"));
+			ctrlAutoSearch.SetItemText(sel, 5, dlg.userMatch.c_str());
 
 		}
 	}
@@ -327,7 +331,7 @@ LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 	int i = -1;
 	while( (i = ctrlAutoSearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		removelist.push_back((AutoSearchPtr)ctrlAutoSearch.GetItemData(i));
+		removelist.push_back((AutoSearch*)ctrlAutoSearch.GetItemData(i));
 	}
 
 	for(std::vector<AutoSearchPtr>::const_iterator a = removelist.begin(); a !=removelist.end(); ++a )
@@ -343,8 +347,8 @@ LRESULT AutoSearchFrame::onMoveUp(WORD , WORD , HWND , BOOL& ) {
 		ctrlAutoSearch.SetRedraw(FALSE);
 		ctrlAutoSearch.DeleteAllItems();
 
-		AutoSearch::List lst = AutoSearchManager::getInstance()->getAutoSearch();
-		for(AutoSearch::List::const_iterator j = lst.begin(); j != lst.end(); ++j) {
+		AutoSearchList lst = AutoSearchManager::getInstance()->getAutoSearch();
+		for(AutoSearchList::const_iterator j = lst.begin(); j != lst.end(); ++j) {
 			const AutoSearchPtr as = *j;	
 			addEntry(as, ctrlAutoSearch.GetItemCount());
 		}
@@ -365,8 +369,8 @@ LRESULT AutoSearchFrame::onMoveDown(WORD , WORD , HWND , BOOL& ) {
 		AutoSearchManager::getInstance()->moveAutoSearchDown(i);
 		ctrlAutoSearch.DeleteAllItems();
 
-		AutoSearch::List lst = AutoSearchManager::getInstance()->getAutoSearch();
-		for(AutoSearch::List::const_iterator j = lst.begin(); j != lst.end(); ++j) {
+		AutoSearchList lst = AutoSearchManager::getInstance()->getAutoSearch();
+		for(AutoSearchList::const_iterator j = lst.begin(); j != lst.end(); ++j) {
 			const AutoSearchPtr as = *j;	
 			addEntry(as, ctrlAutoSearch.GetItemCount());
 		}
@@ -414,9 +418,10 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 		
 	lst.push_back(Text::toT(as->getTarget()));
 	lst.push_back(Text::toT(as->getRemove()? "Yes" : "No"));
-		
+	lst.push_back(Text::toT(as->getUserMatch()));
+
 	bool b = as->getEnabled();
-	int i = ctrlAutoSearch.insert(pos, lst, 0, (LPARAM)as);
+	int i = ctrlAutoSearch.insert(pos, lst, 0, (LPARAM)as.get());
 	ctrlAutoSearch.SetCheckState(i, b);
 
 }

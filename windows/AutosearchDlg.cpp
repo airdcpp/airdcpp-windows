@@ -33,6 +33,7 @@ AutoSearchPageDlg::AutoSearchPageDlg() {
 	comment = _T("");
 	remove = false;
 	target = Util::emptyStringT;
+	userMatch = Util::emptyStringT;
 }
 
 AutoSearchPageDlg::~AutoSearchPageDlg() {
@@ -41,6 +42,7 @@ AutoSearchPageDlg::~AutoSearchPageDlg() {
 	cAction.Detach();
 	ftImage.Destroy();
 	ctrlTarget.Detach();
+	ctrlMatch.Detach();
 
 }
 
@@ -48,10 +50,12 @@ LRESULT AutoSearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
 	ATTACH(IDC_TARGET_PATH, ctrlTarget);
+	ATTACH(IDC_U_MATCH, ctrlMatch);
 
 	ctrlSearch.SetWindowText(search.c_str());
 	ctrlCheatingDescription.SetWindowText(comment.c_str());
 	ctrlTarget.SetWindowText(target.c_str());
+	ctrlMatch.SetWindowText(userMatch.c_str());
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);
 	ftImage.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
@@ -63,6 +67,7 @@ LRESULT AutoSearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	::SetWindowText(GetDlgItem(IDC_ADD_SRCH_STR_TYPE_STATIC), (TSTRING(FILE_TYPE)).c_str());
 	::SetWindowText(GetDlgItem(IDC_REMOVE_ON_HIT), (TSTRING(REMOVE_ON_HIT)).c_str());
 	::SetWindowText(GetDlgItem(IDC_DL_TO), TSTRING(DOWNLOAD_TO).c_str());
+	::SetWindowText(GetDlgItem(IDC_USER_MATCH_TEXT), TSTRING(AS_USER_MATCH).c_str());
 
 	int q = 0;
 	for(size_t i = 0; i < 10; i++) {
@@ -119,6 +124,7 @@ LRESULT AutoSearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 	if(wID == IDOK) {
 		TCHAR buf[512];
 		TCHAR buf2[MAX_PATH];
+		TCHAR match[512];
 		if (ctrlSearch.GetWindowTextLength() == 0) {
 			MessageBox(CTSTRING(LINE_EMPTY));
 			return 0;
@@ -134,6 +140,9 @@ LRESULT AutoSearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 		if( target[ target.length() -1 ] != _T('\\') )
 			target += _T('\\');
 		}
+		
+		GetDlgItemText(IDC_U_MATCH, match, 512);
+		userMatch = match;
 	}
 	EndDialog(wID);
 	return 0;

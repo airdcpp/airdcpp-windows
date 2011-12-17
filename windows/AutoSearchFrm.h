@@ -96,7 +96,12 @@ public:
 
 		tstring val(ctrlAsTime.GetWindowTextLength() +2, _T('\0'));
 		ctrlAsTime.GetWindowText(&val[0],val.size());
-		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_EVERY, Util::toInt(Text::fromT(val)));
+		int value = Util::toInt(Text::fromT(val));
+		if(value < 3) {
+			value = 3;
+			ctrlAsTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
+		}
+		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_EVERY, value);
 		return 0;
 	}
 	LRESULT onAsRTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
@@ -105,7 +110,12 @@ public:
 
 		tstring val(ctrlAsRTime.GetWindowTextLength() +2, _T('\0'));
 		ctrlAsRTime.GetWindowText(&val[0],val.size());
-		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_RECHECK_TIME, Util::toInt(Text::fromT(val)));
+		int value = Util::toInt(Text::fromT(val));
+		if(value < 1) {
+			value = 1;
+			ctrlAsRTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
+		}
+		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_RECHECK_TIME, value);
 		return 0;
 	}
 
@@ -120,6 +130,7 @@ private:
 		COLUMN_ACTION,
 		COLUMN_REMOVE,
 		COLUMN_PATH,
+		COLUMN_MATCH,
 		COLUMN_LAST
 	};
 
@@ -131,9 +142,9 @@ private:
 
 		ctrlAutoSearch.SetRedraw(FALSE);
 		
-		AutoSearch::List lst = AutoSearchManager::getInstance()->getAutoSearch();
+		AutoSearchList lst = AutoSearchManager::getInstance()->getAutoSearch();
 		
-		for(AutoSearch::List::const_iterator i = lst.begin(); i != lst.end(); ++i) {
+		for(AutoSearchList::const_iterator i = lst.begin(); i != lst.end(); ++i) {
 			const AutoSearchPtr as = *i;	
 			addEntry(as, ctrlAutoSearch.GetItemCount());
 			}

@@ -518,8 +518,7 @@ public:
 
 	static string CPUInfo();
 	
-	static TStringList volumes;
-	static BOOL FindVolume(HANDLE hVol, TCHAR *Buf, int bufSize);
+	static TStringList FindVolumes();
 	static bool getTarget(int ID, string& target, int64_t aSize);
 
 	static string getCompileDate() {

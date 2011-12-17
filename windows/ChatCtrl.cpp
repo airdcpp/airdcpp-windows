@@ -998,7 +998,7 @@ LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	if(searchterm.size() < 5) //we dont accept anything under 5 chars
 		return 0;
 
-	AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString);
+	AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH);
 	LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	return 0;
 }
@@ -1012,7 +1012,7 @@ LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 	if(WinUtil::browseDirectory(target, m_hWnd)) {
 		WinUtil::addLastDir(target);
-		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(target));
+		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(target), AutoSearch::TARGET_PATH);
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	}
 	return 0;
@@ -1057,12 +1057,12 @@ LRESULT ChatCtrl::onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_TARGET;
 
 	if(newId < WinUtil::lastDirs.size()) {
-		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(WinUtil::lastDirs[newId]));
+		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(WinUtil::lastDirs[newId]), AutoSearch::TARGET_PATH);
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	} else {
 		dcassert((newId - WinUtil::lastDirs.size()));
 		//download to default download path
-		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString);
+		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH);
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	}
 

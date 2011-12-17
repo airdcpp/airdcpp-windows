@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -436,6 +436,7 @@
 #define IDC_SKIP_SUBTRACT               1218
 #define IDC_FILELIST_HL                 1218
 #define IDC_SHARE_SAVE_TIME             1218
+#define IDC_U_MATCH                     1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_MAX_UPLOAD_SP               1219
@@ -944,6 +945,7 @@
 #define IDC_PROGRESS_COLOR_DOWN_SHOW    1616
 #define IDC_PROGRESS_COLOR_UP_SHOW      1617
 #define IDC_FAVDIRS_SHOW_SHARED         1619
+#define IDC_USER_MATCH_TEXT             1620
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1243,7 +1245,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        320
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1620
+#define _APS_NEXT_CONTROL_VALUE         1621
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

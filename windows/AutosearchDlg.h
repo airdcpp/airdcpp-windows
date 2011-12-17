@@ -27,7 +27,7 @@
 
 class AutoSearchPageDlg : public CDialogImpl<AutoSearchPageDlg> {
 public:
-	tstring	search, comment, target;
+	tstring	search, comment, target, userMatch;
 	int fileType, action, rawToSend;
 	bool display;
 	bool remove;
@@ -61,7 +61,7 @@ private:
 //	enum { BUF_LEN = 1024 };
 	CImageList ftImage;
 
-	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget;
+	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget, ctrlMatch;
 	CComboBox cRaw;
 	CComboBoxEx ctrlFileType;
 	CComboBox cAction;
