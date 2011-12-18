@@ -459,6 +459,7 @@ private:
 	void on(QueueManagerListener::RecheckNoTree, const string& target) noexcept;
 	void on(QueueManagerListener::RecheckAlreadyFinished, const string& target) noexcept;
 	void on(QueueManagerListener::RecheckDone, const string& target) noexcept;
+	void on(QueueManagerListener::Moved, const QueueItem* aQI, const string& oldTarget) noexcept;
 
 	void on(QueueManagerListener::BundleSources, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundlePriority(), aBundle); };
 	void on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept;

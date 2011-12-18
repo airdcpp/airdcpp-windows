@@ -446,21 +446,19 @@ HTREEITEM QueueFrame::createSplitDir(TVINSERTSTRUCT& tvi, const string& dir, HTR
 	bool updateMap = false;
 	bool setBold = false;
 	//check if we need to modify the bundlemap
-	for (auto i = bii->getBundles().begin(); i != bii->getBundles().end();) {
+	for (auto i = bii->getBundles().begin(); i != bii->getBundles().end(); ++i) {
 		biiNew->addBundle(*i);
 		if (dir == (*i)->getTarget()) {
 			name = (*i)->getBundleText();
 			updateMap = true;
 			setBold=true;
-			//break;
+			break;
 		} else if ((*i)->getFileBundle()) {
 			name = bii->getBundleName(false);
 			setBold=true;
-			//break;
+			break;
 		}
-		bii->getBundles().erase(i);
 	}
-	//delete bii;
 
 	if (setBold) {
 		tvi.itemex.state = TVIS_BOLD;
@@ -558,19 +556,19 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 
 			// Create a new root
 			BundleItemInfo* bii = ((BundleItemInfo*)ctrlDirs.GetItemData(next));
-			//bii->addBundle(aBundle);
 			HTREEITEM newRoot = next = createSplitDir(tvi, rootStr.substr(0, i), NULL, bii, false);
 
 			parent = addBundleDir(rootStr, aBundle, newRoot);
 			((BundleItemInfo*)ctrlDirs.GetItemData(newRoot))->addBundle(aBundle);
+
 			next = ctrlDirs.GetChildItem(oldRoot);
 			while(next != NULL) {
 				moveNode(next, parent);
 				next = ctrlDirs.GetChildItem(oldRoot);
 			}
+			delete bii;
 			ctrlDirs.DeleteItem(oldRoot);
 			parent = newRoot;
-			//delete bii;
 		} else {
 			// Use this root as parent
 			parent = next;
@@ -719,8 +717,10 @@ void QueueFrame::removeBundleDir(const string& dir, const BundlePtr aBundle) {
 
 void QueueFrame::removeBundle(const BundlePtr aBundle) {
 	dcassert(aBundle);
-	dcassert(bundleMap.find(aBundle->getTarget()) != bundleMap.end());
-	bundleMap.erase(aBundle->getTarget());
+	if (!aBundle->getFileBundle()) {
+		dcassert(bundleMap.find(aBundle->getTarget()) != bundleMap.end());
+		bundleMap.erase(aBundle->getTarget());
+	}
 	const string& dir = Util::getDir(aBundle->getTarget(), false, false);
 	// First, find the last name available
 	string::size_type i = 0;
@@ -736,7 +736,7 @@ void QueueFrame::removeBundle(const BundlePtr aBundle) {
 				string test2 = dir.c_str()+i;
 				if(strnicmp(n.c_str()+i, dir.c_str()+i, n.length()-i) == 0) {
 					// Match!
-					if (aBundle->getFileBundle() && (n.c_str()+i == Util::getDir(aBundle->getTarget(), false, false))) {
+					if (aBundle->getFileBundle() && (n == Util::getDir(aBundle->getTarget(), false, false))) {
 						tstring text;
 						if (((BundleItemInfo*)ctrlDirs.GetItemData(next))->countFileBundles() == 1) {
 							//reset the item
@@ -783,10 +783,15 @@ void QueueFrame::on(QueueManagerListener::Removed, const QueueItem* aQI) {
 	speak(UPDATE_STATUS_ITEMS, new StringTask(aQI->getTarget()));
 }
 
+void QueueFrame::on(QueueManagerListener::Moved, const QueueItem*, const string& oldTarget) {
+	speak(REMOVE_ITEM, new StringTask(oldTarget));
+	
+	// we need to call speaker now to properly remove item before other actions
+	onSpeaker(0, 0, 0, *reinterpret_cast<BOOL*>(NULL));
+}
+
 void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) {
-	for (auto i = aBundle->getQueueItems().begin(); i != aBundle->getQueueItems().end(); ++i) {
-		speak(REMOVE_ITEM, new StringTask((*i)->getTarget()));
-	}
+	for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItem* qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
 	speak(REMOVE_BUNDLE, new BundleItemInfoTask(new BundleItemInfo(aBundle->getTarget(), aBundle)));
 	
 	// we need to call speaker now to properly remove items before other actions
@@ -822,9 +827,7 @@ void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr aBundle) 
 }
 
 void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) {
-	for (auto i = aBundle->getQueueItems().begin(); i != aBundle->getQueueItems().end(); ++i) {
-		speak(REMOVE_ITEM, new StringTask((*i)->getTarget()));
-	}
+	for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItem* qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
 	speak(REMOVE_BUNDLE, new BundleItemInfoTask(new BundleItemInfo(aBundle->getTarget(), aBundle)));
 }
 
