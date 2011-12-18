@@ -402,6 +402,17 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 					int64_t filesize = Util::toInt64(link.substr(link.find("xl=") + 3, link.find("&") - link.find("xl=")));
 					shortLink = Text::toT(sFileName) + _T(" (") + Util::formatBytesW(filesize) + _T(")");
 					shortLinks[shortLink] = Text::toT(link);
+
+					string::size_type tth = link.find("urn:tree:tiger:");
+					if(tth != tstring::npos && link.length() > tth+54) {
+						if (ShareManager::getInstance()->isFileShared(TTHValue(link.substr(tth+15, 39)), sFileName)) {
+							SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+						} else if (QueueManager::getInstance()->isFileQueued(TTHValue(link.substr(tth+15, 39)), sFileName) > 0) {
+							SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
+						} else {
+							SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+						}
+					}
 				}
 			} else if (isSpotify != string::npos) {
 				string type = "";
@@ -429,10 +440,8 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 				} else {
 						//some other spotify link, just show the original url
 				}
+				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 			}
-
-			SetSelectionCharFormat(WinUtil::m_TextStyleURL);
-
 			pos=pos+result.position() + result.length();
 			start = result[0].second;
 		}
@@ -449,21 +458,6 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 			setText(p->first);
 			linkEnd = linkStart + p->first.size();
 			SetSel(lSelBegin + linkStart, lSelBegin + linkEnd);
-
-			//dupe check and formating
-			string link = Text::fromT(p->second.c_str());
-			string::size_type tth = link.find("urn:tree:tiger:");
-			if(tth != tstring::npos && link.length() > tth+54) {
-				link=link.substr(tth+15, 39);
-				if (ShareManager::getInstance()->isTTHShared(TTHValue(link))) {
-					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-				} else if (QueueManager::getInstance()->isTTHQueued(TTHValue(link)) > 0) {
-					SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-				} else {
-					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
-				}
-			}
-
 		}
 	}
 

@@ -340,9 +340,9 @@ private:
 						queueDupe = QueueManager::getInstance()->isDirQueued(sr->getFile());
 					}
 				} else {
-					shareDupe = ShareManager::getInstance()->isTTHShared(sr->getTTH());
+					shareDupe = ShareManager::getInstance()->isFileShared(sr->getTTH(), sr->getFileName());
 					if (!shareDupe) {
-						int tmp = QueueManager::getInstance()->isTTHQueued(sr->getTTH());
+						int tmp = QueueManager::getInstance()->isFileQueued(sr->getTTH(), sr->getFileName());
 						if (tmp == 1) {
 							queueDupe = true;
 						} else if (tmp == 2) {
