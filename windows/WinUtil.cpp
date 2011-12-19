@@ -1079,6 +1079,8 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		ShareManager::getInstance()->save();
 	} else if(stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
+	} else if(stricmp(cmd.c_str(), _T("bloomstats")) == 0) {
+		status = Text::toT(ShareManager::getInstance()->getBloomStats());
 	} else if(stricmp(cmd.c_str(), _T("away")) == 0) {
 		if(Util::getAway() && param.empty()) {
 			Util::setAway(false);

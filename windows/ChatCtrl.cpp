@@ -441,6 +441,8 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 						//some other spotify link, just show the original url
 				}
 				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+			} else {
+				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 			}
 			pos=pos+result.position() + result.length();
 			start = result[0].second;
