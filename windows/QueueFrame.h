@@ -229,7 +229,7 @@ private:
 	class BundleItemInfo;
 	friend class BundleItemInfo;
 
-	class BundleItemInfo : public FastAlloc<BundleItemInfo> {
+	class BundleItemInfo {
 	public:
 		BundleItemInfo(const string dir, BundlePtr aBundle = NULL) : directory(dir)	{
 			if (aBundle) {
