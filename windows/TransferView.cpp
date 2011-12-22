@@ -942,10 +942,10 @@ void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueIt
 	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
 	if(aCqi->getUser().user->isSet(User::OLD_CLIENT)) {
 		ui->setStatusString(TSTRING(SOURCE_TOO_OLD));
-	} 
-	else {
+	} else {
 		ui->setStatusString(Text::toT(aReason));
 	}
+	ui->setBundle(aCqi->getLastBundle());
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	speak(UPDATE_ITEM, ui);
 }
@@ -978,7 +978,7 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	if (download) {
 		BundlePtr b = QueueManager::getInstance()->getBundle(bundle);
 		if (b) {
-			ii->target = Text::toT(b->getName() + " (" + AirUtil::getPrioText((int)b->getPriority()) + ")");
+			ii->target = Text::toT(b->getTarget() + " (" + AirUtil::getPrioText((int)b->getPriority()) + ")");
 			//ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
 		}
@@ -1033,11 +1033,15 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 			}
 			return (status == STATUS_RUNNING) ? (Util::formatBytesW(speed) + _T("/s")) : Util::emptyStringT;
 		case COLUMN_FILE:
-			if (isBundle && target[target.size() -1] == '\\') {
-				return Text::toT(Util::getDir(Text::fromT(target), false, true));
-			} else {
-				return getFile(type, Util::getFileName(target));
+			if (isBundle) {
+				size_t pos = target.rfind(' ');
+				if (target[target.size() -1] == '\\') {
+					return Text::toT(Util::getDir(Text::fromT(target), false, true));
+				} else if (target[target.size() -1] == ')') {
+					return Util::getLastDir(target) + target.substr(pos, target.length()-pos);
+				}
 			}
+			return getFile(type, Util::getFileName(target));
 		case COLUMN_SIZE: return Util::formatBytesW(size); 
 		case COLUMN_PATH: return Util::getFilePath(target);
 		case COLUMN_IP: return ip;
@@ -1411,7 +1415,7 @@ void TransferView::onBundleUser(const string& bundleToken, const HintedUser& aUs
 void TransferView::on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept {
 	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setBundle(aBundle->getToken());
-	ui->setTarget(Text::toT(aBundle->getName() + " (" + AirUtil::getPrioText((int)aBundle->getPriority()) + ")"));
+	ui->setTarget(Text::toT(aBundle->getTarget() + " (" + AirUtil::getPrioText((int)aBundle->getPriority()) + ")"));
 	speak(UPDATE_PARENT, ui);
 }
 
