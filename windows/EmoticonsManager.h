@@ -20,7 +20,7 @@
 #define EMOTICONSMANAGER_H
 
 #include "../client/FastAlloc.h"
-#include "../client/Util.h"
+#include "../client/GetSet.h"
 
 #include "ResourceLoader.h"
 
