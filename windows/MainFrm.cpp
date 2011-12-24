@@ -136,10 +136,22 @@ public:
 			DirectoryListing* dl = new DirectoryListing(user);
 			try {
 				dl->loadFile(*i, false, false);
+				int matches=0, newFiles=0;
+				BundleList bundles;
+				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
 				string tmp;
-				int x = QueueManager::getInstance()->matchListing(*dl, false);
-				tmp.resize(STRING(MATCHED_FILES).size() + 16);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(MATCHED_FILES), x));
+
+				if (matches > 0) {
+					if (bundles.size() == 1) {
+						tmp.resize(STRING(MATCHED_FILES_BUNDLE).size() + 32 + bundles.front()->getName().size());
+						snprintf(&tmp[0], tmp.size(), CSTRING(MATCHED_FILES_BUNDLE), matches, bundles.front()->getName().c_str(), newFiles);
+					} else {
+						tmp.resize(STRING(MATCHED_FILES_X_BUNDLES).size() + 32);
+						snprintf(&tmp[0], tmp.size(), CSTRING(MATCHED_FILES_X_BUNDLES), matches, (int)bundles.size(), newFiles);
+					}
+				} else {
+					tmp = CSTRING(NO_MATCHED_FILES);
+				}
 				LogManager::getInstance()->message(Util::toString(ClientManager::getInstance()->getNicks(user)) + ": " + tmp);
 			} catch(const Exception&) {
 

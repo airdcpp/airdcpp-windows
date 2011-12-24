@@ -321,7 +321,6 @@
 		<String Name="MagnetShellDesc">URL:MAGNET URI</String>
 		<String Name="ManageGroups">Manage Groups</String>
 		<String Name="MatchQueue">Match queue</String>
-		<String Name="MatchedFiles">Matched %d file(s)</String>
 		<String Name="MaxHubs">Max Hubs</String>
 		<String Name="MaxSegmentsNumber">Max number of segments</String>
 		<String Name="MaxSize">Max Size</String>
@@ -1451,5 +1450,11 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="AsUserMatch">Only from users with nick Matching:  (Wildcards, | separate)</String>
 		<String Name="UserMatch">User Match</String>
 		<String Name="SettingsAllowMatchFullList">Use full filelists as last resort if adding sources fails</String>
+		<String Name="MatchedFilesBundle">Matched %d file(s) in the bundle %s, of which %d were new</String>
+		<String Name="MatchedFilesXBundles">Matched %d file(s) in %d bundles, of which %d were new</String>
+		<String Name="NoMatchedFiles">No matching files were found!</String>
+		<String Name="MatchSourceAdded">Added as source for %d items in the bundle %s</String>
+		<String Name="MatchSourceAddedXBundles">Added as source for %d items in %d bundles</String>
+		<String Name="SettingsReportAddedSources">Report added sources in System Log</String>
 	</Strings>
 </Language>

@@ -608,13 +608,24 @@ LRESULT DirectoryListingFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, H
 LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(loading)
 		return 0;
-	
-	int x = QueueManager::getInstance()->matchListing(*dl, false);
 
-	tstring buf;
-	buf.resize(STRING(MATCHED_FILES).length() + 32);
-	_stprintf(&buf[0], CTSTRING(MATCHED_FILES), x);
-	ctrlStatus.SetText(STATUS_TEXT, &buf[0]);
+	int matches=0, newFiles=0;
+	BundleList bundles;
+	QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
+	tstring tmp;
+
+	if (matches > 0) {
+		if (bundles.size() == 1) {
+			tmp.resize(STRING(MATCHED_FILES_BUNDLE).size() + 32 + bundles.front()->getName().size());
+			_stprintf(&tmp[0], CTSTRING(MATCHED_FILES_BUNDLE), matches, bundles.front()->getName().c_str(), newFiles);
+		} else {
+			tmp.resize(STRING(MATCHED_FILES_X_BUNDLES).size() + 32);
+			_stprintf(&tmp[0], CTSTRING(MATCHED_FILES_X_BUNDLES), matches, (int)bundles.size(), newFiles);
+		}
+	} else {
+		tmp = CTSTRING(NO_MATCHED_FILES);
+	}
+	ctrlStatus.SetText(STATUS_TEXT, tmp.c_str());
 
 	return 0;
 }
