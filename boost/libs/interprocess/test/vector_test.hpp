@@ -35,14 +35,14 @@ namespace interprocess{
 namespace test{
 
 template<class V1, class V2>
-bool copyable_only(V1 *, V2 *, boost::interprocess::detail::false_type)
+bool copyable_only(V1 *, V2 *, boost::interprocess::ipcdetail::false_type)
 {
    return true;
 }
 
 //Function to check if both sets are equal
 template<class V1, class V2>
-bool copyable_only(V1 *shmvector, V2 *stdvector, boost::interprocess::detail::true_type)
+bool copyable_only(V1 *shmvector, V2 *stdvector, boost::interprocess::ipcdetail::true_type)
 {
    typedef typename V1::value_type IntType;
    std::size_t size = shmvector->size();
@@ -137,7 +137,7 @@ int vector_test()
             IntType aux_vect[50];
             for(int i = 0; i < 50; ++i){
                IntType new_int(-1);
-               BOOST_STATIC_ASSERT((::boost::interprocess::is_movable<boost::interprocess::test::movable_int>::value == true));
+               //BOOST_STATIC_ASSERT((::boost::move_ipcdetail::is_copy_constructible<boost::interprocess::test::movable_int>::value == false));
                aux_vect[i] = boost::interprocess::move(new_int);
             }
             int aux_vect2[50];
@@ -146,8 +146,8 @@ int vector_test()
             }
 
             shmvector->insert(shmvector->end()
-                              ,::boost::interprocess::make_move_iterator(&aux_vect[0])
-                              ,::boost::interprocess::make_move_iterator(aux_vect + 50));
+                              ,::boost::make_move_iterator(&aux_vect[0])
+                              ,::boost::make_move_iterator(aux_vect + 50));
             stdvector->insert(stdvector->end(), aux_vect2, aux_vect2 + 50);
             if(!test::CheckEqualContainers(shmvector, stdvector)) return 1;
 
@@ -168,8 +168,8 @@ int vector_test()
                aux_vect2[i] = -1;
             }
             shmvector->insert(shmvector->begin()
-                              ,::boost::interprocess::make_move_iterator(&aux_vect[0])
-                              ,::boost::interprocess::make_move_iterator(aux_vect + 50));
+                              ,::boost::make_move_iterator(&aux_vect[0])
+                              ,::boost::make_move_iterator(aux_vect + 50));
             stdvector->insert(stdvector->begin(), aux_vect2, aux_vect2 + 50);
             if(!test::CheckEqualContainers(shmvector, stdvector)) return 1;
          }
@@ -186,7 +186,7 @@ int vector_test()
          if(!test::CheckEqualContainers(shmvector, stdvector)) return 1;
 
          if(!copyable_only(shmvector, stdvector
-                        ,detail::bool_<!is_movable<IntType>::value>())){
+                        ,ipcdetail::bool_<!ipcdetail::is_same<IntType, test::movable_int>::value>())){
             return 1;
          }
 

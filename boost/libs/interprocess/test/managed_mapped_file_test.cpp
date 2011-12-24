@@ -20,7 +20,7 @@ using namespace boost::interprocess;
 
 inline std::string get_filename()
 {
-   std::string ret (detail::get_temporary_path());
+   std::string ret (ipcdetail::get_temporary_path());
    ret += "/";
    ret += test::get_process_id_name();
    return ret;
@@ -136,7 +136,7 @@ int main ()
          return -1;
    }
    {
-      std::size_t old_free_memory;
+      managed_mapped_file::size_type old_free_memory;
       {
          //Map preexisting file again in memory
          managed_mapped_file mfile(open_only, FileName);
@@ -160,7 +160,7 @@ int main ()
          return -1;
    }
    {
-      std::size_t old_free_memory, next_free_memory,
+      managed_mapped_file::size_type old_free_memory, next_free_memory,
                   old_file_size, next_file_size, final_file_size;
       {
          //Map preexisting file again in memory

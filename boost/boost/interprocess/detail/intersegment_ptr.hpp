@@ -97,7 +97,7 @@ struct intersegment_base
       std::size_t pow      :  pow_size_bits;
       std::size_t frc      :  frc_size_bits;
       std::size_t beg      :  begin_bits;
-      std::ptrdiff_t off   :  sizeof(ptrdiff_t)*CHAR_BIT - 2;
+      std::ptrdiff_t off   :  sizeof(std::ptrdiff_t)*CHAR_BIT - 2;
       std::ptrdiff_t bits  :  2;
    };
 
@@ -153,13 +153,13 @@ struct intersegment_base
    {
       if(orig_size < align)
          orig_size = align;
-      orig_size = detail::get_rounded_size_po2(orig_size, align);
-      pow = detail::floor_log2(orig_size);
+      orig_size = ipcdetail::get_rounded_size_po2(orig_size, align);
+      pow = ipcdetail::floor_log2(orig_size);
       std::size_t low_size = (std::size_t(1) << pow);
       std::size_t diff = orig_size - low_size;
       BOOST_ASSERT(pow >= frc_size_bits);
-      std::size_t rounded = detail::get_rounded_size_po2
-                              (diff, (1u << (pow - frc_size_bits)));
+      std::size_t rounded = ipcdetail::get_rounded_size_po2
+                              (diff, (std::size_t)(1u << (pow - frc_size_bits)));
       if(rounded == low_size){
          ++pow;
          frc = 0;
@@ -604,7 +604,7 @@ class intersegment_ptr : public flat_map_intersegment<interprocess_mutex>
 
    public:
    typedef T *                                     pointer;
-   typedef typename detail::add_reference<T>::type reference;
+   typedef typename ipcdetail::add_reference<T>::type reference;
    typedef T                                       value_type;
    typedef std::ptrdiff_t                          difference_type;
    typedef std::random_access_iterator_tag         iterator_category;
@@ -635,25 +635,25 @@ class intersegment_ptr : public flat_map_intersegment<interprocess_mutex>
    //!Emulates static_cast operator.
    //!Never throws.
    template<class U>
-   intersegment_ptr(const intersegment_ptr<U> &r, detail::static_cast_tag)
+   intersegment_ptr(const intersegment_ptr<U> &r, ipcdetail::static_cast_tag)
    {  base_t::set_from_pointer(static_cast<T*>(r.get())); }
 
    //!Emulates const_cast operator.
    //!Never throws.
    template<class U>
-   intersegment_ptr(const intersegment_ptr<U> &r, detail::const_cast_tag)
+   intersegment_ptr(const intersegment_ptr<U> &r, ipcdetail::const_cast_tag)
    {  base_t::set_from_pointer(const_cast<T*>(r.get())); }
 
    //!Emulates dynamic_cast operator.
    //!Never throws.
    template<class U>
-   intersegment_ptr(const intersegment_ptr<U> &r, detail::dynamic_cast_tag)
+   intersegment_ptr(const intersegment_ptr<U> &r, ipcdetail::dynamic_cast_tag)
    {  base_t::set_from_pointer(dynamic_cast<T*>(r.get())); }
 
    //!Emulates reinterpret_cast operator.
    //!Never throws.
    template<class U>
-   intersegment_ptr(const intersegment_ptr<U> &r, detail::reinterpret_cast_tag)
+   intersegment_ptr(const intersegment_ptr<U> &r, ipcdetail::reinterpret_cast_tag)
    {  base_t::set_from_pointer(reinterpret_cast<T*>(r.get())); }
 
    //!Obtains raw pointer from offset.
@@ -762,7 +762,7 @@ class intersegment_ptr : public flat_map_intersegment<interprocess_mutex>
    //!This only works with two basic_intersegment_ptr pointing
    //!to the same segment. Otherwise undefined
    template <class T2>
-   ptrdiff_t _diff(const intersegment_ptr<T2> &other) const
+   std::ptrdiff_t _diff(const intersegment_ptr<T2> &other) const
    {  return base_t::diff(other);   }
 
    //!Returns true if both point to the
@@ -875,25 +875,25 @@ T * get_pointer(boost::interprocess::intersegment_ptr<T> const & p)
 //!Never throws.
 template<class T, class U> inline 
 boost::interprocess::intersegment_ptr<T> static_pointer_cast(const boost::interprocess::intersegment_ptr<U> &r)
-{  return boost::interprocess::intersegment_ptr<T>(r, boost::interprocess::detail::static_cast_tag());  }
+{  return boost::interprocess::intersegment_ptr<T>(r, boost::interprocess::ipcdetail::static_cast_tag());  }
 
 //!Simulation of const_cast between pointers.
 //!Never throws.
 template<class T, class U> inline 
 boost::interprocess::intersegment_ptr<T> const_pointer_cast(const boost::interprocess::intersegment_ptr<U> &r)
-{  return boost::interprocess::intersegment_ptr<T>(r, boost::interprocess::detail::const_cast_tag());  }
+{  return boost::interprocess::intersegment_ptr<T>(r, boost::interprocess::ipcdetail::const_cast_tag());  }
 
 //!Simulation of dynamic_cast between pointers.
 //!Never throws.
 template<class T, class U> inline 
 boost::interprocess::intersegment_ptr<T> dynamic_pointer_cast(const boost::interprocess::intersegment_ptr<U> &r)
-{  return boost::interprocess::intersegment_ptr<T>(r, boost::interprocess::detail::dynamic_cast_tag());  }
+{  return boost::interprocess::intersegment_ptr<T>(r, boost::interprocess::ipcdetail::dynamic_cast_tag());  }
 
 //!Simulation of reinterpret_cast between pointers.
 //!Never throws.
 template<class T, class U> inline
 boost::interprocess::intersegment_ptr<T> reinterpret_pointer_cast(const boost::interprocess::intersegment_ptr<U> &r)
-{  return boost::interprocess::intersegment_ptr<T>(r, boost::interprocess::detail::reinterpret_cast_tag());  }
+{  return boost::interprocess::intersegment_ptr<T>(r, boost::interprocess::ipcdetail::reinterpret_cast_tag());  }
 
 //!Trait class to detect if an smart pointer has 
 //!multi-segment addressing capabilities.
@@ -1037,5 +1037,6 @@ void set_from_other(const self_t &other)
 
 #endif
 
-#endif //#ifndef BOOST_INTERPROCESS_INTERSEGMENT_PTR_HPP
+#include <boost/interprocess/detail/config_end.hpp>
 
+#endif //#ifndef BOOST_INTERPROCESS_INTERSEGMENT_PTR_HPP

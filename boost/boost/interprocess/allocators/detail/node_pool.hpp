@@ -24,7 +24,7 @@
 
 #include <boost/interprocess/detail/utilities.hpp>
 #include <boost/interprocess/allocators/detail/allocator_common.hpp>
-#include <boost/interprocess/containers/container/detail/node_pool_impl.hpp>
+#include <boost/container/detail/node_pool_impl.hpp>
 #include <cstddef>
 
 
@@ -33,7 +33,7 @@
 
 namespace boost {
 namespace interprocess {
-namespace detail {
+namespace ipcdetail {
 
 
 
@@ -55,11 +55,12 @@ class private_node_pool
    private_node_pool &operator=(const private_node_pool &);
 
    public:
-   typedef SegmentManager segment_manager;
+   typedef SegmentManager              segment_manager;
+   typedef typename base_t::size_type  size_type;
 
-   static const std::size_t nodes_per_block = NodesPerBlock;
+   static const size_type nodes_per_block = NodesPerBlock;
    //Deprecated, use nodes_per_block
-   static const std::size_t nodes_per_chunk = NodesPerBlock;
+   static const size_type nodes_per_chunk = NodesPerBlock;
 
    //!Constructor from a segment manager. Never throws
    private_node_pool(segment_manager *segment_mngr)
@@ -85,12 +86,12 @@ template< class SegmentManager
         , std::size_t NodesPerBlock
         >
 class shared_node_pool 
-   :  public detail::shared_pool_impl
+   :  public ipcdetail::shared_pool_impl
       < private_node_pool
          <SegmentManager, NodeSize, NodesPerBlock>
       >
 {
-   typedef detail::shared_pool_impl
+   typedef ipcdetail::shared_pool_impl
       < private_node_pool
          <SegmentManager, NodeSize, NodesPerBlock>
       > base_t;
@@ -100,7 +101,7 @@ class shared_node_pool
    {}
 };
 
-}  //namespace detail {
+}  //namespace ipcdetail {
 }  //namespace interprocess {
 }  //namespace boost {
 

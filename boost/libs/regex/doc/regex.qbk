@@ -8,7 +8,7 @@
         [@http://www.boost.org/LICENSE_1_0.txt])
     ]
     [authors [Maddock, John]]
-    [/last-revision $Date: 2011-01-01 08:08:10 -0500 (Sat, 01 Jan 2011) $]
+    [/last-revision $Date: 2011-08-23 04:47:38 -0400 (Tue, 23 Aug 2011) $]
 ]
 
 [template super[x]'''<superscript>'''[x]'''</superscript>''']
@@ -83,6 +83,10 @@ PDF version of this manual is also available].
 [include regex_grep.qbk]
 [include regex_split.qbk]
 [include old_regex.qbk]
+[endsect]
+
+[section Internal Details]
+[include unicode_iterators.qbk]
 [endsect]
 
 [endsect]

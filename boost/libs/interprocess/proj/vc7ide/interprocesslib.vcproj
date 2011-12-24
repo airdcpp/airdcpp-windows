@@ -99,6 +99,9 @@
 			Name="Containers"
 			Filter="">
 			<File
+				RelativePath="..\..\..\..\boost\interprocess\containers\allocation_type.hpp">
+			</File>
+			<File
 				RelativePath="..\..\..\..\boost\interprocess\containers\containers_fwd.hpp">
 			</File>
 			<File
@@ -117,6 +120,9 @@
 				RelativePath="..\..\..\..\boost\interprocess\containers\map.hpp">
 			</File>
 			<File
+				RelativePath="..\..\..\..\boost\interprocess\containers\pair.hpp">
+			</File>
+			<File
 				RelativePath="..\..\..\..\boost\interprocess\containers\set.hpp">
 			</File>
 			<File
@@ -130,6 +136,9 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\boost\interprocess\containers\vector.hpp">
+			</File>
+			<File
+				RelativePath="..\..\..\..\boost\interprocess\containers\version_type.hpp">
 			</File>
 		</Filter>
 		<Filter
@@ -281,6 +290,19 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\boost\interprocess\sync\emulation\semaphore.hpp">
+				</File>
+			</Filter>
+			<Filter
+				Name="xsi"
+				Filter="">
+				<File
+					RelativePath="..\..\..\..\boost\interprocess\sync\xsi\advanced_xsi_semaphore.hpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\boost\interprocess\sync\xsi\simple_xsi_semaphore.hpp">
+				</File>
+				<File
+					RelativePath="..\..\..\..\boost\interprocess\sync\xsi\xsi_named_mutex.hpp">
 				</File>
 			</Filter>
 		</Filter>
@@ -473,6 +495,9 @@
 			Name="Documentation"
 			Filter="">
 			<File
+				RelativePath="..\..\doc\index.idx">
+			</File>
+			<File
 				RelativePath="..\..\doc\interprocess.qbk">
 			</File>
 			<File
@@ -500,17 +525,6 @@
 			<File
 				RelativePath="..\..\..\..\boost\interprocess\indexes\unordered_map_index.hpp">
 			</File>
-		</Filter>
-		<Filter
-			Name="Jamfiles"
-			Filter="">
-			<Filter
-				Name="Test"
-				Filter="">
-				<File
-					RelativePath="..\..\test\Jamfile.v2">
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Streams"
@@ -551,6 +565,9 @@
 			</File>
 			<File
 				RelativePath="..\..\test\get_process_id_name.hpp">
+			</File>
+			<File
+				RelativePath="..\..\test\Jamfile.v2">
 			</File>
 			<File
 				RelativePath="..\..\test\list_test.hpp">
@@ -620,6 +637,36 @@
 		<Filter
 			Name="Example"
 			Filter="">
+			<File
+				RelativePath="..\..\example\comp_doc_anonymous_conditionA.cpp">
+			</File>
+			<File
+				RelativePath="..\..\example\comp_doc_anonymous_conditionB.cpp">
+			</File>
+			<File
+				RelativePath="..\..\example\comp_doc_anonymous_mutexA.cpp">
+			</File>
+			<File
+				RelativePath="..\..\example\comp_doc_anonymous_mutexB.cpp">
+			</File>
+			<File
+				RelativePath="..\..\example\comp_doc_anonymous_semaphoreA.cpp">
+			</File>
+			<File
+				RelativePath="..\..\example\comp_doc_anonymous_semaphoreB.cpp">
+			</File>
+			<File
+				RelativePath="..\..\example\comp_doc_anonymous_upgradable_mutexA.cpp">
+			</File>
+			<File
+				RelativePath="..\..\example\comp_doc_anonymous_upgradable_mutexB.cpp">
+			</File>
+			<File
+				RelativePath="..\..\example\comp_doc_message_queueA.cpp">
+			</File>
+			<File
+				RelativePath="..\..\example\comp_doc_message_queueB.cpp">
+			</File>
 			<File
 				RelativePath="..\..\example\doc_adaptive_pool.cpp">
 				<FileConfiguration
@@ -720,6 +767,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\example\doc_anonymous_shared_memory.cpp">
+			</File>
+			<File
 				RelativePath="..\..\example\doc_anonymous_upgradable_mutexA.cpp">
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -763,6 +813,9 @@
 					<Tool
 						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\example\doc_complex_map.cpp">
 			</File>
 			<File
 				RelativePath="..\..\example\doc_cont.cpp">
@@ -819,6 +872,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\example\doc_ipc_message.cpp">
+			</File>
+			<File
 				RelativePath="..\..\example\doc_ipc_messageA.cpp">
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -864,6 +920,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\example\doc_managed_copy_on_write.cpp">
+			</File>
+			<File
 				RelativePath="..\..\example\doc_managed_external_buffer.cpp">
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -871,6 +930,9 @@
 					<Tool
 						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\example\doc_managed_grow.cpp">
 			</File>
 			<File
 				RelativePath="..\..\example\doc_managed_heap_memory.cpp">
@@ -943,6 +1005,12 @@
 					<Tool
 						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\example\doc_multi_index.cpp">
+			</File>
+			<File
+				RelativePath="..\..\example\doc_named_alloc.cpp">
 			</File>
 			<File
 				RelativePath="..\..\example\doc_named_allocA.cpp">
@@ -1062,6 +1130,9 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\example\doc_spawn_vector.cpp">
+			</File>
+			<File
 				RelativePath="..\..\example\doc_unique_ptr.cpp">
 				<FileConfiguration
 					Name="Debug|Win32"
@@ -1069,6 +1140,9 @@
 					<Tool
 						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\example\doc_unordered_map.cpp">
 			</File>
 			<File
 				RelativePath="..\..\example\doc_upgradable_mutex_shared_data.hpp">
@@ -1114,6 +1188,9 @@
 					<Tool
 						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\example\doc_xsi_shared_memory.cpp">
 			</File>
 			<File
 				RelativePath="..\..\example\Jamfile.v2">

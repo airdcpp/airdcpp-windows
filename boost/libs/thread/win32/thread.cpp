@@ -9,7 +9,6 @@
 
 #include <boost/thread/thread.hpp>
 #include <algorithm>
-#include <windows.h>
 #ifndef UNDER_CE
 #include <process.h>
 #endif
@@ -20,6 +19,7 @@
 #include <boost/throw_exception.hpp>
 #include <boost/thread/detail/tss_hooks.hpp>
 #include <boost/date_time/posix_time/conversion.hpp>
+#include <windows.h>
 
 namespace boost
 {
@@ -30,9 +30,14 @@ namespace boost
 
         void create_current_thread_tls_key()
         {
-            //tss_cleanup_implemented(); // if anyone uses TSS, we need the cleanup linked in
+            tss_cleanup_implemented(); // if anyone uses TSS, we need the cleanup linked in
             current_thread_tls_key=TlsAlloc();
-            BOOST_ASSERT(current_thread_tls_key!=TLS_OUT_OF_INDEXES);
+			#if defined(UNDER_CE)
+				// Windows CE does not define the TLS_OUT_OF_INDEXES constant.
+				BOOST_ASSERT(current_thread_tls_key!=0xFFFFFFFF);
+			#else
+				BOOST_ASSERT(current_thread_tls_key!=TLS_OUT_OF_INDEXES);
+			#endif
         }
 
         void cleanup_tls_key()
@@ -56,10 +61,13 @@ namespace boost
         void set_current_thread_data(detail::thread_data_base* new_data)
         {
             boost::call_once(current_thread_tls_init_flag,create_current_thread_tls_key);
-            BOOST_VERIFY(TlsSetValue(current_thread_tls_key,new_data));
+            if(current_thread_tls_key)
+                BOOST_VERIFY(TlsSetValue(current_thread_tls_key,new_data));
+            else
+                boost::throw_exception(thread_resource_error());
         }
 
-#ifdef BOOST_NO_THREADEX
+#ifndef BOOST_HAS_THREADEX
 // Windows CE doesn't define _beginthreadex
 
         struct ThreadProxyData
@@ -221,7 +229,15 @@ namespace boost
         void make_external_thread_data()
         {
             externally_launched_thread* me=detail::heap_new<externally_launched_thread>();
-            set_current_thread_data(me);
+            try
+            {
+                set_current_thread_data(me);
+            }
+            catch(...)
+            {
+                detail::heap_delete(me);
+                throw;
+            }
         }
 
         detail::thread_data_base* get_or_make_current_thread_data()
@@ -540,8 +556,8 @@ namespace boost
         {
             detail::thread_data_base* const current_thread_data(get_or_make_current_thread_data());
             thread_exit_callback_node* const new_node=
-                heap_new<thread_exit_callback_node>(func,
-                                                    current_thread_data->thread_exit_callbacks);
+                heap_new<thread_exit_callback_node>(
+                    func,current_thread_data->thread_exit_callbacks);
             current_thread_data->thread_exit_callbacks=new_node;
         }
 
@@ -583,10 +599,11 @@ namespace boost
                 current_node->func=func;
                 current_node->value=tss_data;
             }
-            else
+            else if(func && tss_data)
             {
                 detail::thread_data_base* const current_thread_data(get_or_make_current_thread_data());
-                tss_data_node* const new_node=heap_new<tss_data_node>(key,func,tss_data,current_thread_data->tss_data);
+                tss_data_node* const new_node=
+                    heap_new<tss_data_node>(key,func,tss_data,current_thread_data->tss_data);
                 current_thread_data->tss_data=new_node;
             }
         }

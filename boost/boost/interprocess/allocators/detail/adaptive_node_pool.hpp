@@ -28,7 +28,7 @@
 #include <boost/interprocess/allocators/detail/allocator_common.hpp>
 #include <cstddef>
 #include <boost/config/no_tr1/cmath.hpp>
-#include <boost/interprocess/containers/container/detail/adaptive_node_pool_impl.hpp>
+#include <boost/container/detail/adaptive_node_pool_impl.hpp>
 #include <boost/assert.hpp>
 
 //!\file
@@ -36,7 +36,7 @@
 
 namespace boost {
 namespace interprocess {
-namespace detail {
+namespace ipcdetail {
 
 template< class SegmentManager
         , std::size_t NodeSize
@@ -56,12 +56,13 @@ class private_adaptive_node_pool
    private_adaptive_node_pool &operator=(const private_adaptive_node_pool &);
 
    public:
-   typedef SegmentManager segment_manager;
+   typedef SegmentManager              segment_manager;
+   typedef typename base_t::size_type  size_type;
 
-   static const std::size_t nodes_per_block = NodesPerBlock;
+   static const size_type nodes_per_block = NodesPerBlock;
 
    //Deprecated, use node_per_block
-   static const std::size_t nodes_per_chunk = NodesPerBlock;
+   static const size_type nodes_per_chunk = NodesPerBlock;
 
    //!Constructor from a segment manager. Never throws
    private_adaptive_node_pool(segment_manager *segment_mngr)
@@ -84,12 +85,12 @@ template< class SegmentManager
         , unsigned char OverheadPercent
         >
 class shared_adaptive_node_pool 
-   :  public detail::shared_pool_impl
+   :  public ipcdetail::shared_pool_impl
       < private_adaptive_node_pool
          <SegmentManager, NodeSize, NodesPerBlock, MaxFreeBlocks, OverheadPercent>
       >
 {
-   typedef detail::shared_pool_impl
+   typedef ipcdetail::shared_pool_impl
       < private_adaptive_node_pool
          <SegmentManager, NodeSize, NodesPerBlock, MaxFreeBlocks, OverheadPercent>
       > base_t;
@@ -99,7 +100,7 @@ class shared_adaptive_node_pool
    {}
 };
 
-}  //namespace detail {
+}  //namespace ipcdetail {
 }  //namespace interprocess {
 }  //namespace boost {
 

@@ -50,11 +50,11 @@ struct unique_name_generator
    typedef simple_pair     simple_type;
    typedef array_pair      array_type;
    typedef array_it_pair   array_it_type;
-   static const detail::unique_instance_t *get_simple_name()
+   static const ipcdetail::unique_instance_t *get_simple_name()
    {  return 0;  }
-   static const detail::unique_instance_t *get_array_name()
+   static const ipcdetail::unique_instance_t *get_array_name()
    {  return 0;  }
-   static const detail::unique_instance_t *get_array_it_name()
+   static const ipcdetail::unique_instance_t *get_array_it_name()
    {  return 0;  }
 };
 
@@ -65,11 +65,11 @@ struct anonymous_name_generator
    typedef simple_pair simple_type;
    typedef array_pair array_type;
    typedef array_it_pair array_it_type;
-   static const detail::anonymous_instance_t *get_simple_name()
+   static const ipcdetail::anonymous_instance_t *get_simple_name()
    {  return 0;  }
-   static const detail::anonymous_instance_t *get_array_name()
+   static const ipcdetail::anonymous_instance_t *get_array_name()
    {  return 0;  }
-   static const detail::anonymous_instance_t *get_array_it_name()
+   static const ipcdetail::anonymous_instance_t *get_array_it_name()
    {  return 0;  }
 };
 
@@ -135,7 +135,7 @@ int construct_test()
 
       if(NameGenerator::searchable){
          {
-            std::pair<simple_type*, std::size_t> res;
+            std::pair<simple_type*, managed_shared_memory::size_type> res;
             //Find the object
             res = segment.find<simple_type> (NameGenerator::get_simple_name());
             //Length should be 1
@@ -147,7 +147,7 @@ int construct_test()
                return 1;
          }
          {
-            std::pair<array_type*, std::size_t> res;
+            std::pair<array_type*, managed_shared_memory::size_type> res;
 
             //Find the array
             res = segment.find<array_type> (NameGenerator::get_array_name());
@@ -160,7 +160,7 @@ int construct_test()
                return 1;
          }
          {
-            std::pair<array_it_type*, std::size_t> res;
+            std::pair<array_it_type*, managed_shared_memory::size_type> res;
             //Find the array constructed from iterators
             res = segment.find<array_it_type> (NameGenerator::get_array_it_name());
             //Length should be 3

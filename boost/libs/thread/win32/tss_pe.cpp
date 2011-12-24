@@ -1,4 +1,4 @@
-// $Id: tss_pe.cpp 63789 2010-07-09 19:13:09Z anthonyw $
+// $Id: tss_pe.cpp 72431 2011-06-06 08:28:31Z anthonyw $
 // (C) Copyright Aaron W. LaFramboise, Roland Schwarz, Michael Glassford 2004.
 // (C) Copyright 2007 Roland Schwarz
 // (C) Copyright 2007 Anthony Williams
@@ -11,7 +11,7 @@
 
 #if defined(BOOST_HAS_WINTHREADS) && defined(BOOST_THREAD_BUILD_LIB) 
 
-#if defined(__MINGW32__) && !defined(_WIN64)
+#if (defined(__MINGW32__) && !defined(_WIN64)) || defined(__MINGW64__)
 
 #include <boost/thread/detail/tss_hooks.hpp>
 
@@ -38,6 +38,13 @@ namespace {
     }
 }
 
+#if defined(__MINGW64__) || (__MINGW32_MAJOR_VERSION >3) ||             \
+    ((__MINGW32_MAJOR_VERSION==3) && (__MINGW32_MINOR_VERSION>=18))
+extern "C"
+{
+    PIMAGE_TLS_CALLBACK __crt_xl_tls_callback__ __attribute__ ((section(".CRT$XLB"))) = on_tls_callback;
+}
+#else
 extern "C" {
 
     void (* after_ctors )() __attribute__((section(".ctors")))     = boost::on_process_enter;
@@ -50,10 +57,8 @@ extern "C" {
 
 
     PIMAGE_TLS_CALLBACK __crt_xl_start__ __attribute__ ((section(".CRT$XLA"))) = 0;
-    PIMAGE_TLS_CALLBACK __crt_xl_tls_callback__ __attribute__ ((section(".CRT$XLB"))) = on_tls_callback;
     PIMAGE_TLS_CALLBACK __crt_xl_end__ __attribute__ ((section(".CRT$XLZ"))) = 0;
 }
-
 extern "C" const IMAGE_TLS_DIRECTORY32 _tls_used __attribute__ ((section(".rdata$T"))) =
 {
         (DWORD) &__tls_start__,
@@ -63,6 +68,7 @@ extern "C" const IMAGE_TLS_DIRECTORY32 _tls_used __attribute__ ((section(".rdata
         (DWORD) 0,
         (DWORD) 0
 };
+#endif
 
 
 #elif  defined(_MSC_VER) && !defined(UNDER_CE)

@@ -16,13 +16,14 @@
 #endif
 
 #include <boost/interprocess/detail/config_begin.hpp>
-#include <boost/interprocess/containers/container/detail/pair.hpp>
+#include <boost/container/detail/pair.hpp>
 #include <boost/interprocess/containers/containers_fwd.hpp>
 
 namespace boost {
 namespace interprocess {
 
 using boost::container::containers_detail::pair;
+using boost::container::containers_detail::piecewise_construct;
 
 }  //namespace interprocess {
 }  //namespace boost {
