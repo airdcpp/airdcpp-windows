@@ -847,7 +847,7 @@ LRESULT SearchFrame::onDownloadWholeTarget(WORD /*wNotifyCode*/, WORD wID, HWND 
 
 LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	dcassert(wID >= IDC_DOWNLOAD_FAVORITE_DIRS);
-	size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
+	int newId = wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 
 	int favShareSize = (int)FavoriteManager::getInstance()->getFavoriteDirs().size();
 	if (SETTING(SHOW_SHARED_DIRS_FAV)) {
@@ -876,7 +876,7 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 			ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(target), this));
 		}
 	} else {
-		dcassert((newId - favShareSize) < targets.size());
+		dcassert((newId - favShareSize) < (int)targets.size());
 		string tgt = targets[newId - favShareSize];
 		if(!tgt.empty())
 		ctrlResults.forEachSelectedT(SearchInfo::DownloadTarget(Text::toT(tgt)));

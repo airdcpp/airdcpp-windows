@@ -3135,7 +3135,7 @@ tstring WinUtil::getTitle(tstring searchTerm) {
 bool WinUtil::getTarget(int ID, string& target, int64_t aSize) {
 	int64_t freeSpace = 0;
 	auto shareDirs = ShareManager::getInstance()->getGroupedDirectories();
-	if (SETTING(SHOW_SHARED_DIRS_FAV) && ID < shareDirs.size()) {
+	if (SETTING(SHOW_SHARED_DIRS_FAV) && ID < (int)shareDirs.size()) {
 		AirUtil::getTarget(shareDirs[ID].second, target, freeSpace);
 	} else {
 		FavoriteManager::getInstance()->getFavoriteTarget(ID-(SETTING(SHOW_SHARED_DIRS_FAV) ? shareDirs.size() : 0), target, freeSpace);
@@ -3150,7 +3150,7 @@ bool WinUtil::getTarget(int ID, string& target, int64_t aSize) {
 	if (aSize > freeSpace) {
 		string tmp;
 		tmp.resize(tmp.size() + STRING(CONFIRM_SIZE_WARNING).size() + 1024);
-		tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_SIZE_WARNING), Util::formatBytes(freeSpace), target.c_str(), Util::formatBytes(aSize)));
+		tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_SIZE_WARNING), Util::formatBytes(freeSpace).c_str(), target.c_str(), Util::formatBytes(aSize).c_str()));
 		return (MessageBox(mainWnd, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES);
 	}
 	return true;
