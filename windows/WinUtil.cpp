@@ -2071,7 +2071,8 @@ TStringList WinUtil::FindVolumes() {
    hVol = FindFirstVolume(buf, MAX_PATH);
 
    if(hVol != INVALID_HANDLE_VALUE) {
-	  
+		volumes.push_back(buf);
+
 		found = FindNextVolume(hVol, buf, MAX_PATH);
 
 		//while we find drive volumes.
