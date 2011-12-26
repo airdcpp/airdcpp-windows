@@ -1038,7 +1038,11 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 				if (target[target.size() -1] == '\\') {
 					return Text::toT(Util::getDir(Text::fromT(target), false, true));
 				} else if (target[target.size() -1] == ')') {
-					return Util::getLastDir(target) + target.substr(pos, target.length()-pos);
+					if (target[pos-1] == '\\') {
+						return Util::getLastDir(target) + target.substr(pos, target.length()-pos);
+					} else {
+						return Util::getFileName(target);
+					}
 				}
 			}
 			return getFile(type, Util::getFileName(target));

@@ -1258,7 +1258,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				singleMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
 				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)previewMenu, CTSTRING(PREVIEW_MENU));	
 				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
-				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_PRIORITY));
+				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITY));
 				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)browseMenu, CTSTRING(GET_FILE_LIST));
 				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)pmMenu, CTSTRING(SEND_PRIVATE_MESSAGE));
 				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)readdMenu, CTSTRING(READD_SOURCE));
@@ -1407,7 +1407,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				multiMenu.CreatePopupMenu();
 				multiMenu.InsertSeparatorFirst(TSTRING(FILES));
 				multiMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
-				multiMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_PRIORITY));
+				multiMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITIES));
 				multiMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE));
 				multiMenu.AppendMenu(MF_SEPARATOR);
 				multiMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
@@ -1449,25 +1449,41 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			if (bundles.size() == 1) {
 				b = bundles.front();
 				mainBundle = b->getTarget() == curDir;
-				dirMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
+				if (mainBundle) {
+					dirMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
+					dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITY));
+				} else {
+					BundleList tmpBundles;
+					int finishedFiles = 0, fileBundles = 0;
+					int files = QueueManager::getInstance()->getBundleInfo(curDir, tmpBundles, finishedFiles, fileBundles);
+					if (files == 1) {
+						dirMenu.InsertSeparatorFirst(Util::toStringW(files) + _T(" ") + CTSTRING(FILE));
+						dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITY));
+					} else {
+						dirMenu.InsertSeparatorFirst(Util::toStringW(files) + _T(" ") + CTSTRING(FILES));
+						dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITIES));
+					}
+				}
 			} else {
-				dirMenu.InsertSeparatorFirst(Util::toStringW(bundles.size()) + _T(" bundles"));
+				dirMenu.InsertSeparatorFirst(Util::toStringW(bundles.size()) + _T(" ") + CTSTRING(BUNDLES));
+				dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITIES));
 			}
-			dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_PRIORITY));
 		} else {
 			dirMenu.InsertSeparatorFirst(TSTRING(FOLDER));
 		}
 
 		if (curDir != Util::getListPath() && curDir != Util::getTempPath()) {
-			dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_DIRECTORY));
+			if (mainBundle) {
+				dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_BUNDLE, CTSTRING(SEARCH_BUNDLE_ALT));
+			}
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			dirMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+			dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_DIRECTORY));
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			dirMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 			dirMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE));
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			if (mainBundle) {
-				dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_BUNDLE, CTSTRING(SEARCH_BUNDLE_ALT));
 				dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)readdMenu, CTSTRING(READD_SOURCE));
 				dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)removeMenu, CTSTRING(REMOVE_SOURCE));
 			}

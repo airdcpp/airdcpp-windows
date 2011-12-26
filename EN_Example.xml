@@ -532,7 +532,6 @@
 		<String Name="SendPublicMessage">Send public message</String>
 		<String Name="Separator">Separator</String>
 		<String Name="Server">Server</String>
-		<String Name="SetPriority">Set priority</String>
 		<String Name="SetczdcBackColor">Back color</String>
 		<String Name="SetczdcCzcharsDisable">Remove diacritic marks from Czech chars</String>
 		<String Name="SetczdcDefaultStyle">Default style</String>
@@ -1361,6 +1360,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="NumberOfConnections">connection(s)</String>
 		<String Name="BundleFilename">Bundle / Filename</String>
 		<String Name="Bundle">Bundle</String>
+		<String Name="Bundles">bundles</String>
 		<String Name="RemoveBundle">Remove bundle from queue</String>
 		<String Name="BundleRemoved">Bundle removed</String>
 		<String Name="PartialSharing">Enable partial bundle/file sharing</String>
@@ -1456,5 +1456,9 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="MatchSourceAdded">Added as source for %d items in the bundle %s</String>
 		<String Name="MatchSourceAddedXBundles">Added as source for %d items in %d bundles</String>
 		<String Name="SettingsReportAddedSources">Report added sources in System Log</String>
+		<String Name="SetBundlePriority">Set the bundle priority</String>
+		<String Name="SetBundlePriorities">Set the bundle priorities</String>
+		<String Name="SetFilePriority">Set the file priority</String>
+		<String Name="SetFilePriorities">Set the file priorities</String>
 	</Strings>
 </Language>
