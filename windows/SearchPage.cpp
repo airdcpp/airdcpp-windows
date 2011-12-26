@@ -19,7 +19,7 @@
 #include "../client/SettingsManager.h"
 #include "Resource.h"
 
-#include "AutosearchPage.h"
+#include "SearchPage.h"
 
 PropPage::TextItem AutosearchPage::texts[] = {
 	{ IDC_SEARH_SKIPLIST_PRESET,				ResourceManager::SETTINGS_SEARH_SKIPLIST_PRESET },

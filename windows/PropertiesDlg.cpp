@@ -54,7 +54,7 @@
 #include "IgnorePage.h"
 #include "Popups.h"
 #include "FulHighlightPage.h"
-#include "AutoSearchPage.h"
+#include "SearchPage.h"
 #include "AirAppearancePage.h"
 
 bool PropertiesDlg::needUpdate = false;
@@ -70,7 +70,6 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s) : TreePropertyShee
 	pages[n++] = new FavoriteDirsPage(s);
 	pages[n++] = new AVIPreview(s);	
 	pages[n++] = new QueuePage(s);
-	pages[n++] = new PriorityPage(s);
 	pages[n++] = new SpeedPage(s);
 	pages[n++] = new AppearancePage(s);
 	pages[n++] = new PropPageTextStyles(s);
@@ -93,6 +92,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s) : TreePropertyShee
 	pages[n++] = new FulHighlightPage(s);
 	pages[n++] = new AutosearchPage(s);
 	pages[n++] = new AirAppearancePage(s);
+	pages[n++] = new PriorityPage(s);
 	
 	for(int i=0; i<numPages; i++) {
 		AddPage(pages[i]->getPSP());

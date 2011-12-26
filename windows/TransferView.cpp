@@ -35,7 +35,7 @@
 #include "BarShader.h"
 
 int TransferView::columnIndexes[] = { COLUMN_USER, COLUMN_FILE, COLUMN_HUB, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SIZE, COLUMN_PATH, COLUMN_CIPHER, COLUMN_IP, COLUMN_RATIO };
-int TransferView::columnSizes[] = { 150, 175, 150, 250, 75, 75, 100, 200, 100, 150, 50 };
+int TransferView::columnSizes[] = { 150, 250, 150, 275, 75, 75, 75, 200, 100, 175, 50 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::USER, ResourceManager::BUNDLE_FILENAME, ResourceManager::HUB_SEGMENTS, ResourceManager::STATUS,
 	ResourceManager::TIME_LEFT, ResourceManager::SPEED, ResourceManager::SIZE, ResourceManager::PATH,

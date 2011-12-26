@@ -32,12 +32,12 @@ class AirDCPage : public CPropertyPage<IDD_AIRDCPAGE>, public PropPage
 {
 public:
 	AirDCPage(SettingsManager *s) : PropPage(s) {
-		//title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(SETTINGS_EXTRA)).c_str());
-		SetTitle(CTSTRING(SETTINGS_AIRDCPAGE));
+		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(SETTINGS_AIRDCPAGE)).c_str());
+		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}
 
-	~AirDCPage() { }
+	~AirDCPage() { free(title); }
 	
 
 	BEGIN_MSG_MAP_EX(AirDCPage)
@@ -66,8 +66,6 @@ private:
 	static Item items[];
 	static TextItem texts[];
 
-
-
 	CComboBox ctrlPlayer;
 	CEdit ctrlFormat;
 
@@ -78,8 +76,7 @@ private:
 	tstring SpotifyStr;
 	int CurSel;
 
-
-
+	TCHAR* title;
 
 };
 

@@ -42,6 +42,10 @@ PropPage::TextItem PriorityPage::texts[] = {
 	{ IDC_SETTINGS_PRIO_LOW, ResourceManager::SETTINGS_PRIO_LOW },
 	{ IDC_SETTINGS_KB6, ResourceManager::KiB },
 	{ IDC_DOWNLOAD_ORDER, ResourceManager::DOWNLOAD_ORDER },
+	
+	{ IDC_ST_HIGH_PRIO_FILES, ResourceManager::SETTINGS_ST_PATHS	},
+	{ IDC_SB_HIGH_PRIO_FILES, ResourceManager::SETTINGS_SB_HIGH_PRIO_FILES	},
+	{ IDC_HIGHEST_PRIORITY_USE_REGEXP, ResourceManager::USE_REGEXP },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -50,6 +54,9 @@ PropPage::Item PriorityPage::items[] = {
 	{ IDC_PRIO_HIGH_SIZE, SettingsManager::PRIO_HIGH_SIZE, PropPage::T_INT },
 	{ IDC_PRIO_NORMAL_SIZE, SettingsManager::PRIO_NORMAL_SIZE, PropPage::T_INT },
 	{ IDC_PRIO_LOW_SIZE, SettingsManager::PRIO_LOW_SIZE, PropPage::T_INT },
+	
+	{ IDC_HIGH_PRIO_FILES,	SettingsManager::HIGH_PRIO_FILES, PropPage::T_STR },
+	{ IDC_HIGHEST_PRIORITY_USE_REGEXP, SettingsManager::HIGHEST_PRIORITY_USE_REGEXP, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 

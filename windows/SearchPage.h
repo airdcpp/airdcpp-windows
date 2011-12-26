@@ -28,7 +28,7 @@ class AutosearchPage : public CPropertyPage<IDD_AUTOSEARCH>, public PropPage
 {
 public:
 	AutosearchPage(SettingsManager *s) : PropPage(s) {
-		title = _tcsdup((TSTRING(SETTINGS_AIRDCPAGE) + _T('\\') + TSTRING(SETTINGS_AIRSEARCH)).c_str());
+		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(SETTINGS_AIRSEARCH)).c_str());
 
 		SetTitle(title);
 	};

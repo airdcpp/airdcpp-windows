@@ -14,7 +14,7 @@ class AirSharingPage : public CPropertyPage<IDD_AIRSHARINGPAGE>, public PropPage
 {
 public:
 	AirSharingPage(SettingsManager *s) : PropPage(s) {
-		title = _tcsdup((TSTRING(SETTINGS_AIRDCPAGE) + _T('\\') + TSTRING(SETTINGS_AIRSHARING)).c_str());
+		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(SETTINGS_AIRSHARING)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}

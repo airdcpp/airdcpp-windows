@@ -46,6 +46,13 @@ PropPage::Item AppearancePage::items[] = {
 };
 
 PropPage::ListItem AppearancePage::listItems[] = {
+	{ SettingsManager::NAT_SORT, ResourceManager::NAT_SORT },
+	{ SettingsManager::CLIENT_COMMANDS , ResourceManager::SET_CLIENT_COMMANDS },
+	{ SettingsManager::SERVER_COMMANDS , ResourceManager::SETTINGS_SERVER_COMMANDS },
+	{ SettingsManager::FLASH_WINDOW_ON_PM, ResourceManager::FLASH_WINDOW_ON_PM },
+	{ SettingsManager::FLASH_WINDOW_ON_NEW_PM, ResourceManager::FLASH_WINDOW_ON_NEW_PM },
+	{ SettingsManager::FLASH_WINDOW_ON_MYNICK, ResourceManager::FLASH_WINDOW_ON_MYNICK },
+	{ SettingsManager::SHOW_QUEUE_BARS, ResourceManager::SETTINGS_SHOW_QUEUE_BARS },
 	{ SettingsManager::SHOW_PROGRESS_BARS, ResourceManager::SETTINGS_SHOW_PROGRESS_BARS },
 	{ SettingsManager::SHOW_INFOTIPS, ResourceManager::SETTINGS_SHOW_INFO_TIPS },
 	{ SettingsManager::FILTER_MESSAGES, ResourceManager::SETTINGS_FILTER_MESSAGES },

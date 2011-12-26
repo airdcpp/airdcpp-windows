@@ -31,7 +31,7 @@ class Popups : public CPropertyPage<IDD_POPUPS>, public PropPage
 {
 public:
 	Popups(SettingsManager *s) : PropPage(s) {
-		title = _tcsdup((TSTRING(SETTINGS_AIRDCPAGE) + _T('\\') + TSTRING(BALLOON_POPUPS)).c_str());
+		title = _tcsdup((TSTRING(SETTINGS_APPEARANCE) + _T('\\') + TSTRING(BALLOON_POPUPS)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	};

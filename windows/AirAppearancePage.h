@@ -31,11 +31,12 @@ class AirAppearancePage : public CPropertyPage<IDD_AIRAPPEARANCEPAGE>, public Pr
 {
 public:
 	AirAppearancePage(SettingsManager *s) : PropPage(s) {
-		SetTitle(CTSTRING(SETTINGS_AIRAPPEARANCE));
+		title = _tcsdup((TSTRING(SETTINGS_APPEARANCE) + _T('\\') + TSTRING(SETTINGS_AIRAPPEARANCEPAGE)).c_str());
+		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}
 
-	~AirAppearancePage();
+	~AirAppearancePage() { free(title);  }
 
 	BEGIN_MSG_MAP_EX(AirAppearancePage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
@@ -53,9 +54,10 @@ public:
 protected:
 	static Item items[];
 	static TextItem texts[];
-	static ListItem listItems[];
 
 	void BrowseForPic(int DLGITEM);
+
+	TCHAR* title;
 
 };
 

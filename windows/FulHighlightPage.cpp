@@ -175,6 +175,7 @@ LRESULT FulHighlightPage::onDelete(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 FulHighlightPage::~FulHighlightPage() {
 	ctrlStrings.Detach();
+	free(title);
 }
 
 LRESULT FulHighlightPage::onEnable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

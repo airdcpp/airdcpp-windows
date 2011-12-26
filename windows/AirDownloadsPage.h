@@ -16,7 +16,7 @@ class AirDownloadsPage : public CPropertyPage<IDD_AIRDOWNLOADSPAGE>, public Prop
 {
 public:
 	AirDownloadsPage(SettingsManager *s) : PropPage(s) {
-		title = _tcsdup((TSTRING(SETTINGS_AIRDCPAGE) + _T('\\') + TSTRING(SETTINGS_AIRDOWNLOADS)).c_str());
+		title = _tcsdup((TSTRING(SETTINGS_DOWNLOADS) + _T('\\') + TSTRING(SETTINGS_AIRDOWNLOADS)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}

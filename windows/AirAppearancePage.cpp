@@ -57,23 +57,9 @@ PropPage::Item AirAppearancePage::items[] = {
  //end
 };
 
-PropPage::ListItem AirAppearancePage::listItems[] = {
-	{ SettingsManager::NAT_SORT, ResourceManager::NAT_SORT },
-	{ SettingsManager::CLIENT_COMMANDS , ResourceManager::SET_CLIENT_COMMANDS },
-	{ SettingsManager::SERVER_COMMANDS , ResourceManager::SETTINGS_SERVER_COMMANDS },
-	{ SettingsManager::FLASH_WINDOW_ON_PM, ResourceManager::FLASH_WINDOW_ON_PM },
-	{ SettingsManager::FLASH_WINDOW_ON_NEW_PM, ResourceManager::FLASH_WINDOW_ON_NEW_PM },
-	{ SettingsManager::FLASH_WINDOW_ON_MYNICK, ResourceManager::FLASH_WINDOW_ON_MYNICK },
-	{ SettingsManager::SHOW_QUEUE_BARS, ResourceManager::SETTINGS_SHOW_QUEUE_BARS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
-};
-
-
-
-AirAppearancePage::~AirAppearancePage(){ }
 
 void AirAppearancePage::write() {
-	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_AIRAPPEARANCE_BOOLEANS));
+	PropPage::write((HWND)*this, items);
 }
 
 
@@ -81,7 +67,7 @@ LRESULT AirAppearancePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 {
 	PropPage::translate((HWND)(*this), texts);
 
-	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_AIRAPPEARANCE_BOOLEANS));
+	PropPage::read((HWND)*this, items);
 	
 	CUpDownCtrl updown; //ApexDC
 	setMinMax(IDC_RESIZE_LINES_SPIN, 1, 10); //ApexDC

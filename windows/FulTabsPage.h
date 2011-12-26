@@ -30,7 +30,8 @@ class FulTabsPage: public CPropertyPage<IDD_FULTABSPAGE>, public PropPage
 {
 public:
 	FulTabsPage(SettingsManager *s) : PropPage(s) {	
-		SetTitle( CTSTRING(SETTINGS_FUL_TABS) );
+		title = _tcsdup((TSTRING(SETTINGS_APPEARANCE) + _T('\\') + TSTRING(SETTINGS_AIR_TABSPAGE)).c_str());
+		SetTitle(  title );
 		m_psp.dwFlags |= PSP_HASHELP | PSP_RTLREADING;
 	};
 	~FulTabsPage() { };
@@ -58,6 +59,7 @@ protected:
 	static TextItem texts[];
 	static ListItem listItems[];
 	CComboBox colorList;
+	TCHAR* title;
 };
 
 #endif // FULTABSPAGE_H

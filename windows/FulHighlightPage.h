@@ -33,7 +33,8 @@ class FulHighlightPage: public CPropertyPage<IDD_HIGHLIGHTPAGE>, public PropPage
 {
 	public:
 	FulHighlightPage(SettingsManager *s) : PropPage(s) {
-		SetTitle( CTSTRING(SETTINGS_FUL_HIGHLIGHT) );
+		title = _tcsdup((TSTRING(SETTINGS_APPEARANCE) + _T('\\') + TSTRING(SETTINGS_AIR_HIGHLIGHTPAGE)).c_str()); 
+		SetTitle( title);
 		m_psp.dwFlags |= PSP_HASHELP | PSP_RTLREADING;
 	};
 	virtual ~FulHighlightPage();
@@ -83,6 +84,8 @@ protected:
 	ColorList highlights;
 
 	CMenu presets;
+
+	TCHAR* title;
 	
 };
 

@@ -34,7 +34,7 @@ class SharePage : public CPropertyPage<IDD_SHAREPAGE>, public PropPage
 {
 public:
 	SharePage(SettingsManager *s) : PropPage(s) {
-		SetTitle(CTSTRING(SETTINGS_UPLOADS));
+		SetTitle(CTSTRING(SETTINGS_SHARINGPAGE));
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}
 	~SharePage() {

@@ -661,6 +661,7 @@
 #define IDC_BUTTON1                     1313
 #define IDC_BLACK                       1313
 #define IDC_SLOTS_GROUP                 1313
+#define IDC_HIGHEST_PRIORITY_USE_REGEXP2 1313
 #define IDC_SETTINGS_BOLD_CONTENTS      1314
 #define IDC_SHARE_SKIPLIST_USE_REGEXP   1314
 #define IDC_UPDATE_CLIENTS              1314
