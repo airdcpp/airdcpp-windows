@@ -181,7 +181,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			transferMenu.AppendMenu(MF_SEPARATOR);
 			transferMenu.AppendMenu(MF_STRING, IDC_OPEN_BUNDLE_FOLDER, CTSTRING(OPEN_FOLDER));
 			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE, CTSTRING(REMOVE_BUNDLE));
-			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(BUNDLE_PRIORITY));
+			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITY));
 		}
 			
 
@@ -311,16 +311,17 @@ void TransferView::ItemInfo::removeAll() {
 void TransferView::ItemInfo::removeBundle() {
 	BundlePtr aBundle = QueueManager::getInstance()->getBundle(bundle);
 	if (aBundle) {
-		bool moveFinished = !aBundle->getFinishedFiles().empty();
+		int finishedFiles = QueueManager::getInstance()->getFinishedItemCount(aBundle);
+		bool moveFinished = true;
 		string tmp;
 		tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE).size() + 1024);
 		tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE), aBundle->getName().c_str()));
 		if(::MessageBox(0, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 			return;
 		} else {
-			if (moveFinished) {
+			if (finishedFiles > 0) {
 				tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE).size() + 1024);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE), aBundle->getFinishedFiles().size()));
+				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE), finishedFiles));
 				if(::MessageBox(0, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 					moveFinished = false;
 				}
@@ -1071,8 +1072,8 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 }
 
 void TransferView::on(DownloadManagerListener::Requesting, const Download* d) noexcept {
-	//LogManager::getInstance()->message("Requesting " + d->getUserConnection().getToken());
-	UpdateInfo* ui = new UpdateInfo(d->getUserConnection().getToken(), true);
+	//LogManager::getInstance()->message("Requesting " + d->getToken());
+	UpdateInfo* ui = new UpdateInfo(d->getToken(), true);
 	starting(ui, d);
 	
 	ui->setActual(d->getActual());
@@ -1085,8 +1086,8 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d) no
 }
 
 void TransferView::on(DownloadManagerListener::Starting, const Download* aDownload) {
-	//LogManager::getInstance()->message("Starting " + aDownload->getUserConnection().getToken());
-	UpdateInfo* ui = new UpdateInfo(aDownload->getUserConnection().getToken(), true);
+	//LogManager::getInstance()->message("Starting " + aDownload->getToken());
+	UpdateInfo* ui = new UpdateInfo(aDownload->getToken(), true);
 
 	ui->setStatus(ItemInfo::STATUS_RUNNING);
 	ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
@@ -1133,7 +1134,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 	for(DownloadList::const_iterator j = dl.begin(); j != dl.end(); ++j) {
 		Download* d = *j;
-		UpdateInfo* ui = new UpdateInfo(d->getUserConnection().getToken(), true);
+		UpdateInfo* ui = new UpdateInfo(d->getToken(), true);
 		ui->setStatus(ItemInfo::STATUS_RUNNING);
 		ui->setActual(d->getActual());
 		ui->setPos(d->getPos());
@@ -1187,8 +1188,8 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 }
 
 void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) {
-	//LogManager::getInstance()->message("Failed " + aDownload->getUserConnection().getToken());
-	UpdateInfo* ui = new UpdateInfo(aDownload->getUserConnection().getToken(), true, true);
+	//LogManager::getInstance()->message("Failed " + aDownload->getToken());
+	UpdateInfo* ui = new UpdateInfo(aDownload->getToken(), true, true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
 	ui->setSize(aDownload->getSize());
@@ -1245,7 +1246,7 @@ void TransferView::on(DownloadManagerListener::TargetChanged, const string& aTar
 }
 
 void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
-	UpdateInfo* ui = new UpdateInfo(aUpload->getUserConnection().getToken(), false);
+	UpdateInfo* ui = new UpdateInfo(aUpload->getToken(), false);
 	starting(ui, aUpload);
 	
 	ui->setStatus(ItemInfo::STATUS_RUNNING);
@@ -1299,11 +1300,11 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul, const U
 		Upload* u = *j;
 
 		if (u->getPos() == 0) continue;
-		if (u->getUserConnection().getToken().empty()) {
+		if (u->getToken().empty()) {
 			continue;
 		}
 
-		UpdateInfo* ui = new UpdateInfo(u->getUserConnection().getToken(), false);
+		UpdateInfo* ui = new UpdateInfo(u->getToken(), false);
 		ui->setActual(u->getStartPos() + u->getActual());
 		ui->setPos(u->getStartPos() + u->getPos());
 		ui->setTimeLeft(u->getSecondsLeft(true)); // we are interested when whole file is finished and not only one chunk
@@ -1349,8 +1350,8 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul, const U
 }
 
 void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree, const string& bundleToken) {
-	//LogManager::getInstance()->message("Transfer complete " + aTransfer->getUserConnection().getToken());
-	UpdateInfo* ui = new UpdateInfo(aTransfer->getUserConnection().getToken(), !isUpload);
+	//LogManager::getInstance()->message("Transfer complete " + aTransfer->getToken());
+	UpdateInfo* ui = new UpdateInfo(aTransfer->getToken(), !isUpload);
 
 	ui->setStatus(ItemInfo::STATUS_WAITING);	
 	ui->setPos(0);

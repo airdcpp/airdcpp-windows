@@ -1020,20 +1020,26 @@ void QueueFrame::removeSelectedDir() {
 }
 
 void QueueFrame::moveSelected() {
-	BundleList bundles;
-	int finishedFiles = 0, fileBundles = 0;
-	int totalBundleQueued = QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
+	const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
+	int totalBundleQueued = 0;
+	BundlePtr b = ii->getBundle();
+	if (b) {
+		totalBundleQueued = QueueManager::getInstance()->getBundleItemCount(ii->getBundle());
+	} else {
+		return;
+	}
 
-	bool moveWhole = false;
 	int n = ctrlQueue.GetSelectedCount();
-	if (bundles.size() == 1 && fileBundles != 1) {
+	if (!b->getFileBundle()) {
 		if (n == totalBundleQueued) {
+			BundleList bundles;
+			int finishedFiles = 0, fileBundles = 0;
+			QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
 			bool moveFinished = (finishedFiles > 0);
 			//we are moving all files in a directory bundle
-			BundlePtr bundle = bundles.front();
 			string tmp;
 			tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_ALL_FILES).size() + 1024);
-			tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_ALL_FILES), bundle->getName().c_str()));
+			tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_MOVE_DIR_ALL_FILES), b->getName().c_str()));
 			if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 				if (moveFinished) {
 					tmp.resize(tmp.size() + STRING(CONFIRM_MOVE_DIR_FINISHED_BUNDLE).size() + 1024);
@@ -1048,8 +1054,8 @@ void QueueFrame::moveSelected() {
 				}
 
 				if(WinUtil::browseDirectory(name, m_hWnd)) {
-					string newDir = Text::fromT(name) + Util::getLastDir(bundle->getTarget()) + "\\";
-					QueueManager::getInstance()->moveDir(bundle->getTarget(), newDir, bundles, moveFinished);
+					string newDir = Text::fromT(name) + Util::getLastDir(b->getTarget()) + "\\";
+					QueueManager::getInstance()->moveDir(b->getTarget(), newDir, bundles, moveFinished);
 				}
 				return;
 			}
@@ -1058,7 +1064,6 @@ void QueueFrame::moveSelected() {
 
 	if(n == 1) {
 		// Single file, get the full filename and move...
-		const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
 		tstring target = Text::toT(ii->getTarget());
 		tstring ext = Util::getFileExt(target);
 		tstring ext2;
@@ -1437,12 +1442,8 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		OMenu dirMenu;
 		dirMenu.CreatePopupMenu();	
 
-		//int tmp1=0, tmp2=0, tmp3=0;
-		//BundleList bundles = QueueManager::getInstance()->getBundleInfo(curDir, tmp1, tmp2, tmp3);
-		//const BundleItemInfo* ii = (BundleItemInfo*)ctrlDirs.getItemData(ctrlDirs.GetSelectedItem());
 		BundleItemInfo* bii = (BundleItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
 		BundleList bundles = bii->getBundles();
-		//BundleItemInfo* ii = getDir(
 		bool mainBundle = false;
 		BundlePtr b = NULL;
 		if (!bundles.empty()) {
@@ -1453,9 +1454,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 					dirMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
 					dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITY));
 				} else {
-					BundleList tmpBundles;
-					int finishedFiles = 0, fileBundles = 0;
-					int files = QueueManager::getInstance()->getBundleInfo(curDir, tmpBundles, finishedFiles, fileBundles);
+					int files = QueueManager::getInstance()->getDirItemCount(b, curDir);
 					if (files == 1) {
 						dirMenu.InsertSeparatorFirst(Util::toStringW(files) + _T(" ") + CTSTRING(FILE));
 						dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITY));
@@ -1496,10 +1495,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
 			}
 			CMenuItemInfo mi;
-		
-			/*while(browseMenu.GetMenuItemCount() > 0) {
-				browseMenu.RemoveMenu(0, MF_BYPOSITION);
-			} */
+
 			{
 				while(removeMenu.GetMenuItemCount() > 2) {
 					removeMenu.RemoveMenu(2, MF_BYPOSITION);
