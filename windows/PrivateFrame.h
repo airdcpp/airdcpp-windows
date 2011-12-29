@@ -243,7 +243,7 @@ private:
 	}
 	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept {
 		if(aUser == replyTo.user) {
-			ctrlClient.setClient(NULL);
+			ctrlClient.setClient(nullptr);
 			PostMessage(WM_SPEAKER, USER_UPDATED);
 		}
 	}

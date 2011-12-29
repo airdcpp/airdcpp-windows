@@ -694,7 +694,7 @@ void PrivateFrame::updateTitle() {
 			addClientLine(status);
 		}
 		isoffline = true;
-		ctrlClient.setClient(NULL);
+		ctrlClient.setClient(nullptr);
 	}
 	SetWindowText((WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint, priv) + _T(" - ") + hubs.first).c_str());
 }

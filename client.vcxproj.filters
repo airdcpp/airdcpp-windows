@@ -550,6 +550,9 @@
     <ClInclude Include="client\GetSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="client\MerkleTreeOutputStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="client\StringDefs.h">

@@ -349,6 +349,7 @@
     <ClInclude Include="client\MappingManager.h" />
     <ClInclude Include="client\MerkleCheckOutputStream.h" />
     <ClInclude Include="client\MerkleTree.h" />
+    <ClInclude Include="client\MerkleTreeOutputStream.h" />
     <ClInclude Include="client\NmdcHub.h" />
     <ClInclude Include="client\noexcept.h" />
     <ClInclude Include="client\OnlineUser.h" />
