@@ -728,9 +728,9 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 				dcassert(pos != -1);
 				updateItem(pos, ui.updateMask);
 			}
-		} else if(i->first == UPDATE_PARENT) {
+		} else if(i->first == UPDATE_BUNDLE) {
 			auto &ui = static_cast<UpdateInfo&>(*i->second);
-			ItemInfoList::ParentPair* pp = ctrlTransfers.findParentPair(ui.bundle);
+			ItemInfoList::ParentPair* pp = ctrlTransfers.findParentPair(ui.token);
 			
 			if(!pp) {
 				continue;
@@ -1117,7 +1117,6 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 		ui->setSize(b->getSize());
 		ui->setTimeLeft(b->getSecondsLeft());
 		ui->setSpeed(static_cast<int64_t>(b->getSpeed()));
-		ui->setBundle(b->getToken());
 		ui->setRunning(b->getRunning());
 		ui->setUsers(b->getRunningUsers().size());
 
@@ -1127,7 +1126,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 		statusString += Text::tformat(TSTRING(DOWNLOADED_BYTES), Util::formatBytesW(pos).c_str(), percent, elapsed.c_str());
 		ui->setStatusString(statusString);
 			
-		speak(UPDATE_PARENT, ui);
+		speak(UPDATE_BUNDLE, ui);
 	}
 }
 
@@ -1214,16 +1213,6 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 	}
 
 	speak(UPDATE_ITEM, ui);
-
-	//if (bundle) {
-	//	if (aDownload->getBundle()->getRunningUsers().empty()) {
-	//		ui->setStatus(ItemInfo::STATUS_WAITING);
-	//		ui = new UpdateInfo(bundle->getToken(), true, true);
-	//		ui->setBundle(bundle->getToken());
-	//		ui->setUser(aDownload->getHintedUser());
-	//		speak(UPDATE_PARENT, ui);
-	//	}
-	//}
 }
 
 void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc, const string& aReason) {
@@ -1262,29 +1251,26 @@ void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(UploadManagerListener::Tick, const UploadList& ul, const UploadBundleList& bundles) {
-	for(UploadBundleList::const_iterator j = bundles.begin(); j != bundles.end(); ++j) {
+void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList& bundles) {
+	for(auto j = bundles.begin(); j != bundles.end(); ++j) {
 		UploadBundlePtr bundle = *j;
-		string bundleToken = bundle->getToken();
-		int64_t uploaded = bundle->getUploaded();
 		UpdateInfo* ui = new UpdateInfo(bundle->getToken(), true);
+		int64_t uploaded = bundle->getUploaded();
+
 		ui->setStatus(ItemInfo::STATUS_RUNNING);
 		ui->setPos(uploaded);
 		ui->setActual(uploaded);
 		ui->setTimeLeft(bundle->getSecondsLeft());
 		ui->setSpeed(static_cast<int64_t>(bundle->getSpeed()));
-		ui->setBundle(bundle->getToken());
 		ui->setRunning(bundle->getRunning());
-		ui->setTotalSpeed(bundle->getTotalSpeed());
-		ui->setSize(bundle->getSize());
 
 		if (bundle->getSingleUser()) {
 			ui->setUsers(1);
+			ui->setTotalSpeed(0);
 		} else {
 			ui->setUsers(2);
+			ui->setTotalSpeed(bundle->getTotalSpeed());
 		}
-
-		//ui->setRunning(bundle->getRunning());
 
 		tstring pos = Util::formatBytesW(uploaded);
 		double percent = (double)uploaded*100.0/(double)bundle->getSize();
@@ -1294,9 +1280,12 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul, const U
 		statusString += Text::tformat(TSTRING(UPLOADED_BYTES), pos.c_str(), percent, elapsed.c_str());
 		ui->setStatusString(statusString);
 			
-		speak(UPDATE_PARENT, ui);
+		speak(UPDATE_BUNDLE, ui);
 	}
-	for(UploadList::const_iterator j = ul.begin(); j != ul.end(); ++j) {
+}
+
+void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
+	for(auto j = ul.begin(); j != ul.end(); ++j) {
 		Upload* u = *j;
 
 		if (u->getPos() == 0) continue;
@@ -1377,7 +1366,6 @@ void TransferView::onBundleComplete(const string& bundleToken, const string& bun
 	ui->setStatusString(isUpload ? TSTRING(UPLOAD_FINISHED_IDLE) : TSTRING(DOWNLOAD_FINISHED_IDLE));
 	ui->setRunning(0);
 	ui->setUsers(0);
-	ui->setBundle(bundleToken);
 
 	if(BOOLSETTING(POPUP_BUNDLE_DLS) && !isUpload) {
 		MainFrame::getMainFrame()->ShowBalloonTip(_T("The following bundle has finished downloading: ") + Text::toT(bundleName), TSTRING(DOWNLOAD_FINISHED_IDLE));
@@ -1385,7 +1373,7 @@ void TransferView::onBundleComplete(const string& bundleToken, const string& bun
 		MainFrame::getMainFrame()->ShowBalloonTip(_T("The following bundle has finished uploading: ") + Text::toT(bundleName), TSTRING(UPLOAD_FINISHED_IDLE));
 	}
 	
-	speak(UPDATE_PARENT, ui);
+	speak(UPDATE_BUNDLE, ui);
 }
 
 void TransferView::onBundleStatus(const BundlePtr aBundle, bool removed) {
@@ -1398,30 +1386,33 @@ void TransferView::onBundleStatus(const BundlePtr aBundle, bool removed) {
 	}
 	ui->setUsers(0);
 	ui->setRunning(0);
-	ui->setBundle(aBundle->getToken());
-	speak(UPDATE_PARENT, ui);
+	speak(UPDATE_BUNDLE, ui);
 }
 
-void TransferView::onBundleName(const string& bundleToken, const string& aTarget, bool isUpload) {
-	UpdateInfo* ui = new UpdateInfo(bundleToken, !isUpload);
-	ui->setBundle(bundleToken);
-	ui->setTarget(Text::toT(aTarget));
-	speak(UPDATE_PARENT, ui);
+void TransferView::on(QueueManagerListener::BundleSize, const BundlePtr aBundle) noexcept {
+	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
+	ui->setSize(aBundle->getSize());
+	speak(UPDATE_BUNDLE, ui);
+}
+
+void TransferView::on(UploadManagerListener::BundleSizeName, const string& bundleToken, const string& newTarget, int64_t aSize) noexcept {
+	UpdateInfo* ui = new UpdateInfo(bundleToken, false);
+	ui->setSize(aSize);
+	ui->setTarget(Text::toT(newTarget));
+	speak(UPDATE_BUNDLE, ui);
 }
 
 void TransferView::onBundleUser(const string& bundleToken, const HintedUser& aUser) {
 	UpdateInfo* ui = new UpdateInfo(bundleToken, true);
 	ui->setUsers(1);
-	ui->setBundle(bundleToken);
 	ui->setUser(aUser);
-	speak(UPDATE_PARENT, ui);
+	speak(UPDATE_BUNDLE, ui);
 }
 
-void TransferView::on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept {
+void TransferView::onBundleName(const BundlePtr aBundle) {
 	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
-	ui->setBundle(aBundle->getToken());
 	ui->setTarget(Text::toT(aBundle->getTarget() + " (" + AirUtil::getPrioText((int)aBundle->getPriority()) + ")"));
-	speak(UPDATE_PARENT, ui);
+	speak(UPDATE_BUNDLE, ui);
 }
 
 LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

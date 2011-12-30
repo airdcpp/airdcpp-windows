@@ -1162,8 +1162,7 @@ void QueueFrame::moveSelectedDir() {
 				}
 			}
 		}
-		string tmp2 = curDir;
-		QueueManager::getInstance()->moveDir(tmp2, newDir, bundles, moveFinished);
+		QueueManager::getInstance()->moveDir(curDir, newDir, bundles, moveFinished);
 	}
 }
 /*
@@ -1734,6 +1733,7 @@ LRESULT QueueFrame::onRemoveSource(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 		int finishedFiles = 0, fileBundles = 0;
 		BundleList bundles;
 		QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
+		dcassert(!bundles.empty());
 		BundlePtr b = bundles.front();
 
 		if(wID == IDC_REMOVE_SOURCE) {
