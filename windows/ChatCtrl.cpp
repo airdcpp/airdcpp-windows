@@ -379,7 +379,8 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 	//Format URLs
 		string::size_type isMagnet, isSpotify;
 
-
+		try {
+		
 		tstring::const_iterator start = sMsg.begin();
 		tstring::const_iterator end = sMsg.end();
 		boost::match_results<tstring::const_iterator> result;
@@ -535,6 +536,11 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 				lastReplace = curReplace + foundEmoticon->getEmoticonText().size();
 			} else break;
 		}
+	}
+	
+	} catch(Exception& e) { 
+		//remove this later, lets see if we can catch the match that returns the error.
+		LogManager::getInstance()->message("Error in FormatEmoticonsAndLinks, report it! Message: " + Text::fromT(sMsg) + " Error: " + e.getError());  
 	}
 
 }
