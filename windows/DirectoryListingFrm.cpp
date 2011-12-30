@@ -612,21 +612,7 @@ LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	int matches=0, newFiles=0;
 	BundleList bundles;
 	QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
-	tstring tmp;
-
-	if (matches > 0) {
-		if (bundles.size() == 1) {
-			tmp.resize(STRING(MATCHED_FILES_BUNDLE).size() + 32 + bundles.front()->getName().size());
-			_stprintf(&tmp[0], CTSTRING(MATCHED_FILES_BUNDLE), matches, bundles.front()->getName().c_str(), newFiles);
-		} else {
-			tmp.resize(STRING(MATCHED_FILES_X_BUNDLES).size() + 32);
-			_stprintf(&tmp[0], CTSTRING(MATCHED_FILES_X_BUNDLES), matches, (int)bundles.size(), newFiles);
-		}
-	} else {
-		tmp = CTSTRING(NO_MATCHED_FILES);
-	}
-	ctrlStatus.SetText(STATUS_TEXT, tmp.c_str());
-
+	ctrlStatus.SetText(STATUS_TEXT, Text::toT(AirUtil::formatMatchResults(matches, newFiles, bundles, false)).c_str());
 	return 0;
 }
 

@@ -139,20 +139,7 @@ public:
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
-				string tmp;
-
-				if (matches > 0) {
-					if (bundles.size() == 1) {
-						tmp.resize(STRING(MATCHED_FILES_BUNDLE).size() + 32 + bundles.front()->getName().size());
-						snprintf(&tmp[0], tmp.size(), CSTRING(MATCHED_FILES_BUNDLE), matches, bundles.front()->getName().c_str(), newFiles);
-					} else {
-						tmp.resize(STRING(MATCHED_FILES_X_BUNDLES).size() + 32);
-						snprintf(&tmp[0], tmp.size(), CSTRING(MATCHED_FILES_X_BUNDLES), matches, (int)bundles.size(), newFiles);
-					}
-				} else {
-					tmp = CSTRING(NO_MATCHED_FILES);
-				}
-				LogManager::getInstance()->message(Util::toString(ClientManager::getInstance()->getNicks(user)) + ": " + tmp);
+				LogManager::getInstance()->message(Util::toString(ClientManager::getInstance()->getNicks(user)) + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles, false));
 			} catch(const Exception&) {
 
 			}
