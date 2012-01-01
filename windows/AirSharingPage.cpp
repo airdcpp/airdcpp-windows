@@ -63,15 +63,13 @@ LRESULT AirSharingPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 }
 
 void AirSharingPage::write() {
-
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SCANLIST));
 	
-		 //set to the defaults
+	//set to the defaults
 	if(SETTING(SKIPLIST_SHARE).empty())
 		settings->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
 
-	AirUtil::setSkiplist();
-
+	AirUtil::updateCachedSettings();
 }
  
 

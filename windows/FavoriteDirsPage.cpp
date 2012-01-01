@@ -184,32 +184,6 @@ LRESULT FavoriteDirsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 }
 
 LRESULT FavoriteDirsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	
-	/*int i = ctrlDirectories.GetSelectedIndex();
-	
-	if(wID == IDC_MOVEUP && i > 0){
-		StringPair j  = favoriteDirs[i];
-
-		favoriteDirs[i] = favoriteDirs[i-1];
-		favoriteDirs[i-1] = j;
-
-		ctrlDirectories.DeleteItem(i);
-		ctrlDirectories.insert(i-1, Text::toT(j.second));
-		ctrlDirectories.SetItemText(i-1, 1, Text::toT(j.first).c_str());
-		ctrlDirectories.SelectItem(i-1);
-	
-	} else if( wID == IDC_MOVEDOWN && i < ctrlDirectories.GetItemCount()-1 ) {
-		StringPair j = favoriteDirs[i];
-
-		favoriteDirs[i] = favoriteDirs[i+1];
-		favoriteDirs[i+1] = j;
-
-		ctrlDirectories.DeleteItem(i);
-		ctrlDirectories.insert(i+1, Text::toT(j.second));
-		ctrlDirectories.SetItemText(i+1, 1, Text::toT(j.first).c_str());
-		ctrlDirectories.SelectItem(i+1);
-	} */
-
 	return 0;
 }
 
@@ -263,6 +237,7 @@ bool FavoriteDirsPage::addFavoriteDir(const string& aDirectory, const string & a
 	StringList tmp;
 	tmp.push_back(path);
 	favoriteDirs.push_back(make_pair(aName, tmp));
+	sort(favoriteDirs.begin(), favoriteDirs.end());
 	return true;
 }
 

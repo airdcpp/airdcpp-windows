@@ -79,7 +79,7 @@ void DownloadPage::write()
 		SettingsManager::getInstance()->set(SettingsManager::TEMP_DOWNLOAD_DIRECTORY, t + '\\');
 		
 	}
-	
+	AirUtil::updateCachedSettings();
 }
 
 LRESULT DownloadPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
