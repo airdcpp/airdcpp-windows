@@ -497,8 +497,8 @@ private:
 				
 			if(listdiff) {
 				mWindow->DisableWindow();
-				DirectoryListing dirList(mWindow->dl->getHintedUser());
-				dirList.loadFile(mFile, true, mWindow->partialList);
+				DirectoryListing dirList(mWindow->dl->getHintedUser(), mWindow->partialList);
+				dirList.loadFile(mFile, true);
 				mWindow->dl->getRoot()->filterList(dirList);
 			
 				mWindow->refreshTree(Util::emptyStringT);
@@ -518,7 +518,7 @@ private:
 				}
 				if (!SETTING(DUPES_IN_FILELIST))
 					checkShareDupe = false;
-				mWindow->dl->loadFile(mFile, checkShareDupe, mWindow->partialList);
+				mWindow->dl->loadFile(mFile, checkShareDupe);
 				
 
 				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {

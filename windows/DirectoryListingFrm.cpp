@@ -95,10 +95,10 @@ void DirectoryListingFrame::openWindow(const HintedUser& aUser, const string& tx
 	}
 }
 
-DirectoryListingFrame::DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed, bool myList, bool partialList) :
+DirectoryListingFrame::DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed, bool myList, bool aPartialList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0), loading(true),
-		treeRoot(NULL), skipHits(0), files(0), speed(aSpeed), updating(false), dl(new DirectoryListing(aUser)), searching(false), mylist(myList), partialList(partialList)
+		treeRoot(NULL), skipHits(0), files(0), speed(aSpeed), updating(false), dl(new DirectoryListing(aUser, aPartialList)), searching(false), mylist(myList), partialList(aPartialList)
 {
 	lists.insert(make_pair(aUser, this));
 }

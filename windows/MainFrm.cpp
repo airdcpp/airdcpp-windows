@@ -133,9 +133,9 @@ public:
 				continue;
 				
 			HintedUser user(u, Util::emptyString);
-			DirectoryListing* dl = new DirectoryListing(user);
+			DirectoryListing* dl = new DirectoryListing(user, false);
 			try {
-				dl->loadFile(*i, false, false);
+				dl->loadFile(*i, false);
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
@@ -1712,9 +1712,9 @@ int MainFrame::FileListQueue::run() {
 			fileLists.pop_front();
 		}
 		if(Util::fileExists(Text::fromT(i->file))) {
-			DirectoryListing* dl = new DirectoryListing(i->user);
+			DirectoryListing* dl = new DirectoryListing(i->user, false);
 			try {
-				dl->loadFile(Text::fromT(i->file), false, false);
+				dl->loadFile(Text::fromT(i->file), false);
 			} catch(...) {
 			}
 			delete dl;
