@@ -241,6 +241,7 @@
     <ClCompile Include="client\Encoder.cpp" />
     <ClCompile Include="client\FavoriteManager.cpp" />
     <ClCompile Include="client\File.cpp" />
+    <ClCompile Include="client\FileReader.cpp" />
     <ClCompile Include="client\FinishedManager.cpp" />
     <ClCompile Include="client\HashBloom.cpp" />
     <ClCompile Include="client\HashManager.cpp" />
@@ -331,6 +332,7 @@
     <ClInclude Include="client\FavoriteManagerListener.h" />
     <ClInclude Include="client\FavoriteUser.h" />
     <ClInclude Include="client\File.h" />
+    <ClInclude Include="client\FileReader.h" />
     <ClInclude Include="client\FilteredFile.h" />
     <ClInclude Include="client\FinishedManager.h" />
     <ClInclude Include="client\FinishedManagerListener.h" />

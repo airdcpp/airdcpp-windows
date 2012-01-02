@@ -562,7 +562,7 @@ private:
 	void on(HttpConnectionListener::Retried, HttpConnection* /*conn*/, const bool Connected) noexcept;		
 
 	// QueueManagerListener
-	void on(QueueManagerListener::Finished, const QueueItem* qi, const string& dir, const Download*) noexcept;
+	void on(QueueManagerListener::Finished, const QueueItem* qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
 	void on(PartialList, const HintedUser&, const string& text) noexcept;
 };
 

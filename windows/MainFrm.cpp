@@ -1616,18 +1616,18 @@ void MainFrame::on(PartialList, const HintedUser& aUser, const string& text) noe
 	PostMessage(WM_SPEAKER, BROWSE_LISTING, (LPARAM)new DirectoryBrowseInfo(aUser, text));
 }
 
-void MainFrame::on(QueueManagerListener::Finished, const QueueItem* qi, const string& dir, const Download* download) noexcept {
+void MainFrame::on(QueueManagerListener::Finished, const QueueItem* qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept {
 	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW)) {
 		if(qi->isSet(QueueItem::FLAG_USER_LIST)) {
 			// This is a file listing, show it...
-			DirectoryListInfo* i = new DirectoryListInfo(download->getHintedUser(), Text::toT(qi->getListName()), Text::toT(dir), static_cast<int64_t>(download->getAverageSpeed()));
+			DirectoryListInfo* i = new DirectoryListInfo(aUser, Text::toT(qi->getListName()), Text::toT(dir), static_cast<int64_t>(aSpeed));
 
 			PostMessage(WM_SPEAKER, DOWNLOAD_LISTING, (LPARAM)i);
 		} else if(qi->isSet(QueueItem::FLAG_TEXT)) {
 			PostMessage(WM_SPEAKER, VIEW_FILE_AND_DELETE, (LPARAM) new tstring(Text::toT(qi->getTarget())));
 		}
 	} else if(qi->isSet(QueueItem::FLAG_USER_LIST)) {
-		DirectoryListInfo* i = new DirectoryListInfo(download->getHintedUser(), Text::toT(qi->getListName()), Text::toT(dir), static_cast<int64_t>(download->getAverageSpeed()));
+		DirectoryListInfo* i = new DirectoryListInfo(aUser, Text::toT(qi->getListName()), Text::toT(dir), static_cast<int64_t>(aSpeed));
 		
 		if(listQueue.stop) {
 			listQueue.stop = false;

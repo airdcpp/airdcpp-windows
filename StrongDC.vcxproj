@@ -99,6 +99,8 @@
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\airsvn\trunk\WTL;C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\airsvn\trunk\WTL;C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
     <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</PostBuildEventUseInBuild>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -187,6 +189,9 @@
       <TargetMachine>MachineX64</TargetMachine>
       <OutputFile>$(SolutionDir)compiled\$(Platform)\$(ProjectName).exe</OutputFile>
     </Link>
+    <PostBuildEvent>
+      <Command>$(SolutionDir)sendrelease.bat $(Platform)</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Midl>
