@@ -226,6 +226,7 @@
     <ClCompile Include="client\AutoSearchManager.cpp" />
     <ClCompile Include="client\BufferedSocket.cpp" />
     <ClCompile Include="client\Bundle.cpp" />
+    <ClCompile Include="client\BundleQueue.cpp" />
     <ClCompile Include="client\BZUtils.cpp" />
     <ClCompile Include="client\ChatMessage.cpp" />
     <ClCompile Include="client\CID.cpp" />
@@ -241,6 +242,7 @@
     <ClCompile Include="client\Encoder.cpp" />
     <ClCompile Include="client\FavoriteManager.cpp" />
     <ClCompile Include="client\File.cpp" />
+    <ClCompile Include="client\FileQueue.cpp" />
     <ClCompile Include="client\FileReader.cpp" />
     <ClCompile Include="client\FinishedManager.cpp" />
     <ClCompile Include="client\HashBloom.cpp" />
@@ -287,6 +289,7 @@
     <ClCompile Include="client\User.cpp" />
     <ClCompile Include="client\UserCommand.cpp" />
     <ClCompile Include="client\UserConnection.cpp" />
+    <ClCompile Include="client\UserQueue.cpp" />
     <ClCompile Include="client\Util.cpp" />
     <ClCompile Include="client\Wildcards.cpp" />
     <ClCompile Include="client\ZUtils.cpp" />
@@ -304,6 +307,7 @@
     <ClInclude Include="client\BufferedSocket.h" />
     <ClInclude Include="client\BufferedSocketListener.h" />
     <ClInclude Include="client\Bundle.h" />
+    <ClInclude Include="client\BundleQueue.h" />
     <ClInclude Include="client\BZUtils.h" />
     <ClInclude Include="client\ChatMessage.h" />
     <ClInclude Include="client\CID.h" />
@@ -332,6 +336,7 @@
     <ClInclude Include="client\FavoriteManagerListener.h" />
     <ClInclude Include="client\FavoriteUser.h" />
     <ClInclude Include="client\File.h" />
+    <ClInclude Include="client\FileQueue.h" />
     <ClInclude Include="client\FileReader.h" />
     <ClInclude Include="client\FilteredFile.h" />
     <ClInclude Include="client\FinishedManager.h" />
@@ -385,6 +390,7 @@
     <ClInclude Include="client\Streams.h" />
     <ClInclude Include="client\typedefs.h" />
     <ClInclude Include="client\UploadBundle.h" />
+    <ClInclude Include="client\UserQueue.h" />
     <ClInclude Include="windows\ResourceLoader.h" />
     <CustomBuild Include="client\StringDefs.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
