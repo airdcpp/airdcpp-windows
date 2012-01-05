@@ -69,13 +69,6 @@ bool IgnoreManager::isIgnored(const string& aNick) {
 						};
 					} catch(...) {
 					}
-
-				/*	PME regexp(tmp.substr(4), "gims");
-
-					if(regexp.match(aNick)) {
-						ret = true;
-						break;
-					}*/
 				}
 			} else {
 				ret = Wildcard::patternMatch(Text::toLower(aNick), Text::toLower(tmp), false);

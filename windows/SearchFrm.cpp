@@ -611,13 +611,11 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 			}
 		}
 	}
-	if(UseSkiplist) {
-	if( Wildcard::patternMatch(  aResult->getFileName(), SETTING(SKIPLIST_SEARCH), '|' ) )
-	{
-					droppedResults++;
-					PostMessage(WM_SPEAKER, FILTER_RESULT);
-					return;
-			}
+
+	if(UseSkiplist && Wildcard::patternMatch(aResult->getFileName(), SETTING(SKIPLIST_SEARCH), '|')) {
+		droppedResults++;
+		PostMessage(WM_SPEAKER, FILTER_RESULT);
+		return;
 	}
 
 	// Reject results without free slots

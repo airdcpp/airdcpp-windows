@@ -1462,5 +1462,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SetFilePriorities">Set the file priorities</String>
 		<String Name="BundleReadded">A failed bundle %s has been readded in queue</String>
 		<String Name="TargetFileMissing">Target file is missing or wrong size</String>
+		<String Name="DownloadSkiplistMatch">The file matches the download skiplist</String>
 	</Strings>
 </Language>
