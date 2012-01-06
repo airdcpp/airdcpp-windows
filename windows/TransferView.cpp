@@ -1138,8 +1138,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 		ui->setActual(d->getActual());
 		ui->setPos(d->getPos());
 		ui->setSize(d->getSize());
-		uint64_t timeleft = d->getSecondsLeft();
-		ui->setTimeLeft(timeleft);
+		ui->setTimeLeft(d->getSecondsLeft());
 		ui->setBundle(d->getBundle() ? d->getBundle()->getToken() : Util::emptyString);
 		
 		

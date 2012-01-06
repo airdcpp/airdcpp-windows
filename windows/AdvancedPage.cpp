@@ -61,7 +61,6 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::MAGNET_ASK, ResourceManager::MAGNET_ASK },
 	{ SettingsManager::OPEN_LOGS_INTERNAL, ResourceManager::OPEN_LOGS_INTERNAL },
 	{ SettingsManager::CORAL, ResourceManager::CORAL },
-	{ SettingsManager::FAST_HASH, ResourceManager::FAST_HASH },
 	{ SettingsManager::	TESTWRITE, ResourceManager::TEST_WRITE }, 
 	{ SettingsManager::USE_ADLS, ResourceManager::SETTINGS_USE_ADLS },
 	{ SettingsManager::USE_ADLS_OWN_LIST, ResourceManager::SETTINGS_USE_ADLS_OWN_LIST },

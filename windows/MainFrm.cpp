@@ -1564,7 +1564,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		if(aTick == lastUpdate)	// FIXME: temp fix for new TimerManager
 		return;
 
-	Util::increaseUptime();
+		Util::increaseUptime();
 		int64_t diff = (int64_t)((lastUpdate == 0) ? aTick - 1000 : aTick - lastUpdate);
 		int64_t updiff = Socket::getTotalUp() - lastUp;
 		int64_t downdiff = Socket::getTotalDown() - lastDown;

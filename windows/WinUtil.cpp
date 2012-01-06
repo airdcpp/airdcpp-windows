@@ -738,7 +738,7 @@ int CALLBACK WinUtil::browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LP
 }
 
 bool WinUtil::browseDirectory(tstring& target, HWND owner /* = NULL */) {
-	TCHAR buf[UNC_MAX_PATH];
+	TCHAR buf[MAX_PATH];
 	BROWSEINFO bi;
 	LPMALLOC ma;
 	

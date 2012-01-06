@@ -299,6 +299,7 @@
     <ClInclude Include="client\AdcHub.h" />
     <ClInclude Include="client\ADLSearch.h" />
     <ClInclude Include="client\AirUtil.h" />
+    <ClInclude Include="client\atomic.h" />
     <ClInclude Include="client\AutoSearchManager.h" />
     <ClInclude Include="client\AutosearchManagerListener.h" />
     <ClInclude Include="client\BitInputStream.h" />

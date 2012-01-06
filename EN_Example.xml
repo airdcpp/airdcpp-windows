@@ -173,7 +173,6 @@
 		<String Name="FailedToShutdown">Failed to shutdown!</String>
 		<String Name="FailedToLoadCertificate">Failed to load certificate file</String>
 		<String Name="FailedToLoadPrivateKey">Failed to load private key</String>
-		<String Name="FastHash">Use fast hashing method (disable if you have problems with hashing)</String>
 		<String Name="FavJoinShowingOff">Join/part of favorite users showing off</String>
 		<String Name="FavJoinShowingOn">Join/part of favorite users showing on</String>
 		<String Name="FavoriteDirName">Favorite name</String>
