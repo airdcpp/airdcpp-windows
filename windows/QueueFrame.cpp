@@ -115,8 +115,8 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
 
-	addQueueList(QueueManager::getInstance()->lockQueue());
-	QueueManager::getInstance()->unlockQueue();
+	auto queue = QueueManager::getInstance()->getQueue();
+	addQueueList(queue);
 	QueueManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);

@@ -217,16 +217,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 					transferMenu.EnableMenuItem((UINT)(HMENU)previewMenu, MFS_DISABLED);
 				}
 
-				const QueueItem::StringMap& queue = QueueManager::getInstance()->lockQueue();
-				auto qi = queue.find(&target);
-
-				bool slowDisconnect = false;
-				if(qi != queue.end())
-					slowDisconnect = qi->second->isSet(QueueItem::FLAG_AUTODROP);
-
-				QueueManager::getInstance()->unlockQueue();
-
-				if(slowDisconnect) {
+				if(QueueManager::getInstance()->getAutoDrop(target)) {
 					transferMenu.CheckMenuItem(IDC_MENU_SLOWDISCONNECT, MF_BYCOMMAND | MF_CHECKED);
 				}
 			} 
@@ -1462,22 +1453,12 @@ void TransferView::ItemInfo::disconnect() {
 	ConnectionManager::getInstance()->disconnect(token);
 }
 		
-LRESULT TransferView::onPreviewCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
+LRESULT TransferView::onPreviewCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
 	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
 
-		const QueueItem::StringMap& queue = QueueManager::getInstance()->lockQueue();
-
-		string tmp = Text::fromT(ii->target);
-		auto qi = queue.find(&tmp);
-
-		string aTempTarget;
-		if(qi != queue.end())
-			aTempTarget = qi->second->getTempTarget();
-
-		QueueManager::getInstance()->unlockQueue();
-
+		string aTempTarget = QueueManager::getInstance()->getTempTarget(Text::fromT(ii->target));
 		WinUtil::RunPreviewCommand(wID - IDC_PREVIEW_APP, aTempTarget);
 	}
 
@@ -1530,21 +1511,7 @@ LRESULT TransferView::onSlowDisconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	int i = -1;
 	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
-
-		const QueueItem::StringMap& queue = QueueManager::getInstance()->lockQueue();
-
-		string tmp = Text::fromT(ii->target);
-		auto qi = queue.find(&tmp);
-
-		if(qi != queue.end()) {
-			if(qi->second->isSet(QueueItem::FLAG_AUTODROP)) {
-				qi->second->unsetFlag(QueueItem::FLAG_AUTODROP);
-			} else {
-				qi->second->setFlag(QueueItem::FLAG_AUTODROP);
-			}
-		}
-
-		QueueManager::getInstance()->unlockQueue();
+		QueueManager::getInstance()->onSlowDisconnect(Text::fromT(ii->target));
 	}
 
 	return 0;
