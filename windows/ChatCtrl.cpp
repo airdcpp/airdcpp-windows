@@ -821,11 +821,8 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
 
 			menu.AppendMenu(MF_SEPARATOR);
-			menu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
-			menu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
-			menu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
-			menu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
-			menu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
+			menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+			WinUtil::AppendSearchMenu(SearchMenu);
 
 			int n = 0;
 
@@ -868,10 +865,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-			SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE));
-			SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
-			SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
-			SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
+			WinUtil::AppendSearchMenu(SearchMenu);
 		}
 
 
@@ -1800,41 +1794,24 @@ LRESULT ChatCtrl::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 
 LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-	//I think we can use full searchterm here because its user selected from chat anyways.
+	size_t newId = (size_t)wID - IDC_SEARCH_SITES;
+	if(newId < (int)WebShortcuts::getInstance()->list.size()) {
+		WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
+		if(ws != NULL) {
 
-	CHARRANGE cr;
-	GetSel(cr);
-	if(cr.cpMax != cr.cpMin) {
-		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
-		GetSelText(buf);
-		searchTermFull = Util::replace(buf, _T("\r"), _T("\r\n"));
-		searchTerm = WinUtil::getTitle(searchTermFull);
-		//searchTerm = searchTermFull;
-		delete[] buf;
-	 } else if(!selectedWord.empty())  { 	 
-	              searchTermFull = selectedWord; 
-				  searchTerm = WinUtil::getTitle(searchTermFull);
-	         }
-		switch (wID) {
-			case IDC_GOOGLE_TITLE:
-				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-
-			case IDC_GOOGLE_FULL:
-				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
-				break;
-
-			case IDC_IMDB:
-				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-			case IDC_TVCOM:
-				WinUtil::openLink(_T("http://www.tv.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-			case IDC_METACRITIC:
-				WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
-				break;
+			CHARRANGE cr;
+			GetSel(cr);
+			if(cr.cpMax != cr.cpMin) {
+				TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
+				GetSelText(buf);
+				searchTermFull = Util::replace(buf, _T("\r"), _T("\r\n"));
+				WinUtil::SearchSite(ws, searchTermFull); 
+	
+				delete[] buf;
+			} else if(!selectedWord.empty())  { 	 
+	              WinUtil::SearchSite(ws, selectedWord); 
+	       }
 		}
-	searchTerm = Util::emptyStringT;
-	searchTermFull = Util::emptyStringT;
+	}
 	return S_OK;
 }

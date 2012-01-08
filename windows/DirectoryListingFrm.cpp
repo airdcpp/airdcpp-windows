@@ -859,11 +859,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
 			
 					//SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-					SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
-					SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
-					SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
-					SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
-					SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
+					WinUtil::AppendSearchMenu(SearchMenu);
 
 					UINT idCommand = shellMenu.ShowContextMenu(m_hWnd, pt);
 					if(idCommand != 0) {
@@ -931,11 +927,7 @@ clientmenu:
 
 		//Search menus
 		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
-		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
-		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
-		SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
-		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
+		WinUtil::AppendSearchMenu(SearchMenu);
 
 		int n = 0;
 
@@ -1081,24 +1073,14 @@ clientmenu:
 		directoryMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetDirMenu, CTSTRING(DOWNLOAD_TO));
 		directoryMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityDirMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
 		directoryMenu.AppendMenu(MF_SEPARATOR);
-		directoryMenu.AppendMenu(MF_STRING, IDC_IMDB+90, CTSTRING(SEARCH_IMDB));
-		directoryMenu.AppendMenu(MF_STRING, IDC_TVCOM+90, CTSTRING(SEARCH_TVCOM));
-		directoryMenu.AppendMenu(MF_STRING, IDC_METACRITIC+90, CTSTRING(SEARCH_METACRITIC));
-		directoryMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE+90, CTSTRING(SEARCH_GOOGLE_TITLE));
-		directoryMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL+90, CTSTRING(SEARCH_GOOGLE_FULL));
+		directoryMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
+		WinUtil::AppendSearchMenu(SearchMenu, 90);
 		directoryMenu.AppendMenu(MF_SEPARATOR);
 		directoryMenu.AppendMenu(MF_STRING,IDC_COPY_DIRECTORY, CTSTRING(COPY_DIRECTORY));
 		directoryMenu.AppendMenu(MF_STRING,IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
 		directoryMenu.AppendMenu(MF_STRING, IDC_SEARCHLEFT, CTSTRING(SEARCH));
 		
-		/*
-		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE+90, CTSTRING(SEARCH_GOOGLE_TITLE));
-		SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL+90, CTSTRING(SEARCH_GOOGLE_FULL));
-		SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM+90, CTSTRING(SEARCH_TVCOM));
-		SearchMenu.AppendMenu(MF_STRING, IDC_IMDB+90, CTSTRING(SEARCH_IMDB));
-		SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC+90, CTSTRING(SEARCH_METACRITIC));
-		*/
 		// Strange, windows doesn't change the selection on right-click... (!)
 
 		int n = 0;
@@ -2007,41 +1989,23 @@ tstring searchTerm;
 
 LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-	tstring searchTerm;
 	tstring searchTermFull;
 
 	if(ctrlList.GetSelectedCount() == 1) {
-			const ItemInfo* ii = ctrlList.getSelectedItem();
+		const ItemInfo* ii = ctrlList.getSelectedItem();
 
-			if(ii->type == ItemInfo::FILE && (SETTING(SETTINGS_PROFILE) == 1)){
-				searchTermFull = Text::toT(Util::getDir(ii->file->getPath(), true, true));
-			}
-			else {
-				searchTermFull = ii->getText(COLUMN_FILENAME);
-			}
-			searchTerm = WinUtil::getTitle(searchTermFull);
-
-
-			switch (wID) {
-				case IDC_GOOGLE_TITLE:
-					WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-					break;
-				case IDC_GOOGLE_FULL:
-					WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
-					break;
-				case IDC_IMDB:
-					WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-					break;
-				case IDC_TVCOM:
-					WinUtil::openLink(_T("http://www.tv.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-					break;
-				case IDC_METACRITIC:
-					WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
-					break;
-				}
-			}
-	searchTerm = Util::emptyStringT;
-	searchTermFull = Util::emptyStringT;
+		if(ii->type == ItemInfo::FILE && (SETTING(SETTINGS_PROFILE) == 1)){
+			searchTermFull = Text::toT(Util::getDir(ii->file->getPath(), true, true));
+		} else {
+			searchTermFull = ii->getText(COLUMN_FILENAME);
+		}
+		size_t newId = (size_t)wID - IDC_SEARCH_SITES;
+		if(newId < (int)WebShortcuts::getInstance()->list.size()) {
+			WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
+			if(ws != NULL) 
+				WinUtil::SearchSite(ws, searchTermFull); 
+		}
+	}
 	return S_OK;
 }
 
@@ -2062,35 +2026,21 @@ LRESULT DirectoryListingFrame::onSearchLeft(WORD /*wNotifyCode*/, WORD /*wID*/, 
 
 LRESULT DirectoryListingFrame::onSearchSiteDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-tstring searchTerm;
-tstring searchTermFull;
+	tstring searchTermFull;
 
-		HTREEITEM t = ctrlTree.GetSelectedItem();
-		if(t != NULL) {
-			DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-			searchTermFull = Text::toT((dir)->getName());
-			searchTerm = WinUtil::getTitle(searchTermFull);
+	HTREEITEM t = ctrlTree.GetSelectedItem();
+	if(t != NULL) {
+		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		searchTermFull = Text::toT((dir)->getName());
 
-			switch (wID-90) {
-				case IDC_GOOGLE_TITLE:
-					WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-					break;
-				case IDC_GOOGLE_FULL:
-					WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
-					break;
-				case IDC_IMDB:
-					WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-					break;
-				case IDC_TVCOM:
-					WinUtil::openLink(_T("http://www.tv.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-					break;
-				case IDC_METACRITIC:
-					WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
-					break;
-				}
-			}
-	searchTerm = Util::emptyStringT;
-	searchTermFull = Util::emptyStringT;
+		size_t newId = (size_t)wID - IDC_SEARCH_SITES -90;
+		if(newId < (int)WebShortcuts::getInstance()->list.size()) {
+			WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
+			if(ws != NULL) 
+				WinUtil::SearchSite(ws, searchTermFull); 
+		}
+	}
+
 	return S_OK;
 }
 /**

@@ -1462,5 +1462,12 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="BundleReadded">A failed bundle %s has been readded in queue</String>
 		<String Name="TargetFileMissing">Target file is missing or wrong size</String>
 		<String Name="DownloadSkiplistMatch">The file matches the download skiplist</String>
+		<String Name="SettingsSbWebShortcuts">Web Shortcuts</String>
+		<String Name="SettingsWsDescr">Web shortcuts are used to open web pages with specific contents. The key can be more than one character, but must not contain any space. The URL has to have exactly One \"%s\" which will be replaced with the string you'll enter. If no \"%s\" exists, nothing will be pasted to the url, and the page will just open up. An example is:
+http://domain.com/search=%s
+
+Note: The key is case sensitive!
+
+Clean search string means that a title will be attempted to pick from the string. e.g \"Movie.Name.2003.DVDRip.XviD-ABC\" will become \"Movie Name\"</String>
 	</Strings>
 </Language>

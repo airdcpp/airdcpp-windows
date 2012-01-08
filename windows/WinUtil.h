@@ -29,6 +29,7 @@
 #include "../client/MerkleTree.h"
 #include "../client/HintedUser.h"
 #include "../client/UserInfoBase.h"
+#include "../client/WebShortcuts.h"
 
 #include <boost/bind.hpp>
 
@@ -309,6 +310,8 @@ public:
 	static void search(tstring searchTerm, int searchMode, bool tth = false);
 	static void SetIcon(HWND hWnd, tstring file, bool big = false);
 	static tstring getTitle(tstring searchTerm);
+	static void SearchSite(WebShortcut* ws, tstring strSearchString);
+	static void AppendSearchMenu(OMenu& menu, int x = 0);
 
 	static tstring getIconPath(const tstring& filename);
 

@@ -21,8 +21,11 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "../client/WebShortcuts.h"
+
 #include <atlcrack.h>
 #include "PropPage.h"
+#include "ExListViewCtrl.h"
 
 class AutosearchPage : public CPropertyPage<IDD_AUTOSEARCH>, public PropPage
 {
@@ -33,25 +36,61 @@ public:
 		SetTitle(title);
 	};
 
-	~AutosearchPage() { 
+	~AutosearchPage() {
+		for (WebShortcut::Iter i = wsList.begin(); i != wsList.end(); ++i)
+			delete *i;
+		
+		ctrlWebShortcuts.Detach();
 		free(title);
 	};
 
 	BEGIN_MSG_MAP_EX(AutosearchPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
+		COMMAND_HANDLER(IDC_WEB_SHORTCUTS_ADD, BN_CLICKED, onClickedShortcuts)
+		COMMAND_HANDLER(IDC_WEB_SHORTCUTS_PROPERTIES, BN_CLICKED, onClickedShortcuts)
+		COMMAND_HANDLER(IDC_WEB_SHORTCUTS_REMOVE, BN_CLICKED, onClickedShortcuts)
+		COMMAND_HANDLER(IDC_WEB_SHORTCUTS_LIST, LVN_ITEMCHANGED, onSelChangeShortcuts)
+		COMMAND_HANDLER(IDC_WEB_SHORTCUTS_LIST, LVN_ITEMCHANGING, onSelChangeShortcuts)
+		COMMAND_HANDLER(IDC_WEB_SHORTCUTS_LIST, LVN_ITEMACTIVATE, onSelChangeShortcuts)
+		NOTIFY_HANDLER(IDC_WEB_SHORTCUTS_LIST, LVN_KEYDOWN, onKeyDown)
+		NOTIFY_HANDLER(IDC_WEB_SHORTCUTS_LIST, NM_DBLCLK, onDoubleClick)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT, WPARAM, LPARAM, BOOL&);
+	LRESULT onClickedShortcuts(WORD /* wNotifyCode */, WORD wID, HWND /* hWndCtl */, BOOL& /* bHandled */);
+	LRESULT onSelChangeShortcuts(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
+	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
+	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
+
+	void updateListItem(int pos) {
+		dcassert(pos >= 0 && (unsigned int)pos < wsList.size());
+		ctrlWebShortcuts.SetItemText(pos, 0, wsList[pos]->name.c_str());
+		ctrlWebShortcuts.SetItemText(pos, 1, wsList[pos]->key.c_str());
+		ctrlWebShortcuts.SetItemText(pos, 2, wsList[pos]->url.c_str());
+	}
+
+	void addListItem(WebShortcut* ws) {
+		TStringList cols;
+		cols.push_back(ws->name);
+		cols.push_back(ws->key);
+		cols.push_back(ws->url);
+		cols.push_back(ws->clean? _T("Yes") : _T("No"));
+		ctrlWebShortcuts.insert(cols);
+		cols.clear();
+	}
 	
 protected:
 
 	static Item items[];
 	static TextItem texts[];
 	TCHAR* title;
+
+	ExListViewCtrl ctrlWebShortcuts;
+	WebShortcut::List wsList;
 
 };
 

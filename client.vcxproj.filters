@@ -218,6 +218,9 @@
     <ClCompile Include="client\FileQueue.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\WebShortcuts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -578,6 +581,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\atomic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\WebShortcuts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

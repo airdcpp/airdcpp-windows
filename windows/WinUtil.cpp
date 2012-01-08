@@ -974,8 +974,6 @@ tstring WinUtil::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /save\t\t\t\t\t(save share cache shares.xml)\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /search <string>\t\t\t\t(search for...)\n\
-/g <searchstring>\t\t\t\t(Google search)\n\
-/imdb <imdbquery>\t\t\t\t(search film from IMDB database)\n\
 /whois [IP]\t\t\t\t(find info about user from the ip address)\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /slots # \t\t\t\t\t(upload slots)\n\
@@ -1095,18 +1093,8 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(Util::getAwayMessage(sm));
 		}
 		ClientManager::getInstance()->infoUpdated();
-	} else if(stricmp(cmd.c_str(), _T("g")) == 0) {
-		if(param.empty()) {
-			status = TSTRING(SPECIFY_SEARCH_STRING);
-		} else {
-			WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(param))));
-		}
-	} else if(stricmp(cmd.c_str(), _T("imdb")) == 0) {
-		if(param.empty()) {
-			status = TSTRING(SPECIFY_SEARCH_STRING);
-		} else {
-			WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(param))));
-		}
+	} else if(WebShortcuts::getInstance()->getShortcutByKey(cmd) != NULL) {
+		WinUtil::SearchSite(WebShortcuts::getInstance()->getShortcutByKey(cmd), param);
 	} else if(stricmp(cmd.c_str(), _T("u")) == 0) {
 		if (!param.empty()) {
 			WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(param))));
@@ -3091,6 +3079,34 @@ void WinUtil::search(tstring searchTerm, int searchMode, bool tth) {
 tstring WinUtil::getIconPath(const tstring& filename) {
 
 	return m_IconPath + _T("\\") + filename;
+}
+
+void WinUtil::AppendSearchMenu(OMenu& menu, int x /*0*/) {
+	while(menu.GetMenuItemCount() > 0) {
+		menu.RemoveMenu(0, MF_BYPOSITION);
+	}
+	int n = 0;
+	WebShortcut::Iter i = WebShortcuts::getInstance()->list.begin();
+	for(; i != WebShortcuts::getInstance()->list.end(); ++i) {
+		menu.AppendMenu(MF_STRING, IDC_SEARCH_SITES + x + n, (LPCTSTR)(*i)->name.c_str());
+		n++;
+	}
+}
+
+void WinUtil::SearchSite(WebShortcut* ws, tstring searchTerm) {
+	if(ws == NULL)
+		return;
+
+	if(ws->clean) {
+		searchTerm = WinUtil::getTitle(searchTerm);
+	}
+	
+	if(!searchTerm.empty())
+		WinUtil::openLink((ws->url) + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+	else
+		WinUtil::openLink(ws->url);
+	
+
 }
 
 tstring WinUtil::getTitle(tstring searchTerm) {

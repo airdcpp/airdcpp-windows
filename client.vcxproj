@@ -291,6 +291,7 @@
     <ClCompile Include="client\UserConnection.cpp" />
     <ClCompile Include="client\UserQueue.cpp" />
     <ClCompile Include="client\Util.cpp" />
+    <ClCompile Include="client\WebShortcuts.cpp" />
     <ClCompile Include="client\Wildcards.cpp" />
     <ClCompile Include="client\ZUtils.cpp" />
   </ItemGroup>
@@ -392,6 +393,7 @@
     <ClInclude Include="client\typedefs.h" />
     <ClInclude Include="client\UploadBundle.h" />
     <ClInclude Include="client\UserQueue.h" />
+    <ClInclude Include="client\WebShortcuts.h" />
     <ClInclude Include="windows\ResourceLoader.h" />
     <CustomBuild Include="client\StringDefs.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>

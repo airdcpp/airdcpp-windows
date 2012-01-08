@@ -1186,11 +1186,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 	OMenu SearchMenu;
 	SearchMenu.CreatePopupMenu();
 	SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-	SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_TITLE, CTSTRING(SEARCH_GOOGLE_TITLE));
-	SearchMenu.AppendMenu(MF_STRING, IDC_GOOGLE_FULL, CTSTRING(SEARCH_GOOGLE_FULL));
-	SearchMenu.AppendMenu(MF_STRING, IDC_TVCOM, CTSTRING(SEARCH_TVCOM));
-	SearchMenu.AppendMenu(MF_STRING, IDC_IMDB, CTSTRING(SEARCH_IMDB));
-	SearchMenu.AppendMenu(MF_STRING, IDC_METACRITIC, CTSTRING(SEARCH_METACRITIC));
+	WinUtil::AppendSearchMenu(SearchMenu);
 
 
 	if (reinterpret_cast<HWND>(wParam) == ctrlQueue && ctrlQueue.GetSelectedCount() > 0) { 
@@ -2316,7 +2312,6 @@ void QueueFrame::on(QueueManagerListener::RecheckDone, const string& target) noe
 }
 LRESULT QueueFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-tstring searchTerm;
 tstring searchTermFull;
 
 		if(usingDirMenu && (ctrlDirs.GetSelectedItem() != NULL)) {
@@ -2330,32 +2325,13 @@ tstring searchTermFull;
 				searchTermFull = ii->getText(COLUMN_TARGET);
 			}
 		}
+	size_t newId = (size_t)wID - IDC_SEARCH_SITES;
+	if(newId < (int)WebShortcuts::getInstance()->list.size()) {
+		WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
+		if(ws != NULL) 
+			WinUtil::SearchSite(ws, searchTermFull); 
+	}
 		
-		searchTerm = WinUtil::getTitle(searchTermFull);
-
-
-		switch (wID) {
-			case IDC_GOOGLE_TITLE:
-				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-
-			case IDC_GOOGLE_FULL:
-				WinUtil::openLink(_T("http://www.google.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTermFull))));
-				break;
-
-			case IDC_IMDB:
-				WinUtil::openLink(_T("http://www.imdb.com/find?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-			case IDC_TVCOM:
-				WinUtil::openLink(_T("http://www.tv.com/search?q=") + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
-				break;
-			case IDC_METACRITIC:
-				WinUtil::openLink(_T("http://www.metacritic.com/search/all/") + Text::toT(Util::encodeURI(Text::fromT(searchTerm)) + "/results"));
-				break;
-		}
-
-	searchTerm = Util::emptyStringT;
-	searchTermFull = Util::emptyStringT;
 	return S_OK;
 }	
 /**

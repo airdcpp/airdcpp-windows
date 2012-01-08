@@ -24,21 +24,14 @@
 
 #include "WebShortcutsProperties.h"
 
-
-const tstring WebShortcutsProperties::badkeys = _T(" refresh refreshi slots search dc++ away back lastlog me join clear ts password showjoins close userlist connection favorite help pm ");
-
 // Initialize dialog
 LRESULT WebShortcutsProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 
-	SetWindowText(CTSTRING(SETTINGS_WS_TITLE));
-	SetDlgItemText(IDOK, CTSTRING(DIALOG_OK));
-	SetDlgItemText(IDCANCEL, CTSTRING(DIALOG_CANCEL));
+	SetWindowText(_T("WebShortCuts"));
 	SetDlgItemText(IDC_WEB_SHORTCUTS_NAME_DESC, CTSTRING(SETTINGS_NAME));
-	SetDlgItemText(IDC_WEB_SHORTCUT_KEY_DESC, CTSTRING(KEY));
-	SetDlgItemText(IDC_WEB_SHORTCUT_URL_DESC, CTSTRING(URL));
-	SetDlgItemText(IDC_WEB_SHORTCUTS_HOWTO, CTSTRING(SETTINGS_WS_HOWTO));
+	//SetDlgItemText(IDC_WEB_SHORTCUTS_HOWTO, CTSTRING(SETTINGS_WS_HOWTO));
 	SetDlgItemText(IDC_WEB_SHORTCUTS_DESC, CTSTRING(SETTINGS_WS_DESCR));
-	SetDlgItemText(IDC_WEB_SHORTCUTS_CLEAN, CTSTRING(SETTINGS_WS_CLEAN));
+	//SetDlgItemText(IDC_WEB_SHORTCUTS_CLEAN, CTSTRING(SETTINGS_WS_CLEAN));
 
 	SetDlgItemText(IDC_WEB_SHORTCUT_NAME,	ws->name.c_str());
 	SetDlgItemText(IDC_WEB_SHORTCUT_KEY,	ws->key.c_str());
@@ -59,12 +52,12 @@ LRESULT WebShortcutsProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND 
 		GetDlgItemText(IDC_WEB_SHORTCUT_NAME, buf, 2048);
 		tstring sName = buf;
 		if (sName.empty()) {
-			MessageBox(CTSTRING(NAME_REQUIRED), sName.c_str(), MB_OK | MB_ICONEXCLAMATION);
+			MessageBox(_T("Name required"), sName.c_str(), MB_OK | MB_ICONEXCLAMATION);
 			return 0;
 		}
 		WebShortcut* _ws = WebShortcuts::getShortcutByName(wslist, sName);
 		if ( _ws != NULL && _ws != ws ) {
-			MessageBox(CTSTRING(NAME_ALREADY_IN_USE), sName.c_str(), MB_OK | MB_ICONEXCLAMATION);
+			MessageBox(_T("Name already in use"), sName.c_str(), MB_OK | MB_ICONEXCLAMATION);
 			return 0;
 		}
 
@@ -74,11 +67,7 @@ LRESULT WebShortcutsProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND 
 		if (!sKey.empty()) {
 			_ws = WebShortcuts::getShortcutByKey(wslist, sKey);
 			if ( _ws != NULL && _ws != ws ) {
-				MessageBox(CTSTRING(KEY_ALREADY_IN_USE), (sName + _T(" (") + sKey + _T(")")).c_str(), MB_OK | MB_ICONEXCLAMATION);
-				return 0;
-			}
-			if (badkeys.find(_T(" ") + sKey + _T(" ")) != tstring::npos) {
-				MessageBox(CTSTRING(KEY_ALREADY_IN_USE), (sName + _T(" (") + sKey + _T(")")).c_str(), MB_OK | MB_ICONEXCLAMATION);
+				MessageBox(_T("Key already in use"), (sName + _T(" (") + sKey + _T(")")).c_str(), MB_OK | MB_ICONEXCLAMATION);
 				return 0;
 			}
 		}
