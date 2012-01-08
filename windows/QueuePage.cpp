@@ -59,11 +59,11 @@ PropPage::ListItem QueuePage::optionItems[] = {
 	{ SettingsManager::DONT_DL_ALREADY_SHARED, ResourceManager::SETTINGS_DONT_DL_ALREADY_SHARED },
 	{ SettingsManager::ANTI_FRAG, ResourceManager::SETTINGS_ANTI_FRAG },
 	{ SettingsManager::AUTO_PRIORITY_DEFAULT ,ResourceManager::SETTINGS_AUTO_PRIORITY_DEFAULT },
-	{ SettingsManager::OVERLAP_CHUNKS ,ResourceManager::SETTINGS_OVERLAP_CHUNKS },
+	{ SettingsManager::OVERLAP_SLOW_SOURCES ,ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
 	{ SettingsManager::AUTO_ADD_SOURCE ,ResourceManager::AUTO_ADD_SOURCE },
 	{ SettingsManager::KEEP_FINISHED_FILES, ResourceManager::KEEP_FINISHED_FILES },
 	{ SettingsManager::DONT_DL_ALREADY_QUEUED, ResourceManager::SETTING_DONT_DL_ALREADY_QUEUED },
-	{ SettingsManager::DOWNLOADS_EXPAND, ResourceManager::SETTINGS_DOWNLOADS_EXPAND },
+	{ SettingsManager::EXPAND_BUNDLES, ResourceManager::SETTINGS_EXPAND_BUNDLES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
