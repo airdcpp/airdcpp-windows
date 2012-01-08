@@ -819,11 +819,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
 			menu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
-
-			menu.AppendMenu(MF_SEPARATOR);
-			menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-			WinUtil::AppendSearchMenu(SearchMenu);
-
+	
 			int n = 0;
 
 
@@ -861,12 +857,12 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 				}
 			}
 		} else {
-			SearchMenu.CreatePopupMenu();
 			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
-			menu.AppendMenu(MF_SEPARATOR);
-			menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-			WinUtil::AppendSearchMenu(SearchMenu);
 		}
+		SearchMenu.CreatePopupMenu();
+		menu.AppendMenu(MF_SEPARATOR);
+		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+		WinUtil::AppendSearchMenu(SearchMenu);
 
 
 	} else {
