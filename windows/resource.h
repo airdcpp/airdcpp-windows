@@ -931,11 +931,6 @@
 #define IDC_RESET_TAB_COLOR             1525
 #define IDC_SEARCH_BY_TTH               1526
 #define IDC_THEMES                      1526
-#define IDC_GOOGLE                      1527
-#define IDC_IMDB                        1528
-#define IDC_GOOGLE_FULL                 1530
-#define IDC_TVCOM                       1531
-#define IDC_GOOGLE_TITLE                1532
 #define IDC_REMOVE_ON_HIT               1533
 #define IDC_DL_TO                       1534
 #define IDC_TARGET_PATH                 1535

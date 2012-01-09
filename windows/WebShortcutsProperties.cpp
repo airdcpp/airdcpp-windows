@@ -27,11 +27,11 @@
 // Initialize dialog
 LRESULT WebShortcutsProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 
-	SetWindowText(_T("WebShortCuts"));
+	SetWindowText(CTSTRING(WEBSHORTCUTS));
 	SetDlgItemText(IDC_WEB_SHORTCUTS_NAME_DESC, CTSTRING(SETTINGS_NAME));
-	//SetDlgItemText(IDC_WEB_SHORTCUTS_HOWTO, CTSTRING(SETTINGS_WS_HOWTO));
+	SetDlgItemText(IDC_WEB_SHORTCUTS_HOWTO, CTSTRING(SETTINGS_WS_HOWTO));
 	SetDlgItemText(IDC_WEB_SHORTCUTS_DESC, CTSTRING(SETTINGS_WS_DESCR));
-	//SetDlgItemText(IDC_WEB_SHORTCUTS_CLEAN, CTSTRING(SETTINGS_WS_CLEAN));
+	SetDlgItemText(IDC_WEB_SHORTCUTS_CLEAN, CTSTRING(SETTINGS_WS_CLEAN));
 
 	SetDlgItemText(IDC_WEB_SHORTCUT_NAME,	ws->name.c_str());
 	SetDlgItemText(IDC_WEB_SHORTCUT_KEY,	ws->key.c_str());
@@ -52,12 +52,12 @@ LRESULT WebShortcutsProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND 
 		GetDlgItemText(IDC_WEB_SHORTCUT_NAME, buf, 2048);
 		tstring sName = buf;
 		if (sName.empty()) {
-			MessageBox(_T("Name required"), sName.c_str(), MB_OK | MB_ICONEXCLAMATION);
+			MessageBox(CTSTRING(NAME_REQUIRED), sName.c_str(), MB_OK | MB_ICONEXCLAMATION);
 			return 0;
 		}
 		WebShortcut* _ws = WebShortcuts::getShortcutByName(wslist, sName);
 		if ( _ws != NULL && _ws != ws ) {
-			MessageBox(_T("Name already in use"), sName.c_str(), MB_OK | MB_ICONEXCLAMATION);
+			MessageBox(CTSTRING(NAME_IN_USE), sName.c_str(), MB_OK | MB_ICONEXCLAMATION);
 			return 0;
 		}
 
@@ -67,7 +67,7 @@ LRESULT WebShortcutsProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND 
 		if (!sKey.empty()) {
 			_ws = WebShortcuts::getShortcutByKey(wslist, sKey);
 			if ( _ws != NULL && _ws != ws ) {
-				MessageBox(_T("Key already in use"), (sName + _T(" (") + sKey + _T(")")).c_str(), MB_OK | MB_ICONEXCLAMATION);
+				MessageBox(CTSTRING(KEY_IN_USE), (sName + _T(" (") + sKey + _T(")")).c_str(), MB_OK | MB_ICONEXCLAMATION);
 				return 0;
 			}
 		}

@@ -538,9 +538,9 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 		}
 	}
 	
-	} catch(Exception& e) { 
+	} catch(...) { 
 		//remove this later, lets see if we can catch the match that returns the error.
-		LogManager::getInstance()->message("Error in FormatEmoticonsAndLinks, report it! Message: " + Text::fromT(sMsg) + " Error: " + e.getError());  
+		LogManager::getInstance()->message("Error in FormatEmoticonsAndLinks, report it! Message: " + Text::fromT(sMsg) );  
 	}
 
 }
