@@ -1454,6 +1454,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			dirMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 			dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_DIRECTORY));
+			dirMenu.AppendMenu(MF_STRING, IDC_COPY, CTSTRING(COPY_DIRECTORY));
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			dirMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 			dirMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE));
@@ -2200,10 +2201,13 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 }			
 
 LRESULT QueueFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	QueueItemInfo *ii = (QueueItemInfo*)ctrlQueue.GetItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-
-	if(ii != NULL) {
-		WinUtil::setClipboard(ii->getText(wID - IDC_COPY));
+	if (usingDirMenu) {
+		WinUtil::setClipboard(Text::toT(Util::getLastDir(curDir)));
+	} else {
+		QueueItemInfo *ii = (QueueItemInfo*)ctrlQueue.GetItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
+		if(ii != NULL) {
+			WinUtil::setClipboard(ii->getText(wID - IDC_COPY));
+		}
 	}
 	return 0;
 }
