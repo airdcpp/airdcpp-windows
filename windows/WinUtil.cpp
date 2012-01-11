@@ -1496,7 +1496,7 @@ void WinUtil::openLink(const tstring& url) {
 	}
 
 	boost::wregex reg;
-	reg.assign(_T("(?=\\S*[A-Z]\\S*)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S+)))(\\S+)-(\\w{2,})"));
+	reg.assign(Text::toT(AirUtil::getReleaseRegLong(false)));
 	if(regex_match(url, reg)) {
 		WinUtil::search(url, 0, false);
 	}

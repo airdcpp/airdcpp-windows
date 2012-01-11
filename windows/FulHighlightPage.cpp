@@ -20,6 +20,7 @@
 #include "stdafx.h"
 #include "../client/DCPlusPlus.h"
 
+#include "../client/AirUtil.h"
 #include "../client/SettingsManager.h"
 #include "../client/ColorSettings.h"
 #include "../client/HighlightManager.h"
@@ -230,7 +231,7 @@ void FulHighlightPage::addPreset(int preset) {
 			cs.setFgColor(RGB(51, 102, 154));
 			break;
 		case 4:
-			cs.setMatch(_T("$Re:((?<=\\s)(?=\\S*[A-Z]\\S*)(([A-Z0-9]|\\w[A-Z0-9])[A-Za-z0-9-]*)(\\.|_|(-(?=\\S*\\d{4}\\S+)))(\\S+)-(\\w{2,})(?=(\\W)?\\s))"));
+			cs.setMatch(_T("$Re:") + Text::toT(AirUtil::getReleaseRegLong(true)));
 			cs.setHasFgColor(true);
 			cs.setFgColor(RGB(153, 51, 153));
 			break;
