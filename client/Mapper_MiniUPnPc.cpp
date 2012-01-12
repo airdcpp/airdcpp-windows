@@ -16,63 +16,76 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "stdafx.h"
-
+#include "stdinc.h"
 #include "Mapper_MiniUPnPc.h"
 
-#include "../client/SettingsManager.h"
-#include "../client/Socket.h"
-#include "../client/Util.h"
-#include "../client/AirUtil.h"
+#include "ConnectivityManager.h"
+#include "SettingsManager.h"
+#include "Util.h"
+#include "Socket.h"
+#include "AirUtil.h"
 
 extern "C" {
 #ifndef STATICLIB
 #define STATICLIB
 #endif
-#include "../miniupnpc/miniupnpc.h"
-#include "../miniupnpc/upnpcommands.h"
+#include <../miniupnpc/miniupnpc.h>
+#include <../miniupnpc/upnpcommands.h>
 }
+
+namespace dcpp {
 
 const string Mapper_MiniUPnPc::name = "MiniUPnP";
 
 bool Mapper_MiniUPnPc::init() {
-	if(initialized)
+	if(!url.empty())
 		return true;
 
+#ifndef PORTMAPTOOL
+	const auto& bindAddr = Socket::getBindAddress();
 	UPNPDev* devices = upnpDiscover(2000,
-		SettingsManager::getInstance()->isDefault(SettingsManager::BIND_INTERFACE) ? nullptr : Socket::getBindAddress().c_str(),
+		(bindAddr.empty() || bindAddr == Socket::getBindAddress()) ? nullptr : bindAddr.c_str(),
 		0, 0, 0, 0);
+#else
+	UPNPDev* devices = upnpDiscover(2000, nullptr, 0, 0, 0, 0);
+#endif
 	if(!devices)
 		return false;
 
 	UPNPUrls urls;
 	IGDdatas data;
 
-	initialized = UPNP_GetValidIGD(devices, &urls, &data, 0, 0) == 1;
-	if(initialized) {
+	auto ret = UPNP_GetValidIGD(devices, &urls, &data, 0, 0);
+
+	bool ok = ret == 1;
+	if(ok) {
 		url = urls.controlURL;
 		service = data.first.servicetype;
 		device = data.CIF.friendlyName;
+	}
 
+	if(ret) {
 		FreeUPNPUrls(&urls);
 		freeUPNPDevlist(devices);
 	}
 
-	return initialized;
+	return ok;
 }
 
 void Mapper_MiniUPnPc::uninit() {
 }
 
-bool Mapper_MiniUPnPc::add(const unsigned short port, const Protocol protocol, const string& description) {
-	const string port_ = Util::toString(port);
-	return UPNP_AddPortMapping(url.c_str(), service.c_str(), port_.c_str(), port_.c_str(),
-		AirUtil::getLocalIp().c_str(), description.c_str(), protocols[protocol], 0, 0) == UPNPCOMMAND_SUCCESS;
+#ifndef PORTMAPTOOL
+namespace { string getLocalIp() { return AirUtil::getLocalIp(); } }
+#endif
+
+bool Mapper_MiniUPnPc::add(const string& port, const Protocol protocol, const string& description) {
+	return UPNP_AddPortMapping(url.c_str(), service.c_str(), port.c_str(), port.c_str(),
+		getLocalIp().c_str(), description.c_str(), protocols[protocol], 0, 0) == UPNPCOMMAND_SUCCESS;
 }
 
-bool Mapper_MiniUPnPc::remove(const unsigned short port, const Protocol protocol) {
-	return UPNP_DeletePortMapping(url.c_str(), service.c_str(), Util::toString(port).c_str(),
-		protocols[protocol], 0) == UPNPCOMMAND_SUCCESS;
+bool Mapper_MiniUPnPc::remove(const string& port, const Protocol protocol) {
+	return UPNP_DeletePortMapping(url.c_str(), service.c_str(), port.c_str(), protocols[protocol], 0) == UPNPCOMMAND_SUCCESS;
 }
 
 string Mapper_MiniUPnPc::getDeviceName() {
@@ -85,3 +98,5 @@ string Mapper_MiniUPnPc::getExternalIP() {
 		return buf;
 	return Util::emptyString;
 }
+
+} // dcpp namespace

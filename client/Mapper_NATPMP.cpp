@@ -16,19 +16,20 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "stdafx.h"
-
+#include "stdinc.h"
 #include "Mapper_NATPMP.h"
 
-#include "../client/Util.h"
+#include "Util.h"
 
 extern "C" {
 #ifndef STATICLIB
 #define STATICLIB
 #endif
-#include "../natpmp/getgateway.h"
-#include "../natpmp/natpmp.h"
+#include <../natpmp/getgateway.h>
+#include <../natpmp/natpmp.h>
 }
+
+namespace dcpp {
 
 const string Mapper_NATPMP::name = "NAT-PMP";
 
@@ -48,21 +49,27 @@ void Mapper_NATPMP::uninit() {
 	closenatpmp(&nat);
 }
 
-int reqType(const Mapper::Protocol protocol) {
-	switch(protocol) {
-	case Mapper::PROTOCOL_TCP: return NATPMP_PROTOCOL_TCP;
-	case Mapper::PROTOCOL_UDP: return NATPMP_PROTOCOL_UDP;
+namespace {
+
+int reqType(Mapper::Protocol protocol) {
+	if (protocol == Mapper::PROTOCOL_TCP) {
+		return NATPMP_PROTOCOL_TCP;
+	} else {
+		dcassert(protocol == Mapper::PROTOCOL_UDP);
+		return NATPMP_PROTOCOL_UDP;
 	}
 }
 
-int respType(const Mapper::Protocol protocol) {
-	switch(protocol) {
-	case Mapper::PROTOCOL_TCP: return NATPMP_RESPTYPE_TCPPORTMAPPING;
-	case Mapper::PROTOCOL_UDP: return NATPMP_RESPTYPE_UDPPORTMAPPING;
+int respType(Mapper::Protocol protocol) {
+	if (protocol == Mapper::PROTOCOL_TCP) {
+		return NATPMP_RESPTYPE_TCPPORTMAPPING;
+	} else {
+		dcassert(protocol == Mapper::PROTOCOL_UDP);
+		return  NATPMP_RESPTYPE_UDPPORTMAPPING;
 	}
 }
 
-bool sendRequest(const unsigned short port, const Mapper::Protocol protocol, uint32_t lifetime) {
+bool sendRequest(uint16_t port, Mapper::Protocol protocol, uint32_t lifetime) {
 	return sendnewportmappingrequest(&nat, reqType(protocol), port, port, lifetime) >= 0;
 }
 
@@ -83,10 +90,13 @@ bool read(natpmpresp_t& response) {
 	return res >= 0;
 }
 
-bool Mapper_NATPMP::add(const unsigned short port, const Protocol protocol, const string&) {
-	if(sendRequest(port, protocol, 3600)) {
+} // unnamed namespace
+
+bool Mapper_NATPMP::add(const string& port, const Protocol protocol, const string&) {
+	auto port_ = Util::toInt(port);
+	if(sendRequest(port_, protocol, 3600)) {
 		natpmpresp_t response;
-		if(read(response) && response.type == respType(protocol) && response.pnu.newportmapping.mappedpublicport == port) {
+		if(read(response) && response.type == respType(protocol) && response.pnu.newportmapping.mappedpublicport == port_) {
 			lifetime = std::min(lifetime ? lifetime : 3600, response.pnu.newportmapping.lifetime);
 			return true;
 		}
@@ -94,10 +104,11 @@ bool Mapper_NATPMP::add(const unsigned short port, const Protocol protocol, cons
 	return false;
 }
 
-bool Mapper_NATPMP::remove(const unsigned short port, const Protocol protocol) {
-	if(sendRequest(port, protocol, 0)) {
+bool Mapper_NATPMP::remove(const string& port, const Protocol protocol) {
+	auto port_ = Util::toInt(port);
+	if(sendRequest(port_, protocol, 0)) {
 		natpmpresp_t response;
-		return read(response) && response.type == respType(protocol) && response.pnu.newportmapping.mappedpublicport == port;
+		return read(response) && response.type == respType(protocol) && response.pnu.newportmapping.mappedpublicport == port_;
 	}
 	return false;
 }
@@ -115,3 +126,5 @@ string Mapper_NATPMP::getExternalIP() {
 	}
 	return Util::emptyString;
 }
+
+} // dcpp namespace

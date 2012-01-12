@@ -33,10 +33,6 @@
 #include "SingleInstance.h"
 #include "WinUtil.h"
 
-#include "Mapper_NATPMP.h"
-#include "Mapper_MiniUPnPc.h"
-#include "Mapper_WinUPnP.h"
-
 #include "../client/MerkleTree.h"
 #include "../client/MappingManager.h"
 
@@ -396,10 +392,6 @@ if(BOOLSETTING(PASSWD_PROTECT)) {
 	if(ResourceManager::getInstance()->isRTL()) {
 		SetProcessDefaultLayout(LAYOUT_RTL);
 	}
-
-	MappingManager::getInstance()->addMapper<Mapper_NATPMP>();
-	MappingManager::getInstance()->addMapper<Mapper_MiniUPnPc>();
-	MappingManager::getInstance()->addMapper<Mapper_WinUPnP>();
 
 	MainFrame wndMain;
 

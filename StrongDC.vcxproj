@@ -478,9 +478,6 @@
     <ClCompile Include="windows\MagnetDlg.cpp" />
     <ClCompile Include="windows\main.cpp" />
     <ClCompile Include="windows\MainFrm.cpp" />
-    <ClCompile Include="windows\Mapper_MiniUPnPc.cpp" />
-    <ClCompile Include="windows\Mapper_NATPMP.cpp" />
-    <ClCompile Include="windows\Mapper_WinUPnP.cpp" />
     <ClCompile Include="windows\NetworkPage.cpp" />
     <ClCompile Include="windows\NotepadFrame.cpp" />
     <ClCompile Include="windows\OMenu.cpp" />
@@ -580,9 +577,6 @@
     <ClInclude Include="windows\LogPage.h" />
     <ClInclude Include="windows\MagnetDlg.h" />
     <ClInclude Include="windows\MainFrm.h" />
-    <ClInclude Include="windows\Mapper_MiniUPnPc.h" />
-    <ClInclude Include="windows\Mapper_NATPMP.h" />
-    <ClInclude Include="windows\Mapper_WinUPnP.h" />
     <ClInclude Include="windows\memdc.h" />
     <ClInclude Include="windows\NetworkPage.h" />
     <ClInclude Include="windows\NotepadFrame.h" />

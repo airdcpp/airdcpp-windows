@@ -250,6 +250,9 @@
     <ClCompile Include="client\HighlightManager.cpp" />
     <ClCompile Include="client\HttpConnection.cpp" />
     <ClCompile Include="client\Mapper.cpp" />
+    <ClCompile Include="client\Mapper_MiniUPnPc.cpp" />
+    <ClCompile Include="client\Mapper_NATPMP.cpp" />
+    <ClCompile Include="client\Mapper_WinUPnP.cpp" />
     <ClCompile Include="client\MappingManager.cpp" />
     <ClCompile Include="client\NmdcHub.cpp" />
     <ClCompile Include="client\pme.cpp" />
@@ -355,6 +358,9 @@
     <ClInclude Include="client\HubEntry.h" />
     <ClInclude Include="client\LogManager.h" />
     <ClInclude Include="client\Mapper.h" />
+    <ClInclude Include="client\Mapper_MiniUPnPc.h" />
+    <ClInclude Include="client\Mapper_NATPMP.h" />
+    <ClInclude Include="client\Mapper_WinUPnP.h" />
     <ClInclude Include="client\MappingManager.h" />
     <ClInclude Include="client\MerkleCheckOutputStream.h" />
     <ClInclude Include="client\MerkleTree.h" />
@@ -394,6 +400,7 @@
     <ClInclude Include="client\UploadBundle.h" />
     <ClInclude Include="client\UserQueue.h" />
     <ClInclude Include="client\WebShortcuts.h" />
+    <ClInclude Include="E:\dcplusplus\dcpp\format.h" />
     <ClInclude Include="windows\ResourceLoader.h" />
     <CustomBuild Include="client\StringDefs.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>

@@ -16,15 +16,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_WIN32_MAPPER_NATPMP_H
-#define DCPLUSPLUS_WIN32_MAPPER_NATPMP_H
+#ifndef DCPLUSPLUS_DCPP_MAPPER_MINIUPNPC_H
+#define DCPLUSPLUS_DCPP_MAPPER_MINIUPNPC_H
 
-#include "../client/Mapper.h"
+#include "Mapper.h"
 
-class Mapper_NATPMP : public Mapper
+namespace dcpp {
+
+class Mapper_MiniUPnPc : public Mapper
 {
 public:
-	Mapper_NATPMP() : Mapper(), lifetime(0) { }
+	Mapper_MiniUPnPc() : Mapper() { }
 
 	static const string name;
 
@@ -32,18 +34,21 @@ private:
 	bool init();
 	void uninit();
 
-	bool add(const unsigned short port, const Protocol protocol, const string& description);
-	bool remove(const unsigned short port, const Protocol protocol);
+	bool add(const string& port, const Protocol protocol, const string& description);
+	bool remove(const string& port, const Protocol protocol);
 
-	uint32_t renewal() const { return lifetime / 2; }
+	uint32_t renewal() const { return 0; }
 
 	string getDeviceName();
 	string getExternalIP();
 
 	const string& getName() const { return name; }
 
-	string gateway;
-	uint32_t lifetime;
+	string url;
+	string service;
+	string device;
 };
+
+} // dcpp namespace
 
 #endif

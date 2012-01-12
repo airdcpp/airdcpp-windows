@@ -483,15 +483,6 @@
     <ClCompile Include="windows\iTunesCOMInterface_i.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\Mapper_MiniUPnPc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windows\Mapper_WinUPnP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windows\Mapper_NATPMP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\SpeedPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -795,15 +786,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\iTunesCOMInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\Mapper_MiniUPnPc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\Mapper_WinUPnP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\Mapper_NATPMP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\SpeedPage.h">

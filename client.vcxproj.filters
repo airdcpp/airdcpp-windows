@@ -221,6 +221,15 @@
     <ClCompile Include="client\WebShortcuts.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\Mapper_MiniUPnPc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\Mapper_NATPMP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\Mapper_WinUPnP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -584,6 +593,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\WebShortcuts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\Mapper_NATPMP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\Mapper_WinUPnP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\Mapper_MiniUPnPc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\dcplusplus\dcpp\format.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
