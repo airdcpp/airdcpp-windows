@@ -25,7 +25,7 @@
 #include "../client/Util.h"
 #include "../client/ResourceManager.h"
 
-class AutoSearchPageDlg : public CDialogImpl<AutoSearchPageDlg> {
+class SearchPageDlg : public CDialogImpl<SearchPageDlg> {
 public:
 	tstring	search, comment, target, userMatch;
 	int fileType, action, rawToSend;
@@ -34,10 +34,10 @@ public:
 
 	enum { IDD = IDD_AUTOSEARCH_DLG };
 
-	AutoSearchPageDlg();
-	~AutoSearchPageDlg();
+	SearchPageDlg();
+	~SearchPageDlg();
 
-	BEGIN_MSG_MAP_EX(AutoSearchPageDlg)
+	BEGIN_MSG_MAP_EX(SearchPageDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)

@@ -14,8 +14,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef AUTOSEARCH_PAGE_H
-#define AUTOSEARCH_PAGE_H
+#ifndef SEARCH_PAGE_H
+#define SEARCH_PAGE_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -27,16 +27,16 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
-class AutosearchPage : public CPropertyPage<IDD_AUTOSEARCH>, public PropPage
+class SearchPage : public CPropertyPage<IDD_SEARCHPAGE>, public PropPage
 {
 public:
-	AutosearchPage(SettingsManager *s) : PropPage(s) {
+	SearchPage(SettingsManager *s) : PropPage(s) {
 		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(SETTINGS_AIRSEARCH)).c_str());
 
 		SetTitle(title);
 	};
 
-	~AutosearchPage() {
+	~SearchPage() {
 		for (WebShortcut::Iter i = wsList.begin(); i != wsList.end(); ++i)
 			delete *i;
 		
@@ -44,7 +44,7 @@ public:
 		free(title);
 	};
 
-	BEGIN_MSG_MAP_EX(AutosearchPage)
+	BEGIN_MSG_MAP_EX(SearchPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		COMMAND_HANDLER(IDC_WEB_SHORTCUTS_ADD, BN_CLICKED, onClickedShortcuts)
 		COMMAND_HANDLER(IDC_WEB_SHORTCUTS_PROPERTIES, BN_CLICKED, onClickedShortcuts)

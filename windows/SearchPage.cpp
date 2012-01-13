@@ -22,7 +22,7 @@
 #include "SearchPage.h"
 #include "WebShortcutsProperties.h"
 
-PropPage::TextItem AutosearchPage::texts[] = {
+PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_SEARH_SKIPLIST_PRESET,				ResourceManager::SETTINGS_SEARH_SKIPLIST_PRESET },
 	{ IDC_PRE1,									ResourceManager::PRESET1 },
 	{ IDC_PRE2,									ResourceManager::PRESET2 },
@@ -34,7 +34,7 @@ PropPage::TextItem AutosearchPage::texts[] = {
 	{ 0,										ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-PropPage::Item AutosearchPage::items[] = {
+PropPage::Item SearchPage::items[] = {
 	{ IDC_SKIPLIST_PRESET1, SettingsManager::SKIP_MSG_01, PropPage::T_STR },
 	{ IDC_SKIPLIST_PRESET2, SettingsManager::SKIP_MSG_02, PropPage::T_STR },
 	{ IDC_SKIPLIST_PRESET3, SettingsManager::SKIP_MSG_03, PropPage::T_STR },
@@ -42,7 +42,7 @@ PropPage::Item AutosearchPage::items[] = {
 	{ 0, 0, PropPage::T_END }
 };
 
-LRESULT AutosearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT SearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
 	
@@ -66,7 +66,7 @@ LRESULT AutosearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 
 	return TRUE;
 }
-LRESULT AutosearchPage::onClickedShortcuts(WORD /* wNotifyCode */, WORD wID, HWND /* hWndCtl */, BOOL& /* bHandled */) {
+LRESULT SearchPage::onClickedShortcuts(WORD /* wNotifyCode */, WORD wID, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 	if (wID == IDC_WEB_SHORTCUTS_ADD) {
 		WebShortcut* ws;
 		ws = new WebShortcut();
@@ -97,7 +97,7 @@ LRESULT AutosearchPage::onClickedShortcuts(WORD /* wNotifyCode */, WORD wID, HWN
 	}
 	return S_OK;
 }
-LRESULT AutosearchPage::onSelChangeShortcuts(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */) {
+LRESULT SearchPage::onSelChangeShortcuts(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 	CButton cbnProp, cbnRemove;
 	cbnProp.Attach(GetDlgItem(IDC_WEB_SHORTCUTS_PROPERTIES));
 	cbnRemove.Attach(GetDlgItem(IDC_WEB_SHORTCUTS_REMOVE));
@@ -112,7 +112,7 @@ LRESULT AutosearchPage::onSelChangeShortcuts(WORD /* wNotifyCode */, WORD /* wID
 	}
 	return S_OK;
 }
-LRESULT AutosearchPage::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+LRESULT SearchPage::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
 	switch(kd->wVKey) {
 	case VK_INSERT:
@@ -127,7 +127,7 @@ LRESULT AutosearchPage::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 	return 0;
 }
 
-LRESULT AutosearchPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT SearchPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	NMITEMACTIVATE* item = (NMITEMACTIVATE*)pnmh;
 
 	if(item->iItem >= 0) {
@@ -140,7 +140,7 @@ LRESULT AutosearchPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 }
 
 
-void AutosearchPage::write() {
+void SearchPage::write() {
 	WebShortcuts::getInstance()->replaceList(wsList);
 
 	PropPage::write((HWND)*this, items);

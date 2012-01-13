@@ -90,7 +90,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s) : TreePropertyShee
 	pages[n++] = new IgnorePage(s);
 	pages[n++] = new Popups(s);
 	pages[n++] = new FulHighlightPage(s);
-	pages[n++] = new AutosearchPage(s);
+	pages[n++] = new SearchPage(s);
 	pages[n++] = new AirAppearancePage(s);
 	pages[n++] = new PriorityPage(s);
 	

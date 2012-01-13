@@ -1804,7 +1804,7 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 				WinUtil::SearchSite(ws, searchTermFull); 
 	
 				delete[] buf;
-			} else if(!selectedWord.empty())  { 	 
+			} else { 	 
 	              WinUtil::SearchSite(ws, selectedWord); 
 	       }
 		}

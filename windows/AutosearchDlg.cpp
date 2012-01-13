@@ -26,7 +26,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-AutoSearchPageDlg::AutoSearchPageDlg() {
+SearchPageDlg::SearchPageDlg() {
 	search = _T("");
 	fileType = 0;
 	action = 0;
@@ -36,7 +36,7 @@ AutoSearchPageDlg::AutoSearchPageDlg() {
 	userMatch = Util::emptyStringT;
 }
 
-AutoSearchPageDlg::~AutoSearchPageDlg() {
+SearchPageDlg::~SearchPageDlg() {
 	ctrlSearch.Detach();
 	ctrlFileType.Detach();
 	cAction.Detach();
@@ -46,7 +46,7 @@ AutoSearchPageDlg::~AutoSearchPageDlg() {
 
 }
 
-LRESULT AutoSearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
 	ATTACH(IDC_TARGET_PATH, ctrlTarget);
@@ -108,7 +108,7 @@ LRESULT AutoSearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	return TRUE;
 }
 
-LRESULT AutoSearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT SearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	TCHAR buf[MAX_PATH];
 
 	GetDlgItemText(IDC_TARGET_PATH, buf, MAX_PATH);
@@ -120,7 +120,7 @@ LRESULT AutoSearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
-LRESULT AutoSearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(wID == IDOK) {
 		TCHAR buf[512];
 		TCHAR buf2[MAX_PATH];
@@ -147,7 +147,7 @@ LRESULT AutoSearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 	EndDialog(wID);
 	return 0;
 }
-LRESULT AutoSearchPageDlg::onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT SearchPageDlg::onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	return 0;
 }
 

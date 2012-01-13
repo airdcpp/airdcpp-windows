@@ -3097,7 +3097,7 @@ void WinUtil::SearchSite(WebShortcut* ws, tstring searchTerm) {
 	if(ws == NULL)
 		return;
 
-	if(ws->clean) {
+	if(ws->clean && !searchTerm.empty()) {
 		searchTerm = WinUtil::getTitle(searchTerm);
 	}
 	

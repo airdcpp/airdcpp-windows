@@ -141,7 +141,7 @@
 #define IDD_EXTRA                       301
 #define IDD_AIRDCPAGE                   301
 #define IDB_WINAMP_CONTROL              302
-#define IDD_AUTOSEARCH                  302
+#define IDD_SEARCHPAGE						302
 #define IDD_AIRDOWNLOADSPAGE            303
 #define IDD_AIRSHARINGPAGE              304
 #define IDD_AUTOSEARCH_DLG              305

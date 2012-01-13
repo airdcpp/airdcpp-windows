@@ -266,7 +266,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 
 LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
-	AutoSearchPageDlg dlg;
+	SearchPageDlg dlg;
 	if(dlg.DoModal() == IDOK) {
 		string search = Text::fromT(dlg.search + _T("\r\n"));
 		string::size_type j = 0;
@@ -288,7 +288,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		AutoSearchPtr as;
 		AutoSearchManager::getInstance()->getAutoSearch(sel, as);
 
-		AutoSearchPageDlg dlg;
+		SearchPageDlg dlg;
 		dlg.search = Text::toT(as->getSearchString());
 		dlg.fileType = as->getFileType();
 		dlg.action = as->getAction();
