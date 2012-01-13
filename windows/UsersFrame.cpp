@@ -288,14 +288,14 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		const UserInfo* ui = ctrlUsers.getItemData(i);
 		dcassert(i != -1);
 
-		StringMap params;
-		params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(ui->getUser()->getCID(), Util::emptyString));
-		params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubs(ui->getUser()->getCID(), Util::emptyString));
+		ParamMap params;
+		params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(ui->getUser()->getCID()));
+		params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(ui->getUser()->getCID()));
 		params["userCID"] = ui->getUser()->getCID().toBase32(); 
-		params["userNI"] = Util::toString(ClientManager::getInstance()->getNicks(ui->getUser()->getCID(), Util::emptyString))[0];
+		params["userNI"] = ClientManager::getInstance()->getNicks(ui->getUser()->getCID())[0];
 		params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
 
-		string file = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false));
+		string file = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params));
 		if(Util::fileExists(file)) {
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 				ShellExecute(NULL, NULL, Text::toT(file).c_str(), NULL, NULL, SW_SHOWNORMAL);

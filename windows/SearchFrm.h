@@ -30,6 +30,7 @@
 
 #include "../client/Client.h"
 #include "../client/SearchManager.h"
+#include "../client/GeoManager.h"
 
 #include "../client/ClientManagerListener.h"
 #include "../client/FavoriteManager.h"
@@ -349,7 +350,7 @@ private:
 
 				if (!sr->getIP().empty()) {
 					// Only attempt to grab a country mapping if we actually have an IP address
-					string tmpCountry = Util::getIpCountry(sr->getIP());
+					string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
 					if(!tmpCountry.empty()) {
 						flagIndex = WinUtil::getFlagIndexByCode(tmpCountry.c_str());
 					}
@@ -444,7 +445,7 @@ private:
 					string ip = sr->getIP();
 					if (!ip.empty()) {
 						// Only attempt to grab a country mapping if we actually have an IP address
-						string tmpCountry = Util::getIpCountry(ip);
+						string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
 						if(!tmpCountry.empty()) {
 							ip = tmpCountry + " (" + ip + ")";
 						}
@@ -632,7 +633,7 @@ private:
 
 	bool closed;
 
-	StringMap ucLineParams;
+	ParamMap ucLineParams;
 	
 	std::string token;
 		

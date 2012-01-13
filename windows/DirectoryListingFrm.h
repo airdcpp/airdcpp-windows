@@ -436,7 +436,7 @@ private:
 	
 	unique_ptr<DirectoryListing> dl;
 
-	StringMap ucLineParams;
+	ParamMap ucLineParams;
 
 	typedef unordered_map<UserPtr, DirectoryListingFrame*, User::Hash> UserMap;
 	typedef UserMap::const_iterator UserIter;

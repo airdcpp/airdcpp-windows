@@ -48,7 +48,7 @@ UpdateDlg::~UpdateDlg() {
 	//issue the update here after the file is flushed.
 	if(updating) {
 		::ShellExecute(NULL, NULL, Text::toT(Util::getPath(Util::PATH_RESOURCES) + INSTALLER).c_str(), NULL, NULL, SW_SHOWNORMAL);
-		MainFrame::getMainFrame()->Terminate();
+		MainFrame::getMainFrame()->terminate();
 	}
 };
 
@@ -99,9 +99,8 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	::SetWindowText(GetDlgItem(IDC_UPDATE_LANGUAGE), CTSTRING(LANGUAGE_VERSION));
 	::SetWindowText(GetDlgItem(IDC_UPDATE_HISTORY), CTSTRING(HISTORY));
 
-	hc = new HttpConnection;
+	hc = new HttpConnection(false);
 	hc->addListener(this);
-	hc->setCoralizeState(HttpConnection::CST_NOCORALIZE);
 	hc->downloadFile((VERSION_URL));
 
 	SetWindowText(CTSTRING(UPDATE_CHECK));
@@ -157,9 +156,8 @@ LRESULT UpdateDlg::OnDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		if(file) { delete file; file = NULL; }
 	}
 	update = true;
-	hc = new HttpConnection();
+	hc = new HttpConnection(false);
 	hc->addListener(this);
-	hc->setCoralizeState(HttpConnection::CST_NOCORALIZE);
 	hc->downloadFile((downloadURL));
 	PostMessage(WM_SPEAKER, UPDATE_CONTENT, (LPARAM)new tstring(_T("Update Downloading...")));
 	ctrlDownload.EnableWindow(FALSE);
@@ -195,7 +193,7 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 						updating = true;
 						PostMessage(WM_CLOSE);
 					}else{ 
-						MainFrame::getMainFrame()->Update();
+						MainFrame::getMainFrame()->update();
 					}
 					}
 				}
@@ -300,10 +298,7 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 }
 
 void UpdateDlg::on(HttpConnectionListener::Data, HttpConnection* conn, const uint8_t* buf, size_t len) noexcept {
-		//Todo Fix Exceptions
-		
-	
-
+	//Todo Fix Exceptions
 	if (update) {
 		if(file == NULL) {
 		File* f = NULL;
@@ -344,10 +339,9 @@ void UpdateDlg::on(HttpConnectionListener::Data, HttpConnection* conn, const uin
 	//progressbar
 	if(conn->getSize() > 0) {
 		progress.SetPos((int)(100.0 * (double)pos) / (double)conn->getSize());
-		} else {
+	} else {
 		progress.SetPos(0);
-		}
-
+	}
 }
 
 

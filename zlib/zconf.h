@@ -3,7 +3,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-/* @(#) $Id: zconf.h 551 2010-12-18 12:14:16Z bigmuscle $ */
+/* @(#) $Id$ */
 
 #ifndef ZCONF_H
 #define ZCONF_H

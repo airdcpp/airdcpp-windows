@@ -1312,7 +1312,7 @@ LRESULT ChatCtrl::onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou) {
-		StringMap params;
+		ParamMap params;
 
 		params["userNI"] = ou->getIdentity().getNick();
 		params["hubNI"] = client->getHubName();
@@ -1320,7 +1320,7 @@ LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 		params["userCID"] = ou->getUser()->getCID().toBase32();
 		params["hubURL"] = client->getHubUrl();
 
-		tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false)));
+		tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params)));
 		if(Util::fileExists(Text::fromT(file))) {
 		switch(wID) {
 			case IDC_OPEN_USER_LOG:
@@ -1428,7 +1428,7 @@ LRESULT ChatCtrl::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 }
 
 void ChatCtrl::runUserCommand(UserCommand& uc) {
-	StringMap ucParams;
+	ParamMap ucParams;
 
 	if(!WinUtil::getUCParams(m_hWnd, uc, ucParams))
 		return;
@@ -1438,9 +1438,8 @@ void ChatCtrl::runUserCommand(UserCommand& uc) {
 
 	const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou != NULL) {
-		StringMap tmp = ucParams;
+		auto tmp = ucParams;
 		ou->getIdentity().getParams(tmp, "user", true);
-		client->escapeParams(tmp);
 		client->sendUserCmd(uc, tmp);
 	}
 }

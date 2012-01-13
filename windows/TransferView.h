@@ -350,7 +350,7 @@ private:
 
 	TaskQueue tasks;
 
-	StringMap ucLineParams;
+	ParamMap ucLineParams;
 	int PreviewAppsSize;
 
 	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept;

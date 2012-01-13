@@ -30,7 +30,7 @@
  *          Addison-Wesley, 1983. ISBN 0-201-06672-6.
  */
 
-/* @(#) $Id: trees.c 551 2010-12-18 12:14:16Z bigmuscle $ */
+/* @(#) $Id$ */
 
 /* #define GEN_TREES_H */
 

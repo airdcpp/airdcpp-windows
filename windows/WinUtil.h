@@ -396,8 +396,8 @@ public:
 	// Hash related
 	static void bitziLink(const TTHValue& /*aHash*/);
 	static void copyMagnet(const TTHValue& /*aHash*/, const string& /*aFile*/, int64_t);
-	static tstring getMagnet(const TTHValue& /*aHash*/, const string& /*aFile*/, int64_t);
 	static void searchHash(const TTHValue& /*aHash*/);
+	static string makeMagnet(const TTHValue& aHash, const string& aFile, int64_t size);
 
 	// URL related
 	static void registerDchubHandler();
@@ -408,10 +408,10 @@ public:
 	static void unRegisterADChubHandler();
 	static void unRegisterADCShubHandler();
 	static void unRegisterMagnetHandler();
-	static void parseDchubUrl(const tstring& /*aUrl*/, bool secure);
-	static void parseADChubUrl(const tstring& /*aUrl*/, bool secure);
+
+	static bool parseDBLClick(const tstring& aString);
 	static void parseMagnetUri(const tstring& /*aUrl*/, bool aOverride = false);
-	static bool parseDBLClick(const tstring& /*aString*/, string::size_type start, string::size_type end);
+
 	static bool urlDcADCRegistered;
 	static bool urlMagnetRegistered;
 	static int textUnderCursor(POINT p, CEdit& ctrl, tstring& x);
@@ -440,7 +440,7 @@ public:
 	static void getContextMenuPos(CTreeViewCtrl& aTree, POINT& aPt);
 	static void getContextMenuPos(CEdit& aEdit,			POINT& aPt);
 	
-	static bool getUCParams(HWND parent, const UserCommand& cmd, StringMap& sm) noexcept;
+	static bool getUCParams(HWND parent, const UserCommand& cmd, ParamMap& params) noexcept;
 
 	static tstring getNicks(const CID& cid, const string& hintUrl);
 	static tstring getNicks(const UserPtr& u, const string& hintUrl);

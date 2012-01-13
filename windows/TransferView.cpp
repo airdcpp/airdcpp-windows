@@ -26,6 +26,7 @@
 #include "../client/UploadManager.h"
 #include "../client/QueueManager.h"
 #include "../client/QueueItem.h"
+#include "../client/GeoManager.h"
 #include "../client/AirUtil.h"
 
 #include "WinUtil.h"
@@ -140,7 +141,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				const ItemInfo* itemI = ctrlTransfers.getItemData(i);
 				
 				if(itemI->user.user)
-					prepareMenu(transferMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubs(itemI->user.user->getCID(), itemI->user.hint));
+					prepareMenu(transferMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(itemI->user.user->getCID(), itemI->user.hint));
 			}
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 			transferMenu.AppendMenu(MF_SEPARATOR);
@@ -246,7 +247,7 @@ void TransferView::runUserCommand(UserCommand& uc) {
 	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
-	StringMap ucParams = ucLineParams;
+	auto ucParams = ucLineParams;
 
 	int i = -1;
 	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
@@ -254,7 +255,7 @@ void TransferView::runUserCommand(UserCommand& uc) {
 		if(!itemI->user.user || !itemI->user.user->isOnline())
 			continue;
 
-		StringMap tmp = ucParams;
+		auto tmp = ucParams;
 		ucParams["fileFN"] = Text::fromT(itemI->target);
 
 		// compatibility with 0.674 and earlier
@@ -1054,7 +1055,7 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 	const UserConnection& uc = t->getUserConnection();
 	ui->setCipher(Text::toT(uc.getCipherName()));
 	const string& ip = uc.getRemoteIp();
-	const string& country = Util::getIpCountry(ip);
+	const auto& country = GeoManager::getInstance()->getCountry(uc.getRemoteIp());
 	if(country.empty()) {
 		ui->setIP(Text::toT(ip), 0);
 	} else {

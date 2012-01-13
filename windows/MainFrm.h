@@ -25,7 +25,6 @@
 
 #include "HubFrame.h"
 #include "../client/TimerManager.h"
-#include "../client/HttpConnection.h"
 #include "../client/FavoriteManager.h"
 #include "../client/QueueManagerListener.h"
 #include "../client/Util.h"
@@ -36,6 +35,8 @@
 #include "../client/DownloadManager.h"
 #include "../client/SettingsManager.h"
 #include "../client/AdlSearch.h"
+#include "../client/GeoManager.h"
+#include "../client/HttpDownload.h"
 #include "PopupManager.h"
 
 #include "FlatTabCtrl.h"
@@ -47,10 +48,11 @@
 
 #include "picturewindow.h"
 
+using std::unique_ptr;
 
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>, public Thread,
-		private TimerManagerListener, private HttpConnectionListener, private QueueManagerListener,
+		private TimerManagerListener, private QueueManagerListener,
 		private LogManagerListener
 {
 public:
@@ -78,7 +80,8 @@ public:
 		SHOW_POPUP,
 		REMOVE_POPUP,
 		SET_PM_TRAY_ICON,
-		SET_HUB_TRAY_ICON
+		SET_HUB_TRAY_ICON,
+		HTTP_COMPLETED
 	};
 
 	BOOL PreTranslateMessage(MSG* pMsg)
@@ -260,6 +263,7 @@ public:
 		return 0;
 	}
 
+	void postMessageFW(UINT u, WPARAM w, LPARAM l) { PostMessage(u, w, l); }
 	LRESULT onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	if(WinUtil::getOsMajor() < 6 || (WinUtil::getOsMajor() == 6 && WinUtil::getOsMinor() < 1))
 		return 0;
@@ -296,9 +300,9 @@ public:
 		Invalidate();
 		return 0;
 	}
-	void Terminate(); 
-	bool HasUpdate;
-	void Update() { HasUpdate = true; }
+	void terminate(); 
+	bool hasUpdate;
+	void update() { hasUpdate = true; }
 
 	void TestWrite(bool downloads, bool incomplete, bool appPath);
 
@@ -443,6 +447,16 @@ private:
 			s.signal();
 		}
 	};
+
+	struct {
+		tstring homepage;
+		tstring downloads;
+		tstring geoip6;
+		tstring geoip4;
+		tstring guides;
+		tstring customize;
+		tstring discuss;
+	} links;
 	
 	TransferView transferView;
 	static MainFrame* anyMF;
@@ -454,8 +468,6 @@ private:
 
 	CStatusBarCtrl ctrlStatus;
 	FlatTabCtrl ctrlTab;
-	HttpConnection* c;
-	string versionInfo;
 	CImageList images;
 	CImageList winampImages;
 	CToolBarCtrl ctrlToolbar;
@@ -516,35 +528,25 @@ private:
 	void updateTray(bool add = true);
 	bool hasPassdlg;
 
-	LRESULT onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/) {
-		if (::IsIconic(m_hWnd)) {
-	if(BOOLSETTING(PASSWD_PROTECT_TRAY)) {
-		if(hasPassdlg)
-			return 0;
+	LRESULT onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/);
 
-		hasPassdlg = true;
-		PassDlg passdlg;
-		passdlg.description = TSTRING(PASSWORD_DESC);
-		passdlg.title = TSTRING(PASSWORD_TITLE);
-		passdlg.ok = TSTRING(UNLOCK);
-		if(passdlg.DoModal(/*m_hWnd*/) == IDOK){
-			tstring tmp = passdlg.line;
-			if (tmp == Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
-			ShowWindow(SW_SHOW);
-			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
-			}
-			hasPassdlg = false;
-		}
-	} else {
-			ShowWindow(SW_SHOW);
-			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
-			}
 
-		} else {
-				SetForegroundWindow(m_hWnd);	
-		}
-		return 0;
-	}
+	enum {
+		CONN_VERSION,
+		CONN_GEO_V6,
+		CONN_GEO_V4,
+
+		CONN_LAST
+	};
+
+	shared_ptr<HttpDownload> conns[CONN_LAST];
+
+	void checkGeoUpdate();
+	void checkGeoUpdate(bool v6);
+	void updateGeo();
+	void updateGeo(bool v6);
+	void completeGeoUpdate(bool v6);
+	void completeVersionUpdate();
 
 	void autoConnect(const FavoriteHubEntry::List& fl);
 
@@ -555,11 +557,6 @@ private:
 
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
-	
-	// HttpConnectionListener
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) noexcept;
-	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept;	
-	void on(HttpConnectionListener::Retried, HttpConnection* /*conn*/, const bool Connected) noexcept;		
 
 	// QueueManagerListener
 	void on(QueueManagerListener::Finished, const QueueItem* qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;

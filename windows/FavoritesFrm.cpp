@@ -539,11 +539,11 @@ LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	if(ctrlHubs.GetSelectedCount() == 1) {
 		int i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED);
 		FavoriteHubEntry* entry = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
-		StringMap params;
+		ParamMap params;
 		params["hubNI"] = entry->getName();
 		params["hubURL"] = entry->getServer();
 		params["myNI"] = entry->getNick(); 
-		tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params, false)));
+		tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params)));
 		if(Util::fileExists(Text::fromT(filename))){
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, filename.c_str(), NULL, NULL, SW_SHOWNORMAL);

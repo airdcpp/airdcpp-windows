@@ -427,6 +427,7 @@
     <ResourceCompile Include="AirDC.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="windows\AboutDlg.cpp" />
     <ClCompile Include="windows\ADLSearchFrame.cpp" />
     <ClCompile Include="windows\ADLSProperties.cpp" />
     <ClCompile Include="windows\AdvancedPage.cpp" />

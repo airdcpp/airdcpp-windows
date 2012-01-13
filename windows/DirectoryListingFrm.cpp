@@ -985,7 +985,7 @@ clientmenu:
 			}
 			fileMenu.EnableMenuItem((UINT)(HMENU)copyMenu, MF_BYCOMMAND | MFS_ENABLED);
 			fileMenu.EnableMenuItem(IDC_SEARCH_ALTERNATES, MF_BYCOMMAND | MFS_ENABLED);
-			prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubs(dl->getHintedUser().user->getCID(), dl->getHintedUser().hint));
+			prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubUrls(dl->getHintedUser().user->getCID(), dl->getHintedUser().hint));
 			fileMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 		} else {
 			fileMenu.EnableMenuItem(IDC_SEARCH_ALTERNATES, MF_BYCOMMAND | MFS_DISABLED);
@@ -1033,7 +1033,7 @@ clientmenu:
 				fileMenu.AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
 			}
 
-			prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubs(dl->getUser()->getCID(), dl->getHintedUser().hint));
+			prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubUrls(dl->getUser()->getCID(), dl->getHintedUser().hint));
 			fileMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 		}
 		}
@@ -1458,7 +1458,7 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
-	StringMap ucParams = ucLineParams;
+	auto ucParams = ucLineParams;
 
 	set<UserPtr> nicks;
 
@@ -1472,18 +1472,19 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 		}
 		if(!dl->getUser()->isOnline())
 			return;
-		ucParams["fileTR"] = "NONE";
+		//ucParams["fileTR"] = "NONE";
 		if(ii->type == ItemInfo::FILE) {
-			ucParams["type"] = "File";
-			ucParams["fileFN"] = dl->getPath(ii->file) + ii->file->getName();
-			ucParams["fileSI"] = Util::toString(ii->file->getSize());
-			ucParams["fileSIshort"] = Util::formatBytes(ii->file->getSize());
-			ucParams["fileTR"] = ii->file->getTTH().toBase32();
+			ucParams["type"] = [] { return "File"; };
+			ucParams["fileFN"] = [this, ii] { return dl->getPath(ii->file) + ii->file->getName(); };
+			ucParams["fileSI"] = [ii] { return Util::toString(ii->file->getSize()); };
+			ucParams["fileSIshort"] = [ii] { return Util::formatBytes(ii->file->getSize()); };
+			ucParams["fileTR"] = [ii] { return ii->file->getTTH().toBase32(); };
+			ucParams["fileMN"] = [ii] { return WinUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize()); };
 		} else {
-			ucParams["type"] = "Directory";
-			ucParams["fileFN"] = dl->getPath(ii->dir) + ii->dir->getName();
-			ucParams["fileSI"] = Util::toString(ii->dir->getTotalSize());
-			ucParams["fileSIshort"] = Util::formatBytes(ii->dir->getTotalSize());
+			ucParams["type"] = [] { return "Directory"; };
+			ucParams["fileFN"] = [this, ii] { return dl->getPath(ii->dir) + ii->dir->getName(); };
+			ucParams["fileSI"] = [ii] { return Util::toString(ii->dir->getTotalSize()); };
+			ucParams["fileSIshort"] = [ii] { return Util::formatBytes(ii->dir->getTotalSize()); };
 		}
 
 		// compatibility with 0.674 and earlier
@@ -1492,7 +1493,7 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 		ucParams["filesizeshort"] = ucParams["fileSIshort"];
 		ucParams["tth"] = ucParams["fileTR"];
 
-		StringMap tmp = ucParams;
+		auto tmp = ucParams;
 		UserPtr tmpPtr = dl->getUser();
 		ClientManager::getInstance()->userCommand(dl->getHintedUser(), uc, tmp, true);
 	}
@@ -1530,7 +1531,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 				break;
 			case IDC_COPY_LINK:
 				if(ii->type == ItemInfo::FILE) {
-					sCopy = WinUtil::getMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize());
+					sCopy = Text::toT(WinUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize()));
 				}
 				else if(ii->type == ItemInfo::DIRECTORY){
 					sCopy = Text::toT("Directories don't have Magnet links");
@@ -1583,7 +1584,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 					break;
 				case IDC_COPY_LINK:
 					if(ii->type == ItemInfo::FILE) {
-					WinUtil::getMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize());
+					WinUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize());
 						}
 					else if(ii->type == ItemInfo::DIRECTORY){
 					sCopy = Text::toT("Directories don't have Magnet links");

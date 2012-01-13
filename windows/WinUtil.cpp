@@ -873,7 +873,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 	}
 }
 
-bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, StringMap& sm) noexcept {
+bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, ParamMap& params) noexcept {
 	string::size_type i = 0;
 	StringMap done;
 
@@ -888,7 +888,7 @@ bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, StringMap& sm) noe
 			LineDlg dlg;
 			dlg.title = Text::toT(Util::toString(" > ", uc.getDisplayName()));
 			dlg.description = Text::toT(name);
-			dlg.line = Text::toT(sm["line:" + name]);
+			dlg.line = Text::toT(boost::get<string>(params["line:" + name]));
 
 			if(uc.adc()) {
 				Util::replace(_T("\\\\"), _T("\\"), dlg.description);
@@ -896,7 +896,7 @@ bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, StringMap& sm) noe
 			}
 
 			if(dlg.DoModal(parent) == IDOK) {
-				sm["line:" + name] = Text::fromT(dlg.line);
+				params["line:" + name] = Text::fromT(dlg.line);
 				done[name] = Text::fromT(dlg.line);
 			} else {
 				return false;
@@ -923,7 +923,7 @@ bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, StringMap& sm) noe
 			}
 
 			if(dlg.DoModal(parent) == IDOK) {
-				sm["kickline:" + name] = Text::fromT(dlg.line);
+				params["kickline:" + name] = Text::fromT(dlg.line);
 				done[name] = Text::fromT(dlg.line);
 			} else {
 				return false;
@@ -1089,7 +1089,7 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			MainFrame::setAwayButton(true);
 			Util::setAwayMessage(Text::fromT(param));
 			
-			StringMap sm;
+			ParamMap sm;
 			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(Util::getAwayMessage(sm));
 		}
 		ClientManager::getInstance()->infoUpdated();
@@ -1157,7 +1157,7 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 	} else if((stricmp(cmd.c_str(), _T("winamp")) == 0) || (stricmp(cmd.c_str(), _T("w")) == 0)) {
 		HWND hwndWinamp = FindWindow(_T("Winamp v1.x"), NULL);
 		if (hwndWinamp) {
-			StringMap params;
+			ParamMap params;
 			int waVersion = SendMessage(hwndWinamp,WM_USER, 0, IPC_GETVERSION),
 				majorVersion, minorVersion;
 			majorVersion = waVersion >> 12;
@@ -1169,11 +1169,11 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			params["version"] = Util::toString(majorVersion + minorVersion / 100.0);
 			int state = SendMessage(hwndWinamp,WM_USER, 0, IPC_ISPLAYING);
 			switch (state) {
-				case 0: params["state"] = "stopped";
+				case 0: params["state"] = boost::get<string>(params["stopped"]);
 					break;
-				case 1: params["state"] = "playing";
+				case 1: params["state"] = boost::get<string>(params["playing"]);
 					break;
-				case 3: params["state"] = "paused";
+				case 3: params["state"] = boost::get<string>(params["paused"]);
 			};
 			TCHAR titleBuffer[2048];
 			int buffLength = sizeof(titleBuffer);
@@ -1263,7 +1263,7 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			}
 			params["channels"] = waChannelName;
 			//params["channels"] = (waChannels==2?"stereo":"mono"); // 3+ channels? 0 channels?
-			message = Text::toT(Util::formatParams(SETTING(WINAMP_FORMAT), params, false));
+			message = Text::toT(Util::formatParams(SETTING(WINAMP_FORMAT), params));
 			thirdPerson = strnicmp(message.c_str(), _T("/me "), 4) == 0;
 			if(thirdPerson) {
 				message = message.substr(4);
@@ -1297,14 +1297,17 @@ void WinUtil::bitziLink(const TTHValue& aHash) {
 	openLink(_T("http://bitzi.com/lookup/tree:tiger:") + Text::toT(aHash.toBase32()));
 }
 
-tstring WinUtil::getMagnet(const TTHValue& aHash, const string& aFile, int64_t aSize) {
-	return _T("magnet:?xt=urn:tree:tiger:") + Text::toT(aHash.toBase32()) + _T("&xl=") + Util::toStringW(aSize) + _T("&dn=") + Text::toT(Util::encodeURI(aFile));
-}
-
 void WinUtil::copyMagnet(const TTHValue& aHash, const string& aFile, int64_t aSize) {
 	if(!aFile.empty()) {
-		setClipboard(getMagnet(aHash, aFile, aSize));
+		setClipboard(Text::toT(makeMagnet(aHash, aFile, aSize)));
  	}
+}
+
+string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t size) {
+	string ret = "magnet:?xt=urn:tree:tiger:" + aHash.toBase32();
+	if(size > 0)
+		ret += "&xl=" + Util::toString(size);
+	return ret + "&dn=" + Util::encodeURI(aFile);
 }
 
  void WinUtil::searchHash(const TTHValue& aHash) {
@@ -1474,67 +1477,57 @@ void WinUtil::unRegisterMagnetHandler() {
 }
 
 void WinUtil::openLink(const tstring& url) {
-	if(_strnicmp(Text::fromT(url).c_str(), "magnet:?", 8) == 0) {
-		parseMagnetUri(url);
-		return;
-	}
-	if(_strnicmp(Text::fromT(url).c_str(), "dchub://", 8) == 0) {
-		parseDchubUrl(url, false);
-		return;
-	}
-	if(_strnicmp(Text::fromT(url).c_str(), "nmdcs://", 8) == 0) {
-		parseDchubUrl(url, true);
-		return;
-	}	
-	if(_strnicmp(Text::fromT(url).c_str(), "adc://", 6) == 0) {
-		parseADChubUrl(url, false);
-		return;
-	}
-	if(_strnicmp(Text::fromT(url).c_str(), "adcs://", 7) == 0) {
-		parseADChubUrl(url, true);
-		return;
-	}
-
-	boost::wregex reg;
-	reg.assign(Text::toT(AirUtil::getReleaseRegLong(false)));
-	if(regex_match(url, reg)) {
-		WinUtil::search(url, 0, false);
-	}
-
-	::ShellExecute(NULL, NULL, url.c_str(), NULL, NULL, SW_SHOWNORMAL);
+	parseDBLClick(url);
 }
 
-void WinUtil::parseDchubUrl(const tstring& aUrl, bool secure) {
-	uint16_t port = 411;
-	string proto, host, file, query, fragment;
-	Util::decodeUrl(Text::fromT(aUrl), proto, host, port, file, query, fragment);
-	string url = host + ":" + Util::toString(port);
-	if(!host.empty()) {
-		HubFrame::openWindow((secure ? _T("nmdcs://") : _T("")) + Text::toT(host) + _T(":") + Util::toStringW(port));
-	}
-	if(!file.empty()) {
-		if(file[0] == '/') // Remove any '/' in from of the file
-			file = file.substr(1);
-		try {
-			if(!file.empty()) {
+bool WinUtil::parseDBLClick(const tstring& str) {
+	auto url = Text::fromT(str);
+	string proto, host, port, file, query, fragment;
+	Util::decodeUrl(url, proto, host, port, file, query, fragment);
+
+	if(Util::stricmp(proto.c_str(), "adc") == 0 ||
+		Util::stricmp(proto.c_str(), "adcs") == 0 ||
+		Util::stricmp(proto.c_str(), "dchub") == 0 )
+	{
+		if(!host.empty()) {
+			HubFrame::openWindow(Text::toT(url));
+		}
+
+		if(!file.empty()) {
+			if(file[0] == '/') {
+				// Remove any '/' in from of the file
+				file = file.substr(1);
+				if(file.empty()) return true;
+			}
+			try {
 				UserPtr user = ClientManager::getInstance()->findLegacyUser(file);
 				if(user)
-					QueueManager::getInstance()->addList(HintedUser(user, url), QueueItem::FLAG_CLIENT_VIEW);
+					QueueManager::getInstance()->addList(HintedUser(user, url), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+				// @todo else report error
+			} catch (const Exception&) {
+				// ...
 			}
-			// @todo else report error
-		} catch(const Exception&) {
-			// ...
 		}
-	}
-}
 
-void WinUtil::parseADChubUrl(const tstring& aUrl, bool secure) {
-	string proto, host, file, query, fragment;
-	uint16_t port = 0; //make sure we get a port since adc doesn't have a standard one
-	Util::decodeUrl(Text::fromT(aUrl), proto, host, port, file, query, fragment);
-	if(!host.empty() && port > 0) {
-		HubFrame::openWindow((secure ? _T("adcs://") : _T("adc://")) + Text::toT(host) + _T(":") + Util::toStringW(port));
+		return true;
+	} else if(!proto.empty() ||
+		Util::strnicmp(str.c_str(), _T("www."), 4) == 0 ||
+		Util::strnicmp(str.c_str(), _T("mailto:"), 7) == 0) {
+		//openLink(str);
+		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
+		return true;
+	} else if(host == "magnet") {
+		parseMagnetUri(str);
+		return true;
 	}
+
+	boost::regex reg;
+	reg.assign(AirUtil::getReleaseRegLong(false));
+	if(regex_match(url, reg)) {
+		WinUtil::search(Text::toT(url), 0, false);
+		return true;
+	}
+	return false;
 }
 
 void WinUtil::SetIcon(HWND hWnd, long icon, bool big) {
@@ -1678,36 +1671,6 @@ int WinUtil::textUnderCursor(POINT p, CRichEditCtrl& ctrl, tstring& x) {
 		start++;
 
 	return start;
-}
-bool WinUtil::parseDBLClick(const tstring& aString, string::size_type start, string::size_type end) {
-	if( (strnicmp(aString.c_str() + start, _T("http://"), 7) == 0) || 
-		(strnicmp(aString.c_str() + start, _T("www."), 4) == 0) ||
-		(strnicmp(aString.c_str() + start, _T("ftp://"), 6) == 0) ||
-		(strnicmp(aString.c_str() + start, _T("irc://"), 6) == 0) ||
-		(strnicmp(aString.c_str() + start, _T("https://"), 8) == 0) ||	
-		(strnicmp(aString.c_str() + start, _T("file://"), 7) == 0) ||
-		(strnicmp(aString.c_str() + start, _T("mailto:"), 7) == 0) )
-	{
-
-		openLink(aString.substr(start, end-start));
-		return true;
-	} else if(strnicmp(aString.c_str() + start, _T("dchub://"), 8) == 0) {
-		parseDchubUrl(aString.substr(start, end-start), false);
-		return true;
-	} else if(strnicmp(aString.c_str() + start, _T("nmdcs://"), 8) == 0) {
-		parseDchubUrl(aString.substr(start, end-start), true);
-		return true;	
-	} else if(strnicmp(aString.c_str() + start, _T("magnet:?"), 8) == 0) {
-		parseMagnetUri(aString.substr(start, end-start));
-		return true;
-	} else if(strnicmp(aString.c_str() + start, _T("adc://"), 6) == 0) {
-		parseADChubUrl(aString.substr(start, end-start), false);
-		return true;
-	} else if(strnicmp(aString.c_str() + start, _T("adcs://"), 7) == 0) {
-		parseADChubUrl(aString.substr(start, end-start), true);
-		return true;
-	}
-	return false;
 }
 
 void WinUtil::saveHeaderOrder(CListViewCtrl& ctrl, SettingsManager::StrSetting order, 
@@ -1924,12 +1887,12 @@ void WinUtil::RunPreviewCommand(unsigned int index, const string& target) {
 	if(index <= lst.size()) {
 		string application = lst[index]->getApplication();
 		string arguments = lst[index]->getArguments();
-		StringMap ucParams;				
+		ParamMap ucParams;				
 	
 		ucParams["file"] = "\"" + target + "\"";
 		ucParams["dir"] = "\"" + Util::getFilePath(target) + "\"";
 
-		::ShellExecute(NULL, NULL, Text::toT(application).c_str(), Text::toT(Util::formatParams(arguments, ucParams, false)).c_str(), Text::toT(ucParams["dir"]).c_str(), SW_SHOWNORMAL);
+		::ShellExecute(NULL, NULL, Text::toT(application).c_str(), Text::toT(Util::formatParams(arguments, ucParams)).c_str(), Text::toT(Util::getFilePath(target)).c_str(), SW_SHOWNORMAL);
 	}
 }
 
@@ -2458,7 +2421,7 @@ string WinUtil::getItunesSpam(HWND playerWnd /*= NULL*/) {
 		CoInitialize(NULL);
 
 		// Others
-		StringMap params;
+		ParamMap params;
 
 		// note - CLSID_iTunesApp and IID_IiTunes are defined in iTunesCOMInterface_i.c
 		//Create an instance of the top-level object.  iITunes is an interface pointer to IiTunes.  (weird capitalization, but that's how Apple did it)
@@ -2534,10 +2497,10 @@ string WinUtil::getItunesSpam(HWND playerWnd /*= NULL*/) {
 			ITPlayerState pStatus;
 			iITunes->get_PlayerState(&pStatus);
 			if (pStatus == ITPlayerStateStopped) {
-				params["state"] = "stopped";
+				params["state"] = (string)"stopped";
 				state = 1;
 			} else if (pStatus == ITPlayerStatePlaying) {
-				params["state"] = "playing";
+				params["state"] = (string)"playing";
 			}
 
 			//Player position (in seconds, you'll want to convert for your output)
@@ -2576,7 +2539,7 @@ string WinUtil::getItunesSpam(HWND playerWnd /*= NULL*/) {
 
 		// If there is something in title, we have at least partly succeeded 
 		if(!params["title"].empty()) {
-			return Util::formatParams(SETTING(ITUNES_FORMAT), params, false);
+			return Util::formatParams(SETTING(ITUNES_FORMAT), params);
 		} else {
 			return "no_media";
 		}
@@ -2588,7 +2551,7 @@ string WinUtil::getItunesSpam(HWND playerWnd /*= NULL*/) {
 // mpc = mplayerc = MediaPlayer Classic
 // liberally inspired (copied with changes) by the GPLed application mpcinfo by Gabest
 string WinUtil::getMPCSpam() {
-	StringMap params;
+	ParamMap params;
 	bool success = false;
 	CComPtr<IRunningObjectTable> pROT;
 	CComPtr<IEnumMoniker> pEM;
@@ -2636,7 +2599,7 @@ string WinUtil::getMPCSpam() {
 								WideCharToMultiByte(CP_ACP, 0, pFileName, -1, test, 1000, NULL, NULL);
 								string filename(test);
 								params["filename"] = Util::getFileName(filename); //otherwise fully qualified
-								params["title"] = params["filename"].substr(0, params["filename"].size() - 4);
+								params["title"] = Util::getFileName(filename).substr(0, Util::getFileName(filename).size() - 4);
 								params["size"] = Util::formatBytes(File::getSize(filename));
 							}
 							delete test;
@@ -2669,15 +2632,15 @@ string WinUtil::getMPCSpam() {
 			if((pMC = pFG) && (pMC->GetState(0, &fs) == S_OK)) {
 				switch(fs) {
 					case State_Running:
-						params["state"] = "playing";
+						params["state"] = (string)"playing";
 						state = 1;
 						break;
 					case State_Paused:
-						params["state"] = "paused";
+						params["state"] = (string)"paused";
 						state = 3;
 						break;
 					case State_Stopped:
-						params["state"] = "stopped";
+						params["state"] = (string)"stopped";
 						state = 0;
 				};
 			}
@@ -2708,7 +2671,7 @@ string WinUtil::getMPCSpam() {
 	}
 
 	if (success) {
-		return Util::formatParams(SETTING(MPLAYERC_FORMAT), params, false);
+		return Util::formatParams(SETTING(MPLAYERC_FORMAT), params);
 	} else {
 		 return "";
 	}
@@ -2716,71 +2679,70 @@ string WinUtil::getMPCSpam() {
 
 string WinUtil::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 	if(playerWnd != NULL) {
-		StringMap params;
-			TCHAR titleBuffer[2048];
-			int buffLength = sizeof(titleBuffer);
-			GetWindowText(playerWnd, titleBuffer, buffLength);
-			tstring title = titleBuffer;
-			if (strcmpi(Text::fromT(title).c_str(), "Spotify") == 0)
-				return "no_media";
-			boost::algorithm::replace_first(title, "Spotify - ", "");
-			params["title"] = Text::fromT(title);
+		ParamMap params;
+		TCHAR titleBuffer[2048];
+		int buffLength = sizeof(titleBuffer);
+		GetWindowText(playerWnd, titleBuffer, buffLength);
+		tstring title = titleBuffer;
+		if (strcmpi(Text::fromT(title).c_str(), "Spotify") == 0)
+			return "no_media";
+		boost::algorithm::replace_first(title, "Spotify - ", "");
+		params["title"] = Text::fromT(title);
 
-			TCHAR appDataPath[MAX_PATH];
-			::SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, appDataPath);
-			string line;
-			boost::regex ritem;
-			boost::regex rname;
-			boost::regex rhash;
+		TCHAR appDataPath[MAX_PATH];
+		::SHGetFolderPath(NULL, CSIDL_APPDATA, NULL, SHGFP_TYPE_CURRENT, appDataPath);
+		string line;
+		boost::regex ritem;
+		boost::regex rname;
+		boost::regex rhash;
 
-			string path = Text::fromT(appDataPath) + "\\Spotify\\Users\\";
-			ifstream guistate;
-			StringList userFiles;
-			StringIterC i;
+		string path = Text::fromT(appDataPath) + "\\Spotify\\Users\\";
+		ifstream guistate;
+		StringList userFiles;
+		StringIterC i;
 
-			ritem.assign("\"name\":\"([^\"]+)\",\"uri\":\"([^\"]+)");
-			rname.assign("(?<=\"name\":\")([^\"]+)");
-			rhash.assign("(?<=spotify:track:)([^\"]+)");
-			params["link"] = "";
+		ritem.assign("\"name\":\"([^\"]+)\",\"uri\":\"([^\"]+)");
+		rname.assign("(?<=\"name\":\")([^\"]+)");
+		rhash.assign("(?<=spotify:track:)([^\"]+)");
+		params["link"] = Util::emptyString;
 
-			StringList usersList = File::findFiles(path, "*");
+		StringList usersList = File::findFiles(path, "*");
 
-			//find the file containing the latest songs played
-			for(i = usersList.begin(); i != usersList.end(); ++i) {
-				userFiles = File::findFiles(*i, "guistate");
-				for(StringIterC s = userFiles.begin(); s != userFiles.end(); ++s) {
-					guistate.open(Text::utf8ToAcp(*s));
-					while (getline(guistate, line)) {
-						boost::smatch result;
-						string::const_iterator  begin = line.begin(), end = line.end();
-						//find each song
-						while (regex_search(begin, end, result, ritem)) {
-							std::string item( result[0].first, result[0].second );
-							boost::smatch nresult;
-							//compare the name with the song being played now
-							if (regex_search(item, nresult, rname)) {
-								std::string song( nresult[0].first, nresult[0].second );
-								size_t found = Text::fromT(title).find(song);
-								if (found != string::npos) {
-									//current song found, get the hash
-									boost::smatch hresult;
-									if (regex_search(item, hresult, rhash)) {
-										std::string hash( hresult[0].first, hresult[0].second );
-										params["link"] = "spotify:track:" + hash;
-										break;
-									}
+		//find the file containing the latest songs played
+		for(i = usersList.begin(); i != usersList.end(); ++i) {
+			userFiles = File::findFiles(*i, "guistate");
+			for(auto s = userFiles.begin(); s != userFiles.end(); ++s) {
+				guistate.open(Text::utf8ToAcp(*s));
+				while (getline(guistate, line)) {
+					boost::smatch result;
+					string::const_iterator  begin = line.begin(), end = line.end();
+					//find each song
+					while (regex_search(begin, end, result, ritem)) {
+						std::string item( result[0].first, result[0].second );
+						boost::smatch nresult;
+						//compare the name with the song being played now
+						if (regex_search(item, nresult, rname)) {
+							std::string song( nresult[0].first, nresult[0].second );
+							size_t found = Text::fromT(title).find(song);
+							if (found != string::npos) {
+								//current song found, get the hash
+								boost::smatch hresult;
+								if (regex_search(item, hresult, rhash)) {
+									std::string hash( hresult[0].first, hresult[0].second );
+									params["link"] = "spotify:track:" + hash;
+									break;
 								}
 							}
-							begin = result[0].second;
 						}
+						begin = result[0].second;
 					}
 				}
 			}
+		}
 
-			return Util::formatParams(SETTING(SPOTIFY_FORMAT), params, false);
-	} else {
-		return "";
+		return Util::formatParams(SETTING(SPOTIFY_FORMAT), params);
 	}
+	return Util::emptyString;
 }
 
 // This works for WMP 9+, but it's little slow, but hey we're talking about an MS app here, so what can you expect from the remote support for it...
@@ -2799,7 +2761,7 @@ string WinUtil::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 		// Other
 		HRESULT								hresult;
 		CAxWindow *DummyWnd;
-		StringMap params;
+		ParamMap params;
 
 		// Create hidden window to host the control (if there just was other way to do this... as CoCreateInstance has no access to the current running instance)
 		AtlAxWinInit();
@@ -2860,7 +2822,7 @@ string WinUtil::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 				if(bstrWMPVer != NULL) {
 					::COLE2T WMPVer(bstrWMPVer);
 					params["fullversion"] = Text::fromT(WMPVer.m_szBuffer);
-					params["version"] = params["fullversion"].substr(0, params["fullversion"].find("."));
+					params["version"] = Text::fromT(WMPVer.m_szBuffer).substr(0, Text::fromT(WMPVer.m_szBuffer).find("."));
 				}
 
 				// Pre-formatted status message from Windows Media Player
@@ -2963,19 +2925,19 @@ string WinUtil::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 				Media->getItemInfo(CComBSTR(_T("UserRating")), &bstrUserRating);
 				if(bstrUserRating != NULL) {
 					if(bstrUserRating == "0") {
-						params["rating"] = "unrated";
+						params["rating"] = (string)"unrated";
 					} else if(bstrUserRating == "1") {
-						params["rating"] = "*";
+						params["rating"] = (string)"*";
 					} else if(bstrUserRating == "25") {
-						params["rating"] = "* *";
+						params["rating"] = (string)"* *";
 					} else if(bstrUserRating == "50") {
-						params["rating"] = "* * *";
+						params["rating"] = (string)"* * *";
 					} else if(bstrUserRating == "75") {
-						params["rating"] = "* * * *";
+						params["rating"] = (string)"* * * *";
 					} else if(bstrUserRating == "99") {
-						params["rating"] = "* * * * *";
+						params["rating"] = (string)"* * * * *";
 					} else {
-						params["rating"] = "";
+						params["rating"] = Util::emptyString;
 					}
 				}
 
@@ -2999,8 +2961,8 @@ string WinUtil::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 						inBack = string(numBack, '-');
 					params["bar"] = "[" + inFront + (elapsed > 0 ? "|" : "-") + inBack + "]";
 				} else {
-					params["percent"] = "0%";
-					params["bar"] = "[|---------]";
+					params["percent"] = (string)"0%";
+					params["bar"] = (string)"[|---------]";
 				}
 			}
 		}
@@ -3017,7 +2979,7 @@ string WinUtil::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 			
 		// If there is something in title, we have at least partly succeeded 
 		if(!params["title"].empty()) {
-			return Util::formatParams(SETTING(WMP_FORMAT), params, false);
+			return Util::formatParams(SETTING(WMP_FORMAT), params);
 		} else {
 			return "no_media";
 		}

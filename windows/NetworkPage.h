@@ -25,27 +25,25 @@
 
 #include <atlcrack.h>
 #include "PropPage.h"
-#include "../client/HttpConnection.h"
+#include "../client/HttpDownload.h"
 #include "../client/SimpleXML.h"
 #include "../client/version.h"
 
 #include <IPHlpApi.h>
 #pragma comment(lib, "iphlpapi.lib")
 
-class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage, private HttpConnectionListener
+class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage
 {
 public:
 	NetworkPage(SettingsManager *s) : PropPage(s), adapterInfo(NULL) {
 		SetTitle(CTSTRING(SETTINGS_NETWORK));
 		m_psp.dwFlags |= PSP_RTLREADING;
-		c = new HttpConnection;
 	}
 	~NetworkPage() {
 		if(adapterInfo)
 			HeapFree(GetProcessHeap(), 0, adapterInfo);
 
 		if(c != NULL) {
-			delete c;
 			c = NULL;
 		}
 	}
@@ -78,20 +76,13 @@ private:
 	CEdit desc;
 	CComboBox BindCombo;
 
-	
-	HttpConnection* c;
-	string downBuf;
+	void completeDownload();
+	unique_ptr<HttpDownload> c;
 
 	void fixControls();
 	void getAddresses();
 
 	IP_ADAPTER_ADDRESSES* adapterInfo;
-
-	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept;
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) noexcept;
-	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& /*aLine*/) noexcept;
-
-
 };
 
 #endif // !defined(NETWORK_PAGE_H)

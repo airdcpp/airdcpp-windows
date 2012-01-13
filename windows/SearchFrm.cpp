@@ -773,11 +773,11 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 	} 
 
 	if(firstHubs && hubs.empty()) {
-		hubs = ClientManager::getInstance()->getHubs(si->sr->getUser()->getCID(), si->sr->getHubURL());
+		hubs = ClientManager::getInstance()->getHubUrls(si->sr->getUser()->getCID(), si->sr->getHubURL());
 		firstHubs = false;
 	} else if(!hubs.empty()) {
 		// we will merge hubs of all users to ensure we can use OP commands in all hubs
-		StringList sl = ClientManager::getInstance()->getHubs(si->sr->getUser()->getCID(), si->sr->getHubURL());
+		StringList sl = ClientManager::getInstance()->getHubUrls(si->sr->getUser()->getCID(), si->sr->getHubURL());
 		hubs.insert( hubs.end(), sl.begin(), sl.end() );
 		//Util::intersect(hubs, ClientManager::getInstance()->getHubs(si->sr->getUser()->getCID()));
 	}
@@ -1150,7 +1150,7 @@ void SearchFrame::runUserCommand(UserCommand& uc) {
 	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
-	StringMap ucParams = ucLineParams;
+	auto ucParams = ucLineParams;
 
 	set<CID> users;
 
@@ -1167,12 +1167,14 @@ void SearchFrame::runUserCommand(UserCommand& uc) {
 			users.insert(sr->getUser()->getCID());
 		}
 
-		ucParams["fileFN"] = sr->getFile();
-		ucParams["fileSI"] = Util::toString(sr->getSize());
-		ucParams["fileSIshort"] = Util::formatBytes(sr->getSize());
+
+		ucParams["fileFN"] = [sr] { return sr->getFile(); };
+		ucParams["fileSI"] = [sr] { return Util::toString(sr->getSize()); };
+		ucParams["fileSIshort"] = [sr] { return Util::formatBytes(sr->getSize()); };
 		if(sr->getType() == SearchResult::TYPE_FILE) {
-			ucParams["fileTR"] = sr->getTTH().toBase32();
+			ucParams["fileTR"] = [sr] { return sr->getTTH().toBase32(); };
 		}
+		ucParams["fileMN"] = [sr] { return WinUtil::makeMagnet(sr->getTTH(), sr->getFile(), sr->getSize()); };
 
 		// compatibility with 0.674 and earlier
 		ucParams["file"] = ucParams["fileFN"];
@@ -1180,7 +1182,7 @@ void SearchFrame::runUserCommand(UserCommand& uc) {
 		ucParams["filesizeshort"] = ucParams["fileSIshort"];
 		ucParams["tth"] = ucParams["fileTR"];
 
-		StringMap tmp = ucParams;
+		auto tmp = ucParams;
 		ClientManager::getInstance()->userCommand(HintedUser(sr->getUser(), sr->getHubURL()), uc, tmp, true);
 	}
 }

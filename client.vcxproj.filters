@@ -77,9 +77,6 @@
     <ClCompile Include="client\HighlightManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="client\HttpConnection.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="client\NmdcHub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -230,6 +227,18 @@
     <ClCompile Include="client\Mapper_WinUPnP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\GeoManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\GeoIP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\HttpDownload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\HttpConnection.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -356,9 +365,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\HighlightManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\HttpConnection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\HubEntry.h">
@@ -605,6 +611,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="E:\dcplusplus\dcpp\format.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\GeoIP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\GeoManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\HttpConnection.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\HttpDownload.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

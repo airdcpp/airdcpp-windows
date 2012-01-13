@@ -101,7 +101,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 		if(Util::getAway()) {
 			if(!(BOOLSETTING(NO_AWAYMSG_TO_BOTS) && user->isSet(User::BOT))) 
 			{
-				StringMap params;
+				ParamMap params;
 				from.getParams(params, "user", false);
 				p->sendMessage(Text::toT(Util::getAwayMessage(params)));
 			}
@@ -408,16 +408,16 @@ void PrivateFrame::onEnter()
 				BOOL bTmp;
 				onGetList(0,0,0,bTmp);
 			} else if(stricmp(s.c_str(), _T("log")) == 0) {
-				StringMap params;
+				ParamMap params;
 				const CID& cid = replyTo.user->getCID();
 				const string& hint = replyTo.hint;
 	
 				params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv));
-				params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubs(cid, hint, priv));
+				params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint, priv));
 				params["userCID"] = cid.toBase32(); 
 				params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
 				params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
-				WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false))));
+				WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params))));
 			} else if(stricmp(s.c_str(), _T("stats")) == 0) {
 				sendMessage(Text::toT(WinUtil::generateStats()));
 			} else if(stricmp(s.c_str(), _T("speed")) == 0) {
@@ -507,16 +507,14 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 	ctrlClient.GetClientRect(r);
 
 	if(BOOLSETTING(LOG_PRIVATE_CHAT)) {
-		StringMap params;
+		ParamMap params;
 		const CID& cid = replyTo.user->getCID();
 		const string& hint = replyTo.hint;
-		
-		params["message"] = Text::fromT(aLine);
-		params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv));
-		params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubs(cid, hint, priv));
-		params["userCID"] = cid.toBase32(); 
-		params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
-		params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
+		params["hubNI"] = [&] { return Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv)); };
+		params["hubURL"] = [&] { return Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint, priv)); };
+		params["userCID"] = [&cid] { return cid.toBase32(); };
+		params["userNI"] = [&] { return ClientManager::getInstance()->getNicks(cid, hint, priv)[0]; };
+		params["myCID"] = [] { return ClientManager::getInstance()->getMe()->getCID().toBase32(); };
 		LOG(LogManager::PM, params);
 	}
 
@@ -557,7 +555,7 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	tabMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
 	tabMenu.AppendMenu(MF_STRING, IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
 
-	prepareMenu(tabMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubs(replyTo.user->getCID(), replyTo.hint, priv));
+	prepareMenu(tabMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(replyTo.user->getCID(), replyTo.hint, priv));
 	if(!(tabMenu.GetMenuState(tabMenu.GetMenuItemCount()-1, MF_BYPOSITION) & MF_SEPARATOR)) {	
 		tabMenu.AppendMenu(MF_SEPARATOR);
 	}
@@ -572,7 +570,7 @@ void PrivateFrame::runUserCommand(UserCommand& uc) {
 	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
-	StringMap ucParams = ucLineParams;
+	auto ucParams = ucLineParams;
 
 	ClientManager::getInstance()->userCommand(replyTo, uc, ucParams, true);
 }
@@ -742,18 +740,18 @@ LRESULT PrivateFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 void PrivateFrame::readLog() {
 	if (SETTING(SHOW_LAST_LINES_LOG) == 0) return;
-	StringMap params;
+	ParamMap params;
 	
 	const CID& cid = replyTo.user->getCID();
 	const string& hint = replyTo.hint;
 					
 	params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv));
-	params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubs(cid, hint, priv));
+	params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint, priv));
 	params["userCID"] = cid.toBase32(); 
 	params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
 	params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
 		
-	string path = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false));
+	string path = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params));
 
 	try {
 		File f(path, File::READ, File::OPEN);
@@ -796,17 +794,17 @@ void PrivateFrame::closeAllOffline() {
 }
 
 LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
-	StringMap params;
+	ParamMap params;
 	const CID& cid = replyTo.user->getCID();
 	const string& hint = replyTo.hint;
 					
 	params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv));
-	params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubs(cid, hint, priv));
+	params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint, priv));
 	params["userCID"] = cid.toBase32(); 
 	params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
 	params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
 
-	string file = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false));
+	string file = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params));
 	if(Util::fileExists(file)) {
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, Text::toT(file).c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -820,17 +818,17 @@ LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 LRESULT PrivateFrame::onUserHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
-	StringMap params;
+	ParamMap params;
 	const CID& cid = replyTo.user->getCID();
 	const string& hint = replyTo.hint;
 					
 	params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv));
-	params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubs(cid, hint, priv));
+	params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint, priv));
 	params["userCID"] = cid.toBase32(); 
 	params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
 	params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
 
-	string file = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false));
+	string file = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params));
 	if(Util::fileExists(file)) {
 			TextFrame::openWindow(Text::toT(file).c_str(),false ,true);
 	} else {

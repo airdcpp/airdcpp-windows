@@ -3,7 +3,7 @@
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
-/* @(#) $Id: zutil.c 551 2010-12-18 12:14:16Z bigmuscle $ */
+/* @(#) $Id$ */
 
 #include "zutil.h"
 

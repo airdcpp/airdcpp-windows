@@ -68,6 +68,9 @@
 #include "../client/MappingManager.h"
 #include "../client/ShareScannerManager.h"
 #include "../client/AirUtil.h"
+#include "../client/ScopedFunctor.h"
+#include "../client/format.h"
+#include "../client/HttpDownload.h"
 
 MainFrame* MainFrame::anyMF = NULL;
 bool MainFrame::bShutdown = false;
@@ -75,7 +78,7 @@ uint64_t MainFrame::iCurrentShutdownTime = 0;
 bool MainFrame::isShutdownStatus = false;
 
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
-lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL), c(new HttpConnection()), 
+lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
 bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false)
 
@@ -163,21 +166,28 @@ LRESULT MainFrame::onMatchAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	return 0;
 }
 
-void MainFrame::Terminate() {
-	HasUpdate = false; // avoid update question if user double downloads update
+void MainFrame::terminate() {
+	hasUpdate = false; // avoid update question if user double downloads update
 	oldshutdown = true;
 	PostMessage(WM_CLOSE);
-	
-
 }
+
 LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	links.homepage = _T("http://www.airdcpp.net/");
+	links.downloads = links.homepage + _T("download/");
+	links.geoip6 = _T("http://geolite.maxmind.com/download/geoip/database/GeoIPv6.dat.gz");
+	links.geoip4 = _T("http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz");
+	links.guides = links.homepage + _T("guides/");
+	links.customize = links.homepage + _T("c/customizations/");
+	links.discuss = links.homepage + _T("forum/");
+
 	TimerManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
 	LogManager::getInstance()->addListener(this);
 
-	HasUpdate = false; 
-	
-
+	hasUpdate = false; 
+	conns[CONN_VERSION].reset(new HttpDownload(VERSION_URL,
+		[this] { postMessageFW(WM_SPEAKER, HTTP_COMPLETED, (LPARAM)CONN_VERSION); }));
 
 	WinUtil::init(m_hWnd);
 
@@ -313,10 +323,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	trayMenu.AppendMenu(MF_STRING, ID_APP_ABOUT, CTSTRING(MENU_ABOUT));
 	trayMenu.AppendMenu(MF_STRING, ID_APP_EXIT, CTSTRING(MENU_EXIT));
 
-	c->addListener(this);
-	c->setCoralizeState(HttpConnection::CST_NOCORALIZE);
-	c->downloadFile((VERSION_URL));
-
 	if(BOOLSETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
 	if(BOOLSETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
 	if(BOOLSETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
@@ -348,6 +354,23 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ConnectivityManager::getInstance()->setup(true);
 	} catch (const Exception& e) {
 		LogManager::getInstance()->message(e.getError());
+	}
+
+	auto prevGeo = BOOLSETTING(GET_USER_COUNTRY);
+	auto prevGeoFormat = SETTING(COUNTRY_FORMAT);
+
+	bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;
+	//if(BOOLSETTING(GET_USER_COUNTRY) != prevGeo) {
+		if(BOOLSETTING(GET_USER_COUNTRY)) {
+			GeoManager::getInstance()->init();
+			checkGeoUpdate();
+		} else {
+			GeoManager::getInstance()->close();
+			rebuildGeo = false;
+		}
+	//}
+	if(rebuildGeo) {
+		GeoManager::getInstance()->rebuild();
 	}
 	
 	// Different app icons for different instances (APEX)
@@ -721,7 +744,16 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 				::Shell_NotifyIcon(NIM_MODIFY, &nid);
 			}
 		}
-    }
+    } else if(wParam == HTTP_COMPLETED) {
+		switch(lParam) {
+			case CONN_VERSION:
+				completeVersionUpdate();
+			case CONN_GEO_V6:
+				completeGeoUpdate(true);
+			case CONN_GEO_V4:
+				completeGeoUpdate(false);
+		};
+	}
 
 	return 0;
 }
@@ -731,20 +763,12 @@ void MainFrame::parseCommandLine(const tstring& cmdLine)
 	string::size_type i = 0;
 	string::size_type j;
 
-	if( (j = cmdLine.find(_T("dchub://"), i)) != string::npos) {
-		WinUtil::parseDchubUrl(cmdLine.substr(j), false);
-	}
-	if( (j = cmdLine.find(_T("nmdcs://"), i)) != string::npos) {
-		WinUtil::parseDchubUrl(cmdLine.substr(j), true);
-	}	
-	if( (j = cmdLine.find(_T("adc://"), i)) != string::npos) {
-		WinUtil::parseADChubUrl(cmdLine.substr(j), false);
-	}
-	if( (j = cmdLine.find(_T("adcs://"), i)) != string::npos) {
-		WinUtil::parseADChubUrl(cmdLine.substr(j), true);
-	}
-	if( (j = cmdLine.find(_T("magnet:?"), i)) != string::npos) {
-		WinUtil::parseMagnetUri(cmdLine.substr(j));
+	if( (j = cmdLine.find(_T("dchub://"), i)) != string::npos ||
+		(j = cmdLine.find(_T("adc://"), i)) != string::npos ||
+		(j = cmdLine.find(_T("adcs://"), i)) != string::npos ||
+		(j = cmdLine.find(_T("magnet:?"), i)) != string::npos )
+	{
+		WinUtil::parseDBLClick(cmdLine.substr(j));
 	}
 }
 
@@ -878,113 +902,6 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	}
 	return 0;
 }
-
-void MainFrame::on(HttpConnectionListener::Complete, HttpConnection* /*aConn*/, const string&, bool /*fromCoral*/) noexcept {
-	try {
-		SimpleXML xml;
-		xml.fromXML(versionInfo);
-		xml.stepIn();
-
-		double LangVersion;
-
-		string url;
-#		ifdef _WIN64
-			if(xml.findChild("URL64")) {
-			url = xml.getChildData();
-		}
-#		else
-		if(xml.findChild("URL")) {
-			url = xml.getChildData();
-		}
-#		endif
-
-		//ApexDC
-		xml.resetCurrentChild();
-		if(!BOOLSETTING(AUTO_DETECT_CONNECTION)) {
-			if(BOOLSETTING(IP_UPDATE) && xml.findChild("IP")) {
-				string ip = xml.getChildData();
-				SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, (!ip.empty() ? ip : AirUtil::getLocalIp()));
-			} else if(BOOLSETTING(IP_UPDATE)) {
-				SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, AirUtil::getLocalIp());
-			}
-			xml.resetCurrentChild();
-		}
-
-		if(xml.findChild("Version")) {
-			double remoteVer = Util::toDouble(xml.getChildData());
-			xml.resetCurrentChild();
-			double ownVersion = Util::toDouble(VERSIONFLOAT);
-
-#ifdef SVNVERSION
-			if (xml.findChild("SVNrev")) {
-				remoteVer = Util::toDouble(xml.getChildData());
-				xml.resetCurrentChild();
-			}
-			string tmp = SVNVERSION;
-			ownVersion = Util::toDouble(tmp.substr(1, tmp.length()-1));
-#endif
-
-			if(remoteVer > ownVersion) {
-				xml.resetCurrentChild();
-				if(xml.findChild("Title")) {
-					const string& title = xml.getChildData();
-					xml.resetCurrentChild();
-					if(xml.findChild("Message") && !BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS)) {
-						if(url.empty()) {
-							const string& msg = xml.getChildData();
-							MessageBox(Text::toT(msg).c_str(), Text::toT(title).c_str(), MB_OK);
-						} else {
-							string msg = xml.getChildData() + "\r\n" + STRING(OPEN_DOWNLOAD_PAGE);
-							UpdateDlg dlg;
-							dlg.DoModal();
-						}
-					}
-				}
-				xml.resetCurrentChild();
-				if(xml.findChild("VeryOldVersion")) {
-					if(Util::toDouble(xml.getChildData()) >= Util::toDouble(VERSIONFLOAT)) {
-						string msg = xml.getChildAttrib("Message", "Your version of AirDC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
-						MessageBox(Text::toT(msg + "\r\nPlease get a new one at " + url).c_str());
-						oldshutdown = true;
-						PostMessage(WM_CLOSE);
-					}
-				}
-				xml.resetCurrentChild();
-				if(xml.findChild("BadVersion")) {
-					xml.stepIn();
-					while(xml.findChild("BadVersion")) {
-						double v = Util::toDouble(xml.getChildAttrib("Version"));
-						if(v == Util::toDouble(VERSIONFLOAT)) {
-							string msg = xml.getChildAttrib("Message", "Your version of DC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
-							MessageBox(Text::toT(msg + "\r\nPlease get a new one at " + url).c_str(), _T("Bad DC++ version"), MB_OK | MB_ICONEXCLAMATION);
-							oldshutdown = true;
-							PostMessage(WM_CLOSE);
-						}
-					}
-				}
-			} else 
-				if((!SETTING(LANGUAGE_FILE).empty() && !BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS))) {
-					if (xml.findChild(Text::fromT(TSTRING(AAIRDCPP_LANGUAGE_FILE)))) {
-						string version = xml.getChildData();
-						LangVersion = Util::toDouble(version);
-						xml.resetCurrentChild();
-						if (xml.findChild("LANGURL")) {
-							if (LangVersion > Util::toDouble(Text::fromT(TSTRING(AAIRDCPP_LANGUAGE_VERSION)))){
-							string msg = xml.getChildData()+ "\r\n" + STRING(OPEN_DOWNLOAD_PAGE);
-							xml.resetCurrentChild();
-							UpdateDlg dlg;
-							dlg.DoModal();
-							}
-							xml.resetCurrentChild();
-						}
-					}
-				}
-			}
-		} catch (const Exception&) {
-		// ...
-	}
-}
-
 
 LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
@@ -1123,12 +1040,6 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 }
 
 LRESULT MainFrame::onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	if(c != NULL) {
-		c->removeListener(this);
-		delete c;
-		c = NULL;
-	}
-
 	WINDOWPLACEMENT wp;
 	wp.length = sizeof(wp);
 	GetWindowPlacement(&wp);
@@ -1152,20 +1063,15 @@ LRESULT MainFrame::onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(c != NULL) {
-		c->removeListener(this);
-		delete c;
-		c = NULL;
-	}
-		if(HasUpdate) {
-					if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + INSTALLER)) {
-						//string file = (Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe");
-					if(MessageBox(CTSTRING(UPDATE_FILE_DETECTED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-						::ShellExecute(NULL, NULL, Text::toT(Util::getPath(Util::PATH_RESOURCES) + INSTALLER).c_str(), NULL, NULL, SW_SHOWNORMAL);
-						Terminate();
-					}
+	if(hasUpdate) {
+		if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + INSTALLER)) {
+			//string file = (Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe");
+			if(MessageBox(CTSTRING(UPDATE_FILE_DETECTED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+				::ShellExecute(NULL, NULL, Text::toT(Util::getPath(Util::PATH_RESOURCES) + INSTALLER).c_str(), NULL, NULL, SW_SHOWNORMAL);
+				terminate();
 			}
-			HasUpdate = false;
+		}
+		hasUpdate = false;
 	}
 	if(!closing) {
 		if( oldshutdown ||(!BOOLSETTING(CONFIRM_EXIT)) || (MessageBox(CTSTRING(REALLY_EXIT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) ) {
@@ -1239,11 +1145,10 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 	tstring site;
 	bool isFile = false;
 	switch(wID) {
-		case IDC_HELP_HOMEPAGE: site = _T("http://www.airdcpp.net"); break;
-		case IDC_HELP_GEOIPFILE: site = _T("http://www.maxmind.com/download/geoip/database/GeoIPCountryCSV.zip"); break;
-		case IDC_HELP_GUIDES: site = _T("http://www.airdcpp.net/guides"); break;
-		case IDC_HELP_DISCUSS: site = _T("http://www.airdcpp.net/forum"); break;
-		case IDC_HELP_CUSTOMIZE: site = _T("http://www.airdcpp.net/c/customizations"); break;
+		case IDC_HELP_HOMEPAGE: site = links.homepage; break;
+		case IDC_HELP_GUIDES: site = links.guides; break;
+		case IDC_HELP_DISCUSS: site = links.discuss; break;
+		case IDC_HELP_CUSTOMIZE: site = links.customize; break;
 		default: dcassert(0);
 	}
 
@@ -1604,14 +1509,6 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 			
 }
 
-void MainFrame::on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept {
-	versionInfo += string((const char*)buf, len);
-}
-
-void MainFrame::on(HttpConnectionListener::Retried, HttpConnection* /*conn*/, const bool Connected) noexcept {
- 	if (Connected)
- 		versionInfo = Util::emptyString;
-}
 void MainFrame::on(PartialList, const HintedUser& aUser, const string& text) noexcept {
 	PostMessage(WM_SPEAKER, BROWSE_LISTING, (LPARAM)new DirectoryBrowseInfo(aUser, text));
 }
@@ -1867,6 +1764,204 @@ LRESULT MainFrame::onRefreshMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/
 	}
 
 	return 0;
+}
+
+void MainFrame::checkGeoUpdate() {
+	checkGeoUpdate(true);
+	checkGeoUpdate(false);
+}
+
+void MainFrame::checkGeoUpdate(bool v6) {
+	// update when the database is non-existent or older than 16 days (GeoIP updates every month).
+	try {
+		File f(GeoManager::getDbPath(v6) + ".gz", File::READ, File::OPEN);
+		if(f.getSize() > 0 && static_cast<time_t>(f.getLastModified()) > GET_TIME() - 3600 * 24 * 16) {
+			return;
+		}
+	} catch(const FileException&) { }
+	updateGeo(v6);
+}
+
+void MainFrame::updateGeo() {
+	if(BOOLSETTING(GET_USER_COUNTRY)) {
+		updateGeo(true);
+		updateGeo(false);
+	} else {
+		//dwt::MessageBox(this).show(T_("IP -> country mappings are disabled. Turn them back on via Settings > Appearance."),
+			//_T(APPNAME) _T(" ") _T(VERSIONSTRING), dwt::MessageBox::BOX_OK, dwt::MessageBox::BOX_ICONEXCLAMATION);
+	}
+}
+
+void MainFrame::updateGeo(bool v6) {
+	auto& conn = conns[v6 ? CONN_GEO_V6 : CONN_GEO_V4];
+	if(conn)
+		return;
+
+	LogManager::getInstance()->message(str(boost::format("Updating the %1% GeoIP database...") % (v6 ? "IPv6" : "IPv4")));
+	conn.reset(new HttpDownload(Text::fromT(v6 ? links.geoip6 : links.geoip4),
+		[this, v6] { postMessageFW(WM_SPEAKER, HTTP_COMPLETED, (LPARAM)v6 ? CONN_GEO_V6 : CONN_GEO_V4); }, false));
+}
+
+void MainFrame::completeGeoUpdate(bool v6) {
+	auto& conn = conns[v6 ? CONN_GEO_V6 : CONN_GEO_V4];
+	if(!conn) { return; }
+	ScopedFunctor([&conn] { conn.reset(); });
+
+	if(!conn->buf.empty()) {
+		try {
+			File(GeoManager::getDbPath(v6) + ".gz", File::WRITE, File::CREATE | File::TRUNCATE).write(conn->buf);
+			GeoManager::getInstance()->update(v6);
+			LogManager::getInstance()->message(str(boost::format("The %1% GeoIP database has been successfully updated") % (v6 ? "IPv6" : "IPv4")));
+			return;
+		} catch(const FileException&) { }
+	}
+	LogManager::getInstance()->message(str(boost::format("The %1% GeoIP database could not be updated") % (v6 ? "IPv6" : "IPv4")));
+}
+
+
+LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/) {
+	if (::IsIconic(m_hWnd)) {
+		if(BOOLSETTING(PASSWD_PROTECT_TRAY)) {
+			if(hasPassdlg)
+				return 0;
+
+			hasPassdlg = true;
+			PassDlg passdlg;
+			passdlg.description = TSTRING(PASSWORD_DESC);
+			passdlg.title = TSTRING(PASSWORD_TITLE);
+			passdlg.ok = TSTRING(UNLOCK);
+			if(passdlg.DoModal(/*m_hWnd*/) == IDOK){
+				tstring tmp = passdlg.line;
+				if (tmp == Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
+					ShowWindow(SW_SHOW);
+					ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
+				}
+				hasPassdlg = false;
+			}
+		} else {
+			ShowWindow(SW_SHOW);
+			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
+		}
+
+	} else {
+		SetForegroundWindow(m_hWnd);	
+	}
+	return 0;
+}
+
+void MainFrame::completeVersionUpdate() {
+
+	if(!conns[CONN_VERSION]) { return; }
+	try {
+		SimpleXML xml;
+		xml.fromXML(conns[CONN_VERSION]->buf);
+		xml.stepIn();
+
+		double LangVersion;
+
+		string url;
+#		ifdef _WIN64
+			if(xml.findChild("URL64")) {
+			url = xml.getChildData();
+		}
+#		else
+		if(xml.findChild("URL")) {
+			url = xml.getChildData();
+		}
+#		endif
+
+		//ApexDC
+		xml.resetCurrentChild();
+		if(!BOOLSETTING(AUTO_DETECT_CONNECTION)) {
+			if(BOOLSETTING(IP_UPDATE) && xml.findChild("IP")) {
+				string ip = xml.getChildData();
+				SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, (!ip.empty() ? ip : AirUtil::getLocalIp()));
+			} else if(BOOLSETTING(IP_UPDATE)) {
+				SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, AirUtil::getLocalIp());
+			}
+			xml.resetCurrentChild();
+		}
+
+		if(xml.findChild("Version")) {
+			double remoteVer = Util::toDouble(xml.getChildData());
+			xml.resetCurrentChild();
+			double ownVersion = Util::toDouble(VERSIONFLOAT);
+
+#ifdef SVNVERSION
+			if (xml.findChild("SVNrev")) {
+				remoteVer = Util::toDouble(xml.getChildData());
+				xml.resetCurrentChild();
+			}
+			string tmp = SVNVERSION;
+			ownVersion = Util::toDouble(tmp.substr(1, tmp.length()-1));
+#endif
+
+			if(remoteVer > ownVersion) {
+				xml.resetCurrentChild();
+				if(xml.findChild("Title")) {
+					const string& title = xml.getChildData();
+					xml.resetCurrentChild();
+					if(xml.findChild("Message") && !BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS)) {
+						if(url.empty()) {
+							const string& msg = xml.getChildData();
+							MessageBox(Text::toT(msg).c_str(), Text::toT(title).c_str(), MB_OK);
+						} else {
+							string msg = xml.getChildData() + "\r\n" + STRING(OPEN_DOWNLOAD_PAGE);
+							UpdateDlg dlg;
+							dlg.DoModal();
+						}
+					}
+				}
+				xml.resetCurrentChild();
+				if(xml.findChild("VeryOldVersion")) {
+					if(Util::toDouble(xml.getChildData()) >= Util::toDouble(VERSIONFLOAT)) {
+						string msg = xml.getChildAttrib("Message", "Your version of AirDC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
+						MessageBox(Text::toT(msg + "\r\nPlease get a new one at " + url).c_str());
+						oldshutdown = true;
+						PostMessage(WM_CLOSE);
+					}
+				}
+				xml.resetCurrentChild();
+				if(xml.findChild("BadVersion")) {
+					xml.stepIn();
+					while(xml.findChild("BadVersion")) {
+						double v = Util::toDouble(xml.getChildAttrib("Version"));
+						if(v == Util::toDouble(VERSIONFLOAT)) {
+							string msg = xml.getChildAttrib("Message", "Your version of DC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
+							MessageBox(Text::toT(msg + "\r\nPlease get a new one at " + url).c_str(), _T("Bad DC++ version"), MB_OK | MB_ICONEXCLAMATION);
+							oldshutdown = true;
+							PostMessage(WM_CLOSE);
+						}
+					}
+				}
+			} else 
+				if((!SETTING(LANGUAGE_FILE).empty() && !BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS))) {
+					if (xml.findChild(CSTRING(AAIRDCPP_LANGUAGE_FILE))) {
+						string version = xml.getChildData();
+						LangVersion = Util::toDouble(version);
+						xml.resetCurrentChild();
+						if (xml.findChild("LANGURL")) {
+							if (LangVersion > Util::toDouble(CSTRING(AAIRDCPP_LANGUAGE_VERSION))){
+								string msg = xml.getChildData()+ "\r\n" + STRING(OPEN_DOWNLOAD_PAGE);
+								xml.resetCurrentChild();
+								UpdateDlg dlg;
+								dlg.DoModal();
+							}
+							xml.resetCurrentChild();
+						}
+					}
+				}
+			}
+		} catch (const Exception&) {
+		// ...
+	}
+
+	conns[CONN_VERSION].reset();
+
+	// check after the version.xml download in case it contains updated GeoIP links.
+	/*if(BOOLSETTING(GET_USER_COUNTRY)) {
+		checkGeoUpdate();
+	} */
 }
 
 /**

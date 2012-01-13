@@ -24,7 +24,8 @@
 #endif // _MSC_VER > 1000
 
 #include "../client/HttpConnection.h"
-#include "../client/SimpleXML.h"
+
+using std::unique_ptr;
 
 static const TCHAR thanks[] = 
 _T("Dìkuji všem, kteøí mì ve vývoji podporovali. THX: Andyman (for muscle-arm logo), Atom, Blackrabbit, Catalin, ")
@@ -47,6 +48,7 @@ _T("xaozon, kryppy, B1ackBoX, shuttle, ICU2M8, en_dator, NT, Bl0m5t3r, Shuttle, 
 
 class AboutDlg : public CDialogImpl<AboutDlg>, private HttpConnectionListener
 {
+
 public:
 	enum { IDD = IDD_ABOUTBOX };
 	enum { WM_VERSIONDATA = WM_APP + 53 };
@@ -61,79 +63,17 @@ public:
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 	END_MSG_MAP()
 
-	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		SetDlgItemText(IDC_VERSION, _T("AirDC++ v") _T(VERSIONSTRING) _T(" By Night and maksalaatikko \n http://www.airdcpp.net") _T("\n Based on: StrongDC++ \n Copyright 2004-2011 Big Muscle"));
-		CEdit ctrlThanks(GetDlgItem(IDC_THANKS));
-		ctrlThanks.FmtLines(TRUE);
-		ctrlThanks.AppendText(thanks, TRUE);
-		ctrlThanks.Detach();
-		
-		ctrlThanks.Attach(GetDlgItem(IDC_AIRTHANKS));
-		ctrlThanks.FmtLines(TRUE);
-		ctrlThanks.AppendText(Airthanks, TRUE);
-		ctrlThanks.Detach();
-		SetDlgItemText(IDC_TTH, WinUtil::tth.c_str());
-		SetDlgItemText(IDC_LATEST, CTSTRING(DOWNLOADING));
-		SetDlgItemText(IDC_TOTALS, (_T("Upload: ") + Util::formatBytesW(SETTING(TOTAL_UPLOAD)) + _T(", Download: ") + 
-			Util::formatBytesW(SETTING(TOTAL_DOWNLOAD))).c_str());
-
-		if(SETTING(TOTAL_DOWNLOAD) > 0) {
-			TCHAR buf[64];
-			snwprintf(buf, sizeof(buf), _T("Ratio (up/down): %.2f"), ((double)SETTING(TOTAL_UPLOAD)) / ((double)SETTING(TOTAL_DOWNLOAD)));
-
-			SetDlgItemText(IDC_RATIO, buf);
-		/*	sprintf(buf, "Uptime: %s", Util::formatTime(Util::getUptime()));
-			SetDlgItemText(IDC_UPTIME, Text::toT(buf).c_str());*/
-		}
-		CenterWindow(GetParent());
-		c.addListener(this);
-		c.downloadFile(VERSION_URL), false;
-		return TRUE;
-	}
-
-	LRESULT onVersionData(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		tstring* x = (tstring*) wParam;
-		SetDlgItemText(IDC_LATEST, x->c_str());
-		delete x;
-		return 0;
-	}
-		
-	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		EndDialog(wID);
-		return 0;
-	}
+	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onVersionData(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
-	HttpConnection c;
-
 	AboutDlg(const AboutDlg&) { dcassert(0); }
+	HttpConnection c;
 	
-	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept {
-		downBuf.append((char*)buf, len);
-	}
-
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool /*fromCoral*/) noexcept {
-		if(!downBuf.empty()) {
-			try {
-				SimpleXML xml;
-				xml.fromXML(downBuf);
-				if(xml.findChild("DCUpdate")) {
-					xml.stepIn();
-					if(xml.findChild("Version")) {
-						tstring* x = new tstring(Text::toT(xml.getChildData()));
-						PostMessage(WM_VERSIONDATA, (WPARAM) x);
-					}
-				}
-			} catch(const SimpleXMLException&) { }
-		}
-		conn->removeListener(this);
-	}
-
-	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) noexcept {
-		tstring* x = new tstring(Text::toT(aLine));
-		PostMessage(WM_VERSIONDATA, (WPARAM) x);
-		conn->removeListener(this);
-	}
+	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept;
+	void on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool /*fromCoral*/) noexcept ;
+	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) noexcept;
 
 	string downBuf;
 };

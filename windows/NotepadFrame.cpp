@@ -117,7 +117,7 @@ LRESULT NotepadFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		if(end == string::npos)
 			end = x.length();
 		
-		bHandled = WinUtil::parseDBLClick(x, start, end);
+		bHandled = WinUtil::parseDBLClick(x.substr(start, end-start));
 	}
 	return 0;
 }

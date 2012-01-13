@@ -313,14 +313,14 @@ void HubFrame::onEnter() {
 					}
 				}
 			} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
-				StringMap params;
+				ParamMap params;
 				params["hubNI"] = client->getHubName();
 				params["hubURL"] = client->getHubUrl();
 				params["myNI"] = client->getMyNick(); 
 				if(param.empty()) {
-					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params, false))));
+					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params))));
 				} else if(stricmp(param.c_str(), _T("status")) == 0) {
-					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_STATUS), params, false))));
+					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_STATUS), params))));
 				}
 			} else if(stricmp(cmd.c_str(), _T("f")) == 0) {
 				if(param.empty())
@@ -353,14 +353,14 @@ void HubFrame::onEnter() {
 					ignorelist += _T(" ") + Text::toT(ClientManager::getInstance()->getNicks((*i)->getCID(), Util::emptyString)[0]); // ignore user isn't hub dependent
 				addLine(ignorelist, WinUtil::m_ChatTextSystem);
 			} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
-				StringMap params;
+				ParamMap params;
 				params["hubNI"] = client->getHubName();
 				params["hubURL"] = client->getHubUrl();
 				params["myNI"] = client->getMyNick(); 
 				if(param.empty()) {
-					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params, false))));
+					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params))));
 				} else if(stricmp(param.c_str(), _T("status")) == 0) {
-					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_STATUS), params, false))));
+					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_STATUS), params))));
 				}
 			} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
 				addLine(_T("*** ") + WinUtil::commands + _T(", /smallfilesize #, /extraslots #, /savequeue, /join <hub-ip>, /clear, /ts, /showjoins, /favshowjoins, /close, /userlist, /connection, /favorite, /pm <user> [message], /getlist <user>, /ignorelist, /removefavorite"), WinUtil::m_ChatTextSystem);
@@ -1189,7 +1189,7 @@ void HubFrame::addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf,
 //	ctrlClient.AdjustTextSize();
 
 	if(BOOLSETTING(LOG_MAIN_CHAT) | logMainChat) {
-		StringMap params;
+		ParamMap params;
 		params["message"] = Text::fromT(aLine);
 		client->getHubIdentity().getParams(params, "hub", false);
 		params["hubURL"] = client->getHubUrl();
@@ -1336,22 +1336,20 @@ void HubFrame::runUserCommand(::UserCommand& uc) {
 	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
 
-	StringMap ucParams = ucLineParams;
+	auto ucParams = ucLineParams;
 
 	client->getMyIdentity().getParams(ucParams, "my", true);
 	client->getHubIdentity().getParams(ucParams, "hub", false);
 
 	if(tabMenuShown) {
-		client->escapeParams(ucParams);
 		client->sendUserCmd(uc, ucParams);
 	} else {
 		int sel = -1;
 		while((sel = ctrlUsers.GetNextItem(sel, LVNI_SELECTED)) != -1) {
 			const OnlineUserPtr u = ctrlUsers.getItemData(sel);
 			if(u->getUser()->isOnline()) {
-				StringMap tmp = ucParams;
+				auto tmp = ucParams;
 				u->getIdentity().getParams(tmp, "user", true);
-				client->escapeParams(tmp);
 				client->sendUserCmd(uc, tmp);
 			}
 		}
@@ -1762,7 +1760,7 @@ void HubFrame::addStatus(const tstring& aLine, CHARFORMAT2& cf, bool inChat /* =
 		addLine(_T("*** ") + aLine, cf, BOOLSETTING(HUB_BOLD_TABS));
 	}
 	if(BOOLSETTING(LOG_STATUS_MESSAGES)) {
-		StringMap params;
+		ParamMap params;
 		client->getHubIdentity().getParams(params, "hub", false);
 		params["hubURL"] = client->getHubUrl();
 		client->getMyIdentity().getParams(params, "my", true);
@@ -2374,7 +2372,7 @@ LRESULT HubFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
-	StringMap params;
+	ParamMap params;
 	OnlineUserPtr ui = NULL;
 
 	int i = -1;
@@ -2389,7 +2387,7 @@ LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	params["myNI"] = client->getMyNick();
 	params["userCID"] = ui->getUser()->getCID().toBase32();
 	params["hubURL"] = client->getHubUrl();
-	tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false)));
+	tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params)));
 	if(Util::fileExists(Text::fromT(file))) {
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -2403,11 +2401,11 @@ LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 }
 
 LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	StringMap params;
+	ParamMap params;
 	params["hubNI"] = client->getHubName();
 	params["hubURL"] = client->getHubUrl();
 	params["myNI"] = client->getMyNick(); 
-	tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params, false)));
+	tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params)));
 	if(Util::fileExists(Text::fromT(filename))){
 			if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, filename.c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -2420,11 +2418,11 @@ LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	return 0;
 }
 LRESULT HubFrame::onHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	StringMap params;
+	ParamMap params;
 	params["hubNI"] = client->getHubName();
 	params["hubURL"] = client->getHubUrl();
 	params["myNI"] = client->getMyNick(); 
-	tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params, false)));
+	tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params)));
 	if(Util::fileExists(Text::fromT(filename))){
 			TextFrame::openWindow(filename, false, true);
 		
@@ -2434,7 +2432,7 @@ LRESULT HubFrame::onHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	return 0;
 }
 LRESULT HubFrame::onUserHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	StringMap params;
+	ParamMap params;
 	OnlineUserPtr ui = NULL;
 
 	int i = -1;
@@ -2449,7 +2447,7 @@ LRESULT HubFrame::onUserHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	params["myNI"] = client->getMyNick();
 	params["userCID"] = ui->getUser()->getCID().toBase32();
 	params["hubURL"] = client->getHubUrl();
-	tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params, false)));
+	tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params)));
 	if(Util::fileExists(Text::fromT(file))) {
 			TextFrame::openWindow(file, false, true);
 	} else {
@@ -2591,7 +2589,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				uint8_t flagIndex = 0;
 				if (!ip.empty()) {
 					// Only attempt to grab a country mapping if we actually have an IP address
-					string tmpCountry = Util::getIpCountry(ip);
+					string tmpCountry = GeoManager::getInstance()->getCountry(ip);
 					if(!tmpCountry.empty()) {
 						flagIndex = WinUtil::getFlagIndexByCode(tmpCountry.c_str());
 					}

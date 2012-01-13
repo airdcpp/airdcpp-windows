@@ -106,7 +106,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\boost;$(SolutionDir)\bzip2;$(SolutionDir)\openssl\include;$(SolutionDir)\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\geoip;$(SolutionDir)\boost;$(SolutionDir)\bzip2;$(SolutionDir)\openssl\include;$(SolutionDir)\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -127,6 +127,7 @@
     <Lib>
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <IgnoreAllDefaultLibraries>true</IgnoreAllDefaultLibraries>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -137,7 +138,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\geoip;$(SolutionDir)\bzip2;$(SolutionDir)\boost;$(SolutionDir)\zlib;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -245,10 +246,13 @@
     <ClCompile Include="client\FileQueue.cpp" />
     <ClCompile Include="client\FileReader.cpp" />
     <ClCompile Include="client\FinishedManager.cpp" />
+    <ClCompile Include="client\GeoIP.cpp" />
+    <ClCompile Include="client\GeoManager.cpp" />
     <ClCompile Include="client\HashBloom.cpp" />
     <ClCompile Include="client\HashManager.cpp" />
     <ClCompile Include="client\HighlightManager.cpp" />
     <ClCompile Include="client\HttpConnection.cpp" />
+    <ClCompile Include="client\HttpDownload.cpp" />
     <ClCompile Include="client\Mapper.cpp" />
     <ClCompile Include="client\Mapper_MiniUPnPc.cpp" />
     <ClCompile Include="client\Mapper_NATPMP.cpp" />
@@ -348,6 +352,8 @@
     <ClInclude Include="client\FinishedManagerListener.h" />
     <ClInclude Include="client\Flags.h" />
     <ClInclude Include="client\forward.h" />
+    <ClInclude Include="client\GeoIP.h" />
+    <ClInclude Include="client\GeoManager.h" />
     <ClInclude Include="client\GetSet.h" />
     <ClInclude Include="client\HashBloom.h" />
     <ClInclude Include="client\HashManager.h" />
@@ -355,6 +361,7 @@
     <ClInclude Include="client\HighlightManager.h" />
     <ClInclude Include="client\HintedUser.h" />
     <ClInclude Include="client\HttpConnection.h" />
+    <ClInclude Include="client\HttpDownload.h" />
     <ClInclude Include="client\HubEntry.h" />
     <ClInclude Include="client\LogManager.h" />
     <ClInclude Include="client\Mapper.h" />
@@ -447,6 +454,14 @@
     <ProjectReference Include="bzip2.vcxproj">
       <Project>{8b162f1b-5d6c-41c1-8a80-858b379de07d}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="geoip\geoip.vcxproj">
+      <Project>{40440579-27af-4e34-8374-ca64b340f1d9}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
     </ProjectReference>
     <ProjectReference Include="MakeDefs\MakeDefs.vcxproj">
       <Project>{aef82786-9da2-4cdf-8602-02643cafc727}</Project>
