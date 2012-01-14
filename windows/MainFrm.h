@@ -28,7 +28,7 @@
 #include "../client/FavoriteManager.h"
 #include "../client/QueueManagerListener.h"
 #include "../client/Util.h"
-#include "../client/LogManager.h"
+#include "../client/LogManagerListener.h"
 #include "../client/version.h"
 #include "../client/Client.h"
 #include "../client/ShareManager.h"

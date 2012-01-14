@@ -71,10 +71,10 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
     <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)vc10\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\airsvn\trunk\WTL;C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\airsvn\trunk\WTL;C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
-    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Projects\airsvn\trunk\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\windows\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\windows\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\windows\WTL;$(IncludePath)</IncludePath>
+    <IncludePath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\windows\WTL;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -253,6 +253,7 @@
     <ClCompile Include="client\HighlightManager.cpp" />
     <ClCompile Include="client\HttpConnection.cpp" />
     <ClCompile Include="client\HttpDownload.cpp" />
+    <ClCompile Include="client\LogManager.cpp" />
     <ClCompile Include="client\Mapper.cpp" />
     <ClCompile Include="client\Mapper_MiniUPnPc.cpp" />
     <ClCompile Include="client\Mapper_NATPMP.cpp" />
@@ -361,9 +362,11 @@
     <ClInclude Include="client\HighlightManager.h" />
     <ClInclude Include="client\HintedUser.h" />
     <ClInclude Include="client\HttpConnection.h" />
+    <ClInclude Include="client\HttpConnectionListener.h" />
     <ClInclude Include="client\HttpDownload.h" />
     <ClInclude Include="client\HubEntry.h" />
     <ClInclude Include="client\LogManager.h" />
+    <ClInclude Include="client\LogManagerListener.h" />
     <ClInclude Include="client\Mapper.h" />
     <ClInclude Include="client\Mapper_MiniUPnPc.h" />
     <ClInclude Include="client\Mapper_NATPMP.h" />

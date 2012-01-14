@@ -239,6 +239,9 @@
     <ClCompile Include="client\HttpConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\LogManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -623,6 +626,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\HttpDownload.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\LogManagerListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\HttpConnectionListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
