@@ -539,7 +539,7 @@ private:
 		CONN_LAST
 	};
 
-	shared_ptr<HttpDownload> conns[CONN_LAST];
+	unique_ptr<HttpDownload> conns[CONN_LAST];
 
 	void checkGeoUpdate();
 	void checkGeoUpdate(bool v6);

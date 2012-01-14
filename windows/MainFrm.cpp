@@ -175,8 +175,8 @@ void MainFrame::terminate() {
 LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	links.homepage = _T("http://www.airdcpp.net/");
 	links.downloads = links.homepage + _T("download/");
-	links.geoip6 = _T("http://geolite.maxmind.com/download/geoip/database/GeoIPv6.dat.gz");
-	links.geoip4 = _T("http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz");
+	links.geoip6 = _T("http://geoip6.airdcpp.net");
+	links.geoip4 = _T("http://geoip4.airdcpp.net");
 	links.guides = links.homepage + _T("guides/");
 	links.customize = links.homepage + _T("c/customizations/");
 	links.discuss = links.homepage + _T("forum/");
