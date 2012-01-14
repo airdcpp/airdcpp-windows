@@ -89,7 +89,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);ssize_t=SSIZE_T;PACKAGE_VERSION=0</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);ssize_t=SSIZE_T;PACKAGE_VERSION=0;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -107,7 +107,7 @@
       <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);_WIN32_WINNT=0x502;WINVER=0x502;_WIN32_IE=0x600;NOMINMAX;STRICT;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;BOOST_USE_WINDOWS_H;HAS_PCH;UNICODE;_UNICODE;NDEBUG;_REENTRANT;snprintf=_snprintf;HAVE_HTMLHELP_H;HAVE_NATUPNP_H;HAVE_STDINT_H=1;PACKAGE_VERSION=0;ssize_t=SSIZE_T;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);_WIN32_WINNT=0x502;WINVER=0x502;_WIN32_IE=0x600;NOMINMAX;STRICT;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;BOOST_USE_WINDOWS_H;HAS_PCH;UNICODE;_UNICODE;NDEBUG;_REENTRANT;snprintf=_snprintf;HAVE_HTMLHELP_H;HAVE_NATUPNP_H;HAVE_STDINT_H=1;PACKAGE_VERSION=0;ssize_t=SSIZE_T;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
@@ -139,7 +139,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);_WIN32_WINNT=0x502;WINVER=0x502;_WIN32_IE=0x600;NOMINMAX;STRICT;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;BOOST_USE_WINDOWS_H;HAS_PCH;UNICODE;_UNICODE;NDEBUG;_REENTRANT;snprintf=_snprintf;HAVE_HTMLHELP_H;HAVE_NATUPNP_H;HAVE_STDINT_H=1;PACKAGE_VERSION=0;ssize_t=SSIZE_T;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);_WIN32_WINNT=0x502;WINVER=0x502;_WIN32_IE=0x600;NOMINMAX;STRICT;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;BOOST_USE_WINDOWS_H;HAS_PCH;UNICODE;_UNICODE;NDEBUG;_REENTRANT;snprintf=_snprintf;HAVE_HTMLHELP_H;HAVE_NATUPNP_H;HAVE_STDINT_H=1;PACKAGE_VERSION=0;ssize_t=SSIZE_T;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
       <Optimization>Disabled</Optimization>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
@@ -156,7 +156,7 @@
       <WarningLevel>Level3</WarningLevel>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <Optimization>Full</Optimization>
-      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);_WIN32_WINNT=0x502;WINVER=0x502;_WIN32_IE=0x600;NOMINMAX;STRICT;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;BOOST_USE_WINDOWS_H;HAS_PCH;UNICODE;_UNICODE;NDEBUG;_REENTRANT;snprintf=_snprintf;HAVE_HTMLHELP_H;HAVE_NATUPNP_H;HAVE_STDINT_H=1;PACKAGE_VERSION=0;ssize_t=SSIZE_T;</PreprocessorDefinitions>
+      <PreprocessorDefinitions>STATICLIB;%(PreprocessorDefinitions);_WIN32_WINNT=0x502;WINVER=0x502;_WIN32_IE=0x600;NOMINMAX;STRICT;WIN32_LEAN_AND_MEAN;BOOST_ALL_NO_LIB;BOOST_USE_WINDOWS_H;HAS_PCH;UNICODE;_UNICODE;NDEBUG;_REENTRANT;snprintf=_snprintf;HAVE_HTMLHELP_H;HAVE_NATUPNP_H;HAVE_STDINT_H=1;PACKAGE_VERSION=0;ssize_t=SSIZE_T;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_DEPRECATE;</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <StringPooling>true</StringPooling>
       <BufferSecurityCheck>false</BufferSecurityCheck>
