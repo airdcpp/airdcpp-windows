@@ -92,6 +92,7 @@
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions);ssize_t=SSIZE_T;PACKAGE_VERSION=0</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
