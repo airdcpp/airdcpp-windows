@@ -141,7 +141,7 @@
 #define IDD_EXTRA                       301
 #define IDD_AIRDCPAGE                   301
 #define IDB_WINAMP_CONTROL              302
-#define IDD_SEARCHPAGE						302
+#define IDD_SEARCHPAGE                  302
 #define IDD_AIRDOWNLOADSPAGE            303
 #define IDD_AIRSHARINGPAGE              304
 #define IDD_AUTOSEARCH_DLG              305
@@ -158,6 +158,7 @@
 #define IDD_WIZARD                      314
 #define IDD_DIRLIST_DLG                 316
 #define IDI_GER                         318
+#define IDD_FAVORITEDIR                 320
 #define IDI_ICON1                       324
 #define IDI_FIN                         324
 #define IDI_ICON2                       325
@@ -438,6 +439,7 @@
 #define IDC_FILELIST_HL                 1218
 #define IDC_SHARE_SAVE_TIME             1218
 #define IDC_U_MATCH                     1218
+#define IDC_FDNAME                      1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_MAX_UPLOAD_SP               1219
@@ -574,6 +576,8 @@
 #define IDC_AIRDC_SLOT                  1285
 #define IDC_SKIPLIST_PRESET2            1285
 #define IDC_EXPLAIN                     1285
+#define IDC_FD                          1285
+#define IDC_FDPATH                      1285
 #define IDC_EDIT3                       1286
 #define IDC_BIND_ADDRESS                1286
 #define IDC_SKIPLIST_PRESET3            1286
@@ -943,6 +947,10 @@
 #define IDC_PROGRESS_COLOR_UP_SHOW      1617
 #define IDC_FAVDIRS_SHOW_SHARED         1619
 #define IDC_USER_MATCH_TEXT             1620
+#define IDC_FDNAME_TEXT                 1621
+#define IDC_FDPATH_TEXT                 1622
+#define IDC_BROWSEFAV                   1623
+#define IDC_FAVDIR_EXPLAIN              1624
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1006,7 +1014,7 @@
 #define IDC_WEB_SHORTCUTS_NAME_DESC     8690
 #define IDC_WEB_SHORTCUT_KEY_DESC       8691
 #define IDC_WEB_SHORTCUTS_LIST          8692
-#define IDC_SEARCH_SITES				8693
+#define IDC_SEARCH_SITES                8693
 #define IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS 9000
 #define IDR_TRAY_PM                     10000
 #define IDR_TRAY_HUB                    10001
@@ -1255,9 +1263,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        320
+#define _APS_NEXT_RESOURCE_VALUE        321
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1621
+#define _APS_NEXT_CONTROL_VALUE         1625
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

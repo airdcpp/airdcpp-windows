@@ -352,6 +352,7 @@
     <ClInclude Include="client\FinishedManager.h" />
     <ClInclude Include="client\FinishedManagerListener.h" />
     <ClInclude Include="client\Flags.h" />
+    <ClInclude Include="client\format.h" />
     <ClInclude Include="client\forward.h" />
     <ClInclude Include="client\GeoIP.h" />
     <ClInclude Include="client\GeoManager.h" />
@@ -410,7 +411,6 @@
     <ClInclude Include="client\UploadBundle.h" />
     <ClInclude Include="client\UserQueue.h" />
     <ClInclude Include="client\WebShortcuts.h" />
-    <ClInclude Include="E:\dcplusplus\dcpp\format.h" />
     <ClInclude Include="windows\ResourceLoader.h" />
     <CustomBuild Include="client\StringDefs.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>

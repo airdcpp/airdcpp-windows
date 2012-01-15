@@ -440,6 +440,7 @@
     <ClCompile Include="windows\AirSharingPage.cpp" />
     <ClCompile Include="windows\AppearancePage.cpp" />
     <ClCompile Include="windows\AutosearchDlg.cpp" />
+    <ClCompile Include="windows\FavoriteDirDlg.cpp" />
     <ClCompile Include="windows\SearchPage.cpp" />
     <ClCompile Include="windows\AVIPreview.cpp" />
     <ClCompile Include="windows\BarShader.cpp" />
@@ -541,6 +542,7 @@
     <ClInclude Include="windows\AirSharingPage.h" />
     <ClInclude Include="windows\AppearancePage.h" />
     <ClInclude Include="windows\AutosearchDlg.h" />
+    <ClInclude Include="windows\FavoriteDirDlg.h" />
     <ClInclude Include="windows\SearchPage.h" />
     <ClInclude Include="windows\AVIPreview.h" />
     <ClInclude Include="windows\BarShader.h" />

@@ -632,7 +632,7 @@
 		<String Name="SettingsGeneral">General</String>
 		<String Name="SettingsGetUserCountry">Get User Country</String>
 		<String Name="SettingsHubUserCommands">Accept custom user commands from hub</String>
-		<String Name="SettingsChange">&amp;Change</String>
+		<String Name="SettingsChange">Change</String>
 		<String Name="SettingsIgnoreHubPms">Ignore private messages from the hub</String>
 		<String Name="SettingsIgnoreBotPms">Ignore private messages from bots</String>
 		<String Name="SettingsIncoming">Incoming connection settings (see Help/FAQ if unsure)</String>
@@ -1481,5 +1481,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SettingsWsHowto">How To use</String>
 		<String Name="SettingsWsClean">Clean search term</String>
 		<String Name="Webshortcuts">WebShortCuts</String>
+		<String Name="FavdirExplain">a Favorite Download location accepts multiple paths for 1 name,
+The path used will be the one wich has the most free diskspace.
+ </String>
 	</Strings>
 </Language>

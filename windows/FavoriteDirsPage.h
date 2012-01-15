@@ -78,7 +78,7 @@ protected:
 	void addDirectory(const tstring& aPath);
 	bool renameFavoriteDir(const string& aName, const string& anotherName, const string& aPath);
 	bool addFavoriteDir(const string& aDirectory, const string & aName);
-	bool removeFavoriteDir(const string& aName, const string& aTarget);
+	bool removeFavoriteDir(const string& aName);
 };
 
 #endif // !defined(FAVORITE_DIR_SPAGE_H)
