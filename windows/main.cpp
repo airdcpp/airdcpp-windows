@@ -373,7 +373,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	startup(callBack, (void*)splash.m_hWnd);
 	
 
-if(BOOLSETTING(PASSWD_PROTECT)) {
+	if(BOOLSETTING(PASSWD_PROTECT)) {
 		PassDlg dlg;
 		dlg.description = TSTRING(PASSWORD_DESC);
 		dlg.title = TSTRING(PASSWORD_TITLE);
@@ -427,7 +427,30 @@ if(BOOLSETTING(PASSWD_PROTECT)) {
 	
 	_Module.RemoveMessageLoop();
 
-	shutdown();
+	
+	dummy.Create(NULL, rc, _T(APPNAME) _T(" ") _T(VERSIONSTRING), WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+		ES_CENTER | ES_READONLY, WS_EX_STATICEDGE);
+	splash.Create(_T("Static"), GetDesktopWindow(), splash.rcDefault, NULL, WS_POPUP | WS_VISIBLE | SS_USERITEM | WS_EX_TOOLWINDOW);
+	splash.SetFont((HFONT)GetStockObject(DEFAULT_GUI_FONT));
+	
+	dc = splash.GetDC();
+	rc.right = rc.left + 350;
+	rc.bottom = rc.top + 120;
+	splash.ReleaseDC(dc);
+	splash.HideCaret();
+	splash.SetWindowPos(NULL, &rc, SWP_SHOWWINDOW);
+	splash.SetWindowLongPtr(GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&splashCallback));
+	splash.CenterWindow();
+
+	sTitle = TSTRING(PROCESSING);
+
+	splash.SetFocus();
+	splash.RedrawWindow();
+
+	shutdown(callBack, (void*)splash.m_hWnd);
+
+	splash.DestroyWindow();
+	dummy.DestroyWindow();
 
 	return nRet;
 }

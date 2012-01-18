@@ -187,7 +187,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	hasUpdate = false; 
 	conns[CONN_VERSION].reset(new HttpDownload(VERSION_URL,
-		[this] { postMessageFW(WM_SPEAKER, HTTP_COMPLETED, (LPARAM)CONN_VERSION); }));
+		[this] { postMessageFW(WM_SPEAKER, HTTP_COMPLETED, (LPARAM)CONN_VERSION); }, false));
 
 	WinUtil::init(m_hWnd);
 
@@ -745,13 +745,12 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 			}
 		}
     } else if(wParam == HTTP_COMPLETED) {
-		switch(lParam) {
-			case CONN_VERSION:
-				completeVersionUpdate();
-			case CONN_GEO_V6:
-				completeGeoUpdate(true);
-			case CONN_GEO_V4:
-				completeGeoUpdate(false);
+		if (lParam == CONN_VERSION) {
+			completeVersionUpdate();
+		} else if (lParam == CONN_GEO_V6) {
+			completeGeoUpdate(true);
+		} else if (lParam == CONN_GEO_V4) {
+			completeGeoUpdate(false);
 		};
 	}
 
@@ -1799,7 +1798,7 @@ void MainFrame::updateGeo(bool v6) {
 
 	LogManager::getInstance()->message(str(boost::format("Updating the %1% GeoIP database...") % (v6 ? "IPv6" : "IPv4")));
 	conn.reset(new HttpDownload(Text::fromT(v6 ? links.geoip6 : links.geoip4),
-		[this, v6] { postMessageFW(WM_SPEAKER, HTTP_COMPLETED, (LPARAM)v6 ? CONN_GEO_V6 : CONN_GEO_V4); }, false));
+		[this, v6] { postMessageFW(WM_SPEAKER, HTTP_COMPLETED, (LPARAM)(v6 ? CONN_GEO_V6 : CONN_GEO_V4)); }, false));
 }
 
 void MainFrame::completeGeoUpdate(bool v6) {
@@ -1934,25 +1933,24 @@ void MainFrame::completeVersionUpdate() {
 						}
 					}
 				}
-			} else 
-				if((!SETTING(LANGUAGE_FILE).empty() && !BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS))) {
-					if (xml.findChild(CSTRING(AAIRDCPP_LANGUAGE_FILE))) {
-						string version = xml.getChildData();
-						LangVersion = Util::toDouble(version);
-						xml.resetCurrentChild();
-						if (xml.findChild("LANGURL")) {
-							if (LangVersion > Util::toDouble(CSTRING(AAIRDCPP_LANGUAGE_VERSION))){
-								string msg = xml.getChildData()+ "\r\n" + STRING(OPEN_DOWNLOAD_PAGE);
-								xml.resetCurrentChild();
-								UpdateDlg dlg;
-								dlg.DoModal();
-							}
+			} else if((!SETTING(LANGUAGE_FILE).empty() && !BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS))) {
+				if (xml.findChild(CSTRING(AAIRDCPP_LANGUAGE_FILE))) {
+					string version = xml.getChildData();
+					LangVersion = Util::toDouble(version);
+					xml.resetCurrentChild();
+					if (xml.findChild("LANGURL")) {
+						if (LangVersion > Util::toDouble(CSTRING(AAIRDCPP_LANGUAGE_VERSION))){
+							string msg = xml.getChildData()+ "\r\n" + STRING(OPEN_DOWNLOAD_PAGE);
 							xml.resetCurrentChild();
+							UpdateDlg dlg;
+							dlg.DoModal();
 						}
+						xml.resetCurrentChild();
 					}
 				}
 			}
-		} catch (const Exception&) {
+		}
+	} catch (const Exception&) {
 		// ...
 	}
 
