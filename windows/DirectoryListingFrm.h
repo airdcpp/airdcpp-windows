@@ -495,8 +495,8 @@ private:
 			
 				mWindow->refreshTree(Util::emptyStringT);
 			}else if(adlsearch) {
-				mWindow->dl->getRoot()->clearAdls(); //not much to check even if its the first time loaded without adls...
 				mWindow->DisableWindow();
+				mWindow->dl->getRoot()->clearAdls(); //not much to check even if its the first time loaded without adls...
 				ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
 				mWindow->refreshTree(Util::emptyStringT);
 
