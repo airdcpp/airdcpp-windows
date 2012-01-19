@@ -255,7 +255,7 @@ void FavoriteDirsPage::addDirectory(const tstring& aPath){
 			string str = path.substr(j, i-j);
 			j = i +1;
 			if(str.size() >= 3) { //path must be atleast 3 characters
-				if (addFavoriteDir(str, Text::fromT(dlg.name))) {
+				if(addFavoriteDir(str, Text::fromT(dlg.name))) {
 					int pos;
 					pos = ctrlDirectories.find(dlg.name);
 					if(pos == -1) {

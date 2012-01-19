@@ -1483,7 +1483,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="Webshortcuts">WebShortCuts</String>
 		<String Name="FavdirExplain">a Favorite Download location accepts multiple paths for 1 name,
 The path used will be the one wich has the most free diskspace.
- </String>
+</String>
 		<String Name="CountryInformation">Country information</String>
 		<String Name="ClosingConnections">Closing connections</String>
 		<String Name="Processing">Processing, please wait...</String>
