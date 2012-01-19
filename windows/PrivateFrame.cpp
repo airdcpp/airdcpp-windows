@@ -495,6 +495,16 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine) {
 	addLine(from, aLine, WinUtil::m_ChatTextGeneral );
 }
 
+void PrivateFrame::fillLogParams(ParamMap& params) const {
+	const CID& cid = replyTo.user->getCID();
+	const string& hint = replyTo.hint;
+	params["hubNI"] = [&] { return Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv)); };
+	params["hubURL"] = [&] { return Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint, priv)); };
+	params["userCID"] = [&cid] { return cid.toBase32(); };
+	params["userNI"] = [&] { return ClientManager::getInstance()->getNicks(cid, hint, priv)[0]; };
+	params["myCID"] = [] { return ClientManager::getInstance()->getMe()->getCID().toBase32(); };
+}
+
 void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMAT2& cf) {
 	if(!created) {
 		if(BOOLSETTING(POPUNDER_PM))
@@ -508,13 +518,8 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 
 	if(BOOLSETTING(LOG_PRIVATE_CHAT)) {
 		ParamMap params;
-		const CID& cid = replyTo.user->getCID();
-		const string& hint = replyTo.hint;
-		params["hubNI"] = [&] { return Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv)); };
-		params["hubURL"] = [&] { return Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint, priv)); };
-		params["userCID"] = [&cid] { return cid.toBase32(); };
-		params["userNI"] = [&] { return ClientManager::getInstance()->getNicks(cid, hint, priv)[0]; };
-		params["myCID"] = [] { return ClientManager::getInstance()->getMe()->getCID().toBase32(); };
+		params["message"] = [&aLine] { return Text::fromT(aLine); };
+		fillLogParams(params);
 		LOG(LogManager::PM, params);
 	}
 
