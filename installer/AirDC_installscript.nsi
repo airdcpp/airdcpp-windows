@@ -155,11 +155,6 @@ no_backup:
   WriteUninstaller "uninstall.exe"
 SectionEnd
 
-Section "IP -> Country mappings"
-  SetOutPath $INSTDIR
-  File "GeoIPCountryWhois.csv"
-SectionEnd
-
 ; optional section
 Section "Start Menu Shortcuts"
   CreateDirectory "$SMPROGRAMS\AirDC++"
@@ -247,7 +242,6 @@ Section "un.Uninstall"
   Delete "$INSTDIR\popup.bmp"
   Delete "$INSTDIR\AirDC.pdb"
   Delete "$INSTDIR\AirDC.exe"
-  Delete "$INSTDIR\GeoIPCountryWhois.csv"
   ; remove EmoPacks dir
   RMDir /r "$INSTDIR\EmoPacks"
   
