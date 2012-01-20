@@ -1214,7 +1214,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="DirectoryIsHidden">Directory is hidden</String>
 		<String Name="DirectoryNotFound">Directory not shared</String>
 		<String Name="Group">Group</String>
-		<String Name="RefreshVnameOnSharepage">Refresh Changed on Exit Share Settings</String>
 		<String Name="QueueSize">Queue Size</String>
 		<String Name="AutoAddSource">Automatically add download sources from search</String>
 		<String Name="Update">Update</String>

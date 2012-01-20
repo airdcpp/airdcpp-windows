@@ -43,7 +43,6 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
 	{ IDC_SETTINGS_MAX_HASH_SPEED, ResourceManager::SETTINGS_MAX_HASH_SPEED },
 	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
-	{ IDC_REFRESH_VNAME_ON_SHAREPAGE, ResourceManager::REFRESH_VNAME_ON_SHAREPAGE},
 	{ IDC_SHARE_SAVE, ResourceManager::SAVE_SHARE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
@@ -53,7 +52,6 @@ PropPage::Item SharePage::items[] = {
 	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
-	{ IDC_REFRESH_VNAME_ON_SHAREPAGE, SettingsManager::REFRESH_VNAME_ON_SHAREPAGE, PropPage::T_BOOL },
 	{ IDC_SHARE_SAVE_TIME, SettingsManager::SHARE_SAVE_TIME, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
@@ -169,12 +167,6 @@ void SharePage::write()
 
 	PropPage::write((HWND)*this, items);
 	
-	if(BOOLSETTING(REFRESH_VNAME_ON_SHAREPAGE) && !RefreshDirs.empty()){
-		ShareManager::getInstance()->setDirty();
-		ShareManager::getInstance()->refreshDirs(RefreshDirs);
-	}
-
-
 	ShareManager::getInstance()->DelIncoming();
 	int size = ctrlDirectories.GetItemCount();
 	TCHAR buf[MAX_PATH];
@@ -185,7 +177,6 @@ void SharePage::write()
 			ShareManager::getInstance()->setIncoming(tmp);
 		}
 
-	RefreshDirs.clear();
 
 }
 
@@ -290,7 +281,6 @@ LRESULT SharePage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 					ctrlDirectories.SetItemText(i, 0, virt.line.c_str());
 
 					setDirty = true;
-					RefreshDirs.push_back(Text::fromT(virt.line));
 				} else {
 					MessageBox(CTSTRING(SKIP_RENAME), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK);
 				}
@@ -355,7 +345,6 @@ void SharePage::addDirectory(const tstring& aPath){
 			ctrlDirectories.SetItemText(i, 1, path.c_str());
 			ctrlDirectories.SetItemText(i, 2, Util::formatBytesW(ShareManager::getInstance()->getShareSize(Text::fromT(path))).c_str());
 			ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getShareSize()).c_str());
-			RefreshDirs.push_back(Text::fromT(virt.line));
 		}
 	} catch(const ShareException& e) {
 		MessageBox(Text::toT(e.getError()).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);

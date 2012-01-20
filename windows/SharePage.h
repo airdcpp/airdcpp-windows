@@ -78,7 +78,6 @@ protected:
 	static TextItem texts[];
 	ExListViewCtrl ctrlDirectories;
 	CStatic ctrlTotal;
-	StringList RefreshDirs;
 
 	void addDirectory(const tstring& aPath);
 	FolderTree ft;
