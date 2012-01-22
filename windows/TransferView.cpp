@@ -636,6 +636,7 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 			}
 		}
 	}
+	//LogManager::getInstance()->message("Transferview, token not found: " + ui.token + ", total items: " + Util::toString(ctrlTransfers.GetItemCount()));
 	return NULL;
 }
 
@@ -649,6 +650,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	for(auto i = t.begin(); i != t.end(); ++i) {
 		if(i->first == ADD_ITEM) {
 			auto &ui = static_cast<UpdateInfo&>(*i->second);
+			//LogManager::getInstance()->message("Transferview, ADD_ITEM: " + ui.token);
 			ItemInfo* ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
 			if (!ii->bundle.empty()) {
@@ -657,8 +659,8 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 				ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 			}
 		} else if(i->first == REMOVE_ITEM) {
-			//LogManager::getInstance()->message("REMOVE_ITEM2");
 			auto &ui = static_cast<UpdateInfo&>(*i->second);
+			//LogManager::getInstance()->message("Transferview, REMOVE_ITEM: " + ui.token);
 
 			int pos = -1;
 			ItemInfo* ii = findItem(ui, pos);
