@@ -910,7 +910,9 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_POPUP, (UINT)(HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
+			menu.AppendMenu(MF_STRING, IDC_BROWSELIST, CTSTRING(BROWSE_FILE_LIST));
 			menu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
+			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
 			
 			// add user commands
@@ -918,7 +920,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		}
 			// add user commands on self req by endator
 			prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
-		// default doubleclick action
+		/*// default doubleclick action
 		switch(SETTING(CHAT_DBLCLICK)) {
         case 0:
 			menu.SetMenuDefaultItem(IDC_SELECT_USER);
@@ -938,7 +940,13 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
         case 6:
 			menu.SetMenuDefaultItem(IDC_ADD_TO_FAVORITES);
 			break;
-		} 
+		} */ 
+			//Bold the Best solution for getting user users list instead.
+			if(client->getAdcHub()) {
+				menu.SetMenuDefaultItem(IDC_BROWSELIST);
+			} else {
+				menu.SetMenuDefaultItem(IDC_GETLIST);
+			}
 	}
 
 	menu.AppendMenu(MF_SEPARATOR);
@@ -1358,6 +1366,13 @@ LRESULT ChatCtrl::onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	return 0;
 }
 
+LRESULT ChatCtrl::onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
+	if(ou)
+		ou->browseList(client->getHubUrl());
+
+	return 0;
+}
 LRESULT ChatCtrl::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou)

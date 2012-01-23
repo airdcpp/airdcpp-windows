@@ -2274,29 +2274,12 @@ bool HubFrame::PreparePopupMenu(CWindow *pCtrl, OMenu& menu ) {
 	
 	menu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
    
-	switch(SETTING(USERLIST_DBLCLICK)) {
-    case 0:
+
+	if(!client->getAdcHub())
 		menu.SetMenuDefaultItem( IDC_GETLIST );
-		break;
-    case 1:
-		menu.SetMenuDefaultItem(IDC_PUBLIC_MESSAGE);
-		break;
-    case 2:
-		menu.SetMenuDefaultItem(IDC_PRIVATEMESSAGE);
-		break;
-    case 3:
-		menu.SetMenuDefaultItem(IDC_MATCH_QUEUE);
-		break;
-	case 4:
-		menu.SetMenuDefaultItem(IDC_GRANTSLOT);
-		break;
-    case 5:
-		menu.SetMenuDefaultItem(IDC_ADD_TO_FAVORITES);
-		break;
-	case 6:
+	else
 		menu.SetMenuDefaultItem(IDC_BROWSELIST);
-		break;
-	}   		
+	
 
 	return true;
 }
