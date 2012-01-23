@@ -318,9 +318,9 @@ void HubFrame::onEnter() {
 				params["hubURL"] = client->getHubUrl();
 				params["myNI"] = client->getMyNick(); 
 				if(param.empty()) {
-					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params))));
+					WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::CHAT, params)));
 				} else if(stricmp(param.c_str(), _T("status")) == 0) {
-					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_STATUS), params))));
+					WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::STATUS, params)));
 				}
 			} else if(stricmp(cmd.c_str(), _T("f")) == 0) {
 				if(param.empty())
@@ -358,9 +358,9 @@ void HubFrame::onEnter() {
 				params["hubURL"] = client->getHubUrl();
 				params["myNI"] = client->getMyNick(); 
 				if(param.empty()) {
-					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params))));
+					WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::CHAT, params)));
 				} else if(stricmp(param.c_str(), _T("status")) == 0) {
-					WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_STATUS), params))));
+					WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::STATUS, params)));
 				}
 			} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
 				addLine(_T("*** ") + WinUtil::commands + _T(", /smallfilesize #, /extraslots #, /savequeue, /join <hub-ip>, /clear, /ts, /showjoins, /favshowjoins, /close, /userlist, /connection, /favorite, /pm <user> [message], /getlist <user>, /ignorelist, /removefavorite"), WinUtil::m_ChatTextSystem);
@@ -2387,7 +2387,7 @@ LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	params["myNI"] = client->getMyNick();
 	params["userCID"] = ui->getUser()->getCID().toBase32();
 	params["hubURL"] = client->getHubUrl();
-	tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params)));
+	tstring file = Text::toT(LogManager::getInstance()->getPath(LogManager::PM, params));
 	if(Util::fileExists(Text::fromT(file))) {
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -2405,7 +2405,7 @@ LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	params["hubNI"] = client->getHubName();
 	params["hubURL"] = client->getHubUrl();
 	params["myNI"] = client->getMyNick(); 
-	tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params)));
+	tstring filename = Text::toT(LogManager::getInstance()->getPath(LogManager::CHAT, params));
 	if(Util::fileExists(Text::fromT(filename))){
 			if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, filename.c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -2422,7 +2422,7 @@ LRESULT HubFrame::onHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	params["hubNI"] = client->getHubName();
 	params["hubURL"] = client->getHubUrl();
 	params["myNI"] = client->getMyNick(); 
-	tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params)));
+	tstring filename = Text::toT(LogManager::getInstance()->getPath(LogManager::CHAT, params));
 	if(Util::fileExists(Text::fromT(filename))){
 			TextFrame::openWindow(filename, false, true);
 		
@@ -2447,7 +2447,7 @@ LRESULT HubFrame::onUserHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	params["myNI"] = client->getMyNick();
 	params["userCID"] = ui->getUser()->getCID().toBase32();
 	params["hubURL"] = client->getHubUrl();
-	tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params)));
+	tstring file = Text::toT(LogManager::getInstance()->getPath(LogManager::PM, params));
 	if(Util::fileExists(Text::fromT(file))) {
 			TextFrame::openWindow(file, false, true);
 	} else {

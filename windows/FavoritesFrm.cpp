@@ -543,11 +543,11 @@ LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		params["hubNI"] = entry->getName();
 		params["hubURL"] = entry->getServer();
 		params["myNI"] = entry->getNick(); 
-		tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_MAIN_CHAT), params)));
+		tstring filename = Text::toT(LogManager::getInstance()->getPath(LogManager::CHAT, params));
 		if(Util::fileExists(Text::fromT(filename))){
-		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
-			ShellExecute(NULL, NULL, filename.c_str(), NULL, NULL, SW_SHOWNORMAL);
-		} else {
+			if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
+				ShellExecute(NULL, NULL, filename.c_str(), NULL, NULL, SW_SHOWNORMAL);
+			} else {
 				TextFrame::openWindow(filename, true, false);
 			}
 		} else {

@@ -417,7 +417,7 @@ void PrivateFrame::onEnter()
 				params["userCID"] = cid.toBase32(); 
 				params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
 				params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
-				WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params))));
+				WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::PM, params)));
 			} else if(stricmp(s.c_str(), _T("stats")) == 0) {
 				sendMessage(Text::toT(WinUtil::generateStats()));
 			} else if(stricmp(s.c_str(), _T("speed")) == 0) {
@@ -756,7 +756,7 @@ void PrivateFrame::readLog() {
 	params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
 	params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
 		
-	string path = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params));
+	string path = LogManager::getInstance()->getPath(LogManager::PM, params);
 
 	try {
 		File f(path, File::READ, File::OPEN);
@@ -809,7 +809,7 @@ LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
 	params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
 
-	string file = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params));
+	string file = LogManager::getInstance()->getPath(LogManager::PM, params);
 	if(Util::fileExists(file)) {
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, Text::toT(file).c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -833,7 +833,7 @@ LRESULT PrivateFrame::onUserHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
 	params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
 
-	string file = Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params));
+	string file = LogManager::getInstance()->getPath(LogManager::PM, params);
 	if(Util::fileExists(file)) {
 			TextFrame::openWindow(Text::toT(file).c_str(),false ,true);
 	} else {

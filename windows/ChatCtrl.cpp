@@ -1320,7 +1320,7 @@ LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 		params["userCID"] = ou->getUser()->getCID().toBase32();
 		params["hubURL"] = client->getHubUrl();
 
-		tstring file = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatParams(SETTING(LOG_FILE_PRIVATE_CHAT), params)));
+		tstring file = Text::toT(LogManager::getInstance()->getPath(LogManager::PM, params));
 		if(Util::fileExists(Text::fromT(file))) {
 		switch(wID) {
 			case IDC_OPEN_USER_LOG:
