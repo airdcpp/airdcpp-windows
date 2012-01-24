@@ -942,7 +942,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			break;
 		} */ 
 			//Bold the Best solution for getting user users list instead.
-			if(client->getAdcHub()) {
+			if(AirUtil::isAdcHub(client->getHubUrl())) {
 				menu.SetMenuDefaultItem(IDC_BROWSELIST);
 			} else {
 				menu.SetMenuDefaultItem(IDC_GETLIST);
