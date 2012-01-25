@@ -1510,12 +1510,6 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 		}
 
 		return true;
-	} else if(!proto.empty() ||
-		Util::strnicmp(str.c_str(), _T("www."), 4) == 0 ||
-		Util::strnicmp(str.c_str(), _T("mailto:"), 7) == 0) {
-		//openLink(str);
-		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
-		return true;
 	} else if(host == "magnet") {
 		parseMagnetUri(str);
 		return true;
@@ -1525,6 +1519,9 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 	reg.assign(AirUtil::getReleaseRegLong(false));
 	if(regex_match(url, reg)) {
 		WinUtil::search(Text::toT(url), 0, false);
+		return true;
+	} else {
+		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		return true;
 	}
 	return false;

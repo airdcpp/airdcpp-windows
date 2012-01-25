@@ -684,7 +684,6 @@
 		<String Name="SettingsPrioNormal">Normal prio max size</String>
 		<String Name="SettingsPromptPassword">Popup box to input password for hubs</String>
 		<String Name="SettingsPublicHubList">Public Hubs list</String>
-		<String Name="SettingsPublicHubListHttpProxy">HTTP Proxy (for hublist only)</String>
 		<String Name="SettingsPublicHubListUrl">Public Hubs list URL</String>
 		<String Name="SettingsQueue">Queue</String>
 		<String Name="SettingsRenameFolder">Rename</String>
@@ -1490,5 +1489,7 @@ The path used will be the one wich has the most free diskspace.
 		<String Name="SavingSettings">Saving settings</String>
 		<String Name="SavingShare">Saving the share cache</String>
 		<String Name="ShuttingDown">Shutting down.</String>
+		<String Name="SettingsHttpProxy">HTTP Proxy</String>
+		<String Name="DownloadLocations">Download Locations</String>
 	</Strings>
 </Language>

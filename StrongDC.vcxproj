@@ -455,7 +455,7 @@
     <ClCompile Include="windows\ExtendedTrace.cpp" />
     <ClCompile Include="windows\FavHubGroupsDlg.cpp" />
     <ClCompile Include="windows\FavHubProperties.cpp" />
-    <ClCompile Include="windows\FavoriteDirsPage.cpp" />
+    <ClCompile Include="windows\LocationsPage.cpp" />
     <ClCompile Include="windows\FavoritesFrm.cpp" />
     <ClCompile Include="windows\FolderTree.cpp" />
     <ClCompile Include="windows\FulHighlightDialog.cpp" />
@@ -557,7 +557,7 @@
     <ClInclude Include="windows\ExtendedTrace.h" />
     <ClInclude Include="windows\FavHubGroupsDlg.h" />
     <ClInclude Include="windows\FavHubProperties.h" />
-    <ClInclude Include="windows\FavoriteDirsPage.h" />
+    <ClInclude Include="windows\LocationsPage.h" />
     <ClInclude Include="windows\FavoritesFrm.h" />
     <ClInclude Include="windows\FinishedFrame.h" />
     <ClInclude Include="windows\FinishedFrameBase.h" />

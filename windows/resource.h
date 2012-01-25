@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -114,7 +114,7 @@
 #define IDD_FULTABSPAGE                 257
 #define IDD_TOOLBARPAGE                 259
 #define IDD_DOWNLOADDIR                 260
-#define IDD_FAVORITE_DIRSPAGE           261
+#define IDD_LOCATIONSPAGE				261
 #define IDB_SPEEDS                      266
 #define IDR_SYSTEM_LOG                  268
 #define IDR_CDM                         270
@@ -365,7 +365,7 @@
 #define IDC_SETTINGS_SPEEDS_NOT_ACCURATE 1150
 #define IDC_SETTINGS_PUBLIC_HUB_LIST    1151
 #define IDC_SETTINGS_PUBLIC_HUB_LIST_URL 1152
-#define IDC_SETTINGS_PUBLIC_HUB_LIST_HTTP_PROXY 1153
+#define IDC_SETTINGS_HTTP_PROXY			1153
 #define IDC_SETTINGS_SHARED_DIRECTORIES 1154
 #define IDC_SETTINGS_FILES_MAX          1154
 #define IDC_SETTINGS_SHARE_SIZE         1155

@@ -318,9 +318,6 @@
     <ClCompile Include="windows\FavHubProperties.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\FavoriteDirsPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\FavoritesFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -510,6 +507,9 @@
     <ClCompile Include="windows\FavoriteDirDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\LocationsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -579,9 +579,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\FavHubProperties.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\FavoriteDirsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\FavoritesFrm.h">
@@ -819,6 +816,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\FavoriteDirDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\LocationsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -29,30 +29,15 @@
 #include "PropertiesDlg.h"
 
 PropPage::TextItem DownloadPage::texts[] = {
-	{ IDC_SETTINGS_DIRECTORIES, ResourceManager::SETTINGS_DIRECTORIES }, 
-	{ IDC_SETTINGS_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_DOWNLOAD_DIRECTORY },
-	{ IDC_BROWSEDIR, ResourceManager::BROWSE_ACCEL },
-	{ IDC_SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY }, 
-	{ IDC_BROWSETEMPDIR, ResourceManager::BROWSE },
-	{ IDC_SETTINGS_BTN_TARGETDRIVE, ResourceManager::SETTINGS_USE_TARGETDRIVE }, 
-	{ IDC_SETTINGS_TARGETDRIVE_NOTE, ResourceManager::SETTINGS_TARGETDRIVE_NOTE }, 
-	{ IDC_SETTINGS_PUBLIC_HUB_LIST, ResourceManager::SETTINGS_PUBLIC_HUB_LIST },
-	{ IDC_SETTINGS_PUBLIC_HUB_LIST_URL, ResourceManager::SETTINGS_PUBLIC_HUB_LIST_URL },
-	{ IDC_SETTINGS_LIST_CONFIG, ResourceManager::SETTINGS_CONFIGURE_HUB_LISTS },
-	{ IDC_SETTINGS_PUBLIC_HUB_LIST_HTTP_PROXY, ResourceManager::SETTINGS_PUBLIC_HUB_LIST_HTTP_PROXY },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item DownloadPage::items[] = {
-	{ IDC_TEMP_DOWNLOAD_DIRECTORY, SettingsManager::TEMP_DOWNLOAD_DIRECTORY, PropPage::T_STR },
-	{ IDC_DOWNLOADDIR,	SettingsManager::DOWNLOAD_DIRECTORY, PropPage::T_STR }, 
-	{ IDC_PROXY, SettingsManager::HTTP_PROXY, PropPage::T_STR },
 	{ 0, 0, PropPage::T_END }
 };
 
 
 PropPage::ListItem DownloadPage::optionItems[] = {
-	{ SettingsManager::SCAN_DL_BUNDLES, ResourceManager::SETTINGS_SCAN_FINISHED_BUNDLES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -69,56 +54,6 @@ void DownloadPage::write()
 {
 	PropPage::write((HWND)*this, items);
 	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_DOWNLOAD_OPTIONS));
-
-	const string& s = SETTING(DOWNLOAD_DIRECTORY);
-	if(s.length() > 0 && s[s.length() - 1] != '\\') {
-		SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_DIRECTORY, s + '\\');
-	}
-	const string& t = SETTING(TEMP_DOWNLOAD_DIRECTORY);
-	if(t.length() > 0 && t[t.length() - 1] != '\\') {
-		SettingsManager::getInstance()->set(SettingsManager::TEMP_DOWNLOAD_DIRECTORY, t + '\\');
-		
-	}
-	AirUtil::updateCachedSettings();
-}
-
-LRESULT DownloadPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-	tstring dir = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
-	if(WinUtil::browseDirectory(dir, m_hWnd))
-	{
-		// Adjust path string
-		if(dir.size() > 0 && dir[dir.size() - 1] != '\\')
-			dir += '\\';
-	
-		SetDlgItemText(IDC_DOWNLOADDIR, dir.c_str());
-	}
-	return 0;
-}
-
-LRESULT DownloadPage::onClickedBrowseTempDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-	tstring dir = Text::toT(SETTING(TEMP_DOWNLOAD_DIRECTORY));
-	if(WinUtil::browseDirectory(dir, m_hWnd))
-	{
-		// Adjust path string
-		if(dir.size() > 0 && dir[dir.size() - 1] != '\\')
-			dir += '\\';
-
-		SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, dir.c_str());
-	}
-	return 0;
-}
-
-LRESULT DownloadPage::onClickedTargetdrive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, _T("%[targetdrive]DCUnfinished"));
-	return 0;
-}
-
-LRESULT DownloadPage::onClickedListConfigure(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	PublicHubListDlg dlg;
-	dlg.DoModal(m_hWnd);
-	return 0;
 }
 
 /**

@@ -1198,25 +1198,9 @@ LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD
 	if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 
-		if(ii->type == ItemInfo::FILE) {
-			if(newId < (int)targets.size()) {
-				try {
-					dl->download(ii->file, targets[newId], false, WinUtil::isShift(), QueueItem::DEFAULT);
-				} catch(const Exception& e) {
-					ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
-				}
-			} else {
-				newId -= (int)targets.size();
-				string target;
-				if (WinUtil::getTarget(newId, target, ii->file->getSize())) {
-					downloadList(Text::toT(target));
-				}
-			}
-		} else {
-			string target;
-			if (WinUtil::getTarget(newId, target, ii->dir->getSize())) {
-				downloadList(Text::toT(target));
-			}
+		string target;
+		if (WinUtil::getTarget(newId, target, ii->type == ItemInfo::FILE ? ii->file->getSize() : ii->dir->getSize())) {
+			downloadList(Text::toT(target));
 		}
 	} else if(ctrlList.GetSelectedCount() > 1) {
 		int64_t size = 0;

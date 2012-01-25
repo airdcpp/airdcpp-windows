@@ -52,7 +52,8 @@ PropPage::TextItem NetworkPage::texts[] = {
 	{ IDC_SETTINGS_BIND_ADDRESS_HELP, ResourceManager::SETTINGS_BIND_ADDRESS_HELP },
 	{ IDC_IPUPDATE, ResourceManager::UPDATE_IP },
 	{ IDC_GETIP, ResourceManager::GET_IP },
-	{ IDC_NATT,							ResourceManager::ALLOW_NAT_TRAVERSAL		},
+	{ IDC_NATT,	ResourceManager::ALLOW_NAT_TRAVERSAL },
+	{ IDC_SETTINGS_HTTP_PROXY, ResourceManager::SETTINGS_HTTP_PROXY },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -70,7 +71,8 @@ PropPage::Item NetworkPage::items[] = {
 	{ IDC_SOCKS_RESOLVE, SettingsManager::SOCKS_RESOLVE, PropPage::T_BOOL },
 	//{ IDC_BIND_ADDRESS, SettingsManager::BIND_INTERFACE, PropPage::T_STR },
 	{ IDC_IPUPDATE, SettingsManager::IP_UPDATE, PropPage::T_BOOL },
-	{ IDC_NATT,				SettingsManager::ALLOW_NAT_TRAVERSAL,	PropPage::T_BOOL	},
+	{ IDC_NATT,	SettingsManager::ALLOW_NAT_TRAVERSAL, PropPage::T_BOOL },
+	{ IDC_PROXY, SettingsManager::HTTP_PROXY, PropPage::T_STR },
 	{ 0, 0, PropPage::T_END }
 };
 

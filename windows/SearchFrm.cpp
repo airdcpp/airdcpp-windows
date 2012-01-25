@@ -852,33 +852,30 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 		favShareSize += (int)ShareManager::getInstance()->getGroupedDirectories().size();
 	}
 
-	if(newId < favShareSize) {
-		int sel = -1;
-		map<string, int64_t> countedDirs;
-		while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-			const SearchResultPtr& sr = ctrlResults.getItemData(sel)->sr;
-			auto s = countedDirs.find(sr->getFileName());
-			if (s != countedDirs.end()) {
-				if (s->second < sr->getSize()) {
-					s->second = sr->getSize();
-				}
-			} else {
-				countedDirs[sr->getFileName()] = sr->getSize();
-			}
-		}
-		int64_t size = 0;
-		for_each(countedDirs.begin(), countedDirs.end(), [&](pair<string, int64_t> p) { size += p.second; } );
+	dcassert(newId < favShareSize);
 
-		string target;
-		if (WinUtil::getTarget(newId, target, size)) {
-			ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(target), this));
+	int sel = -1;
+	map<string, int64_t> countedDirs;
+	while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+		const SearchResultPtr& sr = ctrlResults.getItemData(sel)->sr;
+		auto s = countedDirs.find(sr->getFileName());
+		if (s != countedDirs.end()) {
+			if (s->second < sr->getSize()) {
+				s->second = sr->getSize();
+			}
+		} else {
+			countedDirs[sr->getFileName()] = sr->getSize();
 		}
-	} else {
-		dcassert((newId - favShareSize) < (int)targets.size());
-		string tgt = targets[newId - favShareSize];
-		if(!tgt.empty())
-		ctrlResults.forEachSelectedT(SearchInfo::DownloadTarget(Text::toT(tgt)));
 	}
+
+	int64_t size = 0;
+	for_each(countedDirs.begin(), countedDirs.end(), [&](pair<string, int64_t> p) { size += p.second; } );
+
+	string target;
+	if (WinUtil::getTarget(newId, target, size)) {
+		ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(target), this));
+	}
+
 	return 0;
 }
 
@@ -1272,7 +1269,7 @@ LRESULT SearchFrame::onBitziLookup(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 void SearchFrame::addSearchResult(SearchInfo* si) {
 	const SearchResultPtr& sr = si->sr;
     // Check previous search results for dupes
-	if(si->sr->getTTH().data > 0 && useGrouping) {
+	if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
 		SearchInfoList::ParentPair* pp = ctrlResults.findParentPair(sr->getTTH());
 		if(pp) {
 			if((sr->getUser()->getCID() == pp->parent->getUser()->getCID()) && (sr->getFile() == pp->parent->sr->getFile())) {	 	

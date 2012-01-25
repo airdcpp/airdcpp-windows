@@ -64,6 +64,7 @@ PropPage::ListItem QueuePage::optionItems[] = {
 	{ SettingsManager::KEEP_FINISHED_FILES, ResourceManager::KEEP_FINISHED_FILES },
 	{ SettingsManager::DONT_DL_ALREADY_QUEUED, ResourceManager::SETTING_DONT_DL_ALREADY_QUEUED },
 	{ SettingsManager::EXPAND_BUNDLES, ResourceManager::SETTINGS_EXPAND_BUNDLES },
+	{ SettingsManager::SCAN_DL_BUNDLES, ResourceManager::SETTINGS_SCAN_FINISHED_BUNDLES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -99,6 +100,11 @@ void QueuePage::write() {
 	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_QUEUE_OPTIONS));
 }
 
+void QueuePage::onTick() {
+	::EnableWindow(GetDlgItem(IDC_DONTBEGIN),				IsDlgButtonChecked(IDC_AUTOSEGMENT));
+	::EnableWindow(GetDlgItem(IDC_SEG_NUMBER),				IsDlgButtonChecked(IDC_CHUNKCOUNT));
+	::EnableWindow(GetDlgItem(IDC_BEGIN_EDIT),				IsDlgButtonChecked(IDC_DONTBEGIN));
+}
 
 /**
  * @file

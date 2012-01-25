@@ -46,7 +46,7 @@ public:
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
-	
+	void onTick();
 protected:
 
 	static Item items[];

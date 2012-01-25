@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(FAVORITE_DIRS_PAGE_H)
-#define FAVORITE_DIRS_PAGE_H
+#if !defined(LOCATIONS_PAGE_H)
+#define LOCATIONS_PAGE_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -28,20 +28,20 @@
 #include "ExListViewCtrl.h"
 #include "WinUtil.h"
 
-class FavoriteDirsPage : public CPropertyPage<IDD_FAVORITE_DIRSPAGE>, public PropPage
+class LocationsPage : public CPropertyPage<IDD_LOCATIONSPAGE>, public PropPage
 {
 public:
-	FavoriteDirsPage(SettingsManager *s) : PropPage(s) {
-		title = _tcsdup((TSTRING(SETTINGS_DOWNLOADS) + _T('\\') + TSTRING(SETTINGS_FAVORITE_DIRS_PAGE)).c_str());
+	LocationsPage(SettingsManager *s) : PropPage(s) {
+		title = _tcsdup((TSTRING(SETTINGS_DOWNLOADS) + _T('\\') + TSTRING(DOWNLOAD_LOCATIONS)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}
-	~FavoriteDirsPage() {
+	~LocationsPage() {
 		ctrlDirectories.Detach();
 		free(title);
 	}
 
-	BEGIN_MSG_MAP_EX(FavoriteDirsPage)
+	BEGIN_MSG_MAP_EX(LocationsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		MESSAGE_HANDLER(WM_DROPFILES, onDropFiles)
 		NOTIFY_HANDLER(IDC_FAVORITE_DIRECTORIES, LVN_ITEMCHANGED, onItemchangedDirectories)
@@ -52,6 +52,10 @@ public:
 		COMMAND_ID_HANDLER(IDC_RENAME, onClickedRename)
 		COMMAND_ID_HANDLER(IDC_MOVEUP, onMove)
 		COMMAND_ID_HANDLER(IDC_MOVEDOWN, onMove)
+
+		COMMAND_ID_HANDLER(IDC_BROWSEDIR, onClickedBrowseDir)
+		COMMAND_ID_HANDLER(IDC_BROWSETEMPDIR, onClickedBrowseTempDir)
+		COMMAND_ID_HANDLER(IDC_SETTINGS_BTN_TARGETDRIVE, onClickedTargetdrive)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -63,6 +67,10 @@ public:
 	LRESULT onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onMove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedBrowseTempDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedTargetdrive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }

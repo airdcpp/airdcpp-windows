@@ -22,29 +22,39 @@
 #include "../client/Util.h"
 #include "../client/SettingsManager.h"
 #include "../client/FavoriteManager.h"
+#include "../client/AirUtil.h"
 
 #include "Resource.h"
-#include "FavoriteDirsPage.h"
+#include "LocationsPage.h"
 #include "WinUtil.h"
 #include "LineDlg.h"
 #include "FavoriteDirDlg.h"
 
-PropPage::TextItem FavoriteDirsPage::texts[] = {
+PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_SETTINGS_FAVORITE_DIRECTORIES, ResourceManager::SETTINGS_FAVORITE_DIRS },
 	{ IDC_REMOVE, ResourceManager::REMOVE },
 	{ IDC_ADD, ResourceManager::SETTINGS_ADD_FOLDER },
 	{ IDC_RENAME, ResourceManager::SETTINGS_CHANGE },
 	{ IDC_FAVDIRS_SHOW_SHARED, ResourceManager::FAVDIRS_SHOW_SHARED },
+	{ IDC_SETTINGS_DIRECTORIES, ResourceManager::SETTINGS_DIRECTORIES }, 
+	{ IDC_SETTINGS_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_DOWNLOAD_DIRECTORY },
+	{ IDC_BROWSEDIR, ResourceManager::BROWSE_ACCEL },
+	{ IDC_SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY }, 
+	{ IDC_BROWSETEMPDIR, ResourceManager::BROWSE },
+	{ IDC_SETTINGS_BTN_TARGETDRIVE, ResourceManager::SETTINGS_USE_TARGETDRIVE }, 
+	{ IDC_SETTINGS_TARGETDRIVE_NOTE, ResourceManager::SETTINGS_TARGETDRIVE_NOTE }, 
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 
-PropPage::Item FavoriteDirsPage::items[] = {
+PropPage::Item LocationsPage::items[] = {
+	{ IDC_TEMP_DOWNLOAD_DIRECTORY, SettingsManager::TEMP_DOWNLOAD_DIRECTORY, PropPage::T_STR },
+	{ IDC_DOWNLOADDIR,	SettingsManager::DOWNLOAD_DIRECTORY, PropPage::T_STR }, 
 	{ IDC_FAVDIRS_SHOW_SHARED, SettingsManager::SHOW_SHARED_DIRS_FAV, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 
-LRESULT FavoriteDirsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT LocationsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
@@ -74,13 +84,24 @@ LRESULT FavoriteDirsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 
 
-void FavoriteDirsPage::write()
+void LocationsPage::write()
 {	
 	FavoriteManager::getInstance()->saveFavoriteDirs(favoriteDirs);
 	PropPage::write((HWND)*this, items);
+
+	const string& s = SETTING(DOWNLOAD_DIRECTORY);
+	if(s.length() > 0 && s[s.length() - 1] != '\\') {
+		SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_DIRECTORY, s + '\\');
+	}
+	const string& t = SETTING(TEMP_DOWNLOAD_DIRECTORY);
+	if(t.length() > 0 && t[t.length() - 1] != '\\') {
+		SettingsManager::getInstance()->set(SettingsManager::TEMP_DOWNLOAD_DIRECTORY, t + '\\');
+		
+	}
+	AirUtil::updateCachedSettings();
 }
 
-LRESULT FavoriteDirsPage::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
+LRESULT LocationsPage::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
 	HDROP drop = (HDROP)wParam;
 	tstring buf;
 	buf.resize(MAX_PATH);
@@ -101,7 +122,7 @@ LRESULT FavoriteDirsPage::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lPa
 	return 0;
 }
 
-LRESULT FavoriteDirsPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
+LRESULT LocationsPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 {
 	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
 	::EnableWindow(GetDlgItem(IDC_REMOVE), (lv->uNewState & LVIS_FOCUSED));
@@ -111,7 +132,7 @@ LRESULT FavoriteDirsPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh,
 	return 0;		
 }
 
-LRESULT FavoriteDirsPage::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+LRESULT LocationsPage::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
 	switch(kd->wVKey) {
 	case VK_INSERT:
@@ -126,7 +147,7 @@ LRESULT FavoriteDirsPage::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled
 	return 0;
 }
 
-LRESULT FavoriteDirsPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT LocationsPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	NMITEMACTIVATE* item = (NMITEMACTIVATE*)pnmh;
 
 	if(item->iItem >= 0) {
@@ -138,14 +159,14 @@ LRESULT FavoriteDirsPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bH
 	return 0;
 }
 
-LRESULT FavoriteDirsPage::onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT LocationsPage::onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	addDirectory(Util::emptyStringT);
 	return 0;
 }
 	
 
-LRESULT FavoriteDirsPage::onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT LocationsPage::onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	TCHAR buf[MAX_PATH];
 
@@ -159,7 +180,7 @@ LRESULT FavoriteDirsPage::onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	return 0;
 }
 
-LRESULT FavoriteDirsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT LocationsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	TCHAR buf[MAX_PATH];
 	TCHAR buf2[2048];
@@ -211,7 +232,7 @@ LRESULT FavoriteDirsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	return 0;
 }
 
-LRESULT FavoriteDirsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT LocationsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int id = ctrlDirectories.GetSelectedIndex();
 	if(id != -1) {
 		switch(wID) {
@@ -238,7 +259,7 @@ LRESULT FavoriteDirsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	return 0;
 }
 
-void FavoriteDirsPage::addDirectory(const tstring& aPath){
+void LocationsPage::addDirectory(const tstring& aPath){
 	tstring _path = aPath;
 	if(!_path.empty()) {
 		if( _path[ _path.length() -1 ] != PATH_SEPARATOR )
@@ -279,7 +300,7 @@ void FavoriteDirsPage::addDirectory(const tstring& aPath){
 	}
 }
 
-bool FavoriteDirsPage::addFavoriteDir(const string& aDirectory, const string & aName){
+bool LocationsPage::addFavoriteDir(const string& aDirectory, const string & aName){
 	string path = aDirectory;
 
 	if( path[ path.length() -1 ] != PATH_SEPARATOR )
@@ -306,7 +327,7 @@ bool FavoriteDirsPage::addFavoriteDir(const string& aDirectory, const string & a
 }
 
 
-bool FavoriteDirsPage::removeFavoriteDir(const string& aName) {
+bool LocationsPage::removeFavoriteDir(const string& aName) {
 
 	for(auto i = favoriteDirs.begin(); i != favoriteDirs.end(); ++i) {
 		if(stricmp(aName, i->first) == 0) {
@@ -316,6 +337,41 @@ bool FavoriteDirsPage::removeFavoriteDir(const string& aName) {
 	}
 	return false;
 }
+
+
+LRESULT LocationsPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	tstring dir = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
+	if(WinUtil::browseDirectory(dir, m_hWnd))
+	{
+		// Adjust path string
+		if(dir.size() > 0 && dir[dir.size() - 1] != '\\')
+			dir += '\\';
+	
+		SetDlgItemText(IDC_DOWNLOADDIR, dir.c_str());
+	}
+	return 0;
+}
+
+LRESULT LocationsPage::onClickedBrowseTempDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	tstring dir = Text::toT(SETTING(TEMP_DOWNLOAD_DIRECTORY));
+	if(WinUtil::browseDirectory(dir, m_hWnd))
+	{
+		// Adjust path string
+		if(dir.size() > 0 && dir[dir.size() - 1] != '\\')
+			dir += '\\';
+
+		SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, dir.c_str());
+	}
+	return 0;
+}
+
+LRESULT LocationsPage::onClickedTargetdrive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, _T("%[targetdrive]DCUnfinished"));
+	return 0;
+}
+
 
 /**
  * @file

@@ -38,7 +38,7 @@
 #include "AVIPreview.h"
 #include "OperaColorsPage.h"
 #include "ToolbarPage.h"
-#include "FavoriteDirsPage.h"
+#include "LocationsPage.h"
 #include "SDCPage.h"
 #include "UserListColours.h"
 #include "NetworkPage.h"
@@ -67,7 +67,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s) : TreePropertyShee
 	pages[n++] = new NetworkPage(s);
 	pages[n++] = new DownloadPage(s);
 	pages[n++] = new SharePage(s);
-	pages[n++] = new FavoriteDirsPage(s);
+	pages[n++] = new LocationsPage(s);
 	pages[n++] = new AVIPreview(s);	
 	pages[n++] = new QueuePage(s);
 	pages[n++] = new SpeedPage(s);
