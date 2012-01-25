@@ -1302,7 +1302,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 			resort = true;
 		}
 
-		if(si->sr->getTTH().data > 0 && useGrouping) {
+		if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
 			ctrlResults.insertGroupedItem(si, expandSR);
 		} else {
 			SearchInfoList::ParentPair pp = { si, SearchInfoList::emptyVector };

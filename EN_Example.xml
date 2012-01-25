@@ -581,7 +581,6 @@
 		<String Name="SettingsAutoOpen">Auto-open at startup</String>
 		<String Name="SettingsAutoPriorityDefault">Use Auto Priority by default</String>
 		<String Name="SettingsAutoRefreshTime">Auto refresh time</String>
-		<String Name="SettingsAutoSearch">Automatically search for alternative TTH source every</String>
 		<String Name="SettingsAutoSearchLimit">Max sources for autosearch</String>
 		<String Name="SettingsAutoSlots">Maximum auto opened</String>
 		<String Name="SettingsAvipreview">File Preview</String>
@@ -1491,5 +1490,8 @@ The path used will be the one wich has the most free diskspace.
 		<String Name="ShuttingDown">Shutting down.</String>
 		<String Name="SettingsHttpProxy">HTTP Proxy</String>
 		<String Name="DownloadLocations">Download Locations</String>
+		<String Name="SegmentedDownloads">Segmented Downloads</String>
+		<String Name="SettingsAutoBundleSearch">Automatically search for alternative bundle sources</String>
+		<String Name="SearchingOptions">Searching Options</String>
 	</Strings>
 </Language>

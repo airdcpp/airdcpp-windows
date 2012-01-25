@@ -39,6 +39,10 @@ public:
 
 	BEGIN_MSG_MAP(QueuePage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
+		COMMAND_ID_HANDLER(IDC_ENABLE_SEGMENTS, onTick)
+		COMMAND_ID_HANDLER(IDC_AUTO_SEARCH_ALT, onTick)
+		COMMAND_ID_HANDLER(IDC_CHUNKCOUNT, onTick)
+		COMMAND_ID_HANDLER(IDC_DONTBEGIN, onTick)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -46,7 +50,8 @@ public:
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
-	void onTick();
+	LRESULT onTick(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	void checkItems();
 protected:
 
 	static Item items[];

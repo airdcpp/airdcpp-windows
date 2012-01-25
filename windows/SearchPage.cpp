@@ -31,6 +31,9 @@ PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_WEB_SHORTCUTS_REMOVE,					ResourceManager::REMOVE						},
 	{ IDC_WEB_SHORTCUTS_PROPERTIES,				ResourceManager::PROPERTIES					},
 	{ IDC_SB_WEB_SHORTCUTS,						ResourceManager::SETTINGS_SB_WEB_SHORTCUTS	},
+	{ IDC_INTERVAL_TEXT,						ResourceManager::MINIMUM_SEARCH_INTERVAL },
+	{ IDC_SETTINGS_SEARCH_HISTORY,				ResourceManager::SETTINGS_SEARCH_HISTORY },
+	{ IDC_SEARCHING_OPTIONS,					ResourceManager::SEARCHING_OPTIONS	},
 	{ 0,										ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -38,14 +41,24 @@ PropPage::Item SearchPage::items[] = {
 	{ IDC_SKIPLIST_PRESET1, SettingsManager::SKIP_MSG_01, PropPage::T_STR },
 	{ IDC_SKIPLIST_PRESET2, SettingsManager::SKIP_MSG_02, PropPage::T_STR },
 	{ IDC_SKIPLIST_PRESET3, SettingsManager::SKIP_MSG_03, PropPage::T_STR },
-
+	{ IDC_INTERVAL, SettingsManager::MINIMUM_SEARCH_INTERVAL, PropPage::T_INT },
+	{ IDC_SEARCH_HISTORY, SettingsManager::SEARCH_HISTORY, PropPage::T_INT }, 
 	{ 0, 0, PropPage::T_END }
 };
+
+#define setMinMax(x, y, z) \
+	updown.Attach(GetDlgItem(x)); \
+	updown.SetRange32(y, z); \
+	updown.Detach();
 
 LRESULT SearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
 	
+	CUpDownCtrl updown;
+	setMinMax(IDC_SEARCH_HISTORY_SPIN, 1, 100);
+	setMinMax(IDC_INTERVAL_SPIN, 5, 9999);
+
 	wsList = WebShortcuts::getInstance()->copyList();
 
 	CRect rc;

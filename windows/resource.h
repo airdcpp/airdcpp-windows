@@ -114,7 +114,7 @@
 #define IDD_FULTABSPAGE                 257
 #define IDD_TOOLBARPAGE                 259
 #define IDD_DOWNLOADDIR                 260
-#define IDD_LOCATIONSPAGE				261
+#define IDD_LOCATIONSPAGE               261
 #define IDB_SPEEDS                      266
 #define IDR_SYSTEM_LOG                  268
 #define IDR_CDM                         270
@@ -274,6 +274,7 @@
 #define IDC_TOTALS                      1077
 #define IDC_SEARCH                      1078
 #define IDC_RATIO                       1078
+#define IDC_SEARCHING_OPTIONS           1078
 #define IDC_CLOSE_WINDOW                1080
 #define IDC_FIND                        1081
 #define IDC_NEXT                        1082
@@ -365,7 +366,7 @@
 #define IDC_SETTINGS_SPEEDS_NOT_ACCURATE 1150
 #define IDC_SETTINGS_PUBLIC_HUB_LIST    1151
 #define IDC_SETTINGS_PUBLIC_HUB_LIST_URL 1152
-#define IDC_SETTINGS_HTTP_PROXY			1153
+#define IDC_SETTINGS_HTTP_PROXY         1153
 #define IDC_SETTINGS_SHARED_DIRECTORIES 1154
 #define IDC_SETTINGS_FILES_MAX          1154
 #define IDC_SETTINGS_SHARE_SIZE         1155
@@ -425,6 +426,7 @@
 #define IDC_PREVIEW_EXTENSION           1215
 #define IDC_AUTOSEGMENT                 1216
 #define IDC_SETTINGS_SEGMENT_BAR_COLOR  1216
+#define IDC_AUTO_SEARCH_ALT             1216
 #define IDC_COPY_TTH                    1217
 #define IDC_DONTBEGIN                   1217
 #define IDC_SKIPLIST                    1217
@@ -518,6 +520,7 @@
 #define IDC_TAB_SIZE                    1254
 #define IDC_SEG_NUMBER                  1255
 #define IDC_CURRENT_FILE                1255
+#define IDC_SEG_NUMBER_EDIT             1255
 #define IDC_SEG_NUMBER_SPIN             1256
 #define IDC_INTERVAL_SPIN               1256
 #define IDC_LIST_ADD                    1256
@@ -530,9 +533,11 @@
 #define IDC_LIST_UP                     1258
 #define IDC_BEGIN_EDIT                  1259
 #define IDC_LIST_DOWN                   1259
+#define IDC_DONTBEGIN_EDIT              1259
 #define IDC_BEGIN_SPIN                  1260
 #define IDC_LIST_REMOVE                 1260
 #define IDC_LIST_DESC                   1261
+#define IDC_MATCH_SPIN2                 1261
 #define AAA                             1262
 #define IDC_LIST_LIST                   1262
 #define IDC_SOUNDLIST                   1263
@@ -600,6 +605,7 @@
 #define IDC_SETTINGS_OUTGOING           1295
 #define IDC_CH_STATUS_HUB_BOLD2         1295
 #define IDC_BOLD_HUB_TABS_ON_KICK       1295
+#define IDC_ENABLE_SEGMENTS             1295
 #define IDC_REGEXP_TESTER_COMBO         1296
 #define IDC_MULTISOURCE_COMBO           1296
 #define IDC_CH_ICONS                    1296
@@ -672,6 +678,7 @@
 #define IDC_UPDATE_CLIENTS              1314
 #define IDC_SETTINGS_MCNSLOTS           1314
 #define IDC_PRIO_HIGH_SIZE2             1314
+#define IDC_SETTINGS_ALT_SEARCH         1314
 #define IDC_SETTINGS_CONFIRM_OPTIONS    1315
 #define IDC_FAV_DL                      1315
 #define IDC_LINE_SPEED                  1315
@@ -951,6 +958,7 @@
 #define IDC_FDPATH_TEXT                 1622
 #define IDC_BROWSEFAV                   1623
 #define IDC_FAVDIR_EXPLAIN              1624
+#define IDC_SEARCH_INTERVAL             1625
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1005,6 +1013,7 @@
 #define IDC_WEB_SHORTCUTS_REMOVE        8681
 #define IDC_WEB_SHORTCUTS_PROPERTIES    8682
 #define IDC_WEB_SHORTCUTS_CLEAN         8683
+#define IDC_SEACHING_OPTIONS            8683
 #define IDC_WEB_SHORTCUT_NAME           8684
 #define IDC_WEB_SHORTCUT_KEY            8685
 #define IDC_WEB_SHORTCUT_URL            8686
@@ -1265,7 +1274,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        321
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1625
+#define _APS_NEXT_CONTROL_VALUE         1626
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif
