@@ -33,7 +33,7 @@ PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_SB_WEB_SHORTCUTS,						ResourceManager::SETTINGS_SB_WEB_SHORTCUTS	},
 	{ IDC_INTERVAL_TEXT,						ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	{ IDC_SETTINGS_SEARCH_HISTORY,				ResourceManager::SETTINGS_SEARCH_HISTORY },
-	{ IDC_SEARCHING_OPTIONS,					ResourceManager::SEARCHING_OPTIONS	},
+	{ IDC_SEARCHING_OPTIONS,					ResourceManager::SETTINGS_SEARCHING_OPTIONS	},
 	{ 0,										ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

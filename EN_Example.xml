@@ -574,7 +574,6 @@
 		<String Name="SettingsAppearance">Appearance</String>
 		<String Name="SettingsArgument">Arguments</String>
 		<String Name="SettingsAutoAway">Auto-away on minimize (and back on restore)</String>
-		<String Name="SettingsAutoDropSegmentedSource">When segmented downloading only (more than 2 active sources)</String>
 		<String Name="SettingsAutoFollow">Automatically follow redirects</String>
 		<String Name="SettingsAutoKick">Automatically disconnect users who leave the hub</String>
 		<String Name="SettingsAutoKickNoFavs">Don't automatically disconnect favorite users who leave the hub</String>
@@ -1062,9 +1061,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="StMinislotsExt">Grant minislot automatically for the following file extensions: (separate extensions with '|', wildcards allowed)</String>
 		<String Name="SbMinislots">Minislots</String>
 		<String Name="SettingsAirsharing">Share Options</String>
-		<String Name="SettingsSbSkiplistDownload">Skiplist</String>
-		<String Name="SettingsStPaths">Separate paths with |</String>
-		<String Name="SettingsSbHighPrioFiles">High priority files - Has higher Priority over other Priority Settings</String>
 		<String Name="RemoveFile">Remove file from queue</String>
 		<String Name="SettingsAirHighlightpage">Highlight</String>
 		<String Name="HighlightMatchTypes">Begins,Contains,Ends,Equals</String>
@@ -1489,9 +1485,14 @@ The path used will be the one wich has the most free diskspace.
 		<String Name="SavingShare">Saving the share cache</String>
 		<String Name="ShuttingDown">Shutting down.</String>
 		<String Name="SettingsHttpProxy">HTTP Proxy</String>
-		<String Name="DownloadLocations">Download Locations</String>
-		<String Name="SegmentedDownloads">Segmented Downloads</String>
+		<String Name="SettingsDownloadLocations">Download Locations</String>
+		<String Name="SettingsSegmentedDownloads">Segmented Downloads</String>
 		<String Name="SettingsAutoBundleSearch">Automatically search for alternative bundle sources</String>
-		<String Name="SearchingOptions">Searching Options</String>
+		<String Name="SettingsSearchingOptions">Searching Options</String>
+		<String Name="SettingsSearchMatching">Search Matching</String>
+		<String Name="SettingsSkippingOptions">Skipping options</String>
+		<String Name="SettingsSkiplistDownload">Download Skiplist (separate files with '|', wildcards allowed)</String>
+		<String Name="SettingsHighPrioFiles">Highest priority files (separate files with '|', wildcards allowed)</String>
+		<String Name="SettingsAutoDropSlowSources">Actively monitor slow downloads (more than 2 active sources)</String>
 	</Strings>
 </Language>

@@ -39,18 +39,21 @@ public:
 
 	BEGIN_MSG_MAP(QueuePage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
+		COMMAND_HANDLER(IDC_ANTIVIR_BROWSE, BN_CLICKED, onBrowse)
 		COMMAND_ID_HANDLER(IDC_ENABLE_SEGMENTS, onTick)
 		COMMAND_ID_HANDLER(IDC_AUTO_SEARCH_ALT, onTick)
 		COMMAND_ID_HANDLER(IDC_CHUNKCOUNT, onTick)
 		COMMAND_ID_HANDLER(IDC_DONTBEGIN, onTick)
+		COMMAND_ID_HANDLER(IDC_AUTO_ADD_SOURCES, onTick)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT onTick(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
-	LRESULT onTick(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	void checkItems();
 protected:
 

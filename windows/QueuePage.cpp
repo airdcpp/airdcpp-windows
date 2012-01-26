@@ -28,19 +28,24 @@
 #include "PropertiesDlg.h"
 
 PropPage::TextItem QueuePage::texts[] = {
+	{ IDC_AIRDC_ANTI_VIR, ResourceManager::SETAIRDC_ANTI_VIR },
+	{ IDC_ANTIVIR_BROWSE, ResourceManager::BROWSE },
 	{ IDC_AUTO_SEARCH_ALT, ResourceManager::SETTINGS_AUTO_BUNDLE_SEARCH },
 	{ IDC_DONTBEGIN, ResourceManager::DONT_ADD_SEGMENT_TEXT },
 	{ IDC_ENABLE_SEGMENTS, ResourceManager::ENABLE_MULTI_SOURCE },
 	{ IDC_MINUTES, ResourceManager::MINUTES },
 	{ IDC_KBPS, ResourceManager::KBPS },
 	{ IDC_CHUNKCOUNT, ResourceManager::TEXT_MANUAL },
-	{ IDC_SETTINGS_SEGMENTS, ResourceManager::SEGMENTED_DOWNLOADS },
+	{ IDC_SETTINGS_SEGMENTS, ResourceManager::SETTINGS_SEGMENTED_DOWNLOADS },
 	{ IDC_MIN_SEGMENT_SIZE_LABEL, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT_SIZE },
 	{ IDC_SETTINGS_KIB, ResourceManager::KiB },
 	{ IDC_SETTINGS_AUTO_SEARCH_LIMIT, ResourceManager::SETTINGS_AUTO_SEARCH_LIMIT },
 	{ IDC_MATCH_QUEUE_TEXT, ResourceManager::SETTINGS_SB_MAX_SOURCES },
-	{ IDC_SETTINGS_ALT_SEARCH, ResourceManager::SEARCH_FOR_ALTERNATES },
+	{ IDC_SETTINGS_SEARCH_MATCHING, ResourceManager::SETTINGS_SEARCH_MATCHING },
 	{ IDC_INTERVAL_TEXT, ResourceManager::MINIMUM_SEARCH_INTERVAL },
+	{ IDC_AUTO_ADD_SOURCES, ResourceManager::AUTO_ADD_SOURCE },
+	{ IDC_ALLOW_MATCH_FULL, ResourceManager::SETTINGS_ALLOW_MATCH_FULL_LIST },
+	{ IDC_OTHER_QUEUE_OPTIONS, ResourceManager::FINISHED_DOWNLOADS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -55,21 +60,13 @@ PropPage::Item QueuePage::items[] = {
 	{ IDC_ENABLE_SEGMENTS, SettingsManager::MULTI_CHUNK, PropPage::T_BOOL },
 	{ IDC_MATCH, SettingsManager::MAX_AUTO_MATCH_SOURCES, PropPage::T_INT },
 	{ IDC_AUTO_SEARCH_LIMIT, SettingsManager::AUTO_SEARCH_LIMIT, PropPage::T_INT },
+	{ IDC_AUTO_ADD_SOURCES, SettingsManager::AUTO_ADD_SOURCE, PropPage::T_BOOL },
+	{ IDC_ALLOW_MATCH_FULL, SettingsManager::ALLOW_MATCH_FULL_LIST, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 
 PropPage::ListItem QueuePage::optionItems[] = {
-	{ SettingsManager::PRIO_LOWEST, ResourceManager::SETTINGS_PRIO_LOWEST },
-	{ SettingsManager::ALLOW_MATCH_FULL_LIST, ResourceManager::SETTINGS_ALLOW_MATCH_FULL_LIST },
-	{ SettingsManager::SKIP_ZERO_BYTE, ResourceManager::SETTINGS_SKIP_ZERO_BYTE },
-	{ SettingsManager::DONT_DL_ALREADY_SHARED, ResourceManager::SETTINGS_DONT_DL_ALREADY_SHARED },
-	{ SettingsManager::ANTI_FRAG, ResourceManager::SETTINGS_ANTI_FRAG },
-	{ SettingsManager::AUTO_PRIORITY_DEFAULT ,ResourceManager::SETTINGS_AUTO_PRIORITY_DEFAULT },
-	{ SettingsManager::OVERLAP_SLOW_SOURCES ,ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
-	{ SettingsManager::AUTO_ADD_SOURCE ,ResourceManager::AUTO_ADD_SOURCE },
-	{ SettingsManager::KEEP_FINISHED_FILES, ResourceManager::KEEP_FINISHED_FILES },
-	{ SettingsManager::DONT_DL_ALREADY_QUEUED, ResourceManager::SETTING_DONT_DL_ALREADY_QUEUED },
-	{ SettingsManager::EXPAND_BUNDLES, ResourceManager::SETTINGS_EXPAND_BUNDLES },
+	{ SettingsManager::ADD_FINISHED_INSTANTLY, ResourceManager::ADD_FINISHED_INSTANTLY },
 	{ SettingsManager::SCAN_DL_BUNDLES, ResourceManager::SETTINGS_SCAN_FINISHED_BUNDLES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
@@ -137,15 +134,30 @@ void QueuePage::checkItems() {
 	::EnableWindow(GetDlgItem(IDC_DONTBEGIN),				IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
 
 	/* Searching */
-	::EnableWindow(GetDlgItem(IDC_INTERVAL_TEXT),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT));
-	::EnableWindow(GetDlgItem(IDC_SEARCH_INTERVAL),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT));
-	::EnableWindow(GetDlgItem(IDC_MINUTES),					IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT));
+	::EnableWindow(GetDlgItem(IDC_MATCH),					IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_MATCH_QUEUE_TEXT),		IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
 
-	::EnableWindow(GetDlgItem(IDC_MATCH),					IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT));
-	::EnableWindow(GetDlgItem(IDC_MATCH_QUEUE_TEXT),		IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT));
+	::EnableWindow(GetDlgItem(IDC_ALLOW_MATCH_FULL),		IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_AUTO_SEARCH_ALT),			IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
 
-	::EnableWindow(GetDlgItem(IDC_AUTO_SEARCH_LIMIT),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT));
-	::EnableWindow(GetDlgItem(IDC_SETTINGS_AUTO_SEARCH_LIMIT),	IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT));
+	::EnableWindow(GetDlgItem(IDC_INTERVAL_TEXT),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_SEARCH_INTERVAL),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_MINUTES),					IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+
+	::EnableWindow(GetDlgItem(IDC_AUTO_SEARCH_LIMIT),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_AUTO_SEARCH_LIMIT),	IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+}
+
+LRESULT QueuePage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	TCHAR buf[MAX_PATH];
+
+	GetDlgItemText(IDC_ANTIVIR_PATH, buf, MAX_PATH);
+	tstring x = buf;
+
+	if(WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
+		SetDlgItemText(IDC_ANTIVIR_PATH, x.c_str());
+	}
+	return 0;
 }
 
 /**

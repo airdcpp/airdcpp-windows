@@ -445,9 +445,11 @@
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_MAX_UPLOAD_SP               1219
+#define IDC_AUTO_ADD_SOURCES            1219
 #define IDC_CLIENT_TAG                  1220
 #define IDC_REFRESH_DELAY3              1220
 #define IDC_DONT_SHARE_BIGGER_VALUE     1220
+#define IDC_ALLOW_MATCH_FULL            1220
 #define IDC_STATIC2                     1221
 #define IDC_TOOLBAR_ACTUAL              1221
 #define IDC_CLIENT_EXTENDED_TAG         1221
@@ -548,6 +550,7 @@
 #define IDC_REGEXP_TESTER_TEXT          1264
 #define IDC_LIST_EDIT                   1264
 #define IDC_ST_HIGH_PRIO_FILES          1265
+#define IDC_DL_SKIPPING_OPTIONS         1265
 #define IDC_CHANGE_COLOR                1266
 #define IDC_PORT_UDP                    1266
 #define IDC_USERLIST_IMAGE              1267
@@ -679,10 +682,12 @@
 #define IDC_SETTINGS_MCNSLOTS           1314
 #define IDC_PRIO_HIGH_SIZE2             1314
 #define IDC_SETTINGS_ALT_SEARCH         1314
+#define IDC_SETTINGS_SEARCH_MATCHING    1314
 #define IDC_SETTINGS_CONFIRM_OPTIONS    1315
 #define IDC_FAV_DL                      1315
 #define IDC_LINE_SPEED                  1315
 #define IDC_SETTINGS_KB7                1315
+#define IDC_FINISHED_OPTIONS            1315
 #define IDC_CONFIRM_OPTIONS             1316
 #define IDC_RADIO1                      1316
 #define IDC_PRIVATE                     1316
@@ -959,6 +964,8 @@
 #define IDC_BROWSEFAV                   1623
 #define IDC_FAVDIR_EXPLAIN              1624
 #define IDC_SEARCH_INTERVAL             1625
+#define IDC_OTHER_SKIPPING_OPTIONS      1626
+#define IDC_OTHER_PRIORITY_OPTIONS      1627
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1179,7 +1186,9 @@
 #define IDC_SETTINGS_KBPS7              15047
 #define IDC_CZDC_H_DOWN_SPEED           15048
 #define IDC_SEGMENTED_ONLY              15049
+#define IDC_MONITOR_SLOW_SPEED          15049
 #define IDC_SEARCH_FAKE_DLG_SEARCH_STRING 15050
+#define IDC_OVERLAP_SLOW_SOURCES        15050
 #define IDC_AS_SEARCH_STRING            15051
 #define IDC_MIN_SEGMENT_SIZE            15051
 #define IDC_ADD_SRCH_STR_TYPE_STATIC    15052
@@ -1274,7 +1283,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        321
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1626
+#define _APS_NEXT_CONTROL_VALUE         1628
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

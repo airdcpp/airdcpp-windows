@@ -654,7 +654,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			ItemInfo* ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
 			if (!ii->bundle.empty()) {
-				ctrlTransfers.insertBundle(ii, false);
+				ctrlTransfers.insertBundle(ii, BOOLSETTING(EXPAND_BUNDLES));
 			} else {
 				ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 			}
@@ -709,7 +709,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 							ii->parent = NULL; //we need to NULL the old parent so it won't be used when comparing items
 							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 						} else {
-							ctrlTransfers.insertBundle(ii, false);
+							ctrlTransfers.insertBundle(ii, BOOLSETTING(EXPAND_BUNDLES));
 							//parent = ii->parent ? ii->parent : ii;
 						}
 					} else if(ii == parent || !parent->collapsed) {

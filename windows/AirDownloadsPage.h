@@ -27,23 +27,23 @@ public:
 
 	BEGIN_MSG_MAP(AirDownloadsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
-		COMMAND_HANDLER(IDC_ANTIVIR_BROWSE, BN_CLICKED, onBrowse)
+		COMMAND_ID_HANDLER(IDC_MONITOR_SLOW_SPEED, onTick)
 
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	
+	LRESULT onTick(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
-	
+	void checkItems();
 protected:
 
 	static Item items[];
 	static TextItem texts[];
+	static ListItem optionItems[];
 	TCHAR* title;
 
 };

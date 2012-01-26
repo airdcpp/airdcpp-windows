@@ -32,7 +32,7 @@ class LocationsPage : public CPropertyPage<IDD_LOCATIONSPAGE>, public PropPage
 {
 public:
 	LocationsPage(SettingsManager *s) : PropPage(s) {
-		title = _tcsdup((TSTRING(SETTINGS_DOWNLOADS) + _T('\\') + TSTRING(DOWNLOAD_LOCATIONS)).c_str());
+		title = _tcsdup((TSTRING(SETTINGS_DOWNLOADS) + _T('\\') + TSTRING(SETTINGS_DOWNLOAD_LOCATIONS)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}

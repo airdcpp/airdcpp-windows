@@ -43,8 +43,7 @@ PropPage::TextItem PriorityPage::texts[] = {
 	{ IDC_SETTINGS_KB6, ResourceManager::KiB },
 	{ IDC_DOWNLOAD_ORDER, ResourceManager::DOWNLOAD_ORDER },
 	
-	{ IDC_ST_HIGH_PRIO_FILES, ResourceManager::SETTINGS_ST_PATHS	},
-	{ IDC_SB_HIGH_PRIO_FILES, ResourceManager::SETTINGS_SB_HIGH_PRIO_FILES	},
+	{ IDC_SB_HIGH_PRIO_FILES, ResourceManager::SETTINGS_HIGH_PRIO_FILES	},
 	{ IDC_HIGHEST_PRIORITY_USE_REGEXP, ResourceManager::USE_REGEXP },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
@@ -60,10 +59,17 @@ PropPage::Item PriorityPage::items[] = {
 	{ 0, 0, PropPage::T_END }
 };
 
+PropPage::ListItem PriorityPage::optionItems[] = {
+	{ SettingsManager::PRIO_LOWEST, ResourceManager::SETTINGS_PRIO_LOWEST },
+	{ SettingsManager::AUTO_PRIORITY_DEFAULT ,ResourceManager::SETTINGS_AUTO_PRIORITY_DEFAULT },
+	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+};
+
 LRESULT PriorityPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items, 0, 0);
+	PropPage::read((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_PRIORITY_OPTIONS));
 
 	switch(SETTING(DOWNLOAD_ORDER)) {
 		case SettingsManager::ORDER_BALANCED: 
@@ -106,6 +112,7 @@ void PriorityPage::write() {
 	SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_ORDER, id);
 
 	PropPage::write((HWND)*this, items, 0, 0);
+	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_PRIORITY_OPTIONS));
 }
 
 
