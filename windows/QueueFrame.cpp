@@ -1425,7 +1425,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		if (!bundles.empty()) {
 			if (bundles.size() == 1) {
 				b = bundles.front();
-				mainBundle = b->getTarget() == curDir;
+				mainBundle = !AirUtil::isSub(curDir, b->getTarget());
 				if (mainBundle) {
 					dirMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
 					dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITY));
