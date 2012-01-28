@@ -131,6 +131,10 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <PreBuildEvent>
+      <Message>Generating revision number...</Message>
+      <Command>"SubWCRev.exe" "$(SolutionDir)." "$(SolutionDir)client\version.h.template" "$(SolutionDir)client\version.h"</Command>
+    </PreBuildEvent>
     <ClCompile>
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
@@ -171,6 +175,10 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PreBuildEvent>
+      <Message>Generating revision number...</Message>
+      <Command>"SubWCRev.exe" "$(SolutionDir)." "$(SolutionDir)client\version.h.template" "$(SolutionDir)client\version.h"</Command>
+    </PreBuildEvent>
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
     </Midl>
@@ -212,12 +220,6 @@
       <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
     </Lib>
-    <PreBuildEvent>
-      <Command>"SubWCRev.exe" "$(SolutionDir)." "$(SolutionDir)client\version.h.template" "$(SolutionDir)client\version.h"</Command>
-    </PreBuildEvent>
-    <PreBuildEvent>
-      <Message>Generating revision number...</Message>
-    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="client\AdcCommand.cpp" />
@@ -450,6 +452,9 @@
     <ClInclude Include="client\ZUtils.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="client\version.h.template" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="boost-regex.vcxproj">
       <Project>{d1095e8a-63a5-4592-ae93-2d638f20f66a}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
@@ -482,9 +487,6 @@
       <Project>{dfbbe42a-45f4-4188-89c2-17f5dfe50673}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="client\version.h.template" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
