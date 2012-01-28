@@ -1204,21 +1204,23 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			/*Need to read the filepath from the process memory*/
 			DWORD dw_handle = 0;
 			char buf[MAX_PATH];
+			buf[0] = 0;
+			SIZE_T buf_len = 0;
 			GetWindowThreadProcessId(hwndWinamp, &dw_handle);
 			HANDLE w_hHandle = OpenProcess(PROCESS_ALL_ACCESS, false, dw_handle);
 			if(w_hHandle !=INVALID_HANDLE_VALUE) {
 				LPCVOID lpath = (LPCVOID)SendMessage(hwndWinamp, WM_WA_IPC, waListPosition, IPC_GETPLAYLISTFILE);
 				if(lpath)
-					ReadProcessMemory(w_hHandle, lpath, &buf, MAX_PATH, 0);
+					ReadProcessMemory(w_hHandle, lpath, &buf, MAX_PATH, &buf_len);
 		
-				string fpath = Text::acpToUtf8(buf);
+				string fpath = buf;
 				string dir = Util::getDir(fpath,true,true);
 				params["path"] = fpath; //full filepath, probobly not even needed.
 				params["filename"] = Util::getFileName(fpath); //only filename
 				params["directory"] = dir;
 				params["parentdir"] = Util::getLastDir(fpath.substr(0, fpath.find(dir)));
 			}
-		
+
 			CloseHandle(w_hHandle);
 		}
 		// Could be used like; track %[listpos]/%[listlength]
