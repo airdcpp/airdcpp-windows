@@ -1959,7 +1959,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 
 LRESULT DirectoryListingFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
-tstring searchTerm;
+	tstring searchTerm;
 	if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getSelectedItem();
 		searchTerm = ii->getText(COLUMN_FILENAME);
@@ -1979,21 +1979,24 @@ tstring searchTerm;
 
 LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-	tstring searchTermFull;
-
-	if(ctrlList.GetSelectedCount() == 1) {
-		const ItemInfo* ii = ctrlList.getSelectedItem();
-
-		if(ii->type == ItemInfo::FILE && (SETTING(SETTINGS_PROFILE) == 1)){
-			searchTermFull = Text::toT(Util::getDir(ii->file->getPath(), true, true));
-		} else {
-			searchTermFull = ii->getText(COLUMN_FILENAME);
-		}
+	if(ctrlList.GetSelectedCount() > 1) {
 		size_t newId = (size_t)wID - IDC_SEARCH_SITES;
 		if(newId < (int)WebShortcuts::getInstance()->list.size()) {
+			tstring searchTermFull;
 			WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
-			if(ws != NULL) 
-				WinUtil::SearchSite(ws, searchTermFull); 
+		
+			int sel = -1;
+			while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+				const ItemInfo* ii =  ctrlList.getItemData(sel);
+
+				if(ii->type == ItemInfo::FILE && (SETTING(SETTINGS_PROFILE) == 1)){
+					searchTermFull = Text::toT(Util::getDir(ii->file->getPath(), true, true));
+				} else {
+					searchTermFull = ii->getText(COLUMN_FILENAME);
+				}
+				if(ws != NULL) 
+					WinUtil::SearchSite(ws, searchTermFull); 
+			}
 		}
 	}
 	return S_OK;

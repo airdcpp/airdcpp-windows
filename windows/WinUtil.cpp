@@ -1200,23 +1200,25 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		int listlength = SendMessage(hwndWinamp, WM_WA_IPC, 0, IPC_GETLISTLENGTH);
 		int waListPosition = SendMessage(hwndWinamp,WM_WA_IPC,0,IPC_GETLISTPOS);
 		if(waListPosition >= 0) {
-		/*Need to read the filepath from the process memory*/
-		DWORD dw_handle = 0;
-		char buf[MAX_PATH];
-		GetWindowThreadProcessId(hwndWinamp, &dw_handle);
-		HANDLE w_hHandle = OpenProcess(PROCESS_ALL_ACCESS, false, dw_handle);
-		if(w_hHandle !=INVALID_HANDLE_VALUE) {
-		LPCVOID lpath = (LPCVOID)SendMessage(hwndWinamp, WM_WA_IPC, waListPosition, IPC_GETPLAYLISTFILE);
-		if(lpath)
-			ReadProcessMemory(w_hHandle, lpath, &buf, MAX_PATH, 0);
+			/*Need to read the filepath from the process memory*/
+			DWORD dw_handle = 0;
+			char buf[MAX_PATH];
+			GetWindowThreadProcessId(hwndWinamp, &dw_handle);
+			HANDLE w_hHandle = OpenProcess(PROCESS_ALL_ACCESS, false, dw_handle);
+			if(w_hHandle !=INVALID_HANDLE_VALUE) {
+				LPCVOID lpath = (LPCVOID)SendMessage(hwndWinamp, WM_WA_IPC, waListPosition, IPC_GETPLAYLISTFILE);
+				if(lpath)
+					ReadProcessMemory(w_hHandle, lpath, &buf, MAX_PATH, 0);
 		
-		string fpath = Text::acpToUtf8(buf);
-		params["path"] = fpath; //full filepath, probobly not even needed.
-		params["filename"] = Util::getFileName(fpath); //only filename
-		params["directory"] = Util::getDir(fpath,true,true); //show only release dir? , -maksis feel free to modify, just made it work.
-		}
+				string fpath = Text::acpToUtf8(buf);
+				string dir = Util::getDir(fpath,true,true);
+				params["path"] = fpath; //full filepath, probobly not even needed.
+				params["filename"] = Util::getFileName(fpath); //only filename
+				params["directory"] = dir;
+				params["parentdir"] = Util::getLastDir(fpath.substr(0, fpath.find(dir)));
+			}
 		
-		CloseHandle(w_hHandle);
+			CloseHandle(w_hHandle);
 		}
 		// Could be used like; track %[listpos]/%[listlength]
 		params["listlength"] = Util::toString(listlength);

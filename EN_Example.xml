@@ -938,6 +938,7 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 - %[path]	Playing full Filepath
 - %[directory]	Playing DirectoryName
 - %[filename]	Playing FileName
+- %[parentdir]	Parent Directory name of %[directory]
  Empty = Default String -&gt; winamp(%[version]) %[state](%[title]) stats(%[percent] of %[length] %[bar])</String>
 		<String Name="WinampHelpDesc">Winamp Help</String>
 		<String Name="Yes">Yes</String>
