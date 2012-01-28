@@ -1207,7 +1207,7 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			buf[0] = 0;
 			SIZE_T buf_len = 0;
 			GetWindowThreadProcessId(hwndWinamp, &dw_handle);
-			HANDLE w_hHandle = OpenProcess(PROCESS_ALL_ACCESS, false, dw_handle);
+			HANDLE w_hHandle = OpenProcess(PROCESS_VM_READ, false, dw_handle);
 			if(w_hHandle !=INVALID_HANDLE_VALUE) {
 				LPCVOID lpath = (LPCVOID)SendMessage(hwndWinamp, WM_WA_IPC, waListPosition, IPC_GETPLAYLISTFILE);
 				if(lpath)
