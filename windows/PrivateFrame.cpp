@@ -112,13 +112,12 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 		}
 		if(BOOLSETTING(POPUP_NEW_PM)) {
 			pair<tstring, bool> hubs = WinUtil::getHubNames(replyTo, c->getHubUrl());
-		if(BOOLSETTING(PM_PREVIEW)) {
-			tstring message = aMessage.substr(0, 250);
-			MainFrame::getMainFrame()->ShowBalloonTip(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
+			if(BOOLSETTING(PM_PREVIEW)) {
+				tstring message = aMessage.substr(0, 250);
+				MainFrame::getMainFrame()->ShowBalloonTip(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 			} else {
-			MainFrame::getMainFrame()->ShowBalloonTip(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + hubs.first, TSTRING(PRIVATE_MESSAGE));
-
-	}
+				MainFrame::getMainFrame()->ShowBalloonTip(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + hubs.first, TSTRING(PRIVATE_MESSAGE));
+			}
 		}
 
 		if((BOOLSETTING(PRIVATE_MESSAGE_BEEP) || BOOLSETTING(PRIVATE_MESSAGE_BEEP_OPEN)) && (!BOOLSETTING(SOUNDS_DISABLED))) {
@@ -134,15 +133,16 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 			if(BOOLSETTING(FLASH_WINDOW_ON_PM) && !BOOLSETTING(FLASH_WINDOW_ON_NEW_PM)) {
 				WinUtil::FlashWindow();
 			}
+
 			if(BOOLSETTING(POPUP_PM)) {
-			if(BOOLSETTING(PM_PREVIEW)) {
+				if(BOOLSETTING(PM_PREVIEW)) {
 					tstring message = aMessage.substr(0, 250);
 					MainFrame::getMainFrame()->ShowBalloonTip(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 				} else {
-				pair<tstring, bool> hubs = WinUtil::getHubNames(replyTo, c->getHubUrl());
-				MainFrame::getMainFrame()->ShowBalloonTip(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + hubs.first, TSTRING(PRIVATE_MESSAGE));
+					pair<tstring, bool> hubs = WinUtil::getHubNames(replyTo, c->getHubUrl());
+					MainFrame::getMainFrame()->ShowBalloonTip(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + hubs.first, TSTRING(PRIVATE_MESSAGE));
 				}
-		}
+			}
 
 			if((BOOLSETTING(PRIVATE_MESSAGE_BEEP)) && (!BOOLSETTING(SOUNDS_DISABLED))) {
 				if (SETTING(BEEPFILE).empty()) {
@@ -154,7 +154,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 		}
 		i->second->addLine(from, aMessage);
 	}
-	}
+}
 
 void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Client* c) {
 	PrivateFrame* p = NULL;
@@ -175,10 +175,10 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 }
 
 LRESULT PrivateFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if (uMsg != WM_KEYDOWN) {
+	if (uMsg != WM_KEYDOWN && uMsg != WM_CUT && uMsg != WM_PASTE) {
 		switch(wParam) {
 			case VK_RETURN:
-				if((GetKeyState(VK_SHIFT) & 0x8000) || (GetKeyState(VK_CONTROL) & 0x8000) || (GetKeyState(VK_MENU) & 0x8000)  ) {
+				if( WinUtil::isShift() || WinUtil::isCtrl() ||  WinUtil::isAlt() ) {
 					bHandled = FALSE;
 				}
 				break;
@@ -743,23 +743,16 @@ LRESULT PrivateFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 	return 0;
 }
 
+string PrivateFrame::getLogPath() const {
+	ParamMap params;
+	fillLogParams(params);
+	return LogManager::getInstance()->getPath(LogManager::PM, params);
+}
+
 void PrivateFrame::readLog() {
 	if (SETTING(SHOW_LAST_LINES_LOG) == 0) return;
-	ParamMap params;
-	
-	const CID& cid = replyTo.user->getCID();
-	const string& hint = replyTo.hint;
-					
-	params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv));
-	params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint, priv));
-	params["userCID"] = cid.toBase32(); 
-	params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
-	params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
-		
-	string path = LogManager::getInstance()->getPath(LogManager::PM, params);
-
 	try {
-		File f(path, File::READ, File::OPEN);
+		File f(getLogPath(), File::READ, File::OPEN);
 		
 		int64_t size = f.getSize();
 
@@ -799,43 +792,13 @@ void PrivateFrame::closeAllOffline() {
 }
 
 LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
-	ParamMap params;
-	const CID& cid = replyTo.user->getCID();
-	const string& hint = replyTo.hint;
-					
-	params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv));
-	params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint, priv));
-	params["userCID"] = cid.toBase32(); 
-	params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
-	params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
-
-	string file = LogManager::getInstance()->getPath(LogManager::PM, params);
+	string file = getLogPath();
 	if(Util::fileExists(file)) {
 		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
 			ShellExecute(NULL, NULL, Text::toT(file).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		} else {
 			TextFrame::openWindow(Text::toT(file).c_str(),true ,false);
 		}
-	} else {
-		MessageBox(CTSTRING(NO_LOG_FOR_USER), CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
-	}	
-
-	return 0;
-}
-LRESULT PrivateFrame::onUserHistory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
-	ParamMap params;
-	const CID& cid = replyTo.user->getCID();
-	const string& hint = replyTo.hint;
-					
-	params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint, priv));
-	params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint, priv));
-	params["userCID"] = cid.toBase32(); 
-	params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint, priv)[0];
-	params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
-
-	string file = LogManager::getInstance()->getPath(LogManager::PM, params);
-	if(Util::fileExists(file)) {
-			TextFrame::openWindow(Text::toT(file).c_str(),false ,true);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_USER), CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 	}	

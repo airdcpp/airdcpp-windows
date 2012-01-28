@@ -57,7 +57,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			int64_t size = f.getSize();
 			if(size > 64*1024) {
 				f.setPos(size - 64*1024);
-				}
+			}
 			
 			tmp = f.read(64*1024);
 			StringList lines;
