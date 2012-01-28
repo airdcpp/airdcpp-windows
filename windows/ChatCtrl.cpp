@@ -1328,20 +1328,16 @@ LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 		params["userCID"] = ou->getUser()->getCID().toBase32();
 		params["hubURL"] = client->getHubUrl();
 
-		tstring file = Text::toT(LogManager::getInstance()->getPath(LogManager::PM, params));
-		if(Util::fileExists(Text::fromT(file))) {
-		switch(wID) {
-			case IDC_OPEN_USER_LOG:
-				if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
-					ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
-				} else {
-					TextFrame::openWindow(file, true, false);
-				}
-				break;
-			case IDC_USER_HISTORY:
-				TextFrame::openWindow(file, false, true);
-				break;
-		}
+		string file = LogManager::getInstance()->getPath(LogManager::PM, params);
+		if(Util::fileExists(file)) {
+			switch(wID) {
+				case IDC_OPEN_USER_LOG:
+					WinUtil::viewLog(file);
+					break;
+				case IDC_USER_HISTORY:
+					TextFrame::openWindow(Text::toT(file), false, true);
+					break;
+			}
 		} else {
 			MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 		}

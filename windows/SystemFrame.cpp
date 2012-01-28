@@ -231,11 +231,7 @@ LRESULT SystemFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM l
 LRESULT SystemFrame::onSystemLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string filename = LogManager::getInstance()->getPath(LogManager::SYSTEM);
 	if(Util::fileExists(filename)){
-		if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
-			ShellExecute(NULL, NULL, Text::toT(filename).c_str(), NULL, NULL, SW_SHOWNORMAL);
-		} else {
-			TextFrame::openWindow(Text::toT(filename), true, false);
-		}
+		WinUtil::viewLog(filename);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
 	}

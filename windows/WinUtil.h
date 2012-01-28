@@ -523,6 +523,7 @@ public:
 	
 	static TStringList FindVolumes();
 	static bool getTarget(int ID, string& target, int64_t aSize);
+	static void viewLog(const string& path);
 
 	static string getCompileDate() {
 		COleDateTime tCompileDate; 

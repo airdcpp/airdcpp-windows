@@ -573,13 +573,14 @@ LRESULT DirectoryListingFrame::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, 
 
 LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-	if (mylist){
-		try{
-		tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-		TextFrame::openWindow(path, false, false);
-		}catch(...) {} //file deleted no path
-	}else
+	if (mylist) {
+		try {
+			tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+			TextFrame::openWindow(path, false, false);
+		} catch(...) { } //file deleted no path
+	} else {
 		downloadList(Text::toT(Util::getTempPath()), true);
+	}
 	return 0;
 }
 

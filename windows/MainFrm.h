@@ -185,7 +185,7 @@ public:
 		COMMAND_ID_HANDLER(ID_FILE_QUICK_CONNECT, onQuickConnect)
 		COMMAND_ID_HANDLER(IDC_HASH_PROGRESS, onHashProgress)
 		COMMAND_ID_HANDLER(IDC_HASH_PROGRESS_AUTO_CLOSE, onHashProgress)
-		COMMAND_ID_HANDLER(IDC_OPEN_SYSTEMLOG, Opensyslog)
+		COMMAND_ID_HANDLER(IDC_OPEN_SYSTEMLOG, onOpenSysLog)
 		COMMAND_RANGE_HANDLER(IDC_WINAMP_BACK, IDC_WINAMP_VOL_HALF, onWinampButton)
 		COMMAND_RANGE_HANDLER(IDC_SWITCH_WINDOW_1, IDC_SWITCH_WINDOW_0, onSwitchWindow)
 
@@ -243,7 +243,7 @@ public:
 	LRESULT onWinampStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSwitchWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT Opensyslog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onOpenSysLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onDropDown(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onRefreshMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);

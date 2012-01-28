@@ -34,6 +34,7 @@
 
 #include "WinUtil.h"
 #include "PrivateFrame.h"
+#include "TextFrame.h"
 #include "SearchFrm.h"
 #include "LineDlg.h"
 #include "MainFrm.h"
@@ -1019,11 +1020,11 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 
 	if(stricmp(cmd.c_str(), _T("log")) == 0) {
 		if(stricmp(param.c_str(), _T("system")) == 0) {
-			WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + "system.log")));
+			WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::SYSTEM)));
 		} else if(stricmp(param.c_str(), _T("downloads")) == 0) {
-			WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatTime(SETTING(LOG_FILE_DOWNLOAD), time(NULL)))));
+			WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::DOWNLOAD)));
 		} else if(stricmp(param.c_str(), _T("uploads")) == 0) {
-			WinUtil::openFile(Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatTime(SETTING(LOG_FILE_UPLOAD), time(NULL)))));
+			WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::UPLOAD)));
 		} else {
 			return false;
 		}
@@ -3132,6 +3133,14 @@ bool WinUtil::getTarget(int ID, string& target, int64_t aSize) {
 		return (MessageBox(mainWnd, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES);
 	}
 	return true;
+}
+
+void WinUtil::viewLog(const string& path) {
+	if(BOOLSETTING(OPEN_LOGS_INTERNAL)) {
+		TextFrame::openWindow(Text::toT(path), true, false);
+	} else {
+		ShellExecute(NULL, NULL, Text::toT(path).c_str(), NULL, NULL, SW_SHOWNORMAL);
+	}
 }
 
 /**

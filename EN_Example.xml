@@ -1325,7 +1325,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ProfileRar">Rar Hubs</String>
 		<String Name="ProfilePrivate">Private Hubs</String>
 		<String Name="SettingsMcnNote">* Lowering the upload connections from the default value will result the download connections to be set to the same value</String>
-		<String Name="SettingsTargetdriveNote">* Using target drive means that unfinished files are always being saved to an own folder on the same drive where the final destination is</String>
 		<String Name="SettingsUseTargetdrive">Use Target Drive for unfinished files</String>
 		<String Name="RemoveOnHit">Remove after found</String>
 		<String Name="SearchAdded">Search Added to Autosearch List: </String>
@@ -1495,5 +1494,6 @@ The path used will be the one wich has the most free diskspace.
 		<String Name="SettingsSkiplistDownload">Download Skiplist (separate files with '|', wildcards allowed)</String>
 		<String Name="SettingsHighPrioFiles">Highest priority files (separate files with '|', wildcards allowed)</String>
 		<String Name="SettingsAutoDropSlowSources">Actively monitor slow downloads (more than 2 active sources)</String>
+		<String Name="SettingsFormatRemoteTime">Use the date of the remote directory for time parameters</String>
 	</Strings>
 </Language>

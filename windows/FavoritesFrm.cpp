@@ -543,13 +543,9 @@ LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		params["hubNI"] = entry->getName();
 		params["hubURL"] = entry->getServer();
 		params["myNI"] = entry->getNick(); 
-		tstring filename = Text::toT(LogManager::getInstance()->getPath(LogManager::CHAT, params));
-		if(Util::fileExists(Text::fromT(filename))){
-			if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
-				ShellExecute(NULL, NULL, filename.c_str(), NULL, NULL, SW_SHOWNORMAL);
-			} else {
-				TextFrame::openWindow(filename, true, false);
-			}
+		string file = LogManager::getInstance()->getPath(LogManager::CHAT, params);
+		if(Util::fileExists(file)){
+			WinUtil::viewLog(file);
 		} else {
 			MessageBox(CTSTRING(NO_LOG_FOR_HUB), CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
 		}

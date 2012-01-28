@@ -1416,19 +1416,13 @@ LRESULT MainFrame::onCloseWindows(WORD , WORD wID, HWND , BOOL& ) {
 	}
 	return 0;
 }
-LRESULT MainFrame::Opensyslog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-
-tstring filename = Text::toT(Util::validateFileName(SETTING(LOG_DIRECTORY) + Util::formatTime(SETTING(LOG_FILE_SYSTEM), time(NULL))));
-	if(Util::fileExists(Text::fromT(filename))){
-			if(BOOLSETTING(OPEN_LOGS_INTERNAL) == false) {
-			ShellExecute(NULL, NULL, filename.c_str(), NULL, NULL, SW_SHOWNORMAL);
-		} else {
-			TextFrame::openWindow(filename, true, false);
-		}
+LRESULT MainFrame::onOpenSysLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	string filename = LogManager::getInstance()->getPath(LogManager::SYSTEM);
+	if(Util::fileExists(filename)){
+		WinUtil::viewLog(filename);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
-	} 
+	}
 	
 	return 0; 
 }
