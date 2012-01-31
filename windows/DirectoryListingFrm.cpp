@@ -1980,7 +1980,7 @@ LRESULT DirectoryListingFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 
 LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-	if(ctrlList.GetSelectedCount() > 1) {
+	if(ctrlList.GetSelectedCount() >= 1) {
 		size_t newId = (size_t)wID - IDC_SEARCH_SITES;
 		if(newId < (int)WebShortcuts::getInstance()->list.size()) {
 			tstring searchTermFull;
