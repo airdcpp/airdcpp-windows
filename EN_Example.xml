@@ -532,12 +532,10 @@
 		<String Name="Separator">Separator</String>
 		<String Name="Server">Server</String>
 		<String Name="SetczdcBackColor">Back color</String>
-		<String Name="SetczdcCzcharsDisable">Remove diacritic marks from Czech chars</String>
 		<String Name="SetczdcDefaultStyle">Default style</String>
 		<String Name="SetczdcDisconnectingEnable">Enable slow downloads disconnecting</String>
 		<String Name="SetczdcDownloadSpeed">Download Speed</String>
 		<String Name="SetczdcErrorColor">Error color</String>
-		<String Name="SetczdcHDownSpeed">And whole file speed exceeds</String>
 		<String Name="SetczdcIDownSpeed">Disconnect download if speed is below</String>
 		<String Name="SetczdcMagnetUriHandler">Install Magnet URI handler on startup</String>
 		<String Name="SetczdcMinFileSize">And file size is more than</String>
@@ -1220,7 +1218,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SettingsIncomingRefreshTime">Incoming Refresh Time</String>
 		<String Name="SettingsUseAdls">Use ADLSearch on Filelists</String>
 		<String Name="SettingsUseAdlsOwnList">Use ADLSearch on Own FileList</String>
-		<String Name="SettingDontDlAlreadyQueued">Dont Download Files already in Queue</String>
+		<String Name="SettingDontDlAlreadyQueued">Don't download files already in queue</String>
 		<String Name="FileWithSameTth">File with same TTH allready exists in Queue</String>
 		<String Name="FavShowJoin">Show User Joins / Parts</String>
 		<String Name="UpnpRemovedMappings">Successfully removed port mappings</String>
@@ -1478,6 +1476,17 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 The path used will be the one wich has the most free diskspace.
 </String>
 		<String Name="CountryInformation">Country information</String>
+		<String Name="SettingsCountryFormat">Country format</String>
+		<String Name="SettingsCountryFormatHelpDesc">Country Format Help</String>
+		<String Name="SettingsCountryFormatHelp">This box allows customization of the way user country information is displayed throughout the interface. Default: %[2code] - %[name]
+
+  Available variables: 
+  %[2code] gets replaced by a 2-letters country code (eg DE, FR). 
+  %[3code] gets replaced by a 3-letters country code (eg DEU, FRA). 
+  %[continent] gets replaced by a continent code (AF, AS, EU, NA, OC, SA for Africa, Asia, Europe, North America, Oceania and South America). 
+  %[engname] gets replaced by the English country friendly name (eg Germany, France). 
+  %[name] gets replaced by the localized country friendly name (eg Germany, France on an English operating system). 
+  %[officialname] gets replaced by the localized country official name (eg Federal Republic of Germany, French Republic on an English operating system).</String>
 		<String Name="ClosingConnections">Closing connections</String>
 		<String Name="Processing">Processing, please wait...</String>
 		<String Name="SavingHashData">Saving hash data</String>
@@ -1493,7 +1502,9 @@ The path used will be the one wich has the most free diskspace.
 		<String Name="SettingsSkippingOptions">Skipping options</String>
 		<String Name="SettingsSkiplistDownload">Download Skiplist (separate files with '|', wildcards allowed)</String>
 		<String Name="SettingsHighPrioFiles">Highest priority files (separate files with '|', wildcards allowed)</String>
-		<String Name="SettingsAutoDropSlowSources">Actively monitor slow downloads (more than 2 active sources)</String>
 		<String Name="SettingsFormatRemoteTime">Use the date of the remote directory for time parameters</String>
+		<String Name="DisconnectBundleSpeed">And the bundle speed exceeds</String>
+		<String Name="DisconnectRunningDownloads">And the minimum number of bundle downloads is</String>
+		<String Name="SettingsAutoDropSlowSources">Use slow speed disconnecting by default for new bundles</String>
 	</Strings>
 </Language>

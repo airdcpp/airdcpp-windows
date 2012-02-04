@@ -28,6 +28,7 @@
 #include "../client/QueueItem.h"
 #include "../client/GeoManager.h"
 #include "../client/AirUtil.h"
+#include "../client/format.h"
 
 #include "WinUtil.h"
 #include "TransferView.h"
@@ -305,15 +306,12 @@ void TransferView::ItemInfo::removeBundle() {
 	if (aBundle) {
 		int finishedFiles = QueueManager::getInstance()->getFinishedItemCount(aBundle);
 		bool moveFinished = true;
-		string tmp;
-		tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_BUNDLE).size() + 1024);
-		tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_BUNDLE), aBundle->getName().c_str()));
+		string tmp = str(boost::format(STRING(CONFIRM_REMOVE_DIR_BUNDLE)) % aBundle->getName().c_str());
 		if(::MessageBox(0, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 			return;
 		} else {
 			if (finishedFiles > 0) {
-				tmp.resize(tmp.size() + STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE).size() + 1024);
-				tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE), finishedFiles));
+				tmp = str(boost::format(STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE)) % finishedFiles);
 				if(::MessageBox(0, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 					moveFinished = false;
 				}

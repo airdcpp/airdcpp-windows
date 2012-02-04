@@ -498,7 +498,9 @@
 #define IDC_SETTINGS_ONLY_HASHED        1243
 #define IDC_FH_HUB                      1243
 #define IDC_COLOR_COMBO                 1243
+#define IDC_SETTINGS_COUNTRY_FORMAT     1243
 #define IDC_FH_IDENT                    1244
+#define IDC_COUNTRY_FORMAT              1244
 #define IDC_FH_NAME                     1245
 #define IDC_MAXCOMPRESS                 1246
 #define IDC_HASH_PROGRESS               1246
@@ -1121,6 +1123,7 @@
 #define IDC_MAGNET_DISP_SIZE            10165
 #define IDC_TIMESTAMP_HELP              10167
 #define IDC_CHECKSFV                    10168
+#define IDC_COUNTRY_FORMAT_HELP         10168
 #define IDC_SFV_CHECH_FILE              10169
 #define IDC_USERLIST_DBLCLICK           10190
 #define IDC_TRANSFERLIST_DBLCLICK       10191
@@ -1189,11 +1192,15 @@
 #define IDC_CZDC_H_DOWN_SPEED           15048
 #define IDC_SEGMENTED_ONLY              15049
 #define IDC_MONITOR_SLOW_SPEED          15049
+#define IDC_USE_DISCONNECT_DEFAULT      15049
 #define IDC_SEARCH_FAKE_DLG_SEARCH_STRING 15050
 #define IDC_OVERLAP_SLOW_SOURCES        15050
+#define IDC_DISCONNECT_ONLINE_SOURCES   15050
 #define IDC_AS_SEARCH_STRING            15051
 #define IDC_MIN_SEGMENT_SIZE            15051
+#define IDC_SOURCES_SPIN                15051
 #define IDC_ADD_SRCH_STR_TYPE_STATIC    15052
+#define IDC_RUNNING_DOWNLOADS_LABEL     15052
 #define IDC_AS_ACTION_STATIC            15053
 #define IDC_AS_ACTION                   15054
 #define IDC_AS_FILETYPE                 15055

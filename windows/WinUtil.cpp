@@ -3129,9 +3129,12 @@ bool WinUtil::getTarget(int ID, string& target, int64_t aSize) {
 	}
 
 	if (aSize > freeSpace) {
-		string tmp;
-		tmp.resize(tmp.size() + STRING(CONFIRM_SIZE_WARNING).size() + 1024);
-		tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(CONFIRM_SIZE_WARNING), Util::formatBytes(freeSpace).c_str(), target.c_str(), Util::formatBytes(aSize).c_str()));
+
+		string tmp = str(boost::format(STRING(CONFIRM_SIZE_WARNING)) % 
+			Util::formatBytes(freeSpace).c_str() % 
+			target.c_str() %
+			Util::formatBytes(aSize).c_str());
+
 		return (MessageBox(mainWnd, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES);
 	}
 	return true;

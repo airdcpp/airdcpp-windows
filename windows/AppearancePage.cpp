@@ -35,12 +35,14 @@ PropPage::TextItem AppearancePage::texts[] = {
 	{ IDC_BROWSE, ResourceManager::BROWSE_ACCEL },
 	{ IDC_SETTINGS_REQUIRES_RESTART, ResourceManager::SETTINGS_REQUIRES_RESTART },
 	{ IDC_SETTINGS_GET_USER_COUNTRY, ResourceManager::SETTINGS_GET_USER_COUNTRY }, 
+	{ IDC_SETTINGS_COUNTRY_FORMAT, ResourceManager::SETTINGS_COUNTRY_FORMAT }, 
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item AppearancePage::items[] = {
 	{ IDC_DEFAULT_AWAY_MESSAGE, SettingsManager::DEFAULT_AWAY_MESSAGE, PropPage::T_STR },
 	{ IDC_TIME_STAMPS_FORMAT, SettingsManager::TIME_STAMPS_FORMAT, PropPage::T_STR },
+	{ IDC_COUNTRY_FORMAT, SettingsManager::COUNTRY_FORMAT, PropPage::T_STR },
 	{ IDC_LANGUAGE, SettingsManager::LANGUAGE_FILE, PropPage::T_STR },
 	{ 0, 0, PropPage::T_END }
 };
@@ -66,7 +68,6 @@ PropPage::ListItem AppearancePage::listItems[] = {
 	{ SettingsManager::SORT_FAVUSERS_FIRST, ResourceManager::SETTINGS_SORT_FAVUSERS_FIRST },
 	{ SettingsManager::USE_SYSTEM_ICONS, ResourceManager::SETTINGS_USE_SYSTEM_ICONS },
 	{ SettingsManager::GET_USER_COUNTRY, ResourceManager::SETTINGS_GET_USER_COUNTRY },
-	{ SettingsManager::CZCHARS_DISABLE, ResourceManager::SETCZDC_CZCHARS_DISABLE },
 	{ SettingsManager::USE_OLD_SHARING_UI, ResourceManager::SETTINGS_USE_OLD_SHARING_UI },
 	{ SettingsManager::SUPPRESS_MAIN_CHAT, ResourceManager::SETTINGS_ADVANCED_SUPPRESS_MAIN_CHAT },
 	{ SettingsManager::TABS_ON_TOP, ResourceManager::TABS_ON_TOP },
@@ -81,12 +82,8 @@ PropPage::ListItem AppearancePage::listItems[] = {
 
 AppearancePage::~AppearancePage(){ }
 
-void AppearancePage::write()
-{
-
+void AppearancePage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_APPEARANCE_BOOLEANS));
-
-
 }
 
 
@@ -115,10 +112,16 @@ LRESULT AppearancePage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	return 0;
 }
 
-LRESULT AppearancePage::onClickedHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
+LRESULT AppearancePage::onClickedTimeHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 	MessageBox(CTSTRING(TIMESTAMP_HELP), CTSTRING(TIMESTAMP_HELP_DESC), MB_OK | MB_ICONINFORMATION);
 	return S_OK;
 }
+
+LRESULT AppearancePage::onClickedCountryHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
+	MessageBox(CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP), CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP_DESC), MB_OK | MB_ICONINFORMATION);
+	return S_OK;
+}
+
 
 /**
  * @file

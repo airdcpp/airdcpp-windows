@@ -68,6 +68,7 @@ PropPage::Item QueuePage::items[] = {
 PropPage::ListItem QueuePage::optionItems[] = {
 	{ SettingsManager::ADD_FINISHED_INSTANTLY, ResourceManager::ADD_FINISHED_INSTANTLY },
 	{ SettingsManager::SCAN_DL_BUNDLES, ResourceManager::SETTINGS_SCAN_FINISHED_BUNDLES },
+	{ SettingsManager::OVERLAP_SLOW_SOURCES, ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

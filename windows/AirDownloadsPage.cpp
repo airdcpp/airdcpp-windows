@@ -20,7 +20,8 @@ PropPage::TextItem AirDownloadsPage::texts[] = {
 	{ IDC_CZDC_SLOW_DISCONNECT, ResourceManager::SETCZDC_SLOW_DISCONNECT },
 	{ IDC_CZDC_I_DOWN_SPEED, ResourceManager::SETCZDC_I_DOWN_SPEED },
 	{ IDC_CZDC_TIME_DOWN, ResourceManager::SETCZDC_TIME_DOWN },
-	{ IDC_CZDC_H_DOWN_SPEED, ResourceManager::SETCZDC_H_DOWN_SPEED },
+	{ IDC_CZDC_H_DOWN_SPEED, ResourceManager::DISCONNECT_BUNDLE_SPEED },
+	{ IDC_RUNNING_DOWNLOADS_LABEL, ResourceManager::DISCONNECT_RUNNING_DOWNLOADS },
 	{ IDC_DISCONNECTING_ENABLE, ResourceManager::SETCZDC_DISCONNECTING_ENABLE },
 	{ IDC_CZDC_MIN_FILE_SIZE, ResourceManager::SETCZDC_MIN_FILE_SIZE },
 	{ IDC_SETTINGS_MB, ResourceManager::MiB },
@@ -28,7 +29,6 @@ PropPage::TextItem AirDownloadsPage::texts[] = {
 	{ IDC_SB_SKIPLIST_DOWNLOAD,	ResourceManager::SETTINGS_SKIPLIST_DOWNLOAD	},
 	{ IDC_DL_SKIPPING_OPTIONS,	ResourceManager::SETTINGS_SKIPPING_OPTIONS	},
 	{ IDC_DOWNLOAD_SKIPLIST_USE_REGEXP, ResourceManager::USE_REGEXP },
-	{ IDC_OVERLAP_SLOW_SOURCES, ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -38,9 +38,10 @@ PropPage::Item AirDownloadsPage::items[] = {
 	{ IDC_H_DOWN_SPEED, SettingsManager::DISCONNECT_FILE_SPEED, PropPage::T_INT },
 	{ IDC_MIN_FILE_SIZE, SettingsManager::DISCONNECT_FILESIZE, PropPage::T_INT },
 	{ IDC_REMOVE_IF_BELOW, SettingsManager::REMOVE_SPEED, PropPage::T_INT },
+	{ IDC_DISCONNECT_ONLINE_SOURCES, SettingsManager::DISCONNECT_MIN_SOURCES, PropPage::T_INT },
 	{ IDC_SKIPLIST_DOWNLOAD, SettingsManager::SKIPLIST_DOWNLOAD, PropPage::T_STR },
 	{ IDC_DOWNLOAD_SKIPLIST_USE_REGEXP, SettingsManager::DOWNLOAD_SKIPLIST_USE_REGEXP, PropPage::T_BOOL },
-	{ IDC_MONITOR_SLOW_SPEED, SettingsManager::DROP_MULTISOURCE_ONLY, PropPage::T_BOOL },
+	{ IDC_USE_DISCONNECT_DEFAULT, SettingsManager::USE_SLOW_DISCONNECTING_DEFAULT, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -72,8 +73,10 @@ LRESULT AirDownloadsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	spin.Attach(GetDlgItem(IDC_REMOVE_SPIN));
 	spin.SetRange32(0, 99999);
 	spin.Detach(); 
+	spin.Attach(GetDlgItem(IDC_SOURCES_SPIN));
+	spin.SetRange32(1, 99999);
+	spin.Detach(); 
 
-	checkItems();
 	// Do specialized reading here
 	return TRUE;
 }
@@ -91,33 +94,6 @@ void AirDownloadsPage::write() {
 	settings->set(SettingsManager::ANTIVIR_PATH, Text::fromT(buf));
 
 	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_SKIPPING_OPTIONS));
-}
-
-LRESULT AirDownloadsPage::onTick(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
-	checkItems();
-	return 0;
-}
-
-void AirDownloadsPage::checkItems() {
-	::EnableWindow(GetDlgItem(IDC_CZDC_I_DOWN_SPEED),		IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-	::EnableWindow(GetDlgItem(IDC_I_DOWN_SPEED),			IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-	::EnableWindow(GetDlgItem(IDC_SETTINGS_KBPS5),			IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-
-	::EnableWindow(GetDlgItem(IDC_CZDC_TIME_DOWN),			IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-	::EnableWindow(GetDlgItem(IDC_TIME_DOWN),				IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-	::EnableWindow(GetDlgItem(IDC_SETTINGS_MINUTES),		IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-
-	::EnableWindow(GetDlgItem(IDC_CZDC_H_DOWN_SPEED),		IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-	::EnableWindow(GetDlgItem(IDC_H_DOWN_SPEED),			IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-	::EnableWindow(GetDlgItem(IDC_SETTINGS_KBPS6),			IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-
-	::EnableWindow(GetDlgItem(IDC_CZDC_MIN_FILE_SIZE),		IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-	::EnableWindow(GetDlgItem(IDC_MIN_FILE_SIZE),			IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-	::EnableWindow(GetDlgItem(IDC_SETTINGS_MB),				IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-
-	::EnableWindow(GetDlgItem(IDC_REMOVE_IF),				IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-	::EnableWindow(GetDlgItem(IDC_REMOVE_IF_BELOW),			IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
-	::EnableWindow(GetDlgItem(IDC_SETTINGS_KBPS7),			IsDlgButtonChecked(IDC_MONITOR_SLOW_SPEED));
 }
 
 
