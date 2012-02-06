@@ -325,7 +325,10 @@ void TransferView::ItemInfo::removeBundle() {
 LRESULT TransferView::onOpenBundleFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
 	if (ii) {
-		WinUtil::openFolder(ii->target);
+		size_t pos = ii->target.rfind(' ');
+		if (pos != string::npos) {
+			WinUtil::openFolder(ii->target.substr(0, pos));
+		}
 	}
 	return 0;
 }
@@ -778,17 +781,6 @@ LRESULT TransferView::onSearchDirectory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		if (ii->isBundle) {
 			size_t pos = ii->target.rfind(' ');
 			if (pos != string::npos) {
-			/*if (target[target.size() -1] == '\\') {
-				return Text::toT(Util::getDir(Text::fromT(target), false, true));
-			} else if (target[target.size() -1] == ')') {
-				if (target[pos-1] == '\\') {
-					return Util::getLastDir(target) + target.substr(pos, target.length()-pos);
-				} else {
-					return Util::getFileName(target);
-				}
-				}
-			}
-			string searchterm = */
 				WinUtil::search(Util::getLastDir(ii->target.substr(0, pos)), 0);
 			}
 		}
