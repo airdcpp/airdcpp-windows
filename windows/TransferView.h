@@ -70,6 +70,7 @@ public:
 		MESSAGE_HANDLER(WM_NOTIFYFORMAT, onNotifyFormat)
 		COMMAND_ID_HANDLER(IDC_FORCE, onForce)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
+		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDirectory)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_REMOVEALL, onRemoveAll)
 		COMMAND_ID_HANDLER(IDC_OPEN_BUNDLE_FOLDER, onOpenBundleFolder)
@@ -106,6 +107,7 @@ public:
 	LRESULT onSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onForce(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);			
 	LRESULT onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSearchDirectory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onDisconnectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

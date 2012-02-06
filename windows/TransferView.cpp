@@ -173,6 +173,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		} else {
 			transferMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
+			transferMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
 			transferMenu.AppendMenu(MF_STRING, IDC_MENU_SLOWDISCONNECT, CTSTRING(SETCZDC_DISCONNECTING_ENABLE));
 			transferMenu.AppendMenu(MF_SEPARATOR);
 			transferMenu.AppendMenu(MF_STRING, IDC_FORCE, CTSTRING(CONNECT_ALL));
@@ -765,6 +766,32 @@ LRESULT TransferView::onRemoveFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		QueueManager::getInstance()->remove(Text::fromT(ii->getText(COLUMN_PATH) + Util::getFileName(ii->target)));
 		else
 		QueueManager::getInstance()->remove(Text::fromT(ii->getText(COLUMN_PATH) + ii->getText(COLUMN_FILE)));
+	}
+
+	return 0;
+}
+
+LRESULT TransferView::onSearchDirectory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int i = -1;
+	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		const ItemInfo *ii = ctrlTransfers.getItemData(i);
+		if (ii->isBundle) {
+			size_t pos = ii->target.rfind(' ');
+			if (pos != string::npos) {
+			/*if (target[target.size() -1] == '\\') {
+				return Text::toT(Util::getDir(Text::fromT(target), false, true));
+			} else if (target[target.size() -1] == ')') {
+				if (target[pos-1] == '\\') {
+					return Util::getLastDir(target) + target.substr(pos, target.length()-pos);
+				} else {
+					return Util::getFileName(target);
+				}
+				}
+			}
+			string searchterm = */
+				WinUtil::search(Util::getLastDir(ii->target.substr(0, pos)), 0);
+			}
+		}
 	}
 
 	return 0;
