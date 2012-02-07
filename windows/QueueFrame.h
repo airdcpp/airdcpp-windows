@@ -274,7 +274,7 @@ private:
 	class QueueItemInfo : public FastAlloc<QueueItemInfo> {
 	public:
 
-		QueueItemInfo(QueueItem* aQI) : qi(aQI)	{ }
+		QueueItemInfo(QueueItemPtr aQI) : qi(aQI)	{ }
 
 		~QueueItemInfo() { }
 
@@ -295,7 +295,7 @@ private:
 		int getImageIndex() const { return WinUtil::getIconIndex(Text::toT(getTarget()));	}
 
 		const BundlePtr getBundle() const { return qi->getBundle(); }
-		const QueueItem* getQueueItem() const { return qi; }
+		const QueueItemPtr getQueueItem() const { return qi; }
 		string getPath() const { return Util::getFilePath(getTarget()); }
 
 		bool isSet(Flags::MaskType aFlag) const { return (qi->getFlags() & aFlag) == aFlag; }
@@ -315,7 +315,7 @@ private:
 		bool getAutoPriority() const { return qi->getAutoPriority(); }
 
 	private:
-		QueueItem* qi;
+		QueueItemPtr qi;
 
 		QueueItemInfo(const QueueItemInfo&);
 		QueueItemInfo& operator=(const QueueItemInfo&);
@@ -439,11 +439,11 @@ private:
 	
 	const string& getDir(HTREEITEM ht) const { dcassert(ht != NULL); return ((BundleItemInfo*)(ctrlDirs.GetItemData(ht)))->getDir(); }
 
-	void on(QueueManagerListener::Added, QueueItem* aQI) noexcept;
+	void on(QueueManagerListener::Added, QueueItemPtr aQI) noexcept;
 	void on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) noexcept;
-	void on(QueueManagerListener::Removed, const QueueItem* aQI) noexcept;
-	void on(QueueManagerListener::SourcesUpdated, const QueueItem* aQI) noexcept;
-	void on(QueueManagerListener::StatusUpdated, const QueueItem* aQI) noexcept { on(QueueManagerListener::SourcesUpdated(), aQI); }
+	void on(QueueManagerListener::Removed, const QueueItemPtr aQI) noexcept;
+	void on(QueueManagerListener::SourcesUpdated, const QueueItemPtr aQI) noexcept;
+	void on(QueueManagerListener::StatusUpdated, const QueueItemPtr aQI) noexcept { on(QueueManagerListener::SourcesUpdated(), aQI); }
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 	
 	void onRechecked(const string& target, const string& message);
@@ -455,7 +455,7 @@ private:
 	void on(QueueManagerListener::RecheckNoTree, const string& target) noexcept;
 	void on(QueueManagerListener::RecheckAlreadyFinished, const string& target) noexcept;
 	void on(QueueManagerListener::RecheckDone, const string& target) noexcept;
-	void on(QueueManagerListener::Moved, const QueueItem* aQI, const string& oldTarget) noexcept;
+	void on(QueueManagerListener::Moved, const QueueItemPtr aQI, const string& oldTarget) noexcept;
 
 	void on(QueueManagerListener::BundleSources, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundlePriority(), aBundle); };
 	void on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept;

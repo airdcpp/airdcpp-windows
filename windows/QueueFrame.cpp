@@ -186,7 +186,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			}
 		}
 		case COLUMN_SEGMENTS: {
-			const QueueItem* qi = QueueManager::getInstance()->fileQueue.find(getTarget());
+			const QueueItemPtr qi = QueueManager::getInstance()->fileQueue.find(getTarget());
 			//todo update on exit AirDC Download settings
 			if(qi){
 				int64_t min_seg_size = (SETTING(MIN_SEGMENT_SIZE)*1024);
@@ -271,7 +271,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 	}
 }
 
-void QueueFrame::on(QueueManagerListener::Added, QueueItem* aQI) {
+void QueueFrame::on(QueueManagerListener::Added, QueueItemPtr aQI) {
 	QueueItemInfo* ii = new QueueItemInfo(aQI);
 
 	speak(ADD_ITEM,	new QueueItemInfoTask(ii));
@@ -352,7 +352,7 @@ void QueueFrame::addQueueList(const QueueItem::StringMap& li) {
 	ctrlQueue.SetRedraw(FALSE);
 	ctrlDirs.SetRedraw(FALSE);
 	for(QueueItem::StringMap::const_iterator j = li.begin(); j != li.end(); ++j) {
-		QueueItem* aQI = j->second;
+		QueueItemPtr aQI = j->second;
 		if (aQI->isSet(QueueItem::FLAG_FINISHED) && !BOOLSETTING(KEEP_FINISHED_FILES)) {
 			continue;
 		}
@@ -779,12 +779,12 @@ void QueueFrame::removeBundle(const BundlePtr aBundle) {
 	ctrlDirs.DeleteItem(ht);
 } */
 
-void QueueFrame::on(QueueManagerListener::Removed, const QueueItem* aQI) {
+void QueueFrame::on(QueueManagerListener::Removed, const QueueItemPtr aQI) {
 	speak(REMOVE_ITEM, new StringTask(aQI->getTarget()));
 	speak(UPDATE_STATUS_ITEMS, new StringTask(aQI->getTarget()));
 }
 
-void QueueFrame::on(QueueManagerListener::Moved, const QueueItem*, const string& oldTarget) {
+void QueueFrame::on(QueueManagerListener::Moved, const QueueItemPtr, const string& oldTarget) {
 	speak(REMOVE_ITEM, new StringTask(oldTarget));
 	
 	// we need to call speaker now to properly remove item before other actions
@@ -792,14 +792,14 @@ void QueueFrame::on(QueueManagerListener::Moved, const QueueItem*, const string&
 }
 
 void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) {
-	for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItem* qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
+	for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItemPtr qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
 	speak(REMOVE_BUNDLE, new BundleItemInfoTask(new BundleItemInfo(aBundle->getTarget(), aBundle)));
 	
 	// we need to call speaker now to properly remove items before other actions
 	onSpeaker(0, 0, 0, *reinterpret_cast<BOOL*>(NULL));
 }
 
-void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItem* aQI) {
+void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr aQI) {
 	speak(UPDATE_ITEM, new UpdateTask(*aQI));
 }
 
@@ -828,7 +828,7 @@ void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr aBundle) 
 }
 
 void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) {
-	for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItem* qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
+	for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItemPtr qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
 	speak(REMOVE_BUNDLE, new BundleItemInfoTask(new BundleItemInfo(aBundle->getTarget(), aBundle)));
 }
 
@@ -1248,7 +1248,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 
 				const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-				QueueItem* qi = QueueManager::getInstance()->fileQueue.find(ii->getTarget());
+				QueueItemPtr qi = QueueManager::getInstance()->fileQueue.find(ii->getTarget());
 				if(!qi) return 0;
 
 				segmentsMenu.CheckMenuItem(qi->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
@@ -1757,7 +1757,7 @@ LRESULT QueueFrame::onSegments(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	int i = -1;
 	while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		QueueItemInfo* ii = ctrlQueue.getItemData(i);
-		QueueItem* qi = QueueManager::getInstance()->fileQueue.find(ii->getTarget());
+		QueueItemPtr qi = QueueManager::getInstance()->fileQueue.find(ii->getTarget());
 
 		qi->setMaxSegments((uint8_t)(wID - 109));
 
@@ -2212,7 +2212,7 @@ LRESULT QueueFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 LRESULT QueueFrame::onPreviewCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 	if(ctrlQueue.GetSelectedCount() == 1) {
 		const QueueItemInfo* i = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-		QueueItem* qi = QueueManager::getInstance()->fileQueue.find(i->getTarget());
+		QueueItemPtr qi = QueueManager::getInstance()->fileQueue.find(i->getTarget());
 		if(qi)
 			WinUtil::RunPreviewCommand(wID - IDC_PREVIEW_APP, qi->getTempTarget());
 	}

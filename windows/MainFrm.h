@@ -559,7 +559,7 @@ private:
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 
 	// QueueManagerListener
-	void on(QueueManagerListener::Finished, const QueueItem* qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
+	void on(QueueManagerListener::Finished, const QueueItemPtr qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
 	void on(PartialList, const HintedUser&, const string& text) noexcept;
 };
 
