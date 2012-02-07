@@ -270,7 +270,8 @@ void DirectoryListingFrame::refreshTree(const tstring& root) {
 
 	ctrlTree.SelectItem(NULL);
 	selectItem(root);
-
+	if (partialList && SETTING(DUPES_IN_FILELIST))
+		dl->checkShareDupes();
 	ctrlTree.SetRedraw(TRUE);
 }
 
@@ -623,22 +624,10 @@ LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 
 	tstring file;
 	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), _T("File Lists\0*.xml.bz2\0All Files\0*.*\0"))) {
-			ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
-			ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(file), Util::emptyString, Util::emptyStringT, mylist, true, false);
-			loading = true;
-			tdl->start();
-		//DirectoryListing dirList(dl->getHintedUser());
-		/*try {
-			dirList.loadFile(Text::fromT(file), true);
-			dl->getRoot()->filterList(dirList);
-			loading = true;
-			refreshTree(Util::emptyStringT);
-			loading = false;
-			initStatus();
-			updateStatus();
-		} catch(const Exception&) {
-			/// @todo report to user?
-		}*/
+		ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
+		ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(file), Util::emptyString, Util::emptyStringT, mylist, true, false);
+		loading = true;
+		tdl->start();
 	}
 	return 0;
 }

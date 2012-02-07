@@ -487,37 +487,37 @@ private:
 			mWindow->loadTime = 0;
 			int64_t start = GET_TICK();
 				
-			if(listdiff) {
+			if (listdiff) {
 				mWindow->DisableWindow();
 				DirectoryListing dirList(mWindow->dl->getHintedUser(), mWindow->partialList);
 				dirList.loadFile(mFile, true);
 				mWindow->dl->getRoot()->filterList(dirList);
-			
 				mWindow->refreshTree(Util::emptyStringT);
-			}else if(adlsearch) {
+
+			} else if(adlsearch) {
 				mWindow->DisableWindow();
 				mWindow->dl->getRoot()->clearAdls(); //not much to check even if its the first time loaded without adls...
 				ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
 				mWindow->refreshTree(Util::emptyStringT);
 
 			} else if(!mFile.empty()) {
-				
-				
 				bool checkShareDupe = true;
 				if(mylist) {
 					// if its own list regenerate it before opening, but only if its dirty
 					mFile = ShareManager::getInstance()->generateOwnList();
 					checkShareDupe = false;
 				}
+
 				if (!SETTING(DUPES_IN_FILELIST))
 					checkShareDupe = false;
+
 				mWindow->dl->loadFile(mFile, checkShareDupe);
 				
-
 				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {
 					ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
-				} 
-				if(!mylist && SETTING(DUPES_IN_FILELIST)) {
+				}
+
+				if(checkShareDupe) {
 					mWindow->dl->checkShareDupes();
 				}
 
