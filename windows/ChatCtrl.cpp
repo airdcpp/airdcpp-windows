@@ -539,8 +539,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 	}
 	
 	} catch(...) { 
-		//remove this later, lets see if we can catch the match that returns the error.
-		LogManager::getInstance()->message("Error in FormatEmoticonsAndLinks, report it! Message: " + Text::fromT(sMsg) );  
+		//...
 	}
 
 }
@@ -1114,8 +1113,6 @@ LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 }
 
 bool ChatCtrl::isLink(POINT pt) {
-
-	bool found=false;
 	tstring word = WordFromPos(pt);
 
 	if (word.empty())
@@ -1123,22 +1120,17 @@ bool ChatCtrl::isLink(POINT pt) {
 
 	if (word.length() > 7) {
 		if (regUrl.match(word) > 0) {
-			found=true;
+			return true;
 		} else if (regRelease.match(word) > 0) {
-			found=true;
+			return true;
 		}
 	}
 
-	if (!found) {
-		if (!getShortLink(pt).empty()) {
-			found=true;
-		}
-	}
-
-	if (found)
+	if (!getShortLink(pt).empty()) {
 		return true;
-	else 
-		return false;
+	}
+
+	return false;
 }
 
 LRESULT ChatCtrl::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
