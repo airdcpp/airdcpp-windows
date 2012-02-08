@@ -2335,7 +2335,7 @@ LRESULT HubFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	return 0;
 }
 
-LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
+LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 	ParamMap params;
 	OnlineUserPtr ui = NULL;
 
@@ -2353,7 +2353,14 @@ LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	params["hubURL"] = client->getHubUrl();
 	string file = LogManager::getInstance()->getPath(LogManager::PM, params);
 	if(Util::fileExists(file)) {
-		WinUtil::viewLog(file);
+		switch(wID) {
+				case IDC_OPEN_USER_LOG:
+					WinUtil::viewLog(file);
+					break;
+				case IDC_USER_HISTORY:
+					TextFrame::openWindow(Text::toT(file), false, true);
+					break;
+			}
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 	}
@@ -2368,10 +2375,17 @@ string HubFrame::getLogPath(bool status) const {
 	return LogManager::getInstance()->getPath(status ? LogManager::STATUS : LogManager::CHAT, params);
 }
 
-LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string filename = getLogPath(false);
 	if(Util::fileExists(filename)){
-		WinUtil::viewLog(filename);
+		switch(wID) {
+			case IDC_OPEN_HUB_LOG:
+				WinUtil::viewLog(filename);
+				break;
+			case IDC_HISTORY:
+				TextFrame::openWindow(Text::toT(filename), false, true);
+				break;
+			}
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
 	}
