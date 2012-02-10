@@ -273,6 +273,7 @@ public:
 	static int dirIconIndex;
 	static int dirMaskedIndex;
 	static TStringList lastDirs;
+	static TStringList lastSearches;
 	static HWND mainWnd;
 	static HWND mdiClient;
 	static FlatTabCtrl* tabCtrl;
@@ -373,16 +374,6 @@ public:
 	}
 
 	static void setClipboard(const tstring& str);
-
-	static void addLastDir(const tstring& dir) {
-		if(find(lastDirs.begin(), lastDirs.end(), dir) != lastDirs.end()) {
-			return;
-		}
-		if(lastDirs.size() == 10) {
-			lastDirs.erase(lastDirs.begin());
-		}
-		lastDirs.push_back(dir);
-	}
 
 	static uint32_t percent(int32_t x, uint8_t percent) {
 		return x*percent/100;
@@ -494,6 +485,7 @@ public:
 		}
 	}
 
+	static void appendDirsMenu(OMenu &targetMenu);
 	static void ClearPreviewMenu(OMenu &previewMenu);
 	static int SetupPreviewMenu(CMenu &previewMenu, string extension);
 	static void RunPreviewCommand(unsigned int index, const string& target);

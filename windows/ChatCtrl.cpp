@@ -818,43 +818,9 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
 			menu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
-	
-			int n = 0;
-
 
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
-
-			//Append shared directories
-			if (SETTING(SHOW_SHARED_DIRS_FAV)) {
-				auto directories = ShareManager::getInstance()->getGroupedDirectories();
-				if (!directories.empty()) {
-					for(auto i = directories.begin(); i != directories.end(); i++) {
-						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
-						n++;
-					}
-					targetMenu.AppendMenu(MF_SEPARATOR);
-				}
-			}
-
-			//Append favorite download dirs
-			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-			if (spl.size() > 0) {
-				for(auto i = spl.begin(); i != spl.end(); i++) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
-					n++;
-				}
-				targetMenu.AppendMenu(MF_SEPARATOR);
-			}
-
-			n = 0;
-			targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOADTO, CTSTRING(BROWSE));
-			if(WinUtil::lastDirs.size() > 0) {
-				targetMenu.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
-				for(TStringIter i = WinUtil::lastDirs.begin(); i != WinUtil::lastDirs.end(); ++i) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + n, i->c_str());
-					n++;
-				}
-			}
+			WinUtil::appendDirsMenu(targetMenu);
 		} else {
 			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
 		}
@@ -1010,7 +976,7 @@ LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 	tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 	if(WinUtil::browseDirectory(target, m_hWnd)) {
-		WinUtil::addLastDir(target);
+		SettingsManager::getInstance()->addDirToHistory(target);
 		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(target), AutoSearch::TARGET_PATH);
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	}
@@ -1048,11 +1014,11 @@ LRESULT ChatCtrl::onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_TARGET;
 
-	if(newId < WinUtil::lastDirs.size()) {
-		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(WinUtil::lastDirs[newId]), AutoSearch::TARGET_PATH);
+	if(newId < SettingsManager::getInstance()->getDirHistory().size()) {
+		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId]), AutoSearch::TARGET_PATH);
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	} else {
-		dcassert((newId - WinUtil::lastDirs.size()));
+		dcassert((newId - SettingsManager::getInstance()->getDirHistory().size()));
 		//download to default download path
 		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH);
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));

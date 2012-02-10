@@ -483,7 +483,7 @@ LRESULT DirectoryListingFrame::onDownloadDirTo(WORD , WORD , HWND , BOOL& ) {
 		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
 		tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 		if(WinUtil::browseDirectory(target, m_hWnd)) {
-			WinUtil::addLastDir(target);
+			SettingsManager::getInstance()->addDirToHistory(target);
 			
 			try {
 				dl->download(dir, Text::fromT(target), WinUtil::isShift(), QueueItem::DEFAULT);
@@ -549,13 +549,13 @@ LRESULT DirectoryListingFrame::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, 
 			if(ii->type == ItemInfo::FILE) {
 				tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY)) + ii->getText(COLUMN_FILENAME);
 				if(WinUtil::browseFile(target, m_hWnd)) {
-					WinUtil::addLastDir(Util::getFilePath(target));
+					SettingsManager::getInstance()->addDirToHistory(Util::getFilePath(target));
 					dl->download(ii->file, Text::fromT(target), false, WinUtil::isShift(), QueueItem::DEFAULT);
 				}
 			} else {
 				tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 				if(WinUtil::browseDirectory(target, m_hWnd)) {
-					WinUtil::addLastDir(target);
+					SettingsManager::getInstance()->addDirToHistory(target);
 					dl->download(ii->dir, Text::fromT(target), WinUtil::isShift(), QueueItem::DEFAULT);
 				}
 			} 
@@ -565,7 +565,7 @@ LRESULT DirectoryListingFrame::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	} else {
 		tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 		if(WinUtil::browseDirectory(target, m_hWnd)) {
-			WinUtil::addLastDir(target);			
+			SettingsManager::getInstance()->addDirToHistory(target);			
 			downloadList(target);
 		}
 	}
@@ -934,44 +934,14 @@ clientmenu:
 
 		if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
 			fileMenu.InsertSeparatorFirst(Text::toT(Util::getFileName(ii->file->getName())));
+			WinUtil::appendDirsMenu(targetMenu);
 
-			//Append shared directories
-			if (SETTING(SHOW_SHARED_DIRS_FAV)) {
-				auto directories = ShareManager::getInstance()->getGroupedDirectories();
-				if (!directories.empty()) {
-					for(auto i = directories.begin(); i != directories.end(); i++) {
-						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
-						n++;
-					}
-					targetMenu.AppendMenu(MF_SEPARATOR);
-				}
-			}
-			
-			//Append Favorite download dirs
-			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-			if (spl.size() > 0) {
-				for(auto i = spl.begin(); i != spl.end(); i++) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
-					n++;
-				}
-				targetMenu.AppendMenu(MF_SEPARATOR);
-			}
-
-			n = 0;
-			targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOADTO, CTSTRING(BROWSE));
 			targets.clear();
 			targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
-
 			if(targets.size() > 0) {
-				targetMenu.AppendMenu(MF_SEPARATOR);
-				for(StringIter i = targets.begin(); i != targets.end(); ++i) {
+				targetMenu.InsertSeparatorLast(TSTRING(ADD_AS_SOURCE));
+				for(auto i = targets.begin(); i != targets.end(); ++i) {
 					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + (++n), Text::toT(*i).c_str());
-				}
-			}
-			if(WinUtil::lastDirs.size() > 0) {
-				targetMenu.AppendMenu(MF_SEPARATOR);
-				for(TStringIter i = WinUtil::lastDirs.begin(); i != WinUtil::lastDirs.end(); ++i) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + (++n), i->c_str());
 				}
 			}
 
@@ -985,44 +955,8 @@ clientmenu:
 		} else {
 			fileMenu.EnableMenuItem(IDC_SEARCH_ALTERNATES, MF_BYCOMMAND | MFS_DISABLED);
 
-			//Append shared directories
-			if (SETTING(SHOW_SHARED_DIRS_FAV)) {
-				auto directories = ShareManager::getInstance()->getGroupedDirectories();
-				if (!directories.empty()) {
-					for(auto i = directories.begin(); i != directories.end(); i++) {
-						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
-						n++;
-					}
-					targetMenu.AppendMenu(MF_SEPARATOR);
-				}
-			}
+			WinUtil::appendDirsMenu(targetMenu);
 
-			//Append Favorite download dirs
-			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-			if (spl.size() > 0) {
-				for(auto i = spl.begin(); i != spl.end(); i++) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
-					n++;
-				}
-				targetMenu.AppendMenu(MF_SEPARATOR);
-			}
-
-			n = 0;
-			targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOADTO, CTSTRING(BROWSE));
-			if(WinUtil::lastDirs.size() > 0) {
-				targetMenu.AppendMenu(MF_SEPARATOR);
-				for(TStringIter i = WinUtil::lastDirs.begin(); i != WinUtil::lastDirs.end(); ++i) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + (++n), i->c_str());
-				}
-			}
-			//don't care about partial dupes since their folders might not be the same so we can't find
-			//them in our folder structure
-	/*		if(ctrlList.GetSelectedCount() == 1 && ii->dir->getDupe() == DirectoryListing::Directory::DUPE) {
-				fileMenu.AppendMenu(MF_SEPARATOR);
-				fileMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
-				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-			}
-	*/
 			if(ii->type == ItemInfo::DIRECTORY && ii->type == ItemInfo::DIRECTORY && 
 			   ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()) {
 				fileMenu.AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
@@ -1078,39 +1012,7 @@ clientmenu:
 		
 		// Strange, windows doesn't change the selection on right-click... (!)
 
-		int n = 0;
-
-		//Append shared directories
-		if (SETTING(SHOW_SHARED_DIRS_FAV)) {
-			auto directories = ShareManager::getInstance()->getGroupedDirectories();
-			if (!directories.empty()) {
-				for(auto i = directories.begin(); i != directories.end(); i++) {
-					targetDirMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
-					n++;
-				}
-				targetDirMenu.AppendMenu(MF_SEPARATOR);
-			}
-		}
-
-		//Append Favorite download dirs
-		auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-		if (spl.size() > 0) {
-			for(auto i = spl.begin(); i != spl.end(); i++) {
-				targetDirMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + n, Text::toT(i->first).c_str());
-				n++;
-			}
-			targetDirMenu.AppendMenu(MF_SEPARATOR);
-		}
-
-		n = 0;
-		targetDirMenu.AppendMenu(MF_STRING, IDC_DOWNLOADDIRTO, CTSTRING(BROWSE));
-
-		if(WinUtil::lastDirs.size() > 0) {
-			targetDirMenu.AppendMenu(MF_SEPARATOR);
-			for(TStringIter i = WinUtil::lastDirs.begin(); i != WinUtil::lastDirs.end(); ++i) {
-				targetDirMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET_DIR + (++n), i->c_str());
-			}
-		}
+		WinUtil::appendDirsMenu(targetDirMenu);
 			
 		directoryMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
 		directoryMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
@@ -1150,16 +1052,16 @@ LRESULT DirectoryListingFrame::onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, 
 				} 
 			} else {
 				newId -= (int)targets.size();
-				dcassert(newId < (int)WinUtil::lastDirs.size());
-				downloadList(WinUtil::lastDirs[newId]);
+				dcassert(newId < (int)SettingsManager::getInstance()->getDirHistory().size());
+				downloadList(SettingsManager::getInstance()->getDirHistory()[newId]);
 			}
 		} else {
-			dcassert(newId < (int)WinUtil::lastDirs.size());
-			downloadList(WinUtil::lastDirs[newId]);
+			dcassert(newId < (int)SettingsManager::getInstance()->getDirHistory().size());
+			downloadList(SettingsManager::getInstance()->getDirHistory()[newId]);
 		}
 	} else if(ctrlList.GetSelectedCount() > 1) {
-		dcassert(newId < (int)WinUtil::lastDirs.size());
-		downloadList(WinUtil::lastDirs[newId]);
+		dcassert(newId < (int)SettingsManager::getInstance()->getDirHistory().size());
+		downloadList(SettingsManager::getInstance()->getDirHistory()[newId]);
 	}
 	return 0;
 }
@@ -1171,10 +1073,9 @@ LRESULT DirectoryListingFrame::onDownloadTargetDir(WORD /*wNotifyCode*/, WORD wI
 	HTREEITEM t = ctrlTree.GetSelectedItem();
 	if(t != NULL) {
 		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		string target = SETTING(DOWNLOAD_DIRECTORY);
 		try {
-			dcassert(newId < (int)WinUtil::lastDirs.size());
-			dl->download(dir, Text::fromT(WinUtil::lastDirs[newId]), WinUtil::isShift(), QueueItem::DEFAULT);
+			dcassert(newId < (int)SettingsManager::getInstance()->getDirHistory().size());
+			dl->download(dir, Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId]), WinUtil::isShift(), QueueItem::DEFAULT);
 		} catch(const Exception& e) {
 			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 		}

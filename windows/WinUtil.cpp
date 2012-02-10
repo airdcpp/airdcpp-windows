@@ -88,7 +88,6 @@ CImageList WinUtil::userImages;
 CImageList WinUtil::flagImages;
 int WinUtil::dirIconIndex = 0;
 int WinUtil::dirMaskedIndex = 0;
-TStringList WinUtil::lastDirs;
 HWND WinUtil::mainWnd = NULL;
 HWND WinUtil::mdiClient = NULL;
 FlatTabCtrl* WinUtil::tabCtrl = NULL;
@@ -1881,6 +1880,43 @@ int WinUtil::SetupPreviewMenu(CMenu &previewMenu, string extension){
 		}
 	}
 	return PreviewAppsSize;
+}
+
+
+void WinUtil::appendDirsMenu(OMenu &targetMenu) {
+
+	int n = 0;
+
+	//Append shared directories
+	if (SETTING(SHOW_SHARED_DIRS_FAV)) {
+		auto directories = ShareManager::getInstance()->getGroupedDirectories();
+		if (!directories.empty()) {
+			for(auto i = directories.begin(); i != directories.end(); i++) {
+				targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + (++n), Text::toT(i->first).c_str());
+			}
+			targetMenu.AppendMenu(MF_SEPARATOR);
+		}
+	}
+
+	//Append Favorite download dirs
+	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
+	if (!spl.empty()) {
+		for(auto i = spl.begin(); i != spl.end(); i++) {
+			targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + (++n), Text::toT(i->first).c_str());
+		}
+		targetMenu.AppendMenu(MF_SEPARATOR);
+	}
+
+	n = 0;
+	targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOADDIRTO, CTSTRING(BROWSE));
+
+	auto ldl = SettingsManager::getInstance()->getDirHistory();
+	if(!ldl.empty()) {
+		targetMenu.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
+		for(auto i = ldl.begin(); i != ldl.end(); ++i) {
+			targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET_DIR + (++n), i->c_str());
+		}
+	}
 }
 
 void WinUtil::RunPreviewCommand(unsigned int index, const string& target) {
