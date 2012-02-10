@@ -259,8 +259,6 @@ LRESULT SharePage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	item.cchTextMax = sizeof(buf);
 	item.pszText = buf;
 
-	bool setDirty = false;
-
 	int i = -1;
 	while((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		item.iItem = i;
@@ -280,7 +278,6 @@ LRESULT SharePage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 					ShareManager::getInstance()->renameDirectory(Text::fromT(rPath), Text::fromT(virt.line));
 					ctrlDirectories.SetItemText(i, 0, virt.line.c_str());
 
-					setDirty = true;
 				} else {
 					MessageBox(CTSTRING(SKIP_RENAME), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK);
 				}
@@ -289,9 +286,6 @@ LRESULT SharePage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 			MessageBox(Text::toT(e.getError()).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);
 		}
 	}
-
-	if( setDirty )
-		ShareManager::getInstance()->setDirty();
 
 	return 0;
 }
@@ -307,7 +301,6 @@ LRESULT SharePage::onClickedShareHidden(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	}
 
 	// Refresh the share. 
-	ShareManager::getInstance()->setDirty();
 	ShareManager::getInstance()->refresh(ShareManager::REFRESH_ALL);
 
 	if(BOOLSETTING(USE_OLD_SHARING_UI))	{

@@ -1268,7 +1268,6 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 }
 
 LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ShareManager::getInstance()->setDirty();
 	ShareManager::getInstance()->refresh(ShareManager::REFRESH_ALL | ShareManager::REFRESH_UPDATE);
 	return 0;
 }
@@ -1744,7 +1743,6 @@ LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 LRESULT MainFrame::onRefreshMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	try
 	{
-		ShareManager::getInstance()->setDirty();
 		if(wParam == 0){
 			ShareManager::getInstance()->refresh( ShareManager::REFRESH_ALL | ShareManager::REFRESH_UPDATE );
 		} else if(wParam > 1){

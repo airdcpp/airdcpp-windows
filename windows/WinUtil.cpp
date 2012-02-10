@@ -1043,7 +1043,6 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 	} else if(stricmp(cmd.c_str(), _T("refresh"))==0) {
 		//refresh path
 		try {
-			ShareManager::getInstance()->setDirty();
 			if(!param.empty()) {
 				if(stricmp(param.c_str(), _T("incoming"))==0) {
 					ShareManager::getInstance()->refreshIncoming();
