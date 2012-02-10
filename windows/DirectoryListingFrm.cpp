@@ -484,7 +484,6 @@ LRESULT DirectoryListingFrame::onDownloadDirTo(WORD , WORD , HWND , BOOL& ) {
 		tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 		if(WinUtil::browseDirectory(target, m_hWnd)) {
 			SettingsManager::getInstance()->addDirToHistory(target);
-			
 			try {
 				dl->download(dir, Text::fromT(target), WinUtil::isShift(), QueueItem::DEFAULT);
 			} catch(const Exception& e) {
@@ -941,7 +940,8 @@ clientmenu:
 			if(targets.size() > 0) {
 				targetMenu.InsertSeparatorLast(TSTRING(ADD_AS_SOURCE));
 				for(auto i = targets.begin(); i != targets.end(); ++i) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + (++n), Text::toT(*i).c_str());
+					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + n, Text::toT(*i).c_str());
+					n++;
 				}
 			}
 
@@ -1012,7 +1012,7 @@ clientmenu:
 		
 		// Strange, windows doesn't change the selection on right-click... (!)
 
-		WinUtil::appendDirsMenu(targetDirMenu);
+		WinUtil::appendDirsMenu(targetDirMenu, true);
 			
 		directoryMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
 		directoryMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
@@ -1036,68 +1036,37 @@ LRESULT DirectoryListingFrame::onXButtonUp(UINT /*uMsg*/, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
+
 LRESULT DirectoryListingFrame::onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int newId = wID - IDC_DOWNLOAD_TARGET - 1;
+	int newId = wID - IDC_DOWNLOAD_TARGET;
 	dcassert(newId >= 0);
 	
 	if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-
-		if(ii->type == ItemInfo::FILE) {
-			if(newId < (int)targets.size()) {
-				try {
-					dl->download(ii->file, targets[newId], false, WinUtil::isShift(), QueueItem::DEFAULT);
-				} catch(const Exception& e) {
-					ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
-				} 
-			} else {
-				newId -= (int)targets.size();
-				dcassert(newId < (int)SettingsManager::getInstance()->getDirHistory().size());
-				downloadList(SettingsManager::getInstance()->getDirHistory()[newId]);
-			}
-		} else {
-			dcassert(newId < (int)SettingsManager::getInstance()->getDirHistory().size());
-			downloadList(SettingsManager::getInstance()->getDirHistory()[newId]);
-		}
-	} else if(ctrlList.GetSelectedCount() > 1) {
-		dcassert(newId < (int)SettingsManager::getInstance()->getDirHistory().size());
-		downloadList(SettingsManager::getInstance()->getDirHistory()[newId]);
-	}
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onDownloadTargetDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int newId = wID - IDC_DOWNLOAD_TARGET_DIR - 1;
-	dcassert(newId >= 0);
-	
-	HTREEITEM t = ctrlTree.GetSelectedItem();
-	if(t != NULL) {
-		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		try {
-			dcassert(newId < (int)SettingsManager::getInstance()->getDirHistory().size());
-			dl->download(dir, Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId]), WinUtil::isShift(), QueueItem::DEFAULT);
-		} catch(const Exception& e) {
-			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+		if(ii->type == ItemInfo::FILE && newId < (int)targets.size()) {
+			try {
+				dl->download(ii->file, targets[newId], false, WinUtil::isShift(), QueueItem::DEFAULT);
+			} catch(const Exception& e) {
+				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+			} 
 		}
 	}
 	return 0;
 }
+
 LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int newId = wID - IDC_DOWNLOAD_FAVORITE_DIRS;
-	dcassert(newId >= 0);
-	
+	/* Directory download from the list (right column) */
 	if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-
 		string target;
-		if (WinUtil::getTarget(newId, target, ii->type == ItemInfo::FILE ? ii->file->getSize() : ii->dir->getSize())) {
+		if (WinUtil::getTarget(wID, target, ii->type == ItemInfo::FILE ? ii->file->getSize() : ii->dir->getSize())) {
 			downloadList(Text::toT(target));
 		}
 	} else if(ctrlList.GetSelectedCount() > 1) {
 		int64_t size = 0;
 
 		//count the total size
-		int i=-1;
+		int i = -1;
 		while( (i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			const ItemInfo* ii = ctrlList.getItemData(i);
 			if (ii->type == ItemInfo::DIRECTORY) {
@@ -1108,7 +1077,7 @@ LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD
 		}
 
 		string target;
-		if (WinUtil::getTarget(newId, target, size)) {
+		if (WinUtil::getTarget(wID, target, size)) {
 			downloadList(Text::toT(target));
 		}
 	}
@@ -1116,14 +1085,12 @@ LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD
 }
 
 LRESULT DirectoryListingFrame::onDownloadWholeFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int newId = wID - IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS;
-	dcassert(newId >= 0);
-	
+	/* Download from the tree */
 	HTREEITEM t = ctrlTree.GetSelectedItem();
 	if(t != NULL) {
 		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
 		string target;
-		if (WinUtil::getTarget(newId, target, dir->getSize())) {
+		if (WinUtil::getTarget(wID, target, dir->getSize(), true)) {
 			try {
 				dl->download(dir, target, WinUtil::isShift(), QueueItem::DEFAULT);
 			} catch(const Exception& e) {

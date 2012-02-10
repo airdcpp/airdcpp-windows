@@ -826,33 +826,23 @@ LRESULT SearchFrame::onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 	dcassert(wID >= IDC_DOWNLOAD_TARGET);
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_TARGET;
 
-	if(newId < (int)SettingsManager::getInstance()->getDirHistory().size()) {
-		ctrlResults.forEachSelectedT(SearchInfo::Download(SettingsManager::getInstance()->getDirHistory()[newId], this));
-	} else {
-		dcassert((newId - (int)SettingsManager::getInstance()->getDirHistory().size()) < targets.size());
-		string tgt = targets[newId - (int)SettingsManager::getInstance()->getDirHistory().size()];
-		if(!tgt.empty()) //if we for some reason counted wrong picking the target, dont bother to use empty string.
-			ctrlResults.forEachSelectedT(SearchInfo::DownloadTarget(Text::toT(tgt)));
-	}
-	return 0;
-}
-
-LRESULT SearchFrame::onDownloadWholeTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	dcassert((wID-IDC_DOWNLOAD_WHOLE_TARGET) < (int)SettingsManager::getInstance()->getDirHistory().size());
-	ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole((SettingsManager::getInstance()->getDirHistory()[wID-IDC_DOWNLOAD_WHOLE_TARGET])));
+	dcassert(newId < targets.size());
+	string tgt = targets[newId];
+	ctrlResults.forEachSelectedT(SearchInfo::DownloadTarget(Text::toT(tgt)));
 	return 0;
 }
 
 LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	dcassert(wID >= IDC_DOWNLOAD_FAVORITE_DIRS);
-	int newId = wID - IDC_DOWNLOAD_FAVORITE_DIRS;
-
+	bool isWhole = wID >= IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS;
+#ifdef _DEBUG
 	int favShareSize = (int)FavoriteManager::getInstance()->getFavoriteDirs().size();
 	if (SETTING(SHOW_SHARED_DIRS_FAV)) {
 		favShareSize += (int)ShareManager::getInstance()->getGroupedDirectories().size();
 	}
 
-	dcassert(newId < favShareSize);
+	dcassert(wID - IDC_DOWNLOAD_FAVORITE_DIRS < favShareSize);
+#endif
 
 	int sel = -1;
 	map<string, int64_t> countedDirs;
@@ -872,36 +862,13 @@ LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND
 	for_each(countedDirs.begin(), countedDirs.end(), [&](pair<string, int64_t> p) { size += p.second; } );
 
 	string target;
-	if (WinUtil::getTarget(newId, target, size)) {
-		ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(target), this));
+	if (WinUtil::getTarget(wID, target, size, isWhole)) {
+		if (isWhole)
+			ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(Text::toT(target)));
+		else
+			ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(target), this));
 	}
 
-	return 0;
-}
-
-LRESULT SearchFrame::onDownloadWholeFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	/* the space calculation isn't accurate because the size of the folder isn't known with files (but it works with folders) */
-	int sel = -1;
-	map<string, int64_t> countedDirs;
-	while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-		const SearchResultPtr& sr = ctrlResults.getItemData(sel)->sr;
-		auto s = countedDirs.find(sr->getFileName());
-		if (s != countedDirs.end()) {
-			if (s->second < sr->getSize()) {
-				s->second = sr->getSize();
-			}
-		} else {
-			countedDirs[sr->getFileName()] = sr->getSize();
-		}
-	}
-	int64_t size = 0;
-	for_each(countedDirs.begin(), countedDirs.end(), [&](pair<string, int64_t> p) { size += p.second; } );
-
-	string target;
-	int newId = wID-IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS;
-	if (WinUtil::getTarget(newId, target, size)) {
-		ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(Text::toT(target)));
-	}
 	return 0;
 }
 
@@ -1431,13 +1398,14 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 				if(targets.size() > 0) {
 					targetMenu.InsertSeparatorLast(TSTRING(ADD_AS_SOURCE));
 					for(auto i = targets.begin(); i != targets.end(); ++i) {
-						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + (++n), Text::toT(Util::getFileName(*i)).c_str());
+						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + n, Text::toT(Util::getFileName(*i)).c_str());
+						n++;
 					}
 				}
 			}
 
 			targetDirMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_WHOLE_DIR_TO));
-			WinUtil::appendDirsMenu(targetDirMenu);
+			WinUtil::appendDirsMenu(targetDirMenu, true);
 
 			resultsMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 			return TRUE; 

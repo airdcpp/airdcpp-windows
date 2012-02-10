@@ -989,41 +989,26 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 		return 0;
 
 	size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
-	auto shareDirs = ShareManager::getInstance()->getGroupedDirectories();
 
 	AutoSearch::targetType targetType = AutoSearch::TARGET_FAVORITE;
 	string target;
 
-	if (SETTING(SHOW_SHARED_DIRS_FAV) && (newId < shareDirs.size())) {
+	if (newId < WinUtil::countShareFavDirs()) {
 		targetType = AutoSearch::TARGET_SHARE;
-		target = shareDirs[newId].first;
+		target = ShareManager::getInstance()->getGroupedDirectories()[newId].first;
 	} else {
 		auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-		target = spl[newId - (SETTING(SHOW_SHARED_DIRS_FAV) ? shareDirs.size() : 0)].first;
+		if (newId < WinUtil::countShareFavDirs() + spl.size()) {
+			targetType = AutoSearch::TARGET_FAVORITE;
+			target = spl[newId - WinUtil::countShareFavDirs()].first;
+		} else {
+			targetType = AutoSearch::TARGET_PATH;
+			target = Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId - spl.size() - WinUtil::countShareFavDirs()]);
+		}
 	}
 
 	AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, target, targetType);
 	LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
-	return 0;
-}
-
-LRESULT ChatCtrl::onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring searchterm = getSearchString();
-	if(searchterm.size() < 5) //we dont accept anything under 5 chars
-		return 0;
-
-	size_t newId = (size_t)wID - IDC_DOWNLOAD_TARGET;
-
-	if(newId < SettingsManager::getInstance()->getDirHistory().size()) {
-		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId]), AutoSearch::TARGET_PATH);
-		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
-	} else {
-		dcassert((newId - SettingsManager::getInstance()->getDirHistory().size()));
-		//download to default download path
-		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH);
-		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
-	}
-
 	return 0;
 }
 

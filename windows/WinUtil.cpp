@@ -1881,43 +1881,6 @@ int WinUtil::SetupPreviewMenu(CMenu &previewMenu, string extension){
 	return PreviewAppsSize;
 }
 
-
-void WinUtil::appendDirsMenu(OMenu &targetMenu) {
-
-	int n = 0;
-
-	//Append shared directories
-	if (SETTING(SHOW_SHARED_DIRS_FAV)) {
-		auto directories = ShareManager::getInstance()->getGroupedDirectories();
-		if (!directories.empty()) {
-			for(auto i = directories.begin(); i != directories.end(); i++) {
-				targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + (++n), Text::toT(i->first).c_str());
-			}
-			targetMenu.AppendMenu(MF_SEPARATOR);
-		}
-	}
-
-	//Append Favorite download dirs
-	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-	if (!spl.empty()) {
-		for(auto i = spl.begin(); i != spl.end(); i++) {
-			targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + (++n), Text::toT(i->first).c_str());
-		}
-		targetMenu.AppendMenu(MF_SEPARATOR);
-	}
-
-	n = 0;
-	targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOADDIRTO, CTSTRING(BROWSE));
-
-	auto ldl = SettingsManager::getInstance()->getDirHistory();
-	if(!ldl.empty()) {
-		targetMenu.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
-		for(auto i = ldl.begin(); i != ldl.end(); ++i) {
-			targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET_DIR + (++n), i->c_str());
-		}
-	}
-}
-
 void WinUtil::RunPreviewCommand(unsigned int index, const string& target) {
 	PreviewApplication::List lst = FavoriteManager::getInstance()->getPreviewApps();
 
@@ -3147,14 +3110,68 @@ tstring WinUtil::getTitle(tstring searchTerm) {
 		return searchTerm;
 }
 
+void WinUtil::appendDirsMenu(OMenu &targetMenu, bool wholeDir /*false*/) {
 
-bool WinUtil::getTarget(int ID, string& target, int64_t aSize) {
+	int n = 0;
+
+	//Append shared directories
+	if (SETTING(SHOW_SHARED_DIRS_FAV)) {
+		auto directories = ShareManager::getInstance()->getGroupedDirectories();
+		if (!directories.empty()) {
+			for(auto i = directories.begin(); i != directories.end(); i++) {
+				targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS) + n, Text::toT(i->first).c_str());
+				++n;
+			}
+			targetMenu.AppendMenu(MF_SEPARATOR);
+		}
+	}
+
+	//Append Favorite download dirs
+	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
+	if (!spl.empty()) {
+		for(auto i = spl.begin(); i != spl.end(); i++) {
+			targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS) + n, Text::toT(i->first).c_str());
+			++n;
+		}
+		targetMenu.AppendMenu(MF_SEPARATOR);
+	}
+
+	//n = 0;
+	targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOADDIRTO : IDC_DOWNLOADTO), CTSTRING(BROWSE));
+
+	auto ldl = SettingsManager::getInstance()->getDirHistory();
+	if(!ldl.empty()) {
+		targetMenu.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
+		for(auto i = ldl.begin(); i != ldl.end(); ++i) {
+			targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS) + n, i->c_str());
+			++n;
+		}
+	}
+}
+
+int WinUtil::countDownloadDirItems() {
+	return FavoriteManager::getInstance()->getFavoriteDirs().size() + countShareFavDirs() + SettingsManager::getInstance()->getDirHistory().size();
+}
+
+int WinUtil::countShareFavDirs() {
+	return SETTING(SHOW_SHARED_DIRS_FAV) ? ShareManager::getInstance()->getGroupedDirectories().size() : 0;
+}
+
+bool WinUtil::getTarget(int ID, string& target, int64_t aSize, bool wholeDir /*false*/) {
 	int64_t freeSpace = 0;
+	int newId = ID - (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS);
+	dcassert(newId >= 0);
+
 	auto shareDirs = ShareManager::getInstance()->getGroupedDirectories();
-	if (SETTING(SHOW_SHARED_DIRS_FAV) && ID < (int)shareDirs.size()) {
-		AirUtil::getTarget(shareDirs[ID].second, target, freeSpace);
+	if (SETTING(SHOW_SHARED_DIRS_FAV) && newId < (int)shareDirs.size()) {
+		AirUtil::getTarget(shareDirs[newId].second, target, freeSpace);
 	} else {
-		FavoriteManager::getInstance()->getFavoriteTarget(ID-(SETTING(SHOW_SHARED_DIRS_FAV) ? shareDirs.size() : 0), target, freeSpace);
+		auto slp = FavoriteManager::getInstance()->getFavoriteDirs();
+		if (newId < slp.size() - countShareFavDirs()) {
+			FavoriteManager::getInstance()->getFavoriteTarget(newId - countShareFavDirs(), target, freeSpace);
+		} else {
+			target = Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId - slp.size() - countShareFavDirs()]);
+		}
 	}
 
 	if (target.empty()) {

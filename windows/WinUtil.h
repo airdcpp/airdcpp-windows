@@ -485,7 +485,7 @@ public:
 		}
 	}
 
-	static void appendDirsMenu(OMenu &targetMenu);
+	static void appendDirsMenu(OMenu &targetMenu, bool wholeDir = false);
 	static void ClearPreviewMenu(OMenu &previewMenu);
 	static int SetupPreviewMenu(CMenu &previewMenu, string extension);
 	static void RunPreviewCommand(unsigned int index, const string& target);
@@ -514,8 +514,10 @@ public:
 	static string CPUInfo();
 	
 	static TStringList FindVolumes();
-	static bool getTarget(int ID, string& target, int64_t aSize);
+	static bool getTarget(int ID, string& target, int64_t aSize, bool wholeDir = false);
 	static void viewLog(const string& path);
+	static int countDownloadDirItems();
+	static int countShareFavDirs();
 
 	static string getCompileDate() {
 		COleDateTime tCompileDate; 
