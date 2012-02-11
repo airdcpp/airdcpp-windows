@@ -17,43 +17,148 @@
  */
 
 #include "stdafx.h"
-
 #include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
 
 #include "Resource.h"
+
 #include "DownloadPage.h"
+#include "CommandDlg.h"
 #include "WinUtil.h"
-#include "PublicHubsListDlg.h"
-#include "MainFrm.h"
 #include "PropertiesDlg.h"
 
 PropPage::TextItem DownloadPage::texts[] = {
+	{ IDC_AIRDC_ANTI_VIR, ResourceManager::SETAIRDC_ANTI_VIR },
+	{ IDC_ANTIVIR_BROWSE, ResourceManager::BROWSE },
+	{ IDC_AUTO_SEARCH_ALT, ResourceManager::SETTINGS_AUTO_BUNDLE_SEARCH },
+	{ IDC_DONTBEGIN, ResourceManager::DONT_ADD_SEGMENT_TEXT },
+	{ IDC_ENABLE_SEGMENTS, ResourceManager::ENABLE_MULTI_SOURCE },
+	{ IDC_MINUTES, ResourceManager::MINUTES },
+	{ IDC_KBPS, ResourceManager::KBPS },
+	{ IDC_CHUNKCOUNT, ResourceManager::TEXT_MANUAL },
+	{ IDC_SETTINGS_SEGMENTS, ResourceManager::SETTINGS_SEGMENTED_DOWNLOADS },
+	{ IDC_MIN_SEGMENT_SIZE_LABEL, ResourceManager::SETTINGS_AIRDOWNLOADS_SEGMENT_SIZE },
+	{ IDC_SETTINGS_KIB, ResourceManager::KiB },
+	{ IDC_SETTINGS_AUTO_SEARCH_LIMIT, ResourceManager::SETTINGS_AUTO_SEARCH_LIMIT },
+	{ IDC_MATCH_QUEUE_TEXT, ResourceManager::SETTINGS_SB_MAX_SOURCES },
+	{ IDC_SETTINGS_SEARCH_MATCHING, ResourceManager::SETTINGS_SEARCH_MATCHING },
+	{ IDC_INTERVAL_TEXT, ResourceManager::MINIMUM_SEARCH_INTERVAL },
+	{ IDC_AUTO_ADD_SOURCES, ResourceManager::AUTO_ADD_SOURCE },
+	{ IDC_ALLOW_MATCH_FULL, ResourceManager::SETTINGS_ALLOW_MATCH_FULL_LIST },
+	{ IDC_OTHER_QUEUE_OPTIONS, ResourceManager::FINISHED_DOWNLOADS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item DownloadPage::items[] = {
+	{ IDC_AUTO_SEARCH_ALT, SettingsManager::AUTO_SEARCH, PropPage::T_BOOL },
+	{ IDC_DONTBEGIN, SettingsManager::DONT_BEGIN_SEGMENT, PropPage::T_BOOL },
+	{ IDC_DONTBEGIN_EDIT, SettingsManager::DONT_BEGIN_SEGMENT_SPEED, PropPage::T_INT },
+	{ IDC_SEARCH_INTERVAL, SettingsManager::SEARCH_TIME, PropPage::T_INT },
+	{ IDC_CHUNKCOUNT, SettingsManager::SEGMENTS_MANUAL, PropPage::T_BOOL },
+	{ IDC_SEG_NUMBER, SettingsManager::NUMBER_OF_SEGMENTS, PropPage::T_INT },
+	{ IDC_MIN_SEGMENT_SIZE, SettingsManager::MIN_SEGMENT_SIZE, PropPage::T_INT },
+	{ IDC_ENABLE_SEGMENTS, SettingsManager::MULTI_CHUNK, PropPage::T_BOOL },
+	{ IDC_MATCH, SettingsManager::MAX_AUTO_MATCH_SOURCES, PropPage::T_INT },
+	{ IDC_AUTO_SEARCH_LIMIT, SettingsManager::AUTO_SEARCH_LIMIT, PropPage::T_INT },
+	{ IDC_AUTO_ADD_SOURCES, SettingsManager::AUTO_ADD_SOURCE, PropPage::T_BOOL },
+	{ IDC_ALLOW_MATCH_FULL, SettingsManager::ALLOW_MATCH_FULL_LIST, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 
-
 PropPage::ListItem DownloadPage::optionItems[] = {
+	{ SettingsManager::ADD_FINISHED_INSTANTLY, ResourceManager::ADD_FINISHED_INSTANTLY },
+	{ SettingsManager::SCAN_DL_BUNDLES, ResourceManager::SETTINGS_SCAN_FINISHED_BUNDLES },
+	{ SettingsManager::OVERLAP_SLOW_SOURCES, ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
+
+#define setMinMax(x, y, z) \
+	updown.Attach(GetDlgItem(x)); \
+	updown.SetRange32(y, z); \
+	updown.Detach();
 
 LRESULT DownloadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
-	PropPage::read((HWND)*this, items);
-	PropPage::read((HWND)*this, items, optionItems, GetDlgItem(IDC_DOWNLOAD_OPTIONS));
+	PropPage::read((HWND)*this, items, 0, 0);
+	PropPage::read((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_QUEUE_OPTIONS));
+
+	CUpDownCtrl updown;
+	setMinMax(IDC_INTERVAL_SPIN, 5, 9999);
+	setMinMax(IDC_MATCH_SPIN, 1, 999);
+	setMinMax(IDC_AUTO_SEARCH_LIMIT_SPIN, 1, 999);
+
+	CUpDownCtrl spin;
+	spin.Attach(GetDlgItem(IDC_SEG_NUMBER_SPIN));
+	spin.SetRange32(1, 10);
+	spin.Detach();
+
+	spin.Attach(GetDlgItem(IDC_SEARCH_SPIN));
+	spin.SetRange32(5, 60);
+	spin.Detach();
+
+	spin.Attach(GetDlgItem(IDC_BEGIN_SPIN));
+	spin.SetRange32(2, 100000);
+	spin.Detach();
+
+	checkItems();
+
 	// Do specialized reading here
 	return TRUE;
 }
 
-void DownloadPage::write()
-{
-	PropPage::write((HWND)*this, items);
-	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_DOWNLOAD_OPTIONS));
+void DownloadPage::write() {
+
+	if(SETTING(MIN_SEGMENT_SIZE) < 1024)
+		settings->set(SettingsManager::MIN_SEGMENT_SIZE, 1024);
+
+	PropPage::write((HWND)*this, items, 0, 0);
+	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_QUEUE_OPTIONS));
+}
+
+LRESULT DownloadPage::onTick(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
+	checkItems();
+	return 0;
+}
+
+void DownloadPage::checkItems() {
+	/* Segments */
+	::EnableWindow(GetDlgItem(IDC_MIN_SEGMENT_SIZE_LABEL),	IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+	::EnableWindow(GetDlgItem(IDC_MIN_SEGMENT_SIZE),		IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_KIB),			IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+
+	::EnableWindow(GetDlgItem(IDC_SEG_NUMBER_EDIT),			IsDlgButtonChecked(IDC_CHUNKCOUNT) && IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+	::EnableWindow(GetDlgItem(IDC_CHUNKCOUNT),				IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+
+	::EnableWindow(GetDlgItem(IDC_DONTBEGIN_EDIT),			IsDlgButtonChecked(IDC_DONTBEGIN) && IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+	::EnableWindow(GetDlgItem(IDC_KBPS),					IsDlgButtonChecked(IDC_DONTBEGIN) && IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+	::EnableWindow(GetDlgItem(IDC_DONTBEGIN),				IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+
+	/* Searching */
+	::EnableWindow(GetDlgItem(IDC_MATCH),					IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_MATCH_QUEUE_TEXT),		IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+
+	::EnableWindow(GetDlgItem(IDC_ALLOW_MATCH_FULL),		IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_AUTO_SEARCH_ALT),			IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+
+	::EnableWindow(GetDlgItem(IDC_INTERVAL_TEXT),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_SEARCH_INTERVAL),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_MINUTES),					IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+
+	::EnableWindow(GetDlgItem(IDC_AUTO_SEARCH_LIMIT),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_AUTO_SEARCH_LIMIT),	IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+}
+
+LRESULT DownloadPage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	TCHAR buf[MAX_PATH];
+
+	GetDlgItemText(IDC_ANTIVIR_PATH, buf, MAX_PATH);
+	tstring x = buf;
+
+	if(WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
+		SetDlgItemText(IDC_ANTIVIR_PATH, x.c_str());
+	}
+	return 0;
 }
 
 /**

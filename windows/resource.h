@@ -70,7 +70,6 @@
 #define IDB_ARROWS                      208
 #define IDD_LINE                        209
 #define IDD_ADVANCEDPAGE                210
-#define IDD_DOWNLOADPAGE                211
 #define IDD_UPLOADPAGE                  212
 #define IDD_SPEEDPAGE                   212
 #define IDB_TOOLBAR                     213
@@ -136,6 +135,7 @@
 #define IDD_NETWORKPAGE                 296
 #define IDD_CERTIFICATESPAGE            297
 #define IDD_QUEUEPAGE                   298
+#define IDD_DOWNLOADPAGE                298
 #define IDB_WINAMPBAR                   299
 #define IDR_WINAMP_LOGO                 300
 #define IDD_EXTRA                       301
