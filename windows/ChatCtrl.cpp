@@ -518,7 +518,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 				//check the position
 				if ((curReplace != lastReplace) && (curReplace > 0)) {
 					//char previousChar = sMsg[idxFound-1];
-					int pos=curReplace-1;
+					tstring::size_type pos=curReplace-1;
 					if (isgraph(sMsg[pos])) {
 						//if (isgraph(sMsg[curReplace + foundEmoticon->getEmoticonText().size()])) {
 							insert=false;
@@ -963,8 +963,8 @@ LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	if(searchterm.size() < 5) //we dont accept anything under 5 chars
 		return 0;
 
-	AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH);
-	LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+	if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH))
+		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	return 0;
 }
 
@@ -977,8 +977,8 @@ LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 	if(WinUtil::browseDirectory(target, m_hWnd)) {
 		SettingsManager::getInstance()->addDirToHistory(target);
-		AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(target), AutoSearch::TARGET_PATH);
-		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+		if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(target), AutoSearch::TARGET_PATH))
+			LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	}
 	return 0;
 }
@@ -1007,8 +1007,8 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 		}
 	}
 
-	AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, target, targetType);
-	LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+	if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, target, targetType))
+		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	return 0;
 }
 
