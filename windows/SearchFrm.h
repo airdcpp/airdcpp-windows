@@ -323,39 +323,16 @@ private:
 		typedef vector<Ptr> List;
 		typedef List::const_iterator Iter;
 
+		enum DupeType { 
+			NONE, 
+			SHARE_DUPE, 
+			QUEUE_DUPE,
+			FINISHED_DUPE
+		};
+
 		SearchInfo::List subItems;
 
-		SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), queueDupe(false), shareDupe(false), finishedDupe(false) { 
-			
-			if(BOOLSETTING(DUPE_SEARCH)) {
-				if(sr->getType() == SearchResult::TYPE_DIRECTORY) {
-					shareDupe = ShareManager::getInstance()->isDirShared(sr->getFile());
-					if (!shareDupe) {
-						queueDupe = QueueManager::getInstance()->isDirQueued(sr->getFile());
-					}
-				} else {
-					shareDupe = ShareManager::getInstance()->isFileShared(sr->getTTH(), sr->getFileName());
-					if (!shareDupe) {
-						int tmp = QueueManager::getInstance()->isFileQueued(sr->getTTH(), sr->getFileName());
-						if (tmp == 1) {
-							queueDupe = true;
-						} else if (tmp == 2) {
-							finishedDupe = true;
-						}
-					}
-				}
-
-				if (!sr->getIP().empty()) {
-					// Only attempt to grab a country mapping if we actually have an IP address
-					string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
-					if(!tmpCountry.empty()) {
-						flagIndex = WinUtil::getFlagIndexByCode(tmpCountry.c_str());
-					}
-				}
-			}
-		}
-	
-
+		SearchInfo(const SearchResultPtr& aSR);
 		~SearchInfo() {	}
 
 		const UserPtr& getUser() const { return sr->getUser(); }
@@ -397,62 +374,7 @@ private:
 			tstring tth;
 		};
 	
-		const tstring getText(uint8_t col) const {
-			switch(col) {
-				case COLUMN_FILENAME:
-					if(sr->getType() == SearchResult::TYPE_FILE) {
-						if(sr->getFile().rfind(_T('\\')) == tstring::npos) {
-							return Text::toT(sr->getFile());
-						} else {
-	    					return Text::toT(Util::getFileName(sr->getFile()));
-						}      
-					} else {
-						return Text::toT(sr->getFileName());
-					}
-				case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : Util::toStringW(hits + 1) + _T(' ') + TSTRING(USERS);
-				case COLUMN_NICK: return WinUtil::getNicks(sr->getUser(), sr->getHubURL());
-				case COLUMN_TYPE:
-					if(sr->getType() == SearchResult::TYPE_FILE) {
-						tstring type = Text::toT(Util::getFileExt(Text::fromT(getText(COLUMN_FILENAME))));
-						if(!type.empty() && type[0] == _T('.'))
-							type.erase(0, 1);
-						return type;
-					} else {
-						return TSTRING(DIRECTORY);
-					}
-				case COLUMN_SIZE: 
-					if(sr->getType() == SearchResult::TYPE_FILE) {
-						return Util::formatBytesW(sr->getSize());
-					} else if (SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR) {
-						return sr->getSize() > 0 ? Util::formatBytesW(sr->getSize()) : Util::emptyStringT;
-					} else {
-						return Util::emptyStringT;
-					}					
-				case COLUMN_PATH:
-					if(sr->getType() == SearchResult::TYPE_FILE) {
-						return Text::toT(Util::getFilePath(sr->getFile()));
-					} else {
-						return Text::toT(sr->getFile());
-					}
-				case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
-				case COLUMN_CONNECTION: return Text::toT(ClientManager::getInstance()->getConnection(getUser()->getCID()));
-				case COLUMN_HUB: return Text::toT(sr->getHubName());
-				case COLUMN_EXACT_SIZE: return sr->getSize() > 0 ? Util::formatExactSize(sr->getSize()) : Util::emptyStringT;
-				case COLUMN_IP: {
-					string ip = sr->getIP();
-					if (!ip.empty()) {
-						// Only attempt to grab a country mapping if we actually have an IP address
-						string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
-						if(!tmpCountry.empty()) {
-							ip = tmpCountry + " (" + ip + ")";
-						}
-					}
-					return Text::toT(ip);
-				}
-				case COLUMN_TTH: return sr->getType() == SearchResult::TYPE_FILE ? Text::toT(sr->getTTH().toBase32()) : Util::emptyStringT;
-				default: return Util::emptyStringT;
-			}
-		}
+		const tstring getText(uint8_t col) const;
 	
 		static int compareItems(const SearchInfo* a, const SearchInfo* b, uint8_t col) {
 			if(!a->sr || !b->sr)
@@ -483,32 +405,7 @@ private:
 			}
 		}
 
-		int getImageIndex() const {
-			int image = 0;
-			if (BOOLSETTING(USE_SYSTEM_ICONS)) {
-				image = sr->getType() == SearchResult::TYPE_FILE ? WinUtil::getIconIndex(Text::toT(sr->getFile())) : WinUtil::getDirIconIndex();
-			} else {
-				string tmp = ClientManager::getInstance()->getConnection(sr->getUser()->getCID());
-				if( (tmp == "28.8Kbps") ||
-					(tmp == "33.6Kbps") ||
-					(tmp == "56Kbps") ||
-					(tmp == "Modem") ||
-					(tmp == "Satellite") ||
-					(tmp == "Wireless") ||
-					(tmp == "ISDN") ) {
-					image = 1;
-				} else if( (tmp == "Cable") ||
-					(tmp == "DSL") ) {
-					image = 2;
-				} else if( (tmp == "LAN(T1)") ||
-					(tmp == "LAN(T3)") ) {
-					image = 3;
-				}
-				if(sr->getType() == SearchResult::TYPE_FILE)
-					image += 4;
-			}
-			return image;
-		}
+		int getImageIndex() const;
 		
 		inline SearchInfo* createParent() { return this; }
 		inline const TTHValue& getGroupCond() const { return sr->getTTH(); }

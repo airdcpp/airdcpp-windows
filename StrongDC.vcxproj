@@ -494,7 +494,6 @@
     <ClCompile Include="windows\PropPageTextStyles.cpp" />
     <ClCompile Include="windows\PublicHubsFrm.cpp" />
     <ClCompile Include="windows\QueueFrame.cpp" />
-    <ClCompile Include="windows\QueuePage.cpp" />
     <ClCompile Include="windows\RecentsFrm.cpp" />
     <ClCompile Include="windows\SDCPage.cpp" />
     <ClCompile Include="windows\SearchFrm.cpp" />
@@ -599,7 +598,6 @@
     <ClInclude Include="windows\PublicHubsFrm.h" />
     <ClInclude Include="windows\PublicHubsListDlg.h" />
     <ClInclude Include="windows\QueueFrame.h" />
-    <ClInclude Include="windows\QueuePage.h" />
     <ClInclude Include="windows\RecentsFrm.h" />
     <ClInclude Include="windows\resource.h" />
     <ClInclude Include="windows\SDCPage.h" />

@@ -648,6 +648,101 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	}
 }
 
+SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), queueDupe(false), shareDupe(false), finishedDupe(false) { 
+
+	if(BOOLSETTING(DUPE_SEARCH)) {
+		if(sr->getType() == SearchResult::TYPE_DIRECTORY) {
+			shareDupe = ShareManager::getInstance()->isDirShared(sr->getFile());
+			if (!shareDupe) {
+				auto qd = QueueManager::getInstance()->isDirQueued(sr->getFile());
+				queueDupe = (qd == 1);
+				finishedDupe = (qd == 2);
+			}
+		} else {
+			shareDupe = ShareManager::getInstance()->isFileShared(sr->getTTH(), sr->getFileName());
+			if (!shareDupe) {
+				int tmp = QueueManager::getInstance()->isFileQueued(sr->getTTH(), sr->getFileName());
+				if (tmp == 1) {
+					queueDupe = true;
+				} else if (tmp == 2) {
+					finishedDupe = true;
+				}
+			}
+		}
+
+		if (!sr->getIP().empty()) {
+			// Only attempt to grab a country mapping if we actually have an IP address
+			string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
+			if(!tmpCountry.empty()) {
+				flagIndex = WinUtil::getFlagIndexByCode(tmpCountry.c_str());
+			}
+		}
+	}
+}
+
+
+int SearchFrame::SearchInfo::getImageIndex() const {
+	return BOOLSETTING(USE_SYSTEM_ICONS) ? sr->getType() == SearchResult::TYPE_FILE ? WinUtil::getIconIndex(Text::toT(sr->getFile())) : WinUtil::getDirIconIndex() : 0;
+}
+
+
+const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
+	switch(col) {
+		case COLUMN_FILENAME:
+			if(sr->getType() == SearchResult::TYPE_FILE) {
+				if(sr->getFile().rfind(_T('\\')) == tstring::npos) {
+					return Text::toT(sr->getFile());
+				} else {
+	    			return Text::toT(Util::getFileName(sr->getFile()));
+				}      
+			} else {
+				return Text::toT(sr->getFileName());
+			}
+		case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : Util::toStringW(hits + 1) + _T(' ') + TSTRING(USERS);
+		case COLUMN_NICK: return WinUtil::getNicks(sr->getUser(), sr->getHubURL());
+		case COLUMN_TYPE:
+			if(sr->getType() == SearchResult::TYPE_FILE) {
+				tstring type = Text::toT(Util::getFileExt(Text::fromT(getText(COLUMN_FILENAME))));
+				if(!type.empty() && type[0] == _T('.'))
+					type.erase(0, 1);
+				return type;
+			} else {
+				return TSTRING(DIRECTORY);
+			}
+		case COLUMN_SIZE: 
+			if(sr->getType() == SearchResult::TYPE_FILE) {
+				return Util::formatBytesW(sr->getSize());
+			} else if (SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR) {
+				return sr->getSize() > 0 ? Util::formatBytesW(sr->getSize()) : Util::emptyStringT;
+			} else {
+				return Util::emptyStringT;
+			}					
+		case COLUMN_PATH:
+			if(sr->getType() == SearchResult::TYPE_FILE) {
+				return Text::toT(Util::getFilePath(sr->getFile()));
+			} else {
+				return Text::toT(sr->getFile());
+			}
+		case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
+		case COLUMN_CONNECTION: return Text::toT(ClientManager::getInstance()->getConnection(getUser()->getCID()));
+		case COLUMN_HUB: return Text::toT(sr->getHubName());
+		case COLUMN_EXACT_SIZE: return sr->getSize() > 0 ? Util::formatExactSize(sr->getSize()) : Util::emptyStringT;
+		case COLUMN_IP: {
+			string ip = sr->getIP();
+			if (!ip.empty()) {
+				// Only attempt to grab a country mapping if we actually have an IP address
+				string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
+				if(!tmpCountry.empty()) {
+					ip = tmpCountry + " (" + ip + ")";
+				}
+			}
+			return Text::toT(ip);
+		}
+		case COLUMN_TTH: return sr->getType() == SearchResult::TYPE_FILE ? Text::toT(sr->getTTH().toBase32()) : Util::emptyStringT;
+		default: return Util::emptyStringT;
+	}
+}
+
 void SearchFrame::SearchInfo::view() {
 	try {
 		if(sr->getType() == SearchResult::TYPE_FILE) {
@@ -680,12 +775,11 @@ void SearchFrame::SearchInfo::viewNfo() {
 }
 void SearchFrame::SearchInfo::matchPartial() {
 	string path = Util::getDir(Text::fromT(getText(COLUMN_PATH)), true, false);
-	bool nmdc = sr->getUser()->isNMDC();
-		try {
-			QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_MATCH_QUEUE | (nmdc? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST, path);
-		} catch(const Exception&) {
-			//...
-		}
+	try {
+		QueueManager::getInstance()->addList(HintedUser(sr->getUser(), sr->getHubURL()), QueueItem::FLAG_MATCH_QUEUE | (sr->getUser()->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST, path);
+	} catch(const Exception&) {
+		//...
+	}
 }
 
 

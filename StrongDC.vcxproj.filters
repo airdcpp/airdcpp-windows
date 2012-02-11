@@ -405,9 +405,6 @@
     <ClCompile Include="windows\QueueFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\QueuePage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\RecentsFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -696,9 +693,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\QueueFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\QueuePage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\RecentsFrm.h">

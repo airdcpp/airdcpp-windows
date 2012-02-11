@@ -478,7 +478,21 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 				if (SETTING(DUPES_IN_CHAT) && ShareManager::getInstance()->isDirShared(link)) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
 				} else if (QueueManager::getInstance()->isDirQueued(link)) {
-					SetSelectionCharFormat(WinUtil::m_TextStyleQueue);	
+					auto qd = QueueManager::getInstance()->isDirQueued(link);
+					if (qd == 1) {
+						SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
+					} else {
+						CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
+						BYTE r, b, g;
+						DWORD queue = SETTING(QUEUE_COLOR);
+
+						r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(newFormat.crBackColor)) ) / 2);
+						g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(newFormat.crBackColor)) ) / 2);
+						b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(newFormat.crBackColor)) ) / 2);
+						newFormat.crTextColor = RGB(r, g, b);
+
+						SetSelectionCharFormat(newFormat);
+					}
 				} else if (SETTING(FORMAT_RELEASE)) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 				}
