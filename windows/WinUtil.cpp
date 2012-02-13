@@ -1479,11 +1479,11 @@ void WinUtil::unRegisterMagnetHandler() {
 	SHDeleteKey(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"));
 }
 
-void WinUtil::openLink(const tstring& url) {
-	parseDBLClick(url);
+void WinUtil::openLink(const tstring& url, HWND hWnd/*NULL*/) {
+	parseDBLClick(url, hWnd);
 }
 
-bool WinUtil::parseDBLClick(const tstring& str) {
+bool WinUtil::parseDBLClick(const tstring& str, HWND hWnd/*NULL*/) {
 	auto url = Text::fromT(str);
 	string proto, host, port, file, query, fragment;
 	Util::decodeUrl(url, proto, host, port, file, query, fragment);
@@ -1514,7 +1514,11 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 
 		return true;
 	} else if(host == "magnet") {
+		if(hWnd)
+			SendMessage(hWnd, IDC_HANDLE_MAGNET,0,(LPARAM)new tstring(str));
+		else {
 		parseMagnetUri(str);
+		}
 		return true;
 	}
 
@@ -1555,7 +1559,7 @@ void WinUtil::SetIcon(HWND hWnd, tstring file, bool big) {
 }
 
 
-void WinUtil::parseMagnetUri(const tstring& aUrl, bool /*aOverride*/) {
+void WinUtil::parseMagnetUri(const tstring& aUrl, bool /*aOverride*/, const UserPtr& aUser/*UserPtr()*/, const string& hubHint/*Util::emptyString*/) {
 	// official types that are of interest to us
 	//  xt = exact topic
 	//  xs = exact substitute
@@ -1610,7 +1614,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, bool /*aOverride*/) {
 				switch(SETTING(MAGNET_ACTION)) {
 					case SettingsManager::MAGNET_AUTO_DOWNLOAD:
 						try {
-							QueueManager::getInstance()->add(SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(fname), fsize, TTHValue(Text::fromT(fhash)), HintedUser(UserPtr(), Util::emptyString));
+							QueueManager::getInstance()->add(SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(fname), fsize, TTHValue(Text::fromT(fhash)), HintedUser(aUser, hubHint));
 						} catch(const Exception& e) {
 							LogManager::getInstance()->message(e.getError());
 						}
@@ -1621,7 +1625,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, bool /*aOverride*/) {
 				};
 			} else {
 			// use aOverride to force the display of the dialog.  used for auto-updating
-				MagnetDlg dlg(fhash, fname, fsize);
+				MagnetDlg dlg(fhash, fname, fsize, aUser, hubHint);
 				dlg.DoModal(mainWnd);
 			}
 		} else {

@@ -178,6 +178,7 @@
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
 #define IDD_FORMVIEW                    500
+#define IDC_HANDLE_MAGNET                560
 #define IDC_REFRESH                     1000
 #define IDC_NICK                        1001
 #define IDC_EMAIL                       1002

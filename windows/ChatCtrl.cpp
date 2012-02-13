@@ -1184,9 +1184,11 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 			WinUtil::openLink(sText);
 		} else {
 			if (shortLink.find(_T("magnet:?")) != tstring::npos) {
-				WinUtil::parseMagnetUri(shortLinks[shortLink]);
+				SendMessage(IDC_HANDLE_MAGNET,0, (LPARAM)new tstring(shortLinks[shortLink]));
+				//WinUtil::parseMagnetUri(shortLinks[shortLink]);
 			} else {
-				WinUtil::openLink(shortLinks[shortLink]);
+
+				WinUtil::openLink(shortLinks[shortLink], ccw.m_hWnd);
 			}
 		}
 		return 1;

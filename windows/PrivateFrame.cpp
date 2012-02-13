@@ -49,7 +49,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlStatus.Attach(m_hWndStatusBar);
 	
 	ctrlClient.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE, IDC_CLIENT);
+		WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE | WS_EX_ACCEPTFILES, IDC_CLIENT);
 	
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
 	ctrlClient.Subclass();
@@ -59,6 +59,8 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlClient.SetBackgroundColor( SETTING(BACKGROUND_COLOR) ); 
 	ctrlClient.SetAutoURLDetect(false);
 	ctrlClient.SetEventMask( ctrlClient.GetEventMask() | ENM_LINK );
+
+
 	ctrlMessage.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL, WS_EX_CLIENTEDGE);
 	
@@ -468,6 +470,24 @@ void PrivateFrame::sendMessage(const tstring& msg, bool thirdPerson) {
 	ClientManager::getInstance()->privateMessage(replyTo, Text::fromT(msg), thirdPerson);
 }
 
+LRESULT PrivateFrame::onMagnet(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/){
+	tstring* tmp = (tstring*)lParam;
+	/*
+	if the sender is not a bot, assume the user sending the magnet is sharing it,
+	if he isnt, too bad.. we just get file not available..
+	*/
+	
+	if(!replyTo.user->isSet(User::BOT))
+		WinUtil::parseMagnetUri(*tmp, false, replyTo.user, replyTo.hint);
+	else
+		WinUtil::parseMagnetUri(*tmp);
+
+	delete tmp;
+
+	return 0;
+} 
+
+
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		hEmoticonBmp.Destroy();
@@ -873,6 +893,61 @@ LRESULT PrivateFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 		ctrlMessage.SetFocus();
 	}
 	return 0;
+}
+LRESULT PrivateFrame::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
+	HDROP drop = (HDROP)wParam;
+	tstring buf;
+	buf.resize(MAX_PATH);
+
+	UINT nrFiles;
+	
+	nrFiles = DragQueryFile(drop, (UINT)-1, NULL, 0);
+	
+	for(UINT i = 0; i < nrFiles; ++i){
+		if(DragQueryFile(drop, i, &buf[0], MAX_PATH)){
+			if(!PathIsDirectory(&buf[0])){
+				addMagnet(buf);
+			}
+		}
+	}
+
+	DragFinish(drop);
+
+	return 0;
+}
+void PrivateFrame::addMagnet(const tstring& path) {
+	string magnetlink = Util::emptyString;
+
+	TTHValue TTH;
+
+		boost::scoped_array<char> buf(new char[512 * 1024]);
+
+		try {
+			File f(Text::fromT(path), File::READ, File::OPEN);
+			TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
+
+			if(f.getSize() > 0) {
+				size_t n = 512*1024;
+				while( (n = f.read(&buf[0], n)) > 0) {
+					tth.update(&buf[0], n);
+					n = 512*1024;
+				}
+			} else {
+				tth.update("", 0);
+			}
+			tth.finalize();
+
+			TTH = tth.getRoot();
+
+			magnetlink = "magnet:?xt=urn:tree:tiger:"+ TTH.toBase32() +"&xl="+Util::toString(f.getSize())+"&dn="+Text::fromT(Util::getFileName(path));
+			f.close();
+		}catch(...) { }
+
+		if(!magnetlink.empty()){
+			ShareManager::getInstance()->addTempShare(replyTo.user->getCID(), TTH, Text::fromT(path));
+			//sendMessage(Text::toT(magnetlink));
+			ctrlMessage.SetWindowText(Text::toT(magnetlink).c_str());
+		}
 }
 
 /**
