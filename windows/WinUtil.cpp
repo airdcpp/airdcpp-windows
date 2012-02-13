@@ -3162,15 +3162,16 @@ bool WinUtil::getTarget(int ID, string& target, int64_t aSize, bool wholeDir /*f
 	int newId = ID - (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS);
 	dcassert(newId >= 0);
 
-	auto shareDirs = ShareManager::getInstance()->getGroupedDirectories();
-	if (SETTING(SHOW_SHARED_DIRS_FAV) && newId < (int)shareDirs.size()) {
-		AirUtil::getTarget(shareDirs[newId].second, target, freeSpace);
+	if (newId < countShareFavDirs()) {
+		AirUtil::getTarget(ShareManager::getInstance()->getGroupedDirectories()[newId].second, target, freeSpace);
 	} else {
 		auto slp = FavoriteManager::getInstance()->getFavoriteDirs();
-		if (newId < slp.size() - countShareFavDirs()) {
+		if (newId < ((int)slp.size() + countShareFavDirs())) {
 			FavoriteManager::getInstance()->getFavoriteTarget(newId - countShareFavDirs(), target, freeSpace);
 		} else {
+			int64_t size = 0;
 			target = Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId - slp.size() - countShareFavDirs()]);
+			GetDiskFreeSpaceEx(Text::toT(target).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&freeSpace);
 		}
 	}
 
