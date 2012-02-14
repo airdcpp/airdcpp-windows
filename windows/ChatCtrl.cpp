@@ -30,6 +30,7 @@
 #include "../client/highlightmanager.h"
 #include "../client/AutoSearchManager.h"
 #include "ResourceLoader.h"
+#include "Magnet.h"
 EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48
@@ -109,7 +110,7 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 			CHARFORMAT2 cfSel;
 			cfSel.cbSize = sizeof(CHARFORMAT2);
 
-			for(TStringMap::iterator i = shortLinks.begin(); i != shortLinks.end();) {
+			for(auto i = shortLinks.begin(); i != shortLinks.end();) {
 				tstring::size_type j = 0;
 				while((j = buf.find(i->first, j)) != tstring::npos) {
 					SetSel(j, j + i->first.size());
@@ -377,14 +378,14 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 	 bool detectMagnet=false;
 
 	//Format URLs
-		string::size_type isMagnet, isSpotify;
-
-		try {
+	string::size_type isMagnet, isSpotify;
 		
-		tstring::const_iterator start = sMsg.begin();
-		tstring::const_iterator end = sMsg.end();
-		boost::match_results<tstring::const_iterator> result;
-		int pos=0;
+	tstring::const_iterator start = sMsg.begin();
+	tstring::const_iterator end = sMsg.end();
+	boost::match_results<tstring::const_iterator> result;
+	int pos=0;
+
+	try {
 
 		while(boost::regex_search(start, end, result, regUrlBoost, boost::match_default)) {
 			size_t linkStart = pos + lSelBegin + result.position();
@@ -397,18 +398,16 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 
 			if(isMagnet != string::npos) {
 				detectMagnet=true;
+				Magnet m = Magnet(Text::toT(link));
+
 				string::size_type dn = link.find("dn=");
 				if(dn != tstring::npos) {
-					string sFileName = Util::encodeURI(link.substr(dn + 3), true);
-					int64_t filesize = Util::toInt64(link.substr(link.find("xl=") + 3, link.find("&") - link.find("xl=")));
-					shortLink = Text::toT(sFileName) + _T(" (") + Util::formatBytesW(filesize) + _T(")");
-					shortLinks[shortLink] = Text::toT(link);
-
-					string::size_type tth = link.find("urn:tree:tiger:");
-					if(tth != tstring::npos && link.length() > tth+54) {
-						if (ShareManager::getInstance()->isFileShared(TTHValue(link.substr(tth+15, 39)), sFileName)) {
+					shortLink = m.fname + _T(" (") + Util::formatBytesW(m.fsize) + _T(")");
+					shortLinks.push_back(make_pair(shortLink, Text::toT(link)));
+					if (!m.fhash.empty()) {
+						if (m.isShareDupe()) {
 							SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-						} else if (QueueManager::getInstance()->isFileQueued(TTHValue(link.substr(tth+15, 39)), sFileName) > 0) {
+						} else if (m.isQueueDupe() > 0) {
 							SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
 						} else {
 							SetSelectionCharFormat(WinUtil::m_TextStyleURL);
@@ -437,7 +436,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 					} else if (strcmpi(type.c_str(), "album") == 0) {
 						shortLink = Text::toT(STRING(SPOTIFY_ALBUM) + " (" + hash + ")");
 					}
-					shortLinks[shortLink] = Text::toT(link);
+					shortLinks.push_back(make_pair(shortLink, Text::toT(link)));
 				} else {
 						//some other spotify link, just show the original url
 				}
@@ -448,9 +447,13 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 			pos=pos+result.position() + result.length();
 			start = result[0].second;
 		}
+	
+	} catch(...) { 
+		//...
+	}
 
 	//replace shortlinks
-	for(TStringMapIter p = shortLinks.begin(); p != shortLinks.end(); p++) {
+	for(auto p = shortLinks.begin(); p != shortLinks.end(); p++) {
 		tstring::size_type found = 0;
 		while((found = sMsg.find(p->second, found)) != tstring::npos) {
 			size_t linkStart =  found;
@@ -465,40 +468,38 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 	}
 
 	//Format release names
-	if(SETTING(FORMAT_RELEASE) || SETTING(DUPES_IN_CHAT)) {
-		if(!detectMagnet) {
-			tstring::const_iterator start = sMsg.begin();
-			tstring::const_iterator end = sMsg.end();
-			boost::match_results<tstring::const_iterator> result;
-			int pos=0;
+	if((SETTING(FORMAT_RELEASE) || SETTING(DUPES_IN_CHAT)) && !detectMagnet) {
+		tstring::const_iterator start = sMsg.begin();
+		tstring::const_iterator end = sMsg.end();
+		boost::match_results<tstring::const_iterator> result;
+		int pos=0;
 
-			while(boost::regex_search(start, end, result, regReleaseBoost, boost::match_default)) {
-				SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
-				std::string link (result[0].first, result[0].second);
-				if (SETTING(DUPES_IN_CHAT) && ShareManager::getInstance()->isDirShared(link)) {
-					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-				} else if (QueueManager::getInstance()->isDirQueued(link)) {
-					auto qd = QueueManager::getInstance()->isDirQueued(link);
-					if (qd == 1) {
-						SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-					} else {
-						CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
-						BYTE r, b, g;
-						DWORD queue = SETTING(QUEUE_COLOR);
+		while(boost::regex_search(start, end, result, regReleaseBoost, boost::match_default)) {
+			SetSel(pos + lSelBegin + result.position(), pos + lSelBegin + result.position() + result.length());
+			std::string link (result[0].first, result[0].second);
+			if (SETTING(DUPES_IN_CHAT) && ShareManager::getInstance()->isDirShared(link)) {
+				SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+			} else if (QueueManager::getInstance()->isDirQueued(link)) {
+				auto qd = QueueManager::getInstance()->isDirQueued(link);
+				if (qd == 1) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
+				} else {
+					CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
+					BYTE r, b, g;
+					DWORD queue = SETTING(QUEUE_COLOR);
 
-						r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(newFormat.crBackColor)) ) / 2);
-						g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(newFormat.crBackColor)) ) / 2);
-						b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(newFormat.crBackColor)) ) / 2);
-						newFormat.crTextColor = RGB(r, g, b);
+					r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(newFormat.crBackColor)) ) / 2);
+					g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(newFormat.crBackColor)) ) / 2);
+					b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(newFormat.crBackColor)) ) / 2);
+					newFormat.crTextColor = RGB(r, g, b);
 
-						SetSelectionCharFormat(newFormat);
-					}
-				} else if (SETTING(FORMAT_RELEASE)) {
-					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+					SetSelectionCharFormat(newFormat);
 				}
-				start = result[0].second;
-				pos=pos+result.position() + result.length();
+			} else if (SETTING(FORMAT_RELEASE)) {
+				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 			}
+			start = result[0].second;
+			pos=pos+result.position() + result.length();
 		}
 	}
 
@@ -550,10 +551,6 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 				lastReplace = curReplace + foundEmoticon->getEmoticonText().size();
 			} else break;
 		}
-	}
-	
-	} catch(...) { 
-		//...
 	}
 
 }
@@ -708,15 +705,40 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	selectedWord = WordFromPos(pt);
 
 	release = (regRelease.match(selectedWord) > 0) ? true : false;
-	shareDupe=false, queueDupe=false;
+	shareDupe=false, queueDupe=false, isMagnet=false;
 	if (release) {
 		if (ShareManager::getInstance()->isDirShared(Text::fromT(selectedWord))) {
 			shareDupe=true;
 		} else if (QueueManager::getInstance()->isDirQueued(Text::fromT(selectedWord))) {
 			queueDupe=true;
 		}
+	} else {
+		tstring shortLink = getShortLink(pt);
+		if (!shortLink.empty()) {
+			selectedWord = shortLink;
+			if (shortLink.find(_T("magnet")) != tstring::npos) {
+				isMagnet = true;
+				Magnet m = Magnet(shortLink);
+				if (!m.fhash.empty()) {
+					if (m.isShareDupe()) {
+						shareDupe=true;
+					} else if (m.isQueueDupe() > 0) {
+						queueDupe=true;
+					}
+				}
+			}
+		}
 	}
 
+	size_t pos = selectedLine.find(_T(" "));
+	if (pos != tstring::npos && selectedLine[pos+1] == _T('<')) {
+		tstring::size_type iAuthorLen = selectedLine.find(_T('>'), 1);
+		if(iAuthorLen != tstring::npos) {
+			tstring nick(selectedLine.c_str() + pos + 2);
+			nick.erase(iAuthorLen - pos - 2);
+			author = nick;
+		}
+	}
 
 	// Po kliku dovnitr oznaceneho textu si zkusime poznamenat pripadnej nick ci ip...
 	// jinak by nam to neuznalo napriklad druhej klik na uz oznaceny nick =)
@@ -808,11 +830,9 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 				menu.AppendMenu(MF_STRING, IDC_UNBAN_IP, (_T("!unban ") + selectedIP).c_str());
 				menu.AppendMenu(MF_SEPARATOR);
 			}
-		} 
-		else if (release) {
+		} else if (release) {
 			menu.InsertSeparatorFirst(_T("Release"));
-		}
-		else {
+		} else {
 			menu.InsertSeparatorFirst(_T("Text"));
 		}
 
@@ -820,13 +840,13 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		menu.AppendMenu(MF_STRING, IDC_COPY_ACTUAL_LINE,  CTSTRING(COPY_LINE));
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
-		
-		if (release) {
-			if (shareDupe || queueDupe) {
-				menu.AppendMenu(MF_SEPARATOR);
-				menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-			}
 
+		if (shareDupe || queueDupe) {
+			menu.AppendMenu(MF_SEPARATOR);
+			menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+		}
+		
+		if (release || (isMagnet && !author.empty())) {
 			//autosearch menus
 			targetMenu.CreatePopupMenu();
 			menu.AppendMenu(MF_SEPARATOR);
@@ -838,12 +858,11 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		} else {
 			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
 		}
+
 		SearchMenu.CreatePopupMenu();
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 		WinUtil::AppendSearchMenu(SearchMenu);
-
-
 	} else {
 		bool isMe = (selectedUser == Text::toT(client->getMyNick()));
 
@@ -960,10 +979,27 @@ tstring ChatCtrl::getSearchString() {
 
 LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring path;
-	if (shareDupe) {
-		path = ShareManager::getInstance()->getDirPath(Text::fromT(getSearchString()));
+	if (release) {
+		if (shareDupe) {
+			path = ShareManager::getInstance()->getDirPath(Text::fromT(getSearchString()));
+		} else {
+			path = QueueManager::getInstance()->getDirPath(Text::fromT(getSearchString()));
+		}
 	} else {
-		path = QueueManager::getInstance()->getDirPath(Text::fromT(getSearchString()));
+		Magnet m = Magnet(selectedWord);
+		if (m.fhash.empty())
+			return 0;
+
+		if (shareDupe) {
+			try {
+				path = Text::toT(ShareManager::getInstance()->getRealPath(m.getTTH()));
+			} catch(...) { }
+		} else {
+			StringList targets = QueueManager::getInstance()->getTargets(m.getTTH());
+			if (!targets.empty()) {
+				path = Text::toT(targets.front());
+			}
+		}
 	}
 	if (path.empty())
 		return 0;
@@ -973,13 +1009,28 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 }
 
 LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring searchterm = getSearchString();
-	if(searchterm.size() < 5) //we dont accept anything under 5 chars
-		return 0;
+	if (release) {
+		tstring searchterm = getSearchString();
+		if(searchterm.size() < 5) //we dont accept anything under 5 chars
+			return 0;
 
-	if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH))
-		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+		if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH))
+			LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+	} else {
+		downloadMagnet(SETTING(DOWNLOAD_DIRECTORY));
+	}
 	return 0;
+}
+
+void ChatCtrl::downloadMagnet(const string& aPath) {
+
+	Magnet m = Magnet(selectedWord);
+	OnlineUserPtr u = client->findUser(Text::fromT(author));
+	if (u) {
+		try {
+			QueueManager::getInstance()->add(aPath + Text::fromT(m.fname), m.fsize, TTHValue(Text::fromT(m.fhash)), HintedUser(u->getUser(), client->getHubUrl()));
+		} catch (...) {}
+	}
 }
 
 LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -991,38 +1042,49 @@ LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 	if(WinUtil::browseDirectory(target, m_hWnd)) {
 		SettingsManager::getInstance()->addDirToHistory(target);
-		if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(target), AutoSearch::TARGET_PATH))
-			LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+		if (release) {
+			if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(target), AutoSearch::TARGET_PATH))
+				LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+		} else {
+			downloadMagnet(Text::fromT(target));
+		}
 	}
 	return 0;
 }
 
 LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring searchterm = getSearchString();
-	if(searchterm.size() < 5) //we dont accept anything under 5 chars
-		return 0;
+	if (release) {
+		tstring searchterm = getSearchString();
+		if(searchterm.size() < 5) //we dont accept anything under 5 chars
+			return 0;
 
-	size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
+		size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 
-	AutoSearch::targetType targetType = AutoSearch::TARGET_FAVORITE;
-	string target;
+		AutoSearch::targetType targetType = AutoSearch::TARGET_FAVORITE;
+		string target;
 
-	if (newId < WinUtil::countShareFavDirs()) {
-		targetType = AutoSearch::TARGET_SHARE;
-		target = ShareManager::getInstance()->getGroupedDirectories()[newId].first;
-	} else {
-		auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-		if (newId < WinUtil::countShareFavDirs() + spl.size()) {
-			targetType = AutoSearch::TARGET_FAVORITE;
-			target = spl[newId - WinUtil::countShareFavDirs()].first;
+		if (newId < WinUtil::countShareFavDirs()) {
+			targetType = AutoSearch::TARGET_SHARE;
+			target = ShareManager::getInstance()->getGroupedDirectories()[newId].first;
 		} else {
-			targetType = AutoSearch::TARGET_PATH;
-			target = Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId - spl.size() - WinUtil::countShareFavDirs()]);
+			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
+			if (newId < WinUtil::countShareFavDirs() + spl.size()) {
+				targetType = AutoSearch::TARGET_FAVORITE;
+				target = spl[newId - WinUtil::countShareFavDirs()].first;
+			} else {
+				targetType = AutoSearch::TARGET_PATH;
+				target = Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId - spl.size() - WinUtil::countShareFavDirs()]);
+			}
+		}
+
+		if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, target, targetType))
+			LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+	} else {
+		string target;
+		if (WinUtil::getTarget(wID, target, 0)) {
+			downloadMagnet(target);
 		}
 	}
-
-	if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, target, targetType))
-		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
 	return 0;
 }
 
@@ -1184,11 +1246,10 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 			WinUtil::openLink(sText);
 		} else {
 			if (shortLink.find(_T("magnet:?")) != tstring::npos) {
-				SendMessage(IDC_HANDLE_MAGNET,0, (LPARAM)new tstring(shortLinks[shortLink]));
+				SendMessage(IDC_HANDLE_MAGNET,0, (LPARAM)new tstring(shortLink));
 				//WinUtil::parseMagnetUri(shortLinks[shortLink]);
 			} else {
-
-				WinUtil::openLink(shortLinks[shortLink], ccw.m_hWnd);
+				WinUtil::openLink(shortLink, ccw.m_hWnd);
 			}
 		}
 		return 1;
@@ -1197,6 +1258,7 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 			SetSel(l_Start+begin, l_Start+begin+sText.length());
 		} else {
 			//need to check the starting position from the line first
+			shortLink = getShortLink(pt, true);
 			tstring shortLine=LineFromPos(pt);
 			size_t pos = shortLine.find(shortLink);
 			if (pos != tstring::npos) {
@@ -1209,15 +1271,15 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 	return 0;
 }
 
-tstring ChatCtrl::getShortLink(POINT pt) {
+tstring ChatCtrl::getShortLink(POINT pt, bool getShort /* false */) {
 	tstring line=LineFromPos(pt);
 	tstring word;
-	for(TStringMap::iterator i = shortLinks.begin(); i != shortLinks.end(); i++) {
+	for(auto i = shortLinks.begin(); i != shortLinks.end(); i++) {
 		if(line.find(i->first) != tstring::npos) {
 			//if there are multiple shortlinks on the same line.. this should be accurate enough
 			word=WordFromPos(pt);
 			if (!word.empty() && i->first.find(word) != tstring::npos) {
-				return i->first;
+				return (getShort ? i->first : i->second);
 			}
 		}
 	}
@@ -1594,7 +1656,7 @@ size_t ChatCtrl::RegExpMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring
 
 	//this is not a valid regexp
 	if(cs->getMatch().length() < 5)
-	return tstring::npos;
+		return tstring::npos;
 
 	string str = (Text::fromT(cs->getMatch())).substr(4);
 	try {

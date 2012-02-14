@@ -38,6 +38,7 @@
 #include "SearchFrm.h"
 #include "LineDlg.h"
 #include "MainFrm.h"
+#include "Magnet.h"
 
 #include "../client/Util.h"
 #include "../client/StringTokenizer.h"
@@ -1560,72 +1561,27 @@ void WinUtil::SetIcon(HWND hWnd, tstring file, bool big) {
 
 
 void WinUtil::parseMagnetUri(const tstring& aUrl, bool /*aOverride*/, const UserPtr& aUser/*UserPtr()*/, const string& hubHint/*Util::emptyString*/) {
-	// official types that are of interest to us
-	//  xt = exact topic
-	//  xs = exact substitute
-	//  as = acceptable substitute
-	//  dn = display name
-	//  xl = exact length
 	if (strnicmp(aUrl.c_str(), _T("magnet:?"), 8) == 0) {
 		LogManager::getInstance()->message(STRING(MAGNET_DLG_TITLE) + ": " + Text::fromT(aUrl));
-		StringTokenizer<tstring> mag(aUrl.substr(8), _T('&'));
-		typedef map<tstring, tstring> MagMap;
-		MagMap hashes;
-		tstring fname, fhash, type, param;
-		int64_t fsize = 0;
-		for(TStringList::const_iterator idx = mag.getTokens().begin(); idx != mag.getTokens().end(); ++idx) {
-			// break into pairs
-			string::size_type pos = idx->find(_T('='));
-			if(pos != string::npos) {
-				type = Text::toT(Text::toLower(Util::encodeURI(Text::fromT(idx->substr(0, pos)), true)));
-				param = Text::toT(Util::encodeURI(Text::fromT(idx->substr(pos+1)), true));
-			} else {
-				type = Text::toT(Util::encodeURI(Text::fromT(*idx), true));
-				param.clear();
-			}
-			// extract what is of value
-			if(param.length() == 85 && strnicmp(param.c_str(), _T("urn:bitprint:"), 13) == 0) {
-				hashes[type] = param.substr(46);
-			} else if(param.length() == 54 && strnicmp(param.c_str(), _T("urn:tree:tiger:"), 15) == 0) {
-				hashes[type] = param.substr(15);
-			} else if(param.length() == 55 && strnicmp(param.c_str(), _T("urn:tree:tiger/:"), 16) == 0) {
-				hashes[type] = param.substr(16);
-			} else if(param.length() == 59 && strnicmp(param.c_str(), _T("urn:tree:tiger/1024:"), 20) == 0) {
-				hashes[type] = param.substr(20);
-			} else if(type.length() == 2 && strnicmp(type.c_str(), _T("dn"), 2) == 0) {
-				fname = param;
-			} else if(type.length() == 2 && strnicmp(type.c_str(), _T("xl"), 2) == 0) {
-				fsize = _tstoi64(param.c_str());
-			}
-		}
-		// pick the most authoritative hash out of all of them.
-		if(hashes.find(_T("as")) != hashes.end()) {
-			fhash = hashes[_T("as")];
-		}
-		if(hashes.find(_T("xs")) != hashes.end()) {
-			fhash = hashes[_T("xs")];
-		}
-		if(hashes.find(_T("xt")) != hashes.end()) {
-			fhash = hashes[_T("xt")];
-		}
-		if(!fhash.empty() && Encoder::isBase32(Text::fromT(fhash).c_str())){
+		Magnet m = Magnet(aUrl);
+		if(!m.fhash.empty() && Encoder::isBase32(Text::fromT(m.fhash).c_str())){
 			// ok, we have a hash, and maybe a filename.
-			if(!BOOLSETTING(MAGNET_ASK) && fsize > 0 && fname.length() > 0) {
+			if(!BOOLSETTING(MAGNET_ASK) && m.fsize > 0 && m.fname.length() > 0) {
 				switch(SETTING(MAGNET_ACTION)) {
 					case SettingsManager::MAGNET_AUTO_DOWNLOAD:
 						try {
-							QueueManager::getInstance()->add(SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(fname), fsize, TTHValue(Text::fromT(fhash)), HintedUser(aUser, hubHint));
+							QueueManager::getInstance()->add(SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(m.fname), m.fsize, TTHValue(Text::fromT(m.fhash)), HintedUser(aUser, hubHint));
 						} catch(const Exception& e) {
 							LogManager::getInstance()->message(e.getError());
 						}
 						break;
 					case SettingsManager::MAGNET_AUTO_SEARCH:
-						SearchFrame::openWindow(fhash, 0, SearchManager::SIZE_DONTCARE, SearchManager::TYPE_TTH);
+						SearchFrame::openWindow(m.fhash, 0, SearchManager::SIZE_DONTCARE, SearchManager::TYPE_TTH);
 						break;
 				};
 			} else {
-			// use aOverride to force the display of the dialog.  used for auto-updating
-				MagnetDlg dlg(fhash, fname, fsize, aUser, hubHint);
+				// use aOverride to force the display of the dialog.  used for auto-updating
+				MagnetDlg dlg(m.fhash, m.fname, m.fsize, aUser, hubHint);
 				dlg.DoModal(mainWnd);
 			}
 		} else {

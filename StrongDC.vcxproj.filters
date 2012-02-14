@@ -815,5 +815,8 @@
     <ClInclude Include="windows\LocationsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\Magnet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

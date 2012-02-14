@@ -85,7 +85,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_DOWNLOAD, onDownload)
 		COMMAND_ID_HANDLER(IDC_DOWNLOADTO, onDownloadTo)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
-		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + FavoriteManager::getInstance()->getFavoriteDirs().size() + (SETTING(SHOW_SHARED_DIRS_FAV) ? ShareManager::getInstance()->getGroupedDirectories().size() : 0), onDownloadFavoriteDirs)
+		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + WinUtil::countDownloadDirItems(), onDownloadFavoriteDirs)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
 
 		CHAIN_COMMANDS(ucBase)
@@ -182,16 +182,20 @@ private:
 	bool		logged;
 	bool		skipLog;
 	bool		timeStamps;
+
+
 	bool		release;
 	bool		shareDupe;
 	bool		queueDupe;
+	bool		isMagnet;
+	tstring		author;
 	tstring		nick;
 	tstring		searchTerm;
 	tstring		searchTermFull;
 	int t_height; //text height
 
     //Client* client;
-	TStringMap shortLinks; //ApexDC
+	TStringPairList shortLinks; //ApexDC
 	
 	bool m_bPopupMenu;
 	
@@ -208,8 +212,9 @@ private:
 	boost::wregex regUrlBoost, regReleaseBoost;
 	uint64_t lastTick;
 	bool isLink(POINT pt);
-	tstring getShortLink(POINT pt);
+	tstring getShortLink(POINT pt, bool getShort=false);
 	bool handCursor;
+	void downloadMagnet(const string& aPath);
 };
 
 
