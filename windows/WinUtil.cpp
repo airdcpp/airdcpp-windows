@@ -1515,10 +1515,10 @@ bool WinUtil::parseDBLClick(const tstring& str, HWND hWnd/*NULL*/) {
 
 		return true;
 	} else if(host == "magnet") {
-		if(hWnd)
+		if(hWnd) {
 			SendMessage(hWnd, IDC_HANDLE_MAGNET,0,(LPARAM)new tstring(str));
-		else {
-		parseMagnetUri(str);
+		} else {
+			parseMagnetUri(str);
 		}
 		return true;
 	}

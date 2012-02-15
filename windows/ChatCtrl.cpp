@@ -845,8 +845,20 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 		}
-		
-		if (release || (isMagnet && !author.empty())) {
+
+		if (isMagnet && !author.empty()) {
+			if (author == Text::toT(client->getMyNick())) {
+				/* show an option to remove the item */
+			} else {
+				targetMenu.CreatePopupMenu();
+				menu.AppendMenu(MF_SEPARATOR);
+				menu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
+				menu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
+
+				targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
+				WinUtil::appendDirsMenu(targetMenu);
+			}
+		} else if (release) {
 			//autosearch menus
 			targetMenu.CreatePopupMenu();
 			menu.AppendMenu(MF_SEPARATOR);
@@ -1028,7 +1040,8 @@ void ChatCtrl::downloadMagnet(const string& aPath) {
 	OnlineUserPtr u = client->findUser(Text::fromT(author));
 	if (u) {
 		try {
-			QueueManager::getInstance()->add(aPath + Text::fromT(m.fname), m.fsize, TTHValue(Text::fromT(m.fhash)), HintedUser(u->getUser(), client->getHubUrl()));
+			QueueManager::getInstance()->add(aPath + Text::fromT(m.fname), m.fsize, TTHValue(Text::fromT(m.fhash)), 
+				!u->getUser()->isSet(User::BOT) ? HintedUser(u->getUser(), client->getHubUrl()) : HintedUser(UserPtr(), Util::emptyString));
 		} catch (...) {}
 	}
 }
@@ -1247,7 +1260,7 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		} else {
 			if (shortLink.find(_T("magnet:?")) != tstring::npos) {
 				SendMessage(IDC_HANDLE_MAGNET,0, (LPARAM)new tstring(shortLink));
-				//WinUtil::parseMagnetUri(shortLinks[shortLink]);
+				//WinUtil::parseMagnetUri(shortLink);
 			} else {
 				WinUtil::openLink(shortLink, ccw.m_hWnd);
 			}

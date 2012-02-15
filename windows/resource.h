@@ -178,7 +178,7 @@
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
 #define IDD_FORMVIEW                    500
-#define IDC_HANDLE_MAGNET                560
+#define IDC_HANDLE_MAGNET               560
 #define IDC_REFRESH                     1000
 #define IDC_NICK                        1001
 #define IDC_EMAIL                       1002
@@ -1203,9 +1203,14 @@
 #define IDC_ADD_SRCH_STR_TYPE_STATIC    15052
 #define IDC_RUNNING_DOWNLOADS_LABEL     15052
 #define IDC_AS_ACTION_STATIC            15053
+#define IDC_BUNDLE_RECENT_HOURS_LABEL   15053
 #define IDC_AS_ACTION                   15054
+#define IDC_BUNDLE_RECENT_HOURS         15054
 #define IDC_AS_FILETYPE                 15055
+#define IDC_REMOVE_SPIN2                15055
+#define IDC_RECENT_SPIN                 15055
 #define IDC_AUTOSEARCH_ITEMS            15056
+#define IDC_SETTINGS_KBPS8              15056
 #define IDC_AUTOSEARCH_ENABLE_TIME      15058
 #define IDC_AUTOSEARCH_EVERY            15059
 #define IDC_AUTOSEARCH_SPIN             15060

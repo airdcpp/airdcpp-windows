@@ -61,6 +61,7 @@ PropPage::Item PriorityPage::items[] = {
 
 PropPage::ListItem PriorityPage::optionItems[] = {
 	{ SettingsManager::PRIO_LOWEST, ResourceManager::SETTINGS_PRIO_LOWEST },
+	{ SettingsManager::PRIO_LIST_HIGHEST, ResourceManager::SETTINGS_USE_HIGHEST_LIST },
 	{ SettingsManager::AUTO_PRIORITY_DEFAULT ,ResourceManager::SETTINGS_AUTO_PRIORITY_DEFAULT },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };

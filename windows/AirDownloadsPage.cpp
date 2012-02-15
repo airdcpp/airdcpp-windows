@@ -29,6 +29,7 @@ PropPage::TextItem AirDownloadsPage::texts[] = {
 	{ IDC_SB_SKIPLIST_DOWNLOAD,	ResourceManager::SETTINGS_SKIPLIST_DOWNLOAD	},
 	{ IDC_DL_SKIPPING_OPTIONS,	ResourceManager::SETTINGS_SKIPPING_OPTIONS	},
 	{ IDC_DOWNLOAD_SKIPLIST_USE_REGEXP, ResourceManager::USE_REGEXP },
+	{ IDC_BUNDLE_RECENT_HOURS_LABEL, ResourceManager::SETTINGS_RECENT_HOURS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -42,6 +43,7 @@ PropPage::Item AirDownloadsPage::items[] = {
 	{ IDC_SKIPLIST_DOWNLOAD, SettingsManager::SKIPLIST_DOWNLOAD, PropPage::T_STR },
 	{ IDC_DOWNLOAD_SKIPLIST_USE_REGEXP, SettingsManager::DOWNLOAD_SKIPLIST_USE_REGEXP, PropPage::T_BOOL },
 	{ IDC_USE_DISCONNECT_DEFAULT, SettingsManager::USE_SLOW_DISCONNECTING_DEFAULT, PropPage::T_BOOL },
+	{ IDC_BUNDLE_RECENT_HOURS, SettingsManager::RECENT_BUNDLE_HOURS, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -75,6 +77,9 @@ LRESULT AirDownloadsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	spin.Detach(); 
 	spin.Attach(GetDlgItem(IDC_SOURCES_SPIN));
 	spin.SetRange32(1, 99999);
+	spin.Detach();
+	spin.Attach(GetDlgItem(IDC_RECENT_SPIN));
+	spin.SetRange32(0, 99999);
 	spin.Detach(); 
 
 	// Do specialized reading here
