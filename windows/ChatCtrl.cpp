@@ -1071,7 +1071,7 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 		if(searchterm.size() < 5) //we dont accept anything under 5 chars
 			return 0;
 
-		size_t newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
+		int newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 
 		AutoSearch::targetType targetType = AutoSearch::TARGET_FAVORITE;
 		string target;
@@ -1081,7 +1081,7 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 			target = ShareManager::getInstance()->getGroupedDirectories()[newId].first;
 		} else {
 			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-			if (newId < WinUtil::countShareFavDirs() + spl.size()) {
+			if (newId < WinUtil::countShareFavDirs() + (int)spl.size()) {
 				targetType = AutoSearch::TARGET_FAVORITE;
 				target = spl[newId - WinUtil::countShareFavDirs()].first;
 			} else {
