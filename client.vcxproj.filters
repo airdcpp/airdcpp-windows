@@ -101,9 +101,6 @@
     <ClCompile Include="client\SearchResult.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="client\ServerSocket.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="client\SettingsManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -419,9 +416,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\Semaphore.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\ServerSocket.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\SettingsManager.h">

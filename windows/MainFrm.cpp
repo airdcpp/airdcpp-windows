@@ -840,13 +840,19 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 {
 	PropertiesDlg dlg(m_hWnd, SettingsManager::getInstance());
 
-	unsigned short lastTCP = static_cast<unsigned short>(SETTING(TCP_PORT));
-	unsigned short lastUDP = static_cast<unsigned short>(SETTING(UDP_PORT));
-	unsigned short lastTLS = static_cast<unsigned short>(SETTING(TLS_PORT));
+	auto prevTCP = SETTING(TCP_PORT);
+	auto prevUDP = SETTING(UDP_PORT);
+	auto prevTLS = SETTING(TLS_PORT);
 
-	int lastConn = SETTING(INCOMING_CONNECTIONS);
-	string lastMapper = SETTING(MAPPER);
-	string lastBind = SETTING(BIND_INTERFACE);
+	auto prevConn = SETTING(INCOMING_CONNECTIONS);
+	auto prevMapper = SETTING(MAPPER);
+	auto prevBind = SETTING(BIND_ADDRESS);
+	auto prevBind6 = SETTING(BIND_ADDRESS6);
+	auto prevProxy = CONNSETTING(OUTGOING_CONNECTIONS);
+
+
+	auto prevGeo = BOOLSETTING(GET_USER_COUNTRY);
+	auto prevGeoFormat = SETTING(COUNTRY_FORMAT);
 
 	bool lastSortFavUsersFirst = BOOLSETTING(SORT_FAVUSERS_FIRST);
 
@@ -858,9 +864,33 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		}
 
 		try {
-			ConnectivityManager::getInstance()->setup(SETTING(INCOMING_CONNECTIONS) != lastConn || SETTING(TCP_PORT) != lastTCP || SETTING(UDP_PORT) != lastUDP || SETTING(TLS_PORT) != lastTLS || SETTING(MAPPER) != lastMapper || SETTING(BIND_INTERFACE) != lastBind );
+			ConnectivityManager::getInstance()->setup(SETTING(INCOMING_CONNECTIONS) != prevConn ||
+				SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
+				SETTING(MAPPER) != prevMapper || SETTING(BIND_ADDRESS) != prevBind || SETTING(BIND_ADDRESS6) != prevBind6);
 		} catch (const Exception& e) {
 			LogManager::getInstance()->message(e.getError());
+		}
+
+		auto outConns = CONNSETTING(OUTGOING_CONNECTIONS);
+		if(outConns != prevProxy || outConns == SettingsManager::OUTGOING_SOCKS5) {
+			Socket::socksUpdated();
+		}
+
+
+		ClientManager::getInstance()->infoUpdated();
+
+		bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;
+		if(BOOLSETTING(GET_USER_COUNTRY) != prevGeo) {
+			if(BOOLSETTING(GET_USER_COUNTRY)) {
+				GeoManager::getInstance()->init();
+				checkGeoUpdate();
+			} else {
+				GeoManager::getInstance()->close();
+				rebuildGeo = false;
+			}
+		}
+		if(rebuildGeo) {
+			GeoManager::getInstance()->rebuild();
 		}
  
 		if(BOOLSETTING(SORT_FAVUSERS_FIRST) != lastSortFavUsersFirst)
@@ -897,7 +927,6 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 			tabsontop = BOOLSETTING(TABS_ON_TOP);
 			UpdateLayout();
 		}
-		ClientManager::getInstance()->infoUpdated();
 	}
 	return 0;
 }

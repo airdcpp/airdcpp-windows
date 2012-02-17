@@ -269,7 +269,6 @@
     <ClCompile Include="client\SearchManager.cpp" />
     <ClCompile Include="client\SearchQueue.cpp" />
     <ClCompile Include="client\SearchResult.cpp" />
-    <ClCompile Include="client\ServerSocket.cpp" />
     <ClCompile Include="client\SettingsManager.cpp" />
     <ClCompile Include="client\SFVReader.cpp" />
     <ClCompile Include="client\SharedFileStream.cpp" />
@@ -394,7 +393,6 @@
     <ClInclude Include="client\SearchResult.h" />
     <ClInclude Include="client\Segment.h" />
     <ClInclude Include="client\Semaphore.h" />
-    <ClInclude Include="client\ServerSocket.h" />
     <ClInclude Include="client\SettingsManager.h" />
     <ClInclude Include="client\SFVReader.h" />
     <ClInclude Include="client\SharedFileStream.h" />

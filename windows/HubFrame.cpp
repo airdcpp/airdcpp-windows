@@ -297,9 +297,9 @@ void HubFrame::onEnter() {
 			} else if(stricmp(cmd.c_str(), _T("connection")) == 0) {
 				addStatus(Text::toT((STRING(IP) + " " + client->getLocalIp() + ", " + 
 					STRING(PORT) + " " +
-					Util::toString(ConnectionManager::getInstance()->getPort()) + "/" + 
-					Util::toString(SearchManager::getInstance()->getPort()) + "/" +
-					Util::toString(ConnectionManager::getInstance()->getSecurePort())))
+					ConnectionManager::getInstance()->getPort() + "/" + 
+					SearchManager::getInstance()->getPort() + "/" +
+					ConnectionManager::getInstance()->getSecurePort()))
 					, WinUtil::m_ChatTextSystem);
 			} else if((stricmp(cmd.c_str(), _T("favorite")) == 0) || (stricmp(cmd.c_str(), _T("fav")) == 0)) {
 				addAsFavorite();
