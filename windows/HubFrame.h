@@ -115,6 +115,7 @@ public:
 		MESSAGE_HANDLER(WM_CUT, onChar) //ApexDC
 		MESSAGE_HANDLER(WM_PASTE, onChar) //ApexDC
 		MESSAGE_HANDLER(IDC_HANDLE_MAGNET, onMagnet)
+		MESSAGE_HANDLER(WM_DROPFILES, onDropFiles)
 		//MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
@@ -158,6 +159,7 @@ public:
 	LRESULT onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onMagnet(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
+	LRESULT onDropFiles(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	LRESULT onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		tstring cmd, param, message, status;
@@ -492,6 +494,8 @@ private:
     string sColumsVisible;
 
 	void updateStatusBar() { if(m_hWnd) speak(STATS); }
+
+	void addMagnet(const tstring& path);
 
 	// FavoriteManagerListener
 	void on(FavoriteManagerListener::UserAdded, const FavoriteUser& /*aUser*/) noexcept;

@@ -61,7 +61,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlStatus.Attach(m_hWndStatusBar);
 
 	ctrlClient.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_VSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE, IDC_CLIENT);
+		WS_VSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE | WS_EX_ACCEPTFILES, IDC_CLIENT);
 
 	ctrlClient.Subclass();
 	ctrlClient.LimitText(0);
@@ -2587,6 +2587,63 @@ LRESULT HubFrame::onKeyDownUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*
 LRESULT HubFrame::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlClient.SetWindowText(Util::emptyStringT.c_str());
 	return 0;
+}
+
+LRESULT HubFrame::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
+	HDROP drop = (HDROP)wParam;
+	tstring buf;
+	buf.resize(MAX_PATH);
+
+	UINT nrFiles;
+	
+	nrFiles = DragQueryFile(drop, (UINT)-1, NULL, 0);
+	
+	for(UINT i = 0; i < nrFiles; ++i){
+		if(DragQueryFile(drop, i, &buf[0], MAX_PATH)){
+			if(!PathIsDirectory(&buf[0])){
+				addMagnet(buf);
+			}
+		}
+	}
+
+	DragFinish(drop);
+
+	return 0;
+}
+
+void HubFrame::addMagnet(const tstring& path) {
+	string magnetlink = Util::emptyString;
+
+	TTHValue TTH;
+	int64_t size = 0;
+	boost::scoped_array<char> buf(new char[512 * 1024]);
+
+	try {
+		File f(Text::fromT(path), File::READ, File::OPEN);
+		TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
+
+		if(f.getSize() > 0) {
+			size_t n = 512*1024;
+			while( (n = f.read(&buf[0], n)) > 0) {
+				tth.update(&buf[0], n);
+				n = 512*1024;
+			}
+		} else {
+			tth.update("", 0);
+		}
+		tth.finalize();
+
+		TTH = tth.getRoot();
+		size = f.getSize();
+		magnetlink = "magnet:?xt=urn:tree:tiger:"+ TTH.toBase32() +"&xl="+Util::toString(size)+"&dn="+Text::fromT(Util::getFileName(path));
+		f.close();
+	}catch(...) { }
+
+	if(!magnetlink.empty()){
+		ShareManager::getInstance()->addTempShare(Util::emptyString, TTH, Text::fromT(path), size);
+		//sendMessage(Text::toT(magnetlink));
+		ctrlMessage.SetWindowText(Text::toT(magnetlink).c_str());
+	}
 }
 
 /**

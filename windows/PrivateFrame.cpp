@@ -919,35 +919,35 @@ void PrivateFrame::addMagnet(const tstring& path) {
 	string magnetlink = Util::emptyString;
 
 	TTHValue TTH;
+	int64_t size = 0;
+	boost::scoped_array<char> buf(new char[512 * 1024]);
 
-		boost::scoped_array<char> buf(new char[512 * 1024]);
+	try {
+		File f(Text::fromT(path), File::READ, File::OPEN);
+		TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
 
-		try {
-			File f(Text::fromT(path), File::READ, File::OPEN);
-			TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
-
-			if(f.getSize() > 0) {
-				size_t n = 512*1024;
-				while( (n = f.read(&buf[0], n)) > 0) {
-					tth.update(&buf[0], n);
-					n = 512*1024;
-				}
-			} else {
-				tth.update("", 0);
+		if(f.getSize() > 0) {
+			size_t n = 512*1024;
+			while( (n = f.read(&buf[0], n)) > 0) {
+				tth.update(&buf[0], n);
+				n = 512*1024;
 			}
-			tth.finalize();
-
-			TTH = tth.getRoot();
-
-			magnetlink = "magnet:?xt=urn:tree:tiger:"+ TTH.toBase32() +"&xl="+Util::toString(f.getSize())+"&dn="+Text::fromT(Util::getFileName(path));
-			f.close();
-		}catch(...) { }
-
-		if(!magnetlink.empty()){
-			ShareManager::getInstance()->addTempShare(replyTo.user->getCID(), TTH, Text::fromT(path));
-			//sendMessage(Text::toT(magnetlink));
-			ctrlMessage.SetWindowText(Text::toT(magnetlink).c_str());
+		} else {
+			tth.update("", 0);
 		}
+		tth.finalize();
+
+		TTH = tth.getRoot();
+		size = f.getSize();
+		magnetlink = "magnet:?xt=urn:tree:tiger:"+ TTH.toBase32() +"&xl="+Util::toString(size)+"&dn="+Text::fromT(Util::getFileName(path));
+		f.close();
+	}catch(...) { }
+
+	if(!magnetlink.empty()){
+		ShareManager::getInstance()->addTempShare(replyTo.user->getCID().toBase32(), TTH, Text::fromT(path), size);
+		//sendMessage(Text::toT(magnetlink));
+		ctrlMessage.SetWindowText(Text::toT(magnetlink).c_str());
+	}
 }
 
 /**
