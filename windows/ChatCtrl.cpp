@@ -730,8 +730,8 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 		}
 	}
 
-	size_t pos = selectedLine.find(_T(" "));
-	if (pos != tstring::npos && selectedLine[pos+1] == _T('<')) {
+	size_t pos = selectedLine.find(_T(" <"));
+	if (pos != tstring::npos) {
 		tstring::size_type iAuthorLen = selectedLine.find(_T('>'), 1);
 		if(iAuthorLen != tstring::npos) {
 			tstring nick(selectedLine.c_str() + pos + 2);

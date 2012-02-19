@@ -1012,10 +1012,11 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 		/*maybe make this an option? with large amount of ram this is kinda obsolete,
 		will look good in taskmanager ram usage tho :) */
 		if(BOOLSETTING(DECREASE_RAM)) {
-		if(!SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T)-1, (SIZE_T)-1))
-		LogManager::getInstance()->message("Minimize Process WorkingSet Failed: "+ Util::translateError(GetLastError()));
+			if(!SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T)-1, (SIZE_T)-1))
+				LogManager::getInstance()->message("Minimize Process WorkingSet Failed: "+ Util::translateError(GetLastError()));
 		}
-			if(BOOLSETTING(AUTO_AWAY) && (bAppMinimized == false) ) {
+
+		if(BOOLSETTING(AUTO_AWAY) && (bAppMinimized == false) ) {
 			
 			if(Util::getAway()) {
 				awaybyminimize = false;
@@ -1024,9 +1025,9 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				Util::setAway(true, true);
 				setAwayButton(true);
 				ClientManager::getInstance()->infoUpdated();
-					}
-				}
-			bAppMinimized = true; //set this here, on size is called twice if minimize to tray.
+			}
+		}
+		bAppMinimized = true; //set this here, on size is called twice if minimize to tray.
 
 		if(BOOLSETTING(MINIMIZE_TRAY) != WinUtil::isShift()) {
 			ShowWindow(SW_HIDE);

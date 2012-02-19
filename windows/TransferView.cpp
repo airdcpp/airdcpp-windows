@@ -326,9 +326,7 @@ LRESULT TransferView::onOpenBundleFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
 	if (ii) {
 		size_t pos = ii->target.rfind(' ');
-		if (pos != string::npos) {
-			WinUtil::openFolder(ii->target.substr(0, pos));
-		}
+		WinUtil::openFolder(ii->target.substr(0, pos != string::npos ? pos : ii->target.length()));
 	}
 	return 0;
 }
@@ -780,9 +778,7 @@ LRESULT TransferView::onSearchDirectory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
 		if (ii->isBundle) {
 			size_t pos = ii->target.rfind(' ');
-			if (pos != string::npos) {
-				WinUtil::search(Util::getLastDir(ii->target.substr(0, pos)), 0);
-			}
+			WinUtil::search(Util::getLastDir(ii->target.substr(0, pos != string::npos ? pos : ii->target.length())), 0);
 		}
 	}
 
@@ -1559,6 +1555,7 @@ void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 
 LRESULT TransferView::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string sCopy;
+	size_t pos;
 	if(ctrlTransfers.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlTransfers.getSelectedItem();
 		tstring buf;
@@ -1583,6 +1580,9 @@ LRESULT TransferView::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, B
 			case IDC_COPY_IP:
 				buf = ii->getText(COLUMN_IP);
 				sCopy = Text::fromT(buf);
+				pos = sCopy.rfind('(');
+				if (pos != string::npos)
+					sCopy = sCopy.substr(pos+1, sCopy.length()-pos-2);
 				break;
 			case IDC_COPY_HUB:
 				buf = ii->getText(COLUMN_HUB);

@@ -488,7 +488,7 @@ LRESULT HubFrame::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		if(!sCopy.empty())
 			sCopy += _T("\r\n");
 
-		sCopy += ou->getText(static_cast<uint8_t>(wID - IDC_COPY));
+		sCopy += ou->getText(static_cast<uint8_t>(wID - IDC_COPY), true);
 	}
 	if (!sCopy.empty())
 		WinUtil::setClipboard(sCopy);
