@@ -1440,7 +1440,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			}
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			dirMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-			dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_DIRECTORY));
+			dirMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
 			dirMenu.AppendMenu(MF_STRING, IDC_COPY, CTSTRING(COPY_DIRECTORY));
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			dirMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));

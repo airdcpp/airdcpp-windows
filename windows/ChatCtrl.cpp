@@ -1125,7 +1125,7 @@ LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 	
 
 	bHandled=FALSE;
-	if (lastTick+75 > GET_TICK())
+	if (lastTick+50 > GET_TICK())
 		return FALSE;
 	lastTick=GET_TICK();
 

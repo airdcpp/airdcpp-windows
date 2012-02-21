@@ -55,8 +55,8 @@ LRESULT TransferView::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_TRANSFERS);
 	ctrlTransfers.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 
-	WinUtil::splitTokens(columnIndexes, SETTING(MAINFRAME_ORDER), COLUMN_LAST);
-	WinUtil::splitTokens(columnSizes, SETTING(MAINFRAME_WIDTHS), COLUMN_LAST);
+	WinUtil::splitTokens(columnIndexes, SETTING(TRANSFERVIEW_ORDER), COLUMN_LAST);
+	WinUtil::splitTokens(columnSizes, SETTING(TRANSFERVIEW_WIDTHS), COLUMN_LAST);
 
 	for(uint8_t j=0; j<COLUMN_LAST; j++) {
 		int fmt = (j == COLUMN_SIZE || j == COLUMN_TIMELEFT || j == COLUMN_SPEED) ? LVCFMT_RIGHT : LVCFMT_LEFT;
@@ -83,7 +83,7 @@ LRESULT TransferView::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 }
 
 void TransferView::prepareClose() {
-	ctrlTransfers.saveHeaderOrder(SettingsManager::MAINFRAME_ORDER, SettingsManager::MAINFRAME_WIDTHS,
+	ctrlTransfers.saveHeaderOrder(SettingsManager::TRANSFERVIEW_ORDER, SettingsManager::TRANSFERVIEW_WIDTHS,
 		SettingsManager::MAINFRAME_VISIBLE);
 
 	ConnectionManager::getInstance()->removeListener(this);

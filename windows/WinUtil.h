@@ -272,8 +272,6 @@ public:
 	static OMenu grantMenu;
 	static int dirIconIndex;
 	static int dirMaskedIndex;
-	static TStringList lastDirs;
-	static TStringList lastSearches;
 	static HWND mainWnd;
 	static HWND mdiClient;
 	static FlatTabCtrl* tabCtrl;

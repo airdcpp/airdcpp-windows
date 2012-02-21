@@ -522,7 +522,6 @@ private:
 	tstring target;
 	
 	CriticalSection cs;
-	TStringList lastSearches;
 	size_t droppedResults;
 
 	bool closed;
