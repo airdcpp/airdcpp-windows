@@ -3129,16 +3129,14 @@ bool WinUtil::getTarget(int ID, string& target, int64_t aSize, bool wholeDir /*f
 		if (newId < ((int)slp.size() + countShareFavDirs())) {
 			FavoriteManager::getInstance()->getFavoriteTarget(newId - countShareFavDirs(), target, freeSpace);
 		} else {
-			int64_t size = 0;
 			target = Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId - slp.size() - countShareFavDirs()]);
-			GetDiskFreeSpaceEx(Text::toT(target).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&freeSpace);
+			AirUtil::getDiskInfo(target, freeSpace);
 		}
 	}
 
 	if (target.empty()) {
-		int64_t size = 0;
 		target = SETTING(DOWNLOAD_DIRECTORY);
-		GetDiskFreeSpaceEx(Text::toT(target).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&freeSpace);
+		AirUtil::getDiskInfo(target, freeSpace);
 	}
 
 	if (aSize > freeSpace) {
