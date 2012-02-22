@@ -475,12 +475,12 @@ LRESULT SystemFrame::onEditSelectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 }
 
 LRESULT SystemFrame::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	LogManager::getInstance()->clearLastLogs();
 	ctrlPad.SetWindowText(_T(""));
 	return 0;
 }
 
 LRESULT SystemFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	
 
 	CHARRANGE cr;
 	ctrlPad.GetSel(cr);
