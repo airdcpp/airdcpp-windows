@@ -778,7 +778,7 @@ LRESULT TransferView::onSearchDirectory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
 		if (ii->isBundle) {
 			size_t pos = ii->target.rfind(' ');
-			WinUtil::search(Util::getLastDir(ii->target.substr(0, pos != string::npos ? pos : ii->target.length())), 0);
+			WinUtil::searchAny(Util::getLastDir(ii->target.substr(0, pos != string::npos ? pos : ii->target.length())));
 		}
 	}
 

@@ -1526,7 +1526,7 @@ bool WinUtil::parseDBLClick(const tstring& str, HWND hWnd/*NULL*/) {
 	boost::regex reg;
 	reg.assign(AirUtil::getReleaseRegLong(false));
 	if(regex_match(url, reg)) {
-		WinUtil::search(Text::toT(url), 0, false);
+		WinUtil::searchAny(Text::toT(url));
 		return true;
 	} else {
 		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
@@ -2962,42 +2962,14 @@ int WinUtil::setButtonPressed(int nID, bool bPressed /* = true */) {
 
 
 
-void WinUtil::search(tstring searchTerm, int searchMode, bool tth) {
+void WinUtil::searchAny(const tstring& aSearch) {
+	tstring searchTerm = aSearch;
+	searchTerm.erase(std::remove(searchTerm.begin(), searchTerm.end(), '\r'), searchTerm.end());
+	searchTerm.erase(std::remove(searchTerm.begin(), searchTerm.end(), '\n'), searchTerm.end());
 	if(!searchTerm.empty()) {
-		TCHAR chars[33] = {_T('<'), _T('>'), _T(','), _T(';'), _T('.'), _T(':'), _T('-'), _T('_'), _T('!'),
-						_T('\"'), _T('@'), _T('#'), _T('£'), _T('$'), _T('%'), _T('&'), _T('/'), _T('{'),
-						_T('('), _T('['), _T(')'), _T(']'), _T('='), _T('}'), _T('?'), _T('+'), _T('´'),
-						_T('`'), _T('*'), _T('^'), _T('\\'), _T('\r'), _T('\n')};
-		
-		size_t length = searchTerm.length()-1;
-		try{
-			//check for bad chars in the list and remove any matches.
-			for(int i = 0; i < 31; ++i) {
-				if(searchTerm[0] == chars[i]) {
-					searchTerm.erase((tstring::size_type)0, (tstring::size_type)1);
-					i = 0;
-					--length;
-				}
-				if(searchTerm[length] == chars[i]) {
-					searchTerm.erase(length, length);
-					i = 0;
-					--length;
-				}
-			}
-		}catch(Exception) {
-			return;
-		}
-		if(!searchTerm.empty()) {
-			if(0 == searchMode) {
-				if(tth)
-					SearchFrame::openWindow(searchTerm, 0, SearchManager::SIZE_ATLEAST, SearchManager::TYPE_TTH);
-				else
-					SearchFrame::openWindow(searchTerm, 0, SearchManager::SIZE_ATLEAST, SearchManager::TYPE_ANY);
-			
-				}
-			}
-		}
+		SearchFrame::openWindow(searchTerm, 0, SearchManager::SIZE_ATLEAST, SearchManager::TYPE_ANY);
 	}
+}
 
 tstring WinUtil::getIconPath(const tstring& filename) {
 
@@ -3032,42 +3004,40 @@ void WinUtil::SearchSite(WebShortcut* ws, tstring searchTerm) {
 
 }
 
-tstring WinUtil::getTitle(tstring searchTerm) {
+tstring WinUtil::getTitle(const tstring& searchTerm) {
+	tstring ret = Text::toLower(searchTerm);
 
-		//Remove group name
-		string tmp = Text::fromT(searchTerm);
-		int spos = tmp.rfind("-");
-		tmp = tmp.substr(0,spos);
-		searchTerm = Text::toT(tmp);
-		searchTerm += ' ';
+	//Remove group name
+	size_t pos = ret.rfind(_T("-"));
+	if (pos != string::npos)
+		ret = ret.substr(0, pos);
 
-		//replace . with space
-		int pos = 0;
-		while ( (pos = searchTerm.find_first_of(_T("._"), pos)) != string::npos) {
-			searchTerm.replace(pos, 1, _T(" "));
-		}
+	//replace . with space
+	pos = 0;
+	while ((pos = ret.find_first_of(_T("._"), pos)) != string::npos) {
+		ret.replace(pos, 1, _T(" "));
+	}
 
-		searchTerm = Text::toLower(searchTerm);
+	//remove words after year/episode
+	PME regexp;
+	regexp.Init(_T("(((\\[)?((19[0-9]{2})|(20[0-1][0-9]))|(s[0-9]([0-9])?(e|d)[0-9]([0-9])?)|(Season(\\.)[0-9]([0-9])?)).*)"));
+	ret = regexp.sub(ret, Util::emptyStringT);
 
-		//remove words after year/episode
-		PME regexp;
-		regexp.Init(_T("(((\\[)?((19[0-9]{2})|(20[0-1][0-9]))|(s[0-9]([0-9])?(e|d)[0-9]([0-9])?)|(Season(\\.)[0-9]([0-9])?)).*)"));
-		searchTerm = regexp.sub(searchTerm, Util::emptyStringT);
+	//remove extra words
+	string extrawords[] = {"multisubs","multi","dvdrip","dvdr","real proper","proper","ultimate directors cut","directors cut","dircut","x264","pal","complete","limited","ntsc","bd25",
+							"bd50","bdr","bd9","retail","bluray","nordic","720p","1080p","read nfo","dts","hdtv","pdtv","hddvd","repack","internal","custom","subbed","unrated","recut",
+							"extended","dts51","finsub","swesub","dksub","nosub","remastered","2disc","rf","fi","swe","stv","r5","festival","anniversary edition","bdrip","ac3", "xvid",
+							"ws","int"};
+	pos = 0;
+	ret += ' ';
+	while(pos <= extrawords->size()) {
+		boost::replace_all(ret, " " + extrawords[pos] + " ", " ");
+		pos++;
+	}
 
-		//remove extra words
-		string extrawords[] = {"multisubs","multi","dvdrip","dvdr","real proper","proper","ultimate directors cut","directors cut","dircut","x264","pal","complete","limited","ntsc","bd25",
-								"bd50","bdr","bd9","retail","bluray","nordic","720p","1080p","read nfo","dts","hdtv","pdtv","hddvd","repack","internal","custom","subbed","unrated","recut",
-								"extended","dts51","finsub","swesub","dksub","nosub","remastered","2disc","rf","fi","swe","stv","r5","festival","anniversary edition","bdrip","ac3", "xvid",
-								"ws","int"};
-		pos = 0;
-		while(pos <= 53) {
-			boost::algorithm::replace_all(searchTerm, " " + extrawords[pos] + " ", " ");
-			pos++;
-		}
-
-		//trim spaces from the end
-		boost::algorithm::trim_right(searchTerm);
-		return searchTerm;
+	//trim spaces from the end
+	boost::trim_right(ret);
+	return ret;
 }
 
 void WinUtil::appendDirsMenu(OMenu &targetMenu, bool wholeDir /*false*/) {

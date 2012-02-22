@@ -325,19 +325,16 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT
 		ColorSettings* cs = &(*i);
 	if(!cs->getIncludeNickList()) {
 		size_t pos;
-		 tstring msg = sText;
+		tstring msg = sText;
 
 		//set start position for find
-			pos = msg.find(_T(">"));
-			if(pos == tstring::npos)
-				pos = msg.find(_T("**")) + nick.length();
-		
+		pos = msg.find(_T(">"));
 
 		//prepare the charformat
-				memset(&hlcf, 0, sizeof(CHARFORMAT2));
-				hlcf.cbSize = sizeof(hlcf);
-				hlcf.dwReserved = 0;
-				hlcf.dwMask = CFM_BACKCOLOR | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
+		memset(&hlcf, 0, sizeof(CHARFORMAT2));
+		hlcf.cbSize = sizeof(hlcf);
+		hlcf.dwReserved = 0;
+		hlcf.dwMask = CFM_BACKCOLOR | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
 
 		if(cs->getBold())		hlcf.dwEffects |= CFE_BOLD;
 		if(cs->getItalic())		hlcf.dwEffects |= CFE_ITALIC;
@@ -705,7 +702,7 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	selectedWord = WordFromPos(pt);
 
 	release = (regRelease.match(selectedWord) > 0) ? true : false;
-	shareDupe=false, queueDupe=false, isMagnet=false;
+	shareDupe=false, queueDupe=false, isMagnet=false, isTTH=false;
 	if (release) {
 		if (ShareManager::getInstance()->isDirShared(Text::fromT(selectedWord))) {
 			shareDupe=true;
@@ -727,6 +724,8 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 					}
 				}
 			}
+		} else if (selectedWord.length() == 39) {
+			isTTH = true;
 		}
 	}
 
@@ -822,7 +821,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		if(!selectedIP.empty()) {
 			menu.InsertSeparatorFirst(selectedIP);
 			menu.AppendMenu(MF_STRING, IDC_WHOIS_IP, (TSTRING(WHO_IS) + _T(" ") + selectedIP).c_str() );
-			 prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
+			prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
 			if (client && client->isOp()) {
 				menu.AppendMenu(MF_SEPARATOR);
 				menu.AppendMenu(MF_STRING, IDC_BAN_IP, (_T("!banip ") + selectedIP).c_str());
@@ -867,7 +866,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
 			WinUtil::appendDirsMenu(targetMenu);
-		} else {
+		} else if (isTTH) {
 			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
 		}
 
@@ -924,12 +923,11 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
-			
-			// add user commands
-			//prepareMenu(menu, ::UserCommand::CONTEXT_CHAT, client->getHubUrl());
 		}
-			// add user commands on self req by endator
-			prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
+
+		// add user commands
+		prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
+
 		/*// default doubleclick action
 		switch(SETTING(CHAT_DBLCLICK)) {
         case 0:
@@ -970,23 +968,19 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 	return 0;
 }
 tstring ChatCtrl::getSearchString() {
-	tstring term = Util::emptyStringT;
-		/*this should always pick up a whole releasename IF releaselinks are used.	
-		otherwise selectedword will pick up the whole releasename unless we mark something.
-		*/
-		CHARRANGE cr;
-		GetSel(cr);
+	tstring searchTerm;
+
+	CHARRANGE cr;
+	GetSel(cr);
 	if(cr.cpMax != cr.cpMin) {
 		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
 		GetSelText(buf);
-		term = Util::replace(buf, _T("\r"), _T("\r\n"));
+		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
 		delete[] buf;
-	 } else if(!selectedWord.empty())  { 	 
-	              term = selectedWord; 
-	      }
-	
-	return term;
-
+	} else if(!selectedWord.empty())  { 	 
+		searchTerm = selectedWord; 
+	}
+	return searchTerm;
 }
 
 LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -1543,7 +1537,7 @@ size_t ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstri
 		tstring::size_type p = cs->getMatch().find(_T("$MyNI$"));
 		if(p != tstring::npos) {
 			searchString = cs->getMatch();
-			searchString = searchString.replace(p, 8, nick);
+			searchString = searchString.replace(p, 8, Text::toT(client->getMyNick()));
 		} 
 	} else {
 		searchString = cs->getMatch();
@@ -1677,10 +1671,10 @@ size_t ChatCtrl::RegExpMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring
 
 	
 		boost::wsregex_iterator iter(line.begin(), line.end(), reg);
-					boost::wsregex_iterator enditer;
-					for(; iter != enditer; ++iter) {
-						begin = lineIndex + iter->position();
-						end = lineIndex + iter->position() + iter->length();
+		boost::wsregex_iterator enditer;
+		for(; iter != enditer; ++iter) {
+			begin = lineIndex + iter->position();
+			end = lineIndex + iter->position() + iter->length();
 
 			if( cs->getWholeLine() ) {
 				end = begin + line.length();
@@ -1800,34 +1794,12 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 }
 
 LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-
-	CHARRANGE cr;
-	GetSel(cr);
-	if(cr.cpMax != cr.cpMin) {
-		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
-		GetSelText(buf);
-		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
-		delete[] buf;
-			} else {
-			searchTerm = selectedWord;
-	}
-	WinUtil::search(searchTerm, 0, false);
-	searchTerm = Util::emptyStringT;
+	WinUtil::searchAny(getSearchString());
 	return 0;
 }
 
 LRESULT ChatCtrl::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-
-	CHARRANGE cr;
-	GetSel(cr);
-	if(cr.cpMax != cr.cpMin) {
-		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
-		GetSelText(buf);
-		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
-		delete[] buf;
-	}
-	WinUtil::search(searchTerm, 0, true);
-	searchTerm = Util::emptyStringT;
+	WinUtil::searchHash(TTHValue(Text::fromT(selectedWord)));
 	return 0;
 }
 
@@ -1838,19 +1810,7 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	if(newId < (int)WebShortcuts::getInstance()->list.size()) {
 		WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
 		if(ws != NULL) {
-
-			CHARRANGE cr;
-			GetSel(cr);
-			if(cr.cpMax != cr.cpMin) {
-				TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
-				GetSelText(buf);
-				searchTermFull = Util::replace(buf, _T("\r"), _T("\r\n"));
-				WinUtil::SearchSite(ws, searchTermFull); 
-	
-				delete[] buf;
-			} else { 	 
-	              WinUtil::SearchSite(ws, selectedWord); 
-	       }
+			WinUtil::SearchSite(ws, getSearchString()); 
 		}
 	}
 	return S_OK;

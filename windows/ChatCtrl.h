@@ -188,13 +188,10 @@ private:
 	bool		shareDupe;
 	bool		queueDupe;
 	bool		isMagnet;
+	bool		isTTH;
 	tstring		author;
-	tstring		nick;
-	tstring		searchTerm;
-	tstring		searchTermFull;
 	int t_height; //text height
 
-    //Client* client;
 	TStringPairList shortLinks; //ApexDC
 	
 	bool m_bPopupMenu;

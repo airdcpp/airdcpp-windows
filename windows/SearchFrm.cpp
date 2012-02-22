@@ -2045,26 +2045,26 @@ void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept
 
 LRESULT SearchFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-tstring searchTerm;
-tstring searchTermFull;
+	tstring searchTerm;
+	tstring searchTermFull;
 
 
-if(ctrlResults.GetSelectedCount() == 1) {
-	size_t newId = (size_t)wID - IDC_SEARCH_SITES;
-	if(newId < (int)WebShortcuts::getInstance()->list.size()) {
-		WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
-		if(ws != NULL) {
-			int i = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
-			dcassert(i != -1);
-			const SearchInfo* si = ctrlResults.getItemData(i);
-			const SearchResultPtr& sr = si->sr;
+	if(ctrlResults.GetSelectedCount() == 1) {
+		size_t newId = (size_t)wID - IDC_SEARCH_SITES;
+		if(newId < (int)WebShortcuts::getInstance()->list.size()) {
+			WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
+			if(ws != NULL) {
+				int i = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
+				dcassert(i != -1);
+				const SearchInfo* si = ctrlResults.getItemData(i);
+				const SearchResultPtr& sr = si->sr;
 
 
-		searchTermFull = Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true));
-		WinUtil::SearchSite(ws, searchTermFull); 
+				searchTermFull = Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true));
+				WinUtil::SearchSite(ws, searchTermFull); 
+			}
 		}
 	}
-}
 	return S_OK;
 }
 
@@ -2076,7 +2076,7 @@ LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 		if ( pos >= 0 ) {
 			const SearchResultPtr& sr = ctrlResults.getItemData(pos)->sr;
-			WinUtil::search(Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true)), 0, false);
+			WinUtil::searchAny(Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true)));
 		}
 	}
 	return S_OK;

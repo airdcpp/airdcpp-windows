@@ -493,7 +493,7 @@ LRESULT SystemFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		searchTerm = selWord;
 	}
 
-	WinUtil::search(searchTerm, 0, false);
+	WinUtil::searchAny(searchTerm);
 	searchTerm = Util::emptyStringT;
 	return 0;
 }

@@ -595,14 +595,13 @@ LRESULT DirectoryListingFrame::onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/,
 LRESULT DirectoryListingFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	const ItemInfo* ii = ctrlList.getSelectedItem();
 	tstring dir;
-	if(ii->type == ItemInfo::FILE){
+	if(ii->type == ItemInfo::FILE) {
 		dir = Text::toT(Util::getDir(ii->file->getPath(), true, true));
-		WinUtil::search(dir, 0, false);
-	}
-	else if(ii->type == ItemInfo::DIRECTORY){
+	} else if(ii->type == ItemInfo::DIRECTORY){
 		dir = ii->getText(COLUMN_FILENAME);
-		WinUtil::search(dir, 0, false);
 	}
+
+	WinUtil::searchAny(dir);
 	return 0;
 }
 
@@ -1821,17 +1820,15 @@ LRESULT DirectoryListingFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	if(ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getSelectedItem();
 		searchTerm = ii->getText(COLUMN_FILENAME);
-
-		WinUtil::search(searchTerm, 0, false);
 	} else {
 		HTREEITEM t = ctrlTree.GetSelectedItem();
 		if(t != NULL) {
 			DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
 			searchTerm = Text::toT((dir)->getName());
-			WinUtil::search(searchTerm, 0, false);
 		}
 	}
-	searchTerm = Util::emptyStringT;
+
+	WinUtil::searchAny(searchTerm);
 	return 0;
 }
 
@@ -1862,15 +1859,13 @@ LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND
 
 LRESULT DirectoryListingFrame::onSearchLeft(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
-		tstring searchTerm;
-		HTREEITEM t = ctrlTree.GetSelectedItem();
-		if(t != NULL) {
+	tstring searchTerm;
+	HTREEITEM t = ctrlTree.GetSelectedItem();
+	if(t != NULL) {
 		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
 		searchTerm = Text::toT((dir)->getName());
-		WinUtil::search(searchTerm, 0, false);
-
-}
-	searchTerm = Util::emptyStringT;
+		WinUtil::searchAny(searchTerm);
+	}
 	return 0;
 }
 

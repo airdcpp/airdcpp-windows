@@ -1557,12 +1557,12 @@ LRESULT QueueFrame::onRecheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 LRESULT QueueFrame::onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlQueue.GetSelectedCount() == 1 || ctrlDirs.GetSelectedItem() != NULL) {
 		if(usingDirMenu) {
-			WinUtil::search(Util::getLastDir(Text::toT(getSelectedDir())), 0, false);
+			WinUtil::searchAny(Util::getLastDir(Text::toT(getSelectedDir())));
 		} else {
 			int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
 			const QueueItemInfo* ii = ctrlQueue.getItemData(i);
 			if(ii != NULL)
-			WinUtil::searchHash(ii->getTTH());
+				WinUtil::searchHash(ii->getTTH());
 		}
 	}
 	return 0;

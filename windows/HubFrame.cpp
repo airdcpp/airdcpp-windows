@@ -41,6 +41,7 @@
 #include "../client/Wildcards.h"
 #include "../client/ColorSettings.h"
 #include "../client/HighlightManager.h"
+#include "../client/ConnectivityManager.h"
 
 HubFrame::FrameMap HubFrame::frames;
 HubFrame::IgnoreMap HubFrame::ignoreList;
@@ -294,13 +295,8 @@ void HubFrame::onEnter() {
 				PostMessage(WM_CLOSE);
 			} else if(stricmp(cmd.c_str(), _T("userlist")) == 0) {
 				ctrlShowUsers.SetCheck(showUsers ? BST_UNCHECKED : BST_CHECKED);
-			} else if(stricmp(cmd.c_str(), _T("connection")) == 0) {
-				addStatus(Text::toT((STRING(IP) + " " + client->getLocalIp() + ", " + 
-					STRING(PORT) + " " +
-					ConnectionManager::getInstance()->getPort() + "/" + 
-					SearchManager::getInstance()->getPort() + "/" +
-					ConnectionManager::getInstance()->getSecurePort()))
-					, WinUtil::m_ChatTextSystem);
+			} else if(Util::stricmp(cmd.c_str(), _T("conn")) == 0 || Util::stricmp(cmd.c_str(), _T("connection")) == 0) {
+				addStatus(Text::toT(ConnectivityManager::getInstance()->getInformation()));
 			} else if((stricmp(cmd.c_str(), _T("favorite")) == 0) || (stricmp(cmd.c_str(), _T("fav")) == 0)) {
 				addAsFavorite();
 			} else if((stricmp(cmd.c_str(), _T("removefavorite")) == 0) || (stricmp(cmd.c_str(), _T("removefav")) == 0)) {
@@ -345,7 +341,7 @@ void HubFrame::onEnter() {
 			} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
 				WinUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));
 			} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
-				addLine(_T("*** ") + WinUtil::commands + _T(", /smallfilesize #, /extraslots #, /savequeue, /join <hub-ip>, /clear, /ts, /showjoins, /favshowjoins, /close, /userlist, /connection, /favorite, /pm <user> [message], /getlist <user>, /ignorelist, /removefavorite"), WinUtil::m_ChatTextSystem);
+				addLine(_T("*** ") + WinUtil::commands + _T(", /smallfilesize #, /extraslots #, /savequeue, /join <hub-ip>, /clear, /ts, /showjoins, /favshowjoins, /close, /userlist, /conn[ection], /favorite, /pm <user> [message], /getlist <user>, /ignorelist, /removefavorite"), WinUtil::m_ChatTextSystem);
 			} else if(stricmp(cmd.c_str(), _T("pm")) == 0) {
 				string::size_type j = param.find(_T(' '));
 				if(j != string::npos) {

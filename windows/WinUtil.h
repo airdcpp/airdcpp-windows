@@ -306,9 +306,9 @@ public:
 	static void setFonts();
 	static void reLoadImages(); // User Icon Begin / User Icon End
 	static void FlashWindow();
-	static void search(tstring searchTerm, int searchMode, bool tth = false);
+	static void searchAny(const tstring& aSearch);
 	static void SetIcon(HWND hWnd, tstring file, bool big = false);
-	static tstring getTitle(tstring searchTerm);
+	static tstring getTitle(const tstring& searchTerm);
 	static void SearchSite(WebShortcut* ws, tstring strSearchString);
 	static void AppendSearchMenu(OMenu& menu, int x = 0);
 
