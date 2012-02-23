@@ -25,6 +25,8 @@
 #include "../client/Util.h"
 #include "../client/ResourceManager.h"
 
+#include "ExListViewCtrl.h"
+
 class FavoriteDirDlg : public CDialogImpl<FavoriteDirDlg> {
 public:
 
@@ -38,7 +40,12 @@ public:
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDC_FAVDIR_ADD, onAddPath)
+		COMMAND_ID_HANDLER(IDC_FAVDIR_REMOVE, onRemovePath)
 		COMMAND_HANDLER(IDC_BROWSEFAV, BN_CLICKED, onBrowse)
+		COMMAND_CODE_HANDLER(EN_CHANGE, onEditChange)
+		NOTIFY_HANDLER(IDC_DIRPATHS, LVN_ITEMCHANGED, onItemchangedDirectories)
+		MESSAGE_HANDLER(WM_DROPFILES, onDropFiles)
 	END_MSG_MAP()
 
 
@@ -50,11 +57,17 @@ public:
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT onEditChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT onAddPath(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
+	LRESULT onRemovePath(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
+	LRESULT onDropFiles(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
-	tstring name, path;
-
+	tstring vName;
+	StringList paths;
 private:
-	CEdit ctrlName, ctrlPath;
-
+	CEdit ctrlName;
+	ExListViewCtrl pathListCtrl;
+	void addPath(const tstring& aPath);
 };
 #endif

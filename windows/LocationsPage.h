@@ -43,7 +43,6 @@ public:
 
 	BEGIN_MSG_MAP_EX(LocationsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
-		MESSAGE_HANDLER(WM_DROPFILES, onDropFiles)
 		NOTIFY_HANDLER(IDC_FAVORITE_DIRECTORIES, LVN_ITEMCHANGED, onItemchangedDirectories)
 		NOTIFY_HANDLER(IDC_FAVORITE_DIRECTORIES, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_FAVORITE_DIRECTORIES, NM_DBLCLK, onDoubleClick)
@@ -59,7 +58,6 @@ public:
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onDropFiles(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
@@ -83,10 +81,9 @@ protected:
 	TCHAR* title;
 	FavoriteManager::FavDirList favoriteDirs;
 
-	void addDirectory(const tstring& aPath);
 	bool renameFavoriteDir(const string& aName, const string& anotherName, const string& aPath);
-	bool addFavoriteDir(const string& aDirectory, const string & aName);
 	bool removeFavoriteDir(const string& aName);
+	void addDirs(const string& vName, const StringList& aPaths);
 };
 
 #endif // !defined(FAVORITE_DIR_SPAGE_H)

@@ -971,6 +971,10 @@
 #define IDC_OTHER_PRIORITY_OPTIONS      1627
 #define IDC_                            1628
 #define IDC_FORMAT_REMOTE_TIME          1628
+#define IDC_FAVDIR_EDIT                 1630
+#define IDC_FAVDIR_ADD                  1631
+#define IDC_FAVDIR_REMOVE               1632
+#define IDC_SETTINGS_FAVDIR_PATHS       1633
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -999,6 +1003,7 @@
 #define IDC_AUTOSEARCHFRM               3031
 #define IDC_ENABLE                      3032
 #define IDC_DISABLE                     3033
+#define IDC_DIRPATHS                    3033
 #define IDC_DOWNLOAD_TARGET             5000
 #define IDC_DOWNLOAD_TARGET_DIR         5500
 #define IDC_SELECT_WINDOW               6000
@@ -1298,7 +1303,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        321
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1629
+#define _APS_NEXT_CONTROL_VALUE         1634
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

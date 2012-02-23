@@ -18,6 +18,8 @@
 
 #include "stdafx.h"
 
+#include <boost/range/algorithm.hpp>
+
 #include "../client/DCPlusPlus.h"
 #include "../client/Util.h"
 #include "../client/SettingsManager.h"
@@ -66,19 +68,11 @@ LRESULT LocationsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	CRect rc; 
 	ctrlDirectories.GetClientRect(rc); 
 	ctrlDirectories.InsertColumn(0, CTSTRING(FAVORITE_DIR_NAME), LVCFMT_LEFT, rc.Width()/4, 0); 
-	ctrlDirectories.InsertColumn(1, CTSTRING(DIRECTORY), LVCFMT_LEFT, rc.Width()*2 /2, 1);
+	ctrlDirectories.InsertColumn(1, CTSTRING(PATHS), LVCFMT_LEFT, rc.Width()*2 /2, 1);
 	favoriteDirs = FavoriteManager::getInstance()->getFavoriteDirs();
 	for(auto j = favoriteDirs.begin(); j != favoriteDirs.end(); j++) {
-		tstring vname = Text::toT(j->first);
-		int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), vname);
-		string paths = Util::emptyString;
-		for (auto s = j->second.begin(); s != j->second.end(); ++s) {
-			if(!paths.empty())
-				paths += "|";
-
-			paths += *s;
-		}
-		ctrlDirectories.SetItemText(i, 1, Text::toT(paths).c_str());
+		int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(j->first).c_str());
+		ctrlDirectories.SetItemText(i, 1, Text::toT(Util::toString(j->second)).c_str());
 	}
 	
 	return TRUE;
@@ -100,27 +94,6 @@ void LocationsPage::write()
 		
 	}
 	AirUtil::updateCachedSettings();
-}
-
-LRESULT LocationsPage::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
-	HDROP drop = (HDROP)wParam;
-	tstring buf;
-	buf.resize(MAX_PATH);
-
-	UINT nrFiles;
-	
-	nrFiles = DragQueryFile(drop, (UINT)-1, NULL, 0);
-	
-	for(UINT i = 0; i < nrFiles; ++i){
-		if(DragQueryFile(drop, i, &buf[0], MAX_PATH)){
-			if(PathIsDirectory(&buf[0]))
-				addDirectory(buf);
-		}
-	}
-
-	DragFinish(drop);
-
-	return 0;
 }
 
 LRESULT LocationsPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
@@ -162,7 +135,10 @@ LRESULT LocationsPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 
 LRESULT LocationsPage::onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	addDirectory(Util::emptyStringT);
+	FavoriteDirDlg dlg;
+	if(dlg.DoModal() == IDOK) {
+		addDirs(Text::fromT(dlg.vName), dlg.paths);
+	}
 	return 0;
 }
 	
@@ -184,50 +160,22 @@ LRESULT LocationsPage::onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 LRESULT LocationsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	TCHAR buf[MAX_PATH];
-	TCHAR buf2[2048];
 
 	int i = -1;
 	while((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		ctrlDirectories.GetItemText(i, 0, buf, MAX_PATH); //vname
-		ctrlDirectories.GetItemText(i, 1, buf2, 2048); //path
 		
 		FavoriteDirDlg dlg;
-		dlg.name = buf;
-		dlg.path = buf2;
+		dlg.vName = buf;
+		auto s = find_if(favoriteDirs.begin(), favoriteDirs.end(), CompareFirst<string, StringList>(Text::fromT(buf)));
+		dcassert(s != favoriteDirs.end());
+		dlg.paths = s->second;
 	
 		if(dlg.DoModal() == IDOK) {
-			removeFavoriteDir(Text::fromT(buf));
-			ctrlDirectories.DeleteItem(i);
-			
-			string path = Text::fromT(dlg.path + _T("|"));
-			string::size_type j = 0;
-			string::size_type i = 0;
-	
-			while((i = path.find("|", j)) != string::npos) {
-				string str = path.substr(j, i-j);
-				j = i +1;
-				if(str.size() >= 3){ //path must be atleast 3 characters
-					if (addFavoriteDir(str, Text::fromT(dlg.name))) {
-						int pos;
-						pos = ctrlDirectories.find(dlg.name);
-						if(pos == -1) {
-							//new virtual name
-							pos = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), dlg.name );
-							ctrlDirectories.SetItemText(pos, 1, dlg.path.c_str());
-						} else {
-							//existing virtual name, reload the paths in it.
-							tstring newstr = Util::emptyStringT;
-							auto paths = favoriteDirs[pos];
-							for(auto p = paths.second.begin(); p != paths.second.end(); ++p) {
-								if(!newstr.empty())
-									newstr += _T("|");
-								newstr += Text::toT(*p);
-							}
-							ctrlDirectories.SetItemText(pos, 1, newstr.c_str());
-						}
-					}
-				}
-			}
+			if (removeFavoriteDir(Text::fromT(buf)))
+				ctrlDirectories.DeleteItem(i);
+
+			addDirs(Text::fromT(dlg.vName), dlg.paths);
 		}
 	}
 	return 0;
@@ -260,81 +208,36 @@ LRESULT LocationsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, 
 	return 0;
 }
 
-void LocationsPage::addDirectory(const tstring& aPath){
-	tstring _path = aPath;
-	if(!_path.empty()) {
-		if( _path[ _path.length() -1 ] != PATH_SEPARATOR )
-			_path += PATH_SEPARATOR;
+void LocationsPage::addDirs(const string& vName, const StringList& aPaths){
+	int pos = 0;
+	StringList paths = aPaths;
+	std::sort(paths.begin(), paths.end());
+
+	auto i = find_if(favoriteDirs.begin(), favoriteDirs.end(), CompareFirst<string, StringList>(vName));
+	if (i != favoriteDirs.end()) {
+		//auto tmpPaths = i->second;
+		//i->second.clear();
+		//boost::merge(paths, tmpPaths, i->second);
+		//pos = distance(favoriteDirs.begin(), i);
+		pos = ctrlDirectories.find(Text::toT(vName));
+		boost::for_each(aPaths, [&](string p) {
+			if (find(i->second.begin(), i->second.end(), p) == i->second.end())
+				i->second.push_back(p); 
+		});
+		paths = i->second;
+	} else {
+		favoriteDirs.push_back(make_pair(vName, paths));
+		pos = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(vName) );
 	}
-	FavoriteDirDlg dlg;
-	dlg.path = _path;
-	if(dlg.DoModal() == IDOK) {
-		string path = Text::fromT(dlg.path) + "|";
-		string::size_type j = 0;
-		string::size_type i = 0;
-	
-		while((i = path.find("|", j)) != string::npos) {
-			string str = path.substr(j, i-j);
-			j = i +1;
-			if(str.size() >= 3) { //path must be atleast 3 characters
-				if(addFavoriteDir(str, Text::fromT(dlg.name))) {
-					int pos;
-					pos = ctrlDirectories.find(dlg.name);
-					if(pos == -1) {
-						//new virtual name
-						pos = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), dlg.name );
-						ctrlDirectories.SetItemText(pos, 1, dlg.path.c_str());
-					} else {
-						//existing virtual name, reload the paths in it.
-						tstring newstr = Util::emptyStringT;
-						auto paths = favoriteDirs[pos];
-						for(auto p = paths.second.begin(); p != paths.second.end(); ++p) {
-							if(!newstr.empty())
-								newstr += _T("|");
-							newstr += Text::toT(*p);
-						}
-						ctrlDirectories.SetItemText(pos, 1, newstr.c_str());
-					}
-				}
-			}
-		}
-	}
+	dcassert(pos != -1);
+	ctrlDirectories.SetItemText(pos, 1, Text::toT(Util::toString(paths)).c_str());
 }
 
-bool LocationsPage::addFavoriteDir(const string& aDirectory, const string & aName){
-	string path = aDirectory;
-
-	if( path[ path.length() -1 ] != PATH_SEPARATOR )
-		path += PATH_SEPARATOR;
-
-	for(auto i = favoriteDirs.begin(); i != favoriteDirs.end(); ++i) {
-		if(stricmp(aName, i->first) == 0) {
-			//virtual name exists
-			for (auto s = i->second.begin(); s != i->second.end(); ++s) {
-				if((strnicmp(path, *s, (*s).length()) == 0) && (strnicmp(path, (*s), path.length()) == 0)) {
-					return false;
-				}
-			}
-			i->second.push_back(path);
-			return true;
-		}
-	}
-
-	//new virtual name
-	StringList tmp;
-	tmp.push_back(path);
-	favoriteDirs.push_back(make_pair(aName, tmp));
-	return true;
-}
-
-
-bool LocationsPage::removeFavoriteDir(const string& aName) {
-
-	for(auto i = favoriteDirs.begin(); i != favoriteDirs.end(); ++i) {
-		if(stricmp(aName, i->first) == 0) {
-				favoriteDirs.erase(i);
-					return true;
-		}
+bool LocationsPage::removeFavoriteDir(const string& vName) {
+	auto i = find_if(favoriteDirs.begin(), favoriteDirs.end(), CompareFirst<string, StringList>(vName));
+	if (i != favoriteDirs.end()) {
+		favoriteDirs.erase(i);
+		return true;
 	}
 	return false;
 }

@@ -699,10 +699,25 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	selectedLine = LineFromPos(pt);
 	selectedUser.clear();
 	selectedIP.clear();
-	selectedWord = WordFromPos(pt);
+
+	CHARRANGE cr;
+	GetSel(cr);
+	if(cr.cpMax != cr.cpMin) {
+		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
+		GetSelText(buf);
+		selectedWord = Util::replace(buf, _T("\r"), _T("\r\n"));
+		delete[] buf;
+	} else { 	 
+		selectedWord = WordFromPos(pt); 
+	}
+
+	if (selectedWord.empty())
+		return 1;
+
 
 	release = (regRelease.match(selectedWord) > 0) ? true : false;
 	shareDupe=false, queueDupe=false, isMagnet=false, isTTH=false;
+
 	if (release) {
 		if (ShareManager::getInstance()->isDirShared(Text::fromT(selectedWord))) {
 			shareDupe=true;
@@ -967,29 +982,14 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 
 	return 0;
 }
-tstring ChatCtrl::getSearchString() {
-	tstring searchTerm;
-
-	CHARRANGE cr;
-	GetSel(cr);
-	if(cr.cpMax != cr.cpMin) {
-		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
-		GetSelText(buf);
-		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
-		delete[] buf;
-	} else if(!selectedWord.empty())  { 	 
-		searchTerm = selectedWord; 
-	}
-	return searchTerm;
-}
 
 LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring path;
 	if (release) {
 		if (shareDupe) {
-			path = ShareManager::getInstance()->getDirPath(Text::fromT(getSearchString()));
+			path = ShareManager::getInstance()->getDirPath(Text::fromT(selectedWord));
 		} else {
-			path = QueueManager::getInstance()->getDirPath(Text::fromT(getSearchString()));
+			path = QueueManager::getInstance()->getDirPath(Text::fromT(selectedWord));
 		}
 	} else {
 		Magnet m = Magnet(selectedWord);
@@ -1016,12 +1016,11 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 
 LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (release) {
-		tstring searchterm = getSearchString();
-		if(searchterm.size() < 5) //we dont accept anything under 5 chars
+		if(selectedWord.size() < 5) //we dont accept anything under 5 chars
 			return 0;
 
-		if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH))
-			LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+		if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(selectedWord), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH))
+			LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
 	} else {
 		downloadMagnet(SETTING(DOWNLOAD_DIRECTORY));
 	}
@@ -1041,17 +1040,15 @@ void ChatCtrl::downloadMagnet(const string& aPath) {
 }
 
 LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring searchterm = getSearchString();
-
-	if(searchterm.size() < 5) //we dont accept anything under 5 chars
+	if(selectedWord.size() < 5) //we dont accept anything under 5 chars
 		return 0;
 
 	tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 	if(WinUtil::browseDirectory(target, m_hWnd)) {
 		SettingsManager::getInstance()->addDirToHistory(target);
 		if (release) {
-			if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, Text::fromT(target), AutoSearch::TARGET_PATH))
-				LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+			if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(selectedWord), 7/*directory type*/, 0, true, Text::fromT(target), AutoSearch::TARGET_PATH))
+				LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
 		} else {
 			downloadMagnet(Text::fromT(target));
 		}
@@ -1061,8 +1058,7 @@ LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (release) {
-		tstring searchterm = getSearchString();
-		if(searchterm.size() < 5) //we dont accept anything under 5 chars
+		if(selectedWord.size() < 5) //we dont accept anything under 5 chars
 			return 0;
 
 		int newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
@@ -1084,8 +1080,8 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 			}
 		}
 
-		if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(searchterm), 7/*directory type*/, 0, true, target, targetType))
-			LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(searchterm));
+		if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(selectedWord), 7/*directory type*/, 0, true, target, targetType))
+			LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
 	} else {
 		string target;
 		if (WinUtil::getTarget(wID, target, 0)) {
@@ -1794,7 +1790,7 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 }
 
 LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::searchAny(getSearchString());
+	WinUtil::searchAny(selectedWord);
 	return 0;
 }
 
@@ -1810,7 +1806,7 @@ LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	if(newId < (int)WebShortcuts::getInstance()->list.size()) {
 		WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
 		if(ws != NULL) {
-			WinUtil::SearchSite(ws, getSearchString()); 
+			WinUtil::SearchSite(ws, selectedWord); 
 		}
 	}
 	return S_OK;
