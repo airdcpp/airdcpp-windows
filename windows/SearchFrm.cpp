@@ -529,8 +529,6 @@ void SearchFrame::onEnter() {
 
 	// Add new searches to the last-search dropdown list
 	if(SettingsManager::getInstance()->addSearchToHistory(s)) {
-		ctrlSearchBox.ResetContent();
-
 		auto lastSearches = SettingsManager::getInstance()->getSearchHistory();
 		for(auto i = lastSearches.begin(); i != lastSearches.end(); ++i) {
 			ctrlSearchBox.InsertString(0, i->c_str());
