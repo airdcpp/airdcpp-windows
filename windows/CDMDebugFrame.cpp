@@ -8,6 +8,16 @@
 
 #define MAX_TEXT_LEN 131072
 
+CDMDebugFrame::CDMDebugFrame() : stop(false), closed(false), showCommands(true), showHubCommands(false), showDetection(false), bFilterIp(false),
+		detectionContainer(WC_BUTTON, this, DETECTION_MESSAGE_MAP),
+		HubCommandContainer(WC_BUTTON, this, HUB_COMMAND_MESSAGE_MAP),
+		commandContainer(WC_BUTTON, this, COMMAND_MESSAGE_MAP),
+		cFilterContainer(WC_BUTTON, this, DEBUG_FILTER_MESSAGE_MAP),
+		eFilterContainer(WC_EDIT, this, DEBUG_FILTER_TEXT_MESSAGE_MAP),
+		clearContainer(WC_BUTTON, this, CLEAR_MESSAGE_MAP),
+		statusContainer(STATUSCLASSNAME, this, CLEAR_MESSAGE_MAP)
+	 { }
+
 LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
@@ -159,5 +169,122 @@ void CDMDebugFrame::addLine(const string& aLine) {
 LRESULT CDMDebugFrame::onClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlPad.SetWindowText(_T(""));
 	ctrlPad.SetFocus();
+	return 0;
+}
+
+int CDMDebugFrame::run() {
+	setThreadPriority(Thread::LOW);
+	string x = Util::emptyString;
+	stop = false;
+
+	while(true) {
+		s.wait();
+		if(stop)
+			break;
+
+		{
+			Lock l(cs);
+			if(cmdList.empty()) continue;
+
+			x = cmdList.front();
+			cmdList.pop_front();
+		}
+		addLine(x);
+	}
+		
+	stop = false;
+	return 0;
+}
+
+void CDMDebugFrame::addCmd(const string& cmd) {
+	{
+		Lock l(cs);
+		cmdList.push_back(cmd);
+	}
+	s.signal();
+}
+	
+void CDMDebugFrame::on(DebugManagerListener::DebugDetection, const string& aLine) noexcept {
+	if(!showDetection)
+		return;
+
+	addCmd(aLine);
+}
+void CDMDebugFrame::on(DebugManagerListener::DebugCommand, const string& aLine, int typeDir, const string& ip) noexcept {
+		switch(typeDir) {
+			case DebugManager::HUB_IN:
+				if(!showHubCommands)
+					return;
+				if(!bFilterIp || Text::toT(ip) == sFilterIp) {
+					addCmd("Hub:\t[Incoming][" + ip + "]\t \t" + aLine);
+				}
+				break;
+			case DebugManager::HUB_OUT:
+				if(!showHubCommands)
+					return;
+				if(!bFilterIp || Text::toT(ip) == sFilterIp) {
+					addCmd("Hub:\t[Outgoing][" + ip + "]\t \t" + aLine);
+				}
+				break;
+			case DebugManager::CLIENT_IN:
+				if(!showCommands)
+					return;
+				if(!bFilterIp || Text::toT(ip) == sFilterIp) {
+					addCmd("Client:\t[Incoming][" + ip + "]\t \t" + aLine);
+				}
+				break;
+			case DebugManager::CLIENT_OUT:
+				if(!showCommands)
+					return;
+				if(!bFilterIp || Text::toT(ip) == sFilterIp) {
+					addCmd("Client:\t[Outgoing][" + ip + "]\t \t" + aLine);
+				}
+				break;
+			default: dcassert(0);
+		}
+}
+
+LRESULT CDMDebugFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	HWND hWnd = (HWND)lParam;
+	HDC hDC = (HDC)wParam;
+	if(hWnd == ctrlPad.m_hWnd) {
+		::SetBkColor(hDC, WinUtil::bgColor);
+		::SetTextColor(hDC, WinUtil::textColor);
+		return (LRESULT)WinUtil::bgBrush;
+	}
+	bHandled = FALSE;
+	return FALSE;
+};
+LRESULT CDMDebugFrame::OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlPad.SetFocus();
+	return 0;
+}
+LRESULT CDMDebugFrame::onSetCheckDetection(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	showDetection = wParam == BST_CHECKED;
+	bHandled = FALSE;
+	return 0;
+}
+LRESULT CDMDebugFrame::onSetCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	showCommands = wParam == BST_CHECKED;
+	bHandled = FALSE;
+	return 0;
+}
+LRESULT CDMDebugFrame::onSetCheckHubCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	showHubCommands = wParam == BST_CHECKED;
+	bHandled = FALSE;
+	return 0;
+}
+LRESULT CDMDebugFrame::onSetCheckFilter(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	bFilterIp = wParam == BST_CHECKED;
+	UpdateLayout();
+	bHandled = FALSE;
+	return 0;
+}
+LRESULT CDMDebugFrame::onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	sFilterIp.resize(ctrlFilterText.GetWindowTextLength());
+
+	ctrlFilterText.GetWindowText(&sFilterIp[0], sFilterIp.size() + 1);
+
+	UpdateLayout();
 	return 0;
 }

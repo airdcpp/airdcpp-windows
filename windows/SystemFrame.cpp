@@ -266,20 +266,25 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	OMenu menu;
 	menu.CreatePopupMenu();
 
-		menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
+	menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
+	if (!selWord.empty()) {
 		menu.AppendMenu(MF_SEPARATOR);
-		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
-		
+		menu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
+		auto s = selWord[selWord.length()-1];
+		if (selWord[selWord.length()-1] != PATH_SEPARATOR)
+			menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH_FILENAME));
+	
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+	}
 
-		menu.AppendMenu(MF_SEPARATOR);
-		if(BOOLSETTING(LOG_SYSTEM)) {
+	menu.AppendMenu(MF_SEPARATOR);
+	if(BOOLSETTING(LOG_SYSTEM)) {
 		menu.AppendMenu(MF_STRING, IDC_OPEN_SYSTEM_LOG, CTSTRING(OPEN_SYSTEM_LOG));
 		menu.AppendMenu(MF_SEPARATOR);
-		}
-		menu.AppendMenu(MF_STRING, ID_EDIT_SELECT_ALL, CTSTRING(SELECT_ALL));
-		menu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR));
+	}
+	menu.AppendMenu(MF_STRING, ID_EDIT_SELECT_ALL, CTSTRING(SELECT_ALL));
+	menu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR));
 	
 	menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 
@@ -287,13 +292,18 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 }
 LRESULT SystemFrame::OnRButtonDown(POINT pt) {
-	//selLine.clear();
-	selPath.clear();
+	selWord.clear();
 
-	//selLine = LineFromPos(pt);
-	//selPath = getPath(selLine);
-	selWord = WordFromPos(pt);
-	
+	CHARRANGE cr;
+	ctrlPad.GetSel(cr);
+	if(cr.cpMax != cr.cpMin) {
+		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
+		ctrlPad.GetSelText(buf);
+		selWord = Util::replace(buf, _T("\r"), _T("\r\n"));
+		delete[] buf;
+	} else {
+		selWord = WordFromPos(pt);
+	}	
 	return 0;
 }
 
@@ -306,7 +316,9 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 	int iCharPos = ctrlPad.CharFromPos(p);
 	int line = ctrlPad.LineFromChar(iCharPos);
 	int	len = ctrlPad.LineLength(iCharPos) + 1;
-	int c = LOWORD(iCharPos) - ctrlPad.LineIndex(line);
+
+	LONG Begin = ctrlPad.LineIndex(line);
+	int c = LOWORD(iCharPos) - Begin;
 
 	if(len < 3)
 		return Util::emptyStringT;
@@ -315,140 +327,24 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 	x.resize(len);
 	ctrlPad.GetLine(line, &x[0], len);
 
-	string::size_type begin = 0;
-	tstring::size_type end = 0;
-	
-	begin = x.rfind(_T(":\\"), c);
-	
-	if(begin == string::npos) 
-		begin = x.rfind(_T("\\\\"), c);
+	tstring::const_iterator start = x.begin();
+	tstring::const_iterator end = x.end();
+	boost::match_results<tstring::const_iterator> result;
+	int pos=0;
 
-	if(begin != string::npos) { //found atleast 1 fullpath
-		begin = begin - 1;		
-		int pos = begin +2;
-		end = x.find(_T(":\\"), pos);  //this happens with dupedirs
-		
-		if(end == string::npos)
-		end = x.find(_T("\\\\"), pos);  //this happens with dupedirs
-
-		if(end == string::npos) {
-			end = x.rfind(_T("\\"));
-			if(end == string::npos)
-				end = x.length();
-		}else
-			end = x.rfind(_T("\\"), end);
-
-		selPath = x.substr(begin, end-begin +1);
-		
-	} else {
-		begin = x.find_first_of(_T("\\"));
-		if(begin != string::npos) {
-			
-		
-		end = x.rfind(_T("\\"));
-			if(end == string::npos)  //doing it like this means if we have one \ we will have a path.
-				end = x.length();	//remove if it causes weird things, tho all paths in systemlog should contain \ at the end too.
-
-			selPath = x.substr(begin, end-begin +1);
-			
-		} else begin = 0, end = 0;
+	while(boost::regex_search(start, end, result, reg, boost::match_default)) {
+		if (pos + result.position() <= c && pos + result.position() + result.length() >= c) {
+			ctrlPad.SetSel(pos + Begin + result.position(), pos + Begin + result.position() + result.length());
+			ctrlPad.SetSelectionCharFormat(WinUtil::m_ChatTextServer);
+			return x.substr(result.position(), result.length());
+		}
+		start = result[0].second;
+		pos=pos+result.position() + result.length();
 	}
 
-
-	if(!selPath.empty())
-		begin = x.find_last_of(_T("\\"), c);
-	else
-		begin = x.find_last_of(_T(" \t\r\n"), c);
-
-	if(begin == string::npos)
-		begin = 0;
-	else
-		begin++; 
-
-
-	
-	if(!selPath.empty()) {
-		end = x.find(_T("\\"), begin);
-		if(end == string::npos)
-			end = x.find_last_of(_T("."))+4; // a filename, crappy filenames can contain spaces or anything else weird so.
-	} else
-		end = x.find(_T(" "), begin);
-
-	if(end == tstring::npos)
-		end = x.length();
-	
-	len = end - begin;
-	
-	if(len <= 0)
 	return Util::emptyStringT;
-
-	tstring sText;
-	sText = x.substr(begin, end-begin);
-
-	if(!sText.empty()) 
-		return sText;
-	
-		
-	return Util::emptyStringT;
-	
-}/*
-tstring SystemFrame::getPath(tstring line) {
-	
-	tstring::size_type start = line.find_first_of(PATH_SEPARATOR); 
-	tstring::size_type end = line.length();
-	
-	if(start == tstring::npos)   //no path, return
-		return Util::emptyStringT;
-
-	start = line.rfind(_T(" "), start) +1; //find the drive
-	
-	if(start == tstring::npos) //this shouldnt happen.
-		return Util::emptyStringT;
-
-		
-	tstring path = line.substr(start, end);
-	
-	//LogManager::getInstance()->message(Text::fromT(path));
-	
-	/* Yes ofc regex match would be better, just need to know how to make a match :) 
-
-			tstring path;
-			try{
-			
-			boost::wregex reg;
-			reg.assign(_T(^([a-zA-Z]\:|\\\\[^\/\\:*?"<>|]+\\[^\/\\:*?"<>|]+)(\\[^\/\\:*?"<>|]+)+(\.[^\/\\:*?"<>|]+)$));
-			boost::match_results<tstring::const_iterator> result;
-			
-			if(boost::regex_search(line, result, reg, boost::match_default)) {
-				path = path.substr(result.position(), result.length());
-			}
-			}catch(...) {
-			
-			}
-			*/
-/*
-	if(!path.empty())
-		return path;
-	else
-		return Util::emptyStringT;
 }
 
-tstring SystemFrame::LineFromPos(const POINT& p) const {
-	int iCharPos = ctrlPad.CharFromPos(p);
-	int len = ctrlPad.LineLength(iCharPos);
-
-	if(len < 3) {
-		return Util::emptyStringT;
-	}
-
-	tstring tmp;
-	tmp.resize(len);
-
-	ctrlPad.GetLine(ctrlPad.LineFromChar(iCharPos), &tmp[0], len);
-
-	return tmp;
-}
-*/
 LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if(wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0) {
 		scrollToEnd();
@@ -459,7 +355,7 @@ LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 }
 
 LRESULT SystemFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring tmp = Util::getFilePath(selPath); //need to pick up the path here if we have a missing file, they dont exist :)
+	tstring tmp = Util::getFilePath(selWord); //need to pick up the path here if we have a missing file, they dont exist :)
 	if(Util::fileExists(Text::fromT(tmp)))
 		WinUtil::openFolder(tmp);
 
@@ -480,20 +376,12 @@ LRESULT SystemFrame::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
-LRESULT SystemFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT SystemFrame::onSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	WinUtil::searchAny(Util::getFileName(selWord));
+	return 0;
+}
 
-	CHARRANGE cr;
-	ctrlPad.GetSel(cr);
-	if(cr.cpMax != cr.cpMin) {
-		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
-		ctrlPad.GetSelText(buf);
-		searchTerm = Util::replace(buf, _T("\r"), _T("\r\n"));
-		delete[] buf;
-	}else{
-		searchTerm = selWord;
-	}
-
-	WinUtil::searchAny(searchTerm);
-	searchTerm = Util::emptyStringT;
+LRESULT SystemFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	WinUtil::searchAny(Text::toT(Util::getDir(Text::fromT(selWord), true, true)));
 	return 0;
 }

@@ -1194,7 +1194,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="PasswdProtectTrayChckbox">Protect Tray</String>
 		<String Name="Note">Note; If you disable password protection your password will be reset!</String>
 		<String Name="ReaddAll">Readd all Sources</String>
-		<String Name="HubNotProtected">No password was required/provided at login, disconnecting hub. (Setting @ Misc Page)</String>
+		<String Name="HubNotProtected">No password was required/provided at login, disconnecting hub. (Setting @ AirDCpage)</String>
 		<String Name="DisallowConnectionToPassedHubs">Automatically disconnect hubs if not registered</String>
 		<String Name="DontShareDownloadDirectory">The download directory cannot be shared</String>
 		<String Name="BoldHubTabsOnKick">Bold hub's tabs on kick messages</String>
@@ -1505,7 +1505,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SettingsAutoDropSlowSources">Use slow speed disconnecting by default for new bundles</String>
 		<String Name="SettingsUseHighestList">Set highest priority for files matching the high priority list</String>
 		<String Name="SettingsRecentHours">The maximum age for a bundle dir to consider it as recent</String>
-		<String Name="PathsFavdirs">Paths (the one with most disk space will be picked)</String>
+		<String Name="PathsFavdirs">Paths (the one with most disk space will be picked, allows time variables)</String>
 		<String Name="Paths">Paths</String>
+		<String Name="SearchFilename">Search filename</String>
 	</Strings>
 </Language>

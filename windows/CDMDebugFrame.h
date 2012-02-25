@@ -26,16 +26,7 @@ class CDMDebugFrame : private DebugManagerListener, public Thread,
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("CDMDebugFrame"), IDR_CDM, 0, COLOR_3DFACE);
 
-	CDMDebugFrame() : stop(false), closed(false), showCommands(true), showHubCommands(false), showDetection(false), bFilterIp(false),
-		detectionContainer(WC_BUTTON, this, DETECTION_MESSAGE_MAP),
-		HubCommandContainer(WC_BUTTON, this, HUB_COMMAND_MESSAGE_MAP),
-		commandContainer(WC_BUTTON, this, COMMAND_MESSAGE_MAP),
-		cFilterContainer(WC_BUTTON, this, DEBUG_FILTER_MESSAGE_MAP),
-		eFilterContainer(WC_EDIT, this, DEBUG_FILTER_TEXT_MESSAGE_MAP),
-		clearContainer(WC_BUTTON, this, CLEAR_MESSAGE_MAP),
-		statusContainer(STATUSCLASSNAME, this, CLEAR_MESSAGE_MAP)
-	 { 
-	 }
+	CDMDebugFrame();
 	
 	~CDMDebugFrame() { }
 	void OnFinalMessage(HWND /*hWnd*/) { delete this; }
@@ -66,50 +57,13 @@ public:
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
-	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-		HWND hWnd = (HWND)lParam;
-		HDC hDC = (HDC)wParam;
-		if(hWnd == ctrlPad.m_hWnd) {
-			::SetBkColor(hDC, WinUtil::bgColor);
-			::SetTextColor(hDC, WinUtil::textColor);
-			return (LRESULT)WinUtil::bgBrush;
-		}
-		bHandled = FALSE;
-		return FALSE;
-	};
-	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		ctrlPad.SetFocus();
-		return 0;
-	}
-	LRESULT onSetCheckDetection(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-		showDetection = wParam == BST_CHECKED;
-		bHandled = FALSE;
-		return 0;
-	}
-	LRESULT onSetCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-		showCommands = wParam == BST_CHECKED;
-		bHandled = FALSE;
-		return 0;
-	}
-	LRESULT onSetCheckHubCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-		showHubCommands = wParam == BST_CHECKED;
-		bHandled = FALSE;
-		return 0;
-	}
-	LRESULT onSetCheckFilter(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-		bFilterIp = wParam == BST_CHECKED;
-		UpdateLayout();
-		bHandled = FALSE;
-		return 0;
-	}
-	LRESULT onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		sFilterIp.resize(ctrlFilterText.GetWindowTextLength());
-
-		ctrlFilterText.GetWindowText(&sFilterIp[0], sFilterIp.size() + 1);
-
-		UpdateLayout();
-		return 0;
-	}
+	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onSetCheckDetection(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onSetCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onSetCheckHubCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onSetCheckFilter(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void addLine(const string& aLine);
 	
@@ -119,37 +73,9 @@ private:
 	Semaphore s;
 	deque<string> cmdList;
 
-	int run() {
-		setThreadPriority(Thread::LOW);
-		string x = Util::emptyString;
-		stop = false;
+	int run();
 
-		while(true) {
-			s.wait();
-			if(stop)
-				break;
-
-			{
-				Lock l(cs);
-				if(cmdList.empty()) continue;
-
-				x = cmdList.front();
-				cmdList.pop_front();
-			}
-			addLine(x);
-		}
-		
-		stop = false;
-		return 0;
-	}
-
-	void addCmd(const string& cmd) {
-		{
-			Lock l(cs);
-			cmdList.push_back(cmd);
-		}
-		s.signal();
-	}
+	void addCmd(const string& cmd);
 
 	CEdit ctrlPad, ctrlFilterText;
 	CStatusBarCtrl ctrlStatus;
@@ -160,45 +86,8 @@ private:
 	tstring sFilterIp;
 	bool closed;
 	
-	void on(DebugManagerListener::DebugDetection, const string& aLine) noexcept {
-		if(!showDetection)
-			return;
-
-		addCmd(aLine);
-	}
-	void on(DebugManagerListener::DebugCommand, const string& aLine, int typeDir, const string& ip) noexcept {
-			switch(typeDir) {
-				case DebugManager::HUB_IN:
-					if(!showHubCommands)
-						return;
-					if(!bFilterIp || Text::toT(ip) == sFilterIp) {
-						addCmd("Hub:\t[Incoming][" + ip + "]\t \t" + aLine);
-					}
-					break;
-				case DebugManager::HUB_OUT:
-					if(!showHubCommands)
-						return;
-					if(!bFilterIp || Text::toT(ip) == sFilterIp) {
-						addCmd("Hub:\t[Outgoing][" + ip + "]\t \t" + aLine);
-					}
-					break;
-				case DebugManager::CLIENT_IN:
-					if(!showCommands)
-						return;
-					if(!bFilterIp || Text::toT(ip) == sFilterIp) {
-						addCmd("Client:\t[Incoming][" + ip + "]\t \t" + aLine);
-					}
-					break;
-				case DebugManager::CLIENT_OUT:
-					if(!showCommands)
-						return;
-					if(!bFilterIp || Text::toT(ip) == sFilterIp) {
-						addCmd("Client:\t[Outgoing][" + ip + "]\t \t" + aLine);
-					}
-					break;
-				default: dcassert(0);
-			}
-	}
+	void on(DebugManagerListener::DebugDetection, const string& aLine) noexcept;
+	void on(DebugManagerListener::DebugCommand, const string& aLine, int typeDir, const string& ip) noexcept;
 };
 
 #endif // __CDMDEBUGFRAME_H

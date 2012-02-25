@@ -110,8 +110,9 @@ LRESULT FavoriteDirDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 
 
 LRESULT FavoriteDirDlg::onEditChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(wID == IDC_FAVDIR_EDIT)
+	if(wID == IDC_FAVDIR_EDIT) {
 		::EnableWindow(GetDlgItem(IDC_FAVDIR_ADD), (::GetWindowTextLength(GetDlgItem(IDC_FAVDIR_EDIT)) > 0));
+	}
 	return 0;
 }
 
@@ -119,6 +120,9 @@ LRESULT FavoriteDirDlg::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, B
 {
 	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
 	::EnableWindow(GetDlgItem(IDC_FAVDIR_REMOVE), (lv->uNewState & LVIS_FOCUSED));
+	TCHAR buf[MAX_PATH];
+	pathListCtrl.GetItemText(pathListCtrl.GetSelectedIndex(), 0, buf, MAX_PATH);
+	SetDlgItemText(IDC_FAVDIR_EDIT, buf);
 	return 0;
 }
 
