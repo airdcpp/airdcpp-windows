@@ -387,7 +387,6 @@
 		<String Name="Minslots">Min slots</String>
 		<String Name="Minutes">Minutes</String>
 		<String Name="Mode">Mode</String>
-		<String Name="Move">Move/Rename</String>
 		<String Name="MoveDown">Move &amp;Down</String>
 		<String Name="MoveUp">Move &amp;Up</String>
 		<String Name="MynickInChat">My nick in mainchat</String>
@@ -1508,5 +1507,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="PathsFavdirs">Paths (the one with most disk space will be picked, allows time variables)</String>
 		<String Name="Paths">Paths</String>
 		<String Name="SearchFilename">Search filename</String>
+		<String Name="RenameDir">Rename Directory</String>
+		<String Name="MoveDir">Move Directory</String>
+		<String Name="MoveRenameFile">Move/Rename file(s)</String>
 	</Strings>
 </Language>
