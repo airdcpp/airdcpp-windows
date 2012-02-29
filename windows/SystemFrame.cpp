@@ -270,7 +270,6 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	if (!selWord.empty()) {
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
-		auto s = selWord[selWord.length()-1];
 		if (selWord[selWord.length()-1] != PATH_SEPARATOR)
 			menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH_FILENAME));
 	
