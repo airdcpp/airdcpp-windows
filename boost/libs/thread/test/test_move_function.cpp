@@ -1,6 +1,6 @@
 // Copyright (C) 2007-8 Anthony Williams
 //
-//  Distributed under the Boost Software License, Version 1.0. (See accompanying 
+//  Distributed under the Boost Software License, Version 1.0. (See accompanying
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 #include <boost/thread/thread.hpp>
 #include <boost/test/unit_test.hpp>
@@ -89,10 +89,17 @@ namespace user_test_ns
     }
 
     bool move_called=false;
-    
+
     struct nc:
         public boost::shared_ptr<int>
     {
+#ifndef BOOST_NO_RVALUE_REFERENCES
+        nc() {}
+        nc(nc&&)
+        {
+            move_called=true;
+        }
+#endif
         nc move()
         {
             move_called=true;
@@ -101,16 +108,30 @@ namespace user_test_ns
     };
 }
 
+#ifdef BOOST_NO_RVALUE_REFERENCES
+namespace boost
+{
+    template <>
+    struct has_move_emulation_enabled_aux<user_test_ns::nc>
+      : BOOST_MOVE_BOOST_NS::integral_constant<bool, true>
+    {};
+}
+#endif
+
 void test_move_for_user_defined_type_unaffected()
 {
     user_test_ns::nc src;
+#ifndef BOOST_NO_RVALUE_REFERENCES
+    user_test_ns::nc dest=boost::move(src);
+#else
     user_test_ns::nc dest=move(src);
+#endif
     BOOST_CHECK(user_test_ns::move_called);
 }
 
-boost::unit_test_framework::test_suite* init_unit_test_suite(int, char*[])
+boost::unit_test::test_suite* init_unit_test_suite(int, char*[])
 {
-    boost::unit_test_framework::test_suite* test =
+    boost::unit_test::test_suite* test =
         BOOST_TEST_SUITE("Boost.Threads: thread move test suite");
 
     test->add(BOOST_TEST_CASE(test_thread_move_from_lvalue_on_construction));

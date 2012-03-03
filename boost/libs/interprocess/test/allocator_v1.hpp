@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// (C) Copyright Ion Gaztanaga 2005-2009. Distributed under the Boost
+// (C) Copyright Ion Gaztanaga 2005-2011. Distributed under the Boost
 // Software License, Version 1.0. (See accompanying file
 // LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
@@ -18,7 +18,7 @@
 #include <boost/interprocess/detail/config_begin.hpp>
 #include <boost/interprocess/detail/workaround.hpp>
 
-#include <boost/pointer_to_other.hpp>
+#include <boost/intrusive/pointer_traits.hpp>
 
 #include <boost/interprocess/interprocess_fwd.hpp>
 #include <boost/interprocess/containers/allocation_type.hpp>
@@ -50,12 +50,13 @@ class allocator_v1
    typedef SegmentManager                          segment_manager;
    typedef typename segment_manager::void_pointer  aux_pointer_t;
 
-   typedef typename 
-      boost::pointer_to_other
-         <aux_pointer_t, const void>::type   cvoid_ptr;
+   typedef typename boost::intrusive::
+      pointer_traits<aux_pointer_t>::template
+         rebind_pointer<const void>::type          cvoid_ptr;
 
-   typedef typename boost::pointer_to_other
-      <cvoid_ptr, segment_manager>::type     alloc_ptr_t;
+   typedef typename boost::intrusive::
+      pointer_traits<cvoid_ptr>::template
+         rebind_pointer<segment_manager>::type     alloc_ptr_t;
 
    template<class T2, class SegmentManager2>
    allocator_v1& operator=(const allocator_v1<T2, SegmentManager2>&);
@@ -66,10 +67,15 @@ class allocator_v1
 
  public:
    typedef T                                    value_type;
-   typedef typename boost::pointer_to_other
-      <cvoid_ptr, T>::type                      pointer;
-   typedef typename boost::
-      pointer_to_other<pointer, const T>::type  const_pointer;
+
+   typedef typename boost::intrusive::
+      pointer_traits<cvoid_ptr>::template
+         rebind_pointer<T>::type                pointer;
+
+   typedef typename boost::intrusive::
+      pointer_traits<cvoid_ptr>::template
+         rebind_pointer<const T>::type          const_pointer;
+
    typedef typename ipcdetail::add_reference
                      <value_type>::type         reference;
    typedef typename ipcdetail::add_reference
@@ -86,7 +92,7 @@ class allocator_v1
 
    //!Returns the segment manager. Never throws
    segment_manager* get_segment_manager()const
-   {  return ipcdetail::get_pointer(mp_mngr);   }
+   {  return ipcdetail::to_raw_pointer(mp_mngr);   }
 /*
    //!Returns address of mutable object. Never throws
    pointer address(reference value) const
@@ -116,12 +122,12 @@ class allocator_v1
 
    //!Deallocates memory previously allocated. Never throws
    void deallocate(const pointer &ptr, size_type)
-   {  mp_mngr->deallocate((void*)ipcdetail::get_pointer(ptr));  }
+   {  mp_mngr->deallocate((void*)ipcdetail::to_raw_pointer(ptr));  }
 
    //!Construct object, calling constructor. 
    //!Throws if T(const T&) throws
    void construct(const pointer &ptr, const_reference value)
-   {  new((void*)ipcdetail::get_pointer(ptr)) value_type(value);  }
+   {  new((void*)ipcdetail::to_raw_pointer(ptr)) value_type(value);  }
 
    //!Destroys object. Throws if object's destructor throws
    void destroy(const pointer &ptr)

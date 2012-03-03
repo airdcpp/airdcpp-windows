@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-// (C) Copyright Ion Gaztanaga 2005-2009. Distributed under the Boost
+// (C) Copyright Ion Gaztanaga 2005-2011. Distributed under the Boost
 // Software License, Version 1.0. (See accompanying file
 // LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
@@ -18,7 +18,7 @@
 #include <boost/interprocess/detail/config_begin.hpp>
 #include <boost/interprocess/detail/workaround.hpp>
 
-#include <boost/pointer_to_other.hpp>
+#include <boost/intrusive/pointer_traits.hpp>
 
 #include <boost/interprocess/interprocess_fwd.hpp>
 #include <boost/assert.hpp>
@@ -80,10 +80,12 @@ class node_allocator_base
 
    public:
    //-------
-   typedef typename boost::
-      pointer_to_other<void_pointer, T>::type            pointer;
-   typedef typename boost::
-      pointer_to_other<void_pointer, const T>::type      const_pointer;
+   typedef typename boost::intrusive::
+      pointer_traits<void_pointer>::template
+         rebind_pointer<T>::type                         pointer;
+   typedef typename boost::intrusive::
+      pointer_traits<void_pointer>::template
+         rebind_pointer<const T>::type                   const_pointer;
    typedef T                                             value_type;
    typedef typename ipcdetail::add_reference
                      <value_type>::type                  reference;
@@ -93,7 +95,7 @@ class node_allocator_base
    typedef typename segment_manager::difference_type     difference_type;
 
    typedef boost::interprocess::version_type<node_allocator_base, Version>   version;
-   typedef boost::container::containers_detail::transform_multiallocation_chain
+   typedef boost::container::container_detail::transform_multiallocation_chain
       <typename SegmentManager::multiallocation_chain, T>multiallocation_chain;
 
    //!Obtains node_allocator_base from 
@@ -127,7 +129,7 @@ class node_allocator_base
    node_allocator_base(const node_allocator_base &other) 
       : mp_node_pool(other.get_node_pool()) 
    {  
-      node_pool<0>::get(ipcdetail::get_pointer(mp_node_pool))->inc_ref_count();   
+      node_pool<0>::get(ipcdetail::to_raw_pointer(mp_node_pool))->inc_ref_count();   
    }
 
    //!Copy constructor from related node_allocator_base. If not present, constructs
@@ -149,17 +151,17 @@ class node_allocator_base
    //!Destructor, removes node_pool_t from memory
    //!if its reference count reaches to zero. Never throws
    ~node_allocator_base() 
-   {  ipcdetail::destroy_node_pool_if_last_link(node_pool<0>::get(ipcdetail::get_pointer(mp_node_pool)));   }
+   {  ipcdetail::destroy_node_pool_if_last_link(node_pool<0>::get(ipcdetail::to_raw_pointer(mp_node_pool)));   }
 
    //!Returns a pointer to the node pool.
    //!Never throws
    void* get_node_pool() const
-   {  return ipcdetail::get_pointer(mp_node_pool);   }
+   {  return ipcdetail::to_raw_pointer(mp_node_pool);   }
 
    //!Returns the segment manager.
    //!Never throws
    segment_manager* get_segment_manager()const
-   {  return node_pool<0>::get(ipcdetail::get_pointer(mp_node_pool))->get_segment_manager();  }
+   {  return node_pool<0>::get(ipcdetail::to_raw_pointer(mp_node_pool))->get_segment_manager();  }
 
    //!Swaps allocators. Does not throw. If each allocator is placed in a
    //!different memory segment, the result is undefined.

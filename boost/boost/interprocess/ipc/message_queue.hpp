@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-// (C) Copyright Ion Gaztanaga 2005-2009. Distributed under the Boost
+// (C) Copyright Ion Gaztanaga 2005-2011. Distributed under the Boost
 // Software License, Version 1.0. (See accompanying file
 // LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
@@ -18,6 +18,7 @@
 #include <boost/interprocess/detail/managed_open_or_create_impl.hpp>
 #include <boost/interprocess/sync/interprocess_condition.hpp>
 #include <boost/interprocess/sync/interprocess_mutex.hpp>
+#include <boost/interprocess/sync/scoped_lock.hpp>
 #include <boost/interprocess/detail/utilities.hpp>
 #include <boost/interprocess/offset_ptr.hpp>
 #include <boost/interprocess/creation_tags.hpp>
@@ -25,9 +26,10 @@
 #include <boost/interprocess/permissions.hpp>
 #include <boost/detail/no_exceptions_support.hpp>
 #include <boost/interprocess/detail/type_traits.hpp>
-#include <boost/pointer_to_other.hpp>
+#include <boost/intrusive/pointer_traits.hpp>
 #include <boost/type_traits/make_unsigned.hpp>
 #include <boost/type_traits/alignment_of.hpp>
+#include <boost/intrusive/pointer_traits.hpp>
 #include <algorithm> //std::lower_bound
 #include <cstddef>   //std::size_t
 #include <cstring>   //memcpy
@@ -54,8 +56,10 @@ class message_queue_t
 
    public:
    typedef VoidPointer                                                 void_pointer;
-   typedef typename boost::pointer_to_other<void_pointer, char>::type  char_ptr;
-   typedef typename std::iterator_traits<char_ptr>::difference_type    difference_type;
+   typedef typename boost::intrusive::
+      pointer_traits<void_pointer>::template
+         rebind_pointer<char>::type                                    char_ptr;
+   typedef typename boost::intrusive::pointer_traits<char_ptr>::difference_type difference_type;
    typedef typename boost::make_unsigned<difference_type>::type        size_type;
 
    //!Creates a process shared message queue with name "name". For this message queue,
@@ -79,7 +83,7 @@ class message_queue_t
                  const permissions &perm = permissions());
 
    //!Opens a previously created process shared message queue with name "name". 
-   //!If the was not previously created or there are no free resources, 
+   //!If the queue was not previously created or there are no free resources, 
    //!throws an error.
    message_queue_t(open_only_t open_only,
                  const char *name);
@@ -185,11 +189,12 @@ namespace ipcdetail {
 template<class VoidPointer>
 class msg_hdr_t 
 {
-   typedef VoidPointer                                                    void_pointer;
-   typedef typename boost::
-      pointer_to_other<VoidPointer, char>::type                          char_ptr;
-   typedef typename std::iterator_traits<char_ptr>::difference_type       difference_type;
-   typedef typename boost::make_unsigned<difference_type>::type           size_type;
+   typedef VoidPointer                                                           void_pointer;
+   typedef typename boost::intrusive::
+      pointer_traits<void_pointer>::template
+         rebind_pointer<char>::type                                              char_ptr;
+   typedef typename boost::intrusive::pointer_traits<char_ptr>::difference_type  difference_type;
+   typedef typename boost::make_unsigned<difference_type>::type                  size_type;
 
    public:
    size_type               len;     // Message length
@@ -202,8 +207,9 @@ class msg_hdr_t
 template<class VoidPointer>
 class priority_functor
 {
-   typedef typename boost::
-      pointer_to_other<VoidPointer, msg_hdr_t<VoidPointer> >::type      msg_hdr_ptr_t;
+   typedef typename boost::intrusive::
+      pointer_traits<VoidPointer>::template
+         rebind_pointer<msg_hdr_t<VoidPointer> >::type                  msg_hdr_ptr_t;
 
    public:
    bool operator()(const msg_hdr_ptr_t &msg1, 
@@ -247,14 +253,17 @@ template<class VoidPointer>
 class mq_hdr_t
    : public ipcdetail::priority_functor<VoidPointer>
 {   
-   typedef VoidPointer                                                    void_pointer;
-   typedef msg_hdr_t<void_pointer>                                        msg_header;
-   typedef typename boost::
-      pointer_to_other<void_pointer, msg_header>::type                   msg_hdr_ptr_t;
-   typedef typename std::iterator_traits<msg_hdr_ptr_t>::difference_type  difference_type;
-   typedef typename boost::make_unsigned<difference_type>::type           size_type;
-   typedef typename boost::
-      pointer_to_other<void_pointer, msg_hdr_ptr_t>::type                msg_hdr_ptr_ptr_t;
+   typedef VoidPointer                                                     void_pointer;
+   typedef msg_hdr_t<void_pointer>                                         msg_header;
+   typedef typename boost::intrusive::
+      pointer_traits<void_pointer>::template
+         rebind_pointer<msg_header>::type                                  msg_hdr_ptr_t;
+   typedef typename boost::intrusive::pointer_traits
+      <msg_hdr_ptr_t>::difference_type                                     difference_type;
+   typedef typename boost::make_unsigned<difference_type>::type            size_type;
+   typedef typename boost::intrusive::
+      pointer_traits<void_pointer>::template
+         rebind_pointer<msg_hdr_ptr_t>::type                              msg_hdr_ptr_ptr_t;
 
    public:
    //!Constructor. This object must be constructed in the beginning of the 
@@ -373,8 +382,10 @@ template<class VoidPointer>
 class initialization_func_t
 {
    public:
-   typedef typename boost::pointer_to_other<VoidPointer, char>::type   char_ptr;
-   typedef typename std::iterator_traits<char_ptr>::difference_type    difference_type;
+   typedef typename boost::intrusive::
+      pointer_traits<VoidPointer>::template
+         rebind_pointer<char>::type                                    char_ptr;
+   typedef typename boost::intrusive::pointer_traits<char_ptr>::difference_type difference_type;
    typedef typename boost::make_unsigned<difference_type>::type        size_type;
 
    initialization_func_t(size_type maxmsg = 0, 

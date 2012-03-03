@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////////////////////////
 //
-// (C) Copyright Ion Gaztanaga 2005-2009. Distributed under the Boost
+// (C) Copyright Ion Gaztanaga 2005-2011. Distributed under the Boost
 // Software License, Version 1.0. (See accompanying file
 // LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
@@ -20,7 +20,6 @@
 
 #include <boost/intrusive/slist.hpp>
 #include <boost/math/common_factor_ct.hpp>
-#include <boost/pointer_to_other.hpp>
 
 #include <boost/interprocess/detail/utilities.hpp>
 #include <boost/interprocess/allocators/detail/allocator_common.hpp>
@@ -44,10 +43,10 @@ namespace ipcdetail {
 template< class SegmentManager, std::size_t NodeSize, std::size_t NodesPerBlock >
 class private_node_pool
    //Inherit from the implementation to avoid template bloat
-   :  public boost::container::containers_detail::
+   :  public boost::container::container_detail::
          private_node_pool_impl<typename SegmentManager::segment_manager_base_type>
 {
-   typedef boost::container::containers_detail::private_node_pool_impl
+   typedef boost::container::container_detail::private_node_pool_impl
       <typename SegmentManager::segment_manager_base_type> base_t;
    //Non-copyable
    private_node_pool();
