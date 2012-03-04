@@ -270,6 +270,7 @@ private:
 		uint8_t getImageIndex() const { return static_cast<uint8_t>(!download ? IMAGE_UPLOAD : (!parent ? IMAGE_DOWNLOAD : IMAGE_SEGMENT)); }
 
 		ItemInfo* createParent();
+		void updateUser(const vector<ItemInfo*>& aChildren);
 
 		inline const string& getGroupCond() const;
 	};
@@ -370,7 +371,6 @@ private:
 	void on(DownloadManagerListener::Tick, const DownloadList& aDownload) noexcept;
 	void on(DownloadManagerListener::BundleTick, const BundleList& bundles) noexcept;
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
-	void on(DownloadManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) noexcept { onBundleUser(bundleToken, aUser); }
 	void on(DownloadManagerListener::Target, const UserPtr& user, const string& aToken) noexcept { onUpdateFileInfo(user, aToken, false); }
 	void on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, false); }
 	void on(DownloadManagerListener::TargetChanged, const string& aTarget, const string& aToken, const string& bundleToken) noexcept;
@@ -386,7 +386,6 @@ private:
 
 	void on(QueueManagerListener::BundleFinished, const BundlePtr aBundle) noexcept { onBundleComplete(aBundle->getToken(), aBundle->getName(), false); }
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, true); }
-	void on(QueueManagerListener::BundleUser, const string& bundleToken, const HintedUser& aUser) noexcept { onBundleUser(bundleToken, aUser); }
 	void on(QueueManagerListener::BundleSize, const BundlePtr aBundle) noexcept;
 	void on(QueueManagerListener::BundleTarget, const BundlePtr aBundle) noexcept { onBundleName(aBundle); }
 	void on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept { onBundleName(aBundle); }
@@ -398,7 +397,6 @@ private:
 	void onBundleName(const BundlePtr aBundle);
 	void onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload);
 	void onBundleStatus(const BundlePtr aBundle, bool removed);
-	void onBundleUser(const string& bundleToken, const HintedUser& aUser);
 	void onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree, const string& bundleToken);
 	void starting(UpdateInfo* ui, const Transfer* t);
 	

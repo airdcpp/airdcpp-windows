@@ -30,6 +30,9 @@
 #include "../client/AirUtil.h"
 #include "../client/format.h"
 
+#include <boost/range/algorithm/for_each.hpp>
+#include <boost/range/algorithm_ext/for_each.hpp>
+
 #include "WinUtil.h"
 #include "TransferView.h"
 #include "MainFrm.h"
@@ -666,11 +669,10 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			ItemInfo* ii = findItem(ui, pos);
 			if(ii) {
 				if (!ii->bundle.empty()) {
-					const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
-					if (children.size() == 2) {
-						ii->parent->user = (children.front()->getHintedUser() == ui.user) ? children.back()->getHintedUser() : children.front()->getHintedUser();
-					}
+					ItemInfo* parent = ii->parent;
 					ctrlTransfers.removeBundle(ii, true);
+					if (parent)
+						parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
 				} else {
 					dcassert(pos != -1);
 					ctrlTransfers.DeleteItem(pos);
@@ -695,11 +697,9 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 						if (ii->bundle.empty()) {
 							ctrlTransfers.DeleteItem(pos);
 						} else {
-							const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
-							if (children.size() == 2) {
-								ii->parent->user = (children.front()->getHintedUser() == ui.user) ? children.back()->getHintedUser() : children.front()->getHintedUser();
-							}
 							ctrlTransfers.removeBundle(ii, false);
+							if (parent)
+								parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
 						}
 					}
 					ii->update(ui);
@@ -709,8 +709,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 							ii->parent = NULL; //we need to NULL the old parent so it won't be used when comparing items
 							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 						} else {
-							ctrlTransfers.insertBundle(ii, BOOLSETTING(EXPAND_BUNDLES));
-							//parent = ii->parent ? ii->parent : ii;
+							ctrlTransfers.insertBundle(ii, !ii->parent->collapsed);
 						}
 					} else if(ii == parent || !parent->collapsed) {
 						updateItem(ctrlTransfers.findItem(ii), ui.updateMask);
@@ -757,6 +756,21 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	}
 	
 	return 0;
+}
+
+void TransferView::ItemInfo::updateUser(const vector<ItemInfo*>& aChildren) {
+	HintedUser u = HintedUser(nullptr, Util::emptyString);
+	for(auto i = aChildren.cbegin(), iend = aChildren.cend(); i != iend; ++i) {
+		ItemInfo* ii = *i;
+		if (!u.user) {
+			u = ii->user;
+		} else if (u.user != ii->user.user) {
+			return;
+		}
+	}
+
+	if (u.user)
+		user = u;
 }
 
 LRESULT TransferView::onRemoveFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -1405,13 +1419,6 @@ void TransferView::on(UploadManagerListener::BundleSizeName, const string& bundl
 	UpdateInfo* ui = new UpdateInfo(bundleToken, false);
 	ui->setSize(aSize);
 	ui->setTarget(Text::toT(newTarget));
-	speak(UPDATE_BUNDLE, ui);
-}
-
-void TransferView::onBundleUser(const string& bundleToken, const HintedUser& aUser) {
-	UpdateInfo* ui = new UpdateInfo(bundleToken, true);
-	ui->setUsers(1);
-	ui->setUser(aUser);
 	speak(UPDATE_BUNDLE, ui);
 }
 
