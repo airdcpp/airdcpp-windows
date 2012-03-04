@@ -709,7 +709,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 							ii->parent = NULL; //we need to NULL the old parent so it won't be used when comparing items
 							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 						} else {
-							ctrlTransfers.insertBundle(ii, !ii->parent->collapsed);
+							ctrlTransfers.insertBundle(ii, ii->parent ? !ii->parent->collapsed : BOOLSETTING(EXPAND_BUNDLES));
 						}
 					} else if(ii == parent || !parent->collapsed) {
 						updateItem(ctrlTransfers.findItem(ii), ui.updateMask);
