@@ -45,14 +45,7 @@ public:
 	{
 	}
 
-	~QueueFrame() {
-		// Clear up dynamicly allocated menu objects
-		browseMenu.ClearMenu();
-		removeMenu.ClearMenu();
-		removeAllMenu.ClearMenu();
-		pmMenu.ClearMenu();
-		readdMenu.ClearMenu();		
-	}
+	~QueueFrame();
 	
 	typedef MDITabChildWindowImpl<QueueFrame> baseClass;
 	typedef CSplitterImpl<QueueFrame> splitBase;
@@ -225,17 +218,13 @@ private:
 	};
 
 
-	class BundleItemInfo;
-	friend class BundleItemInfo;
+	class DirItemInfo;
+	friend class DirItemInfo;
 
-	class BundleItemInfo {
+	class DirItemInfo {
 	public:
-		BundleItemInfo(const string dir, BundlePtr aBundle = NULL) : directory(dir)	{
-			if (aBundle) {
-				bundles.push_back(aBundle);
-			}
-		}
-		~BundleItemInfo() { }
+		DirItemInfo(const string dir, BundlePtr aBundle = nullptr);
+		~DirItemInfo();
 
 		const string& getDir() const { return directory; }
 		void addBundle(BundlePtr aBundle);
@@ -243,31 +232,12 @@ private:
 		tstring getBundleName(bool remove);
 		int countFileBundles();
 		BundleList& getBundles() { return bundles; }
-
-		/*const BundlePtr getBundle() const { return b; }
-		string getPath() const { return Util::getFilePath(getTarget()); }
-
-		bool isSet(Flags::MaskType aFlag) const { return (b->getFlags() & aFlag) == aFlag; }
-
-		const string& getTarget() const { return b->getTarget(); }
-
-		int64_t getSize() const { return b->getSize(); }
-		int64_t getDownloadedBytes() const { return b->getDownloadedBytes(); }
-
-		time_t getAdded() const { return b->getAdded(); }
-
-		Bundle::Priority getPriority() const { return b->getPriority(); }
-		//bool isWaiting() const { return b->isRunning(); }
-		bool isFinished() const { return b->isFinished(); }
-
-		bool getAutoPriority() const { return b->getAutoPriority(); } */
 	private:
-		//BundlePtr b;
 		BundleList bundles;
 		string directory;
 
-		BundleItemInfo(const BundleItemInfo&);
-		BundleItemInfo& operator=(const BundleItemInfo&);
+		DirItemInfo(const DirItemInfo&);
+		DirItemInfo& operator=(const DirItemInfo&);
 	};
 	
 
@@ -329,9 +299,9 @@ private:
 		QueueItemInfo* ii;
 	};
 
-	struct BundleItemInfoTask : FastAlloc<BundleItemInfoTask>, public Task {
-		BundleItemInfoTask(BundleItemInfo* ii_) : ii(ii_) { }
-		BundleItemInfo* ii;
+	struct DirItemInfoTask : FastAlloc<DirItemInfoTask>, public Task {
+		DirItemInfoTask(DirItemInfo* ii_) : ii(ii_) { }
+		DirItemInfo* ii;
 	};
 
 	struct UpdateTask : FastAlloc<UpdateTask>, public Task {
@@ -399,7 +369,7 @@ private:
 	HTREEITEM addItemDir(bool isFileList);
 	HTREEITEM addBundleDir(const string& dir, const BundlePtr aBundle, HTREEITEM startAt = NULL);
 	HTREEITEM createDir(TVINSERTSTRUCT& tvi, const string& dir, const BundlePtr aBundle, HTREEITEM parent, bool subDir=false);
-	HTREEITEM createSplitDir(TVINSERTSTRUCT& tvi, const string& dir, HTREEITEM parent, BundleItemInfo* bii, bool subDir=false);
+	HTREEITEM createSplitDir(TVINSERTSTRUCT& tvi, const string& dir, HTREEITEM parent, DirItemInfo* bii, bool subDir=false);
 	void removeQueueItem(QueueItemInfo* ii, bool noSort);
 	void removeItemDir(bool isFileList);
 	void removeBundleDir(const string& dir, const BundlePtr aBundle);
@@ -440,7 +410,7 @@ private:
 		return ht == NULL ? Util::emptyString : getDir(ctrlDirs.GetSelectedItem());
 	}
 	
-	const string& getDir(HTREEITEM ht) const { dcassert(ht != NULL); return ((BundleItemInfo*)(ctrlDirs.GetItemData(ht)))->getDir(); }
+	const string& getDir(HTREEITEM ht) const { dcassert(ht != NULL); return ((DirItemInfo*)(ctrlDirs.GetItemData(ht)))->getDir(); }
 
 	void on(QueueManagerListener::Added, QueueItemPtr aQI) noexcept;
 	void on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) noexcept;
