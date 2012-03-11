@@ -1119,7 +1119,7 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 	speak(UPDATE_ITEM, ui);
 }
 
-void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bundles) {
+void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t /*aTick*/) {
 	for(auto j = bundles.begin(); j != bundles.end(); ++j) {
 		BundlePtr b = *j;
 		string bundleToken = b->getToken();

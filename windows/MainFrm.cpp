@@ -856,6 +856,8 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 	bool lastSortFavUsersFirst = BOOLSETTING(SORT_FAVUSERS_FIRST);
 
+	auto prevDownloadOrder = SETTING(DOWNLOAD_ORDER);
+
 	if(dlg.DoModal(m_hWnd) == IDOK) 
 	{
 		SettingsManager::getInstance()->save();
@@ -878,6 +880,10 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 
 		ClientManager::getInstance()->infoUpdated();
+
+		if (prevDownloadOrder != SETTING(DOWNLOAD_ORDER)) {
+			QueueManager::getInstance()->onChangeDownloadOrder();
+		}
 
 		bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;
 		if(BOOLSETTING(GET_USER_COUNTRY) != prevGeo) {

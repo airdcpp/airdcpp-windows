@@ -88,18 +88,9 @@ LRESULT DownloadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	setMinMax(IDC_MATCH_SPIN, 1, 999);
 	setMinMax(IDC_AUTO_SEARCH_LIMIT_SPIN, 1, 999);
 
-	CUpDownCtrl spin;
-	spin.Attach(GetDlgItem(IDC_SEG_NUMBER_SPIN));
-	spin.SetRange32(1, 10);
-	spin.Detach();
-
-	spin.Attach(GetDlgItem(IDC_SEARCH_SPIN));
-	spin.SetRange32(5, 60);
-	spin.Detach();
-
-	spin.Attach(GetDlgItem(IDC_BEGIN_SPIN));
-	spin.SetRange32(2, 100000);
-	spin.Detach();
+	setMinMax(IDC_SEG_NUMBER_SPIN, 1, 10);
+	setMinMax(IDC_SEARCH_SPIN, 5, 60);
+	setMinMax(IDC_BEGIN_SPIN, 2, 100000);
 
 	checkItems();
 

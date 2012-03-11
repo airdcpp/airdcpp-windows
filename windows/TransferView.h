@@ -369,7 +369,7 @@ private:
 	void on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) noexcept;
 	void on(DownloadManagerListener::Starting, const Download* aDownload) noexcept;
 	void on(DownloadManagerListener::Tick, const DownloadList& aDownload) noexcept;
-	void on(DownloadManagerListener::BundleTick, const BundleList& bundles) noexcept;
+	void on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t aTick) noexcept;
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
 	void on(DownloadManagerListener::Target, const UserPtr& user, const string& aToken) noexcept { onUpdateFileInfo(user, aToken, false); }
 	void on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, false); }

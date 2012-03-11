@@ -686,17 +686,20 @@
 #define IDC_PRIO_HIGH_SIZE2             1314
 #define IDC_SETTINGS_ALT_SEARCH         1314
 #define IDC_SETTINGS_SEARCH_MATCHING    1314
+#define IDC_CALC_PRIO_EVERY             1314
 #define IDC_SETTINGS_CONFIRM_OPTIONS    1315
 #define IDC_FAV_DL                      1315
 #define IDC_LINE_SPEED                  1315
 #define IDC_SETTINGS_KB7                1315
 #define IDC_FINISHED_OPTIONS            1315
+#define IDC_AUTOPRIO_INTERVAL           1315
 #define IDC_CONFIRM_OPTIONS             1316
 #define IDC_RADIO1                      1316
 #define IDC_PRIVATE                     1316
 #define IDC_PUBLIC                      1316
 #define IDC_SLOTS_GROUP2                1316
 #define IDC_PRIO_LOW_SIZE2              1316
+#define IDC_SETTINGS_SECONDS            1316
 #define IDC_SOCKET_IN_BUFFER            1317
 #define IDC_UPDATE_LANGUAGE             1317
 #define IDC_GROUP                       1317
@@ -709,6 +712,7 @@
 #define IDC_SETTINGS_SOCKET_OUT_BUFFER  1319
 #define IDC_PLAYER_PATH                 1319
 #define IDC_ORDER_BALANCED              1319
+#define IDC_PRIO_BALANCED               1319
 #define IDC_SETTINGS_SOCKET_IN_BUFFER   1320
 #define IDC_PREVIEW_NAME_TEXT           1320
 #define IDC_ICON_SIZE                   1321
@@ -850,6 +854,7 @@
 #define IDC_DOWNLOAD_OPTIONS            1399
 #define IDC_OTHER_QUEUE_OPTIONS         1400
 #define IDC_ORDER_PROGRESS              1400
+#define IDC_PRIO_PROGRESS               1400
 #define IDC_COPY_EXACT_SIZE             1401
 #define IDC_ORDER_ADDED                 1401
 #define IDC_DUPE_TEXT                   1402
@@ -858,6 +863,7 @@
 #define IDC_PRIO_RANDOM2                1403
 #define IDC_DOWNLOAD_ORDER              1404
 #define IDC_SHARE_SAVE                  1405
+#define IDC_AUTOPRIO_TYPE               1405
 #define IDC_FILELIST_DIFF               1406
 #define IDC_SETTINGS_MEBIBYES           1406
 #define IDC_SETTINGS_MEBIBITS           1406
@@ -975,6 +981,10 @@
 #define IDC_FAVDIR_ADD                  1631
 #define IDC_FAVDIR_REMOVE               1632
 #define IDC_SETTINGS_FAVDIR_PATHS       1633
+#define IDC_AUTOPRIO_DISABLED           1634
+#define IDC_AUTOPRIO_ENABLED            1634
+#define IDC_AUTOPRIO_FILES              1635
+#define IDC_PRIO_SPIN                   1636
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1303,7 +1313,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        321
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1634
+#define _APS_NEXT_CONTROL_VALUE         1637
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

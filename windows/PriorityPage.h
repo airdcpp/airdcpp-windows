@@ -39,14 +39,17 @@ public:
 
 	BEGIN_MSG_MAP(PriorityPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
-		COMMAND_ID_HANDLER(IDC_ORDER_BALANCED, onDownloadOrder)
-		COMMAND_ID_HANDLER(IDC_ORDER_PROGRESS, onDownloadOrder)
-		COMMAND_ID_HANDLER(IDC_ORDER_ADDED, onDownloadOrder)
-		COMMAND_ID_HANDLER(IDC_ORDER_RANDOM, onDownloadOrder)
+		COMMAND_ID_HANDLER(IDC_PRIO_BALANCED, onPrioTypeChanged)
+		COMMAND_ID_HANDLER(IDC_PRIO_PROGRESS, onPrioTypeChanged)
+		COMMAND_ID_HANDLER(IDC_AUTOPRIO_ENABLED, onPrioTypeChanged)
+
+		COMMAND_ID_HANDLER(IDC_ORDER_ADDED, onOrderChanged)
+		COMMAND_ID_HANDLER(IDC_ORDER_RANDOM, onOrderChanged)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadOrder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onOrderChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onPrioTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }

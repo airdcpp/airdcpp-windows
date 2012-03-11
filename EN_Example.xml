@@ -1390,7 +1390,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="MatchingAdl">Matching Filelist with ADLSearch, this might take a while if the list is large...</String>
 		<String Name="LogHashing">Show Hashing Files in systemlog</String>
 		<String Name="AdlsearchInProgress">The ADLSearch list can't be modified while matching is in progress!</String>
-		<String Name="PriopageOrderBalanced">Balanced (change priorities dynamically)</String>
+		<String Name="PriopageOrderBalanced">Balanced (based on sources and their speeds)</String>
 		<String Name="PriopageOrderProgress">Set priorities automatically based on the progress</String>
 		<String Name="PriopageOrderAdded">Download in the order of adding</String>
 		<String Name="PriopageOrderRandom">Download in random order</String>
@@ -1510,5 +1510,9 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="RenameDir">Rename Directory</String>
 		<String Name="MoveDir">Move Directory</String>
 		<String Name="MoveRenameFile">Move/Rename file(s)</String>
+		<String Name="SettingsCalculatePrioAuto">Calculate bundle priorities automatically</String>
+		<String Name="SettingsAutoprioFiles">Calculate priorities also for individual files</String>
+		<String Name="SettingsCalculateEvery">Calculate priorities every</String>
+		<String Name="SettingsAutoprio">Auto priority settings</String>
 	</Strings>
 </Language>
