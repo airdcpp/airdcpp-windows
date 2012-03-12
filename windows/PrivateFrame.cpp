@@ -944,9 +944,10 @@ void PrivateFrame::addMagnet(const tstring& path) {
 	}catch(...) { }
 
 	if(!magnetlink.empty()){
-		ShareManager::getInstance()->addTempShare(replyTo.user->getCID().toBase32(), TTH, Text::fromT(path), size);
-		//sendMessage(Text::toT(magnetlink));
-		ctrlMessage.SetWindowText(Text::toT(magnetlink).c_str());
+		if(ShareManager::getInstance()->addTempShare(replyTo.user->getCID().toBase32(), TTH, Text::fromT(path), size, !replyTo.user->isNMDC()))
+			ctrlMessage.SetWindowText(Text::toT(magnetlink).c_str());
+		else
+			MessageBox(_T("File is not shared and temporary shares are not supported with NMDC hubs!"), _T("NMDC hub not supported!"), MB_ICONWARNING | MB_OK);
 	}
 }
 

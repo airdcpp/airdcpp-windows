@@ -317,7 +317,7 @@ private:
 	enum Tasks { UPDATE_USER_JOIN, UPDATE_USER, REMOVE_USER, ADD_CHAT_LINE,
 		ADD_STATUS_LINE, ADD_SILENT_STATUS_LINE, SET_WINDOW_TITLE, GET_PASSWORD, 
 		PRIVATE_MESSAGE, STATS, CONNECTED, DISCONNECTED,
-		GET_SHUTDOWN, SET_SHUTDOWN, KICK_MSG, UPDATE_ICONS
+		GET_SHUTDOWN, SET_SHUTDOWN, KICK_MSG
 	};
 
 	enum FilterModes{
@@ -522,7 +522,7 @@ private:
 	void on(SearchFlood, const Client*, const string&) noexcept;	
 	void on(HubTopic, const Client*, const string&) noexcept;
 	void on(AddLine, const Client*, const string&) noexcept;
-	void on(ClientListener::SetIcons, const Client*) noexcept;
+	void on(ClientListener::SetIcons, const Client*, int status) noexcept;
 
 	void speak(Tasks s) { tasks.add(static_cast<uint8_t>(s), nullptr); PostMessage(WM_SPEAKER); }
 	void speak(Tasks s, const string& msg, bool inChat = true) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new StatusTask(msg, inChat))); PostMessage(WM_SPEAKER); }

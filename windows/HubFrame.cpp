@@ -809,19 +809,6 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 					::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_PM_TRAY_ICON, NULL);
 				}
 			}
-		} else if(i->first == UPDATE_ICONS) {
-			if(client->isReady() == true) {
-				if(client->getMyIdentity().isOp()){	
-					setIcon(HubOpIcon);
-			
-				} else if(client->getMyIdentity().isRegistered()){
-					setIcon(HubRegIcon);
-			
-				} else {
-					setIcon(HubIcon);
-					
-				}
-			}
 		}
 	}
 	
@@ -1806,9 +1793,16 @@ void HubFrame::on(Second, uint64_t /*aTick*/) noexcept {
 	}
 }
 
-void HubFrame::on(ClientListener::SetIcons, const Client*) noexcept { 
-		//speak(UPDATE_ICONS);
-		tasks.add(UPDATE_ICONS, nullptr);
+void HubFrame::on(ClientListener::SetIcons, const Client*, int status) noexcept { 
+	if(client->isReady() == true) {
+		if(status == 2) {	
+			setIcon(HubOpIcon);
+		} else if(status == 1) {
+			setIcon(HubRegIcon);
+		} else {
+			setIcon(HubIcon);
+		}
+	}
 }
 
 void HubFrame::on(Connecting, const Client*) noexcept { 
@@ -2636,9 +2630,10 @@ void HubFrame::addMagnet(const tstring& path) {
 	}catch(...) { }
 
 	if(!magnetlink.empty()){
-		ShareManager::getInstance()->addTempShare(Util::emptyString, TTH, Text::fromT(path), size);
-		//sendMessage(Text::toT(magnetlink));
-		ctrlMessage.SetWindowText(Text::toT(magnetlink).c_str());
+		if(ShareManager::getInstance()->addTempShare(Util::emptyString, TTH, Text::fromT(path), size, AirUtil::isAdcHub(client->getHubUrl())))
+			ctrlMessage.SetWindowText(Text::toT(magnetlink).c_str());
+		else
+			MessageBox(_T("File is not shared and temporary shares are not supported with NMDC hubs!"), _T("NMDC hub not supported!"), MB_ICONWARNING | MB_OK);
 	}
 }
 
