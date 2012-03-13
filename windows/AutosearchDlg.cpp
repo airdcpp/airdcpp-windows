@@ -136,10 +136,6 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		remove = IsDlgButtonChecked(IDC_REMOVE_ON_HIT) ? true : false;
 		GetDlgItemText(IDC_TARGET_PATH, buf2, MAX_PATH);
 		target = buf2;
-		if(!target.empty()) {
-		if( target[ target.length() -1 ] != _T('\\') )
-			target += _T('\\');
-		}
 		
 		GetDlgItemText(IDC_U_MATCH, match, 512);
 		userMatch = match;
