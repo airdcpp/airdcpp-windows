@@ -54,6 +54,7 @@
 #include "../client/version.h"
 #include "../client/pme.h"
 #include "../client/ShareScannerManager.h"
+#include "../client/AutoSearchManager.h"
 
 #include "boost/algorithm/string/replace.hpp"
 #include "boost/algorithm/string/trim.hpp"
@@ -1077,6 +1078,8 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		ShareManager::getInstance()->save();
 	} else if(stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
+	} else if(stricmp(cmd.c_str(), _T("autosearch")) == 0) {
+		AutoSearchManager::getInstance()->checkSearches(true);
 	} else if(stricmp(cmd.c_str(), _T("bloomstats")) == 0) {
 		status = Text::toT(ShareManager::getInstance()->getBloomStats());
 	} else if(stricmp(cmd.c_str(), _T("away")) == 0) {

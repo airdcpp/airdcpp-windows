@@ -243,8 +243,11 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		//make a menu title from the search string, its probobly too long to fit but atleast it shows something.
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
-			AutoSearch* as = (AutoSearch*)ctrlAutoSearch.GetItemData(WinUtil::getFirstSelectedIndex(ctrlAutoSearch));
+			auto as = AutoSearchManager::getInstance()->getAutoSearch(ctrlAutoSearch.GetSelectedIndex());
 			title = Text::toT(as->getSearchString());
+			//TCHAR buf[256];
+			//ctrlAutoSearch.GetItemText(ctrlAutoSearch.GetSelectedIndex(), buf, 256);
+			//title = buf;
 		} else {
 			title = _T("");
 		}
@@ -268,15 +271,21 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 	SearchPageDlg dlg;
 	if(dlg.DoModal() == IDOK) {
-		string search = Text::fromT(dlg.search + _T("\r\n"));
+		string search = dlg.searchString + "\r\n";
 		string::size_type j = 0;
 		string::size_type i = 0;
 	
 		while((i = search.find("\r\n", j)) != string::npos) {
 			string str = search.substr(j, i-j);
 			j = i +2;
-			if(str.size() >= 5) //dont accept shorter search strings than 5 chars
-				AutoSearchManager::getInstance()->addAutoSearch(true, str, dlg.fileType, dlg.action, dlg.remove, Text::fromT(dlg.target), AutoSearch::TARGET_PATH, Text::fromT(dlg.userMatch));
+			if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
+				AutoSearchManager::getInstance()->addAutoSearch(true, str, (SearchManager::TypeModes)dlg.fileType, (AutoSearch::ActionType)dlg.action, dlg.remove, 
+				dlg.target, AutoSearch::TARGET_PATH, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.searchInterval, 
+				dlg.userMatch);
+			} else {
+				//MessageBox(_T("Not adding the auto search: ") + Text::toT(str).c_str());
+				MessageBox(CTSTRING(LINE_EMPTY));
+			}
 		}
 	}
 	return 0;
@@ -285,41 +294,38 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 	if(ctrlAutoSearch.GetSelectedCount() == 1) {
 		int sel = ctrlAutoSearch.GetSelectedIndex();
-		AutoSearchPtr as;
-		AutoSearchManager::getInstance()->getAutoSearch(sel, as);
+		AutoSearchPtr as = AutoSearchManager::getInstance()->getAutoSearch(sel);
 
 		SearchPageDlg dlg;
-		dlg.search = Text::toT(as->getSearchString());
+		dlg.searchString = as->getSearchString();
 		dlg.fileType = as->getFileType();
 		dlg.action = as->getAction();
 		dlg.remove = as->getRemove();
-		dlg.target = Text::toT(as->getTarget());
-		dlg.userMatch = Text::toT(as->getUserMatch());
+		dlg.target = as->getTarget();
+		dlg.userMatch = as->getUserMatch();
+		dlg.matcherString = as->getPattern();
 
 		if(dlg.DoModal() == IDOK) {
-			as->setSearchString(Text::fromT(dlg.search));
-			as->setFileType(dlg.fileType);
-			as->setAction(dlg.action);
-			as->setRemove(dlg.remove);
-			as->setTarget(Text::fromT(dlg.target));
-			as->setUserMatch(Text::fromT(dlg.userMatch));
+			AutoSearchPtr asNew = AutoSearchPtr(new AutoSearch(as->getEnabled(), dlg.searchString, (SearchManager::TypeModes)dlg.fileType, (AutoSearch::ActionType)dlg.action, 
+				dlg.remove, dlg.target, (AutoSearch::TargetType)dlg.targetType, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval));
 
-			AutoSearchManager::getInstance()->updateAutoSearch(sel, as);
+			if (AutoSearchManager::getInstance()->updateAutoSearch(sel, asNew)) {
 
-			ctrlAutoSearch.SetCheckState(sel, as->getEnabled());
-			ctrlAutoSearch.SetItemText(sel, 0, dlg.search.c_str());
-			ctrlAutoSearch.SetItemText(sel, 1, Text::toT(getType(dlg.fileType)).c_str());
-			if(dlg.action == 0){
-				ctrlAutoSearch.SetItemText(sel, 2, Text::toT(STRING(DOWNLOAD)).c_str());
-			}else if(dlg.action == 1){
-				ctrlAutoSearch.SetItemText(sel, 2, Text::toT(STRING(ADD_TO_QUEUE)).c_str());
-			}else if(dlg.action == 2){
-				ctrlAutoSearch.SetItemText(sel, 2, Text::toT(STRING(AS_REPORT)).c_str());
+				ctrlAutoSearch.SetCheckState(sel, asNew->getEnabled());
+				ctrlAutoSearch.SetItemText(sel, 0, Text::toT(dlg.searchString).c_str());
+				ctrlAutoSearch.SetItemText(sel, 1, Text::toT(getType(dlg.fileType)).c_str());
+				if(dlg.action == 0){
+					ctrlAutoSearch.SetItemText(sel, 2, Text::toT(STRING(DOWNLOAD)).c_str());
+				} else if(dlg.action == 1){
+					ctrlAutoSearch.SetItemText(sel, 2, Text::toT(STRING(ADD_TO_QUEUE)).c_str());
+				} else if(dlg.action == 2){
+					ctrlAutoSearch.SetItemText(sel, 2, Text::toT(STRING(AS_REPORT)).c_str());
+				}
+				ctrlAutoSearch.SetItemText(sel, 3, Text::toT(dlg.target).c_str());
+				ctrlAutoSearch.SetItemText(sel, 4, dlg.remove ? _T("Yes") : _T("No"));
+				ctrlAutoSearch.SetItemText(sel, 5, Text::toT(dlg.userMatch).c_str());
+				ctrlAutoSearch.SetItemData(sel, (LPARAM)asNew.get());
 			}
-			ctrlAutoSearch.SetItemText(sel, 3, dlg.target.c_str());
-			ctrlAutoSearch.SetItemText(sel, 4, dlg.remove? _T("Yes") : _T("No"));
-			ctrlAutoSearch.SetItemText(sel, 5, dlg.userMatch.c_str());
-
 		}
 	}
 	return 0;
@@ -339,6 +345,7 @@ LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 	return 0;
 }
+
 LRESULT AutoSearchFrame::onMoveUp(WORD , WORD , HWND , BOOL& ) {
 	int i = ctrlAutoSearch.GetSelectedIndex();
 	if(i != -1 && i != 0) {
@@ -347,8 +354,8 @@ LRESULT AutoSearchFrame::onMoveUp(WORD , WORD , HWND , BOOL& ) {
 		ctrlAutoSearch.SetRedraw(FALSE);
 		ctrlAutoSearch.DeleteAllItems();
 
-		AutoSearchList lst = AutoSearchManager::getInstance()->getAutoSearch();
-		for(AutoSearchList::const_iterator j = lst.begin(); j != lst.end(); ++j) {
+		AutoSearchList lst = AutoSearchManager::getInstance()->getSearchItems();
+		for(auto j = lst.begin(); j != lst.end(); ++j) {
 			const AutoSearchPtr as = *j;	
 			addEntry(as, ctrlAutoSearch.GetItemCount());
 		}
@@ -369,8 +376,8 @@ LRESULT AutoSearchFrame::onMoveDown(WORD , WORD , HWND , BOOL& ) {
 		AutoSearchManager::getInstance()->moveAutoSearchDown(i);
 		ctrlAutoSearch.DeleteAllItems();
 
-		AutoSearchList lst = AutoSearchManager::getInstance()->getAutoSearch();
-		for(AutoSearchList::const_iterator j = lst.begin(); j != lst.end(); ++j) {
+		AutoSearchList lst = AutoSearchManager::getInstance()->getSearchItems();
+		for(auto j = lst.begin(); j != lst.end(); ++j) {
 			const AutoSearchPtr as = *j;	
 			addEntry(as, ctrlAutoSearch.GetItemCount());
 		}

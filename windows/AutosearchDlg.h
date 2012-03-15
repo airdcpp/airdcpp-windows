@@ -27,8 +27,8 @@
 
 class SearchPageDlg : public CDialogImpl<SearchPageDlg> {
 public:
-	tstring	search, comment, target, userMatch;
-	int fileType, action, rawToSend;
+	string searchString, comment, target, userMatch, matcherString;
+	int fileType, action, matcherType, searchInterval, targetType;
 	bool display;
 	bool remove;
 

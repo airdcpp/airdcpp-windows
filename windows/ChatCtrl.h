@@ -211,6 +211,7 @@ private:
 	tstring getShortLink(POINT pt, bool getShort=false);
 	bool handCursor;
 	void downloadMagnet(const string& aPath);
+	void addAutoSearch(const string& aPath);
 };
 
 

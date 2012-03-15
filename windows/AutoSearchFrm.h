@@ -142,12 +142,12 @@ private:
 
 		ctrlAutoSearch.SetRedraw(FALSE);
 		
-		AutoSearchList lst = AutoSearchManager::getInstance()->getAutoSearch();
+		AutoSearchList lst = AutoSearchManager::getInstance()->getSearchItems();
 		
-		for(AutoSearchList::const_iterator i = lst.begin(); i != lst.end(); ++i) {
+		for(auto i = lst.begin(); i != lst.end(); ++i) {
 			const AutoSearchPtr as = *i;	
 			addEntry(as, ctrlAutoSearch.GetItemCount());
-			}
+		}
 
 		ctrlAutoSearch.SetRedraw(TRUE);
 		ctrlAutoSearch.Invalidate();

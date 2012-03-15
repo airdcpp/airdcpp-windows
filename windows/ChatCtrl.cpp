@@ -1019,12 +1019,17 @@ LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 		if(selectedWord.size() < 5) //we dont accept anything under 5 chars
 			return 0;
 
-		if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(selectedWord), 7/*directory type*/, 0, true, Util::emptyString, AutoSearch::TARGET_PATH))
-			LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
+		addAutoSearch(SETTING(DOWNLOAD_DIRECTORY));
 	} else {
 		downloadMagnet(SETTING(DOWNLOAD_DIRECTORY));
 	}
 	return 0;
+}
+
+void ChatCtrl::addAutoSearch(const string& aPath) {
+	if(AutoSearchManager::getInstance()->addAutoSearch(true, aPath, SearchManager::TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, Util::emptyString, 
+		AutoSearch::TARGET_PATH, StringMatcher::MATCHER_STRING, aPath, 0))
+		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
 }
 
 void ChatCtrl::downloadMagnet(const string& aPath) {
@@ -1047,8 +1052,7 @@ LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	if(WinUtil::browseDirectory(target, m_hWnd)) {
 		SettingsManager::getInstance()->addDirToHistory(target);
 		if (release) {
-			if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(selectedWord), 7/*directory type*/, 0, true, Text::fromT(target), AutoSearch::TARGET_PATH))
-				LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
+			addAutoSearch(Text::fromT(target));
 		} else {
 			downloadMagnet(Text::fromT(target));
 		}
@@ -1063,7 +1067,7 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 
 		int newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
 
-		AutoSearch::targetType targetType = AutoSearch::TARGET_FAVORITE;
+		AutoSearch::TargetType targetType = AutoSearch::TARGET_FAVORITE;
 		string target;
 
 		if (newId < WinUtil::countShareFavDirs()) {
@@ -1080,8 +1084,7 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 			}
 		}
 
-		if(AutoSearchManager::getInstance()->addAutoSearch(true, Text::fromT(selectedWord), 7/*directory type*/, 0, true, target, targetType))
-			LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
+		addAutoSearch(target);
 	} else {
 		string target;
 		if (WinUtil::getTarget(wID, target, 0)) {
