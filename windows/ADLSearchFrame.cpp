@@ -272,8 +272,7 @@ LRESULT ADLSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		return 0;
 	}
 
-	ADLSearch* search = new ADLSearch();
-	ADLSProperties dlg(search);
+	ADLSProperties dlg(new ADLSearch("<Enter string>", ADLSearch::OnlyFile, false, false));
 	if(dlg.DoModal((HWND)*this) == IDOK)
 	{
 		// Add new search to the end or if selected, just before
@@ -284,7 +283,7 @@ LRESULT ADLSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		if(i < 0)
 		{
 			// Add to end
-			if (!ADLSearchManager::getInstance()->addCollection(search, true, true)) {
+			if (!ADLSearchManager::getInstance()->addCollection(dlg.searchNew, true, true)) {
 				return 0;
 			}
 			i = collection.size() - 1;
@@ -292,7 +291,7 @@ LRESULT ADLSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		else
 		{
 			// Add before selection
-			if (!ADLSearchManager::getInstance()->addCollection(search, true, true, true, i)) {
+			if (!ADLSearchManager::getInstance()->addCollection(dlg.searchNew, true, true, true, i)) {
 				return 0;
 			}
 		}
@@ -329,7 +328,7 @@ LRESULT ADLSearchFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	if(dlg.DoModal((HWND)*this) == IDOK)
 	{
 		// Update search collection
-		collection[i] = search;
+		collection[i] = dlg.searchNew;
 
 		// Update list control
 		UpdateSearch(i);	  
@@ -608,7 +607,7 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	// Generate values
 	TStringList line;
 	tstring fs;
-	line.push_back(Text::toT(search->searchString));
+	line.push_back(Text::toT(search->getPattern()));
 	line.push_back(search->SourceTypeToDisplayString(search->sourceType));
 	line.push_back(Text::toT(search->destDir));
 
@@ -631,7 +630,7 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	line.push_back(fs);
 
 	line.push_back(Text::toT(search->adlsComment));
-	line.push_back(Util::toStringW(search->isRegexp));
+	line.push_back(Util::toStringW(search->isRegexp()));
 
 
 	// Insert in list control

@@ -304,6 +304,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.target = as->getTarget();
 		dlg.userMatch = as->getUserMatch();
 		dlg.matcherString = as->getPattern();
+		dlg.matcherType = as->getMatcherType();
 
 		if(dlg.DoModal() == IDOK) {
 			AutoSearchPtr asNew = AutoSearchPtr(new AutoSearch(as->getEnabled(), dlg.searchString, (SearchManager::TypeModes)dlg.fileType, (AutoSearch::ActionType)dlg.action, 

@@ -19,6 +19,7 @@
 #include "Resource.h"
 #include "WinUtil.h"
 #include "AutoSearchDlg.h"
+//#include "../client/SearchManager.h"
 
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \
@@ -35,20 +36,22 @@ SearchPageDlg::~SearchPageDlg() {
 	cAction.Detach();
 	ftImage.Destroy();
 	ctrlTarget.Detach();
-	ctrlMatch.Detach();
-
+	ctrlUserMatch.Detach();
+	cMatcherType.Detach();
 }
 
 LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
 	ATTACH(IDC_TARGET_PATH, ctrlTarget);
-	ATTACH(IDC_U_MATCH, ctrlMatch);
+	ATTACH(IDC_U_MATCH, ctrlUserMatch);
+	ATTACH(IDC_MATCHER_PATTERN, ctrlMatcherString);
 
 	ctrlSearch.SetWindowText(Text::toT(searchString).c_str());
 	ctrlCheatingDescription.SetWindowText(Text::toT(comment).c_str());
 	ctrlTarget.SetWindowText(Text::toT(target).c_str());
-	ctrlMatch.SetWindowText(Text::toT(userMatch).c_str());
+	ctrlUserMatch.SetWindowText(Text::toT(userMatch).c_str());
+	ctrlMatcherString.SetWindowText(Text::toT(matcherString).c_str());
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);
 	ftImage.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
@@ -63,7 +66,7 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_USER_MATCH_TEXT), TSTRING(AS_USER_MATCH).c_str());
 
 	int q = 0;
-	for(size_t i = 0; i < 10; i++) {
+	for(size_t i = 0; i < 9; i++) {
 		COMBOBOXEXITEM cbitem = {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
 		tstring ftString;
 		switch(i) {
@@ -93,10 +96,19 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	cAction.AddString(CTSTRING(AS_REPORT));
 	cAction.SetCurSel(action);
 
+	ATTACH(IDC_MATCHER_TYPE, cMatcherType);
+	cMatcherType.AddString(CTSTRING(PLAIN_TEXT));
+	cMatcherType.AddString(CTSTRING(REGEXP));
+	cMatcherType.AddString(CTSTRING(WILDCARDS));
+	cMatcherType.SetCurSel(matcherType);
+
 	CheckDlgButton(IDC_REMOVE_ON_HIT, remove);
+	CheckDlgButton(IDC_USE_MATCHER, !(matcherString == searchString && matcherType == 0));
 
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(AUTOSEARCH_DLG));
+
+	fixControls();
 	return TRUE;
 }
 
@@ -127,7 +139,10 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		remove = IsDlgButtonChecked(IDC_REMOVE_ON_HIT) ? true : false;
 		GetDlgItemText(IDC_TARGET_PATH, bufPath, MAX_PATH);
 		target = Text::fromT(bufPath);
-		
+		GetDlgItemText(IDC_MATCHER_PATTERN, buf, 512);
+		matcherString = Text::fromT(buf);
+		matcherType = cMatcherType.GetCurSel();
+
 		GetDlgItemText(IDC_U_MATCH, buf, 512);
 		userMatch = Text::fromT(buf);
 	}
@@ -136,5 +151,19 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 }
 LRESULT SearchPageDlg::onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	return 0;
+}
+
+void SearchPageDlg::fixControls() {
+	BOOL isTTH = ctrlFileType.GetCurSel() == 8;
+	if (isTTH) {
+		CheckDlgButton(IDC_USE_MATCHER, false);
+		::EnableWindow(GetDlgItem(IDC_USE_MATCHER),			false);
+	}
+
+	BOOL enableMatcher = IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED;
+	::EnableWindow(GetDlgItem(IDC_PATTERN),					enableMatcher);
+	::EnableWindow(GetDlgItem(IDC_MATCHER_PATTERN),			enableMatcher);
+	::EnableWindow(GetDlgItem(IDC_TYPE),					enableMatcher);
+	::EnableWindow(GetDlgItem(IDC_MATCHER_TYPE),			enableMatcher);
 }
 

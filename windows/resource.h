@@ -959,6 +959,10 @@
 #define IDC_REMOVE_ON_HIT               1533
 #define IDC_DL_TO                       1534
 #define IDC_TARGET_PATH                 1535
+#define IDC_REMOVE_ON_HIT2              1536
+#define IDC_USE_MATCHER                 1536
+#define IDC_MATCHER_PATTERN             1537
+#define IDC_PATTERN                     1538
 #define IDC_AUTOPRIORITY                1572
 #define IDC_SETTINGS_ODC_MENUBAR        1612
 #define IDC_SETTINGS_ODC_MENUBAR_USETWO 1613
@@ -1226,6 +1230,8 @@
 #define IDC_RECENT_SPIN                 15055
 #define IDC_AUTOSEARCH_ITEMS            15056
 #define IDC_SETTINGS_KBPS8              15056
+#define IDC_TYPE                        15056
+#define IDC_MATCHER_TYPE                15057
 #define IDC_AUTOSEARCH_ENABLE_TIME      15058
 #define IDC_AUTOSEARCH_EVERY            15059
 #define IDC_AUTOSEARCH_SPIN             15060

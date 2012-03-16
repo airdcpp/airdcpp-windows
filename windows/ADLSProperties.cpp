@@ -71,19 +71,19 @@ LRESULT ADLSProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	ctrlSizeType.AddString(CTSTRING(GiB));
 	
 	// Load search data
-	ctrlSearch.SetWindowText(Text::toT(search->searchString).c_str());
+	ctrlSearch.SetWindowText(Text::toT(search->getPattern()).c_str());
 	ctrlComment.SetWindowText(Text::toT(search->adlsComment).c_str());
 	ctrlDestDir.SetWindowText(Text::toT(search->destDir).c_str());
 	ctrlMinSize.SetWindowText((search->minFileSize > 0 ? Util::toStringW(search->minFileSize) : _T("")).c_str());
 	ctrlMaxSize.SetWindowText((search->maxFileSize > 0 ? Util::toStringW(search->maxFileSize) : _T("")).c_str());
 	ctrlActive.SetCheck(search->isActive ? 1 : 0);
 	ctrlAutoQueue.SetCheck(search->isAutoQueue ? 1 : 0);
-	ctrlRegexp.SetCheck(search->isRegexp ? 1 : 0);
+	ctrlRegexp.SetCheck(search->isRegexp() ? 1 : 0);
 	ctrlSearchType.SetCurSel(search->sourceType);
 	ctrlSizeType.SetCurSel(search->typeFileSize);
 	::SendMessage(GetDlgItem(IDC_IS_FORBIDDEN), BM_SETCHECK, search->isForbidden ? 1 : 0, 0L);
-	::SendMessage(GetDlgItem(IDC_REGEXP), BM_SETCHECK, search->isRegexp ? 1 : 0, 0L);
-	::SendMessage(GetDlgItem(IDC_IS_CASE_SENSITIVE), BM_SETCHECK, search->isCaseSensitive ? 1 : 0, 0L);
+	::SendMessage(GetDlgItem(IDC_REGEXP), BM_SETCHECK, search->isRegexp() ? 1 : 0, 0L);
+	::SendMessage(GetDlgItem(IDC_IS_CASE_SENSITIVE), BM_SETCHECK, search->isCaseSensitive() ? 1 : 0, 0L);
 
 	// Center dialog
 	CenterWindow(GetParent());
@@ -127,27 +127,28 @@ LRESULT ADLSProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 		TCHAR buf[256];
 
 		ctrlSearch.GetWindowText(buf, 256);
-		search->searchString = Text::fromT(buf);
+
+		searchNew = new ADLSearch(Text::fromT(buf), (ADLSearch::SourceType)ctrlSearchType.GetCurSel() , ctrlRegexp.GetCheck() == 1, 
+			::SendMessage(GetDlgItem(IDC_IS_CASE_SENSITIVE), BM_GETCHECK, 0, 0L) != 0);
+
 		ctrlComment.GetWindowText(buf, 521);
-		search->adlsComment = Text::fromT(buf);
+		searchNew->adlsComment = Text::fromT(buf);
 		ctrlDestDir.GetWindowText(buf, 256);
-		search->destDir = Text::fromT(buf);
+		searchNew->destDir = Text::fromT(buf);
 
 		ctrlMinSize.GetWindowText(buf, 256);
-		search->minFileSize = (_tcslen(buf) == 0 ? -1 : Util::toInt64(Text::fromT(buf)));
+		searchNew->minFileSize = (_tcslen(buf) == 0 ? -1 : Util::toInt64(Text::fromT(buf)));
 		ctrlMaxSize.GetWindowText(buf, 256);
-		search->maxFileSize = (_tcslen(buf) == 0 ? -1 : Util::toInt64(Text::fromT(buf)));
+		searchNew->maxFileSize = (_tcslen(buf) == 0 ? -1 : Util::toInt64(Text::fromT(buf)));
 
-		search->isActive = (ctrlActive.GetCheck() == 1);
-		search->isAutoQueue = (ctrlAutoQueue.GetCheck() == 1);
+		searchNew->isActive = (ctrlActive.GetCheck() == 1);
+		searchNew->isAutoQueue = (ctrlAutoQueue.GetCheck() == 1);
 
-		search->sourceType = (ADLSearch::SourceType)ctrlSearchType.GetCurSel();
-		search->typeFileSize = (ADLSearch::SizeType)ctrlSizeType.GetCurSel();
-		search->isForbidden = (::SendMessage(GetDlgItem(IDC_IS_FORBIDDEN), BM_GETCHECK, 0, 0L) != 0);
-		search->isRegexp = (ctrlRegexp.GetCheck() == 1);
-		search->isCaseSensitive = (::SendMessage(GetDlgItem(IDC_IS_CASE_SENSITIVE), BM_GETCHECK, 0, 0L) != 0);
-		if(search->isForbidden) {
-			search->destDir = "Forbidden Files";
+		searchNew->sourceType = (ADLSearch::SourceType)ctrlSearchType.GetCurSel();
+		searchNew->typeFileSize = (ADLSearch::SizeType)ctrlSizeType.GetCurSel();
+		searchNew->isForbidden = (::SendMessage(GetDlgItem(IDC_IS_FORBIDDEN), BM_GETCHECK, 0, 0L) != 0);
+		if(searchNew->isForbidden) {
+			searchNew->destDir = "Forbidden Files";
 		}
 	}
 

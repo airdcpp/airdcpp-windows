@@ -28,7 +28,8 @@
 class SearchPageDlg : public CDialogImpl<SearchPageDlg> {
 public:
 	string searchString, comment, target, userMatch, matcherString;
-	int fileType, action, matcherType, searchInterval, targetType;
+	int fileType, searchInterval;
+	int8_t matcherType, action, targetType;
 	bool display;
 	bool remove;
 
@@ -43,12 +44,19 @@ public:
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDC_AS_ACTION, onAction)
+		COMMAND_ID_HANDLER(IDC_AS_FILETYPE, onCheckControls)
+		COMMAND_ID_HANDLER(IDC_USE_MATCHER, onCheckControls)
 		COMMAND_HANDLER(IDC_BROWSE, BN_CLICKED, onBrowse)
 	END_MSG_MAP()
 
 
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlSearch.SetFocus();
+		return FALSE;
+	}
+
+	LRESULT onCheckControls(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		fixControls();
 		return FALSE;
 	}
 
@@ -61,10 +69,13 @@ private:
 //	enum { BUF_LEN = 1024 };
 	CImageList ftImage;
 
-	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget, ctrlMatch;
+	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget, ctrlUserMatch, ctrlMatcherString;
 	CComboBox cRaw;
 	CComboBoxEx ctrlFileType;
 	CComboBox cAction;
 	CButton cDisplay;
+	CComboBox cMatcherType;
+
+	void fixControls();
 };
 #endif

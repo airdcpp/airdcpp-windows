@@ -1514,5 +1514,9 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SettingsAutoprioFiles">Calculate priorities also for individual files</String>
 		<String Name="SettingsCalculateEvery">Calculate priorities every</String>
 		<String Name="SettingsAutoprio">Auto priority settings</String>
+		<String Name="PlainText">Plain text</String>
+		<String Name="Wildcards">Wildcards</String>
+		<String Name="UseCustomMatcher">Use a custom matcher for the search results</String>
+		<String Name="Pattern">Pattern</String>
 	</Strings>
 </Language>
