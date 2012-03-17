@@ -1518,5 +1518,17 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="Wildcards">Wildcards</String>
 		<String Name="UseCustomMatcher">Use a custom matcher for the search results</String>
 		<String Name="Pattern">Pattern</String>
+		<String Name="CustomSearchTimes">Search only on specific times</String>
+		<String Name="Monday">Monday</String>
+		<String Name="Tuesday">Tuesday</String>
+		<String Name="Wednesday">Wednesday</String>
+		<String Name="Thursday">Thursday</String>
+		<String Name="Friday">Friday</String>
+		<String Name="Saturday">Saturday</String>
+		<String Name="Sunday">Sunday</String>
+		<String Name="UseExpiryDay">Use an expiry day for this item</String>
+		<String Name="SettingsExpiryDays">The default expiry days (0 = won't expire)</String>
+		<String Name="StartTime">Start time</String>
+		<String Name="EndTime">End time</String>
 	</Strings>
 </Language>

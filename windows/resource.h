@@ -276,6 +276,8 @@
 #define IDC_SEARCH                      1078
 #define IDC_RATIO                       1078
 #define IDC_SEARCHING_OPTIONS           1078
+#define IDC_SEARCHING_OPTIONS2          1079
+#define IDC_AUTO_SEARCH                 1079
 #define IDC_CLOSE_WINDOW                1080
 #define IDC_FIND                        1081
 #define IDC_NEXT                        1082
@@ -329,6 +331,7 @@
 #define IDC_SEARCH_STRING               1118
 #define IDC_SEARCH_HISTORY              1118
 #define IDC_DEST_DIR                    1119
+#define IDC_EXPIRY_DAYS                 1119
 #define IDC_IS_ACTIVE                   1120
 #define IDC_MIN_FILE_SIZE               1121
 #define IDC_MAX_FILE_SIZE               1122
@@ -390,6 +393,7 @@
 #define IDC_ADD_AS_FAVORITE             1175
 #define IDC_SETTINGS_SEARCH_HISTORY     1178
 #define IDC_HELP_DONATE                 1179
+#define IDC_EXPIRY_DAYS_LABEL           1179
 #define IDC_ADLSP_SEARCH                1184
 #define IDC_ADLSP_TYPE                  1185
 #define IDC_ADLSP_SIZE_MIN              1186
@@ -580,6 +584,7 @@
 #define IDC_MINUTES                     1281
 #define IDC_SEARCH_HISTORY_SPIN         1281
 #define IDC_PLAY                        1282
+#define IDC_EXPIRY_SPIN                 1282
 #define IDC_POPUPLIST                   1283
 #define IDC_COMBO1                      1284
 #define IDC_SB_HIGHLIGHT                1285
@@ -963,6 +968,14 @@
 #define IDC_USE_MATCHER                 1536
 #define IDC_MATCHER_PATTERN             1537
 #define IDC_PATTERN                     1538
+#define IDC_MON                         1539
+#define IDC_TUE                         1540
+#define IDC_WED                         1541
+#define IDC_THU                         1542
+#define IDC_FRI                         1543
+#define IDC_SAT                         1544
+#define IDC_CUSTOM_SEARCH_TIMES         1546
+#define IDC_USE_EXPIRY                  1547
 #define IDC_AUTOPRIORITY                1572
 #define IDC_SETTINGS_ODC_MENUBAR        1612
 #define IDC_SETTINGS_ODC_MENUBAR_USETWO 1613
@@ -989,6 +1002,7 @@
 #define IDC_AUTOPRIO_ENABLED            1634
 #define IDC_AUTOPRIO_FILES              1635
 #define IDC_PRIO_SPIN                   1636
+#define IDC_SUN                         1637
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1233,7 +1247,9 @@
 #define IDC_TYPE                        15056
 #define IDC_MATCHER_TYPE                15057
 #define IDC_AUTOSEARCH_ENABLE_TIME      15058
+#define IDC_START_TIME                  15058
 #define IDC_AUTOSEARCH_EVERY            15059
+#define IDC_END_TIME                    15059
 #define IDC_AUTOSEARCH_SPIN             15060
 #define IDC_AUTOSEARCH_ENABLE           15061
 #define IDC_AUTOSEARCH_RECHECK_TIME     15062
@@ -1287,6 +1303,10 @@
 #define IDC_REMOVE_BUNDLE_SOURCE        15116
 #define IDC_RELOAD                      15117
 #define IDC_SEARCH_BUNDLE               15118
+#define IDC_DATETIMEPICKER              15119
+#define IDC_SEARCH_START                15120
+#define IDC_DATETIMEPICKER3             15121
+#define IDC_SEARCH_END                  15121
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_BITZI_LOOKUP                20000
 #define IDC_BROWSELIST                  21000
@@ -1319,7 +1339,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        321
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1637
+#define _APS_NEXT_CONTROL_VALUE         1638
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

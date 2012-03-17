@@ -3124,12 +3124,62 @@ bool WinUtil::getTarget(int ID, string& target, int64_t aSize, bool wholeDir /*f
 	return true;
 }
 
+bool WinUtil::getVirtualTarget(int wID, string& vTarget, uint8_t& targetType) {
+	int newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
+	if (newId < WinUtil::countShareFavDirs()) {
+		targetType = AutoSearch::TARGET_SHARE;
+		vTarget = ShareManager::getInstance()->getGroupedDirectories()[newId].first;
+	} else {
+		auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
+		if (newId < WinUtil::countShareFavDirs() + (int)spl.size()) {
+			targetType = AutoSearch::TARGET_FAVORITE;
+			vTarget = spl[newId - WinUtil::countShareFavDirs()].first;
+		} else {
+			targetType = AutoSearch::TARGET_PATH;
+			vTarget = Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId - spl.size() - WinUtil::countShareFavDirs()]);
+		}
+	}
+	return true;
+}
+
 void WinUtil::viewLog(const string& path) {
 	if(BOOLSETTING(OPEN_LOGS_INTERNAL)) {
 		TextFrame::openWindow(Text::toT(path), true, false);
 	} else {
 		ShellExecute(NULL, NULL, Text::toT(path).c_str(), NULL, NULL, SW_SHOWNORMAL);
 	}
+}
+
+time_t WinUtil::fromSystemTime(const SYSTEMTIME * pTime) {
+	struct tm tm;
+	memset(&tm, 0, sizeof(tm));
+
+	tm.tm_year = pTime->wYear - 1900;
+	tm.tm_mon = pTime->wMonth - 1;
+	tm.tm_mday = pTime->wDay;
+
+	tm.tm_hour = pTime->wHour;
+	tm.tm_min = pTime->wMinute;
+	tm.tm_sec = pTime->wSecond;
+	tm.tm_wday = pTime->wDayOfWeek;
+
+	return mktime(&tm);
+}
+
+void WinUtil::toSystemTime(const time_t aTime, SYSTEMTIME* sysTime) {
+	tm _tm;
+	localtime_s(&_tm, &aTime);
+
+	sysTime->wYear = _tm.tm_year + 1900;
+	sysTime->wMonth = _tm.tm_mon + 1;
+	sysTime->wDay = _tm.tm_mday;
+
+	sysTime->wHour = _tm.tm_hour;
+
+	sysTime->wMinute = _tm.tm_min;
+	sysTime->wSecond = _tm.tm_sec;
+	sysTime->wDayOfWeek = _tm.tm_wday;
+	sysTime->wMilliseconds = 0;
 }
 
 /**

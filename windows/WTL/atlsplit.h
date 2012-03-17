@@ -1,9 +1,9 @@
-// Windows Template Library - WTL version 8.0
+// Windows Template Library - WTL version 8.1
 // Copyright (C) Microsoft Corporation. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
-// Common Public License 1.0 (http://opensource.org/osi3.0/licenses/cpl1.0.php)
+// Common Public License 1.0 (http://opensource.org/licenses/cpl1.0.php)
 // which can be found in the file CPL.TXT at the root of this distribution.
 // By using this software in any fashion, you are agreeing to be bound by
 // the terms of this license. You must not remove this notice, or
@@ -13,10 +13,6 @@
 #define __ATLSPLIT_H__
 
 #pragma once
-
-#ifndef __cplusplus
-	#error ATL requires C++ compilation (use a .cpp suffix)
-#endif
 
 #ifndef __ATLAPP_H__
 	#error atlsplit.h requires atlapp.h to be included first
@@ -53,6 +49,8 @@ namespace WTL
 #define SPLIT_NONINTERACTIVE		0x00000002
 #define SPLIT_RIGHTALIGNED		0x00000004
 #define SPLIT_BOTTOMALIGNED		SPLIT_RIGHTALIGNED
+#define SPLIT_GRADIENTBAR		0x00000008
+#define SPLIT_FIXEDBARSIZE		0x00000010
 
 // Note: SPLIT_PROPORTIONAL and SPLIT_RIGHTALIGNED/SPLIT_BOTTOMALIGNED are 
 // mutually exclusive. If both are set, splitter defaults to SPLIT_PROPORTIONAL
@@ -70,7 +68,6 @@ public:
 	int m_nDefActivePane;
 	int m_cxySplitBar;              // splitter bar width/height
 	static HCURSOR m_hCursor;
-	static HCURSOR m_hCursorAlt;
 	int m_cxyMin;                   // minimum pane size
 	int m_cxyBarEdge;              	// splitter bar edge
 	bool m_bFullDrag;
@@ -79,15 +76,14 @@ public:
 	bool m_bUpdateProportionalPos;
 	DWORD m_dwExtendedStyle;       // splitter specific extended styles
 	int m_nSinglePane;             // single pane mode
-	bool m_bVertical;
 
 // Constructor
 	CSplitterImpl() :
 			m_xySplitterPos(-1), m_nDefActivePane(SPLIT_PANE_NONE), 
-			m_cxySplitBar(0), m_cxyMin(0), m_cxyBarEdge(0), m_bFullDrag(true), 
+			m_cxySplitBar(4), m_cxyMin(0), m_cxyBarEdge(0), m_bFullDrag(true), 
 			m_cxyDragOffset(0), m_nProportionalPos(0), m_bUpdateProportionalPos(true),
 			m_dwExtendedStyle(SPLIT_PROPORTIONAL),
-			m_nSinglePane(SPLIT_PANE_NONE), m_bVertical(t_bVertical)
+			m_nSinglePane(SPLIT_PANE_NONE)
 	{
 		m_hWndPane[SPLIT_PANE_LEFT] = NULL;
 		m_hWndPane[SPLIT_PANE_RIGHT] = NULL;
@@ -105,10 +101,7 @@ public:
 			}
 
 			if(m_hCursor == NULL)
-				m_hCursor = ::LoadCursor(NULL, IDC_SIZEWE);
-
-			if(m_hCursorAlt == NULL)
-				m_hCursorAlt = ::LoadCursor(NULL, IDC_SIZENS);
+				m_hCursor = ::LoadCursor(NULL, t_bVertical ? IDC_SIZEWE : IDC_SIZENS);
 
 			lock.Unlock();
 		}
@@ -146,7 +139,7 @@ public:
 	{
 		if(xyPos == -1)   // -1 == middle
 		{
-			if(m_bVertical)
+			if(t_bVertical)
 				xyPos = (m_rcSplitter.right - m_rcSplitter.left - m_cxySplitBar - m_cxyBarEdge) / 2;
 			else
 				xyPos = (m_rcSplitter.bottom - m_rcSplitter.top - m_cxySplitBar - m_cxyBarEdge) / 2;
@@ -154,7 +147,7 @@ public:
 
 		// Adjust if out of valid range
 		int cxyMax = 0;
-		if(m_bVertical)
+		if(t_bVertical)
 			cxyMax = m_rcSplitter.right - m_rcSplitter.left;
 		else
 			cxyMax = m_rcSplitter.bottom - m_rcSplitter.top;
@@ -391,21 +384,35 @@ public:
 // Overrideables
 	void DrawSplitterBar(CDCHandle dc)
 	{
-		RECT rect;
+		RECT rect = { 0 };
 		if(GetSplitterBarRect(&rect))
 		{
 			dc.FillRect(&rect, COLOR_3DFACE);
+
+#if (!defined(_WIN32_WCE) || (_WIN32_WCE >= 420))
+			if((m_dwExtendedStyle & SPLIT_GRADIENTBAR) != 0)
+			{
+				RECT rect2 = rect;
+				if(t_bVertical)
+					rect2.left = (rect.left + rect.right) / 2 - 1;
+				else
+					rect2.top = (rect.top + rect.bottom) / 2 - 1;
+
+				dc.GradientFillRect(rect2, ::GetSysColor(COLOR_3DFACE), ::GetSysColor(COLOR_3DSHADOW), t_bVertical);
+			}
+#endif // !defined(_WIN32_WCE) || (_WIN32_WCE >= 420)
+
 			// draw 3D edge if needed
 			T* pT = static_cast<T*>(this);
 			if((pT->GetExStyle() & WS_EX_CLIENTEDGE) != 0)
-				dc.DrawEdge(&rect, EDGE_RAISED, m_bVertical ? (BF_LEFT | BF_RIGHT) : (BF_TOP | BF_BOTTOM));
+				dc.DrawEdge(&rect, EDGE_RAISED, t_bVertical ? (BF_LEFT | BF_RIGHT) : (BF_TOP | BF_BOTTOM));
 		}
 	}
 
 	// called only if pane is empty
 	void DrawSplitterPane(CDCHandle dc, int nPane)
 	{
-		RECT rect;
+		RECT rect = { 0 };
 		if(GetSplitterPaneRect(nPane, &rect))
 		{
 			T* pT = static_cast<T*>(this);
@@ -440,7 +447,9 @@ public:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 	{
-		GetSystemSettings(false);
+		T* pT = static_cast<T*>(this);
+		pT->GetSystemSettings(false);
+
 		bHandled = FALSE;
 		return 1;
 	}
@@ -481,7 +490,7 @@ public:
 		if((wParam & MK_LBUTTON) && ::GetCapture() == pT->m_hWnd)
 		{
 			int xyNewSplitPos = 0;
-			if(m_bVertical)
+			if(t_bVertical)
 				xyNewSplitPos = xPos - m_rcSplitter.left - m_cxyDragOffset;
 			else
 				xyNewSplitPos = yPos - m_rcSplitter.top - m_cxyDragOffset;
@@ -507,7 +516,7 @@ public:
 		else		// not dragging, just set cursor
 		{
 			if(IsOverSplitterBar(xPos, yPos))
-				::SetCursor(m_bVertical ? m_hCursor : m_hCursorAlt);
+				::SetCursor(m_hCursor);
 			bHandled = FALSE;
 		}
 
@@ -522,10 +531,10 @@ public:
 		{
 			T* pT = static_cast<T*>(this);
 			pT->SetCapture();
-			::SetCursor(m_bVertical ? m_hCursor : m_hCursorAlt);
+			::SetCursor(m_hCursor);
 			if(!m_bFullDrag)
 				DrawGhostBar();
-			if(m_bVertical)
+			if(t_bVertical)
 				m_cxyDragOffset = xPos - m_rcSplitter.left - m_xySplitterPos;
 			else
 				m_cxyDragOffset = yPos - m_rcSplitter.top - m_xySplitterPos;
@@ -585,7 +594,7 @@ public:
 			DWORD dwPos = ::GetMessagePos();
 			POINT pt = { GET_X_LPARAM(dwPos), GET_Y_LPARAM(dwPos) };
 			pT->ScreenToClient(&pt);
-			RECT rcPane;
+			RECT rcPane = { 0 };
 			for(int nPane = 0; nPane < m_nPanesCount; nPane++)
 			{
 				if(GetSplitterPaneRect(nPane, &rcPane) && ::PtInRect(&rcPane, pt))
@@ -601,7 +610,9 @@ public:
 
 	LRESULT OnSettingChange(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
-		GetSystemSettings(true);
+		T* pT = static_cast<T*>(this);
+		pT->GetSystemSettings(true);
+
 		return 0;
 	}
 
@@ -612,7 +623,7 @@ public:
 			return;
 
 		T* pT = static_cast<T*>(this);
-		RECT rect = { 0, 0, 0, 0 };
+		RECT rect = { 0 };
 		if(m_nSinglePane == SPLIT_PANE_NONE)
 		{
 			if(GetSplitterBarRect(&rect))
@@ -647,7 +658,7 @@ public:
 		if(m_nSinglePane != SPLIT_PANE_NONE || m_xySplitterPos == -1)
 			return false;
 
-		if(m_bVertical)
+		if(t_bVertical)
 		{
 			lpRect->left = m_rcSplitter.left + m_xySplitterPos;
 			lpRect->top = m_rcSplitter.top;
@@ -679,7 +690,7 @@ public:
 		}
 		else if(nPane == SPLIT_PANE_LEFT)
 		{
-			if(m_bVertical)
+			if(t_bVertical)
 			{
 				lpRect->left = m_rcSplitter.left;
 				lpRect->top = m_rcSplitter.top;
@@ -696,7 +707,7 @@ public:
 		}
 		else if(nPane == SPLIT_PANE_RIGHT)
 		{
-			if(m_bVertical)
+			if(t_bVertical)
 			{
 				lpRect->left = m_rcSplitter.left + m_xySplitterPos + m_cxySplitBar + m_cxyBarEdge;
 				lpRect->top = m_rcSplitter.top;
@@ -731,18 +742,24 @@ public:
 			return false;
 		if(m_xySplitterPos == -1 || !IsOverSplitterRect(x, y))
 			return false;
-		int xy = m_bVertical ? x : y;
-		int xyOff = m_bVertical ? m_rcSplitter.left : m_rcSplitter.top;
+		int xy = t_bVertical ? x : y;
+		int xyOff = t_bVertical ? m_rcSplitter.left : m_rcSplitter.top;
 		return ((xy >= (xyOff + m_xySplitterPos)) && (xy < xyOff + m_xySplitterPos + m_cxySplitBar + m_cxyBarEdge));
 	}
 
 	void DrawGhostBar()
 	{
-		RECT rect = { 0, 0, 0, 0 };
+		RECT rect = { 0 };
 		if(GetSplitterBarRect(&rect))
 		{
-			// invert the brush pattern (looks just like frame window sizing)
+			// convert client to window coordinates
 			T* pT = static_cast<T*>(this);
+			RECT rcWnd = { 0 };
+			pT->GetWindowRect(&rcWnd);
+			::MapWindowPoints(NULL, pT->m_hWnd, (LPPOINT)&rcWnd, 2);
+			::OffsetRect(&rect, -rcWnd.left, -rcWnd.top);
+
+			// invert the brush pattern (looks just like frame window sizing)
 			CWindowDC dc(pT->m_hWnd);
 			CBrush brush = CDCHandle::GetHalftoneBrush();
 			if(brush.m_hBrush != NULL)
@@ -756,22 +773,25 @@ public:
 
 	void GetSystemSettings(bool bUpdate)
 	{
+		if((m_dwExtendedStyle & SPLIT_FIXEDBARSIZE) == 0)
+		{
 #ifndef _WIN32_WCE
-		m_cxySplitBar = ::GetSystemMetrics(m_bVertical ? SM_CXSIZEFRAME : SM_CYSIZEFRAME);
+			m_cxySplitBar = ::GetSystemMetrics(t_bVertical ? SM_CXSIZEFRAME : SM_CYSIZEFRAME);
 #else // CE specific
-		m_cxySplitBar = 2 * ::GetSystemMetrics(m_bVertical ? SM_CXEDGE : SM_CYEDGE);
+			m_cxySplitBar = 2 * ::GetSystemMetrics(t_bVertical ? SM_CXEDGE : SM_CYEDGE);
 #endif // _WIN32_WCE
+		}
 
 		T* pT = static_cast<T*>(this);
 		if((pT->GetExStyle() & WS_EX_CLIENTEDGE))
 		{
-			m_cxyBarEdge = 2 * ::GetSystemMetrics(m_bVertical ? SM_CXEDGE : SM_CYEDGE);
+			m_cxyBarEdge = 2 * ::GetSystemMetrics(t_bVertical ? SM_CXEDGE : SM_CYEDGE);
 			m_cxyMin = 0;
 		}
 		else
 		{
 			m_cxyBarEdge = 0;
-			m_cxyMin = 2 * ::GetSystemMetrics(m_bVertical ? SM_CXEDGE : SM_CYEDGE);
+			m_cxyMin = 2 * ::GetSystemMetrics(t_bVertical ? SM_CXEDGE : SM_CYEDGE);
 		}
 
 #ifndef _WIN32_WCE
@@ -789,7 +809,7 @@ public:
 
 	void StoreProportionalPos()
 	{
-		int cxyTotal = m_bVertical ? (m_rcSplitter.right - m_rcSplitter.left - m_cxySplitBar - m_cxyBarEdge) : (m_rcSplitter.bottom - m_rcSplitter.top - m_cxySplitBar - m_cxyBarEdge);
+		int cxyTotal = t_bVertical ? (m_rcSplitter.right - m_rcSplitter.left - m_cxySplitBar - m_cxyBarEdge) : (m_rcSplitter.bottom - m_rcSplitter.top - m_cxySplitBar - m_cxyBarEdge);
 		if(cxyTotal > 0)
 			m_nProportionalPos = ::MulDiv(m_xySplitterPos, m_nPropMax, cxyTotal);
 		else
@@ -799,7 +819,7 @@ public:
 
 	void UpdateProportionalPos()
 	{
-		int cxyTotal = m_bVertical ? (m_rcSplitter.right - m_rcSplitter.left - m_cxySplitBar - m_cxyBarEdge) : (m_rcSplitter.bottom - m_rcSplitter.top - m_cxySplitBar - m_cxyBarEdge);
+		int cxyTotal = t_bVertical ? (m_rcSplitter.right - m_rcSplitter.left - m_cxySplitBar - m_cxyBarEdge) : (m_rcSplitter.bottom - m_rcSplitter.top - m_cxySplitBar - m_cxyBarEdge);
 		if(cxyTotal > 0)
 		{
 			int xyNewPos = ::MulDiv(m_nProportionalPos, cxyTotal, m_nPropMax);
@@ -816,7 +836,7 @@ public:
 
 	void StoreRightAlignPos()
 	{
-		int cxyTotal = m_bVertical ? (m_rcSplitter.right - m_rcSplitter.left - m_cxySplitBar - m_cxyBarEdge) : (m_rcSplitter.bottom - m_rcSplitter.top - m_cxySplitBar - m_cxyBarEdge);
+		int cxyTotal = t_bVertical ? (m_rcSplitter.right - m_rcSplitter.left - m_cxySplitBar - m_cxyBarEdge) : (m_rcSplitter.bottom - m_rcSplitter.top - m_cxySplitBar - m_cxyBarEdge);
 		if(cxyTotal > 0)
 			m_nProportionalPos = cxyTotal - m_xySplitterPos;
 		else
@@ -826,7 +846,7 @@ public:
 
 	void UpdateRightAlignPos()
 	{
-		int cxyTotal = m_bVertical ? (m_rcSplitter.right - m_rcSplitter.left - m_cxySplitBar - m_cxyBarEdge) : (m_rcSplitter.bottom - m_rcSplitter.top - m_cxySplitBar - m_cxyBarEdge);
+		int cxyTotal = t_bVertical ? (m_rcSplitter.right - m_rcSplitter.left - m_cxySplitBar - m_cxyBarEdge) : (m_rcSplitter.bottom - m_rcSplitter.top - m_cxySplitBar - m_cxyBarEdge);
 		if(cxyTotal > 0)
 		{
 			m_bUpdateProportionalPos = false;
@@ -842,7 +862,6 @@ public:
 };
 
 template <class T, bool t_bVertical> HCURSOR CSplitterImpl< T, t_bVertical>::m_hCursor = NULL;
-template <class T, bool t_bVertical> HCURSOR CSplitterImpl< T, t_bVertical>::m_hCursorAlt = NULL;
 
 
 ///////////////////////////////////////////////////////////////////////////////

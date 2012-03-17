@@ -21,15 +21,22 @@
 #pragma once
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
-
+#include <bitset>
 #include "../client/Util.h"
 #include "../client/ResourceManager.h"
+#include "../client/AutoSearchManager.h"
 
 class SearchPageDlg : public CDialogImpl<SearchPageDlg> {
 public:
 	string searchString, comment, target, userMatch, matcherString;
 	int fileType, searchInterval;
-	int8_t matcherType, action, targetType;
+	uint8_t matcherType, action, targetType;
+	SearchTime startTime;
+	SearchTime endTime;
+
+	time_t expireTime;
+	bitset<7> searchDays;
+
 	bool display;
 	bool remove;
 
@@ -44,9 +51,15 @@ public:
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDC_AS_ACTION, onAction)
-		COMMAND_ID_HANDLER(IDC_AS_FILETYPE, onCheckControls)
-		COMMAND_ID_HANDLER(IDC_USE_MATCHER, onCheckControls)
-		COMMAND_HANDLER(IDC_BROWSE, BN_CLICKED, onBrowse)
+		COMMAND_ID_HANDLER(IDC_AS_FILETYPE, onCheckMatcher)
+		COMMAND_ID_HANDLER(IDC_USE_MATCHER, onCheckMatcher)
+		COMMAND_ID_HANDLER(IDC_CUSTOM_SEARCH_TIMES, onCheckTimes)
+		COMMAND_ID_HANDLER(IDC_USE_EXPIRY, onCheckExpiry)
+		COMMAND_HANDLER(IDC_TARGET_PATH, CBN_EDITCHANGE, onTargetChanged)
+		COMMAND_HANDLER(IDC_BROWSE, BN_CLICKED, onClickLocation)
+
+		COMMAND_ID_HANDLER(IDC_DOWNLOADTO, onBrowse)
+		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + WinUtil::countDownloadDirItems(), onDownloadFavoriteDirs)
 	END_MSG_MAP()
 
 
@@ -55,16 +68,18 @@ public:
 		return FALSE;
 	}
 
-	LRESULT onCheckControls(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		fixControls();
-		return FALSE;
-	}
+	LRESULT onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onCheckExpiry(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
+	LRESULT onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 private:
 //	enum { BUF_LEN = 1024 };
 	CImageList ftImage;
@@ -76,6 +91,11 @@ private:
 	CButton cDisplay;
 	CComboBox cMatcherType;
 
+	CDateTimePickerCtrl ctrlExpire, ctrlSearchStart, ctrlSearchEnd;
+
+	OMenu targetMenu;
+
 	void fixControls();
+	void updateTargetText();
 };
 #endif

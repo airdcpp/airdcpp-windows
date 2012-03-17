@@ -270,6 +270,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 	SearchPageDlg dlg;
+	dlg.expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS)*24*60*60) : 0;
 	if(dlg.DoModal() == IDOK) {
 		string search = dlg.searchString + "\r\n";
 		string::size_type j = 0;
@@ -279,9 +280,12 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 			string str = search.substr(j, i-j);
 			j = i +2;
 			if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
-				AutoSearchManager::getInstance()->addAutoSearch(true, str, (SearchManager::TypeModes)dlg.fileType, (AutoSearch::ActionType)dlg.action, dlg.remove, 
-				dlg.target, AutoSearch::TARGET_PATH, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.searchInterval, 
-				dlg.userMatch);
+				AutoSearchPtr as = new AutoSearch(true, str, (SearchManager::TypeModes)dlg.fileType, (AutoSearch::ActionType)dlg.action, dlg.remove, 
+					dlg.target, AutoSearch::TARGET_PATH, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, dlg.expireTime);
+				as->startTime = dlg.startTime;
+				as->endTime = dlg.endTime;
+				as->searchDays = dlg.searchDays;
+				AutoSearchManager::getInstance()->addAutoSearch(as);
 			} else {
 				//MessageBox(_T("Not adding the auto search: ") + Text::toT(str).c_str());
 				MessageBox(CTSTRING(LINE_EMPTY));
@@ -302,13 +306,21 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.action = as->getAction();
 		dlg.remove = as->getRemove();
 		dlg.target = as->getTarget();
-		dlg.userMatch = as->getUserMatch();
+		dlg.userMatch = as->getNickPattern();
 		dlg.matcherString = as->getPattern();
 		dlg.matcherType = as->getMatcherType();
+		dlg.expireTime = as->getExpireTime();
+		dlg.searchDays = as->searchDays;
+		dlg.startTime = as->startTime;
+		dlg.endTime = as->endTime;
 
 		if(dlg.DoModal() == IDOK) {
 			AutoSearchPtr asNew = AutoSearchPtr(new AutoSearch(as->getEnabled(), dlg.searchString, (SearchManager::TypeModes)dlg.fileType, (AutoSearch::ActionType)dlg.action, 
-				dlg.remove, dlg.target, (AutoSearch::TargetType)dlg.targetType, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval));
+				dlg.remove, dlg.target, (AutoSearch::TargetType)dlg.targetType, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, 
+				dlg.expireTime));
+			asNew->startTime = dlg.startTime;
+			asNew->endTime = dlg.endTime;
+			asNew->searchDays = dlg.searchDays;
 
 			if (AutoSearchManager::getInstance()->updateAutoSearch(sel, asNew)) {
 
@@ -426,7 +438,7 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 		
 	lst.push_back(Text::toT(as->getTarget()));
 	lst.push_back(Text::toT(as->getRemove()? "Yes" : "No"));
-	lst.push_back(Text::toT(as->getUserMatch()));
+	lst.push_back(Text::toT(as->getNickPattern()));
 
 	bool b = as->getEnabled();
 	int i = ctrlAutoSearch.insert(pos, lst, 0, (LPARAM)as.get());

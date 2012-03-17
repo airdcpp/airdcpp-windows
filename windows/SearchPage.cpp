@@ -34,7 +34,9 @@ PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_INTERVAL_TEXT,						ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	{ IDC_SETTINGS_SEARCH_HISTORY,				ResourceManager::SETTINGS_SEARCH_HISTORY },
 	{ IDC_SEARCHING_OPTIONS,					ResourceManager::SETTINGS_SEARCHING_OPTIONS	},
-	{ 0,										ResourceManager::SETTINGS_AUTO_AWAY }
+	{ IDC_EXPIRY_DAYS_LABEL,					ResourceManager::SETTINGS_EXPIRY_DAYS	},
+	{ IDC_AUTO_SEARCH,							ResourceManager::SETTINGS_ASEARCH	},
+	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item SearchPage::items[] = {
@@ -43,6 +45,7 @@ PropPage::Item SearchPage::items[] = {
 	{ IDC_SKIPLIST_PRESET3, SettingsManager::SKIP_MSG_03, PropPage::T_STR },
 	{ IDC_INTERVAL, SettingsManager::MINIMUM_SEARCH_INTERVAL, PropPage::T_INT },
 	{ IDC_SEARCH_HISTORY, SettingsManager::SEARCH_HISTORY, PropPage::T_INT }, 
+	{ IDC_EXPIRY_DAYS, SettingsManager::AUTOSEARCH_EXPIRE_DAYS, PropPage::T_INT }, 
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -58,6 +61,7 @@ LRESULT SearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	CUpDownCtrl updown;
 	setMinMax(IDC_SEARCH_HISTORY_SPIN, 1, 100);
 	setMinMax(IDC_INTERVAL_SPIN, 5, 9999);
+	setMinMax(IDC_EXPIRY_SPIN, 0, 90);
 
 	wsList = WebShortcuts::getInstance()->copyList();
 

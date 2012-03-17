@@ -513,6 +513,8 @@ public:
 	
 	static TStringList FindVolumes();
 	static bool getTarget(int ID, string& target, int64_t aSize, bool wholeDir = false);
+	static bool getVirtualTarget(int ID, string& vTarget, uint8_t& targetType);
+
 	static void viewLog(const string& path);
 	static int countDownloadDirItems();
 	static int countShareFavDirs();
@@ -523,7 +525,8 @@ public:
 		return Text::fromT(tCompileDate.Format(_T("%d.%m.%Y")).GetString());
 	}
 
-
+	static time_t fromSystemTime(const SYSTEMTIME* pTime);
+	static void toSystemTime(const time_t aTime, SYSTEMTIME* sysTime);
 private:
 	static int CALLBACK browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LPARAM pData);
 

@@ -1019,16 +1019,15 @@ LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 		if(selectedWord.size() < 5) //we dont accept anything under 5 chars
 			return 0;
 
-		addAutoSearch(SETTING(DOWNLOAD_DIRECTORY));
+		addAutoSearch(SETTING(DOWNLOAD_DIRECTORY), AutoSearch::TARGET_PATH);
 	} else {
 		downloadMagnet(SETTING(DOWNLOAD_DIRECTORY));
 	}
 	return 0;
 }
 
-void ChatCtrl::addAutoSearch(const string& aPath) {
-	if(AutoSearchManager::getInstance()->addAutoSearch(true, aPath, SearchManager::TYPE_DIRECTORY, AutoSearch::ACTION_DOWNLOAD, true, Util::emptyString, 
-		AutoSearch::TARGET_PATH, StringMatcher::MATCHER_STRING, aPath, 0))
+void ChatCtrl::addAutoSearch(const string& aPath, uint8_t targetType) {
+	if(AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aPath, (AutoSearch::TargetType)targetType))
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
 }
 
@@ -1052,7 +1051,7 @@ LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	if(WinUtil::browseDirectory(target, m_hWnd)) {
 		SettingsManager::getInstance()->addDirToHistory(target);
 		if (release) {
-			addAutoSearch(Text::fromT(target));
+			addAutoSearch(Text::fromT(target), AutoSearch::TARGET_PATH);
 		} else {
 			downloadMagnet(Text::fromT(target));
 		}
@@ -1065,26 +1064,10 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 		if(selectedWord.size() < 5) //we dont accept anything under 5 chars
 			return 0;
 
-		int newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
-
-		AutoSearch::TargetType targetType = AutoSearch::TARGET_FAVORITE;
-		string target;
-
-		if (newId < WinUtil::countShareFavDirs()) {
-			targetType = AutoSearch::TARGET_SHARE;
-			target = ShareManager::getInstance()->getGroupedDirectories()[newId].first;
-		} else {
-			auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-			if (newId < WinUtil::countShareFavDirs() + (int)spl.size()) {
-				targetType = AutoSearch::TARGET_FAVORITE;
-				target = spl[newId - WinUtil::countShareFavDirs()].first;
-			} else {
-				targetType = AutoSearch::TARGET_PATH;
-				target = Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId - spl.size() - WinUtil::countShareFavDirs()]);
-			}
-		}
-
-		addAutoSearch(target);
+		uint8_t targetType;
+		string vTarget;
+		if (WinUtil::getVirtualTarget(wID, vTarget, targetType))
+			addAutoSearch(vTarget, targetType);
 	} else {
 		string target;
 		if (WinUtil::getTarget(wID, target, 0)) {
