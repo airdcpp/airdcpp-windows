@@ -1527,8 +1527,9 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="Saturday">Saturday</String>
 		<String Name="Sunday">Sunday</String>
 		<String Name="UseExpiryDay">Use an expiry day for this item</String>
-		<String Name="SettingsExpiryDays">The default expiry days (0 = won't expire)</String>
+		<String Name="SettingsExpiryDays">The default expiry days for items (0 = won't expire)</String>
 		<String Name="StartTime">Start time</String>
 		<String Name="EndTime">End time</String>
+		<String Name="LastSearch">Last Search</String>
 	</Strings>
 </Language>

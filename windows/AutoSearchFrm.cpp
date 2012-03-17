@@ -23,10 +23,10 @@
 #include "../client/StringTokenizer.h"
 #include "../client/AutoSearchManager.h"
 
-int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_ACTION, COLUMN_PATH, COLUMN_REMOVE, COLUMN_MATCH };
-int AutoSearchFrame::columnSizes[] = { 450, 100, 125, 400, 100, 200 };
+int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_ACTION, COLUMN_PATH, COLUMN_REMOVE, COLUMN_MATCH, COLUMN_LASTSEARCH };
+int AutoSearchFrame::columnSizes[] = { 450, 100, 125, 400, 100, 200, 200 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, 
-ResourceManager::ACTION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT, ResourceManager::USER_MATCH };
+ResourceManager::ACTION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT, ResourceManager::USER_MATCH, ResourceManager::LAST_SEARCH };
 
 LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	
@@ -325,18 +325,18 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 			if (AutoSearchManager::getInstance()->updateAutoSearch(sel, asNew)) {
 
 				ctrlAutoSearch.SetCheckState(sel, asNew->getEnabled());
-				ctrlAutoSearch.SetItemText(sel, 0, Text::toT(dlg.searchString).c_str());
-				ctrlAutoSearch.SetItemText(sel, 1, Text::toT(getType(dlg.fileType)).c_str());
+				ctrlAutoSearch.SetItemText(sel, COLUMN_VALUE, Text::toT(dlg.searchString).c_str());
+				ctrlAutoSearch.SetItemText(sel, COLUMN_TYPE, Text::toT(getType(dlg.fileType)).c_str());
 				if(dlg.action == 0){
-					ctrlAutoSearch.SetItemText(sel, 2, Text::toT(STRING(DOWNLOAD)).c_str());
+					ctrlAutoSearch.SetItemText(sel, COLUMN_ACTION, Text::toT(STRING(DOWNLOAD)).c_str());
 				} else if(dlg.action == 1){
-					ctrlAutoSearch.SetItemText(sel, 2, Text::toT(STRING(ADD_TO_QUEUE)).c_str());
+					ctrlAutoSearch.SetItemText(sel, COLUMN_ACTION, Text::toT(STRING(ADD_TO_QUEUE)).c_str());
 				} else if(dlg.action == 2){
-					ctrlAutoSearch.SetItemText(sel, 2, Text::toT(STRING(AS_REPORT)).c_str());
+					ctrlAutoSearch.SetItemText(sel, COLUMN_ACTION, Text::toT(STRING(AS_REPORT)).c_str());
 				}
-				ctrlAutoSearch.SetItemText(sel, 3, Text::toT(dlg.target).c_str());
-				ctrlAutoSearch.SetItemText(sel, 4, dlg.remove ? _T("Yes") : _T("No"));
-				ctrlAutoSearch.SetItemText(sel, 5, Text::toT(dlg.userMatch).c_str());
+				ctrlAutoSearch.SetItemText(sel, COLUMN_REMOVE, Text::toT(dlg.target).c_str());
+				ctrlAutoSearch.SetItemText(sel, COLUMN_PATH, dlg.remove ? _T("Yes") : _T("No"));
+				ctrlAutoSearch.SetItemText(sel, COLUMN_MATCH, Text::toT(dlg.userMatch).c_str());
 				ctrlAutoSearch.SetItemData(sel, (LPARAM)asNew.get());
 			}
 		}
@@ -428,24 +428,36 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	lst.push_back(Text::toT(as->getSearchString()));
 	lst.push_back(Text::toT(getType(as->getFileType())));
 		
-		if(as->getAction() == 0){
-			lst.push_back(Text::toT(STRING(DOWNLOAD)));
-		}else if(as->getAction() == 1){
-			lst.push_back(Text::toT(STRING(ADD_TO_QUEUE)));
-		}else if(as->getAction() == 2){
-			lst.push_back(Text::toT(STRING(AS_REPORT)));
-		}
+	if(as->getAction() == 0){
+		lst.push_back(CTSTRING(DOWNLOAD));
+	}else if(as->getAction() == 1){
+		lst.push_back(CTSTRING(ADD_TO_QUEUE));
+	}else if(as->getAction() == 2){
+		lst.push_back(CTSTRING(AS_REPORT));
+	}
 		
 	lst.push_back(Text::toT(as->getTarget()));
 	lst.push_back(Text::toT(as->getRemove()? "Yes" : "No"));
 	lst.push_back(Text::toT(as->getNickPattern()));
+	lst.push_back((as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
 
 	bool b = as->getEnabled();
 	int i = ctrlAutoSearch.insert(pos, lst, 0, (LPARAM)as.get());
 	ctrlAutoSearch.SetCheckState(i, b);
-
 }
 
+void AutoSearchFrame::updateItem(const AutoSearchPtr as, int pos) {
+	ctrlAutoSearch.SetItemText(pos, COLUMN_LASTSEARCH, (as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
+}
+
+tstring AutoSearchFrame::formatSearchDate(const time_t aTime) {
+	char buf[20];
+	if (strftime(buf, 20, "%x %X", localtime(&aTime))) {
+		return Text::toT(string(buf));
+	} else {
+		return _T("-");
+	}
+}
 
 LRESULT AutoSearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 

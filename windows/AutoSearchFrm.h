@@ -131,6 +131,7 @@ private:
 		COLUMN_REMOVE,
 		COLUMN_PATH,
 		COLUMN_MATCH,
+		COLUMN_LASTSEARCH,
 		COLUMN_LAST
 	};
 
@@ -159,7 +160,8 @@ private:
 	}
 
 	void addEntry(const AutoSearchPtr as, int pos);
-
+	void updateItem(const AutoSearchPtr as, int pos);
+	tstring formatSearchDate(const time_t aTime);
 
 	string getType(int i) {
 		switch(i) {
@@ -193,6 +195,6 @@ private:
 
 	virtual void on(AutoSearchManagerListener::RemoveItem, const string item) noexcept { ctrlAutoSearch.deleteItem(Text::toT(item)); setDirty(); }
 	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept { addEntry(as, ctrlAutoSearch.GetItemCount()); setDirty(); }
-
+	virtual void on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as, int pos) noexcept { updateItem(as, pos); setDirty(); }
 };
 #endif // !defined(AUTOSEARCH_FRM_H)
