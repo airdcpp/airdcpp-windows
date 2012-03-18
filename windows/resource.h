@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -159,6 +159,7 @@
 #define IDD_DIRLIST_DLG                 316
 #define IDI_GER                         318
 #define IDD_FAVORITEDIR                 320
+#define IDD_TEMPSHARE_DLG               321
 #define IDI_ICON1                       324
 #define IDI_FIN                         324
 #define IDI_ICON2                       325
@@ -684,6 +685,8 @@
 #define IDC_BLACK                       1313
 #define IDC_SLOTS_GROUP                 1313
 #define IDC_HIGHEST_PRIORITY_USE_REGEXP2 1313
+#define IDC_EDIT_TEMPSHARES             1313
+#define IDC_TMP_REMOVE                  1313
 #define IDC_SETTINGS_BOLD_CONTENTS      1314
 #define IDC_SHARE_SKIPLIST_USE_REGEXP   1314
 #define IDC_UPDATE_CLIENTS              1314
@@ -1003,6 +1006,7 @@
 #define IDC_AUTOPRIO_FILES              1635
 #define IDC_PRIO_SPIN                   1636
 #define IDC_SUN                         1637
+#define IDC_TEMPSHARELST                1638
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1337,9 +1341,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        321
+#define _APS_NEXT_RESOURCE_VALUE        322
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1638
+#define _APS_NEXT_CONTROL_VALUE         1639
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

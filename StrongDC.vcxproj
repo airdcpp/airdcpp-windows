@@ -611,6 +611,7 @@
     <ClInclude Include="windows\StatsFrame.h" />
     <ClInclude Include="windows\stdafx.h" />
     <ClInclude Include="windows\SystemFrame.h" />
+    <ClInclude Include="windows\TempShare_dlg.h" />
     <ClInclude Include="windows\TextFrame.h" />
     <ClInclude Include="windows\ToolbarPage.h" />
     <ClInclude Include="windows\TransferView.h" />

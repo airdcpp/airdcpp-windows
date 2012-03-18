@@ -53,6 +53,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE, onClickedRemove)
 		COMMAND_ID_HANDLER(IDC_RENAME, onClickedRename)
 		COMMAND_ID_HANDLER(IDC_SHAREHIDDEN, onClickedShareHidden)
+		COMMAND_ID_HANDLER(IDC_EDIT_TEMPSHARES, onEditTempShares)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 
@@ -67,6 +68,7 @@ public:
 	LRESULT onClickedShareHidden(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRefreshDisable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onColumnClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
+	LRESULT onEditTempShares(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 
 	// Common PropPage interface

@@ -30,6 +30,7 @@
 #include "HashProgressDlg.h"
 #include "LineDlg.h"
 #include "PropertiesDlg.h"
+#include "TempShare_dlg.h"
 
 PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
@@ -66,6 +67,7 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	GetDlgItem(IDC_REMOVE).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
 	GetDlgItem(IDC_RENAME).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
 
+	GetDlgItem(IDC_EDIT_TEMPSHARES).EnableWindow((ShareManager::getInstance()->hasTempShares()) ? 1 : 0);
 
 	ctrlDirectories.Attach(GetDlgItem(IDC_DIRECTORIES));
 		ctrlDirectories.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_CHECKBOXES);
@@ -122,6 +124,12 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 
 	return TRUE;
+}
+
+LRESULT SharePage::onEditTempShares(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	TempShareDlg dlg;
+	dlg.DoModal();
+	return 0;
 }
 
 LRESULT SharePage::onColumnClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
