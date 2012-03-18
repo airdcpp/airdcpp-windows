@@ -63,7 +63,10 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_AS_ACTION_STATIC), (TSTRING(ACTION)).c_str());
 	::SetWindowText(GetDlgItem(IDC_ADD_SRCH_STR_TYPE_STATIC), (TSTRING(FILE_TYPE)).c_str());
 	::SetWindowText(GetDlgItem(IDC_REMOVE_ON_HIT), (TSTRING(REMOVE_ON_HIT)).c_str());
+
 	::SetWindowText(GetDlgItem(IDC_DL_TO), TSTRING(DOWNLOAD_TO).c_str());
+	::SetWindowText(GetDlgItem(IDC_SELECT_DIR), TSTRING(SELECT_DIRECTORY).c_str());
+
 	::SetWindowText(GetDlgItem(IDC_USER_MATCH_TEXT), TSTRING(AS_USER_MATCH).c_str());
 
 	::SetWindowText(GetDlgItem(IDC_USE_MATCHER), CTSTRING(USE_CUSTOM_MATCHER));
@@ -168,6 +171,13 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	e.wHour = endTime.hour;
 	e.wMinute = endTime.minute;
 	ctrlSearchEnd.SetSystemTime(0, &e);
+
+	/*CButton tmp1;
+	ATTACH(IDC_BROWSE, tmp1);
+	tmp1.SetButtonStyle(BS_SPLITBUTTON);
+	BUTTON_SPLITINFO split;
+	split.uSplitStyle = BCSS_STRETCH; */
+	//tmp1.SetSplitInfo(
 
 	fixControls();
 	return TRUE;
@@ -308,6 +318,22 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 LRESULT SearchPageDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
 	if (targetType > 0) {
 		//don't allow changing fav/share dir directly
+
+		tstring path;
+		path.resize(1024);
+		path.resize(GetDlgItemText(wID, &path[0], 1024));
+
+		CEdit tmp;
+		tmp.Attach(hWndCtl);
+		DWORD dwSel;
+		if ((dwSel = tmp.GetSel()) != CB_ERR) {
+			auto it = path.begin() +  HIWORD(dwSel)-1;
+			path.erase(it);
+			tmp.SetSel(0,-1);
+			tmp.SetWindowText(path.c_str());
+			tmp.SetSel(HIWORD(dwSel)-1, HIWORD(dwSel)-1);
+			tmp.Detach();
+		}
 		return 1;
 	}
 	return 0;
@@ -346,7 +372,7 @@ void SearchPageDlg::fixControls() {
 	/* Action */
 	BOOL isReportOnly = cAction.GetCurSel() == AutoSearch::ACTION_REPORT;
 	::EnableWindow(GetDlgItem(IDC_TARGET_PATH),				!isReportOnly);
-	::EnableWindow(GetDlgItem(IDC_BROWSE),					!isReportOnly);
+	::EnableWindow(GetDlgItem(IDC_SELECT_DIR),				!isReportOnly);
 
 	/* Matcher */
 	BOOL enableMatcher = IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED;

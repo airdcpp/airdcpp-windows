@@ -1531,5 +1531,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="StartTime">Start time</String>
 		<String Name="EndTime">End time</String>
 		<String Name="LastSearch">Last Search</String>
+		<String Name="SelectDirectory">Select directory</String>
 	</Strings>
 </Language>

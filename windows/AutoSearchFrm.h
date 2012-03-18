@@ -174,7 +174,6 @@ private:
 			case 6: return STRING(VIDEO);		break;
 			case 7: return STRING(DIRECTORY);	break;
 			case 8: return "TTH";				break;
-			case 9: return "RegExp";			break;
 			default: return STRING(ANY);
 		}
 	}

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -1007,6 +1007,8 @@
 #define IDC_PRIO_SPIN                   1636
 #define IDC_SUN                         1637
 #define IDC_TEMPSHARELST                1638
+#define IDC_SELECT_PATH                 1639
+#define IDC_SELECT_DIR                  1639
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1343,7 +1345,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        322
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1639
+#define _APS_NEXT_CONTROL_VALUE         1640
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

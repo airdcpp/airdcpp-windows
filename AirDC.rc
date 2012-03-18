@@ -1422,7 +1422,7 @@ BEGIN
     CONTROL         "Remove after found",IDC_REMOVE_ON_HIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,271,132,104,10
     EDITTEXT        IDC_TARGET_PATH,60,111,243,14,ES_AUTOHSCROLL
     RTEXT           "Download To:",IDC_DL_TO,6,114,49,8
-    PUSHBUTTON      "Browse",IDC_BROWSE,309,111,50,14
+    PUSHBUTTON      "Select directory",IDC_SELECT_DIR,309,111,64,14
     EDITTEXT        IDC_U_MATCH,7,229,222,14,ES_AUTOHSCROLL
     LTEXT           "Only from users  with nick Matching: (Wildcards, | separate)",IDC_USER_MATCH_TEXT,7,215,219,8
     CONTROL         "Use a custom matcher for search results",IDC_USE_MATCHER,
