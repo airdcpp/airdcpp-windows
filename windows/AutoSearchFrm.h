@@ -111,7 +111,7 @@ public:
 		tstring val(ctrlAsRTime.GetWindowTextLength() +2, _T('\0'));
 		ctrlAsRTime.GetWindowText(&val[0],val.size());
 		int value = Util::toInt(Text::fromT(val));
-		if(value < 1) {
+		if(value < 1) { //Todo limit higher, 10min atleast, just keep this for easier testing.
 			value = 1;
 			ctrlAsRTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
 		}
