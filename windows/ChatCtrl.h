@@ -24,6 +24,7 @@
 #include "../client/Client.h"
 #include "../client/ColorSettings.h"
 #include "../client/ShareManager.h"
+#include "../client/TargetUtil.h"
 
 #include "TypedListViewCtrl.h"
 #include "ImageDataObject.h"
@@ -85,7 +86,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_DOWNLOAD, onDownload)
 		COMMAND_ID_HANDLER(IDC_DOWNLOADTO, onDownloadTo)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
-		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + WinUtil::countDownloadDirItems(), onDownloadFavoriteDirs)
+		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + TargetUtil::countDownloadDirItems(), onDownloadFavoriteDirs)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
 
 		CHAIN_COMMANDS(ucBase)

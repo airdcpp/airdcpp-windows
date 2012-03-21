@@ -30,6 +30,7 @@
 #include "../client/HintedUser.h"
 #include "../client/UserInfoBase.h"
 #include "../client/WebShortcuts.h"
+#include "../client/TargetUtil.h"
 
 #include <boost/bind.hpp>
 
@@ -513,11 +514,9 @@ public:
 	
 	static TStringList FindVolumes();
 	static bool getTarget(int ID, string& target, int64_t aSize, bool wholeDir = false);
-	static bool getVirtualTarget(int ID, string& vTarget, uint8_t& targetType);
+	static bool getVirtualName(int ID, string& vTarget, TargetUtil::TargetType& targetType);
 
 	static void viewLog(const string& path);
-	static int countDownloadDirItems();
-	static int countShareFavDirs();
 
 	static string getCompileDate() {
 		COleDateTime tCompileDate; 

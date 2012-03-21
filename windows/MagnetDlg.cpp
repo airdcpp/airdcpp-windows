@@ -42,7 +42,7 @@ LRESULT MagnetDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	SetDlgItemText(IDC_MAGNET_TEXT, CTSTRING(MAGNET_DLG_TEXT_GOOD));
 
 	// file details
-	SetDlgItemText(IDC_MAGNET_DISP_HASH, mHash.c_str());
+	SetDlgItemText(IDC_MAGNET_DISP_HASH, Text::toT(mHash).c_str());
 
 	// handling UTF8 input text
 	{
@@ -78,12 +78,12 @@ LRESULT MagnetDlg::onCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, 
 		}
 
 		if(IsDlgButtonChecked(IDC_MAGNET_SEARCH)) {
-			TTHValue tmphash(Text::fromT(mHash));
+			TTHValue tmphash(mHash);
 			WinUtil::searchHash(tmphash); 
 		} else if(IsDlgButtonChecked(IDC_MAGNET_QUEUE)) {
 			try {
 				string target = SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(mFileName);
-				QueueManager::getInstance()->add(target, mSize, TTHValue(Text::fromT(mHash)), HintedUser(mUser, mHint));
+				QueueManager::getInstance()->add(target, mSize, TTHValue(mHash), HintedUser(mUser, mHint));
 			} catch(const Exception& e) {
 				LogManager::getInstance()->message(e.getError());
 			}

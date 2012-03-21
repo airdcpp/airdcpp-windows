@@ -30,7 +30,7 @@
 #include "../client/highlightmanager.h"
 #include "../client/AutoSearchManager.h"
 #include "ResourceLoader.h"
-#include "Magnet.h"
+#include "../client/Magnet.h"
 EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48
@@ -395,13 +395,13 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 
 			if(isMagnet != string::npos) {
 				detectMagnet=true;
-				Magnet m = Magnet(Text::toT(link));
+				Magnet m = Magnet(link);
 
 				string::size_type dn = link.find("dn=");
 				if(dn != tstring::npos) {
-					shortLink = m.fname + _T(" (") + Util::formatBytesW(m.fsize) + _T(")");
+					shortLink = Text::toT(m.fname) + _T(" (") + Util::formatBytesW(m.fsize) + _T(")");
 					shortLinks.push_back(make_pair(shortLink, Text::toT(link)));
-					if (!m.fhash.empty()) {
+					if (!m.hash.empty()) {
 						if (m.isShareDupe()) {
 							SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
 						} else if (m.isQueueDupe() > 0) {
@@ -730,8 +730,8 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 			selectedWord = shortLink;
 			if (shortLink.find(_T("magnet")) != tstring::npos) {
 				isMagnet = true;
-				Magnet m = Magnet(shortLink);
-				if (!m.fhash.empty()) {
+				Magnet m = Magnet(Text::fromT(shortLink));
+				if (!m.hash.empty()) {
 					if (m.isShareDupe()) {
 						shareDupe=true;
 					} else if (m.isQueueDupe() > 0) {
@@ -992,8 +992,8 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 			path = QueueManager::getInstance()->getDirPath(Text::fromT(selectedWord));
 		}
 	} else {
-		Magnet m = Magnet(selectedWord);
-		if (m.fhash.empty())
+		Magnet m = Magnet(Text::fromT(selectedWord));
+		if (m.hash.empty())
 			return 0;
 
 		if (shareDupe) {
@@ -1019,7 +1019,7 @@ LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 		if(selectedWord.size() < 5) //we dont accept anything under 5 chars
 			return 0;
 
-		addAutoSearch(SETTING(DOWNLOAD_DIRECTORY), AutoSearch::TARGET_PATH);
+		addAutoSearch(SETTING(DOWNLOAD_DIRECTORY), TargetUtil::TARGET_PATH);
 	} else {
 		downloadMagnet(SETTING(DOWNLOAD_DIRECTORY));
 	}
@@ -1027,17 +1027,17 @@ LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 }
 
 void ChatCtrl::addAutoSearch(const string& aPath, uint8_t targetType) {
-	if(AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aPath, (AutoSearch::TargetType)targetType))
+	if(AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aPath, (TargetUtil::TargetType)targetType))
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
 }
 
 void ChatCtrl::downloadMagnet(const string& aPath) {
 
-	Magnet m = Magnet(selectedWord);
+	Magnet m = Magnet(Text::fromT(selectedWord));
 	OnlineUserPtr u = client->findUser(Text::fromT(author));
 	if (u) {
 		try {
-			QueueManager::getInstance()->add(aPath + Text::fromT(m.fname), m.fsize, TTHValue(Text::fromT(m.fhash)), 
+			QueueManager::getInstance()->add(aPath + m.fname, m.fsize, m.getTTH(), 
 				!u->getUser()->isSet(User::BOT) ? HintedUser(u->getUser(), client->getHubUrl()) : HintedUser(UserPtr(), Util::emptyString));
 		} catch (...) {}
 	}
@@ -1051,7 +1051,7 @@ LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	if(WinUtil::browseDirectory(target, m_hWnd)) {
 		SettingsManager::getInstance()->addDirToHistory(target);
 		if (release) {
-			addAutoSearch(Text::fromT(target), AutoSearch::TARGET_PATH);
+			addAutoSearch(Text::fromT(target), TargetUtil::TARGET_PATH);
 		} else {
 			downloadMagnet(Text::fromT(target));
 		}
@@ -1064,9 +1064,9 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 		if(selectedWord.size() < 5) //we dont accept anything under 5 chars
 			return 0;
 
-		uint8_t targetType;
+		TargetUtil::TargetType targetType;
 		string vTarget;
-		if (WinUtil::getVirtualTarget(wID, vTarget, targetType))
+		if (WinUtil::getVirtualName(wID, vTarget, targetType))
 			addAutoSearch(vTarget, targetType);
 	} else {
 		string target;

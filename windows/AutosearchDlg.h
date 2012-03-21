@@ -23,14 +23,17 @@
 #include <atlcrack.h>
 #include <bitset>
 #include "../client/Util.h"
+#include "../client/TargetUtil.h"
 #include "../client/ResourceManager.h"
 #include "../client/AutoSearchManager.h"
 
+#define FILTER_MESSAGE_MAP 8
 class SearchPageDlg : public CDialogImpl<SearchPageDlg> {
 public:
 	string searchString, comment, target, userMatch, matcherString;
 	int fileType, searchInterval;
-	uint8_t matcherType, action, targetType;
+	uint8_t matcherType, action;
+	TargetUtil::TargetType targetType;
 	SearchTime startTime;
 	SearchTime endTime;
 
@@ -57,13 +60,17 @@ public:
 		COMMAND_ID_HANDLER(IDC_USE_EXPIRY, onCheckExpiry)
 		COMMAND_HANDLER(IDC_TARGET_PATH, EN_CHANGE, onTargetChanged)
 		COMMAND_HANDLER(IDC_SELECT_DIR, BN_CLICKED, onClickLocation)
+		//MESSAGE_HANDLER(WM_UNINITMENUPOPUP, onDestroyMenu)
+		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 
 		COMMAND_ID_HANDLER(IDC_DOWNLOADTO, onBrowse)
-		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + WinUtil::countDownloadDirItems(), onDownloadFavoriteDirs)
+		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + TargetUtil::countDownloadDirItems(), onDownloadFavoriteDirs)
 
 		MESSAGE_HANDLER_HWND(WM_INITMENUPOPUP, OMenu::onInitMenuPopup)
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
+	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
+		MESSAGE_HANDLER(WM_CHAR, onChar)
 	END_MSG_MAP()
 
 
@@ -78,12 +85,15 @@ public:
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
 	LRESULT onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
 	LRESULT onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 private:
 //	enum { BUF_LEN = 1024 };
 	CImageList ftImage;
@@ -92,7 +102,7 @@ private:
 	CComboBox cRaw;
 	CComboBoxEx ctrlFileType;
 	CComboBox cAction;
-	CButton cDisplay;
+	CButton cSelectDir;
 	CComboBox cMatcherType;
 
 	CDateTimePickerCtrl ctrlExpire, ctrlSearchStart, ctrlSearchEnd;

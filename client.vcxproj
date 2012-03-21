@@ -256,6 +256,7 @@
     <ClCompile Include="client\HttpConnection.cpp" />
     <ClCompile Include="client\HttpDownload.cpp" />
     <ClCompile Include="client\LogManager.cpp" />
+    <ClCompile Include="client\Magnet.cpp" />
     <ClCompile Include="client\Mapper.cpp" />
     <ClCompile Include="client\Mapper_MiniUPnPc.cpp" />
     <ClCompile Include="client\Mapper_NATPMP.cpp" />
@@ -286,6 +287,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="client\StringDefs.cpp" />
+    <ClCompile Include="client\TargetUtil.cpp" />
     <ClCompile Include="client\Text.cpp" />
     <ClCompile Include="client\Thread.cpp" />
     <ClCompile Include="client\TigerHash.cpp" />
@@ -369,6 +371,7 @@
     <ClInclude Include="client\HubEntry.h" />
     <ClInclude Include="client\LogManager.h" />
     <ClInclude Include="client\LogManagerListener.h" />
+    <ClInclude Include="client\Magnet.h" />
     <ClInclude Include="client\Mapper.h" />
     <ClInclude Include="client\Mapper_MiniUPnPc.h" />
     <ClInclude Include="client\Mapper_NATPMP.h" />
@@ -408,6 +411,7 @@
     <ClInclude Include="client\stdinc.h" />
     <ClInclude Include="client\Streams.h" />
     <ClInclude Include="client\StringMatcher.h" />
+    <ClInclude Include="client\TargetUtil.h" />
     <ClInclude Include="client\typedefs.h" />
     <ClInclude Include="client\UploadBundle.h" />
     <ClInclude Include="client\UserQueue.h" />

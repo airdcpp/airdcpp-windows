@@ -239,6 +239,12 @@
     <ClCompile Include="client\GeoIP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\Magnet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\TargetUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -629,6 +635,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\StringMatcher.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\Magnet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\TargetUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

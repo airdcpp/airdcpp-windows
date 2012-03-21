@@ -26,6 +26,7 @@
 #include <crtdbg.h>
 #endif
 
+#define OEMRESOURCE
 
 #include "../client/stdinc.h"
 #include "../client/ResourceManager.h"

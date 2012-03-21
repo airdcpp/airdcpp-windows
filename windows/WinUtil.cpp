@@ -38,7 +38,6 @@
 #include "SearchFrm.h"
 #include "LineDlg.h"
 #include "MainFrm.h"
-#include "Magnet.h"
 
 #include "../client/Util.h"
 #include "../client/StringTokenizer.h"
@@ -55,6 +54,7 @@
 #include "../client/pme.h"
 #include "../client/ShareScannerManager.h"
 #include "../client/AutoSearchManager.h"
+#include "../client/Magnet.h"
 
 #include "boost/algorithm/string/replace.hpp"
 #include "boost/algorithm/string/trim.hpp"
@@ -1566,25 +1566,25 @@ void WinUtil::SetIcon(HWND hWnd, tstring file, bool big) {
 void WinUtil::parseMagnetUri(const tstring& aUrl, bool /*aOverride*/, const UserPtr& aUser/*UserPtr()*/, const string& hubHint/*Util::emptyString*/) {
 	if (strnicmp(aUrl.c_str(), _T("magnet:?"), 8) == 0) {
 		LogManager::getInstance()->message(STRING(MAGNET_DLG_TITLE) + ": " + Text::fromT(aUrl));
-		Magnet m = Magnet(aUrl);
-		if(!m.fhash.empty() && Encoder::isBase32(Text::fromT(m.fhash).c_str())){
+		Magnet m = Magnet(Text::fromT(aUrl));
+		if(!m.hash.empty() && Encoder::isBase32(m.hash.c_str())){
 			// ok, we have a hash, and maybe a filename.
 			if(!BOOLSETTING(MAGNET_ASK) && m.fsize > 0 && m.fname.length() > 0) {
 				switch(SETTING(MAGNET_ACTION)) {
 					case SettingsManager::MAGNET_AUTO_DOWNLOAD:
 						try {
-							QueueManager::getInstance()->add(SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(m.fname), m.fsize, TTHValue(Text::fromT(m.fhash)), HintedUser(aUser, hubHint));
+							QueueManager::getInstance()->add(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), HintedUser(aUser, hubHint));
 						} catch(const Exception& e) {
 							LogManager::getInstance()->message(e.getError());
 						}
 						break;
 					case SettingsManager::MAGNET_AUTO_SEARCH:
-						SearchFrame::openWindow(m.fhash, 0, SearchManager::SIZE_DONTCARE, SearchManager::TYPE_TTH);
+						WinUtil::searchHash(m.getTTH());
 						break;
 				};
 			} else {
 				// use aOverride to force the display of the dialog.  used for auto-updating
-				MagnetDlg dlg(m.fhash, m.fname, m.fsize, aUser, hubHint);
+				MagnetDlg dlg(m.hash, Text::toT(m.fname), m.fsize, aUser, hubHint);
 				dlg.DoModal(mainWnd);
 			}
 		} else {
@@ -3045,32 +3045,35 @@ tstring WinUtil::getTitle(const tstring& searchTerm) {
 
 void WinUtil::appendDirsMenu(OMenu &targetMenu, bool wholeDir /*false*/) {
 
+	targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOADDIRTO : IDC_DOWNLOADTO), CTSTRING(BROWSE));
 	int n = 0;
 
 	//Append shared directories
 	if (SETTING(SHOW_SHARED_DIRS_FAV)) {
 		auto directories = ShareManager::getInstance()->getGroupedDirectories();
 		if (!directories.empty()) {
+			targetMenu.InsertSeparatorLast(TSTRING(SHARED));
 			for(auto i = directories.begin(); i != directories.end(); i++) {
 				targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS) + n, Text::toT(i->first).c_str());
 				++n;
 			}
-			targetMenu.AppendMenu(MF_SEPARATOR);
+			//targetMenu.AppendMenu(MF_SEPARATOR);
 		}
 	}
 
 	//Append Favorite download dirs
 	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
 	if (!spl.empty()) {
+		targetMenu.InsertSeparatorLast(TSTRING(SETTINGS_FAVORITE_DIRS_PAGE));
 		for(auto i = spl.begin(); i != spl.end(); i++) {
 			targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS) + n, Text::toT(i->first).c_str());
 			++n;
 		}
-		targetMenu.AppendMenu(MF_SEPARATOR);
+		//targetMenu.AppendMenu(MF_SEPARATOR);
 	}
 
 	//n = 0;
-	targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOADDIRTO : IDC_DOWNLOADTO), CTSTRING(BROWSE));
+	//targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOADDIRTO : IDC_DOWNLOADTO), CTSTRING(BROWSE));
 
 	auto ldl = SettingsManager::getInstance()->getDirHistory();
 	if(!ldl.empty()) {
@@ -3082,63 +3085,39 @@ void WinUtil::appendDirsMenu(OMenu &targetMenu, bool wholeDir /*false*/) {
 	}
 }
 
-int WinUtil::countDownloadDirItems() {
-	return FavoriteManager::getInstance()->getFavoriteDirs().size() + countShareFavDirs() + SettingsManager::getInstance()->getDirHistory().size();
-}
-
-int WinUtil::countShareFavDirs() {
-	return SETTING(SHOW_SHARED_DIRS_FAV) ? ShareManager::getInstance()->getGroupedDirectories().size() : 0;
-}
-
 bool WinUtil::getTarget(int ID, string& target, int64_t aSize, bool wholeDir /*false*/) {
-	int64_t freeSpace = 0;
+	//int64_t freeSpace = 0;
 	int newId = ID - (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS);
 	dcassert(newId >= 0);
+	TargetUtil::TargetInfo targetInfo;
+	TargetUtil::getTarget(newId, targetInfo);
 
-	if (newId < countShareFavDirs()) {
-		AirUtil::getTarget(ShareManager::getInstance()->getGroupedDirectories()[newId].second, target, freeSpace);
-	} else {
-		auto slp = FavoriteManager::getInstance()->getFavoriteDirs();
-		if (newId < ((int)slp.size() + countShareFavDirs())) {
-			FavoriteManager::getInstance()->getFavoriteTarget(newId - countShareFavDirs(), target, freeSpace);
+	if (aSize > targetInfo.getFreeSpace()) {
+		string tmp;
+		if (targetInfo.queued > 0) {
+			tmp = str(boost::format(STRING(CONFIRM_SIZE_WARNING_QUEUED)) % 
+				Util::formatBytes(targetInfo.diskSpace).c_str() % 
+				targetInfo.targetDir.c_str() %
+				Util::formatBytes(targetInfo.queued).c_str() %
+				Util::formatBytes(aSize).c_str());
 		} else {
-			target = Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId - slp.size() - countShareFavDirs()]);
-			AirUtil::getDiskInfo(target, freeSpace);
+			tmp = str(boost::format(STRING(CONFIRM_SIZE_WARNING)) % 
+				Util::formatBytes(targetInfo.getFreeSpace()).c_str() % 
+				targetInfo.targetDir.c_str() %
+				Util::formatBytes(aSize).c_str());
 		}
+
+		if (MessageBox(mainWnd, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES)
+			return false;
 	}
 
-	if (target.empty()) {
-		target = SETTING(DOWNLOAD_DIRECTORY);
-		AirUtil::getDiskInfo(target, freeSpace);
-	}
-
-	if (aSize > freeSpace) {
-
-		string tmp = str(boost::format(STRING(CONFIRM_SIZE_WARNING)) % 
-			Util::formatBytes(freeSpace).c_str() % 
-			target.c_str() %
-			Util::formatBytes(aSize).c_str());
-
-		return (MessageBox(mainWnd, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES);
-	}
+	target = targetInfo.targetDir;
 	return true;
 }
 
-bool WinUtil::getVirtualTarget(int wID, string& vTarget, uint8_t& targetType) {
+bool WinUtil::getVirtualName(int wID, string& vTarget, TargetUtil::TargetType& targetType) {
 	int newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
-	if (newId < WinUtil::countShareFavDirs()) {
-		targetType = AutoSearch::TARGET_SHARE;
-		vTarget = ShareManager::getInstance()->getGroupedDirectories()[newId].first;
-	} else {
-		auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-		if (newId < WinUtil::countShareFavDirs() + (int)spl.size()) {
-			targetType = AutoSearch::TARGET_FAVORITE;
-			vTarget = spl[newId - WinUtil::countShareFavDirs()].first;
-		} else {
-			targetType = AutoSearch::TARGET_PATH;
-			vTarget = Text::fromT(SettingsManager::getInstance()->getDirHistory()[newId - spl.size() - WinUtil::countShareFavDirs()]);
-		}
-	}
+	TargetUtil::getVirtualName(newId, vTarget, (TargetUtil::TargetType)targetType);
 	return true;
 }
 
