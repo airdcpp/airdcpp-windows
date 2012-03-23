@@ -47,6 +47,7 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
 	ATTACH(IDC_TARGET_PATH, ctrlTarget);
+	ATTACH(IDC_TARGET_TYPE, cTargetType);
 	ATTACH(IDC_U_MATCH, ctrlUserMatch);
 	ATTACH(IDC_MATCHER_PATTERN, ctrlMatcherString);
 
@@ -245,17 +246,15 @@ LRESULT SearchPageDlg::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HW
 }
 
 void SearchPageDlg::updateTargetText() {
-	string targetAdd;
-	if (targetType > 0) {
-		targetAdd = " (";
-		if (targetType == TargetUtil::TARGET_FAVORITE)
-			targetAdd += "Favorite";
-		else if (targetType == TargetUtil::TARGET_SHARE)
-			targetAdd += "Shared";
-		targetAdd += ")";
-	}
+	string targetText = "Location type: ";
+	if (targetType == TargetUtil::TARGET_PATH)
+		targetText += "Direct path";
+	if (targetType == TargetUtil::TARGET_FAVORITE)
+		targetText += "Favorite directory (the real path will be picked when matches are found)";
+	else if (targetType == TargetUtil::TARGET_SHARE)
+		targetText += "Shared directory (the real path will be picked when matches are found)";
 
-	ctrlTarget.SetWindowText(Text::toT(target+targetAdd).c_str());
+	cTargetType.SetWindowText(Text::toT(targetText).c_str());
 }
 
 LRESULT SearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -344,10 +343,12 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 }
 
 LRESULT SearchPageDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
-	/*if (targetType > 0) {
+	if (targetType > 0) {
+		targetType = TargetUtil::TARGET_PATH;
+		updateTargetText();
 		//don't allow changing fav/share dir directly
 
-		tstring path;
+		/*tstring path;
 		path.resize(1024);
 		path.resize(GetDlgItemText(wID, &path[0], 1024));
 
@@ -362,8 +363,8 @@ LRESULT SearchPageDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl,
 			tmp.SetSel(HIWORD(dwSel)-1, HIWORD(dwSel)-1);
 			tmp.Detach();
 		}
-		return 1;
-	}*/
+		return 1; */
+	}
 	return 0;
 }
 

@@ -1257,6 +1257,8 @@
 #define IDC_AUTOSEARCH_EVERY            15059
 #define IDC_END_TIME                    15059
 #define IDC_AUTOSEARCH_SPIN             15060
+#define IDC_AS_ACTION_STATIC2           15060
+#define IDC_TARGET_TYPE                 15060
 #define IDC_AUTOSEARCH_ENABLE           15061
 #define IDC_AUTOSEARCH_RECHECK_TIME     15062
 #define IDC_AUTOSEARCH_RECHECK_SPIN     15063

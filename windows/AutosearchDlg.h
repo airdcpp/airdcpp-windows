@@ -104,6 +104,7 @@ private:
 	CComboBox cAction;
 	CButton cSelectDir;
 	CComboBox cMatcherType;
+	CStatic cTargetType;
 
 	CDateTimePickerCtrl ctrlExpire, ctrlSearchStart, ctrlSearchEnd;
 
