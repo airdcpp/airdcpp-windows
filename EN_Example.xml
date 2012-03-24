@@ -1252,7 +1252,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="MultipleSfv">Multiple SFV files found: </String>
 		<String Name="ScanStarted">Scan for missing/extra files started...</String>
 		<String Name="DupeFound">Dupe found: </String>
-		<String Name="DupeIsSame">is the same as</String>
 		<String Name="CheckMissing">Check missing release files</String>
 		<String Name="CheckSfv">Check missing SFV files</String>
 		<String Name="CheckNfo">Check missing NFO files</String>
@@ -1533,5 +1532,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="EndTime">End time</String>
 		<String Name="LastSearch">Last Search</String>
 		<String Name="SelectDirectory">Select directory</String>
+		<String Name="XIsSameThan">The directory %s also exists in %s</String>
 	</Strings>
 </Language>

@@ -334,7 +334,7 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 	while(boost::regex_search(start, end, result, reg, boost::match_default)) {
 		if (pos + result.position() <= c && pos + result.position() + result.length() >= c) {
 			ctrlPad.SetSel(pos + Begin + result.position(), pos + Begin + result.position() + result.length());
-			return x.substr(result.position(), result.length());
+			return x.substr(pos + result.position(), result.length());
 		}
 		start = result[0].second;
 		pos=pos+result.position() + result.length();
