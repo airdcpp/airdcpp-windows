@@ -669,35 +669,28 @@ LRESULT DirectoryListingFrame::onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*
 }
 
 LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlList.GetSelectedCount() != 1) 
-		return 0;
-
-	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
-
-	StringList localpaths;
-	tstring path;
-
-	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-
-	if(ii->type == ItemInfo::FILE) {
-		try{
-		path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-		wstring::size_type end = path.find_last_of(_T("\\"));
-		if(end != wstring::npos) {
-			path = path.substr(0, end);
+	StringList localPaths;
+	if(ctrlList.GetSelectedCount() >= 1) {
+		int sel = -1;
+		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+			const ItemInfo* ii = ctrlList.getItemData(sel);
+			if(ii->type == ItemInfo::FILE) {
+				try {
+					string path = ShareManager::getInstance()->getRealPath(ii->file->getTTH());
+					localPaths.push_back(Util::getFilePath(path));
+				}catch(...) { } //file deleted no path
+			} else if(ii->type == ItemInfo::DIRECTORY) {
+				try {
+					dl->getLocalPaths(ii->dir, localPaths);
+				} catch(...) {}
+			}
 		}
-		path += '\\';
-		localpaths.push_back(Text::fromT(path));
-		}catch(...) {} //file deleted no path
-	} else  if(ii->type == ItemInfo::DIRECTORY) {
-		try{
-			localpaths = dl->getLocalPaths(ii->dir);
-		}catch(...) {}
-		}
+	}
 
-	
-		if(!localpaths.empty())
-		ShareScannerManager::getInstance()->scan(localpaths);
+	if(!localPaths.empty()) {
+		ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
+		ShareScannerManager::getInstance()->scan(localPaths);
+	}
 	
 	return 0;
 }
@@ -714,33 +707,14 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		int sel = -1;
 		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
 			const ItemInfo* ii = ctrlList.getItemData(sel);
-		
 			if (ii->type == ItemInfo::FILE) {
-				try{
-				tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-				scanList.push_back(Text::fromT(path));
-				}catch(...) {}
+				try {
+					string path = ShareManager::getInstance()->getRealPath(ii->file->getTTH());
+					scanList.push_back(path);
+				} catch(...) { }
+			} else if (ii->type == ItemInfo::DIRECTORY)  {
+				dl->getLocalPaths(ii->dir, scanList);
 			}
-			if (ii->type == ItemInfo::DIRECTORY)  {
-					if(ii->dir->getFileCount() > 0) {
-							DirectoryListing::File::Iter i = ii->dir->files.begin();
-					if(i != ii->dir->files.end()) {
-						try{
-							path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
-							wstring::size_type end = path.find_last_of(_T("\\")); 
-								if(end != wstring::npos) {
-									path = path.substr(0, end);
-								}
-								path += '\\'; 
-							scanList.push_back(Text::fromT(path));
-						}catch(...) {}
-				}
-					
-			} else {
-			LogManager::getInstance()->message(STRING(NO_FILES_IN_FOLDER) + " \\" + ii->dir->getPath());
-		}
-		}
-		
 		}
 	}
 
@@ -787,77 +761,76 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 
 		if(BOOLSETTING(SHOW_SHELL_MENU) && mylist && (ctrlList.GetSelectedCount() == 1) && (LOBYTE(LOWORD(GetVersion())) >= 5)) {
-			tstring path = Util::emptyStringT; 
+			tstring path; 
 	
 			if(ii->type == ItemInfo::FILE){
-			try {
-			path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-			}catch(...) {
-				path = Util::emptyStringT;
-				goto clientmenu;
-			}
-
+				try {
+					path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+				}catch(...) {
+					goto clientmenu;
+				}
 			} else if(ii->type == ItemInfo::DIRECTORY) {
 				try {
-				//Fix this Someway
-				StringList localpaths = dl->getLocalPaths(ii->dir);
-				for(StringIterC i = localpaths.begin(); i != localpaths.end(); i++) {
-					path = Text::toT(*i);
-					dirs++; //if we count more than 1 its a virtualfolder
-						}	
-				}catch(...) {
-				path = Util::emptyStringT;
-				goto clientmenu;
+					//Fix this Someway
+					StringList localPaths;
+					dl->getLocalPaths(ii->dir, localPaths);
+					for(auto i = localPaths.begin(); i != localPaths.end(); i++) {
+						path = Text::toT(*i);
+						dirs++; //if we count more than 1 its a virtualfolder
+					}	
+				} catch(...) {
+					goto clientmenu;
 				}
 			}
 			
-				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF && !path.empty() && (dirs <= 1) ){ // Check that the file still exists
-					CShellContextMenu shellMenu;
-					shellMenu.SetPath(path);
-					CMenu* pShellMenu = shellMenu.GetMenu();
+			if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF && !path.empty() && (dirs <= 1) ){ // Check that the file still exists
+				CShellContextMenu shellMenu;
+				shellMenu.SetPath(path);
+				CMenu* pShellMenu = shellMenu.GetMenu();
 					
-					//do we need to see anything else on own list?
-					copyMenu.CreatePopupMenu();
-					SearchMenu.CreatePopupMenu();
-					if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE && ii->file->getAdls()) {
-						pShellMenu->AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
-					}
-					if(ctrlList.GetSelectedCount() == 1/* && ii->type == ItemInfo::FILE*/ ) {				
-						pShellMenu->AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-						pShellMenu->AppendMenu(MF_SEPARATOR);
-					}
+				//do we need to see anything else on own list?
+				copyMenu.CreatePopupMenu();
+				SearchMenu.CreatePopupMenu();
+				if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE && ii->file->getAdls()) {
+					pShellMenu->AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
+				}
+				if(ctrlList.GetSelectedCount() == 1/* && ii->type == ItemInfo::FILE*/ ) {				
+					pShellMenu->AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+					pShellMenu->AppendMenu(MF_SEPARATOR);
+				}
 					
-					pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
-					pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
-					pShellMenu->AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
-					pShellMenu->AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK));
-					pShellMenu->AppendMenu(MF_SEPARATOR);
-					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
-					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
-					pShellMenu->AppendMenu(MF_SEPARATOR);
-					pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-					pShellMenu->AppendMenu(MF_SEPARATOR);
-					//copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_EXACT_SIZE, CTSTRING(EXACT_SIZE));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
+				pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
+				pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
+				pShellMenu->AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
+				pShellMenu->AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK));
+				pShellMenu->AppendMenu(MF_SEPARATOR);
+				pShellMenu->AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+				pShellMenu->AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
+				pShellMenu->AppendMenu(MF_SEPARATOR);
+				pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+				pShellMenu->AppendMenu(MF_SEPARATOR);
+				//copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
+				copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
+				copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
+				copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
+				copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
+				copyMenu.AppendMenu(MF_STRING, IDC_COPY_EXACT_SIZE, CTSTRING(EXACT_SIZE));
+				copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
+				copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
+				copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
 			
-					//SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-					WinUtil::AppendSearchMenu(SearchMenu);
+				//SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
+				WinUtil::AppendSearchMenu(SearchMenu);
 
-					UINT idCommand = shellMenu.ShowContextMenu(m_hWnd, pt);
-					if(idCommand != 0) {
-						PostMessage(WM_COMMAND, idCommand);
-					}
+				UINT idCommand = shellMenu.ShowContextMenu(m_hWnd, pt);
+				if(idCommand != 0) {
+					PostMessage(WM_COMMAND, idCommand);
+				}
 					
-				} else goto clientmenu;
-			//}
-		}else{
+			} else {
+				goto clientmenu;
+			}
+		} else {
 
 clientmenu:
 		fileMenu.CreatePopupMenu();
@@ -1767,7 +1740,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 					return 0;
 
 				try {
-					tmp = dl->getLocalPaths(ii->dir);
+					dl->getLocalPaths(ii->dir, tmp);
 				}catch(...) { }
 
 				if(tmp.empty())

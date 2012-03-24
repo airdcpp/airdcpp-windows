@@ -111,6 +111,6 @@ private:
 	OMenu targetMenu;
 
 	void fixControls();
-	void updateTargetText();
+	void updateTargetTypeText();
 };
 #endif

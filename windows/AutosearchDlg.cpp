@@ -54,7 +54,7 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlSearch.SetWindowText(Text::toT(searchString).c_str());
 	ctrlCheatingDescription.SetWindowText(Text::toT(comment).c_str());
 
-	updateTargetText();
+	updateTargetTypeText();
 	ctrlUserMatch.SetWindowText(Text::toT(userMatch).c_str());
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);
@@ -175,29 +175,7 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	e.wMinute = endTime.minute;
 	ctrlSearchEnd.SetSystemTime(0, &e);
 
-	//HINSTANCE 
-	//CButton tmp1;
 	ATTACH(IDC_SELECT_DIR, cSelectDir);
-	//HICON tmp = LoadIcon(0, MAKEINTRESOURCE(OBM_MNARROW));
-	//cSelectDir.SetBitmap(MAKEINTRESOURCE(OBM_MNARROW));
-
-	//auto gasgas = LoadBitmap(NULL, MAKEINTRESOURCE(OBM_DNARROWI));
-	//cSelectDir.SetBitmap(gasgas);
-//	cSelectDir.SetButtonStyle(TBSTYLE_DROPDOWN, 0);
-
-	//HICON m_hIcon = ::LoadIcon(_Module.get_m_hInst(), MAKEINTRESOURCE(OBM_DNARROWD));
-	//cSelectDir.SetIcon(m_hIcon);
-	//WinUtil::SetIcon(cSelectDir.m_hWnd, IDR_UPDATE, false);
-
-	//static_cast<HICON>(LoadImage(_Module.get_m_hInst(), MAKEINTRESOURCE(OBM_MNARROW), IMAGE_ICON, 16, 16, LR_DEFAULTSIZE));
-	//cSelectDir.SetIcon(static_cast<HICON>(LoadImage(NULL, MAKEINTRESOURCE(OBM_MNARROW), IMAGE_ICON, 16, 16, LR_DEFAULTSIZE)));
-	//cSelectDir.SetIcon(LoadIcon(_Module.get_m_hInst(), MAKEINTRESOURCE(OBM_MNARROW)));
-	//cSelectDir.SetI
-	/*tmp1.SetButtonStyle(BS_SPLITBUTTON);
-	BUTTON_SPLITINFO split;
-	split.uSplitStyle = BCSS_STRETCH;
-	tmp1.Set*/
-	//tmp1.SetSplitInfo(
 
 	fixControls();
 	return TRUE;
@@ -225,27 +203,22 @@ LRESULT SearchPageDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 	WinUtil::appendDirsMenu(targetMenu);
 
-	/*MENUINFO inf;
-	inf.cbSize = sizeof(MENUINFO);
-	inf.fMask = MIM_STYLE;
-	inf.dwStyle = MNS_NOTIFYBYPOS;
-	locations.SetMenuInfo(&inf);
-	targetMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_LEFTBUTTON | TPM_HORPOSANIMATION | TPM_VERPOSANIMATION,
-		pt.x, pt.y, m_hWnd);*/
-	//targetMenu.TrackPopupMenu(
 	targetMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt.x, pt.y, m_hWnd);
-	//}
 	return 0;
 }
 
 LRESULT SearchPageDlg::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (WinUtil::getVirtualName(wID, target, targetType)) {
-		updateTargetText();
+	TargetUtil::TargetType tmpType;
+	if (WinUtil::getVirtualName(wID, target, tmpType)) {
+		ctrlTarget.SetWindowTextW(Text::toT(target).c_str());
+		//update the type only after setting the text
+		targetType = tmpType;
+		updateTargetTypeText();
 	}
 	return 0;
 }
 
-void SearchPageDlg::updateTargetText() {
+void SearchPageDlg::updateTargetTypeText() {
 	string targetText = "Location type: ";
 	if (targetType == TargetUtil::TARGET_PATH)
 		targetText += "Direct path";
@@ -264,8 +237,9 @@ LRESULT SearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	tstring x = buf;
 
 	if(WinUtil::browseDirectory(x, m_hWnd) == IDOK) {
-		SetDlgItemText(IDC_TARGET_PATH, x.c_str());
+		ctrlTarget.SetWindowTextW(x.c_str());
 		targetType = TargetUtil::TARGET_PATH;
+		updateTargetTypeText();
 	}
 	return 0;
 }
@@ -345,25 +319,7 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 LRESULT SearchPageDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
 	if (targetType > 0) {
 		targetType = TargetUtil::TARGET_PATH;
-		updateTargetText();
-		//don't allow changing fav/share dir directly
-
-		/*tstring path;
-		path.resize(1024);
-		path.resize(GetDlgItemText(wID, &path[0], 1024));
-
-		CEdit tmp;
-		tmp.Attach(hWndCtl);
-		DWORD dwSel;
-		if ((dwSel = tmp.GetSel()) != CB_ERR) {
-			auto it = path.begin() +  HIWORD(dwSel)-1;
-			path.erase(it);
-			tmp.SetSel(0,-1);
-			tmp.SetWindowText(path.c_str());
-			tmp.SetSel(HIWORD(dwSel)-1, HIWORD(dwSel)-1);
-			tmp.Detach();
-		}
-		return 1; */
+		updateTargetTypeText();
 	}
 	return 0;
 }
