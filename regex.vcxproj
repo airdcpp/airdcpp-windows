@@ -223,24 +223,63 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="regex\config.h" />
-    <ClInclude Include="regex\pcre.h" />
-    <ClInclude Include="regex\pcre_internal.h" />
-    <ClInclude Include="regex\ucp.h" />
-  </ItemGroup>
-  <ItemGroup>
+    <ClCompile Include="regex\dftables.c" />
+    <ClCompile Include="regex\pcre16_byte_order.c" />
+    <ClCompile Include="regex\pcre16_chartables.c" />
+    <ClCompile Include="regex\pcre16_compile.c" />
+    <ClCompile Include="regex\pcre16_config.c" />
+    <ClCompile Include="regex\pcre16_dfa_exec.c" />
+    <ClCompile Include="regex\pcre16_exec.c" />
+    <ClCompile Include="regex\pcre16_fullinfo.c" />
+    <ClCompile Include="regex\pcre16_get.c" />
+    <ClCompile Include="regex\pcre16_globals.c" />
+    <ClCompile Include="regex\pcre16_jit_compile.c" />
+    <ClCompile Include="regex\pcre16_maketables.c" />
+    <ClCompile Include="regex\pcre16_newline.c" />
+    <ClCompile Include="regex\pcre16_ord2utf16.c" />
+    <ClCompile Include="regex\pcre16_printint.c" />
+    <ClCompile Include="regex\pcre16_refcount.c" />
+    <ClCompile Include="regex\pcre16_string_utils.c" />
+    <ClCompile Include="regex\pcre16_study.c" />
+    <ClCompile Include="regex\pcre16_tables.c" />
+    <ClCompile Include="regex\pcre16_ucd.c" />
+    <ClCompile Include="regex\pcre16_utf16_utils.c" />
+    <ClCompile Include="regex\pcre16_valid_utf16.c" />
+    <ClCompile Include="regex\pcre16_version.c" />
+    <ClCompile Include="regex\pcre16_xclass.c" />
+    <ClCompile Include="regex\pcre_byte_order.c" />
     <ClCompile Include="regex\pcre_chartables.c" />
     <ClCompile Include="regex\pcre_compile.c" />
+    <ClCompile Include="regex\pcre_config.c" />
+    <ClCompile Include="regex\pcre_dfa_exec.c" />
     <ClCompile Include="regex\pcre_exec.c" />
     <ClCompile Include="regex\pcre_fullinfo.c" />
+    <ClCompile Include="regex\pcre_get.c" />
     <ClCompile Include="regex\pcre_globals.c" />
+    <ClCompile Include="regex\pcre_jit_compile.c" />
+    <ClCompile Include="regex\pcre_jit_test.c" />
+    <ClCompile Include="regex\pcre_maketables.c" />
     <ClCompile Include="regex\pcre_newline.c" />
     <ClCompile Include="regex\pcre_ord2utf8.c" />
+    <ClCompile Include="regex\pcre_printint.c" />
+    <ClCompile Include="regex\pcre_refcount.c" />
+    <ClCompile Include="regex\pcre_string_utils.c" />
     <ClCompile Include="regex\pcre_study.c" />
     <ClCompile Include="regex\pcre_tables.c" />
-    <ClCompile Include="regex\pcre_try_flipped.c" />
+    <ClCompile Include="regex\pcre_ucd.c" />
     <ClCompile Include="regex\pcre_valid_utf8.c" />
+    <ClCompile Include="regex\pcre_version.c" />
     <ClCompile Include="regex\pcre_xclass.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="regex\config.h" />
+    <ClInclude Include="regex\pcre.h" />
+    <ClInclude Include="regex\pcrecpp.h" />
+    <ClInclude Include="regex\pcrecpp_internal.h" />
+    <ClInclude Include="regex\pcreposix.h" />
+    <ClInclude Include="regex\pcre_internal.h" />
+    <ClInclude Include="regex\pcre_scanner.h" />
+    <ClInclude Include="regex\ucp.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

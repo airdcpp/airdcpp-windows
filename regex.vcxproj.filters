@@ -15,6 +15,164 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="regex\pcre_exec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_fullinfo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_get.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_globals.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_jit_compile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_jit_test.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_maketables.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_newline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_ord2utf8.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_printint.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_refcount.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_string_utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_study.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_tables.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_ucd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_valid_utf8.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_version.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_xclass.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_byte_order.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_chartables.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_compile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_config.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_dfa_exec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_exec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_fullinfo.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_get.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_globals.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_jit_compile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_maketables.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_newline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_ord2utf16.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_printint.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_refcount.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_string_utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_study.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_tables.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_ucd.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_utf16_utils.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_valid_utf16.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_version.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre16_xclass.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\dftables.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_byte_order.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_compile.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_config.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_dfa_exec.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="regex\pcre_chartables.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="regex\pcre_scanner.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regex\pcrecpp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regex\pcrecpp_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regex\pcreposix.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="regex\ucp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="regex\config.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -24,46 +182,5 @@
     <ClInclude Include="regex\pcre_internal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="regex\ucp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="regex\pcre_chartables.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_compile.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_exec.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_fullinfo.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_globals.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_newline.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_ord2utf8.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_study.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_tables.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_try_flipped.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_valid_utf8.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="regex\pcre_xclass.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

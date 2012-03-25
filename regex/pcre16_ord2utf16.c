@@ -38,47 +38,58 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-/* This module contains global variables that are exported by the PCRE library.
-PCRE is thread-clean and doesn't use any global variables in the normal sense.
-However, it calls memory allocation and freeing functions via the four
-indirections below, and it can optionally do callouts, using the fifth
-indirection. These values can be changed by the caller, but are shared between
-all threads.
-
-For MS Visual Studio and Symbian OS, there are problems in initializing these
-variables to non-local functions. In these cases, therefore, an indirection via
-a local function is used.
-
-Also, when compiling for Virtual Pascal, things are done differently, and
-global variables are not used. */
+/* This file contains a private PCRE function that converts an ordinal
+character value into a UTF16 string. */
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
+/* Generate code with 16 bit character support. */
+#define COMPILE_PCRE16
+
 #include "pcre_internal.h"
 
-#if defined _MSC_VER || defined  __SYMBIAN32__
-static void* LocalPcreMalloc(size_t aSize)
-  {
-  return malloc(aSize);
-  }
-static void LocalPcreFree(void* aPtr)
-  {
-  free(aPtr);
-  }
-PCRE_EXP_DATA_DEFN void *(*PUBL(malloc))(size_t) = LocalPcreMalloc;
-PCRE_EXP_DATA_DEFN void  (*PUBL(free))(void *) = LocalPcreFree;
-PCRE_EXP_DATA_DEFN void *(*PUBL(stack_malloc))(size_t) = LocalPcreMalloc;
-PCRE_EXP_DATA_DEFN void  (*PUBL(stack_free))(void *) = LocalPcreFree;
-PCRE_EXP_DATA_DEFN int   (*PUBL(callout))(PUBL(callout_block) *) = NULL;
+/*************************************************
+*       Convert character value to UTF-16         *
+*************************************************/
 
-#elif !defined VPCOMPAT
-PCRE_EXP_DATA_DEFN void *(*PUBL(malloc))(size_t) = malloc;
-PCRE_EXP_DATA_DEFN void  (*PUBL(free))(void *) = free;
-PCRE_EXP_DATA_DEFN void *(*PUBL(stack_malloc))(size_t) = malloc;
-PCRE_EXP_DATA_DEFN void  (*PUBL(stack_free))(void *) = free;
-PCRE_EXP_DATA_DEFN int   (*PUBL(callout))(PUBL(callout_block) *) = NULL;
-#endif
+/* This function takes an integer value in the range 0 - 0x10ffff
+and encodes it as a UTF-16 character in 1 to 2 pcre_uchars.
 
-/* End of pcre_globals.c */
+Arguments:
+  cvalue     the character value
+  buffer     pointer to buffer for result - at least 2 pcre_uchars long
+
+Returns:     number of characters placed in the buffer
+*/
+
+int
+PRIV(ord2utf)(pcre_uint32 cvalue, pcre_uchar *buffer)
+{
+#ifdef SUPPORT_UTF
+
+/* Checking invalid cvalue character, encoded as invalid UTF-16 character.
+Should never happen in practice. */
+if ((cvalue & 0xf800) == 0xd800 || cvalue >= 0x110000)
+  cvalue = 0xfffe;
+
+if (cvalue <= 0xffff)
+  {
+  *buffer = (pcre_uchar)cvalue;
+  return 1;
+  }
+
+cvalue -= 0x10000;
+*buffer++ = 0xd800 | (cvalue >> 10);
+*buffer = 0xdc00 | (cvalue & 0x3ff);
+return 2;
+
+#else /* SUPPORT_UTF */
+(void)(cvalue);  /* Keep compiler happy; this function won't ever be */
+(void)(buffer);  /* called when SUPPORT_UTF is not defined. */
+return 0;
+#endif /* SUPPORT_UTF */
+}
+
+/* End of pcre16_ord2utf16.c */

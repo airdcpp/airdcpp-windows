@@ -38,60 +38,133 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-/* This file contains a private PCRE function that converts an ordinal
-character value into a UTF8 string. */
+/* This module contains the external function pcre_config(). */
+
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
+/* Keep the original link size. */
+static int real_link_size = LINK_SIZE;
+
 #include "pcre_internal.h"
 
 
 /*************************************************
-*       Convert character value to UTF-8         *
+* Return info about what features are configured *
 *************************************************/
 
-/* This function takes an integer value in the range 0 - 0x10ffff
-and encodes it as a UTF-8 character in 1 to 6 pcre_uchars.
+/* This function has an extensible interface so that additional items can be
+added compatibly.
 
 Arguments:
-  cvalue     the character value
-  buffer     pointer to buffer for result - at least 6 pcre_uchars long
+  what             what information is required
+  where            where to put the information
 
-Returns:     number of characters placed in the buffer
+Returns:           0 if data returned, negative on error
 */
 
-int
-PRIV(ord2utf)(pcre_uint32 cvalue, pcre_uchar *buffer)
-{
-#ifdef SUPPORT_UTF
-
-register int i, j;
-
-/* Checking invalid cvalue character, encoded as invalid UTF-16 character.
-Should never happen in practice. */
-if ((cvalue & 0xf800) == 0xd800 || cvalue >= 0x110000)
-  cvalue = 0xfffe;
-
-for (i = 0; i < PRIV(utf8_table1_size); i++)
-  if ((int)cvalue <= PRIV(utf8_table1)[i]) break;
-buffer += i;
-for (j = i; j > 0; j--)
- {
- *buffer-- = 0x80 | (cvalue & 0x3f);
- cvalue >>= 6;
- }
-*buffer = PRIV(utf8_table2)[i] | cvalue;
-return i + 1;
-
+#ifdef COMPILE_PCRE8
+PCRE_EXP_DEFN int PCRE_CALL_CONVENTION
+pcre_config(int what, void *where)
 #else
-
-(void)(cvalue);  /* Keep compiler happy; this function won't ever be */
-(void)(buffer);  /* called when SUPPORT_UTF is not defined. */
-return 0;
-
+PCRE_EXP_DEFN int PCRE_CALL_CONVENTION
+pcre16_config(int what, void *where)
 #endif
+{
+switch (what)
+  {
+  case PCRE_CONFIG_UTF8:
+#if defined COMPILE_PCRE16
+  *((int *)where) = 0;
+  return PCRE_ERROR_BADOPTION;
+#else
+#if defined SUPPORT_UTF
+  *((int *)where) = 1;
+#else
+  *((int *)where) = 0;
+#endif
+  break;
+#endif
+
+  case PCRE_CONFIG_UTF16:
+#if defined COMPILE_PCRE8
+  *((int *)where) = 0;
+  return PCRE_ERROR_BADOPTION;
+#else
+#if defined SUPPORT_UTF
+  *((int *)where) = 1;
+#else
+  *((int *)where) = 0;
+#endif
+  break;
+#endif
+
+  case PCRE_CONFIG_UNICODE_PROPERTIES:
+#ifdef SUPPORT_UCP
+  *((int *)where) = 1;
+#else
+  *((int *)where) = 0;
+#endif
+  break;
+
+  case PCRE_CONFIG_JIT:
+#ifdef SUPPORT_JIT
+  *((int *)where) = 1;
+#else
+  *((int *)where) = 0;
+#endif
+  break;
+
+  case PCRE_CONFIG_JITTARGET:
+#ifdef SUPPORT_JIT
+  *((const char **)where) = PRIV(jit_get_target)();
+#else
+  *((const char **)where) = NULL;
+#endif
+  break;
+
+  case PCRE_CONFIG_NEWLINE:
+  *((int *)where) = NEWLINE;
+  break;
+
+  case PCRE_CONFIG_BSR:
+#ifdef BSR_ANYCRLF
+  *((int *)where) = 1;
+#else
+  *((int *)where) = 0;
+#endif
+  break;
+
+  case PCRE_CONFIG_LINK_SIZE:
+  *((int *)where) = real_link_size;
+  break;
+
+  case PCRE_CONFIG_POSIX_MALLOC_THRESHOLD:
+  *((int *)where) = POSIX_MALLOC_THRESHOLD;
+  break;
+
+  case PCRE_CONFIG_MATCH_LIMIT:
+  *((unsigned long int *)where) = MATCH_LIMIT;
+  break;
+
+  case PCRE_CONFIG_MATCH_LIMIT_RECURSION:
+  *((unsigned long int *)where) = MATCH_LIMIT_RECURSION;
+  break;
+
+  case PCRE_CONFIG_STACKRECURSE:
+#ifdef NO_RECURSE
+  *((int *)where) = 0;
+#else
+  *((int *)where) = 1;
+#endif
+  break;
+
+  default: return PCRE_ERROR_BADOPTION;
+  }
+
+return 0;
 }
 
-/* End of pcre_ord2utf8.c */
+/* End of pcre_config.c */

@@ -29,7 +29,10 @@ them both to 0; an emulation function will be used. */
 
 /* If you are compiling for a system that uses EBCDIC instead of ASCII
    character codes, define this macro as 1. On systems that can use
-   "configure", this can be done via --enable-ebcdic. */
+   "configure", this can be done via --enable-ebcdic. PCRE will then assume
+   that all input strings are in EBCDIC. If you do not define this macro, PCRE
+   will assume input strings are ASCII or UTF-8/16 Unicode. It is not possible
+   to build a version of PCRE that supports both EBCDIC and UTF-8/16. */
 /* #undef EBCDIC */
 
 /* Define to 1 if you have the `bcopy' function. */
@@ -120,10 +123,13 @@ them both to 0; an emulation function will be used. */
 #define HAVE_STRING_H 1
 #endif
 
-/* Define to 1 if you have the `strtoll' function. */
+/* Define to 1 if you have `strtoimax'. */
+/* #undef HAVE_STRTOIMAX */
+
+/* Define to 1 if you have `strtoll'. */
 /* #undef HAVE_STRTOLL */
 
-/* Define to 1 if you have the `strtoq' function. */
+/* Define to 1 if you have `strtoq'. */
 #ifndef HAVE_STRTOQ
 #define HAVE_STRTOQ 1
 #endif
@@ -159,14 +165,8 @@ them both to 0; an emulation function will be used. */
 #define HAVE_ZLIB_H 1
 #endif
 
-/* Define to 1 if you have the `_strtoi64' function. */
+/* Define to 1 if you have `_strtoi64'. */
 /* #undef HAVE__STRTOI64 */
-
-
-
-
-
-
 
 /* The value of LINK_SIZE determines the number of bytes used to store links
    as offsets within the compiled regex. The default is 2, which allows for
@@ -178,11 +178,11 @@ them both to 0; an emulation function will be used. */
 #define LINK_SIZE 2
 #endif
 
-
-
-
-
-
+/* Define to the sub-directory in which libtool stores uninstalled libraries.
+   */
+#ifndef LT_OBJDIR
+#define LT_OBJDIR ".libs/"
+#endif
 
 /* The value of MATCH_LIMIT determines the default number of times the
    internal match() function can be called during a single execution of
@@ -191,10 +191,8 @@ them both to 0; an emulation function will be used. */
    for ever to determine that they do not match. The default is set very large
    so that it does not accidentally catch legitimate cases. On systems that
    support it, "configure" can be used to override this default default. */
-#define NO_RECURSE
 #ifndef MATCH_LIMIT
-//#define MATCH_LIMIT 10000000
-#define MATCH_LIMIT 1000000
+#define MATCH_LIMIT 10000000
 #endif
 
 /* The above limit applies to all calls of match(), whether or not they
@@ -252,16 +250,26 @@ them both to 0; an emulation function will be used. */
 #define PACKAGE_NAME "PCRE"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PCRE 7.7"
+#define PACKAGE_STRING "PCRE 8.30"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "pcre"
 
+/* Define to the home page for this package. */
+#define PACKAGE_URL ""
+
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "7.7"
+#define PACKAGE_VERSION "8.30"
 
-
-
+/* The value of PCREGREP_BUFSIZE determines the size of buffer used by
+   pcregrep to hold parts of the file it is searching. On systems that support
+   it, "configure" can be used to override the default, which is 8192. This is
+   also the minimum value. The actual amount of memory used by pcregrep is
+   three times this number, because it allows for the buffering of "before"
+   and "after" lines. */
+#ifndef PCREGREP_BUFSIZE
+#define PCREGREP_BUFSIZE 20480
+#endif
 
 
 /* If you are compiling for a system other than a Unix-like system or
@@ -295,6 +303,9 @@ them both to 0; an emulation function will be used. */
 #define STDC_HEADERS 1
 #endif
 
+/* Define to enable support for Just-In-Time compiling. */
+/* #undef SUPPORT_JIT */
+
 /* Define to allow pcregrep to be linked with libbz2, so that it is able to
    handle .bz2 files. */
 /* #undef SUPPORT_LIBBZ2 */
@@ -306,19 +317,37 @@ them both to 0; an emulation function will be used. */
    handle .gz files. */
 /* #undef SUPPORT_LIBZ */
 
-/* Define to enable support for Unicode properties */
+/* Define to enable the 16 bit PCRE library. */
+/* #undef SUPPORT_PCRE16 */
+
+/* Define to enable the 8 bit PCRE library. */
+#ifndef SUPPORT_PCRE8
+#define SUPPORT_PCRE8 /**/
+#endif
+
+/* Define to enable JIT support in pcregrep. */
+/* #undef SUPPORT_PCREGREP_JIT */
+
+/* Define to enable support for Unicode properties. */
 /* #undef SUPPORT_UCP */
 
-/* Define to enable support for the UTF-8 Unicode encoding. */
-/* #undef SUPPORT_UTF8 */
+/* Define to enable support for the UTF-8/16 Unicode encoding. This will work
+   even in an EBCDIC environment, but it is incompatible with the EBCDIC
+   macro. That is, PCRE can support *either* EBCDIC code *or* ASCII/UTF-8/16,
+   but not both at once. */
+/* #undef SUPPORT_UTF */
 
 /* Version number of package */
 #ifndef VERSION
-#define VERSION "7.7"
+#define VERSION "8.30"
 #endif
 
 /* Define to empty if `const' does not conform to ANSI C. */
 /* #undef const */
+
+/* Define to the type of a signed integer type of width exactly 64 bits if
+   such a type exists and the standard includes do not define it. */
+/* #undef int64_t */
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 /* #undef size_t */

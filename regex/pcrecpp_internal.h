@@ -1,12 +1,10 @@
 /*************************************************
-*      Perl-Compatible Regular Expressions       *
+*       Perl-Compatible Regular Expressions      *
 *************************************************/
 
-/* PCRE is a library of functions to support regular expressions whose syntax
-and semantics are as close as possible to those of the Perl 5 language.
-
-                       Written by Philip Hazel
-           Copyright (c) 1997-2012 University of Cambridge
+/*
+Copyright (c) 2005, Google Inc.
+All rights reserved.
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -38,60 +36,36 @@ POSSIBILITY OF SUCH DAMAGE.
 */
 
 
-/* This file contains a private PCRE function that converts an ordinal
-character value into a UTF8 string. */
+#ifndef PCRECPP_INTERNAL_H
+#define PCRECPP_INTERNAL_H
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+/* When compiling a DLL for Windows, the exported symbols have to be declared
+using some MS magic. I found some useful information on this web page:
+http://msdn2.microsoft.com/en-us/library/y4h7bcy6(VS.80).aspx. According to the
+information there, using __declspec(dllexport) without "extern" we have a
+definition; with "extern" we have a declaration. The settings here override the
+setting in pcre.h. We use:
 
-#include "pcre_internal.h"
+  PCRECPP_EXP_DECL       for declarations
+  PCRECPP_EXP_DEFN       for definitions of exported functions
 
-
-/*************************************************
-*       Convert character value to UTF-8         *
-*************************************************/
-
-/* This function takes an integer value in the range 0 - 0x10ffff
-and encodes it as a UTF-8 character in 1 to 6 pcre_uchars.
-
-Arguments:
-  cvalue     the character value
-  buffer     pointer to buffer for result - at least 6 pcre_uchars long
-
-Returns:     number of characters placed in the buffer
 */
 
-int
-PRIV(ord2utf)(pcre_uint32 cvalue, pcre_uchar *buffer)
-{
-#ifdef SUPPORT_UTF
-
-register int i, j;
-
-/* Checking invalid cvalue character, encoded as invalid UTF-16 character.
-Should never happen in practice. */
-if ((cvalue & 0xf800) == 0xd800 || cvalue >= 0x110000)
-  cvalue = 0xfffe;
-
-for (i = 0; i < PRIV(utf8_table1_size); i++)
-  if ((int)cvalue <= PRIV(utf8_table1)[i]) break;
-buffer += i;
-for (j = i; j > 0; j--)
- {
- *buffer-- = 0x80 | (cvalue & 0x3f);
- cvalue >>= 6;
- }
-*buffer = PRIV(utf8_table2)[i] | cvalue;
-return i + 1;
-
-#else
-
-(void)(cvalue);  /* Keep compiler happy; this function won't ever be */
-(void)(buffer);  /* called when SUPPORT_UTF is not defined. */
-return 0;
-
+#ifndef PCRECPP_EXP_DECL
+#  ifdef _WIN32
+#    ifndef PCRE_STATIC
+#      define PCRECPP_EXP_DECL       extern __declspec(dllexport)
+#      define PCRECPP_EXP_DEFN       __declspec(dllexport)
+#    else
+#      define PCRECPP_EXP_DECL       extern
+#      define PCRECPP_EXP_DEFN
+#    endif
+#  else
+#    define PCRECPP_EXP_DECL         extern
+#    define PCRECPP_EXP_DEFN
+#  endif
 #endif
-}
 
-/* End of pcre_ord2utf8.c */
+#endif  /* PCRECPP_INTERNAL_H */
+
+/* End of pcrecpp_internal.h */
