@@ -281,7 +281,7 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 			j = i +2;
 			if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
 				AutoSearchPtr as = new AutoSearch(true, str, (SearchManager::TypeModes)dlg.fileType, (AutoSearch::ActionType)dlg.action, dlg.remove, 
-					dlg.target, TargetUtil::TARGET_PATH, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, dlg.expireTime);
+					dlg.target, dlg.targetType, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, dlg.expireTime);
 				as->startTime = dlg.startTime;
 				as->endTime = dlg.endTime;
 				as->searchDays = dlg.searchDays;

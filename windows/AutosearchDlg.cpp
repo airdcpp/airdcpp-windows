@@ -29,7 +29,7 @@
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
 SearchPageDlg::SearchPageDlg() : fileType(0), action(0), matcherType(0), searchInterval(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
-	endTime(23, 59), searchDays("1111111")
+	endTime(23, 59), searchDays("1111111"), loading(true)
 	/*ctrlTarget(WC_EDIT, this, FILTER_MESSAGE_MAP)*/ {
 }
 
@@ -55,6 +55,7 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlCheatingDescription.SetWindowText(Text::toT(comment).c_str());
 
 	updateTargetTypeText();
+	ctrlTarget.SetWindowText(Text::toT(target).c_str());
 	ctrlUserMatch.SetWindowText(Text::toT(userMatch).c_str());
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);
@@ -178,6 +179,7 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ATTACH(IDC_SELECT_DIR, cSelectDir);
 
 	fixControls();
+	loading = false; //loading done.
 	return TRUE;
 }
 
@@ -317,7 +319,7 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 }
 
 LRESULT SearchPageDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
-	if (targetType > 0) {
+	if (!loading && targetType > 0) {
 		targetType = TargetUtil::TARGET_PATH;
 		updateTargetTypeText();
 	}
@@ -325,7 +327,7 @@ LRESULT SearchPageDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl,
 }
 
 LRESULT SearchPageDlg::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if (targetType > 0 && ctrlTarget.GetSel())
+	if (!loading && targetType > 0 && ctrlTarget.GetSel())
 		return 1;
 	return 0;
 }

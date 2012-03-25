@@ -112,5 +112,6 @@ private:
 
 	void fixControls();
 	void updateTargetTypeText();
+	bool loading;
 };
 #endif
