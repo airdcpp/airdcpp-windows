@@ -23,8 +23,8 @@
 
 #include "../client/Client.h"
 #include "../client/ColorSettings.h"
-#include "../client/ShareManager.h"
 #include "../client/TargetUtil.h"
+#include "../client/ChatMessage.h"
 
 #include "TypedListViewCtrl.h"
 #include "ImageDataObject.h"
@@ -191,8 +191,6 @@ private:
 	bool		isTTH;
 	tstring		author;
 	int t_height; //text height
-
-	TStringPairList shortLinks; //ApexDC
 	
 	bool m_bPopupMenu;
 	
@@ -209,10 +207,15 @@ private:
 	boost::wregex regUrlBoost, regReleaseBoost;
 	uint64_t lastTick;
 	bool isLink(POINT pt);
-	tstring getShortLink(POINT pt, bool getShort=false);
-	bool handCursor;
+	bool getLink(POINT pt, CHARRANGE& cr, ChatLink& link);
+	bool showHandCursor;
 	void downloadMagnet(const string& aPath);
 	void addAutoSearch(const string& aPath, uint8_t targetType);
+
+	vector<pair<CHARRANGE, ChatLink>> links;
+
+	HCURSOR		handCursor;
+	HCURSOR		arrowCursor;
 };
 
 
