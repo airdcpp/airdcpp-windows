@@ -191,6 +191,7 @@ them both to 0; an emulation function will be used. */
    for ever to determine that they do not match. The default is set very large
    so that it does not accidentally catch legitimate cases. On systems that
    support it, "configure" can be used to override this default default. */
+#define NO_RECURSE
 #ifndef MATCH_LIMIT
 #define MATCH_LIMIT 10000000
 #endif
