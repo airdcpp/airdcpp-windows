@@ -307,24 +307,19 @@ LRESULT SystemFrame::OnRButtonDown(POINT pt) {
 }
 
 tstring SystemFrame::WordFromPos(const POINT& p) {
-	HWND focus = GetFocus();
-	
-	if(focus != ctrlPad.m_hWnd)
-		return Util::emptyStringT;
 
 	int iCharPos = ctrlPad.CharFromPos(p);
 	int line = ctrlPad.LineFromChar(iCharPos);
-	int	len = ctrlPad.LineLength(iCharPos) + 1;
-
-	LONG Begin = ctrlPad.LineIndex(line);
-	int c = LOWORD(iCharPos) - Begin;
-
+	int len = ctrlPad.LineLength(iCharPos);
 	if(len < 3)
 		return Util::emptyStringT;
 
+	int Begin = ctrlPad.LineIndex(line);
+	int c = iCharPos - Begin;
+
 	tstring x;
-	x.resize(len);
-	ctrlPad.GetLine(line, &x[0], len);
+	x.resize(len+1);
+	x.resize(ctrlPad.GetLine(line, &x[0], len+1));
 
 	tstring::const_iterator start = x.begin();
 	tstring::const_iterator end = x.end();

@@ -1618,14 +1618,15 @@ int WinUtil::textUnderCursor(POINT p, CRichEditCtrl& ctrl, tstring& x) {
 	
 	int i = ctrl.CharFromPos(p);
 	int line = ctrl.LineFromChar(i);
-	int c = LOWORD(i) - ctrl.LineIndex(line);
-	int len = ctrl.LineLength(i) + 1;
+	int c = i - ctrl.LineIndex(line);
+	int len = ctrl.LineLength(i);
+	
 	if(len < 3) {
 		return 0;
 	}
 
-	x.resize(len);
-	ctrl.GetLine(line, &x[0], len);
+	x.resize(len+1);
+	x.resize(ctrl.GetLine(line, &x[0], len+1));
 
 	string::size_type start = x.find_last_of(_T(" <\t\r\n"), c);
 	if(start == string::npos)
