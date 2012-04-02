@@ -318,53 +318,50 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT
 
 	if(BOOLSETTING(USE_HIGHLIGHT)) {
 	
-	ColorList *cList = HighlightManager::getInstance()->getList();
-	CHARFORMAT2 hlcf;
+		ColorList *cList = HighlightManager::getInstance()->getList();
+		CHARFORMAT2 hlcf;
+		logged = false;
+		//compare the last line against all strings in the vector
+		for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
+			ColorSettings* cs = &(*i);
+			if(cs->getIncludeNickList()) 
+				continue;
+			size_t pos;
+			tstring msg = sText;
 
-	logged = false;
+			//set start position for find
+			pos = msg.find(_T(">"));
 
-	//compare the last line against all strings in the vector
-	for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
-		ColorSettings* cs = &(*i);
-	if(!cs->getIncludeNickList()) {
-		size_t pos;
-		tstring msg = sText;
+			//prepare the charformat
+			memset(&hlcf, 0, sizeof(CHARFORMAT2));
+			hlcf.cbSize = sizeof(hlcf);
+			hlcf.dwReserved = 0;
+			hlcf.dwMask = CFM_BACKCOLOR | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
 
-		//set start position for find
-		pos = msg.find(_T(">"));
-
-		//prepare the charformat
-		memset(&hlcf, 0, sizeof(CHARFORMAT2));
-		hlcf.cbSize = sizeof(hlcf);
-		hlcf.dwReserved = 0;
-		hlcf.dwMask = CFM_BACKCOLOR | CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_UNDERLINE | CFM_STRIKEOUT;
-
-		if(cs->getBold())		hlcf.dwEffects |= CFE_BOLD;
-		if(cs->getItalic())		hlcf.dwEffects |= CFE_ITALIC;
-		if(cs->getUnderline())	hlcf.dwEffects |= CFM_UNDERLINE;
-		if(cs->getStrikeout())	hlcf.dwEffects |= CFM_STRIKEOUT;
+			if(cs->getBold())		hlcf.dwEffects |= CFE_BOLD;
+			if(cs->getItalic())		hlcf.dwEffects |= CFE_ITALIC;
+			if(cs->getUnderline())	hlcf.dwEffects |= CFM_UNDERLINE;
+			if(cs->getStrikeout())	hlcf.dwEffects |= CFM_STRIKEOUT;
 		
-		if(cs->getHasBgColor())
-			hlcf.crBackColor = cs->getBgColor();
-		else
-			hlcf.crBackColor = SETTING(TEXT_GENERAL_BACK_COLOR);
+			if(cs->getHasBgColor())
+				hlcf.crBackColor = cs->getBgColor();
+			else
+				hlcf.crBackColor = SETTING(TEXT_GENERAL_BACK_COLOR);
 	
-		if(cs->getHasFgColor())
-			hlcf.crTextColor = cs->getFgColor();
-		else
-			hlcf.crTextColor = SETTING(TEXT_GENERAL_FORE_COLOR);
+			if(cs->getHasFgColor())
+				hlcf.crTextColor = cs->getFgColor();
+			else
+				hlcf.crTextColor = SETTING(TEXT_GENERAL_FORE_COLOR);
 		
-		while( pos != string::npos ){
-			if(cs->usingRegexp()) 
-				pos = RegExpMatch(cs, hlcf, msg, lSelBegin);
-			else 
-				pos = FullTextMatch(cs, hlcf, msg, pos, lSelBegin);
-		}
-
-		matchedPopup = false;
-		matchedSound = false;
-		
+			while( pos != string::npos ){
+				if(cs->usingRegexp()) 
+					pos = RegExpMatch(cs, hlcf, msg, lSelBegin);
+				else 
+					pos = FullTextMatch(cs, hlcf, msg, pos, lSelBegin);
 			}
+
+			matchedPopup = false;
+			matchedSound = false;
 		}//end for
 	}
 
@@ -377,12 +374,12 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 	LONG lSelEnd = lSelBegin + sMsg.size();
 	vector<ChatLink> tmpLinks;
 		
-	tstring::const_iterator start = sMsg.begin();
-	tstring::const_iterator end = sMsg.end();
-	boost::match_results<tstring::const_iterator> result;
-	int pos=0;
-
 	try {
+		tstring::const_iterator start = sMsg.begin();
+		tstring::const_iterator end = sMsg.end();
+		boost::match_results<tstring::const_iterator> result;
+		int pos=0;
+
 		while(boost::regex_search(start, end, result, regUrlBoost, boost::match_default)) {
 			size_t linkStart = pos + lSelBegin + result.position();
 			size_t linkEnd = pos + lSelBegin + result.position() + result.length();
@@ -518,9 +515,8 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 					}
 				}
 
-				GetSelectionCharFormat(cfSel);
-
 				if (insert) {
+					GetSelectionCharFormat(cfSel);
 					CImageDataObject::InsertBitmap(GetOleInterface(), foundEmoticon->getEmoticonBmp(cfSel.crBackColor));
 					++smiles;
 					++lSelBegin;
@@ -1115,6 +1111,16 @@ bool ChatCtrl::isLink(POINT pt) {
 
 bool ChatCtrl::getLink(POINT pt, CHARRANGE& cr, ChatLink& link) {
 	int iCharPos = CharFromPos(pt);
+	POINT p_ichar = PosFromChar(iCharPos);
+	
+	//Validate that we are actually clicking over a link.
+	if(pt.x > (p_ichar.x + 3)) { 
+		return false;
+	}
+	if(pt.y > (p_ichar.y +  (t_height*1.5))) {
+		return false;
+	}
+
 	for(auto i = links.rbegin(); i != links.rend(); ++i) {
 		if( iCharPos >= i->first.cpMin && iCharPos <= i->first.cpMax ) {
 			link = i->second;
