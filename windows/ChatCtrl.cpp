@@ -105,31 +105,18 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 				lRemoveChars = LineIndex(LineFromChar(multiplier++ * lTextLimit / 10));
 		}
 
-		/*if(links.size()) {
-			tstring buf;
-			buf.resize(lRemoveChars);
-			GetTextRange(0, lRemoveChars, &buf[0]);
-
-			CHARFORMAT2 cfSel;
-			cfSel.cbSize = sizeof(CHARFORMAT2);
-
-			for(auto i = links.begin(); i != links.end();) {
-				tstring::size_type j = 0;
-				while((j = buf.find(i->first, j)) != tstring::npos) {
-					SetSel(j, j + i->first.size());
-					GetSelectionCharFormat(cfSel);
-					if(cfSel.dwEffects & CFE_LINK) {
-						shortLinks.erase(i++);
-						j = 0;
-						break;
-					}
-					j += i->first.size();
-				} if(j == tstring::npos) {
-					j = 0;
-					++i;
-				}
+		//remove old links (the list must be in the same order than in text)
+		for(auto i = links.begin(); i != links.end();) {
+			if ((*i).first.cpMin < lRemoveChars) {
+				links.erase(i);
+				i = links.begin();
+			} else {
+				//update the position
+				(*i).first.cpMin -= lRemoveChars;
+				(*i).first.cpMax -= lRemoveChars;
+				++i;
 			}
-		}*/
+		}
 
 		// Update selection ranges
 		lSelEnd = lSelBegin -= lRemoveChars;
@@ -371,7 +358,6 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT
 }
 
 void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LONG lSelBegin, bool bUseEmo) {
-	LONG lSelEnd = lSelBegin + sMsg.size();
 	vector<ChatLink> tmpLinks;
 		
 	try {
@@ -388,16 +374,13 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 
 			if(link.find("magnet:?") != string::npos) {
 				ChatLink cl = ChatLink(link, ChatLink::TYPE_MAGNET);
-
-				if(!cl.displayText.empty()) {
-					tmpLinks.push_back(cl);
-					if (cl.dupe == ChatLink::DUPE_SHARE) {
-						SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-					} else if (cl.dupe == ChatLink::DUPE_QUEUE) {
-						SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-					} else {
-						SetSelectionCharFormat(WinUtil::m_TextStyleURL);
-					}
+				tmpLinks.push_back(cl);
+				if (cl.dupe == ChatLink::DUPE_SHARE) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+				} else if (cl.dupe == ChatLink::DUPE_QUEUE) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
+				} else {
+					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 				}
 			} else {
 				ChatLink cl = ChatLink(link, (link.find("spotify:") != string::npos ? ChatLink::TYPE_SPOTIFY : ChatLink::TYPE_URL));
@@ -420,10 +403,11 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 			size_t linkStart =  found;
 			size_t linkEnd =  found + p->url.length();
 
+			tstring displayText = Text::toT(p->getDisplayText());
 			SetSel(linkStart + lSelBegin, linkEnd + lSelBegin);
-			sMsg.replace(linkStart, linkEnd - linkStart, Text::toT(p->displayText).c_str());
-			setText(Text::toT(p->displayText));
-			linkEnd = linkStart + p->displayText.size();
+			sMsg.replace(linkStart, linkEnd - linkStart, displayText.c_str());
+			setText(displayText);
+			linkEnd = linkStart + displayText.size();
 			//SetSel(cr.cpMin, cr.cpMax);
 			found++;
 
@@ -482,12 +466,13 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 		const Emoticon::List& emoticonsList = emoticonsManager->getEmoticonsList();
 		tstring::size_type lastReplace = 0;
 		uint8_t smiles = 0;
+		LONG lSelEnd=0;
 
 		while(true) {
 			tstring::size_type curReplace = tstring::npos;
 			Emoticon* foundEmoticon = NULL;
 
-			for(Emoticon::Iter emoticon = emoticonsList.begin(); emoticon != emoticonsList.end(); ++emoticon) {
+			for(auto emoticon = emoticonsList.begin(); emoticon != emoticonsList.end(); ++emoticon) {
 				tstring::size_type idxFound = sMsg.find((*emoticon)->getEmoticonText(), lastReplace);
 				if(idxFound < curReplace || curReplace == tstring::npos) {
 					curReplace = idxFound;
@@ -499,27 +484,32 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 				bool insert=true;
 				CHARFORMAT2 cfSel;
 				cfSel.cbSize = sizeof(cfSel);
-
 				lSelBegin += (curReplace - lastReplace);
 				lSelEnd = lSelBegin + foundEmoticon->getEmoticonText().size();
-				SetSel(lSelBegin, lSelEnd);
 
 				//check the position
-				if ((curReplace != lastReplace) && (curReplace > 0)) {
-					//char previousChar = sMsg[idxFound-1];
-					tstring::size_type pos=curReplace-1;
-					if (isgraph(sMsg[pos])) {
-						//if (isgraph(sMsg[curReplace + foundEmoticon->getEmoticonText().size()])) {
-							insert=false;
-						//}
-					}
+				if ((curReplace != lastReplace) && (curReplace > 0) && isgraph(sMsg[curReplace-1])) {
+					insert=false;
 				}
 
 				if (insert) {
+					SetSel(lSelBegin, lSelEnd);
+
 					GetSelectionCharFormat(cfSel);
 					CImageDataObject::InsertBitmap(GetOleInterface(), foundEmoticon->getEmoticonBmp(cfSel.crBackColor));
+
 					++smiles;
 					++lSelBegin;
+
+					//fix the positions for links after this emoticon....
+					for(auto i = links.rbegin(); i != links.rend(); ++i) {
+						if ((*i).first.cpMin > lSelBegin) {
+							(*i).first.cpMin = (*i).first.cpMin - foundEmoticon->getEmoticonText().size() + 1;
+							(*i).first.cpMax = (*i).first.cpMax - foundEmoticon->getEmoticonText().size() + 1;
+						} else {
+							break;
+						}
+					}
 				} else lSelBegin = lSelEnd;
 				lastReplace = curReplace + foundEmoticon->getEmoticonText().size();
 			} else break;
