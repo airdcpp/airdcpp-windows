@@ -30,11 +30,12 @@
 #include "../client/FastAlloc.h"
 #include "../client/TaskQueue.h"
 #include "boost/unordered_map.hpp"
+#include "CSplitterEx.h"
 
 #define SHOWTREE_MESSAGE_MAP 12
 
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
-	private QueueManagerListener, private DownloadManagerListener, public CSplitterImpl<QueueFrame>, private SettingsManagerListener
+	private QueueManagerListener, private DownloadManagerListener, public CSplitterEx<QueueFrame>, private SettingsManagerListener
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE, 0, COLOR_3DFACE);
@@ -48,7 +49,7 @@ public:
 	~QueueFrame();
 	
 	typedef MDITabChildWindowImpl<QueueFrame> baseClass;
-	typedef CSplitterImpl<QueueFrame> splitBase;
+	typedef CSplitterEx<QueueFrame> splitBase;
 
 	BEGIN_MSG_MAP(QueueFrame)
 		NOTIFY_HANDLER(IDC_QUEUE, LVN_GETDISPINFO, ctrlQueue.onGetDispInfo)

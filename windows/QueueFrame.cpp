@@ -75,8 +75,10 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlDirs.SetImageList(WinUtil::fileImages, TVSIL_NORMAL);
 	ctrlQueue.SetImageList(WinUtil::fileImages, LVSIL_SMALL);
 	
+	t_bVertical = !BOOLSETTING(HORIZONTAL_QUEUE);
 	m_nProportionalPos = 2500;
 	SetSplitterPanes(ctrlDirs.m_hWnd, ctrlQueue.m_hWnd);
+	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 
 	// Create listview columns
 	WinUtil::splitTokens(columnIndexes, SETTING(QUEUEFRAME_ORDER), COLUMN_LAST);
@@ -2013,7 +2015,7 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 			updateQueue();
 		}
 	}
-	
+
 	CRect rc = rect;
 	SetSplitterRect(rc);
 }

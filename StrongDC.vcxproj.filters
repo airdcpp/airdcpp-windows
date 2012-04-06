@@ -818,5 +818,8 @@
     <ClInclude Include="windows\TempShare_dlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\CSplitterEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

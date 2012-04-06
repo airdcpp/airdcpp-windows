@@ -64,6 +64,7 @@
 #define IDC_MAX_MSG_LENGTH_SPIN         154
 #define IDC_COPY_BEGIN                  162
 #define IDC_COPY_END                    163
+#define IDC_SPLITTER                    164
 #define IDD_SHAREPAGE                   205
 #define IDB_FOLDERS                     206
 #define IDD_AIRAPPEARANCEPAGE           207

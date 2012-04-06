@@ -1533,5 +1533,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="LastSearch">Last Search</String>
 		<String Name="SelectDirectory">Select directory</String>
 		<String Name="XIsSameThan">The directory %s also exists in %s</String>
+		<String Name="HorizontalQueue">Use horizontal splitter in Download Queue window</String>
 	</Strings>
 </Language>
