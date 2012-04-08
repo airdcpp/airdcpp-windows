@@ -441,6 +441,7 @@
     <ClCompile Include="windows\AppearancePage.cpp" />
     <ClCompile Include="windows\AutosearchDlg.cpp" />
     <ClCompile Include="windows\FavoriteDirDlg.cpp" />
+    <ClCompile Include="windows\Players.cpp" />
     <ClCompile Include="windows\SearchPage.cpp" />
     <ClCompile Include="windows\AVIPreview.cpp" />
     <ClCompile Include="windows\BarShader.cpp" />

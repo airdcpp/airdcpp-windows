@@ -59,4 +59,20 @@
 #define S_VOLDOWN 0x90000L		// Volume: Down
 #define S_MUTE 0x80000L			// Volume: Mute
 
+
+#include <string>
+
+namespace dcpp {
+
+class Players {
+public:
+	static string getWMPSpam(HWND playerWnd = NULL);
+	static string getSpotifySpam(HWND playerWnd = NULL);
+	static string getItunesSpam(HWND playerWnd = NULL);
+	static string getMPCSpam();
+	static string getWinAmpSpam();
+};
+
+}
+
 #endif

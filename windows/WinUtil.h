@@ -504,10 +504,6 @@ public:
 	static uint8_t getFlagIndexByCode(const char* countryCode);
 	static uint8_t getFlagIndexByName(const char* countryName);
 
-	static string getWMPSpam(HWND playerWnd = NULL);
-	static string getSpotifySpam(HWND playerWnd = NULL);
-	static string getItunesSpam(HWND playerWnd = NULL);
-	static string getMPCSpam();
 	static string getReport(const Identity& identity, HWND hwnd);
 
 	static string CPUInfo();
