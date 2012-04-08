@@ -1131,7 +1131,7 @@ void QueueFrame::moveSelectedDir() {
 			if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 				return;
 			} else if (finishedFiles > 0) {
-				tmp = str(boost::format(STRING(CONFIRM_MOVE_DIR_MULTIPLE)) % finishedFiles);
+				tmp = str(boost::format(STRING(CONFIRM_MOVE_DIR_FINISHED_MULTIPLE)) % finishedFiles);
 				if(MessageBox(Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 					moveFinished = true;
 				}
@@ -1459,15 +1459,15 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				} else {
 					int files = QueueManager::getInstance()->getDirItemCount(b, curDir);
 					if (files == 1) {
-						dirMenu.InsertSeparatorFirst(Util::toStringW(files) + _T(" ") + CTSTRING(FILE));
+						dirMenu.InsertSeparatorFirst(CTSTRING(FILE));
 						dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITY));
 					} else {
-						dirMenu.InsertSeparatorFirst(Util::toStringW(files) + _T(" ") + CTSTRING(FILES));
+						dirMenu.InsertSeparatorFirst(Text::toT(str(boost::format(CSTRING(X_FILES)) % files)));
 						dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITIES));
 					}
 				}
 			} else {
-				dirMenu.InsertSeparatorFirst(Util::toStringW(bundles.size()) + _T(" ") + CTSTRING(BUNDLES));
+				dirMenu.InsertSeparatorFirst(Text::toT(str(boost::format(CSTRING(X_BUNDLES)) % bundles.size())));
 				dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITIES));
 			}
 		} else {

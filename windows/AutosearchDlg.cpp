@@ -387,7 +387,9 @@ void SearchPageDlg::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_SAT),				useCustomTimes);
 	::EnableWindow(GetDlgItem(IDC_SUN),				useCustomTimes);
 
+	::EnableWindow(GetDlgItem(IDC_START_TIME),		useCustomTimes);
 	::EnableWindow(GetDlgItem(IDC_SEARCH_START),	useCustomTimes);
+	::EnableWindow(GetDlgItem(IDC_END_TIME),		useCustomTimes);
 	::EnableWindow(GetDlgItem(IDC_SEARCH_END),		useCustomTimes);
 }
 

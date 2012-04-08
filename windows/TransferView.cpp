@@ -1032,17 +1032,18 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 				if ((users == 1 || hits == 2) && user.user) {
 					return WinUtil::getNicks(user);
 				} else {
-					return Util::toStringW(users) + _T(" ") + TSTRING(NUMBER_OF_USERS) + _T(" (") + Util::toStringW(((hits-running-1) > 0 ? hits-running-1 : 0)) + _T(" waiting)");
+					return Text::toT(str(boost::format(CSTRING(X_USERS_WAITING)) % users %
+						((hits-running-1) > 0 ? hits-running-1 : 0)));
 				}
 			} else if (hits == -1 || isBundle) {
 				return WinUtil::getNicks(user);
 			} else {
-				return Util::toStringW(hits) + _T(' ') + TSTRING(USERS);
+				return Text::toT(str(boost::format(CSTRING(X_USERS)) % hits));
 			}
 			//return (hits == -1 || isBundle) ? WinUtil::getNicks(user) : (Util::toStringW(hits) + _T(' ') + TSTRING(USERS));
 		case COLUMN_HUB: 
 			if (isBundle)
-				return (Util::toStringW(running) + _T(' ') + TSTRING(NUMBER_OF_CONNECTIONS));
+				return Text::toT(str(boost::format(CSTRING(X_CONNECTIONS)) % running));
 			else if (hits == -1)
 				return WinUtil::getHubNames(user).first;
 			else

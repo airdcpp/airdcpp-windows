@@ -39,7 +39,7 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlPad.LimitText(128*1024);
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 	
-	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s])([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:)))"));
+	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 
 	//might miss some messages
 	deque<pair<time_t, string> > oldMessages = LogManager::getInstance()->getLastLogs();
@@ -293,16 +293,7 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 LRESULT SystemFrame::OnRButtonDown(POINT pt) {
 	selWord.clear();
 
-	CHARRANGE cr;
-	ctrlPad.GetSel(cr);
-	if(cr.cpMax != cr.cpMin) {
-		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
-		ctrlPad.GetSelText(buf);
-		selWord = Util::replace(buf, _T("\r"), _T("\r\n"));
-		delete[] buf;
-	} else {
-		selWord = WordFromPos(pt);
-	}	
+	selWord = WordFromPos(pt);
 	return 0;
 }
 
@@ -335,7 +326,18 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 		pos=pos+result.position() + result.length();
 	}
 
-	return Util::emptyStringT;
+	/* No path found, try to get the current selection */
+	tstring ret;
+	CHARRANGE cr;
+	ctrlPad.GetSel(cr);
+	if(cr.cpMax != cr.cpMin) {
+		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
+		ctrlPad.GetSelText(buf);
+		ret = Util::replace(buf, _T("\r"), _T("\r\n"));
+		delete[] buf;
+	}
+
+	return ret;
 }
 
 LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -352,6 +354,7 @@ LRESULT SystemFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	if(Util::fileExists(Text::fromT(tmp)))
 		WinUtil::openFolder(tmp);
 
+	ctrlPad.SetSelNone();
 	return 0;
 }
 LRESULT SystemFrame::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
