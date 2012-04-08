@@ -97,8 +97,8 @@ public:
 		tstring val(ctrlAsTime.GetWindowTextLength() +2, _T('\0'));
 		ctrlAsTime.GetWindowText(&val[0],val.size());
 		int value = Util::toInt(Text::fromT(val));
-		if(value < 3) {
-			value = 3;
+		if(value < 1) {
+			value = 1;
 			ctrlAsTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
 		}
 		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_EVERY, value);
@@ -111,8 +111,8 @@ public:
 		tstring val(ctrlAsRTime.GetWindowTextLength() +2, _T('\0'));
 		ctrlAsRTime.GetWindowText(&val[0],val.size());
 		int value = Util::toInt(Text::fromT(val));
-		if(value < 1) { //Todo limit higher, 10min atleast, just keep this for easier testing.
-			value = 1;
+		if(value < 15) {
+			value = 15;
 			ctrlAsRTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
 		}
 		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_RECHECK_TIME, value);

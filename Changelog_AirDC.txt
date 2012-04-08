@@ -554,6 +554,8 @@ Added:
 - Auto update of GeoIP country databases, add IPv6 country database (DC++)
 - Connection type detection improvements (DC++)
 - Customizable site search menu items
+- Group same directories in search results ( ADC only )
+- Support Time params in download paths
 
 Changed:
 
@@ -565,6 +567,8 @@ Changed:
 - Reorganized settings
 - Also compare the file name when checking for dupes
 - Limit the number of new connections for downloads
+- Theme support changes, includes more colors and icons. See Themes/readme.txt for details.
+
 
 Fixed:
 
@@ -576,3 +580,6 @@ Fixed:
 - Always connect the ADC search results to a correct hub
 - Detect Windows 8 in stats
 - Fix a problem on redirected HTTP addresses
+- Fix scrolling problem with long message as 1 word
+- Fix a popup crash on download failed
+
