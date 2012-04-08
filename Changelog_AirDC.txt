@@ -523,3 +523,56 @@ Removed:
 
 #Refresh delay setting (client wont refresh on startup unless couldnt load share cache)
 #The options "Extra slots for fellow AirDC users" and "Maximum simultaneous files" 
+
+
+
+
+2.23
+
+Fixed:
+
+#Prevent a crash which can be triggered remotely
+#Fix "Download with priority" in filelists
+#Clean old results when applying ADL search multiple times in a filelist
+
+Changed:
+
+#Use a different format for the modify dates in filelists
+
+
+
+2.30
+
+Added:
+
+- New downloading/queuing system (read <link> for more information)
+- New favorite download directories
+- New auto search including a new tab in GUI
+- Instant sending of files in chat
+- Mark queued and finished files/folders in search, chat and filelists
+- Recursive SFV check in own filelist + allow choosing multiple directories to scan
+- Auto update of GeoIP country databases, add IPv6 country database (DC++)
+- Connection type detection improvements (DC++)
+- Customizable site search menu items
+
+Changed:
+
+- More flexible link detection in chat
+- Share scanner improvements (reporting mainly)
+- Improved ADL Search matching speed
+- DC++ socket merge (IPv4+IPv6, the client works on Wine again)
+- Save the previous custom download locations into the setting file
+- Reorganized settings
+- Also compare the file name when checking for dupes
+- Limit the number of new connections for downloads
+
+Fixed:
+
+- Not all search replies were sent in ADC hubs
+- More reliable path opening in system log
+- Improve the accuracy for estimated time for queued searches
+- Updated libraries (Boost, ZLIB, OpenSSL, PCRE, WTL)
+- Numerous fixes for freezes and other bugs
+- Always connect the ADC search results to a correct hub
+- Detect Windows 8 in stats
+- Fix a problem on redirected HTTP addresses
