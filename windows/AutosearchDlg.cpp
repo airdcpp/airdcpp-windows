@@ -221,15 +221,23 @@ LRESULT SearchPageDlg::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HW
 }
 
 void SearchPageDlg::updateTargetTypeText() {
-	string targetText = "Location type: ";
-	if (targetType == TargetUtil::TARGET_PATH)
-		targetText += "Direct path";
-	if (targetType == TargetUtil::TARGET_FAVORITE)
-		targetText += "Favorite directory (the real path will be picked when matches are found)";
-	else if (targetType == TargetUtil::TARGET_SHARE)
-		targetText += "Shared directory (the real path will be picked when matches are found)";
+	tstring targetText = TSTRING(LOCATION_TYPE) + _T(": ");
 
-	cTargetType.SetWindowText(Text::toT(targetText).c_str());
+	TCHAR bufPath[MAX_PATH];
+	GetDlgItemText(IDC_TARGET_PATH, bufPath, MAX_PATH);
+
+	if (Text::fromT(bufPath).empty()) {
+		targetText += TSTRING(SETTINGS_DOWNLOAD_DIRECTORY);
+	} else {
+		if (targetType == TargetUtil::TARGET_PATH)
+			targetText += TSTRING(TYPE_TARGET_PATH);
+		if (targetType == TargetUtil::TARGET_FAVORITE)
+			targetText += TSTRING(TYPE_TARGET_FAVORITE);
+		else if (targetType == TargetUtil::TARGET_SHARE)
+			targetText += TSTRING(TYPE_TARGET_SHARE);
+	}
+
+	cTargetType.SetWindowText(targetText.c_str());
 }
 
 LRESULT SearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -319,7 +327,7 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 }
 
 LRESULT SearchPageDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
-	if (!loading && targetType > 0) {
+	if (!loading) {
 		targetType = TargetUtil::TARGET_PATH;
 		updateTargetTypeText();
 	}
