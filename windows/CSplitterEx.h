@@ -6,7 +6,11 @@ Here's a little extended implementation of the Splitter class.
 #ifndef __CSPLITTEREX_H__
 #define __CSPLITTEREX_H__
 
+#include "stdafx.h"
+
+#if _MSC_VER >= 1000
 #pragma once
+#endif // _MSC_VER >= 1000
 
 template <class T> class CSplitterEx
 {
@@ -45,6 +49,13 @@ public:
 		if(m_hCursor == NULL || m_vCursor == NULL) 
 		{
 			CStaticDataInitCriticalSectionLock lock;
+
+			if(FAILED(lock.Lock()))
+			{
+				dcdebug("ERROR : Unable to lock critical section in CSplitterEx\n");
+				return;
+			}
+
 
 			if(m_hCursor == NULL)
 				m_hCursor = ::LoadCursor(NULL, IDC_SIZENS);

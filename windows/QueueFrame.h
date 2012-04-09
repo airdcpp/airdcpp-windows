@@ -23,6 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "CSplitterEx.h"
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 
@@ -30,7 +31,6 @@
 #include "../client/FastAlloc.h"
 #include "../client/TaskQueue.h"
 #include "boost/unordered_map.hpp"
-#include "CSplitterEx.h"
 
 #define SHOWTREE_MESSAGE_MAP 12
 

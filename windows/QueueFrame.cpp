@@ -78,7 +78,6 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	t_bVertical = !BOOLSETTING(HORIZONTAL_QUEUE);
 	m_nProportionalPos = 2500;
 	SetSplitterPanes(ctrlDirs.m_hWnd, ctrlQueue.m_hWnd);
-	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 
 	// Create listview columns
 	WinUtil::splitTokens(columnIndexes, SETTING(QUEUEFRAME_ORDER), COLUMN_LAST);
