@@ -183,118 +183,111 @@ void UpdateDlg::on(HttpConnectionListener::Failed, HttpConnection* /*conn*/, con
 void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, string const& /*aLine*/, bool /*fromCoral*/) noexcept {
 	//hc->removeListener(this);
 	PostMessage(WM_SPEAKER, UPDATE_STATUS, (LPARAM)new tstring(TSTRING(DATA_RETRIEVED) + _T("!")));
-			string sText;
-			try {
-				
-				if (update) {
-					if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + INSTALLER)) {
-						if(MessageBox(CTSTRING(UPDATE_CLIENT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-						update = false;
-						updating = true;
-						PostMessage(WM_CLOSE);
-					}else{ 
-						MainFrame::getMainFrame()->update();
-					}
-					}
+	string sText;
+	try {
+		if (update) {
+			if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + INSTALLER)) {
+				if(MessageBox(CTSTRING(UPDATE_CLIENT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+					update = false;
+					updating = true;
+					PostMessage(WM_CLOSE);
+				} else{ 
+					MainFrame::getMainFrame()->update();
 				}
+			}
+		}
 
-			if(LangDL)
-				{
-			if (!xmldata.empty())	{	
-			string fname = Util::getPath(Util::PATH_USER_LANGUAGE) + Text::fromT(TSTRING(AAIRDCPP_LANGUAGE_FILE)).c_str();
-			File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE);
-			f.write(xmldata);
-			f.close();
-			File::deleteFile(fname);
-			File::renameFile(fname + ".tmp", fname);
-			PostMessage(WM_SPEAKER, UPDATE_CONTENT, (LPARAM)new tstring(_T("Language File Downloaded")));
-			MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
-	} 
-				} else {
+		if(LangDL) {
+			if (!xmldata.empty()) {	
+				string fname = Util::getPath(Util::PATH_USER_LANGUAGE) + Text::fromT(TSTRING(AAIRDCPP_LANGUAGE_FILE)).c_str();
+				File f(fname + ".tmp", File::WRITE, File::CREATE | File::TRUNCATE);
+				f.write(xmldata);
+				f.close();
+				File::deleteFile(fname);
+				File::renameFile(fname + ".tmp", fname);
+				PostMessage(WM_SPEAKER, UPDATE_CONTENT, (LPARAM)new tstring(_T("Language File Downloaded")));
+				MessageBox(_T("Ok!\r\nRestart the AirDC++ client!"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
+			} 
+		} else {
+			double latestVersion;
+			double ownVersion;
+			double LangVersion;
 
-				double latestVersion;
-				double ownVersion;
-				double LangVersion;
+			SimpleXML xml;
+			xml.fromXML(xmldata);
+			xml.stepIn();
 
-				SimpleXML xml;
-				xml.fromXML(xmldata);
-				xml.stepIn();
-
-				if (xml.findChild("Version")) {
-					string remoteVer = xml.getChildData();
-					xml.resetCurrentChild();
-					latestVersion = Util::toDouble(remoteVer);
-					ownVersion = Util::toDouble(VERSIONFLOAT);
-					string svn;
+			if (xml.findChild("Version")) {
+				string remoteVer = xml.getChildData();
+				xml.resetCurrentChild();
+				latestVersion = Util::toDouble(remoteVer);
+				ownVersion = Util::toDouble(VERSIONFLOAT);
+				string svn;
 #ifdef SVNVERSION
-					if (xml.findChild("SVNrev")) {
-						string svn = xml.getChildData();
-						latestVersion = Util::toDouble(svn);
-						xml.resetCurrentChild();
-						PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(Text::toT(remoteVer + " r" + svn)));
-						string tmp = SVNVERSION;
-						ownVersion = Util::toDouble(tmp.substr(1, tmp.length()-1));
-					}
-#else
-					PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(Text::toT(remoteVer)));
-#endif
-				} else
-					throw Exception();
-#ifdef _WIN64 
-				if (xml.findChild("URL64")) {   //remember to add this in the versionfile
-					downloadURL = xml.getChildData();
+				if (xml.findChild("SVNrev")) {
+					string svn = xml.getChildData();
+					latestVersion = Util::toDouble(svn);
 					xml.resetCurrentChild();
-					if (latestVersion > ownVersion)
-						ctrlDownload.EnableWindow(TRUE);
-				} else
-					throw Exception();
+					PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(Text::toT(remoteVer + " r" + svn)));
+					string tmp = SVNVERSION;
+					ownVersion = Util::toDouble(tmp.substr(1, tmp.length()-1));
+				}
+#else
+				PostMessage(WM_SPEAKER, UPDATE_LATEST_VERSION, (LPARAM)new tstring(Text::toT(remoteVer)));
+#endif
+			} else
+				throw Exception();
+#ifdef _WIN64 
+			if (xml.findChild("URL64")) {   //remember to add this in the versionfile
+				downloadURL = xml.getChildData();
+				xml.resetCurrentChild();
+				if (latestVersion > ownVersion)
+					ctrlDownload.EnableWindow(TRUE);
+			} else
+				throw Exception();
 			
 #else
-				if (xml.findChild("URL")) {
-					downloadURL = xml.getChildData();
-					xml.resetCurrentChild();
-					if (latestVersion > ownVersion)
-						ctrlDownload.EnableWindow(TRUE);
-				} else
-					throw Exception();
+			if (xml.findChild("URL")) {
+				downloadURL = xml.getChildData();
+				xml.resetCurrentChild();
+				if (latestVersion > ownVersion)
+					ctrlDownload.EnableWindow(TRUE);
+			} else
+				throw Exception();
 #endif	
 
-				if((!SETTING(LANGUAGE_FILE).empty())) {
-						if (xml.findChild(Text::fromT(TSTRING(AAIRDCPP_LANGUAGE_FILE)))) {
-						string version = xml.getChildData();
+			if((!SETTING(LANGUAGE_FILE).empty())) {
+					if (xml.findChild(Text::fromT(TSTRING(AAIRDCPP_LANGUAGE_FILE)))) {
+					string version = xml.getChildData();
 						
-						PostMessage(WM_SPEAKER, UPDATE_LATEST_LANGUAGE, (LPARAM)new tstring(Text::toT(version)));
+					PostMessage(WM_SPEAKER, UPDATE_LATEST_LANGUAGE, (LPARAM)new tstring(Text::toT(version)));
 					
-						LangVersion = Util::toDouble(version);
+					LangVersion = Util::toDouble(version);
+					xml.resetCurrentChild();
+					if (xml.findChild("LANGURL")) {
+						LangdownloadURL = xml.getChildData();
 						xml.resetCurrentChild();
-						if (xml.findChild("LANGURL")) {
-							LangdownloadURL = xml.getChildData();
-							xml.resetCurrentChild();
-							if (LangVersion > Util::toDouble(Text::fromT(TSTRING(AAIRDCPP_LANGUAGE_VERSION))))
-								ctrlLangDownlod.EnableWindow(TRUE);
-						}
-					} else {
-						// todo. move to StringDefs ERROR_LANGGUAGE
-						PostMessage(WM_SPEAKER, UPDATE_LATEST_LANGUAGE, (LPARAM)new tstring(_T("language not found")));
-						xml.resetCurrentChild();
+						if (LangVersion > Util::toDouble(Text::fromT(TSTRING(AAIRDCPP_LANGUAGE_VERSION))))
+							ctrlLangDownlod.EnableWindow(TRUE);
 					}
+				} else {
+					// todo. move to StringDefs ERROR_LANGGUAGE
+					PostMessage(WM_SPEAKER, UPDATE_LATEST_LANGUAGE, (LPARAM)new tstring(_T("language not found")));
+					xml.resetCurrentChild();
 				}
-
-				xml.resetCurrentChild();
-
-				while(xml.findChild("Message")) {
-					const string& sData = Text::toDOS(xml.getChildData());
-					sText += sData + "\r\n";
-				}
-				PostMessage(WM_SPEAKER, UPDATE_CONTENT, (LPARAM)new tstring(Text::toT(sText)));
-				}
-			} catch (const Exception&) {
-				PostMessage(WM_SPEAKER, UPDATE_CONTENT, (LPARAM)new tstring(_T("Couldn't parse xml-data")));
 			}
 
+			xml.resetCurrentChild();
 
-
-			
+			while(xml.findChild("Message")) {
+				const string& sData = Text::toDOS(xml.getChildData());
+				sText += sData + "\r\n";
+			}
+			PostMessage(WM_SPEAKER, UPDATE_CONTENT, (LPARAM)new tstring(Text::toT(sText)));
+		}
+	} catch (const Exception&) {
+		PostMessage(WM_SPEAKER, UPDATE_CONTENT, (LPARAM)new tstring(_T("Couldn't parse xml-data")));
+	}		
 }
 
 void UpdateDlg::on(HttpConnectionListener::Data, HttpConnection* conn, const uint8_t* buf, size_t len) noexcept {
