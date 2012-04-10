@@ -856,7 +856,8 @@ public:
 	}
 
 
-	void removeBundle(T* item, bool removeFromMemory = true) {
+	bool removeBundle(T* item, bool removeFromMemory = true) {
+		bool parentExists=true;
 		if(!item->parent) {
 			//LogManager::getInstance()->message("remove if");
 			removeParent(item);
@@ -879,13 +880,15 @@ public:
 				deleteItem(parent);
 				parents.erase(const_cast<K*>(&parent->getGroupCond()));
 				delete parent;
+				parentExists=false;
+			} else {
+				updateItem(parent);
 			}
-
-			updateItem(parent);
 		}
 
 		if(removeFromMemory)
 			delete item;
+		return parentExists;
 	}
 
 

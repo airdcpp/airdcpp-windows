@@ -9,7 +9,7 @@
 ;!include "Sections.nsh"
  !include "MUI2.nsh"
 
-!define X64
+;!define X64
  
 SetCompressor "lzma"
 

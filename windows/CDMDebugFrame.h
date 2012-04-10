@@ -87,7 +87,7 @@ private:
 	bool closed;
 	
 	void on(DebugManagerListener::DebugDetection, const string& aLine) noexcept;
-	void on(DebugManagerListener::DebugCommand, const string& aLine, int typeDir, const string& ip) noexcept;
+	void on(DebugManagerListener::DebugCommand, const string& aLine, int typeDir, const string& ip, bool isUDP) noexcept;
 };
 
 #endif // __CDMDEBUGFRAME_H

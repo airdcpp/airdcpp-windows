@@ -670,8 +670,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			if(ii) {
 				if (!ii->bundle.empty()) {
 					ItemInfo* parent = ii->parent;
-					ctrlTransfers.removeBundle(ii, true);
-					if (parent)
+					if (ctrlTransfers.removeBundle(ii, true))
 						parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
 				} else {
 					dcassert(pos != -1);
@@ -696,10 +695,8 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 						//LogManager::getInstance()->message("CHANGEPARENT, REMOVE");
 						if (ii->bundle.empty()) {
 							ctrlTransfers.DeleteItem(pos);
-						} else {
-							ctrlTransfers.removeBundle(ii, false);
-							if (parent)
-								parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
+						} else if (ctrlTransfers.removeBundle(ii, false)) {
+							parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
 						}
 					}
 					ii->update(ui);

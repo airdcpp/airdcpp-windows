@@ -210,13 +210,13 @@ void CDMDebugFrame::on(DebugManagerListener::DebugDetection, const string& aLine
 
 	addCmd(aLine);
 }
-void CDMDebugFrame::on(DebugManagerListener::DebugCommand, const string& aLine, int typeDir, const string& ip) noexcept {
+void CDMDebugFrame::on(DebugManagerListener::DebugCommand, const string& aLine, int typeDir, const string& ip, bool isUDP) noexcept {
 		switch(typeDir) {
 			case DebugManager::HUB_IN:
 				if(!showHubCommands)
 					return;
 				if(!bFilterIp || Text::toT(ip) == sFilterIp) {
-					addCmd("Hub:\t[Incoming][" + ip + "]\t \t" + aLine);
+					addCmd("Hub:\t[Incoming]\t \t" + aLine);
 				}
 				break;
 			case DebugManager::HUB_OUT:
@@ -230,14 +230,14 @@ void CDMDebugFrame::on(DebugManagerListener::DebugCommand, const string& aLine, 
 				if(!showCommands)
 					return;
 				if(!bFilterIp || Text::toT(ip) == sFilterIp) {
-					addCmd("Client:\t[Incoming][" + ip + "]\t \t" + aLine);
+					addCmd("Client:\t[Incoming]" + (isUDP ? "[UDP]" : Util::emptyString) + "[" + ip + "][" + ip + "]\t \t" + aLine);
 				}
 				break;
 			case DebugManager::CLIENT_OUT:
 				if(!showCommands)
 					return;
 				if(!bFilterIp || Text::toT(ip) == sFilterIp) {
-					addCmd("Client:\t[Outgoing][" + ip + "]\t \t" + aLine);
+					addCmd("Client:\t[Outgoing]" + (isUDP ? "[UDP]" : Util::emptyString) + "[" + ip + "][" + ip + "]\t \t" + aLine);
 				}
 				break;
 			default: dcassert(0);
