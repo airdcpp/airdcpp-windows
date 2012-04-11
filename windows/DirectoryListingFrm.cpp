@@ -37,7 +37,7 @@
 #include "../client/ClientManager.h"
 #include "../client/ShareScannerManager.h"
 #include "../client/Wildcards.h"
-#include "TextFrame.h"
+#include "NfoViewer.h"
 
 
 DirectoryListingFrame::FrameMap DirectoryListingFrame::frames;
@@ -576,7 +576,7 @@ LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	if (mylist) {
 		try {
 			tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-			TextFrame::openWindow(path, false, false);
+			NfoViewer::openWindow(path);
 		} catch(...) { } //file deleted no path
 	} else {
 		downloadList(Text::toT(Util::getTempPath()), true);

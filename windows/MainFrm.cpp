@@ -36,7 +36,7 @@
 #include "FinishedFrame.h"
 #include "ADLSearchFrame.h"
 #include "FinishedULFrame.h"
-#include "TextFrame.h"
+#include "NfoViewer.h"
 #include "UpdateDlg.h"
 #include "StatsFrame.h"
 #include "UploadQueueFrame.h"
@@ -628,7 +628,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		DirectoryListingFrame::openWindow(i->user, i->text, 0);
 	} else if(wParam == VIEW_FILE_AND_DELETE) {
 		auto_ptr<tstring> file(reinterpret_cast<tstring*>(lParam));
-		TextFrame::openWindow(*file, false, false);
+		NfoViewer::openWindow(*file);
 		File::deleteFile(Text::fromT(*file));
 	} else if(wParam == STATS) {
 		auto_ptr<TStringList> pstr(reinterpret_cast<TStringList*>(lParam));

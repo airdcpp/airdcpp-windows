@@ -30,7 +30,7 @@
 #include "TypedListViewCtrl.h"
 #include "ShellContextMenu.h"
 #include "WinUtil.h"
-#include "TextFrame.h"
+#include "NfoViewer.h"
 
 #include "../client/ClientManager.h"
 #include "../client/StringTokenizer.h"
@@ -309,7 +309,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FinishedItem *ii = ctrlList.getItemData(i);
 			if(ii != NULL)
-				TextFrame::openWindow(Text::toT(ii->getTarget()), false, false);
+				NfoViewer::openWindow(Text::toT(ii->getTarget()));
 		}
 		return 0;
 	}

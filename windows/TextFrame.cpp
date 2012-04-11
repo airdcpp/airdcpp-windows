@@ -42,11 +42,10 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlPad.SetEventMask(ctrlPad.GetEventMask() | ENM_LINK);
 	ctrlPad.Subclass();
 	ctrlPad.LimitText(0);
-	if(history || openlog) {
 	ctrlPad.SetFont(WinUtil::font);
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
-	}
+	
 	string tmp;
 	try {
 
@@ -73,44 +72,6 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			//if openlog just add the whole text
 			tmp = f.read();
 			ctrlPad.SetWindowText(Text::toT(tmp).c_str());
-		
-		
-		} else if(!openlog && !history) {
-
-			tmp = Text::toDOS(f.read());
-			tmp = Text::toUtf8(tmp);
-
-			//add the line endings in nfo
-			string::size_type i = 0;
-			while((i = tmp.find('\n', i)) != string::npos) {
-				if(i == 0 || tmp[i-1] != '\r') {
-					tmp.insert(i, 1, '\r');
-					i++;
-				}
-				i++;
-			}
-
-		//edit text style, disable dwEffects, bold, italic etc. looks really bad with bold font.
-		CHARFORMAT2 cf;
-		cf.cbSize = 9;  //use fixed size for testing.
-		cf.dwEffects = 0;
-		cf.dwMask = CFM_BACKCOLOR | CFM_COLOR;
-		cf.crBackColor = SETTING(BACKGROUND_COLOR);
-		cf.crTextColor = SETTING(TEXT_COLOR);
-		cf.bCharSet = OEM_CHARSET;
-
-		//We need to disable autofont, otherwise it will mess up our new font.
-		LRESULT lres = ::SendMessage(ctrlPad.m_hWnd, EM_GETLANGOPTIONS, 0, 0);
-		lres &= ~IMF_AUTOFONT;
-		::SendMessage(ctrlPad.m_hWnd, EM_SETLANGOPTIONS, 0, lres);
-		
-		ctrlPad.SetFont(WinUtil::OEMFont);
-		//set the colors...
-		ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
-		ctrlPad.SetDefaultCharFormat(cf);
-		
-		//ctrlPad.SetTextEx((LPCTSTR)tmp.c_str(), ST_SELECTION, CP_UTF8);
-		ctrlPad.SetWindowText(Text::toT(tmp).c_str()); 
 		}
 		
 		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());

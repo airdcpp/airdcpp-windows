@@ -669,7 +669,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			ItemInfo* ii = findItem(ui, pos);
 			if(ii) {
 				if (!ii->bundle.empty()) {
-					ItemInfo* parent = ii->parent;
+					ItemInfo* parent = ii->parent ? ii->parent : nullptr;
 					if (ctrlTransfers.removeBundle(ii, true))
 						parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
 				} else {
