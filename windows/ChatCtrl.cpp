@@ -405,6 +405,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 
 			tstring displayText = Text::toT(p->getDisplayText());
 			SetSel(linkStart + lSelBegin, linkEnd + lSelBegin);
+
 			sMsg.replace(linkStart, linkEnd - linkStart, displayText.c_str());
 			setText(displayText);
 			linkEnd = linkStart + displayText.size();
@@ -682,6 +683,7 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 			queueDupe = cl.dupe == ChatLink::DUPE_QUEUE;
 			isMagnet = cl.type == ChatLink::TYPE_MAGNET;
 			release = cl.type == ChatLink::TYPE_RELEASE;
+			SetSel(cr.cpMin, cr.cpMax);
 		} else {
 			selectedWord = WordFromPos(pt);
 			if (selectedWord.length() == 39) {
@@ -1124,16 +1126,11 @@ bool ChatCtrl::getLink(POINT pt, CHARRANGE& cr, ChatLink& link) {
 }
 
 LRESULT ChatCtrl::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	bHandled = onClientEnLink(uMsg, wParam, lParam, bHandled, false);
+	bHandled = onClientEnLink(uMsg, wParam, lParam, bHandled);
 	return bHandled = TRUE ? 0: 1;
 }
 
-LRESULT ChatCtrl::onRightButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	bHandled = onClientEnLink(uMsg, wParam, lParam, bHandled, true);
-	return bHandled = TRUE ? 0: 1;
-}
-
-bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/, bool rightButton) {
+bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
 	ChatLink cl;
@@ -1142,19 +1139,12 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		return 0;
 
 
-	if (!rightButton) {
-		if (cl.type == ChatLink::TYPE_MAGNET)
-			SendMessage(IDC_HANDLE_MAGNET,0, (LPARAM)new tstring(Text::toT(cl.url)));
-		else
-			WinUtil::openLink(Text::toT(cl.url));
+	if (cl.type == ChatLink::TYPE_MAGNET)
+		SendMessage(IDC_HANDLE_MAGNET,0, (LPARAM)new tstring(Text::toT(cl.url)));
+	else
+		WinUtil::openLink(Text::toT(cl.url));
 
-		return 1;
-	} else {
-		SetSel(cr.cpMin, cr.cpMax);
-		InvalidateRect(NULL);
-	}
-
-	return 0;
+	return 1;
 }
 
 LRESULT ChatCtrl::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

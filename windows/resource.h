@@ -1130,7 +1130,6 @@
 #define IDC_GRANTSLOT_WEEK              10083
 #define IDC_UNGRANTSLOT                 10084
 #define IDC_UPLOAD_QUEUE                10085
-#define IDC_NFO			                10086
 #define IDC_PROGRESS_TEXT_COLOR_DOWN    10102
 #define IDC_PROGRESS_TEXT_COLOR_UP      10103
 #define IDC_CZDC_PM_SOUND               10107

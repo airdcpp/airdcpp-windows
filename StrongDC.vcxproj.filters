@@ -510,9 +510,6 @@
     <ClCompile Include="windows\Players.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\NfoViewer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -825,9 +822,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\CSplitterEx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\NfoViewer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
