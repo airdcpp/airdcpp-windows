@@ -112,6 +112,9 @@ LRESULT PriorityPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 			break;
 	}
 
+	fixOrderControls();
+	fixPrioTypeControls();
+
 	CUpDownCtrl spin;
 	spin.Attach(GetDlgItem(IDC_PRIO_SPIN));
 	spin.SetRange32(1, 1000);
@@ -150,7 +153,7 @@ void PriorityPage::write() {
 }
 
 
-LRESULT PriorityPage::onOrderChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+BOOL PriorityPage::fixOrderControls() {
 	if(IsDlgButtonChecked(IDC_ORDER_ADDED)){
 		CheckDlgButton(IDC_ORDER_RANDOM, BST_UNCHECKED);
 	} else if (IsDlgButtonChecked(IDC_ORDER_RANDOM)) {
@@ -160,7 +163,7 @@ LRESULT PriorityPage::onOrderChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 }
 
 
-LRESULT PriorityPage::onPrioTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+BOOL PriorityPage::fixPrioTypeControls() {
 	::EnableWindow(GetDlgItem(IDC_PRIO_BALANCED),			IsDlgButtonChecked(IDC_AUTOPRIO_ENABLED));
 	::EnableWindow(GetDlgItem(IDC_PRIO_PROGRESS),			IsDlgButtonChecked(IDC_AUTOPRIO_ENABLED));
 	::EnableWindow(GetDlgItem(IDC_CALC_PRIO_EVERY),			IsDlgButtonChecked(IDC_AUTOPRIO_ENABLED));

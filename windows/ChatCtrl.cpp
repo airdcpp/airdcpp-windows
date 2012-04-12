@@ -668,22 +668,23 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	selectedIP.clear();
 
 	shareDupe=false, queueDupe=false, isMagnet=false, isTTH=false, release=false;
+	ChatLink cl;
 	CHARRANGE cr;
 	GetSel(cr);
-	if(cr.cpMax != cr.cpMin) {
-		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
-		GetSelText(buf);
-		selectedWord = Util::replace(buf, _T("\r"), _T("\r\n"));
-		delete[] buf;
+
+	if (getLink(pt, cr, cl)) {
+		selectedWord = Text::toT(cl.url);
+		shareDupe = cl.dupe == ChatLink::DUPE_SHARE;
+		queueDupe = cl.dupe == ChatLink::DUPE_QUEUE;
+		isMagnet = cl.type == ChatLink::TYPE_MAGNET;
+		release = cl.type == ChatLink::TYPE_RELEASE;
+		SetSel(cr.cpMin, cr.cpMax);
 	} else {
-		ChatLink cl;
-		if (getLink(pt, cr, cl)) {
-			selectedWord = Text::toT(cl.url);
-			shareDupe = cl.dupe == ChatLink::DUPE_SHARE;
-			queueDupe = cl.dupe == ChatLink::DUPE_QUEUE;
-			isMagnet = cl.type == ChatLink::TYPE_MAGNET;
-			release = cl.type == ChatLink::TYPE_RELEASE;
-			SetSel(cr.cpMin, cr.cpMax);
+		if(cr.cpMax != cr.cpMin) {
+			TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
+			GetSelText(buf);
+			selectedWord = Util::replace(buf, _T("\r"), _T("\r\n"));
+			delete[] buf;
 		} else {
 			selectedWord = WordFromPos(pt);
 			if (selectedWord.length() == 39) {
