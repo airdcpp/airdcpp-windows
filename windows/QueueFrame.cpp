@@ -463,13 +463,13 @@ HTREEITEM QueueFrame::createSplitDir(TVINSERTSTRUCT& tvi, const string& dir, HTR
 	bool setBold = false;
 	//check if we need to modify the bundlemap
 	for (auto i = dii->getBundles().begin(); i != dii->getBundles().end(); ++i) {
-		diiNew->addBundle(*i);
-		if (dir == (*i)->getTarget()) {
-			name = (*i)->getBundleText();
+		diiNew->addBundle((*i).second);
+		if (dir == (*i).first) {
+			name = (*i).second->getBundleText();
 			updateMap = true;
 			setBold=true;
 			break;
-		} else if ((*i)->isFileBundle()) {
+		} else if ((*i).second->isFileBundle()) {
 			name = dii->getBundleName(false);
 			setBold=true;
 			break;
@@ -610,12 +610,21 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 				if(strnicmp(n.c_str()+i, dir.c_str()+i, n.length()-i) == 0) {
 					// Found a part, we assume it's the best one we can find...
 					i = n.length();
-					((DirItemInfo*)ctrlDirs.GetItemData(next))->addBundle(aBundle);
-					if (aBundle->isFileBundle() && (n == Util::getDir(aBundle->getTarget(), false, false))) {
-						tstring text = ((DirItemInfo*)ctrlDirs.GetItemData(next))->getBundleName(false);
+					DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(next);
+					if (dii->getBundles().empty() && !aBundle->isFileBundle() && n == aBundle->getTarget()) {
+						ctrlDirs.SetItemText(next, aBundle->getBundleText().c_str());
+						ctrlDirs.SetItemState(next, TVIS_BOLD, TVIS_BOLD);
+						dcassert(bundleMap.find(aBundle->getTarget()) == bundleMap.end());
+						bundleMap[aBundle->getTarget()] = next;
+					}
+
+					dii->addBundle(aBundle);
+					if (aBundle->isFileBundle() && (n == Util::getFilePath(aBundle->getTarget()))) {
+						tstring text = dii->getBundleName(false);
 						ctrlDirs.SetItemText(next, const_cast<TCHAR*>(text.c_str()));
 						ctrlDirs.SetItemState(next, TVIS_BOLD, TVIS_BOLD);
 					}
+
 					parent = next;
 					next = ctrlDirs.GetChildItem(next);
 					break;
@@ -647,7 +656,7 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 QueueFrame::DirItemInfo::DirItemInfo(const string dir, BundlePtr aBundle) : directory(dir)	{
 	//LogManager::getInstance()->message("Create DII: " + dir);
 	if (aBundle) {
-		bundles.push_back(aBundle);
+		bundles.push_back(make_pair(aBundle->getTarget(), aBundle));
 	}
 }
 
@@ -656,25 +665,25 @@ QueueFrame::DirItemInfo::~DirItemInfo() {
 }
 
 void QueueFrame::DirItemInfo::addBundle(BundlePtr aBundle) {
-	if (find(bundles.begin(), bundles.end(), aBundle) == bundles.end()) {
+	if (find_if(bundles.begin(), bundles.end(), CompareSecond<string, BundlePtr>(aBundle)) == bundles.end()) {
 		//LogManager::getInstance()->message("BUNDLE " + aBundle->getName() + " added for dir " + this->getDir());
-		bundles.push_back(aBundle);
+		bundles.push_back(make_pair(aBundle->getTarget(), aBundle));
 	}
 }
 
-void QueueFrame::DirItemInfo::removeBundle(BundlePtr aBundle) {
-	auto s = find(bundles.begin(), bundles.end(), aBundle);
+void QueueFrame::DirItemInfo::removeBundle(const string& aDir) {
+	auto s = find_if(bundles.begin(), bundles.end(), CompareFirst<string, BundlePtr>(aDir));
 	dcassert(s != bundles.end());
 	if (s != bundles.end()) {
 		bundles.erase(s);
 	}
-	dcassert(find(bundles.begin(), bundles.end(), aBundle) == bundles.end());
+	dcassert(find_if(bundles.begin(), bundles.end(), CompareFirst<string, BundlePtr>(aDir)) == bundles.end());
 }
 
 int QueueFrame::DirItemInfo::countFileBundles() {
 	int ret = 0;
 	for (auto s = bundles.begin(); s != bundles.end(); ++s) {
-		if ((*s)->isFileBundle()) {
+		if ((*s).second->isFileBundle()) {
 			ret++;
 		}
 	}
@@ -740,13 +749,13 @@ void QueueFrame::removeBundleDir(const string& dir, const BundlePtr aBundle) {
 	}
 }
 
-void QueueFrame::removeBundle(const BundlePtr aBundle) {
-	dcassert(aBundle);
-	if (!aBundle->isFileBundle()) {
-		dcassert(bundleMap.find(aBundle->getTarget()) != bundleMap.end());
-		bundleMap.erase(aBundle->getTarget());
+void QueueFrame::removeBundle(const string& aDir, bool isFileBundle) {
+	//dcassert(aBundle);
+	if (!isFileBundle) {
+		dcassert(bundleMap.find(aDir) != bundleMap.end());
+		bundleMap.erase(aDir);
 	}
-	const string& dir = Util::getDir(aBundle->getTarget(), false, false);
+	const string& dir = Util::getDir(aDir, false, false);
 	// First, find the last name available
 	string::size_type i = 0;
 
@@ -761,20 +770,25 @@ void QueueFrame::removeBundle(const BundlePtr aBundle) {
 				string test2 = dir.c_str()+i;
 				if(strnicmp(n.c_str()+i, dir.c_str()+i, n.length()-i) == 0) {
 					// Match!
-					if (aBundle->isFileBundle() && (n == Util::getDir(aBundle->getTarget(), false, false))) {
+					DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(next);
+					if (isFileBundle && (n == Util::getFilePath(aDir))) {
 						tstring text;
-						if (((DirItemInfo*)ctrlDirs.GetItemData(next))->countFileBundles() == 1) {
+						if (dii->countFileBundles() == 1) {
 							//reset the item
 							text = Text::toT(Util::getLastDir(dir));
 							ctrlDirs.SetItemState(next, 0, TVIS_BOLD);
 						} else {
 							//update the number of file bundles
-							text = ((DirItemInfo*)ctrlDirs.GetItemData(next))->getBundleName(true);
+							text = dii->getBundleName(true);
 						}
 						ctrlDirs.SetItemText(next, const_cast<TCHAR*>(text.c_str()));
 					}
-					DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(next);
-					dii->removeBundle(aBundle);
+
+					dii->removeBundle(aDir);
+					if (dii->getBundles().empty() && !isFileBundle) {
+						ctrlDirs.SetItemText(next, Text::toT(Util::getLastDir(dii->getDir())).c_str());
+						ctrlDirs.SetItemState(next, 0, TVIS_BOLD);
+					}
 					next = ctrlDirs.GetChildItem(next);
 					i = n.length();
 					break;
@@ -823,11 +837,17 @@ void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) 
 	onSpeaker(0, 0, 0, *reinterpret_cast<BOOL*>(NULL));
 }
 
+void QueueFrame::on(QueueManagerListener::BundleMerged, const BundlePtr aBundle, const string& oldTarget) noexcept {
+	speak(REMOVE_BUNDLE, new DirItemInfoTask(new DirItemInfo(oldTarget, aBundle)));
+	speak(ADD_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
+	//onSpeaker(0, 0, 0, *reinterpret_cast<BOOL*>(NULL));
+}
+
 void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr aQI) {
 	speak(UPDATE_ITEM, new UpdateTask(*aQI));
 }
 
-void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickBundles) noexcept {
+void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t /*aTick*/) noexcept {
 	for (auto i = tickBundles.begin(); i != tickBundles.end(); ++i) {
 		if ((*i)->isFileBundle()) {
 			return;
@@ -852,7 +872,7 @@ void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr aBundle) 
 }
 
 void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) {
-	for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItemPtr qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
+	//for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItemPtr qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
 	speak(REMOVE_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
 }
 
@@ -924,7 +944,7 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			dirty = true;
 		} else if(ti->first == REMOVE_BUNDLE) {
 			auto &ui = static_cast<DirItemInfoTask&>(*ti->second);
-			removeBundle(ui.ii->getBundles().front());
+			removeBundle(ui.ii->getDir(), ui.ii->getBundles().front().second->isFileBundle());
 			//directories.erase(ui.ii->getDir());
 			updateStatus();
 			/*const string& token = ui.ii->getBundles().front()->getToken();
@@ -941,7 +961,7 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			//dcassert(i != bundleMap.end());
 			if (i != bundleMap.end()) {
 				//((DirItemInfo*)ctrlDirs.GetItemData(i->second))->getBundles();
-				ctrlDirs.SetItemText(i->second, const_cast<TCHAR*>(ui.ii->getBundles().front()->getBundleText().c_str()));
+				ctrlDirs.SetItemText(i->second, const_cast<TCHAR*>(ui.ii->getBundles().front().second->getBundleText().c_str()));
 			}
 			delete ui.ii;
 		} else if(ti->first == UPDATE_ITEM) {
@@ -1179,7 +1199,7 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 		DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
 		//BundleList bundles = dii->getBundles();
 		if (dii->getBundles().size() == 1) {
-			BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front()->getToken());
+			BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front().second->getToken());
 			if (b->getTarget() == curDir) {
 				QueueManager::getInstance()->moveBundle(newDir, b, true);
 			} else {
@@ -1445,12 +1465,12 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		dirMenu.CreatePopupMenu();	
 
 		DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
-		BundleList bundles = dii->getBundles();
+		Bundle::StringBundleList bundles = dii->getBundles();
 		bool mainBundle = false;
 		BundlePtr b = NULL;
 		if (!bundles.empty()) {
 			if (bundles.size() == 1) {
-				b = bundles.front();
+				b = bundles.front().second;
 				mainBundle = !AirUtil::isSub(curDir, b->getTarget());
 				if (mainBundle) {
 					dirMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
@@ -1617,8 +1637,8 @@ LRESULT QueueFrame::onSearchBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 			auto i = bundleMap.find(curDir);
 			if (i != bundleMap.end()) {
 				DirItemInfo* dii = ((DirItemInfo*)ctrlDirs.GetItemData(i->second));
-				dcassert(dii->getBundles().front());
-				BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front()->getToken());
+				dcassert(dii->getBundles().front().second);
+				BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front().second->getToken());
 				if (b) {
 					QueueManager::getInstance()->searchBundle(b, false, true);
 				}
@@ -2123,18 +2143,18 @@ void QueueFrame::moveNode(HTREEITEM item, HTREEITEM parent) {
 
 	/* Bundles */
 	DirItemInfo* dii = ((DirItemInfo*)ctrlDirs.GetItemData(item));
-	BundleList bundles = dii->getBundles();
+	Bundle::StringBundleList bundles = dii->getBundles();
 	dcassert(!bundles.empty());
 	tstring name;
 	bool updateMap = false;
 	bool setBold = false;
 	//check if we need to modify the bundlemap
 	for (auto i = bundles.begin(); i != bundles.end(); ++i) {
-		if ((*i)->getTarget() == dii->getDir()) {
+		if ((*i).second->getTarget() == dii->getDir()) {
 			updateMap = true;
 			setBold=true;
 			break;
-		} else if ((*i)->isFileBundle() && (Util::getDir((*i)->getTarget(), false, false) == dii->getDir())) {
+		} else if ((*i).second->isFileBundle() && (Util::getDir((*i).second->getTarget(), false, false) == dii->getDir())) {
 			setBold=true;
 			break;
 		}

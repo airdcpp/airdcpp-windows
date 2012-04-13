@@ -314,8 +314,6 @@
     <ClInclude Include="client\atomic.h" />
     <ClInclude Include="client\AutoSearchManager.h" />
     <ClInclude Include="client\AutosearchManagerListener.h" />
-    <ClInclude Include="client\BitInputStream.h" />
-    <ClInclude Include="client\BitOutputStream.h" />
     <ClInclude Include="client\BloomFilter.h" />
     <ClInclude Include="client\BufferedSocket.h" />
     <ClInclude Include="client\BufferedSocketListener.h" />

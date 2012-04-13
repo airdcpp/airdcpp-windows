@@ -256,12 +256,6 @@
     <ClInclude Include="client\ADLSearch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="client\BitInputStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\BitOutputStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="client\BloomFilter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
