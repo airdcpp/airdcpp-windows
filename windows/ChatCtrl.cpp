@@ -980,7 +980,6 @@ void ChatCtrl::addAutoSearch(const string& aPath, uint8_t targetType) {
 	AutoSearchPtr as = AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aPath, (TargetUtil::TargetType)targetType);
 	if(as){
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
-		AutoSearchManager::getInstance()->SearchNow(as);
 	}
 }
 

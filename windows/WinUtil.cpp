@@ -1071,6 +1071,8 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if(stricmp(cmd.c_str(), _T("autosearch")) == 0) {
 		AutoSearchManager::getInstance()->checkSearches(true);
+	} else if(stricmp(cmd.c_str(), _T("altsearch")) == 0) {
+		QueueManager::getInstance()->runAltSearch();
 	} else if(stricmp(cmd.c_str(), _T("bloomstats")) == 0) {
 		status = Text::toT(ShareManager::getInstance()->getBloomStats());
 	} else if(stricmp(cmd.c_str(), _T("allow")) == 0) {
