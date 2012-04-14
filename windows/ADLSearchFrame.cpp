@@ -551,9 +551,10 @@ LRESULT ADLSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 	if(item->iItem >= 0)
 	{
 		// Set new active status check box
-		ADLSearchManager::SearchCollection& collection = ADLSearchManager::getInstance()->collection;
+		/*ADLSearchManager::SearchCollection& collection = ADLSearchManager::getInstance()->collection;
 		ADLSearch* search = collection[item->iItem];
-		search->isActive = (ctrlList.GetCheckState(item->iItem) != 0);
+		search->isActive = (ctrlList.GetCheckState(item->iItem) != 0);*/
+		ADLSearchManager::getInstance()->changeState(item->iItem, ctrlList.GetCheckState(item->iItem) != 0);
 	}
 	return 0;
 }

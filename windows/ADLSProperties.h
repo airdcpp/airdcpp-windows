@@ -47,6 +47,9 @@ public:
 		COMMAND_ID_HANDLER(IDC_REGEXP_TEST, OnRegExpTester)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDC_REGEXP, FixControls)
+		//COMMAND_ID_HANDLER(IDC_SOURCE_TYPE, FixControls)
+		COMMAND_HANDLER(IDC_SOURCE_TYPE, CBN_SELENDOK, FixControls)
 	END_MSG_MAP()
 	
 	// Message handlers
@@ -54,6 +57,7 @@ public:
 	LRESULT OnRegExpTester(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+	LRESULT FixControls(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) { fixControls(); return 0; }
 private:
 
 	// Current search
@@ -67,9 +71,11 @@ private:
 	CButton ctrlActive;
 	CButton ctrlAutoQueue;
 	CButton ctrlRegexp;
+	CButton ctrlCaseSensitive;
 	CComboBox ctrlSearchType;
 	CComboBox ctrlSizeType;
 	string matchRegExp(const string& aExp, const string& aString, const bool& caseSensitive = true);
+	void fixControls();
 };
 
 #endif // !defined(ADLS_PROPERTIES_H)

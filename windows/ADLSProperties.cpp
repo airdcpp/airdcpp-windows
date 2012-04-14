@@ -57,6 +57,7 @@ LRESULT ADLSProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	ctrlActive.Attach(GetDlgItem(IDC_IS_ACTIVE));
 	ctrlAutoQueue.Attach(GetDlgItem(IDC_AUTOQUEUE));
 	ctrlRegexp.Attach(GetDlgItem(IDC_REGEXP));
+	ctrlCaseSensitive.Attach(GetDlgItem(IDC_IS_CASE_SENSITIVE));
 
 	ctrlSearchType.Attach(GetDlgItem(IDC_SOURCE_TYPE));
 	ctrlSearchType.AddString(CTSTRING(FILENAME));
@@ -85,6 +86,8 @@ LRESULT ADLSProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	::SendMessage(GetDlgItem(IDC_REGEXP), BM_SETCHECK, search->isRegexp ? 1 : 0, 0L);
 	::SendMessage(GetDlgItem(IDC_IS_CASE_SENSITIVE), BM_SETCHECK, search->isCaseSensitive ? 1 : 0, 0L);
 
+	fixControls();
+
 	// Center dialog
 	CenterWindow(GetParent());
 
@@ -103,21 +106,16 @@ string ADLSProperties::matchRegExp(const string& aExp, const string& aString, co
 	string str1 = aExp;
 	string str2 = aString;
 	try {
-		boost::regex reg(str1, caseSensitive ? boost::regex_constants::icase : boost::match_default);
-		if(boost::regex_search(str2.begin(), str2.end(), reg)){
+		PME reg(aExp, caseSensitive ? "" : "i");
+		if(reg.match(aString)){
 			return STRING(REGEXP_MATCH);
-		}else{
+		} else{
 			return STRING(REGEXP_MISMATCH);
 		};
 	} catch(...) {
 		return STRING(INVALID_REGEXP);
 	}
-	/*
-	PME reg(aExp, caseSensitive ? "" : "i");
-	if(!reg.IsValid()) { return STRING(INVALID_REGEXP); }
-	return reg.match(aString) ? STRING(REGEXP_MATCH) : STRING(REGEXP_MISMATCH);
-	*/
-	}
+}
 
 // Exit dialog
 LRESULT ADLSProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -153,6 +151,24 @@ LRESULT ADLSProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 
 	EndDialog(wID);
 	return 0;
+}
+
+void ADLSProperties::fixControls() {
+	if(ctrlSearchType.GetCurSel() == ADLSearch::TTHash) {
+		::EnableWindow(GetDlgItem(IDC_REGEXP),				FALSE);
+		ctrlRegexp.SetCheck(0);
+	} else {
+		::EnableWindow(GetDlgItem(IDC_REGEXP),				TRUE);
+	}
+
+	BOOL isRegExp = (ctrlRegexp.GetCheck() == 1);
+	::EnableWindow(GetDlgItem(IDC_REGEXP_TEST),				isRegExp);
+	::EnableWindow(GetDlgItem(IDC_TEST_STRING),				isRegExp);
+	::EnableWindow(GetDlgItem(IDC_IS_CASE_SENSITIVE),		isRegExp);
+
+	if (!isRegExp) {
+		ctrlCaseSensitive.SetCheck(false);
+	}
 }
 
 /**
