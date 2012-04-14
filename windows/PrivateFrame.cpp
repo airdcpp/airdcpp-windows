@@ -693,8 +693,6 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 void PrivateFrame::updateTitle() {
 	pair<tstring, bool> hubs = WinUtil::getHubNames(replyTo.user->getCID(), replyTo.hint, priv);
 	if(hubs.second) {	
-//		unsetIconState();
-//		setTabColor(RGB(0, 255,	255));
 		setDisconnected(false);
 		hubName = hubs.first;
 		if(isoffline) {
@@ -707,8 +705,6 @@ void PrivateFrame::updateTitle() {
 		}
 		isoffline = false;
 	} else {
-	//	setIconState();
-	//	setTabColor(RGB(255, 0, 0));
 		setDisconnected(true);
 		tstring status = _T(" *** ") + TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubName + _T("] ");
 		if(BOOLSETTING(STATUS_IN_CHAT)) {
