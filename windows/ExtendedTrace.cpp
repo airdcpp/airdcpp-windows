@@ -178,7 +178,11 @@ BOOL InitSymInfo( PCSTR lpszInitialSymbolPath )
 }
 
 // Get the module name from a given address
+#ifndef _WIN64
+static BOOL GetModuleNameFromAddress( DWORD address, LPTSTR lpszModule )
+#else
 static BOOL GetModuleNameFromAddress( DWORD64 address, LPTSTR lpszModule )
+#endif
 {
 	BOOL              ret = FALSE;
 	IMAGEHLP_MODULE   moduleInfo;
@@ -186,7 +190,7 @@ static BOOL GetModuleNameFromAddress( DWORD64 address, LPTSTR lpszModule )
 	::ZeroMemory( &moduleInfo, sizeof(moduleInfo) );
 	moduleInfo.SizeOfStruct = sizeof(moduleInfo);
 
-	if ( SymGetModuleInfo( GetCurrentProcess(), (DWORD)address, &moduleInfo ) )
+	if ( SymGetModuleInfo( GetCurrentProcess(), address, &moduleInfo ) )
 	{
 	   // Got it!
 		PCSTR2LPTSTR( moduleInfo.ModuleName, lpszModule );
@@ -206,19 +210,21 @@ static BOOL GetModuleNameFromAddress( DWORD64 address, LPTSTR lpszModule )
 static BOOL GetFunctionInfoFromAddresses( DWORD64 fnAddress, DWORD64 stackAddress, LPTSTR lpszSymbol )
 {
 	BOOL              ret = FALSE;
-	DWORD64             dwDisp = 0;
-	DWORD             dwSymSize = 1024*16;
-   TCHAR             lpszUnDSymbol[BUFFERSIZE]=_T("?");
+	DWORD64           dwDisp = 0;
+    TCHAR             lpszUnDSymbol[BUFFERSIZE]=_T("?");
 	CHAR              lpszNonUnicodeUnDSymbol[BUFFERSIZE]="?";
 	LPTSTR            lpszParamSep = NULL;
 	LPCTSTR           lpszParsed = lpszUnDSymbol;
-	PSYMBOL_INFO  pSym = (PSYMBOL_INFO)GlobalAlloc( GMEM_FIXED, dwSymSize );
+	BYTE              symBuf[sizeof(SYMBOL_INFO) + BUFFERSIZE];
+	PSYMBOL_INFO      pSym;
 
-	::ZeroMemory( pSym, dwSymSize );
-	pSym->SizeOfStruct = dwSymSize;
-	pSym->MaxNameLen = dwSymSize - sizeof(IMAGEHLP_SYMBOL);
+	::ZeroMemory( symBuf, sizeof(SYMBOL_INFO) + BUFFERSIZE );
+	pSym = (PSYMBOL_INFO)symBuf;
 
-   // Set the default to unknown
+	pSym->SizeOfStruct = sizeof(SYMBOL_INFO);
+	pSym->MaxNameLen = BUFFERSIZE;
+
+     // Set the default to unknown
 	_tcscpy( lpszSymbol, _T("?") );
 
 	// Get symbol info for IP
@@ -287,8 +293,7 @@ static BOOL GetFunctionInfoFromAddresses( DWORD64 fnAddress, DWORD64 stackAddres
 		_tcscat( lpszSymbol, lpszParsed );
    
 		ret = TRUE;
-	} 
-	GlobalFree( pSym );
+	}
 
 	return ret;
 }
@@ -341,17 +346,14 @@ static BOOL GetSourceInfoFromAddress( DWORD64 address, LPTSTR lpszSourceInfo )
 	return ret;
 }
 
-#ifndef _M_AMD64
-void StackTrace( HANDLE hThread, LPCTSTR lpszMessage, File& f, DWORD eip, DWORD esp, DWORD ebp )
-#else
-void StackTrace( HANDLE hThread, LPCTSTR lpszMessage, File& f, DWORD64 eip, DWORD64 esp, DWORD64 ebp )
-#endif
+void StackTrace( HANDLE hThread, File& f, const PCONTEXT pCtx)
 {
 	STACKFRAME     callStack;
 	BOOL           bResult;
 	TCHAR          symInfo[BUFFERSIZE] = _T("?");
 	TCHAR          srcInfo[BUFFERSIZE] = _T("?");
 	HANDLE         hProcess = GetCurrentProcess();
+	CONTEXT        ctx = *pCtx;
 
 	// If it's not this thread, let's suspend it, and resume it at the end
 	if ( hThread != GetCurrentThread() )
@@ -363,14 +365,18 @@ void StackTrace( HANDLE hThread, LPCTSTR lpszMessage, File& f, DWORD64 eip, DWOR
 		}
 
 		::ZeroMemory( &callStack, sizeof(callStack) );
-		callStack.AddrPC.Offset    = eip;
-		callStack.AddrStack.Offset = esp;
-		callStack.AddrFrame.Offset = ebp;
+#ifndef _WIN64
+		callStack.AddrPC.Offset    = ctx.Eip;
+		callStack.AddrStack.Offset = ctx.Esp;
+		callStack.AddrFrame.Offset = ctx.Ebp;
+#else
+		callStack.AddrPC.Offset    = ctx.Rip;
+		callStack.AddrStack.Offset = ctx.Rsp;
+		callStack.AddrFrame.Offset = ctx.Rbp;
+#endif
 		callStack.AddrPC.Mode      = AddrModeFlat;
 		callStack.AddrStack.Mode   = AddrModeFlat;
 		callStack.AddrFrame.Mode   = AddrModeFlat;
-
-		f.write(Text::fromT(lpszMessage));
 
 		GetFunctionInfoFromAddresses( callStack.AddrPC.Offset, callStack.AddrFrame.Offset, symInfo );
 		GetSourceInfoFromAddress( callStack.AddrPC.Offset, srcInfo );
@@ -392,7 +398,7 @@ void StackTrace( HANDLE hThread, LPCTSTR lpszMessage, File& f, DWORD64 eip, DWOR
 				hProcess,
 				hThread,
 				&callStack,
-				NULL, 
+				&ctx, 
 				NULL,
 				SymFunctionTableAccess,
 				SymGetModuleBase,

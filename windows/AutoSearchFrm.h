@@ -52,6 +52,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_MOVE_DOWN, onMoveDown)
 		COMMAND_ID_HANDLER(IDC_ENABLE, onEnable)
 		COMMAND_ID_HANDLER(IDC_DISABLE, onDisable)
+		COMMAND_ID_HANDLER(IDC_SEARCH, onSearchAs)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_ITEMCHANGED, onItemChanged)
 		COMMAND_HANDLER(IDC_AUTOSEARCH_ENABLE_TIME, EN_CHANGE, onAsTime)
 		COMMAND_HANDLER(IDC_AUTOSEARCH_RECHECK_TIME, EN_CHANGE, onAsRTime)
@@ -67,6 +68,7 @@ public:
 	LRESULT onMoveDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 	LRESULT onEnable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		//just set the checkstate, onitemchanged will handle it from there
@@ -111,8 +113,8 @@ public:
 		tstring val(ctrlAsRTime.GetWindowTextLength() +2, _T('\0'));
 		ctrlAsRTime.GetWindowText(&val[0],val.size());
 		int value = Util::toInt(Text::fromT(val));
-		if(value < 15) {
-			value = 15;
+		if(value < 30) {
+			value = 30;
 			ctrlAsRTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
 		}
 		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_RECHECK_TIME, value);

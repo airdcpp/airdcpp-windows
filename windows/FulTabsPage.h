@@ -34,7 +34,7 @@ public:
 		SetTitle(  title );
 		m_psp.dwFlags |= PSP_HASHELP | PSP_RTLREADING;
 	};
-	~FulTabsPage() { };
+	~FulTabsPage() { free(title); };
 
 	BEGIN_MSG_MAP(FulTabsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)

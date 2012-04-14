@@ -977,8 +977,11 @@ LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 }
 
 void ChatCtrl::addAutoSearch(const string& aPath, uint8_t targetType) {
-	if(AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aPath, (TargetUtil::TargetType)targetType))
+	AutoSearchPtr as = AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aPath, (TargetUtil::TargetType)targetType);
+	if(as){
 		LogManager::getInstance()->message(CSTRING(SEARCH_ADDED) + Text::fromT(selectedWord));
+		AutoSearchManager::getInstance()->SearchNow(as);
+	}
 }
 
 void ChatCtrl::downloadMagnet(const string& aPath) {

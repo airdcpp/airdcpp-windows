@@ -24,25 +24,24 @@
 #pragma comment( lib, "dbghelp.lib" )
 
 #define EXTENDEDTRACEINITIALIZE( IniSymbolPath )	InitSymInfo( IniSymbolPath )
-#define EXTENDEDTRACEUNINITIALIZE()			         UninitSymInfo()
-#define STACKTRACE2(file, eip, esp, ebp) StackTrace(GetCurrentThread(), _T(""), file, eip, esp, ebp)
+#define EXTENDEDTRACEUNINITIALIZE()			        UninitSymInfo()
+#define STACKTRACE(file, ctx)                       StackTrace(GetCurrentThread(), file, ctx)
 
 BOOL InitSymInfo( PCSTR );
 BOOL UninitSymInfo();
-void StackTrace( HANDLE, LPCTSTR, File& file);
 
 #ifndef _WIN64
-void StackTrace( HANDLE hThread, LPCTSTR lpszMessage, File& f, DWORD eip, DWORD esp, DWORD ebp );
+void StackTrace( HANDLE hThread, File& f, const PCONTEXT pCtx);
 #else
-void StackTrace( HANDLE hThread, LPCTSTR lpszMessage, File& f, DWORD64 eip, DWORD64 esp, DWORD64 ebp );
+void StackTrace( HANDLE hThread, File& f, const PCONTEXT pCtx);
 #endif
 
 #else
 
 #define EXTENDEDTRACEINITIALIZE( IniSymbolPath )   ((void)0)
 #define EXTENDEDTRACEUNINITIALIZE()			         ((void)0)
-#define STACKTRACE(file)						         	   ((void)0)
-#define STACKTRACE2(file, eip, esp, ebp) ((void)0)
+#define STACKTRACE(file, ctx)                        ((void)0)
+
 #endif
 
 #endif

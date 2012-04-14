@@ -66,7 +66,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlAsRTime.SetFont(WinUtil::systemFont);
 
 	RTimespin.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	RTimespin.SetRange(15, 999);
+	RTimespin.SetRange(30, 999);
 	ctrlAsRTimeLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | SS_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	ctrlAsRTimeLabel.SetFont(WinUtil::systemFont, FALSE);
 	ctrlAsRTimeLabel.SetWindowText(CTSTRING(AUTOSEARCH_RECHECK_TEXT));
@@ -218,16 +218,16 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 			asMenu.AppendMenu(MF_SEPARATOR);
 			//only remove and add is enabled
 		} else if(ctrlAutoSearch.GetSelectedCount() == 1) {
-			if(ctrlAutoSearch.GetCheckState(ctrlAutoSearch.GetSelectedIndex()) == 1)
-				asMenu.AppendMenu(MF_STRING, IDC_DISABLE, CTSTRING(DISABLE_AUTOSEARCH));
-			else
-				asMenu.AppendMenu(MF_STRING, IDC_ENABLE, CTSTRING(ENABLE_AUTOSEARCH));
-
+			if(ctrlAutoSearch.GetCheckState(ctrlAutoSearch.GetSelectedIndex()) == 1) {
+				asMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 				asMenu.AppendMenu(MF_SEPARATOR);
-				//all menu items enabled
+				asMenu.AppendMenu(MF_STRING, IDC_DISABLE, CTSTRING(DISABLE_AUTOSEARCH));
+			} else {
+				asMenu.AppendMenu(MF_STRING, IDC_ENABLE, CTSTRING(ENABLE_AUTOSEARCH));
+			}
+			asMenu.AppendMenu(MF_SEPARATOR);
 		}
 		
-
 		asMenu.AppendMenu(MF_STRING, IDC_ADD, CTSTRING(ADD));
 		asMenu.AppendMenu(MF_STRING, IDC_CHANGE, CTSTRING(SETTINGS_CHANGE));
 		asMenu.AppendMenu(MF_STRING, IDC_MOVE_UP, CTSTRING(SETTINGS_BTN_MOVEUP));
@@ -286,9 +286,9 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 				as->endTime = dlg.endTime;
 				as->searchDays = dlg.searchDays;
 				AutoSearchManager::getInstance()->addAutoSearch(as);
-			} else {
+			} else if(search.size() < 5) { // dont report if empty line between/end when adding multiple
 				//MessageBox(_T("Not adding the auto search: ") + Text::toT(str).c_str());
-				MessageBox(CTSTRING(LINE_EMPTY));
+				MessageBox(CTSTRING(LINE_EMPTY_OR_TOO_SHORT));
 			}
 		}
 	}
@@ -400,6 +400,15 @@ LRESULT AutoSearchFrame::onMoveDown(WORD , WORD , HWND , BOOL& ) {
 		ctrlAutoSearch.SetItemState(i+1, LVIS_SELECTED, LVIS_SELECTED);
 		ctrlAutoSearch.EnsureVisible(i+1, FALSE);
 
+	}
+	return 0;
+}
+LRESULT AutoSearchFrame::onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(ctrlAutoSearch.GetSelectedCount() == 1) {
+		int sel = ctrlAutoSearch.GetSelectedIndex();
+		AutoSearchPtr as = AutoSearchManager::getInstance()->getAutoSearch(sel);
+
+		AutoSearchManager::getInstance()->SearchNow(as);
 	}
 	return 0;
 }

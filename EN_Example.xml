@@ -1532,5 +1532,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="TypeTargetShare">Shared directory (the real path will be picked when matches are found)</String>
 		<String Name="LocationType">Location type</String>
 		<String Name="ForceHashNotification">Refresh the directory after fixing the problem(s) to rescan the bundle (or type \"/allow %s\" to force it to be hashed in share if the problem(s) can't be fixed)</String>
+		<String Name="LineEmptyOrTooShort">Search String empty or too Short! (min. 5 chars allowed)</String>
 	</Strings>
 </Language>
