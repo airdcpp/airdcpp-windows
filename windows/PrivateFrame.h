@@ -220,7 +220,7 @@ private:
 
 
 	HintedUser replyTo;
-	const bool priv;
+	bool priv;
 	
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
@@ -231,7 +231,7 @@ private:
 	ParamMap ucLineParams;
 
 	void updateTitle();
-	
+	void updateFrameOnlineStatus(const HintedUser& newUser, Client* c);
 	TStringList prevCommands;
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;

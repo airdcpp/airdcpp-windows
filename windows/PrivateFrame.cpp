@@ -153,6 +153,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 					::PlaySound(Text::toT(SETTING(BEEPFILE)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
 				}
 			}
+			i->second->updateFrameOnlineStatus(HintedUser(user, c->getHubUrl()), c);
 		}
 		i->second->addLine(from, aMessage);
 	}
@@ -168,12 +169,27 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 		p->CreateEx(WinUtil::mdiClient);
 	} else {
 		p = i->second;
+		p->updateFrameOnlineStatus(replyTo, c); 
 		if(::IsIconic(p->m_hWnd))
 			::ShowWindow(p->m_hWnd, SW_RESTORE);
 		p->MDIActivate(p->m_hWnd);
 	}
 	if(!msg.empty())
 		p->sendMessage(msg);
+}
+/*
+ update the re used frame to the correct hub, 
+ so it doesnt appear offline while user is sending us messages with another hub :P
+ should we change to same hub with the user even if its not offline?
+*/
+void PrivateFrame::updateFrameOnlineStatus(const HintedUser& newUser, Client* c) {
+
+	if(priv && isoffline && !replyTo.user->isNMDC() && replyTo.hint != newUser.hint) {
+		replyTo.hint = newUser.hint;
+		priv = c->getPrivGroup();
+		ctrlClient.setClient(c);
+		updateTitle();
+	}
 }
 
 LRESULT PrivateFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
