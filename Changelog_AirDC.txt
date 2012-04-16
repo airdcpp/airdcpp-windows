@@ -556,6 +556,8 @@ Added:
 - Customizable site search menu items
 - Group same directories in search results ( ADC only )
 - Support Time params in download paths
+- Listing of ADC searches in Search Spy
+- UDP command detection in the CDM Debug frame
 
 Changed:
 
@@ -582,4 +584,4 @@ Fixed:
 - Fix a problem on redirected HTTP addresses
 - Fix scrolling problem with long message as 1 word
 - Fix a popup crash on download failed
-
+- Fixes memory leaks

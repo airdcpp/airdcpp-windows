@@ -228,6 +228,27 @@ void SpyFrame::on(ClientManagerListener::IncomingSearch, const string& s) noexce
 	PostMessage(WM_SPEAKER, SEARCH, (LPARAM)x);
 }
 
+void SpyFrame::on(ClientManagerListener::IncomingADCSearch, const AdcCommand& adc) noexcept {
+	string searchString;
+	if (adc.getParam("TR", 0, searchString)) {
+		if (ignoreTth)
+			return;
+
+		//make it consistent with the nmdc format...
+		searchString = "TTH:" + searchString;
+	} else {
+		StringList tmp;
+		if (adc.getParam("AN", 0, tmp)) {
+			searchString = Util::toString(" ", tmp);
+		} else {
+			return;
+		}
+	}
+
+	tstring* x = new tstring(Text::toT(searchString));
+	PostMessage(WM_SPEAKER, SEARCH, (LPARAM)x);
+}
+
 void SpyFrame::on(TimerManagerListener::Second, uint64_t) noexcept {
 	float* f = new float(0.0);
 	for(int i = 0; i < AVG_TIME; ++i) {

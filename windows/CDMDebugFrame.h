@@ -6,12 +6,13 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#define COMMAND_MESSAGE_MAP 14
-#define DETECTION_MESSAGE_MAP 15
-#define HUB_COMMAND_MESSAGE_MAP 16
-#define DEBUG_FILTER_MESSAGE_MAP 17
-#define DEBUG_FILTER_TEXT_MESSAGE_MAP 18
-#define CLEAR_MESSAGE_MAP 19
+#define TCP_COMMAND_MESSAGE_MAP 14
+#define UDP_COMMAND_MESSAGE_MAP 15
+#define DETECTION_MESSAGE_MAP 16
+#define HUB_COMMAND_MESSAGE_MAP 17
+#define DEBUG_FILTER_MESSAGE_MAP 18
+#define DEBUG_FILTER_TEXT_MESSAGE_MAP 19
+#define CLEAR_MESSAGE_MAP 20
 
 #include "FlatTabCtrl.h"
 #include "WinUtil.h"
@@ -41,8 +42,10 @@ public:
 		CHAIN_MSG_MAP(baseClass)
 	ALT_MSG_MAP(DETECTION_MESSAGE_MAP)
 		MESSAGE_HANDLER(BM_SETCHECK, onSetCheckDetection)
-	ALT_MSG_MAP(COMMAND_MESSAGE_MAP)
-		MESSAGE_HANDLER(BM_SETCHECK, onSetCheckCommand)
+	ALT_MSG_MAP(TCP_COMMAND_MESSAGE_MAP)
+		MESSAGE_HANDLER(BM_SETCHECK, onSetTCPCheckCommand)
+	ALT_MSG_MAP(UDP_COMMAND_MESSAGE_MAP)
+		MESSAGE_HANDLER(BM_SETCHECK, onSetUDPCheckCommand)
 	ALT_MSG_MAP(HUB_COMMAND_MESSAGE_MAP)
 		MESSAGE_HANDLER(BM_SETCHECK, onSetCheckHubCommand)
 	ALT_MSG_MAP(DEBUG_FILTER_MESSAGE_MAP)
@@ -60,7 +63,8 @@ public:
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onSetCheckDetection(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onSetCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onSetTCPCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onSetUDPCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSetCheckHubCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSetCheckFilter(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -79,15 +83,15 @@ private:
 
 	CEdit ctrlPad, ctrlFilterText;
 	CStatusBarCtrl ctrlStatus;
-	CButton ctrlClear, ctrlCommands, ctrlHubCommands, ctrlDetection, ctrlFilterIp;
-	CContainedWindow clearContainer, statusContainer, detectionContainer, commandContainer, HubCommandContainer, cFilterContainer, eFilterContainer;
+	CButton ctrlClear, ctrlTCPCommands, ctrlUDPCommands, ctrlHubCommands, ctrlDetection, ctrlFilterIp;
+	CContainedWindow clearContainer, statusContainer, detectionContainer, commandTCPContainer, commandUDPContainer, HubCommandContainer, cFilterContainer, eFilterContainer;
 
-	bool showCommands, showHubCommands, showDetection, bFilterIp;
+	bool showTCPCommands, showUDPCommands, showHubCommands, showDetection, bFilterIp;
 	tstring sFilterIp;
 	bool closed;
 	
 	void on(DebugManagerListener::DebugDetection, const string& aLine) noexcept;
-	void on(DebugManagerListener::DebugCommand, const string& aLine, int typeDir, const string& ip, bool isUDP) noexcept;
+	void on(DebugManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& ip) noexcept;
 };
 
 #endif // __CDMDEBUGFRAME_H

@@ -331,7 +331,7 @@ string Players::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 				guistate.open(Text::utf8ToAcp(*s));
 				while (getline(guistate, line)) {
 					boost::smatch result;
-					string::const_iterator  begin = line.begin(), end = line.end();
+					string::const_iterator begin=line.begin(), end=line.end();
 					//find each song
 					while (regex_search(begin, end, result, ritem)) {
 						std::string item( result[0].first, result[0].second );

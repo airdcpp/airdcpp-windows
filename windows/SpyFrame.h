@@ -108,6 +108,7 @@ private:
 	
   	// ClientManagerListener
 	void on(ClientManagerListener::IncomingSearch, const string& s) noexcept;
+	void on(ClientManagerListener::IncomingADCSearch, const AdcCommand& s) noexcept;
 	
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t) noexcept;
