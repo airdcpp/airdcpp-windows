@@ -29,7 +29,7 @@
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
 SearchPageDlg::SearchPageDlg() : fileType(0), action(0), matcherType(0), searchInterval(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
-	endTime(23, 59), searchDays("1111111"), loading(true)
+	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true)
 	/*ctrlTarget(WC_EDIT, this, FILTER_MESSAGE_MAP)*/ {
 }
 
@@ -91,6 +91,8 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_SUN), CTSTRING(SUNDAY));
 	::SetWindowText(GetDlgItem(IDC_START_TIME), CTSTRING(START_TIME));
 	::SetWindowText(GetDlgItem(IDC_END_TIME), CTSTRING(END_TIME));
+	::SetWindowText(GetDlgItem(IDC_CHECK_QUEUED), CTSTRING(AUTOSEARCH_CHECK_QUEUED));
+	::SetWindowText(GetDlgItem(IDC_CHECK_SHARED), CTSTRING(AUTOSEARCH_CHECK_SHARED));
 
 	int q = 0;
 	for(size_t i = 0; i < 9; i++) {
@@ -128,6 +130,10 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	cMatcherType.SetCurSel(matcherType);
 
 	CheckDlgButton(IDC_REMOVE_ON_HIT, remove);
+	CheckDlgButton(IDC_CHECK_QUEUED, checkQueued);
+	CheckDlgButton(IDC_CHECK_SHARED, checkShared);
+	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), fileType == SearchManager::TYPE_DIRECTORY);
+	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), fileType == SearchManager::TYPE_DIRECTORY);
 
 	if (!(matcherString == searchString && matcherType == 0)) {
 		ctrlMatcherString.SetWindowText(Text::toT(matcherString).c_str());
@@ -269,6 +275,8 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		fileType = ctrlFileType.GetCurSel();
 		action = cAction.GetCurSel();
 		remove = IsDlgButtonChecked(IDC_REMOVE_ON_HIT) ? true : false;
+		checkQueued = IsDlgButtonChecked(IDC_CHECK_QUEUED) ? true : false;
+		checkShared = IsDlgButtonChecked(IDC_CHECK_SHARED) ? true : false;
 
 		if (targetType == 0) {
 			GetDlgItemText(IDC_TARGET_PATH, bufPath, MAX_PATH);
@@ -369,6 +377,9 @@ void SearchPageDlg::fixControls() {
 	} else {
 		::EnableWindow(GetDlgItem(IDC_USE_MATCHER),	true);
 	}
+
+	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), ctrlFileType.GetCurSel() == SearchManager::TYPE_DIRECTORY);
+	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), ctrlFileType.GetCurSel() == SearchManager::TYPE_DIRECTORY);
 
 	/* Action */
 	BOOL isReportOnly = cAction.GetCurSel() == AutoSearch::ACTION_REPORT;

@@ -42,6 +42,8 @@ public:
 
 	bool display;
 	bool remove;
+	bool checkQueued;
+	bool checkShared;
 
 	enum { IDD = IDD_AUTOSEARCH_DLG };
 
