@@ -1,10 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Dutch_for_AirDC" Author="Kaas" Version="2.20" Revision="1">
+<Language Name="Dutch_for_AirDC" Author="Kaas" Version="2.22" Revision="4">
 	<Strings>
 		<String Name="AairdcppLanguageFile">Dutch_for_AirDC.xml</String>
-		<String Name="AairdcppLanguageVersion">2.201</String>
-		<String Name="AcceptedDisconnects">Geaccepteerde verbroken verbindingen</String>
-		<String Name="AcceptedTimeouts">Geaccepteerde timeouts</String>
+		<String Name="AairdcppLanguageVersion">2.224</String>
 		<String Name="Active">Actief</String>
 		<String Name="ActiveSearchString">Actieve zoekterm</String>
 		<String Name="Add">&amp;Voeg toe</String>
@@ -38,6 +36,7 @@
 -- omdat u geen zoekresultaten van passieve gebruikers krijgt !!! --
 -- Zet de optie uit bij de instellingen =&gt; AirDC++ =&gt; Gebruik altijd Passieve Mode voor zoekopdracht --
 </String>
+		<String Name="AllowNatTraversal">Sta NAT traversal toe voor communicatie met passive gebruikers</String>
 		<String Name="Any">Elke</String>
 		<String Name="AtLeast">Minimaal</String>
 		<String Name="AtMost">Maximaal</String>
@@ -64,7 +63,7 @@
 		<String Name="CertificateGenerated">Nieuw TLS certificaat gegenereerd</String>
 		<String Name="CertificateNotTrusted">Certificaat niet vertrouwd, kan niet verbinden</String>
 		<String Name="CertificateGenerationFailed">TLS onbeschikbaar, certificaat maken mislukt: </String>
-		<String Name="CheatingDescription">Bedriegers beschrijving</String>
+
 		<String Name="Cid">CID</String>
 		<String Name="Cipher">Versleuteling</String>
 		<String Name="Clear">Chatvenster wissen</String>
@@ -72,10 +71,8 @@
 		<String Name="Close">Sluiten</String>
 		<String Name="CloseConnection">Verbinding verbreken</String>
 		<String Name="CollapseAll">Alles opvouwen</String>
-		<String Name="ColorFast">Snelle gebruiker</String>
 		<String Name="ColorOp">Hub operator</String>
 		<String Name="ColorPasive">Pasieve gebruiker</String>
-		<String Name="ColorServer">Gebruiker met server</String>
 		<String Name="CommandTooLong">Commando te lang</String>
 		<String Name="Comment">Commentaar</String>
 		<String Name="Compressed">Gecomprimeerd</String>
@@ -92,6 +89,7 @@
 		<String Name="ConnectingToServer">Verbinden met server</String>
 		<String Name="Connection">Verbinding</String>
 		<String Name="ConnectionClosed">Verbinding verbroken</String>
+		<String Name="ConnectionDetection">Gebruik automatische binnenkomende verbindings detectie</String>
 		<String Name="ConnectionError">Verbindingsfout</String>
 		<String Name="ConnectionTimeout">Verbindings timeout</String>
 		<String Name="ContinueSearch">Hervat zoeken</String>
@@ -128,7 +126,8 @@
 		<String Name="DisconnectAll">Verbinding met alle gebruikers verbreken</String>
 		<String Name="DisconnectUser">Verbreek verbinding met gebruiker(s)</String>
 		<String Name="Disconnected">Verbinding verbroken</String>
-		<String Name="DisconnectedUser">Downloadende gebruiker verlaat een hub: </String>
+		<String Name="DisconnectedUser">Downloadende gebruiker verlaat de hub: </String>
+
 		<String Name="Document">Document</String>
 		<String Name="Done">Gereed</String>
 		<String Name="DontAddSegmentText">Geen extra deel downloaden bij snelheid hoger dan</String>
@@ -155,7 +154,7 @@
 		<String Name="Eb">EiB</String>
 		<String Name="EditAccel">&amp;Bewerken</String>
 		<String Name="Email">E-mail</String>
-		<String Name="EnableMultiSource">Segment downloads activeren</String>
+		<String Name="EnableMultiSource">Segment downloads activeren (in veel hubs verboden)</String>
 		<String Name="EnterNick">Vul bij instellingen een gebruikersnaam in!</String>
 		<String Name="EnterPassword">Wachtwoord opgeven</String>
 		<String Name="EnterSearchString">Zoektekst invullen</String>
@@ -171,7 +170,7 @@
 		<String Name="Executable">Uitvoerbaar bestand</String>
 		<String Name="ExpandAll">Alles openvouwen</String>
 		<String Name="ExpandedResults">Zoekresultaten openvouwen</String>
-		<String Name="ExtraHubSlots">Slot verhouding</String>
+		<String Name="ExtraHubSlots">Slot ratio</String>
 		<String Name="ExtraSlotsSet">Extra sloten vaststellen</String>
 		<String Name="FailedToShutdown">Uitschakelen mislukt!</String>
 		<String Name="FailedToLoadCertificate">Laden certificaat mislukt!</String>
@@ -186,7 +185,6 @@
 		<String Name="FavoriteHubDoesNotExist">Deze hub is geen favoriet</String>
 		<String Name="FavoriteHubIdentity">Identificatie (leeglaten voor standaardwaarden)</String>
 		<String Name="FavoriteHubProperties">Eigenschappen favoriete hub</String>
-		<String Name="FavoriteHubRaw">Rauwe opdrachten</String>
 		<String Name="FavoriteHubConnection">Connectie</String>
 		<String Name="FavoriteHubRemoved">Favoriete hub verwijderd</String>
 		<String Name="FavoriteHubs">Favoriete hubs</String>
@@ -209,6 +207,7 @@
 		<String Name="Files">Bestanden</String>
 		<String Name="FilesLeft">Bestanden te doen</String>
 		<String Name="FilesPerHour">Bestanden/h</String>
+
 		<String Name="Filter">F&amp;ilter</String>
 		<String Name="Filtered">Gefilterd</String>
 		<String Name="Find">Zoek</String>
@@ -223,7 +222,6 @@
 		<String Name="Gib">GiB</String>
 		<String Name="GenerateCertificates">Genereer certificaten</String>
 		<String Name="GetFileList">Bestandslijst bekijken</String>
-		<String Name="GetUserResponses">Krijg reactie van gebruiker</String>
 		<String Name="GoToDirectory">Ga naar map</String>
 		<String Name="GrantExtraSlot">Extra slot geven (10 min)</String>
 		<String Name="GrantExtraSlotDay">Extra slot geven (1 dag)</String>
@@ -231,6 +229,7 @@
 		<String Name="GrantExtraSlotWeek">Extra slot geven (1 week)</String>
 		<String Name="GrantSlotsMenu">Extra slot geven</String>
 		<String Name="GroupSearchResults">Sorteer zoekresultaten op TTH</String>
+
 		<String Name="HashDatabase">Hash database</String>
 		<String Name="HashProgress">Hash voortgang...</String>
 		<String Name="HashProgressBackground">Op de achtergrond verdergaan</String>
@@ -259,17 +258,13 @@
 		<String Name="HubSegments">Hub / Segmenten</String>
 		<String Name="HubTopic">Hub onderwerp:"</String>
 		<String Name="HubUsers">Gebruikers</String>
+		<String Name="HublistCacheCorrupted">Opgeslagen hublijst corrupt of niet ondersteund...</String>
+		<String Name="HublistDownloadCorrupted">Gedownloade hublijst corrupt of niet ondersteund...</String>
 		<String Name="Hubs">Hubs</String>
 		<String Name="Chatdblclickaction">Actie bij dubbelklik in chat</String>
-		<String Name="CheatingUser">Bedrieger gevonden</String>
 		<String Name="Check0byteShare">Nul bytes echte grootte</String>
-		<String Name="CheckFilelist">Controleer bestandslijst</String>
 		<String Name="CheckForbidden">Deelt %s verboden bestanden, inclusief %s, commentaar: %s</String>
-		<String Name="CheckInflated">Bestandslijst was %sx opgeblazen</String>
-		<String Name="CheckMismatchedShareSize">Bestandslijst grootte klopt niet- </String>
-		<String Name="CheckOnConnect">Controleer gebruiker bij binnenkomst</String>
-		<String Name="CheckShowRealShare">, aangegeven grootte = %[statedshareformat], echte grootte = %[realshareformat]</String>
-		<String Name="CheckingClient">Controleren gebruiker...</String>
+		<String Name="CheckInflated">Bestandslijst was %sx vergroot</String>
 		<String Name="ChooseFolder">Selecteer een map</String>
 		<String Name="IgnoreTthSearches">Negeer TTH-zoekopdrachten</String>
 		<String Name="IgnoreUser">Negeer gebruiker</String>
@@ -280,7 +275,7 @@
 		<String Name="InvalidNumberOfSlots">Ongeldig aantal sloten</String>
 		<String Name="InvalidSize">Ongeldige grootte</String>
 		<String Name="InvalidTargetFile">Ongeldig doelbestand (map ontbreekt, controleer de standaard downloadmap instelling)</String>
-		<String Name="InvalidTree">De gedownloade boom past niet bij de TTH root</String>
+		<String Name="InvalidTree">De gedownloade lijst past niet bij de TTH root</String>
 		<String Name="Ip">IP: </String>
 		<String Name="IpBare">IP</String>
 		<String Name="Items">Onderdelen</String>
@@ -289,6 +284,7 @@
 		<String Name="Joins">Komt binnen: </String>
 		<String Name="Kib">KiB</String>
 		<String Name="Kbps">Kb/s</String>
+		<String Name="KeepFinishedFiles">Houd voltooide bestanden in de que</String>
 		<String Name="KickUser">Kick gebruiker(s)</String>
 		<String Name="KickUserFile">Kick gebruiker(s) met bestandsnaam</String>
 		<String Name="LargerTargetFileExists">Een even groot of groter bestand bestaat al in de doelmap</String>
@@ -313,7 +309,7 @@
 		<String Name="PreviewApplication">Programma:</String>
 		<String Name="PreviewArguments">Argumenten: (%[file] %[dir] beschikbaar)</String>
 		<String Name="PreviewExtension">gebruik voor extensies: (avi;mov;divx)</String>
-		<String Name="MagnetAsk">vraag om Magnet aktie</String>
+		<String Name="MagnetAsk">Vraag om Magnet aktie</String>
 		<String Name="MagnetDlgFile">Bestandsnaam:</String>
 		<String Name="MagnetDlgHash">Bestandsindex:</String>
 		<String Name="MagnetDlgNothing">Doe niets</String>
@@ -327,6 +323,7 @@
 		<String Name="MagnetHandlerDesc">Download de bestanden van het Direct Connect netwerk</String>
 		<String Name="MagnetHandlerRoot">AirDC++</String>
 		<String Name="MagnetShellDesc">URL:MAGNET URI</String>
+		<String Name="ManageGroups">Beheer Groepen</String>
 		<String Name="MatchQueue">Vergelijk met wachtrij</String>
 		<String Name="MatchedFiles">%d bestand(en) overeenkomstig</String>
 		<String Name="MaxHubs">Max. aantal hubs</String>
@@ -400,8 +397,7 @@
 		<String Name="MoveDown">Omlaag</String>
 		<String Name="MoveUp">Omhoog</String>
 		<String Name="MynickInChat">Mijn naam in chat venster</String>
-		<String Name="NetlimiterWarning">Netlimiter is op de pc gevonden. Dit zorgt voor het vastlopen van AirDC++, upload onderbrekingen en langzame downloads. Deïnstalleer Netlimiter.</String>
-		<String Name="NetworkStatistics">Netwerk statistieken</String>
+		<String Name="NetworkStatistics">Netwerk Statistieken</String>
 		<String Name="New">Nieuw...</String>
 		<String Name="NewDisconnect">Verwijder gebruikerbron bij snelheid lager dan</String>
 		<String Name="Next">Volgende</String>
@@ -411,7 +407,6 @@
 		<String Name="No">Nee</String>
 		<String Name="NoCertificateFileSet">TLS niet actief, er is geen certificaat aanwezig</String>
 		<String Name="NoDirectorySpecified">Geen map ingesteld</String>
-		<String Name="NoDownloadsFromPassive">U staat passief, u kunt niet downloaden van andere passieve gebruikers</String>
 		<String Name="NoDownloadsFromSelf">U kunt niet van uzelf downloaden!</String>
 		<String Name="NoErrors">Geen fouten</String>
 		<String Name="NoFreeBlock">Geen vrije blokken</String>
@@ -458,7 +453,6 @@
 		<String Name="PopupFavoriteConnected">Popup weergeven als favoriete gebruiker verbinding maakt</String>
 		<String Name="PopupHubConnected">Popup weergeven bij verbinden met hub</String>
 		<String Name="PopupHubDisconnected">Popup weergeven als verbinding met hub verbroken is</String>
-		<String Name="PopupCheatingUser">Popup weergeven als een bedrieger is gevonden</String>
 		<String Name="PopupNewPm">Popup weergeven bij ontvangst nieuwe PM</String>
 		<String Name="PopupPm">Popup weergeven bij ontvangst PM</String>
 		<String Name="PopupType">Popup type</String>
@@ -476,9 +470,6 @@
 		<String Name="PrivateKeyFile">Privé sleutel bestand</String>
 		<String Name="PrivateMessage">Privébericht</String>
 		<String Name="PrivateMessageFrom">Privé bericht van </String>
-		<String Name="ProfileVersion">Versie</String>
-		<String Name="ProfileCount">Aantal</String>
-		<String Name="ProfileMessage">Bericht</String>
 		<String Name="ProgressBack">Voortgangsbalk - achtergrond</String>
 		<String Name="ProgressCompress">Voortgangsbalk - gedecomprimeerd</String>
 		<String Name="ProgressDone">Voortgangsbalk - Segmenten klaar</String>
@@ -512,6 +503,7 @@
 		<String Name="RefreshUserList">Ververs gebruikerslijst</String>
 		<String Name="Reliability">Betrouwbaarheid</String>
 		<String Name="Requesting">Aanvragen</String>
+		<String Name="RequestingList">Bestandslijst aanvragen</String>
 		<String Name="Remove">&amp;Verwijder</String>
 		<String Name="RemoveAll">Verwijder alles</String>
 		<String Name="RemoveExtraSlot">Verwijder extra slot</String>
@@ -546,23 +538,18 @@
 		<String Name="Separator">Scheidingslijn</String>
 		<String Name="Server">Server</String>
 		<String Name="SetPriority">Prioriteit bepalen</String>
-		<String Name="SetczdcAlternateLimiting">Gebruik alternatieve limiet van</String>
 		<String Name="SetczdcBackColor">Achtergr.kleur</String>
 		<String Name="SetczdcBlackWhite">Zwart wit</String>
-		<String Name="SetczdcBold">Toon namen vet gedrukt in chatvenster</String>
 		<String Name="SetczdcCzcharsDisable">Verwijder diakritische tekens van Tsjechische karakters</String>
 		<String Name="SetczdcDefaultStyle">Standaard stijl</String>
 		<String Name="SetczdcDisconnectingEnable">Instellingen voor verbreken trage downloads</String>
-		<String Name="SetczdcDownloadSpeed">Downloadsnelheid</String>
-		<String Name="SetczdcEnableLimiting">Instelling snelheidslimiet</String>
+		<String Name="SetczdcDownloadSpeed">Download</String>
 		<String Name="SetczdcErrorColor">Kleur bij fout</String>
 		<String Name="SetczdcHDownSpeed">En alle downloads sneller dan</String>
 		<String Name="SetczdcIDownSpeed">Verbreek download als snelheid lager is dan </String>
 		<String Name="SetczdcMagnetUriHandler">Instaleer magnet URI handler bij opstarten</String>
 		<String Name="SetczdcMinFileSize">En bestandsgrootte is meer dan</String>
-		<String Name="SetczdcNoteDownload">* Als het upload limiet is ingesteld, is het download limiet max. 7 × het upload limiet!</String>
 		<String Name="SetczdcNoteSmallUp">* Kleine verzend sloten =&gt; Bestandslijsten en kleine bestanden.</String>
-		<String Name="SetczdcNoteUpload">* Het minimale upload limiet is gezet op 5 × sloten + 4!</String>
 		<String Name="SetczdcPassiveSearch">Gebruik passieve modus voor zoekopdrachten (weet wat je doet!)</String>
 		<String Name="SetczdcPmLines">Tekst uit log in nieuw privébericht</String>
 		<String Name="SetczdcPreview">Voorvertoning</String>
@@ -570,7 +557,6 @@
 		<String Name="SetczdcProgressbarColors">Kleuren voortgangsbalk</String>
 		<String Name="SetczdcProgressbarText">Tekstkleur voortgangsbalk</String>
 		<String Name="SetczdcRemoveForbidden">Verwijder verboden bestanden (onafgemaakte P2P bestanden)</String>
-		<String Name="SetczdcSecondaryLimiting">Tweede instelling snelheidslimiet</String>
 		<String Name="SetczdcSlowDisconnect">Verbreek trage downloads</String>
 		<String Name="SetczdcSmallFiles">Kleine bestandsgrootte</String>
 		<String Name="SetczdcSmallUpSlots">Kleine verzendsloten</String>
@@ -579,21 +565,19 @@
 		<String Name="SetczdcTextStyle">Tekststijl</String>
 		<String Name="SetczdcTimeDown">Gedurende meer dan</String>
 		<String Name="SetczdcTo">tot</String>
-		<String Name="SetczdcTransferLimiting">Snelheidslimiet</String>
 		<String Name="SetczdcUpload">Upload</String>
-		<String Name="SetczdcUploadSpeed">Uploadsnelheid</String>
+		<String Name="SetczdcUploadSpeed">Upload</String>
 		<String Name="SetczdcWinamp">Media werkbalk instellingen</String>
 		<String Name="SetczdcWinampPath">Mediaspeler pad:</String>
 		<String Name="SetstrongdcPartialSlots">Extra sloten voor Verzenden van huidige download.</String>
 		<String Name="Settings">Instellingen</String>
-		<String Name="SettingsAddFolder">&amp;Toevoegen</String>
+		<String Name="SettingsAddFolder">&amp;Plus map</String>
 		<String Name="SettingsAdlsBreakOnFirst">ADL zoeken bij eerste zoekresultaat stoppen</String>
 		<String Name="SettingsAdvanced">Geavanceerd</String>
-		<String Name="SettingsAdvancedShowShareCheckedUsers">Gebruikers met gecontroleerde bestandslijst tonen</String>
 		<String Name="SettingsAdvancedSuppressMainChat">Onderdruk chatvenster</String>
 		<String Name="SettingsAdvanced3">Alleen voor experts</String>
-		<String Name="SettingsAllowUntrustedClients">TLS-verbindingen met cliënten zonder vertrouwd certificaat toestaan</String>
-		<String Name="SettingsAllowUntrustedHubs">TLS-verbindingen alleen toestaan met cliënten met een vertrouwd certificaat</String>
+		<String Name="SettingsAllowUntrustedClients">TLS-verbinding met cliënten zonder vertrouwd certificaat toestaan</String>
+		<String Name="SettingsAllowUntrustedHubs">TLS-verbinding alleen toestaan met cliënten met een vertrouwd certificaat</String>
 		<String Name="SettingsAntiFrag">Gebruik antifragmentatie methode voor downloads</String>
 		<String Name="SettingsAppearance">Weergave</String>
 		<String Name="SettingsArgument">Argumenten</String>
@@ -615,14 +599,8 @@
 		<String Name="SettingsBoldOptions">Tekst op tabs vetgedrukt na veranderen vensterinhoud</String>
 		<String Name="SettingsCertificates">Beveiligings certificaten</String>
 		<String Name="SettingsClearSearch">Wis zoekvenster automatisch na elke zoekopdracht</String>
-		<String Name="SettingsClients">Gebruikers</String>
 		<String Name="SettingsColorAlternate">Zoek alternatieven</String>
-		<String Name="SettingsColorBadClient">Ongeldige gebruiker</String>
-		<String Name="SettingsColorBadFilelist">Ongeldige bestandslijst</String>
-		<String Name="SettingsColorClientChecked">Gebruiker gecontroleerd</String>
 		<String Name="SettingsColorFavorite">Favoriet</String>
-		<String Name="SettingsColorFilelistChecked">Bestandslijst gecontroleerd</String>
-		<String Name="SettingsColorFullChecked">Bestandslijst en gebruiker gecontroleerd</String>
 		<String Name="SettingsColorIgnored">Genegeerd</String>
 		<String Name="SettingsColorNormal">Normaal</String>
 		<String Name="SettingsColorReserved">Heeft gereserveerd slot</String>
@@ -631,28 +609,24 @@
 		<String Name="SettingsCompressTransfers">Veilige en gecomprimeerde bestandsoverdracht</String>
 		<String Name="SettingsConfigureHubLists">Instellingen hublijsten</String>
 		<String Name="SettingsConfirmDialogOptions">Bevestigingsdialoog opties  </String>
-		<String Name="SettingsConfirmExit">afsluiten programma bevestigen</String>
+		<String Name="SettingsConfirmExit">Afsluiten programma bevestigen</String>
 		<String Name="SettingsConfirmHubRemoval">Verwijderen favorite hub bevestigen</String>
 		<String Name="SettingsConfirmItemRemoval">Verwijderen van download bevestigen</String>
 		<String Name="SettingsCzdc">AirDC++</String>
 		<String Name="SettingsCzdcExtraDownloads">Extra download sloten voor hoogste prioriteit</String>
-		<String Name="SettingsDebugCommands">Foutopsporing aanzetten</String>
 		<String Name="SettingsDefaultAwayMsg">Standaard afwezigheids bericht</String>
 		<String Name="SettingsDirect">Directe verbinding</String>
 		<String Name="SettingsDirectories">Mappen</String>
-		<String Name="SettingsDisplayCheatsInMainChat">Toon bedrog in hoofdchat</String>
-		<String Name="SettingsDisplayDcUpdate">Programma-updates niet aankondigen</String>
+		<String Name="SettingsDisplayDcUpdate">AirDC++ updates niet aankondigen</String>
 		<String Name="SettingsDontDlAlreadyShared">Geen bestanden downloaden die zich al in uw bestandslijst bevinden</String>
-		<String Name="SettingsDownconn">Dwnld verzoeken/Sec.</String>
+		<String Name="SettingsDownconn">Download verzoeken/sec</String>
 		<String Name="SettingsDownloadDirectory">Standaard opslaglocatie</String>
-		<String Name="SettingsDownloadLimits">Limieten</String>
 		<String Name="SettingsDownloads">Downloads</String>
 		<String Name="SettingsDownloadsMax">Max. gelijktijdige downloads (0 = onbeperkt)</String>
 		<String Name="SettingsDownloadsSpeedPause">Geen nieuwe downloads bij snelheid hoger dan (Kb/s, 0 = uit)</String>
 		<String Name="SettingsExpandQueue">Vouw mappen in wachtrij automatisch uit</String>
 		<String Name="SettingsExtensions">Uitbreidingen</String>
 		<String Name="SettingsExternalIp">Externe / WAN IP</String>
-		<String Name="SettingsFakedetect">Bedrieger detector</String>
 		<String Name="SettingsFavShowJoins">Laat alleen binnenkomst / vertrek van favoriete gebruiker zien</String>
 		<String Name="SettingsFavoriteDirs">Favoriete downloadmappen</String>
 		<String Name="SettingsFavoriteDirsPage">Favorieten</String>
@@ -700,7 +674,7 @@
 		<String Name="SettingsOperacolors">Kleuren voortgangsbalk</String>
 		<String Name="SettingsOptions">Opties</String>
 		<String Name="SettingsOutgoing">Instellingen uitgaande verbindingen</String>
-		<String Name="SettingsOverride">Overschrijven door hub/UPnP niet toestaan</String>
+		<String Name="SettingsOverride">"Overrulen" door hub/UPnP niet toestaan</String>
 		<String Name="SettingsPersonalInformation">Persoonlijke informatie</String>
 		<String Name="SettingsPmBeep">Maak geluid wanneer een privébericht binnenkomt</String>
 		<String Name="SettingsPmBeepOpen">Maak geluid als een PM-venster wordt geopend</String>
@@ -712,10 +686,10 @@
 		<String Name="SettingsPopupPms">Privéberichten in eigen venster openen</String>
 		<String Name="SettingsPorts">Poorten</String>
 		<String Name="SettingsPrioAutoprio">Prioriteit instellingen - gaat voor autoprioriteit</String>
-		<String Name="SettingsPrioHigh">hoge prio Max. grootte</String>
-		<String Name="SettingsPrioHighest">hoogste prio Max. grootte</String>
-		<String Name="SettingsPrioLow">lage prio Max. grootte</String>
-		<String Name="SettingsPrioLowest">laagste prio voor nieuwe bestanden groter dan lage prio grootte</String>
+		<String Name="SettingsPrioHigh">Hoge prio Max. grootte</String>
+		<String Name="SettingsPrioHighest">Hoogste prio Max. grootte</String>
+		<String Name="SettingsPrioLow">Lage prio Max. grootte</String>
+		<String Name="SettingsPrioLowest">Laagste prio voor nieuwe bestanden groter dan lage prio grootte</String>
 		<String Name="SettingsPrioNormal">Normale prio max grootte</String>
 		<String Name="SettingsPromptPassword">Venster voor invoeren wachtwoord hubs</String>
 		<String Name="SettingsPublicHubList">Openbare hublijst</String>
@@ -736,7 +710,7 @@
 		<String Name="SettingsShareSize">Totaal gedeeld:</String>
 		<String Name="SettingsSharedDirectories">Gedeelde mappen</String>
 		<String Name="SettingsShowInfoTips">Laat infotips zien in de lijst</String>
-		<String Name="SettingsShowJoins">laat binnekomst en vertrek berichten in chatvenster zien</String>
+		<String Name="SettingsShowJoins">laat binnenkomst en vertrek berichten in chatvenster zien</String>
 		<String Name="SettingsShowProgressBars">Laat voortgangsindicatiebalk zien (gebruikt enige CPU-kracht)</String>
 		<String Name="SettingsShowShellMenu">Shell-menu weergeven bij geslaagde overdracht</String>
 		<String Name="SettingsSkipZeroByte">Sla lege bestanden (0 bytes) over</String>
@@ -751,17 +725,17 @@
 		<String Name="SettingsSpeedsNotAccurate">Let op: snelheden zijn niet 100% correct...</String>
 		<String Name="SettingsStatusInChat">Bekijk statusberichten in hoofdchat</String>
 		<String Name="SettingsTcpPort">TCP</String>
-		<String Name="SettingsTlsPort">TLS</String>
+		<String Name="SettingsTlsPort">TLS/TCP</String>
 		<String Name="SettingsTextStyles">Kleuren en Lettertype</String>
 		<String Name="SettingsTimeStamps">Laat tijdsaanduiding in chat zien</String>
 		<String Name="SettingsTimeStampsFormat">Tijdsaanduiding</String>
 		<String Name="SettingsToggleActiveWindow">Blader venster bij het selecteren van een actieve tab</String>
 		<String Name="SettingsToolbar">Werkbalk</String>
-		<String Name="SettingsToolbarAdd">Voeg toe--&gt;</String>
+		<String Name="SettingsToolbarAdd">Voeg toe-&gt;</String>
 		<String Name="SettingsToolbarImage">Werkbalk afbeelding</String>
-		<String Name="SettingsToolbarRemove">&lt;--Verwijder</String>
+		<String Name="SettingsToolbarRemove">&lt;-Verwijder</String>
 		<String Name="SettingsUdpPort">UDP Poort</String>
-		<String Name="SettingsUnfinishedDownloadDirectory">tijdelijk map voor lopende downloads</String>
+		<String Name="SettingsUnfinishedDownloadDirectory">Tijdelijk map voor lopende downloads</String>
 		<String Name="SettingsUploadLineSpeed">Verbindingssnelheid (Upload)</String>
 		<String Name="SettingsUploads">Delen</String>
 		<String Name="SettingsUploadsMinSpeed">Open een extra slot als snelheid lager is dan (0 = uit)</String>
@@ -808,7 +782,7 @@
 		<String Name="SoundDownloadFinished">Download gereed</String>
 		<String Name="SoundException">Ongebruikelijke uitzondering</String>
 		<String Name="SoundFakerFound">Bedrieger gevonden</String>
-		<String Name="SoundSourceAdded">alternatieve Bron toegevoegd</String>
+		<String Name="SoundSourceAdded">Alternatieve bron toegevoegd</String>
 		<String Name="SoundTthInvalid">Bestand is beschadigd</String>
 		<String Name="SoundTypingNotify">Typgeluid</String>
 		<String Name="SoundUploadFinished">Upload gereed</String>
@@ -817,6 +791,7 @@
 		<String Name="SpecifySearchString">Zoekterm opgeven</String>
 		<String Name="SpecifyServer">Doelserver opgeven</String>
 		<String Name="Speed">Snelheid</String>
+		<String Name="SslError">SSL Fout</String>
 		<String Name="Started">Gestart</String>
 		<String Name="Status">Status</String>
 		<String Name="StealthMode">Op deze hub DC++ emuleren</String>
@@ -826,11 +801,11 @@
 		<String Name="Suspend">Sluimerstand</String>
 		<String Name="TabsOnTop">Tabs boven</String>
 		<String Name="Tag">Label</String>
+		<String Name="TargetFileExists">Bestand bestaat al in de doel map</String>
+		<String Name="TargetFilenameTooLong">Bestandsnaam te lang</String>
 		<String Name="TargetRemoved">Doel verwijderd</String>
-		<String Name="TargetFilenameTooLong">Doelbestandsnaam te lang</String>
 		<String Name="Tib">TiB</String>
 		<String Name="TcpPortBusy">Kan TCP/TLS poort niet openen. Sluit eerst het programma af dat deze poort gebruikt!</String>
-		<String Name="TextFakepercent">Percentage nep gedeeld accepteren</String>
 		<String Name="TextManual">Handmatige instelling aantal segmenten</String>
 		<String Name="Time">Tijd</String>
 		<String Name="TimeLeft">Resterende tijd</String>
@@ -858,10 +833,11 @@
 - %z, %Z - tijdzone naam, niets als onbekend
 - %% - procent teken
 
-standaard: %H:%M:%S</String>
+Standaard: %H:%M:%S</String>
 		<String Name="TimestampHelpDesc">Tijdsaanduiding hulp</String>
 		<String Name="TimestampsDisabled">Tijdsaanduiding uit</String>
 		<String Name="TimestampsEnabled">Tijdsaanduiding aan</String>
+		<String Name="TooLargeList">Bestandslijst groter dan toegestaan (256 MB)</String>
 		<String Name="TooMuchData">Er werd meer data verzonden dan werd verwacht</String>
 		<String Name="Total">Totaal: </String>
 		<String Name="Transferlistdblclickaction">Actie bij dubbelklik in overdrachtslijst </String>
@@ -893,6 +869,7 @@ standaard: %H:%M:%S</String>
 		<String Name="UpnpFailedToCreateMappings">Het maken van poort mappings is mislukt. NAT a.u.b. handmatig instellen.</String>
 		<String Name="UpnpFailedToGetExternalIp">Extern IP via UPnP verkrijgen is mislukt. A.u.b. handmatig instellen.</String>
 		<String Name="UpnpFailedToRemoveMappings">Kon poort mappings niet verwijderen</String>
+		<String Name="UseExplorerTheme">Gebruik verkenner thema lijst en map schermen</String>
 		<String Name="User">Gebruiker</String>
 		<String Name="UserCmdCommand">Opdracht</String>
 		<String Name="UserCmdContext">Context</String>
@@ -904,7 +881,6 @@ standaard: %H:%M:%S</String>
 		<String Name="UserCmdParameters">Parameter</String>
 		<String Name="UserCmdPm">PM</String>
 		<String Name="UserCmdPreview">Naar hub verzonden tekst</String>
-		<String Name="UserCmdRaw">Rauw</String>
 		<String Name="UserCmdSearchMenu">Zoekmenu</String>
 		<String Name="UserCmdTo">Aan</String>
 		<String Name="UserCmdType">Opdracht type</String>
@@ -973,6 +949,9 @@ Bij parameters, kan je %[xxx] variablen en datum/tijd gebruiken (%Y, %m, ...). d
 - %[bitrate]	Bitrate van spelende media (b.v. 128kbps)
 - %[sample]	Frequentie van spelende media (b.v. 22kHz)
 - %[channels]	Kanalen (b.v. stereo / mono)
+- %[path]	Speelt volledige pad
+- %[directory]	Speelt map naam
+- %[filename]	Speelt Bestandsnaam
 Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] @ %[bitrate] &lt;Winamp %[version]&gt;</String>
 		<String Name="WinampHelpDesc">Winamp hulp</String>
 		<String Name="Yes">Ja</String>
@@ -983,10 +962,10 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] @ %[bitrate] &lt;Wina
 		<String Name="SettingsFulTabs">AirDC++\Tabs</String>
 		<String Name="HubBoldTabs">Maak tabs vetgedrukt bij hub bericht</String>
 		<String Name="TabShowIcons">Toon iconen op tabs</String>
-		<String Name="BlendTabs">verander gewicht inplaats van bold</String>
+		<String Name="BlendTabs">Verander gewicht in plaats van bold</String>
 		<String Name="SettingsSbTabColors">Tab kleuren</String>
-		<String Name="SettingsSbTabSize">lengte van tekst in een tab</String>
-		<String Name="SettingsBtnColor">selectie kleur</String>
+		<String Name="SettingsSbTabSize">Lengte van tekst in een tab</String>
+		<String Name="SettingsBtnColor">Selectie kleur</String>
 		<String Name="SettingsSbDirtyBlend">overvloeien</String>
 		<String Name="TabActiveBg">Actieve achtergrond kleur</String>
 		<String Name="TabActiveText">Actieve tekst kleur</String>
@@ -1079,22 +1058,6 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="UseRegexpOrWc">Gebruik RegExp en/of jokers</String>
 		<String Name="IgnoredUsers">Genegeerde gebruikers</String>
 		<String Name="SettingsAirdcpage">AirDC++</String>
-		<String Name="PgBlocklist">PeerGuardian blokkeerlijst</String>
-		<String Name="PgBlocked">Geblokkeerd door PeerGuardian</String>
-		<String Name="PgNotRunning">PeerGuardian niet gestart...</String>
-		<String Name="PgRunning">PeerGuardian gestart met %s IP ranges.</String>
-		<String Name="PgRunningIdle">PeerGuardian gestart maar niet actief.</String>
-		<String Name="PgAltSoft">Andere blokkeersoftware gevonden!</String>
-		<String Name="PgLog">Log PeerGuardian activiteit</String>
-		<String Name="PgListViewer">PeerGuardian lijst bekijken</String>
-		<String Name="PgViewerLoading">De lijst wordt geladen, even geduld a.u.b...</String>
-		<String Name="PgViewerEmpty">De lijst is leeg of de indeling wordt niet ondersteund.</String>
-		<String Name="PgRangeCount">Totaal IP ranges</String>
-		<String Name="PgTester">PeerGuardian Tester</String>
-		<String Name="PgTesterNoMatch">Dit IP-adres is niet geblokkeerd.</String>
-		<String Name="PgListOptions">Voorkeuren blokkeerlijst</String>
-		<String Name="PgCurrentList">Huidige lijst:</String>
-		<String Name="PgUpdateLocation">Update server:</String>
 		<String Name="Incoming">inkomend</String>
 		<String Name="Outgoing">uitgaand</String>
 		<String Name="Begin">Begin</String>
@@ -1108,12 +1071,12 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="SettingsAirdownloadsSegment">Segmenten</String>
 		<String Name="SettingsAirdownloadsSegmentSize">Minimale maat segment </String>
 		<String Name="StSkiplistShare">Deel de volgende bestanden niet (scheiden met '|', * mogen):</String>
-		<String Name="StSkiplistShareBorder">Overslalijst gedeelde bestanden</String>
-		<String Name="StMinislotsExt">geef een minislot voor deze bestandtypen: (separeer extensies met '|', jokers mogen)</String>
+		<String Name="StSkiplistShareBorder">Niet te delen bestanden </String>
+		<String Name="StMinislotsExt">Geef een minislot voor deze bestandtypen: (scheidt extensies met '|', jokers mogen)</String>
 		<String Name="SbMinislots">Minisloten</String>
 		<String Name="SettingsAirsharing">AirDelen</String>
-		<String Name="SettingsSbSkiplistDownload">Overslalijst</String>
-		<String Name="SettingsStPaths">separeer oprachten met |</String>
+		<String Name="SettingsSbSkiplistDownload">Niet te downloaden bestanden</String>
+		<String Name="SettingsStPaths">Scheidt oprachten met |</String>
 		<String Name="SettingsSbHighPrioFiles">Hoge prioriteits bestanden - gaat voor andere instellingen</String>
 		<String Name="RemoveFile">Verwijder bestand van wachtrij</String>
 		<String Name="SettingsFulHighlight">AirDC++\Highlight</String>
@@ -1137,7 +1100,7 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="SettingsPopup">Laat Popup zien</String>
 		<String Name="SettingsPlaySound">Speel geluid</String>
 		<String Name="SettingsFlashWindow">Knipper venster</String>
-		<String Name="SettingsIncludeNick">Voeg naam toe</String>
+		<String Name="SettingsIncludeNicklist">Gebruik Highlight voor Nicklijst (Wildcards or $Re: voor Regex)</String>
 		<String Name="SettingsWholeLine">Volledige regel</String>
 		<String Name="SettingsEntireWord">Volledig woord</String>
 		<String Name="SettingsTabColor">Verander tab kleur</String>
@@ -1178,35 +1141,11 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="SearchTth">Zoek op TTH</String>
 		<String Name="Pause">Pause</String>
 		<String Name="SettingsAirappearance">AirDC++\Weergave</String>
-		<String Name="PgSetting">PeerGuardian</String>
-		<String Name="PgReload">herlaad Blokeerlijst</String>
-		<String Name="PgUpdate">Update Blokeerlijst</String>
-		<String Name="PgView">Bekijk Blokeerlijst</String>
-		<String Name="PgStatRunBut">Status: loopt maar niet aktief.</String>
-		<String Name="PgStatRunWith">Status: loopt met </String>
-		<String Name="PgIp">IP ranges.</String>
-		<String Name="PgNotRun">Status: loopt niet</String>
-		<String Name="PgBlockReload">Status: Blokeerlijst herladen, met </String>
-		<String Name="PgAbusive">Status: misbruik gedetecteerd</String>
-		<String Name="PgSoftDetect">Status: alleenstaande blokkeer software gedetecteerd</String>
-		<String Name="PgDownloading">Downloading...</String>
-		<String Name="PgOut">Uitgaande Connecties</String>
-		<String Name="PgIn">Binnenkomende Connecties</String>
-		<String Name="PgSearches">Zoekoprachten</String>
-		<String Name="PgRes">Let op!, Peerguardian belast de processor, weet zeker dat je het wil gebruiken</String>
-		<String Name="PgUptodate">je blokeerlijst is bij de tijd.</String>
-		<String Name="PgUpdated">Blokeerlijst upgedate</String>
-		<String Name="PgFinished">Klaar!</String>
-		<String Name="PgDlfail">Blokeerlijst download gefaalt.</String>
-		<String Name="PgUpdatefail">Blokeerlijst update gefaalt</String>
-		<String Name="GetIp">Verkrijg adres</String>
+		<String Name="GetIp">Ververs ip</String>
 		<String Name="UseHighlight">Gebruik Highlights</String>
-		<String Name="SettingsDupes">Dubbel bestand achtergrond kleur</String>
 		<String Name="SettingsDupeDescription">Achtergrond kleur gebruikt in bestandslijsten om te zien welke bestanden al gedeeld worden</String>
 		<String Name="SettingsShowQueueBars">Laat voorgangsbalk zien in wachtrij</String>
-		<String Name="ExclChecks">Hub uitsluiten van automatische cliënt/bedrieger controle</String>
-		<String Name="SettingsUseCdm">Gebruik CDM (Global)</String>
-		<String Name="SettingsLanguage">Taal</String>
+		<String Name="SettingsLanguage">Taal"</String>
 		<String Name="SettingsLswe">Zweeds</String>
 		<String Name="SettingsLfin">Fins</String>
 		<String Name="SettingsLita">Italiaan</String>
@@ -1221,12 +1160,7 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="OpenFirst">Open eerste X aantal hubs bij opstarten</String>
 		<String Name="SearchByTth">Zoek via TTH</String>
 		<String Name="Paste">Plakken</String>
-		<String Name="ProtUsers">Beschermde gebruikers</String>
-		<String Name="ProtDesc">Gebruik ; als separeerteken, jokers mogen.</String>
 		<String Name="SearchSites">ZoekSites</String>
-		<String Name="SearchGoogle">Google</String>
-		<String Name="SearchUrl">als Url</String>
-		<String Name="SearchImdb">Imdb</String>
 		<String Name="BlackTheme">Zwart Thema</String>
 		<String Name="ImportTheme">Importeer Thema</String>
 		<String Name="ExportTheme">Exporteer Thema</String>
@@ -1239,13 +1173,10 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="InvalidRegexp">Ongeldige RegExp!</String>
 		<String Name="CaseInsensitiveRegexp">Niet hoofdlettergevoelige RegExp</String>
 		<String Name="Match">Vergelijk</String>
-		<String Name="IdcMinSegmentSizeLabel">Minimale maat segment</String>
-		<String Name="IdcSettingsSegments">Segmenten</String>
 		<String Name="Raw">Rauw</String>
 		<String Name="DirectoryShared">Map is al gedeeld</String>
 		<String Name="DirectoryParent">Verwijder onderliggende gedeelde mappen eerst</String>
 		<String Name="SettingsOverlapChunks">Overlap langzame segmenten met snellere bij einde bestand</String>
-		<String Name="CheckFoundPgMatch">PeerGuardian gelijke gevonden: </String>
 		<String Name="OpenLogsInternal">Open logboek bestanden intern (traag bij grote logboeken)</String>
 		<String Name="MenuOpenSystemlog">Open System Logboek</String>
 		<String Name="Name">Naam</String>
@@ -1261,7 +1192,7 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="ProppageGeneralText">Algemene tekst</String>
 		<String Name="ProppageGeneralChatText">Algemene chat tekst</String>
 		<String Name="ProppageMyNick">Mijn naam</String>
-		<String Name="ProppageMyOwnMsg">mijn eigen bericht</String>
+		<String Name="ProppageMyOwnMsg">Mijn eigen bericht</String>
 		<String Name="ProppagePrivateMsg">Privé bericht</String>
 		<String Name="ProppageSystemMsg">Systeem bericht</String>
 		<String Name="ProppageServerMsg">Server bericht</String>
@@ -1270,16 +1201,13 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="ProppageUrl">URL</String>
 		<String Name="ProppageFavUser">Favoriete gebruiker</String>
 		<String Name="ProppageOperator">Beheerder</String>
+		<String Name="ProppageNorm">Andere gebruikers</String>
 		<String Name="MaxResizeLines">Max regel grootte</String>
-		<String Name="DontShareEmptyDirs">Deel geen lege mappen</String>
-		<String Name="OnlyShareFullDirs">Deel alleen volledig gehashte mappen</String>
-		<String Name="StRefreshDelay">Ververs vertraging na opstarten</String>
-		<String Name="StAirdcSlot">Extra sloten voor mede AirDC++ gebruikers (2.05-&gt;)</String>
 		<String Name="SettingsDupeSearch">Gebruik dupe kleur bij zoeken</String>
 		<String Name="SettingsLrus">Russisch</String>
 		<String Name="FileAlreadyShared">Poging reeds gedownloade file te downloaden! File: </String>
 		<String Name="PasswdProtectStatic">Client bescherming</String>
-		<String Name="PasswdProtectChckbox">Activeer wachtwoord bescherming</String>
+		<String Name="PasswdProtectChckbox">Gebruik wachtwoord</String>
 		<String Name="PasswordDesc">Wachtwoord ingeven aub:</String>
 		<String Name="PasswordTitle">Authentificatie vereist om deze actie uit te voeren</String>
 		<String Name="Unlock">Vrijgeven</String>
@@ -1287,7 +1215,7 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="Note">P.S.; Als je je wachtwoord bescherming uitzet wordt je wachtwoord gereset!</String>
 		<String Name="ReaddAll">Opnieuw alle bronnen toevoegen</String>
 		<String Name="HubNotProtected">Er werd geen wachtwoord ingegeven/vereist voor de login, hubverbinding wordt verbroken. (Instelling @ AirDCpage)</String>
-		<String Name="DisallowConnectionToPassedHubs">Hubverbinding verbreken indien niet geregistreerd</String>
+		<String Name="DisallowConnectionToPassedHubs">Hubverbinding verbreken indien niet geregistreerd (public hub)</String>
 		<String Name="DontShareDownloadDirectory">De download directory kan niet worden gedeeld</String>
 		<String Name="TotalTimeLeft">Totale tijd resterend</String>
 		<String Name="BoldHubTabsOnKick">Maak hub tab Bold bij kick berichten</String>
@@ -1316,11 +1244,11 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="FileWithSameTth">Bestand met dezelfde TTH bestaat al in download rij</String>
 		<String Name="FavShowJoin">Laat binnenkomende en vertrekkende gebruikers zien</String>
 		<String Name="UpnpRemovedMappings">Port mapping verwijderen gelukt</String>
-		<String Name="SettingsDownloadsExpand">Groeppeer geen downloads in bestandsoverdraht scherm</String>
+		<String Name="SettingsDownloadsExpand">Groepeer geen downloads in bestandsoverdracht scherm</String>
 		<String Name="SystemShowFinishedUploads">Laat voltooide uploads zien in system log</String>
 		<String Name="SystemShowFinishedDownloads">Laat voltooide downloads zien in system Log</String>
 		<String Name="Wizard">Instellingen Wizard</String>
-		<String Name="FormatRelease">Laat Release Namen zien als links in chat</String>
+		<String Name="FormatRelease">Laat release namen zien als links in chat</String>
 		<String Name="CopyDirectory">Copyeer Directory</String>
 		<String Name="SearchForAlternatesDir">Doorzoek directory voor alternatieven</String>
 		<String Name="ErrorHashingCrc32">Berekende CRC32 komt niet overeen met die gevonden in de SFV file.</String>
@@ -1359,9 +1287,9 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="CheckExtraFiles">Check extra files in de release mappen</String>
 		<String Name="CheckDupes">Check dubbele mapnamen</String>
 		<String Name="SettingsScanOptions">Scan opties voor missende/extra files</String>
-		<String Name="RebuildStarted">Hash Database Verniewen Gestart</String>
-		<String Name="SortDirs">Sorteer Directories Eerst in je Zoekscherm</String>
-		<String Name="DecreaseRam">Verminder Ram gebruik bij minimaliseren AirDC</String>
+		<String Name="RebuildStarted">Hash database vernieuwen gestart</String>
+		<String Name="SortDirs">Sorteer directories eerst in je zoekscherm</String>
+		<String Name="DecreaseRam">Verminder ram (geheugen) gebruik bij minimaliseren</String>
 		<String Name="RunSfvCheck">Doe SFV check</String>
 		<String Name="SfvCheckFolder">Doe SFV check (Hele map)</String>
 		<String Name="SfvCheckFile">Doe SFV check (Enkel bestand)</String>
@@ -1391,7 +1319,7 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 - %[title]		Artiest en titel van het afgespeelde item
 - %[link]		Spotify link voor het nummer dat afgespeeld wordt
 
-Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
+Empty = Default String -&gt; /me speelt op Spotify: %[title] %[link]</String>
 		<String Name="SpotifyHelpDesc">Spotify Help</String>
 		<String Name="SpotifyTrack">Speel dit nummer op Spotify</String>
 		<String Name="SpotifyArtist">Bekijk deze artiest op Spotify</String>
@@ -1420,8 +1348,8 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ProfilePublic">Publieke Hubs (standaard)</String>
 		<String Name="ProfileRar">Rar Hubs</String>
 		<String Name="ProfilePrivate">Prive Hubs</String>
-		<String Name="SettingsMcnNote">* Verlagen van de upload anders dan de andaard instelling resulteerd in het instellen van de download instelling in dezelfde waarde</String>
-		<String Name="SettingsTargetdriveNote">* Gebruik doelschijf betekend dat onvolledige bestanden ALTIJD opgeslagen worden in een eigen map op de schijf waar de download map ook staat</String>
+		<String Name="SettingsMcnNote">* Verlagen van de upload anders dan de standaard instelling resulteerd in het instellen van de download instelling in dezelfde waarde</String>
+		<String Name="SettingsTargetdriveNote">* Gebruik doelschijf betekend dat onvolledige bestanden ALTIJD opgeslagen worden in een eigen map op de schijf waar de DOEL map ook staat</String>
 		<String Name="SettingsUseTargetdrive">Gebruik doelschijf voor lopende files</String>
 		<String Name="RemoveOnHit">Verwijder na gevonden</String>
 		<String Name="SearchAdded">Zoekopdracht toegevoegd aan Autosearch lijst: </String>
@@ -1429,7 +1357,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="CheckIgnoreZeroByte">Negeer 0 byte bestanden</String>
 		<String Name="NoFilesAvailable">Geen bestanden om te downloaden</String>
 		<String Name="MatchingFileList">Vrgelijken bestandslijsten, dit kan even duren als de lijst groot is.</String>
-		<String Name="SkipSubtractText">Verwijder lijst: Sla mappen over met SLECHTS 2 of minder bestanden kleiner dan</String>
+		<String Name="SkipSubtractText">Sla mappen over met MAX 2 bestanden erin en kleiner dan</String>
 		<String Name="ProppageDupeText">Dubbele mappen/files</String>
 		<String Name="ProppageDupeMsg">Release.Voorbeeld-AIRDC</String>
 		<String Name="ProppageUnderlineLinks">Onderstreep linken</String>
@@ -1441,11 +1369,14 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ProppageListHl">Bestandslijst benadrukken</String>
 		<String Name="ProppageListHlMsg">Benadruk-AIRDC</String>
 		<String Name="ListHlText">Benadruk overeenkomsten in bestandslijsten (*, | gescheiden)</String>
-		<String Name="ListHlExample">Bijv, *NORDIC* (Dit kan het laden van de bestandslijst vertragen...)</String>
+		<String Name="ListHlExample">(Dit kan het laden van de bestandslijst vertragen...)</String>
 		<String Name="SettingsDupes">Dubbele instellingen</String>
 		<String Name="ReportSkiplist">Laat door skiplist geblokkereerde bestanden zien in de system log</String> 
-		
-		
-		
+		<String Name="MatchAdl">ADL vergelijken</String>
+		<String Name="MatchingAdl">Vgelijk bestandslijst met ADLSearch, dit kan lang duren bij grote bestandslijsten...</String>
+		<String Name="LogHashing">Laat Hashende Files zien in systemlog</String>
+		<String Name="SaveShare">Sla shares automatisch op elke </String>
+		<String Name="UseFtpLogger">Gebruik alternatieve sfv check (Bijv. FTPLogger, Alleen aan zetten als je begrijpt wat je hiermee doet.)  </String>
+		<String Name="MatchPartial">Vergelijk gedeeltelijke lijst</String>
 	</Strings>
-</Language>
+</Language>

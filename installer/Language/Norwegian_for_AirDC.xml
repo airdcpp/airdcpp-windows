@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Norwegian for AirDC++" Author="Toans" Version="2.10" Revision="1.03">
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<Language Name="Norwegian for AirDC++" Author="Shuttle" Version="2.22" Revision="12">
 	<Strings>
 		<String Name="AairdcppLanguageFile">Norwegian_for_AirDC.xml</String>
-		<String Name="AairdcppLanguageVersion">2.10</String>
+		<String Name="AairdcppLanguageVersion">2.232</String>
 		<String Name="Active">Aktiv</String>
 		<String Name="ActiveSearchString">Påslått / Søke Streng</String>
 		<String Name="Add">Legg til</String>
 		<String Name="AddAsSource">Legg til som kilde</String>
-		<String Name="AddFinishedInstantly">Legg til ferdig nedlastet filer til deling (hvis delt)</String>
+		<String Name="AddFinishedInstantly">Legg til ferdig nedlasta filer til deling (hvis delt)</String>
 		<String Name="AddToFavorites">Legg Til Favoritter</String>
 		<String Name="AddToQueue">Legg til Nedlastingskøen</String>
 		<String Name="Added">Lagt til</String>
@@ -26,14 +26,14 @@
 		<String Name="All">Alle</String>
 		<String Name="All3UsersOffline">Alle 3 brukerne frakoblet</String>
 		<String Name="All4UsersOffline">Alle 4 brukerne frakoblet</String>
-		<String Name="AllDownloadSlotsTaken">Alle nedlastings slotene er opptatt</String>
-		<String Name="AllFileSlotsTaken">Alle fil slotene oppbrukt</String>
+		<String Name="AllDownloadSlotsTaken">Alle nedlastings slottene  oppbrukt</String>
+		<String Name="AllFileSlotsTaken">Alle fil slottene  oppbrukt</String>
 		<String Name="AllUsersOffline">Alle %d brukerne frakoblet</String>
 		<String Name="AlternatesSend">Søker TTH alternativer for: </String>
 		<String Name="AntiPassiveSearch">-- ADVARSEL --
 -- Du er i aktiv modus, men har aktivert passiv søking. --
 -- Ikke bruk passiv søk hvis du har søke resultater uten bruk av dette valget --
--- Fordi at du ikke får søke resultater fra passive brukere !!! --
+-- fordi at du ikke får søke resultater fra passive brukere !!! --
 -- Slå av i innstillinger i AirDC++; Alltid bruk Passiv Modus for Søking --
 </String>
 		<String Name="AllowNatTraversal">Tillat bruk av NAT for tilkobling til passive brukere</String>
@@ -47,11 +47,11 @@
 		<String Name="Automatic">Automatisk</String>
 		<String Name="Average">Gjennomsnittlig/s: </String>
 		<String Name="AverageUpload">Opplastings Hastighet</String>
-		<String Name="Away">Borte</String>
-		<String Name="AwayModeOff">Borte modus er nå av</String>
-		<String Name="AwayModeOn">Borte modus slått på med følgende tekst: </String>
+		<String Name="Away">BORTE</String>
+		<String Name="AwayModeOff">Borte modus av</String>
+		<String Name="AwayModeOn">Borte modus slått på som følgende: </String>
 		<String Name="B">B</String>
-		<String Name="BalloonPopups">Popopp ballong</String>
+		<String Name="BalloonPopups">Poppopp ballong</String>
 		<String Name="BitziLookup">Skjekk på Bitzi</String>
 		<String Name="BlockFinished">Segment Blokk Ferdig, venter...</String>
 		<String Name="BothUsersOffline">Begger brukerne frakoblet</String>
@@ -59,10 +59,10 @@
 		<String Name="BrowseAccel">Bla gjennom</String>
 		<String Name="BrowseFileList">Se bruker fil-liste</String>
 		<String Name="Bumped">Blandet</String>
-		<String Name="Cancel">Avbryt</String>
-		<String Name="CertificateGenerated">Lag nytt TLS Sertifikat</String>
+		<String Name="Cancel">Kanseller</String>
+		<String Name="CertificateGenerated">Lag ny TLS Sertifikat</String>
 		<String Name="CertificateNotTrusted">Sertifikatet er ikke sikkert, kan ikke koble til</String>
-		<String Name="CertificateGenerationFailed">TLS avslått, feilet med å lage sertifikatet: </String>
+		<String Name="CertificateGenerationFailed">TLS avslått, feila med å lage sertifikatet: </String>
 		<String Name="Cid">CID</String>
 		<String Name="Cipher">Siffer</String>
 		<String Name="Clear">Tøm chatten</String>
@@ -84,18 +84,18 @@
 		<String Name="Connected">Tilkoblet</String>
 		<String Name="Connecting">Kobler til...</String>
 		<String Name="ConnectingForced">Tilkobling (tvunget)...</String>
-		<String Name="ConnectingTo">Kobler til</String>
+		<String Name="ConnectingTo">Kobler til </String>
 		<String Name="ConnectingToServer">Kobler til server</String>
 		<String Name="Connection">Tilkobling</String>
 		<String Name="ConnectionClosed">Tilkobling lukket</String>
-		<String Name="ConnectionDetection">Sett på automatisk oppdaging av innkommende tilkoplings type</String>
+		<String Name="ConnectionDetection">Sett på automatisk deteksjon av innkommende tilkoblings type</String>
 		<String Name="ConnectionError">Tilkoblings feil</String>
 		<String Name="ConnectionTimeout">Tilkoblings timeout</String>
 		<String Name="ContinueSearch">Fortsett Søk</String>
 		<String Name="Copy">Kopier</String>
 		<String Name="CopyAll">Kopier Alt</String>
 		<String Name="CopyDescription">Kopier beskrivelsen</String>
-		<String Name="CopyEmailAddress">Kopier e-post addresse</String>
+		<String Name="CopyEmailAddress">Kopier e-mail addresse</String>
 		<String Name="CopyExactShare">Kopier Nøyaktig Deling</String>
 		<String Name="CopyHub">Kopier addresse til utklipp</String>
 		<String Name="CopyIp">Kopier IP</String>
@@ -117,9 +117,9 @@
 		<String Name="DecompressionError">Feil under dekomprimering</String>
 		<String Name="Default">Standard</String>
 		<String Name="Description">Beskrivelse</String>
-		<String Name="Destination">Destinasjon</String>
+		<String Name="Destination">Destinajon</String>
 		<String Name="Directory">Mappe</String>
-		<String Name="DirectoryAddError">Mappen eller mappe navnet eksisterer allerede</String>
+		<String Name="DirectoryAddError">Mappa eller mappe navnet eksisterer allerede</String>
 		<String Name="DisableSounds">Slå av lyder</String>
 		<String Name="Disabled">Ute av funksjon</String>
 		<String Name="DisconnectAll">Frakoble alle brukerne fra deg</String>
@@ -128,18 +128,18 @@
 		<String Name="DisconnectedUser">Bruker kobler fra, forlot hubben: </String>
 		<String Name="Document">Dokument</String>
 		<String Name="Done">Ferdig</String>
-		<String Name="DontAddSegmentText">Ikke start nytt segment hvis den totale hastigheten er mer enn</String>
+		<String Name="DontAddSegmentText">Ikke start nytt segment hvis den totale hastigheten er mere enn</String>
 		<String Name="DontRemoveSlashPassword">Ikke fjern /password før ditt passord</String>
-		<String Name="DontShareTempDirectory">Den midlertidige nedlastings mappen kan ikke bli delt</String>
-		<String Name="Download">Last ned</String>
+		<String Name="DontShareTempDirectory">Den midlertidige nedlastings mappa kan ikke bli delt</String>
+		<String Name="Download">Nedlast</String>
 		<String Name="DownloadFailed">Nedlastingen feilet: </String>
 		<String Name="DownloadFinishedIdle">Nedlasting fullført, hviler...</String>
 		<String Name="DownloadQueue">Nedlastings Køen</String>
 		<String Name="DownloadStarting">Nedlasting startet...</String>
 		<String Name="DownloadTo">Last ned til...</String>
-		<String Name="DownloadWholeDir">Last ned hele mappen</String>
-		<String Name="DownloadWholeDirTo">Last ned hele mappen til...</String>
-		<String Name="DownloadWithPriority">Last ned med prioritet...</String>
+		<String Name="DownloadWholeDir">Last ned hele mappa</String>
+		<String Name="DownloadWholeDirTo">Last ned hele mappa til...</String>
+		<String Name="DownloadWithPriority">Nedlast med prioritet...</String>
 		<String Name="Downloaded">Nedlastet</String>
 		<String Name="DownloadedBytes">Lastet ned %s (%.01f%%) på %s</String>
 		<String Name="DownloadedFrom"> laster ned fra </String>
@@ -147,17 +147,17 @@
 		<String Name="Downloading">Laster ned...</String>
 		<String Name="DownloadingHubList">Laster ned offentlig hubliste...</String>
 		<String Name="DownloadingList">Laster ned liste...</String>
-		<String Name="DownloadsRunning">Nedlasting holder på, vennligst frakoble dem</String>
+		<String Name="DownloadsRunning">Nedlasting holder på, venneligst frakobl dem</String>
 		<String Name="DuplicateSource">Duplikat kilde</String>
 		<String Name="Eb">EB</String>
 		<String Name="EditAccel">Rediger</String>
-		<String Name="Email">E-post</String>
-		<String Name="EnableMultiSource">Slå på segmentert nedlasting (Ikke tillatt i private hubber)</String>
+		<String Name="Email">E-Post</String>
+		<String Name="EnableMultiSource">Slå på segment nedlasting</String>
 		<String Name="EnterNick">Vennligts skriv inn et kallenavn i innstillingene!</String>
 		<String Name="EnterPassword">Vennligst skriv inn et passord</String>
 		<String Name="EnterSearchString">Skriv inn søke streng</String>
 		<String Name="ErrorCreatingHashDataFile">Feil under laging av hash data fil: </String>
-		<String Name="ErrorCreatingRegistryKeyAdc">Feil under laging av ADC register-nøkkel</String>
+		<String Name="ErrorCreatingRegistryKeyAdc">Feil under laging av  ADC register-nøkkel</String>
 		<String Name="ErrorCreatingRegistryKeyDchub">Feil under laging av dchub register-nøkkel</String>
 		<String Name="ErrorCreatingRegistryKeyMagnet">Feil under laging av magnet register-nøkkel</String>
 		<String Name="ErrorHashing">Feil under hashing </String>
@@ -168,16 +168,16 @@
 		<String Name="Executable">Program</String>
 		<String Name="ExpandAll">Utvid Alt</String>
 		<String Name="ExpandedResults">Utvid søke resultater</String>
-		<String Name="ExtraHubSlots">Slot ratio</String>
+		<String Name="ExtraHubSlots">Slott ratio</String>
 		<String Name="ExtraSlotsSet">Ekstra slot gitt</String>
-		<String Name="FailedToShutdown">Fikk ikke til å avslutte!</String>
-		<String Name="FailedToLoadCertificate">Feilet med å laste sertifiserings fil</String>
-		<String Name="FailedToLoadPrivateKey">Feilet med å laste privat nøkkel</String>
+		<String Name="FailedToShutdown">Faila med å avslutte!</String>
+		<String Name="FailedToLoadCertificate">Feila med å laste sertifiserings fil</String>
+		<String Name="FailedToLoadPrivateKey">Feila med å laste privat nøkkel</String>
 		<String Name="FastHash">Bruk rask hashe metode (slå av hvis du har problemer med hashing)</String>
-		<String Name="FavJoinShowingOff">Logge på/logge av favoritt brukerne vises av</String>
-		<String Name="FavJoinShowingOn">Logge på/logge av favoritt brukerne vises på</String>
+		<String Name="FavJoinShowingOff">Logga på/logga av favoritt brukerne vises av</String>
+		<String Name="FavJoinShowingOn">Logga på/logga av favoritt brukerne vises på</String>
 		<String Name="FavoriteDirName">Favoritt kallenavn</String>
-		<String Name="FavoriteDirNameLong">Under hvilket navn mappen ligger</String>
+		<String Name="FavoriteDirNameLong">Under hvilket navn mappa ligger</String>
 		<String Name="FavoriteHubAdded">Favoritt hub lagt til</String>
 		<String Name="FavoriteHubAlreadyExists">Hubben eksisterer allerede som en favoritt hub</String>
 		<String Name="FavoriteHubDoesNotExist">Denna hubben er ikke en favoritt hub</String>
@@ -186,21 +186,21 @@
 		<String Name="FavoriteHubConnection">Tilkobling</String>
 		<String Name="FavoriteHubRemoved">Favoritet hub fjernet</String>
 		<String Name="FavoriteHubs">Favoritt Hubber</String>
-		<String Name="FavoriteUserAdded">Favoritt bruker er lagt til</String>
+		<String Name="FavoriteUserAdded">Favoritt bruker lagt til</String>
 		<String Name="FavoriteUsers">Favoritt Brukere</String>
 		<String Name="FavuserOnline">Favoritt bruker pålogga</String>
 		<String Name="File">Fil</String>
-		<String Name="FileAlreadyFinished">Filen er allerede ferdig</String>
+		<String Name="FileAlreadyFinished">Fila er allerede ferdig</String>
 		<String Name="FileList">fil-liste</String>
 		<String Name="FileListDiff">Ta ut liste</String>
 		<String Name="FileListRefreshFailed">Fil-liste oppdatering feilet: </String>
 		<String Name="FileListRefreshFinished">Fil-liste oppdateringen fullført</String>
-		<String Name="FileListRefreshInProgress">Fil-liste oppdatering utføres, vennligst vent til den blir ferdig før du prøver å oppdatere igjen</String>
+		<String Name="FileListRefreshInProgress">Fil-liste oppdatering utføres, venneligts vent for at den fullføres før du prøver å oppdatere igjen</String>
 		<String Name="FileListRefreshInitiated">Fil-liste oppdatering startet</String>
-		<String Name="FileNotAvailable">Filen er ikke tilgjengelig</String>
+		<String Name="FileNotAvailable">Fila er ikke tilgjengelig</String>
 		<String Name="FileType">Fil-type</String>
-		<String Name="FileWithDifferentSize">En fil med en annen størrelse finnes allerede i nedlastingskøen</String>
-		<String Name="FileWithDifferentTth">En fil med en annen TTH finnes allerede i nedlastningskøen</String>
+		<String Name="FileWithDifferentSize">En fil med annerledes størrelse finnes allerede i nedlastingskøen</String>
+		<String Name="FileWithDifferentTth">En fil med annerledes TTH finnes allerede i nedlastningskøen</String>
 		<String Name="Filename">Filnavn</String>
 		<String Name="Files">Filer</String>
 		<String Name="FilesLeft">filer igjen</String>
@@ -214,27 +214,27 @@
 		<String Name="FinishedUploads">Ferdige Opplastinger</String>
 		<String Name="Folder">Mappe</String>
 		<String Name="Forbidden">Ulovlig</String>
-		<String Name="ForbiddenDollarFile">Filen med '$' symbol kan ikke bli lastet ned og vil ikke bli delt: </String>
+		<String Name="ForbiddenDollarFile">Fila med '$' symbol kan ikke bli nedlastet og vil ikke bli delt: </String>
 		<String Name="ForceAttempt">Tvunget forsøk</String>
 		<String Name="Gib">GiB</String>
 		<String Name="GenerateCertificates">Lag sertifikater</String>
 		<String Name="GetFileList">Hent Fil-Liste</String>
 		<String Name="GoToDirectory">Gå til mappe</String>
-		<String Name="GrantExtraSlot">Gi ekstra slot (for 10 min)</String>
-		<String Name="GrantExtraSlotDay">Gi ekstra slot (for 1 dag)</String>
-		<String Name="GrantExtraSlotHour">Gi ekstra slot (for 1 time)</String>
-		<String Name="GrantExtraSlotWeek">Gi ekstra slot (for 1 uke)</String>
-		<String Name="GrantSlotsMenu">Ekstra Sloter</String>
+		<String Name="GrantExtraSlot">Gi ekstra slott (10 min)</String>
+		<String Name="GrantExtraSlotDay">Gi ekstra slott (dag)</String>
+		<String Name="GrantExtraSlotHour">Gi ekstra slott (time)</String>
+		<String Name="GrantExtraSlotWeek">Gi ekstra slott (uke)</String>
+		<String Name="GrantSlotsMenu">Ekstra Slotter</String>
 		<String Name="GroupSearchResults">Grupper søke resultater</String>
-		<String Name="HashDatabase">Hasher databasen</String>
+		<String Name="HashDatabase">Hash databasen</String>
 		<String Name="HashProgress">Lager fil-indeks...</String>
 		<String Name="HashProgressBackground">Jobb i bakgrunnen</String>
 		<String Name="HashProgressStats">Statistikk</String>
 		<String Name="HashProgressText">Vennligst vent mens AirDC++ indekserer filene dine (de blir ikke delt før de har blitt indeksert)...</String>
-		<String Name="HashReadFailed">Kunne ikke lese hash data filen</String>
+		<String Name="HashReadFailed">Kunne ikke lese hash data fil</String>
 		<String Name="HashRebuilt">Hash-databasen er ombygd</String>
-		<String Name="HashingFailed">Hashing feilet på: </String>
-		<String Name="HashingFinished">Ferdig med å hashe: </String>
+		<String Name="HashingFailed">Hashing feila på: </String>
+		<String Name="HashingFinished">Hashing ferdig med: </String>
 		<String Name="Hibernate">Dvalemodus</String>
 		<String Name="High">Høy</String>
 		<String Name="Highest">Høyest</String>
@@ -247,43 +247,43 @@
 		<String Name="HubConnected">Koblet til hub</String>
 		<String Name="HubDisconnected">Tvunget frakobling fra hub</String>
 		<String Name="HubList">Hubliste</String>
-		<String Name="HubListDownloaded">Hub listen er nedlastet...</String>
-		<String Name="HubListEdit">Rediger hublisten</String>
-		<String Name="HubListLoadedFromCache">Hub listen er lastet i fra minne...</String>
+		<String Name="HubListDownloaded">Hub lista er nedlastet...</String>
+		<String Name="HubListEdit">Rediger hublista</String>
+		<String Name="HubListLoadedFromCache">Hub lista er lastet i fra minne...</String>
 		<String Name="HubName">Hub navn</String>
 		<String Name="HubSegments">Hub / Segmenter</String>
 		<String Name="HubTopic">Hub Emne :</String>
-		<String Name="HubUsers">Brukere</String>
-		<String Name="HublistCacheCorrupted">Cachet hub liste er ødelagt eller støttes ikke...</String>
-		<String Name="HublistDownloadCorrupted">Den nedlastede hub listen er ødelagt eller støttes ikke...</String>
+		<String Name="HubUsers">Brukerne</String>
+		<String Name="HublistCacheCorrupted">Cached hub list is corrupted or unsupported...</String>
+		<String Name="HublistDownloadCorrupted">Downloaded hub list is corrupted or unsupported...</String>
 		<String Name="Hubs">Hubber</String>
-		<String Name="Chatdblclickaction">Chat dobbel klikk på bruker hendelse</String>
+		<String Name="Chatdblclickaction">Chatt dobbel klikk på bruker hendelse</String>
 		<String Name="Check0byteShare">0 byte virkelig størrelse</String>
 		<String Name="CheckForbidden">Delte ulovlig fil : %s</String>
-		<String Name="CheckInflated">fil-listen var endret %s ganger</String>
+		<String Name="CheckInflated">fil-lista var endret %s ganger</String>
 		<String Name="ChooseFolder">Velg mappe</String>
 		<String Name="IgnoreTthSearches">Ignorer TTH-søk</String>
 		<String Name="IgnoreUser">Ignorer Bruker</String>
-		<String Name="IgnoredMessage">Ignorerte meldingen: </String>
-		<String Name="IncompleteFavHub">Hub addressen kan ikke være tom.</String>
+		<String Name="IgnoredMessage">Ignorerte meldinga: </String>
+		<String Name="IncompleteFavHub">Hub addressa kan ikke være tom.</String>
 		<String Name="IntegrityCheck">Integritets skjekk: %s (%s)</String>
 		<String Name="InvalidListname">Ugyldig fil-liste navn</String>
-		<String Name="InvalidNumberOfSlots">Ugyldig antall sloter</String>
+		<String Name="InvalidNumberOfSlots">Ugyldig antall slotter</String>
 		<String Name="InvalidSize">Ugyldig størrelse</String>
 		<String Name="InvalidTargetFile">Ugyldig målfil (manglende mappe, skjekk standard nedlastings mappe instillinger)</String>
-		<String Name="InvalidTree">Full TTH matcher ikke mot TTH roten</String>
+		<String Name="InvalidTree">Full TTH matcher ikke mot TTH rota</String>
 		<String Name="Ip">IP: </String>
 		<String Name="IpBare">IP</String>
 		<String Name="Items">Innhold</String>
-		<String Name="JoinShowingOff">Logge på/logge av vises av</String>
-		<String Name="JoinShowingOn">Logge på/logge av vises på</String>
-		<String Name="Joins">Logge på: </String>
+		<String Name="JoinShowingOff">Logga på/logga av vises av</String>
+		<String Name="JoinShowingOn">Logga på/logga av vises på</String>
+		<String Name="Joins">Logga på: </String>
 		<String Name="Kib">KiB</String>
 		<String Name="Kbps">kB/s</String>
-		<String Name="KeepFinishedFiles">Behold ferdig nedlastet filer i nedlastings køen</String>
+		<String Name="KeepFinishedFiles">Behold ferdig nedlasta filer i nedlastings køen</String>
 		<String Name="KickUser">Spark bruker(e)</String>
 		<String Name="KickUserFile">Spark bruker(e) med filnavn</String>
-		<String Name="LargerTargetFileExists">En fil med samme eller større størrelse eksiterer allerede i målmappen</String>
+		<String Name="LargerTargetFileExists">En fil med samme eller større størrelse eksiterer allerede i målmappa</String>
 		<String Name="LastHub">Hub (sist sett på, hvis frakoblet)</String>
 		<String Name="LastChange">Siste endring: </String>
 		<String Name="LastSeen">Sist sett på følgende tidspunkt</String>
@@ -294,9 +294,9 @@
 		<String Name="LibCrash">Programmet \"%s\" forårsaket et uvanlig unntak i AirDC++. Vennligst avinnstaller det, oppdatert det eller bruk et alternativt produkt.</String>
 		<String Name="Limit">Opplastings Fartsperre</String>
 		<String Name="ListenerFailed">Lytte port feilet (du må restarte AirDC++): </String>
-		<String Name="LoadedFileList">Fil listen er lastet.</String>
+		<String Name="LoadedFileList">Fil lista er lastet.</String>
 		<String Name="Loading">AirDC++ starter opp, vennligst vent...</String>
-		<String Name="LoadingFileList">Laster fil-listen, dette kan ta en stund hvis listen er stor.</String>
+		<String Name="LoadingFileList">Laster fil-liste, dette kan ta en stund hvis lista er stor.</String>
 		<String Name="Lock">Lås</String>
 		<String Name="LogOff">Slå av Logg</String>
 		<String Name="Low">Lav</String>
@@ -307,21 +307,21 @@
 		<String Name="PreviewExtension">Gjelder for fil-typene: (avi;mov;divx)</String>
 		<String Name="MagnetAsk">Spør for Magnet hendelse</String>
 		<String Name="MagnetDlgFile">Filnavn:</String>
-		<String Name="MagnetDlgHash">Fil Hashet:</String>
+		<String Name="MagnetDlgHash">Fil Hasha:</String>
 		<String Name="MagnetDlgNothing">Gjør ingenting</String>
-		<String Name="MagnetDlgQueue">Legg til denne filen til din nedlastings kø</String>
+		<String Name="MagnetDlgQueue">Legg til denne fila til din nedlastings kø</String>
 		<String Name="MagnetDlgRemember">Gjør den samme hendelsen neste gang uten å spørre</String>
-		<String Name="MagnetDlgSearch">Start et søk for denne filen</String>
+		<String Name="MagnetDlgSearch">Start et søk for denna fila</String>
 		<String Name="MagnetDlgSize">Fil Størrelse:</String>
-		<String Name="MagnetDlgTextBad">En MAGNET link var gitt til AirDC++, men den inneholdt ikke en gyldig fil hash for bruk på DC nettverket. Det vil derfor ikke skje noe som helst.</String>
+		<String Name="MagnetDlgTextBad">En MAGNET link var gitt til AirDC++, men den inneholdte ikke en gyldig fil hash for bruk på DC nettverket.  Ingen hendelse vil derfor skje.</String>
 		<String Name="MagnetDlgTextGood">AirDC++ har funnet en MAGNET link med en fil-hash som kan bli søkt etter på DC nettverket.  Hva vil du gjøre?</String>
 		<String Name="MagnetDlgTitle">MAGNET Link funnet</String>
 		<String Name="MagnetHandlerDesc">Last ned filer fra DC nettverket</String>
 		<String Name="MagnetHandlerRoot">AirDC++</String>
 		<String Name="MagnetShellDesc">URL:MAGNET URI</String>
-		<String Name="ManageGroups">Administrer grupper</String>
-		<String Name="MatchQueue">Sammenlign med nedlastingskøen</String>
-		<String Name="MatchedFiles">Matchet %d fil(er)</String>
+		<String Name="ManageGroups">Manage Groups</String>
+		<String Name="MatchQueue">Match mot nedlastingskøen</String>
+		<String Name="MatchedFiles">Matcha %d fil(er)</String>
 		<String Name="MaxHubs">Maks Hubber</String>
 		<String Name="MaxSegmentsNumber">Maks antall segmenter</String>
 		<String Name="MaxSize">Maks Størrelse</String>
@@ -331,7 +331,7 @@
 		<String Name="Mib">MiB</String>
 		<String Name="Mbitsps">MBits/s</String>
 		<String Name="Mbps">MB/s</String>
-		<String Name="MenuAbout">Om AirDC++</String>
+		<String Name="MenuAbout">Om AirDC++...</String>
 		<String Name="MenuAdlSearch">ADL Søk</String>
 		<String Name="MenuArrange">Arrangere ikoner</String>
 		<String Name="MenuCascade">Over hverandre</String>
@@ -340,8 +340,8 @@
 		<String Name="MenuCloseAllOfflinePm">Lukk alle frakoblet PM vinduer</String>
 		<String Name="MenuCloseAllPm">Lukk alle PM Vinduer</String>
 		<String Name="MenuCloseAllSearchframe">Lukk alle søke vinduer</String>
-		<String Name="MenuCloseDisconnected">Lukk hubber som du ikke klarer å logge inn på</String>
-		<String Name="MenuDiscuss">AirDC+++ diskusjons forum</String>
+		<String Name="MenuCloseDisconnected">Lukk hubber som er nede</String>
+		<String Name="MenuDiscuss">AirDC+++ disskusjons forum</String>
 		<String Name="MenuDonate">Donere (via paypal)</String>
 		<String Name="MenuDownloadQueue">Nedlastings Køen   Ctrl+D</String>
 		<String Name="MenuExit">Avslutt</String>
@@ -360,13 +360,13 @@
 		<String Name="MenuMinimizeAll">Minimer Alle</String>
 		<String Name="MenuNetworkStatistics">Nettverks Statistikk</String>
 		<String Name="MenuNotepad">Notisblokk	 Ctrl+N</String>
-		<String Name="MenuOpenDownloadsDir">Åpne nedlastings mappen</String>
+		<String Name="MenuOpenDownloadsDir">Åpne nedlastings mappa</String>
 		<String Name="MenuOpenFileList">Åpne nedlastede fil-lister...	Ctrl+L</String>
-		<String Name="MenuOpenMatchAll">Treff mot nedlastede lister</String>
+		<String Name="MenuOpenMatchAll">Match mot nedlastede lister</String>
 		<String Name="MenuOpenOwnList">Åpne din egen fil-liste</String>
 		<String Name="MenuPublicHubs">Offentlige Hubber	 Ctrl+P</String>
-		<String Name="MenuQuickConnect">Raskt koble til en Hub...	 Ctrl+Q</String>
-		<String Name="MenuReconnect">Koble til på nytt i nåværende hub    Ctrl+R</String>
+		<String Name="MenuQuickConnect">Rask Tilkoble en Hub...	 Ctrl+Q</String>
+		<String Name="MenuReconnect">Gjentilkoble i nåværende hub    Ctrl+R</String>
 		<String Name="MenuRefreshFileList">Oppdater din fil-liste</String>
 		<String Name="MenuRestoreAll">Gjenopprett Alle</String>
 		<String Name="MenuSearch">Søk	Ctrl+S</String>
@@ -383,10 +383,10 @@
 		<String Name="MenuWindow">Vindu</String>
 		<String Name="Menubar">Meny linje</String>
 		<String Name="MinShare">Minimum Delt</String>
-		<String Name="MinSlots">Minimum Sloter</String>
+		<String Name="MinSlots">Minimum Slotter</String>
 		<String Name="MinimumSearchInterval">Minimum søke intervall</String>
 		<String Name="Minshare">Min deling</String>
-		<String Name="Minslots">Min sloter</String>
+		<String Name="Minslots">Min slotter</String>
 		<String Name="Minutes">Minutter</String>
 		<String Name="Mode">Modus</String>
 		<String Name="Move">Flytt/Bytt navn</String>
@@ -395,7 +395,7 @@
 		<String Name="MynickInChat">Mitt kallenavn i hovedchatten</String>
 		<String Name="NetworkStatistics">Nettverks Statistikk</String>
 		<String Name="New">Ny...</String>
-		<String Name="NewDisconnect">Fjern bruker fra nedlastingskøen, v/hastighet under</String>
+		<String Name="NewDisconnect">Fjern bruker fra nl køen, v/hastighet under</String>
 		<String Name="Next">Neste</String>
 		<String Name="Nick">Kallenavn</String>
 		<String Name="NickTaken">Ditt kallenavn var allerede i bruk, vennligst bytt til et annet!</String>
@@ -403,49 +403,49 @@
 		<String Name="No">Nei</String>
 		<String Name="NoCertificateFileSet">TLS avslått, ingen sertifikat fil funnet</String>
 		<String Name="NoDirectorySpecified">Ingen mappe spesifisert</String>
-		<String Name="NoDownloadsFromSelf">Du prøver å laste ned i fra deg selv!</String>
+		<String Name="NoDownloadsFromSelf">Du prøver å nedlaste i fra degselv!</String>
 		<String Name="NoErrors">Ingen feil</String>
 		<String Name="NoFreeBlock">Ingen ledig blokk</String>
 		<String Name="NoFullTree">Ingen fullt tre tilgjengelig</String>
 		<String Name="NoLogForHub">Hub loggen eksisterer ikke</String>
 		<String Name="NoLogForUser">Bruker loggen eksisterer ikke</String>
-		<String Name="NoMatches">Ingen treff</String>
+		<String Name="NoMatches">Ingen matcher</String>
 		<String Name="NoNeededPart">Ingen brukbar del</String>
-		<String Name="NoSlotsAvailable">Ingen sloter tilgjengelig</String>
+		<String Name="NoSlotsAvailable">Ingen slotter tilgjengelig</String>
 		<String Name="NoUsers">Ingen brukere</String>
-		<String Name="NoUsersToDownloadFrom">Ingen brukere å laste ned fra</String>
+		<String Name="NoUsersToDownloadFrom">Ingen brukere å nedlaste fra</String>
 		<String Name="None">Ingen</String>
 		<String Name="Normal">Normal</String>
-		<String Name="NotListening">Lytter ikke etter tilkobling - vennligst start AirDC++ på nytt</String>
+		<String Name="NotListening">Lytter ikke etter tilkobling - vennligst restart AirDC++</String>
 		<String Name="Notepad">Notisblokk</String>
 		<String Name="NumberOfSegments">segment(er)</String>
 		<String Name="Offline">Frakoblet</String>
 		<String Name="Ok">OK</String>
 		<String Name="Online">Tilkoblet</String>
-		<String Name="OnlyFreeSlots">Kun brukere med ledig sloter</String>
+		<String Name="OnlyFreeSlots">Kun brukere med ledig slotter</String>
 		<String Name="OnlyTth">Kun resultater med TTH rot</String>
 		<String Name="OnlyWhereOp">Kun hvor jeg er OP</String>
 		<String Name="Open">Åpne</String>
 		<String Name="OpenDownloadPage">Åpne nedlastings siden</String>
-		<String Name="OpenFolder">Åpne mappen</String>
-		<String Name="OpenHubLog">Åpne hub loggen</String>
+		<String Name="OpenFolder">Åpne mappa</String>
+		<String Name="OpenHubLog">Åpne hubb loggen</String>
 		<String Name="OpenUserLog">Åpne bruker loggen</String>
-		<String Name="OverlapChunks">Overlapp sakte biter av en raskere bruker når filen er snart ferdig</String>
-		<String Name="OverlappedSlowSegment">Overlappet av en raskere bruker</String>
+		<String Name="OverlapChunks">Overlapp sakte biter av en raskere bruker når fila er snart ferdig</String>
+		<String Name="OverlappedSlowSegment">Overlappa av en raskere bruker</String>
 		<String Name="OwnCertificateFile">Egen sertifikat fil</String>
-		<String Name="Parts">Logget ut: </String>
+		<String Name="Parts">Logga ut: </String>
 		<String Name="ParamExists">Parameter med samme navn eksisterer allerede!</String>
 		<String Name="PassiveUser">Passiv bruker</String>
 		<String Name="Password">Passord</String>
 		<String Name="Path">Fullstendig bane</String>
 		<String Name="PauseSearch">Sett Søking på Pause</String>
-		<String Name="Paused">Pause</String>
+		<String Name="Paused">På pause</String>
 		<String Name="Pib">PiB</String>
 		<String Name="Picture">Bilde</String>
-		<String Name="Play">Spill av</String>
-		<String Name="PopupDownloadFailed">Vis poppopp når nedlasting har feilet</String>
-		<String Name="PopupDownloadFinished">Vis poppopp når nedlastingen er ferdig</String>
-		<String Name="PopupDownloadStart">Vis poppopp når nedlastingen har begynt</String>
+		<String Name="Play">Avspill</String>
+		<String Name="PopupDownloadFailed">Vis poppopp når nedlasting har feila</String>
+		<String Name="PopupDownloadFinished">Vis poppopp når nedlasting er ferdig</String>
+		<String Name="PopupDownloadStart">Vis poppopp når nedlasting har begynt</String>
 		<String Name="PopupFavoriteConnected">Vis poppopp når en favoritt bruker kobler til</String>
 		<String Name="PopupHubConnected">Vis poppopp når du har kommet inn i en hub</String>
 		<String Name="PopupHubDisconnected">Vis poppopp når du blir tvunget frakoblet fra en hub</String>
@@ -470,16 +470,16 @@
 		<String Name="ProgressCompress">Overførings progressjonsbar -  utpakket del</String>
 		<String Name="ProgressDone">Kø progressjonsbar - ferdige deler</String>
 		<String Name="ProgressDownloaded">Kø progressjonsbar - nedlastet stykker</String>
-		<String Name="ProgressRunning">Kø progressjonsbar - aktive stykker</String>
+		<String Name="ProgressRunning">Kø progressjonsbar –  aktive stykker</String>
 		<String Name="ProgressSegment">Overførings progressjonsbar - aktuell segment</String>
 		<String Name="ProgressVerified">Kø progressjonsbar - godkjente stykker</String>
 		<String Name="ProgressbarOdcStyle">Bruk oDC stil på progressjonsbaren i overføringer</String>
 		<String Name="Properties">Innstillinger</String>
 		<String Name="PublicHubs">Offentlige Hubber</String>
-		<String Name="Purge">Tøm listen</String>
+		<String Name="Purge">Tøm lista</String>
 		<String Name="RegexpTester">RegEksp Tester</String>
-		<String Name="RegexpMatch">Det er et treff!</String>
-		<String Name="RegexpMismatch">Det er ikke et treff.</String>
+		<String Name="RegexpMatch">Det er en match!</String>
+		<String Name="RegexpMismatch">Det er ikke en match.</String>
 		<String Name="RegexpInvalid">Invalid RegEksp!</String>
 		<String Name="Regexp">RegEksp</String>
 		<String Name="Queued">I kø: </String>
@@ -490,19 +490,19 @@
 		<String Name="ReallyExit">Vil du avslutte?</String>
 		<String Name="ReallyRemove">Vil du virkelige fjerne?</String>
 		<String Name="Reason">Begrunnelse</String>
-		<String Name="Reboot">Start på nytt</String>
+		<String Name="Reboot">Restart</String>
 		<String Name="RecentHubs">Siste Besøkte Hubber</String>
 		<String Name="RecheckFile">Skjekk integriteten igjen</String>
-		<String Name="RedirectAlreadyConnected">Du ble omdirigert til en hub som du allerede er koblet til</String>
+		<String Name="RedirectAlreadyConnected">Du ble omdirigert til en hub som du er allerede er koblet til</String>
 		<String Name="RedirectUser">Omdiriger bruker(e)</String>
 		<String Name="Refresh">Oppdater</String>
-		<String Name="RefreshUserList">Oppdater bruker-listen</String>
-		<String Name="Reliability">Pålitelighet</String>
+		<String Name="RefreshUserList">Oppdater bruker-lista</String>
+		<String Name="Reliability">Pålitlighet</String>
 		<String Name="Requesting">Ber om</String>
-		<String Name="RequestingList">Ber om fil liste</String>
+		<String Name="RequestingList">Requesting file list</String>
 		<String Name="Remove">Fjern</String>
 		<String Name="RemoveAll">Fjern alle</String>
-		<String Name="RemoveExtraSlot">Fjern ekstra slot</String>
+		<String Name="RemoveExtraSlot">Fjern ekstra slott</String>
 		<String Name="RemoveFromAll">Fjern bruker i fra nedlastingskøen</String>
 		<String Name="RemoveOffline">Fjern frakoblede brukere</String>
 		<String Name="RemoveSource">Fjern kilde</String>
@@ -536,26 +536,26 @@
 		<String Name="SetPriority">Sett prioritet</String>
 		<String Name="SetczdcBackColor">Bakgrunns farge</String>
 		<String Name="SetczdcBlackWhite">Sort/hvit</String>
-		<String Name="SetczdcCzcharsDisable">Fjern spesial tegn fra Tsjekkiske symboler</String>
+		<String Name="SetczdcCzcharsDisable">Fjern spesial tegn fra Sjekkiske symbolers</String>
 		<String Name="SetczdcDefaultStyle">Standard stil</String>
-		<String Name="SetczdcDisconnectingEnable">Slå på automatisk frakobling av trege nedlastinger</String>
+		<String Name="SetczdcDisconnectingEnable">Slå på auto koble fra sakte nedlastinger</String>
 		<String Name="SetczdcDownloadSpeed">Nedlastings Hastighet</String>
 		<String Name="SetczdcErrorColor">Feil farge</String>
 		<String Name="SetczdcHDownSpeed">Og hele fil hastigheten overskrider</String>
-		<String Name="SetczdcIDownSpeed">Auto koble fra ved nedlastings hastighet under</String>
+		<String Name="SetczdcIDownSpeed">Auto koble fra ved nl hastighet under</String>
 		<String Name="SetczdcMagnetUriHandler">Installer Magnet URI behandler  ved oppstart</String>
 		<String Name="SetczdcMinFileSize">Og fil størrelsen er større enn</String>
-		<String Name="SetczdcNoteSmallUp">* Små Opplastings Sloter; Sloter for fil-liste og Små Filer.</String>
+		<String Name="SetczdcNoteSmallUp">* Små Opplastings Slotter; Slotter for fil-liste og Små Filer.</String>
 		<String Name="SetczdcPassiveSearch">Bruk alltid passiv modus for Søking (Brukes kun hvis du vet hva dette gjør !!!)</String>
 		<String Name="SetczdcPmLines">Linjer fra loggen ved ny PM</String>
 		<String Name="SetczdcPreview">Forhåndstitt</String>
 		<String Name="SetczdcPrivateSound">Privat meldings lyd</String>
 		<String Name="SetczdcProgressbarColors">Progressjonsbar farger</String>
 		<String Name="SetczdcProgressbarText">Progressjonsbar tekst farger</String>
-		<String Name="SetczdcRemoveForbidden">Fjern Ulovlige (Uferdige Kazaa, Win MX, GetRight, eMule, AirDC++)</String>
-		<String Name="SetczdcSlowDisconnect">Automatisk koble fra trege nedlastinger</String>
+		<String Name="SetczdcRemoveForbidden">Fjern Ulovelige (Uferdige Kazaa, Win MX, GetRight, eMule, AirDC++)</String>
+		<String Name="SetczdcSlowDisconnect">Auto frakoble sakte nedlastinger</String>
 		<String Name="SetczdcSmallFiles">Små fil størrelse</String>
-		<String Name="SetczdcSmallUpSlots">Sett små sloter</String>
+		<String Name="SetczdcSmallUpSlots">Sett små slotter</String>
 		<String Name="SetczdcStyles">Tilgjengelige stiler</String>
 		<String Name="SetczdcTextColor">Tekst farge</String>
 		<String Name="SetczdcTextStyle">Tekst stil</String>
@@ -565,22 +565,22 @@
 		<String Name="SetczdcUploadSpeed">Opplastings Hastighet</String>
 		<String Name="SetczdcWinamp">Media Spiller</String>
 		<String Name="SetczdcWinampPath">Media Spiller Mappe:</String>
-		<String Name="SetstrongdcPartialSlots">Ekstra sloter for opplasting av delvis nedlastede filer</String>
+		<String Name="SetstrongdcPartialSlots">Ekstra slotter for opplasting av delvis nedlastet filer</String>
 		<String Name="Settings">Innstillinger</String>
 		<String Name="SettingsAddFolder">Legg til</String>
-		<String Name="SettingsAdlsBreakOnFirst">Stopp ved første ADLSøke treff</String>
+		<String Name="SettingsAdlsBreakOnFirst">Stopp ved første ADLSøke match</String>
 		<String Name="SettingsAdvanced">Avansert</String>
 		<String Name="SettingsAdvancedSuppressMainChat">Ignorer hovedchatten</String>
 		<String Name="SettingsAdvanced3">Kun for Eksperter</String>
 		<String Name="SettingsAllowUntrustedClients">Tilat TLS tilkoblinger for klienter uten klarerte sertifikater</String>
-		<String Name="SettingsAllowUntrustedHubs">Tillat TLS tilkoblinger til hubber uten klarerte sertifikater</String>
+		<String Name="SettingsAllowUntrustedHubs">Tilat TLS tilkoblinger til hubber uten klarerte sertifikater</String>
 		<String Name="SettingsAntiFrag">Bruk antisplittelses metode for nedlastinger</String>
 		<String Name="SettingsAppearance">Utseende</String>
 		<String Name="SettingsArgument">Argumenter</String>
 		<String Name="SettingsAutoAway">Auto-borte ved minimering (og tilbake ved gjennoppretting)</String>
 		<String Name="SettingsAutoDropSegmentedSource">Kun ved segment nedlasting (mer enn 2 aktive kilder)</String>
 		<String Name="SettingsAutoFollow">Automatisk følg omdirigeringer</String>
-		<String Name="SettingsAutoKick">Automatisk koble fra brukere som forlater en hub</String>
+		<String Name="SettingsAutoKick">Auto koble fra brukere som forlater en hub</String>
 		<String Name="SettingsAutoKickNoFavs">Ikke automatisk frakoble favoritt brukere som forlater en hub</String>
 		<String Name="SettingsAutoOpen">Auto-åpne ved oppstart</String>
 		<String Name="SettingsAutoPriorityDefault">Bruk Auto Prioritet som standard</String>
@@ -590,16 +590,16 @@
 		<String Name="SettingsAutoSearchLimit">Maks kilder for autosøking</String>
 		<String Name="SettingsAutoSlots">Maksimum auto åpent</String>
 		<String Name="SettingsAvipreview">Fil Forhåndsvisning</String>
-		<String Name="SettingsBindAddress">Bind addressen</String>
+		<String Name="SettingsBindAddress">Bind addressa</String>
 		<String Name="SettingsBindAddressHelp">Nettverks grensesnitt for alle tilkoblinger</String>
-		<String Name="SettingsBoldOptions">Gjør tittelinjen fet ved endringer</String>
+		<String Name="SettingsBoldOptions">Gjør tittelinja fet ved endringer</String>
 		<String Name="SettingsCertificates">Sikkerhets Sertifikater</String>
 		<String Name="SettingsClearSearch">Tøm søke boksen etter hvert søk</String>
 		<String Name="SettingsColorAlternate">Søke Alternativer</String>
 		<String Name="SettingsColorFavorite">Favoritt</String>
 		<String Name="SettingsColorIgnored">Ignorert</String>
 		<String Name="SettingsColorNormal">Normal</String>
-		<String Name="SettingsColorReserved">Har reservert slot</String>
+		<String Name="SettingsColorReserved">Har reservert slott</String>
 		<String Name="SettingsColors">Andre farger</String>
 		<String Name="SettingsCommand">Kommando</String>
 		<String Name="SettingsCompressTransfers">Slå på sikker og komprimerte overføringer</String>
@@ -609,7 +609,7 @@
 		<String Name="SettingsConfirmHubRemoval">Bekreft fjerning av favoritt hub</String>
 		<String Name="SettingsConfirmItemRemoval">Bekreft fjerning av fil i nedlastings køen</String>
 		<String Name="SettingsCzdc">AirDC++</String>
-		<String Name="SettingsCzdcExtraDownloads">Høyest Prioritet Ekstra Nedlastings Sloter</String>
+		<String Name="SettingsCzdcExtraDownloads">Høyest Prioritet Ekstra Nedlastings Slotter</String>
 		<String Name="SettingsDebugCommands">Feilsøkings kommandoer</String>
 		<String Name="SettingsDefaultAwayMsg">Standard borte melding</String>
 		<String Name="SettingsDirect">Direkte tilkobling</String>
@@ -632,16 +632,16 @@
 		<String Name="SettingsFilesMax">Maksimum filer på en gang (0 = uendelig)</String>
 		<String Name="SettingsFilterMessages">Filtrer spark og NMDC feilsøkings meldinger</String>
 		<String Name="SettingsFilterEnter">Aktiver søk/brukerliste filter ved å trykke Enter</String>
-		<String Name="SettingsFirewallNat">Brannmur med manuell port åpning (anbefales)</String>
+		<String Name="SettingsFirewallNat">Brannmur med manuell port åpning</String>
 		<String Name="SettingsFirewallPassive">Brannmur (passiv, det dårligste valget)</String>
 		<String Name="SettingsFirewallUpnp">Brannmur med UPnP (kun WinXP+)</String>
 		<String Name="SettingsFormat">Format</String>
-		<String Name="SettingsGeneral">Generelt</String>
+		<String Name="SettingsGeneral">Generell</String>
 		<String Name="SettingsGetUserCountry">Finn Bruker Land</String>
-		<String Name="SettingsHubUserCommands">Tillat spesialbygde bruker kommandoer fra hubben</String>
+		<String Name="SettingsHubUserCommands">Tilat spesialbygde bruker kommandoer fra hubben</String>
 		<String Name="SettingsChange">Bytt</String>
 		<String Name="SettingsIgnoreHubPms">Ignorer private meldinger fra hubben</String>
-		<String Name="SettingsIgnoreBotPms">Ignorer private meldinger fra bot'er</String>
+		<String Name="SettingsIgnoreBotPms">Ignorer private meldinger fra botter</String>
 		<String Name="SettingsIncoming">Innkommende tilkoblings innstillinger (se Hjelp/FAQ hvis usikker)</String>
 		<String Name="SettingsKeepLists">Ikke slett fil-lister ved avslutting</String>
 		<String Name="SettingsLanguageFile">Språk fil</String>
@@ -657,17 +657,17 @@
 		<String Name="SettingsLogging">Loggføring</String>
 		<String Name="SettingsLogs">Logger</String>
 		<String Name="SettingsMaxCompress">Maks kompresjons nivå</String>
-		<String Name="SettingsMaxHashSpeed">Maks hashe hastighet</String>
+		<String Name="SettingsMaxHashSpeed">Maks hashings hastighet</String>
 		<String Name="SettingsMaxTabRows">Maks tittelinje rader</String>
 		<String Name="SettingsMinimizeOnStartup">Minimer ved program oppstart</String>
 		<String Name="SettingsMinimizeTray">Minimer til systemstatusfelt</String>
 		<String Name="SettingsMouseOver">Mus Over</String>
 		<String Name="SettingsName">Navn</String>
 		<String Name="SettingsNetwork">Tilkoblings innstillinger</String>
-		<String Name="SettingsNoAwaymsgToBots">Ikke send borte-melding til bot'er</String>
+		<String Name="SettingsNoAwaymsgToBots">Ikke send borte-melding til botter</String>
 		<String Name="SettingsNormal">Normal</String>
-		<String Name="SettingsOdcShutdowntimeout">Timeout tid</String>
-		<String Name="SettingsOnlyHashed">OBS! Filer vises kun i din fil-liste etter at de har blitt hashet!</String>
+		<String Name="SettingsOdcShutdowntimeout">timeout tid</String>
+		<String Name="SettingsOnlyHashed">Notis; Filer vises kun i din fil-liste etter at de har blitt hasha!</String>
 		<String Name="SettingsOpenNewWindow">Åpne nytt vindu når man bruker /join</String>
 		<String Name="SettingsOperacolors">Progressjonsbar farger</String>
 		<String Name="SettingsOptions">Valg</String>
@@ -675,13 +675,13 @@
 		<String Name="SettingsOverride">Ikke tillat at Hub/UPnP overstyrer</String>
 		<String Name="SettingsPersonalInformation">Personlig Informasjon</String>
 		<String Name="SettingsPmBeep">Lag en irriterende lyd hver gang en privat melding er mottatt</String>
-		<String Name="SettingsPmBeepOpen">Lag en irriterende lyd når et privat meldings vindu er åpnet</String>
+		<String Name="SettingsPmBeepOpen">Lag en irriterende lyd når et privat meldings vindu er oåpnet</String>
 		<String Name="SettingsPmHistory">PM historie</String>
 		<String Name="SettingsPopunderFilelist">Åpne ny fil-liste vinduer i bakgrunnen</String>
 		<String Name="SettingsPopunderPm">Åpne nye private meldings vinduer i bakgrunnen</String>
-		<String Name="SettingsPopupBotPms">Åpne private meldinger fra hubben i eget vindu</String>
-		<String Name="SettingsPopupHubPms">Åpne private meldinger fra bot'er i eget vindu</String>
-		<String Name="SettingsPopupPms">Åpne private meldinger i eget vindu</String>
+		<String Name="SettingsPopupBotPms">Åpne private meldinger fra hubben i deres eget vindu</String>
+		<String Name="SettingsPopupHubPms">Åpne private meldinger fra botter i deres eget vindu</String>
+		<String Name="SettingsPopupPms">Åpne private meldinger i deres eget vindu</String>
 		<String Name="SettingsPorts">Porter</String>
 		<String Name="SettingsPrioAutoprio">Autoprioritets innstillinger - Auto prioritets valg må være AV!</String>
 		<String Name="SettingsPrioHigh">Høy prio maks størrelse</String>
@@ -695,11 +695,11 @@
 		<String Name="SettingsPublicHubListUrl">Offentlig Hubliste URL</String>
 		<String Name="SettingsQueue">Nedlastingskøen</String>
 		<String Name="SettingsRenameFolder">Bytt navn</String>
-		<String Name="SettingsRequiresRestart">OBS! De fleste av disse valgene krever at du starter AirDC++ på nytt</String>
+		<String Name="SettingsRequiresRestart">Notis; de fleste av dissa valga krever at du restarter AirDC++</String>
 		<String Name="SettingsReset">Tilbakestill</String>
 		<String Name="SettingsSbMaxSources">Maks kilder for match til nedlastingskøen</String>
 		<String Name="SettingsSearchHistory">Søke historie</String>
-		<String Name="SettingsSegment">Segmentert Nedlasting - NB! Ikke tillatt i private hubber</String>
+		<String Name="SettingsSegment">Segment Nedlasting</String>
 		<String Name="SettingsSelectColor">Velg farge</String>
 		<String Name="SettingsSelectTextFace">Tekst type</String>
 		<String Name="SettingsSelectWindowColor">Vindus farge</String>
@@ -720,7 +720,7 @@
 		<String Name="SettingsSortFavusersFirst">Sorter favoritt-brukerne først</String>
 		<String Name="SettingsSound">Lyder</String>
 		<String Name="SettingsSounds">Lyder</String>
-		<String Name="SettingsSpeedsNotAccurate">OBS! Fordi nedlastings hastigheten bytter, er ikke dette 100% nøyaktig...</String>
+		<String Name="SettingsSpeedsNotAccurate">Notis; fordi nedlastings hastigheten bytter, er ikke dette 100% nøyaktig...</String>
 		<String Name="SettingsStatusInChat">Vis status meldinger i hovedchatten</String>
 		<String Name="SettingsTcpPort">TCP</String>
 		<String Name="SettingsTlsPort">TLS</String>
@@ -736,8 +736,8 @@
 		<String Name="SettingsUnfinishedDownloadDirectory">Mappe for Uferdige nedlastinger</String>
 		<String Name="SettingsUploadLineSpeed">Linje hastighet (opplasting)</String>
 		<String Name="SettingsUploads">Deling</String>
-		<String Name="SettingsUploadsMinSpeed">Auto åpne 1 ekstra slot ved hastighet under (0 = av)</String>
-		<String Name="SettingsUploadsSlots">Opplastings sloter</String>
+		<String Name="SettingsUploadsMinSpeed">Auto åpne 1 ekstra slott ved hastighet under (0 = av)</String>
+		<String Name="SettingsUploadsSlots">Opplastings slotter</String>
 		<String Name="SettingsUrlHandler">Installer URL behandler ved oppstart (for å behandle dchub:// linker)</String>
 		<String Name="SettingsUseCtrlForLineHistory">Bruk CTRL for linje historie</String>
 		<String Name="SettingsUseOldSharingUi">Bruk gammelt delings bruker grensesnitt</String>
@@ -759,23 +759,23 @@
 		<String Name="ShowPopupAway">Vis kun poppopp i borte modus</String>
 		<String Name="ShowPopupMinimized">Vis kun poppopp når klienten er minimert</String>
 		<String Name="Shutdown">Avslutt PC`n</String>
-		<String Name="ShutdownAction">Avslutt-knapp</String>
+		<String Name="ShutdownAction">Avsluttnings-knapp</String>
 		<String Name="ShutdownOff">Avsluttnings sekvens deaktivert...</String>
 		<String Name="ShutdownOn">Avsluttnings sekvens aktivert...</String>
 		<String Name="Size">Størrelse</String>
 		<String Name="SizeExact">Nøyaktig</String>
 		<String Name="SizeMin">Min Størrelse</String>
-		<String Name="SkipRename">Nytt virtuelt navn er likt gammelt navn, hopper over...</String>
-		<String Name="SlotGranted">Slot gitt</String>
-		<String Name="Slots">Sloter</String>
-		<String Name="SlotsSet">Sett antall Sloter</String>
+		<String Name="SkipRename">Nytt virtuelt navn matcher gammalt navn, hopper over...</String>
+		<String Name="SlotGranted">Slott gitt</String>
+		<String Name="Slots">Slotter</String>
+		<String Name="SlotsSet">Sett antall Slotter</String>
 		<String Name="SlowUser">Treg bruker</String>
 		<String Name="SmallFileSizeSet">Sett Liten fil-størrelse</String>
-		<String Name="SocksAuthFailed">Socket server legalisering feilet (feil brukerID / passord?)</String>
+		<String Name="SocksAuthFailed">Socket server legalisering feila (feil brukerID / passord?)</String>
 		<String Name="SocksAuthUnsupported">Denne socket serveren støtter ikke brukerID / passord legalisering</String>
-		<String Name="SocksFailed">Socket serveren feilet med å opprette en tilkobling</String>
+		<String Name="SocksFailed">Socket serveren feila med å opprette en tilkobling</String>
 		<String Name="SocksNeedsAuth">Socket serveren krever legalisering</String>
-		<String Name="SocksSetupError">Feilet med å sette opp socket server for UDP omgang (skjekk socket addresse og port)</String>
+		<String Name="SocksSetupError">Feila med å sette opp socket server for UDP omgang (skjekk socket addresse og port)</String>
 		<String Name="SoundDownloadBegins">Nedlasting startet</String>
 		<String Name="SoundDownloadFinished">Nedlasting ferdig</String>
 		<String Name="SoundException">Uforklarlig Feilhendelse</String>
@@ -784,22 +784,22 @@
 		<String Name="SoundTthInvalid">Ødelagt fil</String>
 		<String Name="SoundTypingNotify">Skrive innformering</String>
 		<String Name="SoundUploadFinished">Opplasting ferdig</String>
-		<String Name="SourceTooOld">Den Eksterne klienten støtter ikke fullt TTH - kan ikke nedlaste fra den</String>
+		<String Name="SourceTooOld">Den Eksterne klienten støtter ikke fullt TTH – kan ikke nedlaste fra den</String>
 		<String Name="SourceType">Kilde Type</String>
 		<String Name="SpecifySearchString">Angi en søke streng</String>
 		<String Name="SpecifyServer">Angi en server å koble til</String>
 		<String Name="Speed">Hastighet</String>
 		<String Name="SslError">SSL Error</String>
-		<String Name="Started">Startet</String>
+		<String Name="Started">Starta</String>
 		<String Name="Status">Status</String>
-		<String Name="StealthMode">Vis som DC++ i denne hubben</String>
+		<String Name="StealthMode">Vis som DC++ i denna hubben</String>
 		<String Name="StoredPasswordSent">Lagret passord sendt...</String>
 		<String Name="StringNotFound">Strengen ble ikke funnet: </String>
 		<String Name="Supports">Støtter</String>
 		<String Name="Suspend">Suspender</String>
 		<String Name="TabsOnTop">Tittelinja på toppen</String>
 		<String Name="Tag">Tag</String>
-		<String Name="TargetFileExists">Filen eksisterer allerede i mål nedlastings mappen</String>
+		<String Name="TargetFileExists">File already exists at the target Download location</String>
 		<String Name="TargetFilenameTooLong">Målfilnavnet er for langt</String>
 		<String Name="TargetRemoved">Målet er fjernet</String>
 		<String Name="Tib">TiB</String>
@@ -808,27 +808,27 @@
 		<String Name="Time">Tid</String>
 		<String Name="TimeLeft">Tid igjen</String>
 		<String Name="TimestampHelp">
-- %a - Kort ukedags navn
+- %a – Kort ukedags navn
 - %A - Fullt ukedags navn
-- %b - Kort måneds navn
+- %b – Kort måneds navn
 - %B - Fullt måneds navn
 - %c - Dato og tid representert for der du er
-- %d - Dag i måneden i desimal nummer (01 – 31)
-- %H - Time i 24-timers format (00 – 23)
-- %I - Time i 12-timers format (01 – 12)
-- %j - Dag i året i desimal nummer (001 – 366)
-- %m - Måned i desimal nummer (01 – 12)
-- %M - Minutt i desimal nummer (00 – 59)
-- %p - Nåværende lokales A.M./P.M. indikator for 12-timers klokke
-- %S - Sekunder i desimal nummer (00 – 59)
-- %U - Uke i året i desimal nummer, med Søndag som første dagen i uka (00 – 53)
-- %w - Ukedag i desimal nummer (0 – 6; Søndag er 0)
-- %W - Uke i året i desimal nummer, med Mandag som første dagen i uka (00 – 53)
+- %d – Dag i måneden i desimal nummer (01 â€“ 31)
+- %H – Time i 24-timers format (00 â€“ 23)
+- %I – Time i 12-timers format (01 â€“ 12)
+- %j – Dag i året i desimal nummer (001 â€“ 366)
+- %m – Måned i desimal nummer (01 â€“ 12)
+- %M – Minutt i desimal nummer (00 â€“ 59)
+- %p – Nåværende lokales A.M./P.M. indikator for 12-timers klokke
+- %S – Sekunder i desimal nummer (00 â€“ 59)
+- %U – Uke i året i desimal nummer, med Søndag som første dagen i uka (00 â€“ 53)
+- %w – Ukedag i desimal nummer (0 â€“ 6; Søndag er 0)
+- %W – Uke i året i desimal nummer, med Mandag som første dagen i uka (00 â€“ 53)
 - %x - Dato representasjon der du er nå
 - %X - Tids representasjon der du er nå
-- %y - År uten århundre, i desimal nummer (00 – 99)
-- %Y - År uten århundre, i desimal nummer
-- %z, %Z - Enten tidssone navnet eller 
+- %y – År uten århundre, i desimal nummer (00 â€“ 99)
+- %Y – År uten århundre, i desimal nummer
+- %z, %Z – Enten tidssone navnet eller 
 tidssone forkortelsen, avhengig av register innstillingene; ingen symboler hvis tidssona er ukjent
 - %% - Prosent tegn
  
@@ -836,14 +836,14 @@ Standard: %H:%M:%S</String>
 		<String Name="TimestampHelpDesc">Tidspunkt Hjelp</String>
 		<String Name="TimestampsDisabled">Tidspunkt slått av</String>
 		<String Name="TimestampsEnabled">Tidspunkt slått på</String>
-		<String Name="TooLargeList">Større enn maksimum filliste størrelse (256 MB)</String>
-		<String Name="TooMuchData">Mer data ble sendt enn det var forventet</String>
+		<String Name="TooLargeList">Greater than maximum filelist size (256 MB)</String>
+		<String Name="TooMuchData">Mere data var sendt enn det var forventa</String>
 		<String Name="Total">Totalt: </String>
 		<String Name="Transferlistdblclickaction">Overføringsliste dobbel klikk hendelse</String>
 		<String Name="Transferred">Overført</String>
 		<String Name="TrustedCertificatesPath">Troverdige sertifikater mappe</String>
 		<String Name="CertificatesConstuction">Under konstruksjon, restart AirDC++ for å se effekten...</String>
-		<String Name="CertificatesExperimental">Eksperimentell funksjon, ikke regn AirDC++ klienten som sikker</String>
+		<String Name="CertificatesExperimental">Eksperimental funksjon, ikke beregn AirDC++ som sikker i noen tilfelle</String>
 		<String Name="TthAlreadyShared">En fil med samma hashen eksisterer allerede i din deling</String>
 		<String Name="TthInconsistency">TTH Uoverensstemmelse</String>
 		<String Name="TthRoot">TTH Rot</String>
@@ -854,8 +854,8 @@ Standard: %H:%M:%S</String>
 		<String Name="UnableToOpenFilelist">Ute av stand til å åpne fil-lista: </String>
 		<String Name="UnableToRename">Ute av stand til å bytte navn</String>
 		<String Name="UnableToSendFile">Ute av stand til å sende filen</String>
-		<String Name="UnfinishedFileNotFound">Uferdig fil ikke funnet</String>
-		<String Name="UnfinishedFileTooSmall">Uferdig fil for liten</String>
+		<String Name="UnfinishedFileNotFound">Uferdig file ikke funnet</String>
+		<String Name="UnfinishedFileTooSmall">Uferdig file for liten</String>
 		<String Name="UnignoreUser">Ikke ignorer Bruker</String>
 		<String Name="Unknown">Ukjent</String>
 		<String Name="UnknownCommand">Ukjent kommando: </String>
@@ -863,11 +863,11 @@ Standard: %H:%M:%S</String>
 		<String Name="UpdateCheck">Oppdaterings skjekk</String>
 		<String Name="UploadFinishedIdle">Opplasting ferdig, hviler...</String>
 		<String Name="UploadStarting">Opplasting starter...</String>
-		<String Name="UploadedBytes">Lastet opp %s (%.01f%%) ved %s</String>
+		<String Name="UploadedBytes">Lasta opp %s (%.01f%%) ved %s</String>
 		<String Name="UploadedTo"> opplastet til </String>
-		<String Name="UpnpFailedToCreateMappings">Feilet med å lage port mapping. Vennligst sett opp din NAT selv.</String>
-		<String Name="UpnpFailedToGetExternalIp">Feilet med å få tak i ekstern IP via UPnP. Vennligst sett den opp selv.</String>
-		<String Name="UpnpFailedToRemoveMappings">Feilet med å fjerne port mapping</String>
+		<String Name="UpnpFailedToCreateMappings">Feila med å lage port mappings. Vennligst sett opp din NAT selv.</String>
+		<String Name="UpnpFailedToGetExternalIp">Feila med å få tak i ekstern IP via UPnP. Vennligst sett den opp selv.</String>
+		<String Name="UpnpFailedToRemoveMappings">Feila med å fjerne port mappings</String>
 		<String Name="UseExplorerTheme">Bruk Explorer stil i listevisning og i grenvisning</String>
 		<String Name="User">Bruker</String>
 		<String Name="UserCmdCommand">Kommando</String>
@@ -875,7 +875,7 @@ Standard: %H:%M:%S</String>
 		<String Name="UserCmdFilelistMenu">Fil-liste Meny</String>
 		<String Name="UserCmdHub">Hub IP / DNS (tom = alle, 'op' = hvor du er operatør)</String>
 		<String Name="UserCmdHubMenu">Hub Meny</String>
-		<String Name="UserCmdChat">Chat</String>
+		<String Name="UserCmdChat">Chatt</String>
 		<String Name="UserCmdOnce">Send en gang per kallenavn</String>
 		<String Name="UserCmdParameters">Parametere</String>
 		<String Name="UserCmdPm">PM</String>
@@ -891,11 +891,11 @@ Rå: Sender rå-kommando til hub (for eksperter, slutter med '|'!).
 Chatt: Sender de som du skulle skrevet dem i hovedchatten.
 PM: Sender de som om du skrev den i pm. 
 Sammenhengen avgjør hvor kommandoer blir vist: 
-Hub-Meny: Hub linjen (på bunnen av skjermen) høyreklikk menyen. Chat-Meny: Bruker høyreklikk menyen i chat og PM menyen. 
+Hubb-Meny: Hubb linja (på bunnen av skjermen) høyreklikk menyen. Chatt-Meny: Bruker høyreklikk menyen i chatt og PM menyen. 
 Søke-Meny: Søke høyreklikk-menyen.
 Parametere: Name: Navn (bruk '\' for å lage undermenyer). 
 Kommando: Kommando tekst (kan inneholde parametere).
-Hub: Hub-IP som skrevet når du kobler til (tom = alle hubbene, \"op\" = hubbene hvor du er op). 
+Hubb: Hubb-IP som skrevet når du kobler til (tom = alle hubbene, \"op\" = hubbene hvor du er op). 
 Til: PM mottaker. Kun en gang: Send kun en gang per bruker fra søke vinduet.
 I parameterne, du kan bruke %[xxx] variabler I parameterne, du kan bruke &gt;dato/tids spesifiserer (%Y, %m, ...). 
 Disse er tilgjengelige:
@@ -911,20 +911,20 @@ Disse er tilgjengelige:
 %[line:reason]: Åpner et vindu som spør for \"reason\"</String>
 		<String Name="UserDescription">Bruker Beskrivelse</String>
 		<String Name="UserOffline">Bruker frakoblet</String>
-		<String Name="UserOnline">Laster ned... (bruker påkoblet)</String>
-		<String Name="UserWentOffline">Brukeren logget av</String>
-		<String Name="UserWentOnline">Brukeren logget på</String>
+		<String Name="UserOnline">Nedlaster... (bruker påkoblet)</String>
+		<String Name="UserWentOffline">Brukeren Logget Av</String>
+		<String Name="UserWentOnline">Brukeren Logget På</String>
 		<String Name="Userinfo">Bruker Info</String>
 		<String Name="UserlistIcons">Bruker-liste ikoner</String>
 		<String Name="Userlistdblclickaction">Brukerliste dobbel klikk hendelse</String>
 		<String Name="Users">Brukere</String>
-		<String Name="UsersOnline">Laster ned... (%d av %d brukerne er påkoblet)</String>
+		<String Name="UsersOnline">Nedlaster... (%d av %d brukerne er påkoblet)</String>
 		<String Name="Version">Versjon</String>
 		<String Name="Video">Video</String>
 		<String Name="ViewAsText">Se som tekst</String>
 		<String Name="VirtualName">Virtuellt navn</String>
 		<String Name="VirtualNameExists">Virtuellt mappe navn finnes allerede</String>
-		<String Name="VirtualNameLong">Navn som de andre ser mappen som</String>
+		<String Name="VirtualNameLong">Navn som de andre ser mappa som</String>
 		<String Name="Waiting">Venter...</String>
 		<String Name="WaitingFor">Venter i %i sekunder før neste søk...</String>
 		<String Name="WaitingTime">Vente tid</String>
@@ -933,12 +933,12 @@ Disse er tilgjengelige:
 		<String Name="WaitingUsers">Ventende Brukere</String>
 		<String Name="WaitingUsersOnline">Venter (%d av %d brukerne påkoblet)</String>
 		<String Name="WhatsThis">Hva er dette?</String>
-		<String Name="WhoIs">Hvem Er??</String>
-		<String Name="WinampHelp">/winamp - Virker med 1.x, 2.x, 5.x (ingen støtte for WinAmp 3)
+		<String Name="WhoIs">HvemEr??</String>
+		<String Name="WinampHelp">/winamp – Virker med 1.x, 2.x, 5.x (ingen støtte for WinAmp 3)
 
 - %[version]	Nummerisk Versjon (eks: 2.91)
 - %[state]		Spille status (eks: stoppet/pauset/avspiller)
-- %[title]		Vindus tittel fra Winamp - hvis du vil bytte dette for mp3r, Winamp &gt; Pref &gt; Input &gt; MPEG &gt; Title
+- %[title]		Vindus tittel fra Winamp – hvis du vil bytte dette for mp3r, Winamp &gt; Pref &gt; Input &gt; MPEG &gt; Title
 - %[rawtitle]	Vindus tittel fra (hvis %[title] ikke virker ordentlig)
 - %[percent]	Prosent (eks. 40%)
 - %[length]	Lengde i minutter:sekunder (eks: 04:09)
@@ -972,7 +972,7 @@ Tom = Standard Streng -&gt; winamp(%[version]) %[state](%[title]) status(%[perce
 		<String Name="TabInactiveBorder">Inaktiv kant farge</String>
 		<String Name="TabInactiveBgNotify">Inaktiv innformerings farge</String>
 		<String Name="FavNoPm">Ignorer private meldinger</String>
-		<String Name="HideShare">Gjem deling i denne hubben</String>
+		<String Name="HideShare">Hjem deling i denna hubben</String>
 		<String Name="WinampBack">Tilbake</String>
 		<String Name="WinampPlay">Spill av</String>
 		<String Name="WinampPause">Pause</String>
@@ -990,7 +990,7 @@ Tom = Standard Streng -&gt; winamp(%[version]) %[state](%[title]) status(%[perce
 		<String Name="PopupTitleFont">Tittel teksten</String>
 		<String Name="MaxMsgLength">Maks lengde</String>
 		<String Name="PopupImage">Popopp bilde</String>
-		<String Name="WmpHelp">/wmp - Virker med Windows Media Player 9+
+		<String Name="WmpHelp">/wmp – Virker med Windows Media Player 9+
 - %[version]	Hvilken Versjon av Windows Media Player du bruker
 - %[fullversion]	Full versjon av Windows Media Player
 - %[status]	Standard-formatert status streng fra Windows Media Player
@@ -1000,7 +1000,7 @@ Tom = Standard Streng -&gt; winamp(%[version]) %[state](%[title]) status(%[perce
 - %[bar]		ASCII progressjons bar, 10 symboler bred, ingen klemmer innkludert (eks. [----|-----])
 - %[length]	Den totale lengden på det som avspilles i (HH:)MM:SS
 - %[artist]	Navnet på artisten på det som avspilles
-- %[album]	Navnet på albumet denne sangen er fra
+- %[album]	Navnet på albumet denna sangen er fra
 - %[genre]	Sjanger for det som avspilles
 - %[bitrate]	Kvaliteten på det som avspilles
 - %[year]	Utgivelses år for albumet (ingen WMP9 støtte)
@@ -1022,20 +1022,20 @@ Tom = Standard Streng -&gt; +me %[title] ved %[bitrate] &lt;Windows Media Player
 - %[bitrate]	Kvaliteten på det som avspilles(kbps)
 - %[frequency]	Frekvensen på det som avspilles(kHz)
 - %[year]	Utgivelsesår/opptagsår for det som avspilles
-- %[size]	Størrelsen på filen som avspilles
+- %[size]	Størrelsen på fila som avspilles
 - %[state]	Spille status for iTunes (spiller av/stoppa)
  
 Tom = Standard Streng -&gt; +me spiller: %[title] ved %[bitrate] &lt;iTunes %[version]&gt;</String>
 		<String Name="ItunesHelpDesc">iTunes Hjelp</String>
 		<String Name="MpcHelp">/mpc - For Windows Media Player Classic media spamming
-- %[filename]	Navnet på filen som blir avspilt
+- %[filename]	Navnet på fila som blir avspilt
 - %[title]	Tittelen på det som blir avspilt (uten fil-etternavn)
-- %[size]	Størrelsen på filen som blir avspilt
+- %[size]	Størrelsen på fila som blir avspilt
 - %[state]	Nåværende status for Windows Media Player Classic (avspiller/pausa/stoppa)
 - %[elapsed]	Tid gått i minutter:sekunder
 - %[percent]	Tid gått i prosent fra den totale lengden
 - %[bar]	ASCII progressjons bar, 10 symboler bredt ikke innkluderte klemmer (eks. [----|-----])
-- %[length]	Den totale lengden for filen som blir avspilt
+- %[length]	Den totale lengden for fila som blir avspilt
  
 Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</String>
 		<String Name="MpcHelpDesc">Windows Media Player Classic Hjelp</String>
@@ -1049,7 +1049,7 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="WinampLocation">Målmappe</String>
 		<String Name="Browsew">Lokaliser..</String>
 		<String Name="SettingsIgnore">Ignorer</String>
-		<String Name="AlreadyIgnored">Brukeren er allerede i listen</String>
+		<String Name="AlreadyIgnored">Brukeren er allerede i lista</String>
 		<String Name="IgnoreClear">Tøm</String>
 		<String Name="UseRegexpOrWc">Bruk regeksp eller viltkort</String>
 		<String Name="IgnoredUsers">Ignorerte brukere</String>
@@ -1058,7 +1058,7 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="Outgoing">utgående</String>
 		<String Name="Begin">Start</String>
 		<String Name="End">Avslutt</String>
-		<String Name="NatSort">Bruk naturlig sortering</String>
+		<String Name="NatSort">Bruk naturlig sotering</String>
 		<String Name="SetairdcAntiVir">Virus skanning etter ferdig nedlasting</String>
 		<String Name="UpdateIp">Oppdater IP ved oppstart</String>
 		<String Name="SettingsServerCommands">Vis Server Kommandoer som status meldinger</String>
@@ -1068,9 +1068,9 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="SettingsAirdownloadsSegmentSize">Minimum segment størrelse</String>
 		<String Name="StSkiplistShare">Ikke del følgende filer (separer filer med '|', viltkort er tilatt):</String>
 		<String Name="StSkiplistShareBorder">Hoppover-liste Deling</String>
-		<String Name="StMinislotsExt">Gi minisloter automatisk for følgende filtyper: (separer etternavn med '|', viltkort er tilatt)</String>
-		<String Name="SbMinislots">Minisloter</String>
-		<String Name="SettingsAirsharing">AirDC Deling</String>
+		<String Name="StMinislotsExt">Gi minislotter automatisk for følgende filtyper: (separer etternavn med '|', viltkort er tilatt)</String>
+		<String Name="SbMinislots">Minislotter</String>
+		<String Name="SettingsAirsharing">AirDeling</String>
 		<String Name="SettingsSbSkiplistDownload">Hopp over lista</String>
 		<String Name="SettingsStPaths">Separer mapper med |</String>
 		<String Name="SettingsSbHighPrioFiles">Høy prioritets filer - Auto Prioritets valg må være av</String>
@@ -1084,10 +1084,10 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="HighlightTextStyles">Tekst design</String>
 		<String Name="HighlightMatchOptions">Matche valg</String>
 		<String Name="HighlightActions">Handlinger</String>
-		<String Name="HighlightTextToMatch">Tekst å finne</String>
+		<String Name="HighlightTextToMatch">Tekst å matche</String>
 		<String Name="HighlightOk">OK</String>
 		<String Name="HighlightCancel">Avbryt</String>
-		<String Name="SettingsStMatchType">Treff Type</String>
+		<String Name="SettingsStMatchType">Matchings Type</String>
 		<String Name="SettingsBtnUpdate">Oppdatere</String>
 		<String Name="SettingsBtnMoveup">Flytt Opp</String>
 		<String Name="SettingsBtnMovedown">Flytt Ned</String>
@@ -1095,9 +1095,9 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="SettingsSelectSound">Velg Lyd Fil</String>
 		<String Name="SettingsPopup">Vis Poppopp</String>
 		<String Name="SettingsPlaySound">Avspill Lyd</String>
-		<String Name="SettingsFlashWindow">Blinkende Vindu</String>
+		<String Name="SettingsFlashWindow">Blink Vindu</String>
 		<String Name="SettingsIncludeNick">Inkluder Kallenavn</String>
-		<String Name="SettingsWholeLine">Hele Linjen</String>
+		<String Name="SettingsWholeLine">Hele Linja</String>
 		<String Name="SettingsEntireWord">Hele Ordet</String>
 		<String Name="SettingsTabColor">Bytt Tittelinjefarge</String>
 		<String Name="SettingsLastlog">Legg til historien</String>
@@ -1114,8 +1114,8 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="PresetUrls">Urlr</String>
 		<String Name="PresetMe">/me</String>
 		<String Name="PresetStatus">Status meldinger</String>
-		<String Name="PresetJoins">Logge inn</String>
-		<String Name="PresetParts">Logge ut</String>
+		<String Name="PresetJoins">Logga inn</String>
+		<String Name="PresetParts">Logga ut</String>
 		<String Name="PresetReleases">Utgivelser</String>
 		<String Name="PresetWinampSpam">Winamp spam</String>
 		<String Name="PresetKickedUsers">Sparket brukere</String>
@@ -1124,16 +1124,16 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="AddEmpty">Kan ikke legge til en tom streng</String>
 		<String Name="BadRegexp">Dårlig format i vanlige uttrykk</String>
 		<String Name="Airdc">AirDC++</String>
-		<String Name="FlashWindowOnPm">Blinkende vindu ved PM</String>
-		<String Name="FlashWindowOnNewPm">Blinkende vindu ved PM kun hvis det er fra en ny bruker</String>
-		<String Name="FlashWindowOnMynick">Blinkende vindu ved bruk av mitt kallenavn i PM/Hub</String>
+		<String Name="FlashWindowOnPm">Blink vindu ved PM</String>
+		<String Name="FlashWindowOnNewPm">Blink vindu ved PM kun hvis det er fra en ny bruker</String>
+		<String Name="FlashWindowOnMynick">Blink vindu ved bruk av mitt kallenavn i PM/Hub</String>
 		<String Name="SettingsAirsearch">Søking</String>
 		<String Name="AutosearchEnable">Slå på søking for spesifiserte filer / TTH</String>
 		<String Name="AutosearchEnableTime">Automatisk søk hver</String>
 		<String Name="AutosearchRecheckText">Reskjekk Alt innhold etter</String>
 		<String Name="SettingsValue">Verdi</String>
 		<String Name="Action">Hendelse</String>
-		<String Name="LineEmpty">Linjen må ikke være tom</String>
+		<String Name="LineEmpty">Linja må ikke være tom</String>
 		<String Name="SearchTth">Søk med TTH</String>
 		<String Name="Pause">Pause</String>
 		<String Name="SettingsAirappearance">AirDC++\Utseende</String>
@@ -1153,7 +1153,7 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="SettingsLpor">Portugisisk</String>
 		<String Name="SettingsLpol">Polsk</String>
 		<String Name="SettingsLfr">Fransk</String>
-		<String Name="SettingsLd">Tysk</String>
+		<String Name="SettingsLd">Nederlandsk</String>
 		<String Name="OpenFirst">Åpne Første X hubber ved oppstart</String>
 		<String Name="SearchByTth">Søk med TTH</String>
 		<String Name="Paste">Lim Inn</String>
@@ -1164,19 +1164,19 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="SettingsLnor">Norsk</String>
 		<String Name="RefreshFileList">Oppdater din fil-liste</String>
 		<String Name="UseRegexp">Bruk Regeksp</String>
-		<String Name="FavDlSpeed">Legg bruker til i Favoritter om Nedlastings farten er over</String>
+		<String Name="FavDlSpeed">Legg bruker til Favoritter Hvis Nedlastings Hastigheten er over</String>
 		<String Name="Filewdir">Filnavn med mappe</String>
 		<String Name="CaseSensitive">Helt nøyaktigt</String>
 		<String Name="InvalidRegexp">Invalid RegEksp!</String>
 		<String Name="CaseInsensitiveRegexp">Ikke nøyaktig RegEksp</String>
-		<String Name="Match">Treff</String>
+		<String Name="Match">Match</String>
 		<String Name="IdcMinSegmentSizeLabel">Minimum segment størrelse</String>
 		<String Name="IdcSettingsSegments">Segmenter</String>
 		<String Name="Raw">Rå</String>
-		<String Name="DirectoryShared">Mappen er allerede delt</String>
-		<String Name="DirectoryParent">Fjern alle undermapper før du legger til denne</String>
-		<String Name="SettingsOverlapChunks">Overlapp sakte nedlastinger av en raskere bruker når fiena er snart ferdig nedlastet</String>
-		<String Name="OpenLogsInternal">Åpne logg filer internt (dette kan ta lengre tid når man åpner store logg-filer)</String>
+		<String Name="DirectoryShared">Mappa er allerede delt</String>
+		<String Name="DirectoryParent">Fjern alle undermapper før du legger til denna</String>
+		<String Name="SettingsOverlapChunks">Overlapp sakte nedlastinger av en raskere bruker når fila er snart ferdig nedlastet</String>
+		<String Name="OpenLogsInternal">Åpne logg filer internt (utførelsen kan ta lengre tid når man åpner store logg-filer)</String>
 		<String Name="MenuOpenSystemlog">Åpne System Loggen</String>
 		<String Name="Name">Navn</String>
 		<String Name="SettingsDupeText">Bruk Duplikat Farge for Tekst istedetfor Bakgrunn</String>
@@ -1192,7 +1192,7 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="ProppageGeneralChatText">Generell chatte tekst</String>
 		<String Name="ProppageMyNick">Mitt Kallenavn</String>
 		<String Name="ProppageMyOwnMsg">Min egen melding</String>
-		<String Name="ProppagePrivateMsg">Privat melding</String>
+		<String Name="ProppagePrivateMsg">Private melding</String>
 		<String Name="ProppageSystemMsg">System melding</String>
 		<String Name="ProppageServerMsg">Server melding</String>
 		<String Name="ProppageTimestamp">Tidspunkt</String>
@@ -1200,26 +1200,26 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="ProppageUrl">URL</String>
 		<String Name="ProppageFavUser">Favoritt bruker</String>
 		<String Name="ProppageOperator">Operatør</String>
-		<String Name="ProppageNorm">Andre brukere</String>
+		<String Name="ProppageNorm">Other users</String>
 		<String Name="MaxResizeLines">linjer maks v/endring av størrelse</String>
 		<String Name="DontShareEmptyDirs">Ikke del tomme mapper</String>
-		<String Name="OnlyShareFullDirs">Del kun fullt hashede mapper</String>
-		<String Name="StRefreshDelay">Oppdaterings forsinkelse etter at klienten starter</String>
-		<String Name="StAirdcSlot">Ekstrasloter for andre AirDC++ brukere(v.2.05--&gt;)</String>
+		<String Name="OnlyShareFullDirs">Del kun fult hasha mapper</String>
+		<String Name="StRefreshDelay">Oppdaterings Forsinkelse Etter klienten starter</String>
+		<String Name="StAirdcSlot">Ekstraslotter for andre AirDC++ brukere(v.2.05--&gt;)</String>
 		<String Name="SettingsDupeSearch">Bruk Duplikat Farge i Søk</String>
 		<String Name="SettingsLrus">Russisk</String>
-		<String Name="FileAlreadyShared">Du prøver å laste ned en fil som alerede deles! Filnavn: </String>
+		<String Name="FileAlreadyShared">Trying to Download File already shared! File: </String>
 		<String Name="PasswdProtectStatic">Klient beskyttelse</String>
 		<String Name="PasswdProtectChckbox">Slå på passord-beskyttelse</String>
 		<String Name="PasswordDesc">Vennligst skriv inn et passord:</String>
-		<String Name="PasswordTitle">Identifisering kreves for å utføre dette</String>
+		<String Name="PasswordTitle">Identifisering Kreves For Å Utføre Dette</String>
 		<String Name="Unlock">Lås opp</String>
 		<String Name="PasswdProtectTrayChckbox">Beskytt AirDC++ minimert i systemstatusfeltet</String>
-		<String Name="Note">OBS! Hvis du slår av passord beskyttelsen blir ditt passord fjernet!</String>
+		<String Name="Note">Notis; Hvis du slår av passord beskyttelsen blir ditt passord fjerna!</String>
 		<String Name="ReaddAll">Legg tilbake alle Kildene</String>
 		<String Name="HubNotProtected">Ingen passord var påkrevet/gitt ved pålogging, kobler fra hubben...</String>
-		<String Name="DisallowConnectionToPassedHubs">Automatisk koble fra hubber der man ikke er registrert</String>
-		<String Name="DontShareDownloadDirectory">Nedlastings mappen kan ikke deles</String>
+		<String Name="DisallowConnectionToPassedHubs">Automatisk koble fra hubber hvis man ikke er registrert der</String>
+		<String Name="DontShareDownloadDirectory">Mappen for nedlasting kan ikke bli delt!</String>
 		<String Name="TotalTimeLeft">Totalt Tid igjen</String>
 		<String Name="BoldHubTabsOnKick">Gjør hub vinduer fete ved spark meldinger</String>
 		<String Name="Skiplist">Hoppeoverliste, Viltkort, Separer | </String>
@@ -1228,42 +1228,120 @@ Tom = Standard Streng -&gt; +me spiller: %[title] &lt;Media Player Classic&gt;</
 		<String Name="Preset1">Valg1</String>
 		<String Name="Preset2">Valg2</String>
 		<String Name="Preset3">Valg3</String>
-		<String Name="DirectoryIsHidden">Mappen er skjult</String>
-		<String Name="DirectoryNotFound">Mappen ble ikke delt</String>
+		<String Name="DirectoryIsHidden">Mappa er gjemt</String>
+		<String Name="DirectoryNotFound">Mappa ble ikke delt</String>
 		<String Name="Group">Gruppe</String>
 		<String Name="DisableRefreshOnSharepage">Slå av Oppdatering av Deling ved Avsluttning</String>
 		<String Name="RefreshVnameOnSharepage">Oppdater Kun Endringer i Deling ved Avsluttning Innstilling</String>
 		<String Name="QueueSize">Kø Størrelse</String>
 		<String Name="AutoAddSource">Automatisk legg til nedlastings kilder fra søk</String>
 		<String Name="Update">Oppdater</String>
-		<String Name="UpnpNoImplementation">Ingen UPnP implementering er tilgjengelig</String>
-		<String Name="UpnpSuccessfullyCreatedMappings">Klarte å lage port mapping</String>
+		<String Name="UpnpNoImplementation">Ingen UPnP inplementering tilgjngelig</String>
 		<String Name="UpdateClient">Oppdaterings fil er ferdig nedlastet. Ønsker du å oppdatere? (AirDC++ vil avsluttes)</String>
 		<String Name="UpdateFileDetected">Oppdaterings Fil oppdaget. Ønsker du å oppdatere? (AirDC++ vil avsluttes)</String>
 		<String Name="TestWrite">Test skriv til AirDC++ mappene ved oppstart</String>
-		<String Name="SettingsIncomingRefreshTime">Innkommende oppfrisknigstid</String>
-		<String Name="SettingsUseAdls">Bruk ADLSearch på fil lister</String>
-		<String Name="SettingsUseAdlsOwnList">Bruk ADLSearch på egen fil liste</String>
-		<String Name="SettingDontDlAlreadyQueued">Ikke last ned filer som allerede ligger i køen</String>
-		<String Name="FileWithSameTth">Fil med samme TTH eksisterer allerede i køen</String>
-		<String Name="FavShowJoin">Vis bruker logger på / av</String>
-		<String Name="UpnpRemovedMappings">Klarte å fjerne port mapping</String>
-		<String Name="SettingsDownloadsExpand">Automatisk utvid nedlastinger i overførings visning</String>
-		<String Name="SystemShowFinishedUploads">Vis ferdige opplastinger i System loggen</String>
-		<String Name="SystemShowFinishedDownloads">Vis ferdige nedlastinger i System loggen</String>
-		<String Name="Wizard">Guide for oppsett</String>
-		<String Name="FormatRelease">Vis Release navn som linker i chatten</String>
-		<String Name="CopyDirectory">Kopier mappe</String>
-		<String Name="SearchForAlternatesDir">Søk mapper etter alternativer</String>
-		<String Name="ErrorHashingCrc32">Beregnet CRC32 stemmer ikke med den vi fant i .SFV filen.</String>
-		<String Name="SettingsShareSfv">Ikke .sfv sjekk filer som holder på å hasje inn i sharen</String>
-		<String Name="SearchDirectory">Søk i mappe</String>
-		<String Name="SearchGoogle">Søk på Google</String>
-		<String Name="SearchGoogleTitle">Søk på Google (bare tittel)</String>
-		<String Name="SearchGoogleFull">Søk på Google (fullt release navn)</String>
-		<String Name="SearchTvcom">Søk på TV.com</String>
-		<String Name="SearchImdb">Søk på Imdb</String>
-		<String Name="SearchMetacritic">Søk med Metacritic</String>
+		<String Name="SettingsIncomingRefreshTime">Inkommende Oppdaterings Tid</String>
+		<String Name="SettingsUseAdls">Bruk ADLSøk i Fil-lister</String>
+		<String Name="SettingsUseAdlsOwnList">Bruk ADLSøk i din Egen Fil-liste</String>
+		<String Name="SettingDontDlAlreadyQueued">Ikke Nedlast Filer allerede i Nedlastings-køen</String>
+		<String Name="FileWithSameTth">Fil med samme TTH finnes allerede i Nedlastings-køen</String>
+		<String Name="FavShowJoin">Vis Bruker Logget på / Logget av</String>
+		<String Name="SettingsDownloadsExpand">Auto Utvid Nedlastinger i Overføringsvinduet</String>
+		<String Name="SystemShowFinishedUploads">Vis Ferdige Opplastinger i System-loggen</String>
+		<String Name="SystemShowFinishedDownloads">Vis Ferdige Nedlastinger i System-loggen</String>
+		<String Name="Wizard">Instillings Forklaring</String>
+		<String Name="CopyDirectory">Kopier Mappe</String>
+		<String Name="SearchForAlternatesDir">Søk Mappe for alternativer</String>
+		<String Name="ErrorHashingCrc32">Den kalkulerte CRC32 matcher ikke den funnet i SFV filen.</String>
+		<String Name="SettingsShareSfv">Ikke utfør SFV sjekk for filer som blir hashet inn i deling</String>
+		<String Name="SearchDirectory">Søk Mappe</String>
+		<String Name="SearchGoogle">Søk Google</String>
+		<String Name="SearchGoogleTitle">Søk Google (kun tittel)</String>
+		<String Name="SearchGoogleFull">Søk Google (fult utgivelses navn)</String>
+		<String Name="SearchTvcom">Søk TV.com</String>
+		<String Name="SearchImdb">Søk Imdb</String>
+		<String Name="SearchMetacritic">Søk Metacritic</String>
 		<String Name="FavLogChat">Logg Hovedchatten</String>
+		<String Name="UpnpRemovedMappings">Porter i Upnp er suksessfult fjernet</String>
+		<String Name="UpnpSuccessfullyCreatedMappings">Porter i Upnp er suksessfult laget</String>
+		<String Name="FormatRelease">Formater Utgivelses Navn som Linker i chatten</String>
+		<String Name="ProppageListHl">Fil-liste Høylys</String>
+		<String Name="ProppageListHlMsg">AirDC-Høylys</String>
+		<String Name="ListHlText">Høylys matcher i Fil-lister (viltkort, | separer)</String>
+		<String Name="ListHlExample">Eksempel, *NORDISK* (kan senke fil-liste nedlasting...)</String>
+		<String Name="SettingsDupes">Duplikat Instillinger</String>
+		<String Name="ReportSkiplist">Vis Hoppeoverliste blokkerte filer i systemloggen</String>
+		<String Name="MatchAdl">ADLSøk</String>
+		<String Name="MatchingAdl">Matcher Fil-liste med ADLSøk, dette kan ta en stund hvis listen er stor...</String>
+		<String Name="LogHashing">Vis Hashede Filer i systemloggen</String>
+		<String Name="SaveShare">Automatisk lagre delingen hvert </String>
+		<String Name="UseFtpLogger">Bruk ekstern sfv skjekking (f.eks. FTPLogger, Sett på kun hvis du vet hva du gjør)  </String>
+		<String Name="MatchPartial">Match del-liste</String>
+		<String Name="MenuScanMissing">Skan deling for manglede/ekstra filer</String>
+		<String Name="MenuGuides">Guider</String>
+		<String Name="MenuCustomize">Last ned temaer</String>
+		<String Name="SettingsProfile">Innstillings Profiler</String>
+		<String Name="ProfilePublic">Offentlige Hubber (standard)</String>
+		<String Name="ProfileRar">Rar Hubber</String>
+		<String Name="ProfilePrivate">Private Hubber</String>
+		<String Name="SettingsLger">Tysk</String>
+		<String Name="SettingsTargetdriveNote">* Bruk av mål disk betyr at uferdige filer alltid blir lagret i en egen mappe på den sammen harddisken som den endelige nedlastings mappa er</String>
+		<String Name="SettingsUseTargetdrive">Bruk Mål Disk for uferdige filer</String>
+		<String Name="SettingsBtnMoveup">Flytt Opp</String>
+		<String Name="SettingsBtnMovedown">Flytt Ned</String>
+		<String Name="PartialMatchAdc">Legg til kilder ved å bruke rekursive del lister (kun ADC)</String>
+		<String Name="LineSpeed">Linje Hastighet</String>
+		<String Name="UploadLimits">Opplastings Begrensninger (med auto deteksjon)</String>
+		<String Name="UploadLimitsAdd">Opplastings Begrensninger (manuelle innstillinger)</String>
+		<String Name="DownloadLimits">Nedlastings Begrensninger</String>
+		<String Name="Autodetect">Auto deteksjon</String>
+		<String Name="SettingsMcnslots">Per bruker begrensninger (kun brukt i ADC hubber)</String>
+		<String Name="SettingsMcnNote">* Nedsetting av opplastings tilkobling fra standard verdien vil resultere i at nedlastings tilkoblingene vil bli satt til den samme verdien</String>
+		<String Name="SettingsMaxMcnDl">Maks nedlasting pr bruker</String>
+		<String Name="SettingsMaxMcnUl">Maks opplasting pr bruker</String>
+		<String Name="ProppageDupeText">Duplikat mapper/filer</String>
+		<String Name="ProppageNorm">Andre brukere</String>
+		<String Name="ProppageDupeMsg">Utgivelses.Eksempel-AIRDC</String>
+		<String Name="FileMissing">FIL MANGLER: </String>
+		<String Name="MenuScanMissing">Skan deling for manglede/ekstra filer</String>
+		<String Name="MissingFinished">Skanning ferdig, fant %d manglende utgivelses filer, %d duplikate mapper, %d manglende SFV filer, %d manglende NFO filer og %d mapper med ekstra filer</String>
+		<String Name="ScanFolderMissing">Skan mappe for manglende/ekstra filer</String>
+		<String Name="ExtraFilesSampledir">Ekstra filer i Prøve mappe: </String>
+		<String Name="ExtraFilesRlsdir">Ekstra filer i Utgivelses mappe: </String>
+		<String Name="NfoMissing">NFO fil muligens mangler: </String>
+		<String Name="SfvMissing">SFV fil muligens mangler: </String>
+		<String Name="MultipleNfo">Mange NFO filer funnet: </String>
+		<String Name="MultipleSfv">Mange SFV filer funnet: </String>
+		<String Name="ScanStarted">Skanning for manglende/ekstra filer startet...</String>
+		<String Name="DupeFound">Duplikat funnet: </String>
+		<String Name="DupeIsSame">er den samme som </String>
+		<String Name="SettingsNoZeroByte">Ikke del 0 Byte filer</String>
+		<String Name="MaxLogLines">Maks Historikk Linjer</String>
+		<String Name="DecreaseRam">Minsk RAM Arbeidsmengde ved minimering</String>
+		<String Name="Raw">Rå</String>
+		<String Name="CheckMissing">Skjekk manglende utgivelses filer</String>
+		<String Name="CheckSfv">Skjekk manglende SFV filer</String>
+		<String Name="CheckNfo">Skjekk manglende NFO filer</String>
+		<String Name="CheckMp3Dir">Skjekk manglende SFV eller NFO filer fra musikk mapper (hvis slått på)</String>
+		<String Name="CheckExtraSfvNfo">Skjekk ekstra SFV/NFO filer</String>
+		<String Name="CheckExtraFiles">Skjekk ekstra filer i utgivelses mapper</String>
+		<String Name="CheckDupes">Skjekk duplikate mappe navn</String>
+		<String Name="SettingsScanOptions">Skanne valg for manglende/ekstra filer</String>
+		<String Name="NoNfoFound">Ingen NFO filer funnet!</String>
+		<String Name="ScanRunning">Skanning pågår</String>
+		<String Name="DirEmpty">Mappen er tom:</String>
+		<String Name="ReleaseFilesMissing">NFO/SFV funnet, men det er ingen andre filer i mappen:</String>
+		<String Name="CheckEmptyReleases">Skjekk om mappen kun inneholder NFO/SFV fil</String>
+		<String Name="CheckEmptyDirs">Skjekk om mappen er tom</String>
+		<String Name="CheckUseSkiplist">Ignorer ting som matvher hoppover-dele-listen</String>
+		<String Name="CheckIgnoreZeroByte">Ignorer null byte filer</String>
+		<String Name="SkipSubtractText">Ta ut listen: Hopp over Mapper med KUN 2 eller førre filer mindre enn </String>
+		<String Name="ProppageDupeText">Duplikat mapper/filer</String>
+		<String Name="SortDirs">Sorter Mapper Først i SøkeVinduet</String>
+		<String Name="Autodetect">Automatisk deteksjon</String>
+		<String Name="ViewHistory">Vis Chatte Historikk</String>
+		<String Name="ChatNotify">Vis Informerings Ikon i chatte meldinger</String>
+		<String Name="Notify">Bruk Chatte Informerings Ikon</String>
+		<String Name="Autodetect">Finn automatisk</String>
 	</Strings>
 </Language>

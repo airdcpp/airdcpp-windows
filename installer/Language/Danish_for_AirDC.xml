@@ -1,13 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Danish Language" Author="Wonderboy/Vimmer/ICU2M8/What2Write" Version="2.21" Revision="19">
+<Language Name="Danish Language" Author="Wonderboy/Vimmer/ICU2M8/What2Write" Version="2.30" Revision="5">
 	<Strings>
 		<String Name="AairdcppLanguageFile">Danish_for_AirDC.xml</String>
-		<String Name="AairdcppLanguageVersion">2.210</String>
+		<String Name="AairdcppLanguageVersion">2.304</String>
 		<String Name="Active">Aktiv</String>
 		<String Name="ActiveSearchString">Aktiver / Søgestreng</String>
 		<String Name="Add">&amp;Tilføj</String>
 		<String Name="AddAsSource">Tilføj som kilde</String>
-		<String Name="AddFinishedInstantly">Tilføj filer til deling ved endt download.</String>
+		<String Name="AddFinishedInstantly">Tilføj pakker til deling ved endt download.</String>
 		<String Name="AddToFavorites">Tilføj Til Favorit</String>
 		<String Name="AddToQueue">Tilføj Til Kø.</String>
 		<String Name="Added">Tilføjet</String>
@@ -32,8 +32,10 @@
 		<String Name="AlternatesSend">Søger TTH alternativer for: </String>
 		<String Name="AntiPassiveSearch">-- Advarsel --
 -- Du er i Aktiv tilstand, men har aktiveret passive søgning. --
--- Du får ikke søgeresultater fra passive klienter. --
--- Slå passiv søgning fra i INDSTILLINGER - ADVANCED</String>
+-- Brug ikke passive søgning, hvis du får søgeresultater uden denne indstilling --
+-- fordi du ikke får søgeresultater fra passive klienter. --
+-- Slå det fra i Indstillinger =&gt; AirDC++ =&gt; Brug altid passiv søgning --
+</String>
 		<String Name="AllowNatTraversal">Tillad NAT Traversal for forbindelser med passive brugere</String>
 		<String Name="Any">Alle typer</String>
 		<String Name="AtLeast">Mindst</String>
@@ -288,11 +290,11 @@
 		<String Name="LatestVersion">Seneste version</String>
 		<String Name="Langdownload">Download sprog</String>
 		<String Name="Left">Tilbage</String>
-		<String Name="LeftColor">Tilbage farve</String>
+		<String Name="LeftColor">Venstre farve</String>
 		<String Name="LibCrash">Program ""%s"" forårsagede en fejl i AirDC++… Vær venlig at afinstallere, opgradere eller benyt et alternativt produkt.</String>
 		<String Name="Limit">Uploadgrænse</String>
 		<String Name="ListenerFailed">Indgående socket afbrudt (du skal genstarte AirDC++):</String>
-		<String Name="LoadedFileList">Filliste loaded.</String>
+		<String Name="LoadedFileList">Filliste indlæst i</String>
 		<String Name="Loading">Indlæser AirDC++, vent venligst...</String>
 		<String Name="LoadingFileList">Indlæser filliste, vent venligst.</String>
 		<String Name="Lock">Lås</String>
@@ -533,7 +535,6 @@
 		<String Name="Server">Server</String>
 		<String Name="SetPriority">Sæt prioritet</String>
 		<String Name="SetczdcBackColor">Baggrunds farve</String>
-		<String Name="SetczdcBlackWhite">Sort &amp; hvid</String>
 		<String Name="SetczdcCzcharsDisable">Fjern accent fra Tjekkiske karakterer</String>
 		<String Name="SetczdcDefaultStyle">Standard farver</String>
 		<String Name="SetczdcDisconnectingEnable">Aktiver afbrydelse af langsom download</String>
@@ -542,9 +543,9 @@
 		<String Name="SetczdcHDownSpeed">Og hastighed for hele filen overstiger</String>
 		<String Name="SetczdcIDownSpeed">Afbryd Download hvis hastighed er UNDER</String>
 		<String Name="SetczdcMagnetUriHandler">Installer Magnet URI handler under opstart</String>
-		<String Name="SetczdcMinFileSize">Og fil størrelsen er mere end</String>
+		<String Name="SetczdcMinFileSize">Og filstørrelsen er mere end</String>
 		<String Name="SetczdcNoteSmallUp">* Små Upload Slots =&gt; Slots for filliste og Små Filer.</String>
-		<String Name="SetczdcPassiveSearch">Brug altid passiv søgning (Benyte kun denne hvis du er absolut sikker på hvad du gør. På hubben er vi normalt aktive!!!)</String>
+		<String Name="SetczdcPassiveSearch">Brug altid passiv søgning (Benyt kun denne hvis du er absolut sikker på hvad du gør. På hubben er vi normalt aktive!!!)</String>
 		<String Name="SetczdcPmLines">Linjer fra log ved ny Privat besked</String>
 		<String Name="SetczdcPreview">Eksempel</String>
 		<String Name="SetczdcPrivateSound">Lyd ved privat besked</String>
@@ -615,7 +616,6 @@
 		<String Name="SettingsDontDlAlreadyShared">Download ikke filer der allerede er i din share</String>
 		<String Name="SettingsDownconn">Download forsøg/sekunder</String>
 		<String Name="SettingsDownloadDirectory">Standard-downloadmappe</String>
-		<String Name="SettingsDownloadLimits">Download Slots</String>
 		<String Name="SettingsDownloads">Downloads</String>
 		<String Name="SettingsDownloadsMax">Maksimum samtidige downloads (0 = ∞)</String>
 		<String Name="SettingsDownloadsSpeedPause">Ingen nye slots hvis hastigheden er (0 = ∞)</String>
@@ -631,7 +631,7 @@
 		<String Name="SettingsFilterEnter">Aktiver søge/brugerliste filter ved tryk på RETUR</String>
 		<String Name="SettingsFirewallNat">Firewall med manuel "port forwarding"</String>
 		<String Name="SettingsFirewallPassive">Firewall (passiv, anbefales ikke)</String>
-		<String Name="SettingsFirewallUpnp">Firewall med UPnP (WinXP+)</String>
+		<String Name="SettingsFirewallUpnp">Firewall med UPnP</String>
 		<String Name="SettingsFormat">Formater</String>
 		<String Name="SettingsGeneral">Generelt</String>
 		<String Name="SettingsGetUserCountry">Hent brugerens land</String>
@@ -696,7 +696,6 @@
 		<String Name="SettingsReset">Reset</String>
 		<String Name="SettingsSbMaxSources">Maks kilder for matching af kø</String>
 		<String Name="SettingsSearchHistory">Søge historik</String>
-		<String Name="SettingsSegment">Segmenteret Download</String>
 		<String Name="SettingsSelectColor">Vælg farve</String>
 		<String Name="SettingsSelectTextFace">Skrift type</String>
 		<String Name="SettingsSelectWindowColor">Farve på vindue</String>
@@ -707,7 +706,7 @@
 		<String Name="SettingsShowInfoTips">Vis InfoTips i lister</String>
 		<String Name="SettingsShowJoins">Vis tilslutning / afgang i main chat</String>
 		<String Name="SettingsShowProgressBars">Vis grafisk bar ved overførelser (Bruger ekstra cpu kraft)</String>
-		<String Name="SettingsShowShellMenu">Vis shell menu i færdige overførelser</String>
+		<String Name="SettingsShowShellMenu">Vis shell menu i færdige overførelser og filliste</String>
 		<String Name="SettingsSkipZeroByte">Download IKKE 0 bytes filer</String>
 		<String Name="SettingsSocks5">SOCKS5</String>
 		<String Name="SettingsSocks5Ip">Socks IP</String>
@@ -756,6 +755,9 @@
 		<String Name="ShowPopupAway">Vis kun popup ved ikke-til-stede</String>
 		<String Name="ShowPopupMinimized">Vis kun popup ved minimering</String>
 		<String Name="Shutdown">Nedluk pc</String>
+		<String Name="ShutdownAction">Nedlukningshandling</String>
+		<String Name="ShutdownOff">Nedlukningssekvensen deaktiveret...</String>
+		<String Name="ShutdownOn">Nedlukningssekvensen aktiveret...</String>
 		<String Name="Size">Størrelse</String>
 		<String Name="SizeExact">Præcis</String>
 		<String Name="SizeMin">Min. størrelse</String>
@@ -925,7 +927,6 @@ Du kan bruge parametre %[xxx] variabler og dato/tid specifikationer (%Y, %m, ...
 		<String Name="WaitingTime">Vente tid</String>
 		<String Name="WaitingToRetry">Venter på at gentage...</String>
 		<String Name="WaitingUserOnline">Venter (Bruger er online)</String>
-		<String Name="WaitingUsers">Ventende Brugere</String>
 		<String Name="WaitingUsersOnline">Venter (%d of %d brugere er online)</String>
 		<String Name="WhatsThis">Hvad er &amp;det?</String>
 		<String Name="WhoIs">Hvem er? </String>
@@ -941,7 +942,10 @@ Du kan bruge parametre %[xxx] variabler og dato/tid specifikationer (%Y, %m, ...
 - %[bitrate]	Bitrate for det Medie der spiller (F.eks 128kbps))
 - %[sample]		Sample frekvens (F.eks 22kHz)
 - %[channels]	Antal Kanler (F.eks stereo / mono)
-Empty = Default String -&gt; Winamp(%[version]) %[state](%[title]) status(%[percent] of %[length] %[bar])</String>
+- %[path]       Afspiller fuld filsti
+- %[directory]  Afspiller mappenavn
+- %[filename]   Afspiller filenavn
+Empty = Default String -&gt; Winamp(%[version]) %[state](%[titel]) status(%[procent] of %[længde] %[bar])</String>
 		<String Name="WinampHelpDesc">Winamp Help</String>
 		<String Name="Yes">Ja</String>
 		<String Name="ZonealarmWarning">ZoneAlarm er fundet på din computer. Dét er ofte ansvarlig for korrupte downloads og er årsag til mange \ "rollback uoverensstemmelse \" fejl. Afinstaller det og bruge en alternativ produkt.  </String>
@@ -1121,7 +1125,7 @@ Empty = Default String -&gt; +me afspiller: %[title] &lt;Media Player Klassisk&g
 		<String Name="FlashWindowOnNewPm">Blink kun med vindue hvis beskeden er fra ny bruger</String>
 		<String Name="FlashWindowOnMynick">Blink med vindue med mit navn i PM/Hub</String>
 		<String Name="SettingsAirsearch">Søg</String>
-		<String Name="AutosearchEnable">Tillad søgning for bestemte filer / TTH</String>
+		<String Name="AutosearchEnable">Automatisk søgning efter bestemte filer / mapper</String>
 		<String Name="AutosearchEnableTime">Søg automatisk efter</String>
 		<String Name="AutosearchRecheckText">Gentjek alle emner efter</String>
 		<String Name="SettingsValue">Værdi</String>
@@ -1132,7 +1136,6 @@ Empty = Default String -&gt; +me afspiller: %[title] &lt;Media Player Klassisk&g
 		<String Name="SettingsAirappearance">AirDC++\DC+Udseende</String>
 		<String Name="GetIp">Hent IP</String>
 		<String Name="UseHighlight">Brug fremhæv</String>
-		<String Name="SettingsDupes">Dupliker Baggrunds farve</String>
 		<String Name="SettingsDupeDescription">Brug baggrundsfarve i fillisten for at vise at filer allerede er delt</String>
 		<String Name="SettingsShowQueueBars">Vis grafisk fremskridt i køen</String>
 		<String Name="SettingsLanguage">Sprog</String>
@@ -1151,7 +1154,6 @@ Empty = Default String -&gt; +me afspiller: %[title] &lt;Media Player Klassisk&g
 		<String Name="SearchByTth">Søg ved hjælp af TTH</String>
 		<String Name="Paste">Sæt ind</String>
 		<String Name="SearchSites">Søgesider</String>
-		<String Name="BlackTheme">Sort tema</String>
 		<String Name="ImportTheme">Import Tema</String>
 		<String Name="ExportTheme">Export Tema</String>
 		<String Name="SettingsLnor">Norsk</String>
@@ -1193,10 +1195,6 @@ Empty = Default String -&gt; +me afspiller: %[title] &lt;Media Player Klassisk&g
 		<String Name="ProppageOperator">Operatør (dem med nøgle)</String>
 		<String Name="ProppageNorm">Andre brugere</String>
 		<String Name="MaxResizeLines">Antal linjer i Chat/PM tekstfelt</String>
-		<String Name="DontShareEmptyDirs">Del ikke tomme mapper</String>
-		<String Name="OnlyShareFullDirs">Del kun mapper der er hashed færdige</String>
-		<String Name="StRefreshDelay">Forsinket hashing ved start</String>
-		<String Name="StAirdcSlot">Ekstra slots til AirDC++ brugere(version 2.05-&gt;)</String>
 		<String Name="SettingsDupeSearch">Vis samme farve i Søg</String>
 		<String Name="SettingsLrus">Russisk</String>
 		<String Name="FileAlreadyShared">Forsøger at downloade fil der allerede eksisterer! Fil: </String>
@@ -1208,10 +1206,9 @@ Empty = Default String -&gt; +me afspiller: %[title] &lt;Media Player Klassisk&g
 		<String Name="PasswdProtectTrayChckbox">Beskyt proceslinjen</String>
 		<String Name="Note">Bemærk; Hvis du deaktivere password beskyttelse vil dit password blive nulstillet!</String>
 		<String Name="ReaddAll">Læs alle kilder</String>
-		<String Name="HubNotProtected">Password blev ikke afkrævet eller leveret - forlader hubben..</String>
+		<String Name="HubNotProtected">Password blev ikke afkrævet eller leveret - forlader hubben..(Indstillinger @ AirDCpage)</String>
 		<String Name="DisallowConnectionToPassedHubs">Forlader automatisk hubben hvis du ikke er registreret.</String>
 		<String Name="DontShareDownloadDirectory">Downloadmappen kan ikke deles</String>
-		<String Name="TotalTimeLeft">Total tid tilbage</String>
 		<String Name="BoldHubTabsOnKick">Faner fremstår fede ved Kick-beskeder</String>
 		<String Name="Skiplist">Undtagelsesliste, Jokertegn, Adskillelse | </String>
 		<String Name="SettingsSearhSkiplistPreset">Forvalg ved søgning i undtagelsesfil, Adskil med | *jokertegn tilladt</String>
@@ -1222,7 +1219,6 @@ Empty = Default String -&gt; +me afspiller: %[title] &lt;Media Player Klassisk&g
 		<String Name="DirectoryIsHidden">Mappen er skjult</String>
 		<String Name="DirectoryNotFound">Mappen er ikke delt</String>
 		<String Name="Group">Gruppe</String>
-		<String Name="DisableRefreshOnSharepage">Ved afslutning af indstillinger for deling, deaktiver opdater</String>
 		<String Name="RefreshVnameOnSharepage">Ved afslutning af indstillinger for deling, opdater kun ændrede</String>
 		<String Name="QueueSize">Kø størrelse</String>
 		<String Name="AutoAddSource">Medtag automatisk download kilder fra søgningen</String>
@@ -1239,15 +1235,14 @@ Empty = Default String -&gt; +me afspiller: %[title] &lt;Media Player Klassisk&g
 		<String Name="FileWithSameTth">Fil med samme TTH eksisterer allerede i køen</String>
 		<String Name="FavShowJoin">Vis bruger tilslut / afgang</String>
 		<String Name="UpnpRemovedMappings">Port mapping fjernet</String>
-		<String Name="SettingsDownloadsExpand">Udvid automatisk Downloads i overførelses billedet</String>
-		<String Name="SystemShowFinishedUploads">Vis færdige Oploads i Systemlog</String>
+		<String Name="SettingsDownloadsExpand">Brug ikke Gruppedownloads i overførelsesbilledet</String>
+		<String Name="SystemShowFinishedUploads">Vis færdige uploads i Systemlog</String>
 		<String Name="SystemShowFinishedDownloads">Vis færdige Downloads i Systemlog</String>
 		<String Name="Wizard">Wizard For Egenskaber</String>
 		<String Name="FormatRelease">Formater release navn som link i chat</String>
 		<String Name="CopyDirectory">Kopier mappe</String>
 		<String Name="SearchForAlternatesDir">Søg efter alternativer</String>
 		<String Name="ErrorHashingCrc32">CRC32 beregning matcher ikke den som findes i SFV filen.</String>
-		<String Name="SettingsShareSfv">Udfør IKKE SFV tjek for filer der hashes ind i sharen</String>
 		<String Name="SearchDirectory">Søgemappe</String>
 		<String Name="SearchGoogle">Søg via Google</String>
 		<String Name="SearchGoogleTitle">Søg via Google (Kun titel)</String>
@@ -1263,7 +1258,6 @@ Empty = Default String -&gt; +me afspiller: %[title] &lt;Media Player Klassisk&g
 		<String Name="SettingsLger">Tysk</String>
 		<String Name="FileMissing">FILER MANGLER: </String>
 		<String Name="MenuScanMissing">Scan Sharen For Manglende/Ekstra Filer</String>
-		<String Name="MissingFinished">Scanning er afsluttet, der er %d manglende fil(er), %d dublerede mappe(r), %d manglende SFV fil(er), %d manglende NFO fil(er) og %d mappe(r) med ekstra filer</String>
 		<String Name="ScanFolderMissing">Scan share for manglende/ekstra filer</String>
 		<String Name="ExtraFilesSampledir">Ekstra fil(er) i mappe (sample): </String>
 		<String Name="ExtraFilesRlsdir">Extra fil(er) i mappen: </String>
@@ -1330,7 +1324,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SettingsMcnslots">Pr. bruger grænser (anvendes kun i ADC hubs)</String>
 		<String Name="SettingsMaxMcnDl">Max downloads pr. bruger</String>
 		<String Name="SettingsMaxMcnUl">Max uploads pr. bruger</String>
-		<String Name="PartialMatchAdc">Tilføj kilder ved hjælp af rekursive partielle lister (kun ADC hubs)</String>
 		<String Name="SettingsNoZeroByte">Del ikke 0 byte filer</String>
 		<String Name="SettingsDownloadLineSpeed">Linje Hastighed (download)</String>
 		<String Name="Autodetect">Registrer automatisk</String>
@@ -1352,8 +1345,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="CheckIgnoreZeroByte">Ignorer nul byte filer</String>
 		<String Name="NoFilesAvailable">Ingen filer at hente</String>
 		<String Name="MatchingFileList">Matchende Filelister, det kan tage et stykke tid, hvis listerne er store.</String>
-		<String Name="SkipSubtractText">Træk liste: Spring Mapper over med kun 2 eller mindre filer mindre end</String>
-		<String Name="ProppageDupeText">Duplikerede mapper filer</String>
+		<String Name="SkipSubtractText">Træk liste: Spring mapper over, med KUN 2 eller mindre filer mindre end</String>
 		<String Name="ProppageDupeMsg">Release.Example-AIRDC</String>
 		<String Name="ProppageUnderlineLinks">Understreg links</String>
 		<String Name="ProppageUnderlineDupes">Understreg duplikerede</String>
@@ -1367,5 +1359,71 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ListHlExample">Eksempel, * NORDIC * (dette kan sinke Filelist læsning ...)</String>
 		<String Name="SettingsDupes">Duplikerede indstillingerne</String>
 		<String Name="ReportSkiplist">Vis Skiplist over blokerede filer i systemlog</String>	
+		<String Name="NumberOfUsers">Bruger(e)</String>
+		<String Name="NumberOfConnections">Forbindelse(r)</String>
+		<String Name="BundleFilename">Pakke / Filnavn</String>
+		<String Name="Bundle">Pakke</String>
+		<String Name="RemoveBundle">Fjern pakke fra kø</String>
+		<String Name="RemoveBundleFinished">Fjern pakke, inklusive afsluttede filer</String>
+		<String Name="BundleRemoved">Pakke fjernet</String>
+		<String Name="PartialSharing">Aktiver delvise pakker / fildeling</String>
+		<String Name="SettingsBundleDlPopup">Vis popup når pakkedownload er færdige</String>
+		<String Name="SettingsBundleUlPopup">Vis popup når pakkeupload er færdige</String>
+		<String Name="SettingsScanFinishedBundles">Scan færdige pakker for manglende / ekstra filer</String>
+		<String Name="DlBundleFinished">Pakken %s er færdig med at downloade</String>
+		<String Name="DlBundleFinishedScan">Pakken %s er færdig med at downloade og vil blive scannet for manglende / ekstra filer</String>
+		<String Name="UploadQueue">Uploadkø</String>
+		<String Name="RemoveBundleSource">Fjern brugeren fra denne pakke</String>
+		<String Name="BundlePriority">Pakke Prioritet</String>
+		<String Name="Reload">Opdater</String>
+		<String Name="ProppageShareDupeText">Duplikerede delemapper / filer</String>
+		<String Name="ProppageQueueDupeText">Duplikerede kø mapper / filer</String>
+		<String Name="ScanShareFinished">Sharen er blevet scannet for manglende / ekstra filer</String>
+		<String Name="ScanFolderFinished">De valgte mapper er blevet scannet for manglende / ekstra filer</String>
+		<String Name="ScanBundleFinished">Pakken %s er færdig med at downloade og er blevet scannet for manglende / ekstra filer</String>
+		<String Name="ScanFailedBundleFinished">Den pakke% s vil ikke blive delt, fordi følgende problemer blev fundet: </String>
+		<String Name="ScanNoProblems">Ingen problemer blev fundet</String>
+		<String Name="ScanProblemsFound">og følgende problemer blev fundet</String>
+		<String Name="XMissingReleaseFiles">%d manglende udgivelsesfiler</String>
+		<String Name="XMissingSfvFiles">%d mangler SFV-filer</String>
+		<String Name="XMissingNfoFiles">%d mangler NFO filer</String>
+		<String Name="XFoldersExtras">%d mapper med ekstra filer</String>
+		<String Name="XEmptyFolders">%d tomme mapper</String>
+		<String Name="XDupeFolders">%d dublerede mapper</String>
+		<String Name="ConfirmRemoveDirMultiple">Den valgte mappe indeholder% d directory pakker og %d fil pakker. Er du sikker på, ønsker at fjerne dem?</String>
+		<String Name="ConfirmRemoveDirBundle">Er du sikker på vil fjerne pakken %s?</String>
+		<String Name="ConfirmRemoveDirBundlePart">Er du sikker på, vil fjerne den mappe %s i pakken %s?</String>
+		<String Name="ConfirmRemoveDirFinishedMultiple">Pakkerne i den valgte mappe indeholder i alt %d afsluttede filer. Vil du også ønsker at fjerne dem?</String>
+		<String Name="ConfirmRemoveDirFinishedBundle">Den valgte pakke indeholder alt %d afsluttede filer. Vil du også ønsker at fjerne dem?</String>
+		<String Name="ConfirmRemoveDirFinishedBundlePart">Den valgte pakkemappe indeholder i alt %d afsluttede filer. Vil du også ønsker at fjerne dem?</String>
+		<String Name="ConfirmMoveDirMultiple">Den valgte mappe indeholder %d directory pakker og %d fil pakker. Er du sikker på, ønsker at flytte dem til %s?</String>
+		<String Name="ConfirmMoveDirBundle">Er du sikker på vil flytte pakken %s til% s?</String>
+		<String Name="ConfirmMoveDirBundlePart">Er du sikker på vil flytte mappen %s i pakken %s til% s?</String>
+		<String Name="ConfirmMoveDirFinishedMultiple">Pakkerne i den valgte mappe indeholder total %d afsluttede filer. Vil du også ønsker at flytte dem?</String>
+		<String Name="ConfirmMoveDirFinishedBundle">Den valgte pakke indeholder total %d afsluttede filer. Vil du også ønsker at flytte dem?</String>
+		<String Name="ConfirmMoveDirFinishedBundlePart">Den valgte pakkemappe indeholder total %d afsluttede filer. Vil du også ønsker at flytte dem?</String>
+		<String Name="MatchAdl">ADLSearch</String>
+		<String Name="MatchingAdl">Matcher filliste med ADLSearch, kan dette tage et stykke tid, hvis listen er stor ...</String>
+		<String Name="LogHashing">Vis hashing filer i systemlog</String>
+		<String Name="AdlsearchInProgress">Den ADLSearchliste kan ikke ændres, mens matchning er i gang!</String>
+		<String Name="PriopageOrderBalanced">Balanceret (ændrer prioriteringer dynamisk)</String>
+		<String Name="PriopageOrderProgress">Sæt prioriteter automatisk baseret på fremgang</String>
+		<String Name="PriopageOrderAdded">Download i den rækkefølge det er tilføjet</String>
+		<String Name="PriopageOrderRandom">Download i tilfældig rækkefølge</String>
+		<String Name="PriopageBalanceQis">Prioriter også orden blandt bundlede filer</String>
+		<String Name="QueueOptions">Kø indstillinger</String>
+		<String Name="DownloadOrder">Downloadeorden</String>
+		<String Name="Priorities">Prioriteter</String>
+		<String Name="SaveShare">Gemmer automatisk share hver</String>
+		<String Name="UseFtpLogger">Brug ekstern SFV kontrol (ex. FTPLogger, Aktiver det kun hvis du ved hvad du gør)</String>
+		<String Name="IconsInTheme">Det valgte tema har brugerdefinerede ikoner, ønsker du at indlæse dem?
+ Du bliver nødt til at genstarte airdc++ for at ikonerne er indlæst.</String>
+		<String Name="IconsRestore">Gendan Standard ikoner?
+ Du bliver nødt til at genstarte airdc++ for at ikonerne er indlæst.</String>
+		<String Name="IconsDefault">Standard ikoner</String>
+		<String Name="ThemeText">Temaer: </String>
+		<String Name="Autosearch">Autosøgning</String>
+		<String Name="EnableAutosearch">Aktiver Søgning(er)</String>
+		<String Name="DisableAutosearch">Deaktiver Søgning(er)</String>
 	</Strings>
 </Language>
