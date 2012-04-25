@@ -1038,7 +1038,7 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		try {
 			if(!param.empty()) {
 				if(stricmp(param.c_str(), _T("incoming"))==0) {
-					ShareManager::getInstance()->refreshIncoming();
+					ShareManager::getInstance()->refresh(ShareManager::REFRESH_DIRECTORY | ShareManager::REFRESH_UPDATE | ShareManager::REFRESH_INCOMING);
 				
 			}else if( ShareManager::REFRESH_PATH_NOT_FOUND == ShareManager::getInstance()->refresh( Text::fromT(param) ) )
 					status = TSTRING(DIRECTORY_NOT_FOUND);
