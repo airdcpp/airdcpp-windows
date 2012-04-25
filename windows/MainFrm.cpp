@@ -858,6 +858,15 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 	auto prevDownloadOrder = SETTING(DOWNLOAD_ORDER);
 
+	/*auto prevHighPrio = SETTING(HIGH_PRIO_FILES);
+	auto prevHighPrioRegex = SETTING(HIGHEST_PRIORITY_USE_REGEXP);
+
+	auto prevShareSkiplist = SETTING(SKIPLIST_SHARE);
+	auto prevShareSkiplistRegex = SETTING(SHARE_SKIPLIST_USE_REGEXP);
+
+	auto prevDownloadSkiplist = SETTING(SKIPLIST_DOWNLOAD);
+	auto prevDownloadSkiplistRegex = SETTING(DOWNLOAD_SKIPLIST_USE_REGEXP);*/
+
 	if(dlg.DoModal(m_hWnd) == IDOK) 
 	{
 		SettingsManager::getInstance()->save();
