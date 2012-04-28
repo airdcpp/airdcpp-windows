@@ -420,7 +420,7 @@ HTREEITEM QueueFrame::createDir(TVINSERTSTRUCT& tvi, const string& dir, const Bu
 	DirItemInfo* dii = new DirItemInfo(dir, aBundle);
 	tvi.item.lParam = (LPARAM)dii;
 	tstring name;
-	if (dir == Util::getDir(aBundle->getTarget(), false, false)) {
+	if (dir == Util::getFilePath(aBundle->getTarget())) {
 		if (aBundle->isFileBundle()) {
 			name = dii->getBundleName(false);
 		} else {
@@ -469,7 +469,7 @@ HTREEITEM QueueFrame::createSplitDir(TVINSERTSTRUCT& tvi, const string& dir, HTR
 			updateMap = true;
 			setBold=true;
 			break;
-		} else if ((*i).second->isFileBundle()) {
+		} else if ((*i).second->isFileBundle() && (Util::getFilePath((*i).second->getTarget()) == dir)) {
 			name = dii->getBundleName(false);
 			setBold=true;
 			break;
@@ -589,7 +589,7 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 			// Use this root as parent
 			parent = next;
 			((DirItemInfo*)ctrlDirs.GetItemData(parent))->addBundle(aBundle);
-			if (aBundle->isFileBundle() && getDir(parent) == Util::getDir(aBundle->getTarget(), false, false)) {
+			if (aBundle->isFileBundle() && getDir(parent) == Util::getFilePath(aBundle->getTarget())) {
 				tstring text = ((DirItemInfo*)ctrlDirs.GetItemData(next))->getBundleName(false);
 				ctrlDirs.SetItemText(next, const_cast<TCHAR*>(text.c_str()));
 				ctrlDirs.SetItemState(next, TVIS_BOLD, TVIS_BOLD);
@@ -755,7 +755,7 @@ void QueueFrame::removeBundle(const string& aDir, bool isFileBundle) {
 		dcassert(bundleMap.find(aDir) != bundleMap.end());
 		bundleMap.erase(aDir);
 	}
-	const string& dir = Util::getDir(aDir, false, false);
+	const string& dir = isFileBundle ? Util::getFilePath(aDir) : aDir;
 	// First, find the last name available
 	string::size_type i = 0;
 
@@ -2154,7 +2154,7 @@ void QueueFrame::moveNode(HTREEITEM item, HTREEITEM parent) {
 			updateMap = true;
 			setBold=true;
 			break;
-		} else if ((*i).second->isFileBundle() && (Util::getDir((*i).second->getTarget(), false, false) == dii->getDir())) {
+		} else if ((*i).second->isFileBundle() && (Util::getFilePath((*i).second->getTarget()) == dii->getDir())) {
 			setBold=true;
 			break;
 		}
