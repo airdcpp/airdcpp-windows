@@ -625,7 +625,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 	for(auto i = t.begin(); i != t.end(); ++i) {
 		if(i->first == UPDATE_USER) {
 
-		updateUser(static_cast<UserTask&>(*i->second));
+			updateUser(static_cast<UserTask&>(*i->second));
 			UserTask& u = static_cast<UserTask&>(*i->second);
 			if(IgnoreManager::getInstance()->isIgnored(u.onlineUser->getIdentity().getNick())) {
 				ignoreList.insert(u.onlineUser->getUser());
@@ -657,17 +657,12 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 			}
 		} else if(i->first == CONNECTED) {
 			addStatus(TSTRING(CONNECTED), WinUtil::m_ChatTextServer);
-//Lets keep these here if someone else does the sdc merge.. they allways merge this in :)
-//			setTabColor(RGB(0, 255, 0));
-//			unsetIconState();
 			wentoffline = false;
 			setDisconnected(false);
 			
-
-			
 			tstring text = Text::toT(client->getCipherName());
-		ctrlStatus.SetText(1, text.c_str());
-		statusSizes[0] = WinUtil::getTextWidth(text, ctrlStatus.m_hWnd);
+			ctrlStatus.SetText(1, text.c_str());
+			statusSizes[0] = WinUtil::getTextWidth(text, ctrlStatus.m_hWnd);
 
 			if(BOOLSETTING(POPUP_HUB_CONNECTED)) {
 				MainFrame::getMainFrame()->ShowBalloonTip(Text::toT(client->getAddress()), TSTRING(CONNECTED));
@@ -696,19 +691,20 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 				continue;
 
     		const MessageTask& msg = static_cast<MessageTask&>(*i->second);
-         if(IgnoreManager::getInstance()->isIgnored(msg.from.getNick())) {
-            ignoreList.insert(msg.from.getUser());
-         } else if(!IgnoreManager::getInstance()->isIgnored(msg.from.getNick()) && (ignoreList.find(msg.from.getUser()) != ignoreList.end())) {
-            ignoreList.erase(msg.from.getUser());
-         } 
-        	if(!msg.from.getUser() || (ignoreList.find(msg.from.getUser()) == ignoreList.end()) ||
-	          (msg.from.isOp() && !client->isOp())) {
-				  addLine(msg.from, Text::toT(msg.str), WinUtil::m_ChatTextGeneral);
-        	}
-				if(showchaticon) {
-					HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;
-					::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_HUB_TRAY_ICON, NULL);
-				}
+			if(IgnoreManager::getInstance()->isIgnored(msg.from.getNick())) {
+				ignoreList.insert(msg.from.getUser());
+			} else if(!IgnoreManager::getInstance()->isIgnored(msg.from.getNick()) && (ignoreList.find(msg.from.getUser()) != ignoreList.end())) {
+				ignoreList.erase(msg.from.getUser());
+			}
+
+			if(!msg.from.getUser() || (ignoreList.find(msg.from.getUser()) == ignoreList.end()) || (msg.from.isOp() && !client->isOp())) {
+				addLine(msg.from, Text::toT(msg.str), WinUtil::m_ChatTextGeneral);
+			}
+
+			if(showchaticon) {
+				HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;
+				::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_HUB_TRAY_ICON, NULL);
+			}
 		} else if(i->first == ADD_STATUS_LINE) {
 			const StatusTask& status = static_cast<StatusTask&>(*i->second);
 			addStatus(Text::toT(status.str), WinUtil::m_ChatTextServer, status.inChat);
@@ -773,11 +769,12 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 		} else if(i->first == PRIVATE_MESSAGE) {
 			const MessageTask& pm = static_cast<MessageTask&>(*i->second);
 			tstring nick = Text::toT(pm.from.getNick());
-       if(IgnoreManager::getInstance()->isIgnored(pm.from.getNick())) {
-            ignoreList.insert(pm.from.getUser());
-         } else if(!IgnoreManager::getInstance()->isIgnored(pm.from.getNick()) && (ignoreList.find(pm.from.getUser()) != ignoreList.end())) {
-            ignoreList.erase(pm.from.getUser());
-         } 
+			if(IgnoreManager::getInstance()->isIgnored(pm.from.getNick())) {
+				ignoreList.insert(pm.from.getUser());
+			} else if(!IgnoreManager::getInstance()->isIgnored(pm.from.getNick()) && (ignoreList.find(pm.from.getUser()) != ignoreList.end())) {
+			   ignoreList.erase(pm.from.getUser());
+			}
+
 			if(!pm.from.getUser() || (ignoreList.find(pm.from.getUser()) == ignoreList.end()) ||
 			  (pm.from.isOp() && !client->isOp())) {
 				bool myPM = pm.replyTo == ClientManager::getInstance()->getMe();
