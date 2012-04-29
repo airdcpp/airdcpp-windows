@@ -540,7 +540,11 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		dcdebug("Failed reading exe\n");
 	}	
 
-	HINSTANCE hInstRich = ::LoadLibrary(_T("RICHED20.DLL"));	
+	HINSTANCE hInstRich = ::LoadLibrary(_T("MSFTEDIT.DLL"));
+	if (hInstRich == NULL) {
+		MessageBox(NULL, _T("AirDC++ isn't supported in operating systems older than Microsoft Windows XP3"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
+		return FALSE;
+	}
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
  

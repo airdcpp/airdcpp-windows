@@ -31,8 +31,8 @@
 #include "UCHandler.h"
 #include "../client/pme.h"
 
-#ifndef _RICHEDIT_VER
-# define _RICHEDIT_VER 0x0300
+#ifndef MSFTEDIT_CLASS
+#define MSFTEDIT_CLASS L"RICHEDIT50W";
 #endif
 
 class UserInfo;

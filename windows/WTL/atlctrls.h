@@ -7247,7 +7247,7 @@ public:
 // Attributes
 	static LPCTSTR GetWndClassName()
 	{
-		return RICHEDIT_CLASS;
+		return MSFTEDIT_CLASS;
 	}
 
 	static LPCTSTR GetLibraryName()
