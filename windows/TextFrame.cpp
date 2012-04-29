@@ -155,12 +155,6 @@ void TextFrame::UpdateLayout(BOOL /*bResizeBars*/ /* = TRUE */)
 	rc.left +=1;
 	rc.right -=1;
 	ctrlPad.MoveWindow(rc);
-
-	SCROLLINFO si = { 0 };
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
-	GetScrollInfo(SB_VERT, &si);
-	//SetScrollInfo(handle(), type, &si, TRUE);
 }
 
 	

@@ -353,7 +353,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	try {
 		ConnectivityManager::getInstance()->setup(true);
 	} catch (const Exception& e) {
-		LogManager::getInstance()->message(e.getError());
+		showPortsError(e.getError());
 	}
 
 	auto prevGeo = BOOLSETTING(GET_USER_COUNTRY);
@@ -420,6 +420,10 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	// We want to pass this one on to the splitter...hope it get's there...
 	bHandled = FALSE;
 	return 0;
+}
+
+void MainFrame::showPortsError(const string& port) {
+	MessageBox(Text::toT(str(boost::format(STRING(PORT_BYSY)) % port)).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2);
 }
 
 HWND MainFrame::createWinampToolbar() {
@@ -879,7 +883,7 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 				SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
 				SETTING(MAPPER) != prevMapper || SETTING(BIND_ADDRESS) != prevBind || SETTING(BIND_ADDRESS6) != prevBind6);
 		} catch (const Exception& e) {
-			LogManager::getInstance()->message(e.getError());
+			showPortsError(e.getError());
 		}
 
 		auto outConns = CONNSETTING(OUTGOING_CONNECTIONS);

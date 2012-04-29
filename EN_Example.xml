@@ -789,7 +789,6 @@
 		<String Name="TargetFilenameTooLong">Target filename too long</String>
 		<String Name="TargetRemoved">Target removed</String>
 		<String Name="Tib">TiB</String>
-		<String Name="TcpPortBusy">Unable to open TCP/TLS port. File transfers will not work correctly until you change settings or turn off any application that might be using the TCP/TLS port</String>
 		<String Name="TextManual">Manual settings of number of segments</String>
 		<String Name="Time">Time</String>
 		<String Name="TimeLeft">Time left</String>
@@ -1535,5 +1534,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="LineEmptyOrTooShort">Search String empty or too Short! (min. 5 chars allowed)</String>
 		<String Name="AutosearchCheckQueued">Don't download already Queued release directories</String>
 		<String Name="AutosearchCheckShared">Don't download already Shared release directories</String>
+		<String Name="PortBysy">Unable to open %s port. Searching or file transfers will not work correctly until you change settings or turn off any application that might be using that port.</String>
+		<String Name="TransferPort">Transfer (TCP)</String>
+		<String Name="SearchPort">Search (UDP)</String>
 	</Strings>
 </Language>

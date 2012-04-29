@@ -547,6 +547,7 @@ private:
 	void updateGeo(bool v6);
 	void completeGeoUpdate(bool v6);
 	void completeVersionUpdate();
+	void showPortsError(const string& port);
 
 	void autoConnect(const FavoriteHubEntry::List& fl);
 
