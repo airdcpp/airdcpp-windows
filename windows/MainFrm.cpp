@@ -628,7 +628,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		DirectoryListingFrame::openWindow(i->user, i->text, 0);
 	} else if(wParam == VIEW_FILE_AND_DELETE) {
 		auto_ptr<tstring> file(reinterpret_cast<tstring*>(lParam));
-		TextFrame::openWindow(*file, false, false);
+		TextFrame::openWindow(*file, TextFrame::NORMAL);
 		File::deleteFile(Text::fromT(*file));
 	} else if(wParam == STATS) {
 		auto_ptr<TStringList> pstr(reinterpret_cast<TStringList*>(lParam));

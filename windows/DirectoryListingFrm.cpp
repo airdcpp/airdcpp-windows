@@ -576,7 +576,7 @@ LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	if (mylist) {
 		try {
 			tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-			TextFrame::openWindow(path, false, false);
+			TextFrame::openWindow(path, TextFrame::NORMAL);
 		} catch(...) { } //file deleted no path
 	} else {
 		downloadList(Text::toT(Util::getTempPath()), true);

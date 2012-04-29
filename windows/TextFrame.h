@@ -33,11 +33,17 @@
 class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManagerListener
 {
 public:
-	static void openWindow(const tstring& aFileName, bool openlog, bool history);
+	enum Type {
+		LOG,
+		HISTORY,
+		NORMAL,
+	};
+
+	static void openWindow(const tstring& aFileName, Type aType);
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("TextFrame"), IDR_NOTEPAD, 0, COLOR_3DFACE);
 
-	TextFrame(const tstring& fileName, bool Openlog, bool History) : file(fileName), openlog(Openlog), history(History){
+	TextFrame(const tstring& fileName, Type aType) : file(fileName), textType(aType) {
 		SettingsManager::getInstance()->addListener(this);
 	}
 	~TextFrame() { }
@@ -63,28 +69,13 @@ public:
 		PostMessage(WM_CLOSE);
 		return 0;
 	}
-	void UpdateLayout(BOOL bResizeBars = TRUE);
 	
-	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-		HWND hWnd = (HWND)lParam;
-		HDC hDC = (HDC)wParam;
-		if(hWnd == ctrlPad.m_hWnd) {
-			::SetBkColor(hDC, WinUtil::bgColor);
-			::SetTextColor(hDC, WinUtil::textColor);
-			return (LRESULT)WinUtil::bgBrush;
-		}
-		bHandled = FALSE;
-		return FALSE;
-	}
-	
-	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		ctrlPad.SetFocus();
-		return 0;
-	}
+	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
+	void UpdateLayout(BOOL bResizeBars = TRUE);
 private:
-	bool openlog;
-	bool history;
+	Type textType;
 	tstring file;
 	ChatCtrl ctrlPad;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;

@@ -155,7 +155,7 @@ public:
 
 	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);
 	GETSET(Client*, client, Client);
-	
+	bool autoScrollToEnd;
 private:
 	bool HitNick(const POINT& p, tstring& sNick, int& iBegin , int& iEnd);
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);

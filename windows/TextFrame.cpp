@@ -28,8 +28,8 @@
 
 //#define MAX_TEXT_LEN 32768
 
-void TextFrame::openWindow(const tstring& aFileName, bool Openlog, bool History) {
-	TextFrame* frame = new TextFrame(aFileName, Openlog, History );
+void TextFrame::openWindow(const tstring& aFileName, Type aType) {
+	TextFrame* frame = new TextFrame(aFileName, aType);
 	frame->CreateEx(WinUtil::mdiClient);
 }
 
@@ -42,53 +42,39 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlPad.SetEventMask(ctrlPad.GetEventMask() | ENM_LINK);
 	ctrlPad.Subclass();
 	ctrlPad.LimitText(0);
-	if(history || openlog) {
-	ctrlPad.SetFont(WinUtil::font);
-	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
-	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
-	}
+
 	string tmp;
 	try {
-
 		File f(Text::fromT(file), File::READ, File::OPEN);
-		
-		if(history) {
+		if(textType < NORMAL) {
+			ctrlPad.SetFont(WinUtil::font);
+			ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
+			ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 
-			int64_t size = f.getSize();
-			if(size > 64*1024) {
-				f.setPos(size - 64*1024);
-			}
+			if (textType == HISTORY) {
+				int64_t size = f.getSize();
+				if(size > 64*1024) {
+					f.setPos(size - 64*1024);
+				}
 			
-			tmp = f.read(64*1024);
-			StringList lines;
-			lines = StringTokenizer<string>(tmp, "\r\n").getTokens();
-			long totalLines = lines.size();
-			int i = totalLines > (SETTING(LOG_LINES) +1) ? totalLines - SETTING(LOG_LINES) : 0;
+				tmp = f.read(64*1024);
+				StringList lines;
+				lines = StringTokenizer<string>(tmp, "\r\n").getTokens();
+				long totalLines = lines.size();
+				int i = totalLines > (SETTING(LOG_LINES) +1) ? totalLines - SETTING(LOG_LINES) : 0;
 
-			for(; i < totalLines; ++i){
-				ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
+				for(; i < totalLines; ++i){
+					ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
+				}
+			} else if (textType == LOG) {
+				//if openlog just add the whole text
+				tmp = f.read();
+				ctrlPad.SetWindowText(Text::toT(tmp).c_str());
 			}
-
-		} else if(openlog) {
-			//if openlog just add the whole text
-			tmp = f.read();
-			ctrlPad.SetWindowText(Text::toT(tmp).c_str());
-		
-		
-		} else if(!openlog && !history) {
-
+		} else if(textType == NORMAL) {
 			tmp = Text::toDOS(f.read());
 			tmp = Text::toUtf8(tmp);
 
-			//add the line endings in nfo
-			/*string::size_type i = 0;
-			while((i = tmp.find('\n', i)) != string::npos) {
-				if(i == 0 || tmp[i-1] != '\r') {
-					tmp.insert(i, 1, '\r');
-					i++;
-				}
-				i++;
-			}*/
 			tstring::size_type j = 0; 
 			while((j = tmp.find("\r", j)) != string::npos)
 				tmp.erase(j, 1);
@@ -116,6 +102,8 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			tstring msg = Text::toT(tmp);
 			ctrlPad.SetWindowText(msg.c_str());
 			ctrlPad.FormatEmoticonsAndLinks(msg, 0, false);
+			ctrlPad.autoScrollToEnd = false;
+			ctrlPad.SetSel(0, 0); //set scroll position to top
 		}
 		
 		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
@@ -167,6 +155,30 @@ void TextFrame::UpdateLayout(BOOL /*bResizeBars*/ /* = TRUE */)
 	rc.left +=1;
 	rc.right -=1;
 	ctrlPad.MoveWindow(rc);
+
+	SCROLLINFO si = { 0 };
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+	GetScrollInfo(SB_VERT, &si);
+	//SetScrollInfo(handle(), type, &si, TRUE);
+}
+
+	
+LRESULT TextFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	HWND hWnd = (HWND)lParam;
+	HDC hDC = (HDC)wParam;
+	if(hWnd == ctrlPad.m_hWnd) {
+		::SetBkColor(hDC, WinUtil::bgColor);
+		::SetTextColor(hDC, WinUtil::textColor);
+		return (LRESULT)WinUtil::bgBrush;
+	}
+	bHandled = FALSE;
+	return FALSE;
+}
+	
+LRESULT TextFrame::OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlPad.SetFocus();
+	return 0;
 }
 
 void TextFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {

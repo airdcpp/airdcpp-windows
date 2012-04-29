@@ -826,14 +826,7 @@ void PrivateFrame::closeAllOffline() {
 LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 	string file = getLogPath();
 	if(Util::fileExists(file)) {
-		switch(wID) {
-			case IDC_OPEN_USER_LOG:
-				WinUtil::viewLog(file);
-				break;
-			case IDC_USER_HISTORY:
-				TextFrame::openWindow(Text::toT(file), false, true);
-				break;
-			}
+		WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_USER), CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 	}	

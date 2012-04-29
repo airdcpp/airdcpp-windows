@@ -1442,9 +1442,9 @@ LRESULT HubFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHan
 	if(wParam == VK_TAB) {
 		onTab();
 		return 0;
-	}else if((GetFocus() == ctrlMessage.m_hWnd) && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000) && (wParam == 'A')){
-				ctrlMessage.SetSelAll();
-				return 0;
+	} else if((GetFocus() == ctrlMessage.m_hWnd) && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000) && (wParam == 'A')){
+		ctrlMessage.SetSelAll();
+		return 0;
 	} else if (wParam == VK_ESCAPE) {
 		// Clear find text and give the focus back to the message box
 		ctrlMessage.SetFocus();
@@ -2347,14 +2347,7 @@ LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 	params["hubURL"] = client->getHubUrl();
 	string file = LogManager::getInstance()->getPath(LogManager::PM, params);
 	if(Util::fileExists(file)) {
-		switch(wID) {
-				case IDC_OPEN_USER_LOG:
-					WinUtil::viewLog(file);
-					break;
-				case IDC_USER_HISTORY:
-					TextFrame::openWindow(Text::toT(file), false, true);
-					break;
-			}
+		WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 	}
@@ -2372,14 +2365,7 @@ string HubFrame::getLogPath(bool status) const {
 LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string filename = getLogPath(false);
 	if(Util::fileExists(filename)){
-		switch(wID) {
-			case IDC_OPEN_HUB_LOG:
-				WinUtil::viewLog(filename);
-				break;
-			case IDC_HISTORY:
-				TextFrame::openWindow(Text::toT(filename), false, true);
-				break;
-			}
+		WinUtil::viewLog(filename, wID == IDC_HISTORY);
 	} else {
 		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
 	}

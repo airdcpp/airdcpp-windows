@@ -512,7 +512,7 @@ public:
 	static bool getTarget(int ID, string& target, int64_t aSize, bool wholeDir = false);
 	static bool getVirtualName(int ID, string& vTarget, TargetUtil::TargetType& targetType);
 
-	static void viewLog(const string& path);
+	static void viewLog(const string& path, bool aHistory=false);
 
 	static string getCompileDate() {
 		COleDateTime tCompileDate; 

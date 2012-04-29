@@ -2417,9 +2417,11 @@ bool WinUtil::getVirtualName(int wID, string& vTarget, TargetUtil::TargetType& t
 	return true;
 }
 
-void WinUtil::viewLog(const string& path) {
-	if(BOOLSETTING(OPEN_LOGS_INTERNAL)) {
-		TextFrame::openWindow(Text::toT(path), true, false);
+void WinUtil::viewLog(const string& path, bool aHistory /*false*/) {
+	if (aHistory) {
+		TextFrame::openWindow(Text::toT(path), TextFrame::HISTORY);
+	} else if(BOOLSETTING(OPEN_LOGS_INTERNAL)) {
+		TextFrame::openWindow(Text::toT(path), TextFrame::LOG);
 	} else {
 		ShellExecute(NULL, NULL, Text::toT(path).c_str(), NULL, NULL, SW_SHOWNORMAL);
 	}

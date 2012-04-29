@@ -35,7 +35,7 @@ EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48
 
-ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false) {
+ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
 	}
@@ -1032,7 +1032,7 @@ LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*
 }
 
 LRESULT ChatCtrl::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	if(wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0) {
+	if(wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0 && autoScrollToEnd) {
 		scrollToEnd();
 	}
 
@@ -1218,14 +1218,7 @@ LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 
 		string file = LogManager::getInstance()->getPath(LogManager::PM, params);
 		if(Util::fileExists(file)) {
-			switch(wID) {
-				case IDC_OPEN_USER_LOG:
-					WinUtil::viewLog(file);
-					break;
-				case IDC_USER_HISTORY:
-					TextFrame::openWindow(Text::toT(file), false, true);
-					break;
-			}
+			WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
 		} else {
 			MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 		}
