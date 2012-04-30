@@ -1318,6 +1318,7 @@
 #define IDC_DATETIMEPICKER3             15121
 #define IDC_SEARCH_END                  15121
 #define IDC_SETTINGS_KB5                15122
+#define IDC_COPY_DATE	                15123
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_BITZI_LOOKUP                20000
 #define IDC_BROWSELIST                  21000

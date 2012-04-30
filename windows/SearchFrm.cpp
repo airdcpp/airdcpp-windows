@@ -1632,70 +1632,14 @@ LRESULT SearchFrame::onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 
 LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring sCopy;
-	if(ctrlResults.GetSelectedCount() == 1) {
-	int pos = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
-	dcassert(pos != -1);
+	if (ctrlResults.GetSelectedCount() >= 1) {
+		int xsel = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
 
-	if ( pos >= 0 ) {
-		const SearchResultPtr& sr = ctrlResults.getItemData(pos)->sr;
-		switch (wID) {
-			case IDC_COPY_NICK:
-				sCopy = WinUtil::getNicks(sr->getUser(), sr->getHubURL());
-				break;
-			case IDC_COPY_FILENAME:
-				if(sr->getType() == SearchResult::TYPE_FILE) {
-					sCopy = Util::getFileName(Text::toT(sr->getFileName()));
-				} else {
-					sCopy = Text::toT(sr->getFileName());
-				}
-				break;
-			case IDC_COPY_DIR:
-				sCopy = Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true));
-				break;
-			case IDC_COPY_PATH:
-				if(sr->getType() == SearchResult::TYPE_FILE) {
-					sCopy = ((Util::getFilePath(Text::toT(sr->getFile()))) + (Util::getFileName(Text::toT(sr->getFile()))));
-				} else {
-					sCopy = Text::toT(sr->getFile());
-				}
-				break;
-			case IDC_COPY_SIZE:
-				if(sr->getType() == SearchResult::TYPE_FILE) {
-					sCopy = Util::formatBytesW(sr->getSize());
-				} else {
-					sCopy = Text::toT("Directories have unknown size in searchframe");
-				}
-				break;
-			case IDC_COPY_LINK:
-				if(sr->getType() == SearchResult::TYPE_FILE) {
-					WinUtil::copyMagnet(sr->getTTH(), sr->getFileName(), sr->getSize());
-				} else {
-					sCopy = Text::toT("Directories don't have Magnet links");
-				}
-				break;
-			case IDC_COPY_TTH:
-				if(sr->getType() == SearchResult::TYPE_FILE) {
-					sCopy = Text::toT(sr->getTTH().toBase32());
-				} else {
-					sCopy = Text::toT("Directories don't have TTH");
-				}
-				break;
-			default:
-				dcdebug("SEARCHFRAME DON'T GO HERE\n");
-				return 0;
-		}
-		if (!sCopy.empty())
-			WinUtil::setClipboard(sCopy);
-	}
-	}else if (ctrlResults.GetSelectedCount() > 1) {
-		int xsel = -1;
-		while((xsel = ctrlResults.GetNextItem(xsel, LVNI_SELECTED)) != -1) {
-			
-		const SearchResultPtr& sr = ctrlResults.getItemData(xsel)->sr;
+		for (;;) {
+			const SearchResultPtr& sr = ctrlResults.getItemData(xsel)->sr;
 			switch (wID) {
 				case IDC_COPY_NICK:
 					sCopy +=  WinUtil::getNicks(sr->getUser(), sr->getHubURL());
-					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_FILENAME:
 					if(sr->getType() == SearchResult::TYPE_FILE) {
@@ -1703,11 +1647,9 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 					} else {
 						sCopy += Text::toT(sr->getFileName());
 					}
-					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_DIR:
 					sCopy += Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true));
-					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_SIZE:
 					if(sr->getType() == SearchResult::TYPE_FILE) {
@@ -1715,7 +1657,6 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 					} else {
 						sCopy += Text::toT("Directories have unknown size in searchframe");
 					}
-					sCopy += Text::toT("\r\n");
 					break;
 
 				case IDC_COPY_PATH:
@@ -1724,34 +1665,38 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 					} else {
 						sCopy += Text::toT(sr->getFile());
 					}
-					sCopy += Text::toT("\r\n");
 					break;
 				case IDC_COPY_LINK:
-				if(sr->getType() == SearchResult::TYPE_FILE) {
-					WinUtil::copyMagnet(sr->getTTH(), sr->getFileName(), sr->getSize());
-				} else {
-					sCopy = Text::toT("Directories don't have Magnet links");
-					sCopy += Text::toT("\r\n");
+					if(sr->getType() == SearchResult::TYPE_FILE) {
+						WinUtil::copyMagnet(sr->getTTH(), sr->getFileName(), sr->getSize());
+					} else {
+						sCopy = Text::toT("Directories don't have Magnet links");
 					}
-					
 					break;
 				case IDC_COPY_TTH:
 					if(sr->getType() == SearchResult::TYPE_FILE) {
-					sCopy += Text::toT(sr->getTTH().toBase32());
-				} else {
-					sCopy += Text::toT("Directories don't have TTH");
-				}
-					sCopy += Text::toT("\r\n");
+						sCopy += Text::toT(sr->getTTH().toBase32());
+					} else {
+						sCopy += Text::toT("Directories don't have TTH");
+					}
 					break;
 				
 				default:
 					dcdebug("SEARCHFRAME DON'T GO HERE\n");
 					return 0;
 			}
-			if (!sCopy.empty())
-				WinUtil::setClipboard(sCopy);
+
+			xsel = ctrlResults.GetNextItem(xsel, LVNI_SELECTED);
+			if (xsel == -1) {
+				break;
+			}
+
+			sCopy += Text::toT("\r\n");
 		}
-		}
+
+		if (!sCopy.empty())
+			WinUtil::setClipboard(sCopy);
+	}
 	return S_OK;
 }
 

@@ -65,7 +65,6 @@
 		<String Name="CertificateGenerationFailed">TLS disabled, failed to generate certificate:</String>
 		<String Name="Cid">CID</String>
 		<String Name="Cipher">Cipher</String>
-		<String Name="Clear">Clear chat</String>
 		<String Name="Clientid">Client</String>
 		<String Name="Close">Close</String>
 		<String Name="CloseConnection">Close connection</String>
@@ -1537,5 +1536,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="PortBysy">Unable to open %s port. Searching or file transfers will not work correctly until you change settings or turn off any application that might be using that port.</String>
 		<String Name="TransferPort">Transfer (TCP)</String>
 		<String Name="SearchPort">Search (UDP)</String>
+		<String Name="ClearChat">Clear chat</String>
+		<String Name="ClearMessages">Clear messages</String>
 	</Strings>
 </Language>
