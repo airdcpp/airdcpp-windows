@@ -1652,13 +1652,8 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 					sCopy += Text::toT(Util::getDir(Util::getFilePath(sr->getFile()), true, true));
 					break;
 				case IDC_COPY_SIZE:
-					if(sr->getType() == SearchResult::TYPE_FILE) {
-						sCopy += Util::formatBytesW(sr->getSize());
-					} else {
-						sCopy += Text::toT("Directories have unknown size in searchframe");
-					}
+					sCopy += Util::formatBytesW(sr->getSize());
 					break;
-
 				case IDC_COPY_PATH:
 					if(sr->getType() == SearchResult::TYPE_FILE) {
 						sCopy += ((Util::getFilePath(Text::toT(sr->getFile()))) + (Util::getFileName(Text::toT(sr->getFile()))));
@@ -1680,7 +1675,6 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 						sCopy += Text::toT("Directories don't have TTH");
 					}
 					break;
-				
 				default:
 					dcdebug("SEARCHFRAME DON'T GO HERE\n");
 					return 0;
@@ -2055,7 +2049,7 @@ LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 					WinUtil::openFolder(path);
 			}
 		} catch(const ShareException& se) {
-			LogManager::getInstance()->message(se.getError());
+			LogManager::getInstance()->message(se.getError(), LogManager::LOG_ERROR);
 		}
 	}
 	return 0;

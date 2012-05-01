@@ -142,7 +142,8 @@ public:
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
-				LogManager::getInstance()->message(Util::toString(ClientManager::getInstance()->getNicks(user)) + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles, false));
+				LogManager::getInstance()->message(Util::toString(ClientManager::getInstance()->getNicks(user)) + ": " + 
+					AirUtil::formatMatchResults(matches, newFiles, bundles, false), LogManager::LOG_INFO);
 			} catch(const Exception&) {
 
 			}
@@ -672,7 +673,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 							// Should we go faster here and force termination?
 							// We "could" do a manual shutdown of this app...
 						} else {
-							LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN));
+							LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN), LogManager::LOG_ERROR);
 							ctrlStatus.SetText(10, _T(""));
 						}
 						// We better not try again. It WON'T work...
@@ -1032,7 +1033,7 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 		will look good in taskmanager ram usage tho :) */
 		if(BOOLSETTING(DECREASE_RAM)) {
 			if(!SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T)-1, (SIZE_T)-1))
-				LogManager::getInstance()->message("Minimize Process WorkingSet Failed: "+ Util::translateError(GetLastError()));
+				LogManager::getInstance()->message("Minimize Process WorkingSet Failed: "+ Util::translateError(GetLastError()), LogManager::LOG_WARNING);
 		}
 
 		if(BOOLSETTING(AUTO_AWAY) && (bAppMinimized == false) ) {
@@ -1730,20 +1731,21 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 			delete f;
 			f = NULL;
 		} catch(const FileException&) { }
-			}
+	}
 
 
 	if (Util::fileExists(filename)) {
-				File::deleteFile(filename);
-				ready = true;
-			}
-		//report errors if any
+		File::deleteFile(filename);
+		ready = true;
+	}
+
+	//report errors if any
 	if( error != Util::emptyStringT) {
 		error += _T("Check Your User Privileges or try running AirDC++ as administrator. \r\n");
 		MessageBox((error.c_str()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
-	} else if(ready) { //dont need this but leave it for now.
-		LogManager::getInstance()->message("Test write to AirDC++ common folders succeeded." );
-	}
+	} /*else if(ready) { //dont need this but leave it for now.
+		LogManager::getInstance()->message("Test write to AirDC++ common folders succeeded.", LogManager::LOG_WARNING);
+	}*/
 
 }
 
@@ -1837,7 +1839,7 @@ void MainFrame::updateGeo(bool v6) {
 	if(conn)
 		return;
 
-	LogManager::getInstance()->message(str(boost::format("Updating the %1% GeoIP database...") % (v6 ? "IPv6" : "IPv4")));
+	LogManager::getInstance()->message(str(boost::format("Updating the %1% GeoIP database...") % (v6 ? "IPv6" : "IPv4")), LogManager::LOG_INFO);
 	conn.reset(new HttpDownload(Text::fromT(v6 ? links.geoip6 : links.geoip4),
 		[this, v6] { postMessageFW(WM_SPEAKER, HTTP_COMPLETED, (LPARAM)(v6 ? CONN_GEO_V6 : CONN_GEO_V4)); }, false));
 }
@@ -1851,11 +1853,11 @@ void MainFrame::completeGeoUpdate(bool v6) {
 		try {
 			File(GeoManager::getDbPath(v6) + ".gz", File::WRITE, File::CREATE | File::TRUNCATE).write(conn->buf);
 			GeoManager::getInstance()->update(v6);
-			LogManager::getInstance()->message(str(boost::format("The %1% GeoIP database has been successfully updated") % (v6 ? "IPv6" : "IPv4")));
+			LogManager::getInstance()->message(str(boost::format("The %1% GeoIP database has been successfully updated") % (v6 ? "IPv6" : "IPv4")), LogManager::LOG_INFO);
 			return;
 		} catch(const FileException&) { }
 	}
-	LogManager::getInstance()->message(str(boost::format("The %1% GeoIP database could not be updated") % (v6 ? "IPv6" : "IPv4")));
+	LogManager::getInstance()->message(str(boost::format("The %1% GeoIP database could not be updated") % (v6 ? "IPv6" : "IPv4")), LogManager::LOG_WARNING);
 }
 
 

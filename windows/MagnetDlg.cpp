@@ -85,7 +85,7 @@ LRESULT MagnetDlg::onCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, 
 				string target = SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(mFileName);
 				QueueManager::getInstance()->add(target, mSize, TTHValue(mHash), HintedUser(mUser, mHint));
 			} catch(const Exception& e) {
-				LogManager::getInstance()->message(e.getError());
+				LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
 			}
 		} 
 	}

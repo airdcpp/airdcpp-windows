@@ -235,7 +235,7 @@ void UserInfoBase::matchQueue(const string& hubHint) {
 		try {
 			QueueManager::getInstance()->addList(HintedUser(getUser(), hubHint), QueueItem::FLAG_MATCH_QUEUE);
 		} catch(const Exception& e) {
-			LogManager::getInstance()->message(e.getError());
+			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
 		}
 	}
 }
@@ -245,7 +245,7 @@ void UserInfoBase::getList(const string& hubHint) {
 		try {
 			QueueManager::getInstance()->addList(HintedUser(getUser(), hubHint), QueueItem::FLAG_CLIENT_VIEW);
 		} catch(const Exception& e) {
-			LogManager::getInstance()->message(e.getError());		
+			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);		
 		}
 	}
 }
@@ -255,7 +255,7 @@ void UserInfoBase::browseList(const string& hubHint) {
 	try {
 		QueueManager::getInstance()->addList(HintedUser(getUser(), hubHint), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
 	} catch(const Exception& e) {
-		LogManager::getInstance()->message(e.getError());		
+		LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);		
 	}
 }
 void UserInfoBase::addFav() {
@@ -1101,7 +1101,7 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 			WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(param))));
 		}
 	} else if(stricmp(cmd.c_str(), _T("rebuild")) == 0) {
-		LogManager::getInstance()->message(STRING(REBUILD_STARTED));
+		LogManager::getInstance()->message(STRING(REBUILD_STARTED), LogManager::LOG_INFO);
 		HashManager::getInstance()->rebuild();
 	} else if(stricmp(cmd.c_str(), _T("shutdown")) == 0) {
 		MainFrame::setShutDown(!(MainFrame::getShutDown()));
@@ -1208,7 +1208,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
 
 	if(stricmp(app.c_str(), Buf) != 0) {
 		if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\dchub"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_DCHUB));
+			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_DCHUB), LogManager::LOG_ERROR);
 			return;
 		}
 	
@@ -1247,7 +1247,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
 
 	 if(stricmp(app.c_str(), Buf) != 0) {
 		 if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adc"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC));
+			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogManager::LOG_ERROR);
 			 return;
 		 }
 
@@ -1290,7 +1290,7 @@ void WinUtil::registerADCShubHandler() {
 	
 	if(stricmp(app.c_str(), Buf) != 0) {
 		if(::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC));
+			 LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_ADC), LogManager::LOG_ERROR);
 			return;
 			}
 
@@ -1335,7 +1335,7 @@ void WinUtil::registerMagnetHandler() {
 	if(BOOLSETTING(MAGNET_REGISTER) && (strnicmp(openCmd, appName, appName.size()) != 0)) {
 		SHDeleteKey(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"));
 		if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
-			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_MAGNET));
+			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_MAGNET), LogManager::LOG_ERROR);
 			return;
 		}
 		::RegSetValueEx(hk, NULL, NULL, REG_SZ, (LPBYTE)CTSTRING(MAGNET_SHELL_DESC), sizeof(TCHAR)*(TSTRING(MAGNET_SHELL_DESC).length()+1));
@@ -1437,7 +1437,7 @@ void WinUtil::SetIcon(HWND hWnd, tstring file, bool big) {
 
 void WinUtil::parseMagnetUri(const tstring& aUrl, bool /*aOverride*/, const UserPtr& aUser/*UserPtr()*/, const string& hubHint/*Util::emptyString*/) {
 	if (strnicmp(aUrl.c_str(), _T("magnet:?"), 8) == 0) {
-		LogManager::getInstance()->message(STRING(MAGNET_DLG_TITLE) + ": " + Text::fromT(aUrl));
+		LogManager::getInstance()->message(STRING(MAGNET_DLG_TITLE) + ": " + Text::fromT(aUrl), LogManager::LOG_INFO);
 		Magnet m = Magnet(Text::fromT(aUrl));
 		if(!m.hash.empty() && Encoder::isBase32(m.hash.c_str())){
 			// ok, we have a hash, and maybe a filename.
@@ -1447,7 +1447,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, bool /*aOverride*/, const User
 						try {
 							QueueManager::getInstance()->add(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), HintedUser(aUser, hubHint));
 						} catch(const Exception& e) {
-							LogManager::getInstance()->message(e.getError());
+							LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
 						}
 						break;
 					case SettingsManager::MAGNET_AUTO_SEARCH:

@@ -42,11 +42,11 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 
 	//might miss some messages
-	deque<pair<time_t, string> > oldMessages = LogManager::getInstance()->getLastLogs();
+	auto oldMessages = LogManager::getInstance()->getLastLogs();
 	LogManager::getInstance()->addListener(this);
 
-	for(deque<pair<time_t, string> >::iterator i = oldMessages.begin(); i != oldMessages.end(); ++i) {
-		addLine(i->first, Text::toT(i->second));
+	for(auto i = oldMessages.begin(); i != oldMessages.end(); ++i) {
+		addLine(i->second, Text::toT(i->first));
 	}
 
 
@@ -123,14 +123,14 @@ LRESULT SystemFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, 
 }
 
 LRESULT SystemFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	auto_ptr<pair<time_t, tstring> > msg((pair<time_t, tstring>*)wParam);
+	auto_ptr<pair<LogManager::MessageData, tstring> > msg((pair<LogManager::MessageData, tstring>*)wParam);
 	
 	addLine(msg->first, msg->second);
 	setDirty();
 	return 0;
 }
 
-void SystemFrame::addLine(time_t t, const tstring& msg) {
+void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	ctrlPad.SetRedraw(FALSE);
 	
 	LONG SavedBegin, SavedEnd;
@@ -149,7 +149,7 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 	ctrlPad.GetScrollPos(&pt);
 
 	tstring Text = msg + _T(" "); //kinda strange, but adding line endings in the start of new line makes it that way.
-	tstring time = Text::toT("\r\n [" + Util::getTimeStamp(t) + "] ");
+	tstring time = Text::toT("\r\n [" + Util::getTimeStamp(md.time) + "] ");
 	tstring line = time + Text;
 
 	LONG limitText = ctrlPad.GetLimitText();
@@ -175,6 +175,13 @@ void SystemFrame::addLine(time_t t, const tstring& msg) {
 	End += time.size() -1;
 	ctrlPad.SetSel(Begin, End);
 	ctrlPad.SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
+
+	if (md.severity == LogManager::LOG_ERROR) {
+		ctrlPad.SetSel(End, End+Text.length()-1);
+		CHARFORMAT2 ec = WinUtil::m_ChatTextGeneral;
+		ec.crTextColor = SETTING(ERROR_COLOR);
+		ctrlPad.SetSelectionCharFormat(ec);
+	}
 
 	Colorize(Text, End); //timestamps should always be timestamps right?
 
@@ -240,6 +247,10 @@ LRESULT SystemFrame::onSystemLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 void SystemFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
     PostMessage(WM_REFRESH_SETTINGS);
+}
+
+void SystemFrame::on(Message, time_t t, const string& message, uint8_t sev) {
+	PostMessage(WM_SPEAKER, (WPARAM)(new pair<LogManager::MessageData, tstring>(LogManager::MessageData(t, (LogManager::Severity)sev), Text::toT(message))));
 }
 
 LRESULT SystemFrame::onRefreshSettings(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
