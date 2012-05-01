@@ -1512,6 +1512,9 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			if (mainBundle) {
 				dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)readdMenu, CTSTRING(READD_SOURCE));
 				dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)removeMenu, CTSTRING(REMOVE_SOURCE));
+				if (!b->getSeqOrder()) {
+					dirMenu.AppendMenu(MF_POPUP, IDC_USE_SEQ_ORDER, CTSTRING(USE_SEQ_ORDER));
+				}
 			}
 		}
 		dirMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
@@ -1608,6 +1611,15 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 	return FALSE; 
 }
 
+LRESULT QueueFrame::onSeqOrder(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
+	if (dii) {
+		BundlePtr b = dii->getBundles().front().second;
+		QueueManager::getInstance()->onUseSeqOrder(b);
+	}
+	return 0;
+}
+
 LRESULT QueueFrame::onRecheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlQueue.GetSelectedCount() == 1) {
 		int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
@@ -1640,7 +1652,7 @@ LRESULT QueueFrame::onSearchBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 				dcassert(dii->getBundles().front().second);
 				BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front().second->getToken());
 				if (b) {
-					QueueManager::getInstance()->searchBundle(b, false, true);
+					QueueManager::getInstance()->searchBundle(b, true);
 				}
 			}
 		}
@@ -2365,19 +2377,19 @@ void QueueFrame::on(QueueManagerListener::RecheckDone, const string& target) noe
 }
 LRESULT QueueFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
-tstring searchTermFull;
+	tstring searchTermFull;
 
-		if(usingDirMenu && (ctrlDirs.GetSelectedItem() != NULL)) {
+	if(usingDirMenu && (ctrlDirs.GetSelectedItem() != NULL)) {
 		searchTermFull = Util::getLastDir(Text::toT(getSelectedDir()));
-		}else{
-			QueueItemInfo *ii = (QueueItemInfo*)ctrlQueue.GetItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-			
-			if(SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR){
-				searchTermFull = Util::getLastDir(ii->getText(COLUMN_PATH));
-			} else {
-				searchTermFull = ii->getText(COLUMN_TARGET);
-			}
+	} else {
+		QueueItemInfo *ii = (QueueItemInfo*)ctrlQueue.GetItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
+		if(SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR){
+			searchTermFull = Util::getLastDir(ii->getText(COLUMN_PATH));
+		} else {
+			searchTermFull = ii->getText(COLUMN_TARGET);
 		}
+	}
+
 	size_t newId = (size_t)wID - IDC_SEARCH_SITES;
 	if(newId < (int)WebShortcuts::getInstance()->list.size()) {
 		WebShortcut *ws = WebShortcuts::getInstance()->list[newId];

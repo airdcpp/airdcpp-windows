@@ -1410,7 +1410,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="NextSearchIn">Next search in %d minutes</String>
 		<String Name="NextRecentSearchIn">Next recent search in %d minutes</String>
 		<String Name="BundleCreated">The bundle %s has been created with %d items</String>
-		<String Name="BundleCreatedAlt">The bundle %s has been created with %d items (total size: %s) and it has been searched for alternates, %d search(es) queued.</String>
 		<String Name="ExistingBundlesMerged">%d existing bundles have been merged into it</String>
 		<String Name="FilebundleMerged">The file bundle %s has been merged into bundle %s</String>
 		<String Name="FilebundleMoved">The file bundle %s has been moved to %s</String>
@@ -1538,5 +1537,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SearchPort">Search (UDP)</String>
 		<String Name="ClearChat">Clear chat</String>
 		<String Name="ClearMessages">Clear messages</String>
+		<String Name="UseSeqOrder">Use sequential order</String>
 	</Strings>
 </Language>
