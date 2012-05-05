@@ -1310,7 +1310,7 @@ LRESULT ChatCtrl::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	
 	const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou) {
-		sCopy = ou->getText(static_cast<uint8_t>(wID - IDC_COPY));
+		sCopy = ou->getText(static_cast<uint8_t>(wID - IDC_COPY), true);
 	}
 
 	if (!sCopy.empty())
