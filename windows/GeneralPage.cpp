@@ -39,6 +39,7 @@ PropPage::TextItem GeneralPage::texts[] = {
 	{ IDC_RAR, ResourceManager::PROFILE_RAR },
 	{ IDC_PRIVATE_HUB, ResourceManager::PROFILE_PRIVATE },
 	{ IDC_LANGUAGE_CAPTION, ResourceManager::SETTINGS_LANGUAGE },
+	{ IDC_LANGUAGE_NOTE, ResourceManager::LANGUAGE_NOTE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

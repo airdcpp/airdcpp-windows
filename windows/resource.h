@@ -333,6 +333,7 @@
 #define IDC_SETTINGS_EMAIL              1134
 #define IDC_SETTINGS_DESCRIPTION        1135
 #define IDC_SETTINGS_ODC_SHUTDOWNTIMEOUT 1135
+#define IDC_SETTINGS_DESCRIPTION2       1136
 #define IDC_SETTINGS_IP                 1138
 #define IDC_SETTINGS_PORT               1139
 #define IDC_SETTINGS_SOCKS5_IP          1140
@@ -781,7 +782,7 @@
 #define IDC_TEST                        1368
 #define IDC_POPUP_TITLE_FONT            1368
 #define IDC_LOG_LINESTEXT               1368
-#define IDC_SPIN1						1369
+#define IDC_SPIN1                       1369
 #define IDC_COMBOBOXEX1                 1369
 #define IDC_NATT                        1370
 #define IDC_SORT_DIRS                   1370
@@ -979,6 +980,7 @@
 #define IDC_SELECT_PATH                 1639
 #define IDC_SELECT_DIR                  1639
 #define IDC_LANGUAGE_CAPTION            1640
+#define IDC_LANGUAGE_NOTE               1641
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1320,7 +1322,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        322
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1641
+#define _APS_NEXT_CONTROL_VALUE         1642
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

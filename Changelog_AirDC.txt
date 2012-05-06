@@ -545,7 +545,7 @@ Changed:
 
 Added:
 
-- New downloading/queuing system (read <link> for more information)
+- New downloading/queuing system (read http://www.airdcpp.net/forum/viewtopic.php?t=1344 for more information)
 - New favorite download directories
 - New auto search including a new tab in GUI
 - Instant sending of files in chat
@@ -554,10 +554,12 @@ Added:
 - Auto update of GeoIP country databases, add IPv6 country database (DC++)
 - Connection type detection improvements (DC++)
 - Customizable site search menu items
-- Group same directories in search results ( ADC only )
+- Group same directories in search results (ADC only)
 - Support Time params in download paths
 - Listing of ADC searches in Search Spy
 - UDP command detection in the CDM Debug frame
+- Use error color in system log for error messages
+
 
 Changed:
 
@@ -569,7 +571,10 @@ Changed:
 - Reorganized settings
 - Also compare the file name when checking for dupes
 - Limit the number of new connections for downloads
-- Theme support changes, includes more colors and icons. See Themes/readme.txt for details.
+- Theme support changes, includes more colors and icons. See Themes/readme.txt for details
+- Copy IP addresses without the country part
+- Don't scroll to the end when viewing text files
+- Use system icons also for directories (if enabled)
 
 
 Fixed:
@@ -577,7 +582,7 @@ Fixed:
 - Not all search replies were sent in ADC hubs
 - More reliable path opening in system log
 - Improve the accuracy for estimated time for queued searches
-- Updated libraries (Boost, ZLIB, OpenSSL, PCRE, WTL)
+- Updated libraries (Boost, ZLIB, OpenSSL, PCRE, WTL, Richedit)
 - Numerous fixes for freezes and other bugs
 - Always connect the ADC search results to a correct hub
 - Detect Windows 8 in stats
