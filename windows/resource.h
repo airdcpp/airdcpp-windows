@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -146,11 +146,6 @@
 #define IDD_AIRDOWNLOADSPAGE            303
 #define IDD_AIRSHARINGPAGE              304
 #define IDD_AUTOSEARCH_DLG              305
-#define IDI_ICON8                       307
-#define IDI_ICON9                       308
-#define IDI_HO                          308
-#define IDI_ICON10                      309
-#define IDI_RUS                         310
 #define IDB_BITMAP1                     312
 #define IDB_USERS                       312
 #define IDD_FULHIGHLIGHTPROPERTIES      313
@@ -158,22 +153,10 @@
 #define IDD_DIALOG1                     314
 #define IDD_WIZARD                      314
 #define IDD_DIRLIST_DLG                 316
-#define IDI_GER                         318
 #define IDD_FAVORITEDIR                 320
 #define IDD_TEMPSHARE_DLG               321
-#define IDI_ICON1                       324
-#define IDI_FIN                         324
-#define IDI_ICON2                       325
-#define IDI_ICON3                       326
-#define IDI_ICON4                       327
-#define IDI_ICON5                       328
-#define IDI_ICON6                       329
-#define IDI_ICON7                       330
-#define IDI_NOR                         331
-#define IDI_RO                          332
-#define IDI_POL                         333
-#define IDI_FR                          334
-#define IDR_EMOTICON                    335
+#define IDR_EXEC                        335
+#define IDR_EMOTICON                    345
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDR_WINAMP                      474
@@ -782,34 +765,23 @@
 #define IDC_SETTINGS_NOMINALBW2         1358
 #define IDC_HIDE_SHARE                  1359
 #define IDC_DOWNLOAD_SLOTS              1359
-#define IDC_LANG_SWE                    1360
 #define IDC_DOWNLOAD_S_SPIN             1360
-#define IDC_ENG                         1361
 #define IDC_UPLOAD_SLOTS                1361
-#define IDC_LANG_FIN                    1362
 #define IDC_UPLOAD_S_SPIN               1362
-#define IDC_LANG_RO                     1363
 #define IDC_MAX_AUTO_OPENED             1363
-#define IDC_LANG_HUN                    1364
 #define IDC_POPUP_TYPE                  1364
 #define IDC_FILE_SLOTS                  1364
-#define IDC_LANG_DAN                    1365
 #define IDC_SPIN4                       1365
 #define IDC_FILE_S_SPIN                 1365
-#define IDC_LANG_ITA                    1366
-#define IDC_CHECK3                      1366
 #define IDC_HIGHLIGHT                   1366
 #define IDC_CHAT_NOTIFY                 1366
-#define IDC_LANG_NOR                    1367
-#define IDC_SPIN1                       1367
 #define IDC_LOG_LINES_SPIN              1367
 #define IDC_SAVE_SPIN                   1367
 #define IDC_UPDATE_BL                   1368
 #define IDC_TEST                        1368
 #define IDC_POPUP_TITLE_FONT            1368
-#define IDC_LANG_POL                    1368
 #define IDC_LOG_LINESTEXT               1368
-#define IDC_LANG_POR                    1369
+#define IDC_SPIN1						1369
 #define IDC_COMBOBOXEX1                 1369
 #define IDC_NATT                        1370
 #define IDC_SORT_DIRS                   1370
@@ -819,17 +791,12 @@
 #define IDC_CURRENT_LIST_BROWSE         1372
 #define IDC_VIEW_BL                     1372
 #define IDC_SETTINGS_MB2                1372
-#define IDC_LANG_FR                     1373
 #define IDC_SETTINGS_KIB                1373
-#define IDC_LANG_D                      1374
-#define IDC_BUTTON2                     1374
 #define IDC_ICONS_RESTORE               1374
 #define IDC_PLAYER_COMBO                1375
-#define IDC_LANG_RUS                    1375
 #define IDC_MCN_SPIN                    1375
 #define IDC_REMOVE_FILE                 1376
 #define IDC_MCN_SPIN2                   1376
-#define IDC_LANG_GER                    1377
 #define IDC_SETTINGS_MAX_MCN            1377
 #define IDC_SETTINGS_MAX_MCN_UL         1378
 #define IDC_MCN_AUTODETECT              1379
@@ -1011,6 +978,7 @@
 #define IDC_TEMPSHARELST                1638
 #define IDC_SELECT_PATH                 1639
 #define IDC_SELECT_DIR                  1639
+#define IDC_LANGUAGE_CAPTION            1640
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1318,8 +1286,8 @@
 #define IDC_DATETIMEPICKER3             15121
 #define IDC_SEARCH_END                  15121
 #define IDC_SETTINGS_KB5                15122
-#define IDC_COPY_DATE	                15123
-#define IDC_USE_SEQ_ORDER	            15124
+#define IDC_COPY_DATE                   15123
+#define IDC_USE_SEQ_ORDER               15124
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_BITZI_LOOKUP                20000
 #define IDC_BROWSELIST                  21000
@@ -1352,7 +1320,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        322
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1640
+#define _APS_NEXT_CONTROL_VALUE         1641
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

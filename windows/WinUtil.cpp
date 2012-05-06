@@ -38,6 +38,7 @@
 #include "MainFrm.h"
 
 #include "../client/Util.h"
+#include "../client/Localization.h"
 #include "../client/StringTokenizer.h"
 #include "../client/ShareManager.h"
 #include "../client/ClientManager.h"
@@ -105,55 +106,6 @@ CHARFORMAT2 WinUtil::m_TextStyleQueue;
 CHARFORMAT2 WinUtil::m_ChatTextPrivate;
 CHARFORMAT2 WinUtil::m_ChatTextLog;
 tstring WinUtil::m_IconPath;
-
-static const char* countryNames[] = { "ANDORRA", "UNITED ARAB EMIRATES", "AFGHANISTAN", "ANTIGUA AND BARBUDA", 
-"ANGUILLA", "ALBANIA", "ARMENIA", "NETHERLANDS ANTILLES", "ANGOLA", "ANTARCTICA", "ARGENTINA", "AMERICAN SAMOA", 
-"AUSTRIA", "AUSTRALIA", "ARUBA", "ALAND", "AZERBAIJAN", "BOSNIA AND HERZEGOVINA", "BARBADOS", "BANGLADESH", 
-"BELGIUM", "BURKINA FASO", "BULGARIA", "BAHRAIN", "BURUNDI", "BENIN", "BERMUDA", "BRUNEI DARUSSALAM", "BOLIVIA", 
-"BRAZIL", "BAHAMAS", "BHUTAN", "BOUVET ISLAND", "BOTSWANA", "BELARUS", "BELIZE", "CANADA", "COCOS ISLANDS", 
-"THE DEMOCRATIC REPUBLIC OF THE CONGO", "CENTRAL AFRICAN REPUBLIC", "CONGO", "SWITZERLAND", "COTE D'IVOIRE", "COOK ISLANDS", 
-"CHILE", "CAMEROON", "CHINA", "COLOMBIA", "COSTA RICA", "SERBIA AND MONTENEGRO", "CUBA", "CAPE VERDE", 
-"CHRISTMAS ISLAND", "CYPRUS", "CZECH REPUBLIC", "GERMANY", "DJIBOUTI", "DENMARK", "DOMINICA", "DOMINICAN REPUBLIC", 
-"ALGERIA", "ECUADOR", "ESTONIA", "EGYPT", "WESTERN SAHARA", "ERITREA", "SPAIN", "ETHIOPIA", "EUROPEAN UNION", "FINLAND", "FIJI", 
-"FALKLAND ISLANDS", "MICRONESIA", "FAROE ISLANDS", "FRANCE", "GABON", "UNITED KINGDOM", "GRENADA", "GEORGIA", 
-"FRENCH GUIANA", "GUERNSEY", "GHANA", "GIBRALTAR", "GREENLAND", "GAMBIA", "GUINEA", "GUADELOUPE", "EQUATORIAL GUINEA", 
-"GREECE", "SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS", "GUATEMALA", "GUAM", "GUINEA-BISSAU", "GUYANA", 
-"HONG KONG", "HEARD ISLAND AND MCDONALD ISLANDS", "HONDURAS", "CROATIA", "HAITI", "HUNGARY", 
-"INDONESIA", "IRELAND", "ISRAEL",  "ISLE OF MAN", "INDIA", "BRITISH INDIAN OCEAN TERRITORY", "IRAQ", "IRAN", "ICELAND", 
-"ITALY","JERSEY", "JAMAICA", "JORDAN", "JAPAN", "KENYA", "KYRGYZSTAN", "CAMBODIA", "KIRIBATI", "COMOROS", 
-"SAINT KITTS AND NEVIS", "DEMOCRATIC PEOPLE'S REPUBLIC OF KOREA", "SOUTH KOREA", "KUWAIT", "CAYMAN ISLANDS", 
-"KAZAKHSTAN", "LAO PEOPLE'S DEMOCRATIC REPUBLIC", "LEBANON", "SAINT LUCIA", "LIECHTENSTEIN", "SRI LANKA", 
-"LIBERIA", "LESOTHO", "LITHUANIA", "LUXEMBOURG", "LATVIA", "LIBYAN ARAB JAMAHIRIYA", "MOROCCO", "MONACO", 
-"MOLDOVA", "MONTENEGRO", "MADAGASCAR", "MARSHALL ISLANDS", "MACEDONIA", "MALI", "MYANMAR", "MONGOLIA", "MACAO", 
-"NORTHERN MARIANA ISLANDS", "MARTINIQUE", "MAURITANIA", "MONTSERRAT", "MALTA", "MAURITIUS", "MALDIVES", 
-"MALAWI", "MEXICO", "MALAYSIA", "MOZAMBIQUE", "NAMIBIA", "NEW CALEDONIA", "NIGER", "NORFOLK ISLAND", 
-"NIGERIA", "NICARAGUA", "NETHERLANDS", "NORWAY", "NEPAL", "NAURU", "NIUE", "NEW ZEALAND", "OMAN", "PANAMA", 
-"PERU", "FRENCH POLYNESIA", "PAPUA NEW GUINEA", "PHILIPPINES", "PAKISTAN", "POLAND", "SAINT PIERRE AND MIQUELON", 
-"PITCAIRN", "PUERTO RICO", "PALESTINIAN TERRITORY", "PORTUGAL", "PALAU", "PARAGUAY", "QATAR", "REUNION", 
-"ROMANIA", "SERBIA", "RUSSIAN FEDERATION", "RWANDA", "SAUDI ARABIA", "SOLOMON ISLANDS", "SEYCHELLES", "SUDAN", 
-"SWEDEN", "SINGAPORE", "SAINT HELENA", "SLOVENIA", "SVALBARD AND JAN MAYEN", "SLOVAKIA", "SIERRA LEONE", 
-"SAN MARINO", "SENEGAL", "SOMALIA", "SURINAME", "SAO TOME AND PRINCIPE", "EL SALVADOR", "SYRIAN ARAB REPUBLIC", 
-"SWAZILAND", "TURKS AND CAICOS ISLANDS", "CHAD", "FRENCH SOUTHERN TERRITORIES", "TOGO", "THAILAND", "TAJIKISTAN", 
-"TOKELAU", "TIMOR-LESTE", "TURKMENISTAN", "TUNISIA", "TONGA", "TURKEY", "TRINIDAD AND TOBAGO", "TUVALU", "TAIWAN", 
-"TANZANIA", "UKRAINE", "UGANDA", "UNITED STATES MINOR OUTLYING ISLANDS", "UNITED STATES", "URUGUAY", "UZBEKISTAN", 
-"VATICAN", "SAINT VINCENT AND THE GRENADINES", "VENEZUELA", "BRITISH VIRGIN ISLANDS", "U.S. VIRGIN ISLANDS", 
-"VIET NAM", "VANUATU", "WALLIS AND FUTUNA", "SAMOA", "YEMEN", "MAYOTTE", "YUGOSLAVIA", "SOUTH AFRICA", "ZAMBIA", 
-"ZIMBABWE" };
-
-static const char* countryCodes[] = { 
- "AD", "AE", "AF", "AG", "AI", "AL", "AM", "AN", "AO", "AQ", "AR", "AS", "AT", "AU", "AW", "AX", "AZ", "BA", "BB", 
- "BD", "BE", "BF", "BG", "BH", "BI", "BJ", "BM", "BN", "BO", "BR", "BS", "BT", "BV", "BW", "BY", "BZ", "CA", "CC", 
- "CD", "CF", "CG", "CH", "CI", "CK", "CL", "CM", "CN", "CO", "CR", "CS", "CU", "CV", "CX", "CY", "CZ", "DE", "DJ", 
- "DK", "DM", "DO", "DZ", "EC", "EE", "EG", "EH", "ER", "ES", "ET", "EU", "FI", "FJ", "FK", "FM", "FO", "FR", "GA", 
- "GB", "GD", "GE", "GF", "GG", "GH", "GI", "GL", "GM", "GN", "GP", "GQ", "GR", "GS", "GT", "GU", "GW", "GY", "HK", 
- "HM", "HN", "HR", "HT", "HU", "ID", "IE", "IL", "IM", "IN", "IO", "IQ", "IR", "IS", "IT", "JE", "JM", "JO", "JP", 
- "KE", "KG", "KH", "KI", "KM", "KN", "KP", "KR", "KW", "KY", "KZ", "LA", "LB", "LC", "LI", "LK", "LR", "LS", "LT", 
- "LU", "LV", "LY", "MA", "MC", "MD", "ME", "MG", "MH", "MK", "ML", "MM", "MN", "MO", "MP", "MQ", "MR", "MS", "MT", 
- "MU", "MV", "MW", "MX", "MY", "MZ", "NA", "NC", "NE", "NF", "NG", "NI", "NL", "NO", "NP", "NR", "NU", "NZ", "OM", 
- "PA", "PE", "PF", "PG", "PH", "PK", "PL", "PM", "PN", "PR", "PS", "PT", "PW", "PY", "QA", "RE", "RO", "RS", "RU", 
- "RW", "SA", "SB", "SC", "SD", "SE", "SG", "SH", "SI", "SJ", "SK", "SL", "SM", "SN", "SO", "SR", "ST", "SV", "SY", 
- "SZ", "TC", "TD", "TF", "TG", "TH", "TJ", "TK", "TL", "TM", "TN", "TO", "TR", "TT", "TV", "TW", "TZ", "UA", "UG", 
- "UM", "US", "UY", "UZ", "VA", "VC", "VE", "VG", "VI", "VN", "VU", "WF", "WS", "YE", "YT", "YU", "ZA", "ZM", "ZW" };
 	
 HLSCOLOR RGB2HLS (COLORREF rgb) {
 	unsigned char minval = min(GetRValue(rgb), min(GetGValue(rgb), GetBValue(rgb)));
@@ -341,6 +293,10 @@ void WinUtil::reLoadImages(){
 		userImages.CreateFromImage(Text::toT(SETTING(USERLIST_IMAGE)).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 }
 
+void WinUtil::preInit() {
+	flagImages.CreateFromImage(IDB_FLAGS, 25, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+}
+
 void WinUtil::init(HWND hWnd) {
 	mainWnd = hWnd;
 
@@ -441,27 +397,47 @@ void WinUtil::init(HWND hWnd) {
 
 	mainMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)help, CTSTRING(MENU_HELP));
 
-/** @todo fix this so that the system icon is used for dirs as well (we need
-			  to mask it so that incomplete folders appear correct */
-#if 0	
-	if(BOOLSETTING(USE_SYSTEM_ICONS)) {
-		SHFILEINFO fi;
-		memzero(&fi, sizeof(SHFILEINFO));
-		fileImages.Create(16, 16, ILC_COLOR32 | ILC_MASK, 16, 16);
-		::SHGetFileInfo(_T("./"), FILE_ATTRIBUTE_DIRECTORY, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES);
-		fileImages.AddIcon(fi.hIcon);
-		fileImages.AddIcon(ic);
-		::DestroyIcon(fi.hIcon);
-	} else {
-		fileImages.CreateFromImage(IDB_FOLDERS, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
-	}
-#endif
-
+	//ResourceLoader::LoadImageList(IDB_FOLDERS, fileImages, 16, 16);
 	fileImages.CreateFromImage(IDB_FOLDERS, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 	dirIconIndex = fileImageCount++;
 	dirMaskedIndex = fileImageCount++;
-
 	fileImageCount++;
+
+	if(BOOLSETTING(USE_SYSTEM_ICONS)) {
+		SHFILEINFO fi;
+		memzero(&fi, sizeof(SHFILEINFO));
+		if(::SHGetFileInfo(_T("./"), FILE_ATTRIBUTE_DIRECTORY, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES)) {
+			fileImages.ReplaceIcon(dirIconIndex, fi.hIcon);
+
+			{
+				HICON overlayIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_EXEC), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+
+				CImageList tmpIcons;
+				tmpIcons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 2, 1);
+				tmpIcons.AddIcon(fi.hIcon);
+				tmpIcons.AddIcon(overlayIcon);
+
+				CImageList mergeList(ImageList_Merge(tmpIcons, 0, tmpIcons, 1, 0, 0));
+				HICON icDirIcon = mergeList.GetIcon(0);
+				fileImages.ReplaceIcon(dirMaskedIndex, icDirIcon);
+
+				mergeList.Destroy();
+				tmpIcons.Destroy();
+
+				::DestroyIcon(icDirIcon);
+				::DestroyIcon(overlayIcon);
+			}
+
+			
+			::DestroyIcon(fi.hIcon);
+		}
+	}
+
+	/*fileImages.CreateFromImage(IDB_FOLDERS, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+	dirIconIndex = fileImageCount++;
+	dirMaskedIndex = fileImageCount++;
+
+	fileImageCount++;*/
 
 	flagImages.CreateFromImage(IDB_FLAGS, 25, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 
@@ -1986,35 +1962,6 @@ string WinUtil::formatTime(uint64_t rest) {
 	return formatedTime;
 }
 
-uint8_t WinUtil::getFlagIndexByCode(const char* countryCode) {
-	// country codes are sorted, use binary search for better performance
-	int begin = 0;
-	int end = (sizeof(countryCodes) / sizeof(countryCodes[0])) - 1;
-		
-	while(begin <= end) {
-		int mid = (begin + end) / 2;
-		int cmp = memcmp(countryCode, countryCodes[mid], 2);
-
-		if(cmp > 0)
-			begin = mid + 1;
-		else if(cmp < 0)
-			end = mid - 1;
-		else
-			return mid + 1;
-	}
-	return 0;
-}
-
-uint8_t WinUtil::getFlagIndexByName(const char* countryName) {
-	// country codes are not sorted, use linear searching (it is not used so often)
-	const char** first = countryNames;
-	const char** last = countryNames + (sizeof(countryNames) / sizeof(countryNames[0]));
-	const char** i = find_if(first, last, [&](const char* cn) { return stricmp(countryName, cn) == 0; });
-	if(i != last)
-		return i - countryNames + 1;
-
-	return 0;
-}
 float ProcSpeedCalc() {
 #ifndef _WIN64
 #define RdTSC __asm _emit 0x0f __asm _emit 0x31
@@ -2456,6 +2403,28 @@ void WinUtil::toSystemTime(const time_t aTime, SYSTEMTIME* sysTime) {
 	sysTime->wSecond = _tm.tm_sec;
 	sysTime->wDayOfWeek = _tm.tm_wday;
 	sysTime->wMilliseconds = 0;
+}
+
+void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
+	ctrlLanguage.SetImageList(WinUtil::flagImages);
+	int count = 0;
+	
+	for(auto i = Localization::languageList.begin(); i != Localization::languageList.end(); ++i){
+		COMBOBOXEXITEM cbli =  {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
+		CString str = Text::toT((*i).languageName).c_str();
+		cbli.iItem = count;
+		cbli.pszText = (LPTSTR)(LPCTSTR) str;
+		cbli.cchTextMax = str.GetLength();
+
+		auto flagIndex = Localization::getFlagIndexByCode((*i).countryFlagCode);
+		cbli.iImage = flagIndex;
+		cbli.iSelectedImage = flagIndex;
+		ctrlLanguage.InsertItem(&cbli);
+
+		count = count++;
+	}
+
+	ctrlLanguage.SetCurSel(Localization::curLanguage);
 }
 
 /**

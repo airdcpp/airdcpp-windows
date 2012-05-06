@@ -28,6 +28,7 @@
 #include "../client/Client.h"
 #include "../client/StringTokenizer.h"
 #include "../client/version.h"
+#include "../client/Localization.h"
 
 int PublicHubsFrame::columnIndexes[] = { 
 	COLUMN_NAME,
@@ -433,7 +434,7 @@ void PublicHubsFrame::updateList() {
 			l[COLUMN_MAXUSERS] = Util::toStringW(i->getMaxUsers());
 			l[COLUMN_RELIABILITY] = Util::toStringW(i->getReliability());
 			l[COLUMN_RATING] = Text::toT(i->getRating());
-			ctrlHubs.insert(ctrlHubs.GetItemCount(), l, WinUtil::getFlagIndexByName(i->getCountry().c_str()));
+			ctrlHubs.insert(ctrlHubs.GetItemCount(), l, Localization::getFlagIndexByName(i->getCountry().c_str()));
 			visibleHubs++;
 			users += i->getUsers();
 		}

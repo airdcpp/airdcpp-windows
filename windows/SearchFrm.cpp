@@ -31,6 +31,7 @@
 #include "../client/ClientManager.h"
 #include "../client/TimerManager.h"
 #include "../client/SearchManager.h"
+#include "../client/Localization.h"
 
 
 int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_HITS, COLUMN_NICK, COLUMN_TYPE, COLUMN_SIZE,
@@ -673,7 +674,7 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 			// Only attempt to grab a country mapping if we actually have an IP address
 			string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
 			if(!tmpCountry.empty()) {
-				flagIndex = WinUtil::getFlagIndexByCode(tmpCountry.c_str());
+				flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
 			}
 		}
 	}

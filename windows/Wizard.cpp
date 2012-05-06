@@ -4,6 +4,7 @@
 #include "../client/SettingsManager.h"
 #include "../client/HighlightManager.h"
 #include "../client/AirUtil.h"
+#include "../client/Localization.h"
 #include "Resource.h"
 #include "WinUtil.h"
 #include "Wizard.h"
@@ -54,28 +55,10 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	spin6.Detach();
 
 		
-	Images.CreateFromImage(WinUtil::getIconPath(_T("flags.bmp")).c_str(), 24, 20, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-	ctrlLanguage.SetImageList(Images);
-		
-	int count = 0;
-	int img = 0;
-		
-	for(StringIter i = SettingsManager::Languages.begin(); i != SettingsManager::Languages.end(); ++i){
-		COMBOBOXEXITEM cbli =  {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
-		CString str = Text::toT(*i).c_str();
-		cbli.iItem =  count;
-		cbli.pszText = (LPTSTR)(LPCTSTR) str;
-		cbli.cchTextMax = str.GetLength();
-		cbli.iImage = img;
-		cbli.iSelectedImage = img;
-		ctrlLanguage.InsertItem(&cbli);
-		count = count++;
-		img = img++;
-		//ctrlLanguage.AddString(Text::toT(*i).c_str());
-	}
+	//Images.CreateFromImage(WinUtil::getIconPath(_T("flags.bmp")).c_str(), 24, 20, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
+	//ctrlLanguage.SetImageList(Images);
 
-	ctrlLanguage.SetCurSel(SETTING(LANGUAGE_SWITCH));
-
+	WinUtil::appendLanguageMenu(ctrlLanguage);
 
 	download = SETTING(DOWNLOAD_SPEED);
 	bool found=false;
@@ -145,11 +128,7 @@ void WizardDlg::write() {
 	//Think can keep the tchar bufs here when just have a few settings that needs it
 	
 	//set the language
-	if(SETTING(LANGUAGE_SWITCH) != ctrlLanguage.GetCurSel()) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_SWITCH, ctrlLanguage.GetCurSel());
-		//To Make this a little cleaner
-		setLang();
-	}
+	Localization::setLanguage(ctrlLanguage.GetCurSel());
 
 	//for Nick
 	TCHAR buf[64];
@@ -337,32 +316,6 @@ LRESULT WizardDlg::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 		::SetBkMode(hDC, TRANSPARENT);
 		return (LRESULT)GetStockObject(HOLLOW_BRUSH);
 	}
-	/*
-	BOOL dl = IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ) != BST_CHECKED;
-	BOOL ul = IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ) != BST_CHECKED;
-	HDC hDC = (HDC)wParam;
-
-	if((HWND) lParam == GetDlgItem(IDC_MAX_AUTO_WIZ) || (HWND) lParam == GetDlgItem(IDC_OPEN_EXTRA_WIZ) || (HWND) lParam == GetDlgItem(IDC_UPLOAD_SLOTS_WIZ)) {
-		if (ul)
-			::SetTextColor(hDC, RGB(0,0,0));
-		else
-			::SetTextColor(hDC, RGB(100,100,100));
-
-		::SetBkMode(hDC, TRANSPARENT);
-		return (LRESULT)GetStockObject(HOLLOW_BRUSH);
-	}
-
-
-	if(((HWND) lParam == GetDlgItem(IDC_MAX_DL_WIZ) || (HWND) lParam == GetDlgItem(IDC_MAX_DL_SPEED_WIZ))) {
-		if (dl)
-			::SetTextColor(hDC, RGB(0,0,0));
-		else
-			::SetTextColor(hDC, RGB(100,100,100));
-
-		::SetBkMode(hDC, TRANSPARENT);
-		return (LRESULT)GetStockObject(HOLLOW_BRUSH);
-	}
-	*/
 	return FALSE;
 }
 
@@ -410,39 +363,6 @@ void WizardDlg::fixcontrols() {
 	
 }
 
-void WizardDlg::setLang() {
-
-	if(SETTING(LANGUAGE_SWITCH) == 0) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, Util::emptyString);
-	} else if(SETTING(LANGUAGE_SWITCH) == 1) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Swedish_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 2) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Finnish_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 3) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Italian_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 4) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Hungarian_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 5) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Romanian_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 6) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Danish_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 7) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Norwegian_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 8) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Port_Br_for_AirDc.xml"));
-    } else if(SETTING(LANGUAGE_SWITCH) == 9) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Polish_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 10) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//French_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 11) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Dutch_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 12) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//Russian_for_AirDc.xml"));
-	} else if(SETTING(LANGUAGE_SWITCH) == 13) {
-		SettingsManager::getInstance()->set(SettingsManager::LANGUAGE_FILE, (Util::getPath(Util::PATH_GLOBAL_CONFIG) + "Language//German_for_AirDc.xml"));
-	}
-
-}
 void WizardDlg::setDownloadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ)) {

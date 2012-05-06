@@ -40,20 +40,6 @@ public:
 		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, onTextChanged)
 		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, onTextChanged)
 		COMMAND_HANDLER(IDC_DESCRIPTION, EN_CHANGE, onTextChanged)
-		COMMAND_ID_HANDLER(IDC_ENG, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_SWE, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_FIN, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_ITA, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_HUN, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_RO, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_DAN, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_NOR, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_POR, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_POL, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_FR, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_D, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_RUS, onLng)
-		COMMAND_ID_HANDLER(IDC_LANG_GER, onLng)
 		COMMAND_ID_HANDLER(IDC_PUBLIC, onProfile)
 		COMMAND_ID_HANDLER(IDC_RAR, onProfile)
 		COMMAND_ID_HANDLER(IDC_PRIVATE_HUB, onProfile)
@@ -63,7 +49,6 @@ public:
 	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onTextChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRadioButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onLng(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
@@ -75,8 +60,7 @@ private:
 	static TextItem texts[];
 	CEdit nick;
 	CEdit desc;
-	void fixControls();
-
+	CComboBoxEx ctrlLanguage;
 };
 
 #endif // !defined(GENERAL_PAGE_H)

@@ -389,6 +389,8 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	splash.SetFocus();
 	splash.RedrawWindow();
 
+	WinUtil::preInit();
+
 	startup(callBack, (void*)splash.m_hWnd);
 	
 

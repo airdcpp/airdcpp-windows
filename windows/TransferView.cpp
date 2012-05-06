@@ -29,6 +29,7 @@
 #include "../client/GeoManager.h"
 #include "../client/AirUtil.h"
 #include "../client/format.h"
+#include "../client/Localization.h"
 
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/algorithm_ext/for_each.hpp>
@@ -1086,7 +1087,7 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 	if(country.empty()) {
 		ui->setIP(Text::toT(ip), 0);
 	} else {
-		ui->setIP(Text::toT(country + " (" + ip + ")"), WinUtil::getFlagIndexByCode(country.c_str()));
+		ui->setIP(Text::toT(country + " (" + ip + ")"), Localization::getFlagIndexByCode(country.c_str()));
 	}
 }
 

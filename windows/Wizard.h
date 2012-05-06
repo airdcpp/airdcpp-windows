@@ -52,7 +52,6 @@ public:
 	LRESULT onCtlColor(UINT, WPARAM, LPARAM, BOOL&);
 
 	void write();
-	void setLang();
 	void setDownloadLimits(double value);
 	void setUploadLimits(double value);
 
@@ -63,5 +62,4 @@ private:
 	void fixcontrols();
 	string upload;
 	string download;
-	CImageList Images;
 };

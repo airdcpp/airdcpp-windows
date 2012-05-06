@@ -255,6 +255,7 @@
     <ClCompile Include="client\HighlightManager.cpp" />
     <ClCompile Include="client\HttpConnection.cpp" />
     <ClCompile Include="client\HttpDownload.cpp" />
+    <ClCompile Include="client\Localization.cpp" />
     <ClCompile Include="client\LogManager.cpp" />
     <ClCompile Include="client\Magnet.cpp" />
     <ClCompile Include="client\Mapper.cpp" />
@@ -367,6 +368,7 @@
     <ClInclude Include="client\HttpConnectionListener.h" />
     <ClInclude Include="client\HttpDownload.h" />
     <ClInclude Include="client\HubEntry.h" />
+    <ClInclude Include="client\Localization.h" />
     <ClInclude Include="client\LogManager.h" />
     <ClInclude Include="client\LogManagerListener.h" />
     <ClInclude Include="client\Magnet.h" />

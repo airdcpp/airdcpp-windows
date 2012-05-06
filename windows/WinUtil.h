@@ -300,6 +300,7 @@ public:
 	static DWORD comCtlVersion;
 	static tstring m_IconPath;
 
+	static void preInit(); // init required for the wizard
 	static void init(HWND hWnd);
 	static void uninit();
 	static void SetIcon(HWND hWnd, long icon, bool big = false);
@@ -501,8 +502,7 @@ public:
 	static tstring Speedinfo();
 	static tstring DiskSpaceInfo(bool onlyTotal = false);
 
-	static uint8_t getFlagIndexByCode(const char* countryCode);
-	static uint8_t getFlagIndexByName(const char* countryName);
+	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
 
 	static string getReport(const Identity& identity, HWND hwnd);
 

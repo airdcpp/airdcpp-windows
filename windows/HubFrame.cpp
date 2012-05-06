@@ -42,6 +42,7 @@
 #include "../client/ColorSettings.h"
 #include "../client/HighlightManager.h"
 #include "../client/ConnectivityManager.h"
+#include "../client/Localization.h"
 
 HubFrame::FrameMap HubFrame::frames;
 HubFrame::IgnoreMap HubFrame::ignoreList;
@@ -2508,7 +2509,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 					// Only attempt to grab a country mapping if we actually have an IP address
 					string tmpCountry = GeoManager::getInstance()->getCountry(ip);
 					if(!tmpCountry.empty()) {
-						flagIndex = WinUtil::getFlagIndexByCode(tmpCountry.c_str());
+						flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
 					}
 				}
 
