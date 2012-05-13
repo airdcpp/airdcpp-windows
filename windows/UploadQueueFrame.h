@@ -141,6 +141,7 @@ private:
 		UserItem(UserPtr u) : u(u) { }
 		
 		const UserPtr& getUser() const { return u; }
+		const string& getHubUrl() const { return Util::emptyString; } //TODO, FIX
 	};
 		
 	const UserPtr getSelectedUser() {

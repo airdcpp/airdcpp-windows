@@ -1451,7 +1451,7 @@ LRESULT DirectoryListingFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/
 
 	OMenu tabMenu;
 	tabMenu.CreatePopupMenu();
-	appendUserItems(tabMenu, Util::emptyString); // TODO: hubhint
+	appendUserItems(tabMenu);
 	tabMenu.AppendMenu(MF_SEPARATOR);
 	tabMenu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
 

@@ -119,6 +119,7 @@ private:
 		tstring columns[COLUMN_LAST];
 
 		const UserPtr& getUser() const { return user; }
+		const string& getHubUrl() const { return Util::emptyString; } //TODO, FIX
 		UserPtr user;
 	};
 

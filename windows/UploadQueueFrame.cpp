@@ -201,7 +201,7 @@ LRESULT UploadQueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
     		WinUtil::getContextMenuPos(ctrlList, pt);
     	}
     	
-		appendUserItems(contextMenu, Util::emptyString); // TODO: hubhint
+		appendUserItems(contextMenu);
 		contextMenu.AppendMenu(MF_SEPARATOR);
 		contextMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 		contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
@@ -223,7 +223,7 @@ LRESULT UploadQueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
 			ctrlQueued.ClientToScreen(&pt);
         }
 		
-		appendUserItems(contextMenu, Util::emptyString); // TODO: hubhint
+		appendUserItems(contextMenu);
 		contextMenu.AppendMenu(MF_SEPARATOR);
 		contextMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));        
 		contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);

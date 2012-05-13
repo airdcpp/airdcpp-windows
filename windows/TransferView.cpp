@@ -126,7 +126,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		
 		if(!parent) {
 			transferMenu.InsertSeparatorFirst(TSTRING(MENU_TRANSFERS));
-			appendUserItems(transferMenu, Util::emptyString); // TODO: hubhint
+			appendUserItems(transferMenu);
 			
 			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_FILE, CTSTRING(REMOVE_FILE));
 			transferMenu.AppendMenu(MF_SEPARATOR);
@@ -571,21 +571,21 @@ LRESULT TransferView::onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR pnmh, BOOL&
 		if (!i->isBundle) {
 			switch(SETTING(TRANSFERLIST_DBLCLICK)) {
 				case 0:
-					i->pm(Util::emptyString);
+					i->pm();
 					break;
 				case 1:
-					i->getList(Util::emptyString);
+					i->getList();
 					break;
 				case 2:
-					i->matchQueue(Util::emptyString);
+					i->matchQueue();
 				case 3:
-					i->grant(Util::emptyString);
+					i->grant();
 					break;
 				case 4:
 					i->addFav();
 					break;
 				case 5:
-					i->browseList(Util::emptyString);
+					i->browseList();
 					break;
 			}
 		}

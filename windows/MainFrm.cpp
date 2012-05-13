@@ -1814,10 +1814,10 @@ void MainFrame::checkGeoUpdate() {
 }
 
 void MainFrame::checkGeoUpdate(bool v6) {
-	// update when the database is non-existent or older than 16 days (GeoIP updates every month).
+	// update when the database is non-existent or older than 25 days (GeoIP updates every month).
 	try {
 		File f(GeoManager::getDbPath(v6) + ".gz", File::READ, File::OPEN);
-		if(f.getSize() > 0 && static_cast<time_t>(f.getLastModified()) > GET_TIME() - 3600 * 24 * 16) {
+		if(f.getSize() > 0 && static_cast<time_t>(f.getLastModified()) > GET_TIME() - 3600 * 24 * 25) {
 			return;
 		}
 	} catch(const FileException&) { }

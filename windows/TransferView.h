@@ -255,7 +255,7 @@ private:
 		void update(const UpdateInfo& ui);
 
 		const UserPtr& getUser() const { return user.user; }
-		const HintedUser& getHintedUser() const { return user; }
+		const string& getHubUrl() const { return user.hint; }
 
 		void disconnect();
 		void removeAll();

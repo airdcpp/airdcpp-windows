@@ -182,30 +182,30 @@ COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S) {
 	return HLS2RGB (HLS(h, l, s));
 }
 
-void UserInfoBase::matchQueue(const string& hubHint) {
+void UserInfoBase::matchQueue() {
 	if(getUser()) {
 		try {
-			QueueManager::getInstance()->addList(HintedUser(getUser(), hubHint), QueueItem::FLAG_MATCH_QUEUE);
+			QueueManager::getInstance()->addList(HintedUser(getUser(), getHubUrl()), QueueItem::FLAG_MATCH_QUEUE);
 		} catch(const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
 		}
 	}
 }
 
-void UserInfoBase::getList(const string& hubHint) {
+void UserInfoBase::getList() {
 	if(getUser()) {
 		try {
-			QueueManager::getInstance()->addList(HintedUser(getUser(), hubHint), QueueItem::FLAG_CLIENT_VIEW);
+			QueueManager::getInstance()->addList(HintedUser(getUser(), getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
 		} catch(const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);		
 		}
 	}
 }
-void UserInfoBase::browseList(const string& hubHint) {
+void UserInfoBase::browseList() {
 	if(!getUser() || getUser()->getCID().isZero())
 		return;
 	try {
-		QueueManager::getInstance()->addList(HintedUser(getUser(), hubHint), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+		QueueManager::getInstance()->addList(HintedUser(getUser(), getHubUrl()), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
 	} catch(const Exception& e) {
 		LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);		
 	}
@@ -215,9 +215,9 @@ void UserInfoBase::addFav() {
 		FavoriteManager::getInstance()->addFavoriteUser(getUser());
 	}
 }
-void UserInfoBase::pm(const string& hubHint) {
+void UserInfoBase::pm() {
 	if(getUser()) {
-		PrivateFrame::openWindow(HintedUser(getUser(), hubHint), Util::emptyStringT, NULL);
+		PrivateFrame::openWindow(HintedUser(getUser(), getHubUrl()), Util::emptyStringT, NULL);
 	}
 }
 void UserInfoBase::connectFav() {
@@ -228,9 +228,9 @@ void UserInfoBase::connectFav() {
 		}
 	}
 }
-void UserInfoBase::grant(const string& hubHint) {
+void UserInfoBase::grant() {
 	if(getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), hubHint), 600);
+		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 600);
 	}
 }
 void UserInfoBase::removeAll() {
@@ -238,19 +238,19 @@ void UserInfoBase::removeAll() {
 		QueueManager::getInstance()->removeSource(getUser(), QueueItem::Source::FLAG_REMOVED);
 	}
 }
-void UserInfoBase::grantHour(const string& hubHint) {
+void UserInfoBase::grantHour() {
 	if(getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), hubHint), 3600);
+		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 3600);
 	}
 }
-void UserInfoBase::grantDay(const string& hubHint) {
+void UserInfoBase::grantDay() {
 	if(getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), hubHint), 24*3600);
+		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 24*3600);
 	}
 }
-void UserInfoBase::grantWeek(const string& hubHint) {
+void UserInfoBase::grantWeek() {
 	if(getUser()) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), hubHint), 7*24*3600);
+		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 7*24*3600);
 	}
 }
 void UserInfoBase::ungrant() {

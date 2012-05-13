@@ -1238,7 +1238,7 @@ LRESULT ChatCtrl::onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 LRESULT ChatCtrl::onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou)
-		ou->getList(client->getHubUrl());
+		ou->getList();
 
 	return 0;
 }
@@ -1246,14 +1246,14 @@ LRESULT ChatCtrl::onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 LRESULT ChatCtrl::onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou)
-		ou->browseList(client->getHubUrl());
+		ou->browseList();
 
 	return 0;
 }
 LRESULT ChatCtrl::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou)
-		ou->matchQueue(client->getHubUrl());
+		ou->matchQueue();
 
 	return 0;
 }

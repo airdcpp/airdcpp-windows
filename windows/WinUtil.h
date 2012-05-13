@@ -70,15 +70,15 @@ public:
 	END_MSG_MAP()
 
 	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::matchQueue, _1, hubHint));
+		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::matchQueue, _1));
 		return 0;
 	}
 	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getList, _1, hubHint));
+		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getList, _1));
 		return 0;
 	}
 	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::browseList, _1, hubHint));
+		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::browseList, _1));
 		return 0;
 	}
 	LRESULT onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -86,7 +86,7 @@ public:
 		return 0;
 	}
 	virtual LRESULT onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::pm, _1, hubHint));
+		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::pm, _1));
 		return 0;
 	}
 	LRESULT onConnectFav(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -95,10 +95,10 @@ public:
 	}
 	LRESULT onGrantSlot(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		switch(wID) {
-			case IDC_GRANTSLOT:		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grant, _1, hubHint)); break;
-			case IDC_GRANTSLOT_DAY:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantDay, _1, hubHint)); break;
-			case IDC_GRANTSLOT_HOUR:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantHour, _1, hubHint)); break;
-			case IDC_GRANTSLOT_WEEK:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantWeek, _1, hubHint)); break;
+			case IDC_GRANTSLOT:		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grant, _1)); break;
+			case IDC_GRANTSLOT_DAY:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantDay, _1)); break;
+			case IDC_GRANTSLOT_HOUR:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantHour, _1)); break;
+			case IDC_GRANTSLOT_WEEK:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantWeek, _1)); break;
 			case IDC_UNGRANTSLOT:	((T*)this)->getUserList().forEachSelected(&UserInfoBase::ungrant); break;
 		}
 		return 0;
@@ -127,9 +127,7 @@ public:
 		bool nonFavOnly;
 	};
 
-	void appendUserItems(CMenu& menu, const string& _hubHint) {
-		hubHint = _hubHint;
-		
+	void appendUserItems(CMenu& menu) {
 		UserTraits traits = ((T*)this)->getUserList().forEachSelectedT(UserTraits()); 
 
 		menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
@@ -145,10 +143,7 @@ public:
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, IDC_REMOVEALL, CTSTRING(REMOVE_FROM_ALL));
 		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
-	}
-
-	string hubHint;
-	
+	}	
 };
 
 class FlatTabCtrl;

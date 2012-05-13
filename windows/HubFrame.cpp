@@ -306,7 +306,7 @@ void HubFrame::onEnter() {
 				if( !param.empty() ){
 					OnlineUserPtr ui = client->findUser(Text::fromT(param));
 					if(ui) {
-						ui->getList(client->getHubUrl());
+						ui->getList();
 					}
 				}
 			} else if(stricmp(cmd.c_str(), _T("f")) == 0) {
@@ -522,7 +522,7 @@ LRESULT HubFrame::onDoubleClickUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 	if(item->iItem != -1 && (ctrlUsers.getItemData(item->iItem)->getUser() != ClientManager::getInstance()->getMe())) {
 	    switch(SETTING(USERLIST_DBLCLICK)) {
 		    case 0:
-				ctrlUsers.getItemData(item->iItem)->getList(client->getHubUrl());
+				ctrlUsers.getItemData(item->iItem)->getList();
 		        break;
 		    case 1: {
 				tstring sUser = Text::toT(ctrlUsers.getItemData(item->iItem)->getIdentity().getNick());
@@ -547,19 +547,19 @@ LRESULT HubFrame::onDoubleClickUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 				break;
 		    }    
 		    case 2:
-				ctrlUsers.getItemData(item->iItem)->pm(client->getHubUrl());
+				ctrlUsers.getItemData(item->iItem)->pm();
 		        break;
 		    case 3:
-		        ctrlUsers.getItemData(item->iItem)->matchQueue(client->getHubUrl());
+		        ctrlUsers.getItemData(item->iItem)->matchQueue();
 		        break;
 		    case 4:
-		        ctrlUsers.getItemData(item->iItem)->grant(client->getHubUrl());
+		        ctrlUsers.getItemData(item->iItem)->grant();
 		        break;
 		    case 5:
 		        ctrlUsers.getItemData(item->iItem)->addFav();
 		        break;
 			case 6:
-				ctrlUsers.getItemData(item->iItem)->browseList(client->getHubUrl());
+				ctrlUsers.getItemData(item->iItem)->browseList();
 				break;
 		}	
 	}
@@ -1119,16 +1119,16 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 					     break;
 					}
 					case 2:
-						ui->pm(client->getHubUrl());
+						ui->pm();
 					    break;
 					case 3:
-					    ui->getList(client->getHubUrl());
+					    ui->getList();
 					    break;
 					case 4:
-					    ui->matchQueue(client->getHubUrl());
+					    ui->matchQueue();
 					    break;
 					case 5:
-					    ui->grant(client->getHubUrl());
+					    ui->grant();
 					    break;
 					case 6:
 					    ui->addFav();
@@ -2234,7 +2234,7 @@ bool HubFrame::PreparePopupMenu(CWindow *pCtrl, OMenu& menu ) {
 
 	if(!isMe) {
 		menu.AppendMenu(MF_STRING, IDC_PUBLIC_MESSAGE, CTSTRING(SEND_PUBLIC_MESSAGE));
-		appendUserItems(menu, client->getHubUrl());
+		appendUserItems(menu);
 		menu.AppendMenu(MF_SEPARATOR);
 
 		if(count == 1) {
@@ -2549,7 +2549,7 @@ LRESULT HubFrame::onKeyDownUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*
 					OnlineUserPtr ou = ctrlUsers.getItemData(i);
 					if(ou->getUser() != ClientManager::getInstance()->getMe())
 					{
-						ou->pm(client->getHubUrl());
+						ou->pm();
 					}
 				}				
 				break;

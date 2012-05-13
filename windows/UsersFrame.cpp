@@ -90,7 +90,7 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		usersMenu.CreatePopupMenu();
 		usersMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG, CTSTRING(OPEN_USER_LOG));
 		usersMenu.AppendMenu(MF_SEPARATOR);
-		appendUserItems(usersMenu, Util::emptyString); // TODO: hubhint
+		appendUserItems(usersMenu);
 		usersMenu.AppendMenu(MF_SEPARATOR);
 		usersMenu.AppendMenu(MF_STRING, IDC_EDIT, CTSTRING(PROPERTIES));
 		usersMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));

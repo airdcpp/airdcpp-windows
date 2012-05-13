@@ -66,6 +66,7 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::NO_ZERO_BYTE, ResourceManager::SETTINGS_NO_ZERO_BYTE },
 	{ SettingsManager::USE_FTP_LOGGER, ResourceManager::USE_FTP_LOGGER },
 	{ SettingsManager::ANTI_FRAG, ResourceManager::SETTINGS_ANTI_FRAG },
+	{ SettingsManager::USE_PARTIAL_SHARING, ResourceManager::PARTIAL_SHARING },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

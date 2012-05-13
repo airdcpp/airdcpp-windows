@@ -336,6 +336,7 @@ private:
 		~SearchInfo() {	}
 
 		const UserPtr& getUser() const { return sr->getUser(); }
+		const string& getHubUrl() const { return sr->getHubURL(); }
 
 		bool collapsed;
 		size_t hits;
@@ -413,6 +414,8 @@ private:
 		bool isShareDupe() const { return shareDupe; }
 		bool isQueueDupe() const { return queueDupe; }
 		bool isFinishedDupe() const { return finishedDupe; }
+		bool isDupe() const { return shareDupe || shareDupe || finishedDupe; }
+		//string getHubUrl() { return sr->getHubURL(); }
 
 		SearchResultPtr sr;
 		GETSET(uint8_t, flagIndex, FlagIndex);

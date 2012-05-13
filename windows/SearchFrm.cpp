@@ -929,14 +929,6 @@ LRESULT SearchFrame::onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 LRESULT SearchFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	dcassert(wID >= IDC_DOWNLOAD_FAVORITE_DIRS);
 	bool isWhole = wID >= IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS;
-#ifdef _DEBUG
-	int favShareSize = (int)FavoriteManager::getInstance()->getFavoriteDirs().size();
-	if (SETTING(SHOW_SHARED_DIRS_FAV)) {
-		favShareSize += (int)ShareManager::getInstance()->getGroupedDirectories().size();
-	}
-
-	dcassert(wID - IDC_DOWNLOAD_FAVORITE_DIRS < favShareSize);
-#endif
 
 	int sel = -1;
 	map<string, int64_t> countedDirs;
@@ -1429,6 +1421,16 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 		}
 		
 		if(ctrlResults.GetSelectedCount() > 0) {
+			bool hasFiles=false, hasDupes=false;
+
+			int sel = -1;
+			while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+				SearchInfo* si = ctrlResults.getItemData(sel);
+				if (si->sr->getType() == SearchResult::TYPE_FILE)
+					hasFiles = true;
+				if (si->isDupe())
+					hasDupes = true;
+			}
 
 			OMenu resultsMenu, targetMenu, targetDirMenu, copyMenu, SearchMenu;
 			SearchInfo::CheckTTH cs = ctrlResults.forEachSelectedT(SearchInfo::CheckTTH());
@@ -1458,23 +1460,27 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 				
 			resultsMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
 			resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
-			resultsMenu.AppendMenu(MF_STRING, IDC_DOWNLOADDIR, CTSTRING(DOWNLOAD_WHOLE_DIR));
-			resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetDirMenu, CTSTRING(DOWNLOAD_WHOLE_DIR_TO));
-			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
+			if (hasFiles) {
+				resultsMenu.AppendMenu(MF_STRING, IDC_DOWNLOADDIR, CTSTRING(DOWNLOAD_WHOLE_DIR));
+				resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetDirMenu, CTSTRING(DOWNLOAD_WHOLE_DIR_TO));
+				resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
+			}
 			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
 			resultsMenu.AppendMenu(MF_STRING, IDC_MATCH, CTSTRING(MATCH_PARTIAL));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
-			if((ctrlResults.GetSelectedCount() == 1) && ((SearchInfo*)ctrlResults.getSelectedItem()->isShareDupe() || (SearchInfo*)ctrlResults.getSelectedItem()->isQueueDupe() ||
-				(SearchInfo*)ctrlResults.getSelectedItem()->isFinishedDupe())) {
+			if((ctrlResults.GetSelectedCount() == 1) && hasDupes) {
 				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 				resultsMenu.AppendMenu(MF_SEPARATOR);
 			}
-			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_TTH));
+
+			if (hasFiles)
+				resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_TTH));
+
 			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES_DIR, CTSTRING(SEARCH_DIRECTORY));
 			resultsMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 			resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)copyMenu, CTSTRING(COPY));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
-			appendUserItems(resultsMenu, Util::emptyString); // TODO: hubhint
+			appendUserItems(resultsMenu);
 			prepareMenu(resultsMenu, UserCommand::CONTEXT_SEARCH, cs.hubs);
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 			resultsMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
@@ -1484,22 +1490,24 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
 			WinUtil::appendDirsMenu(targetMenu);
 
-			if(cs.hasTTH) {
-				targets.clear();
-				targets = QueueManager::getInstance()->getTargets(TTHValue(Text::fromT(cs.tth)));
+			if (hasFiles) {
+				if(cs.hasTTH) {
+					targets.clear();
+					targets = QueueManager::getInstance()->getTargets(TTHValue(Text::fromT(cs.tth)));
 
-				int n = 0;
-				if(targets.size() > 0) {
-					targetMenu.InsertSeparatorLast(TSTRING(ADD_AS_SOURCE));
-					for(auto i = targets.begin(); i != targets.end(); ++i) {
-						targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + n, Text::toT(Util::getFileName(*i)).c_str());
-						n++;
+					int n = 0;
+					if(targets.size() > 0) {
+						targetMenu.InsertSeparatorLast(TSTRING(ADD_AS_SOURCE));
+						for(auto i = targets.begin(); i != targets.end(); ++i) {
+							targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + n, Text::toT(Util::getFileName(*i)).c_str());
+							n++;
+						}
 					}
 				}
-			}
 
-			targetDirMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_WHOLE_DIR_TO));
-			WinUtil::appendDirsMenu(targetDirMenu, true);
+				targetDirMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_WHOLE_DIR_TO));
+				WinUtil::appendDirsMenu(targetDirMenu, true);
+			}
 
 			resultsMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 			return TRUE; 
