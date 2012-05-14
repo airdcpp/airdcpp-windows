@@ -226,7 +226,7 @@ private:
 
 	class DirItemInfo {
 	public:
-		DirItemInfo(const string dir, BundlePtr aBundle = nullptr);
+		DirItemInfo(const string& dir, BundlePtr aBundle = nullptr);
 		~DirItemInfo();
 
 		const string& getDir() const { return directory; }

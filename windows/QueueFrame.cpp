@@ -543,13 +543,7 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 		if(next == NULL) {
 			// First addition, set commonStart to the dir minus the last part...
 			i = dir.rfind('\\', dir.length()-2);
-			if(i != string::npos) {
-				next = createDir(tvi, dir.substr(0, i+1), aBundle, NULL);
-			} else {
-				dcassert(dir.length() == 3);
-				next = ctrlDirs.InsertItem(&tvi);
-				next = createDir(tvi, dir, aBundle, NULL);
-			}
+			next = createDir(tvi, dir.substr(0, (i != string::npos ? i+1 : dir.length())), aBundle, NULL);
 		} 
 
 		// Ok, next now points to x:\... find how much is common
@@ -653,7 +647,7 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 	return parent;
 }
 
-QueueFrame::DirItemInfo::DirItemInfo(const string dir, BundlePtr aBundle) : directory(dir)	{
+QueueFrame::DirItemInfo::DirItemInfo(const string& dir, BundlePtr aBundle) : directory(dir)	{
 	//LogManager::getInstance()->message("Create DII: " + dir);
 	if (aBundle) {
 		bundles.push_back(make_pair(aBundle->getTarget(), aBundle));
