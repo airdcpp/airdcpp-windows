@@ -414,7 +414,7 @@ HTREEITEM QueueFrame::addItemDir(bool isFileList) {
 	}
 }
 
-HTREEITEM QueueFrame::createDir(TVINSERTSTRUCT& tvi, const string& dir, const BundlePtr aBundle, HTREEITEM parent, bool subDir /*false*/) {
+HTREEITEM QueueFrame::createDir(TVINSERTSTRUCT& tvi, const string&& dir, const BundlePtr aBundle, HTREEITEM parent, bool subDir /*false*/) {
 	bool resetFormating = false;
 	bool mainBundle = false;
 	DirItemInfo* dii = new DirItemInfo(dir, aBundle);
@@ -454,7 +454,7 @@ HTREEITEM QueueFrame::createDir(TVINSERTSTRUCT& tvi, const string& dir, const Bu
 	return ret;
 }
 
-HTREEITEM QueueFrame::createSplitDir(TVINSERTSTRUCT& tvi, const string& dir, HTREEITEM parent, DirItemInfo* dii, bool subDir /*false*/) {
+HTREEITEM QueueFrame::createSplitDir(TVINSERTSTRUCT& tvi, const string&& dir, HTREEITEM parent, DirItemInfo* dii, bool subDir /*false*/) {
 	/* Bundles */
 	DirItemInfo* diiNew = new DirItemInfo(dir);
 	dcassert(!dii->getBundles().empty());

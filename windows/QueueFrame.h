@@ -371,8 +371,8 @@ private:
 	void addQueueItem(QueueItemInfo* qi, bool noSort);
 	HTREEITEM addItemDir(bool isFileList);
 	HTREEITEM addBundleDir(const string& dir, const BundlePtr aBundle, HTREEITEM startAt = NULL);
-	HTREEITEM createDir(TVINSERTSTRUCT& tvi, const string& dir, const BundlePtr aBundle, HTREEITEM parent, bool subDir=false);
-	HTREEITEM createSplitDir(TVINSERTSTRUCT& tvi, const string& dir, HTREEITEM parent, DirItemInfo* bii, bool subDir=false);
+	HTREEITEM createDir(TVINSERTSTRUCT& tvi, const string&& dir, const BundlePtr aBundle, HTREEITEM parent, bool subDir=false);
+	HTREEITEM createSplitDir(TVINSERTSTRUCT& tvi, const string&& dir, HTREEITEM parent, DirItemInfo* bii, bool subDir=false);
 	void removeQueueItem(QueueItemInfo* ii, bool noSort);
 	void removeItemDir(bool isFileList);
 	void removeBundleDir(const string& dir, const BundlePtr aBundle);
