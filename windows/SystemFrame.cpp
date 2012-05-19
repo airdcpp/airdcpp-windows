@@ -30,8 +30,8 @@
 LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_NOHIDESEL, WS_EX_CLIENTEDGE);
-	
+		WS_VSCROLL | ES_MULTILINE | ES_NOHIDESEL, WS_EX_CLIENTEDGE);
+
 	ctrlPad.SetReadOnly(TRUE);
 	ctrlPad.SetFont(WinUtil::font);
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
@@ -144,7 +144,7 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	SCROLLINFO si = { 0 };
 	POINT pt = { 0 };
 	si.cbSize = sizeof(si);
-	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+	si.fMask = SIF_ALL;
 	ctrlPad.GetScrollInfo(SB_VERT, &si);
 	ctrlPad.GetScrollPos(&pt);
 
@@ -184,18 +184,18 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	}
 
 	Colorize(Text, End); //timestamps should always be timestamps right?
-
+	
 	ctrlPad.SetSel(SavedBegin, SavedEnd); //restore the user selection
 
-	if(	(si.nPage == 0 || (size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) ) {   //dont scroll if we are looking at something                 
+	if((si.nPage == 0 || (si.nTrackPos >= si.nMax - si.nPage - 5) || 
+		si.nPos >= si.nMax - si.nPage - 5) && (SavedBegin == SavedEnd)) {   //dont scroll if we are looking at something                 
 		ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
 	} else {
 		ctrlPad.SetScrollPos(&pt);
 	}
-
 	
 	ctrlPad.SetRedraw(TRUE);
-	ctrlPad.InvalidateRect(NULL);
+	ctrlPad.RedrawWindow();
 }
 
 void SystemFrame::Colorize(const tstring& line, LONG Begin){
