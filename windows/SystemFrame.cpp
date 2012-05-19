@@ -133,6 +133,10 @@ LRESULT SystemFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, 
 void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	ctrlPad.SetRedraw(FALSE);
 	
+	POINT pt = { 0 };
+	bool scroll = scrollIsEnd();
+	ctrlPad.GetScrollPos(&pt);
+
 	LONG SavedBegin, SavedEnd;
 	LONG Begin = 0; 
 	LONG End = 0;
@@ -140,13 +144,6 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	ctrlPad.GetSel(SavedBegin, SavedEnd);
 
 	End = Begin = ctrlPad.GetTextLengthEx(GTL_NUMCHARS);
-
-	SCROLLINFO si = { 0 };
-	POINT pt = { 0 };
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_ALL;
-	ctrlPad.GetScrollInfo(SB_VERT, &si);
-	ctrlPad.GetScrollPos(&pt);
 
 	tstring Text = msg + _T(" "); //kinda strange, but adding line endings in the start of new line makes it that way.
 	tstring time = Text::toT("\r\n [" + Util::getTimeStamp(md.time) + "] ");
@@ -187,15 +184,14 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	
 	ctrlPad.SetSel(SavedBegin, SavedEnd); //restore the user selection
 
-	if((si.nPage == 0 || (si.nTrackPos >= si.nMax - si.nPage - 5) || 
-		si.nPos >= si.nMax - si.nPage - 5) && (SavedBegin == SavedEnd)) {   //dont scroll if we are looking at something                 
+	if(scroll) {                
 		ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
 	} else {
 		ctrlPad.SetScrollPos(&pt);
 	}
 	
 	ctrlPad.SetRedraw(TRUE);
-	ctrlPad.RedrawWindow();
+	ctrlPad.InvalidateRect(NULL);
 }
 
 void SystemFrame::Colorize(const tstring& line, LONG Begin){
@@ -214,19 +210,25 @@ void SystemFrame::Colorize(const tstring& line, LONG Begin){
 }
 
 void SystemFrame::scrollToEnd() {
-	SCROLLINFO si = { 0 };
-	POINT pt = { 0 };
+	CHARRANGE cr = { 0 };
+	ctrlPad.GetSel(cr);
 
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
-	ctrlPad.GetScrollInfo(SB_VERT, &si);
-	ctrlPad.GetScrollPos(&pt);
-	
-	ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
-	ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
+	ctrlPad.SetSel(ctrlPad.GetTextLengthEx(GTL_NUMCHARS), -1);
+	ctrlPad.ScrollCaret();
 
-	ctrlPad.SetScrollPos(&pt);
+	ctrlPad.SetSel(cr);
+	PostMessage(EM_SCROLL, SB_BOTTOM, 0);
 }
+
+bool SystemFrame::scrollIsEnd() {
+	SCROLLINFO si = { 0 };
+	si.cbSize = sizeof(si);
+	si.fMask = SIF_ALL;
+	ctrlPad.GetScrollInfo(SB_VERT, &si);
+
+	return (!si.nPage || si.nPos >= static_cast<int>(si.nMax - si.nPage) - 5 || si.nTrackPos >= static_cast<int>(si.nMax - si.nPage) - 5);
+}
+
 
 LRESULT SystemFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click 
@@ -351,7 +353,7 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 }
 
 LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	if(wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0) {
+	if((wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0) && scrollIsEnd()) {
 		scrollToEnd();
 	}
 

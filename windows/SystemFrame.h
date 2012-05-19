@@ -121,6 +121,7 @@ private:
 	void Colorize(const tstring& line, LONG Begin);
 	boost::wregex reg;
 
+	bool scrollIsEnd();
 	tstring selWord;
 	tstring WordFromPos(const POINT& p);
 };
