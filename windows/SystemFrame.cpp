@@ -217,7 +217,7 @@ void SystemFrame::scrollToEnd() {
 	ctrlPad.ScrollCaret();
 
 	ctrlPad.SetSel(cr);
-	PostMessage(EM_SCROLL, SB_BOTTOM, 0);
+	ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
 }
 
 bool SystemFrame::scrollIsEnd() {
@@ -226,7 +226,7 @@ bool SystemFrame::scrollIsEnd() {
 	si.fMask = SIF_ALL;
 	ctrlPad.GetScrollInfo(SB_VERT, &si);
 
-	return (!si.nPage || si.nPos >= static_cast<int>(si.nMax - si.nPage) - 5 || si.nTrackPos >= static_cast<int>(si.nMax - si.nPage) - 5);
+	return (!si.nPage || (si.nPos >= static_cast<int>(si.nMax - si.nPage) - 5) && (si.nTrackPos >= static_cast<int>(si.nMax - si.nPage) - 5));
 }
 
 
