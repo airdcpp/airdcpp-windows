@@ -831,7 +831,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
 			WinUtil::appendDirsMenu(targetMenu);
 		} else if (isTTH) {
-			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_BY_TTH));
+			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_TTH));
 		}
 
 		SearchMenu.CreatePopupMenu();

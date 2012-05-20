@@ -44,16 +44,12 @@
 		<String Name="Auto">Auto</String>
 		<String Name="AutoConnect">Auto connect / Name</String>
 		<String Name="AutoGrant">Auto grant slot / Nick</String>
-		<String Name="Automatic">Automatic</String>
 		<String Name="Average">Average/s: </String>
-		<String Name="AverageUpload">Upload Speed</String>
 		<String Name="Away">AWAY</String>
 		<String Name="AwayModeOff">Away mode off</String>
 		<String Name="AwayModeOn">Away mode on: </String>
 		<String Name="B">B</String>
 		<String Name="BalloonPopups">Popups</String>
-		<String Name="BitziLookup">Bitzi Lookup</String>
-		<String Name="BlockFinished">Segment Block Finished, waiting...</String>
 		<String Name="BothUsersOffline">Both users offline</String>
 		<String Name="Browse">Browse...</String>
 		<String Name="BrowseAccel">&amp;Browse...</String>
@@ -65,7 +61,6 @@
 		<String Name="CertificateGenerationFailed">TLS disabled, failed to generate certificate:</String>
 		<String Name="Cid">CID</String>
 		<String Name="Cipher">Cipher</String>
-		<String Name="Clientid">Client</String>
 		<String Name="Close">Close</String>
 		<String Name="CloseConnection">Close connection</String>
 		<String Name="CollapseAll">Collapse All</String>
@@ -93,23 +88,14 @@
 		<String Name="ContinueSearch">Continue Search</String>
 		<String Name="Copy">Copy</String>
 		<String Name="CopyAll">Copy All</String>
-		<String Name="CopyDescription">Copy description</String>
-		<String Name="CopyEmailAddress">Copy email address</String>
-		<String Name="CopyExactShare">Copy Exact Share</String>
 		<String Name="CopyHub">Copy address to clipboard</String>
-		<String Name="CopyIp">Copy IP</String>
 		<String Name="CopyLine">Copy actual line</String>
 		<String Name="CopyMagnetLink">Copy magnet link to clipboard</String>
 		<String Name="CopyNick">Copy nick</String>
-		<String Name="CopyNickIp">Copy Nick+IP</String>
-		<String Name="CopyTag">Copy TAG</String>
-		<String Name="CopyUrl">Copy URL</String>
 		<String Name="Coral">Use Coral network when downloading hub lists (improves reliability)</String>
-		<String Name="CorruptionDetected">Corruption detected for TTH: %s, at position %d</String>
 		<String Name="CouldNotOpenTargetFile">Could not open target file: </String>
 		<String Name="Count">Count</String>
 		<String Name="Country">Country</String>
-		<String Name="CreatingHash">Hashing</String>
 		<String Name="CurrentVersion">Current version</String>
 		<String Name="CurrentLanguage">Current language</String>
 		<String Name="DataRetrieved">Data retrieved</String>
@@ -118,8 +104,6 @@
 		<String Name="Description">Description</String>
 		<String Name="Destination">Destination</String>
 		<String Name="Directory">Directory</String>
-		<String Name="DirectoryAddError">Directory or directory name already exists</String>
-		<String Name="DisableSounds">Disable sounds</String>
 		<String Name="Disabled">Disabled</String>
 		<String Name="DisconnectAll">Disconnect all users</String>
 		<String Name="DisconnectUser">Disconnect user(s)</String>
@@ -175,7 +159,6 @@
 		<String Name="FavJoinShowingOff">Join/part of favorite users showing off</String>
 		<String Name="FavJoinShowingOn">Join/part of favorite users showing on</String>
 		<String Name="FavoriteDirName">Favorite name</String>
-		<String Name="FavoriteDirNameLong">Under what name you see the directory</String>
 		<String Name="FavoriteHubAdded">Favorite hub added</String>
 		<String Name="FavoriteHubAlreadyExists">Hub already exists as a favorite</String>
 		<String Name="FavoriteHubDoesNotExist">This hub is not a favorite hub</String>
@@ -198,7 +181,7 @@
 		<String Name="FileNotAvailable">File not available</String>
 		<String Name="FileType">File type</String>
 		<String Name="FileWithDifferentSize">A file with a different size already exists in the queue</String>
-		<String Name="FileWithDifferentTth">A file with diffent tth root already exists in the queue</String>
+		<String Name="FileWithDifferentTth">A file with diffent TTH root already exists in the queue</String>
 		<String Name="Filename">Filename</String>
 		<String Name="Files">Files</String>
 		<String Name="FilesLeft">files left</String>
@@ -256,7 +239,6 @@
 		<String Name="HublistDownloadCorrupted">Downloaded hub list is corrupted or unsupported...</String>
 		<String Name="Hubs">Hubs</String>
 		<String Name="Chatdblclickaction">Chat double click on user action</String>
-		<String Name="Check0byteShare">zero bytes real size</String>
 		<String Name="CheckForbidden">Shared forbidden file : %s</String>
 		<String Name="CheckInflated">filelist was inflated %s times</String>
 		<String Name="ChooseFolder">Choose folder</String>
@@ -281,7 +263,6 @@
 		<String Name="KeepFinishedFiles">Keep finished files in the queue</String>
 		<String Name="KickUser">Kick user(s)</String>
 		<String Name="KickUserFile">Kick user(s) with filename</String>
-		<String Name="LargerTargetFileExists">A file of equal or larger size already exists at the target location</String>
 		<String Name="LastHub">Hub (last seen on if offline)</String>
 		<String Name="LastChange">Last change: </String>
 		<String Name="LastSeen">Time last seen</String>
@@ -419,18 +400,15 @@
 		<String Name="Ok">OK</String>
 		<String Name="Online">Online</String>
 		<String Name="OnlyFreeSlots">Only users with free slots</String>
-		<String Name="OnlyTth">Only results with TTH root</String>
 		<String Name="OnlyWhereOp">Only where I'm op</String>
 		<String Name="Open">Open</String>
 		<String Name="OpenDownloadPage">Open download page?</String>
 		<String Name="OpenFolder">Open folder</String>
 		<String Name="OpenHubLog">Open hub log</String>
 		<String Name="OpenUserLog">Open user log</String>
-		<String Name="OverlapChunks">Overlap slow chunks by faster user when file is going to be finished</String>
 		<String Name="OverlappedSlowSegment">Overlapped by faster user</String>
 		<String Name="OwnCertificateFile">Own certificate file</String>
 		<String Name="Parts">Parts: </String>
-		<String Name="ParamExists">Param with same name already exists!</String>
 		<String Name="PassiveUser">Passive user</String>
 		<String Name="Password">Password</String>
 		<String Name="Path">Path</String>
@@ -508,7 +486,6 @@
 		<String Name="Resume">Resume</String>
 		<String Name="RetrievingData">Retrieving data</String>
 		<String Name="RightColor">Right color</String>
-		<String Name="Running">Running...</String>
 		<String Name="Search">Search</String>
 		<String Name="SearchFor">Search for</String>
 		<String Name="SearchForAlternates">Search for alternates</String>
@@ -520,7 +497,6 @@
 		<String Name="SearchString">Search String</String>
 		<String Name="SearchingFor">Searching for </String>
 		<String Name="Seconds">Seconds</String>
-		<String Name="SeekBeyondEnd">Request to seek beyond the end of data</String>
 		<String Name="Segment">Segment</String>
 		<String Name="Segments">Segments</String>
 		<String Name="SelectAll">Select all</String>
@@ -703,7 +679,6 @@
 		<String Name="SettingsSocks5Resolve">Use SOCKS5 server to resolve host names</String>
 		<String Name="SettingsSocks5Username">Login</String>
 		<String Name="SettingsSortFavusersFirst">Sort favorite users first</String>
-		<String Name="SettingsSound">Sounds</String>
 		<String Name="SettingsSounds">Sounds</String>
 		<String Name="SettingsSpeedsNotAccurate">Note; because of changing download speeds, this is not 100% accurate...</String>
 		<String Name="SettingsStatusInChat">View status messages in main chat</String>
@@ -764,7 +739,6 @@
 		<String Name="SoundDownloadBegins">Download begins</String>
 		<String Name="SoundDownloadFinished">Download finished</String>
 		<String Name="SoundException">Unhandled Exception</String>
-		<String Name="SoundFakerFound">Faker found</String>
 		<String Name="SoundSourceAdded">Alternate source added</String>
 		<String Name="SoundTthInvalid">File is corrupted</String>
 		<String Name="SoundTypingNotify">Typing sound</String>
@@ -842,7 +816,6 @@ Default: %H:%M:%S</String>
 		<String Name="UnignoreUser">Unignore User</String>
 		<String Name="Unknown">Unknown</String>
 		<String Name="UnknownCommand">Unknown command: </String>
-		<String Name="UnknownError">Unknown error: 0x%x</String>
 		<String Name="UpdateCheck">Update check</String>
 		<String Name="UploadFinishedIdle">Upload finished, idle...</String>
 		<String Name="UploadStarting">Upload starting...</String>
@@ -908,12 +881,9 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 		<String Name="Video">Video</String>
 		<String Name="ViewAsText">View as text</String>
 		<String Name="VirtualName">Virtual name</String>
-		<String Name="VirtualNameExists">Virtual directory name already exists</String>
 		<String Name="VirtualNameLong">Name under which the others see the directory</String>
 		<String Name="Waiting">Waiting...</String>
-		<String Name="WaitingFor">Waiting for %i seconds before searching...</String>
 		<String Name="WaitingTime">Waiting time</String>
-		<String Name="WaitingToRetry">Waiting to retry...</String>
 		<String Name="WaitingUserOnline">Waiting (User online)</String>
 		<String Name="WaitingUsersOnline">Waiting (%d of %d users online)</String>
 		<String Name="WhatsThis">What's &amp;this?</String>
@@ -937,7 +907,6 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
  Empty = Default String -&gt; winamp(%[version]) %[state](%[title]) stats(%[percent] of %[length] %[bar])</String>
 		<String Name="WinampHelpDesc">Winamp Help</String>
 		<String Name="Yes">Yes</String>
-		<String Name="ZonealarmWarning">ZoneAlarm was detected in your computer.  It is frequently responsible for corrupted downloads and is the cause of many \"rollback inconsistency\" errors.  Please uninstall it and use an alternate product.  </String>
 		<String Name="AdlsRegexp">Regexp</String>
 		<String Name="BackgroundImage">Background image</String>
 		<String Name="MenuReconnectDisconnected">Reconnect disconnected</String>
@@ -1137,7 +1106,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SettingsLfr">French</String>
 		<String Name="SettingsLd">Dutch</String>
 		<String Name="OpenFirst">Open First X Hubs at Startup</String>
-		<String Name="SearchByTth">Search by TTH</String>
 		<String Name="Paste">Paste</String>
 		<String Name="SearchSites">Search Sites</String>
 		<String Name="ImportTheme">Import Theme</String>
@@ -1216,7 +1184,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SettingsUseAdls">Use ADLSearch on Filelists</String>
 		<String Name="SettingsUseAdlsOwnList">Use ADLSearch on Own FileList</String>
 		<String Name="SettingDontDlAlreadyQueued">Don't download files already in queue</String>
-		<String Name="FileWithSameTth">File with same TTH allready exists in Queue</String>
 		<String Name="FavShowJoin">Show User Joins / Parts</String>
 		<String Name="UpnpRemovedMappings">Successfully removed port mappings</String>
 		<String Name="SystemShowFinishedUploads">Show Finished Uploads in System Log</String>
@@ -1539,5 +1506,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="ClearMessages">Clear messages</String>
 		<String Name="UseSeqOrder">Use sequential order</String>
 		<String Name="LanguageNote">Note: you need to restart the client for the new language to take effect</String>
+		<String Name="FileAlreadyQueued">The file %s already exists in the queue as %s</String>
 	</Strings>
 </Language>

@@ -46,7 +46,6 @@ Sounds::snds Sounds::sounds[] = {
 	{ ResourceManager::SOUND_DOWNLOAD_FINISHED,	SettingsManager::FINISHFILE, ""},
 	{ ResourceManager::SOUND_SOURCE_ADDED,	SettingsManager::SOURCEFILE, ""},
 	{ ResourceManager::SOUND_UPLOAD_FINISHED,	SettingsManager::UPLOADFILE, ""},
-	{ ResourceManager::SOUND_FAKER_FOUND,	SettingsManager::FAKERFILE, ""},
 	{ ResourceManager::SETCZDC_PRIVATE_SOUND,	SettingsManager::BEEPFILE, ""},
 	{ ResourceManager::MYNICK_IN_CHAT,	SettingsManager::CHATNAMEFILE, ""},
 	{ ResourceManager::SOUND_TTH_INVALID,	SettingsManager::SOUND_TTH, ""},
