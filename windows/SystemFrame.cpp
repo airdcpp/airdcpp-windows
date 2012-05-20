@@ -134,7 +134,7 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	ctrlPad.SetRedraw(FALSE);
 	
 	POINT pt = { 0 };
-	bool scroll = scrollIsEnd();
+	bool scroll = scrollIsAtEnd();
 	ctrlPad.GetScrollPos(&pt);
 
 	LONG SavedBegin, SavedEnd;
@@ -210,23 +210,20 @@ void SystemFrame::Colorize(const tstring& line, LONG Begin){
 }
 
 void SystemFrame::scrollToEnd() {
-	CHARRANGE cr = { 0 };
-	ctrlPad.GetSel(cr);
+	POINT pt = { 0 };
 
-	ctrlPad.SetSel(ctrlPad.GetTextLengthEx(GTL_NUMCHARS), -1);
-	ctrlPad.ScrollCaret();
-
-	ctrlPad.SetSel(cr);
+	ctrlPad.GetScrollPos(&pt);
 	ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
+	ctrlPad.SetScrollPos(&pt);
 }
 
-bool SystemFrame::scrollIsEnd() {
+bool SystemFrame::scrollIsAtEnd() {
 	SCROLLINFO si = { 0 };
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_ALL;
 	ctrlPad.GetScrollInfo(SB_VERT, &si);
 
-	return (!si.nPage || (si.nPos >= static_cast<int>(si.nMax - si.nPage) - 5) && (si.nTrackPos >= static_cast<int>(si.nMax - si.nPage) - 5));
+	return (si.nPage == 0 || ((size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) && ((size_t)si.nTrackPos >= (size_t)si.nMax - si.nPage - 5));
 }
 
 
@@ -353,7 +350,7 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 }
 
 LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	if((wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0) && scrollIsEnd()) {
+	if((wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0) && scrollIsAtEnd()) {
 		scrollToEnd();
 	}
 

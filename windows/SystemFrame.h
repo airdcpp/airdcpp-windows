@@ -91,8 +91,6 @@ public:
 		PostMessage(WM_CLOSE);
 		return 0;
 	}
-		
-
 
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 		HWND hWnd = (HWND)lParam;
@@ -121,7 +119,7 @@ private:
 	void Colorize(const tstring& line, LONG Begin);
 	boost::wregex reg;
 
-	bool scrollIsEnd();
+	bool scrollIsAtEnd();
 	tstring selWord;
 	tstring WordFromPos(const POINT& p);
 };
