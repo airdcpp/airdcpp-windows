@@ -538,7 +538,8 @@ void SearchFrame::onEnter() {
 			ctrlSearchBox.InsertString(0, i->c_str());
 		}
 	}
-	
+
+	ctrlSearchBox.SetCurSel(0);
 	SetWindowText((TSTRING(SEARCH) + _T(" - ") + s).c_str());
 	
 	// stop old search

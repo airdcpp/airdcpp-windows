@@ -700,11 +700,10 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 
 			if(!msg.from.getUser() || (ignoreList.find(msg.from.getUser()) == ignoreList.end()) || (msg.from.isOp() && !client->isOp())) {
 				addLine(msg.from, Text::toT(msg.str), WinUtil::m_ChatTextGeneral);
-			}
-
-			if(showchaticon) {
-				HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;
-				::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_HUB_TRAY_ICON, NULL);
+				if(showchaticon) {
+					HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;
+					::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_HUB_TRAY_ICON, NULL);
+				}
 			}
 		} else if(i->first == ADD_STATUS_LINE) {
 			const StatusTask& status = static_cast<StatusTask&>(*i->second);
