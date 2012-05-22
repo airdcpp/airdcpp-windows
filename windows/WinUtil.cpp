@@ -2299,7 +2299,6 @@ void WinUtil::appendDirsMenu(OMenu &targetMenu, bool wholeDir /*false*/) {
 				targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS) + n, Text::toT(i->first).c_str());
 				++n;
 			}
-			//targetMenu.AppendMenu(MF_SEPARATOR);
 		}
 	}
 
@@ -2311,11 +2310,7 @@ void WinUtil::appendDirsMenu(OMenu &targetMenu, bool wholeDir /*false*/) {
 			targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS) + n, Text::toT(i->first).c_str());
 			++n;
 		}
-		//targetMenu.AppendMenu(MF_SEPARATOR);
 	}
-
-	//n = 0;
-	//targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOADDIRTO : IDC_DOWNLOADTO), CTSTRING(BROWSE));
 
 	auto ldl = SettingsManager::getInstance()->getDirHistory();
 	if(!ldl.empty()) {
@@ -2328,7 +2323,6 @@ void WinUtil::appendDirsMenu(OMenu &targetMenu, bool wholeDir /*false*/) {
 }
 
 bool WinUtil::getTarget(int ID, string& target, int64_t aSize, bool wholeDir /*false*/) {
-	//int64_t freeSpace = 0;
 	int newId = ID - (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS);
 	dcassert(newId >= 0);
 	TargetUtil::TargetInfo targetInfo;

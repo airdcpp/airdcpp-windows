@@ -60,7 +60,6 @@
 #define IDC_WINAMP_VOL_DOWN             147
 #define IDC_WINAMP_VOL_HALF             148
 #define IDC_WINAMP_SPAM                 149
-#define IDC_REFRESH_MENU                150
 #define IDC_MAX_MSG_LENGTH_SPIN         154
 #define IDC_COPY_BEGIN                  162
 #define IDC_COPY_END                    163
@@ -1291,7 +1290,8 @@
 #define IDC_COPY_DATE                   15123
 #define IDC_USE_SEQ_ORDER               15124
 #define ID_TOGGLE_TOOLBAR               15999
-#define IDC_BITZI_LOOKUP                20000
+#define IDC_REFRESH_MENU                18000
+#define IDC_REFRESH_MENU_SUBDIRS        19000
 #define IDC_BROWSELIST                  21000
 #define IDC_REMOVE_SOURCE               23000
 #define IDC_PM                          25000

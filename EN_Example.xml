@@ -1507,5 +1507,9 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="UseSeqOrder">Use sequential order</String>
 		<String Name="LanguageNote">Note: you need to restart the client for the new language to take effect</String>
 		<String Name="FileAlreadyQueued">The file %s already exists in the queue as %s</String>
+		<String Name="FileListRefreshInitiatedRpath">File list refresh initiated for the path %s</String>
+		<String Name="FileListRefreshInitiatedVpath">File list refresh initiated for the virtual directory \"%s\"</String>
+		<String Name="FileListRefreshInitiatedXVpath">File list refresh initiated for %d virtual directories</String>
+		<String Name="FileListRefreshInitiatedIncoming">File list refresh initiated for the incoming directories</String>
 	</Strings>
 </Language>

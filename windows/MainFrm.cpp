@@ -1767,20 +1767,27 @@ LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 	CMenu dropMenu;
 	dropMenu.CreatePopupMenu();
 
-	//Set the MNS_NOTIFYBYPOS flag to receive WM_MENUCOMMAND
-	MENUINFO inf;
-	inf.cbSize = sizeof(MENUINFO);
-	inf.fMask = MIM_STYLE;
-	inf.dwStyle = MNS_NOTIFYBYPOS;
-	dropMenu.SetMenuInfo(&inf);
-
-	StringList l = ShareManager::getInstance()->getVirtualNames();
+	auto l = ShareManager::getInstance()->getGroupedDirectories();
 	
 	dropMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU, CTSTRING(ALL));
 	dropMenu.AppendMenu(MF_SEPARATOR);
-	int j = 1;
-	for(StringIter i = l.begin(); i != l.end(); ++i, ++j)
-		dropMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU, Text::toT( *i ).c_str());
+	int virtualCounter=1, subCounter=0;
+	for(auto i = l.begin(); i != l.end(); ++i, ++virtualCounter) {
+		if (i->second.size() > 1) {
+			CMenu pathMenu;
+			pathMenu.CreatePopupMenu();
+			pathMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU + virtualCounter, CTSTRING(ALL));
+			pathMenu.AppendMenu(MF_SEPARATOR);
+			sort(i->second.begin(), i->second.end());
+			for(auto s = i->second.begin(); s != i->second.end(); ++s) {
+				pathMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU_SUBDIRS + subCounter, Text::toT(*s).c_str());
+				subCounter++;
+			}
+			dropMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)pathMenu, Text::toT(i->first).c_str());
+		} else {
+			dropMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU + virtualCounter, Text::toT(i->first).c_str());
+		}
+	}
 	
 	POINT pt;
 	pt.x = tb->rcButton.right;
@@ -1791,15 +1798,28 @@ LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 	return TBDDRET_DEFAULT;
 }
 
-LRESULT MainFrame::onRefreshMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	try
-	{
-		if(wParam == 0){
+LRESULT MainFrame::onRefreshMenu(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
+
+	try {
+		auto l = ShareManager::getInstance()->getGroupedDirectories();
+		if(wID == IDC_REFRESH_MENU){
 			ShareManager::getInstance()->refresh( ShareManager::REFRESH_ALL | ShareManager::REFRESH_UPDATE );
-		} else if(wParam > 1){
-			int id = wParam - 2;
-			StringList l = ShareManager::getInstance()->getVirtualNames();
-			ShareManager::getInstance()->refresh( l[id] );
+		} else if (wID < IDC_REFRESH_MENU_SUBDIRS) {
+			int id = wID-IDC_REFRESH_MENU-1;
+			ShareManager::getInstance()->refresh(l[id].first);
+		} else {
+			int id = wID-IDC_REFRESH_MENU_SUBDIRS, counter=0;
+			for(auto i = l.begin(); i != l.end(); ++i) {
+				if (i->second.size() > 1) {
+					for(auto s = i->second.begin(); s != i->second.end(); ++s) {
+						if (counter == id) {
+							ShareManager::getInstance()->refresh(*s);
+							return 0;
+						}
+						counter++;
+					}
+				}
+			}
 		}
 	} catch(ShareException) {
 		//...

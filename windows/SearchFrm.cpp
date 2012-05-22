@@ -1312,17 +1312,6 @@ LRESULT SearchFrame::onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
-LRESULT SearchFrame::onBitziLookup(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlResults.GetSelectedCount() == 1) {
-		int i = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
-		const SearchResultPtr& sr = ctrlResults.getItemData(i)->sr;
-		if(sr->getType() == SearchResult::TYPE_FILE) {
-			WinUtil::bitziLink(sr->getTTH());
-		}
-	}
-	return 0;
-}
-
 void SearchFrame::addSearchResult(SearchInfo* si) {
 	const SearchResultPtr& sr = si->sr;
     // Check previous search results for dupes
