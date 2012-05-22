@@ -1811,6 +1811,7 @@ LRESULT MainFrame::onRefreshMenu(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, B
 			int id = wID-IDC_REFRESH_MENU_SUBDIRS, counter=0;
 			for(auto i = l.begin(); i != l.end(); ++i) {
 				if (i->second.size() > 1) {
+					sort(i->second.begin(), i->second.end());
 					for(auto s = i->second.begin(); s != i->second.end(); ++s) {
 						if (counter == id) {
 							ShareManager::getInstance()->refresh(*s);
