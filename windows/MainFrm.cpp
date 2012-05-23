@@ -613,7 +613,7 @@ HWND MainFrame::createToolbar() {
 	tbi.dwMask = TBIF_STYLE;
 
 	if(ctrlToolbar.GetButtonInfo(IDC_REFRESH_FILE_LIST, &tbi) != -1) {
-		tbi.fsStyle |= TBSTYLE_DROPDOWN;
+		tbi.fsStyle |= BTNS_WHOLEDROPDOWN;
 		ctrlToolbar.SetButtonInfo(IDC_REFRESH_FILE_LIST, &tbi);
 	}
 

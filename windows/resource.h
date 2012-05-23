@@ -1289,6 +1289,9 @@
 #define IDC_SETTINGS_KB5                15122
 #define IDC_COPY_DATE                   15123
 #define IDC_USE_SEQ_ORDER               15124
+#define IDC_ADD_AUTO_SEARCH_FILE        15125
+#define IDC_ADD_AUTO_SEARCH_DIR         15126
+#define IDC_DELETE_FILE		            15127
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_REFRESH_MENU                18000
 #define IDC_REFRESH_MENU_SUBDIRS        19000

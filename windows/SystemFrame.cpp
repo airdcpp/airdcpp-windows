@@ -27,6 +27,10 @@
 #include "../client/LogManager.h"
 #include "../client/ShareManager.h"
 
+#include "../client/version.h"
+#include "../client/format.h"
+#include "../client/AutoSearchManager.h"
+
 LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
@@ -278,12 +282,23 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
 	if (!selWord.empty()) {
 		menu.AppendMenu(MF_SEPARATOR);
-		menu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
-		if (selWord[selWord.length()-1] != PATH_SEPARATOR)
-			menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH_FILENAME));
-	
-		menu.AppendMenu(MF_SEPARATOR);
-		menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+		//if (boost::regex_match(selWord, reg)) {
+			menu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
+			menu.AppendMenu(MF_STRING, IDC_ADD_AUTO_SEARCH_DIR, CTSTRING(ADD_AUTO_SEARCH_DIR));
+			if (selWord[selWord.length()-1] != PATH_SEPARATOR) {
+				menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH_FILENAME));
+				if (Util::fileExists(Text::fromT(selWord))) {
+					menu.AppendMenu(MF_SEPARATOR);
+					menu.AppendMenu(MF_STRING, IDC_DELETE_FILE, CTSTRING(DELETE_FILE));
+				} else {
+					menu.AppendMenu(MF_STRING, IDC_ADD_AUTO_SEARCH_FILE, CTSTRING(ADD_AUTO_SEARCH_FILE));
+					menu.AppendMenu(MF_SEPARATOR);
+				}
+			}
+			menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+		/*} else {
+			menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+		}*/
 	}
 
 	menu.AppendMenu(MF_SEPARATOR);
@@ -366,10 +381,43 @@ LRESULT SystemFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	ctrlPad.SetSelNone();
 	return 0;
 }
+
+LRESULT SystemFrame::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	string path = Text::fromT(selWord);
+	string msg = str(boost::format(STRING(DELETE_FILE_CONFIRM)) % path);
+	if(MessageBox(Text::toT(msg).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+		File::deleteFile(path);
+	}
+
+	ctrlPad.SetSelNone();
+	return 0;
+}
+
+LRESULT SystemFrame::onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	string targetPath = Util::getFilePath(Text::fromT(selWord));
+	string fileName = Util::getFileName(Text::fromT(selWord));
+
+	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, TargetUtil::TARGET_PATH, false);
+
+	ctrlPad.SetSelNone();
+	return 0;
+}
+
+LRESULT SystemFrame::onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	string targetPath = Util::getParentDir(Text::fromT(selWord));
+	string dirName = Util::getLastDir(selWord[selWord.length()-1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selWord)) : Text::fromT(selWord));
+
+	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true);
+
+	ctrlPad.SetSelNone();
+	return 0;
+}
+
 LRESULT SystemFrame::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlPad.Copy();
 	return 0;
 }
+
 LRESULT SystemFrame::onEditSelectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlPad.SetSelAll();
 	return 0;

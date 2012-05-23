@@ -1192,7 +1192,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="FormatRelease">Format Release Names as Links in chat</String>
 		<String Name="CopyDirectory">Copy Directory</String>
 		<String Name="ErrorHashingCrc32">calculated CRC32 does not match the one found in SFV file.</String>
-		<String Name="SearchDirectory">Search Directory</String>
+		<String Name="SearchDirectory">Search directory</String>
 		<String Name="SearchGoogleTitle">Search Google (title only)</String>
 		<String Name="SearchGoogleFull">Search Google (full release name)</String>
 		<String Name="SearchTvcom">Search TV.com</String>
@@ -1511,5 +1511,10 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="FileListRefreshInitiatedVpath">File list refresh initiated for the virtual directory \"%s\"</String>
 		<String Name="FileListRefreshInitiatedXVpath">File list refresh initiated for %d virtual directories</String>
 		<String Name="FileListRefreshInitiatedIncoming">File list refresh initiated for the incoming directories</String>
+		<String Name="DeleteFile">Delete file</String>
+		<String Name="DeleteFileConfirm">Are you sure want to delete the file %s?</String>
+		<String Name="AddAutoSearchFile">Add file to auto search</String>
+		<String Name="AddAutoSearchDir">Add directory to auto search</String>
+		<String Name="AutoSearchAddFailed">Failed to add the auto search %s</String>
 	</Strings>
 </Language>
