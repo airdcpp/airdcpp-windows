@@ -1515,6 +1515,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="DeleteFileConfirm">Are you sure want to delete the file %s?</String>
 		<String Name="AddAutoSearchFile">Add file to auto search</String>
 		<String Name="AddAutoSearchDir">Add directory to auto search</String>
-		<String Name="AutoSearchAddFailed">Failed to add the auto search %s</String>
+		<String Name="AutoSearchAddFailed">Failed to add the auto search %s:</String>
+		<String Name="AutoSearchExists">An item with the same name exists already</String>
 	</Strings>
 </Language>

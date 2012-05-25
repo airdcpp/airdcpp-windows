@@ -559,6 +559,9 @@ Added:
 - Listing of ADC searches in Search Spy
 - UDP command detection in the CDM Debug frame
 - Use error color in system log for error messages
+- Add menu items to add auto searches from paths in system log
+- Add a menu item to delete files existing on the disk in system log
+- Use system icons also for folders (if enabled)
 
 
 Changed:
@@ -575,6 +578,12 @@ Changed:
 - Copy IP addresses without the country part
 - Don't scroll to the end when viewing text files
 - Use system icons also for directories (if enabled)
+- Improved scroll handling in system log
+- Also list real paths in the toolbar refresh menu
+- Change the refresh button to always show the dropdown menu
+- Change the language selection system, use dropdown in the settings
+- Add some context-awareness for the search result right click menu'
+- Allow links to end with the char "!"
 
 
 Fixed:
@@ -590,3 +599,4 @@ Fixed:
 - Fix scrolling problem with long message as 1 word
 - Fix a popup crash on download failed
 - Fixes memory leaks
+- Fixes handling of some rare characters in SFV files

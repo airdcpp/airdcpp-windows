@@ -201,7 +201,6 @@ private:
 	tstring selectedIP;
 	tstring selectedUser;
 	tstring selectedWord;
-	PME regUrl, regRelease;
 	boost::wregex regUrlBoost, regReleaseBoost;
 	uint64_t lastTick;
 	bool isLink(POINT pt);
