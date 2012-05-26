@@ -1519,6 +1519,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="AutoSearchExists">An item with the same name exists already</String>
 		<String Name="NoFilesWereLoaded">No files were loaded for %s</String>
 		<String Name="NoFilesFromFile">No files were loaded from this file</String>
-		<String Name="BundleLoadFailed">Failed to load the bundle %s: %s. The bundle file has be deleted.</String>
+		<String Name="BundleLoadFailed">Failed to load the bundle %s: %s. The bundle file has been deleted.</String>
 	</Strings>
 </Language>
