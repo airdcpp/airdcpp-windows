@@ -398,7 +398,11 @@ void WinUtil::init(HWND hWnd) {
 	mainMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)help, CTSTRING(MENU_HELP));
 
 	//ResourceLoader::LoadImageList(IDB_FOLDERS, fileImages, 16, 16);
-	fileImages.CreateFromImage(IDB_FOLDERS, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("folders.bmp")))))
+		fileImages.CreateFromImage(WinUtil::getIconPath(_T("folders.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
+	else
+		fileImages.CreateFromImage(IDB_FOLDERS, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+
 	dirIconIndex = fileImageCount++;
 	dirMaskedIndex = fileImageCount++;
 	fileImageCount++;

@@ -49,7 +49,10 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 	ctrlSearch.SetWindowText(search.c_str());
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);
-	ftImage.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("search_icons.bmp")))))
+		ftImage.CreateFromImage(WinUtil::getIconPath(_T("search_icons.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
+	else
+		ftImage.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
     ctrlFileType.SetImageList(ftImage);	
 	::SetWindowText(GetDlgItem(IDOK), (TSTRING(OK)).c_str());
 	::SetWindowText(GetDlgItem(IDCANCEL), (TSTRING(CANCEL)).c_str());
