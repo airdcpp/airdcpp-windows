@@ -1041,14 +1041,14 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 
 		int i = ctrlClient.CharFromPos(pt);
 		int line = ctrlClient.LineFromChar(i);
-		int c = LOWORD(i) - ctrlClient.LineIndex(line);
-		int len = ctrlClient.LineLength(i) + 1;
+		int c = i - ctrlClient.LineIndex(line);
+		int len = ctrlClient.LineLength(i);
 		if(len < 3) {
 			return 0;
 		}
 
-		TCHAR* buf = new TCHAR[len];
-		ctrlClient.GetLine(line, buf, len);
+		TCHAR* buf = new TCHAR[len+1];
+		ctrlClient.GetLine(line, buf, len+1);
 		tstring x = tstring(buf, len-1);
 		delete[] buf;
 

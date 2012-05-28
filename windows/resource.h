@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\branches\2.50\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -134,7 +134,6 @@
 #define IDB_EMOTICON                    295
 #define IDD_NETWORKPAGE                 296
 #define IDD_CERTIFICATESPAGE            297
-#define IDD_QUEUEPAGE                   298
 #define IDD_DOWNLOADPAGE                298
 #define IDB_WINAMPBAR                   299
 #define IDR_WINAMP_LOGO                 300
@@ -966,10 +965,12 @@
 #define IDC_OTHER_PRIORITY_OPTIONS      1627
 #define IDC_                            1628
 #define IDC_FORMAT_REMOTE_TIME          1628
-#define IDC_FAVDIR_EDIT                 1630
-#define IDC_FAVDIR_ADD                  1631
-#define IDC_FAVDIR_REMOVE               1632
-#define IDC_SETTINGS_FAVDIR_PATHS       1633
+#define IDC_SHARED                      1629
+#define IDC_HUBSHARES_ADC_ONLY          1630
+#define IDC_FAVDIR_EDIT                 1631
+#define IDC_FAVDIR_ADD                  1632
+#define IDC_FAVDIR_REMOVE               1633
+#define IDC_SETTINGS_FAVDIR_PATHS       1634
 #define IDC_AUTOPRIO_DISABLED           1634
 #define IDC_AUTOPRIO_ENABLED            1634
 #define IDC_AUTOPRIO_FILES              1635
@@ -980,6 +981,7 @@
 #define IDC_SELECT_DIR                  1639
 #define IDC_LANGUAGE_CAPTION            1640
 #define IDC_LANGUAGE_NOTE               1641
+#define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200

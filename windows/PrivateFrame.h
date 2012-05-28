@@ -245,8 +245,8 @@ private:
 			PostMessage(WM_SPEAKER, USER_UPDATED);
 		}
 	}
-	void on(ClientManagerListener::UserConnected, const UserPtr& aUser) noexcept {
-		if(aUser == replyTo.user)
+	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser) noexcept {
+		if(aUser.getUser() == replyTo.user)
 			PostMessage(WM_SPEAKER, USER_UPDATED);
 	}
 	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept {
