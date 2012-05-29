@@ -2279,7 +2279,8 @@ tstring WinUtil::getTitle(const tstring& searchTerm) {
 							"ws","int"};
 	pos = 0;
 	ret += ' ';
-	while(pos <= extrawords->size()) {
+	auto arrayLength = sizeof ( extrawords ) / sizeof ( *extrawords );
+	while(pos < arrayLength) {
 		boost::replace_all(ret, " " + extrawords[pos] + " ", " ");
 		pos++;
 	}
