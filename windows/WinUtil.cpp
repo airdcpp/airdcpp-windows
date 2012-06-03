@@ -1050,6 +1050,9 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if(stricmp(cmd.c_str(), _T("autosearch")) == 0) {
 		AutoSearchManager::getInstance()->checkSearches(true);
+		//debug info
+	} else if(stricmp(cmd.c_str(), _T("expected")) == 0) {
+		ConnectionManager::getInstance()->getExpectedMapSize();
 	} else if(stricmp(cmd.c_str(), _T("altsearch")) == 0) {
 		QueueManager::getInstance()->runAltSearch();
 	} else if(stricmp(cmd.c_str(), _T("bloomstats")) == 0) {
