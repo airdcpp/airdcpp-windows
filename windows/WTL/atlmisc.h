@@ -2461,18 +2461,6 @@ protected:
 		return (*p == ch) ? p : NULL;
 	}
 
-	static const TCHAR* _cstrrchr(const TCHAR* p, TCHAR ch)
-	{
-		const TCHAR* lpsz = NULL;
-		while (*p != 0)
-		{
-			if (*p == ch)
-				lpsz = p;
-			p = ::CharNext(p);
-		}
-		return lpsz;
-	}
-
 	static TCHAR* _cstrrev(TCHAR* pStr)
 	{
 		// optimize NULL, zero-length, and single-char case
@@ -2581,20 +2569,6 @@ protected:
 		return (p[n] != 0) ? &p[n] : NULL;
 	}
 
-	static int _cstrisdigit(TCHAR ch)
-	{
-		WORD type;
-		GetStringTypeEx(GetThreadLocale(), CT_CTYPE1, &ch, 1, &type);
-		return (type & C1_DIGIT) == C1_DIGIT;
-	}
-
-	static int _cstrisspace(TCHAR ch)
-	{
-		WORD type;
-		GetStringTypeEx(GetThreadLocale(), CT_CTYPE1, &ch, 1, &type);
-		return (type & C1_SPACE) == C1_SPACE;
-	}
-
 	static int _cstrcmp(const TCHAR* pstrOne, const TCHAR* pstrOther)
 	{
 		return lstrcmp(pstrOne, pstrOther);
@@ -2618,43 +2592,10 @@ protected:
 		ATLASSERT(nRet != 0);
 		return nRet - 2;   // convert to strcmp convention
 	}
-
-	static int _cstrtoi(const TCHAR* nptr)
-	{
-		int c;       // current char
-		int total;   // current total
-		int sign;    // if '-', then negative, otherwise positive
-
-		while (_cstrisspace(*nptr))
-			++nptr;
-
-		c = (int)(_TUCHAR)*nptr++;
-		sign = c;   // save sign indication
-		if (c == _T('-') || c == _T('+'))
-			c = (int)(_TUCHAR)*nptr++;   // skip sign
-
-		total = 0;
-
-		while (_cstrisdigit((TCHAR)c))
-		{
-			total = 10 * total + (c - '0');   // accumulate digit
-			c = (int)(_TUCHAR)*nptr++;        // get next char
-		}
-
-		if (sign == '-')
-			return -total;
-		else
-			return total;   // return result, negated if necessary
-	}
 #else // !_ATL_MIN_CRT
 	static const TCHAR* _cstrchr(const TCHAR* p, TCHAR ch)
 	{
 		return _tcschr(p, ch);
-	}
-
-	static const TCHAR* _cstrrchr(const TCHAR* p, TCHAR ch)
-	{
-		return _tcsrchr(p, ch);
 	}
 
 	static TCHAR* _cstrrev(TCHAR* pStr)
@@ -2682,16 +2623,6 @@ protected:
 		return _tcspbrk(p, lpszCharSet);
 	}
 
-	static int _cstrisdigit(TCHAR ch)
-	{
-		return _istdigit(ch);
-	}
-
-	static int _cstrisspace(TCHAR ch)
-	{
-		return _istspace((_TUCHAR)ch);
-	}
-
 	static int _cstrcmp(const TCHAR* pstrOne, const TCHAR* pstrOther)
 	{
 		return _tcscmp(pstrOne, pstrOther);
@@ -2713,12 +2644,27 @@ protected:
 		return _tcsicoll(pstrOne, pstrOther);
 	}
 #endif // !_WIN32_WCE
+#endif // !_ATL_MIN_CRT
+
+	static const TCHAR* _cstrrchr(const TCHAR* p, TCHAR ch)
+	{
+		return MinCrtHelper::_strrchr(p, ch);
+	}
+
+	static int _cstrisdigit(TCHAR ch)
+	{
+		return MinCrtHelper::_isdigit(ch);
+	}
+
+	static int _cstrisspace(TCHAR ch)
+	{
+		return MinCrtHelper::_isspace(ch);
+	}
 
 	static int _cstrtoi(const TCHAR* nptr)
 	{
-		return _ttoi(nptr);
+		return MinCrtHelper::_atoi(nptr);
 	}
-#endif // !_ATL_MIN_CRT
 
 	static const TCHAR* _cstrchr_db(const TCHAR* p, TCHAR ch1, TCHAR ch2)
 	{
@@ -3330,7 +3276,7 @@ public:
 			return FALSE;
 
 		// find the last dot
-		LPTSTR pstrDot  = (LPTSTR)_cstrrchr(szBuff, _T('.'));
+		LPTSTR pstrDot  = MinCrtHelper::_strrchr(szBuff, _T('.'));
 		if(pstrDot != NULL)
 			*pstrDot = 0;
 
@@ -3579,8 +3525,8 @@ public:
 		else
 		{
 			// find the last forward or backward whack
-			LPTSTR pstrBack  = (LPTSTR)_cstrrchr(m_lpszRoot, _T('\\'));
-			LPTSTR pstrFront = (LPTSTR)_cstrrchr(m_lpszRoot, _T('/'));
+			LPTSTR pstrBack  = MinCrtHelper::_strrchr(m_lpszRoot, _T('\\'));
+			LPTSTR pstrFront = MinCrtHelper::_strrchr(m_lpszRoot, _T('/'));
 
 			if(pstrFront != NULL || pstrBack != NULL)
 			{
@@ -3627,23 +3573,6 @@ public:
 			::FindClose(m_hFind);
 			m_hFind = NULL;
 		}
-	}
-
-// Helper
-	static const TCHAR* _cstrrchr(const TCHAR* p, TCHAR ch)
-	{
-#ifdef _ATL_MIN_CRT
-		const TCHAR* lpsz = NULL;
-		while (*p != 0)
-		{
-			if (*p == ch)
-				lpsz = p;
-			p = ::CharNext(p);
-		}
-		return lpsz;
-#else // !_ATL_MIN_CRT
-		return _tcsrchr(p, ch);
-#endif // !_ATL_MIN_CRT
 	}
 };
 

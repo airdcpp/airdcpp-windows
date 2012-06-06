@@ -542,7 +542,6 @@
 		<String Name="SettingsAdvanced3">Experts only</String>
 		<String Name="SettingsAllowUntrustedClients">Allow TLS connections to clients without trusted certificate</String>
 		<String Name="SettingsAllowUntrustedHubs">Allow TLS connections to hubs without trusted certificate</String>
-		<String Name="SettingsAntiFrag">Use antifragmentation method for downloads</String>
 		<String Name="SettingsAppearance">Appearance</String>
 		<String Name="SettingsArgument">Arguments</String>
 		<String Name="SettingsAutoAway">Auto-away on minimize (and back on restore)</String>

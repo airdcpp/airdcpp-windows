@@ -471,9 +471,13 @@ static CWndClassInfo& GetWndClassInfo() \
   #endif // ATLVERIFY
 #endif // (_ATL_VER < 0x0700)
 
-// Forward declaration for ATL3 fix
-#if (_ATL_VER < 0x0700) && defined(_ATL_DLL) && !defined(_WIN32_WCE)
+// Forward declaration for ATL3 and ATL11 fix
+#if (((_ATL_VER < 0x0700) && defined(_ATL_DLL)) || (_ATL_VER >= 0x0B00)) && !defined(_WIN32_WCE)
   namespace ATL { HRESULT AtlGetCommCtrlVersion(LPDWORD pdwMajor, LPDWORD pdwMinor); };
+#endif
+
+#ifndef WM_MOUSEHWHEEL
+  #define WM_MOUSEHWHEEL                  0x020E
 #endif
 
 
@@ -972,6 +976,91 @@ namespace SecureHelper
 		return nRes;
 	}
 }; // namespace SecureHelper
+
+
+///////////////////////////////////////////////////////////////////////////////
+// MinCrtHelper - helper functions for using _ATL_MIN_CRT
+
+namespace MinCrtHelper
+{
+	inline int _isspace(TCHAR ch)
+	{
+#ifndef _ATL_MIN_CRT
+		return _istspace(ch);
+#else // _ATL_MIN_CRT
+		WORD type = 0;
+		::GetStringTypeEx(::GetThreadLocale(), CT_CTYPE1, &ch, 1, &type);
+		return (type & C1_SPACE) == C1_SPACE;
+#endif // _ATL_MIN_CRT
+	}
+
+	inline int _isdigit(TCHAR ch)
+	{
+#ifndef _ATL_MIN_CRT
+		return _istdigit(ch);
+#else // _ATL_MIN_CRT
+		WORD type = 0;
+		::GetStringTypeEx(::GetThreadLocale(), CT_CTYPE1, &ch, 1, &type);
+		return (type & C1_DIGIT) == C1_DIGIT;
+#endif // _ATL_MIN_CRT
+	}
+
+	inline int _atoi(LPCTSTR str)
+	{
+#ifndef _ATL_MIN_CRT
+		return _ttoi(str);
+#else // _ATL_MIN_CRT
+		while(_isspace(*str) != 0)
+			++str;
+
+		TCHAR ch = *str++;
+		TCHAR sign = ch;   // save sign indication
+		if(ch == _T('-') || ch == _T('+'))
+			ch = *str++;   // skip sign
+
+		int total = 0;
+		while(_isdigit(ch) != 0)
+		{
+			total = 10 * total + (ch - '0');   // accumulate digit
+			ch = *str++;        // get next char
+		}
+
+		return (sign == '-') ? -total : total;   // return result, negated if necessary
+#endif // _ATL_MIN_CRT
+	}
+
+	inline LPCTSTR _strrchr(LPCTSTR str, TCHAR ch)
+	{
+#ifndef _ATL_MIN_CRT
+		return _tcsrchr(str, ch);
+#else // _ATL_MIN_CRT
+		LPCTSTR lpsz = NULL;
+		while(*str != 0)
+		{
+			if(*str == ch)
+				lpsz = str;
+			str = ::CharNext(str);
+		}
+		return lpsz;
+#endif // _ATL_MIN_CRT
+	}
+
+	inline LPTSTR _strrchr(LPTSTR str, TCHAR ch)
+	{
+#ifndef _ATL_MIN_CRT
+		return _tcsrchr(str, ch);
+#else // _ATL_MIN_CRT
+		LPTSTR lpsz = NULL;
+		while(*str != 0)
+		{
+			if(*str == ch)
+				lpsz = str;
+			str = ::CharNext(str);
+		}
+		return lpsz;
+#endif // _ATL_MIN_CRT
+	}
+}; // namespace MinCrtHelper
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1922,9 +2011,10 @@ typedef ATL::CRegKey CRegKeyEx;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// General DLL version helpers (excluded from atlbase.h if _ATL_DLL is defined)
+// General DLL version helpers
+// (ATL3: excluded from atlbase.h if _ATL_DLL is defined; ATL11: removed)
 
-#if (_ATL_VER < 0x0700) && defined(_ATL_DLL) && !defined(_WIN32_WCE)
+#if (((_ATL_VER < 0x0700) && defined(_ATL_DLL)) || (_ATL_VER >= 0x0B00)) && !defined(_WIN32_WCE)
 
 namespace ATL
 {

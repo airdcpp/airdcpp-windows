@@ -1522,7 +1522,7 @@ public:
 				if(*p == _T(','))
 				{
 					*p = _T('\0');
-					c[i] = T::_xttoi(lpstr);
+					c[i] = MinCrtHelper::_atoi(lpstr);
 					lpstr = &p[1];
 					break;
 				}
@@ -1532,7 +1532,7 @@ public:
 		}
 		if(*lpstr == _T('\0'))
 			return CLR_INVALID;
-		c[2] = T::_xttoi(lpstr);
+		c[2] = MinCrtHelper::_atoi(lpstr);
 
 		return RGB(c[0], c[1], c[2]);
 	}
@@ -1813,31 +1813,6 @@ public:
 	bool IsSingleLine() const
 	{
 		return ((m_dwExtendedStyle & HLINK_SINGLELINE) == HLINK_SINGLELINE);
-	}
-
-	static int _xttoi(const TCHAR* nptr)
-	{
-#ifndef _ATL_MIN_CRT
-		return _ttoi(nptr);
-#else // _ATL_MIN_CRT
-		while(*nptr == _T(' '))   // skip spaces
-			++nptr;
-
-		int c = (int)(_TUCHAR)*nptr++;
-		int sign = c;   // save sign indication
-		if (c == _T('-') || c == _T('+'))
-			c = (int)(_TUCHAR)*nptr++;   // skip sign
-
-		int total = 0;
-		while((TCHAR)c >= _T('0') && (TCHAR)c <= _T('9'))
-		{
-			total = 10 * total + ((TCHAR)c - _T('0'));   // accumulate digit
-			c = (int)(_TUCHAR)*nptr++;        // get next char
-		}
-
-		// return result, negated if necessary
-		return ((TCHAR)sign != _T('-')) ? total : -total;
-#endif // _ATL_MIN_CRT
 	}
 };
 

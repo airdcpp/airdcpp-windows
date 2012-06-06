@@ -30,10 +30,6 @@
   #define GET_WHEEL_DELTA_WPARAM(wParam)  ((short)HIWORD(wParam))
 #endif
 
-#ifndef WM_MOUSEHWHEEL
-  #define WM_MOUSEHWHEEL                  0x020E
-#endif
-
 
 ///////////////////////////////////////////////////////////////////////////////
 // Classes in this file:

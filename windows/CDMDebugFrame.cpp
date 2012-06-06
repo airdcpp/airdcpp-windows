@@ -227,28 +227,26 @@ void CDMDebugFrame::on(DebugManagerListener::DebugDetection, const string& aLine
 	addCmd(aLine);
 }
 void CDMDebugFrame::on(DebugManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& ip) noexcept {
+	if(bFilterIp && Text::toT(ip).find(sFilterIp) == tstring::npos) {
+		return;
+	}
+
 	string cmd;
 	switch(aType) {
 		case DebugManager::TYPE_HUB:
 			if(!showHubCommands)
 				return;
-			if(!bFilterIp || Text::toT(ip) == sFilterIp) {
-				cmd = "Hub:";
-			}
+			cmd = "Hub:";
 			break;
 		case DebugManager::TYPE_CLIENT:
 			if(!showTCPCommands)
 				return;
-			if(!bFilterIp || Text::toT(ip) == sFilterIp) {
-				cmd = "Client (TCP):";
-			}
+			cmd = "Client (TCP):";
 			break;
 		case DebugManager::TYPE_CLIENT_UDP:
 			if(!showUDPCommands)
 				return;
-			if(!bFilterIp || Text::toT(ip) == sFilterIp) {
-				cmd = "Client (UDP):";
-			}
+			cmd = "Client (UDP):";
 			break;
 		default: dcassert(0);
 	}

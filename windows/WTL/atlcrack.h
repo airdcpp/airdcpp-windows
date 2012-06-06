@@ -799,7 +799,7 @@ public: \
 			return TRUE; \
 	}
 
-// void OnSysCommand(UINT nID, LPARAM lParam)
+// void OnSysCommand(UINT nID, CPoint point)
 #define MSG_WM_SYSCOMMAND(func) \
 	if (uMsg == WM_SYSCOMMAND) \
 	{ \

@@ -782,9 +782,6 @@
     <ClInclude Include="windows\EmoticonsManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\Wizard.h">
       <Filter>Header Files</Filter>
     </ClInclude>

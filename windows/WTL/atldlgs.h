@@ -514,7 +514,7 @@ public:
 		if (pStr[nLength + 1] == 0)
 		{
 			// The OFN buffer contains a single item so extract its path.
-			LPCTSTR pSep = _strrchr(pStr, _T('\\'));
+			LPCTSTR pSep = MinCrtHelper::_strrchr(pStr, _T('\\'));
 			if (pSep != NULL)
 				nLength = (int)(DWORD_PTR)(pSep - pStr);
 		}
@@ -572,7 +572,7 @@ public:
 		else
 		{
 			// A single item was selected. Skip forward past the path.
-			LPCTSTR pSep = _strrchr(pStr, _T('\\'));
+			LPCTSTR pSep = MinCrtHelper::_strrchr(pStr, _T('\\'));
 			if (pSep != NULL)
 				pStr = pSep + 1;
 		}
@@ -654,7 +654,7 @@ public:
 		int nRet = 0;
 		LPCTSTR pStr = m_pNextFile;
 		// Does the filename contain a backslash?
-		if (_strrchr(pStr, _T('\\')) != NULL)
+		if (MinCrtHelper::_strrchr(pStr, _T('\\')) != NULL)
 		{
 			// Yes, so we'll assume it's a full path.
 			int nLength = lstrlen(pStr);
@@ -847,23 +847,6 @@ public:
 		// If we need more space for shortcut targets, then reallocate.
 		if (nExtraChars > 0)
 			ATLVERIFY(ResizeFilenameBuffer(m_ofn.nMaxFile + nExtraChars));
-	}
-
-	// Helper for _ATL_MIN_CRT
-	static const TCHAR* _strrchr(const TCHAR* p, TCHAR ch)
-	{
-#ifndef _ATL_MIN_CRT
-		return _tcsrchr(p, ch);
-#else // _ATL_MIN_CRT
-		const TCHAR* lpsz = NULL;
-		while (*p != 0)
-		{
-			if (*p == ch)
-				lpsz = p;
-			p = ::CharNext(p);
-		}
-		return lpsz;
-#endif // _ATL_MIN_CRT
 	}
 };
 

@@ -140,6 +140,8 @@ namespace WTL
 
 // DDX support for Tab, Combo, ListBox and ListView selection index
 // Note: Specialized versions require atlctrls.h to be included first
+#if (_MSC_VER >= 1300)
+
 #define DDX_INDEX(CtrlClass, nID, var) \
 	if(nCtlID == (UINT)-1 || nCtlID == nID) \
 		DDX_Index<CtrlClass>(nID, var, bSaveAndValidate);
@@ -150,6 +152,8 @@ namespace WTL
   #define DDX_LISTBOX_INDEX(nID, var)  DDX_INDEX(WTL::CListBox, nID, var)
   #define DDX_LISTVIEW_INDEX(nID, var) DDX_INDEX(WTL::CListViewCtrl, nID, var)
 #endif // __ATLCTRLS_H__
+
+#endif // (_MSC_VER >= 1300)
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -611,6 +615,7 @@ public:
 	}
 
 // DDX support for Tab, Combo, ListBox and ListView selection index
+#if (_MSC_VER >= 1300)
 	template <class TCtrl>
 	INT _getSel(TCtrl& tCtrl)
 	{
@@ -655,6 +660,7 @@ public:
 		else
 			_setSel(ctrl, nVal);
 	}
+#endif // (_MSC_VER >= 1300)
 
 // Overrideables
 	void OnDataExchangeError(UINT nCtrlID, BOOL /*bSave*/)

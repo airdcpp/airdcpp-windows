@@ -528,7 +528,6 @@
     <ClCompile Include="windows\WMPlayerRemoteApi.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h" />
     <ClInclude Include="windows\AboutDlg.h" />
     <ClInclude Include="windows\ADLSearchFrame.h" />
     <ClInclude Include="windows\ADLSProperties.h" />

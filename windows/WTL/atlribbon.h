@@ -3377,7 +3377,7 @@ public:
 			LPBYTE pVal = (LPBYTE)::GlobalLock(hgSettings);
 			if (pVal != NULL)
 			{
-				lRet = key.SetBinaryValue(L"Settings", pVal, ::GlobalSize(hgSettings));
+				lRet = key.SetBinaryValue(L"Settings", pVal, (ULONG)::GlobalSize(hgSettings));
 				::GlobalUnlock(hgSettings);
 			}
 			else
