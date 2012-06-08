@@ -101,7 +101,6 @@ private:
 	CImageList ftImage;
 
 	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget, ctrlUserMatch, ctrlMatcherString;
-	CComboBox cRaw;
 	CComboBoxEx ctrlFileType;
 	CComboBox cAction;
 	CButton cSelectDir;

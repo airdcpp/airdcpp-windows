@@ -2334,9 +2334,8 @@ bool WinUtil::getTarget(int ID, string& target, int64_t aSize, bool wholeDir /*f
 	int newId = ID - (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS);
 	dcassert(newId >= 0);
 	TargetUtil::TargetInfo targetInfo;
-	TargetUtil::getTarget(newId, targetInfo);
 
-	if (aSize > targetInfo.getFreeSpace()) {
+	if (!TargetUtil::getTarget(newId, targetInfo, aSize)) {
 		string tmp;
 		if (targetInfo.queued > 0) {
 			tmp = str(boost::format(STRING(CONFIRM_SIZE_WARNING_QUEUED)) % 

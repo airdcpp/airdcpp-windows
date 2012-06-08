@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\branches\2.50\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
@@ -349,8 +349,10 @@
 #define IDC_SETTINGS_PORT_TCP           1146
 #define IDC_SETTINGS_DOWNLOAD_LIMITS    1147
 #define IDC_SETTINGS_TARGETDRIVE_NOTE   1147
+#define IDC_SETTINGS_OPTIONS            1147
 #define IDC_SETTINGS_DOWNLOADS_MAX      1148
 #define IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE 1149
+#define IDC_AUTOPATH_CAPTION            1149
 #define IDC_SETTINGS_SPEEDS_NOT_ACCURATE 1150
 #define IDC_SETTINGS_PUBLIC_HUB_LIST    1151
 #define IDC_SETTINGS_PUBLIC_HUB_LIST_URL 1152
@@ -981,6 +983,8 @@
 #define IDC_SELECT_DIR                  1639
 #define IDC_LANGUAGE_CAPTION            1640
 #define IDC_LANGUAGE_NOTE               1641
+#define IDC_AUTOSELECT_METHOD           1643
+#define IDC_AUTOPATH_METHOD             1644
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1293,7 +1297,7 @@
 #define IDC_USE_SEQ_ORDER               15124
 #define IDC_ADD_AUTO_SEARCH_FILE        15125
 #define IDC_ADD_AUTO_SEARCH_DIR         15126
-#define IDC_DELETE_FILE		            15127
+#define IDC_DELETE_FILE                 15127
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_REFRESH_MENU                18000
 #define IDC_REFRESH_MENU_SUBDIRS        19000
@@ -1327,7 +1331,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        322
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1642
+#define _APS_NEXT_CONTROL_VALUE         1645
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

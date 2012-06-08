@@ -80,6 +80,7 @@ protected:
 	ExListViewCtrl ctrlDirectories;
 	TCHAR* title;
 	FavoriteManager::FavDirList favoriteDirs;
+	CComboBox ctrlAutoSelect;
 
 	bool renameFavoriteDir(const string& aName, const string& anotherName, const string& aPath);
 	bool removeFavoriteDir(const string& aName);

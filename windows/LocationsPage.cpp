@@ -44,7 +44,9 @@ PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY }, 
 	{ IDC_BROWSETEMPDIR, ResourceManager::BROWSE },
 	{ IDC_SETTINGS_BTN_TARGETDRIVE, ResourceManager::SETTINGS_USE_TARGETDRIVE },
-	{ IDC_FORMAT_REMOTE_TIME, ResourceManager::SETTINGS_FORMAT_REMOTE_TIME }, 
+	{ IDC_FORMAT_REMOTE_TIME, ResourceManager::SETTINGS_FORMAT_REMOTE_TIME },
+	{ IDC_AUTOPATH_CAPTION, ResourceManager::AUTOPATH_CAPTION }, 
+	{ IDC_SETTINGS_OPTIONS, ResourceManager::SETTINGS_OPTIONS }, 
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -74,7 +76,12 @@ LRESULT LocationsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 		int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(j->first).c_str());
 		ctrlDirectories.SetItemText(i, 1, Text::toT(Util::toString(j->second)).c_str());
 	}
-	
+
+	ctrlAutoSelect.Attach(GetDlgItem(IDC_AUTOPATH_METHOD));
+	ctrlAutoSelect.AddString(CTSTRING(AUTOSELECT_MOST_SPACE));
+	ctrlAutoSelect.AddString(CTSTRING(AUTOSELECT_LEAST_SPACE));
+	ctrlAutoSelect.SetCurSel(SETTING(DL_AUTOSELECT_METHOD));
+
 	return TRUE;
 }
 
@@ -91,8 +98,9 @@ void LocationsPage::write()
 	const string& t = SETTING(TEMP_DOWNLOAD_DIRECTORY);
 	if(t.length() > 0 && t[t.length() - 1] != '\\') {
 		SettingsManager::getInstance()->set(SettingsManager::TEMP_DOWNLOAD_DIRECTORY, t + '\\');
-		
 	}
+
+	SettingsManager::getInstance()->set(SettingsManager::DL_AUTOSELECT_METHOD, ctrlAutoSelect.GetCurSel());
 	AirUtil::updateCachedSettings();
 }
 
@@ -215,10 +223,6 @@ void LocationsPage::addDirs(const string& vName, const StringList& aPaths){
 
 	auto i = find_if(favoriteDirs.begin(), favoriteDirs.end(), CompareFirst<string, StringList>(vName));
 	if (i != favoriteDirs.end()) {
-		//auto tmpPaths = i->second;
-		//i->second.clear();
-		//boost::merge(paths, tmpPaths, i->second);
-		//pos = distance(favoriteDirs.begin(), i);
 		pos = ctrlDirectories.find(Text::toT(vName));
 		boost::for_each(aPaths, [&](string p) {
 			if (find(i->second.begin(), i->second.end(), p) == i->second.end())

@@ -63,7 +63,6 @@ private:
 	CImageList ftImage;
 
 	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget;
-	CComboBox cRaw;
 	CComboBoxEx ctrlFileType;
 	CComboBox cAction;
 	CButton cDisplay;
