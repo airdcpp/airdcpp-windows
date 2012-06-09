@@ -123,9 +123,7 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 		exit(-1);
 
 #ifndef _DEBUG
-#if _MSC_VER == 1200
-	__pfnDliFailureHook = FailHook;
-#elif _MSC_VER == 1300 || _MSC_VER == 1310 || _MSC_VER == 1400 || _MSC_VER == 1500 || _MSC_VER == 1600
+#if _MSC_VER >= 1600
 	__pfnDliFailureHook2 = FailHook;
 #else
 #error Unknown Compiler version
