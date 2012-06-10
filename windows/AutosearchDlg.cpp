@@ -271,9 +271,12 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			MessageBox(CTSTRING(LINE_EMPTY));
 			return 0;
 		}
-
-		GetDlgItemText(IDC_AS_SEARCH_STRING, buf, 512);
-		searchString = Text::fromT(buf);
+		
+		tstring str;
+		str.resize(ctrlSearch.GetWindowTextLengthW());
+		str.resize(GetDlgItemText(IDC_AS_SEARCH_STRING, &str[0], ctrlSearch.GetWindowTextLengthW()));
+		searchString = Text::fromT(str);
+		
 
 		fileType = ctrlFileType.GetCurSel();
 		action = cAction.GetCurSel();
