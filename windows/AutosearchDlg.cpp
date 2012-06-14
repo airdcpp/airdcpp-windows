@@ -276,7 +276,6 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		str.resize(ctrlSearch.GetWindowTextLengthW());
 		str.resize(GetDlgItemText(IDC_AS_SEARCH_STRING, &str[0], ctrlSearch.GetWindowTextLengthW()));
 		searchString = Text::fromT(str);
-		
 
 		fileType = ctrlFileType.GetCurSel();
 		action = cAction.GetCurSel();

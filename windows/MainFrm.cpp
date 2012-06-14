@@ -1296,7 +1296,7 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 static const TCHAR types[] = _T("File Lists\0*.DcLst;*.xml.bz2\0All Files\0*.*\0");
 
 LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring file;
+	tstring file = Util::emptyStringT;
 	
 	if(wID == IDC_OPEN_MY_LIST){
 		string ownlist = ShareManager::getInstance()->getOwnListFile();
