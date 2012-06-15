@@ -758,12 +758,6 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 	OMenu menu;
 	menu.CreatePopupMenu();
 
-	if (targetMenu.m_hMenu != NULL) {
-		// delete target menu
-		targetMenu.DestroyMenu();
-		targetMenu.m_hMenu = NULL;
-	}
-
 	if (SearchMenu.m_hMenu != NULL) {
 		// delete search menu
 		SearchMenu.DestroyMenu();
@@ -799,35 +793,30 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		menu.AppendMenu(MF_STRING, IDC_COPY_ACTUAL_LINE,  CTSTRING(COPY_LINE));
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
-
-		if (shareDupe || queueDupe) {
-			menu.AppendMenu(MF_SEPARATOR);
-			menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+		if (isTTH || isMagnet) {
+			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_TTH));
 		}
 
-		if (isMagnet && !author.empty()) {
-			if (author == Text::toT(client->getMyNick())) {
-				/* show an option to remove the item */
-			} else {
-				targetMenu.CreatePopupMenu();
+		targets.clear();
+		if (isMagnet || release) {
+			if (shareDupe || queueDupe) {
 				menu.AppendMenu(MF_SEPARATOR);
-				menu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
-				menu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
-
-				targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
-				WinUtil::appendDirsMenu(targetMenu);
+				menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 			}
-		} else if (release) {
-			//autosearch menus
-			targetMenu.CreatePopupMenu();
-			menu.AppendMenu(MF_SEPARATOR);
-			menu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
-			menu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
 
-			targetMenu.InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
-			WinUtil::appendDirsMenu(targetMenu);
-		} else if (isTTH) {
-			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_TTH));
+			menu.AppendMenu(MF_SEPARATOR);
+			if (!author.empty() && isMagnet) {
+				if (author == Text::toT(client->getMyNick())) {
+					/* show an option to remove the item */
+				} else {
+					Magnet m = Magnet(Text::fromT(selectedWord));
+					targets = QueueManager::getInstance()->getTargets(m.getTTH());
+					this->appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, true);
+				}
+			} else if (release) {
+				//autosearch menus
+				this->appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, false);
+			}
 		}
 
 		SearchMenu.CreatePopupMenu();
@@ -959,69 +948,46 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	return 0;
 }
 
-LRESULT ChatCtrl::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (release) {
-		if(selectedWord.size() < 5) //we dont accept anything under 5 chars
-			return 0;
-
-		addAutoSearch(SETTING(DOWNLOAD_DIRECTORY), TargetUtil::TARGET_PATH);
+void ChatCtrl::download(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType) {
+	if (isMagnet) {
+		Magnet m = Magnet(Text::fromT(selectedWord));
+		OnlineUserPtr u = client->findUser(Text::fromT(author));
+		if (u) {
+			try {
+				QueueManager::getInstance()->add(aTarget + m.fname, m.fsize, m.getTTH(), 
+					!u->getUser()->isSet(User::BOT) ? HintedUser(u->getUser(), client->getHubUrl()) : HintedUser(UserPtr(), Util::emptyString));
+			} catch (...) {}
+		}
 	} else {
-		downloadMagnet(SETTING(DOWNLOAD_DIRECTORY));
-	}
-	SetSelNone();
-	return 0;
-}
-
-void ChatCtrl::addAutoSearch(const string& aPath, uint8_t targetType) {
-	AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aPath, (TargetUtil::TargetType)targetType, true);
-}
-
-void ChatCtrl::downloadMagnet(const string& aPath) {
-
-	Magnet m = Magnet(Text::fromT(selectedWord));
-	OnlineUserPtr u = client->findUser(Text::fromT(author));
-	if (u) {
-		try {
-			QueueManager::getInstance()->add(aPath + m.fname, m.fsize, m.getTTH(), 
-				!u->getUser()->isSet(User::BOT) ? HintedUser(u->getUser(), client->getHubUrl()) : HintedUser(UserPtr(), Util::emptyString));
-		} catch (...) {}
+		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, aTargetType, true);
 	}
 }
 
-LRESULT ChatCtrl::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(selectedWord.size() < 5) //we dont accept anything under 5 chars
+bool ChatCtrl::showDirDialog(string& fileName) {
+	if (isMagnet) {
+		Magnet m = Magnet(Text::fromT(selectedWord));
+		fileName = m.fname;
+		return false;
+	}
+	return true;
+}
+
+
+void ChatCtrl::appendDownloadItems(OMenu& aMenu, bool isWhole) {
+	aMenu.AppendMenu(MF_STRING, isWhole ? IDC_DOWNLOADDIR : IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
+
+	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO));
+	targetMenu->InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
+	appendDownloadTo(*targetMenu, isWhole ? true : false);
+}
+
+int64_t ChatCtrl::getDownloadSize(bool /*isWhole*/) {
+	if (isMagnet) {
+		Magnet m = Magnet(Text::fromT(selectedWord));
+		return m.fsize;
+	} else {
 		return 0;
-
-	tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
-	if(WinUtil::browseDirectory(target, m_hWnd)) {
-		SettingsManager::getInstance()->addDirToHistory(target);
-		if (release) {
-			addAutoSearch(Text::fromT(target), TargetUtil::TARGET_PATH);
-		} else {
-			downloadMagnet(Text::fromT(target));
-		}
 	}
-	SetSelNone();
-	return 0;
-}
-
-LRESULT ChatCtrl::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (release) {
-		if(selectedWord.size() < 5) //we dont accept anything under 5 chars
-			return 0;
-
-		TargetUtil::TargetType targetType;
-		string vTarget;
-		if (WinUtil::getVirtualName(wID, vTarget, targetType))
-			addAutoSearch(vTarget, targetType);
-	} else {
-		string target;
-		if (WinUtil::getTarget(wID, target, 0)) {
-			downloadMagnet(target);
-		}
-	}
-	SetSelNone();
-	return 0;
 }
 
 LRESULT ChatCtrl::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -1640,13 +1606,23 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 }
 
 LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::searchAny(selectedWord);
+	if (isMagnet) {
+		Magnet m = Magnet(Text::fromT(selectedWord));
+		WinUtil::searchAny(Text::toT(m.fname));
+	} else {
+		WinUtil::searchAny(selectedWord);
+	}
 	SetSelNone();
 	return 0;
 }
 
 LRESULT ChatCtrl::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::searchHash(TTHValue(Text::fromT(selectedWord)));
+	if (isMagnet) {
+		Magnet m = Magnet(Text::fromT(selectedWord));
+		WinUtil::searchHash(m.getTTH());
+	} else {
+		WinUtil::searchHash(TTHValue(Text::fromT(selectedWord)));
+	}
 	SetSelNone();
 	return 0;
 }

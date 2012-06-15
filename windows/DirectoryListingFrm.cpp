@@ -439,147 +439,23 @@ LRESULT DirectoryListingFrame::onDoubleClickFiles(int /*idCtrl*/, LPNMHDR pnmh, 
 	return 0;
 }
 
-LRESULT DirectoryListingFrame::onDownloadDir(WORD , WORD , HWND , BOOL& ) {
-	HTREEITEM t = ctrlTree.GetSelectedItem();
-	if(t != NULL) {
-		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		try {
-			dl->download(dir, SETTING(DOWNLOAD_DIRECTORY), WinUtil::isShift(), QueueItem::DEFAULT);
-		} catch(const Exception& e) {
-			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
-		}
-	}
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onDownloadDirWithPrio(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	HTREEITEM t = ctrlTree.GetSelectedItem();
-	if(t != NULL) {
-		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-
-		QueueItem::Priority p;
-		switch(wID-90) {
-			case IDC_PRIORITY_PAUSED: p = QueueItem::PAUSED; break;
-			case IDC_PRIORITY_LOWEST: p = QueueItem::LOWEST; break;
-			case IDC_PRIORITY_LOW: p = QueueItem::LOW; break;
-			case IDC_PRIORITY_NORMAL: p = QueueItem::NORMAL; break;
-			case IDC_PRIORITY_HIGH: p = QueueItem::HIGH; break;
-			case IDC_PRIORITY_HIGHEST: p = QueueItem::HIGHEST; break;
-			default: p = QueueItem::DEFAULT; break;
-		}
-
-		try {
-			dl->download(dir, SETTING(DOWNLOAD_DIRECTORY), WinUtil::isShift(), p);
-		} catch(const Exception& e) {
-			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
-		}
-	}
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onDownloadDirTo(WORD , WORD , HWND , BOOL& ) {
-	HTREEITEM t = ctrlTree.GetSelectedItem();
-	if(t != NULL) {
-		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
-		if(WinUtil::browseDirectory(target, m_hWnd)) {
-			SettingsManager::getInstance()->addDirToHistory(target);
-			try {
-				dl->download(dir, Text::fromT(target), WinUtil::isShift(), QueueItem::DEFAULT);
-			} catch(const Exception& e) {
-				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
-			}
-		}
-	}
-	return 0;
-}
-
-void DirectoryListingFrame::downloadList(const tstring& aTarget, bool view /* = false */, QueueItem::Priority prio /* = QueueItem::Priority::DEFAULT */) {
-	string target = aTarget.empty() ? SETTING(DOWNLOAD_DIRECTORY) : Text::fromT(aTarget);
-	if(ctrlList.GetSelectedCount() >= 1) {
-	int i=-1;
+LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	int i = -1;
 	while( (i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const ItemInfo* ii = ctrlList.getItemData(i);
-
 		try {
 			if(ii->type == ItemInfo::FILE) {
-				if(view) {
-					File::deleteFile(target + Util::validateFileName(ii->file->getName()));
+				if (mylist) {
+					tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+					TextFrame::openWindow(path, TextFrame::NORMAL);
+				} else {
+					File::deleteFile(Util::getTempPath() + Util::validateFileName(ii->file->getName()));
+					dl->download(ii->file, Util::getTempPath() + Text::fromT(ii->getText(COLUMN_FILENAME)), true, true);
 				}
-				dl->download(ii->file, target + Text::fromT(ii->getText(COLUMN_FILENAME)), view, WinUtil::isShift() || view, prio);
-			} else if(!view) {
-				dl->download(ii->dir, target, WinUtil::isShift(), prio);
-			} 
-		} catch(const Exception& e) {
-			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 			}
-		}
-	}
-}
-
-LRESULT DirectoryListingFrame::onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	downloadList(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onDownloadWithPrio(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	QueueItem::Priority p;
-
-	switch(wID) {
-		case IDC_PRIORITY_PAUSED: p = QueueItem::PAUSED; break;
-		case IDC_PRIORITY_LOWEST: p = QueueItem::LOWEST; break;
-		case IDC_PRIORITY_LOW: p = QueueItem::LOW; break;
-		case IDC_PRIORITY_NORMAL: p = QueueItem::NORMAL; break;
-		case IDC_PRIORITY_HIGH: p = QueueItem::HIGH; break;
-		case IDC_PRIORITY_HIGHEST: p = QueueItem::HIGHEST; break;
-		default: p = QueueItem::DEFAULT; break;
-	}
-
-	downloadList(Text::toT(SETTING(DOWNLOAD_DIRECTORY)), false, p);
-
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlList.GetSelectedCount() == 1) {
-		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-
-		try {
-			if(ii->type == ItemInfo::FILE) {
-				tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY)) + ii->getText(COLUMN_FILENAME);
-				if(WinUtil::browseFile(target, m_hWnd)) {
-					SettingsManager::getInstance()->addDirToHistory(Util::getFilePath(target));
-					dl->download(ii->file, Text::fromT(target), false, WinUtil::isShift(), QueueItem::DEFAULT);
-				}
-			} else {
-				tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
-				if(WinUtil::browseDirectory(target, m_hWnd)) {
-					SettingsManager::getInstance()->addDirToHistory(target);
-					dl->download(ii->dir, Text::fromT(target), WinUtil::isShift(), QueueItem::DEFAULT);
-				}
-			} 
 		} catch(const Exception& e) {
 			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 		}
-	} else {
-		tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
-		if(WinUtil::browseDirectory(target, m_hWnd)) {
-			SettingsManager::getInstance()->addDirToHistory(target);			
-			downloadList(target);
-		}
-	}
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-	if (mylist) {
-		try {
-			tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-			TextFrame::openWindow(path, TextFrame::NORMAL);
-		} catch(...) { } //file deleted no path
-	} else {
-		downloadList(Text::toT(Util::getTempPath()), true);
 	}
 	return 0;
 }
@@ -756,7 +632,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		}
 		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 		int dirs = 0;
-		OMenu targetMenu, fileMenu, priorityMenu, copyMenu, SearchMenu;
+		OMenu fileMenu, copyMenu, SearchMenu;
 
 
 
@@ -834,110 +710,81 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		} else {
 
 clientmenu:
-		fileMenu.CreatePopupMenu();
-		targetMenu.CreatePopupMenu();
-		priorityMenu.CreatePopupMenu();
-		copyMenu.CreatePopupMenu();
-		SearchMenu.CreatePopupMenu();
-		targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
-		priorityMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_WITH_PRIORITY));
+			fileMenu.CreatePopupMenu();
+			copyMenu.CreatePopupMenu();
+			SearchMenu.CreatePopupMenu();
 
-		copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_EXACT_SIZE, CTSTRING(EXACT_SIZE));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
+			copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
+			copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
+			copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
+			copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
+			copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
+			copyMenu.AppendMenu(MF_STRING, IDC_COPY_EXACT_SIZE, CTSTRING(EXACT_SIZE));
+			copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
+			copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
+			copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
 		
-		fileMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
-		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)targetMenu, CTSTRING(DOWNLOAD_TO));
-		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
-		fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
-		
-		if (ii->type == ItemInfo::DIRECTORY && (ctrlList.GetSelectedCount() == 1) && !mylist) {
-			if (ShareManager::getInstance()->isDirShared(ii->dir->getPath()) || ii->dir->getDupe() == DirectoryListing::Directory::QUEUE_DUPE) {
-				fileMenu.AppendMenu(MF_SEPARATOR);
-				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-				fileMenu.AppendMenu(MF_SEPARATOR);
-			}
-		}else if(ii->type == ItemInfo::FILE && ctrlList.GetSelectedCount() == 1 && !mylist && (ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE || 
-				ii->file->getDupe() == DirectoryListing::File::FINISHED_DUPE)) {
-				fileMenu.AppendMenu(MF_SEPARATOR);
-				fileMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
-				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-				fileMenu.AppendMenu(MF_SEPARATOR);
-		}
-		if(mylist && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
-			fileMenu.AppendMenu(MF_SEPARATOR);
-			fileMenu.AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
-			fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK)); //sfv checker
-			if(ctrlList.GetSelectedCount() == 1 /*&& ii->type == ItemInfo::FILE */) {				
-					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-			}
-			fileMenu.AppendMenu(MF_SEPARATOR);
-		}
-
-		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_TTH));
-		fileMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
-		fileMenu.AppendMenu(MF_SEPARATOR);
-		fileMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
-		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-		fileMenu.AppendMenu(MF_SEPARATOR);
-		fileMenu.AppendMenu(MF_STRING,IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
-		fileMenu.AppendMenu(MF_SEPARATOR);
-		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
-		fileMenu.SetMenuDefaultItem(IDC_DOWNLOAD);
-
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_PAUSED, CTSTRING(PAUSED));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOWEST, CTSTRING(LOWEST));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOW, CTSTRING(LOW));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_NORMAL, CTSTRING(NORMAL));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGH, CTSTRING(HIGH));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST, CTSTRING(HIGHEST));
-
-		//Search menus
-		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-		WinUtil::AppendSearchMenu(SearchMenu);
-
-		int n = 0;
-
-		if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
-			fileMenu.InsertSeparatorFirst(Text::toT(Util::getFileName(ii->file->getName())));
-			WinUtil::appendDirsMenu(targetMenu);
-
 			targets.clear();
-			targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
-			if(targets.size() > 0) {
-				targetMenu.InsertSeparatorLast(TSTRING(ADD_AS_SOURCE));
-				for(auto i = targets.begin(); i != targets.end(); ++i) {
-					targetMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD_TARGET + n, Text::toT(*i).c_str());
-					n++;
+			if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
+				targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
+			}
+
+			appendDownloadMenu(fileMenu, DownloadBaseHandler::FILELIST, false);
+			fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
+			fileMenu.AppendMenu(MF_SEPARATOR);
+		
+			if (ctrlList.GetSelectedCount() == 1 && !mylist) {
+				if (ii->type == ItemInfo::DIRECTORY && (ShareManager::getInstance()->isDirShared(ii->dir->getPath()) || ii->dir->getDupe() == DirectoryListing::Directory::QUEUE_DUPE)) {
+					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+					fileMenu.AppendMenu(MF_SEPARATOR);
+				} else if(ii->type == ItemInfo::FILE && (ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE || ii->file->getDupe() == DirectoryListing::File::FINISHED_DUPE)) {
+					fileMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
+					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+					fileMenu.AppendMenu(MF_SEPARATOR);
 				}
 			}
 
-			if(ii->file->getAdls())			{
-				fileMenu.AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
+			if(mylist && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
+				fileMenu.AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
+				fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK)); //sfv checker
+				if(ctrlList.GetSelectedCount() == 1) {				
+					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+				}
+				fileMenu.AppendMenu(MF_SEPARATOR);
 			}
-			fileMenu.EnableMenuItem((UINT)(HMENU)copyMenu, MF_BYCOMMAND | MFS_ENABLED);
-			fileMenu.EnableMenuItem(IDC_SEARCH_ALTERNATES, MF_BYCOMMAND | MFS_ENABLED);
+
+			fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_TTH));
+			fileMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
+			fileMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+
+			fileMenu.AppendMenu(MF_SEPARATOR);
+
+			//Search menus
+			fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+			SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
+			WinUtil::AppendSearchMenu(SearchMenu);
+
+			fileMenu.AppendMenu(MF_SEPARATOR);
+
+			fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
+
+			fileMenu.SetMenuDefaultItem(IDC_DOWNLOAD);
+			if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
+				fileMenu.InsertSeparatorFirst(Text::toT(Util::getFileName(ii->file->getName())));
+				if(ii->file->getAdls())	{
+					fileMenu.AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
+				}
+				fileMenu.EnableMenuItem(IDC_SEARCH_ALTERNATES, MF_BYCOMMAND | MFS_ENABLED);
+			} else {
+				fileMenu.EnableMenuItem(IDC_SEARCH_ALTERNATES, MF_BYCOMMAND | MFS_DISABLED);
+				if(ii->type == ItemInfo::DIRECTORY && ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()) {
+					fileMenu.AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
+				}
+			}
+
 			prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubUrls(dl->getHintedUser().user->getCID(), dl->getHintedUser().hint));
 			fileMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
-		} else {
-			fileMenu.EnableMenuItem(IDC_SEARCH_ALTERNATES, MF_BYCOMMAND | MFS_DISABLED);
 
-			WinUtil::appendDirsMenu(targetMenu);
-
-			if(ii->type == ItemInfo::DIRECTORY && ii->type == ItemInfo::DIRECTORY && 
-			   ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()) {
-				fileMenu.AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
-			}
-
-			prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubUrls(dl->getUser()->getCID(), dl->getHintedUser().hint));
-			fileMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
-		}
 		}
 		return TRUE; 
 	} else if(reinterpret_cast<HWND>(wParam) == ctrlTree && ctrlTree.GetSelectedItem() != NULL) { 
@@ -954,38 +801,23 @@ clientmenu:
 			ctrlTree.ClientToScreen(&pt);
 		}
 
-		OMenu targetDirMenu, directoryMenu, priorityDirMenu, SearchMenu;
+		OMenu directoryMenu, SearchMenu;
 
 		directoryMenu.CreatePopupMenu();
-		targetDirMenu.CreatePopupMenu();
-		priorityDirMenu.CreatePopupMenu();
 		SearchMenu.CreatePopupMenu();
 
-		targetDirMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
-		priorityDirMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_WITH_PRIORITY));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_PAUSED+90, CTSTRING(PAUSED));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOWEST+90, CTSTRING(LOWEST));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOW+90, CTSTRING(LOW));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_NORMAL+90, CTSTRING(NORMAL));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGH+90, CTSTRING(HIGH));
-		priorityDirMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST+90, CTSTRING(HIGHEST));
-
-
-		directoryMenu.AppendMenu(MF_STRING, IDC_DOWNLOADDIR, CTSTRING(DOWNLOAD));
-		directoryMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)targetDirMenu, CTSTRING(DOWNLOAD_TO));
-		directoryMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityDirMenu, CTSTRING(DOWNLOAD_WITH_PRIORITY));
+		appendDownloadMenu(directoryMenu, DownloadBaseHandler::FILELIST, true);
 		directoryMenu.AppendMenu(MF_SEPARATOR);
+
 		directoryMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 		SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
 		WinUtil::AppendSearchMenu(SearchMenu, 90);
 		directoryMenu.AppendMenu(MF_SEPARATOR);
+
 		directoryMenu.AppendMenu(MF_STRING,IDC_COPY_DIRECTORY, CTSTRING(COPY_DIRECTORY));
-		directoryMenu.AppendMenu(MF_STRING,IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
 		directoryMenu.AppendMenu(MF_STRING, IDC_SEARCHLEFT, CTSTRING(SEARCH));
 		
 		// Strange, windows doesn't change the selection on right-click... (!)
-
-		WinUtil::appendDirsMenu(targetDirMenu, true);
 			
 		directoryMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
 		directoryMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
@@ -1009,36 +841,68 @@ LRESULT DirectoryListingFrame::onXButtonUp(UINT /*uMsg*/, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
+void DirectoryListingFrame::download(const string& aTarget, QueueItem::Priority prio, bool usingTree, TargetUtil::TargetType aTargetType) {
+	if (usingTree) {
+		HTREEITEM t = ctrlTree.GetSelectedItem();
+		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		try {
+			dl->download(dir, aTarget, WinUtil::isShift(), prio);
+		} catch(const Exception& e) {
+			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+		}
+	} else if(ctrlList.GetSelectedCount() >= 1) {
+		int i = -1;
+		while( (i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
+			const ItemInfo* ii = ctrlList.getItemData(i);
 
-LRESULT DirectoryListingFrame::onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int newId = wID - IDC_DOWNLOAD_TARGET;
-	dcassert(newId >= 0);
-	
-	if(ctrlList.GetSelectedCount() == 1) {
-		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-		if(ii->type == ItemInfo::FILE && newId < (int)targets.size()) {
 			try {
-				dl->download(ii->file, targets[newId], false, WinUtil::isShift(), QueueItem::DEFAULT);
+				if(ii->type == ItemInfo::FILE) {
+					dl->download(ii->file, aTarget + (aTargetType == TargetUtil::NO_APPEND ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), false, 
+						WinUtil::isShift(), prio);
+				} else {
+					dl->download(ii->dir, aTarget, WinUtil::isShift(), prio);
+				} 
 			} catch(const Exception& e) {
 				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
-			} 
+			}
 		}
 	}
-	return 0;
 }
 
-LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	/* Directory download from the list (right column) */
-	if(ctrlList.GetSelectedCount() == 1) {
+bool DirectoryListingFrame::showDirDialog(string& fileName) {
+	//could be improved
+	if (ctrlList.GetSelectedCount() == 1) {
 		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-		string target;
-		if (WinUtil::getTarget(wID, target, ii->type == ItemInfo::FILE ? ii->file->getSize() : ii->dir->getSize())) {
-			downloadList(Text::toT(target));
+		if (ii->type == ItemInfo::DIRECTORY) {
+			return true;
+		} else {
+			fileName = ii->file->getName();
+			return false;
 		}
-	} else if(ctrlList.GetSelectedCount() > 1) {
-		int64_t size = 0;
+	}
 
-		//count the total size
+	return true;
+}
+
+void DirectoryListingFrame::appendDownloadItems(OMenu& aMenu, bool isTree) {
+	//Append general items
+	aMenu.AppendMenu(MF_STRING, isTree ? IDC_DOWNLOADDIR : IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
+
+	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO));
+	targetMenu->InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
+	appendDownloadTo(*targetMenu, isTree ? true : false);
+
+	//Append the "Download with prio" menu
+	appendPriorityMenu(aMenu, isTree);
+}
+
+int64_t DirectoryListingFrame::getDownloadSize(bool isWhole) {
+	int64_t size = 0;
+	if (isWhole) {
+		HTREEITEM t = ctrlTree.GetSelectedItem();
+		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		size = dir->getSize();
+	} else {
 		int i = -1;
 		while( (i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			const ItemInfo* ii = ctrlList.getItemData(i);
@@ -1048,30 +912,8 @@ LRESULT DirectoryListingFrame::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD
 				size += ii->file->getSize();
 			}
 		}
-
-		string target;
-		if (WinUtil::getTarget(wID, target, size)) {
-			downloadList(Text::toT(target));
-		}
 	}
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onDownloadWholeFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	/* Download from the tree */
-	HTREEITEM t = ctrlTree.GetSelectedItem();
-	if(t != NULL) {
-		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		string target;
-		if (WinUtil::getTarget(wID, target, dir->getSize(), true)) {
-			try {
-				dl->download(dir, target, WinUtil::isShift(), QueueItem::DEFAULT);
-			} catch(const Exception& e) {
-				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
-			}
-		}
-	}
-	return 0;
+	return size;
 }
 
 LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
@@ -1097,10 +939,10 @@ LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 					ht = ctrlTree.GetNextSiblingItem(ht);
 				}
 			} else {
-				downloadList(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
+				download(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false);
 			}
 		} else {
-			downloadList(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
+			download(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false);
 		}
 	}
 	return 0;
@@ -1345,13 +1187,13 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 					break;
 				case IDC_COPY_LINK:
 					if(ii->type == ItemInfo::FILE) {
-						WinUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize());
+						sCopy += Text::toT(WinUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize()));
 					} else if(ii->type == ItemInfo::DIRECTORY){
-						sCopy = Text::toT("Directories don't have Magnet links");
+						sCopy += Text::toT("Directories don't have Magnet links");
 					}
 					break;
 				case IDC_COPY_DATE:
-					sCopy = ii->getText(COLUMN_DATE);
+					sCopy += ii->getText(COLUMN_DATE);
 					break;
 				case IDC_COPY_TTH:
 					sCopy += ii->getText(COLUMN_TTH);

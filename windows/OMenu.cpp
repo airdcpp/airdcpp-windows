@@ -31,9 +31,13 @@ OMenu::~OMenu() {
 			RemoveMenu(0, MF_BYPOSITION);
 	} else {
 		// How can we end up here??? it sure happens sometimes..
-		for (OMenuItem::Iter i = items.begin(); i != items.end(); ++i) {
+		for (auto i = items.begin(); i != items.end(); ++i) {
 			delete *i;
 		}
+	}
+
+	for (auto i = subMenuList.begin(); i != subMenuList.end(); ++i) {
+		delete *i;
 	}
 	//pUnMap();
 }
@@ -56,6 +60,14 @@ BOOL OMenu::CreatePopupMenu() {
 	BOOL b = CMenu::CreatePopupMenu();
 	//pMap();
 	return b;
+}
+
+OMenu* OMenu::createSubMenu(const tstring& aTitle) {
+	OMenu* menu = new OMenu();
+	subMenuList.push_back(menu);
+	menu->CreatePopupMenu();
+	AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)*menu, aTitle.c_str());
+	return menu;
 }
 
 void OMenu::InsertSeparator(UINT uItem, BOOL byPosition, const tstring& caption, bool accels /*= false*/) {

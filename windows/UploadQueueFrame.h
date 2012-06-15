@@ -27,7 +27,7 @@
 
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
-#include "WinUtil.h"
+#include "MenuBaseHandlers.h"
 #include "../client/TimerManager.h"
 #include "../client/UploadManager.h"
 

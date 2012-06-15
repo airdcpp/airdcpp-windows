@@ -29,6 +29,7 @@
 #include "TypedListViewCtrl.h"
 #include "ImageDataObject.h"
 #include "UCHandler.h"
+#include "MenuBaseHandlers.h"
 #include "../client/pme.h"
 
 #ifndef MSFTEDIT_CLASS
@@ -37,11 +38,12 @@
 
 class UserInfo;
 
-class ChatCtrl: public CRichEditCtrl, public CMessageMap, public UCHandler<ChatCtrl>
+class ChatCtrl: public CRichEditCtrl, public CMessageMap, public UCHandler<ChatCtrl>, public DownloadBaseHandler<ChatCtrl>
 {
 public:
 
 	typedef UCHandler<ChatCtrl> ucBase;
+	typedef DownloadBaseHandler<ChatCtrl> dlBase;
 
 	BEGIN_MSG_MAP(ChatCtrl)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
@@ -82,12 +84,10 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
 		COMMAND_ID_HANDLER(IDC_SEARCH_BY_TTH, onSearchTTH)
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
-		COMMAND_ID_HANDLER(IDC_DOWNLOAD, onDownload)
-		COMMAND_ID_HANDLER(IDC_DOWNLOADTO, onDownloadTo)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
-		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + TargetUtil::countDownloadDirItems(), onDownloadFavoriteDirs)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
 
+		CHAIN_COMMANDS(dlBase)
 		CHAIN_COMMANDS(ucBase)
 
 		MESSAGE_HANDLER(WM_COMMAND, onCommand)
@@ -132,9 +132,6 @@ public:
 	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 //	void setClient(Client* pClient) { client = pClient; }
 
-	LRESULT onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) ;
 	LRESULT onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void runUserCommand(UserCommand& uc);
@@ -156,6 +153,13 @@ public:
 	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);
 	GETSET(Client*, client, Client);
 	bool autoScrollToEnd;
+
+
+	/* DownloadBaseHandler functions */
+	void appendDownloadItems(OMenu& aMenu, bool isWhole);
+	void download(const string& aTarget, QueueItem::Priority p, bool isRelease, TargetUtil::TargetType aTargetType);
+	int64_t getDownloadSize(bool isWhole);
+	bool showDirDialog(string& fileName);
 private:
 	bool HitNick(const POINT& p, tstring& sNick, int& iBegin , int& iEnd);
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);
@@ -194,7 +198,6 @@ private:
 	
 	OMenu copyMenu;
 	OMenu SearchMenu;
-	OMenu targetMenu;
 	CContainedWindow ccw;
 
 	tstring selectedLine;
@@ -206,8 +209,6 @@ private:
 	bool isLink(POINT pt);
 	bool getLink(POINT pt, CHARRANGE& cr, ChatLink& link);
 	bool showHandCursor;
-	void downloadMagnet(const string& aPath);
-	void addAutoSearch(const string& aPath, uint8_t targetType);
 
 	vector<pair<CHARRANGE, ChatLink>> links;
 

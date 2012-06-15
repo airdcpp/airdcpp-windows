@@ -28,7 +28,6 @@
 #include "../client/User.h"
 #include "../client/MerkleTree.h"
 #include "../client/HintedUser.h"
-#include "../client/UserInfoBase.h"
 #include "../client/WebShortcuts.h"
 #include "../client/TargetUtil.h"
 
@@ -52,99 +51,6 @@ HLSCOLOR RGB2HLS (COLORREF rgb);
 COLORREF HLS2RGB (HLSCOLOR hls);
 
 COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S);
-
-
-
-template<class T>
-class UserInfoBaseHandler {
-public:
-	BEGIN_MSG_MAP(UserInfoBaseHandler)
-		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
-		COMMAND_ID_HANDLER(IDC_BROWSELIST, onBrowseList)
-		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
-		COMMAND_ID_HANDLER(IDC_PRIVATEMESSAGE, onPrivateMessage)
-		COMMAND_ID_HANDLER(IDC_ADD_TO_FAVORITES, onAddToFavorites)
-		COMMAND_RANGE_HANDLER(IDC_GRANTSLOT, IDC_UNGRANTSLOT, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_REMOVEALL, onRemoveAll)
-		COMMAND_ID_HANDLER(IDC_CONNECT, onConnectFav)
-	END_MSG_MAP()
-
-	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::matchQueue, _1));
-		return 0;
-	}
-	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getList, _1));
-		return 0;
-	}
-	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::browseList, _1));
-		return 0;
-	}
-	LRESULT onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		((T*)this)->getUserList().forEachSelected(&UserInfoBase::addFav);
-		return 0;
-	}
-	virtual LRESULT onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::pm, _1));
-		return 0;
-	}
-	LRESULT onConnectFav(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		((T*)this)->getUserList().forEachSelected(&UserInfoBase::connectFav);
-		return 0;
-	}
-	LRESULT onGrantSlot(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		switch(wID) {
-			case IDC_GRANTSLOT:		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grant, _1)); break;
-			case IDC_GRANTSLOT_DAY:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantDay, _1)); break;
-			case IDC_GRANTSLOT_HOUR:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantHour, _1)); break;
-			case IDC_GRANTSLOT_WEEK:	((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::grantWeek, _1)); break;
-			case IDC_UNGRANTSLOT:	((T*)this)->getUserList().forEachSelected(&UserInfoBase::ungrant); break;
-		}
-		return 0;
-	}
-	LRESULT onRemoveAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) { 
-		((T*)this)->getUserList().forEachSelected(&UserInfoBase::removeAll);
-		return 0;
-	}
-
-	struct UserTraits {
-		UserTraits() : adcOnly(true), favOnly(true), nonFavOnly(true) { }
-		void operator()(const UserInfoBase* ui) {
-			if(ui->getUser()) {
-				if(ui->getUser()->isSet(User::NMDC)) 
-					adcOnly = false;
-				bool fav = FavoriteManager::getInstance()->isFavoriteUser(ui->getUser());
-				if(fav)
-					nonFavOnly = false;
-				if(!fav)
-					favOnly = false;
-			}
-		}
-
-		bool adcOnly;
-		bool favOnly;
-		bool nonFavOnly;
-	};
-
-	void appendUserItems(CMenu& menu) {
-		UserTraits traits = ((T*)this)->getUserList().forEachSelectedT(UserTraits()); 
-
-		menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
-		menu.AppendMenu(MF_SEPARATOR);
-		menu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
-		menu.AppendMenu(MF_STRING, IDC_BROWSELIST, CTSTRING(BROWSE_FILE_LIST));
-		menu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
-		menu.AppendMenu(MF_SEPARATOR);
-		if(!traits.favOnly)
-			menu.AppendMenu(MF_STRING, IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
-		if(!traits.nonFavOnly)
-			menu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT_FAVUSER_HUB));
-		menu.AppendMenu(MF_SEPARATOR);
-		menu.AppendMenu(MF_STRING, IDC_REMOVEALL, CTSTRING(REMOVE_FROM_ALL));
-		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
-	}	
-};
 
 class FlatTabCtrl;
 
@@ -480,7 +386,6 @@ public:
 		}
 	}
 
-	static void appendDirsMenu(OMenu &targetMenu, bool wholeDir = false);
 	static void ClearPreviewMenu(OMenu &previewMenu);
 	static int SetupPreviewMenu(CMenu &previewMenu, string extension);
 	static void RunPreviewCommand(unsigned int index, const string& target);
@@ -504,8 +409,6 @@ public:
 	static string CPUInfo();
 	
 	static TStringList FindVolumes();
-	static bool getTarget(int ID, string& target, int64_t aSize, bool wholeDir = false);
-	static bool getVirtualName(int ID, string& vTarget, TargetUtil::TargetType& targetType);
 
 	static void viewLog(const string& path, bool aHistory=false);
 

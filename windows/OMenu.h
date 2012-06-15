@@ -53,6 +53,9 @@ public:
 		InsertSeparator(GetMenuItemCount(), TRUE, caption);
 	}
 
+	/* This should be used when submenus are created within a separate function/scope */
+	OMenu* createSubMenu(const tstring& aTitle);
+
 	void CheckOwnerDrawn(UINT uItem, BOOL byPosition);
 
 	inline void RemoveFirstItem() {
@@ -84,6 +87,7 @@ public:
 
 private:
 	OMenuItem::List items;
+	vector<OMenu*> subMenuList;
 
 	static void CalcTextSize(const tstring& text, HFONT font, LPSIZE size) {
 		HDC dc = CreateCompatibleDC(NULL);

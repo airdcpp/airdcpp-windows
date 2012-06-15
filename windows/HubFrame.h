@@ -28,6 +28,7 @@
 #include "ChatCtrl.h"
 #include "MainFrm.h"
 #include "EmoticonsDlg.h"
+#include "MenuBaseHandlers.h"
 
 #include "../client/Client.h"
 #include "../client/User.h"

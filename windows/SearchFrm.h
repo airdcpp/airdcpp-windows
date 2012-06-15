@@ -26,7 +26,7 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 #include "ChatCtrl.h"
-#include "WinUtil.h"
+#include "MenuBaseHandlers.h"
 
 #include "../client/Client.h"
 #include "../client/SearchManager.h"
@@ -45,7 +45,7 @@
 
 class SearchFrame : public MDITabChildWindowImpl<SearchFrame>, 
 	private SearchManagerListener, private ClientManagerListener,
-	public UCHandler<SearchFrame>, public UserInfoBaseHandler<SearchFrame>,
+	public UCHandler<SearchFrame>, public UserInfoBaseHandler<SearchFrame>, public DownloadBaseHandler<SearchFrame>,
 	private SettingsManagerListener, private TimerManagerListener
 {
 public:
@@ -57,6 +57,7 @@ public:
 	typedef MDITabChildWindowImpl<SearchFrame> baseClass;
 	typedef UCHandler<SearchFrame> ucBase;
 	typedef UserInfoBaseHandler<SearchFrame> uicBase;
+	typedef DownloadBaseHandler<SearchFrame> dlBase;
 
 	BEGIN_MSG_MAP(SearchFrame)
 		NOTIFY_HANDLER(IDC_RESULTS, LVN_GETDISPINFO, ctrlResults.onGetDispInfo)
@@ -77,10 +78,6 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_DRAWITEM, onDrawItem)
 		MESSAGE_HANDLER(WM_MEASUREITEM, onMeasure)
-		COMMAND_ID_HANDLER(IDC_DOWNLOAD, onDownload)
-		COMMAND_ID_HANDLER(IDC_DOWNLOADTO, onDownloadTo)
-		COMMAND_ID_HANDLER(IDC_DOWNLOADDIR, onDownloadWhole)
-		COMMAND_ID_HANDLER(IDC_DOWNLOADDIRTO, onDownloadWholeTo)
 		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
 		COMMAND_ID_HANDLER(IDC_VIEW_NFO, onViewNfo)
 		COMMAND_ID_HANDLER(IDC_MATCH, onMatchPartial)
@@ -94,9 +91,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy)
 		COMMAND_ID_HANDLER(IDC_FREESLOTS, onFreeSlots)
 		COMMAND_ID_HANDLER(IDC_COLLAPSED, onCollapsed)
-		COMMAND_ID_HANDLER(IDC_USKIPLIST, onUseSkiplist)	
-		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
-		COMMAND_ID_HANDLER(IDC_BROWSELIST, onBrowseList)
+		COMMAND_ID_HANDLER(IDC_USKIPLIST, onUseSkiplist)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchByTTH)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES_DIR, onSearchDir)
 		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
@@ -105,10 +100,8 @@ public:
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
-		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + TargetUtil::countDownloadDirItems(), onDownloadFavoriteDirs)
-		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + TargetUtil::countDownloadDirItems(), onDownloadFavoriteDirs)
-		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_TARGET, IDC_DOWNLOAD_TARGET + targets.size() + SettingsManager::getInstance()->getDirHistory().size(), onDownloadTarget)
 		CHAIN_COMMANDS(ucBase)
+		CHAIN_COMMANDS(dlBase)
 		CHAIN_COMMANDS(uicBase)
 		CHAIN_MSG_MAP(baseClass)
 	ALT_MSG_MAP(SEARCH_MESSAGE_MAP)
@@ -163,10 +156,6 @@ public:
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onDoubleClickResults(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
-	LRESULT onDownloadTarget(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadWholeTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -196,11 +185,6 @@ public:
 			ctrlResults.removeGroupedItem(ctrlResults.getItemData(i));
 		}
 	}
-	
-	LRESULT onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ctrlResults.forEachSelectedT(SearchInfo::Download(Text::toT(SETTING(DOWNLOAD_DIRECTORY)), this));
-		return 0;
-	}
 
 	LRESULT onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		ctrlResults.forEachSelected(&SearchInfo::view);
@@ -214,11 +198,6 @@ public:
 	
 	LRESULT onMatchPartial(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		ctrlResults.forEachSelected(&SearchInfo::matchPartial);
-		return 0;
-	}
-
-	LRESULT onDownloadWhole(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(Text::toT(SETTING(DOWNLOAD_DIRECTORY))));
 		return 0;
 	}
 	
@@ -272,7 +251,11 @@ public:
 		initialString = str; initialSize = size; initialMode = mode; initialType = type; running = true;
 	}
 
-	
+	/* DownloadBaseHandler functions */
+	void appendDownloadItems(OMenu& aMenu, bool isWhole);
+	void download(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType);
+	int64_t getDownloadSize(bool isWhole);
+	bool showDirDialog(string& fileName);
 private:
 	class SearchInfo;
 	
@@ -347,20 +330,24 @@ private:
 		void viewNfo();
 		void matchPartial();
 		struct Download {
-			Download(const tstring& aTarget, SearchFrame* aSf) : tgt(aTarget), sf(aSf) { }
+			Download(const string& aTarget, SearchFrame* aSf, QueueItem::Priority aPrio, bool aNoAppend) : tgt(aTarget), sf(aSf), p(aPrio), noAppend(aNoAppend) { }
 			void operator()(SearchInfo* si);
-			const tstring& tgt;
+			const string& tgt;
 			SearchFrame* sf;
+			QueueItem::Priority p;
+			bool noAppend;
 		};
 		struct DownloadWhole {
-			DownloadWhole(const tstring& aTarget) : tgt(aTarget) { }
+			DownloadWhole(const string& aTarget, QueueItem::Priority aPrio) : tgt(aTarget), p(aPrio) { }
 				void operator()(SearchInfo* si);
-			const tstring& tgt;
+			const string& tgt;
+			QueueItem::Priority p;
 		};
 		struct DownloadTarget {
-			DownloadTarget(const tstring& aTarget) : tgt(aTarget) { }
+			DownloadTarget(const string& aTarget, QueueItem::Priority aPrio) : tgt(aTarget), p(aPrio) { }
 				void operator()(SearchInfo* si);
-			const tstring& tgt;
+			const string& tgt;
+			QueueItem::Priority p;
 		};
 		struct CheckTTH {
 			CheckTTH() : op(true), firstHubs(true), hasTTH(false), firstTTH(true) { }
@@ -498,7 +485,6 @@ private:
 	TypedListViewCtrl<HubInfo, IDC_HUB> ctrlHubs;
 
 	TStringList search;
-	StringList targets;
 	StringList wholeTargets;
 	SearchInfo::List pausedResults;
 
@@ -540,12 +526,8 @@ private:
 
 	static FrameMap frames;
 
-	void downloadSelected(const tstring& aDir, bool view = false); 
-	void downloadWholeSelected(const tstring& aDir);
 	void onEnter();
 	void onTab(bool shift);
-
-	void download(const SearchResultPtr& aSR, const tstring& aDir, bool view);
 	
 	void on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept;
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;

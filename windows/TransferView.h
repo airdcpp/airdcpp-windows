@@ -37,9 +37,9 @@
 #include "OMenu.h"
 #include "UCHandler.h"
 #include "TypedListViewCtrl.h"
-#include "WinUtil.h"
 #include "resource.h"
 #include "SearchFrm.h"
+#include "MenuBaseHandlers.h"
 
 class TransferView : public CWindowImpl<TransferView>, private DownloadManagerListener, 
 	private UploadManagerListener, private ConnectionManagerListener, private QueueManagerListener,

@@ -30,6 +30,7 @@
 #include "TypedListViewCtrl.h"
 #include "WinUtil.h"
 #include "UCHandler.h"
+#include "MenuBaseHandlers.h"
 
 #include "../client/DirectoryListing.h"
 #include "../client/StringSearch.h"
@@ -43,8 +44,8 @@ class ThreadedDirectoryListing;
 #define STATUS_MESSAGE_MAP 9
 #define CONTROL_MESSAGE_MAP 10
 class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>, 
-	public UCHandler<DirectoryListingFrame>, private SettingsManagerListener, public UserInfoBaseHandler<DirectoryListingFrame>
-
+	public UCHandler<DirectoryListingFrame>, private SettingsManagerListener, public UserInfoBaseHandler<DirectoryListingFrame>,
+	public DownloadBaseHandler<DirectoryListingFrame>
 {
 public:
 	static void openWindow(const tstring& aFile, const tstring& aDir, const HintedUser& aUser, int64_t aSpeed, bool myList = false);
@@ -54,6 +55,7 @@ public:
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
 	typedef UCHandler<DirectoryListingFrame> ucBase;
 	typedef UserInfoBaseHandler<DirectoryListingFrame> uibBase;
+	typedef DownloadBaseHandler<DirectoryListingFrame> dlBase;
 
 	enum {
 		COLUMN_FILENAME,
@@ -112,10 +114,6 @@ public:
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
-		COMMAND_ID_HANDLER(IDC_DOWNLOAD, onDownload)
-		COMMAND_ID_HANDLER(IDC_DOWNLOADDIR, onDownloadDir)
-		COMMAND_ID_HANDLER(IDC_DOWNLOADDIRTO, onDownloadDirTo)
-		COMMAND_ID_HANDLER(IDC_DOWNLOADTO, onDownloadTo)
 		COMMAND_ID_HANDLER(IDC_GO_TO_DIRECTORY, onGoToDirectory)
 		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchByTTH)
@@ -140,16 +138,10 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCHLEFT, onSearchLeft)
 		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES+90, IDC_SEARCH_SITES+90 + WebShortcuts::getInstance()->list.size(), onSearchSiteDir)
-		
-		COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onDownloadWithPrio)
-		COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED+90, IDC_PRIORITY_HIGHEST+90, onDownloadDirWithPrio)
-
-		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_TARGET, IDC_DOWNLOAD_TARGET + targets.size(), onDownloadTarget)
-		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_FAVORITE_DIRS, IDC_DOWNLOAD_FAVORITE_DIRS + TargetUtil::countDownloadDirItems() - 1, onDownloadFavoriteDirs)
-		COMMAND_RANGE_HANDLER(IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS, IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS + TargetUtil::countDownloadDirItems(), onDownloadWholeFavoriteDirs)
 
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
+		CHAIN_COMMANDS(dlBase)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<DirectoryListingFrame>)
 	ALT_MSG_MAP(STATUS_MESSAGE_MAP)
@@ -164,12 +156,6 @@ public:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadWithPrio(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadDirWithPrio(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadDirTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadTo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -181,9 +167,6 @@ public:
 	LRESULT onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onXButtonUp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
-	LRESULT onDownloadTarget(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDownloadWholeFavoriteDirs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
@@ -199,7 +182,6 @@ public:
 
 	LRESULT onSearchSiteDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	void downloadList(const tstring& aTarget, bool view = false,  QueueItem::Priority prio = QueueItem::DEFAULT);
 	void updateTree(DirectoryListing::Directory* tree, HTREEITEM treeItem);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
@@ -309,6 +291,11 @@ public:
 	
 	UserListHandler getUserList() { return UserListHandler(*dl.get()); }
 
+	/* DownloadBaseHandler functions */
+	void appendDownloadItems(OMenu& aMenu, bool isWhole);
+	int64_t getDownloadSize(bool isWhole);
+	void download(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType = TargetUtil::TARGET_PATH);
+	bool showDirDialog(string& fileName);
 private:
 	friend class ThreadedDirectoryListing;
 	
@@ -401,8 +388,6 @@ private:
 	CContainedWindow statusContainer;
 	CContainedWindow treeContainer;
 	CContainedWindow listContainer;
-
-	StringList targets;
 	
 	deque<string> history;
 	size_t historyIndex;

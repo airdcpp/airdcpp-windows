@@ -824,5 +824,8 @@
     <ClInclude Include="windows\CSplitterEx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\MenuBaseHandlers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

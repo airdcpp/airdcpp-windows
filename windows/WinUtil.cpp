@@ -210,6 +210,15 @@ void UserInfoBase::browseList() {
 		LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);		
 	}
 }
+void UserInfoBase::getBrowseList() {
+	if(!getUser() || getUser()->getCID().isZero())
+		return;
+
+	if (getUser()->isSet(User::NMDC))
+		getList();
+	else
+		browseList();
+}
 void UserInfoBase::addFav() {
 	if(getUser()) {
 		FavoriteManager::getInstance()->addFavoriteUser(getUser());
@@ -2291,77 +2300,6 @@ tstring WinUtil::getTitle(const tstring& searchTerm) {
 	//trim spaces from the end
 	boost::trim_right(ret);
 	return ret;
-}
-
-void WinUtil::appendDirsMenu(OMenu &targetMenu, bool wholeDir /*false*/) {
-
-	targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOADDIRTO : IDC_DOWNLOADTO), CTSTRING(BROWSE));
-	int n = 0;
-
-	//Append shared directories
-	if (SETTING(SHOW_SHARED_DIRS_FAV)) {
-		auto directories = ShareManager::getInstance()->getGroupedDirectories();
-		if (!directories.empty()) {
-			targetMenu.InsertSeparatorLast(TSTRING(SHARED));
-			for(auto i = directories.begin(); i != directories.end(); i++) {
-				targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS) + n, Text::toT(i->first).c_str());
-				++n;
-			}
-		}
-	}
-
-	//Append Favorite download dirs
-	auto spl = FavoriteManager::getInstance()->getFavoriteDirs();
-	if (!spl.empty()) {
-		targetMenu.InsertSeparatorLast(TSTRING(SETTINGS_FAVORITE_DIRS_PAGE));
-		for(auto i = spl.begin(); i != spl.end(); i++) {
-			targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS) + n, Text::toT(i->first).c_str());
-			++n;
-		}
-	}
-
-	auto ldl = SettingsManager::getInstance()->getDirHistory();
-	if(!ldl.empty()) {
-		targetMenu.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
-		for(auto i = ldl.begin(); i != ldl.end(); ++i) {
-			targetMenu.AppendMenu(MF_STRING, (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS) + n, i->c_str());
-			++n;
-		}
-	}
-}
-
-bool WinUtil::getTarget(int ID, string& target, int64_t aSize, bool wholeDir /*false*/) {
-	int newId = ID - (wholeDir ? IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS : IDC_DOWNLOAD_FAVORITE_DIRS);
-	dcassert(newId >= 0);
-	TargetUtil::TargetInfo targetInfo;
-
-	if (!TargetUtil::getTarget(newId, targetInfo, aSize)) {
-		string tmp;
-		if (targetInfo.queued > 0) {
-			tmp = str(boost::format(STRING(CONFIRM_SIZE_WARNING_QUEUED)) % 
-				Util::formatBytes(targetInfo.diskSpace).c_str() % 
-				targetInfo.targetDir.c_str() %
-				Util::formatBytes(targetInfo.queued).c_str() %
-				Util::formatBytes(aSize).c_str());
-		} else {
-			tmp = str(boost::format(STRING(CONFIRM_SIZE_WARNING)) % 
-				Util::formatBytes(targetInfo.getFreeSpace()).c_str() % 
-				targetInfo.targetDir.c_str() %
-				Util::formatBytes(aSize).c_str());
-		}
-
-		if (MessageBox(mainWnd, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES)
-			return false;
-	}
-
-	target = targetInfo.targetDir;
-	return true;
-}
-
-bool WinUtil::getVirtualName(int wID, string& vTarget, TargetUtil::TargetType& targetType) {
-	int newId = (size_t)wID - IDC_DOWNLOAD_FAVORITE_DIRS;
-	TargetUtil::getVirtualName(newId, vTarget, (TargetUtil::TargetType)targetType);
-	return true;
 }
 
 void WinUtil::viewLog(const string& path, bool aHistory /*false*/) {

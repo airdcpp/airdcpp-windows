@@ -212,21 +212,22 @@ LRESULT SearchPageDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 
 	targetMenu.CreatePopupMenu();
 	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
-	WinUtil::appendDirsMenu(targetMenu);
+	appendDownloadMenu(targetMenu, DownloadBaseHandler::AUTO_SEARCH);
 
 	targetMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt.x, pt.y, m_hWnd);
 	return 0;
 }
 
-LRESULT SearchPageDlg::onDownloadFavoriteDirs(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	TargetUtil::TargetType tmpType;
-	if (WinUtil::getVirtualName(wID, target, tmpType)) {
-		ctrlTarget.SetWindowTextW(Text::toT(target).c_str());
-		//update the type only after setting the text
-		targetType = tmpType;
-		updateTargetTypeText();
-	}
-	return 0;
+void SearchPageDlg::download(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType) {
+	target = aTarget;
+	ctrlTarget.SetWindowTextW(Text::toT(target).c_str());
+	//update the type only after setting the text
+	targetType = aTargetType;
+	updateTargetTypeText();
+}
+
+void SearchPageDlg::appendDownloadItems(OMenu& aMenu, bool /*isWhole*/) {
+	appendDownloadTo(targetMenu, false);
 }
 
 void SearchPageDlg::updateTargetTypeText() {
@@ -240,27 +241,13 @@ void SearchPageDlg::updateTargetTypeText() {
 	} else {
 		if (targetType == TargetUtil::TARGET_PATH)
 			targetText += TSTRING(TYPE_TARGET_PATH);
-		if (targetType == TargetUtil::TARGET_FAVORITE)
+		else if (targetType == TargetUtil::TARGET_FAVORITE)
 			targetText += TSTRING(TYPE_TARGET_FAVORITE);
 		else if (targetType == TargetUtil::TARGET_SHARE)
 			targetText += TSTRING(TYPE_TARGET_SHARE);
 	}
 
 	cTargetType.SetWindowText(targetText.c_str());
-}
-
-LRESULT SearchPageDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	TCHAR buf[MAX_PATH];
-
-	GetDlgItemText(IDC_TARGET_PATH, buf, MAX_PATH);
-	tstring x = buf;
-
-	if(WinUtil::browseDirectory(x, m_hWnd) == IDOK) {
-		ctrlTarget.SetWindowTextW(x.c_str());
-		targetType = TargetUtil::TARGET_PATH;
-		updateTargetTypeText();
-	}
-	return 0;
 }
 
 LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

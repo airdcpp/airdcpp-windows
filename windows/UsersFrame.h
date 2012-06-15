@@ -25,7 +25,7 @@
 
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
-#include "WinUtil.h"
+#include "MenuBaseHandlers.h"
 
 #include "../client/FavoriteManager.h"
 #include "../client/File.h"

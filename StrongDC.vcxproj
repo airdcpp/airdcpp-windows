@@ -544,6 +544,7 @@
     <ClInclude Include="windows\AppearancePage.h" />
     <ClInclude Include="windows\AutosearchDlg.h" />
     <ClInclude Include="windows\FavoriteDirDlg.h" />
+    <ClInclude Include="windows\MenuBaseHandlers.h" />
     <ClInclude Include="windows\SearchPage.h" />
     <ClInclude Include="windows\AVIPreview.h" />
     <ClInclude Include="windows\BarShader.h" />
