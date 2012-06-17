@@ -1778,7 +1778,6 @@ LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 			pathMenu.CreatePopupMenu();
 			pathMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU + virtualCounter, CTSTRING(ALL));
 			pathMenu.AppendMenu(MF_SEPARATOR);
-			sort(i->second.begin(), i->second.end());
 			for(auto s = i->second.begin(); s != i->second.end(); ++s) {
 				pathMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU_SUBDIRS + subCounter, Text::toT(*s).c_str());
 				subCounter++;
@@ -1811,7 +1810,6 @@ LRESULT MainFrame::onRefreshMenu(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, B
 			int id = wID-IDC_REFRESH_MENU_SUBDIRS, counter=0;
 			for(auto i = l.begin(); i != l.end(); ++i) {
 				if (i->second.size() > 1) {
-					sort(i->second.begin(), i->second.end());
 					for(auto s = i->second.begin(); s != i->second.end(); ++s) {
 						if (counter == id) {
 							ShareManager::getInstance()->refresh(*s);

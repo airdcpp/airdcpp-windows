@@ -247,7 +247,6 @@ public:
 		int counter=0;
 		for(auto i = l.begin(); i != l.end(); ++i) {
 			if (i->second.size() > 1) {
-				sort(i->second.begin(), i->second.end());
 				for(auto s = i->second.begin(); s != i->second.end(); ++s) {
 					if (counter == newId) {
 						download(*s, isWhole);
@@ -283,7 +282,7 @@ public:
 			string target = isFav ? FavoriteManager::getInstance()->getFavoriteDirs()[newId].first : ShareManager::getInstance()->getGroupedDirectories()[newId].first;
 			((T*)this)->download(target, QueueItem::DEFAULT, false, isFav ? TargetUtil::TARGET_FAVORITE : TargetUtil::TARGET_SHARE);
 		} else {
-			StringList& targets = isFav ? FavoriteManager::getInstance()->getFavoriteDirs()[newId].second : ShareManager::getInstance()->getGroupedDirectories()[newId].second;
+			StringList targets = isFav ? FavoriteManager::getInstance()->getFavoriteDirs()[newId].second : ShareManager::getInstance()->getGroupedDirectories()[newId].second;
 			TargetUtil::TargetInfo targetInfo;
 			int64_t size = ((T*)this)->getDownloadSize(isWhole);
 
@@ -379,7 +378,6 @@ public:
 					OMenu* pathMenu = targetMenu.createSubMenu(Text::toT(i->first));
 					pathMenu->AppendMenu(MF_STRING, getIDC(false) + virtualCounter, CTSTRING(AUTO_SELECT));
 					pathMenu->AppendMenu(MF_SEPARATOR);
-					sort(i->second.begin(), i->second.end());
 					for(auto s = i->second.begin(); s != i->second.end(); ++s) {
 						pathMenu->AppendMenu(MF_STRING, getIDC(true) + subCounter, Text::toT(*s).c_str());
 						subCounter++;
