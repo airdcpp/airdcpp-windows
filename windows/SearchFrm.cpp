@@ -1469,7 +1469,7 @@ void SearchFrame::initHubs() {
 	ctrlHubs.SetCheckState(0, false);
 
 	ClientManager* clientMgr = ClientManager::getInstance();
-	clientMgr->lock();
+	clientMgr->lockRead();
 	clientMgr->addListener(this);
 
 	const Client::List& clients = clientMgr->getClients();
@@ -1484,7 +1484,7 @@ void SearchFrame::initHubs() {
 		onHubAdded(new HubInfo(Text::toT(client->getHubUrl()), Text::toT(client->getHubName()), client->getMyIdentity().isOp()));
 	}
 
-	clientMgr->unlock();
+	clientMgr->unlockRead();
 	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
 
 }
