@@ -811,11 +811,11 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 				} else {
 					Magnet m = Magnet(Text::fromT(selectedWord));
 					targets = QueueManager::getInstance()->getTargets(m.getTTH());
-					this->appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, true);
+					appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, true);
 				}
 			} else if (release) {
 				//autosearch menus
-				this->appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, false);
+				appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, false);
 			}
 		}
 
