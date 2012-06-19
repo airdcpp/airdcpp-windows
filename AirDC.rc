@@ -1703,7 +1703,7 @@ BEGIN
             VALUE "LegalCopyright", "Based on DC++"
             VALUE "OriginalFilename", "AirDC.exe"
             VALUE "ProductName", "AirDC++"
-            VALUE "ProductVersion", "2.20"
+            VALUE "ProductVersion", "2.40"
         END
     END
     BLOCK "VarFileInfo"
