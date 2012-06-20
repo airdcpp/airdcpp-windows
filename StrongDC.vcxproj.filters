@@ -19,9 +19,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="res\ADLSearch.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\AirDCPlusPlus.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -59,12 +56,6 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\fin.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\FinishedDL.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\FinishedUL.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\flags.bmp">
@@ -127,34 +118,16 @@
     <None Include="res\pol.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\PublicHubs.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\queue.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\Recents.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\ro.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\rus.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\Search.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\search_icons.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\searchspy.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\settings_dlg.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\shutdown.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\sounds.ico">
@@ -246,6 +219,48 @@
     </None>
     <None Include="res\emoticon.png" />
     <None Include="res\Exec.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\PublicHubs.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\ADLSearch.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\Clock.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\FavoriteHubs.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\FinishedDL.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\FinishedUL.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\Queue.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\Recents.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\Reconnect.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\Refresh.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\Search.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\SearchSpy.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarIcons\Settings.ico">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

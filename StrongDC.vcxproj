@@ -346,7 +346,6 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <None Include="res\ADLSearch.ico" />
     <None Include="res\AirDCPlusPlus.ico" />
     <None Include="res\arrows.bmp" />
     <None Include="res\bitmap1.bmp" />
@@ -362,8 +361,6 @@
     <None Include="res\Favorites.ico" />
     <None Include="res\FavoriteUser.ico" />
     <None Include="res\fin.ico" />
-    <None Include="res\FinishedDL.ico" />
-    <None Include="res\FinishedUL.ico" />
     <None Include="res\flags.bmp" />
     <None Include="res\folders.bmp" />
     <None Include="res\fr.ico" />
@@ -374,6 +371,7 @@
     <None Include="res\HubOp.ico" />
     <None Include="res\HubReg.ico" />
     <None Include="res\hun.ico" />
+    <None Include="res\icon1.ico" />
     <None Include="res\icon10.ico" />
     <None Include="res\icon11.ico" />
     <None Include="res\icon8.ico" />
@@ -387,16 +385,10 @@
     <None Include="res\o_settings_dlg.bmp" />
     <None Include="res\PM.ico" />
     <None Include="res\pol.ico" />
-    <None Include="res\PublicHubs.ico" />
-    <None Include="res\queue.ico" />
-    <None Include="res\Recents.ico" />
     <None Include="res\ro.ico" />
     <None Include="res\rus.ico" />
-    <None Include="res\Search.ico" />
     <None Include="res\search_icons.bmp" />
-    <None Include="res\searchspy.ico" />
     <None Include="res\settings_dlg.bmp" />
-    <None Include="res\shutdown.ico" />
     <None Include="res\sounds.ico" />
     <None Include="res\speeds.bmp" />
     <None Include="res\state.bmp" />
@@ -408,6 +400,19 @@
     <None Include="res\toolbar.bmp" />
     <None Include="res\toolbar20-highlight.bmp" />
     <None Include="res\toolbar20.bmp" />
+    <None Include="res\ToolbarIcons\ADLSearch.ico" />
+    <None Include="res\ToolbarIcons\Clock.ico" />
+    <None Include="res\ToolbarIcons\FavoriteHubs.ico" />
+    <None Include="res\ToolbarIcons\FinishedDL.ico" />
+    <None Include="res\ToolbarIcons\FinishedUL.ico" />
+    <None Include="res\ToolbarIcons\PublicHubs.ico" />
+    <None Include="res\ToolbarIcons\Queue.ico" />
+    <None Include="res\ToolbarIcons\Recents.ico" />
+    <None Include="res\ToolbarIcons\Reconnect.ico" />
+    <None Include="res\ToolbarIcons\Refresh.ico" />
+    <None Include="res\ToolbarIcons\Search.ico" />
+    <None Include="res\ToolbarIcons\SearchSpy.ico" />
+    <None Include="res\ToolbarIcons\Settings.ico" />
     <None Include="res\transfer_compressed.ico" />
     <None Include="res\transfer_segmented.ico" />
     <None Include="res\transfer_tree.ico" />

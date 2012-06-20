@@ -153,10 +153,34 @@
 #define IDD_DIRLIST_DLG                 316
 #define IDD_FAVORITEDIR                 320
 #define IDD_TEMPSHARE_DLG               321
+#define IDI_PUBLICHUBS                  324
+#define IDI_RECONNECT                   325
+#define IDI_FAVORITEHUBS                326
+#define IDI_RECENTS                     327
+#define IDI_QUEUE                       328
+#define IDI_FINISHED_DL                 329
+#define IDI_FINISHED_UL                 330
+#define IDI_SEARCH                      331
+#define IDI_ADLSEARCH                   332
+#define IDI_SEARCHSPY                   333
+#define IDI_SETTINGS                    334
 #define IDR_EXEC                        335
+#define IDI_AWAY                        336
+#define IDI_REFRESH                     337
 #define IDR_EMOTICON                    345
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
+#define IDI_SHUTDOWN                    361
+#define IDI_NETSTATS                    362
+#define IDI_FOLLOW                      363
+#define IDI_FAVORITE_USERS              364
+#define IDI_OPEN_LIST	                365
+#define IDI_NOTEPAD						366
+#define IDI_OPEN_DOWNLOADS				367
+#define IDI_LOGS						368
+#define IDI_UPLOAD_QUEUE				369
+#define IDI_SCAN						370
+#define IDI_AUTOSEARCH					371
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
@@ -984,6 +1008,7 @@
 #define IDC_LANGUAGE_NOTE               1641
 #define IDC_AUTOSELECT_METHOD           1643
 #define IDC_AUTOPATH_METHOD             1644
+#define IDC_TB_SIZE                     1645
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1300,20 +1325,20 @@
 #define IDC_PM                          21000
 #define IDC_READD                       22000
 #define IDC_REMOVE_SOURCES              23000
-#define IDC_DOWNLOAD_FAVORITE_DIRS_RANGE		24000
-#define IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS_RANGE  26000
-#define IDC_DOWNLOAD_SHARED_DIRS_RANGE			28000
-#define IDC_DOWNLOAD_WHOLE_SHARED_DIRS_RANGE	30000
-#define IDC_DOWNLOAD_FAVORITE_DIRS			32000
-#define IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS	33000
-#define IDC_DOWNLOAD_SHARED_DIRS			34000
-#define IDC_DOWNLOAD_WHOLE_SHARED_DIRS		35000
+#define IDC_DOWNLOAD_FAVORITE_DIRS_RANGE 24000
+#define IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS_RANGE 26000
+#define IDC_DOWNLOAD_SHARED_DIRS_RANGE  28000
+#define IDC_DOWNLOAD_WHOLE_SHARED_DIRS_RANGE 30000
+#define IDC_DOWNLOAD_FAVORITE_DIRS      32000
+#define IDC_DOWNLOAD_WHOLE_FAVORITE_DIRS 33000
+#define IDC_DOWNLOAD_SHARED_DIRS        34000
+#define IDC_DOWNLOAD_WHOLE_SHARED_DIRS  35000
 #define IDC_DOWNLOADDIR                 36000
 #define IDC_DOWNLOADDIRTO               36001
 #define IDC_DOWNLOAD                    36002
 #define IDC_DOWNLOADTO                  36003
-#define IDC_PREVIOUS_DIRS				36004
-#define IDC_PREVIOUS_DIRS_WHOLE			37000
+#define IDC_PREVIOUS_DIRS               36004
+#define IDC_PREVIOUS_DIRS_WHOLE         37000
 #define IDC_DOWNLOAD_TARGET             38000
 #define ID_FILE_CONNECT                 42772
 #define ID_FILE_SETTINGS                42774
@@ -1336,9 +1361,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        322
+#define _APS_NEXT_RESOURCE_VALUE        338
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1645
+#define _APS_NEXT_CONTROL_VALUE         1646
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

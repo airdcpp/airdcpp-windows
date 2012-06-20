@@ -113,25 +113,25 @@ BEGIN
     EDITTEXT        IDC_PREVIEW_EXTENSION,7,96,175,13,ES_AUTOHSCROLL
 END
 
-IDD_TOOLBARPAGE DIALOGEX 0, 0, 275, 242
+IDD_TOOLBARPAGE DIALOGEX 0, 0, 275, 264
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 EXSTYLE WS_EX_STATICEDGE
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0xEE
 BEGIN
     EDITTEXT        IDC_TOOLBAR_IMAGE,19,27,160,15,ES_AUTOHSCROLL
-    GROUPBOX        "Toolbar Images",IDC_TOOLBAR_IMAGE_BOX,9,8,256,71
+    GROUPBOX        "Toolbar Images",IDC_TOOLBAR_IMAGE_BOX,9,8,256,92
     PUSHBUTTON      "Browse...",IDC_IMAGEBROWSE,209,27,50,14
-    CONTROL         "",IDC_TOOLBAR_POSSIBLE,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,7,84,105,149
+    CONTROL         "",IDC_TOOLBAR_POSSIBLE,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,9,106,105,149
     EDITTEXT        IDC_TOOLBAR_HOT_IMAGE,19,54,160,15,ES_AUTOHSCROLL
-    PUSHBUTTON      "Add -->",IDC_TOOLBAR_ADD,115,119,41,14
-    CONTROL         "",IDC_TOOLBAR_ACTUAL,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,159,84,105,149
+    PUSHBUTTON      "Add -->",IDC_TOOLBAR_ADD,117,141,41,14
+    CONTROL         "",IDC_TOOLBAR_ACTUAL,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,161,106,105,149
     PUSHBUTTON      "Browse...",IDC_HOTBROWSE,209,54,50,14
-    PUSHBUTTON      "<-- Remove",IDC_TOOLBAR_REMOVE,115,153,41,14
+    PUSHBUTTON      "<-- Remove",IDC_TOOLBAR_REMOVE,117,175,41,14
     LTEXT           "Normal",IDC_NORMAL,18,17,86,8
     LTEXT           "Mouse Over Image",IDC_MOUSE_OVER,17,44,86,8
-    EDITTEXT        IDC_ICON_SIZE,184,27,22,15,ES_AUTOHSCROLL | ES_NUMBER | NOT WS_VISIBLE
-    EDITTEXT        IDC_ICON_SIZE_HOVER,184,54,22,15,ES_AUTOHSCROLL | ES_NUMBER | NOT WS_VISIBLE
+    EDITTEXT        IDC_ICON_SIZE,157,80,22,15,ES_AUTOHSCROLL | ES_NUMBER
+    RTEXT           "Default Toolbar icon size",IDC_TB_SIZE,19,83,134,8
 END
 
 IDD_DOWNLOADDIR DIALOGEX 0, 0, 189, 110
@@ -636,7 +636,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 268
         TOPMARGIN, 8
-        BOTTOMMARGIN, 235
+        BOTTOMMARGIN, 257
     END
 
     IDD_DOWNLOADDIR, DIALOG
@@ -796,9 +796,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_MAINFRAME           ICON                    "res\\AirDCPlusPlus.ico"
-IDR_RECENTS             ICON                    "res\\Recents.ico"
 IDR_UPDATE              ICON                    "res\\Update.ico"
-IDB_SHUTDOWN            ICON                    "res\\shutdown.ico"
 IDI_MAGNET              ICON                    "res\\magnet.ico"
 #endif    // Czech (Czech Republic) resources
 /////////////////////////////////////////////////////////////////////////////
@@ -1642,8 +1640,6 @@ END
 IDR_TRAY_PM             ICON                    "res\\PM.ico"
 IDR_TRAY_HUB            ICON                    "res\\message.ico"
 IDR_PRIVATE             ICON                    "res\\User.ico"
-IDR_FINISHED_DL         ICON                    "res\\FinishedDL.ico"
-IDR_FINISHED_UL         ICON                    "res\\FinishedUL.ico"
 IDR_PRIVATE_OFF         ICON                    "res\\UserOff.ico"
 IDR_WINAMP_LOGO         ICON                    "res\\Winamp_logo.ico"
 IDR_EXEC                ICON                    "res\\Exec.ico"
@@ -1995,6 +1991,38 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ADLSEARCH               ICON                    "res\\ToolbarImages\\ADLSearch.ico"
+IDI_AWAY					ICON                    "res\\ToolbarImages\\Clock.ico"
+IDI_FAVORITEHUBS            ICON                    "res\\ToolbarImages\\Favorites.ico"
+IDI_FINISHED_DL             ICON                    "res\\ToolbarImages\\FinishedDL.ico"
+IDI_FINISHED_UL             ICON                    "res\\ToolbarImages\\FinishedUL.ico"
+IDI_PUBLICHUBS              ICON                    "res\\ToolbarImages\\PublicHubs.ico"
+IDI_QUEUE					ICON                    "res\\ToolbarImages\\Queue.ico"
+IDI_RECENTS					ICON                    "res\\ToolbarImages\\Recents.ico"
+IDI_RECONNECT               ICON                    "res\\ToolbarImages\\Reconnect.ico"
+IDI_REFRESH					ICON                    "res\\ToolbarImages\\Refresh.ico"
+IDI_SEARCH					ICON                    "res\\ToolbarImages\\Search.ico"
+IDI_SEARCHSPY               ICON                    "res\\ToolbarImages\\SearchSpy.ico"
+IDI_SETTINGS				ICON                    "res\\ToolbarImages\\Settings.ico"
+IDI_SHUTDOWN				ICON                    "res\\ToolbarImages\\Exit.ico"
+IDI_NETSTATS				ICON                    "res\\ToolbarImages\\NetStats.ico"
+IDI_FOLLOW					ICON                    "res\\ToolbarImages\\Follow.ico"
+IDI_FAVORITE_USERS          ICON                    "res\\ToolbarImages\\FavoriteUser.ico"
+IDI_OPEN_LIST				ICON                    "res\\ToolbarImages\\OpenFileList.ico"
+IDI_NOTEPAD					ICON                    "res\\ToolbarImages\\Notepad.ico"
+IDI_OPEN_DOWNLOADS          ICON                    "res\\ToolbarImages\\OpenDLDir.ico"
+IDI_LOGS					ICON                    "res\\ToolbarImages\\SystemLog.ico"
+IDI_UPLOAD_QUEUE            ICON                    "res\\ToolbarImages\\uQueue.ico"
+IDI_SCAN					ICON                    "res\\ToolbarImages\\ScanMissing.ico"
+IDI_AUTOSEARCH				ICON                    "res\\ToolbarImages\\AutoSearch.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

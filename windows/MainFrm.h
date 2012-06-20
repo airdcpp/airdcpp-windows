@@ -404,7 +404,7 @@ public:
 
 	void ShowBalloonTip(tstring szMsg, tstring szTitle, DWORD dwInfoFlags=NIIF_INFO);
 
-	CImageList largeImages, largeImagesHot;
+	CImageList ToolbarImages, ToolbarImagesHot;
 	int run();
 	
 	

@@ -97,8 +97,8 @@ MainFrame::~MainFrame() {
 	m_CmdBar.m_hImageList = NULL;
 
 	images.Destroy();
-	largeImages.Destroy();
-	largeImagesHot.Destroy();
+	ToolbarImages.Destroy();
+	ToolbarImagesHot.Destroy();
 	winampImages.Destroy();
 
 	WinUtil::uninit();
@@ -219,7 +219,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	
 	m_hMenu = WinUtil::mainMenu;
 
-	hShutdownIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDB_SHUTDOWN), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	hShutdownIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SHUTDOWN), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
 	// attach menu
 	m_CmdBar.AttachMenu(m_hMenu);
@@ -558,20 +558,27 @@ LRESULT MainFrame::onWinampButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 
 HWND MainFrame::createToolbar() {
 	if(!tbarcreated) {
-		if(SETTING(TOOLBARIMAGE) == "")
-			largeImages.CreateFromImage(IDB_TOOLBAR20, 32, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
-		else   //do we need a size setting? it will auto adjust with 0.
-			largeImages.CreateFromImage(Text::toT(SETTING(TOOLBARIMAGE)).c_str(), 0/*SETTING(TB_IMAGE_SIZE)*/, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-
-		if(SETTING(TOOLBARHOTIMAGE) == "")
-			largeImagesHot.CreateFromImage(IDB_TOOLBAR20_HOT, 32, 32, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
-		else
-			largeImagesHot.CreateFromImage(Text::toT(SETTING(TOOLBARHOTIMAGE)).c_str(), 0/*SETTING(TB_IMAGE_SIZE_HOT)*/, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 
 		ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 		ctrlToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
-		ctrlToolbar.SetImageList(largeImages);
-		ctrlToolbar.SetHotImageList(largeImagesHot);
+
+		if(!(SETTING(TOOLBARIMAGE) == "")) { //we expect to have the toolbarimage set before setting the Hot image.
+			ToolbarImages.CreateFromImage(Text::toT(SETTING(TOOLBARIMAGE)).c_str(), 0/*SETTING(TB_IMAGE_SIZE)*/, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
+
+			if(!(SETTING(TOOLBARHOTIMAGE) == "")) { 
+				ToolbarImagesHot.CreateFromImage(Text::toT(SETTING(TOOLBARHOTIMAGE)).c_str(), 0/*SETTING(TB_IMAGE_SIZE_HOT)*/, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
+				ctrlToolbar.SetHotImageList(ToolbarImagesHot);
+			}
+		} else { //default ones are .ico
+			int i = 0;
+			int buttonsCount = sizeof(ToolbarButtons) / sizeof(ToolbarButtons[0]);
+			ToolbarImages.Create(SETTING(TB_IMAGE_SIZE), SETTING(TB_IMAGE_SIZE), ILC_COLOR32 | ILC_MASK,  0, buttonsCount+1);
+			while(i < buttonsCount){
+				ToolbarImages.AddIcon(WinUtil::createToolbarIcon(ToolbarButtons[i].nIcon));
+				i++;
+			}
+		}
+		ctrlToolbar.SetImageList(ToolbarImages);
 		tbarcreated = true;
 	}
 
@@ -600,7 +607,6 @@ HWND MainFrame::createToolbar() {
 		} else {
 			continue;
 		}
-
 		ctrlToolbar.AddButtons(1, &nTB);
 	}	
 

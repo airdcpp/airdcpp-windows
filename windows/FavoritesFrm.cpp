@@ -64,37 +64,37 @@ LRESULT FavoriteHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlConnect.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_CONNECT);
 	ctrlConnect.SetWindowText(CTSTRING(CONNECT));
-	ctrlConnect.SetFont(WinUtil::font);
+	ctrlConnect.SetFont(WinUtil::systemFont);
 
 	ctrlNew.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_NEWFAV);
 	ctrlNew.SetWindowText(CTSTRING(NEW));
-	ctrlNew.SetFont(WinUtil::font);
+	ctrlNew.SetFont(WinUtil::systemFont);
 
 	ctrlProps.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_EDIT);
 	ctrlProps.SetWindowText(CTSTRING(PROPERTIES));
-	ctrlProps.SetFont(WinUtil::font);
+	ctrlProps.SetFont(WinUtil::systemFont);
 
 	ctrlRemove.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_REMOVE);
 	ctrlRemove.SetWindowText(CTSTRING(REMOVE));
-	ctrlRemove.SetFont(WinUtil::font);
+	ctrlRemove.SetFont(WinUtil::systemFont);
 
 	ctrlUp.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_MOVE_UP);
 	ctrlUp.SetWindowText(CTSTRING(MOVE_UP));
-	ctrlUp.SetFont(WinUtil::font);
+	ctrlUp.SetFont(WinUtil::systemFont);
 
 	ctrlDown.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_MOVE_DOWN);
 	ctrlDown.SetWindowText(CTSTRING(MOVE_DOWN));
-	ctrlDown.SetFont(WinUtil::font);
+	ctrlDown.SetFont(WinUtil::systemFont);
 
 	ctrlManageGroups.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_MANAGE_GROUPS);
 	ctrlManageGroups.SetWindowText(CTSTRING(MANAGE_GROUPS));
-	ctrlManageGroups.SetFont(WinUtil::font);
+	ctrlManageGroups.SetFont(WinUtil::systemFont);
 
 	FavoriteManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);

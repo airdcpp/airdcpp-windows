@@ -35,6 +35,7 @@ PropPage::TextItem ToolbarPage::texts[] = {
 	{ IDC_TOOLBAR_IMAGE_BOX, ResourceManager::SETTINGS_TOOLBAR_IMAGE },
 	{ IDC_TOOLBAR_ADD, ResourceManager::SETTINGS_TOOLBAR_ADD },
 	{ IDC_TOOLBAR_REMOVE, ResourceManager::SETTINGS_TOOLBAR_REMOVE },
+	{ IDC_TB_SIZE, ResourceManager::SETTINGS_TOOLBAR_SIZE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -42,7 +43,7 @@ PropPage::Item ToolbarPage::items[] = {
 	{ IDC_TOOLBAR_IMAGE, SettingsManager::TOOLBARIMAGE, PropPage::T_STR },
 	{ IDC_TOOLBAR_HOT_IMAGE, SettingsManager::TOOLBARHOTIMAGE, PropPage::T_STR },
 	{ IDC_ICON_SIZE, SettingsManager::TB_IMAGE_SIZE, PropPage::T_INT },
-	{ IDC_ICON_SIZE_HOVER, SettingsManager::TB_IMAGE_SIZE_HOT, PropPage::T_INT },
+	//{ IDC_ICON_SIZE_HOVER, SettingsManager::TB_IMAGE_SIZE_HOT, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -63,7 +64,7 @@ LRESULT ToolbarPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlCommands.GetClientRect(rc);
 	ctrlCommands.InsertColumn(0, _T("Dummy"), LVCFMT_LEFT, rc.Width(), 0);
 
-	ctrlCommands.SetImageList(MainFrame::getMainFrame()->largeImages, LVSIL_SMALL);
+	ctrlCommands.SetImageList(MainFrame::getMainFrame()->ToolbarImages, LVSIL_SMALL);
 		
 
 	LVITEM lvi;
@@ -81,7 +82,7 @@ LRESULT ToolbarPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlToolbar.Attach(GetDlgItem(IDC_TOOLBAR_ACTUAL));
 	ctrlToolbar.GetClientRect(rc);
 	ctrlToolbar.InsertColumn(0, _T("Dummy"), LVCFMT_LEFT, rc.Width(), 0);
-	ctrlToolbar.SetImageList(MainFrame::getMainFrame()->largeImagesHot, LVSIL_SMALL);
+	ctrlToolbar.SetImageList(MainFrame::getMainFrame()->ToolbarImages, LVSIL_SMALL);
 	
 	StringTokenizer<string> t(SETTING(TOOLBAR), ',');
 	StringList& l = t.getTokens();

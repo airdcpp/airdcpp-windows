@@ -1524,5 +1524,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="AutoselectLeastSpace">least possible free space available</String>
 		<String Name="AutoSelect">Auto select based on free space</String>
 		<String Name="GetBrowseList">Get/browse file list</String>
+		<String Name="SettingsToolbarSize">Default Toolbar Icon size</String>
 	</Strings>
 </Language>

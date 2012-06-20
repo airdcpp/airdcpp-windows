@@ -56,6 +56,7 @@ class FlatTabCtrl;
 
 template<class T, int title, int ID = -1>
 class StaticFrame {
+
 public:
 	virtual ~StaticFrame() { frame = NULL; }
 
@@ -95,35 +96,36 @@ T* StaticFrame<T, title, ID>::frame = NULL;
 
 struct toolbarButton {
 	int id, image;
+	int nIcon;
 	bool check;
 	ResourceManager::Strings tooltip;
 };
 
 static const toolbarButton ToolbarButtons[] = {
-	{ID_FILE_CONNECT, 0, true, ResourceManager::MENU_PUBLIC_HUBS},
-	{ID_FILE_RECONNECT, 1, false, ResourceManager::MENU_RECONNECT},
-	{IDC_FOLLOW, 2, false, ResourceManager::MENU_FOLLOW_REDIRECT},
-	{IDC_FAVORITES, 3, true, ResourceManager::MENU_FAVORITE_HUBS},
-	{IDC_FAVUSERS, 4, true, ResourceManager::MENU_FAVORITE_USERS},
-	{IDC_RECENTS, 5, true, ResourceManager::MENU_FILE_RECENT_HUBS},
-	{IDC_QUEUE, 6, true, ResourceManager::MENU_DOWNLOAD_QUEUE},
-	{IDC_FINISHED, 7, true, ResourceManager::FINISHED_DOWNLOADS},
-	{IDC_UPLOAD_QUEUE, 8, true, ResourceManager::UPLOAD_QUEUE},
-	{IDC_FINISHED_UL, 9, true, ResourceManager::FINISHED_UPLOADS},
-	{ID_FILE_SEARCH, 10, false, ResourceManager::MENU_SEARCH},
-	{IDC_FILE_ADL_SEARCH, 11, true, ResourceManager::MENU_ADL_SEARCH},
-	{IDC_SEARCH_SPY, 12, true, ResourceManager::MENU_SEARCH_SPY},
-	{IDC_NET_STATS, 13, true, ResourceManager::NETWORK_STATISTICS},
-	{IDC_OPEN_FILE_LIST, 14, false, ResourceManager::MENU_OPEN_FILE_LIST},
-	{ID_FILE_SETTINGS, 15, false, ResourceManager::MENU_SETTINGS},
-	{IDC_NOTEPAD, 16, true, ResourceManager::MENU_NOTEPAD},
-	{IDC_AWAY, 17, true, ResourceManager::AWAY},
-	{IDC_SHUTDOWN, 18, true, ResourceManager::SHUTDOWN},
-	{IDC_OPEN_DOWNLOADS, 19, false, ResourceManager::MENU_OPEN_DOWNLOADS_DIR},
-	{IDC_REFRESH_FILE_LIST, 20, false, ResourceManager::REFRESH_FILE_LIST},
-	{IDC_SYSTEM_LOG, 21, true, ResourceManager::SYSTEM_LOG},
-	{IDC_SCAN_MISSING, 22, false, ResourceManager::MENU_SCAN_MISSING},
-	{IDC_AUTOSEARCH, 23, false, ResourceManager::AUTOSEARCH},
+	{ID_FILE_CONNECT, 0, IDI_PUBLICHUBS, true, ResourceManager::MENU_PUBLIC_HUBS},
+	{ID_FILE_RECONNECT, 1, IDI_RECONNECT, false, ResourceManager::MENU_RECONNECT},
+	{IDC_FOLLOW, 2, IDI_FOLLOW, false, ResourceManager::MENU_FOLLOW_REDIRECT},
+	{IDC_FAVORITES, 3, IDI_FAVORITEHUBS, true, ResourceManager::MENU_FAVORITE_HUBS},
+	{IDC_FAVUSERS, 4, IDI_FAVORITE_USERS, true, ResourceManager::MENU_FAVORITE_USERS},
+	{IDC_RECENTS, 5, IDI_RECENTS,true, ResourceManager::MENU_FILE_RECENT_HUBS},
+	{IDC_QUEUE, 6, IDI_QUEUE,true, ResourceManager::MENU_DOWNLOAD_QUEUE},
+	{IDC_FINISHED, 7, IDI_FINISHED_DL, true, ResourceManager::FINISHED_DOWNLOADS},
+	{IDC_UPLOAD_QUEUE, 8, IDI_UPLOAD_QUEUE, true, ResourceManager::UPLOAD_QUEUE},
+	{IDC_FINISHED_UL, 9, IDI_FINISHED_UL, true, ResourceManager::FINISHED_UPLOADS},
+	{ID_FILE_SEARCH, 10, IDI_SEARCH,false, ResourceManager::MENU_SEARCH},
+	{IDC_FILE_ADL_SEARCH, 11, IDI_ADLSEARCH, true, ResourceManager::MENU_ADL_SEARCH},
+	{IDC_SEARCH_SPY, 12, IDI_SEARCHSPY,true, ResourceManager::MENU_SEARCH_SPY},
+	{IDC_NET_STATS, 13, IDI_NETSTATS,true, ResourceManager::NETWORK_STATISTICS},
+	{IDC_OPEN_FILE_LIST, 14, IDI_OPEN_LIST, false, ResourceManager::MENU_OPEN_FILE_LIST},
+	{ID_FILE_SETTINGS, 15, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS},
+	{IDC_NOTEPAD, 16, IDI_NOTEPAD,true, ResourceManager::MENU_NOTEPAD},
+	{IDC_AWAY, 17, IDI_AWAY, true, ResourceManager::AWAY},
+	{IDC_SHUTDOWN, 18, IDI_SHUTDOWN, true, ResourceManager::SHUTDOWN},
+	{IDC_OPEN_DOWNLOADS, 19, IDI_OPEN_DOWNLOADS,false, ResourceManager::MENU_OPEN_DOWNLOADS_DIR},
+	{IDC_REFRESH_FILE_LIST, 20, IDI_REFRESH,false, ResourceManager::REFRESH_FILE_LIST},
+	{IDC_SYSTEM_LOG, 21, IDI_LOGS, true, ResourceManager::SYSTEM_LOG},
+	{IDC_SCAN_MISSING, 22, IDI_SCAN,false, ResourceManager::MENU_SCAN_MISSING},
+	{IDC_AUTOSEARCH, 23, IDI_AUTOSEARCH, false, ResourceManager::AUTOSEARCH},
 };
 
 struct winamptoolbarButton {
@@ -227,6 +229,9 @@ public:
 
 	static bool getVersionInfo(OSVERSIONINFOEX& ver);
 
+	static HICON createToolbarIcon(int icon) {
+		return (HICON)::LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(icon));
+	}
 	/**
 	 * Check if this is a common /-command.
 	 * @param cmd The whole text string, will be updated to contain only the command.
