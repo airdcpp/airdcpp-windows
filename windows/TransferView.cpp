@@ -106,6 +106,30 @@ LRESULT TransferView::onSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	return 0;
 }
 
+void TransferView::setDefaultItem(OMenu& aMenu) {
+	switch(SETTING(TRANSFERLIST_DBLCLICK)) {
+		case 0:
+		    aMenu.SetMenuDefaultItem(IDC_PRIVATEMESSAGE);
+		    break;
+		case 1:
+		    aMenu.SetMenuDefaultItem(IDC_GETLIST);
+		    break;
+		case 2:
+		    aMenu.SetMenuDefaultItem(IDC_MATCH_QUEUE);
+		    break;
+		case 3:
+		    aMenu.SetMenuDefaultItem(IDC_GRANTSLOT);
+		    break;
+		case 4:
+		    aMenu.SetMenuDefaultItem(IDC_ADD_TO_FAVORITES);
+		    break;
+		case 5:
+		    aMenu.SetMenuDefaultItem(IDC_BROWSELIST);
+		    break;
+			  
+	}
+}
+
 LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if (reinterpret_cast<HWND>(wParam) == ctrlTransfers && ctrlTransfers.GetSelectedCount() > 0) { 
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
@@ -127,6 +151,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		if(!parent) {
 			transferMenu.InsertSeparatorFirst(TSTRING(MENU_TRANSFERS));
 			appendUserItems(transferMenu);
+			setDefaultItem(transferMenu);
 			
 			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_FILE, CTSTRING(REMOVE_FILE));
 			transferMenu.AppendMenu(MF_SEPARATOR);
@@ -151,44 +176,30 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 			transferMenu.AppendMenu(MF_SEPARATOR);
 			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(CLOSE_CONNECTION));
-			
-
-			switch(SETTING(TRANSFERLIST_DBLCLICK)) {
-				case 0:
-		          transferMenu.SetMenuDefaultItem(IDC_PRIVATEMESSAGE);
-		          break;
-				case 1:
-		          transferMenu.SetMenuDefaultItem(IDC_GETLIST);
-		          break;
-				case 2:
-		          transferMenu.SetMenuDefaultItem(IDC_MATCH_QUEUE);
-		          break;
-				case 3:
-		          transferMenu.SetMenuDefaultItem(IDC_GRANTSLOT);
-		          break;
-				case 4:
-		          transferMenu.SetMenuDefaultItem(IDC_ADD_TO_FAVORITES);
-		          break;
-				case 5:
-		          transferMenu.SetMenuDefaultItem(IDC_BROWSELIST);
-		          break;
-			  
-			}
 		} else {
 			transferMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
+			if (ii->users == 1) {
+				appendUserItems(transferMenu);
+				setDefaultItem(transferMenu);
+				if(ii->download)
+					transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE_SOURCE, CTSTRING(REMOVE_BUNDLE_SOURCE));
+			}
+			transferMenu.AppendMenu(MF_SEPARATOR);
+			transferMenu.AppendMenu(MF_STRING, IDC_OPEN_BUNDLE_FOLDER, CTSTRING(OPEN_FOLDER));
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 			transferMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
-			transferMenu.AppendMenu(MF_STRING, IDC_MENU_SLOWDISCONNECT, CTSTRING(SETCZDC_DISCONNECTING_ENABLE));
 			transferMenu.AppendMenu(MF_SEPARATOR);
 			transferMenu.AppendMenu(MF_STRING, IDC_FORCE, CTSTRING(CONNECT_ALL));
 			transferMenu.AppendMenu(MF_STRING, IDC_DISCONNECT_ALL, CTSTRING(DISCONNECT_ALL));
 			transferMenu.AppendMenu(MF_SEPARATOR);
 			transferMenu.AppendMenu(MF_STRING, IDC_EXPAND_ALL, CTSTRING(EXPAND_ALL));
 			transferMenu.AppendMenu(MF_STRING, IDC_COLLAPSE_ALL, CTSTRING(COLLAPSE_ALL));
-			transferMenu.AppendMenu(MF_SEPARATOR);
-			transferMenu.AppendMenu(MF_STRING, IDC_OPEN_BUNDLE_FOLDER, CTSTRING(OPEN_FOLDER));
-			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE, CTSTRING(REMOVE_BUNDLE));
-			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITY));
+			if(ii->download) {
+				transferMenu.AppendMenu(MF_SEPARATOR);
+				transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITY));
+				transferMenu.AppendMenu(MF_STRING, IDC_MENU_SLOWDISCONNECT, CTSTRING(SETCZDC_DISCONNECTING_ENABLE));
+				transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE, CTSTRING(REMOVE_BUNDLE));
+			}
 		}
 			
 
@@ -229,10 +240,8 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				}
 			} 
 			if (parent) {
-				//LogManager::getInstance()->message("PRIOBUNDLE1");
 				BundlePtr aBundle = QueueManager::getInstance()->getBundle(ii->bundle);
 				if (aBundle) {
-					//LogManager::getInstance()->message("PRIOBUNDLE2");
 					Bundle::Priority p = aBundle->getPriority();
 					priorityMenu.CheckMenuItem(p + 1, MF_BYPOSITION | MF_CHECKED);
 					if(aBundle->getAutoPriority())
@@ -329,8 +338,7 @@ void TransferView::ItemInfo::removeBundle() {
 LRESULT TransferView::onOpenBundleFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
 	if (ii) {
-		size_t pos = ii->target.rfind(' ');
-		WinUtil::openFolder(ii->target.substr(0, pos != string::npos ? pos : ii->target.length()));
+		WinUtil::openFolder(ii->target);
 	}
 	return 0;
 }
@@ -690,7 +698,17 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 					/* if bundle has changed, regroup the item */
 					bool changeParent = (ui.bundle != ii->bundle);
-
+					if (parent->isBundle) {
+						if (!ui.IP.empty() && parent->users == 1) {
+							parent->cipher = ui.cipher;
+							parent->ip = ui.IP;
+							updateItem(ctrlTransfers.findItem(parent), UpdateInfo::MASK_CIPHER | UpdateInfo::MASK_IP);
+						} else if (parent->users > 1 && !parent->ip.empty()) {
+							parent->cipher = Util::emptyStringT;
+							parent->ip = Util::emptyStringT;
+							updateItem(ctrlTransfers.findItem(parent), UpdateInfo::MASK_CIPHER | UpdateInfo::MASK_IP);
+						}
+					}
 
 					if(changeParent) {
 						//LogManager::getInstance()->message("CHANGEPARENT, REMOVE");
@@ -704,7 +722,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 					if(changeParent) {
 						if (ii->bundle.empty()) {
-							ii->parent = NULL; //we need to NULL the old parent so it won't be used when comparing items
+							ii->parent = nullptr; //we need to NULL the old parent so it won't be used when comparing items
 							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 						} else {
 							ctrlTransfers.insertBundle(ii, ii->parent ? !ii->parent->collapsed : BOOLSETTING(EXPAND_BUNDLES));
@@ -776,9 +794,9 @@ LRESULT TransferView::onRemoveFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
 		if(Transfer::TYPE_FULL_LIST)
-		QueueManager::getInstance()->remove(Text::fromT(ii->getText(COLUMN_PATH) + Util::getFileName(ii->target)));
+			QueueManager::getInstance()->remove(Text::fromT(ii->getText(COLUMN_PATH) + Util::getFileName(ii->target)));
 		else
-		QueueManager::getInstance()->remove(Text::fromT(ii->getText(COLUMN_PATH) + ii->getText(COLUMN_FILE)));
+			QueueManager::getInstance()->remove(Text::fromT(ii->getText(COLUMN_PATH) + ii->getText(COLUMN_FILE)));
 	}
 
 	return 0;
@@ -812,7 +830,6 @@ LRESULT TransferView::onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 }
 
 void TransferView::ItemInfo::update(const UpdateInfo& ui) {
-	//LogManager::getInstance()->message("TARGET: " + Text::fromT(target) + " token " + token);
 	if(ui.type != Transfer::TYPE_LAST)
 		type = ui.type;
 		
@@ -865,6 +882,9 @@ void TransferView::ItemInfo::update(const UpdateInfo& ui) {
 	if(ui.updateMask & UpdateInfo::MASK_USER) {
 		user = ui.user;
 	}
+	if(ui.updateMask & UpdateInfo::MASK_PRIORITY) {
+		prio = ui.prio;
+	}
 }
 
 void TransferView::updateItem(int ii, uint32_t updateMask) {
@@ -902,6 +922,9 @@ void TransferView::updateItem(int ii, uint32_t updateMask) {
 	}
 	if(updateMask & UpdateInfo::MASK_USER) {
 		ctrlTransfers.updateItem(ii, COLUMN_USER);
+	}
+	if(updateMask & UpdateInfo::MASK_PRIORITY) {
+		ctrlTransfers.updateItem(ii, COLUMN_FILE);
 	}
 }
 
@@ -998,9 +1021,9 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	if (download) {
 		BundlePtr b = QueueManager::getInstance()->getBundle(bundle);
 		if (b) {
-			ii->target = Text::toT(b->getTarget() + " (" + AirUtil::getPrioText((int)b->getPriority()) + ")");
-			//ii->target = Text::toT(b->getTarget());
+			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
+			ii->prio = b->getPriority();
 		}
 	} else {
 		UploadBundlePtr b = UploadManager::getInstance()->findBundle(bundle);
@@ -1055,16 +1078,16 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 			return (status == STATUS_RUNNING) ? (Util::formatBytesW(speed) + _T("/s")) : Util::emptyStringT;
 		case COLUMN_FILE:
 			if (isBundle) {
-				size_t pos = target.rfind(' ');
+				tstring ret;
 				if (target[target.size() -1] == '\\') {
-					return Text::toT(Util::getDir(Text::fromT(target), false, true));
-				} else if (target[target.size() -1] == ')') {
-					if (target[pos-1] == '\\') {
-						return Util::getLastDir(target) + target.substr(pos, target.length()-pos);
-					} else {
-						return Util::getFileName(target);
-					}
+					ret = Util::getLastDir(target); //directory bundle
+				} else {
+					ret = Util::getFileName(target); //file bundle
 				}
+
+				if (download)
+					ret += _T(" (") + Text::toT(AirUtil::getPrioText(prio)) + _T(")");
+				return ret;
 			}
 			return getFile(type, Util::getFileName(target));
 		case COLUMN_SIZE: return Util::formatBytesW(size); 
@@ -1122,30 +1145,104 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 	for(auto j = bundles.begin(); j != bundles.end(); ++j) {
 		BundlePtr b = *j;
 		string bundleToken = b->getToken();
-		int64_t pos = b->getDownloadedBytes();
-		double percent = (double)pos*100.0/(double)b->getSize();
-		dcassert(percent <= 100.00);
-		/*if (percent >= 100) {
-			//hack, prevents updates for removed bundles
-			return;
-		} */
 
 		UpdateInfo* ui = new UpdateInfo(b->getToken(), true);
-		ui->setStatus(ItemInfo::STATUS_RUNNING);
-		ui->setPos(pos);
-		ui->setActual(b->getActual());
-		ui->setSize(b->getSize());
-		ui->setTimeLeft(b->getSecondsLeft());
-		ui->setSpeed(static_cast<int64_t>(b->getSpeed()));
-		ui->setRunning(b->getRunning());
-		ui->setUsers(b->getRunningUsers().size());
 
-		tstring elapsed = Util::formatSeconds((GET_TICK() - b->getStart())/1000);
 
-		tstring statusString;
-		statusString += Text::tformat(TSTRING(DOWNLOADED_BYTES), Util::formatBytesW(pos).c_str(), percent, elapsed.c_str());
-		ui->setStatusString(statusString);
-			
+		double ratio = 0;
+		int64_t totalSpeed = 0;
+		
+		bool partial=false, trusted=false, untrusted=false, tthcheck=false, zdownload=false, chunked=false, mcn=false;
+
+		for(auto i = b->getDownloads().begin(); i != b->getDownloads().end(); i++) {
+			Download *d = *i;
+
+			if(d->getStart() > 0) {
+				if(d->isSet(Download::FLAG_PARTIAL)) {
+					partial = true;
+				}
+				if(d->getUserConnection().isSecure()) {
+					if(d->getUserConnection().isTrusted()) {
+						trusted = true;
+					} else {
+						untrusted = true;
+					}
+				}
+				if(d->isSet(Download::FLAG_TTH_CHECK)) {
+					tthcheck = true;
+				}
+				if(d->isSet(Download::FLAG_ZDOWNLOAD)) {
+					zdownload = true;
+				}
+				if(d->isSet(Download::FLAG_CHUNKED)) {
+					chunked = true;
+				}
+				if(d->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
+					mcn = true;
+				}
+
+				totalSpeed += static_cast<int64_t>(d->getAverageSpeed());
+				ratio += d->getPos() > 0 ? (double)d->getActual() / (double)d->getPos() : 1.00;
+			}
+		}
+
+		if(b->getRunning() > 0) {
+			ratio = ratio / b->getRunning();
+
+			ui->setStatus(ItemInfo::STATUS_RUNNING);
+			ui->setSize(b->getSize());
+			ui->setPos(b->getDownloadedBytes());
+			ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
+			ui->setTimeLeft((totalSpeed > 0) ? ((ui->size - ui->pos) / totalSpeed) : 0);
+			ui->setSpeed(totalSpeed);
+			ui->setUsers(b->getRunningUsers().size());
+			ui->setRunning(b->getRunning());
+
+			if(b->getBundleBegin() == 0) {
+				// file is starting
+				b->setBundleBegin(GET_TICK());
+
+				ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
+			} else {
+				uint64_t time = GET_TICK() - b->getBundleBegin();
+				if(time > 1000) {
+					tstring pos = Text::toT(Util::formatBytes(ui->pos));
+					double percent = (double)ui->pos*100.0/(double)ui->size;
+					dcassert(percent <= 100.00);
+					tstring elapsed = Util::formatSeconds(time/1000);
+					tstring flag;
+					
+					if(partial) {
+						flag += _T("[P]");
+					}
+					if(trusted) {
+						flag += _T("[S]");
+					}
+					if(untrusted) {
+						flag += _T("[U]");
+					}
+					if(tthcheck) {
+						flag += _T("[T]");
+					}
+					if(zdownload) {
+						flag += _T("[Z]");
+					}
+					if(chunked) {
+						flag += _T("[C]");
+					}
+					if(mcn) {
+						flag += _T("[M]");
+					}	
+
+					if(!flag.empty()) {
+						flag += _T(" ");
+					}
+
+					ui->setStatusString(flag + TSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
+				}
+			}
+		}
+
 		speak(UPDATE_BUNDLE, ui);
 	}
 }
@@ -1272,32 +1369,97 @@ void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
 
 void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList& bundles) {
 	for(auto j = bundles.begin(); j != bundles.end(); ++j) {
-		UploadBundlePtr bundle = *j;
-		UpdateInfo* ui = new UpdateInfo(bundle->getToken(), true);
-		int64_t uploaded = bundle->getUploaded();
+		UploadBundlePtr b = *j;
+		UpdateInfo* ui = new UpdateInfo(b->getToken(), false);
 
-		ui->setStatus(ItemInfo::STATUS_RUNNING);
-		ui->setPos(uploaded);
-		ui->setActual(uploaded);
-		ui->setTimeLeft(bundle->getSecondsLeft());
-		ui->setSpeed(static_cast<int64_t>(bundle->getSpeed()));
-		ui->setRunning(bundle->getRunning());
 
-		if (bundle->getSingleUser()) {
-			ui->setUsers(1);
-			ui->setTotalSpeed(0);
-		} else {
-			ui->setUsers(2);
-			ui->setTotalSpeed(bundle->getTotalSpeed());
+		double ratio = 0;
+		int64_t totalSpeed = 0;
+		
+		bool partial=false, trusted=false, untrusted=false, chunked=false, mcn=false;
+
+		for(auto i = b->getUploads().begin(); i != b->getUploads().end(); i++) {
+			Upload *u = *i;
+
+			if(u->getStart() > 0) {
+				if(u->isSet(Upload::FLAG_PARTIAL)) {
+					partial = true;
+				}
+				if(u->getUserConnection().isSecure()) {
+					if(u->getUserConnection().isTrusted()) {
+						trusted = true;
+					} else {
+						untrusted = true;
+					}
+				}
+
+				if(u->isSet(Upload::FLAG_CHUNKED)) {
+					chunked = true;
+				}
+				if(u->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
+					mcn = true;
+				}
+
+				totalSpeed += static_cast<int64_t>(u->getAverageSpeed());
+				ratio += u->getPos() > 0 ? (double)u->getActual() / (double)u->getPos() : 1.00;
+			}
 		}
 
-		tstring pos = Util::formatBytesW(uploaded);
-		double percent = (double)uploaded*100.0/(double)bundle->getSize();
-		tstring elapsed = Util::formatSeconds((GET_TICK() - bundle->getStart())/1000);
+		if(b->getRunning() > 0) {
+			ratio = ratio / b->getRunning();
 
-		tstring statusString;
-		statusString += Text::tformat(TSTRING(UPLOADED_BYTES), pos.c_str(), percent, elapsed.c_str());
-		ui->setStatusString(statusString);
+			ui->setStatus(ItemInfo::STATUS_RUNNING);
+			ui->setSize(b->getSize());
+			ui->setPos(b->getUploaded());
+			ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
+			ui->setTimeLeft((totalSpeed > 0) ? ((ui->size - ui->pos) / totalSpeed) : 0);
+			ui->setSpeed(totalSpeed);
+			ui->setUsers(1);
+			if (b->getSingleUser()) {
+				ui->setTotalSpeed(0);
+			} else {
+				ui->setTotalSpeed(b->getTotalSpeed());
+			}
+			ui->setRunning(b->getRunning());
+
+			if(b->getBundleBegin() == 0) {
+				// file is starting
+				b->setBundleBegin(GET_TICK());
+
+				ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
+			} else {
+				uint64_t time = GET_TICK() - b->getBundleBegin();
+				if(time > 1000) {
+					tstring pos = Text::toT(Util::formatBytes(ui->pos));
+					double percent = (double)ui->pos*100.0/(double)ui->size;
+					dcassert(percent <= 100.00);
+					tstring elapsed = Util::formatSeconds(time/1000);
+					tstring flag;
+					
+					if(partial) {
+						flag += _T("[P]");
+					}
+					if(trusted) {
+						flag += _T("[S]");
+					}
+					if(untrusted) {
+						flag += _T("[U]");
+					}
+					if(chunked) {
+						flag += _T("[C]");
+					}
+					if(mcn) {
+						flag += _T("[M]");
+					}	
+
+					if(!flag.empty()) {
+						flag += _T(" ");
+					}
+
+					ui->setStatusString(flag + TSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
+				}
+			}
+		}
 			
 		speak(UPDATE_BUNDLE, ui);
 	}
@@ -1403,6 +1565,7 @@ void TransferView::onBundleStatus(const BundlePtr aBundle, bool removed) {
 	} else {
 		ui->setStatusString(TSTRING(WAITING));
 	}
+	aBundle->setBundleBegin(0);
 	ui->setUsers(0);
 	ui->setRunning(0);
 	speak(UPDATE_BUNDLE, ui);
@@ -1423,7 +1586,8 @@ void TransferView::on(UploadManagerListener::BundleSizeName, const string& bundl
 
 void TransferView::onBundleName(const BundlePtr aBundle) {
 	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
-	ui->setTarget(Text::toT(aBundle->getTarget() + " (" + AirUtil::getPrioText((int)aBundle->getPriority()) + ")"));
+	ui->setTarget(Text::toT(aBundle->getTarget()));
+	ui->setPriority(aBundle->getPriority());
 	speak(UPDATE_BUNDLE, ui);
 }
 

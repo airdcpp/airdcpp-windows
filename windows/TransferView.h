@@ -221,7 +221,7 @@ private:
 		ItemInfo(const HintedUser& u, const string aToken, bool aDownload, bool aBundle = false) : user(u), download(aDownload), transferFailed(false),
 			status(STATUS_WAITING), pos(0), size(0), actual(0), speed(0), timeLeft(0), totalSpeed(0)/*ttlf*/, ip(Util::emptyStringT), target(Util::emptyStringT),
 			flagIndex(0), collapsed(true), parent(NULL), hits(-1), statusString(Util::emptyStringT), running(0), token(aToken), isBundle(aBundle), bundle(Util::emptyString),
-			users(0) { }
+			users(0), prio(Bundle::NORMAL) { }
 
 		bool isBundle;
 		bool download;
@@ -239,6 +239,7 @@ private:
 		string bundle;
 		Status status;
 		Transfer::Type type;
+		Bundle::Priority prio;
 		
 		int64_t pos;
 		int64_t size;
@@ -288,10 +289,11 @@ private:
 			MASK_STATUS_STRING	= 0x100,
 			MASK_SEGMENT		= 0x200,
 			MASK_CIPHER			= 0x400,
-			MASK_TOTALSPEED		= 0x800, /* ttlf */
+			MASK_TOTALSPEED		= 0x800,
 			MASK_BUNDLE         = 0x1000,
 			MASK_USERS          = 0x2000,
-			MASK_USER           = 0x4000
+			MASK_USER           = 0x4000,
+			MASK_PRIORITY       = 0x8000
 		};
 
 		bool operator==(const ItemInfo& ii) const {
@@ -340,6 +342,8 @@ private:
 		void setUsers(const int16_t aUsers) { users = aUsers; updateMask |= MASK_USERS; }
 		int16_t users;
 		void setUser(const HintedUser aUser) { user = aUser; updateMask |= MASK_USER; }
+		Bundle::Priority prio;
+		void setPriority(Bundle::Priority aPrio) { prio = aPrio; updateMask |= MASK_PRIORITY; }
 		HintedUser user;
 	};
 
@@ -405,6 +409,7 @@ private:
 
 	ItemInfo* findItem(const UpdateInfo& ui, int& pos) const;
 	void updateItem(int ii, uint32_t updateMask);
+	void setDefaultItem(OMenu& aMenu);
 };
 
 #endif // !defined(TRANSFER_VIEW_H)
