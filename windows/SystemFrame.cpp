@@ -68,9 +68,9 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	SettingsManager::getInstance()->addListener(this);
 	WinUtil::SetIcon(m_hWnd, _T("systemlog.ico"));
-	LogManager::getInstance()->message("This is Info", LogManager::LOG_INFO);
+	/*LogManager::getInstance()->message("This is Info", LogManager::LOG_INFO);
 	LogManager::getInstance()->message("This is Warning", LogManager::LOG_WARNING);
-	LogManager::getInstance()->message("This is Error", LogManager::LOG_ERROR);
+	LogManager::getInstance()->message("This is Error", LogManager::LOG_ERROR);*/
 	bHandled = FALSE;
 	return 1;
 }

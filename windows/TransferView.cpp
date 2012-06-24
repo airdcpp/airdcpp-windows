@@ -1030,6 +1030,8 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
+			ii->cipher = cipher;
+			ii->ip = ip;
 		}
 	}
 
