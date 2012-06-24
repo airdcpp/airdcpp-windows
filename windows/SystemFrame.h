@@ -26,6 +26,7 @@
 #include "FlatTabCtrl.h"
 #include "../client/Text.h"
 #include "../client/LogManager.h"
+#include "ResourceLoader.h"
 
 #define SYSTEM_LOG_MESSAGE_MAP 42
 
@@ -127,6 +128,7 @@ private:
 
 	bool scrollIsAtEnd();
 	tstring selWord;
+	ExCImage bWarning;
 	tstring WordFromPos(const POINT& p);
 };
 

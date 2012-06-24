@@ -49,12 +49,6 @@
     <None Include="res\fav.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\Favorites.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\FavoriteUser.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\fin.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -85,25 +79,13 @@
     <None Include="res\hun.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\icon10.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\icon8.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\ita.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\magnet.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\netstats.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\nor.ico">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="res\notepad.ico">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\o_otools.bmp">
@@ -151,9 +133,6 @@
     <None Include="res\swe.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\systemlog.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\toolbar.bmp">
       <Filter>Resource Files</Filter>
     </None>
@@ -181,9 +160,6 @@
     <None Include="res\Update.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\uqueue.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\User.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -208,9 +184,6 @@
     <None Include="Extensions.txt">
       <Filter>Documentation</Filter>
     </None>
-    <None Include="res\icon11.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\GERM.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -221,46 +194,76 @@
     <None Include="res\Exec.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\PublicHubs.ico">
+    <None Include="res\ToolbarImages\ADLSearch.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\icon1.ico">
+    <None Include="res\ToolbarImages\Clock.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\ADLSearch.ico">
+    <None Include="res\ToolbarImages\Favorites.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\Clock.ico">
+    <None Include="res\ToolbarImages\FinishedDL.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\FavoriteHubs.ico">
+    <None Include="res\ToolbarImages\FinishedUL.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\FinishedDL.ico">
+    <None Include="res\ToolbarImages\PublicHubs.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\FinishedUL.ico">
+    <None Include="res\ToolbarImages\Queue.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\Queue.ico">
+    <None Include="res\ToolbarImages\Recents.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\Recents.ico">
+    <None Include="res\ToolbarImages\Reconnect.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\Reconnect.ico">
+    <None Include="res\ToolbarImages\Refresh.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\Refresh.ico">
+    <None Include="res\ToolbarImages\Search.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\Search.ico">
+    <None Include="res\ToolbarImages\SearchSpy.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\SearchSpy.ico">
+    <None Include="res\ToolbarImages\Settings.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarIcons\Settings.ico">
+    <None Include="res\ToolbarImages\Exit.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\NetStats.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Follow.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\FavoriteUser.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\OpenFileList.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\Notepad.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\OpenDLDir.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\SystemLog.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\uQueue.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\ScanMissing.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\AutoSearch.ico">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>

@@ -2366,6 +2366,52 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 	ctrlLanguage.SetCurSel(Localization::curLanguage);
 }
 
+HBITMAP WinUtil::getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/) {
+	
+	HICON hIcon = HICON(::LoadImage(NULL, aFile.c_str(), IMAGE_ICON, xSize, ySize, LR_LOADFROMFILE));
+	if(!hIcon)
+		return NULL;
+
+	int cx = xSize;
+	int cy = ySize;
+
+	{
+		ICONINFO	iconInfo;
+		BITMAP		bm;
+
+		GetIconInfo(hIcon, &iconInfo);
+		if(iconInfo.hbmColor)
+			GetObject(iconInfo.hbmColor, sizeof(bm), &bm);
+		else if(iconInfo.hbmMask)
+			GetObject(iconInfo.hbmMask, sizeof(bm), &bm);
+		else
+			return NULL;
+
+		cx = bm.bmWidth;
+		cy = bm.bmHeight;
+
+	}
+
+	HDC	crtdc = GetDC(NULL);
+	HDC	memdc = CreateCompatibleDC(crtdc);
+	HBITMAP hBitmap	= CreateCompatibleBitmap(crtdc, cx, cy);
+	HBITMAP hOldBitmap = (HBITMAP)SelectObject(memdc, hBitmap);
+	HBRUSH hBrush = CreateSolidBrush(crBgColor);
+	RECT rect = { 0, 0, cx, cy };
+
+	FillRect(memdc, &rect, hBrush);
+	DrawIconEx(memdc, 0, 0, hIcon, cx, cy, 0, NULL, DI_NORMAL); // DI_NORMAL will automatically alpha-blend the icon over the memdc
+
+	SelectObject(memdc, hOldBitmap);
+
+	DeleteDC(crtdc);
+	DeleteDC(memdc);
+	DeleteObject(hIcon);
+	DeleteObject(hBrush);
+
+	return hBitmap;
+}
+
 /**
  * @file
  * $Id: WinUtil.cpp 473 2010-01-12 23:17:33Z bigmuscle $

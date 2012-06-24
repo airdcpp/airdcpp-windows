@@ -429,9 +429,27 @@ void MainFrame::showPortsError(const string& port) {
 
 HWND MainFrame::createWinampToolbar() {
 	if(!tbarwinampcreated){
-		winampImages.CreateFromImage(WinUtil::getIconPath(_T("mediatoolbar.bmp")).c_str(), 20, 20, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-		ctrlSmallToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
+		ctrlSmallToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 		ctrlSmallToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
+
+		//we want to support old themes also so check if there is the old .bmp
+		if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("mediatoolbar.bmp"))))){
+			winampImages.CreateFromImage(WinUtil::getIconPath(_T("mediatoolbar.bmp")).c_str(), 20, 20, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
+		} else /*if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("MediaToolbar\\")))))*/{
+			int size = SETTING(WTB_IMAGE_SIZE);
+			winampImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 11);
+			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\start.ico")), size));
+			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\spam.ico")), size));
+			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\back.ico")), size));
+			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\play.ico")), size));
+			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\pause.ico")), size));
+			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\next.ico")), size));
+			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\stop.ico")), size));
+			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\up.ico")), size));
+			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\volume50.ico")), size));
+			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\down.ico")), size));
+		}
+		
 		ctrlSmallToolbar.SetImageList(winampImages);
 		tbarwinampcreated = true;
 	}
@@ -559,7 +577,7 @@ LRESULT MainFrame::onWinampButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 HWND MainFrame::createToolbar() {
 	if(!tbarcreated) {
 
-		ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
+		ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 		ctrlToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
 
 		if(!(SETTING(TOOLBARIMAGE) == "")) { //we expect to have the toolbarimage set before setting the Hot image.

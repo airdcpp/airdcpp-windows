@@ -174,13 +174,13 @@
 #define IDI_NETSTATS                    362
 #define IDI_FOLLOW                      363
 #define IDI_FAVORITE_USERS              364
-#define IDI_OPEN_LIST	                365
-#define IDI_NOTEPAD						366
-#define IDI_OPEN_DOWNLOADS				367
-#define IDI_LOGS						368
-#define IDI_UPLOAD_QUEUE				369
-#define IDI_SCAN						370
-#define IDI_AUTOSEARCH					371
+#define IDI_OPEN_LIST                   365
+#define IDI_NOTEPAD                     366
+#define IDI_OPEN_DOWNLOADS              367
+#define IDI_LOGS                        368
+#define IDI_UPLOAD_QUEUE                369
+#define IDI_SCAN                        370
+#define IDI_AUTOSEARCH                  371
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
@@ -735,8 +735,10 @@
 #define IDC_PREVIEW_APPLICATION_TEXT    1321
 #define IDC_ICON_SIZE_HOVER             1322
 #define IDC_PREVIEW_ARGUMENTS_TEXT      1322
+#define IDC_WTB_ICON_SIZE               1322
 #define IDC_PREVIEW_EXTENSION_TEXT      1323
 #define IDC_GROUP_PROPERTIES            1323
+#define IDC_ICON_SIZE2                  1323
 #define IDC_BW_SIMPLE                   1324
 #define IDC_NAME_STATIC                 1324
 #define IDC_BW_BOTH                     1325
@@ -1009,6 +1011,9 @@
 #define IDC_AUTOSELECT_METHOD           1643
 #define IDC_AUTOPATH_METHOD             1644
 #define IDC_TB_SIZE                     1645
+#define IDC_TBAR_NOTE                   1646
+#define IDC_TB_NOTE                     1646
+#define IDC_WTB_SIZE                    1647
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1363,7 +1368,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        338
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1646
+#define _APS_NEXT_CONTROL_VALUE         1647
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

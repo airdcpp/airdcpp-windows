@@ -53,6 +53,7 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		addLine(i->second, Text::toT(i->first));
 	}
 
+	bWarning.LoadFromResource(IDR_EMOTICON, _T("PNG"), _Module.get_m_hInst());
 
 	tabMenu = CreatePopupMenu();
 	if(BOOLSETTING(LOG_SYSTEM)) {
@@ -67,6 +68,9 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	SettingsManager::getInstance()->addListener(this);
 	WinUtil::SetIcon(m_hWnd, _T("systemlog.ico"));
+	LogManager::getInstance()->message("This is Info", LogManager::LOG_INFO);
+	LogManager::getInstance()->message("This is Warning", LogManager::LOG_WARNING);
+	LogManager::getInstance()->message("This is Error", LogManager::LOG_ERROR);
 	bHandled = FALSE;
 	return 1;
 }
@@ -149,8 +153,9 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 
 	End = Begin = ctrlPad.GetTextLengthEx(GTL_NUMCHARS);
 
+
 	tstring Text = msg + _T(" "); //kinda strange, but adding line endings in the start of new line makes it that way.
-	tstring time = Text::toT("\r\n [" + Util::getTimeStamp(md.time) + "] ");
+	tstring time = Text::toT("\r\n   [" + Util::getTimeStamp(md.time) + "] ");
 	tstring line = time + Text;
 
 	LONG limitText = ctrlPad.GetLimitText();
@@ -172,6 +177,23 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	}
 
 	ctrlPad.AppendText(line.c_str());
+	
+	ctrlPad.SetSel(End+2, End+3);
+	
+	switch(md.severity) {
+	
+		case LogManager::LOG_WARNING:
+			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("warning.ico")),WinUtil::bgColor,16,16));
+			break;
+		case LogManager::LOG_ERROR:
+			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("error.ico")),WinUtil::bgColor,16,16));
+			break;
+		case LogManager::LOG_INFO:
+			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("info.ico")),WinUtil::bgColor,16,16));
+			break;
+		default:
+			break;
+	}
 
 	End += time.size() -1;
 	ctrlPad.SetSel(Begin, End);

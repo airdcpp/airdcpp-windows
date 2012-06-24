@@ -232,6 +232,12 @@ public:
 	static HICON createToolbarIcon(int icon) {
 		return (HICON)::LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(icon));
 	}
+	static HICON createToolbarIcon(const tstring& icon, int size) {
+		return (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
+	}
+
+	static HBITMAP getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/);
+
 	/**
 	 * Check if this is a common /-command.
 	 * @param cmd The whole text string, will be updated to contain only the command.
