@@ -702,10 +702,12 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 						if (!ui.IP.empty() && parent->users == 1) {
 							parent->cipher = ui.cipher;
 							parent->ip = ui.IP;
+							parent->flagIndex = ui.flagIndex;
 							updateItem(ctrlTransfers.findItem(parent), UpdateInfo::MASK_CIPHER | UpdateInfo::MASK_IP);
 						} else if (parent->users > 1 && !parent->ip.empty()) {
 							parent->cipher = Util::emptyStringT;
 							parent->ip = Util::emptyStringT;
+							parent->flagIndex = 0;
 							updateItem(ctrlTransfers.findItem(parent), UpdateInfo::MASK_CIPHER | UpdateInfo::MASK_IP);
 						}
 					}
@@ -1032,6 +1034,7 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 			ii->size = b->getSize();
 			ii->cipher = cipher;
 			ii->ip = ip;
+			ii->flagIndex = flagIndex;
 		}
 	}
 
