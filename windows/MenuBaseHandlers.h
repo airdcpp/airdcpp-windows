@@ -186,15 +186,15 @@ public:
 			if(!WinUtil::browseDirectory(target, ((T*)this)->m_hWnd))
 				return false;
 
-			SettingsManager::getInstance()->addDirToHistory(target);			
+			SettingsManager::getInstance()->addDirToHistory(target);
 		} else {
 			target = Text::toT(SETTING(DOWNLOAD_DIRECTORY) + fileName);
 			if(!WinUtil::browseFile(target, ((T*)this)->m_hWnd))
 				return false;
 
 			SettingsManager::getInstance()->addDirToHistory(Util::getFilePath(target));
-			download(Text::fromT(target), useWhole, true);
 		}
+		download(Text::fromT(target), useWhole, !showDirDialog);
 		return 0;
 	}
 
@@ -296,12 +296,14 @@ public:
 	}
 
 	void download(const string& aTarget, bool isWhole, bool noAppendFilename = false, QueueItem::Priority p = QueueItem::DEFAULT) {
-		/* Get the size of the download */
-		int64_t size = ((T*)this)->getDownloadSize(isWhole);
-		/* Check the space */
-		TargetUtil::TargetInfo ti;
-		if (TargetUtil::getDiskInfo(ti) && ti.getFreeSpace() < size && !confirmDownload(ti, size))
-			return;
+		if (type != AUTO_SEARCH) {
+			/* Get the size of the download */
+			int64_t size = ((T*)this)->getDownloadSize(isWhole);
+			/* Check the space */
+			TargetUtil::TargetInfo ti;
+			if (TargetUtil::getDiskInfo(ti) && ti.getFreeSpace() < size && !confirmDownload(ti, size))
+				return;
+		}
 
 		((T*)this)->download(aTarget, WinUtil::isShift() ? QueueItem::HIGHEST : p, isWhole, noAppendFilename ? TargetUtil::NO_APPEND : TargetUtil::TARGET_PATH);
 	}

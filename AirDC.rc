@@ -1457,7 +1457,7 @@ BEGIN
     EDITTEXT        IDC_EXPIRY_DAYS,219,127,30,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_EXPIRY_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,241,126,11,14
     EDITTEXT        IDC_INTERVAL,106,17,31,13,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_SPIN1,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,129,16,11,14
+    CONTROL         "",IDC_INTERVAL_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,129,16,11,14
 END
 
 IDD_AIRAPPEARANCEPAGE DIALOGEX 0, 0, 275, 292
@@ -1676,7 +1676,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,7,8,2
+ FILEVERSION 2,40,0,0
  PRODUCTVERSION 2,2,0,8
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -1693,8 +1693,9 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "Comments", "http://www.airdcpp.net"
+            VALUE "CompanyName", "AirDC++ Team"
             VALUE "FileDescription", "AirDC++"
-            VALUE "FileVersion", "0,7,8,2"
+            VALUE "FileVersion", "2.40.0.0"
             VALUE "InternalName", "AirDC++"
             VALUE "LegalCopyright", "Based on DC++"
             VALUE "OriginalFilename", "AirDC.exe"
@@ -1999,30 +2000,30 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_ADLSEARCH               ICON                    "res\\ToolbarImages\\ADLSearch.ico"
-IDI_AWAY					ICON                    "res\\ToolbarImages\\Clock.ico"
-IDI_FAVORITEHUBS            ICON                    "res\\ToolbarImages\\Favorites.ico"
-IDI_FINISHED_DL             ICON                    "res\\ToolbarImages\\FinishedDL.ico"
-IDI_FINISHED_UL             ICON                    "res\\ToolbarImages\\FinishedUL.ico"
-IDI_PUBLICHUBS              ICON                    "res\\ToolbarImages\\PublicHubs.ico"
-IDI_QUEUE					ICON                    "res\\ToolbarImages\\Queue.ico"
-IDI_RECENTS					ICON                    "res\\ToolbarImages\\Recents.ico"
-IDI_RECONNECT               ICON                    "res\\ToolbarImages\\Reconnect.ico"
-IDI_REFRESH					ICON                    "res\\ToolbarImages\\Refresh.ico"
-IDI_SEARCH					ICON                    "res\\ToolbarImages\\Search.ico"
-IDI_SEARCHSPY               ICON                    "res\\ToolbarImages\\SearchSpy.ico"
-IDI_SETTINGS				ICON                    "res\\ToolbarImages\\Settings.ico"
-IDI_SHUTDOWN				ICON                    "res\\ToolbarImages\\Exit.ico"
-IDI_NETSTATS				ICON                    "res\\ToolbarImages\\NetStats.ico"
-IDI_FOLLOW					ICON                    "res\\ToolbarImages\\Follow.ico"
-IDI_FAVORITE_USERS          ICON                    "res\\ToolbarImages\\FavoriteUser.ico"
-IDI_OPEN_LIST				ICON                    "res\\ToolbarImages\\OpenFileList.ico"
-IDI_NOTEPAD					ICON                    "res\\ToolbarImages\\Notepad.ico"
-IDI_OPEN_DOWNLOADS          ICON                    "res\\ToolbarImages\\OpenDLDir.ico"
-IDI_LOGS					ICON                    "res\\ToolbarImages\\SystemLog.ico"
-IDI_UPLOAD_QUEUE            ICON                    "res\\ToolbarImages\\uQueue.ico"
-IDI_SCAN					ICON                    "res\\ToolbarImages\\ScanMissing.ico"
-IDI_AUTOSEARCH				ICON                    "res\\ToolbarImages\\AutoSearch.ico"
+IDI_ADLSEARCH           ICON                    "res\\ToolbarImages\\ADLSearch.ico"
+IDI_AWAY                ICON                    "res\\ToolbarImages\\Clock.ico"
+IDI_FAVORITEHUBS        ICON                    "res\\ToolbarImages\\Favorites.ico"
+IDI_FINISHED_DL         ICON                    "res\\ToolbarImages\\FinishedDL.ico"
+IDI_FINISHED_UL         ICON                    "res\\ToolbarImages\\FinishedUL.ico"
+IDI_PUBLICHUBS          ICON                    "res\\ToolbarImages\\PublicHubs.ico"
+IDI_QUEUE               ICON                    "res\\ToolbarImages\\Queue.ico"
+IDI_RECENTS             ICON                    "res\\ToolbarImages\\Recents.ico"
+IDI_RECONNECT           ICON                    "res\\ToolbarImages\\Reconnect.ico"
+IDI_REFRESH             ICON                    "res\\ToolbarImages\\Refresh.ico"
+IDI_SEARCH              ICON                    "res\\ToolbarImages\\Search.ico"
+IDI_SEARCHSPY           ICON                    "res\\ToolbarImages\\SearchSpy.ico"
+IDI_SETTINGS            ICON                    "res\\ToolbarImages\\Settings.ico"
+IDI_SHUTDOWN            ICON                    "res\\ToolbarImages\\Exit.ico"
+IDI_NETSTATS            ICON                    "res\\ToolbarImages\\NetStats.ico"
+IDI_FOLLOW              ICON                    "res\\ToolbarImages\\Follow.ico"
+IDI_FAVORITE_USERS      ICON                    "res\\ToolbarImages\\FavoriteUser.ico"
+IDI_OPEN_LIST           ICON                    "res\\ToolbarImages\\OpenFileList.ico"
+IDI_NOTEPAD             ICON                    "res\\ToolbarImages\\Notepad.ico"
+IDI_OPEN_DOWNLOADS      ICON                    "res\\ToolbarImages\\OpenDLDir.ico"
+IDI_LOGS                ICON                    "res\\ToolbarImages\\SystemLog.ico"
+IDI_UPLOAD_QUEUE        ICON                    "res\\ToolbarImages\\uQueue.ico"
+IDI_SCAN                ICON                    "res\\ToolbarImages\\ScanMissing.ico"
+IDI_AUTOSEARCH          ICON                    "res\\ToolbarImages\\AutoSearch.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
