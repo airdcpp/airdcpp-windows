@@ -15,6 +15,20 @@
 #include "ImageDataObject.h"
 
 // Static member functions
+SCODE CImageDataObject::createStorage(IStorage **pStorage, LPLOCKBYTES *lpLockBytes){
+	// Initialize a Storage Object
+
+	SCODE sc = ::CreateILockBytesOnHGlobal(NULL, TRUE, lpLockBytes);
+	if(sc != S_OK || lpLockBytes == NULL) 
+		return NULL;
+	
+	sc = ::StgCreateDocfileOnILockBytes(*lpLockBytes,
+		STGM_SHARE_EXCLUSIVE|STGM_CREATE|STGM_READWRITE, 0, pStorage);
+	if (sc != S_OK) 
+		return NULL;
+	
+	return sc;
+}
 void CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap, bool deleteHandle/*true*/ )
 {
 	if(!pRichEditOle || !hBitmap)
@@ -24,60 +38,28 @@ void CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap,
 	IOleClientSite *pOleClientSite = NULL;	
 	IStorage *pStorage  = NULL;	
 	LPLOCKBYTES lpLockBytes = NULL;
-	
+	IOleObject *pOleObject = NULL;
 	SCODE sc = NULL;
 	CLSID clsid = CLSID_NULL;
 
 	// Get the image data object
-	//
 	CImageDataObject *pods = new CImageDataObject;
 	pods->duplicate = !deleteHandle;
-	pods->QueryInterface(IID_IDataObject, (void **)&lpDataObject);
-	pods->SetBitmap(hBitmap);
 
-	// Get the RichEdit container site
-	//
-	pRichEditOle->GetClientSite(&pOleClientSite);
-
-	// Initialize a Storage Object
-	//
-	sc = ::CreateILockBytesOnHGlobal(NULL, TRUE, &lpLockBytes);
-	if(sc != S_OK || lpLockBytes == NULL) {
-		if(deleteHandle) DeleteObject(hBitmap);
-		pRichEditOle->Release();	
-		return;
-	}
-	
-	sc = ::StgCreateDocfileOnILockBytes(lpLockBytes,
-		STGM_SHARE_EXCLUSIVE|STGM_CREATE|STGM_READWRITE, 0, &pStorage);
-	if (sc != S_OK) {
-		if(deleteHandle) DeleteObject(hBitmap);
-		pRichEditOle->Release();
-		lpLockBytes->Release();
-		lpLockBytes = NULL;
-		return;
-	}
-
-	// The final ole object which will be inserted in the richedit control
-	//
-	IOleObject *pOleObject = pods->GetOleObject(pOleClientSite, pStorage);
+	try {
+		// Get the RichEdit container site
+		if((sc = pRichEditOle->GetClientSite(&pOleClientSite) != S_OK)) throw sc;
+		if((sc = pods->QueryInterface(IID_IDataObject, (void **)&lpDataObject)) != S_OK) throw sc;
+		if((sc = pods->SetBitmap(hBitmap) != S_OK)) throw sc;
+		if((sc = pods->createStorage(&pStorage, &lpLockBytes)) != S_OK) throw sc;
+		// The final ole object which will be inserted in the richedit control
+		if((sc = pods->GetOleObject(pOleClientSite, pStorage, &pOleObject)) != S_OK) throw sc;
 		
-	if(pOleObject != NULL) {
-
-		// all items are "contained" -- this makes our reference to this object
-		//  weak -- which is needed for links to embedding silent update.
-		OleSetContainedObject(pOleObject, TRUE);
+		if((sc = pOleObject->GetUserClassID(&clsid)) != S_OK) throw sc;
 		// Now Add the object to the RichEdit 
-		//
 		REOBJECT reobject;
 		ZeroMemory(&reobject, sizeof(REOBJECT));
 		reobject.cbStruct = sizeof(REOBJECT);
-	
-		sc = pOleObject->GetUserClassID(&clsid);
-		if (sc != S_OK) {
-			pOleObject->Release();
-			return;
-		}
 		reobject.clsid = clsid;
 		reobject.cp = REO_CP_SELECTION;
 		reobject.dvaspect = DVASPECT_CONTENT;
@@ -87,12 +69,12 @@ void CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap,
 		reobject.pstg = pStorage;
 
 		// Insert the bitmap at the current location in the richedit control
-		//
 		pRichEditOle->InsertObject(&reobject);
-	}
+	
+	} catch(...) { }
 
 	// Release all unnecessary interfaces
-	//
+	
 	//TODO: rewrite usage of these handles, these should be used with the richedit instance rather than with every icon!
 	if(pOleObject) pOleObject->Release();
 	if(pOleClientSite) pOleClientSite->Release();
@@ -107,7 +89,7 @@ void CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap,
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-void CImageDataObject::SetBitmap(HBITMAP hBitmap)
+SCODE CImageDataObject::SetBitmap(HBITMAP hBitmap)
 {
 	
 	STGMEDIUM stgm;
@@ -122,17 +104,18 @@ void CImageDataObject::SetBitmap(HBITMAP hBitmap)
 	fm.lindex = -1;							// Index = Not applicaple
 	fm.tymed = TYMED_GDI;					// Storage medium = HBITMAP handle
 
-	this->SetData(&fm, &stgm, TRUE);		
+	return this->SetData(&fm, &stgm, TRUE);		
 }
 
-IOleObject *CImageDataObject::GetOleObject(IOleClientSite *pOleClientSite, IStorage *pStorage)
+SCODE CImageDataObject::GetOleObject(IOleClientSite *pOleClientSite, IStorage *pStorage, IOleObject** pOleObject)
 {
 	SCODE sc;
-	IOleObject *pOleObject;
-	sc = ::OleCreateStaticFromData(this, IID_IOleObject, OLERENDER_FORMAT, 
-			&m_fromat, pOleClientSite, pStorage, (void **)&pOleObject);
-	if (sc != S_OK)
-		return NULL;
+	if((sc = ::OleCreateStaticFromData(this, IID_IOleObject, OLERENDER_FORMAT, &m_fromat, pOleClientSite, pStorage, (void **)pOleObject)) != S_OK)
+		return sc;
 
-	return pOleObject;
+	// all items are "contained" -- this makes our reference to this object
+	//  weak -- which is needed for links to embedding silent update.
+	sc = OleSetContainedObject(*pOleObject, TRUE);
+		
+	return sc;
 }

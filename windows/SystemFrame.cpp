@@ -43,9 +43,12 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlPad.LimitText(96*1024); //now that we have icons we might want to limit even lower, the ram usage grows when many icons in view.
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 	
-	iconInfo = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("info.ico")),WinUtil::bgColor, IDI_INFO, 16, 16);
-	iconWarning = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("warning.ico")),WinUtil::bgColor, IDI_IWARNING, 16, 16);
-	iconError = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("error.ico")),WinUtil::bgColor, IDI_IERROR, 16, 16);
+	if(!iconInfo)
+		iconInfo = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("info.ico")),WinUtil::bgColor, IDI_INFO, 16, 16);
+	if(!iconWarning)
+		iconWarning = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("warning.ico")),WinUtil::bgColor, IDI_IWARNING, 16, 16);
+	if(!iconError)
+		iconError = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("error.ico")),WinUtil::bgColor, IDI_IERROR, 16, 16);
 
 	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 
@@ -67,7 +70,6 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	CRect rc(SETTING(SYSLOG_LEFT), SETTING(SYSLOG_TOP), SETTING(SYSLOG_RIGHT), SETTING(SYSLOG_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
-
 
 	SettingsManager::getInstance()->addListener(this);
 	WinUtil::SetIcon(m_hWnd, _T("systemlog.ico"));
@@ -91,6 +93,12 @@ LRESULT SystemFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		SettingsManager::getInstance()->set(SettingsManager::SYSLOG_LEFT, (rc.left > 0 ? rc.left : 0));
 		SettingsManager::getInstance()->set(SettingsManager::SYSLOG_RIGHT, (rc.right > 0 ? rc.right : 0));
 	}
+
+	ctrlPad.SetWindowText(_T(""));
+	DeleteObject(iconInfo);
+	DeleteObject(iconWarning);
+	DeleteObject(iconError);
+
 	LogManager::getInstance()->removeListener(this);
 	SettingsManager::getInstance()->removeListener(this);
 	bHandled = FALSE;

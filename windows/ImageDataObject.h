@@ -33,6 +33,7 @@ private:
 	//
 	STGMEDIUM m_stgmed;
 	FORMATETC m_fromat;
+	SCODE createStorage(IStorage **pStorage, LPLOCKBYTES *lpLockBytes);
 
 public:
 	CImageDataObject() : m_ulRefCnt(0), duplicate(false)
@@ -126,8 +127,8 @@ public:
 
 	// Some Other helper functions
 	//
-	void SetBitmap(HBITMAP hBitmap);
-	IOleObject *GetOleObject(IOleClientSite *pOleClientSite, IStorage *pStorage);
+	SCODE SetBitmap(HBITMAP hBitmap);
+	SCODE GetOleObject(IOleClientSite *pOleClientSite, IStorage *pStorage, IOleObject** pOleObject);
 
 };
 

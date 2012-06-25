@@ -36,8 +36,12 @@ class SystemFrame : public MDITabChildWindowImpl<SystemFrame>, public StaticFram
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("SystemFrame"), IDR_SYSTEM_LOG, 0, COLOR_3DFACE);
 
-	SystemFrame() : ctrlClientContainer(_T("edit"), this, SYSTEM_LOG_MESSAGE_MAP) { }
-	virtual ~SystemFrame() { }
+	SystemFrame() : ctrlClientContainer(_T("edit"), this, SYSTEM_LOG_MESSAGE_MAP) { 
+		iconError = NULL;
+		iconInfo = NULL;
+		iconWarning = NULL;
+	}
+	~SystemFrame() { }
 	
 	typedef MDITabChildWindowImpl<SystemFrame> baseClass;
 	BEGIN_MSG_MAP(SystemFrame)
@@ -105,8 +109,10 @@ public:
 		if(hWnd == ctrlPad.m_hWnd) {
 			::SetBkColor(hDC, WinUtil::bgColor);
 			::SetTextColor(hDC, WinUtil::textColor);
+			DeleteDC(hDC);
 			return (LRESULT)WinUtil::bgBrush;
 		}
+		DeleteDC(hDC);
 		bHandled = FALSE;
 		return FALSE;
 	}
