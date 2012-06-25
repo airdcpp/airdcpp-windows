@@ -48,9 +48,9 @@ void CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap,
 
 	try {
 		// Get the RichEdit container site
-		if((sc = pRichEditOle->GetClientSite(&pOleClientSite) != S_OK)) throw sc;
+		if((sc = pRichEditOle->GetClientSite(&pOleClientSite)) != S_OK) throw sc;
 		if((sc = pods->QueryInterface(IID_IDataObject, (void **)&lpDataObject)) != S_OK) throw sc;
-		if((sc = pods->SetBitmap(hBitmap) != S_OK)) throw sc;
+		if((sc = pods->SetBitmap(hBitmap)) != S_OK) throw sc;
 		if((sc = pods->createStorage(&pStorage, &lpLockBytes)) != S_OK) throw sc;
 		// The final ole object which will be inserted in the richedit control
 		if((sc = pods->GetOleObject(pOleClientSite, pStorage, &pOleObject)) != S_OK) throw sc;

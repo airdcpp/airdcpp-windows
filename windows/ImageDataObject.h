@@ -16,7 +16,6 @@
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
-#pragma warning(disable : 4100) // unreferenced formal parameter
 
 class CImageDataObject : IDataObject
 {
@@ -33,7 +32,7 @@ private:
 	//
 	STGMEDIUM m_stgmed;
 	FORMATETC m_fromat;
-	SCODE createStorage(IStorage **pStorage, LPLOCKBYTES *lpLockBytes);
+
 
 public:
 	CImageDataObject() : m_ulRefCnt(0), duplicate(false)
@@ -77,7 +76,7 @@ public:
 
 	// Methods of the IDataObject Interface
 	//
-	STDMETHOD(GetData)(FORMATETC *pformatetcIn, STGMEDIUM *pmedium) {
+	STDMETHOD(GetData)(FORMATETC* /*pformatetcIn*/, STGMEDIUM *pmedium) {
 		if(duplicate) {
 			HANDLE hDst;
 			hDst = ::OleDuplicateData(m_stgmed.hBitmap, CF_BITMAP, NULL);
@@ -96,39 +95,27 @@ public:
 
 		return S_OK;
 	}
-	STDMETHOD(GetDataHere)(FORMATETC* pformatetc, STGMEDIUM*  pmedium ) {
-		return E_NOTIMPL;
-	}
-	STDMETHOD(QueryGetData)(FORMATETC*  pformatetc ) {
-		return E_NOTIMPL;
-	}
-	STDMETHOD(GetCanonicalFormatEtc)(FORMATETC*  pformatectIn ,FORMATETC* pformatetcOut ) 	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(SetData)(FORMATETC* pformatetc , STGMEDIUM*  pmedium , BOOL  fRelease ) {
+
+	STDMETHOD(SetData)(FORMATETC* pformatetc , STGMEDIUM*  pmedium , BOOL  /*fRelease*/ ) {
 		m_fromat = *pformatetc;
 		m_stgmed = *pmedium;
 
 		return S_OK;
 	}
-	STDMETHOD(EnumFormatEtc)(DWORD  dwDirection , IEnumFORMATETC**  ppenumFormatEtc ) {
-		return E_NOTIMPL;
-	}
-	STDMETHOD(DAdvise)(FORMATETC *pformatetc, DWORD advf, IAdviseSink *pAdvSink,
-		DWORD *pdwConnection) {
-		return E_NOTIMPL;
-	}
-	STDMETHOD(DUnadvise)(DWORD dwConnection) {
-		return E_NOTIMPL;
-	}
-	STDMETHOD(EnumDAdvise)(IEnumSTATDATA **ppenumAdvise) {
-		return E_NOTIMPL;
-	}
+
+	STDMETHOD(GetDataHere)(FORMATETC* /*pformatetc*/, STGMEDIUM*  /*pmedium*/ ) { return E_NOTIMPL; }
+	STDMETHOD(QueryGetData)(FORMATETC*  /*pformatetc*/ ) { return E_NOTIMPL; }
+	STDMETHOD(GetCanonicalFormatEtc)(FORMATETC*  /*pformatectIn*/ ,FORMATETC* /*pformatetcOut*/ ) 	{ return E_NOTIMPL; }
+	STDMETHOD(EnumFormatEtc)(DWORD  /*dwDirection*/ , IEnumFORMATETC**  /*ppenumFormatEtc*/ ) { return E_NOTIMPL; }
+	STDMETHOD(DAdvise)(FORMATETC* /*pformatetc*/, DWORD /*advf*/, IAdviseSink* /*pAdvSink*/, DWORD* /*pdwConnection*/) { return E_NOTIMPL; }
+	STDMETHOD(DUnadvise)(DWORD /*dwConnection*/) { return E_NOTIMPL; }
+	STDMETHOD(EnumDAdvise)(IEnumSTATDATA** /*ppenumAdvise*/) { return E_NOTIMPL; }
 
 	// Some Other helper functions
 	//
 	SCODE SetBitmap(HBITMAP hBitmap);
 	SCODE GetOleObject(IOleClientSite *pOleClientSite, IStorage *pStorage, IOleObject** pOleObject);
+	SCODE createStorage(IStorage **pStorage, LPLOCKBYTES *lpLockBytes);
 
 };
 
