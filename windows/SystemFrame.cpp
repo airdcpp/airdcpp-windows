@@ -40,9 +40,13 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlPad.SetFont(WinUtil::font);
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
-	ctrlPad.LimitText(128*1024);
+	ctrlPad.LimitText(96*1024); //now that we have icons we might want to limit even lower, the ram usage grows when many icons in view.
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 	
+	iconInfo = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("info.ico")),WinUtil::bgColor, IDI_INFO, 16, 16);
+	iconWarning = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("warning.ico")),WinUtil::bgColor, IDI_IWARNING, 16, 16);
+	iconError = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("error.ico")),WinUtil::bgColor, IDI_IERROR, 16, 16);
+
 	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 
 	//might miss some messages
@@ -52,8 +56,6 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	for(auto i = oldMessages.begin(); i != oldMessages.end(); ++i) {
 		addLine(i->second, Text::toT(i->first));
 	}
-
-	bWarning.LoadFromResource(IDR_EMOTICON, _T("PNG"), _Module.get_m_hInst());
 
 	tabMenu = CreatePopupMenu();
 	if(BOOLSETTING(LOG_SYSTEM)) {
@@ -66,11 +68,9 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
 
+
 	SettingsManager::getInstance()->addListener(this);
 	WinUtil::SetIcon(m_hWnd, _T("systemlog.ico"));
-	/*LogManager::getInstance()->message("This is Info", LogManager::LOG_INFO);
-	LogManager::getInstance()->message("This is Warning", LogManager::LOG_WARNING);
-	LogManager::getInstance()->message("This is Error", LogManager::LOG_ERROR);*/
 	bHandled = FALSE;
 	return 1;
 }
@@ -182,14 +182,14 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	
 	switch(md.severity) {
 	
+		case LogManager::LOG_INFO:
+			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(),iconInfo, false);
+			break;
 		case LogManager::LOG_WARNING:
-			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("warning.ico")),WinUtil::bgColor,16,16));
+			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), iconWarning, false);
 			break;
 		case LogManager::LOG_ERROR:
-			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("error.ico")),WinUtil::bgColor,16,16));
-			break;
-		case LogManager::LOG_INFO:
-			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("info.ico")),WinUtil::bgColor,16,16));
+			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), iconError, false);
 			break;
 		default:
 			break;
@@ -257,6 +257,7 @@ LRESULT SystemFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM l
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click 
 	tabMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 	return TRUE;
+	
 }
 
 LRESULT SystemFrame::onSystemLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

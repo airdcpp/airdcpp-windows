@@ -2028,6 +2028,10 @@ IDI_UPLOAD_QUEUE        ICON                    "res\\ToolbarImages\\uQueue.ico"
 IDI_SCAN                ICON                    "res\\ToolbarImages\\ScanMissing.ico"
 IDI_AUTOSEARCH          ICON                    "res\\ToolbarImages\\AutoSearch.ico"
 
+IDI_IERROR				ICON					"res\\error.ico"
+IDI_IWARNING			ICON					"res\\warning.ico"
+IDI_INFO				ICON					"res\\info.ico"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // PNG

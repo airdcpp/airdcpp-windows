@@ -181,6 +181,9 @@
 #define IDI_UPLOAD_QUEUE                369
 #define IDI_SCAN                        370
 #define IDI_AUTOSEARCH                  371
+#define IDI_IERROR						372
+#define IDI_IWARNING					373
+#define IDI_INFO						374
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479

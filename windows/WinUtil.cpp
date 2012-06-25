@@ -2366,9 +2366,12 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 	ctrlLanguage.SetCurSel(Localization::curLanguage);
 }
 
-HBITMAP WinUtil::getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/) {
+HBITMAP WinUtil::getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, long defaultIcon /*0*/,int xSize /*= 0*/, int ySize /*= 0*/) {
+	HICON hIcon = NULL;
+	hIcon = HICON(::LoadImage(NULL, aFile.c_str(), IMAGE_ICON, xSize, ySize, LR_LOADFROMFILE));
+	if(!hIcon && (defaultIcon != 0))
+		hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(defaultIcon), IMAGE_ICON, xSize, ySize, LR_DEFAULTCOLOR);
 	
-	HICON hIcon = HICON(::LoadImage(NULL, aFile.c_str(), IMAGE_ICON, xSize, ySize, LR_LOADFROMFILE));
 	if(!hIcon)
 		return NULL;
 
@@ -2408,9 +2411,11 @@ HBITMAP WinUtil::getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, int
 	DeleteDC(memdc);
 	DeleteObject(hIcon);
 	DeleteObject(hBrush);
+	DeleteObject(hOldBitmap);
 
 	return hBitmap;
 }
+
 
 /**
  * @file

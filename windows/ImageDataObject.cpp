@@ -15,74 +15,69 @@
 #include "ImageDataObject.h"
 
 // Static member functions
-void CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap) {
-	
+void CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap, bool deleteHandle/*true*/ )
+{
 	if(!pRichEditOle || !hBitmap)
 		return;
 
+	LPDATAOBJECT lpDataObject = NULL;
+	IOleClientSite *pOleClientSite = NULL;	
+	IStorage *pStorage  = NULL;	
 	LPLOCKBYTES lpLockBytes = NULL;
-	SCODE sc = ::CreateILockBytesOnHGlobal(NULL, TRUE, &lpLockBytes);
-
-	if(sc != S_OK || lpLockBytes == NULL) {
-		DeleteObject(hBitmap);
-		pRichEditOle->Release();	
-		dcdebug("Thrown OLE Exception: %d\n", sc);
-		return;
-	}
-
-	// Initialize a Storage Object
-	IStorage *pStorage = NULL;	
-	sc = ::StgCreateDocfileOnILockBytes(lpLockBytes,
-		STGM_SHARE_EXCLUSIVE|STGM_CREATE|STGM_READWRITE, 0, &pStorage);
 	
-	if(sc != S_OK) {
-		DeleteObject(hBitmap);
-		pRichEditOle->Release();	
-		lpLockBytes->Release();
-		lpLockBytes = NULL;
-		dcdebug("Thrown OLE Exception: %d\n", sc);
-		return;
-	}
-	dcassert(pStorage != NULL);
+	SCODE sc = NULL;
+	CLSID clsid = CLSID_NULL;
 
-	CImageDataObject pods;
-	pods.SetBitmap(hBitmap);
-	
+	// Get the image data object
+	//
+	CImageDataObject *pods = new CImageDataObject;
+	pods->duplicate = !deleteHandle;
+	pods->QueryInterface(IID_IDataObject, (void **)&lpDataObject);
+	pods->SetBitmap(hBitmap);
+
 	// Get the RichEdit container site
-	IOleClientSite *pOleClientSite;	
+	//
 	pRichEditOle->GetClientSite(&pOleClientSite);
 
-	if(pOleClientSite == NULL) {
-		DeleteObject(hBitmap);
+	// Initialize a Storage Object
+	//
+	sc = ::CreateILockBytesOnHGlobal(NULL, TRUE, &lpLockBytes);
+	if(sc != S_OK || lpLockBytes == NULL) {
+		if(deleteHandle) DeleteObject(hBitmap);
 		pRichEditOle->Release();	
-		lpLockBytes->Release();
-		lpLockBytes = NULL;
-		dcdebug("pOleClientSite is NULL\n");
 		return;
 	}
-		
-	// The final ole object which will be inserted in the richedit control
-	IOleObject* pOleObject = pods.GetOleObject(pOleClientSite, pStorage);
+	
+	sc = ::StgCreateDocfileOnILockBytes(lpLockBytes,
+		STGM_SHARE_EXCLUSIVE|STGM_CREATE|STGM_READWRITE, 0, &pStorage);
+	if (sc != S_OK) {
+		if(deleteHandle) DeleteObject(hBitmap);
+		pRichEditOle->Release();
+		lpLockBytes->Release();
+		lpLockBytes = NULL;
+		return;
+	}
 
+	// The final ole object which will be inserted in the richedit control
+	//
+	IOleObject *pOleObject = pods->GetOleObject(pOleClientSite, pStorage);
+		
 	if(pOleObject != NULL) {
+
 		// all items are "contained" -- this makes our reference to this object
 		//  weak -- which is needed for links to embedding silent update.
-		OleSetContainedObject(pOleObject, TRUE);		
-
+		OleSetContainedObject(pOleObject, TRUE);
 		// Now Add the object to the RichEdit 
-		REOBJECT reobject = { 0 };
+		//
+		REOBJECT reobject;
+		ZeroMemory(&reobject, sizeof(REOBJECT));
 		reobject.cbStruct = sizeof(REOBJECT);
 	
-		CLSID clsid;
 		sc = pOleObject->GetUserClassID(&clsid);
-		
-		if(sc != S_OK) {
-			pRichEditOle->Release();
-			DeleteObject(hBitmap);
-			dcdebug("Thrown OLE Exception: %d\n", sc);
+		if (sc != S_OK) {
+			pOleObject->Release();
 			return;
 		}
-
 		reobject.clsid = clsid;
 		reobject.cp = REO_CP_SELECTION;
 		reobject.dvaspect = DVASPECT_CONTENT;
@@ -92,48 +87,52 @@ void CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap)
 		reobject.pstg = pStorage;
 
 		// Insert the bitmap at the current location in the richedit control
+		//
 		pRichEditOle->InsertObject(&reobject);
-
-		// Release all unnecessary interfaces
-		pOleObject->Release();
 	}
 
-	pOleClientSite->Release();
-	lpLockBytes->Release();
-	pStorage->Release();
-	pRichEditOle->Release();
-	DeleteObject(hBitmap);
+	// Release all unnecessary interfaces
+	//
+	//TODO: rewrite usage of these handles, these should be used with the richedit instance rather than with every icon!
+	if(pOleObject) pOleObject->Release();
+	if(pOleClientSite) pOleClientSite->Release();
+	if(pStorage) pStorage->Release();
+	if(lpDataObject) lpDataObject->Release();
+	if(lpLockBytes) lpLockBytes->Release();
+	if(deleteHandle) DeleteObject(hBitmap);
+		
 }
 
-void CImageDataObject::SetBitmap(HBITMAP hBitmap) {
-	dcassert(hBitmap);
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
 
+void CImageDataObject::SetBitmap(HBITMAP hBitmap)
+{
+	
 	STGMEDIUM stgm;
-	stgm.tymed = TYMED_GDI;
+	stgm.tymed = TYMED_GDI;					// Storage medium = HBITMAP handle		
 	stgm.hBitmap = hBitmap;
-	stgm.pUnkForRelease = NULL;
+	stgm.pUnkForRelease = NULL;				// Use ReleaseStgMedium
 
 	FORMATETC fm;
-	fm.cfFormat = CF_BITMAP;
-	fm.ptd = NULL;
-	fm.dwAspect = DVASPECT_CONTENT;
-	fm.lindex = -1;
-	fm.tymed = TYMED_GDI;
+	fm.cfFormat = CF_BITMAP;				// Clipboard format = CF_BITMAP
+	fm.ptd = NULL;							// Target Device = Screen
+	fm.dwAspect = DVASPECT_CONTENT;			// Level of detail = Full content
+	fm.lindex = -1;							// Index = Not applicaple
+	fm.tymed = TYMED_GDI;					// Storage medium = HBITMAP handle
 
 	this->SetData(&fm, &stgm, TRUE);		
 }
 
-IOleObject *CImageDataObject::GetOleObject(IOleClientSite *pOleClientSite, IStorage *pStorage) {
-	dcassert(m_stgmed.hBitmap);
-
+IOleObject *CImageDataObject::GetOleObject(IOleClientSite *pOleClientSite, IStorage *pStorage)
+{
+	SCODE sc;
 	IOleObject *pOleObject;
-	
-	SCODE sc = ::OleCreateStaticFromData(this, IID_IOleObject, OLERENDER_FORMAT, 
+	sc = ::OleCreateStaticFromData(this, IID_IOleObject, OLERENDER_FORMAT, 
 			&m_fromat, pOleClientSite, pStorage, (void **)&pOleObject);
-	
-	if (sc != S_OK) {
-		dcdebug("Thrown OLE Exception: %d\n", sc);
+	if (sc != S_OK)
 		return NULL;
-	}
+
 	return pOleObject;
 }

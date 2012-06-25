@@ -126,9 +126,12 @@ private:
 	void Colorize(const tstring& line, LONG Begin);
 	boost::wregex reg;
 
+	HBITMAP  iconInfo;
+	HBITMAP  iconWarning;
+	HBITMAP  iconError;
+
 	bool scrollIsAtEnd();
 	tstring selWord;
-	ExCImage bWarning;
 	tstring WordFromPos(const POINT& p);
 };
 

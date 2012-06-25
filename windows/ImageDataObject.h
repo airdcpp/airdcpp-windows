@@ -16,90 +16,116 @@
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+#pragma warning(disable : 4100) // unreferenced formal parameter
 
-class CImageDataObject : IDataObject {
+class CImageDataObject : IDataObject
+{
 public:
-	static void InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap);
+
+	static void InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap, bool deleteHandle = true);
 
 private:
 	ULONG	m_ulRefCnt;
 	BOOL	m_bRelease;
+	bool duplicate;
 
 	// The data being bassed to the richedit
+	//
 	STGMEDIUM m_stgmed;
 	FORMATETC m_fromat;
 
 public:
-	CImageDataObject() : m_ulRefCnt(0), m_bRelease(FALSE) {	}
-	~CImageDataObject() {
+	CImageDataObject() : m_ulRefCnt(0), duplicate(false)
+	{
+		m_bRelease = FALSE;
+	}
+
+	~CImageDataObject()
+	{
 		if (m_bRelease)
 			::ReleaseStgMedium(&m_stgmed);
 	}
 
 	// Methods of the IUnknown interface
-
-	STDMETHOD(QueryInterface)(REFIID iid, void ** ppvObject) {
-		if (iid == IID_IUnknown || iid == IID_IDataObject) {
+	// 
+	STDMETHOD(QueryInterface)(REFIID iid, void ** ppvObject)
+	{
+		if (iid == IID_IUnknown || iid == IID_IDataObject)
+		{
 			*ppvObject = this;
 			AddRef();
 			return S_OK;
-		} else
+		}
+		else
 			return E_NOINTERFACE;
 	}
-	STDMETHOD_(ULONG, AddRef)(void) {
+	STDMETHOD_(ULONG, AddRef)(void)
+	{
 		m_ulRefCnt++;
 		return m_ulRefCnt;
 	}
-	STDMETHOD_(ULONG, Release)(void) {
-		if (--m_ulRefCnt == 0) {
+	STDMETHOD_(ULONG, Release)(void)
+	{
+		if (--m_ulRefCnt == 0)
+		{
 			delete this;
-			return 0;
 		}
 
 		return m_ulRefCnt;
 	}
 
 	// Methods of the IDataObject Interface
-
-	STDMETHOD(GetData)(FORMATETC* /*pformatetcIn*/, STGMEDIUM *pmedium) {
-
+	//
+	STDMETHOD(GetData)(FORMATETC *pformatetcIn, STGMEDIUM *pmedium) {
+		if(duplicate) {
+			HANDLE hDst;
+			hDst = ::OleDuplicateData(m_stgmed.hBitmap, CF_BITMAP, NULL);
+			if (hDst == NULL)
+			{
+				return E_HANDLE;
+			}
+		
 		pmedium->tymed = TYMED_GDI;
-		pmedium->hBitmap = m_stgmed.hBitmap;
+		pmedium->hBitmap = (HBITMAP)hDst;
+		} else {
+			pmedium->tymed = TYMED_GDI;
+			pmedium->hBitmap = m_stgmed.hBitmap;
+		}
 		pmedium->pUnkForRelease = NULL;
 
 		return S_OK;
 	}
-	STDMETHOD(GetDataHere)(FORMATETC* /*pformatetc*/, STGMEDIUM*  /*pmedium*/) {
+	STDMETHOD(GetDataHere)(FORMATETC* pformatetc, STGMEDIUM*  pmedium ) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(QueryGetData)(FORMATETC* /*pformatetc*/) {
+	STDMETHOD(QueryGetData)(FORMATETC*  pformatetc ) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(GetCanonicalFormatEtc)(FORMATETC* /*pformatectIn*/,FORMATETC* /*pformatetcOut*/) {
+	STDMETHOD(GetCanonicalFormatEtc)(FORMATETC*  pformatectIn ,FORMATETC* pformatetcOut ) 	{
 		return E_NOTIMPL;
 	}
 	STDMETHOD(SetData)(FORMATETC* pformatetc , STGMEDIUM*  pmedium , BOOL  fRelease ) {
 		m_fromat = *pformatetc;
 		m_stgmed = *pmedium;
-		m_bRelease = fRelease;
+
 		return S_OK;
 	}
-	STDMETHOD(EnumFormatEtc)(DWORD /*dwDirection*/, IEnumFORMATETC** /*ppenumFormatEtc*/) {
+	STDMETHOD(EnumFormatEtc)(DWORD  dwDirection , IEnumFORMATETC**  ppenumFormatEtc ) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(DAdvise)(FORMATETC* /*pformatetc*/, DWORD /*advf*/, IAdviseSink* /*pAdvSink*/,
-		DWORD* /*pdwConnection*/) {
+	STDMETHOD(DAdvise)(FORMATETC *pformatetc, DWORD advf, IAdviseSink *pAdvSink,
+		DWORD *pdwConnection) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(DUnadvise)(DWORD /*dwConnection*/) {
+	STDMETHOD(DUnadvise)(DWORD dwConnection) {
 		return E_NOTIMPL;
 	}
-	STDMETHOD(EnumDAdvise)(IEnumSTATDATA ** /*ppenumAdvise*/) {
+	STDMETHOD(EnumDAdvise)(IEnumSTATDATA **ppenumAdvise) {
 		return E_NOTIMPL;
 	}
 
 	// Some Other helper functions
-
+	//
 	void SetBitmap(HBITMAP hBitmap);
 	IOleObject *GetOleObject(IOleClientSite *pOleClientSite, IStorage *pStorage);
 

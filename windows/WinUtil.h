@@ -236,7 +236,7 @@ public:
 		return (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
 	}
 
-	static HBITMAP getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/);
+	static HBITMAP getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, long defaultIcon = 0, int xSize = 0, int ySize = 0);
 
 	/**
 	 * Check if this is a common /-command.
