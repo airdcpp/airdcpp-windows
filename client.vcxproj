@@ -460,10 +460,10 @@
     <None Include="client\version.h.template" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="boost-regex.vcxproj">
+    <ProjectReference Include="boost\boost.vcxproj">
       <Project>{d1095e8a-63a5-4592-ae93-2d638f20f66a}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <Private>true</Private>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
