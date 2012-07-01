@@ -1532,47 +1532,44 @@ LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
-		if(aTick == lastUpdate)	// FIXME: temp fix for new TimerManager
+	if(aTick == lastUpdate)	// FIXME: temp fix for new TimerManager
 		return;
 
-		Util::increaseUptime();
-		int64_t diff = (int64_t)((lastUpdate == 0) ? aTick - 1000 : aTick - lastUpdate);
-		int64_t updiff = Socket::getTotalUp() - lastUp;
-		int64_t downdiff = Socket::getTotalDown() - lastDown;
-		uint64_t queueSize = QueueManager::getInstance()->fileQueue.getTotalQueueSize();
+	Util::increaseUptime();
+	int64_t diff = (int64_t)((lastUpdate == 0) ? aTick - 1000 : aTick - lastUpdate);
+	int64_t updiff = Socket::getTotalUp() - lastUp;
+	int64_t downdiff = Socket::getTotalDown() - lastDown;
+	uint64_t queueSize = QueueManager::getInstance()->fileQueue.getTotalQueueSize();
 
-		TStringList* str = new TStringList();
-		str->push_back(Util::getAway() ? TSTRING(AWAY) : _T(""));
-		str->push_back(TSTRING(SHARED) + _T(": ") + Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
-		str->push_back(_T("H: ") + Text::toT(Client::getCounts()));
-		str->push_back(TSTRING(SLOTS) + _T(": ") + Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
-		str->push_back(_T("D: ") + Util::formatBytesW(Socket::getTotalDown()));
-		str->push_back(_T("U: ") + Util::formatBytesW(Socket::getTotalUp()));
-		str->push_back(_T("D: [") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("]") + Util::formatBytesW(downdiff*1000I64/diff) + _T("/s"));
-		str->push_back(_T("U: [") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("]") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
-		str->push_back(TSTRING(QUEUE_SIZE) + _T(": ")  + Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
+	TStringList* str = new TStringList();
+	str->push_back(Util::getAway() ? TSTRING(AWAY) : _T(""));
+	str->push_back(TSTRING(SHARED) + _T(": ") + Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
+	str->push_back(_T("H: ") + Text::toT(Client::getCounts()));
+	str->push_back(TSTRING(SLOTS) + _T(": ") + Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
+	str->push_back(_T("D: ") + Util::formatBytesW(Socket::getTotalDown()));
+	str->push_back(_T("U: ") + Util::formatBytesW(Socket::getTotalUp()));
+	str->push_back(_T("D: [") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("]") + Util::formatBytesW(downdiff*1000I64/diff) + _T("/s"));
+	str->push_back(_T("U: [") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("]") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
+	str->push_back(TSTRING(QUEUE_SIZE) + _T(": ")  + Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
 
-		PostMessage(WM_SPEAKER, STATS, (LPARAM)str);
-		SettingsManager::getInstance()->set(SettingsManager::TOTAL_UPLOAD, SETTING(TOTAL_UPLOAD) + updiff);
-		SettingsManager::getInstance()->set(SettingsManager::TOTAL_DOWNLOAD, SETTING(TOTAL_DOWNLOAD) + downdiff);
-		lastUpdate = aTick;
-		lastUp = Socket::getTotalUp();
-		lastDown = Socket::getTotalDown();
+	PostMessage(WM_SPEAKER, STATS, (LPARAM)str);
+	SettingsManager::getInstance()->set(SettingsManager::TOTAL_UPLOAD, SETTING(TOTAL_UPLOAD) + updiff);
+	SettingsManager::getInstance()->set(SettingsManager::TOTAL_DOWNLOAD, SETTING(TOTAL_DOWNLOAD) + downdiff);
+	lastUpdate = aTick;
+	lastUp = Socket::getTotalUp();
+	lastDown = Socket::getTotalDown();
 
-			if(SETTING(DISCONNECT_SPEED) < 1) {
-			SettingsManager::getInstance()->set(SettingsManager::DISCONNECT_SPEED, 1);
-		}
+	if(SETTING(DISCONNECT_SPEED) < 1) {
+		SettingsManager::getInstance()->set(SettingsManager::DISCONNECT_SPEED, 1);
+	}
 		
-		if(currentPic != SETTING(BACKGROUND_IMAGE)) {
-				currentPic = SETTING(BACKGROUND_IMAGE);
-				m_PictureWindow.Load(Text::toT(currentPic).c_str());
-		}
+	if(currentPic != SETTING(BACKGROUND_IMAGE)) {
+		currentPic = SETTING(BACKGROUND_IMAGE);
+		m_PictureWindow.Load(Text::toT(currentPic).c_str());
+	}
 
-			time_t currentTime;
-			time(&currentTime);
-			
-
-			
+	time_t currentTime;
+	time(&currentTime);
 }
 
 void MainFrame::on(PartialList, const HintedUser& aUser, const string& text) noexcept {

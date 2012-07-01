@@ -600,3 +600,42 @@ Fixed:
 - Fix a popup crash on download failed
 - Fixes memory leaks
 - Fixes handling of some rare characters in SFV files
+
+
+2.40
+
+Added:
+
+- Severity icons for system log messages
+- Allow users choose the download path selection strategy (most space available/least possible free space available)
+- List real paths in the "Download to.." menu
+- Add "Download with priority" for search results
+
+
+Changed:
+
+- Better display of bundles in transfer view
+- Better locking (less freezes)
+- Reorganized filelist and transfer view context menus
+- Ignore temp files when checking for queue dupes
+- Check slots before any filesystem access on a file upload request (DC++)
+- Enable compiling with VS2012
+- Sort highest priority files based on the size (smallest ones are downloaded first)
+- Don't allow users to download full filelist from ADC users via the search window
+
+
+Fixed:
+
+- Fix getting the bundle path for upload file bundles
+- Fix searching of upload bundles from transfer view
+- More reliable way to trim http addresses (DC++)
+- Auto search adding fixes
+- Fix problems with negative total queue size
+- Fix removing of extra words with web shotcuts
+- Correct search behaviour for magnet links in chat
+- Fix "Copy magnet" in filelists
+
+
+Removed:
+
+- The option to use antifrag method for downloads (always enabled now, didn't work correctly earlier)
