@@ -41,7 +41,7 @@
 #include <boost/graph/properties.hpp>
 #include <boost/static_assert.hpp>
 #include <boost/functional/hash.hpp>
-#include <boost/utility.hpp>
+#include <boost/next_prior.hpp>
 
 #ifdef BOOST_GRAPH_NO_BUNDLED_PROPERTIES
 #  error The Compressed Sparse Row graph only supports bundled properties.
@@ -1134,7 +1134,6 @@ add_vertices(typename BOOST_DIR_CSR_GRAPH_TYPE::vertices_size_type count, BOOST_
   Vertex old_num_verts_plus_one = g.m_forward.m_rowstart.size();
   EdgeIndex numedges = g.m_forward.m_rowstart.back();
   g.m_forward.m_rowstart.resize(old_num_verts_plus_one + count, numedges);
-  g.m_backward.m_rowstart.resize(old_num_verts_plus_one + count, numedges);
   g.vertex_properties().resize(num_vertices(g));
   return old_num_verts_plus_one - 1;
 }
@@ -1383,26 +1382,26 @@ edges(const BOOST_CSR_GRAPH_TYPE& g)
 // Graph properties
 template<BOOST_CSR_GRAPH_TEMPLATE_PARMS, class Tag, class Value>
 inline void
-set_property(BOOST_CSR_GRAPH_TYPE& g, Tag, const Value& value)
+set_property(BOOST_CSR_GRAPH_TYPE& g, Tag tag, const Value& value)
 {
-  get_property_value(g.m_property, Tag()) = value;
+  get_property_value(g.m_property, tag) = value;
 }
 
 template<BOOST_CSR_GRAPH_TEMPLATE_PARMS, class Tag>
 inline
 typename graph_property<BOOST_CSR_GRAPH_TYPE, Tag>::type&
-get_property(BOOST_CSR_GRAPH_TYPE& g, Tag)
+get_property(BOOST_CSR_GRAPH_TYPE& g, Tag tag)
 {
-  return get_property_value(g.m_property, Tag());
+  return get_property_value(g.m_property, tag);
 }
 
 template<BOOST_CSR_GRAPH_TEMPLATE_PARMS, class Tag>
 inline
 const
 typename graph_property<BOOST_CSR_GRAPH_TYPE, Tag>::type&
-get_property(const BOOST_CSR_GRAPH_TYPE& g, Tag)
+get_property(const BOOST_CSR_GRAPH_TYPE& g, Tag tag)
 {
-  return get_property_value(g.m_property, Tag());
+  return get_property_value(g.m_property, tag);
 }
 
 template<BOOST_CSR_GRAPH_TEMPLATE_PARMS>

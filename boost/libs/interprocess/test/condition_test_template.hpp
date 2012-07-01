@@ -36,7 +36,7 @@ namespace test {
 
 boost::posix_time::ptime ptime_delay(int secs)
 {
-   return   microsec_clock::universal_time() + 
+   return   microsec_clock::universal_time() +
             boost::posix_time::time_duration(0, 0, secs);
 }
 
@@ -47,8 +47,8 @@ inline boost::xtime delay(int secs, int msecs=0, int nsecs=0)
     const int NANOSECONDS_PER_MILLISECOND = 1000000;
 
     boost::xtime xt;
-    int ret = boost::xtime_get(&xt, boost::TIME_UTC);
-    BOOST_INTERPROCES_CHECK(ret == static_cast<int>(boost::TIME_UTC));(void)ret;
+    int ret = boost::xtime_get(&xt, boost::TIME_UTC_);
+    BOOST_INTERPROCES_CHECK(ret == static_cast<int>(boost::TIME_UTC_));(void)ret;
     nsecs += xt.nsec;
     msecs += nsecs / NANOSECONDS_PER_MILLISECOND;
     secs += msecs / MILLISECONDS_PER_SECOND;
@@ -95,7 +95,7 @@ struct condition_test_data
 template <class Condition, class Mutex>
 void condition_test_thread(condition_test_data<Condition, Mutex>* data)
 {
-    boost::interprocess::scoped_lock<Mutex> 
+    boost::interprocess::scoped_lock<Mutex>
       lock(data->mutex);
     BOOST_INTERPROCES_CHECK(lock ? true : false);
     while (!(data->notified > 0))
@@ -117,7 +117,7 @@ struct cond_predicate
 template <class Condition, class Mutex>
 void condition_test_waits(condition_test_data<Condition, Mutex>* data)
 {
-    boost::interprocess::scoped_lock<Mutex> 
+    boost::interprocess::scoped_lock<Mutex>
       lock(data->mutex);
     BOOST_INTERPROCES_CHECK(lock ? true : false);
 
@@ -162,7 +162,7 @@ void do_test_condition_notify_one()
 
    boost::thread thread(bind_function(&condition_test_thread<Condition, Mutex>, &data));
    {
-      boost::interprocess::scoped_lock<Mutex> 
+      boost::interprocess::scoped_lock<Mutex>
          lock(data.mutex);
       BOOST_INTERPROCES_CHECK(lock ? true : false);
       data.notified++;
@@ -184,7 +184,7 @@ void do_test_condition_notify_all()
        threads.create_thread(bind_function(&condition_test_thread<Condition, Mutex>, &data));
 
    {
-      boost::interprocess::scoped_lock<Mutex> 
+      boost::interprocess::scoped_lock<Mutex>
          lock(data.mutex);
       BOOST_INTERPROCES_CHECK(lock ? true : false);
       data.notified++;

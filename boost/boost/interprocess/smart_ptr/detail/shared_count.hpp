@@ -28,7 +28,7 @@
 #include <boost/interprocess/smart_ptr/detail/bad_weak_ptr.hpp>
 #include <boost/interprocess/smart_ptr/detail/sp_counted_impl.hpp>
 #include <boost/interprocess/detail/utilities.hpp>
-#include <boost/container/allocator/allocator_traits.hpp>
+#include <boost/container/allocator_traits.hpp>
 #include <boost/detail/no_exceptions_support.hpp>
 #include <functional>       // std::less
 
@@ -99,7 +99,7 @@ class shared_count
             counted_impl_allocator alloc(a);
             m_pi = alloc.allocate(1);
             //Anti-exception deallocator
-            scoped_ptr<counted_impl, 
+            scoped_ptr<counted_impl,
                      scoped_ptr_dealloc_functor<counted_impl_allocator> >
                         deallocator(m_pi, alloc);
             //It's more correct to use VoidAllocator::construct but
@@ -116,7 +116,7 @@ class shared_count
    }
 
    ~shared_count() // nothrow
-   {  
+   { 
       if(m_pi)
          m_pi->release();
    }

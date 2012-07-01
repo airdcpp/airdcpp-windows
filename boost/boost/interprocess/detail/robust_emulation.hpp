@@ -68,7 +68,7 @@ inline void robust_lock_path(std::string &s)
 
 inline void create_and_get_robust_lock_file_path(std::string &s, OS_process_id_t pid)
 {
-   file_locking_helpers::create_tmp_subdir_and_get_pid_based_filepath
+   intermodule_singleton_helpers::create_tmp_subdir_and_get_pid_based_filepath
       (robust_lock_subdir_path(), robust_lock_prefix(), pid, s);
 }
 
@@ -132,7 +132,7 @@ class robust_mutex_lock_file
             throw interprocess_exception(other_error, "Robust emulation robust_mutex_lock_file constructor failed: create_file filed with unexpected error");
          }
       }
-   }   
+   }  
 
    ~robust_mutex_lock_file()
    {
@@ -154,7 +154,7 @@ class robust_mutex_lock_file
       {
          std::string pid_str;
          //If the lock file is not our own lock file, then try to do the cleanup
-         if(!file_locking_helpers::check_if_filename_complies_with_pid
+         if(!intermodule_singleton_helpers::check_if_filename_complies_with_pid
             (filename, robust_lock_prefix(), get_current_process_id(), pid_str)){
             remove_if_can_lock_file(filepath);
          }
@@ -324,7 +324,7 @@ inline bool robust_spin_mutex<Mutex>::robust_check()
       return false;
    }
    atomic_write32(&this->state, fixing_state);
-   return true;   
+   return true;  
 }
 
 template<class Mutex>
@@ -424,7 +424,7 @@ template<class Mutex>
 inline bool robust_spin_mutex<Mutex>::lock_own_unique_file()
 {
    //This function forces instantiation of the singleton
-   robust_emulation_helpers::robust_mutex_lock_file* dummy = 
+   robust_emulation_helpers::robust_mutex_lock_file* dummy =
       &ipcdetail::intermodule_singleton
          <robust_emulation_helpers::robust_mutex_lock_file>::get();
    return dummy != 0;

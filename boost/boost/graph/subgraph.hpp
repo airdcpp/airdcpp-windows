@@ -24,7 +24,9 @@
 
 #include <boost/static_assert.hpp>
 #include <boost/assert.hpp>
-#include <boost/type_traits/is_same.hpp>
+#include <boost/type_traits.hpp>
+#include <boost/mpl/if.hpp>
+#include <boost/mpl/or.hpp>
 
 namespace boost {
 
@@ -131,15 +133,29 @@ public:
 
     // copy constructor
     subgraph(const subgraph& x)
-        : m_graph(x.m_graph), m_parent(x.m_parent), m_edge_counter(x.m_edge_counter)
+        : m_parent(x.m_parent), m_edge_counter(x.m_edge_counter)
         , m_global_vertex(x.m_global_vertex), m_global_edge(x.m_global_edge)
     {
-        // Do a deep copy (recursive).
-        for(typename ChildrenList::const_iterator i = x.m_children.begin();
-            i != x.m_children.end(); ++i)
+        if(x.is_root())
         {
-            m_children.push_back(new subgraph<Graph>( **i ));
+         m_graph = x.m_graph;
         }
+        // Do a deep copy (recursive).
+        // Only the root graph is copied, the subgraphs contain
+        // only references to the global vertices they own.
+        typename subgraph<Graph>::children_iterator i,i_end;
+        boost::tie(i,i_end) = x.children();
+        for(; i != i_end; ++i)
+        {         
+         subgraph<Graph> child = this->create_subgraph();
+         child = *i;
+         vertex_iterator vi,vi_end;   
+         boost::tie(vi,vi_end) = vertices(*i);
+         for (;vi!=vi_end;++vi)  
+         {
+          add_vertex(*vi,child);
+         }
+       }
     }
 
 
@@ -764,7 +780,10 @@ class subgraph_global_property_map
 {
     typedef property_traits<PropertyMap> Traits;
 public:
-    typedef typename Traits::category category;
+    typedef typename mpl::if_<is_const<typename remove_pointer<GraphPtr>::type>,
+                              readable_property_map_tag,
+                              typename Traits::category>::type
+      category;
     typedef typename Traits::value_type value_type;
     typedef typename Traits::key_type key_type;
     typedef typename Traits::reference reference;
@@ -799,7 +818,10 @@ class subgraph_local_property_map
 {
     typedef property_traits<PropertyMap> Traits;
 public:
-    typedef typename Traits::category category;
+    typedef typename mpl::if_<is_const<typename remove_pointer<GraphPtr>::type>,
+                              readable_property_map_tag,
+                              typename Traits::category>::type
+      category;
     typedef typename Traits::value_type value_type;
     typedef typename Traits::key_type key_type;
     typedef typename Traits::reference reference;

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// (C) Copyright Ion Gaztanaga 2005-2011. Distributed under the Boost
+// (C) Copyright Ion Gaztanaga 2005-2012. Distributed under the Boost
 // Software License, Version 1.0. (See accompanying file
 // LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 //
@@ -32,6 +32,8 @@
 #include <boost/container/vector.hpp>
 #include <boost/container/detail/value_init.hpp>
 #include <boost/container/detail/destroyers.hpp>
+#include <boost/container/allocator_traits.hpp>
+#include <boost/aligned_storage.hpp>
 
 namespace boost {
 
@@ -46,24 +48,24 @@ class flat_tree_value_compare
    typedef Value              first_argument_type;
    typedef Value              second_argument_type;
    typedef bool               return_type;
-   public:     
+   public:    
    flat_tree_value_compare()
       : Compare()
    {}
 
-   flat_tree_value_compare(const Compare &pred) 
+   flat_tree_value_compare(const Compare &pred)
       : Compare(pred)
    {}
 
    bool operator()(const Value& lhs, const Value& rhs) const
-   { 
+   {
       KeyOfValue key_extract;
-      return Compare::operator()(key_extract(lhs), key_extract(rhs)); 
+      return Compare::operator()(key_extract(lhs), key_extract(rhs));
    }
 
    const Compare &get_comp() const
       {  return *this;  }
-   
+  
    Compare &get_comp()
       {  return *this;  }
 };
@@ -79,7 +81,7 @@ struct get_flat_tree_iterators
    typedef std::reverse_iterator<const_iterator>      const_reverse_iterator;
 };
 
-template <class Key, class Value, class KeyOfValue, 
+template <class Key, class Value, class KeyOfValue,
           class Compare, class A>
 class flat_tree
 {
@@ -90,7 +92,7 @@ class flat_tree
    typedef flat_tree_value_compare<Compare, Value, KeyOfValue> value_compare;
 
  private:
-   struct Data 
+   struct Data
       //Inherit from value_compare to do EBO
       : public value_compare
    {
@@ -102,19 +104,27 @@ class flat_tree
       {}
 
       Data(const Data &d)
-         : value_compare(d), m_vect(d.m_vect)
+         : value_compare(static_cast<const value_compare&>(d)), m_vect(d.m_vect)
       {}
 
       Data(BOOST_RV_REF(Data) d)
-         : value_compare(boost::move(d)), m_vect(boost::move(d.m_vect))
+         : value_compare(boost::move(static_cast<value_compare&>(d))), m_vect(boost::move(d.m_vect))
       {}
 
-      Data(const Compare &comp) 
+      Data(const Data &d, const A &a)
+         : value_compare(static_cast<const value_compare&>(d)), m_vect(d.m_vect, a)
+      {}
+
+      Data(BOOST_RV_REF(Data) d, const A &a)
+         : value_compare(boost::move(static_cast<value_compare&>(d))), m_vect(boost::move(d.m_vect), a)
+      {}
+
+      Data(const Compare &comp)
          : value_compare(comp), m_vect()
       {}
 
       Data(const Compare &comp,
-           const allocator_t &alloc) 
+           const allocator_t &alloc)
          : value_compare(comp), m_vect(alloc)
       {}
 
@@ -165,6 +175,10 @@ class flat_tree
    //!Standard extension
    typedef allocator_type                             stored_allocator_type;
 
+   private:
+   typedef allocator_traits<stored_allocator_type> stored_allocator_traits;
+
+   public:
    flat_tree()
       : m_data()
    { }
@@ -177,12 +191,20 @@ class flat_tree
       : m_data(comp, a)
    { }
 
-   flat_tree(const flat_tree& x) 
+   flat_tree(const flat_tree& x)
       :  m_data(x.m_data)
    { }
 
    flat_tree(BOOST_RV_REF(flat_tree) x)
       :  m_data(boost::move(x.m_data))
+   { }
+
+   flat_tree(const flat_tree& x, const allocator_type &a)
+      :  m_data(x.m_data, a)
+   { }
+
+   flat_tree(BOOST_RV_REF(flat_tree) x, const allocator_type &a)
+      :  m_data(boost::move(x.m_data), a)
    { }
 
    template <class InputIterator>
@@ -201,66 +223,66 @@ class flat_tree
    flat_tree&  operator=(BOOST_RV_REF(flat_tree) mx)
    {  m_data = boost::move(mx.m_data); return *this;  }
 
-   public:    
+   public:   
    // accessors:
-   Compare key_comp() const 
+   Compare key_comp() const
    { return this->m_data.get_comp(); }
 
-   allocator_type get_allocator() const 
+   allocator_type get_allocator() const
    { return this->m_data.m_vect.get_allocator(); }
 
-   const stored_allocator_type &get_stored_allocator() const 
+   const stored_allocator_type &get_stored_allocator() const
    {  return this->m_data.m_vect.get_stored_allocator(); }
 
    stored_allocator_type &get_stored_allocator()
    {  return this->m_data.m_vect.get_stored_allocator(); }
 
-   iterator begin() 
+   iterator begin()
    { return this->m_data.m_vect.begin(); }
 
-   const_iterator begin() const 
+   const_iterator begin() const
    { return this->cbegin(); }
 
-   const_iterator cbegin() const 
+   const_iterator cbegin() const
    { return this->m_data.m_vect.begin(); }
 
-   iterator end() 
+   iterator end()
    { return this->m_data.m_vect.end(); }
 
-   const_iterator end() const 
+   const_iterator end() const
    { return this->cend(); }
 
-   const_iterator cend() const 
+   const_iterator cend() const
    { return this->m_data.m_vect.end(); }
 
-   reverse_iterator rbegin() 
+   reverse_iterator rbegin()
    { return reverse_iterator(this->end()); }
 
-   const_reverse_iterator rbegin() const 
+   const_reverse_iterator rbegin() const
    {  return this->crbegin();  }
 
-   const_reverse_iterator crbegin() const 
+   const_reverse_iterator crbegin() const
    {  return const_reverse_iterator(this->cend());  }
 
-   reverse_iterator rend() 
+   reverse_iterator rend()
    { return reverse_iterator(this->begin()); }
 
-   const_reverse_iterator rend() const 
-   { return this->crend(); } 
+   const_reverse_iterator rend() const
+   { return this->crend(); }
 
-   const_reverse_iterator crend() const 
-   { return const_reverse_iterator(this->cbegin()); } 
+   const_reverse_iterator crend() const
+   { return const_reverse_iterator(this->cbegin()); }
 
-   bool empty() const 
+   bool empty() const
    { return this->m_data.m_vect.empty(); }
 
-   size_type size() const 
+   size_type size() const
    { return this->m_data.m_vect.size(); }
 
-   size_type max_size() const 
+   size_type max_size() const
    { return this->m_data.m_vect.max_size(); }
 
-   void swap(flat_tree& other) 
+   void swap(flat_tree& other)
    {  this->m_data.swap(other.m_data);  }
 
    public:
@@ -284,7 +306,6 @@ class flat_tree
       }
       return ret;
    }
-
 
    iterator insert_equal(const value_type& val)
    {
@@ -323,14 +344,14 @@ class flat_tree
    iterator insert_equal(const_iterator pos, const value_type& val)
    {
       insert_commit_data data;
-      priv_insert_equal_prepare(pos, val, data);
+      this->priv_insert_equal_prepare(pos, val, data);
       return priv_insert_commit(data, val);
    }
 
    iterator insert_equal(const_iterator pos, BOOST_RV_REF(value_type) mval)
    {
       insert_commit_data data;
-      priv_insert_equal_prepare(pos, mval, data);
+      this->priv_insert_equal_prepare(pos, mval, data);
       return priv_insert_commit(data, boost::move(mval));
    }
 
@@ -344,9 +365,25 @@ class flat_tree
    template <class InIt>
    void insert_equal(InIt first, InIt last)
    {
-      typedef typename 
+      typedef typename
          std::iterator_traits<InIt>::iterator_category ItCat;
-      priv_insert_equal(first, last, ItCat());
+      this->priv_insert_equal(first, last, ItCat());
+   }
+
+   template <class InIt>
+   void insert_equal(ordered_range_t, InIt first, InIt last)
+   {
+      typedef typename
+         std::iterator_traits<InIt>::iterator_category ItCat;
+      this->priv_insert_equal(ordered_range_t(), first, last, ItCat());
+   }
+
+   template <class InIt>
+   void insert_unique(ordered_unique_range_t, InIt first, InIt last)
+   {
+      typedef typename
+         std::iterator_traits<InIt>::iterator_category ItCat;
+      this->priv_insert_unique(ordered_unique_range_t(), first, last, ItCat());
    }
 
    #ifdef BOOST_CONTAINER_PERFECT_FORWARDING
@@ -354,44 +391,65 @@ class flat_tree
    template <class... Args>
    std::pair<iterator, bool> emplace_unique(Args&&... args)
    {
-      value_type && val = value_type(boost::forward<Args>(args)...);
+      aligned_storage<sizeof(value_type), alignment_of<value_type>::value> v;
+      value_type &val = *static_cast<value_type *>(static_cast<void *>(&v));
+      stored_allocator_type &a = this->get_stored_allocator();
+      stored_allocator_traits::construct(a, &val, ::boost::forward<Args>(args)... );
+      scoped_destructor<stored_allocator_type> d(a, &val);
       insert_commit_data data;
       std::pair<iterator,bool> ret =
          priv_insert_unique_prepare(val, data);
       if(ret.second){
          ret.first = priv_insert_commit(data, boost::move(val));
       }
+      d.release();
       return ret;
    }
 
    template <class... Args>
    iterator emplace_hint_unique(const_iterator hint, Args&&... args)
    {
-      value_type && val = value_type(boost::forward<Args>(args)...);
+      aligned_storage<sizeof(value_type), alignment_of<value_type>::value> v;
+      value_type &val = *static_cast<value_type *>(static_cast<void *>(&v));
+      stored_allocator_type &a = this->get_stored_allocator();
+      stored_allocator_traits::construct(a, &val, ::boost::forward<Args>(args)... );
+      scoped_destructor<stored_allocator_type> d(a, &val);
       insert_commit_data data;
       std::pair<iterator,bool> ret = priv_insert_unique_prepare(hint, val, data);
       if(ret.second){
          ret.first = priv_insert_commit(data, boost::move(val));
       }
+      d.release();
       return ret.first;
    }
 
    template <class... Args>
    iterator emplace_equal(Args&&... args)
    {
-      value_type &&val = value_type(boost::forward<Args>(args)...);
+      aligned_storage<sizeof(value_type), alignment_of<value_type>::value> v;
+      value_type &val = *static_cast<value_type *>(static_cast<void *>(&v));
+      stored_allocator_type &a = this->get_stored_allocator();
+      stored_allocator_traits::construct(a, &val, ::boost::forward<Args>(args)... );
+      scoped_destructor<stored_allocator_type> d(a, &val);
       iterator i = this->upper_bound(KeyOfValue()(val));
       i = this->m_data.m_vect.insert(i, boost::move(val));
+      d.release();
       return i;
    }
 
    template <class... Args>
    iterator emplace_hint_equal(const_iterator hint, Args&&... args)
    {
-      value_type &&val = value_type(boost::forward<Args>(args)...);
+      aligned_storage<sizeof(value_type), alignment_of<value_type>::value> v;
+      value_type &val = *static_cast<value_type *>(static_cast<void *>(&v));
+      stored_allocator_type &a = this->get_stored_allocator();
+      stored_allocator_traits::construct(a, &val, ::boost::forward<Args>(args)... );
+      scoped_destructor<stored_allocator_type> d(a, &val);
       insert_commit_data data;
-      priv_insert_equal_prepare(hint, val, data);
-      return priv_insert_commit(data, boost::move(val));
+      this->priv_insert_equal_prepare(hint, val, data);
+      iterator i = priv_insert_commit(data, boost::move(val));
+      d.release();
+      return i;
    }
 
    #else //#ifdef BOOST_CONTAINER_PERFECT_FORWARDING
@@ -401,15 +459,18 @@ class flat_tree
    std::pair<iterator, bool>                                                              \
       emplace_unique(BOOST_PP_ENUM(n, BOOST_CONTAINER_PP_PARAM_LIST, _))                  \
    {                                                                                      \
-      BOOST_PP_EXPR_IF(BOOST_PP_NOT(n), container_detail::value_init<) value_type         \
-         BOOST_PP_EXPR_IF(BOOST_PP_NOT(n), >) vval BOOST_PP_LPAREN_IF(n)                  \
-            BOOST_PP_ENUM(n, BOOST_CONTAINER_PP_PARAM_FORWARD, _) BOOST_PP_RPAREN_IF(n);  \
-      value_type &val = vval;                                                             \
+      aligned_storage<sizeof(value_type), alignment_of<value_type>::value> v;             \
+      value_type &val = *static_cast<value_type *>(static_cast<void *>(&v));              \
+      stored_allocator_type &a = this->get_stored_allocator();                            \
+      stored_allocator_traits::construct(a, &val                                          \
+         BOOST_PP_ENUM_TRAILING(n, BOOST_CONTAINER_PP_PARAM_FORWARD, _) );                \
+      scoped_destructor<stored_allocator_type> d(a, &val);                                \
       insert_commit_data data;                                                            \
       std::pair<iterator,bool> ret = priv_insert_unique_prepare(val, data);               \
       if(ret.second){                                                                     \
          ret.first = priv_insert_commit(data, boost::move(val));                          \
       }                                                                                   \
+      d.release();                                                                        \
       return ret;                                                                         \
    }                                                                                      \
                                                                                           \
@@ -417,27 +478,33 @@ class flat_tree
    iterator emplace_hint_unique(const_iterator hint                                       \
                         BOOST_PP_ENUM_TRAILING(n, BOOST_CONTAINER_PP_PARAM_LIST, _))      \
    {                                                                                      \
-      BOOST_PP_EXPR_IF(BOOST_PP_NOT(n), container_detail::value_init<) value_type         \
-         BOOST_PP_EXPR_IF(BOOST_PP_NOT(n), >) vval BOOST_PP_LPAREN_IF(n)                  \
-            BOOST_PP_ENUM(n, BOOST_CONTAINER_PP_PARAM_FORWARD, _) BOOST_PP_RPAREN_IF(n);  \
-      value_type &val = vval;                                                             \
+      aligned_storage<sizeof(value_type), alignment_of<value_type>::value> v;             \
+      value_type &val = *static_cast<value_type *>(static_cast<void *>(&v));              \
+      stored_allocator_type &a = this->get_stored_allocator();                            \
+      stored_allocator_traits::construct(a, &val                                          \
+         BOOST_PP_ENUM_TRAILING(n, BOOST_CONTAINER_PP_PARAM_FORWARD, _) );                \
+      scoped_destructor<stored_allocator_type> d(a, &val);                                \
       insert_commit_data data;                                                            \
       std::pair<iterator,bool> ret = priv_insert_unique_prepare(hint, val, data);         \
       if(ret.second){                                                                     \
          ret.first = priv_insert_commit(data, boost::move(val));                          \
       }                                                                                   \
+      d.release();                                                                        \
       return ret.first;                                                                   \
    }                                                                                      \
                                                                                           \
    BOOST_PP_EXPR_IF(n, template<) BOOST_PP_ENUM_PARAMS(n, class P) BOOST_PP_EXPR_IF(n, >) \
    iterator emplace_equal(BOOST_PP_ENUM(n, BOOST_CONTAINER_PP_PARAM_LIST, _))             \
    {                                                                                      \
-      BOOST_PP_EXPR_IF(BOOST_PP_NOT(n), container_detail::value_init<) value_type         \
-         BOOST_PP_EXPR_IF(BOOST_PP_NOT(n), >) vval BOOST_PP_LPAREN_IF(n)                  \
-            BOOST_PP_ENUM(n, BOOST_CONTAINER_PP_PARAM_FORWARD, _) BOOST_PP_RPAREN_IF(n);  \
-      value_type &val = vval;                                                             \
+      aligned_storage<sizeof(value_type), alignment_of<value_type>::value> v;             \
+      value_type &val = *static_cast<value_type *>(static_cast<void *>(&v));              \
+      stored_allocator_type &a = this->get_stored_allocator();                            \
+      stored_allocator_traits::construct(a, &val                                          \
+         BOOST_PP_ENUM_TRAILING(n, BOOST_CONTAINER_PP_PARAM_FORWARD, _) );                \
+      scoped_destructor<stored_allocator_type> d(a, &val);                                \
       iterator i = this->upper_bound(KeyOfValue()(val));                                  \
       i = this->m_data.m_vect.insert(i, boost::move(val));                                \
+      d.release();                                                                        \
       return i;                                                                           \
    }                                                                                      \
                                                                                           \
@@ -445,14 +512,19 @@ class flat_tree
    iterator emplace_hint_equal(const_iterator hint                                        \
                       BOOST_PP_ENUM_TRAILING(n, BOOST_CONTAINER_PP_PARAM_LIST, _))        \
    {                                                                                      \
-      BOOST_PP_EXPR_IF(BOOST_PP_NOT(n), container_detail::value_init<) value_type         \
-         BOOST_PP_EXPR_IF(BOOST_PP_NOT(n), >) vval BOOST_PP_LPAREN_IF(n)                  \
-            BOOST_PP_ENUM(n, BOOST_CONTAINER_PP_PARAM_FORWARD, _) BOOST_PP_RPAREN_IF(n);  \
-      value_type &val = vval;                                                             \
+      aligned_storage<sizeof(value_type), alignment_of<value_type>::value> v;             \
+      value_type &val = *static_cast<value_type *>(static_cast<void *>(&v));              \
+      stored_allocator_type &a = this->get_stored_allocator();                            \
+      stored_allocator_traits::construct(a, &val                                          \
+         BOOST_PP_ENUM_TRAILING(n, BOOST_CONTAINER_PP_PARAM_FORWARD, _) );                \
+      scoped_destructor<stored_allocator_type> d(a, &val);                                \
       insert_commit_data data;                                                            \
-      priv_insert_equal_prepare(hint, val, data);                                         \
-      return priv_insert_commit(data, boost::move(val));                                  \
+      this->priv_insert_equal_prepare(hint, val, data);                                   \
+      iterator i = priv_insert_commit(data, boost::move(val));                            \
+      d.release();                                                                        \
+      return i;                                                                           \
    }                                                                                      \
+
    //!
    #define BOOST_PP_LOCAL_LIMITS (0, BOOST_CONTAINER_MAX_CONSTRUCTOR_PARAMETERS)
    #include BOOST_PP_LOCAL_ITERATE()
@@ -493,8 +565,8 @@ class flat_tree
       const Compare &key_comp = this->m_data.get_comp();
       iterator i = this->lower_bound(k);
 
-      if (i != this->end() && key_comp(k, KeyOfValue()(*i))){  
-         i = this->end();  
+      if (i != this->end() && key_comp(k, KeyOfValue()(*i))){ 
+         i = this->end(); 
       }
       return i;
    }
@@ -504,8 +576,8 @@ class flat_tree
       const Compare &key_comp = this->m_data.get_comp();
       const_iterator i = this->lower_bound(k);
 
-      if (i != this->end() && key_comp(k, KeyOfValue()(*i))){  
-         i = this->end();  
+      if (i != this->end() && key_comp(k, KeyOfValue()(*i))){ 
+         i = this->end(); 
       }
       return i;
    }
@@ -535,10 +607,10 @@ class flat_tree
    std::pair<const_iterator, const_iterator> equal_range(const key_type& k) const
    {  return this->priv_equal_range(this->begin(), this->end(), k);  }
 
-   size_type capacity() const           
+   size_type capacity() const          
    { return this->m_data.m_vect.capacity(); }
 
-   void reserve(size_type count)       
+   void reserve(size_type count)      
    { this->m_data.m_vect.reserve(count);   }
 
    private:
@@ -567,12 +639,12 @@ class flat_tree
             data.position = pos;
          }
          else{
-            data.position = 
+            data.position =
                this->priv_upper_bound(this->cbegin(), pos, KeyOfValue()(val));
          }
       }
       else{
-         data.position = 
+         data.position =
             this->priv_lower_bound(pos, this->cend(), KeyOfValue()(val));
       }
    }
@@ -692,7 +764,7 @@ class flat_tree
          }
          else{
             first = ++middle;
-            len = len - half - 1;  
+            len = len - half - 1; 
          }
       }
       return first;
@@ -730,14 +802,97 @@ class flat_tree
       return std::pair<RanIt, RanIt>(first, first);
    }
 
-   template <class FwdIt>
-   void priv_insert_equal(FwdIt first, FwdIt last, std::forward_iterator_tag)
+   template <class BidirIt>
+   void priv_insert_equal(ordered_range_t, BidirIt first, BidirIt last, std::bidirectional_iterator_tag)
    {
       size_type len = static_cast<size_type>(std::distance(first, last));
+      const size_type BurstSize = 16;
+      size_type positions[BurstSize];
+
+      //Prereserve all memory so that iterators are not invalidated
+      this->reserve(this->size()+len);
+      const const_iterator beg(this->cbegin());
+      const_iterator pos(beg);
+      //Loop in burst sizes
+      while(len){
+         const size_type burst = len < BurstSize ? len : BurstSize;
+         const const_iterator cend(this->cend());
+         len -= burst;
+         for(size_type i = 0; i != burst; ++i){
+            //Get the insertion position for each key
+            pos = const_cast<const flat_tree&>(*this).priv_upper_bound(pos, cend, KeyOfValue()(*first));
+            positions[i] = static_cast<size_type>(pos - beg);
+            ++first;
+         }
+         //Insert all in a single step in the precalculated positions
+         this->m_data.m_vect.insert_ordered_at(burst, positions + burst, first);
+         //Next search position updated
+         pos += burst;
+      }
+   }
+
+   template <class BidirIt>
+   void priv_insert_unique(ordered_unique_range_t, BidirIt first, BidirIt last, std::bidirectional_iterator_tag)
+   {
+      size_type len = static_cast<size_type>(std::distance(first, last));
+      const size_type BurstSize = 16;
+      size_type positions[BurstSize];
+      size_type skips[BurstSize];
+
+      //Prereserve all memory so that iterators are not invalidated
+      this->reserve(this->size()+len);
+      const const_iterator beg(this->cbegin());
+      const_iterator pos(beg);
+      const value_compare &value_comp = this->m_data;
+      //Loop in burst sizes
+      while(len){
+         skips[0u] = 0u;
+         const size_type burst = len < BurstSize ? len : BurstSize;
+         size_type unique_burst = 0u;
+         const const_iterator cend(this->cend());
+         while(unique_burst < burst && len > 0){
+            //Get the insertion position for each key
+            const value_type & val = *first++;
+            --len;
+            pos = const_cast<const flat_tree&>(*this).priv_lower_bound(pos, cend, KeyOfValue()(val));
+            //Check if already present
+            if(pos != cend && !value_comp(*pos, val)){
+               ++skips[unique_burst];
+               continue;
+            }
+
+            //If not present, calculate position
+            positions[unique_burst] = static_cast<size_type>(pos - beg);
+            if(++unique_burst < burst)
+               skips[unique_burst] = 0u;
+         }
+         //Insert all in a single step in the precalculated positions
+         this->m_data.m_vect.insert_ordered_at(unique_burst, positions + unique_burst, skips + unique_burst, first);
+         //Next search position updated
+         pos += unique_burst;
+      }
+   }
+/*
+   template <class FwdIt>
+   void priv_insert_equal_forward(ordered_range_t, FwdIt first, FwdIt last, std::forward_iterator_tag)
+   {  this->priv_insert_equal(first, last, std::forward_iterator_tag());   }
+*/
+   template <class InIt>
+   void priv_insert_equal(ordered_range_t, InIt first, InIt last, std::input_iterator_tag)
+   {  this->priv_insert_equal(first, last, std::input_iterator_tag());  }
+
+   template <class InIt>
+   void priv_insert_unique(ordered_unique_range_t, InIt first, InIt last, std::input_iterator_tag)
+   {  this->priv_insert_unique(first, last, std::input_iterator_tag());  }
+/*
+   template <class FwdIt>
+   void priv_insert_equal_forward(FwdIt first, FwdIt last, std::forward_iterator_tag)
+   {
+      const size_type len = static_cast<size_type>(std::distance(first, last));
       this->reserve(this->size()+len);
       this->priv_insert_equal(first, last, std::input_iterator_tag());
    }
-
+*/
    template <class InIt>
    void priv_insert_equal(InIt first, InIt last, std::input_iterator_tag)
    {
@@ -746,59 +901,59 @@ class flat_tree
    }
 };
 
-template <class Key, class Value, class KeyOfValue, 
+template <class Key, class Value, class KeyOfValue,
           class Compare, class A>
-inline bool 
-operator==(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x, 
+inline bool
+operator==(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x,
            const flat_tree<Key,Value,KeyOfValue,Compare,A>& y)
 {
   return x.size() == y.size() &&
          std::equal(x.begin(), x.end(), y.begin());
 }
 
-template <class Key, class Value, class KeyOfValue, 
+template <class Key, class Value, class KeyOfValue,
           class Compare, class A>
-inline bool 
-operator<(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x, 
+inline bool
+operator<(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x,
           const flat_tree<Key,Value,KeyOfValue,Compare,A>& y)
 {
-  return std::lexicographical_compare(x.begin(), x.end(), 
+  return std::lexicographical_compare(x.begin(), x.end(),
                                       y.begin(), y.end());
 }
 
-template <class Key, class Value, class KeyOfValue, 
+template <class Key, class Value, class KeyOfValue,
           class Compare, class A>
-inline bool 
-operator!=(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x, 
-           const flat_tree<Key,Value,KeyOfValue,Compare,A>& y) 
+inline bool
+operator!=(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x,
+           const flat_tree<Key,Value,KeyOfValue,Compare,A>& y)
    {  return !(x == y); }
 
-template <class Key, class Value, class KeyOfValue, 
+template <class Key, class Value, class KeyOfValue,
           class Compare, class A>
-inline bool 
-operator>(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x, 
-          const flat_tree<Key,Value,KeyOfValue,Compare,A>& y) 
+inline bool
+operator>(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x,
+          const flat_tree<Key,Value,KeyOfValue,Compare,A>& y)
    {  return y < x;  }
 
-template <class Key, class Value, class KeyOfValue, 
+template <class Key, class Value, class KeyOfValue,
           class Compare, class A>
-inline bool 
-operator<=(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x, 
-           const flat_tree<Key,Value,KeyOfValue,Compare,A>& y) 
+inline bool
+operator<=(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x,
+           const flat_tree<Key,Value,KeyOfValue,Compare,A>& y)
    {  return !(y < x);  }
 
-template <class Key, class Value, class KeyOfValue, 
+template <class Key, class Value, class KeyOfValue,
           class Compare, class A>
-inline bool 
-operator>=(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x, 
-           const flat_tree<Key,Value,KeyOfValue,Compare,A>& y) 
+inline bool
+operator>=(const flat_tree<Key,Value,KeyOfValue,Compare,A>& x,
+           const flat_tree<Key,Value,KeyOfValue,Compare,A>& y)
    {  return !(x < y);  }
 
 
-template <class Key, class Value, class KeyOfValue, 
+template <class Key, class Value, class KeyOfValue,
           class Compare, class A>
-inline void 
-swap(flat_tree<Key,Value,KeyOfValue,Compare,A>& x, 
+inline void
+swap(flat_tree<Key,Value,KeyOfValue,Compare,A>& x,
      flat_tree<Key,Value,KeyOfValue,Compare,A>& y)
    {  x.swap(y);  }
 
@@ -808,7 +963,7 @@ swap(flat_tree<Key,Value,KeyOfValue,Compare,A>& x,
 /*
 //!has_trivial_destructor_after_move<> == true_type
 //!specialization for optimizations
-template <class K, class V, class KOV, 
+template <class K, class V, class KOV,
 class C, class A>
 struct has_trivial_destructor_after_move<boost::container::container_detail::flat_tree<K, V, KOV, C, A> >
 {

@@ -61,11 +61,11 @@ template <class T, class D>
 struct pointer_type
 {
     typedef typename pointer_type_imp::pointer_type<T,
-        typename ipcdetail::remove_reference<D>::type>::type type;
+        typename remove_reference<D>::type>::type type;
 };
 
 }  //namespace ipcdetail {
-}  //namespace interprocess { 
+}  //namespace interprocess {
 }  //namespace boost {
 
 #include <boost/interprocess/detail/config_end.hpp>
