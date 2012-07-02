@@ -15,20 +15,6 @@
 #include "ImageDataObject.h"
 
 // Static member functions
-SCODE CImageDataObject::createStorage(IStorage **pStorage, LPLOCKBYTES *lpLockBytes){
-	// Initialize a Storage Object
-
-	SCODE sc = ::CreateILockBytesOnHGlobal(NULL, TRUE, lpLockBytes);
-	if(sc != S_OK || lpLockBytes == NULL) 
-		return NULL;
-	
-	sc = ::StgCreateDocfileOnILockBytes(*lpLockBytes,
-		STGM_SHARE_EXCLUSIVE|STGM_CREATE|STGM_READWRITE, 0, pStorage);
-	if (sc != S_OK) 
-		return NULL;
-	
-	return sc;
-}
 void CImageDataObject::InsertBitmap(IRichEditOle* pRichEditOle, HBITMAP hBitmap, bool deleteHandle/*true*/ )
 {
 	if(!pRichEditOle || !hBitmap)
@@ -117,5 +103,21 @@ SCODE CImageDataObject::GetOleObject(IOleClientSite *pOleClientSite, IStorage *p
 	//  weak -- which is needed for links to embedding silent update.
 	sc = OleSetContainedObject(*pOleObject, TRUE);
 		
+	return sc;
+}
+
+SCODE CImageDataObject::createStorage(IStorage **pStorage, LPLOCKBYTES *lpLockBytes)
+{
+	// Initialize a Storage Object
+
+	SCODE sc = ::CreateILockBytesOnHGlobal(NULL, TRUE, lpLockBytes);
+	if(sc != S_OK || lpLockBytes == NULL) 
+		return NULL;
+	
+	sc = ::StgCreateDocfileOnILockBytes(*lpLockBytes,
+		STGM_SHARE_EXCLUSIVE|STGM_CREATE|STGM_READWRITE, 0, pStorage);
+	if (sc != S_OK) 
+		return NULL;
+	
 	return sc;
 }

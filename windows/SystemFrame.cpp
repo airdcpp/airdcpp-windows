@@ -31,6 +31,8 @@
 #include "../client/format.h"
 #include "../client/AutoSearchManager.h"
 
+#define ICON_SIZE 16
+
 LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
@@ -44,11 +46,11 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 	
 	if(!iconInfo)
-		iconInfo = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("info.ico")),WinUtil::bgColor, IDI_INFO, 16, 16);
+		iconInfo = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("info.ico")),WinUtil::bgColor, IDI_INFO, ICON_SIZE, ICON_SIZE);
 	if(!iconWarning)
-		iconWarning = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("warning.ico")),WinUtil::bgColor, IDI_IWARNING, 16, 16);
+		iconWarning = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("warning.ico")),WinUtil::bgColor, IDI_IWARNING, ICON_SIZE, ICON_SIZE);
 	if(!iconError)
-		iconError = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("error.ico")),WinUtil::bgColor, IDI_IERROR, 16, 16);
+		iconError = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("error.ico")),WinUtil::bgColor, IDI_IERROR, ICON_SIZE, ICON_SIZE);
 
 	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 
