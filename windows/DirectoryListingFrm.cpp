@@ -1591,7 +1591,7 @@ LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND
 	
 	if(ctrlList.GetSelectedCount() >= 1) {
 		size_t newId = (size_t)wID - IDC_SEARCH_SITES;
-		if(newId < (int)WebShortcuts::getInstance()->list.size()) {
+		if(newId < WebShortcuts::getInstance()->list.size()) {
 			tstring searchTermFull;
 			WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
 		
@@ -1635,7 +1635,7 @@ LRESULT DirectoryListingFrame::onSearchSiteDir(WORD /*wNotifyCode*/, WORD wID, H
 		searchTermFull = Text::toT((dir)->getName());
 
 		size_t newId = (size_t)wID - IDC_SEARCH_SITES -90;
-		if(newId < (int)WebShortcuts::getInstance()->list.size()) {
+		if(newId < WebShortcuts::getInstance()->list.size()) {
 			WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
 			if(ws != NULL) 
 				WinUtil::SearchSite(ws, searchTermFull); 

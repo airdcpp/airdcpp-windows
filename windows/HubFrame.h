@@ -96,6 +96,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_EMOT, onEmoticons)
 		COMMAND_ID_HANDLER(IDC_NOTIFY, onSetNotify)
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
+		COMMAND_ID_HANDLER(IDC_OPEN_MY_LIST, onOpenMyList)
 		COMMAND_RANGE_HANDLER(IDC_EMOMENU, IDC_EMOMENU + menuItems, onEmoPackChange)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
 		COMMAND_ID_HANDLER(IDC_COPY_HUBNAME, onCopyHubInfo)
@@ -161,6 +162,7 @@ public:
 	LRESULT onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onMagnet(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onDropFiles(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onOpenMyList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		tstring cmd, param, message, status;

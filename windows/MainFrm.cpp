@@ -998,7 +998,7 @@ void MainFrame::autoConnect(const FavoriteHubEntry::List& fl) {
 		
 	int left = SETTING(OPEN_FIRST_X_HUBS);
 	FavoriteHubEntry::List& fh = FavoriteManager::getInstance()->getFavoriteHubs();
-	if(left > (int)fh.size()) {
+	if(left > static_cast<int>(fh.size())) {
 		left = fh.size();
 	}
 	missedAutoConnect = false;
@@ -1323,7 +1323,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	tstring file = Util::emptyStringT;
 	
 	if(wID == IDC_OPEN_MY_LIST){
-		string ownlist = ShareManager::getInstance()->getOwnListFile();
+		string ownlist = "files.xml.bz2";
 		if(!ownlist.empty()){
 			DirectoryListingFrame::openWindow(Text::toT(ownlist), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString), 0, true);
 		}

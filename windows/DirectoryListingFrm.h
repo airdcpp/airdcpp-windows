@@ -419,7 +419,6 @@ private:
 	bool partialList;
 
 	int statusSizes[11];
-
 	
 	unique_ptr<DirectoryListing> dl;
 
@@ -455,7 +454,7 @@ class ThreadedDirectoryListing : public Thread
 {
 public:
 	ThreadedDirectoryListing(DirectoryListingFrame* pWindow, 
-		const string& pFile, const string& pTxt, const tstring& aDir = Util::emptyStringT, bool myList = false, bool listDiff = false, bool adlSearch = false) : mWindow(pWindow),
+		const string& pFile, const string& pTxt, const tstring& aDir = Util::emptyStringT, bool myList = false, bool listDiff = false, bool adlSearch = false, const string& hubUrl = Util::emptyString) : mWindow(pWindow),
 		mFile(pFile), mTxt(pTxt), mDir(aDir), mylist(myList), listdiff(listDiff), adlsearch(adlSearch)
 	{ }
 
@@ -491,7 +490,7 @@ private:
 				bool checkShareDupe = true;
 				if(mylist) {
 					// if its own list regenerate it before opening, but only if its dirty
-					mFile = ShareManager::getInstance()->generateOwnList();
+					mFile = ShareManager::getInstance()->generateOwnList(mWindow->dl->getHubUrl());
 					checkShareDupe = false;
 				}
 

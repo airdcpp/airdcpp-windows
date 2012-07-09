@@ -341,7 +341,7 @@
 		<String Name="MenuOpenDownloadsDir">Open downloads directory</String>
 		<String Name="MenuOpenFileList">Open file list...	Ctrl+L</String>
 		<String Name="MenuOpenMatchAll">Match downloaded lists</String>
-		<String Name="MenuOpenOwnList">Open own list</String>
+		<String Name="MenuOpenOwnList">Open Full own list</String>
 		<String Name="MenuPublicHubs">&amp;Public Hubs	Ctrl+P</String>
 		<String Name="MenuQuickConnect">&amp;Quick Connect ...	Ctrl+Q</String>
 		<String Name="MenuReconnect">&amp;Reconnect	Ctrl+R</String>
@@ -1527,5 +1527,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SettingsToolbarSize">Default Toolbar Icon size</String>
 		<String Name="SettingsToolbarNote">Note! Changing Toolbar Images or icon size require a client restart to take effect.</String>
 		<String Name="SettingsWtoolbarSize">Media Toolbar Icon size</String>
+		<String Name="MenuOpenHubOwnList">Open Hub own list</String>
 	</Strings>
 </Language>

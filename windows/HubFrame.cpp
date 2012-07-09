@@ -26,6 +26,7 @@
 #include "PrivateFrame.h"
 #include "EmoticonsManager.h"
 #include "TextFrame.h"
+#include "DirectoryListingFrm.h"
 
 #include "../client/ChatMessage.h"
 #include "../client/QueueManager.h"
@@ -1001,17 +1002,17 @@ void HubFrame::findText(tstring const& needle) noexcept {
 	if(needle.empty())
 		return;
 	// find upwards
-	currentNeedlePos = (int)ctrlClient.SendMessage(EM_FINDTEXT, 0, (LPARAM)&ft);
+	currentNeedlePos = static_cast<long>(ctrlClient.SendMessage(EM_FINDTEXT, 0, (LPARAM)&ft));
 	// not found? try again on full range
 	if(currentNeedlePos == -1 && ft.chrg.cpMin != max) { // no need to search full range twice
 		currentNeedlePos = max;
 		ft.chrg.cpMin = currentNeedlePos;
-		currentNeedlePos = (int)ctrlClient.SendMessage(EM_FINDTEXT, 0, (LPARAM)&ft);
+		currentNeedlePos = static_cast<long>(ctrlClient.SendMessage(EM_FINDTEXT, 0, (LPARAM)&ft));
 	}
 	// found? set selection
 	if(currentNeedlePos != -1) {
 		ft.chrg.cpMin = currentNeedlePos;
-		ft.chrg.cpMax = currentNeedlePos + (long)needle.length();
+		ft.chrg.cpMax = currentNeedlePos + static_cast<long>(needle.length());
 		ctrlClient.SetFocus();
 		ctrlClient.SendMessage(EM_EXSETSEL, 0, (LPARAM)&ft);
 	} else {
@@ -1197,6 +1198,8 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	tabMenu.AppendMenu(MF_SEPARATOR);
 	tabMenu.AppendMenu(MF_STRING, IDC_ADD_AS_FAVORITE, CTSTRING(ADD_TO_FAVORITES));
 	tabMenu.AppendMenu(MF_STRING, ID_FILE_RECONNECT, CTSTRING(MENU_RECONNECT));
+	tabMenu.AppendMenu(MF_SEPARATOR);
+	tabMenu.AppendMenu(MF_STRING, IDC_OPEN_MY_LIST, CTSTRING(MENU_OPEN_HUB_OWN_LIST));
 	tabMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyHubMenu, CTSTRING(COPY));
 	prepareMenu(tabMenu, ::UserCommand::CONTEXT_HUB, client->getHubUrl());
 	tabMenu.AppendMenu(MF_SEPARATOR);
@@ -1209,6 +1212,19 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	
 	tabMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 	return TRUE;
+}
+
+LRESULT HubFrame::onOpenMyList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
+	string hubUrl = client->getHubUrl();
+	string ownlist = "files.xml.bz2";
+	if(AirUtil::isAdcHub(hubUrl))
+		ownlist = "files" + AirUtil::stripHubUrl(hubUrl) + "xml.bz2";
+	else
+		hubUrl = Util::emptyString;
+
+	DirectoryListingFrame::openWindow(Text::toT(ownlist), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), hubUrl), 0, true);
+	
+	return 0;
 }
 
 LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){

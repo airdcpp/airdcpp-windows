@@ -262,7 +262,7 @@ private:
 		static int compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col) {
 			switch(col) {
 				case COLUMN_SIZE: case COLUMN_EXACT_SIZE: return compare(a->getSize(), b->getSize());
-				case COLUMN_PRIORITY: return compare((int)a->getPriority(), (int)b->getPriority());
+				case COLUMN_PRIORITY: return compare(static_cast<int>(a->getPriority()), static_cast<int>(b->getPriority()));
 				case COLUMN_DOWNLOADED: return compare(a->getDownloadedBytes(), b->getDownloadedBytes());
 				case COLUMN_ADDED: return compare(a->getAdded(), b->getAdded());
 				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
