@@ -82,6 +82,7 @@ lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
 bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false)
 
+
 { 
 		if(WinUtil::getOsMajor() >= 6) {
 			user32lib = LoadLibrary(_T("user32"));
@@ -265,11 +266,14 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	tbarwinampcreated = false;
 	HWND hWndToolBar = createToolbar();
 	HWND hWndWinampBar = createWinampToolbar();
+	HWND hWndTBStatusBar = createTBStatusBar();
 
 	CreateSimpleReBar(ATL_SIMPLE_REBAR_NOBORDER_STYLE);
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
 	AddSimpleReBarBand(hWndWinampBar, NULL, TRUE);
+	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 200, TRUE);
+
 	CreateSimpleStatusBar();
 	
 	RECT toolRect = {0};
@@ -303,11 +307,14 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_nProportionalPos = SETTING(TRANSFER_SPLIT_SIZE);
 	UIAddToolBar(hWndToolBar);
 	UIAddToolBar(hWndWinampBar);
+	UIAddToolBar(hWndTBStatusBar);
 	UISetCheck(ID_VIEW_TOOLBAR, 1);
 	UISetCheck(ID_VIEW_STATUS_BAR, 1);
 	UISetCheck(ID_VIEW_TRANSFER_VIEW, 1);
 	UISetCheck(ID_TOGGLE_TOOLBAR, 1);
+	UISetCheck(ID_TOGGLE_TBSTATUS, 1);
 
+	WinUtil::loadReBarSettings(m_hWndToolBar);
 
 	// register object for message filtering and idle updates
 	CMessageLoop* pLoop = _Module.GetMessageLoop();
@@ -340,6 +347,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(!BOOLSETTING(SHOW_TRANSFERVIEW))	PostMessage(WM_COMMAND, ID_VIEW_TRANSFER_VIEW);
 
 	if(!BOOLSETTING(SHOW_WINAMP_CONTROL)) PostMessage(WM_COMMAND, ID_TOGGLE_TOOLBAR);
+	if(!BOOLSETTING(SHOW_TBSTATUS)) PostMessage(WM_COMMAND, ID_TOGGLE_TBSTATUS);
 	if(BOOLSETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
 
 	if(!WinUtil::isShift())
@@ -416,12 +424,52 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		m_PictureWindow.Load(Text::toT(currentPic).c_str());
 	}
 	if(BOOLSETTING(TESTWRITE)) {
-	TestWrite(true, true, true);
+		TestWrite(true, true, true);
 	}
 	// We want to pass this one on to the splitter...hope it get's there...
 	bHandled = FALSE;
 	return 0;
 }
+
+HWND MainFrame::createTBStatusBar() {
+	
+	TBStatusCtrl.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT, 0, ATL_IDW_TOOLBAR);
+
+	TBBUTTON tb[1];
+	memzero(&tb, sizeof(tb));
+	tb[0].iBitmap = 200;
+	tb[0].fsStyle = TBSTYLE_SEP;
+
+	TBStatusCtrl.SetButtonStructSize();
+	TBStatusCtrl.AddButtons(1, tb);
+	TBStatusCtrl.AutoSize();
+
+	CRect rect;
+	TBStatusCtrl.GetItemRect(0, &rect);
+	rect.bottom += 100;
+	rect.left += 2;
+
+	progress.Create(TBStatusCtrl.m_hWnd, rect , NULL, WS_CHILD | WS_VISIBLE, WS_EX_TRANSPARENT);
+	progress.SetRange(0, 10000);
+
+	TBStatusText.Create(TBStatusCtrl.m_hWnd, rcDefault , NULL, WS_CHILD | SS_LEFT |WS_VISIBLE, WS_EX_TRANSPARENT);
+
+	CRect rc;
+	progress.GetClientRect(&rc);
+	rc.left = rc.right + 6;
+	rc.right = rc.left + 210;
+	rc.bottom = 20;
+	rc.top = rc.bottom - WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) - 2;
+
+	TBStatusText.MoveWindow(rc);
+	TBStatusText.SetFont(WinUtil::systemFont, FALSE);
+	
+	startBytes, startFiles = 0;
+	updateTBStatus();
+
+	return TBStatusCtrl.m_hWnd;
+}
+
 
 void MainFrame::showPortsError(const string& port) {
 	MessageBox(Text::toT(str(boost::format(STRING(PORT_BYSY)) % port)).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
@@ -1173,7 +1221,8 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			if(wp.showCmd == SW_SHOWNORMAL || wp.showCmd == SW_SHOW || wp.showCmd == SW_SHOWMAXIMIZED || wp.showCmd == SW_MAXIMIZE)
 				SettingsManager::getInstance()->set(SettingsManager::MAIN_WINDOW_STATE, (int)wp.showCmd);
 
-			
+			WinUtil::saveReBarSettings(m_hWndToolBar);
+
 			ShowWindow(SW_HIDE);
 			transferView.prepareClose();
 			
@@ -1432,23 +1481,89 @@ LRESULT MainFrame::OnViewWinampBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	static BOOL bVisible = TRUE;	// initially visible
 	bVisible = !bVisible;
 	CReBarCtrl rebar = m_hWndToolBar;
-	int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST + 2);	// toolbar is 2nd added band
+	int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST + 2);	// toolbar is 3rd added band
 	rebar.ShowBand(nBandIndex, bVisible);
 	UISetCheck(ID_TOGGLE_TOOLBAR, bVisible);
 	UpdateLayout();
 	SettingsManager::getInstance()->set(SettingsManager::SHOW_WINAMP_CONTROL, bVisible);
 	return 0;
 }
+LRESULT MainFrame::OnViewTBStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	static BOOL bVisible = TRUE;	// initially visible
+	bVisible = !bVisible;
+	CReBarCtrl rebar = m_hWndToolBar;
+	int nBandIndex = rebar.IdToIndex(ATL_IDW_BAND_FIRST + 3);	// toolbar is 4th added band
+	rebar.ShowBand(nBandIndex, bVisible);
+	UISetCheck(ID_TOGGLE_TBSTATUS, bVisible);
+	UpdateLayout();
+	SettingsManager::getInstance()->set(SettingsManager::SHOW_TBSTATUS, bVisible);
+	return 0;
+}
 
 LRESULT MainFrame::onWinampStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
-if(SETTING(WINAMP_PATH) != Util::emptyString) {
-::ShellExecute(NULL, NULL, Text::toT(SETTING(WINAMP_PATH)).c_str(), NULL , NULL, SW_SHOWNORMAL);
-
+	if(SETTING(WINAMP_PATH) != Util::emptyString) {
+	::ShellExecute(NULL, NULL, Text::toT(SETTING(WINAMP_PATH)).c_str(), NULL , NULL, SW_SHOWNORMAL);
+	}
+	return 0;
 }
-return 0;
-}
 
+void MainFrame::updateTBStatus() {
+	if(!TBStatusCtrl.IsWindowVisible())
+		return;
+
+	string file;
+	int64_t bytes = 0;
+	size_t files = 0;
+	int64_t speed = 0;
+	HashManager::getInstance()->getStats(file, bytes, files, speed);
+	bool hide = true;
+
+	if(bytes > startBytes)
+		startBytes = bytes;
+
+	if(files > startFiles)
+		startFiles = files;
+
+	bool paused = HashManager::getInstance()->isHashingPaused();
+	tstring tmp = _T("");
+	if(files == 0 || bytes == 0 || paused) {
+		if(paused) {
+			hide = false;
+			tmp += 	_T(" ( ") + TSTRING(PAUSED) + _T(" )");
+		} else {
+			tmp = _T("Hasher Idle...");
+		}
+	} else {
+		hide = false;
+		int64_t filestat = speed > 0 ? ((startBytes - (startBytes - bytes)) / speed) : 0;
+
+		tmp = Util::formatBytesW((int64_t)speed) + _T("/s, ") + Util::formatBytesW(bytes) + _T(" ") + TSTRING(LEFT);
+		
+		if(filestat == 0 || speed == 0) {
+			tmp += Text::toT(", -:--:-- " + STRING(LEFT));	
+		} else {
+			tmp += _T(", ") + Util::formatSeconds(filestat) + _T(" ") + TSTRING(LEFT);
+		}
+	}
+
+	if(startFiles == 0 || startBytes == 0 || files == 0) {
+		progress.SetPos(0);
+		startBytes = 0;
+		startFiles = 0;
+	} else {
+		progress.SetPos((int)(progress.GetRangeLimit(0) * ((0.5 * (startFiles - files)/startFiles) + 0.5 * (startBytes - bytes) / startBytes)));
+	}
+	if(hide) {
+		if(TBStatusText.IsWindowVisible())
+			TBStatusText.ShowWindow(SW_HIDE);
+	} else {
+		if(!TBStatusText.IsWindowVisible())
+			TBStatusText.ShowWindow(SW_SHOW);
+		TBStatusText.SetWindowText(tmp.c_str());
+	}
+}
 
 
 
@@ -1562,7 +1677,9 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	if(SETTING(DISCONNECT_SPEED) < 1) {
 		SettingsManager::getInstance()->set(SettingsManager::DISCONNECT_SPEED, 1);
 	}
-		
+	//todo hide if not hashing, and dont update for nothing.
+	updateTBStatus();
+
 	if(currentPic != SETTING(BACKGROUND_IMAGE)) {
 		currentPic = SETTING(BACKGROUND_IMAGE);
 		m_PictureWindow.Load(Text::toT(currentPic).c_str());

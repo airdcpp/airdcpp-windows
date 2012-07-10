@@ -216,6 +216,8 @@ public:
 	static tstring getTitle(const tstring& searchTerm);
 	static void SearchSite(WebShortcut* ws, tstring strSearchString);
 	static void AppendSearchMenu(OMenu& menu, int x = 0);
+	static void loadReBarSettings(HWND bar);
+	static void saveReBarSettings(HWND bar);
 
 	static tstring getIconPath(const tstring& filename);
 

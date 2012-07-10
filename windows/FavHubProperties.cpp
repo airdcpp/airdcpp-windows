@@ -314,6 +314,7 @@ LRESULT FavHubProperties::OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWn
 		::EnableWindow(GetDlgItem(IDC_STEALTH),	0);
 		combo.EnableWindow(false);
 	} else {
+		ctrlDirectories.EnableWindow(false);
 		::EnableWindow(GetDlgItem(IDC_STEALTH),	1);
 		combo.EnableWindow(true);
 	}

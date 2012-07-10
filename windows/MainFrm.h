@@ -50,6 +50,8 @@
 
 using std::unique_ptr;
 
+#define TBSTATUS_MAP 20
+
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>, public Thread,
 		private TimerManagerListener, private QueueManagerListener,
@@ -167,6 +169,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN_MY_LIST, onOpenFileList)
 		COMMAND_ID_HANDLER(IDC_TRAY_SHOW, onAppShow)
 		COMMAND_ID_HANDLER(ID_TOGGLE_TOOLBAR, OnViewWinampBar)
+		COMMAND_ID_HANDLER(ID_TOGGLE_TBSTATUS, OnViewTBStatusBar)
 		COMMAND_ID_HANDLER(ID_WINDOW_MINIMIZE_ALL, onWindowMinimizeAll)
 		COMMAND_ID_HANDLER(ID_WINDOW_RESTORE_ALL, onWindowRestoreAll)
 		COMMAND_ID_HANDLER(IDC_SHUTDOWN, onShutDown)
@@ -202,6 +205,7 @@ public:
 		UPDATE_ELEMENT(ID_VIEW_STATUS_BAR, UPDUI_MENUPOPUP)
 		UPDATE_ELEMENT(ID_VIEW_TRANSFER_VIEW, UPDUI_MENUPOPUP)
 		UPDATE_ELEMENT(ID_TOGGLE_TOOLBAR, UPDUI_MENUPOPUP)
+		UPDATE_ELEMENT(ID_TOGGLE_TBSTATUS, UPDUI_MENUPOPUP)
 	END_UPDATE_UI_MAP()
 
 
@@ -247,8 +251,9 @@ public:
 	LRESULT onDropDown(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onRefreshMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSetFont(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT OnViewTBStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-		static DWORD WINAPI stopper(void* p);
+	static DWORD WINAPI stopper(void* p);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void parseCommandLine(const tstring& cmdLine);
 
@@ -471,6 +476,17 @@ private:
 	CImageList winampImages;
 	CToolBarCtrl ctrlToolbar;
 	CToolBarCtrl ctrlSmallToolbar;
+	
+	CProgressBarCtrl progress;
+	CToolBarCtrl TBStatusCtrl;
+	CStatic TBStatusText;
+
+	HWND createTBStatusBar(); 
+	void updateTBStatus();
+	int64_t startBytes;
+	size_t startFiles;
+	uint64_t startTime;
+
 	CPictureWindow m_PictureWindow;
 	string currentPic;
 

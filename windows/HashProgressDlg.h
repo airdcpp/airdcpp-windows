@@ -31,7 +31,7 @@ public:
 	enum { IDD = IDD_HASH_PROGRESS };
 	enum { WM_VERSIONDATA = WM_APP + 53 };
 
-	HashProgressDlg(bool aAutoClose = false) : autoClose(aAutoClose), startTime(GET_TICK()), startBytes(0), startFiles(0), init(false) { // KUL - hash progress dialog patch
+	HashProgressDlg(bool aAutoClose = false) : autoClose(aAutoClose), startBytes(0), startFiles(0), init(false) { // KUL - hash progress dialog patch
 
 	}
 	virtual ~HashProgressDlg() { }
@@ -64,8 +64,8 @@ public:
 		// KUL - hash progress dialog patch (end)
 
 		string tmp;
-		startTime = GET_TICK();
-		HashManager::getInstance()->getStats(tmp, startBytes, startFiles);
+		int64_t speed;
+		HashManager::getInstance()->getStats(tmp, startBytes, startFiles, speed);
 
 		// KUL - hash progress dialog patch
 		hashspin.Attach(GetDlgItem(IDC_HASH_SPIN));
@@ -132,9 +132,9 @@ public:
 		string file;
 		int64_t bytes = 0;
 		size_t files = 0;
-		uint64_t tick = GET_TICK();
+		int64_t speed = 0;
 
-		HashManager::getInstance()->getStats(file, bytes, files);
+		HashManager::getInstance()->getStats(file, bytes, files, speed);
 		if(bytes > startBytes)
 			startBytes = bytes;
 
@@ -145,9 +145,8 @@ public:
 			PostMessage(WM_CLOSE);
 			return;
 		}
-		double diff = static_cast<double>(tick - startTime);
 		bool paused = HashManager::getInstance()->isHashingPaused();
-		if(diff < 1000 || files == 0 || bytes == 0 || paused) { // KUL - hash progress dialog patch
+		if(files == 0 || bytes == 0 || paused) { // KUL - hash progress dialog patch
 			SetDlgItemText(IDC_FILES_PER_HOUR, Text::toT("-.-- " + STRING(FILES_PER_HOUR) + ", " + Util::toString((uint32_t)files) + " " + STRING(FILES_LEFT)).c_str());
 			SetDlgItemText(IDC_HASH_SPEED, (_T("-.-- B/s, ") + Util::formatBytesW(bytes) + _T(" ") + TSTRING(LEFT)).c_str());
 			// KUL - hash progress dialog patch
@@ -158,19 +157,16 @@ public:
 				progress.SetPos(0);
 			}
 		} else {
-			double filestat = (((double)(startFiles - files)) * 60 * 60 * 1000) / diff;
-			double speedStat = (((double)(startBytes - bytes)) * 1000) / diff;
+			int64_t filestat = speed > 0 ? ((startBytes - (startBytes - bytes)) / speed) : 0;
+			
 
 			SetDlgItemText(IDC_FILES_PER_HOUR, Text::toT(Util::toString(filestat) + " " + STRING(FILES_PER_HOUR) + ", " + Util::toString((uint32_t)files) + " " + STRING(FILES_LEFT)).c_str());
-			SetDlgItemText(IDC_HASH_SPEED, (Util::formatBytesW((int64_t)speedStat) + _T("/s, ") + Util::formatBytesW(bytes) + _T(" ") + TSTRING(LEFT)).c_str());
+			SetDlgItemText(IDC_HASH_SPEED, (Util::formatBytesW(speed) + _T("/s, ") + Util::formatBytesW(bytes) + _T(" ") + TSTRING(LEFT)).c_str());
 
-			if(filestat == 0 || speedStat == 0) {
+			if(filestat == 0 || speed == 0) {
 				SetDlgItemText(IDC_TIME_LEFT, Text::toT("-:--:-- " + STRING(LEFT)).c_str());
 			} else {
-				double fs = files * 60 * 60 / filestat;
-				double ss = bytes / speedStat;
-
-				SetDlgItemText(IDC_TIME_LEFT, (Util::formatSeconds((int64_t)(fs + ss) / 2) + _T(" ") + TSTRING(LEFT)).c_str());
+				SetDlgItemText(IDC_TIME_LEFT, (Util::formatSeconds(filestat) + _T(" ") + TSTRING(LEFT)).c_str());
 			}
 		}
 
@@ -203,7 +199,6 @@ private:
 	bool autoClose;
 	int64_t startBytes;
 	size_t startFiles;
-	uint64_t startTime;
 	CProgressBarCtrl progress;
 	// KUL - hash progress dialog patch
 	CUpDownCtrl hashspin; 

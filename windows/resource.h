@@ -1327,6 +1327,7 @@
 #define IDC_DELETE_FILE                 15127
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_REFRESH_MENU                16000
+#define ID_TOGGLE_TBSTATUS              16900
 #define IDC_REFRESH_MENU_SUBDIRS        17000
 #define IDC_BROWSELIST                  19000
 #define IDC_REMOVE_SOURCE               20000

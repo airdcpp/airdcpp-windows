@@ -1528,5 +1528,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SettingsToolbarNote">Note! Changing Toolbar Images or icon size require a client restart to take effect.</String>
 		<String Name="SettingsWtoolbarSize">Media Toolbar Icon size</String>
 		<String Name="MenuOpenHubOwnList">Open Hub own list</String>
+		<String Name="ToggleTbstatus">Toolbar StatusBar</String>
 	</Strings>
 </Language>

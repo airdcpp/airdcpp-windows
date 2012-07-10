@@ -356,6 +356,7 @@ void WinUtil::init(HWND hWnd) {
 	view.AppendMenu(MF_STRING, ID_VIEW_STATUS_BAR, CTSTRING(MENU_STATUS_BAR));
 	view.AppendMenu(MF_STRING, ID_VIEW_TRANSFER_VIEW, CTSTRING(MENU_TRANSFER_VIEW));
 	view.AppendMenu(MF_STRING, ID_TOGGLE_TOOLBAR, CTSTRING(TOGGLE_TOOLBAR));
+	view.AppendMenu(MF_STRING, ID_TOGGLE_TBSTATUS, CTSTRING(TOGGLE_TBSTATUS));
 
 	mainMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)view, CTSTRING(MENU_VIEW));
 
@@ -1683,6 +1684,54 @@ void WinUtil::ClearPreviewMenu(OMenu &previewMenu){
 		previewMenu.RemoveMenu(0, MF_BYPOSITION);
 	}
 }
+
+void WinUtil::loadReBarSettings(HWND bar) {
+	CReBarCtrl rebar = bar;
+	
+	REBARBANDINFO rbi = { 0 };
+	rbi.cbSize = sizeof(rbi);
+	rbi.fMask = RBBIM_ID | RBBIM_SIZE | RBBIM_STYLE;
+	
+	StringTokenizer<string> st(SETTING(TOOLBAR_POS), ';');
+	StringList &sl = st.getTokens();
+	
+	for(StringList::const_iterator i = sl.begin(); i != sl.end(); i++)
+	{
+		StringTokenizer<string> stBar(*i, ',');
+		StringList &slBar = stBar.getTokens();
+		
+		rebar.MoveBand(rebar.IdToIndex(Util::toUInt32(slBar[1])), i - sl.begin());
+		rebar.GetBandInfo(i - sl.begin(), &rbi);
+		
+		rbi.cx = Util::toUInt32(slBar[0]);
+		
+		if(slBar[2] == "1") {
+			rbi.fStyle |= RBBS_BREAK;
+		} else {
+			rbi.fStyle &= ~RBBS_BREAK;
+		}
+		
+		rebar.SetBandInfo(i - sl.begin(), &rbi);		
+	}
+}
+
+void WinUtil::saveReBarSettings(HWND bar) {
+	string toolbarSettings;
+	CReBarCtrl rebar = bar;
+	
+	REBARBANDINFO rbi = { 0 };
+	rbi.cbSize = sizeof(rbi);
+	rbi.fMask = RBBIM_ID | RBBIM_SIZE | RBBIM_STYLE;
+	
+	for(unsigned int i = 0; i < rebar.GetBandCount(); i++)
+	{
+		rebar.GetBandInfo(i, &rbi);
+		toolbarSettings += Util::toString(rbi.cx) + "," + Util::toString(rbi.wID) + "," + Util::toString((int)(rbi.fStyle & RBBS_BREAK)) + ";";
+	}
+	
+	SettingsManager::getInstance()->set(SettingsManager::TOOLBAR_POS, toolbarSettings);
+}
+
 
 int WinUtil::SetupPreviewMenu(CMenu &previewMenu, string extension){
 	int PreviewAppsSize = 0;
