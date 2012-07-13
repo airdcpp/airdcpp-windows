@@ -463,9 +463,11 @@ HWND MainFrame::createTBStatusBar() {
 
 	TBStatusText.MoveWindow(rc);
 	TBStatusText.SetFont(WinUtil::systemFont, FALSE);
+	TBStatusText.ShowWindow(SW_HIDE);
 	
 	startBytes, startFiles = 0;
-	updateTBStatus();
+	refreshing = false;
+	//updateTBStatus();
 
 	return TBStatusCtrl.m_hWnd;
 }
@@ -821,6 +823,12 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 				::Shell_NotifyIcon(NIM_MODIFY, &nid);
 			}
 		}
+	} else if(wParam == UPDATE_TBSTATUS_HASHING) {
+		HashInfo *tmp = (HashInfo*)lParam;
+		updateTBStatusHashing(*tmp);
+		delete tmp;
+	} else if(wParam == UPDATE_TBSTATUS_REFRESHING) {
+		updateTBStatusRefreshing();
     } else if(wParam == HTTP_COMPLETED) {
 		if (lParam == CONN_VERSION) {
 			completeVersionUpdate();
@@ -1509,15 +1517,16 @@ LRESULT MainFrame::onWinampStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	return 0;
 }
 
-void MainFrame::updateTBStatus() {
-	if(!TBStatusCtrl.IsWindowVisible())
-		return;
+void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 
-	string file;
-	int64_t bytes = 0;
-	size_t files = 0;
-	int64_t speed = 0;
-	HashManager::getInstance()->getStats(file, bytes, files, speed);
+	refreshing = false;
+	progress.SetMarquee(FALSE);
+	progress.ModifyStyle(PBS_MARQUEE, NULL);
+
+	string file = m_HashInfo.file;
+	int64_t bytes = m_HashInfo.size;
+	size_t files = m_HashInfo.files;
+	int64_t speed = m_HashInfo.speed;
 	bool hide = true;
 
 	if(bytes > startBytes)
@@ -1526,7 +1535,7 @@ void MainFrame::updateTBStatus() {
 	if(files > startFiles)
 		startFiles = files;
 
-	bool paused = HashManager::getInstance()->isHashingPaused();
+	bool paused = m_HashInfo.paused;
 	tstring tmp = _T("");
 	if(files == 0 || bytes == 0 || paused) {
 		if(paused) {
@@ -1564,7 +1573,18 @@ void MainFrame::updateTBStatus() {
 		TBStatusText.SetWindowText(tmp.c_str());
 	}
 }
+void MainFrame::updateTBStatusRefreshing() {
+	if(refreshing)
+		return;
 
+	refreshing = true;
+	if(!TBStatusText.IsWindowVisible())
+		TBStatusText.ShowWindow(SW_SHOW);
+	TBStatusText.SetWindowText(_T("Refreshing..."));
+
+	progress.ModifyStyle(NULL, PBS_MARQUEE);
+	progress.SetMarquee(TRUE, 10);
+}
 
 
 
@@ -1677,8 +1697,20 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	if(SETTING(DISCONNECT_SPEED) < 1) {
 		SettingsManager::getInstance()->set(SettingsManager::DISCONNECT_SPEED, 1);
 	}
-	//todo hide if not hashing, and dont update for nothing.
-	updateTBStatus();
+	if(TBStatusCtrl.IsWindowVisible()){
+		if(ShareManager::getInstance()->isRefreshing()){
+			PostMessage(WM_SPEAKER, UPDATE_TBSTATUS_REFRESHING, 0);
+		} else {
+			string file = "";
+			int64_t bytes = 0;
+			size_t files = 0;
+			int64_t speed = 0;
+			bool paused = HashManager::getInstance()->isHashingPaused();
+			HashManager::getInstance()->getStats(file, bytes, files, speed);
+			HashInfo *hashinfo = new HashInfo(file, bytes, files, speed, paused);
+			PostMessage(WM_SPEAKER, UPDATE_TBSTATUS_HASHING, LPARAM(hashinfo));
+		}
+	}
 
 	if(currentPic != SETTING(BACKGROUND_IMAGE)) {
 		currentPic = SETTING(BACKGROUND_IMAGE);

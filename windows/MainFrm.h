@@ -50,8 +50,6 @@
 
 using std::unique_ptr;
 
-#define TBSTATUS_MAP 20
-
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>, public Thread,
 		private TimerManagerListener, private QueueManagerListener,
@@ -83,7 +81,9 @@ public:
 		REMOVE_POPUP,
 		SET_PM_TRAY_ICON,
 		SET_HUB_TRAY_ICON,
-		HTTP_COMPLETED
+		HTTP_COMPLETED,
+		UPDATE_TBSTATUS_HASHING,
+		UPDATE_TBSTATUS_REFRESHING
 	};
 
 	BOOL PreTranslateMessage(MSG* pMsg)
@@ -480,12 +480,24 @@ private:
 	CProgressBarCtrl progress;
 	CToolBarCtrl TBStatusCtrl;
 	CStatic TBStatusText;
-
 	HWND createTBStatusBar(); 
-	void updateTBStatus();
+
+	struct HashInfo {
+		HashInfo(const string& aFile, int64_t& aSize, size_t& aFiles, int64_t& aSpeed, bool aPaused) : 
+		file(aFile), size(aSize), files(aFiles), speed(aSpeed), paused(aPaused) { }
+
+		string file; 
+		int64_t size; 
+		size_t files;
+		int64_t speed;
+		bool paused;
+	};
+
+	void updateTBStatusHashing(HashInfo m_HashInfo);
+	void updateTBStatusRefreshing();
+	bool refreshing;
 	int64_t startBytes;
 	size_t startFiles;
-	uint64_t startTime;
 
 	CPictureWindow m_PictureWindow;
 	string currentPic;
