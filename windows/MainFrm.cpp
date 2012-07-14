@@ -272,7 +272,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
 	AddSimpleReBarBand(hWndWinampBar, NULL, TRUE);
-	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 200, TRUE);
+	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 400, TRUE);
 
 	CreateSimpleStatusBar();
 	
@@ -1406,7 +1406,6 @@ LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
 		ShareScannerManager::getInstance()->scan();
-		
 		return 0;
 }
 
