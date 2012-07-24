@@ -435,6 +435,7 @@ void HubFrame::addAsFavorite() {
 		aEntry.setName(Text::fromT(buf));
 		aEntry.setDescription(Text::fromT(buf));
 		aEntry.setConnect(true);
+		aEntry.setShareProfile(ShareManager::getInstance()->getShareProfile(client->getShareProfile(), true));
 		if(!client->getPassword().empty()) {
 			aEntry.setNick(client->getMyNick());
 			aEntry.setPassword(client->getPassword());

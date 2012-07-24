@@ -1027,12 +1027,12 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		try {
 			if(!param.empty()) {
 				if(stricmp(param.c_str(), _T("incoming"))==0) {
-					ShareManager::getInstance()->refresh(ShareManager::REFRESH_DIRECTORY | ShareManager::REFRESH_UPDATE | ShareManager::REFRESH_INCOMING);
-				
-			}else if( ShareManager::REFRESH_PATH_NOT_FOUND == ShareManager::getInstance()->refresh( Text::fromT(param) ) )
+					ShareManager::getInstance()->refresh(true);
+				} else if( ShareManager::REFRESH_PATH_NOT_FOUND == ShareManager::getInstance()->refresh( Text::fromT(param) ) ) {
 					status = TSTRING(DIRECTORY_NOT_FOUND);
+				}
 			} else {
-				ShareManager::getInstance()->refresh(ShareManager::REFRESH_ALL | ShareManager::REFRESH_UPDATE);
+				ShareManager::getInstance()->refresh();
 			}
 		} catch(const ShareException& e) {
 			status = Text::toT(e.getError());

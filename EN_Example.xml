@@ -341,7 +341,7 @@
 		<String Name="MenuOpenDownloadsDir">Open downloads directory</String>
 		<String Name="MenuOpenFileList">Open file list...	Ctrl+L</String>
 		<String Name="MenuOpenMatchAll">Match downloaded lists</String>
-		<String Name="MenuOpenOwnList">Open Full own list</String>
+		<String Name="MenuOpenOwnList">Open own list</String>
 		<String Name="MenuPublicHubs">&amp;Public Hubs	Ctrl+P</String>
 		<String Name="MenuQuickConnect">&amp;Quick Connect ...	Ctrl+Q</String>
 		<String Name="MenuReconnect">&amp;Reconnect	Ctrl+R</String>
@@ -1529,5 +1529,11 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SettingsWtoolbarSize">Media Toolbar Icon size</String>
 		<String Name="MenuOpenHubOwnList">Open Hub own list</String>
 		<String Name="ToggleTbstatus">Toolbar StatusBar</String>
+		<String Name="XFavProfilesReset">%d favorite hubs have been reset to use the default share profile</String>
+		<String Name="ShareProfile">Share Profile</String>
+		<String Name="ShareProfiles">Share Profiles</String>
+		<String Name="ProfileExists">A profile with the same name exists already</String>
+		<String Name="XProfileDirsExists">This directory also exists in %d other profiles. Do you want to remove it from all of them?</String>
+		<String Name="AddFromThis">Add from this</String>
 	</Strings>
 </Language>

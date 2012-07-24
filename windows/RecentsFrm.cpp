@@ -122,10 +122,13 @@ LRESULT RecentHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		FavoriteHubEntry e;
 		ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
 		e.setName(Text::fromT(buf));
+
 		ctrlHubs.GetItemText(i, COLUMN_DESCRIPTION, buf, 256);
 		e.setDescription(Text::fromT(buf));
+
 		ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
 		e.setServer(Text::fromT(buf));
+
 		FavoriteManager::getInstance()->addFavorite(e);
 	}
 	return 0;

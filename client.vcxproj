@@ -277,6 +277,7 @@
     <ClCompile Include="client\SFVReader.cpp" />
     <ClCompile Include="client\SharedFileStream.cpp" />
     <ClCompile Include="client\ShareManager.cpp" />
+    <ClCompile Include="client\ShareProfile.cpp" />
     <ClCompile Include="client\ShareScannerManager.cpp" />
     <ClCompile Include="client\SimpleXML.cpp" />
     <ClCompile Include="client\SimpleXMLReader.cpp" />
@@ -402,6 +403,7 @@
     <ClInclude Include="client\SFVReader.h" />
     <ClInclude Include="client\SharedFileStream.h" />
     <ClInclude Include="client\ShareManager.h" />
+    <ClInclude Include="client\ShareProfile.h" />
     <ClInclude Include="client\ShareScannerManager.h" />
     <ClInclude Include="client\SimpleXML.h" />
     <ClInclude Include="client\SimpleXMLReader.h" />

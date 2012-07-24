@@ -83,6 +83,151 @@ public:
 	
 };
 
+class LineComboDlg : public CDialogImpl<LineComboDlg>
+{
+	CEdit ctrlLine;
+	CStatic ctrlDescription;
+	CStatic ctrlComboDescription;
+	CComboBox ctrlCombo;
+public:
+	tstring line;
+	tstring description;
+	tstring comboDescription;
+	tstring title;
+	int curSel;
+
+	enum { IDD = IDD_LINECOMBO };
+	
+	BEGIN_MSG_MAP(LineComboDlg)
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
+		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+	END_MSG_MAP()
+	
+	LineComboDlg() : curSel(0) { }
+	//LineComboDlg(const CComboBox& aCombo) : curSel(0), ctrlCombo(aCombo) { }
+	/*LineComboDlg(const StringList& aStrings) : curSel(0) { 
+		for(auto j = aStrings.begin(); j != aStrings.end(); j++) {
+			ctrlCombo.AddString(Text::toT(*j).c_str());
+		}
+	}*/
+	
+	void setList(const StringList& aStrings) { 
+		for(auto j = aStrings.begin(); j != aStrings.end(); j++) {
+			ctrlCombo.AddString(Text::toT(*j).c_str());
+		}
+	}
+
+	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+		ctrlLine.SetFocus();
+		return FALSE;
+	}
+
+	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		ctrlLine.Attach(GetDlgItem(IDC_LINE));
+		ctrlLine.SetFocus();
+		ctrlLine.SetWindowText(line.c_str());
+		ctrlLine.SetSelAll(TRUE);
+
+		ctrlCombo.Attach(GetDlgItem(IDC_COMBO));
+
+		ctrlDescription.Attach(GetDlgItem(IDC_COMBO_DESC));
+		ctrlDescription.SetWindowText(description.c_str());
+
+		ctrlComboDescription.Attach(GetDlgItem(IDC_DESCRIPTION));
+		ctrlDescription.SetWindowText(comboDescription.c_str());
+		
+		SetWindowText(title.c_str());
+		
+
+		CenterWindow(GetParent());
+		return FALSE;
+	}
+	
+	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	{
+		if(wID == IDOK) {
+			line.resize(ctrlLine.GetWindowTextLength() + 1);
+			line.resize(GetDlgItemText(IDC_LINE, &line[0], line.size()));
+			curSel = ctrlCombo.GetCurSel();
+		}
+		EndDialog(wID);
+		return 0;
+	}
+};
+
+class ComboDlg : public CDialogImpl<ComboDlg>
+{
+	CStatic ctrlDescription;
+	CComboBox ctrlCombo;
+public:
+	tstring description;
+	tstring title;
+	int curSel;
+	StringList strings;
+
+	enum { IDD = IDD_COMBO };
+	
+	BEGIN_MSG_MAP(ComboDlg)
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
+		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
+		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+	END_MSG_MAP()
+	
+	ComboDlg() : curSel(0) { }
+	ComboDlg(const CComboBox& aCombo) : curSel(0), ctrlCombo(aCombo) { }
+	ComboDlg(const StringList& aStrings) : curSel(0) { 
+		for(auto j = aStrings.begin(); j != aStrings.end(); j++) {
+			ctrlCombo.AddString(Text::toT(*j).c_str());
+		}
+	}
+
+	/*void setList(const StringList& aStrings) { 
+		for(auto j = aStrings.begin(); j != aStrings.end(); j++) {
+			ctrlCombo.AddString(Text::toT(*j).c_str());
+		}
+	}*/
+
+	void setList(const StringList& aStrings) { strings = aStrings; }
+	
+	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+		ctrlCombo.SetFocus();
+		return FALSE;
+	}
+
+	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+	{
+		ctrlCombo.Attach(GetDlgItem(IDC_COMBO));
+		ctrlCombo.SetFocus();
+		int n = 0;
+		for(auto j = strings.begin(); j != strings.end(); j++) {
+			ctrlCombo.InsertString(n, Text::toT(*j).c_str());
+			n++;
+		}
+		ctrlCombo.SetCurSel(0);
+
+		ctrlDescription.Attach(GetDlgItem(IDC_DESCRIPTION));
+		ctrlDescription.SetWindowText(description.c_str());
+		
+		SetWindowText(title.c_str());
+		
+		CenterWindow(GetParent());
+		return FALSE;
+	}
+	
+	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+	{
+		if(wID == IDOK) {
+			curSel = ctrlCombo.GetCurSel();
+		}
+		EndDialog(wID);
+		return 0;
+	}
+};
+
 class KickDlg : public CDialogImpl<KickDlg> {
 	CComboBox ctrlLine;
 	CStatic ctrlDescription;

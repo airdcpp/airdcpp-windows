@@ -109,6 +109,7 @@ private:
 		COLUMN_PASSWORD,
 		COLUMN_SERVER,
 		COLUMN_USERDESCRIPTION,
+		COLUMN_SHAREPROFILE,
 		COLUMN_LAST
 	};
 	
@@ -151,6 +152,7 @@ private:
 
 	void on(FavoriteAdded, const FavoriteHubEntry* /*e*/)  noexcept { StateKeeper keeper(ctrlHubs); fillList(); }
 	void on(FavoriteRemoved, const FavoriteHubEntry* e) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)e)); }
+	void on(FavoritesUpdated) noexcept { fillList(); }
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 

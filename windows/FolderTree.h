@@ -12,6 +12,10 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 #pragma once
 #include <shlobj.h>
 #include <lm.h>
+#include "SharePage.h"
+#include "../client/ShareManager.h"
+
+class SharePage;
 
 //Class which gets stored int the item data on the tree control
 
@@ -28,6 +32,7 @@ public:
 	tstring			m_sRelativePath;    //The relative bit of the path
 	NETRESOURCE*	m_pNetResource;     //Used if this item is under Network Neighborhood
 	bool			m_bNetworkNode;     //Item is "Network Neighborhood" or is underneath it
+	bool			m_removed;			//Item for a folder which doesn't exist anymore
 };
 
 //Class which encapsulates access to the System image list which contains
@@ -104,7 +109,7 @@ const DWORD DRIVE_ATTRIBUTE_RAMDISK     = 0x00000020;
 class FolderTree : public CWindowImpl<FolderTree, CTreeViewCtrl>
 {
 public:
-	FolderTree();
+	FolderTree(SharePage* sp);
 	~FolderTree();
 	
 	BEGIN_MSG_MAP(FolderTree)
@@ -162,6 +167,7 @@ public:
 	bool IsDirty();
 
 protected:
+	SharePage* sp;
 	bool IsExpanded(HTREEITEM hItem);
 	int GetIconIndex(const tstring& sFilename);
 	int GetIconIndex(HTREEITEM hItem);
@@ -169,8 +175,8 @@ protected:
 	int GetSelIconIndex(const tstring& sFilename);
 	int GetSelIconIndex(HTREEITEM hItem);
 	int GetSelIconIndex(LPITEMIDLIST lpPIDL);
-	HTREEITEM InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo* pItem, bool bShared, int nIcon, int nSelIcon, bool bCheckForChildren);
-	void DisplayDrives(HTREEITEM hParent, bool bUseSetRedraw = true);
+	HTREEITEM InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo* pItem, bool bShared, int nIcon, int nSelIcon, bool bCheckForChildren, ShareDirInfo::list& sharedDirs);
+	void DisplayDrives(HTREEITEM hParent, bool bUseSetRedraw, ShareDirInfo::list& shared);
 	void DisplayPath(const tstring& sPath, HTREEITEM hParent, bool bUseSetRedraw = true);
 	tstring GetDriveLabel(const tstring& sDrive);
 	tstring GetCorrectedLabel(FolderTreeItemInfo* pItem);
@@ -189,13 +195,15 @@ protected:
 	int DeleteChildren(HTREEITEM hItem, bool bUpdateChildIndicator);
 	BOOL GetSerialNumber(const tstring& sDrive, DWORD& dwSerialNumber);
 	void SetHasSharedChildren(HTREEITEM hItem, bool bHasSharedChildren);
-	void SetHasSharedChildren(HTREEITEM hItem);
-	bool GetHasSharedChildren(HTREEITEM hItem);
+	void SetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::list& aShared);
+	bool GetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::list& aShared);
 	HTREEITEM HasSharedParent(HTREEITEM hItem);
 	void ShareParentButNotSiblings(HTREEITEM hItem);
 	void UpdateStaticCtrl();
 	void UpdateChildItems(HTREEITEM hItem, bool bChecked);
 	void UpdateParentItems(HTREEITEM hItem);
+
+	void checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent, ShareDirInfo::list& sharedDirs);
 	
 	//Member variables
 	tstring			m_sRootFolder;

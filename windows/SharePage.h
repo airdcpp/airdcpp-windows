@@ -29,18 +29,13 @@
 #include "WinUtil.h"
 #include "FolderTree.h"
 #include "../client/SettingsManager.h"
+#include "../client/ShareManager.h"
 
 class SharePage : public CPropertyPage<IDD_SHAREPAGE>, public PropPage
 {
 public:
-	SharePage(SettingsManager *s) : PropPage(s) {
-		SetTitle(CTSTRING(SETTINGS_SHARINGPAGE));
-		m_psp.dwFlags |= PSP_RTLREADING;
-	}
-	~SharePage() {
-		ctrlDirectories.Detach();
-		ctrlTotal.Detach();
-	}
+	SharePage(SettingsManager *s);
+	~SharePage();
 
 	BEGIN_MSG_MAP_EX(SharePage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
@@ -49,10 +44,17 @@ public:
 		NOTIFY_HANDLER(IDC_DIRECTORIES, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, LVN_COLUMNCLICK, onColumnClick)
-		COMMAND_ID_HANDLER(IDC_ADD, onClickedAdd)
-		COMMAND_ID_HANDLER(IDC_REMOVE, onClickedRemove)
-		COMMAND_ID_HANDLER(IDC_RENAME, onClickedRename)
+		COMMAND_HANDLER(IDC_PROFILE_SEL, CBN_SELCHANGE , onProfileChanged)
+		COMMAND_ID_HANDLER(IDC_ADD_DIR, onClickedAddDir)
+		COMMAND_ID_HANDLER(IDC_REMOVE_DIR, onClickedRemoveDir)
+		COMMAND_ID_HANDLER(IDC_RENAME_DIR, onClickedRenameDir)
+		COMMAND_ID_HANDLER(IDC_ADD_PROFILE, onClickedAddProfile)
+		COMMAND_ID_HANDLER(IDC_ADD_PROFILE_COPY, onClickedCopyProfile)
+		COMMAND_ID_HANDLER(IDC_REMOVE_PROFILE, onClickedRemoveProfile)
+		COMMAND_ID_HANDLER(IDC_RENAME_PROFILE, onClickedRenameProfile)
+		COMMAND_ID_HANDLER(IDC_APPLY_CHANGES, onApplyChanges)
 		COMMAND_ID_HANDLER(IDC_SHAREHIDDEN, onClickedShareHidden)
+		COMMAND_ID_HANDLER(IDC_SHOW_TREE, onClickedShowTree)
 		COMMAND_ID_HANDLER(IDC_EDIT_TEMPSHARES, onEditTempShares)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
@@ -62,13 +64,20 @@ public:
 	LRESULT onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
-	LRESULT onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedAddDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedRemoveDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedAddProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedCopyProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onProfileChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedShareHidden(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedShowTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRefreshDisable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onColumnClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onEditTempShares(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onApplyChanges(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 
 	// Common PropPage interface
@@ -76,13 +85,43 @@ public:
 	void write();
 	
 protected:
+	string curProfile;
+	friend class FolderTree;
 	static Item items[];
 	static TextItem texts[];
 	ExListViewCtrl ctrlDirectories;
 	CStatic ctrlTotal;
 
+	ShareProfilePtr addProfile();
+
+	FolderTree* ft;
+	map<string, FolderTree*> ftl;
+
+	void showProfile();
+	void applyChanges(bool isQuit);
+	void fixControls();
+	void removeDir(const string& aPath, const string& aProfile, bool checkDupes=true);
 	void addDirectory(const tstring& aPath);
-	FolderTree ft;
+	ShareDirInfo::list removeDirs, newDirs, renameDirs;
+
+	bool addExcludeFolder(const string& aPath);
+	bool removeExcludeFolder(const string& path);
+	bool shareFolder(const string& path, ShareDirInfo::list& aShared);
+
+	ShareProfile::set addProfiles;
+	StringList removeProfiles;
+	vector<pair<ShareProfilePtr, string>> renameProfiles;
+	ShareProfilePtr getSelectedProfile();
+	vector<ShareDirInfo*> getItemsByPath(const string& aPath);
+
+	ShareDirInfo::map shareDirs;
+	vector<ShareProfilePtr> profiles;
+	CComboBox ctrlProfile;
+
+	ShareDirInfo::list getViewItems();
+	StringSet getExcludedDirs();
+
+	StringSetMap excludedAdd, excludedRemove;
 };
 
 #endif // !defined(SHARE_PAGE_H)

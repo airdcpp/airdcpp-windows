@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
+#define IDOK2                           3
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
 #define IDC_COPY_SPEED                  102
@@ -167,6 +168,9 @@
 #define IDR_EXEC                        335
 #define IDI_AWAY                        336
 #define IDI_REFRESH                     337
+#define IDD_LINECOMBO                   338
+#define IDD_DIALOG2                     339
+#define IDD_COMBO                       339
 #define IDR_EMOTICON                    345
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
@@ -181,9 +185,9 @@
 #define IDI_UPLOAD_QUEUE                369
 #define IDI_SCAN                        370
 #define IDI_AUTOSEARCH                  371
-#define IDI_IERROR						372
-#define IDI_IWARNING					373
-#define IDI_INFO						374
+#define IDI_IERROR                      372
+#define IDI_IWARNING                    373
+#define IDI_INFO                        374
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
@@ -208,9 +212,12 @@
 #define IDC_ADD                         1011
 #define IDC_REMOVE                      1012
 #define IDC_RECHECK                     1013
+#define IDC_REMOVE_PROFILE              1013
 #define IDC_TOTAL                       1014
 #define IDC_SLOTS                       1015
+#define IDC_ADD_PROFILE                 1015
 #define IDC_SLOTSPIN                    1016
+#define IDC_ADD_PROFILE_COPY            1016
 #define IDC_TRANSFERS                   1017
 #define IDC_CONNECT                     1018
 #define IDC_BROWSEDIR                   1018
@@ -233,6 +240,8 @@
 #define IDC_GETBROWSELIST               1033
 #define IDC_SHAREHIDDEN                 1035
 #define IDC_SHARE_SFV                   1036
+#define IDC_SHAREHIDDEN2                1036
+#define IDC_SHOW_TREE                   1036
 #define IDC_QUEUE                       1037
 #define IDC_SET_FONTS                   1038
 #define IDC_HUBNICK                     1041
@@ -568,6 +577,7 @@
 #define IDC_UPDATE_URL                  1264
 #define IDC_REGEXP_TESTER_TEXT          1264
 #define IDC_LIST_EDIT                   1264
+#define IDC_RENAME_PROFILE              1264
 #define IDC_ST_HIGH_PRIO_FILES          1265
 #define IDC_DL_SKIPPING_OPTIONS         1265
 #define IDC_CHANGE_COLOR                1266
@@ -728,6 +738,8 @@
 #define IDC_TLS_CERTIFICATE_FILE        1318
 #define IDC_PORT_TLS                    1318
 #define IDC_FH_RAW                      1318
+#define IDC_FAVGROUP2                   1318
+#define IDC_FAV_SHAREPROFILE_CAPTION    1318
 #define IDC_SETTINGS_SOCKET_OUT_BUFFER  1319
 #define IDC_PLAYER_PATH                 1319
 #define IDC_ORDER_BALANCED              1319
@@ -918,6 +930,7 @@
 #define IDC_FAVGROUP_BOX                1454
 #define IDC_LIST_OPTIONS                1455
 #define IDC_UPDATE_VERSION_LANGUAGE_LBL 1455
+#define IDC_FAV_SHAREPROFILE            1455
 #define IDC_UPDATE_LOCATION             1456
 #define IDC_CURRENT_LIST_STR            1457
 #define IDC_UPDATE_LOCATION_STR         1458
@@ -1017,6 +1030,14 @@
 #define IDC_TBAR_NOTE                   1646
 #define IDC_TB_NOTE                     1646
 #define IDC_WTB_SIZE                    1647
+#define IDC_PROFILE_SEL                 1647
+#define IDC_RENAME_DIR                  1648
+#define IDC_REMOVE_DIR                  1649
+#define IDC_ADD_DIR                     1650
+#define IDC_RENAME_DIR2                 1651
+#define IDC_APPLY_CHANGES               1651
+#define IDC_COMBO                       1651
+#define IDC_COMBO_DESC                  1652
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1370,9 +1391,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        338
+#define _APS_NEXT_RESOURCE_VALUE        340
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1647
+#define _APS_NEXT_CONTROL_VALUE         1653
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

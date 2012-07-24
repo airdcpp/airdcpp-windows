@@ -20,7 +20,6 @@
 
 #include "../client/DCPlusPlus.h"
 #include "../client/Util.h"
-#include "../client/ShareManager.h"
 #include "../client/SettingsManager.h"
 #include "../client/version.h"
 
@@ -32,13 +31,17 @@
 #include "PropertiesDlg.h"
 #include "TempShare_dlg.h"
 
+#include <boost/range/algorithm/for_each.hpp>
+#include <boost/range/algorithm/remove_if.hpp>
+#include <boost/range/algorithm/find_if.hpp>
+
 PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
 	{ IDC_SETTINGS_SHARE_SIZE, ResourceManager::SETTINGS_SHARE_SIZE }, 
 	{ IDC_SHAREHIDDEN, ResourceManager::SETTINGS_SHARE_HIDDEN },
-	{ IDC_REMOVE, ResourceManager::REMOVE },
-	{ IDC_ADD, ResourceManager::SETTINGS_ADD_FOLDER },
-	{ IDC_RENAME, ResourceManager::SETTINGS_RENAME_FOLDER },
+	{ IDC_REMOVE_DIR, ResourceManager::REMOVE },
+	{ IDC_ADD_DIR, ResourceManager::SETTINGS_ADD_FOLDER },
+	{ IDC_RENAME_DIR, ResourceManager::SETTINGS_RENAME_FOLDER },
 	{ IDC_SETTINGS_ONLY_HASHED, ResourceManager::SETTINGS_ONLY_HASHED },
 	{ IDC_SETTINGS_AUTO_REFRESH_TIME, ResourceManager::SETTINGS_AUTO_REFRESH_TIME },
 	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
@@ -57,15 +60,22 @@ PropPage::Item SharePage::items[] = {
 	{ 0, 0, PropPage::T_END }
 };
 
+SharePage::SharePage(SettingsManager *s) : PropPage(s), ft(nullptr) {
+	SetTitle(CTSTRING(SETTINGS_SHARINGPAGE));
+	m_psp.dwFlags |= PSP_RTLREADING;
+}
+
 LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 
+	CheckDlgButton(IDC_SHOW_TREE, BOOLSETTING(USE_OLD_SHARING_UI) ? BST_UNCHECKED : BST_CHECKED);
+
 	GetDlgItem(IDC_TREE1).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_HIDE : SW_SHOW);
 	GetDlgItem(IDC_DIRECTORIES).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
-	GetDlgItem(IDC_ADD).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
-	GetDlgItem(IDC_REMOVE).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
-	GetDlgItem(IDC_RENAME).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_ADD_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_REMOVE_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_RENAME_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
 
 	GetDlgItem(IDC_EDIT_TEMPSHARES).EnableWindow((ShareManager::getInstance()->hasTempShares()) ? 1 : 0);
 
@@ -75,30 +85,6 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlTotal.Attach(GetDlgItem(IDC_TOTAL));
 
 	PropPage::read((HWND)*this, items);
-
-	if(BOOLSETTING(USE_OLD_SHARING_UI)) {
-		// Prepare shared dir list
-		ctrlDirectories.InsertColumn(0, CTSTRING(VIRTUAL_NAME), LVCFMT_LEFT, 80, 0);
-		ctrlDirectories.InsertColumn(1, CTSTRING(DIRECTORY), LVCFMT_LEFT, 197, 1);
-		ctrlDirectories.InsertColumn(2, CTSTRING(SIZE), LVCFMT_RIGHT, 90, 2);
-		StringPairList directories = ShareManager::getInstance()->getDirectories(ShareManager::REFRESH_ALL);
-		for(StringPairIter j = directories.begin(); j != directories.end(); j++)
-		{
-			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(j->first));
-			ctrlDirectories.SetItemText(i, 1, Text::toT(j->second).c_str());
-			ctrlDirectories.SetItemText(i, 2, Util::formatBytesW(ShareManager::getInstance()->getShareSize(j->second)).c_str());
-			StringList incoming =  ShareManager::getInstance()->getIncoming();
-			for(StringIter k = incoming.begin(); k != incoming.end(); ++k) {
-				if(stricmp(j->second, *k) == 0) {
-					ctrlDirectories.SetCheckState(i, true);
-				}
-			}
-
-		}
-
-	}
-	ctrlDirectories.setSort(0, ExListViewCtrl::SORT_STRING);
-	ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getShareSize()).c_str());
 
 	CUpDownCtrl updown;
 	updown.Attach(GetDlgItem(IDC_REFRESH_SPIN));
@@ -117,13 +103,142 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	updown.SetRange32(0, 3000); 
 	updown.Detach();
 
-	ft.SubclassWindow(GetDlgItem(IDC_TREE1));
-	ft.SetStaticCtrl(&ctrlTotal);
-	if(!BOOLSETTING(USE_OLD_SHARING_UI))
-		ft.PopulateTree();
+	curProfile = SP_DEFAULT;
+	if(BOOLSETTING(USE_OLD_SHARING_UI)) {
+		// Prepare shared dir list
+		ctrlDirectories.InsertColumn(0, CTSTRING(VIRTUAL_NAME), LVCFMT_LEFT, 80, 0);
+		ctrlDirectories.InsertColumn(1, CTSTRING(DIRECTORY), LVCFMT_LEFT, 197, 1);
+		ctrlDirectories.InsertColumn(2, CTSTRING(SIZE), LVCFMT_RIGHT, 90, 2);
+	}
+	/*if(!BOOLSETTING(USE_OLD_SHARING_UI))
+		ft->PopulateTree();*/
+	ShareManager::getInstance()->getShares(shareDirs);
+	showProfile();
 
+	ctrlProfile.Attach(GetDlgItem(IDC_PROFILE_SEL));
+	auto profileList = ShareManager::getInstance()->getProfiles();
+	int n = 0;
+	for(auto j = profileList.begin(); j != profileList.end(); j++) {
+		if ((*j)->getToken() != SP_HIDDEN) {
+			ctrlProfile.InsertString(n, Text::toT((*j)->getName()).c_str());
+			n++;
+			profiles.push_back((*j));
+		}
+	}
 
+	ctrlProfile.SetCurSel(0);
 	return TRUE;
+}
+
+ShareProfilePtr SharePage::getSelectedProfile() {
+	return profiles[ctrlProfile.GetCurSel()];
+}
+
+LRESULT SharePage::onProfileChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto p = getSelectedProfile();
+	curProfile = p->getToken();
+	showProfile();
+
+	::EnableWindow(GetDlgItem(IDC_REMOVE_PROFILE), p->getToken() != SP_DEFAULT);
+	::EnableWindow(GetDlgItem(IDC_RENAME_PROFILE), p->getToken() != SP_DEFAULT);
+	return 0;
+}
+
+ShareDirInfo::list SharePage::getViewItems() {
+	ShareDirInfo::list ret;
+	/*for(auto j = shares.begin(); j != shares.end(); j++) {
+		if (boost::find_if(removeDirs, [j, this](const ShareDirInfo& sdi) { return sdi.path == j->first && sdi.profile == curProfile; }) == removeDirs.end()) {
+			//check renamed dirs
+			auto p = boost::find_if(renameDirs, [j, this](const ShareDirInfo& sdi) { return sdi.path == j->first && sdi.profile == curProfile; });
+			auto sdi = ShareDirInfo(p != renameDirs.end() ? p->vname : j->second->getProfileDir()->getName(curProfile), curProfile, j->first, 
+				j->second->getProfileDir()->isSet(ShareManager::ProfileDirectory::FLAG_INCOMING));
+			ret.push_back(sdi);
+		}
+	}*/
+
+	auto& dirs = shareDirs[curProfile];
+	for(auto i = dirs.begin(); i != dirs.end(); i++) {
+		if (find(removeDirs.begin(), removeDirs.end(), *i) == removeDirs.end()) {
+			ret.push_back(*i);
+		}
+	}
+
+	for(auto j = newDirs.begin(); j != newDirs.end(); j++) {
+		if (j->profile == curProfile) {
+			//auto sdi = ShareDirInfo(j->vname, curProfile, j->path, j->incoming);
+			//ret.push_back(sdi);
+			ret.push_back(*j);
+		}
+	}
+	return ret;
+}
+
+StringSet SharePage::getExcludedDirs() {
+	StringList excludes;
+	StringSet ret;
+	ShareManager::getInstance()->getExcludes(curProfile, excludes);
+	for (auto j = excludes.begin(); j != excludes.end(); j++) {
+		if (excludedRemove[curProfile].find(*j) == excludedRemove[curProfile].end()) {
+			ret.insert(*j);
+		}
+	}
+
+	ret.insert(excludedAdd[curProfile].begin(), excludedAdd[curProfile].end());
+	return ret;
+}
+
+void SharePage::showProfile() {
+	if (ft) {
+		ft->UnsubclassWindow(true);
+		ft->DestroyWindow();
+		delete ft;
+		ft = nullptr;
+	} else {
+		ctrlDirectories.DeleteAllItems();
+	}
+
+	GetDlgItem(IDC_TREE1).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_HIDE : SW_SHOW);
+	GetDlgItem(IDC_DIRECTORIES).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_ADD_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_REMOVE_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_RENAME_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+
+	if(BOOLSETTING(USE_OLD_SHARING_UI)) {
+		// Prepare shared dir list
+		auto shares = getViewItems();
+		for(auto j = shares.begin(); j != shares.end(); j++) {
+			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(j->vname));
+			ctrlDirectories.SetItemText(i, 1, Text::toT(j->path).c_str());
+			ctrlDirectories.SetItemText(i, 2, Util::formatBytesW(ShareManager::getInstance()->getShareSize(j->path, curProfile)).c_str());
+			ctrlDirectories.SetCheckState(i, j->incoming);
+		}
+		ctrlDirectories.setSort(0, ExListViewCtrl::SORT_STRING);
+	} else {
+		ft = new FolderTree(this);
+		ft->SubclassWindow(GetDlgItem(IDC_TREE1));
+		//ft->SetStaticCtrl(&ctrlTotal);
+		ft->PopulateTree();
+	}
+	ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getTotalShareSize(SP_DEFAULT)).c_str());
+}
+
+LRESULT SharePage::onClickedShowTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto useOldInterface = IsDlgButtonChecked(IDC_SHOW_TREE) != BST_CHECKED;
+	SettingsManager::getInstance()->set(SettingsManager::USE_OLD_SHARING_UI, useOldInterface);
+	if(useOldInterface) {
+		// Prepare shared dir list
+		ctrlDirectories.InsertColumn(0, CTSTRING(VIRTUAL_NAME), LVCFMT_LEFT, 80, 0);
+		ctrlDirectories.InsertColumn(1, CTSTRING(DIRECTORY), LVCFMT_LEFT, 197, 1);
+		ctrlDirectories.InsertColumn(2, CTSTRING(SIZE), LVCFMT_RIGHT, 90, 2);
+	} else {
+		ctrlDirectories.DeleteColumn(0);
+		ctrlDirectories.DeleteColumn(0);
+		ctrlDirectories.DeleteColumn(0);
+	}
+
+	showProfile();
+	//settings->set((SettingsManager::IntSetting)i.setting, true);
+	return 0;
 }
 
 LRESULT SharePage::onEditTempShares(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -170,40 +285,101 @@ LRESULT SharePage::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, 
 	return 0;
 }
 
-void SharePage::write()
-{
-
+void SharePage::write() {
 	PropPage::write((HWND)*this, items);
-	
-	ShareManager::getInstance()->DelIncoming();
-	int size = ctrlDirectories.GetItemCount();
-	TCHAR buf[MAX_PATH];
-	for(int i = 0; i < size; ++i){
-			ctrlDirectories.GetItemText(i, 1, buf, MAX_PATH);
-			string tmp = Text::fromT(buf);
-			if(ctrlDirectories.GetCheckState(i) == 1)
-			ShareManager::getInstance()->setIncoming(tmp);
-		}
-
-
+	applyChanges(true);
+	//boost::for_each(ftl, [](pair<string, FolderTree*> ftp) { delete ftp.second;  });
 }
 
 LRESULT SharePage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 {
 	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
-	::EnableWindow(GetDlgItem(IDC_REMOVE), (lv->uNewState & LVIS_FOCUSED));
-	::EnableWindow(GetDlgItem(IDC_RENAME), (lv->uNewState & LVIS_FOCUSED));
+	::EnableWindow(GetDlgItem(IDC_REMOVE_DIR), (lv->uNewState & LVIS_FOCUSED));
+	::EnableWindow(GetDlgItem(IDC_RENAME_DIR), (lv->uNewState & LVIS_FOCUSED));
+
+	NMITEMACTIVATE* itemActivate = (NMITEMACTIVATE*)pnmh;
+	if((itemActivate->uChanged & LVIF_STATE) == 0)
+		return 0;
+	if((itemActivate->uOldState & INDEXTOSTATEIMAGEMASK(0xf)) == 0)
+		return 0;
+	if((itemActivate->uNewState & INDEXTOSTATEIMAGEMASK(0xf)) == 0)
+		return 0;
+
+	/* The checkbox state has changed */
+	if(itemActivate->iItem >= 0) {
+		TCHAR buf[MAX_PATH];
+		LVITEM item;
+		memzero(&item, sizeof(item));
+		item.mask = LVIF_TEXT;
+		item.cchTextMax = sizeof(buf);
+		item.pszText = buf;
+		item.iItem = itemActivate->iItem;
+
+		item.iSubItem = 1;
+		ctrlDirectories.GetItem(&item);
+		string rPath = Text::fromT(buf);
+		bool checked = ctrlDirectories.GetCheckState(item.iItem) > 0;
+
+		//ShareDirInfo::list dirItems;
+		/*for(auto i = shareDirs.begin(); i != shareDirs.end(); i++) {
+			auto& dirs = i->second;
+			for(auto i = dirs.begin(); i != dirs.end(); i++) {
+				if (i->path == rPath && find(removeDirs.begin(), removeDirs.end(), *i) == removeDirs.end()) {
+					i->incoming = checked;
+					//dirItems.push_back(*i);
+				}
+			}
+		}
+
+		for(auto j = newDirs.begin(); j != newDirs.end(); j++) {
+			if (j->path == rPath)
+				j->incoming = checked;
+				//dirItems.push_back(*j);
+		}*/
+
+		auto dirItems = getItemsByPath(rPath);
+		boost::for_each(dirItems, [checked](ShareDirInfo* aDir) { aDir->incoming = checked; });
+
+	}
+
 	return 0;		
+}
+
+vector<ShareDirInfo*> SharePage::getItemsByPath(const string& aPath) {
+	vector<ShareDirInfo*> dirItems;
+	for(auto i = shareDirs.begin(); i != shareDirs.end(); i++) {
+		auto& dirs = i->second;
+		for(auto i = dirs.begin(); i != dirs.end(); i++) {
+			if (i->path == aPath && find(removeDirs.begin(), removeDirs.end(), *i) == removeDirs.end()) {
+				dirItems.push_back(&(*i));
+			}
+		}
+	}
+
+	for(auto j = newDirs.begin(); j != newDirs.end(); j++) {
+		if (j->path == aPath)
+			dirItems.push_back(&(*j));
+	}
+	return dirItems;
+}
+
+SharePage::~SharePage() {
+	if (ft) {
+		ft->UnsubclassWindow(true);
+		delete ft;
+	}
+	ctrlDirectories.Detach();
+	ctrlTotal.Detach();
 }
 
 LRESULT SharePage::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
 	switch(kd->wVKey) {
 	case VK_INSERT:
-		PostMessage(WM_COMMAND, IDC_ADD, 0);
+		PostMessage(WM_COMMAND, IDC_ADD_DIR, 0);
 		break;
 	case VK_DELETE:
-		PostMessage(WM_COMMAND, IDC_REMOVE, 0);
+		PostMessage(WM_COMMAND, IDC_REMOVE_DIR, 0);
 		break;
 	default:
 		bHandled = FALSE;
@@ -215,50 +391,176 @@ LRESULT SharePage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*
 	NMITEMACTIVATE* item = (NMITEMACTIVATE*)pnmh;
 
 	if(item->iItem >= 0) {
-		PostMessage(WM_COMMAND, IDC_RENAME, 0);
+		PostMessage(WM_COMMAND, IDC_RENAME_DIR, 0);
 	} else if(item->iItem == -1) {
-		PostMessage(WM_COMMAND, IDC_ADD, 0);
+		PostMessage(WM_COMMAND, IDC_ADD_DIR, 0);
 	}
 
 	return 0;
 }
 
-LRESULT SharePage::onClickedAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT SharePage::onClickedAddProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto newProfile = addProfile();
+	if (newProfile) {
+		curProfile = newProfile->getToken();
+		showProfile();
+	}
+	return 0;
+}
+
+ShareProfilePtr SharePage::addProfile() {
+	LineDlg virt;
+	virt.title = TSTRING(NAME);
+	virt.description = TSTRING(VIRTUAL_NAME_LONG);
+	//virt.line = Text::toT(ShareManager::getInstance()->validateVirtual(Util::getLastDir(Text::fromT(path))));
+	if(virt.DoModal(m_hWnd) == IDOK) {
+		string name = Text::fromT(virt.line);
+		auto spNew = ShareProfilePtr(new ShareProfile(name));
+		ctrlProfile.AddString(Text::toT(name).c_str());
+		ctrlProfile.SetCurSel(ctrlProfile.GetCount()-1);
+		profiles.push_back(spNew);
+		addProfiles.insert(spNew);
+		fixControls();
+		return spNew;
+	}
+	return nullptr;
+}
+
+LRESULT SharePage::onClickedCopyProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto newProfile = addProfile();
+	if (!newProfile)
+		return 0;
+
+	/* Add all items from the current profile */
+	auto dirs = getViewItems();
+	for(auto j = dirs.begin(); j != dirs.end(); j++) {
+		auto sdi = ShareDirInfo(j->vname, newProfile->getToken(), j->path);
+		newDirs.push_back(sdi);
+	}
+
+	curProfile = newProfile->getToken();
+	showProfile();
+	return 0;
+}
+
+LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto p = getSelectedProfile();
+	//can't remove the default profile
+	if (p->getToken() == SP_DEFAULT) {
+		return 0;
+	}
+
+	/* Remove the profile */
+	auto n = find(addProfiles.begin(), addProfiles.end(), p);
+	if (n != addProfiles.end()) {
+		addProfiles.erase(n);
+	} else {
+		removeProfiles.push_back(p->getToken());
+	}
+	renameProfiles.erase(remove_if(renameProfiles.begin(), renameProfiles.end(), CompareFirst<ShareProfilePtr, string>(p)), renameProfiles.end());
+
+	/* Undo all current directory modifications to this profile */
+	auto hasProfile = [p](const ShareDirInfo& sdi) -> bool {
+		return sdi.profile == p->getToken();
+	};
+
+	removeDirs.erase(boost::remove_if(removeDirs, hasProfile), removeDirs.end());
+	newDirs.erase(boost::remove_if(newDirs, hasProfile), newDirs.end());
+	renameDirs.erase(boost::remove_if(renameDirs, hasProfile), renameDirs.end());
+
+	excludedAdd.erase(p->getToken());
+	excludedRemove.erase(p->getToken());
+
+
+	/* Add all dirs in this profile to the list of removed dirs */
+	auto& profileDirs = shareDirs[curProfile];
+	removeDirs.insert(removeDirs.end(), profileDirs.begin(), profileDirs.end());
+
+	/* List excludes */
+	StringList excluded;
+	ShareManager::getInstance()->getExcludes(p->getToken(), excluded);
+	boost::for_each(excluded, [&](const string& aString) { excludedRemove[p->getToken()].insert(aString); });
+
+
+	/* Switch to default profile */
+	ctrlProfile.DeleteString(ctrlProfile.GetCurSel());
+	curProfile = SP_DEFAULT;
+	showProfile();
+	ctrlProfile.SetCurSel(0);
+	fixControls();
+	return 0;
+}
+
+LRESULT SharePage::onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto profile = profiles[ctrlProfile.GetCurSel()];
+	if (profile->getToken() == SP_DEFAULT) //shouldn't even be possible
+		return 0;
+
+	auto name = Text::toT(profile->getName());
+	LineDlg virt;
+	virt.title = TSTRING(VIRTUAL_NAME);
+	virt.description = TSTRING(VIRTUAL_NAME_LONG);
+	virt.line = name;
+	if(virt.DoModal(m_hWnd) != IDOK || virt.line.empty())
+		return 0;
+	if (name == virt.line)
+		return 0;
+
+	auto p = find_if(renameProfiles.begin(), renameProfiles.end(), CompareFirst<ShareProfilePtr, string>(profile));
+	if (p != renameProfiles.end()) {
+		p->second = Text::fromT(virt.line);
+		return 0;
+	}
+
+	renameProfiles.push_back(make_pair(profile, Text::fromT(virt.line)));
+	fixControls();
+	return 0;
+}
+
+LRESULT SharePage::onClickedAddDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	tstring target;
 	if(WinUtil::browseDirectory(target, m_hWnd)) {
 		addDirectory(target);
-		::PostMessage( WinUtil::mainWnd, WM_COMMAND, IDC_HASH_PROGRESS_AUTO_CLOSE, 0);
+		//::PostMessage( WinUtil::mainWnd, WM_COMMAND, IDC_HASH_PROGRESS_AUTO_CLOSE, 0);
 		//HashProgressDlg(true).DoModal();
 	}
 	
 	return 0;
 }
 
-LRESULT SharePage::onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+LRESULT SharePage::onClickedRemoveDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	TCHAR buf[MAX_PATH];
-	LVITEM item;
-	memzero(&item, sizeof(item));
-	item.mask = LVIF_TEXT;
-	item.cchTextMax = sizeof(buf);
-	item.pszText = buf;
-
-	int i = -1;
+	int i;
 	while((i = ctrlDirectories.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-		item.iItem = i;
-		item.iSubItem = 1;
-		ctrlDirectories.GetItem(&item);
-		ShareManager::getInstance()->removeDirectory(Text::fromT(buf));
-		ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getShareSize()).c_str());
+		ctrlDirectories.GetItemText(i, 1, buf, MAX_PATH);
+		removeDir(Text::fromT(buf), curProfile);
 		ctrlDirectories.DeleteItem(i);
-		
 	}
 	
 	return 0;
 }
 
-LRESULT SharePage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+void SharePage::removeDir(const string& rPath, const string& aProfile, bool checkDupes /*true*/) {
+	auto shareDir = ShareDirInfo(Util::emptyString, aProfile, rPath);
+	auto p = find(newDirs.begin(), newDirs.end(), shareDir);
+	if (p != newDirs.end()) {
+		newDirs.erase(p);
+		return;
+	}
+
+	removeDirs.push_back(shareDir);
+	if (checkDupes) {
+		auto dirItems = getItemsByPath(rPath);
+		if (!dirItems.empty() && MessageBox(CTSTRING_F(X_PROFILE_DIRS_EXISTS, (int)dirItems.size()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+			boost::for_each(dirItems, [this](ShareDirInfo* aDir) { removeDir(aDir->path, aDir->profile, false); });
+		}
+		fixControls();
+	}
+}
+
+LRESULT SharePage::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	TCHAR buf[MAX_PATH];
 	LVITEM item;
@@ -275,26 +577,43 @@ LRESULT SharePage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		tstring vName = buf;
 		item.iSubItem = 1;
 		ctrlDirectories.GetItem(&item);
-		tstring rPath = buf;
-		try {
-			LineDlg virt;
-			virt.title = TSTRING(VIRTUAL_NAME);
-			virt.description = TSTRING(VIRTUAL_NAME_LONG);
-			virt.line = vName;
-			if(virt.DoModal(m_hWnd) == IDOK) {
-				if (stricmp(buf, virt.line) != 0) {
-					ShareManager::getInstance()->renameDirectory(Text::fromT(rPath), Text::fromT(virt.line));
-					ctrlDirectories.SetItemText(i, 0, virt.line.c_str());
+		string rPath = Text::fromT(buf);
+		LineDlg virt;
+		virt.title = TSTRING(VIRTUAL_NAME);
+		virt.description = TSTRING(VIRTUAL_NAME_LONG);
+		virt.line = vName;
+		if(virt.DoModal(m_hWnd) == IDOK) {
+			if (stricmp(buf, virt.line) != 0) {
+				ctrlDirectories.SetItemText(i, 0, virt.line.c_str());
 
-				} else {
-					MessageBox(CTSTRING(SKIP_RENAME), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK);
+				/* Is this a newly added dir? */
+				auto p = boost::find_if(newDirs, [rPath, this](const ShareDirInfo& sdi) { return sdi.path == rPath && sdi.profile == curProfile; });
+				if (p != newDirs.end()) {
+					p->vname = Text::fromT(virt.line);
+					return 0;
 				}
+					
+				/* Existing shared dir? */
+				auto& dirs = shareDirs[curProfile];
+				auto k = boost::find_if(dirs, [rPath, this](const ShareDirInfo& sdi) { return sdi.path == rPath && sdi.profile == curProfile; });
+				if (k == dirs.end()) {
+					dcassert(0); //this should never happen
+					return 0;
+				}
+
+				auto& shareDir = *k;
+				shareDir.vname = Text::fromT(virt.line);
+				auto s = find(renameDirs.begin(), renameDirs.end(), shareDir);
+				if (s == renameDirs.end()) {
+					renameDirs.push_back(shareDir);
+				}
+			} else {
+				MessageBox(CTSTRING(SKIP_RENAME), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK);
 			}
-		} catch(const ShareException& e) {
-			MessageBox(Text::toT(e.getError()).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);
 		}
 	}
 
+	fixControls();
 	return 0;
 }
 
@@ -309,14 +628,13 @@ LRESULT SharePage::onClickedShareHidden(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	}
 
 	// Refresh the share. 
-	ShareManager::getInstance()->refresh(ShareManager::REFRESH_ALL);
+	/*ShareManager::getInstance()->refresh(ShareManager::REFRESH_ALL);
 
 	if(BOOLSETTING(USE_OLD_SHARING_UI))	{
 		// Clear the GUI list, for insertion of updated shares
 		ctrlDirectories.DeleteAllItems();
 		StringPairList directories = ShareManager::getInstance()->getDirectories(ShareManager::REFRESH_ALL);
-		for(StringPairIter j = directories.begin(); j != directories.end(); j++)
-		{
+		for(auto j = directories.begin(); j != directories.end(); j++) {
 			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(j->first));
 			ctrlDirectories.SetItemText(i, 1, Text::toT(j->second).c_str() );
 			ctrlDirectories.SetItemText(i, 2, Util::formatBytesW(ShareManager::getInstance()->getShareSize(j->second)).c_str());
@@ -324,39 +642,182 @@ LRESULT SharePage::onClickedShareHidden(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	}
 
 	// Display the new total share size
-	ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getShareSize()).c_str());
+	ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getShareSize()).c_str());*/
 	return 0;
 }
 
 
 void SharePage::addDirectory(const tstring& aPath){
 	tstring path = aPath;
-	if( path[ path.length() -1 ] != _T('\\') )
-		path += _T('\\');
+	if(path[path.length()-1] != PATH_SEPARATOR)
+		path += PATH_SEPARATOR;
 
 	try {
 		LineDlg virt;
 		virt.title = TSTRING(VIRTUAL_NAME);
 		virt.description = TSTRING(VIRTUAL_NAME_LONG);
-		virt.line = Text::toT(ShareManager::getInstance()->validateVirtual(
-			Util::getLastDir(Text::fromT(path))));
+		virt.line = Text::toT(ShareManager::getInstance()->validateVirtual(Util::getLastDir(Text::fromT(path))));
 		if(virt.DoModal(m_hWnd) == IDOK) {
-			ShareManager::getInstance()->addDirectory(Text::fromT(path), Text::fromT(virt.line));
-			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), virt.line );
-			ctrlDirectories.SetItemText(i, 1, path.c_str());
-			ctrlDirectories.SetItemText(i, 2, Util::formatBytesW(ShareManager::getInstance()->getShareSize(Text::fromT(path))).c_str());
-			ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getShareSize()).c_str());
+			string vPath = Text::fromT(virt.line), rPath = Text::fromT(path);
+			ShareManager::getInstance()->validatePath(rPath, vPath);
+			auto dir = ShareDirInfo(vPath, curProfile, rPath);
+			if (find(newDirs.begin(), newDirs.end(), dir) != newDirs.end())
+				return;
+			newDirs.push_back(dir);
+			if(BOOLSETTING(USE_OLD_SHARING_UI)) {
+				int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), virt.line );
+				ctrlDirectories.SetItemText(i, 1, path.c_str());
+				ctrlDirectories.SetItemText(i, 2, _T("New"));
+			}
+			//ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getShareSize()).c_str());
 		}
 	} catch(const ShareException& e) {
 		MessageBox(Text::toT(e.getError()).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);
 	}
+
+	fixControls();
 	ctrlDirectories.resort();
 }
 
+LRESULT SharePage::onApplyChanges(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	applyChanges(false);
+	return 0;
+}
+
+void SharePage::fixControls() {
+	bool hasChanged = (!addProfiles.empty() || !removeProfiles.empty() || !renameProfiles.empty() || !newDirs.empty() || !removeDirs.empty() || 
+		renameDirs.empty() || !excludedAdd.empty() || !excludedRemove.empty());
+	::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), !hasChanged);
+}
+
+void SharePage::applyChanges(bool isQuit) {
+	if (!addProfiles.empty()) {
+		ShareManager::getInstance()->addProfiles(addProfiles);
+		addProfiles.clear();
+	}
+
+	if (!removeProfiles.empty()) {
+		int favReset = 0;
+		ClientManager::getInstance()->resetProfiles(removeProfiles, *profiles.begin()); //reset for currently connected hubs
+		favReset += FavoriteManager::getInstance()->resetProfiles(removeProfiles, *profiles.begin()); //reset for favorite hubs
+		ShareManager::getInstance()->removeProfiles(removeProfiles); //remove from profiles
+		if (favReset > 0)
+			MessageBox(CWSTRING_F(X_FAV_PROFILES_RESET, favReset), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);
+
+		removeProfiles.clear();
+	}
+
+	if (!renameProfiles.empty()) {
+		for(auto j = renameProfiles.begin(); j != renameProfiles.end(); j++) {
+			j->first->setName(j->second);
+		}
+		FavoriteManager::getInstance()->onProfilesRenamed();
+		renameProfiles.clear();
+	}
 
 
+	if (!newDirs.empty()) {
+		ShareManager::getInstance()->addDirectories(newDirs);
+		newDirs.clear();
+	}
 
-/**
- * @file
- * $Id: SharePage.cpp 389 2008-06-08 10:51:15Z BigMuscle $
- */
+	if (!removeDirs.empty()) {
+		ShareManager::getInstance()->removeDirectories(removeDirs);
+		removeDirs.clear();
+	}
+
+	if (!renameDirs.empty()) {
+		ShareManager::getInstance()->renameDirectories(renameDirs);
+		renameDirs.clear();
+	}
+
+	if (!excludedRemove.empty() || !excludedAdd.empty()) {
+		//ShareManager::getInstance()->addExcludedDirs(excludedAdd);
+		ShareManager::getInstance()->changeExcludedDirs(excludedAdd, excludedRemove);
+		excludedAdd.clear();
+		excludedRemove.clear();
+	}
+
+	if (!isQuit) {
+		shareDirs.clear();
+		ShareManager::getInstance()->getShares(shareDirs);
+		::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), false);
+	}
+}
+
+bool SharePage::addExcludeFolder(const string &path) {
+	
+	//HashManager::getInstance()->stopHashing(path);
+	auto excludes = getExcludedDirs();
+	auto shares = getViewItems();
+	
+	// make sure this is a sub folder of a shared folder
+	if (boost::find_if(shares, [path](const ShareDirInfo& aDir) { return AirUtil::isSub(path, aDir.path); } ) == shares.end())
+		return false;
+
+	// Make sure this not a subfolder of an already excluded folder
+	if (boost::find_if(excludes, [path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludes.end())
+		return false;
+
+	// remove all sub folder excludes
+	for(auto j = excludes.begin(); j != excludes.end(); ++j) {
+		if (AirUtil::isSub(*j, path))
+			removeExcludeFolder(*j);
+	}
+
+	// add it to the list
+	excludedAdd[curProfile].insert(path);
+	fixControls();
+	return true;
+}
+
+bool SharePage::removeExcludeFolder(const string& path) {
+	auto add = excludedAdd[curProfile].find(path);
+	if (add != excludedAdd[curProfile].end()) {
+		auto p = excludedAdd[curProfile];
+		p.erase(path);
+		if (p.empty())
+			excludedAdd.erase(curProfile);
+		return true;
+	}
+
+	excludedRemove[curProfile].insert(path);
+	fixControls();
+	return true;
+}
+
+bool SharePage::shareFolder(const string& path, ShareDirInfo::list& aShared) {
+	auto excludes = getExcludedDirs();
+	//auto shares = getViewItems();
+
+	// check if it's part of the share before checking if it's in the exclusions
+	bool result = false;
+	ShareDirInfo::list::iterator i;
+	for(i = aShared.begin(); i != aShared.end(); ++i) {
+		if (i->profile != curProfile)
+			continue;
+
+		if((path.size() == i->path.size()) && (stricmp(path, i->path) == 0)) {
+			// is it a perfect match
+			i->found = true;
+			return true;
+		} else if (path.size() > i->path.size()) // this might be a subfolder of a shared folder
+		{
+			// if the left-hand side matches and there is a \ in the remainder then it is a subfolder
+			if((stricmp(path.substr(0, i->path.size()), i->path) == 0) && (path.find('\\', i->path.size()) != string::npos)) {
+				result = true;
+				break;
+			}
+		}
+	}
+
+	if(!result)
+		return false;
+
+	// check if it's an excluded folder or a sub folder of an excluded folder
+	if (boost::find_if(excludes, [path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludes.end())
+		return false;
+
+	i->found = true;
+	return true;
+}

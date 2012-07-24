@@ -248,6 +248,9 @@
     <ClCompile Include="client\Localization.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\ShareProfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -641,6 +644,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\Localization.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\ShareProfile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -29,10 +29,11 @@
 #include "../client/StringTokenizer.h"
 #include "../client/version.h"
 
-int FavoriteHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_NICK, COLUMN_PASSWORD, COLUMN_SERVER, COLUMN_USERDESCRIPTION };
-int FavoriteHubsFrame::columnSizes[] = { 200, 290, 125, 100, 100, 125 };
+int FavoriteHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_NICK, COLUMN_PASSWORD, COLUMN_SERVER, COLUMN_USERDESCRIPTION, 
+	COLUMN_SHAREPROFILE };
+int FavoriteHubsFrame::columnSizes[] = { 200, 290, 125, 100, 100, 125, 100 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::AUTO_CONNECT, ResourceManager::DESCRIPTION, 
-ResourceManager::NICK, ResourceManager::PASSWORD, ResourceManager::SERVER, ResourceManager::USER_DESCRIPTION
+ResourceManager::NICK, ResourceManager::PASSWORD, ResourceManager::SERVER, ResourceManager::USER_DESCRIPTION, ResourceManager::SHARE_PROFILE
 };
 
 LRESULT FavoriteHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -149,7 +150,7 @@ FavoriteHubsFrame::StateKeeper::~StateKeeper() {
 	// restore visual updating now, otherwise it doesn't always scroll
 	hubs.SetRedraw(TRUE);
 
-	for(FavoriteHubEntryList::const_iterator i = selected.begin(), iend = selected.end(); i != iend; ++i) {
+	for(auto i = selected.begin(), iend = selected.end(); i != iend; ++i) {
 		for(int j = 0; j < hubs.GetItemCount(); ++j) {
 			if((FavoriteHubEntry*)hubs.GetItemData(j) == *i)
 			{
@@ -194,7 +195,8 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntry* entry, int pos, int gro
 	l.push_back(Text::toT(entry->getNick(false)));
 	l.push_back(tstring(entry->getPassword().size(), '*'));
 	l.push_back(Text::toT(entry->getServer()));
-	l.push_back(Text::toT(entry->getUserDescription()));	
+	l.push_back(Text::toT(entry->getUserDescription()));
+	l.push_back(Text::toT(entry->getShareProfile()->getName()));
 	bool b = entry->getConnect();
 	int i = ctrlHubs.insert(pos, l, 0, (LPARAM)entry);
 	ctrlHubs.SetCheckState(i, b);
@@ -364,13 +366,13 @@ void FavoriteHubsFrame::handleMove(bool up) {
 		if(find(moved.begin(), moved.end(), *i) != moved.end())
 			continue;
 		const string& group = (*i)->getGroup();
-		for(FavoriteHubEntryList::iterator j = i; ;) {
+		for(auto j = i; ;) {
 			if(j == fh_copy.begin()) {
 				// couldn't move within the same group; change group.
 				TStringList groups(getSortedGroups());
 				if(!up)
 					reverse(groups.begin(), groups.end());
-				TStringIterC ig = find(groups.begin(), groups.end(), Text::toT(group));
+				auto ig = find(groups.begin(), groups.end(), Text::toT(group));
 				if(ig != groups.begin()) {
 					FavoriteHubEntryPtr f = *i;
 					f->setGroup(Text::fromT(*(ig - 1)));
@@ -397,7 +399,7 @@ void FavoriteHubsFrame::handleMove(bool up) {
 TStringList FavoriteHubsFrame::getSortedGroups() const {
 	set<tstring, noCaseStringLess> sorted_groups;
 	const FavHubGroups& favHubGroups = FavoriteManager::getInstance()->getFavHubGroups();
-	for(FavHubGroups::const_iterator i = favHubGroups.begin(), iend = favHubGroups.end(); i != iend; ++i)
+	for(auto i = favHubGroups.begin(), iend = favHubGroups.end(); i != iend; ++i)
 		sorted_groups.insert(Text::toT(i->first));
 
 	TStringList groups(sorted_groups.begin(), sorted_groups.end());
@@ -431,12 +433,12 @@ void FavoriteHubsFrame::fillList()
 	}
 
 	const FavoriteHubEntryList& fl = FavoriteManager::getInstance()->getFavoriteHubs();
-	for(FavoriteHubEntryList::const_iterator i = fl.begin(); i != fl.end(); ++i) {
+	for(auto i = fl.begin(); i != fl.end(); ++i) {
 		const string& group = (*i)->getGroup();
 
 		int index = 0;
 		if(!group.empty()) {
-			TStringList::const_iterator groupI = find(groups.begin() + 1, groups.end(), Text::toT(group));
+			auto groupI = find(groups.begin() + 1, groups.end(), Text::toT(group));
 			if(groupI != groups.end())
 				index = groupI - groups.begin();
 		}

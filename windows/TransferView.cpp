@@ -1066,14 +1066,12 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 			} else {
 				return Text::toT(str(boost::format(CSTRING(X_USERS)) % hits));
 			}
-			//return (hits == -1 || isBundle) ? WinUtil::getNicks(user) : (Util::toStringW(hits) + _T(' ') + TSTRING(USERS));
 		case COLUMN_HUB: 
-			if (isBundle)
+			if (isBundle) {
 				return Text::toT(str(boost::format(CSTRING(X_CONNECTIONS)) % running));
-			else if (hits == -1)
+			} else {
 				return WinUtil::getHubNames(user).first;
-			else
-				return (Util::toStringW(running) + _T(' ') + TSTRING(NUMBER_OF_SEGMENTS));
+			}
 		case COLUMN_STATUS: return statusString;
 		case COLUMN_TIMELEFT: return (status == STATUS_RUNNING) ? Util::formatSeconds(timeLeft) : Util::emptyStringT;
 		case COLUMN_SPEED:
@@ -1149,16 +1147,11 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t /*aTick*/) {
 	for(auto j = bundles.begin(); j != bundles.end(); ++j) {
 		BundlePtr b = *j;
-		string bundleToken = b->getToken();
-
-		UpdateInfo* ui = new UpdateInfo(b->getToken(), true);
-
-
 		double ratio = 0;
 		int64_t totalSpeed = 0;
-		
 		bool partial=false, trusted=false, untrusted=false, tthcheck=false, zdownload=false, chunked=false, mcn=false;
 
+		UpdateInfo* ui = new UpdateInfo(b->getToken(), true);
 		for(auto i = b->getDownloads().begin(); i != b->getDownloads().end(); i++) {
 			Download *d = *i;
 
@@ -1381,7 +1374,7 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 		double ratio = 0;
 		int64_t totalSpeed = 0;
 		
-		bool partial=false, trusted=false, untrusted=false, chunked=false, mcn=false;
+		bool partial=false, trusted=false, untrusted=false, chunked=false, mcn=false, zupload=false;
 
 		for(auto i = b->getUploads().begin(); i != b->getUploads().end(); i++) {
 			Upload *u = *i;
@@ -1403,6 +1396,9 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 				}
 				if(u->getUserConnection().isSet(UserConnection::FLAG_MCN1)) {
 					mcn = true;
+				}
+				if(u->isSet(Upload::FLAG_ZUPLOAD)) {
+					zupload = true;
 				}
 
 				totalSpeed += static_cast<int64_t>(u->getAverageSpeed());
@@ -1455,7 +1451,10 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 					}
 					if(mcn) {
 						flag += _T("[M]");
-					}	
+					}
+					if(zupload) {
+						flag += _T("[Z]");
+					}
 
 					if(!flag.empty()) {
 						flag += _T(" ");

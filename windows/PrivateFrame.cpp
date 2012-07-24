@@ -184,7 +184,7 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 */
 void PrivateFrame::updateFrameOnlineStatus(const HintedUser& newUser, Client* c) {
 
-	if(priv && isoffline && !replyTo.user->isNMDC() && replyTo.hint != newUser.hint) {
+	if(!replyTo.user->isNMDC() && replyTo.hint != newUser.hint) {
 		replyTo.hint = newUser.hint;
 		priv = c->getPrivGroup();
 		ctrlClient.setClient(c);

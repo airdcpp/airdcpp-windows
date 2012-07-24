@@ -281,15 +281,19 @@ LRESULT PublicHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	
 	if(ctrlHubs.GetSelectedCount() >= 1) {
 		int i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED);
-			FavoriteHubEntry e;
-			ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
+
+		FavoriteHubEntry e;
+		ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
 		e.setName(Text::fromT(buf));
-			ctrlHubs.GetItemText(i, COLUMN_DESCRIPTION, buf, 256);
+
+		ctrlHubs.GetItemText(i, COLUMN_DESCRIPTION, buf, 256);
 		e.setDescription(Text::fromT(buf));
-			ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
+
+		ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
 		e.setServer(Text::fromT(buf));
-			FavoriteManager::getInstance()->addFavorite(e);
-		}
+
+		FavoriteManager::getInstance()->addFavorite(e);
+	}
 	return 0;
 }
 

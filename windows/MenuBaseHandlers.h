@@ -394,13 +394,13 @@ public:
 	bool confirmDownload(TargetUtil::TargetInfo& targetInfo, int64_t aSize) {
 		string tmp;
 		if (targetInfo.queued > 0) {
-			tmp = str(boost::format(STRING(CONFIRM_SIZE_WARNING_QUEUED)) % 
+			tmp = STRING_F(CONFIRM_SIZE_WARNING_QUEUED, 
 				Util::formatBytes(targetInfo.diskSpace).c_str() % 
 				targetInfo.targetDir.c_str() %
 				Util::formatBytes(targetInfo.queued).c_str() %
 				Util::formatBytes(aSize).c_str());
 		} else {
-			tmp = str(boost::format(STRING(CONFIRM_SIZE_WARNING)) % 
+			tmp = STRING_F(CONFIRM_SIZE_WARNING, 
 				Util::formatBytes(targetInfo.getFreeSpace()).c_str() % 
 				targetInfo.targetDir.c_str() %
 				Util::formatBytes(aSize).c_str());

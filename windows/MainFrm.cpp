@@ -475,6 +475,7 @@ HWND MainFrame::createTBStatusBar() {
 
 void MainFrame::showPortsError(const string& port) {
 	MessageBox(Text::toT(str(boost::format(STRING(PORT_BYSY)) % port)).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
+	//MessageBox(CTSTRING_F(PORT_BYSY, port), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
 }
 
 HWND MainFrame::createWinampToolbar() {
@@ -1053,12 +1054,12 @@ LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 void MainFrame::autoConnect(const FavoriteHubEntry::List& fl) {
 		
 	int left = SETTING(OPEN_FIRST_X_HUBS);
-	FavoriteHubEntry::List& fh = FavoriteManager::getInstance()->getFavoriteHubs();
+	auto& fh = FavoriteManager::getInstance()->getFavoriteHubs();
 	if(left > static_cast<int>(fh.size())) {
 		left = fh.size();
 	}
 	missedAutoConnect = false;
-	for(FavoriteHubEntry::List::const_iterator i = fl.begin(); i != fl.end(); ++i) {
+	for(auto i = fl.begin(); i != fl.end(); ++i) {
 		FavoriteHubEntry* entry = *i;
 		if(entry->getConnect()) {
  			if(!entry->getNick().empty() || !SETTING(NICK).empty()) {
@@ -1380,10 +1381,28 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	tstring file = Util::emptyStringT;
 	
 	if(wID == IDC_OPEN_MY_LIST){
-		string ownlist = "files.xml.bz2";
-		if(!ownlist.empty()){
-			DirectoryListingFrame::openWindow(Text::toT(ownlist), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString), 0, true);
+		string flname;
+		auto profiles = ShareManager::getInstance()->getProfiles();
+		if (profiles.size() > 2) {
+			StringList tmpList;
+			for(auto j = profiles.begin(); j != profiles.end(); j++) {
+				if ((*j)->getToken() != SP_HIDDEN)
+					tmpList.push_back((*j)->getName());
+			}
+
+			ComboDlg dlg;
+			dlg.setList(tmpList);
+			dlg.description = CTSTRING(SHARE_PROFILE);
+			dlg.title = CTSTRING(MENU_OPEN_OWN_LIST);
+			if(dlg.DoModal() == IDOK) {
+				flname = profiles[dlg.curSel]->getProfileList()->getProfile();
+			} else {
+				return 0;
+			}
+		} else {
+			flname = SP_DEFAULT;
 		}
+		DirectoryListingFrame::openWindow(Text::toT(flname), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString), 0, true);
 		return 0;
 	}
 
@@ -1399,7 +1418,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 }
 
 LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ShareManager::getInstance()->refresh(ShareManager::REFRESH_ALL | ShareManager::REFRESH_UPDATE);
+	ShareManager::getInstance()->refresh();
 	return 0;
 }
 
@@ -1971,7 +1990,7 @@ LRESULT MainFrame::onRefreshMenu(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, B
 	try {
 		auto l = ShareManager::getInstance()->getGroupedDirectories();
 		if(wID == IDC_REFRESH_MENU){
-			ShareManager::getInstance()->refresh( ShareManager::REFRESH_ALL | ShareManager::REFRESH_UPDATE );
+			ShareManager::getInstance()->refresh();
 		} else if (wID < IDC_REFRESH_MENU_SUBDIRS) {
 			int id = wID-IDC_REFRESH_MENU-1;
 			ShareManager::getInstance()->refresh(l[id].first);

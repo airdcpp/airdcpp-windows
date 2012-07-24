@@ -25,6 +25,7 @@
 
 #include <atlcrack.h>
 #include "ExListViewCtrl.h"
+#include "../client/ShareManager.h"
 
 class FavHubProperties : public CDialogImpl<FavHubProperties>
 {
@@ -40,7 +41,6 @@ public:
 		COMMAND_HANDLER(IDC_HUBPASS, EN_CHANGE, OnTextChanged)
 		COMMAND_HANDLER(IDC_HUBUSERDESCR, EN_CHANGE, OnTextChanged)
 		COMMAND_HANDLER(IDC_HUBADDR, EN_CHANGE, OnTextChanged)
-		NOTIFY_HANDLER(IDC_SHARED, LVN_COLUMNCLICK, onColumnClick)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 	END_MSG_MAP()
@@ -48,12 +48,11 @@ public:
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/);
-	LRESULT onColumnClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 protected:
-	void fillShareList();
 	FavoriteHubEntry *entry;
-	ExListViewCtrl ctrlDirectories;
+
+	CComboBox ctrlProfile;
 };
 
 #endif // !defined(FAV_HUB_PROPERTIES_H)

@@ -490,7 +490,7 @@ private:
 				bool checkShareDupe = true;
 				if(mylist) {
 					// if its own list regenerate it before opening, but only if its dirty
-					mFile = ShareManager::getInstance()->generateOwnList(mWindow->dl->getHubUrl());
+					mFile = ShareManager::getInstance()->generateOwnList(mFile);
 					checkShareDupe = false;
 				}
 

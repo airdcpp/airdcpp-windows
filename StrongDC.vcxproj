@@ -356,6 +356,7 @@
     <None Include="res\emoticon.bmp" />
     <None Include="res\emoticon.png" />
     <None Include="res\eng.ico" />
+    <None Include="res\error.ico" />
     <None Include="res\Exec.ico" />
     <None Include="res\fav.bmp" />
     <None Include="res\fin.ico" />
@@ -369,6 +370,7 @@
     <None Include="res\HubOp.ico" />
     <None Include="res\HubReg.ico" />
     <None Include="res\hun.ico" />
+    <None Include="res\info.ico" />
     <None Include="res\ita.ico" />
     <None Include="res\magnet.ico" />
     <None Include="res\message.ico" />
@@ -424,6 +426,7 @@
     <None Include="res\User.ico" />
     <None Include="res\UserOff.ico" />
     <None Include="res\users.bmp" />
+    <None Include="res\warning.ico" />
     <None Include="res\Winamp_logo.ico" />
     <None Include="res\WinampControl.bmp" />
     <None Include="changelog.txt" />
