@@ -1461,24 +1461,18 @@ LRESULT FolderTree::OnChecked(HTREEITEM hItem, BOOL &bHandled)
 	else
 	{
         // if no parent folder is checked then this is a new root dir
-		try {
-			LineDlg virt;
-			virt.title = TSTRING(VIRTUAL_NAME);
-			virt.description = TSTRING(VIRTUAL_NAME_LONG);
+		LineDlg virt;
+		virt.title = TSTRING(VIRTUAL_NAME);
+		virt.description = TSTRING(VIRTUAL_NAME_LONG);
 
-			tstring path = pItem->m_sFQPath;
-			if( path[ path.length() -1 ] != '\\' )
-				path += '\\';
+		tstring path = pItem->m_sFQPath;
+		if( path[ path.length() -1 ] != '\\' )
+			path += '\\';
 
-			sp->addDirectory(path);
-
-			::PostMessage( WinUtil::mainWnd, WM_COMMAND, IDC_HASH_PROGRESS_AUTO_CLOSE, 0);
-			UpdateParentItems(hItem);
-		} catch(const ShareException& e) {
-			MessageBox(Text::toT(e.getError()).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);
-			bHandled = TRUE;
+		if (!sp->addDirectory(path))
 			return 1;
-		}
+
+		UpdateParentItems(hItem);
 	}
 	
 	UpdateStaticCtrl();

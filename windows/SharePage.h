@@ -90,7 +90,6 @@ protected:
 	static Item items[];
 	static TextItem texts[];
 	ExListViewCtrl ctrlDirectories;
-	CStatic ctrlTotal;
 
 	ShareProfilePtr addProfile();
 
@@ -101,8 +100,8 @@ protected:
 	void applyChanges(bool isQuit);
 	void fixControls();
 	void removeDir(const string& aPath, const string& aProfile, bool checkDupes=true);
-	void addDirectory(const tstring& aPath);
-	ShareDirInfo::list removeDirs, newDirs, renameDirs;
+	bool addDirectory(const tstring& aPath);
+	ShareDirInfo::list removeDirs, newDirs, changedDirs;
 
 	bool addExcludeFolder(const string& aPath);
 	bool removeExcludeFolder(const string& path);

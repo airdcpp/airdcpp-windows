@@ -1534,6 +1534,9 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="ShareProfiles">Share Profiles</String>
 		<String Name="ProfileExists">A profile with the same name exists already</String>
 		<String Name="XProfileDirsExists">This directory also exists in %d other profiles. Do you want to remove it from all of them?</String>
-		<String Name="AddFromThis">Add from this</String>
+		<String Name="AddProfile">Add profile</String>
+		<String Name="AddProfileCopy">Add copy from this</String>
+		<String Name="RemoveProfile">Remove profile</String>
+		<String Name="ApplyChanges">Apply changes</String>
 	</Strings>
 </Language>
