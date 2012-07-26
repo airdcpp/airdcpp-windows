@@ -149,7 +149,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 }
 
 void FavHubProperties::appendProfiles() {
-	/*auto profiles = ShareManager::getInstance()->getProfiles();
+	auto profiles = ShareManager::getInstance()->getProfiles();
 
 	int counter = 0;
 	for(auto j = profiles.begin(); j != profiles.end(); j++) {
@@ -157,11 +157,11 @@ void FavHubProperties::appendProfiles() {
 		if ((*j) == entry->getShareProfile())
 			ctrlProfile.SetCurSel(counter);
 		counter++;
-	}*/
+	}
 }
 
 LRESULT FavHubProperties::OnEditProfiles(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
-	MainFrame::getMainFrame()->openSettings(8);
+	MainFrame::getMainFrame()->openSettings(7);
 	while(ctrlProfile.GetCount()) {
 		ctrlProfile.DeleteString(0);
 	}

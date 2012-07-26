@@ -49,7 +49,7 @@ LRESULT TreePropertySheet::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 void TreePropertySheet::hideTab() {
 	CRect rcClient, rcTab, rcPage, rcWindow;
 	CWindow tab = GetTabControl();
-	CWindow page = IndexToHwnd(0);
+	CWindow page = IndexToHwnd(this->m_psh.nStartPage);
 
 	GetClientRect(&rcClient);
 
@@ -75,7 +75,7 @@ void TreePropertySheet::addTree()
 	// Insert the space to the left
 	CRect rcWindow,rcPage;
 
-	HWND page = IndexToHwnd(0);
+	HWND page = IndexToHwnd(this->m_psh.nStartPage);
 	::GetWindowRect(page, &rcPage);
 	::MapWindowPoints(NULL, m_hWnd, (LPPOINT)&rcPage, 2);
 
@@ -102,15 +102,15 @@ void TreePropertySheet::fillTree() {
 	item.pszText = buf;
 	item.cchTextMax = MAX_NAME_LENGTH - 1;
 
-	HTREEITEM first = NULL;
+	HTREEITEM initialItem = NULL;
 	for(int i = 0; i < pages; ++i) {
 		tab.GetItem(i, &item);
-		if(i == 0)
-			first = createTree(buf, TVI_ROOT, i);
+		if(i == m_psh.nStartPage)
+			initialItem = createTree(buf, TVI_ROOT, i);
 		else
 			createTree(buf, TVI_ROOT, i);
 	}
-	ctrlTree.SelectItem(first);
+	ctrlTree.SelectItem(initialItem);
 }
 
 HTREEITEM TreePropertySheet::createTree(const tstring& str, HTREEITEM parent, int page) {
