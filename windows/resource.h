@@ -3,6 +3,8 @@
 // Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
+#define IDCANCEL2                       3
+#define IDC_EDIT_PROFILES               3
 #define IDD_ABOUTBOX                    100
 #define IDC_FILETYPES                   101
 #define IDC_COPY_SPEED                  102
@@ -544,6 +546,7 @@
 #define IDC_FH_USER_DESC                1250
 #define IDC_TIME_LEFT                   1251
 #define IDC_MOVEDOWN                    1251
+#define IDC_PROFILES_NOTE               1251
 #define IDC_SETTINGS_FAVORITE_DIRECTORIES 1252
 #define IDC_SHUTDOWN_SPIN               1253
 #define IDC_STATISTICS                  1253

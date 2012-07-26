@@ -1538,5 +1538,9 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="AddProfileCopy">Add copy from this</String>
 		<String Name="RemoveProfile">Remove profile</String>
 		<String Name="ApplyChanges">Apply changes</String>
+		<String Name="AddInAllProfiles">Add this directory in all profiles</String>
+		<String Name="ProfileNameDesc">Enter a display name for the profile</String>
+		<String Name="EditProfiles">Edit profiles...</String>
+		<String Name="ProfilesNote">Custom share profiles can only be set for ADC hubs</String>
 	</Strings>
 </Language>

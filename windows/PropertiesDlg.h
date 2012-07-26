@@ -40,7 +40,7 @@ public:
 		MESSAGE_HANDLER(TCM_SETCURSEL, TreePropertySheet::onSetCurSel)
 	END_MSG_MAP()
 
-	PropertiesDlg(HWND parent, SettingsManager *s);
+	PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage);
 	~PropertiesDlg();
 	static bool needUpdate;
 

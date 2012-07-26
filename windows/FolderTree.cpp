@@ -259,10 +259,8 @@ FolderTree::FolderTree(SharePage* aSp) : sp(aSp)
 	m_bShowRootedFolder = false;
 	m_hRootedFolder = NULL;
 	m_bShowDriveLabels = true;
-	m_pStaticCtrl = NULL;
 
 	m_nShareSizeDiff = 0;
-	m_bDirty = false;
 }
 
 FolderTree::~FolderTree()
@@ -1475,8 +1473,6 @@ LRESULT FolderTree::OnChecked(HTREEITEM hItem, BOOL &bHandled)
 		UpdateParentItems(hItem);
 	}
 	
-	UpdateStaticCtrl();
-	
 	UpdateChildItems(hItem, true);
 	
 	return 0;
@@ -1488,33 +1484,21 @@ LRESULT FolderTree::OnUnChecked(HTREEITEM hItem, BOOL& /*bHandled*/)
 
 	HTREEITEM hSharedParent = HasSharedParent(hItem);
 	// if no parent is checked remove this root folder from share
-	if(hSharedParent == NULL)
-	{
+	if(hSharedParent == NULL) {
 		string path = Text::fromT(pItem->m_sFQPath);
 		if( path[ path.length() -1 ] != PATH_SEPARATOR )
 			path += PATH_SEPARATOR;
 
 		sp->removeExcludeFolder(path);
-		/* fun with math
-		futureShareSize = currentShareSize + currentOffsetSize - (sizeOfDirToBeRemoved - sizeOfSubDirsWhichWhereAlreadyExcluded) */
-		//int64_t futureShareSize = ShareManager::getInstance()->getTotalShareSize(sp->curProfile) + m_nShareSizeDiff - (Util::getDirSize(Text::fromT(pItem->m_sFQPath)) - temp);
 		sp->removeDir(path, sp->curProfile);
-		/* more fun with math
-		theNewOffset = whatWeKnowTheCorrectNewSizeShouldBe - whatTheShareManagerThinksIsTheNewShareSize
-		m_nShareSizeDiff = futureShareSize - ShareManager::getInstance()->getShareSize(path, sp->curProfile); */
 		UpdateParentItems(hItem);
-	}
-	else if(GetChecked(GetParentItem(hItem)))
-	{
+	} else if(GetChecked(GetParentItem(hItem))) {
 		// if the parent is checked add this folder to excludes
 		string path = Text::fromT(pItem->m_sFQPath);
 		if(	path[ path.length() -1 ] != PATH_SEPARATOR )
 			path += PATH_SEPARATOR;
-		//m_nShareSizeDiff -= ShareManager::getInstance()->addExcludeFolder(path);
 		sp->addExcludeFolder(path);
 	}
-	
-	UpdateStaticCtrl();
 	
 	UpdateChildItems(hItem, false);
 
@@ -1655,27 +1639,6 @@ void FolderTree::ShareParentButNotSiblings(HTREEITEM hItem)
 		string path = Text::fromT(pItem->m_sFQPath);
 		if( path[ path.length() -1 ] != PATH_SEPARATOR )
 			path += PATH_SEPARATOR;
-		//m_nShareSizeDiff += ShareManager::getInstance()->removeExcludeFolder(path);
 		sp->removeExcludeFolder(path);
 	}
-}
-
-void FolderTree::SetStaticCtrl(CStatic *staticCtrl)
-{
-	m_pStaticCtrl = staticCtrl;
-}
-
-void FolderTree::UpdateStaticCtrl()
-{
-	m_bDirty = true;
-	if(m_pStaticCtrl != NULL)
-	{
-		/* display theActualSizeOfTheShareAfterRefresh = WhatTheShareManagerThinksIsTheCorrectSize - theOffsetCreatedByPlayingAroundWithExcludeFolders */
-		m_pStaticCtrl->SetWindowText((Util::formatBytesW(ShareManager::getInstance()->getTotalShareSize(sp->curProfile) + m_nShareSizeDiff) + _T("*")).c_str());
-	}
-}
-
-bool FolderTree::IsDirty()
-{
-	return m_bDirty;
 }

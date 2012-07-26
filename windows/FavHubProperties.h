@@ -41,6 +41,7 @@ public:
 		COMMAND_HANDLER(IDC_HUBPASS, EN_CHANGE, OnTextChanged)
 		COMMAND_HANDLER(IDC_HUBUSERDESCR, EN_CHANGE, OnTextChanged)
 		COMMAND_HANDLER(IDC_HUBADDR, EN_CHANGE, OnTextChanged)
+		COMMAND_ID_HANDLER(IDC_EDIT_PROFILES, OnEditProfiles)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 	END_MSG_MAP()
@@ -48,7 +49,9 @@ public:
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/);
+	LRESULT OnEditProfiles(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/);
 
+	void appendProfiles();
 protected:
 	FavoriteHubEntry *entry;
 

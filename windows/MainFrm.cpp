@@ -922,9 +922,13 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	return 0;
 }
 
-LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-	PropertiesDlg dlg(m_hWnd, SettingsManager::getInstance());
+LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	openSettings();
+	return 0;
+}
+
+void MainFrame::openSettings(uint16_t initialPage /*0*/) {
+	PropertiesDlg dlg(m_hWnd, SettingsManager::getInstance(), initialPage);
 
 	auto prevTCP = SETTING(TCP_PORT);
 	auto prevUDP = SETTING(UDP_PORT);
@@ -1029,7 +1033,6 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 			UpdateLayout();
 		}
 	}
-	return 0;
 }
 
 LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {

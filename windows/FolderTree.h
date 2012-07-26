@@ -163,8 +163,6 @@ public:
 	bool IsFolder(const tstring& sPath);
 	bool GetChecked(HTREEITEM hItem) const;
     BOOL SetChecked(HTREEITEM hItem, bool fCheck);
-	void SetStaticCtrl(CStatic *staticCtrl);
-	bool IsDirty();
 
 protected:
 	SharePage* sp;
@@ -199,7 +197,6 @@ protected:
 	bool GetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::list& aShared);
 	HTREEITEM HasSharedParent(HTREEITEM hItem);
 	void ShareParentButNotSiblings(HTREEITEM hItem);
-	void UpdateStaticCtrl();
 	void UpdateChildItems(HTREEITEM hItem, bool bChecked);
 	void UpdateParentItems(HTREEITEM hItem);
 
@@ -226,9 +223,7 @@ protected:
 	DWORD           m_dwNetworkItemTypes;
 	bool            m_bShowDriveLabels;
 	bool            m_bShowRootedFolder;
-	CStatic*		m_pStaticCtrl;
 	int64_t			m_nShareSizeDiff;
-	bool			m_bDirty;
 
 	ShareEnumerator theSharedEnumerator;
 };

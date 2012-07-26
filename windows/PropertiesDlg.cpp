@@ -58,7 +58,7 @@
 
 bool PropertiesDlg::needUpdate = false;
 
-PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s) : TreePropertySheet(CTSTRING(SETTINGS), 0, parent)
+PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage) : TreePropertySheet(CTSTRING(SETTINGS), initialPage, parent)
 {
 
 	int n = 0;

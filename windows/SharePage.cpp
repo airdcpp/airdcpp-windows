@@ -138,9 +138,7 @@ LRESULT SharePage::onProfileChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	auto p = getSelectedProfile();
 	curProfile = p->getToken();
 	showProfile();
-
-	::EnableWindow(GetDlgItem(IDC_REMOVE_PROFILE), p->getToken() != SP_DEFAULT);
-	::EnableWindow(GetDlgItem(IDC_RENAME_PROFILE), p->getToken() != SP_DEFAULT);
+	fixControls();
 	return 0;
 }
 
@@ -389,6 +387,7 @@ LRESULT SharePage::onClickedAddProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	if (newProfile) {
 		curProfile = newProfile->getToken();
 		showProfile();
+		fixControls();
 	}
 	return 0;
 }
@@ -396,8 +395,7 @@ LRESULT SharePage::onClickedAddProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 ShareProfilePtr SharePage::addProfile() {
 	LineDlg virt;
 	virt.title = TSTRING(NAME);
-	virt.description = TSTRING(VIRTUAL_NAME_LONG);
-	//virt.line = Text::toT(ShareManager::getInstance()->validateVirtual(Util::getLastDir(Text::fromT(path))));
+	virt.description = TSTRING(PROFILE_NAME_DESC);
 	if(virt.DoModal(m_hWnd) == IDOK) {
 		string name = Text::fromT(virt.line);
 		auto spNew = ShareProfilePtr(new ShareProfile(name));
@@ -405,7 +403,6 @@ ShareProfilePtr SharePage::addProfile() {
 		ctrlProfile.SetCurSel(ctrlProfile.GetCount()-1);
 		profiles.push_back(spNew);
 		addProfiles.insert(spNew);
-		fixControls();
 		return spNew;
 	}
 	return nullptr;
@@ -425,6 +422,7 @@ LRESULT SharePage::onClickedCopyProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 
 	curProfile = newProfile->getToken();
 	showProfile();
+	fixControls();
 	return 0;
 }
 
@@ -498,6 +496,10 @@ LRESULT SharePage::onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	}
 
 	renameProfiles.push_back(make_pair(profile, Text::fromT(virt.line)));
+	auto pos = ctrlProfile.GetCurSel();
+	ctrlProfile.DeleteString(pos);
+	ctrlProfile.InsertString(pos, virt.line.c_str());
+
 	fixControls();
 	return 0;
 }
@@ -687,7 +689,9 @@ LRESULT SharePage::onApplyChanges(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 void SharePage::fixControls() {
 	bool hasChanged = (!addProfiles.empty() || !removeProfiles.empty() || !renameProfiles.empty() || !newDirs.empty() || !removeDirs.empty() || 
 		changedDirs.empty() || !excludedAdd.empty() || !excludedRemove.empty());
-	::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), !hasChanged);
+	::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), hasChanged);
+	::EnableWindow(GetDlgItem(IDC_REMOVE_PROFILE), curProfile != SP_DEFAULT);
+	::EnableWindow(GetDlgItem(IDC_RENAME_PROFILE), curProfile != SP_DEFAULT);
 }
 
 void SharePage::applyChanges(bool isQuit) {
@@ -746,8 +750,6 @@ void SharePage::applyChanges(bool isQuit) {
 }
 
 bool SharePage::addExcludeFolder(const string &path) {
-	
-	//HashManager::getInstance()->stopHashing(path);
 	auto excludes = getExcludedDirs();
 	auto shares = getViewItems();
 	
@@ -788,7 +790,6 @@ bool SharePage::removeExcludeFolder(const string& path) {
 
 bool SharePage::shareFolder(const string& path, ShareDirInfo::list& aShared) {
 	auto excludes = getExcludedDirs();
-	//auto shares = getViewItems();
 
 	// check if it's part of the share before checking if it's in the exclusions
 	bool result = false;

@@ -20,6 +20,7 @@
 #include "../client/DCPlusPlus.h"
 #include "Resource.h"
 #include "WinUtil.h"
+#include "MainFrm.h"
 
 #include "FavHubProperties.h"
 
@@ -52,6 +53,10 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_FAVGROUP, CTSTRING(GROUP));
 	SetDlgItemText(IDC_LOGMAINCHAT, CTSTRING(FAV_LOG_CHAT));
 	SetDlgItemText(IDC_CHAT_NOTIFY, CTSTRING(CHAT_NOTIFY));
+
+	SetDlgItemText(IDC_FAV_SHAREPROFILE_CAPTION, CTSTRING(SHARE_PROFILE));
+	SetDlgItemText(IDC_EDIT_PROFILES, CTSTRING(EDIT_PROFILES));
+	SetDlgItemText(IDC_PROFILES_NOTE, CTSTRING(PROFILES_NOTE));
 
 	// Fill in values
 	SetDlgItemText(IDC_HUBNAME, Text::toT(entry->getName()).c_str());
@@ -97,15 +102,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	combo.AddString(Text::toT(Text::utf8).c_str());
 
 	ctrlProfile.Attach(GetDlgItem(IDC_FAV_SHAREPROFILE));
-	auto profiles = ShareManager::getInstance()->getProfiles();
-
-	int counter = 0;
-	for(auto j = profiles.begin(); j != profiles.end(); j++) {
-		ctrlProfile.InsertString(counter, Text::toT((*j)->getName()).c_str());
-		if ((*j) == entry->getShareProfile())
-			ctrlProfile.SetCurSel(counter);
-		counter++;
-	}
+	appendProfiles();
 
 	if(isAdcHub) {
 		combo.SetCurSel(4); // select UTF-8 for ADC hubs
@@ -148,6 +145,27 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	updown.Detach();
 
 	CenterWindow(GetParent());
+	return FALSE;
+}
+
+void FavHubProperties::appendProfiles() {
+	/*auto profiles = ShareManager::getInstance()->getProfiles();
+
+	int counter = 0;
+	for(auto j = profiles.begin(); j != profiles.end(); j++) {
+		ctrlProfile.InsertString(counter, Text::toT((*j)->getName()).c_str());
+		if ((*j) == entry->getShareProfile())
+			ctrlProfile.SetCurSel(counter);
+		counter++;
+	}*/
+}
+
+LRESULT FavHubProperties::OnEditProfiles(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
+	MainFrame::getMainFrame()->openSettings(8);
+	while(ctrlProfile.GetCount()) {
+		ctrlProfile.DeleteString(0);
+	}
+	appendProfiles();
 	return FALSE;
 }
 
