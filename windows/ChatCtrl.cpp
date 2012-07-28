@@ -806,7 +806,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 
 			menu.AppendMenu(MF_SEPARATOR);
 			if (!author.empty() && isMagnet) {
-				if (author == Text::toT(client->getMyNick())) {
+				if (client && author == Text::toT(client->getMyNick())) {
 					/* show an option to remove the item */
 				} else {
 					Magnet m = Magnet(Text::fromT(selectedWord));

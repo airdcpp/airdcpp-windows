@@ -53,7 +53,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE_PROFILE, onClickedRemoveProfile)
 		COMMAND_ID_HANDLER(IDC_RENAME_PROFILE, onClickedRenameProfile)
 		COMMAND_ID_HANDLER(IDC_APPLY_CHANGES, onApplyChanges)
-		COMMAND_ID_HANDLER(IDC_SHAREHIDDEN, onClickedShareHidden)
 		COMMAND_ID_HANDLER(IDC_SHOW_TREE, onClickedShowTree)
 		COMMAND_ID_HANDLER(IDC_EDIT_TEMPSHARES, onEditTempShares)
 		REFLECT_NOTIFICATIONS()
@@ -72,7 +71,6 @@ public:
 	LRESULT onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onProfileChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onClickedShareHidden(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedShowTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRefreshDisable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onColumnClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);

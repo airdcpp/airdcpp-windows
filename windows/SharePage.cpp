@@ -172,12 +172,14 @@ StringSet SharePage::getExcludedDirs() {
 		}
 	}
 
-	ret.insert(excludedAdd[curProfile].begin(), excludedAdd[curProfile].end());
+	if (excludedAdd.find(curProfile) != excludedAdd.end())
+		ret.insert(excludedAdd[curProfile].begin(), excludedAdd[curProfile].end());
 	return ret;
 }
 
 void SharePage::showProfile() {
 	if (ft) {
+		ft->Clear();
 		ft->UnsubclassWindow(true);
 		ft->DestroyWindow();
 		delete ft;
@@ -603,36 +605,6 @@ LRESULT SharePage::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	fixControls();
 	return 0;
 }
-
-LRESULT SharePage::onClickedShareHidden(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
-{
-	// Save the checkbox state so that ShareManager knows to include/exclude hidden files
-	Item i = items[1]; // The checkbox. Explicit index used - bad!
-	if(::IsDlgButtonChecked((HWND)* this, i.itemID) == BST_CHECKED){
-		settings->set((SettingsManager::IntSetting)i.setting, true);
-	} else {
-		settings->set((SettingsManager::IntSetting)i.setting, false);
-	}
-
-	// Refresh the share. 
-	/*ShareManager::getInstance()->refresh(ShareManager::REFRESH_ALL);
-
-	if(BOOLSETTING(USE_OLD_SHARING_UI))	{
-		// Clear the GUI list, for insertion of updated shares
-		ctrlDirectories.DeleteAllItems();
-		StringPairList directories = ShareManager::getInstance()->getDirectories(ShareManager::REFRESH_ALL);
-		for(auto j = directories.begin(); j != directories.end(); j++) {
-			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(j->first));
-			ctrlDirectories.SetItemText(i, 1, Text::toT(j->second).c_str() );
-			ctrlDirectories.SetItemText(i, 2, Util::formatBytesW(ShareManager::getInstance()->getShareSize(j->second)).c_str());
-		}
-	}
-
-	// Display the new total share size
-	ctrlTotal.SetWindowText(Util::formatBytesW(ShareManager::getInstance()->getShareSize()).c_str());*/
-	return 0;
-}
-
 
 bool SharePage::addDirectory(const tstring& aPath){
 	tstring path = aPath;
