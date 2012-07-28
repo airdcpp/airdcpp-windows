@@ -154,7 +154,7 @@ void FavHubProperties::appendProfiles() {
 	int counter = 0;
 	for(auto j = profiles.begin(); j != profiles.end(); j++) {
 		ctrlProfile.InsertString(counter, Text::toT((*j)->getName()).c_str());
-		if ((*j) == entry->getShareProfile())
+		if (counter == 0 || *j == entry->getShareProfile())
 			ctrlProfile.SetCurSel(counter);
 		counter++;
 	}
@@ -233,9 +233,12 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 			ct = 2;
 
 		entry->setMode(ct);
+
+		auto p = ShareManager::getInstance()->getProfiles();
 		if(AirUtil::isAdcHub(entry->getServer())) {
-			auto p = ShareManager::getInstance()->getProfiles();
 			entry->setShareProfile(p[ctrlProfile.GetCurSel()]);
+		} else {
+			entry->setShareProfile(p[0]);
 		}
 
 		FavoriteManager::getInstance()->save();

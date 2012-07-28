@@ -1216,15 +1216,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 LRESULT HubFrame::onOpenMyList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	string hubUrl = client->getHubUrl();
-	string ownlist = "files.xml.bz2";
-	if(AirUtil::isAdcHub(hubUrl))
-		ownlist = "files" + AirUtil::stripHubUrl(hubUrl) + "xml.bz2";
-	else
-		hubUrl = Util::emptyString;
-
-	DirectoryListingFrame::openWindow(Text::toT(ownlist), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), hubUrl), 0, true);
-	
+	DirectoryListingFrame::openWindow(Text::toT(client->getShareProfile()), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), client->getHubUrl()), 0, true);
 	return 0;
 }
 
