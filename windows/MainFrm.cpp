@@ -272,7 +272,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
 	AddSimpleReBarBand(hWndWinampBar, NULL, TRUE);
-	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 400, TRUE);
+	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 200, FALSE);
 
 	CreateSimpleStatusBar();
 	
@@ -452,19 +452,6 @@ HWND MainFrame::createTBStatusBar() {
 	progress.Create(TBStatusCtrl.m_hWnd, rect , NULL, WS_CHILD | WS_VISIBLE, WS_EX_TRANSPARENT);
 	progress.SetRange(0, 10000);
 
-	TBStatusText.Create(TBStatusCtrl.m_hWnd, rcDefault , NULL, WS_CHILD | SS_LEFT |WS_VISIBLE, WS_EX_TRANSPARENT);
-
-	CRect rc;
-	progress.GetClientRect(&rc);
-	rc.left = rc.right + 6;
-	rc.right = rc.left + 210;
-	rc.bottom = 20;
-	rc.top = rc.bottom - WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) - 2;
-
-	TBStatusText.MoveWindow(rc);
-	TBStatusText.SetFont(WinUtil::systemFont, FALSE);
-	TBStatusText.ShowWindow(SW_HIDE);
-	
 	startBytes, startFiles = 0;
 	refreshing = false;
 	//updateTBStatus();
@@ -1543,12 +1530,12 @@ void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 	refreshing = false;
 	progress.SetMarquee(FALSE);
 	progress.ModifyStyle(PBS_MARQUEE, NULL);
+	progress.SetRedraw(TRUE);
 
 	string file = m_HashInfo.file;
 	int64_t bytes = m_HashInfo.size;
 	size_t files = m_HashInfo.files;
 	int64_t speed = m_HashInfo.speed;
-	bool hide = true;
 
 	if(bytes > startBytes)
 		startBytes = bytes;
@@ -1560,13 +1547,11 @@ void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 	tstring tmp = _T("");
 	if(files == 0 || bytes == 0 || paused) {
 		if(paused) {
-			hide = false;
 			tmp += 	_T(" ( ") + TSTRING(PAUSED) + _T(" )");
 		} else {
-			tmp = _T("Hasher Idle...");
+			tmp = _T("");
 		}
 	} else {
-		hide = false;
 		int64_t filestat = speed > 0 ? ((startBytes - (startBytes - bytes)) / speed) : 0;
 
 		tmp = Util::formatBytesW((int64_t)speed) + _T("/s, ") + Util::formatBytesW(bytes) + _T(" ") + TSTRING(LEFT);
@@ -1580,34 +1565,37 @@ void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 
 	if(startFiles == 0 || startBytes == 0 || files == 0) {
 		progress.SetPos(0);
+		//setProgressText(tmp);
 		startBytes = 0;
 		startFiles = 0;
 	} else {
 		progress.SetPos((int)(progress.GetRangeLimit(0) * ((0.5 * (startFiles - files)/startFiles) + 0.5 * (startBytes - bytes) / startBytes)));
-	}
-	if(hide) {
-		if(TBStatusText.IsWindowVisible())
-			TBStatusText.ShowWindow(SW_HIDE);
-	} else {
-		if(!TBStatusText.IsWindowVisible())
-			TBStatusText.ShowWindow(SW_SHOW);
-		TBStatusText.SetWindowText(tmp.c_str());
+		progress.RedrawWindow();
+		setProgressText(tmp);
+		progress.SetRedraw(FALSE);
 	}
 }
+void MainFrame::setProgressText(const tstring& text){
+	CPoint ptStart;
+	CRect prc;
+	progress.GetClientRect(&prc);
+	ptStart.x = prc.left + 1;
+	ptStart.y = prc.top + 5;
+	HDC progressTextDC = progress.GetDC();
+	::SetBkMode(progressTextDC, TRANSPARENT);
+	::SelectObject(progressTextDC, WinUtil::systemFont);
+	::ExtTextOut(progressTextDC, ptStart.x, ptStart.y, ETO_CLIPPED, &prc, text.c_str(), _tcslen(text.c_str()), NULL);
+}
+
 void MainFrame::updateTBStatusRefreshing() {
 	if(refreshing)
 		return;
 
 	refreshing = true;
-	if(!TBStatusText.IsWindowVisible())
-		TBStatusText.ShowWindow(SW_SHOW);
-	TBStatusText.SetWindowText(_T("Refreshing..."));
-
+	progress.SetRedraw(TRUE);
 	progress.ModifyStyle(NULL, PBS_MARQUEE);
 	progress.SetMarquee(TRUE, 10);
 }
-
-
 
 LRESULT MainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {

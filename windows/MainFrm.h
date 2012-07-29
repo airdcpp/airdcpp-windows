@@ -481,8 +481,8 @@ private:
 	
 	CProgressBarCtrl progress;
 	CToolBarCtrl TBStatusCtrl;
-	CStatic TBStatusText;
-	HWND createTBStatusBar(); 
+	HWND createTBStatusBar();
+	void setProgressText(const tstring& text);
 
 	struct HashInfo {
 		HashInfo(const string& aFile, int64_t& aSize, size_t& aFiles, int64_t& aSpeed, bool aPaused) : 
