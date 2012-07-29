@@ -23,6 +23,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "../client/ShareManager.h"
+
 class LineDlg : public CDialogImpl<LineDlg>
 {
 	CEdit ctrlLine;
@@ -83,40 +85,44 @@ public:
 	
 };
 
-class LineComboDlg : public CDialogImpl<LineComboDlg>
+class ConnectDlg : public CDialogImpl<ConnectDlg>
 {
 	CEdit ctrlLine;
 	CStatic ctrlDescription;
 	CStatic ctrlComboDescription;
-	CComboBox ctrlCombo;
+	CStatic ctrlTickDescription;
+	CComboBox ctrlProfile;
 public:
-	tstring line;
+	tstring address;
 	tstring description;
 	tstring comboDescription;
 	tstring title;
-	int curSel;
+	bool hideShare;
+	string curProfile;
+	bool disableAddress;
 
-	enum { IDD = IDD_LINECOMBO };
+	enum { IDD = IDD_QUICKCONNECT };
 	
-	BEGIN_MSG_MAP(LineComboDlg)
+	BEGIN_MSG_MAP(ConnectDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
+		COMMAND_HANDLER(IDC_LINE, EN_CHANGE, OnTextChanged)
+		COMMAND_ID_HANDLER(IDC_HIDE_SHARE, onClickedHideShare)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 	END_MSG_MAP()
 	
-	LineComboDlg() : curSel(0) { }
-	//LineComboDlg(const CComboBox& aCombo) : curSel(0), ctrlCombo(aCombo) { }
-	/*LineComboDlg(const StringList& aStrings) : curSel(0) { 
-		for(auto j = aStrings.begin(); j != aStrings.end(); j++) {
-			ctrlCombo.AddString(Text::toT(*j).c_str());
+	ConnectDlg(bool aDisableAddress=false) : hideShare(false), disableAddress(aDisableAddress) { }
+
+	LRESULT onClickedHideShare(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		if (IsDlgButtonChecked(IDC_HIDE_SHARE)) {
+			hideShare = true;
+			ctrlProfile.EnableWindow(false);
+		} else {
+			hideShare = false;
+			ctrlProfile.EnableWindow(isAdcHub());
 		}
-	}*/
-	
-	void setList(const StringList& aStrings) { 
-		for(auto j = aStrings.begin(); j != aStrings.end(); j++) {
-			ctrlCombo.AddString(Text::toT(*j).c_str());
-		}
+		return FALSE;
 	}
 
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -124,24 +130,63 @@ public:
 		return FALSE;
 	}
 
+	LRESULT OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
+		if (isAdcHub()) {
+			ctrlProfile.EnableWindow(true);
+		} else {
+			ctrlProfile.SetCurSel(0);
+			ctrlProfile.EnableWindow(false);
+		}
+		return FALSE;
+	}
+
+	bool isAdcHub() {
+		tstring address;
+		address.resize(1024);
+		address.resize(GetDlgItemText(IDC_LINE, &address[0], 1024));
+		if(AirUtil::isAdcHub(Text::fromT(address)) && !hideShare) {
+			return true;
+		} else {
+			ctrlProfile.EnableWindow(false);
+			return false;
+		}
+	}
+
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 	{
 		ctrlLine.Attach(GetDlgItem(IDC_LINE));
-		ctrlLine.SetFocus();
-		ctrlLine.SetWindowText(line.c_str());
+		ctrlLine.SetWindowText(address.c_str());
 		ctrlLine.SetSelAll(TRUE);
+		if (disableAddress) {
+			ctrlLine.EnableWindow(false);
+		} else {
+			ctrlLine.SetFocus();
+		}
 
-		ctrlCombo.Attach(GetDlgItem(IDC_COMBO));
+		ctrlProfile.Attach(GetDlgItem(IDC_COMBO));
 
 		ctrlDescription.Attach(GetDlgItem(IDC_COMBO_DESC));
-		ctrlDescription.SetWindowText(description.c_str());
+		ctrlDescription.SetWindowText(CTSTRING(SHARE_PROFILE));
 
 		ctrlComboDescription.Attach(GetDlgItem(IDC_DESCRIPTION));
-		ctrlDescription.SetWindowText(comboDescription.c_str());
+		ctrlComboDescription.SetWindowText(CTSTRING(HUB_ADDRESS));
+
+		auto profiles = ShareManager::getInstance()->getProfiles();
+		int n = 0;
+		for(auto j = profiles.begin(); j != profiles.end()-1; j++) {
+			ctrlProfile.InsertString(n, Text::toT((*j)->getDisplayName()).c_str());
+			n++;
+		}
+		ctrlProfile.SetCurSel(0);
+		ctrlProfile.EnableWindow(isAdcHub());
+
+		ctrlTickDescription.Attach(GetDlgItem(IDC_HIDE_SHARE));
+		ctrlTickDescription.SetWindowTextW(CTSTRING(HIDE_SHARE_SHORT));
 		
 		SetWindowText(title.c_str());
-		
 
+		SetDlgItemText(IDOK, CTSTRING(CONNECT));
+		
 		CenterWindow(GetParent());
 		return FALSE;
 	}
@@ -149,9 +194,10 @@ public:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
 		if(wID == IDOK) {
-			line.resize(ctrlLine.GetWindowTextLength() + 1);
-			line.resize(GetDlgItemText(IDC_LINE, &line[0], line.size()));
-			curSel = ctrlCombo.GetCurSel();
+			address.resize(ctrlLine.GetWindowTextLength() + 1);
+			address.resize(GetDlgItemText(IDC_LINE, &address[0], address.size()));
+			auto profiles = ShareManager::getInstance()->getProfiles();
+			curProfile = profiles[ctrlProfile.GetCurSel()]->getToken();
 		}
 		EndDialog(wID);
 		return 0;

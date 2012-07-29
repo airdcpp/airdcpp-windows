@@ -1377,7 +1377,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			StringList tmpList;
 			for(auto j = profiles.begin(); j != profiles.end(); j++) {
 				if ((*j)->getToken() != SP_HIDDEN)
-					tmpList.push_back((*j)->getName());
+					tmpList.push_back((*j)->getDisplayName());
 			}
 
 			ComboDlg dlg;
@@ -1650,14 +1650,13 @@ LRESULT MainFrame::onReconnectDisconnected(WORD , WORD , HWND , BOOL& ) {
 }
 
 LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	LineDlg dlg;
-	dlg.description = TSTRING(HUB_ADDRESS);
+	ConnectDlg dlg;
 	dlg.title = TSTRING(QUICK_CONNECT);
 	if(dlg.DoModal(m_hWnd) == IDOK){
 		if(SETTING(NICK).empty())
 			return 0;
 
-		tstring tmp = dlg.line;
+		tstring tmp = dlg.address;
 		// Strip out all the spaces
 		string::size_type i;
 		while((i = tmp.find(' ')) != string::npos)
@@ -1670,7 +1669,7 @@ LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		r.setShared("*");
 		r.setServer(Text::fromT(tmp));
 		FavoriteManager::getInstance()->addRecent(r);
-		HubFrame::openWindow(tmp);
+		HubFrame::openWindow(tmp, 0, true, dlg.curProfile);
 	}
 	return 0;
 }

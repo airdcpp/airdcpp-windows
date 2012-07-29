@@ -120,7 +120,7 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	int n = 0;
 	for(auto j = profileList.begin(); j != profileList.end(); j++) {
 		if ((*j)->getToken() != SP_HIDDEN) {
-			ctrlProfile.InsertString(n, Text::toT((*j)->getName()).c_str());
+			ctrlProfile.InsertString(n, Text::toT((*j)->getDisplayName()).c_str());
 			n++;
 			profiles.push_back((*j));
 		}
@@ -478,10 +478,12 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 
 LRESULT SharePage::onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	auto profile = profiles[ctrlProfile.GetCurSel()];
-	if (profile->getToken() == SP_DEFAULT) //shouldn't even be possible
-		return 0;
+	auto name = Text::toT(profile->getPlainName());
+	auto p = find_if(renameProfiles.begin(), renameProfiles.end(), CompareFirst<ShareProfilePtr, string>(profile));
+	if (p != renameProfiles.end()) {
+		name = Text::toT(p->second);
+	}
 
-	auto name = Text::toT(profile->getName());
 	LineDlg virt;
 	virt.title = TSTRING(VIRTUAL_NAME);
 	virt.description = TSTRING(VIRTUAL_NAME_LONG);
@@ -491,16 +493,19 @@ LRESULT SharePage::onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	if (name == virt.line)
 		return 0;
 
-	auto p = find_if(renameProfiles.begin(), renameProfiles.end(), CompareFirst<ShareProfilePtr, string>(profile));
+	// Update the list
+	auto pos = ctrlProfile.GetCurSel();
+	ctrlProfile.DeleteString(pos);
+	tstring displayName = virt.line + (pos == 0 ? (_T(" (") + TSTRING(DEFAULT) + _T(")")) : Util::emptyStringT);
+	ctrlProfile.InsertString(pos, displayName.c_str());
+	ctrlProfile.SetCurSel(pos);
+
 	if (p != renameProfiles.end()) {
 		p->second = Text::fromT(virt.line);
 		return 0;
 	}
 
 	renameProfiles.push_back(make_pair(profile, Text::fromT(virt.line)));
-	auto pos = ctrlProfile.GetCurSel();
-	ctrlProfile.DeleteString(pos);
-	ctrlProfile.InsertString(pos, virt.line.c_str());
 
 	fixControls();
 	return 0;
@@ -663,7 +668,6 @@ void SharePage::fixControls() {
 		changedDirs.empty() || !excludedAdd.empty() || !excludedRemove.empty());
 	::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), hasChanged);
 	::EnableWindow(GetDlgItem(IDC_REMOVE_PROFILE), curProfile != SP_DEFAULT);
-	::EnableWindow(GetDlgItem(IDC_RENAME_PROFILE), curProfile != SP_DEFAULT);
 }
 
 void SharePage::applyChanges(bool isQuit) {
@@ -685,7 +689,7 @@ void SharePage::applyChanges(bool isQuit) {
 
 	if (!renameProfiles.empty()) {
 		for(auto j = renameProfiles.begin(); j != renameProfiles.end(); j++) {
-			j->first->setName(j->second);
+			j->first->setPlainName(j->second);
 		}
 		FavoriteManager::getInstance()->onProfilesRenamed();
 		renameProfiles.clear();

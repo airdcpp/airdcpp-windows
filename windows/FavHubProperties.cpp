@@ -153,7 +153,7 @@ void FavHubProperties::appendProfiles() {
 
 	int counter = 0;
 	for(auto j = profiles.begin(); j != profiles.end(); j++) {
-		ctrlProfile.InsertString(counter, Text::toT((*j)->getName()).c_str());
+		ctrlProfile.InsertString(counter, Text::toT((*j)->getDisplayName()).c_str());
 		if (counter == 0 || *j == entry->getShareProfile())
 			ctrlProfile.SetCurSel(counter);
 		counter++;

@@ -197,10 +197,10 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	return 1;
 }
 
-void HubFrame::openWindow(const tstring& aServer, int chatusersplit, bool userliststate, string sColumsOrder, string sColumsWidth, string sColumsVisible) {
+void HubFrame::openWindow(const tstring& aServer, int chatusersplit, bool userliststate, const string& aShareProfile, string sColumsOrder, string sColumsWidth, string sColumsVisible) {
 	FrameIter i = frames.find(aServer);
 	if(i == frames.end()) {
-		HubFrame* frm = new HubFrame(aServer, chatusersplit, userliststate);
+		HubFrame* frm = new HubFrame(aServer, chatusersplit, userliststate, aShareProfile);
 		frames[aServer] = frm;
 
 //		int nCmdShow = SW_SHOWDEFAULT;
@@ -212,6 +212,40 @@ void HubFrame::openWindow(const tstring& aServer, int chatusersplit, bool userli
 			::ShowWindow(i->second->m_hWnd, SW_RESTORE);
 		i->second->MDIActivate(i->second->m_hWnd);
 	}
+}
+
+HubFrame::~HubFrame() {
+	ClientManager::getInstance()->putClient(client);
+
+	dcassert(frames.find(server) != frames.end());
+	dcassert(frames[server] == this);
+	frames.erase(server);
+	clearTaskList();
+}
+
+HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate, const string& aShareProfile) : 
+		waitingForPW(false), extraSort(false), server(aServer), closed(false), 
+		showUsers(BOOLSETTING(GET_USER_INFO)), updateUsers(false), resort(false),
+		curCommandPosition(0), timeStamps(BOOLSETTING(TIME_STAMPS)),
+		hubchatusersplit(chatusersplit), menuItems(0), currentNeedlePos(-1),
+		lineCount(1), //ApexDC
+		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP), 
+		showUsersContainer(WC_BUTTON, this, EDIT_MESSAGE_MAP),
+		clientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
+		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
+		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP)
+{
+	client = ClientManager::getInstance()->getClient(Text::fromT(aServer));
+	client->setShareProfile(aShareProfile);
+	client->addListener(this);
+
+	if(FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server)) != NULL) {
+		showUsers = userliststate;
+	} else {
+		showUsers = BOOLSETTING(GET_USER_INFO);
+	}
+		
+	memset(statusSizes, 0, sizeof(statusSizes));
 }
 
 LRESULT HubFrame::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {

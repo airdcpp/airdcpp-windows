@@ -223,7 +223,7 @@ public:
 	void handleTab(bool reverse);
 	void runUserCommand(::UserCommand& uc);
 
-	static void openWindow(const tstring& server, int chatusersplit = 0, bool userliststate = true,
+	static void openWindow(const tstring& server, int chatusersplit = 0, bool userliststate = true, const string& aShareProfile = SP_DEFAULT,
 		        string sColumsOrder = Util::emptyString, string sColumsWidth = Util::emptyString, string sColumsVisible = Util::emptyString);
 	static void resortUsers();	
 	static void closeDisconnected();
@@ -361,38 +361,8 @@ private:
 	
 	friend class PrivateFrame;
 	
-	HubFrame(const tstring& aServer, int chatusersplit, bool userliststate) : 
-		waitingForPW(false), extraSort(false), server(aServer), closed(false), 
-		showUsers(BOOLSETTING(GET_USER_INFO)), updateUsers(false), resort(false),
-		curCommandPosition(0), timeStamps(BOOLSETTING(TIME_STAMPS)),
-		hubchatusersplit(chatusersplit), menuItems(0), currentNeedlePos(-1),
-		lineCount(1), //ApexDC
-		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP), 
-		showUsersContainer(WC_BUTTON, this, EDIT_MESSAGE_MAP),
-		clientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
-		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP)
-	{
-		client = ClientManager::getInstance()->getClient(Text::fromT(aServer));
-		client->addListener(this);
-
-		if(FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server)) != NULL) {
-			showUsers = userliststate;
-		} else {
-			showUsers = BOOLSETTING(GET_USER_INFO);
-		}
-		
-		memset(statusSizes, 0, sizeof(statusSizes));
-	}
-
-	~HubFrame() {
-		ClientManager::getInstance()->putClient(client);
-
-		dcassert(frames.find(server) != frames.end());
-		dcassert(frames[server] == this);
-		frames.erase(server);
-		clearTaskList();
-	}
+	HubFrame(const tstring& aServer, int chatusersplit, bool userliststate, const string& aShareProfile);
+	~HubFrame();
 
 	typedef unordered_map<tstring, HubFrame*> FrameMap;
 	typedef FrameMap::const_iterator FrameIter;

@@ -1542,5 +1542,10 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="ProfileNameDesc">Enter a display name for the profile</String>
 		<String Name="EditProfiles">Edit profiles...</String>
 		<String Name="ProfilesNote">Custom share profiles can only be set for ADC hubs</String>
+		<String Name="ConnectWithProfile">Connect with profile...</String>
+		<String Name="Release">Release</String>
+		<String Name="Text">Text</String>
+		<String Name="Link">Link</String>
+		<String Name="HideShareShort">Hide share</String>
 	</Strings>
 </Language>

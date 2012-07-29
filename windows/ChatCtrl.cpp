@@ -784,9 +784,14 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 				menu.AppendMenu(MF_SEPARATOR);
 			}
 		} else if (release) {
-			menu.InsertSeparatorFirst(_T("Release"));
+			menu.InsertSeparatorFirst(CTSTRING(RELEASE));
+		} else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
+			menu.InsertSeparatorFirst(CTSTRING(LINK));
+			menu.AppendMenu(MF_STRING, IDC_OPEN_LINK, CTSTRING(CONNECT));
+			menu.AppendMenu(MF_STRING, IDC_CONNECT_WITH, CTSTRING(CONNECT_WITH_PROFILE));
+			menu.AppendMenu(MF_SEPARATOR);
 		} else {
-			menu.InsertSeparatorFirst(_T("Text"));
+			menu.InsertSeparatorFirst(CTSTRING(TEXT));
 		}
 
 		menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
@@ -1090,6 +1095,20 @@ bool ChatCtrl::getLink(POINT pt, CHARRANGE& cr, ChatLink& link) {
 LRESULT ChatCtrl::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	bHandled = onClientEnLink(uMsg, wParam, lParam, bHandled);
 	return bHandled = TRUE ? 0: 1;
+}
+
+LRESULT ChatCtrl::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
+	string link = Text::fromT(selectedWord);
+	for(auto i = links.rbegin(); i != links.rend(); ++i) {
+		if(compare(i->second.url, link) == 0) {
+			if (i->second.type == ChatLink::TYPE_MAGNET)
+				SendMessage(IDC_HANDLE_MAGNET,0, (LPARAM)new tstring(Text::toT(i->second.url)));
+			else
+				WinUtil::openLink(Text::toT(i->second.url));
+			return 0;
+		}
+	}
+	return 0;
 }
 
 bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -1603,6 +1622,21 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 		return sText;
 	
 	return Util::emptyStringT;
+}
+
+LRESULT ChatCtrl::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
+	string address = Text::fromT(selectedWord);
+	if (!AirUtil::isHubLink(address))
+		return 0;
+
+	ConnectDlg dlg(true);
+	dlg.title = TSTRING(CONNECT_WITH_PROFILE);
+	dlg.address = selectedWord;
+	if(dlg.DoModal(m_hWnd) == IDOK){
+		HubFrame::openWindow(selectedWord, 0, true, dlg.curProfile);
+	}
+
+	return 0;
 }
 
 LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

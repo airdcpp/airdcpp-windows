@@ -83,6 +83,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_UNIGNORE, onUnignore)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
 		COMMAND_ID_HANDLER(IDC_SEARCH_BY_TTH, onSearchTTH)
+		COMMAND_ID_HANDLER(IDC_CONNECT_WITH, onConnectWith)
+		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onOpenLink)
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
@@ -124,6 +126,9 @@ public:
 	LRESULT onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
+
+	LRESULT onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
 
 	LRESULT onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 

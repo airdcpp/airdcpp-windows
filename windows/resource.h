@@ -171,6 +171,8 @@
 #define IDI_AWAY                        336
 #define IDI_REFRESH                     337
 #define IDD_LINECOMBO                   338
+#define IDD_QUICKCONNECT                338
+#define IDD_CONNECT                     338
 #define IDD_DIALOG2                     339
 #define IDD_COMBO                       339
 #define IDR_EMOTICON                    345
@@ -200,6 +202,7 @@
 #define IDC_EMAIL                       1002
 #define IDC_DESCRIPTION                 1003
 #define IDC_READD_ALL                   1004
+#define IDC_DESCRIPTION2                1004
 #define IDC_CONNECTIONTYPE              1005
 #define IDC_USERS                       1006
 #define IDC_ACTIVE                      1006
@@ -1159,6 +1162,8 @@
 #define IDC_GRANTSLOT_WEEK              10083
 #define IDC_UNGRANTSLOT                 10084
 #define IDC_UPLOAD_QUEUE                10085
+#define IDC_CONNECT_WITH                10086
+#define IDC_OPEN_LINK                   10087
 #define IDC_PROGRESS_TEXT_COLOR_DOWN    10102
 #define IDC_PROGRESS_TEXT_COLOR_UP      10103
 #define IDC_CZDC_PM_SOUND               10107

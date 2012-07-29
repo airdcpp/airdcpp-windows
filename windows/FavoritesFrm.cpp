@@ -196,7 +196,7 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntry* entry, int pos, int gro
 	l.push_back(tstring(entry->getPassword().size(), '*'));
 	l.push_back(Text::toT(entry->getServer()));
 	l.push_back(Text::toT(entry->getUserDescription()));
-	l.push_back(Text::toT(entry->getShareProfile()->getName()));
+	l.push_back(Text::toT(entry->getShareProfile()->getDisplayName()));
 	bool b = entry->getConnect();
 	int i = ctrlHubs.insert(pos, l, 0, (LPARAM)entry);
 	ctrlHubs.SetCheckState(i, b);
