@@ -547,6 +547,7 @@ private:
 
 	int statusSizes[10];
 	
+	void loadCmdBarImageList(CImageList& images);
 
 	HANDLE stopperThread;
 

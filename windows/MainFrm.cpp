@@ -226,7 +226,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.AttachMenu(m_hMenu);
 
 	// load command bar images
-	images.CreateFromImage(IDB_TOOLBAR, 16, 16, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 30);
+	loadCmdBarImageList(images);
 	m_CmdBar.m_hImageList = images;
 
 	m_CmdBar.m_arrCommand.Add(ID_FILE_CONNECT);
@@ -243,18 +244,25 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(IDC_FILE_ADL_SEARCH);
 	m_CmdBar.m_arrCommand.Add(IDC_SEARCH_SPY);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_FILE_LIST);
+	m_CmdBar.m_arrCommand.Add(IDC_OPEN_MY_LIST);
+	m_CmdBar.m_arrCommand.Add(IDC_MATCH_ALL);
+	m_CmdBar.m_arrCommand.Add(IDC_REFRESH_FILE_LIST);
+	m_CmdBar.m_arrCommand.Add(IDC_SCAN_MISSING);
+	m_CmdBar.m_arrCommand.Add(IDC_OPEN_DOWNLOADS);
+	m_CmdBar.m_arrCommand.Add(ID_FILE_QUICK_CONNECT);
 	m_CmdBar.m_arrCommand.Add(ID_FILE_SETTINGS);
+	m_CmdBar.m_arrCommand.Add(ID_GET_TTH);
+	m_CmdBar.m_arrCommand.Add(IDC_UPDATE);
+	m_CmdBar.m_arrCommand.Add(ID_APP_EXIT);
 	m_CmdBar.m_arrCommand.Add(IDC_NOTEPAD);
 	m_CmdBar.m_arrCommand.Add(IDC_NET_STATS);
 	m_CmdBar.m_arrCommand.Add(IDC_CDMDEBUG_WINDOW);
-	m_CmdBar.m_arrCommand.Add(IDC_SYSTEM_LOG);
+	m_CmdBar.m_arrCommand.Add(IDC_OPEN_SYSTEMLOG);
 	m_CmdBar.m_arrCommand.Add(IDC_AUTOSEARCH);
-	m_CmdBar.m_arrCommand.Add(ID_WINDOW_CASCADE);
-	m_CmdBar.m_arrCommand.Add(ID_WINDOW_TILE_HORZ);
-	m_CmdBar.m_arrCommand.Add(ID_WINDOW_TILE_VERT);
-	m_CmdBar.m_arrCommand.Add(ID_WINDOW_MINIMIZE_ALL);
-	m_CmdBar.m_arrCommand.Add(ID_WINDOW_RESTORE_ALL);
-	m_CmdBar.m_arrCommand.Add(ID_GET_TTH);		
+	m_CmdBar.m_arrCommand.Add(IDC_HASH_PROGRESS);
+	m_CmdBar.m_arrCommand.Add(ID_APP_ABOUT);
+	m_CmdBar.m_arrCommand.Add(ID_WIZARD);
+
 	// use Vista-styled menus on Vista/Win7
 	if(WinUtil::getOsMajor() >= 6)
 		m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());
@@ -429,6 +437,40 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	// We want to pass this one on to the splitter...hope it get's there...
 	bHandled = FALSE;
 	return 0;
+}
+void MainFrame::loadCmdBarImageList(CImageList& images){
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_PUBLICHUBS));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_RECONNECT));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_FOLLOW));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_RECENTS));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_FAVORITEHUBS));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_FAVORITE_USERS));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_QUEUE));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_FINISHED_DL));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_UPLOAD_QUEUE));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_FINISHED_UL));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_SEARCH));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_ADLSEARCH));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_SEARCHSPY));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_OPEN_LIST));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_OWNLIST)); 
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_MATCHLIST)); 
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_REFRESH));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_SCAN));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_OPEN_DOWNLOADS));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_QCONNECT));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_SETTINGS));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_GET_TTH));
+	images.AddIcon(WinUtil::createToolbarIcon(IDR_UPDATE));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_SHUTDOWN));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_NOTEPAD));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_NETSTATS));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_CDM));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_LOGS));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_AUTOSEARCH));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_INDEXING));
+	images.AddIcon(WinUtil::createToolbarIcon(IDR_MAINFRAME));
+	images.AddIcon(WinUtil::createToolbarIcon(IDI_WIZARD));
 }
 
 HWND MainFrame::createTBStatusBar() {

@@ -192,6 +192,14 @@
 #define IDI_IERROR                      372
 #define IDI_IWARNING                    373
 #define IDI_INFO                        374
+#define IDI_CDM							375
+#define IDI_OWNLIST						376
+#define IDI_MATCHLIST					377
+#define IDI_QCONNECT					378
+#define IDI_GET_TTH						379
+#define IDI_INDEXING					380
+#define IDI_WINDOW_OPTIONS				381
+#define IDI_WIZARD						382
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
