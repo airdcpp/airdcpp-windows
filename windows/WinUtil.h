@@ -154,6 +154,7 @@ public:
 	static int fileImageCount;
 	static CImageList userImages;
 	static CImageList flagImages;
+	static CImageList settingsTreeImages;
 
 	struct TextItem {
 		WORD itemID;
@@ -231,10 +232,10 @@ public:
 
 	static bool getVersionInfo(OSVERSIONINFOEX& ver);
 
-	static HICON createToolbarIcon(int icon) {
+	static HICON createIcon(int icon) {
 		return (HICON)::LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(icon));
 	}
-	static HICON createToolbarIcon(const tstring& icon, int size) {
+	static HICON createIcon(const tstring& icon, int size) {
 		return (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
 	}
 
@@ -416,6 +417,7 @@ public:
 	static tstring DiskSpaceInfo(bool onlyTotal = false);
 
 	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
+	static void loadSettingsTreeIcons();
 
 	static string getReport(const Identity& identity, HWND hwnd);
 

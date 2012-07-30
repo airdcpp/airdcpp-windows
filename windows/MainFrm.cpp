@@ -439,38 +439,38 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	return 0;
 }
 void MainFrame::loadCmdBarImageList(CImageList& images){
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_PUBLICHUBS));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_RECONNECT));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_FOLLOW));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_RECENTS));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_FAVORITEHUBS));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_FAVORITE_USERS));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_QUEUE));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_FINISHED_DL));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_UPLOAD_QUEUE));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_FINISHED_UL));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_SEARCH));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_ADLSEARCH));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_SEARCHSPY));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_OPEN_LIST));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_OWNLIST)); 
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_MATCHLIST)); 
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_REFRESH));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_SCAN));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_OPEN_DOWNLOADS));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_QCONNECT));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_SETTINGS));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_GET_TTH));
-	images.AddIcon(WinUtil::createToolbarIcon(IDR_UPDATE));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_SHUTDOWN));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_NOTEPAD));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_NETSTATS));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_CDM));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_LOGS));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_AUTOSEARCH));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_INDEXING));
-	images.AddIcon(WinUtil::createToolbarIcon(IDR_MAINFRAME));
-	images.AddIcon(WinUtil::createToolbarIcon(IDI_WIZARD));
+	images.AddIcon(WinUtil::createIcon(IDI_PUBLICHUBS));
+	images.AddIcon(WinUtil::createIcon(IDI_RECONNECT));
+	images.AddIcon(WinUtil::createIcon(IDI_FOLLOW));
+	images.AddIcon(WinUtil::createIcon(IDI_RECENTS));
+	images.AddIcon(WinUtil::createIcon(IDI_FAVORITEHUBS));
+	images.AddIcon(WinUtil::createIcon(IDI_FAVORITE_USERS));
+	images.AddIcon(WinUtil::createIcon(IDI_QUEUE));
+	images.AddIcon(WinUtil::createIcon(IDI_FINISHED_DL));
+	images.AddIcon(WinUtil::createIcon(IDI_UPLOAD_QUEUE));
+	images.AddIcon(WinUtil::createIcon(IDI_FINISHED_UL));
+	images.AddIcon(WinUtil::createIcon(IDI_SEARCH));
+	images.AddIcon(WinUtil::createIcon(IDI_ADLSEARCH));
+	images.AddIcon(WinUtil::createIcon(IDI_SEARCHSPY));
+	images.AddIcon(WinUtil::createIcon(IDI_OPEN_LIST));
+	images.AddIcon(WinUtil::createIcon(IDI_OWNLIST)); 
+	images.AddIcon(WinUtil::createIcon(IDI_MATCHLIST)); 
+	images.AddIcon(WinUtil::createIcon(IDI_REFRESH));
+	images.AddIcon(WinUtil::createIcon(IDI_SCAN));
+	images.AddIcon(WinUtil::createIcon(IDI_OPEN_DOWNLOADS));
+	images.AddIcon(WinUtil::createIcon(IDI_QCONNECT));
+	images.AddIcon(WinUtil::createIcon(IDI_SETTINGS));
+	images.AddIcon(WinUtil::createIcon(IDI_GET_TTH));
+	images.AddIcon(WinUtil::createIcon(IDR_UPDATE));
+	images.AddIcon(WinUtil::createIcon(IDI_SHUTDOWN));
+	images.AddIcon(WinUtil::createIcon(IDI_NOTEPAD));
+	images.AddIcon(WinUtil::createIcon(IDI_NETSTATS));
+	images.AddIcon(WinUtil::createIcon(IDI_CDM));
+	images.AddIcon(WinUtil::createIcon(IDI_LOGS));
+	images.AddIcon(WinUtil::createIcon(IDI_AUTOSEARCH));
+	images.AddIcon(WinUtil::createIcon(IDI_INDEXING));
+	images.AddIcon(WinUtil::createIcon(IDR_MAINFRAME));
+	images.AddIcon(WinUtil::createIcon(IDI_WIZARD));
 }
 
 HWND MainFrame::createTBStatusBar() {
@@ -518,16 +518,16 @@ HWND MainFrame::createWinampToolbar() {
 		} else /*if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("MediaToolbar\\")))))*/{
 			int size = SETTING(WTB_IMAGE_SIZE);
 			winampImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 11);
-			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\start.ico")), size));
-			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\spam.ico")), size));
-			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\back.ico")), size));
-			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\play.ico")), size));
-			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\pause.ico")), size));
-			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\next.ico")), size));
-			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\stop.ico")), size));
-			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\up.ico")), size));
-			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\volume50.ico")), size));
-			winampImages.AddIcon(WinUtil::createToolbarIcon(WinUtil::getIconPath(_T("MediaToolbar\\down.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\start.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\spam.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\back.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\play.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\pause.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\next.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\stop.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\up.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\volume50.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\down.ico")), size));
 		}
 		
 		ctrlSmallToolbar.SetImageList(winampImages);
@@ -672,7 +672,7 @@ HWND MainFrame::createToolbar() {
 			int buttonsCount = sizeof(ToolbarButtons) / sizeof(ToolbarButtons[0]);
 			ToolbarImages.Create(SETTING(TB_IMAGE_SIZE), SETTING(TB_IMAGE_SIZE), ILC_COLOR32 | ILC_MASK,  0, buttonsCount+1);
 			while(i < buttonsCount){
-				ToolbarImages.AddIcon(WinUtil::createToolbarIcon(ToolbarButtons[i].nIcon));
+				ToolbarImages.AddIcon(WinUtil::createIcon(ToolbarButtons[i].nIcon));
 				i++;
 			}
 		}

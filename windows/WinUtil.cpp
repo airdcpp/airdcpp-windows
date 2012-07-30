@@ -79,6 +79,7 @@ OMenu WinUtil::grantMenu;
 CImageList WinUtil::fileImages;
 CImageList WinUtil::userImages;
 CImageList WinUtil::flagImages;
+CImageList WinUtil::settingsTreeImages;
 int WinUtil::dirIconIndex = 0;
 int WinUtil::dirMaskedIndex = 0;
 HWND WinUtil::mainWnd = NULL;
@@ -512,6 +513,7 @@ void WinUtil::init(HWND hWnd) {
 	grantMenu.AppendMenu(MF_STRING, IDC_UNGRANTSLOT, CTSTRING(REMOVE_EXTRA_SLOT));
 
 	m_IconPath = Text::toT(SETTING(ICON_PATH));
+	loadSettingsTreeIcons();
 	initColors();
 }
 
@@ -676,6 +678,7 @@ void WinUtil::uninit() {
 	fileImages.Destroy();
 	userImages.Destroy();
 	flagImages.Destroy();
+	settingsTreeImages.Destroy();
 	::DeleteObject(font);
 	::DeleteObject(boldFont);
 	::DeleteObject(bgBrush);
@@ -2313,6 +2316,40 @@ void WinUtil::SearchSite(WebShortcut* ws, tstring searchTerm) {
 	
 
 }
+void WinUtil::loadSettingsTreeIcons() {
+	settingsTreeImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 30);
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_GENERAL));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_CONNECTIONS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_DOWNLOADS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_LOCATIONS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_PREVIEW));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_PRIORITIES));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_QUEUE));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SHARING));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_LIMITS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_APPEARANCE));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_FONTS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_PROGRESS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_USERLIST));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SOUNDS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_TOOLBAR));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_WINDOWS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_TABS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_POPUPS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_HIGHLIGHTS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_AIRAPPEARANCE));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_ADVANCED));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_EXPERTS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_LOGS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_UC));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_CERTIFICATES));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_MISC));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SHAREOPTIONS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_IGNORE));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SEARCH));
+}
+
+
 
 tstring WinUtil::getTitle(const tstring& searchTerm) {
 	tstring ret = Text::toLower(searchTerm);
