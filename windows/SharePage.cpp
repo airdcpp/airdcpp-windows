@@ -211,6 +211,95 @@ void SharePage::showProfile() {
 	}
 }
 
+LRESULT SharePage::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+
+	/*NMLVCUSTOMDRAW* cd = (NMLVCUSTOMDRAW*)pnmh;
+	switch(cd->nmcd.dwDrawStage) {
+
+	case CDDS_PREPAINT:
+		return CDRF_NOTIFYITEMDRAW;
+
+	case CDDS_ITEMPREPAINT: {
+		//ShareDirInfo* ii = reinterpret_cast<ShareDirInfo*>(cd->nmcd.lItemlParam);
+		//auto ii = (ShareDirInfo*)(cd->nmcd.lItemlParam);
+		auto ii = reinterpret_cast<string*>(cd->nmcd.lItemlParam);
+		LPNMLVCUSTOMDRAW customDraw = (LPNMLVCUSTOMDRAW)cd->nmcd.lItemlParam;
+		dcassert(ii);
+
+		if(!SETTING(HIGHLIGHT_LIST).empty() && !mylist && ii->type == ItemInfo::DIRECTORY) {
+			//Todo Regex string?
+			if(Wildcard::patternMatch(ii->dir->getName(), SETTING(HIGHLIGHT_LIST), '|')) {
+				cd->clrText = SETTING(LIST_HL_COLOR);
+				cd->clrTextBk = SETTING(LIST_HL_BG_COLOR);
+			}
+		}
+		
+		if (SETTING(DUPES_IN_FILELIST) && !mylist && ii != NULL) {
+			DWORD bg = SETTING(BACKGROUND_COLOR);
+			//check if the file or dir is a dupe, then use the dupesetting color
+			if ( ( ii->type == ItemInfo::FILE && ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE ) || 
+				( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::SHARE_DUPE )) {
+				cd->clrText = SETTING(DUPE_COLOR);
+
+			} else if (ii->type == ItemInfo::FILE && ii->file->getDupe() == DirectoryListing::File::FINISHED_DUPE) {
+				//if it's a finished dupe, try to use some simple blending to indicate that
+				BYTE r, b, g;
+				DWORD queue = SETTING(QUEUE_COLOR);
+
+				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
+				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
+				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
+					
+				cd->clrText = RGB(r, g, b);
+			} else if ((ii->type == ItemInfo::FILE && ii->file->isQueued()) || 
+				( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::QUEUE_DUPE)) {
+				cd->clrText = SETTING(QUEUE_COLOR);
+			} else if(ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::PARTIAL_SHARE_DUPE) {
+				//if it's a partial dupe, try to use some simple blending to indicate that
+				//a dupe exists somewhere down the directory tree.
+				BYTE r, b, g;
+				//cache these to avoid unnecessary calls.
+				DWORD dupe = SETTING(DUPE_COLOR);
+
+				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(dupe)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
+				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(dupe)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
+				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(dupe)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
+					
+				cd->clrText = RGB(r, g, b);
+			} else if(ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::PARTIAL_QUEUE_DUPE) {
+				//if it's a partial dupe, try to use some simple blending to indicate that
+				//a dupe exists somewhere down the directory tree.
+				BYTE r, b, g;
+				DWORD queue = SETTING(QUEUE_COLOR);
+
+				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
+				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
+				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
+					
+				cd->clrText = RGB(r, g, b);
+			} else if(ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::SHARE_QUEUE_DUPE) {
+				//if it's a mixed dupe, try to use some simple blending to indicate that
+				BYTE r, b, g;
+				DWORD dupe = SETTING(DUPE_COLOR);
+				DWORD queue = SETTING(QUEUE_COLOR);
+
+				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(dupe)) ) / 2);
+				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(dupe)) ) / 2);
+				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(dupe)) ) / 2);
+					
+				cd->clrText = RGB(r, g, b);
+			}
+		}
+		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+	}
+
+	default:
+		return CDRF_DODEFAULT;
+	}*/
+
+	return CDRF_DODEFAULT;
+}
+
 LRESULT SharePage::onClickedShowTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	auto useOldInterface = IsDlgButtonChecked(IDC_SHOW_TREE) != BST_CHECKED;
 	SettingsManager::getInstance()->set(SettingsManager::USE_OLD_SHARING_UI, useOldInterface);
@@ -485,8 +574,8 @@ LRESULT SharePage::onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	}
 
 	LineDlg virt;
-	virt.title = TSTRING(VIRTUAL_NAME);
-	virt.description = TSTRING(VIRTUAL_NAME_LONG);
+	virt.title = TSTRING(PROFILE_NAME);
+	virt.description = TSTRING(PROFILE_NAME_DESC);
 	virt.line = name;
 	if(virt.DoModal(m_hWnd) != IDOK || virt.line.empty())
 		return 0;
