@@ -516,6 +516,9 @@ private:
 	static bool bShutdown;
 	static uint64_t iCurrentShutdownTime;
 	HICON hShutdownIcon;
+	HICON uploadIcon;
+	HICON downloadIcon;
+
 	static bool isShutdownStatus;
 
 	UINT trayMessage;

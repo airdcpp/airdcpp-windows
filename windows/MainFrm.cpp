@@ -411,6 +411,10 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	pmicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_PM), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 	hubicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_HUB), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
+	uploadIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_UPLOAD), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	downloadIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DOWNLOAD), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+
+
 	//updateTray( BOOLSETTING( MINIMIZE_TRAY ) );
 	updateTray(true);
 
@@ -423,6 +427,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		PostMessage(WM_COMMAND, ID_FILE_SETTINGS);
 	}
 	
+	ctrlStatus.SetIcon(5, downloadIcon);
+	ctrlStatus.SetIcon(6, uploadIcon);
 
 	//background image
 	if(!SETTING(BACKGROUND_IMAGE).empty()) {
@@ -747,7 +753,10 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 			ctrlStatus.SetText(1, str[0].c_str());
 			for(int i = 1; i < 9; i++) {
 				int w = WinUtil::getTextWidth(str[i], ctrlStatus.m_hWnd);
-				
+				//make room for the icons
+				if(i == 4 || i == 5)
+					w = w+16;
+
 				if(statusSizes[i] < w) {
 					statusSizes[i] = w;
 					u = true;
@@ -1285,6 +1294,8 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		DestroyIcon(hShutdownIcon); 	
 		DestroyIcon(pmicon.hIcon);
 		DestroyIcon(hubicon.hIcon);
+		DestroyIcon(uploadIcon);
+		DestroyIcon(downloadIcon);
 		bHandled = FALSE;
 	}
 
@@ -1627,6 +1638,7 @@ void MainFrame::setProgressText(const tstring& text){
 	::SetBkMode(progressTextDC, TRANSPARENT);
 	::SelectObject(progressTextDC, WinUtil::systemFont);
 	::ExtTextOut(progressTextDC, ptStart.x, ptStart.y, ETO_CLIPPED, &prc, text.c_str(), _tcslen(text.c_str()), NULL);
+	progress.ReleaseDC(progressTextDC);
 }
 
 void MainFrame::updateTBStatusRefreshing() {

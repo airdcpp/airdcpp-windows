@@ -2088,6 +2088,8 @@ IDI_GET_TTH				ICON					"res\\getTTH.ico"
 IDI_INDEXING			ICON					"res\\Indexing.ico"
 IDI_WINDOW_OPTIONS		ICON					"res\\WindowOptions.ico"
 IDI_WIZARD				ICON					"res\\Wizard.ico"
+IDI_UPLOAD				ICON					"res\\Upload.ico"
+IDI_DOWNLOAD			ICON					"res\\Download.ico"
 
 //settings tree
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"

@@ -224,6 +224,8 @@
 #define IDI_MISC						407
 #define IDI_SHAREOPTIONS				408
 #define IDI_IGNORE						409
+#define IDI_UPLOAD						410
+#define IDI_DOWNLOAD					411
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
