@@ -134,6 +134,10 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 	checkBox(IDC_SETTINGS_ODC_MENUBAR_BUMPED, BOOLSETTING(MENUBAR_BUMPED));
 	checkBox(IDC_SETTINGS_ODC_MENUBAR_USETWO, BOOLSETTING(MENUBAR_TWO_COLORS));
+
+	WinUtil::decodeFont(Text::toT(SETTING(TB_PROGRESS_FONT)), currentFont );
+	textclr = SETTING(TB_PROGRESS_TEXT_COLOR);
+
 	BOOL b;
 	onMenubarClicked(0, IDC_SETTINGS_ODC_MENUBAR_USETWO, 0, b);
 	// Do specialized reading here
@@ -162,6 +166,12 @@ void OperaColorsPage::write()
 	SettingsManager::getInstance()->set(SettingsManager::UPLOAD_BAR_COLOR, (int)crProgressUp);
 	SettingsManager::getInstance()->set(SettingsManager::PROGRESS_TEXT_COLOR_DOWN, (int)crProgressTextDown);
 	SettingsManager::getInstance()->set(SettingsManager::PROGRESS_TEXT_COLOR_UP, (int)crProgressTextUp);
+	
+	SettingsManager::getInstance()->set(SettingsManager::TB_PROGRESS_FONT, Text::fromT(WinUtil::encodeFont(currentFont)));
+	SettingsManager::getInstance()->set(SettingsManager::TB_PROGRESS_TEXT_COLOR, (int)textclr);
+
+	WinUtil::progressFont = CreateFontIndirect(&currentFont);
+	WinUtil::TBprogressTextColor = textclr;
 	
 	OperaColors::ClearCache();
 }
@@ -205,6 +215,19 @@ LRESULT OperaColorsPage::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 			dc.Detach();
 		}
 	return S_OK;
+}
+void OperaColorsPage::EditTextStyle() {
+	LOGFONT font;
+
+	font = currentFont;
+
+	CFontDialog d(&font, CF_EFFECTS | CF_SCREENFONTS, NULL, *this);
+	d.m_cf.rgbColors = textclr;
+	if(d.DoModal() == IDOK)
+	{
+		currentFont = font;
+		textclr = d.GetColor();
+	}
 }
 
 LRESULT OperaColorsPage::onMenubarClicked(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

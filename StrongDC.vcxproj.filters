@@ -275,6 +275,111 @@
     <None Include="res\info.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\ownlist.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\matchlists.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\QConnect.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\getTTH.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Indexing.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\WindowOptions.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Wizard.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Upload.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Download.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\General.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Connections.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Downloads.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Locations.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Preview.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Priorities.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Sharing.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\SpeedLimits.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Appearance.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Fonts.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\ProgressbarColors.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\UserlistColors.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Sounds.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Toolbar.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Windows.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Tabs.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Popups.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Highlights.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\AirAppearance.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Advanced.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Experts.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\UserCommands.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Certificates.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Misc.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\ShareOptions.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\SettingsTree\Ignore.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AirDC.rc">

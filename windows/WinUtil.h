@@ -173,6 +173,7 @@ public:
 	static HFONT systemFont;
 	static HFONT tabFont;
 	static HFONT OEMFont;
+	static HFONT progressFont;
 	static CMenu mainMenu;
 	static OMenu grantMenu;
 	static int dirIconIndex;
@@ -185,6 +186,7 @@ public:
 	static tstring tth;
 	static DWORD helpCookie;	
 	static bool isAppActive;
+	static COLORREF TBprogressTextColor;
 	static CHARFORMAT2 m_TextStyleTimestamp;
 	static CHARFORMAT2 m_ChatTextGeneral;
 	static CHARFORMAT2 m_TextStyleMyNick;

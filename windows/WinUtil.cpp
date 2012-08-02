@@ -74,6 +74,8 @@ HFONT WinUtil::boldFont = NULL;
 HFONT WinUtil::systemFont = NULL;
 HFONT WinUtil::tabFont = NULL;
 HFONT WinUtil::OEMFont = NULL;
+HFONT WinUtil::progressFont = NULL;
+COLORREF WinUtil::TBprogressTextColor = NULL;
 CMenu WinUtil::mainMenu;
 OMenu WinUtil::grantMenu;
 CImageList WinUtil::fileImages;
@@ -484,6 +486,12 @@ void WinUtil::init(HWND hWnd) {
 	systemFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
 	
 	OEMFont = (HFONT)::GetStockObject(OEM_FIXED_FONT);
+
+	LOGFONT lf3;
+	::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf3), &lf3);
+	decodeFont(Text::toT(SETTING(TB_PROGRESS_FONT)), lf3);
+	progressFont = CreateFontIndirect(&lf3);
+	TBprogressTextColor = SETTING(TB_PROGRESS_TEXT_COLOR);
 
 	if(BOOLSETTING(URL_HANDLER)) {
 		registerDchubHandler();

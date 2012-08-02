@@ -58,7 +58,7 @@ public:
 		COMMAND_HANDLER(IDC_SETTINGS_ODC_MENUBAR_RIGHT, BN_CLICKED, onMenubarClicked)
 		COMMAND_HANDLER(IDC_SETTINGS_ODC_MENUBAR_USETWO, BN_CLICKED, onMenubarClicked)
 		COMMAND_HANDLER(IDC_SETTINGS_ODC_MENUBAR_BUMPED, BN_CLICKED, onMenubarClicked)
-
+		COMMAND_ID_HANDLER(IDC_TB_PROG_STYLE, onTBProgress)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 	END_MSG_MAP()
 
@@ -72,6 +72,11 @@ public:
 	LRESULT onClickedProgress(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onClickedProgressTextDown(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onClickedProgressTextUp(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
+
+	LRESULT onTBProgress(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */) {
+		EditTextStyle();
+		return 0;
+	}
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
@@ -132,6 +137,10 @@ private:
 	CCheckBox ctrlProgressOverride2;
 	CButton ctrlProgressDownDrawer;
 	CButton ctrlProgressUpDrawer;
+
+	void EditTextStyle();
+	LOGFONT currentFont;
+	COLORREF textclr; 
 
 	void checkBox(int id, bool b) {
 		CheckDlgButton(id, b ? BST_CHECKED : BST_UNCHECKED);

@@ -93,6 +93,8 @@ BEGIN
     CONTROL         "",IDC_FLAT_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,74,79,11,14
     CONTROL         "Use oDC style of progressbars in Transfers",IDC_ODC_STYLE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,19,245,10
+    GROUPBOX        "Toolbar Progressbar Text styles ",IDC_STATIC,14,160,253,40
+    PUSHBUTTON      "Color / Font",IDC_TB_PROG_STYLE,23,175,50,14
 END
 
 IDD_PREVIEW DIALOGEX 0, 0, 189, 135
@@ -2080,49 +2082,42 @@ IDI_AUTOSEARCH          ICON                    "res\\ToolbarImages\\AutoSearch.
 IDI_IERROR              ICON                    "res\\error.ico"
 IDI_IWARNING            ICON                    "res\\warning.ico"
 IDI_INFO                ICON                    "res\\info.ico"
-IDI_CDM					ICON                    "res\\Cdm.ico"
-IDI_OWNLIST				ICON                    "res\\ownlist.ico"
-IDI_MATCHLIST			ICON					"res\\matchlists.ico"
-IDI_QCONNECT			ICON					"res\\QConnect.ico"
-IDI_GET_TTH				ICON					"res\\getTTH.ico"
-IDI_INDEXING			ICON					"res\\Indexing.ico"
-IDI_WINDOW_OPTIONS		ICON					"res\\WindowOptions.ico"
-IDI_WIZARD				ICON					"res\\Wizard.ico"
-IDI_UPLOAD				ICON					"res\\Upload.ico"
-IDI_DOWNLOAD			ICON					"res\\Download.ico"
-
-//settings tree
+IDI_CDM                 ICON                    "res\\Cdm.ico"
+IDI_OWNLIST             ICON                    "res\\ownlist.ico"
+IDI_MATCHLIST           ICON                    "res\\matchlists.ico"
+IDI_QCONNECT            ICON                    "res\\QConnect.ico"
+IDI_GET_TTH             ICON                    "res\\getTTH.ico"
+IDI_INDEXING            ICON                    "res\\Indexing.ico"
+IDI_WINDOW_OPTIONS      ICON                    "res\\WindowOptions.ico"
+IDI_WIZARD              ICON                    "res\\Wizard.ico"
+IDI_UPLOAD              ICON                    "res\\Upload.ico"
+IDI_DOWNLOAD            ICON                    "res\\Download.ico"
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"
 IDI_LOCATIONS           ICON                    "res\\SettingsTree\\Locations.ico"
 IDI_PREVIEW             ICON                    "res\\SettingsTree\\Preview.ico"
 IDI_PRIORITIES          ICON                    "res\\SettingsTree\\Priorities.ico"
-//IDI_DLOPTIONS           ICON                   "res\\SettingsTree\\DLOptions.ico use Queue icon
 IDI_SHARING             ICON                    "res\\SettingsTree\\Sharing.ico"
-IDI_LIMITS				ICON					"res\\SettingsTree\\SpeedLimits.ico"
+IDI_LIMITS              ICON                    "res\\SettingsTree\\SpeedLimits.ico"
 IDI_APPEARANCE          ICON                    "res\\SettingsTree\\Appearance.ico"
-IDI_FONTS				ICON                    "res\\SettingsTree\\Fonts.ico"
-IDI_PROGRESS	        ICON                    "res\\SettingsTree\\ProgressbarColors.ico"
+IDI_FONTS               ICON                    "res\\SettingsTree\\Fonts.ico"
+IDI_PROGRESS            ICON                    "res\\SettingsTree\\ProgressbarColors.ico"
 IDI_USERLIST            ICON                    "res\\SettingsTree\\UserlistColors.ico"
 IDI_SOUNDS              ICON                    "res\\SettingsTree\\Sounds.ico"
 IDI_TOOLBAR             ICON                    "res\\SettingsTree\\Toolbar.ico"
 IDI_WINDOWS             ICON                    "res\\SettingsTree\\Windows.ico"
-IDI_TABS		        ICON                    "res\\SettingsTree\\Tabs.ico"
-IDI_POPUPS				ICON                    "res\\SettingsTree\\Popups.ico"
+IDI_TABS                ICON                    "res\\SettingsTree\\Tabs.ico"
+IDI_POPUPS              ICON                    "res\\SettingsTree\\Popups.ico"
 IDI_HIGHLIGHTS          ICON                    "res\\SettingsTree\\Highlights.ico"
 IDI_AIRAPPEARANCE       ICON                    "res\\SettingsTree\\AirAppearance.ico"
 IDI_ADVANCED            ICON                    "res\\SettingsTree\\Advanced.ico"
-IDI_EXPERTS	            ICON                    "res\\SettingsTree\\Experts.ico"
-//IDI_LOGS	            ICON                    "res\\SettingsTree\\Logs.ico" Use logs icon
-IDI_UC					ICON                    "res\\SettingsTree\\UserCommands.ico"
+IDI_EXPERTS             ICON                    "res\\SettingsTree\\Experts.ico"
+IDI_UC                  ICON                    "res\\SettingsTree\\UserCommands.ico"
 IDI_CERTIFICATES        ICON                    "res\\SettingsTree\\Certificates.ico"
-IDI_MISC	            ICON                    "res\\SettingsTree\\Misc.ico"
+IDI_MISC                ICON                    "res\\SettingsTree\\Misc.ico"
 IDI_SHAREOPTIONS        ICON                    "res\\SettingsTree\\ShareOptions.ico"
-IDI_IGNORE		        ICON                    "res\\SettingsTree\\Ignore.ico"
-//IDI_SEARCH				ICON                    "res\\SettingsTree\\search.ico" Use toolbar Search icon
-
-
+IDI_IGNORE              ICON                    "res\\SettingsTree\\Ignore.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

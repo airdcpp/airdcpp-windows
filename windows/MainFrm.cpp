@@ -280,7 +280,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
 	AddSimpleReBarBand(hWndWinampBar, NULL, TRUE);
-	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 200, FALSE);
+	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 205, FALSE);
 
 	CreateSimpleStatusBar();
 	
@@ -485,7 +485,7 @@ HWND MainFrame::createTBStatusBar() {
 
 	TBBUTTON tb[1];
 	memzero(&tb, sizeof(tb));
-	tb[0].iBitmap = 200;
+	tb[0].iBitmap = 205;
 	tb[0].fsStyle = TBSTYLE_SEP;
 
 	TBStatusCtrl.SetButtonStructSize();
@@ -1618,7 +1618,7 @@ void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 
 	if(startFiles == 0 || startBytes == 0 || files == 0) {
 		progress.SetPos(0);
-		//setProgressText(tmp);
+		//setProgressText(_T("TEST text"));
 		startBytes = 0;
 		startFiles = 0;
 	} else {
@@ -1632,12 +1632,18 @@ void MainFrame::setProgressText(const tstring& text){
 	CPoint ptStart;
 	CRect prc;
 	progress.GetClientRect(&prc);
-	ptStart.x = prc.left + 1;
-	ptStart.y = prc.top + 5;
+
 	HDC progressTextDC = progress.GetDC();
+
 	::SetBkMode(progressTextDC, TRANSPARENT);
-	::SelectObject(progressTextDC, WinUtil::systemFont);
-	::ExtTextOut(progressTextDC, ptStart.x, ptStart.y, ETO_CLIPPED, &prc, text.c_str(), _tcslen(text.c_str()), NULL);
+	::SetTextColor(progressTextDC, WinUtil::TBprogressTextColor );
+	::SelectObject(progressTextDC, WinUtil::progressFont);
+	
+	//ptStart.x = prc.left + 2;
+	//ptStart.y = prc.top + 5; 
+	//::ExtTextOut(progressTextDC, ptStart.x, ptStart.y, ETO_CLIPPED, &prc, text.c_str(), _tcslen(text.c_str()), NULL);
+	prc.top += 5;
+	::DrawText(progressTextDC, text.c_str(), text.length(), prc, DT_CENTER | DT_VCENTER );
 	progress.ReleaseDC(progressTextDC);
 }
 
