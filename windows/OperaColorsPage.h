@@ -137,6 +137,7 @@ private:
 	CCheckBox ctrlProgressOverride2;
 	CButton ctrlProgressDownDrawer;
 	CButton ctrlProgressUpDrawer;
+	CProgressBarCtrl progress;
 
 	void EditTextStyle();
 	LOGFONT currentFont;
@@ -149,7 +150,9 @@ private:
 		return (BST_CHECKED == IsDlgButtonChecked(id));
 	}
 
-	void BrowseForPic(int DLGITEM);
+	void BrowseForPic(int DLGITEM);	
+	void setProgressText(const tstring& text);
+
 
 	COLORREF crMenubarLeft;
 	COLORREF crMenubarRight;

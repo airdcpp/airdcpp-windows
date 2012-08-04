@@ -1081,6 +1081,7 @@
 #define IDC_APPLY_CHANGES               1651
 #define IDC_COMBO                       1651
 #define IDC_COMBO_DESC                  1652
+#define IDC_PROGRESS1                   1653
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1395,6 +1396,7 @@
 #define IDC_REFRESH_MENU                16000
 #define ID_TOGGLE_TBSTATUS              16900
 #define IDC_REFRESH_MENU_SUBDIRS        17000
+#define ID_LOCK_TB		                18900
 #define IDC_BROWSELIST                  19000
 #define IDC_REMOVE_SOURCE               20000
 #define IDC_PM                          21000
@@ -1438,7 +1440,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        340
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1653
+#define _APS_NEXT_CONTROL_VALUE         1654
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

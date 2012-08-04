@@ -93,8 +93,9 @@ BEGIN
     CONTROL         "",IDC_FLAT_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,74,79,11,14
     CONTROL         "Use oDC style of progressbars in Transfers",IDC_ODC_STYLE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,19,245,10
-    GROUPBOX        "Toolbar Progressbar Text styles ",IDC_STATIC,14,160,253,40
+    GROUPBOX        "Toolbar Progressbar Text styles ",IDC_STATIC,7,160,260,40
     PUSHBUTTON      "Color / Font",IDC_TB_PROG_STYLE,23,175,50,14
+    CONTROL         "",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,103,175,121,14
 END
 
 IDD_PREVIEW DIALOGEX 0, 0, 189, 135

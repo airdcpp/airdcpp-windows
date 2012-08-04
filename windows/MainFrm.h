@@ -170,6 +170,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_TRAY_SHOW, onAppShow)
 		COMMAND_ID_HANDLER(ID_TOGGLE_TOOLBAR, OnViewWinampBar)
 		COMMAND_ID_HANDLER(ID_TOGGLE_TBSTATUS, OnViewTBStatusBar)
+		COMMAND_ID_HANDLER(ID_LOCK_TB, OnLockTB)
 		COMMAND_ID_HANDLER(ID_WINDOW_MINIMIZE_ALL, onWindowMinimizeAll)
 		COMMAND_ID_HANDLER(ID_WINDOW_RESTORE_ALL, onWindowRestoreAll)
 		COMMAND_ID_HANDLER(IDC_SHUTDOWN, onShutDown)
@@ -206,6 +207,7 @@ public:
 		UPDATE_ELEMENT(ID_VIEW_TRANSFER_VIEW, UPDUI_MENUPOPUP)
 		UPDATE_ELEMENT(ID_TOGGLE_TOOLBAR, UPDUI_MENUPOPUP)
 		UPDATE_ELEMENT(ID_TOGGLE_TBSTATUS, UPDUI_MENUPOPUP)
+		UPDATE_ELEMENT(ID_LOCK_TB, UPDUI_MENUPOPUP)
 	END_UPDATE_UI_MAP()
 
 
@@ -252,6 +254,7 @@ public:
 	LRESULT onRefreshMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSetFont(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnViewTBStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnLockTB(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	static DWORD WINAPI stopper(void* p);
 	void UpdateLayout(BOOL bResizeBars = TRUE);

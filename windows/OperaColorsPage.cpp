@@ -122,6 +122,12 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	ctrlSpin.SetRange(1, 5);
 	ctrlSpin.Detach();
 
+	progress.SetRange(0,100);
+	progress.SetPos(50);
+	WinUtil::decodeFont(Text::toT(SETTING(TB_PROGRESS_FONT)), currentFont );
+	textclr = SETTING(TB_PROGRESS_TEXT_COLOR);
+	progress.Attach(GetDlgItem(IDC_PROGRESS1));
+
 	updateProgress();
 
 	crMenubarLeft = SETTING(MENUBAR_LEFT_COLOR);
@@ -134,9 +140,6 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 	checkBox(IDC_SETTINGS_ODC_MENUBAR_BUMPED, BOOLSETTING(MENUBAR_BUMPED));
 	checkBox(IDC_SETTINGS_ODC_MENUBAR_USETWO, BOOLSETTING(MENUBAR_TWO_COLORS));
-
-	WinUtil::decodeFont(Text::toT(SETTING(TB_PROGRESS_FONT)), currentFont );
-	textclr = SETTING(TB_PROGRESS_TEXT_COLOR);
 
 	BOOL b;
 	onMenubarClicked(0, IDC_SETTINGS_ODC_MENUBAR_USETWO, 0, b);
@@ -214,6 +217,7 @@ LRESULT OperaColorsPage::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 
 			dc.Detach();
 		}
+	setProgressText(_T("Sample Text"));
 	return S_OK;
 }
 void OperaColorsPage::EditTextStyle() {
@@ -227,6 +231,7 @@ void OperaColorsPage::EditTextStyle() {
 	{
 		currentFont = font;
 		textclr = d.GetColor();
+		setProgressText(_T("Sample Text"));
 	}
 }
 
@@ -319,6 +324,27 @@ LRESULT OperaColorsPage::onClickedProgressTextUp(WORD /* wNotifyCode */, WORD /*
 	}
 		ctrlProgressUpDrawer.Invalidate();
 	return TRUE;
+}
+
+void OperaColorsPage::setProgressText(const tstring& text){
+	progress.SetRedraw(TRUE);
+	progress.SetPos(50);
+
+	CPoint ptStart;
+	CRect prc;
+	progress.GetClientRect(&prc);
+
+	HDC progressTextDC = progress.GetDC();
+
+	::SetBkMode(progressTextDC, TRANSPARENT);
+	::SetTextColor(progressTextDC, textclr );
+	::SelectObject(progressTextDC, CreateFontIndirect(&currentFont));
+	prc.top += 5;
+
+	::DrawText(progressTextDC, text.c_str(), text.length(), prc, DT_CENTER | DT_VCENTER );
+	
+	progress.ReleaseDC(progressTextDC);
+	progress.SetRedraw(FALSE);
 }
 
 LRESULT OperaColorsPage::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

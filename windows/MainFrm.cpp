@@ -280,7 +280,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
 	AddSimpleReBarBand(hWndWinampBar, NULL, TRUE);
-	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 205, FALSE);
+	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 205, TRUE);
 
 	CreateSimpleStatusBar();
 	
@@ -321,6 +321,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	UISetCheck(ID_VIEW_TRANSFER_VIEW, 1);
 	UISetCheck(ID_TOGGLE_TOOLBAR, 1);
 	UISetCheck(ID_TOGGLE_TBSTATUS, 1);
+	UISetCheck(ID_LOCK_TB, 0);
 
 	WinUtil::loadReBarSettings(m_hWndToolBar);
 
@@ -356,6 +357,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	if(!BOOLSETTING(SHOW_WINAMP_CONTROL)) PostMessage(WM_COMMAND, ID_TOGGLE_TOOLBAR);
 	if(!BOOLSETTING(SHOW_TBSTATUS)) PostMessage(WM_COMMAND, ID_TOGGLE_TBSTATUS);
+	if(BOOLSETTING(LOCK_TB)) PostMessage(WM_COMMAND, ID_LOCK_TB);
 	if(BOOLSETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
 
 	if(!WinUtil::isShift())
@@ -755,7 +757,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 				int w = WinUtil::getTextWidth(str[i], ctrlStatus.m_hWnd);
 				//make room for the icons
 				if(i == 4 || i == 5)
-					w = w+16;
+					w = w+17;
 
 				if(statusSizes[i] < w) {
 					statusSizes[i] = w;
@@ -1250,6 +1252,8 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			string tmp1;
 			string tmp2;
 
+			WinUtil::saveReBarSettings(m_hWndToolBar);
+
 			if( hashProgress.IsWindow() )
 				hashProgress.DestroyWindow();
 
@@ -1270,8 +1274,6 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			}
 			if(wp.showCmd == SW_SHOWNORMAL || wp.showCmd == SW_SHOW || wp.showCmd == SW_SHOWMAXIMIZED || wp.showCmd == SW_MAXIMIZE)
 				SettingsManager::getInstance()->set(SettingsManager::MAIN_WINDOW_STATE, (int)wp.showCmd);
-
-			WinUtil::saveReBarSettings(m_hWndToolBar);
 
 			ShowWindow(SW_HIDE);
 			transferView.prepareClose();
@@ -1567,6 +1569,18 @@ LRESULT MainFrame::OnViewTBStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	UISetCheck(ID_TOGGLE_TBSTATUS, bVisible);
 	UpdateLayout();
 	SettingsManager::getInstance()->set(SettingsManager::SHOW_TBSTATUS, bVisible);
+	return 0;
+}
+LRESULT MainFrame::OnLockTB(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
+{
+	static BOOL locked = FALSE;	// initially not locked
+	locked = !locked;
+	CReBarCtrl rebar = m_hWndToolBar;
+	rebar.LockBands(locked? true : false);
+
+	UISetCheck(ID_LOCK_TB, locked);
+	UpdateLayout();
+	SettingsManager::getInstance()->set(SettingsManager::LOCK_TB, locked);
 	return 0;
 }
 

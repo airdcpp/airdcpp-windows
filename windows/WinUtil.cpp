@@ -360,6 +360,7 @@ void WinUtil::init(HWND hWnd) {
 	view.AppendMenu(MF_STRING, ID_VIEW_TRANSFER_VIEW, CTSTRING(MENU_TRANSFER_VIEW));
 	view.AppendMenu(MF_STRING, ID_TOGGLE_TOOLBAR, CTSTRING(TOGGLE_TOOLBAR));
 	view.AppendMenu(MF_STRING, ID_TOGGLE_TBSTATUS, CTSTRING(TOGGLE_TBSTATUS));
+	view.AppendMenu(MF_STRING, ID_LOCK_TB, CTSTRING(LOCK_TB));
 
 	mainMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)view, CTSTRING(MENU_VIEW));
 
@@ -1700,6 +1701,7 @@ void WinUtil::loadReBarSettings(HWND bar) {
 	CReBarCtrl rebar = bar;
 	
 	REBARBANDINFO rbi = { 0 };
+	ZeroMemory(&rbi, sizeof(rbi));
 	rbi.cbSize = sizeof(rbi);
 	rbi.fMask = RBBIM_ID | RBBIM_SIZE | RBBIM_STYLE;
 	
@@ -1731,6 +1733,7 @@ void WinUtil::saveReBarSettings(HWND bar) {
 	CReBarCtrl rebar = bar;
 	
 	REBARBANDINFO rbi = { 0 };
+	ZeroMemory(&rbi, sizeof(rbi));
 	rbi.cbSize = sizeof(rbi);
 	rbi.fMask = RBBIM_ID | RBBIM_SIZE | RBBIM_STYLE;
 	
