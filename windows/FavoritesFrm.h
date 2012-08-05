@@ -27,17 +27,18 @@
 #include "ExListViewCtrl.h"
 
 #include "../client/FavoriteManager.h"
+#include "../client/ClientManager.h"
 
 #define SERVER_MESSAGE_MAP 7
 
 class FavoriteHubsFrame : public MDITabChildWindowImpl<FavoriteHubsFrame>, public StaticFrame<FavoriteHubsFrame, ResourceManager::FAVORITE_HUBS, IDC_FAVORITES>,
-	private FavoriteManagerListener, private SettingsManagerListener
+	private FavoriteManagerListener, private SettingsManagerListener, private ClientManagerListener
 {
 public:
 	typedef MDITabChildWindowImpl<FavoriteHubsFrame> baseClass;
 
 	FavoriteHubsFrame() : nosave(true), closed(false) { }
-	~FavoriteHubsFrame() { }
+	~FavoriteHubsFrame() { onlineStatusImg.Destroy();  }
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("FavoriteHubsFrame"), IDR_FAVORITES, 0, COLOR_3DFACE);
 		
@@ -46,6 +47,7 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
+		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		COMMAND_ID_HANDLER(IDC_CONNECT, onClickedConnect)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_EDIT, onEdit)
@@ -99,6 +101,8 @@ public:
 		return 0;
 	}
 
+	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
+
 private:
 
 	enum {
@@ -111,6 +115,11 @@ private:
 		COLUMN_USERDESCRIPTION,
 		COLUMN_SHAREPROFILE,
 		COLUMN_LAST
+	};
+
+	enum {
+		HUB_CONNECTED,
+		HUB_DISCONNECTED
 	};
 	
 	struct StateKeeper {
@@ -135,6 +144,11 @@ private:
 	CButton ctrlManageGroups;
 	OMenu hubsMenu;
 
+	CImageList onlineStatusImg;
+	StringList onlineHubs;
+	bool isOnline(const string& hubUrl) {
+		return find(onlineHubs.begin(), onlineHubs.end(), hubUrl) != onlineHubs.end();
+	}
 
 	ExListViewCtrl ctrlHubs;
 
@@ -154,6 +168,13 @@ private:
 	void on(FavoriteRemoved, const FavoriteHubEntry* e) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)e)); }
 	void on(FavoritesUpdated) noexcept { fillList(); }
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+	void on(ClientConnected, const Client* c) noexcept { 
+		PostMessage(WM_SPEAKER, (WPARAM)HUB_CONNECTED,  (LPARAM)new string(c->getHubUrl())); 
+	}
+	void on(ClientDisconnected, const Client* c) noexcept { 
+		PostMessage(WM_SPEAKER, (WPARAM)HUB_DISCONNECTED,  (LPARAM)new string(c->getHubUrl())); 
+	}
+
 };
 
 #endif // !defined(FAVORITE_HUBS_FRM_H)

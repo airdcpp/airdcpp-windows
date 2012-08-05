@@ -226,6 +226,8 @@
 #define IDI_IGNORE                      409
 #define IDI_UPLOAD                      410
 #define IDI_DOWNLOAD                    411
+#define IDI_ONLINE						412
+#define IDI_OFFLINE						413
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479

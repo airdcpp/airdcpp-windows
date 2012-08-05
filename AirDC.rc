@@ -2056,6 +2056,7 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
+//Toolbar
 IDI_ADLSEARCH           ICON                    "res\\ToolbarImages\\ADLSearch.ico"
 IDI_AWAY                ICON                    "res\\ToolbarImages\\Clock.ico"
 IDI_FAVORITEHUBS        ICON                    "res\\ToolbarImages\\Favorites.ico"
@@ -2080,6 +2081,7 @@ IDI_LOGS                ICON                    "res\\ToolbarImages\\SystemLog.i
 IDI_UPLOAD_QUEUE        ICON                    "res\\ToolbarImages\\uQueue.ico"
 IDI_SCAN                ICON                    "res\\ToolbarImages\\ScanMissing.ico"
 IDI_AUTOSEARCH          ICON                    "res\\ToolbarImages\\AutoSearch.ico"
+
 IDI_IERROR              ICON                    "res\\error.ico"
 IDI_IWARNING            ICON                    "res\\warning.ico"
 IDI_INFO                ICON                    "res\\info.ico"
@@ -2093,6 +2095,9 @@ IDI_WINDOW_OPTIONS      ICON                    "res\\WindowOptions.ico"
 IDI_WIZARD              ICON                    "res\\Wizard.ico"
 IDI_UPLOAD              ICON                    "res\\Upload.ico"
 IDI_DOWNLOAD            ICON                    "res\\Download.ico"
+IDI_ONLINE				ICON                    "res\\Online.ico"
+IDI_OFFLINE             ICON                    "res\\Offline.ico"
+//Settingstree
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"

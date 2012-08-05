@@ -97,11 +97,17 @@ LRESULT FavoriteHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlManageGroups.SetWindowText(CTSTRING(MANAGE_GROUPS));
 	ctrlManageGroups.SetFont(WinUtil::systemFont);
 
+	onlineStatusImg.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
+	onlineStatusImg.AddIcon(WinUtil::createIcon(IDI_ONLINE));
+	onlineStatusImg.AddIcon(WinUtil::createIcon(IDI_OFFLINE));
+	ctrlHubs.SetImageList(onlineStatusImg, LVSIL_SMALL);
+	ClientManager::getInstance()->getOnlineClients(onlineHubs);
+
 	FavoriteManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
+	ClientManager::getInstance()->addListener(this);
 
 	fillList();
-
 
 	hubsMenu.CreatePopupMenu();
 	hubsMenu.AppendMenu(MF_STRING, IDC_OPEN_HUB_LOG, CTSTRING(OPEN_HUB_LOG));
@@ -202,12 +208,44 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntry* entry, int pos, int gro
 	ctrlHubs.SetCheckState(i, b);
 
     LVITEM lvItem = { 0 };
-    lvItem.mask = LVIF_GROUPID;
+    lvItem.mask = LVIF_GROUPID | LVIF_IMAGE;
     lvItem.iItem = i;
+	lvItem.iImage = isOnline(entry->getServer()) ? 0 : 1;
     lvItem.iSubItem = 0;
     lvItem.iGroupId = groupIndex;
     ctrlHubs.SetItem( &lvItem );
 }
+
+LRESULT FavoriteHubsFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+	if(wParam == HUB_CONNECTED) {
+		auto_ptr<string> hub(reinterpret_cast<string*>(lParam));
+		onlineHubs.push_back(*hub);
+		
+		for(int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
+			FavoriteHubEntry* e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
+			if(e->getServer() == *hub) {
+				ctrlHubs.SetItem(i,0,LVIF_IMAGE, NULL, 0, 0, 0, NULL);
+				ctrlHubs.Update(i);
+				return 0;
+			}
+		}
+	} else if(wParam == HUB_DISCONNECTED) {
+			auto_ptr<string> hub(reinterpret_cast<string*>(lParam));
+			onlineHubs.erase(remove(onlineHubs.begin(), onlineHubs.end(), *hub), onlineHubs.end());
+
+		for(int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
+			FavoriteHubEntry* e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
+			if(e->getServer() == *hub) {
+				ctrlHubs.SetItem(i,0,LVIF_IMAGE, NULL, 1, 0, 0, NULL);
+				ctrlHubs.Update(i);
+				return 0;
+			}
+		}
+	}
+		
+	return 0;
+}
+
 
 LRESULT FavoriteHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if(reinterpret_cast<HWND>(wParam) == ctrlHubs) {
@@ -466,6 +504,7 @@ LRESULT FavoriteHubsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	if(!closed) {
 		FavoriteManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
+		ClientManager::getInstance()->removeListener(this);
 		closed = true;		
 		WinUtil::setButtonPressed(IDC_FAVORITES, false);
 		PostMessage(WM_CLOSE);
