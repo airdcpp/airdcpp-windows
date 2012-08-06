@@ -117,10 +117,10 @@ public:
 
 		menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
 		menu.AppendMenu(MF_SEPARATOR);
-		if ((traits.adcOnly && showFullList) || traits.nmdcOnly)
+		if (showFullList || traits.nmdcOnly)
 			menu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
 		if (!traits.adcOnly && !traits.nmdcOnly) // GET/BROWSE
-			menu.AppendMenu(MF_STRING, IDC_GETBROWSELIST, CTSTRING(GET_FILE_LIST));
+			menu.AppendMenu(MF_STRING, IDC_GETBROWSELIST, CTSTRING(GET_BROWSE_LIST));
 		menu.AppendMenu(MF_STRING, IDC_BROWSELIST, CTSTRING(BROWSE_FILE_LIST));
 		menu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
 		menu.AppendMenu(MF_SEPARATOR);
