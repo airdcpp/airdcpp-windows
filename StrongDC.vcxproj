@@ -379,6 +379,8 @@
     <None Include="res\matchlists.ico" />
     <None Include="res\message.ico" />
     <None Include="res\nor.ico" />
+    <None Include="res\Offline.ico" />
+    <None Include="res\Online.ico" />
     <None Include="res\ownlist.ico" />
     <None Include="res\o_otools.bmp" />
     <None Include="res\o_settings_dlg.bmp" />

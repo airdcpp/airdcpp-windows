@@ -380,6 +380,12 @@
     <None Include="res\SettingsTree\Ignore.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\Online.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\Offline.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AirDC.rc">

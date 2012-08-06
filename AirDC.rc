@@ -1255,7 +1255,7 @@ BEGIN
     CONTROL         "Default",IDC_DEFAULT,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,16,206,117,10
     CONTROL         "Hide AirDC++ and use DC++ instead (TAG)",IDC_STEALTH,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,136,175,10
-    CONTROL         "Hide share in this hub",IDC_HIDE_SHARE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,155,98,10
+    CONTROL         "Hide share in this hub",IDC_HIDE_SHARE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,333,97,98,10
     CONTROL         "Ignore private messages",IDC_FAV_NO_PM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,145,172,10
     GROUPBOX        "",IDC_OTHER_BORDER,206,7,250,121
     RTEXT           "Minimum search interval",IDC_FAV_SEARCH_INTERVAL,242,16,130,8
@@ -1264,7 +1264,7 @@ BEGIN
     COMBOBOX        IDC_FAVGROUP_BOX,270,44,150,30,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Group:",IDC_FAVGROUP,215,46,52,8
     CONTROL         "Show Users joins / parts in mainchat",IDC_SHOW_JOIN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,165,166,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,156,166,10
     RTEXT           "Hub encoding:",IDC_ENCODINGTEXT,211,62,57,8
     COMBOBOX        IDC_ENCODING,270,60,150,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Log Mainchat",IDC_LOGMAINCHAT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,218,15,70,10
@@ -2056,7 +2056,6 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-//Toolbar
 IDI_ADLSEARCH           ICON                    "res\\ToolbarImages\\ADLSearch.ico"
 IDI_AWAY                ICON                    "res\\ToolbarImages\\Clock.ico"
 IDI_FAVORITEHUBS        ICON                    "res\\ToolbarImages\\Favorites.ico"
@@ -2081,7 +2080,6 @@ IDI_LOGS                ICON                    "res\\ToolbarImages\\SystemLog.i
 IDI_UPLOAD_QUEUE        ICON                    "res\\ToolbarImages\\uQueue.ico"
 IDI_SCAN                ICON                    "res\\ToolbarImages\\ScanMissing.ico"
 IDI_AUTOSEARCH          ICON                    "res\\ToolbarImages\\AutoSearch.ico"
-
 IDI_IERROR              ICON                    "res\\error.ico"
 IDI_IWARNING            ICON                    "res\\warning.ico"
 IDI_INFO                ICON                    "res\\info.ico"
@@ -2095,9 +2093,8 @@ IDI_WINDOW_OPTIONS      ICON                    "res\\WindowOptions.ico"
 IDI_WIZARD              ICON                    "res\\Wizard.ico"
 IDI_UPLOAD              ICON                    "res\\Upload.ico"
 IDI_DOWNLOAD            ICON                    "res\\Download.ico"
-IDI_ONLINE				ICON                    "res\\Online.ico"
+IDI_ONLINE              ICON                    "res\\Online.ico"
 IDI_OFFLINE             ICON                    "res\\Offline.ico"
-//Settingstree
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"

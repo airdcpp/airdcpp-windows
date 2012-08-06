@@ -67,7 +67,6 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_HUBUSERDESCR, Text::toT(entry->getUserDescription()).c_str());
 	CheckDlgButton(IDC_STEALTH, entry->getStealth() ? BST_CHECKED : BST_UNCHECKED);
 	SetDlgItemText(IDC_SERVER, Text::toT(entry->getIP()).c_str());
-	//CheckDlgButton(IDC_HIDE_SHARE, entry->getHideShare() ? BST_CHECKED : BST_UNCHECKED); //Hide Share Mod
 	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_SHOW_JOIN, entry->getHubShowJoins() ? BST_CHECKED : BST_UNCHECKED); //hub show joins
 	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(entry->getSearchInterval()).c_str());
@@ -103,16 +102,22 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 
 	ctrlProfile.Attach(GetDlgItem(IDC_FAV_SHAREPROFILE));
 	appendProfiles();
+	hideShare = entry->getShareProfile() && entry->getShareProfile()->getToken() == SP_HIDDEN;
+	CheckDlgButton(IDC_HIDE_SHARE, hideShare ? BST_CHECKED : BST_UNCHECKED);
+
 
 	if(isAdcHub) {
 		combo.SetCurSel(4); // select UTF-8 for ADC hubs
 		combo.EnableWindow(false);
+		if (hideShare)
+			ctrlProfile.EnableWindow(false);
 	} else {
 		ctrlProfile.EnableWindow(false);
-		if(entry->getEncoding().empty())
+		if(entry->getEncoding().empty()) {
 			combo.SetCurSel(0);
-		else
+		} else {
 			combo.SetWindowText(Text::toT(entry->getEncoding()).c_str());
+		}
 	}
 
 	combo.Detach();
@@ -148,11 +153,25 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	return FALSE;
 }
 
+LRESULT FavHubProperties::onClickedHideShare(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (IsDlgButtonChecked(IDC_HIDE_SHARE)) {
+		ctrlProfile.EnableWindow(false);
+		hideShare = true;
+	} else {
+		hideShare = false;
+		TCHAR buf[512];
+		GetDlgItemText(IDC_HUBADDR, buf, 256);
+		if (AirUtil::isAdcHub(Text::fromT(buf)))
+			ctrlProfile.EnableWindow(true);
+	}
+	return FALSE;
+}
+
 void FavHubProperties::appendProfiles() {
 	auto profiles = ShareManager::getInstance()->getProfiles();
 
 	int counter = 0;
-	for(auto j = profiles.begin(); j != profiles.end(); j++) {
+	for(auto j = profiles.begin(); j != profiles.end()-1; j++) {
 		ctrlProfile.InsertString(counter, Text::toT((*j)->getDisplayName()).c_str());
 		if (counter == 0 || *j == entry->getShareProfile())
 			ctrlProfile.SetCurSel(counter);
@@ -235,10 +254,15 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		entry->setMode(ct);
 
 		auto p = ShareManager::getInstance()->getProfiles();
-		if(AirUtil::isAdcHub(entry->getServer())) {
-			entry->setShareProfile(p[ctrlProfile.GetCurSel()]);
+
+		if(hideShare) {
+			entry->setShareProfile(*(p.end()-1));
 		} else {
-			entry->setShareProfile(p[0]);
+			if(AirUtil::isAdcHub(entry->getServer())) {
+				entry->setShareProfile(p[ctrlProfile.GetCurSel()]);
+			} else {
+				entry->setShareProfile(p[0]);
+			}
 		}
 
 		FavoriteManager::getInstance()->save();
@@ -286,7 +310,8 @@ LRESULT FavHubProperties::OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWn
 	address.resize(GetDlgItemText(IDC_HUBADDR, &address[0], 1024));
 
 	if(AirUtil::isAdcHub(Text::fromT(address))) {
-		ctrlProfile.EnableWindow(true);
+		if (!hideShare)
+			ctrlProfile.EnableWindow(true);
 		combo.SetCurSel(4); // select UTF-8 for ADC hubs
 		::EnableWindow(GetDlgItem(IDC_STEALTH),	0);
 		combo.EnableWindow(false);
