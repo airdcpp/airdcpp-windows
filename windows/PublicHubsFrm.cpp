@@ -149,6 +149,7 @@ LRESULT PublicHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	
 	hubsMenu.CreatePopupMenu();
 	hubsMenu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT));
+	hubsMenu.AppendMenu(MF_STRING, IDC_CONNECT_WITH, CTSTRING(CONNECT_WITH_PROFILE));
 	hubsMenu.AppendMenu(MF_STRING, IDC_ADD, CTSTRING(ADD_TO_FAVORITES));
 	hubsMenu.AppendMenu(MF_STRING, IDC_COPY_HUB, CTSTRING(COPY_HUB));
 	hubsMenu.SetMenuDefaultItem(IDC_CONNECT);
@@ -218,6 +219,27 @@ LRESULT PublicHubsFrame::onEnter(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHa
 
 		ctrlHubs.GetItemText(item, COLUMN_SERVER, buf, 256);
 		HubFrame::openWindow(buf);
+	}
+
+	return 0;
+}
+
+LRESULT PublicHubsFrame::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
+	if(!checkNick())
+		return 0;
+
+	int item = ctrlHubs.GetNextItem(-1, LVNI_FOCUSED);
+	if(item != -1) {
+		TCHAR buf[256];
+
+		ctrlHubs.GetItemText(item, COLUMN_SERVER, buf, 256);
+
+		ConnectDlg dlg(true);
+		dlg.title = TSTRING(CONNECT_WITH_PROFILE);
+		dlg.address = buf;
+		if(dlg.DoModal(m_hWnd) == IDOK){
+			HubFrame::openWindow(buf, 0, true, dlg.curProfile);
+		}
 	}
 
 	return 0;
