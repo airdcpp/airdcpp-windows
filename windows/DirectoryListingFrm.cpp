@@ -90,8 +90,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 }
 
 DirectoryListingFrame::~DirectoryListingFrame() {
-	dl->removeListener(this);
-	DirectoryListingManager::getInstance()->removeList(dl->getUser());
+	delete dl;
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir) noexcept {
@@ -334,10 +333,10 @@ void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enabl
 	updating = true;
 	clearList();
 
-	for(DirectoryListing::Directory::Iter i = d->directories.begin(); i != d->directories.end(); ++i) {
+	for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
 		ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
 	}
-	for(DirectoryListing::File::Iter j = d->files.begin(); j != d->files.end(); ++j) {
+	for(auto j = d->files.begin(); j != d->files.end(); ++j) {
 		ItemInfo* ii = new ItemInfo(*j);
 		ctrlList.insertItem(ctrlList.GetItemCount(), ii, WinUtil::getIconIndex(ii->getText(COLUMN_FILENAME)));
 	}
@@ -351,6 +350,7 @@ void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enabl
 			try {
 				// TODO provide hubHint?
 				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
+				//DisableWindow();
 				ctrlStatus.SetText(STATUS_TEXT, CTSTRING(DOWNLOADING_LIST));
 			} catch(const QueueException& e) {
 				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
@@ -1225,10 +1225,12 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	//tell the thread to abort and wait until we get a notification
 	//that it's done.
 	dl->setAbort(true);
-	return 0;
 	
 	if(!closed) {
 		SettingsManager::getInstance()->removeListener(this);
+		dl->removeListener(this);
+		DirectoryListingManager::getInstance()->removeList(dl->getUser());
+
 		ctrlList.SetRedraw(FALSE);
 		clearList();
 		frames.erase(m_hWnd);
