@@ -309,6 +309,7 @@ private:
 		enum DupeType { 
 			NONE, 
 			SHARE_DUPE, 
+			PARTIAL_SHARE_DUPE, 
 			QUEUE_DUPE,
 			FINISHED_DUPE
 		};
@@ -397,19 +398,15 @@ private:
 		
 		inline SearchInfo* createParent() { return this; }
 		inline const TTHValue& getGroupCond() const { return sr->getTTH(); }
-		
-		bool isShareDupe() const { return shareDupe; }
-		bool isQueueDupe() const { return queueDupe; }
-		bool isFinishedDupe() const { return finishedDupe; }
-		bool isDupe() const { return shareDupe || shareDupe || finishedDupe; }
+
+		bool isDupe() const { return dupe != NONE; }
+		bool isShareDupe() const { return dupe == SHARE_DUPE || dupe == PARTIAL_SHARE_DUPE; }
+		bool isQueueDupe() const { return dupe == QUEUE_DUPE || dupe == FINISHED_DUPE; }
 		//string getHubUrl() { return sr->getHubURL(); }
 
 		SearchResultPtr sr;
 		GETSET(uint8_t, flagIndex, FlagIndex);
-	private:
-		bool shareDupe;
-		bool queueDupe;
-		bool finishedDupe;
+		GETSET(DupeType, dupe, Dupe);
 	};
 	
 	struct HubInfo : public FastAlloc<HubInfo> {

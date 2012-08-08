@@ -656,34 +656,35 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	}
 }
 
-SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), queueDupe(false), shareDupe(false), finishedDupe(false) { 
+SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), dupe(NONE) { 
 
 	if(BOOLSETTING(DUPE_SEARCH)) {
 		if(sr->getType() == SearchResult::TYPE_DIRECTORY) {
-			shareDupe = ShareManager::getInstance()->isDirShared(sr->getFile());
-			if (!shareDupe) {
+			auto sd = ShareManager::getInstance()->isDirShared(sr->getFile(), sr->getSize());
+			if (sd > 0) {
+				setDupe(sd == 2 ? SHARE_DUPE : PARTIAL_SHARE_DUPE);
+			} else {
 				auto qd = QueueManager::getInstance()->isDirQueued(sr->getFile());
-				queueDupe = (qd == 1);
-				finishedDupe = (qd == 2);
+				if (qd > 0)
+					setDupe(qd == 1 ? QUEUE_DUPE : FINISHED_DUPE);
 			}
 		} else {
-			shareDupe = ShareManager::getInstance()->isFileShared(sr->getTTH(), sr->getFileName());
-			if (!shareDupe) {
-				int tmp = QueueManager::getInstance()->isFileQueued(sr->getTTH(), sr->getFileName());
-				if (tmp == 1) {
-					queueDupe = true;
-				} else if (tmp == 2) {
-					finishedDupe = true;
+			if (ShareManager::getInstance()->isFileShared(sr->getTTH(), sr->getFileName())) {
+				setDupe(SHARE_DUPE);
+			} else {
+				int qd = QueueManager::getInstance()->isFileQueued(sr->getTTH(), sr->getFileName());
+				if (qd > 0) {
+					setDupe(qd == 1 ? QUEUE_DUPE : FINISHED_DUPE); 
 				}
 			}
 		}
+	}
 
-		if (!sr->getIP().empty()) {
-			// Only attempt to grab a country mapping if we actually have an IP address
-			string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
-			if(!tmpCountry.empty()) {
-				flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
-			}
+	if (!sr->getIP().empty()) {
+		// Only attempt to grab a country mapping if we actually have an IP address
+		string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
+		if(!tmpCountry.empty()) {
+			flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
 		}
 	}
 }
@@ -1664,16 +1665,16 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		SearchInfo* si = (SearchInfo*)cd->nmcd.lItemlParam;
 		
 		if(BOOLSETTING(DUPE_SEARCH)) {
-			if(si->isShareDupe()) {
+			if(si->getDupe() == SearchInfo::SHARE_DUPE) {
 				cd->clrText = SETTING(DUPE_COLOR);
 				cd->clrTextBk = SETTING(TEXT_DUPE_BACK_COLOR);
-			} else if (si->isQueueDupe()) {
+			} else if (si->getDupe() == SearchInfo::QUEUE_DUPE) {
 				cd->clrText = SETTING(QUEUE_COLOR);
 				cd->clrTextBk = SETTING(TEXT_QUEUE_BACK_COLOR);
 				if(si->sr->getType() == SearchResult::TYPE_FILE) {		
 					targets = QueueManager::getInstance()->getTargets(TTHValue(si->sr->getTTH().toBase32()));
 				}
-			} else if (si->isFinishedDupe()) {
+			} else if (si->getDupe() == SearchInfo::FINISHED_DUPE) {
 				BYTE r, b, g;
 				DWORD textColor = SETTING(QUEUE_COLOR);
 				DWORD bg = SETTING(TEXT_QUEUE_BACK_COLOR);
@@ -1985,7 +1986,7 @@ LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 			if(si->sr->getType() == SearchResult::TYPE_FILE) {
 				if (si->isShareDupe()) {
 					path = Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
-				} else if (si->isQueueDupe() || si->isFinishedDupe()) {
+				} else if (si->isQueueDupe()) {
 					StringList targets = QueueManager::getInstance()->getTargets(si->sr->getTTH());
 					if (!targets.empty()) {
 						path = Text::toT(targets.front());

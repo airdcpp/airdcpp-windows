@@ -251,6 +251,9 @@
     <ClCompile Include="client\ShareProfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\DirectoryListingManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -647,6 +650,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\ShareProfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\DirectoryListingManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\DirectoryListingManagerListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\DirectoryListingListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

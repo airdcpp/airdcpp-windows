@@ -37,6 +37,7 @@
 #include "../client/AdlSearch.h"
 #include "../client/GeoManager.h"
 #include "../client/HttpDownload.h"
+#include "../client/DirectoryListingManagerListener.h"
 #include "PopupManager.h"
 
 #include "FlatTabCtrl.h"
@@ -53,7 +54,7 @@ using std::unique_ptr;
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>, public Thread,
 		private TimerManagerListener, private QueueManagerListener,
-		private LogManagerListener
+		private LogManagerListener, private DirectoryListingManagerListener
 {
 public:
 	MainFrame();
@@ -426,35 +427,16 @@ private:
 
 	class DirectoryListInfo {
 	public:
-		DirectoryListInfo(const HintedUser& aUser, const tstring& aFile, const tstring& aDir, int64_t aSpeed) : user(aUser), file(aFile), dir(aDir), speed(aSpeed) { }
-		HintedUser user;
+		DirectoryListInfo(DirectoryListing* aDirList, const string& aDir) : dirList(aDirList), dir(aDir) { }
+		DirectoryListing* dirList;
 		tstring file;
-		tstring dir;
-		int64_t speed;
+		string dir;
 	};
-	class DirectoryBrowseInfo {
-	public:
-		DirectoryBrowseInfo(const HintedUser& ptr, string aText) : user(ptr), text(aText) { }
-		HintedUser user;
-		string text;
-	};
-	class FileListQueue: public Thread {
-	public:
-		bool stop;
-		Semaphore s;
-		CriticalSection cs;
-		list<DirectoryListInfo*> fileLists;
 
-		FileListQueue() : stop(true) {}
-		~FileListQueue() noexcept {
-			shutdown();
-		}
-
-		int run();
-		void shutdown() {
-			stop = true;
-			s.signal();
-		}
+	class PartialListInfo {
+	public:
+		PartialListInfo(DirectoryListing* aDirList) : dirList(aDirList) { }
+		DirectoryListing* dirList;
 	};
 
 	struct {
@@ -557,7 +539,6 @@ private:
 
 	HANDLE stopperThread;
 
-	FileListQueue listQueue;
 	bool missedAutoConnect;
 	HWND createToolbar();
 	HWND createWinampToolbar();
@@ -597,7 +578,10 @@ private:
 
 	// QueueManagerListener
 	void on(QueueManagerListener::Finished, const QueueItemPtr qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
-	void on(PartialList, const HintedUser&, const string& text) noexcept;
+
+	// DirectoryListingManagerListener
+	void on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept;
+	void on(DirectoryListingManagerListener::OpenPartialListing, DirectoryListing* aList) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)

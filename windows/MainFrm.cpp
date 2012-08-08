@@ -71,6 +71,7 @@
 #include "../client/ScopedFunctor.h"
 #include "../client/format.h"
 #include "../client/HttpDownload.h"
+#include "../client/DirectoryListingManager.h"
 
 MainFrame* MainFrame::anyMF = NULL;
 bool MainFrame::bShutdown = false;
@@ -137,7 +138,7 @@ public:
 				continue;
 				
 			HintedUser user(u, Util::emptyString);
-			DirectoryListing* dl = new DirectoryListing(user, false);
+			DirectoryListing* dl = new DirectoryListing(user, false, *i);
 			try {
 				dl->loadFile(*i, false);
 				int matches=0, newFiles=0;
@@ -186,6 +187,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	TimerManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
 	LogManager::getInstance()->addListener(this);
+	DirectoryListingManager::getInstance()->addListener(this);
 
 	hasUpdate = false; 
 	conns[CONN_VERSION].reset(new HttpDownload(VERSION_URL,
@@ -739,10 +741,10 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		
 	if(wParam == DOWNLOAD_LISTING) {
 		auto_ptr<DirectoryListInfo> i(reinterpret_cast<DirectoryListInfo*>(lParam));
-		DirectoryListingFrame::openWindow(i->file, i->dir, i->user, i->speed);
+		DirectoryListingFrame::openWindow(i->dirList, i->dir);
 	} else if(wParam == BROWSE_LISTING) {
-		auto_ptr<DirectoryBrowseInfo> i(reinterpret_cast<DirectoryBrowseInfo*>(lParam));
-		DirectoryListingFrame::openWindow(i->user, i->text, 0);
+		auto_ptr<PartialListInfo> i(reinterpret_cast<PartialListInfo*>(lParam));
+		DirectoryListingFrame::openWindow(i->dirList);
 	} else if(wParam == VIEW_FILE_AND_DELETE) {
 		auto_ptr<tstring> file(reinterpret_cast<tstring*>(lParam));
 		TextFrame::openWindow(*file, TextFrame::NORMAL);
@@ -1280,7 +1282,6 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			
 			SearchManager::getInstance()->disconnect();
 			ConnectionManager::getInstance()->disconnect();
-			listQueue.shutdown();
 
 			DWORD id;
 			stopperThread = CreateThread(NULL, 0, stopper, this, 0, &id);
@@ -1447,14 +1448,15 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		} else {
 			flname = SP_DEFAULT;
 		}
-		DirectoryListingFrame::openWindow(Text::toT(flname), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), Util::emptyString), 0, true);
+
+		DirectoryListingManager::getInstance()->openOwnList(flname);
 		return 0;
 	}
 
 	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), types)) {
 		UserPtr u = DirectoryListing::getUserFromFilename(Text::fromT(file));
 		if(u) {
-			DirectoryListingFrame::openWindow(file, Text::toT(Util::emptyString), HintedUser(u, Util::emptyString), 0);
+			DirectoryListingManager::getInstance()->openFileList(HintedUser(u, Util::emptyString), Text::fromT(file));
 		} else {
 			MessageBox(CTSTRING(INVALID_LISTNAME), _T(APPNAME) _T(" ") _T(VERSIONSTRING));
 		}
@@ -1803,33 +1805,20 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	time(&currentTime);
 }
 
-void MainFrame::on(PartialList, const HintedUser& aUser, const string& text) noexcept {
-	PostMessage(WM_SPEAKER, BROWSE_LISTING, (LPARAM)new DirectoryBrowseInfo(aUser, text));
+void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept {
+	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && qi->isSet(QueueItem::FLAG_TEXT)) {
+		PostMessage(WM_SPEAKER, VIEW_FILE_AND_DELETE, (LPARAM) new tstring(Text::toT(qi->getTarget())));
+	}
 }
 
-void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept {
-	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW)) {
-		if(qi->isSet(QueueItem::FLAG_USER_LIST)) {
-			// This is a file listing, show it...
-			DirectoryListInfo* i = new DirectoryListInfo(aUser, Text::toT(qi->getListName()), Text::toT(dir), static_cast<int64_t>(aSpeed));
+void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept {
+	DirectoryListInfo* i = new DirectoryListInfo(aList, aDir);
+	PostMessage(WM_SPEAKER, DOWNLOAD_LISTING, (LPARAM)i);
+}
 
-			PostMessage(WM_SPEAKER, DOWNLOAD_LISTING, (LPARAM)i);
-		} else if(qi->isSet(QueueItem::FLAG_TEXT)) {
-			PostMessage(WM_SPEAKER, VIEW_FILE_AND_DELETE, (LPARAM) new tstring(Text::toT(qi->getTarget())));
-		}
-	} else if(qi->isSet(QueueItem::FLAG_USER_LIST)) {
-		DirectoryListInfo* i = new DirectoryListInfo(aUser, Text::toT(qi->getListName()), Text::toT(dir), static_cast<int64_t>(aSpeed));
-		
-		if(listQueue.stop) {
-			listQueue.stop = false;
-			listQueue.start();
-		}
-		{
-			Lock l(listQueue.cs);
-			listQueue.fileLists.push_back(i);
-		}
-		listQueue.s.signal();
-	}	
+void MainFrame::on(DirectoryListingManagerListener::OpenPartialListing, DirectoryListing* aList) noexcept {
+	PartialListInfo* i = new PartialListInfo(aList);
+	PostMessage(WM_SPEAKER, BROWSE_LISTING, (LPARAM)i);
 }
 
 LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -1885,35 +1874,6 @@ LRESULT MainFrame::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	UpdateDlg dlg;
 	dlg.DoModal();
 	return S_OK;
-}
-
-int MainFrame::FileListQueue::run() {
-	setThreadPriority(Thread::LOW);
-
-	while(true) {
-		s.wait(15000);
-		if(stop || fileLists.empty()) {
-			break;
-		}
-
-		DirectoryListInfo* i;
-		{
-			Lock l(cs);
-			i = fileLists.front();
-			fileLists.pop_front();
-		}
-		if(Util::fileExists(Text::fromT(i->file))) {
-			DirectoryListing* dl = new DirectoryListing(i->user, false);
-			try {
-				dl->loadFile(Text::fromT(i->file), false);
-			} catch(...) {
-			}
-			delete dl;
-		}
-		delete i;
-	}
-	stop = true;
-	return 0;
 }
 
 void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
@@ -2006,6 +1966,7 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	LogManager::getInstance()->removeListener(this);
 	QueueManager::getInstance()->removeListener(this);
 	TimerManager::getInstance()->removeListener(this);
+	DirectoryListingManager::getInstance()->removeListener(this);
 
 	//if(bTrayIcon) {
 		updateTray(false);

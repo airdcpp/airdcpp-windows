@@ -26,8 +26,8 @@
 #include "PrivateFrame.h"
 #include "EmoticonsManager.h"
 #include "TextFrame.h"
-#include "DirectoryListingFrm.h"
 
+#include "../client/DirectoryListingManager.h"
 #include "../client/ChatMessage.h"
 #include "../client/QueueManager.h"
 #include "../client/ShareManager.h"
@@ -1250,7 +1250,8 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 LRESULT HubFrame::onOpenMyList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	DirectoryListingFrame::openWindow(Text::toT(client->getShareProfile()), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), client->getHubUrl()), 0, true);
+	//DirectoryListingFrame::openWindow(Text::toT(client->getShareProfile()), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), client->getHubUrl()), 0, true);
+	DirectoryListingManager::getInstance()->openOwnList(client->getShareProfile());
 	return 0;
 }
 

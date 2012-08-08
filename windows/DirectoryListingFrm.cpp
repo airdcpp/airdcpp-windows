@@ -37,6 +37,7 @@
 #include "../client/ClientManager.h"
 #include "../client/ShareScannerManager.h"
 #include "../client/Wildcards.h"
+#include "../client/DirectoryListingManager.h"
 #include "TextFrame.h"
 
 
@@ -46,79 +47,64 @@ int DirectoryListingFrame::columnSizes[] = { 300, 60, 100, 100, 200, 100 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::TYPE, ResourceManager::EXACT_SIZE, ResourceManager::SIZE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 
-DirectoryListingFrame::UserMap DirectoryListingFrame::lists;
+void DirectoryListingFrame::openWindow(DirectoryListing* aList) {
 
-void DirectoryListingFrame::openWindow(const tstring& aFile, const tstring& aDir, const HintedUser& aUser, int64_t aSpeed, bool myList) {
-
-	UserIter i = lists.find(aUser);
-	if(i != lists.end()) {
-		if(i->second->loading)
-			return;
-		if(!BOOLSETTING(POPUNDER_FILELIST)) {
-			i->second->speed = aSpeed;
-			i->second->MDIActivate(i->second->m_hWnd);
-		}
+	HWND aHWND = NULL;
+	DirectoryListingFrame* frame = new DirectoryListingFrame(aList);
+	if(BOOLSETTING(POPUNDER_FILELIST)) {
+		aHWND = WinUtil::hiddenCreateEx(frame);
 	} else {
-		HWND aHWND = NULL;
-		DirectoryListingFrame* frame = new DirectoryListingFrame(aUser, aSpeed, myList);
-		if(BOOLSETTING(POPUNDER_FILELIST)) {
-			aHWND = WinUtil::hiddenCreateEx(frame);
-		} else {
-			aHWND = frame->CreateEx(WinUtil::mdiClient);
-		}
-		if(aHWND != 0) {
-			frame->loadFile(aFile, aDir);
-			frames.insert( FramePair( frame->m_hWnd, frame ) );
-		} else {
-			delete frame;
-		}
+		aHWND = frame->CreateEx(WinUtil::mdiClient);
 	}
-}
-
-void DirectoryListingFrame::openWindow(const HintedUser& aUser, const string& txt, int64_t aSpeed, bool myList) {
-
-	UserIter i = lists.find(aUser);
-	if(i != lists.end()) {
-		if(i->second->loading)
-			return;
-		i->second->speed = aSpeed;
-		i->second->loadXML(txt);
-	} else {
-		DirectoryListingFrame* frame = new DirectoryListingFrame(aUser, aSpeed, myList, true);
-		if(BOOLSETTING(POPUNDER_FILELIST)) {
-			WinUtil::hiddenCreateEx(frame);
-		} else {
-			frame->CreateEx(WinUtil::mdiClient);
-		}
-		frame->loadXML(txt);
+	if(aHWND != 0) {
+		aList->loadPartial();
 		frames.insert( FramePair( frame->m_hWnd, frame ) );
+	} else {
+		delete frame;
 	}
 }
 
-DirectoryListingFrame::DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed, bool myList, bool aPartialList) :
+void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aDir) {
+
+	HWND aHWND = NULL;
+	DirectoryListingFrame* frame = new DirectoryListingFrame(aList);
+	if(BOOLSETTING(POPUNDER_FILELIST)) {
+		aHWND = WinUtil::hiddenCreateEx(frame);
+	} else {
+		aHWND = frame->CreateEx(WinUtil::mdiClient);
+	}
+	if(aHWND != 0) {
+		aList->loadFullList(aDir);
+		frames.insert( FramePair( frame->m_hWnd, frame ) );
+	} else {
+		delete frame;
+	}
+}
+
+DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
-		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0), loading(true),
-		treeRoot(NULL), skipHits(0), files(0), speed(aSpeed), updating(false), dl(new DirectoryListing(aUser, aPartialList)), searching(false), mylist(myList), partialList(aPartialList)
-{
-	lists.insert(make_pair(aUser, this));
+		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
+		treeRoot(NULL), skipHits(0), files(0), updating(false), searching(false), dl(aList)
+{ 
+	dl->addListener(this);
 }
 
-void DirectoryListingFrame::loadFile(const tstring& name, const tstring& dir) {
-	
-	ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
-	//don't worry about cleanup, the object will delete itself once the thread has finished it's job
-	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(name), Util::emptyString, dir, mylist, false, false);
-	loading = true;
-	tdl->start();
-
+DirectoryListingFrame::~DirectoryListingFrame() {
+	dl->removeListener(this);
+	DirectoryListingManager::getInstance()->removeList(dl->getUser());
 }
 
-void DirectoryListingFrame::loadXML(const string& txt) {
-	ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
-	//don't worry about cleanup, the object will delete itself once the thread has finished it's job
-	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Util::emptyString, txt, Util::emptyStringT, mylist, false, false);
-	loading = true;
-	tdl->start();
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir) noexcept {
+	refreshTree(Text::toT(aDir));
+
+	int64_t end = GET_TICK();
+	loadTime = (end - aStart) / 1000;
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED);
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept {
+
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED);
 }
 
 LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -222,11 +208,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 }
 
 void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREEITEM aParent) {
-	for(DirectoryListing::Directory::Iter i = aTree->directories.begin(); i != aTree->directories.end(); ++i) {
-		if(!loading) {
-			throw AbortException();
-		}
-
+	for(auto i = aTree->directories.begin(); i != aTree->directories.end(); ++i) {
 		tstring name = Text::toT((*i)->getName());
 		int index = (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex();
 		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, name.c_str(), index, index, 0, 0, (LPARAM)*i, aParent, TVI_LAST);
@@ -244,9 +226,6 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 }
 
 void DirectoryListingFrame::refreshTree(const tstring& root) {
-	if(!loading) {
-		throw AbortException();
-	}
 	ctrlTree.SetRedraw(FALSE);
 
 	HTREEITEM ht = findItem(treeRoot, root);
@@ -270,7 +249,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root) {
 
 	ctrlTree.SelectItem(NULL);
 	selectItem(root);
-	if (partialList && SETTING(DUPES_IN_FILELIST))
+	if (dl->getPartialList() && SETTING(DUPES_IN_FILELIST))
 		dl->checkShareDupes();
 	ctrlTree.SetRedraw(TRUE);
 }
@@ -445,7 +424,7 @@ LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, 
 		const ItemInfo* ii = ctrlList.getItemData(i);
 		try {
 			if(ii->type == ItemInfo::FILE) {
-				if (mylist) {
+				if (dl->getIsOwnList()) {
 					tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 					TextFrame::openWindow(path, TextFrame::NORMAL);
 				} else {
@@ -482,9 +461,6 @@ LRESULT DirectoryListingFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, H
 }
 
 LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(loading)
-		return 0;
-
 	int matches=0, newFiles=0;
 	BundleList bundles;
 	QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
@@ -493,27 +469,18 @@ LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, 
 }
 
 LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(loading)
-		return 0;
-
 	tstring file;
 	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), _T("File Lists\0*.xml.bz2\0All Files\0*.*\0"))) {
+		DisableWindow();
 		ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
-		ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Text::fromT(file), Util::emptyString, Util::emptyStringT, mylist, true, false);
-		loading = true;
-		tdl->start();
+		dl->listDiff(Text::fromT(file));
 	}
 	return 0;
 }
 LRESULT DirectoryListingFrame::onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(loading)
-		return 0;
-
-
 	ctrlStatus.SetText(0, CTSTRING(MATCHING_ADL));
-	ThreadedDirectoryListing* tdl = new ThreadedDirectoryListing(this, Util::emptyString, Util::emptyString, Util::emptyStringT, mylist, false, true);
-	loading = true;
-	tdl->start();
+	DisableWindow();
+	dl->matchADL();
 	
 	return 0;
 }
@@ -643,7 +610,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 
 
-		if(BOOLSETTING(SHOW_SHELL_MENU) && mylist && (ctrlList.GetSelectedCount() == 1) && (LOBYTE(LOWORD(GetVersion())) >= 5)) {
+		if(BOOLSETTING(SHOW_SHELL_MENU) && dl->getIsOwnList() && (ctrlList.GetSelectedCount() == 1) && (LOBYTE(LOWORD(GetVersion())) >= 5)) {
 			tstring path; 
 	
 			if(ii->type == ItemInfo::FILE){
@@ -740,7 +707,7 @@ clientmenu:
 			fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			fileMenu.AppendMenu(MF_SEPARATOR);
 		
-			if (ctrlList.GetSelectedCount() == 1 && !mylist) {
+			if (ctrlList.GetSelectedCount() == 1 && !dl->getIsOwnList()) {
 				if (ii->type == ItemInfo::DIRECTORY && (ShareManager::getInstance()->isDirShared(ii->dir->getPath()) || ii->dir->getDupe() == DirectoryListing::Directory::QUEUE_DUPE)) {
 					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 					fileMenu.AppendMenu(MF_SEPARATOR);
@@ -751,7 +718,7 @@ clientmenu:
 				}
 			}
 
-			if(mylist && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
+			if(dl->getIsOwnList() && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
 				fileMenu.AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
 				fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK)); //sfv checker
 				if(ctrlList.GetSelectedCount() == 1) {				
@@ -1255,12 +1222,10 @@ LRESULT DirectoryListingFrame::onCopyDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 
 
 LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(loading) {
-		//tell the thread to abort and wait until we get a notification
-		//that it's done.
-		dl->setAbort(true);
-		return 0;
-	}
+	//tell the thread to abort and wait until we get a notification
+	//that it's done.
+	dl->setAbort(true);
+	return 0;
 	
 	if(!closed) {
 		SettingsManager::getInstance()->removeListener(this);
@@ -1332,7 +1297,6 @@ void DirectoryListingFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/
 LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	switch(wParam) {
 		case FINISHED:
-			loading = false;
 			initStatus();
 			ctrlStatus.SetFont(WinUtil::systemFont);
 			//tstring tmp = TSTRING(LOADED_FILE_LIST) + Util::formatSeconds(loadTime);
@@ -1345,7 +1309,6 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*
 			setDirty();
 			break;
 		case ABORTED:
-			loading = false;
 			PostMessage(WM_CLOSE, 0, 0);
 			break;
 		default: dcassert(0); break;
@@ -1364,7 +1327,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 	case CDDS_ITEMPREPAINT: {
 		ItemInfo *ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
 
-		if(!SETTING(HIGHLIGHT_LIST).empty() && !mylist && ii->type == ItemInfo::DIRECTORY) {
+		if(!SETTING(HIGHLIGHT_LIST).empty() && !dl->getIsOwnList() && ii->type == ItemInfo::DIRECTORY) {
 			//Todo Regex string?
 			if(Wildcard::patternMatch(ii->dir->getName(), SETTING(HIGHLIGHT_LIST), '|')) {
 				cd->clrText = SETTING(LIST_HL_COLOR);
@@ -1372,7 +1335,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 			}
 		}
 		
-		if (SETTING(DUPES_IN_FILELIST) && !mylist && ii != NULL) {
+		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList() && ii != NULL) {
 			DWORD bg = SETTING(BACKGROUND_COLOR);
 			//check if the file or dir is a dupe, then use the dupesetting color
 			if ( ( ii->type == ItemInfo::FILE && ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE ) || 
@@ -1446,7 +1409,7 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 
 	case CDDS_ITEMPREPAINT: {
 
-		if (SETTING(DUPES_IN_FILELIST) && !mylist) {
+		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList()) {
 			DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(cd->nmcd.lItemlParam);
 			if(dir != NULL) {
 				DWORD bg = SETTING(BACKGROUND_COLOR);
@@ -1507,8 +1470,8 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 	try {
 		tstring path;
 		if(ii->type == ItemInfo::FILE) {
-			if (ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE || mylist) {
-					path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+			if (ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE || dl->getIsOwnList()) {
+				path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 			} else {
 				StringList targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
 				if (!targets.empty()) {
@@ -1520,7 +1483,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 				return 0;
 			}
 		} else if(ii->type == ItemInfo::DIRECTORY) {
-			if (mylist) {
+			if (dl->getIsOwnList()) {
 				StringList tmp;
 
 				if(ii->dir->getAdls())

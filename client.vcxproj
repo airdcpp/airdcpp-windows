@@ -242,6 +242,7 @@
     <ClCompile Include="client\CryptoManager.cpp" />
     <ClCompile Include="client\DCPlusPlus.cpp" />
     <ClCompile Include="client\DirectoryListing.cpp" />
+    <ClCompile Include="client\DirectoryListingManager.cpp" />
     <ClCompile Include="client\Download.cpp" />
     <ClCompile Include="client\DownloadManager.cpp" />
     <ClCompile Include="client\Encoder.cpp" />
@@ -340,6 +341,9 @@
     <ClInclude Include="client\debug.h" />
     <ClInclude Include="client\DebugManager.h" />
     <ClInclude Include="client\DirectoryListing.h" />
+    <ClInclude Include="client\DirectoryListingListener.h" />
+    <ClInclude Include="client\DirectoryListingManager.h" />
+    <ClInclude Include="client\DirectoryListingManagerListener.h" />
     <ClInclude Include="client\Download.h" />
     <ClInclude Include="client\DownloadManager.h" />
     <ClInclude Include="client\DownloadManagerListener.h" />

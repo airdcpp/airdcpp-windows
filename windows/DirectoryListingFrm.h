@@ -33,23 +33,22 @@
 #include "MenuBaseHandlers.h"
 
 #include "../client/DirectoryListing.h"
+#include "../client/DirectoryListingListener.h"
 #include "../client/StringSearch.h"
 #include "../client/ADLSearch.h"
 #include "../client/LogManager.h"
 #include "../client/ShareManager.h"
 #include "../client/TargetUtil.h"
 
-class ThreadedDirectoryListing;
-
 #define STATUS_MESSAGE_MAP 9
 #define CONTROL_MESSAGE_MAP 10
 class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>, 
 	public UCHandler<DirectoryListingFrame>, private SettingsManagerListener, public UserInfoBaseHandler<DirectoryListingFrame>,
-	public DownloadBaseHandler<DirectoryListingFrame>
+	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener
 {
 public:
-	static void openWindow(const tstring& aFile, const tstring& aDir, const HintedUser& aUser, int64_t aSpeed, bool myList = false);
-	static void openWindow(const HintedUser& aUser, const string& txt, int64_t aSpeed, bool myList = false);
+	static void openWindow(DirectoryListing* aList);
+	static void openWindow(DirectoryListing* aList, const string& aDir);
 	static void closeAll();
 
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
@@ -88,11 +87,8 @@ public:
 		STATUS_LAST
 	};
 	
-	DirectoryListingFrame(const HintedUser& aUser, int64_t aSpeed, bool myList = false, bool partialList = false);
-	 ~DirectoryListingFrame() { 
-		dcassert(lists.find(dl->getUser()) != lists.end());
-		lists.erase(dl->getUser());
-	}
+	DirectoryListingFrame(DirectoryListing* aList);
+	 ~DirectoryListingFrame();
 
 
 	DECLARE_FRAME_WND_CLASS(_T("DirectoryListingFrame"), IDR_DIRECTORY)
@@ -186,8 +182,6 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
 	void runUserCommand(UserCommand& uc);
-	void loadFile(const tstring& name, const tstring& dir);
-	void loadXML(const string& txt);
 	void refreshTree(const tstring& root);
 
 	HTREEITEM findItem(HTREEITEM ht, const tstring& name);
@@ -225,9 +219,6 @@ public:
 	}
 
 	LRESULT onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		if(loading)
-			return 0;
-
 		searching = true;
 		findFile(false);
 		searching = false;
@@ -235,9 +226,6 @@ public:
 		return 0;
 	}
 	LRESULT onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		if(loading)
-			return 0;
-
 		searching = true;
 		findFile(true);
 		searching = false;
@@ -289,7 +277,7 @@ public:
 		DirectoryListing& dl;	
 	};
 	
-	UserListHandler getUserList() { return UserListHandler(*dl.get()); }
+	UserListHandler getUserList() { return UserListHandler(*dl); }
 
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
@@ -414,20 +402,15 @@ private:
 	bool updating;
 	bool searching;
 	bool closed;
-	bool loading;
-	bool mylist;
-	bool partialList;
 
 	int statusSizes[11];
 	
-	unique_ptr<DirectoryListing> dl;
+	DirectoryListing* dl;
 
 	ParamMap ucLineParams;
 
 	typedef unordered_map<UserPtr, DirectoryListingFrame*, User::Hash> UserMap;
 	typedef UserMap::const_iterator UserIter;
-	
-	static UserMap lists;
 
 	static int columnIndexes[COLUMN_LAST];
 	static int columnSizes[COLUMN_LAST];
@@ -448,85 +431,9 @@ private:
 
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
-};
 
-class ThreadedDirectoryListing : public Thread
-{
-public:
-	ThreadedDirectoryListing(DirectoryListingFrame* pWindow, 
-		const string& pFile, const string& pTxt, const tstring& aDir = Util::emptyStringT, bool myList = false, bool listDiff = false, bool adlSearch = false, const string& hubUrl = Util::emptyString) : mWindow(pWindow),
-		mFile(pFile), mTxt(pTxt), mDir(aDir), mylist(myList), listdiff(listDiff), adlsearch(adlSearch)
-	{ }
-
-protected:
-	DirectoryListingFrame* mWindow;
-	string mFile;
-	string mTxt;
-	tstring mDir;
-	bool mylist;
-	//bool partialList;
-	bool listdiff;
-	bool adlsearch;
-private:
-	int run() {
-		try {
-			mWindow->loadTime = 0;
-			int64_t start = GET_TICK();
-				
-			if (listdiff) {
-				mWindow->DisableWindow();
-				DirectoryListing dirList(mWindow->dl->getHintedUser(), mWindow->partialList);
-				dirList.loadFile(mFile, true);
-				mWindow->dl->getRoot()->filterList(dirList);
-				mWindow->refreshTree(Util::emptyStringT);
-
-			} else if(adlsearch) {
-				mWindow->DisableWindow();
-				mWindow->dl->getRoot()->clearAdls(); //not much to check even if its the first time loaded without adls...
-				ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
-				mWindow->refreshTree(Util::emptyStringT);
-
-			} else if(!mFile.empty()) {
-				bool checkShareDupe = true;
-				if(mylist) {
-					// if its own list regenerate it before opening, but only if its dirty
-					mFile = ShareManager::getInstance()->generateOwnList(mFile);
-					checkShareDupe = false;
-				}
-
-				if (!SETTING(DUPES_IN_FILELIST))
-					checkShareDupe = false;
-
-				mWindow->dl->loadFile(mFile, checkShareDupe);
-				
-				if((BOOLSETTING(USE_ADLS) && !mylist) || (BOOLSETTING(USE_ADLS_OWN_LIST) && mylist)) {
-					ADLSearchManager::getInstance()->matchListing(*mWindow->dl);
-				}
-
-				if(checkShareDupe) {
-					mWindow->dl->checkShareDupes();
-				}
-
-				mWindow->refreshTree(mDir);
-			} else {
-				mWindow->refreshTree(Text::toT(Util::toNmdcFile(mWindow->dl->updateXML(mTxt, BOOLSETTING(DUPES_IN_FILELIST)))));
-			}
-
-			int64_t end = GET_TICK();
-			mWindow->loadTime = (end - start) / 1000;
-			mWindow->PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED);
-		} catch(const AbortException) {
-			mWindow->PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED);
-		} catch(const Exception& e) {
-			mWindow->error = Text::toT(ClientManager::getInstance()->getNicks(mWindow->dl->getUser()->getCID(), mWindow->dl->getHintedUser().hint)[0] + ": " + e.getError());
-			mWindow->PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED);
-		}
-		
-		//cleanup the thread object
-		delete this;
-
-		return 0;
-	}
+	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir) noexcept;
+	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)
