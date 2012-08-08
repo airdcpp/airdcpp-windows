@@ -199,7 +199,7 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
                     
 						tstring nick(sMsg.c_str() + 1);
 						nick.erase(iAuthorLen - 1);
-						if(client != NULL) {
+						if(client != nullptr) {
 						const OnlineUserPtr ou = client->findUser(Text::fromT(nick));
 						if(ou != NULL) {
 							isFavorite = FavoriteManager::getInstance()->isFavoriteUser(ou->getUser());
@@ -516,7 +516,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 }
 
 bool ChatCtrl::HitNick(const POINT& p, tstring& sNick, int& iBegin, int& iEnd) {
-	if(client == NULL) return false;
+	if(client == nullptr) return false;
 	
 	int iCharPos = CharFromPos(p), line = LineFromChar(iCharPos), len = LineLength(iCharPos) + 1;
 	long lSelBegin = 0, lSelEnd = 0;
@@ -924,28 +924,29 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 
 LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring path;
-	if (release) {
-		if (shareDupe) {
-			path = ShareManager::getInstance()->getDirPath(Text::fromT(selectedWord));
+	try{
+		if (release) {
+			if (shareDupe) {
+				path = ShareManager::getInstance()->getDirPath(Text::fromT(selectedWord));
+			} else {
+				path = QueueManager::getInstance()->getDirPath(Text::fromT(selectedWord));
+			}
 		} else {
-			path = QueueManager::getInstance()->getDirPath(Text::fromT(selectedWord));
-		}
-	} else {
-		Magnet m = Magnet(Text::fromT(selectedWord));
-		if (m.hash.empty())
-			return 0;
+			Magnet m = Magnet(Text::fromT(selectedWord));
+			if (m.hash.empty())
+				return 0;
 
-		if (shareDupe) {
-			try {
+			if (shareDupe) {
 				path = Text::toT(ShareManager::getInstance()->getRealPath(m.getTTH()));
-			} catch(...) { }
-		} else {
-			StringList targets = QueueManager::getInstance()->getTargets(m.getTTH());
-			if (!targets.empty()) {
-				path = Text::toT(targets.front());
+			} else {
+				StringList targets = QueueManager::getInstance()->getTargets(m.getTTH());
+				if (!targets.empty()) {
+					path = Text::toT(targets.front());
+				}
 			}
 		}
-	}
+	}catch(...) {}
+	
 	if (path.empty())
 		return 0;
 
@@ -954,7 +955,7 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 }
 
 void ChatCtrl::download(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType) {
-	if (isMagnet) {
+	if (isMagnet && client) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		OnlineUserPtr u = client->findUser(Text::fromT(author));
 		if (u) {
@@ -1554,7 +1555,6 @@ void ChatCtrl::CheckAction(ColorSettings* cs, const tstring& line) {
 }
 
 tstring ChatCtrl::WordFromPos(const POINT& p) {
-	//if(client == NULL) return Util::emptyStringT;
 
 	int iCharPos = CharFromPos(p), /*line = LineFromChar(iCharPos),*/ len = LineLength(iCharPos) + 1;
 	if(len < 3)

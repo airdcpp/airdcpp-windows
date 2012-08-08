@@ -499,7 +499,7 @@ HWND MainFrame::createTBStatusBar() {
 	rect.bottom += 100;
 	rect.left += 2;
 
-	progress.Create(TBStatusCtrl.m_hWnd, rect , NULL, WS_CHILD | WS_VISIBLE, WS_EX_TRANSPARENT);
+	progress.Create(TBStatusCtrl.m_hWnd, rect , NULL, WS_BORDER | PBS_SMOOTH  | WS_CHILD | WS_VISIBLE);
 	progress.SetRange(0, 10000);
 
 	startBytes, startFiles = 0;

@@ -546,27 +546,29 @@ LRESULT DirectoryListingFrame::onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*
 
 LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	StringList localPaths;
+	string error;
 	if(ctrlList.GetSelectedCount() >= 1) {
 		int sel = -1;
 		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-			const ItemInfo* ii = ctrlList.getItemData(sel);
-			if(ii->type == ItemInfo::FILE) {
-				try {
+			try {
+				const ItemInfo* ii = ctrlList.getItemData(sel);
+				if(ii->type == ItemInfo::FILE) {
 					string path = ShareManager::getInstance()->getRealPath(ii->file->getTTH());
 					localPaths.push_back(Util::getFilePath(path));
-				}catch(...) { } //file deleted no path
-			} else if(ii->type == ItemInfo::DIRECTORY) {
-				try {
+				} else if(ii->type == ItemInfo::DIRECTORY) {
 					dl->getLocalPaths(ii->dir, localPaths);
-				} catch(...) {}
+				}
+			
+			} catch(ShareException& e) { 
+				error = e.getError();
 			}
 		}
 	}
-
 	if(!localPaths.empty()) {
 		ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
 		ShareScannerManager::getInstance()->scan(localPaths);
-	}
+	} else 
+		ctrlStatus.SetText(0, Text::toT(error).c_str());
 	
 	return 0;
 }
@@ -578,25 +580,30 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	StringList scanList;
 	StringList temp;
 	tstring path;
+	string error;
 	
 	if(ctrlList.GetSelectedCount() >= 1) {
 		int sel = -1;
 		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
 			const ItemInfo* ii = ctrlList.getItemData(sel);
-			if (ii->type == ItemInfo::FILE) {
-				try {
+			try {
+				if (ii->type == ItemInfo::FILE) {
 					string path = ShareManager::getInstance()->getRealPath(ii->file->getTTH());
 					scanList.push_back(path);
-				} catch(...) { }
-			} else if (ii->type == ItemInfo::DIRECTORY)  {
-				dl->getLocalPaths(ii->dir, scanList);
+				} else if (ii->type == ItemInfo::DIRECTORY)  {
+					dl->getLocalPaths(ii->dir, scanList);
+				}
+			} catch(ShareException& e) { 
+				error = e.getError();
 			}
 		}
 	}
 
 	if (!scanList.empty()) {
 		ShareScannerManager::getInstance()->scan(scanList, true);
-	}
+	} else 
+		ctrlStatus.SetText(0, Text::toT(error).c_str());
+
 	return 0;
 }
 
@@ -1501,9 +1508,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 		tstring path;
 		if(ii->type == ItemInfo::FILE) {
 			if (ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE || mylist) {
-				try {
 					path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-				} catch(...) { }
 			} else {
 				StringList targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
 				if (!targets.empty()) {
@@ -1521,9 +1526,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 				if(ii->dir->getAdls())
 					return 0;
 
-				try {
-					dl->getLocalPaths(ii->dir, tmp);
-				}catch(...) { }
+				dl->getLocalPaths(ii->dir, tmp);
 
 				if(tmp.empty())
 					return 0;
@@ -1547,13 +1550,11 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 					break;
 			}
 			if(i != ii->dir->files.end()) {
-				try {
-					path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
-					wstring::size_type end = path.find_last_of(_T("\\")); //makes it open the above folder if dir is selected with open folder
-					if (end != wstring::npos) {
-						path = path.substr(0, end);
-					}
-				} catch(...) {}
+				path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
+				wstring::size_type end = path.find_last_of(_T("\\")); //makes it open the above folder if dir is selected with open folder
+				if (end != wstring::npos) {
+					path = path.substr(0, end);
+				}
 			}
 		}
 
@@ -1562,8 +1563,9 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 		} else {
 			WinUtil::openFolder(path);
 		}
-	} catch(const ShareException& se) {
-		error = Text::toT(se.getError());
+	} catch(const ShareException& e) {
+		//error = Text::toT(e.getError());
+		ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 	}
 
 	return 0;
