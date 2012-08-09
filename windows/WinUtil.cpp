@@ -2376,7 +2376,7 @@ COLORREF WinUtil::getDupeColor(DupeType aType) {
 		return blendColors(SETTING(QUEUE_COLOR), SETTING(DUPE_COLOR));
 	}
 
-	return SETTING(DUPE_COLOR);
+	return SETTING(TEXT_COLOR);
 }
 
 /* Text + the background color */
@@ -2395,7 +2395,7 @@ pair<COLORREF, COLORREF> WinUtil::getDupeColors(DupeType aType) {
 		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(DUPE_COLOR)), SETTING(TEXT_DUPE_BACK_COLOR));
 	}
 
-	return make_pair(SETTING(DUPE_COLOR), SETTING(TEXT_DUPE_BACK_COLOR));
+	return make_pair(SETTING(TEXT_COLOR), SETTING(BACKGROUND_COLOR));
 }
 
 COLORREF WinUtil::blendColors(COLORREF aForeGround, COLORREF aBackGround) {
