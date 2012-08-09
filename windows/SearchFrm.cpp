@@ -656,28 +656,10 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	}
 }
 
-SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), dupe(NONE) { 
+SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), dupe(DUPE_NONE) { 
 
 	if(BOOLSETTING(DUPE_SEARCH)) {
-		if(sr->getType() == SearchResult::TYPE_DIRECTORY) {
-			auto sd = ShareManager::getInstance()->isDirShared(sr->getFile(), sr->getSize());
-			if (sd > 0) {
-				setDupe(sd == 2 ? SHARE_DUPE : PARTIAL_SHARE_DUPE);
-			} else {
-				auto qd = QueueManager::getInstance()->isDirQueued(sr->getFile());
-				if (qd > 0)
-					setDupe(qd == 1 ? QUEUE_DUPE : FINISHED_DUPE);
-			}
-		} else {
-			if (ShareManager::getInstance()->isFileShared(sr->getTTH(), sr->getFileName())) {
-				setDupe(SHARE_DUPE);
-			} else {
-				int qd = QueueManager::getInstance()->isFileQueued(sr->getTTH(), sr->getFileName());
-				if (qd > 0) {
-					setDupe(qd == 1 ? QUEUE_DUPE : FINISHED_DUPE); 
-				}
-			}
-		}
+		dupe = sr->getType() == SearchResult::TYPE_DIRECTORY ? AirUtil::checkDupe(sr->getFile(), sr->getSize()) : AirUtil::checkDupe(sr->getTTH(), sr->getFileName());
 	}
 
 	if (!sr->getIP().empty()) {
@@ -1665,16 +1647,17 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		SearchInfo* si = (SearchInfo*)cd->nmcd.lItemlParam;
 		
 		if(BOOLSETTING(DUPE_SEARCH)) {
-			if(si->getDupe() == SearchInfo::SHARE_DUPE) {
+			cd->clrText = WinUtil::getDupeColor(si->getDupe());
+			/*if(si->getDupe() == SHARE_DUPE) {
 				cd->clrText = SETTING(DUPE_COLOR);
 				cd->clrTextBk = SETTING(TEXT_DUPE_BACK_COLOR);
-			} else if (si->getDupe() == SearchInfo::QUEUE_DUPE) {
+			} else if (si->getDupe() == QUEUE_DUPE) {
 				cd->clrText = SETTING(QUEUE_COLOR);
 				cd->clrTextBk = SETTING(TEXT_QUEUE_BACK_COLOR);
 				if(si->sr->getType() == SearchResult::TYPE_FILE) {		
 					targets = QueueManager::getInstance()->getTargets(TTHValue(si->sr->getTTH().toBase32()));
 				}
-			} else if (si->getDupe() == SearchInfo::FINISHED_DUPE) {
+			} else if (si->getDupe() == FINISHED_DUPE) {
 				BYTE r, b, g;
 				DWORD textColor = SETTING(QUEUE_COLOR);
 				DWORD bg = SETTING(TEXT_QUEUE_BACK_COLOR);
@@ -1685,7 +1668,7 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 					
 				cd->clrText = RGB(r, g, b);
 				cd->clrTextBk = bg;
-			}
+			}*/
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 	}

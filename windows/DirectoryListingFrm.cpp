@@ -708,10 +708,10 @@ clientmenu:
 			fileMenu.AppendMenu(MF_SEPARATOR);
 		
 			if (ctrlList.GetSelectedCount() == 1 && !dl->getIsOwnList()) {
-				if (ii->type == ItemInfo::DIRECTORY && (ShareManager::getInstance()->isDirShared(ii->dir->getPath()) || ii->dir->getDupe() == DirectoryListing::Directory::QUEUE_DUPE)) {
+				if (ii->type == ItemInfo::DIRECTORY && (ShareManager::getInstance()->isDirShared(ii->dir->getPath()) || ii->dir->getDupe() == QUEUE_DUPE)) {
 					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 					fileMenu.AppendMenu(MF_SEPARATOR);
-				} else if(ii->type == ItemInfo::FILE && (ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE || ii->file->getDupe() == DirectoryListing::File::FINISHED_DUPE)) {
+				} else if(ii->type == ItemInfo::FILE && (ii->file->getDupe() == SHARE_DUPE || ii->file->getDupe() == FINISHED_DUPE)) {
 					fileMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 					fileMenu.AppendMenu(MF_SEPARATOR);
@@ -1338,60 +1338,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 		}
 		
 		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList() && ii != NULL) {
-			DWORD bg = SETTING(BACKGROUND_COLOR);
-			//check if the file or dir is a dupe, then use the dupesetting color
-			if ( ( ii->type == ItemInfo::FILE && ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE ) || 
-				( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::SHARE_DUPE )) {
-				cd->clrText = SETTING(DUPE_COLOR);
-
-			} else if (ii->type == ItemInfo::FILE && ii->file->getDupe() == DirectoryListing::File::FINISHED_DUPE) {
-				//if it's a finished dupe, try to use some simple blending to indicate that
-				BYTE r, b, g;
-				DWORD queue = SETTING(QUEUE_COLOR);
-
-				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
-				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
-				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
-					
-				cd->clrText = RGB(r, g, b);
-			} else if ((ii->type == ItemInfo::FILE && ii->file->isQueued()) || 
-				( ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::QUEUE_DUPE)) {
-				cd->clrText = SETTING(QUEUE_COLOR);
-			} else if(ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::PARTIAL_SHARE_DUPE) {
-				//if it's a partial dupe, try to use some simple blending to indicate that
-				//a dupe exists somewhere down the directory tree.
-				BYTE r, b, g;
-				//cache these to avoid unnecessary calls.
-				DWORD dupe = SETTING(DUPE_COLOR);
-
-				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(dupe)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
-				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(dupe)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
-				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(dupe)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
-					
-				cd->clrText = RGB(r, g, b);
-			} else if(ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::PARTIAL_QUEUE_DUPE) {
-				//if it's a partial dupe, try to use some simple blending to indicate that
-				//a dupe exists somewhere down the directory tree.
-				BYTE r, b, g;
-				DWORD queue = SETTING(QUEUE_COLOR);
-
-				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
-				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
-				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
-					
-				cd->clrText = RGB(r, g, b);
-			} else if(ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DirectoryListing::Directory::SHARE_QUEUE_DUPE) {
-				//if it's a mixed dupe, try to use some simple blending to indicate that
-				BYTE r, b, g;
-				DWORD dupe = SETTING(DUPE_COLOR);
-				DWORD queue = SETTING(QUEUE_COLOR);
-
-				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(dupe)) ) / 2);
-				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(dupe)) ) / 2);
-				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(dupe)) ) / 2);
-					
-				cd->clrText = RGB(r, g, b);
-			}
+			cd->clrText = ii->type == ItemInfo::FILE ? WinUtil::getDupeColor(ii->file->getDupe()) : WinUtil::getDupeColor(ii->dir->getDupe());
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 	}
@@ -1413,49 +1360,8 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 
 		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList()) {
 			DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(cd->nmcd.lItemlParam);
-			if(dir != NULL) {
-				DWORD bg = SETTING(BACKGROUND_COLOR);
-				//check if the dir is a dupe, then use the dupesetting color
-				if( dir->getDupe() == DirectoryListing::Directory::SHARE_DUPE ) {
-					cd->clrText = SETTING(DUPE_COLOR);
-				} else if (dir->getDupe() == DirectoryListing::Directory::QUEUE_DUPE) {
-					cd->clrText = SETTING(QUEUE_COLOR);
-				} else if(dir->getDupe() == DirectoryListing::Directory::PARTIAL_SHARE_DUPE) {
-					//if it's a partial dupe, try to use some simple blending to indicate that
-					//a dupe exists somewhere down the directory tree.
-					BYTE r, b, g;
-					//cache these to avoid unnecessary calls.
-					DWORD dupe = SETTING(DUPE_COLOR);
-
-					r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(dupe)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
-					g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(dupe)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
-					b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(dupe)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
-					
-					cd->clrText = RGB(r, g, b);
-				} else if(dir->getDupe() == DirectoryListing::Directory::PARTIAL_QUEUE_DUPE) {
-					//if it's a partial dupe, try to use some simple blending to indicate that
-					//a dupe exists somewhere down the directory tree.
-					BYTE r, b, g;
-					//cache these to avoid unnecessary calls.
-					DWORD queue = SETTING(QUEUE_COLOR);
-
-					r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
-					g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
-					b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
-					
-					cd->clrText = RGB(r, g, b);
-				} else if(dir->getDupe() == DirectoryListing::Directory::SHARE_QUEUE_DUPE) {
-					//if it's a mixed dupe, try to use some simple blending to indicate that
-					BYTE r, b, g;
-					DWORD dupe = SETTING(DUPE_COLOR);
-					DWORD queue = SETTING(QUEUE_COLOR);
-
-					r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(dupe)) ) / 2);
-					g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(dupe)) ) / 2);
-					b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(dupe)) ) / 2);
-					
-					cd->clrText = RGB(r, g, b);
-				}
+			if(dir) {
+				cd->clrText = WinUtil::getDupeColor(dir->getDupe());
 			}
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
@@ -1472,7 +1378,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 	try {
 		tstring path;
 		if(ii->type == ItemInfo::FILE) {
-			if (ii->file->getDupe() == DirectoryListing::File::SHARE_DUPE || dl->getIsOwnList()) {
+			if (ii->file->getDupe() == SHARE_DUPE || dl->getIsOwnList()) {
 				path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 			} else {
 				StringList targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
@@ -1499,7 +1405,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 				path = Text::toT(*tmp.begin());  //could open all virtualfolders but some have so many.
 
 			} else {
-				if (ii->dir->getDupe() == DirectoryListing::Directory::SHARE_DUPE) {
+				if (ii->dir->getDupe() == SHARE_DUPE || (dl->getPartialList() && ii->dir->getDupe() == PARTIAL_SHARE_DUPE)) {
 					path = ShareManager::getInstance()->getDirPath(ii->dir->getPath());
 				} else {
 					path = QueueManager::getInstance()->getDirPath(ii->dir->getPath());
@@ -1511,7 +1417,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 		} else if(ii->dir->getFileCount() > 0) {
 			DirectoryListing::File::Iter i = ii->dir->files.begin();
 			for (; i != ii->dir->files.end(); ++i) {
-				if((*i)->getDupe() == DirectoryListing::Directory::SHARE_DUPE)
+				if((*i)->getDupe() ==SHARE_DUPE)
 					break;
 			}
 			if(i != ii->dir->files.end()) {

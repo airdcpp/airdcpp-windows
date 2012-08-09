@@ -31,6 +31,7 @@
 #include "../client/Client.h"
 #include "../client/SearchManager.h"
 #include "../client/GeoManager.h"
+#include "../client/AirUtil.h"
 
 #include "../client/ClientManagerListener.h"
 #include "../client/FavoriteManager.h"
@@ -305,14 +306,6 @@ private:
 		typedef SearchInfo* Ptr;
 		typedef vector<Ptr> List;
 		typedef List::const_iterator Iter;
-
-		enum DupeType { 
-			NONE, 
-			SHARE_DUPE, 
-			PARTIAL_SHARE_DUPE, 
-			QUEUE_DUPE,
-			FINISHED_DUPE
-		};
 
 		SearchInfo::List subItems;
 

@@ -371,9 +371,9 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 			if(link.find("magnet:?") != string::npos) {
 				ChatLink cl = ChatLink(link, ChatLink::TYPE_MAGNET);
 				tmpLinks.push_back(cl);
-				if (cl.dupe == ChatLink::DUPE_SHARE) {
+				if (cl.dupe == SHARE_DUPE) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-				} else if (cl.dupe == ChatLink::DUPE_QUEUE) {
+				} else if (cl.dupe == QUEUE_DUPE) {
 					SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
 				} else {
 					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
@@ -433,20 +433,13 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 			std::string link (result[0].first, result[0].second);
 			ChatLink cl = ChatLink(link, ChatLink::TYPE_RELEASE);
 
-			if (SETTING(DUPES_IN_CHAT) && cl.dupe == ChatLink::DUPE_SHARE) {
+			if (SETTING(DUPES_IN_CHAT) && cl.dupe == SHARE_DUPE) {
 				SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-			} else if (SETTING(DUPES_IN_CHAT) && cl.dupe == ChatLink::DUPE_QUEUE) {
+			} else if (SETTING(DUPES_IN_CHAT) && cl.dupe == QUEUE_DUPE) {
 				SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-			} else if (SETTING(DUPES_IN_CHAT) && cl.dupe == ChatLink::DUPE_FINISHED) {
+			} else if (SETTING(DUPES_IN_CHAT) && cl.dupe == FINISHED_DUPE) {
 				CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
-				BYTE r, b, g;
-				DWORD queue = SETTING(QUEUE_COLOR);
-
-				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(queue)) + static_cast<DWORD>(GetRValue(newFormat.crBackColor)) ) / 2);
-				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(queue)) + static_cast<DWORD>(GetGValue(newFormat.crBackColor)) ) / 2);
-				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(queue)) + static_cast<DWORD>(GetBValue(newFormat.crBackColor)) ) / 2);
-				newFormat.crTextColor = RGB(r, g, b);
-
+				newFormat.crTextColor = WinUtil::getDupeColors(cl.dupe).first;
 				SetSelectionCharFormat(newFormat);
 			} else if (SETTING(FORMAT_RELEASE)) {
 				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
@@ -670,8 +663,8 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 
 	if (getLink(pt, cr, cl)) {
 		selectedWord = Text::toT(cl.url);
-		shareDupe = cl.dupe == ChatLink::DUPE_SHARE;
-		queueDupe = cl.dupe == ChatLink::DUPE_QUEUE;
+		shareDupe = cl.dupe == SHARE_DUPE;
+		queueDupe = (cl.dupe == QUEUE_DUPE || cl.dupe == FINISHED_DUPE);
 		isMagnet = cl.type == ChatLink::TYPE_MAGNET;
 		release = cl.type == ChatLink::TYPE_RELEASE;
 		SetSel(cr.cpMin, cr.cpMax);

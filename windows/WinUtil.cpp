@@ -2360,7 +2360,53 @@ void WinUtil::loadSettingsTreeIcons() {
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SEARCH));
 }
 
+/* Only returns the text color */
+COLORREF WinUtil::getDupeColor(DupeType aType) {
+	if (aType == SHARE_DUPE) {
+		return SETTING(DUPE_COLOR);
+	} else if (aType == FINISHED_DUPE) {
+		return blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR));
+	} else if (aType == QUEUE_DUPE) {
+		return SETTING(QUEUE_COLOR);
+	} else if(aType == PARTIAL_SHARE_DUPE) {
+		return blendColors(SETTING(DUPE_COLOR), SETTING(BACKGROUND_COLOR));
+	} else if(aType == PARTIAL_QUEUE_DUPE) {
+		return blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR));
+	} else if(aType == SHARE_QUEUE_DUPE) {
+		return blendColors(SETTING(QUEUE_COLOR), SETTING(DUPE_COLOR));
+	}
 
+	return SETTING(DUPE_COLOR);
+}
+
+/* Text + the background color */
+pair<COLORREF, COLORREF> WinUtil::getDupeColors(DupeType aType) {
+	if (aType == SHARE_DUPE) {
+		return make_pair(SETTING(DUPE_COLOR), SETTING(TEXT_DUPE_BACK_COLOR));
+	} else if (aType == FINISHED_DUPE) {
+		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR)), SETTING(TEXT_QUEUE_BACK_COLOR));
+	} else if (aType == QUEUE_DUPE) {
+		return make_pair(SETTING(QUEUE_COLOR), SETTING(TEXT_QUEUE_BACK_COLOR));
+	} else if(aType == PARTIAL_SHARE_DUPE) {
+		return make_pair(blendColors(SETTING(DUPE_COLOR), SETTING(TEXT_DUPE_BACK_COLOR)), SETTING(TEXT_DUPE_BACK_COLOR));
+	} else if(aType == PARTIAL_QUEUE_DUPE) {
+		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(TEXT_QUEUE_BACK_COLOR)), SETTING(TEXT_QUEUE_BACK_COLOR));
+	} else if(aType == SHARE_QUEUE_DUPE) {
+		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(DUPE_COLOR)), SETTING(TEXT_DUPE_BACK_COLOR));
+	}
+
+	return make_pair(SETTING(DUPE_COLOR), SETTING(TEXT_DUPE_BACK_COLOR));
+}
+
+COLORREF WinUtil::blendColors(COLORREF aForeGround, COLORREF aBackGround) {
+	BYTE r, b, g;
+
+	r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(aForeGround)) + static_cast<DWORD>(GetRValue(aBackGround)) ) / 2);
+	g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(aForeGround)) + static_cast<DWORD>(GetGValue(aBackGround)) ) / 2);
+	b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(aForeGround)) + static_cast<DWORD>(GetBValue(aBackGround)) ) / 2);
+					
+	return RGB(r, g, b);
+}
 
 tstring WinUtil::getTitle(const tstring& searchTerm) {
 	tstring ret = Text::toLower(searchTerm);

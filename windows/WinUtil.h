@@ -30,6 +30,7 @@
 #include "../client/HintedUser.h"
 #include "../client/WebShortcuts.h"
 #include "../client/TargetUtil.h"
+#include "../client/AirUtil.h"
 
 #include <boost/bind.hpp>
 
@@ -242,6 +243,9 @@ public:
 	}
 
 	static HBITMAP getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, long defaultIcon = 0, int xSize = 0, int ySize = 0);
+	static COLORREF getDupeColor(DupeType aType);
+	static pair<COLORREF, COLORREF> getDupeColors(DupeType aType);
+	static COLORREF blendColors(COLORREF aForeGround, COLORREF aBackGround);
 
 	/**
 	 * Check if this is a common /-command.
