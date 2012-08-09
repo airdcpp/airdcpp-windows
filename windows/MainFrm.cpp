@@ -485,7 +485,7 @@ void MainFrame::loadCmdBarImageList(CImageList& images){
 
 HWND MainFrame::createTBStatusBar() {
 	
-	TBStatusCtrl.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT, 0, ATL_IDW_TOOLBAR);
+	TBStatusCtrl.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT , 0, ATL_IDW_TOOLBAR);
 
 	TBBUTTON tb[1];
 	memzero(&tb, sizeof(tb));
@@ -501,7 +501,7 @@ HWND MainFrame::createTBStatusBar() {
 	rect.bottom += 100;
 	rect.left += 2;
 
-	progress.Create(TBStatusCtrl.m_hWnd, rect , NULL, WS_BORDER | PBS_SMOOTH  | WS_CHILD | WS_VISIBLE);
+	progress.Create(TBStatusCtrl.m_hWnd, rect , NULL, PBS_SMOOTH  | WS_CHILD | WS_VISIBLE);
 	progress.SetRange(0, 10000);
 
 	startBytes, startFiles = 0;
