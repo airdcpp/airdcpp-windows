@@ -304,7 +304,7 @@ void FolderTree::Refresh()
 
 	//Display the folder items in the tree
 	if (m_sRootFolder.empty()) {
-		auto shared = sp->getViewItems();
+		auto shared = sp->getViewItems(sp->curProfile);
 		//Should we insert a "My Computer" node
 		if (m_bShowMyComputer) {
 			FolderTreeItemInfo* pItem = new FolderTreeItemInfo;
@@ -563,7 +563,7 @@ void FolderTree::DisplayPath(const tstring &sPath, HTREEITEM hParent, bool bUseS
 		DeleteItem(hChild);
 		hChild = GetChildItem(hParent);
 	}
-	auto shared = sp->getViewItems();
+	auto shared = sp->getViewItems(sp->curProfile);
 
 	//Should we display the root folder
 	if (m_bShowRootedFolder && (hParent == TVI_ROOT))
@@ -639,15 +639,15 @@ void FolderTree::DisplayPath(const tstring &sPath, HTREEITEM hParent, bool bUseS
 void FolderTree::checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent, ShareDirInfo::list& sharedDirs) {
 	string parentPath = Text::fromT(aParentPath);
 	for(auto i = sharedDirs.begin(); i != sharedDirs.end(); ++i) {
-		if (i->found)
+		if ((*i)->found)
 			continue;
 
-		auto dir = Util::getParentDir((*i).path);
+		auto dir = Util::getParentDir((*i)->path);
 		if (dir == parentPath) {
 			//this should have been inserted
 			FolderTreeItemInfo* pItem = new FolderTreeItemInfo;
-			pItem->m_sFQPath = Text::toT((*i).path);
-			pItem->m_sRelativePath = Text::toT(Util::getLastDir((*i).path));
+			pItem->m_sFQPath = Text::toT((*i)->path);
+			pItem->m_sRelativePath = Text::toT(Util::getLastDir((*i)->path));
 			pItem->m_removed = true;
 
 			tstring sLabel;
@@ -1005,7 +1005,7 @@ void FolderTree::DoExpand(HTREEITEM hItem)
 			//CWaitCursor wait;
 
 			//Enumerate the local drive letters
-			auto shared = sp->getViewItems();
+			auto shared = sp->getViewItems(sp->curProfile);
 			DisplayDrives(m_hMyComputerRoot, FALSE, shared);
 		}
 		else if ((hItem == m_hNetworkRoot) || (pItem->m_pNetResource))
@@ -1142,7 +1142,7 @@ bool FolderTree::IsFolder(const tstring &sPath)
 
 bool FolderTree::EnumNetwork(HTREEITEM hParent)
 {
-	auto shared = sp->getViewItems();
+	auto shared = sp->getViewItems(sp->curProfile);
 	//What will be the return value from this function
 	bool bGotChildren = false;
 
@@ -1531,14 +1531,14 @@ bool FolderTree::GetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::list&
 
 	for(auto i = aShared.begin(); i != aShared.end(); ++i)
 	{
-		if(i->path.size() > searchStr.size() + startPos)
+		if((*i)->path.size() > searchStr.size() + startPos)
 		{
-			if(stricmp(i->path.substr(startPos, searchStr.size()), searchStr) == 0) {
+			if(stricmp((*i)->path.substr(startPos, searchStr.size()), searchStr) == 0) {
 				if(searchStr.size() <= 3) {
 					//if(Util::fileExists(i->path + PATH_SEPARATOR))
 						return true;
 				} else {
-					if(i->path.substr(searchStr.size()).substr(0,1) == "\\") {
+					if((*i)->path.substr(searchStr.size()).substr(0,1) == "\\") {
 						//if(Util::fileExists(i->path + PATH_SEPARATOR))
 							return true;
 					} else
@@ -1580,7 +1580,7 @@ void FolderTree::UpdateParentItems(HTREEITEM hItem)
 	HTREEITEM hParent = GetParentItem(hItem);
 	if(hParent != NULL && HasSharedParent(hParent) == NULL)
 	{
-		SetHasSharedChildren(hParent, sp->getViewItems());
+		SetHasSharedChildren(hParent, sp->getViewItems(sp->curProfile));
 		UpdateParentItems(hParent);
 	}
 }

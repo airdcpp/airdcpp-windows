@@ -105,7 +105,7 @@ int ExListViewCtrl::insert(TStringList& aList, int iImage, LPARAM lParam) {
 			comp = sortType;
 			if(comp == SORT_FUNC) {
 				data = GetItemData(loc);
-				comp = fun(lParam, data);
+				comp = fun(lParam, data, sortColumn);
 			}
 			
 			if(comp == SORT_STRING) {
@@ -136,7 +136,7 @@ int ExListViewCtrl::insert(TStringList& aList, int iImage, LPARAM lParam) {
 
 		comp = sortType;
 		if(comp == SORT_FUNC) {
-			comp = fun(lParam, data);
+			comp = fun(lParam, data, sortColumn);
 		}
 		if(comp == SORT_STRING) {
 			comp = compare(b, tstring(buf));

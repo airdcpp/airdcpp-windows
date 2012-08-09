@@ -367,12 +367,14 @@ private:
 				return WinUtil::getIconIndex(getText(COLUMN_FILENAME));
 		}
 	};
-		static int CALLBACK DefaultSort(LPARAM lParam1, LPARAM lParam2, LPARAM /*lParamSort*/) {
+
+	static int CALLBACK DefaultSort(LPARAM lParam1, LPARAM lParam2, LPARAM /*lParamSort*/) {
 		DirectoryListing::Directory* pItem1 = (DirectoryListing::Directory*)lParam1;
 		DirectoryListing::Directory* pItem2 = (DirectoryListing::Directory*)lParam2;
 
 		return Util::DefaultSort(Text::toT(pItem1->getName()).c_str(), Text::toT(pItem2->getName()).c_str());
 	}
+
 	CContainedWindow statusContainer;
 	CContainedWindow treeContainer;
 	CContainedWindow listContainer;

@@ -100,7 +100,7 @@ protected:
 	void fixControls();
 	void removeDir(const string& aPath, const string& aProfile, bool checkDupes=true);
 	bool addDirectory(const tstring& aPath);
-	ShareDirInfo::list removeDirs, newDirs, changedDirs;
+	ShareDirInfo::list removeDirs, newDirs, changedDirs, tempViewItems;
 
 	bool addExcludeFolder(const string& aPath);
 	bool removeExcludeFolder(const string& path);
@@ -110,16 +110,19 @@ protected:
 	StringList removeProfiles;
 	vector<pair<ShareProfilePtr, string>> renameProfiles;
 	ShareProfilePtr getSelectedProfile();
-	vector<ShareDirInfo*> getItemsByPath(const string& aPath);
+	ShareDirInfo::list getItemsByPath(const string& aPath);
 
 	ShareDirInfo::map shareDirs;
 	vector<ShareProfilePtr> profiles;
 	CComboBox ctrlProfile;
 
-	ShareDirInfo::list getViewItems();
+	ShareDirInfo::list getViewItems(const string& aProfile, bool getDiffItems=false);
 	StringSet getExcludedDirs();
 
 	StringSetMap excludedAdd, excludedRemove;
+
+	void deleteDirectoryInfoItems();
+	void deleteTempViewItems();
 };
 
 #endif // !defined(SHARE_PAGE_H)

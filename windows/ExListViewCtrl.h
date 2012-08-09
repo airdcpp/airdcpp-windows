@@ -32,7 +32,7 @@ class ExListViewCtrl : public CWindowImpl<ExListViewCtrl, CListViewCtrl, CContro
 	int sortColumn;
 	int sortType;
 	bool ascending;
-	int (*fun)(LPARAM, LPARAM);
+	int (*fun)(LPARAM, LPARAM, int);
 
 public:
 	enum {	
@@ -51,7 +51,7 @@ public:
 		CHAIN_MSG_MAP(arrowBase)
 	END_MSG_MAP()
 
-	void setSort(int aColumn, int aType, bool aAscending = true, int (*aFun)(LPARAM, LPARAM) = NULL) {
+	void setSort(int aColumn, int aType, bool aAscending = true, int (*aFun)(LPARAM, LPARAM, int) = NULL) {
 		bool doUpdateArrow = (aColumn != sortColumn || aAscending != ascending);
 		
 		sortColumn = aColumn;
@@ -125,7 +125,7 @@ public:
 		// internal default sort functions
 		int result = p->sortType;
 		if(result == SORT_FUNC) {
-			result = p->fun(p->GetItemData(na), p->GetItemData(nb));
+			result = p->fun(p->GetItemData(na), p->GetItemData(nb), p->sortColumn);
 		}
 
 		if(result == SORT_STRING) {
