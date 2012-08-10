@@ -34,7 +34,7 @@
   #include <vssym32.h>
 #else
   #ifndef TMSCHEMA_H
-  #include <tmschema.h>
+  #include <vssym32.h>
   #endif
 #endif
 
