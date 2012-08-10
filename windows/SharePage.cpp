@@ -197,33 +197,6 @@ StringSet SharePage::getExcludedDirs() {
 	return ret;
 }
 
-/*static int vNameSort(LPARAM lParam1, LPARAM lParam2) {
-	auto left = (ShareDirInfo*)lParam1;
-	auto right = (ShareDirInfo*)lParam2;
-	if (left->state == ShareDirInfo::REMOVED && right->state != ShareDirInfo::REMOVED) return 1;
-	if (left->state != ShareDirInfo::REMOVED && right->state == ShareDirInfo::REMOVED) return -1;
-
-	return compare(left->vname, right->vname);
-}
-
-static int sizeSort(LPARAM lParam1, LPARAM lParam2) {
-	auto left = (ShareDirInfo*)lParam1;
-	auto right = (ShareDirInfo*)lParam2;
-	if (left->state == ShareDirInfo::REMOVED && right->state != ShareDirInfo::REMOVED) return 1;
-	if (left->state != ShareDirInfo::REMOVED && right->state == ShareDirInfo::REMOVED) return -1;
-
-	return compare(right->size, left->size);
-}
-
-static int pathSort(LPARAM lParam1, LPARAM lParam2) {
-	auto left = (ShareDirInfo*)lParam1;
-	auto right = (ShareDirInfo*)lParam2;
-	if (left->state == ShareDirInfo::REMOVED && right->state != ShareDirInfo::REMOVED) return 1;
-	if (left->state != ShareDirInfo::REMOVED && right->state == ShareDirInfo::REMOVED) return -1;
-
-	return compare(left->path, right->path);
-}*/
-
 static int sort(LPARAM lParam1, LPARAM lParam2, int column) {
 	auto left = (ShareDirInfo*)lParam1;
 	auto right = (ShareDirInfo*)lParam2;
@@ -270,9 +243,6 @@ void SharePage::showProfile() {
 			ctrlDirectories.SetItemText(i, 1, Text::toT((*j)->path).c_str());
 			ctrlDirectories.SetItemText(i, 2, Util::formatBytesW((*j)->size).c_str());
 			ctrlDirectories.SetCheckState(i, (*j)->incoming);
-			/*if ((*j)->state == ShareDirInfo::REMOVED) {
-				ctrlDirectories.SetItemState(i, INDEXTOSTATEIMAGEMASK(3), LVIS_STATEIMAGEMASK);
-			}*/
 		}
 		ctrlDirectories.setSort(0, ExListViewCtrl::SORT_FUNC, true, sort);
 	} else {
@@ -286,24 +256,22 @@ LRESULT SharePage::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandl
 	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
 	switch(cd->nmcd.dwDrawStage) {
 
-	case CDDS_PREPAINT:
-		return CDRF_NOTIFYITEMDRAW;
+		case CDDS_PREPAINT:
+			return CDRF_NOTIFYITEMDRAW;
 
-	case CDDS_ITEMPREPAINT: {
-		ShareDirInfo* ii = reinterpret_cast<ShareDirInfo*>(cd->nmcd.lItemlParam);
-		if (ii->state == ShareDirInfo::REMOVED) {
-			cd->clrText = RGB(225, 225, 225);
-		} else if (ii->state == ShareDirInfo::ADDED) {
-			cd->clrText = RGB(0, 180, 13);
+		case CDDS_ITEMPREPAINT: {
+			ShareDirInfo* ii = reinterpret_cast<ShareDirInfo*>(cd->nmcd.lItemlParam);
+			if (ii->state == ShareDirInfo::REMOVED) {
+				cd->clrText = RGB(225, 225, 225);
+			} else if (ii->state == ShareDirInfo::ADDED) {
+				cd->clrText = RGB(0, 180, 13);
+			}
+			return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 		}
-		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
-	}
 
-	default:
-		return CDRF_DODEFAULT;
+		default:
+			return CDRF_DODEFAULT;
 	}
-
-	return CDRF_DODEFAULT;
 }
 
 LRESULT SharePage::onClickedShowTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -497,6 +465,9 @@ LRESULT SharePage::onClickedCopyProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	auto dirs = getViewItems(curProfile);
 	for(auto j = dirs.begin(); j != dirs.end(); j++) {
 		auto sdi = new ShareDirInfo((*j)->vname, newProfile->getToken(), (*j)->path);
+		sdi->incoming = (*j)->incoming;
+		sdi->state = (*j)->state;
+		sdi->size = (*j)->size;
 		newDirs.push_back(sdi);
 	}
 
@@ -522,13 +493,22 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	}
 	renameProfiles.erase(remove_if(renameProfiles.begin(), renameProfiles.end(), CompareFirst<ShareProfilePtr, string>(p)), renameProfiles.end());
 
+	/* Newly added dirs can be just deleted... */
+	for (auto i = newDirs.begin(); i != newDirs.end(); ) {
+		if((*i)->profile == p->getToken()) {
+			delete *i;  
+			i = newDirs.erase(i);
+		} else {
+			i++;
+		}
+	}
+
 	/* Undo all current directory modifications to this profile */
 	auto hasProfile = [p](const ShareDirInfo* sdi) -> bool {
 		return sdi->profile == p->getToken();
 	};
 
 	removeDirs.erase(boost::remove_if(removeDirs, hasProfile), removeDirs.end());
-	newDirs.erase(boost::remove_if(newDirs, hasProfile), newDirs.end());
 	changedDirs.erase(boost::remove_if(changedDirs, hasProfile), changedDirs.end());
 
 	excludedAdd.erase(p->getToken());
