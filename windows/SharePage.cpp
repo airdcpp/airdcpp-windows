@@ -741,15 +741,20 @@ bool SharePage::addDirectory(const tstring& aPath){
 			return false;
 		}
 
-		//update the diff info in case this path exists in other profiles
+		auto items = getItemsByPath(rPath);
 		if (curProfile == SP_DEFAULT) {
-			auto items = getItemsByPath(rPath);
+			//update the diff info in case this path exists in other profiles
 			boost::for_each(items, [](ShareDirInfo* sdi) { sdi->state = ShareDirInfo::NORMAL; });
+		} else {
+			//check if this exists in the default profile
+			auto pos = boost::find_if(items, [](const ShareDirInfo* sdi) { return sdi->profile == SP_DEFAULT; });
+			if (pos == items.end())
+				dir->state = ShareDirInfo::ADDED;
 		}
 
 		newDirs.push_back(dir);
 		if(BOOLSETTING(USE_OLD_SHARING_UI)) {
-			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), virt.line );
+			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), virt.line, 0, (LPARAM)dir);
 			ctrlDirectories.SetItemText(i, 1, path.c_str());
 			ctrlDirectories.SetItemText(i, 2, _T("New"));
 		}

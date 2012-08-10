@@ -57,6 +57,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList) {
 		aHWND = frame->CreateEx(WinUtil::mdiClient);
 	}
 	if(aHWND != 0) {
+		frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 		aList->loadPartial();
 		frames.insert( FramePair( frame->m_hWnd, frame ) );
 	} else {
@@ -74,6 +75,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 		aHWND = frame->CreateEx(WinUtil::mdiClient);
 	}
 	if(aHWND != 0) {
+		frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 		aList->loadFullList(aDir);
 		frames.insert( FramePair( frame->m_hWnd, frame ) );
 	} else {
