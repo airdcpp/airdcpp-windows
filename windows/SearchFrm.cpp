@@ -32,6 +32,7 @@
 #include "../client/TimerManager.h"
 #include "../client/SearchManager.h"
 #include "../client/Localization.h"
+#include "../client/DirectoryListingManager.h"
 
 
 int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_HITS, COLUMN_NICK, COLUMN_TYPE, COLUMN_SIZE,
@@ -791,7 +792,7 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 				}
 			}
 		} else {
-			QueueManager::getInstance()->addDirectory(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), tgt, p);
+			DirectoryListingManager::getInstance()->addDirectoryDownload(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), tgt, TargetUtil::TARGET_PATH, p);
 		}
 	} catch(const Exception&) {
 	}
@@ -799,13 +800,8 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 
 void SearchFrame::SearchInfo::DownloadWhole::operator()(SearchInfo* si) {
 	try {
-		if(si->sr->getType() == SearchResult::TYPE_FILE) {
-			QueueManager::getInstance()->addDirectory(Text::fromT(si->getText(COLUMN_PATH)),
-				HintedUser(si->sr->getUser(), si->sr->getHubURL()), tgt, p);
-		} else {
-			QueueManager::getInstance()->addDirectory(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), 
-				tgt, p);
-		}
+		DirectoryListingManager::getInstance()->addDirectoryDownload(si->sr->getType() == SearchResult::TYPE_FILE ? Text::fromT(si->getText(COLUMN_PATH)) : si->sr->getFile(),
+			HintedUser(si->sr->getUser(), si->sr->getHubURL()), tgt, TargetUtil::TARGET_PATH, p);
 	} catch(const Exception&) {
 	}
 }
@@ -816,7 +812,7 @@ void SearchFrame::SearchInfo::DownloadTarget::operator()(SearchInfo* si) {
 			QueueManager::getInstance()->add(tgt, si->sr->getSize(), 
 				si->sr->getTTH(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), 0, true, p);
 		} else {
-			QueueManager::getInstance()->addDirectory(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), tgt, p);
+			DirectoryListingManager::getInstance()->addDirectoryDownload(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), tgt, TargetUtil::TARGET_PATH, p);
 		}
 	} catch(const Exception&) {
 	}

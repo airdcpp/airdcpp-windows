@@ -1412,7 +1412,6 @@ bool WinUtil::parseDBLClick(const tstring& str, HWND hWnd/*NULL*/) {
 		::ShellExecute(NULL, NULL, Text::toT(url).c_str(), NULL, NULL, SW_SHOWNORMAL);
 		return true;
 	}
-	return false;
 }
 
 void WinUtil::SetIcon(HWND hWnd, long icon, bool big) {

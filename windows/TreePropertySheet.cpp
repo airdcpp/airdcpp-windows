@@ -102,7 +102,7 @@ void TreePropertySheet::fillTree() {
 	HTREEITEM initialItem = NULL;
 	for(int i = 0; i < pages; ++i) {
 		tab.GetItem(i, &item);
-		if(i == m_psh.nStartPage)
+		if(i == (int)m_psh.nStartPage)
 			initialItem = createTree(buf, TVI_ROOT, i);
 		else
 			createTree(buf, TVI_ROOT, i);
