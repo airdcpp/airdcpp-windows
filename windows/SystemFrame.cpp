@@ -52,7 +52,7 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if(!iconError)
 		iconError = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("error.ico")),WinUtil::bgColor, IDI_IERROR, ICON_SIZE, ICON_SIZE);
 
-	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
+	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])?([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 
 	//might miss some messages
 	auto oldMessages = LogManager::getInstance()->getLastLogs();

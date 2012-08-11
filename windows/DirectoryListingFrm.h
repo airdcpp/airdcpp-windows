@@ -66,6 +66,8 @@ public:
 	};
 
 	enum {
+		QUEUE_MATCHED,
+		STARTED,
 		FINISHED,
 		ABORTED
 	};	
@@ -287,7 +289,7 @@ public:
 	void download(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType = TargetUtil::TARGET_PATH);
 	bool showDirDialog(string& fileName);
 private:
-	friend class ThreadedDirectoryListing;
+	void changeWindowState(bool enable);
 	
 	void changeDir(DirectoryListing::Directory* d, BOOL enableRedraw);
 	HTREEITEM findFile(const StringSearch& str, HTREEITEM root, int &foundFile, int &skipHits);
@@ -438,6 +440,9 @@ private:
 
 	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial) noexcept;
 	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
+	void on(DirectoryListingListener::LoadingStarted) noexcept;
+	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;
+	void on(DirectoryListingListener::Close) noexcept;
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

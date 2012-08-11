@@ -77,7 +77,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 }
 
 DirectoryListingFrame::~DirectoryListingFrame() {
-	delete dl;
+	//delete dl;
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial) noexcept {
@@ -91,6 +91,21 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept {
 
 	PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED);
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted) noexcept {
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::STARTED);
+	changeWindowState(false);
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept {
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::QUEUE_MATCHED, (LPARAM)new string(aMessage));
+	changeWindowState(true);
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::Close) noexcept {
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED);
+	//PostMessage(WM_CLOSE);
 }
 
 LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -200,9 +215,27 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	return 1;
 }
 
+void DirectoryListingFrame::changeWindowState(bool enable) {
+	ctrlMatchQueue.EnableWindow(enable);
+	ctrlADLMatch.EnableWindow(enable);
+	ctrlFind.EnableWindow(enable);
+	ctrlFindNext.EnableWindow(enable);
+	ctrlListDiff.EnableWindow(enable);
+
+	if (enable) {
+		EnableWindow();
+		ctrlGetFullList.EnableWindow(dl->getPartialList());
+	} else {
+		DisableWindow();
+		ctrlGetFullList.EnableWindow(false);
+	}
+}
+
 LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	HTREEITEM ht = ctrlTree.GetSelectedItem();
 	DirectoryListing::Directory* d = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
+
+
 	if (dl->getIsOwnList())
 		dl->addFullListTask(dl->getPath(d));
 	else
@@ -231,9 +264,6 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial) {
 	ctrlTree.SetRedraw(FALSE);
 
-	if (convertFromPartial)
-		ctrlGetFullList.EnableWindow(false);
-
 	HTREEITEM ht = convertFromPartial ? treeRoot : findItem(treeRoot, root);
 	if(ht == NULL) {
 		ht = treeRoot;
@@ -255,7 +285,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 
 	ctrlTree.SelectItem(NULL);
 	selectItem(root);
-	if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList())
+	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
 		dl->checkShareDupes();
 	ctrlTree.SetRedraw(TRUE);
 }
@@ -359,7 +389,6 @@ void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enabl
 			try {
 				// TODO provide hubHint?
 				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
-				//DisableWindow();
 				ctrlStatus.SetText(STATUS_TEXT, CTSTRING(DOWNLOADING_LIST));
 			} catch(const QueueException& e) {
 				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
@@ -470,10 +499,8 @@ LRESULT DirectoryListingFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, H
 }
 
 LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int matches=0, newFiles=0;
-	BundleList bundles;
-	QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
-	ctrlStatus.SetText(STATUS_TEXT, Text::toT(AirUtil::formatMatchResults(matches, newFiles, bundles, false)).c_str());
+	changeWindowState(false);
+	dl->addQueueMatchTask();
 	return 0;
 }
 
@@ -1241,8 +1268,6 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	
 	if(!closed) {
 		SettingsManager::getInstance()->removeListener(this);
-		dl->removeListener(this);
-		DirectoryListingManager::getInstance()->removeList(dl->getUser());
 
 		ctrlList.SetRedraw(FALSE);
 		clearList();
@@ -1252,7 +1277,9 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 			SettingsManager::DIRECTORYLISTINGFRAME_VISIBLE);
 
 		closed = true;
-		PostMessage(WM_CLOSE);
+		//PostMessage(WM_CLOSE);
+		ctrlStatus.SetText(0, _T("Closing down, please wait..."));
+		dl->close();
 		return 0;
 	} else {
 		CRect rc;
@@ -1271,6 +1298,9 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 			SettingsManager::getInstance()->set(SettingsManager::DIRLIST_RIGHT, (rc.right > 0 ? rc.right : 0));
 		}
 		bHandled = FALSE;
+		dl->removeListener(this);
+		DirectoryListingManager::getInstance()->removeList(dl->getUser());
+		delete dl;
 		return 0;
 	}
 }
@@ -1309,7 +1339,7 @@ void DirectoryListingFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/
 	}
 }
 
-LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	switch(wParam) {
 		case FINISHED:
 			initStatus();
@@ -1318,14 +1348,22 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*
 			//tmp.resize(STRING(LOADED_FILE_LIST).size() + 16);
 			//tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(LOADED_FILE_LIST), Util::formatSeconds(loadTime)));
 			ctrlStatus.SetText(0, (TSTRING(LOADED_FILE_LIST) + Util::formatSeconds(loadTime, true)).c_str());
-			ctrlTree.EnableWindow(TRUE);
-			ctrlList.EnableWindow(TRUE);
+			changeWindowState(true);
 			//notify the user that we've loaded the list
 			setDirty();
 			break;
 		case ABORTED:
 			PostMessage(WM_CLOSE, 0, 0);
 			break;
+		case STARTED:
+			ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
+			break;
+		case QUEUE_MATCHED:
+			{
+			auto_ptr<string> msg(reinterpret_cast<string*>(lParam));
+			ctrlStatus.SetText(0, Text::toT(*msg).c_str());
+			break;
+			}
 		default: dcassert(0); break;
 	}
 	return 0;
