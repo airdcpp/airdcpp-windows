@@ -70,8 +70,7 @@ public:
 	};
 
 	enum {
-		DOWNLOAD_LISTING,
-		BROWSE_LISTING,
+		OPEN_FILELIST,
 		STATS,
 		AUTO_CONNECT,
 		PARSE_COMMAND_LINE,
@@ -581,7 +580,6 @@ private:
 
 	// DirectoryListingManagerListener
 	void on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept;
-	void on(DirectoryListingManagerListener::OpenPartialListing, DirectoryListing* aList) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)

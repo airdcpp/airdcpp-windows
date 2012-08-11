@@ -47,24 +47,6 @@ int DirectoryListingFrame::columnSizes[] = { 300, 60, 100, 100, 200, 100 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::TYPE, ResourceManager::EXACT_SIZE, ResourceManager::SIZE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 
-void DirectoryListingFrame::openWindow(DirectoryListing* aList) {
-
-	HWND aHWND = NULL;
-	DirectoryListingFrame* frame = new DirectoryListingFrame(aList);
-	if(BOOLSETTING(POPUNDER_FILELIST)) {
-		aHWND = WinUtil::hiddenCreateEx(frame);
-	} else {
-		aHWND = frame->CreateEx(WinUtil::mdiClient);
-	}
-	if(aHWND != 0) {
-		frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
-		aList->loadPartial();
-		frames.insert( FramePair( frame->m_hWnd, frame ) );
-	} else {
-		delete frame;
-	}
-}
-
 void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aDir) {
 
 	HWND aHWND = NULL;
@@ -76,7 +58,10 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 	}
 	if(aHWND != 0) {
 		frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
-		aList->loadFullList(aDir);
+		if (aList->getPartialList())
+			aList->addPartialListTask(aDir);
+		else
+			aList->addFullListTask(aDir);
 		frames.insert( FramePair( frame->m_hWnd, frame ) );
 	} else {
 		delete frame;
@@ -218,7 +203,10 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	HTREEITEM ht = ctrlTree.GetSelectedItem();
 	DirectoryListing::Directory* d = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
-	QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
+	if (dl->getIsOwnList())
+		dl->addFullListTask(dl->getPath(d));
+	else
+		QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
 	return 1;
 }
 
@@ -365,7 +353,9 @@ void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enabl
 	updateStatus();
 
 	if(!d->getComplete()) {
-		if(dl->getUser()->isOnline()) {
+		if (dl->getIsOwnList()) {
+			dl->addPartialListTask(dl->getPath(d));
+		} else if(dl->getUser()->isOnline()) {
 			try {
 				// TODO provide hubHint?
 				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
@@ -492,14 +482,14 @@ LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), _T("File Lists\0*.xml.bz2\0All Files\0*.*\0"))) {
 		DisableWindow();
 		ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
-		dl->listDiff(Text::fromT(file));
+		dl->addListDiffTask(Text::fromT(file));
 	}
 	return 0;
 }
 LRESULT DirectoryListingFrame::onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlStatus.SetText(0, CTSTRING(MATCHING_ADL));
 	DisableWindow();
-	dl->matchADL();
+	dl->addMatchADLTask();
 	
 	return 0;
 }

@@ -138,9 +138,9 @@ public:
 				continue;
 				
 			HintedUser user(u, Util::emptyString);
-			DirectoryListing* dl = new DirectoryListing(user, false, *i);
+			DirectoryListing* dl = new DirectoryListing(user, false, *i, false);
 			try {
-				dl->loadFile(*i, false);
+				dl->loadFile(*i);
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
@@ -739,12 +739,9 @@ HWND MainFrame::createToolbar() {
 
 LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 		
-	if(wParam == DOWNLOAD_LISTING) {
+	if(wParam == OPEN_FILELIST) {
 		auto_ptr<DirectoryListInfo> i(reinterpret_cast<DirectoryListInfo*>(lParam));
 		DirectoryListingFrame::openWindow(i->dirList, i->dir);
-	} else if(wParam == BROWSE_LISTING) {
-		auto_ptr<PartialListInfo> i(reinterpret_cast<PartialListInfo*>(lParam));
-		DirectoryListingFrame::openWindow(i->dirList);
 	} else if(wParam == VIEW_FILE_AND_DELETE) {
 		auto_ptr<tstring> file(reinterpret_cast<tstring*>(lParam));
 		TextFrame::openWindow(*file, TextFrame::NORMAL);
@@ -1813,12 +1810,7 @@ void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr qi, const 
 
 void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept {
 	DirectoryListInfo* i = new DirectoryListInfo(aList, aDir);
-	PostMessage(WM_SPEAKER, DOWNLOAD_LISTING, (LPARAM)i);
-}
-
-void MainFrame::on(DirectoryListingManagerListener::OpenPartialListing, DirectoryListing* aList) noexcept {
-	PartialListInfo* i = new PartialListInfo(aList);
-	PostMessage(WM_SPEAKER, BROWSE_LISTING, (LPARAM)i);
+	PostMessage(WM_SPEAKER, OPEN_FILELIST, (LPARAM)i);
 }
 
 LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {

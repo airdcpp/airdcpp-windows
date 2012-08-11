@@ -47,7 +47,6 @@ class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame
 	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener
 {
 public:
-	static void openWindow(DirectoryListing* aList);
 	static void openWindow(DirectoryListing* aList, const string& aDir);
 	static void closeAll();
 
