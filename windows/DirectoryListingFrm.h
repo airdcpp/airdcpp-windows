@@ -78,6 +78,7 @@ public:
 		STATUS_TOTAL_SIZE,
 		STATUS_SELECTED_FILES,
 		STATUS_SELECTED_SIZE,
+		STATUS_GET_FULL_LIST,
 		STATUS_MATCH_ADL,
 		STATUS_FILE_LIST_DIFF,
 		STATUS_MATCH_QUEUE,
@@ -146,6 +147,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
 		COMMAND_ID_HANDLER(IDC_FILELIST_DIFF, onListDiff)
 		COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
+		COMMAND_ID_HANDLER(IDC_GETLIST, onGetFullList)
 	ALT_MSG_MAP(CONTROL_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_XBUTTONUP, onXButtonUp)
 	END_MSG_MAP()
@@ -171,6 +173,7 @@ public:
 	LRESULT onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
@@ -182,7 +185,7 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
 	void runUserCommand(UserCommand& uc);
-	void refreshTree(const tstring& root);
+	void refreshTree(const tstring& root, bool convertFromPartial);
 
 	HTREEITEM findItem(HTREEITEM ht, const tstring& name);
 	void selectItem(const tstring& name);
@@ -391,6 +394,7 @@ private:
 	CButton ctrlListDiff;
 	CButton ctrlMatchQueue;
 	CButton ctrlADLMatch;
+	CButton ctrlGetFullList;
 
 	string findStr;
 	tstring error;
@@ -399,13 +403,12 @@ private:
 	int skipHits;
 
 	size_t files;
-	int64_t speed;		/**< Speed at which this file list was downloaded */
 
 	bool updating;
 	bool searching;
 	bool closed;
 
-	int statusSizes[11];
+	int statusSizes[12];
 	
 	DirectoryListing* dl;
 
@@ -434,7 +437,7 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir) noexcept;
+	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial) noexcept;
 	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
 };
 

@@ -1550,5 +1550,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="ProfileName">Profile name</String>
 		<String Name="LockTb">Lock Toolbars</String>
 		<String Name="ClearDirHistory">Clear directory history on exit</String>
+		<String Name="GetFullList">Get full filelist</String>
 	</Strings>
 </Language>

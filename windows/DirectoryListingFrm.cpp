@@ -95,8 +95,8 @@ DirectoryListingFrame::~DirectoryListingFrame() {
 	delete dl;
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir) noexcept {
-	refreshTree(Text::toT(aDir));
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial) noexcept {
+	refreshTree(Text::toT(aDir), convertFromPartial);
 
 	int64_t end = GET_TICK();
 	loadTime = (end - aStart) / 1000;
@@ -176,6 +176,11 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	BS_PUSHBUTTON, 0, IDC_MATCH_ADL);
 	ctrlADLMatch.SetWindowText(CTSTRING(MATCH_ADL));
 	ctrlADLMatch.SetFont(WinUtil::systemFont);
+
+	ctrlGetFullList.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+	BS_PUSHBUTTON, 0, IDC_GETLIST);
+	ctrlGetFullList.SetWindowText(CTSTRING(GET_FULL_LIST));
+	ctrlGetFullList.SetFont(WinUtil::systemFont);
 	
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlList.m_hWnd);
@@ -190,10 +195,12 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	statusSizes[STATUS_FIND] = WinUtil::getTextWidth(TSTRING(FIND), m_hWnd) + 8;
 	statusSizes[STATUS_NEXT] = WinUtil::getTextWidth(TSTRING(NEXT), m_hWnd) + 8;
 	statusSizes[STATUS_MATCH_ADL] = WinUtil::getTextWidth(TSTRING(MATCH_ADL), m_hWnd) + 8;
+	statusSizes[STATUS_GET_FULL_LIST] = WinUtil::getTextWidth(TSTRING(GET_FULL_LIST), m_hWnd) + 8;
 
 	ctrlStatus.SetParts(STATUS_LAST, statusSizes);
 
 	ctrlTree.EnableWindow(FALSE);
+	ctrlGetFullList.EnableWindow(dl->getPartialList());
 	
 	SettingsManager::getInstance()->addListener(this);
 	closed = false;
@@ -205,6 +212,13 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	setWindowTitle();
 	WinUtil::SetIcon(m_hWnd, _T("Directory.ico"));
 	bHandled = FALSE;
+	return 1;
+}
+
+LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	HTREEITEM ht = ctrlTree.GetSelectedItem();
+	DirectoryListing::Directory* d = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
+	QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
 	return 1;
 }
 
@@ -226,10 +240,13 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 
 }
 
-void DirectoryListingFrame::refreshTree(const tstring& root) {
+void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial) {
 	ctrlTree.SetRedraw(FALSE);
 
-	HTREEITEM ht = findItem(treeRoot, root);
+	if (convertFromPartial)
+		ctrlGetFullList.EnableWindow(false);
+
+	HTREEITEM ht = convertFromPartial ? treeRoot : findItem(treeRoot, root);
 	if(ht == NULL) {
 		ht = treeRoot;
 	}
@@ -250,7 +267,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root) {
 
 	ctrlTree.SelectItem(NULL);
 	selectItem(root);
-	if (dl->getPartialList() && SETTING(DUPES_IN_FILELIST))
+	if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList())
 		dl->checkShareDupes();
 	ctrlTree.SetRedraw(TRUE);
 }
@@ -301,7 +318,7 @@ void DirectoryListingFrame::initStatus() {
 	statusSizes[STATUS_TOTAL_SIZE] = WinUtil::getTextWidth(tmp, m_hWnd);
 	ctrlStatus.SetText(STATUS_TOTAL_SIZE, tmp.c_str());
 
-	tmp = TSTRING(SPEED) + _T(": ") + Util::formatBytesW(speed) + _T("/s");
+	tmp = TSTRING(SPEED) + _T(": ") + Util::formatBytesW(dl->getspeed()) + _T("/s");
 	statusSizes[STATUS_SPEED] = WinUtil::getTextWidth(tmp, m_hWnd);
 	ctrlStatus.SetText(STATUS_SPEED, tmp.c_str());
 
@@ -941,6 +958,10 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 		ctrlStatus.SetParts(STATUS_LAST, w);
 		ctrlStatus.GetRect(0, sr);
+
+		sr.left = w[STATUS_GET_FULL_LIST - 1];
+		sr.right = w[STATUS_GET_FULL_LIST];
+		ctrlGetFullList.MoveWindow(sr);
 
 		sr.left = w[STATUS_MATCH_ADL - 1];
 		sr.right = w[STATUS_MATCH_ADL];
