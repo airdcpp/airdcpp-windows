@@ -254,6 +254,9 @@
     <ClCompile Include="client\DirectoryListingManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\AdcSearch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -659,6 +662,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\DirectoryListingListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\AdcSearch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

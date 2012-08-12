@@ -66,7 +66,7 @@ public:
 	};
 
 	enum {
-		QUEUE_MATCHED,
+		UPDATE_STATUS,
 		STARTED,
 		FINISHED,
 		ABORTED
@@ -292,7 +292,9 @@ private:
 	void changeWindowState(bool enable);
 	
 	void changeDir(DirectoryListing::Directory* d, BOOL enableRedraw);
-	HTREEITEM findFile(const StringSearch& str, HTREEITEM root, int &foundFile, int &skipHits);
+	HTREEITEM findFile();
+	int foundFile;
+
 	void updateStatus();
 	void initStatus();
 	void addHistory(const string& name);
@@ -397,7 +399,6 @@ private:
 	CButton ctrlADLMatch;
 	CButton ctrlGetFullList;
 
-	string findStr;
 	tstring error;
 	string size;
 
@@ -443,6 +444,8 @@ private:
 	void on(DirectoryListingListener::LoadingStarted) noexcept;
 	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;
 	void on(DirectoryListingListener::Close) noexcept;
+	void on(DirectoryListingListener::SearchStarted) noexcept;
+	void on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept;
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

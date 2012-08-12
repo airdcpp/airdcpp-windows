@@ -230,6 +230,7 @@
   <ItemGroup>
     <ClCompile Include="client\AdcCommand.cpp" />
     <ClCompile Include="client\AdcHub.cpp" />
+    <ClCompile Include="client\AdcSearch.cpp" />
     <ClCompile Include="client\ADLSearch.cpp" />
     <ClCompile Include="client\AirUtil.cpp" />
     <ClCompile Include="client\AutoSearchManager.cpp" />
@@ -318,6 +319,7 @@
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h" />
     <ClInclude Include="client\AdcHub.h" />
+    <ClInclude Include="client\AdcSearch.h" />
     <ClInclude Include="client\ADLSearch.h" />
     <ClInclude Include="client\AirUtil.h" />
     <ClInclude Include="client\atomic.h" />

@@ -100,13 +100,23 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted) noexcep
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept {
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::QUEUE_MATCHED, (LPARAM)new string(aMessage));
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(Text::toT(aMessage)));
 	changeWindowState(true);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::Close) noexcept {
 	PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED);
 	//PostMessage(WM_CLOSE);
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::SearchStarted) noexcept {
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(TSTRING(SEARCHING)));
+	changeWindowState(false);
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept {
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(timedOut ? TSTRING(SEARCH_TIMED_OUT) : TSTRING(NO_RESULTS_FOUND)));
+	changeWindowState(false);
 }
 
 LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -289,6 +299,80 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
 		dl->checkShareDupes();
 	ctrlTree.SetRedraw(TRUE);
+
+	if (dl->isCurrentSearchPath(Text::fromT(root))) {
+		findFile();
+	}
+}
+
+HTREEITEM DirectoryListingFrame::findFile() {
+	auto search = dl->curSearch;
+	dcassert(search);
+	bool found = false;
+	//HTREEITEM const curDir = ctrlTree.GetSelectedItem();
+
+	// Check file names in list pane
+	while(foundFile <ctrlList.GetItemCount()) {
+		const ItemInfo* ii = ctrlList.getItemData(foundFile);
+		if(ii->type == ItemInfo::FILE) {
+			if(search->matchesDirectFile(ii->file->getName(), ii->file->getSize())) {
+				found = true;
+				break;
+			}
+		} else if(search->matchesDirectDirectory(ii->dir->getName(), ii->dir->getSize())) {
+			found = true;
+			break;
+		}
+		foundFile++;
+	}
+
+	if (found) {
+		// Remove prev. selection from file list
+		if(ctrlList.GetSelectedCount() > 0)		{
+			for(int i=0; i<ctrlList.GetItemCount(); i++)
+				ctrlList.SetItemState(i, 0, LVIS_SELECTED);
+		}
+
+		// Highlight and focus the dir/file if possible
+		ctrlList.SetFocus();
+		ctrlList.EnsureVisible(foundFile, FALSE);
+		ctrlList.SetItemState(foundFile, LVIS_SELECTED | LVIS_FOCUSED, (UINT)-1);
+		foundFile++;
+	} else {
+		//move to next dir (if there are any)
+		foundFile = 0;
+		if (!dl->nextResult()) {
+			MessageBox(CTSTRING(NO_MATCHES), CTSTRING(SEARCH_FOR_FILE));
+		}
+	}
+
+	return 0;
+}
+
+void DirectoryListingFrame::findFile(bool findNext) {
+	if(!findNext)	{
+		foundFile = 0;
+
+		// Prompt for substring to find
+		LineDlg dlg;
+		dlg.title = TSTRING(SEARCH_FOR_FILE);
+		dlg.description = TSTRING(ENTER_SEARCH_STRING);
+		dlg.line = Util::emptyStringT;
+
+		if(dlg.DoModal() != IDOK)
+			return;
+
+		string findStr = Text::fromT(dlg.line);
+		if(findStr.empty())
+			return;
+
+		StringList extList;
+		dl->addSearchTask(findStr, 0, SearchManager::TYPE_ANY, SearchManager::SIZE_DONTCARE, extList);
+
+		return;
+	} else {
+		findFile();
+	}
 }
 
 void DirectoryListingFrame::updateStatus() {
@@ -1005,132 +1089,6 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	SetSplitterRect(&rect);
 }
 
-HTREEITEM DirectoryListingFrame::findFile(const StringSearch& str, HTREEITEM root,
-										  int &foundFile, int &skipHits)
-{
-	// Check dir name for match
-	DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(root);
-	if(str.match(dir->getName()))
-	{
-		if(skipHits == 0)
-		{
-			foundFile = -1;
-			return root;
-		}
-		else
-			skipHits--;
-	}
-
-	// Force list pane to contain files of current dir
-	changeDir(dir, FALSE);
-
-	// Check file names in list pane
-	for(int i=0; i<ctrlList.GetItemCount(); i++)
-	{
-		const ItemInfo* ii = ctrlList.getItemData(i);
-		if(ii->type == ItemInfo::FILE)
-		{
-			if(str.match(ii->file->getName()))
-			{
-				if(skipHits == 0)
-				{
-					foundFile = i;
-					return root;
-				}
-				else
-					skipHits--;
-			}
-		}
-	}
-
-	dcdebug("looking for directories...\n");
-	// Check subdirs recursively
-	HTREEITEM item = ctrlTree.GetChildItem(root);
-	while(item != NULL)
-	{
-		HTREEITEM srch = findFile(str, item, foundFile, skipHits);
-		if(srch)
-			return srch;
-		else
-			item = ctrlTree.GetNextSiblingItem(item);
-	}
-
-	return 0;
-}
-
-void DirectoryListingFrame::findFile(bool findNext)
-{
-	if(!findNext)	{
-		// Prompt for substring to find
-		LineDlg dlg;
-		dlg.title = TSTRING(SEARCH_FOR_FILE);
-		dlg.description = TSTRING(ENTER_SEARCH_STRING);
-		dlg.line = Util::emptyStringT;
-
-		if(dlg.DoModal() != IDOK)
-			return;
-
-		findStr = Text::fromT(dlg.line);
-		skipHits = 0;
-	}	else {
-		skipHits++;
-	}
-
-	if(findStr.empty())
-		return;
-
-	// Do a search
-	int foundFile = -1, skipHitsTmp = skipHits;
-	HTREEITEM const oldDir = ctrlTree.GetSelectedItem();
-	HTREEITEM const foundDir = findFile(StringSearch(findStr), ctrlTree.GetRootItem(), foundFile, skipHitsTmp);
-	ctrlTree.SetRedraw(TRUE);
-
-	if(foundDir)	{
-		// Highlight the directory tree and list if the parent dir/a matched dir was found
-		if(foundFile >= 0)		{
-			// SelectItem won't update the list if SetRedraw was set to FALSE and then
-			// to TRUE and the item selected is the same as the last one... workaround:
-			if(oldDir == foundDir)
-				ctrlTree.SelectItem(NULL);
-
-			ctrlTree.SelectItem(foundDir);
-		}		else		{
-			// Got a dir; select its parent directory in the tree if there is one
-			HTREEITEM parentItem = ctrlTree.GetParentItem(foundDir);
-			if(parentItem)			{
-				// Go to parent file list
-				ctrlTree.SelectItem(parentItem);
-
-				// Locate the dir in the file list
-				DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(foundDir);
-
-				foundFile = ctrlList.findItem(Text::toT(dir->getName()), -1, false);
-				}	else	{
-				// If no parent exists, just the dir tree item and skip the list highlighting
-				ctrlTree.SelectItem(foundDir);
-			}
-		}
-
-		// Remove prev. selection from file list
-		if(ctrlList.GetSelectedCount() > 0)		{
-			for(int i=0; i<ctrlList.GetItemCount(); i++)
-				ctrlList.SetItemState(i, 0, LVIS_SELECTED);
-		}
-
-		// Highlight and focus the dir/file if possible
-		if(foundFile >= 0)		{
-			ctrlList.SetFocus();
-			ctrlList.EnsureVisible(foundFile, FALSE);
-			ctrlList.SetItemState(foundFile, LVIS_SELECTED | LVIS_FOCUSED, (UINT)-1);
-		}		else {
-			ctrlTree.SetFocus();
-	}
-	} else	{
-		ctrlTree.SelectItem(oldDir);
-		MessageBox(CTSTRING(NO_MATCHES), CTSTRING(SEARCH_FOR_FILE));
-	}
-}
-
 void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 	if(!WinUtil::getUCParams(m_hWnd, uc, ucLineParams))
 		return;
@@ -1359,11 +1317,11 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 		case STARTED:
 			ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 			break;
-		case QUEUE_MATCHED:
+		case UPDATE_STATUS:
 			{
-			auto_ptr<string> msg(reinterpret_cast<string*>(lParam));
-			ctrlStatus.SetText(0, Text::toT(*msg).c_str());
-			break;
+				auto_ptr<tstring> msg(reinterpret_cast<tstring*>(lParam));
+				ctrlStatus.SetText(0, (*msg).c_str());
+				break;
 			}
 		default: dcassert(0); break;
 	}
