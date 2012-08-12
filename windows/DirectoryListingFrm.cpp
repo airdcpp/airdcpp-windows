@@ -116,7 +116,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchStarted) noexcept
 
 void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept {
 	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(timedOut ? TSTRING(SEARCH_TIMED_OUT) : TSTRING(NO_RESULTS_FOUND)));
-	changeWindowState(false);
+	changeWindowState(true);
 }
 
 LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
