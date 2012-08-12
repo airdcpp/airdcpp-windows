@@ -77,7 +77,8 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 }
 
 DirectoryListingFrame::~DirectoryListingFrame() {
-	//delete dl;
+	dl->join();
+	delete dl;
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial) noexcept {
@@ -1277,9 +1278,10 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 			SettingsManager::DIRECTORYLISTINGFRAME_VISIBLE);
 
 		closed = true;
-		//PostMessage(WM_CLOSE);
-		ctrlStatus.SetText(0, _T("Closing down, please wait..."));
-		dl->close();
+		PostMessage(WM_CLOSE);
+		//changeWindowState(false);
+		//ctrlStatus.SetText(0, _T("Closing down, please wait..."));
+		//dl->close();
 		return 0;
 	} else {
 		CRect rc;
@@ -1300,7 +1302,6 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 		bHandled = FALSE;
 		dl->removeListener(this);
 		DirectoryListingManager::getInstance()->removeList(dl->getUser());
-		delete dl;
 		return 0;
 	}
 }

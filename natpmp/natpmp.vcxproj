@@ -32,7 +32,7 @@
   <PropertyGroup Label="Globals">
     <ProjectName>natpmp</ProjectName>
     <RootNamespace>natpmp</RootNamespace>
-    <ProjectGuid>{05F574BE-57B1-3F27-280B-5DEBE2228086}</ProjectGuid>
+    <ProjectGuid>{6BD1D0B7-EC0C-4473-533B-5EC961138415}</ProjectGuid>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
