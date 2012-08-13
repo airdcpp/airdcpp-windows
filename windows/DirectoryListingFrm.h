@@ -291,9 +291,9 @@ public:
 private:
 	void changeWindowState(bool enable);
 	
-	void changeDir(DirectoryListing::Directory* d, BOOL enableRedraw);
+	void changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw);
 	HTREEITEM findFile();
-	int foundFile;
+	int searchPos;
 
 	void updateStatus();
 	void initStatus();
@@ -446,6 +446,7 @@ private:
 	void on(DirectoryListingListener::Close) noexcept;
 	void on(DirectoryListingListener::SearchStarted) noexcept;
 	void on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept;
+	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

@@ -119,6 +119,16 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 	changeWindowState(true);
 }
 
+void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept {
+	selectItem(Text::toT(aDir));
+	if (isSearchChange) {
+		PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(_T("Search finished")));
+		findFile();
+	}
+
+	changeWindowState(true);
+}
+
 LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
@@ -309,21 +319,27 @@ HTREEITEM DirectoryListingFrame::findFile() {
 	auto search = dl->curSearch;
 	dcassert(search);
 	bool found = false;
-	//HTREEITEM const curDir = ctrlTree.GetSelectedItem();
 
 	// Check file names in list pane
-	while(foundFile <ctrlList.GetItemCount()) {
-		const ItemInfo* ii = ctrlList.getItemData(foundFile);
-		if(ii->type == ItemInfo::FILE) {
+	while(searchPos <ctrlList.GetItemCount()) {
+		const ItemInfo* ii = ctrlList.getItemData(searchPos);
+		if (search->hasRoot && ii->type == ItemInfo::FILE) {
+			if (search->root == ii->file->getTTH()) {
+				found = true;
+				break;
+			}
+		} else if(ii->type == ItemInfo::FILE) {
 			if(search->matchesDirectFile(ii->file->getName(), ii->file->getSize())) {
 				found = true;
 				break;
 			}
-		} else if(search->matchesDirectDirectory(ii->dir->getName(), ii->dir->getSize())) {
-			found = true;
-			break;
+		} else if(search->matchesDirectDirectoryName(ii->dir->getName())) {
+			if (search->matchesSize(ii->dir->getSize())) {
+				found = true;
+				break;
+			}
 		}
-		foundFile++;
+		searchPos++;
 	}
 
 	if (found) {
@@ -335,12 +351,12 @@ HTREEITEM DirectoryListingFrame::findFile() {
 
 		// Highlight and focus the dir/file if possible
 		ctrlList.SetFocus();
-		ctrlList.EnsureVisible(foundFile, FALSE);
-		ctrlList.SetItemState(foundFile, LVIS_SELECTED | LVIS_FOCUSED, (UINT)-1);
-		foundFile++;
+		ctrlList.EnsureVisible(searchPos, FALSE);
+		ctrlList.SetItemState(searchPos, LVIS_SELECTED | LVIS_FOCUSED, (UINT)-1);
+		searchPos++;
 	} else {
 		//move to next dir (if there are any)
-		foundFile = 0;
+		searchPos = 0;
 		if (!dl->nextResult()) {
 			MessageBox(CTSTRING(NO_MATCHES), CTSTRING(SEARCH_FOR_FILE));
 		}
@@ -351,7 +367,7 @@ HTREEITEM DirectoryListingFrame::findFile() {
 
 void DirectoryListingFrame::findFile(bool findNext) {
 	if(!findNext)	{
-		foundFile = 0;
+		searchPos = 0;
 
 		// Prompt for substring to find
 		LineDlg dlg;
@@ -448,7 +464,7 @@ void DirectoryListingFrame::addHistory(const string& name) {
 	historyIndex = history.size();
 }
 
-void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enableRedraw)
+void DirectoryListingFrame::changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw)
 
 {
 	ctrlList.SetRedraw(FALSE);
