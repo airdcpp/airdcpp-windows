@@ -186,7 +186,8 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
 	void runUserCommand(UserCommand& uc);
-	void refreshTree(const tstring& root, bool convertFromPartial);
+
+	void refreshTree(const tstring& root, bool convertFromPartial, bool searching);
 
 	HTREEITEM findItem(HTREEITEM ht, const tstring& name);
 	void selectItem(const tstring& name);

@@ -82,11 +82,15 @@ DirectoryListingFrame::~DirectoryListingFrame() {
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial) noexcept {
-	refreshTree(Text::toT(aDir), convertFromPartial);
+	bool searching = dl->isCurrentSearchPath(aDir);
 
-	int64_t end = GET_TICK();
-	loadTime = (end - aStart) / 1000;
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED);
+	refreshTree(Text::toT(aDir), convertFromPartial, searching);
+
+	if (!searching) {
+		int64_t end = GET_TICK();
+		loadTime = (end - aStart) / 1000;
+		PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED);
+	}
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept {
@@ -122,7 +126,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept {
 	selectItem(Text::toT(aDir));
 	if (isSearchChange) {
-		PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(_T("Search finished")));
+		PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())));
 		findFile();
 	}
 
@@ -282,7 +286,7 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 
 }
 
-void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial) {
+void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial, bool searching) {
 	ctrlTree.SetRedraw(FALSE);
 
 	HTREEITEM ht = convertFromPartial ? treeRoot : findItem(treeRoot, root);
@@ -310,7 +314,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 		dl->checkShareDupes();
 	ctrlTree.SetRedraw(TRUE);
 
-	if (dl->isCurrentSearchPath(Text::fromT(root))) {
+	if (searching) {
 		findFile();
 	}
 }
@@ -358,7 +362,7 @@ HTREEITEM DirectoryListingFrame::findFile() {
 		//move to next dir (if there are any)
 		searchPos = 0;
 		if (!dl->nextResult()) {
-			MessageBox(CTSTRING(NO_MATCHES), CTSTRING(SEARCH_FOR_FILE));
+			MessageBox(CTSTRING(NO_ADDITIONAL_MATCHES), CTSTRING(SEARCH_FOR_FILE));
 		}
 	}
 
