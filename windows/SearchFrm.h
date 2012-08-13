@@ -127,7 +127,7 @@ public:
 		sizeContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
 		modeContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 		sizeModeContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
-		fileTypeContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
+		fileTypeContainer(WC_COMBOBOXEX, this, SEARCH_MESSAGE_MAP),
 		showUIContainer(WC_COMBOBOX, this, SHOWUI_MESSAGE_MAP),
 		slotsContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 		collapsedContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
@@ -148,7 +148,6 @@ public:
 
 	~SearchFrame() {
 		images.Destroy();
-		searchTypes.Destroy();
 	}
 
 	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
@@ -440,8 +439,7 @@ private:
 	CEdit ctrlSize;
 	CComboBox ctrlMode;
 	CComboBox ctrlSizeMode;
-	CComboBox ctrlFiletype;
-	CImageList searchTypes;
+	CComboBoxEx ctrlFiletype;
 	CButton ctrlDoSearch;
 	CButton ctrlPauseSearch;
 	CButton ctrlPurge;	

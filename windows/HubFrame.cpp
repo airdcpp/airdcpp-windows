@@ -2506,34 +2506,8 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 			OnlineUser* ou = (OnlineUser*)cd->nmcd.lItemlParam;
 			ctrlUsers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
-			if((WinUtil::getOsMajor() >= 5 && WinUtil::getOsMinor() >= 1) //WinXP & WinSvr2003
-				|| (WinUtil::getOsMajor() >= 6)) //Vista & Win7
-			{
-				SetTextColor(cd->nmcd.hdc, cd->clrText);
-				DrawThemeBackground(GetWindowTheme(ctrlUsers.m_hWnd), cd->nmcd.hdc, LVP_LISTITEM, 3, &rc, &rc );
-			} else {
-				COLORREF color;
-				if(ctrlUsers.GetItemState((int)cd->nmcd.dwItemSpec, LVIS_SELECTED) & LVIS_SELECTED) {
-					if(ctrlUsers.m_hWnd == ::GetFocus()) {
-						color = GetSysColor(COLOR_HIGHLIGHT);
-						SetBkColor(cd->nmcd.hdc, GetSysColor(COLOR_HIGHLIGHT));
-						SetTextColor(cd->nmcd.hdc, GetSysColor(COLOR_HIGHLIGHTTEXT));
-					} else {
-						color = GetBkColor(cd->nmcd.hdc);
-						SetBkColor(cd->nmcd.hdc, color);
-					}				
-				} else {
-					color = WinUtil::bgColor;
-					SetBkColor(cd->nmcd.hdc, WinUtil::bgColor);
-					SetTextColor(cd->nmcd.hdc, cd->clrText);
-				}
-				HGDIOBJ oldpen = ::SelectObject(cd->nmcd.hdc, CreatePen(PS_SOLID, 0, color));
-				HGDIOBJ oldbr = ::SelectObject(cd->nmcd.hdc, CreateSolidBrush(color));
-				Rectangle(cd->nmcd.hdc,rc.left, rc.top, rc.right, rc.bottom);
-
-				DeleteObject(::SelectObject(cd->nmcd.hdc, oldpen));
-				DeleteObject(::SelectObject(cd->nmcd.hdc, oldbr));
-			}
+			SetTextColor(cd->nmcd.hdc, cd->clrText);
+			DrawThemeBackground(GetWindowTheme(ctrlUsers.m_hWnd), cd->nmcd.hdc, LVP_LISTITEM, 3, &rc, &rc );
 
 			TCHAR buf[256];
 			ctrlUsers.GetItemText((int)cd->nmcd.dwItemSpec, cd->iSubItem, buf, 255);

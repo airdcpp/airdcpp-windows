@@ -60,12 +60,7 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlTarget.SetWindowText(Text::toT(target).c_str());
 	ctrlUserMatch.SetWindowText(Text::toT(userMatch).c_str());
 
-	ATTACH(IDC_AS_FILETYPE, ctrlFileType);
-	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("search_icons.bmp")))))
-		ftImage.CreateFromImage(WinUtil::getIconPath(_T("search_icons.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-	else
-		ftImage.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
-    ctrlFileType.SetImageList(ftImage);	
+	ATTACH(IDC_AS_FILETYPE, ctrlFileType);	
 	::SetWindowText(GetDlgItem(IDOK), (TSTRING(OK)).c_str());
 	::SetWindowText(GetDlgItem(IDCANCEL), (TSTRING(CANCEL)).c_str());
 	::SetWindowText(GetDlgItem(IDC_SEARCH_FAKE_DLG_SEARCH_STRING), (TSTRING(SEARCH_STRING)).c_str());
@@ -99,27 +94,7 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_CHECK_QUEUED), CTSTRING(AUTOSEARCH_CHECK_QUEUED));
 	::SetWindowText(GetDlgItem(IDC_CHECK_SHARED), CTSTRING(AUTOSEARCH_CHECK_SHARED));
 
-	int q = 0;
-	for(size_t i = 0; i < 9; i++) {
-		COMBOBOXEXITEM cbitem = {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
-		tstring ftString;
-		switch(i) {
-			case 0: q = 0; ftString = TSTRING(ANY); break;
-			case 1: q = 1; ftString = TSTRING(AUDIO); break;
-			case 2: q = 2; ftString = TSTRING(COMPRESSED); break;
-			case 3: q = 3; ftString = TSTRING(DOCUMENT); break;
-			case 4: q = 4; ftString = TSTRING(EXECUTABLE); break;
-			case 5: q = 5; ftString = TSTRING(PICTURE); break;
-			case 6: q = 6; ftString = TSTRING(VIDEO); break;
-			case 7: q = 7; ftString = TSTRING(DIRECTORY); break;
-			case 8: q = 8; ftString = _T("TTH"); break;
-		}
-		cbitem.pszText = const_cast<TCHAR*>(ftString.c_str());
-		cbitem.iItem = i; 
-		cbitem.iImage = q;
-		cbitem.iSelectedImage = q;
-		ctrlFileType.InsertItem(&cbitem);
-	}
+	WinUtil::appendSearchTypeCombo(ctrlFileType);
 	ctrlFileType.SetCurSel(fileType);
 
 	ATTACH(IDC_AS_ACTION, cAction);

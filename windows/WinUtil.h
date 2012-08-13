@@ -151,6 +151,7 @@ static const winamptoolbarButton WinampToolbarButtons[] = {
 
 class WinUtil {
 public:
+	static CImageList searchImages;
 	static CImageList fileImages;
 	static int fileImageCount;
 	static CImageList userImages;
@@ -422,8 +423,10 @@ public:
 	static tstring Speedinfo();
 	static tstring DiskSpaceInfo(bool onlyTotal = false);
 
-	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
+	static void appendSearchTypeCombo(CComboBoxEx& ctrlSearchType);
 	static void loadSettingsTreeIcons();
+
+	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
 
 	static string getReport(const Identity& identity, HWND hwnd);
 

@@ -129,11 +129,7 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 {
 	PropPage::translate((HWND)(*this), texts);
 	
-	if(!(WinUtil::getOsMajor() >= 5 && WinUtil::getOsMinor() >= 1  //WinXP & WinSvr2003
-		|| WinUtil::getOsMajor() >= 6 )) //Vista
-	{
-		::EnableWindow(GetDlgItem(IDC_FIREWALL_UPNP), FALSE);
-	}
+	::EnableWindow(GetDlgItem(IDC_FIREWALL_UPNP), FALSE);
 	switch(SETTING(INCOMING_CONNECTIONS)) {
 		case SettingsManager::INCOMING_DIRECT: CheckDlgButton(IDC_DIRECT, BST_CHECKED); break;
 		case SettingsManager::INCOMING_FIREWALL_UPNP: CheckDlgButton(IDC_FIREWALL_UPNP, BST_CHECKED); break;

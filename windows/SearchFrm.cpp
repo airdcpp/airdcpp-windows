@@ -54,7 +54,7 @@ void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGL
 }
 
 void SearchFrame::closeAll() {
-	for(FrameIter i = frames.begin(); i != frames.end(); ++i)
+	for(auto i = frames.begin(); i != frames.end(); ++i)
 		::PostMessage(i->first, WM_CLOSE, 0, 0);
 }
 
@@ -101,12 +101,8 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	sizeModeContainer.SubclassWindow(ctrlSizeMode.m_hWnd);
 
 	ctrlFiletype.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST | CBS_HASSTRINGS | CBS_OWNERDRAWFIXED, WS_EX_CLIENTEDGE, IDC_FILETYPES);
+		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST | WS_EX_CLIENTEDGE | CBS_HASSTRINGS);
 
-	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("search_icons.bmp")))))
-		searchTypes.CreateFromImage(WinUtil::getIconPath(_T("search_icons.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-	else
-		searchTypes.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 	fileTypeContainer.SubclassWindow(ctrlFiletype.m_hWnd);
 
 	if (BOOLSETTING(USE_SYSTEM_ICONS)) {
@@ -236,15 +232,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	else
 		ctrlSizeMode.SetCurSel(0);
 
-	ctrlFiletype.AddString(CTSTRING(ANY));
-	ctrlFiletype.AddString(CTSTRING(AUDIO));
-	ctrlFiletype.AddString(CTSTRING(COMPRESSED));
-	ctrlFiletype.AddString(CTSTRING(DOCUMENT));
-	ctrlFiletype.AddString(CTSTRING(EXECUTABLE));
-	ctrlFiletype.AddString(CTSTRING(PICTURE));
-	ctrlFiletype.AddString(CTSTRING(VIDEO));
-	ctrlFiletype.AddString(CTSTRING(DIRECTORY));
-	ctrlFiletype.AddString(_T("TTH"));
+	WinUtil::appendSearchTypeCombo(ctrlFiletype);
 	ctrlFiletype.SetCurSel(SETTING(LAST_SEARCH_FILETYPE));
 	
 	ctrlSkiplist.AddString(Text::toT(SETTING(SKIP_MSG_01)).c_str());
@@ -336,10 +324,11 @@ LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 	HWND hwnd = 0;
 	DRAWITEMSTRUCT* dis = (DRAWITEMSTRUCT*)lParam;
 	bHandled = FALSE;
-	
+
 	if(wParam == IDC_FILETYPES) {
 		bHandled = TRUE;
 		return ListDraw(dis);
+		return S_OK;
 	} else if(dis->CtlID == ATL_IDW_STATUS_BAR && dis->itemID == 1){
 		if(searchStartTime > 0){
 			bHandled = TRUE;
@@ -419,10 +408,10 @@ BOOL SearchFrame::ListDraw(DRAWITEMSTRUCT *dis) {
 					DrawFocusRect(dis->hDC, &dis->rcItem);
 			}
 
-			ImageList_Draw(searchTypes, dis->itemID, dis->hDC, 
+			/*ImageList_Draw(searchTypes, dis->itemID, dis->hDC, 
 				dis->rcItem.left + 2, 
 				dis->rcItem.top, 
-				ILD_TRANSPARENT);
+				ILD_TRANSPARENT);*/
 
 			break;
 	}
@@ -496,7 +485,7 @@ void SearchFrame::onEnter() {
 		search = StringTokenizer<tstring>(s, ' ').getTokens();
 		s.clear();
 		//strip out terms beginning with -
-		for(TStringList::iterator si = search.begin(); si != search.end(); ) {
+		for(auto si = search.begin(); si != search.end(); ) {
 			if(si->empty()) {
 				si = search.erase(si);
 				continue;
@@ -606,7 +595,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 			}
 		} else {
 			// match all here
-			for(TStringIter j = search.begin(); j != search.end(); ++j) {
+			for(auto j = search.begin(); j != search.end(); ++j) {
 				if((*j->begin() != _T('-') && Util::findSubString(aResult->getFile(), Text::fromT(*j)) == -1) ||
 					(*j->begin() == _T('-') && j->size() != 1 && Util::findSubString(aResult->getFile(), Text::fromT(j->substr(1))) != -1)
 					) 
@@ -783,7 +772,7 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 				si->sr->getTTH(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), 0, true, p);
 			
 			const vector<SearchInfo*>& children = sf->getUserList().findChildren(si->getGroupCond());
-			for(SearchInfo::Iter i = children.begin(); i != children.end(); i++) {
+			for(auto i = children.begin(); i != children.end(); i++) {
 				SearchInfo* j = *i;
 				try {
 					QueueManager::getInstance()->add(tgt + Text::fromT(si->getText(COLUMN_FILENAME)), j->sr->getSize(), j->sr->getTTH(), 
@@ -1278,7 +1267,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 				delete si;
 				return;	 	
 			} 	
-			for(vector<SearchInfo*>::const_iterator k = pp->children.begin(); k != pp->children.end(); k++){	 	
+			for(auto k = pp->children.begin(); k != pp->children.end(); k++){	 	
 				if((sr->getUser()->getCID() == (*k)->getUser()->getCID()) && (sr->getFile() == (*k)->sr->getFile())) {	 	
 					delete si;
 					return;	 	
@@ -1286,7 +1275,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 			}	 	
 		}
 	} else {
-		for(SearchInfoList::ParentMap::const_iterator s = ctrlResults.getParents().begin(); s != ctrlResults.getParents().end(); ++s) {
+		for(auto s = ctrlResults.getParents().begin(); s != ctrlResults.getParents().end(); ++s) {
 			SearchInfo* si2 = (*s).second.parent;
 	        const SearchResultPtr& sr2 = si2->sr;
 			if((sr->getUser()->getCID() == sr2->getUser()->getCID()) && (sr->getFile() == sr2->getFile())) {
@@ -1674,34 +1663,8 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 			SearchInfo* si = (SearchInfo*)cd->nmcd.lItemlParam;
 			ctrlResults.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
-			if((WinUtil::getOsMajor() >= 5 && WinUtil::getOsMinor() >= 1) //WinXP & WinSvr2003
-				|| (WinUtil::getOsMajor() >= 6)) //Vista & Win7
-			{
-				SetTextColor(cd->nmcd.hdc, cd->clrText);
-				DrawThemeBackground(GetWindowTheme(ctrlResults.m_hWnd), cd->nmcd.hdc, LVP_LISTITEM, 3, &rc, &rc );
-			} else {
-				COLORREF color;
-				if(ctrlResults.GetItemState((int)cd->nmcd.dwItemSpec, LVIS_SELECTED) & LVIS_SELECTED) {
-					if(ctrlResults.m_hWnd == ::GetFocus()) {
-						color = GetSysColor(COLOR_HIGHLIGHT);
-						SetBkColor(cd->nmcd.hdc, GetSysColor(COLOR_HIGHLIGHT));
-						SetTextColor(cd->nmcd.hdc, GetSysColor(COLOR_HIGHLIGHTTEXT));
-					} else {
-						color = GetBkColor(cd->nmcd.hdc);
-						SetBkColor(cd->nmcd.hdc, color);
-					}				
-				} else {
-					color = WinUtil::bgColor;
-					SetBkColor(cd->nmcd.hdc, WinUtil::bgColor);
-					SetTextColor(cd->nmcd.hdc, cd->clrText);
-				}
-				HGDIOBJ oldpen = ::SelectObject(cd->nmcd.hdc, CreatePen(PS_SOLID, 0, color));
-				HGDIOBJ oldbr = ::SelectObject(cd->nmcd.hdc, CreateSolidBrush(color));
-				Rectangle(cd->nmcd.hdc,rc.left, rc.top, rc.right, rc.bottom);
-
-				DeleteObject(::SelectObject(cd->nmcd.hdc, oldpen));
-				DeleteObject(::SelectObject(cd->nmcd.hdc, oldbr));
-			}
+			SetTextColor(cd->nmcd.hdc, cd->clrText);
+			DrawThemeBackground(GetWindowTheme(ctrlResults.m_hWnd), cd->nmcd.hdc, LVP_LISTITEM, 3, &rc, &rc );
 
 			TCHAR buf[256];
 			ctrlResults.GetItemText((int)cd->nmcd.dwItemSpec, cd->iSubItem, buf, 255);
@@ -1860,7 +1823,7 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 		ctrlResults.SetRedraw(FALSE);
 		ctrlResults.DeleteAllItems();
 
-		for(SearchInfoList::ParentMap::const_iterator i = ctrlResults.getParents().begin(); i != ctrlResults.getParents().end(); ++i) {
+		for(auto i = ctrlResults.getParents().begin(); i != ctrlResults.getParents().end(); ++i) {
 			SearchInfo* si = (*i).second.parent;
 			si->collapsed = true;
 			if(matchFilter(si, sel, doSizeCompare, mode, size)) {

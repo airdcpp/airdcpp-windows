@@ -78,6 +78,7 @@ HFONT WinUtil::progressFont = NULL;
 COLORREF WinUtil::TBprogressTextColor = NULL;
 CMenu WinUtil::mainMenu;
 OMenu WinUtil::grantMenu;
+CImageList WinUtil::searchImages;
 CImageList WinUtil::fileImages;
 CImageList WinUtil::userImages;
 CImageList WinUtil::flagImages;
@@ -416,6 +417,11 @@ void WinUtil::init(HWND hWnd) {
 		fileImages.CreateFromImage(WinUtil::getIconPath(_T("folders.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 	else
 		fileImages.CreateFromImage(IDB_FOLDERS, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+
+	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("search_icons.bmp")))))
+		searchImages.CreateFromImage(WinUtil::getIconPath(_T("search_icons.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
+	else
+		searchImages.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 
 	dirIconIndex = fileImageCount++;
 	dirMaskedIndex = fileImageCount++;
@@ -862,7 +868,7 @@ void WinUtil::splitTokens(int* array, const string& tokens, int maxItems /* = -1
 		maxItems = l.size();
 	
 	int k = 0;
-	for(StringList::const_iterator i = l.begin(); i != l.end() && k < maxItems; ++i, ++k) {
+	for(auto i = l.begin(); i != l.end() && k < maxItems; ++i, ++k) {
 		array[k] = Util::toInt(*i);
 	}
 }
@@ -1854,8 +1860,6 @@ tstring WinUtil::UselessInfo() {
 
 tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 	tstring ret = Util::emptyStringT;
-	//support XP and higher
-	if((LOBYTE(LOWORD(GetVersion())) >= 5 && WinUtil::getOsMinor() >= 1) || (WinUtil::getOsMajor() >= 6)) {
 
 	int64_t free = 0, totalFree = 0, size = 0, totalSize = 0, netFree = 0, netSize = 0;
 
@@ -1895,10 +1899,7 @@ tstring WinUtil::DiskSpaceInfo(bool onlyTotal /* = false */) {
 		}		
 		else
 			ret += Util::formatBytesW(totalFree) + _T("/") + Util::formatBytesW(totalSize);
-		
-	}else{
-		ret+=_T("Not Supported by OS");
-	}
+
 	return ret;
 }
 
@@ -1931,62 +1932,56 @@ TStringList WinUtil::FindVolumes() {
 tstring WinUtil::diskInfo() {
 
 	tstring result = Util::emptyStringT;
-	//support XP and higher
-	if((LOBYTE(LOWORD(GetVersion())) >= 5 && WinUtil::getOsMinor() >= 1) || (WinUtil::getOsMajor() >= 6)) {
 		
-		TCHAR   buf[MAX_PATH];
-		int64_t free = 0, size = 0 , totalFree = 0, totalSize = 0;
-		int disk_count = 0;
+	TCHAR   buf[MAX_PATH];
+	int64_t free = 0, size = 0 , totalFree = 0, totalSize = 0;
+	int disk_count = 0;
    
-		std::vector<tstring> results; //add in vector for sorting, nicer to look at :)
-		// lookup drive volumes.
-		TStringList volumes = FindVolumes();
+	std::vector<tstring> results; //add in vector for sorting, nicer to look at :)
+	// lookup drive volumes.
+	TStringList volumes = FindVolumes();
 
-		for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
-			if(GetDriveType((*i).c_str()) == DRIVE_CDROM || GetDriveType((*i).c_str()) == DRIVE_REMOVABLE)
-				continue;
+	for(TStringIter i = volumes.begin(); i != volumes.end(); i++) {
+		if(GetDriveType((*i).c_str()) == DRIVE_CDROM || GetDriveType((*i).c_str()) == DRIVE_REMOVABLE)
+			continue;
 	    
-			if((GetVolumePathNamesForVolumeName((*i).c_str(), buf, 256, NULL) != 0) &&
-				(GetDiskFreeSpaceEx((*i).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free) !=0)){
-				tstring mountpath = buf; 
-				if(!mountpath.empty()) {
-					totalFree += free;
-					totalSize += size;
-					results.push_back((_T("MountPath: ") + mountpath + _T(" Disk Space (free/total) ") + Util::formatBytesW(free) + _T("/") +  Util::formatBytesW(size)));
-				}
+		if((GetVolumePathNamesForVolumeName((*i).c_str(), buf, 256, NULL) != 0) &&
+			(GetDiskFreeSpaceEx((*i).c_str(), NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free) !=0)){
+			tstring mountpath = buf; 
+			if(!mountpath.empty()) {
+				totalFree += free;
+				totalSize += size;
+				results.push_back((_T("MountPath: ") + mountpath + _T(" Disk Space (free/total) ") + Util::formatBytesW(free) + _T("/") +  Util::formatBytesW(size)));
 			}
 		}
-      
-		// and a check for mounted Network drives, todo fix a better way for network space
-		ULONG drives = _getdrives();
-		TCHAR drive[3] = { _T('A'), _T(':'), _T('\0') };
-   
-		while(drives != 0) {
-			if(drives & 1 && ( GetDriveType(drive) != DRIVE_CDROM && GetDriveType(drive) != DRIVE_REMOVABLE && GetDriveType(drive) == DRIVE_REMOTE) ){
-				if(GetDiskFreeSpaceEx(drive, NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
-					totalFree += free;
-					totalSize += size;
-					results.push_back((_T("Network MountPath: ") + (tstring)drive + _T(" Disk Space (free/total) ") + Util::formatBytesW(free) + _T("/") +  Util::formatBytesW(size)));
-				}
-			}
-
-			++drive[0];
-			drives = (drives >> 1);
-		}
-
-		sort(results.begin(), results.end()); //sort it
-		for(std::vector<tstring>::iterator i = results.begin(); i != results.end(); ++i) {
-			disk_count++;
-			result += _T("\r\n ") + *i; 
-		}
-		result +=  _T("\r\n\r\n Total HDD space (free/total): ") + Util::formatBytesW((totalFree)) + _T("/") + Util::formatBytesW(totalSize);
-		result += _T("\r\n Total Drives count: ") + Text::toT(Util::toString(disk_count));
-   
-		results.clear();
-	
-	} else {
-   		result += _T("Not Supported by OS");
 	}
+      
+	// and a check for mounted Network drives, todo fix a better way for network space
+	ULONG drives = _getdrives();
+	TCHAR drive[3] = { _T('A'), _T(':'), _T('\0') };
+   
+	while(drives != 0) {
+		if(drives & 1 && ( GetDriveType(drive) != DRIVE_CDROM && GetDriveType(drive) != DRIVE_REMOVABLE && GetDriveType(drive) == DRIVE_REMOTE) ){
+			if(GetDiskFreeSpaceEx(drive, NULL, (PULARGE_INTEGER)&size, (PULARGE_INTEGER)&free)){
+				totalFree += free;
+				totalSize += size;
+				results.push_back((_T("Network MountPath: ") + (tstring)drive + _T(" Disk Space (free/total) ") + Util::formatBytesW(free) + _T("/") +  Util::formatBytesW(size)));
+			}
+		}
+
+		++drive[0];
+		drives = (drives >> 1);
+	}
+
+	sort(results.begin(), results.end()); //sort it
+	for(std::vector<tstring>::iterator i = results.begin(); i != results.end(); ++i) {
+		disk_count++;
+		result += _T("\r\n ") + *i; 
+	}
+	result +=  _T("\r\n\r\n Total HDD space (free/total): ") + Util::formatBytesW((totalFree)) + _T("/") + Util::formatBytesW(totalSize);
+	result += _T("\r\n Total Drives count: ") + Text::toT(Util::toString(disk_count));
+   
+	results.clear();
 
    return result;
 }
@@ -2506,6 +2501,39 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 	}
 
 	ctrlLanguage.SetCurSel(Localization::curLanguage);
+}
+
+void WinUtil::appendSearchTypeCombo(CComboBoxEx& ctrlSearchType) {
+	auto types = SettingsManager::getInstance()->getSearchTypes();
+	ctrlSearchType.SetImageList(searchImages);
+
+	int listPos=0;
+	auto addListItem = [&ctrlSearchType, &listPos] (int imagePos, const tstring& title) -> void {
+		COMBOBOXEXITEM cbitem = {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
+		cbitem.pszText = const_cast<TCHAR*>(title.c_str());
+		cbitem.iItem = listPos++; 
+		cbitem.iImage = imagePos;
+		cbitem.iSelectedImage = imagePos;
+		ctrlSearchType.InsertItem(&cbitem);
+	};
+
+
+	addListItem(0, TSTRING(ANY));
+	for(auto i = types.begin(); i != types.end(); i++) {
+		string name = i->first;
+		int imagePos = 0;
+		if(name.size() == 1 && name[0] >= '1' && name[0] <= '6') {
+			imagePos = Util::toInt(name.substr(0, 1));
+			name = SearchManager::getTypeStr(name[0] - '0');
+		} else {
+			imagePos = 9;
+		}
+
+		addListItem(imagePos, Text::toT(name));
+	}
+
+	addListItem(7, TSTRING(DIRECTORY));
+	addListItem(8, _T("TTH"));
 }
 
 HBITMAP WinUtil::getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, long defaultIcon /*0*/,int xSize /*= 0*/, int ySize /*= 0*/) {
