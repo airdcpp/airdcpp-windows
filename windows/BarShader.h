@@ -1,5 +1,4 @@
 #include "atlcoll.h"
-#include <stdint.h>
 
 class CBarShader
 {
@@ -157,7 +156,7 @@ public:
 			for (int _x = 0; _x <= w; ++_x) {
 				COLORREF cr = blendColors(c2, c1, (double)(_x) / (double)(w));
 				for (int _y = 0; _y < h; ++_y) {
-					SetPixelV(fci->hDC, _x, _y, brightenColor(cr, (double)blend_vector[(size_t)floor(((double)(_y) / h) * MAX_SHADE - 1)] / (double)SHADE_LEVEL));
+					SetPixelV(fci->hDC, _x, _y, brightenColor(cr, (double)blend_vector[(size_t)floor(((double)(_y) / h) * (MAX_SHADE-1))] / (double)SHADE_LEVEL));
 				}
 			}
 		}

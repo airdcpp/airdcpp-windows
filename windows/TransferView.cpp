@@ -439,16 +439,18 @@ LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
                 ::DrawText(dc, ii->statusString.c_str(), ii->statusString.length(), rc, DT_LEFT | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
 				rc.left -= 6;
 
+				rc.right = rc.left + (int) ((int64_t)rc.Width() * ii->actual / ii->size);
+
 				COLORREF a, b;
 				OperaColors::EnlightenFlood(clr, a, b);
-				OperaColors::FloodFill(cdc, rc.left+1, rc.top+1,  rc.left + (int) ((int64_t)rc.Width() * ii->actual / ii->size), rc.bottom-1, a, b);
+				OperaColors::FloodFill(cdc, rc.left+1, rc.top+1,  rc.right, rc.bottom-1, a, b);
 				
 				// Draw the text only over the bar and with correct color
 				::SetTextColor(dc, SETTING(PROGRESS_OVERRIDE_COLORS2) ? 
 					(ii->download ? SETTING(PROGRESS_TEXT_COLOR_DOWN) : SETTING(PROGRESS_TEXT_COLOR_UP)) : 
 					OperaColors::TextFromBackground(clr));
 
-				rc.right = rc.left + (int) ((int64_t)rc.Width() * ii->actual / ii->size) + 1;
+				rc.right += 1;
 				rc.left += 6;
                 ::DrawText(dc, ii->statusString.c_str(), ii->statusString.length(), rc, DT_LEFT | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
 			} else {
