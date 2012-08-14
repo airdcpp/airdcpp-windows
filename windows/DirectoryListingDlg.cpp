@@ -15,11 +15,14 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
+//#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 #include "WinUtil.h"
 #include "DirectoryListingDlg.h"
-#include "../client/StringTokenizer.h"
+
+//#include "../client/StringTokenizer.h"
+#include "../client/SearchManager.h"
+#include "../client/ResourceManager.h"
 
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \
@@ -27,80 +30,47 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-DirectoryListingDlg::DirectoryListingDlg() {
-	search = _T("");
-	remove = false;
-}
+DirectoryListingDlg::DirectoryListingDlg() : fileTypeStr(SEARCH_TYPE_ANY), fileType(0), size(0), sizeMode(0) { }
 
 DirectoryListingDlg::~DirectoryListingDlg() {
 	ctrlSearch.Detach();
 	ctrlFileType.Detach();
-	cAction.Detach();
-	ftImage.Destroy();
-	ctrlTarget.Detach();
-
 }
 
 LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
-	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
-	ATTACH(IDC_TARGET_PATH, ctrlTarget);
+	ATTACH(IDC_SEARCH_STRING, ctrlSearch);
 
-	ctrlSearch.SetWindowText(search.c_str());
+	ctrlSearch.SetWindowText(Text::toT(searchStr).c_str());
 
-	ATTACH(IDC_AS_FILETYPE, ctrlFileType);
-	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("search_icons.bmp")))))
-		ftImage.CreateFromImage(WinUtil::getIconPath(_T("search_icons.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-	else
-		ftImage.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
-    ctrlFileType.SetImageList(ftImage);	
-	::SetWindowText(GetDlgItem(IDOK), (TSTRING(OK)).c_str());
-	::SetWindowText(GetDlgItem(IDCANCEL), (TSTRING(CANCEL)).c_str());
-	::SetWindowText(GetDlgItem(IDC_SEARCH_FAKE_DLG_SEARCH_STRING), (TSTRING(SEARCH_STRING)).c_str());
-	::SetWindowText(GetDlgItem(IDC_AS_ACTION_STATIC), (TSTRING(ACTION)).c_str());
-	::SetWindowText(GetDlgItem(IDC_ADD_SRCH_STR_TYPE_STATIC), (TSTRING(FILE_TYPE)).c_str());
-	::SetWindowText(GetDlgItem(IDC_REMOVE_ON_HIT), (TSTRING(REMOVE_ON_HIT)).c_str());
-	::SetWindowText(GetDlgItem(IDC_DL_TO), TSTRING(DOWNLOAD_TO).c_str());
+	ATTACH(IDC_FILETYPES, ctrlFileType);
+	ATTACH(IDC_SEARCH_SIZE, ctrlSize);
 
-	int q = 0;
-	for(size_t i = 0; i < 10; i++) {
-		COMBOBOXEXITEM cbitem = {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
-		tstring ftString;
-		switch(i) {
-			case 0: q = 0; ftString = TSTRING(ANY); break;
-			case 1: q = 1; ftString = TSTRING(AUDIO); break;
-			case 2: q = 2; ftString = TSTRING(COMPRESSED); break;
-			case 3: q = 3; ftString = TSTRING(DOCUMENT); break;
-			case 4: q = 4; ftString = TSTRING(EXECUTABLE); break;
-			case 5: q = 5; ftString = TSTRING(PICTURE); break;
-			case 6: q = 6; ftString = TSTRING(VIDEO); break;
-			case 7: q = 7; ftString = TSTRING(DIRECTORY); break;
-			case 8: q = 8; ftString = _T("TTH"); break;
-			case 9: q = 0; ftString = _T("RegExp"); break;
-		}
-		cbitem.pszText = const_cast<TCHAR*>(ftString.c_str());
-		cbitem.iItem = i; 
-		cbitem.iImage = q;
-		cbitem.iSelectedImage = q;
-		ctrlFileType.InsertItem(&cbitem);
-	}
-	ctrlFileType.SetCurSel(fileType);
+	ATTACH(IDC_SIZE_MODE, ctrlSizeMode);
+	ctrlSizeMode.AddString(CTSTRING(NORMAL));
+	ctrlSizeMode.AddString(CTSTRING(AT_LEAST));
+	ctrlSizeMode.AddString(CTSTRING(AT_MOST));
+	ctrlSizeMode.AddString(CTSTRING(EXACT_SIZE));
+	ctrlSizeMode.SetCurSel(1);
+
+	ATTACH(IDC_SIZE_UNIT, ctrlSizeUnit);
+	ctrlSizeUnit.AddString(CTSTRING(B));
+	ctrlSizeUnit.AddString(CTSTRING(KiB));
+	ctrlSizeUnit.AddString(CTSTRING(MiB));
+	ctrlSizeUnit.AddString(CTSTRING(GiB));
+	ctrlSizeUnit.SetCurSel(0);
+
+	::SetWindowText(GetDlgItem(IDOK), (CTSTRING(OK)));
+	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
+	::SetWindowText(GetDlgItem(IDC_DL_SEARCH_DESC), CTSTRING(SEARCH_STRING));
+	::SetWindowText(GetDlgItem(IDC_DL_TYPE_TEXT), CTSTRING(FILE_TYPE));
+	::SetWindowText(GetDlgItem(IDC_SIZE_LABEL), CTSTRING(SIZE));
+
+	WinUtil::appendSearchTypeCombo(ctrlFileType, fileTypeStr);
 
 	CenterWindow(GetParent());
-	SetWindowText(CTSTRING(AUTOSEARCH_DLG));
+	SetWindowText(CTSTRING(SEARCH));
 	return TRUE;
-}
-
-LRESULT DirectoryListingDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	TCHAR buf[MAX_PATH];
-
-	GetDlgItemText(IDC_TARGET_PATH, buf, MAX_PATH);
-	tstring x = buf;
-
-	if(WinUtil::browseDirectory(x, m_hWnd) == IDOK) {
-		SetDlgItemText(IDC_TARGET_PATH, x.c_str());
-	}
-	return 0;
 }
 
 LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -110,15 +80,31 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 			MessageBox(CTSTRING(LINE_EMPTY));
 			return 0;
 		}
-		GetDlgItemText(IDC_AS_SEARCH_STRING, buf, 512);
-		tstring searchWord = buf;
-		//int fileType = ctrlFileType.GetCurSel();
+
+		sizeMode = ctrlSizeMode.GetCurSel();
+
+		ctrlSearch.GetWindowText(buf, 512);
+		searchStr = Text::fromT(buf);
+
+		ctrlSize.GetWindowText(buf, 512);
+		double lsize = Util::toDouble(Text::fromT(buf));
+		switch(ctrlSizeUnit.GetCurSel()) {
+			case 1:
+				lsize*=1024.0; break;
+			case 2:
+				lsize*=1024.0*1024.0; break;
+			case 3:
+				lsize*=1024.0*1024.0*1024.0; break;
+		}
+		size = lsize;
 	}
 	EndDialog(wID);
 	return 0;
 }
 
-
-LRESULT DirectoryListingDlg::onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT DirectoryListingDlg::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	extList.clear();
+	SettingsManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), fileType, extList, fileTypeStr);
+	//fixControls();
 	return 0;
 }

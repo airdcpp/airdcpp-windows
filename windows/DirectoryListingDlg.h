@@ -22,16 +22,13 @@
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
 
-#include "../client/DirectoryListing.h"
-#include "../client/Util.h"
-#include "../client/ResourceManager.h"
-
 class DirectoryListingDlg : public CDialogImpl<DirectoryListingDlg> {
 public:
-	bool display;
-	bool remove;
-	tstring search;
-	int fileType;
+	string searchStr;
+	string fileTypeStr;
+	int fileType, sizeMode;
+	int64_t size;
+	StringList extList;
 
 	enum { IDD = IDD_DIRLIST_DLG };
 
@@ -43,8 +40,7 @@ public:
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
-		COMMAND_ID_HANDLER(IDC_AS_ACTION, onAction)
-		COMMAND_HANDLER(IDC_BROWSE, BN_CLICKED, onBrowse)
+		COMMAND_ID_HANDLER(IDC_FILETYPES, onTypeChanged)
 	END_MSG_MAP()
 
 
@@ -55,17 +51,12 @@ public:
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-
+	LRESULT onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 private:
-//	enum { BUF_LEN = 1024 };
-	CImageList ftImage;
-
-	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget;
+	CEdit ctrlSearch;
 	CComboBoxEx ctrlFileType;
-	CComboBox cAction;
-	CButton cDisplay;
-	void onPartialSearch(tstring aSearch, int type);
+	CEdit ctrlSize;
+	CComboBox ctrlSizeMode;
+	CComboBox ctrlSizeUnit;
 };
 #endif

@@ -548,6 +548,7 @@
 #define IDC_USE_EXTRA_VERSION           1230
 #define IDC_TTH                         1230
 #define IDC_DOWNLOADDIR_NAME            1231
+#define IDC_SEARCH_SIZE                 1231
 #define IDC_DOWNLOADDIR_EXT             1232
 #define IDC_MAGNET_QUEUE                1232
 #define IDC_MAGNET_SEARCH               1233
@@ -1086,6 +1087,9 @@
 #define IDC_COMBO                       1651
 #define IDC_COMBO_DESC                  1652
 #define IDC_PROGRESS1                   1653
+#define IDC_SIZEMODE                    1654
+#define IDC_SIZE_MODE                   1654
+#define IDC_SIZE_UNIT                   1655
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1381,6 +1385,7 @@
 #define IDC_DL_SEARCH_STRING            15110
 #define IDC_DL_TYPE_TEXT                15111
 #define IDC_REMOVE_BUNDLE               15112
+#define IDC_SIZE_LABEL                  15112
 #define IDC_OPEN_BUNDLE_FOLDER          15114
 #define IDC_BUNDLE_PRIORITY             15115
 #define IDC_REMOVE_BUNDLE_SOURCE        15116
@@ -1444,7 +1449,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        340
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1654
+#define _APS_NEXT_CONTROL_VALUE         1655
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

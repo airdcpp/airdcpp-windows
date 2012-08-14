@@ -223,20 +223,8 @@ public:
 		ctrlList.DeleteAllItems();
 	}
 
-	LRESULT onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		searching = true;
-		findFile(false);
-		searching = false;
-		updateStatus();
-		return 0;
-	}
-	LRESULT onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		searching = true;
-		findFile(true);
-		searching = false;
-		updateStatus();
-		return 0;
-	}
+	LRESULT onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -408,7 +396,6 @@ private:
 	size_t files;
 
 	bool updating;
-	bool searching;
 	bool closed;
 
 	int statusSizes[12];

@@ -24,6 +24,8 @@
 #include "Resource.h"
 
 #include "DirectoryListingFrm.h"
+#include "DirectoryListingDlg.h"
+
 #include "WinUtil.h"
 #include "LineDlg.h"
 #include "PrivateFrame.h"
@@ -71,7 +73,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
-		treeRoot(NULL), skipHits(0), files(0), updating(false), searching(false), dl(aList)
+		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList)
 { 
 	dl->addListener(this);
 }
@@ -333,7 +335,7 @@ void DirectoryListingFrame::findSearchHit() {
 				found = true;
 				break;
 			}
-		} else if(ii->type == ItemInfo::FILE) {
+		} else if(ii->type == ItemInfo::FILE && !search->isDirectory) {
 			if(search->matchesDirectFile(ii->file->getName(), ii->file->getSize())) {
 				found = true;
 				break;
@@ -359,6 +361,7 @@ void DirectoryListingFrame::findSearchHit() {
 		ctrlList.EnsureVisible(searchPos, FALSE);
 		ctrlList.SetItemState(searchPos, LVIS_SELECTED | LVIS_FOCUSED, (UINT)-1);
 		searchPos++;
+		updateStatus();
 	} else {
 		//move to next dir (if there are any)
 		searchPos = 0;
@@ -368,34 +371,34 @@ void DirectoryListingFrame::findSearchHit() {
 	}
 }
 
-void DirectoryListingFrame::findFile(bool findNext) {
-	if(!findNext)	{
-		searchPos = 0;
+LRESULT DirectoryListingFrame::onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	searchPos = 0;
 
-		// Prompt for substring to find
-		LineDlg dlg;
-		dlg.title = TSTRING(SEARCH_FOR_FILE);
-		dlg.description = TSTRING(ENTER_SEARCH_STRING);
-		dlg.line = Util::emptyStringT;
+	// Prompt for substring to find
+	DirectoryListingDlg dlg;
+	if(dlg.DoModal() != IDOK)
+		return 0;
 
-		if(dlg.DoModal() != IDOK)
-			return;
+	//dlg.title = TSTRING(SEARCH_FOR_FILE);
+	//dlg.description = TSTRING(ENTER_SEARCH_STRING);
+	//dlg.line = Util::emptyStringT;
 
-		string findStr = Text::fromT(dlg.line);
-		if(findStr.empty())
-			return;
+	/*string findStr = Text::fromT(dlg.line);
+	if(findStr.empty())
+		return 0;*/
 
-		StringList extList;
-		dl->addSearchTask(findStr, 0, SearchManager::TYPE_ANY, SearchManager::SIZE_DONTCARE, extList);
+	dl->addSearchTask(dlg.searchStr, dlg.size, dlg.fileType, dlg.sizeMode, dlg.extList);
 
-		return;
-	} else {
-		findSearchHit();
-	}
+	return 0;
+}
+
+LRESULT DirectoryListingFrame::onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	findSearchHit();
+	return 0;
 }
 
 void DirectoryListingFrame::updateStatus() {
-	if(!searching && !updating && ctrlStatus.IsWindow()) {
+	if(!updating && ctrlStatus.IsWindow()) {
 		int cnt = ctrlList.GetSelectedCount();
 		int64_t total = 0;
 		if(cnt == 0) {
