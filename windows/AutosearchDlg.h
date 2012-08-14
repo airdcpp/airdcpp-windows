@@ -31,12 +31,12 @@
 #include "MenuBaseHandlers.h"
 
 #define FILTER_MESSAGE_MAP 8
-class SearchPageDlg : public CDialogImpl<SearchPageDlg>, public DownloadBaseHandler<SearchPageDlg> {
+class AutoSearchDlg : public CDialogImpl<AutoSearchDlg>, public DownloadBaseHandler<AutoSearchDlg> {
 public:
-	typedef DownloadBaseHandler<SearchPageDlg> dlBase;
+	typedef DownloadBaseHandler<AutoSearchDlg> dlBase;
 
-	string searchString, comment, target, userMatch, matcherString;
-	int fileType, searchInterval;
+	string searchString, comment, target, userMatch, matcherString, fileTypeStr;
+	int searchInterval;
 	uint8_t matcherType, action;
 	TargetUtil::TargetType targetType;
 	SearchTime startTime;
@@ -52,16 +52,16 @@ public:
 
 	enum { IDD = IDD_AUTOSEARCH_DLG };
 
-	SearchPageDlg();
-	~SearchPageDlg();
+	AutoSearchDlg();
+	~AutoSearchDlg();
 
-	BEGIN_MSG_MAP_EX(SearchPageDlg)
+	BEGIN_MSG_MAP_EX(AutoSearchDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDC_AS_ACTION, onAction)
-		COMMAND_ID_HANDLER(IDC_AS_FILETYPE, onCheckMatcher)
+		COMMAND_ID_HANDLER(IDC_AS_FILETYPE, onTypeChanged)
 		COMMAND_ID_HANDLER(IDC_USE_MATCHER, onCheckMatcher)
 		COMMAND_ID_HANDLER(IDC_CUSTOM_SEARCH_TIMES, onCheckTimes)
 		COMMAND_ID_HANDLER(IDC_USE_EXPIRY, onCheckExpiry)
@@ -87,6 +87,7 @@ public:
 	LRESULT onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckExpiry(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -122,5 +123,7 @@ private:
 	void fixControls();
 	void updateTargetTypeText();
 	bool loading;
+
+	int searchType;
 };
 #endif

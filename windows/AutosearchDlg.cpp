@@ -30,12 +30,12 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-SearchPageDlg::SearchPageDlg() : fileType(0), action(0), matcherType(0), searchInterval(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
-	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true)
+AutoSearchDlg::AutoSearchDlg() : fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), searchInterval(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
+	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0)
 	/*ctrlTarget(WC_EDIT, this, FILTER_MESSAGE_MAP)*/ {
 }
 
-SearchPageDlg::~SearchPageDlg() {
+AutoSearchDlg::~AutoSearchDlg() {
 	ctrlSearch.Detach();
 	ctrlFileType.Detach();
 	cAction.Detach();
@@ -45,7 +45,7 @@ SearchPageDlg::~SearchPageDlg() {
 	cMatcherType.Detach();
 }
 
-LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
 	ATTACH(IDC_TARGET_PATH, ctrlTarget);
@@ -94,8 +94,11 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_CHECK_QUEUED), CTSTRING(AUTOSEARCH_CHECK_QUEUED));
 	::SetWindowText(GetDlgItem(IDC_CHECK_SHARED), CTSTRING(AUTOSEARCH_CHECK_SHARED));
 
-	WinUtil::appendSearchTypeCombo(ctrlFileType);
-	ctrlFileType.SetCurSel(fileType);
+	//get the search type so that we can set the initial control states correctly in fixControls
+	StringList ext;
+	SettingsManager::getInstance()->getSearchType(fileTypeStr, searchType, ext);
+
+	WinUtil::appendSearchTypeCombo(ctrlFileType, fileTypeStr);
 
 	ATTACH(IDC_AS_ACTION, cAction);
 	cAction.AddString(CTSTRING(DOWNLOAD));
@@ -112,8 +115,6 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	CheckDlgButton(IDC_REMOVE_ON_HIT, remove);
 	CheckDlgButton(IDC_CHECK_QUEUED, checkQueued);
 	CheckDlgButton(IDC_CHECK_SHARED, checkShared);
-	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), fileType == SearchManager::TYPE_DIRECTORY);
-	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), fileType == SearchManager::TYPE_DIRECTORY);
 
 	if (!(matcherString == searchString && matcherType == 0)) {
 		ctrlMatcherString.SetWindowText(Text::toT(matcherString).c_str());
@@ -169,12 +170,12 @@ LRESULT SearchPageDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	return TRUE;
 }
 
-LRESULT SearchPageDlg::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchDlg::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	cSelectDir.SetState(false);
 	return 0;
 }
 
-LRESULT SearchPageDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CRect rect;
 	cSelectDir.GetWindowRect(rect);
 	auto pt = rect.BottomRight();
@@ -195,7 +196,7 @@ LRESULT SearchPageDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	return 0;
 }
 
-void SearchPageDlg::download(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType) {
+void AutoSearchDlg::download(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType) {
 	target = aTarget;
 	ctrlTarget.SetWindowTextW(Text::toT(target).c_str());
 	//update the type only after setting the text
@@ -203,11 +204,11 @@ void SearchPageDlg::download(const string& aTarget, QueueItem::Priority p, bool 
 	updateTargetTypeText();
 }
 
-void SearchPageDlg::appendDownloadItems(OMenu& aMenu, bool /*isWhole*/) {
+void AutoSearchDlg::appendDownloadItems(OMenu& aMenu, bool /*isWhole*/) {
 	appendDownloadTo(targetMenu, false);
 }
 
-void SearchPageDlg::updateTargetTypeText() {
+void AutoSearchDlg::updateTargetTypeText() {
 	tstring targetText = TSTRING(LOCATION_TYPE) + _T(": ");
 
 	TCHAR bufPath[MAX_PATH];
@@ -227,7 +228,7 @@ void SearchPageDlg::updateTargetTypeText() {
 	cTargetType.SetWindowText(targetText.c_str());
 }
 
-LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(wID == IDOK) {
 		TCHAR buf[512];
 		TCHAR bufPath[MAX_PATH];
@@ -241,7 +242,6 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		str.resize(GetDlgItemText(IDC_AS_SEARCH_STRING, &str[0], ctrlSearch.GetWindowTextLength()+1));
 		searchString = Text::fromT(str);
 
-		fileType = ctrlFileType.GetCurSel();
 		action = cAction.GetCurSel();
 		remove = IsDlgButtonChecked(IDC_REMOVE_ON_HIT) ? true : false;
 		checkQueued = IsDlgButtonChecked(IDC_CHECK_QUEUED) ? true : false;
@@ -303,7 +303,7 @@ LRESULT SearchPageDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	return 0;
 }
 
-LRESULT SearchPageDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
+LRESULT AutoSearchDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
 	if (!loading) {
 		targetType = TargetUtil::TARGET_PATH;
 		updateTargetTypeText();
@@ -311,44 +311,50 @@ LRESULT SearchPageDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl,
 	return 0;
 }
 
-LRESULT SearchPageDlg::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT AutoSearchDlg::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (!loading && targetType > 0 && ctrlTarget.GetSel())
 		return 1;
 	return 0;
 }
 
-LRESULT SearchPageDlg::onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchDlg::onAction(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	fixControls();
 	return 0;
 }
 
-LRESULT SearchPageDlg::onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchDlg::onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	fixControls();
 	return 0;
 }
 
-LRESULT SearchPageDlg::onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchDlg::onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	fixControls();
 	return 0;
 }
 
-LRESULT SearchPageDlg::onCheckExpiry(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT AutoSearchDlg::onCheckExpiry(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	fixControls();
 	return 0;
 }
 
-void SearchPageDlg::fixControls() {
+LRESULT AutoSearchDlg::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	StringList extensions;
+	SettingsManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), searchType, extensions, fileTypeStr);
+	fixControls();
+	return 0;
+}
+
+void AutoSearchDlg::fixControls() {
 	/* File type */
-	BOOL isTTH = ctrlFileType.GetCurSel() == 8;
-	if (isTTH) {
+	if (searchType == SearchManager::TYPE_TTH) {
 		CheckDlgButton(IDC_USE_MATCHER, false);
 		::EnableWindow(GetDlgItem(IDC_USE_MATCHER), false);
 	} else {
 		::EnableWindow(GetDlgItem(IDC_USE_MATCHER),	true);
 	}
 
-	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), ctrlFileType.GetCurSel() == SearchManager::TYPE_DIRECTORY);
-	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), ctrlFileType.GetCurSel() == SearchManager::TYPE_DIRECTORY);
+	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), searchType == SearchManager::TYPE_DIRECTORY);
+	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), searchType == SearchManager::TYPE_DIRECTORY);
 
 	/* Action */
 	BOOL isReportOnly = cAction.GetCurSel() == AutoSearch::ACTION_REPORT;

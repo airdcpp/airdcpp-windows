@@ -423,7 +423,7 @@ public:
 	static tstring Speedinfo();
 	static tstring DiskSpaceInfo(bool onlyTotal = false);
 
-	static void appendSearchTypeCombo(CComboBoxEx& ctrlSearchType);
+	static void appendSearchTypeCombo(CComboBoxEx& ctrlSearchType, const string& aSelection);
 	static void loadSettingsTreeIcons();
 
 	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);

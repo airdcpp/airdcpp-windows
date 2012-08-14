@@ -293,7 +293,7 @@ private:
 	void changeWindowState(bool enable);
 	
 	void changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw);
-	HTREEITEM findFile();
+	void findSearchHit();
 	int searchPos;
 
 	void updateStatus();

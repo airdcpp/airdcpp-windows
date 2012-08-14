@@ -273,33 +273,7 @@ public:
 	}
 
 	void postMessageFW(UINT u, WPARAM w, LPARAM l) { PostMessage(u, w, l); }
-	LRESULT onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		taskbarList.Release();
-		taskbarList.CoCreateInstance(CLSID_TaskbarList);
-
-	//	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str())))
-			taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);
-
-		THUMBBUTTON buttons[2];
-		buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
-		buttons[0].iId = IDC_OPEN_DOWNLOADS;
-		buttons[0].hIcon = images.GetIcon(13);
-		wcscpy(buttons[0].szTip, CWSTRING(MENU_OPEN_DOWNLOADS_DIR));
-		buttons[0].dwFlags = THBF_ENABLED;
-
-		buttons[1].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
-		buttons[1].iId = ID_FILE_SETTINGS;
-		buttons[1].hIcon = images.GetIcon(14);
-		wcscpy(buttons[1].szTip, CWSTRING(SETTINGS));
-		buttons[1].dwFlags = THBF_ENABLED;
-
-		taskbarList->ThumbBarAddButtons(m_hWnd, sizeof(buttons)/sizeof(THUMBBUTTON), buttons);
-
-		for(int i = 0; i < sizeof(buttons)/sizeof(THUMBBUTTON); ++i)
-			DestroyIcon(buttons[i].hIcon);
-
-		return 0;
-	}
+	LRESULT onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	LRESULT onRowsChanged(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		UpdateLayout();

@@ -269,7 +269,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 
 LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
-	SearchPageDlg dlg;
+	AutoSearchDlg dlg;
 	dlg.expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS)*24*60*60) : 0;
 	if(dlg.DoModal() == IDOK) {
 		string search = dlg.searchString + "\r\n";
@@ -280,7 +280,7 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 			string str = search.substr(j, i-j);
 			j = i +2;
 			if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
-				AutoSearchPtr as = new AutoSearch(true, str, (SearchManager::TypeModes)dlg.fileType, (AutoSearch::ActionType)dlg.action, dlg.remove, 
+				AutoSearchPtr as = new AutoSearch(true, str, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, dlg.remove, 
 					dlg.target, dlg.targetType, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, dlg.expireTime, dlg.checkQueued, dlg.checkShared);
 				as->startTime = dlg.startTime;
 				as->endTime = dlg.endTime;
@@ -300,9 +300,9 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		int sel = ctrlAutoSearch.GetSelectedIndex();
 		AutoSearchPtr as = AutoSearchManager::getInstance()->getAutoSearch(sel);
 
-		SearchPageDlg dlg;
+		AutoSearchDlg dlg;
 		dlg.searchString = as->getSearchString();
-		dlg.fileType = as->getFileType();
+		dlg.fileTypeStr = as->getFileType();
 		dlg.action = as->getAction();
 		dlg.remove = as->getRemove();
 		dlg.target = as->getTarget();
@@ -318,7 +318,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.checkShared = as->getCheckAlreadyShared();
 
 		if(dlg.DoModal() == IDOK) {
-			AutoSearchPtr asNew = AutoSearchPtr(new AutoSearch(as->getEnabled(), dlg.searchString, (SearchManager::TypeModes)dlg.fileType, (AutoSearch::ActionType)dlg.action, 
+			AutoSearchPtr asNew = AutoSearchPtr(new AutoSearch(as->getEnabled(), dlg.searchString, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, 
 				dlg.remove, dlg.target, (TargetUtil::TargetType)dlg.targetType, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, 
 				dlg.expireTime, dlg.checkQueued, dlg.checkShared));
 			asNew->startTime = dlg.startTime;
@@ -326,21 +326,9 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 			asNew->searchDays = dlg.searchDays;
 
 			if (AutoSearchManager::getInstance()->updateAutoSearch(sel, asNew)) {
-
-				ctrlAutoSearch.SetCheckState(sel, asNew->getEnabled());
-				ctrlAutoSearch.SetItemText(sel, COLUMN_VALUE, Text::toT(dlg.searchString).c_str());
-				ctrlAutoSearch.SetItemText(sel, COLUMN_TYPE, Text::toT(getType(dlg.fileType)).c_str());
-				if(dlg.action == 0){
-					ctrlAutoSearch.SetItemText(sel, COLUMN_ACTION, Text::toT(STRING(DOWNLOAD)).c_str());
-				} else if(dlg.action == 1){
-					ctrlAutoSearch.SetItemText(sel, COLUMN_ACTION, Text::toT(STRING(ADD_TO_QUEUE)).c_str());
-				} else if(dlg.action == 2){
-					ctrlAutoSearch.SetItemText(sel, COLUMN_ACTION, Text::toT(STRING(AS_REPORT)).c_str());
-				}
-				ctrlAutoSearch.SetItemText(sel, COLUMN_REMOVE, Text::toT(dlg.target).c_str());
-				ctrlAutoSearch.SetItemText(sel, COLUMN_PATH, dlg.remove ? _T("Yes") : _T("No"));
-				ctrlAutoSearch.SetItemText(sel, COLUMN_MATCH, Text::toT(dlg.userMatch).c_str());
-				ctrlAutoSearch.SetItemData(sel, (LPARAM)asNew.get());
+				ctrlAutoSearch.DeleteItem(sel);
+				addEntry(asNew, sel);
+				ctrlAutoSearch.SelectItem(sel);
 			}
 		}
 	}
@@ -356,7 +344,7 @@ LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		removelist.push_back((AutoSearch*)ctrlAutoSearch.GetItemData(i));
 	}
 
-	for(std::vector<AutoSearchPtr>::const_iterator a = removelist.begin(); a !=removelist.end(); ++a )
+	for(auto a = removelist.begin(); a !=removelist.end(); ++a )
 		AutoSearchManager::getInstance()->removeAutoSearch(*a);
 
 	return 0;
@@ -436,9 +424,12 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	if(pos < 0)
 		pos = 0;
 
+
 	TStringList lst;
+
 	lst.push_back(Text::toT(as->getSearchString()));
-	lst.push_back(Text::toT(getType(as->getFileType())));
+	auto ft = SearchManager::isDefaultTypeStr(as->getFileType()) ? SearchManager::getTypeStr(as->getFileType()[0]-'0') : as->getFileType();
+	lst.push_back(Text::toT(ft));
 		
 	if(as->getAction() == 0){
 		lst.push_back(CTSTRING(DOWNLOAD));

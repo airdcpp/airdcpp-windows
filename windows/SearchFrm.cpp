@@ -232,8 +232,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	else
 		ctrlSizeMode.SetCurSel(0);
 
-	WinUtil::appendSearchTypeCombo(ctrlFiletype);
-	ctrlFiletype.SetCurSel(SETTING(LAST_SEARCH_FILETYPE));
+	WinUtil::appendSearchTypeCombo(ctrlFiletype, SETTING(LAST_SEARCH_FILETYPE));
 	
 	ctrlSkiplist.AddString(Text::toT(SETTING(SKIP_MSG_01)).c_str());
 	ctrlSkiplist.AddString(Text::toT(SETTING(SKIP_MSG_02)).c_str());
@@ -430,16 +429,14 @@ void SearchFrame::onEnter() {
 		SettingsManager::getInstance()->set(SettingsManager::SEARCH_SKIPLIST, UseSkiplist);
 
 	
-		TCHAR *buf = new TCHAR[ctrlSkiplist.GetWindowTextLength()+1];
-		ctrlSkiplist.GetWindowText(buf, ctrlSkiplist.GetWindowTextLength()+1);
-		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SEARCH, Text::fromT(buf));
-		delete[] buf;
+	TCHAR *buf = new TCHAR[ctrlSkiplist.GetWindowTextLength()+1];
+	ctrlSkiplist.GetWindowText(buf, ctrlSkiplist.GetWindowTextLength()+1);
+	SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SEARCH, Text::fromT(buf));
+	delete[] buf;
 	
 
 	if (expandSR != BOOLSETTING(EXPAND_DEFAULT))
 		SettingsManager::getInstance()->set(SettingsManager::EXPAND_DEFAULT, expandSR);
-	if (!initialType && ctrlFiletype.GetCurSel() != SETTING(LAST_SEARCH_FILETYPE))
-		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, ctrlFiletype.GetCurSel());
 
 	int n = ctrlHubs.GetItemCount();
 	for(int i = 1; i < n; i++) {
@@ -506,7 +503,6 @@ void SearchFrame::onEnter() {
 	if(llsize == 0)
 		mode = SearchManager::SIZE_DONTCARE;
 
-	int ftype = ctrlFiletype.GetCurSel();
 	exactSize1 = (mode == SearchManager::SIZE_EXACT);
 	exactSize2 = llsize;		
 
@@ -518,8 +514,6 @@ void SearchFrame::onEnter() {
 	droppedResults = 0;
 	resultsCount = 0;
 	running = true;
-
-	isHash = (ftype == SearchManager::TYPE_TTH);
 
 	// Add new searches to the last-search dropdown list
 	if(SettingsManager::getInstance()->addSearchToHistory(s)) {
@@ -541,18 +535,19 @@ void SearchFrame::onEnter() {
 
 	// Get ADC searchtype extensions if any is selected
 	StringList extList;
+	int ftype=0;
+	string typeName;
+
 	try {
-		if(ftype == SearchManager::TYPE_ANY) {
-			// Custom searchtype
-			//Todo in AirDC++
-			// disabled with current GUI extList = SettingsManager::getInstance()->getExtensions(Text::fromT(fileType->getText()));
-		} else if(ftype > SearchManager::TYPE_ANY && ftype < SearchManager::TYPE_DIRECTORY) {
-			// Predefined searchtype
-			extList = SettingsManager::getInstance()->getExtensions(string(1, '0' + ftype));
-		}
+		SettingsManager::getInstance()->getSearchType(ctrlFiletype.GetCurSel(), ftype, extList, typeName);
 	} catch(const SearchTypeException&) {
 		ftype = SearchManager::TYPE_ANY;
 	}
+
+	if (!initialType && typeName != SETTING(LAST_SEARCH_FILETYPE))
+		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, typeName);
+
+	isHash = (ftype == SearchManager::TYPE_TTH);
 
 	{
 		Lock l(cs);

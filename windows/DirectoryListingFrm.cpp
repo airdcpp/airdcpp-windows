@@ -90,6 +90,8 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 		int64_t end = GET_TICK();
 		loadTime = (end - aStart) / 1000;
 		PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED);
+	} else {
+		changeWindowState(true);
 	}
 }
 
@@ -127,7 +129,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const 
 	selectItem(Text::toT(aDir));
 	if (isSearchChange) {
 		PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())));
-		findFile();
+		findSearchHit();
 	}
 
 	changeWindowState(true);
@@ -241,7 +243,7 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 	ctrlMatchQueue.EnableWindow(enable);
 	ctrlADLMatch.EnableWindow(enable);
 	ctrlFind.EnableWindow(enable);
-	ctrlFindNext.EnableWindow(enable);
+	ctrlFindNext.EnableWindow(dl->curSearch ? TRUE : FALSE);
 	ctrlListDiff.EnableWindow(enable);
 
 	if (enable) {
@@ -312,13 +314,15 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 	ctrlTree.SetRedraw(TRUE);
 
 	if (searching) {
-		findFile();
+		findSearchHit();
 	}
 }
 
-HTREEITEM DirectoryListingFrame::findFile() {
+void DirectoryListingFrame::findSearchHit() {
 	auto search = dl->curSearch;
-	dcassert(search);
+	if (!search)
+		return;
+
 	bool found = false;
 
 	// Check file names in list pane
@@ -362,8 +366,6 @@ HTREEITEM DirectoryListingFrame::findFile() {
 			MessageBox(CTSTRING(NO_ADDITIONAL_MATCHES), CTSTRING(SEARCH_FOR_FILE));
 		}
 	}
-
-	return 0;
 }
 
 void DirectoryListingFrame::findFile(bool findNext) {
@@ -388,7 +390,7 @@ void DirectoryListingFrame::findFile(bool findNext) {
 
 		return;
 	} else {
-		findFile();
+		findSearchHit();
 	}
 }
 
