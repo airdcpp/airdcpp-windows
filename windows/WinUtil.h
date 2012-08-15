@@ -425,6 +425,7 @@ public:
 
 	static void appendSearchTypeCombo(CComboBoxEx& ctrlSearchType, const string& aSelection);
 	static void loadSettingsTreeIcons();
+	static void loadSearchTypeIcons();
 
 	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
 

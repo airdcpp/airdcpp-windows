@@ -2169,6 +2169,17 @@ IDI_SHAREOPTIONS        ICON                    "res\\SettingsTree\\ShareOptions
 IDI_SEARCHTYPES         ICON                    "res\\SettingsTree\\ShareOptions.ico"
 IDI_IGNORE              ICON                    "res\\SettingsTree\\Ignore.ico"
 
+//search types
+IDI_ANY					ICON                    "res\\searchTypes\\Any.ico"
+IDI_AUDIO               ICON                    "res\\searchTypes\\Audio.ico"
+IDI_COMPRESSED          ICON                    "res\\searchTypes\\Compressed.ico"
+IDI_DOCUMENT			ICON                    "res\\searchTypes\\Document.ico"
+IDI_EXEC		        ICON                    "res\\searchTypes\\Exec.ico"
+IDI_PICTURE             ICON                    "res\\searchTypes\\Pic.ico"
+IDI_VIDEO	            ICON                    "res\\searchTypes\\Video.ico"
+IDI_DIRECTORY           ICON                    "res\\searchTypes\\Directory.ico"
+IDI_TTH					ICON                    "res\\searchTypes\\tth.ico"
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // PNG

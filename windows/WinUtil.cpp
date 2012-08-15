@@ -419,11 +419,7 @@ void WinUtil::init(HWND hWnd) {
 	else
 		fileImages.CreateFromImage(IDB_FOLDERS, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 
-	auto exists = Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("search_icons.bmp"))));
-	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("search_icons.bmp")))))
-		searchImages.CreateFromImage(WinUtil::getIconPath(_T("search_icons.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-	else
-		searchImages.CreateFromImage(IDB_SEARCH_TYPES, 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+	loadSearchTypeIcons();
 
 	dirIconIndex = fileImageCount++;
 	dirMaskedIndex = fileImageCount++;
@@ -2355,6 +2351,19 @@ void WinUtil::loadSettingsTreeIcons() {
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_IGNORE));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SEARCH));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SEARCHTYPES));
+}
+
+void WinUtil::loadSearchTypeIcons() {
+	searchImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 15);
+	searchImages.AddIcon(WinUtil::createIcon(IDI_ANY));
+	searchImages.AddIcon(WinUtil::createIcon(IDI_AUDIO));
+	searchImages.AddIcon(WinUtil::createIcon(IDI_COMPRESSED));
+	searchImages.AddIcon(WinUtil::createIcon(IDI_DOCUMENT));
+	searchImages.AddIcon(WinUtil::createIcon(IDI_EXEC));
+	searchImages.AddIcon(WinUtil::createIcon(IDI_PICTURE));
+	searchImages.AddIcon(WinUtil::createIcon(IDI_VIDEO));
+	searchImages.AddIcon(WinUtil::createIcon(IDI_DIRECTORY));
+	searchImages.AddIcon(WinUtil::createIcon(IDI_TTH));
 }
 
 /* Only returns the text color */

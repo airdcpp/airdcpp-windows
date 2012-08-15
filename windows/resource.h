@@ -231,7 +231,16 @@
 #define IDI_DOWNLOAD                    411
 #define IDI_ONLINE                      412
 #define IDI_OFFLINE                     413
-#define IDI_SEARCHTYPES                 414
+#define IDI_ANY							414
+#define IDI_AUDIO						415	
+#define IDI_COMPRESSED					416
+#define IDI_DOCUMENT					417	
+#define IDI_EXEC						418
+#define IDI_PICTURE						419
+#define IDI_VIDEO						420
+#define IDI_DIRECTORY					421
+#define IDI_TTH							422
+#define IDI_SEARCHTYPES					423
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479

@@ -101,7 +101,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	sizeModeContainer.SubclassWindow(ctrlSizeMode.m_hWnd);
 
 	ctrlFiletype.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST | WS_EX_CLIENTEDGE | CBS_HASSTRINGS);
+		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST/* ,WS_EX_CLIENTEDGE*/);
 
 	fileTypeContainer.SubclassWindow(ctrlFiletype.m_hWnd);
 
