@@ -100,8 +100,9 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
 	sizeModeContainer.SubclassWindow(ctrlSizeMode.m_hWnd);
 
-	ctrlFiletype.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST/* ,WS_EX_CLIENTEDGE*/);
+	CRect combo(0, 0, 0, 200);
+	ctrlFiletype.Create(m_hWnd, combo, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST |  CBS_NOINTEGRALHEIGHT);
 
 	fileTypeContainer.SubclassWindow(ctrlFiletype.m_hWnd);
 
@@ -1039,7 +1040,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		rc.right = width - rMargin;
 		rc.bottom = rc.top + comboH;
 		ctrlSizeMode.MoveWindow(rc);
-
+		
 		// "File type"
 		rc.left = lMargin;
 		rc.right = width - rMargin;
