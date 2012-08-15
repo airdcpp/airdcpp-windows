@@ -1086,6 +1086,8 @@
 #define IDC_SELECT_PATH                 1639
 #define IDC_SELECT_DIR                  1639
 #define IDC_LANGUAGE_CAPTION            1640
+#define IDC_SELECT_DIR2                 1640
+#define IDC_ADVANCED                    1640
 #define IDC_LANGUAGE_NOTE               1641
 #define IDC_AUTOSELECT_METHOD           1643
 #define IDC_AUTOPATH_METHOD             1644

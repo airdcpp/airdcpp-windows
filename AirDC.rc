@@ -1441,6 +1441,7 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,281,221,198,10
     CONTROL         "Don't dl already Shared Release directories",IDC_CHECK_SHARED,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,281,232,203,10
+    PUSHBUTTON      "Advanced",IDC_ADVANCED,298,143,66,14
 END
 
 IDD_SEARCHPAGE DIALOGEX 0, 0, 305, 311
@@ -1651,10 +1652,6 @@ BEGIN
     IDD_WEB_SHORTCUTS, DIALOG
     BEGIN
         BOTTOMMARGIN, 230
-    END
-
-    "IDD_SEARCHTYPESPAGE$(IDD_SEARCHTYPESPAGE)", DIALOG
-    BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2166,7 +2163,7 @@ IDI_UC                  ICON                    "res\\SettingsTree\\UserCommands
 IDI_CERTIFICATES        ICON                    "res\\SettingsTree\\Certificates.ico"
 IDI_MISC                ICON                    "res\\SettingsTree\\Misc.ico"
 IDI_SHAREOPTIONS        ICON                    "res\\SettingsTree\\ShareOptions.ico"
-IDI_SEARCHTYPES         ICON                    "res\\SettingsTree\\ShareOptions.ico"
+IDI_SEARCHTYPES         ICON                    "res\\SettingsTree\\SearchTypes.ico"
 IDI_IGNORE              ICON                    "res\\SettingsTree\\Ignore.ico"
 
 //search types

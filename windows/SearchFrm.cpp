@@ -309,10 +309,7 @@ LRESULT SearchFrame::onMeasure(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 	HWND hwnd = 0;
 	bHandled = FALSE;
 	
-	if(wParam == IDC_FILETYPES) {
-		bHandled = TRUE;
-		return ListMeasure((MEASUREITEMSTRUCT *)lParam);
-	} else if(((MEASUREITEMSTRUCT *)lParam)->CtlType == ODT_MENU) {
+	if(((MEASUREITEMSTRUCT *)lParam)->CtlType == ODT_MENU) {
 		bHandled = TRUE;
 		return OMenu::onMeasureItem(hwnd, uMsg, wParam, lParam, bHandled);
 	}
@@ -325,11 +322,7 @@ LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 	DRAWITEMSTRUCT* dis = (DRAWITEMSTRUCT*)lParam;
 	bHandled = FALSE;
 
-	if(wParam == IDC_FILETYPES) {
-		bHandled = TRUE;
-		return ListDraw(dis);
-		return S_OK;
-	} else if(dis->CtlID == ATL_IDW_STATUS_BAR && dis->itemID == 1){
+	if(dis->CtlID == ATL_IDW_STATUS_BAR && dis->itemID == 1){
 		if(searchStartTime > 0){
 			bHandled = TRUE;
 
@@ -374,50 +367,6 @@ LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 	
 	return S_OK;
 }
-
-
-BOOL SearchFrame::ListMeasure( MEASUREITEMSTRUCT *mis) {
-	mis->itemHeight = 16;
-	return TRUE;
-}
-
-
-BOOL SearchFrame::ListDraw(DRAWITEMSTRUCT *dis) {
-	TCHAR szText[MAX_PATH+1];
-	
-	switch(dis->itemAction) {
-		case ODA_FOCUS:
-			if(!(dis->itemState & 0x0200))
-				DrawFocusRect(dis->hDC, &dis->rcItem);
-			break;
-
-		case ODA_SELECT:
-		case ODA_DRAWENTIRE:
-			ctrlFiletype.GetLBText(dis->itemID, szText);
-			if(dis->itemState & ODS_SELECTED) {
-				SetTextColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
-				SetBkColor(dis->hDC, GetSysColor(COLOR_HIGHLIGHT));
-			} else {			
-				SetTextColor(dis->hDC, WinUtil::textColor);
-				SetBkColor(dis->hDC, WinUtil::bgColor);
-			}
-
-			ExtTextOut(dis->hDC, dis->rcItem.left+22, dis->rcItem.top+1, ETO_OPAQUE, &dis->rcItem, szText, lstrlen(szText), 0);
-			if(dis->itemState & ODS_FOCUS) {
-				if(!(dis->itemState &  0x0200 ))
-					DrawFocusRect(dis->hDC, &dis->rcItem);
-			}
-
-			/*ImageList_Draw(searchTypes, dis->itemID, dis->hDC, 
-				dis->rcItem.left + 2, 
-				dis->rcItem.top, 
-				ILD_TRANSPARENT);*/
-
-			break;
-	}
-	return TRUE;
-}
-
 
 void SearchFrame::onEnter() {
 	StringList clients;

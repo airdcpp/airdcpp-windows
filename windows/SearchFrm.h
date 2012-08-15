@@ -443,9 +443,6 @@ private:
 	CButton ctrlDoSearch;
 	CButton ctrlPauseSearch;
 	CButton ctrlPurge;	
-
-	BOOL ListMeasure(MEASUREITEMSTRUCT *mis);
-	BOOL ListDraw(DRAWITEMSTRUCT *dis);
 	
 	CContainedWindow searchContainer;
 	CContainedWindow searchBoxContainer;
