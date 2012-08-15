@@ -551,6 +551,8 @@
     <ClCompile Include="windows\RecentsFrm.cpp" />
     <ClCompile Include="windows\SDCPage.cpp" />
     <ClCompile Include="windows\SearchFrm.cpp" />
+    <ClCompile Include="windows\SearchTypeDlg.cpp" />
+    <ClCompile Include="windows\SearchTypesPage.cpp" />
     <ClCompile Include="windows\SharePage.cpp" />
     <ClCompile Include="windows\ShellContextMenu.cpp" />
     <ClCompile Include="windows\Sounds.cpp" />
@@ -657,6 +659,8 @@
     <ClInclude Include="windows\resource.h" />
     <ClInclude Include="windows\SDCPage.h" />
     <ClInclude Include="windows\SearchFrm.h" />
+    <ClInclude Include="windows\SearchTypeDlg.h" />
+    <ClInclude Include="windows\SearchTypesPage.h" />
     <ClInclude Include="windows\SharePage.h" />
     <ClInclude Include="windows\ShellContextMenu.h" />
     <ClInclude Include="windows\SingleInstance.h" />

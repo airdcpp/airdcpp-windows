@@ -651,6 +651,12 @@
     <ClCompile Include="windows\Players.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\SearchTypesPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\SearchTypeDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -963,6 +969,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\MenuBaseHandlers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\SearchTypesPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\SearchTypeDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

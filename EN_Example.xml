@@ -1563,5 +1563,10 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="IncomingRefreshed">Incoming directories have been refreshed</String>
 		<String Name="NoAdditionalMatches">There are no additional matches available</String>
 		<String Name="FileListRefreshInitiatedXRpath">File list refresh initiated for %d directories</String>
+		<String Name="SearchTypes">Search Types</String>
+		<String Name="ResetToDefaults">Reset to defaults</String>
+		<String Name="Predefined">Predefined</String>
+		<String Name="InvalidExtension">Invalid extension: %s</String>
+		<String Name="ExtensionsEmpty">No extensions have been defined</String>
 	</Strings>
 </Language>

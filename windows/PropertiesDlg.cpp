@@ -55,6 +55,7 @@
 #include "FulHighlightPage.h"
 #include "SearchPage.h"
 #include "AirAppearancePage.h"
+#include "SearchTypesPage.h"
 
 bool PropertiesDlg::needUpdate = false;
 
@@ -91,6 +92,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = new AirSharingPage(s);
 	pages[n++] = new IgnorePage(s);
 	pages[n++] = new SearchPage(s);
+	pages[n++] = new SearchTypesPage(s);
 	
 	for(int i=0; i < n; i++) {
 		AddPage(pages[i]->getPSP());

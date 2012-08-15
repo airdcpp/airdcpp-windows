@@ -108,6 +108,7 @@
 #define IDD_WEB_SHORTCUTS               244
 #define IDD_OPERACOLORS                 249
 #define IDD_AVIPREVIEW                  250
+#define IDD_SEARCHTYPEPAGE              251
 #define IDD_PREVIEW                     252
 #define IDB_STATE                       254
 #define IDB_SEARCH_TYPES                257
@@ -173,6 +174,8 @@
 #define IDD_CONNECT                     338
 #define IDD_DIALOG2                     339
 #define IDD_COMBO                       339
+#define IDD_SEARCHTYPESPAGE             342
+#define IDD_SEARCHTYPE_DLG              343
 #define IDR_EMOTICON                    345
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
@@ -362,8 +365,10 @@
 #define IDC_CHANGE_MENU                 1100
 #define IDC_UPDATE_HISTORY_TEXT         1100
 #define IDC_NAME                        1101
+#define IDC_RESET_DEFAULTS              1101
 #define IDC_COMMAND                     1102
 #define IDC_PROGRESS_OVERRIDE           1102
+#define IDC_EXTENSION_NAME              1102
 #define IDC_HUB                         1103
 #define IDC_PROGRESS_OVERRIDE2          1103
 #define IDC_SHUTDOWNTIMEOUT             1104
@@ -1090,6 +1095,10 @@
 #define IDC_SIZEMODE                    1654
 #define IDC_SIZE_MODE                   1654
 #define IDC_SIZE_UNIT                   1655
+#define IDC_TYPE_NAME                   1655
+#define IDC_NAME_LABEL                  1656
+#define IDC_EXTENSIONS_LABEL            1657
+#define IDC_EXTENSIONS                  1660
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1447,9 +1456,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        340
+#define _APS_NEXT_RESOURCE_VALUE        344
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1655
+#define _APS_NEXT_CONTROL_VALUE         1661
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif
