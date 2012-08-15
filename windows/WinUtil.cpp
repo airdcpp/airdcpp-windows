@@ -412,12 +412,14 @@ void WinUtil::init(HWND hWnd) {
 
 	mainMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)help, CTSTRING(MENU_HELP));
 
+	m_IconPath = Text::toT(SETTING(ICON_PATH));
 	//ResourceLoader::LoadImageList(IDB_FOLDERS, fileImages, 16, 16);
 	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("folders.bmp")))))
 		fileImages.CreateFromImage(WinUtil::getIconPath(_T("folders.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 	else
 		fileImages.CreateFromImage(IDB_FOLDERS, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 
+	auto exists = Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("search_icons.bmp"))));
 	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("search_icons.bmp")))))
 		searchImages.CreateFromImage(WinUtil::getIconPath(_T("search_icons.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 	else
@@ -527,7 +529,6 @@ void WinUtil::init(HWND hWnd) {
 	grantMenu.AppendMenu(MF_SEPARATOR);
 	grantMenu.AppendMenu(MF_STRING, IDC_UNGRANTSLOT, CTSTRING(REMOVE_EXTRA_SLOT));
 
-	m_IconPath = Text::toT(SETTING(ICON_PATH));
 	loadSettingsTreeIcons();
 	initColors();
 }
@@ -693,6 +694,7 @@ void WinUtil::uninit() {
 	fileImages.Destroy();
 	userImages.Destroy();
 	flagImages.Destroy();
+	searchImages.Destroy();
 	settingsTreeImages.Destroy();
 	::DeleteObject(font);
 	::DeleteObject(boldFont);
@@ -2352,6 +2354,7 @@ void WinUtil::loadSettingsTreeIcons() {
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SHAREOPTIONS));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_IGNORE));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SEARCH));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SEARCHTYPES));
 }
 
 /* Only returns the text color */

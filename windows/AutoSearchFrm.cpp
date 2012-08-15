@@ -451,6 +451,7 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 
 void AutoSearchFrame::updateItem(const AutoSearchPtr as, int pos) {
 	ctrlAutoSearch.SetItemText(pos, COLUMN_LASTSEARCH, (as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
+	ctrlAutoSearch.SetItemText(pos, COLUMN_TYPE, Text::toT(as->getDisplayType()).c_str());
 }
 
 tstring AutoSearchFrame::formatSearchDate(const time_t aTime) {

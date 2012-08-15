@@ -1521,12 +1521,7 @@ BEGIN
     CONTROL         "Clean search term",IDC_WEB_SHORTCUTS_CLEAN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,41,61,215,10
 END
 
-#if defined(APSTUDIO_INVOKED) || defined(IDD_SEARCHTYPESPAGE)
-#if defined(APSTUDIO_INVOKED)
-IDD_SEARCHTYPESPAGE$(IDD_SEARCHTYPESPAGE) DIALOGEX 0, 0, 275, 268
-#else
 IDD_SEARCHTYPESPAGE DIALOGEX 0, 0, 275, 268
-#endif
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 EXSTYLE WS_EX_STATICEDGE
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
@@ -1537,7 +1532,6 @@ BEGIN
     PUSHBUTTON      "&Remove",IDC_REMOVE_MENU,115,247,50,14,WS_DISABLED
     PUSHBUTTON      "Reset to defaults",IDC_RESET_DEFAULTS,195,247,65,14
 END
-#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2172,6 +2166,7 @@ IDI_UC                  ICON                    "res\\SettingsTree\\UserCommands
 IDI_CERTIFICATES        ICON                    "res\\SettingsTree\\Certificates.ico"
 IDI_MISC                ICON                    "res\\SettingsTree\\Misc.ico"
 IDI_SHAREOPTIONS        ICON                    "res\\SettingsTree\\ShareOptions.ico"
+IDI_SEARCHTYPES         ICON                    "res\\SettingsTree\\ShareOptions.ico"
 IDI_IGNORE              ICON                    "res\\SettingsTree\\Ignore.ico"
 
 /////////////////////////////////////////////////////////////////////////////
