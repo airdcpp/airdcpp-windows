@@ -1569,5 +1569,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="InvalidExtension">Invalid extension: %s</String>
 		<String Name="ExtensionsEmpty">No extensions have been defined</String>
 		<String Name="SearchCurDir">Search within the currect directory</String>
+		<String Name="UpdatingView">Updating the view...</String>
+		<String Name="AdlDlFullList">Do you want to switch to full filelist before matching the ADL search?</String>
 	</Strings>
 </Language>

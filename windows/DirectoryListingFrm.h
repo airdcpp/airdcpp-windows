@@ -436,6 +436,10 @@ private:
 	void on(DirectoryListingListener::SearchStarted) noexcept;
 	void on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept;
 	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;
+	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
+
+	void createRoot();
+	void convertToFull();
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

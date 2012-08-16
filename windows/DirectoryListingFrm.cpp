@@ -86,6 +86,7 @@ DirectoryListingFrame::~DirectoryListingFrame() {
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial) noexcept {
 	bool searching = dl->isCurrentSearchPath(aDir);
 
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(CTSTRING(UPDATING_VIEW)));
 	refreshTree(Text::toT(aDir), convertFromPartial, searching);
 
 	if (!searching) {
@@ -135,6 +136,10 @@ void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const 
 	}
 
 	changeWindowState(true);
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept {
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(Text::toT(aMessage)));
 }
 
 LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -211,9 +216,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlList.m_hWnd);
 	m_nProportionalPos = 2500;
-	string nick = ClientManager::getInstance()->getNicks(dl->getHintedUser())[0];
-	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(nick).c_str(), WinUtil::getDirIconIndex(), WinUtil::getDirIconIndex(), 0, 0, (LPARAM)dl->getRoot(), NULL, TVI_SORT);
-	dcassert(treeRoot != NULL);
+	createRoot();
 	
 	memzero(statusSizes, sizeof(statusSizes));
 	statusSizes[STATUS_FILE_LIST_DIFF] = WinUtil::getTextWidth(TSTRING(FILE_LIST_DIFF), m_hWnd) + 8;
@@ -250,7 +253,7 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 
 	if (enable) {
 		EnableWindow();
-		ctrlGetFullList.EnableWindow(dl->getPartialList());
+		ctrlGetFullList.EnableWindow(dl->getPartialList() && !dl->getIsOwnList());
 	} else {
 		DisableWindow();
 		ctrlGetFullList.EnableWindow(false);
@@ -258,6 +261,11 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 }
 
 LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	convertToFull();
+	return 1;
+}
+
+void DirectoryListingFrame::convertToFull() {
 	HTREEITEM ht = ctrlTree.GetSelectedItem();
 	DirectoryListing::Directory* d = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
 
@@ -266,7 +274,6 @@ LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/,
 		dl->addFullListTask(dl->getPath(d));
 	else
 		QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
-	return 1;
 }
 
 void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREEITEM aParent) {
@@ -287,8 +294,19 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 
 }
 
+void DirectoryListingFrame::createRoot() {
+	string nick = ClientManager::getInstance()->getNicks(dl->getHintedUser())[0];
+	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(nick).c_str(), WinUtil::getDirIconIndex(), WinUtil::getDirIconIndex(), 0, 0, (LPARAM)dl->getRoot(), NULL, TVI_SORT);
+	dcassert(treeRoot);
+}
+
 void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial, bool searching) {
 	ctrlTree.SetRedraw(FALSE);
+	if (convertFromPartial) {
+		ctrlTree.DeleteAllItems();
+		ctrlList.DeleteAllItems();
+		createRoot();
+	}
 
 	HTREEITEM ht = convertFromPartial ? treeRoot : findItem(treeRoot, root);
 	if(ht == NULL) {
@@ -615,16 +633,22 @@ LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, 
 LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring file;
 	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), _T("File Lists\0*.xml.bz2\0All Files\0*.*\0"))) {
-		DisableWindow();
+		changeWindowState(false);
 		ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
 		dl->addListDiffTask(Text::fromT(file));
 	}
 	return 0;
 }
 LRESULT DirectoryListingFrame::onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ctrlStatus.SetText(0, CTSTRING(MATCHING_ADL));
-	DisableWindow();
-	dl->addMatchADLTask();
+	if (dl->getPartialList() && MessageBox(CTSTRING(ADL_DL_FULL_LIST), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+		ctrlStatus.SetText(0, CTSTRING(DOWNLOADING_LIST));
+		dl->setMatchADL(true);
+		convertToFull();
+	} else {
+		changeWindowState(false);
+		ctrlStatus.SetText(0, CTSTRING(MATCHING_ADL));
+		dl->addMatchADLTask();
+	}
 	
 	return 0;
 }
@@ -639,7 +663,7 @@ LRESULT DirectoryListingFrame::onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*
 		if(!ii->file->getAdls())
 			return 0;
 		DirectoryListing::Directory* pd = ii->file->getParent();
-		while(pd != NULL && pd != dl->getRoot()) {
+		while(pd && pd != dl->getRoot()) {
 			fullPath = Text::toT(pd->getName()) + _T("\\") + fullPath;
 			pd = pd->getParent();
 		}
