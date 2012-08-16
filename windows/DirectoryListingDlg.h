@@ -29,6 +29,7 @@ public:
 	int fileType, sizeMode;
 	int64_t size;
 	StringList extList;
+	bool useCurDir;
 
 	enum { IDD = IDD_DIRLIST_DLG };
 

@@ -1568,5 +1568,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="Predefined">Predefined</String>
 		<String Name="InvalidExtension">Invalid extension: %s</String>
 		<String Name="ExtensionsEmpty">No extensions have been defined</String>
+		<String Name="SearchCurDir">Search within the currect directory</String>
 	</Strings>
 </Language>

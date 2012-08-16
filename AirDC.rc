@@ -1928,13 +1928,13 @@ BEGIN
     GROUPBOX        "Language",IDC_STATIC,7,225,145,37
 END
 
-IDD_DIRLIST_DLG DIALOGEX 0, 0, 289, 95
+IDD_DIRLIST_DLG DIALOGEX 0, 0, 289, 109
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Search",IDOK,174,74,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,232,74,50,14
+    DEFPUSHBUTTON   "Search",IDOK,174,84,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,232,84,50,14
     RTEXT           "Search string",IDC_DL_SEARCH_DESC,5,15,49,9
     EDITTEXT        IDC_SEARCH_STRING,61,13,221,12,ES_AUTOHSCROLL
     RTEXT           "File type",IDC_DL_TYPE_TEXT,27,32,31,8
@@ -1943,6 +1943,8 @@ BEGIN
     RTEXT           "Size",IDC_SIZE_LABEL,25,52,31,8
     EDITTEXT        IDC_SEARCH_SIZE,145,49,66,12,ES_AUTOHSCROLL
     COMBOBOX        IDC_SIZE_UNIT,218,48,45,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Search within the current directory",IDC_USE_CUR_DIR,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,68,197,10
 END
 
 IDD_FAVORITEDIR DIALOGEX 0, 0, 275, 234
@@ -2045,7 +2047,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 282
         TOPMARGIN, 7
-        BOTTOMMARGIN, 88
+        BOTTOMMARGIN, 102
     END
 
     IDD_FAVORITEDIR, DIALOG
@@ -2165,17 +2167,15 @@ IDI_MISC                ICON                    "res\\SettingsTree\\Misc.ico"
 IDI_SHAREOPTIONS        ICON                    "res\\SettingsTree\\ShareOptions.ico"
 IDI_SEARCHTYPES         ICON                    "res\\SettingsTree\\SearchTypes.ico"
 IDI_IGNORE              ICON                    "res\\SettingsTree\\Ignore.ico"
-
-//search types
-IDI_ANY					ICON                    "res\\searchTypes\\Any.ico"
+IDI_ANY                 ICON                    "res\\searchTypes\\Any.ico"
 IDI_AUDIO               ICON                    "res\\searchTypes\\Audio.ico"
 IDI_COMPRESSED          ICON                    "res\\searchTypes\\Compressed.ico"
-IDI_DOCUMENT			ICON                    "res\\searchTypes\\Document.ico"
-IDI_EXEC		        ICON                    "res\\searchTypes\\Exec.ico"
+IDI_DOCUMENT            ICON                    "res\\searchTypes\\Document.ico"
+IDI_EXEC                ICON                    "res\\searchTypes\\Exec.ico"
 IDI_PICTURE             ICON                    "res\\searchTypes\\Pic.ico"
-IDI_VIDEO	            ICON                    "res\\searchTypes\\Video.ico"
+IDI_VIDEO               ICON                    "res\\searchTypes\\Video.ico"
 IDI_DIRECTORY           ICON                    "res\\searchTypes\\Directory.ico"
-IDI_TTH					ICON                    "res\\searchTypes\\tth.ico"
+IDI_TTH                 ICON                    "res\\searchTypes\\tth.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //

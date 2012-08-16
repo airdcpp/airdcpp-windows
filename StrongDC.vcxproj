@@ -725,6 +725,18 @@
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\searchTypes\Any.ico" />
+    <Image Include="res\searchTypes\Audio.ico" />
+    <Image Include="res\searchTypes\Compressed.ico" />
+    <Image Include="res\searchTypes\Directory.ico" />
+    <Image Include="res\searchTypes\Document.ico" />
+    <Image Include="res\searchTypes\Exec.ico" />
+    <Image Include="res\searchTypes\Pic.ico" />
+    <Image Include="res\searchTypes\tth.ico" />
+    <Image Include="res\searchTypes\Video.ico" />
+    <Image Include="res\SettingsTree\SearchTypes.ico" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

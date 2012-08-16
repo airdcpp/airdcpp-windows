@@ -341,7 +341,7 @@ void DirectoryListingFrame::findSearchHit() {
 				break;
 			}
 		} else if(search->matchesDirectDirectoryName(ii->dir->getName())) {
-			if (search->matchesSize(ii->dir->getSize())) {
+			if (search->matchesSize(ii->dir->getTotalSize())) {
 				found = true;
 				break;
 			}
@@ -379,15 +379,15 @@ LRESULT DirectoryListingFrame::onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	if(dlg.DoModal() != IDOK)
 		return 0;
 
-	//dlg.title = TSTRING(SEARCH_FOR_FILE);
-	//dlg.description = TSTRING(ENTER_SEARCH_STRING);
-	//dlg.line = Util::emptyStringT;
+	string path;
+	if (dlg.useCurDir) {
+		HTREEITEM t = ctrlTree.GetSelectedItem();
+		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		path = Util::toAdcFile(dir->getPath());
+		//path = Util::toAdcFile(currentDir);
+	}
 
-	/*string findStr = Text::fromT(dlg.line);
-	if(findStr.empty())
-		return 0;*/
-
-	dl->addSearchTask(dlg.searchStr, dlg.size, dlg.fileType, dlg.sizeMode, dlg.extList);
+	dl->addSearchTask(dlg.searchStr, dlg.size, dlg.fileType, dlg.sizeMode, dlg.extList, path);
 
 	return 0;
 }
@@ -477,6 +477,7 @@ void DirectoryListingFrame::changeDir(const DirectoryListing::Directory* d, BOOL
 	updating = true;
 	clearList();
 
+	//currentDir = d->getPath();
 	for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
 		ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
 	}
@@ -1018,13 +1019,13 @@ int64_t DirectoryListingFrame::getDownloadSize(bool isWhole) {
 	if (isWhole) {
 		HTREEITEM t = ctrlTree.GetSelectedItem();
 		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		size = dir->getSize();
+		size = dir->getTotalSize();
 	} else {
 		int i = -1;
 		while( (i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			const ItemInfo* ii = ctrlList.getItemData(i);
 			if (ii->type == ItemInfo::DIRECTORY) {
-				size += ii->dir->getSize();
+				size += ii->dir->getTotalSize();
 			} else {
 				size += ii->file->getSize();
 			}

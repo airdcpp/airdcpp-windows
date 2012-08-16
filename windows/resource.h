@@ -231,16 +231,16 @@
 #define IDI_DOWNLOAD                    411
 #define IDI_ONLINE                      412
 #define IDI_OFFLINE                     413
-#define IDI_ANY							414
-#define IDI_AUDIO						415	
-#define IDI_COMPRESSED					416
-#define IDI_DOCUMENT					417	
-#define IDI_EXEC						418
-#define IDI_PICTURE						419
-#define IDI_VIDEO						420
-#define IDI_DIRECTORY					421
-#define IDI_TTH							422
-#define IDI_SEARCHTYPES					423
+#define IDI_ANY                         414
+#define IDI_AUDIO                       415
+#define IDI_COMPRESSED                  416
+#define IDI_DOCUMENT                    417
+#define IDI_EXEC                        418
+#define IDI_PICTURE                     419
+#define IDI_VIDEO                       420
+#define IDI_DIRECTORY                   421
+#define IDI_TTH                         422
+#define IDI_SEARCHTYPES                 423
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
@@ -1111,6 +1111,7 @@
 #define IDC_NAME_LABEL                  1656
 #define IDC_EXTENSIONS_LABEL            1657
 #define IDC_EXTENSIONS                  1660
+#define IDC_USE_CUR_DIR                 1661
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1470,7 +1471,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        344
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1661
+#define _APS_NEXT_CONTROL_VALUE         1662
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

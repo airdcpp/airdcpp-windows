@@ -671,7 +671,7 @@ LRESULT SharePage::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 
 				/* Is this a newly added dir? */
 				auto p = find(newDirs.begin(), newDirs.end(), sdi);
-				if (p != newDirs.end() && find(changedDirs.begin(), changedDirs.end(), sdi) == changedDirs.end()) {
+				if (p == newDirs.end() && find(changedDirs.begin(), changedDirs.end(), sdi) == changedDirs.end()) {
 					changedDirs.push_back(sdi);
 				}
 			} else {
@@ -752,7 +752,7 @@ LRESULT SharePage::onApplyChanges(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 void SharePage::fixControls() {
 	bool hasChanged = (!addProfiles.empty() || !removeProfiles.empty() || !renameProfiles.empty() || !newDirs.empty() || !removeDirs.empty() || 
-		changedDirs.empty() || !excludedAdd.empty() || !excludedRemove.empty());
+		!changedDirs.empty() || !excludedAdd.empty() || !excludedRemove.empty());
 	::EnableWindow(GetDlgItem(IDC_APPLY_CHANGES), hasChanged);
 	::EnableWindow(GetDlgItem(IDC_REMOVE_PROFILE), curProfile != SP_DEFAULT);
 }

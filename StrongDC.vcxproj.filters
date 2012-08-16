@@ -978,4 +978,36 @@
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\SettingsTree\SearchTypes.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Any.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Audio.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Compressed.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Document.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Exec.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Pic.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Video.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\Directory.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\tth.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

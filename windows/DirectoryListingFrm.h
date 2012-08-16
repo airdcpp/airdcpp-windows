@@ -388,6 +388,7 @@ private:
 	CButton ctrlADLMatch;
 	CButton ctrlGetFullList;
 
+	//string currentDir;
 	tstring error;
 	string size;
 
