@@ -84,7 +84,7 @@ public:
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 protected:
-	string curProfile;
+	ProfileToken curProfile;
 	friend class FolderTree;
 	static Item items[];
 	static TextItem texts[];
@@ -98,7 +98,7 @@ protected:
 	void showProfile();
 	void applyChanges(bool isQuit);
 	void fixControls();
-	void removeDir(const string& aPath, const string& aProfile, bool checkDupes=true);
+	void removeDir(const string& aPath, ProfileToken aProfile, bool checkDupes=true);
 	bool addDirectory(const tstring& aPath);
 	ShareDirInfo::list removeDirs, newDirs, changedDirs, tempViewItems;
 
@@ -107,7 +107,7 @@ protected:
 	bool shareFolder(const string& path, ShareDirInfo::list& aShared);
 
 	ShareProfile::set addProfiles;
-	StringList removeProfiles;
+	ProfileTokenList removeProfiles;
 	vector<pair<ShareProfilePtr, string>> renameProfiles;
 	ShareProfilePtr getSelectedProfile();
 	ShareDirInfo::list getItemsByPath(const string& aPath);
@@ -116,10 +116,10 @@ protected:
 	vector<ShareProfilePtr> profiles;
 	CComboBox ctrlProfile;
 
-	ShareDirInfo::list getViewItems(const string& aProfile, bool getDiffItems=false);
+	ShareDirInfo::list getViewItems(ProfileToken aProfile, bool getDiffItems=false);
 	StringSet getExcludedDirs();
 
-	StringSetMap excludedAdd, excludedRemove;
+	ProfileTokenStringSetMap excludedAdd, excludedRemove;
 
 	void deleteDirectoryInfoItems();
 	void deleteTempViewItems();

@@ -197,7 +197,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	return 1;
 }
 
-void HubFrame::openWindow(const tstring& aServer, int chatusersplit, bool userliststate, const string& aShareProfile, string sColumsOrder, string sColumsWidth, string sColumsVisible) {
+void HubFrame::openWindow(const tstring& aServer, int chatusersplit, bool userliststate, ProfileToken aShareProfile, string sColumsOrder, string sColumsWidth, string sColumsVisible) {
 	FrameIter i = frames.find(aServer);
 	if(i == frames.end()) {
 		HubFrame* frm = new HubFrame(aServer, chatusersplit, userliststate, aShareProfile);
@@ -223,7 +223,7 @@ HubFrame::~HubFrame() {
 	clearTaskList();
 }
 
-HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate, const string& aShareProfile) : 
+HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate, ProfileToken aShareProfile) : 
 		waitingForPW(false), extraSort(false), server(aServer), closed(false), 
 		showUsers(BOOLSETTING(GET_USER_INFO)), updateUsers(false), resort(false),
 		curCommandPosition(0), timeStamps(BOOLSETTING(TIME_STAMPS)),

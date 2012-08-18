@@ -98,7 +98,7 @@ public:
 	tstring comboDescription;
 	tstring title;
 	bool hideShare;
-	string curProfile;
+	ProfileToken curProfile;
 	bool disableAddress;
 
 	enum { IDD = IDD_QUICKCONNECT };

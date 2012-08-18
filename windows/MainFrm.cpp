@@ -1453,7 +1453,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	tstring file = Util::emptyStringT;
 	
 	if(wID == IDC_OPEN_MY_LIST){
-		string flname;
+		ProfileToken profile;
 		auto profiles = ShareManager::getInstance()->getProfiles();
 		if (profiles.size() > 2) {
 			StringList tmpList;
@@ -1467,15 +1467,15 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			dlg.description = CTSTRING(SHARE_PROFILE);
 			dlg.title = CTSTRING(MENU_OPEN_OWN_LIST);
 			if(dlg.DoModal() == IDOK) {
-				flname = profiles[dlg.curSel]->getProfileList()->getProfile();
+				profile = profiles[dlg.curSel]->getProfileList()->getProfile();
 			} else {
 				return 0;
 			}
 		} else {
-			flname = SP_DEFAULT;
+			profile = SP_DEFAULT;
 		}
 
-		DirectoryListingManager::getInstance()->openOwnList(flname);
+		DirectoryListingManager::getInstance()->openOwnList(profile);
 		return 0;
 	}
 

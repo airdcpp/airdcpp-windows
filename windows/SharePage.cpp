@@ -142,7 +142,7 @@ LRESULT SharePage::onProfileChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
-ShareDirInfo::list SharePage::getViewItems(const string& aProfile, bool getDiffItems /*false*/) {
+ShareDirInfo::list SharePage::getViewItems(ProfileToken aProfile, bool getDiffItems /*false*/) {
 	ShareDirInfo::list ret;
 
 	auto& dirs = shareDirs[aProfile];
@@ -623,7 +623,7 @@ LRESULT SharePage::onClickedRemoveDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	return 0;
 }
 
-void SharePage::removeDir(const string& rPath, const string& aProfile, bool checkDupes /*true*/) {
+void SharePage::removeDir(const string& rPath, ProfileToken aProfile, bool checkDupes /*true*/) {
 	//update the diff info in case this path exists in other profiles
 	if (curProfile == SP_DEFAULT) {
 		auto items = getItemsByPath(rPath);

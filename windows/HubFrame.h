@@ -223,7 +223,7 @@ public:
 	void handleTab(bool reverse);
 	void runUserCommand(::UserCommand& uc);
 
-	static void openWindow(const tstring& server, int chatusersplit = 0, bool userliststate = true, const string& aShareProfile = SP_DEFAULT,
+	static void openWindow(const tstring& server, int chatusersplit = 0, bool userliststate = true, ProfileToken aShareProfile = SP_DEFAULT,
 		        string sColumsOrder = Util::emptyString, string sColumsWidth = Util::emptyString, string sColumsVisible = Util::emptyString);
 	static void resortUsers();	
 	static void closeDisconnected();
@@ -361,7 +361,7 @@ private:
 	
 	friend class PrivateFrame;
 	
-	HubFrame(const tstring& aServer, int chatusersplit, bool userliststate, const string& aShareProfile);
+	HubFrame(const tstring& aServer, int chatusersplit, bool userliststate, ProfileToken aShareProfile);
 	~HubFrame();
 
 	typedef unordered_map<tstring, HubFrame*> FrameMap;
