@@ -1019,14 +1019,14 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 
 	auto prevDownloadOrder = SETTING(DOWNLOAD_ORDER);
 
-	/*auto prevHighPrio = SETTING(HIGH_PRIO_FILES);
+	auto prevHighPrio = SETTING(HIGH_PRIO_FILES);
 	auto prevHighPrioRegex = SETTING(HIGHEST_PRIORITY_USE_REGEXP);
 
 	auto prevShareSkiplist = SETTING(SKIPLIST_SHARE);
 	auto prevShareSkiplistRegex = SETTING(SHARE_SKIPLIST_USE_REGEXP);
 
 	auto prevDownloadSkiplist = SETTING(SKIPLIST_DOWNLOAD);
-	auto prevDownloadSkiplistRegex = SETTING(DOWNLOAD_SKIPLIST_USE_REGEXP);*/
+	auto prevDownloadSkiplistRegex = SETTING(DOWNLOAD_SKIPLIST_USE_REGEXP);
 
 	if(dlg.DoModal(m_hWnd) == IDOK) 
 	{
@@ -1050,6 +1050,18 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 
 
 		ClientManager::getInstance()->infoUpdated();
+
+
+		if (prevHighPrio != SETTING(HIGH_PRIO_FILES) || prevHighPrioRegex != SETTING(HIGHEST_PRIORITY_USE_REGEXP) || prevDownloadSkiplist != SETTING(SKIPLIST_DOWNLOAD) ||
+			prevDownloadSkiplistRegex != SETTING(DOWNLOAD_SKIPLIST_USE_REGEXP)) {
+			
+				QueueManager::getInstance()->setMatchers();
+		}
+
+		if (prevShareSkiplist != SETTING(SKIPLIST_SHARE) || prevShareSkiplistRegex != SETTING(SHARE_SKIPLIST_USE_REGEXP)) {
+			ShareManager::getInstance()->setSkipList();
+		}
+
 
 		if (prevDownloadOrder != SETTING(DOWNLOAD_ORDER)) {
 			QueueManager::getInstance()->onChangeDownloadOrder();
