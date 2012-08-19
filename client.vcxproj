@@ -296,6 +296,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="client\StringDefs.cpp" />
+    <ClCompile Include="client\StringMatch.cpp" />
     <ClCompile Include="client\TargetUtil.cpp" />
     <ClCompile Include="client\Text.cpp" />
     <ClCompile Include="client\Thread.cpp" />
@@ -423,7 +424,7 @@
     <ClInclude Include="client\SSLSocket.h" />
     <ClInclude Include="client\stdinc.h" />
     <ClInclude Include="client\Streams.h" />
-    <ClInclude Include="client\StringMatcher.h" />
+    <ClInclude Include="client\StringMatch.h" />
     <ClInclude Include="client\TargetUtil.h" />
     <ClInclude Include="client\typedefs.h" />
     <ClInclude Include="client\UploadBundle.h" />

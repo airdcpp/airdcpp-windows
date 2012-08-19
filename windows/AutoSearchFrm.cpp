@@ -281,7 +281,7 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 			j = i +2;
 			if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
 				AutoSearchPtr as = new AutoSearch(true, str, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, dlg.remove, 
-					dlg.target, dlg.targetType, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, dlg.expireTime, dlg.checkQueued, dlg.checkShared);
+					dlg.target, dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, dlg.expireTime, dlg.checkQueued, dlg.checkShared);
 				as->startTime = dlg.startTime;
 				as->endTime = dlg.endTime;
 				as->searchDays = dlg.searchDays;
@@ -307,8 +307,8 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.remove = as->getRemove();
 		dlg.target = as->getTarget();
 		dlg.userMatch = as->getNickPattern();
-		dlg.matcherString = as->getPattern();
-		dlg.matcherType = as->getMatcherType();
+		dlg.matcherString = as->pattern;
+		dlg.matcherType = as->getMethod();
 		dlg.expireTime = as->getExpireTime();
 		dlg.searchDays = as->searchDays;
 		dlg.startTime = as->startTime;
@@ -319,7 +319,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 
 		if(dlg.DoModal() == IDOK) {
 			AutoSearchPtr asNew = AutoSearchPtr(new AutoSearch(as->getEnabled(), dlg.searchString, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, 
-				dlg.remove, dlg.target, (TargetUtil::TargetType)dlg.targetType, (StringMatcher::Type)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, 
+				dlg.remove, dlg.target, (TargetUtil::TargetType)dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, 
 				dlg.expireTime, dlg.checkQueued, dlg.checkShared));
 			asNew->startTime = dlg.startTime;
 			asNew->endTime = dlg.endTime;

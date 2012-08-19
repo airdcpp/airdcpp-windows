@@ -272,8 +272,11 @@ void DirectoryListingFrame::convertToFull() {
 
 	if (dl->getIsOwnList())
 		dl->addFullListTask(dl->getPath(d));
-	else
-		QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
+	else {
+		try {
+			QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
+		} catch(...) {}
+	}
 }
 
 void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREEITEM aParent) {
