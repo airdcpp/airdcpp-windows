@@ -1571,5 +1571,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="AdlDlFullList">Do you want to switch to full filelist before matching the ADL search?</String>
 		<String Name="HighlightContext">Highlight Context</String>
 		<String Name="SettingsContextFilelist">Highlight for Directories in Filelist (Wildcards or $Re: for Regex)</String>
+		<String Name="ResetExtensionsConfirm">This will delete all defined search types and restore the default ones. Do you want to continue?</String>
+		<String Name="NotEnoughSpacePaused">Not enough free space left on the target path %s (free space: %s while %s is needed). Using paused priority.</String>
+		<String Name="NotEnoughSpaceQueuedPaused">Not enough free space left on the target path %s (free space: %s, queued files: %s while %s is needed). Using paused priority.</String>
 	</Strings>
 </Language>

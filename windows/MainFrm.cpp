@@ -767,8 +767,11 @@ HWND MainFrame::createToolbar() {
 
 
 LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-		
-	if(wParam == OPEN_FILELIST) {
+	if(wParam == PROMPT_SIZE_ACTION) {
+		auto_ptr<SizeConfirmInfo> i(reinterpret_cast<SizeConfirmInfo*>(lParam));
+		bool accept = MessageBox(i.get()->msg.c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
+		DirectoryListingManager::getInstance()->handleSizeConfirmation(i.get()->name, accept);
+	} else if(wParam == OPEN_FILELIST) {
 		auto_ptr<DirectoryListInfo> i(reinterpret_cast<DirectoryListInfo*>(lParam));
 		DirectoryListingFrame::openWindow(i->dirList, i->dir);
 	} else if(wParam == VIEW_FILE_AND_DELETE) {
@@ -1840,6 +1843,14 @@ void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr qi, const 
 void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept {
 	DirectoryListInfo* i = new DirectoryListInfo(aList, aDir);
 	PostMessage(WM_SPEAKER, OPEN_FILELIST, (LPARAM)i);
+}
+
+void MainFrame::on(DirectoryListingManagerListener::PromptAction, const string& aName, const string& aMessage) noexcept {
+	//auto i = new SizeConfirmInfo(aName, aMessage);
+	//PostMessage(WM_SPEAKER, PROMPT_SIZE_ACTION, (LPARAM)i);
+
+	bool accept = MessageBox(Text::toT(aMessage).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
+	DirectoryListingManager::getInstance()->handleSizeConfirmation(aName, accept);
 }
 
 LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {

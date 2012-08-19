@@ -69,7 +69,14 @@ public:
 		int Icon;
 	};
 
+	struct SizeConfirmInfo {
+		SizeConfirmInfo(const string aName, const string& aMsg) : msg(Text::toT(aMsg)), name(aName) { }
+		tstring msg;
+		string name;
+	};
+
 	enum {
+		PROMPT_SIZE_ACTION,
 		OPEN_FILELIST,
 		STATS,
 		AUTO_CONNECT,
@@ -551,6 +558,7 @@ private:
 
 	// DirectoryListingManagerListener
 	void on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept;
+	void on(DirectoryListingManagerListener::PromptAction, const string& aName, const string& aMessage) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)

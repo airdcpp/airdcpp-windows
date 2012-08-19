@@ -325,24 +325,21 @@ private:
 		void viewNfo();
 		void matchPartial();
 		struct Download {
-			Download(const string& aTarget, SearchFrame* aSf, QueueItem::Priority aPrio, bool aNoAppend) : tgt(aTarget), sf(aSf), p(aPrio), noAppend(aNoAppend) { }
+			Download(const string& aTarget, SearchFrame* aSf, QueueItem::Priority aPrio, bool aNoAppend, TargetUtil::TargetType aTargetType) : tgt(aTarget), 
+				sf(aSf), p(aPrio), noAppend(aNoAppend), targetType(aTargetType) { }
 			void operator()(SearchInfo* si);
 			const string& tgt;
 			SearchFrame* sf;
 			QueueItem::Priority p;
 			bool noAppend;
+			TargetUtil::TargetType targetType;
 		};
 		struct DownloadWhole {
-			DownloadWhole(const string& aTarget, QueueItem::Priority aPrio) : tgt(aTarget), p(aPrio) { }
+			DownloadWhole(const string& aTarget, QueueItem::Priority aPrio, TargetUtil::TargetType aTargetType) : tgt(aTarget), p(aPrio), targetType(aTargetType) { }
 				void operator()(SearchInfo* si);
 			const string& tgt;
 			QueueItem::Priority p;
-		};
-		struct DownloadTarget {
-			DownloadTarget(const string& aTarget, QueueItem::Priority aPrio) : tgt(aTarget), p(aPrio) { }
-				void operator()(SearchInfo* si);
-			const string& tgt;
-			QueueItem::Priority p;
+			TargetUtil::TargetType targetType;
 		};
 		struct CheckTTH {
 			CheckTTH() : op(true), firstHubs(true), hasTTH(false), firstTTH(true) { }

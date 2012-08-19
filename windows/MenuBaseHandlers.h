@@ -159,6 +159,11 @@ public:
 
 	StringList targets;
 	Type type;
+	bool isSizeUnknown;
+
+	bool useVirtualDir(bool aIsWhole) {
+		return isSizeUnknown || (type == SEARCH && aIsWhole);
+	}
 
 	LRESULT onDownload(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		download(SETTING(DOWNLOAD_DIRECTORY), false);
@@ -171,7 +176,7 @@ public:
 	}
 
 	LRESULT onDownloadTarget(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		download(targets[IDC_DOWNLOAD_TARGET-wID], false, true);
+		download(targets[IDC_DOWNLOAD_TARGET-wID], false);
 		return 0;
 	}
 
@@ -194,7 +199,7 @@ public:
 
 			SettingsManager::getInstance()->addDirToHistory(Util::getFilePath(target));
 		}
-		download(Text::fromT(target), useWhole, !showDirDialog);
+		download(Text::fromT(target), useWhole);
 		return 0;
 	}
 
@@ -220,7 +225,7 @@ public:
 			case IDC_PRIORITY_HIGHEST: p = QueueItem::HIGHEST; break;
 			default: p = QueueItem::DEFAULT; break;
 		}
-		download(SETTING(DOWNLOAD_DIRECTORY), useWhole, false, p);
+		download(SETTING(DOWNLOAD_DIRECTORY), useWhole, p);
 		return 0;
 	}
 
@@ -278,7 +283,7 @@ public:
 
 		dcassert(newId >= 0);
 
-		if (!isWhole && type == AUTO_SEARCH) {
+		if (useVirtualDir(isWhole)) {
 			string target = isFav ? FavoriteManager::getInstance()->getFavoriteDirs()[newId].first : ShareManager::getInstance()->getGroupedDirectories()[newId].first;
 			((T*)this)->download(target, QueueItem::DEFAULT, false, isFav ? TargetUtil::TARGET_FAVORITE : TargetUtil::TARGET_SHARE);
 		} else {
@@ -295,17 +300,18 @@ public:
 		return 0;
 	}
 
-	void download(const string& aTarget, bool isWhole, bool noAppendFilename = false, QueueItem::Priority p = QueueItem::DEFAULT) {
-		if (type != AUTO_SEARCH) {
+	void download(const string& aTarget, bool isWhole, QueueItem::Priority p = QueueItem::DEFAULT) {
+		if (!isSizeUnknown) {
 			/* Get the size of the download */
 			int64_t size = ((T*)this)->getDownloadSize(isWhole);
 			/* Check the space */
 			TargetUtil::TargetInfo ti;
+			ti.targetDir = aTarget;
 			if (TargetUtil::getDiskInfo(ti) && ti.getFreeSpace() < size && !confirmDownload(ti, size))
 				return;
 		}
 
-		((T*)this)->download(aTarget, WinUtil::isShift() ? QueueItem::HIGHEST : p, isWhole, noAppendFilename ? TargetUtil::NO_APPEND : TargetUtil::TARGET_PATH);
+		((T*)this)->download(aTarget, WinUtil::isShift() ? QueueItem::HIGHEST : p, isWhole, TargetUtil::TARGET_PATH);
 	}
 
 	void appendDownloadTo(OMenu& targetMenu, bool wholeDir) {
@@ -339,8 +345,9 @@ public:
 		}
 	}
 
-	void appendDownloadMenu(OMenu& aMenu, Type aType, bool isWhole=false) {
+	void appendDownloadMenu(OMenu& aMenu, Type aType, bool isWhole, bool aUseVirtualDir) {
 		type = aType;
+		isSizeUnknown = aUseVirtualDir;
 		((T*)this)->appendDownloadItems(aMenu, isWhole);
 	}
 
@@ -392,21 +399,7 @@ public:
 	}
 
 	bool confirmDownload(TargetUtil::TargetInfo& targetInfo, int64_t aSize) {
-		string tmp;
-		if (targetInfo.queued > 0) {
-			tmp = STRING_F(CONFIRM_SIZE_WARNING_QUEUED, 
-				Util::formatBytes(targetInfo.diskSpace).c_str() % 
-				targetInfo.targetDir.c_str() %
-				Util::formatBytes(targetInfo.queued).c_str() %
-				Util::formatBytes(aSize).c_str());
-		} else {
-			tmp = STRING_F(CONFIRM_SIZE_WARNING, 
-				Util::formatBytes(targetInfo.getFreeSpace()).c_str() % 
-				targetInfo.targetDir.c_str() %
-				Util::formatBytes(aSize).c_str());
-		}
-
-		return (MessageBox(((T*)this)->m_hWnd, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES);
+		return (MessageBox(((T*)this)->m_hWnd, Text::toT(TargetUtil::getInsufficientSizeMessage(targetInfo, aSize)).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES);
 	}
 };
 

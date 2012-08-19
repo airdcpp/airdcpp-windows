@@ -451,13 +451,14 @@ void DirectoryListingFrame::updateStatus() {
 
 void DirectoryListingFrame::initStatus() {
 	files = dl->getTotalFileCount();
-	size = Util::formatBytes(dl->getTotalSize());
+	size = Util::formatBytes(dl->getTotalListSize());
 
 	tstring tmp = TSTRING(FILES) + _T(": ") + Util::toStringW(dl->getTotalFileCount(true));
 	statusSizes[STATUS_TOTAL_FILES] = WinUtil::getTextWidth(tmp, m_hWnd);
 	ctrlStatus.SetText(STATUS_TOTAL_FILES, tmp.c_str());
 
-	tmp = TSTRING(SIZE) + _T(": ") + Util::formatBytesW(dl->getTotalSize(true));
+	//tmp = TSTRING(SIZE) + _T(": ") + Util::formatBytesW(dl->getTotalListSize(true));
+	tmp = TSTRING(SIZE) + _T(": ") + Text::toT(size).c_str();
 	statusSizes[STATUS_TOTAL_SIZE] = WinUtil::getTextWidth(tmp, m_hWnd);
 	ctrlStatus.SetText(STATUS_TOTAL_SIZE, tmp.c_str());
 
@@ -787,7 +788,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 				}catch(...) {
 					goto clientmenu;
 				}
-			} else if(ii->type == ItemInfo::DIRECTORY) {
+			} else {
 				try {
 					//Fix this Someway
 					StringList localPaths;
@@ -871,7 +872,17 @@ clientmenu:
 				targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
 			}
 
-			appendDownloadMenu(fileMenu, DownloadBaseHandler::FILELIST, false);
+			int i = -1;
+			bool allComplete = true;
+			while( (i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
+				const ItemInfo* ii = ctrlList.getItemData(i);
+				if (ii->type == ItemInfo::DIRECTORY && !ii->dir->getComplete() && ii->dir->getPartialSize() == 0) {
+					allComplete = false;
+					break;
+				}
+			}
+
+			appendDownloadMenu(fileMenu, DownloadBaseHandler::FILELIST, false, !allComplete);
 			fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			fileMenu.AppendMenu(MF_SEPARATOR);
 		
@@ -948,7 +959,7 @@ clientmenu:
 		directoryMenu.CreatePopupMenu();
 		SearchMenu.CreatePopupMenu();
 
-		appendDownloadMenu(directoryMenu, DownloadBaseHandler::FILELIST, true);
+		appendDownloadMenu(directoryMenu, DownloadBaseHandler::FILELIST, true, false);
 		directoryMenu.AppendMenu(MF_SEPARATOR);
 
 		directoryMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
@@ -988,7 +999,7 @@ void DirectoryListingFrame::download(const string& aTarget, QueueItem::Priority 
 		HTREEITEM t = ctrlTree.GetSelectedItem();
 		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
 		try {
-			dl->download(dir, aTarget, WinUtil::isShift(), prio);
+			dl->download(dir, aTarget, aTargetType, WinUtil::isShift(), prio);
 		} catch(const Exception& e) {
 			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 		}
@@ -999,10 +1010,10 @@ void DirectoryListingFrame::download(const string& aTarget, QueueItem::Priority 
 
 			try {
 				if(ii->type == ItemInfo::FILE) {
-					dl->download(ii->file, aTarget + (aTargetType == TargetUtil::NO_APPEND ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), false, 
+					dl->download(ii->file, aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), false, 
 						WinUtil::isShift(), prio);
 				} else {
-					dl->download(ii->dir, aTarget, WinUtil::isShift(), prio);
+					dl->download(ii->dir, aTarget, aTargetType, WinUtil::isShift(), prio);
 				} 
 			} catch(const Exception& e) {
 				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
