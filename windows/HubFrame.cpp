@@ -2472,31 +2472,34 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				cd->clrText = SETTING(PASIVE_COLOR);
 			} else {
 				cd->clrText = SETTING(NORMAL_COLOUR);
+			}
 			if( BOOLSETTING(USE_HIGHLIGHT) ) {
 				
-			ColorList *cList = HighlightManager::getInstance()->getList();
+				ColorList *cList = HighlightManager::getInstance()->getList();
 				for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
-				ColorSettings* cs = &(*i);
-				string str;
-				if(cs->getIncludeNickList()) {
-					if(cs->usingRegexp()) {
-					try {
-						//have to have $Re:
-						str = Text::fromT(cs->getMatch()).substr(4);
-						boost::regex reg(str, cs->getCaseSensitive() ? boost::match_default : boost::regex_constants::icase  );
-						if(boost::regex_search(ui->getIdentity().getNick(), reg))
-							cd->clrText = cs->getFgColor();
-					}catch(...) {}
-					} else {
-						str = Text::fromT(cs->getMatch());
-						if (Wildcard::patternMatch(ui->getIdentity().getNick(), str, '|')){
-							cd->clrText = cs->getFgColor();
+					ColorSettings* cs = &(*i);
+					string str;
+					if(cs->getContext() == HighlightManager::CONTEXT_NICKLIST) {
+						if(cs->usingRegexp()) {
+							try {
+								//have to have $Re:
+								str = Text::fromT(cs->getMatch()).substr(4);
+								boost::regex reg(str, cs->getCaseSensitive() ? boost::match_default : boost::regex_constants::icase  );
+								if(boost::regex_search(ui->getIdentity().getNick(), reg)){
+									if(cs->getHasFgColor()) cd->clrText = cs->getFgColor();
+									break;
+								}
+							}catch(...) {}
+						} else {
+							if (Wildcard::patternMatch(Text::utf8ToAcp(ui->getIdentity().getNick()), Text::utf8ToAcp(Text::fromT(cs->getMatch())), '|')){
+								if(cs->getHasFgColor()) cd->clrText = cs->getFgColor();
+								break;
+								}
 							}
 						}
 					}
 				}
-			}
-			}
+			
 			return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 		}
 

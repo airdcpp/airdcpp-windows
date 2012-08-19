@@ -1046,7 +1046,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="SettingsPopup">Display Popup</String>
 		<String Name="SettingsPlaySound">Play Sound</String>
 		<String Name="SettingsFlashWindow">Flash Window</String>
-		<String Name="SettingsIncludeNicklist">Use Highlight for Nicklist (Wildcards or $Re: for Regex)</String>
+		<String Name="SettingsIncludeNicklist">Highlight for Nicklist (Wildcards or $Re: for Regex)</String>
 		<String Name="SettingsWholeLine">Whole Line</String>
 		<String Name="SettingsEntireWord">Entire Word</String>
 		<String Name="SettingsTabColor">Change Tabcolor</String>
@@ -1555,7 +1555,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="XResultsFound">Results were found from %d directories</String>
 		<String Name="AddingSharedDir">Adding the directory %s in share...</String>
 		<String Name="AddingXSharedDirs">Adding %d directories in share...</String>
-		<String Name="DirectoryAdded">The directory %s has been added in share (it won't visible in the filelist until it has finished hashing)</String>
+		<String Name="DirectoryAdded">The directory %s has been added in share (it won't be visible in the filelist until it has finished hashing)</String>
 		<String Name="DirectoriesAdded">%d directories has been added in share (they won't be visible in the filelist until they have finished hashing)</String>
 		<String Name="DirectoryRefreshed">The directory %s has been refreshed</String>
 		<String Name="VirtualDirectoryRefreshed">The virtual directory %s has been refreshed</String>
@@ -1571,5 +1571,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SearchCurDir">Search within the currect directory</String>
 		<String Name="UpdatingView">Updating the view...</String>
 		<String Name="AdlDlFullList">Do you want to switch to full filelist before matching the ADL search?</String>
+		<String Name="HighlightContext">Highlight Context</String>
+		<String Name="SettingsContextFilelist">Highlight for Directories in Filelist (Wildcards or $Re: for Regex)</String>
 	</Strings>
 </Language>

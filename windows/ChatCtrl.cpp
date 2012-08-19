@@ -307,7 +307,7 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT
 		//compare the last line against all strings in the vector
 		for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
 			ColorSettings* cs = &(*i);
-			if(cs->getIncludeNickList()) 
+			if(cs->getContext() != HighlightManager::CONTEXT_CHAT) 
 				continue;
 			size_t pos;
 			tstring msg = sText;

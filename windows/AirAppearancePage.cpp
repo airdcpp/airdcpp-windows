@@ -36,8 +36,6 @@ PropPage::TextItem AirAppearancePage::texts[] = {
 	{ IDC_DUPE_FILELISTS,		ResourceManager::SETTINGS_DUPE_FILELIST	},
 	{ IDC_DUPES,				ResourceManager::SETTINGS_DUPES	},
 	{ IDC_MAX_RESIZE_LINES_STR, ResourceManager::MAX_RESIZE_LINES },//ApexDC
-	{ IDC_LIST_HL_TEXT,				ResourceManager::LIST_HL_TEXT	},
-	{ IDC_LIST_HL_EXAMPLE,				ResourceManager::LIST_HL_EXAMPLE	},
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -47,7 +45,6 @@ PropPage::Item AirAppearancePage::items[] = {
 	{ IDC_DUPE_SEARCH, SettingsManager::DUPE_SEARCH, PropPage::T_BOOL },
 	{ IDC_DUPE_CHAT,		SettingsManager::DUPES_IN_CHAT, PropPage::T_BOOL	},
 	{ IDC_DUPE_FILELISTS,	SettingsManager::DUPES_IN_FILELIST, PropPage::T_BOOL	},
-	{ IDC_FILELIST_HL,	SettingsManager::HIGHLIGHT_LIST, PropPage::T_STR	},
 	{ 0, 0, PropPage::T_END }
  //ApexDC
 	#define setMinMax(x, y, z) \

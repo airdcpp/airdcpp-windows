@@ -31,6 +31,7 @@
 #include "WinUtil.h"
 #include "UCHandler.h"
 #include "MenuBaseHandlers.h"
+#include "../client/HighlightManager.h"
 
 #include "../client/DirectoryListing.h"
 #include "../client/DirectoryListingListener.h"

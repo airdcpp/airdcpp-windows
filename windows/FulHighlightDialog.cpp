@@ -45,12 +45,10 @@ PropPage::TextItem FulHighlightDialog::texts[] = {
 	{ IDC_STRIKEOUT,	 ResourceManager::STRIKEOUT					},
 	{ IDC_POPUP,		 ResourceManager::SETTINGS_POPUP			},
 	{ IDC_SOUND,		 ResourceManager::SETTINGS_PLAY_SOUND		},
-	{ IDC_INCLUDENICK,	 ResourceManager::SETTINGS_INCLUDE_NICKLIST		},
 	{ IDC_WHOLELINE,	 ResourceManager::SETTINGS_WHOLE_LINE		},
 	{ IDC_CASESENSITIVE, ResourceManager::CASE_SENSITIVE	},
 	{ IDC_WHOLEWORD,	 ResourceManager::SETTINGS_ENTIRE_WORD		},
-	//{ IDC_TABCOLOR,		 ResourceManager::SETTINGS_TAB_COLOR		},
-	//{ IDC_LASTLOG,		 ResourceManager::SETTINGS_LASTLOG			},
+	{ IDC_HCONTEXT_TEXT, ResourceManager::HIGHLIGHT_CONTEXT		},
 	{ IDOK,				 ResourceManager::OK						},
 	{ IDCANCEL,			 ResourceManager::CANCEL					},
 	{ 0,				 ResourceManager::SETTINGS_AUTO_AWAY		}
@@ -70,6 +68,8 @@ LRESULT FulHighlightDialog::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 
 	//initalize ComboBox
 	ctrlMatchType.Attach(GetDlgItem(IDC_MATCHTYPE));
+	ctrlContext.Attach(GetDlgItem(IDC_HCONTEXT));
+	ctrlText.Attach(GetDlgItem(IDC_HLTEXT));
 
 	//add alternatives
 	StringTokenizer<tstring> s(Text::toT(STRING(HIGHLIGHT_MATCH_TYPES)), _T(','));
@@ -78,6 +78,10 @@ LRESULT FulHighlightDialog::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 		ctrlMatchType.AddString((*i).c_str());
 
 	ctrlMatchType.SetCurSel(1);
+
+	ctrlContext.AddString(_T("Context Chat"));
+	ctrlContext.AddString(_T("Context NickList"));
+	ctrlContext.AddString(_T("Context Filelist"));
 
 	CenterWindow(WinUtil::mainWnd);
 	SetWindowText(CTSTRING(HIGHLIGHT_DIALOG_TITLE));
@@ -101,23 +105,13 @@ LRESULT FulHighlightDialog::onOk(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 		try {
 			boost::regex reg(str1);
 			if(boost::regex_search(str2.begin(), str2.end(), reg)){
-				//MessageBox(CTSTRING(BAD_REGEXP), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
-				//return TRUE;
+				//....
 			}
-			/*boost::regex reg(str1);
-			if(boost::regex_search(str2.begin(), str2.end(), reg)){
-				//Nothing? See below
-			};*/
 		} catch(...) {
 			MessageBox(CTSTRING(BAD_REGEXP), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
 			return TRUE;
 		}
 
-/*		PME reg(cs.getMatch().substr(4));
-		if(! reg.IsValid()){
-			MessageBox(CTSTRING(BAD_REGEXP), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
-			return TRUE;
-		}*/
 	}
 
 	EndDialog(IDOK);
@@ -145,21 +139,66 @@ LRESULT FulHighlightDialog::onBgColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	return 0;
 }
 void FulHighlightDialog::fix() {
-	BOOL use = IsDlgButtonChecked(IDC_INCLUDENICK) != BST_CHECKED;
-	::EnableWindow(GetDlgItem(IDC_UNDERLINE),					use);
-	::EnableWindow(GetDlgItem(IDC_ITALIC),					use);
-	::EnableWindow(GetDlgItem(IDC_BOLD),					use);
-	::EnableWindow(GetDlgItem(IDC_WHOLEWORD),					use);
-	::EnableWindow(GetDlgItem(IDC_WHOLELINE),					use);
-	::EnableWindow(GetDlgItem(IDC_POPUP),					use);
-	::EnableWindow(GetDlgItem(IDC_HAS_BG_COLOR),					use);
-	::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
-	::EnableWindow(GetDlgItem(IDC_SOUND),					use);
-	::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
 
+	if(ctrlContext.GetCurSel() == HighlightManager::CONTEXT_NICKLIST) {
+		ctrlText.SetWindowText(CTSTRING(SETTINGS_INCLUDE_NICKLIST));
+		BOOL use = 0;
+		BOOL t;
+		onClickedBox(0, IDC_HAS_BG_COLOR, NULL, t);
+		onClickedBox(0, IDC_HAS_FG_COLOR, NULL, t);
+
+		::EnableWindow(GetDlgItem(IDC_UNDERLINE),					use);
+		::EnableWindow(GetDlgItem(IDC_ITALIC),					use);
+		::EnableWindow(GetDlgItem(IDC_BOLD),					use);
+		::EnableWindow(GetDlgItem(IDC_WHOLEWORD),					use);
+		::EnableWindow(GetDlgItem(IDC_WHOLELINE),					use);
+		::EnableWindow(GetDlgItem(IDC_POPUP),					use);
+		::EnableWindow(GetDlgItem(IDC_HAS_BG_COLOR),					use);
+		::EnableWindow(GetDlgItem(IDC_BGCOLOR),					use);
+		::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
+		::EnableWindow(GetDlgItem(IDC_SOUND),					use);
+		::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
+
+	} else if(ctrlContext.GetCurSel() == HighlightManager::CONTEXT_FILELIST) {
+		BOOL use = 0;
+		::EnableWindow(GetDlgItem(IDC_UNDERLINE),					use);
+		::EnableWindow(GetDlgItem(IDC_ITALIC),					use);
+		::EnableWindow(GetDlgItem(IDC_BOLD),					use);
+		::EnableWindow(GetDlgItem(IDC_WHOLEWORD),					use);
+		::EnableWindow(GetDlgItem(IDC_WHOLELINE),					use);
+		::EnableWindow(GetDlgItem(IDC_POPUP),					use);
+		::EnableWindow(GetDlgItem(IDC_HAS_BG_COLOR),					1);
+		::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
+		::EnableWindow(GetDlgItem(IDC_SOUND),					use);
+		::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
+		BOOL t;
+		onClickedBox(0, IDC_HAS_BG_COLOR, NULL, t);
+		onClickedBox(0, IDC_HAS_FG_COLOR, NULL, t);
+
+		ctrlText.SetWindowText(CTSTRING(SETTINGS_CONTEXT_FILELIST));
+	} else {
+		BOOL use = 1;
+		::EnableWindow(GetDlgItem(IDC_UNDERLINE),					use);
+		::EnableWindow(GetDlgItem(IDC_ITALIC),					use);
+		::EnableWindow(GetDlgItem(IDC_BOLD),					use);
+		::EnableWindow(GetDlgItem(IDC_WHOLEWORD),					use);
+		::EnableWindow(GetDlgItem(IDC_WHOLELINE),					use);
+		::EnableWindow(GetDlgItem(IDC_POPUP),					use);
+		::EnableWindow(GetDlgItem(IDC_HAS_BG_COLOR),					use);
+		::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
+		::EnableWindow(GetDlgItem(IDC_SOUND),					use);
+		::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
+
+		BOOL t;
+		onClickedBox(0, IDC_HAS_BG_COLOR, NULL, t);
+		onClickedBox(0, IDC_HAS_FG_COLOR, NULL, t);
+		onClickedBox(0, IDC_SOUND, NULL, t);
+
+		ctrlText.SetWindowText(_T(""));
+	}
 }
 
-LRESULT FulHighlightDialog::onApplyNicklist(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
+LRESULT FulHighlightDialog::onApplyContext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	fix();
 	return 0;
 }
@@ -188,7 +227,6 @@ void FulHighlightDialog::getValues(){
 	cs.setStrikeout( IsDlgButtonChecked(IDC_STRIKEOUT) == BST_CHECKED );
 
 	cs.setCaseSensitive( IsDlgButtonChecked(IDC_CASESENSITIVE) == BST_CHECKED );
-	cs.setIncludeNickList(	  IsDlgButtonChecked(IDC_INCLUDENICK)	== BST_CHECKED );
 	cs.setWholeLine(	  IsDlgButtonChecked(IDC_WHOLELINE)		== BST_CHECKED );
 	cs.setWholeWord(	  IsDlgButtonChecked(IDC_WHOLEWORD)		== BST_CHECKED );
 	cs.setPopup(		  IsDlgButtonChecked(IDC_POPUP)			== BST_CHECKED );
@@ -203,6 +241,7 @@ void FulHighlightDialog::getValues(){
 	cs.setFgColor( fgColor );
 
 	cs.setMatchType( ctrlMatchType.GetCurSel() );
+	cs.setContext(ctrlContext.GetCurSel());
 
 	cs.setSoundFile( soundFile );
 
@@ -213,12 +252,12 @@ void FulHighlightDialog::initControls() {
 	
 	SetDlgItemText(IDC_STRING, cs.getMatch().c_str());
 	ctrlMatchType.SetCurSel(cs.getMatchType());
+	ctrlContext.SetCurSel(cs.getContext());
 
 	CheckDlgButton(IDC_BOLD			, cs.getBold()			 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_ITALIC		, cs.getItalic()		 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_UNDERLINE	, cs.getUnderline()	 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_STRIKEOUT	, cs.getStrikeout()	 ? BST_CHECKED : BST_UNCHECKED);
-	CheckDlgButton(IDC_INCLUDENICK	, cs.getIncludeNickList()	 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_WHOLELINE	, cs.getWholeLine()	 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_CASESENSITIVE, cs.getCaseSensitive() ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_WHOLEWORD	, cs.getWholeWord()	 ? BST_CHECKED : BST_UNCHECKED);

@@ -59,7 +59,8 @@ LRESULT FulHighlightPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	//Initalize listview
 	ctrlStrings.Attach(GetDlgItem(IDC_ITEMS));
 	ctrlStrings.GetClientRect(rc);
-	ctrlStrings.InsertColumn(0, CTSTRING(HIGHLIGHTLIST_HEADER), LVCFMT_LEFT, rc.Width(), 0);
+	ctrlStrings.InsertColumn(0, _T("Context"), LVCFMT_LEFT, rc.Width()/3, 1);
+	ctrlStrings.InsertColumn(1, CTSTRING(HIGHLIGHTLIST_HEADER), LVCFMT_LEFT, rc.Width()/3*2, 1);
 	ctrlStrings.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 
 	ColorList* cList = HighlightManager::getInstance()->getList();
@@ -68,7 +69,11 @@ LRESULT FulHighlightPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	highlights.reserve(cList->size());
 	for(ColorIter i = cList->begin();i != cList->end(); ++i) {
 		highlights.push_back((*i));
-		ctrlStrings.insert( ctrlStrings.GetItemCount(), (*i).getMatch());
+		string context = getContextString((*i).getContext()); 
+
+		int l = ctrlStrings.insert( ctrlStrings.GetItemCount(), Text::toT(context));
+		ctrlStrings.SetItemText(l, 1, (*i).getMatch().c_str());
+
 	}
 	
 	presets.CreatePopupMenu();
@@ -101,7 +106,8 @@ LRESULT FulHighlightPage::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	if(dlg.DoModal(WinUtil::mainWnd) == IDOK) {
 		//add the string to the listview
 		highlights.push_back(dlg.getColorSetting());
-		ctrlStrings.insert( ctrlStrings.GetItemCount(), highlights.back().getMatch());
+		int i = ctrlStrings.insert( ctrlStrings.GetItemCount(), Text::toT(getContextString(highlights.back().getContext())));
+		ctrlStrings.SetItemText(i, 1, highlights.back().getMatch().c_str());
 		ctrlStrings.SelectItem(ctrlStrings.GetItemCount()-1);
 	}
 
@@ -119,9 +125,10 @@ LRESULT FulHighlightPage::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		old = highlights[sel];
 		cur = dlg.getColorSetting();
 
-		if(old.getMatch().compare(cur.getMatch()) != 0){
+		if(old.getMatch().compare(cur.getMatch()) != 0 || old.getContext() != cur.getContext()){
 				ctrlStrings.DeleteItem(sel);
-			ctrlStrings.insert(sel, cur.getMatch());
+			int i = ctrlStrings.insert( sel, Text::toT(getContextString(cur.getContext())));
+			ctrlStrings.SetItemText(i, 1, cur.getMatch().c_str());
 			ctrlStrings.SelectItem(sel);
 		} 
 		highlights[sel] = cur;
@@ -136,7 +143,8 @@ LRESULT FulHighlightPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		highlights[sel] = highlights[sel-1];
 		highlights[sel-1] = cs;
 		ctrlStrings.DeleteItem(sel);
-		ctrlStrings.insert(sel-1, cs.getMatch());
+		int i = ctrlStrings.insert( sel-1, Text::toT(getContextString(cs.getContext())));
+		ctrlStrings.SetItemText(i, 1, cs.getMatch().c_str());
 		ctrlStrings.SelectItem(sel-1);
 	} else if(wID == IDC_MOVEDOWN && sel < ctrlStrings.GetItemCount()-1){
 		//hmm odd, moveItem handles the move but the list doesn't get updated
@@ -145,7 +153,8 @@ LRESULT FulHighlightPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		highlights[sel] = highlights[sel+1];
 		highlights[sel+1] = cs;
 		ctrlStrings.DeleteItem(sel);
-		ctrlStrings.insert(sel+1, cs.getMatch());
+		int i = ctrlStrings.insert( sel+1, Text::toT(getContextString(cs.getContext())));
+		ctrlStrings.SetItemText(i, 1, cs.getMatch().c_str());
 		ctrlStrings.SelectItem(sel+1);
 	}
 
@@ -219,23 +228,27 @@ void FulHighlightPage::addPreset(int preset) {
 	ColorSettings cs;
 	switch(preset){
 			case 2:
+			cs.setContext(HighlightManager::CONTEXT_CHAT);
 			cs.setMatch(_T("$Re:^\\[.*?\\] (\\*{3} Joins: .*)"));
 			cs.setHasFgColor(true);
 			cs.setBold(true);
 			cs.setFgColor(RGB(153,153,51));
 			break;
 		case 3:
+			cs.setContext(HighlightManager::CONTEXT_CHAT);
 			cs.setMatch(_T("$Re:^\\[.*?\\] (\\*{3} Parts: .*)"));
 			cs.setHasFgColor(true);
 			cs.setBold(true);
 			cs.setFgColor(RGB(51, 102, 154));
 			break;
 		case 4:
+			cs.setContext(HighlightManager::CONTEXT_CHAT);
 			cs.setMatch(_T("$Re:") + Text::toT(AirUtil::getReleaseRegLong(true)));
 			cs.setHasFgColor(true);
 			cs.setFgColor(RGB(153, 51, 153));
 			break;
 		case 5:
+			cs.setContext(HighlightManager::CONTEXT_CHAT);
 			cs.setMatch(_T("$users$"));
 			cs.setIncludeNickList(false);
 			cs.setBold(true);
@@ -247,7 +260,8 @@ void FulHighlightPage::addPreset(int preset) {
 	}
 
 	highlights.push_back(cs);
-	ctrlStrings.insert( ctrlStrings.GetItemCount(), highlights.back().getMatch());
+	int i = ctrlStrings.insert( ctrlStrings.GetItemCount(), Text::toT(getContextString(highlights.back().getContext())));
+	ctrlStrings.SetItemText(i, 1, highlights.back().getMatch().c_str());
 	ctrlStrings.SelectItem(ctrlStrings.GetItemCount()-1);
 }
 

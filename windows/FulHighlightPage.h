@@ -84,6 +84,16 @@ protected:
 	ColorList highlights;
 
 	CMenu presets;
+	string getContextString(int i) {
+		if(i == 0)  
+			return "Chat";  
+		else if(i == 1) 
+			return "NickList";
+		else if (i == 2)
+			return "FileList";
+
+		return "";
+	}
 
 	TCHAR* title;
 	

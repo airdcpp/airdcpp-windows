@@ -1386,17 +1386,42 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 	case CDDS_ITEMPREPAINT: {
 		ItemInfo *ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
 
-		if(!SETTING(HIGHLIGHT_LIST).empty() && !dl->getIsOwnList() && ii->type == ItemInfo::DIRECTORY) {
-			//Todo Regex string?
-			if(Wildcard::patternMatch(ii->dir->getName(), SETTING(HIGHLIGHT_LIST), '|')) {
-				cd->clrText = SETTING(LIST_HL_COLOR);
-				cd->clrTextBk = SETTING(LIST_HL_BG_COLOR);
-			}
-		}
-		
+		//dupe colors have higher priority than highlights.
 		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList() && ii != NULL) {
 			cd->clrText = ii->type == ItemInfo::FILE ? WinUtil::getDupeColor(ii->file->getDupe()) : WinUtil::getDupeColor(ii->dir->getDupe());
 		}
+
+		//has dupe color = no matching
+		if( BOOLSETTING(USE_HIGHLIGHT) && !dl->getIsOwnList() && (ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DUPE_NONE) ) {
+				
+			ColorList *cList = HighlightManager::getInstance()->getList();
+			for(ColorIter i = cList->begin(); i != cList->end(); ++i) {
+			ColorSettings* cs = &(*i);
+			string str;
+			if(cs->getContext() == HighlightManager::CONTEXT_FILELIST) {
+				if(cs->usingRegexp()) {
+					try {
+						//have to have $Re:
+						str = Text::fromT(cs->getMatch()).substr(4);
+						boost::regex reg(str, cs->getCaseSensitive() ? boost::match_default : boost::regex_constants::icase  );
+						if(boost::regex_search(ii->dir->getName(), reg)) {
+							if(cs->getHasFgColor()) { cd->clrText = cs->getFgColor(); }
+							if(cs->getHasBgColor()) { cd->clrTextBk = cs->getBgColor(); }
+							break;
+						}
+					} catch(...) {}
+				} else {
+					str = Text::fromT(cs->getMatch());
+					if (Wildcard::patternMatch(Text::utf8ToAcp(ii->dir->getName()), Text::utf8ToAcp(str), '|')){
+							if(cs->getHasFgColor()) { cd->clrText = cs->getFgColor(); }
+							if(cs->getHasBgColor()) { cd->clrTextBk = cs->getBgColor(); }
+							break;
+						}
+					}
+				}
+			}
+		}
+		
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 	}
 
