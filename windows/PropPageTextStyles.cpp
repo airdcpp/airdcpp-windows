@@ -132,10 +132,6 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	SettingsManager::TEXT_NORM_BACK_COLOR, SettingsManager::TEXT_NORM_FORE_COLOR, 
 	SettingsManager::TEXT_NORM_BOLD, SettingsManager::TEXT_NORM_ITALIC );
 
-	TextStyles[ TS_LIST_HL ].Init(
-	this, settings, STRING(PROPPAGE_LIST_HL).c_str(), STRING(PROPPAGE_LIST_HL_MSG).c_str(),
-	SettingsManager::LIST_HL_BG_COLOR, SettingsManager::LIST_HL_COLOR, 
-	SettingsManager::LIST_HL_BOLD, SettingsManager::LIST_HL_ITALIC );
 
 	for ( int i = 0; i < TS_LAST; i++ ) {
 		TextStyles[ i ].LoadSettings();
@@ -338,10 +334,6 @@ LRESULT PropPageTextStyles::onDefaultStyles(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	TextStyles[ TS_QUEUE_DUPE ].crBackColor = RGB(255, 255, 255);
 	TextStyles[ TS_QUEUE_DUPE ].crTextColor = RGB(255,200,0);
 	TextStyles[ TS_QUEUE_DUPE ].dwEffects = 0;
-
-	TextStyles[ TS_LIST_HL ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_LIST_HL ].crTextColor = RGB(255,189,202);
-	TextStyles[ TS_LIST_HL ].dwEffects = 0;
 
 	TextStyles[ TS_FAVORITE ].crBackColor = RGB(255, 255, 255);
 	TextStyles[ TS_FAVORITE ].crTextColor = RGB(0,0,0);
@@ -549,10 +541,6 @@ void PropPageTextStyles::LoadTheme(const string& path) {
 			importData("TextDupeColor", DUPE_COLOR);
 			importData("TextDupeBold", TEXT_DUPE_BOLD);
 			importData("TextDupeItalic", TEXT_DUPE_ITALIC);
-			importData("ListHighlightBackColor", LIST_HL_BG_COLOR);
-			importData("ListHighlightColor", LIST_HL_COLOR);
-			importData("ListHighlightBold", LIST_HL_BOLD);
-			importData("ListHighlightItalic", LIST_HL_ITALIC);
 			importData("ProgressTextDown", PROGRESS_TEXT_COLOR_DOWN);
 			importData("ProgressTextUp", PROGRESS_TEXT_COLOR_UP);
 			importData("ErrorColor", ERROR_COLOR);
@@ -747,10 +735,6 @@ LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	exportData("TextDupeColor", DUPE_COLOR);
 	exportData("TextDupeBold", TEXT_DUPE_BOLD);
 	exportData("TextDupeItalic", TEXT_DUPE_ITALIC);
-	exportData("ListHighlightBackColor", LIST_HL_BG_COLOR);
-	exportData("ListHighlightColor", LIST_HL_COLOR);
-	exportData("ListHighlightBold", LIST_HL_BOLD);
-	exportData("ListHighlightItalic", LIST_HL_ITALIC);
 	exportData("TextQueueBackColor", TEXT_QUEUE_BACK_COLOR);
 	exportData("QueueColor", QUEUE_COLOR);
 	exportData("TextQueueBold", TEXT_QUEUE_BOLD);
