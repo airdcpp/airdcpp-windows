@@ -1490,12 +1490,9 @@ size_t ChatCtrl::RegExpMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring
 	if(cs->getMatch().length() < 5)
 		return tstring::npos;
 
-	string str = (Text::fromT(cs->getMatch())).substr(4);
 	try {
-		const boost::wregex reg(Text::toT(str));
 
-	
-		boost::wsregex_iterator iter(line.begin(), line.end(), reg);
+		boost::wsregex_iterator iter(line.begin(), line.end(), cs->regexp);
 		boost::wsregex_iterator enditer;
 		for(; iter != enditer; ++iter) {
 			begin = lineIndex + iter->position();

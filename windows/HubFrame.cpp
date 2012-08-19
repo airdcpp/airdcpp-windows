@@ -2483,9 +2483,8 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 						if(cs->usingRegexp()) {
 							try {
 								//have to have $Re:
-								str = Text::fromT(cs->getMatch()).substr(4);
-								boost::regex reg(str, cs->getCaseSensitive() ? boost::match_default : boost::regex_constants::icase  );
-								if(boost::regex_search(ui->getIdentity().getNick(), reg)){
+								tstring nick = Text::toT(ui->getIdentity().getNick());
+								if(boost::regex_search(nick.begin(), nick.end(), cs->regexp)){
 									if(cs->getHasFgColor()) cd->clrText = cs->getFgColor();
 									break;
 								}

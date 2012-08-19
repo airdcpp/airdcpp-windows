@@ -258,7 +258,7 @@ void FulHighlightPage::addPreset(int preset) {
 		default:
 			break;
 	}
-
+	cs.setRegexp();
 	highlights.push_back(cs);
 	int i = ctrlStrings.insert( ctrlStrings.GetItemCount(), Text::toT(getContextString(highlights.back().getContext())));
 	ctrlStrings.SetItemText(i, 1, highlights.back().getMatch().c_str());
