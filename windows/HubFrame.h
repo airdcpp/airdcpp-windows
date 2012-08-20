@@ -451,7 +451,7 @@ private:
 
 	void updateUserList(OnlineUserPtr ui = NULL);
 	bool parseFilter(FilterModes& mode, int64_t& size);
-	bool matchFilter(const OnlineUser& ui, int sel, bool doSizeCompare = false, FilterModes mode = NONE, int64_t size = 0);
+	bool matchFilter(const OnlineUser& ui, int sel, const boost::wregex aReg, bool doSizeCompare = false, FilterModes mode = NONE, int64_t size = 0);
 
 	void addAsFavorite();
 	void removeFavoriteHub();

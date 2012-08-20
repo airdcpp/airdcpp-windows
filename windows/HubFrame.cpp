@@ -2111,8 +2111,9 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		} else {
 			int sel = ctrlFilterSel.GetCurSel();
 			bool doSizeCompare = sel == OnlineUser::COLUMN_SHARED && parseFilter(mode, size);
+			boost::wregex reg(filter, boost::regex_constants::icase);
 
-			if(matchFilter(*ui, sel, doSizeCompare, mode, size)) {
+			if(matchFilter(*ui, sel, reg, doSizeCompare, mode, size)) {
 				if(ctrlUsers.findItem(ui.get()) == -1) {
 					ui->inc();
 					ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
@@ -2143,10 +2144,11 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		} else {
 			int sel = ctrlFilterSel.GetCurSel();
 			bool doSizeCompare = sel == OnlineUser::COLUMN_SHARED && parseFilter(mode, size);
+			boost::wregex reg(filter, boost::regex_constants::icase);
 
 			for(OnlineUserList::const_iterator i = l.begin(); i != l.end(); ++i) {
 				const OnlineUserPtr& ui = *i;
-				if(!ui->isHidden() && matchFilter(*ui, sel, doSizeCompare, mode, size)) {
+				if(!ui->isHidden() && matchFilter(*ui, sel, reg, doSizeCompare, mode, size)) {
 					ui->inc();
 					ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
 				}
@@ -2186,7 +2188,7 @@ void HubFrame::handleTab(bool reverse) {
 	}
 }
 
-bool HubFrame::matchFilter(const OnlineUser& ui, int sel, bool doSizeCompare, FilterModes mode, int64_t size) {
+bool HubFrame::matchFilter(const OnlineUser& ui, int sel, const boost::wregex aReg, bool doSizeCompare, FilterModes mode, int64_t size) {
 	if(filter.empty())
 		return true;
 
@@ -2203,18 +2205,17 @@ bool HubFrame::matchFilter(const OnlineUser& ui, int sel, bool doSizeCompare, Fi
 		}
 	} else {
 		try {
-			boost::wregex reg(filter, boost::regex_constants::icase);
 			if(sel >= OnlineUser::COLUMN_LAST) {
 				for(uint8_t i = OnlineUser::COLUMN_FIRST; i < OnlineUser::COLUMN_LAST; ++i) {
 					tstring s = ui.getText(i);
-					if(boost::regex_search(s.begin(), s.end(), reg)) {
+					if(boost::regex_search(s.begin(), s.end(), aReg)) {
 						insert = true;
 						break;
 					}
 				}
 			} else {
 				tstring s = ui.getText(static_cast<uint8_t>(sel));
-				if(boost::regex_search(s.begin(), s.end(), reg))
+				if(boost::regex_search(s.begin(), s.end(), aReg))
 					insert = true;
 			}
 		} catch(...) {
