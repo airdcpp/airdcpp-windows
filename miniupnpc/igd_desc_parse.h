@@ -18,6 +18,7 @@ struct IGDdatas_service {
 	char scpdurl[MINIUPNPC_URL_MAXSIZE];
 	char servicetype[MINIUPNPC_URL_MAXSIZE];
 	/*char devicetype[MINIUPNPC_URL_MAXSIZE];*/
+	char friendlyName[MINIUPNPC_URL_MAXSIZE];
 };
 
 struct IGDdatas {

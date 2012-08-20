@@ -50,7 +50,7 @@ class SearchFrame : public MDITabChildWindowImpl<SearchFrame>,
 	private SettingsManagerListener, private TimerManagerListener
 {
 public:
-	static void openWindow(const tstring& str = Util::emptyStringW, LONGLONG size = 0, SearchManager::SizeModes mode = SearchManager::SIZE_ATLEAST, SearchManager::TypeModes type = SearchManager::TYPE_ANY);
+	static void openWindow(const tstring& str = Util::emptyStringW, LONGLONG size = 0, SearchManager::SizeModes mode = SearchManager::SIZE_ATLEAST, const string& type = SEARCH_TYPE_ANY);
 	static void closeAll();
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("SearchFrame"), IDR_SEARCH, 0, COLOR_3DFACE)
@@ -138,7 +138,7 @@ public:
 		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
 		ctrlSkiplistContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 		SkipBoolContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
-		initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SearchManager::TYPE_ANY),
+		initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
 		showUI(true), onlyFree(false), closed(false), isHash(false), UseSkiplist(false), droppedResults(0), resultsCount(0),
 		expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false)
 	{	
@@ -249,7 +249,7 @@ public:
 		return 0;
 	}
 
-	void SearchFrame::setInitial(const tstring& str, LONGLONG size, SearchManager::SizeModes mode, SearchManager::TypeModes type) {
+	void SearchFrame::setInitial(const tstring& str, LONGLONG size, SearchManager::SizeModes mode, const string& type) {
 		initialString = str; initialSize = size; initialMode = mode; initialType = type; running = true;
 	}
 
@@ -428,7 +428,7 @@ private:
 	tstring initialString;
 	int64_t initialSize;
 	SearchManager::SizeModes initialMode;
-	SearchManager::TypeModes initialType;
+	string initialType;
 
 	CStatusBarCtrl ctrlStatus;
 	CEdit ctrlSearch;

@@ -45,7 +45,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  Resour
 
 SearchFrame::FrameMap SearchFrame::frames;
 
-void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGLONG size /* = 0 */, SearchManager::SizeModes mode /* = SearchManager::SIZE_ATLEAST */, SearchManager::TypeModes type /* = SearchManager::TYPE_ANY ( 0 ) */) {
+void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGLONG size /* = 0 */, SearchManager::SizeModes mode /* = SearchManager::SIZE_ATLEAST */, const string& type /* = SEARCH_TYPE_ANY */) {
 	SearchFrame* pChild = new SearchFrame();
 	pChild->setInitial(str, size, mode, type);
 	pChild->CreateEx(WinUtil::mdiClient);
@@ -233,7 +233,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	else
 		ctrlSizeMode.SetCurSel(0);
 
-	WinUtil::appendSearchTypeCombo(ctrlFiletype, SETTING(LAST_SEARCH_FILETYPE));
+	WinUtil::appendSearchTypeCombo(ctrlFiletype, !initialString.empty() ? initialType : SETTING(LAST_SEARCH_FILETYPE));
 	
 	ctrlSkiplist.AddString(Text::toT(SETTING(SKIP_MSG_01)).c_str());
 	ctrlSkiplist.AddString(Text::toT(SETTING(SKIP_MSG_02)).c_str());
@@ -279,7 +279,6 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ctrlSearch.SetWindowText(initialString.c_str());
 		ctrlMode.SetCurSel(initialMode);
 		ctrlSize.SetWindowText(Util::toStringW(initialSize).c_str());
-		ctrlFiletype.SetCurSel(initialType);
 		onEnter();
 	} else {
 		SetWindowText(CTSTRING(SEARCH));
@@ -494,7 +493,7 @@ void SearchFrame::onEnter() {
 		ftype = SearchManager::TYPE_ANY;
 	}
 
-	if (!initialType && typeName != SETTING(LAST_SEARCH_FILETYPE))
+	if (initialString.empty() && typeName != SETTING(LAST_SEARCH_FILETYPE))
 		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, typeName);
 
 	isHash = (ftype == SearchManager::TYPE_TTH);
