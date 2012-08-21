@@ -44,7 +44,6 @@
 #define IDC_SEARCH_PAUSE                130
 #define IDC_HUBLIST                     131
 #define IDC_EMOT                        131
-#define IDC_OPEN_MY_LIST                132
 #define IDC_SERVER                      133
 #define IDC_EXTERNAL_IP                 133
 #define IDC_USKIPLIST                   134
@@ -1462,6 +1461,7 @@
 #define IDC_SEND_MESSAGE                42786
 #define IDC_FILTER_FOCUS                42788
 #define IDC_AUTOSEARCH                  42789
+#define IDC_OPEN_MY_LIST                42790
 #define ID_WINDOW_MINIMIZE_ALL          57654
 #define ID_WINDOW_RESTORE_ALL           57655
 #define IDC_WINAMP_START                57666
