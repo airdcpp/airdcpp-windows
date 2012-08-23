@@ -1074,7 +1074,9 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		ShareManager::getInstance()->save();
 	} else if(stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
-	} else if(stricmp(cmd.c_str(), _T("generatelist")) == 0) {
+	} else if(stricmp(cmd.c_str(), _T("setdirty")) == 0) {
+		ShareManager::getInstance()->setDirty(true);
+	}else if(stricmp(cmd.c_str(), _T("generatelist")) == 0) {
 		ShareManager::getInstance()->generateOwnList(0);
 	} else if(stricmp(cmd.c_str(), _T("autosearch")) == 0) {
 		AutoSearchManager::getInstance()->checkSearches(true);

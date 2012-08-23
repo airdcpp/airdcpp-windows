@@ -85,6 +85,7 @@ public:
 		STATUS_FILE_LIST_DIFF,
 		STATUS_MATCH_QUEUE,
 		STATUS_FIND,
+		STATUS_PREV,
 		STATUS_NEXT,
 		STATUS_DUMMY,
 		STATUS_LAST
@@ -146,6 +147,7 @@ public:
 	ALT_MSG_MAP(STATUS_MESSAGE_MAP)
 		COMMAND_ID_HANDLER(IDC_FIND, onFind)
 		COMMAND_ID_HANDLER(IDC_NEXT, onNext)
+		COMMAND_ID_HANDLER(IDC_PREV, onPrev)
 		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
 		COMMAND_ID_HANDLER(IDC_FILELIST_DIFF, onListDiff)
 		COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
@@ -226,6 +228,7 @@ public:
 
 	LRESULT onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -282,8 +285,9 @@ private:
 	void changeWindowState(bool enable);
 	
 	void changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw);
-	void findSearchHit();
+	void findSearchHit(bool newDir = false);
 	int searchPos;
+	bool gotoPrev;
 
 	void updateStatus();
 	void initStatus();
@@ -383,7 +387,7 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	HTREEITEM treeRoot;
 	
-	CButton ctrlFind, ctrlFindNext;
+	CButton ctrlFind, ctrlFindNext, ctrlFindPrev;
 	CButton ctrlListDiff;
 	CButton ctrlMatchQueue;
 	CButton ctrlADLMatch;

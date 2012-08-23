@@ -1575,5 +1575,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="NotEnoughSpacePaused">Not enough free space left on the target path %s (free space: %s while %s is needed). Using paused priority.</String>
 		<String Name="NotEnoughSpaceQueuedPaused">Not enough free space left on the target path %s (free space: %s, queued files: %s while %s is needed). Using paused priority.</String>
 		<String Name="InvalidPattern">Invalid pattern: %s</String>
+		<String Name="PreviousShort">Prev</String>
 	</Strings>
 </Language>

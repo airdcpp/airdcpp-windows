@@ -137,7 +137,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const 
 	selectItem(Text::toT(aDir));
 	if (isSearchChange) {
 		PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())));
-		findSearchHit();
+		findSearchHit(true);
 	}
 
 	changeWindowState(true);
@@ -193,6 +193,11 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlFind.SetWindowText(CTSTRING(FIND));
 	ctrlFind.SetFont(WinUtil::systemFont);
 
+	ctrlFindPrev.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON, 0, IDC_PREV);
+	ctrlFindPrev.SetWindowText(CTSTRING(PREVIOUS_SHORT));
+	ctrlFindPrev.SetFont(WinUtil::systemFont);
+
 	ctrlFindNext.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON, 0, IDC_NEXT);
 	ctrlFindNext.SetWindowText(CTSTRING(NEXT));
@@ -227,6 +232,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	statusSizes[STATUS_FILE_LIST_DIFF] = WinUtil::getTextWidth(TSTRING(FILE_LIST_DIFF), m_hWnd) + 8;
 	statusSizes[STATUS_MATCH_QUEUE] = WinUtil::getTextWidth(TSTRING(MATCH_QUEUE), m_hWnd) + 8;
 	statusSizes[STATUS_FIND] = WinUtil::getTextWidth(TSTRING(FIND), m_hWnd) + 8;
+	statusSizes[STATUS_PREV] = WinUtil::getTextWidth(TSTRING(PREVIOUS_SHORT), m_hWnd) + 8;
 	statusSizes[STATUS_NEXT] = WinUtil::getTextWidth(TSTRING(NEXT), m_hWnd) + 8;
 	statusSizes[STATUS_MATCH_ADL] = WinUtil::getTextWidth(TSTRING(MATCH_ADL), m_hWnd) + 8;
 	statusSizes[STATUS_GET_FULL_LIST] = WinUtil::getTextWidth(TSTRING(GET_FULL_LIST), m_hWnd) + 8;
@@ -254,7 +260,8 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 	ctrlADLMatch.EnableWindow(enable);
 	ctrlFind.EnableWindow(enable);
 	ctrlFindNext.EnableWindow(dl->curSearch ? TRUE : FALSE);
-	ctrlListDiff.EnableWindow(enable);
+	ctrlFindPrev.EnableWindow(dl->curSearch ? TRUE : FALSE);
+	ctrlListDiff.EnableWindow(dl->getPartialList() ? false : enable);
 
 	if (enable) {
 		EnableWindow();
@@ -297,11 +304,11 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 		updateTree(*i, ht);
 	}
 	// sort
-	TVSORTCB tvsortcb;
-	tvsortcb.hParent = aParent;
-	tvsortcb.lpfnCompare = DefaultSort;
-	tvsortcb.lParam = 0;
-	ctrlTree.SortChildrenCB(&tvsortcb);
+	//TVSORTCB tvsortcb;
+	//tvsortcb.hParent = aParent;
+	//tvsortcb.lpfnCompare = DefaultSort;
+	//tvsortcb.lParam = 0;
+	//ctrlTree.SortChildrenCB(&tvsortcb);
 
 }
 
@@ -346,19 +353,26 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 	ctrlTree.SetRedraw(TRUE);
 
 	if (searching) {
-		findSearchHit();
+		findSearchHit(true);
 	}
 }
 
-void DirectoryListingFrame::findSearchHit() {
+void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 	auto search = dl->curSearch;
 	if (!search)
 		return;
 
 	bool found = false;
+	if (newDir) {
+		searchPos = gotoPrev ? ctrlList.GetItemCount()-1 : 0;
+	} else if (gotoPrev) {
+		searchPos--;
+	} else {
+		searchPos++;
+	}
 
 	// Check file names in list pane
-	while(searchPos <ctrlList.GetItemCount()) {
+	while(searchPos < ctrlList.GetItemCount() && searchPos >= 0) {
 		const ItemInfo* ii = ctrlList.getItemData(searchPos);
 		if (search->hasRoot && ii->type == ItemInfo::FILE) {
 			if (search->root == ii->file->getTTH()) {
@@ -376,7 +390,11 @@ void DirectoryListingFrame::findSearchHit() {
 				break;
 			}
 		}
-		searchPos++;
+
+		if (gotoPrev)
+			searchPos--;
+		else
+			searchPos++;
 	}
 
 	if (found) {
@@ -390,12 +408,10 @@ void DirectoryListingFrame::findSearchHit() {
 		ctrlList.SetFocus();
 		ctrlList.EnsureVisible(searchPos, FALSE);
 		ctrlList.SetItemState(searchPos, LVIS_SELECTED | LVIS_FOCUSED, (UINT)-1);
-		searchPos++;
 		updateStatus();
 	} else {
 		//move to next dir (if there are any)
-		searchPos = 0;
-		if (!dl->nextResult()) {
+		if (!dl->nextResult(gotoPrev)) {
 			MessageBox(CTSTRING(NO_ADDITIONAL_MATCHES), CTSTRING(SEARCH_FOR_FILE));
 		}
 	}
@@ -409,6 +425,7 @@ LRESULT DirectoryListingFrame::onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	if(dlg.DoModal() != IDOK)
 		return 0;
 
+	gotoPrev = false;
 	string path;
 	if (dlg.useCurDir) {
 		HTREEITEM t = ctrlTree.GetSelectedItem();
@@ -423,6 +440,13 @@ LRESULT DirectoryListingFrame::onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 }
 
 LRESULT DirectoryListingFrame::onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	gotoPrev = false;
+	findSearchHit();
+	return 0;
+}
+
+LRESULT DirectoryListingFrame::onPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	gotoPrev = true;
 	findSearchHit();
 	return 0;
 }
@@ -1131,6 +1155,8 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		ctrlStatus.SetParts(STATUS_LAST, w);
 		ctrlStatus.GetRect(0, sr);
 
+		const long bspace = 10;
+
 		sr.left = w[STATUS_GET_FULL_LIST - 1];
 		sr.right = w[STATUS_GET_FULL_LIST];
 		ctrlGetFullList.MoveWindow(sr);
@@ -1147,9 +1173,15 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		sr.right = w[STATUS_MATCH_QUEUE];
 		ctrlMatchQueue.MoveWindow(sr);
 
-		sr.left = w[STATUS_FIND - 1];
+		//sr.left += bspace;
+
+		sr.left = w[STATUS_FIND - 1] + bspace;
 		sr.right = w[STATUS_FIND];
 		ctrlFind.MoveWindow(sr);
+
+		sr.left = w[STATUS_PREV - 1];
+		sr.right = w[STATUS_PREV];
+		ctrlFindPrev.MoveWindow(sr);
 
 		sr.left = w[STATUS_NEXT - 1];
 		sr.right = w[STATUS_NEXT];
