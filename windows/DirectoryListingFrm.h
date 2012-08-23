@@ -404,7 +404,7 @@ private:
 	bool updating;
 	bool closed;
 
-	int statusSizes[12];
+	int statusSizes[13];
 	
 	DirectoryListing* dl;
 

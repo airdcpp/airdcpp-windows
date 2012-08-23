@@ -40,8 +40,9 @@ DirectoryListingDlg::~DirectoryListingDlg() {
 LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
 	ATTACH(IDC_SEARCH_STRING, ctrlSearch);
-
+	ctrlSearch.SetFocus();
 	ctrlSearch.SetWindowText(Text::toT(searchStr).c_str());
+	ctrlSearch.SetSelAll(TRUE);
 
 	ATTACH(IDC_FILETYPES, ctrlFileType);
 	ATTACH(IDC_SEARCH_SIZE, ctrlSize);
@@ -71,6 +72,7 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(SEARCH));
+
 	return TRUE;
 }
 
@@ -111,4 +113,9 @@ LRESULT DirectoryListingDlg::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	SettingsManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), fileType, extList, fileTypeStr);
 	//fixControls();
 	return 0;
+}
+
+LRESULT DirectoryListingDlg::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlSearch.SetFocus();
+	return FALSE;
 }

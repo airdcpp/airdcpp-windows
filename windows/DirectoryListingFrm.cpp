@@ -240,7 +240,6 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlStatus.SetParts(STATUS_LAST, statusSizes);
 
 	ctrlTree.EnableWindow(FALSE);
-	ctrlGetFullList.EnableWindow(dl->getPartialList());
 	
 	SettingsManager::getInstance()->addListener(this);
 	closed = false;
@@ -303,18 +302,11 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 			ctrlTree.SetItemState(ht, TVIS_BOLD, TVIS_BOLD);
 		updateTree(*i, ht);
 	}
-	// sort
-	//TVSORTCB tvsortcb;
-	//tvsortcb.hParent = aParent;
-	//tvsortcb.lpfnCompare = DefaultSort;
-	//tvsortcb.lParam = 0;
-	//ctrlTree.SortChildrenCB(&tvsortcb);
-
 }
 
 void DirectoryListingFrame::createRoot() {
 	string nick = ClientManager::getInstance()->getNicks(dl->getHintedUser())[0];
-	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(nick).c_str(), WinUtil::getDirIconIndex(), WinUtil::getDirIconIndex(), 0, 0, (LPARAM)dl->getRoot(), NULL, TVI_SORT);
+	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(nick).c_str(), WinUtil::getDirIconIndex(), WinUtil::getDirIconIndex(), 0, 0, (LPARAM)dl->getRoot(), NULL, NULL);
 	dcassert(treeRoot);
 }
 
@@ -339,6 +331,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 		ctrlTree.DeleteItem(next);
 	}
 
+	d->sortDirs();
 	updateTree(d, ht);
 
 	ctrlTree.Expand(treeRoot);
@@ -431,7 +424,6 @@ LRESULT DirectoryListingFrame::onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 		HTREEITEM t = ctrlTree.GetSelectedItem();
 		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
 		path = Util::toAdcFile(dir->getPath());
-		//path = Util::toAdcFile(currentDir);
 	}
 
 	dl->addSearchTask(dlg.searchStr, dlg.size, dlg.fileType, dlg.sizeMode, dlg.extList, path);
@@ -532,7 +524,6 @@ void DirectoryListingFrame::changeDir(const DirectoryListing::Directory* d, BOOL
 	updating = true;
 	clearList();
 
-	//currentDir = d->getPath();
 	for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
 		ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
 	}
