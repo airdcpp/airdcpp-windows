@@ -73,7 +73,7 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(SEARCH));
 
-	return TRUE;
+	return FALSE;
 }
 
 LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

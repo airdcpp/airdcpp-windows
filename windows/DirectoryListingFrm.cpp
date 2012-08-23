@@ -294,10 +294,11 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 	if(dl->getAbort())
 		throw AbortException();
 
-	for(auto i = aTree->directories.begin(); i != aTree->directories.end(); ++i) {
+	//reverse iterate to keep the sorting order when adding as first in the tree(a lot faster than TVI_LAST)
+	for(auto i = aTree->directories.end()-1; i != aTree->directories.begin()-1; --i) {
 		tstring name = Text::toT((*i)->getName());
 		int index = (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex();
-		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, name.c_str(), index, index, 0, 0, (LPARAM)*i, aParent, TVI_LAST);
+		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, name.c_str(), index, index, 0, 0, (LPARAM)*i, aParent, TVI_FIRST);
 		if((*i)->getAdls())
 			ctrlTree.SetItemState(ht, TVIS_BOLD, TVIS_BOLD);
 		updateTree(*i, ht);
