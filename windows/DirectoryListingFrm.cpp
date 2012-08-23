@@ -80,6 +80,8 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 
 DirectoryListingFrame::~DirectoryListingFrame() {
 	dl->join();
+	dl->removeListener(this);
+	DirectoryListingManager::getInstance()->removeList(dl->getUser());
 	delete dl;
 }
 
@@ -87,8 +89,11 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	bool searching = dl->isCurrentSearchPath(aDir);
 
 	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(CTSTRING(UPDATING_VIEW)));
-	refreshTree(Text::toT(aDir), convertFromPartial, searching);
-
+	try{
+		refreshTree(Text::toT(aDir), convertFromPartial, searching);
+	} catch(const AbortException) {
+		return;
+	}
 	if (!searching) {
 		int64_t end = GET_TICK();
 		loadTime = (end - aStart) / 1000;
@@ -280,6 +285,9 @@ void DirectoryListingFrame::convertToFull() {
 }
 
 void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREEITEM aParent) {
+	if(dl->getAbort())
+		throw AbortException();
+
 	for(auto i = aTree->directories.begin(); i != aTree->directories.end(); ++i) {
 		tstring name = Text::toT((*i)->getName());
 		int index = (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex();
@@ -323,6 +331,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 	while((next = ctrlTree.GetChildItem(ht)) != NULL) {
 		ctrlTree.DeleteItem(next);
 	}
+
 	updateTree(d, ht);
 
 	ctrlTree.Expand(treeRoot);
@@ -1319,8 +1328,6 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 			SettingsManager::getInstance()->set(SettingsManager::DIRLIST_RIGHT, (rc.right > 0 ? rc.right : 0));
 		}
 		bHandled = FALSE;
-		dl->removeListener(this);
-		DirectoryListingManager::getInstance()->removeList(dl->getUser());
 		return 0;
 	}
 }

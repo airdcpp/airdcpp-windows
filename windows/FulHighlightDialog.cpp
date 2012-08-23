@@ -199,7 +199,7 @@ void FulHighlightDialog::fix() {
 		onClickedBox(0, IDC_HAS_FG_COLOR, NULL, t);
 		onClickedBox(0, IDC_SOUND, NULL, t);
 
-		ctrlText.SetWindowText(_T(""));
+		ctrlText.SetWindowText(_T("Use $Re: for Regexp"));
 	}
 }
 
