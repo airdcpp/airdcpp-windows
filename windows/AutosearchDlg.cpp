@@ -96,7 +96,7 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 	//get the search type so that we can set the initial control states correctly in fixControls
 	StringList ext;
-	SettingsManager::getInstance()->getSearchType(fileTypeStr, searchType, ext);
+	SearchManager::getInstance()->getSearchType(fileTypeStr, searchType, ext);
 
 	WinUtil::appendSearchTypeCombo(ctrlFileType, fileTypeStr);
 
@@ -339,7 +339,7 @@ LRESULT AutoSearchDlg::onCheckExpiry(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 LRESULT AutoSearchDlg::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	StringList extensions;
-	SettingsManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), searchType, extensions, fileTypeStr);
+	SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), searchType, extensions, fileTypeStr);
 	fixControls();
 	return 0;
 }

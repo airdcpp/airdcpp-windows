@@ -488,7 +488,7 @@ void SearchFrame::onEnter() {
 	string typeName;
 
 	try {
-		SettingsManager::getInstance()->getSearchType(ctrlFiletype.GetCurSel(), ftype, extList, typeName);
+		SearchManager::getInstance()->getSearchType(ctrlFiletype.GetCurSel(), ftype, extList, typeName);
 	} catch(const SearchTypeException&) {
 		ftype = SearchManager::TYPE_ANY;
 	}

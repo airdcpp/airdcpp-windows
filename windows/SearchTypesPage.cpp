@@ -64,7 +64,7 @@ LRESULT SearchTypesPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 void SearchTypesPage::fillList() {
 	ctrlTypes.DeleteAllItems();
 
-	auto lst = SettingsManager::getInstance()->getSearchTypes();
+	auto lst = SearchManager::getInstance()->getSearchTypes();
 
 	int pos = 0;
 	for(auto i = lst.begin(); i != lst.end(); ++i) {
@@ -83,7 +83,7 @@ LRESULT SearchTypesPage::onAddMenu(WORD , WORD , HWND , BOOL& ) {
 
 	if(dlg.DoModal() == IDOK) {
 		try {
-			SettingsManager::getInstance()->addSearchType(dlg.name, dlg.extList, true);
+			SearchManager::getInstance()->addSearchType(dlg.name, dlg.extList, true);
 			fillList();
 			//addRow(name, false, values);
 			//types->resort();
@@ -97,7 +97,7 @@ LRESULT SearchTypesPage::onAddMenu(WORD , WORD , HWND , BOOL& ) {
 LRESULT SearchTypesPage::onChangeMenu(WORD , WORD , HWND , BOOL& ) {
 	if(ctrlTypes.GetSelectedCount() == 1) {
 		int sel = ctrlTypes.GetSelectedIndex();
-		auto lst = SettingsManager::getInstance()->getSearchTypes();
+		auto lst = SearchManager::getInstance()->getSearchTypes();
 
 		auto pos = lst.begin();
 		advance(pos, sel);
@@ -113,7 +113,7 @@ LRESULT SearchTypesPage::onChangeMenu(WORD , WORD , HWND , BOOL& ) {
 			pos->second = dlg.extList;
 			if (pos->first != dlg.name) {
 				try {
-					SettingsManager::getInstance()->renameSearchType(pos->first, dlg.name);
+					SearchManager::getInstance()->renameSearchType(pos->first, dlg.name);
 				} catch(const SearchTypeException& e) {
 					showError(e.getError());
 				}
@@ -129,7 +129,7 @@ LRESULT SearchTypesPage::onChangeMenu(WORD , WORD , HWND , BOOL& ) {
 LRESULT SearchTypesPage::onRemoveMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlTypes.GetSelectedCount() == 1) {
 		int sel = ctrlTypes.GetNextItem(-1, LVNI_SELECTED);
-		auto lst = SettingsManager::getInstance()->getSearchTypes();
+		auto lst = SearchManager::getInstance()->getSearchTypes();
 
 		auto pos = lst.begin();
 		advance(pos, sel);
@@ -140,7 +140,7 @@ LRESULT SearchTypesPage::onRemoveMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 
 		//FavoriteManager::getInstance()->removeUserCommand(ctrlTypes.GetItemData(i));
 		try {
-			SettingsManager::getInstance()->delSearchType(pos->first);
+			SearchManager::getInstance()->delSearchType(pos->first);
 			ctrlTypes.DeleteItem(sel);
 		} catch(const SearchTypeException& e) {
 			showError(e.getError());
@@ -154,7 +154,7 @@ LRESULT SearchTypesPage::onSelectionChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& 
 	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
 	if (lv->uNewState & LVIS_FOCUSED) {
 		int sel = ctrlTypes.GetNextItem(-1, LVNI_SELECTED);
-		auto lst = SettingsManager::getInstance()->getSearchTypes();
+		auto lst = SearchManager::getInstance()->getSearchTypes();
 
 		auto pos = lst.begin();
 		advance(pos, sel);
@@ -197,12 +197,10 @@ void SearchTypesPage::write() {
 }
 
 LRESULT SearchTypesPage::onResetDefaults(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	//if(dwt::MessageBox(this).show(T_("This will delete all defined search types and restore the default ones. Do you want to continue?"),
-	//	_T(APPNAME) _T(" ") _T(VERSIONSTRING), dwt::MessageBox::BOX_YESNO, dwt::MessageBox::BOX_ICONEXCLAMATION) == IDYES)
-	//{
-		SettingsManager::getInstance()->setSearchTypeDefaults();
+	if(::MessageBox(0, CTSTRING(RESET_EXTENSIONS_CONFIRM), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+		SearchManager::getInstance()->setSearchTypeDefaults();
 		fillList();
-	//}
+	}
 	return 0;
 }
 

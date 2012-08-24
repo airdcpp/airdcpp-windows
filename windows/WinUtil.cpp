@@ -2518,7 +2518,7 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 }
 
 void WinUtil::appendSearchTypeCombo(CComboBoxEx& ctrlSearchType, const string& aSelection) {
-	auto types = SettingsManager::getInstance()->getSearchTypes();
+	auto types = SearchManager::getInstance()->getSearchTypes();
 	ctrlSearchType.SetImageList(searchImages);
 
 	int listPos=0, selection=0;

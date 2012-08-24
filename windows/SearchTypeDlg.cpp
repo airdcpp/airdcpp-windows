@@ -93,7 +93,7 @@ LRESULT SearchTypeDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			name = Text::fromT(buf);
 
 			try {
-				SettingsManager::getInstance()->validateSearchTypeName(name);
+				SearchManager::getInstance()->validateSearchTypeName(name);
 			} catch(const SearchTypeException& e) {
 				MessageBox(Text::toT(e.getError()).c_str());
 				return 0;
