@@ -42,16 +42,11 @@ public:
 		COMMAND_ID_HANDLER(IDC_PRIO_BALANCED, onPrioTypeChanged)
 		COMMAND_ID_HANDLER(IDC_PRIO_PROGRESS, onPrioTypeChanged)
 		COMMAND_ID_HANDLER(IDC_AUTOPRIO_ENABLED, onPrioTypeChanged)
-
-		COMMAND_ID_HANDLER(IDC_ORDER_ADDED, onOrderChanged)
-		COMMAND_ID_HANDLER(IDC_ORDER_RANDOM, onOrderChanged)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onOrderChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) { return fixOrderControls(); }
 	LRESULT onPrioTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) { return fixPrioTypeControls(); }
 
-	BOOL fixOrderControls();
 	BOOL fixPrioTypeControls();
 
 	// Common PropPage interface

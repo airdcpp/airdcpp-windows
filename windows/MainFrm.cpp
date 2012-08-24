@@ -1017,8 +1017,6 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 
 	bool lastSortFavUsersFirst = BOOLSETTING(SORT_FAVUSERS_FIRST);
 
-	auto prevDownloadOrder = SETTING(DOWNLOAD_ORDER);
-
 	auto prevHighPrio = SETTING(HIGH_PRIO_FILES);
 	auto prevHighPrioRegex = SETTING(HIGHEST_PRIORITY_USE_REGEXP);
 
@@ -1060,11 +1058,6 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 
 		if (prevShareSkiplist != SETTING(SKIPLIST_SHARE) || prevShareSkiplistRegex != SETTING(SHARE_SKIPLIST_USE_REGEXP)) {
 			ShareManager::getInstance()->setSkipList();
-		}
-
-
-		if (prevDownloadOrder != SETTING(DOWNLOAD_ORDER)) {
-			QueueManager::getInstance()->onChangeDownloadOrder();
 		}
 
 		bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;

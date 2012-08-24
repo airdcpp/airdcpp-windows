@@ -1346,12 +1346,8 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="AdlsearchInProgress">The ADLSearch list can't be modified while matching is in progress!</String>
 		<String Name="PriopageOrderBalanced">Balanced (based on sources and their speeds)</String>
 		<String Name="PriopageOrderProgress">Set priorities automatically based on the progress</String>
-		<String Name="PriopageOrderAdded">Download in the order of adding</String>
-		<String Name="PriopageOrderRandom">Download in random order</String>
 		<String Name="PriopageBalanceQis">Also priorize the order among bundle files</String>
-		<String Name="DownloadOrder">Download order</String>
 		<String Name="Priorities">Priorities</String>
-		<String Name="SaveShare">Automatically save shares every </String>
 		<String Name="UseFtpLogger">Use external sfv checking (ex. FTPLogger, Enable this only if you know what you are doing)  </String>
 		<String Name="IconsInTheme">The selected Theme has custom icons, do you wish to load them?
  You will need to restart airdc++ for the icons to load.</String>

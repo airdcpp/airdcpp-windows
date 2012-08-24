@@ -1070,24 +1070,22 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		}
 	} else if(stricmp(cmd.c_str(), _T("airdc++")) == 0) {
 		message = msgs[GET_TICK() % MSGS];
-	} else if(stricmp(cmd.c_str(), _T("save")) == 0) {
+	} /*else if(stricmp(cmd.c_str(), _T("save")) == 0) {
 		ShareManager::getInstance()->save();
-	} else if(stricmp(cmd.c_str(), _T("calcprio")) == 0) {
+	} */ else if(stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if(stricmp(cmd.c_str(), _T("setdirty")) == 0) {
 		ShareManager::getInstance()->setDirty(true);
 	}else if(stricmp(cmd.c_str(), _T("generatelist")) == 0) {
 		ShareManager::getInstance()->generateOwnList(0);
-	} else if(stricmp(cmd.c_str(), _T("autosearch")) == 0) {
+	} /*else if(stricmp(cmd.c_str(), _T("autosearch")) == 0) {
 		AutoSearchManager::getInstance()->checkSearches(true);
 		//debug info
-	} else if(stricmp(cmd.c_str(), _T("expected")) == 0) {
+	} */ else if(stricmp(cmd.c_str(), _T("expected")) == 0) {
 		ConnectionManager::getInstance()->getExpectedMapSize();
-	} else if(stricmp(cmd.c_str(), _T("altsearch")) == 0) {
+	} /*else if(stricmp(cmd.c_str(), _T("altsearch")) == 0) {
 		QueueManager::getInstance()->runAltSearch();
-	} else if(stricmp(cmd.c_str(), _T("bloomstats")) == 0) {
-		status = Text::toT(ShareManager::getInstance()->getBloomStats());
-	} else if(stricmp(cmd.c_str(), _T("allow")) == 0) {
+	} */ else if(stricmp(cmd.c_str(), _T("allow")) == 0) {
 		if(!param.empty()) {
 			QueueManager::getInstance()->shareBundle(Text::fromT(param));
 		} else {

@@ -30,8 +30,6 @@
 PropPage::TextItem PriorityPage::texts[] = {
 	{ IDC_ORDER_BALANCED, ResourceManager::PRIOPAGE_ORDER_BALANCED },
 	{ IDC_ORDER_PROGRESS, ResourceManager::PRIOPAGE_ORDER_PROGRESS },
-	{ IDC_ORDER_ADDED, ResourceManager::PRIOPAGE_ORDER_ADDED },
-	{ IDC_ORDER_RANDOM, ResourceManager::PRIOPAGE_ORDER_RANDOM },
 	{ IDC_SETTINGS_AUTOPRIO, ResourceManager::SETTINGS_PRIO_AUTOPRIO },
 	{ IDC_SETTINGS_PRIO_HIGHEST, ResourceManager::SETTINGS_PRIO_HIGHEST },
 	{ IDC_SETTINGS_KB3, ResourceManager::KiB },
@@ -41,7 +39,6 @@ PropPage::TextItem PriorityPage::texts[] = {
 	{ IDC_SETTINGS_KB5, ResourceManager::KiB },
 	{ IDC_SETTINGS_PRIO_LOW, ResourceManager::SETTINGS_PRIO_LOW },
 	{ IDC_SETTINGS_KB6, ResourceManager::KiB },
-	{ IDC_DOWNLOAD_ORDER, ResourceManager::DOWNLOAD_ORDER },
 	{ IDC_AUTOPRIO_TYPE, ResourceManager::SETTINGS_AUTOPRIO },
 	{ IDC_AUTOPRIO_FILES, ResourceManager::SETTINGS_AUTOPRIO_FILES },
 	{ IDC_CALC_PRIO_EVERY, ResourceManager::SETTINGS_CALCULATE_EVERY },
@@ -79,18 +76,6 @@ LRESULT PriorityPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	PropPage::read((HWND)*this, items, 0, 0);
 	PropPage::read((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_PRIORITY_OPTIONS));
 
-	switch(SETTING(DOWNLOAD_ORDER)) {
-		case SettingsManager::ORDER_ADDED: 
-			CheckDlgButton(IDC_ORDER_ADDED, BST_CHECKED); 
-			break;
-		case SettingsManager::ORDER_RANDOM: 
-			CheckDlgButton(IDC_ORDER_RANDOM, BST_CHECKED); 
-			break;
-		default: 
-			CheckDlgButton(IDC_ORDER_ADDED, BST_CHECKED);
-			break;
-	}
-
 	switch(SETTING(AUTOPRIO_TYPE)) {
 		case SettingsManager::PRIO_BALANCED: 
 			CheckDlgButton(IDC_PRIO_BALANCED, BST_CHECKED);
@@ -112,7 +97,6 @@ LRESULT PriorityPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 			break;
 	}
 
-	fixOrderControls();
 	fixPrioTypeControls();
 
 	CUpDownCtrl spin;
@@ -126,42 +110,18 @@ LRESULT PriorityPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 
 void PriorityPage::write() {
 	int id=0;
-	if(IsDlgButtonChecked(IDC_ORDER_BALANCED)){
-		id=0;
-	} else if(IsDlgButtonChecked(IDC_ORDER_PROGRESS)) {
-		id=1;
-	} else if(IsDlgButtonChecked(IDC_ORDER_ADDED)){
-		id=2;
-	}else if(IsDlgButtonChecked(IDC_ORDER_RANDOM)){
-		id=3;
-	}
-	SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_ORDER, id);
-
 	if (IsDlgButtonChecked(IDC_AUTOPRIO_ENABLED)) {
 		if(IsDlgButtonChecked(IDC_ORDER_BALANCED)){
 			id=1;
 		} else if(IsDlgButtonChecked(IDC_ORDER_PROGRESS)) {
 			id=2;
 		}
-	} else {
-		id=0;
 	}
 	SettingsManager::getInstance()->set(SettingsManager::AUTOPRIO_TYPE, id);
 
 	PropPage::write((HWND)*this, items, 0, 0);
 	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_PRIORITY_OPTIONS));
 }
-
-
-BOOL PriorityPage::fixOrderControls() {
-	if(IsDlgButtonChecked(IDC_ORDER_ADDED)){
-		CheckDlgButton(IDC_ORDER_RANDOM, BST_UNCHECKED);
-	} else if (IsDlgButtonChecked(IDC_ORDER_RANDOM)) {
-		CheckDlgButton(IDC_ORDER_ADDED, BST_UNCHECKED);
-	}
-	return TRUE;
-}
-
 
 BOOL PriorityPage::fixPrioTypeControls() {
 	::EnableWindow(GetDlgItem(IDC_PRIO_BALANCED),			IsDlgButtonChecked(IDC_AUTOPRIO_ENABLED));

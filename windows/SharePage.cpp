@@ -50,7 +50,6 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
 	{ IDC_SETTINGS_MAX_HASH_SPEED, ResourceManager::SETTINGS_MAX_HASH_SPEED },
 	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
-	{ IDC_SHARE_SAVE, ResourceManager::SAVE_SHARE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -59,7 +58,6 @@ PropPage::Item SharePage::items[] = {
 	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
-	{ IDC_SHARE_SAVE_TIME, SettingsManager::SHARE_SAVE_TIME, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
