@@ -53,7 +53,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 
 	HWND aHWND = NULL;
 	DirectoryListingFrame* frame = new DirectoryListingFrame(aList);
-	if(BOOLSETTING(POPUNDER_FILELIST)) {
+	if((BOOLSETTING(POPUNDER_FILELIST) && !aList->getPartialList()) || (BOOLSETTING(POPUNDER_PARTIAL_LIST) && !aList->getPartialList())) {
 		aHWND = WinUtil::hiddenCreateEx(frame);
 	} else {
 		aHWND = frame->CreateEx(WinUtil::mdiClient);
@@ -104,8 +104,8 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept {
-
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED);
+	PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED, (LPARAM)new tstring(Text::toT(aReason)));
+	changeWindowState(true);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted) noexcept {
@@ -295,7 +295,7 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 		throw AbortException();
 
 	//reverse iterate to keep the sorting order when adding as first in the tree(a lot faster than TVI_LAST)
-	for(auto i = aTree->directories.end()-1; i != aTree->directories.begin()-1; --i) {
+	for(auto i = aTree->directories.crbegin(), iend = aTree->directories.crend(); i != iend; ++i) {
 		tstring name = Text::toT((*i)->getName());
 		int index = (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex();
 		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, name.c_str(), index, index, 0, 0, (LPARAM)*i, aParent, TVI_FIRST);
@@ -593,7 +593,7 @@ LRESULT DirectoryListingFrame::onDoubleClickFiles(int /*idCtrl*/, LPNMHDR pnmh, 
 
 		if(ii->type == ItemInfo::FILE) {
 			try {
-				dl->download(ii->file, SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(ii->getText(COLUMN_FILENAME)), false, WinUtil::isShift(), QueueItem::DEFAULT);
+				dl->download(ii->file, SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(ii->getText(COLUMN_FILENAME)), false, WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 			} catch(const Exception& e) {
 				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 			}
@@ -618,11 +618,13 @@ LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, 
 		try {
 			if(ii->type == ItemInfo::FILE) {
 				if (dl->getIsOwnList()) {
-					tstring path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-					TextFrame::openWindow(path, TextFrame::NORMAL);
+					StringList paths;
+					dl->getLocalPaths(ii->file, paths);
+					if (!paths.empty())
+						TextFrame::openWindow(Text::toT(paths.front()), TextFrame::NORMAL);
 				} else {
 					File::deleteFile(Util::getTempPath() + Util::validateFileName(ii->file->getName()));
-					dl->download(ii->file, Util::getTempPath() + Text::fromT(ii->getText(COLUMN_FILENAME)), true, true);
+					dl->download(ii->file, Util::getTempPath() + Text::fromT(ii->getText(COLUMN_FILENAME)), true, QueueItem::HIGHEST);
 				}
 			}
 		} catch(const Exception& e) {
@@ -717,8 +719,7 @@ LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/,
 			try {
 				const ItemInfo* ii = ctrlList.getItemData(sel);
 				if(ii->type == ItemInfo::FILE) {
-					string path = ShareManager::getInstance()->getRealPath(ii->file->getTTH());
-					localPaths.push_back(Util::getFilePath(path));
+					dl->getLocalPaths(ii->file, localPaths);
 				} else if(ii->type == ItemInfo::DIRECTORY) {
 					dl->getLocalPaths(ii->dir, localPaths);
 				}
@@ -742,8 +743,6 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
 
 	StringList scanList;
-	StringList temp;
-	tstring path;
 	string error;
 	
 	if(ctrlList.GetSelectedCount() >= 1) {
@@ -752,8 +751,7 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 			const ItemInfo* ii = ctrlList.getItemData(sel);
 			try {
 				if (ii->type == ItemInfo::FILE) {
-					string path = ShareManager::getInstance()->getRealPath(ii->file->getTTH());
-					scanList.push_back(path);
+					dl->getLocalPaths(ii->file, scanList);
 				} else if (ii->type == ItemInfo::DIRECTORY)  {
 					dl->getLocalPaths(ii->dir, scanList);
 				}
@@ -802,37 +800,30 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			WinUtil::getContextMenuPos(ctrlList, pt);
 		}
 		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-		int dirs = 0;
 		OMenu fileMenu, copyMenu, SearchMenu;
 
 
 
 		if(BOOLSETTING(SHOW_SHELL_MENU) && dl->getIsOwnList() && (ctrlList.GetSelectedCount() == 1) && (LOBYTE(LOWORD(GetVersion())) >= 5)) {
-			tstring path; 
+			StringList localPaths;
 	
 			if(ii->type == ItemInfo::FILE){
 				try {
-					path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
-				}catch(...) {
+					dl->getLocalPaths(ii->file, localPaths);
+				} catch(...) {
 					goto clientmenu;
 				}
 			} else {
 				try {
-					//Fix this Someway
-					StringList localPaths;
 					dl->getLocalPaths(ii->dir, localPaths);
-					for(auto i = localPaths.begin(); i != localPaths.end(); i++) {
-						path = Text::toT(*i);
-						dirs++; //if we count more than 1 its a virtualfolder
-					}	
 				} catch(...) {
 					goto clientmenu;
 				}
 			}
 			
-			if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF && !path.empty() && (dirs <= 1) ){ // Check that the file still exists
+			if(localPaths.size() == 1 && GetFileAttributes(Text::toT(localPaths.front()).c_str()) != 0xFFFFFFFF) { // Check that the file still exists
 				CShellContextMenu shellMenu;
-				shellMenu.SetPath(path);
+				shellMenu.SetPath(Text::toT(localPaths.front()).c_str());
 				CMenu* pShellMenu = shellMenu.GetMenu();
 					
 				//do we need to see anything else on own list?
@@ -1022,12 +1013,12 @@ LRESULT DirectoryListingFrame::onXButtonUp(UINT /*uMsg*/, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-void DirectoryListingFrame::download(const string& aTarget, QueueItem::Priority prio, bool usingTree, TargetUtil::TargetType aTargetType) {
+void DirectoryListingFrame::download(const string& aTarget, QueueItem::Priority prio, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
 	if (usingTree) {
 		HTREEITEM t = ctrlTree.GetSelectedItem();
 		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
 		try {
-			dl->download(dir, aTarget, aTargetType, WinUtil::isShift(), prio);
+			dl->download(dir, aTarget, aTargetType, isSizeUnknown , WinUtil::isShift() ? QueueItem::HIGHEST : prio);
 		} catch(const Exception& e) {
 			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 		}
@@ -1039,9 +1030,9 @@ void DirectoryListingFrame::download(const string& aTarget, QueueItem::Priority 
 			try {
 				if(ii->type == ItemInfo::FILE) {
 					dl->download(ii->file, aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), false, 
-						WinUtil::isShift(), prio);
+						WinUtil::isShift() ? QueueItem::HIGHEST : prio);
 				} else {
-					dl->download(ii->dir, aTarget, aTargetType, WinUtil::isShift(), prio);
+					dl->download(ii->dir, aTarget, aTargetType, isSizeUnknown, WinUtil::isShift() ? QueueItem::HIGHEST : prio);
 				} 
 			} catch(const Exception& e) {
 				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
@@ -1120,10 +1111,10 @@ LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 					ht = ctrlTree.GetNextSiblingItem(ht);
 				}
 			} else {
-				download(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false);
+				download(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
 			}
 		} else {
-			download(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false);
+			download(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
 		}
 	}
 	return 0;
@@ -1404,8 +1395,12 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 			setDirty();
 			break;
 		case ABORTED:
-			PostMessage(WM_CLOSE, 0, 0);
-			break;
+			{
+				auto_ptr<tstring> msg(reinterpret_cast<tstring*>(lParam));
+				ctrlStatus.SetText(0, (*msg).c_str());
+				PostMessage(WM_CLOSE, 0, 0);
+				break;
+			}
 		case STARTED:
 			ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 			break;
@@ -1501,55 +1496,41 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 	try {
 		tstring path;
 		if(ii->type == ItemInfo::FILE) {
-			if (ii->file->getDupe() == SHARE_DUPE || dl->getIsOwnList()) {
+			if (dl->getIsOwnList()) {
+				StringList localPaths;
+				dl->getLocalPaths(ii->file, localPaths);
+				if (!localPaths.empty()) {
+					path = Text::toT(localPaths.front());
+				}
+			} else if (ii->file->getDupe() == SHARE_DUPE) {
 				path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 			} else {
-				StringList targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
-				if (!targets.empty()) {
-					path = Text::toT(targets.front());
+				StringList localPaths = QueueManager::getInstance()->getTargets(ii->file->getTTH());
+				if (!localPaths.empty()) {
+					path = Text::toT(localPaths.front());
 				}
 			}
-
-			if (path.empty()) {
-				return 0;
-			}
-		} else if(ii->type == ItemInfo::DIRECTORY) {
+		} else {
 			if (dl->getIsOwnList()) {
-				StringList tmp;
-
 				if(ii->dir->getAdls())
 					return 0;
 
-				dl->getLocalPaths(ii->dir, tmp);
-
-				if(tmp.empty())
-					return 0;
-
-				path = Text::toT(*tmp.begin());  //could open all virtualfolders but some have so many.
-
+				StringList localPaths;
+				dl->getLocalPaths(ii->dir, localPaths);
+				if (!localPaths.empty()) {
+					path = Text::toT(localPaths.front());
+				}
 			} else {
 				if (ii->dir->getDupe() == SHARE_DUPE || (dl->getPartialList() && ii->dir->getDupe() == PARTIAL_SHARE_DUPE)) {
 					path = ShareManager::getInstance()->getDirPath(ii->dir->getPath());
 				} else {
 					path = QueueManager::getInstance()->getDirPath(ii->dir->getPath());
 				}
-				if (path.empty()) {
-					return 0;
-				}
 			}
-		} else if(ii->dir->getFileCount() > 0) {
-			DirectoryListing::File::Iter i = ii->dir->files.begin();
-			for (; i != ii->dir->files.end(); ++i) {
-				if((*i)->getDupe() ==SHARE_DUPE)
-					break;
-			}
-			if(i != ii->dir->files.end()) {
-				path = Text::toT(ShareManager::getInstance()->getRealPath(((*i)->getTTH())));
-				wstring::size_type end = path.find_last_of(_T("\\")); //makes it open the above folder if dir is selected with open folder
-				if (end != wstring::npos) {
-					path = path.substr(0, end);
-				}
-			}
+		}
+
+		if (path.empty()) {
+			return 0;
 		}
 
 		if(wID == IDC_OPEN) {
@@ -1558,7 +1539,6 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 			WinUtil::openFolder(path);
 		}
 	} catch(const ShareException& e) {
-		//error = Text::toT(e.getError());
 		ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 	}
 

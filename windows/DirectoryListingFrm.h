@@ -279,7 +279,7 @@ public:
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
 	int64_t getDownloadSize(bool isWhole);
-	void download(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType = TargetUtil::TARGET_PATH);
+	void download(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
 private:
 	void changeWindowState(bool enable);

@@ -196,7 +196,7 @@ LRESULT AutoSearchDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	return 0;
 }
 
-void AutoSearchDlg::download(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType) {
+void AutoSearchDlg::download(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	target = aTarget;
 	ctrlTarget.SetWindowTextW(Text::toT(target).c_str());
 	//update the type only after setting the text

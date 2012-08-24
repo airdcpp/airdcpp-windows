@@ -947,7 +947,7 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	return 0;
 }
 
-void ChatCtrl::download(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType) {
+void ChatCtrl::download(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	if (isMagnet && client) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		OnlineUserPtr u = client->findUser(Text::fromT(author));

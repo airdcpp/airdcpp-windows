@@ -285,7 +285,7 @@ public:
 
 		if (useVirtualDir(isWhole)) {
 			string target = isFav ? FavoriteManager::getInstance()->getFavoriteDirs()[newId].first : ShareManager::getInstance()->getGroupedDirectories()[newId].first;
-			((T*)this)->download(target, QueueItem::DEFAULT, false, isFav ? TargetUtil::TARGET_FAVORITE : TargetUtil::TARGET_SHARE);
+			((T*)this)->download(target, QueueItem::DEFAULT, isWhole, isFav ? TargetUtil::TARGET_FAVORITE : TargetUtil::TARGET_SHARE, true);
 		} else {
 			StringList targets = isFav ? FavoriteManager::getInstance()->getFavoriteDirs()[newId].second : ShareManager::getInstance()->getGroupedDirectories()[newId].second;
 			TargetUtil::TargetInfo targetInfo;
@@ -295,7 +295,7 @@ public:
 				return 0;
 			}
 
-			((T*)this)->download(targetInfo.targetDir, QueueItem::DEFAULT, isWhole, TargetUtil::TARGET_PATH);
+			((T*)this)->download(targetInfo.targetDir, QueueItem::DEFAULT, isWhole, TargetUtil::TARGET_PATH, false);
 		}
 		return 0;
 	}
@@ -311,7 +311,7 @@ public:
 				return;
 		}
 
-		((T*)this)->download(aTarget, WinUtil::isShift() ? QueueItem::HIGHEST : p, isWhole, TargetUtil::TARGET_PATH);
+		((T*)this)->download(aTarget, WinUtil::isShift() ? QueueItem::HIGHEST : p, isWhole, TargetUtil::TARGET_PATH, isSizeUnknown);
 	}
 
 	void appendDownloadTo(OMenu& targetMenu, bool wholeDir) {

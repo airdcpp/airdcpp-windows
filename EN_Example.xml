@@ -638,7 +638,6 @@
 		<String Name="SettingsPmBeep">Make an annoying sound every time a private message is received</String>
 		<String Name="SettingsPmBeepOpen">Make an annoying sound when a private message window is opened</String>
 		<String Name="SettingsPmHistory">PM history</String>
-		<String Name="SettingsPopunderFilelist">Open new file list windows in the background</String>
 		<String Name="SettingsPopunderPm">Open new private message windows in the background</String>
 		<String Name="SettingsPopupBotPms">Open private messages from the hub in their own window</String>
 		<String Name="SettingsPopupHubPms">Open private messages from bots in their own window</String>
@@ -1576,5 +1575,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="NotEnoughSpaceQueuedPaused">Not enough free space left on the target path %s (free space: %s, queued files: %s while %s is needed). Using paused priority.</String>
 		<String Name="InvalidPattern">Invalid pattern: %s</String>
 		<String Name="PreviousShort">Prev</String>
+		<String Name="SettingsPopunderFullList">Open new full file lists in the background</String>
+		<String Name="SettingsPopunderPartialList">Open new partial file lists in the background</String>
 	</Strings>
 </Language>

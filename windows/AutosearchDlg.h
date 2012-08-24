@@ -102,7 +102,7 @@ public:
 
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
-	void download(const string& aTarget, QueueItem::Priority p, bool isWhole, TargetUtil::TargetType aTargetType);
+	void download(const string& aTarget, QueueItem::Priority p, bool isWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool /*isWhole*/) { return 0; }
 	bool showDirDialog(string& /*fileName*/) { return true; }
 private:

@@ -725,7 +725,7 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 				}
 			}
 		} else {
-			DirectoryListingManager::getInstance()->addDirectoryDownload(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), tgt, targetType, ASK_USER, p);
+			DirectoryListingManager::getInstance()->addDirectoryDownload(si->sr->getFile(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), tgt, targetType, unknownSize ? ASK_USER : NO_CHECK, p);
 		}
 	} catch(const Exception&) {
 	}
@@ -734,7 +734,7 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 void SearchFrame::SearchInfo::DownloadWhole::operator()(SearchInfo* si) {
 	try {
 		DirectoryListingManager::getInstance()->addDirectoryDownload(si->sr->getType() == SearchResult::TYPE_FILE ? Text::fromT(si->getText(COLUMN_PATH)) : si->sr->getFile(),
-			HintedUser(si->sr->getUser(), si->sr->getHubURL()), tgt, targetType, ASK_USER, p);
+			HintedUser(si->sr->getUser(), si->sr->getHubURL()), tgt, targetType, unknownSize ? ASK_USER : NO_CHECK, p);
 	} catch(const Exception&) {
 	}
 }
@@ -777,11 +777,11 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 	}
 }
 
-void SearchFrame::download(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType) {
+void SearchFrame::download(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
 	if (useWhole) {
-		ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(aTarget, p, aTargetType));
+		ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(aTarget, p, aTargetType, isSizeUnknown));
 	} else {
-		ctrlResults.forEachSelectedT(SearchInfo::Download(aTarget, this, p, aTarget[aTarget.length()-1] != PATH_SEPARATOR, aTargetType));
+		ctrlResults.forEachSelectedT(SearchInfo::Download(aTarget, this, p, aTarget[aTarget.length()-1] != PATH_SEPARATOR, aTargetType, isSizeUnknown));
 	}
 }
 
@@ -850,7 +850,7 @@ LRESULT SearchFrame::onDoubleClickResults(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		if (item->ptAction.x < rect.left)
 			return 0;
 
-		ctrlResults.forEachSelectedT(SearchInfo::Download(SETTING(DOWNLOAD_DIRECTORY), this, WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH));
+		ctrlResults.forEachSelectedT(SearchInfo::Download(SETTING(DOWNLOAD_DIRECTORY), this, WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false));
 	}
 	return 0;
 }

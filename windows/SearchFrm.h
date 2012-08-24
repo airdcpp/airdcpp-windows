@@ -255,7 +255,7 @@ public:
 
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
-	void download(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType);
+	void download(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
 private:
@@ -325,21 +325,25 @@ private:
 		void viewNfo();
 		void matchPartial();
 		struct Download {
-			Download(const string& aTarget, SearchFrame* aSf, QueueItem::Priority aPrio, bool aNoAppend, TargetUtil::TargetType aTargetType) : tgt(aTarget), 
-				sf(aSf), p(aPrio), noAppend(aNoAppend), targetType(aTargetType) { }
+			Download(const string& aTarget, SearchFrame* aSf, QueueItem::Priority aPrio, bool aNoAppend, TargetUtil::TargetType aTargetType, bool aIsSizeUnknown) : tgt(aTarget), 
+				sf(aSf), p(aPrio), noAppend(aNoAppend), targetType(aTargetType), unknownSize(aIsSizeUnknown) { }
 			void operator()(SearchInfo* si);
+
 			const string& tgt;
 			SearchFrame* sf;
 			QueueItem::Priority p;
 			bool noAppend;
 			TargetUtil::TargetType targetType;
+			bool unknownSize;
 		};
 		struct DownloadWhole {
-			DownloadWhole(const string& aTarget, QueueItem::Priority aPrio, TargetUtil::TargetType aTargetType) : tgt(aTarget), p(aPrio), targetType(aTargetType) { }
+			DownloadWhole(const string& aTarget, QueueItem::Priority aPrio, TargetUtil::TargetType aTargetType, bool aIsSizeUnknown) : tgt(aTarget), p(aPrio), targetType(aTargetType), 
+				unknownSize(aIsSizeUnknown) { }
 				void operator()(SearchInfo* si);
 			const string& tgt;
 			QueueItem::Priority p;
 			TargetUtil::TargetType targetType;
+			bool unknownSize;
 		};
 		struct CheckTTH {
 			CheckTTH() : op(true), firstHubs(true), hasTTH(false), firstTTH(true) { }
