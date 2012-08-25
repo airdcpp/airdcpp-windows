@@ -405,15 +405,6 @@
     <ClCompile Include="windows\AirAppearancePage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\AirDCPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windows\AirDownloadsPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="windows\AirSharingPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\AppearancePage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -657,6 +648,15 @@
     <ClCompile Include="windows\SearchTypeDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\MiscPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\SharingOptionsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\DownloadingOptionsPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -672,15 +672,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\AirAppearancePage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\AirDCPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\AirDownloadsPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\AirSharingPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\AppearancePage.h">
@@ -977,6 +968,15 @@
     <ClInclude Include="windows\SearchTypeDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\MiscPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\SharingOptionsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\DownloadingOptionsPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\SettingsTree\SearchTypes.ico">
@@ -1007,6 +1007,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\searchTypes\tth.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\text.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -52,6 +52,8 @@ public:
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 		MESSAGE_HANDLER(WM_SETCURSOR, onSetCursor)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, onMouseMove)
+		MESSAGE_HANDLER(WM_FINDREPLACE, onFind)
+		MESSAGE_HANDLER(WM_CHAR, onChar)
 
 		MESSAGE_HANDLER(WM_LBUTTONUP, onLeftButtonUp)
 
@@ -67,6 +69,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_UNBAN_IP, onUnBanIP)
 		COMMAND_ID_HANDLER(IDC_WHOIS_IP, onWhoisIP)
 
+		COMMAND_ID_HANDLER(IDC_FIND_TEXT, onFindText)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_USER_HISTORY, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_PRIVATEMESSAGE, onPrivateMessage)
@@ -138,7 +141,11 @@ public:
 //	void setClient(Client* pClient) { client = pClient; }
 
 	LRESULT onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onFindText(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
+	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 
+	void findText(tstring& aTxt=Util::emptyStringT);
 	void runUserCommand(UserCommand& uc);
 
 	//void AdjustTextSize();
@@ -166,6 +173,10 @@ public:
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
 private:
+	CFindReplaceDialog* findDlg;
+	int			curFindPos;
+	static UINT	WM_FINDREPLACE;
+
 	bool HitNick(const POINT& p, tstring& sNick, int& iBegin , int& iEnd);
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);
 

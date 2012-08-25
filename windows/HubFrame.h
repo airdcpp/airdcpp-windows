@@ -389,13 +389,6 @@ private:
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;		//can't use an iterator because StringList is a vector, and vector iterators become invalid after resizing
 
-	tstring currentNeedle;		// search in chat window
-	long currentNeedlePos;		// search in chat window
-	void findText(tstring const& needle) noexcept;
-	tstring findTextPopup();
-
-	CFindReplaceDialog findDlg;
-
 	Client* client;
 	tstring server;
 	string cachedHubname;

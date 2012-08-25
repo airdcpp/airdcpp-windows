@@ -4,14 +4,14 @@
 #include "../client/SettingsManager.h"
 #include "Resource.h"
 
-#include "AirDownloadsPage.h"
+#include "DownloadingOptionsPage.h"
 #include "LineDlg.h"
 #include "CommandDlg.h"
 
 #include "WinUtil.h"
 #include "PropertiesDlg.h"
 
-PropPage::TextItem AirDownloadsPage::texts[] = {
+PropPage::TextItem DownloadingOptionsPage::texts[] = {
 	{ IDC_SETTINGS_KBPS5, ResourceManager::KBPS },
 	{ IDC_SETTINGS_KBPS6, ResourceManager::KBPS },
 	{ IDC_SETTINGS_KBPS7, ResourceManager::KBPS },
@@ -33,7 +33,7 @@ PropPage::TextItem AirDownloadsPage::texts[] = {
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-PropPage::Item AirDownloadsPage::items[] = {
+PropPage::Item DownloadingOptionsPage::items[] = {
 	{ IDC_I_DOWN_SPEED, SettingsManager::DISCONNECT_SPEED, PropPage::T_INT },
 	{ IDC_TIME_DOWN, SettingsManager::DISCONNECT_TIME, PropPage::T_INT },
 	{ IDC_H_DOWN_SPEED, SettingsManager::DISCONNECT_FILE_SPEED, PropPage::T_INT },
@@ -47,14 +47,14 @@ PropPage::Item AirDownloadsPage::items[] = {
 	{ 0, 0, PropPage::T_END }
 };
 
-PropPage::ListItem AirDownloadsPage::optionItems[] = {
+PropPage::ListItem DownloadingOptionsPage::optionItems[] = {
 	{ SettingsManager::SKIP_ZERO_BYTE, ResourceManager::SETTINGS_SKIP_ZERO_BYTE },
 	{ SettingsManager::DONT_DL_ALREADY_SHARED, ResourceManager::SETTINGS_DONT_DL_ALREADY_SHARED },
 	{ SettingsManager::DONT_DL_ALREADY_QUEUED, ResourceManager::SETTING_DONT_DL_ALREADY_QUEUED },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-LRESULT AirDownloadsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT DownloadingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
 	PropPage::read((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_SKIPPING_OPTIONS));
@@ -86,7 +86,7 @@ LRESULT AirDownloadsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	return TRUE;
 }
 
-void AirDownloadsPage::write() {
+void DownloadingOptionsPage::write() {
 
 	PropPage::write((HWND)*this, items);
 	 

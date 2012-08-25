@@ -24,14 +24,14 @@
 #include "Resource.h"
 
 
-#include "AirDCPage.h"
+#include "MiscPage.h"
 #include "WinUtil.h"
 #include "LineDlg.h"
 #include "PropertiesDlg.h"
 
 #include "../client/ResourceManager.h"
 
-PropPage::TextItem AirDCPage::texts[] = {
+PropPage::TextItem MiscPage::texts[] = {
 	{ IDC_CZDC_WINAMP, ResourceManager::SETCZDC_WINAMP },
 	{ IDC_PLAYER_PATH, ResourceManager::SETCZDC_WINAMP_PATH },
 	{ IDC_WINAMP_BROWSE, ResourceManager::BROWSEW },
@@ -42,21 +42,22 @@ PropPage::TextItem AirDCPage::texts[] = {
 	{ IDC_ALLOW_CONNECTION_TO_PASSED_HUBS, ResourceManager::DISALLOW_CONNECTION_TO_PASSED_HUBS },
 	{ IDC_PASSWD_PROTECT_TRAY_CHCKBOX, ResourceManager::PASSWD_PROTECT_TRAY_CHCKBOX },
 	{ IDC_PASSWD_PROTECT_CHCKBOX, ResourceManager::PASSWD_PROTECT_CHCKBOX },
-
+	{ IDC_SKIP_SUBTRACT_TEXT, ResourceManager::SKIP_SUBTRACT_TEXT },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-PropPage::Item AirDCPage::items[] = {
+PropPage::Item MiscPage::items[] = {
 	{ IDC_FAV_DL_SPEED, SettingsManager::FAV_DL_SPEED, PropPage::T_INT },
 	{ IDC_OPEN_FIRST_X_HUB, SettingsManager::OPEN_FIRST_X_HUBS, PropPage::T_INT },
 	{ IDC_WINAMP, SettingsManager::WINAMP_FORMAT, PropPage::T_STR },
 	{ IDC_PASSWD_PROTECT_CHCKBOX, SettingsManager::PASSWD_PROTECT, PropPage::T_BOOL },
 	{ IDC_PASSWD_PROTECT_TRAY_CHCKBOX, SettingsManager::PASSWD_PROTECT_TRAY, PropPage::T_BOOL },
 	{ IDC_ALLOW_CONNECTION_TO_PASSED_HUBS, SettingsManager::DISALLOW_CONNECTION_TO_PASSED_HUBS, PropPage::T_BOOL },
+	{ IDC_SKIP_SUBTRACT, SettingsManager::SKIP_SUBTRACT, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
-LRESULT AirDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT MiscPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
@@ -103,7 +104,7 @@ LRESULT AirDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 
-void AirDCPage::write() {
+void MiscPage::write() {
 	PropPage::write((HWND)*this, items);
 
 	TCHAR buf[256];
@@ -150,7 +151,7 @@ void AirDCPage::write() {
 	SettingsManager::getInstance()->set(SettingsManager::SPOTIFY_FORMAT, Text::fromT(SpotifyStr).c_str());
 
 }
-LRESULT AirDCPage::onClickedWinampHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
+LRESULT MiscPage::onClickedWinampHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 		if(CurSel == 0) {
 		MessageBox(CTSTRING(WINAMP_HELP), CTSTRING(WINAMP_HELP_DESC), MB_OK | MB_ICONINFORMATION);
 	} else if(CurSel == 1) {
@@ -166,7 +167,7 @@ LRESULT AirDCPage::onClickedWinampHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWN
 	}
 	return S_OK;
 }
-LRESULT AirDCPage::onBrowsew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT MiscPage::onBrowsew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	TCHAR buf[MAX_PATH];
 
 	GetDlgItemText(IDC_WINAMP_PATH, buf, MAX_PATH);
@@ -178,7 +179,7 @@ LRESULT AirDCPage::onBrowsew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	return 0;
 }
 
-LRESULT AirDCPage::onSelChange(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
+LRESULT MiscPage::onSelChange(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 	ctrlFormat.Attach(GetDlgItem(IDC_WINAMP));
 	if(CurSel == 0) {
 		int len = ctrlFormat.GetWindowTextLength() + 1;
@@ -242,7 +243,7 @@ LRESULT AirDCPage::onSelChange(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWn
 	return 0;
 }
 
-LRESULT AirDCPage::onChangeCont(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT MiscPage::onChangeCont(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(wID == IDC_PASSWD_PROTECT_CHCKBOX) {
 		bool state = (IsDlgButtonChecked(IDC_PASSWD_PROTECT_CHCKBOX) != 0);
 		if(state) {
@@ -285,7 +286,7 @@ LRESULT AirDCPage::onChangeCont(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 }
 
 
-LRESULT AirDCPage::OnPasswordChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT MiscPage::OnPasswordChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
 	if((wID == IDC_PASSWD_BUTTON) /*&& !SETTING(PASSWORD).empty()*/) {
 		ChngPassDlg dlg;
@@ -309,7 +310,7 @@ LRESULT AirDCPage::OnPasswordChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndC
 	return true;
 }
 
-void AirDCPage::fixControls() {
+void MiscPage::fixControls() {
 	bool state = (IsDlgButtonChecked(IDC_PASSWD_PROTECT_CHCKBOX) != 0);
 	::EnableWindow(GetDlgItem(IDC_PASSWD_BUTTON), state);
 	BOOL use = IsDlgButtonChecked(IDC_PASSWD_PROTECT_CHCKBOX) == BST_CHECKED;

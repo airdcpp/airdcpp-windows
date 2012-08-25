@@ -28,19 +28,19 @@
 #include "ExListViewCtrl.h"
 #include "../client/File.h"
 
-class AirDCPage : public CPropertyPage<IDD_AIRDCPAGE>, public PropPage
+class MiscPage : public CPropertyPage<IDD_MISC_PAGE>, public PropPage
 {
 public:
-	AirDCPage(SettingsManager *s) : PropPage(s) {
-		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(SETTINGS_AIRDCPAGE)).c_str());
+	MiscPage(SettingsManager *s) : PropPage(s) {
+		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(SETTINGS_MISC)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}
 
-	~AirDCPage() { free(title); }
+	~MiscPage() { free(title); }
 	
 
-	BEGIN_MSG_MAP_EX(AirDCPage)
+	BEGIN_MSG_MAP_EX(MiscPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		COMMAND_HANDLER(IDC_WINAMP_HELP, BN_CLICKED, onClickedWinampHelp)
 		COMMAND_HANDLER(IDC_PLAYER_COMBO, CBN_SELCHANGE, onSelChange)

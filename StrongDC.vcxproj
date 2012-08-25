@@ -488,9 +488,9 @@
     <ClCompile Include="windows\DirectoryListingDlg.cpp" />
     <ClCompile Include="windows\EmoticonsManager.cpp" />
     <ClCompile Include="windows\AirAppearancePage.cpp" />
-    <ClCompile Include="windows\AirDCPage.cpp" />
-    <ClCompile Include="windows\AirDownloadsPage.cpp" />
-    <ClCompile Include="windows\AirSharingPage.cpp" />
+    <ClCompile Include="windows\MiscPage.cpp" />
+    <ClCompile Include="windows\DownloadingOptionsPage.cpp" />
+    <ClCompile Include="windows\SharingOptionsPage.cpp" />
     <ClCompile Include="windows\AppearancePage.cpp" />
     <ClCompile Include="windows\AutosearchDlg.cpp" />
     <ClCompile Include="windows\FavoriteDirDlg.cpp" />
@@ -592,9 +592,9 @@
     <ClInclude Include="windows\DirectoryListingFrm.h" />
     <ClInclude Include="windows\EmoticonsManager.h" />
     <ClInclude Include="windows\AirAppearancePage.h" />
-    <ClInclude Include="windows\AirDCPage.h" />
-    <ClInclude Include="windows\AirDownloadsPage.h" />
-    <ClInclude Include="windows\AirSharingPage.h" />
+    <ClInclude Include="windows\MiscPage.h" />
+    <ClInclude Include="windows\DownloadingOptionsPage.h" />
+    <ClInclude Include="windows\SharingOptionsPage.h" />
     <ClInclude Include="windows\AppearancePage.h" />
     <ClInclude Include="windows\AutosearchDlg.h" />
     <ClInclude Include="windows\FavoriteDirDlg.h" />
@@ -736,6 +736,7 @@
     <Image Include="res\searchTypes\tth.ico" />
     <Image Include="res\searchTypes\Video.ico" />
     <Image Include="res\SettingsTree\SearchTypes.ico" />
+    <Image Include="res\text.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

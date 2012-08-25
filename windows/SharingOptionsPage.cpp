@@ -5,7 +5,7 @@
 #include "../client/AirUtil.h"
 #include "Resource.h"
 
-#include "AirSharingPage.h"
+#include "SharingOptionsPage.h"
 #include "LineDlg.h"
 #include "CommandDlg.h"
 
@@ -13,7 +13,7 @@
 #include "PropertiesDlg.h"
 
 
-PropPage::ListItem AirSharingPage::listItems[] = {
+PropPage::ListItem SharingOptionsPage::listItems[] = {
 	{ SettingsManager::CHECK_MISSING, ResourceManager::CHECK_MISSING },
 	{ SettingsManager::CHECK_SFV, ResourceManager::CHECK_SFV },
 	{ SettingsManager::CHECK_NFO, ResourceManager::CHECK_NFO },
@@ -28,7 +28,7 @@ PropPage::ListItem AirSharingPage::listItems[] = {
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-PropPage::TextItem AirSharingPage::texts[] = {
+PropPage::TextItem SharingOptionsPage::texts[] = {
 	{ IDC_ST_MINISLOTS_EXT, ResourceManager::ST_MINISLOTS_EXT },
 	{ IDC_SB_MINISLOTS, ResourceManager::SB_MINISLOTS },
 	{ IDC_SB_SKIPLIST_SHARE, ResourceManager::ST_SKIPLIST_SHARE_BORDER },
@@ -38,31 +38,56 @@ PropPage::TextItem AirSharingPage::texts[] = {
 	{ IDC_SETTINGS_MB2, ResourceManager::MiB },
 	{ IDC_MINUTES, ResourceManager::MINUTES },
 	{ IDC_SETTINGS_SCAN_OPTIONS, ResourceManager::SETTINGS_SCAN_OPTIONS },
-	{ IDC_SKIP_SUBTRACT_TEXT, ResourceManager::SKIP_SUBTRACT_TEXT },
+	{ IDC_SETTINGS_AUTO_REFRESH_TIME, ResourceManager::SETTINGS_AUTO_REFRESH_TIME },
+	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
+	{ IDC_SETTINGS_MAX_HASH_SPEED, ResourceManager::SETTINGS_MAX_HASH_SPEED },
+	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-PropPage::Item AirSharingPage::items[] = {
+PropPage::Item SharingOptionsPage::items[] = {
 	{ IDC_SKIPLIST_SHARE, SettingsManager::SKIPLIST_SHARE, PropPage::T_STR },
 	{ IDC_MINISLOTS_EXTENSIONS, SettingsManager::FREE_SLOTS_EXTENSIONS, PropPage::T_STR },
 	{ IDC_SHARE_SKIPLIST_USE_REGEXP, SettingsManager::SHARE_SKIPLIST_USE_REGEXP, PropPage::T_BOOL },
 	{ IDC_DONT_SHARE_BIGGER_VALUE, SettingsManager::MAX_FILE_SIZE_SHARED, PropPage::T_INT },
-	{ IDC_SKIP_SUBTRACT, SettingsManager::SKIP_SUBTRACT, PropPage::T_INT },
+	{ IDC_SHAREHIDDEN, SettingsManager::SHARE_HIDDEN, PropPage::T_BOOL },
+	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
+	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
+	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
 
 
-LRESULT AirSharingPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT SharingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_SCANLIST));
+
+	CUpDownCtrl updown;
+	updown.Attach(GetDlgItem(IDC_REFRESH_SPIN));
+	updown.SetRange32(0, 3000); 
+	updown.Detach();
+
+	updown.Attach(GetDlgItem(IDC_INCOMING_SPIN));
+	updown.SetRange32(0, 3000); 
+	updown.Detach();
+
+	updown.Attach(GetDlgItem(IDC_HASH_SPIN));
+	updown.SetRange32(0, 999);
+	updown.Detach();
+	
+	updown.Attach(GetDlgItem(IDC_SAVE_SPIN));
+	updown.SetRange32(0, 3000); 
+	updown.Detach();
+
+
 	
 	// Do specialized reading here
 	return TRUE;
 }
 
-void AirSharingPage::write() {
+void SharingOptionsPage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SCANLIST));
 	
 	//set to the defaults

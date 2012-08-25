@@ -171,6 +171,8 @@ public:
 		ctrlComboDescription.Attach(GetDlgItem(IDC_DESCRIPTION));
 		ctrlComboDescription.SetWindowText(CTSTRING(HUB_ADDRESS));
 
+		SetDlgItemText(IDC_SHARE_PROFILE_NOTE, CTSTRING(PROFILES_NOTE));
+
 		auto profiles = ShareManager::getInstance()->getProfiles();
 		int n = 0;
 		for(auto j = profiles.begin(); j != profiles.end()-1; j++) {

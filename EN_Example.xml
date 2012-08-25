@@ -628,7 +628,6 @@
 		<String Name="SettingsNoAwaymsgToBots">Don't send the away message to bots</String>
 		<String Name="SettingsNormal">Normal</String>
 		<String Name="SettingsOdcShutdowntimeout">timeout</String>
-		<String Name="SettingsOnlyHashed">Note; Files appear in the share only after they've been hashed!</String>
 		<String Name="SettingsOpenNewWindow">Open new window when using /join</String>
 		<String Name="SettingsOperacolors">Progressbar colors</String>
 		<String Name="SettingsOptions">Options</String>
@@ -1005,7 +1004,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="IgnoreClear">Clear</String>
 		<String Name="UseRegexpOrWc">Use regexp or wildcards</String>
 		<String Name="IgnoredUsers">Ignored users</String>
-		<String Name="SettingsAirdcpage">Misc</String>
 		<String Name="Incoming">incoming</String>
 		<String Name="Outgoing">outgoing</String>
 		<String Name="Begin">Begin</String>
@@ -1022,7 +1020,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="StSkiplistShareBorder">Skiplist Share</String>
 		<String Name="StMinislotsExt">Grant minislot automatically for the following file extensions: (separate extensions with '|', wildcards allowed)</String>
 		<String Name="SbMinislots">Minislots</String>
-		<String Name="SettingsAirsharing">Share Options</String>
 		<String Name="RemoveFile">Remove file from queue</String>
 		<String Name="SettingsAirHighlightpage">Highlight</String>
 		<String Name="HighlightMatchTypes">Begins,Contains,Ends,Equals</String>
@@ -1156,7 +1153,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="PasswdProtectTrayChckbox">Protect Tray</String>
 		<String Name="Note">Note; If you disable password protection your password will be reset!</String>
 		<String Name="ReaddAll">Readd all Sources</String>
-		<String Name="HubNotProtected">No password was required/provided at login, disconnecting hub. (Setting @ AirDCpage)</String>
+		<String Name="HubNotProtected">No password was required/provided at login, disconnecting hub. (Setting @ MiscPage)</String>
 		<String Name="DisallowConnectionToPassedHubs">Automatically disconnect hubs if not registered</String>
 		<String Name="DontShareDownloadDirectory">The download directory cannot be shared</String>
 		<String Name="BoldHubTabsOnKick">Bold hub's tabs on kick messages</String>
@@ -1573,5 +1570,10 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="PreviousShort">Prev</String>
 		<String Name="SettingsPopunderFullList">Open new full file lists in the background</String>
 		<String Name="SettingsPopunderPartialList">Open new partial file lists in the background</String>
+		<String Name="FindText">Find text</String>
+		<String Name="SearchTypesNote">Note; Custom search types will only be applied to ADC hubs! On NMDC hubs, using a predefined search type will only search for a set of predefined, unconfigurable extensions; using a custom type will default to searching for any extension.</String>
+		<String Name="SettingsShareProfileNote">Note; Added share profiles can only be used in ADC hubs. NMDC hubs are forced to use the default profile.</String>
+		<String Name="SettingsSharingOptions">Sharing Options</String>
+		<String Name="SettingsMisc">Miscellaneous</String>
 	</Strings>
 </Language>

@@ -10,20 +10,20 @@
 #include "ExListViewCtrl.h"
 
 
-class AirSharingPage : public CPropertyPage<IDD_AIRSHARINGPAGE>, public PropPage
+class SharingOptionsPage : public CPropertyPage<IDD_SHARING_OPTIONS>, public PropPage
 {
 public:
-	AirSharingPage(SettingsManager *s) : PropPage(s) {
-		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(SETTINGS_AIRSHARING)).c_str());
+	SharingOptionsPage(SettingsManager *s) : PropPage(s) {
+		title = _tcsdup((TSTRING(SETTINGS_SHARINGPAGE) + _T('\\') + TSTRING(SETTINGS_SHARING_OPTIONS)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}
 
-	~AirSharingPage() {
+	~SharingOptionsPage() {
 		free(title);
 	}
 
-	BEGIN_MSG_MAP(AirSharingPage)
+	BEGIN_MSG_MAP(SharingOptionsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 	END_MSG_MAP()
 

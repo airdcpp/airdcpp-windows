@@ -45,20 +45,8 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_REMOVE_DIR, ResourceManager::REMOVE },
 	{ IDC_ADD_DIR, ResourceManager::SETTINGS_ADD_FOLDER },
 	{ IDC_RENAME_DIR, ResourceManager::SETTINGS_RENAME_FOLDER },
-	{ IDC_SETTINGS_ONLY_HASHED, ResourceManager::SETTINGS_ONLY_HASHED },
-	{ IDC_SETTINGS_AUTO_REFRESH_TIME, ResourceManager::SETTINGS_AUTO_REFRESH_TIME },
-	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
-	{ IDC_SETTINGS_MAX_HASH_SPEED, ResourceManager::SETTINGS_MAX_HASH_SPEED },
-	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
+	{ IDC_SHARE_PROFILE_NOTE, ResourceManager::SETTINGS_SHARE_PROFILE_NOTE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
-};
-
-PropPage::Item SharePage::items[] = {
-	{ IDC_SHAREHIDDEN, SettingsManager::SHARE_HIDDEN, PropPage::T_BOOL },
-	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
-	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
-	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
-	{ 0, 0, PropPage::T_END }
 };
 
 SharePage::SharePage(SettingsManager *s) : PropPage(s), ft(nullptr) {
@@ -82,25 +70,6 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	ctrlDirectories.Attach(GetDlgItem(IDC_DIRECTORIES));
 		ctrlDirectories.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_CHECKBOXES);
-
-	PropPage::read((HWND)*this, items);
-
-	CUpDownCtrl updown;
-	updown.Attach(GetDlgItem(IDC_REFRESH_SPIN));
-	updown.SetRange32(0, 3000); 
-	updown.Detach();
-
-	updown.Attach(GetDlgItem(IDC_INCOMING_SPIN));
-	updown.SetRange32(0, 3000); 
-	updown.Detach();
-
-	updown.Attach(GetDlgItem(IDC_HASH_SPIN));
-	updown.SetRange32(0, 999);
-	updown.Detach();
-	
-	updown.Attach(GetDlgItem(IDC_SAVE_SPIN));
-	updown.SetRange32(0, 3000); 
-	updown.Detach();
 
 	curProfile = SP_DEFAULT;
 	if(BOOLSETTING(USE_OLD_SHARING_UI)) {
@@ -332,7 +301,6 @@ LRESULT SharePage::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, 
 }
 
 void SharePage::write() {
-	PropPage::write((HWND)*this, items);
 	applyChanges(true);
 }
 

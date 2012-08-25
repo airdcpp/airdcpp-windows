@@ -2325,13 +2325,14 @@ void WinUtil::loadSettingsTreeIcons() {
 	settingsTreeImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 30);
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_GENERAL));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_CONNECTIONS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_LIMITS));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_DOWNLOADS));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_LOCATIONS));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_PREVIEW));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_PRIORITIES));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_QUEUE));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SHARING));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_LIMITS));
+	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SHAREOPTIONS));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_APPEARANCE));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_FONTS));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_PROGRESS));
@@ -2349,7 +2350,6 @@ void WinUtil::loadSettingsTreeIcons() {
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_UC));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_CERTIFICATES));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_MISC));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SHAREOPTIONS));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_IGNORE));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SEARCH));
 	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SEARCHTYPES));

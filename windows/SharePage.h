@@ -86,7 +86,6 @@ public:
 protected:
 	ProfileToken curProfile;
 	friend class FolderTree;
-	static Item items[];
 	static TextItem texts[];
 	ExListViewCtrl ctrlDirectories;
 

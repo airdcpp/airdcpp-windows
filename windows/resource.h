@@ -139,11 +139,12 @@
 #define IDB_WINAMPBAR                   299
 #define IDR_WINAMP_LOGO                 300
 #define IDD_EXTRA                       301
-#define IDD_AIRDCPAGE                   301
+#define IDD_MISC_PAGE                   301
 #define IDB_WINAMP_CONTROL              302
 #define IDD_SEARCHPAGE                  302
 #define IDD_AIRDOWNLOADSPAGE            303
-#define IDD_AIRSHARINGPAGE              304
+#define IDD_DOWNLOADING_OPTIONS_PAGE    303
+#define IDD_SHARING_OPTIONS             304
 #define IDD_AUTOSEARCH_DLG              305
 #define IDB_BITMAP1                     312
 #define IDB_USERS                       312
@@ -240,6 +241,7 @@
 #define IDI_DIRECTORY                   421
 #define IDI_TTH                         422
 #define IDI_SEARCHTYPES                 423
+#define IDI_TEXT                        424
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
@@ -1114,6 +1116,8 @@
 #define IDC_HCONTEXT                    1662
 #define IDC_HCONTEXT_TEXT               1663
 #define IDC_HLTEXT                      1664
+#define IDC_SEARCHTYPES_NOTE            1665
+#define IDC_SHARE_PROFILE_NOTE          1666
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1426,6 +1430,7 @@
 #define IDC_ADD_AUTO_SEARCH_DIR         15126
 #define IDC_DELETE_FILE                 15127
 #define IDC_PREV                        15128
+#define IDC_FIND_TEXT                   15129
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_REFRESH_MENU                16000
 #define ID_TOGGLE_TBSTATUS              16900
@@ -1475,7 +1480,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        344
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1665
+#define _APS_NEXT_CONTROL_VALUE         1667
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

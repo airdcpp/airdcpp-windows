@@ -46,10 +46,10 @@
 #include "PriorityPage.h"
 #include "CertificatesPage.h"
 
-#include "AirDCPage.h"
+#include "MiscPage.h"
 #include "FulTabsPage.h"
-#include "AirDownloadsPage.h"
-#include "AirSharingPage.h"
+#include "DownloadingOptionsPage.h"
+#include "SharingOptionsPage.h"
 #include "IgnorePage.h"
 #include "Popups.h"
 #include "FulHighlightPage.h"
@@ -65,13 +65,14 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	int n = 0;
 	pages[n++] = new GeneralPage(s);
 	pages[n++] = new NetworkPage(s);
+	pages[n++] = new SpeedPage(s);
 	pages[n++] = new DownloadPage(s);
 	pages[n++] = new LocationsPage(s);
 	pages[n++] = new AVIPreview(s);	
 	pages[n++] = new PriorityPage(s);
-	pages[n++] = new AirDownloadsPage(s);
+	pages[n++] = new DownloadingOptionsPage(s);
 	pages[n++] = new SharePage(s);
-	pages[n++] = new SpeedPage(s);
+	pages[n++] = new SharingOptionsPage(s);
 	pages[n++] = new AppearancePage(s);
 	pages[n++] = new PropPageTextStyles(s);
 	pages[n++] = new OperaColorsPage(s);
@@ -88,8 +89,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = new LogPage(s);
 	pages[n++] = new UCPage(s);	
 	pages[n++] = new CertificatesPage(s);
-	pages[n++] = new AirDCPage(s);
-	pages[n++] = new AirSharingPage(s);
+	pages[n++] = new MiscPage(s);
 	pages[n++] = new IgnorePage(s);
 	pages[n++] = new SearchPage(s);
 	pages[n++] = new SearchTypesPage(s);

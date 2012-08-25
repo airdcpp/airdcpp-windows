@@ -12,20 +12,20 @@
 #include "ExListViewCtrl.h"
 
 
-class AirDownloadsPage : public CPropertyPage<IDD_AIRDOWNLOADSPAGE>, public PropPage
+class DownloadingOptionsPage : public CPropertyPage<IDD_DOWNLOADING_OPTIONS_PAGE>, public PropPage
 {
 public:
-	AirDownloadsPage(SettingsManager *s) : PropPage(s) {
+	DownloadingOptionsPage(SettingsManager *s) : PropPage(s) {
 		title = _tcsdup((TSTRING(SETTINGS_DOWNLOADS) + _T('\\') + TSTRING(SETTINGS_AIRDOWNLOADS)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}
 
-	~AirDownloadsPage() {
+	~DownloadingOptionsPage() {
 		free(title);
 	}
 
-	BEGIN_MSG_MAP(AirDownloadsPage)
+	BEGIN_MSG_MAP(DownloadingOptionsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 	END_MSG_MAP()
 

@@ -227,7 +227,7 @@ HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate
 		waitingForPW(false), extraSort(false), server(aServer), closed(false), 
 		showUsers(BOOLSETTING(GET_USER_INFO)), updateUsers(false), resort(false),
 		curCommandPosition(0), timeStamps(BOOLSETTING(TIME_STAMPS)),
-		hubchatusersplit(chatusersplit), menuItems(0), currentNeedlePos(-1),
+		hubchatusersplit(chatusersplit), menuItems(0),
 		lineCount(1), //ApexDC
 		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP), 
 		showUsersContainer(WC_BUTTON, this, EDIT_MESSAGE_MAP),
@@ -345,9 +345,7 @@ void HubFrame::onEnter() {
 					}
 				}
 			} else if(stricmp(cmd.c_str(), _T("f")) == 0) {
-				if(param.empty())
-					param = findTextPopup();
-				findText(param);
+				ctrlClient.findText();
 			} else if(stricmp(cmd.c_str(), _T("extraslots"))==0) {
 				int j = Util::toInt(Text::fromT(param));
 				if(j > 0) {
@@ -1021,54 +1019,6 @@ void HubFrame::clearTaskList() {
 	tasks.clear();
 }
 
-void HubFrame::findText(tstring const& needle) noexcept {
-	int max = ctrlClient.GetWindowTextLength();
-	// a new search? reset cursor to bottom
-	if(needle != currentNeedle || currentNeedlePos == -1) {
-		currentNeedle = needle;
-		currentNeedlePos = max;
-	}
-	// set current selection
-	FINDTEXT ft;
-	ft.chrg.cpMin = currentNeedlePos;
-	ft.chrg.cpMax = 0; // REVERSED!! GAH!! FUCKING RETARDS! *blowing off steam*
-	ft.lpstrText = needle.c_str();
-	// empty search? stop
-	if(needle.empty())
-		return;
-	// find upwards
-	currentNeedlePos = static_cast<long>(ctrlClient.SendMessage(EM_FINDTEXT, 0, (LPARAM)&ft));
-	// not found? try again on full range
-	if(currentNeedlePos == -1 && ft.chrg.cpMin != max) { // no need to search full range twice
-		currentNeedlePos = max;
-		ft.chrg.cpMin = currentNeedlePos;
-		currentNeedlePos = static_cast<long>(ctrlClient.SendMessage(EM_FINDTEXT, 0, (LPARAM)&ft));
-	}
-	// found? set selection
-	if(currentNeedlePos != -1) {
-		ft.chrg.cpMin = currentNeedlePos;
-		ft.chrg.cpMax = currentNeedlePos + static_cast<long>(needle.length());
-		ctrlClient.SetFocus();
-		ctrlClient.SendMessage(EM_EXSETSEL, 0, (LPARAM)&ft);
-	} else {
-		addStatus(TSTRING(STRING_NOT_FOUND) + _T(" ") + needle);
-		currentNeedle = Util::emptyStringT;
-	}
-}
-
-tstring HubFrame::findTextPopup() {
-	LineDlg *finddlg = new LineDlg;
-	finddlg->title = CTSTRING(SEARCH);
-	finddlg->description = CTSTRING(SPECIFY_SEARCH_STRING);
-
-	tstring param = Util::emptyStringT;
-	if(finddlg->DoModal() == IDOK) {
-		param = finddlg->line;
-	}
-	delete finddlg;
-	return param;
-}
-
 LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	HWND focus = GetFocus();
 	bHandled = false;
@@ -1496,13 +1446,8 @@ LRESULT HubFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHan
 		ctrlClient.SetSel(-1, -1);
 		ctrlClient.SendMessage(EM_SCROLL, SB_BOTTOM, 0);
 		ctrlClient.InvalidateRect(NULL);
-		currentNeedle = Util::emptyStringT;
-	} else if((wParam == VK_F3 && GetKeyState(VK_SHIFT) & 0x8000) ||
-		(wParam == 'F' && GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000)) {
-		findText(findTextPopup());
-		return 0;
-	} else if(wParam == VK_F3) {
-		findText(currentNeedle.empty() ? findTextPopup() : currentNeedle);
+	} if(wParam == VK_F3) {
+		ctrlClient.findText();
 		return 0;
 	} 
 

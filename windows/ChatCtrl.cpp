@@ -34,6 +34,7 @@
 EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48
+UINT ChatCtrl::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
 ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true) {
 	if(emoticonsManager == NULL) {
@@ -905,6 +906,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 	}
 
 	menu.AppendMenu(MF_SEPARATOR);
+	menu.AppendMenu(MF_STRING, IDC_FIND_TEXT, CTSTRING(FIND_TEXT));
 	menu.AppendMenu(MF_STRING, ID_EDIT_SELECT_ALL, CTSTRING(SELECT_ALL));
 	menu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR_CHAT));
 	
@@ -912,6 +914,67 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
     m_bPopupMenu = true;
 	menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 
+	return 0;
+}
+
+LRESULT ChatCtrl::onFindText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	findText();
+	return 1;
+}
+
+LRESULT ChatCtrl::onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+	LPFINDREPLACE fr = reinterpret_cast<LPFINDREPLACE>(lParam);
+
+	if(fr->Flags & FR_DIALOGTERM){
+		findDlg = nullptr;
+	} else if(fr->Flags & FR_FINDNEXT){
+		//prepare the flags used to search
+		int flags = 0;
+		if(fr->Flags & FR_WHOLEWORD)
+			flags = FR_WHOLEWORD;
+		if(fr->Flags & FR_MATCHCASE)
+			flags |= FR_MATCHCASE;
+		if(fr->Flags & FR_DOWN)
+			flags |= FR_DOWN;
+
+		//initiate the structure, cpMax -1 means the whole document is searched
+		FINDTEXTEX ft;
+		ft.chrg.cpMax = -1;
+		ft.chrg.cpMin = curFindPos;
+		ft.lpstrText = fr->lpstrFindWhat;
+		
+		//if we find the end of the document, notify the user and return
+		int result = (int)SendMessage(EM_FINDTEXTEX, (WPARAM)flags, (LPARAM)&ft);
+		if(-1 == result){
+			if (curFindPos == 0)
+				MessageBox(CTSTRING(NO_RESULTS_FOUND), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
+			curFindPos = 0;
+			return 0;
+		}
+
+		//select the result and scroll it into view
+		curFindPos = result +1 ;
+		//SetFocus();
+		SetSel(result, result + _tcslen(ft.lpstrText));
+		ScrollCaret();
+	}
+
+	return 0;
+}
+
+void ChatCtrl::findText(tstring& aTxt) {
+	findDlg = new CFindReplaceDialog();
+	findDlg->Create(true, _T(""), NULL, FR_DOWN, m_hWnd);
+	//findDlg->SetActiveWindow();
+	findDlg->ShowWindow(SW_SHOW);
+	curFindPos = 0;
+}
+
+LRESULT ChatCtrl::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	if(wParam == VK_F3) {
+		findText();
+		return 0;
+	}
 	return 0;
 }
 

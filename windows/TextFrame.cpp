@@ -116,7 +116,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
 	
-	WinUtil::SetIcon(m_hWnd, _T("systemlog.ico"));
+	WinUtil::SetIcon(m_hWnd, _T("text.ico"));
 	
 	bHandled = FALSE;
 	return 1;

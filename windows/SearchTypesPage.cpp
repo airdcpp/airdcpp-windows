@@ -35,6 +35,7 @@ PropPage::TextItem SearchTypesPage::texts[] = {
 	{ IDC_CHANGE_MENU, ResourceManager::SETTINGS_CHANGE },
 	{ IDC_REMOVE_MENU, ResourceManager::REMOVE },
 	{ IDC_RESET_DEFAULTS, ResourceManager::RESET_TO_DEFAULTS },
+	{ IDC_SEARCHTYPES_NOTE, ResourceManager::SEARCH_TYPES_NOTE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
