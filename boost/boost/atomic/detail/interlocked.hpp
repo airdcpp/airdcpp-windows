@@ -66,8 +66,8 @@ public:
 	bool compare_exchange_strong(
 		T &expected,
 		T desired,
-		memory_order /*success_order*/,
-		memory_order /*failure_order*/) volatile
+		memory_order success_order,
+		memory_order failure_order) volatile
 	{
 		T prev=expected;
 		expected=(T)BOOST_INTERLOCKED_COMPARE_EXCHANGE((long *)(&i), (long)desired, (long)expected);
@@ -82,11 +82,11 @@ public:
 	{
 		return compare_exchange_strong(expected, desired, success_order, failure_order);
 	}
-	T exchange(T r, memory_order /*order*/=memory_order_seq_cst) volatile
+	T exchange(T r, memory_order order=memory_order_seq_cst) volatile
 	{
 		return (T)BOOST_INTERLOCKED_EXCHANGE((long *)&i, (long)r);
 	}
-	T fetch_add(T c, memory_order /*order*/=memory_order_seq_cst) volatile
+	T fetch_add(T c, memory_order order=memory_order_seq_cst) volatile
 	{
 		return (T)BOOST_INTERLOCKED_EXCHANGE_ADD((long *)&i, c);
 	}
