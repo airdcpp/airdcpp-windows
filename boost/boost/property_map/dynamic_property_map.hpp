@@ -171,13 +171,13 @@ public:
 
   virtual boost::any get(const any& key)
   {
-    return get_wrapper_xxx(property_map_, any_cast<key_type>(key));
+    return get_wrapper_xxx(property_map_, any_cast<typename boost::property_traits<PropertyMap>::key_type>(key));
   }
 
   virtual std::string get_string(const any& key)
   {
     std::ostringstream out;
-    out << get_wrapper_xxx(property_map_, any_cast<key_type>(key));
+    out << get_wrapper_xxx(property_map_, any_cast<typename boost::property_traits<PropertyMap>::key_type>(key));
     return out.str();
   }
 
@@ -227,7 +227,8 @@ public:
   property(const std::string& name, PropertyMap property_map_)
   {
     boost::shared_ptr<dynamic_property_map> pm(
-      boost::make_shared<detail::dynamic_property_map_adaptor<PropertyMap> >(property_map_));
+      boost::static_pointer_cast<dynamic_property_map>(
+        boost::make_shared<detail::dynamic_property_map_adaptor<PropertyMap> >(property_map_)));
     property_maps.insert(property_maps_type::value_type(name, pm));
 
     return *this;
