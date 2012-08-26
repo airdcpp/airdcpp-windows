@@ -172,8 +172,6 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlTree.SetBkColor(WinUtil::bgColor);
 	ctrlTree.SetTextColor(WinUtil::textColor);
 	
-
-	
 	WinUtil::splitTokens(columnIndexes, SETTING(DIRECTORYLISTINGFRAME_ORDER), COLUMN_LAST);
 	WinUtil::splitTokens(columnSizes, SETTING(DIRECTORYLISTINGFRAME_WIDTHS), COLUMN_LAST);
 	for(uint8_t j = 0; j < COLUMN_LAST; j++) 
@@ -223,7 +221,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlGetFullList.SetWindowText(CTSTRING(GET_FULL_LIST));
 	ctrlGetFullList.SetFont(WinUtil::systemFont);
 
-	ctrlFilter.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE, IDC_FILTER);
+	ctrlFilter.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE, IDC_FILTER);
 	ctrlFilterContainer.SubclassWindow(ctrlFilter.m_hWnd);
 	ctrlFilter.SetFont(WinUtil::font);
 	
@@ -1262,18 +1260,12 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		sr.left = w[STATUS_NEXT - 1];
 		sr.right = w[STATUS_NEXT];
 		ctrlFindNext.MoveWindow(sr);
+
+		sr.left = w[STATUS_FILTER - 1];
+		sr.right = w[STATUS_FILTER];
+		ctrlFilter.MoveWindow(sr);
+
 	}
-
-	CRect rc = rect;
-	rc.top += 2;
-	rc.bottom -=(56);
-	ctrlFilter.MoveWindow(rc);
-
-	//sr.left = w[STATUS_FILTER - 1];
-	//sr.right = w[STATUS_FILTER];
-	////sr.bottom = 0;
-	//sr.top = 0;
-	//ctrlFilter.MoveWindow(sr);
 
 	SetSplitterRect(&rect);
 }

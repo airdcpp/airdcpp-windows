@@ -241,7 +241,7 @@ public:
 	}
 	static HICON createIcon(int aDefault, int size = 0);
 
-	static string getIconString(int aDefault);
+	static tstring getIconName(int aDefault);
 	static HBITMAP getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, long defaultIcon = 0, int xSize = 0, int ySize = 0);
 	static COLORREF getDupeColor(DupeType aType);
 	static pair<COLORREF, COLORREF> getDupeColors(DupeType aType);
