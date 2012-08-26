@@ -259,7 +259,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(IDC_NOTEPAD);
 	m_CmdBar.m_arrCommand.Add(IDC_NET_STATS);
 	m_CmdBar.m_arrCommand.Add(IDC_CDMDEBUG_WINDOW);
-	m_CmdBar.m_arrCommand.Add(IDC_OPEN_SYSTEMLOG);
+	m_CmdBar.m_arrCommand.Add(IDC_SYSTEM_LOG);
 	m_CmdBar.m_arrCommand.Add(IDC_AUTOSEARCH);
 	m_CmdBar.m_arrCommand.Add(IDC_HASH_PROGRESS);
 	m_CmdBar.m_arrCommand.Add(ID_APP_ABOUT);

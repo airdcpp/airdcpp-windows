@@ -1636,6 +1636,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 
 	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
+
 	switch(cd->nmcd.dwDrawStage) {
 
 	case CDDS_PREPAINT:
@@ -1643,7 +1644,7 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 
 	case CDDS_ITEMPREPAINT: {
 
-		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList()) {
+		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList() && !(cd->nmcd.uItemState & CDIS_SELECTED)) {
 			DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(cd->nmcd.lItemlParam);
 			if(dir) {
 				auto c = WinUtil::getDupeColors(dir->getDupe());
