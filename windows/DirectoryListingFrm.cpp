@@ -53,7 +53,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 
 	HWND aHWND = NULL;
 	DirectoryListingFrame* frame = new DirectoryListingFrame(aList);
-	if((BOOLSETTING(POPUNDER_FILELIST) && !aList->getPartialList()) || (BOOLSETTING(POPUNDER_PARTIAL_LIST) && !aList->getPartialList())) {
+	if((BOOLSETTING(POPUNDER_FILELIST) && !aList->getPartialList()) || (BOOLSETTING(POPUNDER_PARTIAL_LIST) && aList->getPartialList())) {
 		aHWND = WinUtil::hiddenCreateEx(frame);
 	} else {
 		aHWND = frame->CreateEx(WinUtil::mdiClient);
@@ -552,7 +552,7 @@ LRESULT DirectoryListingFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*l
 	auto removeItems = [this, d, regNew] () -> void {
 		for(int i=0; i<ctrlList.GetItemCount();) {
 			const ItemInfo* ii = ctrlList.getItemData(i);
-			string s = ii->type == ItemInfo::FILE ? ii->file->getName() : ii->dir->getName();
+			string s = ii->type == 0 ? ii->file->getName() : ii->dir->getName();
 			if(!boost::regex_search(s.begin(), s.end(), regNew)) {
 				delete ctrlList.getItemData(i);
 				ctrlList.DeleteItem(i);
@@ -1593,7 +1593,9 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 
 		//dupe colors have higher priority than highlights.
 		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList() && ii != NULL) {
-			cd->clrText = ii->type == ItemInfo::FILE ? WinUtil::getDupeColor(ii->file->getDupe()) : WinUtil::getDupeColor(ii->dir->getDupe());
+			auto c = WinUtil::getDupeColors(ItemInfo::FILE ? ii->file->getDupe() : ii->dir->getDupe());
+			cd->clrText = c.first;
+			cd->clrTextBk = c.second;
 		}
 
 		//has dupe color = no matching
@@ -1644,7 +1646,9 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList()) {
 			DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(cd->nmcd.lItemlParam);
 			if(dir) {
-				cd->clrText = WinUtil::getDupeColor(dir->getDupe());
+				auto c = WinUtil::getDupeColors(dir->getDupe());
+				cd->clrText = c.first;
+				cd->clrTextBk = c.second;
 			}
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
