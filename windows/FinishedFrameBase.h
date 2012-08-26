@@ -144,7 +144,7 @@ public:
 		if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 			MoveWindow(rc, TRUE);
 
-		WinUtil::SetIcon(m_hWnd, Icon);
+		WinUtil::SetIcon(m_hWnd, iIcon);
 		bHandled = FALSE;
 		return TRUE;
 	}
@@ -504,7 +504,7 @@ protected:
 	bool closed;
 
 	bool upload;
-	tstring Icon;
+	int iIcon;
 	SettingsManager::IntSetting boldFinished;
 	SettingsManager::StrSetting columnWidth;
 	SettingsManager::StrSetting columnOrder;

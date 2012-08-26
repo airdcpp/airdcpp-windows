@@ -172,11 +172,11 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		showchaticon = false;
 	}
 
-	WinUtil::SetIcon(m_hWnd, _T("hub.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_HUB);
 
-	HubOpIcon = (HICON) ::LoadImage(NULL,  WinUtil::getIconPath(_T("hubop.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_SHARED);
-	HubRegIcon = (HICON) ::LoadImage(NULL,  WinUtil::getIconPath(_T("hubreg.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_SHARED);
-	HubIcon = (HICON) ::LoadImage(NULL, WinUtil::getIconPath(_T("hub.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_SHARED);
+	HubOpIcon = WinUtil::createIcon(IDI_HUBOP, 16);
+	HubRegIcon = WinUtil::createIcon(IDI_HUBREG, 16);
+	HubIcon =  WinUtil::createIcon(IDI_HUB, 16);
 
 	if(fhe != NULL){
 		//retrieve window position

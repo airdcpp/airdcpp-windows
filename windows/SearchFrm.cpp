@@ -296,7 +296,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	SettingsManager::getInstance()->addListener(this);
 	TimerManager::getInstance()->addListener(this);
-	WinUtil::SetIcon(m_hWnd, _T("search.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_SEARCH);
 
 	ctrlStatus.SetText(1, 0, SBT_OWNERDRAW);
 	

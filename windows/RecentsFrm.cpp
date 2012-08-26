@@ -79,7 +79,7 @@ LRESULT RecentHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	hubsMenu.AppendMenu(MF_STRING, IDC_REMOVE_ALL, CTSTRING(REMOVE_ALL));
 	hubsMenu.SetMenuDefaultItem(IDC_CONNECT);
 
-	WinUtil::SetIcon(m_hWnd, _T("recents.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_RECENTS);
 	bHandled = FALSE;
 	return TRUE;
 }

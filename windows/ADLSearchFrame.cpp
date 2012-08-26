@@ -134,7 +134,7 @@ LRESULT ADLSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	// Load all searches
 	LoadAll();
 
-	WinUtil::SetIcon(m_hWnd, _T("ADLSearch.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_ADLSEARCH);
 	bHandled = FALSE;
 	return TRUE;
 }

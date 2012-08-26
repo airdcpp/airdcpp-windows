@@ -61,7 +61,7 @@ LRESULT SpyFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	ShareManager::getInstance()->setHits(0);
 
-	WinUtil::SetIcon(m_hWnd, _T("searchspy.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_SEARCHSPY);
 
 
 	ClientManager::getInstance()->addListener(this);

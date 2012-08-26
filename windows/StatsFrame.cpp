@@ -35,7 +35,7 @@ LRESULT StatsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
 
-	WinUtil::SetIcon(m_hWnd, _T("netstats.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_NETSTATS);
 	bHandled = FALSE;
 	return 1;
 }

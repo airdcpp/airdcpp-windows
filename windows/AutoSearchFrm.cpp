@@ -105,7 +105,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	//fill the list
 	updateList();
 
-	WinUtil::SetIcon(m_hWnd, _T("autosearch.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_AUTOSEARCH);
 	loading = false;
 	bHandled = FALSE;
 	return TRUE;

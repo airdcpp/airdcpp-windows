@@ -82,7 +82,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	SettingsManager::getInstance()->addListener(this);
 
 	readLog();
-	WinUtil::SetIcon(m_hWnd, _T("User.ico"));
+	WinUtil::SetIcon(m_hWnd, IDR_PRIVATE);
 	bHandled = FALSE;
 	return 1;
 }

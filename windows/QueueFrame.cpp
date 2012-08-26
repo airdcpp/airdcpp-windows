@@ -128,7 +128,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlStatus.SetParts(6, statusSizes);
 	updateStatus();
 
-	WinUtil::SetIcon(m_hWnd, _T("queue.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_QUEUE);
 
 	bHandled = FALSE;
 	return 1;

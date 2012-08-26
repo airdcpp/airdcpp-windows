@@ -106,28 +106,29 @@ static const toolbarButton ToolbarButtons[] = {
 	{ID_FILE_CONNECT, 0, IDI_PUBLICHUBS, true, ResourceManager::MENU_PUBLIC_HUBS},
 	{ID_FILE_RECONNECT, 1, IDI_RECONNECT, false, ResourceManager::MENU_RECONNECT},
 	{IDC_FOLLOW, 2, IDI_FOLLOW, false, ResourceManager::MENU_FOLLOW_REDIRECT},
-	{IDC_FAVORITES, 3, IDI_FAVORITEHUBS, true, ResourceManager::MENU_FAVORITE_HUBS},
+	{IDC_FAVORITES, 3,IDI_FAVORITEHUBS, true, ResourceManager::MENU_FAVORITE_HUBS},
 	{IDC_FAVUSERS, 4, IDI_FAVORITE_USERS, true, ResourceManager::MENU_FAVORITE_USERS},
-	{IDC_RECENTS, 5, IDI_RECENTS,true, ResourceManager::MENU_FILE_RECENT_HUBS},
-	{IDC_QUEUE, 6, IDI_QUEUE,true, ResourceManager::MENU_DOWNLOAD_QUEUE},
+	{IDC_RECENTS, 5, IDI_RECENTS, true, ResourceManager::MENU_FILE_RECENT_HUBS},
+	{IDC_QUEUE, 6, IDI_QUEUE, true, ResourceManager::MENU_DOWNLOAD_QUEUE},
 	{IDC_FINISHED, 7, IDI_FINISHED_DL, true, ResourceManager::FINISHED_DOWNLOADS},
 	{IDC_UPLOAD_QUEUE, 8, IDI_UPLOAD_QUEUE, true, ResourceManager::UPLOAD_QUEUE},
 	{IDC_FINISHED_UL, 9, IDI_FINISHED_UL, true, ResourceManager::FINISHED_UPLOADS},
 	{ID_FILE_SEARCH, 10, IDI_SEARCH,false, ResourceManager::MENU_SEARCH},
 	{IDC_FILE_ADL_SEARCH, 11, IDI_ADLSEARCH, true, ResourceManager::MENU_ADL_SEARCH},
-	{IDC_SEARCH_SPY, 12, IDI_SEARCHSPY,true, ResourceManager::MENU_SEARCH_SPY},
-	{IDC_NET_STATS, 13, IDI_NETSTATS,true, ResourceManager::NETWORK_STATISTICS},
+	{IDC_SEARCH_SPY, 12, IDI_SEARCHSPY, true, ResourceManager::MENU_SEARCH_SPY},
+	{IDC_NET_STATS, 13, IDI_NETSTATS, true, ResourceManager::NETWORK_STATISTICS},
 	{IDC_OPEN_FILE_LIST, 14, IDI_OPEN_LIST, false, ResourceManager::MENU_OPEN_FILE_LIST},
 	{ID_FILE_SETTINGS, 15, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS},
-	{IDC_NOTEPAD, 16, IDI_NOTEPAD,true, ResourceManager::MENU_NOTEPAD},
+	{IDC_NOTEPAD, 16, IDI_NOTEPAD, true, ResourceManager::MENU_NOTEPAD},
 	{IDC_AWAY, 17, IDI_AWAY, true, ResourceManager::AWAY},
 	{IDC_SHUTDOWN, 18, IDI_SHUTDOWN, true, ResourceManager::SHUTDOWN},
 	{IDC_OPEN_DOWNLOADS, 19, IDI_OPEN_DOWNLOADS,false, ResourceManager::MENU_OPEN_DOWNLOADS_DIR},
 	{IDC_REFRESH_FILE_LIST, 20, IDI_REFRESH,false, ResourceManager::REFRESH_FILE_LIST},
 	{IDC_SYSTEM_LOG, 21, IDI_LOGS, true, ResourceManager::SYSTEM_LOG},
 	{IDC_SCAN_MISSING, 22, IDI_SCAN,false, ResourceManager::MENU_SCAN_MISSING},
-	{IDC_AUTOSEARCH, 23, IDI_AUTOSEARCH, false, ResourceManager::AUTOSEARCH},
+	{IDC_AUTOSEARCH, 23,  IDI_AUTOSEARCH, false, ResourceManager::AUTOSEARCH},
 };
+
 
 struct winamptoolbarButton {
 	int id, image;
@@ -211,13 +212,12 @@ public:
 	static void preInit(); // init required for the wizard
 	static void init(HWND hWnd);
 	static void uninit();
-	static void SetIcon(HWND hWnd, long icon, bool big = false);
 	static void initColors();
 	static void setFonts();
 	static void reLoadImages(); // User Icon Begin / User Icon End
 	static void FlashWindow();
 	static void searchAny(const tstring& aSearch);
-	static void SetIcon(HWND hWnd, tstring file, bool big = false);
+	static void SetIcon(HWND hWnd, int aDefault, bool big = false);
 	static tstring getTitle(const tstring& searchTerm);
 	static void SearchSite(WebShortcut* ws, tstring strSearchString);
 	static void AppendSearchMenu(OMenu& menu, int x = 0);
@@ -236,13 +236,12 @@ public:
 
 	static bool getVersionInfo(OSVERSIONINFOEX& ver);
 
-	static HICON createIcon(int icon) {
+	static HICON loadDefaultIcon(int icon) {
 		return (HICON)::LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(icon));
 	}
-	static HICON createIcon(const tstring& icon, int size) {
-		return (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, 0, 0, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
-	}
+	static HICON createIcon(int aDefault, int size = 0);
 
+	static string getIconString(int aDefault);
 	static HBITMAP getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, long defaultIcon = 0, int xSize = 0, int ySize = 0);
 	static COLORREF getDupeColor(DupeType aType);
 	static pair<COLORREF, COLORREF> getDupeColors(DupeType aType);
@@ -449,6 +448,7 @@ private:
 	static int CALLBACK browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LPARAM pData);
 
 };
+
 
 #endif // !defined(WIN_UTIL_H)
 

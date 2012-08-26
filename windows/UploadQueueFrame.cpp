@@ -99,7 +99,7 @@ LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	LoadAll();
 	
 	ctrlQueued.Expand(rootItem);
-	WinUtil::SetIcon(m_hWnd,  _T("uqueue.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_UPLOAD_QUEUE);
 	bHandled = FALSE;
 	return TRUE;
 }

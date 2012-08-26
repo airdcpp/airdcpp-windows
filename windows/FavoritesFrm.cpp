@@ -127,7 +127,7 @@ LRESULT FavoriteHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 		MoveWindow(rc, TRUE);
 
 	nosave = false;
-	WinUtil::SetIcon(m_hWnd,  _T("favorites.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_FAVORITEHUBS);
 	bHandled = FALSE;
 	return TRUE;
 }

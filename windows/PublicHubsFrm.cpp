@@ -154,7 +154,7 @@ LRESULT PublicHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	hubsMenu.AppendMenu(MF_STRING, IDC_COPY_HUB, CTSTRING(COPY_HUB));
 	hubsMenu.SetMenuDefaultItem(IDC_CONNECT);
 
-	WinUtil::SetIcon(m_hWnd, _T("PublicHubs.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_PUBLICHUBS);
 
 	bHandled = FALSE;
 	return TRUE;

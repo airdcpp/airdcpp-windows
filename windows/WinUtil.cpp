@@ -413,7 +413,7 @@ void WinUtil::init(HWND hWnd) {
 	mainMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)help, CTSTRING(MENU_HELP));
 
 	m_IconPath = Text::toT(SETTING(ICON_PATH));
-	//ResourceLoader::LoadImageList(IDB_FOLDERS, fileImages, 16, 16);
+	//TODO: icons!
 	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("folders.bmp")))))
 		fileImages.CreateFromImage(WinUtil::getIconPath(_T("folders.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 	else
@@ -1420,30 +1420,11 @@ bool WinUtil::parseDBLClick(const tstring& str, HWND hWnd/*NULL*/) {
 	}
 }
 
-void WinUtil::SetIcon(HWND hWnd, long icon, bool big) {
-	
-
-	HICON hIconSm = (HICON)LoadImage((HINSTANCE)::GetWindowLong(hWnd, GWLP_HINSTANCE), MAKEINTRESOURCE(icon), IMAGE_ICON, 16, 16, LR_DEFAULTSIZE);
-	::SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIconSm);
-
-	if(big){
-		HICON hIcon   = (HICON)LoadImage((HINSTANCE)::GetWindowLong(hWnd, GWLP_HINSTANCE), MAKEINTRESOURCE(icon), IMAGE_ICON, 32, 32, LR_DEFAULTSIZE);
-		::SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
-	}
-	
+void WinUtil::SetIcon(HWND hWnd, int aDefault, bool big) {
+	int size = big ? 32 : 16;
+	HICON hIcon = createIcon(aDefault, size);
+	::SendMessage(hWnd, WM_SETICON, big ? ICON_BIG : ICON_SMALL, (LPARAM)hIcon);
 }
-void WinUtil::SetIcon(HWND hWnd, tstring file, bool big) {
-	tstring path = getIconPath(file);
-	HICON hIconSm = (HICON)::LoadImage(NULL, path.c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_SHARED);
-	::SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hIconSm);
-
-	if(big){
-		HICON hIcon   = (HICON)::LoadImage(NULL, path.c_str(), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_SHARED);
-		::SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)hIcon);
-	}
-	
-}
-
 
 void WinUtil::parseMagnetUri(const tstring& aUrl, bool /*aOverride*/, const UserPtr& aUser/*UserPtr()*/, const string& hubHint/*Util::emptyString*/) {
 	if (strnicmp(aUrl.c_str(), _T("magnet:?"), 8) == 0) {
@@ -2318,54 +2299,131 @@ void WinUtil::SearchSite(WebShortcut* ws, tstring searchTerm) {
 		WinUtil::openLink((ws->url) + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
 	else
 		WinUtil::openLink(ws->url);
-	
-
 }
+
+HICON WinUtil::createIcon(int aDefault, int size/* = 0*/) {
+	tstring icon = getIconPath(Text::toT(getIconString(aDefault)));
+	HICON iHandle = icon.empty() ? NULL : (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, size, size, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
+	if(!iHandle) 
+		return loadDefaultIcon(aDefault);
+	return iHandle;
+}
+
+string WinUtil::getIconString(int aDefault) {
+	switch(aDefault) {
+		case IDI_ADLSEARCH :	return "ToolbarImages\\ADLSearch.ico";
+		case IDI_AWAY      :	return "ToolbarImages\\Clock.ico";
+		case IDI_FAVORITEHUBS:  return "ToolbarImages\\Favorites.ico";
+		case IDI_FINISHED_DL:	return "ToolbarImages\\FinishedDL.ico";
+		case IDI_FINISHED_UL:   return "ToolbarImages\\FinishedUL.ico";
+		case IDI_PUBLICHUBS:	return "ToolbarImages\\PublicHubs.ico";
+		case IDI_QUEUE:			return "ToolbarImages\\Queue.ico";
+		case IDI_RECENTS:		return "ToolbarImages\\Recents.ico";
+		case IDI_RECONNECT:		return "ToolbarImages\\Reconnect.ico";
+		case IDI_REFRESH:		return "ToolbarImages\\Refresh.ico";
+		case IDI_SEARCH:		return "ToolbarImages\\Search.ico";
+		case IDI_SEARCHSPY:		return "ToolbarImages\\SearchSpy.ico";
+		case IDI_SETTINGS:		return "ToolbarImages\\Settings.ico";
+		case IDI_SHUTDOWN:		return "ToolbarImages\\Exit.ico";
+		case IDI_NETSTATS:		return "ToolbarImages\\NetStats.ico";
+		case IDI_FOLLOW:		return "ToolbarImages\\Follow.ico";
+		case IDI_FAVORITE_USERS:return "ToolbarImages\\FavoriteUser.ico";
+		case IDI_OPEN_LIST:		return "ToolbarImages\\OpenFileList.ico";
+		case IDI_NOTEPAD:		return "ToolbarImages\\Notepad.ico";
+		case IDI_OPEN_DOWNLOADS:return "ToolbarImages\\OpenDLDir.ico";
+		case IDI_LOGS :			return "ToolbarImages\\SystemLog.ico";
+		case IDI_UPLOAD_QUEUE:	return "ToolbarImages\\uQueue.ico";
+		case IDI_SCAN :			return "ToolbarImages\\ScanMissing.ico";
+		case IDI_AUTOSEARCH:	return "ToolbarImages\\AutoSearch.ico";
+		case IDI_TEXT:			return "text.ico";
+		case IDI_IERROR:		return "error.ico";
+		case IDI_IWARNING:		return "warning.ico";
+		case IDI_INFO:			return "info.ico";
+		case IDI_CDM:			return "Cdm.ico";
+		case IDI_OWNLIST:		return "ownlist.ico";
+		case IDI_MATCHLIST:		return "matchlists.ico";
+		case IDI_QCONNECT:		return "QConnect.ico";
+		case IDI_GET_TTH:		return "getTTH.ico";
+		case IDI_INDEXING:		return "Indexing.ico";
+		case IDI_WINDOW_OPTIONS:return "WindowOptions.ico";
+		case IDI_WIZARD:		return "Wizard.ico";
+		case IDI_UPLOAD:		return "Upload.ico";
+		case IDI_DOWNLOAD:		return "Download.ico";
+		case IDI_ONLINE:		return "Online.ico";
+		case IDI_OFFLINE:		return "Offline.ico";
+		case IDI_HUB:			return "Hub.ico";
+		case IDI_HUBREG	:		return "HubReg.ico";
+		case IDI_HUBOP:			return "HubOp.ico";
+		case IDI_ANY:			return "searchTypes\\Any.ico";
+		case IDI_AUDIO:			return "searchTypes\\Audio.ico";
+		case IDI_COMPRESSED:	return "searchTypes\\Compressed.ico";
+		case IDI_DOCUMENT:		return "searchTypes\\Document.ico";
+		case IDI_EXEC:			return "searchTypes\\Exec.ico";
+		case IDI_PICTURE:		return "searchTypes\\Pic.ico";
+		case IDI_VIDEO:			return "searchTypes\\Video.ico";
+		case IDI_DIRECTORY:		return "searchTypes\\Directory.ico";
+		case IDI_TTH:			return "searchTypes\\tth.ico";
+		case IDI_MPSTART:		return "MediaToolbar\\start.ico";
+		case IDI_MPSPAM:		return "MediaToolbar\\spam.ico";
+		case IDI_MPBACK:		return "MediaToolbar\\back.ico";
+		case IDI_MPPLAY:		return "MediaToolbar\\play.ico";
+		case IDI_MPPAUSE:		return "MediaToolbar\\pause.ico";
+		case IDI_MPNEXT:		return "MediaToolbar\\next.ico";
+		case IDI_MPSTOP:		return "MediaToolbar\\stop.ico";
+		case IDI_MPVOLUMEUP:	return "MediaToolbar\\up.ico";
+		case IDI_MPVOLUME50:	return "MediaToolbar\\volume50.ico";
+		case IDI_MPVOLUMEDOWN:	return "MediaToolbar\\down.ico";
+		case IDR_MAINFRAME:		return "AirDCPlusPlus.ico";
+		case IDR_PRIVATE:       return "User.ico";
+		default: return "";
+	}
+}
+
 void WinUtil::loadSettingsTreeIcons() {
 	settingsTreeImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 30);
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_GENERAL));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_CONNECTIONS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_LIMITS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_DOWNLOADS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_LOCATIONS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_PREVIEW));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_PRIORITIES));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_QUEUE));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SHARING));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SHAREOPTIONS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_APPEARANCE));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_FONTS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_PROGRESS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_USERLIST));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SOUNDS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_TOOLBAR));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_WINDOWS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_TABS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_POPUPS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_HIGHLIGHTS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_AIRAPPEARANCE));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_ADVANCED));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_EXPERTS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_LOGS));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_UC));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_CERTIFICATES));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_MISC));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_IGNORE));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SEARCH));
-	settingsTreeImages.AddIcon(WinUtil::createIcon(IDI_SEARCHTYPES));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_GENERAL));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_CONNECTIONS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LIMITS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_DOWNLOADS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LOCATIONS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_PREVIEW));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_PRIORITIES));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_QUEUE));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SHARING));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SHAREOPTIONS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_APPEARANCE));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_FONTS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_PROGRESS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_USERLIST));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SOUNDS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_TOOLBAR));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_WINDOWS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_TABS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_POPUPS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_HIGHLIGHTS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_AIRAPPEARANCE));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_ADVANCED));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_EXPERTS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LOGS));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_UC));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_CERTIFICATES));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_MISC));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_IGNORE));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SEARCH));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SEARCHTYPES));
 }
 
 void WinUtil::loadSearchTypeIcons() {
 	searchImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 15);
-	searchImages.AddIcon(WinUtil::createIcon(IDI_ANY));
-	searchImages.AddIcon(WinUtil::createIcon(IDI_AUDIO));
-	searchImages.AddIcon(WinUtil::createIcon(IDI_COMPRESSED));
-	searchImages.AddIcon(WinUtil::createIcon(IDI_DOCUMENT));
-	searchImages.AddIcon(WinUtil::createIcon(IDI_EXEC));
-	searchImages.AddIcon(WinUtil::createIcon(IDI_PICTURE));
-	searchImages.AddIcon(WinUtil::createIcon(IDI_VIDEO));
-	searchImages.AddIcon(WinUtil::createIcon(IDI_DIRECTORY));
-	searchImages.AddIcon(WinUtil::createIcon(IDI_TTH));
+	searchImages.AddIcon(createIcon(IDI_ANY));
+	searchImages.AddIcon(createIcon(IDI_AUDIO));
+	searchImages.AddIcon(createIcon(IDI_COMPRESSED));
+	searchImages.AddIcon(createIcon(IDI_DOCUMENT));
+	searchImages.AddIcon(createIcon(IDI_EXEC));
+	searchImages.AddIcon(createIcon(IDI_PICTURE));
+	searchImages.AddIcon(createIcon(IDI_VIDEO));
+	searchImages.AddIcon(createIcon(IDI_DIRECTORY));
+	searchImages.AddIcon(createIcon(IDI_TTH));
 }
 
 /* Only returns the text color */

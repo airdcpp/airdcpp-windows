@@ -46,7 +46,7 @@ LRESULT NotepadFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
 
-	WinUtil::SetIcon(m_hWnd, _T("notepad.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_NOTEPAD);
 	bHandled = FALSE;
 	return 1;
 }

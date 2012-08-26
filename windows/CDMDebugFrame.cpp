@@ -74,7 +74,7 @@ LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	m_hWndClient = ctrlPad;
 	m_hMenu = WinUtil::mainMenu;
 
-	WinUtil::SetIcon(m_hWnd, _T("CDM.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_CDM);
 	start();
 	DebugManager::getInstance()->addListener(this);
 		

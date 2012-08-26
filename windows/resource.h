@@ -82,7 +82,6 @@
 #define IDR_PRIVATE                     218
 #define IDR_DIRECTORY                   219
 #define IDR_NOTEPAD                     220
-#define IDB_TOOLBAR20                   221
 #define IDR_QUEUE                       221
 #define IDR_SPY                         222
 #define IDD_FAVORITEHUB                 223
@@ -93,7 +92,6 @@
 #define IDR_FINISHED_UL                 232
 #define IDR_ADLSEARCH                   233
 #define IDD_ADLS_PROPERTIES             234
-#define IDB_TOOLBAR20_HOT               235
 #define IDD_UCPAGE                      236
 #define IDR_NET_STATS                   237
 #define IDR_RECENTS                     238
@@ -241,7 +239,20 @@
 #define IDI_DIRECTORY                   421
 #define IDI_TTH                         422
 #define IDI_SEARCHTYPES                 423
-#define IDI_TEXT                        424
+#define IDI_HUB			                424
+#define IDI_MPSTART						425
+#define IDI_MPSPAM						426
+#define IDI_MPBACK						427
+#define IDI_MPPLAY						428
+#define IDI_MPPAUSE						429
+#define IDI_MPNEXT						430
+#define IDI_MPSTOP						431
+#define IDI_MPVOLUMEUP					432
+#define IDI_MPVOLUME50					433
+#define IDI_MPVOLUMEDOWN				434
+#define IDI_TEXT                        435
+#define IDI_HUBOP			            436
+#define IDI_HUBREG			            437
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479

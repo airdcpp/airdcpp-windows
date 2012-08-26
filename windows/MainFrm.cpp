@@ -400,7 +400,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		//HICON appIcon = (HICON)::LoadImage(NULL, WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str(), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
 		trayIcon = (HICON)::LoadImage(NULL, WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
 		
-		WinUtil::SetIcon(m_hWnd, _T("AirDCPlusPlus.ico"), true);
+		WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
 
 		//DestroyIcon((HICON)SetClassLongPtr(m_hWnd, GCLP_HICON, (LONG_PTR)appIcon));
 
@@ -478,6 +478,7 @@ LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 }
 
 void MainFrame::loadCmdBarImageList(CImageList& images){
+	//use default ones totally here too?
 	images.AddIcon(WinUtil::createIcon(IDI_PUBLICHUBS));
 	images.AddIcon(WinUtil::createIcon(IDI_RECONNECT));
 	images.AddIcon(WinUtil::createIcon(IDI_FOLLOW));
@@ -557,16 +558,16 @@ HWND MainFrame::createWinampToolbar() {
 		} else /*if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("MediaToolbar\\")))))*/{
 			int size = SETTING(WTB_IMAGE_SIZE);
 			winampImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 11);
-			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\start.ico")), size));
-			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\spam.ico")), size));
-			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\back.ico")), size));
-			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\play.ico")), size));
-			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\pause.ico")), size));
-			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\next.ico")), size));
-			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\stop.ico")), size));
-			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\up.ico")), size));
-			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\volume50.ico")), size));
-			winampImages.AddIcon(WinUtil::createIcon(WinUtil::getIconPath(_T("MediaToolbar\\down.ico")), size));
+			winampImages.AddIcon(WinUtil::createIcon(IDI_MPSTART));
+			winampImages.AddIcon(WinUtil::createIcon(IDI_MPSPAM));
+			winampImages.AddIcon(WinUtil::createIcon(IDI_MPBACK));
+			winampImages.AddIcon(WinUtil::createIcon(IDI_MPPLAY));
+			winampImages.AddIcon(WinUtil::createIcon(IDI_MPPAUSE));
+			winampImages.AddIcon(WinUtil::createIcon(IDI_MPNEXT));
+			winampImages.AddIcon(WinUtil::createIcon(IDI_MPSTOP));
+			winampImages.AddIcon(WinUtil::createIcon(IDI_MPVOLUMEUP));
+			winampImages.AddIcon(WinUtil::createIcon(IDI_MPVOLUME50));
+			winampImages.AddIcon(WinUtil::createIcon(IDI_MPVOLUMEDOWN));
 		}
 		
 		ctrlSmallToolbar.SetImageList(winampImages);

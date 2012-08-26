@@ -74,7 +74,7 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		MoveWindow(rc, TRUE);
 
 	SettingsManager::getInstance()->addListener(this);
-	WinUtil::SetIcon(m_hWnd, _T("systemlog.ico"));
+	WinUtil::SetIcon(m_hWnd, IDI_LOGS);
 	bHandled = FALSE;
 	return 1;
 }

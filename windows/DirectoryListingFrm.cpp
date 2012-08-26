@@ -249,7 +249,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 		MoveWindow(rc, TRUE);
 	
 	setWindowTitle();
-	WinUtil::SetIcon(m_hWnd, _T("Directory.ico"));
+	WinUtil::SetIcon(m_hWnd, dl->getIsOwnList() ? IDI_OWNLIST : IDI_OPEN_LIST);
 	bHandled = FALSE;
 	return 1;
 }

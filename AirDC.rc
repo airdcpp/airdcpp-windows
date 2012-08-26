@@ -26,7 +26,6 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
 IDB_SPLASH              BITMAP                  "res\\bitmap1.bmp"
 IDB_STATE               BITMAP                  "res\\state.bmp"
-IDB_SEARCH_TYPES        BITMAP                  "res\\search_icons.bmp"
 IDB_SPEEDS              BITMAP                  "res\\speeds.bmp"
 IDB_FAVSTATES           BITMAP                  "res\\fav.bmp"
 IDB_FLAGS               BITMAP                  "res\\flags.bmp"
@@ -958,8 +957,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 IDB_FOLDERS             BITMAP                  "res\\folders.bmp"
 IDB_ARROWS              BITMAP                  "res\\arrows.bmp"
 IDB_USERS               BITMAP                  "res\\users.bmp"
-IDB_TOOLBAR20           BITMAP                  "res\\toolbar20.bmp"
-IDB_TOOLBAR20_HOT       BITMAP                  "res\\toolbar20-highlight.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2141,6 +2138,10 @@ IDI_UPLOAD              ICON                    "res\\Upload.ico"
 IDI_DOWNLOAD            ICON                    "res\\Download.ico"
 IDI_ONLINE              ICON                    "res\\Online.ico"
 IDI_OFFLINE             ICON                    "res\\Offline.ico"
+IDI_HUB					ICON                    "res\\Hub.ico"
+IDI_HUBREG				ICON                    "res\\HubReg.ico"
+IDI_HUBOP				ICON                    "res\\HubOp.ico"
+//settings Tree, no loading from icons folder.
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"
@@ -2168,6 +2169,7 @@ IDI_MISC                ICON                    "res\\SettingsTree\\Misc.ico"
 IDI_SHAREOPTIONS        ICON                    "res\\SettingsTree\\ShareOptions.ico"
 IDI_SEARCHTYPES         ICON                    "res\\SettingsTree\\SearchTypes.ico"
 IDI_IGNORE              ICON                    "res\\SettingsTree\\Ignore.ico"
+
 IDI_ANY                 ICON                    "res\\searchTypes\\Any.ico"
 IDI_AUDIO               ICON                    "res\\searchTypes\\Audio.ico"
 IDI_COMPRESSED          ICON                    "res\\searchTypes\\Compressed.ico"
@@ -2177,6 +2179,17 @@ IDI_PICTURE             ICON                    "res\\searchTypes\\Pic.ico"
 IDI_VIDEO               ICON                    "res\\searchTypes\\Video.ico"
 IDI_DIRECTORY           ICON                    "res\\searchTypes\\Directory.ico"
 IDI_TTH                 ICON                    "res\\searchTypes\\tth.ico"
+IDI_MPSTART             ICON                    "res\\MediaToolbar\\start.ico"
+IDI_MPSPAM              ICON                    "res\\MediaToolbar\\spam.ico"
+IDI_MPBACK              ICON                    "res\\MediaToolbar\\back.ico"
+IDI_MPPLAY              ICON                    "res\\MediaToolbar\\play.ico"
+IDI_MPPAUSE             ICON                    "res\\MediaToolbar\\pause.ico"
+IDI_MPNEXT              ICON                    "res\\MediaToolbar\\next.ico"
+IDI_MPSTOP              ICON                    "res\\MediaToolbar\\stop.ico"
+IDI_MPVOLUMEUP          ICON                    "res\\MediaToolbar\\up.ico"
+IDI_MPVOLUME50          ICON                    "res\\MediaToolbar\\volume50.ico"
+IDI_MPVOLUMEDOWN        ICON                    "res\\MediaToolbar\\down.ico"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

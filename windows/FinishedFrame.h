@@ -34,7 +34,7 @@ public:
 		columnOrder = SettingsManager::FINISHED_ORDER;
 		columnWidth = SettingsManager::FINISHED_WIDTHS;
 		columnVisible = SettingsManager::FINISHED_VISIBLE;
-		Icon = _T("FinishedDL.ico");
+		iIcon = IDI_FINISHED_DL;
 	}
 	~FinishedFrame() { }
 

@@ -34,7 +34,7 @@ public:
 		columnOrder = SettingsManager::FINISHED_UL_ORDER;
 		columnWidth = SettingsManager::FINISHED_UL_WIDTHS;
 		columnVisible = SettingsManager::FINISHED_UL_VISIBLE;
-		Icon = _T("FinishedUL.ico");
+		iIcon = IDI_FINISHED_UL;
 	}
 
 	~FinishedULFrame() { }
