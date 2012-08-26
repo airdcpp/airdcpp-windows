@@ -2587,6 +2587,91 @@ void HubFrame::addMagnet(const tstring& path) {
 	}
 }
 
+LRESULT HubFrame::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	tstring cmd, param, message, status;
+	bool thirdPerson;
+	if(SETTING(MEDIA_PLAYER) == 0) {
+		cmd = _T("/winamp");
+	} else if(SETTING(MEDIA_PLAYER) == 1) {
+		cmd = _T("/itunes");
+	} else if(SETTING(MEDIA_PLAYER) == 2) {
+		cmd = _T("/mpc");
+	} else if(SETTING(MEDIA_PLAYER) == 3) {
+		cmd = _T("/wmp");
+	} else if(SETTING(MEDIA_PLAYER) == 4) {
+		cmd = _T("/spotify");
+	} else {
+		addStatus(CTSTRING(NO_MEDIA_SPAM));
+		return 0;
+	}
+	if(WinUtil::checkCommand(cmd, param, message, status, thirdPerson)){
+		if(!message.empty()) {
+			client->hubMessage(Text::fromT(message));
+		}
+		if(!status.empty()) {
+			addStatus(status);
+		}
+	}
+	return 0;
+}
+
+LRESULT HubFrame::onEmoticons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
+	if (hWndCtl != ctrlEmoticons.m_hWnd) {
+		bHandled = false;
+		return 0;
+	}
+
+	EmoticonsDlg dlg;
+	ctrlEmoticons.GetWindowRect(dlg.pos);
+	dlg.DoModal(m_hWnd);
+	if (!dlg.result.empty()) {
+		TCHAR* message = new TCHAR[ctrlMessage.GetWindowTextLength()+1];
+		ctrlMessage.GetWindowText(message, ctrlMessage.GetWindowTextLength()+1);
+		tstring s(message, ctrlMessage.GetWindowTextLength());
+		delete[] message;
+		ctrlMessage.SetWindowText((s + dlg.result).c_str());
+		ctrlMessage.SetFocus();
+		ctrlMessage.SetSel( ctrlMessage.GetWindowTextLength(), ctrlMessage.GetWindowTextLength() );
+	}
+	return 0;
+}
+
+void HubFrame::setFonts() {
+	/* 
+	Pretty brave attemp to switch font on an open window, hope it dont cause any trouble.
+	Reset the fonts. This will reset the charformats in the window too :( 
+		they will apply again with new text..
+		*/
+	ctrlClient.SetFont(WinUtil::font, FALSE);
+	ctrlMessage.SetFont(WinUtil::font, FALSE);
+	ctrlFilter.SetFont(WinUtil::font, FALSE);
+	ctrlFilterSel.SetFont(WinUtil::font, FALSE);
+		
+	addStatus(_T("New Font & TextStyles Applied, TextMatching colors will apply after this line"), WinUtil::m_ChatTextSystem);
+}
+
+LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
+	int i=-1;
+	if(client->isConnected()) {
+		while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
+			ignoreList.insert(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+			IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+		}
+	}
+	return 0;
+}
+
+LRESULT HubFrame::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
+	int i=-1;
+	if(client->isConnected()) {
+		while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
+			ignoreList.erase(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+				IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+		}
+	}
+	return 0;
+}
+
 /**
  * @file
  * $Id: HubFrame.cpp 500 2010-06-25 22:08:18Z bigmuscle $

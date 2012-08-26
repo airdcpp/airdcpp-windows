@@ -8,7 +8,6 @@
 
 #define TCP_COMMAND_MESSAGE_MAP 14
 #define UDP_COMMAND_MESSAGE_MAP 15
-#define DETECTION_MESSAGE_MAP 16
 #define HUB_COMMAND_MESSAGE_MAP 17
 #define DEBUG_FILTER_MESSAGE_MAP 18
 #define DEBUG_FILTER_TEXT_MESSAGE_MAP 19
@@ -40,8 +39,6 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		CHAIN_MSG_MAP(baseClass)
-	ALT_MSG_MAP(DETECTION_MESSAGE_MAP)
-		MESSAGE_HANDLER(BM_SETCHECK, onSetCheckDetection)
 	ALT_MSG_MAP(TCP_COMMAND_MESSAGE_MAP)
 		MESSAGE_HANDLER(BM_SETCHECK, onSetTCPCheckCommand)
 	ALT_MSG_MAP(UDP_COMMAND_MESSAGE_MAP)
@@ -62,7 +59,6 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onSetCheckDetection(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSetTCPCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSetUDPCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSetCheckHubCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
@@ -83,14 +79,13 @@ private:
 
 	CEdit ctrlPad, ctrlFilterText;
 	CStatusBarCtrl ctrlStatus;
-	CButton ctrlClear, ctrlTCPCommands, ctrlUDPCommands, ctrlHubCommands, ctrlDetection, ctrlFilterIp;
-	CContainedWindow clearContainer, statusContainer, detectionContainer, commandTCPContainer, commandUDPContainer, HubCommandContainer, cFilterContainer, eFilterContainer;
+	CButton ctrlClear, ctrlTCPCommands, ctrlUDPCommands, ctrlHubCommands, ctrlFilterIp;
+	CContainedWindow clearContainer, statusContainer, commandTCPContainer, commandUDPContainer, HubCommandContainer, cFilterContainer, eFilterContainer;
 
-	bool showTCPCommands, showUDPCommands, showHubCommands, showDetection, bFilterIp;
+	bool showTCPCommands, showUDPCommands, showHubCommands, bFilterIp;
 	tstring sFilterIp;
 	bool closed;
 	
-	void on(DebugManagerListener::DebugDetection, const string& aLine) noexcept;
 	void on(DebugManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& ip) noexcept;
 };
 

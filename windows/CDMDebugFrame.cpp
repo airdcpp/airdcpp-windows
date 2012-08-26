@@ -8,8 +8,7 @@
 
 #define MAX_TEXT_LEN 131072
 
-CDMDebugFrame::CDMDebugFrame() : stop(false), closed(false), showTCPCommands(true), showUDPCommands(true), showHubCommands(false), showDetection(false), bFilterIp(false),
-		detectionContainer(WC_BUTTON, this, DETECTION_MESSAGE_MAP),
+CDMDebugFrame::CDMDebugFrame() : stop(false), closed(false), showTCPCommands(true), showUDPCommands(true), showHubCommands(false), bFilterIp(false),
 		HubCommandContainer(WC_BUTTON, this, HUB_COMMAND_MESSAGE_MAP),
 		commandTCPContainer(WC_BUTTON, this, TCP_COMMAND_MESSAGE_MAP),
 		commandUDPContainer(WC_BUTTON, this, UDP_COMMAND_MESSAGE_MAP),
@@ -52,12 +51,6 @@ LRESULT CDMDebugFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlUDPCommands.SetFont(WinUtil::systemFont);
 	ctrlUDPCommands.SetCheck(showUDPCommands ? BST_CHECKED : BST_UNCHECKED);
 	commandUDPContainer.SubclassWindow(ctrlUDPCommands.m_hWnd);
-
-	ctrlDetection.Create(ctrlStatus.m_hWnd, rcDefault, _T("Detection"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_STATICEDGE);
-	ctrlDetection.SetButtonStyle(BS_AUTOCHECKBOX, false);
-	ctrlDetection.SetFont(WinUtil::systemFont);
-	ctrlDetection.SetCheck(showDetection ? BST_CHECKED : BST_UNCHECKED);
-	detectionContainer.SubclassWindow(ctrlDetection.m_hWnd);
 
 	ctrlFilterIp.Create(ctrlStatus.m_hWnd, rcDefault, _T("Filter"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_STATICEDGE);
 	ctrlFilterIp.SetButtonStyle(BS_AUTOCHECKBOX, false);
@@ -107,7 +100,7 @@ void CDMDebugFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 	
 	if(ctrlStatus.IsWindow()) {
 		CRect sr;
-		int w[8];
+		int w[7];
 		ctrlStatus.GetClientRect(sr);
 
 		//int clearButtonWidth = 50;
@@ -119,7 +112,6 @@ void CDMDebugFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 		w[4] = w[3] + tmp;
 		w[5] = w[4] + tmp;
 		w[6] = w[5] + tmp;
-		w[7] = w[6] + tmp;
 		
 		ctrlStatus.SetParts(8, w);
 
@@ -136,11 +128,8 @@ void CDMDebugFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 		ctrlHubCommands.MoveWindow(sr);
 		ctrlStatus.GetRect(4, sr);
 
-		ctrlDetection.MoveWindow(sr);
-		ctrlStatus.GetRect(5, sr);
-
 		ctrlFilterIp.MoveWindow(sr);
-		ctrlStatus.GetRect(6, sr);
+		ctrlStatus.GetRect(5, sr);
 
 		ctrlFilterText.MoveWindow(sr);
 		tstring msg;
@@ -148,7 +137,7 @@ void CDMDebugFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 			msg = Text::toT("Watching IP: ") + sFilterIp;
 		else
 			msg = _T("Watching all IPs");
-		ctrlStatus.SetText(7, msg.c_str());
+		ctrlStatus.SetText(6, msg.c_str());
 	}
 	
 	// resize client window
@@ -219,13 +208,7 @@ void CDMDebugFrame::addCmd(const string& cmd) {
 	}
 	s.signal();
 }
-	
-void CDMDebugFrame::on(DebugManagerListener::DebugDetection, const string& aLine) noexcept {
-	if(!showDetection)
-		return;
 
-	addCmd(aLine);
-}
 void CDMDebugFrame::on(DebugManagerListener::DebugCommand, const string& aLine, uint8_t aType, uint8_t aDirection, const string& ip) noexcept {
 	if(bFilterIp && Text::toT(ip).find(sFilterIp) == tstring::npos) {
 		return;
@@ -277,11 +260,6 @@ LRESULT CDMDebugFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 };
 LRESULT CDMDebugFrame::OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ctrlPad.SetFocus();
-	return 0;
-}
-LRESULT CDMDebugFrame::onSetCheckDetection(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	showDetection = wParam == BST_CHECKED;
-	bHandled = FALSE;
 	return 0;
 }
 LRESULT CDMDebugFrame::onSetTCPCheckCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {

@@ -41,6 +41,7 @@
 #include "../client/ShareManager.h"
 #include "../client/TargetUtil.h"
 
+#define FILTER_MESSAGE_MAP 8
 #define STATUS_MESSAGE_MAP 9
 #define CONTROL_MESSAGE_MAP 10
 class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>, 
@@ -87,6 +88,7 @@ public:
 		STATUS_FIND,
 		STATUS_PREV,
 		STATUS_NEXT,
+		STATUS_FILTER,
 		STATUS_DUMMY,
 		STATUS_LAST
 	};
@@ -144,6 +146,9 @@ public:
 		CHAIN_COMMANDS(dlBase)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<DirectoryListingFrame>)
+	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
+		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
+		MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
 	ALT_MSG_MAP(STATUS_MESSAGE_MAP)
 		COMMAND_ID_HANDLER(IDC_FIND, onFind)
 		COMMAND_ID_HANDLER(IDC_NEXT, onNext)
@@ -156,6 +161,8 @@ public:
 		MESSAGE_HANDLER(WM_XBUTTONUP, onXButtonUp)
 	END_MSG_MAP()
 
+	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
+	LRESULT onFilterChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -205,26 +212,13 @@ public:
 		return 0;
 	}
 
-	void setWindowTitle() {
-		if(error.empty())
-			SetWindowText((WinUtil::getNicks(dl->getHintedUser()) + _T(" - ") + WinUtil::getHubNames(dl->getHintedUser()).first).c_str());
-		else
-			SetWindowText(error.c_str());		
-	}
+	void setWindowTitle();
 
 	LRESULT OnEraseBackground(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		return 1;
 	}
 
-	void clearList() {
-		 int j = ctrlList.GetItemCount(); 	                
-	         
-		 for(int i = 0; i < j; i++) { 	 
-	                delete ctrlList.getItemData(i); 	 
-	             } 	 
-	                 
-		ctrlList.DeleteAllItems();
-	}
+	void clearList();
 
 	LRESULT onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -284,6 +278,8 @@ public:
 private:
 	void changeWindowState(bool enable);
 	
+	string filter;
+	void updateItems(const DirectoryListing::Directory* d, BOOL enableRedraw);
 	void changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw);
 	void findSearchHit(bool newDir = false);
 	int searchPos;
@@ -313,25 +309,7 @@ private:
 		ItemInfo(DirectoryListing::File* f) : type(FILE), file(f) { }
 		ItemInfo(DirectoryListing::Directory* d) : type(DIRECTORY), dir(d) { }
 
-		const tstring getText(uint8_t col) const {
-			switch(col) {
-				case COLUMN_FILENAME: return type == DIRECTORY ? Text::toT(dir->getName()) : Text::toT(file->getName());
-				case COLUMN_TYPE: 
-					if(type == FILE) {
-						tstring type = Util::getFileExt(Text::toT(file->getName()));
-						if(type.size() > 0 && type[0] == '.')
-							type.erase(0, 1);
-						return type;
-					} else {
-						return Util::emptyStringT;
-					}
-				case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize()) : Util::formatExactSize(file->getSize());
-				case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize()) : Util::formatBytesW(file->getSize());
-				case COLUMN_TTH: return type == FILE ? Text::toT(file->getTTH().toBase32()) : Util::emptyStringT;
-				case COLUMN_DATE: return (type == DIRECTORY && dir->getDate() > 0) ? Text::toT(Util::getDateTime(dir->getDate())) : Util::emptyStringT;
-				default: return Util::emptyStringT;
-			}
-		}
+		const tstring getText(uint8_t col) const;
 		
 		struct TotalSize {
 			TotalSize() : total(0) { }
@@ -339,33 +317,9 @@ private:
 			int64_t total;
 		};
 
-		static int compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col) {
-			if(a->type == DIRECTORY) {
-				if(b->type == DIRECTORY) {
-					switch(col) {
-					case COLUMN_EXACTSIZE: return compare(a->dir->getTotalSize(), b->dir->getTotalSize());
-					case COLUMN_SIZE: return compare(a->dir->getTotalSize(), b->dir->getTotalSize());
-					default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
-					}
-				} else {
-					return -1;
-				}
-			} else if(b->type == DIRECTORY) {
-				return 1;
-			} else {
-				switch(col) {
-				case COLUMN_EXACTSIZE: return compare(a->file->getSize(), b->file->getSize());
-				case COLUMN_SIZE: return compare(a->file->getSize(), b->file->getSize());
-				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), false);
-				}
-			}
-		}
-		int getImageIndex() const {
-			if(type == DIRECTORY)
-				return WinUtil::getDirIconIndex();
-			else
-				return WinUtil::getIconIndex(getText(COLUMN_FILENAME));
-		}
+		static int compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col);
+
+		int getImageIndex() const;
 	};
 
 	CContainedWindow statusContainer;
@@ -386,6 +340,9 @@ private:
 	CButton ctrlADLMatch;
 	CButton ctrlGetFullList;
 
+	CEdit ctrlFilter;
+	CContainedWindow ctrlFilterContainer;
+
 	//string currentDir;
 	tstring error;
 	string size;
@@ -397,7 +354,7 @@ private:
 	bool updating;
 	bool closed;
 
-	int statusSizes[13];
+	int statusSizes[14];
 	
 	DirectoryListing* dl;
 

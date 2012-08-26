@@ -73,7 +73,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
-		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList)
+		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP)
 { 
 	dl->addListener(this);
 }
@@ -222,6 +222,10 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	BS_PUSHBUTTON, 0, IDC_GETLIST);
 	ctrlGetFullList.SetWindowText(CTSTRING(GET_FULL_LIST));
 	ctrlGetFullList.SetFont(WinUtil::systemFont);
+
+	ctrlFilter.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE, IDC_FILTER);
+	ctrlFilterContainer.SubclassWindow(ctrlFilter.m_hWnd);
+	ctrlFilter.SetFont(WinUtil::font);
 	
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlList.m_hWnd);
@@ -236,6 +240,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	statusSizes[STATUS_NEXT] = WinUtil::getTextWidth(TSTRING(NEXT), m_hWnd) + 8;
 	statusSizes[STATUS_MATCH_ADL] = WinUtil::getTextWidth(TSTRING(MATCH_ADL), m_hWnd) + 8;
 	statusSizes[STATUS_GET_FULL_LIST] = WinUtil::getTextWidth(TSTRING(GET_FULL_LIST), m_hWnd) + 8;
+	statusSizes[STATUS_FILTER] = 100;
 
 	ctrlStatus.SetParts(STATUS_LAST, statusSizes);
 
@@ -518,25 +523,113 @@ void DirectoryListingFrame::addHistory(const string& name) {
 	historyIndex = history.size();
 }
 
-void DirectoryListingFrame::changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw)
+LRESULT DirectoryListingFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	if (BOOLSETTING(FILTER_ENTER) && wParam != VK_RETURN)
+		return 0;
 
-{
+	TCHAR *buf = new TCHAR[ctrlFilter.GetWindowTextLength()+1];
+	ctrlFilter.GetWindowText(buf, ctrlFilter.GetWindowTextLength()+1);
+	string newFilter = Text::fromT(buf);
+	delete[] buf;
+
+	bHandled = FALSE;
+	if (filter == newFilter)
+		return 0;
+
+	HTREEITEM t = ctrlTree.GetSelectedItem();
+	auto d = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+
+	if (BOOLSETTING(FILTER_ENTER)) {
+		//just update the whole list here
+		filter = newFilter;
+		updateItems(d, true);
+	} else {
+		updating = true;
+		ctrlList.SetRedraw(FALSE);
+		boost::regex regNew(newFilter, boost::regex_constants::icase);
+
+		if(wParam == VK_BACK) {
+			//we are adding new items... try to speed this up with large listings by comparing with the old filter
+			boost::regex regOld(filter, boost::regex_constants::icase);
+			for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
+				string s = (*i)->getName();
+				if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
+					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
+				}
+			}
+
+			for(auto j = d->files.begin(); j != d->files.end(); ++j) {
+				string s = (*j)->getName();
+				if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
+					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*j), WinUtil::getIconIndex(Text::toT((*j)->getName())));
+				}
+			}
+		} else {
+			//we can only be removing items from the list
+			for(int i=0; i<ctrlList.GetItemCount();) {
+				const ItemInfo* ii = ctrlList.getItemData(i);
+				string s = ii->type == ItemInfo::FILE ? ii->file->getName() : ii->dir->getName();
+				if(!boost::regex_search(s.begin(), s.end(), regNew)) {
+					delete ctrlList.getItemData(i);
+					ctrlList.DeleteItem(i);
+				} else {
+					i++;
+				}
+			}
+		}
+
+		filter = newFilter;
+
+		ctrlList.resort();
+		ctrlList.SetRedraw(TRUE);
+		updating = false;
+		updateStatus();
+	}
+
+	return 0;
+}
+
+void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BOOL enableRedraw) {
 	ctrlList.SetRedraw(FALSE);
 	updating = true;
 	clearList();
 
-	for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
-		ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
+	if (!filter.empty()) {
+		boost::regex reg(filter, boost::regex_constants::icase);
+
+		for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
+			string s = (*i)->getName();
+			if(boost::regex_search(s.begin(), s.end(), reg)) {
+				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
+			}
+		}
+
+		for(auto j = d->files.begin(); j != d->files.end(); ++j) {
+			string s = (*j)->getName();
+			if(boost::regex_search(s.begin(), s.end(), reg)) {
+				ItemInfo* ii = new ItemInfo(*j);
+				ctrlList.insertItem(ctrlList.GetItemCount(), ii, WinUtil::getIconIndex(ii->getText(COLUMN_FILENAME)));
+			}
+		}
+	} else {
+		for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
+			ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
+		}
+
+		for(auto j = d->files.begin(); j != d->files.end(); ++j) {
+			ItemInfo* ii = new ItemInfo(*j);
+			ctrlList.insertItem(ctrlList.GetItemCount(), ii, WinUtil::getIconIndex(ii->getText(COLUMN_FILENAME)));
+		}
 	}
-	for(auto j = d->files.begin(); j != d->files.end(); ++j) {
-		ItemInfo* ii = new ItemInfo(*j);
-		ctrlList.insertItem(ctrlList.GetItemCount(), ii, WinUtil::getIconIndex(ii->getText(COLUMN_FILENAME)));
-	}
+
 	ctrlList.resort();
 	ctrlList.SetRedraw(enableRedraw);
 	updating = false;
 	updateStatus();
+}
 
+void DirectoryListingFrame::changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw) {
+	updateItems(d, enableRedraw);
 	if(!d->getComplete()) {
 		if (dl->getIsOwnList()) {
 			dl->addPartialListTask(dl->getPath(d));
@@ -1171,7 +1264,89 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		ctrlFindNext.MoveWindow(sr);
 	}
 
+	CRect rc = rect;
+	rc.top += 2;
+	rc.bottom -=(56);
+	ctrlFilter.MoveWindow(rc);
+
+	//sr.left = w[STATUS_FILTER - 1];
+	//sr.right = w[STATUS_FILTER];
+	////sr.bottom = 0;
+	//sr.top = 0;
+	//ctrlFilter.MoveWindow(sr);
+
 	SetSplitterRect(&rect);
+}
+
+LRESULT DirectoryListingFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	HDC hDC = (HDC)wParam;
+	::SetBkColor(hDC, WinUtil::bgColor);
+	::SetTextColor(hDC, WinUtil::textColor);
+	return (LRESULT)WinUtil::bgBrush;
+}
+
+void DirectoryListingFrame::clearList() {
+	int j = ctrlList.GetItemCount();        
+	for(int i = 0; i < j; i++) {
+		delete ctrlList.getItemData(i);
+	}
+	ctrlList.DeleteAllItems();
+}
+
+void DirectoryListingFrame::setWindowTitle() {
+	if(error.empty())
+		SetWindowText((WinUtil::getNicks(dl->getHintedUser()) + _T(" - ") + WinUtil::getHubNames(dl->getHintedUser()).first).c_str());
+	else
+		SetWindowText(error.c_str());		
+}
+
+int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col) {
+	if(a->type == DIRECTORY) {
+		if(b->type == DIRECTORY) {
+			switch(col) {
+			case COLUMN_EXACTSIZE: return compare(a->dir->getTotalSize(), b->dir->getTotalSize());
+			case COLUMN_SIZE: return compare(a->dir->getTotalSize(), b->dir->getTotalSize());
+			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
+			}
+		} else {
+			return -1;
+		}
+	} else if(b->type == DIRECTORY) {
+		return 1;
+	} else {
+		switch(col) {
+			case COLUMN_EXACTSIZE: return compare(a->file->getSize(), b->file->getSize());
+			case COLUMN_SIZE: return compare(a->file->getSize(), b->file->getSize());
+			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), false);
+		}
+	}
+}
+
+const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
+	switch(col) {
+		case COLUMN_FILENAME: return type == DIRECTORY ? Text::toT(dir->getName()) : Text::toT(file->getName());
+		case COLUMN_TYPE: 
+			if(type == FILE) {
+				tstring type = Util::getFileExt(Text::toT(file->getName()));
+				if(type.size() > 0 && type[0] == '.')
+					type.erase(0, 1);
+				return type;
+			} else {
+				return Util::emptyStringT;
+			}
+		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize()) : Util::formatExactSize(file->getSize());
+		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize()) : Util::formatBytesW(file->getSize());
+		case COLUMN_TTH: return type == FILE ? Text::toT(file->getTTH().toBase32()) : Util::emptyStringT;
+		case COLUMN_DATE: return (type == DIRECTORY && dir->getDate() > 0) ? Text::toT(Util::getDateTime(dir->getDate())) : Util::emptyStringT;
+		default: return Util::emptyStringT;
+	}
+}
+
+int DirectoryListingFrame::ItemInfo::getImageIndex() const {
+	if(type == DIRECTORY)
+		return WinUtil::getDirIconIndex();
+	else
+		return WinUtil::getIconIndex(getText(COLUMN_FILENAME));
 }
 
 void DirectoryListingFrame::runUserCommand(UserCommand& uc) {

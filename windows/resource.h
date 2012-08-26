@@ -1442,6 +1442,7 @@
 #define IDC_DELETE_FILE                 15127
 #define IDC_PREV                        15128
 #define IDC_FIND_TEXT                   15129
+#define IDC_FILTER						15130
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_REFRESH_MENU                16000
 #define ID_TOGGLE_TBSTATUS              16900
