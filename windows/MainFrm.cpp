@@ -138,7 +138,7 @@ public:
 				continue;
 				
 			HintedUser user(u, Util::emptyString);
-			DirectoryListing* dl = new DirectoryListing(user, false, *i, false);
+			DirectoryListing* dl = new DirectoryListing(user, false, *i, false, false);
 			try {
 				dl->loadFile(*i);
 				int matches=0, newFiles=0;

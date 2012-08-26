@@ -36,7 +36,7 @@ EmoticonsManager* emoticonsManager = NULL;
 #define MAX_EMOTICONS 48
 UINT ChatCtrl::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
-ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true) {
+ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
 	}
@@ -49,6 +49,9 @@ ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false),
 
 	arrowCursor = LoadCursor(NULL, MAKEINTRESOURCE(IDC_ARROW));
 	handCursor = LoadCursor(NULL, MAKEINTRESOURCE(IDC_HAND));
+
+	findBuffer = new TCHAR[findBufferSize];
+	findBuffer[0] = _T('\0');
 }
 
 ChatCtrl::~ChatCtrl() {
@@ -59,6 +62,7 @@ ChatCtrl::~ChatCtrl() {
 	} else {
 		emoticonsManager->dec();
 	}
+	delete[] findBuffer;
 }
 
 void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
@@ -926,7 +930,7 @@ LRESULT ChatCtrl::onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& 
 	LPFINDREPLACE fr = reinterpret_cast<LPFINDREPLACE>(lParam);
 
 	if(fr->Flags & FR_DIALOGTERM){
-		findDlg = nullptr;
+		WinUtil::findDialog = nullptr;
 	} else if(fr->Flags & FR_FINDNEXT){
 		//prepare the flags used to search
 		int flags = 0;
@@ -963,18 +967,33 @@ LRESULT ChatCtrl::onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& 
 }
 
 void ChatCtrl::findText(tstring& aTxt) {
-	findDlg = new CFindReplaceDialog();
-	findDlg->Create(true, _T(""), NULL, FR_DOWN, m_hWnd);
+	LPFINDREPLACE fr = new FINDREPLACE;
+	ZeroMemory(fr, sizeof(FINDREPLACE));
+	fr->lStructSize = sizeof(FINDREPLACE);
+	fr->hwndOwner = m_hWnd;
+	fr->hInstance = NULL;
+	fr->Flags = FR_DOWN;
+	
+	fr->lpstrFindWhat = findBuffer;
+	fr->wFindWhatLen = findBufferSize;
+
+	if(WinUtil::findDialog == NULL)
+		WinUtil::findDialog = ::FindText(fr);
+
+	/*WinUtil::findDlg = new CFindReplaceDialog();
+	WinUtil::findDlg->Create(true, _T(""), NULL, FR_DOWN, m_hWnd);
 	//findDlg->SetActiveWindow();
-	findDlg->ShowWindow(SW_SHOW);
+	WinUtil::findDlg->ShowWindow(SW_SHOW);*/
+	//WinUtil::findDlg->SetParent(
 	curFindPos = 0;
 }
 
 LRESULT ChatCtrl::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(wParam == VK_F3) {
+	if(((GetKeyState(VkKeyScan('F') & 0xFF) & 0xFF00) > 0 && (GetKeyState(VK_CONTROL) & 0xFF00) > 0) || wParam == VK_F3){
 		findText();
-		return 0;
+		return 1;
 	}
+	bHandled = FALSE;
 	return 0;
 }
 

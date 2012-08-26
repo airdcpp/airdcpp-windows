@@ -76,8 +76,6 @@ public:
 		
 	enum {
 		STATUS_TEXT,
-		STATUS_SPEED,
-		STATUS_TOTAL_FILES,
 		STATUS_TOTAL_SIZE,
 		STATUS_SELECTED_FILES,
 		STATUS_SELECTED_SIZE,
@@ -354,7 +352,7 @@ private:
 	bool updating;
 	bool closed;
 
-	int statusSizes[14];
+	int statusSizes[12];
 	
 	DirectoryListing* dl;
 

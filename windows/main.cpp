@@ -286,6 +286,17 @@ static void checkCommonControls() {
 	}
 }
 
+class CFindDialogMessageFilter : public CMessageFilter
+{
+public:
+	virtual BOOL PreTranslateMessage(MSG* pMsg) {
+		if (WinUtil::findDialog) {
+			return IsDialogMessage(WinUtil::findDialog, pMsg);
+		}
+		return FALSE;
+	}
+};
+
 static HWND hWnd;
 static tstring sText;
 static tstring sTitle;
@@ -354,8 +365,11 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
 	checkCommonControls();
 
-	CMessageLoop theLoop;
-	_Module.AddMessageLoop(&theLoop);	
+	CMessageLoop theLoop;	
+
+	CFindDialogMessageFilter findDialogFilter;
+	theLoop.AddMessageFilter(&findDialogFilter);
+	_Module.AddMessageLoop(&theLoop);
 
 	CEdit dummy;
 	CWindow splash;

@@ -173,9 +173,10 @@ public:
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
 private:
-	CFindReplaceDialog* findDlg;
 	int			curFindPos;
 	static UINT	WM_FINDREPLACE;
+	TCHAR*		findBuffer;
+	const WORD	findBufferSize;
 
 	bool HitNick(const POINT& p, tstring& sNick, int& iBegin , int& iEnd);
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);

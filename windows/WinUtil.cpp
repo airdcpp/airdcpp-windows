@@ -110,6 +110,7 @@ CHARFORMAT2 WinUtil::m_TextStyleQueue;
 CHARFORMAT2 WinUtil::m_ChatTextPrivate;
 CHARFORMAT2 WinUtil::m_ChatTextLog;
 tstring WinUtil::m_IconPath;
+HWND WinUtil::findDialog = nullptr;
 	
 HLSCOLOR RGB2HLS (COLORREF rgb) {
 	unsigned char minval = min(GetRValue(rgb), min(GetGValue(rgb), GetBValue(rgb)));
@@ -2661,6 +2662,11 @@ HBITMAP WinUtil::getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, lon
 	DeleteObject(hOldBitmap);
 
 	return hBitmap;
+}
+
+void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
+	if (WinUtil::getOsMajor() == 6)
+		Edit_SetCueBannerTextFocused(hwnd, text, drawFocus);
 }
 
 

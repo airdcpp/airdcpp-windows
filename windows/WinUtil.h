@@ -444,6 +444,9 @@ public:
 
 	static time_t fromSystemTime(const SYSTEMTIME* pTime);
 	static void toSystemTime(const time_t aTime, SYSTEMTIME* sysTime);
+	static void addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus);
+
+	static HWND findDialog;
 private:
 	static int CALLBACK browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LPARAM pData);
 

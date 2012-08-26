@@ -324,7 +324,7 @@
 		<String Name="MenuDownloadQueue">&amp;Download Queue	Ctrl+D</String>
 		<String Name="MenuExit">E&amp;xit</String>
 		<String Name="MenuFaq">Frequently asked questions</String>
-		<String Name="MenuFavoriteHubs">&amp;Favorite Hubs	Ctrl+F</String>
+		<String Name="MenuFavoriteHubs">&amp;Favorite Hubs	Ctrl+H</String>
 		<String Name="MenuFavoriteUsers">Favorite &amp;Users	Ctrl+U</String>
 		<String Name="MenuFile">&amp;File</String>
 		<String Name="MenuFileRecentHubs">&amp;Recent Hubs</String>
@@ -1575,5 +1575,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SettingsShareProfileNote">Note; Added share profiles can only be used in ADC hubs. NMDC hubs are forced to use the default profile.</String>
 		<String Name="SettingsSharingOptions">Sharing Options</String>
 		<String Name="SettingsMisc">Miscellaneous</String>
+		<String Name="FilterDots">Filter...</String>
 	</Strings>
 </Language>

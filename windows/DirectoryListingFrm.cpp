@@ -224,6 +224,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlFilter.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE, IDC_FILTER);
 	ctrlFilterContainer.SubclassWindow(ctrlFilter.m_hWnd);
 	ctrlFilter.SetFont(WinUtil::font);
+	WinUtil::addCue(ctrlFilter.m_hWnd, CTSTRING(FILTER_DOTS), TRUE);
 	
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlList.m_hWnd);
@@ -238,7 +239,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	statusSizes[STATUS_NEXT] = WinUtil::getTextWidth(TSTRING(NEXT), m_hWnd) + 8;
 	statusSizes[STATUS_MATCH_ADL] = WinUtil::getTextWidth(TSTRING(MATCH_ADL), m_hWnd) + 8;
 	statusSizes[STATUS_GET_FULL_LIST] = WinUtil::getTextWidth(TSTRING(GET_FULL_LIST), m_hWnd) + 8;
-	statusSizes[STATUS_FILTER] = 100;
+	statusSizes[STATUS_FILTER] = 150;
 
 	ctrlStatus.SetParts(STATUS_LAST, statusSizes);
 
@@ -482,21 +483,12 @@ void DirectoryListingFrame::updateStatus() {
 }
 
 void DirectoryListingFrame::initStatus() {
-	files = dl->getTotalFileCount();
 	size = Util::formatBytes(dl->getTotalListSize());
 
-	tstring tmp = TSTRING(FILES) + _T(": ") + Util::toStringW(dl->getTotalFileCount(true));
-	statusSizes[STATUS_TOTAL_FILES] = WinUtil::getTextWidth(tmp, m_hWnd);
-	ctrlStatus.SetText(STATUS_TOTAL_FILES, tmp.c_str());
-
 	//tmp = TSTRING(SIZE) + _T(": ") + Util::formatBytesW(dl->getTotalListSize(true));
-	tmp = TSTRING(SIZE) + _T(": ") + Text::toT(size).c_str();
+	tstring tmp = TSTRING(SETTINGS_SHARE_SIZE) + _T(" ") + Text::toT(size).c_str();
 	statusSizes[STATUS_TOTAL_SIZE] = WinUtil::getTextWidth(tmp, m_hWnd);
 	ctrlStatus.SetText(STATUS_TOTAL_SIZE, tmp.c_str());
-
-	tmp = TSTRING(SPEED) + _T(": ") + Util::formatBytesW(dl->getspeed()) + _T("/s");
-	statusSizes[STATUS_SPEED] = WinUtil::getTextWidth(tmp, m_hWnd);
-	ctrlStatus.SetText(STATUS_SPEED, tmp.c_str());
 
 	UpdateLayout(FALSE);
 }
@@ -537,52 +529,58 @@ LRESULT DirectoryListingFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*l
 	HTREEITEM t = ctrlTree.GetSelectedItem();
 	auto d = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
 
-	if (BOOLSETTING(FILTER_ENTER)) {
-		//just update the whole list here
-		filter = newFilter;
-		updateItems(d, true);
-	} else {
-		updating = true;
-		ctrlList.SetRedraw(FALSE);
-		boost::regex regNew(newFilter, boost::regex_constants::icase);
+	boost::regex regNew(newFilter, boost::regex_constants::icase);
 
-		if(wParam == VK_BACK) {
-			//we are adding new items... try to speed this up with large listings by comparing with the old filter
-			boost::regex regOld(filter, boost::regex_constants::icase);
-			for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
-				string s = (*i)->getName();
-				if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
-					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
-				}
-			}
-
-			for(auto j = d->files.begin(); j != d->files.end(); ++j) {
-				string s = (*j)->getName();
-				if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
-					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*j), WinUtil::getIconIndex(Text::toT((*j)->getName())));
-				}
-			}
-		} else {
-			//we can only be removing items from the list
-			for(int i=0; i<ctrlList.GetItemCount();) {
-				const ItemInfo* ii = ctrlList.getItemData(i);
-				string s = ii->type == ItemInfo::FILE ? ii->file->getName() : ii->dir->getName();
-				if(!boost::regex_search(s.begin(), s.end(), regNew)) {
-					delete ctrlList.getItemData(i);
-					ctrlList.DeleteItem(i);
-				} else {
-					i++;
-				}
+	auto addItems = [this, d, regNew] () -> void {
+		//try to speed this up with large listings by comparing with the old filter
+		boost::regex regOld(filter, boost::regex_constants::icase);
+		for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
+			string s = (*i)->getName();
+			if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
+				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
 			}
 		}
 
-		filter = newFilter;
+		for(auto j = d->files.begin(); j != d->files.end(); ++j) {
+			string s = (*j)->getName();
+			if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
+				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*j), WinUtil::getIconIndex(Text::toT((*j)->getName())));
+			}
+		}
+	};
 
-		ctrlList.resort();
-		ctrlList.SetRedraw(TRUE);
-		updating = false;
-		updateStatus();
+	auto removeItems = [this, d, regNew] () -> void {
+		for(int i=0; i<ctrlList.GetItemCount();) {
+			const ItemInfo* ii = ctrlList.getItemData(i);
+			string s = ii->type == ItemInfo::FILE ? ii->file->getName() : ii->dir->getName();
+			if(!boost::regex_search(s.begin(), s.end(), regNew)) {
+				delete ctrlList.getItemData(i);
+				ctrlList.DeleteItem(i);
+			} else {
+				i++;
+			}
+		}
+	};
+
+	if (AirUtil::isSub(filter, newFilter)) {
+		//we are adding chars
+		addItems();
+	} else if (AirUtil::isSub(newFilter, filter)) {
+		//we are removing chars
+		removeItems();
+	} else {
+		//remove items that don't match
+		removeItems();
+		//add new matches
+		addItems();
 	}
+
+	filter = newFilter;
+
+	ctrlList.resort();
+	ctrlList.SetRedraw(TRUE);
+	updating = false;
+	updateStatus();
 
 	return 0;
 }
@@ -1261,7 +1259,7 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		sr.right = w[STATUS_NEXT];
 		ctrlFindNext.MoveWindow(sr);
 
-		sr.left = w[STATUS_FILTER - 1];
+		sr.left = w[STATUS_FILTER - 1] + bspace;
 		sr.right = w[STATUS_FILTER];
 		ctrlFilter.MoveWindow(sr);
 
