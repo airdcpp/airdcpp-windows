@@ -1593,7 +1593,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 
 		//dupe colors have higher priority than highlights.
 		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList() && ii != NULL) {
-			auto c = WinUtil::getDupeColors(ItemInfo::FILE ? ii->file->getDupe() : ii->dir->getDupe());
+			auto c = WinUtil::getDupeColors(ii->type == ItemInfo::FILE ? ii->file->getDupe() : ii->dir->getDupe());
 			cd->clrText = c.first;
 			cd->clrTextBk = c.second;
 		}
