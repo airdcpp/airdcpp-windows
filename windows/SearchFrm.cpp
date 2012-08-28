@@ -95,6 +95,9 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlSkiplist.SetFont(WinUtil::font);
 	ctrlSkiplist.SetWindowText(Text::toT(SETTING(SKIPLIST_SEARCH)).c_str());
 	ctrlSkiplistContainer.SubclassWindow(ctrlSkiplist.m_hWnd);
+	searchSkipList.pattern = SETTING(SKIPLIST_SEARCH);
+	searchSkipList.setMethod(StringMatch::WILDCARD);
+	searchSkipList.prepare();
 
 	ctrlSizeMode.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
@@ -552,12 +555,12 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 
 			}
 		}
-	}
 
-	if(UseSkiplist && Wildcard::patternMatch(aResult->getFileName(), SETTING(SKIPLIST_SEARCH), '|')) {
-		droppedResults++;
-		PostMessage(WM_SPEAKER, FILTER_RESULT);
-		return;
+		if(UseSkiplist && searchSkipList.match(aResult->getFileName())) {
+			droppedResults++;
+			PostMessage(WM_SPEAKER, FILTER_RESULT);
+			return;
+		}
 	}
 
 	// Reject results without free slots
@@ -1644,7 +1647,15 @@ LRESULT SearchFrame::onSkiplist(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/,
 	if(wParam == VK_RETURN) {
 		TCHAR *buf = new TCHAR[ctrlSkiplist.GetWindowTextLength()+1];
 		ctrlSkiplist.GetWindowText(buf, ctrlSkiplist.GetWindowTextLength()+1);
-		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SEARCH, Text::fromT(buf));
+		string skipList = Text::fromT(buf);
+
+		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SEARCH, skipList);
+
+		{
+			Lock l (cs);
+			searchSkipList.pattern = skipList;
+			searchSkipList.prepare();
+		}
 		delete[] buf;
 	
 	}

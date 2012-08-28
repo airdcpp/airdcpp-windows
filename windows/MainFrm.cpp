@@ -1027,6 +1027,8 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 	auto prevDownloadSkiplist = SETTING(SKIPLIST_DOWNLOAD);
 	auto prevDownloadSkiplistRegex = SETTING(DOWNLOAD_SKIPLIST_USE_REGEXP);
 
+	auto prevFreeSlotMatcher = SETTING(FREE_SLOTS_EXTENSIONS);
+
 	if(dlg.DoModal(m_hWnd) == IDOK) 
 	{
 		SettingsManager::getInstance()->save();
@@ -1059,6 +1061,10 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 
 		if (prevShareSkiplist != SETTING(SKIPLIST_SHARE) || prevShareSkiplistRegex != SETTING(SHARE_SKIPLIST_USE_REGEXP)) {
 			ShareManager::getInstance()->setSkipList();
+		}
+
+		if (prevFreeSlotMatcher != SETTING(FREE_SLOTS_EXTENSIONS)) {
+			UploadManager::getInstance()->setFreeSlotMatcher();
 		}
 
 		bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;

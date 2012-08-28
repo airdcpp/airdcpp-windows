@@ -30,6 +30,7 @@
 #include "LineDlg.h"
 #include "PropertiesDlg.h"
 #include "TempShare_dlg.h"
+#include "SharePageDlg.h"
 
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/algorithm/remove_if.hpp>
@@ -177,9 +178,9 @@ static int sort(LPARAM lParam1, LPARAM lParam2, int column) {
 	if (left->state == ShareDirInfo::ADDED && right->state != ShareDirInfo::ADDED) return -1;
 	
 	if (column == 0)
-		return compare(left->vname, right->vname);
+		return stricmp(left->vname, right->vname);
 	else if (column == 1)
-		return compare(left->path, right->path);
+		return stricmp(left->path, right->path);
 	else
 		return compare(right->size, left->size);
 }
@@ -345,17 +346,17 @@ ShareDirInfo::list SharePage::getItemsByPath(const string& aPath) {
 	ShareDirInfo::list dirItems;
 	for(auto i = shareDirs.begin(); i != shareDirs.end(); i++) {
 		auto& dirs = i->second;
-		for(auto i = dirs.begin(); i != dirs.end(); i++) {
-			if ((*i)->path == aPath && find(removeDirs.begin(), removeDirs.end(), *i) == removeDirs.end()) {
-				dirItems.push_back(*i);
-			}
-		}
+		auto p = boost::find_if(dirs, [&aPath](const ShareDirInfo* sdi) { return sdi->path == aPath; });
+		if (p != dirs.end())
+			dirItems.push_back(*p);
 	}
 
 	for(auto j = newDirs.begin(); j != newDirs.end(); j++) {
-		if ((*j)->path == aPath)
+		if ((*j)->path == aPath) {
 			dirItems.push_back(*j);
+		}
 	}
+
 	return dirItems;
 }
 
@@ -503,7 +504,7 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 LRESULT SharePage::onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	auto profile = profiles[ctrlProfile.GetCurSel()];
 	auto name = Text::toT(profile->getPlainName());
-	auto p = find_if(renameProfiles.begin(), renameProfiles.end(), CompareFirst<ShareProfilePtr, string>(profile));
+	auto p = boost::find_if(renameProfiles, CompareFirst<ShareProfilePtr, string>(profile));
 	if (p != renameProfiles.end()) {
 		name = Text::toT(p->second);
 	}
@@ -591,7 +592,7 @@ LRESULT SharePage::onClickedRemoveDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 
 void SharePage::removeDir(const string& rPath, ProfileToken aProfile, bool checkDupes /*true*/) {
 	//update the diff info in case this path exists in other profiles
-	if (curProfile == SP_DEFAULT) {
+	if (aProfile == SP_DEFAULT) {
 		auto items = getItemsByPath(rPath);
 		boost::for_each(items, [](ShareDirInfo* sdi) { sdi->state = ShareDirInfo::REMOVED; });
 	}
@@ -599,13 +600,12 @@ void SharePage::removeDir(const string& rPath, ProfileToken aProfile, bool check
 	auto p = boost::find_if(newDirs, [rPath, aProfile](const ShareDirInfo* sdi) { return sdi->path == rPath && sdi->profile == aProfile; });
 	if (p != newDirs.end()) {
 		newDirs.erase(p);
-		return;
+	} else {
+		auto& dirs = shareDirs[curProfile];
+		auto k = boost::find_if(dirs, [rPath, aProfile](const ShareDirInfo* sdi) { return sdi->path == rPath && sdi->profile == aProfile; });
+		if (k != dirs.end())
+			removeDirs.push_back(*k);
 	}
-
-	auto& dirs = shareDirs[curProfile];
-	auto k = boost::find_if(dirs, [rPath, aProfile](const ShareDirInfo* sdi) { return sdi->path == rPath && sdi->profile == aProfile; });
-	if (k != dirs.end())
-		removeDirs.push_back(*k);
 
 	if (checkDupes) {
 		auto dirItems = getItemsByPath(rPath);
@@ -614,6 +614,46 @@ void SharePage::removeDir(const string& rPath, ProfileToken aProfile, bool check
 		}
 		fixControls();
 	}
+}
+
+ShareProfilePtr SharePage::getProfile(ProfileToken aProfile) {
+	auto n = find(profiles.begin(), profiles.end(), aProfile);
+	if (n != profiles.end()) {
+		return *n;
+	}
+
+	auto p = find(addProfiles.begin(), addProfiles.end(), aProfile);
+	if (p != addProfiles.end()) {
+		return *n;
+	}
+	return nullptr;
+}
+
+bool SharePage::showShareDlg(const ShareProfile::list& spList, ProfileToken curProfile, const tstring& curName, ProfileTokenList& profilesTokens, tstring& newName, bool rename) {
+	if (!spList.empty()) {
+		SharePageDlg virt;
+		virt.rename = rename;
+		virt.line = curName;
+		virt.profiles = spList;
+		if(virt.DoModal(m_hWnd) == IDOK) {
+			newName = virt.line;
+			profilesTokens.insert(profilesTokens.end(), virt.selectedProfiles.begin(), virt.selectedProfiles.end());
+			//copy(virt.selectedProfiles.begin(), virt.selectedProfiles.end(), profiles.end());
+		} else {
+			return false;
+		}
+	} else {
+		LineDlg virt;
+		virt.title = TSTRING(VIRTUAL_NAME);
+		virt.description = TSTRING(VIRTUAL_NAME_LONG);
+		virt.line = curName;
+		if(virt.DoModal(m_hWnd) != IDOK) {
+			return false;
+		}
+
+		newName = virt.line;
+	}
+	return true;
 }
 
 LRESULT SharePage::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -625,24 +665,37 @@ LRESULT SharePage::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 			continue;
 		}
 
+		ProfileTokenList profilesTokens;
+		profilesTokens.push_back(sdi->profile);
+
 		tstring vName = Text::toT(sdi->vname);
-		LineDlg virt;
-		virt.title = TSTRING(VIRTUAL_NAME);
-		virt.description = TSTRING(VIRTUAL_NAME_LONG);
-		virt.line = vName;
-		if(virt.DoModal(m_hWnd) == IDOK) {
-			if (stricmp(vName, virt.line) != 0) {
-				ctrlDirectories.SetItemText(i, 0, virt.line.c_str());
-				sdi->vname = Text::fromT(virt.line);
+		auto items = getItemsByPath(sdi->path);
+		tstring newName;
+
+		ShareProfile::list spList;
+		for(auto j = items.begin(); j != items.end(); j++) {
+			if ((*j)->profile != curProfile)
+				spList.push_back(getProfile((*j)->profile));
+		}
+
+		if (!showShareDlg(spList, sdi->profile, vName, profilesTokens, newName, true))
+			return 0;
+
+		if (stricmp(vName, newName) != 0) {
+			ctrlDirectories.SetItemText(i, 0, newName.c_str());
+
+			for(auto j = profilesTokens.begin(); j != profilesTokens.end(); j++) {
+				auto s = find_if(items.begin(), items.end(), [j](const ShareDirInfo* tmp) { return tmp->profile == *j; });
+				(*s)->vname = Text::fromT(newName);
 
 				/* Is this a newly added dir? */
-				auto p = find(newDirs.begin(), newDirs.end(), sdi);
-				if (p == newDirs.end() && find(changedDirs.begin(), changedDirs.end(), sdi) == changedDirs.end()) {
-					changedDirs.push_back(sdi);
+				auto p = find(newDirs.begin(), newDirs.end(), *s);
+				if (p == newDirs.end() && find(changedDirs.begin(), changedDirs.end(), *s) == changedDirs.end()) {
+					changedDirs.push_back(*s);
 				}
-			} else {
-				MessageBox(CTSTRING(SKIP_RENAME), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK);
 			}
+		} else {
+			MessageBox(CTSTRING(SKIP_RENAME), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK);
 		}
 	}
 
@@ -674,40 +727,61 @@ bool SharePage::addDirectory(const tstring& aPath){
 		}
 	}
 
-	LineDlg virt;
-	virt.title = TSTRING(VIRTUAL_NAME);
-	virt.description = TSTRING(VIRTUAL_NAME_LONG);
-	virt.line = Text::toT(ShareManager::getInstance()->validateVirtual(Util::getLastDir(Text::fromT(path))));
-	if(virt.DoModal(m_hWnd) == IDOK) {
-		string vPath = Text::fromT(virt.line), rPath = Text::fromT(path);
-		ShareManager::getInstance()->validatePath(rPath, vPath);
-		auto dir = new ShareDirInfo(vPath, curProfile, rPath);
-		if (find(newDirs.begin(), newDirs.end(), dir) != newDirs.end()) {
-			delete dir;
-			return false;
-		}
+	//LineDlg virt;
+	//virt.title = TSTRING(VIRTUAL_NAME);
+	//virt.description = TSTRING(VIRTUAL_NAME_LONG);
+	//virt.line = Text::toT(ShareManager::getInstance()->validateVirtual(Util::getLastDir(Text::fromT(path))));
 
-		auto items = getItemsByPath(rPath);
-		if (curProfile == SP_DEFAULT) {
-			//update the diff info in case this path exists in other profiles
-			boost::for_each(items, [](ShareDirInfo* sdi) { sdi->state = ShareDirInfo::NORMAL; });
-		} else {
-			//check if this exists in the default profile
-			auto pos = boost::find_if(items, [](const ShareDirInfo* sdi) { return sdi->profile == SP_DEFAULT; });
-			if (pos == items.end())
-				dir->state = ShareDirInfo::ADDED;
-		}
+	ShareProfile::list spList;
+	ProfileTokenList profileTokens;
+	tstring newName;
+	profileTokens.push_back(curProfile);
 
-		newDirs.push_back(dir);
-		if(BOOLSETTING(USE_OLD_SHARING_UI)) {
-			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), virt.line, 0, (LPARAM)dir);
-			ctrlDirectories.SetItemText(i, 1, path.c_str());
-			ctrlDirectories.SetItemText(i, 2, _T("New"));
+	//list the profiles that don't have this directory
+	for(auto j = profiles.begin(); j != profiles.end(); j++) {
+		if ((*j)->getToken() == curProfile)
+			continue;
+
+		auto items = move(getViewItems((*j)->getToken(), false));
+		auto p = boost::find_if(items, [&path](const ShareDirInfo* sdi) { return sdi->path == Text::fromT(path); });
+		if (p == items.end()) {
+			spList.push_back(*j);
 		}
 	}
 
-	fixControls();
-	ctrlDirectories.resort();
+	if(showShareDlg(spList, curProfile, Text::toT(ShareManager::getInstance()->validateVirtual(Util::getLastDir(Text::fromT(path)))), profileTokens, newName, false)) {
+		string vPath = Text::fromT(newName), rPath = Text::fromT(path);
+		ShareManager::getInstance()->validatePath(rPath, vPath);
+
+		for(auto j = profileTokens.begin(); j != profileTokens.end(); j++) {
+			auto dir = new ShareDirInfo(vPath, *j, rPath);
+			if (find(newDirs.begin(), newDirs.end(), dir) != newDirs.end()) {
+				delete dir;
+				continue;
+			}
+
+			auto items = getItemsByPath(rPath);
+			if (*j == SP_DEFAULT) {
+				//update the diff info in case this path exists in other profiles
+				boost::for_each(items, [](ShareDirInfo* sdi) { sdi->state = ShareDirInfo::NORMAL; });
+			} else {
+				//check if this exists in the default profile (and the default profile isn't also being added now)
+				auto pos = boost::find_if(items, [](const ShareDirInfo* sdi) { return sdi->profile == SP_DEFAULT; });
+				if (pos == items.end() && find(profileTokens.begin(), profileTokens.end(), SP_DEFAULT) == profileTokens.end())
+					dir->state = ShareDirInfo::ADDED;
+			}
+
+			newDirs.push_back(dir);
+			if(BOOLSETTING(USE_OLD_SHARING_UI) && *j == curProfile) {
+				int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), newName, 0, (LPARAM)dir);
+				ctrlDirectories.SetItemText(i, 1, path.c_str());
+				ctrlDirectories.SetItemText(i, 2, _T("New"));
+			}
+		}
+
+		fixControls();
+		ctrlDirectories.resort();
+	}
 	return true;
 }
 

@@ -594,6 +594,7 @@
     <ClInclude Include="windows\AirAppearancePage.h" />
     <ClInclude Include="windows\MiscPage.h" />
     <ClInclude Include="windows\DownloadingOptionsPage.h" />
+    <ClInclude Include="windows\SharePageDlg.h" />
     <ClInclude Include="windows\SharingOptionsPage.h" />
     <ClInclude Include="windows\AppearancePage.h" />
     <ClInclude Include="windows\AutosearchDlg.h" />
@@ -726,6 +727,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\MediaToolbar\back.ico" />
+    <Image Include="res\MediaToolbar\down.ico" />
+    <Image Include="res\MediaToolbar\next.ico" />
+    <Image Include="res\MediaToolbar\pause.ico" />
+    <Image Include="res\MediaToolbar\play.ico" />
+    <Image Include="res\MediaToolbar\spam.ico" />
+    <Image Include="res\MediaToolbar\start.ico" />
+    <Image Include="res\MediaToolbar\stop.ico" />
+    <Image Include="res\MediaToolbar\up.ico" />
+    <Image Include="res\MediaToolbar\volume50.ico" />
     <Image Include="res\searchTypes\Any.ico" />
     <Image Include="res\searchTypes\Audio.ico" />
     <Image Include="res\searchTypes\Compressed.ico" />

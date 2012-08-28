@@ -19,6 +19,7 @@
 #include "../client/DCPlusPlus.h"
 #include "../client/FavoriteManager.h"
 #include "../client/UploadManager.h"
+#include "../client/QueueManager.h"
 
 #include "ChatCtrl.h"
 #include "EmoticonsManager.h"

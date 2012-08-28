@@ -71,6 +71,7 @@
 #define IDD_AIRAPPEARANCEPAGE           207
 #define IDB_ARROWS                      208
 #define IDD_LINE                        209
+#define IDD_LINE2                       209
 #define IDD_ADVANCEDPAGE                210
 #define IDD_UPLOADPAGE                  212
 #define IDD_SPEEDPAGE                   212
@@ -239,20 +240,20 @@
 #define IDI_DIRECTORY                   421
 #define IDI_TTH                         422
 #define IDI_SEARCHTYPES                 423
-#define IDI_HUB			                424
-#define IDI_MPSTART						425
-#define IDI_MPSPAM						426
-#define IDI_MPBACK						427
-#define IDI_MPPLAY						428
-#define IDI_MPPAUSE						429
-#define IDI_MPNEXT						430
-#define IDI_MPSTOP						431
-#define IDI_MPVOLUMEUP					432
-#define IDI_MPVOLUME50					433
-#define IDI_MPVOLUMEDOWN				434
+#define IDI_HUB                         424
+#define IDI_MPSTART                     425
+#define IDI_MPSPAM                      426
+#define IDI_MPBACK                      427
+#define IDI_MPPLAY                      428
+#define IDI_MPPAUSE                     429
+#define IDI_MPNEXT                      430
+#define IDI_MPSTOP                      431
+#define IDI_MPVOLUMEUP                  432
+#define IDI_MPVOLUME50                  433
+#define IDI_MPVOLUMEDOWN                434
 #define IDI_TEXT                        435
-#define IDI_HUBOP			            436
-#define IDI_HUBREG			            437
+#define IDI_HUBOP                       436
+#define IDI_HUBREG                      437
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
@@ -264,6 +265,7 @@
 #define IDC_DESCRIPTION                 1003
 #define IDC_READD_ALL                   1004
 #define IDC_DESCRIPTION2                1004
+#define IDC_PROFILES_DESC               1004
 #define IDC_CONNECTIONTYPE              1005
 #define IDC_USERS                       1006
 #define IDC_ACTIVE                      1006
@@ -1129,6 +1131,8 @@
 #define IDC_HLTEXT                      1664
 #define IDC_SEARCHTYPES_NOTE            1665
 #define IDC_SHARE_PROFILE_NOTE          1666
+#define IDC_SELECT_ALL                  1667
+#define IDC_PROFILES                    1668
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1305,6 +1309,7 @@
 #define IDD_PRIOPAGE                    15006
 #define IDD_PRIORITYPAGE                15006
 #define IDC_IGNORE_REMOVE               15007
+#define IDD_SHAREPAGE_DLG               15007
 #define IDC_IGNORE_CLEAR                15008
 #define IDC_IGNORELIST                  15009
 #define IDC_IGNORE_USE_REGEXP_OR_WC     15010
@@ -1442,7 +1447,7 @@
 #define IDC_DELETE_FILE                 15127
 #define IDC_PREV                        15128
 #define IDC_FIND_TEXT                   15129
-#define IDC_FILTER						15130
+#define IDC_FILTER                      15130
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_REFRESH_MENU                16000
 #define ID_TOGGLE_TBSTATUS              16900
@@ -1492,7 +1497,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        344
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1667
+#define _APS_NEXT_CONTROL_VALUE         1669
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

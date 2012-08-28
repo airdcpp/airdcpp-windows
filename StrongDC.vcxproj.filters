@@ -977,6 +977,9 @@
     <ClInclude Include="windows\DownloadingOptionsPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\SharePageDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\SettingsTree\SearchTypes.ico">
@@ -1010,6 +1013,36 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\text.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\start.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\spam.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\back.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\play.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\pause.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\next.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\stop.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\up.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\volume50.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MediaToolbar\down.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

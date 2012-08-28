@@ -118,10 +118,13 @@ protected:
 	ShareDirInfo::list getViewItems(ProfileToken aProfile, bool getDiffItems=false);
 	StringSet getExcludedDirs();
 
+	ShareProfilePtr getProfile(ProfileToken aProfile);
+
 	ProfileTokenStringSetMap excludedAdd, excludedRemove;
 
 	void deleteDirectoryInfoItems();
 	void deleteTempViewItems();
+	bool showShareDlg(const ShareProfile::list& spList, ProfileToken curProfile, const tstring& curName, ProfileTokenList& profiles, tstring& newName, bool rename);
 };
 
 #endif // !defined(SHARE_PAGE_H)

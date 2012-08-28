@@ -984,7 +984,7 @@ BEGIN
     EDITTEXT        IDC_AIRTHANKS,216,116,287,66,ES_MULTILINE | ES_READONLY | WS_VSCROLL
 END
 
-IDD_LINE DIALOGEX 0, 0, 239, 46
+IDD_SHAREPAGE_DLG DIALOGEX 0, 0, 239, 158
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Title"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
@@ -992,7 +992,10 @@ BEGIN
     EDITTEXT        IDC_LINE,13,18,156,14,ES_AUTOHSCROLL
     DEFPUSHBUTTON   "OK",IDOK,182,7,50,14
     PUSHBUTTON      "&Cancel",IDCANCEL,182,25,50,14
-    GROUPBOX        "Description",IDC_DESCRIPTION,7,7,168,32
+    GROUPBOX        "Virtual name",IDC_DESCRIPTION,7,7,168,32
+    CONTROL         "",IDC_PROFILES,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,11,54,209,70
+    GROUPBOX        "Add also in the following profiles",IDC_PROFILES_DESC,7,45,222,82
+    PUSHBUTTON      "Select all",IDC_SELECT_ALL,7,134,57,14
 END
 
 IDD_GENERALPAGE DIALOGEX 0, 0, 277, 288
@@ -1519,6 +1522,17 @@ BEGIN
     LTEXT           "Note; Custom search types will only be applied to ADC hubs! On NMDC hubs, using a predefined search type will only search for a set of predefined, unconfigurable extensions; using a custom type will default to searching for any extension.",IDC_SEARCHTYPES_NOTE,8,264,254,43
 END
 
+IDD_LINE DIALOGEX 0, 0, 239, 46
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Title"
+FONT 8, "MS Shell Dlg", 0, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_LINE,13,18,156,14,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,182,7,50,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,182,25,50,14
+    GROUPBOX        "Description",IDC_DESCRIPTION,7,7,168,32
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1534,6 +1548,7 @@ BEGIN
 
     IDD_LINE, DIALOG
     BEGIN
+        BOTTOMMARGIN, 157
     END
 
     IDD_GENERALPAGE, DIALOG
@@ -1645,6 +1660,10 @@ BEGIN
     BEGIN
         RIGHTMARGIN, 275
         BOTTOMMARGIN, 308
+    END
+
+    IDD_SHAREPAGE_DLG, DIALOG
+    BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -2138,10 +2157,9 @@ IDI_UPLOAD              ICON                    "res\\Upload.ico"
 IDI_DOWNLOAD            ICON                    "res\\Download.ico"
 IDI_ONLINE              ICON                    "res\\Online.ico"
 IDI_OFFLINE             ICON                    "res\\Offline.ico"
-IDI_HUB					ICON                    "res\\Hub.ico"
-IDI_HUBREG				ICON                    "res\\HubReg.ico"
-IDI_HUBOP				ICON                    "res\\HubOp.ico"
-//settings Tree, no loading from icons folder.
+IDI_HUB                 ICON                    "res\\Hub.ico"
+IDI_HUBREG              ICON                    "res\\HubReg.ico"
+IDI_HUBOP               ICON                    "res\\HubOp.ico"
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"
@@ -2169,7 +2187,6 @@ IDI_MISC                ICON                    "res\\SettingsTree\\Misc.ico"
 IDI_SHAREOPTIONS        ICON                    "res\\SettingsTree\\ShareOptions.ico"
 IDI_SEARCHTYPES         ICON                    "res\\SettingsTree\\SearchTypes.ico"
 IDI_IGNORE              ICON                    "res\\SettingsTree\\Ignore.ico"
-
 IDI_ANY                 ICON                    "res\\searchTypes\\Any.ico"
 IDI_AUDIO               ICON                    "res\\searchTypes\\Audio.ico"
 IDI_COMPRESSED          ICON                    "res\\searchTypes\\Compressed.ico"
@@ -2189,7 +2206,6 @@ IDI_MPSTOP              ICON                    "res\\MediaToolbar\\stop.ico"
 IDI_MPVOLUMEUP          ICON                    "res\\MediaToolbar\\up.ico"
 IDI_MPVOLUME50          ICON                    "res\\MediaToolbar\\volume50.ico"
 IDI_MPVOLUMEDOWN        ICON                    "res\\MediaToolbar\\down.ico"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //

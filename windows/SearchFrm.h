@@ -30,14 +30,11 @@
 
 #include "../client/Client.h"
 #include "../client/SearchManager.h"
-#include "../client/GeoManager.h"
-#include "../client/AirUtil.h"
 
 #include "../client/ClientManagerListener.h"
 #include "../client/FavoriteManager.h"
-#include "../client/QueueManager.h"
-#include "../client/ShareManager.h"
 #include "../client/SearchResult.h"
+#include "../client/StringMatch.h"
 #include "UCHandler.h"
 
 #define SEARCH_MESSAGE_MAP 6		// This could be any number, really...
@@ -480,6 +477,7 @@ private:
 	CComboBox ctrlFilterSel;
 	CComboBox ctrlSkiplist;
 
+	StringMatch searchSkipList;
 
 	bool onlyFree;
 	bool UseSkiplist;

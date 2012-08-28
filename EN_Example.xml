@@ -1576,5 +1576,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SettingsSharingOptions">Sharing Options</String>
 		<String Name="SettingsMisc">Miscellaneous</String>
 		<String Name="FilterDots">Filter...</String>
+		<String Name="AddDlgDesc">Add also in the following profiles</String>
+		<String Name="RenameDlgDesc">Rename also in the following profiles</String>
 	</Strings>
 </Language>
