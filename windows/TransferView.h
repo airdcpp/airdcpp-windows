@@ -375,7 +375,6 @@ private:
 	void on(DownloadManagerListener::Tick, const DownloadList& aDownload) noexcept;
 	void on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t aTick) noexcept;
 	void on(DownloadManagerListener::Status, const UserConnection*, const string&) noexcept;
-	void on(DownloadManagerListener::Target, const UserPtr& user, const string& aToken) noexcept { onUpdateFileInfo(user, aToken, false); }
 	void on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, false); }
 	void on(DownloadManagerListener::TargetChanged, const string& aTarget, const string& aToken, const string& bundleToken) noexcept;
 
@@ -396,7 +395,7 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void onUpdateFileInfo(const UserPtr& aUser, const string& aToken, bool updateStatus);
+	void onUpdateFileInfo(const HintedUser& aUser, const string& aToken, bool updateStatus);
 
 	void onBundleName(const BundlePtr aBundle);
 	void onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload);

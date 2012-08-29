@@ -451,6 +451,9 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		return 0;
 	}
 
+	if (MessageBox(CTSTRING_F(CONFIRM_PROFILE_REMOVAL, Text::toT(p->getDisplayName())), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES)
+		return 0;
+
 	/* Remove the profile */
 	auto n = find(addProfiles.begin(), addProfiles.end(), p);
 	if (n != addProfiles.end()) {

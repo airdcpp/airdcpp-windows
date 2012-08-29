@@ -932,7 +932,7 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 	speak(ADD_ITEM, ui);
 }
 
-void TransferView::onUpdateFileInfo(const UserPtr& aUser, const string& aToken, bool updateStatus) {
+void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToken, bool updateStatus) {
 	string aTarget, bundleToken;	int64_t aSize; int aFlags = 0;
 	if(QueueManager::getInstance()->getQueueInfo(aUser, aTarget, aSize, aFlags, bundleToken)) {
 		UpdateInfo* ui = new UpdateInfo(aToken, true);
