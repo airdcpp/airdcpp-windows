@@ -218,9 +218,10 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 			asMenu.AppendMenu(MF_SEPARATOR);
 			//only remove and add is enabled
 		} else if(ctrlAutoSearch.GetSelectedCount() == 1) {
+			asMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+			asMenu.AppendMenu(MF_SEPARATOR);
+			
 			if(ctrlAutoSearch.GetCheckState(ctrlAutoSearch.GetSelectedIndex()) == 1) {
-				asMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
-				asMenu.AppendMenu(MF_SEPARATOR);
 				asMenu.AppendMenu(MF_STRING, IDC_DISABLE, CTSTRING(DISABLE_AUTOSEARCH));
 			} else {
 				asMenu.AppendMenu(MF_STRING, IDC_ENABLE, CTSTRING(ENABLE_AUTOSEARCH));
@@ -235,19 +236,17 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		asMenu.AppendMenu(MF_SEPARATOR);
 		asMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 
-		//asMenu.EnableMenuItem(IDC_REMOVE, enable);
+		asMenu.EnableMenuItem(IDC_REMOVE, (ctrlAutoSearch.GetSelectedCount() > 1));
 		asMenu.EnableMenuItem(IDC_CHANGE, enable);
 		asMenu.EnableMenuItem(IDC_MOVE_UP, enable);
 		asMenu.EnableMenuItem(IDC_MOVE_DOWN, enable);
 		
+		asMenu.SetMenuDefaultItem(IDC_CHANGE);
 		//make a menu title from the search string, its probobly too long to fit but atleast it shows something.
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
 			auto as = AutoSearchManager::getInstance()->getAutoSearch(ctrlAutoSearch.GetSelectedIndex());
 			title = Text::toT(as->getSearchString());
-			//TCHAR buf[256];
-			//ctrlAutoSearch.GetItemText(ctrlAutoSearch.GetSelectedIndex(), buf, 256);
-			//title = buf;
 		} else {
 			title = _T("");
 		}
@@ -397,8 +396,11 @@ LRESULT AutoSearchFrame::onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	if(ctrlAutoSearch.GetSelectedCount() == 1) {
 		int sel = ctrlAutoSearch.GetSelectedIndex();
 		AutoSearchPtr as = AutoSearchManager::getInstance()->getAutoSearch(sel);
-
-		AutoSearchManager::getInstance()->SearchNow(as);
+		if(as) {
+			as->setLastSearch(GET_TIME());
+			updateItem(as, sel);
+			AutoSearchManager::getInstance()->SearchNow(as);
+		}
 	}
 	return 0;
 }

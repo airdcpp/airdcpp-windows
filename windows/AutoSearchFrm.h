@@ -54,6 +54,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_DISABLE, onDisable)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearchAs)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_ITEMCHANGED, onItemChanged)
+		NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_DBLCLK, onDoubleClick)
 		COMMAND_HANDLER(IDC_AUTOSEARCH_ENABLE_TIME, EN_CHANGE, onAsTime)
 		COMMAND_HANDLER(IDC_AUTOSEARCH_RECHECK_TIME, EN_KILLFOCUS, onAsRTime)
 		CHAIN_MSG_MAP(baseClass)
@@ -69,6 +70,15 @@ public:
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/){
+		NMITEMACTIVATE* asItem = (NMITEMACTIVATE*)pnmh;
+		if(asItem->iItem >= 0) {
+			PostMessage(WM_COMMAND, IDC_CHANGE, 0);
+		} else if(asItem->iItem == -1) {
+			PostMessage(WM_COMMAND, IDC_ADD, 0);
+		}
+		return 0;
+	}
 	
 	LRESULT onEnable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		//just set the checkstate, onitemchanged will handle it from there
