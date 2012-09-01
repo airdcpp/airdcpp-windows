@@ -271,7 +271,6 @@
     <ClCompile Include="client\Mapper_WinUPnP.cpp" />
     <ClCompile Include="client\MappingManager.cpp" />
     <ClCompile Include="client\NmdcHub.cpp" />
-    <ClCompile Include="client\pme.cpp" />
     <ClCompile Include="client\QueueItem.cpp" />
     <ClCompile Include="client\QueueManager.cpp" />
     <ClCompile Include="client\ResourceManager.cpp" />
@@ -396,7 +395,6 @@
     <ClInclude Include="client\NmdcHub.h" />
     <ClInclude Include="client\noexcept.h" />
     <ClInclude Include="client\OnlineUser.h" />
-    <ClInclude Include="client\pme.h" />
     <ClInclude Include="client\Pointer.h" />
     <ClInclude Include="client\QueueItem.h" />
     <ClInclude Include="client\QueueManager.h" />
@@ -494,10 +492,6 @@
     </ProjectReference>
     <ProjectReference Include="MakeDefs\MakeDefs.vcxproj">
       <Project>{aef82786-9da2-4cdf-8602-02643cafc727}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="regex.vcxproj">
-      <Project>{6b5e1154-d1fc-460a-b5f4-78acb1e96349}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="zlib.vcxproj">

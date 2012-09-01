@@ -50,7 +50,6 @@
 #include "../client/HashManager.h"
 #include "../client/LogManager.h"
 #include "../client/version.h"
-#include "../client/pme.h"
 #include "../client/ShareScannerManager.h"
 #include "../client/AutoSearchManager.h"
 #include "../client/Magnet.h"
@@ -2494,9 +2493,18 @@ tstring WinUtil::getTitle(const tstring& searchTerm) {
 	}
 
 	//remove words after year/episode
-	PME regexp;
-	regexp.Init(_T("(((\\[)?((19[0-9]{2})|(20[0-1][0-9]))|(s[0-9]([0-9])?(e|d)[0-9]([0-9])?)|(Season(\\.)[0-9]([0-9])?)).*)"));
-	ret = regexp.sub(ret, Util::emptyStringT);
+	boost::wregex reg;
+	reg.assign(_T("(((\\[)?((19[0-9]{2})|(20[0-1][0-9]))|(s[0-9]([0-9])?(e|d)[0-9]([0-9])?)|(Season(\\.)[0-9]([0-9])?)).*)"));
+
+	boost::match_results<tstring::const_iterator> result;
+	tstring::const_iterator start = ret.begin();
+	tstring::const_iterator end = ret.end();
+
+	if (boost::regex_search(start, end, result, reg, boost::match_default)) {
+		ret = ret.substr(0, result.position());
+	}
+
+	//boost::regex_replace(ret, reg, Util::emptyStringT, boost::match_default | boost::format_sed);
 
 	//remove extra words
 	string extrawords[] = {"multisubs","multi","dvdrip","dvdr","real proper","proper","ultimate directors cut","directors cut","dircut","x264","pal","complete","limited","ntsc","bd25",

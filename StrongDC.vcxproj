@@ -710,10 +710,6 @@
     <ProjectReference Include="natpmp\natpmp.vcxproj">
       <Project>{05f574be-57b1-3f27-280b-5debe2228086}</Project>
     </ProjectReference>
-    <ProjectReference Include="regex.vcxproj">
-      <Project>{6b5e1154-d1fc-460a-b5f4-78acb1e96349}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="MakeDefs\MakeDefs.vcxproj">
       <Project>{aef82786-9da2-4cdf-8602-02643cafc727}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>

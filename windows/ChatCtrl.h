@@ -30,7 +30,6 @@
 #include "ImageDataObject.h"
 #include "UCHandler.h"
 #include "MenuBaseHandlers.h"
-#include "../client/pme.h"
 
 #ifndef MSFTEDIT_CLASS
 #define MSFTEDIT_CLASS L"RICHEDIT50W";

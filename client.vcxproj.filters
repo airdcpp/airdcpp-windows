@@ -80,9 +80,6 @@
     <ClCompile Include="client\NmdcHub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="client\pme.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="client\QueueItem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -395,9 +392,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\NmdcHub.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\pme.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\Pointer.h">

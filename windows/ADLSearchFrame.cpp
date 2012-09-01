@@ -35,9 +35,9 @@ int ADLSearchFrame::columnIndexes[] = {
 	COLUMN_MIN_FILE_SIZE,
 	COLUMN_MAX_FILE_SIZE,
 	COLUMN_COMMENT,
-	COLUMN_RAW,
 	COLUMN_REGEXP
 };
+
 int ADLSearchFrame::columnSizes[] = { 
 	120, 
 	90, 
@@ -45,9 +45,9 @@ int ADLSearchFrame::columnSizes[] = {
 	90, 
 	90,
 	150,
-	20,
-	20
+	40
 };
+
 static ResourceManager::Strings columnNames[] = { 
 	ResourceManager::ACTIVE_SEARCH_STRING, 
 	ResourceManager::SOURCE_TYPE, 
@@ -55,7 +55,6 @@ static ResourceManager::Strings columnNames[] = {
 	ResourceManager::SIZE_MIN, 
 	ResourceManager::MAX_SIZE, 
 	ResourceManager::COMMENT,
-	ResourceManager::RAW,
 	ResourceManager::REGEXP
 };
 
@@ -272,7 +271,7 @@ LRESULT ADLSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		return 0;
 	}
 
-	ADLSearch* search = new ADLSearch();
+	ADLSearch search;
 	ADLSProperties dlg(search);
 	if(dlg.DoModal((HWND)*this) == IDOK)
 	{
@@ -284,7 +283,7 @@ LRESULT ADLSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		if(i < 0)
 		{
 			// Add to end
-			if (!ADLSearchManager::getInstance()->addCollection(search, true, true)) {
+			if (!ADLSearchManager::getInstance()->addCollection(search, collection.size() - 1)) {
 				return 0;
 			}
 			i = collection.size() - 1;
@@ -292,7 +291,7 @@ LRESULT ADLSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		else
 		{
 			// Add before selection
-			if (!ADLSearchManager::getInstance()->addCollection(search, true, true, true, i)) {
+			if (!ADLSearchManager::getInstance()->addCollection(search, i)) {
 				return 0;
 			}
 		}
@@ -322,15 +321,11 @@ LRESULT ADLSearchFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 	// Edit existing
 	ADLSearchManager::SearchCollection& collection = ADLSearchManager::getInstance()->collection;
-	ADLSearch* search = collection[i];
+	ADLSearch search = collection[i];
 
 	// Invoke dialog with selected search
 	ADLSProperties dlg(search);
-	if(dlg.DoModal((HWND)*this) == IDOK)
-	{
-		// Update search collection
-		collection[i] = search;
-
+	if(dlg.DoModal((HWND)*this) == IDOK) {
 		// Update list control
 		UpdateSearch(i);	  
 	}
@@ -450,7 +445,7 @@ LRESULT ADLSearchFrame::onMoveUp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	// Insert (grouped together)
 	for(i = 0; i < (int)sel.size(); ++i)
 	{
-		if (!ADLSearchManager::getInstance()->addCollection(backup[i], true, false, true, i0 + i)) {
+		if (!ADLSearchManager::getInstance()->addCollection(backup[i], i0 + i)) {
 			return 0;
 		}
 		//collection.insert(collection.begin() + i0 + i, backup[i]);
@@ -514,7 +509,7 @@ LRESULT ADLSearchFrame::onMoveDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	// Insert (grouped together)
 	for(i = 0; i < (int)sel.size(); ++i)
 	{
-		if (!ADLSearchManager::getInstance()->addCollection(backup[i], true, false, true, i0 + i)) {
+		if (!ADLSearchManager::getInstance()->addCollection(backup[i], i0 + i)) {
 			return 0;
 		}
 	}
@@ -582,8 +577,7 @@ void ADLSearchFrame::LoadAll()
 
 	// Load all searches
 	ADLSearchManager::SearchCollection& collection = ADLSearchManager::getInstance()->collection;
-	for(unsigned long l = 0; l < collection.size(); l++)
-	{
+	for(unsigned long l = 0; l < collection.size(); l++) {
 		UpdateSearch(l, FALSE);
 	}
 }
@@ -598,7 +592,7 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	{
 		return;
 	}
-	ADLSearch* search = collection[index];
+	ADLSearch* search = &collection[index];
 
 	// Delete from list control
 	if(doDelete)
@@ -609,7 +603,7 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	// Generate values
 	TStringList line;
 	tstring fs;
-	line.push_back(Text::toT(search->searchString));
+	line.push_back(Text::toT(search->getPattern()));
 	line.push_back(search->SourceTypeToDisplayString(search->sourceType));
 	line.push_back(Text::toT(search->destDir));
 
@@ -632,7 +626,7 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	line.push_back(fs);
 
 	line.push_back(Text::toT(search->adlsComment));
-	line.push_back(Util::toStringW(search->isRegexp));
+	line.push_back(search->isRegEx() ? CTSTRING(YES) : CTSTRING(NO));
 
 
 	// Insert in list control

@@ -35,7 +35,7 @@ class ADLSProperties : public CDialogImpl<ADLSProperties>
 public:
 
 	// Constructor/destructor
-	ADLSProperties::ADLSProperties(ADLSearch *_search) : search(_search) { }
+	ADLSProperties::ADLSProperties(ADLSearch& _search) : search(_search) { }
 	~ADLSProperties() { }
 
 	// Dilaog unique id
@@ -61,7 +61,7 @@ public:
 private:
 
 	// Current search
-	ADLSearch* search;
+	ADLSearch& search;
 
 	CEdit ctrlSearch;
 	CEdit ctrlComment;
@@ -71,10 +71,9 @@ private:
 	CButton ctrlActive;
 	CButton ctrlAutoQueue;
 	CButton ctrlRegexp;
-	CButton ctrlCaseSensitive;
 	CComboBox ctrlSearchType;
 	CComboBox ctrlSizeType;
-	string matchRegExp(const string& aExp, const string& aString, const bool& caseSensitive = true);
+	string matchRegExp(const string& aExp, const string& aString);
 	void fixControls();
 };
 
