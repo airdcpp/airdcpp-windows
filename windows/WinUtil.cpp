@@ -1200,8 +1200,11 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
 	return ret + "&dn=" + Util::encodeURI(aFile);
 }
 
- void WinUtil::searchHash(const TTHValue& aHash) {
-	SearchFrame::openWindow(Text::toT(aHash.toBase32()), 0, SearchManager::SIZE_DONTCARE, SEARCH_TYPE_TTH);
+ void WinUtil::searchHash(const TTHValue& aHash, const string& aFileName, int64_t aSize) {
+	if (SettingsManager::lanMode)
+		SearchFrame::openWindow(Text::toT(aFileName), aSize, SearchManager::SIZE_EXACT, SEARCH_TYPE_ANY);
+	else
+		SearchFrame::openWindow(Text::toT(aHash.toBase32()), 0, SearchManager::SIZE_DONTCARE, SEARCH_TYPE_TTH);
  }
 
  void WinUtil::registerDchubHandler() {
@@ -1435,14 +1438,16 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, bool /*aOverride*/, const User
 			if(!BOOLSETTING(MAGNET_ASK) && m.fsize > 0 && m.fname.length() > 0) {
 				switch(SETTING(MAGNET_ACTION)) {
 					case SettingsManager::MAGNET_AUTO_DOWNLOAD:
-						try {
-							QueueManager::getInstance()->add(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), HintedUser(aUser, hubHint));
-						} catch(const Exception& e) {
-							LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
+						if (!SettingsManager::lanMode) {
+							try {
+								QueueManager::getInstance()->add(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), HintedUser(aUser, hubHint), Util::emptyString);
+							} catch(const Exception& e) {
+								LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
+							}
 						}
 						break;
 					case SettingsManager::MAGNET_AUTO_SEARCH:
-						WinUtil::searchHash(m.getTTH());
+						WinUtil::searchHash(m.getTTH(), m.fname, m.fsize);
 						break;
 				};
 			} else {

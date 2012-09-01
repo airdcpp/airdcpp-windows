@@ -798,7 +798,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 		if (isTTH || isMagnet) {
-			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, CTSTRING(SEARCH_TTH));
+			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
 		}
 
 		targets.clear();
@@ -1013,7 +1013,7 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 				return 0;
 
 			if (shareDupe) {
-				path = Text::toT(ShareManager::getInstance()->getRealPath(m.getTTH()));
+				path = SettingsManager::lanMode ? Text::toT(ShareManager::getInstance()->getRealPath(m.fname, m.fsize)) : Text::toT(ShareManager::getInstance()->getRealPath(m.getTTH()));
 			} else {
 				StringList targets = QueueManager::getInstance()->getTargets(m.getTTH());
 				if (!targets.empty()) {
@@ -1031,13 +1031,13 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 }
 
 void ChatCtrl::download(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
-	if (isMagnet && client) {
+	if (isMagnet && client && !SettingsManager::lanMode) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		OnlineUserPtr u = client->findUser(Text::fromT(author));
 		if (u) {
 			try {
 				QueueManager::getInstance()->add(aTarget + m.fname, m.fsize, m.getTTH(), 
-					!u->getUser()->isSet(User::BOT) ? HintedUser(u->getUser(), client->getHubUrl()) : HintedUser(UserPtr(), Util::emptyString));
+					!u->getUser()->isSet(User::BOT) ? HintedUser(u->getUser(), client->getHubUrl()) : HintedUser(UserPtr(), Util::emptyString), Util::emptyString);
 			} catch (...) {}
 		}
 	} else {
@@ -1726,9 +1726,9 @@ LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 LRESULT ChatCtrl::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
-		WinUtil::searchHash(m.getTTH());
-	} else {
-		WinUtil::searchHash(TTHValue(Text::fromT(selectedWord)));
+		WinUtil::searchHash(m.getTTH(), m.fname, m.fsize);
+	} else if (!SettingsManager::lanMode) {
+		WinUtil::searchHash(TTHValue(Text::fromT(selectedWord)), Util::emptyString, 0);
 	}
 	SetSelNone();
 	return 0;

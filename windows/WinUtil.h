@@ -308,7 +308,7 @@ public:
 	// Hash related
 	static void bitziLink(const TTHValue& /*aHash*/);
 	static void copyMagnet(const TTHValue& /*aHash*/, const string& /*aFile*/, int64_t);
-	static void searchHash(const TTHValue& /*aHash*/);
+	static void searchHash(const TTHValue& aHash, const string& aFileName, int64_t aSize);
 	static string makeMagnet(const TTHValue& aHash, const string& aFile, int64_t size);
 
 	// URL related

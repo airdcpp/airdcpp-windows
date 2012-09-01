@@ -276,7 +276,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		}
 		case COLUMN_ADDED: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getAdded()));
 		case COLUMN_TTH: 
-			return qi->isSet(QueueItem::FLAG_USER_LIST) ? Util::emptyStringT : Text::toT(getTTH().toBase32());
+			return (qi->isSet(QueueItem::FLAG_USER_LIST) || SettingsManager::lanMode) ? Util::emptyStringT : Text::toT(getTTH().toBase32());
 
 		default: return Util::emptyStringT;
 	}
@@ -1629,7 +1629,7 @@ LRESULT QueueFrame::onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 			int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
 			const QueueItemInfo* ii = ctrlQueue.getItemData(i);
 			if(ii != NULL)
-				WinUtil::searchHash(ii->getTTH());
+				WinUtil::searchHash(ii->getTTH(), Util::getFileName(ii->getTarget()), ii->getSize());
 		}
 	}
 	return 0;

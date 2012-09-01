@@ -596,7 +596,10 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), dupe(DUPE_NONE) { 
 
 	if(BOOLSETTING(DUPE_SEARCH)) {
-		dupe = sr->getType() == SearchResult::TYPE_DIRECTORY ? AirUtil::checkDupe(sr->getFile(), sr->getSize()) : AirUtil::checkDupe(sr->getTTH(), sr->getFileName());
+		if (sr->getType() == SearchResult::TYPE_DIRECTORY)
+			dupe = AirUtil::checkDirDupe(sr->getFile(), sr->getSize());
+		else
+			dupe = SettingsManager::lanMode ? AirUtil::checkFileDupe(sr->getFile(), sr->getSize()) : AirUtil::checkFileDupe(sr->getTTH(), sr->getFileName());
 	}
 
 	if (!sr->getIP().empty()) {
@@ -666,7 +669,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			}
 			return Text::toT(ip);
 		}
-		case COLUMN_TTH: return sr->getType() == SearchResult::TYPE_FILE ? Text::toT(sr->getTTH().toBase32()) : Util::emptyStringT;
+		case COLUMN_TTH: return (sr->getType() == SearchResult::TYPE_FILE && !SettingsManager::lanMode) ? Text::toT(sr->getTTH().toBase32()) : Util::emptyStringT;
 		default: return Util::emptyStringT;
 	}
 }
@@ -675,7 +678,7 @@ void SearchFrame::SearchInfo::view() {
 	try {
 		if(sr->getType() == SearchResult::TYPE_FILE) {
 			QueueManager::getInstance()->add(Util::getTempPath() + sr->getFileName(),
-				sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()),
+				sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()), sr->getFile(), 
 				QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_TEXT);
 		}
 	} catch(const Exception&) {
@@ -689,7 +692,7 @@ void SearchFrame::SearchInfo::viewNfo() {
 	if ((sr->getType() == SearchResult::TYPE_FILE) && (regex_match(sr->getFileName(), reg))) {
 		try {
 			QueueManager::getInstance()->add(Util::getTempPath() + sr->getFileName(),
-				sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()),
+				sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()), sr->getFile(), 
 				QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_TEXT);
 		} catch(const Exception&) {
 		}
@@ -716,14 +719,14 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 		if(si->sr->getType() == SearchResult::TYPE_FILE) {
 			string target = tgt + (noAppend ? Util::emptyString : Text::fromT(si->getText(COLUMN_FILENAME)));
 			QueueManager::getInstance()->add(target, si->sr->getSize(), 
-				si->sr->getTTH(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), 0, true, p);
+				si->sr->getTTH(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), si->sr->getFile(), 0, true, p);
 			
 			const vector<SearchInfo*>& children = sf->getUserList().findChildren(si->getGroupCond());
 			for(auto i = children.begin(); i != children.end(); i++) {
 				SearchInfo* j = *i;
 				try {
-					QueueManager::getInstance()->add(tgt + Text::fromT(si->getText(COLUMN_FILENAME)), j->sr->getSize(), j->sr->getTTH(), 
-						HintedUser(j->getUser(), j->sr->getHubURL()), 0, true, p);
+					QueueManager::getInstance()->add(target, j->sr->getSize(), j->sr->getTTH(), 
+						HintedUser(j->getUser(), j->sr->getHubURL()), si->sr->getFile(), 0, true, p);
 				} catch(const Exception&) {
 				}
 			}
@@ -1185,7 +1188,7 @@ LRESULT SearchFrame::onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		int i = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
 		const SearchResultPtr& sr = ctrlResults.getItemData(i)->sr;
 		if(sr->getType() == SearchResult::TYPE_FILE) {
-			WinUtil::searchHash(sr->getTTH());
+			WinUtil::searchHash(sr->getTTH(), sr->getFileName(), sr->getSize());
 		}
 	}
 
@@ -1350,7 +1353,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			}
 
 			if (hasFiles)
-				resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_TTH));
+				resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
 
 			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES_DIR, CTSTRING(SEARCH_DIRECTORY));
 			resultsMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
@@ -1875,7 +1878,7 @@ LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		
 			if(si->sr->getType() == SearchResult::TYPE_FILE) {
 				if (si->isShareDupe()) {
-					path = Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
+					path = SettingsManager::lanMode ? Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getFileName(), si->sr->getSize())) : Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
 				} else if (si->isQueueDupe()) {
 					StringList targets = QueueManager::getInstance()->getTargets(si->sr->getTTH());
 					if (!targets.empty()) {

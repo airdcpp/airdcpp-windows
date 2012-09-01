@@ -726,7 +726,7 @@ LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, 
 LRESULT DirectoryListingFrame::onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	const ItemInfo* ii = ctrlList.getSelectedItem();
 	if(ii != NULL && ii->type == ItemInfo::FILE) {
-		WinUtil::searchHash(ii->file->getTTH());
+		WinUtil::searchHash(ii->file->getTTH(), ii->file->getName(), ii->file->getSize());
 	}
 	return 0;
 }
@@ -1014,7 +1014,7 @@ clientmenu:
 				fileMenu.AppendMenu(MF_SEPARATOR);
 			}
 
-			fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_TTH));
+			fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
 			fileMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
 			fileMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 
@@ -1326,7 +1326,7 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 			}
 		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize()) : Util::formatExactSize(file->getSize());
 		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize()) : Util::formatBytesW(file->getSize());
-		case COLUMN_TTH: return type == FILE ? Text::toT(file->getTTH().toBase32()) : Util::emptyStringT;
+		case COLUMN_TTH: return (type == FILE && !SettingsManager::lanMode) ? Text::toT(file->getTTH().toBase32()) : Util::emptyStringT;
 		case COLUMN_DATE: return (type == DIRECTORY && dir->getDate() > 0) ? Text::toT(Util::getDateTime(dir->getDate())) : Util::emptyStringT;
 		default: return Util::emptyStringT;
 	}
@@ -1673,7 +1673,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 					path = Text::toT(localPaths.front());
 				}
 			} else if (ii->file->getDupe() == SHARE_DUPE) {
-				path = Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
+				path = SettingsManager::lanMode ? Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getName(), ii->file->getSize())) : Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 			} else {
 				StringList localPaths = QueueManager::getInstance()->getTargets(ii->file->getTTH());
 				if (!localPaths.empty()) {

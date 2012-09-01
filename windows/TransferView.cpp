@@ -799,8 +799,9 @@ LRESULT TransferView::onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
 
 		TTHValue tth;
-		if(QueueManager::getInstance()->getTTH(Text::fromT(ii->target), tth)) {
-			WinUtil::searchHash(tth);
+		int64_t size = 0;
+		if(QueueManager::getInstance()->getSearchInfo(Text::fromT(ii->target), tth, size)) {
+			WinUtil::searchHash(tth, Util::getFileName(Text::fromT(ii->target)), size);
 		}
 	}
 

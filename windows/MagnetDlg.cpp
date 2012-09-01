@@ -79,11 +79,11 @@ LRESULT MagnetDlg::onCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, 
 
 		if(IsDlgButtonChecked(IDC_MAGNET_SEARCH)) {
 			TTHValue tmphash(mHash);
-			WinUtil::searchHash(tmphash); 
-		} else if(IsDlgButtonChecked(IDC_MAGNET_QUEUE)) {
+			WinUtil::searchHash(tmphash, Text::fromT(mFileName), mSize); 
+		} else if(IsDlgButtonChecked(IDC_MAGNET_QUEUE) && !SettingsManager::lanMode) {
 			try {
 				string target = SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(mFileName);
-				QueueManager::getInstance()->add(target, mSize, TTHValue(mHash), HintedUser(mUser, mHint));
+				QueueManager::getInstance()->add(target, mSize, TTHValue(mHash), HintedUser(mUser, mHint), Util::emptyString);
 			} catch(const Exception& e) {
 				LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
 			}
