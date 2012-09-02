@@ -323,6 +323,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 			asNew->startTime = dlg.startTime;
 			asNew->endTime = dlg.endTime;
 			asNew->searchDays = dlg.searchDays;
+			asNew->setLastSearch(as->getLastSearch());
 
 			if (AutoSearchManager::getInstance()->updateAutoSearch(sel, asNew)) {
 				ctrlAutoSearch.DeleteItem(sel);

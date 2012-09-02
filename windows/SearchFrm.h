@@ -512,6 +512,8 @@ private:
 
 	static FrameMap frames;
 
+	static StringList lastDisabledHubs;
+
 	void onEnter();
 	void onTab(bool shift);
 	

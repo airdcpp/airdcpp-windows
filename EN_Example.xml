@@ -1352,7 +1352,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
  You will need to restart airdc++ for the icons to load.</String>
 		<String Name="IconsDefault">Default Icons</String>
 		<String Name="ThemeText">Themes: </String>
-		<String Name="Autosearch">AutoSearch</String>
+		<String Name="Autosearch">Auto Search</String>
 		<String Name="EnableAutosearch">Enable Item(s)</String>
 		<String Name="DisableAutosearch">Disable Item(s)</String>
 		<String Name="SearchBundleAlt">Search bundle for alternatives</String>

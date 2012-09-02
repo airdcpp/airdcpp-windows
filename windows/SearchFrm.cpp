@@ -44,6 +44,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  Resour
 	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT };
 
 SearchFrame::FrameMap SearchFrame::frames;
+StringList SearchFrame::lastDisabledHubs;
 
 void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGLONG size /* = 0 */, SearchManager::SizeModes mode /* = SearchManager::SIZE_ATLEAST */, const string& type /* = SEARCH_TYPE_ANY */) {
 	SearchFrame* pChild = new SearchFrame();
@@ -60,7 +61,6 @@ void SearchFrame::closeAll() {
 
 LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
-
 
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
 	ctrlStatus.Attach(m_hWndStatusBar);
@@ -274,6 +274,8 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlHubs.SetTextColor(WinUtil::textColor);
 	ctrlHubs.SetFont(WinUtil::systemFont, FALSE);	// use WinUtil::font instead to obey Appearace settings
 
+	StringTokenizer<string> st(SETTING(LAST_SEARCH_DISABLED_HUBS), _T(','));
+	lastDisabledHubs = st.getTokens();
 	initHubs();
 
 	UpdateLayout();
@@ -883,10 +885,15 @@ LRESULT SearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 		// delete all results which came in paused state
 		for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
-
+		lastDisabledHubs.clear();
 		for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
-			delete ctrlHubs.getItemData(i);
-			}
+			HubInfo* hub = ctrlHubs.getItemData(i);
+			if(ctrlHubs.GetCheckState(i) == FALSE && i != 0)
+				lastDisabledHubs.push_back(Text::fromT(hub->url));
+
+			delete hub;
+		}
+		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_DISABLED_HUBS, Util::toString(",", lastDisabledHubs));
 		ctrlHubs.DeleteAllItems();
 
 		CRect rc;
@@ -1402,7 +1409,12 @@ void SearchFrame::initHubs() {
 
 void SearchFrame::onHubAdded(HubInfo* info) {
 	int nItem = ctrlHubs.insertItem(info, 0);
-	ctrlHubs.SetCheckState(nItem, (ctrlHubs.GetCheckState(0) ? info->op : true));
+	BOOL enable = TRUE;
+	if(ctrlHubs.GetCheckState(0))
+		enable = info->op;
+	else
+		enable = lastDisabledHubs.empty() ? TRUE : find(lastDisabledHubs.begin(), lastDisabledHubs.end(), Text::fromT(info->url)) == lastDisabledHubs.end() ? TRUE : FALSE;
+	ctrlHubs.SetCheckState(nItem, enable);
 	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
 }
 
@@ -1481,8 +1493,7 @@ LRESULT SearchFrame::onItemChangedHub(int /* idCtrl */, LPNMHDR pnmh, BOOL& /* b
 		if (((lv->uNewState & LVIS_STATEIMAGEMASK) >> 12) - 1) {
 			for(int iItem = 0; (iItem = ctrlHubs.GetNextItem(iItem, LVNI_ALL)) != -1; ) {
 				const HubInfo* client = ctrlHubs.getItemData(iItem);
-				if (!client->op)
-					ctrlHubs.SetCheckState(iItem, false);
+				ctrlHubs.SetCheckState(iItem, client->op);
 			}
 		}
 	}

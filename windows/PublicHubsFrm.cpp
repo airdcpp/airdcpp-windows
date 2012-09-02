@@ -302,7 +302,8 @@ LRESULT PublicHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	TCHAR buf[256];
 	
 	if(ctrlHubs.GetSelectedCount() >= 1) {
-		int i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED);
+		int i = -1;
+		while( (i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
 
 		FavoriteHubEntry e;
 		ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
@@ -314,7 +315,9 @@ LRESULT PublicHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
 		e.setServer(Text::fromT(buf));
 
+		e.setShareProfile(ShareManager::getInstance()->getShareProfile(SP_DEFAULT));
 		FavoriteManager::getInstance()->addFavorite(e);
+		}
 	}
 	return 0;
 }
