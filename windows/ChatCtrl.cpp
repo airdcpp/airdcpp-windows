@@ -691,7 +691,7 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	size_t pos = selectedLine.find(_T(" <"));
 	if (pos != tstring::npos) {
 		tstring::size_type iAuthorLen = selectedLine.find(_T('>'), 1);
-		if(iAuthorLen != tstring::npos) {
+		if(iAuthorLen != tstring::npos && iAuthorLen > pos) {
 			tstring nick(selectedLine.c_str() + pos + 2);
 			nick.erase(iAuthorLen - pos - 2);
 			author = nick;

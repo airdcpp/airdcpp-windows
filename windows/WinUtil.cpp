@@ -1077,7 +1077,9 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		ShareManager::getInstance()->setDirty(true);
 	}else if(stricmp(cmd.c_str(), _T("generatelist")) == 0) {
 		ShareManager::getInstance()->generateOwnList(0);
-	} /*else if(stricmp(cmd.c_str(), _T("autosearch")) == 0) {
+	} else if(stricmp(cmd.c_str(), _T("clientstats")) == 0) {
+		message = Text::toT(ClientManager::getInstance()->getClientStats());
+	}/*else if(stricmp(cmd.c_str(), _T("autosearch")) == 0) {
 		AutoSearchManager::getInstance()->checkSearches(true);
 		//debug info
 	} */ else if(stricmp(cmd.c_str(), _T("expected")) == 0) {
