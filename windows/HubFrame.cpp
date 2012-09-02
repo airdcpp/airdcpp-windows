@@ -439,8 +439,6 @@ void HubFrame::onEnter() {
 				if(s[0] == '!' || s[0] == '+' || s[0] == '-')
 					addStatus(_T("Server command: ") + s);
 			}
-			if(BOOLSETTING(CZCHARS_DISABLE))
-				s = WinUtil::disableCzChars(s);
 
 			client->hubMessage(Text::fromT(s));
 			ctrlMessage.SetWindowText(Util::emptyStringT.c_str());

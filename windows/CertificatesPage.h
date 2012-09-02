@@ -44,6 +44,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_BROWSE_CERTIFICATE, onBrowseCertificate)
 		COMMAND_ID_HANDLER(IDC_BROWSE_TRUSTED_PATH, onBrowseTrustedPath)
 		COMMAND_ID_HANDLER(IDC_GENERATE_CERTS, onGenerateCerts)
+		COMMAND_HANDLER(IDC_TRANSFER_ENCRYPTION, CBN_SELENDOK, onModeChanged)
 	END_MSG_MAP()
 
 	LRESULT onBrowsePrivateKey(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -51,17 +52,18 @@ public:
 	LRESULT onBrowseTrustedPath(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGenerateCerts(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onModeChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 	
 protected:
-
+	CComboBox ctrlTransferEncryption;
 	static Item items[];
 	static TextItem texts[];
-	static ListItem listItems[];
 	TCHAR* title;
+	void fixControls();
 };
 
 #endif // !defined(CERTIFICATES_PAGE_H)

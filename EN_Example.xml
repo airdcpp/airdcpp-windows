@@ -698,7 +698,6 @@
 		<String Name="SettingsUseCtrlForLineHistory">Use CTRL for line history</String>
 		<String Name="SettingsUseOldSharingUi">Use old sharing user interface</String>
 		<String Name="SettingsUseSystemIcons">Use system icons when browsing files (slows browsing down a bit)</String>
-		<String Name="SettingsUseTls">Use TLS when remote client supports it (affects both clients and hubs)</String>
 		<String Name="SettingsUseVerticalView">Use vertical view by default</String>
 		<String Name="SettingsUserColors">User List Colors</String>
 		<String Name="SettingsUserCommands">User Commands</String>
@@ -1176,7 +1175,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="TestWrite">Test Write to AirDC++ folders on startup</String>
 		<String Name="SettingsIncomingRefreshTime">Incoming Refresh Time</String>
 		<String Name="SettingsUseAdls">Use ADLSearch on Filelists</String>
-		<String Name="SettingsUseAdlsOwnList">Use ADLSearch on Own FileList</String>
 		<String Name="SettingDontDlAlreadyQueued">Don't download files already in queue</String>
 		<String Name="FavShowJoin">Show User Joins / Parts</String>
 		<String Name="UpnpRemovedMappings">Successfully removed port mappings</String>
@@ -1580,5 +1578,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="RenameDlgDesc">Rename also in the following profiles</String>
 		<String Name="NoFileAccess">You don't have access to this file</String>
 		<String Name="ConfirmProfileRemoval">Are you sure that you want to remove the profile %s?</String>
+		<String Name="SourceNoEncryption">Remote ADC client does not use TLS encryption</String>
+		<String Name="EncryptionForced">Enabled (forced in ADC hubs)</String>
+		<String Name="TransferEncryption">Transfer encryption</String>
 	</Strings>
 </Language>

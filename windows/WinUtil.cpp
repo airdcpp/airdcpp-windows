@@ -2071,22 +2071,6 @@ unsigned __int64 nCtr = 0, nFreq = 0, nCtrStop = 0;
 #endif
 }
 
-wchar_t arrayutf[42] = { L'Á', L'È', L'Ï', L'É', L'Ì', L'Í', L'¼', L'Ò', L'Ó', L'Ø', L'Š', L'', L'Ú', L'Ù', L'İ', L'', L'á', L'è', L'ï', L'é', L'ì', L'í', L'¾', L'ò', L'ó', L'ø', L'š', L'', L'ú', L'ù', L'ı', L'', L'Ä', L'Ë', L'Ö', L'Ü', L'ä', L'ë', L'ö', L'ü', L'£', L'³' };
-wchar_t arraywin[42] = { L'A', L'C', L'D', L'E', L'E', L'I', L'L', L'N', L'O', L'R', L'S', L'T', L'U', L'U', L'Y', L'Z', L'a', L'c', L'd', L'e', L'e', L'i', L'l', L'n', L'o', L'r', L's', L't', L'u', L'u', L'y', L'z', L'A', L'E', L'O', L'U', L'a', L'e', L'o', L'u', L'L', L'l' };
-
-const tstring& WinUtil::disableCzChars(tstring& message) {
-	for(size_t j = 0; j < message.length(); j++) {
-		for(size_t l = 0; l < (sizeof(arrayutf) / sizeof(arrayutf[0])); l++) {
-			if (message[j] == arrayutf[l]) {
-				message[j] = arraywin[l];
-				break;
-			}
-		}
-	}
-
-	return message;
-}
-
 tstring WinUtil::Speedinfo() {
 	tstring result = _T("\n");
 

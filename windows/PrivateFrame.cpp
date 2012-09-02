@@ -467,9 +467,6 @@ void PrivateFrame::onEnter()
 			}
 		} else {
 			if(replyTo.user->isOnline()) {
-				if(BOOLSETTING(CZCHARS_DISABLE))
-					s = WinUtil::disableCzChars(s);
-
 				sendMessage(s);
 			} else {
 				ctrlStatus.SetText(0, CTSTRING(USER_WENT_OFFLINE));

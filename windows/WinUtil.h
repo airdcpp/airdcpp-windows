@@ -414,7 +414,6 @@ public:
 	static tstring diskInfo();
 	static string generateStats();
 	static string uptimeInfo();
-	static const tstring& disableCzChars(tstring& message);
 	static bool shutDown(int action);
 	static int getFirstSelectedIndex(CListViewCtrl& list);
 	static int setButtonPressed(int nID, bool bPressed = true);

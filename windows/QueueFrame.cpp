@@ -248,7 +248,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		case COLUMN_ERRORS: {
 			tstring tmp;
 			QueueItem::SourceList badSources = QueueManager::getInstance()->getBadSources(qi);
-			for(QueueItem::SourceConstIter j = badSources.begin(); j != badSources.end(); ++j) {
+			for(auto j = badSources.begin(); j != badSources.end(); ++j) {
 				if(!j->isSet(QueueItem::Source::FLAG_REMOVED)) {
 				if(tmp.size() > 0)
 					tmp += _T(", ");
@@ -256,9 +256,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 					tmp += _T(" (");
 					if(j->isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
 						tmp += TSTRING(FILE_NOT_AVAILABLE);
-					} else if(j->isSet(QueueItem::Source::FLAG_PASSIVE)) {
-						tmp += TSTRING(PASSIVE_USER);
-					} else if(j->isSet(QueueItem::Source::FLAG_BAD_TREE)) {
+					}  else if(j->isSet(QueueItem::Source::FLAG_BAD_TREE)) {
 						tmp += TSTRING(INVALID_TREE);
 					} else if(j->isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
 						tmp += TSTRING(SLOW_USER);
@@ -1349,8 +1347,6 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 						tstring nick = WinUtil::getNicks(i->getUser());
 						if(i->isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
 							nick += _T(" (") + TSTRING(FILE_NOT_AVAILABLE) + _T(")");
-						} else if(i->isSet(QueueItem::Source::FLAG_PASSIVE)) {
-							nick += _T(" (") + TSTRING(PASSIVE_USER) + _T(")");
 						} else if(i->isSet(QueueItem::Source::FLAG_BAD_TREE)) {
 							nick += _T(" (") + TSTRING(INVALID_TREE) + _T(")");
 						} else if(i->isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {

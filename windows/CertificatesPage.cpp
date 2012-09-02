@@ -33,6 +33,8 @@ PropPage::TextItem CertificatesPage::texts[] = {
 	{ IDC_STATIC2, ResourceManager::OWN_CERTIFICATE_FILE },
 	{ IDC_STATIC3, ResourceManager::TRUSTED_CERTIFICATES_PATH },
 	{ IDC_GENERATE_CERTS, ResourceManager::GENERATE_CERTIFICATES },
+	{ IDC_ALLOW_UNTRUSTED_HUBS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_HUBS },
+	{ IDC_ALLOW_UNTRUSTED_CLIENTS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_CLIENTS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -40,27 +42,38 @@ PropPage::Item CertificatesPage::items[] = {
 	{ IDC_TLS_CERTIFICATE_FILE, SettingsManager::TLS_CERTIFICATE_FILE, PropPage::T_STR },
 	{ IDC_TLS_PRIVATE_KEY_FILE, SettingsManager::TLS_PRIVATE_KEY_FILE, PropPage::T_STR },
 	{ IDC_TLS_TRUSTED_CERTIFICATES_PATH, SettingsManager::TLS_TRUSTED_CERTIFICATES_PATH, PropPage::T_STR },
+	{ IDC_ALLOW_UNTRUSTED_HUBS, SettingsManager::ALLOW_UNTRUSTED_HUBS, PropPage::T_BOOL },
+	{ IDC_ALLOW_UNTRUSTED_CLIENTS, SettingsManager::ALLOW_UNTRUSTED_CLIENTS, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
-};
-
-PropPage::ListItem CertificatesPage::listItems[] = {
-	{ SettingsManager::USE_TLS, ResourceManager::SETTINGS_USE_TLS },
-	{ SettingsManager::ALLOW_UNTRUSTED_HUBS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_HUBS	},
-	{ SettingsManager::ALLOW_UNTRUSTED_CLIENTS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_CLIENTS },
-	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 LRESULT CertificatesPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
-	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_TLS_OPTIONS));
+
+	ctrlTransferEncryption.Attach(GetDlgItem(IDC_TRANSFER_ENCRYPTION));
+	ctrlTransferEncryption.AddString(CTSTRING(DISABLED));
+	ctrlTransferEncryption.AddString(CTSTRING(ADLS_ENABLED));
+	ctrlTransferEncryption.AddString(CTSTRING(ENCRYPTION_FORCED));
+	ctrlTransferEncryption.SetCurSel(SETTING(TLS_MODE));
 
 	// Do specialized reading here
+	PropPage::read((HWND)*this, items);
 	return TRUE;
 }
 
+LRESULT CertificatesPage::onModeChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	fixControls();
+	return 0;
+}
+
+void CertificatesPage::fixControls() {
+	::EnableWindow(GetDlgItem(IDC_ALLOW_UNTRUSTED_CLIENTS),	ctrlTransferEncryption.GetCurSel() > 0);
+}
+
 void CertificatesPage::write() {
-	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_TLS_OPTIONS));
+	SettingsManager::getInstance()->set(SettingsManager::TLS_MODE, ctrlTransferEncryption.GetCurSel());
+	PropPage::write((HWND)*this, items);
 }
 
 LRESULT CertificatesPage::onBrowsePrivateKey(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

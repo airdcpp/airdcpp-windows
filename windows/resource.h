@@ -557,6 +557,7 @@
 #define IDC_CLIENT_LOCK                 1222
 #define IDC_CLIENT_PK                   1223
 #define IDC_MAX_HASH_SPEED              1223
+#define IDC_TRANSFER_ENCRYPTION_LBL     1223
 #define IDC_TOOLBAR_IMAGE               1224
 #define IDC_CLIENT_SUPPORTS             1224
 #define IDC_TREE1                       1224
@@ -1133,6 +1134,10 @@
 #define IDC_SHARE_PROFILE_NOTE          1666
 #define IDC_SELECT_ALL                  1667
 #define IDC_PROFILES                    1668
+#define IDC_ALLOW_UNTRUSTED_CLIENTS     1669
+#define IDC_ALLOW_UNTRUSTED_CLIENTS2    1670
+#define IDC_ALLOW_UNTRUSTED_HUBS        1670
+#define IDC_TRANSFER_ENCRYPTION         1671
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1497,7 +1502,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        344
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1669
+#define _APS_NEXT_CONTROL_VALUE         1672
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif
