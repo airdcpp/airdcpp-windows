@@ -89,6 +89,9 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	bool searching = dl->isCurrentSearchPath(aDir);
 
 	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(CTSTRING(UPDATING_VIEW)));
+	if (searching)
+		resetFilter();
+
 	try{
 		refreshTree(Text::toT(aDir), convertFromPartial, searching);
 	} catch(const AbortException) {
@@ -134,6 +137,9 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept {
+	if (isSearchChange)
+		resetFilter();
+
 	selectItem(Text::toT(aDir));
 	if (isSearchChange) {
 		PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())));
@@ -265,6 +271,7 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 	ctrlFindNext.EnableWindow(dl->curSearch ? TRUE : FALSE);
 	ctrlFindPrev.EnableWindow(dl->curSearch ? TRUE : FALSE);
 	ctrlListDiff.EnableWindow(dl->getPartialList() ? false : enable);
+	ctrlFilter.EnableWindow(enable);
 
 	if (enable) {
 		EnableWindow();
@@ -513,6 +520,11 @@ void DirectoryListingFrame::addHistory(const string& name) {
 	historyIndex = history.size();
 }
 
+void DirectoryListingFrame::resetFilter() {
+	ctrlFilter.SetWindowTextW(_T(""));
+	filter = Util::emptyString;
+}
+
 LRESULT DirectoryListingFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (BOOLSETTING(FILTER_ENTER) && wParam != VK_RETURN)
 		return 0;
@@ -525,6 +537,9 @@ LRESULT DirectoryListingFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*l
 	bHandled = FALSE;
 	if (filter == newFilter)
 		return 0;
+
+	updating = true;
+	ctrlList.SetRedraw(TRUE);
 
 	HTREEITEM t = ctrlTree.GetSelectedItem();
 	auto d = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);

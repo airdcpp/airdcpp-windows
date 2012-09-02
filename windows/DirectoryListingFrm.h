@@ -194,6 +194,7 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
 	void runUserCommand(UserCommand& uc);
+	void resetFilter();
 
 	void refreshTree(const tstring& root, bool convertFromPartial, bool searching);
 
