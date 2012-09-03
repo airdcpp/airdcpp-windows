@@ -553,12 +553,11 @@ void DirectoryListingFrame::filterList() {
 	string newFilter = Text::fromT(buf);
 	delete[] buf;
 
-	//bHandled = FALSE;
 	if (filter == newFilter)
 		return;
 
 	updating = true;
-	ctrlList.SetRedraw(TRUE);
+	ctrlList.SetRedraw(FALSE);
 
 	//HTREEITEM t = ctrlTree.GetSelectedItem();
 	//auto d = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
