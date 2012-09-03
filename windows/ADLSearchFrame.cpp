@@ -34,15 +34,17 @@ int ADLSearchFrame::columnIndexes[] = {
 	COLUMN_DEST_DIR,
 	COLUMN_MIN_FILE_SIZE,
 	COLUMN_MAX_FILE_SIZE,
+	COLUMN_COMMENT,
 	COLUMN_REGEXP
 };
 
 int ADLSearchFrame::columnSizes[] = { 
-	200, 
+	120, 
 	90, 
 	90, 
 	90, 
 	90,
+	150,
 	40
 };
 
@@ -51,7 +53,8 @@ static ResourceManager::Strings columnNames[] = {
 	ResourceManager::SOURCE_TYPE, 
 	ResourceManager::DESTINATION, 
 	ResourceManager::SIZE_MIN, 
-	ResourceManager::MAX_SIZE,
+	ResourceManager::MAX_SIZE, 
+	ResourceManager::COMMENT,
 	ResourceManager::REGEXP
 };
 
@@ -324,6 +327,7 @@ LRESULT ADLSearchFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	ADLSProperties dlg(search);
 	if(dlg.DoModal((HWND)*this) == IDOK) {
 		// Update list control
+		collection[i] = search;
 		UpdateSearch(i);	  
 	}
 
@@ -622,6 +626,7 @@ void ADLSearchFrame::UpdateSearch(int index, BOOL doDelete)
 	}
 	line.push_back(fs);
 
+	line.push_back(Text::toT(search->adlsComment));
 	line.push_back(search->isRegEx() ? CTSTRING(YES) : CTSTRING(NO));
 
 

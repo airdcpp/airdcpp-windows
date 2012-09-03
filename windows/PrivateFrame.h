@@ -37,6 +37,7 @@
 #include "ResourceLoader.h"
 
 #define PM_MESSAGE_MAP 8		// This could be any number, really...
+#define HUB_SEL_MAP 9
 
 class PrivateFrame : public MDITabChildWindowImpl<PrivateFrame>, 
 	private ClientManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener
@@ -86,6 +87,10 @@ public:
 		COMMAND_RANGE_HANDLER(IDC_EMOMENU, IDC_EMOMENU + menuItems, onEmoPackChange);
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_MSG_MAP(baseClass)
+	ALT_MSG_MAP(HUB_SEL_MAP)
+		//COMMAND_HANDLER(IDC_HUB, CBN_SELENDOK, onHubChanged)
+		//COMMAND_ID_HANDLER(IDC_HUB, onHubChanged)
+		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onHubChanged)
 	ALT_MSG_MAP(PM_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 		MESSAGE_HANDLER(WM_KEYDOWN, onChar)
@@ -94,6 +99,7 @@ public:
 		MESSAGE_HANDLER(WM_DROPFILES, onDropFiles)
 	END_MSG_MAP()
 
+	LRESULT onHubChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -142,6 +148,9 @@ public:
 	void addLine(const tstring& aLine, CHARFORMAT2& cf);
 	void addLine(const Identity&, const tstring& aLine);
 	void addLine(const Identity&, const tstring& aLine, CHARFORMAT2& cf);
+	void addStatusLine(const tstring& aLine);
+	void changeClient();
+
 	void onEnter();
 	void UpdateLayout(BOOL bResizeBars = TRUE);	
 	void runUserCommand(UserCommand& uc);
@@ -160,7 +169,8 @@ public:
 	}
 
 	LRESULT PrivateFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
-		updateTitle();
+		//updateTitle();
+		updateOnlineStatus();
 		return 0;
 	}
 	
@@ -194,15 +204,14 @@ public:
 	void sendMessage(const tstring& msg, bool thirdPerson = false);
 
 private:
-	PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
-		priv(FavoriteManager::getInstance()->isPrivate(replyTo_.hint)),
-		created(false), closed(false), isoffline(false), curCommandPosition(0), hubName(Util::emptyStringT), 
-		ctrlMessageContainer(WC_EDIT, this, PM_MESSAGE_MAP),
-		ctrlClientContainer(WC_EDIT, this, PM_MESSAGE_MAP), menuItems(0)
-	{
-		ctrlClient.setClient(c);
-	}
-	
+	enum {
+		STATUS_TEXT,
+		STATUS_HUBSEL_DESC,
+		STATUS_HUBSEL_CTRL,
+		STATUS_LAST
+	};
+
+	PrivateFrame(const HintedUser& replyTo_, Client* c);
 	~PrivateFrame() { }
 
 	bool created;
@@ -213,6 +222,13 @@ private:
 	ChatCtrl ctrlClient;
 	CEdit ctrlMessage;
 	CStatusBarCtrl ctrlStatus;
+	CComboBox ctrlHubSel;
+	CStatic ctrlHubSelDesc;
+
+	void updateOnlineStatus();
+	StringPairList hubs;
+	string initialHub;
+	bool online;
 
 	int menuItems;
 	int lineCount; //ApexDC
@@ -222,13 +238,12 @@ private:
 
 
 	HintedUser replyTo;
-	bool priv;
 	
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
+	CContainedWindow ctrlHubSelContainer;
 
 	bool closed;
-	bool isoffline;
 	tstring hubName;
 	ParamMap ucLineParams;
 
@@ -239,22 +254,10 @@ private:
 	TStringList::size_type curCommandPosition;
 	
 	// ClientManagerListener
-	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
-		if(aUser.getUser() == replyTo.user) {
-			ctrlClient.setClient(const_cast<Client*>(&aUser.getClient()));
-			PostMessage(WM_SPEAKER, USER_UPDATED);
-		}
-	}
-	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser) noexcept {
-		if(aUser.getUser() == replyTo.user)
-			PostMessage(WM_SPEAKER, USER_UPDATED);
-	}
-	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept {
-		if(aUser == replyTo.user) {
-			ctrlClient.setClient(nullptr);
-			PostMessage(WM_SPEAKER, USER_UPDATED);
-		}
-	}
+	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
+	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser) noexcept;
+	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept;
+
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 

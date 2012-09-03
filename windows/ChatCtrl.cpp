@@ -485,10 +485,14 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 
 				//check the position
 				if ((curReplace != lastReplace) && (curReplace > 0) && isgraph(sMsg[curReplace-1])) {
+					//auto tmp = sMsg[curReplace-1];
 					insert=false;
 				}
 
 				if (insert) {
+					//auto tmp2 = Text::fromT(sMsg).substr(curReplace-1);
+					//LogManager::getInstance()->message("Start: " + tmp2, LogManager::LOG_INFO);
+					//auto tmp = sMsg[curReplace-1];
 					SetSel(lSelBegin, lSelEnd);
 
 					GetSelectionCharFormat(cfSel);
@@ -561,7 +565,7 @@ bool ChatCtrl::HitNick(const POINT& p, tstring& sNick, int& iBegin, int& iEnd) {
 	if(sN.empty())
 		return false;
 
-	if(client->findUser(Text::fromT(sN)) != NULL) {
+	if(client && client->findUser(Text::fromT(sN))) {
 		sNick = sN;
 		iBegin = lSelBegin + iLeft;
 		iEnd = lSelBegin + iLeft + iCRLF;

@@ -40,12 +40,14 @@ LRESULT ADLSProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	SetDlgItemText(IDC_ADLSP_DESTINATION, CTSTRING(ADLS_DESTINATION));
 	SetDlgItemText(IDC_IS_ACTIVE, CTSTRING(ADLS_ENABLED));
 	SetDlgItemText(IDC_AUTOQUEUE, CTSTRING(ADLS_DOWNLOAD));
+	SetDlgItemText(IDC_ADLS_COMMENT_STRING, CTSTRING(COMMENT));
 	SetDlgItemText(IDC_REGEXP_TESTER, CTSTRING(REGEXP_TESTER));
 	SetDlgItemText(IDC_REGEXP_TEST, CTSTRING(MATCH));
 	SetDlgItemText(IDC_REGEXP, CTSTRING(ADLS_REGEXP));
 
 	// Initialize dialog items
 	ctrlSearch.Attach(GetDlgItem(IDC_SEARCH_STRING));
+	ctrlComment.Attach(GetDlgItem(IDC_ADLS_COMMENT));
 	ctrlDestDir.Attach(GetDlgItem(IDC_DEST_DIR));
 	ctrlMinSize.Attach(GetDlgItem(IDC_MIN_FILE_SIZE));
 	ctrlMaxSize.Attach(GetDlgItem(IDC_MAX_FILE_SIZE));
@@ -66,6 +68,7 @@ LRESULT ADLSProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	
 	// Load search data
 	ctrlSearch.SetWindowText(Text::toT(search.getPattern()).c_str());
+	ctrlComment.SetWindowText(Text::toT(search.adlsComment).c_str());
 	ctrlDestDir.SetWindowText(Text::toT(search.destDir).c_str());
 	ctrlMinSize.SetWindowText((search.minFileSize > 0 ? Util::toStringW(search.minFileSize) : _T("")).c_str());
 	ctrlMaxSize.SetWindowText((search.maxFileSize > 0 ? Util::toStringW(search.maxFileSize) : _T("")).c_str());
@@ -114,6 +117,8 @@ LRESULT ADLSProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 
 		ctrlSearch.GetWindowText(buf, 256);
 		search.setPattern(Text::fromT(buf));
+		ctrlComment.GetWindowText(buf, 521);
+		search.adlsComment = Text::fromT(buf);
 		ctrlDestDir.GetWindowText(buf, 256);
 		search.destDir = Text::fromT(buf);
 

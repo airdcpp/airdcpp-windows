@@ -1604,10 +1604,6 @@ tstring WinUtil::getNicks(const UserPtr& u, const string& hintUrl) {
 	return getNicks(u->getCID(), hintUrl);
 }
 
-tstring WinUtil::getNicks(const CID& cid, const string& hintUrl, bool priv) {
-	return Text::toT(Util::toString(ClientManager::getInstance()->getNicks(cid, hintUrl, priv)));
-}
-
 static pair<tstring, bool> formatHubNames(const StringList& hubs) {
 	if(hubs.empty()) {
 		return make_pair(CTSTRING(OFFLINE), false);
@@ -1625,7 +1621,7 @@ pair<tstring, bool> WinUtil::getHubNames(const UserPtr& u, const string& hintUrl
 }
 
 pair<tstring, bool> WinUtil::getHubNames(const CID& cid, const string& hintUrl, bool priv) {
-	return formatHubNames(ClientManager::getInstance()->getHubNames(cid, hintUrl, priv));
+	return formatHubNames(ClientManager::getInstance()->getHubNames(cid, hintUrl));
 }
 
 void WinUtil::getContextMenuPos(CListViewCtrl& aList, POINT& aPt) {

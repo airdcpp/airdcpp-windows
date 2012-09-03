@@ -356,7 +356,6 @@ public:
 
 	static tstring getNicks(const CID& cid, const string& hintUrl);
 	static tstring getNicks(const UserPtr& u, const string& hintUrl);
-	static tstring getNicks(const CID& cid, const string& hintUrl, bool priv);
 	static tstring getNicks(const HintedUser& user) { return getNicks(user.user->getCID(), user.hint); }
 
 	/** @return Pair of hubnames as a string and a bool representing the user's online status */

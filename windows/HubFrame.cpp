@@ -236,7 +236,7 @@ HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate
 		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP)
 {
-	client = ClientManager::getInstance()->getClient(Text::fromT(aServer));
+	client = ClientManager::getInstance()->createClient(Text::fromT(aServer));
 	client->setShareProfile(aShareProfile);
 	client->addListener(this);
 
@@ -1641,7 +1641,7 @@ LRESULT HubFrame::onFollow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 		clearUserList();
 		ClientManager::getInstance()->putClient(client);
 		clearTaskList();
-		client = ClientManager::getInstance()->getClient(Text::fromT(server));
+		client = ClientManager::getInstance()->createClient(Text::fromT(server));
 
 		ctrlClient.setClient(client);
 

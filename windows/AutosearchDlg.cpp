@@ -56,8 +56,8 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlSearch.SetWindowText(Text::toT(searchString).c_str());
 	ctrlCheatingDescription.SetWindowText(Text::toT(comment).c_str());
 
-	updateTargetTypeText();
 	ctrlTarget.SetWindowText(Text::toT(target).c_str());
+	updateTargetTypeText();
 	ctrlUserMatch.SetWindowText(Text::toT(userMatch).c_str());
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);	

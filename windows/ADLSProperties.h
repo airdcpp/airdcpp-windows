@@ -64,6 +64,7 @@ private:
 	ADLSearch& search;
 
 	CEdit ctrlSearch;
+	CEdit ctrlComment;
 	CEdit ctrlDestDir;
 	CEdit ctrlMinSize;
 	CEdit ctrlMaxSize;

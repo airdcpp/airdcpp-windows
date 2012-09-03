@@ -1581,5 +1581,9 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SourceNoEncryption">Remote ADC client does not use TLS encryption</String>
 		<String Name="EncryptionForced">Enabled (forced in ADC hubs)</String>
 		<String Name="TransferEncryption">Transfer encryption</String>
+		<String Name="UserOfflinePmChange">User went offline in %s, messages are now sent through the hub %s</String>
+		<String Name="MessagesSentThrough">Messages are now sent through the hub %s</String>
+		<String Name="SendPmVia">Messages are sent via</String>
+		<String Name="MessagesSentThroughRemote">Messages are now sent through the hub %s (changed by the remote users)</String>
 	</Strings>
 </Language>
