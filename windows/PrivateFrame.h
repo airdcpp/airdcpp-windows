@@ -26,6 +26,7 @@
 #include "../client/User.h"
 #include "../client/ClientManagerListener.h"
 #include "../client/ResourceManager.h"
+#include "../client/DelayedEvents.h"
 
 #include "FlatTabCtrl.h"
 #include "WinUtil.h"
@@ -149,7 +150,6 @@ public:
 	void addLine(const Identity&, const tstring& aLine);
 	void addLine(const Identity&, const tstring& aLine, CHARFORMAT2& cf);
 	void addStatusLine(const tstring& aLine);
-	void changeClient();
 
 	void onEnter();
 	void UpdateLayout(BOOL bResizeBars = TRUE);	
@@ -229,6 +229,8 @@ private:
 	StringPairList hubs;
 	string initialHub;
 	bool online;
+	void changeClient();
+	void showHubSelection(bool show);
 
 	int menuItems;
 	int lineCount; //ApexDC
@@ -247,7 +249,6 @@ private:
 	tstring hubName;
 	ParamMap ucLineParams;
 
-	void updateTitle();
 	void updateFrameOnlineStatus(const HintedUser& newUser, Client* c);
 	TStringList prevCommands;
 	tstring currentCommand;
@@ -259,6 +260,11 @@ private:
 	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
+
+	void addSpeakerTask();
+	void runSpeakerTask();
+
+	DelayedEvents<CID> delayEvents;
 };
 
 #endif // !defined(PRIVATE_FRAME_H)

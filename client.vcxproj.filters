@@ -664,6 +664,9 @@
     <ClInclude Include="client\StringMatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="client\DelayedEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="client\StringDefs.h">

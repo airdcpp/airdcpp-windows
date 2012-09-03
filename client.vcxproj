@@ -345,6 +345,7 @@
     <ClInclude Include="client\DCPlusPlus.h" />
     <ClInclude Include="client\debug.h" />
     <ClInclude Include="client\DebugManager.h" />
+    <ClInclude Include="client\DelayedEvents.h" />
     <ClInclude Include="client\DirectoryListing.h" />
     <ClInclude Include="client\DirectoryListingListener.h" />
     <ClInclude Include="client\DirectoryListingManager.h" />
