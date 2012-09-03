@@ -433,9 +433,9 @@ LRESULT DirectoryListingFrame::onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	gotoPrev = false;
 	string path;
 	if (dlg.useCurDir) {
-		HTREEITEM t = ctrlTree.GetSelectedItem();
-		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		path = Util::toAdcFile(dir->getPath());
+		//HTREEITEM t = ctrlTree.GetSelectedItem();
+		//auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		path = Util::toAdcFile(curDir->getPath());
 	}
 
 	dl->addSearchTask(dlg.searchStr, dlg.size, dlg.fileType, dlg.sizeMode, dlg.extList, path);
@@ -505,6 +505,7 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 
 	if(p->itemNew.state & TVIS_SELECTED) {
 		DirectoryListing::Directory* d = (DirectoryListing::Directory*)p->itemNew.lParam;
+		curDir = d;
 		changeDir(d, TRUE);
 		addHistory(dl->getPath(d));
 	}
@@ -526,37 +527,55 @@ void DirectoryListingFrame::resetFilter() {
 }
 
 LRESULT DirectoryListingFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if (BOOLSETTING(FILTER_ENTER) && wParam != VK_RETURN)
+	bHandled = FALSE;
+	if (BOOLSETTING(FILTER_ENTER)) {
+		if (wParam == VK_RETURN) {
+			filterList();
+		}
 		return 0;
+	}
 
+	auto items = curDir->directories.size() + curDir->files.size();
+	if (items < 5000)
+		filterList();
+	else
+		dl->addFilterTask();
+	return 0;
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::Filter) noexcept {
+	PostMessage(WM_SPEAKER, FILTER);
+}
+
+void DirectoryListingFrame::filterList() {
 	TCHAR *buf = new TCHAR[ctrlFilter.GetWindowTextLength()+1];
 	ctrlFilter.GetWindowText(buf, ctrlFilter.GetWindowTextLength()+1);
 	string newFilter = Text::fromT(buf);
 	delete[] buf;
 
-	bHandled = FALSE;
+	//bHandled = FALSE;
 	if (filter == newFilter)
-		return 0;
+		return;
 
 	updating = true;
 	ctrlList.SetRedraw(TRUE);
 
-	HTREEITEM t = ctrlTree.GetSelectedItem();
-	auto d = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+	//HTREEITEM t = ctrlTree.GetSelectedItem();
+	//auto d = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
 
 	boost::regex regNew(newFilter, boost::regex_constants::icase);
 
-	auto addItems = [this, d, regNew] () -> void {
+	auto addItems = [this, regNew] () -> void {
 		//try to speed this up with large listings by comparing with the old filter
 		boost::regex regOld(filter, boost::regex_constants::icase);
-		for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
+		for(auto i = curDir->directories.begin(); i != curDir->directories.end(); ++i) {
 			string s = (*i)->getName();
 			if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
 				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
 			}
 		}
 
-		for(auto j = d->files.begin(); j != d->files.end(); ++j) {
+		for(auto j = curDir->files.begin(); j != curDir->files.end(); ++j) {
 			string s = (*j)->getName();
 			if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
 				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*j), WinUtil::getIconIndex(Text::toT((*j)->getName())));
@@ -564,7 +583,7 @@ LRESULT DirectoryListingFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*l
 		}
 	};
 
-	auto removeItems = [this, d, regNew] () -> void {
+	auto removeItems = [this, regNew] () -> void {
 		for(int i=0; i<ctrlList.GetItemCount();) {
 			const ItemInfo* ii = ctrlList.getItemData(i);
 			string s = ii->type == 0 ? ii->file->getName() : ii->dir->getName();
@@ -596,8 +615,6 @@ LRESULT DirectoryListingFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*l
 	ctrlList.SetRedraw(TRUE);
 	updating = false;
 	updateStatus();
-
-	return 0;
 }
 
 void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BOOL enableRedraw) {
@@ -1563,6 +1580,9 @@ void DirectoryListingFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/
 
 LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	switch(wParam) {
+		case FILTER:
+			filterList();
+			break;
 		case FINISHED:
 			initStatus();
 			ctrlStatus.SetFont(WinUtil::systemFont);

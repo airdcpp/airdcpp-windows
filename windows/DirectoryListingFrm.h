@@ -71,7 +71,8 @@ public:
 		UPDATE_STATUS,
 		STARTED,
 		FINISHED,
-		ABORTED
+		ABORTED,
+		FILTER
 	};	
 		
 	enum {
@@ -275,6 +276,7 @@ public:
 	void download(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
 private:
+	DirectoryListing::Directory* curDir;
 	void changeWindowState(bool enable);
 	
 	string filter;
@@ -391,7 +393,9 @@ private:
 	void on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept;
 	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;
 	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
+	void on(DirectoryListingListener::Filter) noexcept;
 
+	void filterList();
 	void createRoot();
 	void convertToFull();
 };
