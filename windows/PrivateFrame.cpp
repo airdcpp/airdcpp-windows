@@ -94,7 +94,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	hEmoticonBmp.LoadFromResource(IDR_EMOTICON, _T("PNG"), _Module.get_m_hInst());
   	ctrlEmoticons.SetBitmap(hEmoticonBmp);
 
-	addSpeakerTask();
+	addSpeakerTask(false);
 	created = true;
 
 	ClientManager::getInstance()->addListener(this);
@@ -106,8 +106,11 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	return 1;
 }
 
-void PrivateFrame::addSpeakerTask() {
-	delayEvents.addEvent(replyTo.user->getCID(), [this] { runSpeakerTask(); }, 1000);
+void PrivateFrame::addSpeakerTask(bool addDelay) {
+	if (addDelay)
+		delayEvents.addEvent(replyTo.user->getCID(), [this] { runSpeakerTask(); }, 1000);
+	else
+		PostMessage(WM_SPEAKER, USER_UPDATED);
 }
 
 void PrivateFrame::runSpeakerTask() {
@@ -128,19 +131,19 @@ LRESULT PrivateFrame::onHubChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/,
 void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
 	if(aUser.getUser() == replyTo.user) {
 		ctrlClient.setClient(const_cast<Client*>(&aUser.getClient()));
-		addSpeakerTask();
+		addSpeakerTask(true);
 	}
 }
 
 void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser) noexcept {
 	if(aUser.getUser() == replyTo.user)
-		addSpeakerTask();
+		addSpeakerTask(true); //delay this to possible show more nicks & hubs in the connect message :]
 }
 
 void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept {
 	if(aUser == replyTo.user) {
 		ctrlClient.setClient(nullptr);
-		addSpeakerTask();
+		addSpeakerTask(false);
 	}
 }
 

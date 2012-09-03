@@ -261,7 +261,7 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void addSpeakerTask();
+	void addSpeakerTask(bool addDelay);
 	void runSpeakerTask();
 
 	DelayedEvents<CID> delayEvents;
