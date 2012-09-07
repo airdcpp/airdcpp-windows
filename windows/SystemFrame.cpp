@@ -440,7 +440,7 @@ LRESULT SystemFrame::onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	string targetPath = Util::getParentDir(Text::fromT(selWord));
 	string dirName = Util::getLastDir(selWord[selWord.length()-1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selWord)) : Text::fromT(selWord));
 
-	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true);
+	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true, false);
 
 	ctrlPad.SetSelNone();
 	return 0;

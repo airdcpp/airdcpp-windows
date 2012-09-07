@@ -2555,28 +2555,12 @@ void HubFrame::addMagnet(const tstring& path) {
 
 	TTHValue TTH;
 	int64_t size = 0;
-	boost::scoped_array<char> buf(new char[512 * 1024]);
-
 	try {
-		File f(Text::fromT(path), File::READ, File::OPEN);
-		TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
-
-		if(f.getSize() > 0) {
-			size_t n = 512*1024;
-			while( (n = f.read(&buf[0], n)) > 0) {
-				tth.update(&buf[0], n);
-				n = 512*1024;
-			}
-		} else {
-			tth.update("", 0);
-		}
-		tth.finalize();
-
-		TTH = tth.getRoot();
-		size = f.getSize();
+		size = HashManager::getInstance()->HashFile(Text::fromT(path), TTH);
 		magnetlink = "magnet:?xt=urn:tree:tiger:"+ TTH.toBase32() +"&xl="+Util::toString(size)+"&dn="+Text::fromT(Util::getFileName(path));
-		f.close();
-	}catch(...) { }
+	} catch (const Exception& e) { 
+		LogManager::getInstance()->message(STRING(HASHING_FAILED) + " " + e.getError(), LogManager::LOG_ERROR);
+	}
 
 	if(!magnetlink.empty()){
 		if(ShareManager::getInstance()->addTempShare(Util::emptyString, TTH, Text::fromT(path), size, AirUtil::isAdcHub(client->getHubUrl())))
