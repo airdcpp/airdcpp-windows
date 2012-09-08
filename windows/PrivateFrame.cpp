@@ -78,10 +78,10 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlHubSel.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE, IDC_HUB);
 	ctrlHubSelContainer.SubclassWindow(ctrlHubSel.m_hWnd);
-	ctrlHubSel.SetFont(WinUtil::font);
+	ctrlHubSel.SetFont(WinUtil::systemFont);
 
-	ctrlHubSelDesc.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | SS_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	ctrlHubSelDesc.SetFont(WinUtil::font);
+	ctrlHubSelDesc.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | SS_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_TRANSPARENT);
+	ctrlHubSelDesc.SetFont(WinUtil::systemFont);
 	
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 
@@ -823,24 +823,23 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		ctrlStatus.GetClientRect(sr);
 
 		if (ctrlHubSel.GetStyle() & WS_VISIBLE) {
-		//if (ctrlHubSelDesc.IsWindow()) {
 			int w[STATUS_LAST];
 			tstring tmp = TSTRING(SEND_PM_VIA);
-		
-			w[STATUS_TEXT] = sr.right - 166 - WinUtil::getTextWidth(tmp, ctrlHubSelDesc.m_hWnd) - 20;
-			w[STATUS_HUBSEL_DESC] = w[0] + WinUtil::getTextWidth(tmp, ctrlHubSelDesc.m_hWnd) + 20;
-			w[STATUS_HUBSEL_CTRL] = w[1] + 150;
-
 			ctrlHubSelDesc.SetWindowTextW(tmp.c_str());
 
-			sr.top = (WinUtil::getTextHeight(m_hWnd, WinUtil::font) / 2);
-			sr.left = w[STATUS_HUBSEL_DESC-1] + 10;
-			sr.right = w[STATUS_HUBSEL_DESC] - 10;
+			int desclen = WinUtil::getTextWidth(tmp, ctrlHubSelDesc.m_hWnd);
+			w[STATUS_TEXT] = sr.right - 165 - desclen - 20;
+			w[STATUS_HUBSEL] = w[0] + desclen + 165;
+			
+			sr.top = (WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) / 2);
+			sr.bottom -= 1;
+			sr.left = w[STATUS_HUBSEL-1] + 5;
+			sr.right = sr.left + desclen;
 			ctrlHubSelDesc.MoveWindow(sr);
 
-			sr.top = 2;
-			sr.left = w[STATUS_HUBSEL_CTRL-1];
-			sr.right = w[STATUS_HUBSEL_CTRL];
+			sr.top = 1;
+			sr.left = sr.right + 10;
+			sr.right = sr.left + 150;
 			ctrlHubSel.MoveWindow(sr);
 
 			ctrlStatus.SetParts(STATUS_LAST, w);

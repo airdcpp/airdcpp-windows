@@ -206,8 +206,7 @@ public:
 private:
 	enum {
 		STATUS_TEXT,
-		STATUS_HUBSEL_DESC,
-		STATUS_HUBSEL_CTRL,
+		STATUS_HUBSEL,
 		STATUS_LAST
 	};
 
