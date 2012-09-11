@@ -398,7 +398,6 @@ public:
 	
 
 private:
-	NOTIFYICONDATA normalicon;
 	NOTIFYICONDATA pmicon;
 	NOTIFYICONDATA hubicon;
 

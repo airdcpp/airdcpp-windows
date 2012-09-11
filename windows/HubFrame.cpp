@@ -462,7 +462,7 @@ void HubFrame::addAsFavorite() {
 		FavoriteHubEntry aEntry;
 		TCHAR buf[256];
 		this->GetWindowText(buf, 255);
-		aEntry.setServer(Text::fromT(server));
+		aEntry.setServerStr(Text::fromT(server));
 		aEntry.setName(Text::fromT(buf));
 		aEntry.setDescription(Text::fromT(buf));
 		aEntry.setConnect(true);

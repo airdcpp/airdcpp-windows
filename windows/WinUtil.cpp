@@ -1425,7 +1425,7 @@ bool WinUtil::parseDBLClick(const tstring& str, HWND hWnd/*NULL*/) {
 }
 
 void WinUtil::SetIcon(HWND hWnd, int aDefault, bool big) {
-	int size = big ? 32 : 16;
+	int size = big ? ::GetSystemMetrics(SM_CXICON) : ::GetSystemMetrics(SM_CXSMICON);
 	HICON hIcon = createIcon(aDefault, size);
 	::SendMessage(hWnd, WM_SETICON, big ? ICON_BIG : ICON_SMALL, (LPARAM)hIcon);
 }
@@ -2291,8 +2291,13 @@ HICON WinUtil::createIcon(int aDefault, int size/* = 0*/) {
 	tstring icon = getIconPath(getIconName(aDefault));
 	HICON iHandle = icon.empty() ? NULL : (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, size, size, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
 	if(!iHandle) 
-		return loadDefaultIcon(aDefault);
+		return loadDefaultIcon(aDefault, size);
 	return iHandle;
+}
+
+HICON WinUtil::loadDefaultIcon(int icon, int size/* = 0*/) {
+	//int size = big ? ::GetSystemMetrics(SM_CXICON) : ::GetSystemMetrics(SM_CXSMICON);
+	return (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(icon), IMAGE_ICON, size, size, LR_DEFAULTCOLOR);
 }
 
 tstring WinUtil::getIconName(int aDefault) {
@@ -2366,37 +2371,38 @@ tstring WinUtil::getIconName(int aDefault) {
 }
 
 void WinUtil::loadSettingsTreeIcons() {
-	settingsTreeImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 30);
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_GENERAL));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_CONNECTIONS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LIMITS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_DOWNLOADS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LOCATIONS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_PREVIEW));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_PRIORITIES));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_QUEUE));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SHARING));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SHAREOPTIONS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_APPEARANCE));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_FONTS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_PROGRESS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_USERLIST));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SOUNDS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_TOOLBAR));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_WINDOWS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_TABS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_POPUPS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_HIGHLIGHTS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_AIRAPPEARANCE));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_ADVANCED));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_EXPERTS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LOGS));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_UC));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_CERTIFICATES));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_MISC));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_IGNORE));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SEARCH));
-	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SEARCHTYPES));
+	int size = 16;
+	settingsTreeImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 30);
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_GENERAL, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_CONNECTIONS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LIMITS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_DOWNLOADS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LOCATIONS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_PREVIEW, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_PRIORITIES, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_QUEUE, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SHARING, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SHAREOPTIONS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_APPEARANCE, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_FONTS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_PROGRESS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_USERLIST, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SOUNDS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_TOOLBAR, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_WINDOWS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_TABS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_POPUPS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_HIGHLIGHTS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_AIRAPPEARANCE, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_ADVANCED, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_EXPERTS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LOGS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_UC, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_CERTIFICATES, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_MISC, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_IGNORE, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SEARCH, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SEARCHTYPES, size));
 }
 
 void WinUtil::loadSearchTypeIcons() {

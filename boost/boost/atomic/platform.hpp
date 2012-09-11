@@ -4,9 +4,11 @@
 //  See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+// Platform selection file
+
 #include <boost/config.hpp>
 
-#if defined(__GNUC__) && (defined(__i386__) || defined(__amd64__))
+#if defined(__GNUC__) && (defined(__i386__) || defined(__x86_64__))
 
 	#include <boost/atomic/detail/gcc-x86.hpp>
 
@@ -34,9 +36,8 @@
 
 	#include <boost/atomic/detail/interlocked.hpp>
 
-#else
+#elif defined(__GNUC__)
 
-	#warning "Using slow fallback atomic implementation"
-	#include <boost/atomic/detail/generic-cas.hpp>
+	#include <boost/atomic/detail/gcc-cas.hpp>
 
 #endif

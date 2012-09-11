@@ -262,6 +262,7 @@
     <ClCompile Include="client\HighlightManager.cpp" />
     <ClCompile Include="client\HttpConnection.cpp" />
     <ClCompile Include="client\HttpDownload.cpp" />
+    <ClCompile Include="client\HubEntry.cpp" />
     <ClCompile Include="client\Localization.cpp" />
     <ClCompile Include="client\LogManager.cpp" />
     <ClCompile Include="client\Magnet.cpp" />

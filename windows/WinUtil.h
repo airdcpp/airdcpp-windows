@@ -236,9 +236,7 @@ public:
 
 	static bool getVersionInfo(OSVERSIONINFOEX& ver);
 
-	static HICON loadDefaultIcon(int icon) {
-		return (HICON)::LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(icon));
-	}
+	static HICON loadDefaultIcon(int icon, int size=0);
 	static HICON createIcon(int aDefault, int size = 0);
 
 	static tstring getIconName(int aDefault);

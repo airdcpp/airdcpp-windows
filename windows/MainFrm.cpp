@@ -78,6 +78,9 @@ bool MainFrame::bShutdown = false;
 uint64_t MainFrame::iCurrentShutdownTime = 0;
 bool MainFrame::isShutdownStatus = false;
 
+//static HICON mainIcon(WinUtil::createIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXICON)));
+//static HICON mainSmallIcon(WinUtil::createIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXSMICON)));
+
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
@@ -393,24 +396,37 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(rebuildGeo) {
 		GeoManager::getInstance()->rebuild();
 	}
-	
-	// Different app icons for different instances (APEX)
-	HICON trayIcon = NULL;
-	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str()))) {
-		//HICON appIcon = (HICON)::LoadImage(NULL, WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str(), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
-		trayIcon = (HICON)::LoadImage(NULL, WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
-		
-		WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
 
-		//DestroyIcon((HICON)SetClassLongPtr(m_hWnd, GCLP_HICON, (LONG_PTR)appIcon));
+	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, false);
+	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
 
-		DestroyIcon((HICON)SetClassLongPtr(m_hWnd, GCLP_HICONSM, (LONG_PTR)trayIcon));
-		
-	}
+	//SetIcon(mainIcon, true);
+	//SetIcon(mainSmallIcon, false);
+	/*const HANDLE hbicon = ::LoadImage(
+	  ::GetModuleHandle(0),
+	  MAKEINTRESOURCE(IDR_MAINFRAME),
+	  IMAGE_ICON,
+	  ::GetSystemMetrics(SM_CXICON),
+	  ::GetSystemMetrics(SM_CYICON),
+	  0);
+	if (hbicon)
+	  ::SendMessage(m_hWnd, WM_SETICON, ICON_BIG, (LPARAM)hbicon);
 
-	normalicon.hIcon = (!trayIcon) ? (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_MAINFRAME), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR) : trayIcon;
-	pmicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_PM), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-	hubicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_HUB), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	auto tmp1 = ::GetSystemMetrics(SM_CXSMICON);
+	auto tmp2 = ::GetSystemMetrics(SM_CYSMICON);
+
+	const HANDLE hsicon = ::LoadImage(
+	  ::GetModuleHandle(0),
+	  MAKEINTRESOURCE(IDR_MAINFRAME),
+	  IMAGE_ICON,
+	  ::GetSystemMetrics(SM_CXSMICON),
+	  ::GetSystemMetrics(SM_CYSMICON),
+	  0);
+	if (hsicon)
+	  ::SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);*/
+
+	pmicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_PM), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
+	hubicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_HUB), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
 
 	uploadIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_UPLOAD), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 	downloadIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DOWNLOAD), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
@@ -1154,9 +1170,9 @@ void MainFrame::autoConnect(const FavoriteHubEntry::List& fl) {
 				r.setDescription(entry->getDescription());
 				r.setUsers("*");
 				r.setShared("*");
-				r.setServer(entry->getServer());
+				r.setServer(entry->getServers()[0]);
 				FavoriteManager::getInstance()->addRecent(r);
-				HubFrame::openWindow(Text::toT(entry->getServer()), entry->getChatUserSplit(), entry->getUserListState());
+				HubFrame::openWindow(Text::toT(entry->getServers()[0]), entry->getChatUserSplit(), entry->getUserListState());
  			} else
  				missedAutoConnect = true;
  		}				
@@ -1172,7 +1188,8 @@ void MainFrame::updateTray(bool add /* = true */) {
 			nid.uID = 0;
 			nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 			nid.uCallbackMessage = WM_APP + 242;
-			nid.hIcon = normalicon.hIcon;
+			nid.hIcon = GetIcon(false);
+			//nid.hIcon = mainSmallIcon;
 			_tcsncpy(nid.szTip, _T(APPNAME), 64);
 			nid.szTip[63] = '\0';
 			lastMove = GET_TICK() - 1000;
@@ -1244,7 +1261,8 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				nid.hWnd = m_hWnd;
 				nid.uID = 0;
 				nid.uFlags = NIF_ICON;
-				nid.hIcon = normalicon.hIcon;
+				nid.hIcon = GetIcon(false);
+				//nid.hIcon = mainSmallIcon;
 				::Shell_NotifyIcon(NIM_MODIFY, &nid);
 			}
 		}
@@ -1334,7 +1352,6 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		WaitForSingleObject(stopperThread, 60*1000);
 		CloseHandle(stopperThread);
 		stopperThread = NULL;
-		DestroyIcon(normalicon.hIcon);
 		DestroyIcon(hShutdownIcon); 	
 		DestroyIcon(pmicon.hIcon);
 		DestroyIcon(hubicon.hIcon);
@@ -1882,7 +1899,8 @@ LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/
 				nid.hWnd = m_hWnd;
 				nid.uID = 0;
 				nid.uFlags = NIF_ICON;
-				nid.hIcon = normalicon.hIcon;
+				nid.hIcon = GetIcon(false);
+				//nid.hIcon = mainSmallIcon;
 				::Shell_NotifyIcon(NIM_MODIFY, &nid);
 			}
 		}

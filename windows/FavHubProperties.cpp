@@ -61,7 +61,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	// Fill in values
 	SetDlgItemText(IDC_HUBNAME, Text::toT(entry->getName()).c_str());
 	SetDlgItemText(IDC_HUBDESCR, Text::toT(entry->getDescription()).c_str());
-	SetDlgItemText(IDC_HUBADDR, Text::toT(entry->getServer()).c_str());
+	SetDlgItemText(IDC_HUBADDR, Text::toT(Util::toString(";", entry->getServers())).c_str());
 	SetDlgItemText(IDC_HUBNICK, Text::toT(entry->getNick(false)).c_str());
 	SetDlgItemText(IDC_HUBPASS, Text::toT(entry->getPassword()).c_str());
 	SetDlgItemText(IDC_HUBUSERDESCR, Text::toT(entry->getUserDescription()).c_str());
@@ -73,7 +73,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	CheckDlgButton(IDC_LOGMAINCHAT, entry->getHubLogMainchat() ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_CHAT_NOTIFY, entry->getChatNotify() ? BST_CHECKED : BST_UNCHECKED);
 
-	bool isAdcHub = AirUtil::isAdcHub(entry->getServer());
+	bool isAdcHub = entry->isAdcHub();
 
 	CComboBox combo;
 	combo.Attach(GetDlgItem(IDC_FAVGROUP_BOX));
@@ -81,7 +81,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	combo.SetCurSel(0);
 
 	const FavHubGroups& favHubGroups = FavoriteManager::getInstance()->getFavHubGroups();
-	for(FavHubGroups::const_iterator i = favHubGroups.begin(); i != favHubGroups.end(); ++i) {
+	for(auto i = favHubGroups.begin(); i != favHubGroups.end(); ++i) {
 		const string& name = i->first;
 		int pos = combo.AddString(Text::toT(name).c_str());
 		
@@ -198,7 +198,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 			MessageBox(CTSTRING(INCOMPLETE_FAV_HUB), _T(""), MB_ICONWARNING | MB_OK);
 			return 0;
 		}
-		entry->setServer(Text::fromT(buf));
+		entry->setServerStr(Text::fromT(buf));
 		GetDlgItemText(IDC_HUBNAME, buf, 256);
 		entry->setName(Text::fromT(buf));
 		GetDlgItemText(IDC_HUBDESCR, buf, 256);
@@ -258,7 +258,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		if(hideShare) {
 			entry->setShareProfile(*(p.end()-1));
 		} else {
-			if(AirUtil::isAdcHub(entry->getServer())) {
+			if(entry->isAdcHub()) {
 				entry->setShareProfile(p[ctrlProfile.GetCurSel()]);
 			} else {
 				entry->setShareProfile(p[0]);
