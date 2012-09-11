@@ -274,7 +274,8 @@ public:
 	}
 
 	LRESULT onTray(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) { 
-		bTrayIcon = false;
+		updateTray(false);
+		trayUID++;
 		updateTray(true); 
 		return 0;
 	}
@@ -484,6 +485,7 @@ private:
 
 	UINT trayMessage;
 	UINT tbButtonMessage;
+	UINT trayUID;
 
 	CMenu trayMenu;
 	CMenu tbMenu;

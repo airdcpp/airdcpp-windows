@@ -80,7 +80,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlHubSelContainer.SubclassWindow(ctrlHubSel.m_hWnd);
 	ctrlHubSel.SetFont(WinUtil::systemFont);
 
-	ctrlHubSelDesc.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | SS_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, WS_EX_TRANSPARENT);
+	ctrlHubSelDesc.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | SS_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	ctrlHubSelDesc.SetFont(WinUtil::systemFont);
 	
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
@@ -831,7 +831,7 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 			w[STATUS_TEXT] = sr.right - 165 - desclen - 20;
 			w[STATUS_HUBSEL] = w[0] + desclen + 165;
 			
-			sr.top = (WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) / 2);
+			sr.top =  (WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) / 2) -1;
 			sr.bottom -= 1;
 			sr.left = w[STATUS_HUBSEL-1] + 5;
 			sr.right = sr.left + desclen;

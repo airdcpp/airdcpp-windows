@@ -84,7 +84,7 @@ bool MainFrame::isShutdownStatus = false;
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
-bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false)
+bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false), trayUID(0)
 
 
 { 
@@ -92,7 +92,6 @@ bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashPro
 			user32lib = LoadLibrary(_T("user32"));
 			_d_ChangeWindowMessageFilter = (LPFUNC)GetProcAddress(user32lib, "ChangeWindowMessageFilter");
 		}
-
 
 		memzero(statusSizes, sizeof(statusSizes));
 		anyMF = this;
@@ -215,9 +214,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	TimerManager::getInstance()->start();
 
 	// Set window name
-
 	SetWindowText(COMPLETEVERSIONSTRING);
-
 
 	// Load images
 	// create command bar window
@@ -396,43 +393,15 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(rebuildGeo) {
 		GeoManager::getInstance()->rebuild();
 	}
-
-	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, false);
+		
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
-
-	//SetIcon(mainIcon, true);
-	//SetIcon(mainSmallIcon, false);
-	/*const HANDLE hbicon = ::LoadImage(
-	  ::GetModuleHandle(0),
-	  MAKEINTRESOURCE(IDR_MAINFRAME),
-	  IMAGE_ICON,
-	  ::GetSystemMetrics(SM_CXICON),
-	  ::GetSystemMetrics(SM_CYICON),
-	  0);
-	if (hbicon)
-	  ::SendMessage(m_hWnd, WM_SETICON, ICON_BIG, (LPARAM)hbicon);
-
-	auto tmp1 = ::GetSystemMetrics(SM_CXSMICON);
-	auto tmp2 = ::GetSystemMetrics(SM_CYSMICON);
-
-	const HANDLE hsicon = ::LoadImage(
-	  ::GetModuleHandle(0),
-	  MAKEINTRESOURCE(IDR_MAINFRAME),
-	  IMAGE_ICON,
-	  ::GetSystemMetrics(SM_CXSMICON),
-	  ::GetSystemMetrics(SM_CYSMICON),
-	  0);
-	if (hsicon)
-	  ::SendMessage(m_hWnd, WM_SETICON, ICON_SMALL, (LPARAM)hsicon);*/
-
-	pmicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_PM), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
-	hubicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_HUB), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
+	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME);
+	pmicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_PM), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	hubicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_HUB), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
 	uploadIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_UPLOAD), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 	downloadIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DOWNLOAD), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
-
-	//updateTray( BOOLSETTING( MINIMIZE_TRAY ) );
 	updateTray(true);
 
 	Util::setAway(BOOLSETTING(AWAY));
@@ -468,9 +437,7 @@ LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 
 	taskbarList.Release();
 	taskbarList.CoCreateInstance(CLSID_TaskbarList);
-
-//	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("AirDCPlusPlus.ico")).c_str())))
-		taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);
+	taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);
 
 	THUMBBUTTON buttons[2];
 	buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
@@ -886,27 +853,29 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, pmicon.hIcon, NULL);
 			}
-			if(bTrayIcon == true) {
+			if(bTrayIcon) {
 				NOTIFYICONDATA nid;
+				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
 				nid.cbSize = sizeof(NOTIFYICONDATA);
 				nid.hWnd = m_hWnd;
-				nid.uID = 0;
+				nid.uID = trayUID;
 				nid.uFlags = NIF_ICON;
 				nid.hIcon = pmicon.hIcon;
 				::Shell_NotifyIcon(NIM_MODIFY, &nid);
 			}
 		}
     } else if(wParam == SET_HUB_TRAY_ICON) {
-		if(bIsPM == false && (!WinUtil::isAppActive || bAppMinimized)) { //using IsPM to avoid the 2 icons getting mixed up
+		if((!bIsPM) && (!WinUtil::isAppActive || bAppMinimized)) { //using IsPM to avoid the 2 icons getting mixed up
 			bIsPM = true;
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, hubicon.hIcon, NULL);
 			}
-			if(bTrayIcon == true) {
+			if(bTrayIcon) {
 				NOTIFYICONDATA nid;
+				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
 				nid.cbSize = sizeof(NOTIFYICONDATA);
 				nid.hWnd = m_hWnd;
-				nid.uID = 0;
+				nid.uID = trayUID;
 				nid.uFlags = NIF_ICON;
 				nid.hIcon = hubicon.hIcon;
 				::Shell_NotifyIcon(NIM_MODIFY, &nid);
@@ -1181,11 +1150,12 @@ void MainFrame::autoConnect(const FavoriteHubEntry::List& fl) {
 
 void MainFrame::updateTray(bool add /* = true */) {
 	if(add) {
-		if(bTrayIcon == false) {
+		if(!bTrayIcon) {
 			NOTIFYICONDATA nid;
+			ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
 			nid.cbSize = sizeof(NOTIFYICONDATA);
 			nid.hWnd = m_hWnd;
-			nid.uID = 0;
+			nid.uID = trayUID;
 			nid.uFlags = NIF_ICON | NIF_TIP | NIF_MESSAGE;
 			nid.uCallbackMessage = WM_APP + 242;
 			nid.hIcon = GetIcon(false);
@@ -1193,15 +1163,15 @@ void MainFrame::updateTray(bool add /* = true */) {
 			_tcsncpy(nid.szTip, _T(APPNAME), 64);
 			nid.szTip[63] = '\0';
 			lastMove = GET_TICK() - 1000;
-			//::Shell_NotifyIcon(NIM_ADD, &nid);
 			bTrayIcon = (::Shell_NotifyIcon(NIM_ADD, &nid) != FALSE);
 		}
 	} else {
 		if(bTrayIcon) {
 			NOTIFYICONDATA nid;
+			ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
 			nid.cbSize = sizeof(NOTIFYICONDATA);
 			nid.hWnd = m_hWnd;
-			nid.uID = 0;
+			nid.uID = trayUID;
 			nid.uFlags = 0;
 			::Shell_NotifyIcon(NIM_DELETE, &nid);
 			//ShowWindow(SW_SHOW);
@@ -1255,11 +1225,12 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				taskbarList->SetOverlayIcon(m_hWnd, NULL , NULL);
 			}
 
-			if (bTrayIcon == true) {
+			if (bTrayIcon) {
 				NOTIFYICONDATA nid;
+				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
 				nid.cbSize = sizeof(NOTIFYICONDATA);
 				nid.hWnd = m_hWnd;
-				nid.uID = 0;
+				nid.uID = trayUID;
 				nid.uFlags = NIF_ICON;
 				nid.hIcon = GetIcon(false);
 				//nid.hIcon = mainSmallIcon;
@@ -1563,10 +1534,12 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		}
 	} else if(lParam == WM_MOUSEMOVE && ((lastMove + 1000) < GET_TICK()) ) {
 		NOTIFYICONDATA nid;
+		ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
 		nid.cbSize = sizeof(NOTIFYICONDATA);
 		nid.hWnd = m_hWnd;
-		nid.uID = 0;
-		nid.uFlags = NIF_TIP;
+		nid.uID = trayUID;
+		nid.uFlags = NIF_TIP | NIF_ICON;
+		nid.hIcon = GetIcon(false);
 		_tcsncpy(nid.szTip, (_T("D: ") + Util::formatBytesW(DownloadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
 			Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T(")\r\nU: ") +
 			Util::formatBytesW(UploadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
@@ -1895,9 +1868,10 @@ LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/
 
 			if (bTrayIcon == true) {
 				NOTIFYICONDATA nid;
+				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
 				nid.cbSize = sizeof(NOTIFYICONDATA);
 				nid.hWnd = m_hWnd;
-				nid.uID = 0;
+				nid.uID = trayUID;
 				nid.uFlags = NIF_ICON;
 				nid.hIcon = GetIcon(false);
 				//nid.hIcon = mainSmallIcon;

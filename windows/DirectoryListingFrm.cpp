@@ -1259,7 +1259,7 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		ctrlStatus.GetRect(0, sr);
 
 		const long bspace = 10;
-
+		sr.bottom -= 1;
 		sr.left = w[STATUS_GET_FULL_LIST - 1];
 		sr.right = w[STATUS_GET_FULL_LIST];
 		ctrlGetFullList.MoveWindow(sr);
