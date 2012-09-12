@@ -304,6 +304,7 @@
     <ClCompile Include="client\TimerManager.cpp" />
     <ClCompile Include="client\TraceManager.cpp" />
     <ClCompile Include="client\Transfer.cpp" />
+    <ClCompile Include="client\UpdateManager.cpp" />
     <ClCompile Include="client\Upload.cpp" />
     <ClCompile Include="client\UploadBundle.cpp" />
     <ClCompile Include="client\UploadManager.cpp" />
@@ -427,6 +428,8 @@
     <ClInclude Include="client\StringMatch.h" />
     <ClInclude Include="client\TargetUtil.h" />
     <ClInclude Include="client\typedefs.h" />
+    <ClInclude Include="client\UpdateManager.h" />
+    <ClInclude Include="client\UpdateManagerListener.h" />
     <ClInclude Include="client\UploadBundle.h" />
     <ClInclude Include="client\UserQueue.h" />
     <ClInclude Include="client\WebShortcuts.h" />

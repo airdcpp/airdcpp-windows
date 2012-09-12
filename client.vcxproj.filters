@@ -260,6 +260,9 @@
     <ClCompile Include="client\HubEntry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\UpdateManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -668,6 +671,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\DelayedEvents.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\UpdateManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\UpdateManagerListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

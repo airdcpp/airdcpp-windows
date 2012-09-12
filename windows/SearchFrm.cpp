@@ -33,6 +33,7 @@
 #include "../client/SearchManager.h"
 #include "../client/Localization.h"
 #include "../client/DirectoryListingManager.h"
+#include "../client/GeoManager.h"
 
 
 int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_HITS, COLUMN_NICK, COLUMN_TYPE, COLUMN_SIZE,

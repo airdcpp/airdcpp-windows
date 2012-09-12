@@ -72,6 +72,8 @@
 #include "../client/format.h"
 #include "../client/HttpDownload.h"
 #include "../client/DirectoryListingManager.h"
+#include "../client/UpdateManager.h"
+#include "../client/GeoManager.h"
 
 MainFrame* MainFrame::anyMF = NULL;
 bool MainFrame::bShutdown = false;
@@ -88,13 +90,13 @@ bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashPro
 
 
 { 
-		if(WinUtil::getOsMajor() >= 6) {
-			user32lib = LoadLibrary(_T("user32"));
-			_d_ChangeWindowMessageFilter = (LPFUNC)GetProcAddress(user32lib, "ChangeWindowMessageFilter");
-		}
+	if(WinUtil::getOsMajor() >= 6) {
+		user32lib = LoadLibrary(_T("user32"));
+		_d_ChangeWindowMessageFilter = (LPFUNC)GetProcAddress(user32lib, "ChangeWindowMessageFilter");
+	}
 
-		memzero(statusSizes, sizeof(statusSizes));
-		anyMF = this;
+	memzero(statusSizes, sizeof(statusSizes));
+	anyMF = this;	
 }
 
 MainFrame::~MainFrame() {
@@ -178,22 +180,13 @@ void MainFrame::terminate() {
 }
 
 LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	links.homepage = _T("http://www.airdcpp.net/");
-	links.downloads = links.homepage + _T("download/");
-	links.geoip6 = _T("http://geoip6.airdcpp.net");
-	links.geoip4 = _T("http://geoip4.airdcpp.net");
-	links.guides = links.homepage + _T("guides/");
-	links.customize = links.homepage + _T("c/customizations/");
-	links.discuss = links.homepage + _T("forum/");
-
 	TimerManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
 	LogManager::getInstance()->addListener(this);
 	DirectoryListingManager::getInstance()->addListener(this);
+	UpdateManager::getInstance()->addListener(this);
 
 	hasUpdate = false; 
-	conns[CONN_VERSION].reset(new HttpDownload(VERSION_URL,
-		[this] { postMessageFW(WM_SPEAKER, HTTP_COMPLETED, (LPARAM)CONN_VERSION); }, false));
 
 	WinUtil::init(m_hWnd);
 
@@ -377,22 +370,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		showPortsError(e.getError());
 	}
 
-	auto prevGeo = BOOLSETTING(GET_USER_COUNTRY);
-	auto prevGeoFormat = SETTING(COUNTRY_FORMAT);
-
-	bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;
-	//if(BOOLSETTING(GET_USER_COUNTRY) != prevGeo) {
-		if(BOOLSETTING(GET_USER_COUNTRY)) {
-			GeoManager::getInstance()->init();
-			checkGeoUpdate();
-		} else {
-			GeoManager::getInstance()->close();
-			rebuildGeo = false;
-		}
-	//}
-	if(rebuildGeo) {
-		GeoManager::getInstance()->rebuild();
-	}
+	UpdateManager::getInstance()->init();
 		
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME);
@@ -887,15 +865,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		delete tmp;
 	} else if(wParam == UPDATE_TBSTATUS_REFRESHING) {
 		updateTBStatusRefreshing();
-    } else if(wParam == HTTP_COMPLETED) {
-		if (lParam == CONN_VERSION) {
-			completeVersionUpdate();
-		} else if (lParam == CONN_GEO_V6) {
-			completeGeoUpdate(true);
-		} else if (lParam == CONN_GEO_V4) {
-			completeGeoUpdate(false);
-		};
-	}
+    }
 
 	return 0;
 }
@@ -1013,12 +983,17 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 	auto prevDownloadSkiplistRegex = SETTING(DOWNLOAD_SKIPLIST_USE_REGEXP);
 
 	auto prevFreeSlotMatcher = SETTING(FREE_SLOTS_EXTENSIONS);
+	auto prevTranslation = SETTING(LANGUAGE_FILE);
 
 	if(dlg.DoModal(m_hWnd) == IDOK) 
 	{
 		SettingsManager::getInstance()->save();
 		if(missedAutoConnect && !SETTING(NICK).empty()) {
 			PostMessage(WM_SPEAKER, AUTO_CONNECT);
+		}
+
+		if (prevTranslation != SETTING(LANGUAGE_FILE)) {
+			UpdateManager::getInstance()->checkVersion();
 		}
 
 		try {
@@ -1056,7 +1031,7 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 		if(BOOLSETTING(GET_USER_COUNTRY) != prevGeo) {
 			if(BOOLSETTING(GET_USER_COUNTRY)) {
 				GeoManager::getInstance()->init();
-				checkGeoUpdate();
+				UpdateManager::getInstance()->checkGeoUpdate();
 			} else {
 				GeoManager::getInstance()->close();
 				rebuildGeo = false;
@@ -1351,10 +1326,10 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 	tstring site;
 	bool isFile = false;
 	switch(wID) {
-		case IDC_HELP_HOMEPAGE: site = links.homepage; break;
-		case IDC_HELP_GUIDES: site = links.guides; break;
-		case IDC_HELP_DISCUSS: site = links.discuss; break;
-		case IDC_HELP_CUSTOMIZE: site = links.customize; break;
+	case IDC_HELP_HOMEPAGE: site = Text::toT(UpdateManager::getInstance()->links.homepage); break;
+		case IDC_HELP_GUIDES: site = Text::toT(UpdateManager::getInstance()->links.guides); break;
+		case IDC_HELP_DISCUSS: site = Text::toT(UpdateManager::getInstance()->links.discuss); break;
+		case IDC_HELP_CUSTOMIZE: site = Text::toT(UpdateManager::getInstance()->links.customize); break;
 		default: dcassert(0);
 	}
 
@@ -2003,6 +1978,7 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	QueueManager::getInstance()->removeListener(this);
 	TimerManager::getInstance()->removeListener(this);
 	DirectoryListingManager::getInstance()->removeListener(this);
+	UpdateManager::getInstance()->removeListener(this);
 
 	//if(bTrayIcon) {
 		updateTray(false);
@@ -2076,58 +2052,6 @@ LRESULT MainFrame::onRefreshMenu(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, B
 	return 0;
 }
 
-void MainFrame::checkGeoUpdate() {
-	checkGeoUpdate(true);
-	checkGeoUpdate(false);
-}
-
-void MainFrame::checkGeoUpdate(bool v6) {
-	// update when the database is non-existent or older than 25 days (GeoIP updates every month).
-	try {
-		File f(GeoManager::getDbPath(v6) + ".gz", File::READ, File::OPEN);
-		if(f.getSize() > 0 && static_cast<time_t>(f.getLastModified()) > GET_TIME() - 3600 * 24 * 25) {
-			return;
-		}
-	} catch(const FileException&) { }
-	updateGeo(v6);
-}
-
-void MainFrame::updateGeo() {
-	if(BOOLSETTING(GET_USER_COUNTRY)) {
-		updateGeo(true);
-		updateGeo(false);
-	} else {
-		//dwt::MessageBox(this).show(T_("IP -> country mappings are disabled. Turn them back on via Settings > Appearance."),
-			//_T(APPNAME) _T(" ") _T(VERSIONSTRING), dwt::MessageBox::BOX_OK, dwt::MessageBox::BOX_ICONEXCLAMATION);
-	}
-}
-
-void MainFrame::updateGeo(bool v6) {
-	auto& conn = conns[v6 ? CONN_GEO_V6 : CONN_GEO_V4];
-	if(conn)
-		return;
-
-	LogManager::getInstance()->message(str(boost::format("Updating the %1% GeoIP database...") % (v6 ? "IPv6" : "IPv4")), LogManager::LOG_INFO);
-	conn.reset(new HttpDownload(Text::fromT(v6 ? links.geoip6 : links.geoip4),
-		[this, v6] { postMessageFW(WM_SPEAKER, HTTP_COMPLETED, (LPARAM)(v6 ? CONN_GEO_V6 : CONN_GEO_V4)); }, false));
-}
-
-void MainFrame::completeGeoUpdate(bool v6) {
-	auto& conn = conns[v6 ? CONN_GEO_V6 : CONN_GEO_V4];
-	if(!conn) { return; }
-	ScopedFunctor([&conn] { conn.reset(); });
-
-	if(!conn->buf.empty()) {
-		try {
-			File(GeoManager::getDbPath(v6) + ".gz", File::WRITE, File::CREATE | File::TRUNCATE).write(conn->buf);
-			GeoManager::getInstance()->update(v6);
-			LogManager::getInstance()->message(str(boost::format("The %1% GeoIP database has been successfully updated") % (v6 ? "IPv6" : "IPv4")), LogManager::LOG_INFO);
-			return;
-		} catch(const FileException&) { }
-	}
-	LogManager::getInstance()->message(str(boost::format("The %1% GeoIP database could not be updated") % (v6 ? "IPv6" : "IPv4")), LogManager::LOG_WARNING);
-}
-
 
 LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/) {
 	if (::IsIconic(m_hWnd)) {
@@ -2159,119 +2083,48 @@ LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /
 	return 0;
 }
 
-void MainFrame::completeVersionUpdate() {
-
-	if(!conns[CONN_VERSION]) { return; }
-	try {
-		SimpleXML xml;
-		xml.fromXML(conns[CONN_VERSION]->buf);
-		xml.stepIn();
-
-		double LangVersion;
-
-		string url;
-#		ifdef _WIN64
-			if(xml.findChild("URL64")) {
-			url = xml.getChildData();
-		}
-#		else
-		if(xml.findChild("URL")) {
-			url = xml.getChildData();
-		}
-#		endif
-
-		//ApexDC
-		xml.resetCurrentChild();
-		if(!BOOLSETTING(AUTO_DETECT_CONNECTION)) {
-			if(BOOLSETTING(IP_UPDATE) && xml.findChild("IP")) {
-				string ip = xml.getChildData();
-				SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, (!ip.empty() ? ip : AirUtil::getLocalIp()));
-			} else if(BOOLSETTING(IP_UPDATE)) {
-				SettingsManager::getInstance()->set(SettingsManager::EXTERNAL_IP, AirUtil::getLocalIp());
-			}
-			xml.resetCurrentChild();
-		}
-
-		if(xml.findChild("Version")) {
-			double remoteVer = Util::toDouble(xml.getChildData());
-			xml.resetCurrentChild();
-			double ownVersion = Util::toDouble(VERSIONFLOAT);
-
-#ifdef SVNVERSION
-			if (xml.findChild("SVNrev")) {
-				remoteVer = Util::toDouble(xml.getChildData());
-				xml.resetCurrentChild();
-			}
-			string tmp = SVNVERSION;
-			ownVersion = Util::toDouble(tmp.substr(1, tmp.length()-1));
-#endif
-
-			if(remoteVer > ownVersion) {
-				xml.resetCurrentChild();
-				if(xml.findChild("Title")) {
-					const string& title = xml.getChildData();
-					xml.resetCurrentChild();
-					if(xml.findChild("Message") && !BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS)) {
-						if(url.empty()) {
-							const string& msg = xml.getChildData();
-							MessageBox(Text::toT(msg).c_str(), Text::toT(title).c_str(), MB_OK);
-						} else {
-							string msg = xml.getChildData() + "\r\n" + STRING(OPEN_DOWNLOAD_PAGE);
-							UpdateDlg dlg;
-							dlg.DoModal();
-						}
-					}
-				}
-				xml.resetCurrentChild();
-				if(xml.findChild("VeryOldVersion")) {
-					if(Util::toDouble(xml.getChildData()) >= Util::toDouble(VERSIONFLOAT)) {
-						string msg = xml.getChildAttrib("Message", "Your version of AirDC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
-						MessageBox(Text::toT(msg + "\r\nPlease get a new one at " + url).c_str());
-						oldshutdown = true;
-						PostMessage(WM_CLOSE);
-					}
-				}
-				xml.resetCurrentChild();
-				if(xml.findChild("BadVersion")) {
-					xml.stepIn();
-					while(xml.findChild("BadVersion")) {
-						double v = Util::toDouble(xml.getChildAttrib("Version"));
-						if(v == Util::toDouble(VERSIONFLOAT)) {
-							string msg = xml.getChildAttrib("Message", "Your version of DC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
-							MessageBox(Text::toT(msg + "\r\nPlease get a new one at " + url).c_str(), _T("Bad DC++ version"), MB_OK | MB_ICONEXCLAMATION);
-							oldshutdown = true;
-							PostMessage(WM_CLOSE);
-						}
-					}
-				}
-			} else if((!SETTING(LANGUAGE_FILE).empty() && !BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS))) {
-				if (xml.findChild(CSTRING(AAIRDCPP_LANGUAGE_FILE))) {
-					string version = xml.getChildData();
-					LangVersion = Util::toDouble(version);
-					xml.resetCurrentChild();
-					if (xml.findChild("LANGURL")) {
-						if (LangVersion > Util::toDouble(CSTRING(AAIRDCPP_LANGUAGE_VERSION))){
-							string msg = xml.getChildData()+ "\r\n" + STRING(OPEN_DOWNLOAD_PAGE);
-							xml.resetCurrentChild();
-							UpdateDlg dlg;
-							dlg.DoModal();
-						}
-						xml.resetCurrentChild();
-					}
-				}
-			}
-		}
-	} catch (const Exception&) {
-		// ...
+void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& url, bool autoUpdate) noexcept {
+	if (!BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS)) {
+		UpdateDlg dlg;
+		dlg.DoModal();
 	}
 
-	conns[CONN_VERSION].reset();
-
-	// check after the version.xml download in case it contains updated GeoIP links.
-	/*if(BOOLSETTING(GET_USER_COUNTRY)) {
-		checkGeoUpdate();
-	} */
+	/*UpdateDlg dlg(title, message, version, url, autoUpdate);
+	if(dlg.DoModal(m_hWnd) == IDC_UPDATE_DOWNLOAD) {
+		if(!UpdateManager::getInstance()->isUpdating()) {
+			UpdateManager::getInstance()->downloadUpdate(url, WinUtil::getAppName());
+			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
+		} else {
+			MessageBox(updated ? CTSTRING(UPDATER_PENDING_RESTART) : CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
+		}
+	}*/
 }
+
+void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update) noexcept {
+	//tstring msg = xml.getChildAttrib("Message", "Your version of AirDC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
+	MessageBox(Text::toT(message + "\r\nPlease get a new one at " + url).c_str());
+	oldshutdown = true;
+	PostMessage(WM_CLOSE);
+
+	/*tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " APPNAME " " VERSIONSTRING);
+	MessageBox(Text::toT(message + "\r\n\r\n" + STRING(ATTEMPT_AUTO_UPDATE)).c_str(), title.c_str(), MB_OK | MB_ICONEXCLAMATION);
+
+	if(update.empty() || !UpdateDlg::canAutoUpdate(update)) {
+		if(!url.empty())
+			WinUtil::openLink(Text::toT(url));
+
+		oldshutdown = true;
+		PostMessage(WM_CLOSE);
+	} else {
+		if(!UpdateManager::getInstance()->isUpdating()) {
+			UpdateManager::getInstance()->downloadUpdate(update, WinUtil::getAppName());
+			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
+		} else {
+			MessageBox(updated ? CTSTRING(UPDATER_PENDING_RESTART) : CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
+		}
+	}*/
+}
+
 
 /**
  * @file

@@ -52,9 +52,30 @@ LRESULT AboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		SetDlgItemText(IDC_UPTIME, Text::toT(buf).c_str());*/
 	}
 	CenterWindow(GetParent());
-	c.addListener(this);
-	c.downloadFile(VERSION_URL), false;
+	dl.reset(new HttpDownload(VERSION_URL,
+		[this] { completeDownload(); }, true));
+
 	return TRUE;
+}
+
+void AboutDlg::completeDownload() {
+	string msg;
+	if(!dl->buf.empty()) {
+		try {
+			SimpleXML xml;
+			xml.fromXML(dl->buf);
+			if(xml.findChild("DCUpdate")) {
+				xml.stepIn();
+				if(xml.findChild("Version")) {
+					msg = xml.getChildData();
+				}
+			}
+		} catch(const SimpleXMLException&) { }
+	} else {
+		msg = dl->status;
+	}
+
+	PostMessage(WM_VERSIONDATA, (WPARAM) new tstring(Text::toT(msg)));
 }
 
 LRESULT AboutDlg::onVersionData(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -67,31 +88,4 @@ LRESULT AboutDlg::onVersionData(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/,
 LRESULT AboutDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	EndDialog(wID);
 	return 0;
-}
-	
-void AboutDlg::on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept {
-	downBuf.append((char*)buf, len);
-}
-
-void AboutDlg::on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool /*fromCoral*/) noexcept {
-	if(!downBuf.empty()) {
-		try {
-			SimpleXML xml;
-			xml.fromXML(downBuf);
-			if(xml.findChild("DCUpdate")) {
-				xml.stepIn();
-				if(xml.findChild("Version")) {
-					tstring* x = new tstring(Text::toT(xml.getChildData()));
-					PostMessage(WM_VERSIONDATA, (WPARAM) x);
-				}
-			}
-		} catch(const SimpleXMLException&) { }
-	}
-	conn->removeListener(this);
-}
-
-void AboutDlg::on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) noexcept {
-	tstring* x = new tstring(Text::toT(aLine));
-	PostMessage(WM_VERSIONDATA, (WPARAM) x);
-	conn->removeListener(this);
 }

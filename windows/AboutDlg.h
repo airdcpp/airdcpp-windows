@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../client/HttpConnection.h"
+#include "../client/HttpDownload.h"
 
 using std::unique_ptr;
 
@@ -46,7 +46,7 @@ _T("Thanks to Translators: \r\n")
 _T("xaozon, kryppy, B1ackBoX, shuttle, ICU2M8, en_dator, NT, Bl0m5t3r, Shuttle, LadyStardust, savone, aLti, MMWST, Lleexxii, What2Write, Kryppy, Toans, Kaas.\r\n");
 
 
-class AboutDlg : public CDialogImpl<AboutDlg>, private HttpConnectionListener
+class AboutDlg : public CDialogImpl<AboutDlg>
 {
 
 public:
@@ -69,13 +69,9 @@ public:
 
 private:
 	AboutDlg(const AboutDlg&) { dcassert(0); }
-	HttpConnection c;
-	
-	void on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const uint8_t* buf, size_t len) noexcept;
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool /*fromCoral*/) noexcept ;
-	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) noexcept;
+	unique_ptr<HttpDownload> dl;
 
-	string downBuf;
+	void completeDownload();
 };
 
 #endif // !defined(ABOUT_DLG_H)

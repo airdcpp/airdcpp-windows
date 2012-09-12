@@ -25,6 +25,7 @@
 
 #include "../Client/SettingsManager.h"
 #include "../client/FavoriteManager.h"
+#include "../client/StringTokenizer.h"
 #include "ListViewArrows.h"
 
 class ColumnInfo {

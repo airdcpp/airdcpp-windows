@@ -44,6 +44,7 @@
 #include "../client/HighlightManager.h"
 #include "../client/ConnectivityManager.h"
 #include "../client/Localization.h"
+#include "../client/GeoManager.h"
 
 HubFrame::FrameMap HubFrame::frames;
 HubFrame::IgnoreMap HubFrame::ignoreList;

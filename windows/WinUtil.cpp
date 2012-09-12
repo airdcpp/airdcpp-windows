@@ -53,6 +53,7 @@
 #include "../client/ShareScannerManager.h"
 #include "../client/AutoSearchManager.h"
 #include "../client/Magnet.h"
+#include "../client/DownloadManager.h"
 
 #include "boost/algorithm/string/replace.hpp"
 #include "boost/algorithm/string/trim.hpp"
@@ -1079,14 +1080,7 @@ bool WinUtil::checkCommand(tstring& cmd, tstring& param, tstring& message, tstri
 		ShareManager::getInstance()->generateOwnList(0);
 	} else if(stricmp(cmd.c_str(), _T("clientstats")) == 0) {
 		status = Text::toT(ClientManager::getInstance()->getClientStats());
-	}/*else if(stricmp(cmd.c_str(), _T("autosearch")) == 0) {
-		AutoSearchManager::getInstance()->checkSearches(true);
-		//debug info
-	} */ else if(stricmp(cmd.c_str(), _T("expected")) == 0) {
-		ConnectionManager::getInstance()->getExpectedMapSize();
-	} /*else if(stricmp(cmd.c_str(), _T("altsearch")) == 0) {
-		QueueManager::getInstance()->runAltSearch();
-	} */ else if(stricmp(cmd.c_str(), _T("allow")) == 0) {
+	} else if(stricmp(cmd.c_str(), _T("allow")) == 0) {
 		if(!param.empty()) {
 			QueueManager::getInstance()->shareBundle(Text::fromT(param));
 		} else {

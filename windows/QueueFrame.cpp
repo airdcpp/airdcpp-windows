@@ -30,6 +30,7 @@
 #include "../client/ShareManager.h"
 #include "../client/ClientManager.h"
 #include "../client/version.h"
+#include "../client/DownloadManager.h"
 #include "BarShader.h"
 
 #include <boost/range/adaptor/map.hpp>

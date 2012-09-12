@@ -27,17 +27,11 @@
 #include "../client/TimerManager.h"
 #include "../client/FavoriteManager.h"
 #include "../client/QueueManagerListener.h"
-#include "../client/Util.h"
 #include "../client/LogManagerListener.h"
-#include "../client/version.h"
-#include "../client/Client.h"
-#include "../client/ShareManager.h"
-#include "../client/DownloadManager.h"
 #include "../client/SettingsManager.h"
-#include "../client/AdlSearch.h"
-#include "../client/GeoManager.h"
-#include "../client/HttpDownload.h"
 #include "../client/DirectoryListingManagerListener.h"
+#include "../client/UpdateManagerListener.h"
+
 #include "PopupManager.h"
 
 #include "FlatTabCtrl.h"
@@ -49,12 +43,10 @@
 
 #include "picturewindow.h"
 
-using std::unique_ptr;
-
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>, public Thread,
 		private TimerManagerListener, private QueueManagerListener,
-		private LogManagerListener, private DirectoryListingManagerListener
+		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener
 {
 public:
 	MainFrame();
@@ -88,7 +80,6 @@ public:
 		REMOVE_POPUP,
 		SET_PM_TRAY_ICON,
 		SET_HUB_TRAY_ICON,
-		HTTP_COMPLETED,
 		UPDATE_TBSTATUS_HASHING,
 		UPDATE_TBSTATUS_REFRESHING
 	};
@@ -280,7 +271,6 @@ public:
 		return 0;
 	}
 
-	void postMessageFW(UINT u, WPARAM w, LPARAM l) { PostMessage(u, w, l); }
 	LRESULT onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	LRESULT onRowsChanged(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -409,22 +399,6 @@ private:
 		tstring file;
 		string dir;
 	};
-
-	class PartialListInfo {
-	public:
-		PartialListInfo(DirectoryListing* aDirList) : dirList(aDirList) { }
-		DirectoryListing* dirList;
-	};
-
-	struct {
-		tstring homepage;
-		tstring downloads;
-		tstring geoip6;
-		tstring geoip4;
-		tstring guides;
-		tstring customize;
-		tstring discuss;
-	} links;
 	
 	TransferView transferView;
 	static MainFrame* anyMF;
@@ -525,23 +499,6 @@ private:
 
 	LRESULT onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/);
 
-
-	enum {
-		CONN_VERSION,
-		CONN_GEO_V6,
-		CONN_GEO_V4,
-
-		CONN_LAST
-	};
-
-	unique_ptr<HttpDownload> conns[CONN_LAST];
-
-	void checkGeoUpdate();
-	void checkGeoUpdate(bool v6);
-	void updateGeo();
-	void updateGeo(bool v6);
-	void completeGeoUpdate(bool v6);
-	void completeVersionUpdate();
 	void showPortsError(const string& port);
 
 	void autoConnect(const FavoriteHubEntry::List& fl);
@@ -560,6 +517,9 @@ private:
 	// DirectoryListingManagerListener
 	void on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept;
 	void on(DirectoryListingManagerListener::PromptAction, const string& aName, const string& aMessage) noexcept;
+
+	void on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& url, bool autoUpdate) noexcept;
+	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)
