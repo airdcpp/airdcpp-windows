@@ -490,24 +490,22 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 }
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
+	/*#ifndef _DEBUG
+	         SingleInstance dcapp(_T("{AIRDC-AEE8350A-B49A-4753-AB4B-E55479A48351}"));	 
+	 #else
+	         SingleInstance dcapp(_T("{AIRDC-AEE8350A-B49A-4753-AB4B-E55479A48350}"));
+	 #endif*/
+
 	SingleInstance dcapp(_T(INST_NAME));
 
-	LPTSTR* argv = ++__targv;
+	/*LPTSTR* argv = ++__targv;
 	int argc = --__argc;
 	bool multiple = false;
-	UpdateManager::signVersionFile("C:\\Projects\\airsvn\\trunk\\compiled\\x64\\version.xml", "C:\\Projects\\airsvn\\trunk\\compiled\\x64\\air_rsa", false);
+	//UpdateManager::signVersionFile("C:\\Projects\\airsvn\\trunk\\compiled\\x64\\version.xml", "C:\\Projects\\airsvn\\trunk\\compiled\\x64\\air_rsa", false);
 
 	for (;;) {
 		if(argc <= 0) break;
-		/*if(_tcscmp(*argv, _T("/uninstall")) == 0) {
-			if(!dcapp.IsAnotherInstanceRunning()) {
-				WinUtil::uninstallApp();
-				return FALSE;
-			} else {
-				::MessageBox(NULL, _T("Please close all running instances and attempt againg."), _T(APPNAME) _T(" Uninstall"), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
-				return FALSE;
-			}
-		} else*/ if(_tcscmp(*argv, _T("/sign")) == 0 && --argc >= 2) {
+		if(_tcscmp(*argv, _T("/sign")) == 0 && --argc >= 2) {
 			string xmlPath = Text::fromT(*++argv);
 			string keyPath = Text::fromT(*++argv);
 			bool genHeader = (argc > 2 && (_tcscmp(*++argv, _T("-pubout")) == 0));
@@ -561,7 +559,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 		argv++;
 		argc--;
-	}
+	}*/
 
 	if(dcapp.IsAnotherInstanceRunning()) {
 		// Allow for more than one instance...

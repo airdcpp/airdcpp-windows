@@ -1141,7 +1141,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="ProppageOperator">Operator</String>
 		<String Name="ProppageNorm">Other users</String>
 		<String Name="MaxResizeLines">Max resize lines</String>
-		<String Name="SettingsDupeSearch">Use Dupe Color in Search</String>
+		<String Name="SettingsDupeSearch">Use dupe color in search</String>
 		<String Name="SettingsLrus">Russian</String>
 		<String Name="FileAlreadyShared">Trying to Download File already shared! File: </String>
 		<String Name="PasswdProtectStatic">Client protection</String>
@@ -1585,5 +1585,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="MessagesSentThrough">Messages are now sent through the hub %s</String>
 		<String Name="SendPmVia">Messages are sent via</String>
 		<String Name="MessagesSentThroughRemote">Messages are now sent through the hub %s (changed by the remote users)</String>
+		<String Name="IpUpdateFailed">Failed to update the IP address</String>
 	</Strings>
 </Language>

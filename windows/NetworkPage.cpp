@@ -261,14 +261,14 @@ void NetworkPage::on(UpdateManagerListener::SettingUpdated, size_t key, const st
 			fixControls();
 		}
 		SetDlgItemText(IDC_SERVER, Text::toT(value).c_str());
+	} else {
+		::MessageBox(m_hWnd, CTSTRING(IP_UPDATE_FAILED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
 	}
-	::EnableWindow(GetDlgItem(IDC_GETIP), true);
+	::EnableWindow(GetDlgItem(IDC_GETIP), TRUE);
 }
 	
 LRESULT NetworkPage::onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
-	//c.reset(new HttpDownload("http://checkip.dyndns.org/",
-	//	[this] { completeDownload(); }, false));
-
+	::EnableWindow(GetDlgItem(IDC_GETIP), FALSE);
 	UpdateManager::getInstance()->checkIP(true);
 	return S_OK;
 }
