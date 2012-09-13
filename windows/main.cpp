@@ -35,6 +35,7 @@
 
 #include "../client/MerkleTree.h"
 #include "../client/MappingManager.h"
+#include "../client/UpdateManager.h"
 
 #include "Resource.h"
 #include "ExtendedTrace.h"
@@ -489,11 +490,77 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 }
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
-#ifndef _DEBUG
-	SingleInstance dcapp(_T("{AIRDC-AEE8350A-B49A-4753-AB4B-E55479A48351}"));
-#else
-	SingleInstance dcapp(_T("{AIRDC-AEE8350A-B49A-4753-AB4B-E55479A48350}"));
-#endif
+	SingleInstance dcapp(_T(INST_NAME));
+
+	LPTSTR* argv = ++__targv;
+	int argc = --__argc;
+	bool multiple = false;
+
+	for (;;) {
+		if(argc <= 0) break;
+		/*if(_tcscmp(*argv, _T("/uninstall")) == 0) {
+			if(!dcapp.IsAnotherInstanceRunning()) {
+				WinUtil::uninstallApp();
+				return FALSE;
+			} else {
+				::MessageBox(NULL, _T("Please close all running instances and attempt againg."), _T(APPNAME) _T(" Uninstall"), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
+				return FALSE;
+			}
+		} else*/ if(_tcscmp(*argv, _T("/sign")) == 0 && --argc >= 2) {
+			string xmlPath = Text::fromT(*++argv);
+			string keyPath = Text::fromT(*++argv);
+			bool genHeader = (argc > 2 && (_tcscmp(*++argv, _T("-pubout")) == 0));
+			if(Util::fileExists(xmlPath) && Util::fileExists(keyPath))
+				UpdateManager::signVersionFile(xmlPath, keyPath, genHeader);
+			return FALSE;
+		} else if(_tcscmp(*argv, _T("/update")) == 0) {
+			if(--argc >= 2) {
+				string sourcePath = Text::fromT(*++argv);
+				string installPath = Text::fromT(*++argv);
+
+				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
+				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
+
+				bool success = false;
+				for(int i = 0; i < 5 && (success = UpdateManager::applyUpdate(sourcePath, installPath)) == false; ++i)
+					Thread::sleep(1000);
+
+				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
+				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+
+				if(argc > 2 && (_tcscmp(*++argv, _T("-restart")) == 0)) {
+					LPTSTR cmdLine = success ? _T("/updated /silent") : _T("/silent");
+					ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(WinUtil::getAppName())).c_str(), cmdLine, NULL, SW_SHOW);
+				}
+				return FALSE;
+			} else {
+				// This is compatibility code for updating from 1.4.x
+				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
+				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
+
+				while(Util::fileExists(WinUtil::getAppName() + ".bak")) {
+					Thread::sleep(5000);
+					File::deleteFile(WinUtil::getAppName() + ".bak");
+				}
+
+				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
+				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
+				multiple = true;
+				break;
+			}
+		} else {
+			if(_tcscmp(*argv, _T("/crash")) == 0) {
+				// going for a timeout
+				Thread::sleep(5000);
+				multiple = true;
+			}
+			if(_tcscmp(*argv, _T("/silent")) == 0)
+				multiple = true;
+		}
+
+		argv++;
+		argc--;
+	}
 
 	if(dcapp.IsAnotherInstanceRunning()) {
 		// Allow for more than one instance...

@@ -111,7 +111,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\geoip;$(SolutionDir)\boost;$(SolutionDir)\bzip2;$(SolutionDir)\openssl\include;$(SolutionDir)\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\minizip;$(SolutionDir)\geoip;$(SolutionDir)\boost;$(SolutionDir)\bzip2;$(SolutionDir)\openssl\include;$(SolutionDir)\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -315,6 +315,7 @@
     <ClCompile Include="client\Util.cpp" />
     <ClCompile Include="client\WebShortcuts.cpp" />
     <ClCompile Include="client\Wildcards.cpp" />
+    <ClCompile Include="client\ZipFile.cpp" />
     <ClCompile Include="client\ZUtils.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -375,6 +376,7 @@
     <ClInclude Include="client\GeoManager.h" />
     <ClInclude Include="client\GetSet.h" />
     <ClInclude Include="client\HashBloom.h" />
+    <ClInclude Include="client\HashCalc.h" />
     <ClInclude Include="client\HashManager.h" />
     <ClInclude Include="client\HashValue.h" />
     <ClInclude Include="client\HighlightManager.h" />
@@ -399,6 +401,7 @@
     <ClInclude Include="client\noexcept.h" />
     <ClInclude Include="client\OnlineUser.h" />
     <ClInclude Include="client\Pointer.h" />
+    <ClInclude Include="client\pubkey.h" />
     <ClInclude Include="client\QueueItem.h" />
     <ClInclude Include="client\QueueManager.h" />
     <ClInclude Include="client\QueueManagerListener.h" />
@@ -433,6 +436,7 @@
     <ClInclude Include="client\UploadBundle.h" />
     <ClInclude Include="client\UserQueue.h" />
     <ClInclude Include="client\WebShortcuts.h" />
+    <ClInclude Include="client\ZipFile.h" />
     <ClInclude Include="windows\ResourceLoader.h" />
     <CustomBuild Include="client\StringDefs.h">
       <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building StringDefs.cpp and Example.xml from StringDefs.h...</Message>
@@ -498,6 +502,9 @@
     <ProjectReference Include="MakeDefs\MakeDefs.vcxproj">
       <Project>{aef82786-9da2-4cdf-8602-02643cafc727}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="minizip\minizip.vcxproj">
+      <Project>{cce1d62b-cf3b-4705-a24e-75be18963c99}</Project>
     </ProjectReference>
     <ProjectReference Include="zlib.vcxproj">
       <Project>{dfbbe42a-45f4-4188-89c2-17f5dfe50673}</Project>
