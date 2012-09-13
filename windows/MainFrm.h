@@ -387,7 +387,15 @@ public:
 	int run();
 	
 	
+	void ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags = NIIF_INFO, bool force = false) {
+		dcassert(dwInfoFlags != NIIF_USER);
+		ShowPopup(szMsg, szTitle, dwInfoFlags, NULL, force);
+	}
 
+	void ShowPopup(tstring szMsg, tstring szTitle, HICON hIcon, bool force = false) {
+		ShowPopup(szMsg, szTitle, NIIF_USER, hIcon, force);
+	}
+	void ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags = NIIF_INFO, HICON hIcon = NULL, bool force = false);
 private:
 	NOTIFYICONDATA pmicon;
 	NOTIFYICONDATA hubicon;
@@ -478,7 +486,11 @@ private:
 	int64_t lastUp;
 	int64_t lastDown;
 	tstring lastTTHdir;
+
 	bool oldshutdown;
+
+	bool updated;
+	pair<tstring, tstring> updateCommand;
 
 	bool tabsontop;
 	bool closing;
@@ -520,6 +532,8 @@ private:
 
 	void on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& url, bool autoUpdate) noexcept;
 	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update) noexcept;
+	void on(UpdateManagerListener::UpdateComplete, const string& updater, const string& args) noexcept;
+	void on(UpdateManagerListener::UpdateFailed, const string& line) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)

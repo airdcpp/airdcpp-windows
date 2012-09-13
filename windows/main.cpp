@@ -495,6 +495,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	LPTSTR* argv = ++__targv;
 	int argc = --__argc;
 	bool multiple = false;
+	UpdateManager::signVersionFile("C:\\Projects\\airsvn\\trunk\\compiled\\x64\\version.xml", "C:\\Projects\\airsvn\\trunk\\compiled\\x64\\air_rsa", false);
 
 	for (;;) {
 		if(argc <= 0) break;

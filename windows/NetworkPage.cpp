@@ -22,6 +22,7 @@
 #include "../client/SettingsManager.h"
 #include "../client/Socket.h"
 #include "../client/AirUtil.h"
+#include "../client/UpdateManager.h"
 
 #include "Resource.h"
 #include "NetworkPage.h"
@@ -29,6 +30,18 @@
 
 #include <IPHlpApi.h>
 #pragma comment(lib, "iphlpapi.lib")
+
+NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s), adapterInfo(NULL) {
+	SetTitle(CTSTRING(SETTINGS_NETWORK));
+	m_psp.dwFlags |= PSP_RTLREADING;
+	UpdateManager::getInstance()->addListener(this);
+}
+
+NetworkPage::~NetworkPage() {
+	if(adapterInfo)
+		HeapFree(GetProcessHeap(), 0, adapterInfo);
+	UpdateManager::getInstance()->removeListener(this);
+}
 
 PropPage::TextItem NetworkPage::texts[] = {
 		{ IDC_CONNECTION_DETECTION,			ResourceManager::CONNECTION_DETECTION		},
@@ -241,34 +254,21 @@ LRESULT NetworkPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	return 0;
 }
 
-void NetworkPage::completeDownload() {
-	if(!c->buf.empty()) {
-		SimpleXML xml;
-		xml.fromXML(c->buf);
-		if(xml.findChild("html")) {
-			xml.stepIn();
-			if(xml.findChild("body")) {
-				string x = xml.getChildData().substr(20);
-				if(Util::isPrivateIp(x)) {
-						CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
-						fixControls();
-				}
-				SetDlgItemText(IDC_SERVER, Text::toT(x).c_str());
-				//::MessageBox(NULL, _T("IP fetched: checkip.dyndns.org"), _T("Debug"), MB_OK);
-			} else {
-				if(Util::isPrivateIp(AirUtil::getLocalIp())) {
-						CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
-						fixControls();
-				}
-				SetDlgItemText(IDC_SERVER, Text::toT(AirUtil::getLocalIp()).c_str());
-			}
+void NetworkPage::on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept {
+	if(!value.empty()) {
+		if(Util::isPrivateIp(value)) {
+			CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
+			fixControls();
 		}
+		SetDlgItemText(IDC_SERVER, Text::toT(value).c_str());
 	}
 	::EnableWindow(GetDlgItem(IDC_GETIP), true);
 }
 	
 LRESULT NetworkPage::onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
-	c.reset(new HttpDownload("http://checkip.dyndns.org/",
-		[this] { completeDownload(); }, false));
+	//c.reset(new HttpDownload("http://checkip.dyndns.org/",
+	//	[this] { completeDownload(); }, false));
+
+	UpdateManager::getInstance()->checkIP(true);
 	return S_OK;
 }

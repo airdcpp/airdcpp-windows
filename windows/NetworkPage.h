@@ -25,28 +25,18 @@
 
 #include <atlcrack.h>
 #include "PropPage.h"
-#include "../client/HttpDownload.h"
+#include "../client/UpdateManagerListener.h"
 #include "../client/SimpleXML.h"
 #include "../client/version.h"
 
 #include <IPHlpApi.h>
 #pragma comment(lib, "iphlpapi.lib")
 
-class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage
+class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage, private UpdateManagerListener
 {
 public:
-	NetworkPage(SettingsManager *s) : PropPage(s), adapterInfo(NULL) {
-		SetTitle(CTSTRING(SETTINGS_NETWORK));
-		m_psp.dwFlags |= PSP_RTLREADING;
-	}
-	~NetworkPage() {
-		if(adapterInfo)
-			HeapFree(GetProcessHeap(), 0, adapterInfo);
-
-		if(c != NULL) {
-			c = NULL;
-		}
-	}
+	NetworkPage(SettingsManager *s);
+	~NetworkPage();
 
 
 	BEGIN_MSG_MAP(NetworkPage)
@@ -77,12 +67,12 @@ private:
 	CComboBox BindCombo;
 
 	void completeDownload();
-	unique_ptr<HttpDownload> c;
 
 	void fixControls();
 	void getAddresses();
 
 	IP_ADAPTER_ADDRESSES* adapterInfo;
+	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
 };
 
 #endif // !defined(NETWORK_PAGE_H)

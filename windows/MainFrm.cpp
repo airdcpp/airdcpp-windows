@@ -86,7 +86,7 @@ bool MainFrame::isShutdownStatus = false;
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
-bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false), trayUID(0)
+bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false), trayUID(0), updated(false)
 
 
 { 
@@ -108,6 +108,12 @@ MainFrame::~MainFrame() {
 	winampImages.Destroy();
 
 	WinUtil::uninit();
+
+	if(updated && !updateCommand.first.empty()) {
+		if(oldshutdown) updateCommand.second += _T(" -restart");
+		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), updateCommand.second.c_str(), NULL, SW_HIDE);
+	}
+
 	if(WinUtil::getOsMajor() >= 6)
 		FreeLibrary(user32lib);
 }
@@ -993,7 +999,7 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 		}
 
 		if (prevTranslation != SETTING(LANGUAGE_FILE)) {
-			UpdateManager::getInstance()->checkVersion();
+			UpdateManager::getInstance()->checkLanguage();
 		}
 
 		try {
@@ -2123,6 +2129,24 @@ void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, con
 			MessageBox(updated ? CTSTRING(UPDATER_PENDING_RESTART) : CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
 		}
 	}*/
+}
+
+void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& updater, const string& args) noexcept {
+	updated = true;
+	updateCommand = make_pair(Text::toT(updater), Text::toT(args));
+
+	/*if(MessageBox(CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
+		if(updater != WinUtil::getAppName())
+			WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));
+
+		oldshutdown = true;
+		PostMessage(WM_CLOSE);
+	} else if(updater != WinUtil::getAppName())
+		WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));*/
+}
+
+void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noexcept {
+	//ShowPopup(Text::toT(STRING(UPDATER_FAILED) + " " + line), CTSTRING(UPDATER), NIIF_ERROR, true);
 }
 
 
