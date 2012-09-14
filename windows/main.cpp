@@ -490,18 +490,11 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 }
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
-	/*#ifndef _DEBUG
-	         SingleInstance dcapp(_T("{AIRDC-AEE8350A-B49A-4753-AB4B-E55479A48351}"));	 
-	 #else
-	         SingleInstance dcapp(_T("{AIRDC-AEE8350A-B49A-4753-AB4B-E55479A48350}"));
-	 #endif*/
-
 	SingleInstance dcapp(_T(INST_NAME));
-
-	/*LPTSTR* argv = ++__targv;
-	int argc = --__argc;
 	bool multiple = false;
-	//UpdateManager::signVersionFile("C:\\Projects\\airsvn\\trunk\\compiled\\x64\\version.xml", "C:\\Projects\\airsvn\\trunk\\compiled\\x64\\air_rsa", false);
+
+	LPTSTR* argv = ++__targv;
+	int argc = --__argc;
 
 	for (;;) {
 		if(argc <= 0) break;
@@ -517,11 +510,14 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				string sourcePath = Text::fromT(*++argv);
 				string installPath = Text::fromT(*++argv);
 
+				//string sourcePath = "C:\\Users\\maksis\\AppData\\Local\\Temp\\{AIRDC-AEE8350A-B49A-4753-AB4B-E55479A48350}\\LUJK45CVGOQUMKX5B3XJB5GVG2C6OVJAUTW3LMY\\";
+				//string installPath = "C:\\Projects\\airsvn\\trunk\\compiled\\x64\\";
+
 				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
 
 				bool success = false;
-				for(int i = 0; i < 5 && (success = UpdateManager::applyUpdate(sourcePath, installPath)) == false; ++i)
+				for(int i = 0; i < 120 && (success = UpdateManager::applyUpdate(sourcePath, installPath)) == false; ++i)
 					Thread::sleep(1000);
 
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
@@ -559,11 +555,10 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 		argv++;
 		argc--;
-	}*/
+	}
 
 	if(dcapp.IsAnotherInstanceRunning()) {
 		// Allow for more than one instance...
-				bool multiple = false;
 		if(_tcslen(lpstrCmdLine) == 0) {
 			if (::MessageBox(NULL, _T("There is already an instance of AirDC++ running.\nDo you want to launch another instance anyway?"), 
 				_T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {

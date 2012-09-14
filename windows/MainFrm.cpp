@@ -376,7 +376,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		showPortsError(e.getError());
 	}
 
-	UpdateManager::getInstance()->init();
+	UpdateManager::getInstance()->init(WinUtil::getAppName());
 		
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME);
@@ -2135,14 +2135,15 @@ void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& updater,
 	updated = true;
 	updateCommand = make_pair(Text::toT(updater), Text::toT(args));
 
-	/*if(MessageBox(CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
+	//if(MessageBox(CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
+	if(MessageBox(_T("Update installation successful, would you like to restart AirDC++ now to complete the update proccess?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
 		if(updater != WinUtil::getAppName())
 			WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));
 
 		oldshutdown = true;
 		PostMessage(WM_CLOSE);
 	} else if(updater != WinUtil::getAppName())
-		WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));*/
+		WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noexcept {
