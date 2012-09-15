@@ -69,7 +69,7 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_LATEST_LBL), (TSTRING(LATEST_VERSION) + _T(":")).c_str());
 
 #ifdef SVNVERSION
-	PostMessage(WM_SPEAKER, UPDATE_CURRENT_VERSION, (LPARAM)new tstring(Text::toT((string)VERSIONFLOAT + ' ' + (string)SVNVERSION)));
+	PostMessage(WM_SPEAKER, UPDATE_CURRENT_VERSION, (LPARAM)new tstring(Text::toT(SHORTVERSIONSTRING)));
 #else
 	PostMessage(WM_SPEAKER, UPDATE_CURRENT_VERSION, (LPARAM)new tstring(_T(VERSIONSTRING)));
 #endif
@@ -191,8 +191,6 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 					update = false;
 					updating = true;
 					PostMessage(WM_CLOSE);
-				} else{ 
-					MainFrame::getMainFrame()->update();
 				}
 			}
 		}
@@ -221,9 +219,9 @@ void UpdateDlg::on(HttpConnectionListener::Complete, HttpConnection* /*conn*/, s
 				string remoteVer = xml.getChildData();
 				xml.resetCurrentChild();
 				latestVersion = Util::toDouble(remoteVer);
-				ownVersion = Util::toDouble(VERSIONFLOAT);
+				ownVersion = Util::toDouble(VERSIONSTRING);
 				string svn;
-#ifdef SVNVERSION
+#ifdef BETAVER
 				if (xml.findChild("SVNrev")) {
 					string svn = xml.getChildData();
 					latestVersion = Util::toDouble(svn);

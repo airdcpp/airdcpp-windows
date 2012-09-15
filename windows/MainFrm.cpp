@@ -86,7 +86,7 @@ bool MainFrame::isShutdownStatus = false;
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
-bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false), trayUID(0), updated(false)
+bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false), trayUID(0)
 
 
 { 
@@ -108,11 +108,6 @@ MainFrame::~MainFrame() {
 	winampImages.Destroy();
 
 	WinUtil::uninit();
-
-	if(updated && !updateCommand.first.empty()) {
-		if(oldshutdown) updateCommand.second += _T(" -restart");
-		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), updateCommand.second.c_str(), NULL, SW_HIDE);
-	}
 
 	if(WinUtil::getOsMajor() >= 6)
 		FreeLibrary(user32lib);
@@ -180,7 +175,6 @@ LRESULT MainFrame::onMatchAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 }
 
 void MainFrame::terminate() {
-	hasUpdate = false; // avoid update question if user double downloads update
 	oldshutdown = true;
 	PostMessage(WM_CLOSE);
 }
@@ -191,8 +185,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	LogManager::getInstance()->addListener(this);
 	DirectoryListingManager::getInstance()->addListener(this);
 	UpdateManager::getInstance()->addListener(this);
-
-	hasUpdate = false; 
 
 	WinUtil::init(m_hWnd);
 
@@ -361,7 +353,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(BOOLSETTING(LOCK_TB)) PostMessage(WM_COMMAND, ID_LOCK_TB);
 	if(BOOLSETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
 
-	if(!WinUtil::isShift())
+	if(!WinUtil::isShift() && !Util::hasParam("/noautoconnect"))
 		PostMessage(WM_SPEAKER, AUTO_CONNECT);
 
 	PostMessage(WM_SPEAKER, PARSE_COMMAND_LINE);
@@ -1249,16 +1241,6 @@ LRESULT MainFrame::onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(hasUpdate) {
-		if (Util::fileExists(Util::getPath(Util::PATH_RESOURCES) + INSTALLER)) {
-			//string file = (Util::getPath(Util::PATH_RESOURCES) + "AirDC_Installer.exe");
-			if(MessageBox(CTSTRING(UPDATE_FILE_DETECTED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-				::ShellExecute(NULL, NULL, Text::toT(Util::getPath(Util::PATH_RESOURCES) + INSTALLER).c_str(), NULL, NULL, SW_SHOWNORMAL);
-				terminate();
-			}
-		}
-		hasUpdate = false;
-	}
 	if(!closing) {
 		if( oldshutdown ||(!BOOLSETTING(CONFIRM_EXIT)) || (MessageBox(CTSTRING(REALLY_EXIT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) ) {
 			updateTray(false);
@@ -2131,18 +2113,17 @@ void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, con
 	}*/
 }
 
-void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& updater, const string& args) noexcept {
-	updated = true;
-	updateCommand = make_pair(Text::toT(updater), Text::toT(args));
-
+void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater) noexcept {
 	//if(MessageBox(CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
 	if(MessageBox(_T("Update installation successful, would you like to restart AirDC++ now to complete the update proccess?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
-		if(updater != WinUtil::getAppName())
+		if(aUpdater != WinUtil::getAppName())
 			WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));
+
+		WinUtil::addUpdate(aUpdater);
 
 		oldshutdown = true;
 		PostMessage(WM_CLOSE);
-	} else if(updater != WinUtil::getAppName())
+	} else if(aUpdater != WinUtil::getAppName())
 		WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));
 }
 

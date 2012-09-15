@@ -278,9 +278,7 @@ public:
 		Invalidate();
 		return 0;
 	}
-	void terminate(); 
-	bool hasUpdate;
-	void update() { hasUpdate = true; }
+	void terminate();
 
 	void TestWrite(bool downloads, bool incomplete, bool appPath);
 
@@ -489,9 +487,6 @@ private:
 
 	bool oldshutdown;
 
-	bool updated;
-	pair<tstring, tstring> updateCommand;
-
 	bool tabsontop;
 	bool closing;
 
@@ -532,7 +527,7 @@ private:
 
 	void on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& url, bool autoUpdate) noexcept;
 	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update) noexcept;
-	void on(UpdateManagerListener::UpdateComplete, const string& updater, const string& args) noexcept;
+	void on(UpdateManagerListener::UpdateComplete, const string& updater) noexcept;
 	void on(UpdateManagerListener::UpdateFailed, const string& line) noexcept;
 };
 

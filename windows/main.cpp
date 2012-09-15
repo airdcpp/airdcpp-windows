@@ -163,11 +163,9 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 		exceptionCode, getExceptionName(exceptionCode).c_str(), VERSIONSTRING, archStr);
 
 	f.write(buf, strlen(buf));
-#if defined(SVNVERSION)
-	sprintf(buf, "SVN: %s\r\n", 
+	sprintf(buf, "Build: %s\r\n", 
 		SVNVERSION);	
 	f.write(buf, strlen(buf));
-#endif	
 	
 	OSVERSIONINFOEX ver;
 	WinUtil::getVersionInfo(ver);
@@ -486,18 +484,27 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	splash.DestroyWindow();
 	dummy.DestroyWindow();
 
+	WinUtil::runPendingUpdate();
 	return nRet;
 }
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	SingleInstance dcapp(_T(INST_NAME));
-	bool multiple = false;
 
 	LPTSTR* argv = ++__targv;
 	int argc = --__argc;
 
-	for (;;) {
-		if(argc <= 0) break;
+	auto checkParams = [&argc, &argv] () -> void {
+		for (;;) {
+			if(argc <= 0) break;
+			Util::addParam(Text::fromT(*argv));
+
+			argv++;
+			argc--;
+		}
+	};
+
+	if (argc > 0) {
 		if(_tcscmp(*argv, _T("/sign")) == 0 && --argc >= 2) {
 			string xmlPath = Text::fromT(*++argv);
 			string keyPath = Text::fromT(*++argv);
@@ -506,56 +513,46 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				UpdateManager::signVersionFile(xmlPath, keyPath, genHeader);
 			return FALSE;
 		} else if(_tcscmp(*argv, _T("/update")) == 0) {
-			if(--argc >= 2) {
-				string sourcePath = Text::fromT(*++argv);
-				string installPath = Text::fromT(*++argv);
-
-				//string sourcePath = "C:\\Users\\maksis\\AppData\\Local\\Temp\\{AIRDC-AEE8350A-B49A-4753-AB4B-E55479A48350}\\LUJK45CVGOQUMKX5B3XJB5GVG2C6OVJAUTW3LMY\\";
-				//string installPath = "C:\\Projects\\airsvn\\trunk\\compiled\\x64\\";
+			if(--argc >= 1) {
+				string sourcePath = Util::getFilePath(WinUtil::getAppName());
+				string installPath = Text::fromT(*++argv); argc--;
 
 				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
 
 				bool success = false;
-				for(int i = 0; i < 120 && (success = UpdateManager::applyUpdate(sourcePath, installPath)) == false; ++i)
+				for(int i = 0; i < 20 && (success = UpdateManager::applyUpdate(sourcePath, installPath)) == false; ++i)
 					Thread::sleep(1000);
 
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 
-				if(argc > 2 && (_tcscmp(*++argv, _T("-restart")) == 0)) {
-					LPTSTR cmdLine = success ? _T("/updated /silent") : _T("/silent");
-					ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(WinUtil::getAppName())).c_str(), cmdLine, NULL, SW_SHOW);
-				}
-				return FALSE;
-			} else {
-				// This is compatibility code for updating from 1.4.x
-				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
-				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
+				//add new startup params
+				if (success)
+					Util::addParam("/updated");
+				Util::addParam("/silent");
 
-				while(Util::fileExists(WinUtil::getAppName() + ".bak")) {
-					Thread::sleep(5000);
-					File::deleteFile(WinUtil::getAppName() + ".bak");
-				}
+				//append the passed params (but leave out the update commands...)
+				argv++;
+				checkParams();
 
-				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
-				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
-				multiple = true;
-				break;
+				//start the updated instance
+				ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(WinUtil::getAppName())).c_str(), Util::getParams(true).c_str(), NULL, SW_SHOW);
 			}
+			return FALSE;
 		} else {
-			if(_tcscmp(*argv, _T("/crash")) == 0) {
-				// going for a timeout
-				Thread::sleep(5000);
-				multiple = true;
-			}
-			if(_tcscmp(*argv, _T("/silent")) == 0)
-				multiple = true;
+			checkParams();
 		}
-
-		argv++;
-		argc--;
 	}
+
+	string updaterFile;
+	if (UpdateManager::checkPendingUpdates(Util::getFilePath(WinUtil::getAppName()), updaterFile, Util::hasParam("/updated"))) {
+		WinUtil::addUpdate(updaterFile);
+		WinUtil::runPendingUpdate();
+		return FALSE;
+	}
+
+	bool multiple = Util::hasParam("/silent");
 
 	if(dcapp.IsAnotherInstanceRunning()) {
 		// Allow for more than one instance...

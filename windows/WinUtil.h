@@ -209,6 +209,11 @@ public:
 	static DWORD comCtlVersion;
 	static tstring m_IconPath;
 
+	static bool updated;
+	static TStringPair updateCommand;
+
+	static void addUpdate(const string& aUpdater);
+	static void runPendingUpdate();
 	static void preInit(); // init required for the wizard
 	static void init(HWND hWnd);
 	static void uninit();

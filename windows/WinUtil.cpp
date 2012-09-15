@@ -111,6 +111,9 @@ CHARFORMAT2 WinUtil::m_ChatTextPrivate;
 CHARFORMAT2 WinUtil::m_ChatTextLog;
 tstring WinUtil::m_IconPath;
 HWND WinUtil::findDialog = nullptr;
+
+bool WinUtil::updated;
+TStringPair WinUtil::updateCommand;
 	
 HLSCOLOR RGB2HLS (COLORREF rgb) {
 	unsigned char minval = min(GetRValue(rgb), min(GetGValue(rgb), GetBValue(rgb)));
@@ -309,6 +312,7 @@ void WinUtil::reLoadImages(){
 
 void WinUtil::preInit() {
 	flagImages.CreateFromImage(IDB_FLAGS, 25, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+	updated = false;
 }
 
 void WinUtil::init(HWND hWnd) {
@@ -932,7 +936,7 @@ bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, ParamMap& params) 
 	return true;
 }
 
-#ifdef SVNVERSION
+#ifdef BETAVER
 #define LINE2 _T("-- http://www.airdcpp.net  <AirDC++ ") _T(VERSIONSTRING) _T(SVNVERSION) _T(" / ") _T(DCVERSIONSTRING) _T(">")
 #else
 #define LINE2 _T("-- http://www.airdcpp.net  <AirDC++ ") _T(VERSIONSTRING) _T(" / ") _T(DCVERSIONSTRING) _T(">")
@@ -2661,6 +2665,23 @@ HBITMAP WinUtil::getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, lon
 void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
 	if (WinUtil::getOsMajor() == 6)
 		Edit_SetCueBannerTextFocused(hwnd, text, drawFocus);
+}
+
+void WinUtil::addUpdate(const string& aUpdater) {
+	updated = true;
+	auto path = Util::getFilePath(WinUtil::getAppName());
+
+	if(path[path.size() - 1] == PATH_SEPARATOR)
+		path.insert(path.size() - 1, "\\");
+
+	updateCommand = make_pair(Text::toT(aUpdater), Text::toT("/update \"" +  path + "\""));
+}
+
+void WinUtil::runPendingUpdate() {
+	if(updated && !updateCommand.first.empty()) {
+		auto cmd = updateCommand.second + Util::getParams(false);
+		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
+	}
 }
 
 
