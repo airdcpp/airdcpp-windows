@@ -102,6 +102,9 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	readLog();
 	WinUtil::SetIcon(m_hWnd, IDR_PRIVATE);
+	userOffline = WinUtil::createIcon(IDR_PRIVATE_OFF);
+	userOnline = WinUtil::createIcon(IDR_PRIVATE);
+
 	bHandled = FALSE;
 	return 1;
 }
@@ -190,9 +193,11 @@ void PrivateFrame::updateOnlineStatus() {
 		setDisconnected(false);
 		if(!online) {
 			addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint) + _T(" - ") + hubName + _T("]"));
+			setIcon(userOnline);
 		}
 	} else {
 		setDisconnected(true);
+		setIcon(userOffline);
 		addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + Text::toT(oldHubPair.second) + _T("]"));
 		ctrlClient.setClient(nullptr);
 	}
@@ -655,6 +660,8 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		closed = true;
+		DestroyIcon(userOnline);
+		DestroyIcon(userOffline);
 		PostMessage(WM_CLOSE);
 		return 0;
 	} else {

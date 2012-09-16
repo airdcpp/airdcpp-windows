@@ -298,8 +298,7 @@ string Players::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 	if(playerWnd != NULL) {
 		ParamMap params;
 		TCHAR titleBuffer[2048];
-		int buffLength = sizeof(titleBuffer);
-		GetWindowText(playerWnd, titleBuffer, buffLength);
+		GetWindowText(playerWnd, titleBuffer, sizeof(titleBuffer));
 		tstring title = titleBuffer;
 		if (strcmpi(Text::fromT(title).c_str(), "Spotify") == 0)
 			return "no_media";
@@ -626,8 +625,7 @@ string Players::getWinAmpSpam() {
 			case 3: params["state"] = boost::get<string>(params["paused"]);
 		};
 		TCHAR titleBuffer[2048];
-		int buffLength = sizeof(titleBuffer);
-		GetWindowText(hwndWinamp, titleBuffer, buffLength);
+		GetWindowText(hwndWinamp, titleBuffer, sizeof(titleBuffer));
 		tstring title = titleBuffer;
 		params["rawtitle"] = Text::fromT(title);
 		// there's some winamp bug with scrolling. wa5.09x and 5.1 or something.. see:

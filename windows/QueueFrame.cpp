@@ -73,7 +73,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlQueue.SetImageList(WinUtil::fileImages, LVSIL_SMALL);
 	
 	t_bVertical = !BOOLSETTING(HORIZONTAL_QUEUE);
-	m_nProportionalPos = 2500;
+	m_nProportionalPos = SETTING(QUEUE_SPLITTER_POS);
 	SetSplitterPanes(ctrlDirs.m_hWnd, ctrlQueue.m_hWnd);
 
 	// Create listview columns
@@ -2073,6 +2073,7 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			::ScreenToClient(GetParent(), &rc.BottomRight());
 				
 			//save the position
+			SettingsManager::getInstance()->set(SettingsManager::QUEUE_SPLITTER_POS, m_nProportionalPos);
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_TOP, (rc.top > 0 ? rc.top : 0));
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_LEFT, (rc.left > 0 ? rc.left : 0));

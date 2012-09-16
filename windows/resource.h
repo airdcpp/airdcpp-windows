@@ -119,7 +119,6 @@
 #define IDR_CDM                         270
 #define IDD_UPDATE                      274
 #define IDR_UPDATE                      276
-#define IDB_FAVSTATES                   277
 #define IDB_SHUTDOWN                    278
 #define IDD_MAGNET                      281
 #define IDI_MAGNET                      283

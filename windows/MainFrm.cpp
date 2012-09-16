@@ -1501,8 +1501,7 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		nid.cbSize = sizeof(NOTIFYICONDATA);
 		nid.hWnd = m_hWnd;
 		nid.uID = trayUID;
-		nid.uFlags = NIF_TIP | NIF_ICON;
-		nid.hIcon = GetIcon(false);
+		nid.uFlags = NIF_TIP;
 		_tcsncpy(nid.szTip, (_T("D: ") + Util::formatBytesW(DownloadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
 			Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T(")\r\nU: ") +
 			Util::formatBytesW(UploadManager::getInstance()->getRunningAverage()) + _T("/s (") + 

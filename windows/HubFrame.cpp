@@ -953,6 +953,9 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 			FavoriteManager::getInstance()->updateRecent(r);
 		}
 		DeleteObject(hEmoticonBmp);
+		DestroyIcon(HubOpIcon);
+		DestroyIcon(HubRegIcon);
+		DestroyIcon(HubIcon);
 
 		SettingsManager::getInstance()->removeListener(this);
 		TimerManager::getInstance()->removeListener(this);

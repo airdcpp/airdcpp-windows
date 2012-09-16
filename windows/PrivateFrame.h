@@ -236,7 +236,8 @@ private:
 	OMenu emoMenu;
 	CButton ctrlEmoticons;
 	ExCImage hEmoticonBmp;
-
+	HICON userOffline;
+	HICON userOnline;
 
 	HintedUser replyTo;
 	

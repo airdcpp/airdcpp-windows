@@ -38,7 +38,9 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlUsers.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_USERS);
 	ctrlUsers.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
-	images.CreateFromImage(IDB_FAVSTATES, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
+	images.AddIcon(WinUtil::createIcon(IDR_PRIVATE, 16));
+	images.AddIcon(WinUtil::createIcon(IDR_PRIVATE_OFF, 16));
 	ctrlUsers.SetImageList(images, LVSIL_SMALL);
 
 	ctrlUsers.SetBkColor(WinUtil::bgColor);
@@ -210,12 +212,9 @@ void UsersFrame::updateUser(const UserPtr& aUser) {
 		if(ui->user == aUser) {
 			ui->columns[COLUMN_SEEN] = aUser->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", FavoriteManager::getInstance()->getLastSeen(aUser)));
 			if(aUser->isOnline()) {
-				// TODO: if(aUser->isSet(User::AWAY))
-				//	ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 1, 0, 0, NULL);
-				//else
-					ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 0, 0, 0, NULL);
+				ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 0, 0, 0, NULL);
 			} else
-				ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 2, 0, 0, NULL);
+				ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 1, 0, 0, NULL);
 			ctrlUsers.updateItem(i);
 		}
 	}

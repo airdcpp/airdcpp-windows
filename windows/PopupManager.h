@@ -43,7 +43,8 @@ public:
 	PopupManager() : height(90), width(200), offset(0), activated(true), id(0) {
 		if(LOBYTE(LOWORD(GetVersion())) >= 5) {
 			user32lib = LoadLibrary(_T("user32"));
-			_d_SetLayeredWindowAttributes = (LPFUNC)GetProcAddress(user32lib, "SetLayeredWindowAttributes");
+			if(user32lib)
+				_d_SetLayeredWindowAttributes = (LPFUNC)GetProcAddress(user32lib, "SetLayeredWindowAttributes");
 		}	
 	
 		TimerManager::getInstance()->addListener(this);

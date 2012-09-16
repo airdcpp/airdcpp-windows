@@ -506,6 +506,7 @@ LRESULT FavoriteHubsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		ClientManager::getInstance()->removeListener(this);
 		closed = true;		
 		WinUtil::setButtonPressed(IDC_FAVORITES, false);
+		onlineStatusImg.Destroy();
 		PostMessage(WM_CLOSE);
 		return 0;
 	} else {

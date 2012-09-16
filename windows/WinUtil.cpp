@@ -2364,6 +2364,7 @@ tstring WinUtil::getIconName(int aDefault) {
 		case IDI_MPVOLUMEDOWN:	return _T("MediaToolbar\\down.ico");
 		case IDR_MAINFRAME:		return _T("AirDCPlusPlus.ico");
 		case IDR_PRIVATE:       return _T("User.ico");
+		case IDR_PRIVATE_OFF:   return _T("UserOff.ico");
 		default: return Util::emptyStringT;
 	}
 }
