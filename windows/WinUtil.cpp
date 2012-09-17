@@ -1966,55 +1966,6 @@ tstring WinUtil::diskInfo() {
 
    return result;
 }
-string WinUtil::formatTime(uint64_t rest) {
-	char buf[128];
-	string formatedTime;
-	uint64_t n, i;
-	i = 0;
-	n = rest / (24*3600*7);
-	rest %= (24*3600*7);
-	if(n) {
-		if(n >= 2)
-			snprintf(buf, sizeof(buf), "%d weeks ", n);
-		else
-			snprintf(buf, sizeof(buf), "%d week ", n);
-		formatedTime += (string)buf;
-		i++;
-	}
-	n = rest / (24*3600);
-	rest %= (24*3600);
-	if(n) {
-		if(n >= 2)
-			snprintf(buf, sizeof(buf), "%d days ", n); 
-		else
-			snprintf(buf, sizeof(buf), "%d day ", n);
-		formatedTime += (string)buf;
-		i++;
-	}
-	n = rest / (3600);
-	rest %= (3600);
-	if(n) {
-		if(n >= 2)
-			snprintf(buf, sizeof(buf), "%d hours ", n);
-		else
-			snprintf(buf, sizeof(buf), "%d hour ", n);
-		formatedTime += (string)buf;
-		i++;
-	}
-	n = rest / (60);
-	rest %= (60);
-	if(n) {
-		snprintf(buf, sizeof(buf), "%d min ", n);
-		formatedTime += (string)buf;
-		i++;
-	}
-	n = rest;
-	if(++i <= 3) {
-		snprintf(buf, sizeof(buf),"%d sec ", n); 
-		formatedTime += (string)buf;
-	}
-	return formatedTime;
-}
 
 float ProcSpeedCalc() {
 #ifndef _WIN64
@@ -2086,16 +2037,16 @@ return result;
 }
 string WinUtil::getSysUptime(){
 			
-		static HINSTANCE kernel32lib = NULL;
-		if(!kernel32lib)
-			kernel32lib = LoadLibrary(_T("kernel32"));
+	static HINSTANCE kernel32lib = NULL;
+	if(!kernel32lib)
+		kernel32lib = LoadLibrary(_T("kernel32"));
 		
-		//apexdc
-		typedef ULONGLONG (CALLBACK* LPFUNC2)(void);
-		LPFUNC2 _GetTickCount64 = (LPFUNC2)GetProcAddress(kernel32lib, "GetTickCount64");
-		time_t sysUptime = (_GetTickCount64 ? _GetTickCount64() : GetTickCount()) / 1000;
+	//apexdc
+	typedef ULONGLONG (CALLBACK* LPFUNC2)(void);
+	LPFUNC2 _GetTickCount64 = (LPFUNC2)GetProcAddress(kernel32lib, "GetTickCount64");
+	time_t sysUptime = (_GetTickCount64 ? _GetTickCount64() : GetTickCount()) / 1000;
 
-		return formatTime(sysUptime);
+	return Util::formatTime(sysUptime, false);
 
 }
 
@@ -2124,8 +2075,8 @@ string WinUtil::generateStats() {
 \t-=[ CPU: %s ]=-")
 
 			% Text::fromT(COMPLETEVERSIONSTRING)
-			% formatTime(Util::getUptime())
-			% Text::fromT(Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64)))
+			% Util::formatTime(Util::getUptime(), false)
+			% Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64))
 			% Util::formatBytes(pmc.WorkingSetSize)
 			% Util::formatBytes(pmc.PeakWorkingSetSize)
 			% Util::formatBytes(pmc.PagefileUsage)
@@ -2171,7 +2122,7 @@ string WinUtil::uptimeInfo() {
 	if(LOBYTE(LOWORD(GetVersion())) >= 5) {
 		char buf[512]; 
 		snprintf(buf, sizeof(buf), "\n-=[ Uptime: %s]=-\r\n-=[ System Uptime: %s]=-\r\n", 
-		formatTime(Util::getUptime()).c_str(), 
+		Util::formatTime(Util::getUptime(), false).c_str(), 
 		getSysUptime().c_str());
 		return buf;
 	} else {

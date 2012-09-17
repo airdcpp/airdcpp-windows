@@ -1050,7 +1050,7 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 				return WinUtil::getHubNames(user).first;
 			}
 		case COLUMN_STATUS: return statusString;
-		case COLUMN_TIMELEFT: return (status == STATUS_RUNNING) ? Util::formatSeconds(timeLeft) : Util::emptyStringT;
+		case COLUMN_TIMELEFT: return (status == STATUS_RUNNING) ? Util::formatSecondsW(timeLeft) : Util::emptyStringT;
 		case COLUMN_SPEED:
 			if (isBundle && !download && totalSpeed > 0) {
 				return (status == STATUS_RUNNING) ? (Util::formatBytesW(speed) + _T("/s (") + (Util::formatBytesW(totalSpeed)) + _T("/s)")) : Util::emptyStringT;
@@ -1184,7 +1184,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 					tstring pos = Text::toT(Util::formatBytes(ui->pos));
 					double percent = (double)ui->pos*100.0/(double)ui->size;
 					dcassert(percent <= 100.00);
-					tstring elapsed = Util::formatSeconds(time/1000);
+					tstring elapsed = Util::formatSecondsW(time/1000);
 					tstring flag;
 					
 					if(partial) {
@@ -1239,7 +1239,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 
 		tstring pos = Util::formatBytesW(d->getPos());
 		double percent = (double)d->getPos()*100.0/(double)d->getSize();
-		tstring elapsed = Util::formatSeconds((GET_TICK() - d->getStart())/1000);
+		tstring elapsed = Util::formatSecondsW((GET_TICK() - d->getStart())/1000);
 
 		tstring statusString;
 
@@ -1411,7 +1411,7 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 					tstring pos = Text::toT(Util::formatBytes(ui->pos));
 					double percent = (double)ui->pos*100.0/(double)ui->size;
 					dcassert(percent <= 100.00);
-					tstring elapsed = Util::formatSeconds(time/1000);
+					tstring elapsed = Util::formatSecondsW(time/1000);
 					tstring flag;
 					
 					if(partial) {
@@ -1464,7 +1464,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 
 		tstring pos = Util::formatBytesW(ui->pos);
 		double percent = (double)ui->pos*100.0/(double)(u->getType() == Transfer::TYPE_TREE ? u->getSize() : u->getFileSize());
-		tstring elapsed = Util::formatSeconds((GET_TICK() - u->getStart())/1000); 
+		tstring elapsed = Util::formatSecondsW((GET_TICK() - u->getStart())/1000); 
 		
 		tstring statusString;
 

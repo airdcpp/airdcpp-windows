@@ -31,6 +31,7 @@
 #include "../client/ClientManager.h"
 #include "../client/version.h"
 #include "../client/DownloadManager.h"
+#include "../client/ScopedFunctor.h"
 #include "BarShader.h"
 
 #include <boost/range/adaptor/map.hpp>
@@ -198,17 +199,15 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			}
 		}
 		case COLUMN_SEGMENTS: {
-			const QueueItemPtr qi = QueueManager::getInstance()->fileQueue.find(getTarget());
-			//todo update on exit AirDC Download settings
-			if(qi){
-				int64_t min_seg_size = (SETTING(MIN_SEGMENT_SIZE)*1024);
-				if(getSize() < min_seg_size){
-					return Util::toStringW(qi->getDownloads().size()) + _T("/") + Util::toStringW(1);
-				} else {
-					return Util::toStringW(qi->getDownloads().size()) + _T("/") + Util::toStringW(qi->getMaxSegments());
-				}
+			int64_t min_seg_size = (SETTING(MIN_SEGMENT_SIZE)*1024);
+
+			auto qm = QueueManager::getInstance();
+			qm->lockRead();
+			ScopedFunctor([qm] { qm->unlockRead(); });
+			if(getSize() < min_seg_size){
+				return Util::toStringW(qi->getDownloads().size()) + _T("/") + Util::toStringW(1);
 			} else {
-				return Util::toStringW(0) + _T("/") + Util::toStringW(0);
+				return Util::toStringW(qi->getDownloads().size()) + _T("/") + Util::toStringW(getQueueItem()->getMaxSegments());
 			}
 		}
 		case COLUMN_SIZE: return (getSize() == -1) ? TSTRING(UNKNOWN) : Util::formatBytesW(getSize());
@@ -1296,10 +1295,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 
 				const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-				QueueItemPtr qi = QueueManager::getInstance()->fileQueue.find(ii->getTarget());
-				if(!qi) return 0;
-
-				segmentsMenu.CheckMenuItem(qi->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
+				segmentsMenu.CheckMenuItem(ii->getQueueItem()->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
 
 				if((ii->isSet(QueueItem::FLAG_USER_LIST)) == false) {
 					string ext = Util::getFileExt(ii->getTarget());
@@ -1821,9 +1817,7 @@ LRESULT QueueFrame::onSegments(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	int i = -1;
 	while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		QueueItemInfo* ii = ctrlQueue.getItemData(i);
-		QueueItemPtr qi = QueueManager::getInstance()->fileQueue.find(ii->getTarget());
-
-		qi->setMaxSegments((uint8_t)(wID - 109));
+		QueueManager::getInstance()->setSegments(ii->getTarget(), (uint8_t)(wID - 109));
 
 		ctrlQueue.updateItem(ctrlQueue.findItem(ii), COLUMN_SEGMENTS);
 	}
@@ -2277,9 +2271,7 @@ LRESULT QueueFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 LRESULT QueueFrame::onPreviewCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 	if(ctrlQueue.GetSelectedCount() == 1) {
 		const QueueItemInfo* i = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-		QueueItemPtr qi = QueueManager::getInstance()->fileQueue.find(i->getTarget());
-		if(qi)
-			WinUtil::RunPreviewCommand(wID - IDC_PREVIEW_APP, qi->getTempTarget());
+		WinUtil::RunPreviewCommand(wID - IDC_PREVIEW_APP, i->getQueueItem()->getTempTarget());
 	}
 	return 0;
 }

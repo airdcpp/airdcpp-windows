@@ -766,7 +766,7 @@ LRESULT DirectoryListingFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	const ItemInfo* ii = ctrlList.getSelectedItem();
 	tstring dir;
 	if(ii->type == ItemInfo::FILE) {
-		dir = Text::toT(Util::getDir(ii->file->getPath(), true, true));
+		dir = Text::toT(Util::getReleaseDir(ii->file->getPath(), true));
 	} else if(ii->type == ItemInfo::DIRECTORY){
 		dir = ii->getText(COLUMN_FILENAME);
 	}
@@ -1465,7 +1465,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 					break;
 				case IDC_COPY_DIR:
 					if(ii->type == ItemInfo::FILE){
-						sCopy += Text::toT(Util::getDir(ii->file->getPath(), true, true));
+						sCopy += Text::toT(Util::getReleaseDir(ii->file->getPath(), true));
 					} else if(ii->type == ItemInfo::DIRECTORY){
 						sCopy += ii->getText(COLUMN_FILENAME);
 					}
@@ -1588,7 +1588,7 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 			//tstring tmp = TSTRING(LOADED_FILE_LIST) + Util::formatSeconds(loadTime);
 			//tmp.resize(STRING(LOADED_FILE_LIST).size() + 16);
 			//tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(LOADED_FILE_LIST), Util::formatSeconds(loadTime)));
-			ctrlStatus.SetText(0, (TSTRING(LOADED_FILE_LIST) + Util::formatSeconds(loadTime, true)).c_str());
+			ctrlStatus.SetText(0, (TSTRING(LOADED_FILE_LIST) + Util::formatSecondsW(loadTime, true)).c_str());
 			changeWindowState(true);
 			//notify the user that we've loaded the list
 			setDirty();
@@ -1780,7 +1780,7 @@ LRESULT DirectoryListingFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND
 				const ItemInfo* ii =  ctrlList.getItemData(sel);
 
 				if(ii->type == ItemInfo::FILE && (SETTING(SETTINGS_PROFILE) == 1)){
-					searchTermFull = Text::toT(Util::getDir(ii->file->getPath(), true, true));
+					searchTermFull = Text::toT(Util::getReleaseDir(ii->file->getPath(), true));
 				} else {
 					searchTermFull = ii->getText(COLUMN_FILENAME);
 				}

@@ -1374,8 +1374,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="NotInSharedDir">The bundle %s isn't in a shared folder, please add it in share manually</String>
 		<String Name="BundleHashFailed">Failed to hash the bundle %s, not shared</String>
 		<String Name="BundleSharingFailed">Failed to add the bundle %s in share</String>
-		<String Name="BundleHashed">The bundle %s has finished hashing</String>
-		<String Name="BundleShared">The bundle %s has finished hashing and it has been added into share</String>
 		<String Name="AsUserMatch">Only from users with nick Matching:  (Wildcards, | separate)</String>
 		<String Name="UserMatch">User Match</String>
 		<String Name="SettingsAllowMatchFullList">Use full filelists as last resort if adding sources fails</String>
@@ -1543,8 +1541,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="XResultsFound">Results were found from %d directories</String>
 		<String Name="AddingSharedDir">Adding the directory %s in share...</String>
 		<String Name="AddingXSharedDirs">Adding %d directories in share...</String>
-		<String Name="DirectoryAdded">The directory %s has been added in share (it won't be visible in the filelist until it has finished hashing)</String>
-		<String Name="DirectoriesAdded">%d directories has been added in share (they won't be visible in the filelist until they have finished hashing)</String>
+		<String Name="DirectoryAdded">The directory %s has been added in share</String>
+		<String Name="DirectoriesAdded">%d directories has been added in share</String>
 		<String Name="DirectoryRefreshed">The directory %s has been refreshed</String>
 		<String Name="VirtualDirectoryRefreshed">The virtual directory %s has been refreshed</String>
 		<String Name="XDirectoriesRefreshed">%d directories have been refreshed</String>
@@ -1586,5 +1584,19 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SendPmVia">Messages are sent via</String>
 		<String Name="MessagesSentThroughRemote">Messages are now sent through the hub %s (changed by the remote users)</String>
 		<String Name="IpUpdateFailed">Failed to update the IP address</String>
+		<String Name="FilesAddedForHash">(%s of files have been added for hashing; they won't be visible in the filelist until they have finished hashing)</String>
+		<String Name="BundleAddedForHash">The bundle %s has been added for hashing (total size to hash: %s)</String>
+		<String Name="HashingFinishedTotal">Hashing finished: %d directories (%s of files) have been hashed in %s (average hashing speed: %s)</String>
+		<String Name="HashingFinishedTotalDir">The directory %s has finished hashing (%s of files have been hashed in %s, average hashing speed: %s)</String>
+		<String Name="HashingFinishedDir">The directory %s has finished hashing</String>
+		<String Name="BundleXShared">The bundle %s has been added into share</String>
+		<String Name="Hour">Hour</String>
+		<String Name="Hours">Hours</String>
+		<String Name="Day">Day</String>
+		<String Name="Days">Days</String>
+		<String Name="Week">Week</String>
+		<String Name="Weeks">Weeks</String>
+		<String Name="Minute">Minute</String>
+		<String Name="Second">Second</String>
 	</Strings>
 </Language>

@@ -411,7 +411,6 @@ public:
 	static void ClearPreviewMenu(OMenu &previewMenu);
 	static int SetupPreviewMenu(CMenu &previewMenu, string extension);
 	static void RunPreviewCommand(unsigned int index, const string& target);
-	static string formatTime(uint64_t rest);
 	static string getSysUptime();
 	static tstring diskInfo();
 	static string generateStats();

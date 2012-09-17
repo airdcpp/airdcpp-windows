@@ -166,7 +166,7 @@ public:
 			if(filestat == 0 || speed == 0) {
 				SetDlgItemText(IDC_TIME_LEFT, Text::toT("-:--:-- " + STRING(LEFT)).c_str());
 			} else {
-				SetDlgItemText(IDC_TIME_LEFT, (Util::formatSeconds(filestat) + _T(" ") + TSTRING(LEFT)).c_str());
+				SetDlgItemText(IDC_TIME_LEFT, (Util::formatSecondsW(filestat) + _T(" ") + TSTRING(LEFT)).c_str());
 			}
 		}
 

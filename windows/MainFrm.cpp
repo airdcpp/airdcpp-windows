@@ -771,7 +771,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 					ctrlStatus.SetText(10, _T(""));
 				} else {
 					int64_t timeLeft = SETTING(SHUTDOWN_TIMEOUT) - (iSec - iCurrentShutdownTime);
-					ctrlStatus.SetText(10, (_T(" ") + Util::formatSeconds(timeLeft, timeLeft < 3600)).c_str(), SBT_POPOUT);
+					ctrlStatus.SetText(10, (_T(" ") + Util::formatSecondsW(timeLeft, timeLeft < 3600)).c_str(), SBT_POPOUT);
 					if (iCurrentShutdownTime + SETTING(SHUTDOWN_TIMEOUT) <= iSec) {
 						bool bDidShutDown = false;
 						bDidShutDown = WinUtil::shutDown(SETTING(SHUTDOWN_ACTION));
@@ -1244,8 +1244,6 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	if(!closing) {
 		if( oldshutdown ||(!BOOLSETTING(CONFIRM_EXIT)) || (MessageBox(CTSTRING(REALLY_EXIT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) ) {
 			updateTray(false);
-			string tmp1;
-			string tmp2;
 
 			WinUtil::saveReBarSettings(m_hWndToolBar);
 
@@ -1506,7 +1504,7 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 			Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T(")\r\nU: ") +
 			Util::formatBytesW(UploadManager::getInstance()->getRunningAverage()) + _T("/s (") + 
 			Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T(")")
-			+ _T("\r\nUptime: ") + Util::formatSeconds(Util::getUptime())
+			+ _T("\r\nUptime: ") + Util::formatSecondsW(Util::getUptime())
 			).c_str(), 64);
 		
 		::Shell_NotifyIcon(NIM_MODIFY, &nid);
@@ -1621,7 +1619,7 @@ void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 		if(filestat == 0 || speed == 0) {
 			tmp += Text::toT(", -:--:-- " + STRING(LEFT));	
 		} else {
-			tmp += _T(", ") + Util::formatSeconds(filestat) + _T(" ") + TSTRING(LEFT);
+			tmp += _T(", ") + Util::formatSecondsW(filestat) + _T(" ") + TSTRING(LEFT);
 		}
 	}
 

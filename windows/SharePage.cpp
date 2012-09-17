@@ -327,7 +327,7 @@ LRESULT SharePage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& 
 		if (sdi->incoming == boxChecked)
 			return 0; //we are probably loading an initial listing...
 
-		auto dirItems = getItemsByPath(sdi->path);
+		auto dirItems = getItemsByPath(sdi->path, true);
 		boost::for_each(dirItems, [boxChecked](ShareDirInfo* aDir) { aDir->incoming = boxChecked; });
 
 		auto s = find(newDirs.begin(), newDirs.end(), sdi);
@@ -342,12 +342,12 @@ LRESULT SharePage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& 
 	return 0;		
 }
 
-ShareDirInfo::list SharePage::getItemsByPath(const string& aPath) {
+ShareDirInfo::list SharePage::getItemsByPath(const string& aPath, bool listRemoved) {
 	ShareDirInfo::list dirItems;
 	for(auto i = shareDirs.begin(); i != shareDirs.end(); i++) {
 		auto& dirs = i->second;
 		auto p = boost::find_if(dirs, [&aPath](const ShareDirInfo* sdi) { return sdi->path == aPath; });
-		if (p != dirs.end())
+		if (p != dirs.end() && find(removeDirs.begin(), removeDirs.end(), *p) == removeDirs.end())
 			dirItems.push_back(*p);
 	}
 
@@ -596,8 +596,8 @@ LRESULT SharePage::onClickedRemoveDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 void SharePage::removeDir(const string& rPath, ProfileToken aProfile, bool checkDupes /*true*/) {
 	//update the diff info in case this path exists in other profiles
 	if (aProfile == SP_DEFAULT) {
-		auto items = getItemsByPath(rPath);
-		boost::for_each(items, [](ShareDirInfo* sdi) { sdi->state = ShareDirInfo::REMOVED; });
+		auto items = getItemsByPath(rPath, true);
+		boost::for_each(items, [](ShareDirInfo* sdi) { if (sdi->profile != 0) sdi->state = ShareDirInfo::REMOVED; });
 	}
 
 	auto p = boost::find_if(newDirs, [rPath, aProfile](const ShareDirInfo* sdi) { return sdi->path == rPath && sdi->profile == aProfile; });
@@ -611,7 +611,7 @@ void SharePage::removeDir(const string& rPath, ProfileToken aProfile, bool check
 	}
 
 	if (checkDupes) {
-		auto dirItems = getItemsByPath(rPath);
+		auto dirItems = getItemsByPath(rPath, false);
 		if (!dirItems.empty() && MessageBox(CTSTRING_F(X_PROFILE_DIRS_EXISTS, (int)dirItems.size()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 			boost::for_each(dirItems, [this](ShareDirInfo* aDir) { removeDir(aDir->path, aDir->profile, false); });
 		}
@@ -672,7 +672,7 @@ LRESULT SharePage::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 		profilesTokens.push_back(sdi->profile);
 
 		tstring vName = Text::toT(sdi->vname);
-		auto items = getItemsByPath(sdi->path);
+		auto items = getItemsByPath(sdi->path, false);
 		tstring newName;
 
 		ShareProfile::list spList;
@@ -763,7 +763,8 @@ bool SharePage::addDirectory(const tstring& aPath){
 				continue;
 			}
 
-			auto items = getItemsByPath(rPath);
+			//update the diff information
+			auto items = getItemsByPath(rPath, true);
 			if (*j == SP_DEFAULT) {
 				//update the diff info in case this path exists in other profiles
 				boost::for_each(items, [](ShareDirInfo* sdi) { sdi->state = ShareDirInfo::NORMAL; });

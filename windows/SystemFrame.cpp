@@ -468,6 +468,6 @@ LRESULT SystemFrame::onSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT SystemFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::searchAny(Text::toT(Util::getDir(Text::fromT(selWord), true, true)));
+	WinUtil::searchAny(Text::toT(Util::getReleaseDir(Text::fromT(selWord), true)));
 	return 0;
 }

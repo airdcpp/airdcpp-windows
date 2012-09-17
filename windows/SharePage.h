@@ -109,7 +109,7 @@ protected:
 	ProfileTokenList removeProfiles;
 	vector<pair<ShareProfilePtr, string>> renameProfiles;
 	ShareProfilePtr getSelectedProfile();
-	ShareDirInfo::list getItemsByPath(const string& aPath);
+	ShareDirInfo::list getItemsByPath(const string& aPath, bool listRemoved);
 
 	ShareDirInfo::map shareDirs;
 	vector<ShareProfilePtr> profiles;

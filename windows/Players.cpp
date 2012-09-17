@@ -663,7 +663,7 @@ string Players::getWinAmpSpam() {
 					ReadProcessMemory(w_hHandle, lpath, &buf, MAX_PATH, &buf_len);
 		
 				string fpath = buf;
-				string dir = Util::getDir(fpath,true,true);
+				string dir = Util::getReleaseDir(fpath, true);
 				params["path"] = fpath; //full filepath, probobly not even needed.
 				params["filename"] = Util::getFileName(fpath); //only filename
 				params["directory"] = dir;
@@ -692,8 +692,8 @@ string Players::getWinAmpSpam() {
 			intPercent = 0;
 		}
 		params["percent"] = Util::toString(intPercent) + "%";
-		params["elapsed"] = Text::fromT(Util::formatSeconds(curPos, true));
-		params["length"] = Text::fromT(Util::formatSeconds(length, true));
+		params["elapsed"] = Util::formatSeconds(curPos, true);
+		params["length"] = Util::formatSeconds(length, true);
 		int numFront = min(max(intPercent / 10, 0), 10),
 			numBack = min(max(10 - 1 - numFront, 0), 10);
 		string inFront = string(numFront, '-'),
