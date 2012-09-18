@@ -997,6 +997,8 @@
 #define IDC_UPDATE_HISTORY              1450
 #define IDC_HISTORY_STATUS              1451
 #define IDC_LOADING                     1451
+#define IDC_UPDATE_VERSION_LATEST_LBL2  1451
+#define IDC_UPDATE_ALREADY_DOWNLOADED   1451
 #define IDC_COUNT                       1452
 #define IDC_UPDATE_DOWNLOAD             1452
 #define IDC_UPDATE                      1453
@@ -1137,6 +1139,8 @@
 #define IDC_ALLOW_UNTRUSTED_CLIENTS2    1670
 #define IDC_ALLOW_UNTRUSTED_HUBS        1670
 #define IDC_TRANSFER_ENCRYPTION         1671
+#define IDC_LINK                        1672
+#define IDC_STRONGDC                    1673
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1501,7 +1505,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        344
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1672
+#define _APS_NEXT_CONTROL_VALUE         1673
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

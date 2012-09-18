@@ -16,6 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <atlctrlx.h>
+
 #if !defined(ABOUT_DLG_H)
 #define ABOUT_DLG_H
 
@@ -24,26 +26,6 @@
 #endif // _MSC_VER > 1000
 
 #include "../client/HttpConnection.h"
-
-using std::unique_ptr;
-
-static const TCHAR thanks[] = 
-_T("Dìkuji všem, kteøí mì ve vývoji podporovali. THX: Andyman (for muscle-arm logo), Atom, Blackrabbit, Catalin, ")
-_T("Chmelic, Cinique, Corvik, Crakter, darwusch, Dreamveawer, FarCry, GargoyleMT, Gigadisk (for Czech translation), ")
-_T("Ice, Jove, King Wenceslas, Lee, Legolas, Liny, MaynardK, Mlok, Naga, Patrol, popKorn, Pothead, ProLogic, Rm., ")
-_T("Testament, Warrior, WereWiking, xAyiDe, XiND and ToH for very nice betatesting :-) and to all donators who support me: ")
-_T("Kulmegil, Michal Seckar, k3dt, majki, mazeboy, Fino, Architect, Ujep, Jeepo, mlok, redsaq, anton009, Lee, share2all");
-static const TCHAR Airthanks[] = 
-_T("Thanks Zinden for Making me part of the project :D\r\n")
-_T("Thanks to Myth for his work on the airdcpp.com site.\r\n")
-_T("Thanks Northwind for the toolbars for 1.0x versions.\r\n")
-_T("Thanks to my GirlFriend to not getting too mad about all spent hours on PC ;).\r\n")
-_T("Thanks to Yada, en_dator, Vimmer, Charlie, G-Spot, Alehk for Testing the client and helping to make it better.\r\n")
-_T("Thanks also to all other Test users.\r\n")
-_T("Thanks savone, spaljeni for the graphic works.\r\n")
-_T("Thanks NT and Yada for the work on the code\r\n")
-_T("Thanks to Translators: \r\n")
-_T("xaozon, kryppy, B1ackBoX, shuttle, ICU2M8, en_dator, NT, Bl0m5t3r, Shuttle, LadyStardust, savone, aLti, MMWST, Lleexxii, What2Write, Kryppy, Toans, Kaas.\r\n");
 
 
 class AboutDlg : public CDialogImpl<AboutDlg>, private HttpConnectionListener
@@ -68,6 +50,7 @@ public:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
+	CHyperLink url;
 	AboutDlg(const AboutDlg&) { dcassert(0); }
 	HttpConnection c;
 	

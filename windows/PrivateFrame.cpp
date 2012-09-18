@@ -270,9 +270,9 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 			pair<tstring, bool> hubs = WinUtil::getHubNames(replyTo, c->getHubUrl());
 			if(BOOLSETTING(PM_PREVIEW)) {
 				tstring message = aMessage.substr(0, 250);
-				MainFrame::getMainFrame()->ShowBalloonTip(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
+				WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 			} else {
-				MainFrame::getMainFrame()->ShowBalloonTip(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + hubs.first, TSTRING(PRIVATE_MESSAGE));
+				WinUtil::showPopup(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + hubs.first, TSTRING(PRIVATE_MESSAGE));
 			}
 		}
 
@@ -293,10 +293,10 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 			if(BOOLSETTING(POPUP_PM)) {
 				if(BOOLSETTING(PM_PREVIEW)) {
 					tstring message = aMessage.substr(0, 250);
-					MainFrame::getMainFrame()->ShowBalloonTip(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
+					WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 				} else {
 					pair<tstring, bool> hubs = WinUtil::getHubNames(replyTo, c->getHubUrl());
-					MainFrame::getMainFrame()->ShowBalloonTip(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + hubs.first, TSTRING(PRIVATE_MESSAGE));
+					WinUtil::showPopup(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + hubs.first, TSTRING(PRIVATE_MESSAGE));
 				}
 			}
 

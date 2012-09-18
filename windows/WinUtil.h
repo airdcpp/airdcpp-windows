@@ -231,12 +231,6 @@ public:
 
 	static tstring getIconPath(const tstring& filename);
 
-	static string getAppName() {
-		TCHAR buf[MAX_PATH+1];
-		DWORD x = GetModuleFileName(NULL, buf, MAX_PATH);
-		return Text::fromT(tstring(buf, x));
-	}
-
 	static void decodeFont(const tstring& setting, LOGFONT &dest);
 
 	static bool getVersionInfo(OSVERSIONINFOEX& ver);
@@ -249,6 +243,9 @@ public:
 	static COLORREF getDupeColor(DupeType aType);
 	static pair<COLORREF, COLORREF> getDupeColors(DupeType aType);
 	static COLORREF blendColors(COLORREF aForeGround, COLORREF aBackGround);
+
+	static void showPopup(tstring szMsg, tstring szTitle, HICON hIcon, bool force = false);
+	static void showPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags = NIIF_INFO, bool force = false);
 
 	/**
 	 * Check if this is a common /-command.

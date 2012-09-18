@@ -1610,7 +1610,7 @@ void ChatCtrl::CheckAction(ColorSettings* cs, const tstring& line) {
 		matchedPopup = true;
 		tstring popupTitle;
 		popupTitle = _T("Highlight");
-		MainFrame::getMainFrame()->ShowBalloonTip(line.c_str(), popupTitle.c_str());
+		WinUtil::showPopup(line.c_str(), popupTitle.c_str());
 	}
 
 	//Todo maybe

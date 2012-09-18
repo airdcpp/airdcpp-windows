@@ -26,18 +26,24 @@
 #include "../client/HttpDownload.h"
 #include "../client/SimpleXML.h"
 #include "../client/version.h"
+#include "../client/UpdateManager.h"
+
+static const TCHAR Airthanks[] = 
+_T("Thanks to Yada, en_dator, Vimmer, Charlie, G-Spot, Alehk for testing the client and helping to make it better.\r\n")
+_T("Thanks also to all other Test users.\r\n")
+_T("Thanks savone, spaljeni for the graphic works.\r\n")
+_T("Thanks NT and Yada for the work on the code\r\n")
+_T("Thanks to Translators: \r\n")
+_T("xaozon, kryppy, B1ackBoX, shuttle, ICU2M8, en_dator, NT, Bl0m5t3r, Shuttle, LadyStardust, savone, aLti, MMWST, Lleexxii, What2Write, Kryppy, Toans, Kaas.\r\n");
 
 LRESULT AboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	SetDlgItemText(IDC_VERSION, _T("AirDC++ v") _T(VERSIONSTRING) _T(" By Night and maksalaatikko \n http://www.airdcpp.net") _T("\n Based on: StrongDC++ \n Copyright 2004-2011 Big Muscle"));
-	CEdit ctrlThanks(GetDlgItem(IDC_THANKS));
-	ctrlThanks.FmtLines(TRUE);
-	ctrlThanks.AppendText(thanks, TRUE);
-	ctrlThanks.Detach();
-		
-	ctrlThanks.Attach(GetDlgItem(IDC_AIRTHANKS));
+	SetDlgItemText(IDC_VERSION, _T("AirDC++ v") _T(VERSIONSTRING) _T(" By Night and maksalaatikko \n"));
+
+	CEdit ctrlThanks(GetDlgItem(IDC_AIRTHANKS));
 	ctrlThanks.FmtLines(TRUE);
 	ctrlThanks.AppendText(Airthanks, TRUE);
 	ctrlThanks.Detach();
+
 	SetDlgItemText(IDC_TTH, WinUtil::tth.c_str());
 	SetDlgItemText(IDC_LATEST, CTSTRING(DOWNLOADING));
 	SetDlgItemText(IDC_TOTALS, (_T("Upload: ") + Util::formatBytesW(SETTING(TOTAL_UPLOAD)) + _T(", Download: ") + 
@@ -51,6 +57,13 @@ LRESULT AboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	/*	sprintf(buf, "Uptime: %s", Util::formatTime(Util::getUptime()));
 		SetDlgItemText(IDC_UPTIME, Text::toT(buf).c_str());*/
 	}
+
+	url.SubclassWindow(GetDlgItem(IDC_LINK));
+	url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);
+
+	url.SetHyperLink(Text::toT(UpdateManager::getInstance()->links.homepage).c_str());
+	url.SetLabel(Text::toT(UpdateManager::getInstance()->links.homepage).c_str());
+
 	CenterWindow(GetParent());
 	c.addListener(this);
 	c.downloadFile(VERSION_URL), false;

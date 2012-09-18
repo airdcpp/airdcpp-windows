@@ -19,23 +19,18 @@
 #ifndef __UPDATE_DLG
 #define __UPDATE_DLG
 
-#include "../client/HttpConnection.h"
-#include "../client/Streams.h"
+#include <atlctrlx.h>
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
-class UpdateDlg : public CDialogImpl<UpdateDlg>, HttpConnectionListener {
+class UpdateDlg : public CDialogImpl<UpdateDlg> {
 	CEdit ctrlCurrentVersion;
 	CEdit ctrlLatestVersion;
-	CEdit ctrlCurrentLanguageLang;
-	CEdit ctrlCurrentLanguage;
 	CEdit ctrlLatestLanguage;
-	CEdit ctrlStatus;
 	CEdit ctrlChangeLog;
 	CButton ctrlDownload;
-	CButton ctrlLangDownlod;
 	CButton ctrlClose;
 public:
 
@@ -44,9 +39,6 @@ public:
 	enum {
 		UPDATE_CURRENT_VERSION,
 		UPDATE_LATEST_VERSION,
-		UPDATE_CURRENT_LANGUAGE_FILE,
-		UPDATE_CURRENT_LANGUAGE,
-		UPDATE_LATEST_LANGUAGE,
 		UPDATE_STATUS,
 		UPDATE_CONTENT
 	};
@@ -54,14 +46,13 @@ public:
 	BEGIN_MSG_MAP(UpdateDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
-		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		COMMAND_ID_HANDLER(IDC_UPDATE_DOWNLOAD, OnDownload)
-		COMMAND_ID_HANDLER(IDC_UPDATE_LANGUAGE_BUTTON, OnLangDownload)
 		COMMAND_ID_HANDLER(IDCLOSE, OnCloseCmd)
+		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)	
 	END_MSG_MAP()
 
-	UpdateDlg() : hc(NULL), m_hIcon(NULL), file(NULL), pos(0)  { };
+	UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersion, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl);
 	~UpdateDlg();
 
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -70,13 +61,7 @@ public:
 	}
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-
-	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-
 	LRESULT OnDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-	LRESULT OnLangDownload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		EndDialog(0);
 		return 0;
@@ -84,31 +69,24 @@ public:
 
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		EndDialog(wID);
-		progress.Detach();
 		return 0;
 	}
-	void OnLangDownloadRun(string content, bool isFailed);
-
+	LRESULT onCtlColor(UINT, WPARAM, LPARAM, BOOL&);
 	
 
 private:
-	HttpConnection* hc;
-	string xmldata;
+	CHyperLink url;
+
+	string message;
 	string downloadURL;
-	string LangdownloadURL;
-	bool LangDL;
-	bool update;
-	bool updating;
+	string infoLink;
+	string title;
+	string autoUpdateUrl;
+	int buildID;
+
+	string version;
+	bool autoUpdate;
 	HICON m_hIcon;
-	OutputStream* file;
-	boost::int64_t pos;
-
-	CProgressBarCtrl progress;
-
-	void on(HttpConnectionListener::Complete, HttpConnection* conn, string const& /*aLine*/, bool /*fromCoral*/) noexcept;
-	void on(HttpConnectionListener::Data, HttpConnection* conn, const uint8_t* buf, size_t len) noexcept;	
-	void on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) noexcept;
-
 };
 
 #endif // __UPDATE_DLG

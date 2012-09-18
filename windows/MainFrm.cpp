@@ -368,7 +368,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		showPortsError(e.getError());
 	}
 
-	UpdateManager::getInstance()->init(WinUtil::getAppName());
+	UpdateManager::getInstance()->init(Util::getAppName());
 		
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME);
@@ -817,7 +817,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		//delete msg;
 	} else if(wParam == SHOW_POPUP) {
 		Popup* msg = (Popup*)lParam;
-		PopupManager::getInstance()->Show(msg->Message, msg->Title, msg->Icon);
+		PopupManager::getInstance()->Show(msg->Message, msg->Title, msg->Icon, msg->hIcon, msg->force);
 		delete msg;
 	} else if(wParam == WM_CLOSE) {
 		PopupManager::getInstance()->Remove((int)lParam);
@@ -884,7 +884,7 @@ void MainFrame::parseCommandLine(const tstring& cmdLine)
 
 LRESULT MainFrame::onCopyData(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	tstring cmdLine = (LPCTSTR) (((COPYDATASTRUCT *)lParam)->lpData);
-	parseCommandLine(Text::toT(WinUtil::getAppName() + " ") + cmdLine);
+	parseCommandLine(Text::toT(Util::getAppName() + " ") + cmdLine);
 	return true;
 }
 
@@ -1242,6 +1242,13 @@ LRESULT MainFrame::onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closing) {
+		if(UpdateManager::getInstance()->isUpdating()) {
+			MessageBox(CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
+
+			bHandled = TRUE;
+			return 0;
+		}
+
 		if( oldshutdown ||(!BOOLSETTING(CONFIRM_EXIT)) || (MessageBox(CTSTRING(REALLY_EXIT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) ) {
 			updateTray(false);
 
@@ -1516,15 +1523,6 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		PostMessage(WM_NULL, 0, 0);
 	}
 	return 0;
-}
-
-void MainFrame::ShowBalloonTip(tstring szMsg, tstring szTitle, DWORD dwInfoFlags) {
-	Popup* p = new Popup;
-	p->Title = szTitle;
-	p->Message = szMsg;
-	p->Icon = dwInfoFlags;
-
-	PostMessage(WM_SPEAKER, SHOW_POPUP, (LPARAM)p);
 }
 
 LRESULT MainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -1867,8 +1865,7 @@ LRESULT MainFrame::onAway(WORD , WORD , HWND, BOOL& ) {
 }
 
 LRESULT MainFrame::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	UpdateDlg dlg;
-	dlg.DoModal();
+	UpdateManager::getInstance()->checkVersion(true);
 	return S_OK;
 }
 
@@ -2068,10 +2065,13 @@ LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /
 	return 0;
 }
 
-void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& url, bool autoUpdate) noexcept {
+void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
 	if (!BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS)) {
-		UpdateDlg dlg;
-		dlg.DoModal();
+		UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
+		if (dlg.DoModal()  == IDC_UPDATE_DOWNLOAD) {
+			UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, build, true);
+			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
+		}
 	}
 
 	/*UpdateDlg dlg(title, message, version, url, autoUpdate);
@@ -2112,20 +2112,30 @@ void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, con
 
 void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater) noexcept {
 	//if(MessageBox(CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
-	if(MessageBox(_T("Update installation successful, would you like to restart AirDC++ now to complete the update proccess?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
-		if(aUpdater != WinUtil::getAppName())
-			WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));
-
+	if(MessageBox(CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
 		WinUtil::addUpdate(aUpdater);
 
 		oldshutdown = true;
 		PostMessage(WM_CLOSE);
-	} else if(aUpdater != WinUtil::getAppName())
-		WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));
+	}
+
+	//WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noexcept {
+	MessageBox(Text::toT(line).c_str());
 	//ShowPopup(Text::toT(STRING(UPDATER_FAILED) + " " + line), CTSTRING(UPDATER), NIIF_ERROR, true);
+}
+
+void MainFrame::ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, HICON hIcon, bool force) {
+	Popup* p = new Popup;
+	p->Title = szTitle;
+	p->Message = szMsg;
+	p->Icon = dwInfoFlags;
+	p->hIcon = hIcon;
+	p->force = force;
+
+	PostMessage(WM_SPEAKER, SHOW_POPUP, (LPARAM)p);
 }
 
 

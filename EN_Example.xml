@@ -1598,5 +1598,24 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="Weeks">Weeks</String>
 		<String Name="Minute">Minute</String>
 		<String Name="Second">Second</String>
+		<String Name="FailedToRead">Failed to read %s: %s</String>
+		<String Name="DownloadSignFailed">Could not download the digital signature (%s)</String>
+		<String Name="UpdatingFailed">Updating failed: %s</String>
+		<String Name="VersionCheckFailed">Failed to check for new version: %s</String>
+		<String Name="DownloadVersionFailed">Could not download the version file (%s)</String>
+		<String Name="VersionVerifyFailed">Could not verify the version data</String>
+		<String Name="VersionParsingFailed">Could not parse the version data (%s)</String>
+		<String Name="AlreadyUpdating">An update is already being downloaded!</String>
+		<String Name="UpdaterStart">Update is being downloaded and installed, you'll be notified again when your attention is required.</String>
+		<String Name="BackgroundUpdaterStart">Starting to download a new client version (%s)...</String>
+		<String Name="UpdaterRestart">Update installation successful. Would you like to restart AirDC++ now to complete the update proccess?</String>
+		<String Name="UpdateDownloaded">The update has been downloaded successfully and it will be installed on next startup</String>
+		<String Name="LanguageUpdated">The language \"%1%\" has been successfully updated. Changes will take effect after restarting the client.</String>
+		<String Name="LanguageUpdateFailed">Failed to update the language \"%1%\" (%s)</String>
+		<String Name="IntegrityCheckFailed">File integrity check failed</String>
+		<String Name="UpdaterWriteFailed">Failed to write the update file</String>
+		<String Name="UpdateAlreadyDownloaded">This version has already been downloaded. Please restart the client to apply the changes.</String>
+		<String Name="Updater">AirDC++ Updater</String>
+		<String Name="UpdaterInProgress">Updating in progress, please wait a while for it to complete and try again.</String>
 	</Strings>
 </Language>

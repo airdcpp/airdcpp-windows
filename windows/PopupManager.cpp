@@ -28,14 +28,15 @@
 
 PopupManager* Singleton< PopupManager >::instance = NULL;
 
-void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, bool preview /*= false*/) {
+void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, HICON hIcon, bool force) {
 	if(!activated)
 		return;
 
-	if (!Util::getAway() && BOOLSETTING(POPUP_AWAY) && !preview)
+
+	if (!Util::getAway() && BOOLSETTING(POPUP_AWAY) && !force)
 		return;
 	
-	if(!MainFrame::getMainFrame()->getAppMinimized() && BOOLSETTING(POPUP_MINIMIZED) && !preview) {
+	if(!MainFrame::getMainFrame()->getAppMinimized() && BOOLSETTING(POPUP_MINIMIZED) && !force) {
 		return;
 	}
 

@@ -202,8 +202,10 @@ void Popups::write()
 
 LRESULT Popups::onPreview(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	PopupManager::getInstance()->Show(TSTRING(FILE) + _T(": air100.rar\n") +
-		TSTRING(USER) + _T(": ") + Text::toT(SETTING(NICK)), TSTRING(DOWNLOAD_FINISHED_IDLE), NIIF_INFO, true);
+	WinUtil::showPopup(
+		TSTRING(FILE) + _T(": air100.rar\n") +
+		TSTRING(USER) + _T(": ") + Text::toT(SETTING(NICK)), TSTRING(DOWNLOAD_FINISHED_IDLE), NIIF_INFO, true
+	);
 
 	return 0;
 }

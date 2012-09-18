@@ -676,7 +676,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 					PlaySound(Text::toT(SETTING(SOUND_FAVUSER)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
 
 				if(isFavorite && BOOLSETTING(POPUP_FAVORITE_CONNECTED)) {
-					MainFrame::getMainFrame()->ShowBalloonTip(Text::toT(u.onlineUser->getIdentity().getNick() + " - " + client->getHubName()), TSTRING(FAVUSER_ONLINE));
+					WinUtil::showPopup(Text::toT(u.onlineUser->getIdentity().getNick() + " - " + client->getHubName()), TSTRING(FAVUSER_ONLINE));
 				}
 
 				if (showJoins || (favShowJoins && isFavorite) || hubshowjoins) {
@@ -700,7 +700,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 			statusSizes[0] = WinUtil::getTextWidth(text, ctrlStatus.m_hWnd);
 
 			if(BOOLSETTING(POPUP_HUB_CONNECTED)) {
-				MainFrame::getMainFrame()->ShowBalloonTip(Text::toT(client->getAddress()), TSTRING(CONNECTED));
+				WinUtil::showPopup(Text::toT(client->getAddress()), TSTRING(CONNECTED));
 			}
 
 			if ((!SETTING(SOUND_HUBCON).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
@@ -717,7 +717,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 				PlaySound(Text::toT(SETTING(SOUND_HUBDISCON)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
 
 			if(BOOLSETTING(POPUP_HUB_DISCONNECTED)) {
-				MainFrame::getMainFrame()->ShowBalloonTip(Text::toT(client->getAddress()), TSTRING(DISCONNECTED));
+				WinUtil::showPopup(Text::toT(client->getAddress()), TSTRING(DISCONNECTED));
 			}
 			
 

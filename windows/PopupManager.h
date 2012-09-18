@@ -63,7 +63,7 @@ public:
 	enum { BALLOON, CUSTOM, SPLASH, WINDOW };
 	
 	//call this with a preformatted message
-	void Show(const tstring &aMsg, const tstring &aTitle, int Icon, bool preview = false);
+	void Show(const tstring &aMsg, const tstring &aTitle, int Icon, HICON hIcon, bool force);
 
 	//remove first popup in list and move everyone else
 	void Remove(uint32_t pos = 0);

@@ -1297,7 +1297,7 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 	ui->setStatusString(tmpReason);
 
 	if(BOOLSETTING(POPUP_DOWNLOAD_FAILED)) {
-		MainFrame::getMainFrame()->ShowBalloonTip(
+		WinUtil::showPopup(
 			TSTRING(FILE) + _T(": ") + Util::getFileName(ui->target) + _T("\n")+
 			TSTRING(USER) + _T(": ") + WinUtil::getNicks(aDownload->getHintedUser()) + _T("\n")+
 			TSTRING(REASON) + _T(": ") + Text::toT(aReason), TSTRING(DOWNLOAD_FAILED), NIIF_WARNING);
@@ -1511,7 +1511,7 @@ void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, 
 	ui->setBundle(bundleToken);
 
 	if(isUpload && BOOLSETTING(POPUP_UPLOAD_FINISHED) && !isTree) {
-		MainFrame::getMainFrame()->ShowBalloonTip(
+		WinUtil::showPopup(
 			TSTRING(FILE) + _T(": ") + Text::toT(aFileName) + _T("\n")+
 			TSTRING(USER) + _T(": ") + WinUtil::getNicks(aTransfer->getHintedUser()), TSTRING(UPLOAD_FINISHED_IDLE));
 	}
@@ -1530,9 +1530,9 @@ void TransferView::onBundleComplete(const string& bundleToken, const string& bun
 	ui->setUsers(0);
 
 	if(BOOLSETTING(POPUP_BUNDLE_DLS) && !isUpload) {
-		MainFrame::getMainFrame()->ShowBalloonTip(_T("The following bundle has finished downloading: ") + Text::toT(bundleName), TSTRING(DOWNLOAD_FINISHED_IDLE));
+		WinUtil::showPopup(_T("The following bundle has finished downloading: ") + Text::toT(bundleName), TSTRING(DOWNLOAD_FINISHED_IDLE));
 	} else if(BOOLSETTING(POPUP_BUNDLE_ULS) && isUpload) {
-		MainFrame::getMainFrame()->ShowBalloonTip(_T("The following bundle has finished uploading: ") + Text::toT(bundleName), TSTRING(UPLOAD_FINISHED_IDLE));
+		WinUtil::showPopup(_T("The following bundle has finished uploading: ") + Text::toT(bundleName), TSTRING(UPLOAD_FINISHED_IDLE));
 	}
 	
 	speak(UPDATE_BUNDLE, ui);

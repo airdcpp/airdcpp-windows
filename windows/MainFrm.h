@@ -59,6 +59,8 @@ public:
 		tstring Title;
 		tstring Message;
 		int Icon;
+		bool force;
+		HICON hIcon;
 	};
 
 	struct SizeConfirmInfo {
@@ -379,8 +381,6 @@ public:
 		anyMF->ctrlToolbar.CheckButton(IDC_AWAY, check);
 	}
 
-	void ShowBalloonTip(tstring szMsg, tstring szTitle, DWORD dwInfoFlags=NIIF_INFO);
-
 	CImageList ToolbarImages, ToolbarImagesHot;
 	int run();
 	
@@ -525,7 +525,7 @@ private:
 	void on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept;
 	void on(DirectoryListingManagerListener::PromptAction, const string& aName, const string& aMessage) noexcept;
 
-	void on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& url, bool autoUpdate) noexcept;
+	void on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept;
 	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update) noexcept;
 	void on(UpdateManagerListener::UpdateComplete, const string& updater) noexcept;
 	void on(UpdateManagerListener::UpdateFailed, const string& line) noexcept;

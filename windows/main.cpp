@@ -36,6 +36,7 @@
 #include "../client/MerkleTree.h"
 #include "../client/MappingManager.h"
 #include "../client/UpdateManager.h"
+#include "../client/Updater.h"
 
 #include "Resource.h"
 #include "ExtendedTrace.h"
@@ -510,26 +511,25 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 			string keyPath = Text::fromT(*++argv);
 			bool genHeader = (argc > 2 && (_tcscmp(*++argv, _T("-pubout")) == 0));
 			if(Util::fileExists(xmlPath) && Util::fileExists(keyPath))
-				UpdateManager::signVersionFile(xmlPath, keyPath, genHeader);
+				Updater::signVersionFile(xmlPath, keyPath, genHeader);
 			return FALSE;
 		} else if(_tcscmp(*argv, _T("/update")) == 0) {
 			if(--argc >= 1) {
-				string sourcePath = Util::getFilePath(WinUtil::getAppName());
+				string sourcePath = Util::getFilePath(Util::getAppName());
 				string installPath = Text::fromT(*++argv); argc--;
 
 				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
 
 				bool success = false;
-				for(int i = 0; i < 20 && (success = UpdateManager::applyUpdate(sourcePath, installPath)) == false; ++i)
+				for(int i = 0; i < 20 && (success = Updater::applyUpdate(sourcePath, installPath)) == false; ++i)
 					Thread::sleep(1000);
 
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 
 				//add new startup params
-				if (success)
-					Util::addParam("/updated");
+				Util::addParam(success ? "/updated" : "/updatefailed");
 				Util::addParam("/silent");
 
 				//append the passed params (but leave out the update commands...)
@@ -537,7 +537,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				checkParams();
 
 				//start the updated instance
-				ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(WinUtil::getAppName())).c_str(), Util::getParams(true).c_str(), NULL, SW_SHOW);
+				ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Util::getParams(true).c_str(), NULL, SW_SHOW);
 			}
 			return FALSE;
 		} else {
@@ -546,7 +546,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	}
 
 	string updaterFile;
-	if (UpdateManager::checkPendingUpdates(Util::getFilePath(WinUtil::getAppName()), updaterFile, Util::hasParam("/updated"))) {
+	auto updated = Util::hasParam("/updated") || Util::hasParam("/updatefailed");
+	if (UpdateManager::checkPendingUpdates(Util::getFilePath(Util::getAppName()), updaterFile, updated)) {
 		WinUtil::addUpdate(updaterFile);
 		WinUtil::runPendingUpdate();
 		return FALSE;
@@ -597,7 +598,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	ATLASSERT(SUCCEEDED(hRes));
 	
 	try {		
-		File f(WinUtil::getAppName(), File::READ, File::OPEN);
+		File f(Util::getAppName(), File::READ, File::OPEN);
 		TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
 		size_t n = 0;
 		size_t n2 = DEBUG_BUFSIZE;

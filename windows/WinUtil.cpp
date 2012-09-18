@@ -937,7 +937,7 @@ bool WinUtil::getUCParams(HWND parent, const UserCommand& uc, ParamMap& params) 
 }
 
 #ifdef BETAVER
-#define LINE2 _T("-- http://www.airdcpp.net  <AirDC++ ") _T(VERSIONSTRING) _T(SVNVERSION) _T(" / ") _T(DCVERSIONSTRING) _T(">")
+#define LINE2 _T("-- http://www.airdcpp.net  <AirDC++ ") _T(VERSIONSTRING) _T("r") _T(SVNVERSION) _T(" / ") _T(DCVERSIONSTRING) _T(">")
 #else
 #define LINE2 _T("-- http://www.airdcpp.net  <AirDC++ ") _T(VERSIONSTRING) _T(" / ") _T(DCVERSIONSTRING) _T(">")
 #endif
@@ -1209,7 +1209,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
  void WinUtil::registerDchubHandler() {
 	HKEY hk;
 	TCHAR Buf[512];
-	tstring app = _T("\"") + Text::toT(getAppName()) + _T("\" %1");
+	tstring app = _T("\"") + Text::toT(Util::getAppName()) + _T("\" %1");
 	Buf[0] = 0;
 
 	if(::RegOpenKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\dchub\\Shell\\Open\\Command"), 0, KEY_WRITE | KEY_READ, &hk) == ERROR_SUCCESS) {
@@ -1235,7 +1235,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
 		::RegCloseKey(hk);
 
 		::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\dchub\\DefaultIcon"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL);
-		app = Text::toT(getAppName());
+		app = Text::toT(Util::getAppName());
 		::RegSetValueEx(hk, _T(""), 0, REG_SZ, (LPBYTE)app.c_str(), sizeof(TCHAR) * (app.length() + 1));
 		::RegCloseKey(hk);
 	}
@@ -1248,7 +1248,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
  void WinUtil::registerADChubHandler() {
 	 HKEY hk;
 	 TCHAR Buf[512];
-	 tstring app = _T("\"") + Text::toT(getAppName()) + _T("\" %1");
+	 tstring app = _T("\"") + Text::toT(Util::getAppName()) + _T("\" %1");
 	 Buf[0] = 0;
 
 	 if(::RegOpenKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adc\\Shell\\Open\\Command"), 0, KEY_WRITE | KEY_READ, &hk) == ERROR_SUCCESS) {
@@ -1274,7 +1274,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
 		 ::RegCloseKey(hk);
 
 		 ::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adc\\DefaultIcon"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL);
-		 app = Text::toT(getAppName());
+		 app = Text::toT(Util::getAppName());
 		 ::RegSetValueEx(hk, _T(""), 0, REG_SZ, (LPBYTE)app.c_str(), sizeof(TCHAR) * (app.length() + 1));
 		 ::RegCloseKey(hk);
 	 }
@@ -1286,7 +1286,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
 void WinUtil::registerADCShubHandler() {
 	HKEY hk;
 	TCHAR Buf[512];
-	tstring app = _T("\"") + Text::toT(getAppName()) + _T("\" %1");
+	tstring app = _T("\"") + Text::toT(Util::getAppName()) + _T("\" %1");
 	Buf[0] = 0;
  
 	
@@ -1317,7 +1317,7 @@ void WinUtil::registerADCShubHandler() {
 		 ::RegCloseKey(hk);
 
 		 ::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\adcs\\DefaultIcon"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL);
-		 app = Text::toT(getAppName());
+		 app = Text::toT(Util::getAppName());
 		 ::RegSetValueEx(hk, _T(""), 0, REG_SZ, (LPBYTE)app.c_str(), sizeof(TCHAR) * (app.length() + 1));
 		 ::RegCloseKey(hk);
 	    }
@@ -1332,7 +1332,7 @@ void WinUtil::registerMagnetHandler() {
 	HKEY hk;
 	TCHAR buf[512];
 	tstring openCmd;
-	tstring appName = Text::toT(getAppName());
+	tstring appName = Text::toT(Util::getAppName());
 	buf[0] = 0;
 
 	// what command is set up to handle magnets right now?
@@ -2621,7 +2621,7 @@ void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
 
 void WinUtil::addUpdate(const string& aUpdater) {
 	updated = true;
-	auto path = Util::getFilePath(WinUtil::getAppName());
+	auto path = Util::getFilePath(Util::getAppName());
 
 	if(path[path.size() - 1] == PATH_SEPARATOR)
 		path.insert(path.size() - 1, "\\");
@@ -2634,6 +2634,14 @@ void WinUtil::runPendingUpdate() {
 		auto cmd = updateCommand.second + Util::getParams(false);
 		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
 	}
+}
+
+void WinUtil::showPopup(tstring szMsg, tstring szTitle, HICON hIcon, bool force) {
+	MainFrame::getMainFrame()->ShowPopup(szMsg, szTitle, hIcon, force); 
+}
+
+void WinUtil::showPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, bool force) {
+	MainFrame::getMainFrame()->ShowPopup(szMsg, szTitle, dwInfoFlags, force); 
 }
 
 
