@@ -1003,8 +1003,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="IgnoreClear">Clear</String>
 		<String Name="UseRegexpOrWc">Use regexp or wildcards</String>
 		<String Name="IgnoredUsers">Ignored users</String>
-		<String Name="Incoming">incoming</String>
-		<String Name="Outgoing">outgoing</String>
+		<String Name="Incoming">Incoming</String>
 		<String Name="Begin">Begin</String>
 		<String Name="End">End</String>
 		<String Name="NatSort">Use natural sorting</String>
@@ -1617,5 +1616,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="UpdateAlreadyDownloaded">This version has already been downloaded. Please restart the client to apply the changes.</String>
 		<String Name="Updater">AirDC++ Updater</String>
 		<String Name="UpdaterInProgress">Updating in progress, please wait a while for it to complete and try again.</String>
+		<String Name="NoIncomingConfigured">You don't have any incoming directories configured!</String>
 	</Strings>
 </Language>

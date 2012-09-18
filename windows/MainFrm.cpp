@@ -948,7 +948,7 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 }
 
 LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	openSettings();
+	openSettings(WinUtil::lastSettingPage);
 	return 0;
 }
 
@@ -1977,8 +1977,9 @@ LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 	auto l = ShareManager::getInstance()->getGroupedDirectories();
 	
 	dropMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU, CTSTRING(ALL));
+	dropMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU+1, CTSTRING(INCOMING));
 	dropMenu.AppendMenu(MF_SEPARATOR);
-	int virtualCounter=1, subCounter=0;
+	int virtualCounter=2, subCounter=0;
 	for(auto i = l.begin(); i != l.end(); ++i, ++virtualCounter) {
 		if (i->second.size() > 1) {
 			CMenu pathMenu;
@@ -2010,8 +2011,13 @@ LRESULT MainFrame::onRefreshMenu(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, B
 		auto l = ShareManager::getInstance()->getGroupedDirectories();
 		if(wID == IDC_REFRESH_MENU){
 			ShareManager::getInstance()->refresh();
+		} else if(wID == IDC_REFRESH_MENU+1) {
+			auto r = ShareManager::getInstance()->refresh(true);
+			if (r == ShareManager::REFRESH_PATH_NOT_FOUND) {
+				MessageBox(CTSTRING(NO_INCOMING_CONFIGURED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
+			}
 		} else if (wID < IDC_REFRESH_MENU_SUBDIRS) {
-			int id = wID-IDC_REFRESH_MENU-1;
+			int id = wID-IDC_REFRESH_MENU-2;
 			ShareManager::getInstance()->refresh(l[id].first);
 		} else {
 			int id = wID-IDC_REFRESH_MENU_SUBDIRS, counter=0;

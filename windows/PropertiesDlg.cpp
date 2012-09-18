@@ -128,6 +128,8 @@ LRESULT PropertiesDlg::onOK(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 {
 	write();
 	bHandled = FALSE;
+	WinUtil::lastSettingPage = curPage;
+	//SettingsManager::getInstance()->set(SettingsManager::LAST_SETTING_PAGE, curPage);
 	return TRUE;
 }
 

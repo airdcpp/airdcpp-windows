@@ -181,6 +181,7 @@ public:
 	static OMenu grantMenu;
 	static int dirIconIndex;
 	static int dirMaskedIndex;
+	static int lastSettingPage;
 	static HWND mainWnd;
 	static HWND mdiClient;
 	static FlatTabCtrl* tabCtrl;

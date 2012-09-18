@@ -31,7 +31,7 @@ public:
 	enum { WM_USER_INITDIALOG = WM_APP + 501 };
 	enum { TAB_MESSAGE_MAP = 13 };
 	TreePropertySheet(ATL::_U_STRINGorID title = (LPCTSTR)NULL, UINT uStartPage = 0, HWND hWndParent = NULL) :
-		CPropertySheetImpl<TreePropertySheet>(title, uStartPage, hWndParent), tabContainer(WC_TABCONTROL, this, TAB_MESSAGE_MAP) {
+		CPropertySheetImpl<TreePropertySheet>(title, uStartPage, hWndParent), tabContainer(WC_TABCONTROL, this, TAB_MESSAGE_MAP), curPage(0) {
 
 		m_psh.pfnCallback = &PropSheetProc;
 		m_psh.dwFlags |= PSH_RTLREADING;
@@ -62,6 +62,7 @@ public:
 	}
 
 	static int CALLBACK PropSheetProc(HWND hwndDlg, UINT uMsg, LPARAM lParam);
+	int curPage;
 private:
 
 	enum {

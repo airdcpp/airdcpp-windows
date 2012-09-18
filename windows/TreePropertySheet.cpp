@@ -177,8 +177,8 @@ HTREEITEM TreePropertySheet::findItem(int page, HTREEITEM start) {
 
 LRESULT TreePropertySheet::onSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /* bHandled */) {
 	NMTREEVIEW* nmtv = (NMTREEVIEW*)pnmh;
-	int page = nmtv->itemNew.lParam;
-	if(page == -1) {
+	curPage = nmtv->itemNew.lParam;
+	if(curPage == -1) {
 		HTREEITEM next = ctrlTree.GetChildItem(nmtv->itemNew.hItem);
 		if(next == NULL) {
 			next = ctrlTree.GetNextSiblingItem(nmtv->itemNew.hItem);
@@ -192,8 +192,8 @@ LRESULT TreePropertySheet::onSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /* b
 			ctrlTree.SelectItem(next);
 		}
 	} else {
-		if(HwndToIndex(GetActivePage()) != page)
-			SetActivePage(page);
+		if(HwndToIndex(GetActivePage()) != curPage)
+			SetActivePage(curPage);
 	}
 	
 	ctrlTree.SetFocus();

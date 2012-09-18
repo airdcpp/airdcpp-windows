@@ -85,6 +85,7 @@ CImageList WinUtil::flagImages;
 CImageList WinUtil::settingsTreeImages;
 int WinUtil::dirIconIndex = 0;
 int WinUtil::dirMaskedIndex = 0;
+int WinUtil::lastSettingPage = 0;
 HWND WinUtil::mainWnd = NULL;
 HWND WinUtil::mdiClient = NULL;
 FlatTabCtrl* WinUtil::tabCtrl = NULL;
