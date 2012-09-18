@@ -263,7 +263,7 @@
 		<String Name="KeepFinishedFiles">Keep finished files in the queue</String>
 		<String Name="KickUser">Kick user(s)</String>
 		<String Name="KickUserFile">Kick user(s) with filename</String>
-		<String Name="LastHub">Hub (last seen on if offline)</String>
+		<String Name="LastHub">Hub(s) (last seen on if offline)</String>
 		<String Name="LastChange">Last change: </String>
 		<String Name="LastSeen">Time last seen</String>
 		<String Name="LatestVersion">Latest version</String>

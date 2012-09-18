@@ -26,9 +26,9 @@
 #include "HubFrame.h"
 #include "TextFrame.h"
 
-int UsersFrame::columnIndexes[] = { COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION };
-int UsersFrame::columnSizes[] = { 200, 300, 150, 200 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::AUTO_GRANT, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION };
+int UsersFrame::columnIndexes[] = { COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION, COLUMN_CID };
+int UsersFrame::columnSizes[] = { 200, 300, 150, 200, 200 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::AUTO_GRANT, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION, ResourceManager::CID };
 
 LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -272,6 +272,7 @@ void UsersFrame::UserInfo::update(const FavoriteUser& u) {
 	columns[COLUMN_HUB] = user->isOnline() ? WinUtil::getHubNames(u.getUser(), Util::emptyString).first : Text::toT(u.getUrl());
 	columns[COLUMN_SEEN] = user->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", u.getLastSeen()));
 	columns[COLUMN_DESCRIPTION] = Text::toT(u.getDescription());
+	columns[COLUMN_CID] = Text::toT(u.getUser()->getCID().toBase32());
 }
 
 LRESULT UsersFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {

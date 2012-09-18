@@ -79,6 +79,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE, IDC_HUB);
 	ctrlHubSelContainer.SubclassWindow(ctrlHubSel.m_hWnd);
 	ctrlHubSel.SetFont(WinUtil::systemFont);
+	ctrlHubSel.SetCurSel(0);
 
 	ctrlHubSelDesc.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | SS_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	ctrlHubSelDesc.SetFont(WinUtil::systemFont);
@@ -218,6 +219,9 @@ void PrivateFrame::updateOnlineStatus() {
 			}
 		});
 
+		if(replyTo.hint.empty() && ctrlHubSel.GetCurSel() == -1)
+			ctrlHubSel.SetCurSel(0);
+
 		if(ctrlHubSel.GetCurSel() == -1) {
 			ctrlHubSel.SetCurSel(0);
 			changeClient();
@@ -318,6 +322,8 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 	FrameIter i = frames.find(replyTo);
 	if(i == frames.end()) {
 		if(frames.size() > 200) return;
+		if(replyTo.hint.empty())
+			ClientManager::getInstance()->getHubUrls(replyTo.user->getCID())[0];
 		p = new PrivateFrame(replyTo, c);
 		frames[replyTo] = p;
 		p->CreateEx(WinUtil::mdiClient);

@@ -46,6 +46,7 @@ public:
 	BEGIN_MSG_MAP(UsersFrame)
 		NOTIFY_HANDLER(IDC_USERS, LVN_GETDISPINFO, ctrlUsers.onGetDispInfo)
 		NOTIFY_HANDLER(IDC_USERS, LVN_COLUMNCLICK, ctrlUsers.onColumnClick)
+		NOTIFY_HANDLER(IDC_USERS, LVN_GETINFOTIP, ctrlUsers.onInfoTip)
 		NOTIFY_HANDLER(IDC_USERS, LVN_ITEMCHANGED, onItemChanged)
 		NOTIFY_HANDLER(IDC_USERS, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_USERS, NM_DBLCLK, onDoubleClick)
@@ -70,6 +71,7 @@ public:
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
+	LRESULT onInfoTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 
@@ -91,6 +93,7 @@ private:
 		COLUMN_HUB,
 		COLUMN_SEEN,
 		COLUMN_DESCRIPTION,
+		COLUMN_CID,
 		COLUMN_LAST
 	};
 
@@ -100,11 +103,11 @@ private:
 
 	class UserInfo : public UserInfoBase {
 	public:
-		UserInfo(const FavoriteUser& u) : user(u.getUser()) { 
+		UserInfo(const FavoriteUser& u) : user(u.getUser()), hinturl(u.getUrl()) { 
 			update(u);
 		}
 
-		inline const TCHAR* getText(int col) const { return columns[col].c_str(); }
+		inline const tstring& getText(int col) const { return columns[col]; }
 
 		inline static int compareItems(const UserInfo* a, const UserInfo* b, int col) {
 			return Util::DefaultSort(a->columns[col].c_str(), b->columns[col].c_str());
@@ -119,8 +122,9 @@ private:
 		tstring columns[COLUMN_LAST];
 
 		const UserPtr& getUser() const { return user; }
-		const string& getHubUrl() const { return Util::emptyString; } //TODO, FIX
+		const string& getHubUrl() const { return hinturl; }
 		UserPtr user;
+		string hinturl;
 	};
 
 	CStatusBarCtrl ctrlStatus;
