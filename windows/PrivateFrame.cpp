@@ -133,14 +133,19 @@ LRESULT PrivateFrame::onHubChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/,
 
 void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
 	if(aUser.getUser() == replyTo.user) {
-		ctrlClient.setClient(const_cast<Client*>(&aUser.getClient()));
+		//ctrlClient.setClient(const_cast<Client*>(&aUser.getClient()));
 		addSpeakerTask(true);
 	}
 }
 
 void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser) noexcept {
-	if(aUser.getUser() == replyTo.user)
+	if(aUser.getUser() == replyTo.user) {
+		if (!online && aUser.getClient().getHubUrl() != replyTo.hint) {
+			replyTo.hint = aUser.getClient().getHubUrl();
+			ctrlClient.setClient(const_cast<Client*>(&aUser.getClient()));
+		}
 		addSpeakerTask(true); //delay this to possible show more nicks & hubs in the connect message :]
+	}
 }
 
 void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept {
@@ -160,10 +165,8 @@ void PrivateFrame::addStatusLine(const tstring& aLine) {
 }
 
 void PrivateFrame::changeClient() {
-	auto hp = hubs[ctrlHubSel.GetCurSel()];
-	replyTo.hint = move(hp.first);
-	if(replyTo.hint.empty())
-		replyTo.hint = initialHub;
+	replyTo.hint = hubs[ctrlHubSel.GetCurSel()].first;
+	//replyTo.hint = move(hp.first);
 
 	ctrlClient.setClient(ClientManager::getInstance()->getClient(replyTo.hint));
 }
@@ -172,7 +175,14 @@ void PrivateFrame::updateOnlineStatus() {
 	const CID& cid = replyTo.user->getCID();
 	const string& hint = replyTo.hint;
 
+	dcassert(!replyTo.hint.empty());
+
+	//get the hub and online status
 	pair<tstring, bool> hubNames = WinUtil::getHubNames(cid, hint);
+	if (!hubNames.second && !online) {
+		//nothing to update... probably a delayed event
+		return;
+	}
 
 	hubName = move(hubNames.first);
 
@@ -307,6 +317,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 					::PlaySound(Text::toT(SETTING(BEEPFILE)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
 				}
 			}
+
 			i->second->updateFrameOnlineStatus(HintedUser(user, c->getHubUrl()), c);
 		}
 		i->second->addLine(from, aMessage);
