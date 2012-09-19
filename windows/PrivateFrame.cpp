@@ -46,7 +46,7 @@ tstring pSelectedURL = Util::emptyStringT;
 extern EmoticonsManager* emoticonsManager;
 
 PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
-	created(false), closed(false), online(true), curCommandPosition(0), hubName(Util::emptyStringT), 
+	created(false), closed(false), online(true), curCommandPosition(0), 
 	ctrlMessageContainer(WC_EDIT, this, PM_MESSAGE_MAP),
 	ctrlHubSelContainer(WC_COMBOBOX, this, HUB_SEL_MAP),
 	ctrlClientContainer(WC_EDIT, this, PM_MESSAGE_MAP), menuItems(0)
@@ -178,13 +178,11 @@ void PrivateFrame::updateOnlineStatus() {
 	dcassert(!replyTo.hint.empty());
 
 	//get the hub and online status
-	pair<tstring, bool> hubNames = WinUtil::getHubNames(cid, hint);
-	if (!hubNames.second && !online) {
+	pair<tstring, bool> hubsInfoNew = WinUtil::getHubNames(cid, hint);
+	if (!hubsInfoNew.second && !online) {
 		//nothing to update... probably a delayed event
 		return;
 	}
-
-	hubName = move(hubNames.first);
 
 	//setIcon(online ? IDI_PRIVATE : IDI_PRIVATE_OFF);
 
@@ -199,21 +197,22 @@ void PrivateFrame::updateOnlineStatus() {
 	}
 
 	//General things
-	if(hubNames.second) {	
+	if(hubsInfoNew.second) {	
 		setDisconnected(false);
 		if(!online) {
-			addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint) + _T(" - ") + hubName + _T("]"));
+			addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint) + _T(" - ") + hubsInfoNew.first + _T("]"));
 			setIcon(userOnline);
 		}
 	} else {
 		setDisconnected(true);
 		setIcon(userOffline);
-		addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + Text::toT(oldHubPair.second) + _T("]"));
+		addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"));
 		ctrlClient.setClient(nullptr);
 	}
 
-	online = hubNames.second;
-	SetWindowText((WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint) + _T(" - ") + hubName).c_str());
+	hubNames = move(hubsInfoNew.first);
+	online = hubsInfoNew.second;
+	SetWindowText((WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint) + _T(" - ") + hubNames).c_str());
 
 	//ADC related changes
 	if(online && !replyTo.user->isNMDC() && !hubs.empty()) {

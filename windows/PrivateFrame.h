@@ -226,7 +226,6 @@ private:
 
 	void updateOnlineStatus();
 	StringPairList hubs;
-	string initialHub;
 	bool online;
 	void changeClient();
 	void showHubSelection(bool show);
@@ -246,7 +245,7 @@ private:
 	CContainedWindow ctrlHubSelContainer;
 
 	bool closed;
-	tstring hubName;
+	tstring hubNames;
 	ParamMap ucLineParams;
 
 	void updateFrameOnlineStatus(const HintedUser& newUser, Client* c);
