@@ -821,6 +821,9 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 					targets = QueueManager::getInstance()->getTargets(m.getTTH());
 					appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, true, false);
 				}
+
+				if (!shareDupe && !queueDupe)
+					menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 			} else if (release) {
 				//autosearch menus
 				appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, false, true);
@@ -999,6 +1002,22 @@ LRESULT ChatCtrl::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHan
 		return 1;
 	}
 	bHandled = FALSE;
+	return 0;
+}
+
+LRESULT ChatCtrl::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	Magnet m = Magnet(Text::fromT(selectedWord));
+	if (m.hash.empty())
+		return 0;
+
+	OnlineUserPtr u = client->findUser(Text::fromT(author));
+	if (u) {
+		try {
+			QueueManager::getInstance()->add(Util::getOpenPath(m.fname), m.fsize, m.getTTH(), 
+				!u->getUser()->isSet(User::BOT) ? HintedUser(u->getUser(), client->getHubUrl()) : HintedUser(UserPtr(), Util::emptyString), 
+				Util::emptyString, QueueItem::FLAG_OPEN);
+		} catch(...) { }
+	}
 	return 0;
 }
 

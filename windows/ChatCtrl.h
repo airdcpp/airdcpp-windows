@@ -87,6 +87,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCH_BY_TTH, onSearchTTH)
 		COMMAND_ID_HANDLER(IDC_CONNECT_WITH, onConnectWith)
 		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onOpenLink)
+		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
@@ -140,6 +141,7 @@ public:
 //	void setClient(Client* pClient) { client = pClient; }
 
 	LRESULT onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onFindText(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);

@@ -688,6 +688,16 @@ void SearchFrame::SearchInfo::view() {
 	}
 }
 
+void SearchFrame::SearchInfo::open() {
+	try {
+		if(sr->getType() == SearchResult::TYPE_FILE) {
+			QueueManager::getInstance()->add(Util::getOpenPath(sr->getFileName()),
+				sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()), sr->getFile(), QueueItem::FLAG_OPEN);
+		}
+	} catch(const Exception&) {
+	}
+}
+
 void SearchFrame::SearchInfo::viewNfo() {
 	string path = Util::getReleaseDir(Text::fromT(getText(COLUMN_PATH)), false);
 	boost::regex reg;
@@ -1358,6 +1368,8 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			if((ctrlResults.GetSelectedCount() == 1) && hasDupes) {
 				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 				resultsMenu.AppendMenu(MF_SEPARATOR);
+			} else if (!hasDupes && hasFiles) {
+				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 			}
 
 			if (hasFiles)

@@ -1169,10 +1169,8 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="Update">Update</String>
 		<String Name="UpnpNoImplementation">No UPnP implementation available</String>
 		<String Name="UpnpSuccessfullyCreatedMappings">Successfully created port mappings</String>
-		<String Name="UpdateClient">Update file has finished downloading. Do you Wish to update? (AirDC++ will exit)</String>
-		<String Name="UpdateFileDetected">Updater File detected. Do you Wish to update? (AirDC++ will exit)</String>
 		<String Name="TestWrite">Test Write to AirDC++ folders on startup</String>
-		<String Name="SettingsIncomingRefreshTime">Incoming Refresh Time</String>
+		<String Name="SettingsIncomingRefreshTime">Incoming refresh rime</String>
 		<String Name="SettingsUseAdls">Use ADLSearch on Filelists</String>
 		<String Name="SettingDontDlAlreadyQueued">Don't download files already in queue</String>
 		<String Name="FavShowJoin">Show User Joins / Parts</String>
@@ -1618,7 +1616,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="UpdaterInProgress">Updating in progress, please wait a while for it to complete and try again.</String>
 		<String Name="NoIncomingConfigured">You don't have any incoming directories configured!</String>
 		<String Name="ViewedFileTooBig">The file %s is too big to be viewed in the client (the file size is %s while the limit is 1 MiB)</String>
-		<String Name="AddMagnet">Add magnet link</String>
-		<String Name="AddEmoticon">Add emoticon</String>
+		<String Name="SendFilePm">Send a file (it will be available only to this user)</String>
+		<String Name="InsertEmoticon">Insert emoticon</String>
 	</Strings>
 </Language>

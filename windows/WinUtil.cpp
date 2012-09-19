@@ -708,7 +708,8 @@ void WinUtil::uninit() {
 	::DeleteObject(systemFont);
 
 	UnhookWindowsHookEx(hook);	
-
+	auto files = File::findFiles(Util::getInstanceTempPath() + "Opened Items" + PATH_SEPARATOR_STR, "*");
+	for_each(files.begin(), files.end(), &File::deleteFile);
 }
 
 void WinUtil::decodeFont(const tstring& setting, LOGFONT &dest) {

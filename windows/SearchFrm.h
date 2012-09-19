@@ -99,6 +99,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_PURGE, onPurge)	
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
+		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(dlBase)
@@ -183,6 +184,11 @@ public:
 		while( (i = ctrlResults.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			ctrlResults.removeGroupedItem(ctrlResults.getItemData(i));
 		}
+	}
+
+	LRESULT onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		ctrlResults.forEachSelected(&SearchInfo::open);
+		return 0;
 	}
 
 	LRESULT onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -318,6 +324,7 @@ private:
 		void getList();
 		void browseList();
 
+		void open();
 		void view();
 		void viewNfo();
 		void matchPartial();

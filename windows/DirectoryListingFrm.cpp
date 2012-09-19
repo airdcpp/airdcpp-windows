@@ -913,6 +913,17 @@ void DirectoryListingFrame::selectItem(const tstring& name) {
 }
 
 LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	OMenu copyMenu;
+	copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
+	copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
+	copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
+	copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
+	copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
+	copyMenu.AppendMenu(MF_STRING, IDC_COPY_EXACT_SIZE, CTSTRING(EXACT_SIZE));
+	copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
+	copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
+	copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
+
 	if (reinterpret_cast<HWND>(wParam) == ctrlList && ctrlList.GetSelectedCount() > 0) {
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
@@ -920,7 +931,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			WinUtil::getContextMenuPos(ctrlList, pt);
 		}
 		const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-		OMenu fileMenu, copyMenu, SearchMenu;
+		OMenu fileMenu, SearchMenu;
 
 
 
@@ -952,10 +963,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 				if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE && ii->file->getAdls()) {
 					pShellMenu->AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
 				}
-				if(ctrlList.GetSelectedCount() == 1/* && ii->type == ItemInfo::FILE*/ ) {				
-					pShellMenu->AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-					pShellMenu->AppendMenu(MF_SEPARATOR);
-				}
 					
 				pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 				pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
@@ -967,16 +974,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 				pShellMenu->AppendMenu(MF_SEPARATOR);
 				pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 				pShellMenu->AppendMenu(MF_SEPARATOR);
-				//copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
-				copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
-				copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-				copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
-				copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-				copyMenu.AppendMenu(MF_STRING, IDC_COPY_EXACT_SIZE, CTSTRING(EXACT_SIZE));
-				copyMenu.AppendMenu(MF_STRING, IDC_COPY_DATE, CTSTRING(DATE));
-				copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
-				copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
-				copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
 			
 				//SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
 				WinUtil::AppendSearchMenu(SearchMenu);
@@ -995,16 +992,6 @@ clientmenu:
 			fileMenu.CreatePopupMenu();
 			copyMenu.CreatePopupMenu();
 			SearchMenu.CreatePopupMenu();
-
-			copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_EXACT_SIZE, CTSTRING(EXACT_SIZE));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
 		
 			targets.clear();
 			if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
@@ -1012,12 +999,13 @@ clientmenu:
 			}
 
 			int i = -1;
-			bool allComplete = true;
+			bool allComplete=true, hasFiles=false;
 			while( (i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 				const ItemInfo* ii = ctrlList.getItemData(i);
 				if (ii->type == ItemInfo::DIRECTORY && !ii->dir->getComplete() && ii->dir->getPartialSize() == 0) {
 					allComplete = false;
-					break;
+				} else if (ii->type == ItemInfo::FILE) {
+					hasFiles = true;
 				}
 			}
 
@@ -1025,15 +1013,16 @@ clientmenu:
 			fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			fileMenu.AppendMenu(MF_SEPARATOR);
 		
-			if (ctrlList.GetSelectedCount() == 1 && !dl->getIsOwnList()) {
-				if (ii->type == ItemInfo::DIRECTORY && (ShareManager::getInstance()->isDirShared(ii->dir->getPath()) || ii->dir->getDupe() == QUEUE_DUPE)) {
-					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-					fileMenu.AppendMenu(MF_SEPARATOR);
-				} else if(ii->type == ItemInfo::FILE && (ii->file->getDupe() == SHARE_DUPE || ii->file->getDupe() == FINISHED_DUPE)) {
-					fileMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
-					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-					fileMenu.AppendMenu(MF_SEPARATOR);
-				}
+			if (ctrlList.GetSelectedCount() == 1 && (dl->getIsOwnList() || (ii->type == ItemInfo::DIRECTORY && 
+				(ShareManager::getInstance()->isDirShared(ii->dir->getPath()) || ii->dir->getDupe() == QUEUE_DUPE)))) {
+				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+				fileMenu.AppendMenu(MF_SEPARATOR);
+			} else if(ctrlList.GetSelectedCount() == 1 && !dl->getIsOwnList() && ii->type == ItemInfo::FILE && (ii->file->getDupe() == SHARE_DUPE || ii->file->getDupe() == FINISHED_DUPE)) {
+				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FILE, CTSTRING(OPEN));
+				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+				fileMenu.AppendMenu(MF_SEPARATOR);
+			} else if (hasFiles) {
+				fileMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 			}
 
 			if(dl->getIsOwnList() && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
@@ -1694,6 +1683,21 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 	}
 }
 
+LRESULT DirectoryListingFrame::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(ctrlList.GetSelectedCount() >= 1) {
+		int sel = -1;
+		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+			const ItemInfo* ii =  ctrlList.getItemData(sel);
+			if(ii->type == ItemInfo::FILE) {
+				try {
+					QueueManager::getInstance()->add(Util::getOpenPath(ii->file->getName()),
+						ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getPath(), QueueItem::FLAG_OPEN);
+				} catch(const Exception&) { }
+			}
+		}
+	}
+	return 0;
+}
 
 LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	const ItemInfo* ii = ctrlList.getSelectedItem();
@@ -1737,7 +1741,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 			return 0;
 		}
 
-		if(wID == IDC_OPEN) {
+		if(wID == IDC_OPEN_FILE) {
 			WinUtil::openFile(path);
 		} else {
 			WinUtil::openFolder(path);

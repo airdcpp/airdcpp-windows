@@ -98,8 +98,8 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlMagnet.SetIcon(WinUtil::createIcon(IDI_MAGNET, 20));
 	
 	ctrlTooltips.Create(m_hWnd, rcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
-	ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, CTSTRING(ADD_MAGNET)); //show something more revealing to the temp shares maybe?
-	ctrlTooltips.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(ADD_EMOTICON));
+	ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, CTSTRING(SEND_FILE_PM)); //show something more revealing to the temp shares maybe?
+	ctrlTooltips.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(INSERT_EMOTICON));
 	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 25000);
 	ctrlTooltips.Activate(TRUE);
 
