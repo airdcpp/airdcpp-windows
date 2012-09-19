@@ -1170,7 +1170,8 @@
 #define IDC_AUTOSEARCHFRM               3031
 #define IDC_ENABLE                      3032
 #define IDC_DISABLE                     3033
-#define IDC_DIRPATHS                    3033
+#define IDC_DIRPATHS                    3034
+#define IDC_BMAGNET		                3035
 #define IDC_SELECT_WINDOW               6000
 #define IDC_USER_COMMAND                6500
 #define IDC_PRIORITY_PAUSED             7000

@@ -68,6 +68,7 @@ public:
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
+		MESSAGE_HANDLER(WM_FORWARDMSG, OnRelayMsg)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_USER_HISTORY, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
@@ -83,6 +84,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
 		COMMAND_ID_HANDLER(IDC_EMOT, onEmoticons)
+		COMMAND_ID_HANDLER(IDC_BMAGNET, onAddMagnet)
 		COMMAND_ID_HANDLER(IDC_WINAMP_SPAM, onWinampSpam)
 		COMMAND_ID_HANDLER(IDC_PUBLIC_MESSAGE, onPublicMessage)
 		COMMAND_RANGE_HANDLER(IDC_EMOMENU, IDC_EMOMENU + menuItems, onEmoPackChange);
@@ -115,6 +117,7 @@ public:
 	LRESULT onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onEmoPackChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
   	LRESULT onEmoticons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled);
+	LRESULT onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled);
   	LRESULT onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		tstring cmd, param, message, status;
 		bool thirdPerson;
@@ -156,6 +159,13 @@ public:
 	void runUserCommand(UserCommand& uc);
 	void readLog();
 	
+	LRESULT OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+		LPMSG pMsg = (LPMSG)lParam;
+		if(pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
+			ctrlTooltips.RelayEvent(pMsg);
+		return 0;
+}
+
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 		
 	LRESULT onSendMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -234,6 +244,7 @@ private:
 	int lineCount; //ApexDC
 	OMenu emoMenu;
 	CButton ctrlEmoticons;
+	CButton ctrlMagnet;
 	ExCImage hEmoticonBmp;
 	HICON userOffline;
 	HICON userOnline;
@@ -243,6 +254,8 @@ private:
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
 	CContainedWindow ctrlHubSelContainer;
+	
+	CToolTipCtrl ctrlTooltips;
 
 	bool closed;
 	tstring hubNames;
