@@ -159,7 +159,7 @@ public:
 	
 	LRESULT OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 		LPMSG pMsg = (LPMSG)lParam;
-		if(pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
+		if(ctrlTooltips.m_hWnd != NULL && pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
 			ctrlTooltips.RelayEvent(pMsg);
 		return 0;
 }
@@ -220,7 +220,8 @@ private:
 
 	PrivateFrame(const HintedUser& replyTo_, Client* c);
 	~PrivateFrame() { }
-
+	
+	bool nmdcUser;
 	bool created;
 	string getLogPath() const;
 	typedef unordered_map<UserPtr, PrivateFrame*, User::Hash> FrameMap;

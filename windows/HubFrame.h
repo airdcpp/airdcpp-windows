@@ -326,6 +326,7 @@ private:
 
 	CButton ctrlShowUsers;
 	CButton ctrlEmoticons;
+	CButton ctrlMagnet;
 	ChatCtrl ctrlClient;
 	CEdit ctrlMessage;
 	CEdit ctrlFilter;

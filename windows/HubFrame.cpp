@@ -160,6 +160,15 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlLastLines.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 	ctrlLastLines.AddTool(&ti);
 	ctrlLastLines.SetDelayTime(TTDT_AUTOPOP, 15000);
+	
+	ctrlLastLines.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(INSERT_EMOTICON));
+
+	if(AirUtil::isAdcHub(client->getHubUrl())) {
+		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
+		ctrlMagnet.SetIcon(WinUtil::createIcon(IDI_MAGNET, 20));
+		ctrlLastLines.AddTool(ctrlMagnet.m_hWnd, CTSTRING(SEND_FILE_HUB));
+	}
+
 
 	showJoins = BOOLSETTING(SHOW_JOINS);
 	favShowJoins = BOOLSETTING(FAV_SHOW_JOINS);
@@ -907,11 +916,15 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	}
 	SetSplitterRect(rc);
 
+	int buttonsize = 24 +2;
+	if(ctrlMagnet.IsWindow())
+		buttonsize = buttonsize *2;
+
 	rc = rect;
 	rc.bottom -= 2;
 	rc.top = rc.bottom - h - 5;
 	rc.left +=2;
-	rc.right -= (showUsers ? 202 : 2) + 24;
+	rc.right -= (showUsers ? 200 : 0) + buttonsize;
 	ctrlMessage.MoveWindow(rc);
 
 //ApexDC
@@ -919,10 +932,18 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		rc.bottom -= h - (WinUtil::fontHeight + 4);
 	}
 //end
+
 	rc.left = rc.right + 2;
 	rc.right += 24;
-
 	ctrlEmoticons.MoveWindow(rc);
+	
+	if(ctrlMagnet.IsWindow()){
+		//magnet button
+		rc.left = rc.right + 2;
+		rc.right += 24;
+		ctrlMagnet.MoveWindow(rc);
+	}
+
 	if(showUsers){
 		rc.left = rc.right + 2;
 		rc.right = rc.left + 116;

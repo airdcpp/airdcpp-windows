@@ -95,14 +95,16 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	hEmoticonBmp.LoadFromResource(IDR_EMOTICON, _T("PNG"), _Module.get_m_hInst());
   	ctrlEmoticons.SetBitmap(hEmoticonBmp);
 
-	ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
-	ctrlMagnet.SetIcon(WinUtil::createIcon(IDI_MAGNET, 20));
-	
-	ctrlTooltips.Create(m_hWnd, rcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
-	ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, CTSTRING(SEND_FILE_PM)); //show something more revealing to the temp shares maybe?
+	ctrlTooltips.Create(m_hWnd, rcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	
 	ctrlTooltips.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(INSERT_EMOTICON));
-	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 25000);
+	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
 	ctrlTooltips.Activate(TRUE);
+
+	if(!replyTo.user->isSet(User::NMDC)) {
+		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
+		ctrlMagnet.SetIcon(WinUtil::createIcon(IDI_MAGNET, 20));
+		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, CTSTRING(SEND_FILE_PM));
+	}
 
 	addSpeakerTask(false);
 	created = true;
@@ -870,11 +872,15 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	rc.bottom -= h + 10;
 	ctrlClient.MoveWindow(rc);
 	
+	int buttonsize = 24 +2;
+	if(ctrlMagnet.IsWindow())
+		buttonsize = buttonsize *2;
+
 	rc = rect;
 	rc.bottom -= 2;
 	rc.top = rc.bottom - h - 5;
 	rc.left +=2;
-	rc.right -= 2 + 2 + 24 + 24;
+	rc.right -= buttonsize;
 	ctrlMessage.MoveWindow(rc);
 
 	 //ApexDC	
@@ -886,11 +892,12 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
   	 
   	ctrlEmoticons.MoveWindow(rc);
 	
-	//magnet button
-	rc.left = rc.right + 2;
-	rc.right += 24;
-	ctrlMagnet.MoveWindow(rc);
-
+	if(ctrlMagnet.IsWindow()){
+		//magnet button
+		rc.left = rc.right + 2;
+		rc.right += 24;
+		ctrlMagnet.MoveWindow(rc);
+	}
 }
 
 LRESULT PrivateFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
