@@ -37,7 +37,7 @@ EmoticonsManager* emoticonsManager = NULL;
 #define MAX_EMOTICONS 48
 UINT ChatCtrl::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
-ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100) {
+ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
 	}
@@ -692,15 +692,7 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 		}
 	}
 
-	size_t pos = selectedLine.find(_T(" <"));
-	if (pos != tstring::npos) {
-		tstring::size_type iAuthorLen = selectedLine.find(_T('>'), 1);
-		if(iAuthorLen != tstring::npos && iAuthorLen > pos) {
-			tstring nick(selectedLine.c_str() + pos + 2);
-			nick.erase(iAuthorLen - pos - 2);
-			author = nick;
-		}
-	}
+	updateAuthor();
 
 	// Po kliku dovnitr oznaceneho textu si zkusime poznamenat pripadnej nick ci ip...
 	// jinak by nam to neuznalo napriklad druhej klik na uz oznaceny nick =)
@@ -720,6 +712,20 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 		InvalidateRect(NULL);
 	}
 	return 1;
+}
+
+bool ChatCtrl::updateAuthor() {
+	size_t pos = selectedLine.find(_T(" <"));
+	if (pos != tstring::npos) {
+		tstring::size_type iAuthorLen = selectedLine.find(_T('>'), 1);
+		if(iAuthorLen != tstring::npos && iAuthorLen > pos) {
+			tstring nick(selectedLine.c_str() + pos + 2);
+			nick.erase(iAuthorLen - pos - 2);
+			author = nick;
+			return true;
+		}
+	}
+	return false;
 }
 
 LRESULT ChatCtrl::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -813,17 +819,17 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			}
 
 			menu.AppendMenu(MF_SEPARATOR);
-			if (!author.empty() && isMagnet) {
-				if (client && author == Text::toT(client->getMyNick())) {
+			if (isMagnet) {
+				Magnet m = Magnet(Text::fromT(selectedWord));
+				if (client && ShareManager::getInstance()->isTempShared(user ? user->getCID().toBase32() : Util::emptyString, m.getTTH())) {
 					/* show an option to remove the item */
-				} else {
-					Magnet m = Magnet(Text::fromT(selectedWord));
+					menu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(STOP_SHARING));
+				} else if (!author.empty()) {
 					targets = QueueManager::getInstance()->getTargets(m.getTTH());
 					appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, true, false);
+					if (!shareDupe && !queueDupe)
+						menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 				}
-
-				if (!shareDupe && !queueDupe)
-					menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 			} else if (release) {
 				//autosearch menus
 				appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, false, true);
@@ -1010,14 +1016,33 @@ LRESULT ChatCtrl::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, B
 	if (m.hash.empty())
 		return 0;
 
-	OnlineUserPtr u = client->findUser(Text::fromT(author));
-	if (u) {
-		try {
-			QueueManager::getInstance()->add(Util::getOpenPath(m.fname), m.fsize, m.getTTH(), 
-				!u->getUser()->isSet(User::BOT) ? HintedUser(u->getUser(), client->getHubUrl()) : HintedUser(UserPtr(), Util::emptyString), 
-				Util::emptyString, QueueItem::FLAG_OPEN);
-		} catch(...) { }
+	auto u = getMagnetSource();
+	try {
+		QueueManager::getInstance()->add(Util::getOpenPath(m.fname), m.fsize, m.getTTH(), u, Util::emptyString, QueueItem::FLAG_OPEN);
+	} catch(...) { }
+	return 0;
+}
+
+HintedUser ChatCtrl::getMagnetSource() {
+	UserPtr u = nullptr;
+	if (user) {
+		u = user;
+	} else if (client && !author.empty()) {
+		OnlineUserPtr ou = client->findUser(Text::fromT(author));
+		if (ou) {
+			u = ou->getUser();
+		}
 	}
+
+	if (u && !u->isSet(User::BOT))
+		return HintedUser(u, client->getHubUrl());
+
+	return HintedUser(nullptr, Util::emptyString);
+}
+
+LRESULT ChatCtrl::onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	Magnet m = Magnet(Text::fromT(selectedWord));
+	ShareManager::getInstance()->removeTempShare(user ? user->getCID().toBase32() : Util::emptyString, m.getTTH());
 	return 0;
 }
 
@@ -1054,15 +1079,12 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 }
 
 void ChatCtrl::download(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
-	if (isMagnet && client && !SettingsManager::lanMode) {
+	if (isMagnet && !SettingsManager::lanMode) {
+		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
-		OnlineUserPtr u = client->findUser(Text::fromT(author));
-		if (u) {
-			try {
-				QueueManager::getInstance()->add(aTarget + m.fname, m.fsize, m.getTTH(), 
-					!u->getUser()->isSet(User::BOT) ? HintedUser(u->getUser(), client->getHubUrl()) : HintedUser(UserPtr(), Util::emptyString), Util::emptyString);
-			} catch (...) {}
-		}
+		try {
+			QueueManager::getInstance()->add(aTarget + m.fname, m.fsize, m.getTTH(), u, Util::emptyString);
+		} catch (...) {}
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, aTargetType, true);
 	}
@@ -1201,10 +1223,11 @@ LRESULT ChatCtrl::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, 
 	string link = Text::fromT(selectedWord);
 	for(auto i = links.rbegin(); i != links.rend(); ++i) {
 		if(compare(i->second.url, link) == 0) {
-			if (i->second.type == ChatLink::TYPE_MAGNET)
-				SendMessage(IDC_HANDLE_MAGNET,0, (LPARAM)new tstring(Text::toT(i->second.url)));
-			else
+			if (i->second.type == ChatLink::TYPE_MAGNET) {
+				WinUtil::parseMagnetUri(Text::toT(i->second.url), getMagnetSource());
+			} else {
 				WinUtil::openLink(Text::toT(i->second.url));
+			}
 			return 0;
 		}
 	}
@@ -1220,10 +1243,13 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		return 0;
 
 
-	if (cl.type == ChatLink::TYPE_MAGNET)
-		SendMessage(IDC_HANDLE_MAGNET,0, (LPARAM)new tstring(Text::toT(cl.url)));
-	else
+	if (cl.type == ChatLink::TYPE_MAGNET) {
+		selectedLine = LineFromPos(pt);
+		updateAuthor();
+		WinUtil::parseMagnetUri(Text::toT(cl.url), move(getMagnetSource()));
+	} else {
 		WinUtil::openLink(Text::toT(cl.url));
+	}
 
 	return 1;
 }

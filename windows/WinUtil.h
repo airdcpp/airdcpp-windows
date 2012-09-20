@@ -322,14 +322,14 @@ public:
 	static void unRegisterADCShubHandler();
 	static void unRegisterMagnetHandler();
 
-	static bool parseDBLClick(const tstring& aString, HWND hWnd = NULL);
-	static void parseMagnetUri(const tstring& /*aUrl*/, bool aOverride = false, const UserPtr& aUser = UserPtr(), const string& hubHint = Util::emptyString);
+	static bool parseDBLClick(const tstring& aString);
+	static void parseMagnetUri(const tstring& aUrl, const HintedUser& aUser);
 
 	static bool urlDcADCRegistered;
 	static bool urlMagnetRegistered;
 	static int textUnderCursor(POINT p, CEdit& ctrl, tstring& x);
 	static int textUnderCursor(POINT p, CRichEditCtrl& ctrl, tstring& x);
-	static void openLink(const tstring& url, HWND hWnd = NULL);
+	static void openLink(const tstring& url);
 	static void openFile(const tstring& file) {
 	if(Util::fileExists(Text::fromT(file)))
 		::ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);

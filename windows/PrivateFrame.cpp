@@ -52,6 +52,7 @@ PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(repl
 	ctrlClientContainer(WC_EDIT, this, PM_MESSAGE_MAP), menuItems(0)
 {
 	ctrlClient.setClient(c);
+	ctrlClient.setUser(replyTo_.user);
 }
 
 LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -149,10 +150,6 @@ void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUse
 
 void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser) noexcept {
 	if(aUser.getUser() == replyTo.user) {
-		if (!online && aUser.getClient().getHubUrl() != replyTo.hint) {
-			replyTo.hint = aUser.getClient().getHubUrl();
-			ctrlClient.setClient(const_cast<Client*>(&aUser.getClient()));
-		}
 		addSpeakerTask(true); //delay this to possible show more nicks & hubs in the connect message :]
 	}
 }
@@ -175,8 +172,6 @@ void PrivateFrame::addStatusLine(const tstring& aLine) {
 
 void PrivateFrame::changeClient() {
 	replyTo.hint = hubs[ctrlHubSel.GetCurSel()].first;
-	//replyTo.hint = move(hp.first);
-
 	ctrlClient.setClient(ClientManager::getInstance()->getClient(replyTo.hint));
 }
 
@@ -193,7 +188,6 @@ void PrivateFrame::updateOnlineStatus() {
 		return;
 	}
 
-	//setIcon(online ? IDI_PRIVATE : IDI_PRIVATE_OFF);
 
 	auto oldSel = ctrlHubSel.GetStyle() & WS_VISIBLE ? ctrlHubSel.GetCurSel() : 0;
 	StringPair oldHubPair;
@@ -219,12 +213,8 @@ void PrivateFrame::updateOnlineStatus() {
 		ctrlClient.setClient(nullptr);
 	}
 
-	hubNames = move(hubsInfoNew.first);
-	online = hubsInfoNew.second;
-	SetWindowText((WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint) + _T(" - ") + hubNames).c_str());
-
 	//ADC related changes
-	if(online && !replyTo.user->isNMDC() && !hubs.empty()) {
+	if(hubsInfoNew.second && !replyTo.user->isNMDC() && !hubs.empty()) {
 		if(!(ctrlHubSel.GetStyle() & WS_VISIBLE)) {
 			showHubSelection(true);
 		}
@@ -239,14 +229,20 @@ void PrivateFrame::updateOnlineStatus() {
 		if(ctrlHubSel.GetCurSel() == -1) {
 			ctrlHubSel.SetCurSel(0);
 			changeClient();
-			addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)));
+			if (!online) //the user came online but not in the previous hub
+				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
+			else
+				addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)));
 		} else if (oldSel >= 0 && oldSel != ctrlHubSel.GetCurSel()) {
-			changeClient();
 			addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
 		}
 	} else {
 		showHubSelection(false);
 	}
+
+	hubNames = move(hubsInfoNew.first);
+	online = hubsInfoNew.second;
+	SetWindowText((WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint) + _T(" - ") + hubNames).c_str());
 }
 
 void PrivateFrame::showHubSelection(bool show) {
@@ -654,24 +650,6 @@ void PrivateFrame::onEnter()
 void PrivateFrame::sendMessage(const tstring& msg, bool thirdPerson) {
 	ClientManager::getInstance()->privateMessage(replyTo, Text::fromT(msg), thirdPerson);
 }
-
-LRESULT PrivateFrame::onMagnet(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/){
-	tstring* tmp = (tstring*)lParam;
-	/*
-	if the sender is not a bot, assume the user sending the magnet is sharing it,
-	if he isnt, too bad.. we just get file not available..
-	*/
-	
-	if(!replyTo.user->isSet(User::BOT))
-		WinUtil::parseMagnetUri(*tmp, false, replyTo.user, replyTo.hint);
-	else
-		WinUtil::parseMagnetUri(*tmp);
-
-	delete tmp;
-
-	return 0;
-} 
-
 
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {

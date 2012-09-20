@@ -68,27 +68,7 @@ LRESULT MagnetDlg::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 LRESULT MagnetDlg::onCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(wID == IDOK) {
-		if(IsDlgButtonChecked(IDC_MAGNET_REMEMBER) == BST_CHECKED) {
-			SettingsManager::getInstance()->set(SettingsManager::MAGNET_ASK,  false);
-			if(IsDlgButtonChecked(IDC_MAGNET_QUEUE))
-				SettingsManager::getInstance()->set(SettingsManager::MAGNET_ACTION, SettingsManager::MAGNET_AUTO_DOWNLOAD);
-			else if(IsDlgButtonChecked(IDC_MAGNET_SEARCH))
-				SettingsManager::getInstance()->set(SettingsManager::MAGNET_ACTION, SettingsManager::MAGNET_AUTO_SEARCH);
-		}
-
-		if(IsDlgButtonChecked(IDC_MAGNET_SEARCH)) {
-			TTHValue tmphash(mHash);
-			WinUtil::searchHash(tmphash, Text::fromT(mFileName), mSize); 
-		} else if(IsDlgButtonChecked(IDC_MAGNET_QUEUE) && !SettingsManager::lanMode) {
-			try {
-				string target = SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(mFileName);
-				QueueManager::getInstance()->add(target, mSize, TTHValue(mHash), HintedUser(mUser, mHint), Util::emptyString);
-			} catch(const Exception& e) {
-				LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
-			}
-		} 
-	}
+	remember = IsDlgButtonChecked(IDC_MAGNET_REMEMBER) == BST_CHECKED;
 	EndDialog(wID);
 	return 0;
 }
@@ -97,9 +77,7 @@ LRESULT MagnetDlg::onRadioButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	switch(wID) {
 		case IDC_MAGNET_QUEUE:
 		case IDC_MAGNET_SEARCH:
-			if(mSize > 0 && mFileName.length() > 0) {
-				::EnableWindow(GetDlgItem(IDC_MAGNET_REMEMBER), true);
-			}
+			::EnableWindow(GetDlgItem(IDC_MAGNET_REMEMBER), true);
 			break;
 		case IDC_MAGNET_NOTHING:
 			if(IsDlgButtonChecked(IDC_MAGNET_REMEMBER) == BST_CHECKED) {
@@ -108,6 +86,8 @@ LRESULT MagnetDlg::onRadioButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 			::EnableWindow(GetDlgItem(IDC_MAGNET_REMEMBER), false);
 			break;
 	};
+
+	sel = wID;
 	return 0;
 }
 

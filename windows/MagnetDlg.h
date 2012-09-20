@@ -35,7 +35,7 @@ class MagnetDlg : public CDialogImpl<MagnetDlg > {
 public:
 	enum { IDD = IDD_MAGNET };
 
-	MagnetDlg(const string& aHash, const tstring& aFileName, const int64_t aSize, const UserPtr& aUser = UserPtr(), const string& aHint = Util::emptyString) : mHash(aHash), mFileName(aFileName), mSize(aSize), mUser(aUser), mHint(aHint) { }
+	MagnetDlg(const string& aHash, const tstring& aFileName, const int64_t aSize) : mHash(aHash), mFileName(aFileName), mSize(aSize), remember(false), sel(0) { }
 	~MagnetDlg() { }
 
 	BEGIN_MSG_MAP(MagnetDlg)
@@ -50,11 +50,12 @@ public:
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRadioButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	bool remember;
+	int sel;
 private:
 	tstring mFileName;
 	string mHash;
-	const UserPtr& mUser;
-	string mHint;
 	int64_t mSize;
 };
 

@@ -284,6 +284,16 @@ static void checkCommonControls() {
 	if(dwVersion < PACKVERSION(5,80)) {
 		MessageBox(NULL, _T("Your version of windows common controls is too old for AirDC++ to run correctly, and you will most probably experience problems with the user interface. You should download version 5.80 or higher from the DC++ homepage or from Microsoft directly."), _T("User Interface Warning"), MB_OK);
 	}
+
+    // InitCommonControls() is required on Windows XP if an application
+    // manifest specifies use of ComCtl32.dll version 6 or later to enable
+    // visual styles.  Otherwise, any window creation will fail.
+
+    INITCOMMONCONTROLSEX used = {
+        sizeof(INITCOMMONCONTROLSEX),
+            ICC_WIN95_CLASSES
+    };
+    InitCommonControlsEx(&used);
 }
 
 class CFindDialogMessageFilter : public CMessageFilter

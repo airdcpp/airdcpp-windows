@@ -88,6 +88,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_CONNECT_WITH, onConnectWith)
 		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onOpenLink)
 		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
+		COMMAND_ID_HANDLER(IDC_REMOVE, onRemoveTemp)
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
@@ -142,6 +143,7 @@ public:
 
 	LRESULT onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onFindText(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
@@ -165,6 +167,7 @@ public:
 
 	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);
 	GETSET(Client*, client, Client);
+	GETSET(UserPtr, user, User);
 	bool autoScrollToEnd;
 
 
@@ -173,6 +176,7 @@ public:
 	void download(const string& aTarget, QueueItem::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
+	HintedUser getMagnetSource();
 private:
 	int			curFindPos;
 	static UINT	WM_FINDREPLACE;
@@ -181,6 +185,7 @@ private:
 
 	bool HitNick(const POINT& p, tstring& sNick, int& iBegin , int& iEnd);
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);
+	bool updateAuthor();
 
 	tstring WordFromPos(const POINT& p);
 	tstring LineFromPos(const POINT& p) const;
