@@ -104,6 +104,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_USER_ALL, onCopyAll)
 		COMMAND_ID_HANDLER(IDC_IGNORE, onIgnore)
 		COMMAND_ID_HANDLER(IDC_UNIGNORE, onUnignore)
+		COMMAND_ID_HANDLER(IDC_BMAGNET, onAddMagnet)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 		CHAIN_MSG_MAP(baseClass)
@@ -161,6 +162,7 @@ public:
 	LRESULT onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDropFiles(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onOpenMyList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled);
 
 	LRESULT onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onEmoticons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled);

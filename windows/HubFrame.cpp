@@ -2299,6 +2299,14 @@ LRESULT HubFrame::onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
+ LRESULT HubFrame::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled){
+	 tstring file;
+	 if(WinUtil::browseFile(file, m_hWnd, false) == IDOK) {
+		 addMagnet(file);
+	 }
+	 return 0;
+ }
+
 LRESULT HubFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
 	tstring sUsers = Util::emptyStringT;
