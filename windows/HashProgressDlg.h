@@ -101,7 +101,7 @@ public:
 
 	LRESULT onPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		if(HashManager::getInstance()->isHashingPaused()) {
-			HashManager::getInstance()->resumeHashing();
+			HashManager::getInstance()->resumeHashing(true);
 			SetDlgItemText(IDC_PAUSE, CTSTRING(PAUSE));
 		} else {
 			HashManager::getInstance()->pauseHashing();

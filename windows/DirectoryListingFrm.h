@@ -316,7 +316,7 @@ private:
 		
 		struct TotalSize {
 			TotalSize() : total(0) { }
-			void operator()(ItemInfo* a) { total += a->type == DIRECTORY ? a->dir->getTotalSize() : a->file->getSize(); }
+			void operator()(ItemInfo* a) { total += a->type == DIRECTORY ? a->dir->getTotalSize(true) : a->file->getSize(); }
 			int64_t total;
 		};
 

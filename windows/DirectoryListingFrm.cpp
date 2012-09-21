@@ -390,7 +390,7 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 				break;
 			}
 		} else if(search->matchesDirectDirectoryName(ii->dir->getName())) {
-			if (search->matchesSize(ii->dir->getTotalSize())) {
+			if (search->matchesSize(ii->dir->getTotalSize(false))) {
 				found = true;
 				break;
 			}
@@ -460,8 +460,8 @@ void DirectoryListingFrame::updateStatus() {
 		int cnt = ctrlList.GetSelectedCount();
 		int64_t total = 0;
 		if(cnt == 0) {
-			cnt = ctrlList.GetItemCount ();
-			total = ctrlList.forEachT(ItemInfo::TotalSize()).total;
+			cnt = ctrlList.GetItemCount();
+			total = curDir->getTotalSize(curDir != dl->getRoot());
 		} else {
 			total = ctrlList.forEachSelectedT(ItemInfo::TotalSize()).total;
 		}
@@ -1182,13 +1182,13 @@ int64_t DirectoryListingFrame::getDownloadSize(bool isWhole) {
 	if (isWhole) {
 		HTREEITEM t = ctrlTree.GetSelectedItem();
 		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		size = dir->getTotalSize();
+		size = dir->getTotalSize(false);
 	} else {
 		int i = -1;
 		while( (i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			const ItemInfo* ii = ctrlList.getItemData(i);
 			if (ii->type == ItemInfo::DIRECTORY) {
-				size += ii->dir->getTotalSize();
+				size += ii->dir->getTotalSize(false);
 			} else {
 				size += ii->file->getSize();
 			}
@@ -1314,9 +1314,9 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 	if(a->type == DIRECTORY) {
 		if(b->type == DIRECTORY) {
 			switch(col) {
-			case COLUMN_EXACTSIZE: return compare(a->dir->getTotalSize(), b->dir->getTotalSize());
-			case COLUMN_SIZE: return compare(a->dir->getTotalSize(), b->dir->getTotalSize());
-			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
+				case COLUMN_EXACTSIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
+				case COLUMN_SIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
+				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
 			}
 		} else {
 			return -1;
@@ -1344,8 +1344,8 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 			} else {
 				return Util::emptyStringT;
 			}
-		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize()) : Util::formatExactSize(file->getSize());
-		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize()) : Util::formatBytesW(file->getSize());
+		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize(true)) : Util::formatExactSize(file->getSize());
+		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
 		case COLUMN_TTH: return (type == FILE && !SettingsManager::lanMode) ? Text::toT(file->getTTH().toBase32()) : Util::emptyStringT;
 		case COLUMN_DATE: return (type == DIRECTORY && dir->getDate() > 0) ? Text::toT(Util::getDateTime(dir->getDate())) : Util::emptyStringT;
 		default: return Util::emptyStringT;
@@ -1388,8 +1388,8 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 		} else {
 			ucParams["type"] = [] { return "Directory"; };
 			ucParams["fileFN"] = [this, ii] { return dl->getPath(ii->dir) + ii->dir->getName(); };
-			ucParams["fileSI"] = [ii] { return Util::toString(ii->dir->getTotalSize()); };
-			ucParams["fileSIshort"] = [ii] { return Util::formatBytes(ii->dir->getTotalSize()); };
+			ucParams["fileSI"] = [this, ii] { return Util::toString(ii->dir->getTotalSize(curDir != dl->getRoot())); };
+			ucParams["fileSIshort"] = [ii] { return Util::formatBytes(ii->dir->getTotalSize(true)); };
 		}
 
 		// compatibility with 0.674 and earlier
@@ -1729,7 +1729,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 					path = Text::toT(localPaths.front());
 				}
 			} else {
-				if (ii->dir->getDupe() == SHARE_DUPE || (dl->getPartialList() && ii->dir->getDupe() == PARTIAL_SHARE_DUPE)) {
+				if (ii->dir->getDupe() == SHARE_DUPE || ii->dir->getDupe() == PARTIAL_SHARE_DUPE) {
 					path = ShareManager::getInstance()->getDirPath(ii->dir->getPath());
 				} else {
 					path = QueueManager::getInstance()->getDirPath(ii->dir->getPath());
