@@ -860,13 +860,17 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 			menu.AppendMenu(MF_SEPARATOR);
 		}		
 
-		menu.AppendMenu(MF_STRING, IDC_SELECT_USER, CTSTRING(SELECT_USER_LIST));
-		menu.AppendMenu(MF_SEPARATOR);
+		if (!user) {
+			menu.AppendMenu(MF_STRING, IDC_SELECT_USER, CTSTRING(SELECT_USER_LIST));
+			menu.AppendMenu(MF_SEPARATOR);
+		}
 		
 		if(!isMe) {
-			menu.AppendMenu(MF_STRING, IDC_PUBLIC_MESSAGE, CTSTRING(SEND_PUBLIC_MESSAGE));
-			menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
-			menu.AppendMenu(MF_SEPARATOR);
+			if (!user) {
+				menu.AppendMenu(MF_STRING, IDC_PUBLIC_MESSAGE, CTSTRING(SEND_PUBLIC_MESSAGE));
+				menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
+				menu.AppendMenu(MF_SEPARATOR);
+			}
 			
 			const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 			if (client->isOp() || !ou->getIdentity().isOp()) {

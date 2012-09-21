@@ -133,6 +133,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN_FILE, onOpenDupe)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
+		COMMAND_ID_HANDLER(IDC_VIEW_NFO, onViewNFO)
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
 		COMMAND_ID_HANDLER(IDC_FINDMISSING, onFindMissing)
 		COMMAND_ID_HANDLER(IDC_CHECKSFV, onCheckSFV)
@@ -186,6 +187,7 @@ public:
 	LRESULT onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onViewNFO(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
@@ -199,7 +201,7 @@ public:
 	void runUserCommand(UserCommand& uc);
 	void resetFilter();
 
-	void refreshTree(const tstring& root, bool convertFromPartial, bool searching);
+	void refreshTree(const tstring& root, bool convertFromPartial, bool searching, bool changeDir);
 
 	HTREEITEM findItem(HTREEITEM ht, const tstring& name);
 	void selectItem(const tstring& name);
@@ -386,7 +388,7 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial) noexcept;
+	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial, bool changeDir) noexcept;
 	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
 	void on(DirectoryListingListener::LoadingStarted) noexcept;
 	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;

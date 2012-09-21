@@ -237,6 +237,8 @@ void PrivateFrame::updateOnlineStatus() {
 				addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)));
 		} else if (oldSel >= 0 && oldSel != ctrlHubSel.GetCurSel()) {
 			addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
+		} else if (!ctrlClient.getClient()) {
+			changeClient();
 		}
 	} else {
 		showHubSelection(false);

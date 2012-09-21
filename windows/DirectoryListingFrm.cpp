@@ -82,10 +82,11 @@ DirectoryListingFrame::~DirectoryListingFrame() {
 	dl->join();
 	dl->removeListener(this);
 	DirectoryListingManager::getInstance()->removeList(dl->getUser());
-	delete dl;
+	// dl will be automatically deleted by DirectoryListingManager
+	//delete dl;
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial) noexcept {
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial, bool changeDir) noexcept {
 	bool searching = dl->isCurrentSearchPath(aDir);
 
 	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(CTSTRING(UPDATING_VIEW)));
@@ -93,7 +94,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 		resetFilter();
 
 	try{
-		refreshTree(Text::toT(aDir), convertFromPartial, searching);
+		refreshTree(Text::toT(aDir), convertFromPartial, searching, changeDir);
 	} catch(const AbortException) {
 		return;
 	}
@@ -322,7 +323,7 @@ void DirectoryListingFrame::createRoot() {
 	dcassert(treeRoot);
 }
 
-void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial, bool searching) {
+void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial, bool searching, bool changeDir) {
 	ctrlTree.SetRedraw(FALSE);
 	if (convertFromPartial) {
 		ctrlTree.DeleteAllItems();
@@ -351,8 +352,23 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 	int index = d->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex();
 	ctrlTree.SetItemImage(ht, index, index);
 
-	ctrlTree.SelectItem(NULL);
-	selectItem(root);
+	if (changeDir) {
+		ctrlTree.SelectItem(NULL);
+		selectItem(root);
+	} else {
+		//set the dir complete
+		auto dir = Text::fromT(root);
+		int j = ctrlList.GetItemCount();        
+		for(int i = 0; i < j; i++) {
+			const ItemInfo* ii = ctrlList.getItemData(i);
+			if (ii->type == ii->DIRECTORY && ii->dir->getPath() == dir) {
+				ctrlList.SetItem(i, 0, LVIF_IMAGE, NULL, WinUtil::getDirIconIndex(), 0, 0, NULL);
+				updateStatus();
+				break;
+			}
+		}
+	}
+
 	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
 		dl->checkShareDupes();
 	ctrlTree.SetRedraw(TRUE);
@@ -914,6 +930,7 @@ void DirectoryListingFrame::selectItem(const tstring& name) {
 
 LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	OMenu copyMenu;
+	copyMenu.CreatePopupMenu();
 	copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
@@ -958,7 +975,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 				CMenu* pShellMenu = shellMenu.GetMenu();
 					
 				//do we need to see anything else on own list?
-				copyMenu.CreatePopupMenu();
 				SearchMenu.CreatePopupMenu();
 				if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE && ii->file->getAdls()) {
 					pShellMenu->AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
@@ -990,7 +1006,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 clientmenu:
 			fileMenu.CreatePopupMenu();
-			copyMenu.CreatePopupMenu();
 			SearchMenu.CreatePopupMenu();
 		
 			targets.clear();
@@ -1033,6 +1048,9 @@ clientmenu:
 				}
 				fileMenu.AppendMenu(MF_SEPARATOR);
 			}
+
+			if (!hasFiles)
+				fileMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
 
 			fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
 			fileMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
@@ -1681,6 +1699,25 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 	default:
 		return CDRF_DODEFAULT;
 	}
+}
+
+LRESULT DirectoryListingFrame::onViewNFO(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(ctrlList.GetSelectedCount() >= 1) {
+		int sel = -1;
+		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+			const ItemInfo* ii =  ctrlList.getItemData(sel);
+			if(ii->type == ItemInfo::DIRECTORY) {
+				if (!ii->dir->getComplete() || ii->dir->findIncomplete()) {
+					try {
+						QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, ii->dir->getPath());
+					} catch(const Exception&) { }
+				} else if (!dl->findNfo(ii->dir->getPath())) {
+					//ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+				}
+			}
+		}
+	}
+	return 0;
 }
 
 LRESULT DirectoryListingFrame::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
