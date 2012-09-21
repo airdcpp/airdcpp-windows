@@ -2284,7 +2284,7 @@ HICON WinUtil::createIcon(int aDefault, int size/* = 0*/) {
 
 HICON WinUtil::loadDefaultIcon(int icon, int size/* = 0*/) {
 	//int size = big ? ::GetSystemMetrics(SM_CXICON) : ::GetSystemMetrics(SM_CXSMICON);
-	return (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(icon), IMAGE_ICON, size, size, LR_DEFAULTCOLOR);
+	return (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(icon), IMAGE_ICON, size, size, LR_DEFAULTSIZE | LR_DEFAULTCOLOR);
 }
 
 tstring WinUtil::getIconName(int aDefault) {
@@ -2395,15 +2395,15 @@ void WinUtil::loadSettingsTreeIcons() {
 
 void WinUtil::loadSearchTypeIcons() {
 	searchImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 15);
-	searchImages.AddIcon(createIcon(IDI_ANY));
-	searchImages.AddIcon(createIcon(IDI_AUDIO));
-	searchImages.AddIcon(createIcon(IDI_COMPRESSED));
-	searchImages.AddIcon(createIcon(IDI_DOCUMENT));
-	searchImages.AddIcon(createIcon(IDI_EXEC));
-	searchImages.AddIcon(createIcon(IDI_PICTURE));
-	searchImages.AddIcon(createIcon(IDI_VIDEO));
-	searchImages.AddIcon(createIcon(IDI_DIRECTORY));
-	searchImages.AddIcon(createIcon(IDI_TTH));
+	searchImages.AddIcon(createIcon(IDI_ANY, 16));
+	searchImages.AddIcon(createIcon(IDI_AUDIO, 16));
+	searchImages.AddIcon(createIcon(IDI_COMPRESSED, 16));
+	searchImages.AddIcon(createIcon(IDI_DOCUMENT, 16));
+	searchImages.AddIcon(createIcon(IDI_EXEC, 16));
+	searchImages.AddIcon(createIcon(IDI_PICTURE, 16));
+	searchImages.AddIcon(createIcon(IDI_VIDEO, 16));
+	searchImages.AddIcon(createIcon(IDI_DIRECTORY,16));
+	searchImages.AddIcon(createIcon(IDI_TTH, 16));
 }
 
 /* Only returns the text color */
