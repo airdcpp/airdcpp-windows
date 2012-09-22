@@ -76,6 +76,8 @@ public:
 
 private:
 	CHyperLink url;
+	CStatic ctrlUpdateStatus;
+	bool versionAvailable;
 
 	string message;
 	string downloadURL;

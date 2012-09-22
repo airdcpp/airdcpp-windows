@@ -1623,5 +1623,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="MagnetInfotext">A magnet link was detected for a file \"%s\" (%s). Please choose the action to perform.</String>
 		<String Name="DownloadOpen">Download and open</String>
 		<String Name="SaveDefault">Save in the default download directory</String>
+		<String Name="MoreInformation">More information...</String>
+		<String Name="UsingLatest">You are already using the latest version</String>
+		<String Name="NewVersionAvailable">A new version is available</String>
 	</Strings>
 </Language>

@@ -709,7 +709,7 @@ void WinUtil::uninit() {
 	::DeleteObject(systemFont);
 
 	UnhookWindowsHookEx(hook);	
-	auto files = File::findFiles(Util::getInstanceTempPath() + "Opened Items" + PATH_SEPARATOR_STR, "*");
+	auto files = File::findFiles(Util::getOpenPath(), "*");
 	for_each(files.begin(), files.end(), &File::deleteFile);
 }
 

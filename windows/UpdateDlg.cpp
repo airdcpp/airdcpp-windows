@@ -30,7 +30,7 @@
 
 UpdateDlg::UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersion, const string& infoUrl, bool bAutoUpdate, int aBuildID, const string& bAutoUpdateUrl)
 	: title(aTitle), message(aMessage), version(aVersion), infoLink(infoUrl), autoUpdate(bAutoUpdate), m_hIcon(NULL), 
-	autoUpdateUrl(bAutoUpdateUrl), buildID(aBuildID) { };
+	autoUpdateUrl(bAutoUpdateUrl), buildID(aBuildID), versionAvailable(false) { };
 
 
 UpdateDlg::~UpdateDlg() {
@@ -39,9 +39,12 @@ UpdateDlg::~UpdateDlg() {
 };
 
 LRESULT UpdateDlg::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	if((HWND) lParam == GetDlgItem(IDC_UPDATE_ALREADY_DOWNLOADED)) {
+	if((HWND) lParam == GetDlgItem(IDC_UPDATE_STATUS)) {
 		HDC hDC = (HDC)wParam;
-		::SetTextColor(hDC, RGB(0,148,10));
+		if (versionAvailable)
+			::SetTextColor(hDC, RGB(251,69,69));
+		else
+			::SetTextColor(hDC, RGB(0,148,10));
 		::SetBkMode(hDC, TRANSPARENT);
 		return (LRESULT)GetStockObject(HOLLOW_BRUSH);
 	}
@@ -55,17 +58,27 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlChangeLog.Attach(GetDlgItem(IDC_UPDATE_HISTORY_TEXT));
 	ctrlDownload.Attach(GetDlgItem(IDC_UPDATE_DOWNLOAD));
 	ctrlClose.Attach(GetDlgItem(IDCLOSE));
+	ctrlUpdateStatus.Attach(GetDlgItem(IDC_UPDATE_STATUS));
 
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_CURRENT_LBL), (TSTRING(CURRENT_VERSION) + _T(":")).c_str());
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_LATEST_LBL), (TSTRING(LATEST_VERSION) + _T(":")).c_str());
 
 	ctrlDownload.SetWindowText(CTSTRING(DOWNLOAD));
 	
+	versionAvailable = (Util::toInt(SVNVERSION) < buildID);
 	bool versionDownloaded = UpdateManager::getInstance()->getInstalledUpdate() == buildID;
-	ctrlDownload.EnableWindow(!versionDownloaded && (Util::toInt(SVNVERSION) < buildID));
+	ctrlDownload.EnableWindow(!versionDownloaded && versionAvailable);
 	//ctrlDownload.EnableWindow(!versionDownloaded);
 
-	::ShowWindow(GetDlgItem(IDC_UPDATE_ALREADY_DOWNLOADED), versionDownloaded);
+	if (versionDownloaded) {
+		ctrlUpdateStatus.SetWindowText(CTSTRING(UPDATE_ALREADY_DOWNLOADED));
+	} else if (versionAvailable) {
+		ctrlUpdateStatus.SetWindowText(CTSTRING(NEW_VERSION_AVAILABLE));
+	} else {
+		ctrlUpdateStatus.SetWindowText(CTSTRING(USING_LATEST));
+	}
+
+	//::ShowWindow(GetDlgItem(IDC_UPDATE_STATUS), versionDownloaded);
 
 	ctrlClose.SetWindowText(CTSTRING(CLOSE));
 
@@ -84,7 +97,7 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);
 
 	url.SetHyperLink(Text::toT(infoLink).c_str());
-	url.SetLabel(_T("More information..."));
+	url.SetLabel(CTSTRING(MORE_INFORMATION));
 
 	SetWindowText(CTSTRING(UPDATE_CHECK));
 

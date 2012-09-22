@@ -202,7 +202,7 @@ BEGIN
     EDITTEXT        IDC_UPDATE_HISTORY_TEXT,15,90,254,112,ES_MULTILINE | ES_AUTOHSCROLL | ES_READONLY | WS_VSCROLL | WS_HSCROLL,WS_EX_ACCEPTFILES | WS_EX_TRANSPARENT
     ICON            IDR_UPDATE,IDC_STATIC,14,19,20,20
     LTEXT           "More information...",IDC_LINK,18,215,91,12
-    LTEXT           "This version has already been downloaded. Please restart the client to apply the changes.",IDC_UPDATE_ALREADY_DOWNLOADED,16,46,258,18
+    LTEXT           "This version has already been downloaded. Please restart the client to apply the changes.",IDC_UPDATE_STATUS,16,46,258,18
 END
 
 IDD_MAGNET DIALOGEX 0, 0, 250, 159

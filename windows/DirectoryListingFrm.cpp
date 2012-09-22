@@ -758,8 +758,7 @@ LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, 
 					if (!paths.empty())
 						TextFrame::openWindow(Text::toT(paths.front()), TextFrame::NORMAL);
 				} else {
-					File::deleteFile(Util::getTempPath() + Util::validateFileName(ii->file->getName()));
-					dl->download(ii->file, Util::getTempPath() + Text::fromT(ii->getText(COLUMN_FILENAME)), true, QueueItem::HIGHEST);
+					dl->download(ii->file, Util::getOpenPath(Text::fromT(ii->getText(COLUMN_FILENAME))), true, QueueItem::HIGHEST);
 				}
 			}
 		} catch(const Exception& e) {

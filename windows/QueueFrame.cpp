@@ -401,7 +401,7 @@ HTREEITEM QueueFrame::addItemDir(bool isFileList) {
 			dcassert(tempItems == NULL);
 			tvi.hParent = NULL;
 			tvi.item.pszText = TEMP_NAME;
-			tvi.item.lParam = (LPARAM)new DirItemInfo(Util::getTempPath());
+			tvi.item.lParam = (LPARAM)new DirItemInfo(Util::getOpenPath());
 			tempItems = ctrlDirs.InsertItem(&tvi);
 		}
 		return tempItems;
@@ -992,7 +992,7 @@ void QueueFrame::removeSelectedDir() {
 
 	dcassert(!curDir.empty());
 	tstring name = Text::toT(curDir);
-	if (curDir == Util::getListPath() || curDir == Util::getTempPath()) {
+	if (curDir == Util::getListPath() || curDir == Util::getOpenPath()) {
 		removeDir(ctrlDirs.GetSelectedItem());
 		return;
 	}
@@ -1478,7 +1478,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			dirMenu.InsertSeparatorFirst(TSTRING(FOLDER));
 		}
 
-		if (curDir != Util::getListPath() && curDir != Util::getTempPath()) {
+		if (curDir != Util::getListPath() && curDir != Util::getOpenPath()) {
 			if (mainBundle) {
 				dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_BUNDLE, CTSTRING(SEARCH_BUNDLE_ALT));
 			}

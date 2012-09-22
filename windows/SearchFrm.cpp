@@ -680,7 +680,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 void SearchFrame::SearchInfo::view() {
 	try {
 		if(sr->getType() == SearchResult::TYPE_FILE) {
-			QueueManager::getInstance()->add(Util::getTempPath() + sr->getFileName(),
+			QueueManager::getInstance()->add(Util::getOpenPath(sr->getFileName()),
 				sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()), sr->getFile(), 
 				QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_TEXT);
 		}
@@ -704,7 +704,7 @@ void SearchFrame::SearchInfo::viewNfo() {
 	reg.assign("(.+\\.nfo)", boost::regex_constants::icase);
 	if ((sr->getType() == SearchResult::TYPE_FILE) && (regex_match(sr->getFileName(), reg))) {
 		try {
-			QueueManager::getInstance()->add(Util::getTempPath() + sr->getFileName(),
+			QueueManager::getInstance()->add(Util::getOpenPath(sr->getFileName()),
 				sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()), sr->getFile(), 
 				QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_TEXT);
 		} catch(const Exception&) {

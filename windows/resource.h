@@ -580,7 +580,7 @@
 #define IDC_MAGNET_SEARCH               1231
 #define IDC_DOWNLOADDIR_EXT             1232
 #define IDC_MAGNET_QUEUE                1232
-#define IDC_MAGNET_OPEN					1233
+#define IDC_MAGNET_OPEN                 1233
 #define IDC_CLIENT_FORMATTED_TAG        1233
 #define IDC_MAGNET_NOTHING              1234
 #define IDC_MAGNET_REMEMBER             1235
@@ -999,6 +999,7 @@
 #define IDC_LOADING                     1451
 #define IDC_UPDATE_VERSION_LATEST_LBL2  1451
 #define IDC_UPDATE_ALREADY_DOWNLOADED   1451
+#define IDC_UPDATE_STATUS               1451
 #define IDC_COUNT                       1452
 #define IDC_UPDATE_DOWNLOAD             1452
 #define IDC_UPDATE                      1453
@@ -1171,7 +1172,7 @@
 #define IDC_ENABLE                      3032
 #define IDC_DISABLE                     3033
 #define IDC_DIRPATHS                    3034
-#define IDC_BMAGNET		                3035
+#define IDC_BMAGNET                     3035
 #define IDC_SELECT_WINDOW               6000
 #define IDC_USER_COMMAND                6500
 #define IDC_PRIORITY_PAUSED             7000
