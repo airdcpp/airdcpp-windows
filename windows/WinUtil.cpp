@@ -2290,7 +2290,7 @@ HICON WinUtil::loadDefaultIcon(int icon, int size/* = 0*/) {
 tstring WinUtil::getIconName(int aDefault) {
 	switch(aDefault) {
 		case IDI_ADLSEARCH :	return _T("ToolbarImages\\ADLSearch.ico");
-		case IDI_AWAY      :	return _T("ToolbarImages\\Clock.ico");
+		case IDI_AWAY      :	return _T("ToolbarImages\\Away.ico");
 		case IDI_FAVORITEHUBS:  return _T("ToolbarImages\\Favorites.ico");
 		case IDI_FINISHED_DL:	return _T("ToolbarImages\\FinishedDL.ico");
 		case IDI_FINISHED_UL:   return _T("ToolbarImages\\FinishedUL.ico");

@@ -2113,7 +2113,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDI_ADLSEARCH           ICON                    "res\\ToolbarImages\\ADLSearch.ico"
-IDI_AWAY                ICON                    "res\\ToolbarImages\\Clock.ico"
+IDI_AWAY                ICON                    "res\\ToolbarImages\\Away.ico"
 IDI_FAVORITEHUBS        ICON                    "res\\ToolbarImages\\Favorites.ico"
 IDI_FINISHED_DL         ICON                    "res\\ToolbarImages\\FinishedDL.ico"
 IDI_FINISHED_UL         ICON                    "res\\ToolbarImages\\FinishedUL.ico"
