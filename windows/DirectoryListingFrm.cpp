@@ -289,15 +289,11 @@ LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/,
 }
 
 void DirectoryListingFrame::convertToFull() {
-	HTREEITEM ht = ctrlTree.GetSelectedItem();
-	DirectoryListing::Directory* d = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
-
-
 	if (dl->getIsOwnList())
-		dl->addFullListTask(dl->getPath(d));
+		dl->addFullListTask(curDir->getPath());
 	else {
 		try {
-			QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
+			QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, curDir->getPath());
 		} catch(...) {}
 	}
 }
@@ -331,6 +327,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 		createRoot();
 	}
 
+	auto oldSel = ctrlTree.GetSelectedItem();
 	HTREEITEM ht = convertFromPartial ? treeRoot : findItem(treeRoot, root);
 	if(ht == NULL) {
 		ht = treeRoot;
@@ -351,9 +348,9 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 
 	int index = d->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex();
 	ctrlTree.SetItemImage(ht, index, index);
+	ctrlTree.SelectItem(NULL);
 
 	if (changeDir) {
-		ctrlTree.SelectItem(NULL);
 		selectItem(root);
 	} else {
 		//set the dir complete
@@ -363,10 +360,12 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 			const ItemInfo* ii = ctrlList.getItemData(i);
 			if (ii->type == ii->DIRECTORY && ii->dir->getPath() == dir) {
 				ctrlList.SetItem(i, 0, LVIF_IMAGE, NULL, WinUtil::getDirIconIndex(), 0, 0, NULL);
+				ctrlList.updateItem(i);
 				updateStatus();
 				break;
 			}
 		}
+		ctrlTree.SelectItem(oldSel);
 	}
 
 	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
@@ -925,6 +924,8 @@ void DirectoryListingFrame::selectItem(const tstring& name) {
 	if(ht != NULL) {
 		ctrlTree.EnsureVisible(ht);
 		ctrlTree.SelectItem(ht);
+	} else {
+		dcassert(0);
 	}
 }
 
@@ -1049,7 +1050,7 @@ clientmenu:
 				fileMenu.AppendMenu(MF_SEPARATOR);
 			}
 
-			if (!hasFiles)
+			if (!hasFiles && !dl->getIsOwnList())
 				fileMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
 
 			fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
