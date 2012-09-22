@@ -1726,7 +1726,7 @@ void WinUtil::loadReBarSettings(HWND bar) {
 	
 	REBARBANDINFO rbi = { 0 };
 	ZeroMemory(&rbi, sizeof(rbi));
-	rbi.cbSize = sizeof(rbi);
+	rbi.cbSize = WinUtil::getOsMajor() >= 6 ? REBARBANDINFOW_V6_SIZE : REBARBANDINFOW_V3_SIZE;
 	rbi.fMask = RBBIM_ID | RBBIM_SIZE | RBBIM_STYLE;
 	
 	StringTokenizer<string> st(SETTING(TOOLBAR_POS), ';');
@@ -1758,7 +1758,7 @@ void WinUtil::saveReBarSettings(HWND bar) {
 	
 	REBARBANDINFO rbi = { 0 };
 	ZeroMemory(&rbi, sizeof(rbi));
-	rbi.cbSize = sizeof(rbi);
+	rbi.cbSize = WinUtil::getOsMajor() >= 6 ? REBARBANDINFOW_V6_SIZE : REBARBANDINFOW_V3_SIZE;
 	rbi.fMask = RBBIM_ID | RBBIM_SIZE | RBBIM_STYLE;
 	
 	for(unsigned int i = 0; i < rebar.GetBandCount(); i++)
