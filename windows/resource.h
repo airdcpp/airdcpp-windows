@@ -43,7 +43,6 @@
 #define IDC_PUB_LIST_DROPDOWN           130
 #define IDC_SEARCH_PAUSE                130
 #define IDC_HUBLIST                     131
-#define IDC_EMOT                        131
 #define IDC_SERVER                      133
 #define IDC_EXTERNAL_IP                 133
 #define IDC_USKIPLIST                   134
@@ -1459,6 +1458,7 @@
 #define IDC_PREV                        15128
 #define IDC_FIND_TEXT                   15129
 #define IDC_FILTER                      15130
+#define IDC_EMOT                        15131
 #define ID_TOGGLE_TOOLBAR               15999
 #define IDC_REFRESH_MENU                16000
 #define ID_TOGGLE_TBSTATUS              16900

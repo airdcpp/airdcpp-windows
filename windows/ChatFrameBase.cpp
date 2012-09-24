@@ -48,13 +48,6 @@ ChatFrameBase::~ChatFrameBase() {
 
 }
 
-LRESULT ChatFrameBase::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
-	LPMSG pMsg = (LPMSG)lParam;
-	if((pMsg->message >= WM_MOUSEFIRST) && (pMsg->message <= WM_MOUSELAST))
-		ctrlTooltips.RelayEvent(pMsg);
-	return 0;
-}
-
 void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	ctrlClient.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE | WS_EX_ACCEPTFILES, IDC_CLIENT);
@@ -89,7 +82,7 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	if(AirUtil::isAdcHub(getClient()->getHubUrl())) {
 		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
 		ctrlMagnet.SetIcon(WinUtil::createIcon(IDI_MAGNET, 20));
-		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, CTSTRING(SEND_FILE_PM));
+		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, (getUser() && !getUser()->isSet(User::BOT)) ? CTSTRING(SEND_FILE_PM) : CTSTRING(SEND_FILE_HUB));
 	}
 }
 
@@ -307,8 +300,9 @@ void ChatFrameBase::addMagnet(const tstring& path) {
 		return;
 	}
 
-	if(ShareManager::getInstance()->addTempShare(Util::emptyString, tth, Text::fromT(path), size, AirUtil::isAdcHub(getClient()->getHubUrl())))
-		ctrlMessage.SetWindowText(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(Text::fromT(path)), size)).c_str());
+	if(ShareManager::getInstance()->addTempShare((getUser() && !getUser()->isSet(User::BOT)) ? getUser()->getCID().toBase32() : Util::emptyString, tth, Text::fromT(path), size, 
+		AirUtil::isAdcHub(getClient()->getHubUrl())))
+			ctrlMessage.SetWindowText(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(Text::fromT(path)), size)).c_str());
 	else {
 		//MessageBox(_T("File is not shared and temporary shares are not supported with NMDC hubs!"), _T("NMDC hub not supported!"), MB_ICONWARNING | MB_OK);
 	}
