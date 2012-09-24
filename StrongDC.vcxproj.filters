@@ -423,9 +423,6 @@
     <ClCompile Include="windows\CertificatesPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\ChatCtrl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\CommandDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -657,6 +654,12 @@
     <ClCompile Include="windows\DownloadingOptionsPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\RichTextBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\ChatFrameBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -690,9 +693,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\CertificatesPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\ChatCtrl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\CommandDlg.h">
@@ -978,6 +978,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\SharePageDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\RichTextBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\ChatFrameBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

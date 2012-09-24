@@ -38,7 +38,7 @@
 #include "OMenu.h"
 #include <atlcomtime.h>
 
-class ChatCtrl;
+class RichTextBox;
 
 // Some utilities for handling HLS colors, taken from Jean-Michel LE FOL's codeproject
 // article on WTL OfficeXP Menus
@@ -185,7 +185,6 @@ public:
 	static HWND mainWnd;
 	static HWND mdiClient;
 	static FlatTabCtrl* tabCtrl;
-	static tstring commands;
 	static HHOOK hook;
 	static tstring tth;
 	static DWORD helpCookie;	
@@ -247,16 +246,6 @@ public:
 
 	static void showPopup(tstring szMsg, tstring szTitle, HICON hIcon, bool force = false);
 	static void showPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags = NIIF_INFO, bool force = false);
-
-	/**
-	 * Check if this is a common /-command.
-	 * @param cmd The whole text string, will be updated to contain only the command.
-	 * @param param Set to any parameters.
-	 * @param message Message that should be sent to the chat.
-	 * @param status Message that should be shown in the status line.
-	 * @return True if the command was processed, false otherwise.
-	 */
-	static bool checkCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
 
 	static int getTextWidth(const tstring& str, HWND hWnd) {
 		HDC dc = ::GetDC(hWnd);

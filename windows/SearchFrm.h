@@ -25,7 +25,7 @@
 
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
-#include "ChatCtrl.h"
+#include "RichTextBox.h"
 #include "MenuBaseHandlers.h"
 
 #include "../client/Client.h"

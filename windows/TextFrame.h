@@ -25,7 +25,7 @@
 
 #include "FlatTabCtrl.h"
 #include "WinUtil.h"
-#include "ChatCtrl.h"
+#include "RichTextBox.h"
 #include "atlstr.h"
 
 
@@ -77,7 +77,7 @@ public:
 private:
 	Type textType;
 	tstring file;
-	ChatCtrl ctrlPad;
+	RichTextBox ctrlPad;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };
 

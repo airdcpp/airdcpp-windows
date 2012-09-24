@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(MENUBASEHANDLER_H)
+#ifndef MENUBASEHANDLER_H
 #define MENUBASEHANDLER_H
 
 #include "resource.h"

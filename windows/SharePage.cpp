@@ -604,7 +604,7 @@ void SharePage::removeDir(const string& rPath, ProfileToken aProfile, bool check
 	if (p != newDirs.end()) {
 		newDirs.erase(p);
 	} else {
-		auto& dirs = shareDirs[curProfile];
+		auto& dirs = shareDirs[aProfile];
 		auto k = boost::find_if(dirs, [rPath, aProfile](const ShareDirInfo* sdi) { return sdi->path == rPath && sdi->profile == aProfile; });
 		if (k != dirs.end())
 			removeDirs.push_back(*k);

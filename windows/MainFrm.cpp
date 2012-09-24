@@ -1340,36 +1340,15 @@ int MainFrame::run() {
 	if(WinUtil::browseFile(file, m_hWnd, false, lastTTHdir) == IDOK) {
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_GRAYED);
 		Thread::setThreadPriority(Thread::LOW);
-		lastTTHdir = Util::getFilePath(file);
 
-		string TTH;
-		TTH.resize(192*8/(5*8)+1);
-
-		boost::scoped_array<char> buf(new char[512 * 1024]);
-
+		int64_t size = 0;
+		TTHValue tth;
 		try {
-			File f(Text::fromT(file), File::READ, File::OPEN);
-			TigerTree tth(TigerTree::calcBlockSize(f.getSize(), 1));
-
-			if(f.getSize() > 0) {
-				size_t n = 512*1024;
-				while( (n = f.read(&buf[0], n)) > 0) {
-					tth.update(&buf[0], n);
-					n = 512*1024;
-				}
-			} else {
-				tth.update("", 0);
-			}
-			tth.finalize();
-
-			strcpy(&TTH[0], tth.getRoot().toBase32().c_str());
+			HashManager::getInstance()->getFileTTH(Text::fromT(file), false, tth, size);
+			string magnetlink = WinUtil::makeMagnet(tth, Util::getFileName(Text::fromT(file)), size);
 
 			CInputBox ibox(m_hWnd);
-
-			string magnetlink = "magnet:?xt=urn:tree:tiger:"+ TTH +"&xl="+Util::toString(f.getSize())+"&dn="+Util::encodeURI(Text::fromT(Util::getFileName(file)));
-			f.close();
-			
-			ibox.DoModal(_T("Tiger Tree Hash"), file.c_str(), Text::toT(TTH).c_str(), Text::toT(magnetlink).c_str());
+			ibox.DoModal(_T("Tiger Tree Hash"), file.c_str(), Text::toT(tth.toBase32()).c_str(), Text::toT(magnetlink).c_str());
 		} catch(...) { }
 		Thread::setThreadPriority(Thread::NORMAL);
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_ENABLED);

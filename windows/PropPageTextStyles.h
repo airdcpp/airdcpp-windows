@@ -4,7 +4,7 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 #include "../client/ConnectionManager.h"
-#include "ChatCtrl.h"
+#include "RichTextBox.h"
 #include "../client/SettingsManager.h"
 
 
@@ -89,7 +89,7 @@ private:
 
 	class TextStyleSettings: public CHARFORMAT2 {
 	public:
-		TextStyleSettings() /*: ChatCtrl()*/ { };
+		TextStyleSettings() /*: RichTextBox()*/ { };
 		~TextStyleSettings() { };
 
 	void Init(PropPageTextStyles *pParent, SettingsManager *pSM, 
@@ -131,7 +131,7 @@ protected:
 	TCHAR* title;
 	TextStyleSettings TextStyles[ TS_LAST ];
 	CListBox m_lsbList;
-	ChatCtrl m_Preview;
+	RichTextBox m_Preview;
 	LOGFONT m_Font;
 	COLORREF m_BackColor;
 	COLORREF m_ForeColor;

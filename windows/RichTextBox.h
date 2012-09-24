@@ -37,14 +37,14 @@
 
 class UserInfo;
 
-class ChatCtrl: public CRichEditCtrl, public CMessageMap, public UCHandler<ChatCtrl>, public DownloadBaseHandler<ChatCtrl>
+class RichTextBox: public CRichEditCtrl, public CMessageMap, public UCHandler<RichTextBox>, public DownloadBaseHandler<RichTextBox>
 {
 public:
 
-	typedef UCHandler<ChatCtrl> ucBase;
-	typedef DownloadBaseHandler<ChatCtrl> dlBase;
+	typedef UCHandler<RichTextBox> ucBase;
+	typedef DownloadBaseHandler<RichTextBox> dlBase;
 
-	BEGIN_MSG_MAP(ChatCtrl)
+	BEGIN_MSG_MAP(RichTextBox)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, onLButtonDown)
@@ -99,8 +99,8 @@ public:
 		MESSAGE_HANDLER(WM_COMMAND, onCommand)
 	END_MSG_MAP()
 
-	ChatCtrl();
-	~ChatCtrl();
+	RichTextBox();
+	~RichTextBox();
 
 	LRESULT onMouseMove(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnRButtonDown(POINT pt);

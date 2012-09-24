@@ -24,7 +24,6 @@
 #include "SearchFrm.h"
 #include "WinUtil.h"
 #include "MainFrm.h"
-#include "EmoticonsManager.h"
 #include "TextFrame.h"
 
 #include "../client/Client.h"
@@ -40,16 +39,13 @@
 #include <boost/range/algorithm/for_each.hpp>
 
 PrivateFrame::FrameMap PrivateFrame::frames;
-tstring pSelectedLine = Util::emptyStringT;
-tstring pSelectedURL = Util::emptyStringT;
-
-extern EmoticonsManager* emoticonsManager;
 
 PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
 	created(false), closed(false), online(true), curCommandPosition(0), 
-	ctrlMessageContainer(WC_EDIT, this, PM_MESSAGE_MAP),
 	ctrlHubSelContainer(WC_COMBOBOX, this, HUB_SEL_MAP),
-	ctrlClientContainer(WC_EDIT, this, PM_MESSAGE_MAP), menuItems(0)
+	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
+	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
+	ChatFrameBase(this)
 {
 	ctrlClient.setClient(c);
 	ctrlClient.setUser(replyTo_.user);
@@ -59,52 +55,15 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 {
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
 	ctrlStatus.Attach(m_hWndStatusBar);
-	
-	ctrlClient.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE | WS_EX_ACCEPTFILES, IDC_CLIENT);
-	
-	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
-	ctrlClient.Subclass();
-	ctrlClient.LimitText(0);
-	ctrlClient.SetFont(WinUtil::font);
-	
-	ctrlClient.SetBackgroundColor( SETTING(BACKGROUND_COLOR) ); 
-	ctrlClient.SetAutoURLDetect(false);
-	ctrlClient.SetEventMask( ctrlClient.GetEventMask() | ENM_LINK );
-
-
-	ctrlMessage.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL, WS_EX_CLIENTEDGE);
 
 	ctrlHubSel.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE, IDC_HUB);
 	ctrlHubSelContainer.SubclassWindow(ctrlHubSel.m_hWnd);
 	ctrlHubSel.SetFont(WinUtil::systemFont);
 
-	ctrlHubSelDesc.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | SS_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	ctrlHubSelDesc.SetFont(WinUtil::systemFont);
-	
+	init(m_hWnd, rcDefault);
+	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
-
-	ctrlMessage.SetFont(WinUtil::font);
-	ctrlMessage.SetLimitText(9999);
-	lineCount = 1; //ApexDC
-
-	ctrlEmoticons.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_BITMAP | BS_CENTER, 0, IDC_EMOT);
-
-	hEmoticonBmp.LoadFromResource(IDR_EMOTICON, _T("PNG"), _Module.get_m_hInst());
-  	ctrlEmoticons.SetBitmap(hEmoticonBmp);
-
-	ctrlTooltips.Create(m_hWnd, rcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	
-	ctrlTooltips.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(INSERT_EMOTICON));
-	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
-	ctrlTooltips.Activate(TRUE);
-
-	if(!replyTo.user->isSet(User::NMDC)) {
-		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
-		ctrlMagnet.SetIcon(WinUtil::createIcon(IDI_MAGNET, 20));
-		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, CTSTRING(SEND_FILE_PM));
-	}
 
 	addSpeakerTask(false);
 	created = true;
@@ -120,6 +79,41 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	bHandled = FALSE;
 	return 1;
 }
+	
+LRESULT PrivateFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	HWND hWnd = (HWND)lParam;
+	HDC hDC = (HDC)wParam;
+	if(hWnd == ctrlClient.m_hWnd || hWnd == ctrlMessage.m_hWnd) {
+		::SetBkColor(hDC, WinUtil::bgColor);
+		::SetTextColor(hDC, WinUtil::textColor);
+		return (LRESULT)WinUtil::bgBrush;
+	}
+
+	bHandled = FALSE;
+	return FALSE;
+}
+
+LRESULT PrivateFrame::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlMessage.SetFocus();
+	return 0;
+}
+	
+void PrivateFrame::addClientLine(const tstring& aLine) {
+	if(!created) {
+		CreateEx(WinUtil::mdiClient);
+	}
+	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str());
+	if (BOOLSETTING(BOLD_PM)) {
+		setDirty();
+	}
+}
+
+LRESULT PrivateFrame::OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+	LPMSG pMsg = (LPMSG)lParam;
+	if(ctrlTooltips.m_hWnd != NULL && pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
+		ctrlTooltips.RelayEvent(pMsg);
+	return 0;
+}
 
 void PrivateFrame::addSpeakerTask(bool addDelay) {
 	if (addDelay)
@@ -130,6 +124,11 @@ void PrivateFrame::addSpeakerTask(bool addDelay) {
 
 void PrivateFrame::runSpeakerTask() {
 	PostMessage(WM_SPEAKER, USER_UPDATED);
+}
+
+LRESULT PrivateFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
+	updateOnlineStatus();
+	return 0;
 }
 
 LRESULT PrivateFrame::onHubChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled) {
@@ -229,13 +228,14 @@ void PrivateFrame::updateOnlineStatus() {
 		});
 
 		if(ctrlHubSel.GetCurSel() == -1) {
+			//the hub was not found
 			ctrlHubSel.SetCurSel(0);
 			changeClient();
 			if (!online) //the user came online but not in the previous hub
 				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
 			else
 				addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)));
-		} else if (oldSel >= 0 && oldSel != ctrlHubSel.GetCurSel()) {
+		} else if (!oldHubPair.first.empty() && oldHubPair.first != replyTo.hint) {
 			addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
 		} else if (!ctrlClient.getClient()) {
 			changeClient();
@@ -252,9 +252,6 @@ void PrivateFrame::updateOnlineStatus() {
 void PrivateFrame::showHubSelection(bool show) {
 	ctrlHubSel.ShowWindow(show);
 	ctrlHubSel.EnableWindow(show);
-
-	ctrlHubSelDesc.ShowWindow(show);
-	ctrlHubSelDesc.EnableWindow(show);
 
 	UpdateLayout();
 }
@@ -364,295 +361,44 @@ void PrivateFrame::updateFrameOnlineStatus(const HintedUser& newUser, Client* c)
 	}
 }
 
-LRESULT PrivateFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if (uMsg != WM_KEYDOWN && uMsg != WM_CUT && uMsg != WM_PASTE) {
-		switch(wParam) {
-			case VK_RETURN:
-				if( WinUtil::isShift() || WinUtil::isCtrl() ||  WinUtil::isAlt() ) {
-					bHandled = FALSE;
-				}
-				break;
-		case VK_TAB:
-				bHandled = TRUE;
-  				break;
-  			default:
-  				bHandled = FALSE;
-				break;
-		}
-		if ((uMsg == WM_CHAR) && (GetFocus() == ctrlMessage.m_hWnd) && (wParam != VK_RETURN) && (wParam != VK_TAB) && (wParam != VK_BACK)) {
-			if ((!SETTING(SOUND_TYPING_NOTIFY).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
-				PlaySound(Text::toT(SETTING(SOUND_TYPING_NOTIFY)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
-		}
-		return 0;
+bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) { 
+	if(stricmp(cmd.c_str(), _T("grant")) == 0) {
+		UploadManager::getInstance()->reserveSlot(HintedUser(replyTo), 600);
+		addClientLine(TSTRING(SLOT_GRANTED));
+	} else if(stricmp(cmd.c_str(), _T("close")) == 0) {
+		PostMessage(WM_CLOSE);
+	} else if((stricmp(cmd.c_str(), _T("favorite")) == 0) || (stricmp(cmd.c_str(), _T("fav")) == 0)) {
+		FavoriteManager::getInstance()->addFavoriteUser(replyTo);
+		addClientLine(TSTRING(FAVORITE_USER_ADDED));
+	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0) {
+		BOOL bTmp;
+		onGetList(0,0,0,bTmp);
+	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
+		ParamMap params;
+		const CID& cid = replyTo.user->getCID();
+		const string& hint = replyTo.hint;
+	
+		params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint));
+		params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint));
+		params["userCID"] = cid.toBase32(); 
+		params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint)[0];
+		params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
+		WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::PM, params)));
+	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
+		status = _T("*** ") + ChatFrameBase::commands + _T(", /getlist, /clear, /grant, /close, /favorite, /winamp");
+	} else {
+		return false;
 	}
-	
-	switch(wParam) {
-		case VK_TAB:
-		{
-			if(GetFocus() == ctrlMessage.m_hWnd)
-			{
-				ctrlClient.SetFocus();
-			}
-			else
-			{
-				ctrlMessage.SetFocus();
-			}
-		}	
-	}
-	
-	if((GetFocus() == ctrlMessage.m_hWnd) && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000) && (wParam == 'A')){
-				ctrlMessage.SetSelAll();
-				return 0;
-	 }
-	// don't handle these keys unless the user is entering a message
-	if (GetFocus() != ctrlMessage.m_hWnd) {
-		bHandled = FALSE;
-		return 0;
-	}	
-	
-	switch(wParam) {
-		case VK_RETURN:
-			if( (GetKeyState(VK_SHIFT) & 0x8000) || 
-				(GetKeyState(VK_CONTROL) & 0x8000) || 
-				(GetKeyState(VK_MENU) & 0x8000) ) {
-				bHandled = FALSE;
-			} else {
-				if(uMsg == WM_KEYDOWN) {
-					onEnter();
-				}
-			}
-			break;
-		case VK_UP:
-			if ((GetKeyState(VK_CONTROL) & 0x8000) || (GetKeyState(VK_MENU) & 0x8000)) {
-				//scroll up in chat command history
-				//currently beyond the last command?
-				if (curCommandPosition > 0) {
-					//check whether current command needs to be saved
-					if (curCommandPosition == prevCommands.size()) {
-						currentCommand.resize(ctrlMessage.GetWindowTextLength());
-						ctrlMessage.GetWindowText(&currentCommand[0], ctrlMessage.GetWindowTextLength() + 1);
-					}
-					//replace current chat buffer with current command
-					ctrlMessage.SetWindowText(prevCommands[--curCommandPosition].c_str());
-				}
-			} else {
-				bHandled = FALSE;
-			}
-			break;
-		case VK_DOWN:
-			if ((GetKeyState(VK_CONTROL) & 0x8000) || (GetKeyState(VK_MENU) & 0x8000)) {
-				//scroll down in chat command history
-				//currently beyond the last command?
-				if (curCommandPosition + 1 < prevCommands.size()) {
-					//replace current chat buffer with current command
-					ctrlMessage.SetWindowText(prevCommands[++curCommandPosition].c_str());
-				} else if (curCommandPosition + 1 == prevCommands.size()) {
-					//revert to last saved, unfinished command
-					ctrlMessage.SetWindowText(currentCommand.c_str());
-					++curCommandPosition;
-				}
-			} else {
-				bHandled = FALSE;
-			}
-			break;
-		case VK_HOME:
-			if (!prevCommands.empty() && (GetKeyState(VK_CONTROL) & 0x8000) || (GetKeyState(VK_MENU) & 0x8000)) {
-				curCommandPosition = 0;
-				currentCommand.resize(ctrlMessage.GetWindowTextLength());
-				ctrlMessage.GetWindowText(&currentCommand[0], ctrlMessage.GetWindowTextLength() + 1);
-				ctrlMessage.SetWindowText(prevCommands[curCommandPosition].c_str());
-			} else {
-				bHandled = FALSE;
-			}
-			break;
-		case VK_END:
-			if ((GetKeyState(VK_CONTROL) & 0x8000) || (GetKeyState(VK_MENU) & 0x8000)) {
-				curCommandPosition = prevCommands.size();
-				ctrlMessage.SetWindowText(currentCommand.c_str());
-			} else {
-				bHandled = FALSE;
-			}
-			break;
- //ApexDC
-		case VK_PRIOR: // page up
-			ctrlClient.SendMessage(WM_VSCROLL, SB_PAGEUP);
-			break;
-		case VK_NEXT: // page down
-			ctrlClient.SendMessage(WM_VSCROLL, SB_PAGEDOWN);
-			break;
-//End
-		default:
-			bHandled = FALSE;
-//ApexDC
-		}
 
-	// Kinda ugly, but oh well... will clean it later, maybe...
-	if(SETTING(MAX_RESIZE_LINES) != 1) {
-		int newLineCount = ctrlMessage.GetLineCount();
-		int start, end;
-		ctrlMessage.GetSel(start, end);
-		if(wParam == VK_DELETE || uMsg == WM_CUT ||  uMsg == WM_PASTE || (wParam == VK_BACK && (start != end))) {
-			if(uMsg == WM_PASTE) {
-				// We don't need to hadle these
-				if(!IsClipboardFormatAvailable(CF_TEXT))
-					return 0;
-				if(!::OpenClipboard(WinUtil::mainWnd))
-					return 0;
-			}
-			tstring buf;
-			string::size_type i;
-			buf.resize(ctrlMessage.GetWindowTextLength() + 1);
-			buf.resize(ctrlMessage.GetWindowText(&buf[0], buf.size()));
-			buf = buf.substr(start, end);
-			while((i = buf.find(_T("\n"))) != string::npos) {
-				buf.erase(i, 1);
-				newLineCount--;
-			}
-			if(uMsg == WM_PASTE) {
-				HGLOBAL hglb = GetClipboardData(CF_TEXT); 
-				if(hglb != NULL) { 
-					char* lptstr = (char*)GlobalLock(hglb); 
-					if(lptstr != NULL) {
-						string tmp(lptstr);
-						// why I have to do this this way?
-						for(string::size_type i = 0; i < tmp.size(); ++i) {
-							if(tmp[i] == '\n') {
-								newLineCount++;
-								if(newLineCount >= SETTING(MAX_RESIZE_LINES))
-									break;
-							}
-						}
-						GlobalUnlock(hglb);
-					}
-				}
-				CloseClipboard();
-			}
-		} else if(wParam == VK_BACK) {
-			POINT cpt;
-			GetCaretPos(&cpt);
-			int charIndex = ctrlMessage.CharFromPos(cpt);
-			charIndex = LOWORD(charIndex) - ctrlMessage.LineIndex(ctrlMessage.LineFromChar(charIndex));
-			if(charIndex <= 0) {
-				newLineCount -= 1;
-			}
-		} else if(WinUtil::isCtrl() && wParam == VK_RETURN) {
-			newLineCount += 1;
-		} 
-		if(newLineCount != lineCount) {
-			if(lineCount >= SETTING(MAX_RESIZE_LINES) && newLineCount >= SETTING(MAX_RESIZE_LINES)) {
-				lineCount = newLineCount;
-			} else {
-				lineCount = newLineCount;
-				UpdateLayout(FALSE);
-			}
-		}
-//End
-	}
-	return 0;
+	return true;
 }
 
-void PrivateFrame::onEnter()
-{ 
-	
-	bool resetText = true;
-
-	if(ctrlMessage.GetWindowTextLength() > 0) {
-		tstring s;
-		s.resize(ctrlMessage.GetWindowTextLength());
-		
-		ctrlMessage.GetWindowText(&s[0], s.size() + 1);
-
-		// save command in history, reset current buffer pointer to the newest command
-		curCommandPosition = prevCommands.size();		//this places it one position beyond a legal subscript
-		if (!curCommandPosition || curCommandPosition > 0 && prevCommands[curCommandPosition - 1] != s) {
-			++curCommandPosition;
-			prevCommands.push_back(s);
-		}
-		currentCommand = Util::emptyStringT;
-
-		// Process special commands
-		if(s[0] == '/') {
-			tstring m = s;
-			tstring param;
-			tstring message;
-			tstring status;
-			bool thirdPerson = false;
-			if(WinUtil::checkCommand(s, param, message, status, thirdPerson)) {
-				if(!message.empty()) {
-					sendMessage(message, thirdPerson);
-				}
-				if(!status.empty()) {
-					addClientLine(status);
-				}
-			} else if((stricmp(s.c_str(), _T("clear")) == 0) || (stricmp(s.c_str(), _T("cls")) == 0)) {
-				ctrlClient.SetWindowText(_T(""));
-			} else if(stricmp(s.c_str(), _T("grant")) == 0) {
-				UploadManager::getInstance()->reserveSlot(HintedUser(replyTo, replyTo.hint), 600);
-				addClientLine(TSTRING(SLOT_GRANTED));
-			} else if(stricmp(s.c_str(), _T("close")) == 0) {
-				PostMessage(WM_CLOSE);
-			} else if((stricmp(s.c_str(), _T("favorite")) == 0) || (stricmp(s.c_str(), _T("fav")) == 0)) {
-				FavoriteManager::getInstance()->addFavoriteUser(replyTo);
-				addClientLine(TSTRING(FAVORITE_USER_ADDED));
-			} else if(stricmp(s.c_str(), _T("getlist")) == 0) {
-				BOOL bTmp;
-				onGetList(0,0,0,bTmp);
-			} else if(stricmp(s.c_str(), _T("log")) == 0) {
-				ParamMap params;
-				const CID& cid = replyTo.user->getCID();
-				const string& hint = replyTo.hint;
-	
-				params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint));
-				params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint));
-				params["userCID"] = cid.toBase32(); 
-				params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint)[0];
-				params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
-				WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::PM, params)));
-			} else if(stricmp(s.c_str(), _T("stats")) == 0) {
-				sendMessage(Text::toT(WinUtil::generateStats()));
-			} else if(stricmp(s.c_str(), _T("speed")) == 0) {
-					addLine (WinUtil::Speedinfo(), WinUtil::m_ChatTextSystem);
-			} else if(stricmp(s.c_str(), _T("info")) == 0) {
-					addLine (WinUtil::UselessInfo(), WinUtil::m_ChatTextSystem);
-			} else if((stricmp(s.c_str(), _T("disks")) == 0) || (stricmp(s.c_str(), _T("di")) == 0)){
-					addLine (WinUtil::diskInfo(), WinUtil::m_ChatTextSystem);
-			} else if(stricmp(s.c_str(), _T("df")) == 0) {
-					addLine (WinUtil::DiskSpaceInfo(), WinUtil::m_ChatTextSystem);
-			} else if(stricmp(s.c_str(), _T("dfs")) == 0) {
-					sendMessage(WinUtil::DiskSpaceInfo());
-			} else if(stricmp(s.c_str(), _T("uptime")) == 0) {
-					sendMessage(Text::toT(WinUtil::uptimeInfo()));
-
-			} else if(stricmp(s.c_str(), _T("help")) == 0) {
-				addLine(_T("*** ") + WinUtil::commands + _T(", /getlist, /clear, /grant, /close, /favorite, /winamp"), WinUtil::m_ChatTextSystem);
-			} else {
-				if(replyTo.user->isOnline()) {
-					if (BOOLSETTING(SEND_UNKNOWN_COMMANDS)) {
-						sendMessage(tstring(m));
-					} else {
-						addClientLine(TSTRING(UNKNOWN_COMMAND) + _T(" ") + m);
-					}
-				} else {
-					ctrlStatus.SetText(0, CTSTRING(USER_WENT_OFFLINE));
-					resetText = false;
-				}
-			}
-		} else {
-			if(replyTo.user->isOnline()) {
-				sendMessage(s);
-			} else {
-				ctrlStatus.SetText(0, CTSTRING(USER_WENT_OFFLINE));
-				resetText = false;
-			}
-		}
-		if(resetText)
-			ctrlMessage.SetWindowText(_T(""));
-	} 
-	
-}
-
-void PrivateFrame::sendMessage(const tstring& msg, bool thirdPerson) {
-	ClientManager::getInstance()->privateMessage(replyTo, Text::fromT(msg), thirdPerson);
+bool PrivateFrame::sendMessage(const tstring& msg, bool thirdPerson) {
+	if(replyTo.user->isOnline()) {
+		ClientManager::getInstance()->privateMessage(replyTo, Text::fromT(msg), thirdPerson);
+		return true;
+	}
+	return false;
 }
 
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -832,21 +578,15 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 		if (ctrlHubSel.GetStyle() & WS_VISIBLE) {
 			int w[STATUS_LAST];
-			tstring tmp = TSTRING(SEND_PM_VIA);
-			ctrlHubSelDesc.SetWindowTextW(tmp.c_str());
+			tstring tmp = _T(" ") + TSTRING(SEND_PM_VIA);
+			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
 
-			int desclen = WinUtil::getTextWidth(tmp, ctrlHubSelDesc.m_hWnd);
-			w[STATUS_TEXT] = sr.right - 165 - desclen - 20;
+			int desclen = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+			w[STATUS_TEXT] = sr.right - 165 - desclen;
 			w[STATUS_HUBSEL] = w[0] + desclen + 165;
-			
-			sr.top =  (WinUtil::getTextHeight(m_hWnd, WinUtil::systemFont) / 2) -1;
-			sr.bottom -= 1;
-			sr.left = w[STATUS_HUBSEL-1] + 5;
-			sr.right = sr.left + desclen;
-			ctrlHubSelDesc.MoveWindow(sr);
 
 			sr.top = 1;
-			sr.left = sr.right + 10;
+			sr.left = w[STATUS_HUBSEL-1] + desclen + 10;
 			sr.right = sr.left + 150;
 			ctrlHubSel.MoveWindow(sr);
 
@@ -900,47 +640,6 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		rc.right += 24;
 		ctrlMagnet.MoveWindow(rc);
 	}
-}
-
-LRESULT PrivateFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	if(reinterpret_cast<HWND>(wParam) == ctrlEmoticons) {
-		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
-		menuItems = 0;
-
-		if(emoMenu != NULL)
-			emoMenu.DestroyMenu();
-
-		emoMenu.CreatePopupMenu();
-		emoMenu.InsertSeparatorFirst(_T("Emoticons Pack"));
-		emoMenu.AppendMenu(MF_STRING, IDC_EMOMENU, _T("Disabled"));
-		
-		if (SETTING(EMOTICONS_FILE) == "Disabled")
-			emoMenu.CheckMenuItem( IDC_EMOMENU, MF_BYCOMMAND | MF_CHECKED );
-		
-		// nacteme seznam emoticon packu (vsechny *.xml v adresari EmoPacks)
-		WIN32_FIND_DATA data;
-		HANDLE hFind;
-		hFind = FindFirstFile(Text::toT(Util::getPath(Util::PATH_EMOPACKS) + "*.xml").c_str(), &data);
-		if(hFind != INVALID_HANDLE_VALUE) {
-			do {
-				tstring name = data.cFileName;
-				tstring::size_type i = name.rfind('.');
-				name = name.substr(0, i);
-
-				menuItems++;
-				emoMenu.AppendMenu(MF_STRING, IDC_EMOMENU + menuItems, name.c_str());
-				if(name == Text::toT(SETTING(EMOTICONS_FILE))) emoMenu.CheckMenuItem( IDC_EMOMENU + menuItems, MF_BYCOMMAND | MF_CHECKED );
-			} while(FindNextFile(hFind, &data));
-			FindClose(hFind);
-		}
-		
-		if(menuItems>0)
-			emoMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
-
-		emoMenu.RemoveFirstItem();
-	}
-
-	return 0;
 }
 
 string PrivateFrame::getLogPath() const {
@@ -1007,39 +706,6 @@ void PrivateFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
 
-LRESULT PrivateFrame::onEmoPackChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	TCHAR buf[256];
-	emoMenu.GetMenuString(wID, buf, 256, MF_BYCOMMAND);
-	if (buf!=Text::toT(SETTING(EMOTICONS_FILE))) {
-		SettingsManager::getInstance()->set(SettingsManager::EMOTICONS_FILE, Text::fromT(buf));
-		emoticonsManager->Unload();
-		emoticonsManager->Load();
-	}
-	return 0;
-}
-
-LRESULT PrivateFrame::onEmoticons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
-	if (hWndCtl != ctrlEmoticons.m_hWnd) {
-		bHandled = false;
-        return 0;
-    }
- 
-	EmoticonsDlg dlg;
-	ctrlEmoticons.GetWindowRect(dlg.pos);
-	dlg.DoModal(m_hWnd);
-	if (!dlg.result.empty()) {
-		TCHAR* message = new TCHAR[ctrlMessage.GetWindowTextLength()+1];
-		ctrlMessage.GetWindowText(message, ctrlMessage.GetWindowTextLength()+1);
-		tstring s(message, ctrlMessage.GetWindowTextLength());
-		delete[] message;
-		
-		ctrlMessage.SetWindowText((s+dlg.result).c_str());
-		ctrlMessage.SetFocus();
-		ctrlMessage.SetSel( ctrlMessage.GetWindowTextLength(), ctrlMessage.GetWindowTextLength() );
-	}
-	return 0;
-}
-
 LRESULT PrivateFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 
 	if(!online)
@@ -1066,55 +732,6 @@ LRESULT PrivateFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 		ctrlMessage.SetFocus();
 	}
 	return 0;
-}
- LRESULT PrivateFrame::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled){
-	 tstring file;
-	 if(WinUtil::browseFile(file, m_hWnd, false) == IDOK) {
-		 addMagnet(file);
-	 }
-	 return 0;
- }
-
-LRESULT PrivateFrame::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
-	HDROP drop = (HDROP)wParam;
-	tstring buf;
-	buf.resize(MAX_PATH);
-
-	UINT nrFiles;
-	
-	nrFiles = DragQueryFile(drop, (UINT)-1, NULL, 0);
-	
-	for(UINT i = 0; i < nrFiles; ++i){
-		if(DragQueryFile(drop, i, &buf[0], MAX_PATH)){
-			if(!PathIsDirectory(&buf[0])){
-				addMagnet(buf);
-			}
-		}
-	}
-
-	DragFinish(drop);
-
-	return 0;
-}
-void PrivateFrame::addMagnet(const tstring& path) {
-	string magnetlink = Util::emptyString;
-
-	TTHValue TTH;
-	int64_t size = 0;
-
-	try {
-		size = HashManager::getInstance()->HashFile(Text::fromT(path), TTH);
-		magnetlink = "magnet:?xt=urn:tree:tiger:"+ TTH.toBase32() +"&xl="+Util::toString(size)+"&dn="+Text::fromT(Util::getFileName(path));
-	} catch (const Exception& e) { 
-		LogManager::getInstance()->message(STRING(HASHING_FAILED) + " " + e.getError(), LogManager::LOG_ERROR);
-	}
-
-	if(!magnetlink.empty()){
-		if(ShareManager::getInstance()->addTempShare(replyTo.user->getCID().toBase32(), TTH, Text::fromT(path), size, !replyTo.user->isNMDC()))
-			ctrlMessage.SetWindowText(Text::toT(magnetlink).c_str());
-		else
-			MessageBox(_T("File is not shared and temporary shares are not supported with NMDC hubs!"), _T("NMDC hub not supported!"), MB_ICONWARNING | MB_OK);
-	}
 }
 
 /**

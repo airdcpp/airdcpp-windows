@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(PRIVATE_FRAME_H)
+#ifndef PRIVATE_FRAME_H
 #define PRIVATE_FRAME_H
 
 #if _MSC_VER > 1000
@@ -28,20 +28,15 @@
 #include "../client/ResourceManager.h"
 #include "../client/DelayedEvents.h"
 
+#include "ChatFrameBase.h"
 #include "FlatTabCtrl.h"
 #include "WinUtil.h"
 #include "UCHandler.h"
-#include "EmoticonsDlg.h"
-#include "HubFrame.h"
 
-#include "ChatCtrl.h"
-#include "ResourceLoader.h"
-
-#define PM_MESSAGE_MAP 8		// This could be any number, really...
 #define HUB_SEL_MAP 9
 
 class PrivateFrame : public MDITabChildWindowImpl<PrivateFrame>, 
-	private ClientManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener
+	private ClientManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, private ChatFrameBase, private FrameMessageBase
 {
 public:
 	static void gotMessage(const Identity& from, const UserPtr& to, const UserPtr& replyTo, const tstring& aMessage, Client* c);
@@ -58,6 +53,7 @@ public:
 
 	typedef MDITabChildWindowImpl<PrivateFrame> baseClass;
 	typedef UCHandler<PrivateFrame> ucBase;
+	typedef ChatFrameBase chatBase;
 
 	BEGIN_MSG_MAP(PrivateFrame)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
@@ -66,7 +62,6 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
-		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_FORWARDMSG, OnRelayMsg)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
@@ -80,136 +75,63 @@ public:
 		COMMAND_ID_HANDLER(IDC_GRANTSLOT_WEEK, onGrantSlot)
 		COMMAND_ID_HANDLER(IDC_UNGRANTSLOT, onGrantSlot)
 		COMMAND_ID_HANDLER(IDC_ADD_TO_FAVORITES, onAddToFavorites)
-		COMMAND_ID_HANDLER(IDC_SEND_MESSAGE, onSendMessage)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
-		COMMAND_ID_HANDLER(IDC_EMOT, onEmoticons)
-		COMMAND_ID_HANDLER(IDC_BMAGNET, onAddMagnet)
-		COMMAND_ID_HANDLER(IDC_WINAMP_SPAM, onWinampSpam)
 		COMMAND_ID_HANDLER(IDC_PUBLIC_MESSAGE, onPublicMessage)
-		COMMAND_RANGE_HANDLER(IDC_EMOMENU, IDC_EMOMENU + menuItems, onEmoPackChange);
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_MSG_MAP(baseClass)
-	ALT_MSG_MAP(HUB_SEL_MAP)
-		//COMMAND_HANDLER(IDC_HUB, CBN_SELENDOK, onHubChanged)
-		//COMMAND_ID_HANDLER(IDC_HUB, onHubChanged)
-		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onHubChanged)
-	ALT_MSG_MAP(PM_MESSAGE_MAP)
+		CHAIN_MSG_MAP(chatBase)
+	ALT_MSG_MAP(EDIT_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 		MESSAGE_HANDLER(WM_KEYDOWN, onChar)
 		MESSAGE_HANDLER(WM_KEYUP, onChar)
+		MESSAGE_HANDLER(WM_CUT, onChar) //ApexDC
+		MESSAGE_HANDLER(WM_PASTE, onChar) //ApexDC
 		MESSAGE_HANDLER(WM_DROPFILES, onDropFiles)
+	ALT_MSG_MAP(HUB_SEL_MAP)
+		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onHubChanged)
 	END_MSG_MAP()
 
 	LRESULT onHubChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGrantSlot(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
-	LRESULT onContextMenu(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onClientEnLink(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) { return ctrlClient.onClientEnLink(uMsg, wParam, lParam, bHandled); }
 	LRESULT onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onEmoPackChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-  	LRESULT onEmoticons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled);
-	LRESULT onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled);
-  	LRESULT onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		tstring cmd, param, message, status;
-		bool thirdPerson;
-		if(SETTING(MEDIA_PLAYER) == 0) {
-			cmd = _T("/winamp");
-		} else if(SETTING(MEDIA_PLAYER) == 1) {
-			cmd = _T("/wmp");
-		} else if(SETTING(MEDIA_PLAYER) == 2) {
-			cmd = _T("/itunes");
-		} else if(SETTING(MEDIA_PLAYER) == 3) {
-			cmd = _T("/mpc");
-		} else {
-			addClientLine(CTSTRING(NO_MEDIA_SPAM));
-			return 0;
-		}
-		if(WinUtil::checkCommand(cmd, param, message, status, thirdPerson)){
-			if(!message.empty()) {
-				sendMessage(message);
-			}
-			if(!status.empty()) {
-				addClientLine(status);
-			}
-		}
-		return 0;
-	}
 	LRESULT onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onDropFiles(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
-	void addMagnet(const tstring& path);
-	void fillLogParams(ParamMap& params) const;
-	void addLine(const tstring& aLine, CHARFORMAT2& cf);
-	void addLine(const Identity&, const tstring& aLine);
-	void addLine(const Identity&, const tstring& aLine, CHARFORMAT2& cf);
-	void addStatusLine(const tstring& aLine);
-
-	void onEnter();
-	void UpdateLayout(BOOL bResizeBars = TRUE);	
-	void runUserCommand(UserCommand& uc);
-	void readLog();
-	
-	LRESULT OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
-		LPMSG pMsg = (LPMSG)lParam;
-		if(ctrlTooltips.m_hWnd != NULL && pMsg->message >= WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST)
-			ctrlTooltips.RelayEvent(pMsg);
-		return 0;
-}
+	LRESULT OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-		
-	LRESULT onSendMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		onEnter();
-		return 0;
-	}
 
 	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		PostMessage(WM_CLOSE);
 		return 0;
 	}
 
-	LRESULT PrivateFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
-		//updateTitle();
-		updateOnlineStatus();
-		return 0;
-	}
-	
-	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-		HWND hWnd = (HWND)lParam;
-		HDC hDC = (HDC)wParam;
-		if(hWnd == ctrlClient.m_hWnd || hWnd == ctrlMessage.m_hWnd) {
-			::SetBkColor(hDC, WinUtil::bgColor);
-			::SetTextColor(hDC, WinUtil::textColor);
-			return (LRESULT)WinUtil::bgBrush;
-		}
-		bHandled = FALSE;
-		return FALSE;
-	}
+	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
+	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
-	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		ctrlMessage.SetFocus();
-		return 0;
-	}
+
+	void fillLogParams(ParamMap& params) const;
+	void addLine(const tstring& aLine, CHARFORMAT2& cf);
+	void addLine(const Identity&, const tstring& aLine);
+	void addLine(const Identity&, const tstring& aLine, CHARFORMAT2& cf);
+	void addStatusLine(const tstring& aLine);
+
+	bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
+	void UpdateLayout(BOOL bResizeBars = TRUE);	
+	void runUserCommand(UserCommand& uc);
+	void readLog();
 	
-	void addClientLine(const tstring& aLine) {
-		if(!created) {
-			CreateEx(WinUtil::mdiClient);
-		}
-		ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str());
-		if (BOOLSETTING(BOLD_PM)) {
-			setDirty();
-		}
-	}
-	
-	void sendMessage(const tstring& msg, bool thirdPerson = false);
+	void addClientLine(const tstring& aLine);
+	bool sendMessage(const tstring& msg, bool thirdPerson = false);
 
 private:
 	enum {
@@ -227,11 +149,8 @@ private:
 	typedef unordered_map<UserPtr, PrivateFrame*, User::Hash> FrameMap;
 	typedef FrameMap::const_iterator FrameIter;
 	static FrameMap frames;
-	ChatCtrl ctrlClient;
-	CEdit ctrlMessage;
 	CStatusBarCtrl ctrlStatus;
 	CComboBox ctrlHubSel;
-	CStatic ctrlHubSelDesc;
 
 	void updateOnlineStatus();
 	StringPairList hubs;
@@ -239,12 +158,6 @@ private:
 	void changeClient();
 	void showHubSelection(bool show);
 
-	int menuItems;
-	int lineCount; //ApexDC
-	OMenu emoMenu;
-	CButton ctrlEmoticons;
-	CButton ctrlMagnet;
-	ExCImage hEmoticonBmp;
 	HICON userOffline;
 	HICON userOnline;
 
@@ -253,8 +166,6 @@ private:
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
 	CContainedWindow ctrlHubSelContainer;
-	
-	CToolTipCtrl ctrlTooltips;
 
 	bool closed;
 	tstring hubNames;

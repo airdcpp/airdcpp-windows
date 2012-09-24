@@ -21,7 +21,7 @@
 #include "../client/UploadManager.h"
 #include "../client/QueueManager.h"
 
-#include "ChatCtrl.h"
+#include "RichTextBox.h"
 #include "EmoticonsManager.h"
 #include "PrivateFrame.h"
 #include "atlstr.h"
@@ -35,9 +35,9 @@
 EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48
-UINT ChatCtrl::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
+UINT RichTextBox::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
-ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr) {
+RichTextBox::RichTextBox() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
 	}
@@ -55,7 +55,7 @@ ChatCtrl::ChatCtrl() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false),
 	findBuffer[0] = _T('\0');
 }
 
-ChatCtrl::~ChatCtrl() {
+RichTextBox::~RichTextBox() {
 	//shortLinks.clear();//ApexDC
 	if(emoticonsManager->unique()) {
 		emoticonsManager->dec();
@@ -66,7 +66,7 @@ ChatCtrl::~ChatCtrl() {
 	delete[] findBuffer;
 }
 
-void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
+void RichTextBox::AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
 	SetRedraw(FALSE);
 
 	SCROLLINFO si = { 0 };
@@ -253,7 +253,7 @@ void ChatCtrl::AppendText(const Identity& i, const tstring& sMyNick, const tstri
 	InvalidateRect(NULL);
 }
 
-void ChatCtrl::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo) {
+void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo) {
 	// Set text format
 	tstring sMsgLower(sText.length(), NULL);
 	std::transform(sText.begin(), sText.end(), sMsgLower.begin(), _totlower);
@@ -359,7 +359,7 @@ void ChatCtrl::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT
 	FormatEmoticonsAndLinks(sText, /*sMsgLower,*/ lSelBegin, bUseEmo);
 }
 
-void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LONG lSelBegin, bool bUseEmo) {
+void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LONG lSelBegin, bool bUseEmo) {
 	vector<ChatLink> tmpLinks;
 		
 	try {
@@ -518,7 +518,7 @@ void ChatCtrl::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LO
 
 }
 
-bool ChatCtrl::HitNick(const POINT& p, tstring& sNick, int& iBegin, int& iEnd) {
+bool RichTextBox::HitNick(const POINT& p, tstring& sNick, int& iBegin, int& iEnd) {
 	if(client == nullptr) return false;
 	
 	int iCharPos = CharFromPos(p), line = LineFromChar(iCharPos), len = LineLength(iCharPos) + 1;
@@ -604,7 +604,7 @@ bool ChatCtrl::HitNick(const POINT& p, tstring& sNick, int& iBegin, int& iEnd) {
 	return false;
 }
 
-bool ChatCtrl::HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd) {
+bool RichTextBox::HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd) {
 	int iCharPos = CharFromPos(p), len = LineLength(iCharPos) + 1;
 	if(len < 3)
 		return false;
@@ -645,7 +645,7 @@ bool ChatCtrl::HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd) {
 	return true;
 }
 
-tstring ChatCtrl::LineFromPos(const POINT& p) const {
+tstring RichTextBox::LineFromPos(const POINT& p) const {
 	int iCharPos = CharFromPos(p);
 	int len = LineLength(iCharPos);
 
@@ -661,7 +661,7 @@ tstring ChatCtrl::LineFromPos(const POINT& p) const {
 	return tmp;
 }
 
-LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
+LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 	selectedLine = LineFromPos(pt);
 	selectedUser.clear();
 	selectedIP.clear();
@@ -714,7 +714,7 @@ LRESULT ChatCtrl::OnRButtonDown(POINT pt) {
 	return 1;
 }
 
-bool ChatCtrl::updateAuthor() {
+bool RichTextBox::updateAuthor() {
 	size_t pos = selectedLine.find(_T(" <"));
 	if (pos != tstring::npos) {
 		tstring::size_type iAuthorLen = selectedLine.find(_T('>'), 1);
@@ -728,13 +728,13 @@ bool ChatCtrl::updateAuthor() {
 	return false;
 }
 
-LRESULT ChatCtrl::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT RichTextBox::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	m_bPopupMenu = false;
 	bHandled = FALSE;
 	return 0;
 }
 
-LRESULT ChatCtrl::onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT RichTextBox::onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
     if(m_bPopupMenu)
     {
         SetCursor(arrowCursor) ;
@@ -749,7 +749,7 @@ LRESULT ChatCtrl::onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	return 0;
 }
 
-LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
 
 	if(pt.x == -1 && pt.y == -1) {
@@ -866,7 +866,7 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 		}
 		
 		if(!isMe) {
-			if (!user) {
+			if (!user || user->isSet(User::BOT)) {
 				menu.AppendMenu(MF_STRING, IDC_PUBLIC_MESSAGE, CTSTRING(SEND_PUBLIC_MESSAGE));
 				menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
 				menu.AppendMenu(MF_SEPARATOR);
@@ -939,12 +939,12 @@ LRESULT ChatCtrl::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 	return 0;
 }
 
-LRESULT ChatCtrl::onFindText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onFindText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	findText();
 	return 1;
 }
 
-LRESULT ChatCtrl::onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	LPFINDREPLACE fr = reinterpret_cast<LPFINDREPLACE>(lParam);
 
 	if(fr->Flags & FR_DIALOGTERM){
@@ -984,7 +984,7 @@ LRESULT ChatCtrl::onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& 
 	return 0;
 }
 
-void ChatCtrl::findText(tstring& aTxt) {
+void RichTextBox::findText(tstring& aTxt) {
 	LPFINDREPLACE fr = new FINDREPLACE;
 	ZeroMemory(fr, sizeof(FINDREPLACE));
 	fr->lStructSize = sizeof(FINDREPLACE);
@@ -1006,7 +1006,7 @@ void ChatCtrl::findText(tstring& aTxt) {
 	curFindPos = 0;
 }
 
-LRESULT ChatCtrl::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT RichTextBox::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(((GetKeyState(VkKeyScan('F') & 0xFF) & 0xFF00) > 0 && (GetKeyState(VK_CONTROL) & 0xFF00) > 0) || wParam == VK_F3){
 		findText();
 		return 1;
@@ -1015,7 +1015,7 @@ LRESULT ChatCtrl::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHan
 	return 0;
 }
 
-LRESULT ChatCtrl::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	Magnet m = Magnet(Text::fromT(selectedWord));
 	if (m.hash.empty())
 		return 0;
@@ -1027,7 +1027,7 @@ LRESULT ChatCtrl::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, B
 	return 0;
 }
 
-HintedUser ChatCtrl::getMagnetSource() {
+HintedUser RichTextBox::getMagnetSource() {
 	UserPtr u = nullptr;
 	if (user) {
 		u = user;
@@ -1044,13 +1044,13 @@ HintedUser ChatCtrl::getMagnetSource() {
 	return HintedUser(nullptr, Util::emptyString);
 }
 
-LRESULT ChatCtrl::onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	Magnet m = Magnet(Text::fromT(selectedWord));
 	ShareManager::getInstance()->removeTempShare(user ? user->getCID().toBase32() : Util::emptyString, m.getTTH());
 	return 0;
 }
 
-LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring path;
 	try{
 		if (release) {
@@ -1082,7 +1082,7 @@ LRESULT ChatCtrl::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	return 0;
 }
 
-void ChatCtrl::download(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RichTextBox::download(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	if (isMagnet && !SettingsManager::lanMode) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
@@ -1094,7 +1094,7 @@ void ChatCtrl::download(const string& aTarget, QueueItem::Priority p, bool isMag
 	}
 }
 
-bool ChatCtrl::showDirDialog(string& fileName) {
+bool RichTextBox::showDirDialog(string& fileName) {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		fileName = m.fname;
@@ -1104,7 +1104,7 @@ bool ChatCtrl::showDirDialog(string& fileName) {
 }
 
 
-void ChatCtrl::appendDownloadItems(OMenu& aMenu, bool isWhole) {
+void RichTextBox::appendDownloadItems(OMenu& aMenu, bool isWhole) {
 	aMenu.AppendMenu(MF_STRING, isWhole ? IDC_DOWNLOADDIR : IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
 
 	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO));
@@ -1112,7 +1112,7 @@ void ChatCtrl::appendDownloadItems(OMenu& aMenu, bool isWhole) {
 	appendDownloadTo(*targetMenu, isWhole ? true : false);
 }
 
-int64_t ChatCtrl::getDownloadSize(bool /*isWhole*/) {
+int64_t RichTextBox::getDownloadSize(bool /*isWhole*/) {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		return m.fsize;
@@ -1121,7 +1121,7 @@ int64_t ChatCtrl::getDownloadSize(bool /*isWhole*/) {
 	}
 }
 
-LRESULT ChatCtrl::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT RichTextBox::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if(wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0 && autoScrollToEnd) {
 		scrollToEnd();
 	}
@@ -1130,7 +1130,7 @@ LRESULT ChatCtrl::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHan
 	return 0;
 }
 
-LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT RichTextBox::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	selectedLine.clear();
 	selectedIP.clear();
 	selectedUser.clear();
@@ -1141,7 +1141,7 @@ LRESULT ChatCtrl::onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 
-LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT RichTextBox::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	
 
 	bHandled=FALSE;
@@ -1172,7 +1172,7 @@ LRESULT ChatCtrl::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 	return FALSE;
 }
 
-bool ChatCtrl::isLink(POINT pt) {
+bool RichTextBox::isLink(POINT pt) {
 	int iCharPos = CharFromPos(pt), /*line = LineFromChar(iCharPos),*/ len = LineLength(iCharPos) + 1;
 	if(len < 3)
 		return false;
@@ -1196,7 +1196,7 @@ bool ChatCtrl::isLink(POINT pt) {
 	return false;
 }
 
-bool ChatCtrl::getLink(POINT pt, CHARRANGE& cr, ChatLink& link) {
+bool RichTextBox::getLink(POINT pt, CHARRANGE& cr, ChatLink& link) {
 	int iCharPos = CharFromPos(pt);
 	POINT p_ichar = PosFromChar(iCharPos);
 	
@@ -1218,12 +1218,12 @@ bool ChatCtrl::getLink(POINT pt, CHARRANGE& cr, ChatLink& link) {
 	return false;
 }
 
-LRESULT ChatCtrl::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT RichTextBox::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	bHandled = onClientEnLink(uMsg, wParam, lParam, bHandled);
 	return bHandled = TRUE ? 0: 1;
 }
 
-LRESULT ChatCtrl::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	string link = Text::fromT(selectedWord);
 	for(auto i = links.rbegin(); i != links.rend(); ++i) {
 		if(compare(i->second.url, link) == 0) {
@@ -1238,7 +1238,7 @@ LRESULT ChatCtrl::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, 
 	return 0;
 }
 
-bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
 	ChatLink cl;
@@ -1258,7 +1258,7 @@ bool ChatCtrl::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 	return 1;
 }
 
-LRESULT ChatCtrl::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	CHARRANGE cr;
 	GetSel(cr);
 	if(cr.cpMax != cr.cpMin)
@@ -1269,24 +1269,24 @@ LRESULT ChatCtrl::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	return 0;
 }
 
-LRESULT ChatCtrl::onEditSelectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onEditSelectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	SetSelAll();
 	return 0;
 }
 
-LRESULT ChatCtrl::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	SetWindowText(_T(""));
 	return 0;
 }
 
-LRESULT ChatCtrl::onCopyActualLine(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onCopyActualLine(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(!selectedLine.empty()) {
 		WinUtil::setClipboard(selectedLine);
 	}
 	return 0;
 }
 
-LRESULT ChatCtrl::onBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(!selectedIP.empty()) {
 		tstring s = _T("!banip ") + selectedIP;
 		client->hubMessage(Text::fromT(s));
@@ -1295,7 +1295,7 @@ LRESULT ChatCtrl::onBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, 
 	return 0;
 }
 
-LRESULT ChatCtrl::onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(!selectedIP.empty()) {
 		tstring s = _T("!unban ") + selectedIP;
 		client->hubMessage(Text::fromT(s));
@@ -1305,7 +1305,7 @@ LRESULT ChatCtrl::onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 }
 
 
-LRESULT ChatCtrl::onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(!selectedIP.empty()) {
  		WinUtil::openLink(_T("http://www.ripe.net/perl/whois?form_type=simple&full_query_string=&searchtext=") + selectedIP);
  	}
@@ -1313,7 +1313,7 @@ LRESULT ChatCtrl::onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	return 0;
 }
 
-LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou) {
 		ParamMap params;
@@ -1335,7 +1335,7 @@ LRESULT ChatCtrl::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 	return 0;
 }
 
-LRESULT ChatCtrl::onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou)
 		PrivateFrame::openWindow(HintedUser(ou->getUser(), client->getHubUrl()), Util::emptyStringT, client);
@@ -1343,7 +1343,7 @@ LRESULT ChatCtrl::onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
-LRESULT ChatCtrl::onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou)
 		ou->getList();
@@ -1351,14 +1351,14 @@ LRESULT ChatCtrl::onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	return 0;
 }
 
-LRESULT ChatCtrl::onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou)
 		ou->browseList();
 
 	return 0;
 }
-LRESULT ChatCtrl::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou)
 		ou->matchQueue();
@@ -1366,7 +1366,7 @@ LRESULT ChatCtrl::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	return 0;
 }
 
-LRESULT ChatCtrl::onGrantSlot(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onGrantSlot(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou) {
 		uint64_t time = 0;
@@ -1387,7 +1387,7 @@ LRESULT ChatCtrl::onGrantSlot(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, 
 	return 0;
 }
 
-LRESULT ChatCtrl::onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou)
 		ou->addFav();
@@ -1395,7 +1395,7 @@ LRESULT ChatCtrl::onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
-LRESULT ChatCtrl::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/){
+LRESULT RichTextBox::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/){
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
 		HubFrame::ignoreList.insert(ou->getUser());
@@ -1404,7 +1404,7 @@ LRESULT ChatCtrl::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BO
 	return 0;
 }
 
-LRESULT ChatCtrl::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/){
+LRESULT RichTextBox::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/){
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
 		HubFrame::ignoreList.erase(ou->getUser());
@@ -1413,7 +1413,7 @@ LRESULT ChatCtrl::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, 
 	return 0;
 }
 
-LRESULT ChatCtrl::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring sCopy;
 	
 	const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
@@ -1427,7 +1427,7 @@ LRESULT ChatCtrl::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	return 0;
 }
 
-void ChatCtrl::runUserCommand(UserCommand& uc) {
+void RichTextBox::runUserCommand(UserCommand& uc) {
 	ParamMap ucParams;
 
 	if(!WinUtil::getUCParams(m_hWnd, uc, ucParams))
@@ -1444,7 +1444,7 @@ void ChatCtrl::runUserCommand(UserCommand& uc) {
 	}
 }
 
-string ChatCtrl::escapeUnicode(tstring str) {
+string RichTextBox::escapeUnicode(tstring str) {
 	TCHAR buf[8];
 	memzero(buf, sizeof(buf));
 
@@ -1459,7 +1459,7 @@ string ChatCtrl::escapeUnicode(tstring str) {
 	return Text::fromT(str);
 }
 
-tstring ChatCtrl::rtfEscape(tstring str) {
+tstring RichTextBox::rtfEscape(tstring str) {
 	tstring::size_type i = 0;
 	while((i = str.find_first_of(_T("{}\\\n"), i)) != tstring::npos) {
 		switch(str[i]) {
@@ -1472,7 +1472,7 @@ tstring ChatCtrl::rtfEscape(tstring str) {
 	return str;
 }
 
-void ChatCtrl::scrollToEnd() {
+void RichTextBox::scrollToEnd() {
 	SCROLLINFO si = { 0 };
 	POINT pt = { 0 };
 
@@ -1488,7 +1488,7 @@ void ChatCtrl::scrollToEnd() {
 	SetScrollPos(&pt);
 }
 
-size_t ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring &line, size_t pos, long &lineIndex) {
+size_t RichTextBox::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring &line, size_t pos, long &lineIndex) {
 	//this shit needs a total cleanup, we cant highlight authors or timestamps this way and we dont need to.
 	
 	size_t index = tstring::npos;
@@ -1616,7 +1616,7 @@ size_t ChatCtrl::FullTextMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstri
 	
 	return pos;
 }
-size_t ChatCtrl::RegExpMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring &line, long &lineIndex) {
+size_t RichTextBox::RegExpMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring &line, long &lineIndex) {
 	//TODO: Clean it up a bit
 	
 	long begin, end;	
@@ -1654,7 +1654,7 @@ size_t ChatCtrl::RegExpMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstring
 
 }
 
-void ChatCtrl::CheckAction(ColorSettings* cs, const tstring& line) {
+void RichTextBox::CheckAction(ColorSettings* cs, const tstring& line) {
 	if(cs->getPopup() && !matchedPopup) {
 		matchedPopup = true;
 		tstring popupTitle;
@@ -1680,7 +1680,7 @@ void ChatCtrl::CheckAction(ColorSettings* cs, const tstring& line) {
 		WinUtil::FlashWindow();
 }
 
-tstring ChatCtrl::WordFromPos(const POINT& p) {
+tstring RichTextBox::WordFromPos(const POINT& p) {
 
 	int iCharPos = CharFromPos(p), /*line = LineFromChar(iCharPos),*/ len = LineLength(iCharPos) + 1;
 	if(len < 3)
@@ -1750,7 +1750,7 @@ tstring ChatCtrl::WordFromPos(const POINT& p) {
 	return Util::emptyStringT;
 }
 
-LRESULT ChatCtrl::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	string address = Text::fromT(selectedWord);
 	if (!AirUtil::isHubLink(address))
 		return 0;
@@ -1765,7 +1765,7 @@ LRESULT ChatCtrl::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*
 	return 0;
 }
 
-LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		WinUtil::searchAny(Text::toT(m.fname));
@@ -1776,7 +1776,7 @@ LRESULT ChatCtrl::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 	return 0;
 }
 
-LRESULT ChatCtrl::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		WinUtil::searchHash(m.getTTH(), m.fname, m.fsize);
@@ -1788,7 +1788,7 @@ LRESULT ChatCtrl::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 }
 
 
-LRESULT ChatCtrl::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
 	size_t newId = (size_t)wID - IDC_SEARCH_SITES;
 	if(newId < (int)WebShortcuts::getInstance()->list.size()) {
