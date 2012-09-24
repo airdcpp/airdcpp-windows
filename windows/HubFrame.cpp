@@ -223,13 +223,6 @@ HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate
 	memset(statusSizes, 0, sizeof(statusSizes));
 }
 
-LRESULT HubFrame::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
-	LPMSG pMsg = (LPMSG)lParam;
-	if((pMsg->message >= WM_MOUSEFIRST) && (pMsg->message <= WM_MOUSELAST))
-		ctrlLastLines.RelayEvent(pMsg);
-	return 0;
-}
-
 bool HubFrame::sendMessage(const tstring& aMessage, bool isThirdPerson) {
 	client->hubMessage(Text::fromT(aMessage), isThirdPerson);
 	return true;

@@ -48,6 +48,13 @@ ChatFrameBase::~ChatFrameBase() {
 
 }
 
+LRESULT ChatFrameBase::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+	LPMSG pMsg = (LPMSG)lParam;
+	if((pMsg->message >= WM_MOUSEFIRST) && (pMsg->message <= WM_MOUSELAST))
+		ctrlTooltips.RelayEvent(pMsg);
+	return 0;
+}
+
 void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	ctrlClient.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE | WS_EX_ACCEPTFILES, IDC_CLIENT);
