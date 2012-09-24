@@ -2341,6 +2341,7 @@ tstring WinUtil::getIconName(int aDefault) {
 		case IDI_VIDEO:			return _T("searchTypes\\Video.ico");
 		case IDI_DIRECTORY:		return _T("searchTypes\\Directory.ico");
 		case IDI_TTH:			return _T("searchTypes\\tth.ico");
+		case IDI_CUSTOM:		return _T("searchTypes\\Custom.ico");
 		case IDI_MPSTART:		return _T("MediaToolbar\\start.ico");
 		case IDI_MPSPAM:		return _T("MediaToolbar\\spam.ico");
 		case IDI_MPBACK:		return _T("MediaToolbar\\back.ico");
@@ -2404,6 +2405,7 @@ void WinUtil::loadSearchTypeIcons() {
 	searchImages.AddIcon(createIcon(IDI_VIDEO, 16));
 	searchImages.AddIcon(createIcon(IDI_DIRECTORY,16));
 	searchImages.AddIcon(createIcon(IDI_TTH, 16));
+	searchImages.AddIcon(createIcon(IDI_CUSTOM, 16));
 }
 
 /* Only returns the text color */

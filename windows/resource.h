@@ -253,6 +253,7 @@
 #define IDI_TEXT                        435
 #define IDI_HUBOP                       436
 #define IDI_HUBREG                      437
+#define IDI_CUSTOM						438
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
