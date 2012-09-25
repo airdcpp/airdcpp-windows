@@ -2364,7 +2364,7 @@ void WinUtil::appendSearchTypeCombo(CComboBoxEx& ctrlSearchType, const string& a
 }
 
 HBITMAP WinUtil::getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/) {
-	HICON hIcon = createIcon(defaultIcon);
+	HICON hIcon = createIcon(defaultIcon, xSize);
 	if(!hIcon)
 		return NULL;
 
