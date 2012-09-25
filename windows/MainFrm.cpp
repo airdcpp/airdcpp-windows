@@ -659,7 +659,7 @@ HWND MainFrame::createToolbar() {
 		ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 		ctrlToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
 
-		if(!(SETTING(TOOLBARIMAGE) == "")) { //we expect to have the toolbarimage set before setting the Hot image.
+		if(!(SETTING(TOOLBARIMAGE) == "") && Util::fileExists(SETTING(TOOLBARIMAGE)) ) { //we expect to have the toolbarimage set before setting the Hot image.
 			ToolbarImages.CreateFromImage(Text::toT(SETTING(TOOLBARIMAGE)).c_str(), 0/*SETTING(TB_IMAGE_SIZE)*/, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 
 			if(!(SETTING(TOOLBARHOTIMAGE) == "")) { 

@@ -46,11 +46,11 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 	
 	if(!iconInfo)
-		iconInfo = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("info.ico")),WinUtil::bgColor, IDI_INFO, ICON_SIZE, ICON_SIZE);
+		iconInfo = WinUtil::getBitmapFromIcon(IDI_INFO, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
 	if(!iconWarning)
-		iconWarning = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("warning.ico")),WinUtil::bgColor, IDI_IWARNING, ICON_SIZE, ICON_SIZE);
+		iconWarning = WinUtil::getBitmapFromIcon(IDI_IWARNING, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
 	if(!iconError)
-		iconError = WinUtil::getBitmapFromIcon(WinUtil::getIconPath(_T("error.ico")),WinUtil::bgColor, IDI_IERROR, ICON_SIZE, ICON_SIZE);
+		iconError = WinUtil::getBitmapFromIcon(IDI_IERROR, WinUtil::bgColor, ICON_SIZE, ICON_SIZE);
 
 	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])?([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 

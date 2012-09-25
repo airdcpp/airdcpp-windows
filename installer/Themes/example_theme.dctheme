@@ -102,7 +102,5 @@
 	</Settings>
 	<Icons>
 		<IconPath type="string">Themes\Example_iconPack\icons</IconPath>
-		<ToolbarImage type="string">Themes\Example_iconPack\icons\toolbar.bmp</ToolbarImage>
-		<ToolbarHot type="string">Themes\Example_iconPack\icons\toolbarHot.bmp</ToolbarHot>
 	</Icons>
 </DCPlusPlus>

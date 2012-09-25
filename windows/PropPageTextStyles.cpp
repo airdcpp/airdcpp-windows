@@ -626,7 +626,7 @@ void PropPageTextStyles::LoadTheme(const string& path) {
 LRESULT PropPageTextStyles::onRestoreIcons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	if(MessageBox(CTSTRING(ICONS_RESTORE), _T("AirDC++") _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 		SettingsManager::getInstance()->set(SettingsManager::TOOLBARIMAGE, "");
-		SettingsManager::getInstance()->set(SettingsManager::ICON_PATH, "icons");
+		SettingsManager::getInstance()->set(SettingsManager::ICON_PATH, "");
 		SettingsManager::getInstance()->set(SettingsManager::TOOLBARHOTIMAGE, "");
 	}
 	return 0;

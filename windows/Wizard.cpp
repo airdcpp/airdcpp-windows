@@ -54,10 +54,6 @@ LRESULT WizardDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	spin6.SetRange32(1, 100);
 	spin6.Detach();
 
-		
-	//Images.CreateFromImage(WinUtil::getIconPath(_T("flags.bmp")).c_str(), 24, 20, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-	//ctrlLanguage.SetImageList(Images);
-
 	WinUtil::appendLanguageMenu(ctrlLanguage);
 
 	download = SETTING(DOWNLOAD_SPEED);

@@ -18,9 +18,9 @@
 
 #include "stdafx.h"
 #include "../client/DCPlusPlus.h"
+#define COMPILE_MULTIMON_STUBS 1
 #include "Resource.h"
 
-#define COMPILE_MULTIMON_STUBS 1
 #include <MultiMon.h>
 #include <psapi.h>
 #include <powrprof.h>
@@ -419,6 +419,7 @@ void WinUtil::init(HWND hWnd) {
 	mainMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)help, CTSTRING(MENU_HELP));
 
 	m_IconPath = Text::toT(SETTING(ICON_PATH));
+
 	//TODO: icons!
 	if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("folders.bmp")))))
 		fileImages.CreateFromImage(WinUtil::getIconPath(_T("folders.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
@@ -2003,7 +2004,7 @@ void WinUtil::searchAny(const tstring& aSearch) {
 
 tstring WinUtil::getIconPath(const tstring& filename) {
 
-	return m_IconPath + _T("\\") + filename;
+	return m_IconPath.empty() ? Util::emptyStringT : (m_IconPath + _T("\\") + filename);
 }
 
 void WinUtil::AppendSearchMenu(OMenu& menu, int x /*0*/) {
@@ -2362,12 +2363,8 @@ void WinUtil::appendSearchTypeCombo(CComboBoxEx& ctrlSearchType, const string& a
 	ctrlSearchType.SetCurSel(selection);
 }
 
-HBITMAP WinUtil::getBitmapFromIcon(const tstring& aFile, COLORREF crBgColor, long defaultIcon /*0*/,int xSize /*= 0*/, int ySize /*= 0*/) {
-	HICON hIcon = NULL;
-	hIcon = HICON(::LoadImage(NULL, aFile.c_str(), IMAGE_ICON, xSize, ySize, LR_LOADFROMFILE));
-	if(!hIcon && (defaultIcon != 0))
-		hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(defaultIcon), IMAGE_ICON, xSize, ySize, LR_DEFAULTCOLOR);
-	
+HBITMAP WinUtil::getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/) {
+	HICON hIcon = createIcon(defaultIcon);
 	if(!hIcon)
 		return NULL;
 
