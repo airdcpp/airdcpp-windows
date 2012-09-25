@@ -2052,23 +2052,11 @@ LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
-	if (!BOOLSETTING(DONT_ANNOUNCE_NEW_VERSIONS)) {
-		UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
-		if (dlg.DoModal()  == IDC_UPDATE_DOWNLOAD) {
-			UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, build, true);
-			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
-		}
+	UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
+	if (dlg.DoModal()  == IDC_UPDATE_DOWNLOAD) {
+		UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, build, true);
+		ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 	}
-
-	/*UpdateDlg dlg(title, message, version, url, autoUpdate);
-	if(dlg.DoModal(m_hWnd) == IDC_UPDATE_DOWNLOAD) {
-		if(!UpdateManager::getInstance()->isUpdating()) {
-			UpdateManager::getInstance()->downloadUpdate(url, WinUtil::getAppName());
-			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
-		} else {
-			MessageBox(updated ? CTSTRING(UPDATER_PENDING_RESTART) : CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
-		}
-	}*/
 }
 
 void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update) noexcept {

@@ -2430,7 +2430,7 @@ void WinUtil::addUpdate(const string& aUpdater) {
 void WinUtil::runPendingUpdate() {
 	if(updated && !updateCommand.first.empty()) {
 		auto cmd = updateCommand.second + Util::getParams(false);
-		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
+		ShellExecute(NULL, WinUtil::getOsMajor() >= 6 ? _T("runas") : NULL, updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
 	}
 }
 
