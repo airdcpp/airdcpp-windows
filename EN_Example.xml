@@ -1514,7 +1514,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="ShareProfile">Share Profile</String>
 		<String Name="ShareProfiles">Share Profiles</String>
 		<String Name="ProfileExists">A profile with the same name exists already</String>
-		<String Name="XProfileDirsExists">This directory also exists in %d other profiles. Do you want to remove it from all of them?</String>
+		<String Name="XProfileDirsExists">This directory also exists in %d other profile(s)</String>
 		<String Name="AddProfile">Add profile</String>
 		<String Name="AddProfileCopy">Add copy from this</String>
 		<String Name="RemoveProfile">Remove profile</String>
@@ -1626,5 +1626,10 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="MoreInformation">More information...</String>
 		<String Name="UsingLatest">You are already using the latest version</String>
 		<String Name="NewVersionAvailable">A new version is available</String>
+		<String Name="PerformXRemaining">Perform this action for %d remaining items</String>
+		<String Name="RemoveOtherProfiles">Remove this path from all profiles</String>
+		<String Name="LeaveOtherProfiles">Remove only from the current profile</String>
+		<String Name="ShowOtherProfiles">Show other profiles</String>
+		<String Name="OtherProfiles">Other profiles</String>
 	</Strings>
 </Language>

@@ -571,10 +571,13 @@ LRESULT SharePage::onClickedRemoveDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 {
 	int i = -1;
 	bool redraw = false;
+	int8_t confirmOption = CONFIRM_ASK;
+	int selectedDirs = ctrlDirectories.GetSelectedCount();
 	while((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		auto sdi = (ShareDirInfo*)ctrlDirectories.GetItemData(i);
 		if (sdi->state != ShareDirInfo::REMOVED) {
-			removeDir(sdi->path, curProfile);
+			selectedDirs--;
+			removeDir(sdi->path, curProfile, confirmOption, true, selectedDirs);
 			if (sdi->state == ShareDirInfo::NORMAL && curProfile != SP_DEFAULT) {
 				sdi->state = ShareDirInfo::REMOVED;
 				redraw = true;
@@ -593,7 +596,7 @@ LRESULT SharePage::onClickedRemoveDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	return 0;
 }
 
-void SharePage::removeDir(const string& rPath, ProfileToken aProfile, bool checkDupes /*true*/) {
+void SharePage::removeDir(const string& rPath, ProfileToken aProfile, int8_t& confirmOption, bool checkDupes /*true*/, int remainingItems /*1*/) {
 	//update the diff info in case this path exists in other profiles
 	if (aProfile == SP_DEFAULT) {
 		auto items = getItemsByPath(rPath, true);
@@ -612,8 +615,54 @@ void SharePage::removeDir(const string& rPath, ProfileToken aProfile, bool check
 
 	if (checkDupes) {
 		auto dirItems = getItemsByPath(rPath, false);
-		if (!dirItems.empty() && MessageBox(CTSTRING_F(X_PROFILE_DIRS_EXISTS, (int)dirItems.size()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-			boost::for_each(dirItems, [this](ShareDirInfo* aDir) { removeDir(aDir->path, aDir->profile, false); });
+		if (!dirItems.empty() && WinUtil::getOsMajor() >= 6) { //MessageBox(CTSTRING_F(X_PROFILE_DIRS_EXISTS, (int)dirItems.size()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+			if (confirmOption == CONFIRM_ASK) {
+				CTaskDialog taskdlg;
+
+				int sel;
+				BOOL remember = FALSE;
+				tstring msg = TSTRING_F(X_PROFILE_DIRS_EXISTS, (int)dirItems.size());
+				taskdlg.SetMainInstructionText(msg.c_str());
+				TASKDIALOG_BUTTON buttons[] =
+				{
+					{ IDC_MAGNET_SEARCH, CTSTRING(REMOVE_OTHER_PROFILES), },
+					{ IDC_MAGNET_QUEUE, CTSTRING(LEAVE_OTHER_PROFILES), },
+				};
+				taskdlg.ModifyFlags(0, TDF_USE_COMMAND_LINKS);
+
+				auto title = Text::toT(rPath);
+				taskdlg.SetWindowTitle(title.c_str());
+				//taskdlg.SetCommonButtons(TDCBF_CANCEL_BUTTON);
+
+				taskdlg.SetButtons(buttons, _countof(buttons));
+				taskdlg.SetMainIcon(TD_INFORMATION_ICON);
+
+				tstring profiles = Text::toT(STRING(OTHER_PROFILES) + ":");
+				for (auto i = dirItems.begin(); i != dirItems.end(); ++i)
+					profiles += _T("\n") + Text::toT(getProfile((*i)->profile)->getPlainName());
+
+				taskdlg.SetExpandedInformationText(profiles.c_str());
+				taskdlg.SetExpandedControlText(TSTRING(SHOW_OTHER_PROFILES).c_str());
+
+				if (remainingItems >= 1) {
+					tstring remove_msg = CTSTRING_F(PERFORM_X_REMAINING, remainingItems);
+					taskdlg.SetVerificationText(remove_msg.c_str());
+					taskdlg.DoModal(NULL, &sel, 0, &remember);
+				} else {
+					taskdlg.DoModal(NULL, &sel);
+				}
+
+				if (remember) {
+					confirmOption = sel-1231;
+				} 
+					
+				if (sel-1231 == CONFIRM_LEAVE)
+					return;
+			} else if (confirmOption == CONFIRM_LEAVE) {
+				return;
+			}
+
+			boost::for_each(dirItems, [this, &confirmOption](ShareDirInfo* aDir) { removeDir(aDir->path, aDir->profile, confirmOption, false); });
 		}
 		fixControls();
 	}
@@ -720,7 +769,8 @@ bool SharePage::addDirectory(const tstring& aPath){
 		} else if (AirUtil::isSub((*j)->path, Text::fromT(aPath))) {
 			if (ft) {
 				//Remove the subdir but only from this profile
-				removeDir((*j)->path, (*j)->profile, false);
+				int8_t confirmOption = CONFIRM_LEAVE;
+				removeDir((*j)->path, (*j)->profile, confirmOption, false);
 				//break;
 			} else {
 				//Maybe we should find and remove the correct item from the list instead...

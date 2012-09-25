@@ -86,7 +86,7 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
 	ctrlTooltips.Activate(TRUE);
 
-	if(AirUtil::isAdcHub(getClient()->getHubUrl())) {
+	if(getUser() ? !getUser()->isSet(User::NMDC) : AirUtil::isAdcHub(getClient()->getHubUrl())) {
 		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
 		ctrlMagnet.SetIcon(WinUtil::createIcon(IDI_MAGNET, 20));
 		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, (getUser() && !getUser()->isSet(User::BOT)) ? CTSTRING(SEND_FILE_PM) : CTSTRING(SEND_FILE_HUB));
@@ -289,6 +289,9 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 }
 
 LRESULT ChatFrameBase::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled){
+	if (!getClient())
+		return 0;
+
 	 tstring file;
 	 if(WinUtil::browseFile(file, /*m_hWnd*/ 0, false) == IDOK) {
 		 addMagnet(file);
@@ -297,6 +300,9 @@ LRESULT ChatFrameBase::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWnd
  }
 
 void ChatFrameBase::addMagnet(const tstring& path) {
+	if (!getClient())
+		return;
+
 	TTHValue tth;
 	int64_t size = 0;
 

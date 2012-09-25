@@ -83,6 +83,12 @@ public:
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
+
+	enum ConfirmOption {
+		CONFIRM_REMOVE,
+		CONFIRM_LEAVE,
+		CONFIRM_ASK
+	};
 protected:
 	ProfileToken curProfile;
 	friend class FolderTree;
@@ -97,7 +103,7 @@ protected:
 	void showProfile();
 	void applyChanges(bool isQuit);
 	void fixControls();
-	void removeDir(const string& aPath, ProfileToken aProfile, bool checkDupes=true);
+	void removeDir(const string& aPath, ProfileToken aProfile, int8_t& autoRemove, bool checkDupes=true, int remainingItems=0);
 	bool addDirectory(const tstring& aPath);
 	ShareDirInfo::list removeDirs, newDirs, changedDirs, tempViewItems;
 

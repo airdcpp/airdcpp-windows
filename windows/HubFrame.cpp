@@ -62,11 +62,19 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlStatus.Attach(m_hWndStatusBar);
 
 	CToolInfo ti(TTF_SUBCLASS, ctrlStatus.m_hWnd);
+	ctrlLastLines.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	 
+	ctrlLastLines.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);	 
+	ctrlLastLines.AddTool(&ti);	 
+	ctrlLastLines.SetDelayTime(TTDT_AUTOPOP, 15000);
+
+	ctrlLastLines.AddTool(&ti);
+
 
 	ctrlClient.setClient(client);
 	init(m_hWnd, rcDefault);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
+
 
 	ctrlFilter.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);

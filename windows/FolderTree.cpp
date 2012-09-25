@@ -1490,7 +1490,8 @@ LRESULT FolderTree::OnUnChecked(HTREEITEM hItem, BOOL& /*bHandled*/)
 			path += PATH_SEPARATOR;
 
 		sp->removeExcludeFolder(path);
-		sp->removeDir(path, sp->curProfile);
+		int8_t confirmOption = SharePage::CONFIRM_ASK;
+		sp->removeDir(path, sp->curProfile, confirmOption);
 		UpdateParentItems(hItem);
 	} else if(GetChecked(GetParentItem(hItem))) {
 		// if the parent is checked add this folder to excludes
