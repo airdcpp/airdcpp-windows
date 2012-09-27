@@ -516,7 +516,10 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	};
 
 	if (argc > 0) {
-		if(_tcscmp(*argv, _T("/sign")) == 0 && --argc >= 2) {
+		if(_tcscmp(*argv, _T("/createupdate")) == 0) {
+			Updater::createUpdate();
+			return FALSE;
+		} else if(_tcscmp(*argv, _T("/sign")) == 0 && --argc >= 2) {
 			string xmlPath = Text::fromT(*++argv);
 			string keyPath = Text::fromT(*++argv);
 			bool genHeader = (argc > 2 && (_tcscmp(*++argv, _T("-pubout")) == 0));
