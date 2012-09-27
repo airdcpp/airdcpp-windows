@@ -294,12 +294,12 @@ LRESULT ChatFrameBase::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWnd
 
 	 tstring file;
 	 if(WinUtil::browseFile(file, /*m_hWnd*/ 0, false) == IDOK) {
-		 addMagnet(file);
+		 addMagnet(Text::fromT(file));
 	 }
 	 return 0;
  }
 
-void ChatFrameBase::addMagnet(const tstring& path) {
+void ChatFrameBase::addMagnet(string&& path) {
 	if (!getClient())
 		return;
 
@@ -307,15 +307,15 @@ void ChatFrameBase::addMagnet(const tstring& path) {
 	int64_t size = 0;
 
 	try {
-		HashManager::getInstance()->getFileTTH(Text::fromT(path), true, tth, size);
+		HashManager::getInstance()->getFileTTH(path, true, tth, size);
 	} catch (const Exception& e) { 
 		LogManager::getInstance()->message(STRING(HASHING_FAILED) + " " + e.getError(), LogManager::LOG_ERROR);
 		return;
 	}
 
-	if(ShareManager::getInstance()->addTempShare((getUser() && !getUser()->isSet(User::BOT)) ? getUser()->getCID().toBase32() : Util::emptyString, tth, Text::fromT(path), size, 
+	if(ShareManager::getInstance()->addTempShare((getUser() && !getUser()->isSet(User::BOT)) ? getUser()->getCID().toBase32() : Util::emptyString, tth, path, size, 
 		AirUtil::isAdcHub(getClient()->getHubUrl())))
-			ctrlMessage.SetWindowText(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(Text::fromT(path)), size)).c_str());
+			ctrlMessage.SetWindowText(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size)).c_str());
 	else {
 		//MessageBox(_T("File is not shared and temporary shares are not supported with NMDC hubs!"), _T("NMDC hub not supported!"), MB_ICONWARNING | MB_OK);
 	}
@@ -323,7 +323,7 @@ void ChatFrameBase::addMagnet(const tstring& path) {
 
 LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring cmd, param, message, status;
-	bool thirdPerson;
+	bool thirdPerson=false;
 	if(SETTING(MEDIA_PLAYER) == 0) {
 		cmd = _T("/winamp");
 	} else if(SETTING(MEDIA_PLAYER) == 1) {
@@ -339,12 +339,12 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 		return 0;
 	}
 	if(checkCommand(cmd, param, message, status, thirdPerson)){
-		/*if(!message.empty()) {
-			client->hubMessage(Text::fromT(message));
+		if(!message.empty()) {
+			frame->sendMessage(message, thirdPerson);
 		}
 		if(!status.empty()) {
-			addStatus(status);
-		}*/
+			frame->addStatusLine(status);
+		}
 	}
 	return 0;
 }
@@ -382,7 +382,7 @@ LRESULT ChatFrameBase::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam
 	for(UINT i = 0; i < nrFiles; ++i){
 		if(DragQueryFile(drop, i, &buf[0], MAX_PATH)){
 			if(!PathIsDirectory(&buf[0])){
-				addMagnet(buf);
+				addMagnet(Text::fromT(buf));
 			}
 		}
 	}
@@ -779,5 +779,11 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		return frame->checkFrameCommand(cmd, param, message, status, thirdPerson);
 	}
 
+	//check if /me was added by the command
+	i = message.find(' ');
+	if(i != string::npos && message.substr(1, i - 1) == _T("me")) {
+		message = message.substr(i+1);
+		thirdPerson = true;
+	}
 	return true;
 }

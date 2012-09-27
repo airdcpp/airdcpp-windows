@@ -316,8 +316,6 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& message,
 				PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()), Util::emptyStringT, client);
 			}
 		}
-	} else if(stricmp(cmd.c_str(), _T("me")) == 0) {
-		//message = client->hubMessage(Text::fromT(s));
 	} else {
 		return false;
 	}
