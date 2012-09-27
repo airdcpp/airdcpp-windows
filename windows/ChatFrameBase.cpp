@@ -288,6 +288,28 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 	return 0;
 }
 
+LRESULT ChatFrameBase::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
+	HDROP drop = (HDROP)wParam;
+	tstring buf;
+	buf.resize(MAX_PATH);
+
+	UINT nrFiles;
+	
+	nrFiles = DragQueryFile(drop, (UINT)-1, NULL, 0);
+	
+	for(UINT i = 0; i < nrFiles; ++i){
+		if(DragQueryFile(drop, i, &buf[0], MAX_PATH)){
+			if(!PathIsDirectory(&buf[0])){
+				addMagnet(Text::fromT(buf).data());
+			}
+		}
+	}
+
+	DragFinish(drop);
+
+	return 0;
+}
+
 LRESULT ChatFrameBase::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled){
 	if (!getClient())
 		return 0;
@@ -367,28 +389,6 @@ LRESULT ChatFrameBase::onEmoticons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWnd
 		ctrlMessage.SetFocus();
 		ctrlMessage.SetSel( ctrlMessage.GetWindowTextLength(), ctrlMessage.GetWindowTextLength() );
 	}
-	return 0;
-}
-
-LRESULT ChatFrameBase::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
-	HDROP drop = (HDROP)wParam;
-	tstring buf;
-	buf.resize(MAX_PATH);
-
-	UINT nrFiles;
-	
-	nrFiles = DragQueryFile(drop, (UINT)-1, NULL, 0);
-	
-	for(UINT i = 0; i < nrFiles; ++i){
-		if(DragQueryFile(drop, i, &buf[0], MAX_PATH)){
-			if(!PathIsDirectory(&buf[0])){
-				addMagnet(Text::fromT(buf));
-			}
-		}
-	}
-
-	DragFinish(drop);
-
 	return 0;
 }
 

@@ -160,8 +160,10 @@ LRESULT LocationsPage::onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	int i = -1;
 	while((i = ctrlDirectories.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 		ctrlDirectories.GetItemText(i, 0, buf, MAX_PATH); //vname
-		if(removeFavoriteDir(Text::fromT(buf)))
+		if(removeFavoriteDir(Text::fromT(buf))) {
 			ctrlDirectories.DeleteItem(i);
+			i--;
+		}
 	}
 	
 	return 0;

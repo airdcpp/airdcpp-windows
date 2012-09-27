@@ -98,6 +98,41 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	return TRUE;
 }
 
+LRESULT SharePage::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	if(reinterpret_cast<HWND>(wParam) == ctrlDirectories) { 
+		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+		
+		if(pt.x == -1 && pt.y == -1) {
+			WinUtil::getContextMenuPos(ctrlDirectories, pt);
+		}
+
+		int selectedDirs = ctrlDirectories.GetSelectedCount();
+		if (selectedDirs > 0) {
+			int i = -1;
+			bool hasRemoved=false, hasAdded=false;
+			while((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
+				auto sdi = (ShareDirInfo*)ctrlDirectories.GetItemData(i);
+				if (sdi->state == ShareDirInfo::REMOVED) {
+					hasRemoved = true;
+				} else {
+					hasAdded = true;
+				}
+			}
+
+			OMenu menu;
+			menu.CreatePopupMenu();
+			if (hasAdded)
+				menu.AppendMenu(MF_STRING, IDC_REMOVE_DIR, CTSTRING(REMOVE));
+			if (hasRemoved)
+				menu.AppendMenu(MF_STRING, IDC_ADD_DIR, CTSTRING(ADD_THIS_PROFILE));
+			menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+			return TRUE;
+		}
+	}
+	bHandled = FALSE;
+	return FALSE; 
+}
+
 ShareProfilePtr SharePage::getSelectedProfile() {
 	return profiles[ctrlProfile.GetCurSel()];
 }
@@ -583,6 +618,7 @@ LRESULT SharePage::onClickedRemoveDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 				redraw = true;
 			} else {
 				ctrlDirectories.DeleteItem(i);
+				i--;
 			}
 		}
 	}

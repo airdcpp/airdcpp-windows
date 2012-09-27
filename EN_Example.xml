@@ -1632,5 +1632,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="ShowOtherProfiles">Show other profiles</String>
 		<String Name="OtherProfiles">Other profiles</String>
 		<String Name="UpdateIpEvery">Update the IP address once per hour (only enable if you need this)</String>
+		<String Name="AddThisProfile">Add in this profile</String>
 	</Strings>
 </Language>

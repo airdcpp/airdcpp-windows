@@ -136,10 +136,8 @@ LRESULT SearchTypeDlg::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	int i = -1;
 	while((i = ctrlExtensions.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		ctrlExtensions.DeleteItem(i);
-
-		auto pos = extList.begin();
-		advance(pos, i);
-		extList.erase(pos);
+		extList.erase(extList.begin()+i);
+		i--;
 	}
 
 	/*int i = ctrlExtensions.GetCurSel();
