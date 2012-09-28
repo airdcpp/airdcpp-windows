@@ -365,7 +365,10 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 				break;
 			}
 		}
+
+		updating = true; //prevent reloading the listview
 		ctrlTree.SelectItem(oldSel);
+		updating = false;
 	}
 
 	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
@@ -516,6 +519,9 @@ void DirectoryListingFrame::initStatus() {
 }
 
 LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	if (updating)
+		return 0;
+
 	NMTREEVIEW* p = (NMTREEVIEW*) pnmh;
 
 	if(p->itemNew.state & TVIS_SELECTED) {
