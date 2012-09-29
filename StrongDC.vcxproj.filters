@@ -386,6 +386,12 @@
     <None Include="res\Offline.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\ToolbarImages\Away.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\searchTypes\Custom.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AirDC.rc">

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -252,7 +252,9 @@
 #define IDI_TEXT                        435
 #define IDI_HUBOP                       436
 #define IDI_HUBREG                      437
-#define IDI_CUSTOM						438
+#define IDI_CUSTOM                      438
+#define IDI_BOT_OFF                     439
+#define IDI_BOT							440
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479

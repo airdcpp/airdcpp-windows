@@ -66,6 +66,7 @@ LRESULT FulHighlightPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	ColorList* cList = HighlightManager::getInstance()->getList();
 		
 	//populate listview with current strings
+	highlights.clear();
 	highlights.reserve(cList->size());
 	for(ColorIter i = cList->begin();i != cList->end(); ++i) {
 		highlights.push_back((*i));
@@ -95,7 +96,11 @@ LRESULT FulHighlightPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 
 void FulHighlightPage::write(){
-	
+	if(PropertiesDlg::needUpdate)
+	{
+		SendMessage(WM_DESTROY,0,0);
+		SendMessage(WM_INITDIALOG,0,0);
+	}
 	PropPage::write((HWND)*this, items);
 	HighlightManager::getInstance()->replaceList(highlights);
 

@@ -72,9 +72,10 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	SettingsManager::getInstance()->addListener(this);
 
 	readLog();
-	WinUtil::SetIcon(m_hWnd, IDR_PRIVATE);
-	userOffline = WinUtil::createIcon(IDR_PRIVATE_OFF);
-	userOnline = WinUtil::createIcon(IDR_PRIVATE);
+	bool userBot = replyTo.user && replyTo.user->isSet(User::BOT);
+	WinUtil::SetIcon(m_hWnd, userBot ? IDI_BOT : IDR_PRIVATE);
+	userOffline = userBot ? WinUtil::createIcon(IDI_BOT_OFF) : WinUtil::createIcon(IDR_PRIVATE_OFF);
+	userOnline = userBot ? WinUtil::createIcon(IDI_BOT) : WinUtil::createIcon(IDR_PRIVATE);
 
 	bHandled = FALSE;
 	return 1;

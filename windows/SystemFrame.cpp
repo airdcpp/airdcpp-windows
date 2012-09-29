@@ -45,12 +45,15 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlPad.LimitText(96*1024); //now that we have icons we might want to limit even lower, the ram usage grows when many icons in view.
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 	
-	if(!iconInfo)
-		iconInfo = WinUtil::getBitmapFromIcon(IDI_INFO, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
-	if(!iconWarning)
-		iconWarning = WinUtil::getBitmapFromIcon(IDI_IWARNING, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
-	if(!iconError)
-		iconError = WinUtil::getBitmapFromIcon(IDI_IERROR, WinUtil::bgColor, ICON_SIZE, ICON_SIZE);
+	if(!hbInfo)
+		hbInfo = WinUtil::getBitmapFromIcon(IDI_INFO, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
+	if(!hbWarning)
+		hbWarning = WinUtil::getBitmapFromIcon(IDI_IWARNING, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
+	if(!hbError)
+		hbError = WinUtil::getBitmapFromIcon(IDI_IERROR, WinUtil::bgColor, ICON_SIZE, ICON_SIZE);
+
+	tabError = WinUtil::createIcon(IDI_IERROR, 16);
+	tabNormal = WinUtil::createIcon(IDI_LOGS, 16);
 
 	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])?([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 
@@ -97,9 +100,9 @@ LRESULT SystemFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	}
 
 	ctrlPad.SetWindowText(_T(""));
-	DeleteObject(iconInfo);
-	DeleteObject(iconWarning);
-	DeleteObject(iconError);
+	DeleteObject(hbInfo);
+	DeleteObject(hbWarning);
+	DeleteObject(hbError);
 
 	LogManager::getInstance()->removeListener(this);
 	SettingsManager::getInstance()->removeListener(this);
@@ -193,13 +196,17 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	switch(md.severity) {
 	
 		case LogManager::LOG_INFO:
-			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(),iconInfo, false);
+			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(),hbInfo, false);
 			break;
 		case LogManager::LOG_WARNING:
-			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), iconWarning, false);
+			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbWarning, false);
 			break;
 		case LogManager::LOG_ERROR:
-			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), iconError, false);
+			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbError, false);
+			if(!errorNotified && !getActive()) { 
+				setIcon(tabError);
+				errorNotified = true;
+			}
 			break;
 		default:
 			break;
@@ -398,9 +405,15 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 }
 
 LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	if((wParam != SIZE_MINIMIZED && HIWORD(lParam) > 0) && scrollIsAtEnd()) {
-		scrollToEnd();
-	}
+	if(wParam != SIZE_MINIMIZED) { 
+		if((HIWORD(lParam) > 0) && scrollIsAtEnd()) 
+			scrollToEnd();
+
+		if(errorNotified) {
+			setIcon(tabNormal);
+			errorNotified = false;
+		}
+	} 
 
 	bHandled = FALSE;
 	return 0;

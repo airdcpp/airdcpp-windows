@@ -395,6 +395,7 @@
     <None Include="res\QConnect.ico" />
     <None Include="res\ro.ico" />
     <None Include="res\rus.ico" />
+    <None Include="res\searchTypes\Custom.ico" />
     <None Include="res\search_icons.bmp" />
     <None Include="res\SettingsTree\Advanced.ico" />
     <None Include="res\SettingsTree\AirAppearance.ico" />
@@ -435,6 +436,7 @@
     <None Include="res\toolbar20.bmp" />
     <None Include="res\ToolbarImages\ADLSearch.ico" />
     <None Include="res\ToolbarImages\AutoSearch.ico" />
+    <None Include="res\ToolbarImages\Away.ico" />
     <None Include="res\ToolbarImages\Clock.ico" />
     <None Include="res\ToolbarImages\Exit.ico" />
     <None Include="res\ToolbarImages\Favorites.ico" />

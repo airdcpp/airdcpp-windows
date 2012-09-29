@@ -69,7 +69,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	ctrlLastLines.AddTool(&ti);
 
-
 	ctrlClient.setClient(client);
 	init(m_hWnd, rcDefault);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
@@ -208,7 +207,7 @@ HubFrame::~HubFrame() {
 
 HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate, ProfileToken aShareProfile) : 
 		waitingForPW(false), extraSort(false), server(aServer), closed(false), 
-		showUsers(BOOLSETTING(GET_USER_INFO)), updateUsers(false), resort(false),
+		showUsers(BOOLSETTING(GET_USER_INFO)), updateUsers(false), resort(false), countType(Client::COUNT_NORMAL),
 		timeStamps(BOOLSETTING(TIME_STAMPS)),
 		hubchatusersplit(chatusersplit),
 		ctrlShowUsersContainer(WC_BUTTON, this, SHOW_USERS),
@@ -713,6 +712,20 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 					HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;//GetTopLevelWindow();
 					::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_PM_TRAY_ICON, NULL);
 				}
+			}
+		} else if(i->first ==  UPDATE_TAB_ICONS){
+			switch(countType) {
+				case Client::COUNT_OP:
+					setIcon(HubOpIcon);
+					break;
+				case Client::COUNT_REGISTERED:
+					setIcon(HubRegIcon);
+					break;
+				case Client::COUNT_NORMAL:
+					setIcon(HubRegIcon);
+					break;
+				default:
+					break;
 			}
 		}
 	}
@@ -1433,15 +1446,10 @@ void HubFrame::on(Second, uint64_t /*aTick*/) noexcept {
 	}
 }
 
-void HubFrame::on(ClientListener::SetIcons, const Client*, int status) noexcept { 
-	if(client->isReady() == true) {
-		if(status == 2) {	
-			setIcon(HubOpIcon);
-		} else if(status == 1) {
-			setIcon(HubRegIcon);
-		} else {
-			setIcon(HubIcon);
-		}
+void HubFrame::on(ClientListener::SetIcons, const Client*, int aCountType) noexcept { 
+	if(countType != aCountType){
+		countType = aCountType;
+		speak(UPDATE_TAB_ICONS);
 	}
 }
 

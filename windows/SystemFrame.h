@@ -36,10 +36,10 @@ class SystemFrame : public MDITabChildWindowImpl<SystemFrame>, public StaticFram
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("SystemFrame"), IDR_SYSTEM_LOG, 0, COLOR_3DFACE);
 
-	SystemFrame() : ctrlClientContainer(_T("edit"), this, SYSTEM_LOG_MESSAGE_MAP) { 
-		iconError = NULL;
-		iconInfo = NULL;
-		iconWarning = NULL;
+	SystemFrame() : ctrlClientContainer(_T("edit"), this, SYSTEM_LOG_MESSAGE_MAP), errorNotified(false) { 
+		hbError = NULL;
+		hbInfo = NULL;
+		hbWarning = NULL;
 	}
 	~SystemFrame() { }
 	
@@ -132,9 +132,14 @@ private:
 	void Colorize(const tstring& line, LONG Begin);
 	boost::wregex reg;
 
-	HBITMAP  iconInfo;
-	HBITMAP  iconWarning;
-	HBITMAP  iconError;
+	HBITMAP  hbInfo;
+	HBITMAP  hbWarning;
+	HBITMAP  hbError;
+
+	HICON tabError;
+	HICON tabNormal;
+
+	bool errorNotified;
 
 	bool scrollIsAtEnd();
 	tstring selWord;

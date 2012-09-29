@@ -137,14 +137,22 @@ public:
 
 		TabInfo* ti = getTabInfo(aWnd);
 		dcassert(ti != NULL);
-		if(ti == NULL)
-			return;
+		
 		active = ti;
 		ti->dirty = false;
 		ti->notification = false;
 		calcRows(false);
 		Invalidate();
 	}
+
+	bool getActive(HWND aWnd) {
+		TabInfo* ti = getTabInfo(aWnd);
+		if(ti == NULL)
+			return false;
+
+		return active == ti;
+	}
+		
 
 	void setTop(HWND aWnd) {
 		viewOrder.remove(aWnd);
@@ -965,7 +973,11 @@ public:
 		dcassert(getTab());
 		getTab()->setDirty(m_hWnd);
 	}
-	
+	bool getActive() {
+		dcassert(getTab());
+		return getTab()->getActive(m_hWnd);
+	}
+
 	void setDisconnected(bool dis = false) {
 		dcassert(getTab());
 		getTab()->setDisconnected(m_hWnd, dis);
