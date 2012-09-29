@@ -1636,5 +1636,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="HighlightsInTheme">The selected theme has highlight color settings, 
 loading them will override your old highlights, 
 would you still like to load them?</String>
+		<String Name="SearchTimes">Search times</String>
 	</Strings>
 </Language>

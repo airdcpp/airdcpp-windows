@@ -1057,5 +1057,11 @@
     <Image Include="res\MediaToolbar\down.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\Bot.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Botoff.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

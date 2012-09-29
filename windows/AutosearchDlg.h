@@ -65,6 +65,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_USE_MATCHER, onCheckMatcher)
 		COMMAND_ID_HANDLER(IDC_CUSTOM_SEARCH_TIMES, onCheckTimes)
 		COMMAND_ID_HANDLER(IDC_USE_EXPIRY, onCheckExpiry)
+		COMMAND_ID_HANDLER(IDC_ADVANCED, onClickAdvanced)
 		COMMAND_HANDLER(IDC_TARGET_PATH, EN_CHANGE, onTargetChanged)
 		COMMAND_HANDLER(IDC_SELECT_DIR, BN_CLICKED, onClickLocation)
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
@@ -84,6 +85,7 @@ public:
 		return FALSE;
 	}
 
+	LRESULT onClickAdvanced(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckExpiry(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -105,6 +107,7 @@ public:
 	void download(const string& aTarget, QueueItem::Priority p, bool isWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool /*isWhole*/) { return 0; }
 	bool showDirDialog(string& /*fileName*/) { return true; }
+	void switchMode();
 private:
 //	enum { BUF_LEN = 1024 };
 	CImageList ftImage;
@@ -113,6 +116,7 @@ private:
 	CComboBoxEx ctrlFileType;
 	CComboBox cAction;
 	CButton cSelectDir;
+	CButton cAdvanced;
 	CComboBox cMatcherType;
 	CStatic cTargetType;
 
@@ -123,6 +127,7 @@ private:
 	void fixControls();
 	void updateTargetTypeText();
 	bool loading;
+	bool advanced;
 
 	int searchType;
 };

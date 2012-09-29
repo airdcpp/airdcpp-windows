@@ -31,7 +31,7 @@
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
 AutoSearchDlg::AutoSearchDlg() : fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), searchInterval(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
-	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0)
+	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true)
 	/*ctrlTarget(WC_EDIT, this, FILTER_MESSAGE_MAP)*/ {
 }
 
@@ -46,12 +46,12 @@ AutoSearchDlg::~AutoSearchDlg() {
 }
 
 LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
 	ATTACH(IDC_TARGET_PATH, ctrlTarget);
 	ATTACH(IDC_TARGET_TYPE, cTargetType);
 	ATTACH(IDC_U_MATCH, ctrlUserMatch);
 	ATTACH(IDC_MATCHER_PATTERN, ctrlMatcherString);
+	ATTACH(IDC_ADVANCED, cAdvanced);
 
 	ctrlSearch.SetWindowText(Text::toT(searchString).c_str());
 	ctrlCheatingDescription.SetWindowText(Text::toT(comment).c_str());
@@ -93,6 +93,9 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_END_TIME), CTSTRING(END_TIME));
 	::SetWindowText(GetDlgItem(IDC_CHECK_QUEUED), CTSTRING(AUTOSEARCH_CHECK_QUEUED));
 	::SetWindowText(GetDlgItem(IDC_CHECK_SHARED), CTSTRING(AUTOSEARCH_CHECK_SHARED));
+
+	::SetWindowText(GetDlgItem(IDC_SEARCH_TIMES_LABEL), CTSTRING(SEARCH_TIMES));
+	::SetWindowText(GetDlgItem(IDC_ADVANCED_LABEL), CTSTRING(SETTINGS_ADVANCED));
 
 	//get the search type so that we can set the initial control states correctly in fixControls
 	StringList ext;
@@ -172,12 +175,33 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 	fixControls();
 	loading = false; //loading done.
+	switchMode();
 	return TRUE;
 }
 
 LRESULT AutoSearchDlg::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	cSelectDir.SetState(false);
 	return 0;
+}
+
+LRESULT AutoSearchDlg::onClickAdvanced(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	switchMode();
+	return 0;
+}
+
+void AutoSearchDlg::switchMode() {
+	advanced = !advanced;
+
+	//users shouldn't be able to change the hidden options with the keyboard command
+	fixControls();
+
+	if (advanced) {
+		SetWindowPos(NULL,0,0,600,525,SWP_NOZORDER|SWP_NOMOVE);	
+		cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + " <<").c_str());
+	} else {
+		SetWindowPos(NULL,0,0,600,290,SWP_NOZORDER|SWP_NOMOVE);
+		cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + " >>").c_str());
+	}
 }
 
 LRESULT AutoSearchDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -353,33 +377,38 @@ LRESULT AutoSearchDlg::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 void AutoSearchDlg::fixControls() {
 	/* File type */
-	if (searchType == SearchManager::TYPE_TTH) {
+	if (searchType == SearchManager::TYPE_TTH)
 		CheckDlgButton(IDC_USE_MATCHER, false);
-		::EnableWindow(GetDlgItem(IDC_USE_MATCHER), false);
-	} else {
-		::EnableWindow(GetDlgItem(IDC_USE_MATCHER),	true);
-	}
 
-	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), searchType == SearchManager::TYPE_DIRECTORY);
-	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), searchType == SearchManager::TYPE_DIRECTORY);
 
 	/* Action */
 	BOOL isReportOnly = cAction.GetCurSel() == AutoSearch::ACTION_REPORT;
 	::EnableWindow(GetDlgItem(IDC_TARGET_PATH),				!isReportOnly);
 	::EnableWindow(GetDlgItem(IDC_SELECT_DIR),				!isReportOnly);
 
-	/* Matcher */
-	BOOL enableMatcher = IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED;
-	::EnableWindow(GetDlgItem(IDC_PATTERN),					enableMatcher);
-	::EnableWindow(GetDlgItem(IDC_MATCHER_PATTERN),			enableMatcher);
-	::EnableWindow(GetDlgItem(IDC_TYPE),					enableMatcher);
-	::EnableWindow(GetDlgItem(IDC_MATCHER_TYPE),			enableMatcher);
+
+	/* Misc advanced */
+	::EnableWindow(GetDlgItem(IDC_U_MATCH), advanced);
+	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), searchType == SearchManager::TYPE_DIRECTORY && advanced);
+	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), searchType == SearchManager::TYPE_DIRECTORY && advanced);
+
+
+	/* Result matcher */
+	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), searchType != SearchManager::TYPE_TTH && advanced);
+
+	BOOL matcherEnabled = (IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED && advanced);
+	::EnableWindow(GetDlgItem(IDC_PATTERN),					matcherEnabled);
+	::EnableWindow(GetDlgItem(IDC_MATCHER_PATTERN),			matcherEnabled);
+	::EnableWindow(GetDlgItem(IDC_TYPE),					matcherEnabled);
+	::EnableWindow(GetDlgItem(IDC_MATCHER_TYPE),			matcherEnabled);
 
 	/* Expiry date */
 	::EnableWindow(GetDlgItem(IDC_DATETIMEPICKER),			IsDlgButtonChecked(IDC_USE_EXPIRY) == BST_CHECKED);
 
 	/* Search times */
-	BOOL useCustomTimes = IsDlgButtonChecked(IDC_CUSTOM_SEARCH_TIMES) == BST_CHECKED;
+	::EnableWindow(GetDlgItem(IDC_CUSTOM_SEARCH_TIMES),			advanced);
+
+	BOOL useCustomTimes = (IsDlgButtonChecked(IDC_CUSTOM_SEARCH_TIMES) == BST_CHECKED && advanced);
 	::EnableWindow(GetDlgItem(IDC_MON),				useCustomTimes);
 	::EnableWindow(GetDlgItem(IDC_TUE),				useCustomTimes);
 	::EnableWindow(GetDlgItem(IDC_WED),				useCustomTimes);
