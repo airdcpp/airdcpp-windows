@@ -316,7 +316,7 @@ private:
 		string* pItem1 = (string*)lParam1;
 		string* pItem2 = (string*)lParam2;
 
-		return Util::DefaultSort((*pItem1).c_str(), (*pItem2).c_str());
+		return Util::DefaultSort(Text::toT(*pItem1).c_str(), Text::toT(*pItem2).c_str());
 	}
 
 	TaskQueue tasks;

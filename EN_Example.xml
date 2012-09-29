@@ -176,7 +176,6 @@
 		<String Name="FileListDiff">Subtract list</String>
 		<String Name="FileListRefreshFailed">File list refresh failed: </String>
 		<String Name="FileListRefreshFinished">File list refresh finished</String>
-		<String Name="FileListRefreshInProgress">File list refresh in progress, please wait for it to finish before trying to refresh again</String>
 		<String Name="FileListRefreshInitiated">File list refresh initiated</String>
 		<String Name="FileNotAvailable">File not available</String>
 		<String Name="FileType">File type</String>
@@ -1540,12 +1539,16 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="AddingXSharedDirs">Adding %d directories in share...</String>
 		<String Name="DirectoryAdded">The directory %s has been added in share</String>
 		<String Name="DirectoriesAdded">%d directories has been added in share</String>
+		<String Name="AddDirectoryQueued">The directory %s has been queued to be added in share</String>
+		<String Name="AddDirectoriesQueued">%d directories have queued to be added in share</String>
 		<String Name="DirectoryRefreshed">The directory %s has been refreshed</String>
 		<String Name="VirtualDirectoryRefreshed">The virtual directory %s has been refreshed</String>
-		<String Name="XDirectoriesRefreshed">%d directories have been refreshed</String>
 		<String Name="IncomingRefreshed">Incoming directories have been refreshed</String>
+		<String Name="DirectoryRefreshQueued">The directory %s has been queued for refreshing</String>
+		<String Name="VirtualRefreshQueued">The virtual directory %s has been queued for refreshing</String>
+		<String Name="IncomingRefreshQueued">Incoming directories have been queued for refreshing</String>
+		<String Name="RefreshQueued">Filelist refresh has been queued</String>
 		<String Name="NoAdditionalMatches">There are no additional matches available</String>
-		<String Name="FileListRefreshInitiatedXRpath">File list refresh initiated for %d directories</String>
 		<String Name="SearchTypes">Search Types</String>
 		<String Name="ResetToDefaults">Reset to defaults</String>
 		<String Name="Predefined">Predefined</String>
