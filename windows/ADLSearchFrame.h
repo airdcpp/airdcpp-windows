@@ -48,7 +48,7 @@ public:
 	typedef MDITabChildWindowImpl<ADLSearchFrame> baseClass;
 
 	// Constructor/destructor
-	ADLSearchFrame() : closed(false) {}
+	ADLSearchFrame() : closed(false), created(false) {}
 	~ADLSearchFrame() { }
 
 	// Frame window declaration
@@ -127,6 +127,7 @@ private:
 	CMenu contextMenu;
 
 	bool closed;
+	bool created;
 
 	// Column order
 	enum 
