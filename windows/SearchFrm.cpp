@@ -380,6 +380,7 @@ void SearchFrame::onEnter() {
 	if (onlyFree != BOOLSETTING(FREE_SLOTS_DEFAULT))
 		SettingsManager::getInstance()->set(SettingsManager::FREE_SLOTS_DEFAULT, onlyFree);
 
+	updateSkipList();
 	if (UseSkiplist != BOOLSETTING(SEARCH_SKIPLIST))
 		SettingsManager::getInstance()->set(SettingsManager::SEARCH_SKIPLIST, UseSkiplist);
 
@@ -1670,26 +1671,19 @@ LRESULT SearchFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*
 
 	return 0;
 }
-LRESULT SearchFrame::onSkiplist(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(wParam == VK_RETURN) {
-		TCHAR *buf = new TCHAR[ctrlSkiplist.GetWindowTextLength()+1];
-		ctrlSkiplist.GetWindowText(buf, ctrlSkiplist.GetWindowTextLength()+1);
-		string skipList = Text::fromT(buf);
+void SearchFrame::updateSkipList() {
+	TCHAR *buf = new TCHAR[ctrlSkiplist.GetWindowTextLength()+1];
+	ctrlSkiplist.GetWindowText(buf, ctrlSkiplist.GetWindowTextLength()+1);
+	string skipList = Text::fromT(buf);
 
-		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SEARCH, skipList);
+	SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SEARCH, skipList);
 
-		{
-			Lock l (cs);
-			searchSkipList.pattern = skipList;
-			searchSkipList.prepare();
-		}
-		delete[] buf;
-	
+	{
+		Lock l (cs);
+		searchSkipList.pattern = skipList;
+		searchSkipList.prepare();
 	}
-
-	bHandled = false;
-
-	return 0;
+	delete[] buf;
 }
 
 bool SearchFrame::parseFilter(FilterModes& mode, int64_t& size) {

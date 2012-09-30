@@ -196,13 +196,14 @@ void AutoSearchDlg::switchMode() {
 	fixControls();
 
 	CRect rc;
+	DWORD dwStyle = ::GetWindowLongPtr( m_hWnd, GWL_STYLE ) ;
+	AdjustWindowRect(rc, dwStyle, FALSE); //get the border widths so it's being sized correctly on different operating systems
+
 	if (advanced) {
-		::GetWindowRect(GetDlgItem(IDC_ADVANCED_LABEL), rc);
-		SetWindowPos(NULL,0,0,600,rc.bottom + 20,SWP_NOZORDER|SWP_NOMOVE);	
+		SetWindowPos(NULL,0, 0, 585+abs(rc.left)+abs(rc.right), 490+abs(rc.top)+abs(rc.bottom),SWP_NOZORDER|SWP_NOMOVE);
 		cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + " <<").c_str());
 	} else {
-		cAdvanced.GetWindowRect(rc);
-		SetWindowPos(NULL,0,0,600,rc.bottom + 20,SWP_NOZORDER|SWP_NOMOVE);
+		SetWindowPos(NULL, 0, 0, 585+abs(rc.left)+abs(rc.right), 250+abs(rc.top)+abs(rc.bottom),SWP_NOZORDER|SWP_NOMOVE);
 		cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + " >>").c_str());
 	}
 }
