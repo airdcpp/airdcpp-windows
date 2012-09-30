@@ -37,12 +37,15 @@ EmoticonsManager* emoticonsManager = NULL;
 #define MAX_EMOTICONS 48
 UINT RichTextBox::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
-RichTextBox::RichTextBox() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr) {
+RichTextBox::RichTextBox() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr), formatLinks(false),
+	formatPaths(false), formatReleases(true) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
 	}
-	regReleaseBoost.assign(Text::toT(AirUtil::getReleaseRegLong(true)));
-	regUrlBoost.assign(_T("(((?:[a-z][\\w-]{0,10})?:/{1,3}|www\\d{0,3}[.]|magnet:\\?[^\\s=]+=|spotify:|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`()\\[\\]{};:'\".,<>?«»“”‘’]))"), boost::regex_constants::icase);
+
+	regPath.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])?([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
+	regRelease.assign(Text::toT(AirUtil::getReleaseRegLong(true)));
+	regUrl.assign(_T("(((?:[a-z][\\w-]{0,10})?:/{1,3}|www\\d{0,3}[.]|magnet:\\?[^\\s=]+=|spotify:|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`()\\[\\]{};:'\".,<>?«»“”‘’]))"), boost::regex_constants::icase);
 	showHandCursor=false;
 	lastTick = GET_TICK();
 	emoticonsManager->inc();
@@ -360,76 +363,77 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 }
 
 void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LONG lSelBegin, bool bUseEmo) {
-	vector<ChatLink> tmpLinks;
-		
-	try {
-		tstring::const_iterator start = sMsg.begin();
-		tstring::const_iterator end = sMsg.end();
-		boost::match_results<tstring::const_iterator> result;
-		int pos=0;
+	if (formatLinks) {
+		vector<ChatLink> tmpLinks;
+		try {
+			tstring::const_iterator start = sMsg.begin();
+			tstring::const_iterator end = sMsg.end();
+			boost::match_results<tstring::const_iterator> result;
+			int pos=0;
 
-		while(boost::regex_search(start, end, result, regUrlBoost, boost::match_default)) {
-			size_t linkStart = pos + lSelBegin + result.position();
-			size_t linkEnd = pos + lSelBegin + result.position() + result.length();
-			SetSel(linkStart, linkEnd);
-			std::string link( result[0].first, result[0].second );
+			while(boost::regex_search(start, end, result, regUrl, boost::match_default)) {
+				size_t linkStart = pos + lSelBegin + result.position();
+				size_t linkEnd = pos + lSelBegin + result.position() + result.length();
+				SetSel(linkStart, linkEnd);
+				std::string link( result[0].first, result[0].second );
 
-			if(link.find("magnet:?") != string::npos) {
-				ChatLink cl = ChatLink(link, ChatLink::TYPE_MAGNET);
-				tmpLinks.push_back(cl);
-				if (cl.dupe == SHARE_DUPE) {
-					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-				} else if (cl.dupe == QUEUE_DUPE) {
-					SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
+				if(link.find("magnet:?") != string::npos) {
+					ChatLink cl = ChatLink(link, ChatLink::TYPE_MAGNET);
+					tmpLinks.push_back(cl);
+					if (cl.dupe == SHARE_DUPE) {
+						SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+					} else if (cl.dupe == QUEUE_DUPE) {
+						SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
+					} else {
+						SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+					}
 				} else {
+					ChatLink cl = ChatLink(link, (link.find("spotify:") != string::npos ? ChatLink::TYPE_SPOTIFY : ChatLink::TYPE_URL));
+					tmpLinks.push_back(cl);
 					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 				}
-			} else {
-				ChatLink cl = ChatLink(link, (link.find("spotify:") != string::npos ? ChatLink::TYPE_SPOTIFY : ChatLink::TYPE_URL));
-				tmpLinks.push_back(cl);
-				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+
+				pos=pos+result.position() + result.length();
+				start = result[0].second;
 			}
-
-			pos=pos+result.position() + result.length();
-			start = result[0].second;
-		}
 	
-	} catch(...) { 
-		//...
-	}
+		} catch(...) { 
+			//...
+		}
 
-	//replace links
-	for(auto p = tmpLinks.begin(); p != tmpLinks.end(); p++) {
-		tstring::size_type found = 0;
-		while((found = sMsg.find(Text::toT(p->url), found)) != tstring::npos) {
-			size_t linkStart =  found;
-			size_t linkEnd =  found + p->url.length();
+		//replace links
+		for(auto p = tmpLinks.begin(); p != tmpLinks.end(); p++) {
+			tstring::size_type found = 0;
+			while((found = sMsg.find(Text::toT(p->url), found)) != tstring::npos) {
+				size_t linkStart =  found;
+				size_t linkEnd =  found + p->url.length();
 
-			tstring displayText = Text::toT(p->getDisplayText());
-			SetSel(linkStart + lSelBegin, linkEnd + lSelBegin);
+				tstring displayText = Text::toT(p->getDisplayText());
+				SetSel(linkStart + lSelBegin, linkEnd + lSelBegin);
 
-			sMsg.replace(linkStart, linkEnd - linkStart, displayText.c_str());
-			setText(displayText);
-			linkEnd = linkStart + displayText.size();
-			//SetSel(cr.cpMin, cr.cpMax);
-			found++;
+				sMsg.replace(linkStart, linkEnd - linkStart, displayText.c_str());
+				setText(displayText);
+				linkEnd = linkStart + displayText.size();
+				//SetSel(cr.cpMin, cr.cpMax);
+				found++;
 
 
-			CHARRANGE cr;
-			cr.cpMin = linkStart + lSelBegin;
-			cr.cpMax = linkEnd + lSelBegin;
-			links.push_back(make_pair(cr, *p));
+				CHARRANGE cr;
+				cr.cpMin = linkStart + lSelBegin;
+				cr.cpMax = linkEnd + lSelBegin;
+				links.push_back(make_pair(cr, *p));
+			}
 		}
 	}
 
 	//Format release names
-	if(SETTING(FORMAT_RELEASE) || SETTING(DUPES_IN_CHAT)) {
+	if(formatReleases && (SETTING(FORMAT_RELEASE) || SETTING(DUPES_IN_CHAT))) {
 		tstring::const_iterator start = sMsg.begin();
 		tstring::const_iterator end = sMsg.end();
 		boost::match_results<tstring::const_iterator> result;
 		int pos=0;
 
-		while(boost::regex_search(start, end, result, regReleaseBoost, boost::match_default)) {
+		while(boost::regex_search(start, end, result, regRelease, boost::match_default)) {
 			CHARRANGE cr;
 			cr.cpMin = pos + lSelBegin + result.position();
 			cr.cpMax = pos + lSelBegin + result.position() + result.length();
@@ -452,6 +456,30 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 			}
 
 			links.push_back(make_pair(cr, cl));
+			start = result[0].second;
+			pos=pos+result.position() + result.length();
+		}
+	}
+
+	//Format local paths
+	if (formatPaths) {
+		tstring::const_iterator start = sMsg.begin();
+		tstring::const_iterator end = sMsg.end();
+		boost::match_results<tstring::const_iterator> result;
+		int pos=0;
+
+		while(boost::regex_search(start, end, result, regPath, boost::match_default)) {
+			CHARRANGE cr;
+			cr.cpMin = pos + lSelBegin + result.position();
+			cr.cpMax = pos + lSelBegin + result.position() + result.length();
+
+			SetSel(cr.cpMin, cr.cpMax);
+			SetSelectionCharFormat(WinUtil::m_ChatTextServer);
+
+			std::string path (result[0].first, result[0].second);
+			ChatLink cl = ChatLink(path, ChatLink::TYPE_PATH);
+			links.push_back(make_pair(cr, cl));
+
 			start = result[0].second;
 			pos=pos+result.position() + result.length();
 		}
@@ -485,14 +513,10 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 
 				//check the position
 				if ((curReplace != lastReplace) && (curReplace > 0) && isgraph(sMsg[curReplace-1])) {
-					//auto tmp = sMsg[curReplace-1];
 					insert=false;
 				}
 
 				if (insert) {
-					//auto tmp2 = Text::fromT(sMsg).substr(curReplace-1);
-					//LogManager::getInstance()->message("Start: " + tmp2, LogManager::LOG_INFO);
-					//auto tmp = sMsg[curReplace-1];
 					SetSel(lSelBegin, lSelEnd);
 
 					GetSelectionCharFormat(cfSel);
@@ -666,7 +690,7 @@ LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 	selectedUser.clear();
 	selectedIP.clear();
 
-	shareDupe=false, queueDupe=false, isMagnet=false, isTTH=false, release=false;
+	shareDupe=false, queueDupe=false, isMagnet=false, isTTH=false, release=false, isPath=false;
 	ChatLink cl;
 	CHARRANGE cr;
 	GetSel(cr);
@@ -677,6 +701,7 @@ LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 		queueDupe = (cl.dupe == QUEUE_DUPE || cl.dupe == FINISHED_DUPE);
 		isMagnet = cl.type == ChatLink::TYPE_MAGNET;
 		release = cl.type == ChatLink::TYPE_RELEASE;
+		isPath = cl.type == ChatLink::TYPE_PATH;
 		SetSel(cr.cpMin, cr.cpMax);
 	} else {
 		if(cr.cpMax != cr.cpMin) {
@@ -794,6 +819,21 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			}
 		} else if (release) {
 			menu.InsertSeparatorFirst(CTSTRING(RELEASE));
+		} else if (isPath) {
+			menu.InsertSeparatorFirst(CTSTRING(PATH));
+			menu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
+			menu.AppendMenu(MF_STRING, IDC_ADD_AUTO_SEARCH_DIR, CTSTRING(ADD_AUTO_SEARCH_DIR));
+			if (selectedWord[selectedWord.length()-1] != PATH_SEPARATOR) {
+				menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH_FILENAME));
+				if (Util::fileExists(Text::fromT(selectedWord))) {
+					menu.AppendMenu(MF_SEPARATOR);
+					menu.AppendMenu(MF_STRING, IDC_DELETE_FILE, CTSTRING(DELETE_FILE));
+				} else {
+					menu.AppendMenu(MF_STRING, IDC_ADD_AUTO_SEARCH_FILE, CTSTRING(ADD_AUTO_SEARCH_FILE));
+					menu.AppendMenu(MF_SEPARATOR);
+				}
+			}
+			menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 		} else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
 			menu.InsertSeparatorFirst(CTSTRING(LINK));
 			menu.AppendMenu(MF_STRING, IDC_OPEN_LINK, CTSTRING(CONNECT));
@@ -805,34 +845,36 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 		menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
 		menu.AppendMenu(MF_STRING, IDC_COPY_ACTUAL_LINE,  CTSTRING(COPY_LINE));
-		menu.AppendMenu(MF_SEPARATOR);
-		menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
-		if (isTTH || isMagnet) {
-			menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
-		}
-
-		targets.clear();
-		if (isMagnet || release) {
-			if (shareDupe || queueDupe) {
-				menu.AppendMenu(MF_SEPARATOR);
-				menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+		if (!isPath) {
+			menu.AppendMenu(MF_SEPARATOR);
+			menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+			if (isTTH || isMagnet) {
+				menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
 			}
 
-			menu.AppendMenu(MF_SEPARATOR);
-			if (isMagnet) {
-				Magnet m = Magnet(Text::fromT(selectedWord));
-				if (client && ShareManager::getInstance()->isTempShared(user ? user->getCID().toBase32() : Util::emptyString, m.getTTH())) {
-					/* show an option to remove the item */
-					menu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(STOP_SHARING));
-				} else if (!author.empty()) {
-					targets = QueueManager::getInstance()->getTargets(m.getTTH());
-					appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, true, false);
-					if (!shareDupe && !queueDupe)
-						menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
+			targets.clear();
+			if (isMagnet || release) {
+				if (shareDupe || queueDupe) {
+					menu.AppendMenu(MF_SEPARATOR);
+					menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 				}
-			} else if (release) {
-				//autosearch menus
-				appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, false, true);
+
+				menu.AppendMenu(MF_SEPARATOR);
+				if (isMagnet) {
+					Magnet m = Magnet(Text::fromT(selectedWord));
+					if (client && ShareManager::getInstance()->isTempShared(user ? user->getCID().toBase32() : Util::emptyString, m.getTTH())) {
+						/* show an option to remove the item */
+						menu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(STOP_SHARING));
+					} else if (!author.empty()) {
+						targets = QueueManager::getInstance()->getTargets(m.getTTH());
+						appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, true, false);
+						if (!shareDupe && !queueDupe)
+							menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
+					}
+				} else if (release) {
+					//autosearch menus
+					appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, false, true);
+				}
 			}
 		}
 
@@ -936,6 +978,42 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
     m_bPopupMenu = true;
 	menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 
+	return 0;
+}
+
+LRESULT RichTextBox::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	WinUtil::searchAny(Text::toT(Util::getReleaseDir(Text::fromT(selectedWord), true)));
+	return 0;
+}
+
+LRESULT RichTextBox::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	string path = Text::fromT(selectedWord);
+	string msg = str(boost::format(STRING(DELETE_FILE_CONFIRM)) % path);
+	if(MessageBox(Text::toT(msg).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+		File::deleteFile(path);
+	}
+
+	SetSelNone();
+	return 0;
+}
+
+LRESULT RichTextBox::onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	string targetPath = Util::getFilePath(Text::fromT(selectedWord));
+	string fileName = Util::getFileName(Text::fromT(selectedWord));
+
+	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, TargetUtil::TARGET_PATH, false);
+
+	SetSelNone();
+	return 0;
+}
+
+LRESULT RichTextBox::onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	string targetPath = Util::getParentDir(Text::fromT(selectedWord));
+	string dirName = Util::getLastDir(selectedWord[selectedWord.length()-1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selectedWord)) : Text::fromT(selectedWord));
+
+	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true, false);
+
+	SetSelNone();
 	return 0;
 }
 
@@ -1059,6 +1137,8 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 			} else {
 				path = QueueManager::getInstance()->getDirPath(Text::fromT(selectedWord));
 			}
+		} else if (isPath) {
+			path = Util::getFilePath(selectedWord);
 		} else {
 			Magnet m = Magnet(Text::fromT(selectedWord));
 			if (m.hash.empty())
@@ -1219,6 +1299,13 @@ bool RichTextBox::getLink(POINT pt, CHARRANGE& cr, ChatLink& link) {
 }
 
 LRESULT RichTextBox::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	CHARRANGE cr;
+	GetSel(cr);
+	if(cr.cpMax != cr.cpMin) {
+		bHandled = FALSE;
+		return 0;
+	}
+
 	bHandled = onClientEnLink(uMsg, wParam, lParam, bHandled);
 	return bHandled = TRUE ? 0: 1;
 }
@@ -1769,6 +1856,8 @@ LRESULT RichTextBox::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		WinUtil::searchAny(Text::toT(m.fname));
+	} else if (isPath) {
+		WinUtil::searchAny(Util::getFileName(selectedWord));
 	} else {
 		WinUtil::searchAny(selectedWord);
 	}
@@ -1794,7 +1883,7 @@ LRESULT RichTextBox::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	if(newId < (int)WebShortcuts::getInstance()->list.size()) {
 		WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
 		if(ws != NULL) {
-			WinUtil::SearchSite(ws, selectedWord); 
+			WinUtil::SearchSite(ws, isPath ? Text::toT(Util::getReleaseDir(Text::fromT(selectedWord), true)) : selectedWord); 
 		}
 	}
 	SetSelNone();

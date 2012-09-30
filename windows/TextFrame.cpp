@@ -33,25 +33,33 @@ void TextFrame::openWindow(const tstring& aFileName, Type aType) {
 	frame->CreateEx(WinUtil::mdiClient);
 }
 
+void TextFrame::openWindow(const tstring& aTitle, const tstring& aText, Type aType) {
+	TextFrame* frame = new TextFrame(aTitle, aType, aText);
+	frame->CreateEx(WinUtil::mdiClient);
+}
+
+TextFrame::TextFrame(const tstring& fileName, Type aType, const tstring& aText /*empty*/) : file(fileName), textType(aType), text(aText) {
+	SettingsManager::getInstance()->addListener(this);
+}
+
 LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | ES_AUTOVSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE, IDC_CLIENT);
 
-	ctrlPad.SetAutoURLDetect(false);
-	ctrlPad.SetEventMask(ctrlPad.GetEventMask() | ENM_LINK);
 	ctrlPad.Subclass();
 	ctrlPad.LimitText(0);
 
 	string tmp;
 	try {
-		File f(Text::fromT(file), File::READ, File::OPEN);
 		if(textType < NORMAL) {
 			ctrlPad.SetFont(WinUtil::font);
 			ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 			ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 
 			if (textType == HISTORY) {
+				ctrlPad.setFormatLinks(true);
+				File f(Text::fromT(file), File::READ, File::OPEN);
 				int64_t size = f.getSize();
 				if(size > 64*1024) {
 					f.setPos(size - 64*1024);
@@ -66,12 +74,30 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 				for(; i < totalLines; ++i){
 					ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
 				}
+				SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 			} else if (textType == LOG) {
+				ctrlPad.setFormatPaths(true);
+				ctrlPad.setFormatLinks(true);
+				File f(Text::fromT(file), File::READ, File::OPEN);
 				//if openlog just add the whole text
 				tmp = f.read();
 				ctrlPad.SetWindowText(Text::toT(tmp).c_str());
+				SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
+			} else if (textType == REPORT) {
+				ctrlPad.SetRedraw(FALSE);
+				ctrlPad.setFormatReleases(false);
+				ctrlPad.setFormatPaths(true);
+				ctrlPad.SetWindowText(text.c_str());
+				ctrlPad.FormatEmoticonsAndLinks(text, 0, false);
+
+				ctrlPad.setAutoScrollToEnd(false);
+				ctrlPad.SetSel(0, 0); //set scroll position to top
+
+				SetWindowText(file.c_str());
+				ctrlPad.SetRedraw(TRUE);
 			}
 		} else if(textType == NORMAL) {
+			File f(Text::fromT(file), File::READ, File::OPEN);
 			tmp = Text::toDOS(f.read());
 			tmp = Text::toUtf8(tmp);
 
@@ -102,12 +128,11 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			tstring msg = Text::toT(tmp);
 			ctrlPad.SetWindowText(msg.c_str());
 			ctrlPad.FormatEmoticonsAndLinks(msg, 0, false);
-			ctrlPad.autoScrollToEnd = false;
+			ctrlPad.setAutoScrollToEnd(false);
 			ctrlPad.SetSel(0, 0); //set scroll position to top
+			SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 		}
-		
-		SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
-		f.close();
+		//f.close();
 	} catch(const FileException& e) {
 		ctrlPad.SetWindowText(Text::toT(Util::getFileName(Text::fromT(file)) + ": " + e.getError()).c_str());
 	}

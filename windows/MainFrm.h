@@ -31,6 +31,7 @@
 #include "../client/SettingsManager.h"
 #include "../client/DirectoryListingManagerListener.h"
 #include "../client/UpdateManagerListener.h"
+#include "../client/ShareScannerManager.h"
 
 #include "PopupManager.h"
 
@@ -46,7 +47,7 @@
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>, public Thread,
 		private TimerManagerListener, private QueueManagerListener,
-		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener
+		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener
 {
 public:
 	MainFrame();
@@ -76,6 +77,7 @@ public:
 		AUTO_CONNECT,
 		PARSE_COMMAND_LINE,
 		VIEW_FILE_AND_DELETE, 
+		VIEW_TEXT, 
 		SET_STATUSTEXT,
 		STATUS_MESSAGE,
 		SHOW_POPUP,
@@ -529,6 +531,8 @@ private:
 	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update) noexcept;
 	void on(UpdateManagerListener::UpdateComplete, const string& updater) noexcept;
 	void on(UpdateManagerListener::UpdateFailed, const string& line) noexcept;
+
+	void on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)

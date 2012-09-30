@@ -60,17 +60,12 @@
 #include "../client/HashManager.h"
 #include "../client/UploadManager.h"
 #include "../client/StringTokenizer.h"
-#include "../client/SimpleXML.h"
 #include "../client/ShareManager.h"
 #include "../client/LogManager.h"
 #include "../client/Thread.h"
 #include "../client/FavoriteManager.h"
 #include "../client/MappingManager.h"
-#include "../client/ShareScannerManager.h"
 #include "../client/AirUtil.h"
-#include "../client/ScopedFunctor.h"
-#include "../client/format.h"
-#include "../client/HttpDownload.h"
 #include "../client/DirectoryListingManager.h"
 #include "../client/UpdateManager.h"
 #include "../client/GeoManager.h"
@@ -185,6 +180,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	LogManager::getInstance()->addListener(this);
 	DirectoryListingManager::getInstance()->addListener(this);
 	UpdateManager::getInstance()->addListener(this);
+	ShareScannerManager::getInstance()->addListener(this);
 
 	WinUtil::init(m_hWnd);
 
@@ -739,6 +735,9 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		auto_ptr<tstring> file(reinterpret_cast<tstring*>(lParam));
 		TextFrame::openWindow(*file, TextFrame::NORMAL);
 		File::deleteFile(Text::fromT(*file));
+	} else if(wParam == VIEW_TEXT) {
+		auto_ptr<TStringPair> tp(reinterpret_cast<TStringPair*>(lParam));
+		TextFrame::openWindow(tp->first, tp->second, TextFrame::REPORT);
 	} else if(wParam == STATS) {
 		auto_ptr<TStringList> pstr(reinterpret_cast<TStringList*>(lParam));
 		const TStringList& str = *pstr;
@@ -1780,6 +1779,10 @@ void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr qi, const 
 	}
 }
 
+void MainFrame::on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept {
+	PostMessage(WM_SPEAKER, VIEW_TEXT, (LPARAM) new TStringPair(make_pair(Text::toT(aTitle), Text::toT(aText))));
+}
+
 void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept {
 	DirectoryListInfo* i = new DirectoryListInfo(aList, aDir);
 	PostMessage(WM_SPEAKER, OPEN_FILELIST, (LPARAM)i);
@@ -1941,6 +1944,7 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	TimerManager::getInstance()->removeListener(this);
 	DirectoryListingManager::getInstance()->removeListener(this);
 	UpdateManager::getInstance()->removeListener(this);
+	ShareScannerManager::getInstance()->removeListener(this);
 
 	//if(bTrayIcon) {
 		updateTray(false);
@@ -2111,7 +2115,6 @@ void MainFrame::ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, HIC
 
 	PostMessage(WM_SPEAKER, SHOW_POPUP, (LPARAM)p);
 }
-
 
 /**
  * @file

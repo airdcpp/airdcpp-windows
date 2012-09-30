@@ -195,11 +195,14 @@ void AutoSearchDlg::switchMode() {
 	//users shouldn't be able to change the hidden options with the keyboard command
 	fixControls();
 
+	CRect rc;
 	if (advanced) {
-		SetWindowPos(NULL,0,0,600,525,SWP_NOZORDER|SWP_NOMOVE);	
+		::GetWindowRect(GetDlgItem(IDC_ADVANCED_LABEL), rc);
+		SetWindowPos(NULL,0,0,600,rc.bottom + 20,SWP_NOZORDER|SWP_NOMOVE);	
 		cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + " <<").c_str());
 	} else {
-		SetWindowPos(NULL,0,0,600,290,SWP_NOZORDER|SWP_NOMOVE);
+		cAdvanced.GetWindowRect(rc);
+		SetWindowPos(NULL,0,0,600,rc.bottom + 20,SWP_NOZORDER|SWP_NOMOVE);
 		cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + " >>").c_str());
 	}
 }

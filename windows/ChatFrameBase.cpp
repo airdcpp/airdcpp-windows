@@ -63,6 +63,8 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	ctrlClient.Subclass();
 	ctrlClient.LimitText(0);
 	ctrlClient.SetFont(WinUtil::font);
+
+	ctrlClient.setFormatLinks(true);
 	
 	//ctrlClient.SetAutoURLDetect(false);
 	//ctrlClient.SetEventMask(ctrlClient.GetEventMask() | ENM_LINK);

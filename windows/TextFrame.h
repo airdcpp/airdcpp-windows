@@ -34,18 +34,18 @@ class TextFrame : public MDITabChildWindowImpl<TextFrame>, private SettingsManag
 {
 public:
 	enum Type {
+		REPORT,
 		LOG,
 		HISTORY,
 		NORMAL,
 	};
 
 	static void openWindow(const tstring& aFileName, Type aType);
+	static void openWindow(const tstring& aTitle, const tstring& aText, Type aType);
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("TextFrame"), IDR_NOTEPAD, 0, COLOR_3DFACE);
 
-	TextFrame(const tstring& fileName, Type aType) : file(fileName), textType(aType) {
-		SettingsManager::getInstance()->addListener(this);
-	}
+	TextFrame(const tstring& fileName, Type aType, const tstring& aText = Util::emptyStringT);
 	~TextFrame() { }
 	
 	typedef MDITabChildWindowImpl<TextFrame> baseClass;
@@ -77,6 +77,7 @@ public:
 private:
 	Type textType;
 	tstring file;
+	tstring text;
 	RichTextBox ctrlPad;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 };

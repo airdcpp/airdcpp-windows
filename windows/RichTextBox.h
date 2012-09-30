@@ -88,7 +88,13 @@ public:
 		COMMAND_ID_HANDLER(IDC_CONNECT_WITH, onConnectWith)
 		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onOpenLink)
 		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
+
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemoveTemp)
+		COMMAND_ID_HANDLER(IDC_DELETE_FILE, onDeleteFile)
+		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
+
+		COMMAND_ID_HANDLER(IDC_ADD_AUTO_SEARCH_FILE, onAddAutoSearchFile)
+		COMMAND_ID_HANDLER(IDC_ADD_AUTO_SEARCH_DIR, onAddAutoSearchDir)
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
@@ -101,6 +107,11 @@ public:
 
 	RichTextBox();
 	~RichTextBox();
+
+	LRESULT onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onMouseMove(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnRButtonDown(POINT pt);
@@ -168,8 +179,11 @@ public:
 	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);
 	GETSET(Client*, client, Client);
 	GETSET(UserPtr, user, User);
-	bool autoScrollToEnd;
 
+	GETSET(bool, autoScrollToEnd, AutoScrollToEnd);
+	GETSET(bool, formatLinks, FormatLinks);
+	GETSET(bool, formatPaths, FormatPaths);
+	GETSET(bool, formatReleases, FormatReleases);
 
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
@@ -208,7 +222,7 @@ private:
 	bool		skipLog;
 	bool		timeStamps;
 
-
+	bool		isPath;
 	bool		release;
 	bool		shareDupe;
 	bool		queueDupe;
@@ -227,7 +241,7 @@ private:
 	tstring selectedIP;
 	tstring selectedUser;
 	tstring selectedWord;
-	boost::wregex regUrlBoost, regReleaseBoost;
+	boost::wregex regUrl, regRelease, regPath;
 	uint64_t lastTick;
 	bool isLink(POINT pt);
 	bool getLink(POINT pt, CHARRANGE& cr, ChatLink& link);
