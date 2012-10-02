@@ -193,8 +193,3 @@ private:
 };
 
 #endif // !defined(PUBLIC_HUBS_FRM_H)
-
-/**
- * @file
- * $Id: PublicHubsFrm.h 470 2010-01-02 23:23:39Z bigmuscle $
- */

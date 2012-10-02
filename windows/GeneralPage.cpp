@@ -158,8 +158,3 @@ LRESULT GeneralPage::onProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	}
 	return TRUE;
 }
-
-/**
- * @file
- * $Id: GeneralPage.cpp 306 2007-07-10 19:46:55Z bigmuscle $
- */

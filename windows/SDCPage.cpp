@@ -151,9 +151,3 @@ void SDCPage::write()
 	if(SETTING(AUTO_SEARCH_LIMIT) < 1)
 		settings->set(SettingsManager::AUTO_SEARCH_LIMIT, 1);	
 }
-
-/**
- * @file
- * $Id: SDCPage.cpp 412 2008-07-23 22:35:40Z BigMuscle $
- */
-

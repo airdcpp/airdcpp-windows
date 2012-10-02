@@ -47,8 +47,3 @@ private:
 };
 
 #endif // !defined(FINISHED_FRAME_H)
-
-/**
- * @file
- * $Id: FinishedFrame.h 310 2007-07-22 19:37:44Z bigmuscle $
- */

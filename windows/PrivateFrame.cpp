@@ -734,8 +734,3 @@ LRESULT PrivateFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	}
 	return 0;
 }
-
-/**
- * @file
- * $Id: PrivateFrame.cpp 476 2010-01-25 21:43:12Z bigmuscle $
- */

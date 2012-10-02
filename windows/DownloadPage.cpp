@@ -151,8 +151,3 @@ LRESULT DownloadPage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	}
 	return 0;
 }
-
-/**
- * @file
- * $Id: DownloadPage.cpp 412 2008-07-23 22:35:40Z BigMuscle $
- */

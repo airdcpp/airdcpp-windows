@@ -2438,9 +2438,3 @@ void WinUtil::showPopup(tstring szMsg, tstring szTitle, HICON hIcon, bool force)
 void WinUtil::showPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, bool force) {
 	MainFrame::getMainFrame()->ShowPopup(szMsg, szTitle, dwInfoFlags, force); 
 }
-
-
-/**
- * @file
- * $Id: WinUtil.cpp 473 2010-01-12 23:17:33Z bigmuscle $
- */

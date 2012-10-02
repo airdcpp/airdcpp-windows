@@ -61,7 +61,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	// Fill in values
 	SetDlgItemText(IDC_HUBNAME, Text::toT(entry->getName()).c_str());
 	SetDlgItemText(IDC_HUBDESCR, Text::toT(entry->getDescription()).c_str());
-	SetDlgItemText(IDC_HUBADDR, Text::toT(Util::toString(";", entry->getServers())).c_str());
+	SetDlgItemText(IDC_HUBADDR, Text::toT(entry->getServerStr()).c_str());
 	SetDlgItemText(IDC_HUBNICK, Text::toT(entry->getNick(false)).c_str());
 	SetDlgItemText(IDC_HUBPASS, Text::toT(entry->getPassword()).c_str());
 	SetDlgItemText(IDC_HUBUSERDESCR, Text::toT(entry->getUserDescription()).c_str());
@@ -324,8 +324,3 @@ LRESULT FavHubProperties::OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWn
 
 	return TRUE;
 }
-
-/**
- * @file
- * $Id: FavHubProperties.cpp 470 2010-01-02 23:23:39Z bigmuscle $
- */

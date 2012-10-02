@@ -132,8 +132,3 @@ LRESULT PropertiesDlg::onOK(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	//SettingsManager::getInstance()->set(SettingsManager::LAST_SETTING_PAGE, curPage);
 	return TRUE;
 }
-
-/**
- * @file
- * $Id: PropertiesDlg.cpp 395 2008-06-30 12:11:32Z BigMuscle $
- */

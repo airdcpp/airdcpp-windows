@@ -236,8 +236,3 @@ LRESULT StatsFrame::onSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 void StatsFrame::UpdateLayout(BOOL /*bResizeBars*/ /* = TRUE */) {
 	
 }
-
-/**
- * @file
- * $Id: StatsFrame.cpp 463 2009-10-01 16:30:22Z BigMuscle $
- */

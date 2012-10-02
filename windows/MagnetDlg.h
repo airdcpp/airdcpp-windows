@@ -60,8 +60,3 @@ private:
 };
 
 #endif // !defined(MAGNET_DLG_H)
-
-/**
-* @file
-* $Id: MagnetDlg.h 308 2007-07-13 18:57:02Z bigmuscle $
-*/

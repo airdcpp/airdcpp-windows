@@ -168,8 +168,3 @@ private:
 
 #endif //OperaColorsPage_H
 
-/**
- * @file
- * $Id: OperaColorsPage.h 321 2007-08-10 19:48:22Z bigmuscle $
- */
-

@@ -246,8 +246,3 @@ LRESULT CommandDlg::onHelp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	WinUtil::openLink(_T("http://dcplusplus.sourceforge.net/webhelp/dialog_user_command.html"));
 	return 0;
 }
-
-/**
-* @file
-* $Id: CommandDlg.cpp 498 2010-05-08 10:49:48Z bigmuscle $
-*/

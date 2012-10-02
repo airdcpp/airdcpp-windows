@@ -64,8 +64,3 @@ private:
 };
 
 #endif // !defined(GENERAL_PAGE_H)
-
-/**
- * @file
- * $Id: GeneralPage.h 308 2007-07-13 18:57:02Z bigmuscle $
- */

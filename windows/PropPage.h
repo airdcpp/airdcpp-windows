@@ -69,8 +69,3 @@ protected:
 };
 
 #endif // !defined(PROP_PAGE_H)
-
-/**
- * @file
- * $Id: PropPage.h 373 2008-02-06 17:23:49Z bigmuscle $
- */

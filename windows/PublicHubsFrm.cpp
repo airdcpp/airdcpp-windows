@@ -700,10 +700,3 @@ void PublicHubsFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noex
 	}
 	updateDropDown();
 }
-
-
-
-/**
- * @file
- * $Id: PublicHubsFrm.cpp 470 2010-01-02 23:23:39Z bigmuscle $
- */

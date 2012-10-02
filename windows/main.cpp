@@ -651,8 +651,3 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	return nRet;
 }
-
-/**
- * @file
- * $Id: main.cpp 571 2011-07-27 19:18:04Z bigmuscle $
- */

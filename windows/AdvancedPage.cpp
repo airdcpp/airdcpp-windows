@@ -82,9 +82,3 @@ void AdvancedPage::write() {
 	
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_ADVANCED_BOOLEANS));
 }
-
-
-/**
- * @file
- * $Id: AdvancedPage.cpp 425 2008-12-24 22:17:02Z BigMuscle $
- */

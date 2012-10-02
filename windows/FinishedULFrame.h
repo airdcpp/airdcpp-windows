@@ -49,8 +49,3 @@ private:
 };
 
 #endif // !defined(FINISHED_UL_FRAME_H)
-
-/**
- * @file
- * $Id: FinishedULFrame.h 310 2007-07-22 19:37:44Z bigmuscle $
- */

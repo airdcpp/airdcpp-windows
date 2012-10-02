@@ -320,8 +320,3 @@ void UsersFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept 
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
 }
-
-/**
- * @file
- * $Id: UsersFrame.cpp 489 2010-03-14 12:24:07Z bigmuscle $
- */

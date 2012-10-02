@@ -206,8 +206,3 @@ private:
 };
 
 #endif // !defined(HASH_PROGRESS_DLG_H)
-
-/**
- * @file
- * $Id: HashProgressDlg.h 457 2009-08-24 20:37:33Z BigMuscle $
- */

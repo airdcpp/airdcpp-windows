@@ -187,9 +187,9 @@ void FavoriteHubsFrame::openSelected() {
 		r.setDescription(entry->getDescription());
 		r.setUsers("*");
 		r.setShared("*");
-		r.setServer(entry->getServers()[0]);
+		r.setServer(entry->getServers()[0].first);
 		FavoriteManager::getInstance()->addRecent(r);
-		HubFrame::openWindow(Text::toT(entry->getServers()[0]), entry->getChatUserSplit(), entry->getUserListState());
+		HubFrame::openWindow(Text::toT(entry->getServers()[0].first), entry->getChatUserSplit(), entry->getUserListState());
 	}
 	return;
 }
@@ -200,7 +200,7 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntry* entry, int pos, int gro
 	l.push_back(Text::toT(entry->getDescription()));
 	l.push_back(Text::toT(entry->getNick(false)));
 	l.push_back(tstring(entry->getPassword().size(), '*'));
-	l.push_back(Text::toT(entry->getServers()[0]));
+	l.push_back(Text::toT(entry->getServers()[0].first));
 	l.push_back(Text::toT(entry->getUserDescription()));
 	l.push_back(Text::toT(entry->getShareProfile()->getDisplayName()));
 	bool b = entry->getConnect();
@@ -210,7 +210,7 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntry* entry, int pos, int gro
     LVITEM lvItem = { 0 };
     lvItem.mask = LVIF_GROUPID | LVIF_IMAGE;
     lvItem.iItem = i;
-	lvItem.iImage = isOnline(entry->getServers()[0]) ? 0 : 1;
+	lvItem.iImage = isOnline(entry->getServers()[0].first) ? 0 : 1;
     lvItem.iSubItem = 0;
     lvItem.iGroupId = groupIndex;
     ctrlHubs.SetItem( &lvItem );
@@ -223,7 +223,7 @@ LRESULT FavoriteHubsFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 		
 		for(int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
 			FavoriteHubEntry* e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
-			if(e->getServers()[0] == *hub) {
+			if(e->getServers()[0].first == *hub) {
 				ctrlHubs.SetItem(i,0,LVIF_IMAGE, NULL, 0, 0, 0, NULL);
 				ctrlHubs.Update(i);
 				return 0;
@@ -235,7 +235,7 @@ LRESULT FavoriteHubsFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 
 		for(int i = 0; i < ctrlHubs.GetItemCount(); ++i) {
 			FavoriteHubEntry* e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
-			if(e->getServers()[0] == *hub) {
+			if(e->getServers()[0].first == *hub) {
 				ctrlHubs.SetItem(i,0,LVIF_IMAGE, NULL, 1, 0, 0, NULL);
 				ctrlHubs.Update(i);
 				return 0;
@@ -354,7 +354,7 @@ LRESULT FavoriteHubsFrame::onNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 	while (true) {
 		if(dlg.DoModal((HWND)*this) == IDOK) {
-			if (FavoriteManager::getInstance()->isFavoriteHub(e.getServers()[0])){
+			if (FavoriteManager::getInstance()->isFavoriteHub(e.getServers()[0].first)){
 				MessageBox(CTSTRING(FAVORITE_HUB_ALREADY_EXISTS), _T(" "), MB_ICONWARNING | MB_OK);
 			} else {
 				FavoriteManager::getInstance()->addFavorite(e);
@@ -582,7 +582,7 @@ LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		FavoriteHubEntry* entry = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
 		ParamMap params;
 		params["hubNI"] = entry->getName();
-		params["hubURL"] = entry->getServers()[0];
+		params["hubURL"] = entry->getServers()[0].first;
 		params["myNI"] = entry->getNick(); 
 		string file = LogManager::getInstance()->getPath(LogManager::CHAT, params);
 		if(Util::fileExists(file)){
@@ -631,8 +631,3 @@ LRESULT FavoriteHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BO
 	}
 	return 0;
 }
-
-/**
- * @file
- * $Id: FavoritesFrm.cpp 485 2010-02-27 11:22:12Z bigmuscle $
- */

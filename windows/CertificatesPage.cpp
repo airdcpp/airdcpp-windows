@@ -114,8 +114,3 @@ LRESULT CertificatesPage::onGenerateCerts(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	}
 	return 0;
 }
-
-/**
- * @file
- * $Id: CertificatesPage.cpp 403 2008-07-10 21:27:57Z BigMuscle $
- */

@@ -51,8 +51,3 @@ public:
 };
 
 #endif // !defined(SINGLE_INSTANCE_H)
-
-/**
- * @file
- * $Id: SingleInstance.h 242 2006-09-07 15:48:20Z bigmuscle $
- */

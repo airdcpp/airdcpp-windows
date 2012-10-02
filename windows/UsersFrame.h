@@ -151,8 +151,3 @@ private:
 };
 
 #endif // !defined(USERS_FRAME_H)
-
-/**
- * @file
- * $Id: UsersFrame.h 568 2011-07-24 18:28:43Z bigmuscle $
- */

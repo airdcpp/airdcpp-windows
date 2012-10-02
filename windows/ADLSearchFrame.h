@@ -150,8 +150,3 @@ private:
 };
 
 #endif // !defined(ADL_SEARCH_FRAME_H)
-
-/**
- * @file
- * $Id: ADLSearchFrame.h 308 2007-07-13 18:57:02Z bigmuscle $
- */

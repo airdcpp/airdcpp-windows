@@ -117,8 +117,3 @@ private:
 };
 
 #endif // !defined(STATS_FRAME_H)
-
-/**
- * @file
- * $Id: StatsFrame.h 308 2007-07-13 18:57:02Z bigmuscle $
- */

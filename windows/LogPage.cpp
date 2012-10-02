@@ -167,8 +167,3 @@ LRESULT LogPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	}
 	return 0;
 }
-
-/**
- * @file
- * $Id: LogPage.cpp 373 2008-02-06 17:23:49Z bigmuscle $
- */

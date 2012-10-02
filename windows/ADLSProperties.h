@@ -78,8 +78,3 @@ private:
 };
 
 #endif // !defined(ADLS_PROPERTIES_H)
-
-/**
- * @file
- * $Id: ADLSProperties.h 308 2007-07-13 18:57:02Z bigmuscle $
- */

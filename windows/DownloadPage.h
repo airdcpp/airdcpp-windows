@@ -61,8 +61,3 @@ protected:
 };
 
 #endif //  !defined(DOWNLOAD_PAGE_H)
-
-/**
- * @file
- * $Id: DownloadPage.h 308 2007-07-13 18:57:02Z bigmuscle $
- */

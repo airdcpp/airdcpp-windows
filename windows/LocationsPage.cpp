@@ -283,9 +283,3 @@ LRESULT LocationsPage::onClickedTargetdrive(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, _T("%[targetdrive]DCUnfinished"));
 	return 0;
 }
-
-
-/**
- * @file
- * $Id: FavoriteDirsPage.cpp 477 2010-01-29 08:59:43Z bigmuscle $
- */

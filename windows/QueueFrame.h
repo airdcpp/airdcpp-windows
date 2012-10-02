@@ -444,8 +444,3 @@ private:
 };
 
 #endif // !defined(QUEUE_FRAME_H)
-
-/**
- * @file
- * $Id: QueueFrame.h 568 2011-07-24 18:28:43Z bigmuscle $
- */

@@ -365,8 +365,3 @@ LRESULT OperaColorsPage::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		ctrlMenubarDrawer.Detach();
 	return 1;
 }
-/**
- * @file
- * $Id: OperaColorsPage.cpp 389 2008-06-08 10:51:15Z BigMuscle $
- */
-

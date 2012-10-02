@@ -204,8 +204,3 @@ void UCPage::addEntry(const UserCommand& uc, int pos) {
 void UCPage::write() {
 	PropPage::write((HWND)*this, items);
 }
-
-/**
- * @file
- * $Id: UCPage.cpp 481 2010-02-11 12:31:20Z bigmuscle $
- */

@@ -178,8 +178,3 @@ public:
 };
 
 #endif // !defined(EX_LIST_VIEW_CTRL_H)
-
-/**
- * @file
- * $Id: ExListViewCtrl.h 481 2010-02-11 12:31:20Z bigmuscle $
- */

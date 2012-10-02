@@ -412,8 +412,3 @@ private:
 };
 
 #endif // !defined(TRANSFER_VIEW_H)
-
-/**
- * @file
- * $Id: TransferView.h 500 2010-06-25 22:08:18Z bigmuscle $
- */

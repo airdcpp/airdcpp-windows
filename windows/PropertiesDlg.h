@@ -53,8 +53,3 @@ protected:
 };
 
 #endif // !defined(PROPERTIES_DLG_H)
-
-/**
- * @file
- * $Id: PropertiesDlg.h 395 2008-06-30 12:11:32Z BigMuscle $
- */

@@ -424,8 +424,3 @@ void StackTrace( HANDLE hThread, File& f, const PCONTEXT pCtx)
 }
 
 #endif //_DEBUG && _WIN32
-
-/**
-* @file
-* $Id: ExtendedTrace.cpp 500 2010-06-25 22:08:18Z bigmuscle $
-*/

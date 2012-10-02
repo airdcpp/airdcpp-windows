@@ -209,8 +209,3 @@ LRESULT Popups::onPreview(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, 
 
 	return 0;
 }
-/**
- * @file
- * $Id: Popups.cpp 274 2007-01-17 18:03:56Z bigmuscle $
- */
-

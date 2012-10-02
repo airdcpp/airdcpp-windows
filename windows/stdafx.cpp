@@ -28,8 +28,3 @@
 #if (_WTL_VER < 0x750)
 #error WTL not correctly installed, read compile.txt
 #endif
-
-/**
- * @file
- * $Id: stdafx.cpp 213 2006-05-08 08:36:23Z bigmuscle $
- */

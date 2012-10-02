@@ -276,8 +276,3 @@ void SpyFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
 }
-
-/**
- * @file
- * $Id: SpyFrame.cpp 469 2009-12-29 21:13:40Z bigmuscle $
- */

@@ -195,8 +195,3 @@ private:
 };
 
 #endif // !defined(LIST_VIEW_ARROWS_H)
-
-/**
- * @file
- * $Id: ListViewArrows.h 498 2010-05-08 10:49:48Z bigmuscle $
- */

@@ -144,8 +144,3 @@ void ADLSProperties::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_REGEXP_TEST),				isRegExp);
 	::EnableWindow(GetDlgItem(IDC_TEST_STRING),				isRegExp);
 }
-
-/**
- * @file
- * $Id: ADLSProperties.cpp 238 2006-08-21 18:21:40Z bigmuscle $
- */

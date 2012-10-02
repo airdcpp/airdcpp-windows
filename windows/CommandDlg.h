@@ -90,8 +90,3 @@ private:
 };
 
 #endif // !defined(COMMAND_DLG_H)
-
-/**
- * @file
- * $Id: CommandDlg.h 498 2010-05-08 10:49:48Z bigmuscle $
- */

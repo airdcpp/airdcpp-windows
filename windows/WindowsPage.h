@@ -59,8 +59,3 @@ protected:
 };
 
 #endif // !defined(WINDOWS_PAGE_H)
-
-/**
- * @file
- * $Id: WindowsPage.h 308 2007-07-13 18:57:02Z bigmuscle $
- */

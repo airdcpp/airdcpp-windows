@@ -624,8 +624,3 @@ void ADLSearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexc
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
 }
-
-/**
- * @file
- * $Id: ADLSearchFrame.cpp 477 2010-01-29 08:59:43Z bigmuscle $
- */

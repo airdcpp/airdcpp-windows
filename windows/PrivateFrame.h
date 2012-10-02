@@ -190,8 +190,3 @@ private:
 };
 
 #endif // !defined(PRIVATE_FRAME_H)
-
-/**
- * @file
- * $Id: PrivateFrame.h 473 2010-01-12 23:17:33Z bigmuscle $
- */

@@ -178,8 +178,3 @@ private:
 };
 
 #endif // !defined(FAVORITE_HUBS_FRM_H)
-
-/**
- * @file
- * $Id: FavoritesFrm.h 498 2010-05-08 10:49:48Z bigmuscle $
- */

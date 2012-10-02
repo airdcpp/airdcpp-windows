@@ -1922,7 +1922,3 @@ LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	}
 	return 0;
 }
-/**
- * @file
- * $Id: SearchFrm.cpp 500 2010-06-25 22:08:18Z bigmuscle $
- */

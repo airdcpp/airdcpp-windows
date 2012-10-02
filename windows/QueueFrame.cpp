@@ -2380,8 +2380,4 @@ LRESULT QueueFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	}
 		
 	return S_OK;
-}	
-/**
- * @file
- * $Id: QueueFrame.cpp 498 2010-05-08 10:49:48Z bigmuscle $
- */
+}

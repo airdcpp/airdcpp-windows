@@ -550,9 +550,3 @@ private:
 };
 
 #endif // !defined(SEARCH_FRM_H)
-
-/**
- * @file
- * $Id: SearchFrm.h 500 2010-06-25 22:08:18Z bigmuscle $
- */
-

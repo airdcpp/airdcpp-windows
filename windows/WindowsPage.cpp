@@ -88,8 +88,3 @@ void WindowsPage::write() {
 	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_WINDOWS_OPTIONS));
 	PropPage::write((HWND)*this, items, confirmItems, GetDlgItem(IDC_CONFIRM_OPTIONS));
 }
-
-/**
- * @file
- * $Id: WindowsPage.cpp 452 2009-07-26 16:11:52Z BigMuscle $
- */

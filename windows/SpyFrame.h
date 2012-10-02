@@ -116,8 +116,3 @@ private:
 };
 
 #endif // !defined(SPY_FRAME_H)
-
-/**
- * @file
- * $Id: SpyFrame.h 389 2008-06-08 10:51:15Z BigMuscle $
- */

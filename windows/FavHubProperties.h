@@ -62,8 +62,3 @@ protected:
 };
 
 #endif // !defined(FAV_HUB_PROPERTIES_H)
-
-/**
- * @file
- * $Id: FavHubProperties.h 373 2008-02-06 17:23:49Z bigmuscle $
- */

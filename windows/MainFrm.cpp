@@ -1112,9 +1112,9 @@ void MainFrame::autoConnect(const FavoriteHubEntry::List& fl) {
 				r.setDescription(entry->getDescription());
 				r.setUsers("*");
 				r.setShared("*");
-				r.setServer(entry->getServers()[0]);
+				r.setServer(entry->getServers()[0].first);
 				FavoriteManager::getInstance()->addRecent(r);
-				HubFrame::openWindow(Text::toT(entry->getServers()[0]), entry->getChatUserSplit(), entry->getUserListState());
+				HubFrame::openWindow(Text::toT(entry->getServers()[0].first), entry->getChatUserSplit(), entry->getUserListState());
  			} else
  				missedAutoConnect = true;
  		}				
@@ -2115,8 +2115,3 @@ void MainFrame::ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, HIC
 
 	PostMessage(WM_SPEAKER, SHOW_POPUP, (LPARAM)p);
 }
-
-/**
- * @file
- * $Id: MainFrm.cpp,v 1.20 2004/07/21 13:15:15 bigmuscle Exp
- */

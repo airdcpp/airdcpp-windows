@@ -121,9 +121,3 @@ LRESULT AppearancePage::onClickedCountryHelp(WORD /* wNotifyCode */, WORD /*wID*
 	MessageBox(CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP), CTSTRING(SETTINGS_COUNTRY_FORMAT_HELP_DESC), MB_OK | MB_ICONINFORMATION);
 	return S_OK;
 }
-
-
-/**
- * @file
- * $Id: AppearancePage.cpp 453 2009-08-04 15:46:31Z BigMuscle $
- */

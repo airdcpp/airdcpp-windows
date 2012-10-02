@@ -62,8 +62,3 @@ private:
 };
 
 #endif // !defined(ABOUT_DLG_H)
-
-/**
- * @file
- * $Id: AboutDlg.h 470 2010-01-02 23:23:39Z bigmuscle $
- */

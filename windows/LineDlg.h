@@ -490,8 +490,3 @@ public:
 };
 
 #endif // !defined(LINE_DLG_H)
-
-/**
- * @file
- * $Id: LineDlg.h 392 2008-06-21 21:10:31Z BigMuscle $
- */

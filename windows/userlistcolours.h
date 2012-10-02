@@ -55,8 +55,3 @@ protected:
 };
 
 #endif //UserListColours_H
-
-/**
- * @file
- * $Id: userlistcolours.h 308 2007-07-13 18:57:02Z bigmuscle $
- */

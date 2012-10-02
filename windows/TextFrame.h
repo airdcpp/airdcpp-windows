@@ -83,8 +83,3 @@ private:
 };
 
 #endif // !defined(TEXT_FRAME_H)
-
-/**
- * @file
- * $Id: TextFrame.h 308 2007-07-13 18:57:02Z bigmuscle $
- */

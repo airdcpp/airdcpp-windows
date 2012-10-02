@@ -1762,9 +1762,3 @@ LRESULT TransferView::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, B
 	}
 	return S_OK;
 }
-
-
-/**
- * @file
- * $Id: TransferView.cpp 500 2010-06-25 22:08:18Z bigmuscle $
- */

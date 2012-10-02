@@ -143,7 +143,3 @@ LRESULT UserListColours::onImageBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	BrowseForPic(IDC_USERLIST_IMAGE);
 	return 0;
 }
-/**
- * @file
- * $Id: userlistcolours.cpp 373 2008-02-06 17:23:49Z bigmuscle $
- */

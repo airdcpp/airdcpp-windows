@@ -127,6 +127,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			//ctrlPad.SetTextEx((LPCTSTR)tmp.c_str(), ST_SELECTION, CP_UTF8);
 			tstring msg = Text::toT(tmp);
 			ctrlPad.SetWindowText(msg.c_str());
+			ctrlPad.setFormatLinks(true);
 			ctrlPad.FormatEmoticonsAndLinks(msg, 0, false);
 			ctrlPad.setAutoScrollToEnd(false);
 			ctrlPad.SetSel(0, 0); //set scroll position to top
@@ -203,8 +204,3 @@ LRESULT TextFrame::OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 void TextFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
-
-/**
- * @file
- * $Id: TextFrame.cpp 292 2007-06-13 12:15:07Z bigmuscle $
- */

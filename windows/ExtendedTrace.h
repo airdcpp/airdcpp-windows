@@ -45,8 +45,3 @@ void StackTrace( HANDLE hThread, File& f, const PCONTEXT pCtx);
 #endif
 
 #endif
-
-/**
- * @file
- * $Id: ExtendedTrace.h 394 2008-06-28 22:28:44Z BigMuscle $
- */

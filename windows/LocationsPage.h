@@ -88,8 +88,3 @@ protected:
 };
 
 #endif // !defined(FAVORITE_DIR_SPAGE_H)
-
-/**
- * @file
- * $Id: FavoriteDirsPage.h 308 2007-07-13 18:57:02Z bigmuscle $
- */

@@ -130,8 +130,3 @@ private:
 };
 
 #endif // !defined(UC_HANDLER_H)
-
-/**
- * @file
- * $Id: UCHandler.h 492 2010-03-26 14:31:56Z bigmuscle $
- */

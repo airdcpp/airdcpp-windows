@@ -79,8 +79,3 @@ protected:
 };
 
 #endif // !defined(UC_PAGE_H)
-
-/**
- * @file
- * $Id: UCPage.h 373 2008-02-06 17:23:49Z bigmuscle $
- */

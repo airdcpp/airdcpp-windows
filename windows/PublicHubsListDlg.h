@@ -174,8 +174,3 @@ private:
 };
 
 #endif // !defined(PUBLIC_HUBS_LIST_DLG_H)
-
-/**
-* @file
-* $Id: PublicHubsListDlg.h 477 2010-01-29 08:59:43Z bigmuscle $
-*/

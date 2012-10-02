@@ -536,8 +536,3 @@ private:
 };
 
 #endif // !defined(MAIN_FRM_H)
-
-/**
- * @file
- * $Id: MainFrm.h 500 2010-06-25 22:08:18Z bigmuscle $
- */

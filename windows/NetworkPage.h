@@ -76,8 +76,3 @@ private:
 };
 
 #endif // !defined(NETWORK_PAGE_H)
-
-/**
- * @file
- * $Id: NetworkPage.h 477 2010-01-29 08:59:43Z bigmuscle $
- */

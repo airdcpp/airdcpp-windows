@@ -65,9 +65,3 @@ extern CAppModule _Module;
 #define WM_SPEAKER (WM_APP + 500)
 #define WM_REFRESH_SETTINGS (WM_APP + 501)
 #endif
-
-
-/**
- * @file
- * $Id: stdafx.h 474 2010-01-14 18:37:06Z bigmuscle $
- */

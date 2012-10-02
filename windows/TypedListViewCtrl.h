@@ -1093,8 +1093,3 @@ template<class T, int ctrlId, class K, class hashFunc, class equalKey>
 const vector<T*> TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey>::emptyVector;
 
 #endif // !defined(TYPED_LIST_VIEW_CTRL_H)
-
-/**
- * @file
- * $Id: TypedListViewCtrl.h 500 2010-06-25 22:08:18Z bigmuscle $
- */

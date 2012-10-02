@@ -384,8 +384,3 @@ private:
 };
 
 #endif // !defined(HUB_FRAME_H)
-
-/**
- * @file
- * $Id: HubFrame.h 482 2010-02-13 10:49:30Z bigmuscle $
- */

@@ -61,9 +61,3 @@ protected:
 };
 
 #endif //SDCPage_H
-
-/**
- * @file
- * $Id: SDCPage.h 308 2007-07-13 18:57:02Z bigmuscle $
- */
-

@@ -139,8 +139,3 @@ LRESULT Sounds::onPlay(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOO
 	}
 	return 0;
 }
-/**
- * @file
- * $Id: Sounds.cpp 477 2010-01-29 08:59:43Z bigmuscle $
- */
-

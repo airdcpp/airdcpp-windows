@@ -92,8 +92,3 @@ private:
 };
 
 #endif // !defined(TREE_PROPERTY_SHEET_H)
-
-/**
-* @file
-* $Id: TreePropertySheet.h 213 2006-05-08 08:36:23Z bigmuscle $
-*/

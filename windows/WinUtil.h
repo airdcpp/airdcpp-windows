@@ -441,8 +441,3 @@ private:
 
 
 #endif // !defined(WIN_UTIL_H)
-
-/**
- * @file
- * $Id: WinUtil.h 471 2010-01-09 23:17:42Z bigmuscle $
- */
