@@ -408,6 +408,7 @@
     <ClInclude Include="client\QueueManagerListener.h" />
     <ClInclude Include="client\ResourceManager.h" />
     <ClInclude Include="client\ScopedFunctor.h" />
+    <ClInclude Include="client\Search.h" />
     <ClInclude Include="client\SearchManager.h" />
     <ClInclude Include="client\SearchManagerListener.h" />
     <ClInclude Include="client\SearchQueue.h" />
