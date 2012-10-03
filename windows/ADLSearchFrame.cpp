@@ -281,7 +281,7 @@ LRESULT ADLSearchFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		int i = ctrlList.GetNextItem(-1, LVNI_SELECTED);
 		if(i < 0) {
 			// Add to end
-			if (!ADLSearchManager::getInstance()->addCollection(search, collection.size() - 1)) {
+			if (!ADLSearchManager::getInstance()->addCollection(search, collection.size())) {
 				return 0;
 			}
 			i = collection.size() - 1;
