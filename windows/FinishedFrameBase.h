@@ -372,7 +372,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 			}
 
 			bool bShellMenuShown = false;
-			if(BOOLSETTING(SHOW_SHELL_MENU) && (ctrlList.GetSelectedCount() == 1) && (LOBYTE(LOWORD(GetVersion())) >= 5)) {
+			if(BOOLSETTING(SHOW_SHELL_MENU) && (ctrlList.GetSelectedCount() == 1)) {
 				tstring path = Text::toT(ctrlList.getItemData(ctrlList.GetSelectedIndex())->getTarget());
 				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF) { // Check that the file still exists
 					CShellContextMenu shellMenu;

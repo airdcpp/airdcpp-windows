@@ -1849,19 +1849,18 @@ string WinUtil::getSysUptime(){
 
 
 string WinUtil::generateStats() {
-	if(LOBYTE(LOWORD(GetVersion())) >= 5) {
-		PROCESS_MEMORY_COUNTERS pmc;
-		pmc.cb = sizeof(pmc);
-		typedef bool (CALLBACK* LPFUNC)(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
+	PROCESS_MEMORY_COUNTERS pmc;
+	pmc.cb = sizeof(pmc);
+	typedef bool (CALLBACK* LPFUNC)(HANDLE Process, PPROCESS_MEMORY_COUNTERS ppsmemCounters, DWORD cb);
 		
-		LPFUNC _GetProcessMemoryInfo = (LPFUNC)GetProcAddress(LoadLibrary(_T("psapi")), "GetProcessMemoryInfo");
-		_GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
-		FILETIME tmpa, tmpb, kernelTimeFT, userTimeFT;
-		GetProcessTimes(GetCurrentProcess(), &tmpa, &tmpb, &kernelTimeFT, &userTimeFT);
-		int64_t kernelTime = kernelTimeFT.dwLowDateTime | (((int64_t)kernelTimeFT.dwHighDateTime) << 32);
-		int64_t userTime = userTimeFT.dwLowDateTime | (((int64_t)userTimeFT.dwHighDateTime) << 32);  
+	LPFUNC _GetProcessMemoryInfo = (LPFUNC)GetProcAddress(LoadLibrary(_T("psapi")), "GetProcessMemoryInfo");
+	_GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc));
+	FILETIME tmpa, tmpb, kernelTimeFT, userTimeFT;
+	GetProcessTimes(GetCurrentProcess(), &tmpa, &tmpb, &kernelTimeFT, &userTimeFT);
+	int64_t kernelTime = kernelTimeFT.dwLowDateTime | (((int64_t)kernelTimeFT.dwHighDateTime) << 32);
+	int64_t userTime = userTimeFT.dwLowDateTime | (((int64_t)userTimeFT.dwHighDateTime) << 32);  
 
-		string ret = boost::str(boost::format(
+	string ret = boost::str(boost::format(
 "\r\n\t-=[ %s   http://www.airdcpp.net ]=-\r\n\
 \t-=[ Uptime: %s ][ CPU time: %s ]=-\r\n\
 \t-=[ Memory usage (peak): %s (%s) ]=-\r\n\
@@ -1871,25 +1870,21 @@ string WinUtil::generateStats() {
 \t-=[ System: %s (Uptime: %s) ]=-\r\n\
 \t-=[ CPU: %s ]=-")
 
-			% Text::fromT(COMPLETEVERSIONSTRING)
-			% Util::formatTime(Util::getUptime(), false)
-			% Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64))
-			% Util::formatBytes(pmc.WorkingSetSize)
-			% Util::formatBytes(pmc.PeakWorkingSetSize)
-			% Util::formatBytes(pmc.PagefileUsage)
-			% Util::formatBytes(pmc.PeakPagefileUsage)
-			% Util::formatBytes(Socket::getTotalDown())
-			% Util::formatBytes(Socket::getTotalUp())
-			% Util::formatBytes(SETTING(TOTAL_DOWNLOAD))
-			% Util::formatBytes(SETTING(TOTAL_UPLOAD))
-			% Util::getOsVersion()
-			% getSysUptime()
-			% CPUInfo());
-		return ret;
-	} else {
-		return "Not supported by OS";
-	}
-
+		% Text::fromT(COMPLETEVERSIONSTRING)
+		% Util::formatTime(Util::getUptime(), false)
+		% Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64))
+		% Util::formatBytes(pmc.WorkingSetSize)
+		% Util::formatBytes(pmc.PeakWorkingSetSize)
+		% Util::formatBytes(pmc.PagefileUsage)
+		% Util::formatBytes(pmc.PeakPagefileUsage)
+		% Util::formatBytes(Socket::getTotalDown())
+		% Util::formatBytes(Socket::getTotalUp())
+		% Util::formatBytes(SETTING(TOTAL_DOWNLOAD))
+		% Util::formatBytes(SETTING(TOTAL_UPLOAD))
+		% Util::getOsVersion()
+		% getSysUptime()
+		% CPUInfo());
+	return ret;
 }
 
 
@@ -1916,15 +1911,11 @@ string WinUtil::CPUInfo() {
 }
 
 string WinUtil::uptimeInfo() {
-	if(LOBYTE(LOWORD(GetVersion())) >= 5) {
-		char buf[512]; 
-		snprintf(buf, sizeof(buf), "\n-=[ Uptime: %s]=-\r\n-=[ System Uptime: %s]=-\r\n", 
-		Util::formatTime(Util::getUptime(), false).c_str(), 
-		getSysUptime().c_str());
-		return buf;
-	} else {
-		return "Not supported by OS";
-	}
+	char buf[512]; 
+	snprintf(buf, sizeof(buf), "\n-=[ Uptime: %s]=-\r\n-=[ System Uptime: %s]=-\r\n", 
+	Util::formatTime(Util::getUptime(), false).c_str(), 
+	getSysUptime().c_str());
+	return buf;
 }
 
 bool WinUtil::shutDown(int action) {
@@ -1956,11 +1947,9 @@ bool WinUtil::shutDown(int action) {
 		case 3: { SetSuspendState(false, false, false); return true; }
 		case 4: { SetSuspendState(true, false, false); return true; }
 		case 5: { 
-			if(LOBYTE(LOWORD(GetVersion())) >= 5) {
-				typedef bool (CALLBACK* LPLockWorkStation)(void);
-				LPLockWorkStation _d_LockWorkStation = (LPLockWorkStation)GetProcAddress(LoadLibrary(_T("user32")), "LockWorkStation");
-				_d_LockWorkStation();
-			}
+			typedef bool (CALLBACK* LPLockWorkStation)(void);
+			LPLockWorkStation _d_LockWorkStation = (LPLockWorkStation)GetProcAddress(LoadLibrary(_T("user32")), "LockWorkStation");
+			_d_LockWorkStation();
 			return true;
 		}
 	}
