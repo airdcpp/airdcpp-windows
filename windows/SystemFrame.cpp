@@ -103,6 +103,8 @@ LRESULT SystemFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	DeleteObject(hbInfo);
 	DeleteObject(hbWarning);
 	DeleteObject(hbError);
+	DeleteObject(tabNormal);
+	DeleteObject(tabError);
 
 	LogManager::getInstance()->removeListener(this);
 	SettingsManager::getInstance()->removeListener(this);

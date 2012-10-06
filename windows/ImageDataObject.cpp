@@ -109,15 +109,14 @@ SCODE CImageDataObject::GetOleObject(IOleClientSite *pOleClientSite, IStorage *p
 SCODE CImageDataObject::createStorage(IStorage **pStorage, LPLOCKBYTES *lpLockBytes)
 {
 	// Initialize a Storage Object
-
 	SCODE sc = ::CreateILockBytesOnHGlobal(NULL, TRUE, lpLockBytes);
-	if(sc != S_OK || lpLockBytes == NULL) 
-		return NULL;
-	
+	if(sc != S_OK ) { 
+		lpLockBytes = NULL;
+		return sc;
+	}
+
 	sc = ::StgCreateDocfileOnILockBytes(*lpLockBytes,
 		STGM_SHARE_EXCLUSIVE|STGM_CREATE|STGM_READWRITE, 0, pStorage);
-	if (sc != S_OK) 
-		return NULL;
 	
 	return sc;
 }
