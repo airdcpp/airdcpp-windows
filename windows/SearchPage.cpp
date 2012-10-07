@@ -35,7 +35,7 @@ PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_SETTINGS_SEARCH_HISTORY,				ResourceManager::SETTINGS_SEARCH_HISTORY },
 	{ IDC_SEARCHING_OPTIONS,					ResourceManager::SETTINGS_SEARCHING_OPTIONS	},
 	{ IDC_EXPIRY_DAYS_LABEL,					ResourceManager::SETTINGS_EXPIRY_DAYS	},
-	{ IDC_AUTO_SEARCH,							ResourceManager::SETTINGS_ASEARCH	},
+	{ IDC_AUTO_SEARCH,							ResourceManager::AUTO_SEARCH },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

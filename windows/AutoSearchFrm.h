@@ -28,7 +28,7 @@
 #include "AutoSearchDlg.h"
 #include "../client/AutoSearchManager.h"
 
-class AutoSearchFrame : public MDITabChildWindowImpl<AutoSearchFrame>, public StaticFrame<AutoSearchFrame, ResourceManager::AUTOSEARCH, IDC_AUTOSEARCH>,
+class AutoSearchFrame : public MDITabChildWindowImpl<AutoSearchFrame>, public StaticFrame<AutoSearchFrame, ResourceManager::AUTO_SEARCH, IDC_AUTOSEARCH>,
 	 private AutoSearchManagerListener, private SettingsManagerListener
 {
 public:

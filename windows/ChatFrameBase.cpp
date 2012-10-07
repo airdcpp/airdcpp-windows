@@ -339,7 +339,7 @@ void ChatFrameBase::addMagnet(string&& path) {
 
 	if(ShareManager::getInstance()->addTempShare((getUser() && !getUser()->isSet(User::BOT)) ? getUser()->getCID().toBase32() : Util::emptyString, tth, path, size, 
 		AirUtil::isAdcHub(getClient()->getHubUrl())))
-			ctrlMessage.SetWindowText(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size)).c_str());
+			appendTextLine(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size)), true);
 	else {
 		//MessageBox(_T("File is not shared and temporary shares are not supported with NMDC hubs!"), _T("NMDC hub not supported!"), MB_ICONWARNING | MB_OK);
 	}
@@ -373,6 +373,19 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
+void ChatFrameBase::appendTextLine(const tstring& aText, bool addSpace) {
+	TCHAR* message = new TCHAR[ctrlMessage.GetWindowTextLength()+1];
+	ctrlMessage.GetWindowText(message, ctrlMessage.GetWindowTextLength()+1);
+	tstring s(message, ctrlMessage.GetWindowTextLength());
+	delete[] message;
+	if (addSpace && s.length() > 0 && !isspace(s.back()))
+		s += _T(" ");
+
+	ctrlMessage.SetWindowText((s + aText).c_str());
+	ctrlMessage.SetFocus();
+	ctrlMessage.SetSel( ctrlMessage.GetWindowTextLength(), ctrlMessage.GetWindowTextLength() );
+}
+
 LRESULT ChatFrameBase::onEmoticons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
 	if (hWndCtl != ctrlEmoticons.m_hWnd) {
 		bHandled = false;
@@ -383,13 +396,7 @@ LRESULT ChatFrameBase::onEmoticons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWnd
 	ctrlEmoticons.GetWindowRect(dlg.pos);
 	dlg.DoModal(hWndCtl);
 	if (!dlg.result.empty()) {
-		TCHAR* message = new TCHAR[ctrlMessage.GetWindowTextLength()+1];
-		ctrlMessage.GetWindowText(message, ctrlMessage.GetWindowTextLength()+1);
-		tstring s(message, ctrlMessage.GetWindowTextLength());
-		delete[] message;
-		ctrlMessage.SetWindowText((s + dlg.result).c_str());
-		ctrlMessage.SetFocus();
-		ctrlMessage.SetSel( ctrlMessage.GetWindowTextLength(), ctrlMessage.GetWindowTextLength() );
+		appendTextLine(dlg.result, false);
 	}
 	return 0;
 }

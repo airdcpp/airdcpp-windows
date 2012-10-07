@@ -95,6 +95,8 @@ protected:
 	void addMagnet(string&& path);
 	void init(HWND aHWND, RECT rcDefault);
 
+	void appendTextLine(const tstring& aText, bool addSpace);
+
 	void onEnter();
 	static tstring commands;
 private:

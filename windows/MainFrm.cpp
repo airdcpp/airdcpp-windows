@@ -1415,7 +1415,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			ComboDlg dlg;
 			dlg.setList(tmpList);
 			dlg.description = CTSTRING(SHARE_PROFILE);
-			dlg.title = CTSTRING(MENU_OPEN_OWN_LIST);
+			dlg.title = CTSTRING(MENU_BROWSE_OWN_LIST);
 			if(dlg.DoModal() == IDOK) {
 				profile = profiles[dlg.curSel]->getProfileList()->getProfile();
 			} else {

@@ -213,9 +213,9 @@ static int sort(LPARAM lParam1, LPARAM lParam2, int column) {
 	if (left->state == ShareDirInfo::ADDED && right->state != ShareDirInfo::ADDED) return -1;
 	
 	if (column == 0)
-		return stricmp(left->vname, right->vname);
+		return Util::DefaultSort(Text::toT(left->vname).c_str(), Text::toT(right->vname).c_str());
 	else if (column == 1)
-		return stricmp(left->path, right->path);
+		return Util::DefaultSort(Text::toT(left->path).c_str(), Text::toT(right->path).c_str());
 	else
 		return compare(right->size, left->size);
 }
@@ -815,11 +815,6 @@ bool SharePage::addDirectory(const tstring& aPath){
 			}
 		}
 	}
-
-	//LineDlg virt;
-	//virt.title = TSTRING(VIRTUAL_NAME);
-	//virt.description = TSTRING(VIRTUAL_NAME_LONG);
-	//virt.line = Text::toT(ShareManager::getInstance()->validateVirtual(Util::getLastDir(Text::fromT(path))));
 
 	ShareProfile::list spList;
 	ProfileTokenList profileTokens;

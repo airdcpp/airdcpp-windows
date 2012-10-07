@@ -340,7 +340,6 @@
 		<String Name="MenuOpenDownloadsDir">Open downloads directory</String>
 		<String Name="MenuOpenFileList">Open file list...	Ctrl+L</String>
 		<String Name="MenuOpenMatchAll">Match downloaded lists</String>
-		<String Name="MenuOpenOwnList">Open own list</String>
 		<String Name="MenuPublicHubs">&amp;Public Hubs	Ctrl+P</String>
 		<String Name="MenuQuickConnect">&amp;Quick Connect ...	Ctrl+Q</String>
 		<String Name="MenuReconnect">&amp;Reconnect	Ctrl+R</String>
@@ -1156,7 +1155,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="BoldHubTabsOnKick">Bold hub's tabs on kick messages</String>
 		<String Name="Skiplist">Skiplist, Wildcards, Separate | </String>
 		<String Name="SettingsSearhSkiplistPreset">Presets for Search Skiplist, Separate with | *wildcards allowed</String>
-		<String Name="SettingsAsearch">Auto Search</String>
 		<String Name="Preset1">Preset1</String>
 		<String Name="Preset2">Preset2</String>
 		<String Name="Preset3">Preset3</String>
@@ -1208,8 +1206,8 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="CheckExtraFiles">Check extra files in the release folders</String>
 		<String Name="CheckDupes">Check duplicate directory names</String>
 		<String Name="SettingsScanOptions">Scanning options for missing/extra files</String>
-		<String Name="RebuildStarted">Hash Database rebuild Started</String>
-		<String Name="SortDirs">Sort Directories First in SearchWindow</String>
+		<String Name="RebuildStarted">Hash database rebuild Started</String>
+		<String Name="SortDirs">Sort directories first in search window</String>
 		<String Name="DecreaseRam">Decrease Ram WorkingSet size on minimize</String>
 		<String Name="RunSfvCheck">Perform SFV check</String>
 		<String Name="SfvCheckFolder">Perform SFV check (whole folder)</String>
@@ -1269,11 +1267,10 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SettingsMcnNote">* Lowering the upload connections from the default value will result the download connections to be set to the same value</String>
 		<String Name="SettingsUseTargetdrive">Use Target Drive for unfinished files</String>
 		<String Name="RemoveOnHit">Remove after found</String>
-		<String Name="SearchAdded">Search Added to Autosearch List: </String>
 		<String Name="CheckUseSkiplist">Ignore items matching the share skiplist</String>
 		<String Name="CheckIgnoreZeroByte">Ignore zero byte files</String>
 		<String Name="NoFilesAvailable">No files to download</String>
-		<String Name="MatchingFileList">Matching File lists, this may take a while if the lists are large.</String>
+		<String Name="MatchingFileList">Matching file lists, this may take a while if the lists are large.</String>
 		<String Name="SkipSubtractText">Subtract list: Skip Dirs with ONLY 2 or less files smaller than</String>
 		<String Name="ProppageDupeMsg">Release.Example-AIRDC</String>
 		<String Name="ProppageUnderlineLinks">Underline links</String>
@@ -1282,10 +1279,10 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SettingsDupeChat">Use dupe color in chat</String>
 		<String Name="ClientVersion">Client version</String>
 		<String Name="LanguageVersion">Language version</String>
-		<String Name="ListHlText">HighLight matches in Filelists (wildcards, | separate)</String>
+		<String Name="ListHlText">HighLight matches in filelists (wildcards, | separate)</String>
 		<String Name="ListHlExample">Example, *NORDIC* (this may slow down filelist loading...)</String>
 		<String Name="SettingsDupes">Dupes Settings</String>
-		<String Name="ReportSkiplist">Show Skiplist blocked files in systemlog</String>
+		<String Name="ReportSkiplist">Show files blocked by the skiplist in systemlog</String>
 		<String Name="XUsers">%d users</String>
 		<String Name="XUsersWaiting">%d user(s) (%d waiting)</String>
 		<String Name="XConnections">%d connection(s)</String>
@@ -1340,13 +1337,12 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="PriopageBalanceQis">Also priorize the order among bundle files</String>
 		<String Name="Priorities">Priorities</String>
 		<String Name="UseFtpLogger">Use external sfv checking (ex. FTPLogger, Enable this only if you know what you are doing)  </String>
-		<String Name="IconsInTheme">The selected Theme has custom icons, do you wish to load them?
- You will need to restart airdc++ for the icons to load.</String>
+		<String Name="IconsInTheme">The selected theme has custom icons, do you wish to load them?
+ You will need to restart AirDC++ for the icons to load.</String>
 		<String Name="IconsRestore">Restore Default icons?
- You will need to restart airdc++ for the icons to load.</String>
+ You will need to restart AirDC++ for the icons to load.</String>
 		<String Name="IconsDefault">Default Icons</String>
 		<String Name="ThemeText">Themes: </String>
-		<String Name="Autosearch">Auto Search</String>
 		<String Name="EnableAutosearch">Enable Item(s)</String>
 		<String Name="DisableAutosearch">Disable Item(s)</String>
 		<String Name="SearchBundleAlt">Search bundle for alternatives</String>
@@ -1494,8 +1490,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="DeleteFileConfirm">Are you sure want to delete the file %s?</String>
 		<String Name="AddAutoSearchFile">Add file to auto search</String>
 		<String Name="AddAutoSearchDir">Add directory to auto search</String>
-		<String Name="AutoSearchAddFailed">Failed to add the auto search %s:</String>
-		<String Name="AutoSearchExists">An item with the same name exists already</String>
 		<String Name="NoFilesWereLoaded">No files were loaded for %s</String>
 		<String Name="NoFilesFromFile">No files were loaded from this file</String>
 		<String Name="BundleLoadFailed">Failed to load the bundle %s: %s. The bundle file has been deleted.</String>
@@ -1641,5 +1635,15 @@ loading them will override your old highlights,
 would you still like to load them?</String>
 		<String Name="SearchTimes">Search times</String>
 		<String Name="FailoverAuth">This hub requires authentication via a failover address; aborting connection and switching to the default address</String>
+		<String Name="MenuBrowseOwnList">Browse own list</String>
+		<String Name="AutosearchAdded">A new item %s has been added</String>
+		<String Name="AutosearchAddedSearched">A new item %s has been added and it has been searched for</String>
+		<String Name="AutosearchAddedSearchedIn">A new item %s has been added and it will be searched for in %d seconds</String>
+		<String Name="AutosearchAddFailed">Failed to add the item %s: %s</String>
+		<String Name="ItemNameExists">An item with the same name exists already</String>
+		<String Name="ItemSearched">%s has been searched for</String>
+		<String Name="ItemSearchedIn">%s will be searched in %d seconds</String>
+		<String Name="AutoSearchSmall">Auto search</String>
+		<String Name="AutoSearch">Auto Search</String>
 	</Strings>
 </Language>

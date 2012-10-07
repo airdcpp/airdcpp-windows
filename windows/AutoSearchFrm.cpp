@@ -400,7 +400,7 @@ LRESULT AutoSearchFrame::onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 		if(as) {
 			as->setLastSearch(GET_TIME());
 			updateItem(as, sel);
-			AutoSearchManager::getInstance()->SearchNow(as);
+			AutoSearchManager::getInstance()->manualSearch(as);
 		}
 	}
 	return 0;

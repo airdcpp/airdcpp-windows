@@ -126,7 +126,7 @@ static const toolbarButton ToolbarButtons[] = {
 	{IDC_REFRESH_FILE_LIST, 20, IDI_REFRESH,false, ResourceManager::REFRESH_FILE_LIST},
 	{IDC_SYSTEM_LOG, 21, IDI_LOGS, true, ResourceManager::SYSTEM_LOG},
 	{IDC_SCAN_MISSING, 22, IDI_SCAN,false, ResourceManager::MENU_SCAN_MISSING},
-	{IDC_AUTOSEARCH, 23,  IDI_AUTOSEARCH, false, ResourceManager::AUTOSEARCH},
+	{IDC_AUTOSEARCH, 23,  IDI_AUTOSEARCH, false, ResourceManager::AUTO_SEARCH},
 };
 
 
