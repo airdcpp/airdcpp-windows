@@ -38,6 +38,7 @@
 #include "../client/UpdateManager.h"
 #include "../client/Updater.h"
 
+#include "ShellExecAsUser.h"
 #include "Resource.h"
 #include "ExtendedTrace.h"
 #include "ResourceLoader.h"
@@ -501,7 +502,6 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	SingleInstance dcapp(_T(INST_NAME));
-
 	LPTSTR* argv = ++__targv;
 	int argc = --__argc;
 
@@ -531,6 +531,16 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				string sourcePath = Util::getFilePath(Util::getAppName());
 				string installPath = Text::fromT(*++argv); argc--;
 
+				bool startElevated = false;
+				if (argc > 0) {
+					if (Text::fromT((*++argv)) == "/elevation") {
+						startElevated = true;
+						argc--;
+					} else {
+						--argv;
+					}
+				}
+
 				SetPriorityClass(GetCurrentProcess(), IDLE_PRIORITY_CLASS);
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
 
@@ -550,7 +560,11 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				checkParams();
 
 				//start the updated instance
-				ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Util::getParams(true).c_str(), NULL, SW_SHOW);
+				if (startElevated || !ShellExecAsUser(NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Util::getParams(true).c_str(), NULL)) {
+					ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Util::getParams(true).c_str(), NULL, SW_SHOW);
+				}
+
+				return FALSE;
 			}
 			return FALSE;
 		} else {

@@ -57,6 +57,7 @@ WindowsPage::ListItem WindowsPage::optionItems[] = {
 	{ SettingsManager::POPUNDER_FILELIST, ResourceManager::SETTINGS_POPUNDER_FULL_LIST },
 	{ SettingsManager::POPUNDER_PARTIAL_LIST, ResourceManager::SETTINGS_POPUNDER_PARTIAL_LIST },
 	{ SettingsManager::POPUNDER_PM, ResourceManager::SETTINGS_POPUNDER_PM },
+	{ SettingsManager::POPUNDER_TEXT, ResourceManager::SETTINGS_POPUNDER_TEXT },
 	{ SettingsManager::JOIN_OPEN_NEW_WINDOW, ResourceManager::SETTINGS_OPEN_NEW_WINDOW },
 	{ SettingsManager::IGNORE_HUB_PMS, ResourceManager::SETTINGS_IGNORE_HUB_PMS },
 	{ SettingsManager::IGNORE_BOT_PMS, ResourceManager::SETTINGS_IGNORE_BOT_PMS },

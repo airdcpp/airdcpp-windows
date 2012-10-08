@@ -212,6 +212,7 @@ public:
 	static bool updated;
 	static TStringPair updateCommand;
 
+	static bool isElevated();
 	static void addUpdate(const string& aUpdater);
 	static void runPendingUpdate();
 	static void preInit(); // init required for the wizard

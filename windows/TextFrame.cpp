@@ -30,12 +30,18 @@
 
 void TextFrame::openWindow(const tstring& aFileName, Type aType) {
 	TextFrame* frame = new TextFrame(aFileName, aType);
-	frame->CreateEx(WinUtil::mdiClient);
+	if(BOOLSETTING(POPUNDER_TEXT) && aType == NORMAL)
+		WinUtil::hiddenCreateEx(frame);
+	else
+		frame->CreateEx(WinUtil::mdiClient);
 }
 
 void TextFrame::openWindow(const tstring& aTitle, const tstring& aText, Type aType) {
 	TextFrame* frame = new TextFrame(aTitle, aType, aText);
-	frame->CreateEx(WinUtil::mdiClient);
+	//if(BOOLSETTING(POPUNDER_TEXT))
+		WinUtil::hiddenCreateEx(frame);
+	//else
+	//	frame->CreateEx(WinUtil::mdiClient);
 }
 
 TextFrame::TextFrame(const tstring& fileName, Type aType, const tstring& aText /*empty*/) : file(fileName), textType(aType), text(aText) {

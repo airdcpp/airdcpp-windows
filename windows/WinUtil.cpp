@@ -2412,7 +2412,12 @@ void WinUtil::addUpdate(const string& aUpdater) {
 	if(path[path.size() - 1] == PATH_SEPARATOR)
 		path.insert(path.size() - 1, "\\");
 
-	updateCommand = make_pair(Text::toT(aUpdater), Text::toT("/update \"" +  path + "\""));
+	auto updateCmd = Text::toT("/update \"" +  path + "\"");
+	if (isElevated()) {
+		updateCmd += _T(" /elevation");
+	}
+
+	updateCommand = make_pair(Text::toT(aUpdater), updateCmd);
 }
 
 void WinUtil::runPendingUpdate() {
@@ -2428,4 +2433,20 @@ void WinUtil::showPopup(tstring szMsg, tstring szTitle, HICON hIcon, bool force)
 
 void WinUtil::showPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, bool force) {
 	MainFrame::getMainFrame()->ShowPopup(szMsg, szTitle, dwInfoFlags, force); 
+}
+
+bool WinUtil::isElevated() {
+	BOOL fRet = FALSE;
+	HANDLE hToken = NULL;
+	if( OpenProcessToken( GetCurrentProcess( ),TOKEN_QUERY,&hToken ) ) {
+		TOKEN_ELEVATION Elevation;
+		DWORD cbSize = sizeof( TOKEN_ELEVATION );
+		if( GetTokenInformation( hToken, TokenElevation, &Elevation, sizeof( Elevation ), &cbSize ) ) {
+			fRet = Elevation.TokenIsElevated;
+		}
+	}
+	if( hToken ) {
+		CloseHandle( hToken );
+	}
+	return fRet ? true : false;
 }

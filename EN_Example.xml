@@ -1645,5 +1645,9 @@ would you still like to load them?</String>
 		<String Name="ItemSearchedIn">%s will be searched in %d seconds</String>
 		<String Name="AutoSearchSmall">Auto search</String>
 		<String Name="AutoSearch">Auto Search</String>
+		<String Name="SettingsPopunderText">Open new text files in the background</String>
+		<String Name="ScanningResultsOn">Scanning results on %s</String>
+		<String Name="MandatoryUpdate">Mandatory Update</String>
+		<String Name="AttemptAutoUpdate">AirDC++ will now attempt to update your installation automatically (if supported) or you will be forwarded to a download page</String>
 	</Strings>
 </Language>

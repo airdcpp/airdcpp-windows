@@ -111,10 +111,20 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 LRESULT UpdateDlg::OnDownload(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(autoUpdate) {
+	if(autoUpdate && canAutoUpdate(autoUpdateUrl)) {
 		EndDialog(wID);
 	} else {
 		WinUtil::openLink(Text::toT(infoLink));
 	}
 	return S_OK;
+}
+
+bool UpdateDlg::canAutoUpdate(const string& url) {
+	if(Util::getFileExt(url) == ".zip") {
+		tstring buf(256, _T('\0'));
+		tstring sDrive = Text::toT(Util::getAppName().substr(0, 3));
+		GetVolumeInformation(sDrive.c_str(), NULL, 0, NULL, NULL, NULL, &buf[0], 256);
+		return (buf.find(_T("FAT")) == string::npos);
+	}
+	return false;
 }

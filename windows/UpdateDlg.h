@@ -73,7 +73,7 @@ public:
 	}
 	LRESULT onCtlColor(UINT, WPARAM, LPARAM, BOOL&);
 	
-
+	static bool canAutoUpdate(const string& url);
 private:
 	CHyperLink url;
 	CStatic ctrlUpdateStatus;

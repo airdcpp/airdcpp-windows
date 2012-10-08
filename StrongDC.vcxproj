@@ -558,6 +558,7 @@
     <ClCompile Include="windows\SearchTypesPage.cpp" />
     <ClCompile Include="windows\SharePage.cpp" />
     <ClCompile Include="windows\ShellContextMenu.cpp" />
+    <ClCompile Include="windows\ShellExecAsUser.cpp" />
     <ClCompile Include="windows\Sounds.cpp" />
     <ClCompile Include="windows\SpyFrame.cpp" />
     <ClCompile Include="windows\StatsFrame.cpp" />
@@ -668,6 +669,7 @@
     <ClInclude Include="windows\SearchTypesPage.h" />
     <ClInclude Include="windows\SharePage.h" />
     <ClInclude Include="windows\ShellContextMenu.h" />
+    <ClInclude Include="windows\ShellExecAsUser.h" />
     <ClInclude Include="windows\SingleInstance.h" />
     <ClInclude Include="windows\Sounds.h" />
     <ClInclude Include="windows\SpyFrame.h" />

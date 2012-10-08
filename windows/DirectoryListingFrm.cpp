@@ -351,7 +351,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 	ctrlTree.SelectItem(NULL);
 
 	if (changeDir) {
-		selectItem(root);
+		root == _T("\\") ? treeRoot : selectItem(root);
 	} else {
 		//set the dir complete
 		auto dir = Text::fromT(root);

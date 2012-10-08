@@ -2063,29 +2063,29 @@ void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, 
 	}
 }
 
-void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update) noexcept {
+void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const string& infoUrl, const string& updateUrl, int buildID, bool autoUpdate) noexcept {
 	//tstring msg = xml.getChildAttrib("Message", "Your version of AirDC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
-	MessageBox(Text::toT(message + "\r\nPlease get a new one at " + url).c_str());
-	oldshutdown = true;
-	PostMessage(WM_CLOSE);
+	//MessageBox(Text::toT(message + "\r\nPlease get a new one at " + url).c_str());
+	//oldshutdown = true;
+	//PostMessage(WM_CLOSE);
 
-	/*tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " APPNAME " " VERSIONSTRING);
+	tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " APPNAME " " VERSIONSTRING);
 	MessageBox(Text::toT(message + "\r\n\r\n" + STRING(ATTEMPT_AUTO_UPDATE)).c_str(), title.c_str(), MB_OK | MB_ICONEXCLAMATION);
 
-	if(update.empty() || !UpdateDlg::canAutoUpdate(update)) {
-		if(!url.empty())
-			WinUtil::openLink(Text::toT(url));
+	if(!UpdateDlg::canAutoUpdate(updateUrl) || !autoUpdate) {
+		if(!infoUrl.empty())
+			WinUtil::openLink(Text::toT(infoUrl));
 
 		oldshutdown = true;
 		PostMessage(WM_CLOSE);
 	} else {
 		if(!UpdateManager::getInstance()->isUpdating()) {
-			UpdateManager::getInstance()->downloadUpdate(update, WinUtil::getAppName());
+			UpdateManager::getInstance()->downloadUpdate(updateUrl, buildID, true);
 			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 		} else {
-			MessageBox(updated ? CTSTRING(UPDATER_PENDING_RESTART) : CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
+			MessageBox(CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
 		}
-	}*/
+	}
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater) noexcept {
