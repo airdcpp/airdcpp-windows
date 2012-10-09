@@ -184,6 +184,7 @@ public:
 	GETSET(bool, formatLinks, FormatLinks);
 	GETSET(bool, formatPaths, FormatPaths);
 	GETSET(bool, formatReleases, FormatReleases);
+	GETSET(bool, allowClear, AllowClear);
 
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);

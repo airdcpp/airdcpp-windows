@@ -1649,5 +1649,7 @@ would you still like to load them?</String>
 		<String Name="ScanningResultsOn">Scanning results on %s</String>
 		<String Name="MandatoryUpdate">Mandatory Update</String>
 		<String Name="AttemptAutoUpdate">AirDC++ will now attempt to update your installation automatically (if supported) or you will be forwarded to a download page</String>
+		<String Name="LoadingGui">Loading the user interface</String>
+		<String Name="UnloadingGui">Unloading the user interface</String>
 	</Strings>
 </Language>

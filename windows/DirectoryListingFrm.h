@@ -201,7 +201,7 @@ public:
 	void runUserCommand(UserCommand& uc);
 	void resetFilter();
 
-	void refreshTree(const tstring& root, bool convertFromPartial, bool searching, bool changeDir);
+	void refreshTree(const tstring& root, bool convertFromPartial, bool changeDir);
 
 	HTREEITEM findItem(HTREEITEM ht, const tstring& name);
 	void selectItem(const tstring& name);

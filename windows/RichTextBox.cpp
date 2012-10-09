@@ -38,7 +38,7 @@ EmoticonsManager* emoticonsManager = NULL;
 UINT RichTextBox::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
 RichTextBox::RichTextBox() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr), formatLinks(false),
-	formatPaths(false), formatReleases(true) {
+	formatPaths(false), formatReleases(false), allowClear(false) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
 	}
@@ -972,7 +972,8 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	menu.AppendMenu(MF_SEPARATOR);
 	menu.AppendMenu(MF_STRING, IDC_FIND_TEXT, CTSTRING(FIND_TEXT));
 	menu.AppendMenu(MF_STRING, ID_EDIT_SELECT_ALL, CTSTRING(SELECT_ALL));
-	menu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR_CHAT));
+	if (allowClear)
+		menu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR_CHAT));
 	
 	//flag to indicate pop up menu.
     m_bPopupMenu = true;

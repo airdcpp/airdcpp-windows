@@ -398,6 +398,9 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(BOOLSETTING(TESTWRITE)) {
 		TestWrite(true, true, true);
 	}
+
+	WinUtil::splash.reset();
+
 	// We want to pass this one on to the splitter...hope it get's there...
 	bHandled = FALSE;
 	return 0;
@@ -1250,6 +1253,9 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		}
 
 		if( oldshutdown ||(!BOOLSETTING(CONFIRM_EXIT)) || (MessageBox(CTSTRING(REALLY_EXIT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) ) {
+			WinUtil::splash = unique_ptr<SplashWindow>(new SplashWindow());
+			(*WinUtil::splash)(STRING(UNLOADING_GUI));
+
 			updateTray(false);
 
 			WinUtil::saveReBarSettings(m_hWndToolBar);

@@ -20,6 +20,7 @@
 #define __UPDATE_DLG
 
 #include <atlctrlx.h>
+#include "RichTextBox.h"
 
 #if _MSC_VER > 1000
 #pragma once
@@ -29,7 +30,6 @@ class UpdateDlg : public CDialogImpl<UpdateDlg> {
 	CEdit ctrlCurrentVersion;
 	CEdit ctrlLatestVersion;
 	CEdit ctrlLatestLanguage;
-	CEdit ctrlChangeLog;
 	CButton ctrlDownload;
 	CButton ctrlClose;
 public:
@@ -89,6 +89,8 @@ private:
 	string version;
 	bool autoUpdate;
 	HICON m_hIcon;
+
+	RichTextBox m_Changelog;
 };
 
 #endif // __UPDATE_DLG

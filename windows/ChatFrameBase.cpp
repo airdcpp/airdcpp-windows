@@ -65,6 +65,8 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	ctrlClient.SetFont(WinUtil::font);
 
 	ctrlClient.setFormatLinks(true);
+	ctrlClient.setFormatReleases(true);
+	ctrlClient.setAllowClear(true);
 	
 	//ctrlClient.SetAutoURLDetect(false);
 	//ctrlClient.SetEventMask(ctrlClient.GetEventMask() | ENM_LINK);
@@ -412,11 +414,8 @@ LRESULT ChatFrameBase::onEmoPackChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hW
 	return 0;
 }
 
-LRESULT ChatFrameBase::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-//	CRect rc;            // client area of window 
+LRESULT ChatFrameBase::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
-	//OMenu Mnu;
-	//Mnu.CreatePopupMenu();
 		
 	if(reinterpret_cast<HWND>(wParam) == ctrlEmoticons) {
 		if(emoMenu.m_hMenu) {
@@ -445,7 +444,9 @@ LRESULT ChatFrameBase::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 			FindClose(hFind);
 		}
 
-		emoMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, /*m_hWnd*/ 0);
+		emoMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, ctrlClient.m_hWnd);
+		bHandled = TRUE;
+		return 1;
 	}
 
 	return 0; 

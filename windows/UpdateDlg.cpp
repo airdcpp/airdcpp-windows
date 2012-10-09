@@ -55,10 +55,12 @@ LRESULT UpdateDlg::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL&
 LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ctrlCurrentVersion.Attach(GetDlgItem(IDC_UPDATE_VERSION_CURRENT));
 	ctrlLatestVersion.Attach(GetDlgItem(IDC_UPDATE_VERSION_LATEST));
-	ctrlChangeLog.Attach(GetDlgItem(IDC_UPDATE_HISTORY_TEXT));
 	ctrlDownload.Attach(GetDlgItem(IDC_UPDATE_DOWNLOAD));
 	ctrlClose.Attach(GetDlgItem(IDCLOSE));
 	ctrlUpdateStatus.Attach(GetDlgItem(IDC_UPDATE_STATUS));
+
+	m_Changelog.Attach(GetDlgItem(IDC_UPDATE_HISTORY_TEXT));
+	m_Changelog.Subclass();
 
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_CURRENT_LBL), (TSTRING(CURRENT_VERSION) + _T(":")).c_str());
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_LATEST_LBL), (TSTRING(LATEST_VERSION) + _T(":")).c_str());
@@ -86,7 +88,24 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	::SetWindowText(GetDlgItem(IDC_UPDATE_HISTORY), CTSTRING(HISTORY));
 
 	ctrlCurrentVersion.SetWindowText(Text::toT(SHORTVERSIONSTRING).c_str());
-	ctrlChangeLog.SetWindowText(Text::toT(message).c_str());
+
+	m_Changelog.setFormatLinks(true);
+	m_Changelog.SetFont(WinUtil::font);
+	m_Changelog.SetBackgroundColor(WinUtil::bgColor); 
+	m_Changelog.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
+
+	string::size_type j = 0; 
+	while((j = message.find("\r", j)) != string::npos)
+		message.erase(j, 1);
+
+	tstring msg = Text::toT(message);
+
+	m_Changelog.SetWindowTextW(msg.c_str());
+	m_Changelog.FormatEmoticonsAndLinks(msg, 0, false);
+	m_Changelog.setAutoScrollToEnd(false);
+	m_Changelog.SetSel(0, 0); //set scroll position to top
+
+	//m_Changelog.AppendText(Text::toT(message), WinUtil::m_ChatTextGeneral);
 #ifdef BETAVER
 	ctrlLatestVersion.SetWindowText(Text::toT(version + "r" + Util::toString(buildID)).c_str());
 #else

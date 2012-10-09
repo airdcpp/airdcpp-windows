@@ -38,6 +38,7 @@
 #include "../client/UpdateManager.h"
 #include "../client/Updater.h"
 
+#include "SplashWindow.h"
 #include "ShellExecAsUser.h"
 #include "Resource.h"
 #include "ExtendedTrace.h"
@@ -308,70 +309,6 @@ public:
 	}
 };
 
-static HWND hWnd;
-static tstring sText;
-static tstring sTitle;
-
-LRESULT CALLBACK splashCallback(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	if (uMsg == WM_PAINT) {
-		// Get some information
-		HDC dc = GetDC(hwnd);
-		RECT rc;
-		GetWindowRect(hwnd, &rc);
-		OffsetRect(&rc, -rc.left, -rc.top);
-		RECT rc2 = rc;
-		rc2.top = rc2.bottom - 35; 
-		rc2.right = rc2.right - 10;
-		::SetBkMode(dc, TRANSPARENT);
-		
-		// Draw the icon
-		HBITMAP hi;
-		hi = (HBITMAP)LoadImage(_Module.get_m_hInst(), MAKEINTRESOURCE(IDB_SPLASH), IMAGE_BITMAP, 350, 120, LR_SHARED);
-			 
-		HDC comp=CreateCompatibleDC(dc);
-		SelectObject(comp,hi);	
-
-		BitBlt(dc,0, 0 , 350, 120,comp,0,0,SRCCOPY);
-
-		DeleteObject(hi);
-		DeleteDC(comp);
-		LOGFONT logFont;
-		HFONT hFont;
-		GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(logFont), &logFont);
-		lstrcpy(logFont.lfFaceName, TEXT("Tahoma"));
-		logFont.lfHeight = 15;
-		logFont.lfWeight = 700;
-		hFont = CreateFontIndirect(&logFont);		
-		SelectObject(dc, hFont);
-		::SetTextColor(dc, RGB(255,255,255));
-		::DrawText(dc, sTitle.c_str(), _tcslen(sTitle.c_str()), &rc2, DT_RIGHT);
-		DeleteObject(hFont);
-
-		if(!sText.empty()) {
-			rc2 = rc;
-			rc2.top = rc2.bottom - 15;
-			GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(logFont), &logFont);
-			lstrcpy(logFont.lfFaceName, TEXT("Tahoma"));
-			logFont.lfHeight = 12;
-			logFont.lfWeight = 700;
-			hFont = CreateFontIndirect(&logFont);		
-			SelectObject(dc, hFont);
-			::SetTextColor(dc, RGB(255,255,255));
-			::DrawText(dc, (_T(".:: ") + sText + _T(" ::.")).c_str(), _tcslen((_T(".:: ") + sText + _T(" ::.")).c_str()), &rc2, DT_CENTER);
-			DeleteObject(hFont);
-		}
-
-		ReleaseDC(hwnd, dc);
-	}
-
-	return DefWindowProc(hwnd, uMsg, wParam, lParam);
-}
-
-void callBack(void* x, const tstring& a) {
-	sText = a;
-	SendMessage((HWND)x, WM_PAINT, 0, 0);
-}
-
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
 	checkCommonControls();
@@ -382,39 +319,12 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	theLoop.AddMessageFilter(&findDialogFilter);
 	_Module.AddMessageLoop(&theLoop);
 
-	CEdit dummy;
-	CWindow splash;
-	
-	CRect rc;
-	rc.bottom = GetSystemMetrics(SM_CYFULLSCREEN);
-	rc.top = (rc.bottom / 2) - 80;
-
-	rc.right = GetSystemMetrics(SM_CXFULLSCREEN);
-	rc.left = rc.right / 2 - 85;
-	
-	
-	dummy.Create(NULL, rc, _T(APPNAME) _T(" ") _T(VERSIONSTRING), WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		ES_CENTER | ES_READONLY, WS_EX_STATICEDGE);
-	splash.Create(_T("Static"), GetDesktopWindow(), splash.rcDefault, NULL, WS_POPUP | WS_VISIBLE | SS_USERITEM | WS_EX_TOOLWINDOW);
-	splash.SetFont((HFONT)GetStockObject(DEFAULT_GUI_FONT));
-	
-	HDC dc = splash.GetDC();
-	rc.right = rc.left + 350;
-	rc.bottom = rc.top + 120;
-	splash.ReleaseDC(dc);
-	splash.HideCaret();
-	splash.SetWindowPos(NULL, &rc, SWP_SHOWWINDOW);
-	splash.SetWindowLongPtr(GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&splashCallback));
-	splash.CenterWindow();
-
-	sTitle = _T(VERSIONSTRING) _T(" ") _T(CONFIGURATION_TYPE);
-
-	splash.SetFocus();
-	splash.RedrawWindow();
-
 	WinUtil::preInit();
 
-	startup(callBack, (void*)splash.m_hWnd);
+	WinUtil::splash = unique_ptr<SplashWindow>(new SplashWindow());
+	(*WinUtil::splash)("Starting up");
+
+	startup([&](const string& str) { (*WinUtil::splash)(str); });
 	
 
 	if(BOOLSETTING(PASSWD_PROTECT)) {
@@ -428,10 +338,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				ExitProcess(1);
 			}
 		}
-	} 
-
-	splash.DestroyWindow();
-	dummy.DestroyWindow();
+	}
 
 	if(ResourceManager::getInstance()->isRTL()) {
 		SetProcessDefaultLayout(LAYOUT_RTL);
@@ -439,7 +346,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	MainFrame wndMain;
 
-	rc = wndMain.rcDefault;
+	CRect rc = wndMain.rcDefault;
 
 	if( (SETTING(MAIN_WINDOW_POS_X) != CW_USEDEFAULT) &&
 		(SETTING(MAIN_WINDOW_POS_Y) != CW_USEDEFAULT) &&
@@ -471,30 +378,9 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	
 	_Module.RemoveMessageLoop();
 
-	
-	dummy.Create(NULL, rc, _T(APPNAME) _T(" ") _T(VERSIONSTRING), WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		ES_CENTER | ES_READONLY, WS_EX_STATICEDGE);
-	splash.Create(_T("Static"), GetDesktopWindow(), splash.rcDefault, NULL, WS_POPUP | WS_VISIBLE | SS_USERITEM | WS_EX_TOOLWINDOW);
-	splash.SetFont((HFONT)GetStockObject(DEFAULT_GUI_FONT));
-	
-	dc = splash.GetDC();
-	rc.right = rc.left + 350;
-	rc.bottom = rc.top + 120;
-	splash.ReleaseDC(dc);
-	splash.HideCaret();
-	splash.SetWindowPos(NULL, &rc, SWP_SHOWWINDOW);
-	splash.SetWindowLongPtr(GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(&splashCallback));
-	splash.CenterWindow();
-
-	sTitle = TSTRING(PROCESSING);
-
-	splash.SetFocus();
-	splash.RedrawWindow();
-
-	shutdown(callBack, (void*)splash.m_hWnd);
-
-	splash.DestroyWindow();
-	dummy.DestroyWindow();
+	dcassert(WinUtil::splash);
+	shutdown([&](const string& str) { (*WinUtil::splash)(str); });
+	WinUtil::splash.reset();
 
 	WinUtil::runPendingUpdate();
 	return nRet;
@@ -528,6 +414,8 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 			return FALSE;
 		} else if(_tcscmp(*argv, _T("/update")) == 0) {
 			if(--argc >= 1) {
+				WinUtil::splash = unique_ptr<SplashWindow>(new SplashWindow());
+				(*WinUtil::splash)("Updating");
 				string sourcePath = Util::getFilePath(Util::getAppName());
 				string installPath = Text::fromT(*++argv); argc--;
 
@@ -558,6 +446,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				//append the passed params (but leave out the update commands...)
 				argv++;
 				checkParams();
+				WinUtil::splash.reset();
 
 				//start the updated instance
 				if (startElevated || !ShellExecAsUser(NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Util::getParams(true).c_str(), NULL)) {

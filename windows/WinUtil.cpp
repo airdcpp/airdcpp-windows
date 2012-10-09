@@ -64,6 +64,7 @@
 #include "MagnetDlg.h"
 #include "BarShader.h"
 
+unique_ptr<SplashWindow> WinUtil::splash;
 WinUtil::ImageMap WinUtil::fileIndexes;
 int WinUtil::fileImageCount;
 HBRUSH WinUtil::bgBrush = NULL;

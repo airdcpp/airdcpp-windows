@@ -560,6 +560,7 @@
     <ClCompile Include="windows\ShellContextMenu.cpp" />
     <ClCompile Include="windows\ShellExecAsUser.cpp" />
     <ClCompile Include="windows\Sounds.cpp" />
+    <ClCompile Include="windows\SplashWindow.cpp" />
     <ClCompile Include="windows\SpyFrame.cpp" />
     <ClCompile Include="windows\StatsFrame.cpp" />
     <ClCompile Include="windows\stdafx.cpp">
@@ -597,6 +598,7 @@
     <ClInclude Include="windows\EmoticonsManager.h" />
     <ClInclude Include="windows\AirAppearancePage.h" />
     <ClInclude Include="windows\ChatFrameBase.h" />
+    <ClInclude Include="windows\SplashWindow.h" />
     <ClInclude Include="windows\MiscPage.h" />
     <ClInclude Include="windows\DownloadingOptionsPage.h" />
     <ClInclude Include="windows\SharePageDlg.h" />

@@ -94,16 +94,19 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 		resetFilter();
 
 	try{
-		refreshTree(Text::toT(aDir), convertFromPartial, searching, changeDir);
+		refreshTree(Text::toT(aDir), convertFromPartial, changeDir);
 	} catch(const AbortException) {
 		return;
 	}
+
 	if (!searching) {
 		int64_t end = GET_TICK();
 		loadTime = (end - aStart) / 1000;
 		PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED);
 	} else {
+		findSearchHit(true);
 		changeWindowState(true);
+		PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())));
 	}
 }
 
@@ -290,10 +293,10 @@ LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/,
 
 void DirectoryListingFrame::convertToFull() {
 	if (dl->getIsOwnList())
-		dl->addFullListTask(curDir->getPath());
+		dl->addFullListTask(dl->getPath(curDir));
 	else {
 		try {
-			QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, curDir->getPath());
+			QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, dl->getPath(curDir));
 		} catch(...) {}
 	}
 }
@@ -319,7 +322,7 @@ void DirectoryListingFrame::createRoot() {
 	dcassert(treeRoot);
 }
 
-void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial, bool searching, bool changeDir) {
+void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial, bool changeDir) {
 	ctrlTree.SetRedraw(FALSE);
 	if (convertFromPartial) {
 		ctrlTree.DeleteAllItems();
@@ -351,7 +354,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 	ctrlTree.SelectItem(NULL);
 
 	if (changeDir) {
-		root == _T("\\") ? treeRoot : selectItem(root);
+		selectItem(root);
 	} else {
 		//set the dir complete
 		auto dir = Text::fromT(root);
@@ -374,10 +377,6 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
 		dl->checkShareDupes();
 	ctrlTree.SetRedraw(TRUE);
-
-	if (searching) {
-		findSearchHit(true);
-	}
 }
 
 void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
@@ -386,6 +385,8 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 		return;
 
 	bool found = false;
+
+	// set the starting position for the search
 	if (newDir) {
 		searchPos = gotoPrev ? ctrlList.GetItemCount()-1 : 0;
 	} else if (gotoPrev) {
@@ -434,6 +435,7 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 		updateStatus();
 	} else {
 		//move to next dir (if there are any)
+		dcassert(!newDir);
 		if (!dl->nextResult(gotoPrev)) {
 			MessageBox(CTSTRING(NO_ADDITIONAL_MATCHES), CTSTRING(SEARCH_FOR_FILE));
 		}

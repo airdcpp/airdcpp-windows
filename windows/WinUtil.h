@@ -32,6 +32,8 @@
 #include "../client/TargetUtil.h"
 #include "../client/AirUtil.h"
 
+#include "SplashWindow.h"
+
 #include <boost/bind.hpp>
 
 #include "resource.h"
@@ -152,6 +154,7 @@ static const winamptoolbarButton WinampToolbarButtons[] = {
 
 class WinUtil {
 public:
+	static unique_ptr<SplashWindow> splash;
 	static CImageList searchImages;
 	static CImageList fileImages;
 	static int fileImageCount;

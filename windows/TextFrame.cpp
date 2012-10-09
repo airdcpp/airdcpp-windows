@@ -65,6 +65,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 			if (textType == HISTORY) {
 				ctrlPad.setFormatLinks(true);
+				ctrlPad.setFormatReleases(true);
 				File f(Text::fromT(file), File::READ, File::OPEN);
 				int64_t size = f.getSize();
 				if(size > 64*1024) {
@@ -84,6 +85,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			} else if (textType == LOG) {
 				ctrlPad.setFormatPaths(true);
 				ctrlPad.setFormatLinks(true);
+				ctrlPad.setFormatReleases(true);
 				File f(Text::fromT(file), File::READ, File::OPEN);
 				//if openlog just add the whole text
 				tmp = f.read();
@@ -91,7 +93,6 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 				SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 			} else if (textType == REPORT) {
 				ctrlPad.SetRedraw(FALSE);
-				ctrlPad.setFormatReleases(false);
 				ctrlPad.setFormatPaths(true);
 				ctrlPad.SetWindowText(text.c_str());
 				ctrlPad.FormatEmoticonsAndLinks(text, 0, false);
@@ -134,6 +135,8 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			tstring msg = Text::toT(tmp);
 			ctrlPad.SetWindowText(msg.c_str());
 			ctrlPad.setFormatLinks(true);
+			ctrlPad.setFormatReleases(true);
+
 			ctrlPad.FormatEmoticonsAndLinks(msg, 0, false);
 			ctrlPad.setAutoScrollToEnd(false);
 			ctrlPad.SetSel(0, 0); //set scroll position to top
