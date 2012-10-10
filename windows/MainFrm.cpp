@@ -417,13 +417,13 @@ LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	THUMBBUTTON buttons[2];
 	buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
 	buttons[0].iId = IDC_OPEN_DOWNLOADS;
-	buttons[0].hIcon = images.GetIcon(13);
+	buttons[0].hIcon = images.GetIcon(18);
 	wcscpy(buttons[0].szTip, CWSTRING(MENU_OPEN_DOWNLOADS_DIR));
 	buttons[0].dwFlags = THBF_ENABLED;
 
 	buttons[1].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
 	buttons[1].iId = ID_FILE_SETTINGS;
-	buttons[1].hIcon = images.GetIcon(14);
+	buttons[1].hIcon = images.GetIcon(20);
 	wcscpy(buttons[1].szTip, CWSTRING(SETTINGS));
 	buttons[1].dwFlags = THBF_ENABLED;
 

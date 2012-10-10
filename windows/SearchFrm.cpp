@@ -392,6 +392,13 @@ void SearchFrame::onEnter() {
 	if (expandSR != BOOLSETTING(EXPAND_DEFAULT))
 		SettingsManager::getInstance()->set(SettingsManager::EXPAND_DEFAULT, expandSR);
 
+	lastDisabledHubs.clear();
+	for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
+		HubInfo* hub = ctrlHubs.getItemData(i);
+		if(ctrlHubs.GetCheckState(i) == FALSE && i != 0)
+			lastDisabledHubs.push_back(Text::fromT(hub->url));
+	}
+
 	int n = ctrlHubs.GetItemCount();
 	for(int i = 1; i < n; i++) {
 		if(ctrlHubs.GetCheckState(i)) {

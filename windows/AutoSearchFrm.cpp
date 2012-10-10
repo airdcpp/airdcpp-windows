@@ -236,7 +236,6 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		asMenu.AppendMenu(MF_SEPARATOR);
 		asMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 
-		asMenu.EnableMenuItem(IDC_REMOVE, (ctrlAutoSearch.GetSelectedCount() > 1));
 		asMenu.EnableMenuItem(IDC_CHANGE, enable);
 		asMenu.EnableMenuItem(IDC_MOVE_UP, enable);
 		asMenu.EnableMenuItem(IDC_MOVE_DOWN, enable);
@@ -409,16 +408,39 @@ LRESULT AutoSearchFrame::onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 LRESULT AutoSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
 	
-	::EnableWindow(GetDlgItem(IDC_REMOVE), ctrlAutoSearch.GetItemState(l->iItem, LVIS_SELECTED));
-	::EnableWindow(GetDlgItem(IDC_CHANGE), ctrlAutoSearch.GetItemState(l->iItem, LVIS_SELECTED));
-	::EnableWindow(GetDlgItem(IDC_MOVE_UP), ctrlAutoSearch.GetItemState(l->iItem, LVIS_SELECTED));
-	::EnableWindow(GetDlgItem(IDC_MOVE_DOWN), ctrlAutoSearch.GetItemState(l->iItem, LVIS_SELECTED));
+	::EnableWindow(GetDlgItem(IDC_REMOVE), (ctrlAutoSearch.GetSelectedCount() >= 1));
+	::EnableWindow(GetDlgItem(IDC_CHANGE), (ctrlAutoSearch.GetSelectedCount() == 1));
+	::EnableWindow(GetDlgItem(IDC_MOVE_UP), (ctrlAutoSearch.GetSelectedCount() == 1));
+	::EnableWindow(GetDlgItem(IDC_MOVE_DOWN), (ctrlAutoSearch.GetSelectedCount() == 1));
 	
 	if(!loading && l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
 		AutoSearchManager::getInstance()->setActiveItem(l->iItem, Util::toBool(ctrlAutoSearch.GetCheckState(l->iItem)));	
 	}
 	return 0;		
 }
+
+LRESULT AutoSearchFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
+	switch(kd->wVKey) {
+		case VK_DELETE:
+			if(ctrlAutoSearch.GetSelectedCount() >= 1) {
+				PostMessage(WM_COMMAND, IDC_REMOVE, 0);
+			}
+			break;
+		case VK_RETURN:
+			if( WinUtil::isShift() || WinUtil::isCtrl() || WinUtil::isAlt() ) {
+			} else {
+				if(ctrlAutoSearch.GetSelectedCount() == 1) {
+					PostMessage(WM_COMMAND, IDC_CHANGE, 0);
+				}
+			}
+			break;
+		default:
+			break;
+	}
+	return 0;
+}
+
 
 void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	if(as == NULL)

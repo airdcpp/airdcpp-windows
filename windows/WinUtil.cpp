@@ -1585,9 +1585,6 @@ tstring WinUtil::UselessInfo() {
 		result += _T("Pagefile (available/total): ");
 		result += Util::formatBytesW( mem.ullAvailPageFile ) + _T("/") + Util::formatBytesW( mem.ullTotalPageFile );
 		result += _T("\n");
-		result += _T("Virtual memory (available/total): ");
-		result += Util::formatBytesW( mem.ullAvailVirtual ) + _T("/") + Util::formatBytesW( mem.ullTotalVirtual );
-		result += _T("\n");
 		result += _T("Memory load: ");
 		result += Util::toStringW(mem.dwMemoryLoad);
 		result += _T("%\n\n");
