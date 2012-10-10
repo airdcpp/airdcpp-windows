@@ -398,6 +398,7 @@ void SearchFrame::onEnter() {
 		if(ctrlHubs.GetCheckState(i) == FALSE && i != 0)
 			lastDisabledHubs.push_back(Text::fromT(hub->url));
 	}
+	SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_DISABLED_HUBS, Util::toString(",", lastDisabledHubs));
 
 	int n = ctrlHubs.GetItemCount();
 	for(int i = 1; i < n; i++) {
