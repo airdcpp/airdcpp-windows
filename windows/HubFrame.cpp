@@ -1701,11 +1701,18 @@ bool HubFrame::parseFilter(FilterModes& mode, int64_t& size) {
 void HubFrame::updateUserList(OnlineUserPtr ui) {
 	int64_t size = -1;
 	FilterModes mode = NONE;
+
+	boost::wregex reg;
+	try {
+		reg.assign(Text::toT(AirUtil::regexEscape(Text::fromT(filter), false)), boost::regex_constants::icase);
+	} catch (...) { 
+		return;
+	}
 	
 	//single update?
 	//avoid refreshing the whole list and just update the current item
 	//instead
-	if(ui != NULL) {
+	if(ui) {
 		if(ui->isHidden()) {
 			return;
 		}
@@ -1717,7 +1724,6 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		} else {
 			int sel = ctrlFilterSel.GetCurSel();
 			bool doSizeCompare = sel == OnlineUser::COLUMN_SHARED && parseFilter(mode, size);
-			boost::wregex reg(filter, boost::regex_constants::icase);
 
 			if(matchFilter(*ui, sel, reg, doSizeCompare, mode, size)) {
 				if(ctrlUsers.findItem(ui.get()) == -1) {
@@ -1740,7 +1746,7 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		client->getUserList(l);
 
 		if(filter.empty()) {
-			for(OnlineUserList::const_iterator i = l.begin(); i != l.end(); ++i){
+			for(auto i = l.begin(); i != l.end(); ++i){
 				const OnlineUserPtr& ui = *i;
 				if(!ui->isHidden()) {
 					ui->inc();
@@ -1750,9 +1756,8 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		} else {
 			int sel = ctrlFilterSel.GetCurSel();
 			bool doSizeCompare = sel == OnlineUser::COLUMN_SHARED && parseFilter(mode, size);
-			boost::wregex reg(filter, boost::regex_constants::icase);
 
-			for(OnlineUserList::const_iterator i = l.begin(); i != l.end(); ++i) {
+			for(auto i = l.begin(); i != l.end(); ++i) {
 				const OnlineUserPtr& ui = *i;
 				if(!ui->isHidden() && matchFilter(*ui, sel, reg, doSizeCompare, mode, size)) {
 					ui->inc();

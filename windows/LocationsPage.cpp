@@ -32,6 +32,8 @@
 #include "LineDlg.h"
 #include "FavoriteDirDlg.h"
 
+#include <boost/range/algorithm/find_if.hpp>
+
 PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_SETTINGS_FAVORITE_DIRECTORIES, ResourceManager::SETTINGS_FAVORITE_DIRS },
 	{ IDC_REMOVE, ResourceManager::REMOVE },
@@ -179,7 +181,7 @@ LRESULT LocationsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 		
 		FavoriteDirDlg dlg;
 		dlg.vName = buf;
-		auto s = find_if(favoriteDirs.begin(), favoriteDirs.end(), CompareFirst<string, StringList>(Text::fromT(buf)));
+		auto s = boost::find_if(favoriteDirs, CompareFirst<string, StringList>(Text::fromT(buf)));
 		dcassert(s != favoriteDirs.end());
 		dlg.paths = s->second;
 	
@@ -223,13 +225,13 @@ LRESULT LocationsPage::onMove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, 
 void LocationsPage::addDirs(const string& vName, const StringList& aPaths){
 	int pos = 0;
 	StringList paths = aPaths;
-	std::sort(paths.begin(), paths.end());
+	sort(paths.begin(), paths.end());
 
-	auto i = find_if(favoriteDirs.begin(), favoriteDirs.end(), CompareFirst<string, StringList>(vName));
+	auto i = boost::find_if(favoriteDirs, CompareFirst<string, StringList>(vName));
 	if (i != favoriteDirs.end()) {
 		pos = ctrlDirectories.find(Text::toT(vName));
 		boost::for_each(aPaths, [&](string p) {
-			if (find(i->second.begin(), i->second.end(), p) == i->second.end())
+			if (find(i->second, p) == i->second.end())
 				i->second.push_back(p); 
 		});
 		paths = i->second;
@@ -242,7 +244,7 @@ void LocationsPage::addDirs(const string& vName, const StringList& aPaths){
 }
 
 bool LocationsPage::removeFavoriteDir(const string& vName) {
-	auto i = find_if(favoriteDirs.begin(), favoriteDirs.end(), CompareFirst<string, StringList>(vName));
+	auto i = boost::find_if(favoriteDirs, CompareFirst<string, StringList>(vName));
 	if (i != favoriteDirs.end()) {
 		favoriteDirs.erase(i);
 		return true;
