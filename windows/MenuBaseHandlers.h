@@ -262,7 +262,7 @@ public:
 				string t = i->first;
 				if (i->second.size() > 1) {
 					auto vMenu = targetMenu.createSubMenu(Text::toT(i->first).c_str(), true);
-					vMenu->appendItem(CTSTRING(ALL), [this, t, wholeDir, isFavDirs] { onDownloadVirtual(t, wholeDir, isFavDirs); });
+					vMenu->appendItem(CTSTRING(AUTO_SELECT), [this, t, wholeDir, isFavDirs] { onDownloadVirtual(t, wholeDir, isFavDirs); });
 					vMenu->appendSeparator();
 					for(auto s = i->second.begin(); s != i->second.end(); ++s) {
 						auto target = *s;

@@ -81,7 +81,7 @@ void OMenu::InsertSeparator(UINT uItem, BOOL byPosition, const tstring& caption,
 	}
 
 	mi->parent = this;
-	items.push_back(unique_ptr<OMenuItem>(mi));
+	addItem(mi);
 	MENUITEMINFO mii = {0};
 	mii.cbSize = sizeof(MENUITEMINFO);
 	mii.fMask = MIIM_FTYPE | MIIM_DATA;
@@ -142,7 +142,7 @@ unsigned OMenu::getNextID() {
 }
 
 void OMenu::addItem(OMenuItem* mi) {
-	parent ? parent->items.push_back(unique_ptr<OMenuItem>(mi)) : items.push_back(unique_ptr<OMenuItem>(mi));
+	parent ? parent->addItem(mi) : items.push_back(unique_ptr<OMenuItem>(mi));
 }
 
 unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f, bool enabled, bool defaultItem) {
