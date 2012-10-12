@@ -279,7 +279,7 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 
 	if (enable) {
 		EnableWindow();
-		ctrlGetFullList.EnableWindow(dl->getPartialList() && !dl->getIsOwnList());
+		ctrlGetFullList.EnableWindow(dl->getPartialList());
 	} else {
 		DisableWindow();
 		ctrlGetFullList.EnableWindow(false);
