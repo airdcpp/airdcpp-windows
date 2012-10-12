@@ -1651,5 +1651,14 @@ would you still like to load them?</String>
 		<String Name="AttemptAutoUpdate">AirDC++ will now attempt to update your installation automatically (if supported) or you will be forwarded to a download page</String>
 		<String Name="LoadingGui">Loading the user interface</String>
 		<String Name="UnloadingGui">Unloading the user interface</String>
+		<String Name="PartialFilelist">Partial filelist</String>
+		<String Name="DownloadLimit">Download limit</String>
+		<String Name="UploadLimit">Upload limit</String>
+		<String Name="DownloadLimitSetTo">Download limit set to %d KiB/s</String>
+		<String Name="UploadLimitSetTo">Upload limit set to %d KiB/s</String>
+		<String Name="DownloadLimitDisabled">Download limit disabled</String>
+		<String Name="UploadLimitDisabled">Upload limit disabled</String>
+		<String Name="Custom">Custom...</String>
+		<String Name="NewLimit">New limit (KiB/s) (0 = infinite)</String>
 	</Strings>
 </Language>

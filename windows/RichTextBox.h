@@ -42,7 +42,6 @@ class RichTextBox: public CRichEditCtrl, public CMessageMap, public UCHandler<Ri
 public:
 
 	typedef UCHandler<RichTextBox> ucBase;
-	typedef DownloadBaseHandler<RichTextBox> dlBase;
 
 	BEGIN_MSG_MAP(RichTextBox)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
@@ -99,7 +98,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
 
-		CHAIN_COMMANDS(dlBase)
 		CHAIN_COMMANDS(ucBase)
 
 		MESSAGE_HANDLER(WM_COMMAND, onCommand)
@@ -188,7 +186,7 @@ public:
 
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
-	void download(const string& aTarget, QueueItem::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, QueueItem::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
 	HintedUser getMagnetSource();

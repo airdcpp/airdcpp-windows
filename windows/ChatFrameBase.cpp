@@ -36,6 +36,7 @@
 #include "../client/ShareManager.h"
 #include "../client/ClientManager.h"
 #include "../client/ConnectivityManager.h"
+#include "../client/ThrottleManager.h"
 
 extern EmoticonsManager* emoticonsManager;
 
@@ -736,6 +737,14 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		} else {
 			status = TSTRING(INVALID_SIZE);
 		}
+	} else if(Util::stricmp(cmd.c_str(), _T("upload")) == 0) {
+		auto value = Util::toInt(Text::fromT(param));
+		ThrottleManager::setSetting(ThrottleManager::getCurSetting(SettingsManager::MAX_UPLOAD_SPEED_MAIN), value);
+		status = value ? CTSTRING_F(UPLOAD_LIMIT_SET_TO, value) : CTSTRING(UPLOAD_LIMIT_DISABLED);
+	} else if(Util::stricmp(cmd.c_str(), _T("download")) == 0) {
+		auto value = Util::toInt(Text::fromT(param));
+		ThrottleManager::setSetting(ThrottleManager::getCurSetting(SettingsManager::MAX_DOWNLOAD_SPEED_MAIN), value);
+		status = value ? CTSTRING_F(DOWNLOAD_LIMIT_SET_TO, value) : CTSTRING(DOWNLOAD_LIMIT_DISABLED);
 	} else if(stricmp(cmd.c_str(), _T("wmp")) == 0) { // Mediaplayer Support
 		string spam = Players::getWMPSpam(FindWindow(_T("WMPlayerApp"), NULL));
 		if(!spam.empty()) {

@@ -33,8 +33,6 @@
 #define FILTER_MESSAGE_MAP 8
 class AutoSearchDlg : public CDialogImpl<AutoSearchDlg>, public DownloadBaseHandler<AutoSearchDlg> {
 public:
-	typedef DownloadBaseHandler<AutoSearchDlg> dlBase;
-
 	string searchString, comment, target, userMatch, matcherString, fileTypeStr;
 	int searchInterval;
 	uint8_t matcherType, action;
@@ -73,8 +71,6 @@ public:
 		MESSAGE_HANDLER_HWND(WM_INITMENUPOPUP, OMenu::onInitMenuPopup)
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
-
-		CHAIN_COMMANDS(dlBase)
 	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 	END_MSG_MAP()
@@ -104,7 +100,7 @@ public:
 
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
-	void download(const string& aTarget, QueueItem::Priority p, bool isWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, QueueItem::Priority p, bool isWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool /*isWhole*/) { return 0; }
 	bool showDirDialog(string& /*fileName*/) { return true; }
 	void switchMode();

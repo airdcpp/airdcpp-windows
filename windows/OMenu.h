@@ -24,21 +24,51 @@
 #endif // _MSC_VER > 1000
 
 #include "../client/typedefs.h"
+#include <functional>
+#include "../client/GetSet.h"
 
 namespace dcpp {
 
 class OMenu;
 
-struct OMenuItem {
-	typedef vector<OMenuItem*> List;
-	typedef List::iterator Iter;
+namespace Dispatchers {
 
-	OMenuItem() : ownerdrawn(true), text(), parent(NULL), data(NULL) {}
+template<typename T>
+struct Base {
+	typedef std::function<T> F;
+
+	Base(const F& f_) : f(f_) { }
+
+protected:
+	F f;
+};
+
+template<LRESULT value = 0, bool handled = true>
+struct VoidVoid : public Base<void ()> {
+
+	VoidVoid(const F& f_) : Base<void ()>(f_) { }
+
+	bool operator()(const MSG& msg, LRESULT& ret) const {
+		this->f();
+		ret = value;
+		return handled;
+	}
+};
+
+}
+
+typedef Dispatchers::VoidVoid<> Dispatcher;
+
+struct OMenuItem {
+	typedef vector<unique_ptr<OMenuItem>> List;
+
+	OMenuItem() : ownerdrawn(true), text(), parent(nullptr), data(nullptr) {}
 
 	tstring text;
 	OMenu* parent;
 	void* data;
 	bool ownerdrawn;
+	Dispatcher::F f;
 };
 
 /*
@@ -46,7 +76,7 @@ struct OMenuItem {
  */
 class OMenu : public CMenu {
 public:
-	OMenu() : CMenu() { }
+	OMenu(OMenu* aParent = nullptr);
 	~OMenu();
 
 	BOOL CreatePopupMenu();
@@ -59,8 +89,10 @@ public:
 		InsertSeparator(GetMenuItemCount(), TRUE, caption);
 	}
 
+	void appendSeparator();
+
 	/* This should be used when submenus are created within a separate function/scope */
-	OMenu* createSubMenu(const tstring& aTitle);
+	OMenu* createSubMenu(const tstring& aTitle, bool appendSeparator = false);
 
 	void CheckOwnerDrawn(UINT uItem, BOOL byPosition);
 
@@ -72,28 +104,28 @@ public:
 			RemoveMenu(0, MF_BYPOSITION);
 		}
 	}
-	BOOL DeleteMenu(UINT nPosition, UINT nFlags) {
-		CheckOwnerDrawn(nPosition, nFlags & MF_BYPOSITION);
-		return CMenu::DeleteMenu(nPosition, nFlags);
-	}
-	BOOL RemoveMenu(UINT nPosition, UINT nFlags) {
-		CheckOwnerDrawn(nPosition, nFlags & MF_BYPOSITION);
-		return CMenu::RemoveMenu(nPosition, nFlags);
-	}
+	BOOL DeleteMenu(UINT nPosition, UINT nFlags);
+	BOOL RemoveMenu(UINT nPosition, UINT nFlags);
 
 	inline void ClearMenu() {
 		RemoveFirstItem(GetMenuItemCount());
 	}
 
+	unsigned appendItem(const tstring& text, const Dispatcher::F& f = Dispatcher::F(), bool enabled = true, bool defaultItem = false);
 	BOOL InsertMenuItem(UINT uItem, BOOL bByPosition, LPMENUITEMINFO lpmii);
+
+	void open(HWND aHWND, unsigned flags = TPM_LEFTALIGN | TPM_RIGHTBUTTON, CPoint pt = GetMessagePos());
+
+	unsigned getNextID();
+	void addItem(OMenuItem* mi);
 
 	static LRESULT onInitMenuPopup(HWND hWnd, UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	static LRESULT onMeasureItem(HWND hWnd, UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	static LRESULT onDrawItem(HWND hWnd, UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
-
 private:
+	unsigned start;
 	OMenuItem::List items;
-	vector<OMenu*> subMenuList;
+	vector<unique_ptr<OMenu>> subMenuList;
 
 	static void CalcTextSize(const tstring& text, HFONT font, LPSIZE size) {
 		HDC dc = CreateCompatibleDC(NULL);
@@ -102,6 +134,8 @@ private:
 		SelectObject(dc, old);
 		DeleteDC(dc);
 	}
+
+	OMenu* parent;
 };
 
 #define MESSAGE_HANDLER_HWND(msg, func) \

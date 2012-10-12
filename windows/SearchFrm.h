@@ -55,7 +55,6 @@ public:
 	typedef MDITabChildWindowImpl<SearchFrame> baseClass;
 	typedef UCHandler<SearchFrame> ucBase;
 	typedef UserInfoBaseHandler<SearchFrame> uicBase;
-	typedef DownloadBaseHandler<SearchFrame> dlBase;
 
 	BEGIN_MSG_MAP(SearchFrame)
 		NOTIFY_HANDLER(IDC_RESULTS, LVN_GETDISPINFO, ctrlResults.onGetDispInfo)
@@ -98,11 +97,10 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
 		COMMAND_ID_HANDLER(IDC_PURGE, onPurge)	
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
-		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
+		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenFolder)
 		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		CHAIN_COMMANDS(ucBase)
-		CHAIN_COMMANDS(dlBase)
 		CHAIN_COMMANDS(uicBase)
 		CHAIN_MSG_MAP(baseClass)
 	ALT_MSG_MAP(SEARCH_MESSAGE_MAP)
@@ -167,7 +165,7 @@ public:
 	LRESULT onPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		PostMessage(WM_CLOSE);
 		return 0;
@@ -257,7 +255,7 @@ public:
 
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
-	void download(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
 private:

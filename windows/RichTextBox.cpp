@@ -977,7 +977,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	
 	//flag to indicate pop up menu.
     m_bPopupMenu = true;
-	menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+	menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 
 	return 0;
 }
@@ -1133,11 +1133,7 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	tstring path;
 	try{
 		if (release) {
-			if (shareDupe) {
-				path = ShareManager::getInstance()->getDirPath(Text::fromT(selectedWord));
-			} else {
-				path = QueueManager::getInstance()->getDirPath(Text::fromT(selectedWord));
-			}
+			path = AirUtil::getDirDupePath(shareDupe ? SHARE_DUPE : QUEUE_DUPE, Text::fromT(selectedWord));
 		} else if (isPath) {
 			path = Util::getFilePath(selectedWord);
 		} else {
@@ -1163,7 +1159,7 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
-void RichTextBox::download(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RichTextBox::handleDownload(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	if (isMagnet && !SettingsManager::lanMode) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
@@ -1186,10 +1182,9 @@ bool RichTextBox::showDirDialog(string& fileName) {
 
 
 void RichTextBox::appendDownloadItems(OMenu& aMenu, bool isWhole) {
-	aMenu.AppendMenu(MF_STRING, isWhole ? IDC_DOWNLOADDIR : IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
+	aMenu.appendItem(CTSTRING(DOWNLOAD), [this, isWhole] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isWhole); });
 
-	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO));
-	targetMenu->InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
+	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
 	appendDownloadTo(*targetMenu, isWhole ? true : false);
 }
 

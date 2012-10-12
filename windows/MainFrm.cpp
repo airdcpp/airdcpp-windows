@@ -69,6 +69,7 @@
 #include "../client/DirectoryListingManager.h"
 #include "../client/UpdateManager.h"
 #include "../client/GeoManager.h"
+#include "../client/ThrottleManager.h"
 
 MainFrame* MainFrame::anyMF = NULL;
 bool MainFrame::bShutdown = false;
@@ -91,7 +92,7 @@ bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashPro
 	}
 
 	memzero(statusSizes, sizeof(statusSizes));
-	anyMF = this;	
+	anyMF = this;
 }
 
 MainFrame::~MainFrame() {
@@ -319,15 +320,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ATLASSERT(pLoop != NULL);
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
-
-	trayMenu.CreatePopupMenu();
-	trayMenu.AppendMenu(MF_STRING, IDC_TRAY_SHOW, CTSTRING(MENU_SHOW));
-	trayMenu.AppendMenu(MF_STRING, IDC_OPEN_DOWNLOADS, CTSTRING(MENU_OPEN_DOWNLOADS_DIR));
-	trayMenu.AppendMenu(MF_SEPARATOR);
-	trayMenu.AppendMenu(MF_STRING, IDC_REFRESH_FILE_LIST, CTSTRING(MENU_REFRESH_FILE_LIST));
-	trayMenu.AppendMenu(MF_SEPARATOR);
-	trayMenu.AppendMenu(MF_STRING, ID_APP_ABOUT, CTSTRING(MENU_ABOUT));
-	trayMenu.AppendMenu(MF_STRING, ID_APP_EXIT, CTSTRING(MENU_EXIT));
 
 	if(BOOLSETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
 	if(BOOLSETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
@@ -1460,28 +1452,27 @@ LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	if (lParam == WM_LBUTTONUP) {
 		if(bAppMinimized) {
-	
-	if(BOOLSETTING(PASSWD_PROTECT_TRAY)) {
-		if(hasPassdlg) //prevent dialog from showing twice, findwindow doesnt seem to work with this??
-			return 0;
+			if(BOOLSETTING(PASSWD_PROTECT_TRAY)) {
+				if(hasPassdlg) //prevent dialog from showing twice, findwindow doesnt seem to work with this??
+					return 0;
 
-		hasPassdlg = true;
-		PassDlg passdlg;
-		passdlg.description = TSTRING(PASSWORD_DESC);
-		passdlg.title = TSTRING(PASSWORD_TITLE);
-		passdlg.ok = TSTRING(UNLOCK);
-		if(passdlg.DoModal(/*m_hWnd*/) == IDOK){
-			tstring tmp = passdlg.line;
-			if (tmp == Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
-			ShowWindow(SW_SHOW);
-			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
+				hasPassdlg = true;
+				PassDlg passdlg;
+				passdlg.description = TSTRING(PASSWORD_DESC);
+				passdlg.title = TSTRING(PASSWORD_TITLE);
+				passdlg.ok = TSTRING(UNLOCK);
+				if(passdlg.DoModal(/*m_hWnd*/) == IDOK){
+					tstring tmp = passdlg.line;
+					if (tmp == Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
+						ShowWindow(SW_SHOW);
+						ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
+					}
+					hasPassdlg = false;
+				}
+			} else {
+				ShowWindow(SW_SHOW);
+				ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
 			}
-			hasPassdlg = false;
-		}
-	} else {
-			ShowWindow(SW_SHOW);
-			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
-	}
 		} else {
 			SetForegroundWindow(m_hWnd);
 		}
@@ -1502,12 +1493,75 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		::Shell_NotifyIcon(NIM_MODIFY, &nid);
 		lastMove = GET_TICK();
 	} else if (lParam == WM_RBUTTONUP) {
-		CPoint pt(GetMessagePos());		
-		SetForegroundWindow(m_hWnd);
-		trayMenu.TrackPopupMenu(TPM_RIGHTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);		
-		PostMessage(WM_NULL, 0, 0);
+		onTrayMenu();
 	}
 	return 0;
+}
+
+void MainFrame::onTrayMenu() {
+	OMenu trayMenu;
+	trayMenu.CreatePopupMenu();
+	trayMenu.AppendMenu(MF_STRING, IDC_TRAY_SHOW, CTSTRING(MENU_SHOW));
+	trayMenu.AppendMenu(MF_STRING, IDC_OPEN_DOWNLOADS, CTSTRING(MENU_OPEN_DOWNLOADS_DIR));
+	trayMenu.AppendMenu(MF_SEPARATOR);
+	trayMenu.AppendMenu(MF_STRING, IDC_REFRESH_FILE_LIST, CTSTRING(MENU_REFRESH_FILE_LIST));
+	trayMenu.AppendMenu(MF_SEPARATOR);
+
+	fillLimiterMenu(trayMenu.createSubMenu(CTSTRING(DOWNLOAD_LIMIT)), false);
+	fillLimiterMenu(trayMenu.createSubMenu(CTSTRING(UPLOAD_LIMIT)), true);
+
+	trayMenu.AppendMenu(MF_STRING, ID_APP_ABOUT, CTSTRING(MENU_ABOUT));
+	trayMenu.AppendMenu(MF_STRING, ID_APP_EXIT, CTSTRING(MENU_EXIT));
+
+	CPoint pt(GetMessagePos());
+	SetForegroundWindow(m_hWnd);
+	trayMenu.open(m_hWnd);
+	PostMessage(WM_NULL, 0, 0);
+}
+
+void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
+	const auto title = upload ? CTSTRING(UPLOAD_LIMIT) : CTSTRING(DOWNLOAD_LIMIT);
+	limiterMenu->InsertSeparatorFirst(title);
+
+	//menu->setTitle(title, menuIcon);
+
+	const auto setting = ThrottleManager::getCurSetting(
+		upload ? SettingsManager::MAX_UPLOAD_SPEED_MAIN : SettingsManager::MAX_DOWNLOAD_SPEED_MAIN);
+	const auto x = SettingsManager::getInstance()->get(setting);
+
+	int arr[] = { 0 /* disabled */, x /* current value */,
+		x + 1, x + 2, x + 5, x + 10, x + 20, x + 50, x + 100,
+		x - 1, x - 2, x - 5, x - 10, x - 20, x - 50, x - 100,
+		x * 11 / 10, x * 6 / 5, x * 3 / 2, x * 2, x * 3, x * 4, x * 5, x * 10, x * 100,
+		x * 10 / 11, x * 5 / 6, x * 2 / 3, x / 2, x / 3, x / 4, x / 5, x / 10, x / 100 };
+
+	// set ensures ordered unique members; remove_if performs range and relevancy checking.
+	auto minDelta = (x >= 1024) ? (20 * pow(1024, floor(log(static_cast<float>(x)) / log(1024.)) - 1)) : 0;
+	set<int> values(arr, std::remove_if(arr, arr + sizeof(arr) / sizeof(int), [x, minDelta](int i) {
+		return i < 0 || i > ThrottleManager::MAX_LIMIT ||
+			(minDelta && i != x && abs(i - x) < minDelta); // not too close to the original value
+	}));
+
+	for(auto value: values) {
+		auto same = value == x;
+		auto formatted = Text::toT(Util::formatBytes(value * 1024));
+		auto pos = limiterMenu->appendItem(value ? formatted + _T("/s") : CTSTRING(DISABLED),
+			[setting, value] { ThrottleManager::setSetting(setting, value); }, !same);
+		if(same)
+			limiterMenu->CheckMenuItem(pos, TRUE);
+		if(!value)
+			limiterMenu->AppendMenu(MF_SEPARATOR);
+	}
+
+	limiterMenu->AppendMenu(MF_SEPARATOR);
+	limiterMenu->appendItem(CTSTRING(CUSTOM), [this, title, setting, x] {
+		LineDlg dlg;
+		dlg.title = title;
+		dlg.description = CTSTRING(NEW_LIMIT);
+		if(dlg.DoModal() == IDOK) {
+			ThrottleManager::setSetting(setting, Util::toUInt(Text::fromT(dlg.line)));
+		}
+	});
 }
 
 LRESULT MainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -1961,75 +2015,34 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	LPNMTOOLBAR tb = (LPNMTOOLBAR)pnmh;
-	CMenu dropMenu;
+	OMenu dropMenu;
 	dropMenu.CreatePopupMenu();
+	dropMenu.appendItem(CTSTRING(ALL), [] { ShareManager::getInstance()->refresh(); });
+	dropMenu.appendItem(CTSTRING(INCOMING), [] { ShareManager::getInstance()->refresh(true); });
+	dropMenu.appendSeparator();
 
 	auto l = ShareManager::getInstance()->getGroupedDirectories();
-	
-	dropMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU, CTSTRING(ALL));
-	dropMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU+1, CTSTRING(INCOMING));
-	dropMenu.AppendMenu(MF_SEPARATOR);
-	int virtualCounter=2, subCounter=0;
-	for(auto i = l.begin(); i != l.end(); ++i, ++virtualCounter) {
+	for(auto i = l.begin(); i != l.end(); ++i) {
 		if (i->second.size() > 1) {
-			CMenu pathMenu;
-			pathMenu.CreatePopupMenu();
-			pathMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU + virtualCounter, CTSTRING(ALL));
-			pathMenu.AppendMenu(MF_SEPARATOR);
+			auto vMenu = dropMenu.createSubMenu(Text::toT(i->first).c_str(), true);
+			vMenu->appendItem(CTSTRING(ALL), [i] { ShareManager::getInstance()->refresh(i->first); });
+			vMenu->appendSeparator();
 			for(auto s = i->second.begin(); s != i->second.end(); ++s) {
-				pathMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU_SUBDIRS + subCounter, Text::toT(*s).c_str());
-				subCounter++;
+				vMenu->appendItem(Text::toT(*s).c_str(), [s] { ShareManager::getInstance()->refresh(*s); });
 			}
-			dropMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)pathMenu, Text::toT(i->first).c_str());
 		} else {
-			dropMenu.AppendMenu(MF_STRING, IDC_REFRESH_MENU + virtualCounter, Text::toT(i->first).c_str());
+			dropMenu.appendItem(Text::toT(i->first).c_str(), [i] { ShareManager::getInstance()->refresh(i->first); });
 		}
 	}
-	
+
 	POINT pt;
 	pt.x = tb->rcButton.right;
 	pt.y = tb->rcButton.bottom;
 	ClientToScreen(&pt);
-	dropMenu.TrackPopupMenu(TPM_LEFTALIGN, pt.x, pt.y, m_hWnd);
-
+	
+	dropMenu.open(m_hWnd, TPM_LEFTALIGN, pt);
 	return TBDDRET_DEFAULT;
 }
-
-LRESULT MainFrame::onRefreshMenu(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
-
-	try {
-		auto l = ShareManager::getInstance()->getGroupedDirectories();
-		if(wID == IDC_REFRESH_MENU){
-			ShareManager::getInstance()->refresh();
-		} else if(wID == IDC_REFRESH_MENU+1) {
-			auto r = ShareManager::getInstance()->refresh(true);
-			if (r == ShareManager::REFRESH_PATH_NOT_FOUND) {
-				MessageBox(CTSTRING(NO_INCOMING_CONFIGURED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
-			}
-		} else if (wID < IDC_REFRESH_MENU_SUBDIRS) {
-			int id = wID-IDC_REFRESH_MENU-2;
-			ShareManager::getInstance()->refresh(l[id].first);
-		} else {
-			int id = wID-IDC_REFRESH_MENU_SUBDIRS, counter=0;
-			for(auto i = l.begin(); i != l.end(); ++i) {
-				if (i->second.size() > 1) {
-					for(auto s = i->second.begin(); s != i->second.end(); ++s) {
-						if (counter == id) {
-							ShareManager::getInstance()->refresh(*s);
-							return 0;
-						}
-						counter++;
-					}
-				}
-			}
-		}
-	} catch(ShareException) {
-		//...
-	}
-
-	return 0;
-}
-
 
 LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/) {
 	if (::IsIconic(m_hWnd)) {

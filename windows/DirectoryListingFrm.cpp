@@ -1086,7 +1086,6 @@ clientmenu:
 
 			fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 
-			fileMenu.SetMenuDefaultItem(IDC_DOWNLOAD);
 			if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
 				fileMenu.InsertSeparatorFirst(Text::toT(Util::getFileName(ii->file->getName())));
 				if(ii->file->getAdls())	{
@@ -1101,8 +1100,7 @@ clientmenu:
 			}
 
 			prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubUrls(dl->getHintedUser().user->getCID(), dl->getHintedUser().hint));
-			fileMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
-
+			fileMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		}
 		return TRUE; 
 	} else if(reinterpret_cast<HWND>(wParam) == ctrlTree && ctrlTree.GetSelectedItem() != NULL) { 
@@ -1138,7 +1136,7 @@ clientmenu:
 		// Strange, windows doesn't change the selection on right-click... (!)
 			
 		directoryMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
-		directoryMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+		directoryMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			
 		return TRUE; 
 	} 
@@ -1159,7 +1157,7 @@ LRESULT DirectoryListingFrame::onXButtonUp(UINT /*uMsg*/, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-void DirectoryListingFrame::download(const string& aTarget, QueueItem::Priority prio, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
+void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItem::Priority prio, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
 	if (usingTree) {
 		HTREEITEM t = ctrlTree.GetSelectedItem();
 		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
@@ -1204,11 +1202,10 @@ bool DirectoryListingFrame::showDirDialog(string& fileName) {
 
 void DirectoryListingFrame::appendDownloadItems(OMenu& aMenu, bool isTree) {
 	//Append general items
-	aMenu.AppendMenu(MF_STRING, isTree ? IDC_DOWNLOADDIR : IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
+	aMenu.appendItem(CTSTRING(DOWNLOAD), [this, isTree] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isTree); });
 
-	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO));
-	targetMenu->InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
-	appendDownloadTo(*targetMenu, isTree ? true : false);
+	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
+	appendDownloadTo(*targetMenu, isTree);
 
 	//Append the "Download with prio" menu
 	appendPriorityMenu(aMenu, isTree);
@@ -1257,10 +1254,10 @@ LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 					ht = ctrlTree.GetNextSiblingItem(ht);
 				}
 			} else {
-				download(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
+				handleDownload(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
 			}
 		} else {
-			download(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
+			handleDownload(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
 		}
 	}
 	return 0;
@@ -1766,13 +1763,8 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 				if (!localPaths.empty()) {
 					path = Text::toT(localPaths.front());
 				}
-			} else if (ii->file->getDupe() == SHARE_DUPE) {
-				path = SettingsManager::lanMode ? Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getName(), ii->file->getSize())) : Text::toT(ShareManager::getInstance()->getRealPath(ii->file->getTTH()));
 			} else {
-				StringList localPaths = QueueManager::getInstance()->getTargets(ii->file->getTTH());
-				if (!localPaths.empty()) {
-					path = Text::toT(localPaths.front());
-				}
+				path = AirUtil::getDupePath(ii->file->getDupe(), ii->file->getTTH());
 			}
 		} else {
 			if (dl->getIsOwnList()) {
@@ -1785,11 +1777,7 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 					path = Text::toT(localPaths.front());
 				}
 			} else {
-				if (ii->dir->getDupe() == SHARE_DUPE || ii->dir->getDupe() == PARTIAL_SHARE_DUPE) {
-					path = ShareManager::getInstance()->getDirPath(ii->dir->getPath());
-				} else {
-					path = QueueManager::getInstance()->getDirPath(ii->dir->getPath());
-				}
+				path = AirUtil::getDirDupePath(ii->dir->getDupe(), ii->dir->getPath());
 			}
 		}
 

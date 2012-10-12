@@ -225,11 +225,11 @@ LRESULT AutoSearchDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 	appendDownloadMenu(targetMenu, DownloadBaseHandler::AUTO_SEARCH, false, true);
 
-	targetMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt.x, pt.y, m_hWnd);
+	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;
 }
 
-void AutoSearchDlg::download(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void AutoSearchDlg::handleDownload(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	target = aTarget;
 	ctrlTarget.SetWindowTextW(Text::toT(target).c_str());
 	//update the type only after setting the text

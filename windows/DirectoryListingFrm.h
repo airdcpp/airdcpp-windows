@@ -55,7 +55,6 @@ public:
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
 	typedef UCHandler<DirectoryListingFrame> ucBase;
 	typedef UserInfoBaseHandler<DirectoryListingFrame> uibBase;
-	typedef DownloadBaseHandler<DirectoryListingFrame> dlBase;
 
 	enum {
 		COLUMN_FILENAME,
@@ -144,7 +143,6 @@ public:
 
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
-		CHAIN_COMMANDS(dlBase)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<DirectoryListingFrame>)
 	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
@@ -277,7 +275,7 @@ public:
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
 	int64_t getDownloadSize(bool isWhole);
-	void download(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
 private:
 	DirectoryListing::Directory* curDir;

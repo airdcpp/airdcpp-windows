@@ -41,7 +41,7 @@
 #include "WinUtil.h"
 #include "LineDlg.h"
 #include "HashProgressDlg.h"
-
+#include "OMenu.h"
 #include "picturewindow.h"
 
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
@@ -192,7 +192,10 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN_SYSTEMLOG, onOpenSysLog)
 		COMMAND_RANGE_HANDLER(IDC_WINAMP_BACK, IDC_WINAMP_VOL_HALF, onWinampButton)
 		COMMAND_RANGE_HANDLER(IDC_SWITCH_WINDOW_1, IDC_SWITCH_WINDOW_0, onSwitchWindow)
-		COMMAND_RANGE_HANDLER(IDC_REFRESH_MENU, IDC_REFRESH_MENU+3000, onRefreshMenu)
+
+		MESSAGE_HANDLER_HWND(WM_INITMENUPOPUP, OMenu::onInitMenuPopup)
+		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
+		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
 
 		COMMAND_ID_HANDLER(IDC_WINAMP_START, onWinampStart)
 		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
@@ -253,7 +256,6 @@ public:
 	LRESULT onOpenSysLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onDropDown(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-	LRESULT onRefreshMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSetFont(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnViewTBStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnLockTB(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -469,7 +471,9 @@ private:
 	UINT tbButtonMessage;
 	UINT trayUID;
 
-	CMenu trayMenu;
+	void onTrayMenu();
+	void fillLimiterMenu(OMenu* menu, bool upload);
+
 	CMenu tbMenu;
 	CMenu dropMenu;
 

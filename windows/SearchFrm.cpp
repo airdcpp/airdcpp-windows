@@ -698,8 +698,14 @@ void SearchFrame::SearchInfo::view() {
 void SearchFrame::SearchInfo::open() {
 	try {
 		if(sr->getType() == SearchResult::TYPE_FILE) {
-			QueueManager::getInstance()->add(Util::getOpenPath(sr->getFileName()),
-				sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()), sr->getFile(), QueueItem::FLAG_OPEN);
+			if (dupe) {
+				tstring path = AirUtil::getDupePath(dupe, sr->getTTH());
+				if (!path.empty())
+					WinUtil::openFile(path);
+			} else {
+				QueueManager::getInstance()->add(Util::getOpenPath(sr->getFileName()),
+					sr->getSize(), sr->getTTH(), HintedUser(sr->getUser(), sr->getHubURL()), sr->getFile(), QueueItem::FLAG_OPEN);
+			}
 		}
 	} catch(const Exception&) {
 	}
@@ -803,7 +809,7 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 	}
 }
 
-void SearchFrame::download(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
+void SearchFrame::handleDownload(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
 	if (useWhole) {
 		ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(aTarget, p, aTargetType, isSizeUnknown));
 	} else {
@@ -830,17 +836,15 @@ bool SearchFrame::showDirDialog(string& fileName) {
 
 
 void SearchFrame::appendDownloadItems(OMenu& aMenu, bool hasFiles) {
-	aMenu.AppendMenu(MF_STRING, IDC_DOWNLOAD, CTSTRING(DOWNLOAD));
+	aMenu.appendItem(CTSTRING(DOWNLOAD), [this] { onDownload(SETTING(DOWNLOAD_DIRECTORY), false); });
 
-	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO));
-	targetMenu->InsertSeparatorFirst(TSTRING(DOWNLOAD_TO));
+	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
 	appendDownloadTo(*targetMenu, false);
 	appendPriorityMenu(aMenu, false);
 
 	if (hasFiles) {
-		aMenu.AppendMenu(MF_STRING, IDC_DOWNLOADDIR, CTSTRING(DOWNLOAD_WHOLE_DIR));
-		auto targetMenuWhole = aMenu.createSubMenu(TSTRING(DOWNLOAD_WHOLE_DIR_TO));
-		targetMenuWhole->InsertSeparatorFirst(TSTRING(DOWNLOAD_WHOLE_DIR));
+		aMenu.appendItem(CTSTRING(DOWNLOAD_WHOLE_DIR), [this] { onDownload(SETTING(DOWNLOAD_DIRECTORY), true); });
+		auto targetMenuWhole = aMenu.createSubMenu(TSTRING(DOWNLOAD_WHOLE_DIR_TO), true);
 		appendDownloadTo(*targetMenuWhole, true);
 	}
 }
@@ -1097,6 +1101,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlSizeMode.MoveWindow(rc);
 		ctrlFiletype.MoveWindow(rc);
 		ctrlPauseSearch.MoveWindow(rc);
+		ctrlSkiplist.MoveWindow(rc);
 	}
 
 	POINT pt;
@@ -1376,7 +1381,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			if((ctrlResults.GetSelectedCount() == 1) && hasDupes) {
 				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 				resultsMenu.AppendMenu(MF_SEPARATOR);
-			} else if (!hasDupes && hasFiles) {
+			} else if (hasFiles) {
 				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 			}
 
@@ -1393,9 +1398,8 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 
 			resultsMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-			resultsMenu.SetMenuDefaultItem(IDC_DOWNLOAD);
 
-			resultsMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+			resultsMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE; 
 		}
 	}
@@ -1898,36 +1902,18 @@ LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	}
 	return S_OK;
 }
-LRESULT SearchFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT SearchFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	
 	if(ctrlResults.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.getSelectedItem();
-
 		try {
 			tstring path;
-		
-			if(si->sr->getType() == SearchResult::TYPE_FILE) {
-				if (si->isShareDupe()) {
-					path = SettingsManager::lanMode ? Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getFileName(), si->sr->getSize())) : Text::toT(ShareManager::getInstance()->getRealPath(si->sr->getTTH()));
-				} else if (si->isQueueDupe()) {
-					StringList targets = QueueManager::getInstance()->getTargets(si->sr->getTTH());
-					if (!targets.empty()) {
-						path = Text::toT(targets.front());
-					}
-				}
-
-				if (!path.empty())
-					WinUtil::openFolder(path);
-			} else {
-				if (si->isShareDupe()) {
-					path=ShareManager::getInstance()->getDirPath(si->sr->getFile());
-				} else {
-					path=QueueManager::getInstance()->getDirPath(si->sr->getFile());
-				}
-
-				if (!path.empty())
-					WinUtil::openFolder(path);
+			if(si->sr->getType() == SearchResult::TYPE_DIRECTORY) {
+				path = AirUtil::getDirDupePath(si->getDupe(), si->sr->getFile());
 			}
+
+			if (!path.empty())
+				WinUtil::openFolder(path);
 		} catch(const ShareException& se) {
 			LogManager::getInstance()->message(se.getError(), LogManager::LOG_ERROR);
 		}

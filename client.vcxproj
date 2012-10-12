@@ -300,6 +300,7 @@
     <ClCompile Include="client\TargetUtil.cpp" />
     <ClCompile Include="client\Text.cpp" />
     <ClCompile Include="client\Thread.cpp" />
+    <ClCompile Include="client\ThrottleManager.cpp" />
     <ClCompile Include="client\TigerHash.cpp" />
     <ClCompile Include="client\TimerManager.cpp" />
     <ClCompile Include="client\TraceManager.cpp" />
@@ -432,6 +433,7 @@
     <ClInclude Include="client\Streams.h" />
     <ClInclude Include="client\StringMatch.h" />
     <ClInclude Include="client\TargetUtil.h" />
+    <ClInclude Include="client\ThrottleManager.h" />
     <ClInclude Include="client\typedefs.h" />
     <ClInclude Include="client\UpdateManager.h" />
     <ClInclude Include="client\UpdateManagerListener.h" />

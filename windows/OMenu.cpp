@@ -18,10 +18,11 @@
 
 #include "stdafx.h"
 #include "../client/DCPlusPlus.h"
+#include "../client/LogManager.h"
 
-#include "OMenu.h"
 #include "WinUtil.h"
 #include "BarShader.h"
+
 
 namespace dcpp {
 
@@ -29,45 +30,42 @@ OMenu::~OMenu() {
 	if (::IsMenu(m_hMenu)) {
 		while(GetMenuItemCount() != 0)
 			RemoveMenu(0, MF_BYPOSITION);
-	} else {
-		// How can we end up here??? it sure happens sometimes..
-		for (auto i = items.begin(); i != items.end(); ++i) {
-			delete *i;
-		}
 	}
+}
 
-	for (auto i = subMenuList.begin(); i != subMenuList.end(); ++i) {
-		delete *i;
-	}
-	//pUnMap();
-}
-/*
-void OMenu::pMap() {
-	if (m_hMenu != NULL) {
-		menus[m_hMenu] = this;
+OMenu::OMenu(OMenu* aParent /*nullptr*/) : CMenu(), start(IDC_MENURANGE), parent(aParent) { 
+	if (!parent) {
+		MENUINFO mi = { sizeof(MENUINFO), MIM_STYLE, MNS_NOTIFYBYPOS };
+		::SetMenuInfo(m_hMenu, &mi);
 	}
 }
-void OMenu::pUnMap() {
-	if (m_hMenu != NULL) {
-		Iter i = menus.find(m_hMenu);
-		dcassert(i != menus.end());
-		menus.erase(i);
-	}
+
+BOOL OMenu::DeleteMenu(UINT nPosition, UINT nFlags) {
+	//CheckOwnerDrawn(nPosition, nFlags & MF_BYPOSITION);
+	return CMenu::DeleteMenu(nPosition, nFlags);
 }
-*/
+BOOL OMenu::RemoveMenu(UINT nPosition, UINT nFlags) {
+	//CheckOwnerDrawn(nPosition, nFlags & MF_BYPOSITION);
+	return CMenu::RemoveMenu(nPosition, nFlags);
+}
+
 BOOL OMenu::CreatePopupMenu() {
-	//pUnMap();
 	BOOL b = CMenu::CreatePopupMenu();
-	//pMap();
 	return b;
 }
 
-OMenu* OMenu::createSubMenu(const tstring& aTitle) {
-	OMenu* menu = new OMenu();
-	subMenuList.push_back(menu);
+OMenu* OMenu::createSubMenu(const tstring& aTitle, bool appendSeparator /*false*/) {
+	OMenu* menu = new OMenu(this);
+	subMenuList.push_back(unique_ptr<OMenu>(menu));
 	menu->CreatePopupMenu();
+	if (appendSeparator)
+		menu->InsertSeparatorFirst(aTitle);
 	AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)*menu, aTitle.c_str());
 	return menu;
+}
+
+void OMenu::appendSeparator() {
+	AppendMenu(MF_SEPARATOR);
 }
 
 void OMenu::InsertSeparator(UINT uItem, BOOL byPosition, const tstring& caption, bool accels /*= false*/) {
@@ -81,8 +79,9 @@ void OMenu::InsertSeparator(UINT uItem, BOOL byPosition, const tstring& caption,
 	if(mi->text.length() > 25) {
 		mi->text = mi->text.substr(0, 25) + _T("...");
 	}
+
 	mi->parent = this;
-	items.push_back(mi);
+	items.push_back(unique_ptr<OMenuItem>(mi));
 	MENUITEMINFO mii = {0};
 	mii.cbSize = sizeof(MENUITEMINFO);
 	mii.fMask = MIIM_FTYPE | MIIM_DATA;
@@ -97,14 +96,13 @@ void OMenu::CheckOwnerDrawn(UINT uItem, BOOL byPosition) {
 	mii.fMask = MIIM_TYPE | MIIM_DATA | MIIM_SUBMENU;
 	GetMenuItemInfo(uItem, byPosition, &mii);
 
-	if (mii.dwItemData != NULL) {
-		OMenuItem* mi = (OMenuItem*)mii.dwItemData;
+	/*if (mii.dwItemData) {
+		auto mi = (OMenuItem*)mii.dwItemData;
 		if(mii.fType &= MFT_OWNERDRAW) {
-			OMenuItem::Iter i = find(items.begin(), items.end(), mi);
+			auto i = find_if(items.begin(), items.end(), [mi](unique_ptr<OMenuItem> i) { return i.get() == mi; });
 			items.erase(i);
 		}
-		delete mi;
-	}
+	}*/
 }
 
 BOOL OMenu::InsertMenuItem(UINT uItem, BOOL bByPosition, LPMENUITEMINFO lpmii) {
@@ -125,10 +123,65 @@ BOOL OMenu::InsertMenuItem(UINT uItem, BOOL bByPosition, LPMENUITEMINFO lpmii) {
 	return CMenu::InsertMenuItem(uItem, bByPosition, lpmii);
 }
 
+void OMenu::open(HWND aHWND, unsigned flags /*= TPM_LEFTALIGN | TPM_RIGHTBUTTON*/, CPoint pt /*= GetMessagePos()*/) {
+	flags |= TPM_RETURNCMD;
+	unsigned ret = ::TrackPopupMenu(m_hMenu, flags, pt.x, pt.y, 0, aHWND, 0);
+	if(ret >= start) {
+		if(ret - start < items.size())
+			items[ret - start].get()->f();
+	}
+}
+
+unsigned OMenu::getNextID() { 
+	return parent ? parent->getNextID() : start + items.size(); 
+}
+
+void OMenu::addItem(OMenuItem* mi) {
+	parent ? parent->items.push_back(unique_ptr<OMenuItem>(mi)) : items.push_back(unique_ptr<OMenuItem>(mi));
+}
+
+unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f, bool enabled, bool defaultItem) {
+	// init structure for new item
+	CMenuItemInfo info;
+	info.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
+	info.fType = MFT_STRING;
+
+	if(!enabled) {
+		info.fMask |= MIIM_STATE;
+		info.fState |= MFS_DISABLED;
+	}
+	if(defaultItem) {
+		info.fMask |= MIIM_STATE;
+		info.fState |= MFS_DEFAULT;
+	}
+
+	info.dwTypeData = const_cast< LPTSTR >( text.c_str() );
+	const auto index = GetMenuItemCount();
+
+	info.wID = getNextID();
+
+	if(f) {
+		OMenuItem* mi = new OMenuItem();
+		mi->ownerdrawn = false;
+		mi->f = f;
+		mi->text = text;
+		mi->parent = this;
+
+		addItem(mi);
+
+		info.dwItemData = reinterpret_cast<ULONG_PTR>(mi);
+	}
+
+	CMenu::InsertMenuItem(index, TRUE, &info);
+	return index;
+}
+
 LRESULT OMenu::onInitMenuPopup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	HMENU mnu = (HMENU)wParam;
 	bHandled = TRUE; // Always true, since we do the following manually:
 	::DefWindowProc(hWnd, uMsg, wParam, lParam);
+
+	dcassert(::GetMenuItemCount(mnu) > 0);
 	for (int i = 0; i < ::GetMenuItemCount(mnu); ++i) {
 		MENUITEMINFO mii = {0};
 		mii.cbSize = sizeof(MENUITEMINFO);
@@ -174,7 +227,7 @@ LRESULT OMenu::onDrawItem(HWND /*hWnd*/, UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 		DRAWITEMSTRUCT dis = *(DRAWITEMSTRUCT*)lParam;
 		if (dis.CtlType == ODT_MENU) {
 			OMenuItem* mi = (OMenuItem*)dis.itemData;
-			if (mi) {
+			if (mi && mi->ownerdrawn) {
 				bHandled = TRUE;
 				CRect rc(dis.rcItem);
 				//rc.top += 2;
