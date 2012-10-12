@@ -1542,7 +1542,8 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 			(minDelta && i != x && abs(i - x) < minDelta); // not too close to the original value
 	}));
 
-	for(auto value: values) {
+	for(auto i = values.cbegin(), iend = values.cend(); i != iend; ++i) {
+		auto value = *i;
 		auto same = value == x;
 		auto formatted = Text::toT(Util::formatBytes(value * 1024));
 		auto pos = limiterMenu->appendItem(value ? formatted + _T("/s") : CTSTRING(DISABLED),

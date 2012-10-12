@@ -244,16 +244,13 @@ public:
 
 	void appendPriorityMenu(OMenu& aMenu, bool wholeDir) {
 		auto priorityMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_WITH_PRIORITY));
-		auto addItem = [this, priorityMenu, wholeDir] (const tstring& aTitle, QueueItem::Priority p) -> void {
-			priorityMenu->appendItem(aTitle.c_str(), [this, wholeDir, p] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, p); });
-		};
 
-		addItem(CTSTRING(PAUSED), QueueItem::PAUSED);
-		addItem(CTSTRING(LOWEST), QueueItem::LOWEST);
-		addItem(CTSTRING(LOW), QueueItem::LOW);
-		addItem(CTSTRING(NORMAL), QueueItem::NORMAL);
-		addItem(CTSTRING(HIGH), QueueItem::HIGH);
-		addItem(CTSTRING(HIGHEST), QueueItem::HIGHEST);
+		priorityMenu->appendItem(CTSTRING(PAUSED), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::PAUSED); });
+		priorityMenu->appendItem(CTSTRING(LOWEST), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::LOWEST); });
+		priorityMenu->appendItem(CTSTRING(LOW), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::LOW); });
+		priorityMenu->appendItem(CTSTRING(NORMAL), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::NORMAL); });
+		priorityMenu->appendItem(CTSTRING(HIGH), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::HIGH); });
+		priorityMenu->appendItem(CTSTRING(HIGHEST), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::HIGHEST); });
 	}
 
 	void appendVirtualItems(OMenu &targetMenu, bool wholeDir, bool isFavDirs) {
