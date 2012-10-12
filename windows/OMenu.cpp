@@ -127,9 +127,14 @@ void OMenu::open(HWND aHWND, unsigned flags /*= TPM_LEFTALIGN | TPM_RIGHTBUTTON*
 	flags |= TPM_RETURNCMD;
 	unsigned ret = ::TrackPopupMenu(m_hMenu, flags, pt.x, pt.y, 0, aHWND, 0);
 	if(ret >= start) {
-		if(ret - start < items.size())
+		if(ret - start < items.size()) {
 			items[ret - start].get()->f();
+			return;
+		}
 	}
+
+	//not found
+	::PostMessage(aHWND, WM_COMMAND, ret, NULL);
 }
 
 unsigned OMenu::getNextID() { 

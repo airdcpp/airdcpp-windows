@@ -836,7 +836,7 @@ bool SearchFrame::showDirDialog(string& fileName) {
 
 
 void SearchFrame::appendDownloadItems(OMenu& aMenu, bool hasFiles) {
-	aMenu.appendItem(CTSTRING(DOWNLOAD), [this] { onDownload(SETTING(DOWNLOAD_DIRECTORY), false); });
+	aMenu.appendItem(CTSTRING(DOWNLOAD), [this] { onDownload(SETTING(DOWNLOAD_DIRECTORY), false); }, true, true);
 
 	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
 	appendDownloadTo(*targetMenu, false);
@@ -1375,16 +1375,21 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			appendDownloadMenu(resultsMenu, DownloadBaseHandler::SEARCH, hasFiles, hasNmdcDirsOnly);
 
-			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
-			resultsMenu.AppendMenu(MF_STRING, IDC_MATCH, CTSTRING(MATCH_PARTIAL));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
-			if((ctrlResults.GetSelectedCount() == 1) && hasDupes) {
-				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-				resultsMenu.AppendMenu(MF_SEPARATOR);
-			} else if (hasFiles) {
+
+			if (hasFiles && (!hasDupes || ctrlResults.GetSelectedCount() == 1)) {
 				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 			}
 
+			if((ctrlResults.GetSelectedCount() == 1) && hasDupes) {
+				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+				resultsMenu.AppendMenu(MF_SEPARATOR);
+			}
+
+			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
+			resultsMenu.AppendMenu(MF_STRING, IDC_MATCH, CTSTRING(MATCH_PARTIAL));
+
+			resultsMenu.AppendMenu(MF_SEPARATOR);
 			if (hasFiles)
 				resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
 
@@ -1910,6 +1915,8 @@ LRESULT SearchFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 			tstring path;
 			if(si->sr->getType() == SearchResult::TYPE_DIRECTORY) {
 				path = AirUtil::getDirDupePath(si->getDupe(), si->sr->getFile());
+			} else {
+				path = AirUtil::getDupePath(si->getDupe(), si->sr->getTTH());
 			}
 
 			if (!path.empty())

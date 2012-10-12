@@ -212,12 +212,15 @@ static int sort(LPARAM lParam1, LPARAM lParam2, int column) {
 	if (left->state != ShareDirInfo::ADDED && right->state == ShareDirInfo::ADDED) return 1;
 	if (left->state == ShareDirInfo::ADDED && right->state != ShareDirInfo::ADDED) return -1;
 	
-	if (column == 0)
-		return Util::DefaultSort(Text::toT(left->vname).c_str(), Text::toT(right->vname).c_str());
-	else if (column == 1)
-		return Util::DefaultSort(Text::toT(left->path).c_str(), Text::toT(right->path).c_str());
-	else
+	if (column == 0) {
+		auto res = Util::DefaultSort(Text::toT(left->vname).c_str(), Text::toT(right->vname).c_str());
+		return res > 0 ? 1 : res;
+	} else if (column == 1) {
+		auto res = Util::DefaultSort(Text::toT(left->path).c_str(), Text::toT(right->path).c_str()) > 0 ? 1 : 0;
+		return res > 0 ? 1 : res; 
+	} else {
 		return compare(right->size, left->size);
+	}
 }
 
 void SharePage::showProfile() {

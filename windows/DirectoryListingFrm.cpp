@@ -1044,7 +1044,8 @@ clientmenu:
 			}
 
 			appendDownloadMenu(fileMenu, DownloadBaseHandler::FILELIST, false, !allComplete);
-			fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
+			if (hasFiles)
+				fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			fileMenu.AppendMenu(MF_SEPARATOR);
 		
 			if (ctrlList.GetSelectedCount() == 1 && (dl->getIsOwnList() || (ii->type == ItemInfo::DIRECTORY && 
@@ -1202,7 +1203,7 @@ bool DirectoryListingFrame::showDirDialog(string& fileName) {
 
 void DirectoryListingFrame::appendDownloadItems(OMenu& aMenu, bool isTree) {
 	//Append general items
-	aMenu.appendItem(CTSTRING(DOWNLOAD), [this, isTree] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isTree); });
+	aMenu.appendItem(CTSTRING(DOWNLOAD), [this, isTree] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isTree); }, true, true);
 
 	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
 	appendDownloadTo(*targetMenu, isTree);
