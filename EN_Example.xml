@@ -660,7 +660,6 @@
 		<String Name="SettingsSelectWindowColor">&amp;Window color</String>
 		<String Name="SettingsSendUnknownCommands">Send unknown /commands to the hub</String>
 		<String Name="SettingsShareHidden">Share hidden files</String>
-		<String Name="SettingsShareSize">Total size:</String>
 		<String Name="SettingsSharedDirectories">Shared directories</String>
 		<String Name="SettingsShowInfoTips">Show InfoTips in lists</String>
 		<String Name="SettingsShowJoins">Show joins / parts in chat by default</String>
@@ -1660,5 +1659,8 @@ would you still like to load them?</String>
 		<String Name="UploadLimitDisabled">Upload limit disabled</String>
 		<String Name="Custom">Custom...</String>
 		<String Name="NewLimit">New limit (KiB/s) (0 = infinite)</String>
+		<String Name="TotalFiles">Total files: %d</String>
+		<String Name="TotalSize">Total size: %s</String>
+		<String Name="FullListDlLimit">Maximun number of files for getting full filelist with \"Get/Browse filelist\"</String>
 	</Strings>
 </Language>

@@ -77,6 +77,7 @@ public:
 	enum {
 		STATUS_TEXT,
 		STATUS_TOTAL_SIZE,
+		STATUS_TOTAL_FILES,
 		STATUS_SELECTED_FILES,
 		STATUS_SELECTED_SIZE,
 		STATUS_GET_FULL_LIST,
@@ -348,7 +349,6 @@ private:
 
 	//string currentDir;
 	tstring error;
-	string size;
 
 	int skipHits;
 
@@ -357,7 +357,7 @@ private:
 	bool updating;
 	bool closed;
 
-	int statusSizes[12];
+	int statusSizes[13];
 	
 	DirectoryListing* dl;
 

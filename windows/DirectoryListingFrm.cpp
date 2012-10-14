@@ -510,17 +510,24 @@ void DirectoryListingFrame::updateStatus() {
 }
 
 void DirectoryListingFrame::initStatus() {
-	if (dl->getPartialList()) {
+	int totalFiles = 0;
+	int64_t totalSize = 0;
+	if (dl->getPartialList() && !dl->getHintedUser().user->isNMDC()) {
 		auto si = ClientManager::getInstance()->getShareInfo(dl->getHintedUser());
-		size = Util::formatBytes(si.first);
+		totalSize = si.first;
+		totalFiles = si.second;
 	} else {
-		size = Util::formatBytes(dl->getTotalListSize());
+		totalSize = dl->getTotalListSize();
+		totalFiles = dl->getTotalFileCount();
 	}
 
-	//tmp = TSTRING(SIZE) + _T(": ") + Util::formatBytesW(dl->getTotalListSize(true));
-	tstring tmp = TSTRING(SETTINGS_SHARE_SIZE) + _T(" ") + Text::toT(size).c_str();
+	tstring tmp = TSTRING_F(TOTAL_SIZE, Util::formatBytesW(totalSize));
 	statusSizes[STATUS_TOTAL_SIZE] = WinUtil::getTextWidth(tmp, m_hWnd);
 	ctrlStatus.SetText(STATUS_TOTAL_SIZE, tmp.c_str());
+
+	tmp = TSTRING_F(TOTAL_FILES, totalFiles);
+	statusSizes[STATUS_TOTAL_FILES] = WinUtil::getTextWidth(tmp, m_hWnd);
+	ctrlStatus.SetText(STATUS_TOTAL_FILES, tmp.c_str());
 
 	UpdateLayout(FALSE);
 }

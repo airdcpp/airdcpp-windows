@@ -231,7 +231,7 @@ void WinUtil::GetBrowseList::operator()(UserPtr aUser, const string& aUrl) const
 	if(!aUser)
 		return;
 
-	if (aUser->isSet(User::NMDC))
+	if (aUser->isSet(User::NMDC) || ClientManager::getInstance()->getShareInfo(HintedUser(aUser, aUrl)).second < SETTING(FULL_LIST_DL_LIMIT))
 		GetList()(aUser, aUrl);
 	else
 		BrowseList()(aUser, aUrl);

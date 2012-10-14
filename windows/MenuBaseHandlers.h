@@ -93,13 +93,14 @@ public:
 	}
 
 	struct UserTraits {
-		UserTraits() : adcOnly(true), favOnly(true), nonFavOnly(true), nmdcOnly(true) { }
+		UserTraits() : noFullList(true), favOnly(true), nonFavOnly(true), allFullList(true) { }
 		void operator()(const UserInfoBase* ui) {
 			if(ui->getUser()) {
-				if(ui->getUser()->isSet(User::NMDC)) 
-					adcOnly = false;
-				else
-					nmdcOnly = false;
+				if(!ui->getUser()->isSet(User::NMDC) && ClientManager::getInstance()->getShareInfo(HintedUser(ui->getUser(), ui->getHubUrl())).second > SETTING(FULL_LIST_DL_LIMIT)) { 
+					allFullList = false;
+				} else {
+					noFullList = false;
+				}
 
 				bool fav = FavoriteManager::getInstance()->isFavoriteUser(ui->getUser());
 				if(fav)
@@ -109,8 +110,8 @@ public:
 			}
 		}
 
-		bool nmdcOnly;
-		bool adcOnly;
+		bool noFullList;
+		bool allFullList;
 		bool favOnly;
 		bool nonFavOnly;
 	};
@@ -128,17 +129,51 @@ public:
 		UserTraits traits = ((T*)this)->getUserList().forEachSelectedT(UserTraits());
 		bool multipleHubs = false;
 
+		auto appendSingleDownloadItems = [&menu, traits, showFullList] () -> void {
+			menu.AppendMenu(MF_SEPARATOR);
+			if (showFullList || traits.allFullList)
+				menu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
+			if (!traits.noFullList && !traits.allFullList)
+				menu.AppendMenu(MF_STRING, IDC_GETBROWSELIST, CTSTRING(GET_BROWSE_LIST));
+			menu.AppendMenu(MF_STRING, IDC_BROWSELIST, CTSTRING(BROWSE_FILE_LIST));
+			menu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
+			menu.AppendMenu(MF_SEPARATOR);
+		};
+
 		if (aUser) {
 			User::UserInfoList list;
 			ClientManager::getInstance()->getUserInfoList(aUser, list);
 			if (list.size() > 1) {
 				multipleHubs = true;
-
 				appendListMenu<WinUtil::PM>(aUser, list, menu.createSubMenu(CTSTRING(SEND_PRIVATE_MESSAGE)), false);
-				appendListMenu<WinUtil::BrowseList>(aUser, list, menu.createSubMenu(CTSTRING(BROWSE_FILE_LIST)), true);
-				appendListMenu<WinUtil::GetList>(aUser, list, menu.createSubMenu(CTSTRING(GET_FILE_LIST)), true);
-				appendListMenu<WinUtil::MatchQueue>(aUser, list, menu.createSubMenu(CTSTRING(MATCH_QUEUE)), true);
-				menu.AppendMenu(MF_SEPARATOR);
+
+				//combine items in the list based on the share size
+				User::UserInfoList shareList(list.begin(), list.end());
+				for (auto i = shareList.begin(); i != shareList.end(); ++i) {
+					StringList names;
+					names.push_back(i->hubName);
+
+					auto matchPos = i;
+					while ((matchPos = find_if(i+1, shareList.end(), [i](User::UserHubInfo uhi) { return uhi.shared == i->shared; })) != shareList.end()) {
+						names.push_back(matchPos->hubName);
+						shareList.erase(matchPos);
+					}
+					i->hubName = Util::toString(names);
+				}
+
+				if (shareList.size() > 1) {
+					menu.AppendMenu(MF_SEPARATOR);
+					appendListMenu<WinUtil::BrowseList>(aUser, shareList, menu.createSubMenu(CTSTRING(BROWSE_FILE_LIST)), true);
+					if (showFullList || traits.allFullList)
+						appendListMenu<WinUtil::GetList>(aUser, shareList, menu.createSubMenu(CTSTRING(GET_FILE_LIST)), true);
+					if (!traits.noFullList && !traits.allFullList)
+						appendListMenu<WinUtil::GetBrowseList>(aUser, shareList, menu.createSubMenu(CTSTRING(GET_BROWSE_LIST)), true);
+					appendListMenu<WinUtil::MatchQueue>(aUser, shareList, menu.createSubMenu(CTSTRING(MATCH_QUEUE)), true);
+					menu.AppendMenu(MF_SEPARATOR);
+				} else {
+					appendSingleDownloadItems();
+				}
+
 				if(!traits.nonFavOnly)
 					appendListMenu<WinUtil::ConnectFav>(aUser, list, menu.createSubMenu(CTSTRING(CONNECT_FAVUSER_HUB)), false);
 			}
@@ -146,14 +181,7 @@ public:
 		
 		if (!multipleHubs) {
 			menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
-			menu.AppendMenu(MF_SEPARATOR);
-			if (showFullList || traits.nmdcOnly)
-				menu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
-			if (!traits.adcOnly && !traits.nmdcOnly) // GET/BROWSE
-				menu.AppendMenu(MF_STRING, IDC_GETBROWSELIST, CTSTRING(GET_BROWSE_LIST));
-			menu.AppendMenu(MF_STRING, IDC_BROWSELIST, CTSTRING(BROWSE_FILE_LIST));
-			menu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
-			menu.AppendMenu(MF_SEPARATOR);
+			appendSingleDownloadItems();
 			if(!traits.nonFavOnly)
 				menu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT_FAVUSER_HUB));
 		}
