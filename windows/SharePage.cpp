@@ -212,12 +212,11 @@ static int sort(LPARAM lParam1, LPARAM lParam2, int column) {
 	if (left->state != ShareDirInfo::ADDED && right->state == ShareDirInfo::ADDED) return 1;
 	if (left->state == ShareDirInfo::ADDED && right->state != ShareDirInfo::ADDED) return -1;
 	
+	//don't return values over 1 so that ExListViewEx won't do its "tricks"
 	if (column == 0) {
-		auto res = Util::DefaultSort(Text::toT(left->vname).c_str(), Text::toT(right->vname).c_str());
-		return res > 0 ? 1 : res;
+		return min(1, Util::DefaultSort(Text::toT(left->vname).c_str(), Text::toT(right->vname).c_str()));
 	} else if (column == 1) {
-		auto res = Util::DefaultSort(Text::toT(left->path).c_str(), Text::toT(right->path).c_str()) > 0 ? 1 : 0;
-		return res > 0 ? 1 : res; 
+		return min(1, Util::DefaultSort(Text::toT(left->path).c_str(), Text::toT(right->path).c_str()));
 	} else {
 		return compare(right->size, left->size);
 	}

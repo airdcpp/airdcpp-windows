@@ -103,7 +103,7 @@ private:
 
 	class UserInfo : public UserInfoBase {
 	public:
-		UserInfo(const FavoriteUser& u) : user(u.getUser()), hinturl(u.getUrl()) { 
+		UserInfo(const FavoriteUser& u) : user(HintedUser(u.getUser(), u.getUrl())) { 
 			update(u);
 		}
 
@@ -121,10 +121,10 @@ private:
 
 		tstring columns[COLUMN_LAST];
 
-		const UserPtr& getUser() const { return user; }
-		const string& getHubUrl() const { return hinturl; }
-		UserPtr user;
-		string hinturl;
+		const UserPtr& getUser() const { return user.user; }
+		const string& getHubUrl() const { return user.hint; }
+
+		HintedUser user;
 	};
 
 	CStatusBarCtrl ctrlStatus;

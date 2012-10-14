@@ -137,17 +137,17 @@ private:
 	static int columnIndexes[UploadQueueItem::COLUMN_LAST];
 
 	struct UserItem : UserInfoBase {
-		UserPtr u;
-		UserItem(UserPtr u) : u(u) { }
+		HintedUser u;
+		UserItem(HintedUser u) : u(u) { }
 		
-		const UserPtr& getUser() const { return u; }
-		const string& getHubUrl() const { return Util::emptyString; } //TODO, FIX
+		const UserPtr& getUser() const { return u.user; }
+		const string& getHubUrl() const { return u.hint; }
 	};
 		
 	const UserPtr getSelectedUser() {
 		HTREEITEM selectedItem = ctrlQueued.GetSelectedItem();
 		UserItem* ui = reinterpret_cast<UserItem*>(ctrlQueued.GetItemData(selectedItem));
-		return (selectedItem && ui) ? ui->u : UserPtr(NULL);
+		return (selectedItem && ui->u.user) ? ui->u.user : UserPtr();
 	}
 
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
@@ -173,7 +173,7 @@ private:
 			// Ok let's cheat here, if you try to remove more users here is not working :(
 			RemoveUsers.push_back(((UploadQueueItem*)ctrlList.getItemData(i))->getUser());
 		}
-		for(UserList::const_iterator i = RemoveUsers.begin(); i != RemoveUsers.end(); ++i) {
+		for(auto i = RemoveUsers.begin(); i != RemoveUsers.end(); ++i) {
 			UploadManager::getInstance()->clearUserFiles(*i);
 		}
 		updateStatus();
@@ -215,7 +215,7 @@ private:
 
 	// UploadManagerListener
 	void on(UploadManagerListener::QueueAdd, UploadQueueItem* aUQI) noexcept { PostMessage(WM_SPEAKER, ADD_ITEM, (LPARAM)aUQI); }
-	void on(UploadManagerListener::QueueRemove, const UserPtr& aUser) noexcept { PostMessage(WM_SPEAKER, REMOVE, (LPARAM)new UserItem(aUser));	}
+	void on(UploadManagerListener::QueueRemove, const UserPtr& aUser) noexcept { PostMessage(WM_SPEAKER, REMOVE, (LPARAM)new UserItem(HintedUser(aUser, Util::emptyString)));	}
 	void on(UploadManagerListener::QueueItemRemove, UploadQueueItem* aUQI) noexcept { aUQI->inc(); PostMessage(WM_SPEAKER, REMOVE_ITEM, (LPARAM)aUQI); }
 	void on(UploadManagerListener::QueueUpdate) noexcept { PostMessage(WM_SPEAKER, UPDATE_ITEMS, NULL); }
 

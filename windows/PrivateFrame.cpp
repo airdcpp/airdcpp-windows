@@ -331,8 +331,8 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 }
 
 void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Client* c) {
-	PrivateFrame* p = NULL;
-	FrameIter i = frames.find(replyTo);
+	PrivateFrame* p = nullptr;
+	auto i = frames.find(replyTo);
 	if(i == frames.end()) {
 		if(frames.size() > 200) return;
 		p = new PrivateFrame(replyTo, c);

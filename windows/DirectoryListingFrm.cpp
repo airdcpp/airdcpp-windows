@@ -510,7 +510,12 @@ void DirectoryListingFrame::updateStatus() {
 }
 
 void DirectoryListingFrame::initStatus() {
-	size = Util::formatBytes(dl->getTotalListSize());
+	if (dl->getPartialList()) {
+		auto si = ClientManager::getInstance()->getShareInfo(dl->getHintedUser());
+		size = Util::formatBytes(si.first);
+	} else {
+		size = Util::formatBytes(dl->getTotalListSize());
+	}
 
 	//tmp = TSTRING(SIZE) + _T(": ") + Util::formatBytesW(dl->getTotalListSize(true));
 	tstring tmp = TSTRING(SETTINGS_SHARE_SIZE) + _T(" ") + Text::toT(size).c_str();

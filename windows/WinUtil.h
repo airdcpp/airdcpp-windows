@@ -233,6 +233,36 @@ public:
 	static void loadReBarSettings(HWND bar);
 	static void saveReBarSettings(HWND bar);
 
+	struct ConnectFav {
+		void operator()(UserPtr aUser, const string& aUrl) const;
+	};
+
+	struct GetList {
+		void operator()(UserPtr aUser, const string& aUrl) const;
+	};
+
+	struct BrowseList {
+		void operator()(UserPtr aUser, const string& aUrl) const;
+	};
+
+	struct GetBrowseList {
+		void operator()(UserPtr aUser, const string& aUrl) const;
+	};
+
+	struct MatchQueue {
+		void operator()(UserPtr aUser, const string& aUrl) const;
+	};
+
+	struct PM {
+		void operator()(UserPtr aUser, const string& aUrl) const;
+	};
+
+	/*void getList(UserPtr aUser, const string& aUrl);
+	void browseList(UserPtr aUser, const string& aUrl);
+	void getBrowseList(UserPtr aUser, const string& aUrl);
+	void matchQueue(UserPtr aUser, const string& aUrl);
+	void pm(UserPtr aUser, const string& aUrl);*/
+
 	static tstring getIconPath(const tstring& filename);
 
 	static void decodeFont(const tstring& setting, LOGFONT &dest);

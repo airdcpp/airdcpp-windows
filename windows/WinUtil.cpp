@@ -193,59 +193,84 @@ COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S) {
 	return HLS2RGB (HLS(h, l, s));
 }
 
-void UserInfoBase::matchQueue() {
-	if(getUser()) {
+void WinUtil::PM::operator()(UserPtr aUser, const string& aUrl) const {
+	if (aUser)
+		PrivateFrame::openWindow(HintedUser(aUser, aUrl), Util::emptyStringT, ClientManager::getInstance()->getClient(aUrl));
+}
+
+void WinUtil::MatchQueue::operator()(UserPtr aUser, const string& aUrl) const {
+	if(aUser) {
 		try {
-			QueueManager::getInstance()->addList(HintedUser(getUser(), getHubUrl()), QueueItem::FLAG_MATCH_QUEUE);
+			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_MATCH_QUEUE);
 		} catch(const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
 		}
 	}
 }
 
-void UserInfoBase::getList() {
-	if(getUser()) {
+void WinUtil::GetList::operator()(UserPtr aUser, const string& aUrl) const {
+	if(aUser) {
 		try {
-			QueueManager::getInstance()->addList(HintedUser(getUser(), getHubUrl()), QueueItem::FLAG_CLIENT_VIEW);
+			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
 		} catch(const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);		
 		}
 	}
 }
-void UserInfoBase::browseList() {
-	if(!getUser() || getUser()->getCID().isZero())
+void WinUtil::BrowseList::operator()(UserPtr aUser, const string& aUrl) const {
+	if(!aUser)
 		return;
+
 	try {
-		QueueManager::getInstance()->addList(HintedUser(getUser(), getHubUrl()), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+		QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
 	} catch(const Exception& e) {
 		LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);		
 	}
 }
-void UserInfoBase::getBrowseList() {
-	if(!getUser() || getUser()->getCID().isZero())
+void WinUtil::GetBrowseList::operator()(UserPtr aUser, const string& aUrl) const {
+	if(!aUser)
 		return;
 
-	if (getUser()->isSet(User::NMDC))
-		getList();
+	if (aUser->isSet(User::NMDC))
+		GetList()(aUser, aUrl);
 	else
-		browseList();
+		BrowseList()(aUser, aUrl);
 }
+
+void WinUtil::ConnectFav::operator()(UserPtr aUser, const string& aUrl) const {
+	if(aUser) {
+		if(!aUrl.empty()) {
+			HubFrame::openWindow(Text::toT(aUrl));
+		}
+	}
+}
+
+
+void UserInfoBase::pm() {
+	WinUtil::PM()(getUser(), getHubUrl());
+}
+
+void UserInfoBase::matchQueue() {
+	WinUtil::MatchQueue()(getUser(), getHubUrl());
+}
+
+void UserInfoBase::getList() {
+	WinUtil::GetList()(getUser(), getHubUrl());
+}
+void UserInfoBase::browseList() {
+	WinUtil::BrowseList()(getUser(), getHubUrl());
+}
+void UserInfoBase::getBrowseList() {
+	WinUtil::GetBrowseList()(getUser(), getHubUrl());
+}
+
+void UserInfoBase::connectFav() {
+	WinUtil::ConnectFav()(getUser(), getHubUrl());
+}
+
 void UserInfoBase::addFav() {
 	if(getUser()) {
 		FavoriteManager::getInstance()->addFavoriteUser(getUser());
-	}
-}
-void UserInfoBase::pm() {
-	if(getUser()) {
-		PrivateFrame::openWindow(HintedUser(getUser(), getHubUrl()), Util::emptyStringT, NULL);
-	}
-}
-void UserInfoBase::connectFav() {
-	if(getUser()) {
-		string url = FavoriteManager::getInstance()->getUserURL(getUser());
-		if(!url.empty()) {
-			HubFrame::openWindow(Text::toT(url));
-		}
 	}
 }
 void UserInfoBase::grant() {

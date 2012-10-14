@@ -265,7 +265,7 @@ void UploadQueueFrame::RemoveUser(const UserPtr& aUser) {
 
 	while(userNode) {
 		UserItem *u = reinterpret_cast<UserItem *>(ctrlQueued.GetItemData(userNode));
-		if (aUser == u->u) {
+		if (aUser == u->u.user) {
 			delete u;
 			ctrlQueued.DeleteItem(userNode);
 			return;
@@ -283,7 +283,7 @@ LRESULT UploadQueueFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL
 		UserItem* ui = reinterpret_cast<UserItem *>(ctrlQueued.GetItemData(userNode));
 		if(ui) {
 			auto users = UploadManager::getInstance()->getUploadQueue();
-			auto it = find_if(users.begin(), users.end(), [&](const UserPtr& u) { return u == ui->u; });
+			auto it = find_if(users.begin(), users.end(), [&](const UserPtr& u) { return u == ui->u.user; });
 			if(it != users.end()) {
 				ctrlList.SetRedraw(FALSE);
 				ctrlQueued.SetRedraw(FALSE);
@@ -313,7 +313,7 @@ void UploadQueueFrame::AddFile(UploadQueueItem* aUQI) {
 
 	while(userNode) {
 		UserItem *u = reinterpret_cast<UserItem *>(ctrlQueued.GetItemData(userNode));
-		if (aUQI->getUser() == u->u) {
+		if (aUQI->getUser() == u->u.user) {
 			add = false;
 			break;
 		}
@@ -322,7 +322,7 @@ void UploadQueueFrame::AddFile(UploadQueueItem* aUQI) {
 
 	if(add) {
 		userNode = ctrlQueued.InsertItem(TVIF_PARAM | TVIF_TEXT, (WinUtil::getNicks(aUQI->getHintedUser()) + _T(" - ") + WinUtil::getHubNames(aUQI->getHintedUser()).first).c_str(), 
-			0, 0, 0, 0, (LPARAM)(new UserItem(aUQI->getUser())), rootItem, TVI_LAST);
+			0, 0, 0, 0, (LPARAM)(new UserItem(aUQI->getHintedUser())), rootItem, TVI_LAST);
 	}	
 	if(selNode && selNode != rootItem) {
 		TCHAR selBuf[256];

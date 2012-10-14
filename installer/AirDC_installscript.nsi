@@ -113,7 +113,6 @@ no_backup:
 	File "..\compiled\Win32\AirDC.pdb"
 	File "..\compiled\Win32\AirDC.exe"
   !endif
-  File /r /x .svn icons
   
   ; Uncomment to get DCPP core version from AirDC.exe we just installed and store in $1
   ;Function GetDCPlusPlusVersion
@@ -266,10 +265,11 @@ Section "un.Uninstall"
   ; remove directories used.
   ;RMDir "$SMPROGRAMS\AirDC++"
   IfFileExists "$INSTDIR\Settings\*.xml" 0 check_if_empty
-  MessageBox MB_YESNO|MB_ICONQUESTION "Also remove queue and all settings?" IDNO end_uninstall
+  MessageBox MB_YESNO|MB_ICONQUESTION "Also remove queue, themes and all settings?" IDNO end_uninstall
 
   ; delete settings directory
   RMDir /r $INSTDIR\Settings
+  RMDir /r $INSTDIR\Themes
   
 
 check_if_empty:

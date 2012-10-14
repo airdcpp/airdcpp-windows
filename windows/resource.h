@@ -1471,7 +1471,7 @@
 #define IDC_PM                          21000
 #define IDC_READD                       22000
 #define IDC_REMOVE_SOURCES              23000
-#define IDC_MENURANGE					24000
+#define IDC_MENURANGE                   24000
 #define IDC_DOWNLOADDIR                 36000
 #define IDC_DOWNLOAD_TARGET             38000
 #define ID_FILE_CONNECT                 42772
@@ -1496,7 +1496,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        344
+#define _APS_NEXT_RESOURCE_VALUE        345
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         1675
 #define _APS_NEXT_SYMED_VALUE           136

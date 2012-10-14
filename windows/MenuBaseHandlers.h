@@ -28,7 +28,10 @@
 #include "../client/version.h"
 #include "../client/QueueItem.h"
 #include "../client/ShareManager.h"
+#include "../client/ClientManager.h"
+#include "../client/Util.h"
 
+#include "WinUtil.h"
 #include <boost/bind.hpp>
 
 template<class T>
@@ -112,22 +115,51 @@ public:
 		bool nonFavOnly;
 	};
 
-	void appendUserItems(CMenu& menu, bool showFullList = true) {
-		UserTraits traits = ((T*)this)->getUserList().forEachSelectedT(UserTraits()); 
+	template<class K>
+	void appendListMenu(UserPtr aUser, const User::UserInfoList& list, OMenu* subMenu, bool addShareInfo) {
+		for (auto i = list.begin(); i != list.end(); ++i) {
+			string url = (*i).hubUrl;
+			subMenu->appendItem(Text::toT((*i).hubName) + (addShareInfo ? (_T(" (") + Util::formatBytesW((*i).shared) + _T(")")) : Util::emptyStringT), 
+				[this, aUser, url] { K()(aUser, url); });
+		}
+	}
 
-		menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
-		menu.AppendMenu(MF_SEPARATOR);
-		if (showFullList || traits.nmdcOnly)
-			menu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
-		if (!traits.adcOnly && !traits.nmdcOnly) // GET/BROWSE
-			menu.AppendMenu(MF_STRING, IDC_GETBROWSELIST, CTSTRING(GET_BROWSE_LIST));
-		menu.AppendMenu(MF_STRING, IDC_BROWSELIST, CTSTRING(BROWSE_FILE_LIST));
-		menu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
-		menu.AppendMenu(MF_SEPARATOR);
+	void appendUserItems(OMenu& menu, bool showFullList = true, UserPtr aUser = nullptr) {
+		UserTraits traits = ((T*)this)->getUserList().forEachSelectedT(UserTraits());
+		bool multipleHubs = false;
+
+		if (aUser) {
+			User::UserInfoList list;
+			ClientManager::getInstance()->getUserInfoList(aUser, list);
+			if (list.size() > 1) {
+				multipleHubs = true;
+
+				appendListMenu<WinUtil::PM>(aUser, list, menu.createSubMenu(CTSTRING(SEND_PRIVATE_MESSAGE)), false);
+				appendListMenu<WinUtil::BrowseList>(aUser, list, menu.createSubMenu(CTSTRING(BROWSE_FILE_LIST)), true);
+				appendListMenu<WinUtil::GetList>(aUser, list, menu.createSubMenu(CTSTRING(GET_FILE_LIST)), true);
+				appendListMenu<WinUtil::MatchQueue>(aUser, list, menu.createSubMenu(CTSTRING(MATCH_QUEUE)), true);
+				menu.AppendMenu(MF_SEPARATOR);
+				if(!traits.nonFavOnly)
+					appendListMenu<WinUtil::ConnectFav>(aUser, list, menu.createSubMenu(CTSTRING(CONNECT_FAVUSER_HUB)), false);
+			}
+		} 
+		
+		if (!multipleHubs) {
+			menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
+			menu.AppendMenu(MF_SEPARATOR);
+			if (showFullList || traits.nmdcOnly)
+				menu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
+			if (!traits.adcOnly && !traits.nmdcOnly) // GET/BROWSE
+				menu.AppendMenu(MF_STRING, IDC_GETBROWSELIST, CTSTRING(GET_BROWSE_LIST));
+			menu.AppendMenu(MF_STRING, IDC_BROWSELIST, CTSTRING(BROWSE_FILE_LIST));
+			menu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
+			menu.AppendMenu(MF_SEPARATOR);
+			if(!traits.nonFavOnly)
+				menu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT_FAVUSER_HUB));
+		}
+
 		if(!traits.favOnly)
 			menu.AppendMenu(MF_STRING, IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
-		if(!traits.nonFavOnly)
-			menu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT_FAVUSER_HUB));
 		menu.AppendMenu(MF_SEPARATOR);
 		menu.AppendMenu(MF_STRING, IDC_REMOVEALL, CTSTRING(REMOVE_FROM_ALL));
 		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));

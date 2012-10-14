@@ -61,9 +61,9 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	FavoriteManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
-	FavoriteManager::FavoriteMap ul = FavoriteManager::getInstance()->getFavoriteUsers();
+	auto ul = FavoriteManager::getInstance()->getFavoriteUsers();
 	ctrlUsers.SetRedraw(FALSE);
-	for(FavoriteManager::FavoriteMap::const_iterator i = ul.begin(); i != ul.end(); ++i) {
+	for(auto i = ul.begin(); i != ul.end(); ++i) {
 		addUser(i->second);
 	}
 	ctrlUsers.SetRedraw(TRUE);
@@ -87,27 +87,30 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		if(pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlUsers, pt);
 		}
+
+		UserPtr u = nullptr;
+		tstring x;
+		if (ctrlUsers.GetSelectedCount() == 1) {
+			auto ui = ctrlUsers.getItemData(WinUtil::getFirstSelectedIndex(ctrlUsers));
+			x = ui->columns[COLUMN_NICK];
+			u = ui->getUser();
+		} else {
+			x = _T("");
+		}
 	
 		OMenu usersMenu;
 		usersMenu.CreatePopupMenu();
 		usersMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG, CTSTRING(OPEN_USER_LOG));
 		usersMenu.AppendMenu(MF_SEPARATOR);
-		appendUserItems(usersMenu);
+		appendUserItems(usersMenu, true, u);
 		usersMenu.AppendMenu(MF_SEPARATOR);
 		usersMenu.AppendMenu(MF_STRING, IDC_EDIT, CTSTRING(PROPERTIES));
 		usersMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-		
-		tstring x;
-		if (ctrlUsers.GetSelectedCount() == 1) {
-			x = ctrlUsers.getItemData(WinUtil::getFirstSelectedIndex(ctrlUsers))->columns[COLUMN_NICK];
-		} else {
-			x = _T("");
-		}
 
 		if (!x.empty())
 			usersMenu.InsertSeparatorFirst(x);
 		
-		usersMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+		usersMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 
 		return TRUE; 
 	}
@@ -269,8 +272,8 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 void UsersFrame::UserInfo::update(const FavoriteUser& u) {
 	columns[COLUMN_NICK] = Text::toT(u.getNick());
-	columns[COLUMN_HUB] = user->isOnline() ? WinUtil::getHubNames(u.getUser(), Util::emptyString).first : Text::toT(u.getUrl());
-	columns[COLUMN_SEEN] = user->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", u.getLastSeen()));
+	columns[COLUMN_HUB] = user.user->isOnline() ? WinUtil::getHubNames(u.getUser(), Util::emptyString).first : Text::toT(u.getUrl());
+	columns[COLUMN_SEEN] = user.user->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", u.getLastSeen()));
 	columns[COLUMN_DESCRIPTION] = Text::toT(u.getDescription());
 	columns[COLUMN_CID] = Text::toT(u.getUser()->getCID().toBase32());
 }
