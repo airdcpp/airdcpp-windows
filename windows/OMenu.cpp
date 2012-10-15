@@ -182,9 +182,9 @@ unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f, bool ena
 }
 
 LRESULT OMenu::onInitMenuPopup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	HMENU mnu = (HMENU)wParam;
-	bHandled = TRUE; // Always true, since we do the following manually:
-	::DefWindowProc(hWnd, uMsg, wParam, lParam);
+	//HMENU mnu = (HMENU)wParam;
+	bHandled = FALSE;
+	/*::DefWindowProc(hWnd, uMsg, wParam, lParam);
 
 	dcassert(::GetMenuItemCount(mnu) > 0);
 	for (int i = 0; i < ::GetMenuItemCount(mnu); ++i) {
@@ -199,7 +199,7 @@ LRESULT OMenu::onInitMenuPopup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPara
 				::SetMenuItemInfo(mnu, i, TRUE, &mii);
 			}
 		}
-	}
+	}*/
 
 	return S_OK;
 }

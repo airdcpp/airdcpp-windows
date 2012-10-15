@@ -1549,7 +1549,7 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 		auto pos = limiterMenu->appendItem(value ? formatted + _T("/s") : CTSTRING(DISABLED),
 			[setting, value] { ThrottleManager::setSetting(setting, value); }, !same);
 		if(same)
-			limiterMenu->CheckMenuItem(pos, TRUE);
+			limiterMenu->CheckMenuItem(pos, MF_BYPOSITION | MF_CHECKED);
 		if(!value)
 			limiterMenu->AppendMenu(MF_SEPARATOR);
 	}
@@ -1794,10 +1794,28 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	str->push_back(TSTRING(SHARED) + _T(": ") + Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
 	str->push_back(_T("H: ") + Text::toT(Client::getCounts()));
 	str->push_back(TSTRING(SLOTS) + _T(": ") + Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
+
 	str->push_back(_T("D: ") + Util::formatBytesW(Socket::getTotalDown()));
 	str->push_back(_T("U: ") + Util::formatBytesW(Socket::getTotalUp()));
-	str->push_back(_T("D: [") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("]") + Util::formatBytesW(downdiff*1000I64/diff) + _T("/s"));
-	str->push_back(_T("U: [") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("]") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
+
+	tstring down = _T("D: [") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("][");
+	tstring up = _T("U: [") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
+
+	auto dl = ThrottleManager::getDownLimit();
+	if (dl > 0)
+		down += Text::toT(Util::formatBytes(dl * 1024));
+	else
+		down += _T("-");
+
+	auto ul = ThrottleManager::getUpLimit();
+	if (ul > 0)
+		up += Text::toT(Util::formatBytes(ul * 1024));
+	else
+		up += _T("-");
+	
+	str->push_back(down + _T("] ") + Util::formatBytesW(downdiff*1000I64/diff) + _T("/s"));
+	str->push_back(up + _T("] ") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
+
 	str->push_back(TSTRING(QUEUE_SIZE) + _T(": ")  + Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
 
 	PostMessage(WM_SPEAKER, STATS, (LPARAM)str);
