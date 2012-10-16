@@ -44,6 +44,7 @@ public:
 	};
 
 	BEGIN_MSG_MAP(UpdateDlg)
+		NOTIFY_HANDLER(IDC_UPDATE_HISTORY_TEXT, EN_LINK, onClientEnLink)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
@@ -65,6 +66,10 @@ public:
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		EndDialog(0);
 		return 0;
+	}
+
+	LRESULT onClientEnLink(int idCtrl, LPNMHDR pnmh, BOOL& bHandled) { 
+		return m_Changelog.handleLink(*(ENLINK*)pnmh);
 	}
 
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

@@ -45,6 +45,7 @@
 #include "WindowsPage.h"
 #include "PriorityPage.h"
 #include "CertificatesPage.h"
+#include "LimitPage.h"
 
 #include "MiscPage.h"
 #include "FulTabsPage.h"
@@ -66,6 +67,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = new GeneralPage(s);
 	pages[n++] = new NetworkPage(s);
 	pages[n++] = new SpeedPage(s);
+	pages[n++] = new LimitPage(s);
 	pages[n++] = new DownloadPage(s);
 	pages[n++] = new LocationsPage(s);
 	pages[n++] = new AVIPreview(s);	

@@ -2137,6 +2137,7 @@ void WinUtil::loadSettingsTreeIcons() {
 	settingsTreeImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 30);
 	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_GENERAL, size));
 	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_CONNECTIONS, size));
+	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_SPEED, size));
 	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LIMITS, size));
 	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_DOWNLOADS, size));
 	settingsTreeImages.AddIcon(WinUtil::loadDefaultIcon(IDI_LOCATIONS, size));

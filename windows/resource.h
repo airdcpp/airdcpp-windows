@@ -174,6 +174,8 @@
 #define IDD_SEARCHTYPESPAGE             342
 #define IDD_SEARCHTYPE_DLG              343
 #define IDR_EMOTICON                    345
+#define IDD_DIALOG3                     345
+#define IDD_LIMITPAGE                   345
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
@@ -219,6 +221,7 @@
 #define IDI_AIRAPPEARANCE               401
 #define IDI_ADVANCED                    402
 #define IDI_EXPERTS                     403
+#define IDI_SPEED	                    404
 #define IDI_UC                          405
 #define IDI_CERTIFICATES                406
 #define IDI_MISC                        407
@@ -1238,6 +1241,8 @@
 #define IDC_COPY_TIME                   10034
 #define IDC_COPY_TYPE                   10035
 #define IDC_MANAGE_GROUPS               10037
+#define IDC_UPLOADSPEEDSPIN             10038
+#define IDC_DOWNLOADSPEEDSPIN           10039
 #define IDC_NONE                        10041
 #define IDD_TEXT_STYLES                 10042
 #define IDC_HISTORY                     10043
@@ -1257,6 +1262,15 @@
 #define IDC_USER_HISTORY                10062
 #define IDC_IGNORE                      10063
 #define IDC_UNIGNORE                    10064
+#define IDC_MX_UP_SP_LMT_NORMAL         10069
+#define IDC_MX_DW_SP_LMT_NORMAL         10070
+#define IDC_MX_UP_SP_LMT_TIME           10071
+#define IDC_MX_DW_SP_LMT_TIME           10072
+#define IDC_TIME_LIMITING               10073
+#define IDC_BW_START_TIME               10074
+#define IDC_BW_END_TIME                 10075
+#define IDC_UPLOADSPEEDSPIN_TIME        10077
+#define IDC_DOWNLOADSPEEDSPIN_TIME      10078
 #define IDC_GRANTSLOT                   10080
 #define IDC_GRANTSLOT_HOUR              10081
 #define IDC_GRANTSLOT_DAY               10082
@@ -1265,16 +1279,28 @@
 #define IDC_UPLOAD_QUEUE                10085
 #define IDC_CONNECT_WITH                10086
 #define IDC_OPEN_LINK                   10087
+#define IDC_THROTTLE_ENABLE             10093
 #define IDC_PROGRESS_TEXT_COLOR_DOWN    10102
 #define IDC_PROGRESS_TEXT_COLOR_UP      10103
 #define IDC_CZDC_PM_SOUND               10107
+#define IDC_STRONGDC_TRANSFER_LIMITING  10108
+#define IDC_STRONGDC_UP_SPEED           10109
+#define IDC_STRONGDC_DW_SPEED           10110
+#define IDC_STRONGDC_TO                 10111
 #define IDC_CZDC_SECONDARY_TRANSFER     10112
+#define IDC_STRONGDC_TRANSFER_LIMITING2 10112
 #define IDC_CZDC_PROGRESS_COLOR         10115
 #define IDC_CZDC_PROGRESS_TEXT          10117
 #define IDC_INTERVAL_TEXT               10118
 #define IDC_MATCH_QUEUE_TEXT            10119
 #define IDC_SETCZDC_PM_LINES            10121
 #define IDC_CZDC_PREVIEW                10123
+#define IDC_STRONGDC_DW_SPEED1          10124
+#define IDC_STRONGDC_UP_SPEED1          10125
+#define IDC_SETTINGS_KBPS1              10126
+#define IDC_SETTINGS_KBPS2              10127
+#define IDC_SETTINGS_KBPS3              10128
+#define IDC_SETTINGS_KBPS4              10129
 #define IDC_CZDC_SMALL_SLOTS            10130
 #define IDC_CZDC_SMALL_SIZE             10131
 #define IDC_CZDC_NOTE_SMALL             10132
@@ -1496,7 +1522,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        345
+#define _APS_NEXT_RESOURCE_VALUE        346
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         1675
 #define _APS_NEXT_SYMED_VALUE           136

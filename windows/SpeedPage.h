@@ -32,10 +32,11 @@ class SpeedPage : public CPropertyPage<IDD_SPEEDPAGE>, public PropPage
 {
 public:
 	SpeedPage(SettingsManager *s) : PropPage(s) {
-		SetTitle(CTSTRING(SETTINGS_SPEED_LIMITS));
+		title = _tcsdup((TSTRING(SETTINGS_NETWORK) + _T('\\') + TSTRING(SETTINGS_SPEED_SLOTS)).c_str());
+		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	};
-	~SpeedPage() {	};
+	~SpeedPage() { free(title); };
 
 	BEGIN_MSG_MAP(SpeedPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
@@ -74,6 +75,7 @@ protected:
 	int maxMCNExtras(double speed);
 	static Item items[];
 	static TextItem texts[];
+	TCHAR* title;
 };
 
 #endif //SPEED_PAGE_H

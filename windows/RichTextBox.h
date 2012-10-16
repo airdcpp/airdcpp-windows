@@ -26,6 +26,8 @@
 #include "../client/TargetUtil.h"
 #include "../client/ChatMessage.h"
 
+#include <boost/algorithm/string.hpp>
+
 #include "TypedListViewCtrl.h"
 #include "ImageDataObject.h"
 #include "UCHandler.h"
@@ -160,8 +162,19 @@ public:
 	void findText(tstring& aTxt=Util::emptyStringT);
 	void runUserCommand(UserCommand& uc);
 
+	typedef boost::iterator_range<boost::range_const_iterator<tstring>::type> tstring_range;
+	static std::string unicodeEscapeFormatter(const tstring_range& match);
+	static tstring rtfEscapeFormatter(const tstring_range& match);
+
+	static std::string escapeUnicode(const tstring& str);
+	/// escape Rich Edit control chars: {, }, and \, as well as \n which becomes \line.
+	static tstring rtfEscape(const tstring& str);
+
 	//void AdjustTextSize();
 	void AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = true);
+	void AppendHTML(const string& aTxt);
+	tstring getLinkText(const ENLINK& link);
+	LRESULT handleLink(ENLINK& link);
 
 	void setSelectedUser(const tstring& s) { selectedUser = s; }
 	const tstring& getSelectedUser() { return selectedUser; }
@@ -203,9 +216,6 @@ private:
 	tstring WordFromPos(const POINT& p);
 	tstring LineFromPos(const POINT& p) const;
 	void FormatChatLine(const tstring& sMyNick, tstring& sMsg, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo);
-
-	static string escapeUnicode(tstring str);
-	static tstring rtfEscape(tstring str);
 
 	void setText(const tstring& text) {
 		string tmp = "{\\urtf " + escapeUnicode(rtfEscape(text)) + "}";

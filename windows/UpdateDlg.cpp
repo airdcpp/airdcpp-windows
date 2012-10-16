@@ -62,6 +62,9 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	m_Changelog.Attach(GetDlgItem(IDC_UPDATE_HISTORY_TEXT));
 	m_Changelog.Subclass();
 
+	m_Changelog.SetAutoURLDetect(false);
+	m_Changelog.SetEventMask( m_Changelog.GetEventMask() | ENM_LINK );
+
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_CURRENT_LBL), (TSTRING(CURRENT_VERSION) + _T(":")).c_str());
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION_LATEST_LBL), (TSTRING(LATEST_VERSION) + _T(":")).c_str());
 
@@ -89,19 +92,10 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	ctrlCurrentVersion.SetWindowText(Text::toT(SHORTVERSIONSTRING).c_str());
 
-	m_Changelog.setFormatLinks(true);
 	m_Changelog.SetFont(WinUtil::font);
 	m_Changelog.SetBackgroundColor(WinUtil::bgColor); 
 	m_Changelog.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
-
-	string::size_type j = 0; 
-	while((j = message.find("\r", j)) != string::npos)
-		message.erase(j, 1);
-
-	tstring msg = Text::toT(message);
-
-	m_Changelog.SetWindowTextW(msg.c_str());
-	m_Changelog.FormatEmoticonsAndLinks(msg, 0, false);
+	m_Changelog.AppendHTML(message);
 	m_Changelog.setAutoScrollToEnd(false);
 	m_Changelog.SetSel(0, 0); //set scroll position to top
 

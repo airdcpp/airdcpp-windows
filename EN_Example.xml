@@ -604,7 +604,6 @@
 		<String Name="SettingsIncoming">Incoming connection settings (see Help/FAQ if unsure)</String>
 		<String Name="SettingsKeepLists">Don't delete file lists when exiting</String>
 		<String Name="SettingsLanguageFile">Language file</String>
-		<String Name="SettingsLimit">Limits</String>
 		<String Name="SettingsLogDir">Log directory</String>
 		<String Name="SettingsLogDownloads">Log downloads</String>
 		<String Name="SettingsLogFilelistTransfers">Log filelist transfers</String>
@@ -1255,7 +1254,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SettingsDownloadLineSpeed">Line Speed (download)</String>
 		<String Name="Autodetect">Detect automatically</String>
 		<String Name="LineSpeed">Line Speed</String>
-		<String Name="SettingsSpeedLimits">Speed &amp; Limits</String>
 		<String Name="UploadLimits">Upload Limits (with auto detection)</String>
 		<String Name="UploadLimitsAdd">Upload Limits (manually set)</String>
 		<String Name="DownloadLimits">Download Limits</String>
@@ -1579,9 +1577,10 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="IpUpdateFailed">Failed to update the IP address</String>
 		<String Name="FilesAddedForHash">(%s of files have been added for hashing; they won't be visible in the filelist until they have finished hashing)</String>
 		<String Name="BundleAddedForHash">The bundle %s has been added for hashing (total size to hash: %s)</String>
-		<String Name="HashingFinishedTotal">Hashing finished: %d directories (%s of files) have been hashed in %s (average hashing speed: %s)</String>
-		<String Name="HashingFinishedTotalDir">The directory %s has finished hashing (%s of files have been hashed in %s, average hashing speed: %s)</String>
-		<String Name="HashingFinishedDir">The directory %s has finished hashing</String>
+		<String Name="HashingFinishedTotal">Hashing finished: %d files (%s) in %d directories have been hashed in %s (%s)</String>
+		<String Name="HashingFinishedDir">The directory %s has finished hashing: %d files (%s) have been hashed in %s (%s)</String>
+		<String Name="HashingFinishedFile">The file %s (%s) has finished hashing in %s (%s)</String>
+		<String Name="HashingFinishedTotalPlain">Hashing finished</String>
 		<String Name="BundleXShared">The bundle %s has been added into share</String>
 		<String Name="Hour">Hour</String>
 		<String Name="Hours">Hours</String>
@@ -1662,5 +1661,17 @@ would you still like to load them?</String>
 		<String Name="TotalFiles">Total files: %d</String>
 		<String Name="TotalSize">Total size: %s</String>
 		<String Name="FullListDlLimit">Maximun number of files for getting full filelist with \"Get/Browse filelist\"</String>
+		<String Name="SetTransferLimiting">Limit transfer speeds</String>
+		<String Name="SetAlternateLimiting">Use Alternate Limiting from</String>
+		<String Name="MaxUploadRate">Maximum upload rate (0 = infinite)</String>
+		<String Name="MaxDownloadRate">Maximum download rate (0 = infinite)</String>
+		<String Name="AdvancedUploadLimits">Advanced upload limits</String>
+		<String Name="SettingsSpeedSlots">Speed &amp; Slots</String>
+		<String Name="Noon">Noon</String>
+		<String Name="Midnight">Midnight</String>
+		<String Name="Am"> AM</String>
+		<String Name="Pm"> PM</String>
+		<String Name="SettingsLimitsAdvanced">Limits &amp; Advanced</String>
+		<String Name="AlternateLimiting">Alternate Limiting</String>
 	</Strings>
 </Language>

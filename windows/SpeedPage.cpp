@@ -39,11 +39,6 @@ PropPage::TextItem SpeedPage::texts[] = {
 	{ IDC_SETTINGS_KBPS, ResourceManager::KBPS },
 	{ IDC_SETTINGS_AUTO_SLOTS, ResourceManager::SETTINGS_AUTO_SLOTS	},
 	{ IDC_SLOTS_GROUP2, ResourceManager::UPLOAD_LIMITS_ADD },
-	{ IDC_CZDC_SMALL_SLOTS, ResourceManager::SETCZDC_SMALL_UP_SLOTS },
-	{ IDC_CZDC_SMALL_SIZE, ResourceManager::SETCZDC_SMALL_FILES },
-	{ IDC_CZDC_NOTE_SMALL, ResourceManager::SETCZDC_NOTE_SMALL_UP },
-	{ IDC_SETTINGS_PARTIAL_SLOTS, ResourceManager::SETSTRONGDC_PARTIAL_SLOTS },		
-	{ IDC_STATICb, ResourceManager::EXTRA_HUB_SLOTS },
 	{ IDC_DL_AUTODETECT, ResourceManager::AUTODETECT },
 	{ IDC_SETTINGS_DOWNLOAD_LIMITS, ResourceManager::DOWNLOAD_LIMITS },
 	{ IDC_SETTINGS_DOWNLOADS_MAX, ResourceManager::SETTINGS_DOWNLOADS_MAX },
@@ -61,12 +56,8 @@ PropPage::Item SpeedPage::items[] = {
 	{ IDC_DL_SPEED,		SettingsManager::DOWNLOAD_SPEED,	PropPage::T_STR },
 	{ IDC_UL_AUTODETECT, SettingsManager::UL_AUTODETECT, PropPage::T_BOOL },
 	{ IDC_SLOTS, SettingsManager::SLOTS, PropPage::T_INT }, 
-	{ IDC_MIN_UPLOAD_SPEED, SettingsManager::MIN_UPLOAD_SPEED, PropPage::T_INT },
-	{ IDC_EXTRA_SLOTS, SettingsManager::EXTRA_SLOTS, PropPage::T_INT },
-	{ IDC_SMALL_FILE_SIZE, SettingsManager::SET_MINISLOT_SIZE, PropPage::T_INT },
-	{ IDC_EXTRA_SLOTS2, SettingsManager::HUB_SLOTS, PropPage::T_INT },
 	{ IDC_AUTO_SLOTS, SettingsManager::AUTO_SLOTS, PropPage::T_INT  },
-	{ IDC_PARTIAL_SLOTS, SettingsManager::EXTRA_PARTIAL_SLOTS, PropPage::T_INT  },
+	{ IDC_MIN_UPLOAD_SPEED, SettingsManager::MIN_UPLOAD_SPEED, PropPage::T_INT },
 	{ IDC_DL_AUTODETECT, SettingsManager::DL_AUTODETECT, PropPage::T_BOOL },
 	{ IDC_DOWNLOADS, SettingsManager::DOWNLOAD_SLOTS, PropPage::T_INT },
 	{ IDC_MAXSPEED, SettingsManager::MAX_DOWNLOAD_SPEED, PropPage::T_INT },
@@ -346,20 +337,8 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	updown.Attach(GetDlgItem(IDC_MIN_UPLOAD_SPIN));
 	updown.SetRange32(0, UD_MAXVAL);
 	updown.Detach();
-	updown.Attach(GetDlgItem(IDC_EXTRA_SLOTS_SPIN));
-	updown.SetRange(3, 100);
-	updown.Detach();
-	updown.Attach(GetDlgItem(IDC_SMALL_FILE_SIZE_SPIN));
-	updown.SetRange32(64, 30000);
-	updown.Detach();
-	updown.Attach(GetDlgItem(IDC_EXTRASPIN));
-	updown.SetRange(0, 10);
-	updown.Detach();
 	updown.Attach(GetDlgItem(IDC_AUTO_SLOTS_SPIN));
 	updown.SetRange(0, 100);
-	updown.Detach();
-	updown.Attach(GetDlgItem(IDC_PARTIAL_SLOTS_SPIN));
-	updown.SetRange(0, 10);
 	updown.Detach();
 
 	updown.Attach(GetDlgItem(IDC_SLOTSSPIN));

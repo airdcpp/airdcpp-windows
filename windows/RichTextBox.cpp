@@ -21,6 +21,11 @@
 #include "../client/UploadManager.h"
 #include "../client/QueueManager.h"
 
+#include <algorithm>
+#include <boost/lambda/lambda.hpp>
+#include <boost/format.hpp>
+#include <boost/scoped_array.hpp>
+
 #include "RichTextBox.h"
 #include "EmoticonsManager.h"
 #include "PrivateFrame.h"
@@ -32,6 +37,9 @@
 #include "../client/AutoSearchManager.h"
 #include "ResourceLoader.h"
 #include "../client/Magnet.h"
+
+#include "HtmlToRtf.h"
+
 EmoticonsManager* emoticonsManager = NULL;
 
 #define MAX_EMOTICONS 48
@@ -67,6 +75,36 @@ RichTextBox::~RichTextBox() {
 		emoticonsManager->dec();
 	}
 	delete[] findBuffer;
+}
+
+std::string RichTextBox::unicodeEscapeFormatter(const tstring_range& match) {
+	if(match.empty())
+		return std::string();
+	return (boost::format("\\ud\\u%dh")%(int(*match.begin()))).str();
+}
+
+std::string RichTextBox::escapeUnicode(const tstring& str) {
+	std::string ret;
+	boost::find_format_all_copy(std::back_inserter(ret), str,
+		boost::first_finder(L"\x7f", std::greater<TCHAR>()), unicodeEscapeFormatter);
+	return ret;
+}
+
+tstring RichTextBox::rtfEscapeFormatter(const tstring_range& match) {
+	if(match.empty())
+		return tstring();
+	tstring s(1, *match.begin());
+	if (s == _T("\r")) return _T("");
+	if (s == _T("\n")) return _T("\\line\n");
+	return _T("\\") + s;
+}
+
+tstring RichTextBox::rtfEscape(const tstring& str) {
+	using boost::lambda::_1;
+	tstring escaped;
+	boost::find_format_all_copy(std::back_inserter(escaped), str,
+		boost::first_finder(L"\x7f", _1 == '{' || _1 == '}' || _1 == '\\' || _1 == '\n' || _1 == '\r'), rtfEscapeFormatter);
+	return escaped;
 }
 
 void RichTextBox::AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
@@ -1527,34 +1565,6 @@ void RichTextBox::runUserCommand(UserCommand& uc) {
 	}
 }
 
-string RichTextBox::escapeUnicode(tstring str) {
-	TCHAR buf[8];
-	memzero(buf, sizeof(buf));
-
-	int dist = 0;
-	tstring::iterator i;
-	while((i = std::find_if(str.begin() + dist, str.end(), std::bind2nd(std::greater<TCHAR>(), 0x7f))) != str.end()) {
-		dist = (i+1) - str.begin(); // Random Acess iterators FTW
-		snwprintf(buf, sizeof(buf), _T("%hd"), int(*i));
-		str.replace(i, i+1, _T("\\ud\\u") + tstring(buf) + _T("?"));
-		memzero(buf, sizeof(buf));
-	}
-	return Text::fromT(str);
-}
-
-tstring RichTextBox::rtfEscape(tstring str) {
-	tstring::size_type i = 0;
-	while((i = str.find_first_of(_T("{}\\\n"), i)) != tstring::npos) {
-		switch(str[i]) {
-			// no need to process \r handled elsewhere
-			//case '\n': str.replace(i, 1, _T("\\line\n")); i+=6; break; hmm...
-			case '\n': str.insert(i, _T("\\")); i+=2; break;  //do we need to put the /line in there? messes everything up
-			default: str.insert(i, _T("\\")); i+=2;
-		}
-	}
-	return str;
-}
-
 void RichTextBox::scrollToEnd() {
 	SCROLLINFO si = { 0 };
 	POINT pt = { 0 };
@@ -1831,6 +1841,60 @@ tstring RichTextBox::WordFromPos(const POINT& p) {
 		return sText;
 	
 	return Util::emptyStringT;
+}
+
+void RichTextBox::AppendHTML(const string& aTxt) {
+	tstring msg = HtmlToRtf::convert(aTxt, this);
+	msg = _T("{\\urtf1\n") + msg + _T("}\n");
+	auto txt = escapeUnicode(msg);
+
+	SetSel(-1, -1);
+
+	SETTEXTEX config = { ST_SELECTION, CP_ACP };
+	::SendMessage(m_hWnd, EM_SETTEXTEX, reinterpret_cast<WPARAM>(&config), reinterpret_cast<LPARAM>(txt.c_str()));
+}
+
+tstring RichTextBox::getLinkText(const ENLINK& link) {
+	boost::scoped_array<TCHAR> buf(new TCHAR[link.chrg.cpMax - link.chrg.cpMin + 1]);
+	TEXTRANGE text = { link.chrg, buf.get() };
+	SendMessage(m_hWnd, EM_GETTEXTRANGE, 0, reinterpret_cast<LPARAM>(&text));
+	return buf.get();
+}
+
+LRESULT RichTextBox::handleLink(ENLINK& link) {
+	/* the control doesn't handle click events, just "mouse down" & "mouse up". so we have to make
+	sure the mouse hasn't moved between "down" & "up". */
+	static LPARAM clickPos = 0;
+
+	switch(link.msg) {
+	case WM_LBUTTONDOWN:
+		{
+			clickPos = link.lParam;
+			break;
+		}
+
+	case WM_LBUTTONUP:
+		{
+			if(link.lParam != clickPos)
+				break;
+
+			WinUtil::openLink(getLinkText(link));
+			break;
+		}
+
+	/*case WM_SETCURSOR:
+		{
+			auto pos = ::GetMessagePos();
+			if(pos == linkTipPos)
+				break;
+			linkTipPos = pos;
+
+			currentLink = getLinkText(link);
+			linkTip->refresh();
+			break;
+		}*/
+	}
+	return 0;
 }
 
 LRESULT RichTextBox::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
