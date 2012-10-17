@@ -27,7 +27,7 @@
 #include "resource.h"
 #include "RichTextBox.h"
 #include "ResourceLoader.h"
-
+#include "ExCImage.h"
 
 class FrameMessageBase {
 public:

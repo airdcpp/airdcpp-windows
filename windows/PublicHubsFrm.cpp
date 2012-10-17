@@ -91,7 +91,7 @@ LRESULT PublicHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlHubs.SetTextColor(WinUtil::textColor);
 	
 	ctrlHubs.setSort(COLUMN_USERS, ExListViewCtrl::SORT_INT, false);
-	ctrlHubs.SetImageList(WinUtil::flagImages, LVSIL_SMALL);
+	ctrlHubs.SetImageList(ResourceLoader::flagImages, LVSIL_SMALL);
 	ctrlHubs.SetFocus();
 
 	ctrlConfigure.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |

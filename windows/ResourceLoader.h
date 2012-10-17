@@ -1,5 +1,5 @@
-/* 
- * Copyright (C) 2006-2011 Crise, crise<at>mail.berlios.de
+/*
+ * Copyright (C) 2011-2012 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,111 +27,53 @@
 #define __ATLTYPES_H__
 #endif
 
+#include "../client/Util.h"
+#include "../client/SettingsManager.h"
 #include "../client/Singleton.h"
-#include "../client/Pointer.h"
-#include "../client/FastAlloc.h"
-#include <atlimage.h>
 
-class ExCImage : public CImage, public FastAlloc<ExCImage>, public intrusive_ptr_base<ExCImage>, boost::noncopyable
-{
-public:
-	typedef boost::intrusive_ptr<ExCImage> Ptr;
-
-	ExCImage() {
-		m_hBuffer = NULL;
-	}
-	ExCImage(LPCTSTR pszFileName) throw() {
-		m_hBuffer = NULL; Load(pszFileName);
-	}
-	ExCImage(UINT id, LPCTSTR pType = RT_RCDATA, HMODULE hInst = NULL) throw() {
-		m_hBuffer = NULL; LoadFromResource(id, pType, hInst);
-	}
-	ExCImage(UINT id, UINT type, HMODULE hInst = NULL) throw() { 
-		m_hBuffer = NULL; LoadFromResource(id, MAKEINTRESOURCE(type), hInst);
-	}
-
-	~ExCImage() throw() { Destroy(); }
-
-	bool LoadFromResource(UINT id, LPCTSTR pType = RT_RCDATA, HMODULE hInst = NULL) throw();
-	void Destroy() throw();
-
-private:
-	HGLOBAL m_hBuffer;
-};
-
-inline void ExCImage::Destroy() throw() {
-	CImage::Destroy();
-	if(m_hBuffer) {
-		::GlobalUnlock(m_hBuffer);
-		::GlobalFree(m_hBuffer);
-		m_hBuffer = NULL;
-	}
-}
-
-inline bool ExCImage::LoadFromResource(UINT id, LPCTSTR pType, HMODULE hInst) throw() {
-	HRSRC hResource = ::FindResource(hInst, MAKEINTRESOURCE(id), pType);
-	if(!hResource)
-		return false;
-	
-	DWORD imageSize = ::SizeofResource(hInst, hResource);
-	if(!imageSize)
-		return false;
-
-	const void* pResourceData = ::LockResource(::LoadResource(hInst, hResource));
-	if(!pResourceData)
-		return false;
-
-	HRESULT res = E_FAIL;
-	m_hBuffer  = ::GlobalAlloc(GMEM_MOVEABLE, imageSize);
-	if(m_hBuffer) {
-		void* pBuffer = ::GlobalLock(m_hBuffer);
-		if(pBuffer) {
-			CopyMemory(pBuffer, pResourceData, imageSize);
-
-			IStream* pStream = NULL;
-			if(::CreateStreamOnHGlobal(m_hBuffer, FALSE, &pStream) == S_OK) {
-				res = Load(pStream);
-				pStream->Release();
-				pStream = NULL;
-			}
-			::GlobalUnlock(m_hBuffer);
-		}
-		::GlobalFree(m_hBuffer);
-		m_hBuffer = NULL;
-	}
-	return (res == S_OK);
-}
+#include "resource.h"
+#include "ExCImage.h"
 
 class ResourceLoader
 {
 public:
-	static void LoadImageList(LPCTSTR pszFileName, CImageList& aImgLst, int cx, int cy) {
-		if(cx <= 0 || cy <= 0) return;
-		ExCImage img;
+	static void load();
+	static void unload();
+	static void reLoadUserListImages();
+	static void loadSettingsTreeIcons();
+	static void loadSearchTypeIcons();
+	static void loadWinampToolbarIcons(CImageList& winampImages);
+	static void loadCmdBarImageList(CImageList& images);
+	static void loadFlagImages();
+	
+	static HICON loadDefaultIcon(int icon, int size=0);
+	static HICON loadIcon(int aDefault, int size = 0);
+	static HBITMAP getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize = 0, int ySize = 0);
+	
+	static tstring getIconName(int aDefault);
+	static tstring getIconPath(const tstring& filename);
 
-		try {
-			img.Load(pszFileName);
-			aImgLst.Create(cx, cy, ILC_COLOR32 | ILC_MASK, (img.GetWidth()/cy), 0);
-			aImgLst.Add(img, img.GetPixel(0, 0));
-			img.Destroy();
-		} catch(...) {
-			dcdebug("ResourceLoader::LoadImageList(): %s\n", pszFileName);
-		}
-	}
+	static tstring m_IconPath;
 
-	static void LoadImageList(UINT id, CImageList& aImgLst, int cx, int cy) {
-		if(cx <= 0 || cy <= 0) return;
-		ExCImage img;
+	static CImageList searchImages;
+	static CImageList settingsTreeImages;
+	static CImageList fileImages;
+	static CImageList userImages;
+	static CImageList flagImages;
 
-		try {
-			img.LoadFromResource(id, _T("PNG"));
-			aImgLst.Create(cx, cy, ILC_COLOR32 | ILC_MASK, (img.GetWidth()/cy), 1);
-			aImgLst.Add(img);
-			img.Destroy();
-		} catch(...) {
-			dcdebug("ResourceLoader::LoadImageList(): %u\n", id);
-		}
-	}
+	typedef std::map<tstring, int> ImageMap;
+	typedef ImageMap::const_iterator ImageIter;
+	static ImageMap fileIndexes;
+
+	static int getIconIndex(const tstring& aFileName);
+	static int getDirIconIndex() { return dirIconIndex; }
+	static int getDirMaskedIndex() { return dirMaskedIndex; }
+
+private:
+	static int fileImageCount;
+	static int dirIconIndex;
+	static int dirMaskedIndex;
+	static void loadFileImages();
 };
 
 #endif // RESOURCE_LOADER_H

@@ -30,6 +30,7 @@
 #include "TypedListViewCtrl.h"
 #include "ShellContextMenu.h"
 #include "WinUtil.h"
+#include "ResourceLoader.h"
 #include "TextFrame.h"
 
 #include "../client/ClientManager.h"
@@ -87,7 +88,7 @@ public:
 			WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_SINGLESEL, WS_EX_CLIENTEDGE, id);
 		ctrlList.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
-		ctrlList.SetImageList(WinUtil::fileImages, LVSIL_SMALL);
+		ctrlList.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
 		ctrlList.SetBkColor(WinUtil::bgColor);
 		ctrlList.SetTextBkColor(WinUtil::bgColor);
 		ctrlList.SetTextColor(WinUtil::textColor);
@@ -539,7 +540,7 @@ protected:
 		totalBytes += entry->getSize();
 		totalSpeed += entry->getAvgSpeed();
 
-		int image = WinUtil::getIconIndex(Text::toT(entry->getTarget()));
+		int image = ResourceLoader::getIconIndex(Text::toT(entry->getTarget()));
 		int loc = ctrlList.insertItem(entry, image);
 		ctrlList.EnsureVisible(loc, FALSE);
 	}
@@ -572,7 +573,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILENAME, Res
 ResourceManager::NICK, ResourceManager::HUB, ResourceManager::SIZE, ResourceManager::SPEED, ResourceManager::TYPE
 };
 
-int FinishedItem::getImageIndex() const { return WinUtil::getIconIndex(Text::toT(getTarget())); }
+int FinishedItem::getImageIndex() const { return ResourceLoader::getIconIndex(Text::toT(getTarget())); }
 
 #endif // !defined(FINISHED_FRAME_BASE_H)
 

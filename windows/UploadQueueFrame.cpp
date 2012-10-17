@@ -26,6 +26,7 @@
 #include "../client/QueueManager.h"
 #include "UploadQueueFrame.h"
 #include "PrivateFrame.h"
+#include "ResourceLoader.h"
 
 #include "BarShader.h"
 
@@ -55,8 +56,8 @@ LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		SetWindowTheme(ctrlQueued.m_hWnd, L"explorer", NULL);
 	}
 
-	ctrlQueued.SetImageList(WinUtil::fileImages, TVSIL_NORMAL);
-	ctrlList.SetImageList(WinUtil::fileImages, LVSIL_SMALL);
+	ctrlQueued.SetImageList(ResourceLoader::fileImages, TVSIL_NORMAL);
+	ctrlList.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
 
 	m_nProportionalPos = 2500;
 	SetSplitterPanes(ctrlQueued.m_hWnd, ctrlList.m_hWnd);
@@ -365,7 +366,7 @@ void UploadQueueFrame::updateStatus() {
 }
 
 int UploadQueueItem::getImageIndex() const {
-	return WinUtil::getIconIndex(Text::toT(file));
+	return ResourceLoader::getIconIndex(Text::toT(file));
 }
 
 const tstring UploadQueueItem::getText(uint8_t col) const {

@@ -1673,5 +1673,6 @@ would you still like to load them?</String>
 		<String Name="Pm"> PM</String>
 		<String Name="SettingsLimitsAdvanced">Limits &amp; Advanced</String>
 		<String Name="AlternateLimiting">Alternate Limiting</String>
+		<String Name="SaveHubsState">Remember previously enabled hubs in search window</String>
 	</Strings>
 </Language>

@@ -113,7 +113,7 @@
 #define IDD_TOOLBARPAGE                 259
 #define IDD_DOWNLOADDIR                 260
 #define IDD_LOCATIONSPAGE               261
-#define IDB_SPEEDS                      266
+#define IDB_TYPES                      266
 #define IDR_SYSTEM_LOG                  268
 #define IDR_CDM                         270
 #define IDD_UPDATE                      274

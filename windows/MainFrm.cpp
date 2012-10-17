@@ -76,8 +76,8 @@ bool MainFrame::bShutdown = false;
 uint64_t MainFrame::iCurrentShutdownTime = 0;
 bool MainFrame::isShutdownStatus = false;
 
-//static HICON mainIcon(WinUtil::createIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXICON)));
-//static HICON mainSmallIcon(WinUtil::createIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXSMICON)));
+//static HICON mainIcon(ResourceLoader::loadIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXICON)));
+//static HICON mainSmallIcon(ResourceLoader::loadIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXSMICON)));
 
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
@@ -104,6 +104,7 @@ MainFrame::~MainFrame() {
 	winampImages.Destroy();
 
 	WinUtil::uninit();
+	ResourceLoader::unload();
 
 	if(WinUtil::getOsMajor() >= 6)
 		FreeLibrary(user32lib);
@@ -184,6 +185,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ShareScannerManager::getInstance()->addListener(this);
 
 	WinUtil::init(m_hWnd);
+	ResourceLoader::load();
 
 	trayMessage = RegisterWindowMessage(_T("TaskbarCreated"));
 
@@ -216,8 +218,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.AttachMenu(m_hMenu);
 
 	// load command bar images
-	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 30);
-	loadCmdBarImageList(images);
+	ResourceLoader::loadCmdBarImageList(images);
 	m_CmdBar.m_hImageList = images;
 
 	m_CmdBar.m_arrCommand.Add(ID_FILE_CONNECT);
@@ -427,41 +428,6 @@ LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	return 0;
 }
 
-void MainFrame::loadCmdBarImageList(CImageList& images){
-	//use default ones totally here too?
-	images.AddIcon(WinUtil::createIcon(IDI_PUBLICHUBS, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_RECONNECT, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_FOLLOW, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_RECENTS, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_FAVORITEHUBS, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_FAVORITE_USERS, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_QUEUE, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_FINISHED_DL, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_UPLOAD_QUEUE, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_FINISHED_UL, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_SEARCH, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_ADLSEARCH, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_SEARCHSPY, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_OPEN_LIST, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_OWNLIST, 16)); 
-	images.AddIcon(WinUtil::createIcon(IDI_MATCHLIST, 16)); 
-	images.AddIcon(WinUtil::createIcon(IDI_REFRESH, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_SCAN, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_OPEN_DOWNLOADS, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_QCONNECT, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_SETTINGS, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_GET_TTH, 16));
-	images.AddIcon(WinUtil::createIcon(IDR_UPDATE, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_SHUTDOWN, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_NOTEPAD, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_NETSTATS, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_CDM, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_LOGS, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_AUTOSEARCH, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_INDEXING, 16));
-	images.AddIcon(WinUtil::createIcon(IDR_MAINFRAME, 16));
-	images.AddIcon(WinUtil::createIcon(IDI_WIZARD, 16));
-}
 
 HWND MainFrame::createTBStatusBar() {
 	
@@ -503,21 +469,10 @@ HWND MainFrame::createWinampToolbar() {
 		ctrlSmallToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS);
 
 		//we want to support old themes also so check if there is the old .bmp
-		if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("mediatoolbar.bmp"))))){
-			winampImages.CreateFromImage(WinUtil::getIconPath(_T("mediatoolbar.bmp")).c_str(), 20, 20, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-		} else /*if(Util::fileExists(Text::fromT(WinUtil::getIconPath(_T("MediaToolbar\\")))))*/{
-			int size = SETTING(WTB_IMAGE_SIZE);
-			winampImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 11);
-			winampImages.AddIcon(WinUtil::createIcon(IDI_MPSTART, size));
-			winampImages.AddIcon(WinUtil::createIcon(IDI_MPSPAM, size));
-			winampImages.AddIcon(WinUtil::createIcon(IDI_MPBACK, size));
-			winampImages.AddIcon(WinUtil::createIcon(IDI_MPPLAY, size));
-			winampImages.AddIcon(WinUtil::createIcon(IDI_MPPAUSE, size));
-			winampImages.AddIcon(WinUtil::createIcon(IDI_MPNEXT, size));
-			winampImages.AddIcon(WinUtil::createIcon(IDI_MPSTOP, size));
-			winampImages.AddIcon(WinUtil::createIcon(IDI_MPVOLUMEUP, size));
-			winampImages.AddIcon(WinUtil::createIcon(IDI_MPVOLUME50, size));
-			winampImages.AddIcon(WinUtil::createIcon(IDI_MPVOLUMEDOWN, size));
+		if(Util::fileExists(Text::fromT(ResourceLoader::getIconPath(_T("mediatoolbar.bmp"))))){
+			winampImages.CreateFromImage(ResourceLoader::getIconPath(_T("mediatoolbar.bmp")).c_str(), 20, 20, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
+		} else {
+			ResourceLoader::loadWinampToolbarIcons(winampImages);
 		}
 		
 		ctrlSmallToolbar.SetImageList(winampImages);
@@ -663,7 +618,7 @@ HWND MainFrame::createToolbar() {
 			int buttonsCount = sizeof(ToolbarButtons) / sizeof(ToolbarButtons[0]);
 			ToolbarImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, buttonsCount+1);
 			while(i < buttonsCount){
-				ToolbarImages.AddIcon(WinUtil::createIcon(ToolbarButtons[i].nIcon, size));
+				ToolbarImages.AddIcon(ResourceLoader::loadIcon(ToolbarButtons[i].nIcon, size));
 				i++;
 			}
 		}
@@ -712,11 +667,8 @@ HWND MainFrame::createToolbar() {
 		ctrlToolbar.SetButtonInfo(IDC_REFRESH_FILE_LIST, &tbi);
 	}
 
-
 	return ctrlToolbar.m_hWnd;
 }
-
-
 
 LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	if(wParam == PROMPT_SIZE_ACTION) {

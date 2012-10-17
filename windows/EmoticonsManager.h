@@ -22,7 +22,7 @@
 #include "../client/FastAlloc.h"
 #include "../client/GetSet.h"
 
-#include "ResourceLoader.h"
+#include "ExCImage.h"
 
 #if _MSC_VER > 1000
 #pragma once

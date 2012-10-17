@@ -24,6 +24,7 @@
 #include "SearchFrm.h"
 #include "LineDlg.h"
 #include "BarShader.h"
+#include "ResourceLoader.h"
 #include "../client/Wildcards.h"
 
 #include "../client/QueueManager.h"
@@ -45,7 +46,6 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  Resour
 	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT };
 
 SearchFrame::FrameMap SearchFrame::frames;
-StringList SearchFrame::lastDisabledHubs;
 
 void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGLONG size /* = 0 */, SearchManager::SizeModes mode /* = SearchManager::SIZE_ATLEAST */, const string& type /* = SEARCH_TYPE_ANY */) {
 	SearchFrame* pChild = new SearchFrame();
@@ -121,10 +121,14 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	resultsContainer.SubclassWindow(ctrlResults.m_hWnd);
 	
 	if (BOOLSETTING(USE_SYSTEM_ICONS)) {
-		ctrlResults.SetImageList(WinUtil::fileImages, LVSIL_SMALL);
+		ctrlResults.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
 	} else {
-		images.CreateFromImage(IDB_SPEEDS, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
+		if(Util::fileExists(Text::fromT(ResourceLoader::getIconPath(_T("types.bmp")))))
+			images.CreateFromImage(ResourceLoader::getIconPath(_T("types.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
+		else
+			images.CreateFromImage(IDB_TYPES, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 		ctrlResults.SetImageList(images, LVSIL_SMALL);
+
 	}
 
 	ctrlHubs.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
@@ -275,8 +279,11 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlHubs.SetTextColor(WinUtil::textColor);
 	ctrlHubs.SetFont(WinUtil::systemFont, FALSE);	// use WinUtil::font instead to obey Appearace settings
 
-	StringTokenizer<string> st(SETTING(LAST_SEARCH_DISABLED_HUBS), _T(','));
-	lastDisabledHubs = st.getTokens();
+	lastDisabledHubs.clear();
+	if(BOOLSETTING(SEARCH_SAVE_HUBS_STATE)){
+		StringTokenizer<string> st(SETTING(LAST_SEARCH_DISABLED_HUBS), _T(','));
+		lastDisabledHubs = st.getTokens();
+	}
 	initHubs();
 
 	UpdateLayout();
@@ -382,7 +389,6 @@ void SearchFrame::onEnter() {
 
 	updateSkipList();
 
-	
 	TCHAR *buf = new TCHAR[ctrlSkiplist.GetWindowTextLength()+1];
 	ctrlSkiplist.GetWindowText(buf, ctrlSkiplist.GetWindowTextLength()+1);
 	SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SEARCH, Text::fromT(buf));
@@ -392,13 +398,15 @@ void SearchFrame::onEnter() {
 	if (expandSR != BOOLSETTING(EXPAND_DEFAULT))
 		SettingsManager::getInstance()->set(SettingsManager::EXPAND_DEFAULT, expandSR);
 
-	lastDisabledHubs.clear();
-	for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
-		HubInfo* hub = ctrlHubs.getItemData(i);
-		if(ctrlHubs.GetCheckState(i) == FALSE && i != 0)
-			lastDisabledHubs.push_back(Text::fromT(hub->url));
+	if(BOOLSETTING(SEARCH_SAVE_HUBS_STATE)){
+		lastDisabledHubs.clear();
+		for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
+			HubInfo* hub = ctrlHubs.getItemData(i);
+			if(ctrlHubs.GetCheckState(i) == FALSE && i != 0)
+				lastDisabledHubs.push_back(Text::fromT(hub->url));
+		}
+		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_DISABLED_HUBS, Util::toString(",", lastDisabledHubs));
 	}
-	SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_DISABLED_HUBS, Util::toString(",", lastDisabledHubs));
 
 	int n = ctrlHubs.GetItemCount();
 	for(int i = 1; i < n; i++) {
@@ -623,7 +631,7 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 
 
 int SearchFrame::SearchInfo::getImageIndex() const {
-	return BOOLSETTING(USE_SYSTEM_ICONS) ? sr->getType() == SearchResult::TYPE_FILE ? WinUtil::getIconIndex(Text::toT(sr->getFile())) : WinUtil::getDirIconIndex() : 0;
+	return BOOLSETTING(USE_SYSTEM_ICONS) ? sr->getType() == SearchResult::TYPE_FILE ? ResourceLoader::getIconIndex(Text::toT(sr->getFile())) : ResourceLoader::getDirIconIndex() : 0;
 }
 
 
@@ -1660,7 +1668,7 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 					top = rc.top + 1;
 
 				POINT p = { rc.left, top };
-				WinUtil::flagImages.Draw(cd->nmcd.hdc, si->getFlagIndex(), p, LVSIL_SMALL);
+				ResourceLoader::flagImages.Draw(cd->nmcd.hdc, si->getFlagIndex(), p, LVSIL_SMALL);
 				top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1)/2;
 				::ExtTextOut(cd->nmcd.hdc, rc.left + 30, top + 1, ETO_CLIPPED, rc, buf, _tcslen(buf), NULL);
 				return CDRF_SKIPDEFAULT;

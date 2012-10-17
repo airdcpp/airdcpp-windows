@@ -672,10 +672,13 @@
     <ClCompile Include="windows\SplashWindow.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\LimitPage.cpp">
+	<ClCompile Include="windows\LimitPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\HtmlToRtf.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\ResourceLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1007,13 +1010,16 @@
     <ClInclude Include="windows\ShellExecAsUser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+	<ClInclude Include="windows\LimitPage.h">
+		<Filter>Header Files</Filter>
+	</ClInclude>
+	<ClInclude Include="windows\HtmlToRtf.h">
+		<Filter>Header Files</Filter>
+	</ClInclude>
     <ClInclude Include="windows\SplashWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\LimitPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\HtmlToRtf.h">
+    <ClInclude Include="windows\ExCImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -19,14 +19,13 @@
 #include "stdafx.h"
 #include "../client/DCPlusPlus.h"
 
-
-
 #include "Resource.h"
 
 #include "DirectoryListingFrm.h"
 #include "DirectoryListingDlg.h"
 
 #include "WinUtil.h"
+#include "ResourceLoader.h"
 #include "LineDlg.h"
 #include "PrivateFrame.h"
 #include "ShellContextMenu.h"
@@ -192,8 +191,8 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlList.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlList.setVisible(SETTING(DIRECTORYLISTINGFRAME_VISIBLE));
 
-	ctrlTree.SetImageList(WinUtil::fileImages, TVSIL_NORMAL);
-	ctrlList.SetImageList(WinUtil::fileImages, LVSIL_SMALL);
+	ctrlTree.SetImageList(ResourceLoader::fileImages, TVSIL_NORMAL);
+	ctrlList.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
 	ctrlList.setSortColumn(COLUMN_FILENAME);
 
 	ctrlFind.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
@@ -308,7 +307,7 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 	//reverse iterate to keep the sorting order when adding as first in the tree(a lot faster than TVI_LAST)
 	for(auto i = aTree->directories.crbegin(), iend = aTree->directories.crend(); i != iend; ++i) {
 		tstring name = Text::toT((*i)->getName());
-		int index = (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex();
+		int index = (*i)->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex();
 		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, name.c_str(), index, index, 0, 0, (LPARAM)*i, aParent, TVI_FIRST);
 		if((*i)->getAdls())
 			ctrlTree.SetItemState(ht, TVIS_BOLD, TVIS_BOLD);
@@ -318,7 +317,7 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 
 void DirectoryListingFrame::createRoot() {
 	string nick = ClientManager::getInstance()->getNicks(dl->getHintedUser())[0];
-	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(nick).c_str(), WinUtil::getDirIconIndex(), WinUtil::getDirIconIndex(), 0, 0, (LPARAM)dl->getRoot(), NULL, NULL);
+	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(nick).c_str(), ResourceLoader::getDirIconIndex(), ResourceLoader::getDirIconIndex(), 0, 0, (LPARAM)dl->getRoot(), NULL, NULL);
 	dcassert(treeRoot);
 }
 
@@ -349,7 +348,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 
 	ctrlTree.Expand(treeRoot);
 
-	int index = d->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex();
+	int index = d->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex();
 	ctrlTree.SetItemImage(ht, index, index);
 	ctrlTree.SelectItem(NULL);
 
@@ -362,7 +361,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 		for(int i = 0; i < j; i++) {
 			const ItemInfo* ii = ctrlList.getItemData(i);
 			if (ii->type == ii->DIRECTORY && ii->dir->getPath() == dir) {
-				ctrlList.SetItem(i, 0, LVIF_IMAGE, NULL, WinUtil::getDirIconIndex(), 0, 0, NULL);
+				ctrlList.SetItem(i, 0, LVIF_IMAGE, NULL, ResourceLoader::getDirIconIndex(), 0, 0, NULL);
 				ctrlList.updateItem(i);
 				updateStatus();
 				break;
@@ -609,14 +608,14 @@ void DirectoryListingFrame::filterList() {
 			for(auto i = curDir->directories.begin(); i != curDir->directories.end(); ++i) {
 				string s = (*i)->getName();
 				if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
-					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
+					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
 				}
 			}
 
 			for(auto j = curDir->files.begin(); j != curDir->files.end(); ++j) {
 				string s = (*j)->getName();
 				if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
-					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*j), WinUtil::getIconIndex(Text::toT((*j)->getName())));
+					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*j), ResourceLoader::getIconIndex(Text::toT((*j)->getName())));
 				}
 			}
 		} catch (...) { }
@@ -669,7 +668,7 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 		for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
 			string s = (*i)->getName();
 			if(boost::regex_search(s.begin(), s.end(), reg)) {
-				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
+				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
 			}
 		}
 
@@ -677,17 +676,17 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 			string s = (*j)->getName();
 			if(boost::regex_search(s.begin(), s.end(), reg)) {
 				ItemInfo* ii = new ItemInfo(*j);
-				ctrlList.insertItem(ctrlList.GetItemCount(), ii, WinUtil::getIconIndex(ii->getText(COLUMN_FILENAME)));
+				ctrlList.insertItem(ctrlList.GetItemCount(), ii, ResourceLoader::getIconIndex(ii->getText(COLUMN_FILENAME)));
 			}
 		}
 	} else {
 		for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
-			ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? WinUtil::getDirIconIndex() : WinUtil::getDirMaskedIndex());
+			ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
 		}
 
 		for(auto j = d->files.begin(); j != d->files.end(); ++j) {
 			ItemInfo* ii = new ItemInfo(*j);
-			ctrlList.insertItem(ctrlList.GetItemCount(), ii, WinUtil::getIconIndex(ii->getText(COLUMN_FILENAME)));
+			ctrlList.insertItem(ctrlList.GetItemCount(), ii, ResourceLoader::getIconIndex(ii->getText(COLUMN_FILENAME)));
 		}
 	}
 
@@ -1401,9 +1400,9 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 
 int DirectoryListingFrame::ItemInfo::getImageIndex() const {
 	if(type == DIRECTORY)
-		return WinUtil::getDirIconIndex();
+		return ResourceLoader::getDirIconIndex();
 	else
-		return WinUtil::getIconIndex(getText(COLUMN_FILENAME));
+		return ResourceLoader::getIconIndex(getText(COLUMN_FILENAME));
 }
 
 void DirectoryListingFrame::runUserCommand(UserCommand& uc) {

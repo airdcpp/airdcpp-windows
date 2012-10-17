@@ -32,6 +32,8 @@
 #include "../client/TaskQueue.h"
 #include "boost/unordered_map.hpp"
 
+#include "ResourceLoader.h"
+
 #define SHOWTREE_MESSAGE_MAP 12
 
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
@@ -268,7 +270,7 @@ private:
 				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
 			}
 		}
-		int getImageIndex() const { return WinUtil::getIconIndex(Text::toT(getTarget()));	}
+		int getImageIndex() const { return ResourceLoader::getIconIndex(Text::toT(getTarget()));	}
 
 		const BundlePtr getBundle() const { return qi->getBundle(); }
 		const QueueItemPtr getQueueItem() const { return qi; }

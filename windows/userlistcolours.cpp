@@ -8,6 +8,7 @@
 #include "UserListColours.h"
 #include "WinUtil.h"
 #include "PropertiesDlg.h"
+#include "ResourceLoader.h"
 
 PropPage::TextItem UserListColours::texts[] = {
 	{ IDC_CHANGE_COLOR, ResourceManager::SETTINGS_CHANGE },
@@ -124,7 +125,7 @@ void UserListColours::write() {
 	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, pasiveColour);
 	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, opColour);
 
-	WinUtil::reLoadImages(); // User Icon Begin / End
+	ResourceLoader::reLoadUserListImages(); // User Icon Begin / End
 
 }
 

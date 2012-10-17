@@ -26,7 +26,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
 IDB_SPLASH              BITMAP                  "res\\bitmap1.bmp"
 IDB_STATE               BITMAP                  "res\\state.bmp"
-IDB_SPEEDS              BITMAP                  "res\\speeds.bmp"
+IDB_TYPES              BITMAP                  "res\\types.bmp"
 IDB_FLAGS               BITMAP                  "res\\flags.bmp"
 IDB_EMOTICON            BITMAP                  "res\\emoticon.bmp"
 

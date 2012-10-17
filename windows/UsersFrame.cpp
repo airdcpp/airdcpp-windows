@@ -39,8 +39,8 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_USERS);
 	ctrlUsers.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
-	images.AddIcon(WinUtil::createIcon(IDR_PRIVATE, 16));
-	images.AddIcon(WinUtil::createIcon(IDR_PRIVATE_OFF, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDR_PRIVATE, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDR_PRIVATE_OFF, 16));
 	ctrlUsers.SetImageList(images, LVSIL_SMALL);
 
 	ctrlUsers.SetBkColor(WinUtil::bgColor);

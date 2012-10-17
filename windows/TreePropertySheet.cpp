@@ -22,6 +22,7 @@
 #include "TreePropertySheet.h"
 #include "../client/ResourceManager.h"
 #include "WinUtil.h"
+#include "ResourceLoader.h"
 
 static const TCHAR SEPARATOR = _T('\\');
 
@@ -83,7 +84,7 @@ void TreePropertySheet::addTree()
 		SetWindowTheme(ctrlTree.m_hWnd, L"explorer", NULL);
 	}
 	
-	ctrlTree.SetImageList(WinUtil::settingsTreeImages, TVSIL_NORMAL);
+	ctrlTree.SetImageList(ResourceLoader::settingsTreeImages, TVSIL_NORMAL);
 }
 
 void TreePropertySheet::fillTree() {

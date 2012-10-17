@@ -70,8 +70,8 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		SetWindowTheme(ctrlDirs.m_hWnd, L"explorer", NULL);
 	}
 
-	ctrlDirs.SetImageList(WinUtil::fileImages, TVSIL_NORMAL);
-	ctrlQueue.SetImageList(WinUtil::fileImages, LVSIL_SMALL);
+	ctrlDirs.SetImageList(ResourceLoader::fileImages, TVSIL_NORMAL);
+	ctrlQueue.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
 	
 	t_bVertical = !BOOLSETTING(HORIZONTAL_QUEUE);
 	m_nProportionalPos = SETTING(QUEUE_SPLITTER_POS);
@@ -340,9 +340,9 @@ void QueueFrame::addQueueItem(QueueItemInfo* ii, bool noSort) {
 
 	if(!showTree || isCurDir(dir)) {
 		if(noSort)
-			ctrlQueue.insertItem(ctrlQueue.GetItemCount(), ii, WinUtil::getIconIndex(Text::toT(ii->getTarget())));
+			ctrlQueue.insertItem(ctrlQueue.GetItemCount(), ii, ResourceLoader::getIconIndex(Text::toT(ii->getTarget())));
 		else
-			ctrlQueue.insertItem(ii, WinUtil::getIconIndex(Text::toT(ii->getTarget())));
+			ctrlQueue.insertItem(ii, ResourceLoader::getIconIndex(Text::toT(ii->getTarget())));
 	}
 }
 
@@ -378,7 +378,7 @@ HTREEITEM QueueFrame::addItemDir(bool isFileList) {
 	TVINSERTSTRUCT tvi;
 	tvi.hInsertAfter = TVI_SORT;
 	tvi.item.mask = TVIF_IMAGE | TVIF_PARAM | TVIF_SELECTEDIMAGE | TVIF_TEXT;
-	tvi.item.iImage = tvi.item.iSelectedImage = WinUtil::getDirIconIndex();
+	tvi.item.iImage = tvi.item.iSelectedImage = ResourceLoader::getDirIconIndex();
 
 	if(BOOLSETTING(EXPAND_QUEUE)) {
 		tvi.itemex.mask |= TVIF_STATE;
@@ -500,7 +500,7 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 	TVINSERTSTRUCT tvi;
 	tvi.hInsertAfter = TVI_SORT;
 	tvi.item.mask = TVIF_IMAGE | TVIF_PARAM | TVIF_SELECTEDIMAGE | TVIF_TEXT;
-	tvi.item.iImage = tvi.item.iSelectedImage = WinUtil::getDirIconIndex();
+	tvi.item.iImage = tvi.item.iSelectedImage = ResourceLoader::getDirIconIndex();
 
 	if(BOOLSETTING(EXPAND_QUEUE)) {
 		tvi.itemex.mask |= TVIF_STATE;
@@ -2111,7 +2111,7 @@ void QueueFrame::updateQueue() {
 	ctrlQueue.SetRedraw(FALSE);
 	for(DirectoryIter j = i.first; j != i.second; ++j) {
 		QueueItemInfo* ii = j->second;
-		ctrlQueue.insertItem(ctrlQueue.GetItemCount(), ii, WinUtil::getIconIndex(Text::toT(ii->getTarget())));
+		ctrlQueue.insertItem(ctrlQueue.GetItemCount(), ii, ResourceLoader::getIconIndex(Text::toT(ii->getTarget())));
 	}
 	ctrlQueue.resort();
 	ctrlQueue.SetRedraw(TRUE);

@@ -93,7 +93,7 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 
 	if(getUser() ? !getUser()->isSet(User::NMDC) : AirUtil::isAdcHub(getClient()->getHubUrl())) {
 		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
-		ctrlMagnet.SetIcon(WinUtil::createIcon(IDI_MAGNET, 20));
+		ctrlMagnet.SetIcon(ResourceLoader::loadIcon(IDI_MAGNET, 20));
 		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, (getUser() && !getUser()->isSet(User::BOT)) ? CTSTRING(SEND_FILE_PM) : CTSTRING(SEND_FILE_HUB));
 	}
 }

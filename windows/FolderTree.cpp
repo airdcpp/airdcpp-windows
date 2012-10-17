@@ -69,7 +69,7 @@ SystemImageList::SystemImageList()
 	HIMAGELIST hSystemImageList = (HIMAGELIST) SHGetFileInfo(pszTempDir, 0, &sfi, sizeof(SHFILEINFO),
 															SHGFI_SYSICONINDEX | SHGFI_SMALLICON);
 	m_ImageList.Attach(hSystemImageList);
-	//auto tmp = m_ImageList.AddIcon((HICON)::LoadImage(GetModuleHandle(NULL), WinUtil::getIconPath(_T("Hub.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE));
+	//auto tmp = m_ImageList.AddIcon((HICON)::LoadImage(GetModuleHandle(NULL), ResourceLoader::getIconPath(_T("Hub.ico")).c_str(), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR | LR_LOADFROMFILE));
 	auto tmp = m_ImageList.AddIcon((HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MAGNET), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR));
 }
 

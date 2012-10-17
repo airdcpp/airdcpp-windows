@@ -98,8 +98,8 @@ LRESULT FavoriteHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlManageGroups.SetFont(WinUtil::systemFont);
 
 	onlineStatusImg.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
-	onlineStatusImg.AddIcon(WinUtil::createIcon(IDI_ONLINE));
-	onlineStatusImg.AddIcon(WinUtil::createIcon(IDI_OFFLINE));
+	onlineStatusImg.AddIcon(ResourceLoader::loadIcon(IDI_ONLINE));
+	onlineStatusImg.AddIcon(ResourceLoader::loadIcon(IDI_OFFLINE));
 	ctrlHubs.SetImageList(onlineStatusImg, LVSIL_SMALL);
 	ClientManager::getInstance()->getOnlineClients(onlineHubs);
 

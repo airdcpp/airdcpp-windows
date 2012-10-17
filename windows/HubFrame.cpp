@@ -25,6 +25,7 @@
 #include "SearchFrm.h"
 #include "PrivateFrame.h"
 #include "TextFrame.h"
+#include "ResourceLoader.h"
 
 #include "../client/DirectoryListingManager.h"
 #include "../client/ChatMessage.h"
@@ -137,7 +138,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlUsers.SetTextColor(WinUtil::textColor);
 	ctrlUsers.setFlickerFree(WinUtil::bgBrush);
 	ctrlUsers.setSortColumn(OnlineUser::COLUMN_NICK);
-	ctrlUsers.SetImageList(WinUtil::userImages, LVSIL_SMALL);
+	ctrlUsers.SetImageList(ResourceLoader::userImages, LVSIL_SMALL);
 
 
 
@@ -156,9 +157,9 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	WinUtil::SetIcon(m_hWnd, IDI_HUB);
 
-	HubOpIcon = WinUtil::createIcon(IDI_HUBOP, 16);
-	HubRegIcon = WinUtil::createIcon(IDI_HUBREG, 16);
-	HubIcon =  WinUtil::createIcon(IDI_HUB, 16);
+	HubOpIcon = ResourceLoader::loadIcon(IDI_HUBOP, 16);
+	HubRegIcon = ResourceLoader::loadIcon(IDI_HUBREG, 16);
+	HubIcon =  ResourceLoader::loadIcon(IDI_HUB, 16);
 
 	if(fhe != NULL){
 		//retrieve window position
@@ -2045,7 +2046,7 @@ LRESULT HubFrame::onStyleChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
 void HubFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool needRedraw = false;
-	ctrlUsers.SetImageList(WinUtil::userImages, LVSIL_SMALL);
+	ctrlUsers.SetImageList(ResourceLoader::userImages, LVSIL_SMALL);
 	//ctrlUsers.Invalidate();
 	if(ctrlUsers.GetBkColor() != WinUtil::bgColor) {
 		needRedraw = true;
@@ -2144,7 +2145,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 					}
 				}
 
-				WinUtil::flagImages.Draw(cd->nmcd.hdc, flagIndex, p, LVSIL_SMALL);
+				ResourceLoader::flagImages.Draw(cd->nmcd.hdc, flagIndex, p, LVSIL_SMALL);
 				top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1)/2;
 				::ExtTextOut(cd->nmcd.hdc, rc.left + 30, top + 1, ETO_CLIPPED, rc, buf, _tcslen(buf), NULL);
 				return CDRF_SKIPDEFAULT;

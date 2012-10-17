@@ -46,14 +46,14 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
 	
 	if(!hbInfo)
-		hbInfo = WinUtil::getBitmapFromIcon(IDI_INFO, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
+		hbInfo = ResourceLoader::getBitmapFromIcon(IDI_INFO, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
 	if(!hbWarning)
-		hbWarning = WinUtil::getBitmapFromIcon(IDI_IWARNING, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
+		hbWarning = ResourceLoader::getBitmapFromIcon(IDI_IWARNING, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
 	if(!hbError)
-		hbError = WinUtil::getBitmapFromIcon(IDI_IERROR, WinUtil::bgColor, ICON_SIZE, ICON_SIZE);
+		hbError = ResourceLoader::getBitmapFromIcon(IDI_IERROR, WinUtil::bgColor, ICON_SIZE, ICON_SIZE);
 
-	tabError = WinUtil::createIcon(IDI_IERROR, 16);
-	tabNormal = WinUtil::createIcon(IDI_LOGS, 16);
+	tabError = ResourceLoader::loadIcon(IDI_IERROR, 16);
+	tabNormal = ResourceLoader::loadIcon(IDI_LOGS, 16);
 
 	reg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])?([^\\\\:])+)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
 

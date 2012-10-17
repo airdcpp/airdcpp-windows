@@ -155,21 +155,12 @@ static const winamptoolbarButton WinampToolbarButtons[] = {
 class WinUtil {
 public:
 	static unique_ptr<SplashWindow> splash;
-	static CImageList searchImages;
-	static CImageList fileImages;
-	static int fileImageCount;
-	static CImageList userImages;
-	static CImageList flagImages;
-	static CImageList settingsTreeImages;
 
 	struct TextItem {
 		WORD itemID;
 		ResourceManager::Strings translatedString;
 	};
 
-	typedef std::map<tstring, int> ImageMap;
-	typedef ImageMap::const_iterator ImageIter;
-	static ImageMap fileIndexes;
 	static HBRUSH bgBrush;
 	static COLORREF textColor;
 	static COLORREF bgColor;
@@ -182,8 +173,6 @@ public:
 	static HFONT progressFont;
 	static CMenu mainMenu;
 	static OMenu grantMenu;
-	static int dirIconIndex;
-	static int dirMaskedIndex;
 	static int lastSettingPage;
 	static HWND mainWnd;
 	static HWND mdiClient;
@@ -210,7 +199,6 @@ public:
 	static CHARFORMAT2 m_ChatTextLog;
 	static bool mutesounds;
 	static DWORD comCtlVersion;
-	static tstring m_IconPath;
 
 	static bool updated;
 	static TStringPair updateCommand;
@@ -223,7 +211,6 @@ public:
 	static void uninit();
 	static void initColors();
 	static void setFonts();
-	static void reLoadImages(); // User Icon Begin / User Icon End
 	static void FlashWindow();
 	static void searchAny(const tstring& aSearch);
 	static void SetIcon(HWND hWnd, int aDefault, bool big = false);
@@ -263,17 +250,10 @@ public:
 	void matchQueue(UserPtr aUser, const string& aUrl);
 	void pm(UserPtr aUser, const string& aUrl);*/
 
-	static tstring getIconPath(const tstring& filename);
-
 	static void decodeFont(const tstring& setting, LOGFONT &dest);
 
 	static bool getVersionInfo(OSVERSIONINFOEX& ver);
 
-	static HICON loadDefaultIcon(int icon, int size=0);
-	static HICON createIcon(int aDefault, int size = 0);
-
-	static tstring getIconName(int aDefault);
-	static HBITMAP getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize = 0, int ySize = 0);
 	static COLORREF getDupeColor(DupeType aType);
 	static pair<COLORREF, COLORREF> getDupeColors(DupeType aType);
 	static COLORREF blendColors(COLORREF aForeGround, COLORREF aBackGround);
@@ -358,11 +338,6 @@ public:
 		::ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
 	}
 	static void openFolder(const tstring& file);
-
-	static int getIconIndex(const tstring& aFileName);
-
-	static int getDirIconIndex() { return dirIconIndex; }
-	static int getDirMaskedIndex() { return dirMaskedIndex; }
 	
 	static double toBytes(TCHAR* aSize);
 	
@@ -444,8 +419,6 @@ public:
 	static tstring DiskSpaceInfo(bool onlyTotal = false);
 
 	static void appendSearchTypeCombo(CComboBoxEx& ctrlSearchType, const string& aSelection);
-	static void loadSettingsTreeIcons();
-	static void loadSearchTypeIcons();
 
 	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
 
