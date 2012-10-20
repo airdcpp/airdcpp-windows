@@ -861,7 +861,7 @@ LRESULT DirectoryListingFrame::onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*
 	} else if(ii->type == ItemInfo::DIRECTORY)	{
 		if(!(ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()))
 			return 0;
-		fullPath = Text::toT(((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath()).substr(1);
+		fullPath = Text::toT(((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath());
 	}
 
 	if(!fullPath.empty())
@@ -1492,7 +1492,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 						sCopy += Text::toT(ii->file->getPath() + ii->file->getName());
 					} else if(ii->type == ItemInfo::DIRECTORY){
 						if(ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()) {
-							sCopy += Text::toT(((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath().substr(1));
+							sCopy += Text::toT(((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath());
 						} else {
 							sCopy += Text::toT(ii->dir->getPath());
 						}
@@ -1780,9 +1780,6 @@ LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /
 			}
 		} else {
 			if (dl->getIsOwnList()) {
-				if(ii->dir->getAdls())
-					return 0;
-
 				StringList localPaths;
 				dl->getLocalPaths(ii->dir, localPaths);
 				if (!localPaths.empty()) {
