@@ -89,10 +89,6 @@ LRESULT DownloadingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, L
 void DownloadingOptionsPage::write() {
 
 	PropPage::write((HWND)*this, items);
-	 
-	//set to the defaults
-	//if(SETTING(SKIPLIST_DOWNLOAD).empty())
-	//	settings->set(SettingsManager::DOWNLOAD_SKIPLIST_USE_REGEXP, false);
 
 	TCHAR buf[256];
 	GetDlgItemText(IDC_ANTIVIR_PATH, buf, 256);

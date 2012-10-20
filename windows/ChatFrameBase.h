@@ -35,7 +35,7 @@ public:
 	virtual bool sendMessage(const tstring& aMessage, bool thirdPerson) = 0;
 	virtual void addStatusLine(const tstring& aStatus) = 0;
 	virtual void onTab() { };
-	virtual void UpdateLayout(BOOL resizeBars) { };
+	virtual void UpdateLayout(BOOL /*resizeBars*/) { };
 };
 
 

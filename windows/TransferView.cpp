@@ -1511,9 +1511,13 @@ void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, 
 	ui->setBundle(bundleToken);
 
 	if(isUpload && BOOLSETTING(POPUP_UPLOAD_FINISHED) && !isTree) {
-		WinUtil::showPopup(
-			TSTRING(FILE) + _T(": ") + Text::toT(aFileName) + _T("\n")+
-			TSTRING(USER) + _T(": ") + WinUtil::getNicks(aTransfer->getHintedUser()), TSTRING(UPLOAD_FINISHED_IDLE));
+		if(!SETTING(UPLOADFILE).empty() && !BOOLSETTING(SOUNDS_DISABLED))
+			WinUtil::playSound(Text::toT(SETTING(UPLOADFILE)));
+
+		if (BOOLSETTING(POPUP_UPLOAD_FINISHED)) {
+			WinUtil::showPopup(TSTRING(FILE) + _T(": ") + Text::toT(aFileName) + _T("\n") +
+				TSTRING(USER) + _T(": ") + WinUtil::getNicks(aTransfer->getHintedUser()), TSTRING(UPLOAD_FINISHED_IDLE));
+		}
 	}
 	
 	speak(UPDATE_ITEM, ui);

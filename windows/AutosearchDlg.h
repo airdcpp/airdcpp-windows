@@ -68,7 +68,6 @@ public:
 		COMMAND_HANDLER(IDC_SELECT_DIR, BN_CLICKED, onClickLocation)
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 
-		MESSAGE_HANDLER_HWND(WM_INITMENUPOPUP, OMenu::onInitMenuPopup)
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
 	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
@@ -117,8 +116,6 @@ private:
 	CStatic cTargetType;
 
 	CDateTimePickerCtrl ctrlExpire, ctrlSearchStart, ctrlSearchEnd;
-
-	OMenu targetMenu;
 
 	void fixControls();
 	void updateTargetTypeText();

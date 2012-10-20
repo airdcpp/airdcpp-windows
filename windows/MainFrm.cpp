@@ -1804,7 +1804,13 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	time(&currentTime);
 }
 
-void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept {
+void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr qi, const string& /*dir*/, const HintedUser& /*aUser*/, int64_t /*aSpeed*/) noexcept {
+	if(!qi->isSet(QueueItem::FLAG_USER_LIST)) {
+		// Finished file sound
+		if(!SETTING(FINISHFILE).empty() && !BOOLSETTING(SOUNDS_DISABLED))
+			WinUtil::playSound(Text::toT(SETTING(FINISHFILE)));
+	}
+
 	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && qi->isSet(QueueItem::FLAG_TEXT)) {
 		PostMessage(WM_SPEAKER, VIEW_FILE_AND_DELETE, (LPARAM) new tstring(Text::toT(qi->getTarget())));
 	}

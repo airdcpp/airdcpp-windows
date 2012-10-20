@@ -219,6 +219,7 @@ public:
 	static void AppendSearchMenu(OMenu& menu, int x = 0);
 	static void loadReBarSettings(HWND bar);
 	static void saveReBarSettings(HWND bar);
+	static void playSound(const tstring& sound);
 
 	struct ConnectFav {
 		void operator()(UserPtr aUser, const string& aUrl) const;
@@ -360,7 +361,6 @@ public:
 	/** @return Pair of hubnames as a string and a bool representing the user's online status */
 	static pair<tstring, bool> getHubNames(const CID& cid, const string& hintUrl);
 	static pair<tstring, bool> getHubNames(const UserPtr& u, const string& hintUrl);
-	static pair<tstring, bool> getHubNames(const CID& cid, const string& hintUrl, bool priv);
 	static pair<tstring, bool> getHubNames(const HintedUser& user) { return getHubNames(user.user->getCID(), user.hint); }
 	
 	static void splitTokens(int* array, const string& tokens, int maxItems = -1) noexcept;

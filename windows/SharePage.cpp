@@ -186,17 +186,21 @@ ShareDirInfo::list SharePage::getViewItems(ProfileToken aProfile, bool getDiffIt
 }
 
 StringSet SharePage::getExcludedDirs() {
-	StringList excludes;
 	StringSet ret;
-	ShareManager::getInstance()->getExcludes(curProfile, excludes);
-	for (auto j = excludes.begin(); j != excludes.end(); j++) {
-		if (excludedRemove[curProfile].find(*j) == excludedRemove[curProfile].end()) {
+	ShareManager::getInstance()->getExcludes(curProfile, ret);
+
+	//don't list removed items
+	for (auto j = ret.begin(); j != ret.end(); j++) {
+		if (boost::find_if(excludedRemove, [this, j](pair<ProfileToken, string> pp) { return pp.first == curProfile && pp.second == *j; }) == excludedRemove.end()) {
 			ret.insert(*j);
 		}
 	}
 
-	if (excludedAdd.find(curProfile) != excludedAdd.end())
-		ret.insert(excludedAdd[curProfile].begin(), excludedAdd[curProfile].end());
+	//add new items
+	for (auto j = excludedAdd.begin(); j != excludedAdd.end(); j++) {
+		if (j->first == curProfile)
+			ret.insert(j->second);
+	}
 	return ret;
 }
 
@@ -384,7 +388,7 @@ ShareDirInfo::list SharePage::getItemsByPath(const string& aPath, bool listRemov
 	for(auto i = shareDirs.begin(); i != shareDirs.end(); i++) {
 		auto& dirs = i->second;
 		auto p = boost::find_if(dirs, [&aPath](const ShareDirInfo* sdi) { return sdi->path == aPath; });
-		if (p != dirs.end() && find(removeDirs.begin(), removeDirs.end(), *p) == removeDirs.end())
+		if (p != dirs.end() && (listRemoved || find(removeDirs.begin(), removeDirs.end(), *p) == removeDirs.end()))
 			dirItems.push_back(*p);
 	}
 
@@ -518,8 +522,8 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	removeDirs.erase(boost::remove_if(removeDirs, hasProfile), removeDirs.end());
 	changedDirs.erase(boost::remove_if(changedDirs, hasProfile), changedDirs.end());
 
-	excludedAdd.erase(p->getToken());
-	excludedRemove.erase(p->getToken());
+	excludedAdd.erase(boost::remove_if(excludedAdd, CompareFirst<ProfileToken, string>(p->getToken())), excludedAdd.end());
+	excludedRemove.erase(boost::remove_if(excludedRemove, CompareFirst<ProfileToken, string>(p->getToken())), excludedRemove.end());
 
 
 	/* Add all dirs in this profile to the list of removed dirs */
@@ -527,9 +531,9 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	removeDirs.insert(removeDirs.end(), profileDirs.begin(), profileDirs.end());
 
 	/* List excludes */
-	StringList excluded;
+	StringSet excluded;
 	ShareManager::getInstance()->getExcludes(p->getToken(), excluded);
-	boost::for_each(excluded, [&](const string& aString) { excludedRemove[p->getToken()].insert(aString); });
+	boost::for_each(excluded, [&](const string& aPath) { excludedRemove.push_back(make_pair(curProfile, aPath)); });
 
 
 	/* Switch to default profile */
@@ -719,7 +723,7 @@ ShareProfilePtr SharePage::getProfile(ProfileToken aProfile) {
 	return nullptr;
 }
 
-bool SharePage::showShareDlg(const ShareProfile::list& spList, ProfileToken curProfile, const tstring& curName, ProfileTokenList& profilesTokens, tstring& newName, bool rename) {
+bool SharePage::showShareDlg(const ShareProfile::list& spList, ProfileToken /*curProfile*/, const tstring& curName, ProfileTokenList& profilesTokens, tstring& newName, bool rename) {
 	if (!spList.empty()) {
 		SharePageDlg virt;
 		virt.rename = rename;
@@ -728,7 +732,6 @@ bool SharePage::showShareDlg(const ShareProfile::list& spList, ProfileToken curP
 		if(virt.DoModal(m_hWnd) == IDOK) {
 			newName = virt.line;
 			profilesTokens.insert(profilesTokens.end(), virt.selectedProfiles.begin(), virt.selectedProfiles.end());
-			//copy(virt.selectedProfiles.begin(), virt.selectedProfiles.end(), profiles.end());
 		} else {
 			return false;
 		}
@@ -957,7 +960,7 @@ void SharePage::deleteTempViewItems() {
 	tempViewItems.clear();
 }
 
-bool SharePage::addExcludeFolder(const string &path) {
+bool SharePage::addExcludeFolder(const string& path) {
 	auto excludes = getExcludedDirs();
 	auto shares = getViewItems(curProfile);
 	
@@ -976,22 +979,19 @@ bool SharePage::addExcludeFolder(const string &path) {
 	}
 
 	// add it to the list
-	excludedAdd[curProfile].insert(path);
+	excludedAdd.push_back(make_pair(curProfile, path));
 	fixControls();
 	return true;
 }
 
 bool SharePage::removeExcludeFolder(const string& path) {
-	auto add = excludedAdd[curProfile].find(path);
-	if (add != excludedAdd[curProfile].end()) {
-		auto p = excludedAdd[curProfile];
-		p.erase(path);
-		if (p.empty())
-			excludedAdd.erase(curProfile);
+	auto add = boost::find_if(excludedAdd, CompareSecond<ProfileToken, string>(path));
+	if (add != excludedAdd.end()) {
+		excludedAdd.erase(add);
 		return true;
 	}
 
-	excludedRemove[curProfile].insert(path);
+	excludedRemove.push_back(make_pair(curProfile, path));
 	fixControls();
 	return true;
 }

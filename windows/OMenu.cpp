@@ -181,29 +181,6 @@ unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f, bool ena
 	return index;
 }
 
-LRESULT OMenu::onInitMenuPopup(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	//HMENU mnu = (HMENU)wParam;
-	bHandled = FALSE;
-	/*::DefWindowProc(hWnd, uMsg, wParam, lParam);
-
-	dcassert(::GetMenuItemCount(mnu) > 0);
-	for (int i = 0; i < ::GetMenuItemCount(mnu); ++i) {
-		MENUITEMINFO mii = {0};
-		mii.cbSize = sizeof(MENUITEMINFO);
-		mii.fMask = MIIM_TYPE | MIIM_DATA;
-		::GetMenuItemInfo(mnu, i, TRUE, &mii);
-		if ((mii.fType &= MFT_OWNERDRAW) != MFT_OWNERDRAW && mii.dwItemData != NULL) {
-			OMenuItem* omi = (OMenuItem*)mii.dwItemData;
-			if (omi->ownerdrawn) {
-				mii.fType |= MFT_OWNERDRAW;
-				::SetMenuItemInfo(mnu, i, TRUE, &mii);
-			}
-		}
-	}*/
-
-	return S_OK;
-}
-
 LRESULT OMenu::onMeasureItem(HWND /*hWnd*/, UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	bHandled = FALSE;
 	if (wParam == NULL) {

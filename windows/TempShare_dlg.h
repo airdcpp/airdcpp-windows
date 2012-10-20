@@ -59,8 +59,7 @@ public:
 		return 0;
 	}
 	
-	LRESULT onRemove(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		
+	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		TCHAR buf[MAX_PATH];
 		LVITEM item;
 		memzero(&item, sizeof(item));

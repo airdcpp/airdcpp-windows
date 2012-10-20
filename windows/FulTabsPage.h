@@ -32,7 +32,7 @@ public:
 	FulTabsPage(SettingsManager *s) : PropPage(s) {	
 		title = _tcsdup((TSTRING(SETTINGS_APPEARANCE) + _T('\\') + TSTRING(SETTINGS_AIR_TABSPAGE)).c_str());
 		SetTitle(  title );
-		m_psp.dwFlags |= PSP_HASHELP | PSP_RTLREADING;
+		m_psp.dwFlags |= PSP_RTLREADING;
 	};
 	~FulTabsPage() { free(title); };
 

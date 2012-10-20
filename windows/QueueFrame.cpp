@@ -1166,7 +1166,7 @@ void QueueFrame::moveSelectedDir() {
 	}
 }
 
-LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring cur = Text::toT(curDir);
 
 	LineDlg virt;
@@ -1596,7 +1596,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 	return FALSE; 
 }
 
-LRESULT QueueFrame::onSeqOrder(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT QueueFrame::onSeqOrder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
 	if (dii) {
 		BundlePtr b = dii->getBundles().front().second;

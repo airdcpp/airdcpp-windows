@@ -197,7 +197,7 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 	f.close();
 
 	if ((!SETTING(SOUND_EXC).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
-		PlaySound(Text::toT(SETTING(SOUND_EXC)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
+		WinUtil::playSound(Text::toT(SETTING(SOUND_EXC)));
 
 	NOTIFYICONDATA m_nid;
 	m_nid.cbSize = sizeof(NOTIFYICONDATA);

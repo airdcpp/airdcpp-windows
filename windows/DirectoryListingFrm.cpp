@@ -560,7 +560,7 @@ void DirectoryListingFrame::resetFilter() {
 	filter = Util::emptyString;
 }
 
-LRESULT DirectoryListingFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT DirectoryListingFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	bHandled = FALSE;
 	if (BOOLSETTING(FILTER_ENTER)) {
 		if (wParam == VK_RETURN) {

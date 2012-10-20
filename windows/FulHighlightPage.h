@@ -35,7 +35,7 @@ class FulHighlightPage: public CPropertyPage<IDD_HIGHLIGHTPAGE>, public PropPage
 	FulHighlightPage(SettingsManager *s) : PropPage(s) {
 		title = _tcsdup((TSTRING(SETTINGS_APPEARANCE) + _T('\\') + TSTRING(SETTINGS_AIR_HIGHLIGHTPAGE)).c_str()); 
 		SetTitle( title);
-		m_psp.dwFlags |= PSP_HASHELP | PSP_RTLREADING;
+		m_psp.dwFlags |= PSP_RTLREADING;
 	};
 	virtual ~FulHighlightPage();
 

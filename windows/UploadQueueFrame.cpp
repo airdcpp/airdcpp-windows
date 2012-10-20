@@ -377,7 +377,7 @@ const tstring UploadQueueItem::getText(uint8_t col) const {
 		case COLUMN_HUB: return WinUtil::getHubNames(user).first;
 		case COLUMN_SIZE: return Util::formatBytesW(size);
 		case COLUMN_ADDED: return Text::toT(Util::formatTime("%Y-%m-%d %H:%M", time));
-		case COLUMN_TRANSFERRED: return Util::formatBytesW(pos) + _T(" (") + Util::toStringW((double)pos*100.0/(double)size) + _T("%)");
+		case COLUMN_TRANSFERRED: return Util::formatBytesW(pos) + _T(" (") + (size > 0 ? Util::toStringW((double)pos*100.0/(double)size) : _T("0")) + _T("%)");
 		case COLUMN_WAITING: return Util::formatSecondsW(GET_TIME() - time);
 		default: return Util::emptyStringT;
 	}

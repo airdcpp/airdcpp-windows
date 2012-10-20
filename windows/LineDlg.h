@@ -130,7 +130,7 @@ public:
 		return FALSE;
 	}
 
-	LRESULT OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
+	LRESULT OnTextChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		if (isAdcHub()) {
 			ctrlProfile.EnableWindow(true);
 		} else {

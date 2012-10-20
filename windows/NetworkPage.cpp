@@ -255,16 +255,18 @@ LRESULT NetworkPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 }
 
 void NetworkPage::on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept {
-	if(!value.empty()) {
-		if(Util::isPrivateIp(value)) {
-			CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
-			fixControls();
+	if (key == SettingsManager::EXTERNAL_IP) {
+		if(!value.empty()) {
+			if(Util::isPrivateIp(value)) {
+				CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
+				fixControls();
+			}
+			SetDlgItemText(IDC_SERVER, Text::toT(value).c_str());
+		} else {
+			::MessageBox(m_hWnd, CTSTRING(IP_UPDATE_FAILED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
 		}
-		SetDlgItemText(IDC_SERVER, Text::toT(value).c_str());
-	} else {
-		::MessageBox(m_hWnd, CTSTRING(IP_UPDATE_FAILED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
+		::EnableWindow(GetDlgItem(IDC_GETIP), TRUE);
 	}
-	::EnableWindow(GetDlgItem(IDC_GETIP), TRUE);
 }
 	
 LRESULT NetworkPage::onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {

@@ -107,7 +107,7 @@ void DownloadPage::write() {
 	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_QUEUE_OPTIONS));
 }
 
-LRESULT DownloadPage::onTick(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
+LRESULT DownloadPage::onTick(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	checkItems();
 	return 0;
 }

@@ -215,12 +215,7 @@ LRESULT AutoSearchDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	pt.x = pt.x-rect.Width();
 	cSelectDir.SetState(true);
 
-	if (targetMenu.m_hMenu != NULL) {
-		// delete target menu
-		targetMenu.DestroyMenu();
-		targetMenu.m_hMenu = NULL;
-	}
-
+	OMenu targetMenu;
 	targetMenu.CreatePopupMenu();
 	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 	appendDownloadMenu(targetMenu, DownloadBaseHandler::AUTO_SEARCH, false, true);
@@ -229,7 +224,7 @@ LRESULT AutoSearchDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	return 0;
 }
 
-void AutoSearchDlg::handleDownload(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void AutoSearchDlg::handleDownload(const string& aTarget, QueueItem::Priority /*p*/, bool /*useWhole*/, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	target = aTarget;
 	ctrlTarget.SetWindowTextW(Text::toT(target).c_str());
 	//update the type only after setting the text
@@ -238,7 +233,7 @@ void AutoSearchDlg::handleDownload(const string& aTarget, QueueItem::Priority p,
 }
 
 void AutoSearchDlg::appendDownloadItems(OMenu& aMenu, bool /*isWhole*/) {
-	appendDownloadTo(targetMenu, false);
+	appendDownloadTo(aMenu, false);
 }
 
 void AutoSearchDlg::updateTargetTypeText() {
@@ -336,7 +331,7 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	return 0;
 }
 
-LRESULT AutoSearchDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
+LRESULT AutoSearchDlg::onTargetChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (!loading) {
 		targetType = TargetUtil::TARGET_PATH;
 		updateTargetTypeText();
@@ -344,7 +339,7 @@ LRESULT AutoSearchDlg::onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl,
 	return 0;
 }
 
-LRESULT AutoSearchDlg::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT AutoSearchDlg::onChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	if (!loading && targetType > 0 && ctrlTarget.GetSel())
 		return 1;
 	return 0;

@@ -127,7 +127,7 @@ protected:
 
 	ShareProfilePtr getProfile(ProfileToken aProfile);
 
-	ProfileTokenStringSetMap excludedAdd, excludedRemove;
+	ProfileTokenStringList excludedAdd, excludedRemove;
 
 	void deleteDirectoryInfoItems();
 	void deleteTempViewItems();

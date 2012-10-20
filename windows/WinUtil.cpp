@@ -28,6 +28,7 @@
 #include <pdh.h>
 #include <WinInet.h>
 #include <atlwin.h>
+#include <mmsystem.h>
 //#include <afxtaskdialog.h>
 
 #include "Players.h"
@@ -181,6 +182,14 @@ COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S) {
 		s = BYTE((s * (100+percent_S)) / 100);
 	}
 	return HLS2RGB (HLS(h, l, s));
+}
+
+void WinUtil::playSound(const tstring& sound) {
+	if(sound == _T("beep")) {
+		::MessageBeep(MB_OK);
+	} else {
+		::PlaySound(sound.c_str(), 0, SND_FILENAME | SND_ASYNC);
+	}
 }
 
 void WinUtil::PM::operator()(UserPtr aUser, const string& aUrl) const {
@@ -1339,10 +1348,6 @@ pair<tstring, bool> WinUtil::getHubNames(const CID& cid, const string& hintUrl) 
 
 pair<tstring, bool> WinUtil::getHubNames(const UserPtr& u, const string& hintUrl) {
 	return getHubNames(u->getCID(), hintUrl);
-}
-
-pair<tstring, bool> WinUtil::getHubNames(const CID& cid, const string& hintUrl, bool priv) {
-	return formatHubNames(ClientManager::getInstance()->getHubNames(cid, hintUrl));
 }
 
 void WinUtil::getContextMenuPos(CListViewCtrl& aList, POINT& aPt) {

@@ -68,7 +68,7 @@ public:
 		return 0;
 	}
 
-	LRESULT onClientEnLink(int idCtrl, LPNMHDR pnmh, BOOL& bHandled) { 
+	LRESULT onClientEnLink(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) { 
 		return m_Changelog.handleLink(*(ENLINK*)pnmh);
 	}
 

@@ -132,7 +132,7 @@ LRESULT PrivateFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	return 0;
 }
 
-LRESULT PrivateFrame::onHubChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled) {
+LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
 	auto hp = hubs[ctrlHubSel.GetCurSel()];
 	changeClient();
 
@@ -296,7 +296,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 			if (SETTING(BEEPFILE).empty()) {
 				MessageBeep(MB_OK);
 			} else {
-				::PlaySound(Text::toT(SETTING(BEEPFILE)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
+				WinUtil::playSound(Text::toT(SETTING(BEEPFILE)));
 			}
 		}
 	} else {
@@ -320,7 +320,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 				if (SETTING(BEEPFILE).empty()) {
 					MessageBeep(MB_OK);
 				} else {
-					::PlaySound(Text::toT(SETTING(BEEPFILE)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
+					WinUtil::playSound(Text::toT(SETTING(BEEPFILE)));
 				}
 			}
 
@@ -362,7 +362,7 @@ void PrivateFrame::updateFrameOnlineStatus(const HintedUser& newUser, Client* c)
 	}
 }
 
-bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) { 
+bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) { 
 	if(stricmp(cmd.c_str(), _T("grant")) == 0) {
 		UploadManager::getInstance()->reserveSlot(HintedUser(replyTo), 600);
 		addClientLine(TSTRING(SLOT_GRANTED));

@@ -95,7 +95,7 @@ tstring RichTextBox::rtfEscapeFormatter(const tstring_range& match) {
 		return tstring();
 	tstring s(1, *match.begin());
 	if (s == _T("\r")) return _T("");
-	if (s == _T("\n")) return _T("\\line\n");
+	//if (s == _T("\n")) return _T("\\line\n");
 	return _T("\\") + s;
 }
 
@@ -321,7 +321,7 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 	if(found) {
 		if(	!SETTING(CHATNAMEFILE).empty() && !BOOLSETTING(SOUNDS_DISABLED) &&
 			!sAuthor.empty() && (stricmp(sAuthor.c_str(), sNick) != 0)) {
-				::PlaySound(Text::toT(SETTING(CHATNAMEFILE)).c_str(), NULL, SND_FILENAME | SND_ASYNC);	 	
+				WinUtil::playSound(Text::toT(SETTING(CHATNAMEFILE)));	 	
         }
 		if(BOOLSETTING(FLASH_WINDOW_ON_MYNICK) 
 			&& !sAuthor.empty() && (stricmp(sAuthor.c_str(), sNick) != 0))
@@ -1101,7 +1101,7 @@ LRESULT RichTextBox::onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOO
 	return 0;
 }
 
-void RichTextBox::findText(tstring& aTxt) {
+void RichTextBox::findText(tstring& /*aTxt*/) {
 	LPFINDREPLACE fr = new FINDREPLACE;
 	ZeroMemory(fr, sizeof(FINDREPLACE));
 	fr->lStructSize = sizeof(FINDREPLACE);
@@ -1114,16 +1114,10 @@ void RichTextBox::findText(tstring& aTxt) {
 
 	if(WinUtil::findDialog == NULL)
 		WinUtil::findDialog = ::FindText(fr);
-
-	/*WinUtil::findDlg = new CFindReplaceDialog();
-	WinUtil::findDlg->Create(true, _T(""), NULL, FR_DOWN, m_hWnd);
-	//findDlg->SetActiveWindow();
-	WinUtil::findDlg->ShowWindow(SW_SHOW);*/
-	//WinUtil::findDlg->SetParent(
 	curFindPos = 0;
 }
 
-LRESULT RichTextBox::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT RichTextBox::onChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(((GetKeyState(VkKeyScan('F') & 0xFF) & 0xFF00) > 0 && (GetKeyState(VK_CONTROL) & 0xFF00) > 0) || wParam == VK_F3){
 		findText();
 		return 1;
@@ -1197,7 +1191,7 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
-void RichTextBox::handleDownload(const string& aTarget, QueueItem::Priority p, bool isMagnet, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RichTextBox::handleDownload(const string& aTarget, QueueItem::Priority /*p*/, bool isMagnet, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	if (isMagnet && !SettingsManager::lanMode) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
@@ -1765,8 +1759,8 @@ void RichTextBox::CheckAction(ColorSettings* cs, const tstring& line) {
 //	}
 
 	if(cs->getPlaySound() && !matchedSound ){
-			matchedSound = true;
-			PlaySound(cs->getSoundFile().c_str(), NULL, SND_ASYNC | SND_FILENAME | SND_NOWAIT);
+		matchedSound = true;
+		WinUtil::playSound(cs->getSoundFile());
 	}
 
 	if(cs->getFlashWindow())

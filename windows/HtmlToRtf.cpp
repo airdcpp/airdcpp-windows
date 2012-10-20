@@ -190,7 +190,7 @@ void Parser::data(const string& data) {
 	ret += RichTextBox::rtfEscape(Text::toT(Text::toDOS(data)));
 }
 
-void Parser::endTag(const string& name) {
+void Parser::endTag(const string& /*name*/) {
 	ret += contexts.back().getEnd();
 	contexts.pop_back();
 }
@@ -200,7 +200,7 @@ tstring Parser::finalize() {
 		"}{\\colortbl" + Util::toString(Util::emptyString, colors) + "}") + ret + _T("}");
 }
 
-Parser::Context::Context(RichTextBox* box, Parser& parser) {
+Parser::Context::Context(RichTextBox* /*box*/, Parser& parser) {
 	// create a default context with the Rich Edit control's current formatting.
 	LOGFONT lf;
 	::GetObject(WinUtil::font, sizeof(lf), &lf);

@@ -236,7 +236,7 @@ bool HubFrame::sendMessage(const tstring& aMessage, bool isThirdPerson) {
 	return true;
 }
 
-bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) {	
+bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	
 	if(stricmp(cmd.c_str(), _T("join"))==0) {
 		if(!param.empty()) {
 			redirect = param;
@@ -547,7 +547,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 			if(updateUser(u)) {
 				bool isFavorite = FavoriteManager::getInstance()->isFavoriteUser(u.onlineUser->getUser());
 				if (isFavorite && (!SETTING(SOUND_FAVUSER).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
-					PlaySound(Text::toT(SETTING(SOUND_FAVUSER)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
+					WinUtil::playSound(Text::toT(SETTING(SOUND_FAVUSER)));
 
 				if(isFavorite && BOOLSETTING(POPUP_FAVORITE_CONNECTED)) {
 					WinUtil::showPopup(Text::toT(u.onlineUser->getIdentity().getNick() + " - " + client->getHubName()), TSTRING(FAVUSER_ONLINE));
@@ -578,7 +578,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 			}
 
 			if ((!SETTING(SOUND_HUBCON).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
-				PlaySound(Text::toT(SETTING(SOUND_HUBCON)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
+				WinUtil::playSound(Text::toT(SETTING(SOUND_HUBCON)));
 		} else if(i->first == DISCONNECTED) {
 
 			clearUserList();
@@ -588,7 +588,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 			wentoffline = true;
 
 			if ((!SETTING(SOUND_HUBDISCON).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
-				PlaySound(Text::toT(SETTING(SOUND_HUBDISCON)).c_str(), NULL, SND_FILENAME | SND_ASYNC);
+				WinUtil::playSound(Text::toT(SETTING(SOUND_HUBDISCON)));
 
 			if(BOOLSETTING(POPUP_HUB_DISCONNECTED)) {
 				WinUtil::showPopup(Text::toT(client->getAddress()), TSTRING(DISCONNECTED));
@@ -1855,7 +1855,7 @@ bool HubFrame::matchFilter(const OnlineUser& ui, int sel, const boost::wregex aR
 	}
 }
 */
-bool HubFrame::PreparePopupMenu(CWindow *pCtrl, OMenu& menu ) {
+bool HubFrame::PreparePopupMenu(CWindow* /*pCtrl*/, OMenu& menu ) {
 	if (copyMenu.m_hMenu != NULL) {
 		copyMenu.DestroyMenu();
 		copyMenu.m_hMenu = NULL;

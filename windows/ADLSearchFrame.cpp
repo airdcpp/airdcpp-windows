@@ -334,7 +334,7 @@ LRESULT ADLSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	// Loop over all selected items
 	int i;
 	while((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) >= 0) {
-		if (!ADLSearchManager::getInstance()->removeCollection(i, false)) {
+		if (!ADLSearchManager::getInstance()->removeCollection(i)) {
 			return 0;
 		}
 		ctrlList.DeleteItem(i);
@@ -426,7 +426,7 @@ LRESULT ADLSearchFrame::onMoveUp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 	// Erase selected searches
 	for(i = sel.size() - 1; i >= 0; --i) {
-		if (!ADLSearchManager::getInstance()->removeCollection(sel[i], true)) {
+		if (!ADLSearchManager::getInstance()->removeCollection(sel[i])) {
 			return 0;
 		}
 	}
@@ -479,7 +479,7 @@ LRESULT ADLSearchFrame::onMoveDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 	// Erase selected searches
 	for(i = sel.size() - 1; i >= 0; --i) {
-		if (!ADLSearchManager::getInstance()->removeCollection(sel[i], true)) {
+		if (!ADLSearchManager::getInstance()->removeCollection(sel[i])) {
 			return 0;
 		}
 

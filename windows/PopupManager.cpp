@@ -28,7 +28,7 @@
 
 PopupManager* Singleton< PopupManager >::instance = NULL;
 
-void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, HICON hIcon, bool force) {
+void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, HICON /*hIcon*/, bool force) {
 	if(!activated)
 		return;
 
