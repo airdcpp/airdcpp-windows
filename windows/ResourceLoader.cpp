@@ -37,7 +37,6 @@ void ResourceLoader::load() {
 	m_IconPath = Text::toT(SETTING(ICON_PATH));
 
 	loadFileImages();
-	flagImages.CreateFromImage(IDB_FLAGS, 25, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
 
 	if(SETTING(USERLIST_IMAGE) == "")
 		userImages.CreateFromImage(IDB_USERS, 16, 9, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);

@@ -435,7 +435,7 @@ HWND MainFrame::createTBStatusBar() {
 
 	TBBUTTON tb[1];
 	memzero(&tb, sizeof(tb));
-	tb[0].iBitmap = 205;
+	tb[0].iBitmap = 210;
 	tb[0].fsStyle = TBSTYLE_SEP;
 
 	TBStatusCtrl.SetButtonStructSize();
@@ -444,8 +444,6 @@ HWND MainFrame::createTBStatusBar() {
 
 	CRect rect;
 	TBStatusCtrl.GetItemRect(0, &rect);
-	rect.bottom += 100;
-	rect.left += 2;
 
 	progress.Create(TBStatusCtrl.m_hWnd, rect , NULL, PBS_SMOOTH  | WS_CHILD | WS_VISIBLE);
 	progress.SetRange(0, 10000);
@@ -1158,6 +1156,8 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			}
 		}
 		bAppMinimized = false;
+		if(TBStatusCtrl.IsWindow())
+			progress.SetRedraw(TRUE);
 	}
 
 	bHandled = FALSE;
@@ -1615,7 +1615,6 @@ void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 
 	if(startFiles == 0 || startBytes == 0 || files == 0) {
 		progress.SetPos(0);
-		//setProgressText(_T("TEST text"));
 		startBytes = 0;
 		startFiles = 0;
 	} else {
@@ -1635,12 +1634,8 @@ void MainFrame::setProgressText(const tstring& text){
 	::SetBkMode(progressTextDC, TRANSPARENT);
 	::SetTextColor(progressTextDC, WinUtil::TBprogressTextColor );
 	::SelectObject(progressTextDC, WinUtil::progressFont);
+	::DrawText(progressTextDC, text.c_str(), text.length(), prc,  DT_SINGLELINE | DT_CENTER | DT_VCENTER );
 	
-	//ptStart.x = prc.left + 2;
-	//ptStart.y = prc.top + 5; 
-	//::ExtTextOut(progressTextDC, ptStart.x, ptStart.y, ETO_CLIPPED, &prc, text.c_str(), _tcslen(text.c_str()), NULL);
-	prc.top += 5;
-	::DrawText(progressTextDC, text.c_str(), text.length(), prc, DT_CENTER | DT_VCENTER );
 	progress.ReleaseDC(progressTextDC);
 }
 
