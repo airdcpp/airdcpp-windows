@@ -2055,15 +2055,12 @@ void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, 
 }
 
 void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const string& infoUrl, const string& updateUrl, int buildID, bool autoUpdate) noexcept {
-	//tstring msg = xml.getChildAttrib("Message", "Your version of AirDC++ contains a serious bug that affects all users of the DC network or the security of your computer.");
-	//MessageBox(Text::toT(message + "\r\nPlease get a new one at " + url).c_str());
-	//oldshutdown = true;
-	//PostMessage(WM_CLOSE);
+	bool canAutoUpdate = autoUpdate && UpdateDlg::canAutoUpdate(updateUrl);
 
 	tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " APPNAME " " VERSIONSTRING);
-	MessageBox(Text::toT(message + "\r\n\r\n" + STRING(ATTEMPT_AUTO_UPDATE)).c_str(), title.c_str(), MB_OK | MB_ICONEXCLAMATION);
+	MessageBox(Text::toT(message + "\r\n\r\n" + (canAutoUpdate ? STRING(ATTEMPT_AUTO_UPDATE) : STRING(MANUAL_UPDATE_MSG))).c_str(), title.c_str(), MB_OK | MB_ICONEXCLAMATION);
 
-	if(!UpdateDlg::canAutoUpdate(updateUrl) || !autoUpdate) {
+	if(!canAutoUpdate) {
 		if(!infoUrl.empty())
 			WinUtil::openLink(Text::toT(infoUrl));
 
@@ -2080,20 +2077,17 @@ void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, con
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater) noexcept {
-	//if(MessageBox(CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
 	if(MessageBox(CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
 		WinUtil::addUpdate(aUpdater);
 
 		oldshutdown = true;
 		PostMessage(WM_CLOSE);
 	}
-
-	//WinUtil::openLink(Text::toT(UpdateManager::getInstance()->links.homepage));
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noexcept {
-	MessageBox(Text::toT(line).c_str());
-	//ShowPopup(Text::toT(STRING(UPDATER_FAILED) + " " + line), CTSTRING(UPDATER), NIIF_ERROR, true);
+	//MessageBox(Text::toT(line).c_str());
+	ShowPopup(Text::toT(line), CTSTRING(UPDATER), NIIF_ERROR, true);
 }
 
 void MainFrame::ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, HICON hIcon, bool force) {

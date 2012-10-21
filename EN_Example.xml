@@ -1646,7 +1646,7 @@ would you still like to load them?</String>
 		<String Name="SettingsPopunderText">Open new text files in the background</String>
 		<String Name="ScanningResultsOn">Scanning results on %s</String>
 		<String Name="MandatoryUpdate">Mandatory Update</String>
-		<String Name="AttemptAutoUpdate">AirDC++ will now attempt to update your installation automatically (if supported) or you will be forwarded to a download page</String>
+		<String Name="AttemptAutoUpdate">AirDC++ will now attempt to update your installation automatically</String>
 		<String Name="LoadingGui">Loading the user interface</String>
 		<String Name="UnloadingGui">Unloading the user interface</String>
 		<String Name="PartialFilelist">Partial filelist</String>
@@ -1674,5 +1674,7 @@ would you still like to load them?</String>
 		<String Name="SettingsLimitsAdvanced">Limits &amp; Advanced</String>
 		<String Name="AlternateLimiting">Alternate Limiting</String>
 		<String Name="SaveHubsState">Remember previously enabled hubs in search window</String>
+		<String Name="EndlessRedirectionLoop">Endless redirection loop (%1%)</String>
+		<String Name="ManualUpdateMsg">You will be forwarded to the downloading page as automatic updating can't be performed</String>
 	</Strings>
 </Language>

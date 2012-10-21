@@ -606,26 +606,79 @@ Fixed:
 
 Added:
 
+- Share profiles (support for different share for each hub, ADC only)
+- New inbuilt updater
+- New searching functionality in filelists (also allows searching in partial lists via ADC hubs)
+- Show hashing status with toolbar progressbar
+- Bandwidth limiting capabilities
+- Customizable file type extensions for searching (ADC)
 - Severity icons for system log messages
+- Browse the own filelist by default instead of loading the full filelist
+- Allow choosing the hub via which to PM through (ADC)
+- Also adding failover addresses for favorite hubs (also handle failover addresses sent by ADC hubs)
 - Allow users choose the download path selection strategy (most space available/least possible free space available)
 - List real paths in the "Download to.." menu
 - Add "Download with priority" for search results
+- Allow opening directories/files directly from ADL search matches in own filelist
+- Add text filter in filelists
+- Find text from chat and text files (Ctrl+F)
+- Favorite hub online status indicator icons in Favorite hubs window
+- An option to allow saving the last selected hubs in search window
+- New highlight context setting (chat, nicklist, filelist)
+- New button for sending files in ADC hubs
+- Allow forcing TLS encryption for ADC users
+- New menu item to find and view NFO in partial lists
+- New menu item in chat, search and filelists to directly open files from remote users
+- New menu button to refresh incoming directories
+- Automatically update language files on background
+- Allow converting partial lists to full lists
+- Add a setting to clear the directory history on exit
+- Support Windows 8 and Windows Server 2012
+- Add a menu item to open files with external programs without saving them on disk
+- New option to automatically update the external ip once per hour
 
 
 Changed:
 
+- Enable compiling with VS2012, reduces the memory usage of the 64 bit version by about 15%
+- Improved threading in filelists, less GUI freezes
+- ADL matching rewrite, up to 3 times faster than before (DC++)
+- Improve the filelist browsing performance with big folder listings
+- Improve the own filelist generation speed with big folder listings
+- Change the icon loading, new icons
 - Better display of bundles in transfer view
 - Better locking (less freezes)
 - Reorganized filelist and transfer view context menus
 - Ignore temp files when checking for queue dupes
 - Check slots before any filesystem access on a file upload request (DC++)
-- Enable compiling with VS2012
 - Sort highest priority files based on the size (smallest ones are downloaded first)
-- Don't allow users to download full filelist from ADC users via the search window
+- Don't allow users to download full filelist from ADC users with big share via the search window
+- Less log messages for hashing by default (report by directory)
+- Redesigned updating dialog
+- New magnet dialog for recent operating systems
+- Allow using bloom filter again (can only be enabled from the XML file for now)
+- Faster and more stable skiplists
+- Hide advanced auto search options by default
+- Save the own CID also in Favorites.xml
+- Validate all tokens used for transfers
+- Don't install the magnet link handler by default
+- Improved dupe check for shared/queued directories
+- Don't save ADL searches when closing the tab if nothing has been changed
+- Continue with the next item from the same user when getting a file specific error when downloading
+- Update the directories in GUI when downloading folders from partial filelists
+- Remember the previously opened setting page within the current session
+- Allow queueing directories for refresh
+- Add a menu item in "View" menu to open the system log
+- Add settings for opening partial lists and text files in background
+- Limit the maximum size of a viewed files to 1 MB
+- Reporting improvements for filelist refreshing
 
 
 Fixed:
 
+- Fix a crash when right clicking on magnet links in chat history
+- Fix crashes related to the queue tab
+- Fix bundle progress of more than 100% with segments enabled
 - Fix getting the bundle path for upload file bundles
 - Fix searching of upload bundles from transfer view
 - More reliable way to trim http addresses (DC++)
@@ -634,8 +687,25 @@ Fixed:
 - Fix removing of extra words with web shotcuts
 - Correct search behaviour for magnet links in chat
 - Fix "Copy magnet" in filelists
+- Prevent "File not available" errors with partial bundle sharing
+- Don't try to upload files that don't exist with partial sharing
+- Don't allow listing the same file multiple time in the same folder in generated filelists
+- Fix handling of spaces in ADC user commands
+- Fix a few MCN problems
+- Support chunked HTTP downloads as required by HTTP/1.1 (DC++)
+- Fix queries in HTTP redirections
+- Fix a few usability limitations in the auto search tab
+- Allow sharing finished bundles that weren't in a shared directory when they were finished
+- Fix problems with searching time estimation
+- Fix counting the directory sizes and item counts in filelists with ADLs
+- Save the auto search list current search position and last search time between sessions
+- Don't try to hash removed bundles
+- Fix misc freezes and crashes
+- Fix the units for upload and download speeds in ADC hubs
+- Fix a few SFV reading problems when hashing/checking for missing files
 
 
 Removed:
 
 - The option to use antifrag method for downloads (always enabled now, didn't work correctly earlier)
+- "Private" option for favorite hubs

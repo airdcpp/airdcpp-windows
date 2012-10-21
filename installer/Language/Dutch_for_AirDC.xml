@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Dutch_for_AirDC" Author="Kaas" Version="2.30" Revision="3">
+<Language Name="Dutch_for_AirDC" Author="Kaas" Version="2.30" Revision="5">
 	<Strings>
 		<String Name="AairdcppLanguageFile">Dutch_for_AirDC.xml</String>
-		<String Name="AairdcppLanguageVersion">2.303</String>
+		<String Name="AairdcppLanguageVersion">2.305</String>
 		<String Name="Active">Actief</String>
 		<String Name="ActiveSearchString">Actieve zoekterm</String>
 		<String Name="Add">&amp;Voeg toe</String>
@@ -284,7 +284,7 @@
 
 		<String Name="Kib">KiB</String>
 		<String Name="Kbps">Kb/s</String>
-		<String Name="KeepFinishedFiles">Houd voltooide bestanden in de que</String>
+		<String Name="KeepFinishedFiles">Houd voltooide bestanden in de queue</String>
 		<String Name="KickUser">Kick gebruiker(s)</String>
 		<String Name="KickUserFile">Kick gebruiker(s) met bestandsnaam</String>
 		<String Name="LastHub">Hub (laatste indien niet verbonden)</String>
@@ -1240,7 +1240,7 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
 		<String Name="SettingsIncomingRefreshTime">Inkomende ververs tijd</String>
 		<String Name="SettingsUseAdls">Gebruik ADLSearch op bestandslijsten</String>
 		<String Name="SettingsUseAdlsOwnList">Gebruik ADLSearch op je eigen bestandslijst</String>
-		<String Name="SettingDontDlAlreadyQueued">Download geen bestanden die al in download que staan</String>
+		<String Name="SettingDontDlAlreadyQueued">Download geen bestanden die al in download queue staan</String>
 		<String Name="FavShowJoin">Laat binnenkomende en vertrekkende gebruikers zien</String>
 		<String Name="UpnpRemovedMappings">Port mapping verwijderen gelukt</String>
 		<String Name="SystemShowFinishedUploads">Laat voltooide uploads zien in system log</String>
@@ -1442,11 +1442,11 @@ Empty = Default String -&gt; /me speelt op Spotify: %[title] %[link]</String>
 		<String Name="FavdirsShowShared">Laat gedeelde mappen zien in \"Download naar\" menu</String>
 		<String Name="ConfirmSizeWarning">Er is slechts %s over in de map %s terwijl %s nodig is. Toch doorgaan?</String>
 		<String Name="ConfirmSizeWarningQueued">There is only %s remaining in the directory %s (and %s of queued files) while %s is needed. Do you want to continue?</String>
-		<String Name="BundleAltSearch">Doorzoek de bundel %s voor alternatieven, %d zoekopdrachten in que.</String>
-		<String Name="BundleAltSearchRecent">Zoek alternatieven voor een RECENTE bundel %s, %d zoekopdrachten in que.</String>
+		<String Name="BundleAltSearch">Doorzoek de bundel %s voor alternatieven, %d zoekopdracht(en) in queue.</String>
+		<String Name="BundleAltSearchRecent">Zoek alternatieven voor een RECENTE bundel %s, %d zoekopdracht(en) in queue.</String>
 		<String Name="NextSearchIn">Zoekt opnieuw over %d minuten</String>
 		<String Name="NextRecentSearchIn">Volgende recente zoektocht over %d minuten</String>
-		<String Name="BundleCreated">De bunbdel %s bestaat uit %d items</String>
+		<String Name="BundleCreated">De bundel %s bestaat uit %d items</String>
 		<String Name="ExistingBundlesMerged">%d bestaande bundels zijn erin samengevoegd</String>
 		<String Name="FilebundleMerged">Bestands bundel %s is samengevoegd in bundel %s</String>
 		<String Name="FilebundleMoved">Bestands bundel %s is verplaatst naar %s</String>
@@ -1576,8 +1576,8 @@ Schone zoek opdracht betekend dat een poging zal worden gedaan een titel van de 
 		<String Name="ClearChat">Chat schoonmaken</String>
 		<String Name="ClearMessages">Berichten schoonmaken</String>
 		<String Name="UseSeqOrder">Gebruik oplopende volgorde</String>
-		<String Name="LanguageNote">Pm: Om de het nieuwe taalbestand te gebruikenb moet je airdc herstarten</String>
-		<String Name="FileAlreadyQueued">Het bestand %s bestaat al in de que als %s</String>
+		<String Name="LanguageNote">Pm: Om de het nieuwe taalbestand te gebruiken moet je airdc herstarten</String>
+		<String Name="FileAlreadyQueued">Het bestand %s bestaat al in de queue als %s</String>
 		<String Name="FileListRefreshInitiatedRpath">Bestands lijst verversen gestart voor map %s</String>
 		<String Name="FileListRefreshInitiatedVpath">Bestands lijst verversen gestart voor virtuele map \"%s\"</String>
 		<String Name="FileListRefreshInitiatedXVpath">Bestands lijst verversen gestart voor %d virtuele mappen</String>
