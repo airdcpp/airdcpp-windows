@@ -1909,10 +1909,10 @@ bool HubFrame::PreparePopupMenu(CWindow* /*pCtrl*/, OMenu& menu ) {
 	menu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
    
 
-	if(AirUtil::isAdcHub(client->getHubUrl()))
+	/*if(AirUtil::isAdcHub(client->getHubUrl()))
 		menu.SetMenuDefaultItem(IDC_BROWSELIST);
 	else
-		menu.SetMenuDefaultItem( IDC_GETLIST );
+		menu.SetMenuDefaultItem( IDC_GETLIST );*/
 
 	return true;
 }

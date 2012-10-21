@@ -45,7 +45,7 @@ PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(repl
 	ctrlHubSelContainer(WC_COMBOBOX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
-	ChatFrameBase(this)
+	ChatFrameBase(this), UserInfoBaseHandler(false, true)
 {
 	ctrlClient.setClient(c);
 	ctrlClient.setUser(replyTo_.user);
@@ -490,12 +490,7 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 		tabMenu.AppendMenu(MF_SEPARATOR);
 	}
 	tabMenu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR_CHAT));
-	tabMenu.AppendMenu(MF_SEPARATOR);
-	tabMenu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
-	tabMenu.AppendMenu(MF_STRING, IDC_BROWSELIST, CTSTRING(BROWSE_FILE_LIST));
-	tabMenu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
-	tabMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
-	tabMenu.AppendMenu(MF_STRING, IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
+	appendUserItems(tabMenu, true, replyTo.user);
 
 	prepareMenu(tabMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(replyTo.user->getCID(), replyTo.hint));
 	if(!(tabMenu.GetMenuState(tabMenu.GetMenuItemCount()-1, MF_BYPOSITION) & MF_SEPARATOR)) {	
@@ -503,7 +498,7 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	}
 	tabMenu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
 
-	tabMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+	tabMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt);
 	return TRUE;
 }
 
@@ -515,56 +510,6 @@ void PrivateFrame::runUserCommand(UserCommand& uc) {
 	auto ucParams = ucLineParams;
 
 	ClientManager::getInstance()->userCommand(replyTo, uc, ucParams, true);
-}
-
-LRESULT PrivateFrame::onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	try {
-		QueueManager::getInstance()->addList(HintedUser(replyTo, replyTo.hint), QueueItem::FLAG_CLIENT_VIEW);
-	} catch(const Exception& e) {
-		addClientLine(Text::toT(e.getError()));
-	}
-	return 0;
-}
-
-LRESULT PrivateFrame::onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	try {
-		QueueManager::getInstance()->addList(HintedUser(replyTo, replyTo.hint), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
-	} catch(const Exception& e) {
-		addClientLine(Text::toT(e.getError()));
-	}
-	return 0;
-}
-
-LRESULT PrivateFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	try {
-		QueueManager::getInstance()->addList(HintedUser(replyTo, replyTo.hint), QueueItem::FLAG_MATCH_QUEUE);
-	} catch(const Exception& e) {
-		addClientLine(Text::toT(e.getError()));
-	}
-	return 0;
-}
-
-LRESULT PrivateFrame::onGrantSlot(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	uint64_t time = 0;
-	switch(wID) {
-		case IDC_GRANTSLOT:			time = 600; break;
-		case IDC_GRANTSLOT_DAY:		time = 3600; break;
-		case IDC_GRANTSLOT_HOUR:	time = 24*3600; break;
-		case IDC_GRANTSLOT_WEEK:	time = 7*24*3600; break;
-		case IDC_UNGRANTSLOT:		time = 0; break;
-	}
-	
-	if(time > 0)
-		UploadManager::getInstance()->reserveSlot(HintedUser(replyTo, replyTo.hint), time);
-	else
-		UploadManager::getInstance()->unreserveSlot(replyTo);
-
-	return 0;
-}
-
-LRESULT PrivateFrame::onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	FavoriteManager::getInstance()->addFavoriteUser(replyTo);
-	return 0;
 }
 
 void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {

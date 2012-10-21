@@ -27,6 +27,7 @@
 #include "../client/ClientManagerListener.h"
 #include "../client/ResourceManager.h"
 #include "../client/DelayedEvents.h"
+#include "../client/UserInfoBase.h"
 
 #include "ChatFrameBase.h"
 #include "FlatTabCtrl.h"
@@ -35,7 +36,7 @@
 
 #define HUB_SEL_MAP 9
 
-class PrivateFrame : public MDITabChildWindowImpl<PrivateFrame>, 
+class PrivateFrame : public MDITabChildWindowImpl<PrivateFrame>, public UserInfoBaseHandler<PrivateFrame>, public UserInfoBase,
 	private ClientManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, private ChatFrameBase, private FrameMessageBase
 {
 public:
@@ -54,6 +55,7 @@ public:
 	typedef MDITabChildWindowImpl<PrivateFrame> baseClass;
 	typedef UCHandler<PrivateFrame> ucBase;
 	typedef ChatFrameBase chatBase;
+	typedef UserInfoBaseHandler<PrivateFrame> uibBase;
 
 	BEGIN_MSG_MAP(PrivateFrame)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
@@ -66,19 +68,12 @@ public:
 		MESSAGE_HANDLER(WM_FORWARDMSG, OnRelayMsg)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_USER_HISTORY, onOpenUserLog)
-		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
-		COMMAND_ID_HANDLER(IDC_BROWSELIST, onBrowseList)
-		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
-		COMMAND_ID_HANDLER(IDC_GRANTSLOT, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_GRANTSLOT_HOUR, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_GRANTSLOT_DAY, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_GRANTSLOT_WEEK, onGrantSlot)
 		COMMAND_ID_HANDLER(IDC_UNGRANTSLOT, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_ADD_TO_FAVORITES, onAddToFavorites)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
 		COMMAND_ID_HANDLER(IDC_PUBLIC_MESSAGE, onPublicMessage)
 		CHAIN_COMMANDS(ucBase)
+		CHAIN_COMMANDS(uibBase)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(chatBase)
 	ALT_MSG_MAP(EDIT_MESSAGE_MAP)
@@ -94,11 +89,6 @@ public:
 
 	LRESULT onHubChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onGrantSlot(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onClientEnLink(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) { return ctrlClient.onClientEnLink(uMsg, wParam, lParam, bHandled); }
 	LRESULT onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -133,6 +123,25 @@ public:
 	void addClientLine(const tstring& aLine);
 	bool sendMessage(const tstring& msg, bool thirdPerson = false);
 
+	struct UserListHandler {
+		UserListHandler(PrivateFrame* _pf) : pf(_pf) { }
+		
+		void forEachSelected(void (UserInfoBase::*func)()) {
+			(pf->*func)();
+		}
+		
+		template<class _Function>
+		_Function forEachSelectedT(_Function pred) {
+			pred(pf);
+			return pred;
+		}
+		
+	private:
+		PrivateFrame* pf;	
+	};
+	
+	UserListHandler getUserList() { return UserListHandler(this); }
+
 private:
 	enum {
 		STATUS_TEXT,
@@ -162,6 +171,8 @@ private:
 	HICON userOnline;
 
 	HintedUser replyTo;
+	const UserPtr& getUser() const { return replyTo.user; }	
+	const string& getHubUrl() const { return replyTo.hint; }	
 	
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;

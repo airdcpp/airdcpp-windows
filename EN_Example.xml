@@ -1346,7 +1346,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="MatchPartial">Match partial list</String>
 		<String Name="FavdirsShowShared">Show shared directories in the \"Download to\" menu</String>
 		<String Name="ConfirmSizeWarning">There is only %s remaining in the directory %s while %s is needed. Do you want to continue?</String>
-		<String Name="ConfirmSizeWarningQueued">There is only %s remaining in the directory %s (and %s of queued files) while %s is needed. Do you want to continue?</String>
 		<String Name="BundleAltSearch">Searching the bundle %s for alternatives, %d search(es) queued.</String>
 		<String Name="BundleAltSearchRecent">Searching alternates for a RECENT bundle %s, %d search(es) queued.</String>
 		<String Name="NextSearchIn">Next search in %d minutes</String>
@@ -1676,5 +1675,6 @@ would you still like to load them?</String>
 		<String Name="SaveHubsState">Remember previously enabled hubs in search window</String>
 		<String Name="EndlessRedirectionLoop">Endless redirection loop (%1%)</String>
 		<String Name="ManualUpdateMsg">You will be forwarded to the downloading page as automatic updating can't be performed</String>
+		<String Name="ConfirmSizeWarningQueue">There are already %s of queued files for the directory %s and only %s space available. Do you really want to queue %s more?</String>
 	</Strings>
 </Language>
