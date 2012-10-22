@@ -72,18 +72,12 @@ PropPage::ListItem DownloadPage::optionItems[] = {
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-#define setMinMax(x, y, z) \
-	updown.Attach(GetDlgItem(x)); \
-	updown.SetRange32(y, z); \
-	updown.Detach();
-
 LRESULT DownloadPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items, 0, 0);
 	PropPage::read((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_QUEUE_OPTIONS));
 
-	CUpDownCtrl updown;
 	setMinMax(IDC_INTERVAL_SPIN, 5, 9999);
 	setMinMax(IDC_MATCH_SPIN, 1, 999);
 	setMinMax(IDC_AUTO_SEARCH_LIMIT_SPIN, 1, 999);

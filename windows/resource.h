@@ -113,7 +113,7 @@
 #define IDD_TOOLBARPAGE                 259
 #define IDD_DOWNLOADDIR                 260
 #define IDD_LOCATIONSPAGE               261
-#define IDB_TYPES                      266
+#define IDB_TYPES                       266
 #define IDR_SYSTEM_LOG                  268
 #define IDR_CDM                         270
 #define IDD_UPDATE                      274
@@ -221,7 +221,7 @@
 #define IDI_AIRAPPEARANCE               401
 #define IDI_ADVANCED                    402
 #define IDI_EXPERTS                     403
-#define IDI_SPEED	                    404
+#define IDI_SPEED                       404
 #define IDI_UC                          405
 #define IDI_CERTIFICATES                406
 #define IDI_MISC                        407
@@ -1334,7 +1334,10 @@
 #define IDC_CHATDBLCLICKACTION          10194
 #define IDC_CHAT_DBLCLICK               10195
 #define IDC_HEADER_MENU                 10196
+#define IDC_BLOOM_MODE_LBL              10196
 #define IDC_FINDMISSING                 10197
+#define IDC_TRANSFERLIST_DBLCLICK2      10197
+#define IDC_BLOOM_MODE                  10197
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013

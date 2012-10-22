@@ -52,39 +52,21 @@ LRESULT LimitPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	ctrlTransferEncryption.Attach(GetDlgItem(IDC_TRANSFER_ENCRYPTION));
 	ctrlTransferEncryption.AddString(CTSTRING(DISABLED));
-	ctrlTransferEncryption.AddString(CTSTRING(ADLS_ENABLED));
+	ctrlTransferEncryption.AddString(CTSTRING(ENABLED));
 	ctrlTransferEncryption.AddString(CTSTRING(ENCRYPTION_FORCED));
 	ctrlTransferEncryption.SetCurSel(SETTING(TLS_MODE));
 
-	CUpDownCtrl spin;
-
 	//advanced limits start
-	spin.Attach(GetDlgItem(IDC_EXTRASPIN));
-	spin.SetRange(0, 10);
-	spin.Detach();
-	spin.Attach(GetDlgItem(IDC_PARTIAL_SLOTS_SPIN));
-	spin.SetRange(0, 10);
-	spin.Detach();
-	spin.Attach(GetDlgItem(IDC_SMALL_FILE_SIZE_SPIN));
-	spin.SetRange32(64, 30000);
-	spin.Detach();
-	spin.Attach(GetDlgItem(IDC_EXTRA_SLOTS_SPIN));
-	spin.SetRange(3, 100);
-	spin.Detach();
+	setMinMax(IDC_EXTRASPIN, 0, 10);
+	setMinMax(IDC_PARTIAL_SLOTS_SPIN, 0, 10);
+	setMinMax(IDC_SMALL_FILE_SIZE_SPIN, 64, 30000);
+	setMinMax(IDC_EXTRA_SLOTS_SPIN, 3, 100);
 
-	//limiter start 
-	spin.Attach(GetDlgItem(IDC_UPLOADSPEEDSPIN));
-	spin.SetRange32(0, 99999);
-	spin.Detach(); 
-	spin.Attach(GetDlgItem(IDC_DOWNLOADSPEEDSPIN));
-	spin.SetRange32(0, 99999);
-	spin.Detach(); 
-	spin.Attach(GetDlgItem(IDC_UPLOADSPEEDSPIN_TIME));
-	spin.SetRange32(0, 99999);
-	spin.Detach(); 
-	spin.Attach(GetDlgItem(IDC_DOWNLOADSPEEDSPIN_TIME));
-	spin.SetRange32(0, 99999);
-	spin.Detach(); 
+	//limiter start
+	setMinMax(IDC_UPLOADSPEEDSPIN, 0, 99999);
+	setMinMax(IDC_DOWNLOADSPEEDSPIN, 0, 99999);
+	setMinMax(IDC_UPLOADSPEEDSPIN_TIME, 0, 99999);
+	setMinMax(IDC_DOWNLOADSPEEDSPIN_TIME, 0, 99999);
 
 	timeCtrlBegin.Attach(GetDlgItem(IDC_BW_START_TIME));
 	timeCtrlEnd.Attach(GetDlgItem(IDC_BW_END_TIME));

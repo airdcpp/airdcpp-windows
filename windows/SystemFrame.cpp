@@ -323,6 +323,7 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 	menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
 	if (!selWord.empty()) {
+		menu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(COPY_DIRECTORY));
 		menu.AppendMenu(MF_SEPARATOR);
 		//if (boost::regex_match(selWord, reg)) {
 			menu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
@@ -463,6 +464,11 @@ LRESULT SystemFrame::onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 
 LRESULT SystemFrame::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlPad.Copy();
+	return 0;
+}
+
+LRESULT SystemFrame::onCopyDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	WinUtil::setClipboard(Text::toT(Util::getReleaseDir(Text::fromT(selWord), true)));
 	return 0;
 }
 

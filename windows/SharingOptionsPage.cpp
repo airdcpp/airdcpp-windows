@@ -64,25 +64,10 @@ LRESULT SharingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_SCANLIST));
 
-	CUpDownCtrl updown;
-	updown.Attach(GetDlgItem(IDC_REFRESH_SPIN));
-	updown.SetRange32(0, 3000); 
-	updown.Detach();
+	setMinMax(IDC_REFRESH_SPIN, 0, 3000);
+	setMinMax(IDC_INCOMING_SPIN, 0, 1000);
+	setMinMax(IDC_HASH_SPIN, 0, 999);
 
-	updown.Attach(GetDlgItem(IDC_INCOMING_SPIN));
-	updown.SetRange32(0, 3000); 
-	updown.Detach();
-
-	updown.Attach(GetDlgItem(IDC_HASH_SPIN));
-	updown.SetRange32(0, 999);
-	updown.Detach();
-	
-	updown.Attach(GetDlgItem(IDC_SAVE_SPIN));
-	updown.SetRange32(0, 3000); 
-	updown.Detach();
-
-
-	
 	// Do specialized reading here
 	return TRUE;
 }

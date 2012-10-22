@@ -35,23 +35,19 @@ PropPage::TextItem AirAppearancePage::texts[] = {
 	{ IDC_DUPE_CHAT,			ResourceManager::SETTINGS_DUPE_CHAT	},
 	{ IDC_DUPE_FILELISTS,		ResourceManager::SETTINGS_DUPE_FILELIST	},
 	{ IDC_DUPES,				ResourceManager::SETTINGS_DUPES	},
-	{ IDC_MAX_RESIZE_LINES_STR, ResourceManager::MAX_RESIZE_LINES },//ApexDC
+	{ IDC_MAX_RESIZE_LINES_STR, ResourceManager::MAX_CHAT_RESIZE_LINES },
+	{ IDC_SETCZDC_PM_LINES,		ResourceManager::MAX_PM_HISTORY_LINES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item AirAppearancePage::items[] = {
 	{ IDC_BACKGROUND_IMAGE, SettingsManager::BACKGROUND_IMAGE, PropPage::T_STR },
 	{ IDC_RESIZE_LINES, SettingsManager::MAX_RESIZE_LINES, PropPage::T_INT },//ApexDC
+	{ IDC_PM_LINES, SettingsManager::SHOW_LAST_LINES_LOG, PropPage::T_INT },
 	{ IDC_DUPE_SEARCH, SettingsManager::DUPE_SEARCH, PropPage::T_BOOL },
 	{ IDC_DUPE_CHAT,		SettingsManager::DUPES_IN_CHAT, PropPage::T_BOOL	},
 	{ IDC_DUPE_FILELISTS,	SettingsManager::DUPES_IN_FILELIST, PropPage::T_BOOL	},
 	{ 0, 0, PropPage::T_END }
- //ApexDC
-	#define setMinMax(x, y, z) \
-	updown.Attach(GetDlgItem(x)); \
-	updown.SetRange32(y, z); \
-	updown.Detach();
- //end
 };
 
 
@@ -66,8 +62,8 @@ LRESULT AirAppearancePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 
 	PropPage::read((HWND)*this, items);
 	
-	CUpDownCtrl updown; //ApexDC
 	setMinMax(IDC_RESIZE_LINES_SPIN, 1, 10); //ApexDC
+	setMinMax(IDC_PM_LINESSPIN, 0, 999);
 
 	// Do specialized reading here
 	return TRUE;

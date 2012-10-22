@@ -29,7 +29,6 @@
 PropPage::TextItem SDCPage::texts[] = {
 	{ IDC_SETTINGS_WRITE_BUFFER, ResourceManager::SETTINGS_WRITE_BUFFER },
 	{ IDC_SETTINGS_KB, ResourceManager::KiB },
-	{ IDC_SETCZDC_PM_LINES, ResourceManager::SETTINGS_PM_HISTORY },
 	{ IDC_STATIC1, ResourceManager::PORT },
 	{ IDC_STATIC2, ResourceManager::USER },
 	{ IDC_STATIC3, ResourceManager::PASSWORD },
@@ -44,6 +43,7 @@ PropPage::TextItem SDCPage::texts[] = {
 	{ IDC_SETTINGS_SOCKET_OUT_BUFFER, ResourceManager::SETTINGS_SOCKET_OUT_BUFFER },
 	{ IDC_LOG_LINESTEXT, ResourceManager::MAX_LOG_LINES },
 	{ IDC_DECREASE_RAM, ResourceManager::DECREASE_RAM },
+	{ IDC_BLOOM_MODE_LBL, ResourceManager::BLOOM_MODE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -51,7 +51,6 @@ PropPage::Item SDCPage::items[] = {
 	{ IDC_BUFFERSIZE, SettingsManager::BUFFER_SIZE, PropPage::T_INT },
 	{ IDC_SOCKET_IN_BUFFER, SettingsManager::SOCKET_IN_BUFFER, PropPage::T_INT },
 	{ IDC_SOCKET_OUT_BUFFER, SettingsManager::SOCKET_OUT_BUFFER, PropPage::T_INT },
-	{ IDC_PM_LINES, SettingsManager::SHOW_LAST_LINES_LOG, PropPage::T_INT },
 	{ IDC_SHUTDOWNTIMEOUT, SettingsManager::SHUTDOWN_TIMEOUT, PropPage::T_INT },
 	{ IDC_MAX_COMPRESSION, SettingsManager::MAX_COMPRESSION, PropPage::T_INT },
 	{ IDC_DOWNCONN, SettingsManager::DOWNCONN_PER_SEC, PropPage::T_INT },
@@ -60,28 +59,26 @@ PropPage::Item SDCPage::items[] = {
 	{ 0, 0, PropPage::T_END }
 };
 
-#define setMinMax(x, y, z) \
-	updown.Attach(GetDlgItem(x)); \
-	updown.SetRange32(y, z); \
-	updown.Detach();
-
 LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
 
-	CUpDownCtrl updown;
 	setMinMax(IDC_BUFFER_SPIN, 0, 4096);
 	setMinMax(IDC_READ_SPIN, 1024, 1024*1024);
 	setMinMax(IDC_WRITE_SPIN, 1024, 1024*1024);
-	//setMinMax(IDC_TAB_SPIN, 1, 10); remove this Yada
-	setMinMax(IDC_PM_LINESSPIN, 0, 999);
-	setMinMax(IDC_SHUTDOWN_SPIN , 1, 3600);
-	setMinMax(IDC_MAX_COMP_SPIN, 0, 9);
-	setMinMax(IDC_MATCH_SPIN, 1, 999);
-	setMinMax(IDC_AUTO_SEARCH_LIMIT_SPIN, 1, 999);
+
 	setMinMax(IDC_DOWNCONN_SPIN, 0, 5);
+	setMinMax(IDC_MAX_COMP_SPIN, 0, 9);
+
+	setMinMax(IDC_SHUTDOWN_SPIN , 1, 3600);
+	setMinMax(IDC_MATCH_SPIN, 1, 999);
 	setMinMax(IDC_LOG_LINES_SPIN, 0, 1000);
+
+	ctrlBloom.Attach(GetDlgItem(IDC_BLOOM_MODE));
+	ctrlBloom.AddString(CTSTRING(DISABLED));
+	ctrlBloom.AddString(CTSTRING(ENABLED));
+	ctrlBloom.SetCurSel(SETTING(SEND_BLOOM));
 
 	ctrlShutdownAction.Attach(GetDlgItem(IDC_COMBO1));
 	ctrlShutdownAction.AddString(CTSTRING(POWER_OFF));
@@ -141,6 +138,7 @@ void SDCPage::write()
 	settings->set(SettingsManager::USERLIST_DBLCLICK, userlistaction.GetCurSel());
 	settings->set(SettingsManager::TRANSFERLIST_DBLCLICK, transferlistaction.GetCurSel());
 	settings->set(SettingsManager::CHAT_DBLCLICK, chataction.GetCurSel());
+	settings->set(SettingsManager::SEND_BLOOM, ctrlBloom.GetCurSel());
 	userlistaction.Detach();
 	transferlistaction.Detach(); 
 	chataction.Detach(); 

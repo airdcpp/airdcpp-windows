@@ -59,28 +59,13 @@ LRESULT DownloadingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, L
 	PropPage::read((HWND)*this, items);
 	PropPage::read((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_SKIPPING_OPTIONS));
 
-	CUpDownCtrl spin;
-	spin.Attach(GetDlgItem(IDC_I_DOWN_SPEED_SPIN));
-	spin.SetRange32(0, 99999);
-	spin.Detach(); 
-	spin.Attach(GetDlgItem(IDC_TIME_DOWN_SPIN));
-	spin.SetRange32(1, 99999);
-	spin.Detach(); 
-	spin.Attach(GetDlgItem(IDC_H_DOWN_SPEED_SPIN));
-	spin.SetRange32(0, 99999);
-	spin.Detach(); 
-	spin.Attach(GetDlgItem(IDC_MIN_FILE_SIZE_SPIN));
-	spin.SetRange32(0, 99999);
-	spin.Detach(); 
-	spin.Attach(GetDlgItem(IDC_REMOVE_SPIN));
-	spin.SetRange32(0, 99999);
-	spin.Detach(); 
-	spin.Attach(GetDlgItem(IDC_SOURCES_SPIN));
-	spin.SetRange32(1, 99999);
-	spin.Detach();
-	spin.Attach(GetDlgItem(IDC_RECENT_SPIN));
-	spin.SetRange32(0, 99999);
-	spin.Detach(); 
+	setMinMax(IDC_I_DOWN_SPEED_SPIN, 0, 99999);
+	setMinMax(IDC_TIME_DOWN_SPIN, 1, 99999);
+	setMinMax(IDC_H_DOWN_SPEED_SPIN, 0, 99999);
+	setMinMax(IDC_MIN_FILE_SIZE_SPIN, 0, 99999);
+	setMinMax(IDC_REMOVE_SPIN, 0, 99999);
+	setMinMax(IDC_SOURCES_SPIN, 1, 99999);
+	setMinMax(IDC_RECENT_SPIN, 0, 99999);
 
 	// Do specialized reading here
 	return TRUE;

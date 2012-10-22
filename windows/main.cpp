@@ -449,7 +449,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				WinUtil::splash.reset();
 
 				//start the updated instance
-				if (startElevated) {
+				if (!startElevated) {
 					ShellExecAsUser(NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Util::getParams(true).c_str(), NULL);
 				} else {
 					ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Util::getParams(true).c_str(), NULL, SW_SHOW);

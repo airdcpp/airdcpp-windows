@@ -99,10 +99,7 @@ LRESULT PriorityPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 
 	fixPrioTypeControls();
 
-	CUpDownCtrl spin;
-	spin.Attach(GetDlgItem(IDC_PRIO_SPIN));
-	spin.SetRange32(1, 1000);
-	spin.Detach();
+	setMinMax(IDC_PRIO_SPIN, 1, 1000);
 
 	// Do specialized reading here
 	return TRUE;

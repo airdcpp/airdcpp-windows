@@ -15,7 +15,6 @@
 		<String Name="AdlsDestination">Destination Directory</String>
 		<String Name="AdlsDiscard">Discard</String>
 		<String Name="AdlsDownload">Download Matches</String>
-		<String Name="AdlsEnabled">Enabled</String>
 		<String Name="AdlsFullPath">Full Path</String>
 		<String Name="AdlsProperties">ADLSearch Properties</String>
 		<String Name="AdlsSearchString">Search String</String>
@@ -631,7 +630,6 @@
 		<String Name="SettingsPersonalInformation">Personal Information</String>
 		<String Name="SettingsPmBeep">Make an annoying sound every time a private message is received</String>
 		<String Name="SettingsPmBeepOpen">Make an annoying sound when a private message window is opened</String>
-		<String Name="SettingsPmHistory">PM history</String>
 		<String Name="SettingsPopunderPm">Open new private message windows in the background</String>
 		<String Name="SettingsPopupBotPms">Open private messages from the hub in their own window</String>
 		<String Name="SettingsPopupHubPms">Open private messages from bots in their own window</String>
@@ -1133,7 +1131,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="ProppageFavUser">Favorite user</String>
 		<String Name="ProppageOperator">Operator</String>
 		<String Name="ProppageNorm">Other users</String>
-		<String Name="MaxResizeLines">Max resize lines</String>
 		<String Name="SettingsDupeSearch">Use dupe color in search</String>
 		<String Name="SettingsLrus">Russian</String>
 		<String Name="FileAlreadyShared">Trying to Download File already shared! File: </String>
@@ -1675,5 +1672,9 @@ would you still like to load them?</String>
 		<String Name="ConfirmSizeWarningQueue">There are already %s of queued files for the directory %s and only %s space available. Do you really want to queue %s more?</String>
 		<String Name="OpenHubFilelist">Open hub filelist (%s)</String>
 		<String Name="SmallUpSlots">Small upload slots (slots for filelists and small files)</String>
+		<String Name="MaxChatResizeLines">Max lines to resize the message box on multiline messages</String>
+		<String Name="MaxPmHistoryLines">Max lines to show in PM history</String>
+		<String Name="Enabled">Enabled</String>
+		<String Name="BloomMode">Bloom filter mode</String>
 	</Strings>
 </Language>

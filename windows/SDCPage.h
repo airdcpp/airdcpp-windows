@@ -57,6 +57,8 @@ protected:
 	CComboBox ctrlShutdownAction;
 	CComboBox userlistaction, transferlistaction, chataction;
 
+	CComboBox ctrlBloom;
+
 	TCHAR* title;
 };
 

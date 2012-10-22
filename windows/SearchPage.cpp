@@ -49,16 +49,10 @@ PropPage::Item SearchPage::items[] = {
 	{ 0, 0, PropPage::T_END }
 };
 
-#define setMinMax(x, y, z) \
-	updown.Attach(GetDlgItem(x)); \
-	updown.SetRange32(y, z); \
-	updown.Detach();
-
 LRESULT SearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
 	
-	CUpDownCtrl updown;
 	setMinMax(IDC_SEARCH_HISTORY_SPIN, 1, 100);
 	setMinMax(IDC_INTERVAL_SPIN, 5, 9999);
 	setMinMax(IDC_EXPIRY_SPIN, 0, 90);

@@ -330,33 +330,17 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	PropPage::read((HWND)*this, items);
 
-	CUpDownCtrl updown;
-	updown.Attach(GetDlgItem(IDC_SLOTSPIN));
-	updown.SetRange(1, UD_MAXVAL);
-	updown.Detach();
-	updown.Attach(GetDlgItem(IDC_MIN_UPLOAD_SPIN));
-	updown.SetRange32(0, UD_MAXVAL);
-	updown.Detach();
-	updown.Attach(GetDlgItem(IDC_AUTO_SLOTS_SPIN));
-	updown.SetRange(0, 100);
-	updown.Detach();
+	setMinMax(IDC_SLOTSPIN, 1, UD_MAXVAL);
+	setMinMax(IDC_MIN_UPLOAD_SPIN, 0, UD_MAXVAL);
+	setMinMax(IDC_AUTO_SLOTS_SPIN, 0, 100);
+	setMinMax(IDC_SLOTSPIN, 1, UD_MAXVAL);
 
-	updown.Attach(GetDlgItem(IDC_SLOTSSPIN));
-	updown.SetRange32(0, 100);
-	updown.Detach();
-	updown.Attach(GetDlgItem(IDC_SPEEDSPIN));
-	updown.SetRange32(0, 10000);
-	updown.Detach();
-	updown.Attach(GetDlgItem(IDC_EXTRASLOTSSPIN));
-	updown.SetRange32(0, 100);
-	updown.Detach();
+	setMinMax(IDC_SLOTSSPIN, 0, 100);
+	setMinMax(IDC_SPEEDSPIN, 0, 90000);
+	setMinMax(IDC_EXTRASLOTSSPIN, 0, 100);
 
-	updown.Attach(GetDlgItem(IDC_MCN_SPIN));
-	updown.SetRange32(1, 100);
-	updown.Detach();
-	updown.Attach(GetDlgItem(IDC_MCN_SPIN2));
-	updown.SetRange32(1, 100);
-	updown.Detach();
+	setMinMax(IDC_MCN_SPIN, 1, 90000);
+	setMinMax(IDC_MCN_SPIN2, 1, 100);
 
 	fixControls();
 

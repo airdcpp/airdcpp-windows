@@ -117,10 +117,7 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	ctrlProgressDownDrawer.Attach(GetDlgItem(IDC_PROGRESS_COLOR_DOWN_SHOW));
 	ctrlProgressUpDrawer.Attach(GetDlgItem(IDC_PROGRESS_COLOR_UP_SHOW));
 
-	CUpDownCtrl ctrlSpin;
-	ctrlSpin.Attach(GetDlgItem(IDC_FLAT_SPIN));
-	ctrlSpin.SetRange(1, 5);
-	ctrlSpin.Detach();
+	setMinMax(IDC_FLAT_SPIN, 1, 5);
 
 	progress.SetRange(0,100);
 	progress.SetPos(50);

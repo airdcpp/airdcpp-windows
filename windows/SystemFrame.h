@@ -56,6 +56,7 @@ public:
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_REFRESH_SETTINGS, onRefreshSettings)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, onEditCopy)
+		COMMAND_ID_HANDLER(IDC_COPY_DIR, onCopyDir)
 		COMMAND_ID_HANDLER(IDC_OPEN_SYSTEM_LOG, onSystemLog)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearchFile)
@@ -92,6 +93,7 @@ public:
 	LRESULT onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onCopyDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlPad.SetFocus();

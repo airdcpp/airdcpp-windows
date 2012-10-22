@@ -30,6 +30,10 @@
 
 #include "../client/ResourceManager.h"
 
+#define setMinMax(x, y, z) \
+	updown.Attach(GetDlgItem(x)); \
+	updown.SetRange32(y, z); \
+	updown.Detach();
 
 class PropPage
 {
@@ -56,7 +60,7 @@ public:
 		WORD itemID;
 		ResourceManager::Strings translatedString;
 	};
-
+	CUpDownCtrl updown;
 protected:
 
 #if DIM_EDIT_EXPERIMENT
