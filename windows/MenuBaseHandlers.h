@@ -206,9 +206,10 @@ public:
 			//	menu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT_FAVUSER_HUB));
 		}
 
-		if(!traits.favOnly)
+		if(!traits.favOnly) {
 			menu.AppendMenu(MF_STRING, IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
-		menu.AppendMenu(MF_SEPARATOR);
+			menu.AppendMenu(MF_SEPARATOR);
+		}
 		menu.AppendMenu(MF_STRING, IDC_REMOVEALL, CTSTRING(REMOVE_FROM_ALL));
 		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
 	}	

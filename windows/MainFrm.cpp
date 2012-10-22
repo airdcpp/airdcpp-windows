@@ -271,7 +271,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
 	AddSimpleReBarBand(hWndWinampBar, NULL, TRUE);
-	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 205, TRUE);
+	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 210, TRUE);
 
 	CreateSimpleStatusBar();
 	
@@ -1577,11 +1577,13 @@ LRESULT MainFrame::onWinampStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 
-	refreshing = false;
-	progress.SetMarquee(FALSE);
-	progress.ModifyStyle(PBS_MARQUEE, NULL);
+	if(refreshing) {
+		refreshing = false;
+		progress.SetMarquee(FALSE);
+		progress.ModifyStyle(PBS_MARQUEE, NULL);
+		progress.Invalidate();
+	}
 	progress.SetRedraw(TRUE);
-
 	string file = m_HashInfo.file;
 	int64_t bytes = m_HashInfo.size;
 	size_t files = m_HashInfo.files;
