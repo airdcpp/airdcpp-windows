@@ -7,31 +7,28 @@
 #include "WinUtil.h"
 
 PropPage::TextItem LimitPage::texts[] = {
+	//limiter
 	{ IDC_STRONGDC_UP_SPEED, ResourceManager::MAX_UPLOAD_RATE },
 	{ IDC_STRONGDC_UP_SPEED1, ResourceManager::MAX_UPLOAD_RATE },
 	{ IDC_SETTINGS_KBPS1, ResourceManager::KBPS },
 	{ IDC_SETTINGS_KBPS2, ResourceManager::KBPS },
 	{ IDC_SETTINGS_KBPS3, ResourceManager::KBPS },
 	{ IDC_SETTINGS_KBPS4, ResourceManager::KBPS },
-	{ IDC_SETTINGS_KBPS5, ResourceManager::KBPS },
-	{ IDC_SETTINGS_KBPS6, ResourceManager::KBPS },
-	{ IDC_SETTINGS_KBPS7, ResourceManager::KBPS },
-	{ IDC_SETTINGS_MINUTES, ResourceManager::SECONDS },
 	{ IDC_STRONGDC_DW_SPEED, ResourceManager::MAX_DOWNLOAD_RATE },
 	{ IDC_STRONGDC_DW_SPEED1, ResourceManager::MAX_DOWNLOAD_RATE },
 	{ IDC_TIME_LIMITING, ResourceManager::SET_ALTERNATE_LIMITING },
 	{ IDC_STRONGDC_TO, ResourceManager::SETCZDC_TO },
-	{ IDC_REMOVE_IF, ResourceManager::NEW_DISCONNECT },
 
-	{ IDC_CZDC_SMALL_SLOTS, ResourceManager::SETCZDC_SMALL_UP_SLOTS },
+	//uploads
+	{ IDC_CZDC_SMALL_SLOTS, ResourceManager::SMALL_UP_SLOTS },
 	{ IDC_CZDC_SMALL_SIZE, ResourceManager::SETCZDC_SMALL_FILES },
-	{ IDC_CZDC_NOTE_SMALL, ResourceManager::SETCZDC_NOTE_SMALL_UP },
 	{ IDC_SETTINGS_PARTIAL_SLOTS, ResourceManager::SETSTRONGDC_PARTIAL_SLOTS },		
 	{ IDC_STATICb, ResourceManager::EXTRA_HUB_SLOTS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 }; 
 
 PropPage::Item LimitPage::items[] = {
+	//limiter
 	{ IDC_MX_UP_SP_LMT_NORMAL, SettingsManager::MAX_UPLOAD_SPEED_MAIN, PropPage::T_INT },
 	{ IDC_MX_DW_SP_LMT_NORMAL, SettingsManager::MAX_DOWNLOAD_SPEED_MAIN, PropPage::T_INT },
 	{ IDC_TIME_LIMITING, SettingsManager::TIME_DEPENDENT_THROTTLE, PropPage::T_BOOL },
@@ -40,6 +37,7 @@ PropPage::Item LimitPage::items[] = {
 	{ IDC_BW_START_TIME, SettingsManager::BANDWIDTH_LIMIT_START, PropPage::T_INT },
 	{ IDC_BW_END_TIME, SettingsManager::BANDWIDTH_LIMIT_END, PropPage::T_INT },
 
+	//uploads
 	{ IDC_EXTRA_SLOTS, SettingsManager::EXTRA_SLOTS, PropPage::T_INT },
 	{ IDC_SMALL_FILE_SIZE, SettingsManager::SET_MINISLOT_SIZE, PropPage::T_INT },
 	{ IDC_EXTRA_SLOTS2, SettingsManager::HUB_SLOTS, PropPage::T_INT },
@@ -51,6 +49,13 @@ LRESULT LimitPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
+
+	ctrlTransferEncryption.Attach(GetDlgItem(IDC_TRANSFER_ENCRYPTION));
+	ctrlTransferEncryption.AddString(CTSTRING(DISABLED));
+	ctrlTransferEncryption.AddString(CTSTRING(ADLS_ENABLED));
+	ctrlTransferEncryption.AddString(CTSTRING(ENCRYPTION_FORCED));
+	ctrlTransferEncryption.SetCurSel(SETTING(TLS_MODE));
+
 	CUpDownCtrl spin;
 
 	//advanced limits start
@@ -125,6 +130,8 @@ void LimitPage::write()
 	settings->set(SettingsManager::BANDWIDTH_LIMIT_END, timeCtrlEnd.GetCurSel());
 	timeCtrlBegin.Detach();
 	timeCtrlEnd.Detach(); 
+
+	SettingsManager::getInstance()->set(SettingsManager::TLS_MODE, ctrlTransferEncryption.GetCurSel());
 }
 
 void LimitPage::fixControls() {

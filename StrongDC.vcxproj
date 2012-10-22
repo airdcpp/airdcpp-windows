@@ -491,8 +491,8 @@
     <ClCompile Include="windows\EmoticonsManager.cpp" />
     <ClCompile Include="windows\AirAppearancePage.cpp" />
     <ClCompile Include="windows\ChatFrameBase.cpp" />
-	<ClCompile Include="windows\HtmlToRtf.cpp" />
-	<ClCompile Include="windows\LimitPage.cpp" />
+    <ClCompile Include="windows\HtmlToRtf.cpp" />
+    <ClCompile Include="windows\LimitPage.cpp" />
     <ClCompile Include="windows\MiscPage.cpp" />
     <ClCompile Include="windows\DownloadingOptionsPage.cpp" />
     <ClCompile Include="windows\ResourceLoader.cpp" />
@@ -601,7 +601,7 @@
     <ClInclude Include="windows\EmoticonsManager.h" />
     <ClInclude Include="windows\AirAppearancePage.h" />
     <ClInclude Include="windows\ChatFrameBase.h" />
-	<ClInclude Include="windows\HtmlToRtf.h" />
+    <ClInclude Include="windows\HtmlToRtf.h" />
     <ClInclude Include="windows\LimitPage.h" />
     <ClInclude Include="windows\ExCImage.h" />
     <ClInclude Include="windows\SplashWindow.h" />
@@ -758,8 +758,10 @@
     <Image Include="res\searchTypes\Pic.ico" />
     <Image Include="res\searchTypes\tth.ico" />
     <Image Include="res\searchTypes\Video.ico" />
+    <Image Include="res\SettingsTree\Limiter.ico" />
     <Image Include="res\SettingsTree\SearchTypes.ico" />
     <Image Include="res\text.ico" />
+    <Image Include="res\types.bmp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

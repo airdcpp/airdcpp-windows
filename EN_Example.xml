@@ -510,7 +510,6 @@
 		<String Name="SetczdcIDownSpeed">Disconnect download if speed is below</String>
 		<String Name="SetczdcMagnetUriHandler">Install Magnet URI handler on startup</String>
 		<String Name="SetczdcMinFileSize">And file size is more than</String>
-		<String Name="SetczdcNoteSmallUp">* Small Uploads Slots =&gt; Slots for filelist and Small Files.</String>
 		<String Name="SetczdcPassiveSearch">Always use passive mode for Search (Use only if you know what this doing !!!)</String>
 		<String Name="SetczdcPmLines">Lines from log on new PM</String>
 		<String Name="SetczdcPreview">Preview</String>
@@ -520,7 +519,6 @@
 		<String Name="SetczdcRemoveForbidden">Remove Forbidden (Unfinished Kazaa, Win MX, GetRight, eMule, AirDC++)</String>
 		<String Name="SetczdcSlowDisconnect">Disconnecting slow downloads</String>
 		<String Name="SetczdcSmallFiles">Small file size</String>
-		<String Name="SetczdcSmallUpSlots">Small Upload Slots</String>
 		<String Name="SetczdcStyles">Available styles</String>
 		<String Name="SetczdcTextColor">Text color</String>
 		<String Name="SetczdcTextStyle">Text style</String>
@@ -1497,7 +1495,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SettingsToolbarSize">Default Toolbar Icon size</String>
 		<String Name="SettingsToolbarNote">Note! Changing Toolbar Images or icon size require a client restart to take effect.</String>
 		<String Name="SettingsWtoolbarSize">Media Toolbar Icon size</String>
-		<String Name="MenuOpenHubOwnList">Open Hub own list</String>
 		<String Name="ToggleTbstatus">Toolbar Progressbar	Ctrl+5</String>
 		<String Name="XFavProfilesReset">%d favorite hubs have been reset to use the default share profile</String>
 		<String Name="ShareProfile">Share Profile</String>
@@ -1676,5 +1673,7 @@ would you still like to load them?</String>
 		<String Name="EndlessRedirectionLoop">Endless redirection loop (%1%)</String>
 		<String Name="ManualUpdateMsg">You will be forwarded to the downloading page as automatic updating can't be performed</String>
 		<String Name="ConfirmSizeWarningQueue">There are already %s of queued files for the directory %s and only %s space available. Do you really want to queue %s more?</String>
+		<String Name="OpenHubFilelist">Open hub filelist (%s)</String>
+		<String Name="SmallUpSlots">Small upload slots (slots for filelists and small files)</String>
 	</Strings>
 </Language>

@@ -672,6 +672,7 @@ Changed:
 - Add settings for opening partial lists and text files in background
 - Limit the maximum size of a viewed files to 1 MB
 - Reporting improvements for filelist refreshing
+- Show the scanning results in a separate tab
 
 
 Fixed:
@@ -707,5 +708,6 @@ Fixed:
 
 Removed:
 
+- The option to disable notifications about new version
 - The option to use antifrag method for downloads (always enabled now, didn't work correctly earlier)
 - "Private" option for favorite hubs

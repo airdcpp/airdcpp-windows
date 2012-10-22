@@ -51,28 +51,12 @@ LRESULT CertificatesPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 {
 	PropPage::translate((HWND)(*this), texts);
 
-	ctrlTransferEncryption.Attach(GetDlgItem(IDC_TRANSFER_ENCRYPTION));
-	ctrlTransferEncryption.AddString(CTSTRING(DISABLED));
-	ctrlTransferEncryption.AddString(CTSTRING(ADLS_ENABLED));
-	ctrlTransferEncryption.AddString(CTSTRING(ENCRYPTION_FORCED));
-	ctrlTransferEncryption.SetCurSel(SETTING(TLS_MODE));
-
 	// Do specialized reading here
 	PropPage::read((HWND)*this, items);
 	return TRUE;
 }
 
-LRESULT CertificatesPage::onModeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	fixControls();
-	return 0;
-}
-
-void CertificatesPage::fixControls() {
-	::EnableWindow(GetDlgItem(IDC_ALLOW_UNTRUSTED_CLIENTS),	ctrlTransferEncryption.GetCurSel() > 0);
-}
-
 void CertificatesPage::write() {
-	SettingsManager::getInstance()->set(SettingsManager::TLS_MODE, ctrlTransferEncryption.GetCurSel());
 	PropPage::write((HWND)*this, items);
 }
 

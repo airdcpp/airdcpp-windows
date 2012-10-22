@@ -42,8 +42,8 @@ public:
 	LRESULT onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 private:
-	void addItem(const dcpp::tstring& name, bool priv, bool select = false);
-	bool getItem(dcpp::tstring& name, bool& priv, bool checkSel);
+	void addItem(const dcpp::tstring& name, bool select = false);
+	bool getItem(dcpp::tstring& name, bool checkSel);
 	int findGroup(LPCTSTR name);
 	dcpp::tstring getText(int column, int item = -1) const;
 	void updateSelectedGroup(bool forceClean = false);

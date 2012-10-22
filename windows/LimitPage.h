@@ -36,6 +36,8 @@ private:
 	CComboBox timeCtrlBegin, timeCtrlEnd;
 	TCHAR* title;
 	void fixControls();
+
+	CComboBox ctrlTransferEncryption;
 };
 
 #endif //LimitPAGE_H
