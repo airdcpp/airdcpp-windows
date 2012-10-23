@@ -843,29 +843,31 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		RecentHubEntry* r = FavoriteManager::getInstance()->getRecentHubEntry(Text::fromT(server));
-		if(r) {
-			TCHAR buf[256];
-			this->GetWindowText(buf, 255);
-			r->setName(Text::fromT(buf));
-			r->setUsers(Util::toString(client->getUserCount()));
-			r->setShared(Util::toString(client->getAvailable()));
-			FavoriteManager::getInstance()->updateRecent(r);
+		if(!BOOLSETTING(CONFIRM_HUB_EXIT) || (MessageBox(CTSTRING(REALLY_CLOSE), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)) {
+			RecentHubEntry* r = FavoriteManager::getInstance()->getRecentHubEntry(Text::fromT(server));
+			if(r) {
+				TCHAR buf[256];
+				this->GetWindowText(buf, 255);
+				r->setName(Text::fromT(buf));
+				r->setUsers(Util::toString(client->getUserCount()));
+				r->setShared(Util::toString(client->getAvailable()));
+				FavoriteManager::getInstance()->updateRecent(r);
+			}
+			DeleteObject(hEmoticonBmp);
+			DestroyIcon(HubOpIcon);
+			DestroyIcon(HubRegIcon);
+			DestroyIcon(HubIcon);
+
+			SettingsManager::getInstance()->removeListener(this);
+			TimerManager::getInstance()->removeListener(this);
+			FavoriteManager::getInstance()->removeListener(this);
+			client->removeListener(this);
+			client->disconnect(true);
+
+			closed = true;
+			PostMessage(WM_CLOSE);
+			return 0;
 		}
-		DeleteObject(hEmoticonBmp);
-		DestroyIcon(HubOpIcon);
-		DestroyIcon(HubRegIcon);
-		DestroyIcon(HubIcon);
-
-		SettingsManager::getInstance()->removeListener(this);
-		TimerManager::getInstance()->removeListener(this);
-		FavoriteManager::getInstance()->removeListener(this);
-		client->removeListener(this);
-		client->disconnect(true);
-
-		closed = true;
-		PostMessage(WM_CLOSE);
-		return 0;
 	} else {
 		SettingsManager::getInstance()->set(SettingsManager::GET_USER_INFO, showUsers);
 		FavoriteManager::getInstance()->removeUserCommand(Text::fromT(server));

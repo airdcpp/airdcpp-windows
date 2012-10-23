@@ -458,6 +458,7 @@
 		<String Name="Ratio">Ratio</String>
 		<String Name="ReaddSource">Readd source</String>
 		<String Name="ReallyExit">Really exit?</String>
+		<String Name="ReallyClose">Really Close?</String>
 		<String Name="ReallyRemove">Really remove?</String>
 		<String Name="Reason">Reason</String>
 		<String Name="Reboot">Reboot</String>
@@ -1676,5 +1677,7 @@ would you still like to load them?</String>
 		<String Name="MaxPmHistoryLines">Max lines to show in PM history</String>
 		<String Name="Enabled">Enabled</String>
 		<String Name="BloomMode">Bloom filter mode</String>
+		<String Name="SettingsConfirmHubClose">Confirm hub closing</String>
+		<String Name="SettingsConfirmAsRemove">Confirm item removal in auto search</String>
 	</Strings>
 </Language>

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -66,7 +66,6 @@
 #define IDC_COPY_END                    163
 #define IDC_SPLITTER                    164
 #define IDD_SHAREPAGE                   205
-#define IDB_FOLDERS                     206
 #define IDD_AIRAPPEARANCEPAGE           207
 #define IDB_ARROWS                      208
 #define IDD_LINE                        209
@@ -163,7 +162,6 @@
 #define IDI_ADLSEARCH                   332
 #define IDI_SEARCHSPY                   333
 #define IDI_SETTINGS                    334
-#define IDR_EXEC                        335
 #define IDI_AWAY                        336
 #define IDI_REFRESH                     337
 #define IDD_LINECOMBO                   338
@@ -258,6 +256,10 @@
 #define IDI_CUSTOM                      438
 #define IDI_BOT_OFF                     439
 #define IDI_BOT                         440
+#define IDI_FOLDER                      441
+#define IDI_FOLDER_INC                  442
+#define IDI_FILE                        443
+#define IDI_OVERLAY                     444
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479

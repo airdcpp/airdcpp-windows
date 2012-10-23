@@ -70,6 +70,8 @@ WindowsPage::ListItem WindowsPage::confirmItems[] = {
 	{ SettingsManager::CONFIRM_EXIT, ResourceManager::SETTINGS_CONFIRM_EXIT },
 	{ SettingsManager::CONFIRM_HUB_REMOVAL, ResourceManager::SETTINGS_CONFIRM_HUB_REMOVAL },
 	{ SettingsManager::CONFIRM_DELETE, ResourceManager::SETTINGS_CONFIRM_ITEM_REMOVAL },
+	{ SettingsManager::CONFIRM_HUB_EXIT, ResourceManager::SETTINGS_CONFIRM_HUB_CLOSE },
+	{ SettingsManager::CONFIRM_AS_REMOVE, ResourceManager::SETTINGS_CONFIRM_AS_REMOVE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

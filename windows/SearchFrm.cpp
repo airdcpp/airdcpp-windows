@@ -120,16 +120,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlResults.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 	resultsContainer.SubclassWindow(ctrlResults.m_hWnd);
 	
-	if (BOOLSETTING(USE_SYSTEM_ICONS)) {
-		ctrlResults.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
-	} else {
-		if(Util::fileExists(Text::fromT(ResourceLoader::getIconPath(_T("types.bmp")))))
-			images.CreateFromImage(ResourceLoader::getIconPath(_T("types.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-		else
-			images.CreateFromImage(IDB_TYPES, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
-		ctrlResults.SetImageList(images, LVSIL_SMALL);
-
-	}
+	ctrlResults.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
 
 	ctrlHubs.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_NOCOLUMNHEADER, WS_EX_CLIENTEDGE, IDC_HUB);

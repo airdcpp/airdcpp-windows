@@ -188,16 +188,20 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDR_PRIVATE_OFF:   return _T("UserOff.ico");
 		case IDI_BOT:			return _T("Bot.ico");
 		case IDI_BOT_OFF:		return _T("BotOff.ico");
+		case IDI_FOLDER:		return _T("folder.ico");
+		case IDI_FOLDER_INC:	return _T("folder_incomplete.ico");
+		case IDI_FILE:			return _T("file.ico");
+		case IDI_OVERLAY:		return _T("overlay.ico");
 		default: return Util::emptyStringT;
 	}
 }
 void ResourceLoader::loadFileImages() {
 
-	if(Util::fileExists(Text::fromT(ResourceLoader::getIconPath(_T("folders.bmp")))))
-		fileImages.CreateFromImage(ResourceLoader::getIconPath(_T("folders.bmp")).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-	else
-		fileImages.CreateFromImage(IDB_FOLDERS, 16, 3, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
-
+	fileImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 3);
+	fileImages.AddIcon(loadIcon(IDI_FOLDER, 16));
+	fileImages.AddIcon(loadIcon(IDI_FOLDER_INC, 16));
+	fileImages.AddIcon(loadIcon(IDI_FILE, 16));
+	
 	dirIconIndex = fileImageCount++;
 	dirMaskedIndex = fileImageCount++;
 	fileImageCount++;
@@ -209,7 +213,7 @@ void ResourceLoader::loadFileImages() {
 			fileImages.ReplaceIcon(dirIconIndex, fi.hIcon);
 
 			{
-				HICON overlayIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_EXEC), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+				HICON overlayIcon = loadIcon(IDI_OVERLAY);
 
 				CImageList tmpIcons;
 				tmpIcons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 2, 1);

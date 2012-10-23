@@ -26,7 +26,6 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
 IDB_SPLASH              BITMAP                  "res\\bitmap1.bmp"
 IDB_STATE               BITMAP                  "res\\state.bmp"
-IDB_TYPES               BITMAP                  "res\\types.bmp"
 IDB_FLAGS               BITMAP                  "res\\flags.bmp"
 IDB_EMOTICON            BITMAP                  "res\\emoticon.bmp"
 
@@ -353,18 +352,18 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,198,156,50,14
 END
 
-IDD_WINDOWSPAGE DIALOGEX 0, 0, 275, 268
+IDD_WINDOWSPAGE DIALOGEX 0, 0, 276, 281
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 EXSTYLE WS_EX_STATICEDGE
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0xEE
 BEGIN
-    GROUPBOX        "Auto-open at startup",IDC_SETTINGS_AUTO_OPEN,7,7,261,95
+    GROUPBOX        "Auto-open at startup",IDC_SETTINGS_AUTO_OPEN,7,7,262,95
     CONTROL         "",IDC_WINDOWS_STARTUP,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,13,17,248,77
-    GROUPBOX        "Window options",IDC_SETTINGS_WINDOWS_OPTIONS,7,107,261,94
+    GROUPBOX        "Window options",IDC_SETTINGS_WINDOWS_OPTIONS,7,107,262,94
     CONTROL         "",IDC_WINDOWS_OPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,13,120,248,75
-    GROUPBOX        "Confirmation dialog options",IDC_SETTINGS_CONFIRM_OPTIONS,7,205,261,56
-    CONTROL         "",IDC_CONFIRM_OPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,13,216,248,37
+    GROUPBOX        "Confirmation dialog options",IDC_SETTINGS_CONFIRM_OPTIONS,7,218,262,56
+    CONTROL         "",IDC_CONFIRM_OPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,13,210,248,57
 END
 
 IDD_EMOTICONS_DLG DIALOGEX 0, 0, 48, 22
@@ -702,9 +701,9 @@ BEGIN
     IDD_WINDOWSPAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 268
+        RIGHTMARGIN, 269
         TOPMARGIN, 7
-        BOTTOMMARGIN, 261
+        BOTTOMMARGIN, 274
     END
 
     IDD_EMOTICONS_DLG, DIALOG
@@ -930,7 +929,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Bitmap
 //
 
-IDB_FOLDERS             BITMAP                  "res\\folders.bmp"
 IDB_ARROWS              BITMAP                  "res\\arrows.bmp"
 IDB_USERS               BITMAP                  "res\\users.bmp"
 
@@ -1662,7 +1660,6 @@ IDR_TRAY_HUB            ICON                    "res\\message.ico"
 IDR_PRIVATE             ICON                    "res\\User.ico"
 IDR_PRIVATE_OFF         ICON                    "res\\UserOff.ico"
 IDR_WINAMP_LOGO         ICON                    "res\\Winamp_logo.ico"
-IDR_EXEC                ICON                    "res\\Exec.ico"
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -2197,6 +2194,10 @@ IDI_HUBREG              ICON                    "res\\HubReg.ico"
 IDI_HUBOP               ICON                    "res\\HubOp.ico"
 IDI_BOT                 ICON                    "res\\Bot.ico"
 IDI_BOT_OFF             ICON                    "res\\Botoff.ico"
+IDI_OVERLAY             ICON                    "res\\overlay.ico"
+IDI_FOLDER              ICON                    "res\\folder.ico"
+IDI_FOLDER_INC          ICON                    "res\\folder_incomplete.ico"
+IDI_FILE                ICON                    "res\\file.ico"
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"

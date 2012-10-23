@@ -343,9 +343,10 @@ LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		removelist.push_back((AutoSearch*)ctrlAutoSearch.GetItemData(i));
 	}
 
-	for(auto a = removelist.begin(); a !=removelist.end(); ++a )
-		AutoSearchManager::getInstance()->removeAutoSearch(*a);
-
+	if(!BOOLSETTING(CONFIRM_AS_REMOVE) || (MessageBox(CTSTRING(REALLY_REMOVE), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)) {
+		for(auto a = removelist.begin(); a !=removelist.end(); ++a )
+			AutoSearchManager::getInstance()->removeAutoSearch(*a);
+	}
 	return 0;
 }
 
