@@ -1099,5 +1099,17 @@
     <Image Include="res\SettingsTree\Limiter.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\overlay.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\folder.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\folder_incomplete.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\file.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

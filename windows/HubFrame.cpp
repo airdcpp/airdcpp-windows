@@ -909,8 +909,8 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 			SettingsManager::getInstance()->set(SettingsManager::HUBFRAME_VISIBLE, tmp3);
 		}
 		bHandled = FALSE;
-		return 0;
 	}
+	return 0;
 }
 
 void HubFrame::clearUserList() {

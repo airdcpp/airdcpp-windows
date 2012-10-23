@@ -739,6 +739,9 @@
   <ItemGroup>
     <Image Include="res\Bot.ico" />
     <Image Include="res\Botoff.ico" />
+    <Image Include="res\file.ico" />
+    <Image Include="res\folder.ico" />
+    <Image Include="res\folder_incomplete.ico" />
     <Image Include="res\MediaToolbar\back.ico" />
     <Image Include="res\MediaToolbar\down.ico" />
     <Image Include="res\MediaToolbar\next.ico" />
@@ -749,6 +752,7 @@
     <Image Include="res\MediaToolbar\stop.ico" />
     <Image Include="res\MediaToolbar\up.ico" />
     <Image Include="res\MediaToolbar\volume50.ico" />
+    <Image Include="res\overlay.ico" />
     <Image Include="res\searchTypes\Any.ico" />
     <Image Include="res\searchTypes\Audio.ico" />
     <Image Include="res\searchTypes\Compressed.ico" />
