@@ -981,19 +981,10 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 		if(BOOLSETTING(SHOW_SHELL_MENU) && dl->getIsOwnList() && (ctrlList.GetSelectedCount() == 1)) {
 			StringList localPaths;
-	
-			if(ii->type == ItemInfo::FILE){
-				try {
-					dl->getLocalPaths(ii->file, localPaths);
-				} catch(...) {
-					goto clientmenu;
-				}
-			} else {
-				try {
-					dl->getLocalPaths(ii->dir, localPaths);
-				} catch(...) {
-					goto clientmenu;
-				}
+			try {
+				ii->type == ItemInfo::FILE ? dl->getLocalPaths(ii->file, localPaths) : dl->getLocalPaths(ii->dir, localPaths);
+			} catch(...) {
+				goto clientmenu;
 			}
 			
 			if(localPaths.size() == 1 && GetFileAttributes(Text::toT(localPaths.front()).c_str()) != 0xFFFFFFFF) { // Check that the file still exists
@@ -1072,7 +1063,7 @@ clientmenu:
 				fileMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 			}
 
-			if(dl->getIsOwnList() && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
+			if(dl->getIsOwnList() && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls()) && ctrlList.GetSelectedCount() > 1) {
 				fileMenu.AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
 				fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK)); //sfv checker
 				if(ctrlList.GetSelectedCount() == 1) {				

@@ -80,7 +80,6 @@ public:
 		MESSAGE_HANDLER(WM_MOUSEMOVE, onStyleChange)
 		MESSAGE_HANDLER(WM_CAPTURECHANGED, onStyleChanged)
 		COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
-		COMMAND_ID_HANDLER(IDC_REFRESH, onRefresh)
 		COMMAND_ID_HANDLER(IDC_FOLLOW, onFollow)
 		COMMAND_ID_HANDLER(IDC_ADD_AS_FAVORITE, onAddAsFavorite)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
@@ -188,14 +187,6 @@ public:
 
 	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		PostMessage(WM_CLOSE);
-		return 0;
-	}
-
-	LRESULT onRefresh(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		if(client->isConnected()) {
-			clearUserList();
-			client->refreshUserList(false);
-		}
 		return 0;
 	}
 
