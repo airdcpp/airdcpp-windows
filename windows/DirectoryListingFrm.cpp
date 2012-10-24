@@ -1063,12 +1063,9 @@ clientmenu:
 				fileMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 			}
 
-			if(dl->getIsOwnList() && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls()) && ctrlList.GetSelectedCount() > 1) {
+			if(dl->getIsOwnList() && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
 				fileMenu.AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
-				fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK)); //sfv checker
-				if(ctrlList.GetSelectedCount() == 1) {				
-					fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-				}
+				fileMenu.AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK));
 				fileMenu.AppendMenu(MF_SEPARATOR);
 			}
 
