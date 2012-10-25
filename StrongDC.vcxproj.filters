@@ -1022,6 +1022,9 @@
     <ClInclude Include="windows\ExCImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\CProgressCtrlEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\SettingsTree\SearchTypes.ico">

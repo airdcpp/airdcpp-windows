@@ -271,7 +271,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
 	AddSimpleReBarBand(hWndWinampBar, NULL, TRUE);
-	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 210, TRUE);
+	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 215, TRUE);
 
 	CreateSimpleStatusBar();
 	
@@ -444,13 +444,13 @@ HWND MainFrame::createTBStatusBar() {
 
 	CRect rect;
 	TBStatusCtrl.GetItemRect(0, &rect);
+	rect.left += 2;
 
-	progress.Create(TBStatusCtrl.m_hWnd, rect , NULL, PBS_SMOOTH  | WS_CHILD | WS_VISIBLE);
+	progress.Create(TBStatusCtrl.m_hWnd, rect, NULL, WS_CHILD | PBS_SMOOTH | WS_VISIBLE);
 	progress.SetRange(0, 10000);
 
 	startBytes, startFiles = 0;
 	refreshing = false;
-	//updateTBStatus();
 
 	return TBStatusCtrl.m_hWnd;
 }
@@ -1156,8 +1156,6 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			}
 		}
 		bAppMinimized = false;
-		if(TBStatusCtrl.IsWindow())
-			progress.SetRedraw(TRUE);
 	}
 
 	bHandled = FALSE;
@@ -1581,9 +1579,11 @@ void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 		refreshing = false;
 		progress.SetMarquee(FALSE);
 		progress.ModifyStyle(PBS_MARQUEE, NULL);
+		progress.SetText(_T(""));
+		progress.SetPos(0);
 		progress.Invalidate();
 	}
-	progress.SetRedraw(TRUE);
+
 	string file = m_HashInfo.file;
 	int64_t bytes = m_HashInfo.size;
 	size_t files = m_HashInfo.files;
@@ -1616,29 +1616,14 @@ void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 	}
 
 	if(startFiles == 0 || startBytes == 0 || files == 0) {
-		progress.SetPos(0);
 		startBytes = 0;
 		startFiles = 0;
+		if(progress.GetPos() != 0 || paused || progress.GetTextLen() > 0) { //skip unnecessary window updates...
+			progress.SetPosWithText(0, tmp);
+		}
 	} else {
-		progress.SetPos((int)(progress.GetRangeLimit(0) * ((0.5 * (startFiles - files)/startFiles) + 0.5 * (startBytes - bytes) / startBytes)));
-		progress.RedrawWindow();
-		setProgressText(tmp);
-		progress.SetRedraw(FALSE);
+		progress.SetPosWithText(((int)(progress.GetRangeLimit(0) * ((0.5 * (startFiles - files)/startFiles) + 0.5 * (startBytes - bytes) / startBytes))), tmp);
 	}
-}
-void MainFrame::setProgressText(const tstring& text){
-	CPoint ptStart;
-	CRect prc;
-	progress.GetClientRect(&prc);
-
-	HDC progressTextDC = progress.GetDC();
-
-	::SetBkMode(progressTextDC, TRANSPARENT);
-	::SetTextColor(progressTextDC, WinUtil::TBprogressTextColor );
-	::SelectObject(progressTextDC, WinUtil::progressFont);
-	::DrawText(progressTextDC, text.c_str(), text.length(), prc,  DT_SINGLELINE | DT_CENTER | DT_VCENTER );
-	
-	progress.ReleaseDC(progressTextDC);
 }
 
 void MainFrame::updateTBStatusRefreshing() {
@@ -1646,9 +1631,9 @@ void MainFrame::updateTBStatusRefreshing() {
 		return;
 
 	refreshing = true;
-	progress.SetRedraw(TRUE);
 	progress.ModifyStyle(NULL, PBS_MARQUEE);
 	progress.SetMarquee(TRUE, 10);
+	progress.SetText(_T("Refreshing...")); // Dont translate, someone might make it too long to fit.
 }
 
 LRESULT MainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)

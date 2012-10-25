@@ -622,7 +622,7 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 
 
 int SearchFrame::SearchInfo::getImageIndex() const {
-	return BOOLSETTING(USE_SYSTEM_ICONS) ? sr->getType() == SearchResult::TYPE_FILE ? ResourceLoader::getIconIndex(Text::toT(sr->getFile())) : ResourceLoader::getDirIconIndex() : 0;
+	return sr->getType() == SearchResult::TYPE_FILE ? ResourceLoader::getIconIndex(Text::toT(sr->getFile())) : ResourceLoader::getDirIconIndex();
 }
 
 

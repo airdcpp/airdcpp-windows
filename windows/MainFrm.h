@@ -43,6 +43,7 @@
 #include "HashProgressDlg.h"
 #include "OMenu.h"
 #include "picturewindow.h"
+#include "CProgressCtrlEx.h"
 
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>, public Thread,
@@ -424,10 +425,9 @@ private:
 	CToolBarCtrl ctrlToolbar;
 	CToolBarCtrl ctrlSmallToolbar;
 	
-	CProgressBarCtrl progress;
+	CProgressCtrlEx progress;
 	CToolBarCtrl TBStatusCtrl;
 	HWND createTBStatusBar();
-	void setProgressText(const tstring& text);
 
 	struct HashInfo {
 		HashInfo(const string& aFile, int64_t& aSize, size_t& aFiles, int64_t& aSpeed, bool aPaused) : 
