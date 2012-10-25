@@ -45,12 +45,12 @@ public:
 		 MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBg)
 	END_MSG_MAP()
 	
-	LRESULT OnCreate(UINT /*Msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		//DefWindowProc(Msg, wParam, lParam);
+	LRESULT OnCreate(UINT Msg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+		DefWindowProc(Msg, wParam, lParam);
 		CRect rc;
 		GetClientRect(&rc);
 		ctrlText.Create(m_hWnd, rc, NULL, WS_CHILD | WS_VISIBLE | SS_ENDELLIPSIS | SS_CENTERIMAGE | dTextAlign, WS_EX_TRANSPARENT);
-		return TRUE;
+		return 0;
 	}
 	
 	LRESULT OnEraseBg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
