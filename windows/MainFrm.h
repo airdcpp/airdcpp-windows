@@ -169,7 +169,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_HELP_GUIDES, onLink)
 		COMMAND_ID_HANDLER(IDC_HELP_DISCUSS, onLink)
 		COMMAND_ID_HANDLER(IDC_OPEN_FILE_LIST, onOpenFileList)
-		COMMAND_ID_HANDLER(IDC_OPEN_MY_LIST, onOpenFileList)
+		COMMAND_ID_HANDLER(IDC_OPEN_MY_LIST, onOpenOwnList)
+		COMMAND_ID_HANDLER(IDC_OWN_LIST_ADL, onOpenOwnList)
 		COMMAND_ID_HANDLER(IDC_TRAY_SHOW, onAppShow)
 		COMMAND_ID_HANDLER(ID_TOGGLE_TOOLBAR, OnViewWinampBar)
 		COMMAND_ID_HANDLER(ID_TOGGLE_TBSTATUS, OnViewTBStatusBar)
@@ -229,6 +230,7 @@ public:
 	LRESULT OnWizard(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onLink(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onOpenOwnList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

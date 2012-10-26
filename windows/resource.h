@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1494,6 +1494,7 @@
 #define IDC_FIND_TEXT                   15129
 #define IDC_FILTER                      15130
 #define IDC_EMOT                        15131
+#define IDC_OWN_LIST_ADL                15132
 #define ID_TOGGLE_TOOLBAR               15999
 #define ID_TOGGLE_TBSTATUS              16900
 #define ID_LOCK_TB                      18900

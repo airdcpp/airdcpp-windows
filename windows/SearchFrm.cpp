@@ -565,7 +565,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 			}
 		}
 
-		if(UseSkiplist && searchSkipList.match(aResult->getFileName())) {
+		if(!isHash && UseSkiplist && searchSkipList.match(aResult->getFileName())) {
 			droppedResults++;
 			PostMessage(WM_SPEAKER, FILTER_RESULT);
 			return;

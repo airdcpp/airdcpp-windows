@@ -1523,7 +1523,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="AddingSharedDir">Adding the directory %s in share...</String>
 		<String Name="AddingXSharedDirs">Adding %d directories in share...</String>
 		<String Name="DirectoryAdded">The directory %s has been added in share</String>
-		<String Name="DirectoriesAdded">%d directories has been added in share</String>
+		<String Name="DirectoriesAdded">%d directories have been added in share</String>
 		<String Name="AddDirectoryQueued">The directory %s has been queued to be added in share</String>
 		<String Name="AddDirectoriesQueued">%d directories have queued to be added in share</String>
 		<String Name="DirectoryRefreshed">The directory %s has been refreshed</String>
@@ -1654,7 +1654,7 @@ would you still like to load them?</String>
 		<String Name="NewLimit">New limit (KiB/s) (0 = infinite)</String>
 		<String Name="TotalFiles">Total files: %d</String>
 		<String Name="TotalSize">Total size: %s</String>
-		<String Name="FullListDlLimit">Maximun number of files for getting full filelist with \"Get/Browse filelist\"</String>
+		<String Name="FullListDlLimit">Maximum number of files for getting full filelist with \"Get/Browse filelist\"</String>
 		<String Name="SetTransferLimiting">Limit transfer speeds</String>
 		<String Name="SetAlternateLimiting">Use Alternate Limiting from</String>
 		<String Name="MaxUploadRate">Maximum upload rate (0 = infinite)</String>
@@ -1679,5 +1679,6 @@ would you still like to load them?</String>
 		<String Name="BloomMode">Bloom filter mode</String>
 		<String Name="SettingsConfirmHubClose">Confirm hub closing</String>
 		<String Name="SettingsConfirmAsRemove">Confirm item removal in auto search</String>
+		<String Name="OwnListAdl">Match own list with ADL search</String>
 	</Strings>
 </Language>

@@ -1345,38 +1345,36 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 	SetSplitterRect(rc2);
 }
 
-static const TCHAR types[] = _T("File Lists\0*.DcLst;*.xml.bz2\0All Files\0*.*\0");
+LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	ProfileToken profile = SP_DEFAULT;
 
-LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring file = Util::emptyStringT;
-	
-	if(wID == IDC_OPEN_MY_LIST){
-		ProfileToken profile;
-		auto profiles = ShareManager::getInstance()->getProfiles();
-		if (profiles.size() > 2) {
-			StringList tmpList;
-			for(auto j = profiles.begin(); j != profiles.end(); j++) {
-				if ((*j)->getToken() != SP_HIDDEN)
-					tmpList.push_back((*j)->getDisplayName());
-			}
-
-			ComboDlg dlg;
-			dlg.setList(tmpList);
-			dlg.description = CTSTRING(SHARE_PROFILE);
-			dlg.title = CTSTRING(MENU_BROWSE_OWN_LIST);
-			if(dlg.DoModal() == IDOK) {
-				profile = profiles[dlg.curSel]->getProfileList()->getProfile();
-			} else {
-				return 0;
-			}
-		} else {
-			profile = SP_DEFAULT;
+	auto profiles = ShareManager::getInstance()->getProfiles();
+	if (profiles.size() > 2) {
+		StringList tmpList;
+		for(auto j = profiles.begin(); j != profiles.end(); j++) {
+			if ((*j)->getToken() != SP_HIDDEN)
+				tmpList.push_back((*j)->getDisplayName());
 		}
 
-		DirectoryListingManager::getInstance()->openOwnList(profile);
-		return 0;
+		ComboDlg dlg;
+		dlg.setList(tmpList);
+		dlg.description = CTSTRING(SHARE_PROFILE);
+		dlg.title = CTSTRING(MENU_BROWSE_OWN_LIST);
+		if(dlg.DoModal() == IDOK) {
+			profile = profiles[dlg.curSel]->getProfileList()->getProfile();
+		} else {
+			return 0;
+		}
 	}
 
+	DirectoryListingManager::getInstance()->openOwnList(profile, wID == IDC_OWN_LIST_ADL);
+	return 0;
+}
+
+LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	const TCHAR types[] = _T("File Lists\0*.DcLst;*.xml.bz2\0All Files\0*.*\0");
+
+	tstring file;
 	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), types)) {
 		UserPtr u = DirectoryListing::getUserFromFilename(Text::fromT(file));
 		if(u) {
