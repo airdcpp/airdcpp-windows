@@ -315,7 +315,7 @@ LRESULT ADLSearchFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 	// Edit existing
 	ADLSearchManager::SearchCollection& collection = ADLSearchManager::getInstance()->collection;
-	ADLSearch search = collection[i];
+	ADLSearch& search = collection[i];
 
 	// Invoke dialog with selected search
 	ADLSProperties dlg(search);
