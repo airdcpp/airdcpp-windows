@@ -1195,6 +1195,9 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		}
 
 		if( oldshutdown ||(!BOOLSETTING(CONFIRM_EXIT)) || (MessageBox(CTSTRING(REALLY_EXIT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) ) {
+			
+			HubFrame::ShutDown();
+
 			WinUtil::splash = unique_ptr<SplashWindow>(new SplashWindow());
 			(*WinUtil::splash)(STRING(UNLOADING_GUI));
 

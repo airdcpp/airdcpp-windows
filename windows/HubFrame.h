@@ -165,6 +165,9 @@ public:
 	void onTab();
 	void handleTab(bool reverse);
 	void runUserCommand(::UserCommand& uc);
+	static void ShutDown() {
+		shutdown = true;
+	}
 
 	static void openWindow(const tstring& server, int chatusersplit = 0, bool userliststate = true, ProfileToken aShareProfile = SP_DEFAULT,
 		        string sColumsOrder = Util::emptyString, string sColumsWidth = Util::emptyString, string sColumsVisible = Util::emptyString);
@@ -263,6 +266,7 @@ private:
 	bool hubshowjoins; //favorite hub show joins
 	bool logMainChat;
 	bool showchaticon;
+	static bool shutdown;
 	HICON HubOpIcon; 
 	HICON HubRegIcon; 
 	HICON HubIcon; 

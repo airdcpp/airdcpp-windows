@@ -48,6 +48,7 @@
 
 HubFrame::FrameMap HubFrame::frames;
 HubFrame::IgnoreMap HubFrame::ignoreList;
+bool HubFrame::shutdown = false;
 
 int HubFrame::columnSizes[] = { 100, 75, 75, 75, 100, 75, 130, 100, 50, 40, 40, 40, 40, 300 };
 int HubFrame::columnIndexes[] = { OnlineUser::COLUMN_NICK, OnlineUser::COLUMN_SHARED, OnlineUser::COLUMN_EXACT_SHARED,
@@ -843,7 +844,7 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		if(!BOOLSETTING(CONFIRM_HUB_EXIT) || (MessageBox(CTSTRING(REALLY_CLOSE), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)) {
+		if(shutdown || !BOOLSETTING(CONFIRM_HUB_EXIT) || (MessageBox(CTSTRING(REALLY_CLOSE), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)) {
 			RecentHubEntry* r = FavoriteManager::getInstance()->getRecentHubEntry(Text::fromT(server));
 			if(r) {
 				TCHAR buf[256];
