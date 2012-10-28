@@ -305,6 +305,7 @@
     <ClCompile Include="client\TimerManager.cpp" />
     <ClCompile Include="client\TraceManager.cpp" />
     <ClCompile Include="client\Transfer.cpp" />
+    <ClCompile Include="client\UDPServer.cpp" />
     <ClCompile Include="client\UpdateManager.cpp" />
     <ClCompile Include="client\Updater.cpp" />
     <ClCompile Include="client\Upload.cpp" />
@@ -435,6 +436,7 @@
     <ClInclude Include="client\TargetUtil.h" />
     <ClInclude Include="client\ThrottleManager.h" />
     <ClInclude Include="client\typedefs.h" />
+    <ClInclude Include="client\UDPServer.h" />
     <ClInclude Include="client\UpdateManager.h" />
     <ClInclude Include="client\UpdateManagerListener.h" />
     <ClInclude Include="client\Updater.h" />

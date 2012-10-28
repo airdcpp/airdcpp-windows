@@ -24,6 +24,7 @@
 #endif // _MSC_VER > 1000
 
 #include "../client/ShareManager.h"
+#include "../client/AirUtil.h"
 
 class LineDlg : public CDialogImpl<LineDlg>
 {

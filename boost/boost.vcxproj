@@ -172,6 +172,7 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="libs\atomic\src\lockpool.cpp" />
     <ClCompile Include="libs\regex\src\c_regex_traits.cpp" />
     <ClCompile Include="libs\regex\src\cpp_regex_traits.cpp" />
     <ClCompile Include="libs\regex\src\cregex.cpp" />

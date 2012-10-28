@@ -272,6 +272,9 @@
     <ClCompile Include="client\ThrottleManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\UDPServer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -704,6 +707,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\ThrottleManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\UDPServer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
