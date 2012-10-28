@@ -91,6 +91,7 @@ public:
 	//SS_LEFT, SS_RIGHT or SS_CENTER
 	void SetTextAlign(DWORD newAlign) {
 		ctrlText.ModifyStyle(dTextAlign, newAlign);
+		dTextAlign = newAlign;
 	}	
 	
 	tstring GetText() {

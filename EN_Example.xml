@@ -652,7 +652,7 @@
 		<String Name="SettingsSbMaxSources">Max sources for match queue</String>
 		<String Name="SettingsSearchHistory">Search history</String>
 		<String Name="SettingsSelectColor">Select color</String>
-		<String Name="SettingsSelectTextFace">&amp;Text style</String>
+		<String Name="SettingsSelectTextFace">General Text style</String>
 		<String Name="SettingsSelectWindowColor">&amp;Window color</String>
 		<String Name="SettingsSendUnknownCommands">Send unknown /commands to the hub</String>
 		<String Name="SettingsShareHidden">Share hidden files</String>
@@ -1046,7 +1046,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="PresetAddAll">Add all</String>
 		<String Name="PresetMyNick">My nick</String>
 		<String Name="PresetMyMessages">My messages</String>
-		<String Name="PresetUsers">Users</String>
+		<String Name="PresetUserLimiter">Users Limiting Upload</String>
 		<String Name="PresetTimestamp">Timestamps</String>
 		<String Name="PresetUrls">Urls</String>
 		<String Name="PresetMe">/me</String>
@@ -1680,5 +1680,6 @@ would you still like to load them?</String>
 		<String Name="SettingsConfirmHubClose">Confirm hub closing</String>
 		<String Name="SettingsConfirmAsRemove">Confirm item removal in auto search</String>
 		<String Name="OwnListAdl">Match own list with ADL search</String>
+		<String Name="MatchColumn">Match Column</String>
 	</Strings>
 </Language>

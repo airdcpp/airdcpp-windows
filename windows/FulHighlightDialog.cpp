@@ -30,6 +30,10 @@
 #include "FulHighlightDialog.h"
 #include "WinUtil.h"
 
+ResourceManager::Strings FulHighlightDialog::UserColumnNames[] = { ResourceManager::NICK, ResourceManager::SHARED, ResourceManager::EXACT_SHARED, 
+	ResourceManager::DESCRIPTION, ResourceManager::TAG, ResourceManager::SETCZDC_UPLOAD_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED, ResourceManager::IP_BARE, ResourceManager::EMAIL,
+	ResourceManager::VERSION, ResourceManager::MODE, ResourceManager::HUBS, ResourceManager::SLOTS, ResourceManager::CID };
+
 PropPage::TextItem FulHighlightDialog::texts[] = {
 	{ IDC_TEXT_STYLES,	 ResourceManager::HIGHLIGHT_TEXT_STYLES		},
 	{ IDC_MATCH_OPTIONS, ResourceManager::HIGHLIGHT_MATCH_OPTIONS	},
@@ -51,6 +55,7 @@ PropPage::TextItem FulHighlightDialog::texts[] = {
 	{ IDC_HCONTEXT_TEXT, ResourceManager::HIGHLIGHT_CONTEXT		},
 	{ IDOK,				 ResourceManager::OK						},
 	{ IDCANCEL,			 ResourceManager::CANCEL					},
+	{ IDC_MATCH_COL_TEXT,ResourceManager::MATCH_COLUMN					},
 	{ 0,				 ResourceManager::SETTINGS_AUTO_AWAY		}
 };
 
@@ -70,6 +75,7 @@ LRESULT FulHighlightDialog::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	ctrlMatchType.Attach(GetDlgItem(IDC_MATCHTYPE));
 	ctrlContext.Attach(GetDlgItem(IDC_HCONTEXT));
 	ctrlText.Attach(GetDlgItem(IDC_HLTEXT));
+	ctrlMatchCol.Attach(GetDlgItem(IDC_MATCH_COLUMN));
 
 	//add alternatives
 	StringTokenizer<tstring> s(Text::toT(STRING(HIGHLIGHT_MATCH_TYPES)), _T(','));
@@ -163,6 +169,9 @@ void FulHighlightDialog::fix() {
 		::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
 		::EnableWindow(GetDlgItem(IDC_SOUND),					use);
 		::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
+		
+		::EnableWindow(GetDlgItem(IDC_MATCH_COL_TEXT),					1);
+		::EnableWindow(GetDlgItem(IDC_MATCH_COLUMN),					1);
 
 	} else if(ctrlContext.GetCurSel() == HighlightManager::CONTEXT_FILELIST) {
 		BOOL use = 0;
@@ -176,6 +185,8 @@ void FulHighlightDialog::fix() {
 		::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
 		::EnableWindow(GetDlgItem(IDC_SOUND),					use);
 		::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
+		::EnableWindow(GetDlgItem(IDC_MATCH_COL_TEXT),					use);
+		::EnableWindow(GetDlgItem(IDC_MATCH_COLUMN),					use);
 		BOOL t;
 		onClickedBox(0, IDC_HAS_BG_COLOR, NULL, t);
 		onClickedBox(0, IDC_HAS_FG_COLOR, NULL, t);
@@ -193,6 +204,8 @@ void FulHighlightDialog::fix() {
 		::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
 		::EnableWindow(GetDlgItem(IDC_SOUND),					use);
 		::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
+		::EnableWindow(GetDlgItem(IDC_MATCH_COL_TEXT),					0);
+		::EnableWindow(GetDlgItem(IDC_MATCH_COLUMN),					0);
 
 		BOOL t;
 		onClickedBox(0, IDC_HAS_BG_COLOR, NULL, t);
@@ -201,6 +214,13 @@ void FulHighlightDialog::fix() {
 
 		ctrlText.SetWindowText(_T("Use $Re: for Regexp"));
 	}
+}
+void FulHighlightDialog::populateMatchCombo() {
+
+	for(int i = 0; i < 14; i++) 
+		ctrlMatchCol.AddString(CTSTRING_I(UserColumnNames[i]));
+
+	ctrlMatchCol.SetCurSel(cs.getMatchColumn());
 }
 
 LRESULT FulHighlightDialog::onApplyContext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
@@ -247,6 +267,11 @@ void FulHighlightDialog::getValues(){
 
 	cs.setMatchType( ctrlMatchType.GetCurSel() );
 	cs.setContext(ctrlContext.GetCurSel());
+	
+	if(ctrlContext.GetCurSel() == HighlightManager::CONTEXT_NICKLIST)
+		cs.setMatchColumn(ctrlMatchCol.GetCurSel());
+	else
+		cs.setMatchColumn(0);
 
 	cs.setSoundFile( soundFile );
 
@@ -260,6 +285,7 @@ void FulHighlightDialog::initControls() {
 	SetDlgItemText(IDC_STRING, cs.getMatch().c_str());
 	ctrlMatchType.SetCurSel(cs.getMatchType());
 	ctrlContext.SetCurSel(cs.getContext());
+	populateMatchCombo();
 
 	CheckDlgButton(IDC_BOLD			, cs.getBold()			 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_ITALIC		, cs.getItalic()		 ? BST_CHECKED : BST_UNCHECKED);

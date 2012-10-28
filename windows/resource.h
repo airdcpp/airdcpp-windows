@@ -670,6 +670,7 @@
 #define IDC_EXPORT                      1270
 #define IDC_BACK_IMAGE                  1270
 #define IDC_SETTINGS_GET_USER_COUNTRY   1271
+#define IDC_EXPORT2                     1271
 #define IDC_SB_HIGH_PRIO_FILES          1272
 #define IDC_UP_COMBO                    1273
 #define IDC_LOG_FORMAT                  1273
@@ -1151,6 +1152,8 @@
 #define IDC_STRONGDC                    1673
 #define IDC_ADVANCED_LABEL              1673
 #define IDC_SEARCH_TIMES_LABEL          1674
+#define IDC_MATCH_COLUMN                1675
+#define IDC_MATCH_COL_TEXT              1676
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1530,7 +1533,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        346
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1675
+#define _APS_NEXT_CONTROL_VALUE         1677
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

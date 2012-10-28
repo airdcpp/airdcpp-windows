@@ -2098,17 +2098,18 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 					ColorSettings* cs = &(*i);
 					string str;
 					if(cs->getContext() == HighlightManager::CONTEXT_NICKLIST) {
+						tstring match = ui->getText(cs->getMatchColumn());
+						if(match.empty()) continue;
 						if(cs->usingRegexp()) {
 							try {
 								//have to have $Re:
-								tstring nick = Text::toT(ui->getIdentity().getNick());
-								if(boost::regex_search(nick.begin(), nick.end(), cs->regexp)){
+								if(boost::regex_search(match.begin(), match.end(), cs->regexp)){
 									if(cs->getHasFgColor()) cd->clrText = cs->getFgColor();
 									break;
 								}
 							}catch(...) {}
 						} else {
-							if (Wildcard::patternMatch(Text::utf8ToAcp(ui->getIdentity().getNick()), Text::utf8ToAcp(Text::fromT(cs->getMatch())), '|')){
+							if (Wildcard::patternMatch(Text::utf8ToAcp(Text::fromT(match)), Text::utf8ToAcp(Text::fromT(cs->getMatch())), '|')){
 								if(cs->getHasFgColor()) cd->clrText = cs->getFgColor();
 								break;
 								}

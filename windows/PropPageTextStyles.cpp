@@ -18,7 +18,6 @@ PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_BACK_COLOR, ResourceManager::SETCZDC_BACK_COLOR },
 	{ IDC_TEXT_COLOR, ResourceManager::SETCZDC_TEXT_COLOR },
 	{ IDC_TEXT_STYLE, ResourceManager::SETCZDC_TEXT_STYLE },
-	{ IDC_DEFAULT_STYLES, ResourceManager::SETCZDC_DEFAULT_STYLE },
 	{ IDC_CZDC_PREVIEW, ResourceManager::SETCZDC_PREVIEW },
 	{ IDC_SELTEXT, ResourceManager::SETTINGS_SELECT_TEXT_FACE },
 	{ IDC_RESET_TAB_COLOR, ResourceManager::SETTINGS_RESET },
@@ -292,88 +291,6 @@ void PropPageTextStyles::RefreshPreview() {
 	WinUtil::m_TextStyleTimestamp = old2;
 }
 
-LRESULT PropPageTextStyles::onDefaultStyles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	bg = RGB(255, 255, 255);
-	fg = RGB(0,0,0);
-	::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(m_Font), &m_Font);
-	TextStyles[ TS_GENERAL ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_GENERAL ].crTextColor = RGB(0,0,0);
-	TextStyles[ TS_GENERAL ].dwEffects = 0;
-
-	TextStyles[ TS_MYNICK ].crBackColor = RGB(255,255,255);
-	TextStyles[ TS_MYNICK ].crTextColor = RGB(0,180,0);
-	TextStyles[ TS_MYNICK ].dwEffects = CFE_BOLD;
-
-	TextStyles[ TS_MYMSG ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_MYMSG ].crTextColor = RGB(0,0,0);
-	TextStyles[ TS_MYMSG ].dwEffects = 0;
-
-	TextStyles[ TS_PRIVATE ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_PRIVATE ].crTextColor = RGB(0,0,0);
-	TextStyles[ TS_PRIVATE ].dwEffects = 0;
-
-	TextStyles[ TS_SYSTEM ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_SYSTEM ].crTextColor = RGB(255, 102, 0);
-	TextStyles[ TS_SYSTEM ].dwEffects = CFE_BOLD | CFE_ITALIC;
-
-	TextStyles[ TS_SERVER ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_SERVER ].crTextColor = RGB(255, 153, 204);
-	TextStyles[ TS_SERVER ].dwEffects = CFE_BOLD;
-
-	TextStyles[ TS_TIMESTAMP ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_TIMESTAMP ].crTextColor = RGB(255,0,0);
-	TextStyles[ TS_TIMESTAMP ].dwEffects = 0;
-
-	TextStyles[ TS_URL ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_URL ].crTextColor = RGB(0,0,255);
-	TextStyles[ TS_URL ].dwEffects = 0;
-
-	TextStyles[ TS_SHARE_DUPE ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_SHARE_DUPE ].crTextColor = RGB(255,128,255);
-	TextStyles[ TS_SHARE_DUPE ].dwEffects = 0;
-
-	TextStyles[ TS_QUEUE_DUPE ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_QUEUE_DUPE ].crTextColor = RGB(255,200,0);
-	TextStyles[ TS_QUEUE_DUPE ].dwEffects = 0;
-
-	TextStyles[ TS_FAVORITE ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_FAVORITE ].crTextColor = RGB(0,0,0);
-	TextStyles[ TS_FAVORITE ].dwEffects = CFE_BOLD | CFE_ITALIC;
-
-	TextStyles[ TS_OP ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_OP ].crTextColor = RGB(0,0,0);
-	TextStyles[ TS_OP ].dwEffects = CFE_BOLD;
-
-	TextStyles[ TS_NORM ].crBackColor = RGB(255, 255, 255);
-	TextStyles[ TS_NORM ].crTextColor = RGB(0,0,0);
-	TextStyles[ TS_NORM ].dwEffects = CFE_BOLD;
-
-	
-	SettingsManager::getInstance()->set(SettingsManager::NORMAL_COLOUR, (int)RGB(0,0,0));
-	SettingsManager::getInstance()->set(SettingsManager::FAVORITE_COLOR, (int)RGB(51,51,255));
-	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, (int)RGB(0,0,205));
-	SettingsManager::getInstance()->set(SettingsManager::RESERVED_SLOT_COLOR, (int)RGB(0,51,0));
-	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, (int)RGB(192,192,192));
-	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, (int)RGB(132,132,132));
-	SettingsManager::getInstance()->set(SettingsManager::TAB_ACTIVE_BG, (int)RGB(130, 211, 244));
-	SettingsManager::getInstance()->set(SettingsManager::TAB_ACTIVE_TEXT, (int)RGB(0, 0, 0));
-	SettingsManager::getInstance()->set(SettingsManager::TAB_ACTIVE_BORDER, (int)RGB(0, 0, 0));
-	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_BG, (int)RGB(255, 255, 255));
-	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_BG_DISCONNECTED, (int)RGB(126, 154, 194));
-	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_TEXT, (int)RGB(82, 82, 82));
-	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_BORDER, (int)RGB(157, 157, 161));
-	SettingsManager::getInstance()->set(SettingsManager::TAB_INACTIVE_BG_NOTIFY, (int)RGB(176, 169, 185));
-	SettingsManager::getInstance()->set(SettingsManager::TAB_DIRTY_BLEND, 10);
-	SettingsManager::getInstance()->set(SettingsManager::BLEND_TABS, true);
-	SettingsManager::getInstance()->set(SettingsManager::TAB_SIZE, 25);
-	PropertiesDlg::needUpdate = true;
-
-	fontdirty = true;
-	RefreshPreview();
-	return TRUE;
-}
-
-
 void PropPageTextStyles::TextStyleSettings::Init( 
 	PropPageTextStyles *pParent, SettingsManager *pSM, 
 	LPCSTR sText, LPCSTR sPreviewText,
@@ -609,7 +526,6 @@ void PropPageTextStyles::LoadTheme(const string& path) {
 			xml.stepOut();
 		}
 	}
-	xml.resetCurrentChild();
 	if(xml.findChild("Highlights")) {
 		if(MessageBox(CTSTRING(HIGHLIGHTS_IN_THEME), _T("AirDC++") _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 			HighlightManager::getInstance()->clearList();
@@ -758,7 +674,9 @@ LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		exportData("TabSize", TAB_SIZE);
 	
 		xml.stepOut();
-		HighlightManager::getInstance()->save(xml);
+		
+		if(!HighlightManager::getInstance()->emptyList())
+			HighlightManager::getInstance()->save(xml);
 		/*
 		Don't export icon stuff, user might have absolute path for toolbars. Icon packs can be included by editing the .dctheme example.
 		curType = "string";

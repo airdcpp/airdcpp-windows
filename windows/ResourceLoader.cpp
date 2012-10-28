@@ -107,7 +107,7 @@ tstring ResourceLoader::getIconPath(const tstring& filename) {
 
 HICON ResourceLoader::loadIcon(int aDefault, int size/* = 0*/) {
 	tstring icon = getIconPath(getIconName(aDefault));
-	HICON iHandle = icon.empty() ? NULL : (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, size, size, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
+	HICON iHandle = icon.empty() ? NULL : (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, size, size, LR_SHARED | LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
 	if(!iHandle) 
 		return loadDefaultIcon(aDefault, size);
 	return iHandle;

@@ -271,7 +271,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	AddSimpleReBarBand(hWndCmdBar);
 	AddSimpleReBarBand(hWndToolBar, NULL, TRUE);
 	AddSimpleReBarBand(hWndWinampBar, NULL, TRUE);
-	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 215, TRUE);
+	AddSimpleReBarBand(hWndTBStatusBar, NULL, FALSE, 212, TRUE);
 
 	CreateSimpleStatusBar();
 	
@@ -1614,11 +1614,13 @@ void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 	}
 
 	if(startFiles == 0 || startBytes == 0 || files == 0) {
-		startBytes = 0;
-		startFiles = 0;
-		if(progress.GetPos() != 0 || paused || progress.GetTextLen() > 0) { //skip unnecessary window updates...
+		if(startFiles != 0 && files == 0) {
+			progress.SetPosWithText((int)progress.GetRangeLimit(0), _T("Finished...")); //show 100% for one second.
+		} else if(progress.GetPos() != 0 || paused || progress.GetTextLen() > 0) {//skip unnecessary window updates...
 			progress.SetPosWithText(0, tmp);
 		}
+		startBytes = 0;
+		startFiles = 0;
 	} else {
 		progress.SetPosWithText(((int)(progress.GetRangeLimit(0) * ((0.5 * (startFiles - files)/startFiles) + 0.5 * (startBytes - bytes) / startBytes))), tmp);
 	}

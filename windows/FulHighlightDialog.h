@@ -28,6 +28,7 @@
 #include "ExListViewCtrl.h"
 #include "../client/SettingsManager.h"
 #include "../client/HighlightManager.h"
+#include "../client/User.h"
 
 class FulHighlightDialog: public CDialogImpl<FulHighlightDialog>
 {
@@ -68,11 +69,14 @@ protected:
 	void initControls();
 	
 	void fix();
+	void populateMatchCombo();
 
 	static PropPage::TextItem texts[];
+	static ResourceManager::Strings UserColumnNames[14];
 
 	CComboBox ctrlMatchType;
 	CComboBox ctrlContext;
+	CComboBox ctrlMatchCol;
 	CStatic ctrlText;
 
 	COLORREF bgColor;
