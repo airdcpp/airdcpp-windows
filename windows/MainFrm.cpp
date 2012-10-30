@@ -1814,7 +1814,7 @@ void MainFrame::on(DirectoryListingManagerListener::PromptAction, const string& 
 	//auto i = new SizeConfirmInfo(aName, aMessage);
 	//PostMessage(WM_SPEAKER, PROMPT_SIZE_ACTION, (LPARAM)i);
 
-	bool accept = MessageBox(Text::toT(aMessage).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
+	bool accept = ::MessageBox(m_hWnd, Text::toT(aMessage).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
 	DirectoryListingManager::getInstance()->handleSizeConfirmation(aName, accept);
 }
 
@@ -2038,7 +2038,7 @@ LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /
 
 void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
 	UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
-	if (dlg.DoModal()  == IDC_UPDATE_DOWNLOAD) {
+	if (dlg.DoModal(m_hWnd)  == IDC_UPDATE_DOWNLOAD) {
 		UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, build, true);
 		ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 	}
@@ -2048,7 +2048,7 @@ void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, con
 	bool canAutoUpdate = autoUpdate && UpdateDlg::canAutoUpdate(updateUrl);
 
 	tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " APPNAME " " VERSIONSTRING);
-	MessageBox(Text::toT(message + "\r\n\r\n" + (canAutoUpdate ? STRING(ATTEMPT_AUTO_UPDATE) : STRING(MANUAL_UPDATE_MSG))).c_str(), title.c_str(), MB_OK | MB_ICONEXCLAMATION);
+	::MessageBox(m_hWnd, Text::toT(message + "\r\n\r\n" + (canAutoUpdate ? STRING(ATTEMPT_AUTO_UPDATE) : STRING(MANUAL_UPDATE_MSG))).c_str(), title.c_str(), MB_OK | MB_ICONEXCLAMATION);
 
 	if(!canAutoUpdate) {
 		if(!infoUrl.empty())
@@ -2061,13 +2061,13 @@ void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, con
 			UpdateManager::getInstance()->downloadUpdate(updateUrl, buildID, true);
 			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 		} else {
-			MessageBox(CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
+			::MessageBox(m_hWnd, CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
 		}
 	}
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater) noexcept {
-	if(MessageBox(CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
+	if(::MessageBox(m_hWnd, CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
 		WinUtil::addUpdate(aUpdater);
 
 		oldshutdown = true;
