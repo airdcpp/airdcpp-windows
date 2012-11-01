@@ -363,7 +363,7 @@ private:
 	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept;
 	void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) noexcept;
 	void on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) noexcept { onUpdateFileInfo(aCqi->getHintedUser(), aCqi->getToken(), true); };
-	//void on(ConnectionManagerListener::TokenChanged, const ConnectionQueueItem* aCqi, string newToken) {
+	void on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept;
 
 	void on(DownloadManagerListener::Requesting, const Download* aDownload) noexcept;	
 	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { 

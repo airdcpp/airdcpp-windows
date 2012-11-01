@@ -145,7 +145,6 @@ LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
 	if(aUser.getUser() == replyTo.user) {
-		//ctrlClient.setClient(const_cast<Client*>(&aUser.getClient()));
 		addSpeakerTask(true);
 	}
 }

@@ -22,14 +22,15 @@
 #include "resource.h"
 #include "OMenu.h"
 
-#include "../client/UserInfoBase.h"
-#include "../client/TargetUtil.h"
+#include "../client/ClientManager.h"
+#include "../client/FavoriteManager.h"
 #include "../client/format.h"
-#include "../client/version.h"
 #include "../client/QueueItem.h"
 #include "../client/ShareManager.h"
-#include "../client/ClientManager.h"
+#include "../client/TargetUtil.h"
+#include "../client/UserInfoBase.h"
 #include "../client/Util.h"
+#include "../client/version.h"
 
 #include "WinUtil.h"
 #include <boost/bind.hpp>

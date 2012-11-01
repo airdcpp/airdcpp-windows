@@ -907,6 +907,12 @@ void TransferView::updateItem(int ii, uint32_t updateMask) {
 	}
 }
 
+void TransferView::on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept {
+	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
+	ui->setUser(aCqi->getHintedUser());
+	speak(UPDATE_ITEM, ui);
+}
+
 void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) {
 	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
 

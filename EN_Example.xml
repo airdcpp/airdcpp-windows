@@ -1683,5 +1683,6 @@ would you still like to load them?</String>
 		<String Name="MatchColumn">Match Column</String>
 		<String Name="UnknownUser">Unknown user</String>
 		<String Name="NoAccessOnlineHubs">No access to this file via any online hub</String>
+		<String Name="SearchDisabledX">Search disabled: %s</String>
 	</Strings>
 </Language>

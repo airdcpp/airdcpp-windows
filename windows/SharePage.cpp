@@ -19,8 +19,10 @@
 #include "stdafx.h"
 
 #include "../client/DCPlusPlus.h"
-#include "../client/Util.h"
+#include "../client/ClientManager.h"
+#include "../client/FavoriteManager.h"
 #include "../client/SettingsManager.h"
+#include "../client/Util.h"
 #include "../client/version.h"
 
 #include "Resource.h"
