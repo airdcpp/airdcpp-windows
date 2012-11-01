@@ -1681,5 +1681,7 @@ would you still like to load them?</String>
 		<String Name="SettingsConfirmAsRemove">Confirm item removal in auto search</String>
 		<String Name="OwnListAdl">Match own list with ADL search</String>
 		<String Name="MatchColumn">Match Column</String>
+		<String Name="UnknownUser">Unknown user</String>
+		<String Name="NoAccessOnlineHubs">No access to this file via any online hub</String>
 	</Strings>
 </Language>

@@ -912,7 +912,7 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 
 	if(ui->download) {
 		string aTarget, bundleToken; int64_t aSize; int aFlags;
-		if(QueueManager::getInstance()->getQueueInfo(aCqi->getUser(), aTarget, aSize, aFlags, bundleToken)) {
+		if(QueueManager::getInstance()->getQueueInfo(aCqi->getHintedUser(), aTarget, aSize, aFlags, bundleToken)) {
 			Transfer::Type type = Transfer::TYPE_FILE;
 			if(aFlags & QueueItem::FLAG_USER_LIST)
 				type = Transfer::TYPE_FULL_LIST;
@@ -926,7 +926,7 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 		}
 	}
 
-	ui->setUser(aCqi->getUser());
+	ui->setUser(aCqi->getHintedUser());
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setStatusString(TSTRING(CONNECTING));
 
@@ -962,7 +962,7 @@ void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueI
 void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) {
 	//LogManager::getInstance()->message("Failed " + aCqi->getToken());
 	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
-	if(aCqi->getUser().user->isSet(User::OLD_CLIENT)) {
+	if(aCqi->getUser()->isSet(User::OLD_CLIENT)) {
 		ui->setStatusString(TSTRING(SOURCE_TOO_OLD));
 	} else {
 		ui->setStatusString(Text::toT(aReason));

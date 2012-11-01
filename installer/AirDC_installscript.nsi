@@ -4,7 +4,7 @@
 ; Its available from http://nsis.sourceforge.net/MoreInfo_plug-in
 
 ; Uncomment the above line if you want to build installer for the 64-bit version
-!define X64
+;!define X64
 
 ;!include "Sections.nsh"
  !include "MUI2.nsh"

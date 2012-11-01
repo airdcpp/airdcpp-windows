@@ -8,7 +8,7 @@
 
 #define MAX_TEXT_LEN 131072
 
-CDMDebugFrame::CDMDebugFrame() : stop(false), closed(false), showTCPCommands(true), showUDPCommands(true), showHubCommands(false), bFilterIp(false),
+CDMDebugFrame::CDMDebugFrame() : stop(false), closed(false), showTCPCommands(true), showUDPCommands(true), showHubCommands(false), bFilterIp(false), cmdList(1024),
 		HubCommandContainer(WC_BUTTON, this, HUB_COMMAND_MESSAGE_MAP),
 		commandTCPContainer(WC_BUTTON, this, TCP_COMMAND_MESSAGE_MAP),
 		commandUDPContainer(WC_BUTTON, this, UDP_COMMAND_MESSAGE_MAP),
@@ -179,7 +179,7 @@ LRESULT CDMDebugFrame::onClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 int CDMDebugFrame::run() {
 	setThreadPriority(Thread::LOW);
-	string x = Util::emptyString;
+	string x;
 	stop = false;
 
 	while(true) {
@@ -187,12 +187,8 @@ int CDMDebugFrame::run() {
 		if(stop)
 			break;
 
-		{
-			Lock l(cs);
-			if(cmdList.empty()) continue;
-
-			x = cmdList.front();
-			cmdList.pop_front();
+		if(!cmdList.pop(x)) {
+			continue;
 		}
 		addLine(x);
 	}
@@ -202,10 +198,7 @@ int CDMDebugFrame::run() {
 }
 
 void CDMDebugFrame::addCmd(const string& cmd) {
-	{
-		Lock l(cs);
-		cmdList.push_back(cmd);
-	}
+	cmdList.push(cmd);
 	s.signal();
 }
 

@@ -19,6 +19,8 @@
 #include "../client/DebugManager.h"
 #include "../client/Semaphore.h"
 
+#include <boost/lockfree/queue.hpp>
+
 class CDMDebugFrame : private DebugManagerListener, public Thread,
 	public MDITabChildWindowImpl<CDMDebugFrame>,
 	public StaticFrame<CDMDebugFrame, ResourceManager::MENU_CDMDEBUG_MESSAGES>
@@ -69,9 +71,8 @@ public:
 	
 private:
 	bool stop;
-	CriticalSection cs;
 	Semaphore s;
-	deque<string> cmdList;
+	boost::lockfree::queue<string> cmdList;
 
 	int run();
 
