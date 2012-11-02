@@ -261,15 +261,8 @@ private:
 		// TypedListViewCtrl functions
 		const tstring getText(int col) const;
 
-		static int compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col) {
-			switch(col) {
-				case COLUMN_SIZE: case COLUMN_EXACT_SIZE: return compare(a->getSize(), b->getSize());
-				case COLUMN_PRIORITY: return compare(static_cast<int>(a->getPriority()), static_cast<int>(b->getPriority()));
-				case COLUMN_DOWNLOADED: return compare(a->getDownloadedBytes(), b->getDownloadedBytes());
-				case COLUMN_ADDED: return compare(a->getAdded(), b->getAdded());
-				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
-			}
-		}
+		static int compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col);
+
 		int getImageIndex() const { return ResourceLoader::getIconIndex(Text::toT(getTarget()));	}
 
 		const BundlePtr getBundle() const { return qi->getBundle(); }
@@ -281,14 +274,14 @@ private:
 		const string& getTarget() const { return qi->getTarget(); }
 
 		int64_t getSize() const { return qi->getSize(); }
-		int64_t getDownloadedBytes() const { return qi->getDownloadedBytes(); }
+		int64_t getDownloadedBytes() const;
 
 		time_t getAdded() const { return qi->getAdded(); }
 		const TTHValue& getTTH() const { return qi->getTTH(); }
 
 		QueueItem::Priority getPriority() const { return qi->getPriority(); }
-		bool isWaiting() const { return qi->isWaiting(); }
-		bool isFinished() const { return qi->isFinished(); }
+		bool isWaiting() const;
+		bool isFinished() const;
 
 		bool getAutoPriority() const { return qi->getAutoPriority(); }
 

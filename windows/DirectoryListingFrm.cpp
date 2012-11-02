@@ -73,7 +73,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		UserInfoBaseHandler(true, false)
+		UserInfoBaseHandler(true, false), isTreeChange(false)
 { 
 	dl->addListener(this);
 }
@@ -325,6 +325,7 @@ void DirectoryListingFrame::createRoot() {
 void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial, bool changeDir) {
 	ctrlTree.SetRedraw(FALSE);
 	if (convertFromPartial) {
+		isTreeChange = false;
 		ctrlTree.DeleteAllItems();
 		ctrlList.DeleteAllItems();
 		createRoot();
@@ -547,6 +548,10 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 	return 0;
 }
 
+LRESULT DirectoryListingFrame::onClickTree(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {
+	isTreeChange = true;
+	return 0;
+}
 
 void DirectoryListingFrame::addHistory(const string& name) {
 	history.erase(history.begin() + historyIndex, history.end());
@@ -763,6 +768,7 @@ LRESULT DirectoryListingFrame::onDoubleClickFiles(int /*idCtrl*/, LPNMHDR pnmh, 
 			HTREEITEM ht = ctrlTree.GetChildItem(t);
 			while(ht != NULL) {
 				if((DirectoryListing::Directory*)ctrlTree.GetItemData(ht) == ii->dir) {
+					isTreeChange = false;
 					ctrlTree.SelectItem(ht);
 					break;
 				}
@@ -948,7 +954,8 @@ HTREEITEM DirectoryListingFrame::findItem(HTREEITEM ht, const tstring& name) {
 void DirectoryListingFrame::selectItem(const tstring& name) {
 	HTREEITEM ht = findItem(treeRoot, name);
 	if(ht != NULL) {
-		ctrlTree.EnsureVisible(ht);
+		if (!isTreeChange)
+			ctrlTree.EnsureVisible(ht);
 		ctrlTree.SelectItem(ht);
 	} else {
 		dcassert(0);

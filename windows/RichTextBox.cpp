@@ -244,11 +244,11 @@ void RichTextBox::AppendText(const Identity& i, const tstring& sMyNick, const ts
                     bool isOp = false, isFavorite = false;
 
                     
-						tstring nick(sMsg.c_str() + 1);
-						nick.erase(iAuthorLen - 1);
-						if(client != nullptr) {
+					tstring nick(sMsg.c_str() + 1);
+					nick.erase(iAuthorLen - 1);
+					if(client) {
 						const OnlineUserPtr ou = client->findUser(Text::fromT(nick));
-						if(ou != NULL) {
+						if(ou) {
 							isFavorite = FavoriteManager::getInstance()->isFavoriteUser(ou->getUser());
 							isOp = ou->getIdentity().isOp();
 						}
@@ -847,7 +847,9 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		if(!selectedIP.empty()) {
 			menu.InsertSeparatorFirst(selectedIP);
 			menu.AppendMenu(MF_STRING, IDC_WHOIS_IP, (TSTRING(WHO_IS) + _T(" ") + selectedIP).c_str() );
-			prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
+			if (client)
+				prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
+
 			if (client && client->isOp()) {
 				menu.AppendMenu(MF_SEPARATOR);
 				menu.AppendMenu(MF_STRING, IDC_BAN_IP, (_T("!banip ") + selectedIP).c_str());
