@@ -25,6 +25,7 @@ PropPage::Item UserListColours::items[] = {
 LRESULT UserListColours::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
+	SettingsManager::getInstance()->addListener(this);
 
 	normalColour = SETTING(NORMAL_COLOUR);
 	favoriteColour = SETTING(FAVORITE_COLOR);
@@ -35,7 +36,7 @@ LRESULT UserListColours::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 	n_lsbList.Attach( GetDlgItem(IDC_USERLIST_COLORS) );
 	n_Preview.Attach( GetDlgItem(IDC_PREVIEW) );
-	n_Preview.SetBackgroundColor(WinUtil::bgColor);
+	n_Preview.SetBackgroundColor(SETTING(BACKGROUND_COLOR));
 	n_lsbList.AddString(CTSTRING(SETTINGS_COLOR_NORMAL));
 	n_lsbList.AddString(CTSTRING(SETTINGS_COLOR_FAVORITE));	
 	n_lsbList.AddString(CTSTRING(SETTINGS_COLOR_RESERVED));
@@ -45,7 +46,6 @@ LRESULT UserListColours::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	n_lsbList.SetCurSel( 0 );
 
 	refreshPreview();
-
 	return TRUE;
 }
 LRESULT UserListColours::onChangeColour(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& /*bHandled*/) {
@@ -112,11 +112,7 @@ void UserListColours::refreshPreview() {
 }
 
 void UserListColours::write() {
-	if(PropertiesDlg::needUpdate)
-	{
-		SendMessage(WM_DESTROY,0,0);
-		SendMessage(WM_INITDIALOG,0,0);
-	}
+
 	PropPage::write((HWND)*this, items);
 	SettingsManager::getInstance()->set(SettingsManager::NORMAL_COLOUR, normalColour);
 	SettingsManager::getInstance()->set(SettingsManager::FAVORITE_COLOR, favoriteColour);
@@ -126,7 +122,6 @@ void UserListColours::write() {
 	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, opColour);
 
 	ResourceLoader::reLoadUserListImages(); // User Icon Begin / End
-
 }
 
 void UserListColours::BrowseForPic(int DLGITEM) {

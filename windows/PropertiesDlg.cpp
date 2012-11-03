@@ -58,7 +58,6 @@
 #include "AirAppearancePage.h"
 #include "SearchTypesPage.h"
 
-bool PropertiesDlg::needUpdate = false;
 
 PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage) : TreePropertySheet(CTSTRING(SETTINGS), initialPage, parent)
 {
@@ -103,6 +102,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	// Hide "Apply" button
 	m_psh.dwFlags |= PSH_NOAPPLYNOW | PSH_NOCONTEXTHELP;
 	m_psh.dwFlags &= ~PSH_HASHELP;
+
 }
 
 PropertiesDlg::~PropertiesDlg()
@@ -110,7 +110,6 @@ PropertiesDlg::~PropertiesDlg()
 	for(int i=0; i<numPages; i++) {
 		delete pages[i];
 	}
-	PropertiesDlg::needUpdate = false;
 }
 
 void PropertiesDlg::write()

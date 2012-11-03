@@ -1173,7 +1173,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser) {
 					taskdlg.SetMainIcon(IDI_MAGNET);
 					taskdlg.SetVerificationText(CTSTRING(MAGNET_DLG_REMEMBER));
 
-                    taskdlg.DoModal(NULL, &sel, 0, &remember);
+                    taskdlg.DoModal(mainWnd, &sel, 0, &remember);
 					if (sel == IDCANCEL) {
 						return;
 					}

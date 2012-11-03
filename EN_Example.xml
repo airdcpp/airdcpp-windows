@@ -1684,6 +1684,9 @@ would you still like to load them?</String>
 		<String Name="UnknownUser">Unknown user</String>
 		<String Name="NoAccessOnlineHubs">No access to this file via any online hub</String>
 		<String Name="SearchDisabledX">Search disabled: %s</String>
+		<String Name="SkiplistHit">Share skiplist blocked file, not shared: </String>
+		<String Name="ForbiddenFile">Forbidden file will not be shared: </String>
+		<String Name="ShowUserlist">Show/Hide userlist</String>
 		<String Name="OwnFilelist">Own filelist</String>
 		<String Name="FilelistOnDisk">Filelist on disk</String>
 	</Strings>

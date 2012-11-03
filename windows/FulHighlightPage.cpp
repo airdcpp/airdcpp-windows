@@ -55,7 +55,8 @@ LRESULT FulHighlightPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
 	CRect rc;
-	
+	SettingsManager::getInstance()->addListener(this);
+
 	//Initalize listview
 	ctrlStrings.Attach(GetDlgItem(IDC_ITEMS));
 	ctrlStrings.GetClientRect(rc);
@@ -96,11 +97,7 @@ LRESULT FulHighlightPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 
 void FulHighlightPage::write(){
-	if(PropertiesDlg::needUpdate)
-	{
-		SendMessage(WM_DESTROY,0,0);
-		SendMessage(WM_INITDIALOG,0,0);
-	}
+
 	PropPage::write((HWND)*this, items);
 	HighlightManager::getInstance()->replaceList(highlights);
 

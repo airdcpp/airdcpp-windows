@@ -316,7 +316,7 @@ private:
 	enum { MAX_CLIENT_LINES = 5 };
 	TStringList lastLinesList;
 	tstring lastLines;
-	CToolTipCtrl ctrlLastLines;
+	CToolTipCtrl ctrlTooltips;
 	
 	static int columnIndexes[OnlineUser::COLUMN_LAST];
 	static int columnSizes[OnlineUser::COLUMN_LAST];

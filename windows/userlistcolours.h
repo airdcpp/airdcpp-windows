@@ -7,7 +7,7 @@
 
 #include "PropPage.h"
 
-class UserListColours : public CPropertyPage<IDD_USERLIST_COLOURS>, public PropPage
+class UserListColours : public CPropertyPage<IDD_USERLIST_COLOURS>, public PropPage, private SettingsManagerListener
 {
 public:
 
@@ -23,12 +23,20 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		COMMAND_HANDLER(IDC_CHANGE_COLOR, BN_CLICKED, onChangeColour)
 		COMMAND_HANDLER(IDC_IMAGEBROWSE, BN_CLICKED, onImageBrowse)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT, WPARAM, LPARAM, BOOL&);
 	LRESULT onChangeColour(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onImageBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+		SettingsManager::getInstance()->removeListener(this);
+		n_lsbList.ResetContent();
+		n_lsbList.Detach();
+		n_Preview.Detach();
+		return 1;
+	}
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
@@ -47,6 +55,11 @@ private:
 	int ignoredColour;
 	int pasiveColour;
 	int opColour; 
+
+	virtual void on(SettingsManagerListener::ReloadPages, int) {
+		SendMessage(WM_DESTROY,0,0);
+		SendMessage(WM_INITDIALOG,0,0);
+	}
 
 protected:
 	static Item items[];

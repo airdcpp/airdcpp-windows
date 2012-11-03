@@ -8,7 +8,7 @@
 #include "../client/SettingsManager.h"
 
 
-class PropPageTextStyles: public CPropertyPage<IDD_TEXT_STYLES>, public PropPage
+class PropPageTextStyles: public CPropertyPage<IDD_TEXT_STYLES>, public PropPage, private SettingsManagerListener
 {
 public:
 	PropPageTextStyles(SettingsManager *s) : PropPage(s) { 
@@ -109,7 +109,13 @@ private:
 	SettingsManager::IntSetting m_iForeColor;
 	SettingsManager::IntSetting m_iBold;
 	SettingsManager::IntSetting m_iItalic;
+
 };
+	
+	virtual void on(SettingsManagerListener::ReloadPages, int) {
+		SendMessage(WM_DESTROY,0,0);
+		SendMessage(WM_INITDIALOG,0,0);
+	}
 
 protected:
 	static Item items[];

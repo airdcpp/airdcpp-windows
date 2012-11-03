@@ -29,11 +29,13 @@
 #define DIM_EDIT_EXPERIMENT 0
 
 #include "../client/ResourceManager.h"
+#include "../client/Speaker.h"
 
 #define setMinMax(x, y, z) \
 	updown.Attach(GetDlgItem(x)); \
 	updown.SetRange32(y, z); \
 	updown.Detach();
+
 
 class PropPage
 {

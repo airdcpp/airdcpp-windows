@@ -82,7 +82,8 @@ bool MainFrame::isShutdownStatus = false;
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
-bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false), trayUID(0)
+bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false), trayUID(0),
+statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
 
 
 { 
@@ -283,6 +284,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	int w[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	ctrlStatus.SetParts(11, w);
 	statusSizes[0] = WinUtil::getTextWidth(TSTRING(AWAY), ctrlStatus.m_hWnd); // for "AWAY" segment
+	statusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
 	CToolInfo ti(TTF_SUBCLASS, ctrlStatus.m_hWnd);
 
@@ -370,7 +372,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	updateTray(true);
 
 	Util::setAway(BOOLSETTING(AWAY));
-
 	ctrlToolbar.CheckButton(IDC_AWAY,BOOLSETTING(AWAY));
 	ctrlToolbar.CheckButton(IDC_DISABLE_SOUNDS, BOOLSETTING(SOUNDS_DISABLED));
 
@@ -378,8 +379,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		PostMessage(WM_COMMAND, ID_FILE_SETTINGS);
 	}
 	
-	ctrlStatus.SetIcon(5, downloadIcon);
-	ctrlStatus.SetIcon(6, uploadIcon);
+	ctrlStatus.SetIcon(7, downloadIcon);
+	ctrlStatus.SetIcon(8, uploadIcon);
 
 	//background image
 	if(!SETTING(BACKGROUND_IMAGE).empty()) {
@@ -692,8 +693,8 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 			for(int i = 1; i < 9; i++) {
 				int w = WinUtil::getTextWidth(str[i], ctrlStatus.m_hWnd);
 				//make room for the icons
-				if(i == 4 || i == 5)
-					w = w+17;
+				if(i == 6 || i == 7)
+					w = w+22;
 
 				if(statusSizes[i] < w) {
 					statusSizes[i] = w;
@@ -1514,6 +1515,28 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 			ThrottleManager::setSetting(setting, Util::toUInt(Text::fromT(dlg.line)));
 		}
 	});
+}
+
+LRESULT MainFrame::onLimiterMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	OMenu menu;
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	CRect DLrect;
+	CRect ULrect;
+	/* Currently the menu appears by clicking anywhere on the speed regions
+	it could be narrowed down by limiting the rect, or using the icons as a dummy hwnds */
+	ctrlStatus.GetRect(7, DLrect);
+	ctrlStatus.GetRect(8, ULrect);
+	if(PtInRect(&DLrect, pt)) {
+		menu.CreatePopupMenu();
+		fillLimiterMenu(&menu, false);
+		menu.open(ctrlStatus.m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON);
+	} else if(PtInRect(&ULrect, pt)) {
+		menu.CreatePopupMenu();
+		fillLimiterMenu(&menu, true);
+		menu.open(ctrlStatus.m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON);
+	}
+
+	return 0;
 }
 
 LRESULT MainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)

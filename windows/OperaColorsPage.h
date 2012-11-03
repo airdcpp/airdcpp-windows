@@ -27,7 +27,7 @@
 #include "PropPage.h"
 #include "PropPageTextStyles.h"
 
-class OperaColorsPage : public CPropertyPage<IDD_OPERACOLORS>, public PropPage
+class OperaColorsPage : public CPropertyPage<IDD_OPERACOLORS>, public PropPage, private SettingsManagerListener
 {
 public:
 	OperaColorsPage(SettingsManager *s) : PropPage(s) {
@@ -164,6 +164,11 @@ private:
 
 	int hloubka;
 	TCHAR* title;
+
+	virtual void on(SettingsManagerListener::ReloadPages, int) {
+		SendMessage(WM_DESTROY,0,0);
+		SendMessage(WM_INITDIALOG,0,0);
+	}
 };
 
 #endif //OperaColorsPage_H

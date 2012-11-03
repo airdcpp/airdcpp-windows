@@ -108,6 +108,7 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
+	SettingsManager::getInstance()->addListener(this);
 
 	crProgressDown = SETTING(DOWNLOAD_BAR_COLOR);
 	crProgressUp = SETTING(UPLOAD_BAR_COLOR);
@@ -147,11 +148,6 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 void OperaColorsPage::write()
 {
-	if(PropertiesDlg::needUpdate)
-	{
-		SendMessage(WM_DESTROY,0,0);
-		SendMessage(WM_INITDIALOG,0,0);
-	}
 	
 	PropPage::write((HWND)*this, items);
 	
@@ -346,6 +342,7 @@ void OperaColorsPage::setProgressText(const tstring& text){
 
 LRESULT OperaColorsPage::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+	SettingsManager::getInstance()->removeListener(this);
 	if (ctrlProgressDownDrawer.m_hWnd != NULL)	
 		ctrlProgressDownDrawer.Detach();
 	if (ctrlProgressUpDrawer.m_hWnd != NULL)

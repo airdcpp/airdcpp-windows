@@ -43,7 +43,6 @@ public:
 
 	PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage);
 	~PropertiesDlg();
-	static bool needUpdate;
 
 	LRESULT onOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 protected:

@@ -55,6 +55,8 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
+	
+	SettingsManager::getInstance()->addListener(this);
 
 	m_lsbList.Attach( GetDlgItem(IDC_TEXT_STYLES) );
 	m_lsbList.ResetContent();
@@ -164,6 +166,7 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	fontdirty = false;
 
 	RefreshPreview();
+
 	return TRUE;
 }
 
@@ -224,6 +227,7 @@ void PropPageTextStyles::write()
 		WinUtil::setFonts();
 		::SendMessage(WinUtil::mainWnd, IDC_SET_FONTS, 0, 0);
 	}
+
 }
 
 
@@ -389,7 +393,7 @@ LRESULT PropPageTextStyles::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	cmdSetTabColor.Detach();
 	ctrlTabExample.Detach();
 	ctrlTheme.Detach();
-
+	SettingsManager::getInstance()->removeListener(this);
 	return 1;
 }
 
@@ -526,6 +530,7 @@ void PropPageTextStyles::LoadTheme(const string& path) {
 			xml.stepOut();
 		}
 	}
+	xml.resetCurrentChild();
 	if(xml.findChild("Highlights")) {
 		if(MessageBox(CTSTRING(HIGHLIGHTS_IN_THEME), _T("AirDC++") _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 			HighlightManager::getInstance()->clearList();
@@ -534,11 +539,10 @@ void PropPageTextStyles::LoadTheme(const string& path) {
 	}
 	xml.resetCurrentChild();
 			
-	SendMessage(WM_DESTROY,0,0);
+	//SendMessage(WM_DESTROY,0,0);
 	//SettingsManager::getInstance()->save();
-
-	PropertiesDlg::needUpdate = true;
-	SendMessage(WM_INITDIALOG,0,0);
+	//SendMessage(WM_INITDIALOG,0,0);
+	SettingsManager::getInstance()->reloadPages();
 	
 	fontdirty = true;
 

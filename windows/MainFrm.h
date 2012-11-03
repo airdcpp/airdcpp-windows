@@ -44,7 +44,7 @@
 #include "OMenu.h"
 #include "picturewindow.h"
 #include "CProgressCtrlEx.h"
-
+#define STATUS_MESSAGE_MAP 9
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>, public Thread,
 		private TimerManagerListener, private QueueManagerListener,
@@ -205,6 +205,12 @@ public:
 		CHAIN_MSG_MAP(CUpdateUI<MainFrame>)
 		CHAIN_MSG_MAP(CMDIFrameWindowImpl<MainFrame>)
 		CHAIN_MSG_MAP(splitterBase);
+		ALT_MSG_MAP(STATUS_MESSAGE_MAP)
+			MESSAGE_HANDLER(WM_LBUTTONUP, onLimiterMenu)
+			MESSAGE_HANDLER(WM_RBUTTONUP, onLimiterMenu)
+			MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
+			MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
+
 	END_MSG_MAP()
 
 	BEGIN_UPDATE_UI_MAP(MainFrame)
@@ -372,6 +378,9 @@ public:
 		createToolbar();
 		return S_OK;
 	}
+
+	LRESULT onLimiterMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+
 	static MainFrame* getMainFrame() { return anyMF; }
 	bool getAppMinimized() const { return bAppMinimized; }
 	CToolBarCtrl& getToolBar() { return ctrlToolbar; }
@@ -465,6 +474,7 @@ private:
 	HICON hShutdownIcon;
 	HICON uploadIcon;
 	HICON downloadIcon;
+	CContainedWindow statusContainer;
 
 	static bool isShutdownStatus;
 

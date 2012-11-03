@@ -29,7 +29,7 @@
 #include "../client/SettingsManager.h"
 #include "../client/HighlightManager.h"
 
-class FulHighlightPage: public CPropertyPage<IDD_HIGHLIGHTPAGE>, public PropPage
+class FulHighlightPage: public CPropertyPage<IDD_HIGHLIGHTPAGE>, public PropPage, private SettingsManagerListener
 {
 	public:
 	FulHighlightPage(SettingsManager *s) : PropPage(s) {
@@ -51,6 +51,7 @@ class FulHighlightPage: public CPropertyPage<IDD_HIGHLIGHTPAGE>, public PropPage
 		COMMAND_ID_HANDLER(IDC_USE_HIGHLIGHT, onEnable)
 		NOTIFY_HANDLER(IDC_ITEMS, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_ITEMS, NM_DBLCLK, onDoubleClick)
+		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -64,8 +65,14 @@ class FulHighlightPage: public CPropertyPage<IDD_HIGHLIGHTPAGE>, public PropPage
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onEnable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	
-
+	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+		SettingsManager::getInstance()->removeListener(this);
+		highlights.clear();
+		ctrlStrings.DeleteAllItems();
+		ctrlStrings.Detach();
+		presets.DestroyMenu();
+		return 1;
+	}
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
@@ -96,6 +103,11 @@ protected:
 	}
 
 	TCHAR* title;
+	
+	virtual void on(SettingsManagerListener::ReloadPages, int) {
+		SendMessage(WM_DESTROY,0,0);
+		SendMessage(WM_INITDIALOG,0,0);
+	}
 	
 };
 

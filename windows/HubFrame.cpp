@@ -63,19 +63,10 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
 	ctrlStatus.Attach(m_hWndStatusBar);
 
-	CToolInfo ti(TTF_SUBCLASS, ctrlStatus.m_hWnd);
-	ctrlLastLines.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	 
-	ctrlLastLines.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);	 
-	ctrlLastLines.AddTool(&ti);	 
-	ctrlLastLines.SetDelayTime(TTDT_AUTOPOP, 15000);
-
-	ctrlLastLines.AddTool(&ti);
-
 	ctrlClient.setClient(client);
 	init(m_hWnd, rcDefault);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
-
 
 	ctrlFilter.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
@@ -108,6 +99,18 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlShowUsers.SetFont(WinUtil::systemFont);
 	ctrlShowUsers.SetCheck(showUsers ? BST_CHECKED : BST_UNCHECKED);
 	ctrlShowUsersContainer.SubclassWindow(ctrlShowUsers.m_hWnd);
+	
+	CToolInfo ti(TTF_SUBCLASS, ctrlStatus.m_hWnd);
+	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	 
+	ctrlTooltips.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);	 
+	ctrlTooltips.AddTool(&ti);	 
+
+	CToolInfo ti2(TTF_SUBCLASS, ctrlShowUsers.m_hWnd);
+	ti2.cbSize = sizeof(CToolInfo);
+	ti2.lpszText = (LPWSTR)CTSTRING(SHOW_USERLIST);
+	ctrlTooltips.AddTool(&ti2);
+	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
+	ctrlTooltips.Activate(TRUE);
 
 	const FavoriteHubEntry *fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
 	if(fhe) {
@@ -764,7 +767,7 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		
 		ctrlStatus.SetParts(6, w);
 
-		ctrlLastLines.SetMaxTipWidth(w[0]);
+		ctrlTooltips.SetMaxTipWidth(w[0]);
 
 		// Strange, can't get the correct width of the last field...
 		ctrlStatus.GetRect(4, sr);
@@ -1352,7 +1355,7 @@ LRESULT HubFrame::onEnterUsers(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHand
 	return 0;
 }
 
-LRESULT HubFrame::onGetToolTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT HubFrame::onGetToolTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMTTDISPINFO* nm = (NMTTDISPINFO*)pnmh;
 	lastLines.clear();
 	for(TStringIter i = lastLinesList.begin(); i != lastLinesList.end(); ++i) {
@@ -1364,6 +1367,7 @@ LRESULT HubFrame::onGetToolTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 	}
 	nm->lpszText = const_cast<TCHAR*>(lastLines.c_str());
 
+	bHandled = FALSE;
 	return 0;
 }
 
