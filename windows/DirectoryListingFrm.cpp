@@ -292,6 +292,7 @@ LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/,
 }
 
 void DirectoryListingFrame::convertToFull() {
+	dl->setReloading(true);
 	if (dl->getIsOwnList())
 		dl->addFullListTask(dl->getPath(curDir));
 	else {
@@ -702,9 +703,11 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 	updateStatus();
 }
 
-void DirectoryListingFrame::changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw) {
-	updateItems(d, enableRedraw);
-	if(!d->getComplete()) {
+void DirectoryListingFrame::changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw, bool reload) {
+	if (!reload)
+		updateItems(d, enableRedraw);
+
+	if(!d->getComplete() || reload) {
 		if (dl->getIsOwnList()) {
 			dl->addPartialListTask(dl->getPath(d));
 		} else if(dl->getUser()->isOnline()) {
@@ -828,15 +831,51 @@ LRESULT DirectoryListingFrame::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	return 0;
 }
 
-LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring file;
-	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), _T("File Lists\0*.xml.bz2\0All Files\0*.*\0"))) {
-		changeWindowState(false);
-		ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
-		dl->addListDiffTask(Text::fromT(file));
+LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
+	CRect rect;
+	ctrlListDiff.GetWindowRect(rect);
+	auto pt = rect.TopLeft();
+	pt.x = pt.x-rect.Width();
+	ctrlListDiff.SetState(true);
+
+	OMenu sMenu;
+	sMenu.CreatePopupMenu();
+	sMenu.InsertSeparatorFirst(CTSTRING(FILELIST_ON_DISK));
+
+	sMenu.appendItem(TSTRING(BROWSE), [this] { 	
+		tstring file;
+		if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), _T("File Lists\0*.xml.bz2\0All Files\0*.*\0"))) {
+			changeWindowState(false);
+			ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
+			dl->addListDiffTask(Text::fromT(file), false);
+		}; 
+	});
+
+	sMenu.InsertSeparatorLast(CTSTRING(OWN_FILELIST));
+	auto profiles = ShareManager::getInstance()->getProfiles();
+	for (auto i = profiles.begin(); i != profiles.end(); ++i) {
+		if ((*i)->getToken() != SP_HIDDEN) {
+			string profile = Util::toString((*i)->getToken());
+			sMenu.appendItem(Text::toT((*i)->getDisplayName()), [this, profile] {
+				changeWindowState(false);
+				ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
+				dl->addListDiffTask(profile, true);
+			}, !dl->getIsOwnList() || profile != dl->getFileName());
+		}
 	}
+
+	sMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
+
+	//ctrlListDiff.SetState(false);
+	bHandled = TRUE;
+	return 1;
+}
+
+LRESULT DirectoryListingFrame::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlListDiff.SetState(false);
 	return 0;
 }
+
 LRESULT DirectoryListingFrame::onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (dl->getPartialList() && MessageBox(CTSTRING(ADL_DL_FULL_LIST), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 		ctrlStatus.SetText(0, CTSTRING(DOWNLOADING_LIST));
@@ -1140,6 +1179,10 @@ clientmenu:
 
 		directoryMenu.AppendMenu(MF_STRING,IDC_COPY_DIRECTORY, CTSTRING(COPY_DIRECTORY));
 		directoryMenu.AppendMenu(MF_STRING, IDC_SEARCHLEFT, CTSTRING(SEARCH));
+		if (dl->getPartialList()) {
+			directoryMenu.AppendMenu(MF_SEPARATOR);
+			directoryMenu.AppendMenu(MF_STRING, IDC_RELOAD_DIR, CTSTRING(RELOAD));
+		}
 		
 		// Strange, windows doesn't change the selection on right-click... (!)
 			
@@ -1579,15 +1622,28 @@ LRESULT DirectoryListingFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/
 
 	OMenu tabMenu;
 	tabMenu.CreatePopupMenu();
+	tstring nick = Text::toT(ClientManager::getInstance()->getNicks(dl->getHintedUser())[0]);
+	tabMenu.InsertSeparatorFirst(nick);
+
 	appendUserItems(tabMenu);
+	if (!dl->getPartialList() || !dl->getIsOwnList()) {
+		tabMenu.AppendMenu(MF_SEPARATOR);
+		tabMenu.AppendMenu(MF_STRING, IDC_RELOAD, CTSTRING(RELOAD));
+	}
 	tabMenu.AppendMenu(MF_SEPARATOR);
 	tabMenu.AppendMenu(MF_STRING, IDC_CLOSE_WINDOW, CTSTRING(CLOSE));
 
-	tstring nick = Text::toT(ClientManager::getInstance()->getNicks(dl->getHintedUser())[0]);
-
-	tabMenu.InsertSeparatorFirst(nick);
-	tabMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+	tabMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt);
 	return TRUE;
+}
+
+LRESULT DirectoryListingFrame::onReload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (dl->getPartialList()) {
+		onReloadPartial(false);
+	} else {
+		convertToFull();
+	}
+	return 0;
 }
 
 void DirectoryListingFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
@@ -1855,6 +1911,22 @@ LRESULT DirectoryListingFrame::onSearchLeft(WORD /*wNotifyCode*/, WORD /*wID*/, 
 		WinUtil::searchAny(searchTerm);
 	}
 	return 0;
+}
+
+LRESULT DirectoryListingFrame::onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	onReloadPartial(true);
+	return 0;
+}
+
+void DirectoryListingFrame::onReloadPartial(bool dirOnly) {
+	HTREEITEM t = ctrlTree.GetSelectedItem();
+	if(t != NULL) {
+		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		//if (dirOnly) {
+		if (!dirOnly)
+			dl->setReloading(true);
+		changeDir(dir, TRUE, true);
+	}
 }
 
 

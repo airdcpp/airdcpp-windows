@@ -1478,6 +1478,7 @@
 #define IDC_DL_TYPE_TEXT                15111
 #define IDC_REMOVE_BUNDLE               15112
 #define IDC_SIZE_LABEL                  15112
+#define IDC_RELOAD_DIR                  15113
 #define IDC_OPEN_BUNDLE_FOLDER          15114
 #define IDC_BUNDLE_PRIORITY             15115
 #define IDC_REMOVE_BUNDLE_SOURCE        15116

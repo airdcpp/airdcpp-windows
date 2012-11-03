@@ -135,6 +135,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
 		COMMAND_ID_HANDLER(IDC_VIEW_NFO, onViewNFO)
+		COMMAND_ID_HANDLER(IDC_RELOAD, onReload)
+		COMMAND_ID_HANDLER(IDC_RELOAD_DIR, onReloadDir)
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
 		COMMAND_ID_HANDLER(IDC_FINDMISSING, onFindMissing)
 		COMMAND_ID_HANDLER(IDC_CHECKSFV, onCheckSFV)
@@ -142,6 +144,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCHLEFT, onSearchLeft)
 		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES+90, IDC_SEARCH_SITES+90 + WebShortcuts::getInstance()->list.size(), onSearchSiteDir)
+		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
@@ -189,6 +192,8 @@ public:
 	LRESULT onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onViewNFO(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onReload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
@@ -231,6 +236,8 @@ public:
 
 	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
@@ -283,10 +290,11 @@ public:
 private:
 	DirectoryListing::Directory* curDir;
 	void changeWindowState(bool enable);
+	void onReloadPartial(bool dirOnly);
 	
 	string filter;
 	void updateItems(const DirectoryListing::Directory* d, BOOL enableRedraw);
-	void changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw);
+	void changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw, bool reload = false);
 	void findSearchHit(bool newDir = false);
 	int searchPos;
 	bool gotoPrev;

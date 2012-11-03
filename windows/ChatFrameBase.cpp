@@ -665,7 +665,14 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		} else {
 			status = _T("Please specify the bundle name!");
 		}
-	}else if(stricmp(cmd.c_str(), _T("away")) == 0) {
+	} else if(stricmp(cmd.c_str(), _T("setlistdirty")) == 0) {
+		auto profiles = ShareManager::getInstance()->getProfiles();
+		ProfileTokenSet pts;
+		for(auto i = profiles.begin(); i != profiles.end(); ++i) {
+			pts.insert((*i)->getToken());
+		}
+		ShareManager::getInstance()->setDirty(pts, false, true);
+	} else if(stricmp(cmd.c_str(), _T("away")) == 0) {
 		if(Util::getAway() && param.empty()) {
 			Util::setAway(false);
 			MainFrame::setAwayButton(false);
