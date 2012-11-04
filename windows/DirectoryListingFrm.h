@@ -307,8 +307,6 @@ private:
 	void back();
 	void forward();
 
-	int64_t loadTime;
-
 	class ItemInfo : public FastAlloc<ItemInfo> {
 	public:
 		enum ItemType {

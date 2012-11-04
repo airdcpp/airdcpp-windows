@@ -100,9 +100,19 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	}
 
 	if (!searching) {
-		int64_t end = GET_TICK();
-		loadTime = (end - aStart) / 1000;
-		PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED);
+		int64_t loadTime = (GET_TICK() - aStart) / 1000;
+		string msg;
+		if (dl->getPartialList()) {
+			if (aDir.empty()) {
+				msg = STRING(PARTIAL_LIST_LOADED);
+			} else {
+				msg = STRING_F(DIRECTORY_LOADED, Util::getLastDir(aDir));
+			}
+		} else {
+			msg = STRING_F(FILELIST_LOADED_IN, Util::formatSeconds(loadTime, true));
+		}
+
+		PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED, (LPARAM)new tstring(Text::toT(msg)));
 	} else {
 		findSearchHit(true);
 		changeWindowState(true);
@@ -1670,15 +1680,16 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 			filterList();
 			break;
 		case FINISHED:
-			initStatus();
-			ctrlStatus.SetFont(WinUtil::systemFont);
-			//tstring tmp = TSTRING(LOADED_FILE_LIST) + Util::formatSeconds(loadTime);
-			//tmp.resize(STRING(LOADED_FILE_LIST).size() + 16);
-			//tmp.resize(snprintf(&tmp[0], tmp.size(), CSTRING(LOADED_FILE_LIST), Util::formatSeconds(loadTime)));
-			ctrlStatus.SetText(0, (TSTRING(LOADED_FILE_LIST) + Util::formatSecondsW(loadTime, true)).c_str());
-			changeWindowState(true);
-			//notify the user that we've loaded the list
-			setDirty();
+			{
+				initStatus();
+				ctrlStatus.SetFont(WinUtil::systemFont);
+				auto_ptr<tstring> msg(reinterpret_cast<tstring*>(lParam));
+				ctrlStatus.SetText(0, (*msg).c_str());
+				changeWindowState(true);
+
+				//notify the user that we've loaded the list
+				setDirty();
+			}
 			break;
 		case ABORTED:
 			{

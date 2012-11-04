@@ -238,7 +238,6 @@
 		<String Name="Hubs">Hubs</String>
 		<String Name="Chatdblclickaction">Chat double click on user action</String>
 		<String Name="CheckForbidden">Shared forbidden file : %s</String>
-		<String Name="CheckInflated">filelist was inflated %s times</String>
 		<String Name="ChooseFolder">Choose folder</String>
 		<String Name="IgnoreTthSearches">Ignore TTH searches</String>
 		<String Name="IgnoreUser">Ignore User</String>
@@ -271,7 +270,6 @@
 		<String Name="LibCrash">Application ""%s"" caused an unhandled exception in AirDC++. Please uninstall it, upgrade it or use an alternate product.</String>
 		<String Name="Limit">Upload Limit</String>
 		<String Name="ListenerFailed">Listening socket failed (you need to restart AirDC++): </String>
-		<String Name="LoadedFileList">File list loaded in </String>
 		<String Name="Loading">Loading AirDC++, please wait...</String>
 		<String Name="LoadingFileList">Loading file list, this may take a while if the list is large.</String>
 		<String Name="Lock">Lock</String>
@@ -604,7 +602,7 @@
 		<String Name="SettingsLanguageFile">Language file</String>
 		<String Name="SettingsLogDir">Log directory</String>
 		<String Name="SettingsLogDownloads">Log downloads</String>
-		<String Name="SettingsLogFilelistTransfers">Log filelist transfers</String>
+		<String Name="SettingsLogFilelistTransfers">Log file list transfers</String>
 		<String Name="SettingsLogMainChat">Log main chat</String>
 		<String Name="SettingsLogPrivateChat">Log private chat</String>
 		<String Name="SettingsLogStatusMessages">Log status messages</String>
@@ -660,7 +658,7 @@
 		<String Name="SettingsShowInfoTips">Show InfoTips in lists</String>
 		<String Name="SettingsShowJoins">Show joins / parts in chat by default</String>
 		<String Name="SettingsShowProgressBars">Show progress bars for transfers (uses some CPU)</String>
-		<String Name="SettingsShowShellMenu">Show shell menu in finished transfers and Own FileList</String>
+		<String Name="SettingsShowShellMenu">Show shell menu in finished transfers and own file list</String>
 		<String Name="SettingsSkipZeroByte">Skip zero-byte files</String>
 		<String Name="SettingsSocks5">SOCKS5</String>
 		<String Name="SettingsSocks5Ip">Socks IP</String>
@@ -781,7 +779,6 @@ Default: %H:%M:%S</String>
 		<String Name="TimestampHelpDesc">Timestamps Help</String>
 		<String Name="TimestampsDisabled">Timestamps disabled</String>
 		<String Name="TimestampsEnabled">Timestamps enabled</String>
-		<String Name="TooLargeList">Greater than maximum filelist size (256 MB)</String>
 		<String Name="TooMuchData">More data was sent than was expected</String>
 		<String Name="Total">Total: </String>
 		<String Name="Transferlistdblclickaction">Transferlist double click action</String>
@@ -796,7 +793,7 @@ Default: %H:%M:%S</String>
 		<String Name="Type">Type</String>
 		<String Name="UcSubmenu">Place usercommands to submenu</String>
 		<String Name="UnableToCreateThread">Unable to create thread</String>
-		<String Name="UnableToOpenFilelist">Unable to open filelist: </String>
+		<String Name="UnableToOpenFilelist">Unable to open file list: </String>
 		<String Name="UnableToRename">Unable to rename </String>
 		<String Name="UnableToSendFile">Unable to send file </String>
 		<String Name="UnfinishedFileNotFound">Unfinished file not found</String>
@@ -1162,7 +1159,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="UpnpSuccessfullyCreatedMappings">Successfully created port mappings</String>
 		<String Name="TestWrite">Test Write to AirDC++ folders on startup</String>
 		<String Name="SettingsIncomingRefreshTime">Incoming refresh time</String>
-		<String Name="SettingsUseAdls">Use ADLSearch on Filelists</String>
+		<String Name="SettingsUseAdls">Use ADLSearch on file lists</String>
 		<String Name="SettingDontDlAlreadyQueued">Don't download files already in queue</String>
 		<String Name="FavShowJoin">Show User Joins / Parts</String>
 		<String Name="UpnpRemovedMappings">Successfully removed port mappings</String>
@@ -1268,12 +1265,12 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ProppageDupeMsg">Release.Example-AIRDC</String>
 		<String Name="ProppageUnderlineLinks">Underline links</String>
 		<String Name="ProppageUnderlineDupes">Underline dupes</String>
-		<String Name="SettingsDupeFilelist">Use dupe color in filelists</String>
+		<String Name="SettingsDupeFilelist">Use dupe color in file lists</String>
 		<String Name="SettingsDupeChat">Use dupe color in chat</String>
 		<String Name="ClientVersion">Client version</String>
 		<String Name="LanguageVersion">Language version</String>
-		<String Name="ListHlText">HighLight matches in filelists (wildcards, | separate)</String>
-		<String Name="ListHlExample">Example, *NORDIC* (this may slow down filelist loading...)</String>
+		<String Name="ListHlText">HighLight matches in file lists (wildcards, | separate)</String>
+		<String Name="ListHlExample">Example, *NORDIC* (this may slow down file list loading...)</String>
 		<String Name="SettingsDupes">Dupes Settings</String>
 		<String Name="ReportSkiplist">Show files blocked by the skiplist in systemlog</String>
 		<String Name="XUsers">%d users</String>
@@ -1322,7 +1319,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ConfirmMoveDirFinishedBundle">The selected bundle contains total of %d finished files. Do you also want to move them?</String>
 		<String Name="ConfirmMoveDirFinishedBundlePart">The selected bundle directory contains total of %d finished files. Do you also want to move them?</String>
 		<String Name="MatchAdl">ADLSearch</String>
-		<String Name="MatchingAdl">Matching Filelist with ADLSearch, this might take a while if the list is large...</String>
+		<String Name="MatchingAdl">Matching file list with ADL search, this might take a while if the list is large...</String>
 		<String Name="LogHashing">Show Hashing Files in systemlog</String>
 		<String Name="AdlsearchInProgress">The ADLSearch list can't be modified while matching is in progress!</String>
 		<String Name="PriopageOrderBalanced">Balanced (based on sources and their speeds)</String>
@@ -1360,7 +1357,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="BundleSharingFailed">Failed to add the bundle %s in share</String>
 		<String Name="AsUserMatch">Only from users with nick Matching:  (Wildcards, | separate)</String>
 		<String Name="UserMatch">User Match</String>
-		<String Name="SettingsAllowMatchFullList">Use full filelists as last resort if adding sources fails</String>
+		<String Name="SettingsAllowMatchFullList">Use full file lists as last resort if adding sources fails</String>
 		<String Name="MatchedFilesBundle">Matched %d file(s) in the bundle %s, of which %d were new</String>
 		<String Name="MatchedFilesXBundles">Matched %d file(s) in %d bundles, of which %d were new</String>
 		<String Name="NoMatchedFiles">No matching files were found!</String>
@@ -1515,7 +1512,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="ProfileName">Profile name</String>
 		<String Name="LockTb">Lock Toolbars</String>
 		<String Name="ClearDirHistory">Clear directory history on exit</String>
-		<String Name="GetFullList">Get full filelist</String>
+		<String Name="GetFullList">Get full list</String>
 		<String Name="NoResultsFound">No results were found</String>
 		<String Name="SearchTimedOut">Search timed out</String>
 		<String Name="Searching">Searching...</String>
@@ -1532,7 +1529,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="DirectoryRefreshQueued">The directory %s has been queued for refreshing</String>
 		<String Name="VirtualRefreshQueued">The virtual directory %s has been queued for refreshing</String>
 		<String Name="IncomingRefreshQueued">Incoming directories have been queued for refreshing</String>
-		<String Name="RefreshQueued">Filelist refresh has been queued</String>
+		<String Name="RefreshQueued">File list refresh has been queued</String>
 		<String Name="NoAdditionalMatches">There are no additional matches available</String>
 		<String Name="SearchTypes">Search Types</String>
 		<String Name="ResetToDefaults">Reset to defaults</String>
@@ -1541,7 +1538,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="ExtensionsEmpty">No extensions have been defined</String>
 		<String Name="SearchCurDir">Search within the currect directory</String>
 		<String Name="UpdatingView">Updating the view...</String>
-		<String Name="AdlDlFullList">Do you want to switch to full filelist before matching the ADL search?</String>
+		<String Name="AdlDlFullList">Do you want to switch to full file list before matching the ADL search?</String>
 		<String Name="HighlightContext">Highlight Context</String>
 		<String Name="SettingsContextFilelist">Highlight for Directories in Filelist (Wildcards or $Re: for Regex)</String>
 		<String Name="ResetExtensionsConfirm">This will delete all defined search types and restore the default ones. Do you want to continue?</String>
@@ -1569,7 +1566,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SendPmVia">Messages are sent via</String>
 		<String Name="MessagesSentThroughRemote">Messages are now sent through the hub %s (changed by the remote users)</String>
 		<String Name="IpUpdateFailed">Failed to update the IP address</String>
-		<String Name="FilesAddedForHash">(%s of files have been added for hashing; they won't be visible in the filelist until they have finished hashing)</String>
+		<String Name="FilesAddedForHash">(%s of files have been added for hashing; they won't be visible in the file list until they have finished hashing)</String>
 		<String Name="BundleAddedForHash">The bundle %s has been added for hashing (total size to hash: %s)</String>
 		<String Name="HashingFinishedTotal">Hashing finished: %d files (%s) in %d directories have been hashed in %s (%s)</String>
 		<String Name="HashingFinishedDir">The directory %s has finished hashing: %d files (%s) have been hashed in %s (%s)</String>
@@ -1643,7 +1640,7 @@ would you still like to load them?</String>
 		<String Name="AttemptAutoUpdate">AirDC++ will now attempt to update your installation automatically</String>
 		<String Name="LoadingGui">Loading the user interface</String>
 		<String Name="UnloadingGui">Unloading the user interface</String>
-		<String Name="PartialFilelist">Partial filelist</String>
+		<String Name="PartialFilelist">Partial file list</String>
 		<String Name="DownloadLimit">Download limit</String>
 		<String Name="UploadLimit">Upload limit</String>
 		<String Name="DownloadLimitSetTo">Download limit set to %d KiB/s</String>
@@ -1654,7 +1651,7 @@ would you still like to load them?</String>
 		<String Name="NewLimit">New limit (KiB/s) (0 = infinite)</String>
 		<String Name="TotalFiles">Total files: %d</String>
 		<String Name="TotalSize">Total size: %s</String>
-		<String Name="FullListDlLimit">Maximum number of files for getting full filelist with \"Get/Browse filelist\"</String>
+		<String Name="FullListDlLimit">Maximum number of files for getting full file list with \"Get/Browse file list\"</String>
 		<String Name="SetTransferLimiting">Limit transfer speeds</String>
 		<String Name="SetAlternateLimiting">Use Alternate Limiting from</String>
 		<String Name="MaxUploadRate">Maximum upload rate (0 = infinite)</String>
@@ -1671,8 +1668,8 @@ would you still like to load them?</String>
 		<String Name="EndlessRedirectionLoop">Endless redirection loop (%1%)</String>
 		<String Name="ManualUpdateMsg">You will be forwarded to the downloading page as automatic updating can't be performed</String>
 		<String Name="ConfirmSizeWarningQueue">There are already %s of queued files for the directory %s and only %s space available. Do you really want to queue %s more?</String>
-		<String Name="OpenHubFilelist">Open hub filelist (%s)</String>
-		<String Name="SmallUpSlots">Small upload slots (slots for filelists and small files)</String>
+		<String Name="OpenHubFilelist">Open hub file list (%s)</String>
+		<String Name="SmallUpSlots">Small upload slots (slots for file lists and small files)</String>
 		<String Name="MaxChatResizeLines">Max lines to resize the message box on multiline messages</String>
 		<String Name="MaxPmHistoryLines">Max lines to show in PM history</String>
 		<String Name="Enabled">Enabled</String>
@@ -1687,7 +1684,10 @@ would you still like to load them?</String>
 		<String Name="SkiplistHit">Share skiplist blocked file, not shared: </String>
 		<String Name="ForbiddenFile">Forbidden file will not be shared: </String>
 		<String Name="ShowUserlist">Show/Hide userlist</String>
-		<String Name="OwnFilelist">Own filelist</String>
-		<String Name="FilelistOnDisk">Filelist on disk</String>
+		<String Name="OwnFilelist">Own file list</String>
+		<String Name="FilelistOnDisk">File list on disk</String>
+		<String Name="FilelistLoadedIn">File list has been loaded in %s</String>
+		<String Name="PartialListLoaded">Partial list has been loaded</String>
+		<String Name="DirectoryLoaded">The directory %s has been loaded</String>
 	</Strings>
 </Language>

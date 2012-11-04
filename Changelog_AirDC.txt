@@ -636,6 +636,7 @@ Added:
 - Support Windows 8 and Windows Server 2012
 - Add a menu item to open files with external programs without saving them on disk
 - New option to automatically update the external ip once per hour
+- Allow reloading opened filelists (or single directories from partial lists)
 
 
 Changed:
@@ -673,10 +674,14 @@ Changed:
 - Limit the maximum size of a viewed files to 1 MB
 - Reporting improvements for filelist refreshing
 - Show the scanning results in a separate tab
+- Don't change the tree position when changing directories in partial lists
+- Update user's nicks and hubs in transfer view when they change
+- Don't match search skiplist with TTH searches
 
 
 Fixed:
 
+- Prevent search results from getting lost when the system is on heavy load or the client is run on a slow computer
 - Fix a crash when right clicking on magnet links in chat history
 - Fix crashes related to the queue tab
 - Fix bundle progress of more than 100% with segments enabled
@@ -701,9 +706,9 @@ Fixed:
 - Fix counting the directory sizes and item counts in filelists with ADLs
 - Save the auto search list current search position and last search time between sessions
 - Don't try to hash removed bundles
-- Fix misc freezes and crashes
 - Fix the units for upload and download speeds in ADC hubs
 - Fix a few SFV reading problems when hashing/checking for missing files
+- Fix misc freezes and crashes
 
 
 Removed:
