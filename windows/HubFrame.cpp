@@ -2202,11 +2202,18 @@ void HubFrame::setFonts() {
 	Reset the fonts. This will reset the charformats in the window too :( 
 		they will apply again with new text..
 		*/
+	ctrlClient.SetRedraw(FALSE);
+	ctrlClient.SetSelAll();
+
 	ctrlClient.SetFont(WinUtil::font, FALSE);
 	ctrlMessage.SetFont(WinUtil::font, FALSE);
 	ctrlFilter.SetFont(WinUtil::font, FALSE);
 	ctrlFilterSel.SetFont(WinUtil::font, FALSE);
-		
+	
+	ctrlClient.SetSelectionCharFormat(WinUtil::m_ChatTextLog);
+	ctrlClient.SetSelNone();
+	ctrlClient.SetRedraw(TRUE);
+
 	addStatus(_T("New Font & TextStyles Applied, TextMatching colors will apply after this line"), WinUtil::m_ChatTextSystem);
 }
 

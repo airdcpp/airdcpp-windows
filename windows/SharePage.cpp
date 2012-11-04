@@ -403,7 +403,10 @@ ShareDirInfo::list SharePage::getItemsByPath(const string& aPath, bool listRemov
 	return dirItems;
 }
 
-SharePage::~SharePage() {
+SharePage::~SharePage() { }
+
+LRESULT SharePage::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	//use the gui message for cleanup, these wont exist if the page hasnt been opened.
 	if (ft) {
 		ft->UnsubclassWindow(true);
 		delete ft;
@@ -411,6 +414,7 @@ SharePage::~SharePage() {
 	ctrlDirectories.DeleteAllItems();
 	ctrlDirectories.Detach();
 	deleteDirectoryInfoItems();
+	return 0;
 }
 
 LRESULT SharePage::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
