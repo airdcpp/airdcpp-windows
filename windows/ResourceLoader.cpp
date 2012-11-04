@@ -115,7 +115,7 @@ HICON ResourceLoader::loadIcon(int aDefault, int size/* = 0*/) {
 
 HICON ResourceLoader::loadDefaultIcon(int icon, int size/* = 0*/) {
 	//int size = big ? ::GetSystemMetrics(SM_CXICON) : ::GetSystemMetrics(SM_CXSMICON);
-	return (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(icon), IMAGE_ICON, size, size, LR_DEFAULTSIZE | LR_DEFAULTCOLOR);
+	return (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(icon), IMAGE_ICON, size, size, LR_SHARED | LR_DEFAULTSIZE | LR_DEFAULTCOLOR);
 }
 
 tstring ResourceLoader::getIconName(int aDefault) {
@@ -317,7 +317,7 @@ void ResourceLoader::reLoadUserListImages(){
 }
 
 void ResourceLoader::loadCmdBarImageList(CImageList& images){
-	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 30);
+	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 33);
 	//use default ones totally here too?
 	images.AddIcon(ResourceLoader::loadIcon(IDI_PUBLICHUBS, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_RECONNECT, 16));
@@ -334,6 +334,7 @@ void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.AddIcon(ResourceLoader::loadIcon(IDI_SEARCHSPY, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_OPEN_LIST, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_OWNLIST, 16)); 
+	images.AddIcon(ResourceLoader::loadIcon(IDI_ADLSEARCH, 16)); 
 	images.AddIcon(ResourceLoader::loadIcon(IDI_MATCHLIST, 16)); 
 	images.AddIcon(ResourceLoader::loadIcon(IDI_REFRESH, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_SCAN, 16));

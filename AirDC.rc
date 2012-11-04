@@ -933,7 +933,6 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Bitmap
 //
 
-IDB_ARROWS              BITMAP                  "res\\arrows.bmp"
 IDB_USERS               BITMAP                  "res\\users.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
@@ -2202,6 +2201,7 @@ IDI_OVERLAY             ICON                    "res\\overlay.ico"
 IDI_FOLDER              ICON                    "res\\folder.ico"
 IDI_FOLDER_INC          ICON                    "res\\folder_incomplete.ico"
 IDI_FILE                ICON                    "res\\file.ico"
+IDI_SEGMENT             ICON                    "res\\transfer_segmented.ico"
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"

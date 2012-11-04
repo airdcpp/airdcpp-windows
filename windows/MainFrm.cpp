@@ -237,6 +237,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(IDC_SEARCH_SPY);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_FILE_LIST);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_MY_LIST);
+	m_CmdBar.m_arrCommand.Add(IDC_OWN_LIST_ADL);
 	m_CmdBar.m_arrCommand.Add(IDC_MATCH_ALL);
 	m_CmdBar.m_arrCommand.Add(IDC_REFRESH_FILE_LIST);
 	m_CmdBar.m_arrCommand.Add(IDC_SCAN_MISSING);
@@ -366,8 +367,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	pmicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_PM), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 	hubicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_HUB), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
-	uploadIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_UPLOAD), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-	downloadIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_DOWNLOAD), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	uploadIcon = ResourceLoader::loadIcon(IDI_UPLOAD, 16);
+	downloadIcon = ResourceLoader::loadIcon(IDI_DOWNLOAD, 16);
 
 	updateTray(true);
 
@@ -696,7 +697,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 				if(i == 6 || i == 7)
 					w = w+22;
 
-				if(statusSizes[i] < w) {
+				if((statusSizes[i] < w) || (statusSizes[i] > w + 30) ) {
 					statusSizes[i] = w;
 					u = true;
 				}
@@ -1025,18 +1026,33 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
 	pDispInfo->szText[0] = 0;
+	CRect rect;
+	auto getRect = [&] (int i) -> CRect { 
+		ctrlStatus.GetRect(i, rect);
+		return rect;
+	};
 
 	if(!((idCtrl != 0) && !(pDispInfo->uFlags & TTF_IDISHWND))) {
 		// if we're really in the status bar, this should be detected intelligently
-		lastLines.clear();
-		for(TStringIter i = lastLinesList.begin(); i != lastLinesList.end(); ++i) {
-			lastLines += *i;
-			lastLines += _T("\r\n");
+		POINT pt;
+		GetCursorPos(&pt);
+		ctrlStatus.ScreenToClient(&pt);
+
+		if(getRect(0).PtInRect(pt)) {
+			lastLines.clear();
+			for(TStringIter i = lastLinesList.begin(); i != lastLinesList.end(); ++i) {
+				lastLines += *i;
+				lastLines += _T("\r\n");
+			}
+			if(lastLines.size() > 2) {
+				lastLines.erase(lastLines.size() - 2);
+			}
+			pDispInfo->lpszText = const_cast<TCHAR*>(lastLines.c_str());
+		} else if(getRect(7).PtInRect(pt)) {
+			pDispInfo->lpszText = _T("Set download limit");
+		} else if(getRect(8).PtInRect(pt)) {
+			pDispInfo->lpszText = _T("Set upload limit");
 		}
-		if(lastLines.size() > 2) {
-			lastLines.erase(lastLines.size() - 2);
-		}
-		pDispInfo->lpszText = const_cast<TCHAR*>(lastLines.c_str());
 	}
 	return 0;
 }

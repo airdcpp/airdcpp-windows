@@ -66,12 +66,11 @@
 #define IDC_COPY_END                    163
 #define IDC_SPLITTER                    164
 #define IDD_SHAREPAGE                   205
-#define IDD_AIRAPPEARANCEPAGE           207
-#define IDB_ARROWS                      208
-#define IDD_LINE                        209
-#define IDD_LINE2                       209
-#define IDD_ADVANCEDPAGE                210
-#define IDD_UPLOADPAGE                  212
+#define IDD_AIRAPPEARANCEPAGE           206
+#define IDD_LINE                        207
+#define IDD_LINE2                       208
+#define IDD_ADVANCEDPAGE                209
+#define IDD_UPLOADPAGE                  210
 #define IDD_SPEEDPAGE                   212
 #define IDD_APPEARANCEPAGE              213
 #define IDR_FLATTAB                     214
@@ -260,6 +259,7 @@
 #define IDI_FOLDER_INC                  442
 #define IDI_FILE                        443
 #define IDI_OVERLAY                     444
+#define IDI_SEGMENT						445
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
