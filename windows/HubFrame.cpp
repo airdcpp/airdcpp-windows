@@ -1495,10 +1495,19 @@ void HubFrame::on(Redirect, const Client*, const string& line) noexcept {
 	}
 
 	redirect = Text::toT(line);
-	if(BOOLSETTING(AUTO_FOLLOW)) {
+	bool isFO = FavoriteManager::getInstance()->isFailOverUrl(client->getFavToken(), client->getHubUrl());
+
+	if(BOOLSETTING(AUTO_FOLLOW) && !isFO) {
 		PostMessage(WM_COMMAND, IDC_FOLLOW, 0);
 	} else {
-		speak(ADD_STATUS_LINE, STRING(PRESS_FOLLOW) + " " + line);
+		string msg;
+		if (isFO) {
+			msg = STRING_F(REDIRECT_FAILOVER, line);
+		} else {
+			msg = STRING(PRESS_FOLLOW) + " " + line;
+		}
+
+		speak(ADD_STATUS_LINE, msg);
 	}
 }
 void HubFrame::on(Failed, const Client*, const string& line) noexcept { 

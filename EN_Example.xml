@@ -1689,5 +1689,6 @@ would you still like to load them?</String>
 		<String Name="FilelistLoadedIn">File list has been loaded in %s</String>
 		<String Name="PartialListLoaded">Partial list has been loaded</String>
 		<String Name="DirectoryLoaded">The directory %s has been loaded</String>
+		<String Name="RedirectFailover">A redirection request was received via a failover address; press the follow redirect button to connect to %s</String>
 	</Strings>
 </Language>
