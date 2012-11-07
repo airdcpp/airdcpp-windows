@@ -260,6 +260,8 @@
 #define IDI_FILE                        443
 #define IDI_OVERLAY                     444
 #define IDI_SEGMENT						445
+#define IDI_D_USER						446
+#define IDI_U_USER						447
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479

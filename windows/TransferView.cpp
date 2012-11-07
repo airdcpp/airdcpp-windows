@@ -58,7 +58,8 @@ LRESULT TransferView::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	arrows.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 3);
 	arrows.AddIcon(ResourceLoader::loadIcon(IDI_DOWNLOAD, 16));
 	arrows.AddIcon(ResourceLoader::loadIcon(IDI_UPLOAD, 16));
-	arrows.AddIcon(ResourceLoader::loadIcon(IDI_SEGMENT, 16));
+	arrows.AddIcon(ResourceLoader::loadIcon(IDI_D_USER, 16));
+	arrows.AddIcon(ResourceLoader::loadIcon(IDI_U_USER, 16));
 
 	ctrlTransfers.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_TRANSFERS);

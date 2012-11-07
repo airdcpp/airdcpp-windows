@@ -205,7 +205,8 @@ private:
 	enum {
 		IMAGE_DOWNLOAD = 0,
 		IMAGE_UPLOAD,
-		IMAGE_SEGMENT
+		IMAGE_D_USER,
+		IMAGE_U_USER
 	};
 
 	struct UpdateInfo;
@@ -267,7 +268,7 @@ private:
 		const tstring getText(uint8_t col) const;
 		static int compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col);
 
-		uint8_t getImageIndex() const { return static_cast<uint8_t>(!download ? IMAGE_UPLOAD : (!parent ? IMAGE_DOWNLOAD : IMAGE_SEGMENT)); }
+		uint8_t getImageIndex() const { return static_cast<uint8_t>(!download ? (!parent ? IMAGE_UPLOAD : IMAGE_U_USER) : (!parent ? IMAGE_DOWNLOAD : IMAGE_D_USER)); }
 
 		ItemInfo* createParent();
 		void updateUser(const vector<ItemInfo*>& aChildren);

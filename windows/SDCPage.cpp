@@ -72,7 +72,6 @@ LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	setMinMax(IDC_MAX_COMP_SPIN, 0, 9);
 
 	setMinMax(IDC_SHUTDOWN_SPIN , 1, 3600);
-	setMinMax(IDC_MATCH_SPIN, 1, 999);
 	setMinMax(IDC_LOG_LINES_SPIN, 0, 1000);
 
 	ctrlBloom.Attach(GetDlgItem(IDC_BLOOM_MODE));

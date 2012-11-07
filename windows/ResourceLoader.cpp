@@ -158,6 +158,9 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_WIZARD:		return _T("Wizard.ico");
 		case IDI_UPLOAD:		return _T("Upload.ico");
 		case IDI_DOWNLOAD:		return _T("Download.ico");
+		case IDI_SEGMENT:		return _T("transfer_segmented.ico");
+		case IDI_D_USER:		return _T("download_user.ico");
+		case IDI_U_USER:		return _T("upload_user.ico");
 		case IDI_ONLINE:		return _T("Online.ico");
 		case IDI_OFFLINE:		return _T("Offline.ico");
 		case IDI_HUB:			return _T("Hub.ico");
