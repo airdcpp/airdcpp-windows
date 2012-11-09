@@ -352,17 +352,8 @@ LRESULT FavoriteHubsFrame::onNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	FavoriteHubEntry e;
 	FavHubProperties dlg(&e);
 
-	while (true) {
-		if(dlg.DoModal((HWND)*this) == IDOK) {
-			if (FavoriteManager::getInstance()->isFavoriteHub(e.getServers()[0].first)){
-				MessageBox(CTSTRING(FAVORITE_HUB_ALREADY_EXISTS), _T(" "), MB_ICONWARNING | MB_OK);
-			} else {
-				FavoriteManager::getInstance()->addFavorite(e);
-				break;
-			}
-		} else {
-			break;
-		}
+	if(dlg.DoModal((HWND)*this) == IDOK) {
+		FavoriteManager::getInstance()->addFavorite(e);
 	}
 	return 0;
 }
