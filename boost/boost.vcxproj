@@ -203,7 +203,7 @@
     <ClInclude Include="libs\system\src\local_free_on_destruction.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\zlib.vcxproj">
+    <ProjectReference Include="..\zlib\zlib.vcxproj">
       <Project>{dfbbe42a-45f4-4188-89c2-17f5dfe50673}</Project>
     </ProjectReference>
   </ItemGroup>

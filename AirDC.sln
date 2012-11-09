@@ -7,7 +7,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AirDC", "StrongDC.vcxproj",
 		{6BD1D0B7-EC0C-4473-533B-5EC961138415} = {6BD1D0B7-EC0C-4473-533B-5EC961138415}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bzip2", "bzip2.vcxproj", "{8B162F1B-5D6C-41C1-8A80-858B379DE07D}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bzip2", "bzip2\bzip2.vcxproj", "{8B162F1B-5D6C-41C1-8A80-858B379DE07D}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client", "client.vcxproj", "{F8D0E5FE-BABD-4FC8-B3FE-B48978D23FEB}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -17,7 +17,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "client", "client.vcxproj", 
 		{D1095E8A-63A5-4592-AE93-2D638F20F66A} = {D1095E8A-63A5-4592-AE93-2D638F20F66A}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib.vcxproj", "{DFBBE42A-45F4-4188-89C2-17F5DFE50673}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zlib", "zlib\zlib.vcxproj", "{DFBBE42A-45F4-4188-89C2-17F5DFE50673}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MakeDefs", "MakeDefs\MakeDefs.vcxproj", "{AEF82786-9DA2-4CDF-8602-02643CAFC727}"
 	ProjectSection(ProjectDependencies) = postProject

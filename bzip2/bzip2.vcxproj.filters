@@ -11,33 +11,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="bzip2\blocksort.c">
+    <ClCompile Include="blocksort.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bzip2\bzlib.c">
+    <ClCompile Include="bzlib.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bzip2\compress.c">
+    <ClCompile Include="compress.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bzip2\crctable.c">
+    <ClCompile Include="crctable.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bzip2\decompress.c">
+    <ClCompile Include="decompress.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bzip2\huffman.c">
+    <ClCompile Include="huffman.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bzip2\randtable.c">
+    <ClCompile Include="randtable.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bzip2\bzlib.h">
+    <ClInclude Include="bzlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bzip2\bzlib_private.h">
+    <ClInclude Include="bzlib_private.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -11,84 +11,84 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="zlib\adler32.c">
+    <ClCompile Include="adler32.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\compress.c">
+    <ClCompile Include="compress.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\crc32.c">
+    <ClCompile Include="crc32.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\deflate.c">
+    <ClCompile Include="deflate.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\gzclose.c">
+    <ClCompile Include="gzclose.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\gzlib.c">
+    <ClCompile Include="gzlib.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\gzread.c">
+    <ClCompile Include="gzread.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\gzwrite.c">
+    <ClCompile Include="gzwrite.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\infback.c">
+    <ClCompile Include="infback.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\inffast.c">
+    <ClCompile Include="inffast.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\inflate.c">
+    <ClCompile Include="inflate.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\inftrees.c">
+    <ClCompile Include="inftrees.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\trees.c">
+    <ClCompile Include="trees.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\uncompr.c">
+    <ClCompile Include="uncompr.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="zlib\zutil.c">
+    <ClCompile Include="zutil.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="zlib\crc32.h">
+    <ClInclude Include="crc32.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\deflate.h">
+    <ClInclude Include="deflate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\gzguts.h">
+    <ClInclude Include="gzguts.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\inffast.h">
+    <ClInclude Include="inffast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\inffixed.h">
+    <ClInclude Include="inffixed.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\inflate.h">
+    <ClInclude Include="inflate.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\inftrees.h">
+    <ClInclude Include="inftrees.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\trees.h">
+    <ClInclude Include="trees.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\zconf.h">
+    <ClInclude Include="zconf.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\zlib.h">
+    <ClInclude Include="zlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="zlib\zutil.h">
+    <ClInclude Include="zutil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
