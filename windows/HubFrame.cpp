@@ -1510,7 +1510,7 @@ void HubFrame::on(Redirect, const Client*, const string& line) noexcept {
 		speak(ADD_STATUS_LINE, msg);
 	}
 }
-void HubFrame::on(Failed, const Client*, const string& line) noexcept { 
+void HubFrame::on(Failed, const string&, const string& line) noexcept { 
 	speak(ADD_STATUS_LINE, line); 
 	speak(DISCONNECTED); 
 }

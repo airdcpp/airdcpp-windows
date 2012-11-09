@@ -1172,6 +1172,7 @@ clientmenu:
 			if(ht != NULL && ht != ctrlTree.GetSelectedItem())
 				ctrlTree.SelectItem(ht);
 			ctrlTree.ClientToScreen(&pt);
+			isTreeChange = true;
 		}
 
 		OMenu directoryMenu, SearchMenu;

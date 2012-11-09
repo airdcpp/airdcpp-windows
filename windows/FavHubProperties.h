@@ -30,7 +30,7 @@
 class FavHubProperties : public CDialogImpl<FavHubProperties>
 {
 public:
-	FavHubProperties::FavHubProperties(FavoriteHubEntry *_entry) : entry(_entry) { }
+	FavHubProperties(FavoriteHubEntry *_entry);
 	~FavHubProperties() { }
 
 	enum { IDD = IDD_FAVORITEHUB };
@@ -59,6 +59,7 @@ protected:
 
 	bool hideShare;
 	CComboBox ctrlProfile;
+	bool loaded;
 };
 
 #endif // !defined(FAV_HUB_PROPERTIES_H)

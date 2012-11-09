@@ -171,8 +171,8 @@ private:
 	void on(ClientConnected, const Client* c) noexcept { 
 		PostMessage(WM_SPEAKER, (WPARAM)HUB_CONNECTED,  (LPARAM)new string(c->getHubUrl())); 
 	}
-	void on(ClientDisconnected, const Client* c) noexcept { 
-		PostMessage(WM_SPEAKER, (WPARAM)HUB_DISCONNECTED,  (LPARAM)new string(c->getHubUrl())); 
+	void on(ClientDisconnected, const string& aHubUrl) noexcept { 
+		PostMessage(WM_SPEAKER, (WPARAM)HUB_DISCONNECTED,  (LPARAM)new string(aHubUrl)); 
 	}
 
 };

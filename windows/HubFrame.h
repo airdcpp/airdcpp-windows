@@ -359,7 +359,7 @@ private:
 	void on(UsersUpdated, const Client*, const OnlineUserList&) noexcept;
 	void on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr&) noexcept;
 	void on(Redirect, const Client*, const string&) noexcept;
-	void on(Failed, const Client*, const string&) noexcept;
+	void on(Failed, const string&, const string&) noexcept;
 	void on(GetPassword, const Client*) noexcept;
 	void on(HubUpdated, const Client*) noexcept;
 	void on(Message, const Client*, const ChatMessage&) noexcept;

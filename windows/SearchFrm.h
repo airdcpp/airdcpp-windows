@@ -527,13 +527,13 @@ private:
 	// ClientManagerListener
 	void on(ClientConnected, const Client* c) noexcept { speak(HUB_ADDED, c); }
 	void on(ClientUpdated, const Client* c) noexcept { speak(HUB_CHANGED, c); }
-	void on(ClientDisconnected, const Client* c) noexcept { speak(HUB_REMOVED, c); }
+	void on(ClientDisconnected, const string& aHubUrl) noexcept { PostMessage(WM_SPEAKER, HUB_REMOVED, (LPARAM)new string(aHubUrl)); }
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void initHubs();
 	void onHubAdded(HubInfo* info);
 	void onHubChanged(HubInfo* info);
-	void onHubRemoved(HubInfo* info);
+	void onHubRemoved(tstring&& aHubUrl);
 	bool matchFilter(SearchInfo* si, int sel, bool doSizeCompare = false, FilterModes mode = NONE, int64_t size = 0);
 	bool parseFilter(FilterModes& mode, int64_t& size);
 	void updateSearchList(SearchInfo* si = NULL);

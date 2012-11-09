@@ -1299,7 +1299,10 @@ LRESULT SearchFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL
  			onHubChanged((HubInfo*)(lParam));
 		break;
  	case HUB_REMOVED:
- 			onHubRemoved((HubInfo*)(lParam));
+		{
+ 			onHubRemoved(Text::toT(*(string*)(lParam)));
+			delete (string*)lParam;
+		}
  		break;
 	case QUEUE_STATS:
 	{
@@ -1464,15 +1467,13 @@ void SearchFrame::onHubChanged(HubInfo* info) {
 	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
 }
 
-void SearchFrame::onHubRemoved(HubInfo* info) {
+void SearchFrame::onHubRemoved(tstring&& aHubUrl) {
 	int nItem = 0;
 	int n = ctrlHubs.GetItemCount();
 	for(; nItem < n; nItem++) {
-		if(ctrlHubs.getItemData(nItem)->url == info->url)
+		if(ctrlHubs.getItemData(nItem)->url == aHubUrl)
 			break;
 	}
-
-	delete info;
 
 	if (nItem == n)
 		return;

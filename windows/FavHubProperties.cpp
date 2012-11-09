@@ -27,6 +27,9 @@
 #include "../client/FavoriteManager.h"
 #include "../client/ResourceManager.h"
 
+
+FavHubProperties::FavHubProperties(FavoriteHubEntry *_entry) : entry(_entry), loaded(false) { }
+
 LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 {
 	// Translate dialog
@@ -150,6 +153,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	updown.Detach();
 
 	CenterWindow(GetParent());
+	loaded = true;
 	return FALSE;
 }
 
@@ -198,7 +202,28 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 			MessageBox(CTSTRING(INCOMPLETE_FAV_HUB), _T(""), MB_ICONWARNING | MB_OK);
 			return 0;
 		}
-		entry->setServerStr(Text::fromT(buf));
+
+		//check the primary address for dupes
+		string addresses = Text::fromT(buf);
+		size_t pos = addresses.find(";");
+
+		if (!FavoriteManager::getInstance()->isUnique(pos != string::npos ? addresses.substr(0, pos) : addresses, entry->getToken())){
+			MessageBox(CTSTRING(FAVORITE_HUB_ALREADY_EXISTS), _T(" "), MB_ICONWARNING | MB_OK);
+			return 0;
+		}
+
+		//validate the encoding
+		GetDlgItemText(IDC_ENCODING, buf, 512);
+		if(_tcschr(buf, _T('.')) == NULL && _tcscmp(buf, Text::toT(Text::utf8).c_str()) != 0 && _tcscmp(buf, _T("System default")) != 0)
+		{
+			MessageBox(_T("Invalid encoding!"), _T(""), MB_ICONWARNING | MB_OK);
+			return 0;
+		}
+
+		//set the values
+		entry->setEncoding(Text::fromT(buf));
+		entry->setServerStr(addresses);
+
 		GetDlgItemText(IDC_HUBNAME, buf, 256);
 		entry->setName(Text::fromT(buf));
 		GetDlgItemText(IDC_HUBDESCR, buf, 256);
@@ -218,14 +243,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		entry->setChatNotify(IsDlgButtonChecked(IDC_CHAT_NOTIFY) == 1);
 		GetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, buf, 512);
 		entry->setSearchInterval(Util::toUInt32(Text::fromT(buf)));
-		
-		GetDlgItemText(IDC_ENCODING, buf, 512);
-		if(_tcschr(buf, _T('.')) == NULL && _tcscmp(buf, Text::toT(Text::utf8).c_str()) != 0 && _tcscmp(buf, _T("System default")) != 0)
-		{
-			MessageBox(_T("Invalid encoding!"), _T(""), MB_ICONWARNING | MB_OK);
-			return 0;
-		}
-		entry->setEncoding(Text::fromT(buf));
+
 		
 		CComboBox combo;
 		combo.Attach(GetDlgItem(IDC_FAV_DLG_GROUP));
@@ -267,6 +285,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 
 		FavoriteManager::getInstance()->save();
 	}
+	loaded = false;
 	EndDialog(wID);
 	return 0;
 }
@@ -302,6 +321,8 @@ LRESULT FavHubProperties::OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWn
 		tmp.Detach();
 	}
 
+	if (!loaded)
+		return 0;
 	
 	CComboBox combo;
 	combo.Attach(GetDlgItem(IDC_ENCODING));
