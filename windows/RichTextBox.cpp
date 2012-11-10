@@ -907,13 +907,13 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 						menu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(STOP_SHARING));
 					} else if (!author.empty()) {
 						targets = QueueManager::getInstance()->getTargets(m.getTTH());
-						appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, true, false);
+						appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, false, false);
 						if (!shareDupe && !queueDupe)
 							menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 					}
 				} else if (release) {
 					//autosearch menus
-					appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, false, true);
+					appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, true, true);
 				}
 			}
 		}
@@ -1193,12 +1193,12 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
-void RichTextBox::handleDownload(const string& aTarget, QueueItem::Priority /*p*/, bool isMagnet, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
-	if (isMagnet && !SettingsManager::lanMode) {
+void RichTextBox::handleDownload(const string& aTarget, QueueItem::Priority /*p*/, bool isRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+	if (!isRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		try {
-			QueueManager::getInstance()->add(aTarget + m.fname, m.fsize, m.getTTH(), u, Util::emptyString);
+			QueueManager::getInstance()->add(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, Util::emptyString);
 		} catch (...) {}
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, aTargetType, true);
@@ -1219,7 +1219,7 @@ void RichTextBox::appendDownloadItems(OMenu& aMenu, bool isWhole) {
 	aMenu.appendItem(CTSTRING(DOWNLOAD), [this, isWhole] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isWhole); });
 
 	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-	appendDownloadTo(*targetMenu, isWhole ? true : false);
+	appendDownloadTo(*targetMenu, isWhole);
 }
 
 int64_t RichTextBox::getDownloadSize(bool /*isWhole*/) {

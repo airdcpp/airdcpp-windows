@@ -98,7 +98,6 @@ public:
 	tstring description;
 	tstring comboDescription;
 	tstring title;
-	bool hideShare;
 	ProfileToken curProfile;
 	bool disableAddress;
 
@@ -113,7 +112,7 @@ public:
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 	END_MSG_MAP()
 	
-	ConnectDlg(bool aDisableAddress=false) : hideShare(false), disableAddress(aDisableAddress) { }
+	ConnectDlg(bool aDisableAddress=false) : hideShare(false), created(false), disableAddress(aDisableAddress) { }
 
 	LRESULT onClickedHideShare(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		if (IsDlgButtonChecked(IDC_HIDE_SHARE)) {
@@ -132,11 +131,13 @@ public:
 	}
 
 	LRESULT OnTextChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		if (isAdcHub()) {
-			ctrlProfile.EnableWindow(true);
-		} else {
-			ctrlProfile.SetCurSel(0);
-			ctrlProfile.EnableWindow(false);
+		if (created) {
+			if (isAdcHub()) {
+				ctrlProfile.EnableWindow(true);
+			} else {
+				ctrlProfile.SetCurSel(0);
+				ctrlProfile.EnableWindow(false);
+			}
 		}
 		return FALSE;
 	}
@@ -191,6 +192,7 @@ public:
 		SetDlgItemText(IDOK, CTSTRING(CONNECT));
 		
 		CenterWindow(GetParent());
+		created = true;
 		return FALSE;
 	}
 	
@@ -199,12 +201,21 @@ public:
 		if(wID == IDOK) {
 			address.resize(ctrlLine.GetWindowTextLength() + 1);
 			address.resize(GetDlgItemText(IDC_LINE, &address[0], address.size()));
+
+			// Strip out all the spaces
+			string::size_type i;
+			while((i = address.find(' ')) != string::npos)
+				address.erase(i, 1);
+
 			auto profiles = ShareManager::getInstance()->getProfiles();
 			curProfile = profiles[ctrlProfile.GetCurSel()]->getToken();
 		}
 		EndDialog(wID);
 		return 0;
 	}
+private:
+	bool created;
+	bool hideShare;
 };
 
 class ComboDlg : public CDialogImpl<ComboDlg>

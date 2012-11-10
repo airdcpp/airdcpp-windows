@@ -1741,20 +1741,14 @@ LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if(SETTING(NICK).empty())
 			return 0;
 
-		tstring tmp = dlg.address;
-		// Strip out all the spaces
-		string::size_type i;
-		while((i = tmp.find(' ')) != string::npos)
-			tmp.erase(i, 1);
-
 		RecentHubEntry r;
 		r.setName("*");
 		r.setDescription("*");
 		r.setUsers("*");
 		r.setShared("*");
-		r.setServer(Text::fromT(tmp));
+		r.setServer(Text::fromT(dlg.address));
 		FavoriteManager::getInstance()->addRecent(r);
-		HubFrame::openWindow(tmp, 0, true, dlg.curProfile);
+		HubFrame::openWindow(dlg.address, 0, true, dlg.curProfile);
 	}
 	return 0;
 }

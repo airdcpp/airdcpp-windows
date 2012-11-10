@@ -86,7 +86,7 @@ DirectoryListingFrame::~DirectoryListingFrame() {
 	//delete dl;
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadDir, bool changeDir) noexcept {
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir) noexcept {
 	bool searching = dl->isCurrentSearchPath(aDir);
 
 	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(CTSTRING(UPDATING_VIEW)));
@@ -94,7 +94,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 		resetFilter();
 
 	try{
-		refreshTree(Text::toT(aDir), reloadDir, changeDir);
+		refreshTree(Text::toT(aDir), reloadList, changeDir);
 	} catch(const AbortException) {
 		return;
 	}
@@ -333,9 +333,9 @@ void DirectoryListingFrame::createRoot() {
 	dcassert(treeRoot);
 }
 
-void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadDir, bool changeDir) {
+void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bool changeDir) {
 	ctrlTree.SetRedraw(FALSE);
-	if (reloadDir) {
+	if (reloadList) {
 		isTreeChange = false;
 		ctrlTree.DeleteAllItems();
 		ctrlList.DeleteAllItems();
@@ -343,7 +343,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadDir, boo
 	}
 
 	auto oldSel = ctrlTree.GetSelectedItem();
-	HTREEITEM ht = reloadDir ? treeRoot : findItem(treeRoot, root);
+	HTREEITEM ht = reloadList ? treeRoot : findItem(treeRoot, root);
 	if(ht == NULL) {
 		ht = treeRoot;
 	}

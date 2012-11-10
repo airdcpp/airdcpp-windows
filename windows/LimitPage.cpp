@@ -18,12 +18,17 @@ PropPage::TextItem LimitPage::texts[] = {
 	{ IDC_STRONGDC_DW_SPEED1, ResourceManager::MAX_DOWNLOAD_RATE },
 	{ IDC_TIME_LIMITING, ResourceManager::SET_ALTERNATE_LIMITING },
 	{ IDC_STRONGDC_TO, ResourceManager::SETCZDC_TO },
+	{ IDC_STRONGDC_TRANSFER_LIMITING2, ResourceManager::ALTERNATE_LIMITING },
 
 	//uploads
 	{ IDC_CZDC_SMALL_SLOTS, ResourceManager::SMALL_UP_SLOTS },
 	{ IDC_CZDC_SMALL_SIZE, ResourceManager::SETCZDC_SMALL_FILES },
 	{ IDC_SETTINGS_PARTIAL_SLOTS, ResourceManager::SETSTRONGDC_PARTIAL_SLOTS },		
 	{ IDC_STATICb, ResourceManager::EXTRA_HUB_SLOTS },
+
+	//other
+	{ IDC_TRANSFER_ENCRYPTION_LBL, ResourceManager::TRANSFER_ENCRYPTION },
+
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 }; 
 
