@@ -86,7 +86,7 @@ DirectoryListingFrame::~DirectoryListingFrame() {
 	//delete dl;
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial, bool changeDir) noexcept {
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadDir, bool changeDir) noexcept {
 	bool searching = dl->isCurrentSearchPath(aDir);
 
 	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(CTSTRING(UPDATING_VIEW)));
@@ -94,7 +94,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 		resetFilter();
 
 	try{
-		refreshTree(Text::toT(aDir), convertFromPartial, changeDir);
+		refreshTree(Text::toT(aDir), reloadDir, changeDir);
 	} catch(const AbortException) {
 		return;
 	}
@@ -333,9 +333,9 @@ void DirectoryListingFrame::createRoot() {
 	dcassert(treeRoot);
 }
 
-void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPartial, bool changeDir) {
+void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadDir, bool changeDir) {
 	ctrlTree.SetRedraw(FALSE);
-	if (convertFromPartial) {
+	if (reloadDir) {
 		isTreeChange = false;
 		ctrlTree.DeleteAllItems();
 		ctrlList.DeleteAllItems();
@@ -343,7 +343,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 	}
 
 	auto oldSel = ctrlTree.GetSelectedItem();
-	HTREEITEM ht = convertFromPartial ? treeRoot : findItem(treeRoot, root);
+	HTREEITEM ht = reloadDir ? treeRoot : findItem(treeRoot, root);
 	if(ht == NULL) {
 		ht = treeRoot;
 	}
@@ -368,20 +368,26 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool convertFromPar
 	if (changeDir) {
 		selectItem(root);
 	} else {
-		//set the dir complete
-		auto dir = Text::fromT(root);
-		int j = ctrlList.GetItemCount();        
-		for(int i = 0; i < j; i++) {
-			const ItemInfo* ii = ctrlList.getItemData(i);
-			if (ii->type == ii->DIRECTORY && ii->dir->getPath() == dir) {
-				ctrlList.SetItem(i, 0, LVIF_IMAGE, NULL, ResourceLoader::getDirIconIndex(), 0, 0, NULL);
-				ctrlList.updateItem(i);
-				updateStatus();
-				break;
+		auto loadedDir = Text::fromT(root);
+		auto oldDir = dl->getPath(curDir);
+
+		if (oldDir == Util::getParentDir(loadedDir, true)) {
+			//set the dir complete
+			int j = ctrlList.GetItemCount();        
+			for(int i = 0; i < j; i++) {
+				const ItemInfo* ii = ctrlList.getItemData(i);
+				if (ii->type == ii->DIRECTORY && ii->dir->getPath() == loadedDir) {
+					ctrlList.SetItem(i, 0, LVIF_IMAGE, NULL, ResourceLoader::getDirIconIndex(), 0, 0, NULL);
+					ctrlList.updateItem(i);
+					updateStatus();
+					break;
+				}
 			}
 		}
 
-		updating = true; //prevent reloading the listview
+		if (oldDir != loadedDir)
+			updating = true; //prevent reloading the listview unless we are in the directory already (recursive partial lists with directory downloads from tree)
+
 		ctrlTree.SelectItem(oldSel);
 		updating = false;
 	}

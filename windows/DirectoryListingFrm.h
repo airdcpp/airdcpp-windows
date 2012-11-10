@@ -207,7 +207,7 @@ public:
 	void runUserCommand(UserCommand& uc);
 	void resetFilter();
 
-	void refreshTree(const tstring& root, bool convertFromPartial, bool changeDir);
+	void refreshTree(const tstring& root, bool reloadDir, bool changeDir);
 
 	HTREEITEM findItem(HTREEITEM ht, const tstring& name);
 	void selectItem(const tstring& name);
@@ -395,7 +395,7 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool convertFromPartial, bool changeDir) noexcept;
+	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadDir, bool changeDir) noexcept;
 	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
 	void on(DirectoryListingListener::LoadingStarted) noexcept;
 	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;
