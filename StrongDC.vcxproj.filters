@@ -681,6 +681,9 @@
     <ClCompile Include="windows\ResourceLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\ExMessageBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1023,6 +1026,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\CProgressCtrlEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\ExMessageBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

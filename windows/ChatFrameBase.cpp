@@ -25,6 +25,7 @@
 #include "SearchFrm.h"
 #include "MainFrm.h"
 #include "Players.h"
+#include "ExMessageBox.h"
 
 #include "../client/HashManager.h"
 #include "../client/SettingsManager.h"
@@ -91,11 +92,11 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
 	ctrlTooltips.Activate(TRUE);
 
-	if(getUser() ? !getUser()->isSet(User::NMDC) : AirUtil::isAdcHub(getClient()->getHubUrl())) {
-		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
-		ctrlMagnet.SetIcon(ResourceLoader::loadIcon(IDI_MAGNET, 20));
-		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, (getUser() && !getUser()->isSet(User::BOT)) ? CTSTRING(SEND_FILE_PM) : CTSTRING(SEND_FILE_HUB));
-	}
+	bool tmp = (getUser() && (!getUser()->isSet(User::BOT) && !getUser()->isSet(User::NMDC)));
+	ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
+	ctrlMagnet.SetIcon(ResourceLoader::loadIcon(IDI_MAGNET, 20));
+	ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, tmp ? CTSTRING(SEND_FILE_PM) : CTSTRING(SEND_FILE_HUB));
+	
 }
 
 LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -327,8 +328,17 @@ LRESULT ChatFrameBase::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
  }
 
 void ChatFrameBase::addMagnet(string&& path) {
-	if (!getClient())
+	if(!getClient())
 		return;
+
+	//warn the user that nmdc share will be public access.
+	if((getUser() && getUser()->isSet(User::NMDC))) {
+		UINT bCheck = SETTING(NMDC_MAGNET_WARN) ? BST_UNCHECKED : BST_CHECKED;
+		if(bCheck == BST_UNCHECKED)
+			::MessageBox(WinUtil::mainWnd, CTSTRING(NMDC_MAGNET_WARNING), CTSTRING(NMDC_HUB_PRIVATE), CTSTRING(DONT_SHOW_AGAIN), MB_OK | MB_ICONWARNING | MB_DEFBUTTON2, bCheck);
+		
+		SettingsManager::getInstance()->set(SettingsManager::NMDC_MAGNET_WARN, bCheck != BST_CHECKED);
+	}
 
 	TTHValue tth;
 	int64_t size = 0;
@@ -339,13 +349,11 @@ void ChatFrameBase::addMagnet(string&& path) {
 		LogManager::getInstance()->message(STRING(HASHING_FAILED) + " " + e.getError(), LogManager::LOG_ERROR);
 		return;
 	}
+	bool useKey = getUser() && (!getUser()->isSet(User::BOT) || !getUser()->isSet(User::NMDC));
+	ShareManager::getInstance()->addTempShare((useKey ? getUser()->getCID().toBase32() : Util::emptyString), tth, path, size, getClient()->getShareProfile());
+		
+	appendTextLine(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size)), true);
 
-	if(ShareManager::getInstance()->addTempShare((getUser() && !getUser()->isSet(User::BOT)) ? getUser()->getCID().toBase32() : Util::emptyString, tth, path, size, 
-		AirUtil::isAdcHub(getClient()->getHubUrl())))
-			appendTextLine(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size)), true);
-	else {
-		//MessageBox(_T("File is not shared and temporary shares are not supported with NMDC hubs!"), _T("NMDC hub not supported!"), MB_ICONWARNING | MB_OK);
-	}
 }
 
 LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

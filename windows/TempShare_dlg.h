@@ -29,6 +29,7 @@ public:
 	END_MSG_MAP()
 	
 	TempShareDlg() { }
+	~TempShareDlg() { }
 	
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -51,10 +52,12 @@ public:
 		}
 
 		CenterWindow(GetParent());
-		return FALSE;
+		return TRUE;
 	}
 	
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		ctrlFiles.DeleteAllItems();
+		ctrlFiles.Detach();
 		EndDialog(wID);
 		return 0;
 	}
