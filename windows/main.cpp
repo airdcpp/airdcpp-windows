@@ -388,20 +388,19 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	SingleInstance dcapp(_T(INST_NAME));
-	LPTSTR* argv = ++__targv;
+	LPTSTR* argv = __targv;
 	int argc = --__argc;
 
 	auto checkParams = [&argc, &argv] () -> void {
-		for (;;) {
-			if(argc <= 0) break;
+		while (argc > 0) {
 			Util::addParam(Text::fromT(*argv));
-
-			argv++;
 			argc--;
+			argv++;
 		}
 	};
 
 	if (argc > 0) {
+		argv++;
 		if(_tcscmp(*argv, _T("/createupdate")) == 0) {
 			Updater::createUpdate();
 			return FALSE;

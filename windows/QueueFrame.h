@@ -252,7 +252,7 @@ private:
 	class QueueItemInfo : public FastAlloc<QueueItemInfo> {
 	public:
 
-		QueueItemInfo(QueueItemPtr aQI) : qi(aQI)	{ }
+		QueueItemInfo(QueueItemPtr aQI) : qi(aQI), fileName(aQI->getTargetFileName()) { }
 
 		~QueueItemInfo() { }
 
@@ -285,6 +285,8 @@ private:
 
 		bool getAutoPriority() const { return qi->getAutoPriority(); }
 
+		//cache in case we move the item to avoid threading issues
+		GETSET(string, fileName, FileName);
 	private:
 		QueueItemPtr qi;
 
@@ -370,7 +372,7 @@ private:
 	HTREEITEM createSplitDir(TVINSERTSTRUCT& tvi, const string&& dir, HTREEITEM parent, DirItemInfo* bii, bool subDir=false);
 	void removeQueueItem(QueueItemInfo* ii, bool noSort);
 	void removeItemDir(bool isFileList);
-	void removeBundleDir(const string& dir, const BundlePtr aBundle);
+	void removeBundleDir(const string& dir);
 	void removeBundle(const string& aDir, bool isFileBundle);
 
 	void updateQueue();
@@ -389,7 +391,7 @@ private:
 		}
 	}
 
-	bool isCurDir(const string& aDir) const { return stricmp(curDir, aDir) == 0; }
+	bool isCurDir(const string& aDir) const;
 
 	void moveSelected();	
 	void moveSelectedDir();

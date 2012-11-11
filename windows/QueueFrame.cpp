@@ -38,6 +38,8 @@
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/algorithm_ext/for_each.hpp>
 
+using boost::adaptors::map_values;
+
 #define FILE_LIST_NAME _T("File Lists")
 #define TEMP_NAME _T("Temp items")
 
@@ -369,14 +371,16 @@ void QueueFrame::addQueueItem(QueueItemInfo* ii, bool noSort) {
 }
 
 QueueFrame::QueueItemInfo* QueueFrame::getItemInfo(const string& target) const {
-	string path = Util::getFilePath(target);
-	DirectoryPairC items = directories.equal_range(path);
-	for(DirectoryIterC i = items.first; i != items.second; ++i) {
-		if(compare(i->second->getTarget(), target) == 0) {
+	string fileName = Util::getFileName(target);
+
+	auto items = directories.equal_range(Util::getFilePath(target));
+
+	for(auto i = items.first; i != items.second; ++i) {
+		if(compare(i->second->getFileName(), fileName) == 0) {
 			return i->second;
 		}
 	}
-	return 0;
+	return nullptr;
 }
 
 void QueueFrame::addQueueList(const QueueItem::StringMap& li) {
@@ -721,7 +725,7 @@ void QueueFrame::removeItemDir(bool isFileList) {
 	} 
 }
 
-void QueueFrame::removeBundleDir(const string& dir, const BundlePtr aBundle) {
+void QueueFrame::removeBundleDir(const string& dir) {
 	// First, find the last name available
 	string::size_type i = 0;
 
@@ -834,23 +838,16 @@ void QueueFrame::on(QueueManagerListener::Removed, const QueueItemPtr aQI) {
 
 void QueueFrame::on(QueueManagerListener::Moved, const QueueItemPtr, const string& oldTarget) {
 	speak(REMOVE_ITEM, new StringTask(oldTarget));
-	
-	// we need to call speaker now to properly remove item before other actions
-	onSpeaker(0, 0, 0, *reinterpret_cast<BOOL*>(NULL));
 }
 
 void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) {
 	for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItemPtr qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
 	speak(REMOVE_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
-	
-	// we need to call speaker now to properly remove items before other actions
-	onSpeaker(0, 0, 0, *reinterpret_cast<BOOL*>(NULL));
 }
 
 void QueueFrame::on(QueueManagerListener::BundleMerged, const BundlePtr aBundle, const string& oldTarget) noexcept {
 	speak(REMOVE_BUNDLE, new DirItemInfoTask(new DirItemInfo(oldTarget, aBundle)));
 	speak(ADD_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
-	//onSpeaker(0, 0, 0, *reinterpret_cast<BOOL*>(NULL));
 }
 
 void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr aQI) {
@@ -886,6 +883,10 @@ void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle
 	speak(REMOVE_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
 }
 
+bool QueueFrame::isCurDir(const string& aDir) const { 
+	return compare(curDir, aDir) == 0; 
+}
+
 LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	TaskQueue::List t;
 
@@ -906,13 +907,21 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			delete ui.ii;
 		} else if(ti->first == REMOVE_ITEM) {
 			auto &target = static_cast<StringTask&>(*ti->second);
-			const QueueItemInfo* ii = getItemInfo(target.str);
-			if(!ii) {
-				dcassert(ii);
-				continue;
-			}
+
+			auto fileName = Util::getFileName(target.str);
+			auto dirs = directories.equal_range(Util::getFilePath(target.str));
+
+			auto j = boost::find_if(dirs | map_values, [&fileName](const QueueItemInfo* qii) { return compare(qii->getFileName(), fileName) == 0; });
+			dcassert(j.base() != dirs.second);
+
+			const QueueItemInfo* ii = *j;
+			bool removeTree = distance(dirs.first, dirs.second) == 1;
+			bool inCurDir = isCurDir(Util::getFilePath(target.str));
+
+
+			directories.erase(j.base());
 			
-			if(!showTree || isCurDir(ii->getPath()) ) {
+			if(!showTree || inCurDir) {
 				dcassert(ctrlQueue.findItem(ii) != -1);
 				ctrlQueue.deleteItem(ii);
 			}
@@ -925,26 +934,17 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			}
 			queueItems--;
 			dcassert(queueItems >= 0);
-			
-			pair<DirectoryIter, DirectoryIter> i = directories.equal_range(ii->getPath());
-			DirectoryIter j;
-			for(j = i.first; j != i.second; ++j) {
-				if(j->second == ii)
-					break;
-			}
-			dcassert(j != i.second);
-			directories.erase(j);
-			if(directories.count(ii->getPath()) == 0) {
+
+			if(removeTree) {
 				if (!ii->getBundle()) {
 					removeItemDir(userList);
 				} else {
-					removeBundleDir(ii->getPath(), ii->getBundle());
+					removeBundleDir(Util::getFilePath(target.str));
 				}
-				if(isCurDir(ii->getPath()))
+
+				if(inCurDir)
 					curDir.clear();
-			} //else if (ii->getBundle()->isFileBundle()) {
-				//removeBundle(ii->getBundle());
-			//}
+			}
 			
 			delete ii;
 			//updateStatus();
@@ -955,22 +955,13 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		} else if(ti->first == REMOVE_BUNDLE) {
 			auto &ui = static_cast<DirItemInfoTask&>(*ti->second);
 			removeBundle(ui.ii->getDir(), ui.ii->getBundles().front().second->isFileBundle());
-			//directories.erase(ui.ii->getDir());
 			updateStatus();
-			/*const string& token = ui.ii->getBundles().front()->getToken();
-			const string& path = ui.ii->getDir();
-
-			if (ui.ii->getBundles().front()) */
 			delete ui.ii;
 		} else if(ti->first == UPDATE_BUNDLE) {
 			auto &ui = static_cast<DirItemInfoTask&>(*ti->second);
-			//const_cast<TCHAR*>(name.c_str());
-			//DirItemInfo* dii = 
 			const string& path = ui.ii->getDir();
 			auto i = bundleMap.find(path);
-			//dcassert(i != bundleMap.end());
 			if (i != bundleMap.end()) {
-				//((DirItemInfo*)ctrlDirs.GetItemData(i->second))->getBundles();
 				ctrlDirs.SetItemText(i->second, const_cast<TCHAR*>(ui.ii->getBundles().front().second->getBundleText().c_str()));
 			}
 			delete ui.ii;
