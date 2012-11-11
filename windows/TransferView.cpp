@@ -967,7 +967,7 @@ void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToke
 	}
 }
 
-void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi, bool) {
+void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) {
 	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getToken(), aCqi->getDownload()));
 }
 
