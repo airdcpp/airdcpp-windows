@@ -413,7 +413,7 @@ private:
 	const string& getDir(HTREEITEM ht) const { dcassert(ht != NULL); return ((DirItemInfo*)(ctrlDirs.GetItemData(ht)))->getDir(); }
 
 	void on(QueueManagerListener::Added, QueueItemPtr aQI) noexcept;
-	void on(QueueManagerListener::Removed, const QueueItemPtr aQI) noexcept;
+	void on(QueueManagerListener::Removed, const QueueItemPtr aQI, bool updateStatus) noexcept;
 	void on(QueueManagerListener::SourcesUpdated, const QueueItemPtr aQI) noexcept;
 	void on(QueueManagerListener::StatusUpdated, const QueueItemPtr aQI) noexcept { on(QueueManagerListener::SourcesUpdated(), aQI); }
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;

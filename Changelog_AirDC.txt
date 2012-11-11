@@ -684,6 +684,7 @@ Fixed:
 - Prevent search results from getting lost when the system is on heavy load or the client is run on a slow computer
 - Fix a crash when right clicking on magnet links in chat history
 - Fix crashes related to the queue tab
+- Prevent deadlocks when moving queued files or folders
 - Fix bundle progress of more than 100% with segments enabled
 - Fix getting the bundle path for upload file bundles
 - Fix searching of upload bundles from transfer view

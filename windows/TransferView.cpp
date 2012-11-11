@@ -967,7 +967,7 @@ void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToke
 	}
 }
 
-void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) {
+void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi, bool) {
 	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getToken(), aCqi->getDownload()));
 }
 
@@ -1435,14 +1435,14 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 					if(untrusted) {
 						flag += _T("[U]");
 					}
+					if(zupload) {
+						flag += _T("[Z]");
+					}
 					if(chunked) {
 						flag += _T("[C]");
 					}
 					if(mcn) {
 						flag += _T("[M]");
-					}
-					if(zupload) {
-						flag += _T("[Z]");
 					}
 
 					if(!flag.empty()) {
