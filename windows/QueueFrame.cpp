@@ -1695,10 +1695,11 @@ LRESULT QueueFrame::onReadd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 		BundlePtr b = bundles.front();
 
 		if(wID == IDC_READD) {
-			Bundle::SourceInfoList sources = b->getSources();
-			for(auto si = sources.begin(); si != sources.end(); si++) {
+			Bundle::SourceInfoList badSources = b->getBadSources();
+			for(auto si = badSources.begin(); si != badSources.end(); si++) {
 				QueueManager::getInstance()->readdBundleSource(b, get<Bundle::SOURCE_USER>(*si));
 			}
+			ctrlQueue.Invalidate();
 		} else {
 			CMenuItemInfo mi;
 			mi.fMask = MIIM_DATA;
@@ -1763,6 +1764,7 @@ LRESULT QueueFrame::onRemoveSource(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 				QueueManager::getInstance()->removeBundleSource(b, tmp);
 			}
 		}
+		ctrlQueue.Invalidate();
 	} else if(ctrlQueue.GetSelectedCount() == 1) {
 		int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
 		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
