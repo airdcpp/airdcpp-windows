@@ -288,7 +288,7 @@ public:
 	void handleDownload(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
 private:
-	DirectoryListing::Directory* curDir;
+	string curPath;
 	void changeWindowState(bool enable);
 	void onReloadPartial(bool dirOnly);
 	

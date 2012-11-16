@@ -341,7 +341,7 @@ private:
 	HTREEITEM fileLists;
 	HTREEITEM tempItems;
 
-	typedef boost::unordered_multimap<string, QueueItemInfo*> DirectoryMap;
+	typedef boost::unordered_multimap<string, QueueItemInfo*, noCaseStringHash, noCaseStringEq> DirectoryMap;
 	typedef boost::unordered_map<string, HTREEITEM> BundleMap;
 	typedef DirectoryMap::iterator DirectoryIter;
 	typedef DirectoryMap::const_iterator DirectoryIterC;

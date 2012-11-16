@@ -1694,5 +1694,6 @@ would you still like to load them?</String>
 		<String Name="NmdcHubPrivate">NMDC hub Private chat!</String>
 		<String Name="DontAskAgain">Don't ask me again</String>
 		<String Name="DontShowAgain">Don't show this again</String>
+		<String Name="DataParsingFailed">Failed to parse the data</String>
 	</Strings>
 </Language>

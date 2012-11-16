@@ -87,20 +87,28 @@ void AboutDlg::on(HttpConnectionListener::Data, HttpConnection* /*conn*/, const 
 }
 
 void AboutDlg::on(HttpConnectionListener::Complete, HttpConnection* conn, const string&, bool /*fromCoral*/) noexcept {
+	conn->removeListener(this);
 	if(!downBuf.empty()) {
 		try {
 			SimpleXML xml;
 			xml.fromXML(downBuf);
 			if(xml.findChild("DCUpdate")) {
 				xml.stepIn();
-				if(xml.findChild("Version")) {
-					tstring* x = new tstring(Text::toT(xml.getChildData()));
+				string versionString;
+				int remoteBuild = 0;
+
+				if(UpdateManager::getVersionInfo(xml, versionString, remoteBuild)) {
+					tstring* x = new tstring(Text::toT(versionString));
 					PostMessage(WM_VERSIONDATA, (WPARAM) x);
+					return;
 				}
 			}
 		} catch(const SimpleXMLException&) { }
 	}
-	conn->removeListener(this);
+
+	//failed
+	tstring* x = new tstring(CTSTRING(DATA_PARSING_FAILED));
+	PostMessage(WM_VERSIONDATA, (WPARAM) x);
 }
 
 void AboutDlg::on(HttpConnectionListener::Failed, HttpConnection* conn, const string& aLine) noexcept {

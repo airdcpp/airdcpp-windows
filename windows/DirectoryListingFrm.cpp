@@ -304,10 +304,10 @@ LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/,
 void DirectoryListingFrame::convertToFull() {
 	dl->setReloading(true);
 	if (dl->getIsOwnList())
-		dl->addFullListTask(dl->getPath(curDir));
+		dl->addFullListTask(curPath);
 	else {
 		try {
-			QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, dl->getPath(curDir));
+			QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, curPath);
 		} catch(...) {}
 	}
 }
@@ -369,9 +369,8 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 		selectItem(root);
 	} else {
 		auto loadedDir = Text::fromT(root);
-		auto oldDir = dl->getPath(curDir);
 
-		if (oldDir == Util::getParentDir(loadedDir, true)) {
+		if (curPath == Util::getParentDir(loadedDir, true)) {
 			//set the dir complete
 			int j = ctrlList.GetItemCount();        
 			for(int i = 0; i < j; i++) {
@@ -385,7 +384,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 			}
 		}
 
-		if (oldDir != loadedDir)
+		if (AirUtil::isParentOrExact(loadedDir, curPath))
 			updating = true; //prevent reloading the listview unless we are in the directory already (recursive partial lists with directory downloads from tree)
 
 		ctrlTree.SelectItem(oldSel);
@@ -473,7 +472,7 @@ LRESULT DirectoryListingFrame::onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	if (dlg.useCurDir) {
 		//HTREEITEM t = ctrlTree.GetSelectedItem();
 		//auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		path = Util::toAdcFile(curDir->getPath());
+		path = Util::toAdcFile(curPath);
 	}
 
 	dl->addSearchTask(dlg.searchStr, dlg.size, dlg.fileType, dlg.sizeMode, dlg.extList, path);
@@ -499,7 +498,9 @@ void DirectoryListingFrame::updateStatus() {
 		int64_t total = 0;
 		if(cnt == 0) {
 			cnt = ctrlList.GetItemCount();
-			total = curDir->getTotalSize(curDir != dl->getRoot());
+			auto d = dl->findDirectory(curPath);
+			if (d)
+				total = d->getTotalSize(d != dl->getRoot());
 		} else {
 			total = ctrlList.forEachSelectedT(ItemInfo::TotalSize()).total;
 		}
@@ -558,7 +559,7 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 
 	if(p->itemNew.state & TVIS_SELECTED) {
 		DirectoryListing::Directory* d = (DirectoryListing::Directory*)p->itemNew.lParam;
-		curDir = d;
+		curPath = dl->getPath(d);
 		changeDir(d, TRUE);
 		addHistory(dl->getPath(d));
 	}
@@ -592,11 +593,14 @@ LRESULT DirectoryListingFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM
 		return 0;
 	}
 
-	auto items = curDir->directories.size() + curDir->files.size();
-	if (items < 5000)
-		filterList();
-	else
-		dl->addFilterTask();
+	auto d = dl->findDirectory(curPath);
+	if (d) {
+		auto items = d->directories.size() + d->files.size();
+		if (items < 5000)
+			filterList();
+		else
+			dl->addFilterTask();
+	}
 	return 0;
 }
 
@@ -624,7 +628,12 @@ void DirectoryListingFrame::filterList() {
 		return;
 	}
 
-	auto addItems = [this, regNew] () -> void {
+	auto curDir = dl->findDirectory(curPath);
+	if (!curDir) {
+		return;
+	}
+
+	auto addItems = [this, regNew, curDir] () -> void {
 		//try to speed this up with large listings by comparing with the old filter
 		try {
 			boost::regex regOld(filter, boost::regex_constants::icase);
@@ -1490,7 +1499,10 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 		} else {
 			ucParams["type"] = [] { return "Directory"; };
 			ucParams["fileFN"] = [this, ii] { return dl->getPath(ii->dir) + ii->dir->getName(); };
-			ucParams["fileSI"] = [this, ii] { return Util::toString(ii->dir->getTotalSize(curDir != dl->getRoot())); };
+			ucParams["fileSI"] = [this, ii] {
+				auto curDir = dl->findDirectory(curPath);
+				return Util::toString(curDir ? ii->dir->getTotalSize(curDir != dl->getRoot()) : 0); 
+			};
 			ucParams["fileSIshort"] = [ii] { return Util::formatBytes(ii->dir->getTotalSize(true)); };
 		}
 

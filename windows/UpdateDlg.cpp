@@ -28,8 +28,8 @@
 #include "WinUtil.h"
 #include "MainFrm.h"
 
-UpdateDlg::UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersion, const string& infoUrl, bool bAutoUpdate, int aBuildID, const string& bAutoUpdateUrl)
-	: title(aTitle), message(aMessage), version(aVersion), infoLink(infoUrl), autoUpdate(bAutoUpdate), m_hIcon(NULL), 
+UpdateDlg::UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersionString, const string& infoUrl, bool bAutoUpdate, int aBuildID, const string& bAutoUpdateUrl)
+	: title(aTitle), message(aMessage), versionString(aVersionString), infoLink(infoUrl), autoUpdate(bAutoUpdate), m_hIcon(NULL), 
 	autoUpdateUrl(bAutoUpdateUrl), buildID(aBuildID), versionAvailable(false) { };
 
 
@@ -100,11 +100,7 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	m_Changelog.SetSel(0, 0); //set scroll position to top
 
 	//m_Changelog.AppendText(Text::toT(message), WinUtil::m_ChatTextGeneral);
-#ifdef BETAVER
-	ctrlLatestVersion.SetWindowText(Text::toT(version + "r" + Util::toString(buildID)).c_str());
-#else
-	ctrlLatestVersion.SetWindowText(Text::toT(version).c_str());
-#endif
+	ctrlLatestVersion.SetWindowText(Text::toT(versionString).c_str());
 
 	url.SubclassWindow(GetDlgItem(IDC_LINK));
 	url.SetHyperLinkExtendedStyle(HLINK_UNDERLINEHOVER);

@@ -2082,8 +2082,8 @@ void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noex
 	ShowPopup(Text::toT(line), CTSTRING(UPDATER), NIIF_ERROR, true);
 }
 
-void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
-	callAsync([=] { onUpdateAvailable(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl); });
+void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
+	callAsync([=] { onUpdateAvailable(title, message, aVersionString, infoUrl, autoUpdate, build, autoUpdateUrl); });
 }
 
 void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const string& infoUrl, const string& updateUrl, int buildID, bool autoUpdate) noexcept {
@@ -2094,8 +2094,8 @@ void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater
 	callAsync([=] { onUpdateComplete(aUpdater); });
 }
 
-void MainFrame::onUpdateAvailable(const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
-	UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
+void MainFrame::onUpdateAvailable(const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
+	UpdateDlg dlg(title, message, aVersionString, infoUrl, autoUpdate, build, autoUpdateUrl);
 	if (dlg.DoModal(m_hWnd)  == IDC_UPDATE_DOWNLOAD) {
 		UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, build, true);
 		ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
