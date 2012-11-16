@@ -1695,5 +1695,8 @@ would you still like to load them?</String>
 		<String Name="DontAskAgain">Don't ask me again</String>
 		<String Name="DontShowAgain">Don't show this again</String>
 		<String Name="DataParsingFailed">Failed to parse the data</String>
+		<String Name="FilesAddedForHashStartup">%s of shared files have been added for hashing as no previous hash information was found for them</String>
+		<String Name="BundleXRemoved">The bundle %s has been removed from the queue</String>
+		<String Name="DirectoryNotRemoved">The directory %s isn't empty, not removed</String>
 	</Strings>
 </Language>
