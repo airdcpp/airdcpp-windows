@@ -1499,10 +1499,7 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 		} else {
 			ucParams["type"] = [] { return "Directory"; };
 			ucParams["fileFN"] = [this, ii] { return dl->getPath(ii->dir) + ii->dir->getName(); };
-			ucParams["fileSI"] = [this, ii] {
-				auto curDir = dl->findDirectory(curPath);
-				return Util::toString(curDir ? ii->dir->getTotalSize(curDir != dl->getRoot()) : 0); 
-			};
+			ucParams["fileSI"] = [this, ii] { return Util::toString(ii->dir->getTotalSize(ii->dir != dl->getRoot())); };
 			ucParams["fileSIshort"] = [ii] { return Util::formatBytes(ii->dir->getTotalSize(true)); };
 		}
 
