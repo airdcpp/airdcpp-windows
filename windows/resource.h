@@ -259,9 +259,9 @@
 #define IDI_FOLDER_INC                  442
 #define IDI_FILE                        443
 #define IDI_OVERLAY                     444
-#define IDI_SEGMENT						445
-#define IDI_D_USER						446
-#define IDI_U_USER						447
+#define IDI_SEGMENT                     445
+#define IDI_D_USER                      446
+#define IDI_U_USER                      447
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
@@ -1421,6 +1421,7 @@
 #define IDC_AS_FILETYPE                 15055
 #define IDC_REMOVE_SPIN2                15055
 #define IDC_RECENT_SPIN                 15055
+#define IDC_AS_ACTION2                  15055
 #define IDC_AUTOSEARCH_ITEMS            15056
 #define IDC_SETTINGS_KBPS8              15056
 #define IDC_TYPE                        15056

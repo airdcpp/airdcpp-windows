@@ -2105,44 +2105,6 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 	ctrlLanguage.SetCurSel(Localization::curLanguage);
 }
 
-void WinUtil::appendSearchTypeCombo(CComboBoxEx& ctrlSearchType, const string& aSelection) {
-	auto types = SearchManager::getInstance()->getSearchTypes();
-	ctrlSearchType.SetImageList(ResourceLoader::searchImages);
-
-	int listPos=0, selection=0;
-	auto addListItem = [&] (int imagePos, const tstring& title, const string& nameStr) -> void {
-		if (nameStr == aSelection)
-			selection = listPos;
-
-		COMBOBOXEXITEM cbitem = {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
-		cbitem.pszText = const_cast<TCHAR*>(title.c_str());
-		cbitem.iItem = listPos++; 
-		cbitem.iImage = imagePos;
-		cbitem.iSelectedImage = imagePos;
-		ctrlSearchType.InsertItem(&cbitem);
-	};
-
-
-	addListItem(0, TSTRING(ANY), SEARCH_TYPE_ANY);
-	addListItem(7, TSTRING(DIRECTORY), SEARCH_TYPE_DIRECTORY);
-	addListItem(8, _T("TTH"), SEARCH_TYPE_TTH);
-
-	for(auto i = types.begin(); i != types.end(); i++) {
-		string name = i->first;
-		int imagePos = 0;
-		if(name.size() == 1 && name[0] >= '1' && name[0] <= '6') {
-			imagePos = name[0] - '0';
-			name = SearchManager::getTypeStr(name[0] - '0');
-		} else {
-			imagePos = 9;
-		}
-
-		addListItem(imagePos, Text::toT(name), i->first);
-	}
-
-	ctrlSearchType.SetCurSel(selection);
-}
-
 void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
 	if (WinUtil::getOsMajor() == 6)
 		Edit_SetCueBannerTextFocused(hwnd, text, drawFocus);

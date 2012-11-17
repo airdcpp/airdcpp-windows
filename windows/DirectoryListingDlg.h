@@ -23,6 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
+#include "SearchTypeCombo.h"
 
 class DirectoryListingDlg : public CDialogImpl<DirectoryListingDlg> {
 public:
@@ -41,6 +42,8 @@ public:
 	BEGIN_MSG_MAP_EX(DirectoryListingDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
+		MESSAGE_HANDLER(WM_DRAWITEM, SearchTypeCombo::onDrawItem)
+		MESSAGE_HANDLER(WM_MEASUREITEM, SearchTypeCombo::onMeasureItem)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDC_FILETYPES, onTypeChanged)
@@ -52,7 +55,7 @@ public:
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 private:
 	CEdit ctrlSearch;
-	CComboBoxEx ctrlFileType;
+	SearchTypeCombo ctrlFileType;
 	CEdit ctrlSize;
 	CComboBox ctrlSizeMode;
 	CComboBox ctrlSizeUnit;

@@ -31,9 +31,7 @@
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
 AutoSearchDlg::AutoSearchDlg() : fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), searchInterval(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
-	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true)
-	/*ctrlTarget(WC_EDIT, this, FILTER_MESSAGE_MAP)*/ {
-}
+	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true) { }
 
 AutoSearchDlg::~AutoSearchDlg() {
 	ctrlSearch.Detach();
@@ -54,7 +52,6 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ATTACH(IDC_ADVANCED, cAdvanced);
 
 	ctrlSearch.SetWindowText(Text::toT(searchString).c_str());
-	ctrlCheatingDescription.SetWindowText(Text::toT(comment).c_str());
 
 	ctrlTarget.SetWindowText(Text::toT(target).c_str());
 	updateTargetTypeText();
@@ -106,7 +103,7 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 		searchType = SearchManager::TYPE_ANY;
 	}
 
-	WinUtil::appendSearchTypeCombo(ctrlFileType, fileTypeStr);
+	ctrlFileType.fillList(fileTypeStr);
 
 	ATTACH(IDC_AS_ACTION, cAction);
 	cAction.AddString(CTSTRING(DOWNLOAD));
@@ -336,12 +333,6 @@ LRESULT AutoSearchDlg::onTargetChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 		targetType = TargetUtil::TARGET_PATH;
 		updateTargetTypeText();
 	}
-	return 0;
-}
-
-LRESULT AutoSearchDlg::onChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	if (!loading && targetType > 0 && ctrlTarget.GetSel())
-		return 1;
 	return 0;
 }
 

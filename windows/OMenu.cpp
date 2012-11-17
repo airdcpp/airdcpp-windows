@@ -18,7 +18,6 @@
 
 #include "stdafx.h"
 #include "../client/DCPlusPlus.h"
-#include "../client/LogManager.h"
 
 #include "WinUtil.h"
 #include "BarShader.h"

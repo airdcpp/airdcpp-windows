@@ -497,6 +497,7 @@
     <ClCompile Include="windows\MiscPage.cpp" />
     <ClCompile Include="windows\DownloadingOptionsPage.cpp" />
     <ClCompile Include="windows\ResourceLoader.cpp" />
+    <ClCompile Include="windows\SearchTypeCombo.cpp" />
     <ClCompile Include="windows\SharingOptionsPage.cpp" />
     <ClCompile Include="windows\AppearancePage.cpp" />
     <ClCompile Include="windows\AutosearchDlg.cpp" />
@@ -607,6 +608,7 @@
     <ClInclude Include="windows\HtmlToRtf.h" />
     <ClInclude Include="windows\LimitPage.h" />
     <ClInclude Include="windows\ExCImage.h" />
+    <ClInclude Include="windows\SearchTypeCombo.h" />
     <ClInclude Include="windows\SplashWindow.h" />
     <ClInclude Include="windows\MiscPage.h" />
     <ClInclude Include="windows\DownloadingOptionsPage.h" />
@@ -750,6 +752,7 @@
   <ItemGroup>
     <Image Include="res\Bot.ico" />
     <Image Include="res\Botoff.ico" />
+    <Image Include="res\download_user.ico" />
     <Image Include="res\file.ico" />
     <Image Include="res\folder.ico" />
     <Image Include="res\folder_incomplete.ico" />
@@ -777,6 +780,7 @@
     <Image Include="res\SettingsTree\SearchTypes.ico" />
     <Image Include="res\text.ico" />
     <Image Include="res\types.bmp" />
+    <Image Include="res\upload_user.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

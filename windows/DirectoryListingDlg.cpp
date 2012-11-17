@@ -70,7 +70,7 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 	::SetWindowText(GetDlgItem(IDC_SIZE_LABEL), CTSTRING(SIZE));
 	::SetWindowText(GetDlgItem(IDC_USE_CUR_DIR), CTSTRING(SEARCH_CUR_DIR));
 
-	WinUtil::appendSearchTypeCombo(ctrlFileType, fileTypeStr);
+	ctrlFileType.fillList(fileTypeStr);
 
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(SEARCH));

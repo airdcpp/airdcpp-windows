@@ -60,6 +60,32 @@ void SearchFrame::closeAll() {
 		::PostMessage(i->first, WM_CLOSE, 0, 0);
 }
 
+SearchFrame::SearchFrame() : 
+searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
+	searchContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
+	purgeContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
+	sizeContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
+	modeContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
+	sizeModeContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
+	fileTypeContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
+	showUIContainer(WC_COMBOBOX, this, SHOWUI_MESSAGE_MAP),
+	slotsContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
+	collapsedContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
+	doSearchContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
+	resultsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
+	hubsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
+	ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
+	ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
+	ctrlSkiplistContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
+	SkipBoolContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
+	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
+	showUI(true), onlyFree(false), closed(false), isHash(false), UseSkiplist(false), droppedResults(0), resultsCount(0),
+	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false)
+{	
+	SearchManager::getInstance()->addListener(this);
+	useGrouping = BOOLSETTING(GROUP_SEARCH_RESULTS);
+}
+
 LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 
@@ -104,11 +130,10 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
 	sizeModeContainer.SubclassWindow(ctrlSizeMode.m_hWnd);
 
-	CRect combo(0, 0, 0, 200);
-	ctrlFiletype.Create(m_hWnd, combo, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST |  CBS_NOINTEGRALHEIGHT);
+	ctrlFileType.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST | CBS_HASSTRINGS | CBS_OWNERDRAWFIXED, WS_EX_CLIENTEDGE, IDC_FILETYPES);
 
-	fileTypeContainer.SubclassWindow(ctrlFiletype.m_hWnd);
+	fileTypeContainer.SubclassWindow(ctrlFileType.m_hWnd);
 
 	
 	ctrlResults.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
@@ -212,7 +237,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlSize.SetFont(WinUtil::systemFont, FALSE);
 	ctrlMode.SetFont(WinUtil::systemFont, FALSE);
 	ctrlSizeMode.SetFont(WinUtil::systemFont, FALSE);
-	ctrlFiletype.SetFont(WinUtil::systemFont, FALSE);
+	ctrlFileType.SetFont(WinUtil::systemFont, FALSE);
 
 	ctrlMode.AddString(CTSTRING(NORMAL));
 	ctrlMode.AddString(CTSTRING(AT_LEAST));
@@ -229,7 +254,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	else
 		ctrlSizeMode.SetCurSel(0);
 
-	WinUtil::appendSearchTypeCombo(ctrlFiletype, !initialString.empty() ? initialType : SETTING(LAST_SEARCH_FILETYPE));
+	ctrlFileType.fillList(!initialString.empty() ? initialType : SETTING(LAST_SEARCH_FILETYPE), WinUtil::textColor, WinUtil::bgColor);
 	
 	ctrlSkiplist.AddString(Text::toT(SETTING(SKIP_MSG_01)).c_str());
 	ctrlSkiplist.AddString(Text::toT(SETTING(SKIP_MSG_02)).c_str());
@@ -309,12 +334,15 @@ LRESULT SearchFrame::onMeasure(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bH
 	HWND hwnd = 0;
 	bHandled = FALSE;
 	
-	if(((MEASUREITEMSTRUCT *)lParam)->CtlType == ODT_MENU) {
+	if(wParam == IDC_FILETYPES) {
+		bHandled = TRUE;
+		return SearchTypeCombo::onMeasureItem(uMsg, wParam, lParam, bHandled);
+	} else if(((MEASUREITEMSTRUCT *)lParam)->CtlType == ODT_MENU) {
 		bHandled = TRUE;
 		return OMenu::onMeasureItem(hwnd, uMsg, wParam, lParam, bHandled);
 	}
 	
-	return S_OK;
+	return FALSE;
 }
 
 LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -322,7 +350,10 @@ LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 	DRAWITEMSTRUCT* dis = (DRAWITEMSTRUCT*)lParam;
 	bHandled = FALSE;
 
-	if(dis->CtlID == ATL_IDW_STATUS_BAR && dis->itemID == 1){
+	if(wParam == IDC_FILETYPES) {
+		bHandled = TRUE;
+		return SearchTypeCombo::onDrawItem(uMsg, wParam, lParam, bHandled);
+	} else if(dis->CtlID == ATL_IDW_STATUS_BAR && dis->itemID == 1){
 		if(searchStartTime > 0){
 			bHandled = TRUE;
 
@@ -359,7 +390,7 @@ LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 			dc.ExtTextOut(rc.left + borders[2], top, ETO_CLIPPED, &rc2, buf.c_str(), buf.size(), NULL);
 			
 			dc.Detach();
-		}	
+		}
 	} else if(dis->CtlType == ODT_MENU) {
 		bHandled = TRUE;
 		return OMenu::onDrawItem(hwnd, uMsg, wParam, lParam, bHandled);
@@ -497,7 +528,7 @@ void SearchFrame::onEnter() {
 	string typeName;
 
 	try {
-		SearchManager::getInstance()->getSearchType(ctrlFiletype.GetCurSel(), ftype, extList, typeName);
+		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), ftype, extList, typeName);
 	} catch(const SearchTypeException&) {
 		ftype = SearchManager::TYPE_ANY;
 	}
@@ -1014,7 +1045,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		rc.right = width - rMargin;
 		rc.top += spacing;
 		rc.bottom = rc.top + comboH + 21;
-		ctrlFiletype.MoveWindow(rc);
+		ctrlFileType.MoveWindow(rc);
 		//rc.bottom -= comboH;
 
 		typeLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
@@ -1095,7 +1126,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlPurge.MoveWindow(rc);
 		ctrlSize.MoveWindow(rc);
 		ctrlSizeMode.MoveWindow(rc);
-		ctrlFiletype.MoveWindow(rc);
+		ctrlFileType.MoveWindow(rc);
 		ctrlPauseSearch.MoveWindow(rc);
 		ctrlSkiplist.MoveWindow(rc);
 	}
@@ -1192,7 +1223,7 @@ LRESULT SearchFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& b
 void SearchFrame::onTab(bool shift) {
 	HWND wnds[] = {
 		ctrlSearch.m_hWnd, ctrlPurge.m_hWnd, ctrlMode.m_hWnd, ctrlSize.m_hWnd, ctrlSizeMode.m_hWnd, 
-		ctrlFiletype.m_hWnd, ctrlSlots.m_hWnd, ctrlCollapsed.m_hWnd, ctrlDoSearch.m_hWnd, ctrlSearch.m_hWnd, 
+		ctrlFileType.m_hWnd, ctrlSlots.m_hWnd, ctrlCollapsed.m_hWnd, ctrlDoSearch.m_hWnd, ctrlSearch.m_hWnd, 
 		ctrlResults.m_hWnd
 	};
 	
@@ -1614,27 +1645,6 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		
 		if(BOOLSETTING(DUPE_SEARCH)) {
 			cd->clrText = WinUtil::getDupeColor(si->getDupe());
-			/*if(si->getDupe() == SHARE_DUPE) {
-				cd->clrText = SETTING(DUPE_COLOR);
-				cd->clrTextBk = SETTING(TEXT_DUPE_BACK_COLOR);
-			} else if (si->getDupe() == QUEUE_DUPE) {
-				cd->clrText = SETTING(QUEUE_COLOR);
-				cd->clrTextBk = SETTING(TEXT_QUEUE_BACK_COLOR);
-				if(si->sr->getType() == SearchResult::TYPE_FILE) {		
-					targets = QueueManager::getInstance()->getTargets(TTHValue(si->sr->getTTH().toBase32()));
-				}
-			} else if (si->getDupe() == FINISHED_DUPE) {
-				BYTE r, b, g;
-				DWORD textColor = SETTING(QUEUE_COLOR);
-				DWORD bg = SETTING(TEXT_QUEUE_BACK_COLOR);
-
-				r = static_cast<BYTE>(( static_cast<DWORD>(GetRValue(textColor)) + static_cast<DWORD>(GetRValue(bg)) ) / 2);
-				g = static_cast<BYTE>(( static_cast<DWORD>(GetGValue(textColor)) + static_cast<DWORD>(GetGValue(bg)) ) / 2);
-				b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(textColor)) + static_cast<DWORD>(GetBValue(bg)) ) / 2);
-					
-				cd->clrText = RGB(r, g, b);
-				cd->clrTextBk = bg;
-			}*/
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 	}

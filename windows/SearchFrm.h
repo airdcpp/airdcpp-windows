@@ -36,6 +36,7 @@
 #include "../client/SearchResult.h"
 #include "../client/StringMatch.h"
 #include "UCHandler.h"
+#include "SearchTypeCombo.h"
 
 #define SEARCH_MESSAGE_MAP 6		// This could be any number, really...
 #define SHOWUI_MESSAGE_MAP 7
@@ -115,32 +116,7 @@ public:
 		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onSelChange)
 	END_MSG_MAP()
 
-	SearchFrame() : 
-	searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
-		searchContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
-		purgeContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
-		sizeContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
-		modeContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
-		sizeModeContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
-		fileTypeContainer(WC_COMBOBOXEX, this, SEARCH_MESSAGE_MAP),
-		showUIContainer(WC_COMBOBOX, this, SHOWUI_MESSAGE_MAP),
-		slotsContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
-		collapsedContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
-		doSearchContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
-		resultsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
-		hubsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
-		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
-		ctrlSkiplistContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		SkipBoolContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
-		initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
-		showUI(true), onlyFree(false), closed(false), isHash(false), UseSkiplist(false), droppedResults(0), resultsCount(0),
-		expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false)
-	{	
-		SearchManager::getInstance()->addListener(this);
-		useGrouping = BOOLSETTING(GROUP_SEARCH_RESULTS);
-	}
-
+	SearchFrame();
 	~SearchFrame() {
 		images.Destroy();
 	}
@@ -441,7 +417,7 @@ private:
 	CEdit ctrlSize;
 	CComboBox ctrlMode;
 	CComboBox ctrlSizeMode;
-	CComboBoxEx ctrlFiletype;
+	SearchTypeCombo ctrlFileType;
 	CButton ctrlDoSearch;
 	CButton ctrlPauseSearch;
 	CButton ctrlPurge;	

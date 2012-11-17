@@ -29,8 +29,8 @@
 #include "../client/ResourceManager.h"
 #include "../client/AutoSearchManager.h"
 #include "MenuBaseHandlers.h"
+#include "SearchTypeCombo.h"
 
-#define FILTER_MESSAGE_MAP 8
 class AutoSearchDlg : public CDialogImpl<AutoSearchDlg>, public DownloadBaseHandler<AutoSearchDlg> {
 public:
 	string searchString, comment, target, userMatch, matcherString, fileTypeStr;
@@ -56,6 +56,8 @@ public:
 	BEGIN_MSG_MAP_EX(AutoSearchDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
+		MESSAGE_HANDLER(WM_DRAWITEM, SearchTypeCombo::onDrawItem)
+		MESSAGE_HANDLER(WM_MEASUREITEM, SearchTypeCombo::onMeasureItem)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDC_AS_ACTION, onAction)
@@ -70,8 +72,6 @@ public:
 
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
-	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
-		MESSAGE_HANDLER(WM_CHAR, onChar)
 	END_MSG_MAP()
 
 
@@ -94,7 +94,6 @@ public:
 
 	LRESULT onTargetChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 
 
 	/* DownloadBaseHandler functions */
@@ -108,7 +107,7 @@ private:
 	CImageList ftImage;
 
 	CEdit ctrlSearch, ctrlCheatingDescription, ctrlTarget, ctrlUserMatch, ctrlMatcherString;
-	CComboBoxEx ctrlFileType;
+	SearchTypeCombo ctrlFileType;
 	CComboBox cAction;
 	CButton cSelectDir;
 	CButton cAdvanced;

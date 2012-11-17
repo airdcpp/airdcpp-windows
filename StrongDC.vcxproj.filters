@@ -684,6 +684,9 @@
     <ClCompile Include="windows\ExMessageBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\SearchTypeCombo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1031,6 +1034,9 @@
     <ClInclude Include="windows\ExMessageBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\SearchTypeCombo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\SettingsTree\SearchTypes.ico">
@@ -1118,6 +1124,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\file.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\download_user.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\upload_user.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

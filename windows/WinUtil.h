@@ -418,8 +418,6 @@ public:
 	static tstring Speedinfo();
 	static tstring DiskSpaceInfo(bool onlyTotal = false);
 
-	static void appendSearchTypeCombo(CComboBoxEx& ctrlSearchType, const string& aSelection);
-
 	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
 
 	static string getReport(const Identity& identity, HWND hwnd);
