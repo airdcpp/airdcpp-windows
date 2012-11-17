@@ -677,6 +677,7 @@ Changed:
 - Don't change the tree position when changing directories in partial lists
 - Update user's nicks and hubs in transfer view when they change
 - Don't match search skiplist with TTH searches
+- Remove the partial bundle source notifications after a bundle has finished downloading
 
 
 Fixed:
@@ -712,6 +713,11 @@ Fixed:
 - Fix a few SFV reading problems when hashing/checking for missing files
 - Fix misc freezes and crashes
 - Don't allow setting a duplicate address for existing favorite hubs
+- Mac style line break detection in SFV files
+- The "Copy info" command in user list
+- Fix problems with non-removed temp files
+- Fix case sensitivity issues on the queue frame (may have caused invalid folder structures)
+- Prevent problems when downloads are finished twice ("Unable to rename" etc.)
 
 
 Removed:

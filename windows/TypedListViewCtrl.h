@@ -135,17 +135,28 @@ public:
 		if(!BOOLSETTING(SHOW_INFOTIPS)) return 0;
 
 		NMLVGETINFOTIP* pInfoTip = (NMLVGETINFOTIP*) pnmh;
-		BOOL NoColumnHeader = (BOOL)(GetWindowLongPtr(GWL_STYLE) & LVS_NOCOLUMNHEADER);
-		tstring InfoTip(Util::emptyStringT);
-		tstring buffer;
 
+		tstring InfoTip = GetColumnTexts(pInfoTip->iItem);
+		
+		pInfoTip->cchTextMax = InfoTip.size();
+
+ 		_tcsncpy(pInfoTip->pszText, InfoTip.c_str(), INFOTIPSIZE);
+		pInfoTip->pszText[INFOTIPSIZE - 1] = NULL;
+
+		return 0;
+	}
+
+	tstring GetColumnTexts(int row) {
 #define BUF_SIZE 300
+		BOOL NoColumnHeader = (BOOL)(GetWindowLongPtr(GWL_STYLE) & LVS_NOCOLUMNHEADER);
+		tstring InfoTip;
+		tstring buffer;
 		buffer.resize(BUF_SIZE);
 		
-		LV_COLUMN lvCol;
-		LVITEM lvItem;
 		int indexes[32];
 		GetColumnOrderArray(GetHeader().GetItemCount(), indexes);
+		LV_COLUMN lvCol;
+
 		for (int i = 0; i < GetHeader().GetItemCount(); ++i)
 		{
 			if (!NoColumnHeader) {
@@ -156,9 +167,7 @@ public:
 				InfoTip += lvCol.pszText;
 				InfoTip += _T(": ");
 			}
-			lvItem.iItem = pInfoTip->iItem;
-			GetItemText(pInfoTip->iItem, indexes[i],  &buffer[0], BUF_SIZE);
-			//Buffer[299] = NULL;
+			GetItemText(row, indexes[i],  &buffer[0], BUF_SIZE);
 
 			InfoTip += &buffer[0];
 			InfoTip += _T("\r\n");
@@ -166,13 +175,7 @@ public:
 
 		if (InfoTip.size() > 2)
 			InfoTip.erase(InfoTip.size() - 2);
-		
-		pInfoTip->cchTextMax = InfoTip.size();
-
- 		_tcsncpy(pInfoTip->pszText, InfoTip.c_str(), INFOTIPSIZE);
-		pInfoTip->pszText[INFOTIPSIZE - 1] = NULL;
-
-		return 0;
+		return InfoTip;
 	}
 
 	// Sorting

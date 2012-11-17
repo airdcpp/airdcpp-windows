@@ -405,24 +405,15 @@ LRESULT HubFrame::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	return 0;
 }
 LRESULT HubFrame::onCopyAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	string Copy;
+	tstring sCopy;
 
 	int sel = -1;
 	while((sel = ctrlUsers.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-		const OnlineUserPtr ou = ctrlUsers.getItemData(sel);
-
-		Copy += "\r\nNick :              " + ou->getIdentity().getNick();
-		Copy += "\r\nShared :          " + Util::formatBytes(ou->getIdentity().getBytesShared());
-		Copy += "\r\nDescription :    " + ou->getIdentity().getDescription();
-		Copy += "\r\nTag :               " + ou->getIdentity().getTag();
-		Copy += "\r\nUpload Speed :   " + ou->getIdentity().getConnection();
-		Copy += "\r\nDownload Speed :   " + ou->getIdentity().getDLSpeed();
-		Copy += "\r\nIp :                  " + ou->getIdentity().getIp();
-		Copy += "\r\nEmail :             " + ou->getIdentity().getEmail();
-		Copy += "\r\nSlots :             " + ou->getIdentity().get("SL");
-
+		if (!sCopy.empty())
+			sCopy += _T("\r\n\r\n");
+		sCopy += ctrlUsers.GetColumnTexts(sel);
 	}
-	tstring sCopy = Text::toT(Copy);
+
 	if (!sCopy.empty())
 		WinUtil::setClipboard(sCopy);
 

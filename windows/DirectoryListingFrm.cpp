@@ -384,8 +384,15 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 			}
 		}
 
-		if (AirUtil::isParentOrExact(loadedDir, curPath))
+		if (!AirUtil::isParentOrExact(loadedDir, curPath))
 			updating = true; //prevent reloading the listview unless we are in the directory already (recursive partial lists with directory downloads from tree)
+
+		if (AirUtil::isSub(curPath, loadedDir)) {
+			//the old tree item isn't valid anymore
+			oldSel = findItem(treeRoot, Text::toT(curPath));
+			if (!oldSel)
+				oldSel = ht;
+		}
 
 		ctrlTree.SelectItem(oldSel);
 		updating = false;
