@@ -92,7 +92,7 @@ void SearchTypeCombo::fillList(const string& aSelection, COLORREF aTextColor, CO
 	int selection=0;
 	auto addListItem = [&] (int imagePos, const tstring& title, const string& nameStr) -> void {
 		if (nameStr == aSelection)
-			selection = imageIndexes.size()+1;
+			selection = imageIndexes.size();
 
 		auto ii = new ItemInfo(title, imagePos, aTextColor, aBgColor);
 		AddString(const_cast<TCHAR*>(title.c_str()));
