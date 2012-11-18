@@ -66,7 +66,7 @@ LRESULT AboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	CenterWindow(GetParent());
 	c.addListener(this);
-	c.downloadFile(VERSION_URL), false;
+	c.downloadFile(VERSION_URL);
 	return TRUE;
 }
 
