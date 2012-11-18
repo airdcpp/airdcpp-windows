@@ -210,7 +210,7 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 	_tcscpy(m_nid.szInfoTitle, _T("AirDC++ has crashed"));
 	Shell_NotifyIcon(NIM_MODIFY, &m_nid);
 
-	if(MessageBox(WinUtil::mainWnd, _T("AirDC++ just encountered a fatal bug and should have written an exceptioninfo.txt the same directory as the executable. You can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?"), _T("AirDC++ Has Crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
+	if(::MessageBox(WinUtil::mainWnd, _T("AirDC++ just encountered a fatal bug and should have written an exceptioninfo.txt the same directory as the executable. You can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?"), _T("AirDC++ Has Crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
 		WinUtil::openLink(_T("http://crash.airdcpp.net"));
 	}
 

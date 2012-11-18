@@ -1376,9 +1376,10 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SettingsSbWebShortcuts">Web Shortcuts</String>
 		<String Name="SettingsWsDescr">Web shortcuts are used to open web pages with specific contents.
 The key is used in chat / commands Example: /google \"Movie Name\"
-Key can be more than one character, but can not a space.
+Key can be more than one character, but can not be a space.
 
-The search string added to the end of URL will be picked with rightclick on mouse over from Chat/Search/Filelist windows,
+If the URL contains param %s its replaced by the search string, otherwise the search string is added to the end of URL.
+The search string will be picked with rightclick on mouse over from Chat/Search/Filelist windows,
 If select empty space or no search string is found,
 nothing will be pasted to the url, and the page will just open up.
 An example: http://domain.com/search=
@@ -1487,7 +1488,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="AutoselectLeastSpace">least possible free space available</String>
 		<String Name="AutoSelect">Auto select based on free space</String>
 		<String Name="GetBrowseList">Get/browse file list</String>
-		<String Name="SettingsToolbarSize">Default Toolbar Icon size</String>
+		<String Name="SettingsToolbarSize">Toolbar icon size</String>
 		<String Name="SettingsToolbarNote">Note! Changing Toolbar Images or icon size require a client restart to take effect.</String>
 		<String Name="SettingsWtoolbarSize">Media Toolbar Icon size</String>
 		<String Name="ToggleTbstatus">Toolbar Progressbar	Ctrl+5</String>

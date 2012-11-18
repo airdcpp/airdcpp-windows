@@ -31,6 +31,7 @@ CImageList ResourceLoader::settingsTreeImages;
 CImageList ResourceLoader::fileImages;
 CImageList ResourceLoader::userImages;
 CImageList ResourceLoader::flagImages;
+COLORREF ResourceLoader::GrayPalette[256];
 
 void ResourceLoader::load() {
 
@@ -45,6 +46,10 @@ void ResourceLoader::load() {
 
 	loadSearchTypeIcons();
 	loadSettingsTreeIcons();
+
+	for(int i = 0; i < 256; i++){
+		GrayPalette[i] = RGB(255-i, 255-i, 255-i);
+	}
 
 }
 void ResourceLoader::unload() {
@@ -374,4 +379,67 @@ void ResourceLoader::loadWinampToolbarIcons(CImageList& winampImages) {
 
 void ResourceLoader::loadFlagImages() { 
 	flagImages.CreateFromImage(IDB_FLAGS, 25, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED); 
+}
+
+//try to keep the icon smoothness but copy it as grayscale.
+HICON ResourceLoader::convertGrayscaleIcon( HICON hIcon ) {
+	if(!hIcon)
+		return NULL;
+
+	HDC hdc = ::GetDC(NULL);
+	HICON hGrayIcon = NULL;
+	ICONINFO iconInfo = { 0 };
+	ICONINFO iconGray = { 0 };
+	LPDWORD lpBits = NULL;
+	LPBYTE lpBitsPtr = NULL;
+	SIZE sz;
+	DWORD c1 = 0;
+	BITMAPINFO bmpInfo = { 0 };
+	bmpInfo.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	COLORREF* grayPalette = GrayPalette;
+
+	if(::GetIconInfo(hIcon, &iconInfo)) {
+		if(::GetDIBits(hdc, iconInfo.hbmColor, 0, 0, NULL, &bmpInfo, DIB_RGB_COLORS) != 0) {
+			bmpInfo.bmiHeader.biCompression = BI_RGB;
+			sz.cx = bmpInfo.bmiHeader.biWidth;
+			sz.cy = bmpInfo.bmiHeader.biHeight;
+			c1 = sz.cx * sz.cy;
+			lpBits = (LPDWORD)::GlobalAlloc(GMEM_FIXED, (c1) * 4);
+
+			if (lpBits && ::GetDIBits(hdc, iconInfo.hbmColor, 0, sz.cy, lpBits, &bmpInfo, DIB_RGB_COLORS) != 0) {
+				lpBitsPtr     = (LPBYTE)lpBits;
+				UINT off      = 0;
+
+				for (UINT i = 0; i < c1; i++) {
+					off = (UINT)(255-(( lpBitsPtr[0] + lpBitsPtr[1] + lpBitsPtr[2] ) / 3) );
+					if (lpBitsPtr[3] != 0 || off != 255) {
+						if(off == 0)
+							off = 1;
+					
+						lpBits[i] = grayPalette[off] | ( lpBitsPtr[3] << 24 );
+					}
+
+					lpBitsPtr += 4;
+				}
+
+				iconGray.hbmColor = ::CreateCompatibleBitmap(hdc, sz.cx, sz.cy);
+
+				if (iconGray.hbmColor != NULL) {
+					::SetDIBits(hdc, iconGray.hbmColor, 0, sz.cy, lpBits, &bmpInfo, DIB_RGB_COLORS);
+					iconGray.hbmMask = iconInfo.hbmMask;
+					iconGray.fIcon   = TRUE;
+					hGrayIcon = ::CreateIconIndirect(&iconGray);
+					::DeleteObject(iconGray.hbmColor);
+				}
+
+				::GlobalFree(lpBits);
+				lpBits = NULL;
+			}
+		}
+		::DeleteObject(iconInfo.hbmColor);
+		::DeleteObject(iconInfo.hbmMask);
+	}
+	::ReleaseDC(NULL, hdc);
+
+	return hGrayIcon;
 }

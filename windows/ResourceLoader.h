@@ -48,6 +48,7 @@ public:
 	
 	static HICON loadDefaultIcon(int icon, int size=0);
 	static HICON loadIcon(int aDefault, int size = 0);
+	static HICON convertGrayscaleIcon(HICON hIcon);
 	static HBITMAP getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize = 0, int ySize = 0);
 	
 	static tstring getIconName(int aDefault);
@@ -74,6 +75,8 @@ private:
 	static int dirIconIndex;
 	static int dirMaskedIndex;
 	static void loadFileImages();
+	static COLORREF GrayPalette[256];
+
 };
 
 #endif // RESOURCE_LOADER_H

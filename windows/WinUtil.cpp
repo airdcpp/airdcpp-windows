@@ -1942,7 +1942,11 @@ void WinUtil::SearchSite(WebShortcut* ws, tstring searchTerm) {
 	}
 	
 	if(!searchTerm.empty())
-		WinUtil::openLink((ws->url) + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+		if(ws->url.find(_T("%s")) != tstring::npos){
+			WinUtil::openLink(Text::toT(str(boost::format(Text::fromT(ws->url)) %Util::encodeURI(Text::fromT(searchTerm)))));
+		} else {
+			WinUtil::openLink((ws->url) + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+		}
 	else
 		WinUtil::openLink(ws->url);
 }

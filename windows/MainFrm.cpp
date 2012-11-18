@@ -412,13 +412,13 @@ LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	THUMBBUTTON buttons[2];
 	buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
 	buttons[0].iId = IDC_OPEN_DOWNLOADS;
-	buttons[0].hIcon = images.GetIcon(18);
+	buttons[0].hIcon = ResourceLoader::loadIcon(IDI_OPEN_DOWNLOADS, 16);
 	wcscpy(buttons[0].szTip, CWSTRING(MENU_OPEN_DOWNLOADS_DIR));
 	buttons[0].dwFlags = THBF_ENABLED;
 
 	buttons[1].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
 	buttons[1].iId = ID_FILE_SETTINGS;
-	buttons[1].hIcon = images.GetIcon(20);
+	buttons[1].hIcon = ResourceLoader::loadIcon(IDI_SETTINGS, 16);
 	wcscpy(buttons[1].szTip, CWSTRING(SETTINGS));
 	buttons[1].dwFlags = THBF_ENABLED;
 
@@ -617,12 +617,16 @@ HWND MainFrame::createToolbar() {
 			int size = SETTING(TB_IMAGE_SIZE);
 			int buttonsCount = sizeof(ToolbarButtons) / sizeof(ToolbarButtons[0]);
 			ToolbarImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, buttonsCount+1);
+			ToolbarImagesHot.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, buttonsCount+1);
 			while(i < buttonsCount){
-				ToolbarImages.AddIcon(ResourceLoader::loadIcon(ToolbarButtons[i].nIcon, size));
+				HICON icon = ResourceLoader::loadIcon(ToolbarButtons[i].nIcon, size);
+				ToolbarImages.AddIcon(icon);
+				ToolbarImagesHot.AddIcon(ResourceLoader::convertGrayscaleIcon(icon));
 				i++;
 			}
 		}
 		ctrlToolbar.SetImageList(ToolbarImages);
+		ctrlToolbar.SetHotImageList(ToolbarImagesHot);
 		tbarcreated = true;
 	}
 
@@ -2082,8 +2086,8 @@ void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noex
 	ShowPopup(Text::toT(line), CTSTRING(UPDATER), NIIF_ERROR, true);
 }
 
-void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
-	callAsync([=] { onUpdateAvailable(title, message, aVersionString, infoUrl, autoUpdate, build, autoUpdateUrl); });
+void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
+	callAsync([=] { onUpdateAvailable(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl); });
 }
 
 void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const string& infoUrl, const string& updateUrl, int buildID, bool autoUpdate) noexcept {
@@ -2094,8 +2098,8 @@ void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater
 	callAsync([=] { onUpdateComplete(aUpdater); });
 }
 
-void MainFrame::onUpdateAvailable(const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
-	UpdateDlg dlg(title, message, aVersionString, infoUrl, autoUpdate, build, autoUpdateUrl);
+void MainFrame::onUpdateAvailable(const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
+	UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
 	if (dlg.DoModal(m_hWnd)  == IDC_UPDATE_DOWNLOAD) {
 		UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, build, true);
 		ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
