@@ -1841,7 +1841,7 @@ LRESULT DirectoryListingFrame::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 			const ItemInfo* ii =  ctrlList.getItemData(sel);
 			if(ii->type == ItemInfo::FILE) {
 				try {
-					QueueManager::getInstance()->add(Util::getOpenPath(ii->file->getName()),
+					QueueManager::getInstance()->addFile(Util::getOpenPath(ii->file->getName()),
 						ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getPath(), QueueItem::FLAG_OPEN);
 				} catch(const Exception&) { }
 			}

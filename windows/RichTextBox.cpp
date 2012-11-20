@@ -1135,7 +1135,7 @@ LRESULT RichTextBox::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 
 	auto u = getMagnetSource();
 	try {
-		QueueManager::getInstance()->add(Util::getOpenPath(m.fname), m.fsize, m.getTTH(), u, Util::emptyString, QueueItem::FLAG_OPEN);
+		QueueManager::getInstance()->addFile(Util::getOpenPath(m.fname), m.fsize, m.getTTH(), u, Util::emptyString, QueueItem::FLAG_OPEN);
 	} catch(...) { }
 	return 0;
 }
@@ -1198,7 +1198,7 @@ void RichTextBox::handleDownload(const string& aTarget, QueueItem::Priority /*p*
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		try {
-			QueueManager::getInstance()->add(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, Util::emptyString);
+			QueueManager::getInstance()->addFile(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, Util::emptyString);
 		} catch (...) {}
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, aTargetType, true);

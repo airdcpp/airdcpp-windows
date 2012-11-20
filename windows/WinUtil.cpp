@@ -1201,9 +1201,9 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser) {
 				if (sel == SettingsManager::MAGNET_SEARCH) {
 					WinUtil::searchHash(m.getTTH(), m.fname, m.fsize);
 				} else if (sel == SettingsManager::MAGNET_DOWNLOAD) {
-					QueueManager::getInstance()->add(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aUser, Util::emptyString);
+					QueueManager::getInstance()->addFile(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aUser, Util::emptyString);
 				} else if (sel == SettingsManager::MAGNET_OPEN) {
-					QueueManager::getInstance()->add(Util::getOpenPath(m.fname), m.fsize, m.getTTH(), aUser, 
+					QueueManager::getInstance()->addFile(Util::getOpenPath(m.fname), m.fsize, m.getTTH(), aUser, 
 						Util::emptyString, QueueItem::FLAG_OPEN);
 				}
 			} catch(const Exception& e) {
@@ -1949,6 +1949,26 @@ void WinUtil::SearchSite(WebShortcut* ws, tstring searchTerm) {
 		}
 	else
 		WinUtil::openLink(ws->url);
+}
+
+void WinUtil::removeBundle(const string& aBundleToken) {
+	BundlePtr aBundle = QueueManager::getInstance()->getBundle(aBundleToken);
+	if (aBundle) {
+		int finishedFiles = QueueManager::getInstance()->getFinishedItemCount(aBundle);
+		bool moveFinished = true;
+		string tmp = str(boost::format(STRING(CONFIRM_REMOVE_DIR_BUNDLE)) % aBundle->getName().c_str());
+		if(::MessageBox(0, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+			return;
+		} else {
+			if (finishedFiles > 0) {
+				tmp = str(boost::format(STRING(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE)) % finishedFiles);
+				if(::MessageBox(mainWnd, Text::toT(tmp).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+					moveFinished = false;
+				}
+			}
+		}
+		QueueManager::getInstance()->removeBundle(aBundle, false, moveFinished);
+	}
 }
 
 /* Only returns the text color */

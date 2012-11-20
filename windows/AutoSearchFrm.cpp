@@ -244,16 +244,25 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		//make a menu title from the search string, its probobly too long to fit but atleast it shows something.
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
-			auto as = AutoSearchManager::getInstance()->getAutoSearch(ctrlAutoSearch.GetSelectedIndex());
+			StringPairList spl;
+			auto as = AutoSearchManager::getInstance()->getSearchByIndex(ctrlAutoSearch.GetSelectedIndex());
 			title = Text::toT(as->getSearchString());
-		} else {
-			title = _T("");
+
+			AutoSearchManager::getInstance()->getBundleInfo(as, spl);
+
+			if (!spl.empty()) {
+				auto bundleMenu = asMenu.createSubMenu(CTSTRING(REMOVE_BUNDLE), true);
+				for(auto j=spl.begin(); j != spl.end(); j++) {
+					string token = j->first;
+					bundleMenu->appendItem(Text::toT(j->second), [=] { WinUtil::removeBundle(token); });
+				}
+			}
 		}
+
 		if (!title.empty())
 			asMenu.InsertSeparatorFirst(title);
-
 		
-		asMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+		asMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 
 		if (!title.empty())
 			asMenu.RemoveFirstItem();
@@ -296,7 +305,7 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 	if(ctrlAutoSearch.GetSelectedCount() == 1) {
 		int sel = ctrlAutoSearch.GetSelectedIndex();
-		AutoSearchPtr as = AutoSearchManager::getInstance()->getAutoSearch(sel);
+		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
 
 		AutoSearchDlg dlg;
 		dlg.searchString = as->getSearchString();
@@ -396,7 +405,7 @@ LRESULT AutoSearchFrame::onMoveDown(WORD , WORD , HWND , BOOL& ) {
 LRESULT AutoSearchFrame::onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlAutoSearch.GetSelectedCount() == 1) {
 		int sel = ctrlAutoSearch.GetSelectedIndex();
-		AutoSearchPtr as = AutoSearchManager::getInstance()->getAutoSearch(sel);
+		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
 		if(as) {
 			as->setLastSearch(GET_TIME());
 			updateItem(as, sel);
