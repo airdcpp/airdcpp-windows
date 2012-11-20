@@ -17,16 +17,17 @@
 #include "stdafx.h"
 #include "../client/DCPlusPlus.h"
 #include "Resource.h"
+#include "MainFrm.h"
 
 #include "AutoSearchFrm.h"
 #include "../client/SettingsManager.h"
 #include "../client/StringTokenizer.h"
 #include "../client/AutoSearchManager.h"
 
-int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_ACTION, COLUMN_PATH, COLUMN_REMOVE, COLUMN_MATCH, COLUMN_LASTSEARCH };
-int AutoSearchFrame::columnSizes[] = { 450, 100, 125, 400, 100, 200, 200 };
+int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_ACTION, COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH, COLUMN_LASTSEARCH, COLUMN_STATUS };
+int AutoSearchFrame::columnSizes[] = { 450, 100, 125, 400, 100, 200, 200, 200 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, 
-ResourceManager::ACTION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT, ResourceManager::USER_MATCH, ResourceManager::LAST_SEARCH };
+ResourceManager::ACTION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT, ResourceManager::USER_MATCH, ResourceManager::LAST_SEARCH, ResourceManager::STATUS };
 
 LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	
@@ -197,6 +198,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 	if(reinterpret_cast<HWND>(wParam) == ctrlAutoSearch) {
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 		
+		OMenu asMenu;
 		asMenu.CreatePopupMenu();
 
 		CRect rc;
@@ -212,6 +214,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 		int enable = ctrlAutoSearch.GetSelectedCount() == 1 ? MFS_ENABLED : MFS_DISABLED;
 
+		auto index = WinUtil::getFirstSelectedIndex(ctrlAutoSearch);
 		if(ctrlAutoSearch.GetSelectedCount() > 1) {
 			asMenu.AppendMenu(MF_STRING, IDC_ENABLE, CTSTRING(ENABLE_AUTOSEARCH));
 			asMenu.AppendMenu(MF_STRING, IDC_DISABLE, CTSTRING(DISABLE_AUTOSEARCH));
@@ -221,7 +224,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 			asMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 			asMenu.AppendMenu(MF_SEPARATOR);
 			
-			if(ctrlAutoSearch.GetCheckState(ctrlAutoSearch.GetSelectedIndex()) == 1) {
+			if(ctrlAutoSearch.GetCheckState(index) == 1) {
 				asMenu.AppendMenu(MF_STRING, IDC_DISABLE, CTSTRING(DISABLE_AUTOSEARCH));
 			} else {
 				asMenu.AppendMenu(MF_STRING, IDC_ENABLE, CTSTRING(ENABLE_AUTOSEARCH));
@@ -245,7 +248,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
 			StringPairList spl;
-			auto as = AutoSearchManager::getInstance()->getSearchByIndex(ctrlAutoSearch.GetSelectedIndex());
+			auto as = AutoSearchManager::getInstance()->getSearchByIndex(index);
 			title = Text::toT(as->getSearchString());
 
 			AutoSearchManager::getInstance()->getBundleInfo(as, spl);
@@ -304,7 +307,7 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 
 LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 	if(ctrlAutoSearch.GetSelectedCount() == 1) {
-		int sel = ctrlAutoSearch.GetSelectedIndex();
+		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
 
 		AutoSearchDlg dlg;
@@ -404,11 +407,11 @@ LRESULT AutoSearchFrame::onMoveDown(WORD , WORD , HWND , BOOL& ) {
 }
 LRESULT AutoSearchFrame::onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlAutoSearch.GetSelectedCount() == 1) {
-		int sel = ctrlAutoSearch.GetSelectedIndex();
+		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
 		if(as) {
 			as->setLastSearch(GET_TIME());
-			updateItem(as, sel);
+			updateItem(as->getToken());
 			AutoSearchManager::getInstance()->manualSearch(as);
 		}
 	}
@@ -478,15 +481,40 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	lst.push_back(Text::toT(as->getRemove()? "Yes" : "No"));
 	lst.push_back(Text::toT(as->getNickPattern()));
 	lst.push_back((as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
+	lst.push_back(Text::toT(AutoSearchManager::getInstance()->getStatus(as)));
 
 	bool b = as->getEnabled();
 	int i = ctrlAutoSearch.insert(pos, lst, 0, (LPARAM)as.get());
 	ctrlAutoSearch.SetCheckState(i, b);
 }
 
-void AutoSearchFrame::updateItem(const AutoSearchPtr as, int pos) {
-	ctrlAutoSearch.SetItemText(pos, COLUMN_LASTSEARCH, (as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
-	ctrlAutoSearch.SetItemText(pos, COLUMN_TYPE, Text::toT(as->getDisplayType()).c_str());
+void AutoSearchFrame::updateItem(ProfileToken aToken) {
+	auto itemCount = ctrlAutoSearch.GetItemCount();
+	for(int pos = 0; pos < itemCount; ++pos) {
+		auto as = (AutoSearch*)ctrlAutoSearch.GetItemData(pos);
+		if(compare(aToken, as->getToken()) == 0) {
+			ctrlAutoSearch.SetItemText(pos, COLUMN_LASTSEARCH, (as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
+			ctrlAutoSearch.SetItemText(pos, COLUMN_TYPE, Text::toT(as->getDisplayType()).c_str());
+			ctrlAutoSearch.SetItemText(pos, COLUMN_STATUS, Text::toT(AutoSearchManager::getInstance()->getStatus(as)).c_str());
+			return;
+		}
+	}
+}
+
+void AutoSearchFrame::on(AutoSearchManagerListener::RemoveItem, const string item) noexcept { 
+	MainFrame::getMainFrame()->callAsync([=] { ctrlAutoSearch.deleteItem(Text::toT(item)); }); 
+	setDirty(); 
+}
+
+void AutoSearchFrame::on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept { 
+	//addEntry(as, ctrlAutoSearch.GetItemCount());
+	MainFrame::getMainFrame()->callAsync([=] { addEntry(as, ctrlAutoSearch.GetItemCount()); });
+	setDirty(); 
+}
+
+void AutoSearchFrame::on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as) noexcept {
+	MainFrame::getMainFrame()->callAsync([=] { updateItem(as->getToken()); }); 
+	setDirty(); 
 }
 
 tstring AutoSearchFrame::formatSearchDate(const time_t aTime) {

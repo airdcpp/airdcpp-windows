@@ -410,6 +410,7 @@ public:
 		ShowPopup(szMsg, szTitle, NIIF_USER, hIcon, force);
 	}
 	void ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags = NIIF_INFO, HICON hIcon = NULL, bool force = false);
+	void callAsync(function<void ()> f);
 private:
 	NOTIFYICONDATA pmicon;
 	NOTIFYICONDATA hubicon;
@@ -546,7 +547,6 @@ private:
 	void onUpdateAvailable(const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept;
 	void onBadVersion(const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;
 	void onUpdateComplete(const string& updater) noexcept;
-	void callAsync(function<void ()> f);
 
 	void on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept;
 	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;

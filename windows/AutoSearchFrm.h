@@ -145,8 +145,9 @@ private:
 		COLUMN_ACTION,
 		COLUMN_REMOVE,
 		COLUMN_PATH,
-		COLUMN_MATCH,
+		COLUMN_USERMATCH,
 		COLUMN_LASTSEARCH,
+		COLUMN_STATUS,
 		COLUMN_LAST
 	};
 
@@ -175,30 +176,13 @@ private:
 	}
 
 	void addEntry(const AutoSearchPtr as, int pos);
-	void updateItem(const AutoSearchPtr as, int pos);
+	void updateItem(ProfileToken as);
 	tstring formatSearchDate(const time_t aTime);
-
-	string getType(int i) {
-		switch(i) {
-			case 0: return STRING(ANY);			break;
-			case 1: return STRING(AUDIO);		break;
-			case 2: return STRING(COMPRESSED);	break;
-			case 3: return STRING(DOCUMENT);	break;
-			case 4: return STRING(EXECUTABLE);	break;
-			case 5: return STRING(PICTURE);		break;
-			case 6: return STRING(VIDEO);		break;
-			case 7: return STRING(DIRECTORY);	break;
-			case 8: return "TTH";				break;
-			default: return STRING(ANY);
-		}
-	}
 
 	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDown, ctrlUp;
 	CEdit ctrlAsTime;
 	CStatic ctrlAsTimeLabel;
 	CUpDownCtrl Timespin;
-
-	OMenu asMenu;
 
 	CEdit ctrlAsRTime;
 	CStatic ctrlAsRTimeLabel;
@@ -207,8 +191,8 @@ private:
 	bool closed;
 	bool loading;
 
-	virtual void on(AutoSearchManagerListener::RemoveItem, const string item) noexcept { ctrlAutoSearch.deleteItem(Text::toT(item)); setDirty(); }
-	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept { addEntry(as, ctrlAutoSearch.GetItemCount()); setDirty(); }
-	virtual void on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as, int pos) noexcept { updateItem(as, pos); setDirty(); }
+	virtual void on(AutoSearchManagerListener::RemoveItem, const string item) noexcept;
+	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept;
+	virtual void on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as) noexcept;
 };
 #endif // !defined(AUTOSEARCH_FRM_H)
