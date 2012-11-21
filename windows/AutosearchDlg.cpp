@@ -31,7 +31,7 @@
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
 AutoSearchDlg::AutoSearchDlg() : fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), searchInterval(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
-	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true) { }
+	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true), matchFullPath(false) { }
 
 AutoSearchDlg::~AutoSearchDlg() {
 	ctrlSearch.Detach();
@@ -90,6 +90,7 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_END_TIME), CTSTRING(END_TIME));
 	::SetWindowText(GetDlgItem(IDC_CHECK_QUEUED), CTSTRING(AUTOSEARCH_CHECK_QUEUED));
 	::SetWindowText(GetDlgItem(IDC_CHECK_SHARED), CTSTRING(AUTOSEARCH_CHECK_SHARED));
+	::SetWindowText(GetDlgItem(IDC_MATCH_FULL_PATH), CTSTRING(MATCH_FULL_PATH));
 
 	::SetWindowText(GetDlgItem(IDC_SEARCH_TIMES_LABEL), CTSTRING(SEARCH_TIMES));
 	::SetWindowText(GetDlgItem(IDC_ADVANCED_LABEL), CTSTRING(SETTINGS_ADVANCED));
@@ -120,6 +121,7 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	CheckDlgButton(IDC_REMOVE_ON_HIT, remove);
 	CheckDlgButton(IDC_CHECK_QUEUED, checkQueued);
 	CheckDlgButton(IDC_CHECK_SHARED, checkShared);
+	CheckDlgButton(IDC_MATCH_FULL_PATH, matchFullPath);
 
 	if (!(matcherString == searchString && matcherType == 0)) {
 		ctrlMatcherString.SetWindowText(Text::toT(matcherString).c_str());
@@ -271,6 +273,7 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		remove = IsDlgButtonChecked(IDC_REMOVE_ON_HIT) ? true : false;
 		checkQueued = IsDlgButtonChecked(IDC_CHECK_QUEUED) ? true : false;
 		checkShared = IsDlgButtonChecked(IDC_CHECK_SHARED) ? true : false;
+		matchFullPath = IsDlgButtonChecked(IDC_MATCH_FULL_PATH) ? true : false;
 
 		if (targetType == 0) {
 			GetDlgItemText(IDC_TARGET_PATH, bufPath, MAX_PATH);

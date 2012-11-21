@@ -779,6 +779,8 @@
 #define IDC_DOWNCONN_SPIN               1310
 #define IDC_HIGHEST_PRIORITY_USE_REGEXP 1310
 #define IDC_FAV_SEARCH_INTERVAL_BOX     1310
+#define IDC_CHECK_QUEUED2               1310
+#define IDC_MATCH_FULL_PATH             1310
 #define IDC_SETTINGS_KB6                1311
 #define IDC_ST_REFRESH_DELAY            1311
 #define IDC_FAV_SEARCH_INTERVAL_SPIN    1311

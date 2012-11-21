@@ -47,6 +47,7 @@ public:
 	bool remove;
 	bool checkQueued;
 	bool checkShared;
+	bool matchFullPath;
 
 	enum { IDD = IDD_AUTOSEARCH_DLG };
 

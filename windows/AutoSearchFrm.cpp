@@ -247,17 +247,40 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		//make a menu title from the search string, its probobly too long to fit but atleast it shows something.
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
-			StringPairList spl;
+			BundleList bl;
+			OrderedStringSet fpl;
 			auto as = AutoSearchManager::getInstance()->getSearchByIndex(index);
 			title = Text::toT(as->getSearchString());
 
-			AutoSearchManager::getInstance()->getBundleInfo(as, spl);
+			AutoSearchManager::getInstance()->getMenuInfo(as, bl, fpl);
 
-			if (!spl.empty()) {
+			if (!bl.empty()) {
 				auto bundleMenu = asMenu.createSubMenu(CTSTRING(REMOVE_BUNDLE), true);
-				for(auto j=spl.begin(); j != spl.end(); j++) {
-					string token = j->first;
-					bundleMenu->appendItem(Text::toT(j->second), [=] { WinUtil::removeBundle(token); });
+				for(auto j=bl.begin(); j != bl.end(); j++) {
+					string token = (*j)->getToken();
+					bundleMenu->appendItem(Text::toT((*j)->getName()), [=] { WinUtil::removeBundle(token); });
+				}
+			}
+
+			if (!bl.empty() || !fpl.empty()) {
+				auto pathMenu = asMenu.createSubMenu(CTSTRING(OPEN_FOLDER), false);
+				if (!bl.empty()) {
+					pathMenu->InsertSeparatorFirst(CTSTRING(QUEUED_BUNDLES));
+					for(auto j=bl.begin(); j != bl.end(); j++) {
+						string path = (*j)->getTarget();
+						pathMenu->appendItem(Text::toT(path), [=] { WinUtil::openFolder(Text::toT(path)); });
+					}
+				}
+
+				if (!fpl.empty()) {
+					pathMenu->InsertSeparatorLast(CTSTRING(FINISHED_BUNDLES));
+					for(auto j=fpl.begin(); j != fpl.end(); j++) {
+						string path = *j;
+						pathMenu->appendItem(Text::toT(*j), [=] { WinUtil::openFolder(Text::toT(path)); });
+					}
+
+					pathMenu->appendSeparator();
+					pathMenu->appendItem(CTSTRING(CLEAR_FINISHED_PATHS), [=] { AutoSearchManager::getInstance()->clearPaths(as); });
 				}
 			}
 		}
@@ -291,7 +314,8 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 			j = i +2;
 			if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
 				AutoSearchPtr as = new AutoSearch(true, str, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, dlg.remove, 
-					dlg.target, dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, dlg.expireTime, dlg.checkQueued, dlg.checkShared);
+					dlg.target, dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, dlg.expireTime, dlg.checkQueued, 
+					dlg.checkShared, dlg.matchFullPath);
 				as->startTime = dlg.startTime;
 				as->endTime = dlg.endTime;
 				as->searchDays = dlg.searchDays;
@@ -326,11 +350,12 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.targetType = as->getTargetType();
 		dlg.checkQueued = as->getCheckAlreadyQueued();
 		dlg.checkShared = as->getCheckAlreadyShared();
+		dlg.matchFullPath = as->getMatchFullPath();
 
 		if(dlg.DoModal() == IDOK) {
 			AutoSearchPtr asNew = AutoSearchPtr(new AutoSearch(as->getEnabled(), dlg.searchString, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, 
 				dlg.remove, dlg.target, (TargetUtil::TargetType)dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, 
-				dlg.expireTime, dlg.checkQueued, dlg.checkShared));
+				dlg.expireTime, dlg.checkQueued, dlg.checkShared, dlg.matchFullPath));
 			asNew->startTime = dlg.startTime;
 			asNew->endTime = dlg.endTime;
 			asNew->searchDays = dlg.searchDays;
@@ -412,7 +437,7 @@ LRESULT AutoSearchFrame::onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 		if(as) {
 			as->setLastSearch(GET_TIME());
 			updateItem(as->getToken());
-			AutoSearchManager::getInstance()->manualSearch(as);
+			AutoSearchManager::getInstance()->searchItem(as, true);
 		}
 	}
 	return 0;
@@ -533,7 +558,6 @@ LRESULT AutoSearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 		AutoSearchManager::getInstance()->removeListener(this);
 		WinUtil::setButtonPressed(IDC_AUTOSEARCH, false);
 		closed = true;
-		save();
 		PostMessage(WM_CLOSE);
 		return 0;
 	}else {

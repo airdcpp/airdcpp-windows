@@ -1463,8 +1463,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="LocationType">Location type</String>
 		<String Name="ForceHashNotification">Refresh the directory after fixing the problem(s) to rescan the bundle (or type \"/allow %s\" to force it to be hashed in share if the problem(s) can't be fixed)</String>
 		<String Name="LineEmptyOrTooShort">Search String empty or too Short! (min. 5 chars allowed)</String>
-		<String Name="AutosearchCheckQueued">Don't download already Queued release directories</String>
-		<String Name="AutosearchCheckShared">Don't download already Shared release directories</String>
+		<String Name="AutosearchCheckQueued">Don't download directories already in queue</String>
+		<String Name="AutosearchCheckShared">Don't download directories already in share</String>
 		<String Name="PortBysy">Unable to open %s port. Searching or file transfers will not work correctly until you change settings or turn off any application that might be using that port.</String>
 		<String Name="TransferPort">Transfer (TCP)</String>
 		<String Name="SearchPort">Search (UDP)</String>
@@ -1699,5 +1699,9 @@ would you still like to load them?</String>
 		<String Name="FilesAddedForHashStartup">%s of shared files have been added for hashing as no previous hash information was found for them</String>
 		<String Name="BundleXRemoved">The bundle %s has been removed from the queue</String>
 		<String Name="DirectoryNotRemoved">The directory %s isn't empty, not removed</String>
+		<String Name="MatchFullPath">Find matches from the full path instead of the file/directory name</String>
+		<String Name="QueuedBundles">Queued bundles</String>
+		<String Name="FinishedBundles">Finished bundles</String>
+		<String Name="ClearFinishedPaths">Clear finished paths</String>
 	</Strings>
 </Language>

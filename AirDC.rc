@@ -1378,8 +1378,8 @@ BEGIN
     EDITTEXT        IDC_TARGET_PATH,58,103,229,14,ES_AUTOHSCROLL
     RTEXT           "Download To:",IDC_DL_TO,4,106,49,8
     PUSHBUTTON      "Select directory",IDC_SELECT_DIR,293,103,66,14
-    EDITTEXT        IDC_U_MATCH,12,188,214,14,ES_AUTOHSCROLL
-    LTEXT           "Only from users  with nick Matching: (Wildcards, | separate)",IDC_USER_MATCH_TEXT,10,174,219,8
+    EDITTEXT        IDC_U_MATCH,10,181,214,14,ES_AUTOHSCROLL
+    LTEXT           "Only from users  with nick Matching: (Wildcards, | separate)",IDC_USER_MATCH_TEXT,8,167,219,8
     CONTROL         "Use a custom matcher for search results",IDC_USE_MATCHER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,246,163,10
     LTEXT           "Type",IDC_TYPE,191,263,33,9
@@ -1402,13 +1402,15 @@ BEGIN
     RTEXT           "End time",IDC_END_TIME,277,279,31,8
     LTEXT           "Target type: direct path",IDC_TARGET_TYPE,59,120,280,9
     CONTROL         "Don't dl already Queued Release directories",IDC_CHECK_QUEUED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,216,198,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,216,235,10
     CONTROL         "Don't dl already Shared Release directories",IDC_CHECK_SHARED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,228,203,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,228,237,10
     PUSHBUTTON      "Advanced",IDC_ADVANCED,317,134,66,14
     GROUPBOX        "Advanced",IDC_ADVANCED_LABEL,2,154,381,140
     GROUPBOX        "Search times",IDC_SEARCH_TIMES_LABEL,261,163,116,130
     COMBOBOX        IDC_AS_FILETYPE,59,81,82,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Find matches from the full path instead of the file/directory name",IDC_MATCH_FULL_PATH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,204,235,10
 END
 
 IDD_SEARCHPAGE DIALOGEX 0, 0, 305, 311

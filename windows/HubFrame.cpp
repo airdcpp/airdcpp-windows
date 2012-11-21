@@ -320,6 +320,10 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 				PrivateFrame::openWindow(HintedUser(ui->getUser(), client->getHubUrl()), Util::emptyStringT, client);
 			}
 		}
+	} else if(stricmp(cmd.c_str(), _T("topic")) == 0) {
+		addLine(_T("*** ") + Text::toT(client->getHubDescription()));
+	} else if(stricmp(cmd.c_str(), _T("ctopic")) == 0) {
+		openLinksInTopic();
 	} else {
 		return false;
 	}
@@ -1604,7 +1608,9 @@ void HubFrame::openLinksInTopic() {
 	}
 
 	for( TStringIter i = urls.begin(); i != urls.end(); ++i ) {
-		WinUtil::openLink((*i));
+		string tmp = Text::fromT(*i);
+		Util::sanitizeUrl(tmp);
+		WinUtil::openLink(Text::toT(tmp));
 	}
 }
 
