@@ -319,6 +319,12 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 				as->startTime = dlg.startTime;
 				as->endTime = dlg.endTime;
 				as->searchDays = dlg.searchDays;
+
+				as->setCurNumber(dlg.curNumber);
+				as->setMaxNumber(dlg.maxNumber);
+				as->setNumberLen(dlg.numberLen);
+				as->setUseParams(dlg.useParams);
+
 				AutoSearchManager::getInstance()->addAutoSearch(as);
 			} else if(search.size() < 5) { // dont report if empty line between/end when adding multiple
 				//MessageBox(_T("Not adding the auto search: ") + Text::toT(str).c_str());
@@ -352,6 +358,11 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.checkShared = as->getCheckAlreadyShared();
 		dlg.matchFullPath = as->getMatchFullPath();
 
+		dlg.curNumber = as->getCurNumber();
+		dlg.numberLen = as->getNumberLen();
+		dlg.maxNumber = as->getMaxNumber();
+		dlg.useParams = as->getUseParams();
+
 		if(dlg.DoModal() == IDOK) {
 			AutoSearchPtr asNew = AutoSearchPtr(new AutoSearch(as->getEnabled(), dlg.searchString, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, 
 				dlg.remove, dlg.target, (TargetUtil::TargetType)dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, 
@@ -360,6 +371,11 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 			asNew->endTime = dlg.endTime;
 			asNew->searchDays = dlg.searchDays;
 			asNew->setLastSearch(as->getLastSearch());
+
+			asNew->setCurNumber(dlg.curNumber);
+			asNew->setMaxNumber(dlg.maxNumber);
+			asNew->setNumberLen(dlg.numberLen);
+			asNew->setUseParams(dlg.useParams);
 
 			if (AutoSearchManager::getInstance()->updateAutoSearch(sel, asNew)) {
 				ctrlAutoSearch.DeleteItem(sel);

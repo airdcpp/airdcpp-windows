@@ -31,6 +31,8 @@
 #include "MenuBaseHandlers.h"
 #include "SearchTypeCombo.h"
 
+#define ATTACH(id, var) var.Attach(GetDlgItem(id))
+
 class AutoSearchDlg : public CDialogImpl<AutoSearchDlg>, public DownloadBaseHandler<AutoSearchDlg> {
 public:
 	string searchString, comment, target, userMatch, matcherString, fileTypeStr;
@@ -48,6 +50,9 @@ public:
 	bool checkQueued;
 	bool checkShared;
 	bool matchFullPath;
+
+	int numberLen, curNumber, maxNumber;
+	bool useParams;
 
 	enum { IDD = IDD_AUTOSEARCH_DLG };
 
@@ -67,6 +72,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_CUSTOM_SEARCH_TIMES, onCheckTimes)
 		COMMAND_ID_HANDLER(IDC_USE_EXPIRY, onCheckExpiry)
 		COMMAND_ID_HANDLER(IDC_ADVANCED, onClickAdvanced)
+		COMMAND_ID_HANDLER(IDC_USE_PARAMS, onCheckParams)
+		COMMAND_ID_HANDLER(IDC_CONF_PARAMS, onConfigParams)
 		COMMAND_HANDLER(IDC_TARGET_PATH, EN_CHANGE, onTargetChanged)
 		COMMAND_HANDLER(IDC_SELECT_DIR, BN_CLICKED, onClickLocation)
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
@@ -81,6 +88,8 @@ public:
 		return FALSE;
 	}
 
+	LRESULT onConfigParams(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onCheckParams(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickAdvanced(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckMatcher(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -103,6 +112,7 @@ public:
 	int64_t getDownloadSize(bool /*isWhole*/) { return 0; }
 	bool showDirDialog(string& /*fileName*/) { return true; }
 	void switchMode();
+	void insertNumber();
 private:
 //	enum { BUF_LEN = 1024 };
 	CImageList ftImage;

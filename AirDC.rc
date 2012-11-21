@@ -1374,7 +1374,7 @@ BEGIN
     DEFPUSHBUTTON   "Ok",IDOK,184,134,58,14
     PUSHBUTTON      "Cancel",IDCANCEL,250,134,58,14
     COMBOBOX        IDC_AS_ACTION,177,81,82,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Remove after found",IDC_REMOVE_ON_HIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,265,51,104,10
+    CONTROL         "Remove after found",IDC_REMOVE_ON_HIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,264,41,104,10
     EDITTEXT        IDC_TARGET_PATH,58,103,229,14,ES_AUTOHSCROLL
     RTEXT           "Download To:",IDC_DL_TO,4,106,49,8
     PUSHBUTTON      "Select directory",IDC_SELECT_DIR,293,103,66,14
@@ -1411,6 +1411,8 @@ BEGIN
     COMBOBOX        IDC_AS_FILETYPE,59,81,82,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Find matches from the full path instead of the file/directory name",IDC_MATCH_FULL_PATH,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,204,235,10
+    CONTROL         "Enable parameters",IDC_USE_PARAMS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,265,60,94,10
+    PUSHBUTTON      "Configure...",IDC_CONF_PARAMS,276,71,66,14
 END
 
 IDD_SEARCHPAGE DIALOGEX 0, 0, 305, 311
@@ -2058,6 +2060,32 @@ BEGIN
     RTEXT           "Transfer Encryption",IDC_TRANSFER_ENCRYPTION_LBL,25,252,99,8,0,WS_EX_TRANSPARENT
 END
 
+IDD_AUTOSEARCH_PARAMS DIALOGEX 0, 0, 255, 251
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Parameters"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,144,230,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,198,230,50,14
+    LTEXT           "Current number",IDC_CUR_NUMBER_LBL,53,50,159,8
+    LTEXT           "Last number to search for",IDC_MAX_NUMBER_LBL,53,80,174,8
+    EDITTEXT        IDC_CUR_NUMBER,12,47,36,13,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_CUR_NUMBER_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,36,47,11,14
+    EDITTEXT        IDC_MAX_NUMBER,12,77,36,13,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_MAX_NUMBER_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,36,77,11,14
+    LTEXT           "Minimum length",IDC_NUMBER_LEN_LBL,52,121,56,8
+    EDITTEXT        IDC_NUMBER_LEN,12,118,36,13,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_NUMBER_LEN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,36,118,11,14
+    PUSHBUTTON      "Insert in the search string",IDC_INSERT_NUMBER,63,159,123,14
+    LTEXT           "If the number string is shorter than this value, the length will be filled by adding zeroes in front of the current number",IDC_AS_NUMLEN_HELP,12,135,224,23
+    LTEXT           "The next number to search for",IDC_AS_CURNUMBER_HELP2,13,62,225,9
+    LTEXT           "The search item will be removed after a bundle with this number has been downloaded",IDC_AS_MAXNUMBER_HELP,12,92,225,16
+    GROUPBOX        "Incrementing numbers",IDC_INCR_PARAMETERS,7,7,241,171
+    LTEXT           "In addition to incrementing numbers, you may also insert time variables in the search string. Note that using a custom matcher isn't possible when the parameter support is enabled for an item.",IDC_AS_TIMEVAR_HELP,7,183,220,26
+    LTEXT           "Available time variables",IDC_TIMEVAR_LINK,7,214,91,12
+    LTEXT           "The number will be incremented only after the previous bundle has finished downloading. and only one bundle can be queued at time. ",IDC_INCR_NUM_DESC,12,22,228,16
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2142,6 +2170,14 @@ BEGIN
         RIGHTMARGIN, 275
         TOPMARGIN, 7
         BOTTOMMARGIN, 276
+    END
+
+    IDD_AUTOSEARCH_PARAMS, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 248
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 244
     END
 END
 #endif    // APSTUDIO_INVOKED

@@ -597,6 +597,7 @@
     <ClInclude Include="windows\ADLSProperties.h" />
     <ClInclude Include="windows\AdvancedPage.h" />
     <ClInclude Include="windows\AutoSearchFrm.h" />
+    <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\CProgressCtrlEx.h" />
     <ClInclude Include="windows\CSplitterEx.h" />
     <ClInclude Include="windows\DirectoryListingDlg.h" />

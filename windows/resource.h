@@ -173,6 +173,7 @@
 #define IDR_EMOTICON                    345
 #define IDD_DIALOG3                     345
 #define IDD_LIMITPAGE                   345
+#define IDD_AUTOSEARCH_PARAMS           346
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
@@ -779,7 +780,6 @@
 #define IDC_DOWNCONN_SPIN               1310
 #define IDC_HIGHEST_PRIORITY_USE_REGEXP 1310
 #define IDC_FAV_SEARCH_INTERVAL_BOX     1310
-#define IDC_CHECK_QUEUED2               1310
 #define IDC_MATCH_FULL_PATH             1310
 #define IDC_SETTINGS_KB6                1311
 #define IDC_ST_REFRESH_DELAY            1311
@@ -1078,6 +1078,7 @@
 #define IDC_THU                         1542
 #define IDC_FRI                         1543
 #define IDC_SAT                         1544
+#define IDC_USE_PARAMS                  1545
 #define IDC_CUSTOM_SEARCH_TIMES         1546
 #define IDC_USE_EXPIRY                  1547
 #define IDC_AUTOPRIORITY                1572
@@ -1118,6 +1119,7 @@
 #define IDC_SELECT_DIR2                 1640
 #define IDC_ADVANCED                    1640
 #define IDC_LANGUAGE_NOTE               1641
+#define IDC_CONF_PARAMS                 1641
 #define IDC_AUTOSELECT_METHOD           1643
 #define IDC_AUTOPATH_METHOD             1644
 #define IDC_TB_SIZE                     1645
@@ -1158,6 +1160,21 @@
 #define IDC_SEARCH_TIMES_LABEL          1674
 #define IDC_MATCH_COLUMN                1675
 #define IDC_MATCH_COL_TEXT              1676
+#define IDC_CUR_NUMBER                  1677
+#define IDC_CUR_NUMBER_SPIN             1678
+#define IDC_MAX_NUMBER                  1679
+#define IDC_MAX_NUMBER_SPIN             1680
+#define IDC_NUMBER_LEN                  1681
+#define IDC_NUMBER_LEN_SPIN             1682
+#define IDC_INSERT_NUMBER               1683
+#define IDC_AS_NUMLEN_HELP              1684
+#define IDC_AS_CURNUMBER_HELP2          1685
+#define IDC_AS_MAXNUMBER_HELP           1686
+#define IDC_INCR_PARAMETERS             1687
+#define IDC_AS_TIMEVAR_HELP             1688
+#define IDC_TIMEVAR_LINK                1689
+#define IDC_AS_MAXNUMBER_HELP2          1690
+#define IDC_INCR_NUM_DESC               1690
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1436,8 +1453,11 @@
 #define IDC_AS_ACTION_STATIC2           15060
 #define IDC_TARGET_TYPE                 15060
 #define IDC_AUTOSEARCH_ENABLE           15061
+#define IDC_CUR_NUMBER_LBL              15061
 #define IDC_AUTOSEARCH_RECHECK_TIME     15062
+#define IDC_MAX_NUMBER_LBL              15062
 #define IDC_AUTOSEARCH_RECHECK_SPIN     15063
+#define IDC_NUMBER_LEN_LBL              15063
 #define IDC_MINUTES2                    15064
 #define IDC_AUTOSEARCH_RECHECK_TEXT     15065
 #define IDC_DUPES                       15066
@@ -1537,9 +1557,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        346
+#define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1677
+#define _APS_NEXT_CONTROL_VALUE         1690
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

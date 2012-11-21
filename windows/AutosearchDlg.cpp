@@ -22,16 +22,17 @@
 #include "WinUtil.h"
 #include "AutoSearchDlg.h"
 #include <commctrl.h>
+#include "AutosearchParams.h"
+
 //#include "../client/SearchManager.h"
 
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \
 	var = Text::fromT(buf);
 
-#define ATTACH(id, var) var.Attach(GetDlgItem(id))
-
 AutoSearchDlg::AutoSearchDlg() : fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), searchInterval(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
-	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true), matchFullPath(false) { }
+	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true), matchFullPath(false), curNumber(1), maxNumber(0),
+	numberLen(2) { }
 
 AutoSearchDlg::~AutoSearchDlg() {
 	ctrlSearch.Detach();
@@ -95,6 +96,7 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_SEARCH_TIMES_LABEL), CTSTRING(SEARCH_TIMES));
 	::SetWindowText(GetDlgItem(IDC_ADVANCED_LABEL), CTSTRING(SETTINGS_ADVANCED));
 
+
 	//get the search type so that we can set the initial control states correctly in fixControls
 	StringList ext;
 	try {
@@ -125,7 +127,8 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 	if (!(matcherString == searchString && matcherType == 0)) {
 		ctrlMatcherString.SetWindowText(Text::toT(matcherString).c_str());
-		CheckDlgButton(IDC_USE_MATCHER, true);
+		if (!useParams)
+			CheckDlgButton(IDC_USE_MATCHER, true);
 	}
 
 	CenterWindow(GetParent());
@@ -185,6 +188,14 @@ LRESULT AutoSearchDlg::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 LRESULT AutoSearchDlg::onClickAdvanced(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	switchMode();
+	return 0;
+}
+
+LRESULT AutoSearchDlg::onConfigParams(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	AutoSearchParams dlg(this);
+	if(dlg.DoModal() == IDOK) {
+
+	}
 	return 0;
 }
 
@@ -253,6 +264,14 @@ void AutoSearchDlg::updateTargetTypeText() {
 	}
 
 	cTargetType.SetWindowText(targetText.c_str());
+}
+
+void AutoSearchDlg::insertNumber() {
+	tstring str;
+	str.resize(ctrlSearch.GetWindowTextLength()+1);
+	str.resize(GetDlgItemText(IDC_AS_SEARCH_STRING, &str[0], ctrlSearch.GetWindowTextLength()+1));
+	str += _T("%[number]");
+	ctrlSearch.SetWindowText(str.c_str());
 }
 
 LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -359,6 +378,11 @@ LRESULT AutoSearchDlg::onCheckExpiry(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	return 0;
 }
 
+LRESULT AutoSearchDlg::onCheckParams(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	fixControls();
+	return 0;
+}
+
 LRESULT AutoSearchDlg::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	StringList extensions;
 	try {
@@ -385,11 +409,14 @@ void AutoSearchDlg::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_CHECK_QUEUED), searchType == SearchManager::TYPE_DIRECTORY && advanced);
 	::EnableWindow(GetDlgItem(IDC_CHECK_SHARED), searchType == SearchManager::TYPE_DIRECTORY && advanced);
 
+	/* Param config */
+	bool usingParams = IsDlgButtonChecked(IDC_USE_PARAMS) == BST_CHECKED;
+	::EnableWindow(GetDlgItem(IDC_CONF_PARAMS), usingParams);
 
 	/* Result matcher */
-	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), searchType != SearchManager::TYPE_TTH && advanced);
+	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), searchType != SearchManager::TYPE_TTH && advanced && !usingParams);
 
-	BOOL matcherEnabled = (IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED && advanced);
+	BOOL matcherEnabled = (IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED && advanced && !usingParams);
 	::EnableWindow(GetDlgItem(IDC_PATTERN),					matcherEnabled);
 	::EnableWindow(GetDlgItem(IDC_MATCHER_PATTERN),			matcherEnabled);
 	::EnableWindow(GetDlgItem(IDC_TYPE),					matcherEnabled);
