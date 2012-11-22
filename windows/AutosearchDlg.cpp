@@ -32,7 +32,7 @@
 
 AutoSearchDlg::AutoSearchDlg() : fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), searchInterval(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
 	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true), matchFullPath(false), curNumber(1), maxNumber(0),
-	numberLen(2) { }
+	numberLen(2), useParams(false) { }
 
 AutoSearchDlg::~AutoSearchDlg() {
 	ctrlSearch.Detach();
@@ -124,6 +124,8 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	CheckDlgButton(IDC_CHECK_QUEUED, checkQueued);
 	CheckDlgButton(IDC_CHECK_SHARED, checkShared);
 	CheckDlgButton(IDC_MATCH_FULL_PATH, matchFullPath);
+
+	CheckDlgButton(IDC_USE_PARAMS, useParams);
 
 	if (!(matcherString == searchString && matcherType == 0)) {
 		ctrlMatcherString.SetWindowText(Text::toT(matcherString).c_str());
@@ -270,7 +272,7 @@ void AutoSearchDlg::insertNumber() {
 	tstring str;
 	str.resize(ctrlSearch.GetWindowTextLength()+1);
 	str.resize(GetDlgItemText(IDC_AS_SEARCH_STRING, &str[0], ctrlSearch.GetWindowTextLength()+1));
-	str += _T("%[number]");
+	str += _T("%[inc]");
 	ctrlSearch.SetWindowText(str.c_str());
 }
 
@@ -293,6 +295,8 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		checkQueued = IsDlgButtonChecked(IDC_CHECK_QUEUED) ? true : false;
 		checkShared = IsDlgButtonChecked(IDC_CHECK_SHARED) ? true : false;
 		matchFullPath = IsDlgButtonChecked(IDC_MATCH_FULL_PATH) ? true : false;
+
+		useParams = IsDlgButtonChecked(IDC_USE_PARAMS) ? true : false;
 
 		if (targetType == 0) {
 			GetDlgItemText(IDC_TARGET_PATH, bufPath, MAX_PATH);
@@ -414,9 +418,9 @@ void AutoSearchDlg::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_CONF_PARAMS), usingParams);
 
 	/* Result matcher */
-	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), searchType != SearchManager::TYPE_TTH && advanced && !usingParams);
+	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), searchType != SearchManager::TYPE_TTH && advanced);
 
-	BOOL matcherEnabled = (IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED && advanced && !usingParams);
+	BOOL matcherEnabled = (IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED && advanced);
 	::EnableWindow(GetDlgItem(IDC_PATTERN),					matcherEnabled);
 	::EnableWindow(GetDlgItem(IDC_MATCHER_PATTERN),			matcherEnabled);
 	::EnableWindow(GetDlgItem(IDC_TYPE),					matcherEnabled);

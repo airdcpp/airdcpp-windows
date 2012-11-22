@@ -24,10 +24,10 @@
 #include "../client/StringTokenizer.h"
 #include "../client/AutoSearchManager.h"
 
-int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_ACTION, COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH, COLUMN_LASTSEARCH, COLUMN_STATUS };
-int AutoSearchFrame::columnSizes[] = { 450, 100, 125, 400, 100, 200, 200, 200 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, 
-ResourceManager::ACTION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT, ResourceManager::USER_MATCH, ResourceManager::LAST_SEARCH, ResourceManager::STATUS };
+int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_STATUS, COLUMN_LASTSEARCH, COLUMN_ACTION, COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH };
+int AutoSearchFrame::columnSizes[] = { 300, 125, 200, 125, 100, 300, 100, 200 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, ResourceManager::STATUS, ResourceManager::LAST_SEARCH, 
+ResourceManager::ACTION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT, ResourceManager::USER_MATCH };
 
 LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	
@@ -236,38 +236,30 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		asMenu.AppendMenu(MF_STRING, IDC_CHANGE, CTSTRING(SETTINGS_CHANGE));
 		asMenu.AppendMenu(MF_STRING, IDC_MOVE_UP, CTSTRING(SETTINGS_BTN_MOVEUP));
 		asMenu.AppendMenu(MF_STRING, IDC_MOVE_DOWN, CTSTRING(SETTINGS_BTN_MOVEDOWN));
-		asMenu.AppendMenu(MF_SEPARATOR);
-		asMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 
-		asMenu.EnableMenuItem(IDC_CHANGE, enable);
-		asMenu.EnableMenuItem(IDC_MOVE_UP, enable);
-		asMenu.EnableMenuItem(IDC_MOVE_DOWN, enable);
-		
-		asMenu.SetMenuDefaultItem(IDC_CHANGE);
-		//make a menu title from the search string, its probobly too long to fit but atleast it shows something.
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
-			BundleList bl;
+			AutoSearch::BundleStatusList bsl;
 			OrderedStringSet fpl;
 			auto as = AutoSearchManager::getInstance()->getSearchByIndex(index);
-			title = Text::toT(as->getSearchString());
+			title = Text::toT(as->getDisplayName());
 
-			AutoSearchManager::getInstance()->getMenuInfo(as, bl, fpl);
-
-			if (!bl.empty()) {
-				auto bundleMenu = asMenu.createSubMenu(CTSTRING(REMOVE_BUNDLE), true);
-				for(auto j=bl.begin(); j != bl.end(); j++) {
-					string token = (*j)->getToken();
-					bundleMenu->appendItem(Text::toT((*j)->getName()), [=] { WinUtil::removeBundle(token); });
+			AutoSearchManager::getInstance()->getMenuInfo(as, bsl, fpl);
+			if (!bsl.empty() || !fpl.empty()) {
+				asMenu.appendSeparator();
+				if (!bsl.empty()) {
+					auto bundleMenu = asMenu.createSubMenu(CTSTRING(REMOVE_BUNDLE), true);
+					for(auto j=bsl.begin(); j != bsl.end(); j++) {
+						string token = j->first->getToken();
+						bundleMenu->appendItem(Text::toT(j->first->getName()), [=] { WinUtil::removeBundle(token); });
+					}
 				}
-			}
 
-			if (!bl.empty() || !fpl.empty()) {
 				auto pathMenu = asMenu.createSubMenu(CTSTRING(OPEN_FOLDER), false);
-				if (!bl.empty()) {
+				if (!bsl.empty()) {
 					pathMenu->InsertSeparatorFirst(CTSTRING(QUEUED_BUNDLES));
-					for(auto j=bl.begin(); j != bl.end(); j++) {
-						string path = (*j)->getTarget();
+					for(auto j=bsl.begin(); j != bsl.end(); j++) {
+						string path = j->first->getTarget();
 						pathMenu->appendItem(Text::toT(path), [=] { WinUtil::openFolder(Text::toT(path)); });
 					}
 				}
@@ -285,6 +277,16 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 			}
 		}
 
+		asMenu.AppendMenu(MF_SEPARATOR);
+		asMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
+
+		asMenu.EnableMenuItem(IDC_CHANGE, enable);
+		asMenu.EnableMenuItem(IDC_MOVE_UP, enable);
+		asMenu.EnableMenuItem(IDC_MOVE_DOWN, enable);
+		
+		asMenu.SetMenuDefaultItem(IDC_CHANGE);
+
+		//make a menu title from the search string, its probobly too long to fit but atleast it shows something.
 		if (!title.empty())
 			asMenu.InsertSeparatorFirst(title);
 		
@@ -347,7 +349,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.remove = as->getRemove();
 		dlg.target = as->getTarget();
 		dlg.userMatch = as->getNickPattern();
-		dlg.matcherString = as->pattern;
+		dlg.matcherString = as->getMatcherString();
 		dlg.matcherType = as->getMethod();
 		dlg.expireTime = as->getExpireTime();
 		dlg.searchDays = as->searchDays;
@@ -366,7 +368,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		if(dlg.DoModal() == IDOK) {
 			AutoSearchPtr asNew = AutoSearchPtr(new AutoSearch(as->getEnabled(), dlg.searchString, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, 
 				dlg.remove, dlg.target, (TargetUtil::TargetType)dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, 
-				dlg.expireTime, dlg.checkQueued, dlg.checkShared, dlg.matchFullPath));
+				dlg.expireTime, dlg.checkQueued, dlg.checkShared, dlg.matchFullPath, as->getToken()));
 			asNew->startTime = dlg.startTime;
 			asNew->endTime = dlg.endTime;
 			asNew->searchDays = dlg.searchDays;
@@ -389,7 +391,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 
 LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	//use a removelist, the selection position will change when removing multiple.
-	std::vector<AutoSearchPtr> removelist;
+	AutoSearchList removelist;
 
 	int i = -1;
 	while( (i = ctrlAutoSearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
@@ -451,9 +453,7 @@ LRESULT AutoSearchFrame::onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
 		if(as) {
-			as->setLastSearch(GET_TIME());
-			updateItem(as->getToken());
-			AutoSearchManager::getInstance()->searchItem(as, true);
+			AutoSearchManager::getInstance()->searchItem(as, AutoSearchManager::TYPE_MANUAL);
 		}
 	}
 	return 0;
@@ -506,9 +506,10 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 
 	TStringList lst;
 
-	lst.push_back(Text::toT(as->getSearchString()));
-	auto ft = SearchManager::isDefaultTypeStr(as->getFileType()) ? SearchManager::getTypeStr(as->getFileType()[0]-'0') : as->getFileType();
-	lst.push_back(Text::toT(ft));
+	lst.push_back(Text::toT(as->getDisplayName()));
+	lst.push_back(Text::toT(SearchManager::isDefaultTypeStr(as->getFileType()) ? SearchManager::getTypeStr(as->getFileType()[0]-'0') : as->getFileType()));
+	lst.push_back(Text::toT(AutoSearchManager::getInstance()->getStatus(as)));
+	lst.push_back((as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
 		
 	if(as->getAction() == 0){
 		lst.push_back(CTSTRING(DOWNLOAD));
@@ -521,41 +522,52 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	lst.push_back(Text::toT(as->getTarget()));
 	lst.push_back(Text::toT(as->getRemove()? "Yes" : "No"));
 	lst.push_back(Text::toT(as->getNickPattern()));
-	lst.push_back((as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
-	lst.push_back(Text::toT(AutoSearchManager::getInstance()->getStatus(as)));
 
 	bool b = as->getEnabled();
 	int i = ctrlAutoSearch.insert(pos, lst, 0, (LPARAM)as.get());
 	ctrlAutoSearch.SetCheckState(i, b);
 }
 
-void AutoSearchFrame::updateItem(ProfileToken aToken) {
+int AutoSearchFrame::findItem(ProfileToken aToken) {
 	auto itemCount = ctrlAutoSearch.GetItemCount();
 	for(int pos = 0; pos < itemCount; ++pos) {
 		auto as = (AutoSearch*)ctrlAutoSearch.GetItemData(pos);
-		if(compare(aToken, as->getToken()) == 0) {
-			ctrlAutoSearch.SetItemText(pos, COLUMN_LASTSEARCH, (as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
-			ctrlAutoSearch.SetItemText(pos, COLUMN_TYPE, Text::toT(as->getDisplayType()).c_str());
-			ctrlAutoSearch.SetItemText(pos, COLUMN_STATUS, Text::toT(AutoSearchManager::getInstance()->getStatus(as)).c_str());
-			return;
+		if(aToken == as->getToken()) {
+			return pos;
 		}
+	}
+
+	return -1;
+}
+
+void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
+	int pos = findItem(as->getToken());
+	if (pos >= 0) {
+		ctrlAutoSearch.SetItemText(pos, COLUMN_VALUE, Text::toT(as->getDisplayName()).c_str());
+		ctrlAutoSearch.SetItemText(pos, COLUMN_LASTSEARCH, (as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
+		ctrlAutoSearch.SetItemText(pos, COLUMN_TYPE, Text::toT(as->getDisplayType()).c_str());
+		ctrlAutoSearch.SetItemText(pos, COLUMN_STATUS, Text::toT(AutoSearchManager::getInstance()->getStatus(as)).c_str());
+		return;
 	}
 }
 
-void AutoSearchFrame::on(AutoSearchManagerListener::RemoveItem, const string item) noexcept { 
-	MainFrame::getMainFrame()->callAsync([=] { ctrlAutoSearch.deleteItem(Text::toT(item)); }); 
-	setDirty(); 
+void AutoSearchFrame::removeItem(const AutoSearchPtr as) {
+	int pos = findItem(as->getToken());
+	if (pos >= 0) {
+		ctrlAutoSearch.DeleteItem(pos);
+	}
+}
+
+void AutoSearchFrame::on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& as) noexcept { 
+	MainFrame::getMainFrame()->callAsync([=] { removeItem(as); setDirty(); }); 
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept { 
-	//addEntry(as, ctrlAutoSearch.GetItemCount());
-	MainFrame::getMainFrame()->callAsync([=] { addEntry(as, ctrlAutoSearch.GetItemCount()); });
-	setDirty(); 
+	MainFrame::getMainFrame()->callAsync([=] { addEntry(as, ctrlAutoSearch.GetItemCount()); setDirty();  });
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as) noexcept {
-	MainFrame::getMainFrame()->callAsync([=] { updateItem(as->getToken()); }); 
-	setDirty(); 
+	MainFrame::getMainFrame()->callAsync([=] { updateItem(as); setDirty();  }); 
 }
 
 tstring AutoSearchFrame::formatSearchDate(const time_t aTime) {

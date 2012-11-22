@@ -20,7 +20,6 @@
 #define SEARCH_AUTOSEARCH_PARAMS_H
 
 #include <atlcrack.h>
-//#include <atlctrls.h>
 #include <atlctrlx.h>
 #include "AutosearchDlg.h"
 
@@ -44,7 +43,6 @@ public:
 	AutoSearchParams(AutoSearchDlg* asd) : p(asd) { }
 	
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		//ctrlLine.SetFocus();
 		return FALSE;
 	}
 
@@ -70,7 +68,6 @@ public:
 		updown.SetRange32(0, 999);
 		updown.Detach();
 
-		CheckDlgButton(IDC_USE_PARAMS, p->useParams);
 		ctrlCurNumber.SetWindowText(Util::toStringW(p->curNumber).c_str());
 		ctrlMaxNumber.SetWindowText(Util::toStringW(p->maxNumber).c_str());
 		ctrlNumberLen.SetWindowText(Util::toStringW(p->numberLen).c_str());
@@ -93,16 +90,21 @@ public:
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 	{
 		if(wID == IDOK) {
-			//line.resize(ctrlLine.GetWindowTextLength() + 1);
-			//line.resize(GetDlgItemText(IDC_LINE, &line[0], line.size()));
-
 			//params
 			TCHAR buf[512];
-			p->useParams = IsDlgButtonChecked(IDC_USE_PARAMS) ? true : false;
 			ctrlCurNumber.GetWindowText(buf, 512);
-			p->curNumber = Util::toInt(Text::fromT(buf));
+			auto curNumber = Util::toInt(Text::fromT(buf));
 			ctrlMaxNumber.GetWindowText(buf, 512);
-			p->maxNumber = Util::toInt(Text::fromT(buf));
+			auto maxNumber = Util::toInt(Text::fromT(buf));
+
+			if (maxNumber > 0 && curNumber > maxNumber) {
+				MessageBox(_T("The current number can't be bigger than the maximum number!"));
+				return 0;
+			}
+
+			p->curNumber = curNumber;
+			p->maxNumber = maxNumber;
+
 			ctrlNumberLen.GetWindowText(buf, 512);
 			p->numberLen = Util::toInt(Text::fromT(buf));
 		}

@@ -142,12 +142,12 @@ private:
 		COLUMN_FIRST,
 		COLUMN_VALUE = COLUMN_FIRST,
 		COLUMN_TYPE,
+		COLUMN_STATUS,
+		COLUMN_LASTSEARCH,
 		COLUMN_ACTION,
 		COLUMN_REMOVE,
 		COLUMN_PATH,
 		COLUMN_USERMATCH,
-		COLUMN_LASTSEARCH,
-		COLUMN_STATUS,
 		COLUMN_LAST
 	};
 
@@ -176,8 +176,11 @@ private:
 	}
 
 	void addEntry(const AutoSearchPtr as, int pos);
-	void updateItem(ProfileToken as);
+	void updateItem(const AutoSearchPtr as);
 	tstring formatSearchDate(const time_t aTime);
+
+	int findItem(ProfileToken aToken);
+	void removeItem(const AutoSearchPtr as);
 
 	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDown, ctrlUp;
 	CEdit ctrlAsTime;
@@ -191,7 +194,7 @@ private:
 	bool closed;
 	bool loading;
 
-	virtual void on(AutoSearchManagerListener::RemoveItem, const string item) noexcept;
+	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& aToken) noexcept;
 	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept;
 	virtual void on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as) noexcept;
 };

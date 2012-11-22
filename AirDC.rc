@@ -2068,7 +2068,7 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,144,230,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,198,230,50,14
     LTEXT           "Current number",IDC_CUR_NUMBER_LBL,53,50,159,8
-    LTEXT           "Last number to search for",IDC_MAX_NUMBER_LBL,53,80,174,8
+    LTEXT           "Last number to search for (0 = disabled)",IDC_MAX_NUMBER_LBL,53,80,174,8
     EDITTEXT        IDC_CUR_NUMBER,12,47,36,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_CUR_NUMBER_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,36,47,11,14
     EDITTEXT        IDC_MAX_NUMBER,12,77,36,13,ES_AUTOHSCROLL | ES_NUMBER
@@ -2081,9 +2081,9 @@ BEGIN
     LTEXT           "The next number to search for",IDC_AS_CURNUMBER_HELP2,13,62,225,9
     LTEXT           "The search item will be removed after a bundle with this number has been downloaded",IDC_AS_MAXNUMBER_HELP,12,92,225,16
     GROUPBOX        "Incrementing numbers",IDC_INCR_PARAMETERS,7,7,241,171
-    LTEXT           "In addition to incrementing numbers, you may also insert time variables in the search string. Note that using a custom matcher isn't possible when the parameter support is enabled for an item.",IDC_AS_TIMEVAR_HELP,7,183,220,26
+    LTEXT           "In addition to incrementing numbers, you may also insert time variables in the search string. Note that the parameters can also be used in the custom matcher.",IDC_AS_TIMEVAR_HELP,7,183,220,26
     LTEXT           "Available time variables",IDC_TIMEVAR_LINK,7,214,91,12
-    LTEXT           "The number will be incremented only after the previous bundle has finished downloading. and only one bundle can be queued at time. ",IDC_INCR_NUM_DESC,12,22,228,16
+    LTEXT           "The number will be incremented only after the previous bundle has finished downloading, only one bundle can be queued at time. ",IDC_INCR_NUM_DESC,12,22,228,16
 END
 
 
