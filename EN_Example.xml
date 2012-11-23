@@ -1703,5 +1703,10 @@ would you still like to load them?</String>
 		<String Name="QueuedBundles">Queued bundles</String>
 		<String Name="FinishedBundles">Finished bundles</String>
 		<String Name="ClearFinishedPaths">Clear finished paths</String>
+		<String Name="SearchingStatus">Searching status</String>
+		<String Name="Expiration">Expiration</String>
+		<String Name="Expired">Expired</String>
+		<String Name="Never">Never</String>
+		<String Name="Bundles">Bundles</String>
 	</Strings>
 </Language>

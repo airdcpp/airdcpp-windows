@@ -24,10 +24,12 @@
 #include "../client/StringTokenizer.h"
 #include "../client/AutoSearchManager.h"
 
-int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_STATUS, COLUMN_LASTSEARCH, COLUMN_ACTION, COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH };
-int AutoSearchFrame::columnSizes[] = { 300, 125, 200, 125, 100, 300, 100, 200 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, ResourceManager::STATUS, ResourceManager::LAST_SEARCH, 
-ResourceManager::ACTION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT, ResourceManager::USER_MATCH };
+int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_SEARCH_STATUS, COLUMN_LASTSEARCH, COLUMN_BUNDLES, COLUMN_ACTION, COLUMN_EXPIRATION,
+	COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH };
+
+int AutoSearchFrame::columnSizes[] = { 300, 125, 150, 125, 500, 100, 100, 300, 100, 200 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, ResourceManager::SEARCHING_STATUS, ResourceManager::LAST_SEARCH, 
+ResourceManager::BUNDLES, ResourceManager::ACTION, ResourceManager::EXPIRATION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT, ResourceManager::USER_MATCH };
 
 LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	
@@ -306,10 +308,13 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 	AutoSearchDlg dlg;
 	dlg.expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS)*24*60*60) : 0;
+	dlg.fileTypeStr = SETTING(LAST_AS_FILETYPE);
 	if(dlg.DoModal() == IDOK) {
 		string search = dlg.searchString + "\r\n";
 		string::size_type j = 0;
 		string::size_type i = 0;
+
+		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, dlg.fileTypeStr);
 	
 		while((i = search.find("\r\n", j)) != string::npos) {
 			string str = search.substr(j, i-j);
@@ -406,7 +411,7 @@ LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT AutoSearchFrame::onMoveUp(WORD , WORD , HWND , BOOL& ) {
-	int i = ctrlAutoSearch.GetSelectedIndex();
+	int i = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 	if(i != -1 && i != 0) {
 		//swap and reload list, not the best solution :P
 		AutoSearchManager::getInstance()->moveAutoSearchUp(i);
@@ -428,7 +433,7 @@ LRESULT AutoSearchFrame::onMoveUp(WORD , WORD , HWND , BOOL& ) {
 }
 
 LRESULT AutoSearchFrame::onMoveDown(WORD , WORD , HWND , BOOL& ) {
-	int i = ctrlAutoSearch.GetSelectedIndex();
+	int i = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 	if(i != -1 && i != (ctrlAutoSearch.GetItemCount()-1) ) {
 		//swap and reload list, not the best solution :P
 		ctrlAutoSearch.SetRedraw(FALSE);
@@ -508,8 +513,9 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 
 	lst.push_back(Text::toT(as->getDisplayName()));
 	lst.push_back(Text::toT(SearchManager::isDefaultTypeStr(as->getFileType()) ? SearchManager::getTypeStr(as->getFileType()[0]-'0') : as->getFileType()));
-	lst.push_back(Text::toT(AutoSearchManager::getInstance()->getStatus(as)));
+	lst.push_back(Text::toT(as->getSearchingStatus()));
 	lst.push_back((as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
+	lst.push_back(Text::toT(AutoSearchManager::getInstance()->getBundleStatuses(as)));
 		
 	if(as->getAction() == 0){
 		lst.push_back(CTSTRING(DOWNLOAD));
@@ -519,6 +525,7 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 		lst.push_back(CTSTRING(AS_REPORT));
 	}
 		
+	lst.push_back(Text::toT(as->getExpiration()));
 	lst.push_back(Text::toT(as->getTarget()));
 	lst.push_back(Text::toT(as->getRemove()? "Yes" : "No"));
 	lst.push_back(Text::toT(as->getNickPattern()));
@@ -546,7 +553,9 @@ void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
 		ctrlAutoSearch.SetItemText(pos, COLUMN_VALUE, Text::toT(as->getDisplayName()).c_str());
 		ctrlAutoSearch.SetItemText(pos, COLUMN_LASTSEARCH, (as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
 		ctrlAutoSearch.SetItemText(pos, COLUMN_TYPE, Text::toT(as->getDisplayType()).c_str());
-		ctrlAutoSearch.SetItemText(pos, COLUMN_STATUS, Text::toT(AutoSearchManager::getInstance()->getStatus(as)).c_str());
+		ctrlAutoSearch.SetItemText(pos, COLUMN_BUNDLES, Text::toT(AutoSearchManager::getInstance()->getBundleStatuses(as)).c_str());
+		ctrlAutoSearch.SetItemText(pos, COLUMN_SEARCH_STATUS, Text::toT(as->getSearchingStatus()).c_str());
+		ctrlAutoSearch.SetItemText(pos, COLUMN_EXPIRATION, Text::toT(as->getExpiration()).c_str());
 		return;
 	}
 }
