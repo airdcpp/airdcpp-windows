@@ -22,14 +22,12 @@ public:
 	BEGIN_MSG_MAP(UserListColours)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		COMMAND_HANDLER(IDC_CHANGE_COLOR, BN_CLICKED, onChangeColour)
-		COMMAND_HANDLER(IDC_IMAGEBROWSE, BN_CLICKED, onImageBrowse)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT, WPARAM, LPARAM, BOOL&);
 	LRESULT onChangeColour(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT onImageBrowse(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		SettingsManager::getInstance()->removeListener(this);
 		n_lsbList.ResetContent();
@@ -44,7 +42,6 @@ public:
 
 	CRichEditCtrl n_Preview;
 private:
-	void BrowseForPic(int DLGITEM);
 
 	void refreshPreview();
 
@@ -62,7 +59,7 @@ private:
 	}
 
 protected:
-	static Item items[];
+
 	static TextItem texts[];
 	TCHAR* title;
 };

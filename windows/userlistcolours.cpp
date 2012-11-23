@@ -17,14 +17,9 @@ PropPage::TextItem UserListColours::texts[] = {
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-PropPage::Item UserListColours::items[] = {
-	{ IDC_USERLIST_IMAGE, SettingsManager::USERLIST_IMAGE, PropPage::T_STR },
-	{ 0, 0, PropPage::T_END }
-};
 
 LRESULT UserListColours::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	PropPage::translate((HWND)(*this), texts);
-	PropPage::read((HWND)*this, items);
 	SettingsManager::getInstance()->addListener(this);
 
 	normalColour = SETTING(NORMAL_COLOUR);
@@ -113,7 +108,6 @@ void UserListColours::refreshPreview() {
 
 void UserListColours::write() {
 
-	PropPage::write((HWND)*this, items);
 	SettingsManager::getInstance()->set(SettingsManager::NORMAL_COLOUR, normalColour);
 	SettingsManager::getInstance()->set(SettingsManager::FAVORITE_COLOR, favoriteColour);
 	SettingsManager::getInstance()->set(SettingsManager::RESERVED_SLOT_COLOR, reservedSlotColour);
@@ -121,21 +115,6 @@ void UserListColours::write() {
 	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, pasiveColour);
 	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, opColour);
 
-	ResourceLoader::reLoadUserListImages(); // User Icon Begin / End
 }
 
-void UserListColours::BrowseForPic(int DLGITEM) {
-	TCHAR buf[MAX_PATH];
 
-	GetDlgItemText(DLGITEM, buf, MAX_PATH);
-	tstring x = buf;
-
-	if(WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
-		SetDlgItemText(DLGITEM, x.c_str());
-	}
-}
-
-LRESULT UserListColours::onImageBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	BrowseForPic(IDC_USERLIST_IMAGE);
-	return 0;
-}

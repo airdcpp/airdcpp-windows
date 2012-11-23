@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -263,6 +263,12 @@
 #define IDI_SEGMENT                     445
 #define IDI_D_USER                      446
 #define IDI_U_USER                      447
+#define IDI_USER_BASE                   448
+#define IDI_USER_AWAY                   449
+#define IDI_USER_BOT                    450
+#define IDI_USER_PASSIVE                451
+#define IDI_USER_OP                     452
+#define IDI_USER_AIRDC                  453
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
@@ -666,7 +672,6 @@
 #define IDC_DL_SKIPPING_OPTIONS         1265
 #define IDC_CHANGE_COLOR                1266
 #define IDC_PORT_UDP                    1266
-#define IDC_USERLIST_IMAGE              1267
 #define IDC_SETTINGS_PORT_UDP           1267
 #define IDC_USERLIST                    1268
 #define IDC_IMPORT                      1269

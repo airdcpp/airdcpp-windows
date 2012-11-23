@@ -25,6 +25,7 @@
 #include "resource.h"
 #include "WinUtil.h"
 
+
 SplashWindow::SplashWindow() {
 	CRect rc;
 	rc.bottom = GetSystemMetrics(SM_CYFULLSCREEN);
@@ -70,12 +71,22 @@ void SplashWindow::operator()(const string& status) {
 	::SetBkMode(dc, TRANSPARENT);
 		
 	// Draw the icon
-	HBITMAP hi;
-	hi = (HBITMAP)LoadImage(_Module.get_m_hInst(), MAKEINTRESOURCE(IDB_SPLASH), IMAGE_BITMAP, 350, 120, LR_SHARED);
-			 
+
+	//add temp support for loading .png and .bmp from file...
+	HBITMAP hi = NULL;
+	CImage img;
+	HRESULT r = img.Load(_T("splash.png"));
+	if(r == S_OK) {
+		hi = img.Detach();
+	} else {
+		hi = (HBITMAP)LoadImage(_Module.get_m_hInst(), _T("splash.bmp") , IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
+		if(!hi)
+			hi = (HBITMAP)LoadImage(_Module.get_m_hInst(), MAKEINTRESOURCE(IDB_SPLASH), IMAGE_BITMAP, 350, 120, LR_SHARED);
+	}
 	HDC comp=CreateCompatibleDC(dc);
 	SelectObject(comp,hi);	
 
+	
 	BitBlt(dc,0, 0 , 350, 120,comp,0,0,SRCCOPY);
 
 	DeleteObject(hi);

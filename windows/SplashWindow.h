@@ -19,8 +19,13 @@
 #ifndef DCPLUSPLUS_WIN32_SPLASHWINDOW_H
 #define DCPLUSPLUS_WIN32_SPLASHWINDOW_H
 
+#ifdef __ATLMISC_H__
+#define __ATLTYPES_H__
+#endif
+
 #include <string>
 #include "../client/typedefs.h"
+#include <atlimage.h>
 
 using std::string;
 

@@ -18,6 +18,7 @@
 
 #include "stdafx.h"
 #include "../client/DCPlusPlus.h"
+#include "../client/UserInfoBase.h"
 
 #include "ResourceLoader.h"
 
@@ -38,12 +39,7 @@ void ResourceLoader::load() {
 	m_IconPath = Text::toT(SETTING(ICON_PATH));
 
 	loadFileImages();
-
-	if(SETTING(USERLIST_IMAGE) == "")
-		userImages.CreateFromImage(IDB_USERS, 16, 9, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
-	else
-		userImages.CreateFromImage(Text::toT(SETTING(USERLIST_IMAGE)).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE); 
-
+	loadUserImages();
 	loadSearchTypeIcons();
 	loadSettingsTreeIcons();
 
@@ -58,6 +54,38 @@ void ResourceLoader::unload() {
 	fileImages.Destroy();
 	userImages.Destroy();
 	flagImages.Destroy();
+}
+void ResourceLoader::loadUserImages() {
+
+	const unsigned baseCount = UserInfoBase::USER_ICON_MOD_START;
+	const unsigned modifierCount = UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START;
+	HICON bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
+	HICON modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16), /*loadIcon(IDI_USER_AIRDC, 16),*/ loadIcon(IDI_USER_OP, 16) };
+	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 16);
+	for(size_t iBase = 0; iBase < baseCount; ++iBase) {
+		for(size_t i = 0, n = modifierCount * modifierCount; i < n; ++i) {
+			CImageList icons;
+			icons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 2, 16);
+			icons.AddIcon(bases[iBase]);
+
+			for(size_t iMod = 0; iMod < modifierCount; ++iMod) {
+				if(i & (1i64 << iMod))
+					icons.AddIcon(modifiers[iMod]);
+			}
+			int iCount = icons.GetImageCount();
+			if(iCount == 1) {
+				userImages.AddIcon(icons.GetIcon(0));
+			} else {
+				CImageList mergelist(ImageList_Merge(icons, 0, icons, 1, 0, 0));
+				for(size_t m = 2; m < iCount; ++m) {
+					mergelist = ImageList_Merge(mergelist, 0, icons, m, 0, 0);
+				}
+				userImages.AddIcon(mergelist.GetIcon(0));
+				mergelist.Destroy();
+			} 
+			icons.Destroy();
+		}	
+	}
 }
 
 HBITMAP ResourceLoader::getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/) {
@@ -200,6 +228,13 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_FOLDER_INC:	return _T("folder_incomplete.ico");
 		case IDI_FILE:			return _T("file.ico");
 		case IDI_OVERLAY:		return _T("overlay.ico");
+		case IDI_USER_BASE:		return _T("UserlistImages\\UserBase.ico");
+		case IDI_USER_AWAY:		return _T("UserlistImages\\UserAway.ico");
+		case IDI_USER_BOT:		return _T("UserlistImages\\UserBot.ico");
+		case IDI_USER_PASSIVE:	return _T("UserlistImages\\UserNoCon.ico");
+		case IDI_USER_OP:		return _T("UserlistImages\\UserOP.ico");
+		case IDI_USER_AIRDC:	return _T("UserlistImages\\UserAirDC.ico");
+
 		default: return Util::emptyStringT;
 	}
 }
@@ -314,14 +349,6 @@ int ResourceLoader::getIconIndex(const tstring& aFileName) {
 	} else {
 		return 2;
 	}
-}
-
-void ResourceLoader::reLoadUserListImages(){
-	userImages.Destroy();
-	if(SETTING(USERLIST_IMAGE).empty())
-		userImages.CreateFromImage(IDB_USERS, 16, 9, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED);
-	else
-		userImages.CreateFromImage(Text::toT(SETTING(USERLIST_IMAGE)).c_str(), 16, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
 }
 
 void ResourceLoader::loadCmdBarImageList(CImageList& images){

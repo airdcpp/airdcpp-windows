@@ -330,9 +330,6 @@ BEGIN
     CONTROL         "",IDC_PREVIEW,"RichEdit50W",WS_BORDER | WS_TABSTOP | 0x884,125,19,138,120
     LISTBOX         IDC_USERLIST_COLORS,16,19,106,120,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "User list",IDC_STATIC,7,10,261,225
-    EDITTEXT        IDC_USERLIST_IMAGE,19,182,182,15,ES_AUTOHSCROLL
-    PUSHBUTTON      "Browse...",IDC_IMAGEBROWSE,207,182,50,14
-    LTEXT           "Userlist Icons:",IDC_USERLIST,19,172,86,8
 END
 
 IDD_HUB_LIST DIALOGEX 0, 0, 263, 187
@@ -2242,6 +2239,12 @@ IDI_FILE                ICON                    "res\\file.ico"
 IDI_SEGMENT             ICON                    "res\\transfer_segmented.ico"
 IDI_D_USER              ICON                    "res\\download_user.ico"
 IDI_U_USER              ICON                    "res\\upload_user.ico"
+IDI_USER_BASE           ICON                    "res\\UserlistImages\\UserBase.ico"
+IDI_USER_AWAY           ICON                    "res\\UserlistImages\\UserAway.ico"
+IDI_USER_BOT            ICON                    "res\\UserlistImages\\UserBot.ico"
+IDI_USER_PASSIVE        ICON                    "res\\UserlistImages\\UserNoCon.ico"
+IDI_USER_OP             ICON                    "res\\UserlistImages\\UserOP.ico"
+IDI_USER_AIRDC          ICON                    "res\\UserlistImages\\UserAirDC.ico"
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"

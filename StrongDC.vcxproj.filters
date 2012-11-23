@@ -392,6 +392,24 @@
     <None Include="res\searchTypes\Custom.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\UserlistImages\UserBase.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserAway.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserBot.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserNoCon.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserOP.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\UserlistImages\UserAirDC.ico">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="AirDC.rc">

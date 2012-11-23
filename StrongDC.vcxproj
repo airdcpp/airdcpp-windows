@@ -467,6 +467,12 @@
     <None Include="res\Update.ico" />
     <None Include="res\Upload.ico" />
     <None Include="res\User.ico" />
+    <None Include="res\UserlistImages\UserAirDC.ico" />
+    <None Include="res\UserlistImages\UserAway.ico" />
+    <None Include="res\UserlistImages\UserBase.ico" />
+    <None Include="res\UserlistImages\UserBot.ico" />
+    <None Include="res\UserlistImages\UserNoCon.ico" />
+    <None Include="res\UserlistImages\UserOP.ico" />
     <None Include="res\UserOff.ico" />
     <None Include="res\users.bmp" />
     <None Include="res\warning.ico" />

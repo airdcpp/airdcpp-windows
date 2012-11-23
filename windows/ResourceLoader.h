@@ -39,12 +39,12 @@ class ResourceLoader
 public:
 	static void load();
 	static void unload();
-	static void reLoadUserListImages();
 	static void loadSettingsTreeIcons();
 	static void loadSearchTypeIcons();
 	static void loadWinampToolbarIcons(CImageList& winampImages);
 	static void loadCmdBarImageList(CImageList& images);
 	static void loadFlagImages();
+	static void loadUserImages();
 	
 	static HICON loadDefaultIcon(int icon, int size=0);
 	static HICON loadIcon(int aDefault, int size = 0);
