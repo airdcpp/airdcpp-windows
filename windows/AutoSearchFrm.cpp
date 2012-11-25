@@ -29,7 +29,7 @@ int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_SEARC
 
 int AutoSearchFrame::columnSizes[] = { 300, 125, 150, 125, 500, 100, 100, 300, 100, 200 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, ResourceManager::SEARCHING_STATUS, ResourceManager::LAST_SEARCH, 
-ResourceManager::BUNDLES, ResourceManager::ACTION, ResourceManager::EXPIRATION, ResourceManager::PATH, ResourceManager::REMOVE_ON_HIT, ResourceManager::USER_MATCH };
+ResourceManager::BUNDLES, ResourceManager::ACTION, ResourceManager::EXPIRATION, ResourceManager::PATH, ResourceManager::AUTO_REMOVE, ResourceManager::USER_MATCH };
 
 LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	
@@ -50,6 +50,18 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	}
 	
 	ctrlAutoSearch.SetColumnOrderArray(COLUMN_LAST, columnIndexes);
+
+
+	statusImg.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
+	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_DISABLED));
+	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_MANUAL));
+	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_SEARCHING));
+	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_WAITING));
+	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_QUEUED_OK));
+	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_QUEUED_ERROR));
+	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_SEARCH_ERROR));
+	ctrlAutoSearch.SetImageList(statusImg, LVSIL_SMALL);
+
 
 	/*AutoSearch every time */
 	ctrlAsTime.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | ES_RIGHT | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
@@ -531,7 +543,7 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	lst.push_back(Text::toT(as->getNickPattern()));
 
 	bool b = as->getEnabled();
-	int i = ctrlAutoSearch.insert(pos, lst, 0, (LPARAM)as.get());
+	int i = ctrlAutoSearch.insert(pos, lst, AutoSearchManager::getInstance()->getStatus(as), (LPARAM)as.get());
 	ctrlAutoSearch.SetCheckState(i, b);
 }
 
@@ -556,7 +568,8 @@ void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
 		ctrlAutoSearch.SetItemText(pos, COLUMN_BUNDLES, Text::toT(AutoSearchManager::getInstance()->getBundleStatuses(as)).c_str());
 		ctrlAutoSearch.SetItemText(pos, COLUMN_SEARCH_STATUS, Text::toT(as->getSearchingStatus()).c_str());
 		ctrlAutoSearch.SetItemText(pos, COLUMN_EXPIRATION, Text::toT(as->getExpiration()).c_str());
-		return;
+
+		ctrlAutoSearch.SetItem(pos, 0 ,LVIF_IMAGE, NULL, AutoSearchManager::getInstance()->getStatus(as), 0, 0, NULL);
 	}
 }
 

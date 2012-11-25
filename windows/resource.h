@@ -269,6 +269,13 @@
 #define IDI_USER_PASSIVE                451
 #define IDI_USER_OP                     452
 #define IDI_USER_AIRDC                  453
+#define IDI_WAITING						454
+#define IDI_QUEUED_ERROR				455
+#define IDI_SEARCH_ERROR				456
+#define IDI_MANUAL						457
+#define IDI_DISABLED					458
+#define IDI_QUEUED_OK					459
+#define IDI_SEARCHING					460
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479

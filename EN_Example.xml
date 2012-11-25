@@ -1708,5 +1708,6 @@ would you still like to load them?</String>
 		<String Name="Expired">Expired</String>
 		<String Name="Never">Never</String>
 		<String Name="Bundles">Bundles</String>
+		<String Name="AutoRemove">Auto remove</String>
 	</Strings>
 </Language>

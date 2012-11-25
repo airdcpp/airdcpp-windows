@@ -2293,6 +2293,13 @@ IDI_MPSTOP              ICON                    "res\\MediaToolbar\\stop.ico"
 IDI_MPVOLUMEUP          ICON                    "res\\MediaToolbar\\up.ico"
 IDI_MPVOLUME50          ICON                    "res\\MediaToolbar\\volume50.ico"
 IDI_MPVOLUMEDOWN        ICON                    "res\\MediaToolbar\\down.ico"
+IDI_SEARCHING        	ICON                    "res\\AutoSearch\\Searching.ico"
+IDI_QUEUED_OK        	ICON                    "res\\AutoSearch\\QueuedOK.ico"
+IDI_QUEUED_ERROR        ICON                    "res\\AutoSearch\\QueuedError.ico"
+IDI_SEARCH_ERROR        ICON                    "res\\AutoSearch\\SearchError.ico"
+IDI_WAITING		        ICON                    "res\\AutoSearch\\Waiting.ico"
+IDI_MANUAL		        ICON                    "res\\AutoSearch\\Manual.ico"
+IDI_DISABLED		    ICON                    "res\\AutoSearch\\Disabled.ico"
 
 /////////////////////////////////////////////////////////////////////////////
 //
