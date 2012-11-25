@@ -198,6 +198,6 @@ private:
 
 	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& aToken) noexcept;
 	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept;
-	virtual void on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as) noexcept;
+	virtual void on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as, bool setDirty) noexcept;
 };
 #endif // !defined(AUTOSEARCH_FRM_H)
