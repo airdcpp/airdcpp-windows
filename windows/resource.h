@@ -276,6 +276,8 @@
 #define IDI_DISABLED					458
 #define IDI_QUEUED_OK					459
 #define IDI_SEARCHING					460
+#define IDI_SLOTS						461
+#define IDI_SLOTSFULL					462
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479

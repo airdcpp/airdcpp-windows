@@ -234,6 +234,8 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_USER_PASSIVE:	return _T("UserlistImages\\UserNoCon.ico");
 		case IDI_USER_OP:		return _T("UserlistImages\\UserOP.ico");
 		case IDI_USER_AIRDC:	return _T("UserlistImages\\UserAirDC.ico");
+		case IDI_SLOTS:			return _T("Slots.ico");
+		case IDI_SLOTSFULL:		return _T("SlotsFull.ico");
 
 		default: return Util::emptyStringT;
 	}

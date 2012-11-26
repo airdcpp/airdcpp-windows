@@ -44,7 +44,10 @@
 #include "OMenu.h"
 #include "picturewindow.h"
 #include "CProgressCtrlEx.h"
+
 #define STATUS_MESSAGE_MAP 9
+#define POPUP_UID 19000
+
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>, public Thread,
 		private TimerManagerListener, private QueueManagerListener,
@@ -93,7 +96,7 @@ public:
 	BOOL PreTranslateMessage(MSG* pMsg)
 	{
 		if((pMsg->message >= WM_MOUSEFIRST) && (pMsg->message <= WM_MOUSELAST))
-			ctrlLastLines.RelayEvent(pMsg);
+			ctrlTooltips.RelayEvent(pMsg);
 
 		if (!IsWindow())
 			return FALSE;
@@ -200,13 +203,13 @@ public:
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
 
 		COMMAND_ID_HANDLER(IDC_WINAMP_START, onWinampStart)
-		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
 		NOTIFY_CODE_HANDLER(TBN_DROPDOWN, onDropDown)
 		CHAIN_MDI_CHILD_COMMANDS()
 		CHAIN_MSG_MAP(CUpdateUI<MainFrame>)
 		CHAIN_MSG_MAP(CMDIFrameWindowImpl<MainFrame>)
 		CHAIN_MSG_MAP(splitterBase);
 		ALT_MSG_MAP(STATUS_MESSAGE_MAP)
+			NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
 			MESSAGE_HANDLER(WM_LBUTTONUP, onLimiterMenu)
 			MESSAGE_HANDLER(WM_RBUTTONUP, onLimiterMenu)
 			MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
@@ -429,7 +432,7 @@ private:
 	enum { MAX_CLIENT_LINES = 10 };
 	TStringList lastLinesList;
 	tstring lastLines;
-	CToolTipCtrl ctrlLastLines;
+	CToolTipCtrl ctrlTooltips;
 
 	CStatusBarCtrl ctrlStatus;
 	FlatTabCtrl ctrlTab;
@@ -476,6 +479,8 @@ private:
 	HICON hShutdownIcon;
 	HICON uploadIcon;
 	HICON downloadIcon;
+	HICON slotsIcon;
+	HICON slotsFullIcon;
 	CContainedWindow statusContainer;
 
 	static bool isShutdownStatus;
@@ -522,6 +527,22 @@ private:
 	HWND createWinampToolbar();
 	void updateTray(bool add = true);
 	bool hasPassdlg;
+
+	enum {
+		STATUS_LASTLINES,
+		STATUS_AWAY,
+		STATUS_SHARED,
+		STATUS_HUBS,
+		STATUS_SLOTS,
+		STATUS_DOWNLOADED,
+		STATUS_UPLOADED,
+		STATUS_DL_SPEED,
+		STATUS_UL_SPEED,
+		STATUS_QUEUED,
+		STATUS_SHUTDOWN,
+		STATUS_LAST
+
+	};
 
 	LRESULT onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/);
 

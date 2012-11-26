@@ -26,9 +26,9 @@
 #include "HubFrame.h"
 #include "TextFrame.h"
 
-int UsersFrame::columnIndexes[] = { COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION, COLUMN_CID };
-int UsersFrame::columnSizes[] = { 200, 300, 150, 200, 200 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::AUTO_GRANT, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION, ResourceManager::CID };
+int UsersFrame::columnIndexes[] = { COLUMN_NICK, COLUMN_NICKS, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION, COLUMN_CID };
+int UsersFrame::columnSizes[] = { 150, 200, 300, 150, 200, 200 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::AUTO_GRANT, ResourceManager::ONLINE_NICKS, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION, ResourceManager::CID };
 
 LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -38,6 +38,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlUsers.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_USERS);
 	ctrlUsers.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
+	
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
 	images.AddIcon(ResourceLoader::loadIcon(IDR_PRIVATE, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDR_PRIVATE_OFF, 16));
@@ -216,8 +217,11 @@ void UsersFrame::updateUser(const UserPtr& aUser) {
 			ui->columns[COLUMN_SEEN] = aUser->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", FavoriteManager::getInstance()->getLastSeen(aUser)));
 			if(aUser->isOnline()) {
 				ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 0, 0, 0, NULL);
-			} else
+				ui->columns[COLUMN_NICKS] = WinUtil::getNicks(aUser, Util::emptyString);
+			} else {
+				ui->columns[COLUMN_NICKS] =  TSTRING(OFFLINE);
 				ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 1, 0, 0, NULL);
+			}
 			ctrlUsers.updateItem(i);
 		}
 	}
@@ -272,6 +276,7 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 void UsersFrame::UserInfo::update(const FavoriteUser& u) {
 	columns[COLUMN_NICK] = Text::toT(u.getNick());
+	columns[COLUMN_NICKS] =  user.user->isOnline() ? WinUtil::getNicks(u.getUser(), Util::emptyString) : TSTRING(OFFLINE);
 	columns[COLUMN_HUB] = user.user->isOnline() ? WinUtil::getHubNames(u.getUser(), Util::emptyString).first : Text::toT(u.getUrl());
 	columns[COLUMN_SEEN] = user.user->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", u.getLastSeen()));
 	columns[COLUMN_DESCRIPTION] = Text::toT(u.getDescription());

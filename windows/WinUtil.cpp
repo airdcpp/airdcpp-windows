@@ -269,7 +269,7 @@ void UserInfoBase::connectFav() {
 
 void UserInfoBase::addFav() {
 	if(getUser()) {
-		FavoriteManager::getInstance()->addFavoriteUser(getUser());
+		FavoriteManager::getInstance()->addFavoriteUser(HintedUser(getUser(), getHubUrl()));
 	}
 }
 void UserInfoBase::grant() {

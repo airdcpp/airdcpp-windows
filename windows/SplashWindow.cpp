@@ -71,7 +71,6 @@ void SplashWindow::operator()(const string& status) {
 	::SetBkMode(dc, TRANSPARENT);
 		
 	// Draw the icon
-
 	//add temp support for loading .png and .bmp from file...
 	HBITMAP hi = NULL;
 	CImage img;
@@ -79,7 +78,7 @@ void SplashWindow::operator()(const string& status) {
 	if(r == S_OK) {
 		hi = img.Detach();
 	} else {
-		hi = (HBITMAP)LoadImage(_Module.get_m_hInst(), _T("splash.bmp") , IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR | LR_LOADFROMFILE);
+		hi = (HBITMAP)LoadImage(_Module.get_m_hInst(), _T("splash.bmp") , IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_SHARED);
 		if(!hi)
 			hi = (HBITMAP)LoadImage(_Module.get_m_hInst(), MAKEINTRESOURCE(IDB_SPLASH), IMAGE_BITMAP, 350, 120, LR_SHARED);
 	}

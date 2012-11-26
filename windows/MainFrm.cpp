@@ -287,12 +287,26 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	statusSizes[0] = WinUtil::getTextWidth(TSTRING(AWAY), ctrlStatus.m_hWnd); // for "AWAY" segment
 	statusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
-	CToolInfo ti(TTF_SUBCLASS, ctrlStatus.m_hWnd);
+	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
+	ctrlTooltips.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	CToolInfo ti_lastlines(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_LASTLINES+POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	CToolInfo ti_dlSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_DL_SPEED+POPUP_UID, 0, (LPWSTR)CTSTRING(DL_STATUS_POPUP));
+	CToolInfo ti_ulSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_UL_SPEED+POPUP_UID, 0, (LPWSTR)CTSTRING(UL_STATUS_POPUP));
+	CToolInfo ti_queueSize(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_QUEUED+POPUP_UID, 0, (LPWSTR)CTSTRING(QUEUE_SIZE));
+	CToolInfo ti_slots(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_SLOTS+POPUP_UID, 0, (LPWSTR)CTSTRING(SLOTS));  //TODO: Click to adjust
+	CToolInfo ti_hubs(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_HUBS+POPUP_UID, 0, (LPWSTR)CTSTRING(HUBS));
+	CToolInfo ti_downloaded(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_DOWNLOADED+POPUP_UID, 0, (LPWSTR)CTSTRING(DOWNLOADED));
+	CToolInfo ti_uploaded(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_UPLOADED+POPUP_UID, 0, (LPWSTR)CTSTRING(UPLOADED));
 
-	ctrlLastLines.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
-	ctrlLastLines.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-	ctrlLastLines.AddTool(&ti);
-	ctrlLastLines.SetDelayTime(TTDT_AUTOPOP, 15000);
+	ctrlTooltips.AddTool(&ti_lastlines);
+	ctrlTooltips.AddTool(&ti_dlSpeed);
+	ctrlTooltips.AddTool(&ti_ulSpeed);
+	ctrlTooltips.AddTool(&ti_queueSize);
+	ctrlTooltips.AddTool(&ti_slots);
+	ctrlTooltips.AddTool(&ti_hubs);
+	ctrlTooltips.AddTool(&ti_downloaded);
+	ctrlTooltips.AddTool(&ti_uploaded);
+	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
 
 	CreateMDIClient();
 	m_CmdBar.SetMDIClient(m_hWndMDIClient);
@@ -369,6 +383,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	uploadIcon = ResourceLoader::loadIcon(IDI_UPLOAD, 16);
 	downloadIcon = ResourceLoader::loadIcon(IDI_DOWNLOAD, 16);
+	slotsIcon = ResourceLoader::loadIcon(IDI_SLOTS, 16);
+	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
 
 	updateTray(true);
 
@@ -380,8 +396,13 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		PostMessage(WM_COMMAND, ID_FILE_SETTINGS);
 	}
 	
-	ctrlStatus.SetIcon(7, downloadIcon);
-	ctrlStatus.SetIcon(8, uploadIcon);
+	ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
+	ctrlStatus.SetIcon(STATUS_DOWNLOADED, downloadIcon);
+	ctrlStatus.SetIcon(STATUS_UPLOADED, uploadIcon);
+	ctrlStatus.SetIcon(STATUS_DL_SPEED, downloadIcon);
+	ctrlStatus.SetIcon(STATUS_UL_SPEED, uploadIcon);
+	ctrlStatus.SetIcon(STATUS_QUEUED, ResourceLoader::loadIcon(IDI_QUEUE, 16));
+	ctrlStatus.SetIcon(STATUS_HUBS, ResourceLoader::loadIcon(IDI_HUB, 16));
 
 	//background image
 	if(!SETTING(BACKGROUND_IMAGE).empty()) {
@@ -697,9 +718,19 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 			ctrlStatus.SetText(1, str[0].c_str());
 			for(int i = 1; i < 9; i++) {
 				int w = WinUtil::getTextWidth(str[i], ctrlStatus.m_hWnd);
+				
+				if(i == STATUS_SLOTS-1) {
+					w+=20;
+					if(str[i][1] == '0') // a hack, do this some other way.
+						ctrlStatus.SetIcon(STATUS_SLOTS, slotsFullIcon);
+					else
+						ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
+				}
 				//make room for the icons
-				if(i == 6 || i == 7)
-					w = w+22;
+				if(i == STATUS_DOWNLOADED-1 || i == STATUS_UPLOADED-1 ||
+					i == STATUS_DL_SPEED-1 || i == STATUS_UL_SPEED-1 || 
+					i == STATUS_QUEUED-1 || i == STATUS_HUBS-1 )
+						w += 20;
 
 				if((statusSizes[i] < w) || (statusSizes[i] > w + 30) ) {
 					statusSizes[i] = w;
@@ -714,15 +745,15 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 			if (bShutdown) {
 				uint64_t iSec = GET_TICK() / 1000;
 				if(!isShutdownStatus) {
-					ctrlStatus.SetIcon(10, hShutdownIcon);
+					ctrlStatus.SetIcon(STATUS_SHUTDOWN, hShutdownIcon);
 					isShutdownStatus = true;
 				}
 				if (DownloadManager::getInstance()->getDownloadCount() > 0) {
 					iCurrentShutdownTime = iSec;
-					ctrlStatus.SetText(10, _T(""));
+					ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
 				} else {
 					int64_t timeLeft = SETTING(SHUTDOWN_TIMEOUT) - (iSec - iCurrentShutdownTime);
-					ctrlStatus.SetText(10, (_T(" ") + Util::formatSecondsW(timeLeft, timeLeft < 3600)).c_str(), SBT_POPOUT);
+					ctrlStatus.SetText(STATUS_SHUTDOWN, (_T(" ") + Util::formatSecondsW(timeLeft, timeLeft < 3600)).c_str(), SBT_POPOUT);
 					if (iCurrentShutdownTime + SETTING(SHUTDOWN_TIMEOUT) <= iSec) {
 						bool bDidShutDown = false;
 						bDidShutDown = WinUtil::shutDown(SETTING(SHUTDOWN_ACTION));
@@ -731,7 +762,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 							// We "could" do a manual shutdown of this app...
 						} else {
 							LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN), LogManager::LOG_ERROR);
-							ctrlStatus.SetText(10, _T(""));
+							ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
 						}
 						// We better not try again. It WON'T work...
 						bShutdown = false;
@@ -739,10 +770,10 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 				}
 			} else {
 				if(isShutdownStatus) {
-					ctrlStatus.SetIcon(10, NULL);
+					ctrlStatus.SetIcon(STATUS_SHUTDOWN, NULL);
 					isShutdownStatus = false;
 				}
-				ctrlStatus.SetText(10, _T(""));
+				ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
 			}
 		}
 	} else if(wParam == AUTO_CONNECT) {
@@ -756,7 +787,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 			//tstring line = Text::toT("[" + Util::getShortTimeString() + "] ") + *msg;
 			tstring line = Text::toT("[" + Util::getTimeStamp(msg->first) + "] ") + msg->second;
 
-			ctrlStatus.SetText(0, line.c_str());
+			ctrlStatus.SetText(STATUS_LASTLINES, line.c_str());
 			while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
 				lastLinesList.erase(lastLinesList.begin());
 			if (_tcschr(line.c_str(), _T('\r')) == NULL) {
@@ -1034,33 +1065,18 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
 	pDispInfo->szText[0] = 0;
-	CRect rect;
-	auto getRect = [&] (int i) -> CRect { 
-		ctrlStatus.GetRect(i, rect);
-		return rect;
-	};
 
-	if(!((idCtrl != 0) && !(pDispInfo->uFlags & TTF_IDISHWND))) {
-		// if we're really in the status bar, this should be detected intelligently
-		POINT pt;
-		GetCursorPos(&pt);
-		ctrlStatus.ScreenToClient(&pt);
-
-		if(getRect(0).PtInRect(pt)) {
-			lastLines.clear();
-			for(TStringIter i = lastLinesList.begin(); i != lastLinesList.end(); ++i) {
-				lastLines += *i;
-				lastLines += _T("\r\n");
-			}
-			if(lastLines.size() > 2) {
-				lastLines.erase(lastLines.size() - 2);
-			}
-			pDispInfo->lpszText = const_cast<TCHAR*>(lastLines.c_str());
-		} else if(getRect(7).PtInRect(pt)) {
-			pDispInfo->lpszText = _T("Set download limit");
-		} else if(getRect(8).PtInRect(pt)) {
-			pDispInfo->lpszText = _T("Set upload limit");
+	if(idCtrl == STATUS_LASTLINES+POPUP_UID) {
+		lastLines.clear();
+		for(TStringIter i = lastLinesList.begin(); i != lastLinesList.end(); ++i) {
+			lastLines += *i;
+			lastLines += _T("\r\n");
 		}
+		if(lastLines.size() > 2) {
+			lastLines.erase(lastLines.size() - 2);
+		}
+		pDispInfo->lpszText = const_cast<TCHAR*>(lastLines.c_str());
+
 	}
 	return 0;
 }
@@ -1272,6 +1288,8 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		DestroyIcon(hubicon.hIcon);
 		DestroyIcon(uploadIcon);
 		DestroyIcon(downloadIcon);
+		DestroyIcon(slotsIcon);
+		DestroyIcon(slotsFullIcon);
 		bHandled = FALSE;
 	}
 
@@ -1343,7 +1361,7 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 	// position bars and offset their dimensions
 	UpdateBarsPosition(rect, bResizeBars);
 	
-	if(ctrlStatus.IsWindow() && ctrlLastLines.IsWindow()) {
+	if(ctrlStatus.IsWindow() && ctrlTooltips.IsWindow()) {
 		CRect sr;
 		int w[11];
 		ctrlStatus.GetClientRect(sr);
@@ -1354,7 +1372,24 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 		setw(7); setw(6); setw(5); setw(4); setw(3); setw(2); setw(1); setw(0);
 
 		ctrlStatus.SetParts(11, w);
-		ctrlLastLines.SetMaxTipWidth(w[0]);
+		ctrlTooltips.SetMaxTipWidth(w[0]);
+
+		ctrlStatus.GetRect(STATUS_LASTLINES, sr);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_LASTLINES+POPUP_UID, sr);
+		ctrlStatus.GetRect(STATUS_DL_SPEED, sr);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_DL_SPEED+POPUP_UID, sr);
+		ctrlStatus.GetRect(STATUS_UL_SPEED, sr);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_UL_SPEED+POPUP_UID, sr);
+		ctrlStatus.GetRect(STATUS_QUEUED, sr);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_QUEUED+POPUP_UID, sr);
+		ctrlStatus.GetRect(STATUS_SLOTS, sr);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_SLOTS+POPUP_UID, sr);
+		ctrlStatus.GetRect(STATUS_HUBS, sr);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_HUBS+POPUP_UID, sr);
+		ctrlStatus.GetRect(STATUS_DOWNLOADED, sr);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_DOWNLOADED+POPUP_UID, sr);
+		ctrlStatus.GetRect(STATUS_UPLOADED, sr);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_UPLOADED+POPUP_UID, sr);
 	}
 	CRect rc = rect;
 	if(tabsontop == false)
@@ -1770,14 +1805,14 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	TStringList* str = new TStringList();
 	str->push_back(Util::getAway() ? TSTRING(AWAY) : _T(""));
 	str->push_back(TSTRING(SHARED) + _T(": ") + Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
-	str->push_back(_T("H: ") + Text::toT(Client::getCounts()));
-	str->push_back(TSTRING(SLOTS) + _T(": ") + Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
+	str->push_back(_T(" ") + Text::toT(Client::getCounts()));
+	str->push_back(_T(" ") + Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
 
-	str->push_back(_T("D: ") + Util::formatBytesW(Socket::getTotalDown()));
-	str->push_back(_T("U: ") + Util::formatBytesW(Socket::getTotalUp()));
+	str->push_back(_T(" ") + Util::formatBytesW(Socket::getTotalDown()));
+	str->push_back(_T(" ") + Util::formatBytesW(Socket::getTotalUp()));
 
-	tstring down = _T("D: [") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("][");
-	tstring up = _T("U: [") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
+	tstring down = _T(" [") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("][");
+	tstring up = _T(" [") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
 
 	auto dl = ThrottleManager::getDownLimit();
 	if (dl > 0)
@@ -1794,7 +1829,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	str->push_back(down + _T("] ") + Util::formatBytesW(downdiff*1000I64/diff) + _T("/s"));
 	str->push_back(up + _T("] ") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
 
-	str->push_back(TSTRING(QUEUE_SIZE) + _T(": ")  + Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
+	str->push_back(_T(" " ) + Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
 
 	PostMessage(WM_SPEAKER, STATS, (LPARAM)str);
 	SettingsManager::getInstance()->set(SettingsManager::TOTAL_UPLOAD, SETTING(TOTAL_UPLOAD) + updiff);
@@ -1924,7 +1959,7 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 	//Create the test file first, we should allways be able to write Settings folder
 	try {
 
-	f = new File((filename), File::WRITE, File::OPEN | File::CREATE);
+	f = new File((filename), File::WRITE, File::OPEN | File::CREATE | File::TRUNCATE);
 
 	} catch (const Exception&) {
 		        //if cant write to settings no need to test anything more
