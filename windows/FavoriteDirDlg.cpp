@@ -13,6 +13,7 @@ FavoriteDirDlg::FavoriteDirDlg() {
 
 FavoriteDirDlg::~FavoriteDirDlg() {
 	ctrlName.Detach();
+	pathListCtrl.Detach();
 }
 
 LRESULT FavoriteDirDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -81,7 +82,6 @@ LRESULT FavoriteDirDlg::onRemovePath(WORD /* wNotifyCode */, WORD /*wID*/, HWND 
 	while((i = pathListCtrl.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 		pathListCtrl.GetItemText(i, 0, buf, MAX_PATH);
 		paths.erase(remove(paths.begin(), paths.end(), Text::fromT(buf)), paths.end());
-		//ignoreList.erase(buf);
 		pathListCtrl.DeleteItem(i);
 	}
 
@@ -120,9 +120,13 @@ LRESULT FavoriteDirDlg::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, B
 {
 	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
 	::EnableWindow(GetDlgItem(IDC_FAVDIR_REMOVE), (lv->uNewState & LVIS_FOCUSED));
-	TCHAR buf[MAX_PATH];
-	pathListCtrl.GetItemText(pathListCtrl.GetSelectedIndex(), 0, buf, MAX_PATH);
-	SetDlgItemText(IDC_FAVDIR_EDIT, buf);
+	if (lv->uNewState & LVIS_FOCUSED) {
+		TCHAR buf[MAX_PATH];
+		pathListCtrl.GetItemText(lv->iItem, 0, buf, MAX_PATH);
+		SetDlgItemText(IDC_FAVDIR_EDIT, buf);
+	} else {
+		SetDlgItemText(IDC_FAVDIR_EDIT, _T(""));
+	}
 	return 0;
 }
 

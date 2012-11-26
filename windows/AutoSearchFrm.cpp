@@ -538,7 +538,17 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	}
 		
 	lst.push_back(Text::toT(as->getExpiration()));
-	lst.push_back(Text::toT(as->getTarget()));
+
+	string target = as->getTarget();
+	if (target.empty()) {
+		target = CSTRING(SETTINGS_DOWNLOAD_DIRECTORY);
+	} else if (as->getTargetType() == TargetUtil::TARGET_FAVORITE) {
+		target += " (" + Text::toLower(STRING(SETTINGS_COLOR_FAVORITE)) +  ")";
+	} else if (as->getTargetType() == TargetUtil::TARGET_SHARE) {
+		target += " (" + Text::toLower(STRING(SHARED)) +  ")";
+	}
+
+	lst.push_back(Text::toT(target));
 	lst.push_back(Text::toT(as->getRemove()? "Yes" : "No"));
 	lst.push_back(Text::toT(as->getNickPattern()));
 

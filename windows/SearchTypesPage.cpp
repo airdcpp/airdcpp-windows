@@ -74,7 +74,7 @@ void SearchTypesPage::fillList() {
 		TStringList lst;
 		lst.push_back(Text::toT(isDefault ? SearchManager::getTypeStr(i->first[0] - '0') : i->first));
 		lst.push_back(Text::toT(Util::toString(";", i->second)));
-		lst.push_back(isDefault ? _T("Yes") : _T("No"));
+		lst.push_back(isDefault ? CTSTRING(YES) : CTSTRING(NO));
 		ctrlTypes.insert(pos++, lst, 0);
 	}
 }
@@ -86,8 +86,6 @@ LRESULT SearchTypesPage::onAddMenu(WORD , WORD , HWND , BOOL& ) {
 		try {
 			SearchManager::getInstance()->addSearchType(dlg.name, dlg.extList, true);
 			fillList();
-			//addRow(name, false, values);
-			//types->resort();
 		} catch(const SearchTypeException& e) {
 			showError(e.getError());
 		}
@@ -111,8 +109,13 @@ LRESULT SearchTypesPage::onChangeMenu(WORD , WORD , HWND , BOOL& ) {
 		dlg.isDefault = isDefault;
 
 		if(dlg.DoModal() == IDOK) {
-			pos->second = dlg.extList;
-			if (pos->first != dlg.name) {
+			try {
+				SearchManager::getInstance()->modSearchType(pos->first, dlg.extList);
+			} catch(const SearchTypeException& e) {
+				showError(e.getError());
+			}
+
+			if (!isDefault && pos->first != dlg.name) {
 				try {
 					SearchManager::getInstance()->renameSearchType(pos->first, dlg.name);
 				} catch(const SearchTypeException& e) {
@@ -139,7 +142,6 @@ LRESULT SearchTypesPage::onRemoveMenu(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 			return 0;
 		}
 
-		//FavoriteManager::getInstance()->removeUserCommand(ctrlTypes.GetItemData(i));
 		try {
 			SearchManager::getInstance()->delSearchType(pos->first);
 			ctrlTypes.DeleteItem(sel);
