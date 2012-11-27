@@ -341,11 +341,11 @@ private:
 	HTREEITEM fileLists;
 	HTREEITEM tempItems;
 
-	typedef unique_ptr<QueueItemInfo> QueueItemInfoPtr;
-	typedef boost::unordered_multimap<string, QueueItemInfoPtr, noCaseStringHash, noCaseStringEq> DirectoryMap;
+	typedef boost::unordered_multimap<string, QueueItemInfo*, noCaseStringHash, noCaseStringEq> DirectoryMap;
 	typedef boost::unordered_map<string, HTREEITEM> BundleMap;
 	typedef DirectoryMap::iterator DirectoryIter;
-	typedef pair<DirectoryIter, DirectoryIter> DirectoryIterPair;
+	typedef DirectoryMap::const_iterator DirectoryIterC;
+	typedef pair<DirectoryIterC, DirectoryIterC> DirectoryPairC;
 	DirectoryMap directories;
 	BundleMap bundleMap;
 	string curDir;

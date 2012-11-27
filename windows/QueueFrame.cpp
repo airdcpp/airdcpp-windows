@@ -319,7 +319,7 @@ void QueueFrame::addQueueItem(QueueItemInfo* ii, bool noSort) {
 	dirty = true;
 	const string& dir = ii->getPath();
 	bool updateDir = (directories.find(dir) == directories.end());
-	directories.insert(make_pair(dir, unique_ptr<QueueItemInfo>(ii)));
+	directories.insert(make_pair(dir, ii));
 	BundlePtr b = ii->getBundle();
 
 	if (!b) {
@@ -377,7 +377,7 @@ QueueFrame::QueueItemInfo* QueueFrame::getItemInfo(const string& target) const {
 
 	for(auto i = items.first; i != items.second; ++i) {
 		if(compare(i->second->getFileName(), fileName) == 0) {
-			return i->second.get();
+			return i->second;
 		}
 	}
 	return nullptr;
@@ -893,36 +893,24 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			auto fileName = Util::getFileName(target.str);
 			auto dirs = directories.equal_range(Util::getFilePath(target.str));
 
-			//auto j = boost::find_if(dirs | map_values, [&fileName](QueueItemInfoPtr& qii) { return compare(qii->getFileName(), fileName) == 0; });
-
-
-			DirectoryIter j = dirs.second;
-			for(auto i = dirs.first; i != dirs.second; ++i) {
-				if(compare(i->second->getFileName(), fileName) == 0) {
-					j = i;
-					break;
-				}
-			}
-
-			//auto j = find_if(dirs, [&fileName](const pair<string, QueueItemInfoPtr>& dp) { return compare(dp.second->getFileName(), fileName) == 0; });
-			if (j == dirs.second) {
+			auto j = boost::find_if(dirs | map_values, [&fileName](const QueueItemInfo* qii) { return compare(qii->getFileName(), fileName) == 0; });
+			if (j.base() == dirs.second) {
 				dcassert(0);
 				continue;
 			}
 
-			//LogManager::getInstance()->message("Distance: " + Util::toString(distance(dirs.first, dirs.second)), LogManager::LOG_INFO);
+			const QueueItemInfo* ii = *j;
 			bool removeTree = distance(dirs.first, dirs.second) == 1;
-			bool inCurDir = isCurDir(Util::getFilePath(target.str));
 
-			auto ii = move(j->second);
-			directories.erase(j);
+
+			directories.erase(j.base());
 			
-			if(!showTree || inCurDir) {
-				dcassert(ctrlQueue.findItem(ii.get()) != -1);
-				ctrlQueue.deleteItem(ii.get());
+			if(!showTree || isCurDir(Util::getFilePath(target.str))) {
+				dcassert(ctrlQueue.findItem(ii) != -1);
+				ctrlQueue.deleteItem(ii);
 			}
 			
-			bool userList = ii.get()->isSet(QueueItem::FLAG_USER_LIST);
+			bool userList = ii->isSet(QueueItem::FLAG_USER_LIST);
 			
 			if(!userList) {
 				queueSize-=ii->getSize();
@@ -938,15 +926,14 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 					removeBundleDir(Util::getFilePath(target.str));
 				}
 
-				if(inCurDir)
+				if(isCurDir(Util::getFilePath(target.str)))
 					curDir.clear();
 			}
 			
-			//updateStatus();
+			delete ii;
 			if (!userList && BOOLSETTING(BOLD_QUEUE)) {
 				setDirty();
 			}
-
 			dirty = true;
 		} else if(ti->first == REMOVE_BUNDLE) {
 			auto &ui = static_cast<DirItemInfoTask&>(*ti->second);
@@ -1877,8 +1864,8 @@ void QueueFrame::removeDir(HTREEITEM ht) {
 		child = ctrlDirs.GetNextSiblingItem(child);
 	}
 	const string& name = getDir(ht);
-	auto dp = directories.equal_range(name);
-	for(auto i = dp.first; i != dp.second; ++i) {
+	DirectoryPairC dp = directories.equal_range(name);
+	for(DirectoryIterC i = dp.first; i != dp.second; ++i) {
 		QueueManager::getInstance()->remove(i->second->getTarget());
 	}
 }
@@ -1919,8 +1906,8 @@ void QueueFrame::setPriority(HTREEITEM ht, const QueueItem::Priority& p) {
 		child = ctrlDirs.GetNextSiblingItem(child);
 	}
 	const string& name = getDir(ht);
-	auto dp = directories.equal_range(name);
-	for(auto i = dp.first; i != dp.second; ++i) {
+	DirectoryPairC dp = directories.equal_range(name);
+	for(DirectoryIterC i = dp.first; i != dp.second; ++i) {
 		QueueManager::getInstance()->setQIAutoPriority(i->second->getTarget(), false);
 		QueueManager::getInstance()->setQIPriority(i->second->getTarget(), p);
 	}
@@ -1935,8 +1922,8 @@ void QueueFrame::setAutoPriority(HTREEITEM ht, const bool& ap) {
 		child = ctrlDirs.GetNextSiblingItem(child);
 	}
 	const string& name = getDir(ht);
-	auto dp = directories.equal_range(name);
-	for(auto i = dp.first; i != dp.second; ++i) {
+	DirectoryPairC dp = directories.equal_range(name);
+	for(DirectoryIterC i = dp.first; i != dp.second; ++i) {
 		QueueManager::getInstance()->setQIAutoPriority(i->second->getTarget(), ap);
 	}
 }
@@ -2062,7 +2049,9 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		}
 
 		SettingsManager::getInstance()->set(SettingsManager::QUEUEFRAME_SHOW_TREE, ctrlShowTree.GetCheck() == BST_CHECKED);
-		//for_each(directories | map_values, DeleteFunction());
+		for(DirectoryIter i = directories.begin(); i != directories.end(); ++i) {
+				delete i->second;
+			}
 		directories.clear();
 		ctrlQueue.DeleteAllItems();
 
@@ -2109,7 +2098,7 @@ void QueueFrame::onTab() {
 
 void QueueFrame::updateQueue() {
 	ctrlQueue.DeleteAllItems();
-	DirectoryIterPair i;
+	pair<DirectoryIter, DirectoryIter> i;
 	if(showTree) {
 		i = directories.equal_range(getSelectedDir());
 	} else {
@@ -2118,8 +2107,8 @@ void QueueFrame::updateQueue() {
 	}
 
 	ctrlQueue.SetRedraw(FALSE);
-	for(auto j = i.first; j != i.second; ++j) {
-		QueueItemInfo* ii = j->second.get();
+	for(DirectoryIter j = i.first; j != i.second; ++j) {
+		QueueItemInfo* ii = j->second;
 		ctrlQueue.insertItem(ctrlQueue.GetItemCount(), ii, ResourceLoader::getIconIndex(Text::toT(ii->getTarget())));
 	}
 	ctrlQueue.resort();

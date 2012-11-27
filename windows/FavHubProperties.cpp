@@ -149,7 +149,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	
 	CUpDownCtrl updown;
 	updown.Attach(GetDlgItem(IDC_FAV_SEARCH_INTERVAL_SPIN));
-	updown.SetRange32(10, 9999);
+	updown.SetRange32(5, 9999);
 	updown.Detach();
 
 	CenterWindow(GetParent());
