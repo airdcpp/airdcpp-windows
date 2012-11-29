@@ -188,9 +188,8 @@ private:
 	TStringList::size_type curCommandPosition;
 	
 	// ClientManagerListener
-	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
-	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser) noexcept;
-	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept;
+	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
+	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 

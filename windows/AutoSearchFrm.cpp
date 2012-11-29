@@ -207,6 +207,27 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 }
 
+LRESULT AutoSearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+	NMLVCUSTOMDRAW* cd = (NMLVCUSTOMDRAW*)pnmh;
+
+	switch(cd->nmcd.dwDrawStage) {
+		case CDDS_PREPAINT:
+			return CDRF_NOTIFYITEMDRAW;
+
+		case CDDS_ITEMPREPAINT:
+			{
+				auto status = ((AutoSearch*)cd->nmcd.lItemlParam)->getStatus();
+				if(status == AutoSearch::STATUS_FAILED_EXTRAS || status == AutoSearch::STATUS_FAILED_MISSING) {
+					cd->clrText = SETTING(ERROR_COLOR);
+					return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+				}		
+			}
+			return CDRF_NOTIFYSUBITEMDRAW;
+		default:
+			return CDRF_DODEFAULT;
+	}
+}	
+
 LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 
 	if(reinterpret_cast<HWND>(wParam) == ctrlAutoSearch) {
@@ -555,7 +576,7 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	lst.push_back(Text::toT(as->getNickPattern()));
 
 	bool b = as->getEnabled();
-	int i = ctrlAutoSearch.insert(pos, lst, AutoSearchManager::getInstance()->getStatus(as), (LPARAM)as.get());
+	int i = ctrlAutoSearch.insert(pos, lst, as->getStatus(), (LPARAM)as.get());
 	ctrlAutoSearch.SetCheckState(i, b);
 }
 
@@ -581,7 +602,7 @@ void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
 		ctrlAutoSearch.SetItemText(pos, COLUMN_SEARCH_STATUS, Text::toT(as->getSearchingStatus()).c_str());
 		ctrlAutoSearch.SetItemText(pos, COLUMN_EXPIRATION, Text::toT(as->getExpiration()).c_str());
 
-		ctrlAutoSearch.SetItem(pos, 0 ,LVIF_IMAGE, NULL, AutoSearchManager::getInstance()->getStatus(as), 0, 0, NULL);
+		ctrlAutoSearch.SetItem(pos, 0 ,LVIF_IMAGE, NULL, as->getStatus(), 0, 0, NULL);
 	}
 }
 

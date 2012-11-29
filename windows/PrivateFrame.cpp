@@ -143,19 +143,13 @@ LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
-void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
-	if(aUser.getUser() == replyTo.user) {
-		addSpeakerTask(true);
-	}
-}
-
-void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser) noexcept {
+void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool) noexcept {
 	if(aUser.getUser() == replyTo.user) {
 		addSpeakerTask(true); //delay this to possible show more nicks & hubs in the connect message :]
 	}
 }
 
-void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept {
+void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool) noexcept {
 	if(aUser == replyTo.user) {
 		ctrlClient.setClient(nullptr);
 		addSpeakerTask(false);
