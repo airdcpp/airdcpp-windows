@@ -268,7 +268,6 @@
 #define IDI_USER_BOT                    450
 #define IDI_USER_PASSIVE                451
 #define IDI_USER_OP                     452
-#define IDI_USER_AIRDC                  453
 #define IDI_WAITING						454
 #define IDI_QUEUED_ERROR				455
 #define IDI_SEARCH_ERROR				456

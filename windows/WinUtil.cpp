@@ -64,6 +64,7 @@
 #include "HubFrame.h"
 #include "MagnetDlg.h"
 #include "BarShader.h"
+#include "ExMessageBox.h"
 
 unique_ptr<SplashWindow> WinUtil::splash;
 HBRUSH WinUtil::bgBrush = NULL;
@@ -729,6 +730,15 @@ bool WinUtil::browseDirectory(tstring& target, HWND owner /* = NULL */) {
 		return true;
 	}
 	return false;
+}
+bool WinUtil::MessageBoxConfirm(SettingsManager::IntSetting i, const tstring& txt){
+	UINT ret = IDYES;
+	UINT bCheck = SettingsManager::getInstance()->getBool(i) ? BST_UNCHECKED : BST_CHECKED;
+	if(bCheck == BST_UNCHECKED)
+		ret = ::MessageBox(WinUtil::mainWnd, txt.c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), CTSTRING(DONT_ASK_AGAIN), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2, bCheck);
+		
+	SettingsManager::getInstance()->set(i, bCheck != BST_CHECKED);
+	return ret == IDYES;
 }
 
 bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* = true */, const tstring& initialDir /* = Util::emptyString */, const TCHAR* types /* = NULL */, const TCHAR* defExt /* = NULL */) {

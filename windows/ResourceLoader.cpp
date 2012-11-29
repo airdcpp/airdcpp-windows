@@ -60,16 +60,16 @@ void ResourceLoader::loadUserImages() {
 	const unsigned baseCount = UserInfoBase::USER_ICON_MOD_START;
 	const unsigned modifierCount = UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START;
 	HICON bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
-	HICON modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16), /*loadIcon(IDI_USER_AIRDC, 16),*/ loadIcon(IDI_USER_OP, 16) };
-	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 16);
+	HICON modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16),  loadIcon(IDI_USER_OP, 16) };
+	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   9, 9);
 	for(size_t iBase = 0; iBase < baseCount; ++iBase) {
 		for(size_t i = 0, n = modifierCount * modifierCount; i < n; ++i) {
 			CImageList icons;
-			icons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 2, 16);
+			icons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 6);
 			icons.AddIcon(bases[iBase]);
 
 			for(size_t iMod = 0; iMod < modifierCount; ++iMod) {
-				if(i & (1i64 << iMod))
+				if(i & (1 << iMod))
 					icons.AddIcon(modifiers[iMod]);
 			}
 			int iCount = icons.GetImageCount();
@@ -86,6 +86,7 @@ void ResourceLoader::loadUserImages() {
 			icons.Destroy();
 		}	
 	}
+
 }
 
 HBITMAP ResourceLoader::getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/) {
@@ -233,7 +234,6 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_USER_BOT:		return _T("UserlistImages\\UserBot.ico");
 		case IDI_USER_PASSIVE:	return _T("UserlistImages\\UserNoCon.ico");
 		case IDI_USER_OP:		return _T("UserlistImages\\UserOP.ico");
-		case IDI_USER_AIRDC:	return _T("UserlistImages\\UserAirDC.ico");
 		case IDI_SLOTS:			return _T("Slots.ico");
 		case IDI_SLOTSFULL:		return _T("SlotsFull.ico");
 

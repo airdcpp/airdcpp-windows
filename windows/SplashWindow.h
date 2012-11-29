@@ -26,6 +26,7 @@
 #include <string>
 #include "../client/typedefs.h"
 #include <atlimage.h>
+#include "ExCImage.h"
 
 using std::string;
 
@@ -36,9 +37,13 @@ public:
 
 	void operator()(const string& status);
 private:
+	void loadImage();
 	tstring title;
 	CWindow splash;
 	CEdit dummy;
+	ExCImage img;
+	int width;
+	int height;
 };
 
 #endif

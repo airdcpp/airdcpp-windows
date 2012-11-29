@@ -25,7 +25,6 @@
 #include "resource.h"
 #include "WinUtil.h"
 
-
 SplashWindow::SplashWindow() {
 	CRect rc;
 	rc.bottom = GetSystemMetrics(SM_CYFULLSCREEN);
@@ -34,15 +33,23 @@ SplashWindow::SplashWindow() {
 	rc.right = GetSystemMetrics(SM_CXFULLSCREEN);
 	rc.left = rc.right / 2 - 85;
 	
-	
 	dummy.Create(NULL, rc, _T(APPNAME) _T(" ") _T(VERSIONSTRING), WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		ES_CENTER | ES_READONLY, WS_EX_STATICEDGE);
-	splash.Create(_T("Static"), GetDesktopWindow(), splash.rcDefault, NULL, WS_POPUP | WS_VISIBLE | SS_USERITEM | WS_EX_TOOLWINDOW);
+	splash.Create(_T("Static"), GetDesktopWindow(), splash.rcDefault, NULL, WS_POPUP | WS_VISIBLE | SS_USERITEM, WS_EX_TOOLWINDOW);
 	splash.SetFont((HFONT)GetStockObject(DEFAULT_GUI_FONT));
 	
+	//load the image
+	loadImage();
+
+	//Get the dimensions of the bitmap, this is probobly easier anyway even if we dont allow loading custom splashes.
+	BITMAP bm;
+	::GetObject( (HBITMAP)img, sizeof( bm ), &bm );
+	width = bm.bmWidth;
+	height = bm.bmHeight;
+
 	HDC dc = splash.GetDC();
-	rc.right = rc.left + 350;
-	rc.bottom = rc.top + 120;
+	rc.right = rc.left + width;
+	rc.bottom = rc.top + height;
 	splash.ReleaseDC(dc);
 	splash.HideCaret();
 	splash.SetWindowPos(HWND_TOPMOST, &rc, SWP_SHOWWINDOW);
@@ -53,8 +60,14 @@ SplashWindow::SplashWindow() {
 	splash.SetFocus();
 	splash.RedrawWindow();
 }
+void SplashWindow::loadImage() {
+	if(img.Load(_T("splash.png")) != S_OK)
+		img.LoadFromResource(IDB_SPLASH, _T("PNG"), _Module.get_m_hInst());
+}
 
 SplashWindow::~SplashWindow() {
+	if(!img.IsNull())
+		img.Destroy();
 	splash.DestroyWindow();
 	dummy.DestroyWindow();
 }
@@ -66,30 +79,17 @@ void SplashWindow::operator()(const string& status) {
 	GetWindowRect(splash.m_hWnd, &rc);
 	OffsetRect(&rc, -rc.left, -rc.top);
 	RECT rc2 = rc;
-	rc2.top = rc2.bottom - 35; 
-	rc2.right = rc2.right - 10;
+	rc2.top = rc2.bottom - 30; 
+	rc2.left = rc2.left + 20;
 	::SetBkMode(dc, TRANSPARENT);
-		
-	// Draw the icon
-	//add temp support for loading .png and .bmp from file...
-	HBITMAP hi = NULL;
-	CImage img;
-	HRESULT r = img.Load(_T("splash.png"));
-	if(r == S_OK) {
-		hi = img.Detach();
-	} else {
-		hi = (HBITMAP)LoadImage(_Module.get_m_hInst(), _T("splash.bmp") , IMAGE_BITMAP, 0, 0, LR_DEFAULTCOLOR | LR_LOADFROMFILE | LR_SHARED);
-		if(!hi)
-			hi = (HBITMAP)LoadImage(_Module.get_m_hInst(), MAKEINTRESOURCE(IDB_SPLASH), IMAGE_BITMAP, 350, 120, LR_SHARED);
-	}
-	HDC comp=CreateCompatibleDC(dc);
-	SelectObject(comp,hi);	
-
 	
-	BitBlt(dc,0, 0 , 350, 120,comp,0,0,SRCCOPY);
+	HDC memDC = img.GetDC();
+	BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+	AlphaBlend(dc, 0, 0, width, height, memDC, 0, 0, width, height, bf);
+	
+	SelectObject(dc, img);
+	img.ReleaseDC();
 
-	DeleteObject(hi);
-	DeleteDC(comp);
 	LOGFONT logFont;
 	HFONT hFont;
 	GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(logFont), &logFont);
@@ -98,21 +98,26 @@ void SplashWindow::operator()(const string& status) {
 	logFont.lfWeight = 700;
 	hFont = CreateFontIndirect(&logFont);		
 	SelectObject(dc, hFont);
-	::SetTextColor(dc, RGB(255,255,255));
-	::DrawText(dc, title.c_str(), _tcslen(title.c_str()), &rc2, DT_RIGHT);
+	//::SetTextColor(dc, RGB(255,255,255)); //white text
+	::SetTextColor(dc, RGB(0,0,0)); //black text
+	//::SetTextColor(dc, RGB(104,104,104)); //grey text
+	::DrawText(dc, title.c_str(), _tcslen(title.c_str()), &rc2, DT_LEFT);
 	DeleteObject(hFont);
 
 	if(!status.empty()) {
 		rc2 = rc;
-		rc2.top = rc2.bottom - 15;
+		rc2.top = rc2.bottom - 30;
+		rc2.right = rc2.right - 20;
 		GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(logFont), &logFont);
 		lstrcpy(logFont.lfFaceName, TEXT("Tahoma"));
 		logFont.lfHeight = 12;
 		logFont.lfWeight = 700;
 		hFont = CreateFontIndirect(&logFont);		
 		SelectObject(dc, hFont);
-		::SetTextColor(dc, RGB(255,255,255));
-		::DrawText(dc, (_T(".:: ") + Text::toT(status) + _T(" ::.")).c_str(), _tcslen((_T(".:: ") + Text::toT(status) + _T(" ::.")).c_str()), &rc2, DT_CENTER);
+		//::SetTextColor(dc, RGB(255,255,255)); // white text
+		::SetTextColor(dc, RGB(0,0,0)); // black text
+		//::SetTextColor(dc, RGB(104,104,104)); //grey text
+		::DrawText(dc, (_T(".:: ") + Text::toT(status) + _T(" ::.")).c_str(), _tcslen((_T(".:: ") + Text::toT(status) + _T(" ::.")).c_str()), &rc2, DT_RIGHT);
 		DeleteObject(hFont);
 	}
 

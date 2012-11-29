@@ -323,7 +323,8 @@ LRESULT FavoriteHubsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandle
 
 LRESULT FavoriteHubsFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
-	if(!BOOLSETTING(CONFIRM_HUB_REMOVAL) || MessageBox(CTSTRING(REALLY_REMOVE), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+	
+	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_REMOVAL, TSTRING(REALLY_REMOVE))) {
 		while( (i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FavoriteManager::getInstance()->removeFavorite((FavoriteHubEntry*)ctrlHubs.GetItemData(i));
 		}

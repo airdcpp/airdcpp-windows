@@ -289,6 +289,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
 	ctrlTooltips.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+	// last lines is different, the tooltip text changes, onGetToolTip handles the text shown.
 	CToolInfo ti_lastlines(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_LASTLINES+POPUP_UID, 0, LPSTR_TEXTCALLBACK);
 	CToolInfo ti_dlSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_DL_SPEED+POPUP_UID, 0, (LPWSTR)CTSTRING(DL_STATUS_POPUP));
 	CToolInfo ti_ulSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_UL_SPEED+POPUP_UID, 0, (LPWSTR)CTSTRING(UL_STATUS_POPUP));
@@ -1234,8 +1235,8 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			bHandled = TRUE;
 			return 0;
 		}
-
-		if( oldshutdown ||(!BOOLSETTING(CONFIRM_EXIT)) || (MessageBox(CTSTRING(REALLY_EXIT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) ) {
+		
+		if( oldshutdown || WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_EXIT, TSTRING(REALLY_EXIT)) ) {
 			
 			HubFrame::ShutDown();
 

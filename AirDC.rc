@@ -24,7 +24,7 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 // Bitmap
 //
 
-IDB_SPLASH              BITMAP                  "res\\bitmap1.bmp"
+IDB_SPLASH              PNG                     "res\\splash.png"
 IDB_STATE               BITMAP                  "res\\state.bmp"
 IDB_FLAGS               BITMAP                  "res\\flags.bmp"
 IDB_EMOTICON            BITMAP                  "res\\emoticon.bmp"
@@ -2246,7 +2246,6 @@ IDI_USER_AWAY           ICON                    "res\\UserlistImages\\UserAway.i
 IDI_USER_BOT            ICON                    "res\\UserlistImages\\UserBot.ico"
 IDI_USER_PASSIVE        ICON                    "res\\UserlistImages\\UserNoCon.ico"
 IDI_USER_OP             ICON                    "res\\UserlistImages\\UserOP.ico"
-IDI_USER_AIRDC          ICON                    "res\\UserlistImages\\UserAirDC.ico"
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"

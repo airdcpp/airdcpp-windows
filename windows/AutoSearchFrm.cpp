@@ -415,12 +415,14 @@ LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		removelist.push_back((AutoSearch*)ctrlAutoSearch.GetItemData(i));
 	}
 
-	if(!BOOLSETTING(CONFIRM_AS_REMOVE) || (MessageBox(CTSTRING(REALLY_REMOVE), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)) {
+	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_AS_REMOVE, TSTRING(REALLY_REMOVE))) {
 		for(auto a = removelist.begin(); a !=removelist.end(); ++a )
 			AutoSearchManager::getInstance()->removeAutoSearch(*a);
 	}
 	return 0;
 }
+
+
 
 LRESULT AutoSearchFrame::onMoveUp(WORD , WORD , HWND , BOOL& ) {
 	int i = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);

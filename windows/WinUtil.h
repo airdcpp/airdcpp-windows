@@ -221,6 +221,8 @@ public:
 	static void saveReBarSettings(HWND bar);
 	static void playSound(const tstring& sound);
 
+	static bool MessageBoxConfirm(SettingsManager::IntSetting i, const tstring& txt);
+
 	struct ConnectFav {
 		void operator()(UserPtr aUser, const string& aUrl) const;
 	};

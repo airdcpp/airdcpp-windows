@@ -842,7 +842,7 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		if(shutdown || !BOOLSETTING(CONFIRM_HUB_EXIT) || (MessageBox(CTSTRING(REALLY_CLOSE), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)) {
+		if(shutdown || WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_EXIT, TSTRING(REALLY_CLOSE))) {
 			RecentHubEntry* r = FavoriteManager::getInstance()->getRecentHubEntry(Text::fromT(server));
 			if(r) {
 				TCHAR buf[256];
