@@ -95,6 +95,7 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 	::SetWindowText(GetDlgItem(IDC_SEARCH_TIMES_LABEL), CTSTRING(SEARCH_TIMES));
 	::SetWindowText(GetDlgItem(IDC_ADVANCED_LABEL), CTSTRING(SETTINGS_ADVANCED));
+	::SetWindowText(GetDlgItem(IDC_EXACT_MATCH), CTSTRING(REQUIRE_EXACT_MATCH));
 
 
 	//get the search type so that we can set the initial control states correctly in fixControls
@@ -118,7 +119,13 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	cMatcherType.AddString(CTSTRING(PLAIN_TEXT));
 	cMatcherType.AddString(CTSTRING(REGEXP));
 	cMatcherType.AddString(CTSTRING(WILDCARDS));
-	cMatcherType.SetCurSel(matcherType);
+
+	if (matcherType == StringMatch::EXACT) {
+		CheckDlgButton(IDC_EXACT_MATCH, true);
+		cMatcherType.SetCurSel(0);
+	} else {
+		cMatcherType.SetCurSel(matcherType);
+	}
 
 	CheckDlgButton(IDC_REMOVE_ON_HIT, remove);
 	CheckDlgButton(IDC_CHECK_QUEUED, checkQueued);
@@ -304,9 +311,11 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		}
 
 		auto useDefaultMatcher = IsDlgButtonChecked(IDC_USE_MATCHER) != BST_CHECKED;
-		if (useDefaultMatcher) {
+		auto exactMatch = IsDlgButtonChecked(IDC_EXACT_MATCH) == BST_CHECKED;
+
+		if (useDefaultMatcher || exactMatch) {
 			matcherString = Util::emptyString;
-			matcherType = 0;
+			matcherType = exactMatch ? StringMatch::EXACT : 0;
 		} else {
 			GetDlgItemText(IDC_MATCHER_PATTERN, buf, 512);
 			matcherString = Text::fromT(buf);
@@ -387,6 +396,11 @@ LRESULT AutoSearchDlg::onCheckParams(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	return 0;
 }
 
+LRESULT AutoSearchDlg::onExactMatch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	fixControls();
+	return 0;
+}
+
 LRESULT AutoSearchDlg::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	StringList extensions;
 	try {
@@ -418,9 +432,10 @@ void AutoSearchDlg::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_CONF_PARAMS), usingParams);
 
 	/* Result matcher */
-	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), searchType != SearchManager::TYPE_TTH && advanced);
+	bool exactMatch = IsDlgButtonChecked(IDC_EXACT_MATCH) == BST_CHECKED;
+	::EnableWindow(GetDlgItem(IDC_USE_MATCHER), searchType != SearchManager::TYPE_TTH && advanced && !exactMatch);
 
-	BOOL matcherEnabled = (IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED && advanced);
+	BOOL matcherEnabled = (IsDlgButtonChecked(IDC_USE_MATCHER) == BST_CHECKED && advanced && !exactMatch);
 	::EnableWindow(GetDlgItem(IDC_PATTERN),					matcherEnabled);
 	::EnableWindow(GetDlgItem(IDC_MATCHER_PATTERN),			matcherEnabled);
 	::EnableWindow(GetDlgItem(IDC_TYPE),					matcherEnabled);

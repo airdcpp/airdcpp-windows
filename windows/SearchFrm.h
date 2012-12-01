@@ -449,7 +449,7 @@ private:
 	SearchInfoList ctrlResults;
 	TypedListViewCtrl<HubInfo, IDC_HUB> ctrlHubs;
 
-	TStringList search;
+	StringList search;
 	StringList wholeTargets;
 	SearchInfo::List pausedResults;
 

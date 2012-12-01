@@ -1727,5 +1727,6 @@ would you still like to load them?</String>
 		<String Name="AwayOn">Away mode ON - Click to adjust</String>
 		<String Name="AwayOff">Away mode OFF - Click to adjust</String>
 		<String Name="SettingsAutoCompleteBundles">Try to to complete bundles with missing files automatically</String>
+		<String Name="RequireExactMatch">Require an exact match</String>
 	</Strings>
 </Language>

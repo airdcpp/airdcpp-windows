@@ -74,6 +74,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_ADVANCED, onClickAdvanced)
 		COMMAND_ID_HANDLER(IDC_USE_PARAMS, onCheckParams)
 		COMMAND_ID_HANDLER(IDC_CONF_PARAMS, onConfigParams)
+		COMMAND_ID_HANDLER(IDC_EXACT_MATCH, onExactMatch)
 		COMMAND_HANDLER(IDC_TARGET_PATH, EN_CHANGE, onTargetChanged)
 		COMMAND_HANDLER(IDC_SELECT_DIR, BN_CLICKED, onClickLocation)
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
@@ -95,6 +96,7 @@ public:
 	LRESULT onCheckTimes(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCheckExpiry(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onExactMatch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);

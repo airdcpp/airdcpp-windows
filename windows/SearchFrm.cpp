@@ -465,10 +465,11 @@ void SearchFrame::onEnter() {
 	
 	::EnableWindow(GetDlgItem(IDC_SEARCH_PAUSE), TRUE);
 	ctrlPauseSearch.SetWindowText(CTSTRING(PAUSE_SEARCH));
+	StringList excluded;
 	
 	{
 		Lock l(cs);
-		search = StringTokenizer<tstring>(s, ' ').getTokens();
+		search = StringTokenizer<string>(Text::fromT(s), ' ').getTokens();
 		s.clear();
 		//strip out terms beginning with -
 		for(auto si = search.begin(); si != search.end(); ) {
@@ -476,8 +477,11 @@ void SearchFrame::onEnter() {
 				si = search.erase(si);
 				continue;
 			}
-			if ((*si)[0] != _T('-')) 
-				s += *si + _T(' ');	
+			if ((*si)[0] != '-') {
+				s += Text::toT(*si + ' ');	
+			} else {
+				excluded.push_back((*si).erase(0, 1));
+			}
 			++si;
 		}
 
@@ -544,7 +548,7 @@ void SearchFrame::onEnter() {
 		searchStartTime = GET_TICK();
 		// more 5 seconds for transfering results
 		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, Text::fromT(s), llsize, 
-			(SearchManager::TypeModes)ftype, mode, token, extList, Search::MANUAL, (void*)this) + 5000;
+			(SearchManager::TypeModes)ftype, mode, token, extList, excluded, Search::MANUAL, (void*)this) + 5000;
 
 		waiting = true;
 	}
@@ -572,7 +576,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		}
 		
 		if(isHash) {
-			if(aResult->getType() != SearchResult::TYPE_FILE || TTHValue(Text::fromT(search[0])) != aResult->getTTH()) {
+			if(aResult->getType() != SearchResult::TYPE_FILE || TTHValue(search[0]) != aResult->getTTH()) {
 				droppedResults++;
 				PostMessage(WM_SPEAKER, FILTER_RESULT);
 				return;
@@ -580,8 +584,8 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		} else {
 			// match all here
 			for(auto j = search.begin(); j != search.end(); ++j) {
-				if((*j->begin() != _T('-') && Util::findSubString(aResult->getFile(), Text::fromT(*j)) == -1) ||
-					(*j->begin() == _T('-') && j->size() != 1 && Util::findSubString(aResult->getFile(), Text::fromT(j->substr(1))) != -1)
+				if((*j->begin() != _T('-') && Util::findSubString(aResult->getFile(), *j) == -1) ||
+					(*j->begin() == _T('-') && j->size() != 1 && Util::findSubString(aResult->getFile(), j->substr(1)) != -1)
 					) 
 				{
 					droppedResults++;

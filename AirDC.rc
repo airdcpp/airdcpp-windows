@@ -1414,8 +1414,9 @@ BEGIN
     COMBOBOX        IDC_AS_FILETYPE,59,81,82,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Find matches from the full path instead of the file/directory name",IDC_MATCH_FULL_PATH,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,204,235,10
-    CONTROL         "Enable parameters",IDC_USE_PARAMS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,265,60,94,10
-    PUSHBUTTON      "Configure...",IDC_CONF_PARAMS,276,71,66,14
+    CONTROL         "Enable parameters",IDC_USE_PARAMS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,264,63,94,10
+    PUSHBUTTON      "Configure...",IDC_CONF_PARAMS,273,74,66,14
+    CONTROL         "Require exact match",IDC_EXACT_MATCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,264,52,104,10
 END
 
 IDD_SEARCHPAGE DIALOGEX 0, 0, 305, 311

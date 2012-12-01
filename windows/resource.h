@@ -1094,6 +1094,8 @@
 #define IDC_USE_PARAMS                  1545
 #define IDC_CUSTOM_SEARCH_TIMES         1546
 #define IDC_USE_EXPIRY                  1547
+#define IDC_REQUIRE_EXACT_MATCH         1548
+#define IDC_EXACT_MATCH                 1548
 #define IDC_AUTOPRIORITY                1572
 #define IDC_SETTINGS_ODC_MENUBAR        1612
 #define IDC_SETTINGS_ODC_MENUBAR_USETWO 1613
