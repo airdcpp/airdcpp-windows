@@ -44,7 +44,6 @@ extern EmoticonsManager* emoticonsManager;
 
 ChatFrameBase::ChatFrameBase(FrameMessageBase* aFrameBase) : /*clientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP)*/ frame(aFrameBase), menuItems(0),
 		lineCount(1), curCommandPosition(0) {
-
 }
 
 ChatFrameBase::~ChatFrameBase() {
@@ -114,6 +113,9 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			case VK_TAB:
 				bHandled = TRUE;
   				break;
+			case VK_F16: //adds strange char when using ctrl+backspace
+				bHandled = TRUE;
+  				break;
   			default:
   				bHandled = FALSE;
 				break;
@@ -159,8 +161,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				if (curCommandPosition > 0) {
 					//check whether current command needs to be saved
 					if (curCommandPosition == prevCommands.size()) {
-						currentCommand.resize(ctrlMessage.GetWindowTextLength());
-						ctrlMessage.GetWindowText(&currentCommand[0], ctrlMessage.GetWindowTextLength()+1);
+						getLineText(currentCommand);
 					}
 
 					//replace current chat buffer with current command
@@ -206,8 +207,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			if (!prevCommands.empty() && (GetKeyState(VK_CONTROL) & 0x8000) || (GetKeyState(VK_MENU) & 0x8000)) {
 				curCommandPosition = 0;
 				
-				currentCommand.resize(ctrlMessage.GetWindowTextLength());
-				ctrlMessage.GetWindowText(&currentCommand[0], ctrlMessage.GetWindowTextLength() + 1);
+				getLineText(currentCommand);
 
 				ctrlMessage.SetWindowText(prevCommands[curCommandPosition].c_str());
 			} else {
@@ -230,7 +230,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 	}
 
 	// Kinda ugly, but oh well... will clean it later, maybe...
-	if(SETTING(MAX_RESIZE_LINES) != 1) {
+	//if(SETTING(MAX_RESIZE_LINES) != 1) {
 		int newLineCount = ctrlMessage.GetLineCount();
 		int start, end;
 		ctrlMessage.GetSel(start, end);
@@ -244,8 +244,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			}
 			tstring buf;
 			string::size_type i;
-			buf.resize(ctrlMessage.GetWindowTextLength() + 1);
-			buf.resize(ctrlMessage.GetWindowText(&buf[0], buf.size()));
+			getLineText(buf);
 			buf = buf.substr(start, end);
 			while((i = buf.find(_T("\n"))) != string::npos) {
 				buf.erase(i, 1);
@@ -274,9 +273,50 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			POINT cpt;
 			GetCaretPos(&cpt);
 			int charIndex = ctrlMessage.CharFromPos(cpt);
-			charIndex = LOWORD(charIndex) - ctrlMessage.LineIndex(ctrlMessage.LineFromChar(charIndex));
-			if(charIndex <= 0) {
-				newLineCount -= 1;
+
+			if (WinUtil::isCtrl()) {
+				if (charIndex == 0)
+					return 0;
+
+				tstring s;
+				getLineText(s);
+
+				//remove an empty line
+				auto isEmptyNewLine = charIndex > 0 && s[charIndex-1] == _T('\n');
+
+				//auto newLine = boost::trim_right_copy(s);
+				tstring newLine = s;
+				for (int i = charIndex-1; i >= 0; --i) {
+					if (!isgraph(newLine[i])) {
+						newLine.erase(i, 1);
+					} else {
+						break;
+					}
+				}
+
+				if (!isEmptyNewLine) {
+					//always stay on the old line here...
+					auto p = newLine.find_last_of(_T("\n "), charIndex);
+					if (p == tstring::npos) {
+						p = 0;
+					} else {
+						p++;
+					}
+
+					newLine = newLine.erase(p, charIndex-p);
+					charIndex = charIndex - (s.length()-newLine.length());
+				} else {
+					charIndex--;
+					newLineCount -= 1;
+				}
+
+				ctrlMessage.SetWindowText(newLine.c_str());
+				ctrlMessage.SetFocus();
+				ctrlMessage.SetSel(charIndex, charIndex);
+			} else {
+				charIndex = LOWORD(charIndex) - ctrlMessage.LineIndex(ctrlMessage.LineFromChar(charIndex));
+				if(charIndex <= 0)
+					newLineCount -= 1;
 			}
 		} else if(WinUtil::isCtrl() && wParam == VK_RETURN) {
 			newLineCount += 1;
@@ -291,8 +331,13 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			}
 		}
 //End
-	}
+	//}
 	return 0;
+}
+
+void ChatFrameBase::getLineText(tstring& s) {
+	s.resize(ctrlMessage.GetWindowTextLength());
+	ctrlMessage.GetWindowText(&s[0], ctrlMessage.GetWindowTextLength() + 1);
 }
 
 LRESULT ChatFrameBase::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
@@ -386,10 +431,8 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 }
 
 void ChatFrameBase::appendTextLine(const tstring& aText, bool addSpace) {
-	TCHAR* message = new TCHAR[ctrlMessage.GetWindowTextLength()+1];
-	ctrlMessage.GetWindowText(message, ctrlMessage.GetWindowTextLength()+1);
-	tstring s(message, ctrlMessage.GetWindowTextLength());
-	delete[] message;
+	tstring s;
+	getLineText(s);
 	if (addSpace && s.length() > 0 && !isspace(s.back()))
 		s += _T(" ");
 
@@ -469,9 +512,7 @@ void ChatFrameBase::onEnter() {
 
 	if(ctrlMessage.GetWindowTextLength() > 0) {
 		tstring s;
-		s.resize(ctrlMessage.GetWindowTextLength());
-		
-		ctrlMessage.GetWindowText(&s[0], ctrlMessage.GetWindowTextLength() + 1);
+		getLineText(s);
 
 		// save command in history, reset current buffer pointer to the newest command
 		curCommandPosition = prevCommands.size();		//this places it one position beyond a legal subscript

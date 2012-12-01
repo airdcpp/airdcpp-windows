@@ -99,6 +99,8 @@ protected:
 
 	void onEnter();
 	static tstring commands;
+
+	void getLineText(tstring& s);
 private:
 	FrameMessageBase* frame;
 

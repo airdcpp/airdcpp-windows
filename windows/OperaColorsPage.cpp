@@ -120,11 +120,11 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 
 	setMinMax(IDC_FLAT_SPIN, 1, 5);
 
+	progress.Attach(GetDlgItem(IDC_PROGRESS1));
 	progress.SetRange(0,100);
 	progress.SetPos(50);
 	WinUtil::decodeFont(Text::toT(SETTING(TB_PROGRESS_FONT)), currentFont );
 	textclr = SETTING(TB_PROGRESS_TEXT_COLOR);
-	progress.Attach(GetDlgItem(IDC_PROGRESS1));
 
 	updateProgress();
 
