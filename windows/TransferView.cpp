@@ -1264,7 +1264,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 		if(!statusString.empty()) {
 			statusString += _T(" ");
 		}
-		statusString += Text::tformat(TSTRING(DOWNLOADED_BYTES), pos.c_str(), percent, elapsed.c_str());
+		statusString += CTSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed);
 		ui->setStatusString(statusString);
 			
 		tasks.add(UPDATE_ITEM, unique_ptr<Task>(ui));
@@ -1486,7 +1486,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 		if(!statusString.empty()) {
 			statusString += _T(" ");
 		}			
-		statusString += Text::tformat(TSTRING(UPLOADED_BYTES), pos.c_str(), percent, elapsed.c_str());
+		statusString += CTSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed);
 
 		ui->setStatusString(statusString);
 					

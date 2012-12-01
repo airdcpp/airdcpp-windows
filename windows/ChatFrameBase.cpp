@@ -280,12 +280,9 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 
 				tstring s;
 				getLineText(s);
-
-				//remove an empty line
-				auto isEmptyNewLine = charIndex > 0 && s[charIndex-1] == _T('\n');
-
-				//auto newLine = boost::trim_right_copy(s);
 				tstring newLine = s;
+
+				//trim spaces before the word
 				for (int i = charIndex-1; i >= 0; --i) {
 					if (!isgraph(newLine[i])) {
 						newLine.erase(i, 1);
@@ -294,7 +291,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 					}
 				}
 
-				if (!isEmptyNewLine) {
+				if (s[charIndex-1] != _T('\n')) {
 					//always stay on the old line here...
 					auto p = newLine.find_last_of(_T("\n "), charIndex);
 					if (p == tstring::npos) {
@@ -306,6 +303,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 					newLine = newLine.erase(p, charIndex-p);
 					charIndex = charIndex - (s.length()-newLine.length());
 				} else {
+					//remove the empty line
 					charIndex--;
 					newLineCount -= 1;
 				}

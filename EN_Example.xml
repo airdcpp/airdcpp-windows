@@ -1714,7 +1714,7 @@ would you still like to load them?</String>
 		<String Name="Uploaded">Uploaded</String>
 		<String Name="SwitchingToAddress">Switching to an address %s</String>
 		<String Name="XBundlesQueued">%d bundles queued</String>
-		<String Name="XFinishedBundles">%d finished bundles</String>
+		<String Name="XFinishedBundles">%d finished bundle(s)</String>
 		<String Name="ActiveFor">Active for %s</String>
 		<String Name="WaitingLeft">Waiting (%s left)</String>
 		<String Name="InactiveQueued">Inactive (files queued)</String>
