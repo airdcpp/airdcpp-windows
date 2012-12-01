@@ -1667,7 +1667,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_TRAY_PM             ICON                    "res\\PM.ico"
-IDR_TRAY_HUB            ICON                    "res\\message.ico"
+IDR_TRAY_HUB            ICON                    "res\\HubMessage.ico"
 IDR_PRIVATE             ICON                    "res\\User.ico"
 IDR_PRIVATE_OFF         ICON                    "res\\UserOff.ico"
 IDR_WINAMP_LOGO         ICON                    "res\\Winamp_logo.ico"

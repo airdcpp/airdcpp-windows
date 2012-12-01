@@ -381,8 +381,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, true);
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME);
-	pmicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_PM), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
-	hubicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_HUB), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	pmicon.hIcon = ResourceLoader::loadIcon(IDR_TRAY_PM, 16);
+	hubicon.hIcon = ResourceLoader::loadIcon(IDR_TRAY_HUB, 16);
 
 	updateTray(true);
 
@@ -739,7 +739,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 					i == STATUS_QUEUED-1 || i == STATUS_HUBS-1 )
 						w += 20;
 
-				if((statusSizes[i] < w) || (statusSizes[i] > w + 30) ) {
+				if((statusSizes[i] < w) || (statusSizes[i] > (w + 30)) ) {
 					statusSizes[i] = w;
 					u = true;
 				}
