@@ -274,7 +274,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
-			AutoSearch::BundleStatusList bsl;
+			AutoSearch::BundleStatusMap bsl;
 			OrderedStringSet fpl;
 			auto as = AutoSearchManager::getInstance()->getSearchByIndex(index);
 			title = Text::toT(as->getDisplayName());
@@ -365,9 +365,8 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 				as->setNumberLen(dlg.numberLen);
 				as->setUseParams(dlg.useParams);
 
-				AutoSearchManager::getInstance()->addAutoSearch(as);
+				AutoSearchManager::getInstance()->addAutoSearch(as, false);
 			} else if(search.size() < 5) { // dont report if empty line between/end when adding multiple
-				//MessageBox(_T("Not adding the auto search: ") + Text::toT(str).c_str());
 				MessageBox(CTSTRING(LINE_EMPTY_OR_TOO_SHORT));
 			}
 		}

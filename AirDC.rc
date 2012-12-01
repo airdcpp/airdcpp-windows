@@ -21,10 +21,16 @@ LANGUAGE LANG_CZECH, SUBLANG_DEFAULT
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Bitmap
+// PNG
 //
 
 IDB_SPLASH              PNG                     "res\\splash.png"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
 IDB_STATE               BITMAP                  "res\\state.bmp"
 IDB_FLAGS               BITMAP                  "res\\flags.bmp"
 IDB_EMOTICON            BITMAP                  "res\\emoticon.bmp"
@@ -440,14 +446,14 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,7,91,240,10,WS_EX_RIGHT
 END
 
-IDD_DOWNLOADPAGE DIALOGEX 0, 0, 297, 312
+IDD_DOWNLOADPAGE DIALOGEX 0, 0, 298, 318
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 EXSTYLE WS_EX_ACCEPTFILES | WS_EX_STATICEDGE
 CAPTION "Queue"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_OTHER_QUEUE_OPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,15,223,268,37
-    GROUPBOX        "Segmented Downloads",IDC_SETTINGS_SEGMENTS,7,10,283,82
+    CONTROL         "",IDC_OTHER_QUEUE_OPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,15,223,268,48
+    GROUPBOX        "Segmented Downloads",IDC_SETTINGS_SEGMENTS,7,10,284,82
     CONTROL         "Automatically search for alternative bundle sources",IDC_AUTO_SEARCH_ALT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,157,183,10
     EDITTEXT        IDC_SEARCH_INTERVAL,213,169,27,13,ES_AUTOHSCROLL | ES_NUMBER
@@ -466,7 +472,7 @@ BEGIN
     LTEXT           "kB",IDC_SETTINGS_KIB,249,36,9,8
     LTEXT           "Minimum segment size",IDC_MIN_SEGMENT_SIZE_LABEL,25,38,171,10
     CONTROL         "Enable segmented downloads",IDC_ENABLE_SEGMENTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,21,183,10
-    GROUPBOX        "Search Matching",IDC_SETTINGS_SEARCH_MATCHING,7,99,283,105
+    GROUPBOX        "Search Matching",IDC_SETTINGS_SEARCH_MATCHING,7,99,284,105
     RTEXT           "Minimum search interval",IDC_INTERVAL_TEXT,31,172,163,8
     RTEXT           "Max sources for match queue",IDC_MATCH_QUEUE_TEXT,15,127,111,8
     EDITTEXT        IDC_MATCH,213,124,26,13,ES_AUTOHSCROLL | ES_NUMBER
@@ -478,10 +484,10 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,113,183,10
     CONTROL         "Use full filelists as last resort if adding sources fails",IDC_ALLOW_MATCH_FULL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,142,183,10
-    GROUPBOX        "Finished Downloads",IDC_FINISHED_OPTIONS,7,208,283,97
-    EDITTEXT        IDC_ANTIVIR_PATH,21,279,183,14,ES_AUTOHSCROLL
-    PUSHBUTTON      "Browse...",IDC_ANTIVIR_BROWSE,215,279,47,14
-    GROUPBOX        "Virus scan after download finished",IDC_AIRDC_ANTI_VIR,15,267,261,31,BS_LEFT
+    GROUPBOX        "Finished Downloads",IDC_FINISHED_OPTIONS,7,209,284,102
+    EDITTEXT        IDC_ANTIVIR_PATH,21,289,183,14,ES_AUTOHSCROLL
+    PUSHBUTTON      "Browse...",IDC_ANTIVIR_BROWSE,215,289,47,14
+    GROUPBOX        "Virus scan after download finished",IDC_AIRDC_ANTI_VIR,15,277,261,31,BS_LEFT
 END
 
 IDD_SPEEDPAGE DIALOGEX 0, 0, 281, 308
@@ -732,10 +738,10 @@ BEGIN
     IDD_DOWNLOADPAGE, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 290
+        RIGHTMARGIN, 291
         VERTGUIDE, 15
         TOPMARGIN, 7
-        BOTTOMMARGIN, 305
+        BOTTOMMARGIN, 311
     END
 
     IDD_SPEEDPAGE, DIALOG
@@ -1809,6 +1815,13 @@ LANGUAGE LANG_FINNISH, SUBLANG_DEFAULT
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// PNG
+//
+
+IDR_EMOTICON            PNG                     "res\\emoticon.png"
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Dialog
 //
 
@@ -2294,20 +2307,13 @@ IDI_MPSTOP              ICON                    "res\\MediaToolbar\\stop.ico"
 IDI_MPVOLUMEUP          ICON                    "res\\MediaToolbar\\up.ico"
 IDI_MPVOLUME50          ICON                    "res\\MediaToolbar\\volume50.ico"
 IDI_MPVOLUMEDOWN        ICON                    "res\\MediaToolbar\\down.ico"
-IDI_SEARCHING        	ICON                    "res\\AutoSearch\\Searching.ico"
-IDI_QUEUED_OK        	ICON                    "res\\AutoSearch\\QueuedOK.ico"
+IDI_SEARCHING           ICON                    "res\\AutoSearch\\Searching.ico"
+IDI_QUEUED_OK           ICON                    "res\\AutoSearch\\QueuedOK.ico"
 IDI_QUEUED_ERROR        ICON                    "res\\AutoSearch\\QueuedError.ico"
 IDI_SEARCH_ERROR        ICON                    "res\\AutoSearch\\SearchError.ico"
-IDI_WAITING		        ICON                    "res\\AutoSearch\\Waiting.ico"
-IDI_MANUAL		        ICON                    "res\\AutoSearch\\Manual.ico"
-IDI_DISABLED		    ICON                    "res\\AutoSearch\\Disabled.ico"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// PNG
-//
-
-IDR_EMOTICON            PNG                     "res\\emoticon.png"
+IDI_WAITING             ICON                    "res\\AutoSearch\\Waiting.ico"
+IDI_MANUAL              ICON                    "res\\AutoSearch\\Manual.ico"
+IDI_DISABLED            ICON                    "res\\AutoSearch\\Disabled.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 

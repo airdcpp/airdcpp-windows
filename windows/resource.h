@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -268,15 +268,15 @@
 #define IDI_USER_BOT                    450
 #define IDI_USER_PASSIVE                451
 #define IDI_USER_OP                     452
-#define IDI_WAITING						454
-#define IDI_QUEUED_ERROR				455
-#define IDI_SEARCH_ERROR				456
-#define IDI_MANUAL						457
-#define IDI_DISABLED					458
-#define IDI_QUEUED_OK					459
-#define IDI_SEARCHING					460
-#define IDI_SLOTS						461
-#define IDI_SLOTSFULL					462
+#define IDI_WAITING                     454
+#define IDI_QUEUED_ERROR                455
+#define IDI_SEARCH_ERROR                456
+#define IDI_MANUAL                      457
+#define IDI_DISABLED                    458
+#define IDI_QUEUED_OK                   459
+#define IDI_SEARCHING                   460
+#define IDI_SLOTS                       461
+#define IDI_SLOTSFULL                   462
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479

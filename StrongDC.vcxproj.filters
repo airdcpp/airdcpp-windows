@@ -1153,5 +1153,33 @@
     <Image Include="res\upload_user.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\splash.png" />
+    <Image Include="res\Slots.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\SlotsFull.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\Searching.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\QueuedOK.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\QueuedError.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\SearchError.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\Waiting.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\Manual.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\Disabled.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
