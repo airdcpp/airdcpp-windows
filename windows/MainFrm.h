@@ -210,8 +210,8 @@ public:
 		CHAIN_MSG_MAP(splitterBase);
 		ALT_MSG_MAP(STATUS_MESSAGE_MAP)
 			NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
-			MESSAGE_HANDLER(WM_LBUTTONUP, onLimiterMenu)
-			MESSAGE_HANDLER(WM_RBUTTONUP, onLimiterMenu)
+			MESSAGE_HANDLER(WM_LBUTTONUP, onStatusBarClick)
+			MESSAGE_HANDLER(WM_RBUTTONUP, onStatusBarClick)
 			MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 			MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
 
@@ -383,7 +383,7 @@ public:
 		return S_OK;
 	}
 
-	LRESULT onLimiterMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT onStatusBarClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
 	static MainFrame* getMainFrame() { return anyMF; }
 	bool getAppMinimized() const { return bAppMinimized; }
@@ -519,6 +519,9 @@ private:
 	int statusSizes[10];
 	
 	void loadCmdBarImageList(CImageList& images);
+
+	HICON awayIconOFF;
+	HICON awayIconON;
 
 	HANDLE stopperThread;
 

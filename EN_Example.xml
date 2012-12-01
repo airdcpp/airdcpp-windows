@@ -1724,5 +1724,7 @@ would you still like to load them?</String>
 		<String Name="BundleXExtraFiles">%s (extra files)</String>
 		<String Name="FailedBundleSearched">A failed bundle %s has been searched for</String>
 		<String Name="FailedBundleSearchedIn">A failed bundle %s will be searched for in %d seconds</String>
+		<String Name="AwayOn">Away mode ON - Click to adjust</String>
+		<String Name="AwayOff">Away mode OFF - Click to adjust</String>
 	</Strings>
 </Language>

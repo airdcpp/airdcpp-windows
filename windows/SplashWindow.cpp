@@ -26,6 +26,7 @@
 #include "WinUtil.h"
 
 SplashWindow::SplashWindow() {
+	
 	CRect rc;
 	rc.bottom = GetSystemMetrics(SM_CYFULLSCREEN);
 	rc.top = (rc.bottom / 2) - 80;
@@ -40,12 +41,8 @@ SplashWindow::SplashWindow() {
 	
 	//load the image
 	loadImage();
-
-	//Get the dimensions of the bitmap, this is probobly easier anyway even if we dont allow loading custom splashes.
-	BITMAP bm;
-	::GetObject( (HBITMAP)img, sizeof( bm ), &bm );
-	width = bm.bmWidth;
-	height = bm.bmHeight;
+	width = img.GetWidth();
+	height = img.GetHeight();
 
 	HDC dc = splash.GetDC();
 	rc.right = rc.left + width;
@@ -79,16 +76,18 @@ void SplashWindow::operator()(const string& status) {
 	GetWindowRect(splash.m_hWnd, &rc);
 	OffsetRect(&rc, -rc.left, -rc.top);
 	RECT rc2 = rc;
-	rc2.top = rc2.bottom - 30; 
+	rc2.top = rc2.bottom - 20; 
 	rc2.left = rc2.left + 20;
 	::SetBkMode(dc, TRANSPARENT);
 	
-	HDC memDC = img.GetDC();
-	BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
-	AlphaBlend(dc, 0, 0, width, height, memDC, 0, 0, width, height, bf);
-	
-	SelectObject(dc, img);
-	img.ReleaseDC();
+	//HDC memDC = img.GetDC();
+	//BLENDFUNCTION bf = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+	//AlphaBlend(dc, 0, 0, width, height, memDC, 0, 0, width, height, bf);
+	//img.ReleaseDC();
+	HDC comp = CreateCompatibleDC(dc);
+	SelectObject(comp, img);
+	BitBlt(dc, 0, 0 , width, height, comp, 0, 0, SRCCOPY);
+	DeleteDC(comp);
 
 	LOGFONT logFont;
 	HFONT hFont;
@@ -99,14 +98,14 @@ void SplashWindow::operator()(const string& status) {
 	hFont = CreateFontIndirect(&logFont);		
 	SelectObject(dc, hFont);
 	//::SetTextColor(dc, RGB(255,255,255)); //white text
-	::SetTextColor(dc, RGB(0,0,0)); //black text
-	//::SetTextColor(dc, RGB(104,104,104)); //grey text
+	//::SetTextColor(dc, RGB(0,0,0)); //black text
+	::SetTextColor(dc, RGB(104,104,104)); //grey text
 	::DrawText(dc, title.c_str(), _tcslen(title.c_str()), &rc2, DT_LEFT);
 	DeleteObject(hFont);
 
 	if(!status.empty()) {
 		rc2 = rc;
-		rc2.top = rc2.bottom - 30;
+		rc2.top = rc2.bottom - 20;
 		rc2.right = rc2.right - 20;
 		GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(logFont), &logFont);
 		lstrcpy(logFont.lfFaceName, TEXT("Tahoma"));
@@ -115,8 +114,8 @@ void SplashWindow::operator()(const string& status) {
 		hFont = CreateFontIndirect(&logFont);		
 		SelectObject(dc, hFont);
 		//::SetTextColor(dc, RGB(255,255,255)); // white text
-		::SetTextColor(dc, RGB(0,0,0)); // black text
-		//::SetTextColor(dc, RGB(104,104,104)); //grey text
+		//::SetTextColor(dc, RGB(0,0,0)); // black text
+		::SetTextColor(dc, RGB(104,104,104)); //grey text
 		::DrawText(dc, (_T(".:: ") + Text::toT(status) + _T(" ::.")).c_str(), _tcslen((_T(".:: ") + Text::toT(status) + _T(" ::.")).c_str()), &rc2, DT_RIGHT);
 		DeleteObject(hFont);
 	}

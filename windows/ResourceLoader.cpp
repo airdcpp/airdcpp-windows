@@ -56,11 +56,55 @@ void ResourceLoader::unload() {
 	flagImages.Destroy();
 }
 void ResourceLoader::loadUserImages() {
+	//make this in a damn simple(but ugly) way so it hopefully works in every system,
+	//got tired of finding out the cause for the problem.
 
+	//first construct the overlay images.
+	CImageList overLays;
+	overLays.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
+	overLays.AddIcon(loadIcon(IDI_USER_PASSIVE, 16));
+	overLays.AddIcon(loadIcon(IDI_USER_OP, 16));
+	CImageList mergeList(ImageList_Merge(overLays, 0, overLays, 1, 0, 0));
+	HICON tmp = mergeList.GetIcon(0, ILD_TRANSPARENT);
+	overLays.AddIcon(tmp);
+	mergeList.Destroy();
+	DestroyIcon(tmp);
+
+	//start constructing the userlist images from the bases
+	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   10, 10);
+	int pos = userImages.AddIcon(loadIcon(IDI_USER_BASE, 16));
+	for(int i = 0; i < overLays.GetImageCount(); i++){
+		CImageList mergelist(ImageList_Merge(userImages, pos, overLays, i, 0, 0));
+		HICON tmp2 = mergelist.GetIcon(0, ILD_TRANSPARENT);
+		userImages.AddIcon(tmp2);
+		mergelist.Destroy();
+		DestroyIcon(tmp2);
+	}
+
+	pos = userImages.AddIcon(loadIcon(IDI_USER_AWAY, 16));
+	for(int i = 0; i < overLays.GetImageCount(); i++){
+		CImageList mergelist(ImageList_Merge(userImages, pos, overLays, i, 0, 0));
+		HICON tmp2 = mergelist.GetIcon(0, ILD_TRANSPARENT);
+		userImages.AddIcon(tmp2);
+		mergelist.Destroy();
+		DestroyIcon(tmp2);
+	}
+
+	pos = userImages.AddIcon(loadIcon(IDI_USER_BOT, 16));
+	for(int i = 0; i < overLays.GetImageCount(); i++){
+		CImageList mergelist(ImageList_Merge(userImages, pos, overLays, i, 0, 0));
+		HICON tmp2 = mergelist.GetIcon(0, ILD_TRANSPARENT);
+		userImages.AddIcon(tmp2);
+		mergelist.Destroy();
+		DestroyIcon(tmp2);
+	}
+	overLays.Destroy();
+
+	/*
 	const unsigned baseCount = UserInfoBase::USER_ICON_MOD_START;
 	const unsigned modifierCount = UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START;
-	HICON bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
-	HICON modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16),  loadIcon(IDI_USER_OP, 16) };
+	HICON bases[baseCount] = { CopyIcon(loadIcon(IDI_USER_BASE, 16)), CopyIcon(loadIcon(IDI_USER_AWAY, 16)), CopyIcon(loadIcon(IDI_USER_BOT, 16)) };
+	HICON modifiers[modifierCount] = { CopyIcon(loadIcon(IDI_USER_PASSIVE, 16)),  CopyIcon(loadIcon(IDI_USER_OP, 16)) };
 	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   9, 9);
 	for(size_t iBase = 0; iBase < baseCount; ++iBase) {
 		for(size_t i = 0, n = modifierCount * modifierCount; i < n; ++i) {
@@ -74,19 +118,24 @@ void ResourceLoader::loadUserImages() {
 			}
 			int iCount = icons.GetImageCount();
 			if(iCount == 1) {
+				//add the base icon
 				userImages.AddIcon(icons.GetIcon(0));
 			} else {
-				CImageList mergelist(ImageList_Merge(icons, 0, icons, 1, 0, 0));
+
+				CImageList mergelist = ImageList_Merge(icons, 0, icons, 1, 0, 0);
 				for(size_t m = 2; m < iCount; ++m) {
-					mergelist = ImageList_Merge(mergelist, 0, icons, m, 0, 0);
+					HICON tmp = ImageList_GetIcon(ImageList_Merge(mergelist, 0, icons, m, 0, 0), 0, 0);
+					mergelist.ReplaceIcon(0, tmp);
+					DestroyIcon(tmp);
 				}
 				userImages.AddIcon(mergelist.GetIcon(0));
 				mergelist.Destroy();
+
 			} 
 			icons.Destroy();
 		}	
 	}
-
+	*/
 }
 
 HBITMAP ResourceLoader::getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/) {
@@ -141,7 +190,7 @@ tstring ResourceLoader::getIconPath(const tstring& filename) {
 
 HICON ResourceLoader::loadIcon(int aDefault, int size/* = 0*/) {
 	tstring icon = getIconPath(getIconName(aDefault));
-	HICON iHandle = icon.empty() ? NULL : (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, size, size, LR_SHARED | LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
+	HICON iHandle = icon.empty() ? NULL : (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, size, size, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
 	if(!iHandle) 
 		return loadDefaultIcon(aDefault, size);
 	return iHandle;
@@ -149,7 +198,7 @@ HICON ResourceLoader::loadIcon(int aDefault, int size/* = 0*/) {
 
 HICON ResourceLoader::loadDefaultIcon(int icon, int size/* = 0*/) {
 	//int size = big ? ::GetSystemMetrics(SM_CXICON) : ::GetSystemMetrics(SM_CXSMICON);
-	return (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(icon), IMAGE_ICON, size, size, LR_SHARED | LR_DEFAULTSIZE | LR_DEFAULTCOLOR);
+	return (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(icon), IMAGE_ICON, size, size, LR_SHARED | LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION);
 }
 
 tstring ResourceLoader::getIconName(int aDefault) {

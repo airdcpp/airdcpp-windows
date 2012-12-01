@@ -284,13 +284,14 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlStatus.SetSimple(FALSE);
 	int w[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	ctrlStatus.SetParts(11, w);
-	statusSizes[0] = WinUtil::getTextWidth(TSTRING(AWAY), ctrlStatus.m_hWnd); // for "AWAY" segment
+	statusSizes[0] = 24; //WinUtil::getTextWidth(TSTRING(AWAY), ctrlStatus.m_hWnd); // for "AWAY" segment
 	statusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
 	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
 	ctrlTooltips.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-	// last lines is different, the tooltip text changes, onGetToolTip handles the text shown.
+	// last lines and away are different, the tooltip text changes, onGetToolTip handles the text shown.
 	CToolInfo ti_lastlines(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_LASTLINES+POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	CToolInfo ti_away(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_AWAY+POPUP_UID, 0, LPSTR_TEXTCALLBACK);
 	CToolInfo ti_dlSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_DL_SPEED+POPUP_UID, 0, (LPWSTR)CTSTRING(DL_STATUS_POPUP));
 	CToolInfo ti_ulSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_UL_SPEED+POPUP_UID, 0, (LPWSTR)CTSTRING(UL_STATUS_POPUP));
 	CToolInfo ti_queueSize(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_QUEUED+POPUP_UID, 0, (LPWSTR)CTSTRING(QUEUE_SIZE));
@@ -300,6 +301,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	CToolInfo ti_uploaded(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_UPLOADED+POPUP_UID, 0, (LPWSTR)CTSTRING(UPLOADED));
 
 	ctrlTooltips.AddTool(&ti_lastlines);
+	ctrlTooltips.AddTool(&ti_away);
 	ctrlTooltips.AddTool(&ti_dlSpeed);
 	ctrlTooltips.AddTool(&ti_ulSpeed);
 	ctrlTooltips.AddTool(&ti_queueSize);
@@ -382,11 +384,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	pmicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_PM), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 	hubicon.hIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_TRAY_HUB), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 
-	uploadIcon = ResourceLoader::loadIcon(IDI_UPLOAD, 16);
-	downloadIcon = ResourceLoader::loadIcon(IDI_DOWNLOAD, 16);
-	slotsIcon = ResourceLoader::loadIcon(IDI_SLOTS, 16);
-	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
-
 	updateTray(true);
 
 	Util::setAway(BOOLSETTING(AWAY));
@@ -397,6 +394,14 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		PostMessage(WM_COMMAND, ID_FILE_SETTINGS);
 	}
 	
+	uploadIcon = ResourceLoader::loadIcon(IDI_UPLOAD, 16);
+	downloadIcon = ResourceLoader::loadIcon(IDI_DOWNLOAD, 16);
+	slotsIcon = ResourceLoader::loadIcon(IDI_SLOTS, 16);
+	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
+	awayIconON = ResourceLoader::userImages.GetIcon(4);
+	awayIconOFF = ResourceLoader::userImages.GetIcon(0);
+
+	ctrlStatus.SetIcon(STATUS_AWAY, Util::getAway() ? awayIconON : awayIconOFF);
 	ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
 	ctrlStatus.SetIcon(STATUS_DOWNLOADED, downloadIcon);
 	ctrlStatus.SetIcon(STATUS_UPLOADED, uploadIcon);
@@ -716,7 +721,8 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		const TStringList& str = *pstr;
 		if(ctrlStatus.IsWindow()) {
 			bool u = false;
-			ctrlStatus.SetText(1, str[0].c_str());
+			//ctrlStatus.SetText(1, str[0].c_str());
+			ctrlStatus.SetIcon(STATUS_AWAY, Util::getAway() ? awayIconON : awayIconOFF);
 			for(int i = 1; i < 9; i++) {
 				int w = WinUtil::getTextWidth(str[i], ctrlStatus.m_hWnd);
 				
@@ -1078,6 +1084,8 @@ LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 		}
 		pDispInfo->lpszText = const_cast<TCHAR*>(lastLines.c_str());
 
+	} else if(idCtrl == STATUS_AWAY+POPUP_UID) {
+		pDispInfo->lpszText = Util::getAway() ? (LPWSTR)CTSTRING(AWAY_ON) : (LPWSTR)CTSTRING(AWAY_OFF);
 	}
 	return 0;
 }
@@ -1377,6 +1385,8 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 
 		ctrlStatus.GetRect(STATUS_LASTLINES, sr);
 		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_LASTLINES+POPUP_UID, sr);
+		ctrlStatus.GetRect(STATUS_AWAY, sr);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_AWAY+POPUP_UID, sr);
 		ctrlStatus.GetRect(STATUS_DL_SPEED, sr);
 		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_DL_SPEED+POPUP_UID, sr);
 		ctrlStatus.GetRect(STATUS_UL_SPEED, sr);
@@ -1577,15 +1587,17 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 	});
 }
 
-LRESULT MainFrame::onLimiterMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT MainFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	OMenu menu;
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 	CRect DLrect;
 	CRect ULrect;
+	CRect Awayrect;
 	/* Currently the menu appears by clicking anywhere on the speed regions
 	it could be narrowed down by limiting the rect, or using the icons as a dummy hwnds */
-	ctrlStatus.GetRect(7, DLrect);
-	ctrlStatus.GetRect(8, ULrect);
+	ctrlStatus.GetRect(STATUS_DL_SPEED, DLrect);
+	ctrlStatus.GetRect(STATUS_UL_SPEED, ULrect);
+	ctrlStatus.GetRect(STATUS_AWAY, Awayrect);
 	if(PtInRect(&DLrect, pt)) {
 		menu.CreatePopupMenu();
 		fillLimiterMenu(&menu, false);
@@ -1594,6 +1606,17 @@ LRESULT MainFrame::onLimiterMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BO
 		menu.CreatePopupMenu();
 		fillLimiterMenu(&menu, true);
 		menu.open(ctrlStatus.m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON);
+	} else if(PtInRect(&Awayrect, pt)) {
+		if(Util::getAway()) { 
+			setAwayButton(false);
+			Util::setAway(false);
+			ctrlStatus.SetIcon(STATUS_AWAY, awayIconOFF);
+		} else {
+			setAwayButton(true);
+			Util::setAway(true);
+			ctrlStatus.SetIcon(STATUS_AWAY, awayIconON);
+		}
+		ClientManager::getInstance()->infoUpdated();
 	}
 
 	return 0;
