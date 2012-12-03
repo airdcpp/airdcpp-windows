@@ -64,39 +64,27 @@ void ResourceLoader::loadUserImages() {
 	overLays.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
 	overLays.AddIcon(loadIcon(IDI_USER_PASSIVE, 16));
 	overLays.AddIcon(loadIcon(IDI_USER_OP, 16));
-	CImageList mergeList(ImageList_Merge(overLays, 0, overLays, 1, 0, 0));
-	HICON tmp = mergeList.GetIcon(0, ILD_TRANSPARENT);
-	overLays.AddIcon(tmp);
-	mergeList.Destroy();
-	DestroyIcon(tmp);
+	HIMAGELIST mergelist = ImageList_Merge(overLays, 0, overLays, 1, 0, 0);
+	overLays.AddIcon(ImageList_GetIcon(mergelist, 0, ILD_TRANSPARENT));
 
 	//start constructing the userlist images from the bases
 	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   10, 10);
 	int pos = userImages.AddIcon(loadIcon(IDI_USER_BASE, 16));
 	for(int i = 0; i < overLays.GetImageCount(); i++){
-		CImageList mergelist(ImageList_Merge(userImages, pos, overLays, i, 0, 0));
-		HICON tmp2 = mergelist.GetIcon(0, ILD_TRANSPARENT);
-		userImages.AddIcon(tmp2);
-		mergelist.Destroy();
-		DestroyIcon(tmp2);
+		HIMAGELIST mergelist = ImageList_Merge(userImages, pos, overLays, i, 0, 0);
+		userImages.AddIcon(ImageList_GetIcon(mergelist, 0, ILD_TRANSPARENT));
 	}
 
 	pos = userImages.AddIcon(loadIcon(IDI_USER_AWAY, 16));
 	for(int i = 0; i < overLays.GetImageCount(); i++){
-		CImageList mergelist(ImageList_Merge(userImages, pos, overLays, i, 0, 0));
-		HICON tmp2 = mergelist.GetIcon(0, ILD_TRANSPARENT);
-		userImages.AddIcon(tmp2);
-		mergelist.Destroy();
-		DestroyIcon(tmp2);
+		HIMAGELIST mergelist = ImageList_Merge(userImages, pos, overLays, i, 0, 0);
+		userImages.AddIcon(ImageList_GetIcon(mergelist, 0, ILD_TRANSPARENT));
 	}
 
 	pos = userImages.AddIcon(loadIcon(IDI_USER_BOT, 16));
 	for(int i = 0; i < overLays.GetImageCount(); i++){
-		CImageList mergelist(ImageList_Merge(userImages, pos, overLays, i, 0, 0));
-		HICON tmp2 = mergelist.GetIcon(0, ILD_TRANSPARENT);
-		userImages.AddIcon(tmp2);
-		mergelist.Destroy();
-		DestroyIcon(tmp2);
+		HIMAGELIST mergelist = ImageList_Merge(userImages, pos, overLays, i, 0, 0);
+		userImages.AddIcon(ImageList_GetIcon(mergelist, 0, ILD_TRANSPARENT));
 	}
 	overLays.Destroy();
 
@@ -287,6 +275,8 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_SLOTSFULL:		return _T("SlotsFull.ico");
 		case IDR_TRAY_PM:		return _T("PM.ico");
 		case IDR_TRAY_HUB:		return _T("HubMessage.ico");
+		case IDI_TOTAL_UP:		return _T("TotalUp.ico");
+		case IDI_TOTAL_DOWN:	return _T("TotalDown.ico");
 
 		default: return Util::emptyStringT;
 	}

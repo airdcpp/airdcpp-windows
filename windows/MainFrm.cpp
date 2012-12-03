@@ -394,8 +394,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		PostMessage(WM_COMMAND, ID_FILE_SETTINGS);
 	}
 	
-	uploadIcon = ResourceLoader::loadIcon(IDI_UPLOAD, 16);
-	downloadIcon = ResourceLoader::loadIcon(IDI_DOWNLOAD, 16);
 	slotsIcon = ResourceLoader::loadIcon(IDI_SLOTS, 16);
 	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
 	awayIconON = ResourceLoader::userImages.GetIcon(4);
@@ -403,10 +401,10 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	ctrlStatus.SetIcon(STATUS_AWAY, Util::getAway() ? awayIconON : awayIconOFF);
 	ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
-	ctrlStatus.SetIcon(STATUS_DOWNLOADED, downloadIcon);
-	ctrlStatus.SetIcon(STATUS_UPLOADED, uploadIcon);
-	ctrlStatus.SetIcon(STATUS_DL_SPEED, downloadIcon);
-	ctrlStatus.SetIcon(STATUS_UL_SPEED, uploadIcon);
+	ctrlStatus.SetIcon(STATUS_DOWNLOADED, ResourceLoader::loadIcon(IDI_TOTAL_DOWN, 16));
+	ctrlStatus.SetIcon(STATUS_UPLOADED, ResourceLoader::loadIcon(IDI_TOTAL_UP, 16));
+	ctrlStatus.SetIcon(STATUS_DL_SPEED, ResourceLoader::loadIcon(IDI_DOWNLOAD, 16));
+	ctrlStatus.SetIcon(STATUS_UL_SPEED, ResourceLoader::loadIcon(IDI_UPLOAD, 16));
 	ctrlStatus.SetIcon(STATUS_QUEUED, ResourceLoader::loadIcon(IDI_QUEUE, 16));
 	ctrlStatus.SetIcon(STATUS_HUBS, ResourceLoader::loadIcon(IDI_HUB, 16));
 
@@ -1295,8 +1293,6 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		DestroyIcon(hShutdownIcon); 	
 		DestroyIcon(pmicon.hIcon);
 		DestroyIcon(hubicon.hIcon);
-		DestroyIcon(uploadIcon);
-		DestroyIcon(downloadIcon);
 		DestroyIcon(slotsIcon);
 		DestroyIcon(slotsFullIcon);
 		bHandled = FALSE;

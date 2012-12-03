@@ -477,8 +477,6 @@ private:
 	static bool bShutdown;
 	static uint64_t iCurrentShutdownTime;
 	HICON hShutdownIcon;
-	HICON uploadIcon;
-	HICON downloadIcon;
 	HICON slotsIcon;
 	HICON slotsFullIcon;
 	CContainedWindow statusContainer;

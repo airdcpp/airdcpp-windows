@@ -277,6 +277,8 @@
 #define IDI_SEARCHING                   460
 #define IDI_SLOTS                       461
 #define IDI_SLOTSFULL                   462
+#define IDI_TOTAL_UP                    463
+#define IDI_TOTAL_DOWN                  464
 #define IDR_WINAMP                      474
 #define IDD_PARAM_DLG                   475
 #define IDD_FAVHUBGROUPS                479
