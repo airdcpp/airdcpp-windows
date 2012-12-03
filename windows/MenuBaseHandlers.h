@@ -312,6 +312,9 @@ public:
 				auto target = Text::fromT(*i);
 				targetMenu.appendItem(i->c_str(), [this, wholeDir, target] { onDownload(target, wholeDir); });
 			}
+
+			targetMenu.appendSeparator();
+			targetMenu.appendItem(TSTRING(CLEAR_HISTORY), [] { SettingsManager::getInstance()->clearDirHistory(); });
 		}
 
 		//Append TTH locations

@@ -66,11 +66,14 @@ LRESULT FavoriteDirDlg::onAddPath(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* 
 }
 
 void FavoriteDirDlg::addPath(const tstring& aPath) {
-	if (find(paths.begin(), paths.end(), Text::fromT(aPath)) == paths.end()) {
+	auto p = find_if(paths.begin(), paths.end(), Stricmp(Text::fromT(aPath)));
+	if (p == paths.end()) {
 		paths.push_back(Text::fromT(aPath));
 		pathListCtrl.insert(pathListCtrl.GetItemCount(), aPath);
 	} else {
-
+		//change the case for sopor
+		*p = Text::fromT(aPath);
+		pathListCtrl.SetItemText(distance(paths.begin(), p), 0, aPath.c_str());
 	}
 }
 

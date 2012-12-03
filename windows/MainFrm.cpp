@@ -1534,6 +1534,7 @@ void MainFrame::onTrayMenu() {
 
 	trayMenu.AppendMenu(MF_STRING, ID_APP_ABOUT, CTSTRING(MENU_ABOUT));
 	trayMenu.AppendMenu(MF_STRING, ID_APP_EXIT, CTSTRING(MENU_EXIT));
+	trayMenu.SetMenuDefaultItem(IDC_TRAY_SHOW);
 
 	CPoint pt(GetMessagePos());
 	SetForegroundWindow(m_hWnd);

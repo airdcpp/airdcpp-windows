@@ -1071,7 +1071,7 @@ void QueueFrame::moveSelected() {
 		if(WinUtil::browseFile(target, m_hWnd, true, path, ext2.c_str(), ext.empty() ? NULL : ext.c_str())) {
 			StringPairList ret;
 			ret.push_back(make_pair(ii->getTarget(), Text::fromT(target)));
-			QueueManager::getInstance()->move(ret);
+			QueueManager::getInstance()->moveFiles(ret);
 		}
 	} else if(n > 1) {
 		tstring name;
@@ -1086,7 +1086,7 @@ void QueueFrame::moveSelected() {
 				const QueueItemInfo* ii = ctrlQueue.getItemData(i);
 				ret.push_back(make_pair(ii->getTarget(), Text::fromT(name) + Util::getFileName(ii->getTarget())));
 			}
-			QueueManager::getInstance()->move(ret);
+			QueueManager::getInstance()->moveFiles(ret);
 		}
 	}
 }
@@ -1104,7 +1104,7 @@ void QueueFrame::moveSelectedDir() {
 	bool moveFinished = false;
 	
 	if(WinUtil::browseDirectory(name, m_hWnd)) {
-		string newDir = Text::fromT(name) + Util::getLastDir(curDir) + "\\";
+		string newDir = Util::validateFileName(Text::fromT(name) + Util::getLastDir(curDir) + PATH_SEPARATOR);
 		string tmp;
 		if (bundles.size() == 1) {
 			BundlePtr bundle = bundles.front();
@@ -1141,24 +1141,22 @@ void QueueFrame::moveSelectedDir() {
 			}
 		}
 
-		newDir = Util::validateFileName(newDir);
+		
 		for_each(bundles, [&](BundlePtr sourceBundle) {
 			if (!sourceBundle->isFileBundle()) {
+				string source = curDir;
 				if (AirUtil::isParentOrExact(curDir, sourceBundle->getTarget())) {
 					//we are moving the root bundle dir or some of it's parents
-					QueueManager::getInstance()->moveBundle(newDir, sourceBundle, moveFinished);
+					QueueManager::getInstance()->moveBundle(source, newDir, sourceBundle, moveFinished);
 				} else {
-					//we are moving a subfolder, get the list of queueitems we need to move
-					string source = curDir;
+					//we are moving a subfolder of a bundle
 					QueueManager::getInstance()->splitBundle(source, newDir, sourceBundle, moveFinished);
 				}
 			} else {
 				//move queue items
-				newDir = Util::validateFileName(AirUtil::convertMovePath(sourceBundle->getTarget(), curDir, newDir));
-				QueueManager::getInstance()->moveFileBundle(sourceBundle, newDir);
+				QueueManager::getInstance()->moveFileBundle(sourceBundle, AirUtil::convertMovePath(sourceBundle->getTarget(), curDir, newDir));
 			}
 		});
-		//QueueManager::getInstance()->moveDir(curDir, newDir, bundles, moveFinished);
 	}
 }
 
@@ -1184,10 +1182,10 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		//BundleList bundles = dii->getBundles();
 		if (dii->getBundles().size() == 1) {
 			BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front().second->getToken());
+			string target = curDir;
 			if (isCurDir(b->getTarget())) {
-				QueueManager::getInstance()->moveBundle(newDir, b, true);
+				QueueManager::getInstance()->moveBundle(target, newDir, b, true);
 			} else {
-				string target = curDir;
 				QueueManager::getInstance()->splitBundle(target, newDir, b, true);
 			}
 		}
@@ -1310,7 +1308,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				int pmItems = 0;
 				if(ii) {
 					sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
-					for(QueueItem::SourceConstIter i = sources.begin(); i != sources.end(); ++i) {
+					for(auto i = sources.begin(); i != sources.end(); ++i) {
 						tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(i->getUser()));
 						// add hub hint to menu
 						if(!i->getUser().hint.empty())
@@ -1336,7 +1334,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 					readdItems = 0;
 					
 					badSources = QueueManager::getInstance()->getBadSources(ii->getQueueItem());
-					for(QueueItem::SourceConstIter i = badSources.begin(); i != badSources.end(); ++i) {
+					for(auto i = badSources.begin(); i != badSources.end(); ++i) {
 						tstring nick = WinUtil::getNicks(i->getUser());
 						if(i->isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
 							nick += _T(" (") + TSTRING(FILE_NOT_AVAILABLE) + _T(")");
@@ -1864,8 +1862,8 @@ void QueueFrame::removeDir(HTREEITEM ht) {
 		child = ctrlDirs.GetNextSiblingItem(child);
 	}
 	const string& name = getDir(ht);
-	DirectoryPairC dp = directories.equal_range(name);
-	for(DirectoryIterC i = dp.first; i != dp.second; ++i) {
+	auto dp = directories.equal_range(name);
+	for(auto i = dp.first; i != dp.second; ++i) {
 		QueueManager::getInstance()->remove(i->second->getTarget());
 	}
 }
@@ -1922,8 +1920,8 @@ void QueueFrame::setAutoPriority(HTREEITEM ht, const bool& ap) {
 		child = ctrlDirs.GetNextSiblingItem(child);
 	}
 	const string& name = getDir(ht);
-	DirectoryPairC dp = directories.equal_range(name);
-	for(DirectoryIterC i = dp.first; i != dp.second; ++i) {
+	auto dp = directories.equal_range(name);
+	for(auto i = dp.first; i != dp.second; ++i) {
 		QueueManager::getInstance()->setQIAutoPriority(i->second->getTarget(), ap);
 	}
 }
