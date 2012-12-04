@@ -402,7 +402,6 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 
 void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LONG lSelBegin, bool bUseEmo) {
 	if (formatLinks) {
-		vector<ChatLink> tmpLinks;
 		try {
 			tstring::const_iterator start = sMsg.begin();
 			tstring::const_iterator end = sMsg.end();
@@ -415,52 +414,33 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 				SetSel(linkStart, linkEnd);
 				std::string link( result[0].first, result[0].second );
 
-				if(link.find("magnet:?") != string::npos) {
-					ChatLink cl = ChatLink(link, ChatLink::TYPE_MAGNET);
-					tmpLinks.push_back(cl);
-					if (cl.dupe == SHARE_DUPE) {
-						SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-					} else if (cl.dupe == QUEUE_DUPE) {
-						SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-					} else {
-						SetSelectionCharFormat(WinUtil::m_TextStyleURL);
-					}
+				//create the link
+				ChatLink cl = link.find("magnet:?") != string::npos ? ChatLink(link, ChatLink::TYPE_MAGNET) : ChatLink(link, (link.find("spotify:") != string::npos ? ChatLink::TYPE_SPOTIFY : ChatLink::TYPE_URL));
+				if (cl.dupe == SHARE_DUPE) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+				} else if (cl.dupe == QUEUE_DUPE) {
+					SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
 				} else {
-					ChatLink cl = ChatLink(link, (link.find("spotify:") != string::npos ? ChatLink::TYPE_SPOTIFY : ChatLink::TYPE_URL));
-					tmpLinks.push_back(cl);
 					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 				}
 
-				pos=pos+result.position() + result.length();
-				start = result[0].second;
+				//replace the text displayed in chat
+				tstring displayText = Text::toT(cl.getDisplayText());
+				sMsg.replace(result[0].first, result[0].second, displayText.c_str());
+				setText(displayText);
+
+				//store the link and the range
+				CHARRANGE cr;
+				cr.cpMin = linkStart;
+				cr.cpMax = linkStart + displayText.length();
+				links.push_back(make_pair(cr, cl));
+
+				pos=pos+result.position() + displayText.length();
+				start = result[0].first + displayText.length();
 			}
 	
 		} catch(...) { 
 			//...
-		}
-
-		//replace links
-		for(auto p = tmpLinks.begin(); p != tmpLinks.end(); p++) {
-			tstring::size_type found = 0;
-			while((found = sMsg.find(Text::toT(p->url), found)) != tstring::npos) {
-				size_t linkStart =  found;
-				size_t linkEnd =  found + p->url.length();
-
-				tstring displayText = Text::toT(p->getDisplayText());
-				SetSel(linkStart + lSelBegin, linkEnd + lSelBegin);
-
-				sMsg.replace(linkStart, linkEnd - linkStart, displayText.c_str());
-				setText(displayText);
-				linkEnd = linkStart + displayText.size();
-				//SetSel(cr.cpMin, cr.cpMax);
-				found++;
-
-
-				CHARRANGE cr;
-				cr.cpMin = linkStart + lSelBegin;
-				cr.cpMax = linkEnd + lSelBegin;
-				links.push_back(make_pair(cr, *p));
-			}
 		}
 	}
 

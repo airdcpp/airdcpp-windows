@@ -36,7 +36,6 @@
 class AutoSearchDlg : public CDialogImpl<AutoSearchDlg>, public DownloadBaseHandler<AutoSearchDlg> {
 public:
 	string searchString, comment, target, userMatch, matcherString, fileTypeStr;
-	int searchInterval;
 	uint8_t matcherType, action;
 	TargetUtil::TargetType targetType;
 	SearchTime startTime;

@@ -30,7 +30,7 @@
 	GetDlgItemText(id, buf, 1024); \
 	var = Text::fromT(buf);
 
-AutoSearchDlg::AutoSearchDlg() : fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), searchInterval(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
+AutoSearchDlg::AutoSearchDlg() : fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
 	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true), matchFullPath(false), curNumber(1), maxNumber(0),
 	numberLen(2), useParams(false) { }
 

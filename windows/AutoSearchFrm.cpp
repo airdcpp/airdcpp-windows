@@ -354,7 +354,7 @@ LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 			j = i +2;
 			if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
 				AutoSearchPtr as = new AutoSearch(true, str, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, dlg.remove, 
-					dlg.target, dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, dlg.expireTime, dlg.checkQueued, 
+					dlg.target, dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.expireTime, dlg.checkQueued, 
 					dlg.checkShared, dlg.matchFullPath);
 				as->startTime = dlg.startTime;
 				as->endTime = dlg.endTime;
@@ -403,22 +403,32 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.useParams = as->getUseParams();
 
 		if(dlg.DoModal() == IDOK) {
-			AutoSearchPtr asNew = AutoSearchPtr(new AutoSearch(as->getEnabled(), dlg.searchString, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, 
-				dlg.remove, dlg.target, (TargetUtil::TargetType)dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.searchInterval, 
-				dlg.expireTime, dlg.checkQueued, dlg.checkShared, dlg.matchFullPath, as->getToken()));
-			asNew->startTime = dlg.startTime;
-			asNew->endTime = dlg.endTime;
-			asNew->searchDays = dlg.searchDays;
-			asNew->setLastSearch(as->getLastSearch());
+			as->setSearchString(dlg.searchString);
+			as->setFileType(dlg.fileTypeStr);
+			as->setAction((AutoSearch::ActionType)dlg.action);
+			as->setRemove(dlg.remove);
+			as->setTarget(dlg.target);
+			as->setTargetType(dlg.targetType);
+			as->setMethod((StringMatch::Method)dlg.matcherType);
+			as->setMatcherString(dlg.matcherString);
+			as->setUserMatcher(dlg.userMatch);
+			as->setExpireTime(dlg.expireTime);
+			as->setCheckAlreadyQueued(dlg.checkQueued);
+			as->setCheckAlreadyShared(dlg.checkShared);
+			as->setMatchFullPath(dlg.matchFullPath);
 
-			asNew->setCurNumber(dlg.curNumber);
-			asNew->setMaxNumber(dlg.maxNumber);
-			asNew->setNumberLen(dlg.numberLen);
-			asNew->setUseParams(dlg.useParams);
+			as->startTime = dlg.startTime;
+			as->endTime = dlg.endTime;
+			as->searchDays = dlg.searchDays;
 
-			if (AutoSearchManager::getInstance()->updateAutoSearch(sel, asNew)) {
+			as->setCurNumber(dlg.curNumber);
+			as->setMaxNumber(dlg.maxNumber);
+			as->setNumberLen(dlg.numberLen);
+			as->setUseParams(dlg.useParams);
+
+			if (AutoSearchManager::getInstance()->updateAutoSearch(as)) {
 				ctrlAutoSearch.DeleteItem(sel);
-				addEntry(asNew, sel);
+				addEntry(as, sel);
 				ctrlAutoSearch.SelectItem(sel);
 			}
 		}
