@@ -233,16 +233,22 @@ void NetworkPage::getAddresses() {
 		dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);		
 	}
 
+	OrderedStringSet addresses;
 	if(dwStatus == ERROR_SUCCESS) {
 		PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
 		while (pAdapterInfo) {
 			IP_ADDR_STRING* pIpList = &(pAdapterInfo->IpAddressList);
 			while (pIpList) {
-				BindCombo.AddString(Text::toT(pIpList->IpAddress.String).c_str());
+				addresses.insert(pIpList->IpAddress.String);
 				pIpList = pIpList->Next;
 			}
 			pAdapterInfo = pAdapterInfo->Next;
 		}
+	}
+
+	addresses.insert("0.0.0.0");
+	for(auto i = addresses.begin(); i != addresses.end(); ++i) {
+		BindCombo.AddString(Text::toT(*i).c_str());
 	}
 	
 	if(AdapterInfo)
