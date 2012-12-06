@@ -2317,6 +2317,7 @@ IDI_SEARCH_ERROR        ICON                    "res\\AutoSearch\\SearchError.ic
 IDI_WAITING             ICON                    "res\\AutoSearch\\Waiting.ico"
 IDI_MANUAL              ICON                    "res\\AutoSearch\\Manual.ico"
 IDI_DISABLED            ICON                    "res\\AutoSearch\\Disabled.ico"
+IDI_SHARED              ICON                    "res\\Shared.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 

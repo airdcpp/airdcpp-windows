@@ -56,43 +56,11 @@ void ResourceLoader::unload() {
 	flagImages.Destroy();
 }
 void ResourceLoader::loadUserImages() {
-	//make this in a damn simple(but ugly) way so it hopefully works in every system,
-	//got tired of finding out the cause for the problem.
-
-	//first construct the overlay images.
-	CImageList overLays;
-	overLays.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
-	overLays.AddIcon(loadIcon(IDI_USER_PASSIVE, 16));
-	overLays.AddIcon(loadIcon(IDI_USER_OP, 16));
-	HIMAGELIST mergelist = ImageList_Merge(overLays, 0, overLays, 1, 0, 0);
-	overLays.AddIcon(ImageList_GetIcon(mergelist, 0, ILD_TRANSPARENT));
-
-	//start constructing the userlist images from the bases
-	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   10, 10);
-	int pos = userImages.AddIcon(loadIcon(IDI_USER_BASE, 16));
-	for(int i = 0; i < overLays.GetImageCount(); i++){
-		HIMAGELIST mergelist = ImageList_Merge(userImages, pos, overLays, i, 0, 0);
-		userImages.AddIcon(ImageList_GetIcon(mergelist, 0, ILD_TRANSPARENT));
-	}
-
-	pos = userImages.AddIcon(loadIcon(IDI_USER_AWAY, 16));
-	for(int i = 0; i < overLays.GetImageCount(); i++){
-		HIMAGELIST mergelist = ImageList_Merge(userImages, pos, overLays, i, 0, 0);
-		userImages.AddIcon(ImageList_GetIcon(mergelist, 0, ILD_TRANSPARENT));
-	}
-
-	pos = userImages.AddIcon(loadIcon(IDI_USER_BOT, 16));
-	for(int i = 0; i < overLays.GetImageCount(); i++){
-		HIMAGELIST mergelist = ImageList_Merge(userImages, pos, overLays, i, 0, 0);
-		userImages.AddIcon(ImageList_GetIcon(mergelist, 0, ILD_TRANSPARENT));
-	}
-	overLays.Destroy();
-
-	/*
+	
 	const unsigned baseCount = UserInfoBase::USER_ICON_MOD_START;
 	const unsigned modifierCount = UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START;
-	HICON bases[baseCount] = { CopyIcon(loadIcon(IDI_USER_BASE, 16)), CopyIcon(loadIcon(IDI_USER_AWAY, 16)), CopyIcon(loadIcon(IDI_USER_BOT, 16)) };
-	HICON modifiers[modifierCount] = { CopyIcon(loadIcon(IDI_USER_PASSIVE, 16)),  CopyIcon(loadIcon(IDI_USER_OP, 16)) };
+	HICON bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
+	HICON modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16),  loadIcon(IDI_USER_OP, 16) };
 	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   9, 9);
 	for(size_t iBase = 0; iBase < baseCount; ++iBase) {
 		for(size_t i = 0, n = modifierCount * modifierCount; i < n; ++i) {
@@ -107,24 +75,33 @@ void ResourceLoader::loadUserImages() {
 			int iCount = icons.GetImageCount();
 			if(iCount == 1) {
 				//add the base icon
-				userImages.AddIcon(icons.GetIcon(0));
+				userImages.AddIcon(icons.GetIcon(0, ILD_TRANSPARENT));
 			} else {
-
-				CImageList mergelist = ImageList_Merge(icons, 0, icons, 1, 0, 0);
+				HIMAGELIST mergelist = MergeImages(icons, 0, icons, 1);
 				for(size_t m = 2; m < iCount; ++m) {
-					HICON tmp = ImageList_GetIcon(ImageList_Merge(mergelist, 0, icons, m, 0, 0), 0, 0);
-					mergelist.ReplaceIcon(0, tmp);
-					DestroyIcon(tmp);
+					mergelist =  MergeImages(mergelist, 0, icons, m);
 				}
-				userImages.AddIcon(mergelist.GetIcon(0));
-				mergelist.Destroy();
+				userImages.AddIcon(ImageList_GetIcon(mergelist, 0, ILD_TRANSPARENT));
+				ImageList_Destroy(mergelist);
 
 			} 
 			icons.Destroy();
 		}	
 	}
-	*/
+	
 }
+HIMAGELIST ResourceLoader::MergeImages(HIMAGELIST hImglst1, int pos, HIMAGELIST hImglst2, int pos2) {
+	/* Adding the merge images to a same Imagelist before merging makes the transparency work on xp */
+	CImageList tmp;
+	tmp.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 0);
+	tmp.AddIcon(ImageList_GetIcon(hImglst1, pos, ILD_TRANSPARENT));
+	tmp.AddIcon(ImageList_GetIcon(hImglst2, pos2, ILD_TRANSPARENT));
+
+	HIMAGELIST dest = ImageList_Merge(tmp, 0, tmp, 1, 0, 0);
+	tmp.Destroy();
+	return dest;
+}
+
 
 HBITMAP ResourceLoader::getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize /*= 0*/, int ySize /*= 0*/) {
 	HICON hIcon = loadIcon(defaultIcon, xSize);
@@ -277,6 +254,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDR_TRAY_HUB:		return _T("HubMessage.ico");
 		case IDI_TOTAL_UP:		return _T("TotalUp.ico");
 		case IDI_TOTAL_DOWN:	return _T("TotalDown.ico");
+		case IDI_SHARED:		return _T("Shared.ico");
 
 		default: return Util::emptyStringT;
 	}

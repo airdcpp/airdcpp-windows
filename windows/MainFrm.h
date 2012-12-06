@@ -479,6 +479,9 @@ private:
 	HICON hShutdownIcon;
 	HICON slotsIcon;
 	HICON slotsFullIcon;
+	HICON infoIcon;
+	HICON warningIcon;
+	HICON errorIcon;
 	CContainedWindow statusContainer;
 
 	static bool isShutdownStatus;
@@ -528,6 +531,7 @@ private:
 	HWND createWinampToolbar();
 	void updateTray(bool add = true);
 	bool hasPassdlg;
+	void updateTooltipRect();
 
 	enum {
 		STATUS_LASTLINES,
@@ -544,7 +548,17 @@ private:
 		STATUS_LAST
 
 	};
+	
+	struct LogInfo {
+		LogInfo(const tstring& msg_, time_t& time_, uint8_t& severity_) : 
+		 msg(msg_), time(time_), severity(severity_) { }
 
+		tstring msg;
+		time_t time;
+		uint8_t severity;
+	};
+
+	
 	LRESULT onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/);
 
 	void showPortsError(const string& port);
@@ -554,7 +568,9 @@ private:
 	MainFrame(const MainFrame&) { dcassert(0); }
 
 	// LogManagerListener
-	virtual void on(LogManagerListener::Message, time_t t, const string& m, uint8_t /*sev*/) noexcept { PostMessage(WM_SPEAKER, STATUS_MESSAGE, (LPARAM)new pair<time_t, tstring>(t, tstring(Text::toT(m)))); }
+	virtual void on(LogManagerListener::Message, time_t t, const string& m, uint8_t sev) noexcept { 
+		PostMessage(WM_SPEAKER, STATUS_MESSAGE, (LPARAM)new LogInfo(tstring(Text::toT(m)), t, sev)); 
+	}
 
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;

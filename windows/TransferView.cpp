@@ -1486,7 +1486,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 		if(!statusString.empty()) {
 			statusString += _T(" ");
 		}			
-		statusString += CTSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed);
+		statusString += CTSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed);
 
 		ui->setStatusString(statusString);
 					

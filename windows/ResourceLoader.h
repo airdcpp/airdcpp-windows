@@ -76,6 +76,7 @@ private:
 	static int dirMaskedIndex;
 	static void loadFileImages();
 	static COLORREF GrayPalette[256];
+	static HIMAGELIST MergeImages(HIMAGELIST hImglst1, int pos, HIMAGELIST hImglst2, int pos2);
 
 };
 

@@ -76,6 +76,8 @@ bool MainFrame::bShutdown = false;
 uint64_t MainFrame::iCurrentShutdownTime = 0;
 bool MainFrame::isShutdownStatus = false;
 
+#define ICON_SPACE 24
+
 //static HICON mainIcon(ResourceLoader::loadIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXICON)));
 //static HICON mainSmallIcon(ResourceLoader::loadIcon(IDR_MAINFRAME, ::GetSystemMetrics(SM_CXSMICON)));
 
@@ -284,7 +286,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	ctrlStatus.SetSimple(FALSE);
 	int w[11] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	ctrlStatus.SetParts(11, w);
-	statusSizes[0] = 24; //WinUtil::getTextWidth(TSTRING(AWAY), ctrlStatus.m_hWnd); // for "AWAY" segment
+	//statusSizes[0] = 4;
 	statusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
 	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);
@@ -292,6 +294,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	// last lines and away are different, the tooltip text changes, onGetToolTip handles the text shown.
 	CToolInfo ti_lastlines(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_LASTLINES+POPUP_UID, 0, LPSTR_TEXTCALLBACK);
 	CToolInfo ti_away(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_AWAY+POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	CToolInfo ti_shared(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_SHARED+POPUP_UID, 0, (LPWSTR)CTSTRING(SHARED));
 	CToolInfo ti_dlSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_DL_SPEED+POPUP_UID, 0, (LPWSTR)CTSTRING(DL_STATUS_POPUP));
 	CToolInfo ti_ulSpeed(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_UL_SPEED+POPUP_UID, 0, (LPWSTR)CTSTRING(UL_STATUS_POPUP));
 	CToolInfo ti_queueSize(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_QUEUED+POPUP_UID, 0, (LPWSTR)CTSTRING(QUEUE_SIZE));
@@ -302,6 +305,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	ctrlTooltips.AddTool(&ti_lastlines);
 	ctrlTooltips.AddTool(&ti_away);
+	ctrlTooltips.AddTool(&ti_shared);
 	ctrlTooltips.AddTool(&ti_dlSpeed);
 	ctrlTooltips.AddTool(&ti_ulSpeed);
 	ctrlTooltips.AddTool(&ti_queueSize);
@@ -398,15 +402,19 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
 	awayIconON = ResourceLoader::userImages.GetIcon(4);
 	awayIconOFF = ResourceLoader::userImages.GetIcon(0);
+	infoIcon = ResourceLoader::loadIcon(IDI_INFO, 16);
+	warningIcon = ResourceLoader::loadIcon(IDI_IWARNING, 16);
+	errorIcon = ResourceLoader::loadIcon(IDI_IERROR, 16);;
 
 	ctrlStatus.SetIcon(STATUS_AWAY, Util::getAway() ? awayIconON : awayIconOFF);
+	ctrlStatus.SetIcon(STATUS_SHARED, ResourceLoader::loadIcon(IDI_SHARED, 16));
 	ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
+	ctrlStatus.SetIcon(STATUS_HUBS, ResourceLoader::loadIcon(IDI_HUB, 16));
 	ctrlStatus.SetIcon(STATUS_DOWNLOADED, ResourceLoader::loadIcon(IDI_TOTAL_DOWN, 16));
 	ctrlStatus.SetIcon(STATUS_UPLOADED, ResourceLoader::loadIcon(IDI_TOTAL_UP, 16));
 	ctrlStatus.SetIcon(STATUS_DL_SPEED, ResourceLoader::loadIcon(IDI_DOWNLOAD, 16));
 	ctrlStatus.SetIcon(STATUS_UL_SPEED, ResourceLoader::loadIcon(IDI_UPLOAD, 16));
 	ctrlStatus.SetIcon(STATUS_QUEUED, ResourceLoader::loadIcon(IDI_QUEUE, 16));
-	ctrlStatus.SetIcon(STATUS_HUBS, ResourceLoader::loadIcon(IDI_HUB, 16));
 
 	//background image
 	if(!SETTING(BACKGROUND_IMAGE).empty()) {
@@ -719,29 +727,25 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		const TStringList& str = *pstr;
 		if(ctrlStatus.IsWindow()) {
 			bool u = false;
-			//ctrlStatus.SetText(1, str[0].c_str());
 			ctrlStatus.SetIcon(STATUS_AWAY, Util::getAway() ? awayIconON : awayIconOFF);
-			for(int i = 1; i < 9; i++) {
-				int w = WinUtil::getTextWidth(str[i], ctrlStatus.m_hWnd);
+			auto pos = 0;
+			for(int i = STATUS_SHARED; i < STATUS_SHUTDOWN; i++) {
 				
-				if(i == STATUS_SLOTS-1) {
-					w+=20;
-					if(str[i][1] == '0') // a hack, do this some other way.
+				int w = WinUtil::getTextWidth(str[pos], ctrlStatus.m_hWnd);
+				
+				if(i == STATUS_SLOTS) {
+					if(str[pos][1] == '0') // a hack, do this some other way.
 						ctrlStatus.SetIcon(STATUS_SLOTS, slotsFullIcon);
 					else
 						ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
 				}
-				//make room for the icons
-				if(i == STATUS_DOWNLOADED-1 || i == STATUS_UPLOADED-1 ||
-					i == STATUS_DL_SPEED-1 || i == STATUS_UL_SPEED-1 || 
-					i == STATUS_QUEUED-1 || i == STATUS_HUBS-1 )
-						w += 20;
-
-				if((statusSizes[i] < w) || (statusSizes[i] > (w + 30)) ) {
-					statusSizes[i] = w;
+		
+				if((statusSizes[i-1] < w ) || (statusSizes[i-1] > (w + 25)) ) {
+					statusSizes[i-1] = w;
 					u = true;
 				}
-				ctrlStatus.SetText(i+1, str[i].c_str());
+				ctrlStatus.SetText(i, str[pos].c_str());
+				pos++;
 			}
 
 			if(u)
@@ -787,10 +791,10 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		parseCommandLine(GetCommandLine());
 	} else if(wParam == STATUS_MESSAGE) {
 		//tstring* msg = (tstring*)lParam;
-		auto_ptr<pair<time_t, tstring> > msg((pair<time_t, tstring>*)lParam);
+		LogInfo *msg = (LogInfo*)lParam;
 		if(ctrlStatus.IsWindow()) {
 			//tstring line = Text::toT("[" + Util::getShortTimeString() + "] ") + *msg;
-			tstring line = Text::toT("[" + Util::getTimeStamp(msg->first) + "] ") + msg->second;
+			tstring line = Text::toT("[" + Util::getTimeStamp(msg->time) + "] ") + msg->msg;
 
 			ctrlStatus.SetText(STATUS_LASTLINES, line.c_str());
 			while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
@@ -800,8 +804,21 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 			} else {
 				lastLinesList.push_back(line.substr(0, line.find(_T('\r'))));
 			}
+			switch(msg->severity) {
+				case LogManager::LOG_INFO:
+					ctrlStatus.SetIcon(STATUS_LASTLINES, infoIcon);
+					break;
+				case LogManager::LOG_WARNING:
+					ctrlStatus.SetIcon(STATUS_LASTLINES, warningIcon);
+					break;
+				case LogManager::LOG_ERROR:
+					ctrlStatus.SetIcon(STATUS_LASTLINES, errorIcon);
+					break;
+				default:
+					break;
+			}
 		}
-		//delete msg;
+		delete msg;
 	} else if(wParam == SHOW_POPUP) {
 		Popup* msg = (Popup*)lParam;
 		PopupManager::getInstance()->Show(msg->Message, msg->Title, msg->Icon, msg->hIcon, msg->force);
@@ -1372,31 +1389,13 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 		ctrlStatus.GetClientRect(sr);
 		w[10] = sr.right - 20;
 		w[9] = w[10] - 20;
-		w[8] = w[9] - 120;
-#define setw(x) w[x] = max(w[x+1] - statusSizes[x], 0)
-		setw(7); setw(6); setw(5); setw(4); setw(3); setw(2); setw(1); setw(0);
+#define setw(x) w[x] = max(w[x+1] - (statusSizes[x]+ICON_SPACE), 0)
+		setw(8); setw(7); setw(6); setw(5); setw(4); setw(3); setw(2); setw(1); setw(0);
 
 		ctrlStatus.SetParts(11, w);
 		ctrlTooltips.SetMaxTipWidth(w[0]);
-
-		ctrlStatus.GetRect(STATUS_LASTLINES, sr);
-		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_LASTLINES+POPUP_UID, sr);
-		ctrlStatus.GetRect(STATUS_AWAY, sr);
-		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_AWAY+POPUP_UID, sr);
-		ctrlStatus.GetRect(STATUS_DL_SPEED, sr);
-		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_DL_SPEED+POPUP_UID, sr);
-		ctrlStatus.GetRect(STATUS_UL_SPEED, sr);
-		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_UL_SPEED+POPUP_UID, sr);
-		ctrlStatus.GetRect(STATUS_QUEUED, sr);
-		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_QUEUED+POPUP_UID, sr);
-		ctrlStatus.GetRect(STATUS_SLOTS, sr);
-		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_SLOTS+POPUP_UID, sr);
-		ctrlStatus.GetRect(STATUS_HUBS, sr);
-		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_HUBS+POPUP_UID, sr);
-		ctrlStatus.GetRect(STATUS_DOWNLOADED, sr);
-		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_DOWNLOADED+POPUP_UID, sr);
-		ctrlStatus.GetRect(STATUS_UPLOADED, sr);
-		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_UPLOADED+POPUP_UID, sr);
+		
+		updateTooltipRect();
 	}
 	CRect rc = rect;
 	if(tabsontop == false)
@@ -1824,16 +1823,15 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	uint64_t queueSize = QueueManager::getInstance()->fileQueue.getTotalQueueSize();
 
 	TStringList* str = new TStringList();
-	str->push_back(Util::getAway() ? TSTRING(AWAY) : _T(""));
-	str->push_back(TSTRING(SHARED) + _T(": ") + Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
-	str->push_back(_T(" ") + Text::toT(Client::getCounts()));
-	str->push_back(_T(" ") + Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
+	str->push_back(Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
+	str->push_back(Text::toT(Client::getCounts()));
+	str->push_back(Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
 
-	str->push_back(_T(" ") + Util::formatBytesW(Socket::getTotalDown()));
-	str->push_back(_T(" ") + Util::formatBytesW(Socket::getTotalUp()));
+	str->push_back(Util::formatBytesW(Socket::getTotalDown()));
+	str->push_back(Util::formatBytesW(Socket::getTotalUp()));
 
-	tstring down = _T(" [") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("][");
-	tstring up = _T(" [") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
+	tstring down = _T("[") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("][");
+	tstring up = _T("[") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
 
 	auto dl = ThrottleManager::getDownLimit();
 	if (dl > 0)
@@ -1850,7 +1848,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	str->push_back(down + _T("] ") + Util::formatBytesW(downdiff*1000I64/diff) + _T("/s"));
 	str->push_back(up + _T("] ") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
 
-	str->push_back(_T(" " ) + Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
+	str->push_back(Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
 
 	PostMessage(WM_SPEAKER, STATS, (LPARAM)str);
 	SettingsManager::getInstance()->set(SettingsManager::TOTAL_UPLOAD, SETTING(TOTAL_UPLOAD) + updiff);
@@ -2202,4 +2200,11 @@ void MainFrame::ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, HIC
 	p->force = force;
 
 	PostMessage(WM_SPEAKER, SHOW_POPUP, (LPARAM)p);
+}
+void MainFrame::updateTooltipRect() {
+	CRect sr;
+	for(uint8_t i = STATUS_LASTLINES; i != STATUS_SHUTDOWN; i++) {
+		ctrlStatus.GetRect(i, sr);
+		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, i+POPUP_UID, sr);
+	}
 }
