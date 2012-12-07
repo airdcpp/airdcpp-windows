@@ -1271,7 +1271,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ListHlText">HighLight matches in file lists (wildcards, | separate)</String>
 		<String Name="ListHlExample">Example, *NORDIC* (this may slow down file list loading...)</String>
 		<String Name="SettingsDupes">Dupes Settings</String>
-		<String Name="ReportSkiplist">Show files blocked by the skiplist in systemlog</String>
+		<String Name="ReportSkiplist">Show files blocked by the skiplist in system log</String>
 		<String Name="XUsers">%d users</String>
 		<String Name="XUsersWaiting">%d user(s) (%d waiting)</String>
 		<String Name="XConnections">%d connection(s)</String>
@@ -1319,7 +1319,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ConfirmMoveDirFinishedBundlePart">The selected bundle directory contains total of %d finished files. Do you also want to move them?</String>
 		<String Name="MatchAdl">ADLSearch</String>
 		<String Name="MatchingAdl">Matching file list with ADL search, this might take a while if the list is large...</String>
-		<String Name="LogHashing">Show Hashing Files in systemlog</String>
+		<String Name="LogHashing">Show each hashed file in system log</String>
 		<String Name="AdlsearchInProgress">The ADLSearch list can't be modified while matching is in progress!</String>
 		<String Name="PriopageOrderBalanced">Balanced (based on sources and their speeds)</String>
 		<String Name="PriopageOrderProgress">Set priorities automatically based on the progress</String>
@@ -1729,5 +1729,6 @@ would you still like to load them?</String>
 		<String Name="SettingsAutoCompleteBundles">Try to to complete bundles with missing files automatically</String>
 		<String Name="RequireExactMatch">Require an exact match</String>
 		<String Name="ClearHistory">Clear history</String>
+		<String Name="SettingsLogScheduledRefreshes">Show scheduled filelist refreshes in system log</String>
 	</Strings>
 </Language>

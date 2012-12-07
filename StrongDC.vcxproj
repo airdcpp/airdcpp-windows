@@ -770,6 +770,7 @@
     <Image Include="res\file.ico" />
     <Image Include="res\folder.ico" />
     <Image Include="res\folder_incomplete.ico" />
+    <Image Include="res\HubMessage.ico" />
     <Image Include="res\MediaToolbar\back.ico" />
     <Image Include="res\MediaToolbar\down.ico" />
     <Image Include="res\MediaToolbar\next.ico" />
@@ -792,10 +793,13 @@
     <Image Include="res\searchTypes\Video.ico" />
     <Image Include="res\SettingsTree\Limiter.ico" />
     <Image Include="res\SettingsTree\SearchTypes.ico" />
+    <Image Include="res\Shared.ico" />
     <Image Include="res\Slots.ico" />
     <Image Include="res\SlotsFull.ico" />
     <Image Include="res\splash.png" />
     <Image Include="res\text.ico" />
+    <Image Include="res\TotalDown.ico" />
+    <Image Include="res\TotalUp.ico" />
     <Image Include="res\types.bmp" />
     <Image Include="res\upload_user.ico" />
   </ItemGroup>

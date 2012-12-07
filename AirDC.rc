@@ -1053,7 +1053,7 @@ BEGIN
     PUSHBUTTON      "?",IDC_COUNTRY_FORMAT_HELP,103,281,14,14
 END
 
-IDD_LOGPAGE DIALOGEX 0, 0, 275, 264
+IDD_LOGPAGE DIALOGEX 0, 0, 276, 283
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 EXSTYLE WS_EX_STATICEDGE
 CAPTION "Logs and Sound"
@@ -1068,8 +1068,8 @@ BEGIN
     RTEXT           "Directory",IDC_SETTINGS_LOG_DIR,8,14,49,8
     RTEXT           "Format",IDC_SETTINGS_FORMAT,7,132,47,8,WS_TABSTOP
     RTEXT           "File name",IDC_SETTINGS_FILE_NAME,8,145,46,8,WS_TABSTOP
-    GROUPBOX        "System Log / Statusbar",IDC_SYS_LOG,7,168,261,89
-    CONTROL         "",IDC_SYSTEM_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,16,179,244,74
+    GROUPBOX        "System Log / Statusbar",IDC_SYS_LOG,7,168,261,105
+    CONTROL         "",IDC_SYSTEM_LIST,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,16,179,244,87
 END
 
 IDD_USER_COMMAND DIALOGEX 0, 0, 435, 282
@@ -1565,6 +1565,8 @@ BEGIN
 
     IDD_LOGPAGE, DIALOG
     BEGIN
+        RIGHTMARGIN, 275
+        BOTTOMMARGIN, 264
     END
 
     IDD_USER_COMMAND, DIALOG
@@ -2256,7 +2258,7 @@ IDI_U_USER              ICON                    "res\\upload_user.ico"
 IDI_SLOTS               ICON                    "res\\Slots.ico"
 IDI_SLOTSFULL           ICON                    "res\\SlotsFull.ico"
 IDI_TOTAL_UP            ICON                    "res\\TotalUp.ico"
-IDI_TOTAL_DOWN           ICON                   "res\\TotalDown.ico"
+IDI_TOTAL_DOWN          ICON                    "res\\TotalDown.ico"
 IDI_USER_BASE           ICON                    "res\\UserlistImages\\UserBase.ico"
 IDI_USER_AWAY           ICON                    "res\\UserlistImages\\UserAway.ico"
 IDI_USER_BOT            ICON                    "res\\UserlistImages\\UserBot.ico"

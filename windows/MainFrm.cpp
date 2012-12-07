@@ -1456,7 +1456,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 }
 
 LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ShareManager::getInstance()->refresh();
+	ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL);
 	return 0;
 }
 
@@ -2074,8 +2074,8 @@ LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 	LPNMTOOLBAR tb = (LPNMTOOLBAR)pnmh;
 	OMenu dropMenu;
 	dropMenu.CreatePopupMenu();
-	dropMenu.appendItem(CTSTRING(ALL), [] { ShareManager::getInstance()->refresh(); });
-	dropMenu.appendItem(CTSTRING(INCOMING), [] { ShareManager::getInstance()->refresh(true); });
+	dropMenu.appendItem(CTSTRING(ALL), [] { ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL); });
+	dropMenu.appendItem(CTSTRING(INCOMING), [] { ShareManager::getInstance()->refresh(true, ShareManager::TYPE_MANUAL); });
 	dropMenu.appendSeparator();
 
 	auto l = ShareManager::getInstance()->getGroupedDirectories();

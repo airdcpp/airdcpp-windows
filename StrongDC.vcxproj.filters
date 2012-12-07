@@ -1181,5 +1181,17 @@
     <Image Include="res\AutoSearch\Disabled.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\HubMessage.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\TotalUp.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\TotalDown.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Shared.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
