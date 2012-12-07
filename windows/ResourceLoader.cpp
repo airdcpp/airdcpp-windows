@@ -56,50 +56,44 @@ void ResourceLoader::unload() {
 	flagImages.Destroy();
 }
 void ResourceLoader::loadUserImages() {
-	
-	const unsigned baseCount = UserInfoBase::USER_ICON_MOD_START;
-	const unsigned modifierCount = UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START;
-	HICON bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
-	HICON modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16),  loadIcon(IDI_USER_OP, 16) };
-	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   9, 9);
-	for(size_t iBase = 0; iBase < baseCount; ++iBase) {
-		for(size_t i = 0, n = modifierCount * modifierCount; i < n; ++i) {
-			CImageList icons;
-			icons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 6);
-			icons.AddIcon(bases[iBase]);
 
-			for(size_t iMod = 0; iMod < modifierCount; ++iMod) {
-				if(i & (1 << iMod))
-					icons.AddIcon(modifiers[iMod]);
-			}
-			int iCount = icons.GetImageCount();
-			if(iCount == 1) {
-				//add the base icon
-				userImages.AddIcon(icons.GetIcon(0, ILD_TRANSPARENT));
-			} else {
-				HIMAGELIST mergelist = MergeImages(icons, 0, icons, 1);
-				for(size_t m = 2; m < iCount; ++m) {
-					mergelist =  MergeImages(mergelist, 0, icons, m);
-				}
-				userImages.AddIcon(ImageList_GetIcon(mergelist, 0, ILD_TRANSPARENT));
-				ImageList_Destroy(mergelist);
+	//first construct the overlay images.
+	CImageList overLays;
+	overLays.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
+	overLays.AddIcon(loadIcon(IDI_USER_PASSIVE, 16));
+	overLays.AddIcon(loadIcon(IDI_USER_OP, 16));
+	overLays.AddIcon(MergeImages(overLays, 0, overLays, 1));
 
-			} 
-			icons.Destroy();
-		}	
+	//start constructing the userlist images from the bases
+	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   10, 10);
+	int pos = userImages.AddIcon(loadIcon(IDI_USER_BASE, 16));
+	for(int i = 0; i < overLays.GetImageCount(); i++){
+		userImages.AddIcon(MergeImages(userImages, pos, overLays, i));
 	}
+
+	pos = userImages.AddIcon(loadIcon(IDI_USER_AWAY, 16));
+	for(int i = 0; i < overLays.GetImageCount(); i++){
+		userImages.AddIcon(MergeImages(userImages, pos, overLays, i));
+	}
+
+	pos = userImages.AddIcon(loadIcon(IDI_USER_BOT, 16));
+	for(int i = 0; i < overLays.GetImageCount(); i++){
+		userImages.AddIcon(MergeImages(userImages, pos, overLays, i));
+	}
+	overLays.Destroy();
 	
 }
-HIMAGELIST ResourceLoader::MergeImages(HIMAGELIST hImglst1, int pos, HIMAGELIST hImglst2, int pos2) {
+HICON ResourceLoader::MergeImages(HIMAGELIST hImglst1, int pos, HIMAGELIST hImglst2, int pos2) {
 	/* Adding the merge images to a same Imagelist before merging makes the transparency work on xp */
 	CImageList tmp;
 	tmp.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 0);
 	tmp.AddIcon(ImageList_GetIcon(hImglst1, pos, ILD_TRANSPARENT));
 	tmp.AddIcon(ImageList_GetIcon(hImglst2, pos2, ILD_TRANSPARENT));
+	tmp.Merge(tmp, 0, tmp, 1, 0, 0);
 
-	HIMAGELIST dest = ImageList_Merge(tmp, 0, tmp, 1, 0, 0);
+	HICON merged = CopyIcon(tmp.GetIcon(0, ILD_TRANSPARENT));
 	tmp.Destroy();
-	return dest;
+	return merged;
 }
 
 

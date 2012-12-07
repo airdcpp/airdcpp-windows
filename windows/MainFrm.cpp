@@ -740,7 +740,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 						ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
 				}
 		
-				if((statusSizes[i-1] < w ) || (statusSizes[i-1] > (w + 25)) ) {
+				if((statusSizes[i-1] < w ) || (statusSizes[i-1] > (w + 35)) ) {
 					statusSizes[i-1] = w;
 					u = true;
 				}
@@ -1817,9 +1817,6 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		return;
 
 	Util::increaseUptime();
-	int64_t diff = (int64_t)((lastUpdate == 0) ? aTick - 1000 : aTick - lastUpdate);
-	int64_t updiff = Socket::getTotalUp() - lastUp;
-	int64_t downdiff = Socket::getTotalDown() - lastDown;
 	uint64_t queueSize = QueueManager::getInstance()->fileQueue.getTotalQueueSize();
 
 	TStringList* str = new TStringList();
@@ -1844,6 +1841,10 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		up += Text::toT(Util::formatBytes(ul * 1024));
 	else
 		up += _T("-");
+
+	int64_t diff = (int64_t)((lastUpdate == 0) ? aTick - 1000 : aTick - lastUpdate);
+	int64_t updiff = Socket::getTotalUp() - lastUp;
+	int64_t downdiff = Socket::getTotalDown() - lastDown;
 	
 	str->push_back(down + _T("] ") + Util::formatBytesW(downdiff*1000I64/diff) + _T("/s"));
 	str->push_back(up + _T("] ") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
