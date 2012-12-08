@@ -89,10 +89,12 @@ HICON ResourceLoader::MergeImages(HIMAGELIST hImglst1, int pos, HIMAGELIST hImgl
 	tmp.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 0);
 	tmp.AddIcon(ImageList_GetIcon(hImglst1, pos, ILD_TRANSPARENT));
 	tmp.AddIcon(ImageList_GetIcon(hImglst2, pos2, ILD_TRANSPARENT));
-	tmp.Merge(tmp, 0, tmp, 1, 0, 0);
+	CImageList mergelist;
+	mergelist.Merge(tmp, 0, tmp, 1, 0, 0);
 
-	HICON merged = CopyIcon(tmp.GetIcon(0, ILD_TRANSPARENT));
+	HICON merged = CopyIcon(mergelist.GetIcon(0, ILD_TRANSPARENT));
 	tmp.Destroy();
+	mergelist.Destroy();
 	return merged;
 }
 

@@ -727,6 +727,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		const TStringList& str = *pstr;
 		if(ctrlStatus.IsWindow()) {
 			bool u = false;
+			bool downsize = false;
 			ctrlStatus.SetIcon(STATUS_AWAY, Util::getAway() ? awayIconON : awayIconOFF);
 			auto pos = 0;
 			for(int i = STATUS_SHARED; i < STATUS_SHUTDOWN; i++) {
@@ -740,10 +741,11 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 						ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
 				}
 		
-				if((statusSizes[i-1] < w ) || (statusSizes[i-1] > (w + 35)) ) {
+				if(statusSizes[i-1] < w || statusSizes[i-1] > (w + 50) ) {
 					statusSizes[i-1] = w;
 					u = true;
 				}
+
 				ctrlStatus.SetText(i, str[pos].c_str());
 				pos++;
 			}
@@ -1818,14 +1820,20 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 
 	Util::increaseUptime();
 	uint64_t queueSize = QueueManager::getInstance()->fileQueue.getTotalQueueSize();
+	int64_t totalDown = Socket::getTotalDown();
+	int64_t totalUp = Socket::getTotalUp();
+
+	int64_t diff = (int64_t)((lastUpdate == 0) ? aTick - 1000 : aTick - lastUpdate);
+	int64_t updiff = totalUp - lastUp;
+	int64_t downdiff = totalDown - lastDown;
 
 	TStringList* str = new TStringList();
 	str->push_back(Util::formatBytesW(ShareManager::getInstance()->getSharedSize()));
 	str->push_back(Text::toT(Client::getCounts()));
 	str->push_back(Util::toStringW(UploadManager::getInstance()->getFreeSlots()) + _T('/') + Util::toStringW(UploadManager::getInstance()->getSlots()) + _T(" (") + Util::toStringW(UploadManager::getInstance()->getFreeExtraSlots()) + _T('/') + Util::toStringW(SETTING(EXTRA_SLOTS)) + _T(")"));
 
-	str->push_back(Util::formatBytesW(Socket::getTotalDown()));
-	str->push_back(Util::formatBytesW(Socket::getTotalUp()));
+	str->push_back(Util::formatBytesW(totalDown));
+	str->push_back(Util::formatBytesW(totalUp));
 
 	tstring down = _T("[") + Util::toStringW(DownloadManager::getInstance()->getDownloadCount()) + _T("][");
 	tstring up = _T("[") + Util::toStringW(UploadManager::getInstance()->getUploadCount()) + _T("][");
@@ -1842,21 +1850,16 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	else
 		up += _T("-");
 
-	int64_t diff = (int64_t)((lastUpdate == 0) ? aTick - 1000 : aTick - lastUpdate);
-	int64_t updiff = Socket::getTotalUp() - lastUp;
-	int64_t downdiff = Socket::getTotalDown() - lastDown;
-	
 	str->push_back(down + _T("] ") + Util::formatBytesW(downdiff*1000I64/diff) + _T("/s"));
 	str->push_back(up + _T("] ") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
-
 	str->push_back(Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
 
 	PostMessage(WM_SPEAKER, STATS, (LPARAM)str);
 	SettingsManager::getInstance()->set(SettingsManager::TOTAL_UPLOAD, SETTING(TOTAL_UPLOAD) + updiff);
 	SettingsManager::getInstance()->set(SettingsManager::TOTAL_DOWNLOAD, SETTING(TOTAL_DOWNLOAD) + downdiff);
 	lastUpdate = aTick;
-	lastUp = Socket::getTotalUp();
-	lastDown = Socket::getTotalDown();
+	lastUp = totalUp;
+	lastDown = totalDown;
 
 	if(SETTING(DISCONNECT_SPEED) < 1) {
 		SettingsManager::getInstance()->set(SettingsManager::DISCONNECT_SPEED, 1);
