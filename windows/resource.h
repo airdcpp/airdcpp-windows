@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -129,7 +129,7 @@
 #define IDD_EMOTICONS_DLG               293
 #define IDB_EMOTICON                    295
 #define IDD_NETWORKPAGE                 296
-#define IDD_CERTIFICATESPAGE            297
+#define IDD_ENCRYPTIONPAGE				297
 #define IDD_DOWNLOADPAGE                298
 #define IDB_WINAMPBAR                   299
 #define IDR_WINAMP_LOGO                 300
@@ -947,6 +947,7 @@
 #define IDC_SETTINGS_MAX_MCN_DL         1380
 #define IDC_DL_AUTODETECT               1381
 #define IDC_UL_AUTODETECT               1382
+#define IDC_DL_AUTODETECT2              1382
 #define IDC_UL_AUTODETECT_WIZ           1383
 #define IDC_DL_AUTODETECT_WIZ           1384
 #define IDC_SETTINGS_PROFILE            1385
@@ -1193,6 +1194,7 @@
 #define IDC_TIMEVAR_LINK                1689
 #define IDC_AS_MAXNUMBER_HELP2          1690
 #define IDC_INCR_NUM_DESC               1690
+#define IDC_AUTO_DETECTION_USE_LIMITED  1690
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1541,7 +1543,6 @@
 #define IDC_FIND_TEXT                   15129
 #define IDC_FILTER                      15130
 #define IDC_EMOT                        15131
-#define IDC_OWN_LIST_ADL                15132
 #define ID_TOGGLE_TOOLBAR               15999
 #define ID_TOGGLE_TBSTATUS              16900
 #define ID_LOCK_TB                      18900
@@ -1564,7 +1565,8 @@
 #define IDC_SEND_MESSAGE                42786
 #define IDC_FILTER_FOCUS                42788
 #define IDC_AUTOSEARCH                  42789
-#define IDC_OPEN_MY_LIST                42790
+#define IDC_OPEN_OWN_LIST               42790
+#define IDC_BROWSE_OWN_LIST             42791
 #define ID_WINDOW_MINIMIZE_ALL          57654
 #define ID_WINDOW_RESTORE_ALL           57655
 #define IDC_WINAMP_START                57666
@@ -1577,7 +1579,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1690
+#define _APS_NEXT_CONTROL_VALUE         1691
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

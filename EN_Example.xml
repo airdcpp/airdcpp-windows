@@ -337,6 +337,7 @@
 		<String Name="MenuOpenDownloadsDir">Open downloads directory</String>
 		<String Name="MenuOpenFileList">Open file list...	Ctrl+L</String>
 		<String Name="MenuOpenMatchAll">Match downloaded lists</String>
+		<String Name="MenuOpenOwnList">Open own list</String>
 		<String Name="MenuPublicHubs">Public Hubs	Ctrl+P</String>
 		<String Name="MenuQuickConnect">Quick Connect ...	Ctrl+Q</String>
 		<String Name="MenuReconnect">Reconnect	Ctrl+R</String>
@@ -549,7 +550,6 @@
 		<String Name="SettingsBindAddress">Bind address</String>
 		<String Name="SettingsBindAddressHelp">Network interface for all connections</String>
 		<String Name="SettingsBoldOptions">Tab bolding on content change</String>
-		<String Name="SettingsCertificates">Security Certificates</String>
 		<String Name="SettingsClearSearch">Clear search box after each search</String>
 		<String Name="SettingsColorAlternate">Search Alternate</String>
 		<String Name="SettingsColorFavorite">Favorite</String>
@@ -1158,7 +1158,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="UpnpSuccessfullyCreatedMappings">Successfully created port mappings</String>
 		<String Name="TestWrite">Test Write to AirDC++ folders on startup</String>
 		<String Name="SettingsIncomingRefreshTime">Incoming refresh time</String>
-		<String Name="SettingsUseAdls">Use ADLSearch on file lists</String>
 		<String Name="SettingDontDlAlreadyQueued">Don't download files already in queue</String>
 		<String Name="FavShowJoin">Show User Joins / Parts</String>
 		<String Name="UpnpRemovedMappings">Successfully removed port mappings</String>
@@ -1676,7 +1675,6 @@ would you still like to load them?</String>
 		<String Name="BloomMode">Bloom filter mode</String>
 		<String Name="SettingsConfirmHubClose">Confirm hub closing</String>
 		<String Name="SettingsConfirmAsRemove">Confirm item removal in auto search</String>
-		<String Name="OwnListAdl">Match own list with ADL search</String>
 		<String Name="MatchColumn">Match Column</String>
 		<String Name="UnknownUser">Unknown user</String>
 		<String Name="NoAccessOnlineHubs">No access to this file via any online hub</String>
@@ -1731,5 +1729,9 @@ would you still like to load them?</String>
 		<String Name="ClearHistory">Clear history</String>
 		<String Name="SettingsLogScheduledRefreshes">Show scheduled filelist refreshes in system log</String>
 		<String Name="SetAwayMessage">Set away message</String>
+		<String Name="SettingsAutoDetectionUseLimited">Use the limiter values when setting the auto detected speed and slot limits</String>
+		<String Name="Encryption">Encryption</String>
+		<String Name="SettingsUseAdls">Always match other users' file lists with ADL search</String>
+		<String Name="SettingsUseAdlsOwn">Always match own full file list with ADL search </String>
 	</Strings>
 </Language>

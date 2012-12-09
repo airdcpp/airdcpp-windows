@@ -44,7 +44,7 @@
 #include "NetworkPage.h"
 #include "WindowsPage.h"
 #include "PriorityPage.h"
-#include "CertificatesPage.h"
+#include "EncryptionPage.h"
 #include "LimitPage.h"
 
 #include "MiscPage.h"
@@ -89,7 +89,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = new SDCPage(s);
 	pages[n++] = new LogPage(s);
 	pages[n++] = new UCPage(s);	
-	pages[n++] = new CertificatesPage(s);
+	pages[n++] = new EncryptionPage(s);
 	pages[n++] = new MiscPage(s);
 	pages[n++] = new IgnorePage(s);
 	pages[n++] = new SearchPage(s);

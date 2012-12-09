@@ -407,8 +407,8 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 			as->setFileType(dlg.fileTypeStr);
 			as->setAction((AutoSearch::ActionType)dlg.action);
 			as->setRemove(dlg.remove);
-			as->setTarget(dlg.target);
 			as->setTargetType(dlg.targetType);
+			as->setTarget(dlg.target);
 			as->setMethod((StringMatch::Method)dlg.matcherType);
 			as->setMatcherString(dlg.matcherString);
 			as->setUserMatcher(dlg.userMatch);

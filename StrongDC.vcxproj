@@ -513,7 +513,7 @@
     <ClCompile Include="windows\AVIPreview.cpp" />
     <ClCompile Include="windows\BarShader.cpp" />
     <ClCompile Include="windows\CDMDebugFrame.cpp" />
-    <ClCompile Include="windows\CertificatesPage.cpp" />
+    <ClCompile Include="windows\EncryptionPage.cpp" />
     <ClCompile Include="windows\RichTextBox.cpp" />
     <ClCompile Include="windows\CommandDlg.cpp" />
     <ClCompile Include="windows\DirectoryListingFrm.cpp" />
@@ -629,7 +629,7 @@
     <ClInclude Include="windows\AVIPreview.h" />
     <ClInclude Include="windows\BarShader.h" />
     <ClInclude Include="windows\CDMDebugFrame.h" />
-    <ClInclude Include="windows\CertificatesPage.h" />
+    <ClInclude Include="windows\EncryptionPage.h" />
     <ClInclude Include="windows\RichTextBox.h" />
     <ClInclude Include="windows\CommandDlg.h" />
     <ClInclude Include="windows\DimEdit.h" />

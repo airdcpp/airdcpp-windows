@@ -1722,6 +1722,7 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lP
 				break;
 			}
 		case STARTED:
+			ctrlList.DeleteAllItems();
 			ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 			break;
 		case UPDATE_STATUS:

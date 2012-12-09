@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(CERTIFICATES_PAGE_H)
-#define CERTIFICATES_PAGE_H
+#if !defined(ENCRYPTION_PAGE_H)
+#define ENCRYPTION_PAGE_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -27,18 +27,18 @@
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
 
-class CertificatesPage : public CPropertyPage<IDD_CERTIFICATESPAGE>, public PropPage
+class EncryptionPage : public CPropertyPage<IDD_ENCRYPTIONPAGE>, public PropPage
 {
 public:
-	CertificatesPage(SettingsManager *s) : PropPage(s) {
-		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(SETTINGS_CERTIFICATES)).c_str());
+	EncryptionPage(SettingsManager *s) : PropPage(s) {
+		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(ENCRYPTION)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}
 
-	~CertificatesPage() { free(title); }
+	~EncryptionPage() { free(title); }
 
-	BEGIN_MSG_MAP(CertificatesPage)
+	BEGIN_MSG_MAP(EncryptionPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		COMMAND_ID_HANDLER(IDC_BROWSE_PRIVATE_KEY, onBrowsePrivateKey)
 		COMMAND_ID_HANDLER(IDC_BROWSE_CERTIFICATE, onBrowseCertificate)
@@ -60,6 +60,8 @@ protected:
 	static Item items[];
 	static TextItem texts[];
 	TCHAR* title;
+
+	CComboBox ctrlTransferEncryption;
 };
 
-#endif // !defined(CERTIFICATES_PAGE_H)
+#endif // !defined(ENCRYPTION_PAGE_H)

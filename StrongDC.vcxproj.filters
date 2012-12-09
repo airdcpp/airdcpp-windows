@@ -444,9 +444,6 @@
     <ClCompile Include="windows\CDMDebugFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\CertificatesPage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\CommandDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -705,6 +702,9 @@
     <ClCompile Include="windows\SearchTypeCombo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\EncryptionPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -735,9 +735,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\CDMDebugFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\CertificatesPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\CommandDlg.h">
@@ -1056,6 +1053,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\AutosearchParams.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\EncryptionPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

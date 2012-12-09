@@ -1091,7 +1091,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 	auto p = ShareManager::getInstance()->getShareProfile(client->getShareProfile());
 
-	tabMenu.AppendMenu(MF_STRING, IDC_OPEN_MY_LIST, CTSTRING_F(OPEN_HUB_FILELIST, Text::toT(p->getPlainName())));
+	tabMenu.AppendMenu(MF_STRING, IDC_OPEN_OWN_LIST, CTSTRING_F(OPEN_HUB_FILELIST, Text::toT(p->getPlainName())));
 	tabMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyHubMenu, CTSTRING(COPY));
 	prepareMenu(tabMenu, ::UserCommand::CONTEXT_HUB, client->getHubUrl());
 	tabMenu.AppendMenu(MF_SEPARATOR);

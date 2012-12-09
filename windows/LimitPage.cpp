@@ -27,7 +27,7 @@ PropPage::TextItem LimitPage::texts[] = {
 	{ IDC_STATICb, ResourceManager::EXTRA_HUB_SLOTS },
 
 	//other
-	{ IDC_TRANSFER_ENCRYPTION_LBL, ResourceManager::TRANSFER_ENCRYPTION },
+	{ IDC_AUTO_DETECTION_USE_LIMITED, ResourceManager::SETTINGS_AUTO_DETECTION_USE_LIMITED },
 
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 }; 
@@ -41,6 +41,7 @@ PropPage::Item LimitPage::items[] = {
 	{ IDC_MX_DW_SP_LMT_TIME, SettingsManager::MAX_DOWNLOAD_SPEED_ALTERNATE, PropPage::T_INT },
 	{ IDC_BW_START_TIME, SettingsManager::BANDWIDTH_LIMIT_START, PropPage::T_INT },
 	{ IDC_BW_END_TIME, SettingsManager::BANDWIDTH_LIMIT_END, PropPage::T_INT },
+	{ IDC_AUTO_DETECTION_USE_LIMITED, SettingsManager::AUTO_DETECTION_USE_LIMITED, PropPage::T_BOOL },
 
 	//uploads
 	{ IDC_EXTRA_SLOTS, SettingsManager::EXTRA_SLOTS, PropPage::T_INT },
@@ -54,12 +55,6 @@ LRESULT LimitPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
-
-	ctrlTransferEncryption.Attach(GetDlgItem(IDC_TRANSFER_ENCRYPTION));
-	ctrlTransferEncryption.AddString(CTSTRING(DISABLED));
-	ctrlTransferEncryption.AddString(CTSTRING(ENABLED));
-	ctrlTransferEncryption.AddString(CTSTRING(ENCRYPTION_FORCED));
-	ctrlTransferEncryption.SetCurSel(SETTING(TLS_MODE));
 
 	//advanced limits start
 	setMinMax(IDC_EXTRASPIN, 0, 10);
@@ -117,8 +112,6 @@ void LimitPage::write()
 	settings->set(SettingsManager::BANDWIDTH_LIMIT_END, timeCtrlEnd.GetCurSel());
 	timeCtrlBegin.Detach();
 	timeCtrlEnd.Detach(); 
-
-	SettingsManager::getInstance()->set(SettingsManager::TLS_MODE, ctrlTransferEncryption.GetCurSel());
 }
 
 void LimitPage::fixControls() {
