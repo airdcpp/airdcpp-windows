@@ -1730,5 +1730,6 @@ would you still like to load them?</String>
 		<String Name="RequireExactMatch">Require an exact match</String>
 		<String Name="ClearHistory">Clear history</String>
 		<String Name="SettingsLogScheduledRefreshes">Show scheduled filelist refreshes in system log</String>
+		<String Name="SetAwayMessage">Set away message</String>
 	</Strings>
 </Language>

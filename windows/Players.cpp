@@ -477,7 +477,7 @@ string Players::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 				// Name of the artist (use Author as secondary choice)
 				CComBSTR bstrArtistName;
 				Media->getItemInfo(CComBSTR(_T("WM/AlbumArtist")), &bstrArtistName);
-				if(bstrArtistName != NULL) {
+				if(bstrArtistName.Length() > 1) {
 					::COLE2T ArtistName(bstrArtistName);
 					params["artist"] = Text::fromT(ArtistName.m_szBuffer);
 				} else {

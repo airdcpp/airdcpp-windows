@@ -1585,7 +1585,7 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 	});
 }
 
-LRESULT MainFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	OMenu menu;
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 	CRect DLrect;
@@ -1605,18 +1605,36 @@ LRESULT MainFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		fillLimiterMenu(&menu, true);
 		menu.open(ctrlStatus.m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON);
 	} else if(PtInRect(&Awayrect, pt)) {
-		if(Util::getAway()) { 
-			setAwayButton(false);
-			Util::setAway(false);
-			ctrlStatus.SetIcon(STATUS_AWAY, awayIconOFF);
+		if(uMsg == WM_RBUTTONUP) {
+			LineDlg awaymsg;
+			awaymsg.title = CTSTRING(AWAY);
+			awaymsg.description = CTSTRING(SET_AWAY_MESSAGE);
+			if(awaymsg.DoModal(m_hWnd) == IDOK) {
+				string msg = Text::fromT(awaymsg.line);
+				if(!msg.empty())
+					SettingsManager::getInstance()->set(SettingsManager::DEFAULT_AWAY_MESSAGE, msg); 
+			
+				//set the away mode on if its not already.
+				if(!Util::getAway()) {
+					setAwayButton(true);
+					Util::setAway(true);
+					ctrlStatus.SetIcon(STATUS_AWAY, awayIconON);
+					ClientManager::getInstance()->infoUpdated();
+				}
+			}
 		} else {
-			setAwayButton(true);
-			Util::setAway(true);
-			ctrlStatus.SetIcon(STATUS_AWAY, awayIconON);
+			if(Util::getAway()) { 
+				setAwayButton(false);
+				Util::setAway(false);
+				ctrlStatus.SetIcon(STATUS_AWAY, awayIconOFF);
+			} else {
+				setAwayButton(true);
+				Util::setAway(true);
+				ctrlStatus.SetIcon(STATUS_AWAY, awayIconON);
+			}
+			ClientManager::getInstance()->infoUpdated();
 		}
-		ClientManager::getInstance()->infoUpdated();
 	}
-
 	return 0;
 }
 

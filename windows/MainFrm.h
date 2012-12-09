@@ -383,7 +383,7 @@ public:
 		return S_OK;
 	}
 
-	LRESULT onStatusBarClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT onStatusBarClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
 	static MainFrame* getMainFrame() { return anyMF; }
 	bool getAppMinimized() const { return bAppMinimized; }
