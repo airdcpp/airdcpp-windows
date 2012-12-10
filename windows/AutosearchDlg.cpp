@@ -134,10 +134,9 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 
 	CheckDlgButton(IDC_USE_PARAMS, useParams);
 
-	if (!(matcherString == searchString && matcherType == 0)) {
+	if (matcherString != searchString) {
 		ctrlMatcherString.SetWindowText(Text::toT(matcherString).c_str());
-		if (!useParams)
-			CheckDlgButton(IDC_USE_MATCHER, true);
+		CheckDlgButton(IDC_USE_MATCHER, true);
 	}
 
 	CenterWindow(GetParent());
