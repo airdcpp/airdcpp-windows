@@ -314,7 +314,7 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 
 		if (useDefaultMatcher || exactMatch) {
 			matcherString = Util::emptyString;
-			matcherType = exactMatch ? StringMatch::EXACT : 0;
+			matcherType = exactMatch ? StringMatch::EXACT : StringMatch::PARTIAL;
 		} else {
 			GetDlgItemText(IDC_MATCHER_PATTERN, buf, 512);
 			matcherString = Text::fromT(buf);
