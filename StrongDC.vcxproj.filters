@@ -1193,5 +1193,11 @@
     <Image Include="res\Shared.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\AutoSearch\Collecting.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\AutoSearch\PostSearch.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -684,11 +684,9 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 		case COLUMN_SIZE: 
 			if(sr->getType() == SearchResult::TYPE_FILE) {
 				return Util::formatBytesW(sr->getSize());
-			} else if (SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR) {
-				return sr->getSize() > 0 ? Util::formatBytesW(sr->getSize()) : Util::emptyStringT;
 			} else {
-				return Util::emptyStringT;
-			}					
+				return sr->getSize() > 0 ? Util::formatBytesW(sr->getSize()) : Util::emptyStringT;
+			}				
 		case COLUMN_PATH:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
 				return Text::toT(Util::getFilePath(sr->getFile()));

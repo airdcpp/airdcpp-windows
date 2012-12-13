@@ -56,7 +56,9 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_DISABLED));
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_MANUAL));
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_SEARCHING));
+	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_COLLECTING));
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_WAITING));
+	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_POSTSEARCH));
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_QUEUED_OK));
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_QUEUED_ERROR));
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_SEARCH_ERROR));
@@ -275,9 +277,20 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
 			AutoSearch::BundleStatusMap bsl;
-			OrderedStringSet fpl;
+			AutoSearch::FinishedPathMap fpl;
 			auto as = AutoSearchManager::getInstance()->getSearchByIndex(index);
 			title = Text::toT(as->getDisplayName());
+
+
+			if (as->usingIncrementation()) {
+				asMenu.appendSeparator();
+				asMenu.appendItem(TSTRING(INCREASE_NUM), [=] { 
+					AutoSearchManager::getInstance()->changeNumber(as, true);
+				}, as->getMaxNumber() == 0 || as->getCurNumber() < as->getMaxNumber());
+				asMenu.appendItem(TSTRING(DECREASE_NUM), [=] { 
+					AutoSearchManager::getInstance()->changeNumber(as, false);
+				}, as->getCurNumber() > 0);
+			}
 
 			AutoSearchManager::getInstance()->getMenuInfo(as, bsl, fpl);
 			if (!bsl.empty() || !fpl.empty()) {
@@ -302,8 +315,8 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 				if (!fpl.empty()) {
 					pathMenu->InsertSeparatorLast(CTSTRING(FINISHED_BUNDLES));
 					for(auto j=fpl.begin(); j != fpl.end(); j++) {
-						string path = *j;
-						pathMenu->appendItem(Text::toT(*j), [=] { WinUtil::openFolder(Text::toT(path)); });
+						string path = j->first;
+						pathMenu->appendItem(Text::toT(path) + (j->second > 0 ? _T(" (") + Text::toT(Util::formatTime("%Y-%m-%d %H:%M", j->second)) + _T(")") : Util::emptyStringT), [=] { WinUtil::openFolder(Text::toT(path)); });
 					}
 
 					pathMenu->appendSeparator();
@@ -397,6 +410,8 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.checkShared = as->getCheckAlreadyShared();
 		dlg.matchFullPath = as->getMatchFullPath();
 
+		if (as->getCurNumber() != dlg.curNumber)
+			as->setNoDelay(true);
 		dlg.curNumber = as->getCurNumber();
 		dlg.numberLen = as->getNumberLen();
 		dlg.maxNumber = as->getMaxNumber();

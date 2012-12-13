@@ -1733,5 +1733,10 @@ would you still like to load them?</String>
 		<String Name="Encryption">Encryption</String>
 		<String Name="SettingsUseAdls">Always match other users' file lists with ADL search</String>
 		<String Name="SettingsUseAdlsOwn">Always match own full file list with ADL search </String>
+		<String Name="CollectingResults">Collecting results</String>
+		<String Name="PostSearching">Searching for proper</String>
+		<String Name="IncreaseNum">Increase current number</String>
+		<String Name="DecreaseNum">Decrease current number</String>
+		<String Name="SettingsDelayHours">Hours to search for proper when using incrementation</String>
 	</Strings>
 </Language>

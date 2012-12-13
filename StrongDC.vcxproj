@@ -757,8 +757,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\AutoSearch\Collecting.ico" />
     <Image Include="res\AutoSearch\Disabled.ico" />
     <Image Include="res\AutoSearch\Manual.ico" />
+    <Image Include="res\AutoSearch\PostSearch.ico" />
     <Image Include="res\AutoSearch\QueuedError.ico" />
     <Image Include="res\AutoSearch\QueuedOK.ico" />
     <Image Include="res\AutoSearch\SearchError.ico" />
