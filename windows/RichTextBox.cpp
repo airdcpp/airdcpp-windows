@@ -1060,21 +1060,21 @@ LRESULT RichTextBox::onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOO
 
 		//initiate the structure, cpMax -1 means the whole document is searched
 		FINDTEXTEX ft;
-		ft.chrg.cpMax = -1;
-		ft.chrg.cpMin = curFindPos;
 		ft.lpstrText = fr->lpstrFindWhat;
-		
+
+		CHARRANGE cr;
+		GetSel(cr);
+		ft.chrg.cpMin = fr->Flags & FR_DOWN ? cr.cpMax : cr.cpMin;
+		ft.chrg.cpMax = -1;
+
 		//if we find the end of the document, notify the user and return
 		int result = (int)SendMessage(EM_FINDTEXTEX, (WPARAM)flags, (LPARAM)&ft);
 		if(-1 == result){
-			if (curFindPos == 0)
-				MessageBox(CTSTRING(NO_RESULTS_FOUND), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
-			curFindPos = 0;
+			::MessageBox(WinUtil::findDialog, CTSTRING(NO_RESULTS_FOUND), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
 			return 0;
 		}
 
 		//select the result and scroll it into view
-		curFindPos = result +1 ;
 		//SetFocus();
 		SetSel(result, result + _tcslen(ft.lpstrText));
 		ScrollCaret();
@@ -1096,7 +1096,6 @@ void RichTextBox::findText(tstring& /*aTxt*/) {
 
 	if(WinUtil::findDialog == NULL)
 		WinUtil::findDialog = ::FindText(fr);
-	curFindPos = 0;
 }
 
 LRESULT RichTextBox::onChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {

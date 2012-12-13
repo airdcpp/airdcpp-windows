@@ -203,7 +203,6 @@ public:
 	bool showDirDialog(string& fileName);
 	HintedUser getMagnetSource();
 private:
-	int			curFindPos;
 	static UINT	WM_FINDREPLACE;
 	TCHAR*		findBuffer;
 	const WORD	findBufferSize;
