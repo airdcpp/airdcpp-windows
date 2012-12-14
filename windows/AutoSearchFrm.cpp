@@ -411,7 +411,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		dlg.matchFullPath = as->getMatchFullPath();
 
 		if (as->getCurNumber() != dlg.curNumber)
-			as->setNoDelay(true);
+			as->setLastIncFinish(0);
 		dlg.curNumber = as->getCurNumber();
 		dlg.numberLen = as->getNumberLen();
 		dlg.maxNumber = as->getMaxNumber();

@@ -246,9 +246,10 @@ size_t Parser::addFont(string&& font) {
 }
 
 int Parser::rtfFontSize(float px) {
-	return px * 72.0 / 96.0 // px -> font points
-		* static_cast<float>(::GetDeviceCaps(GetDC(reinterpret_cast<HWND>(0)), LOGPIXELSX )) / 96.0 // respect DPI settings
-		* 2.0; // RTF font sizes are expressed in half-points
+	// the px value must not take DPI settings into account; the Rich Edit control handles that.
+	return std::floor(px
+		* 72.0 / 96.0 // px -> font points
+		* 2.0); // RTF font sizes are expressed in half-points
 }
 
 size_t Parser::addColor(COLORREF color) {

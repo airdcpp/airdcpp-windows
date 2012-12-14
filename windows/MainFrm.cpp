@@ -1422,17 +1422,22 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	auto profiles = ShareManager::getInstance()->getProfiles();
 	if (profiles.size() > 2) {
 		StringList tmpList;
-		for(auto j = profiles.begin(); j != profiles.end(); j++) {
-			if ((*j)->getToken() != SP_HIDDEN)
-				tmpList.push_back((*j)->getDisplayName());
+		int selPos = 0, pos=0;
+		for(auto j = profiles.begin(); j != profiles.end() && (*j)->getToken() != SP_HIDDEN; j++) {
+			if ((*j)->getToken() == SETTING(LAST_LIST_PROFILE))
+				selPos = pos;
+			tmpList.push_back((*j)->getDisplayName());
+			pos++;
 		}
 
 		ComboDlg dlg;
 		dlg.setList(tmpList);
 		dlg.description = CTSTRING(SHARE_PROFILE);
 		dlg.title = CTSTRING(MENU_BROWSE_OWN_LIST);
+		dlg.curSel = selPos;
 		if(dlg.DoModal() == IDOK) {
 			profile = profiles[dlg.curSel]->getProfileList()->getProfile();
+			SettingsManager::getInstance()->set(SettingsManager::LAST_LIST_PROFILE, profile);
 		} else {
 			return 0;
 		}

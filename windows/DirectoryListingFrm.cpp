@@ -467,24 +467,25 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 }
 
 LRESULT DirectoryListingFrame::onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	onFind();
+	return 0;
+}
+
+void DirectoryListingFrame::onFind() {
 	searchPos = 0;
 
 	// Prompt for substring to find
 	DirectoryListingDlg dlg;
 	if(dlg.DoModal() != IDOK)
-		return 0;
+		return;
 
 	gotoPrev = false;
 	string path;
 	if (dlg.useCurDir) {
-		//HTREEITEM t = ctrlTree.GetSelectedItem();
-		//auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
 		path = Util::toAdcFile(curPath);
 	}
 
 	dl->addSearchTask(dlg.searchStr, dlg.size, dlg.fileType, dlg.sizeMode, dlg.extList, path);
-
-	return 0;
 }
 
 LRESULT DirectoryListingFrame::onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -946,6 +947,16 @@ LRESULT DirectoryListingFrame::onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*
 		selectItem(fullPath);
 	
 	return 0;
+}
+
+LRESULT DirectoryListingFrame::onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	if((GetKeyState(VkKeyScan('F') & 0xFF) & 0xFF00) > 0 && WinUtil::isCtrl()){
+		onFind();
+		return 0;
+	}
+		
+	bHandled = FALSE;
+	return 1;
 }
 
 LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

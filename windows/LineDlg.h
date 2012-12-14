@@ -267,7 +267,7 @@ public:
 			ctrlCombo.InsertString(n, Text::toT(*j).c_str());
 			n++;
 		}
-		ctrlCombo.SetCurSel(0);
+		ctrlCombo.SetCurSel(curSel);
 
 		ctrlDescription.Attach(GetDlgItem(IDC_DESCRIPTION));
 		ctrlDescription.SetWindowText(description.c_str());
