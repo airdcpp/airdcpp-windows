@@ -203,6 +203,7 @@ private:
         return reinterpret_cast<T*>(ptr);
     }
 
+protected:
     template <bool ThreadSafe>
     void deallocate (T * n)
     {
@@ -212,6 +213,7 @@ private:
             deallocate_impl_unsafe(n);
     }
 
+private:
     void deallocate_impl (T * n)
     {
         void * node = n;
@@ -253,7 +255,7 @@ public:
     {}
 
     /** copy constructor */
-#ifdef BOOST_NO_DEFAULTED_FUNCTIONS
+#ifdef BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
     tagged_index(tagged_index const & rhs):
         index(rhs.index), tag(rhs.tag)
     {}

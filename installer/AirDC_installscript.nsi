@@ -135,7 +135,7 @@ no_backup:
   ;Pop $2
   
   ; Write the installation path into the registry
-  WriteRegStr HKLM SOFTWARE\AirDC++ "Install_Dir" "$INSTDIR"
+  WriteRegStr HKLM SOFTWARE\AirDC++\ "Install_Dir" "$INSTDIR"
   ; Write the uninstall keys for Windows
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "InstallLocation" "$INSTDIR"
   WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\AirDC++" "DisplayIcon" '"$INSTDIR\AirDC.exe"'
