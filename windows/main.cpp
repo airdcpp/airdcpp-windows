@@ -432,8 +432,20 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_IDLE);
 
 				bool success = false;
-				for(int i = 0; i < 20 && (success = Updater::applyUpdate(sourcePath, installPath)) == false; ++i)
-					Thread::sleep(1000);
+
+				for (;;) {
+					string error;
+					for(int i = 0; i < 10 && (success = Updater::applyUpdate(sourcePath, installPath, error)) == false; ++i)
+						Thread::sleep(1000);
+
+					if (!success) {
+						if (::MessageBox(NULL, Text::toT("Updating failed:\n\n" + error + "\n\nDo you want to retry installing the update?").c_str(), 
+							_T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
+								continue;
+						}
+					}
+					break;
+				}
 
 				SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_NORMAL);
 				SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
