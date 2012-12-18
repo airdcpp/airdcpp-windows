@@ -192,11 +192,12 @@ ShareDirInfo::list SharePage::getViewItems(ProfileToken aProfile, bool getDiffIt
 }
 
 StringSet SharePage::getExcludedDirs() {
-	StringSet ret;
-	ShareManager::getInstance()->getExcludes(curProfile, ret);
+	StringList tmp;
+	ShareManager::getInstance()->getExcludes(curProfile, tmp);
 
 	//don't list removed items
-	for (auto j = ret.begin(); j != ret.end(); j++) {
+	StringSet ret;
+	for (auto j = tmp.begin(); j != tmp.end(); j++) {
 		if (boost::find_if(excludedRemove, [this, j](pair<ProfileToken, string> pp) { return pp.first == curProfile && pp.second == *j; }) == excludedRemove.end()) {
 			ret.insert(*j);
 		}
@@ -541,7 +542,7 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	removeDirs.insert(removeDirs.end(), profileDirs.begin(), profileDirs.end());
 
 	/* List excludes */
-	StringSet excluded;
+	StringList excluded;
 	ShareManager::getInstance()->getExcludes(p->getToken(), excluded);
 	boost::for_each(excluded, [&](const string& aPath) { excludedRemove.push_back(make_pair(curProfile, aPath)); });
 
@@ -854,7 +855,7 @@ bool SharePage::addDirectory(const tstring& aPath){
 
 		for(auto j = profileTokens.begin(); j != profileTokens.end(); j++) {
 			auto dir = new ShareDirInfo(vPath, *j, rPath);
-			if (find(newDirs.begin(), newDirs.end(), dir) != newDirs.end()) {
+			if (find_if(newDirs.begin(), newDirs.end(), [dir](const ShareDirInfo* sdi) { return compare(sdi->profile, dir->profile) == 0 && sdi->path == dir->path; }) != newDirs.end()) {
 				delete dir;
 				continue;
 			}
@@ -871,11 +872,19 @@ bool SharePage::addDirectory(const tstring& aPath){
 					dir->state = ShareDirInfo::ADDED;
 			}
 
-			newDirs.push_back(dir);
+			auto p = find_if(removeDirs.begin(), removeDirs.end(), [dir](const ShareDirInfo* sdi) { return compare(sdi->profile, dir->profile) == 0 && sdi->path == dir->path; });
+			if (p != removeDirs.end()) {
+				delete dir;
+				dir = *p;
+				removeDirs.erase(p);
+			} else {
+				newDirs.push_back(dir);
+			}
+
 			if(BOOLSETTING(USE_OLD_SHARING_UI) && *j == curProfile) {
 				int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), newName, 0, (LPARAM)dir);
 				ctrlDirectories.SetItemText(i, 1, path.c_str());
-				ctrlDirectories.SetItemText(i, 2, _T("New"));
+				ctrlDirectories.SetItemText(i, 2, dir->size == 0 ? _T("New") : Util::formatBytesW(dir->size).c_str());
 			}
 		}
 
