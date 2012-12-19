@@ -610,6 +610,7 @@ Added:
 - New inbuilt updater
 - New searching functionality in filelists (also allows searching in partial lists via ADC hubs)
 - Show hashing status with toolbar progressbar
+- New auto search features (auto completion of bundles, parameter support, new columns, statuses...)
 - Bandwidth limiting capabilities
 - Customizable file type extensions for searching (ADC)
 - Severity icons for system log messages
@@ -678,6 +679,8 @@ Changed:
 - Update user's nicks and hubs in transfer view when they change
 - Don't match search skiplist with TTH searches
 - Remove the partial bundle source notifications after a bundle has finished downloading
+- Send excluded words in searched also to the responding clints (ADC only)
+- Save the last file type for auto search items, using the directory type by default
 
 
 Fixed:
@@ -685,8 +688,8 @@ Fixed:
 - Prevent search results from getting lost when the system is on heavy load or the client is run on a slow computer
 - Fix a crash when right clicking on magnet links in chat history
 - Fix crashes related to the queue tab
-- Prevent deadlocks when moving queued files or folders
-- Fix bundle progress of more than 100% with segments enabled
+- Prevent deadlocks and fix invalid paths when moving queued files or folders
+- Fix bundle progress of more than 100% with segments enabled, don't allow 100%+ process for upload bundles
 - Fix getting the bundle path for upload file bundles
 - Fix searching of upload bundles from transfer view
 - More reliable way to trim http addresses (DC++)
@@ -697,6 +700,7 @@ Fixed:
 - Fix "Copy magnet" in filelists
 - Prevent "File not available" errors with partial bundle sharing
 - Don't try to upload files that don't exist with partial sharing
+- Fix partial file sharing with segmented downloads
 - Don't allow listing the same file multiple time in the same folder in generated filelists
 - Fix handling of spaces in ADC user commands
 - Fix a few MCN problems
@@ -718,6 +722,8 @@ Fixed:
 - Fix problems with non-removed temp files
 - Fix case sensitivity issues on the queue frame (may have caused invalid folder structures)
 - Prevent problems when downloads are finished twice ("Unable to rename" etc.)
+- Fix Windows mediaplayer spam
+- Files are also matched with the share skiplist when scanning the share
 
 
 Removed:

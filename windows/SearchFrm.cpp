@@ -480,7 +480,8 @@ void SearchFrame::onEnter() {
 			if ((*si)[0] != '-') {
 				s += Text::toT(*si + ' ');	
 			} else {
-				excluded.push_back((*si).erase(0, 1));
+				auto ex = *si;
+				excluded.push_back(ex.erase(0, 1));
 			}
 			++si;
 		}
