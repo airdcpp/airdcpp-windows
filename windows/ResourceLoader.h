@@ -46,15 +46,11 @@ public:
 	static void loadFlagImages();
 	static void loadUserImages();
 	
-	static HICON loadDefaultIcon(int icon, int size=0);
 	static HICON loadIcon(int aDefault, int size = 0);
 	static HICON convertGrayscaleIcon(HICON hIcon);
 	static HBITMAP getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize = 0, int ySize = 0);
 	
-	static tstring getIconName(int aDefault);
 	static tstring getIconPath(const tstring& filename);
-
-	static tstring m_IconPath;
 
 	static CImageList searchImages;
 	static CImageList settingsTreeImages;
@@ -62,21 +58,27 @@ public:
 	static CImageList userImages;
 	static CImageList flagImages;
 
-	typedef std::map<tstring, int> ImageMap;
-	typedef ImageMap::const_iterator ImageIter;
-	static ImageMap fileIndexes;
-
 	static int getIconIndex(const tstring& aFileName);
 	static int getDirIconIndex() { return dirIconIndex; }
 	static int getDirMaskedIndex() { return dirMaskedIndex; }
 
 private:
+	
+	typedef std::map<tstring, int> ImageMap;
+	typedef ImageMap::const_iterator ImageIter;
+	static ImageMap fileIndexes;
+
 	static int fileImageCount;
 	static int dirIconIndex;
 	static int dirMaskedIndex;
 	static void loadFileImages();
 	static COLORREF GrayPalette[256];
 	static HICON MergeImages(HIMAGELIST hImglst1, int pos, HIMAGELIST hImglst2, int pos2);
+	static tstring getIconName(int aDefault);
+	static HICON loadDefaultIcon(int icon, int size=0);
+	
+	static tstring m_IconPath;
+
 
 };
 

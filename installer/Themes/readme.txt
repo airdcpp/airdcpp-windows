@@ -22,15 +22,15 @@ click on the button "Export Theme" in Colors & Fonts page, select the name for y
 If you have your own Toolbars or custom icons and you want to share them with the theme you will need to edit the .dctheme theme file in a text editor.
 
 	-Add the paths to your iconpack in the end of the .dctheme file like this:
-	-Make sure the paths exist in the themes directory, otherwise the client can't load any icons!!
+
 	<Icons>
 		<IconPath type="string">Themes\Example_iconPack\icons</IconPath>
-		<ToolbarImage type="string">Themes\Example_iconPack\icons\toolbar.bmp</ToolbarImage>
-		<ToolbarHot type="string">Themes\Example_iconPack\icons\toolbarHot.bmp</ToolbarHot>
 	</Icons>
-</DCPlusPlus>
+
+	-Make sure the paths exist in the themes directory, otherwise the client will load a default icon!
+
 
 For More detailed example see example_theme.dctheme
-** Example_iconpack is using icons made by spaljeni **
+** Example_iconpack is using default icons just as an example on how the icons should be named **
 
 --------------------------------------------------------------------------------------------------

@@ -151,15 +151,14 @@ tstring ResourceLoader::getIconPath(const tstring& filename) {
 
 HICON ResourceLoader::loadIcon(int aDefault, int size/* = 0*/) {
 	tstring icon = getIconPath(getIconName(aDefault));
-	HICON iHandle = icon.empty() ? NULL : (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, size, size, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION | LR_LOADFROMFILE);
+	HICON iHandle = icon.empty() ? NULL : (HICON)::LoadImage(NULL, icon.c_str(), IMAGE_ICON, size, size, LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_LOADFROMFILE);
 	if(!iHandle) 
 		return loadDefaultIcon(aDefault, size);
 	return iHandle;
 }
 
 HICON ResourceLoader::loadDefaultIcon(int icon, int size/* = 0*/) {
-	//int size = big ? ::GetSystemMetrics(SM_CXICON) : ::GetSystemMetrics(SM_CXSMICON);
-	return (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(icon), IMAGE_ICON, size, size, LR_SHARED | LR_DEFAULTSIZE | LR_DEFAULTCOLOR | LR_CREATEDIBSECTION);
+	return (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(icon), IMAGE_ICON, size, size, LR_SHARED | LR_DEFAULTSIZE | LR_DEFAULTCOLOR);
 }
 
 tstring ResourceLoader::getIconName(int aDefault) {

@@ -1,0 +1,19 @@
+Howto install:
+
+1. Copy the file Zoo_default.dctheme and the folder Zoolution_IconPack to the Themes directory located in the Airdc++ root.
+2. Hello %[userNI]:) Whats on your mind? I've been wasted since %Y-%m-%d %H:%M <-- This works on your awaymess
+3. In settings - appearance untick the use systemicons box (Now you use my folders and icons)
+
+download and share skiplist use regexp: 
+(.*(\.(scn|asd|lnk|cmd|conf|dll|url|log|crc|dat|sfk|mxm|txt|message|iso|inf|sub|exe|img|bin|aac|mrg|thumbs.db|.bad|.missing|tmp|xml|sup|ini|db|debug|pls|ac3|ape|par2|htm(l)?|bat|idx|srt|doc(x)?|ion|b4s|bgl|cab|cat|bat)$))|((All-Files-CRC-OK|xCOMPLETEx|imdb.nfo|- Copy|(.*\s\(\d\).*)).*$)
+
+Add highlight:    $Re:(\[(-[Crew]-|#[Dump]|#[Dump]|vip|[VIP]|Friend|[Friend]|Dump)\])   should be used with content nicklist and same color as dupes.
+timestamps:
+%A | %d %b | %H:%M
+
+Custom popup BMP included. Suggested font:
+Msg text: Calibri 10 black
+Title text: Trebuchet MS B 10 black
+
+2. Open settings in Airdc++ and goto Appearance -> Colors & Fonts and chose Theme from the dropdown menu.
+3. Restart Airdc++.

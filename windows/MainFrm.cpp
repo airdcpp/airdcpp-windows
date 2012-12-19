@@ -727,7 +727,6 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		const TStringList& str = *pstr;
 		if(ctrlStatus.IsWindow()) {
 			bool u = false;
-			bool downsize = false;
 			ctrlStatus.SetIcon(STATUS_AWAY, Util::getAway() ? awayIconON : awayIconOFF);
 			auto pos = 0;
 			for(int i = STATUS_SHARED; i < STATUS_SHUTDOWN; i++) {
@@ -735,7 +734,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 				int w = WinUtil::getTextWidth(str[pos], ctrlStatus.m_hWnd);
 				
 				if(i == STATUS_SLOTS) {
-					if(str[pos][1] == '0') // a hack, do this some other way.
+					if(str[pos][0] == '0') // a hack, do this some other way.
 						ctrlStatus.SetIcon(STATUS_SLOTS, slotsFullIcon);
 					else
 						ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
@@ -830,7 +829,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 	} else if(wParam == REMOVE_POPUP){
 		PopupManager::getInstance()->AutoRemove();
 	} else if(wParam == SET_PM_TRAY_ICON) {
-		if(bIsPM == false && (!WinUtil::isAppActive || bAppMinimized)) {
+		if((!bIsPM) && (!WinUtil::isAppActive || bAppMinimized)) {
 			bIsPM = true;
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, pmicon.hIcon, NULL);
@@ -1614,6 +1613,7 @@ LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 			LineDlg awaymsg;
 			awaymsg.title = CTSTRING(AWAY);
 			awaymsg.description = CTSTRING(SET_AWAY_MESSAGE);
+			awaymsg.line = Text::toT(SETTING(DEFAULT_AWAY_MESSAGE));
 			if(awaymsg.DoModal(m_hWnd) == IDOK) {
 				string msg = Text::fromT(awaymsg.line);
 				if(!msg.empty())
