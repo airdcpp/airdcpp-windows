@@ -36,6 +36,8 @@
 #include "../client/DirectoryListingManager.h"
 #include "../client/GeoManager.h"
 
+#include <boost/range/numeric.hpp>
+
 
 int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_HITS, COLUMN_NICK, COLUMN_TYPE, COLUMN_SIZE,
 	COLUMN_PATH, COLUMN_SLOTS, COLUMN_CONNECTION, COLUMN_HUB, COLUMN_EXACT_SIZE, COLUMN_IP, COLUMN_TTH };
@@ -52,7 +54,7 @@ void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGL
 	pChild->setInitial(str, size, mode, type);
 	pChild->CreateEx(WinUtil::mdiClient);
 
-	frames.insert( FramePair(pChild->m_hWnd, pChild) );
+	frames.emplace(pChild->m_hWnd, pChild);
 }
 
 void SearchFrame::closeAll() {
@@ -894,9 +896,7 @@ int64_t SearchFrame::getDownloadSize(bool /*isWhole*/) {
 		}
 	}
 
-	int64_t size = 0;
-	for_each(countedDirs.begin(), countedDirs.end(), [&size](pair<string, int64_t> p) { size += p.second; } );
-	return size;
+	return boost::accumulate(countedDirs | map_values, (int64_t)0);
 }
 
 LRESULT SearchFrame::onDoubleClickResults(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
@@ -1297,7 +1297,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		} else {
 			SearchInfoList::ParentPair pp = { si, SearchInfoList::emptyVector };
 			ctrlResults.insertItem(si, si->getImageIndex());
-			ctrlResults.getParents().insert(make_pair(const_cast<TTHValue*>(&sr->getTTH()), pp));
+			ctrlResults.getParents().emplace(const_cast<TTHValue*>(&sr->getTTH()), pp);
 		}
 
 		if(!filter.empty())

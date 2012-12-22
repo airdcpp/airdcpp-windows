@@ -32,8 +32,6 @@
 #include "LineDlg.h"
 #include "FavoriteDirDlg.h"
 
-#include <boost/range/algorithm/find_if.hpp>
-
 PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_SETTINGS_FAVORITE_DIRECTORIES, ResourceManager::SETTINGS_FAVORITE_DIRS },
 	{ IDC_REMOVE, ResourceManager::REMOVE },
@@ -230,13 +228,15 @@ void LocationsPage::addDirs(const string& vName, const StringList& aPaths){
 	auto i = boost::find_if(favoriteDirs, CompareFirst<string, StringList>(vName));
 	if (i != favoriteDirs.end()) {
 		pos = ctrlDirectories.find(Text::toT(vName));
-		boost::for_each(aPaths, [&](string p) {
+		//merge(paths.begin(), paths.end(), i->second.begin(), i->second.end(), back_inserter(i->second));
+
+		for(auto& p: aPaths) {
 			if (find(i->second, p) == i->second.end())
 				i->second.push_back(p); 
-		});
+		}
 		paths = i->second;
 	} else {
-		favoriteDirs.push_back(make_pair(vName, paths));
+		favoriteDirs.emplace_back(vName, paths);
 		pos = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(vName) );
 	}
 	dcassert(pos != -1);

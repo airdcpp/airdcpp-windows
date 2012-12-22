@@ -91,8 +91,10 @@ public:
 
 	void appendSeparator();
 
-	/* This should be used when submenus are created within a separate function/scope */
+	/* These should be used when submenus are created within a separate function/scope */
 	OMenu* createSubMenu(const tstring& aTitle, bool appendSeparator = false);
+	OMenu* getMenu();
+	void appendThis(const tstring& aTitle, bool appendSeparator = false, bool disableIfEmpty = true);
 
 	void CheckOwnerDrawn(UINT uItem, BOOL byPosition);
 
@@ -118,6 +120,7 @@ public:
 
 	unsigned getNextID();
 	void addItem(OMenuItem* mi);
+	bool hasItems();
 
 	static LRESULT onMeasureItem(HWND hWnd, UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	static LRESULT onDrawItem(HWND hWnd, UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);

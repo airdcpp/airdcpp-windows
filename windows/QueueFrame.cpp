@@ -34,12 +34,6 @@
 #include "../client/ScopedFunctor.h"
 #include "BarShader.h"
 
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/algorithm/for_each.hpp>
-#include <boost/range/algorithm_ext/for_each.hpp>
-
-using boost::adaptors::map_values;
-
 #define FILE_LIST_NAME _T("File Lists")
 #define TEMP_NAME _T("Temp items")
 
@@ -104,18 +98,12 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlShowTree.SetButtonStyle(BS_AUTOCHECKBOX, false);
 	ctrlShowTree.SetCheck(showTree);
 	showTreeContainer.SubclassWindow(ctrlShowTree.m_hWnd);
-	
-	browseMenu.CreatePopupMenu();
-	removeMenu.CreatePopupMenu();
-	removeAllMenu.CreatePopupMenu();
-	pmMenu.CreatePopupMenu();
-	readdMenu.CreatePopupMenu();
 
-	removeMenu.AppendMenu(MF_STRING, IDC_REMOVE_SOURCE, CTSTRING(ALL));
-	removeMenu.AppendMenu(MF_SEPARATOR);
+//	removeMenu.AppendMenu(MF_STRING, IDC_REMOVE_SOURCE, CTSTRING(ALL));
+//	removeMenu.AppendMenu(MF_SEPARATOR);
 
-	readdMenu.AppendMenu(MF_STRING, IDC_READD, CTSTRING(ALL));
-	readdMenu.AppendMenu(MF_SEPARATOR);
+//	readdMenu.AppendMenu(MF_STRING, IDC_READD, CTSTRING(ALL));
+//	readdMenu.AppendMenu(MF_SEPARATOR);
 
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -139,14 +127,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 }
 
 
-QueueFrame::~QueueFrame() {
-	// Clear up dynamicly allocated menu objects
-	browseMenu.ClearMenu();
-	removeMenu.ClearMenu();
-	removeAllMenu.ClearMenu();
-	pmMenu.ClearMenu();
-	readdMenu.ClearMenu();
-}
+QueueFrame::~QueueFrame() { }
 
 int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col) {
 	switch(col) {
@@ -319,7 +300,7 @@ void QueueFrame::addQueueItem(QueueItemInfo* ii, bool noSort) {
 	dirty = true;
 	const string& dir = ii->getPath();
 	bool updateDir = (directories.find(dir) == directories.end());
-	directories.insert(make_pair(dir, ii));
+	directories.emplace(dir, ii);
 	BundlePtr b = ii->getBundle();
 
 	if (!b) {
@@ -462,7 +443,7 @@ HTREEITEM QueueFrame::createDir(TVINSERTSTRUCT& tvi, const string&& dir, const B
 	if (mainBundle) {
 		//LogManager::getInstance()->message("MAINBUNDLE ADD: " + aBundle->getName() + ", dir: " + ((DirItemInfo*)ctrlDirs.GetItemData(parent))->getDir());
 		dcassert(bundleMap.find(dir) == bundleMap.end());
-		bundleMap.insert(make_pair(aBundle->getTarget(), ret));
+		bundleMap.emplace(aBundle->getTarget(), ret);
 		mainBundle = false;
 	}
 
@@ -667,7 +648,7 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 QueueFrame::DirItemInfo::DirItemInfo(const string& dir, BundlePtr aBundle) : directory(dir)	{
 	//LogManager::getInstance()->message("Create DII: " + dir);
 	if (aBundle) {
-		bundles.push_back(make_pair(aBundle->getTarget(), aBundle));
+		bundles.emplace_back(aBundle->getTarget(), aBundle);
 	}
 }
 
@@ -678,7 +659,7 @@ QueueFrame::DirItemInfo::~DirItemInfo() {
 void QueueFrame::DirItemInfo::addBundle(BundlePtr aBundle) {
 	if (find_if(bundles.begin(), bundles.end(), CompareSecond<string, BundlePtr>(aBundle)) == bundles.end()) {
 		//LogManager::getInstance()->message("BUNDLE " + aBundle->getName() + " added for dir " + this->getDir());
-		bundles.push_back(make_pair(aBundle->getTarget(), aBundle));
+		bundles.emplace_back(aBundle->getTarget(), aBundle);
 	}
 }
 
@@ -823,7 +804,9 @@ void QueueFrame::on(QueueManagerListener::Moved, const QueueItemPtr, const strin
 }
 
 void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) {
-	for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItemPtr qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
+	for(auto qi: aBundle->getQueueItems()) 
+		speak(REMOVE_ITEM, new StringTask(qi->getTarget()));
+
 	speak(REMOVE_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
 }
 
@@ -1084,7 +1067,7 @@ void QueueFrame::moveSelected() {
 			StringPairList ret;
 			while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
 				const QueueItemInfo* ii = ctrlQueue.getItemData(i);
-				ret.push_back(make_pair(ii->getTarget(), Text::fromT(name) + Util::getFileName(ii->getTarget())));
+				ret.emplace_back(ii->getTarget(), Text::fromT(name) + Util::getFileName(ii->getTarget()));
 			}
 			QueueManager::getInstance()->moveFiles(ret);
 		}
@@ -1142,7 +1125,7 @@ void QueueFrame::moveSelectedDir() {
 		}
 
 		
-		for_each(bundles, [&](BundlePtr sourceBundle) {
+		for(auto sourceBundle: bundles) {
 			if (!sourceBundle->isFileBundle()) {
 				string source = curDir;
 				if (AirUtil::isParentOrExact(curDir, sourceBundle->getTarget())) {
@@ -1156,7 +1139,7 @@ void QueueFrame::moveSelectedDir() {
 				//move queue items
 				QueueManager::getInstance()->moveFileBundle(sourceBundle, AirUtil::convertMovePath(sourceBundle->getTarget(), curDir, newDir));
 			}
-		});
+		}
 	}
 }
 
@@ -1193,12 +1176,10 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
-QueueItem::SourceList sources;
-QueueItem::SourceList badSources;
-Bundle::SourceInfoList bundleSources, badBundleSources;
 LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 
 	OMenu priorityMenu;
+
 	priorityMenu.CreatePopupMenu();
 	priorityMenu.InsertSeparatorFirst(TSTRING(PRIORITY));
 	priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_PAUSED, CTSTRING(PAUSED));
@@ -1223,7 +1204,11 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			WinUtil::getContextMenuPos(ctrlQueue, pt);
 		}
 
+		OMenu fileMenu;
+		fileMenu.CreatePopupMenu();
+
 		OMenu segmentsMenu;
+
 		segmentsMenu.CreatePopupMenu();
 		segmentsMenu.InsertSeparatorFirst(TSTRING(MAX_SEGMENTS_NUMBER));
 		for(int i = IDC_SEGMENTONE; i <= IDC_SEGMENTTEN; i++)
@@ -1231,25 +1216,15 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			
 		if(ctrlQueue.GetSelectedCount() > 0) { 
 			usingDirMenu = false;
-			CMenuItemInfo mi;
-		
-			while(browseMenu.GetMenuItemCount() > 0) {
-				browseMenu.RemoveMenu(0, MF_BYPOSITION);
-			}
-			while(removeMenu.GetMenuItemCount() > 2) {
-				removeMenu.RemoveMenu(2, MF_BYPOSITION);
-			}
-			while(removeAllMenu.GetMenuItemCount() > 0) {
-				removeAllMenu.RemoveMenu(0, MF_BYPOSITION);
-			}
-			while(pmMenu.GetMenuItemCount() > 0) {
-				pmMenu.RemoveMenu(0, MF_BYPOSITION);
-			}
-			while(readdMenu.GetMenuItemCount() > 2) {
-				readdMenu.RemoveMenu(2, MF_BYPOSITION);
-			}
 
 			if(ctrlQueue.GetSelectedCount() == 1) {
+				OMenu* pmMenu = fileMenu.getMenu();
+				OMenu* browseMenu = fileMenu.getMenu();
+				OMenu* removeAllMenu = fileMenu.getMenu();
+				OMenu* previewMenu = fileMenu.getMenu();
+				OMenu* removeMenu = fileMenu.getMenu();
+				OMenu* readdMenu = fileMenu.getMenu();
+
 				OMenu copyMenu;
 				copyMenu.CreatePopupMenu();
 				copyMenu.InsertSeparatorFirst(TSTRING(COPY));
@@ -1257,169 +1232,111 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				for(int i = 0; i <COLUMN_LAST; ++i)
 					copyMenu.AppendMenu(MF_STRING, IDC_COPY + i, CTSTRING_I(columnNames[i]));
 
-				OMenu previewMenu;
-				previewMenu.CreatePopupMenu();
-				previewMenu.InsertSeparatorFirst(TSTRING(PREVIEW_MENU));
 
-				OMenu singleMenu;
-				singleMenu.CreatePopupMenu();
-				singleMenu.InsertSeparatorFirst(TSTRING(FILE));
-				singleMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
-				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)previewMenu, CTSTRING(PREVIEW_MENU));	
-				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
-				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITY));
-				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)browseMenu, CTSTRING(GET_FILE_LIST));
-				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)pmMenu, CTSTRING(SEND_PRIVATE_MESSAGE));
-				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)readdMenu, CTSTRING(READD_SOURCE));
-				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)copyMenu, CTSTRING(COPY));
-				singleMenu.AppendMenu(MF_SEPARATOR);
-				singleMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-
-				singleMenu.AppendMenu(MF_SEPARATOR);
-				singleMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_RENAME_FILE));
-				singleMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-				singleMenu.AppendMenu(MF_SEPARATOR);
-				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)removeMenu, CTSTRING(REMOVE_SOURCE));
-				singleMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)removeAllMenu, CTSTRING(REMOVE_FROM_ALL));
-				singleMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
-				singleMenu.AppendMenu(MF_SEPARATOR);
-				singleMenu.AppendMenu(MF_STRING, IDC_RECHECK, CTSTRING(RECHECK_FILE));
-				singleMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-				
-
+				/* Create submenus */
 
 				const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
 				segmentsMenu.CheckMenuItem(ii->getQueueItem()->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
 
-				if((ii->isSet(QueueItem::FLAG_USER_LIST)) == false) {
-					string ext = Util::getFileExt(ii->getTarget());
-					if(ext.size()>1) ext = ext.substr(1);
-					PreviewAppsSize = WinUtil::SetupPreviewMenu(previewMenu, ext);
-					if(previewMenu.GetMenuItemCount() > 1) {
-						singleMenu.EnableMenuItem((UINT)(HMENU)previewMenu, MFS_ENABLED);
-					} else {
-						singleMenu.EnableMenuItem((UINT)(HMENU)previewMenu, MFS_DISABLED);
-					}
-				} else {
-					singleMenu.EnableMenuItem((UINT)(HMENU)segmentsMenu, MFS_DISABLED);
+				if(!ii->isSet(QueueItem::FLAG_USER_LIST)) {
+					WinUtil::appendPreviewMenu(previewMenu, ii->getTarget());
 				}
 
-				menuItems = 0;
-				int pmItems = 0;
 				if(ii) {
-					sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
-					for(auto i = sources.begin(); i != sources.end(); ++i) {
-						tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(i->getUser()));
+					bool hasPMItems = false;
+					auto sources = move(QueueManager::getInstance()->getSources(ii->getQueueItem()));
+					for(auto& s: sources) {
+						tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(s.getUser()));
 						// add hub hint to menu
-						if(!i->getUser().hint.empty())
-							nick += _T(" (") + Text::toT(i->getUser().hint) + _T(")");
+						if(!s.getUser().hint.empty())
+							nick += _T(" (") + Text::toT(s.getUser().hint) + _T(")");
 
-						mi.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
-						mi.fType = MFT_STRING;
-						mi.dwTypeData = (LPTSTR)nick.c_str();
-						mi.dwItemData = (ULONG_PTR)&(*i);
-						mi.wID = IDC_BROWSELIST + menuItems;
-						browseMenu.InsertMenuItem(menuItems, TRUE, &mi);
-						mi.wID = IDC_REMOVE_SOURCE + 1 + menuItems; // "All" is before sources
-						removeMenu.InsertMenuItem(menuItems + 2, TRUE, &mi); // "All" and separator come first
-						mi.wID = IDC_REMOVE_SOURCES + menuItems;
-						removeAllMenu.InsertMenuItem(menuItems, TRUE, &mi);
-						if(i->getUser().user->isOnline()) {
-							mi.wID = IDC_PM + menuItems;
-							pmMenu.InsertMenuItem(menuItems, TRUE, &mi);
-							pmItems++;
+						auto u = s.getUser();
+						auto target = ii->getTarget();
+						browseMenu->appendItem(nick, [=] { QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW); });
+						removeMenu->appendItem(nick, [=] { QueueManager::getInstance()->removeSource(target, u, QueueItem::Source::FLAG_REMOVED); });
+						removeAllMenu->appendItem(nick, [=]{ QueueManager::getInstance()->removeSource(u, QueueItem::Source::FLAG_REMOVED); });
+
+						if(s.getUser().user->isOnline()) {
+							pmMenu->appendItem(nick, [=] { PrivateFrame::openWindow(u); });
+							hasPMItems = true;
 						}
-						menuItems++;
 					}
-					readdItems = 0;
 					
-					badSources = QueueManager::getInstance()->getBadSources(ii->getQueueItem());
-					for(auto i = badSources.begin(); i != badSources.end(); ++i) {
-						tstring nick = WinUtil::getNicks(i->getUser());
-						if(i->isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
+					auto badSources = move(QueueManager::getInstance()->getBadSources(ii->getQueueItem()));
+					for(auto& s: badSources) {
+						tstring nick = WinUtil::getNicks(s.getUser());
+						if(s.isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
 							nick += _T(" (") + TSTRING(FILE_NOT_AVAILABLE) + _T(")");
-						} else if(i->isSet(QueueItem::Source::FLAG_BAD_TREE)) {
+						} else if(s.isSet(QueueItem::Source::FLAG_BAD_TREE)) {
 							nick += _T(" (") + TSTRING(INVALID_TREE) + _T(")");
-						} else if(i->isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {
+						} else if(s.isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {
 							nick += _T(" (") + TSTRING(NO_NEEDED_PART) + _T(")");
-						} else if(i->isSet(QueueItem::Source::FLAG_NO_TTHF)) {
+						} else if(s.isSet(QueueItem::Source::FLAG_NO_TTHF)) {
 							nick += _T(" (") + TSTRING(SOURCE_TOO_OLD) + _T(")");
-						} else if(i->isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
+						} else if(s.isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
 							nick += _T(" (") + TSTRING(SLOW_USER) + _T(")");
-						} else if(i->isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
+						} else if(s.isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
 							nick += _T(" (") + TSTRING(CERTIFICATE_NOT_TRUSTED) + _T(")");
 						}
 
 						// add hub hint to menu
-						if(!i->getUser().hint.empty())
-							nick += _T(" (") + Text::toT(i->getUser().hint) + _T(")");
+						if(!s.getUser().hint.empty())
+							nick += _T(" (") + Text::toT(s.getUser().hint) + _T(")");
 
-						mi.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
-						mi.fType = MFT_STRING;
-						mi.dwTypeData = (LPTSTR)nick.c_str();
-						mi.dwItemData = (ULONG_PTR)&(*i);
-						mi.wID = IDC_READD + 1 + readdItems;  // "All" is before sources
-						readdMenu.InsertMenuItem(readdItems + 2, TRUE, &mi);  // "All" and separator come first
-						readdItems++;
+						auto u = s.getUser();
+						auto target = ii->getTarget();
+						readdMenu->appendItem(nick, [=] { QueueManager::getInstance()->readdQISource(target, u); });
 					}
 				}
-
-				if(menuItems == 0) {
-					singleMenu.EnableMenuItem((UINT_PTR)(HMENU)browseMenu, MFS_DISABLED);
-					singleMenu.EnableMenuItem((UINT_PTR)(HMENU)removeMenu, MFS_DISABLED);
-					singleMenu.EnableMenuItem((UINT_PTR)(HMENU)removeAllMenu, MFS_DISABLED);
-				}
-				else {
-					singleMenu.EnableMenuItem((UINT_PTR)(HMENU)browseMenu, MFS_ENABLED);
-					singleMenu.EnableMenuItem((UINT_PTR)(HMENU)removeMenu, MFS_ENABLED);
-					singleMenu.EnableMenuItem((UINT_PTR)(HMENU)removeAllMenu, MFS_ENABLED);
-				}
-
-				if(pmItems == 0) {
-					singleMenu.EnableMenuItem((UINT_PTR)(HMENU)pmMenu, MFS_DISABLED);
-				}
-				else {
-					singleMenu.EnableMenuItem((UINT_PTR)(HMENU)pmMenu, MFS_ENABLED);
-				}
-
-				if(readdItems == 0) {
-					singleMenu.EnableMenuItem((UINT_PTR)(HMENU)readdMenu, MFS_DISABLED);
-				}
-				else {
-					singleMenu.EnableMenuItem((UINT_PTR)(HMENU)readdMenu, MFS_ENABLED);
- 				}
 
 				priorityMenu.CheckMenuItem(ii->getPriority() + 1, MF_BYPOSITION | MF_CHECKED);
 				if(ii->getAutoPriority())
 					priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
 
-				browseMenu.InsertSeparatorFirst(TSTRING(GET_FILE_LIST));
-				removeMenu.InsertSeparatorFirst(TSTRING(REMOVE_SOURCE));
-				removeAllMenu.InsertSeparatorFirst(TSTRING(REMOVE_FROM_ALL));
-				pmMenu.InsertSeparatorFirst(TSTRING(SEND_PRIVATE_MESSAGE));
-				readdMenu.InsertSeparatorFirst(TSTRING(READD_SOURCE));
+				/* Submenus end */
 
-				singleMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
 
-				browseMenu.RemoveFirstItem();
-				removeMenu.RemoveFirstItem();
-				removeAllMenu.RemoveFirstItem();
-				pmMenu.RemoveFirstItem();
-				readdMenu.RemoveFirstItem();
+				fileMenu.InsertSeparatorFirst(TSTRING(FILE));
+				fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
+
+				previewMenu->appendThis(TSTRING(PREVIEW_MENU), true);
+
+				fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
+				fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITY));
+
+				browseMenu->appendThis(TSTRING(GET_FILE_LIST), true);
+				pmMenu->appendThis(TSTRING(SEND_PRIVATE_MESSAGE), true);
+				readdMenu->appendThis(TSTRING(READD_SOURCE), true);
+
+				fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)copyMenu, CTSTRING(COPY));
+				fileMenu.AppendMenu(MF_SEPARATOR);
+				fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+
+				fileMenu.AppendMenu(MF_SEPARATOR);
+				fileMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_RENAME_FILE));
+				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+				fileMenu.AppendMenu(MF_SEPARATOR);
+
+				removeMenu->appendThis(TSTRING(REMOVE_SOURCE), true);
+				removeAllMenu->appendThis(TSTRING(REMOVE_FROM_ALL), true);
+
+				fileMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
+				fileMenu.AppendMenu(MF_SEPARATOR);
+				fileMenu.AppendMenu(MF_STRING, IDC_RECHECK, CTSTRING(RECHECK_FILE));
+				fileMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 			} else {
-				OMenu multiMenu;
-				multiMenu.CreatePopupMenu();
-				multiMenu.InsertSeparatorFirst(TSTRING(FILES));
-				multiMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
-				multiMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITIES));
-				multiMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_RENAME_FILE));
-				multiMenu.AppendMenu(MF_SEPARATOR);
-				multiMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
-				multiMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-				multiMenu.AppendMenu(MF_STRING, IDC_READD_ALL, CTSTRING(READD_ALL));
-				multiMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+				fileMenu.InsertSeparatorFirst(TSTRING(FILES));
+				fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
+				fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITIES));
+				fileMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_RENAME_FILE));
+				fileMenu.AppendMenu(MF_SEPARATOR);
+				fileMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
+				fileMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
+				fileMenu.AppendMenu(MF_STRING, IDC_READD_ALL, CTSTRING(READD_ALL));
 			}
 		
+			fileMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE; 
 		}
 	} else if (reinterpret_cast<HWND>(wParam) == ctrlDirs && ctrlDirs.GetSelectedItem() != NULL) { 
@@ -1439,7 +1356,10 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		usingDirMenu = true;
 		
 		OMenu dirMenu;
-		dirMenu.CreatePopupMenu();	
+		dirMenu.CreatePopupMenu();
+
+		OMenu* removeMenu = dirMenu.getMenu();
+		OMenu* readdMenu = dirMenu.getMenu();
 
 		DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
 		Bundle::StringBundleList bundles = dii->getBundles();
@@ -1472,6 +1392,51 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			dirMenu.InsertSeparatorFirst(TSTRING(FOLDER));
 		}
 
+
+		/* Insert submenus */
+		if (mainBundle) {
+			priorityMenu.CheckMenuItem(b->getPriority() + 1, MF_BYPOSITION | MF_CHECKED);
+			if(b->getAutoPriority()) {
+				priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
+			}
+
+			Bundle::SourceInfoList bundleSources, badBundleSources;
+			QueueManager::getInstance()->getBundleSources(b, bundleSources, badBundleSources);
+
+			auto formatUser = [this] (Bundle::SourceTuple& bs) -> tstring {
+				auto u = get<Bundle::SOURCE_USER>(bs);
+				tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(u));
+				// add hub hint to menu
+				bool addHint = !u.hint.empty(), addSpeed = u.user->getSpeed() > 0;
+				nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(get<Bundle::SOURCE_FILES>(bs));
+				if(addHint || addSpeed) {
+					nick += _T(", ");
+					if (addSpeed) {
+						nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(u.user->getSpeed()) + _T("/s)");
+					}
+					if(addHint) {
+						if(addSpeed) {
+							nick += _T(", ");
+						}
+						nick += TSTRING(HUB) + _T(": ") + Text::toT(u.hint);
+					}
+				}
+				nick += _T(")");
+				return nick;
+			};
+
+			for(auto& bs: bundleSources) {
+				auto u = get<Bundle::SOURCE_USER>(bs);
+				removeMenu->appendItem(formatUser(bs), [b, u] { QueueManager::getInstance()->removeBundleSource(b, u); });
+			}
+
+			for(auto& bs: badBundleSources) {
+				auto u = get<Bundle::SOURCE_USER>(bs);
+				readdMenu->appendItem(formatUser(bs), [b, u] { QueueManager::getInstance()->readdBundleSource(b, u); });
+			}
+		}
+		/* Submenus end */
+
 		if (curDir != Util::getListPath() && curDir != Util::getOpenPath()) {
 			if (mainBundle) {
 				dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_BUNDLE, CTSTRING(SEARCH_BUNDLE_ALT));
@@ -1489,8 +1454,8 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			dirMenu.AppendMenu(MF_SEPARATOR);
 
 			if (mainBundle) {
-				dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)readdMenu, CTSTRING(READD_SOURCE));
-				dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)removeMenu, CTSTRING(REMOVE_SOURCE));
+				readdMenu->appendThis(CTSTRING(READD_SOURCE), true, true);
+				removeMenu->appendThis(CTSTRING(REMOVE_SOURCE), true, true);
 				if (!b->getSeqOrder()) {
 					dirMenu.AppendMenu(MF_POPUP, IDC_USE_SEQ_ORDER, CTSTRING(USE_SEQ_ORDER));
 				}
@@ -1498,91 +1463,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		}
 		dirMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 
-		if (mainBundle) {
-			priorityMenu.CheckMenuItem(b->getPriority() + 1, MF_BYPOSITION | MF_CHECKED);
-			if(b->getAutoPriority()) {
-				priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
-			}
-			CMenuItemInfo mi;
-
-			{
-				while(removeMenu.GetMenuItemCount() > 2) {
-					removeMenu.RemoveMenu(2, MF_BYPOSITION);
-				}
-
-				while(readdMenu.GetMenuItemCount() > 2) {
-					readdMenu.RemoveMenu(2, MF_BYPOSITION);
-				}
-
-				menuItems = 0;
-				QueueManager::getInstance()->getBundleSources(b, bundleSources, badBundleSources);
-
-				for(auto i = bundleSources.begin(); i != bundleSources.end(); ++i) {
-					tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(get<Bundle::SOURCE_USER>(*i)));
-					// add hub hint to menu
-					bool addHint = !get<Bundle::SOURCE_USER>(*i).hint.empty(), addSpeed = get<Bundle::SOURCE_USER>(*i).user->getSpeed() > 0;
-					nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(get<Bundle::SOURCE_FILES>(*i));
-					if(addHint || addSpeed) {
-						nick += _T(", ");
-						if (addSpeed) {
-							nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(get<Bundle::SOURCE_USER>(*i).user->getSpeed()) + _T("/s)");
-						}
-						if(addHint) {
-							if(addSpeed) {
-								nick += _T(", ");
-							}
-							nick += TSTRING(HUB) + _T(": ") + Text::toT(get<Bundle::SOURCE_USER>(*i).hint);
-						}
-					}
-					nick += _T(")");
-						
-					mi.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
-					mi.fType = MFT_STRING;
-					mi.dwTypeData = (LPTSTR)nick.c_str();
-					mi.dwItemData = (ULONG_PTR)&(*i);
-					mi.wID = IDC_REMOVE_SOURCE + 1 + menuItems; // "All" is before sources
-					removeMenu.InsertMenuItem(menuItems + 2, TRUE, &mi); // "All" and separator come first
-					menuItems++;
-				}
-
-			
-				readdItems = 0;
-				for(auto i = badBundleSources.begin(); i != badBundleSources.end(); ++i) {
-					tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(get<Bundle::SOURCE_USER>(*i)));
-					// add hub hint to menu
-					bool addHint = get<Bundle::SOURCE_USER>(*i).hint.empty(), addSpeed = get<Bundle::SOURCE_USER>(*i).user->getSpeed() > 0;
-					nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(get<Bundle::SOURCE_FILES>(*i));
-					if(addHint || addSpeed) {
-						nick += _T(", ");
-						if (addSpeed) {
-							nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(get<Bundle::SOURCE_USER>(*i).user->getSpeed()) + _T("/s)");
-						}
-						if(addHint) {
-							if(addSpeed) {
-								nick += _T(", ");
-							}
-							nick += TSTRING(HUB) + _T(": ") + Text::toT(get<Bundle::SOURCE_USER>(*i).hint);
-						}
-					}
-					nick += _T(")");
-
-					mi.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
-					mi.fType = MFT_STRING;
-					mi.dwTypeData = (LPTSTR)nick.c_str();
-					mi.dwItemData = (ULONG_PTR)&(*i);
-					mi.wID = IDC_READD + 1 + readdItems; // "All" is before sources
-					readdMenu.InsertMenuItem(readdItems + 2, TRUE, &mi); // "All" and separator come first
-					readdItems++;
-				}
-				if(readdItems == 0) {
-					dirMenu.EnableMenuItem((UINT_PTR)(HMENU)readdMenu, MFS_DISABLED);
-				} else {
-					dirMenu.EnableMenuItem((UINT_PTR)(HMENU)readdMenu, MFS_ENABLED);
- 				}
-			}
-		}
-
-		dirMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+		dirMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE;
 	}
 
@@ -1644,148 +1525,6 @@ LRESULT QueueFrame::onCopyMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 		int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
 		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
 		WinUtil::copyMagnet(ii->getTTH(), Util::getFileName(ii->getTarget()), ii->getSize());
-	}
-	return 0;
-}
-
-LRESULT QueueFrame::onBrowseList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	
-	if(ctrlQueue.GetSelectedCount() == 1) {
-		CMenuItemInfo mi;
-		mi.fMask = MIIM_DATA;
-		
-		browseMenu.GetMenuItemInfo(wID, FALSE, &mi);
-		OMenuItem* omi = (OMenuItem*)mi.dwItemData;
-		QueueItem::Source* s = (QueueItem::Source*)omi->data;
-		try {
-			QueueManager::getInstance()->addList(s->getUser(), QueueItem::FLAG_CLIENT_VIEW);
-		} catch(const Exception&) {
-		}
-	}
-	return 0;
-}
-
-
-
-LRESULT QueueFrame::onReadd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	
-	if(usingDirMenu) {
-		int finishedFiles = 0, fileBundles = 0;
-		BundleList bundles;
-		QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
-		BundlePtr b = bundles.front();
-
-		if(wID == IDC_READD) {
-			Bundle::SourceInfoList badSources = b->getBadSources();
-			for(auto si = badSources.begin(); si != badSources.end(); si++) {
-				QueueManager::getInstance()->readdBundleSource(b, get<Bundle::SOURCE_USER>(*si));
-			}
-			ctrlQueue.Invalidate();
-		} else {
-			CMenuItemInfo mi;
-			mi.fMask = MIIM_DATA;
-			readdMenu.GetMenuItemInfo(wID, FALSE, &mi);
-			OMenuItem* omi = (OMenuItem*)mi.dwItemData;
-			Bundle::SourceTuple* st = (Bundle::SourceTuple*)omi->data;
-			HintedUser tmp = get<Bundle::SOURCE_USER>(*st);
-			dcassert(st);
-
-			if (!bundles.empty()) {
-				QueueManager::getInstance()->readdBundleSource(b, tmp);
-			}
-		}
-	} else if(ctrlQueue.GetSelectedCount() == 1) {
-		int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
-		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
-
-		CMenuItemInfo mi;
-		mi.fMask = MIIM_DATA;
-		
-		readdMenu.GetMenuItemInfo(wID, FALSE, &mi);
-		if(wID == IDC_READD) {
-			// re-add all sources
-			QueueItem::SourceList badSources = QueueManager::getInstance()->getBadSources(ii->getQueueItem());
-			for(QueueItem::SourceConstIter s = badSources.begin(); s != badSources.end(); s++) {
-				QueueManager::getInstance()->readdQISource(ii->getTarget(), s->getUser());
-			}
-		} else {
-			OMenuItem* omi = (OMenuItem*)mi.dwItemData;
-			QueueItem::Source* s = (QueueItem::Source*)omi->data;
-			try {
-				QueueManager::getInstance()->readdQISource(ii->getTarget(), s->getUser());
-			} catch(const Exception& e) {
-				ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
-			}
-		}
-	}
-	return 0;
-}
-
-LRESULT QueueFrame::onRemoveSource(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	
-	if(usingDirMenu) {
-		int finishedFiles = 0, fileBundles = 0;
-		BundleList bundles;
-		QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
-		dcassert(!bundles.empty());
-		BundlePtr b = bundles.front();
-
-		if(wID == IDC_REMOVE_SOURCE) {
-			QueueManager::getInstance()->removeBundleSources(b);
-		} else {
-			CMenuItemInfo mi;
-			mi.fMask = MIIM_DATA;
-			removeMenu.GetMenuItemInfo(wID, FALSE, &mi);
-			OMenuItem* omi = (OMenuItem*)mi.dwItemData;
-			Bundle::SourceTuple* st = (Bundle::SourceTuple*)omi->data;
-			HintedUser tmp = get<Bundle::SOURCE_USER>(*st);
-			dcassert(st);
-
-			if (!bundles.empty()) {
-				QueueManager::getInstance()->removeBundleSource(b, tmp);
-			}
-		}
-		ctrlQueue.Invalidate();
-	} else if(ctrlQueue.GetSelectedCount() == 1) {
-		int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
-		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
-		if(wID == IDC_REMOVE_SOURCE) {
-			QueueItem::SourceList sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
-			for(QueueItem::SourceConstIter si = sources.begin(); si != sources.end(); si++) {
-				QueueManager::getInstance()->removeSource(ii->getTarget(), si->getUser(), QueueItem::Source::FLAG_REMOVED);
-			}
-		} else {
-			CMenuItemInfo mi;
-			mi.fMask = MIIM_DATA;
-		
-			removeMenu.GetMenuItemInfo(wID, FALSE, &mi);
-			OMenuItem* omi = (OMenuItem*)mi.dwItemData;
-			QueueItem::Source* s = (QueueItem::Source*)omi->data;
-			QueueManager::getInstance()->removeSource(ii->getTarget(), s->getUser(), QueueItem::Source::FLAG_REMOVED);
-		}
-	}
-	return 0;
-}
-
-LRESULT QueueFrame::onRemoveSources(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	CMenuItemInfo mi;
-	mi.fMask = MIIM_DATA;
-	removeAllMenu.GetMenuItemInfo(wID, FALSE, &mi);
-	OMenuItem* omi = (OMenuItem*)mi.dwItemData;
-	QueueItem::Source* s = (QueueItem::Source*)omi->data;
-	QueueManager::getInstance()->removeSource(s->getUser(), QueueItem::Source::FLAG_REMOVED);
-	return 0;
-}
-
-LRESULT QueueFrame::onPM(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlQueue.GetSelectedCount() == 1) {
-		CMenuItemInfo mi;
-		mi.fMask = MIIM_DATA;
-		
-		pmMenu.GetMenuItemInfo(wID, FALSE, &mi);
-		OMenuItem* omi = (OMenuItem*)mi.dwItemData;
-		QueueItem::Source* s = (QueueItem::Source*)omi->data;
-		PrivateFrame::openWindow(s->getUser());
 	}
 	return 0;
 }
@@ -2264,13 +2003,6 @@ LRESULT QueueFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	}
 	return 0;
 }
-LRESULT QueueFrame::onPreviewCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
-	if(ctrlQueue.GetSelectedCount() == 1) {
-		const QueueItemInfo* i = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-		WinUtil::RunPreviewCommand(wID - IDC_PREVIEW_APP, i->getQueueItem()->getTempTarget());
-	}
-	return 0;
-}
 
 LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
@@ -2291,14 +2023,15 @@ LRESULT QueueFrame::onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
 
-			// re-add all sources
-			QueueItem::SourceList badSources = QueueManager::getInstance()->getBadSources(ii->getQueueItem());
-			for(QueueItem::SourceConstIter s = badSources.begin(); s != badSources.end(); s++) {
-				QueueManager::getInstance()->readdQISource(ii->getTarget(), s->getUser());
-			}
-			}
-return 0; 
+		// re-add all sources
+		QueueItem::SourceList badSources = QueueManager::getInstance()->getBadSources(ii->getQueueItem());
+		for(auto s = badSources.begin(); s != badSources.end(); s++) {
+			QueueManager::getInstance()->readdQISource(ii->getTarget(), s->getUser());
+		}
+	}
+	return 0; 
 }
+
 void QueueFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
 	if(ctrlQueue.GetBkColor() != WinUtil::bgColor) {

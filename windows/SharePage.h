@@ -100,7 +100,7 @@ protected:
 
 	ShareProfilePtr addProfile();
 
-	FolderTree* ft;
+	unique_ptr<FolderTree> ft;
 	map<string, FolderTree*> ftl;
 
 	void showProfile();

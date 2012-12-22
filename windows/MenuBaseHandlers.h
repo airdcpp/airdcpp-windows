@@ -122,9 +122,9 @@ public:
 
 	template<class K>
 	void appendListMenu(UserPtr aUser, const User::UserInfoList& list, OMenu* subMenu, bool addShareInfo) {
-		for (auto i = list.begin(); i != list.end(); ++i) {
-			string url = (*i).hubUrl;
-			subMenu->appendItem(Text::toT((*i).hubName) + (addShareInfo ? (_T(" (") + Util::formatBytesW((*i).shared) + _T(")")) : Util::emptyStringT), 
+		for (auto& i: list) {
+			string url = i.hubUrl;
+			subMenu->appendItem(Text::toT(i.hubName) + (addShareInfo ? (_T(" (") + Util::formatBytesW(i.shared) + _T(")")) : Util::emptyStringT), 
 				[this, aUser, url] { K()(aUser, url); });
 		}
 	}
@@ -308,9 +308,9 @@ public:
 		auto ldl = SettingsManager::getInstance()->getDirHistory();
 		if(!ldl.empty()) {
 			targetMenu.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
-			for(auto i = ldl.begin(); i != ldl.end(); ++i) {
-				auto target = Text::fromT(*i);
-				targetMenu.appendItem(i->c_str(), [this, wholeDir, target] { onDownload(target, wholeDir); });
+			for(auto& i: ldl) {
+				auto target = Text::fromT(i);
+				targetMenu.appendItem(i.c_str(), [=] { onDownload(target, wholeDir); });
 			}
 
 			targetMenu.appendSeparator();
@@ -320,9 +320,8 @@ public:
 		//Append TTH locations
 		if(targets.size() > 0 && (type != SEARCH || !wholeDir)) {
 			targetMenu.InsertSeparatorLast(TSTRING(ADD_AS_SOURCE));
-			for(auto i = targets.begin(); i != targets.end(); ++i) {
-				auto target = *i;
-				targetMenu.appendItem(Text::toT(*i).c_str(), [this, target] { onDownload(target, false); });
+			for(auto& target: targets) {
+				targetMenu.appendItem(Text::toT(target).c_str(), [=] { onDownload(target, false); });
 			}
 		}
 	}
@@ -330,12 +329,16 @@ public:
 	void appendPriorityMenu(OMenu& aMenu, bool wholeDir) {
 		auto priorityMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_WITH_PRIORITY));
 
-		priorityMenu->appendItem(CTSTRING(PAUSED), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::PAUSED); });
-		priorityMenu->appendItem(CTSTRING(LOWEST), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::LOWEST); });
-		priorityMenu->appendItem(CTSTRING(LOW), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::LOW); });
-		priorityMenu->appendItem(CTSTRING(NORMAL), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::NORMAL); });
-		priorityMenu->appendItem(CTSTRING(HIGH), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::HIGH); });
-		priorityMenu->appendItem(CTSTRING(HIGHEST), [this, wholeDir] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, QueueItem::HIGHEST); });
+		auto addItem = [&] (const tstring& aTitle, QueueItem::Priority p) -> void {
+			priorityMenu->appendItem(aTitle.c_str(), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, p); });
+		};
+
+		addItem(CTSTRING(PAUSED), QueueItem::PAUSED);
+		addItem(CTSTRING(LOWEST), QueueItem::LOWEST);
+		addItem(CTSTRING(LOW), QueueItem::LOW);
+		addItem(CTSTRING(NORMAL), QueueItem::NORMAL);
+		addItem(CTSTRING(HIGH), QueueItem::HIGH);
+		addItem(CTSTRING(HIGHEST), QueueItem::HIGHEST);
 	}
 
 	void appendVirtualItems(OMenu &targetMenu, bool wholeDir, bool isFavDirs) {
@@ -343,18 +346,17 @@ public:
 
 		if (!l.empty()) {
 			targetMenu.InsertSeparatorLast(isFavDirs ? TSTRING(SETTINGS_FAVORITE_DIRS_PAGE) : TSTRING(SHARED));
-			for(auto i = l.begin(); i != l.end(); ++i) {
-				string t = i->first;
-				if (i->second.size() > 1) {
-					auto vMenu = targetMenu.createSubMenu(Text::toT(i->first).c_str(), true);
-					vMenu->appendItem(CTSTRING(AUTO_SELECT), [this, t, wholeDir, isFavDirs] { onDownloadVirtual(t, isFavDirs, wholeDir); });
+			for(auto& i: l) {
+				string t = i.first;
+				if (i.second.size() > 1) {
+					auto vMenu = targetMenu.createSubMenu(Text::toT(i.first).c_str(), true);
+					vMenu->appendItem(CTSTRING(AUTO_SELECT), [=] { onDownloadVirtual(t, isFavDirs, wholeDir); });
 					vMenu->appendSeparator();
-					for(auto s = i->second.begin(); s != i->second.end(); ++s) {
-						auto target = *s;
-						vMenu->appendItem(Text::toT(*s).c_str(), [this, target, wholeDir] { onDownload(target, wholeDir); });
+					for(auto& target: i.second) {
+						vMenu->appendItem(Text::toT(target).c_str(), [=] { onDownload(target, wholeDir); });
 					}
 				} else {
-					targetMenu.appendItem(Text::toT(t).c_str(), [this, t, wholeDir, isFavDirs] { onDownloadVirtual(t, isFavDirs, wholeDir); });
+					targetMenu.appendItem(Text::toT(t).c_str(), [=] { onDownloadVirtual(t, isFavDirs, wholeDir); });
 				}
 			}
 		}

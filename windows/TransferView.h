@@ -49,7 +49,7 @@ class TransferView : public CWindowImpl<TransferView>, private DownloadManagerLi
 public:
 	DECLARE_WND_CLASS(_T("TransferView"))
 
-	TransferView() : PreviewAppsSize(0) { }
+	TransferView() { }
 	~TransferView(void);
 
 	typedef UserInfoBaseHandler<TransferView> uibBase;
@@ -94,7 +94,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_AUTOPRIORITY, onAutoPriority)
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
-		COMMAND_RANGE_HANDLER(IDC_PREVIEW_APP, IDC_PREVIEW_APP + PreviewAppsSize, onPreviewCommand)
 		COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onPriority)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
@@ -111,7 +110,6 @@ public:
 	LRESULT onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onDisconnectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSlowDisconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onPreviewCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemoveFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -358,7 +356,6 @@ private:
 	TaskQueue tasks;
 
 	ParamMap ucLineParams;
-	int PreviewAppsSize;
 
 	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept;
 	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept;

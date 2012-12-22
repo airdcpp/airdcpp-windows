@@ -29,7 +29,7 @@ namespace dcpp {
 SearchTypeCombo::SearchTypeCombo() { }
 SearchTypeCombo::~SearchTypeCombo() { }
 
-LRESULT SearchTypeCombo::onMeasureItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT SearchTypeCombo::onMeasureItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
 	bHandled = FALSE;
 	
 	auto mis = (MEASUREITEMSTRUCT *)lParam;
@@ -42,7 +42,7 @@ LRESULT SearchTypeCombo::onMeasureItem(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 	return FALSE;
 }
 
-LRESULT SearchTypeCombo::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT SearchTypeCombo::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
 	DRAWITEMSTRUCT* dis = (DRAWITEMSTRUCT*)lParam;
 	bHandled = FALSE;
 	
@@ -105,8 +105,8 @@ void SearchTypeCombo::fillList(const string& aSelection, COLORREF aTextColor, CO
 	addListItem(7, TSTRING(DIRECTORY), SEARCH_TYPE_DIRECTORY);
 	addListItem(8, _T("TTH"), SEARCH_TYPE_TTH);
 
-	for(auto i = types.begin(); i != types.end(); i++) {
-		string name = i->first;
+	for(auto& id: types | map_keys) {
+		string name = id;
 		int imagePos = 0;
 		if(name.size() == 1 && name[0] >= '1' && name[0] <= '6') {
 			imagePos = name[0] - '0';
@@ -115,7 +115,7 @@ void SearchTypeCombo::fillList(const string& aSelection, COLORREF aTextColor, CO
 			imagePos = 9;
 		}
 
-		addListItem(imagePos, Text::toT(name), i->first);
+		addListItem(imagePos, Text::toT(name), id);
 	}
 
 	SetCurSel(selection);

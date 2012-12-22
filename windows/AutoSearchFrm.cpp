@@ -209,7 +209,7 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 }
 
-LRESULT AutoSearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+LRESULT AutoSearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	NMLVCUSTOMDRAW* cd = (NMLVCUSTOMDRAW*)pnmh;
 
 	switch(cd->nmcd.dwDrawStage) {

@@ -82,7 +82,7 @@ public:
 		return FALSE;
 	}
 
-	LRESULT OnInsertNumber(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	LRESULT OnInsertNumber(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		p->insertNumber();
 		return FALSE;
 	}

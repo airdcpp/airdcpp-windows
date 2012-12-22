@@ -435,7 +435,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 				CHARRANGE cr;
 				cr.cpMin = linkStart;
 				cr.cpMax = linkStart + displayText.length();
-				links.push_back(make_pair(cr, cl));
+				links.emplace_back(cr, cl);
 
 				pos=pos+result.position() + displayText.length();
 				start = result[0].first + displayText.length();
@@ -475,7 +475,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
 			}
 
-			links.push_back(make_pair(cr, cl));
+			links.emplace_back(cr, cl);
 			start = result[0].second;
 			pos=pos+result.position() + result.length();
 		}
@@ -498,7 +498,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 
 			std::string path (result[0].first, result[0].second);
 			ChatLink cl = ChatLink(path, ChatLink::TYPE_PATH);
-			links.push_back(make_pair(cr, cl));
+			links.emplace_back(cr, cl);
 
 			start = result[0].second;
 			pos=pos+result.position() + result.length();

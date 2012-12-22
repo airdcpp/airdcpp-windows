@@ -79,7 +79,7 @@ tstring HtmlToRtf::convert(const string& html, RichTextBox* box) {
 
 Parser::Parser(RichTextBox* box) {
 	// create a default context with the Rich Edit control's current formatting.
-	contexts.push_back(Context(box, *this));
+	contexts.emplace_back(box, *this);
 }
 
 void Parser::startTag(const string& name_, StringPairList& attribs, bool simple) {

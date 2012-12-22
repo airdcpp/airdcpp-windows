@@ -54,13 +54,30 @@ BOOL OMenu::CreatePopupMenu() {
 }
 
 OMenu* OMenu::createSubMenu(const tstring& aTitle, bool appendSeparator /*false*/) {
+	auto menu = getMenu();
+	menu->appendThis(aTitle, appendSeparator, false);
+	return menu;
+}
+
+OMenu* OMenu::getMenu() {
 	OMenu* menu = new OMenu(this);
 	subMenuList.push_back(unique_ptr<OMenu>(menu));
 	menu->CreatePopupMenu();
-	if (appendSeparator)
-		menu->InsertSeparatorFirst(aTitle);
-	AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)*menu, aTitle.c_str());
 	return menu;
+}
+
+bool OMenu::hasItems() {
+	return GetMenuItemCount() > 0;
+}
+
+void OMenu::appendThis(const tstring& aTitle, bool appendSeparator /*false*/, bool disableIfEmpty /*true*/) {
+	dcassert(parent);
+	parent->AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)*this, aTitle.c_str());
+	if (disableIfEmpty && !hasItems())
+		parent->EnableMenuItem((UINT_PTR)(HMENU)*this, MFS_DISABLED);
+
+	if (appendSeparator)
+		InsertSeparatorFirst(aTitle);
 }
 
 void OMenu::appendSeparator() {

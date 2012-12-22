@@ -63,7 +63,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 			aList->addPartialListTask(aDir);
 		else
 			aList->addFullListTask(aDir);
-		frames.insert( FramePair( frame->m_hWnd, frame ) );
+		frames.emplace(frame->m_hWnd, frame);
 	} else {
 		delete frame;
 	}
@@ -317,13 +317,13 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 		throw AbortException();
 
 	//reverse iterate to keep the sorting order when adding as first in the tree(a lot faster than TVI_LAST)
-	for(auto i = aTree->directories.crbegin(), iend = aTree->directories.crend(); i != iend; ++i) {
-		tstring name = Text::toT((*i)->getName());
-		int index = (*i)->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex();
-		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, name.c_str(), index, index, 0, 0, (LPARAM)*i, aParent, TVI_FIRST);
-		if((*i)->getAdls())
+	for(auto d: aTree->directories | reversed) {
+		tstring name = Text::toT(d->getName());
+		int index = d->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex();
+		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, name.c_str(), index, index, 0, 0, (LPARAM)d, aParent, TVI_FIRST);
+		if(d->getAdls())
 			ctrlTree.SetItemState(ht, TVIS_BOLD, TVIS_BOLD);
-		updateTree(*i, ht);
+		updateTree(d, ht);
 	}
 }
 
@@ -574,7 +574,7 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 	return 0;
 }
 
-LRESULT DirectoryListingFrame::onClickTree(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {
+LRESULT DirectoryListingFrame::onClickTree(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
 	isTreeChange = true;
 	return 0;
 }
@@ -645,17 +645,17 @@ void DirectoryListingFrame::filterList() {
 		//try to speed this up with large listings by comparing with the old filter
 		try {
 			boost::regex regOld(filter, boost::regex_constants::icase);
-			for(auto i = curDir->directories.begin(); i != curDir->directories.end(); ++i) {
-				string s = (*i)->getName();
+			for(auto d: curDir->directories) {
+				string s = d->getName();
 				if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
-					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
+					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), d->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
 				}
 			}
 
-			for(auto j = curDir->files.begin(); j != curDir->files.end(); ++j) {
-				string s = (*j)->getName();
+			for(auto f: curDir->files) {
+				string s = f->getName();
 				if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
-					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*j), ResourceLoader::getIconIndex(Text::toT((*j)->getName())));
+					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(f), ResourceLoader::getIconIndex(Text::toT(f->getName())));
 				}
 			}
 		} catch (...) { }
@@ -705,27 +705,27 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 	if (!filter.empty()) {
 		boost::regex reg(filter, boost::regex_constants::icase);
 
-		for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
-			string s = (*i)->getName();
+		for(auto d: d->directories) {
+			string s = d->getName();
 			if(boost::regex_search(s.begin(), s.end(), reg)) {
-				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
+				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), d->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
 			}
 		}
 
-		for(auto j = d->files.begin(); j != d->files.end(); ++j) {
-			string s = (*j)->getName();
+		for(auto f: d->files) {
+			string s = f->getName();
 			if(boost::regex_search(s.begin(), s.end(), reg)) {
-				ItemInfo* ii = new ItemInfo(*j);
+				ItemInfo* ii = new ItemInfo(f);
 				ctrlList.insertItem(ctrlList.GetItemCount(), ii, ResourceLoader::getIconIndex(ii->getText(COLUMN_FILENAME)));
 			}
 		}
 	} else {
-		for(auto i = d->directories.begin(); i != d->directories.end(); ++i) {
-			ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(*i), (*i)->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
+		for(auto d: d->directories) {
+			ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), d->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
 		}
 
-		for(auto j = d->files.begin(); j != d->files.end(); ++j) {
-			ItemInfo* ii = new ItemInfo(*j);
+		for(auto f: d->files) {
+			ItemInfo* ii = new ItemInfo(f);
 			ctrlList.insertItem(ctrlList.GetItemCount(), ii, ResourceLoader::getIconIndex(ii->getText(COLUMN_FILENAME)));
 		}
 	}
@@ -886,10 +886,10 @@ LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 
 	sMenu.InsertSeparatorLast(CTSTRING(OWN_FILELIST));
 	auto profiles = ShareManager::getInstance()->getProfiles();
-	for (auto i = profiles.begin(); i != profiles.end(); ++i) {
-		if ((*i)->getToken() != SP_HIDDEN) {
-			string profile = Util::toString((*i)->getToken());
-			sMenu.appendItem(Text::toT((*i)->getDisplayName()), [this, profile] {
+	for (auto sp: profiles) {
+		if (sp->getToken() != SP_HIDDEN) {
+			string profile = Util::toString(sp->getToken());
+			sMenu.appendItem(Text::toT(sp->getDisplayName()), [this, profile] {
 				changeWindowState(false);
 				ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
 				dl->addListDiffTask(profile, true);
@@ -1534,8 +1534,8 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 }
 
 void DirectoryListingFrame::closeAll(){
-	for(FrameIter i = frames.begin(); i != frames.end(); ++i)
-		i->second->PostMessage(WM_CLOSE, 0, 0);
+	for(auto f: frames | map_values)
+		f->PostMessage(WM_CLOSE, 0, 0);
 }
 
 LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

@@ -34,6 +34,8 @@
 
 #include "ResourceLoader.h"
 
+#include <boost/noncopyable.hpp>
+
 #define SHOWTREE_MESSAGE_MAP 12
 
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
@@ -43,7 +45,7 @@ public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE, 0, COLOR_3DFACE);
 
 	QueueFrame() : menuItems(0), queueSize(0), queueItems(0), spoken(false), dirty(false), 
-		usingDirMenu(false),  readdItems(0), fileLists(NULL), tempItems(NULL), showTree(true), closed(false), PreviewAppsSize(0),
+		usingDirMenu(false),  readdItems(0), fileLists(NULL), tempItems(NULL), showTree(true), closed(false),
 		showTreeContainer(WC_BUTTON, this, SHOWTREE_MESSAGE_MAP) 
 	{
 	}
@@ -83,13 +85,7 @@ public:
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + COLUMN_LAST-1, onCopy)
 		COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onPriority)
 		COMMAND_RANGE_HANDLER(IDC_SEGMENTONE, IDC_SEGMENTTEN, onSegments)
-		COMMAND_RANGE_HANDLER(IDC_BROWSELIST, IDC_BROWSELIST + menuItems, onBrowseList)
-		COMMAND_RANGE_HANDLER(IDC_REMOVE_SOURCE, IDC_REMOVE_SOURCE + menuItems, onRemoveSource)
-		COMMAND_RANGE_HANDLER(IDC_REMOVE_SOURCES, IDC_REMOVE_SOURCES + 1 + menuItems, onRemoveSources)
-		COMMAND_RANGE_HANDLER(IDC_PM, IDC_PM + menuItems, onPM)
-		COMMAND_RANGE_HANDLER(IDC_READD, IDC_READD + 1 + readdItems, onReadd)
 		COMMAND_ID_HANDLER(IDC_AUTOPRIORITY, onAutoPriority)
-		COMMAND_RANGE_HANDLER(IDC_PREVIEW_APP, IDC_PREVIEW_APP + PreviewAppsSize, onPreviewCommand)
 		NOTIFY_HANDLER(IDC_QUEUE, NM_CUSTOMDRAW, onCustomDraw)
 		CHAIN_MSG_MAP(splitBase)
 		CHAIN_MSG_MAP(baseClass)
@@ -97,14 +93,11 @@ public:
 		MESSAGE_HANDLER(BM_SETCHECK, onShowTree)
 	END_MSG_MAP()
 
+
+	LRESULT onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSegments(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onRemoveSource(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onRemoveSources(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPM(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onReadd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRecheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -116,7 +109,6 @@ public:
 	LRESULT OnChar(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onAutoPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onPreviewCommand(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -249,7 +241,7 @@ private:
 	class QueueItemInfo;
 	friend class QueueItemInfo;
 	
-	class QueueItemInfo : public FastAlloc<QueueItemInfo> {
+	class QueueItemInfo : public FastAlloc<QueueItemInfo>, boost::noncopyable {
 	public:
 
 		QueueItemInfo(QueueItemPtr aQI) : qi(aQI), fileName(aQI->getTargetFileName()) { }
@@ -289,9 +281,6 @@ private:
 		GETSET(string, fileName, FileName);
 	private:
 		QueueItemPtr qi;
-
-		QueueItemInfo(const QueueItemInfo&);
-		QueueItemInfo& operator=(const QueueItemInfo&);
 	};
 		
 	struct QueueItemInfoTask : FastAlloc<QueueItemInfoTask>, public Task {
@@ -318,14 +307,6 @@ private:
 
 	TaskQueue tasks;
 	bool spoken;
-
-	OMenu browseMenu;
-	OMenu removeMenu;
-	OMenu removeAllMenu;
-	OMenu pmMenu;
-	OMenu readdMenu;
-
-	int PreviewAppsSize;
 
 	CButton ctrlShowTree;
 	CContainedWindow showTreeContainer;

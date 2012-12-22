@@ -89,7 +89,6 @@ public:
 		REMOVE_POPUP,
 		SET_PM_TRAY_ICON,
 		SET_HUB_TRAY_ICON,
-		UPDATE_TBSTATUS_HASHING,
 		UPDATE_TBSTATUS_REFRESHING
 	};
 
@@ -445,18 +444,7 @@ private:
 	CToolBarCtrl TBStatusCtrl;
 	HWND createTBStatusBar();
 
-	struct HashInfo {
-		HashInfo(const string& aFile, int64_t& aSize, size_t& aFiles, int64_t& aSpeed, bool aPaused) : 
-		file(aFile), size(aSize), files(aFiles), speed(aSpeed), paused(aPaused) { }
-
-		string file; 
-		int64_t size; 
-		size_t files;
-		int64_t speed;
-		bool paused;
-	};
-
-	void updateTBStatusHashing(HashInfo m_HashInfo);
+	void updateTBStatusHashing(const string& aFile, int64_t aSize, size_t aFiles, int64_t aSpeed, int aHashers, bool aPaused);
 	void updateTBStatusRefreshing();
 	bool refreshing;
 	int64_t startBytes;

@@ -774,7 +774,7 @@ public:
 				deleteItem(oldParent);
 
 				ParentPair newPP = { parent };
-				pp = &(parents.insert(make_pair(const_cast<K*>(&parent->getGroupCond()), newPP)).first->second);
+				pp = &(parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP).first->second);
 
 				parent->parent = NULL; // ensure that parent of this item is really NULL
 				oldParent->parent = parent;
@@ -826,7 +826,7 @@ public:
 			uniqueParent = false;
 
 			ParentPair newPP = { parent };
-			pp = &(parents.insert(make_pair(const_cast<K*>(&parent->getGroupCond()), newPP)).first->second);
+			pp = &(parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP).first->second);
 
 			parent->parent = NULL; // ensure that parent of this item is really NULL
 			parent->hits++;
@@ -935,7 +935,7 @@ public:
 					delete oldParent;
 
 					ParentPair newPP = { parent };
-					parents.insert(make_pair(const_cast<K*>(&parent->getGroupCond()), newPP));
+					parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
 
 					parent->parent = NULL; // ensure that parent of this item is really NULL
 					deleteItem(parent);

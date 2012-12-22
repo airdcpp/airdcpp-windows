@@ -407,8 +407,7 @@ public:
 	}
 
 	static void ClearPreviewMenu(OMenu &previewMenu);
-	static int SetupPreviewMenu(CMenu &previewMenu, string extension);
-	static void RunPreviewCommand(unsigned int index, const string& target);
+	static void appendPreviewMenu(OMenu* previewMenu, const string& aTarget);
 	static string getSysUptime();
 	static tstring diskInfo();
 	static string generateStats();

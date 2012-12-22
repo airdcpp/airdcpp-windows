@@ -137,15 +137,15 @@ public:
 
 	}
 	int run() {
-		for(StringIter i = files.begin(); i != files.end(); ++i) {
-			UserPtr u = DirectoryListing::getUserFromFilename(*i);
+		for(auto& i: files) {
+			UserPtr u = DirectoryListing::getUserFromFilename(i);
 			if(!u)
 				continue;
 				
 			HintedUser user(u, Util::emptyString);
-			DirectoryListing* dl = new DirectoryListing(user, false, *i, false, false);
+			unique_ptr<DirectoryListing> dl(new DirectoryListing(user, false, i, false, false));
 			try {
-				dl->loadFile(*i);
+				dl->loadFile(i);
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
@@ -154,7 +154,6 @@ public:
 			} catch(const Exception&) {
 
 			}
-			delete dl;
 		}
 		delete this;
 		return 0;
@@ -862,10 +861,6 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 				::Shell_NotifyIcon(NIM_MODIFY, &nid);
 			}
 		}
-	} else if(wParam == UPDATE_TBSTATUS_HASHING) {
-		HashInfo *tmp = (HashInfo*)lParam;
-		updateTBStatusHashing(*tmp);
-		delete tmp;
 	} else if(wParam == UPDATE_TBSTATUS_REFRESHING) {
 		updateTBStatusRefreshing();
     } else if(wParam == ASYNC) {
@@ -1446,7 +1441,7 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	return 0;
 }
 
-LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	const TCHAR types[] = _T("File Lists\0*.DcLst;*.xml.bz2\0All Files\0*.*\0");
 
 	tstring file;
@@ -1568,8 +1563,7 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 			(minDelta && i != x && abs(i - x) < minDelta); // not too close to the original value
 	}));
 
-	for(auto i = values.cbegin(), iend = values.cend(); i != iend; ++i) {
-		auto value = *i;
+	for(auto value: values) {
 		auto same = value == x;
 		auto formatted = Text::toT(Util::formatBytes(value * 1024));
 		auto pos = limiterMenu->appendItem(value ? formatted + _T("/s") : CTSTRING(DISABLED),
@@ -1703,7 +1697,7 @@ LRESULT MainFrame::onWinampStart(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	return 0;
 }
 
-void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
+void MainFrame::updateTBStatusHashing(const string& /*aFile*/, int64_t aSize, size_t aFiles, int64_t aSpeed, int /*aHashers*/, bool aPaused) {
 
 	if(refreshing) {
 		refreshing = false;
@@ -1714,47 +1708,41 @@ void MainFrame::updateTBStatusHashing(HashInfo m_HashInfo) {
 		progress.Invalidate();
 	}
 
-	string file = m_HashInfo.file;
-	int64_t bytes = m_HashInfo.size;
-	size_t files = m_HashInfo.files;
-	int64_t speed = m_HashInfo.speed;
+	if(aSize > startBytes)
+		startBytes = aSize;
 
-	if(bytes > startBytes)
-		startBytes = bytes;
+	if(aFiles > startFiles)
+		startFiles = aFiles;
 
-	if(files > startFiles)
-		startFiles = files;
-
-	bool paused = m_HashInfo.paused;
-	tstring tmp = _T("");
-	if(files == 0 || bytes == 0 || paused) {
-		if(paused) {
+	tstring tmp;
+	if(aFiles == 0 || aSize == 0 || aPaused) {
+		if(aPaused) {
 			tmp += 	_T(" ( ") + TSTRING(PAUSED) + _T(" )");
 		} else {
 			tmp = _T("");
 		}
 	} else {
-		int64_t filestat = speed > 0 ? ((startBytes - (startBytes - bytes)) / speed) : 0;
+		int64_t filestat = aSpeed > 0 ? ((startBytes - (startBytes - aSize)) / aSpeed) : 0;
 
-		tmp = Util::formatBytesW((int64_t)speed) + _T("/s, ") + Util::formatBytesW(bytes) + _T(" ") + TSTRING(LEFT);
+		tmp = Util::formatBytesW((int64_t)aSpeed) + _T("/s, ") + Util::formatBytesW(aSize) + _T(" ") + TSTRING(LEFT);
 		
-		if(filestat == 0 || speed == 0) {
+		if(filestat == 0 || aSpeed == 0) {
 			tmp += Text::toT(", -:--:-- " + STRING(LEFT));	
 		} else {
 			tmp += _T(", ") + Util::formatSecondsW(filestat) + _T(" ") + TSTRING(LEFT);
 		}
 	}
 
-	if(startFiles == 0 || startBytes == 0 || files == 0) {
-		if(startFiles != 0 && files == 0) {
+	if(startFiles == 0 || startBytes == 0 || aFiles == 0) {
+		if(startFiles != 0 && aFiles == 0) {
 			progress.SetPosWithText((int)progress.GetRangeLimit(0), _T("Finished...")); //show 100% for one second.
-		} else if(progress.GetPos() != 0 || paused || progress.GetTextLen() > 0) {//skip unnecessary window updates...
+		} else if(progress.GetPos() != 0 || aPaused || progress.GetTextLen() > 0) {//skip unnecessary window updates...
 			progress.SetPosWithText(0, tmp);
 		}
 		startBytes = 0;
 		startFiles = 0;
 	} else {
-		progress.SetPosWithText(((int)(progress.GetRangeLimit(0) * ((0.5 * (startFiles - files)/startFiles) + 0.5 * (startBytes - bytes) / startBytes))), tmp);
+		progress.SetPosWithText(((int)(progress.GetRangeLimit(0) * ((0.5 * (startFiles - aFiles)/startFiles) + 0.5 * (startBytes - aSize) / startBytes))), tmp);
 	}
 }
 
@@ -1893,14 +1881,14 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		if(ShareManager::getInstance()->isRefreshing()){
 			PostMessage(WM_SPEAKER, UPDATE_TBSTATUS_REFRESHING, 0);
 		} else {
-			string file = "";
+			string file;
 			int64_t bytes = 0;
 			size_t files = 0;
 			int64_t speed = 0;
+			int hashers = 0;
 			bool paused = HashManager::getInstance()->isHashingPaused();
-			HashManager::getInstance()->getStats(file, bytes, files, speed);
-			HashInfo *hashinfo = new HashInfo(file, bytes, files, speed, paused);
-			PostMessage(WM_SPEAKER, UPDATE_TBSTATUS_HASHING, LPARAM(hashinfo));
+			HashManager::getInstance()->getStats(file, bytes, files, speed, hashers);
+			callAsync([=] { updateTBStatusHashing(file, bytes, files, speed, hashers, paused); });
 		}
 	}
 
@@ -2108,16 +2096,16 @@ LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 	dropMenu.appendSeparator();
 
 	auto l = ShareManager::getInstance()->getGroupedDirectories();
-	for(auto i = l.begin(); i != l.end(); ++i) {
-		if (i->second.size() > 1) {
-			auto vMenu = dropMenu.createSubMenu(Text::toT(i->first).c_str(), true);
-			vMenu->appendItem(CTSTRING(ALL), [i] { ShareManager::getInstance()->refresh(i->first); });
+	for(auto& i: l) {
+		if (i.second.size() > 1) {
+			auto vMenu = dropMenu.createSubMenu(Text::toT(i.first).c_str(), true);
+			vMenu->appendItem(CTSTRING(ALL), [&i] { ShareManager::getInstance()->refresh(i.first); });
 			vMenu->appendSeparator();
-			for(auto s = i->second.begin(); s != i->second.end(); ++s) {
-				vMenu->appendItem(Text::toT(*s).c_str(), [s] { ShareManager::getInstance()->refresh(*s); });
+			for(auto s: i.second) {
+				vMenu->appendItem(Text::toT(s).c_str(), [&s] { ShareManager::getInstance()->refresh(s); });
 			}
 		} else {
-			dropMenu.appendItem(Text::toT(i->first).c_str(), [i] { ShareManager::getInstance()->refresh(i->first); });
+			dropMenu.appendItem(Text::toT(i.first).c_str(), [&i] { ShareManager::getInstance()->refresh(i.first); });
 		}
 	}
 

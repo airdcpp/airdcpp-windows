@@ -1472,43 +1472,31 @@ void WinUtil::saveReBarSettings(HWND bar) {
 }
 
 
-int WinUtil::SetupPreviewMenu(CMenu &previewMenu, string extension){
-	int PreviewAppsSize = 0;
-	PreviewApplication::List lst = FavoriteManager::getInstance()->getPreviewApps();
-	if(lst.size()>0){		
-		PreviewAppsSize = 0;
-		for(PreviewApplication::Iter i = lst.begin(); i != lst.end(); i++){
-			StringList tok = StringTokenizer<string>((*i)->getExtension(), ';').getTokens();
-			bool add = false;
-			if(tok.size()==0)add = true;
+void WinUtil::appendPreviewMenu(OMenu* previewMenu, const string& aTarget) {
+	auto lst = FavoriteManager::getInstance()->getPreviewApps();
+	auto ext = Util::getFileExt(aTarget);
+	if (ext.empty()) return;
 
-			
-			for(StringIter si = tok.begin(); si != tok.end(); ++si) {
-				if(_stricmp(extension.c_str(), si->c_str())==0){
-					add = true;
-					break;
-				}
-			}
-							
-			if (add) previewMenu.AppendMenu(MF_STRING, IDC_PREVIEW_APP + PreviewAppsSize, Text::toT(((*i)->getName())).c_str());
-			PreviewAppsSize++;
-		}
-	}
-	return PreviewAppsSize;
-}
+	ext = ext.substr(1); //remove the dot
 
-void WinUtil::RunPreviewCommand(unsigned int index, const string& target) {
-	PreviewApplication::List lst = FavoriteManager::getInstance()->getPreviewApps();
+	for(auto& i: lst){
+		auto tok = StringTokenizer<string>(i->getExtension(), ';').getTokens();
 
-	if(index <= lst.size()) {
-		string application = lst[index]->getApplication();
-		string arguments = lst[index]->getArguments();
-		ParamMap ucParams;				
+		if (tok.size() == 0 || any_of(tok.begin(), tok.end(), [&ext](const string& si) { return _stricmp(ext.c_str(), si.c_str())==0; })) {
+
+			string application = i->getApplication();
+			string arguments = i->getArguments();
+
+			previewMenu->appendItem(Text::toT((i->getName())).c_str(), [=] {
+				string tempTarget = QueueManager::getInstance()->getTempTarget(aTarget);
+				ParamMap ucParams;				
 	
-		ucParams["file"] = "\"" + target + "\"";
-		ucParams["dir"] = "\"" + Util::getFilePath(target) + "\"";
+				ucParams["file"] = "\"" + tempTarget + "\"";
+				ucParams["dir"] = "\"" + Util::getFilePath(tempTarget) + "\"";
 
-		::ShellExecute(NULL, NULL, Text::toT(application).c_str(), Text::toT(Util::formatParams(arguments, ucParams)).c_str(), Text::toT(Util::getFilePath(target)).c_str(), SW_SHOWNORMAL);
+				::ShellExecute(NULL, NULL, Text::toT(application).c_str(), Text::toT(Util::formatParams(arguments, ucParams)).c_str(), Text::toT(Util::getFilePath(tempTarget)).c_str(), SW_SHOWNORMAL);
+			});
+		}
 	}
 }
 
