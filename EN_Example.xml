@@ -1739,5 +1739,6 @@ would you still like to load them?</String>
 		<String Name="DecreaseNum">Decrease current number</String>
 		<String Name="SettingsDelayHours">Hours to search for proper when using incrementation</String>
 		<String Name="XNoReleaseFiles">%d folders with no release files</String>
+		<String Name="MenuHide">Hide</String>
 	</Strings>
 </Language>

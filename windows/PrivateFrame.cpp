@@ -452,12 +452,16 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 		LOG(LogManager::PM, params);
 	}
 
+	bool notify = false;
 	if(BOOLSETTING(TIME_STAMPS)) {
-		ctrlClient.AppendText(from, Text::toT(SETTING(NICK)), Text::toT("[" + Util::getShortTimeString() + "] "), aLine + _T('\n'), cf);
+		notify = ctrlClient.AppendText(from, Text::toT(SETTING(NICK)), Text::toT("[" + Util::getShortTimeString() + "] "), aLine + _T('\n'), cf);
 	} else {
-		ctrlClient.AppendText(from, Text::toT(SETTING(NICK)), _T(""), aLine + _T('\n'), cf);
+		notify = ctrlClient.AppendText(from, Text::toT(SETTING(NICK)), _T(""), aLine + _T('\n'), cf);
 	}
 	addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()));
+
+	if(notify)
+		setNotify();
 
 	if (BOOLSETTING(BOLD_PM)) {
 		setDirty();

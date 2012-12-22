@@ -1497,7 +1497,9 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 				ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
 			}
 		} else {
-			SetForegroundWindow(m_hWnd);
+			ShowWindow(SW_HIDE);
+			ShowWindow(SW_MINIMIZE);
+			//SetForegroundWindow(m_hWnd);
 		}
 	} else if(lParam == WM_MOUSEMOVE && ((lastMove + 1000) < GET_TICK()) ) {
 		NOTIFYICONDATA nid;
@@ -1524,7 +1526,7 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 void MainFrame::onTrayMenu() {
 	OMenu trayMenu;
 	trayMenu.CreatePopupMenu();
-	trayMenu.AppendMenu(MF_STRING, IDC_TRAY_SHOW, CTSTRING(MENU_SHOW));
+	trayMenu.AppendMenu(MF_STRING, IDC_TRAY_SHOW, bAppMinimized ? CTSTRING(MENU_SHOW) : CTSTRING(MENU_HIDE));
 	trayMenu.AppendMenu(MF_STRING, IDC_OPEN_DOWNLOADS, CTSTRING(MENU_OPEN_DOWNLOADS_DIR));
 	trayMenu.AppendMenu(MF_SEPARATOR);
 	trayMenu.AppendMenu(MF_STRING, IDC_REFRESH_FILE_LIST, CTSTRING(MENU_REFRESH_FILE_LIST));
@@ -2153,7 +2155,8 @@ LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /
 		}
 
 	} else {
-		SetForegroundWindow(m_hWnd);	
+		ShowWindow(SW_HIDE);
+		ShowWindow(SW_MINIMIZE);
 	}
 	return 0;
 }

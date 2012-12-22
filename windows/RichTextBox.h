@@ -170,7 +170,7 @@ public:
 	static tstring rtfEscape(const tstring& str);
 
 	//void AdjustTextSize();
-	void AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = true);
+	bool AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = true);
 	void AppendHTML(const string& aTxt);
 	tstring getLinkText(const ENLINK& link);
 	LRESULT handleLink(ENLINK& link);

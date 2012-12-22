@@ -107,8 +107,9 @@ tstring RichTextBox::rtfEscape(const tstring& str) {
 	return escaped;
 }
 
-void RichTextBox::AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
+bool RichTextBox::AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
 	SetRedraw(FALSE);
+	matchedTab = false;
 
 	SCROLLINFO si = { 0 };
 	POINT pt = { 0 };
@@ -292,6 +293,7 @@ void RichTextBox::AppendText(const Identity& i, const tstring& sMyNick, const ts
 	// Force window to redraw
 	SetRedraw(TRUE);
 	InvalidateRect(NULL);
+	return matchedTab;
 }
 
 void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFORMAT2& cf, bool isMyMessage, const tstring& sAuthor, LONG lSelBegin, bool bUseEmo) {
@@ -347,7 +349,7 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 	
 
 	if(BOOLSETTING(USE_HIGHLIGHT)) {
-	
+
 		ColorList *cList = HighlightManager::getInstance()->getList();
 		CHARFORMAT2 hlcf;
 		logged = false;
@@ -1713,10 +1715,8 @@ size_t RichTextBox::RegExpMatch(ColorSettings* cs, CHARFORMAT2 &hlcf, const tstr
 	} catch(...) {
 	}
 
-	if(!found)
-		return tstring::npos;
-	
-	CheckAction(cs, line);
+	if(found)
+		CheckAction(cs, line);
 	
 	return tstring::npos;
 
@@ -1730,10 +1730,11 @@ void RichTextBox::CheckAction(ColorSettings* cs, const tstring& line) {
 		WinUtil::showPopup(line.c_str(), popupTitle.c_str());
 	}
 
-	//Todo maybe
-//	if(cs->getTab() && isSet(TAB))
-//		matchedTab = true;
 
+	if(cs->getTab())
+		matchedTab = true;
+	
+	//Todo maybe
 //	if(cs->getLog() && !logged && !skipLog){
 //		logged = true;
 //		AddLogLine(line);

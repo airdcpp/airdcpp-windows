@@ -169,6 +169,7 @@ void FulHighlightDialog::fix() {
 		::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
 		::EnableWindow(GetDlgItem(IDC_SOUND),					use);
 		::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
+		::EnableWindow(GetDlgItem(IDC_TABCOLOR),					use);
 		
 		::EnableWindow(GetDlgItem(IDC_MATCH_COL_TEXT),					1);
 		::EnableWindow(GetDlgItem(IDC_MATCH_COLUMN),					1);
@@ -187,6 +188,7 @@ void FulHighlightDialog::fix() {
 		::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
 		::EnableWindow(GetDlgItem(IDC_MATCH_COL_TEXT),					use);
 		::EnableWindow(GetDlgItem(IDC_MATCH_COLUMN),					use);
+		::EnableWindow(GetDlgItem(IDC_TABCOLOR),					use);
 		BOOL t;
 		onClickedBox(0, IDC_HAS_BG_COLOR, NULL, t);
 		onClickedBox(0, IDC_HAS_FG_COLOR, NULL, t);
@@ -204,6 +206,7 @@ void FulHighlightDialog::fix() {
 		::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
 		::EnableWindow(GetDlgItem(IDC_SOUND),					use);
 		::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
+		::EnableWindow(GetDlgItem(IDC_TABCOLOR),					use);
 		::EnableWindow(GetDlgItem(IDC_MATCH_COL_TEXT),					0);
 		::EnableWindow(GetDlgItem(IDC_MATCH_COLUMN),					0);
 
@@ -255,7 +258,7 @@ void FulHighlightDialog::getValues(){
 	cs.setWholeLine(	  IsDlgButtonChecked(IDC_WHOLELINE)		== BST_CHECKED );
 	cs.setWholeWord(	  IsDlgButtonChecked(IDC_WHOLEWORD)		== BST_CHECKED );
 	cs.setPopup(		  IsDlgButtonChecked(IDC_POPUP)			== BST_CHECKED );
-	//cs.setTab(			  IsDlgButtonChecked(IDC_TABCOLOR)		== BST_CHECKED );
+	cs.setTab(			  IsDlgButtonChecked(IDC_TABCOLOR)		== BST_CHECKED );
 	cs.setPlaySound(	  IsDlgButtonChecked(IDC_SOUND)			== BST_CHECKED );
 	//cs.setLog(			  IsDlgButtonChecked(IDC_LASTLOG)		== BST_CHECKED );
 	cs.setHasBgColor(	  IsDlgButtonChecked(IDC_HAS_BG_COLOR)	== BST_CHECKED );
@@ -295,7 +298,7 @@ void FulHighlightDialog::initControls() {
 	CheckDlgButton(IDC_CASESENSITIVE, cs.getCaseSensitive() ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_WHOLEWORD	, cs.getWholeWord()	 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_POPUP		, cs.getPopup()		 ? BST_CHECKED : BST_UNCHECKED);
-	//CheckDlgButton(IDC_TABCOLOR		, cs.getTab()			 ? BST_CHECKED : BST_UNCHECKED);
+	CheckDlgButton(IDC_TABCOLOR		, cs.getTab()			 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_SOUND		, cs.getPlaySound()	 ? BST_CHECKED : BST_UNCHECKED);
 	//CheckDlgButton(IDC_LASTLOG		, cs.getLog()			 ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_HAS_BG_COLOR , cs.getHasBgColor()	 ? BST_CHECKED : BST_UNCHECKED);
