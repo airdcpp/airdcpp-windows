@@ -496,6 +496,7 @@
     <ClCompile Include="windows\ADLSProperties.cpp" />
     <ClCompile Include="windows\AdvancedPage.cpp" />
     <ClCompile Include="windows\AutoSearchFrm.cpp" />
+    <ClCompile Include="windows\ChatCommands.cpp" />
     <ClCompile Include="windows\DirectoryListingDlg.cpp" />
     <ClCompile Include="windows\EmoticonsManager.cpp" />
     <ClCompile Include="windows\AirAppearancePage.cpp" />
@@ -608,6 +609,7 @@
     <ClInclude Include="windows\AdvancedPage.h" />
     <ClInclude Include="windows\AutoSearchFrm.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
+    <ClInclude Include="windows\ChatCommands.h" />
     <ClInclude Include="windows\CProgressCtrlEx.h" />
     <ClInclude Include="windows\CSplitterEx.h" />
     <ClInclude Include="windows\DirectoryListingDlg.h" />

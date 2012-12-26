@@ -408,24 +408,13 @@ public:
 
 	static void ClearPreviewMenu(OMenu &previewMenu);
 	static void appendPreviewMenu(OMenu* previewMenu, const string& aTarget);
-	static string getSysUptime();
-	static tstring diskInfo();
-	static string generateStats();
-	static string uptimeInfo();
 	static bool shutDown(int action);
 	static int getFirstSelectedIndex(CListViewCtrl& list);
 	static int setButtonPressed(int nID, bool bPressed = true);
-	static tstring UselessInfo();
-	static tstring Speedinfo();
-	static tstring DiskSpaceInfo(bool onlyTotal = false);
 
 	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
 
 	static string getReport(const Identity& identity, HWND hwnd);
-
-	static string CPUInfo();
-	
-	static TStringList FindVolumes();
 
 	static void viewLog(const string& path, bool aHistory=false);
 

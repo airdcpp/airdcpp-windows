@@ -26,6 +26,7 @@
 #include "MainFrm.h"
 #include "Players.h"
 #include "ExMessageBox.h"
+#include "ChatCommands.h"
 
 #include "../client/AutoSearchManager.h"
 #include "../client/HashManager.h"
@@ -753,21 +754,21 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 			status = TSTRING(SHUTDOWN_OFF);
 		}
 	} else if((stricmp(cmd.c_str(), _T("disks")) == 0) || (stricmp(cmd.c_str(), _T("di")) == 0)) {
-		status = WinUtil::diskInfo();
+		status = ChatCommands::diskInfo();
 	} else if(stricmp(cmd.c_str(), _T("stats")) == 0) {
-		message = Text::toT(WinUtil::generateStats());
+		message = Text::toT(ChatCommands::generateStats());
 	} else if(stricmp(cmd.c_str(), _T("prvstats")) == 0) {
-		status = Text::toT(WinUtil::generateStats());
+		status = Text::toT(ChatCommands::generateStats());
 	} else if(stricmp(cmd.c_str(), _T("speed")) == 0) {
-		status = WinUtil::Speedinfo();
+		status = ChatCommands::Speedinfo();
 	} else if(stricmp(cmd.c_str(), _T("info")) == 0) {
-		status = WinUtil::UselessInfo();
+		status = ChatCommands::UselessInfo();
 	} else if(stricmp(cmd.c_str(), _T("df")) == 0) {
-		status = WinUtil::DiskSpaceInfo();
+		status = ChatCommands::DiskSpaceInfo();
 	} else if(stricmp(cmd.c_str(), _T("dfs")) == 0) {
-		message = WinUtil::DiskSpaceInfo();
+		message = ChatCommands::DiskSpaceInfo();
 	} else if(stricmp(cmd.c_str(), _T("uptime")) == 0) {
-		message = Text::toT(WinUtil::uptimeInfo());
+		message = Text::toT(ChatCommands::uptimeInfo());
 	} else if(stricmp(cmd.c_str(), _T("f")) == 0) {
 		ctrlClient.findText();
 	} else if(stricmp(cmd.c_str(), _T("whois")) == 0) {

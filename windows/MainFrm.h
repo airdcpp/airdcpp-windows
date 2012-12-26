@@ -60,33 +60,14 @@ public:
 
 	CMDICommandBarCtrl m_CmdBar;
 
-	struct Popup {
-		tstring Title;
-		tstring Message;
-		int Icon;
-		bool force;
-		HICON hIcon;
-	};
-
-	struct SizeConfirmInfo {
-		SizeConfirmInfo(const string aName, const string& aMsg) : msg(Text::toT(aMsg)), name(aName) { }
-		tstring msg;
-		string name;
-	};
-
 	enum {
-		PROMPT_SIZE_ACTION,
-		OPEN_FILELIST,
 		STATS,
 		AUTO_CONNECT,
 		PARSE_COMMAND_LINE,
-		VIEW_FILE_AND_DELETE, 
-		VIEW_TEXT, 
+		VIEW_FILE_AND_DELETE,
 		SET_STATUSTEXT,
 		STATUS_MESSAGE,
 		ASYNC,
-		SHOW_POPUP,
-		REMOVE_POPUP,
 		SET_PM_TRAY_ICON,
 		SET_HUB_TRAY_ICON,
 		UPDATE_TBSTATUS_REFRESHING
@@ -416,14 +397,6 @@ public:
 private:
 	NOTIFYICONDATA pmicon;
 	NOTIFYICONDATA hubicon;
-
-	class DirectoryListInfo {
-	public:
-		DirectoryListInfo(DirectoryListing* aDirList, const string& aDir) : dirList(aDirList), dir(aDir) { }
-		DirectoryListing* dirList;
-		tstring file;
-		string dir;
-	};
 	
 	TransferView transferView;
 	static MainFrame* anyMF;

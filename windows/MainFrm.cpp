@@ -707,20 +707,10 @@ HWND MainFrame::createToolbar() {
 }
 
 LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	if(wParam == PROMPT_SIZE_ACTION) {
-		auto_ptr<SizeConfirmInfo> i(reinterpret_cast<SizeConfirmInfo*>(lParam));
-		bool accept = MessageBox(i.get()->msg.c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
-		DirectoryListingManager::getInstance()->handleSizeConfirmation(i.get()->name, accept);
-	} else if(wParam == OPEN_FILELIST) {
-		auto_ptr<DirectoryListInfo> i(reinterpret_cast<DirectoryListInfo*>(lParam));
-		DirectoryListingFrame::openWindow(i->dirList, i->dir);
-	} else if(wParam == VIEW_FILE_AND_DELETE) {
+	if(wParam == VIEW_FILE_AND_DELETE) {
 		auto_ptr<tstring> file(reinterpret_cast<tstring*>(lParam));
 		TextFrame::openWindow(*file, TextFrame::NORMAL);
 		File::deleteFile(Text::fromT(*file));
-	} else if(wParam == VIEW_TEXT) {
-		auto_ptr<TStringPair> tp(reinterpret_cast<TStringPair*>(lParam));
-		TextFrame::openWindow(tp->first, tp->second, TextFrame::REPORT);
 	} else if(wParam == STATS) {
 		auto_ptr<TStringList> pstr(reinterpret_cast<TStringList*>(lParam));
 		const TStringList& str = *pstr;
@@ -819,14 +809,8 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 			}
 		}
 		delete msg;
-	} else if(wParam == SHOW_POPUP) {
-		Popup* msg = (Popup*)lParam;
-		PopupManager::getInstance()->Show(msg->Message, msg->Title, msg->Icon, msg->hIcon, msg->force);
-		delete msg;
 	} else if(wParam == WM_CLOSE) {
 		PopupManager::getInstance()->Remove((int)lParam);
-	} else if(wParam == REMOVE_POPUP){
-		PopupManager::getInstance()->AutoRemove();
 	} else if(wParam == SET_PM_TRAY_ICON) {
 		if((!bIsPM) && (!WinUtil::isAppActive || bAppMinimized)) {
 			bIsPM = true;
@@ -1877,6 +1861,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	if(SETTING(DISCONNECT_SPEED) < 1) {
 		SettingsManager::getInstance()->set(SettingsManager::DISCONNECT_SPEED, 1);
 	}
+
 	if(TBStatusCtrl.IsWindowVisible()){
 		if(ShareManager::getInstance()->isRefreshing()){
 			PostMessage(WM_SPEAKER, UPDATE_TBSTATUS_REFRESHING, 0);
@@ -1914,18 +1899,14 @@ void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr qi, const 
 }
 
 void MainFrame::on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept {
-	PostMessage(WM_SPEAKER, VIEW_TEXT, (LPARAM) new TStringPair(make_pair(Text::toT(aTitle), Text::toT(aText))));
+	callAsync([=] { TextFrame::openWindow(Text::toT(aTitle), Text::toT(aText), TextFrame::REPORT); });
 }
 
 void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept {
-	DirectoryListInfo* i = new DirectoryListInfo(aList, aDir);
-	PostMessage(WM_SPEAKER, OPEN_FILELIST, (LPARAM)i);
+	callAsync([=] { DirectoryListingFrame::openWindow(aList, aDir); });
 }
 
 void MainFrame::on(DirectoryListingManagerListener::PromptAction, const string& aName, const string& aMessage) noexcept {
-	//auto i = new SizeConfirmInfo(aName, aMessage);
-	//PostMessage(WM_SPEAKER, PROMPT_SIZE_ACTION, (LPARAM)i);
-
 	bool accept = ::MessageBox(m_hWnd, Text::toT(aMessage).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
 	DirectoryListingManager::getInstance()->handleSizeConfirmation(aName, accept);
 }
@@ -2210,14 +2191,7 @@ void MainFrame::onUpdateComplete(const string& aUpdater) noexcept {
 }
 
 void MainFrame::ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags, HICON hIcon, bool force) {
-	Popup* p = new Popup;
-	p->Title = szTitle;
-	p->Message = szMsg;
-	p->Icon = dwInfoFlags;
-	p->hIcon = hIcon;
-	p->force = force;
-
-	PostMessage(WM_SPEAKER, SHOW_POPUP, (LPARAM)p);
+	callAsync([=] { PopupManager::getInstance()->Show(szMsg, szTitle, dwInfoFlags, hIcon, force); });
 }
 void MainFrame::updateTooltipRect() {
 	CRect sr;

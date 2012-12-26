@@ -120,8 +120,8 @@ void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, HI
 }
 
 void PopupManager::on(TimerManagerListener::Second /*type*/, uint64_t /*tick*/) {
-	//post a message and let the main window thread take care of the window
-	::PostMessage(WinUtil::mainWnd, WM_SPEAKER, MainFrame::REMOVE_POPUP, 0);
+	//let the main thread take care of the window
+	MainFrame::getMainFrame()->callAsync([=] { AutoRemove(); });
 }
 
 

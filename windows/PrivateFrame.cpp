@@ -65,7 +65,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 
-	addSpeakerTask(false);
+	updateOnlineStatus();
 	created = true;
 
 	ClientManager::getInstance()->addListener(this);
@@ -177,7 +177,7 @@ void PrivateFrame::updateOnlineStatus() {
 	dcassert(!replyTo.hint.empty());
 
 	//get the hub and online status
-	pair<tstring, bool> hubsInfoNew = WinUtil::getHubNames(cid, hint);
+	auto hubsInfoNew = move(WinUtil::getHubNames(cid, hint));
 	if (!hubsInfoNew.second && !online) {
 		//nothing to update... probably a delayed event
 		return;
@@ -255,7 +255,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 	bool myPM = replyTo == ClientManager::getInstance()->getMe();
 	const UserPtr& user = myPM ? to : replyTo;
 	
-	FrameIter i = frames.find(user);
+	auto i = frames.find(user);
 	if(i == frames.end()) {
 		if(frames.size() > 200) return;
 		p = new PrivateFrame(HintedUser(user, c->getHubUrl()), c);
@@ -275,13 +275,13 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 		if(BOOLSETTING(FLASH_WINDOW_ON_NEW_PM)) {
 			WinUtil::FlashWindow();
 		}
+
 		if(BOOLSETTING(POPUP_NEW_PM)) {
-			pair<tstring, bool> hubs = WinUtil::getHubNames(replyTo, c->getHubUrl());
 			if(BOOLSETTING(PM_PREVIEW)) {
 				tstring message = aMessage.substr(0, 250);
 				WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 			} else {
-				WinUtil::showPopup(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + hubs.first, TSTRING(PRIVATE_MESSAGE));
+				WinUtil::showPopup(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + p->hubNames, TSTRING(PRIVATE_MESSAGE));
 			}
 		}
 
@@ -294,7 +294,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 		}
 	} else {
 		if(!myPM) {
-
+			i->second->updateFrameOnlineStatus(HintedUser(user, c->getHubUrl()), c);
 			if(BOOLSETTING(FLASH_WINDOW_ON_PM) && !BOOLSETTING(FLASH_WINDOW_ON_NEW_PM)) {
 				WinUtil::FlashWindow();
 			}
@@ -304,8 +304,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 					tstring message = aMessage.substr(0, 250);
 					WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 				} else {
-					pair<tstring, bool> hubs = WinUtil::getHubNames(replyTo, c->getHubUrl());
-					WinUtil::showPopup(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + hubs.first, TSTRING(PRIVATE_MESSAGE));
+					WinUtil::showPopup(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + i->second->hubNames, TSTRING(PRIVATE_MESSAGE));
 				}
 			}
 
@@ -316,8 +315,6 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 					WinUtil::playSound(Text::toT(SETTING(BEEPFILE)));
 				}
 			}
-
-			i->second->updateFrameOnlineStatus(HintedUser(user, c->getHubUrl()), c);
 		}
 		i->second->addLine(from, aMessage);
 	}
@@ -344,7 +341,6 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 /*
  update the re used frame to the correct hub, 
  so it doesnt appear offline while user is sending us messages with another hub :P
- should we change to same hub with the user even if its not offline?
 */
 void PrivateFrame::updateFrameOnlineStatus(const HintedUser& newUser, Client* c) {
 
@@ -368,16 +364,7 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 		BOOL bTmp;
 		onGetList(0,0,0,bTmp);
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
-		ParamMap params;
-		const CID& cid = replyTo.user->getCID();
-		const string& hint = replyTo.hint;
-	
-		params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(cid, hint));
-		params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint));
-		params["userCID"] = cid.toBase32(); 
-		params["userNI"] = ClientManager::getInstance()->getNicks(cid, hint)[0];
-		params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
-		WinUtil::openFile(Text::toT(LogManager::getInstance()->getPath(LogManager::PM, params)));
+		WinUtil::openFile(Text::toT(getLogPath()));
 	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
 		status = _T("*** ") + ChatFrameBase::commands + _T(", /getlist, /clear, /grant, /close, /favorite, /winamp");
 	} else {
@@ -406,7 +393,7 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		PostMessage(WM_CLOSE);
 		return 0;
 	} else {
-		FrameIter i = frames.find(replyTo);
+		auto i = frames.find(replyTo);
 		if(i != frames.end())
 			frames.erase(i);
 
@@ -622,14 +609,14 @@ void PrivateFrame::readLog() {
 }
 
 void PrivateFrame::closeAll(){
-	for(FrameIter i = frames.begin(); i != frames.end(); ++i)
-		i->second->PostMessage(WM_CLOSE, 0, 0);
+	for(auto f: frames | map_values)
+		f->PostMessage(WM_CLOSE, 0, 0);
 }
 
 void PrivateFrame::closeAllOffline() {
-	for(FrameIter i = frames.begin(); i != frames.end(); ++i) {
-		if(!i->first->isOnline())
-			i->second->PostMessage(WM_CLOSE, 0, 0);
+	for(auto& fp: frames) {
+		if(!fp.first->isOnline())
+			fp.second->PostMessage(WM_CLOSE, 0, 0);
 	}
 }
 
