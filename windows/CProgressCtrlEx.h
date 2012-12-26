@@ -66,6 +66,7 @@ public:
 			::SetTextColor(hDC, WinUtil::TBprogressTextColor);
 			return (LRESULT)(HBRUSH)::GetStockObject(NULL_BRUSH);
 		}
+		bHandled = FALSE;
 		return FALSE;
 	}
 
