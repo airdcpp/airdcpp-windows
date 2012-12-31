@@ -1042,7 +1042,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="PresetAddAll">Add all</String>
 		<String Name="PresetMyNick">My nick</String>
 		<String Name="PresetMyMessages">My messages</String>
-		<String Name="PresetUserLimiter">Users Limiting Upload</String>
 		<String Name="PresetTimestamp">Timestamps</String>
 		<String Name="PresetUrls">Urls</String>
 		<String Name="PresetMe">/me</String>
@@ -1638,7 +1637,6 @@ would you still like to load them?</String>
 		<String Name="MandatoryUpdate">Mandatory Update</String>
 		<String Name="AttemptAutoUpdate">AirDC++ will now attempt to update your installation automatically</String>
 		<String Name="LoadingGui">Loading the user interface</String>
-		<String Name="UnloadingGui">Unloading the user interface</String>
 		<String Name="PartialFilelist">Partial file list</String>
 		<String Name="DownloadLimit">Download limit</String>
 		<String Name="UploadLimit">Upload limit</String>
@@ -1740,5 +1738,6 @@ would you still like to load them?</String>
 		<String Name="SettingsDelayHours">Hours to search for proper when using incrementation</String>
 		<String Name="XNoReleaseFiles">%d folders with no release files</String>
 		<String Name="MenuHide">Hide</String>
+		<String Name="ClosingWindows">Closing windows</String>
 	</Strings>
 </Language>

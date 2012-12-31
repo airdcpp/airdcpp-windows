@@ -939,7 +939,7 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 
 		TCHAR* buf = new TCHAR[len+1];
 		ctrlClient.GetLine(line, buf, len+1);
-		tstring x = tstring(buf, len-1);
+		tstring x = tstring(buf, len);
 		delete[] buf;
 
 		string::size_type start = x.find_last_of(_T(" <\t\r\n"), c);

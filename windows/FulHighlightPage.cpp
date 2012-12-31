@@ -84,7 +84,6 @@ LRESULT FulHighlightPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	presets.AppendMenu(MF_STRING, IDC_PRESETMENU, CTSTRING(PRESET_JOINS));
 	presets.AppendMenu(MF_STRING, IDC_PRESETMENU, CTSTRING(PRESET_PARTS));
 	presets.AppendMenu(MF_STRING, IDC_PRESETMENU, CTSTRING(PRESET_RELEASES));
-	presets.AppendMenu(MF_STRING, IDC_PRESETMENU, CTSTRING(PRESET_USER_LIMITER));
 
 	MENUINFO inf;
 	inf.cbSize = sizeof(MENUINFO);
@@ -248,13 +247,6 @@ void FulHighlightPage::addPreset(int preset) {
 			cs.setMatch(_T("$Re:") + Text::toT(AirUtil::getReleaseRegLong(true)));
 			cs.setHasFgColor(true);
 			cs.setFgColor(RGB(153, 51, 153));
-			break;
-		case 5:
-			cs.setContext(HighlightManager::CONTEXT_NICKLIST);
-			cs.setMatchColumn(3);
-			cs.setMatch(_T("$Re:L:\\d{1,8}KB"));
-			cs.setHasFgColor(true);
-			cs.setFgColor(RGB(204, 102, 51));
 			break;
 		default:
 			break;
