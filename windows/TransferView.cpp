@@ -685,7 +685,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 					if(changeParent) {
 						if (ii->bundle.empty()) {
-							ii->parent = nullptr; //we need to NULL the old parent so it won't be used when comparing items
+							ii->parent = nullptr;
 							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 						} else {
 							ctrlTransfers.insertBundle(ii, ii->parent ? !ii->parent->collapsed : BOOLSETTING(EXPAND_BUNDLES));
