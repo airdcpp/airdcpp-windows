@@ -247,9 +247,8 @@ void NetworkPage::getAddresses() {
 	}
 
 	addresses.insert("0.0.0.0");
-	for(auto i = addresses.begin(); i != addresses.end(); ++i) {
-		BindCombo.AddString(Text::toT(*i).c_str());
-	}
+	for(auto& addr: addresses)
+		BindCombo.AddString(Text::toT(addr).c_str());
 	
 	if(AdapterInfo)
 		HeapFree(GetProcessHeap(), 0, AdapterInfo);	

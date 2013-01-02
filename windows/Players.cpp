@@ -314,7 +314,6 @@ string Players::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 
 		string path = Text::fromT(appDataPath) + "\\Spotify\\Users\\";
 		ifstream guistate;
-		StringList userFiles;
 
 		ritem.assign("\"name\":\"([^\"]+)\",\"uri\":\"([^\"]+)");
 		rname.assign("(?<=\"name\":\")([^\"]+)");
@@ -324,10 +323,10 @@ string Players::getSpotifySpam(HWND playerWnd /*= NULL*/) {
 		StringList usersList = File::findFiles(path, "*");
 
 		//find the file containing the latest songs played
-		for(auto i = usersList.begin(); i != usersList.end(); ++i) {
-			userFiles = File::findFiles(*i, "guistate");
-			for(auto s = userFiles.begin(); s != userFiles.end(); ++s) {
-				guistate.open(Text::utf8ToAcp(*s));
+		for(auto& u: usersList) {
+			auto userFiles = File::findFiles(u, "guistate");
+			for(auto& file: userFiles) {
+				guistate.open(Text::utf8ToAcp(file));
 				while (getline(guistate, line)) {
 					boost::smatch result;
 					string::const_iterator begin=line.begin(), end=line.end();

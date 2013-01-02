@@ -332,9 +332,7 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 
 	// highlight all occurences of favourite users' nicks
 	FavoriteManager::FavoriteMap ul = FavoriteManager::getInstance()->getFavoriteUsers();
-	for(FavoriteManager::FavoriteMap::const_iterator i = ul.begin(); i != ul.end(); ++i) {
-		const FavoriteUser& pUser = i->second;
-
+	for(const auto& pUser: ul | map_values) {
 		lSearchFrom = 0;
 		sNick = Text::toT(pUser.getNick());
 		std::transform(sNick.begin(), sNick.end(), sNick.begin(), _totlower);
@@ -516,11 +514,11 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 			tstring::size_type curReplace = tstring::npos;
 			Emoticon* foundEmoticon = NULL;
 
-			for(auto emoticon = emoticonsList.begin(); emoticon != emoticonsList.end(); ++emoticon) {
-				tstring::size_type idxFound = sMsg.find((*emoticon)->getEmoticonText(), lastReplace);
+			for(auto emoticon: emoticonsList) {
+				tstring::size_type idxFound = sMsg.find(emoticon->getEmoticonText(), lastReplace);
 				if(idxFound < curReplace || curReplace == tstring::npos) {
 					curReplace = idxFound;
-					foundEmoticon = (*emoticon);
+					foundEmoticon = emoticon;
 				}
 			}
 
@@ -546,10 +544,10 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 					++lSelBegin;
 
 					//fix the positions for links after this emoticon....
-					for(auto i = links.rbegin(); i != links.rend(); ++i) {
-						if ((*i).first.cpMin > lSelBegin) {
-							(*i).first.cpMin = (*i).first.cpMin - foundEmoticon->getEmoticonText().size() + 1;
-							(*i).first.cpMax = (*i).first.cpMax - foundEmoticon->getEmoticonText().size() + 1;
+					for(auto l: links | reversed) {
+						if (l.first.cpMin > lSelBegin) {
+							l.first.cpMin = l.first.cpMin - foundEmoticon->getEmoticonText().size() + 1;
+							l.first.cpMax = l.first.cpMax - foundEmoticon->getEmoticonText().size() + 1;
 						} else {
 							break;
 						}
@@ -1278,8 +1276,8 @@ bool RichTextBox::isLink(POINT pt) {
 	}
 
 
-	for(auto i = links.rbegin(); i != links.rend(); ++i) {
-		if( iCharPos >= i->first.cpMin && iCharPos <= i->first.cpMax ) {
+	for(auto l: links | reversed) {
+		if( iCharPos >= l.first.cpMin && iCharPos <= l.first.cpMax ) {
 			return true;
 		}
 	}
@@ -1299,10 +1297,10 @@ bool RichTextBox::getLink(POINT pt, CHARRANGE& cr, ChatLink& link) {
 		return false;
 	}
 
-	for(auto i = links.rbegin(); i != links.rend(); ++i) {
-		if( iCharPos >= i->first.cpMin && iCharPos <= i->first.cpMax ) {
-			link = i->second;
-			cr = i->first;
+	for(auto l: links | reversed) {
+		if( iCharPos >= l.first.cpMin && iCharPos <= l.first.cpMax ) {
+			link = l.second;
+			cr = l.first;
 			return true;
 		}
 	}
@@ -1323,12 +1321,12 @@ LRESULT RichTextBox::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 
 LRESULT RichTextBox::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	string link = Text::fromT(selectedWord);
-	for(auto i = links.rbegin(); i != links.rend(); ++i) {
-		if(compare(i->second.url, link) == 0) {
-			if (i->second.type == ChatLink::TYPE_MAGNET) {
-				WinUtil::parseMagnetUri(Text::toT(i->second.url), getMagnetSource());
+	for(auto l: links | reversed) {
+		if(compare(l.second.url, link) == 0) {
+			if (l.second.type == ChatLink::TYPE_MAGNET) {
+				WinUtil::parseMagnetUri(Text::toT(l.second.url), getMagnetSource());
 			} else {
-				WinUtil::openLink(Text::toT(i->second.url));
+				WinUtil::openLink(Text::toT(l.second.url));
 			}
 			return 0;
 		}
@@ -1414,15 +1412,7 @@ LRESULT RichTextBox::onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 LRESULT RichTextBox::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou) {
-		ParamMap params;
-
-		params["userNI"] = ou->getIdentity().getNick();
-		params["hubNI"] = client->getHubName();
-		params["myNI"] = client->getMyNick();
-		params["userCID"] = ou->getUser()->getCID().toBase32();
-		params["hubURL"] = client->getHubUrl();
-
-		string file = LogManager::getInstance()->getPath(LogManager::PM, params);
+		auto file = ou->getLogPath();
 		if(Util::fileExists(file)) {
 			WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
 		} else {

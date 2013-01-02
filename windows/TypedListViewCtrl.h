@@ -484,19 +484,16 @@ public:
 			lvc.cchTextMax = 512;
 			lvc.pszText = buf;
 			GetColumn(i, &lvc);
-			for(ColumnIter j = columnList.begin(); j != columnList.end(); ++j){
-				if(_tcscmp(buf, (*j)->name.c_str()) == 0) {
-					(*j)->pos = lvc.iOrder;
-					(*j)->width = lvc.cx;
+			for(auto c: columnList){
+				if(_tcscmp(buf, c->name.c_str()) == 0) {
+					c->pos = lvc.iOrder;
+					c->width = lvc.cx;
 					break;
 				}
 			}
 		}
 
-		for(ColumnIter i = columnList.begin(); i != columnList.end(); ++i){
-			ColumnInfo* ci = *i;
-			
-
+		for(auto ci: columnList) {
 			if(ci->visible){
 				visible += "1,";
 			} else {
@@ -504,8 +501,8 @@ public:
 				visible += "0,";
 			}
 			
-			order += Util::toString((*i)->pos) + ",";
-			widths += Util::toString((*i)->width) + ",";
+			order += Util::toString(ci->pos) + ",";
+			widths += Util::toString(ci->width) + ",";
 		}
 
 		order.erase(order.size()-1, 1);
@@ -697,10 +694,10 @@ public:
 
 	void Collapse(T* parent, int itemPos) {
 		SetRedraw(false);
-		const vector<T*>& children = findChildren(parent->getGroupCond());
-		for(vector<T*>::const_iterator i = children.begin(); i != children.end(); i++) {
-			deleteItem(*i);
-		}
+		auto& children = findChildren(parent->getGroupCond());
+		for(const auto c: children)
+			deleteItem(c);
+
 		parent->collapsed = true;
 		SetItemState(itemPos, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
 		SetRedraw(true);
@@ -708,12 +705,12 @@ public:
 
 	void Expand(T* parent, int itemPos) {
 		SetRedraw(false);
-		const vector<T*>& children = findChildren(parent->getGroupCond());
+		const auto& children = findChildren(parent->getGroupCond());
 		if(children.size() > (size_t)(uniqueParent ? 1 : 0)) {
 			parent->collapsed = false;
-			for(vector<T*>::const_iterator i = children.begin(); i != children.end(); i++) {
-				insertChild(*i, itemPos + 1);
-			}
+			for(const auto c: children)
+				insertChild(c, itemPos + 1);
+
 			SetItemState(itemPos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
 			resort();
 		}
@@ -899,9 +896,9 @@ public:
 	void removeParent(T* parent) {
 		ParentPair* pp = findParentPair(parent->getGroupCond());
 		if(pp) {
-			for(vector<T*>::iterator i = pp->children.begin(); i != pp->children.end(); i++) {
-				deleteItem(*i);
-				delete *i;
+			for(auto i: pp->children) {
+				deleteItem(i);
+				delete i;
 			}
 			pp->children.clear();
 			parents.erase(const_cast<K*>(&parent->getGroupCond()));
@@ -956,14 +953,13 @@ public:
 
 	void deleteAllItems() {
 		// HACK: ugly hack but at least it doesn't crash and there's no memory leak
-		for(ParentMap::iterator i = parents.begin(); i != parents.end(); i++) {
-			T* ti = (*i).second.parent;
-			for(vector<T*>::iterator j = (*i).second.children.begin(); j != (*i).second.children.end(); j++) {
-				deleteItem(*j);
-				delete *j;
+		for(auto p: parents | map_values) {
+			for(auto c: p.children) {
+				deleteItem(c);
+				delete c;
 			}
-			deleteItem(ti);
-			delete ti;
+			deleteItem(p.parent);
+			delete p.parent;
 		}
 		for(int i = 0; i < GetItemCount(); i++) {
 			T* si = getItemData(i);

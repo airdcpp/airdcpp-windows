@@ -62,11 +62,12 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	FavoriteManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
-	auto ul = FavoriteManager::getInstance()->getFavoriteUsers();
 	ctrlUsers.SetRedraw(FALSE);
-	for(auto i = ul.begin(); i != ul.end(); ++i) {
-		addUser(i->second);
-	}
+
+	auto ul = FavoriteManager::getInstance()->getFavoriteUsers();
+	for(auto& u: ul | map_values)
+		addUser(u);
+
 	ctrlUsers.SetRedraw(TRUE);
 	CRect rc(SETTING(USERS_LEFT), SETTING(USERS_TOP), SETTING(USERS_RIGHT), SETTING(USERS_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -303,7 +304,7 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		params["userNI"] = ClientManager::getInstance()->getNicks(ui->getUser()->getCID())[0];
 		params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
 
-		string file = LogManager::getInstance()->getPath(LogManager::CHAT, params);
+		string file = LogManager::getInstance()->getPath(LogManager::PM, params);
 		if(Util::fileExists(file)) {
 			WinUtil::viewLog(file);
 		} else {

@@ -1749,14 +1749,14 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 	ctrlLanguage.SetImageList(ResourceLoader::flagImages);
 	int count = 0;
 	
-	for(auto i = Localization::languageList.begin(); i != Localization::languageList.end(); ++i){
+	for(auto l: Localization::languageList){
 		COMBOBOXEXITEM cbli =  {CBEIF_TEXT|CBEIF_IMAGE|CBEIF_SELECTEDIMAGE};
-		CString str = Text::toT((*i).languageName).c_str();
+		CString str = Text::toT(l.languageName).c_str();
 		cbli.iItem = count;
 		cbli.pszText = (LPTSTR)(LPCTSTR) str;
 		cbli.cchTextMax = str.GetLength();
 
-		auto flagIndex = Localization::getFlagIndexByCode((*i).countryFlagCode);
+		auto flagIndex = Localization::getFlagIndexByCode(l.countryFlagCode);
 		cbli.iImage = flagIndex;
 		cbli.iSelectedImage = flagIndex;
 		ctrlLanguage.InsertItem(&cbli);

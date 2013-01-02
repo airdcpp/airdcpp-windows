@@ -389,7 +389,7 @@ void FavoriteHubsFrame::handleMove(bool up) {
 	if(!up)
 		reverse(fh_copy.begin(), fh_copy.end());
 	FavoriteHubEntryList moved;
-	for(FavoriteHubEntryList::iterator i = fh_copy.begin(); i != fh_copy.end(); ++i) {
+	for(auto i = fh_copy.begin(); i != fh_copy.end(); ++i) {
 		if(find(selected.begin(), selected.end(), *i) == selected.end())
 			continue;
 		if(find(moved.begin(), moved.end(), *i) != moved.end())
@@ -462,8 +462,8 @@ void FavoriteHubsFrame::fillList()
 	}
 
 	const FavoriteHubEntryList& fl = FavoriteManager::getInstance()->getFavoriteHubs();
-	for(auto i = fl.begin(); i != fl.end(); ++i) {
-		const string& group = (*i)->getGroup();
+	for(auto fhe: fl) {
+		const string& group = fhe->getGroup();
 
 		int index = 0;
 		if(!group.empty()) {
@@ -472,7 +472,7 @@ void FavoriteHubsFrame::fillList()
 				index = groupI - groups.begin();
 		}
 
-		addEntry(*i, ctrlHubs.GetItemCount(), index);
+		addEntry(fhe, ctrlHubs.GetItemCount(), index);
 	}
 
 	nosave = old_nosave;
