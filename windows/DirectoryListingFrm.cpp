@@ -52,7 +52,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 
 	HWND aHWND = NULL;
 	DirectoryListingFrame* frame = new DirectoryListingFrame(aList);
-	if((BOOLSETTING(POPUNDER_FILELIST) && !aList->getPartialList()) || (BOOLSETTING(POPUNDER_PARTIAL_LIST) && aList->getPartialList())) {
+	if((SETTING(POPUNDER_FILELIST) && !aList->getPartialList()) || (SETTING(POPUNDER_PARTIAL_LIST) && aList->getPartialList())) {
 		aHWND = WinUtil::hiddenCreateEx(frame);
 	} else {
 		aHWND = frame->CreateEx(WinUtil::mdiClient);
@@ -176,7 +176,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 
 	ctrlTree.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT, WS_EX_CLIENTEDGE, IDC_DIRECTORIES);
 	
-	if(BOOLSETTING(USE_EXPLORER_THEME)) {
+	if(SETTING(USE_EXPLORER_THEME)) {
 		SetWindowTheme(ctrlTree.m_hWnd, L"explorer", NULL);
 	}
 	
@@ -594,7 +594,7 @@ void DirectoryListingFrame::resetFilter() {
 
 LRESULT DirectoryListingFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	bHandled = FALSE;
-	if (BOOLSETTING(FILTER_ENTER)) {
+	if (SETTING(FILTER_ENTER)) {
 		if (wParam == VK_RETURN) {
 			filterList();
 		}
@@ -1068,7 +1068,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 
 
-		if(BOOLSETTING(SHOW_SHELL_MENU) && dl->getIsOwnList() && (ctrlList.GetSelectedCount() == 1)) {
+		if(SETTING(SHOW_SHELL_MENU) && dl->getIsOwnList() && (ctrlList.GetSelectedCount() == 1)) {
 			StringList localPaths;
 			try {
 				ii->type == ItemInfo::FILE ? dl->getLocalPaths(ii->file, localPaths) : dl->getLocalPaths(ii->dir, localPaths);
@@ -1766,7 +1766,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 		}
 
 		//has dupe color = no matching
-		if( BOOLSETTING(USE_HIGHLIGHT) && !dl->getIsOwnList() && (ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DUPE_NONE) ) {
+		if( SETTING(USE_HIGHLIGHT) && !dl->getIsOwnList() && (ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() == DUPE_NONE) ) {
 				
 			ColorList *cList = HighlightManager::getInstance()->getList();
 			for(ColorIter i = cList->begin(); i != cList->end(); ++i) {

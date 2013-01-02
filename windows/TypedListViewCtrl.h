@@ -132,7 +132,7 @@ public:
 	}
 	
 	LRESULT onInfoTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-		if(!BOOLSETTING(SHOW_INFOTIPS)) return 0;
+		if(!SETTING(SHOW_INFOTIPS)) return 0;
 
 		NMLVGETINFOTIP* pInfoTip = (NMLVGETINFOTIP*) pnmh;
 

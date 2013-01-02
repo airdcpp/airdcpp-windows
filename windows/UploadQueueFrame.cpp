@@ -38,7 +38,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILENAME, Res
 	ResourceManager::HUB, ResourceManager::TRANSFERRED, ResourceManager::SIZE, ResourceManager::ADDED, ResourceManager::WAITING_TIME };
 
 LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	showTree = BOOLSETTING(UPLOADQUEUEFRAME_SHOW_TREE);
+	showTree = SETTING(UPLOADQUEUEFRAME_SHOW_TREE);
 
 	// status bar
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
@@ -52,7 +52,7 @@ LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT,
 		 WS_EX_CLIENTEDGE, IDC_DIRECTORIES);
 
-	if(BOOLSETTING(USE_EXPLORER_THEME)) {
+	if(SETTING(USE_EXPLORER_THEME)) {
 		SetWindowTheme(ctrlQueued.m_hWnd, L"explorer", NULL);
 	}
 
@@ -392,7 +392,7 @@ LRESULT UploadQueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		ctrlList.deleteItem(i);
 		updateStatus();
 		i->dec();
-		if(BOOLSETTING(BOLD_WAITING_USERS))
+		if(SETTING(BOLD_WAITING_USERS))
 			setDirty();
 		break;
 	}
@@ -401,7 +401,7 @@ LRESULT UploadQueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		std::unique_ptr<UserItem> item((UserItem*)lParam);
 		RemoveUser(item->getUser());
 		updateStatus();
-		if(BOOLSETTING(BOLD_WAITING_USERS))
+		if(SETTING(BOLD_WAITING_USERS))
 			setDirty();
 		break;
 	}
@@ -409,7 +409,7 @@ LRESULT UploadQueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		AddFile((UploadQueueItem*)lParam);
 		updateStatus();
 		ctrlList.resort();
-		if(BOOLSETTING(BOLD_WAITING_USERS))
+		if(SETTING(BOLD_WAITING_USERS))
 			setDirty();
 		break;
 	case UPDATE_ITEMS:
@@ -442,7 +442,7 @@ void UploadQueueFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noe
 }
 
 LRESULT UploadQueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
-	if(!BOOLSETTING(SHOW_PROGRESS_BARS)) {
+	if(!SETTING(SHOW_PROGRESS_BARS)) {
 		bHandled = FALSE;
 		return 0;
 	}

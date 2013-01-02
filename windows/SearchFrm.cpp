@@ -85,7 +85,7 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false)
 {	
 	SearchManager::getInstance()->addListener(this);
-	useGrouping = BOOLSETTING(GROUP_SEARCH_RESULTS);
+	useGrouping = SETTING(GROUP_SEARCH_RESULTS);
 }
 
 LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -205,16 +205,16 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlCollapsed.SetWindowText(CTSTRING(EXPANDED_RESULTS));
 	collapsedContainer.SubclassWindow(ctrlCollapsed.m_hWnd);
 
-	if(BOOLSETTING(FREE_SLOTS_DEFAULT)) {
+	if(SETTING(FREE_SLOTS_DEFAULT)) {
 		ctrlSlots.SetCheck(true);
 		onlyFree = true;
 	}
-	if(BOOLSETTING(SEARCH_SKIPLIST)) {
+	if(SETTING(SEARCH_SKIPLIST)) {
 		ctrlSkipBool.SetCheck(true);
 		UseSkiplist = true;
 	}
 
-	if(BOOLSETTING(EXPAND_DEFAULT)) {
+	if(SETTING(EXPAND_DEFAULT)) {
 		ctrlCollapsed.SetCheck(true);
 		expandSR = true;
 	}
@@ -276,7 +276,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	ctrlResults.setVisible(SETTING(SEARCHFRAME_VISIBLE));
 	
-	if(BOOLSETTING(SORT_DIRS)) {
+	if(SETTING(SORT_DIRS)) {
 		ctrlResults.setSortColumn(COLUMN_FILENAME);
 	} else {
 		ctrlResults.setSortColumn(COLUMN_HITS);
@@ -295,7 +295,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlHubs.SetFont(WinUtil::systemFont, FALSE);	// use WinUtil::font instead to obey Appearace settings
 
 	lastDisabledHubs.clear();
-	if(BOOLSETTING(SEARCH_SAVE_HUBS_STATE)){
+	if(SETTING(SEARCH_SAVE_HUBS_STATE)){
 		StringTokenizer<string> st(SETTING(LAST_SEARCH_DISABLED_HUBS), _T(','));
 		lastDisabledHubs = st.getTokens();
 	}
@@ -405,7 +405,7 @@ void SearchFrame::onEnter() {
 	StringList clients;
 	
 	// Change Default Settings If Changed
-	if (onlyFree != BOOLSETTING(FREE_SLOTS_DEFAULT))
+	if (onlyFree != SETTING(FREE_SLOTS_DEFAULT))
 		SettingsManager::getInstance()->set(SettingsManager::FREE_SLOTS_DEFAULT, onlyFree);
 
 	updateSkipList();
@@ -416,10 +416,10 @@ void SearchFrame::onEnter() {
 	delete[] buf;
 	
 
-	if (expandSR != BOOLSETTING(EXPAND_DEFAULT))
+	if (expandSR != SETTING(EXPAND_DEFAULT))
 		SettingsManager::getInstance()->set(SettingsManager::EXPAND_DEFAULT, expandSR);
 
-	if(BOOLSETTING(SEARCH_SAVE_HUBS_STATE)){
+	if(SETTING(SEARCH_SAVE_HUBS_STATE)){
 		lastDisabledHubs.clear();
 		for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
 			HubInfo* hub = ctrlHubs.getItemData(i);
@@ -558,7 +558,7 @@ void SearchFrame::onEnter() {
 	
 	ctrlStatus.SetText(2, (TSTRING(TIME_LEFT) + _T(" ") + Util::formatSecondsW((searchEndTime - searchStartTime) / 1000)).c_str());
 
-	if(BOOLSETTING(CLEAR_SEARCH)) // Only clear if the search was sent
+	if(SETTING(CLEAR_SEARCH)) // Only clear if the search was sent
 		ctrlSearch.SetWindowText(_T(""));
 
 }
@@ -639,7 +639,7 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 
 SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), dupe(DUPE_NONE) { 
 
-	if(BOOLSETTING(DUPE_SEARCH)) {
+	if(SETTING(DUPE_SEARCH)) {
 		if (sr->getType() == SearchResult::TYPE_DIRECTORY)
 			dupe = AirUtil::checkDirDupe(sr->getFile(), sr->getSize());
 		else
@@ -1303,7 +1303,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		if(!filter.empty())
 			updateSearchList(si);
 
-		if (BOOLSETTING(BOLD_SEARCH)) {
+		if (SETTING(BOLD_SEARCH)) {
 			setDirty();
 		}
 		ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T(" ") + TSTRING(FILES)).c_str());
@@ -1646,13 +1646,13 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		cd->clrText = WinUtil::textColor;	
 		SearchInfo* si = (SearchInfo*)cd->nmcd.lItemlParam;
 		
-		if(BOOLSETTING(DUPE_SEARCH)) {
+		if(SETTING(DUPE_SEARCH)) {
 			cd->clrText = WinUtil::getDupeColor(si->getDupe());
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 	}
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
-		if(BOOLSETTING(GET_USER_COUNTRY) && (ctrlResults.findColumn(cd->iSubItem) == COLUMN_IP)) {
+		if(SETTING(GET_USER_COUNTRY) && (ctrlResults.findColumn(cd->iSubItem) == COLUMN_IP)) {
 			CRect rc;
 			SearchInfo* si = (SearchInfo*)cd->nmcd.lItemlParam;
 			ctrlResults.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
@@ -1684,7 +1684,7 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 }
 
 LRESULT SearchFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(!BOOLSETTING(FILTER_ENTER) || (wParam == VK_RETURN)) {
+	if(!SETTING(FILTER_ENTER) || (wParam == VK_RETURN)) {
 		TCHAR *buf = new TCHAR[ctrlFilter.GetWindowTextLength()+1];
 		ctrlFilter.GetWindowText(buf, ctrlFilter.GetWindowTextLength()+1);
 		filter = buf;
@@ -1698,7 +1698,7 @@ LRESULT SearchFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*
 	return 0;
 }
 void SearchFrame::updateSkipList() {
-	if (UseSkiplist != BOOLSETTING(SEARCH_SKIPLIST))
+	if (UseSkiplist != SETTING(SEARCH_SKIPLIST))
 		SettingsManager::getInstance()->set(SettingsManager::SEARCH_SKIPLIST, UseSkiplist);
 
 	if (UseSkiplist) {

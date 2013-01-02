@@ -33,10 +33,10 @@ void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, HI
 		return;
 
 
-	if (!Util::getAway() && BOOLSETTING(POPUP_AWAY) && !force)
+	if (!Util::getAway() && SETTING(POPUP_AWAY) && !force)
 		return;
 	
-	if(!MainFrame::getMainFrame()->getAppMinimized() && BOOLSETTING(POPUP_MINIMIZED) && !force) {
+	if(!MainFrame::getMainFrame()->getAppMinimized() && SETTING(POPUP_MINIMIZED) && !force) {
 		return;
 	}
 

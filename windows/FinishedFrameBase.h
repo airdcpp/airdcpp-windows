@@ -373,7 +373,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 			}
 
 			bool bShellMenuShown = false;
-			if(BOOLSETTING(SHOW_SHELL_MENU) && (ctrlList.GetSelectedCount() == 1)) {
+			if(SETTING(SHOW_SHELL_MENU) && (ctrlList.GetSelectedCount() == 1)) {
 				tstring path = Text::toT(ctrlList.getItemData(ctrlList.GetSelectedIndex())->getTarget());
 				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF) { // Check that the file still exists
 					CShellContextMenu shellMenu;
@@ -506,7 +506,7 @@ protected:
 
 	bool upload;
 	int iIcon;
-	SettingsManager::IntSetting boldFinished;
+	SettingsManager::BoolSetting boldFinished;
 	SettingsManager::StrSetting columnWidth;
 	SettingsManager::StrSetting columnOrder;
 	SettingsManager::StrSetting columnVisible;

@@ -299,7 +299,7 @@ void PropPageTextStyles::TextStyleSettings::Init(
 	PropPageTextStyles *pParent, SettingsManager *pSM, 
 	LPCSTR sText, LPCSTR sPreviewText,
 	SettingsManager::IntSetting iBack, SettingsManager::IntSetting iFore, 
-	SettingsManager::IntSetting iBold, SettingsManager::IntSetting iItalic) {
+	SettingsManager::BoolSetting iBold, SettingsManager::BoolSetting iItalic) {
 
 	cbSize = sizeof(CHARFORMAT2);
 	dwMask = CFM_COLOR | CFM_BOLD | CFM_ITALIC | CFM_BACKCOLOR;

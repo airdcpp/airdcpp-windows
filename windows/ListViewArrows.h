@@ -165,7 +165,7 @@ public:
 		T* pThis = (T*)this;
 		_Module.AddSettingChangeNotify(pThis->m_hWnd);
 
-		if(BOOLSETTING(USE_EXPLORER_THEME)) {
+		if(SETTING(USE_EXPLORER_THEME)) {
 			SetWindowTheme(pThis->m_hWnd, L"explorer", NULL);
 		}
 

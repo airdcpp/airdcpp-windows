@@ -49,7 +49,7 @@ ResourceManager::ADDED, ResourceManager::TTH_ROOT };
 
 LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
-	showTree = BOOLSETTING(QUEUEFRAME_SHOW_TREE);
+	showTree = SETTING(QUEUEFRAME_SHOW_TREE);
 	
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
 	ctrlStatus.Attach(m_hWndStatusBar);
@@ -62,14 +62,14 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT, 
 		 WS_EX_CLIENTEDGE, IDC_DIRECTORIES);
 	
-	if(BOOLSETTING(USE_EXPLORER_THEME)) {
+	if(SETTING(USE_EXPLORER_THEME)) {
 		SetWindowTheme(ctrlDirs.m_hWnd, L"explorer", NULL);
 	}
 
 	ctrlDirs.SetImageList(ResourceLoader::fileImages, TVSIL_NORMAL);
 	ctrlQueue.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
 	
-	t_bVertical = !BOOLSETTING(HORIZONTAL_QUEUE);
+	t_bVertical = !SETTING(HORIZONTAL_QUEUE);
 	m_nProportionalPos = SETTING(QUEUE_SPLITTER_POS);
 	SetSplitterPanes(ctrlDirs.m_hWnd, ctrlQueue.m_hWnd);
 
@@ -369,7 +369,7 @@ void QueueFrame::addQueueList(const QueueItem::StringMap& li) {
 	ctrlDirs.SetRedraw(FALSE);
 	for(QueueItem::StringMap::const_iterator j = li.begin(); j != li.end(); ++j) {
 		QueueItemPtr aQI = j->second;
-		if (aQI->isSet(QueueItem::FLAG_FINISHED) && !BOOLSETTING(KEEP_FINISHED_FILES)) {
+		if (aQI->isSet(QueueItem::FLAG_FINISHED) && !SETTING(KEEP_FINISHED_FILES)) {
 			continue;
 		}
 		QueueItemInfo* ii = new QueueItemInfo(aQI);
@@ -387,7 +387,7 @@ HTREEITEM QueueFrame::addItemDir(bool isFileList) {
 	tvi.item.mask = TVIF_IMAGE | TVIF_PARAM | TVIF_SELECTEDIMAGE | TVIF_TEXT;
 	tvi.item.iImage = tvi.item.iSelectedImage = ResourceLoader::getDirIconIndex();
 
-	if(BOOLSETTING(EXPAND_QUEUE)) {
+	if(SETTING(EXPAND_QUEUE)) {
 		tvi.itemex.mask |= TVIF_STATE;
 		tvi.itemex.state = TVIS_EXPANDED;
 		tvi.itemex.stateMask = TVIS_EXPANDED;
@@ -509,7 +509,7 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, H
 	tvi.item.mask = TVIF_IMAGE | TVIF_PARAM | TVIF_SELECTEDIMAGE | TVIF_TEXT;
 	tvi.item.iImage = tvi.item.iSelectedImage = ResourceLoader::getDirIconIndex();
 
-	if(BOOLSETTING(EXPAND_QUEUE)) {
+	if(SETTING(EXPAND_QUEUE)) {
 		tvi.itemex.mask |= TVIF_STATE;
 		tvi.itemex.state = TVIS_EXPANDED;
 		tvi.itemex.stateMask = TVIS_EXPANDED;
@@ -914,7 +914,7 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			}
 			
 			delete ii;
-			if (!userList && BOOLSETTING(BOLD_QUEUE)) {
+			if (!userList && SETTING(BOLD_QUEUE)) {
 				setDirty();
 			}
 			dirty = true;
@@ -1933,7 +1933,7 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
 		if(ctrlQueue.findColumn(cd->iSubItem) == COLUMN_PROGRESS) {
-			if(!BOOLSETTING(SHOW_PROGRESS_BARS) || !BOOLSETTING(SHOW_QUEUE_BARS) ) {
+			if(!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) ) {
 				bHandled = FALSE;
 				return 0;
 			}			

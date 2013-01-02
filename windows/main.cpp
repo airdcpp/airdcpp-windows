@@ -196,7 +196,7 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 
 	f.close();
 
-	if ((!SETTING(SOUND_EXC).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
+	if ((!SETTING(SOUND_EXC).empty()) && (!SETTING(SOUNDS_DISABLED)))
 		WinUtil::playSound(Text::toT(SETTING(SOUND_EXC)));
 
 	NOTIFYICONDATA m_nid;
@@ -327,7 +327,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	startup([&](const string& str) { (*WinUtil::splash)(str); });
 	
 
-	if(BOOLSETTING(PASSWD_PROTECT)) {
+	if(SETTING(PASSWD_PROTECT)) {
 		PassDlg dlg;
 		dlg.description = TSTRING(PASSWORD_DESC);
 		dlg.title = TSTRING(PASSWORD_TITLE);
@@ -369,7 +369,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		return 0;
 	}
 	
-	if(BOOLSETTING(MINIMIZE_ON_STARTUP)) {
+	if(SETTING(MINIMIZE_ON_STARTUP)) {
 		wndMain.ShowWindow(SW_SHOWMINIMIZED);
 	} else {
 		wndMain.ShowWindow(((nCmdShow == SW_SHOWDEFAULT) || (nCmdShow == SW_SHOWNORMAL)) ? SETTING(MAIN_WINDOW_STATE) : nCmdShow);

@@ -65,15 +65,15 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_HUBNAME, Text::toT(entry->getName()).c_str());
 	SetDlgItemText(IDC_HUBDESCR, Text::toT(entry->getDescription()).c_str());
 	SetDlgItemText(IDC_HUBADDR, Text::toT(entry->getServerStr()).c_str());
-	SetDlgItemText(IDC_HUBNICK, Text::toT(entry->getNick(false)).c_str());
+	SetDlgItemText(IDC_HUBNICK, Text::toT(entry->get(HubSettings::Nick)).c_str());
 	SetDlgItemText(IDC_HUBPASS, Text::toT(entry->getPassword()).c_str());
-	SetDlgItemText(IDC_HUBUSERDESCR, Text::toT(entry->getUserDescription()).c_str());
+	SetDlgItemText(IDC_HUBUSERDESCR, Text::toT(entry->get(HubSettings::Description)).c_str());
 	CheckDlgButton(IDC_STEALTH, entry->getStealth() ? BST_CHECKED : BST_UNCHECKED);
-	SetDlgItemText(IDC_SERVER, Text::toT(entry->getIP()).c_str());
+	SetDlgItemText(IDC_SERVER, Text::toT(entry->get(HubSettings::UserIp)).c_str());
 	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
-	CheckDlgButton(IDC_SHOW_JOIN, entry->getHubShowJoins() ? BST_CHECKED : BST_UNCHECKED); //hub show joins
-	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(entry->getSearchInterval()).c_str());
-	CheckDlgButton(IDC_LOGMAINCHAT, entry->getHubLogMainchat() ? BST_CHECKED : BST_UNCHECKED);
+	CheckDlgButton(IDC_SHOW_JOIN, entry->get(HubSettings::FavShowJoins) ? BST_CHECKED : BST_UNCHECKED); //hub show joins
+	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(entry->get(HubSettings::SearchInterval)).c_str());
+	CheckDlgButton(IDC_LOGMAINCHAT, entry->get(HubSettings::LogMainChat) ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_CHAT_NOTIFY, entry->getChatNotify() ? BST_CHECKED : BST_UNCHECKED);
 
 	bool isAdcHub = entry->isAdcHub();
@@ -228,21 +228,28 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		entry->setName(Text::fromT(buf));
 		GetDlgItemText(IDC_HUBDESCR, buf, 256);
 		entry->setDescription(Text::fromT(buf));
-		GetDlgItemText(IDC_HUBNICK, buf, 256);
-		entry->setNick(Text::fromT(buf));
 		GetDlgItemText(IDC_HUBPASS, buf, 256);
 		entry->setPassword(Text::fromT(buf));
-		GetDlgItemText(IDC_HUBUSERDESCR, buf, 256);
-		entry->setUserDescription(Text::fromT(buf));
 		entry->setStealth(IsDlgButtonChecked(IDC_STEALTH) == 1);
-		GetDlgItemText(IDC_SERVER, buf, 512);
-		entry->setIP(Text::fromT(buf));
 		entry->setFavNoPM(IsDlgButtonChecked(IDC_FAV_NO_PM) == 1);
-		entry->setHubShowJoins(IsDlgButtonChecked(IDC_SHOW_JOIN) == 1); //show joins
-		entry->setHubLogMainchat(IsDlgButtonChecked(IDC_LOGMAINCHAT) == 1);
 		entry->setChatNotify(IsDlgButtonChecked(IDC_CHAT_NOTIFY) == 1);
+
+		//Hub settings
+		GetDlgItemText(IDC_HUBNICK, buf, 256);
+		entry->get(HubSettings::Nick) = Text::fromT(buf);
+
+		GetDlgItemText(IDC_HUBUSERDESCR, buf, 256);
+		entry->get(HubSettings::Description) = Text::fromT(buf);
+
+		GetDlgItemText(IDC_SERVER, buf, 512);
+		entry->get(HubSettings::UserIp) = Text::fromT(buf);
+
+		entry->get(HubSettings::ShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN) == 1);
+		//entry->get(HubSettings::FavShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN) == 1);
+		entry->get(HubSettings::LogMainChat) = to3bool(IsDlgButtonChecked(IDC_LOGMAINCHAT) == 1);
+
 		GetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, buf, 512);
-		entry->setSearchInterval(Util::toUInt32(Text::fromT(buf)));
+		entry->get(HubSettings::SearchInterval) = Util::toInt(Text::fromT(buf));
 
 		
 		CComboBox combo;

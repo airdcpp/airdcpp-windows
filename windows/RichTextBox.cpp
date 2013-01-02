@@ -321,11 +321,11 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 	}
 	
 	if(found) {
-		if(	!SETTING(CHATNAMEFILE).empty() && !BOOLSETTING(SOUNDS_DISABLED) &&
+		if(	!SETTING(CHATNAMEFILE).empty() && !SETTING(SOUNDS_DISABLED) &&
 			!sAuthor.empty() && (stricmp(sAuthor.c_str(), sNick) != 0)) {
 				WinUtil::playSound(Text::toT(SETTING(CHATNAMEFILE)));	 	
         }
-		if(BOOLSETTING(FLASH_WINDOW_ON_MYNICK) 
+		if(SETTING(FLASH_WINDOW_ON_MYNICK) 
 			&& !sAuthor.empty() && (stricmp(sAuthor.c_str(), sNick) != 0))
 					WinUtil::FlashWindow();
 	}
@@ -346,7 +346,7 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 	}
 	
 
-	if(BOOLSETTING(USE_HIGHLIGHT)) {
+	if(SETTING(USE_HIGHLIGHT)) {
 
 		ColorList *cList = HighlightManager::getInstance()->getList();
 		CHARFORMAT2 hlcf;
@@ -915,7 +915,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 		menu.InsertSeparatorFirst(selectedUser);
 
-		if(BOOLSETTING(LOG_PRIVATE_CHAT)) {
+		if(SETTING(LOG_PRIVATE_CHAT)) {
 			menu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG,  CTSTRING(OPEN_USER_LOG));
 			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_USER_HISTORY,  CTSTRING(VIEW_HISTORY));

@@ -123,7 +123,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 		}
 
 		 if ((uMsg == WM_CHAR) && (GetFocus() == ctrlMessage.m_hWnd) && (wParam != VK_RETURN) && (wParam != VK_TAB) && (wParam != VK_BACK)) {
-			if ((!SETTING(SOUND_TYPING_NOTIFY).empty()) && (!BOOLSETTING(SOUNDS_DISABLED)))
+			if ((!SETTING(SOUND_TYPING_NOTIFY).empty()) && (!SETTING(SOUNDS_DISABLED)))
 				WinUtil::playSound(Text::toT(SETTING(SOUND_TYPING_NOTIFY)));
 		}
 		return 0;
@@ -156,7 +156,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				}
 			break;
 		case VK_UP:
-			if ( (GetKeyState(VK_MENU) & 0x8000) ||	( ((GetKeyState(VK_CONTROL) & 0x8000) == 0) ^ (BOOLSETTING(USE_CTRL_FOR_LINE_HISTORY) == true) ) ) {
+			if ( (GetKeyState(VK_MENU) & 0x8000) ||	( ((GetKeyState(VK_CONTROL) & 0x8000) == 0) ^ (SETTING(USE_CTRL_FOR_LINE_HISTORY) == true) ) ) {
 				//scroll up in chat command history
 				//currently beyond the last command?
 				if (curCommandPosition > 0) {
@@ -176,7 +176,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 
 			break;
 		case VK_DOWN:
-			if ( (GetKeyState(VK_MENU) & 0x8000) ||	( ((GetKeyState(VK_CONTROL) & 0x8000) == 0) ^ (BOOLSETTING(USE_CTRL_FOR_LINE_HISTORY) == true) ) ) {
+			if ( (GetKeyState(VK_MENU) & 0x8000) ||	( ((GetKeyState(VK_CONTROL) & 0x8000) == 0) ^ (SETTING(USE_CTRL_FOR_LINE_HISTORY) == true) ) ) {
 				//scroll down in chat command history
 
 				//currently beyond the last command?
@@ -525,19 +525,19 @@ void ChatFrameBase::onEnter() {
 		if(s[0] == _T('/')) {
 			tstring cmd = s;
 			tstring param;
-			if(BOOLSETTING(CLIENT_COMMANDS)) {
+			if(SETTING(CLIENT_COMMANDS)) {
 				frame->addStatusLine(_T("Client command: ") + s);
 			}
 		
 			if(!checkCommand(cmd, param, message, status, thirdPerson)) {
-				if (BOOLSETTING(SEND_UNKNOWN_COMMANDS)) {
+				if (SETTING(SEND_UNKNOWN_COMMANDS)) {
 					message = s;
 				} else {
 					status = TSTRING(UNKNOWN_COMMAND) + _T(" ") + cmd;
 				}
 			}
 		} else {
-			if(BOOLSETTING(SERVER_COMMANDS)) {
+			if(SETTING(SERVER_COMMANDS)) {
 				if(s[0] == '!' || s[0] == '+' || s[0] == '-')
 					status = _T("Server command: ") + s;
 			}

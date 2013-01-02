@@ -83,7 +83,7 @@ LRESULT SpyFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 		return 0;
 	} else {
 		WinUtil::saveHeaderOrder(ctrlSearches, SettingsManager::SPYFRAME_ORDER, SettingsManager::SPYFRAME_WIDTHS, COLUMN_LAST, columnIndexes, columnSizes);
-		if (ignoreTth != BOOLSETTING(SPY_FRAME_IGNORE_TTH_SEARCHES))
+		if (ignoreTth != SETTING(SPY_FRAME_IGNORE_TTH_SEARCHES))
 			SettingsManager::getInstance()->set(SettingsManager::SPY_FRAME_IGNORE_TTH_SEARCHES, ignoreTth);
 
 		WinUtil::setButtonPressed(IDC_SEARCH_SPY, false);

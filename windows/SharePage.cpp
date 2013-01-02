@@ -61,13 +61,13 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 {
 	PropPage::translate((HWND)(*this), texts);
 
-	CheckDlgButton(IDC_SHOW_TREE, BOOLSETTING(USE_OLD_SHARING_UI) ? BST_UNCHECKED : BST_CHECKED);
+	CheckDlgButton(IDC_SHOW_TREE, SETTING(USE_OLD_SHARING_UI) ? BST_UNCHECKED : BST_CHECKED);
 
-	GetDlgItem(IDC_TREE1).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_HIDE : SW_SHOW);
-	GetDlgItem(IDC_DIRECTORIES).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
-	GetDlgItem(IDC_ADD_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
-	GetDlgItem(IDC_REMOVE_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
-	GetDlgItem(IDC_RENAME_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_TREE1).ShowWindow((SETTING(USE_OLD_SHARING_UI)) ? SW_HIDE : SW_SHOW);
+	GetDlgItem(IDC_DIRECTORIES).ShowWindow((SETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_ADD_DIR).ShowWindow((SETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_REMOVE_DIR).ShowWindow((SETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_RENAME_DIR).ShowWindow((SETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
 
 	GetDlgItem(IDC_EDIT_TEMPSHARES).EnableWindow((ShareManager::getInstance()->hasTempShares()) ? 1 : 0);
 
@@ -75,7 +75,7 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		ctrlDirectories.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_CHECKBOXES);
 
 	curProfile = SP_DEFAULT;
-	if(BOOLSETTING(USE_OLD_SHARING_UI)) {
+	if(SETTING(USE_OLD_SHARING_UI)) {
 		// Prepare shared dir list
 		ctrlDirectories.InsertColumn(0, CTSTRING(VIRTUAL_NAME), LVCFMT_LEFT, 80, 0);
 		ctrlDirectories.InsertColumn(1, CTSTRING(DIRECTORY), LVCFMT_LEFT, 197, 1);
@@ -243,13 +243,13 @@ void SharePage::showProfile() {
 		ctrlDirectories.DeleteAllItems();
 	}
 
-	GetDlgItem(IDC_TREE1).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_HIDE : SW_SHOW);
-	GetDlgItem(IDC_DIRECTORIES).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
-	GetDlgItem(IDC_ADD_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
-	GetDlgItem(IDC_REMOVE_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
-	GetDlgItem(IDC_RENAME_DIR).ShowWindow((BOOLSETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_TREE1).ShowWindow((SETTING(USE_OLD_SHARING_UI)) ? SW_HIDE : SW_SHOW);
+	GetDlgItem(IDC_DIRECTORIES).ShowWindow((SETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_ADD_DIR).ShowWindow((SETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_REMOVE_DIR).ShowWindow((SETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
+	GetDlgItem(IDC_RENAME_DIR).ShowWindow((SETTING(USE_OLD_SHARING_UI)) ? SW_SHOW : SW_HIDE);
 
-	if(BOOLSETTING(USE_OLD_SHARING_UI)) {
+	if(SETTING(USE_OLD_SHARING_UI)) {
 		// Prepare shared dir list
 		auto shares = getViewItems(curProfile, true);
 		for(auto sdi: shares) {
@@ -611,7 +611,7 @@ LRESULT SharePage::onClickedAddDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		if(WinUtil::browseDirectory(target, m_hWnd)) {
 			addDirectory(target);
 		}
-	} else if (BOOLSETTING(USE_OLD_SHARING_UI)) {
+	} else if (SETTING(USE_OLD_SHARING_UI)) {
 		//update the list to fix the colors and sorting
 		RedrawWindow();
 		ctrlDirectories.resort();
@@ -887,7 +887,7 @@ bool SharePage::addDirectory(const tstring& aPath){
 				newDirs.push_back(dir);
 			}
 
-			if(BOOLSETTING(USE_OLD_SHARING_UI) && pt == curProfile) {
+			if(SETTING(USE_OLD_SHARING_UI) && pt == curProfile) {
 				int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), newName, 0, (LPARAM)dir);
 				ctrlDirectories.SetItemText(i, 1, path.c_str());
 				ctrlDirectories.SetItemText(i, 2, dir->size == 0 ? _T("New") : Util::formatBytesW(dir->size).c_str());

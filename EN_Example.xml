@@ -688,7 +688,6 @@
 		<String Name="SettingsUseCtrlForLineHistory">Use CTRL for line history</String>
 		<String Name="SettingsUseOldSharingUi">Use old sharing user interface</String>
 		<String Name="SettingsUseSystemIcons">Use system icons when browsing files (slows browsing down a bit)</String>
-		<String Name="SettingsUseVerticalView">Use vertical view by default</String>
 		<String Name="SettingsUserColors">User List Colors</String>
 		<String Name="SettingsUserCommands">User Commands</String>
 		<String Name="SettingsUserMenu">User Menu Items</String>

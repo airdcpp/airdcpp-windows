@@ -284,7 +284,7 @@ public:
 		HWND hWnd = (HWND)wParam;
 		if(MDIGetActive() != hWnd) {
 			MDIActivate(hWnd);
-		} else if(BOOLSETTING(TOGGLE_ACTIVE_WINDOW)) {
+		} else if(SETTING(TOGGLE_ACTIVE_WINDOW)) {
 			::SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 			MDINext(hWnd);
 			hWnd = MDIGetActive();

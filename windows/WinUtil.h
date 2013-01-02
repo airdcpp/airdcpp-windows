@@ -77,7 +77,7 @@ public:
 			} else if(frame->MDIGetActive() != hWnd) {
 				MainFrame::getMainFrame()->MDIActivate(hWnd);
 				WinUtil::setButtonPressed(ID, true);
-			} else if(BOOLSETTING(TOGGLE_ACTIVE_WINDOW)) {
+			} else if(SETTING(TOGGLE_ACTIVE_WINDOW)) {
 				::SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
 				frame->MDINext(hWnd);
 				hWnd = frame->MDIGetActive();
@@ -221,7 +221,7 @@ public:
 	static void saveReBarSettings(HWND bar);
 	static void playSound(const tstring& sound);
 
-	static bool MessageBoxConfirm(SettingsManager::IntSetting i, const tstring& txt);
+	static bool MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& txt);
 
 	struct ConnectFav {
 		void operator()(UserPtr aUser, const string& aUrl) const;

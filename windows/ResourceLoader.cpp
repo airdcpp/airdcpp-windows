@@ -265,7 +265,7 @@ void ResourceLoader::loadFileImages() {
 	dirMaskedIndex = fileImageCount++;
 	fileImageCount++;
 
-	if(BOOLSETTING(USE_SYSTEM_ICONS)) {
+	if(SETTING(USE_SYSTEM_ICONS)) {
 		SHFILEINFO fi;
 		memzero(&fi, sizeof(SHFILEINFO));
 		if(::SHGetFileInfo(_T("./"), FILE_ATTRIBUTE_DIRECTORY, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES)) {
@@ -347,7 +347,7 @@ void ResourceLoader::loadSearchTypeIcons() {
 }
 
 int ResourceLoader::getIconIndex(const tstring& aFileName) {
-	if(BOOLSETTING(USE_SYSTEM_ICONS)) {
+	if(SETTING(USE_SYSTEM_ICONS)) {
 		SHFILEINFO fi;
 		tstring x = Text::toLower(Util::getFileExt(aFileName));
 		if(!x.empty()) {

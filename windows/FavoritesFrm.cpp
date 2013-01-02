@@ -198,10 +198,10 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntry* entry, int pos, int gro
 	TStringList l;
 	l.push_back(Text::toT(entry->getName()));
 	l.push_back(Text::toT(entry->getDescription()));
-	l.push_back(Text::toT(entry->getNick(false)));
+	l.push_back(Text::toT(entry->get(HubSettings::Nick)));
 	l.push_back(tstring(entry->getPassword().size(), '*'));
 	l.push_back(Text::toT(entry->getServers()[0].first));
-	l.push_back(Text::toT(entry->getUserDescription()));
+	l.push_back(Text::toT(entry->get(HubSettings::Description)));
 	l.push_back(Text::toT(entry->getShareProfile()->getDisplayName()));
 	bool b = entry->getConnect();
 	int i = ctrlHubs.insert(pos, l, 0, (LPARAM)entry);
@@ -575,7 +575,7 @@ LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		ParamMap params;
 		params["hubNI"] = entry->getName();
 		params["hubURL"] = entry->getServers()[0].first;
-		params["myNI"] = entry->getNick(); 
+		params["myNI"] = entry->get(HubSettings::Nick); 
 		string file = LogManager::getInstance()->getPath(LogManager::CHAT, params);
 		if(Util::fileExists(file)){
 			WinUtil::viewLog(file);

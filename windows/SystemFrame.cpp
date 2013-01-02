@@ -66,7 +66,7 @@ LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	}
 
 	tabMenu = CreatePopupMenu();
-	if(BOOLSETTING(LOG_SYSTEM)) {
+	if(SETTING(LOG_SYSTEM)) {
 		tabMenu.AppendMenu(MF_STRING, IDC_OPEN_SYSTEM_LOG, CTSTRING(OPEN_SYSTEM_LOG));
 		tabMenu.AppendMenu(MF_SEPARATOR);
 	}
@@ -345,7 +345,7 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	}
 
 	menu.AppendMenu(MF_SEPARATOR);
-	if(BOOLSETTING(LOG_SYSTEM)) {
+	if(SETTING(LOG_SYSTEM)) {
 		menu.AppendMenu(MF_STRING, IDC_OPEN_SYSTEM_LOG, CTSTRING(OPEN_SYSTEM_LOG));
 		menu.AppendMenu(MF_SEPARATOR);
 	}

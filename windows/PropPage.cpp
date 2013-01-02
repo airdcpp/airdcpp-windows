@@ -27,8 +27,42 @@
 
 #define SETTING_STR_MAXLEN 1024
 
-void PropPage::read(HWND page, Item const* items, ListItem* listItems /* = NULL */, HWND list /* = 0 */)
-{
+void PropPage::read(HWND page, Item const* items, ListItem* listItems /* = NULL */, HWND list /* = 0 */) {
+
+	/*SettingsManager* settings = SettingsManager::getInstance();
+
+	for(auto& i: listItems) {
+		switch(i.type) {
+		case T_STR:
+			{
+				auto setting = static_cast<SettingsManager::StrSetting>(i.setting);
+				if(!settings->isDefault(setting)) {
+					static_cast<TextBoxPtr>(i.widget)->setText(Text::toT(settings->get(setting)));
+				}
+				break;
+			}
+		case T_INT:
+			{
+				auto setting = static_cast<SettingsManager::IntSetting>(i.setting);
+				if(!settings->isDefault(setting)) {
+					static_cast<TextBoxPtr>(i.widget)->setText(Text::toT(Util::toString(settings->get(setting))));
+				}
+				break;
+			}
+		case T_INT_WITH_SPIN:
+			{
+				auto setting = static_cast<SettingsManager::IntSetting>(i.setting);
+				static_cast<TextBoxPtr>(i.widget)->setText(Text::toT(Util::toString(settings->get(setting))));
+				break;
+			}
+		case T_BOOL:
+			{
+				auto setting = static_cast<SettingsManager::BoolSetting>(i.setting);
+				static_cast<CheckBoxPtr>(i.widget)->setChecked(settings->get(setting));
+				break;
+			}
+		}
+	}*/
 #if DIM_EDIT_EXPERIMENT
 	CDimEdit *tempCtrl;
 #endif
@@ -65,18 +99,18 @@ void PropPage::read(HWND page, Item const* items, ListItem* listItems /* = NULL 
 				::SetDlgItemInt(page, i->itemID,
 					settings->get((SettingsManager::IntSetting)i->setting, useDef), FALSE);
 			break;
-		case T_INT64:
+		/*case T_INT64:
 			if(!SettingsManager::getInstance()->isDefault(i->setting)) {
 				tstring s = Util::toStringW(settings->get((SettingsManager::Int64Setting)i->setting, useDef));
 				::SetDlgItemText(page, i->itemID, s.c_str());
 			}
-			break;
+			break;*/
 		case T_BOOL:
 			if (GetDlgItem(page, i->itemID) == NULL) {
 				// Control not exist ? Why ??
 				throw;
 			}
-			if(settings->getBool((SettingsManager::IntSetting)i->setting, useDef))
+			if(settings->get((SettingsManager::BoolSetting)i->setting, useDef))
 				::CheckDlgButton(page, i->itemID, BST_CHECKED);
 			else
 				::CheckDlgButton(page, i->itemID, BST_UNCHECKED);
@@ -100,7 +134,7 @@ void PropPage::read(HWND page, Item const* items, ListItem* listItems /* = NULL 
 			lvi.iItem = i;
 			lvi.pszText = const_cast<TCHAR*>(CTSTRING_I(listItems[i].desc));
 			ctrl.InsertItem(&lvi);
-			ctrl.SetCheckState(i, SettingsManager::getInstance()->getBool(SettingsManager::IntSetting(listItems[i].setting), true));
+			ctrl.SetCheckState(i, SettingsManager::getInstance()->get(SettingsManager::BoolSetting(listItems[i].setting), true));
 		}
 		ctrl.SetColumnWidth(0, LVSCW_AUTOSIZE);
 		ctrl.Detach();
@@ -160,9 +194,9 @@ void PropPage::write(HWND page, Item const* items, ListItem* listItems /* = NULL
 					throw;
 				}
 				if(::IsDlgButtonChecked(page, i->itemID) == BST_CHECKED)
-					settings->set((SettingsManager::IntSetting)i->setting, true);
+					settings->set((SettingsManager::BoolSetting)i->setting, true);
 				else
-					settings->set((SettingsManager::IntSetting)i->setting, false);
+					settings->set((SettingsManager::BoolSetting)i->setting, false);
 			}
 		}
 	}

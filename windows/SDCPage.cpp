@@ -77,7 +77,7 @@ LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlBloom.Attach(GetDlgItem(IDC_BLOOM_MODE));
 	ctrlBloom.AddString(CTSTRING(DISABLED));
 	ctrlBloom.AddString(CTSTRING(ENABLED));
-	ctrlBloom.SetCurSel(SETTING(SEND_BLOOM));
+	ctrlBloom.SetCurSel(SETTING(BLOOM_MODE));
 
 	ctrlShutdownAction.Attach(GetDlgItem(IDC_COMBO1));
 	ctrlShutdownAction.AddString(CTSTRING(POWER_OFF));
@@ -137,7 +137,7 @@ void SDCPage::write()
 	settings->set(SettingsManager::USERLIST_DBLCLICK, userlistaction.GetCurSel());
 	settings->set(SettingsManager::TRANSFERLIST_DBLCLICK, transferlistaction.GetCurSel());
 	settings->set(SettingsManager::CHAT_DBLCLICK, chataction.GetCurSel());
-	settings->set(SettingsManager::SEND_BLOOM, ctrlBloom.GetCurSel());
+	settings->set(SettingsManager::BLOOM_MODE, ctrlBloom.GetCurSel());
 	userlistaction.Detach();
 	transferlistaction.Detach(); 
 	chataction.Detach(); 

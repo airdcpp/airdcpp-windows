@@ -311,7 +311,7 @@ void TransferView::ItemInfo::removeAll() {
 	if(hits <= 1) {
 		QueueManager::getInstance()->removeSource(user, QueueItem::Source::FLAG_REMOVED);
 	} else {
-		if(!BOOLSETTING(CONFIRM_DELETE) || ::MessageBox(0, _T("Do you really want to remove this item?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
+		if(!SETTING(CONFIRM_DELETE) || ::MessageBox(0, _T("Do you really want to remove this item?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
 			QueueManager::getInstance()->remove(Text::fromT(target));
 	}
 }
@@ -345,7 +345,7 @@ LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 		cd->clrTextBk = WinUtil::bgColor;
 
 		if((colIndex == COLUMN_STATUS) && (ii->status != ItemInfo::STATUS_WAITING)) {
-			if(!BOOLSETTING(SHOW_PROGRESS_BARS)) {
+			if(!SETTING(SHOW_PROGRESS_BARS)) {
 				bHandled = FALSE;
 				return 0;
 			}
@@ -390,7 +390,7 @@ LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 			if(ii->size == 0) ii->size = 1;		
 			
 			COLORREF oldcol;
-			if(BOOLSETTING(PROGRESSBAR_ODC_STYLE)) {
+			if(SETTING(PROGRESSBAR_ODC_STYLE)) {
 				// New style progressbar tweaks the current colors
 				HLSTRIPLE hls_bk = OperaColors::RGB2HLS(cd->clrTextBk);
 
@@ -491,7 +491,7 @@ LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 				}
 			}
 			return CDRF_SKIPDEFAULT;
-		} else if(BOOLSETTING(GET_USER_COUNTRY) && (colIndex == COLUMN_IP)) {
+		} else if(SETTING(GET_USER_COUNTRY) && (colIndex == COLUMN_IP)) {
 			ItemInfo* ii = (ItemInfo*)cd->nmcd.lItemlParam;
 			CRect rc;
 			ctrlTransfers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
@@ -627,7 +627,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			ItemInfo* ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
 			if (!ii->bundle.empty()) {
-				ctrlTransfers.insertBundle(ii, BOOLSETTING(EXPAND_BUNDLES));
+				ctrlTransfers.insertBundle(ii, SETTING(EXPAND_BUNDLES));
 			} else {
 				ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 			}
@@ -688,7 +688,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 							ii->parent = nullptr;
 							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 						} else {
-							ctrlTransfers.insertBundle(ii, ii->parent ? !ii->parent->collapsed : BOOLSETTING(EXPAND_BUNDLES));
+							ctrlTransfers.insertBundle(ii, ii->parent ? !ii->parent->collapsed : SETTING(EXPAND_BUNDLES));
 						}
 					} else if(ii == parent || !parent->collapsed) {
 						updateItem(ctrlTransfers.findItem(ii), ui.updateMask);
@@ -1282,7 +1282,7 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 
 	ui->setStatusString(tmpReason);
 
-	if(BOOLSETTING(POPUP_DOWNLOAD_FAILED)) {
+	if(SETTING(POPUP_DOWNLOAD_FAILED)) {
 		WinUtil::showPopup(
 			TSTRING(FILE) + _T(": ") + Util::getFileName(ui->target) + _T("\n")+
 			TSTRING(USER) + _T(": ") + WinUtil::getNicks(aDownload->getHintedUser()) + _T("\n")+
@@ -1491,11 +1491,11 @@ void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, 
 	ui->setRunning(0);
 	ui->setBundle(bundleToken);
 
-	if(isUpload && BOOLSETTING(POPUP_UPLOAD_FINISHED) && !isTree) {
-		if(!SETTING(UPLOADFILE).empty() && !BOOLSETTING(SOUNDS_DISABLED))
+	if(isUpload && SETTING(POPUP_UPLOAD_FINISHED) && !isTree) {
+		if(!SETTING(UPLOADFILE).empty() && !SETTING(SOUNDS_DISABLED))
 			WinUtil::playSound(Text::toT(SETTING(UPLOADFILE)));
 
-		if (BOOLSETTING(POPUP_UPLOAD_FINISHED)) {
+		if (SETTING(POPUP_UPLOAD_FINISHED)) {
 			WinUtil::showPopup(TSTRING(FILE) + _T(": ") + Text::toT(aFileName) + _T("\n") +
 				TSTRING(USER) + _T(": ") + WinUtil::getNicks(aTransfer->getHintedUser()), TSTRING(UPLOAD_FINISHED_IDLE));
 		}
@@ -1514,9 +1514,9 @@ void TransferView::onBundleComplete(const string& bundleToken, const string& bun
 	ui->setRunning(0);
 	ui->setUsers(0);
 
-	if(BOOLSETTING(POPUP_BUNDLE_DLS) && !isUpload) {
+	if(SETTING(POPUP_BUNDLE_DLS) && !isUpload) {
 		WinUtil::showPopup(_T("The following bundle has finished downloading: ") + Text::toT(bundleName), TSTRING(DOWNLOAD_FINISHED_IDLE));
-	} else if(BOOLSETTING(POPUP_BUNDLE_ULS) && isUpload) {
+	} else if(SETTING(POPUP_BUNDLE_ULS) && isUpload) {
 		WinUtil::showPopup(_T("The following bundle has finished uploading: ") + Text::toT(bundleName), TSTRING(UPLOAD_FINISHED_IDLE));
 	}
 	

@@ -261,10 +261,6 @@ private:
 
 	tstring redirect;
 	bool timeStamps;
-	bool showJoins;
-	bool favShowJoins;
-	bool hubshowjoins; //favorite hub show joins
-	bool logMainChat;
 	bool showchaticon;
 	static bool shutdown;
 	HICON HubOpIcon; 

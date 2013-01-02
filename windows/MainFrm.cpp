@@ -320,7 +320,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	ctrlTab.Create(m_hWnd, rcDefault);
 	WinUtil::tabCtrl = &ctrlTab;
-	tabsontop = BOOLSETTING(TABS_ON_TOP);
+	tabsontop = SETTING(TABS_ON_TOP);
 
 	transferView.Create(m_hWnd);
 
@@ -345,25 +345,25 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	pLoop->AddMessageFilter(this);
 	pLoop->AddIdleHandler(this);
 
-	if(BOOLSETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
-	if(BOOLSETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
-	if(BOOLSETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
-	if(BOOLSETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
-	if(BOOLSETTING(OPEN_FINISHED_DOWNLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED);
-	if(BOOLSETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
-	if(BOOLSETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
-	if(BOOLSETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
-	if(BOOLSETTING(OPEN_NETWORK_STATISTICS)) PostMessage(WM_COMMAND, IDC_NET_STATS);
-	if(BOOLSETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
+	if(SETTING(OPEN_PUBLIC)) PostMessage(WM_COMMAND, ID_FILE_CONNECT);
+	if(SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
+	if(SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
+	if(SETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
+	if(SETTING(OPEN_FINISHED_DOWNLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED);
+	if(SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
+	if(SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
+	if(SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
+	if(SETTING(OPEN_NETWORK_STATISTICS)) PostMessage(WM_COMMAND, IDC_NET_STATS);
+	if(SETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
 
-	if(!BOOLSETTING(SHOW_STATUSBAR)) PostMessage(WM_COMMAND, ID_VIEW_STATUS_BAR);
-	if(!BOOLSETTING(SHOW_TOOLBAR)) PostMessage(WM_COMMAND, ID_VIEW_TOOLBAR);
-	if(!BOOLSETTING(SHOW_TRANSFERVIEW))	PostMessage(WM_COMMAND, ID_VIEW_TRANSFER_VIEW);
+	if(!SETTING(SHOW_STATUSBAR)) PostMessage(WM_COMMAND, ID_VIEW_STATUS_BAR);
+	if(!SETTING(SHOW_TOOLBAR)) PostMessage(WM_COMMAND, ID_VIEW_TOOLBAR);
+	if(!SETTING(SHOW_TRANSFERVIEW))	PostMessage(WM_COMMAND, ID_VIEW_TRANSFER_VIEW);
 
-	if(!BOOLSETTING(SHOW_WINAMP_CONTROL)) PostMessage(WM_COMMAND, ID_TOGGLE_TOOLBAR);
-	if(!BOOLSETTING(SHOW_TBSTATUS)) PostMessage(WM_COMMAND, ID_TOGGLE_TBSTATUS);
-	if(BOOLSETTING(LOCK_TB)) PostMessage(WM_COMMAND, ID_LOCK_TB);
-	if(BOOLSETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
+	if(!SETTING(SHOW_WINAMP_CONTROL)) PostMessage(WM_COMMAND, ID_TOGGLE_TOOLBAR);
+	if(!SETTING(SHOW_TBSTATUS)) PostMessage(WM_COMMAND, ID_TOGGLE_TBSTATUS);
+	if(SETTING(LOCK_TB)) PostMessage(WM_COMMAND, ID_LOCK_TB);
+	if(SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
 
 	if(!WinUtil::isShift() && !Util::hasParam("/noautoconnect"))
 		PostMessage(WM_SPEAKER, AUTO_CONNECT);
@@ -389,9 +389,9 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	updateTray(true);
 
-	Util::setAway(BOOLSETTING(AWAY));
-	ctrlToolbar.CheckButton(IDC_AWAY,BOOLSETTING(AWAY));
-	ctrlToolbar.CheckButton(IDC_DISABLE_SOUNDS, BOOLSETTING(SOUNDS_DISABLED));
+	Util::setAway(SETTING(AWAY));
+	ctrlToolbar.CheckButton(IDC_AWAY,SETTING(AWAY));
+	ctrlToolbar.CheckButton(IDC_DISABLE_SOUNDS, SETTING(SOUNDS_DISABLED));
 
 	if(SETTING(NICK).empty()) {
 		PostMessage(WM_COMMAND, ID_FILE_SETTINGS);
@@ -422,7 +422,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		currentPic = SETTING(BACKGROUND_IMAGE);
 		m_PictureWindow.Load(Text::toT(currentPic).c_str());
 	}
-	if(BOOLSETTING(TESTWRITE)) {
+	if(SETTING(TESTWRITE)) {
 		TestWrite(true, true, true);
 	}
 
@@ -954,10 +954,10 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 	auto prevProxy = CONNSETTING(OUTGOING_CONNECTIONS);
 
 
-	auto prevGeo = BOOLSETTING(GET_USER_COUNTRY);
+	auto prevGeo = SETTING(GET_USER_COUNTRY);
 	auto prevGeoFormat = SETTING(COUNTRY_FORMAT);
 
-	bool lastSortFavUsersFirst = BOOLSETTING(SORT_FAVUSERS_FIRST);
+	bool lastSortFavUsersFirst = SETTING(SORT_FAVUSERS_FIRST);
 
 	auto prevHighPrio = SETTING(HIGH_PRIO_FILES);
 	auto prevHighPrioRegex = SETTING(HIGHEST_PRIORITY_USE_REGEXP);
@@ -1014,8 +1014,8 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 		}
 
 		bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;
-		if(BOOLSETTING(GET_USER_COUNTRY) != prevGeo) {
-			if(BOOLSETTING(GET_USER_COUNTRY)) {
+		if(SETTING(GET_USER_COUNTRY) != prevGeo) {
+			if(SETTING(GET_USER_COUNTRY)) {
 				GeoManager::getInstance()->init();
 				UpdateManager::getInstance()->checkGeoUpdate();
 			} else {
@@ -1027,10 +1027,10 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			GeoManager::getInstance()->rebuild();
 		}
  
-		if(BOOLSETTING(SORT_FAVUSERS_FIRST) != lastSortFavUsersFirst)
+		if(SETTING(SORT_FAVUSERS_FIRST) != lastSortFavUsersFirst)
 			HubFrame::resortUsers();
 
-		if(BOOLSETTING(URL_HANDLER)) {
+		if(SETTING(URL_HANDLER)) {
 			WinUtil::registerDchubHandler();
 			WinUtil::registerADChubHandler();
 		WinUtil::registerADCShubHandler();
@@ -1041,7 +1041,7 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			WinUtil::unRegisterADCShubHandler();
 			WinUtil::urlDcADCRegistered = false;
 		}
-		if(BOOLSETTING(MAGNET_REGISTER)) {
+		if(SETTING(MAGNET_REGISTER)) {
 			WinUtil::registerMagnetHandler();
 			WinUtil::urlMagnetRegistered = true; 
 		} else if(WinUtil::urlMagnetRegistered) {
@@ -1057,8 +1057,8 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 		if(getShutDown()) ctrlToolbar.CheckButton(IDC_SHUTDOWN, true);
 		else ctrlToolbar.CheckButton(IDC_SHUTDOWN, false);
 	
-		if(tabsontop != BOOLSETTING(TABS_ON_TOP)) {
-			tabsontop = BOOLSETTING(TABS_ON_TOP);
+		if(tabsontop != SETTING(TABS_ON_TOP)) {
+			tabsontop = SETTING(TABS_ON_TOP);
 			UpdateLayout();
 		}
 	}
@@ -1096,7 +1096,7 @@ void MainFrame::autoConnect(const FavoriteHubEntry::List& fl) {
 	for(auto i = fl.begin(); i != fl.end(); ++i) {
 		FavoriteHubEntry* entry = *i;
 		if(entry->getConnect()) {
- 			if(!entry->getNick().empty() || !SETTING(NICK).empty()) {
+ 			if(!SETTING(NICK).empty()) {
 				RecentHubEntry r;
 				r.setName(entry->getName());
 				r.setDescription(entry->getDescription());
@@ -1148,12 +1148,12 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 	if(wParam == SIZE_MINIMIZED) {
 		/*maybe make this an option? with large amount of ram this is kinda obsolete,
 		will look good in taskmanager ram usage tho :) */
-		if(BOOLSETTING(DECREASE_RAM)) {
+		if(SETTING(DECREASE_RAM)) {
 			if(!SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T)-1, (SIZE_T)-1))
 				LogManager::getInstance()->message("Minimize Process WorkingSet Failed: "+ Util::translateError(GetLastError()), LogManager::LOG_WARNING);
 		}
 
-		if(BOOLSETTING(AUTO_AWAY) && (bAppMinimized == false) ) {
+		if(SETTING(AUTO_AWAY) && (bAppMinimized == false) ) {
 			
 			if(Util::getAway()) {
 				awaybyminimize = false;
@@ -1166,7 +1166,7 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 		}
 		bAppMinimized = true; //set this here, on size is called twice if minimize to tray.
 
-		if(BOOLSETTING(MINIMIZE_TRAY) != WinUtil::isShift()) {
+		if(SETTING(MINIMIZE_TRAY) != WinUtil::isShift()) {
 			ShowWindow(SW_HIDE);
 			SetPriorityClass(GetCurrentProcess(), BELOW_NORMAL_PRIORITY_CLASS);
 		}
@@ -1174,7 +1174,7 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 		maximized = IsZoomed() > 0;
 	} else if( (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED) ) {
 		SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
-		if(BOOLSETTING(AUTO_AWAY)) {
+		if(SETTING(AUTO_AWAY)) {
 			if(awaybyminimize == true) {
 				awaybyminimize = false;
 				Util::setAway(false, true);
@@ -1259,7 +1259,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 			CRect rc;
 			GetWindowRect(rc);
-			if(BOOLSETTING(SHOW_TRANSFERVIEW)) {
+			if(SETTING(SHOW_TRANSFERVIEW)) {
 				SettingsManager::getInstance()->set(SettingsManager::TRANSFER_SPLIT_SIZE, m_nProportionalPos);
 			}
 			if(wp.showCmd == SW_SHOW || wp.showCmd == SW_SHOWNORMAL) {
@@ -1454,7 +1454,7 @@ LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	if (lParam == WM_LBUTTONUP) {
 		if(bAppMinimized) {
-			if(BOOLSETTING(PASSWD_PROTECT_TRAY)) {
+			if(SETTING(PASSWD_PROTECT_TRAY)) {
 				if(hasPassdlg) //prevent dialog from showing twice, findwindow doesnt seem to work with this??
 					return 0;
 
@@ -1889,7 +1889,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr qi, const string& /*dir*/, const HintedUser& /*aUser*/, int64_t /*aSpeed*/) noexcept {
 	if(!qi->isSet(QueueItem::FLAG_USER_LIST)) {
 		// Finished file sound
-		if(!SETTING(FINISHFILE).empty() && !BOOLSETTING(SOUNDS_DISABLED))
+		if(!SETTING(FINISHFILE).empty() && !SETTING(SOUNDS_DISABLED))
 			WinUtil::playSound(Text::toT(SETTING(FINISHFILE)));
 	}
 
@@ -2101,7 +2101,7 @@ LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 
 LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/) {
 	if (::IsIconic(m_hWnd)) {
-		if(BOOLSETTING(PASSWD_PROTECT_TRAY)) {
+		if(SETTING(PASSWD_PROTECT_TRAY)) {
 			if(hasPassdlg)
 				return 0;
 

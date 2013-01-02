@@ -104,7 +104,7 @@ void PrivateFrame::addClientLine(const tstring& aLine) {
 		CreateEx(WinUtil::mdiClient);
 	}
 	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str());
-	if (BOOLSETTING(BOLD_PM)) {
+	if (SETTING(BOLD_PM)) {
 		setDirty();
 	}
 }
@@ -158,7 +158,7 @@ void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aU
 
 void PrivateFrame::addStatusLine(const tstring& aLine) {
 	tstring status = _T(" *** ") + aLine + _T(" ***");
-	if(BOOLSETTING(STATUS_IN_CHAT)) {
+	if(SETTING(STATUS_IN_CHAT)) {
 		addLine(status, WinUtil::m_ChatTextServer);
 	} else {
 		addClientLine(status);
@@ -264,7 +264,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 		p->addLine(from, aMessage);
 
 		if(Util::getAway()) {
-			if(!(BOOLSETTING(NO_AWAYMSG_TO_BOTS) && user->isSet(User::BOT))) 
+			if(!(SETTING(NO_AWAYMSG_TO_BOTS) && user->isSet(User::BOT))) 
 			{
 				ParamMap params;
 				from.getParams(params, "user", false);
@@ -272,12 +272,12 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 			}
 		}
 
-		if(BOOLSETTING(FLASH_WINDOW_ON_NEW_PM)) {
+		if(SETTING(FLASH_WINDOW_ON_NEW_PM)) {
 			WinUtil::FlashWindow();
 		}
 
-		if(BOOLSETTING(POPUP_NEW_PM)) {
-			if(BOOLSETTING(PM_PREVIEW)) {
+		if(SETTING(POPUP_NEW_PM)) {
+			if(SETTING(PM_PREVIEW)) {
 				tstring message = aMessage.substr(0, 250);
 				WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 			} else {
@@ -285,7 +285,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 			}
 		}
 
-		if((BOOLSETTING(PRIVATE_MESSAGE_BEEP) || BOOLSETTING(PRIVATE_MESSAGE_BEEP_OPEN)) && (!BOOLSETTING(SOUNDS_DISABLED))) {
+		if((SETTING(PRIVATE_MESSAGE_BEEP) || SETTING(PRIVATE_MESSAGE_BEEP_OPEN)) && (!SETTING(SOUNDS_DISABLED))) {
 			if (SETTING(BEEPFILE).empty()) {
 				MessageBeep(MB_OK);
 			} else {
@@ -295,12 +295,12 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 	} else {
 		if(!myPM) {
 			i->second->updateFrameOnlineStatus(HintedUser(user, c->getHubUrl()), c);
-			if(BOOLSETTING(FLASH_WINDOW_ON_PM) && !BOOLSETTING(FLASH_WINDOW_ON_NEW_PM)) {
+			if(SETTING(FLASH_WINDOW_ON_PM) && !SETTING(FLASH_WINDOW_ON_NEW_PM)) {
 				WinUtil::FlashWindow();
 			}
 
-			if(BOOLSETTING(POPUP_PM)) {
-				if(BOOLSETTING(PM_PREVIEW)) {
+			if(SETTING(POPUP_PM)) {
+				if(SETTING(PM_PREVIEW)) {
 					tstring message = aMessage.substr(0, 250);
 					WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 				} else {
@@ -308,7 +308,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 				}
 			}
 
-			if((BOOLSETTING(PRIVATE_MESSAGE_BEEP)) && (!BOOLSETTING(SOUNDS_DISABLED))) {
+			if((SETTING(PRIVATE_MESSAGE_BEEP)) && (!SETTING(SOUNDS_DISABLED))) {
 				if (SETTING(BEEPFILE).empty()) {
 					MessageBeep(MB_OK);
 				} else {
@@ -423,7 +423,7 @@ void PrivateFrame::fillLogParams(ParamMap& params) const {
 
 void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMAT2& cf) {
 	if(!created) {
-		if(BOOLSETTING(POPUNDER_PM))
+		if(SETTING(POPUNDER_PM))
 			WinUtil::hiddenCreateEx(this);
 		else
 			CreateEx(WinUtil::mdiClient);
@@ -432,7 +432,7 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 	CRect r;
 	ctrlClient.GetClientRect(r);
 
-	if(BOOLSETTING(LOG_PRIVATE_CHAT)) {
+	if(SETTING(LOG_PRIVATE_CHAT)) {
 		ParamMap params;
 		params["message"] = [&aLine] { return Text::fromT(aLine); };
 		fillLogParams(params);
@@ -440,7 +440,7 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 	}
 
 	bool notify = false;
-	if(BOOLSETTING(TIME_STAMPS)) {
+	if(SETTING(TIME_STAMPS)) {
 		notify = ctrlClient.AppendText(from, Text::toT(SETTING(NICK)), Text::toT("[" + Util::getShortTimeString() + "] "), aLine + _T('\n'), cf);
 	} else {
 		notify = ctrlClient.AppendText(from, Text::toT(SETTING(NICK)), _T(""), aLine + _T('\n'), cf);
@@ -450,7 +450,7 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 	if(notify)
 		setNotify();
 
-	if (BOOLSETTING(BOLD_PM)) {
+	if (SETTING(BOLD_PM)) {
 		setDirty();
 	}
 }
@@ -467,7 +467,7 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	tabMenu.CreatePopupMenu();	
 
 	tabMenu.InsertSeparatorFirst(Text::toT(ClientManager::getInstance()->getNicks(replyTo.user->getCID(), replyTo.hint)[0]));
-	if(BOOLSETTING(LOG_PRIVATE_CHAT)) {
+	if(SETTING(LOG_PRIVATE_CHAT)) {
 		tabMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG,  CTSTRING(OPEN_USER_LOG));
 		tabMenu.AppendMenu(MF_SEPARATOR);
 		tabMenu.AppendMenu(MF_STRING, IDC_USER_HISTORY,  CTSTRING(VIEW_HISTORY));

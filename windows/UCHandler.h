@@ -66,14 +66,14 @@ public:
 
 			menu.AppendMenu(MF_SEPARATOR);
 			
-			if(BOOLSETTING(UC_SUBMENU)) {
+			if(SETTING(UC_SUBMENU)) {
 				subMenu.CreatePopupMenu();				
 				subMenu.InsertSeparatorLast(TSTRING(SETTINGS_USER_COMMANDS));
 				
 				menu.AppendMenu(MF_POPUP, (UINT)(HMENU)subMenu, CTSTRING(SETTINGS_USER_COMMANDS));
 			}
 			
-			CMenuHandle cur = BOOLSETTING(UC_SUBMENU) ? subMenu.m_hMenu : menu.m_hMenu;	
+			CMenuHandle cur = SETTING(UC_SUBMENU) ? subMenu.m_hMenu : menu.m_hMenu;	
 
 			if(isOp) {
 				extraItems = 5;
@@ -91,7 +91,7 @@ public:
 						m++;
 					}
 				} else if(uc.isRaw() || uc.isChat()) {
-					cur = BOOLSETTING(UC_SUBMENU) ? subMenu.m_hMenu : menu.m_hMenu;
+					cur = SETTING(UC_SUBMENU) ? subMenu.m_hMenu : menu.m_hMenu;
 					for(StringList::const_iterator i = uc.getDisplayName().begin(), iend = uc.getDisplayName().end(); i != iend; ++i) {
 						tstring name = Text::toT(*i);
 						if(i + 1 == iend) {

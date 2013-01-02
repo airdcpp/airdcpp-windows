@@ -30,7 +30,7 @@
 
 void TextFrame::openWindow(const tstring& aFileName, Type aType) {
 	TextFrame* frame = new TextFrame(aFileName, aType);
-	if(BOOLSETTING(POPUNDER_TEXT) && aType == NORMAL)
+	if(SETTING(POPUNDER_TEXT) && aType == NORMAL)
 		WinUtil::hiddenCreateEx(frame);
 	else
 		frame->CreateEx(WinUtil::mdiClient);
@@ -38,7 +38,7 @@ void TextFrame::openWindow(const tstring& aFileName, Type aType) {
 
 void TextFrame::openWindow(const tstring& aTitle, const tstring& aText, Type aType) {
 	TextFrame* frame = new TextFrame(aTitle, aType, aText);
-	//if(BOOLSETTING(POPUNDER_TEXT))
+	//if(SETTING(POPUNDER_TEXT))
 		WinUtil::hiddenCreateEx(frame);
 	//else
 	//	frame->CreateEx(WinUtil::mdiClient);

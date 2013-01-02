@@ -53,7 +53,7 @@ bool IgnoreManager::isIgnored(const string& aNick) {
 	if(ignoredUsers.count(Text::toT(aNick)))
 		ret = true;
 
-	if(BOOLSETTING(IGNORE_USE_REGEXP_OR_WC) && !ret) {
+	if(SETTING(IGNORE_USE_REGEXP_OR_WC) && !ret) {
 		Lock l(cs);
 		for(TStringHashIterC i = ignoredUsers.begin(); i != ignoredUsers.end(); ++i) {
 			const string tmp = Text::fromT(*i);

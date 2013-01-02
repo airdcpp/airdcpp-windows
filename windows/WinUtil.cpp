@@ -455,13 +455,13 @@ void WinUtil::init(HWND hWnd) {
 	progressFont = CreateFontIndirect(&lf3);
 	TBprogressTextColor = SETTING(TB_PROGRESS_TEXT_COLOR);
 
-	if(BOOLSETTING(URL_HANDLER)) {
+	if(SETTING(URL_HANDLER)) {
 		registerDchubHandler();
 		registerADChubHandler();
 		registerADCShubHandler();
 		urlDcADCRegistered = true;
 	}
-	if(BOOLSETTING(MAGNET_REGISTER)) {
+	if(SETTING(MAGNET_REGISTER)) {
 		registerMagnetHandler();
 		urlMagnetRegistered = true; 
 	}
@@ -716,9 +716,9 @@ bool WinUtil::browseDirectory(tstring& target, HWND owner /* = NULL */) {
 	}
 	return false;
 }
-bool WinUtil::MessageBoxConfirm(SettingsManager::IntSetting i, const tstring& txt){
+bool WinUtil::MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& txt){
 	UINT ret = IDYES;
-	UINT bCheck = SettingsManager::getInstance()->getBool(i) ? BST_UNCHECKED : BST_CHECKED;
+	UINT bCheck = SettingsManager::getInstance()->get(i) ? BST_UNCHECKED : BST_CHECKED;
 	if(bCheck == BST_UNCHECKED)
 		ret = ::MessageBox(WinUtil::mainWnd, txt.c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), CTSTRING(DONT_ASK_AGAIN), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2, bCheck);
 		
@@ -1060,7 +1060,7 @@ void WinUtil::registerMagnetHandler() {
 	buf[0] = 0;
 
 	// (re)register the handler if magnet.exe isn't the default, or if DC++ is handling it
-	if(BOOLSETTING(MAGNET_REGISTER) && (strnicmp(openCmd, appName, appName.size()) != 0)) {
+	if(SETTING(MAGNET_REGISTER) && (strnicmp(openCmd, appName, appName.size()) != 0)) {
 		SHDeleteKey(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"));
 		if (::RegCreateKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\magnet"), 0, NULL, REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL, &hk, NULL))  {
 			LogManager::getInstance()->message(STRING(ERROR_CREATING_REGISTRY_KEY_MAGNET), LogManager::LOG_ERROR);
@@ -1146,7 +1146,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser) {
 		if(!m.hash.empty() && Encoder::isBase32(m.hash.c_str())){
 			auto sel = SETTING(MAGNET_ACTION);
 			BOOL remember = false;
-			if (BOOLSETTING(MAGNET_ASK)) {
+			if (SETTING(MAGNET_ASK)) {
 				if (WinUtil::getOsMajor() >= 6) {
 					CTaskDialog taskdlg;
 
@@ -1706,7 +1706,7 @@ tstring WinUtil::getTitle(const tstring& searchTerm) {
 void WinUtil::viewLog(const string& path, bool aHistory /*false*/) {
 	if (aHistory) {
 		TextFrame::openWindow(Text::toT(path), TextFrame::HISTORY);
-	} else if(BOOLSETTING(OPEN_LOGS_INTERNAL)) {
+	} else if(SETTING(OPEN_LOGS_INTERNAL)) {
 		TextFrame::openWindow(Text::toT(path), TextFrame::LOG);
 	} else {
 		ShellExecute(NULL, NULL, Text::toT(path).c_str(), NULL, NULL, SW_SHOWNORMAL);

@@ -93,7 +93,7 @@ private:
 	void Init(PropPageTextStyles *pParent, SettingsManager *pSM, 
                LPCSTR sText, LPCSTR sPreviewText,
                SettingsManager::IntSetting iBack, SettingsManager::IntSetting iFore, 
-               SettingsManager::IntSetting iBold, SettingsManager::IntSetting iItalic);
+               SettingsManager::BoolSetting iBold, SettingsManager::BoolSetting iItalic);
 	void LoadSettings();
 	void SaveSettings();
 	void EditBackColor();
@@ -107,8 +107,8 @@ private:
 	SettingsManager *settings;
 	SettingsManager::IntSetting m_iBackColor;
 	SettingsManager::IntSetting m_iForeColor;
-	SettingsManager::IntSetting m_iBold;
-	SettingsManager::IntSetting m_iItalic;
+	SettingsManager::BoolSetting m_iBold;
+	SettingsManager::BoolSetting m_iItalic;
 
 };
 	
