@@ -1738,5 +1738,7 @@ would you still like to load them?</String>
 		<String Name="XNoReleaseFiles">%d folders with no release files</String>
 		<String Name="MenuHide">Hide</String>
 		<String Name="ClosingWindows">Closing windows</String>
+		<String Name="UseDefault">Use default</String>
+		<String Name="GlobalSettingOverrides">Overrides for global settings</String>
 	</Strings>
 </Language>

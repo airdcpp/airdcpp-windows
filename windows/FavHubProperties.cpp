@@ -26,6 +26,7 @@
 
 #include "../client/FavoriteManager.h"
 #include "../client/ResourceManager.h"
+#include "../client/tribool.h"
 
 
 FavHubProperties::FavHubProperties(FavoriteHubEntry *_entry) : entry(_entry), loaded(false) { }
@@ -57,6 +58,10 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_LOGMAINCHAT, CTSTRING(FAV_LOG_CHAT));
 	SetDlgItemText(IDC_CHAT_NOTIFY, CTSTRING(CHAT_NOTIFY));
 
+	SetDlgItemText(IDC_LOGMAINCHAT, CTSTRING(FAV_LOG_CHAT));
+	SetDlgItemText(IDC_HUBSETTINGS, CTSTRING(GLOBAL_SETTING_OVERRIDES));
+	SetDlgItemText(IDC_SEARCH_INTERVAL_DEFAULT, CTSTRING(USE_DEFAULT));
+
 	SetDlgItemText(IDC_FAV_SHAREPROFILE_CAPTION, CTSTRING(SHARE_PROFILE));
 	SetDlgItemText(IDC_EDIT_PROFILES, CTSTRING(EDIT_PROFILES));
 	SetDlgItemText(IDC_PROFILES_NOTE, CTSTRING(PROFILES_NOTE));
@@ -71,10 +76,17 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	CheckDlgButton(IDC_STEALTH, entry->getStealth() ? BST_CHECKED : BST_UNCHECKED);
 	SetDlgItemText(IDC_SERVER, Text::toT(entry->get(HubSettings::UserIp)).c_str());
 	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
-	CheckDlgButton(IDC_SHOW_JOIN, entry->get(HubSettings::FavShowJoins) ? BST_CHECKED : BST_UNCHECKED); //hub show joins
-	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(entry->get(HubSettings::SearchInterval)).c_str());
-	CheckDlgButton(IDC_LOGMAINCHAT, entry->get(HubSettings::LogMainChat) ? BST_CHECKED : BST_UNCHECKED);
-	CheckDlgButton(IDC_CHAT_NOTIFY, entry->getChatNotify() ? BST_CHECKED : BST_UNCHECKED);
+
+	CheckDlgButton(IDC_SHOW_JOIN, toInt(entry->get(HubSettings::ShowJoins)));
+	CheckDlgButton(IDC_SHOW_JOIN_FAV, toInt(entry->get(HubSettings::FavShowJoins)));
+	CheckDlgButton(IDC_LOGMAINCHAT, toInt(entry->get(HubSettings::LogMainChat)));
+	CheckDlgButton(IDC_CHAT_NOTIFY, toInt(entry->get(HubSettings::ChatNotify)));
+
+	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
+
+	auto searchInterval = entry->get(HubSettings::SearchInterval);
+	CheckDlgButton(IDC_SEARCH_INTERVAL_DEFAULT, searchInterval == -1 ? BST_CHECKED : BST_UNCHECKED);
+	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(searchInterval).c_str());
 
 	bool isAdcHub = entry->isAdcHub();
 
@@ -84,8 +96,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	combo.SetCurSel(0);
 
 	const FavHubGroups& favHubGroups = FavoriteManager::getInstance()->getFavHubGroups();
-	for(auto i = favHubGroups.begin(); i != favHubGroups.end(); ++i) {
-		const string& name = i->first;
+	for(const auto& name: favHubGroups | map_keys) {
 		int pos = combo.AddString(Text::toT(name).c_str());
 		
 		if(name == entry->getGroup())
@@ -125,12 +136,15 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 
 	combo.Detach();
 
-	if(entry->getMode() == 0)
+	auto conn = entry->get(HubSettings::Connection);
+	if(conn == -1)
 		CheckRadioButton(IDC_ACTIVE, IDC_DEFAULT, IDC_DEFAULT);
-	else if(entry->getMode() == 1)
+	else if(conn == SettingsManager::INCOMING_DIRECT)
 		CheckRadioButton(IDC_ACTIVE, IDC_DEFAULT, IDC_ACTIVE);
-	else if(entry->getMode() == 2)
+	else if(conn == SettingsManager::INCOMING_FIREWALL_PASSIVE)
 		CheckRadioButton(IDC_ACTIVE, IDC_DEFAULT, IDC_PASSIVE);
+
+	fixControls();
 
 	CEdit tmp;
 	tmp.Attach(GetDlgItem(IDC_HUBNAME));
@@ -169,6 +183,19 @@ LRESULT FavHubProperties::onClickedHideShare(WORD /*wNotifyCode*/, WORD /*wID*/,
 			ctrlProfile.EnableWindow(true);
 	}
 	return FALSE;
+}
+
+LRESULT FavHubProperties::fixControls(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	fixControls();
+	return FALSE;
+}
+
+void FavHubProperties::fixControls() {
+	auto usingDefaultInterval = IsDlgButtonChecked(IDC_SEARCH_INTERVAL_DEFAULT);
+	::EnableWindow(GetDlgItem(IDC_FAV_SEARCH_INTERVAL_BOX),			!usingDefaultInterval);
+	::EnableWindow(GetDlgItem(IDC_FAV_SEARCH_INTERVAL_SPIN),		!usingDefaultInterval);
+	if (usingDefaultInterval)
+		SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(SettingsManager::getInstance()->getDefault(SettingsManager::MINIMUM_SEARCH_INTERVAL)).c_str());
 }
 
 void FavHubProperties::appendProfiles() {
@@ -232,7 +259,6 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		entry->setPassword(Text::fromT(buf));
 		entry->setStealth(IsDlgButtonChecked(IDC_STEALTH) == 1);
 		entry->setFavNoPM(IsDlgButtonChecked(IDC_FAV_NO_PM) == 1);
-		entry->setChatNotify(IsDlgButtonChecked(IDC_CHAT_NOTIFY) == 1);
 
 		//Hub settings
 		GetDlgItemText(IDC_HUBNICK, buf, 256);
@@ -244,12 +270,17 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		GetDlgItemText(IDC_SERVER, buf, 512);
 		entry->get(HubSettings::UserIp) = Text::fromT(buf);
 
-		entry->get(HubSettings::ShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN) == 1);
-		//entry->get(HubSettings::FavShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN) == 1);
-		entry->get(HubSettings::LogMainChat) = to3bool(IsDlgButtonChecked(IDC_LOGMAINCHAT) == 1);
+		entry->get(HubSettings::ShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN));
+		entry->get(HubSettings::FavShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN));
+		entry->get(HubSettings::LogMainChat) = to3bool(IsDlgButtonChecked(IDC_LOGMAINCHAT));
+		entry->get(HubSettings::ChatNotify) = to3bool(IsDlgButtonChecked(IDC_CHAT_NOTIFY));
 
-		GetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, buf, 512);
-		entry->get(HubSettings::SearchInterval) = Util::toInt(Text::fromT(buf));
+		auto val = -1;
+		if (!IsDlgButtonChecked(IDC_SEARCH_INTERVAL_DEFAULT)) {
+			GetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, buf, 512);
+			val = Util::toInt(Text::fromT(buf));
+		}
+		entry->get(HubSettings::SearchInterval) = val;
 
 		
 		CComboBox combo;
@@ -269,14 +300,12 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		combo.Detach();
 
 		int	ct = -1;
-		if(IsDlgButtonChecked(IDC_DEFAULT))
-			ct = 0;
-		else if(IsDlgButtonChecked(IDC_ACTIVE))
-			ct = 1;
+		if(IsDlgButtonChecked(IDC_ACTIVE))
+			ct = SettingsManager::INCOMING_DIRECT;
 		else if(IsDlgButtonChecked(IDC_PASSIVE))
-			ct = 2;
+			ct = SettingsManager::INCOMING_FIREWALL_PASSIVE;
 
-		entry->setMode(ct);
+		entry->get(HubSettings::Connection) = ct;
 
 		auto p = ShareManager::getInstance()->getProfiles();
 

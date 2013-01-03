@@ -43,8 +43,10 @@ public:
 		COMMAND_HANDLER(IDC_HUBADDR, EN_CHANGE, OnTextChanged)
 		COMMAND_ID_HANDLER(IDC_HIDE_SHARE, onClickedHideShare)
 		COMMAND_ID_HANDLER(IDC_EDIT_PROFILES, OnEditProfiles)
+		COMMAND_ID_HANDLER(IDC_SEARCH_INTERVAL_DEFAULT, fixControls)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
+
 	END_MSG_MAP()
 	
 	LRESULT OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -52,6 +54,7 @@ public:
 	LRESULT OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/);
 	LRESULT OnEditProfiles(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/);
 	LRESULT onClickedHideShare(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT fixControls(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void appendProfiles();
 protected:
@@ -60,6 +63,7 @@ protected:
 	bool hideShare;
 	CComboBox ctrlProfile;
 	bool loaded;
+	void fixControls();
 };
 
 #endif // !defined(FAV_HUB_PROPERTIES_H)

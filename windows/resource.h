@@ -746,9 +746,11 @@
 #define IDC_CH_STATUS_HUB_BOLD2         1295
 #define IDC_BOLD_HUB_TABS_ON_KICK       1295
 #define IDC_ENABLE_SEGMENTS             1295
+#define IDC_HUBSETTINGS                 1295
 #define IDC_REGEXP_TESTER_COMBO         1296
 #define IDC_MULTISOURCE_COMBO           1296
 #define IDC_CH_ICONS                    1296
+#define IDC_SEARCH_INT_BOX              1296
 #define IDC_PUB_LIST_CONFIG             1297
 #define IDC_ODC_STYLE                   1297
 #define IDC_OVERRIDE                    1297
@@ -884,6 +886,8 @@
 #define IDC_CHECK_SHARED                1331
 #define IDC_ASEARCH                     1332
 #define IDC_REFRESH_VNAME_ON_SHAREPAGE2 1332
+#define IDC_SHOW_JOIN2                  1332
+#define IDC_SHOW_JOIN_FAV               1332
 #define IDC_SEARH_SKIPLIST_PRESET       1333
 #define IDC_PRE1                        1334
 #define IDC_PRE2                        1335
@@ -916,6 +920,7 @@
 #define IDC_HIDE_SHARE                  1359
 #define IDC_DOWNLOAD_SLOTS              1359
 #define IDC_DOWNLOAD_S_SPIN             1360
+#define IDC_SEARCH_INTERVAL_DEFAULT     1360
 #define IDC_UPLOAD_SLOTS                1361
 #define IDC_UPLOAD_S_SPIN               1362
 #define IDC_MAX_AUTO_OPENED             1363

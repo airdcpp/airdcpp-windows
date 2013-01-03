@@ -261,7 +261,6 @@ private:
 
 	tstring redirect;
 	bool timeStamps;
-	bool showchaticon;
 	static bool shutdown;
 	HICON HubOpIcon; 
 	HICON HubRegIcon; 

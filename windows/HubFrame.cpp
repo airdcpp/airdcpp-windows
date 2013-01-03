@@ -144,12 +144,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlUsers.setSortColumn(OnlineUser::COLUMN_NICK);
 	ctrlUsers.SetImageList(ResourceLoader::userImages, LVSIL_SMALL);
 
-	if(fhe){
-		showchaticon = fhe->getChatNotify();
-	} else {
-		showchaticon = false;
-	}
-
 	WinUtil::SetIcon(m_hWnd, IDI_HUB);
 
 	HubOpIcon = ResourceLoader::loadIcon(IDI_HUBOP, 16);
@@ -597,7 +591,7 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 
 			if(!msg.from.getUser() || (ignoreList.find(msg.from.getUser()) == ignoreList.end()) || (msg.from.isOp() && !client->isOp())) {
 				addLine(msg.from, Text::toT(msg.str), WinUtil::m_ChatTextGeneral);
-				if(showchaticon) {
+				if(client->get(HubSettings::ChatNotify)) {
 					HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;
 					::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_HUB_TRAY_ICON, NULL);
 				}
@@ -1069,7 +1063,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	}
 
 	tabMenu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR_CHAT));
-	if(showchaticon) 
+	if(client->get(HubSettings::ChatNotify)) 
 		tabMenu.AppendMenu(MF_CHECKED, IDC_NOTIFY, CTSTRING(NOTIFY));
 	else
 		tabMenu.AppendMenu(MF_UNCHECKED, IDC_NOTIFY, CTSTRING(NOTIFY));
@@ -1103,7 +1097,7 @@ LRESULT HubFrame::onOpenMyList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 }
 
 LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	FavoriteHubEntry *fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
+	/*FavoriteHubEntry *fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
 
 	if(showchaticon){
 		if(fhe)
@@ -1115,7 +1109,9 @@ LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 			fhe->setChatNotify(true);
 
 		showchaticon = true;
-	}
+	}*/
+
+	client->get(HubSettings::ChatNotify) = !client->get(HubSettings::ChatNotify);
 	return 0;
 }
 
@@ -1452,7 +1448,7 @@ void HubFrame::on(ClientListener::SetIcons, const Client*, int aCountType) noexc
 }
 
 void HubFrame::on(Connecting, const Client*) noexcept { 
-	if(SETTING(SEARCH_PASSIVE) && ClientManager::getInstance()->isActive(client->getHubUrl())) {
+	if(SETTING(SEARCH_PASSIVE) && client->isActive()) {
 		addLine(TSTRING(ANTI_PASSIVE_SEARCH), WinUtil::m_ChatTextSystem);
 	}
 	speak(ADD_STATUS_LINE, STRING(CONNECTING_TO) + " " + client->getHubUrl() + " ...");
