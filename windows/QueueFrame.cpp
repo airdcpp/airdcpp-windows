@@ -1262,6 +1262,15 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 							hasPMItems = true;
 						}
 					}
+
+					if (!sources.empty()) {
+						removeMenu->appendSeparator();
+						removeMenu->appendItem(TSTRING(ALL), [=] {
+							auto sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
+							for(auto& si: sources)
+									QueueManager::getInstance()->removeSource(ii->getTarget(), si.getUser(), QueueItem::Source::FLAG_REMOVED);
+						});
+					}
 					
 					auto badSources = move(QueueManager::getInstance()->getBadSources(ii->getQueueItem()));
 					for(auto& s: badSources) {
@@ -1287,6 +1296,15 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 						auto u = s.getUser();
 						auto target = ii->getTarget();
 						readdMenu->appendItem(nick, [=] { QueueManager::getInstance()->readdQISource(target, u); });
+					}
+
+					if (!badSources.empty()) {
+						readdMenu->appendSeparator();
+						readdMenu->appendItem(TSTRING(ALL), [=] {
+							auto sources = QueueManager::getInstance()->getBadSources(ii->getQueueItem());
+							for(auto& si: sources)
+								QueueManager::getInstance()->readdQISource(ii->getTarget(), si.getUser());
+						});
 					}
 				}
 
@@ -1400,9 +1418,6 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
 			}
 
-			Bundle::SourceInfoList bundleSources, badBundleSources;
-			QueueManager::getInstance()->getBundleSources(b, bundleSources, badBundleSources);
-
 			auto formatUser = [this] (Bundle::SourceTuple& bs) -> tstring {
 				auto u = get<Bundle::SOURCE_USER>(bs);
 				tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(u));
@@ -1425,14 +1440,34 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				return nick;
 			};
 
+			//current sources
+			auto bundleSources = move(QueueManager::getInstance()->getBundleSources(b));
 			for(auto& bs: bundleSources) {
 				auto u = get<Bundle::SOURCE_USER>(bs);
 				removeMenu->appendItem(formatUser(bs), [b, u] { QueueManager::getInstance()->removeBundleSource(b, u); });
 			}
+			if (!bundleSources.empty()) {
+				removeMenu->appendSeparator();
+				removeMenu->appendItem(TSTRING(ALL), [b] {
+					auto sources = move(QueueManager::getInstance()->getBundleSources(b));
+					for(auto& si: sources)
+						QueueManager::getInstance()->removeBundleSource(b, get<Bundle::SOURCE_USER>(si).user);
+				});
+			}
 
+			//bad sources
+			auto badBundleSources = move(QueueManager::getInstance()->getBadBundleSources(b));
 			for(auto& bs: badBundleSources) {
 				auto u = get<Bundle::SOURCE_USER>(bs);
 				readdMenu->appendItem(formatUser(bs), [b, u] { QueueManager::getInstance()->readdBundleSource(b, u); });
+			}
+			if (!badBundleSources.empty()) {
+				readdMenu->appendSeparator();
+				readdMenu->appendItem(TSTRING(ALL), [b] { 
+					auto sources = move(QueueManager::getInstance()->getBadBundleSources(b));
+					for(auto& si: sources)
+						QueueManager::getInstance()->readdBundleSource(b, get<Bundle::SOURCE_USER>(si));
+				});
 			}
 		}
 		/* Submenus end */
