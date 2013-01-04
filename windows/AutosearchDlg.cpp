@@ -215,13 +215,17 @@ void AutoSearchDlg::switchMode() {
 
 	CRect rc;
 	DWORD dwStyle = ::GetWindowLongPtr( m_hWnd, GWL_STYLE ) ;
-	AdjustWindowRect(rc, dwStyle, FALSE); //get the border widths so it's being sized correctly on different operating systems
+	DWORD dwExStyle = ::GetWindowLongPtr( m_hWnd, GWL_EXSTYLE ) ;
+	if (!AdjustWindowRectEx(rc, dwStyle, FALSE, dwExStyle)) { //get the border widths so it's being sized correctly on different operating systems
+		MessageBox(Text::toT(Util::translateError(GetLastError())).c_str(), _T("AdjustWindowRectEx failed"), MB_OK);
+		return;
+	}
 
 	if (advanced) {
-		SetWindowPos(NULL,0, 0, 585+abs(rc.left)+abs(rc.right), 490+abs(rc.top)+abs(rc.bottom),SWP_NOZORDER|SWP_NOMOVE);
+		SetWindowPos(m_hWnd,0, 0, 585+abs(rc.left)+abs(rc.right), 490+abs(rc.top)+abs(rc.bottom),SWP_NOZORDER|SWP_NOMOVE);
 		cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + " <<").c_str());
 	} else {
-		SetWindowPos(NULL, 0, 0, 585+abs(rc.left)+abs(rc.right), 250+abs(rc.top)+abs(rc.bottom),SWP_NOZORDER|SWP_NOMOVE);
+		SetWindowPos(m_hWnd, 0, 0, 585+abs(rc.left)+abs(rc.right), 250+abs(rc.top)+abs(rc.bottom),SWP_NOZORDER|SWP_NOMOVE);
 		cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + " >>").c_str());
 	}
 }

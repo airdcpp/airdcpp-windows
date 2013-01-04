@@ -195,7 +195,7 @@ void FavHubProperties::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_FAV_SEARCH_INTERVAL_BOX),			!usingDefaultInterval);
 	::EnableWindow(GetDlgItem(IDC_FAV_SEARCH_INTERVAL_SPIN),		!usingDefaultInterval);
 	if (usingDefaultInterval)
-		SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(SettingsManager::getInstance()->getDefault(SettingsManager::MINIMUM_SEARCH_INTERVAL)).c_str());
+		SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(SettingsManager::getInstance()->get(SettingsManager::MINIMUM_SEARCH_INTERVAL)).c_str());
 }
 
 void FavHubProperties::appendProfiles() {

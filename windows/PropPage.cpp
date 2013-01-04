@@ -153,6 +153,7 @@ void PropPage::write(HWND page, Item const* items, ListItem* listItems /* = NULL
 		{
 		case T_STR:
 			{
+				dcassert(i->setting >= SettingsManager::STR_FIRST && i->setting <= SettingsManager::STR_LAST);
 				if (GetDlgItem(page, i->itemID) == NULL) {
 					// Control not exist ? Why ??
 					throw;
@@ -171,6 +172,7 @@ void PropPage::write(HWND page, Item const* items, ListItem* listItems /* = NULL
 			}
 		case T_INT:
 			{
+				dcassert(i->setting >= SettingsManager::INT_FIRST && i->setting <= SettingsManager::INT_LAST);
 				if (GetDlgItem(page, i->itemID) == NULL) {
 					// Control not exist ? Why ??
 					throw;
@@ -182,6 +184,7 @@ void PropPage::write(HWND page, Item const* items, ListItem* listItems /* = NULL
 			}
 		case T_INT64:
 			{
+				dcassert(i->setting >= SettingsManager::INT64_FIRST && i->setting <= SettingsManager::INT64_LAST);
 				buf.resize(SETTING_STR_MAXLEN);
 				buf.resize(::GetDlgItemText(page, i->itemID, &buf[0], SETTING_STR_MAXLEN));
 				settings->set((SettingsManager::Int64Setting)i->setting, Text::fromT(buf));
@@ -189,6 +192,7 @@ void PropPage::write(HWND page, Item const* items, ListItem* listItems /* = NULL
 			}
 		case T_BOOL:
 			{
+				dcassert(i->setting >= SettingsManager::BOOL_FIRST && i->setting <= SettingsManager::BOOL_LAST);
 				if (GetDlgItem(page, i->itemID) == NULL) {
 					// Control not exist ? Why ??
 					throw;
@@ -207,7 +211,8 @@ void PropPage::write(HWND page, Item const* items, ListItem* listItems /* = NULL
 
 		int i;
 		for(i = 0; listItems[i].setting != 0; i++) {
-			SettingsManager::getInstance()->set(SettingsManager::IntSetting(listItems[i].setting), ctrl.GetCheckState(i));
+			dcassert(listItems[i].setting >= SettingsManager::BOOL_FIRST && listItems[i].setting <= SettingsManager::BOOL_LAST);
+			SettingsManager::getInstance()->set(SettingsManager::BoolSetting(listItems[i].setting), ctrl.GetCheckState(i));
 		}
 
 		ctrl.Detach();
