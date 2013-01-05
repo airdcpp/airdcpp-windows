@@ -460,7 +460,7 @@ LRESULT AutoSearchFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		removelist.push_back((AutoSearch*)ctrlAutoSearch.GetItemData(i));
 	}
 
-	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_AS_REMOVE, TSTRING(REALLY_REMOVE))) {
+	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_AS_REMOVAL, TSTRING(REALLY_REMOVE))) {
 		for(auto a = removelist.begin(); a !=removelist.end(); ++a )
 			AutoSearchManager::getInstance()->removeAutoSearch(*a);
 	}

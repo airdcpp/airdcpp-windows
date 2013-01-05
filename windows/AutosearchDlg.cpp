@@ -213,21 +213,45 @@ void AutoSearchDlg::switchMode() {
 	//users shouldn't be able to change the hidden options with the keyboard command
 	fixControls();
 
-	CRect rc;
+	/*CRect rc;
 	DWORD dwStyle = ::GetWindowLongPtr( m_hWnd, GWL_STYLE ) ;
 	DWORD dwExStyle = ::GetWindowLongPtr( m_hWnd, GWL_EXSTYLE ) ;
 	if (!AdjustWindowRectEx(rc, dwStyle, FALSE, dwExStyle)) { //get the border widths so it's being sized correctly on different operating systems
 		MessageBox(Text::toT(Util::translateError(GetLastError())).c_str(), _T("AdjustWindowRectEx failed"), MB_OK);
 		return;
-	}
+	}*/
 
-	if (advanced) {
-		SetWindowPos(m_hWnd,0, 0, 585+abs(rc.left)+abs(rc.right), 490+abs(rc.top)+abs(rc.bottom),SWP_NOZORDER|SWP_NOMOVE);
-		cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + " <<").c_str());
-	} else {
-		SetWindowPos(m_hWnd, 0, 0, 585+abs(rc.left)+abs(rc.right), 250+abs(rc.top)+abs(rc.bottom),SWP_NOZORDER|SWP_NOMOVE);
-		cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + " >>").c_str());
-	}
+	/*int WindowWidth;
+	int WindowHeight;
+
+	//Get the required window dimensions
+	WindowWidth = 590; //Required width
+	WindowWidth += (2 * GetSystemMetrics(SM_CXFIXEDFRAME)); //Add frame widths
+
+	WindowHeight = advanced ? 495 : 254; //Required height
+	WindowHeight += GetSystemMetrics(SM_CYCAPTION); //Titlebar height
+	//WindowHeight += GetSystemMetrics(SM_CYMENU); //Uncomment for menu bar height
+	WindowHeight += (3 * GetSystemMetrics(SM_CYFIXEDFRAME)); //Frame heights*/
+
+	int x = 585;
+	int y = advanced ? 490 : 250;
+
+	CRect rc;
+
+	GetClientRect(&rc);
+
+	x -= rc.right;
+	y -= rc.bottom;
+
+	GetWindowRect(&rc);
+
+	x += (rc.right - rc.left);
+	y += (rc.bottom - rc.top);
+
+	SetWindowPos(NULL, 0, 0, x, y, SWP_NOMOVE);
+	//SetWindowPos(m_hWnd, 0, 0, WindowWidth, WindowHeight,SWP_NOZORDER|SWP_NOMOVE);
+
+	cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + (advanced ? " <<" : " >>")).c_str());
 }
 
 LRESULT AutoSearchDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

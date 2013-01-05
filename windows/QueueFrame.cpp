@@ -961,7 +961,7 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 }
 
 void QueueFrame::removeSelected() {
-	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_DELETE, TSTRING(REALLY_REMOVE)))
+	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING(REALLY_REMOVE)))
 		ctrlQueue.forEachSelected(&QueueItemInfo::remove);
 }
 	
@@ -987,7 +987,7 @@ void QueueFrame::removeSelectedDir() {
 		BundlePtr bundle = bundles.front();
 		if (stricmp(bundle->getTarget(), curDir) != 0) {
 			tmp = STRING_F(CONFIRM_REMOVE_DIR_BUNDLE_PART, Util::getLastDir(curDir).c_str() % bundle->getName().c_str());
-			if(!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_DELETE, Text::toT(tmp))) {
+			if(!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, Text::toT(tmp))) {
 				return;
 			} else {
 				if (finishedFiles > 0) {
@@ -999,7 +999,7 @@ void QueueFrame::removeSelectedDir() {
 			}
 		} else {
 			tmp = STRING_F(CONFIRM_REMOVE_DIR_BUNDLE, bundle->getName().c_str());
-			if(!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_DELETE, Text::toT(tmp))) {
+			if(!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, Text::toT(tmp))) {
 				return;
 			} else {
 				if (finishedFiles > 0) {
@@ -1012,7 +1012,7 @@ void QueueFrame::removeSelectedDir() {
 		}
 	} else {
 		tmp = STRING_F(CONFIRM_REMOVE_DIR_MULTIPLE, dirBundles % fileBundles);
-		if(!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_DELETE, Text::toT(tmp))) {
+		if(!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, Text::toT(tmp))) {
 			return;
 		} else {
 			if (finishedFiles > 0) {

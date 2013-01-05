@@ -311,7 +311,7 @@ void TransferView::ItemInfo::removeAll() {
 	if(hits <= 1) {
 		QueueManager::getInstance()->removeSource(user, QueueItem::Source::FLAG_REMOVED);
 	} else {
-		if(!SETTING(CONFIRM_DELETE) || ::MessageBox(0, _T("Do you really want to remove this item?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
+		if(!SETTING(CONFIRM_QUEUE_REMOVAL) || ::MessageBox(0, _T("Do you really want to remove this item?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
 			QueueManager::getInstance()->remove(Text::fromT(target));
 	}
 }

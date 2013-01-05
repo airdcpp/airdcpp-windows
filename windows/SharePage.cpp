@@ -856,7 +856,12 @@ bool SharePage::addDirectory(const tstring& aPath){
 
 	if(showShareDlg(spList, curProfile, Text::toT(ShareManager::getInstance()->validateVirtual(Util::getLastDir(Text::fromT(path)))), profileTokens, newName, false)) {
 		string vPath = Text::fromT(newName), rPath = Text::fromT(path);
-		ShareManager::getInstance()->validatePath(rPath, vPath);
+		try {
+			ShareManager::getInstance()->validatePath(rPath, vPath);
+		} catch(ShareException& e) { 
+			MessageBox(Text::toT(e.getError()).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
+			return false;
+		}
 
 		for(auto pt: profileTokens) {
 			auto dir = new ShareDirInfo(vPath, pt, rPath);
@@ -880,16 +885,21 @@ bool SharePage::addDirectory(const tstring& aPath){
 
 			auto p = find_if(removeDirs.begin(), removeDirs.end(), [dir](const ShareDirInfo* sdi) { return compare(sdi->profile, dir->profile) == 0 && sdi->path == dir->path; });
 			if (p != removeDirs.end()) {
-				delete dir;
-				dir = *p;
+				//check if the virtual name is different...
+				if ((*p)->vname != dir->vname) {
+					changedDirs.push_back(dir);
+				} else {
+					delete dir;
+					dir = *p;
+				}
 				removeDirs.erase(p);
 			} else {
 				newDirs.push_back(dir);
 			}
 
 			if(SETTING(USE_OLD_SHARING_UI) && pt == curProfile) {
-				int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), newName, 0, (LPARAM)dir);
-				ctrlDirectories.SetItemText(i, 1, path.c_str());
+				int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(dir->vname), 0, (LPARAM)dir);
+				ctrlDirectories.SetItemText(i, 1, Text::toT(dir->path).c_str());
 				ctrlDirectories.SetItemText(i, 2, dir->size == 0 ? _T("New") : Util::formatBytesW(dir->size).c_str());
 			}
 		}
