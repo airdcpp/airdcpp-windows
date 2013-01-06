@@ -213,44 +213,30 @@ void AutoSearchDlg::switchMode() {
 	//users shouldn't be able to change the hidden options with the keyboard command
 	fixControls();
 
-	/*CRect rc;
-	DWORD dwStyle = ::GetWindowLongPtr( m_hWnd, GWL_STYLE ) ;
-	DWORD dwExStyle = ::GetWindowLongPtr( m_hWnd, GWL_EXSTYLE ) ;
-	if (!AdjustWindowRectEx(rc, dwStyle, FALSE, dwExStyle)) { //get the border widths so it's being sized correctly on different operating systems
-		MessageBox(Text::toT(Util::translateError(GetLastError())).c_str(), _T("AdjustWindowRectEx failed"), MB_OK);
-		return;
-	}*/
+	auto adjustWindowSize = [](HWND m_hWnd, int exceptedCurX, int exceptedCurY, int& newX, int& newY) -> void {
+		//get the border widths so it's being sized correctly on different operating systems
+		CRect rc;
+		DWORD dwStyle = ::GetWindowLongPtr(m_hWnd, GWL_STYLE);
+		AdjustWindowRect(rc, dwStyle, FALSE);
 
-	/*int WindowWidth;
-	int WindowHeight;
+		//get the current window rect (it varies depending on the font size)
+		CRect rcCur;
+		::GetClientRect(m_hWnd, &rcCur);
 
-	//Get the required window dimensions
-	WindowWidth = 590; //Required width
-	WindowWidth += (2 * GetSystemMetrics(SM_CXFIXEDFRAME)); //Add frame widths
+		//get the conversion factors
+		auto dpiFactorX = static_cast<float>(rcCur.right) / exceptedCurX;
+		auto dpiFactorY = static_cast<float>(rcCur.bottom) / exceptedCurY;
 
-	WindowHeight = advanced ? 495 : 254; //Required height
-	WindowHeight += GetSystemMetrics(SM_CYCAPTION); //Titlebar height
-	//WindowHeight += GetSystemMetrics(SM_CYMENU); //Uncomment for menu bar height
-	WindowHeight += (3 * GetSystemMetrics(SM_CYFIXEDFRAME)); //Frame heights*/
+		//calculate the new size
+		newX = (newX * dpiFactorX) + abs(rc.left) + abs(rc.right);
+		newY = (newY * dpiFactorY) + abs(rc.top) + abs(rc.bottom);
+	};
 
-	int x = 585;
-	int y = advanced ? 490 : 250;
+	int newX = 584;
+	int newY = (advanced ? 489.0 : 250.0);
+	adjustWindowSize(m_hWnd, 584, (!advanced ? 489.0 : 250.0), newX, newY);
 
-	CRect rc;
-
-	GetClientRect(&rc);
-
-	x -= rc.right;
-	y -= rc.bottom;
-
-	GetWindowRect(&rc);
-
-	x += (rc.right - rc.left);
-	y += (rc.bottom - rc.top);
-
-	SetWindowPos(NULL, 0, 0, x, y, SWP_NOMOVE);
-	//SetWindowPos(m_hWnd, 0, 0, WindowWidth, WindowHeight,SWP_NOZORDER|SWP_NOMOVE);
-
+	SetWindowPos(m_hWnd,0, 0, newX, newY, SWP_NOZORDER|SWP_NOMOVE);
 	cAdvanced.SetWindowText(Text::toT(STRING(SETTINGS_ADVANCED) + (advanced ? " <<" : " >>")).c_str());
 }
 
