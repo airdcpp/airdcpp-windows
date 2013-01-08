@@ -23,6 +23,8 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
+#include <ppl.h>
+
 #include "HubFrame.h"
 #include "../client/TimerManager.h"
 #include "../client/FavoriteManager.h"
@@ -49,7 +51,7 @@
 #define POPUP_UID 19000
 
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
-		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>, public Thread,
+		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>,
 		private TimerManagerListener, private QueueManagerListener,
 		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener
 {
@@ -381,7 +383,7 @@ public:
 	}
 
 	CImageList ToolbarImages, ToolbarImagesHot;
-	int run();
+	void getMagnetForFile();
 	
 	
 	void ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags = NIIF_INFO, bool force = false) {
@@ -394,7 +396,11 @@ public:
 	}
 	void ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags = NIIF_INFO, HICON hIcon = NULL, bool force = false);
 	void callAsync(function<void ()> f);
+
+	void addThreadedTask(std::function<void ()> aF);
+	concurrency::task_group threadedTasks;
 private:
+	//vector<concurrency::task<void>> threadedTasks;
 	NOTIFYICONDATA pmicon;
 	NOTIFYICONDATA hubicon;
 	

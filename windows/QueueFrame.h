@@ -23,6 +23,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include <future>
+
 #include "CSplitterEx.h"
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
@@ -185,7 +187,6 @@ public:
 	}
 	
 private:
-
 	enum {
 		COLUMN_FIRST,
 		COLUMN_TARGET = COLUMN_FIRST,

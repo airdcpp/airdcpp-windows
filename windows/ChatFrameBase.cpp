@@ -44,11 +44,19 @@
 extern EmoticonsManager* emoticonsManager;
 
 ChatFrameBase::ChatFrameBase(FrameMessageBase* aFrameBase) : /*clientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP)*/ frame(aFrameBase), menuItems(0),
-		lineCount(1), curCommandPosition(0) {
+		lineCount(1), curCommandPosition(0), cancelHashing(false) {
 }
 
-ChatFrameBase::~ChatFrameBase() {
+ChatFrameBase::~ChatFrameBase() { }
 
+LRESULT ChatFrameBase::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	if (hasher.valid()) {
+		cancelHashing = true;
+		hasher.wait();
+	}
+
+	bHandled = FALSE;
+	return 0;
 }
 
 LRESULT ChatFrameBase::OnForwardMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -376,6 +384,9 @@ void ChatFrameBase::addMagnet(string&& path) {
 	if(!getClient())
 		return;
 
+	if (hasher.valid())
+		return;
+
 	//warn the user that nmdc share will be public access.
 	if((getUser() && getUser()->isSet(User::NMDC))) {
 		UINT bCheck = SETTING(NMDC_MAGNET_WARN) ? BST_UNCHECKED : BST_CHECKED;
@@ -385,19 +396,37 @@ void ChatFrameBase::addMagnet(string&& path) {
 		SettingsManager::getInstance()->set(SettingsManager::NMDC_MAGNET_WARN, bCheck != BST_CHECKED);
 	}
 
-	TTHValue tth;
-	int64_t size = 0;
+	ctrlStatus.SetText(0, CTSTRING_F(CREATING_MAGNET_FOR, Text::toT(path)));
+	hasher = std::async([=] () -> void {
+		TTHValue tth;
+		int64_t size = 0;
+		try {
+			HashManager::getInstance()->getFileTTH(path, true, tth, size, cancelHashing, [=] (int64_t aTimeLeft, const string& aFileName) -> void {
+				//update the statusbar
+				if (aTimeLeft == 0)
+					return;
 
-	try {
-		HashManager::getInstance()->getFileTTH(path, true, tth, size);
-	} catch (const Exception& e) { 
-		LogManager::getInstance()->message(STRING(HASHING_FAILED) + " " + e.getError(), LogManager::LOG_ERROR);
-		return;
-	}
-	bool useKey = getUser() && (!getUser()->isSet(User::BOT) || !getUser()->isSet(User::NMDC));
-	ShareManager::getInstance()->addTempShare((useKey ? getUser()->getCID().toBase32() : Util::emptyString), tth, path, size, getClient()->getShareProfile());
+				MainFrame::getMainFrame()->callAsync([=] {
+					ctrlStatus.SetText(0, CTSTRING_F(HASHING_X_LEFT, Text::toT(aFileName) % Text::toT(Util::formatTime(aTimeLeft, true))));
+					//frame->addStatusLine(Text::toT("Hashing " + aFileName + ", " + Util::formatTime(aTimeLeft, true) + " left"));
+				});
+			});
+		} catch (const Exception& e) { 
+			LogManager::getInstance()->message(STRING(HASHING_FAILED) + " " + e.getError(), LogManager::LOG_ERROR);
+			return;
+		}
+
+		bool useKey = getUser() && (!getUser()->isSet(User::BOT) || !getUser()->isSet(User::NMDC));
+		ShareManager::getInstance()->addTempShare((useKey ? getUser()->getCID().toBase32() : Util::emptyString), tth, path, size, getClient()->getShareProfile());
 		
-	appendTextLine(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size)), true);
+		MainFrame::getMainFrame()->callAsync([=] {
+			if (!cancelHashing) {
+				ctrlStatus.SetText(0, CTSTRING_F(MAGNET_CREATED_FOR, Text::toT(path)));
+				appendTextLine(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size)), true); 
+				hasher.get(); // reset the state
+			}
+		});
+	});
 
 }
 

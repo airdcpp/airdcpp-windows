@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Example Language" Author="AirDC++ Team" Version="2.40" Revision="1">
+<Language Name="Example Language" Author="AirDC++ Team" Version="2.41" Revision="1">
 	<Strings>
 		<String Name="AairdcppLanguageFile">EN_Example.xml</String>
 		<String Name="AairdcppLanguageVersion">1.00</String>
@@ -1741,5 +1741,8 @@ would you still like to load them?</String>
 		<String Name="UseDefault">Use default</String>
 		<String Name="GlobalSettingOverrides">Overrides for global settings</String>
 		<String Name="HasherX">Hasher #%d</String>
+		<String Name="CreatingMagnetFor">Creating magnet for a file %s...</String>
+		<String Name="MagnetCreatedFor">Magnet created for a file %s</String>
+		<String Name="HashingXLeft">Hashing %s, %s left</String>
 	</Strings>
 </Language>

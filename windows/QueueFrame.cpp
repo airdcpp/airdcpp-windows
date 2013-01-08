@@ -24,6 +24,7 @@
 #include "SearchFrm.h"
 #include "PrivateFrame.h"
 #include "LineDlg.h"
+#include "MainFrm.h"
 
 #include "../client/AirUtil.h"
 #include "../client/StringTokenizer.h"
@@ -1024,7 +1025,9 @@ void QueueFrame::removeSelectedDir() {
 		}
 	}
 
-	QueueManager::getInstance()->removeDir(curDir, bundles, moveFinished);
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		QueueManager::getInstance()->removeDir(curDir, bundles, moveFinished);
+	});
 }
 
 void QueueFrame::moveSelected() {
@@ -1127,14 +1130,15 @@ void QueueFrame::moveSelectedDir() {
 		
 		for(auto sourceBundle: bundles) {
 			if (!sourceBundle->isFileBundle()) {
-				string source = curDir;
-				if (AirUtil::isParentOrExact(curDir, sourceBundle->getTarget())) {
-					//we are moving the root bundle dir or some of it's parents
-					QueueManager::getInstance()->moveBundle(source, newDir, sourceBundle, moveFinished);
-				} else {
-					//we are moving a subfolder of a bundle
-					QueueManager::getInstance()->splitBundle(source, newDir, sourceBundle, moveFinished);
-				}
+				MainFrame::getMainFrame()->addThreadedTask([=] {
+					if (AirUtil::isParentOrExact(curDir, sourceBundle->getTarget())) {
+						//we are moving the root bundle dir or some of it's parents
+						QueueManager::getInstance()->moveBundle(curDir, newDir, sourceBundle, moveFinished);
+					} else {
+						//we are moving a subfolder of a bundle
+						QueueManager::getInstance()->splitBundle(curDir, newDir, sourceBundle, moveFinished);
+					}
+				});
 			} else {
 				//move queue items
 				QueueManager::getInstance()->moveFileBundle(sourceBundle, AirUtil::convertMovePath(sourceBundle->getTarget(), curDir, newDir));
@@ -1165,12 +1169,13 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		//BundleList bundles = dii->getBundles();
 		if (dii->getBundles().size() == 1) {
 			BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front().second->getToken());
-			string target = curDir;
-			if (isCurDir(b->getTarget())) {
-				QueueManager::getInstance()->moveBundle(target, newDir, b, true);
-			} else {
-				QueueManager::getInstance()->splitBundle(target, newDir, b, true);
-			}
+			MainFrame::getMainFrame()->addThreadedTask([=] {
+				if (isCurDir(b->getTarget())) {
+					QueueManager::getInstance()->moveBundle(curDir, newDir, b, true);
+				} else {
+					QueueManager::getInstance()->splitBundle(curDir, newDir, b, true);
+				}
+			});
 		}
 	}
 	return 0;

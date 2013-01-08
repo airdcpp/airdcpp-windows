@@ -287,7 +287,6 @@ private:
 	CComboBox ctrlFilterSel;
 	typedef TypedListViewCtrl<OnlineUser, IDC_USERS> CtrlUsers;
 	CtrlUsers ctrlUsers;
-	CStatusBarCtrl ctrlStatus;
 	
 	int statusSizes[4];
 	

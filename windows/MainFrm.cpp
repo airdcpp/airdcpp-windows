@@ -113,10 +113,15 @@ MainFrame::~MainFrame() {
 		FreeLibrary(user32lib);
 }
 
+void MainFrame::addThreadedTask(std::function<void ()> aF) {
+	threadedTasks.run(aF);
+}
+
 DWORD WINAPI MainFrame::stopper(void* p) {
 	MainFrame* mf = (MainFrame*)p;
 	HWND wnd, wnd2 = NULL;
 
+	mf->threadedTasks.wait();
 	while( (wnd=::GetWindow(mf->m_hWndMDIClient, GW_CHILD)) != NULL) {
 		if(wnd == wnd2)
 			Sleep(100);
@@ -1330,29 +1335,31 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 	return 0;
 }
 
-int MainFrame::run() {
+void MainFrame::getMagnetForFile() {
 	tstring file;
 	if(WinUtil::browseFile(file, m_hWnd, false, lastTTHdir) == IDOK) {
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_GRAYED);
-		Thread::setThreadPriority(Thread::LOW);
+		//Thread::setThreadPriority(Thread::LOW);
 
 		int64_t size = 0;
 		TTHValue tth;
 		try {
-			HashManager::getInstance()->getFileTTH(Text::fromT(file), false, tth, size);
+			HashManager::getInstance()->getFileTTH(Text::fromT(file), false, tth, size, closing);
+			if (closing)
+				return;
+
 			string magnetlink = WinUtil::makeMagnet(tth, Util::getFileName(Text::fromT(file)), size);
 
 			CInputBox ibox(m_hWnd);
 			ibox.DoModal(_T("Tiger Tree Hash"), file.c_str(), Text::toT(tth.toBase32()).c_str(), Text::toT(magnetlink).c_str());
 		} catch(...) { }
-		Thread::setThreadPriority(Thread::NORMAL);
+		//SetThreadPriority(NORMAL);
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_ENABLED);
 	}
-	return 0;
 }
 
 LRESULT MainFrame::onGetTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	Thread::start();
+	addThreadedTask([this] { getMagnetForFile(); });
 	return 0;
 }
 
