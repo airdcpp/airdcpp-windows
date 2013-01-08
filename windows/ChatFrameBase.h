@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <future>
+#include <ppl.h>
 
 #include "OMenu.h"
 #include "resource.h"
@@ -107,7 +107,7 @@ protected:
 	void getLineText(tstring& s);
 
 	bool cancelHashing;
-	std::future<void> hasher;
+	concurrency::task_group tasks;
 
 	CStatusBarCtrl ctrlStatus;
 private:

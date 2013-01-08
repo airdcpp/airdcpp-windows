@@ -50,10 +50,8 @@ ChatFrameBase::ChatFrameBase(FrameMessageBase* aFrameBase) : /*clientContainer(W
 ChatFrameBase::~ChatFrameBase() { }
 
 LRESULT ChatFrameBase::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	if (hasher.valid()) {
-		cancelHashing = true;
-		hasher.wait();
-	}
+	cancelHashing = true;
+	tasks.wait();
 
 	bHandled = FALSE;
 	return 0;
@@ -384,9 +382,6 @@ void ChatFrameBase::addMagnet(string&& path) {
 	if(!getClient())
 		return;
 
-	if (hasher.valid())
-		return;
-
 	//warn the user that nmdc share will be public access.
 	if((getUser() && getUser()->isSet(User::NMDC))) {
 		UINT bCheck = SETTING(NMDC_MAGNET_WARN) ? BST_UNCHECKED : BST_CHECKED;
@@ -397,7 +392,7 @@ void ChatFrameBase::addMagnet(string&& path) {
 	}
 
 	ctrlStatus.SetText(0, CTSTRING_F(CREATING_MAGNET_FOR, Text::toT(path)));
-	hasher = std::async([=] () -> void {
+	tasks.run([this, path] {
 		TTHValue tth;
 		int64_t size = 0;
 		try {
@@ -408,7 +403,6 @@ void ChatFrameBase::addMagnet(string&& path) {
 
 				MainFrame::getMainFrame()->callAsync([=] {
 					ctrlStatus.SetText(0, CTSTRING_F(HASHING_X_LEFT, Text::toT(aFileName) % Text::toT(Util::formatTime(aTimeLeft, true))));
-					//frame->addStatusLine(Text::toT("Hashing " + aFileName + ", " + Util::formatTime(aTimeLeft, true) + " left"));
 				});
 			});
 		} catch (const Exception& e) { 
@@ -422,8 +416,7 @@ void ChatFrameBase::addMagnet(string&& path) {
 		MainFrame::getMainFrame()->callAsync([=] {
 			if (!cancelHashing) {
 				ctrlStatus.SetText(0, CTSTRING_F(MAGNET_CREATED_FOR, Text::toT(path)));
-				appendTextLine(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size)), true); 
-				hasher.get(); // reset the state
+				appendTextLine(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size)), true);
 			}
 		});
 	});

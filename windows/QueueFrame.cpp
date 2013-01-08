@@ -1025,8 +1025,9 @@ void QueueFrame::removeSelectedDir() {
 		}
 	}
 
+	auto sourceDir = curDir;
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		QueueManager::getInstance()->removeDir(curDir, bundles, moveFinished);
+		QueueManager::getInstance()->removeDir(sourceDir, bundles, moveFinished);
 	});
 }
 
@@ -1130,13 +1131,14 @@ void QueueFrame::moveSelectedDir() {
 		
 		for(auto sourceBundle: bundles) {
 			if (!sourceBundle->isFileBundle()) {
+				auto sourceDir = curDir;
 				MainFrame::getMainFrame()->addThreadedTask([=] {
-					if (AirUtil::isParentOrExact(curDir, sourceBundle->getTarget())) {
+					if (AirUtil::isParentOrExact(sourceDir, sourceBundle->getTarget())) {
 						//we are moving the root bundle dir or some of it's parents
-						QueueManager::getInstance()->moveBundle(curDir, newDir, sourceBundle, moveFinished);
+						QueueManager::getInstance()->moveBundle(sourceDir, newDir, sourceBundle, moveFinished);
 					} else {
 						//we are moving a subfolder of a bundle
-						QueueManager::getInstance()->splitBundle(curDir, newDir, sourceBundle, moveFinished);
+						QueueManager::getInstance()->splitBundle(sourceDir, newDir, sourceBundle, moveFinished);
 					}
 				});
 			} else {
@@ -1169,11 +1171,12 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		//BundleList bundles = dii->getBundles();
 		if (dii->getBundles().size() == 1) {
 			BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front().second->getToken());
+			auto sourceDir = curDir;
 			MainFrame::getMainFrame()->addThreadedTask([=] {
 				if (isCurDir(b->getTarget())) {
-					QueueManager::getInstance()->moveBundle(curDir, newDir, b, true);
+					QueueManager::getInstance()->moveBundle(sourceDir, newDir, b, true);
 				} else {
-					QueueManager::getInstance()->splitBundle(curDir, newDir, b, true);
+					QueueManager::getInstance()->splitBundle(sourceDir, newDir, b, true);
 				}
 			});
 		}
