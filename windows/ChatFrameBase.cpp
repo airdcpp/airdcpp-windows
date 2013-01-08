@@ -354,16 +354,17 @@ LRESULT ChatFrameBase::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam
 	
 	nrFiles = DragQueryFile(drop, (UINT)-1, NULL, 0);
 	
+	StringList paths;
 	for(UINT i = 0; i < nrFiles; ++i){
 		if(DragQueryFile(drop, i, &buf[0], MAX_PATH)){
 			if(!PathIsDirectory(&buf[0])){
-				addMagnet(Text::fromT(buf).data());
+				paths.push_back(Text::fromT(buf).data());
 			}
 		}
 	}
-
 	DragFinish(drop);
 
+	addMagnet(paths);
 	return 0;
 }
 
@@ -373,12 +374,14 @@ LRESULT ChatFrameBase::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 	 tstring file;
 	 if(WinUtil::browseFile(file, /*m_hWnd*/ 0, false) == IDOK) {
-		 addMagnet(Text::fromT(file));
+		 StringList tmp;
+		 tmp.push_back(Text::fromT(file));
+		 addMagnet(tmp);
 	 }
 	 return 0;
  }
 
-void ChatFrameBase::addMagnet(string&& path) {
+void ChatFrameBase::addMagnet(const StringList& aPaths) {
 	if(!getClient())
 		return;
 
@@ -391,36 +394,51 @@ void ChatFrameBase::addMagnet(string&& path) {
 		SettingsManager::getInstance()->set(SettingsManager::NMDC_MAGNET_WARN, bCheck != BST_CHECKED);
 	}
 
-	ctrlStatus.SetText(0, CTSTRING_F(CREATING_MAGNET_FOR, Text::toT(path)));
-	tasks.run([this, path] {
-		TTHValue tth;
-		int64_t size = 0;
-		try {
-			HashManager::getInstance()->getFileTTH(path, true, tth, size, cancelHashing, [=] (int64_t aTimeLeft, const string& aFileName) -> void {
-				//update the statusbar
-				if (aTimeLeft == 0)
-					return;
+	setStatusText(aPaths.size() > 1 ? TSTRING_F(CREATING_MAGNET_FOR_X, aPaths.size()) : TSTRING_F(CREATING_MAGNET_FOR, Text::toT(aPaths.front())));
+	tasks.run([=] {
+		tstring ret;
+		int pos = 1;
+		for (auto& path: aPaths) {
+			TTHValue tth;
+			int64_t size = 0;
+			try {
+				HashManager::getInstance()->getFileTTH(path, true, tth, size, cancelHashing, [=] (int64_t aTimeLeft, const string& aFileName) -> void {
+					//update the statusbar
+					if (aTimeLeft == 0)
+						return;
 
-				MainFrame::getMainFrame()->callAsync([=] {
-					ctrlStatus.SetText(0, CTSTRING_F(HASHING_X_LEFT, Text::toT(aFileName) % Text::toT(Util::formatTime(aTimeLeft, true))));
+					MainFrame::getMainFrame()->callAsync([=] {
+						tstring status = TSTRING_F(HASHING_X_LEFT, Text::toT(aFileName) % Text::toT(Util::formatTime(aTimeLeft, true)));
+						if (aPaths.size() > 1) 
+							status += _T(" (") + Text::toLower(TSTRING(FILE)) + _T(" ") + Util::toStringW(pos) + _T("/") + Util::toStringW(aPaths.size()) + _T(")");
+						setStatusText(status);
+					});
 				});
-			});
-		} catch (const Exception& e) { 
-			LogManager::getInstance()->message(STRING(HASHING_FAILED) + " " + e.getError(), LogManager::LOG_ERROR);
-			return;
+			} catch (const Exception& e) { 
+				LogManager::getInstance()->message(STRING(HASHING_FAILED) + " " + e.getError(), LogManager::LOG_ERROR);
+				return;
+			}
+
+			if (!cancelHashing) {
+				bool useKey = getUser() && (!getUser()->isSet(User::BOT) || !getUser()->isSet(User::NMDC));
+				ShareManager::getInstance()->addTempShare((useKey ? getUser()->getCID().toBase32() : Util::emptyString), tth, path, size, getClient()->getShareProfile());
+			}
+			ret += Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size));
+			pos++;
 		}
 
-		bool useKey = getUser() && (!getUser()->isSet(User::BOT) || !getUser()->isSet(User::NMDC));
-		ShareManager::getInstance()->addTempShare((useKey ? getUser()->getCID().toBase32() : Util::emptyString), tth, path, size, getClient()->getShareProfile());
-		
 		MainFrame::getMainFrame()->callAsync([=] {
 			if (!cancelHashing) {
-				ctrlStatus.SetText(0, CTSTRING_F(MAGNET_CREATED_FOR, Text::toT(path)));
-				appendTextLine(Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size)), true);
+				setStatusText(aPaths.size() > 1 ? TSTRING_F(MAGNET_CREATED_FOR_X, aPaths.size()) : TSTRING_F(MAGNET_CREATED_FOR, Text::toT(aPaths.front())));
+				appendTextLine(ret, true);
 			}
 		});
 	});
 
+}
+
+void ChatFrameBase::setStatusText(const tstring& aLine) {
+	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str());
 }
 
 LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

@@ -103,7 +103,7 @@ void PrivateFrame::addClientLine(const tstring& aLine) {
 	if(!created) {
 		CreateEx(WinUtil::mdiClient);
 	}
-	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str());
+	setStatusText(aLine);
 	if (SETTING(BOLD_PM)) {
 		setDirty();
 	}
@@ -149,10 +149,10 @@ void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aU
 	}
 }
 
-void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool) noexcept {
+void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept {
 	if(aUser == replyTo.user) {
 		ctrlClient.setClient(nullptr);
-		addSpeakerTask(false);
+		addSpeakerTask(wentOffline ? false : true);
 	}
 }
 

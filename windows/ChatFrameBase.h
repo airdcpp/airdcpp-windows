@@ -96,7 +96,7 @@ protected:
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;		//can't use an iterator because StringList is a vector, and vector iterators become invalid after resizing
 
-	void addMagnet(string&& path);
+	void addMagnet(const StringList& aPaths);
 	void init(HWND aHWND, RECT rcDefault);
 
 	void appendTextLine(const tstring& aText, bool addSpace);
@@ -109,6 +109,7 @@ protected:
 	bool cancelHashing;
 	concurrency::task_group tasks;
 
+	void setStatusText(const tstring& aLine);
 	CStatusBarCtrl ctrlStatus;
 private:
 	FrameMessageBase* frame;

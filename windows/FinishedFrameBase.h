@@ -329,8 +329,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 		int i;
 		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 			FinishedItem *ii = ctrlList.getItemData(i);
-			if(ii != NULL)
-				::ShellExecute(NULL, NULL, Text::toT(Util::getFilePath(ii->getTarget())).c_str(), NULL, NULL, SW_SHOWNORMAL);
+			WinUtil::openFolder(Text::toT(Util::getFilePath(ii->getTarget())));
 		}
 		return 0;
 	}

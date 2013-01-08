@@ -1232,6 +1232,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				OMenu* previewMenu = fileMenu.getMenu();
 				OMenu* removeMenu = fileMenu.getMenu();
 				OMenu* readdMenu = fileMenu.getMenu();
+				OMenu* getListMenu = fileMenu.getMenu();
 
 				OMenu copyMenu;
 				copyMenu.CreatePopupMenu();
@@ -1261,7 +1262,8 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 						auto u = s.getUser();
 						auto target = ii->getTarget();
-						browseMenu->appendItem(nick, [=] { QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW); });
+						getListMenu->appendItem(nick, [=] { QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW); });
+						browseMenu->appendItem(nick, [=] { QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST); });
 						removeMenu->appendItem(nick, [=] { QueueManager::getInstance()->removeSource(target, u, QueueItem::Source::FLAG_REMOVED); });
 						removeAllMenu->appendItem(nick, [=]{ QueueManager::getInstance()->removeSource(u, QueueItem::Source::FLAG_REMOVED); });
 
@@ -1331,7 +1333,8 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
 				fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITY));
 
-				browseMenu->appendThis(TSTRING(GET_FILE_LIST), true);
+				browseMenu->appendThis(TSTRING(BROWSE_FILE_LIST), true);
+				getListMenu->appendThis(TSTRING(GET_FILE_LIST), true);
 				pmMenu->appendThis(TSTRING(SEND_PRIVATE_MESSAGE), true);
 				readdMenu->appendThis(TSTRING(READD_SOURCE), true);
 

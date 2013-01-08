@@ -1741,8 +1741,10 @@ would you still like to load them?</String>
 		<String Name="UseDefault">Use default</String>
 		<String Name="GlobalSettingOverrides">Overrides for global settings</String>
 		<String Name="HasherX">Hasher #%d</String>
-		<String Name="CreatingMagnetFor">Creating magnet for a file %s...</String>
-		<String Name="MagnetCreatedFor">Magnet created for a file %s</String>
+		<String Name="CreatingMagnetFor">Creating magnet link for a file %s...</String>
+		<String Name="MagnetCreatedFor">Magnet link was created for a file %s</String>
 		<String Name="HashingXLeft">Hashing %s, %s left</String>
+		<String Name="MagnetCreatedForX">Magnet links were created for %d files</String>
+		<String Name="CreatingMagnetForX">Creating magnet links for %d files...</String>
 	</Strings>
 </Language>

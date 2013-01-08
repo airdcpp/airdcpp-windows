@@ -1383,10 +1383,12 @@ void WinUtil::getContextMenuPos(CEdit& aEdit, POINT& aPt) {
 void WinUtil::openFolder(const tstring& file) {
 	if(file.empty() )
 		return;
-	if(!Util::fileExists(Text::fromT(file)))
-		return;
 
-	::ShellExecute(NULL, Text::toT("explore").c_str(), Text::toT(Util::FormatPath(Util::getFilePath(Text::fromT(file)))).c_str(), NULL, NULL, SW_SHOWNORMAL);
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		if(!Util::fileExists(Text::fromT(file)))
+			return;
+		::ShellExecute(NULL, Text::toT("explore").c_str(), Text::toT(Util::FormatPath(Util::getFilePath(Text::fromT(file)))).c_str(), NULL, NULL, SW_SHOWNORMAL);
+	});
 }
 void WinUtil::FlashWindow() {
 	if( GetForegroundWindow() != WinUtil::mainWnd ) {
