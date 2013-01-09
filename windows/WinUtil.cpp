@@ -265,9 +265,11 @@ void UserInfoBase::grant() {
 	}
 }
 void UserInfoBase::removeAll() {
-	if(getUser()) {
-		QueueManager::getInstance()->removeSource(getUser(), QueueItem::Source::FLAG_REMOVED);
-	}
+	MainFrame::getMainFrame()->addThreadedTask([=] { 
+		if(getUser()) {
+			QueueManager::getInstance()->removeSource(getUser(), QueueItem::Source::FLAG_REMOVED);
+		}
+	});
 }
 void UserInfoBase::grantHour() {
 	if(getUser()) {

@@ -1176,8 +1176,13 @@ void RichTextBox::handleDownload(const string& aTarget, QueueItem::Priority /*p*
 	if (!isRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
+		if (getUser() && ShareManager::getInstance()->isDirShared(aTarget, m.fsize) > 0 && 
+			MessageBox(CTSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+				return;
+		}
+
 		try {
-			QueueManager::getInstance()->addFile(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, Util::emptyString);
+			QueueManager::getInstance()->addFile(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, Util::emptyString, getUser() ? QueueItem::FLAG_PRIVATE : 0);
 		} catch (...) {}
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, aTargetType, true);

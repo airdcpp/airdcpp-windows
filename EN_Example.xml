@@ -1746,5 +1746,8 @@ would you still like to load them?</String>
 		<String Name="HashingXLeft">Hashing %s, %s left</String>
 		<String Name="MagnetCreatedForX">Magnet links were created for %d files</String>
 		<String Name="CreatingMagnetForX">Creating magnet links for %d files...</String>
+		<String Name="PmMagnetSharedWarning">The download destination %s is a shared directory. Files sent in private chat may contain sensitive information that you or the sender don't want to be made available for other user.
+
+Do you want to use this destination anyway?</String>
 	</Strings>
 </Language>

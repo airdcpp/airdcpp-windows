@@ -1073,7 +1073,10 @@ void QueueFrame::moveSelected() {
 				const QueueItemInfo* ii = ctrlQueue.getItemData(i);
 				ret.emplace_back(ii->getTarget(), Text::fromT(name) + Util::getFileName(ii->getTarget()));
 			}
-			QueueManager::getInstance()->moveFiles(ret);
+
+			MainFrame::getMainFrame()->addThreadedTask([=] { 
+				QueueManager::getInstance()->moveFiles(ret);
+			});
 		}
 	}
 }
@@ -1265,7 +1268,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 						getListMenu->appendItem(nick, [=] { QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW); });
 						browseMenu->appendItem(nick, [=] { QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST); });
 						removeMenu->appendItem(nick, [=] { QueueManager::getInstance()->removeSource(target, u, QueueItem::Source::FLAG_REMOVED); });
-						removeAllMenu->appendItem(nick, [=]{ QueueManager::getInstance()->removeSource(u, QueueItem::Source::FLAG_REMOVED); });
+						removeAllMenu->appendItem(nick, [=]{ MainFrame::getMainFrame()->addThreadedTask([=] { QueueManager::getInstance()->removeSource(u, QueueItem::Source::FLAG_REMOVED); }); });
 
 						if(s.getUser().user->isOnline()) {
 							pmMenu->appendItem(nick, [=] { PrivateFrame::openWindow(u); });
@@ -1276,9 +1279,11 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 					if (!sources.empty()) {
 						removeMenu->appendSeparator();
 						removeMenu->appendItem(TSTRING(ALL), [=] {
-							auto sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
-							for(auto& si: sources)
+							MainFrame::getMainFrame()->addThreadedTask([=] { 
+								auto sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
+								for(auto& si: sources)
 									QueueManager::getInstance()->removeSource(ii->getTarget(), si.getUser(), QueueItem::Source::FLAG_REMOVED);
+							});
 						});
 					}
 					
@@ -1460,9 +1465,11 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			if (!bundleSources.empty()) {
 				removeMenu->appendSeparator();
 				removeMenu->appendItem(TSTRING(ALL), [b] {
-					auto sources = move(QueueManager::getInstance()->getBundleSources(b));
-					for(auto& si: sources)
-						QueueManager::getInstance()->removeBundleSource(b, get<Bundle::SOURCE_USER>(si).user);
+					MainFrame::getMainFrame()->addThreadedTask([=] { 
+						auto sources = move(QueueManager::getInstance()->getBundleSources(b));
+						for(auto& si: sources)
+							QueueManager::getInstance()->removeBundleSource(b, get<Bundle::SOURCE_USER>(si).user);
+					});
 				});
 			}
 
@@ -1475,9 +1482,11 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			if (!badBundleSources.empty()) {
 				readdMenu->appendSeparator();
 				readdMenu->appendItem(TSTRING(ALL), [b] { 
-					auto sources = move(QueueManager::getInstance()->getBadBundleSources(b));
-					for(auto& si: sources)
-						QueueManager::getInstance()->readdBundleSource(b, get<Bundle::SOURCE_USER>(si));
+					MainFrame::getMainFrame()->addThreadedTask([=] { 
+						auto sources = move(QueueManager::getInstance()->getBadBundleSources(b));
+						for(auto& si: sources)
+							QueueManager::getInstance()->readdBundleSource(b, get<Bundle::SOURCE_USER>(si));
+					});
 				});
 			}
 		}
