@@ -24,7 +24,6 @@ class FolderTreeItemInfo
 public:
 	//Constructors / Destructors
 	FolderTreeItemInfo();
-	FolderTreeItemInfo(const FolderTreeItemInfo& ItemInfo);
 	~FolderTreeItemInfo() {};
 
 	//Member variables
@@ -33,6 +32,34 @@ public:
 	NETRESOURCE*	m_pNetResource;     //Used if this item is under Network Neighborhood
 	bool			m_bNetworkNode;     //Item is "Network Neighborhood" or is underneath it
 	bool			m_removed;			//Item for a folder which doesn't exist anymore
+};
+
+
+//class which manages enumeration of shares. This is used for determining 
+//if an item is shared or not
+class ShareEnumerator
+{
+public:
+	//Constructors / Destructors
+	ShareEnumerator();
+	~ShareEnumerator();
+
+	//Methods
+	void Refresh(); //Updates the internal enumeration list
+	bool IsShared(const tstring& sPath);
+
+protected:
+	//Defines
+	typedef NET_API_STATUS (WINAPI NT_NETSHAREENUM)(LPWSTR, DWORD, LPBYTE*, DWORD, LPDWORD, LPDWORD, LPDWORD);
+	typedef NET_API_STATUS (WINAPI NT_NETAPIBUFFERFREE)(LPVOID);
+	typedef NET_API_STATUS (WINAPI WIN9X_NETSHAREENUM)(const char FAR *, short, char FAR *, unsigned short, unsigned short FAR *, unsigned short FAR *);
+
+	//Data
+	HMODULE                  m_hNetApi;         //Handle to the net api dll
+	NT_NETSHAREENUM*         m_pNTShareEnum;    //NT function pointer for NetShareEnum
+	NT_NETAPIBUFFERFREE*     m_pNTBufferFree;   //NT function pointer for NetAPIBufferFree
+	SHARE_INFO_502*          m_pNTShareInfo;    //NT share info
+	DWORD                    m_dwShares;        //The number of shares enumerated
 };
 
 //Class which encapsulates access to the System image list which contains
@@ -55,49 +82,6 @@ private:
 	SystemImageList();
 };
 
-//Struct taken from svrapi.h as we cannot mix Win9x and Win NT net headers in one program
-#pragma pack(1)
-struct FolderTree_share_info_50 
-{
-	char			shi50_netname[LM20_NNLEN+1];    /* share name */
-	unsigned char 	shi50_type;						/* see below */
-	unsigned short	shi50_flags;					/* see below */
-	char FAR *		shi50_remark;                   /* ANSI comment string */
-	char FAR *		shi50_path;                     /* shared resource */
-	char			shi50_rw_password[SHPWLEN+1];   /* read-write password (share-level security) */
-	char			shi50_ro_password[SHPWLEN+1];   /* read-only password (share-level security) */
-};	/* share_info_50 */
-#pragma pack()
-
-//class which manages enumeration of shares. This is used for determining 
-//if an item is shared or not
-class ShareEnumerator
-{
-public:
-	//Constructors / Destructors
-	ShareEnumerator();
-	~ShareEnumerator();
-
-	//Methods
-	void Refresh(); //Updates the internal enumeration list
-	bool IsShared(const tstring& sPath);
-
-protected:
-	//Defines
-	typedef NET_API_STATUS (WINAPI NT_NETSHAREENUM)(LPWSTR, DWORD, LPBYTE*, DWORD, LPDWORD, LPDWORD, LPDWORD);
-	typedef NET_API_STATUS (WINAPI NT_NETAPIBUFFERFREE)(LPVOID);
-	typedef NET_API_STATUS (WINAPI WIN9X_NETSHAREENUM)(const char FAR *, short, char FAR *, unsigned short, unsigned short FAR *, unsigned short FAR *);
-
-	//Data
-	bool                     m_bWinNT;          //Are we running on NT
-	HMODULE                  m_hNetApi;         //Handle to the net api dll
-	NT_NETSHAREENUM*         m_pNTShareEnum;    //NT function pointer for NetShareEnum
-	NT_NETAPIBUFFERFREE*     m_pNTBufferFree;   //NT function pointer for NetAPIBufferFree
-	SHARE_INFO_502*          m_pNTShareInfo;    //NT share info
-	WIN9X_NETSHAREENUM*      m_pWin9xShareEnum; //Win9x function pointer for NetShareEnum
-	FolderTree_share_info_50* m_pWin9xShareInfo; //Win9x share info
-	DWORD                    m_dwShares;        //The number of shares enumerated
-};
 
 //Allowable bit mask flags in SetDriveHideFlags / GetDriveHideFlags
 const DWORD DRIVE_ATTRIBUTE_REMOVABLE   = 0x00000001;

@@ -1341,14 +1341,16 @@ void MainFrame::getMagnetForFile() {
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_GRAYED);
 		//Thread::setThreadPriority(Thread::LOW);
 
-		int64_t size = 0;
+		auto path = Text::fromT(file);
 		TTHValue tth;
 		try {
-			HashManager::getInstance()->getFileTTH(Text::fromT(file), false, tth, size, closing);
+			auto size = File::getSize(path);
+			auto sizeLeft = size;
+			HashManager::getInstance()->getFileTTH(path, size, false, tth, sizeLeft, closing);
 			if (closing)
 				return;
 
-			string magnetlink = WinUtil::makeMagnet(tth, Util::getFileName(Text::fromT(file)), size);
+			string magnetlink = WinUtil::makeMagnet(tth, Util::getFileName(path), size);
 
 			CInputBox ibox(m_hWnd);
 			ibox.DoModal(_T("Tiger Tree Hash"), file.c_str(), Text::toT(tth.toBase32()).c_str(), Text::toT(magnetlink).c_str());

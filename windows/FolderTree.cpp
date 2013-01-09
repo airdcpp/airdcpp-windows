@@ -22,39 +22,10 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 //Pull in the WNet Lib automatically
 #pragma comment(lib, "mpr.lib")
 
-FolderTreeItemInfo::FolderTreeItemInfo()
-{
-  m_pNetResource = NULL;
-  m_bNetworkNode = false;
+FolderTreeItemInfo::FolderTreeItemInfo() : m_pNetResource(nullptr), m_bNetworkNode(false) {
 }
 
-FolderTreeItemInfo::FolderTreeItemInfo(const FolderTreeItemInfo& ItemInfo)
-{
-  m_sFQPath       = ItemInfo.m_sFQPath;
-  m_sRelativePath = ItemInfo.m_sRelativePath;
-  m_bNetworkNode  = ItemInfo.m_bNetworkNode;
-  m_pNetResource = new NETRESOURCE;
-  if (ItemInfo.m_pNetResource)
-  {
-    //Copy the direct member variables of NETRESOURCE
-    CopyMemory(m_pNetResource, ItemInfo.m_pNetResource, sizeof(NETRESOURCE));
-
-    //Duplicate the strings which are stored in NETRESOURCE as pointers
-    if (ItemInfo.m_pNetResource->lpLocalName)
-		  m_pNetResource->lpLocalName	= _tcsdup(ItemInfo.m_pNetResource->lpLocalName);
-    if (ItemInfo.m_pNetResource->lpRemoteName)
-		  m_pNetResource->lpRemoteName = _tcsdup(ItemInfo.m_pNetResource->lpRemoteName);
-    if (ItemInfo.m_pNetResource->lpComment)
-		  m_pNetResource->lpComment	= _tcsdup(ItemInfo.m_pNetResource->lpComment);
-    if (ItemInfo.m_pNetResource->lpProvider)
-		  m_pNetResource->lpProvider	= _tcsdup(ItemInfo.m_pNetResource->lpProvider);
-  }
-  else
-    memzero(m_pNetResource, sizeof(NETRESOURCE));
-}
-
-SystemImageList::SystemImageList()
-{
+SystemImageList::SystemImageList() {
 	//Get the temp directory. This is used to then bring back the system image list
 	TCHAR pszTempDir[_MAX_PATH];
 	GetTempPath(_MAX_PATH, pszTempDir);
@@ -73,14 +44,12 @@ SystemImageList::SystemImageList()
 	//auto tmp = m_ImageList.AddIcon((HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_MAGNET), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR));
 }
 
-SystemImageList* SystemImageList::getInstance()
-{
+SystemImageList* SystemImageList::getInstance() {
 	static SystemImageList instance;
 	return &instance;
 }
 
-SystemImageList::~SystemImageList()
-{
+SystemImageList::~SystemImageList() {
 	//Detach from the image list to prevent problems on 95/98 where
 	//the system image list is shared across processes
 	m_ImageList.Detach();
@@ -90,38 +59,18 @@ ShareEnumerator::ShareEnumerator()
 {
 	//Set out member variables to defaults
 	m_pNTShareEnum = NULL;
-	m_pWin9xShareEnum = NULL;
 	m_pNTBufferFree = NULL;
 	m_pNTShareInfo = NULL;
-	m_pWin9xShareInfo = NULL;
-	m_pWin9xShareInfo = NULL;
 	m_hNetApi = NULL;
 	m_dwShares = 0;
 
-	//Determine if we are running Windows NT or Win9x
-	OSVERSIONINFO osvi;
-	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	m_bWinNT = (GetVersionEx(&osvi) && osvi.dwPlatformId == VER_PLATFORM_WIN32_NT);
-	if (m_bWinNT)
+	//Load up the NETAPI dll
+	m_hNetApi = LoadLibrary(_T("NETAPI32.dll"));
+	if (m_hNetApi)
 	{
-		//Load up the NETAPI dll
-		m_hNetApi = LoadLibrary(_T("NETAPI32.dll"));
-		if (m_hNetApi)
-		{
-		//Get the required function pointers
-		m_pNTShareEnum = (NT_NETSHAREENUM*) GetProcAddress(m_hNetApi, "NetShareEnum");
-		m_pNTBufferFree = (NT_NETAPIBUFFERFREE*) GetProcAddress(m_hNetApi, "NetApiBufferFree");
-		}
-	}
-	else
-	{
-		//Load up the NETAPI dll
-		m_hNetApi = LoadLibrary(_T("SVRAPI.dll"));
-		if (m_hNetApi)
-		{
-		//Get the required function pointer
-		m_pWin9xShareEnum = (WIN9X_NETSHAREENUM*) GetProcAddress(m_hNetApi, "NetShareEnum");
-		}
+	//Get the required function pointers
+	m_pNTShareEnum = (NT_NETSHAREENUM*) GetProcAddress(m_hNetApi, "NetShareEnum");
+	m_pNTBufferFree = (NT_NETAPIBUFFERFREE*) GetProcAddress(m_hNetApi, "NetApiBufferFree");
 	}
 
 	//Update the array of shares we know about
@@ -130,19 +79,13 @@ ShareEnumerator::ShareEnumerator()
 
 ShareEnumerator::~ShareEnumerator()
 {
-	if (m_bWinNT)
-	{
-		//Free the buffer if valid
-		if (m_pNTShareInfo)
+
+	//Free the buffer if valid
+	if (m_pNTShareInfo)
 		m_pNTBufferFree(m_pNTShareInfo);
-	}
-	else
-		//Free up the heap memory we have used
-			delete [] m_pWin9xShareInfo;
 
 	//Free the dll now that we are finished with it
-	if (m_hNetApi)
-	{
+	if (m_hNetApi) {
 		FreeLibrary(m_hNetApi);
 		m_hNetApi = NULL;
 	}
@@ -151,85 +94,25 @@ ShareEnumerator::~ShareEnumerator()
 void ShareEnumerator::Refresh()
 {
 	m_dwShares = 0;
-	if (m_bWinNT)
+	//Free the buffer if valid
+	if (m_pNTShareInfo)
+		m_pNTBufferFree(m_pNTShareInfo);
+
+	//Call the function to enumerate the shares
+	if (m_pNTShareEnum)
 	{
-		//Free the buffer if valid
-		if (m_pNTShareInfo)
-			m_pNTBufferFree(m_pNTShareInfo);
-
-		//Call the function to enumerate the shares
-		if (m_pNTShareEnum)
-		{
-			DWORD dwEntriesRead = 0;
-			m_pNTShareEnum(NULL, 502, (LPBYTE*) &m_pNTShareInfo, MAX_PREFERRED_LENGTH, &dwEntriesRead, &m_dwShares, NULL);
-		}
-	}
-	else
-	{
-		//Free the buffer if valid
-		if (m_pWin9xShareInfo)
-			delete [] m_pWin9xShareInfo;
-
-		//Call the function to enumerate the shares
-		if (m_pWin9xShareEnum)
-		{
-			//Start with a reasonably sized buffer
-			unsigned short cbBuffer = 1024;
-			bool bNeedMoreMemory = true;
-			bool bSuccess = false;
-			while (bNeedMoreMemory && !bSuccess)
-			{
-				unsigned short nTotalRead = 0;
-				m_pWin9xShareInfo = (FolderTree_share_info_50*) new BYTE[cbBuffer];
-				memzero(m_pWin9xShareInfo, cbBuffer);
-				unsigned short nShares = 0;
-				NET_API_STATUS nStatus = m_pWin9xShareEnum(NULL, 50, (char FAR *)m_pWin9xShareInfo, cbBuffer, (unsigned short FAR *)&nShares, (unsigned short FAR *)&nTotalRead);
-				if (nStatus == ERROR_MORE_DATA)
-				{
-					//Free up the heap memory we have used
-					delete [] m_pWin9xShareInfo;
-
-					//And double the size, ready for the next loop around
-					cbBuffer *= 2;
-				}
-				else if (nStatus == NERR_Success)
-				{
-					m_dwShares = nShares;
-					bSuccess = true;
-				}
-				else
-					bNeedMoreMemory = false;
-			}
-		}
+		DWORD dwEntriesRead = 0;
+		m_pNTShareEnum(NULL, 502, (LPBYTE*) &m_pNTShareInfo, MAX_PREFERRED_LENGTH, &dwEntriesRead, &m_dwShares, NULL);
 	}
 }
 
-bool ShareEnumerator::IsShared(const tstring& sPath)
-{
+bool ShareEnumerator::IsShared(const tstring& sPath) {
 	//Assume the item is not shared
 	bool bShared = false;
-
-	if (m_bWinNT)
-	{
-		if (m_pNTShareInfo)
-		{
-			for (DWORD i=0; i<m_dwShares && !bShared; i++)
-			{
-				tstring sShare(m_pNTShareInfo[i].shi502_path);
-				bShared = (stricmp(sPath, sShare) == 0) && ((m_pNTShareInfo[i].shi502_type == STYPE_DISKTREE) || ((m_pNTShareInfo[i].shi502_type == STYPE_PRINTQ)));
-			}
-		}
-	}
-	else
-	{
-		if (m_pWin9xShareInfo)
-		{
-			for (DWORD i=0; i<m_dwShares && !bShared; i++)
-			{
-				tstring sShare(Text::toT(m_pWin9xShareInfo[i].shi50_path));
-				bShared = (stricmp(sPath, sShare) == 0) &&
-						((m_pWin9xShareInfo[i].shi50_type == STYPE_DISKTREE) || ((m_pWin9xShareInfo[i].shi50_type == STYPE_PRINTQ)));
-			}
+	if (m_pNTShareInfo) {
+		for (DWORD i=0; i<m_dwShares && !bShared; i++) {
+			tstring sShare(m_pNTShareInfo[i].shi502_path);
+			bShared = (stricmp(sPath, sShare) == 0) && ((m_pNTShareInfo[i].shi502_type == STYPE_DISKTREE) || ((m_pNTShareInfo[i].shi502_type == STYPE_PRINTQ)));
 		}
 	}
 
@@ -280,8 +163,7 @@ void FolderTree::PopulateTree()
 	Expand(m_hMyComputerRoot, TVE_EXPAND );
 }
 
-void FolderTree::Refresh()
-{
+void FolderTree::Refresh() {
 	//Just in case this will take some time
 	//CWaitCursor wait;
 
@@ -335,6 +217,36 @@ void FolderTree::Refresh()
 		//Display all the drives
 		if (!m_bShowMyComputer)
 			DisplayDrives(TVI_ROOT, false, shared);
+
+		//Display homegroup
+		/*if (m_bDisplayNetwork) {
+			FolderTreeItemInfo* pItem = new FolderTreeItemInfo;
+			//pItem-> = true;
+			int nIcon = 0;
+			int nSelIcon = 0;
+
+			//Get the localized name and correct icons for "Network Neighborhood"
+			LPITEMIDLIST lpNNPidl;
+			//SHGetKnownFolderIDList(FOLDERID_HomeGroup, 0, NULL, &lpNNPidl);
+
+			if (SUCCEEDED(SHGetKnownFolderIDList(FOLDERID_HomeGroup, 0, NULL, &lpNNPidl))) {
+				SHFILEINFO sfi;
+				if (SHGetFileInfo((LPCTSTR)lpNNPidl, 0, &sfi, sizeof(sfi), SHGFI_PIDL | SHGFI_DISPLAYNAME))
+				pItem->m_sRelativePath = sfi.szDisplayName;
+				nIcon = GetIconIndex(lpNNPidl);
+				nSelIcon = GetSelIconIndex(lpNNPidl);
+
+				//Free up the pidl now that we are finished with it
+				//ASSERT(m_pMalloc);
+				m_pMalloc->Free(lpNNPidl);
+				m_pMalloc->Release();
+			}
+
+			//Add it to the tree control
+			m_hHomegroupRoot = InsertFileItem(TVI_ROOT, pItem, false, nIcon, nSelIcon, false, shared);
+			SetHasSharedChildren(m_hHomegroupRoot, shared);
+			//checkRemovedDirs(Util::emptyStringT, TVI_ROOT, shared);
+		}*/
 
 		//Also add network neighborhood if requested to do so
 		if (m_bDisplayNetwork) {
@@ -410,7 +322,7 @@ int FolderTree::GetIconIndex(HTREEITEM hItem)
 {
 	TV_ITEM tvi;
 	memzero(&tvi, sizeof(TV_ITEM));
-	tvi.mask = TVIF_IMAGE;
+	tvi.mask = TVIF_HANDLE | TVIF_IMAGE;
 	tvi.hItem = hItem;
 	if (GetItem(&tvi))
 		return tvi.iImage;
@@ -447,7 +359,7 @@ int FolderTree::GetSelIconIndex(HTREEITEM hItem)
 {
 	TV_ITEM tvi;
 	memzero(&tvi, sizeof(TV_ITEM));
-	tvi.mask = TVIF_SELECTEDIMAGE;
+	tvi.mask = TVIF_HANDLE | TVIF_SELECTEDIMAGE;
 	tvi.hItem = hItem;
 	if (GetItem(&tvi))
 		return tvi.iSelectedImage;
@@ -638,16 +550,16 @@ void FolderTree::DisplayPath(const tstring &sPath, HTREEITEM hParent, bool bUseS
 
 void FolderTree::checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent, ShareDirInfo::list& sharedDirs) {
 	string parentPath = Text::fromT(aParentPath);
-	for(auto i = sharedDirs.begin(); i != sharedDirs.end(); ++i) {
-		if ((*i)->found)
+	for(auto sd: sharedDirs) {
+		if (sd->found)
 			continue;
 
-		auto dir = Util::getParentDir((*i)->path);
+		auto dir = Util::getParentDir(sd->path);
 		if (dir == parentPath) {
 			//this should have been inserted
 			FolderTreeItemInfo* pItem = new FolderTreeItemInfo;
-			pItem->m_sFQPath = Text::toT((*i)->path);
-			pItem->m_sRelativePath = Text::toT(Util::getLastDir((*i)->path));
+			pItem->m_sFQPath = Text::toT(sd->path);
+			pItem->m_sRelativePath = Text::toT(Util::getLastDir(sd->path));
 			pItem->m_removed = true;
 
 			tstring sLabel;
@@ -952,8 +864,7 @@ bool FolderTree::CanDisplayDrive(const tstring &sDrive)
 	return bDisplay;
 }
 
-bool FolderTree::IsShared(const tstring &sPath)
-{
+bool FolderTree::IsShared(const tstring &sPath) {
 	//Defer all the work to the share enumerator class
 	return theSharedEnumerator.IsShared(sPath);
 }
@@ -971,7 +882,7 @@ void FolderTree::SetHasPlusButton(HTREEITEM hItem, bool bHavePlus)
 	//Remove all the child items from the parent
 	TV_ITEM tvItem;
 	tvItem.hItem = hItem;
-	tvItem.mask = TVIF_CHILDREN;
+	tvItem.mask = TVIF_HANDLE | TVIF_CHILDREN;
 	tvItem.cChildren = bHavePlus;
 	SetItem(&tvItem);
 }
@@ -1239,8 +1150,7 @@ bool FolderTree::EnumNetwork(HTREEITEM hParent)
 					pItem->m_sRelativePath = pItem->m_sRelativePath.substr(nPos+1);
 
 				//Now add the item into the control
-				InsertFileItem(hParent, pItem, m_bShowSharedUsingDifferentIcon, GetIconIndex(pItem->m_sFQPath),
-							GetSelIconIndex(pItem->m_sFQPath), TRUE, shared);
+				InsertFileItem(hParent, pItem, m_bShowSharedUsingDifferentIcon, GetIconIndex(pItem->m_sFQPath), GetSelIconIndex(pItem->m_sFQPath), false, shared);
 			}
 			else if (lpnrDrv[i].dwDisplayType == RESOURCEDISPLAYTYPE_SERVER)
 			{
@@ -1530,20 +1440,14 @@ bool FolderTree::GetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::list&
 	else
         return false;
 
-	for(auto i = aShared.begin(); i != aShared.end(); ++i)
-	{
-		if((*i)->path.size() > searchStr.size() + startPos)
-		{
-			if(stricmp((*i)->path.substr(startPos, searchStr.size()), searchStr) == 0) {
+	for(auto sd: aShared) {
+		if(sd->path.size() > searchStr.size() + startPos) {
+			if(stricmp(sd->path.substr(startPos, searchStr.size()), searchStr) == 0) {
 				if(searchStr.size() <= 3) {
-					//if(Util::fileExists(i->path + PATH_SEPARATOR))
-						return true;
+					return true;
 				} else {
-					if((*i)->path.substr(searchStr.size()).substr(0,1) == "\\") {
-						//if(Util::fileExists(i->path + PATH_SEPARATOR))
-							return true;
-					} else
-						return false;
+					//check that we have path separator next
+					return sd->path[searchStr.size()] == '\\';
 				}
 			}
 		}

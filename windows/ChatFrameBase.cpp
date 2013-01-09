@@ -396,13 +396,17 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 
 	setStatusText(aPaths.size() > 1 ? TSTRING_F(CREATING_MAGNET_FOR_X, aPaths.size()) : TSTRING_F(CREATING_MAGNET_FOR, Text::toT(aPaths.front())));
 	tasks.run([=] {
+		int64_t sizeLeft = 0;
+		for(auto& path: aPaths)
+			sizeLeft += File::getSize(path);
+
 		tstring ret;
 		int pos = 1;
 		for (auto& path: aPaths) {
 			TTHValue tth;
-			int64_t size = 0;
+			auto size = File::getSize(path);
 			try {
-				HashManager::getInstance()->getFileTTH(path, true, tth, size, cancelHashing, [=] (int64_t aTimeLeft, const string& aFileName) -> void {
+				HashManager::getInstance()->getFileTTH(path, size, true, tth, sizeLeft, cancelHashing, [=] (int64_t aTimeLeft, const string& aFileName) -> void {
 					//update the statusbar
 					if (aTimeLeft == 0)
 						return;
