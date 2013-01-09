@@ -26,13 +26,14 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 #include "MenuBaseHandlers.h"
+#include "RichTextBox.h"
 
 #include "../client/FavoriteManager.h"
 #include "../client/File.h"
 #include "../client/OnlineUser.h"
 
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::FAVORITE_USERS, IDC_FAVUSERS>,
-	private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, private SettingsManagerListener {
+	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, private SettingsManagerListener {
 public:
 	
 	UsersFrame() : closed(false), startup(true) { }
@@ -42,6 +43,7 @@ public:
 		
 	typedef MDITabChildWindowImpl<UsersFrame> baseClass;
 	typedef UserInfoBaseHandler<UsersFrame> uibBase;
+	typedef CSplitterImpl<UsersFrame> splitBase;
 
 	BEGIN_MSG_MAP(UsersFrame)
 		NOTIFY_HANDLER(IDC_USERS, LVN_GETDISPINFO, ctrlUsers.onGetDispInfo)
@@ -59,6 +61,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_EDIT, onEdit)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		CHAIN_MSG_MAP(uibBase)
+		CHAIN_MSG_MAP(splitBase)
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 		
@@ -94,7 +97,6 @@ private:
 		COLUMN_HUB,
 		COLUMN_SEEN,
 		COLUMN_DESCRIPTION,
-		COLUMN_CID,
 		COLUMN_LAST
 	};
 
@@ -131,7 +133,10 @@ private:
 	CStatusBarCtrl ctrlStatus;
 		
 	TypedListViewCtrl<UserInfo, IDC_USERS> ctrlUsers;
-	CImageList images;	
+	CImageList images;
+	RichTextBox ctrlInfo;
+
+	void updateInfoText(const UserInfo* ui);
 
 	bool closed;
 	

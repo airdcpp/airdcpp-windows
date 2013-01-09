@@ -326,10 +326,10 @@ void PropPageTextStyles::TextStyleSettings::LoadSettings() {
 void PropPageTextStyles::TextStyleSettings::SaveSettings() {
 	settings->set( m_iBackColor, (int) crBackColor);
 	settings->set( m_iForeColor, (int) crTextColor);
-	BOOL boBold = ( ( dwEffects & CFE_BOLD ) == CFE_BOLD );
-	settings->set( m_iBold, (int) boBold);
-	BOOL boItalic = ( ( dwEffects & CFE_ITALIC ) == CFE_ITALIC );
-	settings->set( m_iItalic, (int) boItalic);
+	bool boBold = ( ( dwEffects & CFE_BOLD ) == CFE_BOLD );
+	settings->set( m_iBold, boBold);
+	bool boItalic = ( ( dwEffects & CFE_ITALIC ) == CFE_ITALIC );
+	settings->set( m_iItalic, boItalic);
 }
 
 void PropPageTextStyles::TextStyleSettings::EditBackColor() {

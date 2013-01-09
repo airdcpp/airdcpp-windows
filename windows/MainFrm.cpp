@@ -651,7 +651,7 @@ HWND MainFrame::createToolbar() {
 			}
 		} else { //default ones are .ico
 			int i = 0;
-			int size = SETTING(TB_IMAGE_SIZE);
+			const int size = SETTING(TB_IMAGE_SIZE);
 			int buttonsCount = sizeof(ToolbarButtons) / sizeof(ToolbarButtons[0]);
 			ToolbarImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, buttonsCount+1);
 			ToolbarImagesHot.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, buttonsCount+1);
@@ -725,7 +725,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 			auto pos = 0;
 			for(int i = STATUS_SHARED; i < STATUS_SHUTDOWN; i++) {
 				
-				int w = WinUtil::getTextWidth(str[pos], ctrlStatus.m_hWnd);
+				const int w = WinUtil::getTextWidth(str[pos], ctrlStatus.m_hWnd);
 				
 				if(i == STATUS_SLOTS) {
 					if(str[pos][0] == '0') // a hack, do this some other way.
@@ -1075,8 +1075,8 @@ LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 
 	if(idCtrl == STATUS_LASTLINES+POPUP_UID) {
 		lastLines.clear();
-		for(TStringIter i = lastLinesList.begin(); i != lastLinesList.end(); ++i) {
-			lastLines += *i;
+		for(const auto& i : lastLinesList) {
+			lastLines += i;
 			lastLines += _T("\r\n");
 		}
 		if(lastLines.size() > 2) {
@@ -1092,14 +1092,8 @@ LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 
 void MainFrame::autoConnect(const FavoriteHubEntry::List& fl) {
 		
-	int left = SETTING(OPEN_FIRST_X_HUBS);
-	auto& fh = FavoriteManager::getInstance()->getFavoriteHubs();
-	if(left > static_cast<int>(fh.size())) {
-		left = fh.size();
-	}
 	missedAutoConnect = false;
-	for(auto i = fl.begin(); i != fl.end(); ++i) {
-		FavoriteHubEntry* entry = *i;
+	for(const auto entry: fl) {
 		if(entry->getConnect()) {
  			if(!SETTING(NICK).empty()) {
 				RecentHubEntry r;
@@ -1320,7 +1314,7 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 	tstring site;
 	bool isFile = false;
 	switch(wID) {
-	case IDC_HELP_HOMEPAGE: site = Text::toT(UpdateManager::getInstance()->links.homepage); break;
+		case IDC_HELP_HOMEPAGE: site = Text::toT(UpdateManager::getInstance()->links.homepage); break;
 		case IDC_HELP_GUIDES: site = Text::toT(UpdateManager::getInstance()->links.guides); break;
 		case IDC_HELP_DISCUSS: site = Text::toT(UpdateManager::getInstance()->links.discuss); break;
 		case IDC_HELP_CUSTOMIZE: site = Text::toT(UpdateManager::getInstance()->links.customize); break;
@@ -1578,7 +1572,7 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 	});
 }
 
-LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
 	OMenu menu;
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 	CRect DLrect;
@@ -1629,6 +1623,7 @@ LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 			ClientManager::getInstance()->infoUpdated();
 		}
 	}
+	bHandled = TRUE;
 	return 0;
 }
 
@@ -1641,7 +1636,7 @@ LRESULT MainFrame::OnViewToolBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	rebar.ShowBand(nBandIndex, bVisible);
 	UISetCheck(ID_VIEW_TOOLBAR, bVisible);
 	UpdateLayout();
-	SettingsManager::getInstance()->set(SettingsManager::SHOW_TOOLBAR, bVisible);
+	SettingsManager::getInstance()->set(SettingsManager::SHOW_TOOLBAR, bVisible ? true : false);
 	return 0;
 }
 
@@ -1654,7 +1649,7 @@ LRESULT MainFrame::OnViewWinampBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	rebar.ShowBand(nBandIndex, bVisible);
 	UISetCheck(ID_TOGGLE_TOOLBAR, bVisible);
 	UpdateLayout();
-	SettingsManager::getInstance()->set(SettingsManager::SHOW_WINAMP_CONTROL, bVisible);
+	SettingsManager::getInstance()->set(SettingsManager::SHOW_WINAMP_CONTROL, bVisible ? true : false);
 	return 0;
 }
 LRESULT MainFrame::OnViewTBStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -1666,7 +1661,7 @@ LRESULT MainFrame::OnViewTBStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	rebar.ShowBand(nBandIndex, bVisible);
 	UISetCheck(ID_TOGGLE_TBSTATUS, bVisible);
 	UpdateLayout();
-	SettingsManager::getInstance()->set(SettingsManager::SHOW_TBSTATUS, bVisible);
+	SettingsManager::getInstance()->set(SettingsManager::SHOW_TBSTATUS, bVisible ? true : false);
 	return 0;
 }
 LRESULT MainFrame::OnLockTB(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
@@ -1678,7 +1673,7 @@ LRESULT MainFrame::OnLockTB(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 
 	UISetCheck(ID_LOCK_TB, locked);
 	UpdateLayout();
-	SettingsManager::getInstance()->set(SettingsManager::LOCK_TB, locked);
+	SettingsManager::getInstance()->set(SettingsManager::LOCK_TB, locked ? true : false);
 	return 0;
 }
 
@@ -1755,7 +1750,7 @@ LRESULT MainFrame::OnViewStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	::ShowWindow(m_hWndStatusBar, bVisible ? SW_SHOWNOACTIVATE : SW_HIDE);
 	UISetCheck(ID_VIEW_STATUS_BAR, bVisible);
 	UpdateLayout();
-	SettingsManager::getInstance()->set(SettingsManager::SHOW_STATUSBAR, bVisible);
+	SettingsManager::getInstance()->set(SettingsManager::SHOW_STATUSBAR, bVisible ? true : false);
 	return 0;
 }
 
@@ -1771,7 +1766,7 @@ LRESULT MainFrame::OnViewTransferView(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	}
 	UISetCheck(ID_VIEW_TRANSFER_VIEW, bVisible);
 	UpdateLayout();
-	SettingsManager::getInstance()->set(SettingsManager::SHOW_TRANSFERVIEW, bVisible);
+	SettingsManager::getInstance()->set(SettingsManager::SHOW_TRANSFERVIEW, bVisible ? true : false);
 	return 0;
 }
 

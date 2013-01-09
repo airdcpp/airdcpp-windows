@@ -48,7 +48,6 @@ PropPage::TextItem MiscPage::texts[] = {
 
 PropPage::Item MiscPage::items[] = {
 	{ IDC_FAV_DL_SPEED, SettingsManager::FAV_DL_SPEED, PropPage::T_INT },
-	{ IDC_OPEN_FIRST_X_HUB, SettingsManager::OPEN_FIRST_X_HUBS, PropPage::T_INT },
 	{ IDC_WINAMP, SettingsManager::WINAMP_FORMAT, PropPage::T_STR },
 	{ IDC_PASSWD_PROTECT_CHCKBOX, SettingsManager::PASSWD_PROTECT, PropPage::T_BOOL },
 	{ IDC_PASSWD_PROTECT_TRAY_CHCKBOX, SettingsManager::PASSWD_PROTECT_TRAY, PropPage::T_BOOL },

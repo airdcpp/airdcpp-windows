@@ -212,7 +212,7 @@ void PropPage::write(HWND page, Item const* items, ListItem* listItems /* = NULL
 		int i;
 		for(i = 0; listItems[i].setting != 0; i++) {
 			dcassert(listItems[i].setting >= SettingsManager::BOOL_FIRST && listItems[i].setting <= SettingsManager::BOOL_LAST);
-			SettingsManager::getInstance()->set(SettingsManager::BoolSetting(listItems[i].setting), ctrl.GetCheckState(i));
+			SettingsManager::getInstance()->set(SettingsManager::BoolSetting(listItems[i].setting), ctrl.GetCheckState(i) ? true : false);
 		}
 
 		ctrl.Detach();

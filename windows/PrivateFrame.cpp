@@ -64,18 +64,20 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	init(m_hWnd, rcDefault);
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
-
-	updateOnlineStatus();
+	
+	bool userBot = replyTo.user && replyTo.user->isSet(User::BOT);
+	userOffline = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
+	userOnline = userBot ? ResourceLoader::loadIcon(IDI_BOT) : ResourceLoader::loadIcon(IDR_PRIVATE);
 	created = true;
 
 	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
 	readLog();
-	bool userBot = replyTo.user && replyTo.user->isSet(User::BOT);
+
 	WinUtil::SetIcon(m_hWnd, userBot ? IDI_BOT : IDR_PRIVATE);
-	userOffline = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
-	userOnline = userBot ? ResourceLoader::loadIcon(IDI_BOT) : ResourceLoader::loadIcon(IDR_PRIVATE);
+	//add the updateonlinestatus in the wnd message queue so the frame and tab can finish creating first.
+	PostMessage(WM_SPEAKER, USER_UPDATED);
 
 	bHandled = FALSE;
 	return 1;
@@ -102,6 +104,7 @@ LRESULT PrivateFrame::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 void PrivateFrame::addClientLine(const tstring& aLine) {
 	if(!created) {
 		CreateEx(WinUtil::mdiClient);
+		//updateOnlineStatus();
 	}
 	setStatusText(aLine);
 	if (SETTING(BOLD_PM)) {
@@ -328,6 +331,7 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 		p = new PrivateFrame(replyTo, c);
 		frames[replyTo] = p;
 		p->CreateEx(WinUtil::mdiClient);
+		//p->updateOnlineStatus();
 	} else {
 		p = i->second;
 		p->updateFrameOnlineStatus(replyTo, c); 
@@ -427,6 +431,8 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 			WinUtil::hiddenCreateEx(this);
 		else
 			CreateEx(WinUtil::mdiClient);
+
+		//updateOnlineStatus();
 	}
 
 	CRect r;

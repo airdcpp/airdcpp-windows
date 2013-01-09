@@ -216,7 +216,7 @@ LRESULT FulHighlightPage::onPreset(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 LRESULT FulHighlightPage::onMenuCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	if(wParam == 0) {
-		for(int i = 2; i < 6; ++i) {
+		for(int i = 0; i < 3; ++i) {
 			addPreset(i);
 		}
 	} else {
@@ -228,21 +228,21 @@ LRESULT FulHighlightPage::onMenuCommand(UINT /*uMsg*/, WPARAM wParam, LPARAM /*l
 void FulHighlightPage::addPreset(int preset) {
 	ColorSettings cs;
 	switch(preset){
-			case 2:
+		case 0:
 			cs.setContext(HighlightManager::CONTEXT_CHAT);
 			cs.setMatch(_T("$Re:^\\[.*?\\] (\\*{3} Joins: .*)"));
 			cs.setHasFgColor(true);
 			cs.setBold(true);
 			cs.setFgColor(RGB(153,153,51));
 			break;
-		case 3:
+		case 1:
 			cs.setContext(HighlightManager::CONTEXT_CHAT);
 			cs.setMatch(_T("$Re:^\\[.*?\\] (\\*{3} Parts: .*)"));
 			cs.setHasFgColor(true);
 			cs.setBold(true);
 			cs.setFgColor(RGB(51, 102, 154));
 			break;
-		case 4:
+		case 2:
 			cs.setContext(HighlightManager::CONTEXT_CHAT);
 			cs.setMatch(_T("$Re:") + Text::toT(AirUtil::getReleaseRegLong(true)));
 			cs.setHasFgColor(true);

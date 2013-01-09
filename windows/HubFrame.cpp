@@ -472,7 +472,7 @@ bool HubFrame::updateUser(const UserTask& u) {
 			updateUserList(u.onlineUser);
 		return true;
 	} else {
-		int pos = ctrlUsers.findItem(u.onlineUser.get());
+		const int pos = ctrlUsers.findItem(u.onlineUser.get());
 
 		if(pos != -1) {
 			TCHAR buf[255];
@@ -913,10 +913,10 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 	if(focus == ctrlClient.m_hWnd) {
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
-		int i = ctrlClient.CharFromPos(pt);
+		const int i = ctrlClient.CharFromPos(pt);
 		int line = ctrlClient.LineFromChar(i);
-		int c = i - ctrlClient.LineIndex(line);
-		int len = ctrlClient.LineLength(i);
+		const int c = i - ctrlClient.LineIndex(line);
+		const int len = ctrlClient.LineLength(i);
 		if(len < 3) {
 			return 0;
 		}
@@ -1607,13 +1607,41 @@ LRESULT HubFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL
 		handleTab(WinUtil::isShift());
 		return 0;
 	}
+	if(uMsg == WM_PASTE) {
+		if(!IsClipboardFormatAvailable(CF_TEXT))
+			return 0;
+		if(!::OpenClipboard(WinUtil::mainWnd))
+			return 0;
+	}
 	
 	if(!SETTING(FILTER_ENTER) || (wParam == VK_RETURN)) {
-		TCHAR *buf = new TCHAR[ctrlFilter.GetWindowTextLength()+1];
-		ctrlFilter.GetWindowText(buf, ctrlFilter.GetWindowTextLength()+1);
-		filter = buf;
-		delete[] buf;
-	
+		if(uMsg == WM_PASTE) {
+			HGLOBAL hglb = GetClipboardData(CF_TEXT); 
+			if(hglb != NULL) { 
+				char* lptstr = (char*)GlobalLock(hglb); 
+				if(lptstr != NULL) {
+					string tmp(lptstr);
+					filter = Text::toT(tmp);
+					GlobalUnlock(hglb);
+				}
+			}
+			CloseClipboard();
+		}else if(uMsg == WM_CUT) {
+			int begin, end;
+			ctrlFilter.GetSel(begin, end);
+			tstring buf;
+			buf.resize(ctrlFilter.GetWindowTextLength());
+			buf.resize(ctrlFilter.GetWindowText(&buf[0], ctrlFilter.GetWindowTextLength() + 1));
+			buf.erase(begin, end);
+			filter = buf;
+		}else if(uMsg == WM_CLEAR) {
+			filter.clear();
+		} else {
+			TCHAR *buf = new TCHAR[ctrlFilter.GetWindowTextLength()+1];
+			ctrlFilter.GetWindowText(buf, ctrlFilter.GetWindowTextLength()+1);
+			filter = buf;
+			delete[] buf;
+		}
 		updateUserList();
 		updateUsers = true;
 	}

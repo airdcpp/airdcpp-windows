@@ -25,10 +25,55 @@
 #include "LineDlg.h"
 #include "HubFrame.h"
 #include "TextFrame.h"
+#include "../client/ClientManager.h"
 
-int UsersFrame::columnIndexes[] = { COLUMN_NICK, COLUMN_NICKS, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION, COLUMN_CID };
-int UsersFrame::columnSizes[] = { 150, 200, 300, 150, 200, 200 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::AUTO_GRANT, ResourceManager::ONLINE_NICKS, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION, ResourceManager::CID };
+int UsersFrame::columnIndexes[] = { COLUMN_NICK, COLUMN_NICKS, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION };
+int UsersFrame::columnSizes[] = { 150, 200, 300, 150, 200 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::AUTO_GRANT, ResourceManager::ONLINE_NICKS, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION };
+
+struct FieldName {
+	string field;
+	tstring name;
+	tstring (*convert)(const string &val);
+};
+static tstring formatBytes(const string& val) {
+	return Text::toT(Util::formatBytes(val));
+}
+
+static tstring formatSpeed(const string& val) {
+	return Text::toT(boost::str(boost::format("%1%/s") % Util::formatBytes(val)));
+}
+
+static const FieldName fields[] =
+{
+	{ "NI", _T("Nick: "), &Text::toT },
+	{ "AW", _T("Away: "), &Text::toT },
+	{ "DE", _T("Description: "), &Text::toT },
+	{ "EM", _T("E-Mail: "), &Text::toT },
+	{ "SS", _T("Shared: "), &formatBytes },
+	{ "SF", _T("Shared files: "), &Text::toT },
+	{ "US", _T("Upload speed: "), &formatSpeed },
+	{ "DS", _T("Download speed: "), &formatSpeed },
+	{ "SL", _T("Total slots: "), &Text::toT },
+	{ "FS", _T("Free slots: "), &Text::toT },
+	{ "HN", _T("Hubs (normal): "), &Text::toT },
+	{ "HR", _T("Hubs (registered): "), &Text::toT },
+	{ "HO", _T("Hubs (op): "), &Text::toT },
+	{ "I4", _T("IP (v4): "), &Text::toT },
+	{ "I6", _T("IP (v6): "), &Text::toT },
+	//{ "U4", _T("Search port (v4): "), &Text::toT },
+	//{ "U6", _T("Search port (v6): "), &Text::toT },
+	//{ "SU", _T("Features: "), &Text::toT },
+	{ "VE", _T("Application version: "), &Text::toT },
+	{ "AP", _T("Application: "), &Text::toT },
+	{ "ID", _T("CID: "), &Text::toT },
+	//{ "KP", _T("TLS Keyprint: "), &Text::toT },
+	{ "CO", _T("Connection: "), &Text::toT },
+	//{ "CT", _T("Client type: "), &Text::toT },
+	{ "TA", _T("Tag: "), &Text::toT },
+	{ "", _T(""), 0 }
+};
+
 
 LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -39,6 +84,17 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_USERS);
 	ctrlUsers.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 	
+	ctrlInfo.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE, WS_EX_CLIENTEDGE);
+	ctrlInfo.Subclass();
+	ctrlInfo.SetReadOnly(TRUE);
+	ctrlInfo.SetFont(WinUtil::font);
+	ctrlInfo.SetBackgroundColor(WinUtil::bgColor); 
+	ctrlInfo.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
+
+	SetSplitterPanes(ctrlUsers.m_hWnd, ctrlInfo.m_hWnd);
+	m_nProportionalPos = SETTING(FAV_USERS_SPLITTER_POS);
+	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
+
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
 	images.AddIcon(ResourceLoader::loadIcon(IDR_PRIVATE, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDR_PRIVATE_OFF, 16));
@@ -141,6 +197,7 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		
 	CRect rc = rect;
 	ctrlUsers.MoveWindow(rc);
+	SetSplitterRect(rc);
 }
 
 LRESULT UsersFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -174,6 +231,15 @@ LRESULT UsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 	if(!startup && l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
 		FavoriteManager::getInstance()->setAutoGrant(ctrlUsers.getItemData(l->iItem)->user, ctrlUsers.GetCheckState(l->iItem) != FALSE);
  	}
+	 if ( (l->uChanged & LVIF_STATE) && (l->uNewState & LVIS_SELECTED) != (l->uOldState & LVIS_SELECTED) ) {
+		if (l->uNewState & LVIS_SELECTED){
+			if(l->iItem != -1) {
+				updateInfoText(ctrlUsers.getItemData(l->iItem));
+			}
+		} else { //deselected
+			ctrlInfo.SetWindowText(_T(""));
+		}
+	 }
   	return 0;
 }
 
@@ -203,6 +269,28 @@ LRESULT UsersFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	}
 	return 0;
 }
+void UsersFrame::updateInfoText(const UserInfo* ui){
+	vector<Identity> idents = ClientManager::getInstance()->getIdentities(ui->getUser());
+	if(!idents.empty()) {
+		auto info = idents[0].getInfo();
+		for(size_t i = 1; i < idents.size(); ++i) {
+			for(auto& j: idents[i].getInfo()) {
+				info[j.first] = j.second;
+			}
+		}
+		tstring tmp = _T("\r\n");
+		tmp += _T("User Information: \r\n");
+		for(auto f = fields; !f->field.empty(); ++f) {
+			auto i = info.find(f->field);
+			if(i != info.end()) {
+				tmp += f->name + f->convert(i->second) + _T("\r\n");
+				info.erase(i);
+			}
+		}
+		ctrlInfo.SetWindowText(tmp.c_str());
+	} else
+		ctrlInfo.SetWindowText(_T(""));
+}
 
 void UsersFrame::addUser(const FavoriteUser& aUser) {
 	int i = ctrlUsers.insertItem(new UserInfo(aUser), 0);
@@ -219,6 +307,7 @@ void UsersFrame::updateUser(const UserPtr& aUser) {
 			if(aUser->isOnline()) {
 				ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 0, 0, 0, NULL);
 				ui->columns[COLUMN_NICKS] = WinUtil::getNicks(aUser, Util::emptyString);
+				ui->columns[COLUMN_HUB] = WinUtil::getHubNames(aUser, Util::emptyString).first;
 			} else {
 				ui->columns[COLUMN_NICKS] =  TSTRING(OFFLINE);
 				ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 1, 0, 0, NULL);
@@ -262,6 +351,7 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			SettingsManager::getInstance()->set(SettingsManager::USERS_TOP, (rc.top > 0 ? rc.top : 0));
 			SettingsManager::getInstance()->set(SettingsManager::USERS_LEFT, (rc.left > 0 ? rc.left : 0));
 			SettingsManager::getInstance()->set(SettingsManager::USERS_RIGHT, (rc.right > 0 ? rc.right : 0));
+			SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_SPLITTER_POS, m_nProportionalPos);
 		}
 		WinUtil::saveHeaderOrder(ctrlUsers, SettingsManager::USERSFRAME_ORDER, 
 			SettingsManager::USERSFRAME_WIDTHS, COLUMN_LAST, columnIndexes, columnSizes);
@@ -281,7 +371,6 @@ void UsersFrame::UserInfo::update(const FavoriteUser& u) {
 	columns[COLUMN_HUB] = user.user->isOnline() ? WinUtil::getHubNames(u.getUser(), Util::emptyString).first : Text::toT(u.getUrl());
 	columns[COLUMN_SEEN] = user.user->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", u.getLastSeen()));
 	columns[COLUMN_DESCRIPTION] = Text::toT(u.getDescription());
-	columns[COLUMN_CID] = Text::toT(u.getUser()->getCID().toBase32());
 }
 
 LRESULT UsersFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
