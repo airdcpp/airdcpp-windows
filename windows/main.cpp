@@ -324,7 +324,10 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	WinUtil::splash = unique_ptr<SplashWindow>(new SplashWindow());
 	(*WinUtil::splash)("Starting up");
 
-	startup([&](const string& str) { (*WinUtil::splash)(str); });
+	startup(
+		[&](const string& str) { (*WinUtil::splash)(str); },
+		[&](const string& str) { ::MessageBox(WinUtil::splash->getHWND(), Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK); }
+	);
 	
 
 	if(SETTING(PASSWD_PROTECT)) {
@@ -380,7 +383,6 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	dcassert(WinUtil::splash);
 	shutdown([&](const string& str) { (*WinUtil::splash)(str); });
-	WinUtil::splash.reset();
 
 	WinUtil::runPendingUpdate();
 	return nRet;
@@ -457,7 +459,6 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 				//append the passed params (but leave out the update commands...)
 				argv++;
 				checkParams();
-				WinUtil::splash.reset();
 
 				//start the updated instance
 				if (!startElevated) {

@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <future>
+#include <ppltasks.h>
 
 #include "CSplitterEx.h"
 #include "FlatTabCtrl.h"
@@ -187,6 +187,7 @@ public:
 	}
 	
 private:
+	concurrency::task<void> startupTask;
 	enum {
 		COLUMN_FIRST,
 		COLUMN_TARGET = COLUMN_FIRST,

@@ -100,18 +100,16 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlShowTree.SetCheck(showTree);
 	showTreeContainer.SubclassWindow(ctrlShowTree.m_hWnd);
 
-//	removeMenu.AppendMenu(MF_STRING, IDC_REMOVE_SOURCE, CTSTRING(ALL));
-//	removeMenu.AppendMenu(MF_SEPARATOR);
-
-//	readdMenu.AppendMenu(MF_STRING, IDC_READD, CTSTRING(ALL));
-//	readdMenu.AppendMenu(MF_SEPARATOR);
-
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
 
-	auto queue = QueueManager::getInstance()->getQueue();
-	addQueueList(queue);
+	QueueManager::getInstance()->readLockedOperation([this](const QueueItem::StringMap& qsm) { addQueueList(qsm); });
+	//auto queue = QueueManager::getInstance()->getQueue();
+	//addQueueList(queue);
+	//concurrency::reader_writer_lock
+	//startupTask.
+
 	QueueManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);

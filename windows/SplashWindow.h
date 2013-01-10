@@ -36,6 +36,8 @@ public:
 	virtual ~SplashWindow();
 
 	void operator()(const string& status);
+
+	HWND getHWND();
 private:
 	void loadImage();
 	tstring title;

@@ -1353,7 +1353,12 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 		updateAuthor();
 		WinUtil::parseMagnetUri(Text::toT(cl.url), move(getMagnetSource()));
 	} else {
-		WinUtil::openLink(Text::toT(cl.url));
+		//the url regex also detects web links without any protocol part
+		auto link = cl.url;
+		if (link.find(':') == string::npos)
+			link = "http://" + link;
+
+		WinUtil::openLink(Text::toT(link));
 	}
 
 	return 1;

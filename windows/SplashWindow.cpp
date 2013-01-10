@@ -69,6 +69,10 @@ SplashWindow::~SplashWindow() {
 	dummy.DestroyWindow();
 }
 
+HWND SplashWindow::getHWND() {
+	return splash.m_hWnd;
+}
+
 void SplashWindow::operator()(const string& status) {
 	// Get some information
 	HDC dc = GetDC(splash.m_hWnd);

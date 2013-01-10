@@ -496,7 +496,7 @@ HWND MainFrame::createTBStatusBar() {
 
 
 void MainFrame::showPortsError(const string& port) {
-	MessageBox(Text::toT(str(boost::format(STRING(PORT_BYSY)) % port)).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
+	::MessageBox(WinUtil::splash->getHWND(), Text::toT(str(boost::format(STRING(PORT_BYSY)) % port)).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
 	//MessageBox(CTSTRING_F(PORT_BYSY, port), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
 }
 
@@ -2049,7 +2049,7 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 	//report errors if any
 	if( error != Util::emptyStringT) {
 		error += _T("Check Your User Privileges or try running AirDC++ as administrator. \r\n");
-		MessageBox((error.c_str()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
+		::MessageBox(WinUtil::splash->getHWND(), (error.c_str()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
 	} /*else if(ready) { //dont need this but leave it for now.
 		LogManager::getInstance()->message("Test write to AirDC++ common folders succeeded.", LogManager::LOG_WARNING);
 	}*/
