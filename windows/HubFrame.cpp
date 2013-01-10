@@ -250,15 +250,13 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 		client->password(Text::fromT(param));
 		waitingForPW = false;
 	} else if( stricmp(cmd.c_str(), _T("showjoins")) == 0 ) {
-		client->get(HubSettings::ShowJoins) = !client->get(HubSettings::ShowJoins);
-		if(client->get(HubSettings::ShowJoins)) {
+		if(client->changeBoolHubSetting(HubSettings::ShowJoins)) {
 			status = TSTRING(JOIN_SHOWING_ON);
 		} else {
 			status = TSTRING(JOIN_SHOWING_OFF);
 		}
 	} else if( stricmp(cmd.c_str(), _T("favshowjoins")) == 0 ) {
-		client->get(HubSettings::FavShowJoins) = !client->get(HubSettings::FavShowJoins);
-		if(client->get(HubSettings::FavShowJoins)) {
+		if(client->changeBoolHubSetting(HubSettings::FavShowJoins)) {
 			status = TSTRING(FAV_JOIN_SHOWING_ON);
 		} else {
 			status = TSTRING(FAV_JOIN_SHOWING_OFF);
@@ -1097,21 +1095,7 @@ LRESULT HubFrame::onOpenMyList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 }
 
 LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	/*FavoriteHubEntry *fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
-
-	if(showchaticon){
-		if(fhe)
-			fhe->setChatNotify(false);
-
-		showchaticon = false;
-	}else{
-		if(fhe)
-			fhe->setChatNotify(true);
-
-		showchaticon = true;
-	}*/
-
-	client->get(HubSettings::ChatNotify) = !client->get(HubSettings::ChatNotify);
+	client->changeBoolHubSetting(HubSettings::ChatNotify);
 	return 0;
 }
 
