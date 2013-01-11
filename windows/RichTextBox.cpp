@@ -1355,7 +1355,7 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	} else {
 		//the url regex also detects web links without any protocol part
 		auto link = cl.url;
-		if (link.find(':') == string::npos)
+		if (cl.type == ChatLink::TYPE_URL && link.find(':') == string::npos)
 			link = "http://" + link;
 
 		WinUtil::openLink(Text::toT(link));
