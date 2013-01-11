@@ -42,6 +42,7 @@
 #include "SDCPage.h"
 #include "UserListColours.h"
 #include "NetworkPage.h"
+#include "ProxyPage.h"
 #include "WindowsPage.h"
 #include "PriorityPage.h"
 #include "EncryptionPage.h"
@@ -67,6 +68,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = new NetworkPage(s);
 	pages[n++] = new SpeedPage(s);
 	pages[n++] = new LimitPage(s);
+	pages[n++] = new ProxyPage(s);
 	pages[n++] = new DownloadPage(s);
 	pages[n++] = new LocationsPage(s);
 	pages[n++] = new AVIPreview(s);	

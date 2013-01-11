@@ -48,7 +48,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_FH_CONN, CTSTRING(FAVORITE_HUB_CONNECTION));
 	SetDlgItemText(IDC_DEFAULT, CTSTRING(DEFAULT));
 	SetDlgItemText(IDC_ACTIVE, CTSTRING(SETTINGS_DIRECT));
-	SetDlgItemText(IDC_PASSIVE, CTSTRING(SETTINGS_FIREWALL_PASSIVE));
+	SetDlgItemText(IDC_PASSIVE, CTSTRING(SETTINGS_PASSIVE));
 	SetDlgItemText(IDC_STEALTH, CTSTRING(STEALTH_MODE));
 	SetDlgItemText(IDC_FAV_NO_PM, CTSTRING(FAV_NO_PM));
 	SetDlgItemText(IDC_SHOW_JOIN, CTSTRING(FAV_SHOW_JOIN));
@@ -139,9 +139,9 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	auto conn = entry->get(HubSettings::Connection);
 	if(conn == -1)
 		CheckRadioButton(IDC_ACTIVE, IDC_DEFAULT, IDC_DEFAULT);
-	else if(conn == SettingsManager::INCOMING_DIRECT)
+	else if(conn == SettingsManager::INCOMING_ACTIVE)
 		CheckRadioButton(IDC_ACTIVE, IDC_DEFAULT, IDC_ACTIVE);
-	else if(conn == SettingsManager::INCOMING_FIREWALL_PASSIVE)
+	else if(conn == SettingsManager::INCOMING_PASSIVE)
 		CheckRadioButton(IDC_ACTIVE, IDC_DEFAULT, IDC_PASSIVE);
 
 	fixControls();
@@ -301,9 +301,9 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 
 		int	ct = -1;
 		if(IsDlgButtonChecked(IDC_ACTIVE))
-			ct = SettingsManager::INCOMING_DIRECT;
+			ct = SettingsManager::INCOMING_ACTIVE;
 		else if(IsDlgButtonChecked(IDC_PASSIVE))
-			ct = SettingsManager::INCOMING_FIREWALL_PASSIVE;
+			ct = SettingsManager::INCOMING_PASSIVE;
 
 		entry->get(HubSettings::Connection) = ct;
 

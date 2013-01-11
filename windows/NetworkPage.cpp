@@ -44,68 +44,46 @@ NetworkPage::~NetworkPage() {
 }
 
 PropPage::TextItem NetworkPage::texts[] = {
-		{ IDC_CONNECTION_DETECTION,			ResourceManager::CONNECTION_DETECTION		},
-	{ IDC_DIRECT, ResourceManager::SETTINGS_DIRECT },
-	{ IDC_DIRECT_OUT, ResourceManager::SETTINGS_DIRECT },
-	{ IDC_FIREWALL_UPNP, ResourceManager::SETTINGS_FIREWALL_UPNP },
-	{ IDC_FIREWALL_NAT, ResourceManager::SETTINGS_FIREWALL_NAT },
-	{ IDC_FIREWALL_PASSIVE, ResourceManager::SETTINGS_FIREWALL_PASSIVE },
+	{ IDC_CONNECTION_DETECTION,			ResourceManager::CONNECTION_DETECTION		},
+	{ IDC_ACTIVE, ResourceManager::SETTINGS_ACTIVE },
+	{ IDC_ACTIVE_UPNP, ResourceManager::SETTINGS_ACTIVE_UPNP },
+	{ IDC_PASSIVE, ResourceManager::SETTINGS_PASSIVE },
 	{ IDC_OVERRIDE, ResourceManager::SETTINGS_OVERRIDE },
-	{ IDC_SOCKS5, ResourceManager::SETTINGS_SOCKS5 }, 
 	{ IDC_SETTINGS_PORTS, ResourceManager::SETTINGS_PORTS },
 	{ IDC_SETTINGS_IP, ResourceManager::SETTINGS_EXTERNAL_IP },
 	{ IDC_SETTINGS_PORT_TCP, ResourceManager::SETTINGS_TCP_PORT },
 	{ IDC_SETTINGS_PORT_UDP, ResourceManager::SETTINGS_UDP_PORT },
 	{ IDC_SETTINGS_PORT_TLS, ResourceManager::SETTINGS_TLS_PORT },
-	{ IDC_SETTINGS_SOCKS5_IP, ResourceManager::SETTINGS_SOCKS5_IP },
-	{ IDC_SETTINGS_SOCKS5_PORT, ResourceManager::SETTINGS_SOCKS5_PORT },
-	{ IDC_SETTINGS_SOCKS5_USERNAME, ResourceManager::SETTINGS_SOCKS5_USERNAME },
-	{ IDC_SETTINGS_SOCKS5_PASSWORD, ResourceManager::PASSWORD },
-	{ IDC_SOCKS_RESOLVE, ResourceManager::SETTINGS_SOCKS5_RESOLVE },
 	{ IDC_SETTINGS_INCOMING, ResourceManager::SETTINGS_INCOMING },
-	{ IDC_SETTINGS_OUTGOING, ResourceManager::SETTINGS_OUTGOING },
 	{ IDC_SETTINGS_BIND_ADDRESS, ResourceManager::SETTINGS_BIND_ADDRESS },
 	{ IDC_SETTINGS_BIND_ADDRESS_HELP, ResourceManager::SETTINGS_BIND_ADDRESS_HELP },
 	{ IDC_IPUPDATE, ResourceManager::UPDATE_IP },
 	{ IDC_GETIP, ResourceManager::GET_IP },
 	{ IDC_NATT,	ResourceManager::ALLOW_NAT_TRAVERSAL },
-	{ IDC_SETTINGS_HTTP_PROXY, ResourceManager::SETTINGS_HTTP_PROXY },
+	{ IDC_SETTINGS_MANUAL_CONFIG, ResourceManager::SETTINGS_MANUAL_CONFIG },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item NetworkPage::items[] = {
-		{ IDC_CONNECTION_DETECTION,	SettingsManager::AUTO_DETECT_CONNECTION,	PropPage::T_BOOL	},
+	{ IDC_CONNECTION_DETECTION,	SettingsManager::AUTO_DETECT_CONNECTION,	PropPage::T_BOOL	},
 	{ IDC_EXTERNAL_IP,	SettingsManager::EXTERNAL_IP,	PropPage::T_STR }, 
 	{ IDC_PORT_TCP,		SettingsManager::TCP_PORT,		PropPage::T_INT }, 
 	{ IDC_PORT_UDP,		SettingsManager::UDP_PORT,		PropPage::T_INT }, 
 	{ IDC_PORT_TLS,		SettingsManager::TLS_PORT,		PropPage::T_INT },
 	{ IDC_OVERRIDE,		SettingsManager::NO_IP_OVERRIDE, PropPage::T_BOOL },
-	{ IDC_SOCKS_SERVER, SettingsManager::SOCKS_SERVER,	PropPage::T_STR },
-	{ IDC_SOCKS_PORT,	SettingsManager::SOCKS_PORT,	PropPage::T_INT },
-	{ IDC_SOCKS_USER,	SettingsManager::SOCKS_USER,	PropPage::T_STR },
-	{ IDC_SOCKS_PASSWORD, SettingsManager::SOCKS_PASSWORD, PropPage::T_STR },
-	{ IDC_SOCKS_RESOLVE, SettingsManager::SOCKS_RESOLVE, PropPage::T_BOOL },
 	{ IDC_BIND_ADDRESS, SettingsManager::BIND_ADDRESS, PropPage::T_STR },
 	{ IDC_IPUPDATE, SettingsManager::IP_UPDATE, PropPage::T_BOOL },
 	{ IDC_NATT,	SettingsManager::ALLOW_NAT_TRAVERSAL, PropPage::T_BOOL },
-	{ IDC_PROXY, SettingsManager::HTTP_PROXY, PropPage::T_STR },
 	{ 0, 0, PropPage::T_END }
 };
 
 void NetworkPage::write()
 {
 	TCHAR tmp[1024];
-	GetDlgItemText(IDC_SOCKS_SERVER, tmp, 1024);
-	tstring x = tmp;
-	tstring::size_type i;
-
-	while((i = x.find(' ')) != string::npos)
-		x.erase(i, 1);
-	SetDlgItemText(IDC_SOCKS_SERVER, x.c_str());
-
 	GetDlgItemText(IDC_SERVER, tmp, 1024);
-	x = tmp;
+	tstring x = tmp;
 
+	tstring::size_type i;
 	while((i = x.find(' ')) != string::npos)
 		x.erase(i, 1);
 
@@ -114,27 +92,15 @@ void NetworkPage::write()
 	PropPage::write((HWND)(*this), items);
 
 	// Set connection active/passive
-	int ct = SettingsManager::INCOMING_DIRECT;
+	int ct = SettingsManager::INCOMING_ACTIVE;
 
-	if(IsDlgButtonChecked(IDC_FIREWALL_UPNP))
-		ct = SettingsManager::INCOMING_FIREWALL_UPNP;
-	else if(IsDlgButtonChecked(IDC_FIREWALL_NAT))
-		ct = SettingsManager::INCOMING_FIREWALL_NAT;
-	else if(IsDlgButtonChecked(IDC_FIREWALL_PASSIVE))
-		ct = SettingsManager::INCOMING_FIREWALL_PASSIVE;
+	if(IsDlgButtonChecked(IDC_ACTIVE_UPNP))
+		ct = SettingsManager::INCOMING_ACTIVE_UPNP;
+	else if(IsDlgButtonChecked(IDC_PASSIVE))
+		ct = SettingsManager::INCOMING_PASSIVE;
 
 	if(SETTING(INCOMING_CONNECTIONS) != ct) {
 		settings->set(SettingsManager::INCOMING_CONNECTIONS, ct);
-	}
-
-	ct = SettingsManager::OUTGOING_DIRECT;
-	
-	if(IsDlgButtonChecked(IDC_SOCKS5))
-		ct = SettingsManager::OUTGOING_SOCKS5;
-
-	if(SETTING(OUTGOING_CONNECTIONS) != ct) {
-		settings->set(SettingsManager::OUTGOING_CONNECTIONS, ct);
-		Socket::socksUpdated();
 	}
 }
 
@@ -142,13 +108,12 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 {
 	PropPage::translate((HWND)(*this), texts);
 	
-	::EnableWindow(GetDlgItem(IDC_FIREWALL_UPNP), FALSE);
+	::EnableWindow(GetDlgItem(IDC_ACTIVE_UPNP), FALSE);
 	switch(SETTING(INCOMING_CONNECTIONS)) {
-		case SettingsManager::INCOMING_DIRECT: CheckDlgButton(IDC_DIRECT, BST_CHECKED); break;
-		case SettingsManager::INCOMING_FIREWALL_UPNP: CheckDlgButton(IDC_FIREWALL_UPNP, BST_CHECKED); break;
-		case SettingsManager::INCOMING_FIREWALL_NAT: CheckDlgButton(IDC_FIREWALL_NAT, BST_CHECKED); break;
-		case SettingsManager::INCOMING_FIREWALL_PASSIVE: CheckDlgButton(IDC_FIREWALL_PASSIVE, BST_CHECKED); break;
-		default: CheckDlgButton(IDC_DIRECT, BST_CHECKED); break;
+		case SettingsManager::INCOMING_ACTIVE: CheckDlgButton(IDC_ACTIVE, BST_CHECKED); break;
+		case SettingsManager::INCOMING_ACTIVE_UPNP: CheckDlgButton(IDC_ACTIVE_UPNP, BST_CHECKED); break;
+		case SettingsManager::INCOMING_PASSIVE: CheckDlgButton(IDC_PASSIVE, BST_CHECKED); break;
+		default: CheckDlgButton(IDC_ACTIVE, BST_CHECKED); break;
 	}
 
 	switch(SETTING(OUTGOING_CONNECTIONS)) {
@@ -161,65 +126,43 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	fixControls();
 
-	desc.Attach(GetDlgItem(IDC_SOCKS_SERVER));
-	desc.LimitText(250);
-	desc.Detach();
-	desc.Attach(GetDlgItem(IDC_SOCKS_PORT));
-	desc.LimitText(5);
-	desc.Detach();
-	desc.Attach(GetDlgItem(IDC_SOCKS_USER));
-	desc.LimitText(250);
-	desc.Detach();
-	desc.Attach(GetDlgItem(IDC_SOCKS_PASSWORD));
-	desc.LimitText(250);
-	desc.Detach();
-
 	BindCombo.Attach(GetDlgItem(IDC_BIND_ADDRESS));
-	//BindCombo.AddString(_T("0.0.0.0"));
 	getAddresses();
-	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(SETTING(BIND_ADDRESS)).c_str()));
-	
-	if(BindCombo.GetCurSel() == -1) {
+
+	auto cur = bindAddresses.find(SETTING(BIND_ADDRESS));
+	if (cur == bindAddresses.end()) {
 		BindCombo.AddString(Text::toT(SETTING(BIND_ADDRESS)).c_str());
-		BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(SETTING(BIND_ADDRESS)).c_str()));
+		bindAddresses.emplace(SETTING(BIND_ADDRESS), Util::emptyString);
 	}
+	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(SETTING(BIND_ADDRESS)).c_str()));
 
 	return TRUE;
 }
 
 void NetworkPage::fixControls() {
 	BOOL auto_detect = IsDlgButtonChecked(IDC_CONNECTION_DETECTION) == BST_CHECKED;
-	BOOL direct = IsDlgButtonChecked(IDC_DIRECT) == BST_CHECKED;
-	BOOL upnp = IsDlgButtonChecked(IDC_FIREWALL_UPNP) == BST_CHECKED;
-	BOOL nat = IsDlgButtonChecked(IDC_FIREWALL_NAT) == BST_CHECKED;
+	BOOL direct = IsDlgButtonChecked(IDC_ACTIVE) == BST_CHECKED;
+	BOOL upnp = IsDlgButtonChecked(IDC_ACTIVE_UPNP) == BST_CHECKED;
 	BOOL nat_traversal = IsDlgButtonChecked(IDC_NATT) == BST_CHECKED;
 
-	::EnableWindow(GetDlgItem(IDC_DIRECT), !auto_detect);
-	::EnableWindow(GetDlgItem(IDC_FIREWALL_UPNP), !auto_detect);
-	::EnableWindow(GetDlgItem(IDC_FIREWALL_NAT), !auto_detect);
-	::EnableWindow(GetDlgItem(IDC_FIREWALL_PASSIVE), !auto_detect);
+	::EnableWindow(GetDlgItem(IDC_ACTIVE), !auto_detect);
+	::EnableWindow(GetDlgItem(IDC_ACTIVE_UPNP), !auto_detect);
+	::EnableWindow(GetDlgItem(IDC_PASSIVE), !auto_detect);
 	::EnableWindow(GetDlgItem(IDC_SETTINGS_IP), !auto_detect);
 	::EnableWindow(GetDlgItem(IDC_BIND_ADDRESS), !auto_detect);
 
-	::EnableWindow(GetDlgItem(IDC_EXTERNAL_IP), !auto_detect && (direct || upnp || nat || nat_traversal));
-	::EnableWindow(GetDlgItem(IDC_OVERRIDE), !auto_detect && (direct || upnp || nat || nat_traversal));
+	::EnableWindow(GetDlgItem(IDC_EXTERNAL_IP), !auto_detect && (direct || upnp || nat_traversal));
+	::EnableWindow(GetDlgItem(IDC_OVERRIDE), !auto_detect && (direct || upnp || nat_traversal));
 
-	::EnableWindow(GetDlgItem(IDC_PORT_TCP), !auto_detect && (upnp || nat));
-	::EnableWindow(GetDlgItem(IDC_PORT_UDP), !auto_detect && (upnp || nat));
-	::EnableWindow(GetDlgItem(IDC_PORT_TLS), !auto_detect && (upnp || nat));
-	::EnableWindow(GetDlgItem(IDC_NATT), !auto_detect && !direct && !upnp && !nat); // for passive settings only
+	::EnableWindow(GetDlgItem(IDC_PORT_TCP), !auto_detect && upnp);
+	::EnableWindow(GetDlgItem(IDC_PORT_UDP), !auto_detect && upnp);
+	::EnableWindow(GetDlgItem(IDC_PORT_TLS), !auto_detect && upnp);
+	::EnableWindow(GetDlgItem(IDC_NATT), !auto_detect && !direct && !upnp); // for passive settings only
 
 
 
-	::EnableWindow(GetDlgItem(IDC_IPUPDATE),!auto_detect && (direct || upnp || nat || nat_traversal));
-	::EnableWindow(GetDlgItem(IDC_GETIP),!auto_detect && ( direct || upnp || nat || nat_traversal));
-
-	BOOL socks = IsDlgButtonChecked(IDC_SOCKS5);
-	::EnableWindow(GetDlgItem(IDC_SOCKS_SERVER), socks);
-	::EnableWindow(GetDlgItem(IDC_SOCKS_PORT), socks);
-	::EnableWindow(GetDlgItem(IDC_SOCKS_USER), socks);
-	::EnableWindow(GetDlgItem(IDC_SOCKS_PASSWORD), socks);
-	::EnableWindow(GetDlgItem(IDC_SOCKS_RESOLVE), socks);
+	::EnableWindow(GetDlgItem(IDC_IPUPDATE),!auto_detect && (direct || upnp || nat_traversal));
+	::EnableWindow(GetDlgItem(IDC_GETIP),!auto_detect && ( direct || upnp || nat_traversal));
 
 }
 
@@ -233,22 +176,21 @@ void NetworkPage::getAddresses() {
 		dwStatus = GetAdaptersInfo(AdapterInfo, &dwBufLen);		
 	}
 
-	OrderedStringSet addresses;
 	if(dwStatus == ERROR_SUCCESS) {
 		PIP_ADAPTER_INFO pAdapterInfo = AdapterInfo;
 		while (pAdapterInfo) {
 			IP_ADDR_STRING* pIpList = &(pAdapterInfo->IpAddressList);
 			while (pIpList) {
-				addresses.insert(pIpList->IpAddress.String);
+				bindAddresses.emplace(pIpList->IpAddress.String, Util::emptyString /*pAdapterInfo->AdapterName*/);
 				pIpList = pIpList->Next;
 			}
 			pAdapterInfo = pAdapterInfo->Next;
 		}
 	}
 
-	addresses.insert("0.0.0.0");
-	for(auto& addr: addresses)
-		BindCombo.AddString(Text::toT(addr).c_str());
+	bindAddresses.emplace("0.0.0.0", "Any");
+	for(auto& addr: bindAddresses)
+		BindCombo.AddString(Text::toT(addr.first + (!addr.second.empty() ? " (" + addr.second + ")" : Util::emptyString)).c_str());
 	
 	if(AdapterInfo)
 		HeapFree(GetProcessHeap(), 0, AdapterInfo);	
@@ -263,7 +205,7 @@ void NetworkPage::on(UpdateManagerListener::SettingUpdated, size_t key, const st
 	if (key == SettingsManager::EXTERNAL_IP) {
 		if(!value.empty()) {
 			if(Util::isPrivateIp(value)) {
-				CheckRadioButton(IDC_DIRECT, IDC_FIREWALL_PASSIVE, IDC_FIREWALL_PASSIVE);
+				CheckRadioButton(IDC_ACTIVE, IDC_PASSIVE, IDC_PASSIVE);
 				fixControls();
 			}
 			SetDlgItemText(IDC_SERVER, Text::toT(value).c_str());

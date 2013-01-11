@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(NETWORK_PAGE_H)
-#define NETWORK_PAGE_H
+#if !defined(PROXY_PAGE_H)
+#define PROXY_PAGE_H
 
 #if _MSC_VER > 1000
 #pragma once
@@ -25,33 +25,22 @@
 
 #include <atlcrack.h>
 #include "PropPage.h"
-#include "../client/UpdateManagerListener.h"
-#include "../client/SimpleXML.h"
-#include "../client/version.h"
 
-#include <IPHlpApi.h>
-#pragma comment(lib, "iphlpapi.lib")
-
-class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage, private UpdateManagerListener
+class ProxyPage : public CPropertyPage<IDD_PROXYPAGE>, public PropPage
 {
 public:
-	NetworkPage(SettingsManager *s);
-	~NetworkPage();
+	ProxyPage(SettingsManager *s);
+	~ProxyPage();
 
 
-	BEGIN_MSG_MAP(NetworkPage)
+	BEGIN_MSG_MAP(ProxyPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
-		COMMAND_ID_HANDLER(IDC_CONNECTION_DETECTION, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_ACTIVE, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_PASSIVE, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_ACTIVE_UPNP, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_NATT, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_GETIP, onGetIP)
+		COMMAND_ID_HANDLER(IDC_SOCKS5, onClickedActive)
+		COMMAND_ID_HANDLER(IDC_DIRECT_OUT, onClickedActive)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
@@ -60,16 +49,10 @@ public:
 private:
 	static Item items[];
 	static TextItem texts[];
-	CComboBox BindCombo;
+	CEdit desc;
 
-	void completeDownload();
-
+	TCHAR* title;
 	void fixControls();
-	void getAddresses();
-
-	map<string, string> bindAddresses;
-	IP_ADAPTER_ADDRESSES* adapterInfo;
-	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
 };
 
-#endif // !defined(NETWORK_PAGE_H)
+#endif // !defined(PROXY_PAGE_H)

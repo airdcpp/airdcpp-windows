@@ -29,6 +29,9 @@ PropPage::TextItem LimitPage::texts[] = {
 	//other
 	{ IDC_AUTO_DETECTION_USE_LIMITED, ResourceManager::SETTINGS_AUTO_DETECTION_USE_LIMITED },
 
+	//minislots
+	{ IDC_ST_MINISLOTS_EXT, ResourceManager::ST_MINISLOTS_EXT },
+	{ IDC_SB_MINISLOTS, ResourceManager::SB_MINISLOTS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 }; 
 
@@ -48,6 +51,9 @@ PropPage::Item LimitPage::items[] = {
 	{ IDC_SMALL_FILE_SIZE, SettingsManager::SET_MINISLOT_SIZE, PropPage::T_INT },
 	{ IDC_EXTRA_SLOTS2, SettingsManager::HUB_SLOTS, PropPage::T_INT },
 	{ IDC_PARTIAL_SLOTS, SettingsManager::EXTRA_PARTIAL_SLOTS, PropPage::T_INT  },
+
+	//minislots
+	{ IDC_MINISLOTS_EXTENSIONS, SettingsManager::FREE_SLOTS_EXTENSIONS, PropPage::T_STR },
 	{ 0, 0, PropPage::T_END }
 };
 

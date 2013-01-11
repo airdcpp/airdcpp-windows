@@ -29,31 +29,46 @@ PropPage::ListItem SharingOptionsPage::listItems[] = {
 };
 
 PropPage::TextItem SharingOptionsPage::texts[] = {
-	{ IDC_ST_MINISLOTS_EXT, ResourceManager::ST_MINISLOTS_EXT },
-	{ IDC_SB_MINISLOTS, ResourceManager::SB_MINISLOTS },
+	//skiplist
 	{ IDC_SB_SKIPLIST_SHARE, ResourceManager::ST_SKIPLIST_SHARE_BORDER },
 	{ IDC_ST_SKIPLIST_SHARE_EXT, ResourceManager::ST_SKIPLIST_SHARE },
 	{ IDC_SHARE_SKIPLIST_USE_REGEXP, ResourceManager::USE_REGEXP },
+
+	//sharing options
+	{ IDC_REFRESHING_OPTIONS, ResourceManager::REFRESH_OPTIONS },
 	{ IDC_DONT_SHARE_BIGGER_THAN, ResourceManager::DONT_SHARE_BIGGER_THAN },
 	{ IDC_SETTINGS_MB2, ResourceManager::MiB },
 	{ IDC_MINUTES, ResourceManager::MINUTES },
-	{ IDC_SETTINGS_SCAN_OPTIONS, ResourceManager::SETTINGS_SCAN_OPTIONS },
 	{ IDC_SETTINGS_AUTO_REFRESH_TIME, ResourceManager::SETTINGS_AUTO_REFRESH_TIME },
 	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
+
+	//hashing
+	{ IDC_HASHING_OPTIONS, ResourceManager::HASHING_OPTIONS },
 	{ IDC_SETTINGS_MAX_HASH_SPEED, ResourceManager::SETTINGS_MAX_HASH_SPEED },
 	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
+	{ IDC_HASHING_THREADS_LBL, ResourceManager::MAX_HASHING_THREADS },
+	{ IDC_MAX_VOL_HASHERS_LBL, ResourceManager::MAX_VOL_HASHERS },
+
+	//scanning
+	{ IDC_SETTINGS_SCAN_OPTIONS, ResourceManager::SETTINGS_SCAN_OPTIONS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item SharingOptionsPage::items[] = {
+	//skiplist
 	{ IDC_SKIPLIST_SHARE, SettingsManager::SKIPLIST_SHARE, PropPage::T_STR },
-	{ IDC_MINISLOTS_EXTENSIONS, SettingsManager::FREE_SLOTS_EXTENSIONS, PropPage::T_STR },
 	{ IDC_SHARE_SKIPLIST_USE_REGEXP, SettingsManager::SHARE_SKIPLIST_USE_REGEXP, PropPage::T_BOOL },
-	{ IDC_DONT_SHARE_BIGGER_VALUE, SettingsManager::MAX_FILE_SIZE_SHARED, PropPage::T_INT },
-	{ IDC_SHAREHIDDEN, SettingsManager::SHARE_HIDDEN, PropPage::T_BOOL },
+
+	//refreshing
 	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
+	{ IDC_DONT_SHARE_BIGGER_VALUE, SettingsManager::MAX_FILE_SIZE_SHARED, PropPage::T_INT },
+	{ IDC_SHAREHIDDEN, SettingsManager::SHARE_HIDDEN, PropPage::T_BOOL },
+
+	//hashing
 	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
+	{ IDC_HASHING_THREADS, SettingsManager::MAX_HASHING_THREADS, PropPage::T_INT },
+	{ IDC_MAX_VOL_HASHERS, SettingsManager::HASHERS_PER_VOLUME, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -64,9 +79,14 @@ LRESULT SharingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_SCANLIST));
 
+	//refresh
 	setMinMax(IDC_REFRESH_SPIN, 0, 3000);
 	setMinMax(IDC_INCOMING_SPIN, 0, 1000);
-	setMinMax(IDC_HASH_SPIN, 0, 999);
+
+	//hashing
+	setMinMax(IDC_HASH_SPIN, 0, 9999);
+	setMinMax(IDC_VOL_HASHERS_SPIN, 1, 30);
+	setMinMax(IDC_HASHING_THREADS_SPIN, 1, 50);
 
 	// Do specialized reading here
 	return TRUE;
@@ -76,8 +96,8 @@ void SharingOptionsPage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SCANLIST));
 	
 	//set to the defaults
-	if(SETTING(SKIPLIST_SHARE).empty())
-		settings->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
+	//if(SETTING(SKIPLIST_SHARE).empty())
+	//	settings->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
 }
  
 

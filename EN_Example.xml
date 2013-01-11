@@ -586,9 +586,6 @@
 		<String Name="SettingsFilesMax">Maximum simultaneous files (0 = infinite)</String>
 		<String Name="SettingsFilterMessages">Filter kick and NMDC debug messages</String>
 		<String Name="SettingsFilterEnter">Activate search/userlist filter by pressing Enter</String>
-		<String Name="SettingsFirewallNat">Firewall with manual port forwarding</String>
-		<String Name="SettingsFirewallPassive">Firewall (passive, worst case)</String>
-		<String Name="SettingsFirewallUpnp">Firewall with UPnP</String>
 		<String Name="SettingsFormat">Format</String>
 		<String Name="SettingsGeneral">General</String>
 		<String Name="SettingsGetUserCountry">Get User Country</String>
@@ -1749,5 +1746,15 @@ would you still like to load them?</String>
 		<String Name="PmMagnetSharedWarning">The download destination %s is a shared directory. Files sent in private chat may contain sensitive information that you or the sender don't want to be made available for other user.
 
 Do you want to use this destination anyway?</String>
+		<String Name="SettingsPassive">Passive mode (last resort - has serious limitations)</String>
+		<String Name="SettingsActiveUpnp">Active mode (let the client configure my router with NAT-PMP / UPnP)</String>
+		<String Name="SettingsActive">Active mode (no router or manual router configuration)</String>
+		<String Name="SettingsManualConfig">Manual router/firewall configuration</String>
+		<String Name="MaxVolHashers">Max hashers per volume</String>
+		<String Name="MaxHashingThreads">Max hashing threads</String>
+		<String Name="HashingOptions">Hashing options</String>
+		<String Name="RefreshOptions">Refreshing options</String>
+		<String Name="ExpiredAsRemoved">An expired auto search has been removed: %s</String>
+		<String Name="Proxies">Proxies</String>
 	</Strings>
 </Language>

@@ -507,6 +507,7 @@
     <ClCompile Include="windows\LimitPage.cpp" />
     <ClCompile Include="windows\MiscPage.cpp" />
     <ClCompile Include="windows\DownloadingOptionsPage.cpp" />
+    <ClCompile Include="windows\ProxyPage.cpp" />
     <ClCompile Include="windows\ResourceLoader.cpp" />
     <ClCompile Include="windows\SearchTypeCombo.cpp" />
     <ClCompile Include="windows\SharingOptionsPage.cpp" />
@@ -621,6 +622,7 @@
     <ClInclude Include="windows\HtmlToRtf.h" />
     <ClInclude Include="windows\LimitPage.h" />
     <ClInclude Include="windows\ExCImage.h" />
+    <ClInclude Include="windows\ProxyPage.h" />
     <ClInclude Include="windows\SearchTypeCombo.h" />
     <ClInclude Include="windows\SplashWindow.h" />
     <ClInclude Include="windows\MiscPage.h" />
