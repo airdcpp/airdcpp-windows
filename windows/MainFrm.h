@@ -399,6 +399,9 @@ public:
 
 	void addThreadedTask(std::function<void ()> aF);
 	concurrency::task_group threadedTasks;
+
+	/* Displays a message box that will also display correctly with the splash */
+	void showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& aTitle = Util::emptyStringT);
 private:
 	//vector<concurrency::task<void>> threadedTasks;
 	NOTIFYICONDATA pmicon;

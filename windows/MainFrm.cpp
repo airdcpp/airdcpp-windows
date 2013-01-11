@@ -496,8 +496,7 @@ HWND MainFrame::createTBStatusBar() {
 
 
 void MainFrame::showPortsError(const string& port) {
-	::MessageBox(WinUtil::splash->getHWND(), Text::toT(str(boost::format(STRING(PORT_BYSY)) % port)).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
-	//MessageBox(CTSTRING_F(PORT_BYSY, port), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
+	showMessageBox(Text::toT(str(boost::format(STRING(PORT_BYSY)) % port)).c_str(), MB_OK | MB_ICONEXCLAMATION);
 }
 
 HWND MainFrame::createWinampToolbar() {
@@ -1229,10 +1228,14 @@ LRESULT MainFrame::onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	return 0;
 }
 
+void MainFrame::showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& aTitle) {
+	::MessageBox(WinUtil::splash ? WinUtil::splash->getHWND() : m_hWnd, aMsg.c_str(), (!aTitle.empty() ? aTitle.c_str() : _T(APPNAME) _T(" ") _T(VERSIONSTRING)), aFlags);
+}
+
 LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closing) {
 		if(UpdateManager::getInstance()->isUpdating()) {
-			MessageBox(CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
+			showMessageBox(CTSTRING(UPDATER_IN_PROGRESS), MB_OK | MB_ICONINFORMATION);
 
 			bHandled = TRUE;
 			return 0;
@@ -2049,11 +2052,8 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 	//report errors if any
 	if( error != Util::emptyStringT) {
 		error += _T("Check Your User Privileges or try running AirDC++ as administrator. \r\n");
-		::MessageBox(WinUtil::splash->getHWND(), (error.c_str()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONWARNING | MB_OK);
-	} /*else if(ready) { //dont need this but leave it for now.
-		LogManager::getInstance()->message("Test write to AirDC++ common folders succeeded.", LogManager::LOG_WARNING);
-	}*/
-
+		showMessageBox(error, MB_ICONWARNING | MB_OK);
+	}
 }
 
 
@@ -2167,7 +2167,7 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 	bool canAutoUpdate = autoUpdate && UpdateDlg::canAutoUpdate(updateUrl);
 
 	tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " APPNAME " " VERSIONSTRING);
-	::MessageBox(m_hWnd, Text::toT(message + "\r\n\r\n" + (canAutoUpdate ? STRING(ATTEMPT_AUTO_UPDATE) : STRING(MANUAL_UPDATE_MSG))).c_str(), title.c_str(), MB_OK | MB_ICONEXCLAMATION);
+	showMessageBox(Text::toT(message + "\r\n\r\n" + (canAutoUpdate ? STRING(ATTEMPT_AUTO_UPDATE) : STRING(MANUAL_UPDATE_MSG))).c_str(), MB_OK | MB_ICONEXCLAMATION, title);
 
 	if(!canAutoUpdate) {
 		if(!infoUrl.empty())
@@ -2180,7 +2180,7 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 			UpdateManager::getInstance()->downloadUpdate(updateUrl, buildID, true);
 			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 		} else {
-			::MessageBox(m_hWnd, CTSTRING(UPDATER_IN_PROGRESS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION);
+			showMessageBox(CTSTRING(UPDATER_IN_PROGRESS), MB_OK | MB_ICONINFORMATION);
 		}
 	}
 }

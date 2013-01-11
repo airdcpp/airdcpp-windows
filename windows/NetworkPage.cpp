@@ -71,7 +71,6 @@ PropPage::Item NetworkPage::items[] = {
 	{ IDC_PORT_UDP,		SettingsManager::UDP_PORT,		PropPage::T_INT }, 
 	{ IDC_PORT_TLS,		SettingsManager::TLS_PORT,		PropPage::T_INT },
 	{ IDC_OVERRIDE,		SettingsManager::NO_IP_OVERRIDE, PropPage::T_BOOL },
-	{ IDC_BIND_ADDRESS, SettingsManager::BIND_ADDRESS, PropPage::T_STR },
 	{ IDC_IPUPDATE, SettingsManager::IP_UPDATE, PropPage::T_BOOL },
 	{ IDC_NATT,	SettingsManager::ALLOW_NAT_TRAVERSAL, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
@@ -102,6 +101,10 @@ void NetworkPage::write()
 	if(SETTING(INCOMING_CONNECTIONS) != ct) {
 		settings->set(SettingsManager::INCOMING_CONNECTIONS, ct);
 	}
+
+	auto pos = bindAddresses.begin();
+	advance(pos, BindCombo.GetCurSel());
+	SettingsManager::getInstance()->set(SettingsManager::BIND_ADDRESS, pos->first);
 }
 
 LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
