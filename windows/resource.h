@@ -282,10 +282,11 @@
 #define IDI_TOTAL_UP                    482
 #define IDI_TOTAL_DOWN                  483
 #define IDI_SHARED                      484
-#define IDR_WINAMP                      485
-#define IDD_PARAM_DLG                   486
-#define IDD_FAVHUBGROUPS                487
+#define IDI_PROXY		                488
 #define IDD_FORMVIEW                    500
+#define IDR_WINAMP                      501
+#define IDD_PARAM_DLG                   502
+#define IDD_FAVHUBGROUPS                503
 #define IDC_REFRESH                     1000
 #define IDC_NICK                        1001
 #define IDC_EMAIL                       1002

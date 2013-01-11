@@ -1214,5 +1214,8 @@
     <Image Include="res\AutoSearch\PostSearch.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\SettingsTree\Proxy.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -154,9 +154,9 @@ void NetworkPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_EXTERNAL_IP), !auto_detect && (direct || upnp || nat_traversal));
 	::EnableWindow(GetDlgItem(IDC_OVERRIDE), !auto_detect && (direct || upnp || nat_traversal));
 
-	::EnableWindow(GetDlgItem(IDC_PORT_TCP), !auto_detect && upnp);
-	::EnableWindow(GetDlgItem(IDC_PORT_UDP), !auto_detect && upnp);
-	::EnableWindow(GetDlgItem(IDC_PORT_TLS), !auto_detect && upnp);
+	::EnableWindow(GetDlgItem(IDC_PORT_TCP), !auto_detect && upnp || direct);
+	::EnableWindow(GetDlgItem(IDC_PORT_UDP), !auto_detect && upnp || direct);
+	::EnableWindow(GetDlgItem(IDC_PORT_TLS), !auto_detect && upnp || direct);
 	::EnableWindow(GetDlgItem(IDC_NATT), !auto_detect && !direct && !upnp); // for passive settings only
 
 

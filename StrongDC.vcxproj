@@ -802,6 +802,7 @@
     <Image Include="res\searchTypes\tth.ico" />
     <Image Include="res\searchTypes\Video.ico" />
     <Image Include="res\SettingsTree\Limiter.ico" />
+    <Image Include="res\SettingsTree\Proxy.ico" />
     <Image Include="res\SettingsTree\SearchTypes.ico" />
     <Image Include="res\Shared.ico" />
     <Image Include="res\Slots.ico" />

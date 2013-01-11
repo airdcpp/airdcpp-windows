@@ -77,7 +77,7 @@ void TreePropertySheet::addTree()
 	::GetWindowRect(page, &rcPage);
 	::MapWindowPoints(NULL, m_hWnd, (LPPOINT)&rcPage, 2);
 
-	CRect rc(SPACE_LEFT, rcPage.top, TREE_WIDTH, rcPage.bottom);
+	CRect rc(SPACE_LEFT, rcPage.top, TREE_WIDTH, rcPage.bottom + 30);
 	ctrlTree.Create(m_hWnd, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT, WS_EX_CLIENTEDGE, IDC_PAGE);
 	
 	if(SETTING(USE_EXPLORER_THEME)) {

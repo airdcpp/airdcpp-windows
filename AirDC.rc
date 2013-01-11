@@ -1348,27 +1348,27 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,17,81,181,10
     CONTROL         "Active mode (let the client configure my router with NAT-PMP / UPnP)",IDC_ACTIVE_UPNP,
                     "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,17,95,236,10
-    EDITTEXT        IDC_EXTERNAL_IP,29,177,99,14,ES_AUTOHSCROLL
-    CONTROL         "Don't allow hub/UPnP to override",IDC_OVERRIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,198,149,10
+    EDITTEXT        IDC_EXTERNAL_IP,27,177,101,14,ES_AUTOHSCROLL
+    CONTROL         "Don't allow hub/UPnP to override",IDC_OVERRIDE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,194,149,10
     EDITTEXT        IDC_PORT_TCP,241,175,29,14,ES_AUTOHSCROLL
     EDITTEXT        IDC_PORT_UDP,241,194,30,14,ES_AUTOHSCROLL
-    CONTROL         "Firewall (passive mode, worst case)",IDC_PASSIVE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,17,110,249,10
+    CONTROL         "Firewall (passive mode, worst case)",IDC_PASSIVE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,17,108,249,10
     GROUPBOX        "Incoming Connection Settings (See help / FAQ if unsure)",IDC_SETTINGS_INCOMING,9,49,279,92,WS_GROUP
     LTEXT           "TCP",IDC_SETTINGS_PORT_TCP,211,178,25,8,NOT WS_GROUP
-    LTEXT           "UDP",IDC_SETTINGS_PORT_UDP,211,198,26,8
+    LTEXT           "UDP",IDC_SETTINGS_PORT_UDP,211,197,26,8
     GROUPBOX        "Bind Address",IDC_SETTINGS_BIND_ADDRESS,9,6,277,35
     LTEXT           "Network interface for all connections",IDC_SETTINGS_BIND_ADDRESS_HELP,14,19,153,8
-    LTEXT           "TLS",IDC_SETTINGS_PORT_TLS,211,214,26,8
+    LTEXT           "TLS",IDC_SETTINGS_PORT_TLS,211,216,26,8
     EDITTEXT        IDC_PORT_TLS,241,214,30,14,ES_AUTOHSCROLL | ES_NUMBER
     COMBOBOX        IDC_BIND_ADDRESS,140,18,140,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Update IP on startup",IDC_IPUPDATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,25,207,126,10
+    CONTROL         "Update IP on startup",IDC_IPUPDATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,205,126,10
     PUSHBUTTON      "Get IP",IDC_GETIP,131,177,45,14
     CONTROL         "Allow NAT Traversal for connections with passive users",IDC_NATT,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,31,121,237,10
     CONTROL         "Enable automatic incoming connection type detection",IDC_CONNECTION_DETECTION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,65,249,10
     GROUPBOX        "Manual router/firewall configuration",IDC_SETTINGS_MANUAL_CONFIG,9,153,279,92
-    GROUPBOX        "External / WAN IP",IDC_SETTINGS_IP,13,166,173,67
+    GROUPBOX        "External / WAN IP",IDC_SETTINGS_IP,19,166,170,67
     GROUPBOX        "Ports",IDC_SETTINGS_PORTS,203,166,74,67
 END
 
@@ -2152,6 +2152,7 @@ IDI_MISC                ICON                    "res\\SettingsTree\\Misc.ico"
 IDI_SHAREOPTIONS        ICON                    "res\\SettingsTree\\ShareOptions.ico"
 IDI_SEARCHTYPES         ICON                    "res\\SettingsTree\\SearchTypes.ico"
 IDI_IGNORE              ICON                    "res\\SettingsTree\\Ignore.ico"
+IDI_PROXY               ICON                    "res\\SettingsTree\\Proxy.ico"
 IDI_ANY                 ICON                    "res\\searchTypes\\Any.ico"
 IDI_AUDIO               ICON                    "res\\searchTypes\\Audio.ico"
 IDI_COMPRESSED          ICON                    "res\\searchTypes\\Compressed.ico"

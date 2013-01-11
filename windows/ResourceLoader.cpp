@@ -303,6 +303,7 @@ void ResourceLoader::loadSettingsTreeIcons() {
 	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_CONNECTIONS, size));
 	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SPEED, size));
 	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_LIMITS, size));
+	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PROXY, size));
 	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_DOWNLOADS, size));
 	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_LOCATIONS, size));
 	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PREVIEW, size));
