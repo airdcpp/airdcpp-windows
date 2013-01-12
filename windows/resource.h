@@ -1103,7 +1103,7 @@
 #define IDC_RESET_TAB_COLOR             1525
 #define IDC_SEARCH_BY_TTH               1526
 #define IDC_THEMES                      1526
-#define IDC_REMOVE_ON_HIT               1533
+#define IDC_REMOVE_AFTER_COMPLETED      1533
 #define IDC_DL_TO                       1534
 #define IDC_TARGET_PATH                 1535
 #define IDC_REMOVE_ON_HIT2              1536

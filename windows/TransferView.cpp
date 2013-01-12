@@ -1523,7 +1523,7 @@ void TransferView::onBundleComplete(const string& bundleToken, const string& bun
 	speak(UPDATE_BUNDLE, ui);
 }
 
-void TransferView::onBundleStatus(const BundlePtr aBundle, bool removed) {
+void TransferView::onBundleStatus(const BundlePtr& aBundle, bool removed) {
 	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	if (removed) {
@@ -1537,7 +1537,7 @@ void TransferView::onBundleStatus(const BundlePtr aBundle, bool removed) {
 	speak(UPDATE_BUNDLE, ui);
 }
 
-void TransferView::on(QueueManagerListener::BundleSize, const BundlePtr aBundle) noexcept {
+void TransferView::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept {
 	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setSize(aBundle->getSize());
 	speak(UPDATE_BUNDLE, ui);
@@ -1550,7 +1550,7 @@ void TransferView::on(UploadManagerListener::BundleSizeName, const string& bundl
 	speak(UPDATE_BUNDLE, ui);
 }
 
-void TransferView::onBundleName(const BundlePtr aBundle) {
+void TransferView::onBundleName(const BundlePtr& aBundle) {
 	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setTarget(Text::toT(aBundle->getTarget()));
 	ui->setPriority(aBundle->getPriority());

@@ -64,7 +64,7 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_SEARCH_FAKE_DLG_SEARCH_STRING), (TSTRING(SEARCH_STRING)).c_str());
 	::SetWindowText(GetDlgItem(IDC_AS_ACTION_STATIC), (TSTRING(ACTION)).c_str());
 	::SetWindowText(GetDlgItem(IDC_ADD_SRCH_STR_TYPE_STATIC), (TSTRING(FILE_TYPE)).c_str());
-	::SetWindowText(GetDlgItem(IDC_REMOVE_ON_HIT), (TSTRING(REMOVE_ON_HIT)).c_str());
+	::SetWindowText(GetDlgItem(IDC_REMOVE_AFTER_COMPLETED), (TSTRING(REMOVE_AFTER_COMPLETED)).c_str());
 
 	::SetWindowText(GetDlgItem(IDC_DL_TO), TSTRING(DOWNLOAD_TO).c_str());
 	::SetWindowText(GetDlgItem(IDC_SELECT_DIR), TSTRING(SELECT_DIRECTORY).c_str());
@@ -127,7 +127,7 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 		cMatcherType.SetCurSel(matcherType);
 	}
 
-	CheckDlgButton(IDC_REMOVE_ON_HIT, remove);
+	CheckDlgButton(IDC_REMOVE_AFTER_COMPLETED, remove);
 	CheckDlgButton(IDC_CHECK_QUEUED, checkQueued);
 	CheckDlgButton(IDC_CHECK_SHARED, checkShared);
 	CheckDlgButton(IDC_MATCH_FULL_PATH, matchFullPath);
@@ -311,7 +311,7 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		searchString = Text::fromT(str);
 
 		action = cAction.GetCurSel();
-		remove = IsDlgButtonChecked(IDC_REMOVE_ON_HIT) ? true : false;
+		remove = IsDlgButtonChecked(IDC_REMOVE_AFTER_COMPLETED) ? true : false;
 		checkQueued = IsDlgButtonChecked(IDC_CHECK_QUEUED) ? true : false;
 		checkShared = IsDlgButtonChecked(IDC_CHECK_SHARED) ? true : false;
 		matchFullPath = IsDlgButtonChecked(IDC_MATCH_FULL_PATH) ? true : false;

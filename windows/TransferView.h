@@ -384,19 +384,19 @@ private:
 	void on(UploadManagerListener::BundleComplete, const string& bundleToken, const string& bundleName) noexcept { onBundleComplete(bundleToken, bundleName, true); }
 	void on(UploadManagerListener::BundleSizeName, const string& bundleToken, const string& newTarget, int64_t aSize) noexcept;
 
-	void on(QueueManagerListener::BundleFinished, const BundlePtr aBundle) noexcept { onBundleComplete(aBundle->getToken(), aBundle->getName(), false); }
-	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept { onBundleStatus(aBundle, true); }
-	void on(QueueManagerListener::BundleSize, const BundlePtr aBundle) noexcept;
-	void on(QueueManagerListener::BundleTarget, const BundlePtr aBundle) noexcept { onBundleName(aBundle); }
-	void on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept { onBundleName(aBundle); }
+	void on(QueueManagerListener::BundleFinished, const BundlePtr& aBundle) noexcept { onBundleComplete(aBundle->getToken(), aBundle->getName(), false); }
+	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept { onBundleStatus(aBundle, true); }
+	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept;
+	void on(QueueManagerListener::BundleTarget, const BundlePtr& aBundle) noexcept { onBundleName(aBundle); }
+	void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept { onBundleName(aBundle); }
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void onUpdateFileInfo(const HintedUser& aUser, const string& aToken, bool updateStatus);
 
-	void onBundleName(const BundlePtr aBundle);
+	void onBundleName(const BundlePtr& aBundle);
 	void onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload);
-	void onBundleStatus(const BundlePtr aBundle, bool removed);
+	void onBundleStatus(const BundlePtr& aBundle, bool removed);
 	void onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree, const string& bundleToken);
 	void starting(UpdateInfo* ui, const Transfer* t);
 	

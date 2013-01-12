@@ -1887,7 +1887,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	time(&currentTime);
 }
 
-void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr qi, const string& /*dir*/, const HintedUser& /*aUser*/, int64_t /*aSpeed*/) noexcept {
+void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr& qi, const string& /*dir*/, const HintedUser& /*aUser*/, int64_t /*aSpeed*/) noexcept {
 	if(!qi->isSet(QueueItem::FLAG_USER_LIST)) {
 		// Finished file sound
 		if(!SETTING(FINISHFILE).empty() && !SETTING(SOUNDS_DISABLED))
@@ -2077,13 +2077,13 @@ LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 	for(auto& i: l) {
 		if (i.second.size() > 1) {
 			auto vMenu = dropMenu.createSubMenu(Text::toT(i.first).c_str(), true);
-			vMenu->appendItem(CTSTRING(ALL), [&i] { ShareManager::getInstance()->refresh(i.first); });
+			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refresh(i.first); });
 			vMenu->appendSeparator();
-			for(auto s: i.second) {
-				vMenu->appendItem(Text::toT(s).c_str(), [&s] { ShareManager::getInstance()->refresh(s); });
+			for(const auto& s: i.second) {
+				vMenu->appendItem(Text::toT(s).c_str(), [=] { ShareManager::getInstance()->refresh(s); });
 			}
 		} else {
-			dropMenu.appendItem(Text::toT(i.first).c_str(), [&i] { ShareManager::getInstance()->refresh(i.first); });
+			dropMenu.appendItem(Text::toT(i.first).c_str(), [=] { ShareManager::getInstance()->refresh(i.first); });
 		}
 	}
 

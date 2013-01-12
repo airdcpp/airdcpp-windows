@@ -156,8 +156,8 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		case COLUMN_STATUS: {
 			int online = 0;
 			QueueItem::SourceList sources = QueueManager::getInstance()->getSources(qi);
-			for(QueueItem::SourceConstIter j = sources.begin(); j != sources.end(); ++j) {
-				if(j->getUser().user->isOnline())
+			for(const auto& s: sources) {
+				if(s.getUser().user->isOnline())
 					online++;
 			}
 
@@ -239,11 +239,11 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			tstring tmp;
 
 			QueueItem::SourceList sources = QueueManager::getInstance()->getSources(qi);
-			for(QueueItem::SourceConstIter j = sources.begin(); j != sources.end(); ++j) {
+			for(const auto& s: sources) {
 				if(tmp.size() > 0)
 					tmp += _T(", ");
 
-				tmp += WinUtil::getNicks(j->getUser());
+				tmp += WinUtil::getNicks(s.getUser());
 			}
 			return tmp.empty() ? TSTRING(NO_USERS) : tmp;
 		}
@@ -252,23 +252,23 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		case COLUMN_ERRORS: {
 			tstring tmp;
 			QueueItem::SourceList badSources = QueueManager::getInstance()->getBadSources(qi);
-			for(auto j = badSources.begin(); j != badSources.end(); ++j) {
-				if(!j->isSet(QueueItem::Source::FLAG_REMOVED)) {
+			for(auto& bs: badSources) {
+				if(!bs.isSet(QueueItem::Source::FLAG_REMOVED)) {
 				if(tmp.size() > 0)
 					tmp += _T(", ");
-					tmp += WinUtil::getNicks(j->getUser());
+					tmp += WinUtil::getNicks(bs.getUser());
 					tmp += _T(" (");
-					if(j->isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
+					if(bs.isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
 						tmp += TSTRING(FILE_NOT_AVAILABLE);
-					}  else if(j->isSet(QueueItem::Source::FLAG_BAD_TREE)) {
+					}  else if(bs.isSet(QueueItem::Source::FLAG_BAD_TREE)) {
 						tmp += TSTRING(INVALID_TREE);
-					} else if(j->isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
+					} else if(bs.isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
 						tmp += TSTRING(SLOW_USER);
-					} else if(j->isSet(QueueItem::Source::FLAG_NO_TTHF)) {
+					} else if(bs.isSet(QueueItem::Source::FLAG_NO_TTHF)) {
 						tmp += TSTRING(SOURCE_TOO_OLD);						
-					} else if(j->isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {
+					} else if(bs.isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {
 						tmp += TSTRING(NO_NEEDED_PART);
-					} else if(j->isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
+					} else if(bs.isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
 						tmp += TSTRING(CERTIFICATE_NOT_TRUSTED);
 					}
 					tmp += _T(')');
@@ -284,7 +284,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 	}
 }
 
-void QueueFrame::on(QueueManagerListener::Added, QueueItemPtr aQI) {
+void QueueFrame::on(QueueManagerListener::Added, QueueItemPtr& aQI) {
 	QueueItemInfo* ii = new QueueItemInfo(aQI);
 
 	speak(ADD_ITEM,	new QueueItemInfoTask(ii));
@@ -366,12 +366,11 @@ QueueFrame::QueueItemInfo* QueueFrame::getItemInfo(const string& target) const {
 void QueueFrame::addQueueList(const QueueItem::StringMap& li) {
 	ctrlQueue.SetRedraw(FALSE);
 	ctrlDirs.SetRedraw(FALSE);
-	for(QueueItem::StringMap::const_iterator j = li.begin(); j != li.end(); ++j) {
-		QueueItemPtr aQI = j->second;
-		if (aQI->isSet(QueueItem::FLAG_FINISHED) && !SETTING(KEEP_FINISHED_FILES)) {
+	for(auto& qi: li | map_values) {
+		if (qi->isSet(QueueItem::FLAG_FINISHED) && !SETTING(KEEP_FINISHED_FILES)) {
 			continue;
 		}
-		QueueItemInfo* ii = new QueueItemInfo(aQI);
+		QueueItemInfo* ii = new QueueItemInfo(qi);
 		addQueueItem(ii, true);
 	}
 	ctrlQueue.resort();
@@ -414,7 +413,7 @@ HTREEITEM QueueFrame::addItemDir(bool isFileList) {
 	}
 }
 
-HTREEITEM QueueFrame::createDir(TVINSERTSTRUCT& tvi, const string&& dir, const BundlePtr aBundle, HTREEITEM parent, bool subDir /*false*/) {
+HTREEITEM QueueFrame::createDir(TVINSERTSTRUCT& tvi, const string&& dir, const BundlePtr& aBundle, HTREEITEM parent, bool subDir /*false*/) {
 	bool resetFormating = false;
 	bool mainBundle = false;
 	DirItemInfo* dii = new DirItemInfo(dir, aBundle);
@@ -462,14 +461,14 @@ HTREEITEM QueueFrame::createSplitDir(TVINSERTSTRUCT& tvi, const string&& dir, HT
 	bool updateMap = false;
 	bool setBold = false;
 	//check if we need to modify the bundlemap
-	for (auto i = dii->getBundles().begin(); i != dii->getBundles().end(); ++i) {
-		diiNew->addBundle((*i).second);
-		if (stricmp(dir, (*i).first) == 0) {
-			name = (*i).second->getBundleText();
+	for (auto& bp: dii->getBundles()) {
+		diiNew->addBundle(bp.second);
+		if (stricmp(dir, bp.first) == 0) {
+			name = bp.second->getBundleText();
 			updateMap = true;
 			setBold=true;
 			break;
-		} else if ((*i).second->isFileBundle() && (Util::getFilePath((*i).second->getTarget()) == dir)) {
+		} else if (bp.second->isFileBundle() && (Util::getFilePath(bp.second->getTarget()) == dir)) {
 			name = dii->getBundleName(false);
 			setBold=true;
 			break;
@@ -502,7 +501,7 @@ HTREEITEM QueueFrame::createSplitDir(TVINSERTSTRUCT& tvi, const string&& dir, HT
 	return ret;
 }
 
-HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr aBundle, HTREEITEM startAt /* = NULL */) {
+HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr& aBundle, HTREEITEM startAt /* = NULL */) {
 	TVINSERTSTRUCT tvi;
 	tvi.hInsertAfter = TVI_SORT;
 	tvi.item.mask = TVIF_IMAGE | TVIF_PARAM | TVIF_SELECTEDIMAGE | TVIF_TEXT;
@@ -673,10 +672,9 @@ void QueueFrame::DirItemInfo::removeBundle(const string& aDir) {
 
 int QueueFrame::DirItemInfo::countFileBundles() {
 	int ret = 0;
-	for (auto s = bundles.begin(); s != bundles.end(); ++s) {
-		if ((*s).second->isFileBundle()) {
+	for (auto b: bundles | map_values) {
+		if (b->isFileBundle())
 			ret++;
-		}
 	}
 	return ret;
 }
@@ -792,57 +790,57 @@ void QueueFrame::removeBundle(const string& aDir, bool isFileBundle) {
 	}
 }
 
-void QueueFrame::on(QueueManagerListener::Removed, const QueueItemPtr aQI, bool updateStatus) {
+void QueueFrame::on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool updateStatus) {
 	speak(REMOVE_ITEM, new StringTask(aQI->getTarget()));
 	if (updateStatus)
 		speak(UPDATE_STATUS_ITEMS, new StringTask(aQI->getTarget()));
 }
 
-void QueueFrame::on(QueueManagerListener::Moved, const QueueItemPtr, const string& oldTarget) {
+void QueueFrame::on(QueueManagerListener::Moved, const QueueItemPtr&, const string& oldTarget) {
 	speak(REMOVE_ITEM, new StringTask(oldTarget));
 }
 
-void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) {
-	for(auto qi: aBundle->getQueueItems()) 
+void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) {
+	for(auto& qi: aBundle->getQueueItems()) 
 		speak(REMOVE_ITEM, new StringTask(qi->getTarget()));
 
 	speak(REMOVE_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
 }
 
-void QueueFrame::on(QueueManagerListener::BundleMerged, const BundlePtr aBundle, const string& oldTarget) noexcept {
+void QueueFrame::on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string& oldTarget) noexcept {
 	speak(REMOVE_BUNDLE, new DirItemInfoTask(new DirItemInfo(oldTarget, aBundle)));
 	speak(ADD_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
 }
 
-void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr aQI) {
+void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) {
 	speak(UPDATE_ITEM, new UpdateTask(*aQI));
 }
 
 void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t /*aTick*/) noexcept {
-	for (auto i = tickBundles.begin(); i != tickBundles.end(); ++i) {
-		if ((*i)->isFileBundle()) {
+	for (auto& b: tickBundles) {
+		if (b->isFileBundle()) {
 			return;
 		}
-		speak(UPDATE_BUNDLE, new DirItemInfoTask(new DirItemInfo((*i)->getTarget(), (*i))));
+		speak(UPDATE_BUNDLE, new DirItemInfoTask(new DirItemInfo(b->getTarget(), b)));
 	}
 }
 
-void QueueFrame::on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) {
+void QueueFrame::on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) {
 	if (aBundle->isFileBundle()) {
 		return;
 	}
 	speak(UPDATE_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
 }
 
-void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr aBundle) {
-	for (auto i = aBundle->getQueueItems().begin(); i != aBundle->getQueueItems().end(); ++i) {
-		QueueItemInfo* ii = new QueueItemInfo(*i);
+void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) {
+	for (auto& qi: aBundle->getQueueItems()) {
+		QueueItemInfo* ii = new QueueItemInfo(qi);
 		speak(ADD_ITEM,	new QueueItemInfoTask(ii));
 	}
 	speak(ADD_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
 }
 
-void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) {
+void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) {
 	//for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItemPtr qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
 	speak(REMOVE_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
 }
@@ -857,20 +855,20 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	tasks.get(t);
 	spoken = false;
 
-	for(auto ti = t.begin(); ti != t.end(); ++ti) {
-		if(ti->first == ADD_ITEM) {
-			auto &iit = static_cast<QueueItemInfoTask&>(*ti->second);
+	for(auto& ti: t) {
+		if(ti.first == ADD_ITEM) {
+			auto &iit = static_cast<QueueItemInfoTask&>(*ti.second);
 			
 			dcassert(ctrlQueue.findItem(iit.ii) == -1);
 			addQueueItem(iit.ii, false);
 			//updateStatus();
-		} else if(ti->first == ADD_BUNDLE) {
-			auto &ui = static_cast<DirItemInfoTask&>(*ti->second);
+		} else if(ti.first == ADD_BUNDLE) {
+			auto &ui = static_cast<DirItemInfoTask&>(*ti.second);
 			//bundleMap.insert(make_pair(ui.ii->getDir(), ui.ii));
 			updateStatus();
 			delete ui.ii;
-		} else if(ti->first == REMOVE_ITEM) {
-			auto &target = static_cast<StringTask&>(*ti->second);
+		} else if(ti.first == REMOVE_ITEM) {
+			auto &target = static_cast<StringTask&>(*ti.second);
 
 			auto fileName = Util::getFileName(target.str);
 			auto dirs = directories.equal_range(Util::getFilePath(target.str));
@@ -917,21 +915,21 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 				setDirty();
 			}
 			dirty = true;
-		} else if(ti->first == REMOVE_BUNDLE) {
-			auto &ui = static_cast<DirItemInfoTask&>(*ti->second);
+		} else if(ti.first == REMOVE_BUNDLE) {
+			auto &ui = static_cast<DirItemInfoTask&>(*ti.second);
 			removeBundle(ui.ii->getDir(), ui.ii->getBundles().front().second->isFileBundle());
 			updateStatus();
 			delete ui.ii;
-		} else if(ti->first == UPDATE_BUNDLE) {
-			auto &ui = static_cast<DirItemInfoTask&>(*ti->second);
+		} else if(ti.first == UPDATE_BUNDLE) {
+			auto &ui = static_cast<DirItemInfoTask&>(*ti.second);
 			const string& path = ui.ii->getDir();
 			auto i = bundleMap.find(path);
 			if (i != bundleMap.end()) {
 				ctrlDirs.SetItemText(i->second, const_cast<TCHAR*>(ui.ii->getBundles().front().second->getBundleText().c_str()));
 			}
 			delete ui.ii;
-		} else if(ti->first == UPDATE_ITEM) {
-			auto &ui = static_cast<UpdateTask&>(*ti->second);
+		} else if(ti.first == UPDATE_ITEM) {
+			auto &ui = static_cast<UpdateTask&>(*ti.second);
             QueueItemInfo* ii = getItemInfo(ui.target);
 			if(!ii)
 				continue;
@@ -948,10 +946,10 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 					ctrlQueue.updateItem(pos, COLUMN_DOWNLOADED);
 				}
 			}
-		} else if(ti->first == UPDATE_STATUS) {
-			auto &status = static_cast<StringTask&>(*ti->second);
+		} else if(ti.first == UPDATE_STATUS) {
+			auto &status = static_cast<StringTask&>(*ti.second);
 			ctrlStatus.SetText(1, Text::toT(status.str).c_str());
-		} else if(ti->first == UPDATE_STATUS_ITEMS) {
+		} else if(ti.first == UPDATE_STATUS_ITEMS) {
 			updateStatus();
 		}
 	}
@@ -1130,7 +1128,7 @@ void QueueFrame::moveSelectedDir() {
 		}
 
 		
-		for(auto sourceBundle: bundles) {
+		for(auto& sourceBundle: bundles) {
 			if (!sourceBundle->isFileBundle()) {
 				auto sourceDir = curDir;
 				MainFrame::getMainFrame()->addThreadedTask([=] {
@@ -1410,14 +1408,12 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 						dirMenu.InsertSeparatorFirst(CTSTRING(FILE));
 						dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITY));
 					} else {
-						//dirMenu.InsertSeparatorFirst(CTSTRING_F(X_FILES, files));
-						dirMenu.InsertSeparatorFirst(Text::toT(str(boost::format(CSTRING(X_FILES)) % files)));
+						dirMenu.InsertSeparatorFirst(CTSTRING_F(X_FILES, files));
 						dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_FILE_PRIORITIES));
 					}
 				}
 			} else {
-				dirMenu.InsertSeparatorFirst(Text::toT(str(boost::format(CSTRING(X_BUNDLES)) % bundles.size())));
-				//dirMenu.InsertSeparatorFirst(CTSTRING(X_BUNDLES, bundles.size()));
+				dirMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bundles.size()));
 				dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITIES));
 			}
 		} else {
@@ -1697,7 +1693,7 @@ void QueueFrame::setPriority(HTREEITEM ht, const QueueItem::Priority& p) {
 	}
 	const string& name = getDir(ht);
 	DirectoryPairC dp = directories.equal_range(name);
-	for(DirectoryIterC i = dp.first; i != dp.second; ++i) {
+	for(auto i = dp.first; i != dp.second; ++i) {
 		QueueManager::getInstance()->setQIAutoPriority(i->second->getTarget(), false);
 		QueueManager::getInstance()->setQIPriority(i->second->getTarget(), p);
 	}
@@ -1839,9 +1835,10 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		}
 
 		SettingsManager::getInstance()->set(SettingsManager::QUEUEFRAME_SHOW_TREE, ctrlShowTree.GetCheck() == BST_CHECKED);
-		for(DirectoryIter i = directories.begin(); i != directories.end(); ++i) {
-				delete i->second;
-			}
+
+		for(auto d: directories | map_values)
+			delete d;
+
 		directories.clear();
 		ctrlQueue.DeleteAllItems();
 
@@ -1897,7 +1894,7 @@ void QueueFrame::updateQueue() {
 	}
 
 	ctrlQueue.SetRedraw(FALSE);
-	for(DirectoryIter j = i.first; j != i.second; ++j) {
+	for(auto j = i.first; j != i.second; ++j) {
 		QueueItemInfo* ii = j->second;
 		ctrlQueue.insertItem(ctrlQueue.GetItemCount(), ii, ResourceLoader::getIconIndex(Text::toT(ii->getTarget())));
 	}
@@ -1933,12 +1930,12 @@ void QueueFrame::moveNode(HTREEITEM item, HTREEITEM parent) {
 	bool updateMap = false;
 	bool setBold = false;
 	//check if we need to modify the bundlemap
-	for (auto i = bundles.begin(); i != bundles.end(); ++i) {
-		if (stricmp((*i).second->getTarget(), dii->getDir()) == 0) {
+	for (auto& b: bundles | map_values) {
+		if (stricmp(b->getTarget(), dii->getDir()) == 0) {
 			updateMap = true;
 			setBold=true;
 			break;
-		} else if ((*i).second->isFileBundle() && stricmp(Util::getFilePath((*i).second->getTarget()), dii->getDir()) == 0) {
+		} else if (b->isFileBundle() && stricmp(Util::getFilePath(b->getTarget()), dii->getDir()) == 0) {
 			setBold=true;
 			break;
 		}
@@ -2002,20 +1999,20 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 
 			// running chunks
 			v = QueueManager::getInstance()->getChunksVisualisation(qii->getQueueItem(), 0);
-			for(vector<Segment>::const_iterator i = v.begin(); i < v.end(); ++i) {
-				statusBar.FillRange((*i).getStart(), (*i).getEnd(), SETTING(COLOR_RUNNING));
+			for(const auto& s: v) {
+				statusBar.FillRange(s.getStart(), s.getEnd(), SETTING(COLOR_RUNNING));
 			}
 
 			// downloaded bytes
 			v = QueueManager::getInstance()->getChunksVisualisation(qii->getQueueItem(), 1);
-			for(vector<Segment>::const_iterator i = v.begin(); i < v.end(); ++i) {
-				statusBar.FillRange((*i).getStart(), (*i).getEnd(), SETTING(COLOR_DOWNLOADED));
+			for(const auto& s: v) {
+				statusBar.FillRange(s.getStart(), s.getEnd(), SETTING(COLOR_DOWNLOADED));
 			}
 
 			// done chunks
 			v = QueueManager::getInstance()->getChunksVisualisation(qii->getQueueItem(), 2);
-			for(vector<Segment>::const_iterator i = v.begin(); i < v.end(); ++i) {
-				statusBar.FillRange((*i).getStart(), (*i).getEnd(), SETTING(COLOR_DONE));
+			for(const auto& s: v) {
+				statusBar.FillRange(s.getStart(), s.getEnd(), SETTING(COLOR_DONE));
 			}
 
 			CDC cdc;
@@ -2063,9 +2060,9 @@ LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
 
 		QueueItem::SourceList sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
-		for(QueueItem::SourceConstIter i =	sources.begin(); i != sources.end(); i++) {
-			if(!i->getUser().user->isOnline()) {
-				QueueManager::getInstance()->removeSource(ii->getTarget(), i->getUser().user, QueueItem::Source::FLAG_REMOVED);
+		for(const auto& s: sources) {
+			if(!s.getUser().user->isOnline()) {
+				QueueManager::getInstance()->removeSource(ii->getTarget(), s.getUser().user, QueueItem::Source::FLAG_REMOVED);
 			}
 		}
 	}
@@ -2078,8 +2075,8 @@ LRESULT QueueFrame::onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 		// re-add all sources
 		QueueItem::SourceList badSources = QueueManager::getInstance()->getBadSources(ii->getQueueItem());
-		for(auto s = badSources.begin(); s != badSources.end(); s++) {
-			QueueManager::getInstance()->readdQISource(ii->getTarget(), s->getUser());
+		for(const auto& bs: badSources) {
+			QueueManager::getInstance()->readdQISource(ii->getTarget(), bs.getUser());
 		}
 	}
 	return 0; 

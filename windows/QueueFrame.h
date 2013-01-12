@@ -350,8 +350,8 @@ private:
 	void addQueueList(const QueueItem::StringMap& l);
 	void addQueueItem(QueueItemInfo* qi, bool noSort);
 	HTREEITEM addItemDir(bool isFileList);
-	HTREEITEM addBundleDir(const string& dir, const BundlePtr aBundle, HTREEITEM startAt = NULL);
-	HTREEITEM createDir(TVINSERTSTRUCT& tvi, const string&& dir, const BundlePtr aBundle, HTREEITEM parent, bool subDir=false);
+	HTREEITEM addBundleDir(const string& dir, const BundlePtr& aBundle, HTREEITEM startAt = NULL);
+	HTREEITEM createDir(TVINSERTSTRUCT& tvi, const string&& dir, const BundlePtr& aBundle, HTREEITEM parent, bool subDir=false);
 	HTREEITEM createSplitDir(TVINSERTSTRUCT& tvi, const string&& dir, HTREEITEM parent, DirItemInfo* bii, bool subDir=false);
 	void removeQueueItem(QueueItemInfo* ii, bool noSort);
 	void removeItemDir(bool isFileList);
@@ -395,10 +395,10 @@ private:
 	
 	const string& getDir(HTREEITEM ht) const { dcassert(ht != NULL); return ((DirItemInfo*)(ctrlDirs.GetItemData(ht)))->getDir(); }
 
-	void on(QueueManagerListener::Added, QueueItemPtr aQI) noexcept;
-	void on(QueueManagerListener::Removed, const QueueItemPtr aQI, bool updateStatus) noexcept;
-	void on(QueueManagerListener::SourcesUpdated, const QueueItemPtr aQI) noexcept;
-	void on(QueueManagerListener::StatusUpdated, const QueueItemPtr aQI) noexcept { on(QueueManagerListener::SourcesUpdated(), aQI); }
+	void on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept;
+	void on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool updateStatus) noexcept;
+	void on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) noexcept;
+	void on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept { on(QueueManagerListener::SourcesUpdated(), aQI); }
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 	
 	void onRechecked(const string& target, const string& message);
@@ -410,15 +410,15 @@ private:
 	void on(QueueManagerListener::RecheckNoTree, const string& target) noexcept;
 	void on(QueueManagerListener::RecheckAlreadyFinished, const string& target) noexcept;
 	void on(QueueManagerListener::RecheckDone, const string& target) noexcept;
-	void on(QueueManagerListener::Moved, const QueueItemPtr aQI, const string& oldTarget) noexcept;
+	void on(QueueManagerListener::Moved, const QueueItemPtr& aQI, const string& oldTarget) noexcept;
 
-	void on(QueueManagerListener::BundleMoved, const BundlePtr aBundle) noexcept;
-	void on(QueueManagerListener::BundleMerged, const BundlePtr aBundle, const string& oldTarget) noexcept;
-	void on(QueueManagerListener::BundleSources, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundlePriority(), aBundle); };
-	void on(QueueManagerListener::BundlePriority, const BundlePtr aBundle) noexcept;
-	void on(QueueManagerListener::BundleAdded, const BundlePtr aBundle) noexcept;
-	void on(QueueManagerListener::BundleRemoved, const BundlePtr aBundle) noexcept;
-	void on(QueueManagerListener::BundleFinished, const BundlePtr aBundle) noexcept { on(QueueManagerListener::BundleRemoved(), aBundle); }
+	void on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept;
+	void on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string& oldTarget) noexcept;
+	void on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept { on(QueueManagerListener::BundlePriority(), aBundle); };
+	void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept;
+	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;
+	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
+	void on(QueueManagerListener::BundleFinished, const BundlePtr& aBundle) noexcept { on(QueueManagerListener::BundleRemoved(), aBundle); }
 
 	void on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t aTick) noexcept;
 };

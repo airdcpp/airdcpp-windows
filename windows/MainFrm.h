@@ -547,7 +547,7 @@ private:
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 
 	// QueueManagerListener
-	void on(QueueManagerListener::Finished, const QueueItemPtr qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
+	void on(QueueManagerListener::Finished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
 
 	// DirectoryListingManagerListener
 	void on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir) noexcept;

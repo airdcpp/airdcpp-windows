@@ -731,3 +731,38 @@ Removed:
 - The option to disable notifications about new version
 - The option to use antifrag method for downloads (always enabled now, didn't work correctly earlier)
 - "Private" option for favorite hubs
+
+
+2.41
+
+Added:
+
+- Allow using multiple threads for hashing
+- Show some user information in favorite users frame
+- Add "browse list" in the queue tab
+
+Changed:
+
+- Optimize hard disk access with segmented downloads/uploads (equals to not using segments when transferring sequential segments)
+- Store the favorite hub settings in a different way, use the global value by default (when there is one)
+- Remove GUI freezes in various situations
+- Make sending of magnet links usable with large files: no freezing and the hashing progress is shown
+- Show a warning message when magnet links from private chat are downloaded into a shared folder
+- Disable partial sharing for magnet links downloaded from private chat
+- Merge 2 identical active mode settings (DC++)
+- Several performance tweaks
+
+Fixed:
+
+- Fix a startup crash if the client can't write in the settings folder
+- Fix a bug that prevents users from sending chat messages before they change their CID
+- Fix the auto search dialog sizing when using larger font size
+- Open web links even when they don't have the http:// part
+- Don't spam "User went offline" status messages in PM
+- Fix a few message boxes going to the background on startup
+- Fix a crash with formating parameters (only affects the 32 bit version)
+- Fix a crash when there are favorite hubs with empty addresses
+- Display the bundle sources correctly when sources have been readded for single files
+- Fix a few bugs in the sharing page
+- Avoid disk access when loading the initial folder tree on the sharing page
+- Fix queue size going wrong when opening files directly
