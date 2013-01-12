@@ -607,7 +607,6 @@
 		<String Name="SettingsLogging">Logging</String>
 		<String Name="SettingsLogs">Logs</String>
 		<String Name="SettingsMaxCompress">Max compression level</String>
-		<String Name="SettingsMaxHashSpeed">Max hash speed</String>
 		<String Name="SettingsMaxTabRows">Max tab rows</String>
 		<String Name="SettingsMinimizeOnStartup">Minimize at program startup</String>
 		<String Name="SettingsMinimizeTray">Minimize to tray</String>
@@ -1249,7 +1248,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ProfilePrivate">Private Hubs</String>
 		<String Name="SettingsMcnNote">* Lowering the upload connections from the default value will result the download connections to be set to the same value</String>
 		<String Name="SettingsUseTargetdrive">Use Target Drive for unfinished files</String>
-		<String Name="RemoveOnHit">Remove after found</String>
 		<String Name="CheckUseSkiplist">Ignore items matching the share skiplist</String>
 		<String Name="CheckIgnoreZeroByte">Ignore zero byte files</String>
 		<String Name="NoFilesAvailable">No files to download</String>
@@ -1756,8 +1754,12 @@ Do you want to use this destination anyway?</String>
 		<String Name="RefreshOptions">Refreshing options</String>
 		<String Name="ExpiredAsRemoved">An expired auto search has been removed: %s</String>
 		<String Name="Proxies">Proxies</String>
+		<String Name="PassiveMode">Passive mode</String>
+		<String Name="ActiveMode">Active mode</String>
+		<String Name="RemoveAfterCompleted">Remove after completed</String>
 		<String Name="AwayMode">Away Mode</String>
 		<String Name="AwayIdleTimeBegin">Automatically set away mode after</String>
 		<String Name="AwayIdleTimeEnd">minutes of inactivity (0 = disabled)</String>
+		<String Name="SettingsMaxHasherSpeed">Max speed per hasher</String>
 	</Strings>
 </Language>

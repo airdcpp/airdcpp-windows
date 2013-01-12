@@ -44,7 +44,7 @@ PropPage::TextItem SharingOptionsPage::texts[] = {
 
 	//hashing
 	{ IDC_HASHING_OPTIONS, ResourceManager::HASHING_OPTIONS },
-	{ IDC_SETTINGS_MAX_HASH_SPEED, ResourceManager::SETTINGS_MAX_HASH_SPEED },
+	{ IDC_SETTINGS_MAX_HASH_SPEED, ResourceManager::SETTINGS_MAX_HASHER_SPEED },
 	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
 	{ IDC_HASHING_THREADS_LBL, ResourceManager::MAX_HASHING_THREADS },
 	{ IDC_MAX_VOL_HASHERS_LBL, ResourceManager::MAX_VOL_HASHERS },
