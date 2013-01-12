@@ -394,7 +394,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	updateTray(true);
 
-	Util::setAway(SETTING(AWAY));
+	AirUtil::setAway(SETTING(AWAY) ? AWAY_MANUAL : AWAY_OFF);
 	ctrlToolbar.CheckButton(IDC_AWAY,SETTING(AWAY));
 	ctrlToolbar.CheckButton(IDC_DISABLE_SOUNDS, SETTING(SOUNDS_DISABLED));
 
@@ -410,7 +410,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	warningIcon = ResourceLoader::loadIcon(IDI_IWARNING, 16);
 	errorIcon = ResourceLoader::loadIcon(IDI_IERROR, 16);;
 
-	ctrlStatus.SetIcon(STATUS_AWAY, Util::getAway() ? awayIconON : awayIconOFF);
+	ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? awayIconON : awayIconOFF);
 	ctrlStatus.SetIcon(STATUS_SHARED, ResourceLoader::loadIcon(IDI_SHARED, 16));
 	ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
 	ctrlStatus.SetIcon(STATUS_HUBS, ResourceLoader::loadIcon(IDI_HUB, 16));
@@ -716,11 +716,13 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 		TextFrame::openWindow(*file, TextFrame::NORMAL);
 		File::deleteFile(Text::fromT(*file));
 	} else if(wParam == STATS) {
+		checkAwayIdle();
+
 		auto_ptr<TStringList> pstr(reinterpret_cast<TStringList*>(lParam));
 		const TStringList& str = *pstr;
 		if(ctrlStatus.IsWindow()) {
 			bool u = false;
-			ctrlStatus.SetIcon(STATUS_AWAY, Util::getAway() ? awayIconON : awayIconOFF);
+			ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? awayIconON : awayIconOFF);
 			auto pos = 0;
 			for(int i = STATUS_SHARED; i < STATUS_SHUTDOWN; i++) {
 				
@@ -1055,7 +1057,7 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 
 
 
-		if(Util::getAway()) ctrlToolbar.CheckButton(IDC_AWAY, true);
+		if(AirUtil::getAway()) ctrlToolbar.CheckButton(IDC_AWAY, true);
 		else ctrlToolbar.CheckButton(IDC_AWAY, false);
 
 		if(getShutDown()) ctrlToolbar.CheckButton(IDC_SHUTDOWN, true);
@@ -1084,7 +1086,7 @@ LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 		pDispInfo->lpszText = const_cast<TCHAR*>(lastLines.c_str());
 
 	} else if(idCtrl == STATUS_AWAY+POPUP_UID) {
-		pDispInfo->lpszText = Util::getAway() ? (LPWSTR)CTSTRING(AWAY_ON) : (LPWSTR)CTSTRING(AWAY_OFF);
+		pDispInfo->lpszText = AirUtil::getAway() ? (LPWSTR)CTSTRING(AWAY_ON) : (LPWSTR)CTSTRING(AWAY_OFF);
 	}
 	return 0;
 }
@@ -1153,13 +1155,9 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 
 		if(SETTING(AUTO_AWAY) && (bAppMinimized == false) ) {
 			
-			if(Util::getAway()) {
-				awaybyminimize = false;
-			} else {
-				awaybyminimize = true;
-				Util::setAway(true, true);
+			if(AirUtil::getAwayMode() < AWAY_MANUAL) {
+				AirUtil::setAway(AWAY_MINIMIZE);
 				setAwayButton(true);
-				ClientManager::getInstance()->infoUpdated();
 			}
 		}
 		bAppMinimized = true; //set this here, on size is called twice if minimize to tray.
@@ -1173,11 +1171,9 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 	} else if( (wParam == SIZE_RESTORED || wParam == SIZE_MAXIMIZED) ) {
 		SetPriorityClass(GetCurrentProcess(), NORMAL_PRIORITY_CLASS);
 		if(SETTING(AUTO_AWAY)) {
-			if(awaybyminimize == true) {
-				awaybyminimize = false;
-				Util::setAway(false, true);
+			if(AirUtil::getAwayMode() < AWAY_MANUAL) {
+				AirUtil::setAway(AWAY_OFF);
 				setAwayButton(false);
-				ClientManager::getInstance()->infoUpdated();
 			}
 		}
 		if(bIsPM) {
@@ -1606,24 +1602,22 @@ LRESULT MainFrame::onStatusBarClick(UINT uMsg, WPARAM /*wParam*/, LPARAM lParam,
 					SettingsManager::getInstance()->set(SettingsManager::DEFAULT_AWAY_MESSAGE, msg); 
 			
 				//set the away mode on if its not already.
-				if(!Util::getAway()) {
+				if(!AirUtil::getAway()) {
 					setAwayButton(true);
-					Util::setAway(true);
+					AirUtil::setAway(AWAY_MANUAL);
 					ctrlStatus.SetIcon(STATUS_AWAY, awayIconON);
-					ClientManager::getInstance()->infoUpdated();
 				}
 			}
 		} else {
-			if(Util::getAway()) { 
+			if(AirUtil::getAway()) { 
 				setAwayButton(false);
-				Util::setAway(false);
+				AirUtil::setAway(AWAY_OFF);
 				ctrlStatus.SetIcon(STATUS_AWAY, awayIconOFF);
 			} else {
 				setAwayButton(true);
-				Util::setAway(true);
+				AirUtil::setAway(AWAY_MANUAL);
 				ctrlStatus.SetIcon(STATUS_AWAY, awayIconON);
 			}
-			ClientManager::getInstance()->infoUpdated();
 		}
 	}
 	bHandled = TRUE;
@@ -1886,7 +1880,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 
 	if(currentPic != SETTING(BACKGROUND_IMAGE)) {
 		currentPic = SETTING(BACKGROUND_IMAGE);
-		m_PictureWindow.Load(Text::toT(currentPic).c_str());
+		callAsync([=] { m_PictureWindow.Load(Text::toT(currentPic).c_str()); });
 	}
 
 	time_t currentTime;
@@ -1958,14 +1952,13 @@ LRESULT MainFrame::onAppCommand(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam,
 }
 
 LRESULT MainFrame::onAway(WORD , WORD , HWND, BOOL& ) {
-	if(Util::getAway()) { 
+	if(AirUtil::getAway()) { 
 		setAwayButton(false);
-		Util::setAway(false);
+		AirUtil::setAway(AWAY_OFF);
 	} else {
 		setAwayButton(true);
-		Util::setAway(true);
+		AirUtil::setAway(AWAY_MANUAL);
 	}
-	ClientManager::getInstance()->infoUpdated();
 	return 0;
 }
 
@@ -2132,6 +2125,15 @@ LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /
 		ShowWindow(SW_MINIMIZE);
 	}
 	return 0;
+}
+void MainFrame::checkAwayIdle() {
+	if(SETTING(AWAY_IDLE_TIME) && (AirUtil::getAwayMode() <= AWAY_IDLE)) {
+		LASTINPUTINFO info = { sizeof(LASTINPUTINFO) };
+		bool awayIdle = (AirUtil::getAwayMode() == AWAY_IDLE);
+		if((::GetLastInputInfo(&info) && static_cast<int>(::GetTickCount() - info.dwTime) > SETTING(AWAY_IDLE_TIME) * 60 * 1000) ^ awayIdle) {
+			awayIdle ? AirUtil::setAway(AWAY_OFF) : AirUtil::setAway(AWAY_IDLE);
+		}
+	}
 }
 
 void MainFrame::callAsync(function<void ()> f) {

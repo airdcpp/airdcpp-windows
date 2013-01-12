@@ -768,19 +768,18 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 
 		ShareManager::getInstance()->setDirty(pts, false, true);
 	} else if(stricmp(cmd.c_str(), _T("away")) == 0) {
-		if(Util::getAway() && param.empty()) {
-			Util::setAway(false);
+		if(AirUtil::getAway() && param.empty()) {
+			AirUtil::setAway(AWAY_OFF);
 			MainFrame::setAwayButton(false);
 			status = TSTRING(AWAY_MODE_OFF);
 		} else {
-			Util::setAway(true);
+			AirUtil::setAway(AWAY_MANUAL);
 			MainFrame::setAwayButton(true);
-			Util::setAwayMessage(Text::fromT(param));
+			AirUtil::setAwayMessage(Text::fromT(param));
 			
 			ParamMap sm;
-			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(Util::getAwayMessage(sm));
+			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(AirUtil::getAwayMessage(sm));
 		}
-		ClientManager::getInstance()->infoUpdated();
 	} else if(WebShortcuts::getInstance()->getShortcutByKey(cmd) != NULL) {
 		WinUtil::SearchSite(WebShortcuts::getInstance()->getShortcutByKey(cmd), param);
 	} else if(stricmp(cmd.c_str(), _T("u")) == 0) {

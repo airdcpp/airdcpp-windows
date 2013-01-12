@@ -1756,5 +1756,8 @@ Do you want to use this destination anyway?</String>
 		<String Name="RefreshOptions">Refreshing options</String>
 		<String Name="ExpiredAsRemoved">An expired auto search has been removed: %s</String>
 		<String Name="Proxies">Proxies</String>
+		<String Name="AwayMode">Away Mode</String>
+		<String Name="AwayIdleTimeBegin">Automatically set away mode after</String>
+		<String Name="AwayIdleTimeEnd">minutes of inactivity (0 = disabled)</String>
 	</Strings>
 </Language>

@@ -502,6 +502,7 @@ private:
 	void updateTray(bool add = true);
 	bool hasPassdlg;
 	void updateTooltipRect();
+	void checkAwayIdle();
 
 	enum {
 		STATUS_LASTLINES,

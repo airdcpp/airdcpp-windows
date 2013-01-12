@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -282,7 +282,7 @@
 #define IDI_TOTAL_UP                    482
 #define IDI_TOTAL_DOWN                  483
 #define IDI_SHARED                      484
-#define IDI_PROXY		                488
+#define IDI_PROXY                       488
 #define IDD_FORMVIEW                    500
 #define IDR_WINAMP                      501
 #define IDD_PARAM_DLG                   502
@@ -571,6 +571,7 @@
 #define IDC_SHARE_SAVE_TIME             1218
 #define IDC_U_MATCH                     1218
 #define IDC_FDNAME                      1218
+#define IDC_AWAY_IDLE_TIME              1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_MAX_UPLOAD_SP               1219
@@ -806,6 +807,7 @@
 #define IDC_REFRESH_ON_SHAREPAGE        1309
 #define IDC_CHECK_QUEUED                1309
 #define IDC_VOL_HASHERS_SPIN            1309
+#define IDC_AUTO_AWAY                   1309
 #define IDC_DOWNCONN_SPIN               1310
 #define IDC_HIGHEST_PRIORITY_USE_REGEXP 1310
 #define IDC_FAV_SEARCH_INTERVAL_BOX     1310
@@ -943,6 +945,7 @@
 #define IDC_LOG_LINESTEXT               1368
 #define IDC_SPIN1                       1369
 #define IDC_COMBOBOXEX1                 1369
+#define IDC_AWAY_SPIN                   1369
 #define IDC_NATT                        1370
 #define IDC_SORT_DIRS                   1370
 #define IDC_CONNECTION_DETECTION        1371
@@ -1215,6 +1218,10 @@
 #define IDC_AUTO_DETECTION_USE_LIMITED  1690
 #define IDC_REFRESHING_OPTIONS          1691
 #define IDC_HASHING_OPTIONS             1692
+#define IDC_AWAY_MINS                   1694
+#define IDC_AWAY_IDLE_TEXT_END          1694
+#define IDC_AWAY_IDLE_TEXT_BEGIN        1695
+#define IDC_AWAY_MODE                   1696
 #define IDC_EDIT4                       1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
@@ -1600,7 +1607,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1694
+#define _APS_NEXT_CONTROL_VALUE         1697
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif
