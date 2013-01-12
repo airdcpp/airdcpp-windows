@@ -740,6 +740,7 @@ Added:
 - Allow using multiple threads for hashing
 - Show some user information in favorite users frame
 - Add "browse list" in the queue tab
+- Allow automatic enabling of away mode after certain period of inactivity
 
 Changed:
 
@@ -766,3 +767,4 @@ Fixed:
 - Fix a few bugs in the sharing page
 - Avoid disk access when loading the initial folder tree on the sharing page
 - Fix queue size going wrong when opening files directly
+- Don't try to update custom language files
