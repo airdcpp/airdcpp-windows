@@ -109,10 +109,11 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	statusSizes[0] = 16;
 	ctrlStatus.SetParts(6, statusSizes);
 
-	ctrlStatus.SetText(1, Text::toT("Loading").c_str());
+	ctrlStatus.SetText(1, CTSTRING(LOADING_QUEUE));
 
 	WinUtil::SetIcon(m_hWnd, IDI_QUEUE);
 
+	
 	ctrlQueue.SetRedraw(FALSE);
 	ctrlDirs.SetRedraw(FALSE);
 
@@ -1645,9 +1646,13 @@ LRESULT QueueFrame::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 		int tmp1=0, tmp2=0;
 		BundleList bundles;
 		QueueManager::getInstance()->getBundleInfo(curDir, bundles, tmp1, tmp2);
-		if (!bundles.empty()) {
-			QueueManager::getInstance()->setBundlePriorities(curDir, bundles, (Bundle::Priority)p);
-		}
+
+		auto dir = curDir;
+		MainFrame::getMainFrame()->callAsync([=] {
+			if (!bundles.empty()) {
+				QueueManager::getInstance()->setBundlePriorities(dir, bundles, (Bundle::Priority)p);
+			}
+		});
 		//setPriority(ctrlDirs.GetSelectedItem(), p);
 	} else {
 		int i = -1;

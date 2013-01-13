@@ -1761,5 +1761,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="AwayIdleTimeBegin">Automatically set away mode after</String>
 		<String Name="AwayIdleTimeEnd">minutes of inactivity (0 = disabled)</String>
 		<String Name="SettingsMaxHasherSpeed">Max speed per hasher</String>
+		<String Name="LoadingQueue">Loading queue...</String>
 	</Strings>
 </Language>

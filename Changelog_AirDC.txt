@@ -768,3 +768,5 @@ Fixed:
 - Avoid disk access when loading the initial folder tree on the sharing page
 - Fix queue size going wrong when opening files directly
 - Don't try to update custom language files
+- Don't leave empty directories on disk when moving queued bundles
+- Improve the stability of browsing partial file lists
