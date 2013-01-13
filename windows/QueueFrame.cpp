@@ -98,28 +98,50 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlShowTree.Create(ctrlStatus.m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	ctrlShowTree.SetButtonStyle(BS_AUTOCHECKBOX, false);
 	ctrlShowTree.SetCheck(showTree);
+	ctrlShowTree.EnableWindow(FALSE);
 	showTreeContainer.SubclassWindow(ctrlShowTree.m_hWnd);
 
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
 
-	QueueManager::getInstance()->readLockedOperation([this](const QueueItem::StringMap& qsm) { addQueueList(qsm); });
-	//auto queue = QueueManager::getInstance()->getQueue();
-	//addQueueList(queue);
-	//concurrency::reader_writer_lock
-	//startupTask.
-
-	QueueManager::getInstance()->addListener(this);
-	DownloadManager::getInstance()->addListener(this);
-	SettingsManager::getInstance()->addListener(this);
-
 	memzero(statusSizes, sizeof(statusSizes));
 	statusSizes[0] = 16;
 	ctrlStatus.SetParts(6, statusSizes);
-	updateStatus();
+
+	ctrlStatus.SetText(1, Text::toT("Loading").c_str());
 
 	WinUtil::SetIcon(m_hWnd, IDI_QUEUE);
+
+	ctrlQueue.SetRedraw(FALSE);
+	ctrlDirs.SetRedraw(FALSE);
+
+	frameTasks.run([this] {
+		QueueManager::getInstance()->readLockedOperation([this](const QueueItem::StringMap& qsm) { 
+			addQueueList(qsm); 
+
+			if (!closed)
+				QueueManager::getInstance()->addListener(this);
+		});
+
+		if (!closed) {
+			DownloadManager::getInstance()->addListener(this);
+			SettingsManager::getInstance()->addListener(this);
+
+			ctrlQueue.resort();
+
+			MainFrame::getMainFrame()->callAsync([this] {
+				ctrlQueue.SetRedraw(TRUE);
+				ctrlDirs.SetRedraw(TRUE);
+
+				ctrlShowTree.EnableWindow(TRUE);
+				ctrlDirs.Invalidate();
+				ctrlStatus.SetText(1, _T(""));
+				updateStatus();
+				setDirty();
+			});
+		}
+	});
 
 	bHandled = FALSE;
 	return 1;
@@ -364,19 +386,16 @@ QueueFrame::QueueItemInfo* QueueFrame::getItemInfo(const string& target) const {
 }
 
 void QueueFrame::addQueueList(const QueueItem::StringMap& li) {
-	ctrlQueue.SetRedraw(FALSE);
-	ctrlDirs.SetRedraw(FALSE);
 	for(auto& qi: li | map_values) {
 		if (qi->isSet(QueueItem::FLAG_FINISHED) && !SETTING(KEEP_FINISHED_FILES)) {
 			continue;
 		}
 		QueueItemInfo* ii = new QueueItemInfo(qi);
 		addQueueItem(ii, true);
+
+		if (closed)
+			return;
 	}
-	ctrlQueue.resort();
-	ctrlQueue.SetRedraw(TRUE);
-	ctrlDirs.SetRedraw(TRUE);
-	ctrlDirs.Invalidate();
 }
 
 HTREEITEM QueueFrame::addItemDir(bool isFileList) {
@@ -1824,6 +1843,7 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		DownloadManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		closed = true;
+		frameTasks.wait();
 		WinUtil::setButtonPressed(IDC_QUEUE, false);
 		PostMessage(WM_CLOSE);
 		return 0;

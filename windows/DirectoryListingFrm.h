@@ -49,7 +49,7 @@ class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame
 	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener
 {
 public:
-	static void openWindow(DirectoryListing* aList, const string& aDir);
+	static void openWindow(DirectoryListing* aList, const string& aDir, const string& aXML);
 	static void closeAll();
 
 	typedef MDITabChildWindowImpl<DirectoryListingFrame> baseClass;
@@ -65,14 +65,6 @@ public:
 		COLUMN_DATE,
 		COLUMN_LAST
 	};
-
-	enum {
-		UPDATE_STATUS,
-		STARTED,
-		FINISHED,
-		ABORTED,
-		FILTER
-	};	
 		
 	enum {
 		STATUS_TEXT,
@@ -227,6 +219,8 @@ public:
 	void onFind();
 	void setWindowTitle();
 
+	void callAsync(function<void ()> f);
+
 	LRESULT OnEraseBackground(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		return 1;
 	}
@@ -291,6 +285,7 @@ public:
 	void handleDownload(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
 private:
+	void updateStatus(const tstring& aMsg);
 	string curPath;
 	void changeWindowState(bool enable);
 	void onReloadPartial(bool dirOnly);
@@ -398,7 +393,7 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir) noexcept;
+	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept;
 	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
 	void on(DirectoryListingListener::LoadingStarted) noexcept;
 	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;
@@ -412,6 +407,7 @@ private:
 	void filterList();
 	void createRoot();
 	void convertToFull();
+	void onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir);
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

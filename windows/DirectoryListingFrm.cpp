@@ -48,7 +48,7 @@ int DirectoryListingFrame::columnSizes[] = { 300, 60, 100, 100, 200, 100 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::TYPE, ResourceManager::EXACT_SIZE, ResourceManager::SIZE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 
-void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aDir) {
+void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aDir, const string& aXML) {
 
 	HWND aHWND = NULL;
 	DirectoryListingFrame* frame = new DirectoryListingFrame(aList);
@@ -60,7 +60,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 	if(aHWND != 0) {
 		frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 		if (aList->getPartialList())
-			aList->addPartialListTask(aDir);
+			aList->addPartialListTask(aDir, aXML);
 		else
 			aList->addFullListTask(aDir);
 		frames.emplace(frame->m_hWnd, frame);
@@ -74,22 +74,31 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 		UserInfoBaseHandler(true, false), isTreeChange(false)
-{ 
+{
 	dl->addListener(this);
 }
 
 DirectoryListingFrame::~DirectoryListingFrame() {
 	dl->join();
 	dl->removeListener(this);
-	DirectoryListingManager::getInstance()->removeList(dl->getUser());
+
 	// dl will be automatically deleted by DirectoryListingManager
-	//delete dl;
+	DirectoryListingManager::getInstance()->removeList(dl->getUser());
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir) noexcept {
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept {
+	auto f = [=] { onLoadingFinished(aStart, aDir, reloadList, changeDir); };
+	if (loadInGUIThread) {
+		callAsync(f);
+	} else {
+		f();
+	}
+}
+
+void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir) {
 	bool searching = dl->isCurrentSearchPath(aDir);
 
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(CTSTRING(UPDATING_VIEW)));
+	callAsync([=] { updateStatus(CTSTRING(UPDATING_VIEW)); });
 	if (searching)
 		resetFilter();
 
@@ -112,41 +121,56 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 			msg = STRING_F(FILELIST_LOADED_IN, Util::formatSeconds(loadTime, true));
 		}
 
-		PostMessage(WM_SPEAKER, DirectoryListingFrame::FINISHED, (LPARAM)new tstring(Text::toT(msg)));
+		callAsync([=] {
+			initStatus();
+			updateStatus(Text::toT(msg));
+			changeWindowState(true);
+
+			//notify the user that we've loaded the list
+			setDirty();
+		});
 	} else {
 		findSearchHit(true);
 		changeWindowState(true);
-		PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())));
+		callAsync([=] { updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())); });
 	}
+	dl->setWaiting(false);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept {
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED, (LPARAM)new tstring(Text::toT(aReason)));
-	changeWindowState(true);
+	callAsync([=] { 
+		updateStatus(Text::toT(aReason));
+		PostMessage(WM_CLOSE, 0, 0);
+	});
+
+	//changeWindowState(true);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted) noexcept {
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::STARTED);
+	callAsync([=] { 
+		ctrlList.DeleteAllItems();
+		ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
+		dl->setWaiting(false);
+	});
 	changeWindowState(false);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept {
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(Text::toT(aMessage)));
+	callAsync([=] { updateStatus(Text::toT(aMessage)); });
 	changeWindowState(true);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::Close) noexcept {
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::ABORTED);
-	//PostMessage(WM_CLOSE);
+	callAsync([this] { PostMessage(WM_CLOSE, 0, 0); });
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::SearchStarted) noexcept {
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(TSTRING(SEARCHING)));
+	callAsync([=] { updateStatus(TSTRING(SEARCHING)); });
 	changeWindowState(false);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept {
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(timedOut ? TSTRING(SEARCH_TIMED_OUT) : TSTRING(NO_RESULTS_FOUND)));
+	callAsync([=] { updateStatus(timedOut ? TSTRING(SEARCH_TIMED_OUT) : TSTRING(NO_RESULTS_FOUND)); });
 	changeWindowState(true);
 }
 
@@ -156,7 +180,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const 
 
 	selectItem(Text::toT(aDir));
 	if (isSearchChange) {
-		PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())));
+		callAsync([=] { updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())); });
 		findSearchHit(true);
 	}
 
@@ -164,14 +188,15 @@ void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const 
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept {
-	PostMessage(WM_SPEAKER, DirectoryListingFrame::UPDATE_STATUS, (LPARAM)new tstring(Text::toT(aMessage)));
+	callAsync([=] { updateStatus(Text::toT(aMessage)); });
 }
 
 LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
 	ctrlStatus.Attach(m_hWndStatusBar);
-	ctrlStatus.SetFont(WinUtil::boldFont);
+	//ctrlStatus.SetFont(WinUtil::boldFont);
+	ctrlStatus.SetFont(WinUtil::systemFont);
 	statusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
 	ctrlTree.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT, WS_EX_CLIENTEDGE, IDC_DIRECTORIES);
@@ -302,7 +327,6 @@ LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/,
 }
 
 void DirectoryListingFrame::convertToFull() {
-	dl->setReloading(true);
 	if (dl->getIsOwnList())
 		dl->addFullListTask(curPath);
 	else {
@@ -613,7 +637,7 @@ LRESULT DirectoryListingFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::Filter) noexcept {
-	PostMessage(WM_SPEAKER, FILTER);
+	callAsync([this] { filterList(); });
 }
 
 void DirectoryListingFrame::filterList() {
@@ -742,7 +766,7 @@ void DirectoryListingFrame::changeDir(const DirectoryListing::Directory* d, BOOL
 
 	if(!d->getComplete() || reload) {
 		if (dl->getIsOwnList()) {
-			dl->addPartialListTask(dl->getPath(d));
+			dl->addPartialListTask(Util::emptyString, dl->getPath(d));
 		} else if(dl->getUser()->isOnline()) {
 			try {
 				// TODO provide hubHint?
@@ -1708,42 +1732,19 @@ void DirectoryListingFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/
 	}
 }
 
-LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	switch(wParam) {
-		case FILTER:
-			filterList();
-			break;
-		case FINISHED:
-			{
-				initStatus();
-				ctrlStatus.SetFont(WinUtil::systemFont);
-				auto_ptr<tstring> msg(reinterpret_cast<tstring*>(lParam));
-				ctrlStatus.SetText(0, (*msg).c_str());
-				changeWindowState(true);
+void DirectoryListingFrame::callAsync(function<void ()> f) {
+	PostMessage(WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(f));
+}
 
-				//notify the user that we've loaded the list
-				setDirty();
-			}
-			break;
-		case ABORTED:
-			{
-				auto_ptr<tstring> msg(reinterpret_cast<tstring*>(lParam));
-				ctrlStatus.SetText(0, (*msg).c_str());
-				PostMessage(WM_CLOSE, 0, 0);
-				break;
-			}
-		case STARTED:
-			ctrlList.DeleteAllItems();
-			ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
-			break;
-		case UPDATE_STATUS:
-			{
-				auto_ptr<tstring> msg(reinterpret_cast<tstring*>(lParam));
-				ctrlStatus.SetText(0, (*msg).c_str());
-				break;
-			}
-		default: dcassert(0); break;
-	}
+void DirectoryListingFrame::updateStatus(const tstring& aMsg) {
+	ctrlStatus.SetText(0, aMsg.c_str());
+}
+
+LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+	auto f = reinterpret_cast<Dispatcher::F*>(lParam);
+	(*f)();
+	delete f;
+
 	return 0;
 }
 
@@ -1964,13 +1965,10 @@ LRESULT DirectoryListingFrame::onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	return 0;
 }
 
-void DirectoryListingFrame::onReloadPartial(bool dirOnly) {
+void DirectoryListingFrame::onReloadPartial(bool /*dirOnly*/) {
 	HTREEITEM t = ctrlTree.GetSelectedItem();
 	if(t != NULL) {
 		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		//if (dirOnly) {
-		if (!dirOnly)
-			dl->setReloading(true);
 		changeDir(dir, TRUE, true);
 	}
 }

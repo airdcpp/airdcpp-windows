@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <ppltasks.h>
+#include <ppl.h>
 
 #include "CSplitterEx.h"
 #include "FlatTabCtrl.h"
@@ -187,7 +187,9 @@ public:
 	}
 	
 private:
-	concurrency::task<void> startupTask;
+	//most of the time the main frame task group can be used...
+	concurrency::task_group frameTasks;
+
 	enum {
 		COLUMN_FIRST,
 		COLUMN_TARGET = COLUMN_FIRST,
