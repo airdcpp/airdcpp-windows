@@ -770,3 +770,6 @@ Fixed:
 - Don't try to update custom language files
 - Don't leave empty directories on disk when moving queued bundles
 - Improve the stability of browsing partial file lists
+- Fix the context menu when right-clicking on a scroll bar in chat
+- Fix a bug with setting newly added share dirs as incoming
+- Don't leave 0-byte dctmp files when the incomlete dir is full

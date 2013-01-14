@@ -113,41 +113,11 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	WinUtil::SetIcon(m_hWnd, IDI_QUEUE);
 
-	
-	ctrlQueue.SetRedraw(FALSE);
-	ctrlDirs.SetRedraw(FALSE);
-
-	frameTasks.run([this] {
-		QueueManager::getInstance()->readLockedOperation([this](const QueueItem::StringMap& qsm) { 
-			addQueueList(qsm); 
-
-			if (!closed)
-				QueueManager::getInstance()->addListener(this);
-		});
-
-		if (!closed) {
-			DownloadManager::getInstance()->addListener(this);
-			SettingsManager::getInstance()->addListener(this);
-
-			ctrlQueue.resort();
-
-			MainFrame::getMainFrame()->callAsync([this] {
-				ctrlQueue.SetRedraw(TRUE);
-				ctrlDirs.SetRedraw(TRUE);
-
-				ctrlShowTree.EnableWindow(TRUE);
-				ctrlDirs.Invalidate();
-				ctrlStatus.SetText(1, _T(""));
-				updateStatus();
-				setDirty();
-			});
-		}
-	});
+	//the queue will be downloaded in custom draw (otherwise the list view would be left without a background)
 
 	bHandled = FALSE;
 	return 1;
 }
-
 
 QueueFrame::~QueueFrame() { }
 
@@ -971,6 +941,15 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			ctrlStatus.SetText(1, Text::toT(status.str).c_str());
 		} else if(ti.first == UPDATE_STATUS_ITEMS) {
 			updateStatus();
+		} else if (ti.first == QUEUE_LOADED) {
+			ctrlQueue.SetRedraw(TRUE);
+			ctrlDirs.SetRedraw(TRUE);
+
+			ctrlShowTree.EnableWindow(TRUE);
+			ctrlDirs.Invalidate();
+			ctrlStatus.SetText(1, _T(""));
+			updateStatus();
+			setDirty();
 		}
 	}
 
@@ -1991,6 +1970,29 @@ void QueueFrame::moveNode(HTREEITEM item, HTREEITEM parent) {
 }
 
 LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+	if (!loaded) {
+		ctrlQueue.SetRedraw(FALSE);
+		ctrlDirs.SetRedraw(FALSE);
+		frameTasks.run([this] {
+			QueueManager::getInstance()->readLockedOperation([this](const QueueItem::StringMap& qsm) { 
+				addQueueList(qsm); 
+
+				if (!closed)
+					QueueManager::getInstance()->addListener(this);
+			});
+
+			loaded = true;
+			if (!closed) {
+				DownloadManager::getInstance()->addListener(this);
+				SettingsManager::getInstance()->addListener(this);
+
+				ctrlQueue.resort();
+
+				speak(QUEUE_LOADED, nullptr);
+			}
+		});
+	}
+
 	NMLVCUSTOMDRAW* cd = (NMLVCUSTOMDRAW*)pnmh;
 
 	switch(cd->nmcd.dwDrawStage) {

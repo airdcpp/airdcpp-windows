@@ -792,7 +792,12 @@ LRESULT RichTextBox::onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	return 0;
 }
 
-LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+	SCROLLBARINFO sbi;
+	memset(&sbi, 0, sizeof(SCROLLBARINFO));
+	sbi.cbSize = sizeof(SCROLLBARINFO);
+	GetScrollBarInfo(m_hWnd, OBJID_VSCROLL, &sbi);
+
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
 
 	if(pt.x == -1 && pt.y == -1) {
@@ -801,6 +806,12 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		pt.x = erc.Width() / 2;
 		pt.y = erc.Height() / 2;
 		ClientToScreen(&pt);
+	}
+
+	if (sbi.rcScrollBar.left <= pt.x && sbi.rcScrollBar.right >= pt.x) {
+		//let the system handle those
+		bHandled = FALSE;
+		return 0;
 	}
 
 	POINT ptCl = pt;

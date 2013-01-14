@@ -47,7 +47,7 @@ public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE, 0, COLOR_3DFACE);
 
 	QueueFrame() : menuItems(0), queueSize(0), queueItems(0), spoken(false), dirty(false), 
-		usingDirMenu(false),  readdItems(0), fileLists(NULL), tempItems(NULL), showTree(true), closed(false),
+		usingDirMenu(false),  readdItems(0), fileLists(NULL), tempItems(NULL), showTree(true), closed(false), loaded(false),
 		showTreeContainer(WC_BUTTON, this, SHOWTREE_MESSAGE_MAP) 
 	{
 	}
@@ -216,6 +216,7 @@ private:
 		UPDATE_BUNDLE,
 		UPDATE_STATUS,
 		UPDATE_STATUS_ITEMS,
+		QUEUE_LOADED
 	};
 
 
@@ -345,6 +346,7 @@ private:
 	int queueItems;
 
 	bool closed;
+	bool loaded;
 	
 	static int columnIndexes[COLUMN_LAST];
 	static int columnSizes[COLUMN_LAST];

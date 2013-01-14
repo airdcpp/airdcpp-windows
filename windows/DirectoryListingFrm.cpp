@@ -910,7 +910,7 @@ LRESULT DirectoryListingFrame::onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 
 	sMenu.InsertSeparatorLast(CTSTRING(OWN_FILELIST));
 	auto profiles = ShareManager::getInstance()->getProfiles();
-	for (auto sp: profiles) {
+	for (auto& sp: profiles) {
 		if (sp->getToken() != SP_HIDDEN) {
 			string profile = Util::toString(sp->getToken());
 			sMenu.appendItem(Text::toT(sp->getDisplayName()), [this, profile] {

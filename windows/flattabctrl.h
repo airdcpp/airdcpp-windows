@@ -237,8 +237,7 @@ public:
 		int yPos = GET_Y_LPARAM(lParam);
 		int row = getRows() - ((yPos / getTabHeight()) + 1);
 
-		for(TabInfo::ListIter i = tabs.begin(); i != tabs.end(); ++i) {
-			TabInfo* t = *i;
+		for(auto t: tabs) {
 			if((row == t->row) && (xPos >= t->xpos) && (xPos < (t->xpos + t->getWidth())) ) {
 				// Bingo, this was clicked
 				HWND hWnd = GetParent();
@@ -262,9 +261,7 @@ public:
 
 			bool moveLast = true;
 
-			for(TabInfo::ListIter i = tabs.begin(); i != tabs.end(); ++i) {
-				TabInfo* t = *i;
-			
+			for(auto t: tabs) {
 				if((row == t->row) && (xPos >= t->xpos) && (xPos < (t->xpos + t->getWidth())) ) {
 					// Bingo, this was clicked
 					HWND hWnd = GetParent();
@@ -293,8 +290,7 @@ public:
 		int yPos = GET_Y_LPARAM(lParam); 
 		int row = getRows() - ((yPos / getTabHeight()) + 1);
 
-		for(TabInfo::ListIter i = tabs.begin(); i != tabs.end(); ++i) {
-			TabInfo* t = *i;
+		for(auto t: tabs) {
 			if((row == t->row) && (xPos >= t->xpos) && (xPos < (t->xpos + t->getWidth())) ) {
 				// Bingo, this was clicked
 				HWND hWnd = GetParent();
@@ -314,8 +310,7 @@ public:
 		int xPos = pt.x;
 		int row = getRows() - ((pt.y / getTabHeight()) + 1);
 
-		for(TabInfo::ListIter i = tabs.begin(); i != tabs.end(); ++i) {
-			TabInfo* t = *i;
+		for(auto t: tabs) {
 			if((row == t->row) && (xPos >= t->xpos) && (xPos < (t->xpos + t->getWidth())) ) {
 				// Bingo, this was clicked, check if the owner wants to handle it...
 				if(!::SendMessage(t->hWnd, FTM_CONTEXTMENU, 0, lParam)) {
@@ -385,8 +380,7 @@ public:
 		bool notify = false;
 		bool needInval = false;
 
-		for(TabInfo::ListIter i = tabs.begin(); i != tabs.end(); ++i) {
-			TabInfo* ti = *i;
+		for(auto ti: tabs) {
 			if( (r != 0) && ((w + ti->getWidth() ) > rc.Width()) ) {
 				if(r >= SETTING(MAX_TAB_ROWS)) {
 					notify |= (rows != r);
@@ -457,9 +451,7 @@ public:
 			
 			HFONT oldfont = memDC.SelectFont(WinUtil::font);
 
-			for(TabInfo::ListIter i = tabs.begin(); i != tabs.end(); ++i) {
-				TabInfo* t = *i;
-
+			for(auto t: tabs) {
 				if(t->row != -1 && t->xpos < rc.right && t->xpos + t->getWidth()  >= rc.left ) {
 					if(t != active) {
 						drawTab(memDC, t, t->xpos, t->row);
@@ -537,9 +529,9 @@ public:
 
 	void redraw() {
 		height = WinUtil::getTextHeight(GetParent(), WinUtil::font) + 7;
-		for(TabInfo::ListIter i = tabs.begin(); i != tabs.end(); ++i) {
-			(*i)->update();
-			::SendMessage((*i)->hWnd, WM_PAINT, 0, 0);
+		for(auto t: tabs) {
+			t->update();
+			::SendMessage(t->hWnd, WM_PAINT, 0, 0);
 		}
 		Invalidate();
 	}
@@ -674,9 +666,9 @@ private:
 	bool inTab;
 
 	TabInfo* getTabInfo(HWND aWnd) {
-		for(TabInfo::ListIter i	= tabs.begin(); i != tabs.end(); ++i) {
-			if((*i)->hWnd == aWnd)
-				return *i;
+		for(auto t: tabs) {
+			if(t->hWnd == aWnd)
+				return t;
 		}
 		return NULL;
 	}

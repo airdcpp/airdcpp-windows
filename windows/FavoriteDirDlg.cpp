@@ -25,8 +25,8 @@ LRESULT FavoriteDirDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	pathListCtrl.InsertColumn(0, _T("Dummy"), LVCFMT_LEFT, (rc.Width() - 17), 0);
 	pathListCtrl.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 
-	for(auto i = paths.begin(); i != paths.end(); ++i) {
-		pathListCtrl.insert(pathListCtrl.GetItemCount(), Text::toT(*i).c_str());
+	for(auto& p: paths) {
+		pathListCtrl.insert(pathListCtrl.GetItemCount(), Text::toT(p).c_str());
 	}
 
 	ATTACH(IDC_FDNAME, ctrlName);
