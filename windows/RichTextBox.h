@@ -21,6 +21,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "../client/AirUtil.h"
 #include "../client/Client.h"
 #include "../client/ColorSettings.h"
 #include "../client/TargetUtil.h"
@@ -231,8 +232,7 @@ private:
 
 	bool		isPath;
 	bool		release;
-	bool		shareDupe;
-	bool		queueDupe;
+	DupeType	dupeType;
 	bool		isMagnet;
 	bool		isTTH;
 	tstring		author;
@@ -251,13 +251,15 @@ private:
 	boost::wregex regUrl, regRelease, regPath;
 	uint64_t lastTick;
 	bool isLink(POINT pt);
-	bool getLink(POINT pt, CHARRANGE& cr, ChatLink& link);
+	ChatLink* getLink(POINT pt, CHARRANGE& cr);
 	bool showHandCursor;
 
-	vector<pair<CHARRANGE, ChatLink>> links;
+	vector<pair<CHARRANGE, ChatLink*>> links;
 
 	HCURSOR		handCursor;
 	HCURSOR		arrowCursor;
+
+	void formatLink(DupeType aDupeType, bool isRelease);
 };
 
 

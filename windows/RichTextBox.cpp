@@ -20,6 +20,7 @@
 #include "../client/FavoriteManager.h"
 #include "../client/UploadManager.h"
 #include "../client/QueueManager.h"
+#include "../client/Util.h"
 
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
@@ -74,6 +75,10 @@ RichTextBox::~RichTextBox() {
 	} else {
 		emoticonsManager->dec();
 	}
+
+	for (auto cl: links)
+		delete cl.second;
+
 	delete[] findBuffer;
 }
 
@@ -152,6 +157,7 @@ bool RichTextBox::AppendText(const Identity& i, const tstring& sMyNick, const ts
 		//remove old links (the list must be in the same order than in text)
 		for(auto i = links.begin(); i != links.end();) {
 			if ((*i).first.cpMin < lRemoveChars) {
+				delete i->second;
 				links.erase(i);
 				i = links.begin();
 			} else {
@@ -415,17 +421,11 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 				std::string link( result[0].first, result[0].second );
 
 				//create the link
-				ChatLink cl = link.find("magnet:?") != string::npos ? ChatLink(link, ChatLink::TYPE_MAGNET) : ChatLink(link, (link.find("spotify:") != string::npos ? ChatLink::TYPE_SPOTIFY : ChatLink::TYPE_URL));
-				if (cl.dupe == SHARE_DUPE) {
-					SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-				} else if (cl.dupe == QUEUE_DUPE) {
-					SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-				} else {
-					SetSelectionCharFormat(WinUtil::m_TextStyleURL);
-				}
+				ChatLink* cl = link.find("magnet:?") != string::npos ? new ChatLink(link, ChatLink::TYPE_MAGNET) : new ChatLink(link, (link.find("spotify:") != string::npos ? ChatLink::TYPE_SPOTIFY : ChatLink::TYPE_URL));
+				formatLink(cl->getDupe(), false);
 
 				//replace the text displayed in chat
-				tstring displayText = Text::toT(cl.getDisplayText());
+				tstring displayText = Text::toT(cl->getDisplayText());
 				sMsg.replace(result[0].first, result[0].second, displayText.c_str());
 				setText(displayText);
 
@@ -437,6 +437,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 
 				pos=pos+result.position() + displayText.length();
 				start = result[0].first + displayText.length();
+				end = sMsg.end();
 			}
 	
 		} catch(...) { 
@@ -459,19 +460,9 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 			SetSel(cr.cpMin, cr.cpMax);
 
 			std::string link (result[0].first, result[0].second);
-			ChatLink cl = ChatLink(link, ChatLink::TYPE_RELEASE);
+			ChatLink* cl = new ChatLink(link, ChatLink::TYPE_RELEASE);
 
-			if (SETTING(DUPES_IN_CHAT) && cl.dupe == SHARE_DUPE) {
-				SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-			} else if (SETTING(DUPES_IN_CHAT) && cl.dupe == QUEUE_DUPE) {
-				SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-			} else if (SETTING(DUPES_IN_CHAT) && cl.dupe == FINISHED_DUPE) {
-				CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
-				newFormat.crTextColor = WinUtil::getDupeColors(cl.dupe).first;
-				SetSelectionCharFormat(newFormat);
-			} else if (SETTING(FORMAT_RELEASE)) {
-				SetSelectionCharFormat(WinUtil::m_TextStyleURL);
-			}
+			formatLink(cl->getDupe(), true);
 
 			links.emplace_back(cr, cl);
 			start = result[0].second;
@@ -495,7 +486,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 			SetSelectionCharFormat(WinUtil::m_ChatTextServer);
 
 			std::string path (result[0].first, result[0].second);
-			ChatLink cl = ChatLink(path, ChatLink::TYPE_PATH);
+			ChatLink* cl = new ChatLink(path, ChatLink::TYPE_PATH);
 			links.emplace_back(cr, cl);
 
 			start = result[0].second;
@@ -703,24 +694,49 @@ tstring RichTextBox::LineFromPos(const POINT& p) const {
 	return tmp;
 }
 
+void RichTextBox::formatLink(DupeType aDupeType, bool isRelease) {
+	if (SETTING(DUPES_IN_CHAT) && aDupeType == SHARE_DUPE) {
+		SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
+	} else if (SETTING(DUPES_IN_CHAT) && aDupeType == QUEUE_DUPE) {
+		SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
+	} else if (SETTING(DUPES_IN_CHAT) && aDupeType == FINISHED_DUPE) {
+		CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
+		newFormat.crTextColor = WinUtil::getDupeColors(aDupeType).first;
+		SetSelectionCharFormat(newFormat);
+	} else if (!isRelease || (SETTING(FORMAT_RELEASE)) && aDupeType == DUPE_NONE) {
+		SetSelectionCharFormat(WinUtil::m_TextStyleURL);
+	}
+}
+
 LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 	selectedLine = LineFromPos(pt);
 	selectedUser.clear();
 	selectedIP.clear();
 
-	shareDupe=false, queueDupe=false, isMagnet=false, isTTH=false, release=false, isPath=false;
-	ChatLink cl;
+	dupeType = DUPE_NONE, isMagnet=false, isTTH=false, release=false, isPath=false;
 	CHARRANGE cr;
 	GetSel(cr);
 
-	if (getLink(pt, cr, cl)) {
-		selectedWord = Text::toT(cl.url);
-		shareDupe = cl.dupe == SHARE_DUPE;
-		queueDupe = (cl.dupe == QUEUE_DUPE || cl.dupe == FINISHED_DUPE);
-		isMagnet = cl.type == ChatLink::TYPE_MAGNET;
-		release = cl.type == ChatLink::TYPE_RELEASE;
-		isPath = cl.type == ChatLink::TYPE_PATH;
+	ChatLink* cl = getLink(pt, cr);
+	if (cl) {
+		selectedWord = Text::toT(cl->url);
 		SetSel(cr.cpMin, cr.cpMax);
+
+		if (cl->getType() == ChatLink::TYPE_MAGNET || cl->getType() == ChatLink::TYPE_RELEASE) {
+			//check if the dupe status has changed
+			auto oldDT = cl->getDupe();
+			if (oldDT != cl->updateDupeType()) {
+				//update in the list
+				formatLink(cl->getDupe(), cl->getType() == ChatLink::TYPE_RELEASE);
+			}
+
+			dupeType = cl->getDupe();
+		}
+
+
+		isMagnet = cl->getType() == ChatLink::TYPE_MAGNET;
+		release = cl->getType() == ChatLink::TYPE_RELEASE;
+		isPath = cl->getType() == ChatLink::TYPE_PATH;
 	} else {
 		if(cr.cpMax != cr.cpMin) {
 			TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
@@ -885,7 +901,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 			targets.clear();
 			if (isMagnet || release) {
-				if (shareDupe || queueDupe) {
+				if (dupeType > 0) {
 					menu.AppendMenu(MF_SEPARATOR);
 					menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 				}
@@ -899,9 +915,10 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 					} else if (!author.empty()) {
 						targets = QueueManager::getInstance()->getTargets(m.getTTH());
 						appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, false, false);
-						if (!shareDupe && !queueDupe)
-							menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 					}
+
+					if (!author.empty() || dupeType)
+						menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 				} else if (release) {
 					//autosearch menus
 					appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, true, true);
@@ -1123,10 +1140,16 @@ LRESULT RichTextBox::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	if (m.hash.empty())
 		return 0;
 
-	auto u = getMagnetSource();
-	try {
-		QueueManager::getInstance()->addFile(Util::getOpenPath(m.fname), m.fsize, m.getTTH(), u, Util::emptyString, QueueItem::FLAG_OPEN);
-	} catch(...) { }
+	if (dupeType > 0) {
+		auto p = AirUtil::getDupePath(dupeType, m.getTTH());
+		if (!p.empty())
+			Util::openFile(Text::fromT(p));
+	} else {
+		auto u = getMagnetSource();
+		try {
+			QueueManager::getInstance()->addFile(Util::getOpenPath(m.fname), m.fsize, m.getTTH(), u, Util::emptyString, QueueItem::FLAG_OPEN);
+		} catch(...) { }
+	}
 	return 0;
 }
 
@@ -1157,7 +1180,7 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	tstring path;
 	try{
 		if (release) {
-			path = AirUtil::getDirDupePath(shareDupe ? SHARE_DUPE : QUEUE_DUPE, Text::fromT(selectedWord));
+			path = AirUtil::getDirDupePath(dupeType, Text::fromT(selectedWord));
 		} else if (isPath) {
 			path = Util::getFilePath(selectedWord);
 		} else {
@@ -1165,19 +1188,12 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 			if (m.hash.empty())
 				return 0;
 
-			if (shareDupe) {
-				path = SettingsManager::lanMode ? Text::toT(ShareManager::getInstance()->getRealPath(m.fname, m.fsize)) : Text::toT(ShareManager::getInstance()->getRealPath(m.getTTH()));
-			} else {
-				StringList targets = QueueManager::getInstance()->getTargets(m.getTTH());
-				if (!targets.empty()) {
-					path = Text::toT(targets.front());
-				}
-			}
+			path = AirUtil::getDupePath(dupeType, m.getTTH());
+			if (!path.empty())
+				path = Util::getFilePath(path);
+
 		}
 	}catch(...) {}
-	
-	if (path.empty())
-		return 0;
 
 	WinUtil::openFolder(path);
 	return 0;
@@ -1301,26 +1317,25 @@ bool RichTextBox::isLink(POINT pt) {
 	return false;
 }
 
-bool RichTextBox::getLink(POINT pt, CHARRANGE& cr, ChatLink& link) {
+ChatLink* RichTextBox::getLink(POINT pt, CHARRANGE& cr) {
 	int iCharPos = CharFromPos(pt);
 	POINT p_ichar = PosFromChar(iCharPos);
 	
 	//Validate that we are actually clicking over a link.
 	if(pt.x > (p_ichar.x + 3)) { 
-		return false;
+		return nullptr;
 	}
 	if(pt.y > (p_ichar.y +  (t_height*1.5))) {
-		return false;
+		return nullptr;
 	}
 
 	for(auto l: links | reversed) {
 		if( iCharPos >= l.first.cpMin && iCharPos <= l.first.cpMax ) {
-			link = l.second;
 			cr = l.first;
-			return true;
+			return l.second;
 		}
 	}
-	return false;
+	return nullptr;
 }
 
 LRESULT RichTextBox::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -1338,11 +1353,11 @@ LRESULT RichTextBox::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 LRESULT RichTextBox::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	string link = Text::fromT(selectedWord);
 	for(auto l: links | reversed) {
-		if(compare(l.second.url, link) == 0) {
-			if (l.second.type == ChatLink::TYPE_MAGNET) {
-				WinUtil::parseMagnetUri(Text::toT(l.second.url), getMagnetSource());
+		if(compare(l.second->url, link) == 0) {
+			if (l.second->getType() == ChatLink::TYPE_MAGNET) {
+				WinUtil::parseMagnetUri(Text::toT(l.second->url), getMagnetSource());
 			} else {
-				WinUtil::openLink(Text::toT(l.second.url));
+				WinUtil::openLink(Text::toT(l.second->url));
 			}
 			return 0;
 		}
@@ -1353,20 +1368,20 @@ LRESULT RichTextBox::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*
 bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
-	ChatLink cl;
 	CHARRANGE cr;
-	if (!getLink(pt, cr, cl))
+	ChatLink* cl = getLink(pt, cr);
+	if (!cl)
 		return 0;
 
 
-	if (cl.type == ChatLink::TYPE_MAGNET) {
+	if (cl->getType() == ChatLink::TYPE_MAGNET) {
 		selectedLine = LineFromPos(pt);
 		updateAuthor();
-		WinUtil::parseMagnetUri(Text::toT(cl.url), move(getMagnetSource()));
+		WinUtil::parseMagnetUri(Text::toT(cl->url), move(getMagnetSource()));
 	} else {
 		//the url regex also detects web links without any protocol part
-		auto link = cl.url;
-		if (cl.type == ChatLink::TYPE_URL && link.find(':') == string::npos)
+		auto link = cl->url;
+		if (cl->getType() == ChatLink::TYPE_URL && link.find(':') == string::npos)
 			link = "http://" + link;
 
 		WinUtil::openLink(Text::toT(link));
