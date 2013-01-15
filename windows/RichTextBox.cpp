@@ -713,7 +713,7 @@ LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 	selectedUser.clear();
 	selectedIP.clear();
 
-	dupeType = DUPE_NONE, isMagnet=false, isTTH=false, release=false, isPath=false;
+	dupeType = DUPE_NONE, isMagnet=false, isTTH=false, isRelease=false, isPath=false;
 	CHARRANGE cr;
 	GetSel(cr);
 
@@ -722,21 +722,19 @@ LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 		selectedWord = Text::toT(cl->url);
 		SetSel(cr.cpMin, cr.cpMax);
 
-		if (cl->getType() == ChatLink::TYPE_MAGNET || cl->getType() == ChatLink::TYPE_RELEASE) {
+		isMagnet = cl->getType() == ChatLink::TYPE_MAGNET;
+		isRelease = cl->getType() == ChatLink::TYPE_RELEASE;
+		isPath = cl->getType() == ChatLink::TYPE_PATH;
+
+		if (isMagnet || isRelease) {
 			//check if the dupe status has changed
 			auto oldDT = cl->getDupe();
 			if (oldDT != cl->updateDupeType()) {
-				//update in the list
-				formatLink(cl->getDupe(), cl->getType() == ChatLink::TYPE_RELEASE);
+				formatLink(cl->getDupe(), isRelease);
 			}
 
 			dupeType = cl->getDupe();
 		}
-
-
-		isMagnet = cl->getType() == ChatLink::TYPE_MAGNET;
-		release = cl->getType() == ChatLink::TYPE_RELEASE;
-		isPath = cl->getType() == ChatLink::TYPE_PATH;
 	} else {
 		if(cr.cpMax != cr.cpMin) {
 			TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
@@ -864,7 +862,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 				menu.AppendMenu(MF_STRING, IDC_UNBAN_IP, (_T("!unban ") + selectedIP).c_str());
 				menu.AppendMenu(MF_SEPARATOR);
 			}
-		} else if (release) {
+		} else if (isRelease) {
 			menu.InsertSeparatorFirst(CTSTRING(RELEASE));
 		} else if (isPath) {
 			menu.InsertSeparatorFirst(CTSTRING(PATH));
@@ -900,7 +898,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			}
 
 			targets.clear();
-			if (isMagnet || release) {
+			if (isMagnet || isRelease) {
 				if (dupeType > 0) {
 					menu.AppendMenu(MF_SEPARATOR);
 					menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
@@ -917,9 +915,9 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 						appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, false, false);
 					}
 
-					if (!author.empty() || dupeType)
+					if (!author.empty() || dupeType == SHARE_DUPE || dupeType == FINISHED_DUPE)
 						menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
-				} else if (release) {
+				} else if (isRelease) {
 					//autosearch menus
 					appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, true, true);
 				}
@@ -1179,7 +1177,7 @@ LRESULT RichTextBox::onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring path;
 	try{
-		if (release) {
+		if (isRelease) {
 			path = AirUtil::getDirDupePath(dupeType, Text::fromT(selectedWord));
 		} else if (isPath) {
 			path = Util::getFilePath(selectedWord);

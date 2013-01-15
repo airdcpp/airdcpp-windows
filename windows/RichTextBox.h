@@ -231,7 +231,7 @@ private:
 	bool		timeStamps;
 
 	bool		isPath;
-	bool		release;
+	bool		isRelease;
 	DupeType	dupeType;
 	bool		isMagnet;
 	bool		isTTH;
