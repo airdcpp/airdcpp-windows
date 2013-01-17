@@ -377,7 +377,6 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF) { // Check that the file still exists
 					CShellContextMenu shellMenu;
 					shellMenu.SetPath(path);
-					copyMenu.CreatePopupMenu();
 
 					CMenu* pShellMenu = shellMenu.GetMenu();
 					pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
@@ -388,18 +387,6 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 					pShellMenu->AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 					pShellMenu->AppendMenu(MF_STRING, IDC_TOTAL, CTSTRING(REMOVE_ALL));
 					pShellMenu->AppendMenu(MF_SEPARATOR);
-
-
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_TIME, CTSTRING(TIME));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_HUB, CTSTRING(HUB));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_SPEED, CTSTRING(SPEED));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_TYPE, CTSTRING(TYPE));
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY_ALL, CTSTRING(ALL));
-
 
 					UINT idCommand = shellMenu.ShowContextMenu(m_hWnd, pt);
 					if(idCommand != 0) {

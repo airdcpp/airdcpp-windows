@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <ppl.h>
+#include <ppltasks.h>
 
 #include "CSplitterEx.h"
 #include "FlatTabCtrl.h"
@@ -47,7 +47,7 @@ public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE, 0, COLOR_3DFACE);
 
 	QueueFrame() : menuItems(0), queueSize(0), queueItems(0), spoken(false), dirty(false), 
-		usingDirMenu(false),  readdItems(0), fileLists(NULL), tempItems(NULL), showTree(true), closed(false), loaded(false),
+		usingDirMenu(false),  readdItems(0), fileLists(NULL), tempItems(NULL), showTree(true), closed(false),
 		showTreeContainer(WC_BUTTON, this, SHOWTREE_MESSAGE_MAP) 
 	{
 	}
@@ -187,9 +187,7 @@ public:
 	}
 	
 private:
-	//most of the time the main frame task group can be used...
-	concurrency::task_group frameTasks;
-
+	concurrency::task<void> startupTask;
 	enum {
 		COLUMN_FIRST,
 		COLUMN_TARGET = COLUMN_FIRST,
@@ -216,7 +214,6 @@ private:
 		UPDATE_BUNDLE,
 		UPDATE_STATUS,
 		UPDATE_STATUS_ITEMS,
-		QUEUE_LOADED
 	};
 
 
@@ -346,7 +343,6 @@ private:
 	int queueItems;
 
 	bool closed;
-	bool loaded;
 	
 	static int columnIndexes[COLUMN_LAST];
 	static int columnSizes[COLUMN_LAST];

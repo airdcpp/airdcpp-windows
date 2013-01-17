@@ -98,26 +98,33 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlShowTree.Create(ctrlStatus.m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	ctrlShowTree.SetButtonStyle(BS_AUTOCHECKBOX, false);
 	ctrlShowTree.SetCheck(showTree);
-	ctrlShowTree.EnableWindow(FALSE);
 	showTreeContainer.SubclassWindow(ctrlShowTree.m_hWnd);
 
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
 
+	QueueManager::getInstance()->readLockedOperation([this](const QueueItem::StringMap& qsm) { addQueueList(qsm); });
+	//auto queue = QueueManager::getInstance()->getQueue();
+	//addQueueList(queue);
+	//concurrency::reader_writer_lock
+	//startupTask.
+
+	QueueManager::getInstance()->addListener(this);
+	DownloadManager::getInstance()->addListener(this);
+	SettingsManager::getInstance()->addListener(this);
+
 	memzero(statusSizes, sizeof(statusSizes));
 	statusSizes[0] = 16;
 	ctrlStatus.SetParts(6, statusSizes);
-
-	ctrlStatus.SetText(1, CTSTRING(LOADING_QUEUE));
+	updateStatus();
 
 	WinUtil::SetIcon(m_hWnd, IDI_QUEUE);
-
-	//the queue will be downloaded in custom draw (otherwise the list view would be left without a background)
 
 	bHandled = FALSE;
 	return 1;
 }
+
 
 QueueFrame::~QueueFrame() { }
 
@@ -357,16 +364,19 @@ QueueFrame::QueueItemInfo* QueueFrame::getItemInfo(const string& target) const {
 }
 
 void QueueFrame::addQueueList(const QueueItem::StringMap& li) {
+	ctrlQueue.SetRedraw(FALSE);
+	ctrlDirs.SetRedraw(FALSE);
 	for(auto& qi: li | map_values) {
 		if (qi->isSet(QueueItem::FLAG_FINISHED) && !SETTING(KEEP_FINISHED_FILES)) {
 			continue;
 		}
 		QueueItemInfo* ii = new QueueItemInfo(qi);
 		addQueueItem(ii, true);
-
-		if (closed)
-			return;
 	}
+	ctrlQueue.resort();
+	ctrlQueue.SetRedraw(TRUE);
+	ctrlDirs.SetRedraw(TRUE);
+	ctrlDirs.Invalidate();
 }
 
 HTREEITEM QueueFrame::addItemDir(bool isFileList) {
@@ -941,15 +951,6 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			ctrlStatus.SetText(1, Text::toT(status.str).c_str());
 		} else if(ti.first == UPDATE_STATUS_ITEMS) {
 			updateStatus();
-		} else if (ti.first == QUEUE_LOADED) {
-			ctrlQueue.SetRedraw(TRUE);
-			ctrlDirs.SetRedraw(TRUE);
-
-			ctrlShowTree.EnableWindow(TRUE);
-			ctrlDirs.Invalidate();
-			ctrlStatus.SetText(1, _T(""));
-			updateStatus();
-			setDirty();
 		}
 	}
 
@@ -1126,6 +1127,9 @@ void QueueFrame::moveSelectedDir() {
 			}
 		}
 
+		if (curDir == newDir) {
+			return;
+		}
 		
 		for(auto& sourceBundle: bundles) {
 			if (!sourceBundle->isFileBundle()) {
@@ -1169,6 +1173,9 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		//BundleList bundles = dii->getBundles();
 		if (dii->getBundles().size() == 1) {
 			BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front().second->getToken());
+			if (curDir == newDir)
+				return 0;
+
 			auto sourceDir = curDir;
 			MainFrame::getMainFrame()->addThreadedTask([=] {
 				if (isCurDir(b->getTarget())) {
@@ -1625,13 +1632,9 @@ LRESULT QueueFrame::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 		int tmp1=0, tmp2=0;
 		BundleList bundles;
 		QueueManager::getInstance()->getBundleInfo(curDir, bundles, tmp1, tmp2);
-
-		auto dir = curDir;
-		MainFrame::getMainFrame()->callAsync([=] {
-			if (!bundles.empty()) {
-				QueueManager::getInstance()->setBundlePriorities(dir, bundles, (Bundle::Priority)p);
-			}
-		});
+		if (!bundles.empty()) {
+			QueueManager::getInstance()->setBundlePriorities(curDir, bundles, (Bundle::Priority)p);
+		}
 		//setPriority(ctrlDirs.GetSelectedItem(), p);
 	} else {
 		int i = -1;
@@ -1827,7 +1830,6 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		DownloadManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		closed = true;
-		frameTasks.wait();
 		WinUtil::setButtonPressed(IDC_QUEUE, false);
 		PostMessage(WM_CLOSE);
 		return 0;
@@ -1970,29 +1972,6 @@ void QueueFrame::moveNode(HTREEITEM item, HTREEITEM parent) {
 }
 
 LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
-	if (!loaded) {
-		ctrlQueue.SetRedraw(FALSE);
-		ctrlDirs.SetRedraw(FALSE);
-		frameTasks.run([this] {
-			QueueManager::getInstance()->readLockedOperation([this](const QueueItem::StringMap& qsm) { 
-				addQueueList(qsm); 
-
-				if (!closed)
-					QueueManager::getInstance()->addListener(this);
-			});
-
-			loaded = true;
-			if (!closed) {
-				DownloadManager::getInstance()->addListener(this);
-				SettingsManager::getInstance()->addListener(this);
-
-				ctrlQueue.resort();
-
-				speak(QUEUE_LOADED, nullptr);
-			}
-		});
-	}
-
 	NMLVCUSTOMDRAW* cd = (NMLVCUSTOMDRAW*)pnmh;
 
 	switch(cd->nmcd.dwDrawStage) {
