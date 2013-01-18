@@ -13,7 +13,7 @@ cd %solutionDir%
 
 set fileName=airdcpp_VERSION_x64.7z
 cd installer
-7za a -t7z %solutionDir%\%fileName% EmoPacks Language Themes
+7za a -t7z %solutionDir%\%fileName% EmoPacks Language Themes dcppboot.xml popup.bmp
 cd ..
 cd compiled\x64
 7za a -t7z %solutionDir%\%fileName% AirDC.exe AirDC.pdb

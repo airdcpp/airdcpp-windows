@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2006 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2001-2013 Jacek Sieka, arnetheduck on gmail point com
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1053,7 +1053,7 @@ void QueueFrame::moveSelected() {
 		tstring path = Text::toT(ii->getPath());
 		if(WinUtil::browseFile(target, m_hWnd, true, path, ext2.c_str(), ext.empty() ? NULL : ext.c_str())) {
 			StringPairList ret;
-			ret.push_back(make_pair(ii->getTarget(), Text::fromT(target)));
+			ret.emplace_back(ii->getTarget(), Text::fromT(target));
 			QueueManager::getInstance()->moveFiles(ret);
 		}
 	} else if(n > 1) {

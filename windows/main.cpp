@@ -326,7 +326,11 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	startup(
 		[&](const string& str) { (*WinUtil::splash)(str); },
-		[&](const string& str) { ::MessageBox(WinUtil::splash->getHWND(), Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK); }
+		[&](const string& str) { ::MessageBox(WinUtil::splash->getHWND(), Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK); },
+		[&]() { 
+			WizardDlg dlg;
+			dlg.DoModal(/*m_hWnd*/);
+		}
 	);
 	
 

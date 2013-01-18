@@ -746,6 +746,7 @@ Changed:
 
 - Optimize hard disk access with segmented downloads/uploads (equals to not using segments when transferring sequential segments)
 - Store the favorite hub settings in a different way, use the global value by default (when there is one)
+- Store the settings in "My documents" for new installations
 - Remove GUI freezes in various situations
 - Make sending of magnet links usable with large files: no freezing and the hashing progress is shown
 - Show a warning message when magnet links from private chat are downloaded into a shared folder
@@ -754,6 +755,7 @@ Changed:
 - Several performance tweaks
 - Update the dupe type when right clicking on a magnet/release name
 - Open dupe files in links from disk
+- Allow loading version 3 hash indexes
 
 Fixed:
 
@@ -776,3 +778,5 @@ Fixed:
 - Fix a bug with setting newly added share dirs as incoming
 - Don't leave 0-byte dctmp files when the incomlete dir is full
 - Fix "Don't share files bigger than x MB" when the limit is more than 2048MB
+- Fix ugly background color in file lists while loading them
+- Fix a few minor problems when moving bundles
