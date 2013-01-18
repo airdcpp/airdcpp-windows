@@ -28,8 +28,6 @@
 #include "PropertiesDlg.h"
 
 PropPage::TextItem DownloadPage::texts[] = {
-	{ IDC_AIRDC_ANTI_VIR, ResourceManager::SETAIRDC_ANTI_VIR },
-	{ IDC_ANTIVIR_BROWSE, ResourceManager::BROWSE },
 	{ IDC_AUTO_SEARCH_ALT, ResourceManager::SETTINGS_AUTO_BUNDLE_SEARCH },
 	{ IDC_DONTBEGIN, ResourceManager::DONT_ADD_SEGMENT_TEXT },
 	{ IDC_ENABLE_SEGMENTS, ResourceManager::ENABLE_MULTI_SOURCE },
@@ -135,14 +133,3 @@ void DownloadPage::checkItems() {
 	::EnableWindow(GetDlgItem(IDC_SETTINGS_AUTO_SEARCH_LIMIT),	IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
 }
 
-LRESULT DownloadPage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	TCHAR buf[MAX_PATH];
-
-	GetDlgItemText(IDC_ANTIVIR_PATH, buf, MAX_PATH);
-	tstring x = buf;
-
-	if(WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
-		SetDlgItemText(IDC_ANTIVIR_PATH, x.c_str());
-	}
-	return 0;
-}

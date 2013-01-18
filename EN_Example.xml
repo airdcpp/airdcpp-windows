@@ -991,7 +991,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="Begin">Begin</String>
 		<String Name="End">End</String>
 		<String Name="NatSort">Use natural sorting</String>
-		<String Name="SetairdcAntiVir">Virus scan after download finished</String>
 		<String Name="UpdateIp">Update IP on startup</String>
 		<String Name="SettingsServerCommands">Show Server Commands as status messages</String>
 		<String Name="SetClientCommands">Show Client Commands as status messages</String>

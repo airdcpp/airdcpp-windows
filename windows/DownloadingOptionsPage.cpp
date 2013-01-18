@@ -74,11 +74,6 @@ LRESULT DownloadingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, L
 void DownloadingOptionsPage::write() {
 
 	PropPage::write((HWND)*this, items);
-
-	TCHAR buf[256];
-	GetDlgItemText(IDC_ANTIVIR_PATH, buf, 256);
-	settings->set(SettingsManager::ANTIVIR_PATH, Text::fromT(buf));
-
 	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_SKIPPING_OPTIONS));
 }
 

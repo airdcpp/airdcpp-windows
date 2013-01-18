@@ -1748,7 +1748,11 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	return 0;
 }
 
-LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+	if(!ctrlList.IsWindowEnabled()) {
+		bHandled = TRUE;
+		return 0;
+	}
 
 	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
 	switch(cd->nmcd.dwDrawStage) {

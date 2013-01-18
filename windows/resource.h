@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1435,9 +1435,6 @@
 #define IDC_FAV_DL_SPEED                15013
 #define IDC_OPEN_FIRST_X_HUB            15014
 #define IDC_OPEN_FIRST                  15015
-#define IDC_ANTIVIR_PATH                15016
-#define IDC_ANTIVIR_BROWSE              15017
-#define IDC_AIRDC_ANTI_VIR              15018
 #define IDC_SKIPLIST_SHARE              15019
 #define IDC_FREE_SLOTS_EXTENSIONS       15020
 #define IDC_MINISLOTS_EXTENSIONS        15021
