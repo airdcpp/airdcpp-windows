@@ -4,9 +4,9 @@
 ; Its available from http://nsis.sourceforge.net/MoreInfo_plug-in
 
 ; Uncomment the above line if you want to build installer for the 64-bit version
-!define X64
+;!define X64
 
-;!include "Sections.nsh"
+ !include "Sections.nsh"
  !include "MUI2.nsh"
  
 SetCompressor "lzma"
@@ -18,8 +18,10 @@ ShowInstDetails show
 ShowUninstDetails show
 
   !define MUI_HEADERIMAGE
-  !define MUI_HEADERIMAGE_BITMAP "${NSISDIR}\Contrib\Graphics\Header\nsis.bmp" ; optional
+  !define MUI_HEADERIMAGE_BITMAP "airheader.bmp" ; optional
   !define MUI_ABORTWARNING
+
+  !define MUI_COMPONENTSPAGE_NODESC
   
   !define MUI_FINISHPAGE_RUN
   !define MUI_FINISHPAGE_RUN_TEXT "Launch AirDC++"

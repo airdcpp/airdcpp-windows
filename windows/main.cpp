@@ -393,6 +393,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	LPTSTR* argv = __targv;
 	int argc = --__argc;
 
+	Sleep(10000);
 	auto checkParams = [&argc, &argv] () -> void {
 		while (argc > 0) {
 			Util::addParam(Text::fromT(*argv));
