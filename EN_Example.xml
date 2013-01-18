@@ -1745,7 +1745,7 @@ would you still like to load them?</String>
 
 Do you want to use this destination anyway?</String>
 		<String Name="SettingsPassive">Passive mode (last resort - has serious limitations)</String>
-		<String Name="SettingsActiveUpnp">Active mode (let the client configure my router with NAT-PMP / UPnP)</String>
+		<String Name="SettingsActiveUpnp">Active mode with NAT-PMP / UPnP (let the client configure my router)</String>
 		<String Name="SettingsActive">Active mode (no router or manual router configuration)</String>
 		<String Name="SettingsManualConfig">Manual router/firewall configuration</String>
 		<String Name="MaxVolHashers">Max hashers per volume</String>
@@ -1762,5 +1762,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="AwayIdleTimeEnd">minutes of inactivity (0 = disabled)</String>
 		<String Name="SettingsMaxHasherSpeed">Max speed per hasher</String>
 		<String Name="LoadingQueue">Loading queue...</String>
+		<String Name="RefreshingShare">Refreshing share</String>
 	</Strings>
 </Language>

@@ -4,7 +4,7 @@
 ; Its available from http://nsis.sourceforge.net/MoreInfo_plug-in
 
 ; Uncomment the above line if you want to build installer for the 64-bit version
-;!define X64
+!define X64
 
 ;!include "Sections.nsh"
  !include "MUI2.nsh"
@@ -81,12 +81,13 @@ Section "AirDC++ (required)" dcpp
   SetOutPath $INSTDIR
 
   ; Check for existing settings in the profile first
-  ;IfFileExists "$DOCUMENTS\AirDC++\*.xml" 0 check_programdir
-  ;MessageBox MB_YESNO|MB_ICONQUESTION "Settings of a previous installation of AirDC++ has been found in the user profile, do you want to backup settings and queue? (You can find them in $DOCUMENTS\AirDC++\BACKUP later)" IDNO no_backup
-  ;CreateDirectory "$DOCUMENTS\AirDC++\BACKUP\"
-  ;CopyFiles "$DOCUMENTS\AirDC++\*.xml" "$DOCUMENTS\AirDC++\BACKUP\"
-  ;goto no_backup
+  IfFileExists "$DOCUMENTS\AirDC++\*.xml" 0 check_programdir
+  MessageBox MB_YESNO|MB_ICONQUESTION "Settings of a previous installation of AirDC++ has been found in the user profile, do you want to backup settings and queue? (You can find them in $DOCUMENTS\AirDC++\BACKUP later)" IDNO no_backup
+  CreateDirectory "$DOCUMENTS\AirDC++\BACKUP\"
+  CopyFiles "$DOCUMENTS\AirDC++\*.xml" "$DOCUMENTS\AirDC++\BACKUP\"
+  goto no_backup
 
+  check_programdir:
   ; Maybe we're upgrading from an older version so lets check the old Settings directory
   IfFileExists "$INSTDIR\Settings\*.xml" 0 no_backup
   MessageBox MB_YESNO|MB_ICONQUESTION "A previous installation of AirDC++ has been found in the target folder, do you want to backup settings and queue? (You can find them in $INSTDIR\BACKUP later)" IDNO no_backup
@@ -96,16 +97,17 @@ Section "AirDC++ (required)" dcpp
 
 ;check_dcpp:
   ; Lets check the profile for possible DC++ settings to import
- ; IfFileExists "$APPDATA\DC++\*.xml" 0 no_backup
-  ;MessageBox MB_YESNO|MB_ICONQUESTION "Settings of an existing DC++ installation has been found in the user profile, do you want to import settings and queue?" IDNO no_backup
-  ;CreateDirectory "$DOCUMENTS\AirDC++\"
-  ;CopyFiles "$APPDATA\DC++\*.xml" "$DOCUMENTS\AirDC++\"
-  ;CopyFiles "$APPDATA\DC++\*.dat" "$DOCUMENTS\AirDC++\"
-  ;CopyFiles "$APPDATA\DC++\*.txt" "$DOCUMENTS\AirDC++\"
+  IfFileExists "$APPDATA\DC++\*.xml" 0 no_backup
+  MessageBox MB_YESNO|MB_ICONQUESTION "Settings of an existing DC++ installation has been found in the user profile, do you want to import settings and queue?" IDNO no_backup
+  CreateDirectory "$DOCUMENTS\AirDC++\"
+  CopyFiles "$APPDATA\DC++\*.xml" "$DOCUMENTS\AirDC++\"
+  CopyFiles "$APPDATA\DC++\*.dat" "$DOCUMENTS\AirDC++\"
+  CopyFiles "$APPDATA\DC++\*.txt" "$DOCUMENTS\AirDC++\"
 
 no_backup:
   ; Put file there
   File "popup.bmp"
+  File "dcppboot.xml"
   !ifdef X64
 	File "..\compiled\x64\AirDC.pdb"
 	File "..\compiled\x64\AirDC.exe"
@@ -131,8 +133,8 @@ no_backup:
   ; Pop $1
 
   ; Get AirDC version we just installed and store in $2
-  ;MoreInfo::GetProductVersion "$INSTDIR\AirDC.exe"
-  ;Pop $2
+  MoreInfo::GetProductVersion "$INSTDIR\AirDC.exe"
+  Pop $2
   
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\AirDC++\ "Install_Dir" "$INSTDIR"
@@ -173,6 +175,25 @@ Section "Language Translations"
   SetOutPath $INSTDIR
   File /r /x .svn Language
 SectionEnd
+
+Section "Store settings in your user profile folder" loc
+  ; Change to nonlocal dcppboot if the checkbox left checked
+  SetOutPath $INSTDIR
+  File /oname=dcppboot.xml "dcppboot.nonlocal.xml" 
+SectionEnd
+
+Function .onSelChange
+  ; Do not show the warning on XP or older
+  StrCmp $R8 "0" skip
+  ; Show the warning only once
+  StrCmp $R9 "1" skip
+  SectionGetFlags ${loc} $0
+  IntOp $0 $0 & ${SF_SELECTED}
+  StrCmp $0 ${SF_SELECTED} skip
+    StrCpy $R9 "1"
+    MessageBox MB_OK|MB_ICONEXCLAMATION "If you want to keep your settings in the program directory using Windows Vista or later make sure that you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to abnormal behaviour like loss of settings or downloads!"
+skip:
+FunctionEnd
 
 Function .onInit
   IfFileExists "$EXEDIR\AirDC.exe" 0 checkos
@@ -239,6 +260,7 @@ Section "un.Uninstall"
   Delete "$INSTDIR\popup.bmp"
   Delete "$INSTDIR\AirDC.pdb"
   Delete "$INSTDIR\AirDC.exe"
+  Delete "$INSTDIR\dcppboot.xml"
   ; remove EmoPacks dir
   RMDir /r "$INSTDIR\EmoPacks"
   
@@ -261,18 +283,17 @@ Section "un.Uninstall"
   Delete $INSTDIR\uninstall.exe
 
   ; remove shortcuts, if any.
-  ;Delete "$SMPROGRAMS\AirDC++\*.*"
+  Delete "$SMPROGRAMS\AirDC++\*.*"
   ; remove directories used.
-  ;RMDir "$SMPROGRAMS\AirDC++"
-  IfFileExists "$INSTDIR\Settings\*.xml" 0 check_if_empty
+  RMDir "$SMPROGRAMS\AirDC++"
+  ;IfFileExists "$INSTDIR\Settings\*.xml" 0 check_if_empty
   MessageBox MB_YESNO|MB_ICONQUESTION "Also remove queue, themes and all settings?" IDNO end_uninstall
 
   ; delete settings directory
   RMDir /r $INSTDIR\Settings
   RMDir /r $INSTDIR\Themes
   
-
-check_if_empty:
+  
   Push "$INSTDIR"
   Call un.isEmptyDir
   Pop $0
