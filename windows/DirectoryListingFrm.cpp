@@ -73,7 +73,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		UserInfoBaseHandler(true, false), isTreeChange(false)
+		UserInfoBaseHandler(true, false), isTreeChange(false), disabled(false)
 {
 	dl->addListener(this);
 }
@@ -138,21 +138,21 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept {
-	callAsync([=] { 
-		updateStatus(Text::toT(aReason));
-		PostMessage(WM_CLOSE, 0, 0);
-	});
-
-	//changeWindowState(true);
+	if (!closed) {
+		callAsync([=] { 
+			updateStatus(Text::toT(aReason));
+			PostMessage(WM_CLOSE, 0, 0);
+		});
+	}
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted) noexcept {
-	callAsync([=] { 
-		ctrlList.DeleteAllItems();
+	callAsync([=] {
+		changeWindowState(false);
+		//ctrlList.DeleteAllItems();
 		ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 		dl->setWaiting(false);
 	});
-	changeWindowState(false);
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept {
@@ -313,10 +313,15 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 	ctrlFilter.EnableWindow(enable);
 
 	if (enable) {
-		EnableWindow();
+		disabled = false;
+		ctrlList.SetRedraw(TRUE);
+		ctrlTree.EnableWindow(TRUE);
 		ctrlGetFullList.EnableWindow(dl->getPartialList());
 	} else {
-		DisableWindow();
+		disabled = true;
+		ctrlList.RedrawWindow();
+		ctrlList.SetRedraw(FALSE);
+		ctrlTree.EnableWindow(FALSE);
 		ctrlGetFullList.EnableWindow(false);
 	}
 }
@@ -359,6 +364,7 @@ void DirectoryListingFrame::createRoot() {
 
 void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bool changeDir) {
 	ctrlTree.SetRedraw(FALSE);
+	disabled = false;
 	if (reloadList) {
 		isTreeChange = false;
 		ctrlTree.DeleteAllItems();
@@ -581,6 +587,11 @@ void DirectoryListingFrame::initStatus() {
 	ctrlStatus.SetText(STATUS_TOTAL_FILES, tmp.c_str());
 
 	UpdateLayout(FALSE);
+}
+
+LRESULT DirectoryListingFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {
+	updateStatus();
+	return 0;
 }
 
 LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
@@ -1749,11 +1760,6 @@ LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 }
 
 LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
-	if(!ctrlList.IsWindowEnabled()) {
-		bHandled = TRUE;
-		return 0;
-	}
-
 	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
 	switch(cd->nmcd.dwDrawStage) {
 
@@ -1797,7 +1803,30 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 			}
 		}
 		
-		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+		if (disabled)
+			return CDRF_NEWFONT | CDRF_NOTIFYPOSTPAINT;
+
+		return CDRF_NEWFONT;
+	}
+
+	case CDDS_ITEMPOSTPAINT: {
+		if (disabled && ctrlList.findColumn(cd->iSubItem) == COLUMN_FILENAME) {
+			LVITEM rItem;
+			int    nItem = static_cast<int>(cd->nmcd.dwItemSpec);
+
+			ZeroMemory (&rItem, sizeof(LVITEM) );
+			rItem.mask  = LVIF_IMAGE | LVIF_STATE;
+			rItem.iItem = nItem;
+			ctrlList.GetItem ( &rItem );
+
+			// Get the rect that holds the item's icon.
+			CRect rcIcon;
+			ctrlList.GetItemRect ( nItem, &rcIcon, LVIR_ICON );
+
+			// Draw the icon.
+			ResourceLoader::fileImages.DrawEx(rItem.iImage, cd->nmcd.hdc, rcIcon, WinUtil::bgColor, RGB(183, 183, 183), ILD_BLEND50);
+			return CDRF_SKIPDEFAULT;
+		}
 	}
 
 	default:

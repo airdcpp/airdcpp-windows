@@ -206,10 +206,7 @@ public:
 	HTREEITEM findItem(HTREEITEM ht, const tstring& name);
 	void selectItem(const tstring& name);
 	
-	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
-		updateStatus();
-		return 0;
-	}
+	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
 	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlList.SetFocus();
@@ -363,6 +360,8 @@ private:
 
 	bool updating;
 	bool closed;
+
+	bool disabled;
 
 	int statusSizes[13];
 	
