@@ -1781,5 +1781,7 @@ Do you want to use this destination anyway?</String>
 		<String Name="Generic">Generic</String>
 		<String Name="Transfer">Transfer</String>
 		<String Name="EncryptedTransfer">Encrypted transfer</String>
+		<String Name="TreeLoadFailed">Failed to load hash data for a TTH root %s: %s (consider rebuilding your hash database by typing /rebuild)</String>
+		<String Name="HasherXCreated">Hasher #%d created</String>
 	</Strings>
 </Language>

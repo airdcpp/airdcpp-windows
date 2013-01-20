@@ -401,7 +401,7 @@ HTREEITEM FolderTree::InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo *pIte
 		tvis.item.cChildren = HasGotSubEntries(pItem->m_sFQPath);
 	else
 		tvis.item.cChildren = true;
-	
+
 	if(bShared)
 	{
 		tvis.item.mask |= TVIF_STATE;
@@ -410,13 +410,17 @@ HTREEITEM FolderTree::InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo *pIte
 	}
 
 	HTREEITEM hItem = InsertItem(&tvis);
+	
+	bool bChecked = false;
+	if (!pItem->m_sFQPath.empty()) {
+		string path = Text::fromT(pItem->m_sFQPath);
+		if( path[ path.length() -1 ] != PATH_SEPARATOR )
+			path += PATH_SEPARATOR;
 
-	string path = Text::fromT(pItem->m_sFQPath);
-	if( path[ path.length() -1 ] != PATH_SEPARATOR )
-		path += PATH_SEPARATOR;
+		bChecked = sp->shareFolder(path, sharedDirs);
+		SetChecked(hItem, bChecked);
+	}
 
-	bool bChecked = sp->shareFolder(path, sharedDirs);
-	SetChecked(hItem, bChecked);
 	if(!bChecked)
 		SetHasSharedChildren(hItem, sharedDirs);
 

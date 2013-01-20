@@ -4,7 +4,7 @@
 ; Its available from http://nsis.sourceforge.net/MoreInfo_plug-in
 
 ; Uncomment the above line if you want to build installer for the 64-bit version
-;!define X64
+!define X64
 
  !include "Sections.nsh"
  !include "MUI2.nsh"
@@ -174,7 +174,7 @@ Section "Themes"
 SectionEnd
 
 Section "Language Translations" 
-  SetOutPath $INSTDIR
+  SetOutPath "$LOCALAPPDATA\AirDC++\"
   File /r /x .svn Language
 SectionEnd
 
@@ -267,7 +267,6 @@ Section "un.Uninstall"
   RMDir /r "$INSTDIR\EmoPacks"
   
   RMDir /r "$INSTDIR\icons"
-  RMDir /r "$INSTDIR\Language"
   
   ; Remove registry entries
   ; Assume they are all registered to us
@@ -293,8 +292,8 @@ Section "un.Uninstall"
 
   ; delete settings directory
   RMDir /r $INSTDIR\Settings
-  RMDir /r "$LOCALAPPDATA\AirDC++"
-  RMDir /r "$DOCUMENTS\AirDC++"
+  RMDir /r "$LOCALAPPDATA\AirDC++\"
+  RMDir /r "$DOCUMENTS\AirDC++\"
   
   RMDir /r $INSTDIR\Themes
   
