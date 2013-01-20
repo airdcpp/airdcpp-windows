@@ -293,6 +293,9 @@ Section "un.Uninstall"
 
   ; delete settings directory
   RMDir /r $INSTDIR\Settings
+  RMDir /r "$LOCALAPPDATA\AirDC++"
+  RMDir /r "$DOCUMENTS\AirDC++"
+  
   RMDir /r $INSTDIR\Themes
   
   

@@ -59,7 +59,6 @@ PropPage::TextItem NetworkPage::texts[] = {
 	{ IDC_SETTINGS_BIND_ADDRESS_HELP, ResourceManager::SETTINGS_BIND_ADDRESS_HELP },
 	{ IDC_IPUPDATE, ResourceManager::UPDATE_IP },
 	{ IDC_GETIP, ResourceManager::GET_IP },
-	{ IDC_NATT,	ResourceManager::ALLOW_NAT_TRAVERSAL },
 	{ IDC_SETTINGS_MANUAL_CONFIG, ResourceManager::SETTINGS_MANUAL_CONFIG },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
@@ -72,7 +71,6 @@ PropPage::Item NetworkPage::items[] = {
 	{ IDC_PORT_TLS,		SettingsManager::TLS_PORT,		PropPage::T_INT },
 	{ IDC_OVERRIDE,		SettingsManager::NO_IP_OVERRIDE, PropPage::T_BOOL },
 	{ IDC_IPUPDATE, SettingsManager::IP_UPDATE, PropPage::T_BOOL },
-	{ IDC_NATT,	SettingsManager::ALLOW_NAT_TRAVERSAL, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -146,7 +144,6 @@ void NetworkPage::fixControls() {
 	BOOL auto_detect = IsDlgButtonChecked(IDC_CONNECTION_DETECTION) == BST_CHECKED;
 	BOOL direct = IsDlgButtonChecked(IDC_ACTIVE) == BST_CHECKED;
 	BOOL upnp = IsDlgButtonChecked(IDC_ACTIVE_UPNP) == BST_CHECKED;
-	BOOL nat_traversal = IsDlgButtonChecked(IDC_NATT) == BST_CHECKED;
 
 	::EnableWindow(GetDlgItem(IDC_ACTIVE), !auto_detect);
 	::EnableWindow(GetDlgItem(IDC_ACTIVE_UPNP), !auto_detect);
@@ -154,18 +151,17 @@ void NetworkPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_SETTINGS_IP), !auto_detect);
 	::EnableWindow(GetDlgItem(IDC_BIND_ADDRESS), !auto_detect);
 
-	::EnableWindow(GetDlgItem(IDC_EXTERNAL_IP), !auto_detect && (direct || upnp || nat_traversal));
-	::EnableWindow(GetDlgItem(IDC_OVERRIDE), !auto_detect && (direct || upnp || nat_traversal));
+	::EnableWindow(GetDlgItem(IDC_EXTERNAL_IP), !auto_detect);
+	::EnableWindow(GetDlgItem(IDC_OVERRIDE), !auto_detect);
 
-	::EnableWindow(GetDlgItem(IDC_PORT_TCP), !auto_detect && upnp || direct);
-	::EnableWindow(GetDlgItem(IDC_PORT_UDP), !auto_detect && upnp || direct);
-	::EnableWindow(GetDlgItem(IDC_PORT_TLS), !auto_detect && upnp || direct);
-	::EnableWindow(GetDlgItem(IDC_NATT), !auto_detect && !direct && !upnp); // for passive settings only
-
+	::EnableWindow(GetDlgItem(IDC_PORT_TCP), !auto_detect && (upnp || direct));
+	::EnableWindow(GetDlgItem(IDC_PORT_UDP), !auto_detect && (upnp || direct));
+	::EnableWindow(GetDlgItem(IDC_PORT_TLS), !auto_detect && (upnp || direct));
 
 
-	::EnableWindow(GetDlgItem(IDC_IPUPDATE),!auto_detect && (direct || upnp || nat_traversal));
-	::EnableWindow(GetDlgItem(IDC_GETIP),!auto_detect && ( direct || upnp || nat_traversal));
+
+	::EnableWindow(GetDlgItem(IDC_IPUPDATE),!auto_detect && (direct || upnp));
+	::EnableWindow(GetDlgItem(IDC_GETIP),!auto_detect && ( direct || upnp));
 
 }
 

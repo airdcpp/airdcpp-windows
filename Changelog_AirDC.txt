@@ -756,6 +756,8 @@ Changed:
 - Update the dupe type when right clicking on a magnet/release name
 - Open dupe files in links from disk
 - Allow loading version 3 hash indexes
+- Improved coloring in file lists while they are being loaded
+- Update the country database and language even if getting the version file fails
 
 Fixed:
 
@@ -780,3 +782,8 @@ Fixed:
 - Fix "Don't share files bigger than x MB" when the limit is more than 2048MB
 - Fix ugly background color in file lists while loading them
 - Fix a few minor problems when moving bundles
+
+Removed:
+
+- The virus scanner path for finished downloads (didn't work before)
+- The NAT travelsal option (always enabled for now when using passive mode)

@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -946,7 +946,6 @@
 #define IDC_SPIN1                       1369
 #define IDC_COMBOBOXEX1                 1369
 #define IDC_AWAY_SPIN                   1369
-#define IDC_NATT                        1370
 #define IDC_SORT_DIRS                   1370
 #define IDC_CONNECTION_DETECTION        1371
 #define IDC_DONT_SHARE_BIGGER_THAN      1371

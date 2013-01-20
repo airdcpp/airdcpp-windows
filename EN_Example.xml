@@ -35,7 +35,6 @@
 -- because you don't get search result from passive clients !!! --
 -- Turn it off in settings =&gt; AirDC++ =&gt; Always use Passive Mode for Search --
 </String>
-		<String Name="AllowNatTraversal">Allow NAT Traversal for connections with passive users</String>
 		<String Name="Any">Any</String>
 		<String Name="AtLeast">At least</String>
 		<String Name="AtMost">At most</String>
@@ -1762,5 +1761,26 @@ Do you want to use this destination anyway?</String>
 		<String Name="SettingsMaxHasherSpeed">Max speed per hasher</String>
 		<String Name="LoadingQueue">Loading queue...</String>
 		<String Name="RefreshingShare">Refreshing share</String>
+		<String Name="ConnActiveFailed">Active mode could not be achieved; a manual configuration is recommended for better connectivity</String>
+		<String Name="ConnNatDetected">Active mode could not be achieved; a manual configuration is recommended for better connectivity</String>
+		<String Name="ConnDirectDetected">Public IP address detected, selecting active mode with direct connection</String>
+		<String Name="ConnPortXFailed">Unable to open %1% port(s); connectivity settings must be configured manually</String>
+		<String Name="ConnDetermining">Determining the best connectivity settings...</String>
+		<String Name="MapperNoInterface">No port mapping interface available</String>
+		<String Name="MapperInProgress">Another port mapping attempt is in progress...</String>
+		<String Name="MapperInitFailed">Failed to initalize the %1% interface</String>
+		<String Name="MapperCreatingFailed">Failed to create port mappings</String>
+		<String Name="MapperInterfaceFailed">Failed to map the %1% port (%2% %3%) with the %4% interface</String>
+		<String Name="MapperCreatingSuccess">Successfully created port mappings (Transfers: %1%, Encrypted transfers: %2%, Search: %3%) on the %4% device with the %5% interface</String>
+		<String Name="MapperCreatingSuccessLong">Successfully created port mappings on the %1% device with the %2% interface</String>
+		<String Name="MapperRemovingFailed">Failed to remove port mappings from the %1% device with the %2% interface</String>
+		<String Name="MapperRemovingSuccess">Successfully removed port mappings from the %1% device with the %2% interface</String>
+		<String Name="MapperXPortX">%1% %2% port (%3% %4%)</String>
+		<String Name="MapperIpFailed">Failed to get external IP</String>
+		<String Name="Connectivity">Connectivity</String>
+		<String Name="PortMapping">Port mapping</String>
+		<String Name="Generic">Generic</String>
+		<String Name="Transfer">Transfer</String>
+		<String Name="EncryptedTransfer">Encrypted transfer</String>
 	</Strings>
 </Language>

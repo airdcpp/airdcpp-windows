@@ -149,7 +149,6 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const st
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted) noexcept {
 	callAsync([=] {
 		changeWindowState(false);
-		//ctrlList.DeleteAllItems();
 		ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 		dl->setWaiting(false);
 	});
@@ -315,12 +314,14 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 	if (enable) {
 		disabled = false;
 		ctrlList.SetRedraw(TRUE);
+		ctrlList.RedrawWindow();
 		ctrlTree.EnableWindow(TRUE);
 		ctrlGetFullList.EnableWindow(dl->getPartialList());
 	} else {
 		disabled = true;
 		ctrlList.RedrawWindow();
 		ctrlList.SetRedraw(FALSE);
+		ctrlTree.RedrawWindow();
 		ctrlTree.EnableWindow(FALSE);
 		ctrlGetFullList.EnableWindow(false);
 	}
@@ -347,9 +348,8 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 
 	//reverse iterate to keep the sorting order when adding as first in the tree(a lot faster than TVI_LAST)
 	for(auto d: aTree->directories | reversed) {
-		tstring name = Text::toT(d->getName());
 		int index = d->getComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex();
-		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, name.c_str(), index, index, 0, 0, (LPARAM)d, aParent, TVI_FIRST);
+		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(d->getName()).c_str(), index, index, 0, 0, (LPARAM)d, aParent, TVI_FIRST);
 		if(d->getAdls())
 			ctrlTree.SetItemState(ht, TVIS_BOLD, TVIS_BOLD);
 		updateTree(d, ht);
@@ -364,7 +364,6 @@ void DirectoryListingFrame::createRoot() {
 
 void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bool changeDir) {
 	ctrlTree.SetRedraw(FALSE);
-	disabled = false;
 	if (reloadList) {
 		isTreeChange = false;
 		ctrlTree.DeleteAllItems();
@@ -590,7 +589,11 @@ void DirectoryListingFrame::initStatus() {
 }
 
 LRESULT DirectoryListingFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {
-	updateStatus();
+	if (disabled) {
+		bHandled = TRUE;
+	} else {
+		updateStatus();
+	}
 	return 0;
 }
 
@@ -823,6 +826,10 @@ void DirectoryListingFrame::forward() {
 }
 
 LRESULT DirectoryListingFrame::onDoubleClickFiles(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	if (disabled) {
+		return 0;
+	}
+
 	NMITEMACTIVATE* item = (NMITEMACTIVATE*) pnmh;
 
 	HTREEITEM t = ctrlTree.GetSelectedItem();
@@ -985,6 +992,9 @@ LRESULT DirectoryListingFrame::onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*
 }
 
 LRESULT DirectoryListingFrame::onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	if (disabled)
+		return 1;
+
 	if((GetKeyState(VkKeyScan('F') & 0xFF) & 0xFF00) > 0 && WinUtil::isCtrl()){
 		onFind();
 		return 0;
@@ -1080,6 +1090,10 @@ void DirectoryListingFrame::selectItem(const tstring& name) {
 }
 
 LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	if (disabled) {
+		return 0;
+	}
+
 	OMenu copyMenu;
 	copyMenu.CreatePopupMenu();
 	copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
@@ -1276,6 +1290,9 @@ clientmenu:
 }
 
 LRESULT DirectoryListingFrame::onXButtonUp(UINT /*uMsg*/, WPARAM wParam, LPARAM /* lParam */, BOOL& /* bHandled */) {
+	if (disabled)
+		return 1;
+
 	if(GET_XBUTTON_WPARAM(wParam) & XBUTTON1) {
 		back();
 		return TRUE;
@@ -1362,6 +1379,9 @@ int64_t DirectoryListingFrame::getDownloadSize(bool isWhole) {
 }
 
 LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	if (disabled)
+		return 1;
+
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
 	if(kd->wVKey == VK_BACK) {
 		up();
@@ -1767,6 +1787,12 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
+		if (disabled) {
+			cd->clrText = COLORREF(GetSysColor(COLOR_3DDKSHADOW));
+			cd->clrTextBk = WinUtil::bgColor;
+			return CDRF_NEWFONT | CDRF_NOTIFYPOSTPAINT;
+		}
+
 		ItemInfo *ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
 
 		//dupe colors have higher priority than highlights.
@@ -1802,9 +1828,6 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 				}
 			}
 		}
-		
-		if (disabled)
-			return CDRF_NEWFONT | CDRF_NOTIFYPOSTPAINT;
 
 		return CDRF_NEWFONT;
 	}
@@ -1824,7 +1847,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 			ctrlList.GetItemRect ( nItem, &rcIcon, LVIR_ICON );
 
 			// Draw the icon.
-			ResourceLoader::fileImages.DrawEx(rItem.iImage, cd->nmcd.hdc, rcIcon, WinUtil::bgColor, RGB(183, 183, 183), ILD_BLEND50);
+			ResourceLoader::fileImages.DrawEx(rItem.iImage, cd->nmcd.hdc, rcIcon, WinUtil::bgColor, COLORREF(GetSysColor(COLOR_3DDKSHADOW)), ILD_BLEND50);
 			return CDRF_SKIPDEFAULT;
 		}
 	}
@@ -1844,6 +1867,11 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
+		if (disabled) {
+			cd->clrText = COLORREF(GetSysColor(COLOR_3DDKSHADOW));
+			cd->clrTextBk = WinUtil::bgColor;
+			return CDRF_NEWFONT;
+		}
 
 		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList() && !(cd->nmcd.uItemState & CDIS_SELECTED)) {
 			DirectoryListing::Directory* dir = reinterpret_cast<DirectoryListing::Directory*>(cd->nmcd.lItemlParam);
@@ -1853,7 +1881,7 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 				cd->clrTextBk = c.second;
 			}
 		}
-		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+		return CDRF_NEWFONT;
 	}
 
 	default:
