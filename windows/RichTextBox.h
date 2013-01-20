@@ -260,6 +260,7 @@ private:
 	HCURSOR		arrowCursor;
 
 	void formatLink(DupeType aDupeType, bool isRelease);
+	DupeType updateDupeType(ChatLink* aChatLink);
 };
 
 

@@ -421,7 +421,14 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 				std::string link( result[0].first, result[0].second );
 
 				//create the link
-				ChatLink* cl = link.find("magnet:?") != string::npos ? new ChatLink(link, ChatLink::TYPE_MAGNET) : new ChatLink(link, (link.find("spotify:") != string::npos ? ChatLink::TYPE_SPOTIFY : ChatLink::TYPE_URL));
+				ChatLink::LinkType type = ChatLink::TYPE_URL;
+				if (link.find("magnet:?") != string::npos) {
+					type = ChatLink::TYPE_MAGNET;
+				} else if (link.find("spotify:") != string::npos) {
+					type = ChatLink::TYPE_SPOTIFY;
+				}
+
+				ChatLink* cl = new ChatLink(link, type, user);
 				formatLink(cl->getDupe(), false);
 
 				//replace the text displayed in chat
@@ -460,7 +467,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 			SetSel(cr.cpMin, cr.cpMax);
 
 			std::string link (result[0].first, result[0].second);
-			ChatLink* cl = new ChatLink(link, ChatLink::TYPE_RELEASE);
+			ChatLink* cl = new ChatLink(link, ChatLink::TYPE_RELEASE, user);
 
 			formatLink(cl->getDupe(), true);
 
@@ -486,7 +493,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 			SetSelectionCharFormat(WinUtil::m_ChatTextServer);
 
 			std::string path (result[0].first, result[0].second);
-			ChatLink* cl = new ChatLink(path, ChatLink::TYPE_PATH);
+			ChatLink* cl = new ChatLink(path, ChatLink::TYPE_PATH, nullptr);
 			links.emplace_back(cr, cl);
 
 			start = result[0].second;
@@ -708,6 +715,14 @@ void RichTextBox::formatLink(DupeType aDupeType, bool isRelease) {
 	}
 }
 
+DupeType RichTextBox::updateDupeType(ChatLink* aChatLink) {
+	auto oldDT = aChatLink->getDupe();
+	if (oldDT != aChatLink->updateDupeType(user)) {
+		formatLink(aChatLink->getDupe(), isRelease);
+	}
+	return aChatLink->getDupe();
+}
+
 LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 	selectedLine = LineFromPos(pt);
 	selectedUser.clear();
@@ -728,12 +743,7 @@ LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 
 		if (isMagnet || isRelease) {
 			//check if the dupe status has changed
-			auto oldDT = cl->getDupe();
-			if (oldDT != cl->updateDupeType()) {
-				formatLink(cl->getDupe(), isRelease);
-			}
-
-			dupeType = cl->getDupe();
+			dupeType = updateDupeType(cl);
 		}
 	} else {
 		if(cr.cpMax != cr.cpMin) {
@@ -1169,8 +1179,14 @@ HintedUser RichTextBox::getMagnetSource() {
 }
 
 LRESULT RichTextBox::onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	Magnet m = Magnet(Text::fromT(selectedWord));
+	string link = Text::fromT(selectedWord);
+	Magnet m = Magnet(link);
 	ShareManager::getInstance()->removeTempShare(user ? user->getCID().toBase32() : Util::emptyString, m.getTTH());
+	for (auto cl: links | map_values) {
+		if (cl->getType() == ChatLink::TYPE_MAGNET && cl->url == link) {
+			updateDupeType(cl);
+		}
+	}
 	return 0;
 }
 
