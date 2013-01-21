@@ -18,7 +18,6 @@
 
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 
 #include "../client/AirUtil.h"
 #include "../client/SettingsManager.h"

@@ -17,9 +17,8 @@
 */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
-#include "../client/Util.h"
+#include "../client/AirUtil.h"
 
 #include "WinUtil.h"
 #include "PopupManager.h"

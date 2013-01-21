@@ -23,7 +23,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "FlatTabCtrl.h"
@@ -33,8 +32,6 @@
 #include "ResourceLoader.h"
 #include "TextFrame.h"
 
-#include "../client/ClientManager.h"
-#include "../client/StringTokenizer.h"
 #include "../client/FinishedManager.h"
 
 template<class T, int title, int id>

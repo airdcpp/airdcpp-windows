@@ -17,14 +17,11 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "RecentsFrm.h"
 #include "HubFrame.h"
 #include "LineDlg.h"
-
-#include "../client/ClientManager.h"
 
 int RecentHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_USERS, COLUMN_SHARED, COLUMN_SERVER };
 int RecentHubsFrame::columnSizes[] = { 200, 290, 50, 50, 100 };

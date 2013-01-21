@@ -34,7 +34,6 @@
 #endif // _MSC_VER >= 1000
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 
 class CMemDC : public CDC {
 private:	

@@ -28,9 +28,6 @@
 #include "Resource.h"
 
 #include "../client/FavoriteManager.h"
-#include "../client/StringSearch.h"
-
-#include "WinUtil.h"
 
 #define FILTER_MESSAGE_MAP 8
 class PublicHubsFrame : public MDITabChildWindowImpl<PublicHubsFrame>, public StaticFrame<PublicHubsFrame, ResourceManager::PUBLIC_HUBS, ID_FILE_CONNECT>, 
@@ -96,17 +93,7 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	bool checkNick();
 	
-	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-		HWND hWnd = (HWND)lParam;
-		HDC hDC = (HDC)wParam;
-		if(uMsg == WM_CTLCOLORLISTBOX || hWnd == ctrlPubLists.m_hWnd || hWnd == ctrlFilter.m_hWnd || hWnd == ctrlFilterSel.m_hWnd) {
-			::SetBkColor(hDC, WinUtil::bgColor);
-			::SetTextColor(hDC, WinUtil::textColor);
-			return (LRESULT)WinUtil::bgBrush;
-		}
-		bHandled = FALSE;
-		return FALSE;
-	}
+	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlHubs.SetFocus();

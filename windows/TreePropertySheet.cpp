@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 
 #include "TreePropertySheet.h"
 #include "../client/ResourceManager.h"

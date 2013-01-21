@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "../client/SettingsManager.h"
 #include "../client/StringTokenizer.h"
 #include "../client/Util.h"

@@ -18,8 +18,6 @@
 
 #include "stdafx.h"
 
-#include "../client/DCPlusPlus.h"
-#include "../client/SettingsManager.h"
 #include "../Client/FavoriteManager.h"
 
 #include "AVIPreview.h"

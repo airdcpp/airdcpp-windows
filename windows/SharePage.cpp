@@ -18,17 +18,14 @@
 
 #include "stdafx.h"
 
-#include "../client/DCPlusPlus.h"
-#include "../client/ClientManager.h"
-#include "../client/FavoriteManager.h"
-#include "../client/SettingsManager.h"
 #include "../client/Util.h"
 #include "../client/version.h"
+#include "../client/ClientManager.h"
+#include "../client/FavoriteManager.h"
 
 #include "Resource.h"
 #include "SharePage.h"
 #include "WinUtil.h"
-#include "HashProgressDlg.h"
 #include "LineDlg.h"
 #include "PropertiesDlg.h"
 #include "TempShare_dlg.h"

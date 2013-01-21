@@ -28,17 +28,11 @@
 
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
-#include "WinUtil.h"
 #include "UCHandler.h"
 #include "MenuBaseHandlers.h"
-#include "../client/HighlightManager.h"
 
 #include "../client/DirectoryListing.h"
 #include "../client/DirectoryListingListener.h"
-#include "../client/StringSearch.h"
-#include "../client/ADLSearch.h"
-#include "../client/LogManager.h"
-#include "../client/ShareManager.h"
 #include "../client/TargetUtil.h"
 
 #define FILTER_MESSAGE_MAP 8

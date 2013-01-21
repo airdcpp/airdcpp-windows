@@ -23,7 +23,6 @@
 
 #include "stdafx.h"
 
-#include "../client/DCPlusPlus.h"
 #include "ShellContextMenu.h"
 #include "resource.h"
 

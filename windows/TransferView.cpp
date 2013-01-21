@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "../client/ResourceManager.h"
@@ -37,6 +36,7 @@
 #include "WinUtil.h"
 #include "TransferView.h"
 #include "MainFrm.h"
+#include "ResourceLoader.h"
 
 #include "BarShader.h"
 

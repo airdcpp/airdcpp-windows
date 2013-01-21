@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "MainFrm.h"
@@ -62,7 +61,6 @@
 #include "../client/StringTokenizer.h"
 #include "../client/ShareManager.h"
 #include "../client/LogManager.h"
-#include "../client/Thread.h"
 #include "../client/FavoriteManager.h"
 #include "../client/MappingManager.h"
 #include "../client/AirUtil.h"
@@ -96,6 +94,11 @@ statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
 
 	memzero(statusSizes, sizeof(statusSizes));
 	anyMF = this;
+}
+
+LRESULT MainFrame::onOpenDownloads(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	WinUtil::openFile(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
+	return 0;
 }
 
 MainFrame::~MainFrame() {

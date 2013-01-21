@@ -23,8 +23,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <ppltasks.h>
-
 #include "CSplitterEx.h"
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
@@ -33,8 +31,6 @@
 #include "../client/FastAlloc.h"
 #include "../client/TaskQueue.h"
 #include "boost/unordered_map.hpp"
-
-#include "ResourceLoader.h"
 
 #include <boost/noncopyable.hpp>
 
@@ -73,7 +69,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCH_BUNDLE, onSearchBundle)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
 		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchAlternates)
-		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopyMagnet)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_RECHECK, onRecheck);
 		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
@@ -84,7 +79,7 @@ public:
 		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenFolder)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
-		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + COLUMN_LAST-1, onCopy)
+		COMMAND_ID_HANDLER(IDC_COPY, onCopy)
 		COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onPriority)
 		COMMAND_RANGE_HANDLER(IDC_SEGMENTONE, IDC_SEGMENTTEN, onSegments)
 		COMMAND_ID_HANDLER(IDC_AUTOPRIORITY, onAutoPriority)
@@ -103,7 +98,6 @@ public:
 	LRESULT onRecheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onCopyMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onItemChanged(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
@@ -187,7 +181,6 @@ public:
 	}
 	
 private:
-	concurrency::task<void> startupTask;
 	enum {
 		COLUMN_FIRST,
 		COLUMN_TARGET = COLUMN_FIRST,
@@ -257,7 +250,7 @@ private:
 
 		static int compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col);
 
-		int getImageIndex() const { return ResourceLoader::getIconIndex(Text::toT(getTarget()));	}
+		int getImageIndex() const;
 
 		const BundlePtr getBundle() const { return qi->getBundle(); }
 		const QueueItemPtr getQueueItem() const { return qi; }

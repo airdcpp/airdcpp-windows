@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "MainFrm.h"
@@ -25,7 +24,6 @@
 #include "LineDlg.h"
 #include "BarShader.h"
 #include "ResourceLoader.h"
-#include "../client/Wildcards.h"
 
 #include "../client/QueueManager.h"
 #include "../client/StringTokenizer.h"

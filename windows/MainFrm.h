@@ -25,7 +25,6 @@
 
 #include <ppl.h>
 
-#include "HubFrame.h"
 #include "../client/TimerManager.h"
 #include "../client/FavoriteManager.h"
 #include "../client/QueueManagerListener.h"
@@ -40,8 +39,6 @@
 #include "FlatTabCtrl.h"
 #include "SingleInstance.h"
 #include "TransferView.h"
-#include "WinUtil.h"
-#include "LineDlg.h"
 #include "HashProgressDlg.h"
 #include "OMenu.h"
 #include "picturewindow.h"
@@ -307,10 +304,7 @@ public:
 		return 0;
 	}
 	
-	LRESULT onOpenDownloads(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		WinUtil::openFile(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
-		return 0;
-	}
+	LRESULT onOpenDownloads(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT OnWindowCascade(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		MDICascade();

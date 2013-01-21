@@ -17,14 +17,12 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "TextFrame.h"
 #include "WinUtil.h"
 #include "../client/File.h"
 #include "../client/StringTokenizer.h"
-#include "../client/LogManager.h"
 
 //#define MAX_TEXT_LEN 32768
 

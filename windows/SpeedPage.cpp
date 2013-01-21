@@ -18,10 +18,8 @@
 
 #include "stdafx.h"
 
-#include "../client/DCPlusPlus.h"
-#include "../client/SettingsManager.h"
-#include "../client/ShareManager.h"
 #include "../client/AirUtil.h"
+#include "../client/SettingsManager.h"
 
 #include "Resource.h"
 #include "SpeedPage.h"

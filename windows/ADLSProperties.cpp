@@ -17,12 +17,10 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "ADLSProperties.h"
 #include "../client/ADLSearch.h"
-#include "../client/FavoriteManager.h"
 #include "WinUtil.h"
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \

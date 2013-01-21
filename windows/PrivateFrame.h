@@ -25,13 +25,11 @@
 
 #include "../client/User.h"
 #include "../client/ClientManagerListener.h"
-#include "../client/ResourceManager.h"
 #include "../client/DelayedEvents.h"
 #include "../client/UserInfoBase.h"
 
 #include "ChatFrameBase.h"
 #include "FlatTabCtrl.h"
-#include "WinUtil.h"
 #include "UCHandler.h"
 
 #define HUB_SEL_MAP 9

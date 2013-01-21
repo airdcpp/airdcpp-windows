@@ -17,17 +17,14 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "QueueFrame.h"
-#include "SearchFrm.h"
 #include "PrivateFrame.h"
 #include "LineDlg.h"
 #include "MainFrm.h"
 
 #include "../client/AirUtil.h"
-#include "../client/StringTokenizer.h"
 #include "../client/ShareManager.h"
 #include "../client/ClientManager.h"
 #include "../client/version.h"
@@ -149,6 +146,8 @@ bool QueueFrame::QueueItemInfo::isWaiting() const {
 bool QueueFrame::QueueItemInfo::isFinished() const { 
 	return QueueManager::getInstance()->isFinished(qi); 
 }
+
+int QueueFrame::QueueItemInfo::getImageIndex() const { return ResourceLoader::getIconIndex(Text::toT(getTarget())); }
 
 const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 	switch(col) {
@@ -1238,25 +1237,24 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				OMenu* removeMenu = fileMenu.getMenu();
 				OMenu* readdMenu = fileMenu.getMenu();
 				OMenu* getListMenu = fileMenu.getMenu();
-
-				OMenu copyMenu;
-				copyMenu.CreatePopupMenu();
-				copyMenu.InsertSeparatorFirst(TSTRING(COPY));
-				copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
-				for(int i = 0; i <COLUMN_LAST; ++i)
-					copyMenu.AppendMenu(MF_STRING, IDC_COPY + i, CTSTRING_I(columnNames[i]));
+				OMenu* copyMenu = fileMenu.getMenu();
 
 
 				/* Create submenus */
 
 				const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-				segmentsMenu.CheckMenuItem(ii->getQueueItem()->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
-
-				if(!ii->isSet(QueueItem::FLAG_USER_LIST)) {
-					WinUtil::appendPreviewMenu(previewMenu, ii->getTarget());
-				}
-
 				if(ii) {
+					segmentsMenu.CheckMenuItem(ii->getQueueItem()->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
+
+
+					copyMenu->appendItem(TSTRING(COPY_MAGNET_LINK), [=] { WinUtil::copyMagnet(ii->getTTH(), Util::getFileName(ii->getTarget()), ii->getSize()); });
+					for(int i = 0; i <COLUMN_LAST; ++i)
+						copyMenu->appendItem(TSTRING_I(columnNames[i]), [=] { WinUtil::setClipboard(ii->getText(i)); });
+
+					if(!ii->isSet(QueueItem::FLAG_USER_LIST)) {
+						WinUtil::appendPreviewMenu(previewMenu, ii->getTarget());
+					}
+
 					bool hasPMItems = false;
 					auto sources = move(QueueManager::getInstance()->getSources(ii->getQueueItem()));
 					for(auto& s: sources) {
@@ -1345,7 +1343,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				pmMenu->appendThis(TSTRING(SEND_PRIVATE_MESSAGE), true);
 				readdMenu->appendThis(TSTRING(READD_SOURCE), true);
 
-				fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)copyMenu, CTSTRING(COPY));
+				copyMenu->appendThis(TSTRING(COPY), true);
 				fileMenu.AppendMenu(MF_SEPARATOR);
 				fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
 
@@ -1571,15 +1569,6 @@ LRESULT QueueFrame::onSearchBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 				}
 			}
 		}
-	}
-	return 0;
-}
-
-LRESULT QueueFrame::onCopyMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlQueue.GetSelectedCount() == 1) {
-		int i = ctrlQueue.GetNextItem(-1, LVNI_SELECTED);
-		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
-		WinUtil::copyMagnet(ii->getTTH(), Util::getFileName(ii->getTarget()), ii->getSize());
 	}
 	return 0;
 }
@@ -2037,15 +2026,8 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	}
 }			
 
-LRESULT QueueFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (usingDirMenu) {
-		WinUtil::setClipboard(Text::toT(Util::getLastDir(curDir)));
-	} else {
-		QueueItemInfo *ii = (QueueItemInfo*)ctrlQueue.GetItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-		if(ii != NULL) {
-			WinUtil::setClipboard(ii->getText(wID - IDC_COPY));
-		}
-	}
+LRESULT QueueFrame::onCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	WinUtil::setClipboard(Text::toT(Util::getLastDir(curDir)));
 	return 0;
 }
 LRESULT QueueFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){

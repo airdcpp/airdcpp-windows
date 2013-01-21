@@ -17,15 +17,9 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
-#include "../client/SettingsManager.h"
-#include "../client/ShareManager.h"
-#include "../client/AirUtil.h"
 #include "Resource.h"
 
 #include "SharingOptionsPage.h"
-#include "LineDlg.h"
-#include "CommandDlg.h"
 
 #include "WinUtil.h"
 #include "PropertiesDlg.h"

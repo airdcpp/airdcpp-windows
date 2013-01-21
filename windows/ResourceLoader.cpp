@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "../client/UserInfoBase.h"
 
 #include "ResourceLoader.h"

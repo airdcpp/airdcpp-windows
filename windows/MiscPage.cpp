@@ -17,10 +17,7 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
-#include "../client/SettingsManager.h"
 #include "../client/version.h"
-#include "../client/SimpleXML.h"
 #include "Resource.h"
 
 

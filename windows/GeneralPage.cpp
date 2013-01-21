@@ -17,11 +17,8 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
-#include "../client/SettingsManager.h"
-#include "../client/Socket.h"
+
 #include "../client/version.h"
-#include "../client/LogManager.h"
 #include "../client/AirUtil.h"
 #include "../client/Localization.h"
 #include "Resource.h"

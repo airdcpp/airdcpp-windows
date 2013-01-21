@@ -17,12 +17,13 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "SystemFrame.h"
 #include "WinUtil.h"
 #include "TextFrame.h"
+#include "ResourceLoader.h"
+
 #include "../client/File.h"
 #include "../client/LogManager.h"
 #include "../client/ShareManager.h"

@@ -16,7 +16,6 @@
 
 #include "stdafx.h"
 #include "Resource.h"
-#include "../client/DCPlusPlus.h"
 #include "../client/FavoriteManager.h"
 #include "../client/UploadManager.h"
 #include "../client/QueueManager.h"
@@ -29,7 +28,9 @@
 
 #include "RichTextBox.h"
 #include "EmoticonsManager.h"
+#include "HubFrame.h"
 #include "PrivateFrame.h"
+#include "LineDlg.h"
 #include "atlstr.h"
 #include "MainFrm.h"
 #include "IgnoreManager.h"

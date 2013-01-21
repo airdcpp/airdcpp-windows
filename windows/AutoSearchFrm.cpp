@@ -17,14 +17,13 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 #include "MainFrm.h"
 
 #include "AutoSearchFrm.h"
+#include "ResourceLoader.h"
+
 #include "../client/SettingsManager.h"
-#include "../client/StringTokenizer.h"
-#include "../client/AutoSearchManager.h"
 
 int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_SEARCH_STATUS, COLUMN_LASTSEARCH, COLUMN_BUNDLES, COLUMN_ACTION, COLUMN_EXPIRATION,
 	COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH };

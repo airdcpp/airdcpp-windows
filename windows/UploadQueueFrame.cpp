@@ -19,13 +19,7 @@
 
 #include "stdafx.h"
 #include "Resource.h"
-#include "../client/DCPlusPlus.h"
-#include "../client/Client.h"
-#include "../client/ClientManager.h"
-#include "../client/FavoriteManager.h"
-#include "../client/QueueManager.h"
 #include "UploadQueueFrame.h"
-#include "PrivateFrame.h"
 #include "ResourceLoader.h"
 
 #include "BarShader.h"

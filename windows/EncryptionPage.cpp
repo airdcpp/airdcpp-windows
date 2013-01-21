@@ -18,14 +18,10 @@
 
 #include "stdafx.h"
 
-#include "../client/DCPlusPlus.h"
-#include "../client/SettingsManager.h"
-#include "../client/FavoriteManager.h"
 #include "../client/CryptoManager.h"
 
 #include "Resource.h"
 #include "EncryptionPage.h"
-#include "CommandDlg.h"
 #include "WinUtil.h"
 
 PropPage::TextItem EncryptionPage::texts[] = {

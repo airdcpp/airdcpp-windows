@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 
 #include "Resource.h"
 
@@ -27,13 +26,13 @@
 #include "WinUtil.h"
 #include "ResourceLoader.h"
 #include "LineDlg.h"
-#include "PrivateFrame.h"
 #include "ShellContextMenu.h"
+
+#include "../client/HighlightManager.h"
 #include "../client/File.h"
 #include "../client/QueueManager.h"
 #include "../client/StringTokenizer.h"
 #include "../client/ADLSearch.h"
-#include "../client/MerkleTree.h"
 #include "../client/User.h"
 #include "../client/ClientManager.h"
 #include "../client/ShareScannerManager.h"

@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "PublicHubsFrm.h"
@@ -25,8 +24,6 @@
 #include "WinUtil.h"
 #include "PublicHubsListDlg.h"
 
-#include "../client/Client.h"
-#include "../client/StringTokenizer.h"
 #include "../client/version.h"
 #include "../client/Localization.h"
 
@@ -62,6 +59,18 @@ static ResourceManager::Strings columnNames[] = {
 	ResourceManager::RATING,
 	
 };
+
+LRESULT PublicHubsFrame::onCtlColor(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	HWND hWnd = (HWND)lParam;
+	HDC hDC = (HDC)wParam;
+	if(uMsg == WM_CTLCOLORLISTBOX || hWnd == ctrlPubLists.m_hWnd || hWnd == ctrlFilter.m_hWnd || hWnd == ctrlFilterSel.m_hWnd) {
+		::SetBkColor(hDC, WinUtil::bgColor);
+		::SetTextColor(hDC, WinUtil::textColor);
+		return (LRESULT)WinUtil::bgBrush;
+	}
+	bHandled = FALSE;
+	return FALSE;
+}
 
 LRESULT PublicHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {

@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "SpyFrame.h"
@@ -26,7 +25,6 @@
 
 #include "../client/ShareManager.h"
 #include "../client/ResourceManager.h"
-#include "../client/ConnectionManager.h"
 
 int SpyFrame::columnSizes[] = { 305, 70, 85 };
 int SpyFrame::columnIndexes[] = { COLUMN_STRING, COLUMN_COUNT, COLUMN_TIME };

@@ -17,12 +17,10 @@
  */
 
 #include "stdafx.h"
-//#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 #include "WinUtil.h"
 #include "DirectoryListingDlg.h"
 
-//#include "../client/StringTokenizer.h"
 #include "../client/SearchManager.h"
 #include "../client/ResourceManager.h"
 

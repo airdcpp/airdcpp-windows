@@ -19,6 +19,8 @@
 #ifndef __EMOTICONS_DLG
 #define __EMOTICONS_DLG
 
+#include "../client/typedefs.h"
+
 class EmoticonsDlg : public CDialogImpl<EmoticonsDlg>
 {
 public:

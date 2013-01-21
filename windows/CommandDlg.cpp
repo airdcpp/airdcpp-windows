@@ -17,12 +17,10 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "../client/ResourceManager.h"
 #include "../client/UserCommand.h"
-#include "../client/NmdcHub.h"
 
 #include "WinUtil.h"
 #include "CommandDlg.h"

@@ -34,6 +34,7 @@
 
 #include <string>
 #include <AtlCrack.h>
+#include "../client/typedefs.h"
 
 class CDimEdit : public CWindowImpl< CDimEdit, CEdit > {
 public:

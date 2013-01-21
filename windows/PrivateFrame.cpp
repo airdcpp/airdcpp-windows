@@ -17,24 +17,21 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "PrivateFrame.h"
-#include "SearchFrm.h"
 #include "WinUtil.h"
 #include "MainFrm.h"
-#include "TextFrame.h"
+
 
 #include "../client/Client.h"
 #include "../client/ClientManager.h"
 #include "../client/Util.h"
 #include "../client/LogManager.h"
 #include "../client/UploadManager.h"
-#include "../client/ShareManager.h"
 #include "../client/FavoriteManager.h"
-#include "../client/QueueManager.h"
 #include "../client/StringTokenizer.h"
+#include "../client/ResourceManager.h"
 
 #include <boost/range/algorithm/for_each.hpp>
 

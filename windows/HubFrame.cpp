@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
 #include "HubFrame.h"
@@ -31,18 +30,14 @@
 #include "../client/ChatMessage.h"
 #include "../client/QueueManager.h"
 #include "../client/ShareManager.h"
+#include "../client/UploadManager.h"
 #include "../client/Util.h"
-#include "../client/StringTokenizer.h"
 #include "../client/FavoriteManager.h"
 #include "../client/LogManager.h"
-#include "../client/AdcCommand.h"
 #include "../client/SettingsManager.h"
-#include "../client/ConnectionManager.h" 
-#include "../client/NmdcHub.h"
 #include "../client/Wildcards.h"
 #include "../client/ColorSettings.h"
 #include "../client/HighlightManager.h"
-#include "../client/ConnectivityManager.h"
 #include "../client/Localization.h"
 #include "../client/GeoManager.h"
 

@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2001-2013 Jacek Sieka, arnetheduck on gmail point com
+ * Copyright (C) 2012-2013 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,16 +18,12 @@
 
 #include "stdafx.h"
 
-#include "../client/DCPlusPlus.h"
-#include "../client/SettingsManager.h"
-#include "../client/FavoriteManager.h"
 #include "../client/SearchManager.h"
 #include "../client/version.h"
 
 #include "Resource.h"
 #include "SearchTypesPage.h"
 #include "SearchTypeDlg.h"
-#include "CommandDlg.h"
 #include "WinUtil.h"
 
 PropPage::TextItem SearchTypesPage::texts[] = {

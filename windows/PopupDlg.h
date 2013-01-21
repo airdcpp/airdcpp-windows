@@ -24,7 +24,6 @@
 #endif // _MSC_VER > 1000
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 #include "WinUtil.h"
 

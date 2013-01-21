@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "../client/FavoriteManager.h"
 
 #include "FavHubGroupsDlg.h"

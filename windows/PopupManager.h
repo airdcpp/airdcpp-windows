@@ -28,7 +28,6 @@
 #define _ATL_NO_DOCHOSTUIHANDLER
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "../client/Singleton.h"
 #include "../client/TimerManager.h"
 

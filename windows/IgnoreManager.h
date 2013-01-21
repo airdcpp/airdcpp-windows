@@ -11,8 +11,6 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../client/DCPlusPlus.h"
-
 #include "../client/Singleton.h"
 #include "../client/SettingsManager.h"
 #include "../client/SimpleXML.h"

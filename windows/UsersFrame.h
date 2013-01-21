@@ -29,8 +29,6 @@
 #include "RichTextBox.h"
 
 #include "../client/FavoriteManager.h"
-#include "../client/File.h"
-#include "../client/OnlineUser.h"
 
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::FAVORITE_USERS, IDC_FAVUSERS>,
 	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, private SettingsManagerListener {

@@ -17,7 +17,6 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "../client/ResourceManager.h"
 #include "../client/WebShortcuts.h"
 #include "Resource.h"

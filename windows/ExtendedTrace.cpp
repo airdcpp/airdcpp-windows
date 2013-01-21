@@ -19,7 +19,6 @@
 
 #if defined(_WIN32)
 
-#include "../client/DCPlusPlus.h"
 #include "../client/File.h"
 #include "WinUtil.h"
 

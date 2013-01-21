@@ -19,7 +19,6 @@
 // @todo Smarter width calculation for Vista+ in CheckMessageBoxProc
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 
 #include "ExMessageBox.h"
 #include "WinUtil.h"

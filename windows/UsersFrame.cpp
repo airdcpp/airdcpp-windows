@@ -17,13 +17,11 @@
  */
 
 #include "stdafx.h"
-#include "../client/DCPlusPlus.h"
 #include "Resource.h"
 
+#include "ResourceLoader.h"
 #include "UsersFrame.h"
-#include "../client/StringTokenizer.h"
 #include "LineDlg.h"
-#include "HubFrame.h"
 #include "TextFrame.h"
 #include "../client/ClientManager.h"
 
