@@ -168,9 +168,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 					if(size == 1) {
 						return TSTRING(WAITING_USER_ONLINE);
 					} else {
-						TCHAR buf[64];
-						_stprintf(buf, CTSTRING(WAITING_USERS_ONLINE), online, size);
-						return buf;
+						return TSTRING_F(WAITING_USERS_ONLINE, online % size);
 					}
 				} else {
 					size_t size = QueueManager::getInstance()->getSourcesCount(qi);
@@ -180,14 +178,8 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 						return TSTRING(USER_OFFLINE);
 					} else if(size == 2) {
 						return TSTRING(BOTH_USERS_OFFLINE);
-					} else if(size == 3) {
-						return TSTRING(ALL_3_USERS_OFFLINE);
-					} else if(size == 4) {
-						return TSTRING(ALL_4_USERS_OFFLINE);
 					} else {
-						TCHAR buf[64];
-						_stprintf(buf, CTSTRING(ALL_USERS_OFFLINE), size);
-						return buf;
+						return TSTRING_F(ALL_USERS_OFFLINE, size);
 					}
 				}
 			} else {
@@ -195,9 +187,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 				if(size == 1) {
 					return TSTRING(USER_ONLINE);
 				} else {
-					TCHAR buf[64];
-					_stprintf(buf, CTSTRING(USERS_ONLINE), online, size);
-					return buf;
+					return TSTRING_F(USERS_ONLINE, online % size);
 				}
 			}
 		}
