@@ -40,7 +40,7 @@ PropPage::TextItem DownloadPage::texts[] = {
 	{ IDC_INTERVAL_TEXT, ResourceManager::MINIMUM_SEARCH_INTERVAL },
 	{ IDC_AUTO_ADD_SOURCES, ResourceManager::AUTO_ADD_SOURCE },
 	{ IDC_ALLOW_MATCH_FULL, ResourceManager::SETTINGS_ALLOW_MATCH_FULL_LIST },
-	{ IDC_OTHER_QUEUE_OPTIONS, ResourceManager::FINISHED_DOWNLOADS },
+	{ IDC_FINISHED_OPTIONS, ResourceManager::FINISHED_DOWNLOADS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

@@ -1783,5 +1783,8 @@ Do you want to use this destination anyway?</String>
 		<String Name="EncryptedTransfer">Encrypted transfer</String>
 		<String Name="TreeLoadFailed">Failed to load hash data for a TTH root %s: %s (consider rebuilding your hash database by typing /rebuild)</String>
 		<String Name="HasherXCreated">Hasher #%d created</String>
+		<String Name="ShowDirectoryTree">Show directory tree</String>
+		<String Name="AdditionalUpLimits">Additional upload limits</String>
+		<String Name="EnableParameters">Enable parameters</String>
 	</Strings>
 </Language>

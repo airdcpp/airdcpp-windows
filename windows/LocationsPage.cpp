@@ -47,6 +47,8 @@ PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_AUTOPATH_CAPTION, ResourceManager::AUTOPATH_CAPTION }, 
 	{ IDC_SETTINGS_OPTIONS, ResourceManager::SETTINGS_OPTIONS }, 
 	{ IDC_CLEAR_DIR_HISTORY, ResourceManager::CLEAR_DIR_HISTORY }, 
+	{ IDC_MOVEDOWN, ResourceManager::MOVE_DOWN }, 
+	{ IDC_MOVEUP, ResourceManager::MOVE_UP }, 
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

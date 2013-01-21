@@ -46,6 +46,7 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_ADD_DIR, ResourceManager::SETTINGS_ADD_FOLDER },
 	{ IDC_RENAME_DIR, ResourceManager::SETTINGS_RENAME_FOLDER },
 	{ IDC_SHARE_PROFILE_NOTE, ResourceManager::SETTINGS_SHARE_PROFILE_NOTE },
+	{ IDC_RENAME_PROFILE, ResourceManager::SETTINGS_RENAME_FOLDER },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

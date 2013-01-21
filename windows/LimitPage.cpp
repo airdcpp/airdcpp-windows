@@ -43,6 +43,7 @@ PropPage::TextItem LimitPage::texts[] = {
 	{ IDC_CZDC_SMALL_SIZE, ResourceManager::SETCZDC_SMALL_FILES },
 	{ IDC_SETTINGS_PARTIAL_SLOTS, ResourceManager::SETSTRONGDC_PARTIAL_SLOTS },		
 	{ IDC_STATICb, ResourceManager::EXTRA_HUB_SLOTS },
+	{ IDC_SLOTS_GROUP2, ResourceManager::ADDITIONAL_UP_LIMITS },
 
 	//other
 	{ IDC_AUTO_DETECTION_USE_LIMITED, ResourceManager::SETTINGS_AUTO_DETECTION_USE_LIMITED },

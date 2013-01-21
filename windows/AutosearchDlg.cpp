@@ -96,6 +96,8 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_ADVANCED_LABEL), CTSTRING(SETTINGS_ADVANCED));
 	::SetWindowText(GetDlgItem(IDC_EXACT_MATCH), CTSTRING(REQUIRE_EXACT_MATCH));
 
+	::SetWindowText(GetDlgItem(IDC_CONF_PARAMS), Text::toT(STRING(CONFIGURE) + "...").c_str());
+	::SetWindowText(GetDlgItem(IDC_USE_PARAMS), CTSTRING(ENABLE_PARAMETERS));
 
 	//get the search type so that we can set the initial control states correctly in fixControls
 	StringList ext;
