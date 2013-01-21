@@ -1532,12 +1532,16 @@ void MainFrame::onTrayMenu() {
 void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 	const auto title = upload ? CTSTRING(UPLOAD_LIMIT) : CTSTRING(DOWNLOAD_LIMIT);
 	limiterMenu->InsertSeparatorFirst(title);
-
 	//menu->setTitle(title, menuIcon);
 
 	const auto setting = ThrottleManager::getCurSetting(
 		upload ? SettingsManager::MAX_UPLOAD_SPEED_MAIN : SettingsManager::MAX_DOWNLOAD_SPEED_MAIN);
-	const auto x = SettingsManager::getInstance()->get(setting);
+	auto x = SettingsManager::getInstance()->get(setting);
+	bool disabled = x > 0 ? false : true;
+	auto lineSpeed = upload ? Util::toDouble(SETTING(UPLOAD_SPEED))*1024/8 : Util::toDouble(SETTING(DOWNLOAD_SPEED))*1024/8;
+	if(!x) {
+		x = lineSpeed;
+	}
 
 	int arr[] = { 0 /* disabled */, x /* current value */,
 		x + 1, x + 2, x + 5, x + 10, x + 20, x + 50, x + 100,
@@ -1546,18 +1550,22 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 		x * 10 / 11, x * 5 / 6, x * 2 / 3, x / 2, x / 3, x / 4, x / 5, x / 10, x / 100 };
 
 	// set ensures ordered unique members; remove_if performs range and relevancy checking.
-	auto minDelta = (x >= 1024) ? (20 * pow(1024, floor(log(static_cast<float>(x)) / log(1024.)) - 1)) : 0;
-	set<int> values(arr, std::remove_if(arr, arr + sizeof(arr) / sizeof(int), [x, minDelta](int i) {
-		return i < 0 || i > ThrottleManager::MAX_LIMIT ||
+	auto minDelta = (x >= 1024) ? (20 * pow(1024, floor(log(static_cast<float>(x)) / log(1024.)) - 1)) : 
+		(x >= 100) ? 5 : 0; // aint 5KB/s accurate enough?
+	
+	set<int> values(arr, std::remove_if(arr, arr + sizeof(arr) / sizeof(int), [x, minDelta, lineSpeed](int i) {
+		return i < 0 || 
+			i > ThrottleManager::MAX_LIMIT || 
+			(x == lineSpeed && (i > (lineSpeed*1.2))) || // dont show over 1.2 * connectionspeed as default
 			(minDelta && i != x && abs(i - x) < minDelta); // not too close to the original value
 	}));
 
 	for(auto value: values) {
-		auto same = value == x;
+		auto enabled = (disabled && !value) || (!disabled && value == x);
 		auto formatted = Text::toT(Util::formatBytes(value * 1024));
 		auto pos = limiterMenu->appendItem(value ? formatted + _T("/s") : CTSTRING(DISABLED),
-			[setting, value] { ThrottleManager::setSetting(setting, value); }, !same);
-		if(same)
+			[setting, value] { ThrottleManager::setSetting(setting, value); }, !enabled);
+		if(enabled)
 			limiterMenu->CheckMenuItem(pos, MF_BYPOSITION | MF_CHECKED);
 		if(!value)
 			limiterMenu->AppendMenu(MF_SEPARATOR);

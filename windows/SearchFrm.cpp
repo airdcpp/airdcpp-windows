@@ -461,8 +461,10 @@ void SearchFrame::onEnter() {
 	for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
 	pausedResults.clear();
 
+	ctrlResults.SetRedraw(FALSE);
 	ctrlResults.deleteAllItems();	
-	
+	ctrlResults.SetRedraw(TRUE);
+
 	::EnableWindow(GetDlgItem(IDC_SEARCH_PAUSE), TRUE);
 	ctrlPauseSearch.SetWindowText(CTSTRING(PAUSE_SEARCH));
 	StringList excluded;

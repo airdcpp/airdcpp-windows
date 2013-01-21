@@ -57,6 +57,7 @@ public:
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBkgnd)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
+		MESSAGE_HANDLER(WM_ENABLE, onEnable)
 		CHAIN_MSG_MAP(arrowBase)
 	END_MSG_MAP();
 
@@ -348,49 +349,17 @@ public:
 		}
 			DeleteAllItems();
 	}
-
-	LRESULT onEraseBkgnd(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-		bHandled = FALSE;
-		if(!leftMargin || !hBrBg) 
-			return 0;
-
-		dcassert(hBrBg);
-		if(!hBrBg) return 0;
-
-		bHandled = TRUE;
-		HDC dc = (HDC)wParam;
-		int n = GetItemCount();
-		RECT r = {0, 0, 0, 0}, full;
-		GetClientRect(&full);
-
-		if (n > 0) {
-			GetItemRect(0, &r, LVIR_BOUNDS);
-			r.bottom = r.top + ((r.bottom - r.top) * n);
-		}
-
-		RECT full2 = full; // Keep a backup
-
-
-		full.bottom = r.top;
-		FillRect(dc, &full, hBrBg);
-
-		full = full2; // Revert from backup
-		full.right = r.left + leftMargin; // state image
-		//full.left = 0;
-		FillRect(dc, &full, hBrBg);
-
-		full = full2; // Revert from backup
-		full.left = r.right;
-		FillRect(dc, &full, hBrBg);
-
-		full = full2; // Revert from backup
-		full.top = r.bottom;
-		full.right = r.right;
-		FillRect(dc, &full, hBrBg);
-
-		
-		return S_OK;
+	
+	/*Override handling of window cancelmode, let the owner do the necessary drawing*/
+	LRESULT onEnable(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+		bHandled = !wParam;
+		return 0;
 	}
+
+	LRESULT onEraseBkgnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+		return 1;
+	}
+
 	void setFlickerFree(HBRUSH flickerBrush) { hBrBg = flickerBrush; }
 
 	LRESULT onContextMenu(UINT /*msg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {

@@ -164,7 +164,7 @@ public:
 	LRESULT onDoubleClickFiles(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
 	LRESULT onSelChangedDirectories(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
 	LRESULT onClickTree(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled);
-	LRESULT onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
+	LRESULT onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onXButtonUp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
@@ -201,6 +201,7 @@ public:
 	void selectItem(const tstring& name);
 	
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+
 
 	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlList.SetFocus();
@@ -355,8 +356,6 @@ private:
 	bool updating;
 	bool closed;
 
-	bool disabled;
-
 	int statusSizes[13];
 	
 	DirectoryListing* dl;
@@ -374,16 +373,10 @@ private:
 	typedef FrameMap::iterator FrameIter;
 
 	static FrameMap frames;
-	void DisableWindow(){
-		ctrlTree.EnableWindow(FALSE);
-		ctrlList.EnableWindow(FALSE);
-	}
-	void EnableWindow(){
-		ctrlTree.EnableWindow(TRUE);
-		ctrlList.EnableWindow(TRUE);
-	}
+	void DisableWindow();
+	void EnableWindow();
 
-
+	bool disabled;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept;
