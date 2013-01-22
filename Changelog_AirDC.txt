@@ -759,6 +759,7 @@ Changed:
 - Improved coloring in file lists while they are being loaded
 - Update the country database and language even if getting the version file fails
 - Show a log message if the hash data is corrupt
+- Consider the connection speed settings in the limiter menu when there is no limit set
 
 Fixed:
 

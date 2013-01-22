@@ -524,7 +524,7 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	}
 
 	/* Undo all current directory modifications to this profile */
-	auto hasProfile = [p](const ShareDirInfo* sdi) -> bool {
+	auto hasProfile = [&p](const ShareDirInfo* sdi) -> bool {
 		return sdi->profile == p->getToken();
 	};
 
@@ -658,12 +658,12 @@ void SharePage::removeDir(const string& rPath, ProfileToken aProfile, int8_t& co
 		}
 	}
 
-	auto p = boost::find_if(newDirs, [rPath, aProfile](const ShareDirInfo* sdi) { return sdi->path == rPath && sdi->profile == aProfile; });
+	auto p = boost::find_if(newDirs, [&rPath, aProfile](const ShareDirInfo* sdi) { return sdi->path == rPath && sdi->profile == aProfile; });
 	if (p != newDirs.end()) {
 		newDirs.erase(p);
 	} else {
 		auto& dirs = shareDirs[aProfile];
-		auto k = boost::find_if(dirs, [rPath, aProfile](const ShareDirInfo* sdi) { return sdi->path == rPath && sdi->profile == aProfile; });
+		auto k = boost::find_if(dirs, [&rPath, aProfile](const ShareDirInfo* sdi) { return sdi->path == rPath && sdi->profile == aProfile; });
 		if (k != dirs.end())
 			removeDirs.push_back(*k);
 	}
@@ -998,11 +998,11 @@ bool SharePage::addExcludeFolder(const string& path) {
 	auto shares = getViewItems(curProfile);
 	
 	// make sure this is a sub folder of a shared folder
-	if (boost::find_if(shares, [path](const ShareDirInfo* aDir) { return AirUtil::isSub(path, aDir->path); } ) == shares.end())
+	if (boost::find_if(shares, [&path](const ShareDirInfo* aDir) { return AirUtil::isSub(path, aDir->path); } ) == shares.end())
 		return false;
 
 	// Make sure this not a subfolder of an already excluded folder
-	if (boost::find_if(excludes, [path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludes.end())
+	if (boost::find_if(excludes, [&path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludes.end())
 		return false;
 
 	// remove all sub folder excludes
@@ -1057,7 +1057,7 @@ bool SharePage::shareFolder(const string& path, ShareDirInfo::list& aShared) {
 		return false;
 
 	// check if it's an excluded folder or a sub folder of an excluded folder
-	if (boost::find_if(excludes, [path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludes.end())
+	if (boost::find_if(excludes, [&path](const string& aDir) { return AirUtil::isParentOrExact(aDir, path); } ) != excludes.end())
 		return false;
 
 	(*i)->found = true;
