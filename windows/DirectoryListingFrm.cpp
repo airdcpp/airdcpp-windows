@@ -72,7 +72,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		UserInfoBaseHandler(true, false), isTreeChange(false), disabled(false), ctrlTree(this)
+		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this)
 {
 	dl->addListener(this);
 }
@@ -353,9 +353,11 @@ int DirectoryListingFrame::getLoadingIcon() const {
 	return ResourceLoader::getDirIconIndex();
 }
 
-void DirectoryListingFrame::expandDir(const DirectoryListing::Directory* d, bool /*collapsing*/) {
-	//if (!collapsing || !d->isComplete())
-	changeDir(d, TRUE);
+void DirectoryListingFrame::expandDir(const DirectoryListing::Directory* d, bool collapsing) {
+	changeType = collapsing ? CHANGE_COLLAPSE : CHANGE_EXPAND_ONLY;
+	if (collapsing || !d->isComplete()) {
+		changeDir(d, TRUE);
+	}
 }
 
 void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREEITEM aParent) {
@@ -381,7 +383,6 @@ void DirectoryListingFrame::createRoot() {
 void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bool changeDir) {
 	ctrlTree.SetRedraw(FALSE);
 	if (reloadList) {
-		isTreeChange = false;
 		ctrlTree.DeleteAllItems();
 		ctrlList.DeleteAllItems();
 		createRoot();
@@ -398,28 +399,31 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 	}
 
 	DirectoryListing::Directory* d = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
+
+	//if (changeType != CHANGE_EXPAND_ONLY)
 	ctrlTree.SelectItem(NULL);
 
 	if (ctrlTree.IsExpanded(ht)) {
-		ctrlTree.Expand(ht, TVE_COLLAPSERESET);
+		ctrlTree.Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
 	}
 
 	dcassert(ctrlTree.GetChildItem(ht) == NULL);
-	/*HTREEITEM next = NULL;
-	while((next = ctrlTree.GetChildItem(ht)) != NULL) {
-		ctrlTree.DeleteItem(next);
-	}*/
 
 	d->sortDirs();
 
-	ctrlTree.Expand(ht);
+	if (changeType != CHANGE_COLLAPSE)
+		ctrlTree.Expand(ht);
 
 	int index = d->isComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex();
 	ctrlTree.SetItemImage(ht, index, index);
 	ctrlTree.SelectItem(NULL);
 
+
 	if (changeDir) {
-		selectItem(root);
+		if (changeType == CHANGE_EXPAND_ONLY)
+			ctrlTree.SelectItem(oldSel);
+		else
+			selectItem(root);
 	} else {
 		auto loadedDir = Text::fromT(root);
 
@@ -650,7 +654,7 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 }
 
 LRESULT DirectoryListingFrame::onClickTree(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {
-	isTreeChange = true;
+	changeType = CHANGE_TREE;
 	bHandled = FALSE;
 	return 0;
 }
@@ -880,7 +884,7 @@ LRESULT DirectoryListingFrame::onDoubleClickFiles(int /*idCtrl*/, LPNMHDR pnmh, 
 			HTREEITEM ht = ctrlTree.GetChildItem(t);
 			while(ht != NULL) {
 				if((DirectoryListing::Directory*)ctrlTree.GetItemData(ht) == ii->dir) {
-					isTreeChange = false;
+					changeType = CHANGE_LIST;
 					ctrlTree.SelectItem(ht);
 					break;
 				}
@@ -1112,7 +1116,7 @@ HTREEITEM DirectoryListingFrame::findItem(HTREEITEM ht, const tstring& name) {
 void DirectoryListingFrame::selectItem(const tstring& name) {
 	HTREEITEM ht = ctrlTree.findItem(treeRoot, name);
 	if(ht != NULL) {
-		if (!isTreeChange)
+		if (changeType == CHANGE_LIST)
 			ctrlTree.EnsureVisible(ht);
 		ctrlTree.SelectItem(ht);
 	} else {
@@ -1280,7 +1284,7 @@ clientmenu:
 			if(ht != NULL && ht != ctrlTree.GetSelectedItem())
 				ctrlTree.SelectItem(ht);
 			ctrlTree.ClientToScreen(&pt);
-			isTreeChange = true;
+			changeType = CHANGE_TREE;
 		}
 
 		OMenu directoryMenu;

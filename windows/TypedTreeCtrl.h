@@ -83,7 +83,7 @@ public:
 
 	LRESULT OnItemExpanding(int /*idCtrl*/, NMHDR *pNMHDR, BOOL &bHandled) {
 		NMTREEVIEW *pNMTreeView = (NMTREEVIEW*)pNMHDR;
-		if(pNMTreeView->action == TVE_COLLAPSE) {
+		if(pNMTreeView->action == TVE_COLLAPSE || pNMTreeView->action == TVE_COLLAPSERESET) {
 			//Get the currently selected item
 			HTREEITEM sel = GetSelectedItem();
 			bool childSelected = false;
@@ -91,11 +91,12 @@ public:
 				childSelected = AirUtil::isSub(((T*)GetItemData(sel))->getPath(), ((T*)pNMTreeView->itemNew.lParam)->getPath());
 			}
 
-			Expand(pNMTreeView->itemNew.hItem, TVE_COLLAPSE);
-
 			if (childSelected) {
 				//it would be selected anyway but without any notification message
+				Expand(pNMTreeView->itemNew.hItem, TVE_COLLAPSE | TVE_COLLAPSERESET);
 				parent->expandDir(((T*)pNMTreeView->itemNew.lParam), true);
+			} else {
+				Expand(pNMTreeView->itemNew.hItem, pNMTreeView->action);
 			}
 		} else if (pNMTreeView->action == TVE_EXPAND && !(pNMTreeView->itemNew.state & TVIS_EXPANDEDONCE)) {
 			T* curDir = (T*)pNMTreeView->itemNew.lParam;
@@ -105,7 +106,10 @@ public:
 			if (state == CHILDREN_CREATED) {
 				insertItems(curDir, pNMTreeView->itemNew.hItem);
 			} else if (state == CHILDREN_PENDING) {
+				//items aren't ready, don't change the state and notify the parent
 				parent->expandDir(curDir, false);
+				bHandled = TRUE;
+				return 1;
 			}
 		}
 
@@ -114,7 +118,6 @@ public:
 	}
 
 	void setHasChildren(HTREEITEM hItem, bool bHavePlus) {
-		//Remove all the child items from the parent
 		TV_ITEM tvItem;
 		tvItem.hItem = hItem;
 		tvItem.mask = TVIF_HANDLE | TVIF_CHILDREN;
@@ -162,7 +165,6 @@ public:
 		//have we created it yet?
 		if (hasChildren(ht) && !IsExpanded(ht)) {
 			Expand(ht, TVE_EXPAND);
-			//insertItems((T*)GetItemData(ht), ht);
 			return findItem(ht, name);
 		}
 

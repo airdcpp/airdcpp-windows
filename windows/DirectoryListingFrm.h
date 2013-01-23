@@ -290,7 +290,15 @@ private:
 	void findSearchHit(bool newDir = false);
 	int searchPos;
 	bool gotoPrev;
-	bool isTreeChange;
+
+	enum ChangeType {
+		CHANGE_LIST,
+		CHANGE_TREE,
+		CHANGE_EXPAND_ONLY,
+		CHANGE_COLLAPSE,
+	};
+
+	ChangeType changeType;
 
 	void updateStatus();
 	void initStatus();
