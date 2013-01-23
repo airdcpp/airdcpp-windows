@@ -1284,7 +1284,6 @@
 #define IDC_WEB_SHORTCUTS_NAME_DESC     8690
 #define IDC_WEB_SHORTCUT_KEY_DESC       8691
 #define IDC_WEB_SHORTCUTS_LIST          8692
-#define IDC_SEARCH_SITES                8693
 #define IDR_TRAY_PM                     10000
 #define IDR_TRAY_HUB                    10001
 #define IDC_EXTRASLOTSSPIN              10002

@@ -96,8 +96,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES_DIR, onSearchDir)
 		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
-		COMMAND_ID_HANDLER(IDC_PURGE, onPurge)	
-		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
+		COMMAND_ID_HANDLER(IDC_PURGE, onPurge)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenFolder)
 		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
@@ -139,7 +138,6 @@ public:
 	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

@@ -56,8 +56,8 @@ void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGL
 }
 
 void SearchFrame::closeAll() {
-	for(auto i = frames.begin(); i != frames.end(); ++i)
-		::PostMessage(i->first, WM_CLOSE, 0, 0);
+	for(auto f: frames | map_keys)
+		::PostMessage(f, WM_CLOSE, 0, 0);
 }
 
 SearchFrame::SearchFrame() : 
@@ -96,8 +96,8 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
 
 	auto lastSearches = SettingsManager::getInstance()->getSearchHistory();
-	for(auto i = lastSearches.begin(); i != lastSearches.end(); ++i) {
-		ctrlSearchBox.InsertString(0, i->c_str());
+	for(const auto& s: lastSearches) {
+		ctrlSearchBox.InsertString(0, s.c_str());
 	}
 
 	searchBoxContainer.SubclassWindow(ctrlSearchBox.m_hWnd);
@@ -517,8 +517,8 @@ void SearchFrame::onEnter() {
 			ctrlSearchBox.DeleteString(0);
 
 		auto lastSearches = SettingsManager::getInstance()->getSearchHistory();
-		for(auto i = lastSearches.begin(); i != lastSearches.end(); ++i) {
-			ctrlSearchBox.InsertString(0, i->c_str());
+		for(const auto& s: lastSearches) {
+			ctrlSearchBox.InsertString(0, s.c_str());
 		}
 	}
 
@@ -586,9 +586,9 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 			}
 		} else {
 			// match all here
-			for(auto j = search.begin(); j != search.end(); ++j) {
-				if((*j->begin() != _T('-') && Util::findSubString(aResult->getFile(), *j) == -1) ||
-					(*j->begin() == _T('-') && j->size() != 1 && Util::findSubString(aResult->getFile(), j->substr(1)) != -1)
+			for(auto& s: search) {
+				if((*s.begin() != '-' && Util::findSubString(aResult->getFile(), s) == -1) ||
+					(*s.begin() == '-' && s.size() != 1 && Util::findSubString(aResult->getFile(), s.substr(1)) != -1)
 					) 
 				{
 					droppedResults++;
@@ -779,9 +779,8 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 			QueueManager::getInstance()->addFile(target, si->sr->getSize(), 
 				si->sr->getTTH(), HintedUser(si->sr->getUser(), si->sr->getHubURL()), si->sr->getFile(), 0, true, p);
 			
-			const vector<SearchInfo*>& children = sf->getUserList().findChildren(si->getGroupCond());
-			for(auto i = children.begin(); i != children.end(); i++) {
-				SearchInfo* j = *i;
+			const auto& children = sf->getUserList().findChildren(si->getGroupCond());
+			for(const auto j: children) {
 				try {
 					QueueManager::getInstance()->addFile(target, j->sr->getSize(), j->sr->getTTH(), 
 						HintedUser(j->getUser(), j->sr->getHubURL()), si->sr->getFile(), 0, true, p);
@@ -1266,16 +1265,16 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 				delete si;
 				return;	 	
 			} 	
-			for(auto k = pp->children.begin(); k != pp->children.end(); k++){	 	
-				if((sr->getUser()->getCID() == (*k)->getUser()->getCID()) && (sr->getFile() == (*k)->sr->getFile())) {	 	
+			for(auto c: pp->children){	 	
+				if((sr->getUser()->getCID() == c->getUser()->getCID()) && (sr->getFile() == c->sr->getFile())) {	 	
 					delete si;
 					return;	 	
 				} 	
 			}	 	
 		}
 	} else {
-		for(auto s = ctrlResults.getParents().begin(); s != ctrlResults.getParents().end(); ++s) {
-			SearchInfo* si2 = (*s).second.parent;
+		for(auto p: ctrlResults.getParents() | map_values) {
+			SearchInfo* si2 = p.parent;
 	        const SearchResultPtr& sr2 = si2->sr;
 			if((sr->getUser()->getCID() == sr2->getUser()->getCID()) && (sr->getFile() == sr2->getFile())) {
 				delete si;	 	
@@ -1377,12 +1376,11 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 					hasDupes = true;
 			}
 
-			OMenu resultsMenu, copyMenu, SearchMenu;
+			OMenu resultsMenu, copyMenu;
 			SearchInfo::CheckTTH cs = ctrlResults.forEachSelectedT(SearchInfo::CheckTTH());
 
 			copyMenu.CreatePopupMenu();
 			resultsMenu.CreatePopupMenu();
-			SearchMenu.CreatePopupMenu();
 
 			copyMenu.InsertSeparatorFirst(TSTRING(COPY));
 			copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
@@ -1392,9 +1390,6 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
 			copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
 			copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
-
-			SearchMenu.InsertSeparatorFirst(TSTRING(SEARCH_SITES));		
-			WinUtil::AppendSearchMenu(SearchMenu);
 
 			if(ctrlResults.GetSelectedCount() > 1)
 				resultsMenu.InsertSeparatorFirst(Util::toStringW(ctrlResults.GetSelectedCount()) + _T(" ") + TSTRING(FILES));
@@ -1427,7 +1422,13 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 				resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
 
 			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES_DIR, CTSTRING(SEARCH_DIRECTORY));
-			resultsMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+
+			WinUtil::appendSearchMenu(resultsMenu, [=](const WebShortcut* ws) {
+				ctrlResults.forEachSelectedT([=](const SearchInfo* ii) { 
+					WinUtil::searchSite(ws, ii->sr->getFile()); 
+				});
+			});
+
 			resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)copyMenu, CTSTRING(COPY));
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 
@@ -1453,16 +1454,12 @@ void SearchFrame::initHubs() {
 	clientMgr->lockRead();
 	clientMgr->addListener(this);
 
-	const Client::List& clients = clientMgr->getClients();
-
-	Client::Iter it;
-	Client::Iter endIt = clients.end();
-	for(it = clients.begin(); it != endIt; ++it) {
-		Client* client = it->second;
-		if (!client->isConnected())
+	const auto& clients = clientMgr->getClients();
+	for(auto c: clients | map_values) {
+		if (!c->isConnected())
 			continue;
 
-		onHubAdded(new HubInfo(Text::toT(client->getHubUrl()), Text::toT(client->getHubName()), client->getMyIdentity().isOp()));
+		onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp()));
 	}
 
 	clientMgr->unlockRead();
@@ -1823,14 +1820,14 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 		ctrlResults.SetRedraw(FALSE);
 		ctrlResults.DeleteAllItems();
 
-		for(auto i = ctrlResults.getParents().begin(); i != ctrlResults.getParents().end(); ++i) {
-			SearchInfo* si = (*i).second.parent;
+		for(auto aSI: ctrlResults.getParents() | map_values) {
+			SearchInfo* si = aSI.parent;
 			si->collapsed = true;
 			if(matchFilter(si, sel, doSizeCompare, mode, size)) {
 				dcassert(ctrlResults.findItem(si) == -1);
 				int k = ctrlResults.insertItem(si, si->getImageIndex());
 
-				const vector<SearchInfo*>& children = ctrlResults.findChildren(si->getGroupCond());
+				const auto& children = ctrlResults.findChildren(si->getGroupCond());
 				if(!children.empty()) {
 					if(si->collapsed) {
 						ctrlResults.SetItemState(k, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);	
@@ -1877,31 +1874,6 @@ void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
-}
-
-LRESULT SearchFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	
-	tstring searchTerm;
-	tstring searchTermFull;
-
-
-	if(ctrlResults.GetSelectedCount() == 1) {
-		size_t newId = (size_t)wID - IDC_SEARCH_SITES;
-		if(newId < (int)WebShortcuts::getInstance()->list.size()) {
-			WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
-			if(ws != NULL) {
-				int i = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
-				dcassert(i != -1);
-				const SearchInfo* si = ctrlResults.getItemData(i);
-				const SearchResultPtr& sr = si->sr;
-
-
-				searchTermFull = Text::toT(Util::getReleaseDir(sr->getFile(), true));
-				WinUtil::SearchSite(ws, searchTermFull); 
-			}
-		}
-	}
-	return S_OK;
 }
 
 LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

@@ -27,9 +27,11 @@
 #include "../client/FastAlloc.h"
 
 #include "FlatTabCtrl.h"
-#include "TypedListViewCtrl.h"
+#include "FilteredListViewCtrl.h"
 #include "UCHandler.h"
 #include "MenuBaseHandlers.h"
+#include "TypedTreeCtrl.h"
+
 
 #include "../client/DirectoryListing.h"
 #include "../client/DirectoryListingListener.h"
@@ -123,19 +125,18 @@ public:
 		COMMAND_ID_HANDLER(IDC_VIEW_NFO, onViewNFO)
 		COMMAND_ID_HANDLER(IDC_RELOAD, onReload)
 		COMMAND_ID_HANDLER(IDC_RELOAD_DIR, onReloadDir)
-		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES, IDC_SEARCH_SITES + WebShortcuts::getInstance()->list.size(), onSearchSite)
 		COMMAND_ID_HANDLER(IDC_FINDMISSING, onFindMissing)
 		COMMAND_ID_HANDLER(IDC_CHECKSFV, onCheckSFV)
 
 		COMMAND_ID_HANDLER(IDC_SEARCHLEFT, onSearchLeft)
 		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
-		COMMAND_RANGE_HANDLER(IDC_SEARCH_SITES+90, IDC_SEARCH_SITES+90 + WebShortcuts::getInstance()->list.size(), onSearchSiteDir)
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<DirectoryListingFrame>)
+		REFLECT_NOTIFICATIONS()
 	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
 		MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
@@ -184,10 +185,6 @@ public:
 	LRESULT onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-	LRESULT onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-	LRESULT onSearchSiteDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void updateTree(DirectoryListing::Directory* tree, HTREEITEM treeItem);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
@@ -276,6 +273,11 @@ public:
 	int64_t getDownloadSize(bool isWhole);
 	void handleDownload(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
+	
+	ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Directory* d) const;
+	int getIconIndex(const DirectoryListing::Directory* d) const;
+	int getLoadingIcon() const;
+	void expandDir(const DirectoryListing::Directory* d, bool /*collapsing*/);
 private:
 	void updateStatus(const tstring& aMsg);
 	string curPath;
@@ -332,8 +334,8 @@ private:
 	deque<string> history;
 	size_t historyIndex;
 	
-	CTreeViewCtrl ctrlTree;
-	TypedListViewCtrl<ItemInfo, IDC_FILES> ctrlList;
+	TypedTreeCtrl<DirectoryListingFrame, DirectoryListing::Directory> ctrlTree;
+	FilteredListViewCtrl<ItemInfo, IDC_FILES> ctrlList;
 	CStatusBarCtrl ctrlStatus;
 	HTREEITEM treeRoot;
 	

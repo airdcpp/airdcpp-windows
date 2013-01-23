@@ -1562,21 +1562,22 @@ void WinUtil::searchAny(const tstring& aSearch) {
 	}
 }
 
-void WinUtil::AppendSearchMenu(OMenu& menu, int x /*0*/) {
-	while(menu.GetMenuItemCount() > 0) {
-		menu.RemoveMenu(0, MF_BYPOSITION);
-	}
-	int n = 0;
-	WebShortcut::Iter i = WebShortcuts::getInstance()->list.begin();
-	for(; i != WebShortcuts::getInstance()->list.end(); ++i) {
-		menu.AppendMenu(MF_STRING, IDC_SEARCH_SITES + x + n, (LPCTSTR)(*i)->name.c_str());
-		n++;
+void WinUtil::appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f) {
+	OMenu* searchMenu = aParent.createSubMenu(TSTRING(SEARCH_SITES), true);
+	for(auto ws: WebShortcuts::getInstance()->list) {
+		searchMenu->appendItem(ws->name, [=] { f(ws); });
 	}
 }
 
-void WinUtil::SearchSite(WebShortcut* ws, tstring searchTerm) {
+void WinUtil::appendSearchMenu(OMenu& aParent, const string& aPath, bool getReleaseDir /*true*/) {
+	appendSearchMenu(aParent, [=](const WebShortcut* ws) { searchSite(ws, aPath, getReleaseDir); });
+}
+
+void WinUtil::searchSite(const WebShortcut* ws, const string& aSearchTerm, bool getReleaseDir) {
 	if(ws == NULL)
 		return;
+
+	tstring searchTerm = Text::toT(getReleaseDir ? Util::getReleaseDir(aSearchTerm, true) : Util::getLastDir(aSearchTerm));
 
 	if(ws->clean && !searchTerm.empty()) {
 		searchTerm = WinUtil::getTitle(searchTerm);

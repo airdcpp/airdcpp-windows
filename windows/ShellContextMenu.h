@@ -26,6 +26,7 @@
 
 #include "stdafx.h"
 #include "../client/typedefs.h"
+#include "OMenu.h"
 
 class CShellContextMenu
 {
@@ -38,12 +39,12 @@ public:
 	~CShellContextMenu();
 
 	void SetPath(const tstring& strPath);
-	CMenu* GetMenu();
+	OMenu* GetMenu();
 	UINT ShowContextMenu(HWND hWnd, CPoint pt);
 
 private:
 	bool bDelete;
-	CMenu* m_Menu;
+	OMenu* m_Menu;
 	IShellFolder* m_psfFolder;
 	LPITEMIDLIST* m_pidlArray;
 

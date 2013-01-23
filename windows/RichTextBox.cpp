@@ -846,12 +846,6 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	OMenu menu;
 	menu.CreatePopupMenu();
 
-	if (SearchMenu.m_hMenu != NULL) {
-		// delete search menu
-		SearchMenu.DestroyMenu();
-		SearchMenu.m_hMenu = NULL;
-	}
-
 	if (copyMenu.m_hMenu != NULL) {
 		// delete copy menu if it exists
 		copyMenu.DestroyMenu();
@@ -935,10 +929,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			}
 		}
 
-		SearchMenu.CreatePopupMenu();
-		menu.AppendMenu(MF_SEPARATOR);
-		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
-		WinUtil::AppendSearchMenu(SearchMenu);
+		WinUtil::appendSearchMenu(menu, Text::fromT(selectedWord), false);
 	} else {
 		bool isMe = (selectedUser == Text::toT(client->getMyNick()));
 
@@ -1951,18 +1942,4 @@ LRESULT RichTextBox::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	}
 	SetSelNone();
 	return 0;
-}
-
-
-LRESULT RichTextBox::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	
-	size_t newId = (size_t)wID - IDC_SEARCH_SITES;
-	if(newId < (int)WebShortcuts::getInstance()->list.size()) {
-		WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
-		if(ws != NULL) {
-			WinUtil::SearchSite(ws, isPath ? Text::toT(Util::getReleaseDir(Text::fromT(selectedWord), true)) : selectedWord); 
-		}
-	}
-	SetSelNone();
-	return S_OK;
 }

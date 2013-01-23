@@ -112,11 +112,11 @@ void CShellContextMenu::SetPath(const tstring& strPath)
 	bDelete = true;	// indicates that m_psfFolder should be deleted by CShellContextMenu
 }
 
-CMenu* CShellContextMenu::GetMenu()
+OMenu* CShellContextMenu::GetMenu()
 {
 	if(!m_Menu)
 	{
-		m_Menu = new CMenu;
+		m_Menu = new OMenu;
 		m_Menu->CreatePopupMenu();	// create the popupmenu(its empty)
 	}
 	return m_Menu;
@@ -134,7 +134,7 @@ UINT CShellContextMenu::ShowContextMenu(HWND hWnd, CPoint pt)
 	{
 		delete m_Menu;
 		m_Menu = NULL;
-		m_Menu = new CMenu;
+		m_Menu = new OMenu;
 		m_Menu->CreatePopupMenu();
 	}
 

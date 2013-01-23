@@ -619,6 +619,7 @@
     <ClInclude Include="windows\AirAppearancePage.h" />
     <ClInclude Include="windows\ChatFrameBase.h" />
     <ClInclude Include="windows\ExMessageBox.h" />
+    <ClInclude Include="windows\FilteredListViewCtrl.h" />
     <ClInclude Include="windows\HtmlToRtf.h" />
     <ClInclude Include="windows\LimitPage.h" />
     <ClInclude Include="windows\ExCImage.h" />
@@ -710,6 +711,7 @@
     <ClInclude Include="windows\TransferView.h" />
     <ClInclude Include="windows\TreePropertySheet.h" />
     <ClInclude Include="windows\TypedListViewCtrl.h" />
+    <ClInclude Include="windows\TypedTreeCtrl.h" />
     <ClInclude Include="windows\UCHandler.h" />
     <ClInclude Include="windows\UCPage.h" />
     <ClInclude Include="windows\UpdateDlg.h" />

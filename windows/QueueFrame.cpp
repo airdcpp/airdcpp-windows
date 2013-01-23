@@ -1192,12 +1192,6 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 	priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST, CTSTRING(HIGHEST));
 	priorityMenu.AppendMenu(MF_STRING, IDC_AUTOPRIORITY, CTSTRING(AUTO));
 
-	//Search Menu
-	OMenu SearchMenu;
-	SearchMenu.CreatePopupMenu();
-	SearchMenu.InsertSeparatorFirst(CTSTRING(SEARCH_SITES));
-	WinUtil::AppendSearchMenu(SearchMenu);
-
 
 	if (reinterpret_cast<HWND>(wParam) == ctrlQueue && ctrlQueue.GetSelectedCount() > 0) { 
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
@@ -1335,7 +1329,8 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 				copyMenu->appendThis(TSTRING(COPY), true);
 				fileMenu.AppendMenu(MF_SEPARATOR);
-				fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+
+				WinUtil::appendSearchMenu(fileMenu, ii->getPath());
 
 				fileMenu.AppendMenu(MF_SEPARATOR);
 				fileMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_RENAME_FILE));
@@ -1485,7 +1480,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				dirMenu.AppendMenu(MF_STRING, IDC_SEARCH_BUNDLE, CTSTRING(SEARCH_BUNDLE_ALT));
 			}
 			dirMenu.AppendMenu(MF_SEPARATOR);
-			dirMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)SearchMenu, CTSTRING(SEARCH_SITES));
+			WinUtil::appendSearchMenu(dirMenu, curDir);
 			dirMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
 			dirMenu.AppendMenu(MF_STRING, IDC_COPY, CTSTRING(COPY_DIRECTORY));
 			dirMenu.AppendMenu(MF_SEPARATOR);
@@ -2113,28 +2108,4 @@ void QueueFrame::on(QueueManagerListener::RecheckAlreadyFinished, const string& 
 
 void QueueFrame::on(QueueManagerListener::RecheckDone, const string& target) noexcept {
 	onRechecked(target, STRING(DONE));
-}
-LRESULT QueueFrame::onSearchSite(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	
-	tstring searchTermFull;
-
-	if(usingDirMenu && (ctrlDirs.GetSelectedItem() != NULL)) {
-		searchTermFull = Util::getLastDir(Text::toT(getSelectedDir()));
-	} else {
-		QueueItemInfo *ii = (QueueItemInfo*)ctrlQueue.GetItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
-		if(SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR){
-			searchTermFull = Util::getLastDir(ii->getText(COLUMN_PATH));
-		} else {
-			searchTermFull = ii->getText(COLUMN_TARGET);
-		}
-	}
-
-	size_t newId = (size_t)wID - IDC_SEARCH_SITES;
-	if(newId < (int)WebShortcuts::getInstance()->list.size()) {
-		WebShortcut *ws = WebShortcuts::getInstance()->list[newId];
-		if(ws != NULL) 
-			WinUtil::SearchSite(ws, searchTermFull); 
-	}
-		
-	return S_OK;
 }

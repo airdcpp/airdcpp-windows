@@ -1073,6 +1073,12 @@
     <ClInclude Include="windows\ProxyPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\TypedTreeCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\FilteredListViewCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\SettingsTree\SearchTypes.ico">
