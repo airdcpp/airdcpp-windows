@@ -194,7 +194,6 @@ public:
 
 	void refreshTree(const tstring& root, bool reloadList, bool changeDir);
 
-	HTREEITEM findItem(HTREEITEM ht, const tstring& name);
 	void selectItem(const tstring& name);
 	
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
@@ -275,9 +274,8 @@ public:
 	bool showDirDialog(string& fileName);
 	
 	ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Directory* d) const;
-	int getIconIndex(const DirectoryListing::Directory* d) const;
-	int getLoadingIcon() const;
-	void expandDir(const DirectoryListing::Directory* d, bool /*collapsing*/);
+	static int getIconIndex(const DirectoryListing::Directory* d);
+	void expandDir(DirectoryListing::Directory* d, bool /*collapsing*/);
 private:
 	void updateStatus(const tstring& aMsg);
 	string curPath;
@@ -286,7 +284,7 @@ private:
 	
 	string filter;
 	void updateItems(const DirectoryListing::Directory* d, BOOL enableRedraw);
-	void changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw, bool reload = false);
+	void changeDir(DirectoryListing::Directory* d, BOOL enableRedraw, bool reload = false);
 	void findSearchHit(bool newDir = false);
 	int searchPos;
 	bool gotoPrev;

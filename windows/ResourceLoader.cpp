@@ -24,8 +24,6 @@
 tstring ResourceLoader::m_IconPath;
 ResourceLoader::ImageMap ResourceLoader::fileIndexes;
 int ResourceLoader::fileImageCount;
-int ResourceLoader::dirIconIndex = 0;
-int ResourceLoader::dirMaskedIndex = 0;
 CImageList ResourceLoader::searchImages;
 CImageList ResourceLoader::settingsTreeImages;
 CImageList ResourceLoader::fileImages;
@@ -236,7 +234,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_FOLDER:		return _T("folder.ico");
 		case IDI_FOLDER_INC:	return _T("folder_incomplete.ico");
 		case IDI_FILE:			return _T("file.ico");
-		case IDI_OVERLAY:		return _T("overlay.ico");
+		case IDI_DIR_INC_OL:	return _T("overlay.ico");
 		case IDI_USER_BASE:		return _T("UserlistImages\\UserBase.ico");
 		case IDI_USER_AWAY:		return _T("UserlistImages\\UserAway.ico");
 		case IDI_USER_BOT:		return _T("UserlistImages\\UserBot.ico");
@@ -249,29 +247,27 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_TOTAL_UP:		return _T("TotalUp.ico");
 		case IDI_TOTAL_DOWN:	return _T("TotalDown.ico");
 		case IDI_SHARED:		return _T("Shared.ico");
+		case IDI_DIR_LOADING_OL:return _T("ExecMasked.ico");
 
 		default: return Util::emptyStringT;
 	}
 }
 void ResourceLoader::loadFileImages() {
 
-	fileImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 3);
-	fileImages.AddIcon(loadIcon(IDI_FOLDER, 16));
-	fileImages.AddIcon(loadIcon(IDI_FOLDER_INC, 16));
-	fileImages.AddIcon(loadIcon(IDI_FILE, 16));
-	
-	dirIconIndex = fileImageCount++;
-	dirMaskedIndex = fileImageCount++;
-	fileImageCount++;
+	fileImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 4);
+	fileImages.AddIcon(loadIcon(IDI_FILE, 16)); fileImageCount++;
+	fileImages.AddIcon(loadIcon(IDI_FOLDER, 16)); fileImageCount++;
+	fileImages.AddIcon(loadIcon(IDI_FOLDER_INC, 16)); fileImageCount++;
+	fileImages.AddIcon(loadIcon(IDI_FOLDER, 16)); fileImageCount++;
 
 	if(SETTING(USE_SYSTEM_ICONS)) {
 		SHFILEINFO fi;
 		memzero(&fi, sizeof(SHFILEINFO));
 		if(::SHGetFileInfo(_T("./"), FILE_ATTRIBUTE_DIRECTORY, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES)) {
-			fileImages.ReplaceIcon(dirIconIndex, fi.hIcon);
+			fileImages.ReplaceIcon(DIR_NORMAL, fi.hIcon);
 
-			{
-				HICON overlayIcon = loadIcon(IDI_OVERLAY);
+			auto mergeIcon = [&] (int resourceID, int8_t iconIndex) -> void {
+				HICON overlayIcon = loadIcon(resourceID);
 
 				CImageList tmpIcons;
 				tmpIcons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 2, 1);
@@ -280,15 +276,17 @@ void ResourceLoader::loadFileImages() {
 
 				CImageList mergeList(ImageList_Merge(tmpIcons, 0, tmpIcons, 1, 0, 0));
 				HICON icDirIcon = mergeList.GetIcon(0);
-				fileImages.ReplaceIcon(dirMaskedIndex, icDirIcon);
+				fileImages.ReplaceIcon(iconIndex, icDirIcon);
 
 				mergeList.Destroy();
 				tmpIcons.Destroy();
 
 				::DestroyIcon(icDirIcon);
 				::DestroyIcon(overlayIcon);
-			}
+			};
 
+			mergeIcon(IDI_DIR_INC_OL, DIR_INCOMPLETE);
+			mergeIcon(IDI_DIR_LOADING_OL, DIR_LOADING);
 			
 			::DestroyIcon(fi.hIcon);
 		}

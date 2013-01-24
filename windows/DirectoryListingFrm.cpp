@@ -97,7 +97,9 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir) {
 	bool searching = dl->isCurrentSearchPath(aDir);
 
-	callAsync([=] { updateStatus(CTSTRING(UPDATING_VIEW)); });
+	if (!dl->getPartialList())
+		callAsync([=] { updateStatus(CTSTRING(UPDATING_VIEW)); });
+
 	if (searching)
 		resetFilter();
 
@@ -114,7 +116,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 			if (aDir.empty()) {
 				msg = STRING(PARTIAL_LIST_LOADED);
 			} else {
-				msg = STRING_F(DIRECTORY_LOADED, Util::getLastDir(aDir));
+				//msg = STRING_F(DIRECTORY_LOADED, Util::getLastDir(aDir));
 			}
 		} else {
 			msg = STRING_F(FILELIST_LOADED_IN, Util::formatSeconds(loadTime, true));
@@ -122,7 +124,8 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 
 		callAsync([=] {
 			initStatus();
-			updateStatus(Text::toT(msg));
+			if (!msg.empty())
+				updateStatus(Text::toT(msg));
 			changeWindowState(true);
 
 			//notify the user that we've loaded the list
@@ -337,23 +340,28 @@ void DirectoryListingFrame::convertToFull() {
 
 ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Directory* d) const {
 	if (!d->directories.empty())
-		return ChildrenState::CHILDREN_CREATED;
+		return !d->isComplete() ? ChildrenState::CHILDREN_PART_PENDING : ChildrenState::CHILDREN_CREATED;
 
 	if (d->getType() == DirectoryListing::Directory::TYPE_INCOMPLETE_CHILD)
-		return ChildrenState::CHILDREN_PENDING;
+		return ChildrenState::CHILDREN_ALL_PENDING;
+
+	if (d->getLoading())
+		return ChildrenState::CHILDREN_LOADING;
 
 	return ChildrenState::NO_CHILDREN;
 }
 
-int DirectoryListingFrame::getIconIndex(const DirectoryListing::Directory* d) const {
-	return d->isComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex();
+int DirectoryListingFrame::getIconIndex(const DirectoryListing::Directory* d) {
+	if (d->getLoading())
+		return ResourceLoader::DIR_LOADING;
+	
+	if (d->getType() == DirectoryListing::Directory::TYPE_NORMAL)
+		return ResourceLoader::DIR_NORMAL;
+
+	return ResourceLoader::DIR_INCOMPLETE;
 }
 
-int DirectoryListingFrame::getLoadingIcon() const {
-	return ResourceLoader::getDirIconIndex();
-}
-
-void DirectoryListingFrame::expandDir(const DirectoryListing::Directory* d, bool collapsing) {
+void DirectoryListingFrame::expandDir(DirectoryListing::Directory* d, bool collapsing) {
 	changeType = collapsing ? CHANGE_COLLAPSE : CHANGE_EXPAND_ONLY;
 	if (collapsing || !d->isComplete()) {
 		changeDir(d, TRUE);
@@ -366,7 +374,7 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 
 	//reverse iterate to keep the sorting order when adding as first in the tree(a lot faster than TVI_LAST)
 	for(auto d: aTree->directories | reversed) {
-		const int index = d->isComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex();
+		const int index = getIconIndex(d);
 		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(d->getName()).c_str(), index, index, 0, 0, (LPARAM)d, aParent, TVI_FIRST);
 		if(d->getAdls())
 			ctrlTree.SetItemState(ht, TVIS_BOLD, TVIS_BOLD);
@@ -376,8 +384,10 @@ void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREE
 
 void DirectoryListingFrame::createRoot() {
 	string nick = ClientManager::getInstance()->getNicks(dl->getHintedUser())[0];
-	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(nick).c_str(), ResourceLoader::getDirIconIndex(), ResourceLoader::getDirIconIndex(), 0, 0, (LPARAM)dl->getRoot(), NULL, NULL);
-	dcassert(treeRoot);
+//	const auto icon = getIconIndex(dl->getRoot());
+	const auto icon = ResourceLoader::DIR_NORMAL;
+	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(nick).c_str(), icon, icon, 0, 0, (LPARAM)dl->getRoot(), NULL, NULL);
+	dcassert(treeRoot); 
 }
 
 void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bool changeDir) {
@@ -393,12 +403,13 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 	}
 
 	auto oldSel = ctrlTree.GetSelectedItem();
-	HTREEITEM ht = reloadList ? treeRoot : ctrlTree.findItem(treeRoot, root);
+	HTREEITEM ht = reloadList ? treeRoot : ctrlTree.findItem(treeRoot, Text::fromT(root));
 	if(ht == NULL) {
 		ht = treeRoot;
 	}
 
 	DirectoryListing::Directory* d = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
+	d->setLoading(false);
 
 	//if (changeType != CHANGE_EXPAND_ONLY)
 	ctrlTree.SelectItem(NULL);
@@ -414,9 +425,9 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 	if (changeType != CHANGE_COLLAPSE)
 		ctrlTree.Expand(ht);
 
-	int index = d->isComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex();
-	ctrlTree.SetItemImage(ht, index, index);
-	ctrlTree.SelectItem(NULL);
+	//const int index = getIconIndex(d);
+	//ctrlTree.SetItemImage(ht, index, index);
+	//ctrlTree.SelectItem(NULL);
 
 
 	if (changeDir) {
@@ -433,7 +444,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 			for(int i = 0; i < j; i++) {
 				const ItemInfo* ii = ctrlList.getItemData(i);
 				if (ii->type == ii->DIRECTORY && ii->dir->getPath() == loadedDir) {
-					ctrlList.SetItem(i, 0, LVIF_IMAGE, NULL, ResourceLoader::getDirIconIndex(), 0, 0, NULL);
+					ctrlList.SetItem(i, 0, LVIF_IMAGE, NULL, ResourceLoader::DIR_NORMAL, 0, 0, NULL);
 					ctrlList.updateItem(i);
 					updateStatus();
 					break;
@@ -446,7 +457,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 
 		if (AirUtil::isSub(curPath, loadedDir)) {
 			//the old tree item isn't valid anymore
-			oldSel = findItem(treeRoot, Text::toT(curPath));
+			oldSel = ctrlTree.findItem(treeRoot, curPath);
 			if (!oldSel)
 				oldSel = ht;
 		}
@@ -728,7 +739,7 @@ void DirectoryListingFrame::filterList() {
 			for(auto d: curDir->directories) {
 				string s = d->getName();
 				if(boost::regex_search(s.begin(), s.end(), regNew) && !boost::regex_search(s.begin(), s.end(), regOld)) {
-					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), d->isComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
+					ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), getIconIndex(d));
 				}
 			}
 
@@ -788,7 +799,7 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 		for(auto d: d->directories) {
 			string s = d->getName();
 			if(boost::regex_search(s.begin(), s.end(), reg)) {
-				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), d->isComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
+				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), getIconIndex(d));
 			}
 		}
 
@@ -801,7 +812,7 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 		}
 	} else {
 		for(auto d: d->directories) {
-			ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), d->isComplete() ? ResourceLoader::getDirIconIndex() : ResourceLoader::getDirMaskedIndex());
+			ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), getIconIndex(d));
 		}
 
 		for(auto f: d->files) {
@@ -816,7 +827,7 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 	updateStatus();
 }
 
-void DirectoryListingFrame::changeDir(const DirectoryListing::Directory* d, BOOL enableRedraw, bool reload) {
+void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enableRedraw, bool reload) {
 	if (!reload)
 		updateItems(d, enableRedraw);
 
@@ -825,9 +836,10 @@ void DirectoryListingFrame::changeDir(const DirectoryListing::Directory* d, BOOL
 			dl->addPartialListTask(Util::emptyString, dl->getPath(d));
 		} else if(dl->getUser()->isOnline()) {
 			try {
-				// TODO provide hubHint?
+				d->setLoading(true);
+				ctrlTree.updateItemImage(d);
 				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
-				ctrlStatus.SetText(STATUS_TEXT, CTSTRING(DOWNLOADING_LIST));
+				//ctrlStatus.SetText(STATUS_TEXT, CTSTRING(DOWNLOADING_LIST));
 			} catch(const QueueException& e) {
 				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 			}
@@ -1098,23 +1110,8 @@ LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	return 0;
 }
 
-
-HTREEITEM DirectoryListingFrame::findItem(HTREEITEM ht, const tstring& name) {
-	string::size_type i = name.find('\\');
-	if(i == string::npos)
-		return ht;
-	
-	for(HTREEITEM child = ctrlTree.GetChildItem(ht); child != NULL; child = ctrlTree.GetNextSiblingItem(child)) {
-		DirectoryListing::Directory* d = (DirectoryListing::Directory*)ctrlTree.GetItemData(child);
-		if(Text::toT(d->getName()) == name.substr(0, i)) {
-			return findItem(child, name.substr(i+1));
-		}
-	}
-	return NULL;
-}
-
 void DirectoryListingFrame::selectItem(const tstring& name) {
-	HTREEITEM ht = ctrlTree.findItem(treeRoot, name);
+	HTREEITEM ht = ctrlTree.findItem(treeRoot, Text::fromT(name));
 	if(ht != NULL) {
 		if (changeType == CHANGE_LIST)
 			ctrlTree.EnsureVisible(ht);
@@ -1559,7 +1556,7 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 
 int DirectoryListingFrame::ItemInfo::getImageIndex() const {
 	if(type == DIRECTORY)
-		return ResourceLoader::getDirIconIndex();
+		return DirectoryListingFrame::getIconIndex(dir);
 	else
 		return ResourceLoader::getIconIndex(getText(COLUMN_FILENAME));
 }

@@ -28,7 +28,9 @@
 enum ChildrenState {
 	NO_CHILDREN,
 	CHILDREN_CREATED,
-	CHILDREN_PENDING
+	CHILDREN_ALL_PENDING,
+	CHILDREN_PART_PENDING,
+	CHILDREN_LOADING
 };
 
 template<class PT, class T>
@@ -91,21 +93,19 @@ public:
 				childSelected = AirUtil::isSub(((T*)GetItemData(sel))->getPath(), ((T*)pNMTreeView->itemNew.lParam)->getPath());
 			}
 
+			Expand(pNMTreeView->itemNew.hItem, (childSelected && parent->getChildrenState((T*)pNMTreeView->itemNew.lParam) == CHILDREN_PART_PENDING) ? TVE_COLLAPSE | TVE_COLLAPSERESET : pNMTreeView->action);
 			if (childSelected) {
 				//it would be selected anyway but without any notification message
-				Expand(pNMTreeView->itemNew.hItem, TVE_COLLAPSE | TVE_COLLAPSERESET);
 				parent->expandDir(((T*)pNMTreeView->itemNew.lParam), true);
-			} else {
-				Expand(pNMTreeView->itemNew.hItem, pNMTreeView->action);
 			}
 		} else if (pNMTreeView->action == TVE_EXPAND && !(pNMTreeView->itemNew.state & TVIS_EXPANDEDONCE)) {
 			T* curDir = (T*)pNMTreeView->itemNew.lParam;
 
 			ChildrenState state = parent->getChildrenState(curDir);
 			/* now create the children */
-			if (state == CHILDREN_CREATED) {
+			if (state == CHILDREN_CREATED || state == CHILDREN_PART_PENDING) {
 				insertItems(curDir, pNMTreeView->itemNew.hItem);
-			} else if (state == CHILDREN_PENDING) {
+			} else if (state == CHILDREN_ALL_PENDING) {
 				//items aren't ready, don't change the state and notify the parent
 				parent->expandDir(curDir, false);
 				bHandled = TRUE;
@@ -150,14 +150,14 @@ public:
 		}
 	}
 
-	HTREEITEM findItem(HTREEITEM ht, const tstring& name) {
+	HTREEITEM findItem(HTREEITEM ht, const string& name) {
 		string::size_type i = name.find('\\');
 		if(i == string::npos)
 			return ht;
 	
 		for(HTREEITEM child = GetChildItem(ht); child != NULL; child = GetNextSiblingItem(child)) {
 			T* d = (T*)GetItemData(child);
-			if(Text::toT(d->getName()) == name.substr(0, i)) {
+			if(d->getName() == name.substr(0, i)) {
 				return findItem(child, name.substr(i+1));
 			}
 		}
@@ -178,6 +178,15 @@ public:
 		return (GetItem(&tvItem) && (tvItem.state & TVIS_EXPANDED));
 	}
 
+	void updateItemImage(const T* item) { 
+		HTREEITEM ht = findItem(GetRootItem(), item->getPath());
+		if (ht) {
+			//int index = parent->getIconIndex(item);
+			//SetItemImage(ht, index, index);
+			SetItemImage(ht, I_IMAGECALLBACK, I_IMAGECALLBACK);
+			RedrawWindow();
+		}
+	}
 private:
 	PT* parent;
 };

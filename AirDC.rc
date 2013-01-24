@@ -2115,7 +2115,7 @@ IDI_HUBREG              ICON                    "res\\HubReg.ico"
 IDI_HUBOP               ICON                    "res\\HubOp.ico"
 IDI_BOT                 ICON                    "res\\Bot.ico"
 IDI_BOT_OFF             ICON                    "res\\Botoff.ico"
-IDI_OVERLAY             ICON                    "res\\overlay.ico"
+IDI_DIR_INC_OL          ICON                    "res\\overlay.ico"
 IDI_FOLDER              ICON                    "res\\folder.ico"
 IDI_FOLDER_INC          ICON                    "res\\folder_incomplete.ico"
 IDI_FILE                ICON                    "res\\file.ico"
@@ -2190,6 +2190,7 @@ IDI_DISABLED            ICON                    "res\\AutoSearch\\Disabled.ico"
 IDI_COLLECTING          ICON                    "res\\AutoSearch\\Collecting.ico"
 IDI_POSTSEARCH          ICON                    "res\\AutoSearch\\PostSearch.ico"
 IDI_SHARED              ICON                    "res\\Shared.ico"
+IDI_DIR_LOADING_OL      ICON                    "res\\ExecMasked.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 

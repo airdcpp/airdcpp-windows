@@ -58,9 +58,14 @@ public:
 	static CImageList userImages;
 	static CImageList flagImages;
 
+	enum {
+		DIR_NORMAL,
+		DIR_INCOMPLETE,
+		DIR_LOADING,
+		FILE
+	};
+
 	static int getIconIndex(const tstring& aFileName);
-	static int getDirIconIndex() { return dirIconIndex; }
-	static int getDirMaskedIndex() { return dirMaskedIndex; }
 
 private:
 	
@@ -69,8 +74,6 @@ private:
 	static ImageMap fileIndexes;
 
 	static int fileImageCount;
-	static int dirIconIndex;
-	static int dirMaskedIndex;
 	static void loadFileImages();
 	static COLORREF GrayPalette[256];
 	static HICON MergeImages(HIMAGELIST hImglst1, int pos, HIMAGELIST hImglst2, int pos2);

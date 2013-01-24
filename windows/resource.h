@@ -257,9 +257,9 @@
 #define IDI_BOT_OFF                     439
 #define IDI_BOT                         440
 #define IDI_FOLDER                      441
-#define IDI_FOLDER_INC                  442
+#define IDI_DIR_INC_OL					442
 #define IDI_FILE                        443
-#define IDI_OVERLAY                     444
+#define IDI_FOLDER_INC					444
 #define IDI_SEGMENT                     445
 #define IDI_D_USER                      446
 #define IDI_U_USER                      447
@@ -282,6 +282,7 @@
 #define IDI_TOTAL_UP                    482
 #define IDI_TOTAL_DOWN                  483
 #define IDI_SHARED                      484
+#define IDI_DIR_LOADING_OL				485
 #define IDI_PROXY                       488
 #define IDD_FORMVIEW                    500
 #define IDR_WINAMP                      501

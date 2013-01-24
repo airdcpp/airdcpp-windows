@@ -372,7 +372,7 @@ HTREEITEM QueueFrame::addItemDir(bool isFileList) {
 	TVINSERTSTRUCT tvi;
 	tvi.hInsertAfter = TVI_SORT;
 	tvi.item.mask = TVIF_IMAGE | TVIF_PARAM | TVIF_SELECTEDIMAGE | TVIF_TEXT;
-	tvi.item.iImage = tvi.item.iSelectedImage = ResourceLoader::getDirIconIndex();
+	tvi.item.iImage = tvi.item.iSelectedImage = ResourceLoader::DIR_NORMAL;
 
 	if(SETTING(EXPAND_QUEUE)) {
 		tvi.itemex.mask |= TVIF_STATE;
@@ -494,7 +494,7 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr& aBundle, 
 	TVINSERTSTRUCT tvi;
 	tvi.hInsertAfter = TVI_SORT;
 	tvi.item.mask = TVIF_IMAGE | TVIF_PARAM | TVIF_SELECTEDIMAGE | TVIF_TEXT;
-	tvi.item.iImage = tvi.item.iSelectedImage = ResourceLoader::getDirIconIndex();
+	tvi.item.iImage = tvi.item.iSelectedImage = ResourceLoader::DIR_NORMAL;
 
 	if(SETTING(EXPAND_QUEUE)) {
 		tvi.itemex.mask |= TVIF_STATE;
