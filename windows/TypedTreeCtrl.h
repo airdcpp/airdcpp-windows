@@ -137,12 +137,16 @@ public:
 			TVINSERTSTRUCT tvs = {0};
  
 			tvs.item.mask = TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_CHILDREN|TVIF_PARAM;
- 
 			tvs.item.pszText = LPSTR_TEXTCALLBACK ;
 			tvs.item.iImage = I_IMAGECALLBACK ;
 			tvs.item.iSelectedImage = I_IMAGECALLBACK ;
 			tvs.item.cChildren = I_CHILDRENCALLBACK;
 			tvs.item.lParam = (LPARAM)d;
+			if (parent->isBold(d)) {
+				tvs.item.mask |= TVIF_STATE;
+				tvs.item.state = TVIS_BOLD;
+				tvs.item.stateMask = TVIS_BOLD;
+			}
 	    
 			tvs.hParent = aParent;
 			tvs.hInsertAfter = TVI_FIRST;

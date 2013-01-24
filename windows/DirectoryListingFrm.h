@@ -186,7 +186,6 @@ public:
 
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	void updateTree(DirectoryListing::Directory* tree, HTREEITEM treeItem);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
 	void runUserCommand(UserCommand& uc);
@@ -274,8 +273,9 @@ public:
 	bool showDirDialog(string& fileName);
 	
 	ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Directory* d) const;
-	static int getIconIndex(const DirectoryListing::Directory* d);
+	int getIconIndex(const DirectoryListing::Directory* d) const;
 	void expandDir(DirectoryListing::Directory* d, bool /*collapsing*/);
+	bool isBold(const DirectoryListing::Directory* d);
 private:
 	void updateStatus(const tstring& aMsg);
 	string curPath;

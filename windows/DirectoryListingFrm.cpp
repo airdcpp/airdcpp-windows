@@ -351,16 +351,6 @@ ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Di
 	return ChildrenState::NO_CHILDREN;
 }
 
-int DirectoryListingFrame::getIconIndex(const DirectoryListing::Directory* d) {
-	if (d->getLoading())
-		return ResourceLoader::DIR_LOADING;
-	
-	if (d->getType() == DirectoryListing::Directory::TYPE_NORMAL)
-		return ResourceLoader::DIR_NORMAL;
-
-	return ResourceLoader::DIR_INCOMPLETE;
-}
-
 void DirectoryListingFrame::expandDir(DirectoryListing::Directory* d, bool collapsing) {
 	changeType = collapsing ? CHANGE_COLLAPSE : CHANGE_EXPAND_ONLY;
 	if (collapsing || !d->isComplete()) {
@@ -368,18 +358,8 @@ void DirectoryListingFrame::expandDir(DirectoryListing::Directory* d, bool colla
 	}
 }
 
-void DirectoryListingFrame::updateTree(DirectoryListing::Directory* aTree, HTREEITEM aParent) {
-	if(dl->getAbort())
-		throw AbortException();
-
-	//reverse iterate to keep the sorting order when adding as first in the tree(a lot faster than TVI_LAST)
-	for(auto d: aTree->directories | reversed) {
-		const int index = getIconIndex(d);
-		HTREEITEM ht = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(d->getName()).c_str(), index, index, 0, 0, (LPARAM)d, aParent, TVI_FIRST);
-		if(d->getAdls())
-			ctrlTree.SetItemState(ht, TVIS_BOLD, TVIS_BOLD);
-		updateTree(d, ht);
-	}
+bool DirectoryListingFrame::isBold(const DirectoryListing::Directory* d) {
+	return d->getAdls();
 }
 
 void DirectoryListingFrame::createRoot() {
@@ -411,7 +391,6 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 	DirectoryListing::Directory* d = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
 	d->setLoading(false);
 
-	//if (changeType != CHANGE_EXPAND_ONLY)
 	ctrlTree.SelectItem(NULL);
 
 	if (ctrlTree.IsExpanded(ht)) {
@@ -424,10 +403,6 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 
 	if (changeType != CHANGE_COLLAPSE)
 		ctrlTree.Expand(ht);
-
-	//const int index = getIconIndex(d);
-	//ctrlTree.SetItemImage(ht, index, index);
-	//ctrlTree.SelectItem(NULL);
 
 
 	if (changeDir) {
@@ -1555,10 +1530,20 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 }
 
 int DirectoryListingFrame::ItemInfo::getImageIndex() const {
-	if(type == DIRECTORY)
+	/*if(type == DIRECTORY)
 		return DirectoryListingFrame::getIconIndex(dir);
-	else
-		return ResourceLoader::getIconIndex(getText(COLUMN_FILENAME));
+	else*/
+	return ResourceLoader::getIconIndex(getText(COLUMN_FILENAME));
+}
+
+int DirectoryListingFrame::getIconIndex(const DirectoryListing::Directory* d) const {
+	if (d->getLoading())
+		return ResourceLoader::DIR_LOADING;
+	
+	if (d->getType() == DirectoryListing::Directory::TYPE_NORMAL || dl->getIsOwnList())
+		return ResourceLoader::DIR_NORMAL;
+
+	return ResourceLoader::DIR_INCOMPLETE;
 }
 
 void DirectoryListingFrame::runUserCommand(UserCommand& uc) {

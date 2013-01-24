@@ -779,6 +779,7 @@
     <Image Include="res\Bot.ico" />
     <Image Include="res\Botoff.ico" />
     <Image Include="res\download_user.ico" />
+    <Image Include="res\ExecMasked.ico" />
     <Image Include="res\file.ico" />
     <Image Include="res\folder.ico" />
     <Image Include="res\folder_incomplete.ico" />

@@ -48,11 +48,16 @@ LRESULT FavoriteDirDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	ATTACH(IDC_FDNAME, ctrlName);
 	ctrlName.SetWindowText(vName.c_str());
 
-	::SetWindowText(GetDlgItem(IDOK), (TSTRING(OK)).c_str());
-	::SetWindowText(GetDlgItem(IDCANCEL), (TSTRING(CANCEL)).c_str());
-	::SetWindowText(GetDlgItem(IDC_SETTINGS_FAVDIR_PATHS), (TSTRING(PATHS_FAVDIRS)).c_str());
-	::SetWindowText(GetDlgItem(IDC_FDNAME_TEXT), (TSTRING(FAVORITE_DIR_NAME)).c_str());
-	::SetWindowText(GetDlgItem(IDC_SETTINGS_FAVORITE_DIRECTORIES), (TSTRING(SETTINGS_DIRECTORIES)).c_str());
+	::SetWindowText(GetDlgItem(IDOK), CTSTRING(OK));
+	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
+	::SetWindowText(GetDlgItem(IDC_SETTINGS_FAVDIR_PATHS), CTSTRING(PATHS_FAVDIRS));
+	::SetWindowText(GetDlgItem(IDC_FDNAME_TEXT), CTSTRING(FAVORITE_DIR_NAME));
+	::SetWindowText(GetDlgItem(IDC_SETTINGS_FAVORITE_DIRECTORIES), CTSTRING(SETTINGS_DIRECTORIES));
+	::SetWindowText(GetDlgItem(IDC_ADD), CTSTRING(ADD));
+	::SetWindowText(GetDlgItem(IDC_REMOVE), CTSTRING(REMOVE));
+	::SetWindowText(GetDlgItem(IDC_BROWSE), CTSTRING(BROWSE));
+
+	SetWindowText(CTSTRING(FAV_DIRECTORY));
 
 	CenterWindow(GetParent());
 	return TRUE;
@@ -130,7 +135,7 @@ LRESULT FavoriteDirDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 
 LRESULT FavoriteDirDlg::onEditChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(wID == IDC_FAVDIR_EDIT) {
-		::EnableWindow(GetDlgItem(IDC_FAVDIR_ADD), (::GetWindowTextLength(GetDlgItem(IDC_FAVDIR_EDIT)) > 0));
+		::EnableWindow(GetDlgItem(IDC_ADD), (::GetWindowTextLength(GetDlgItem(IDC_FAVDIR_EDIT)) > 0));
 	}
 	return 0;
 }
@@ -138,7 +143,7 @@ LRESULT FavoriteDirDlg::onEditChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 LRESULT FavoriteDirDlg::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 {
 	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
-	::EnableWindow(GetDlgItem(IDC_FAVDIR_REMOVE), (lv->uNewState & LVIS_FOCUSED));
+	::EnableWindow(GetDlgItem(IDC_REMOVE), (lv->uNewState & LVIS_FOCUSED));
 	if (lv->uNewState & LVIS_FOCUSED) {
 		TCHAR buf[MAX_PATH];
 		pathListCtrl.GetItemText(lv->iItem, 0, buf, MAX_PATH);

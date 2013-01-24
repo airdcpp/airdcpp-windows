@@ -326,7 +326,6 @@
 		<String Name="MenuOpenDownloadsDir">Open downloads directory</String>
 		<String Name="MenuOpenFileList">Open file list...	Ctrl+L</String>
 		<String Name="MenuOpenMatchAll">Match downloaded lists</String>
-		<String Name="MenuOpenOwnList">Open own list</String>
 		<String Name="MenuPublicHubs">Public Hubs	Ctrl+P</String>
 		<String Name="MenuQuickConnect">Quick Connect ...	Ctrl+Q</String>
 		<String Name="MenuReconnect">Reconnect	Ctrl+R</String>
@@ -1674,7 +1673,6 @@ would you still like to load them?</String>
 		<String Name="SettingsAutoDetectionUseLimited">Use the limiter values when setting the auto detected speed and slot limits</String>
 		<String Name="Encryption">Encryption</String>
 		<String Name="SettingsUseAdls">Always match other users' file lists with ADL search</String>
-		<String Name="SettingsUseAdlsOwn">Always match own full file list with ADL search </String>
 		<String Name="CollectingResults">Collecting results</String>
 		<String Name="PostSearching">Searching for proper</String>
 		<String Name="IncreaseNum">Increase current number</String>
@@ -1742,5 +1740,9 @@ Do you want to use this destination anyway?</String>
 		<String Name="GeoipUpdated">The %1% GeoIP database has been successfully updated</String>
 		<String Name="GeoipUpdatingFailed">The %1% GeoIP database could not be updated</String>
 		<String Name="AsXFoundFrom">A %s %s was found from an user %s</String>
+		<String Name="FavDirectory">Favorite directory</String>
+		<String Name="TrasferRateLimiting">Transfer rate limiting</String>
+		<String Name="HoursLower">hours</String>
+		<String Name="OwnListAdl">Match own list with ADL search</String>
 	</Strings>
 </Language>

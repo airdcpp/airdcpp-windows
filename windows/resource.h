@@ -257,9 +257,9 @@
 #define IDI_BOT_OFF                     439
 #define IDI_BOT                         440
 #define IDI_FOLDER                      441
-#define IDI_DIR_INC_OL					442
+#define IDI_DIR_INC_OL                  442
 #define IDI_FILE                        443
-#define IDI_FOLDER_INC					444
+#define IDI_FOLDER_INC                  444
 #define IDI_SEGMENT                     445
 #define IDI_D_USER                      446
 #define IDI_U_USER                      447
@@ -282,7 +282,7 @@
 #define IDI_TOTAL_UP                    482
 #define IDI_TOTAL_DOWN                  483
 #define IDI_SHARED                      484
-#define IDI_DIR_LOADING_OL				485
+#define IDI_DIR_LOADING_OL              485
 #define IDI_PROXY                       488
 #define IDD_FORMVIEW                    500
 #define IDR_WINAMP                      501
@@ -1134,7 +1134,6 @@
 #define IDC_CLEAR_DIR_HISTORY           1620
 #define IDC_FDNAME_TEXT                 1621
 #define IDC_FDPATH_TEXT                 1622
-#define IDC_BROWSEFAV                   1623
 #define IDC_FAVDIR_EXPLAIN              1624
 #define IDC_SEARCH_INTERVAL             1625
 #define IDC_OTHER_SKIPPING_OPTIONS      1626
@@ -1144,8 +1143,6 @@
 #define IDC_SHARED                      1629
 #define IDC_HUBSHARES_ADC_ONLY          1630
 #define IDC_FAVDIR_EDIT                 1631
-#define IDC_FAVDIR_ADD                  1632
-#define IDC_FAVDIR_REMOVE               1633
 #define IDC_SETTINGS_FAVDIR_PATHS       1634
 #define IDC_AUTOPRIO_DISABLED           1634
 #define IDC_AUTOPRIO_ENABLED            1634
@@ -1488,6 +1485,7 @@
 #define IDC_AUTOSEARCH_ITEMS            15056
 #define IDC_SETTINGS_KBPS8              15056
 #define IDC_TYPE                        15056
+#define IDC_HOURS                       15056
 #define IDC_MATCHER_TYPE                15057
 #define IDC_AUTOSEARCH_ENABLE_TIME      15058
 #define IDC_START_TIME                  15058
@@ -1589,7 +1587,7 @@
 #define IDC_SEND_MESSAGE                42786
 #define IDC_FILTER_FOCUS                42788
 #define IDC_AUTOSEARCH                  42789
-#define IDC_OPEN_OWN_LIST               42790
+#define IDC_OWN_LIST_ADL				42790
 #define IDC_BROWSE_OWN_LIST             42791
 #define ID_WINDOW_MINIMIZE_ALL          57654
 #define ID_WINDOW_RESTORE_ALL           57655

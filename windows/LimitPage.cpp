@@ -37,6 +37,7 @@ PropPage::TextItem LimitPage::texts[] = {
 	{ IDC_TIME_LIMITING, ResourceManager::SET_ALTERNATE_LIMITING },
 	{ IDC_STRONGDC_TO, ResourceManager::SETCZDC_TO },
 	{ IDC_STRONGDC_TRANSFER_LIMITING2, ResourceManager::ALTERNATE_LIMITING },
+	{ IDC_STRONGDC_TRANSFER_LIMITING, ResourceManager::TRASFER_RATE_LIMITING },
 
 	//uploads
 	{ IDC_CZDC_SMALL_SLOTS, ResourceManager::SMALL_UP_SLOTS },

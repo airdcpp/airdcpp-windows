@@ -44,6 +44,7 @@ PropPage::TextItem DownloadingOptionsPage::texts[] = {
 	{ IDC_DL_SKIPPING_OPTIONS,	ResourceManager::SETTINGS_SKIPPING_OPTIONS	},
 	{ IDC_DOWNLOAD_SKIPLIST_USE_REGEXP, ResourceManager::USE_REGEXP },
 	{ IDC_BUNDLE_RECENT_HOURS_LABEL, ResourceManager::SETTINGS_RECENT_HOURS },
+	{ IDC_HOURS, ResourceManager::HOURS_LOWER },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

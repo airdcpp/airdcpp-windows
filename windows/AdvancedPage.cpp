@@ -54,7 +54,6 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::CORAL, ResourceManager::CORAL },
 	{ SettingsManager::	TESTWRITE, ResourceManager::TEST_WRITE }, 
 	{ SettingsManager::USE_ADLS, ResourceManager::SETTINGS_USE_ADLS },
-	{ SettingsManager::USE_ADLS_OWN, ResourceManager::SETTINGS_USE_ADLS_OWN },
 	{ SettingsManager::NO_ZERO_BYTE, ResourceManager::SETTINGS_NO_ZERO_BYTE },
 	{ SettingsManager::USE_FTP_LOGGER, ResourceManager::USE_FTP_LOGGER },
 	{ SettingsManager::USE_PARTIAL_SHARING, ResourceManager::PARTIAL_SHARING },

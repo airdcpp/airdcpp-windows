@@ -1223,5 +1223,8 @@
     <Image Include="res\SettingsTree\Proxy.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\ExecMasked.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

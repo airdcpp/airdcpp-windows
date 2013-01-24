@@ -246,7 +246,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(IDC_SEARCH_SPY);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_FILE_LIST);
 	m_CmdBar.m_arrCommand.Add(IDC_BROWSE_OWN_LIST);
-	m_CmdBar.m_arrCommand.Add(IDC_OPEN_OWN_LIST);
+	m_CmdBar.m_arrCommand.Add(IDC_OWN_LIST_ADL);
 	m_CmdBar.m_arrCommand.Add(IDC_MATCH_ALL);
 	m_CmdBar.m_arrCommand.Add(IDC_REFRESH_FILE_LIST);
 	m_CmdBar.m_arrCommand.Add(IDC_SCAN_MISSING);
@@ -1416,7 +1416,7 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		ComboDlg dlg;
 		dlg.setList(tmpList);
 		dlg.description = CTSTRING(SHARE_PROFILE);
-		dlg.title = CTSTRING(MENU_BROWSE_OWN_LIST);
+		dlg.title = wID == IDC_OWN_LIST_ADL ? CTSTRING(OWN_LIST_ADL) : CTSTRING(MENU_BROWSE_OWN_LIST);
 		dlg.curSel = selPos;
 		if(dlg.DoModal() == IDOK) {
 			profile = profiles[dlg.curSel]->getProfileList()->getProfile();
@@ -1426,7 +1426,7 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		}
 	}
 
-	DirectoryListingManager::getInstance()->openOwnList(profile, wID == IDC_OPEN_OWN_LIST);
+	DirectoryListingManager::getInstance()->openOwnList(profile, wID == IDC_OWN_LIST_ADL);
 	return 0;
 }
 
