@@ -1919,7 +1919,8 @@ void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListin
 }
 
 void MainFrame::on(DirectoryListingManagerListener::PromptAction, const string& aName, const string& aMessage) noexcept {
-	bool accept = ::MessageBox(m_hWnd, Text::toT(aMessage).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
+	bool accept = !SETTING(FREE_SPACE_WARN) || ::MessageBox(m_hWnd, Text::toT(aMessage).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
+	//bool accept = WinUtil::MessageBoxConfirm(SettingsManager::FREE_SPACE_WARN, Text::toT(aMessage));
 	DirectoryListingManager::getInstance()->handleSizeConfirmation(aName, accept);
 }
 

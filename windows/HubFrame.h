@@ -297,6 +297,7 @@ private:
 
 	bool closed;
 	bool showUsers;
+	bool forceClose;
 
 	int countType;
 

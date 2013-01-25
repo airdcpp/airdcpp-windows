@@ -191,7 +191,7 @@ HubFrame::~HubFrame() {
 }
 
 HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate, ProfileToken aShareProfile) : 
-		waitingForPW(false), extraSort(false), server(aServer), closed(false), 
+		waitingForPW(false), extraSort(false), server(aServer), closed(false), forceClose(false),
 		showUsers(SETTING(GET_USER_INFO)), updateUsers(false), resort(false), countType(Client::COUNT_NORMAL),
 		timeStamps(SETTING(TIME_STAMPS)),
 		hubchatusersplit(chatusersplit),
@@ -819,7 +819,7 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		if(shutdown || WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_CLOSING, TSTRING(REALLY_CLOSE))) {
+		if(shutdown || forceClose ||  WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_CLOSING, TSTRING(REALLY_CLOSE))) {
 			RecentHubEntry* r = FavoriteManager::getInstance()->getRecentHubEntry(Text::fromT(server));
 			if(r) {
 				TCHAR buf[256];
@@ -1375,6 +1375,7 @@ void HubFrame::resortUsers() {
 void HubFrame::closeDisconnected() {
 	for(auto f: frames | map_values) {
 		if (!f->client->isConnected()) {
+			f->forceClose = true;
 			f->PostMessage(WM_CLOSE);
 		}
 	}

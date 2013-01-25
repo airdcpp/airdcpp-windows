@@ -1744,5 +1744,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="TrasferRateLimiting">Transfer rate limiting</String>
 		<String Name="HoursLower">hours</String>
 		<String Name="OwnListAdl">Match own list with ADL search</String>
+		<String Name="SettingsUseSpaceWarning">Warn me about Insufficient space left on target drive</String>
 	</Strings>
 </Language>
