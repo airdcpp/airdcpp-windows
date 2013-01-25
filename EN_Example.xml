@@ -200,7 +200,6 @@
 		<String Name="HashProgressStats">Statistics</String>
 		<String Name="HashProgressText">Please wait while AirDC++ indexes your files (they won't be shared until they've been indexed)...</String>
 		<String Name="HashReadFailed">Unable to read hash data file</String>
-		<String Name="HashRebuilt">Hash database rebuilt</String>
 		<String Name="HashingFailed">Hashing failed: </String>
 		<String Name="HashingFinished">Finished hashing: </String>
 		<String Name="Hibernate">Hibernate</String>
@@ -1139,7 +1138,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="CheckExtraFiles">Check extra files in the release folders</String>
 		<String Name="CheckDupes">Check duplicate directory names</String>
 		<String Name="SettingsScanOptions">Scanning options for missing/extra files</String>
-		<String Name="RebuildStarted">Hash database rebuild Started</String>
+		<String Name="RebuildStarted">Hash database rebuild started</String>
 		<String Name="SortDirs">Sort directories first in search window</String>
 		<String Name="DecreaseRam">Decrease Ram WorkingSet size on minimize</String>
 		<String Name="RunSfvCheck">Perform SFV check</String>
@@ -1744,6 +1743,9 @@ Do you want to use this destination anyway?</String>
 		<String Name="TrasferRateLimiting">Transfer rate limiting</String>
 		<String Name="HoursLower">hours</String>
 		<String Name="OwnListAdl">Match own list with ADL search</String>
+		<String Name="HashRebuiltUnused">Hash database has been rebuilt: %d unused file entries and %d unused tree entries have been removed</String>
+		<String Name="RebuildFailedEntries">Failed to load %d tree entries from the hash data; it's recommended to refresh your share as those files (total of %s) must be rehashed if they are still shared</String>
+		<String Name="HashRebuiltNoUnused">Hash database has been rebuilt and no unused entries were found</String>
 		<String Name="SettingsUseSpaceWarning">Warn me about Insufficient space left on target drive</String>
 	</Strings>
 </Language>
