@@ -789,3 +789,16 @@ Removed:
 
 - The virus scanner path for finished downloads (didn't work before)
 - The NAT travelsal option (always enabled for now when using passive mode)
+
+
+2.42
+
+Changed:
+
+- Show more details in the log message when hash database has been rebuilt
+- Try falling back to the language translation path if the translation file is missing
+
+Fixed:
+
+- Client hanging when merging bundles or adding new files in them
+- Add missing translations
