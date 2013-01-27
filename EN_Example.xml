@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Example Language" Author="AirDC++ Team" Version="2.42" Revision="1">
+<Language Name="Example Language" Author="AirDC++ Team" Version="2.43" Revision="1">
 	<Strings>
 		<String Name="AairdcppLanguageFile">EN_Example.xml</String>
 		<String Name="AairdcppLanguageVersion">1.00</String>
@@ -1152,7 +1152,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="CrcStopped">SFV check stopped</String>
 		<String Name="CrcFileError">Unable to check file: </String>
 		<String Name="NoCrc32">No SFV file found or the selected file isn't listed in it</String>
-		<String Name="CantOpenSfv">Failed to open SFV file: </String>
 		<String Name="SeeSyslogForResults">Open System Log to see the scan results</String>
 		<String Name="Stop">Stop</String>
 		<String Name="ChatNotify">Show notify icon on main chat messages</String>
@@ -1747,5 +1746,7 @@ Do you want to use this destination anyway?</String>
 		<String Name="RebuildFailedEntries">Failed to load %d tree entries from the hash data; it's recommended to refresh your share as those files (total of %s) must be rehashed if they are still shared</String>
 		<String Name="HashRebuiltNoUnused">Hash database has been rebuilt and no unused entries were found</String>
 		<String Name="SettingsUseSpaceWarning">Warn me about Insufficient space left on target drive</String>
+		<String Name="SfvTooLarge">The SFV file is too large to be loaded (%s)</String>
+		<String Name="CantOpenSfv">Failed to open the SFV file</String>
 	</Strings>
 </Language>
