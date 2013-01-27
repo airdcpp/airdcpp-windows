@@ -275,6 +275,7 @@
     <ClCompile Include="client\MappingManager.cpp" />
     <ClCompile Include="client\NmdcHub.cpp" />
     <ClCompile Include="client\QueueItem.cpp" />
+    <ClCompile Include="client\QueueItemBase.cpp" />
     <ClCompile Include="client\QueueManager.cpp" />
     <ClCompile Include="client\ResourceManager.cpp" />
     <ClCompile Include="client\SearchManager.cpp" />
@@ -409,6 +410,7 @@
     <ClInclude Include="client\Pointer.h" />
     <ClInclude Include="client\pubkey.h" />
     <ClInclude Include="client\QueueItem.h" />
+    <ClInclude Include="client\QueueItemBase.h" />
     <ClInclude Include="client\QueueManager.h" />
     <ClInclude Include="client\QueueManagerListener.h" />
     <ClInclude Include="client\ResourceManager.h" />

@@ -1342,7 +1342,7 @@ LRESULT DirectoryListingFrame::onXButtonUp(UINT /*uMsg*/, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItem::Priority prio, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
+void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItemBase::Priority prio, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
 	if (usingTree) {
 		HTREEITEM t = ctrlTree.GetSelectedItem();
 		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);

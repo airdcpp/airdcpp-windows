@@ -170,7 +170,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			if (parent) {
 				BundlePtr aBundle = QueueManager::getInstance()->getBundle(ii->bundle);
 				if (aBundle) {
-					Bundle::Priority p = aBundle->getPriority();
+					QueueItemBase::Priority p = aBundle->getPriority();
 					priorityMenu.CheckMenuItem(p + 1, MF_BYPOSITION | MF_CHECKED);
 					if(aBundle->getAutoPriority())
 						priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
@@ -1558,7 +1558,7 @@ void TransferView::onBundleName(const BundlePtr& aBundle) {
 }
 
 LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	QueueItem::Priority p;
+	QueueItemBase::Priority p;
 
 	switch(wID) {
 		case IDC_PRIORITY_PAUSED: p = QueueItem::PAUSED; break;
@@ -1574,7 +1574,7 @@ LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const ItemInfo *ii = ctrlTransfers.getItemData(i);
 		if (ii->isBundle) {
-			QueueManager::getInstance()->setBundlePriority(ii->bundle, (Bundle::Priority)p);
+			QueueManager::getInstance()->setBundlePriority(ii->bundle, p);
 		}
 	}
 

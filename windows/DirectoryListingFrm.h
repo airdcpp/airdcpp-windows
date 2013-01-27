@@ -254,7 +254,7 @@ public:
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
 	int64_t getDownloadSize(bool isWhole);
-	void handleDownload(const string& aTarget, QueueItem::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
 	
 	ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Directory* d) const;

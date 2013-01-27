@@ -233,7 +233,7 @@ public:
 
 
 	/* Action handlers */
-	void onDownload(const string& aTarget, bool isWhole, QueueItem::Priority p = QueueItem::DEFAULT) {
+	void onDownload(const string& aTarget, bool isWhole, QueueItemBase::Priority p = QueueItem::DEFAULT) {
 		if (!isSizeUnknown) {
 			/* Get the size of the download */
 			int64_t size = ((T*)this)->getDownloadSize(isWhole);
@@ -329,7 +329,7 @@ public:
 	void appendPriorityMenu(OMenu& aMenu, bool wholeDir) {
 		auto priorityMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_WITH_PRIORITY));
 
-		auto addItem = [&] (const tstring& aTitle, QueueItem::Priority p) -> void {
+		auto addItem = [&] (const tstring& aTitle, QueueItemBase::Priority p) -> void {
 			priorityMenu->appendItem(aTitle.c_str(), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, p); });
 		};
 

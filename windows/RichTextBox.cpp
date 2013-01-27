@@ -1205,7 +1205,7 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
-void RichTextBox::handleDownload(const string& aTarget, QueueItem::Priority /*p*/, bool isRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority /*p*/, bool isRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	if (!isRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));

@@ -237,7 +237,7 @@ private:
 		string bundle;
 		Status status;
 		Transfer::Type type;
-		Bundle::Priority prio;
+		QueueItemBase::Priority prio;
 		
 		int64_t pos;
 		int64_t size;
@@ -340,8 +340,8 @@ private:
 		void setUsers(const int16_t aUsers) { users = aUsers; updateMask |= MASK_USERS; }
 		int16_t users;
 		void setUser(const HintedUser aUser) { user = aUser; updateMask |= MASK_USER; }
-		Bundle::Priority prio;
-		void setPriority(Bundle::Priority aPrio) { prio = aPrio; updateMask |= MASK_PRIORITY; }
+		QueueItemBase::Priority prio;
+		void setPriority(QueueItemBase::Priority aPrio) { prio = aPrio; updateMask |= MASK_PRIORITY; }
 		HintedUser user;
 	};
 

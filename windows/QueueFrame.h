@@ -117,7 +117,7 @@ public:
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void removeDir(HTREEITEM ht);
-	void setPriority(HTREEITEM ht, const QueueItem::Priority& p);
+	void setPriority(HTREEITEM ht, const QueueItemBase::Priority& p);
 	void setAutoPriority(HTREEITEM ht, const bool& ap);
 	void changePriority(bool inc);
 
@@ -264,7 +264,7 @@ private:
 		time_t getAdded() const { return qi->getAdded(); }
 		const TTHValue& getTTH() const { return qi->getTTH(); }
 
-		QueueItem::Priority getPriority() const { return qi->getPriority(); }
+		QueueItemBase::Priority getPriority() const { return qi->getPriority(); }
 		bool isWaiting() const;
 		bool isFinished() const;
 
@@ -287,7 +287,7 @@ private:
 	};
 
 	struct UpdateTask : FastAlloc<UpdateTask>, public Task {
-		UpdateTask(const QueueItem& source) : target(source.getTarget()) { }
+		UpdateTask(const QueueItemPtr& source) : target(source->getTarget()) { }
 		string target;
 	};
 

@@ -197,7 +197,7 @@ public:
 
 	/* DownloadBaseHandler functions */
 	void appendDownloadItems(OMenu& aMenu, bool isWhole);
-	void handleDownload(const string& aTarget, QueueItem::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
 	HintedUser getMagnetSource();

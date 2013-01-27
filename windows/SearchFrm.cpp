@@ -840,7 +840,7 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 	}
 }
 
-void SearchFrame::handleDownload(const string& aTarget, QueueItem::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
+void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
 	if (useWhole) {
 		ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(aTarget, p, aTargetType, isSizeUnknown));
 	} else {

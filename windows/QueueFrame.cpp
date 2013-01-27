@@ -802,7 +802,7 @@ void QueueFrame::on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle
 }
 
 void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) {
-	speak(UPDATE_ITEM, new UpdateTask(*aQI));
+	speak(UPDATE_ITEM, new UpdateTask(aQI));
 }
 
 void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t /*aTick*/) noexcept {
@@ -1590,7 +1590,7 @@ LRESULT QueueFrame::onSegments(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 }
 
 LRESULT QueueFrame::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	QueueItem::Priority p;
+	QueueItemBase::Priority p;
 
 	switch(wID) {
 		case IDC_PRIORITY_PAUSED: p = QueueItem::PAUSED; break;
@@ -1607,7 +1607,7 @@ LRESULT QueueFrame::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 		BundleList bundles;
 		QueueManager::getInstance()->getBundleInfo(curDir, bundles, tmp1, tmp2);
 		if (!bundles.empty()) {
-			QueueManager::getInstance()->setBundlePriorities(curDir, bundles, (Bundle::Priority)p);
+			QueueManager::getInstance()->setBundlePriorities(curDir, bundles, p);
 		}
 		//setPriority(ctrlDirs.GetSelectedItem(), p);
 	} else {
@@ -1642,7 +1642,7 @@ void QueueFrame::removeDir(HTREEITEM ht) {
 void QueueFrame::changePriority(bool inc){
 	int i = -1;
 	while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1){
-		QueueItem::Priority p = ctrlQueue.getItemData(i)->getPriority();
+		QueueItemBase::Priority p = ctrlQueue.getItemData(i)->getPriority();
 
 		if ((inc && p == QueueItem::HIGHEST) || (!inc && p == QueueItem::PAUSED)){
 			// Trying to go higher than HIGHEST or lower than PAUSED
@@ -1663,7 +1663,7 @@ void QueueFrame::changePriority(bool inc){
 	}
 }
 
-void QueueFrame::setPriority(HTREEITEM ht, const QueueItem::Priority& p) {
+void QueueFrame::setPriority(HTREEITEM ht, const QueueItemBase::Priority& p) {
 	if(ht == NULL)
 		return;
 	HTREEITEM child = ctrlDirs.GetChildItem(ht);
