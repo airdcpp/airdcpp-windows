@@ -345,14 +345,14 @@ ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Di
 	if (d->getType() == DirectoryListing::Directory::TYPE_INCOMPLETE_CHILD)
 		return ChildrenState::CHILDREN_ALL_PENDING;
 
-	if (d->getLoading())
-		return ChildrenState::CHILDREN_LOADING;
+	//if (d->getLoading() && d->getType() == )
+	//	return ChildrenState::CHILDREN_LOADING;
 
 	return ChildrenState::NO_CHILDREN;
 }
 
 void DirectoryListingFrame::expandDir(DirectoryListing::Directory* d, bool collapsing) {
-	changeType = collapsing ? CHANGE_COLLAPSE : CHANGE_EXPAND_ONLY;
+	changeType = collapsing ? CHANGE_TREE_COLLAPSE : CHANGE_TREE_EXPAND;
 	if (collapsing || !d->isComplete()) {
 		changeDir(d, TRUE);
 	}
@@ -378,7 +378,8 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 		createRoot();
 	}
 
-	if (!dl->getRoot()->directories.empty()) {
+	bool initialChange = !ctrlTree.hasChildren(treeRoot);
+	if (initialChange && !dl->getRoot()->directories.empty()) {
 		ctrlTree.setHasChildren(treeRoot, true);
 	}
 
@@ -401,12 +402,12 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 
 	d->sortDirs();
 
-	if (changeType != CHANGE_COLLAPSE)
+	if (initialChange || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
 		ctrlTree.Expand(ht);
 
 
 	if (changeDir) {
-		if (changeType == CHANGE_EXPAND_ONLY)
+		if (changeType == CHANGE_TREE_EXPAND)
 			ctrlTree.SelectItem(oldSel);
 		else
 			selectItem(root);
@@ -640,7 +641,7 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 }
 
 LRESULT DirectoryListingFrame::onClickTree(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {
-	changeType = CHANGE_TREE;
+	changeType = CHANGE_TREE_SINGLE;
 	bHandled = FALSE;
 	return 0;
 }
@@ -854,31 +855,72 @@ void DirectoryListingFrame::forward() {
 	}
 }
 
-LRESULT DirectoryListingFrame::onDoubleClickFiles(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	NMITEMACTIVATE* item = (NMITEMACTIVATE*) pnmh;
+LRESULT DirectoryListingFrame::onDoubleClickDirs(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {
+	changeType = CHANGE_TREE_DOUBLE;
+	bHandled = FALSE;
+	return 0;
+}
 
+LRESULT DirectoryListingFrame::onDoubleClickFiles(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	onListItemAction();
+	return 0;
+}
+
+void DirectoryListingFrame::onListItemAction() {
 	HTREEITEM t = ctrlTree.GetSelectedItem();
-	if(t != NULL && item->iItem != -1) {
-		const ItemInfo* ii = ctrlList.getItemData(item->iItem);
-
-		if(ii->type == ItemInfo::FILE) {
-			try {
-				dl->download(ii->file, SETTING(DOWNLOAD_DIRECTORY) + Text::fromT(ii->getText(COLUMN_FILENAME)), false, WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
-			} catch(const Exception& e) {
-				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+	if(t) {
+		if (ctrlList.GetSelectedCount() == 1) {
+			const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
+			if(ii->type == ItemInfo::FILE) {
+				handleDownload(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
+			} else {
+				changeType = CHANGE_LIST;
+				HTREEITEM ht = ctrlTree.findItem(t, ii->dir->getName() + "\\");
+				if (ht) {
+					ctrlTree.SelectItem(ht);
+				}
 			}
 		} else {
-			HTREEITEM ht = ctrlTree.GetChildItem(t);
-			while(ht != NULL) {
-				if((DirectoryListing::Directory*)ctrlTree.GetItemData(ht) == ii->dir) {
-					changeType = CHANGE_LIST;
-					ctrlTree.SelectItem(ht);
-					break;
-				}
-				ht = ctrlTree.GetNextSiblingItem(ht);
-			}
-		} 
+			handleDownload(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
+		}
 	}
+}
+
+LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
+	if(kd->wVKey == VK_BACK) {
+		up();
+	} else if(kd->wVKey == VK_TAB) {
+		onTab();
+	} else if(kd->wVKey == VK_LEFT && WinUtil::isAlt()) {
+		back();
+	} else if(kd->wVKey == VK_RIGHT && WinUtil::isAlt()) {
+		forward();
+	} else if(kd->wVKey == VK_RETURN) {
+		onListItemAction();
+	}
+	return 0;
+}
+
+LRESULT DirectoryListingFrame::onKeyDownDirs(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	NMTVKEYDOWN* kd = (NMTVKEYDOWN*) pnmh;
+	if(kd->wVKey == VK_TAB) {
+		onTab();
+	}
+	return 0;
+}
+
+void DirectoryListingFrame::onTab() {
+	HWND focus = ::GetFocus();
+	if(focus == ctrlTree.m_hWnd) {
+		ctrlList.SetFocus();
+	} else if(focus == ctrlList.m_hWnd) {
+		ctrlTree.SetFocus();
+	}
+}
+
+LRESULT DirectoryListingFrame::onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlList.SetFocus();
 	return 0;
 }
 
@@ -1256,7 +1298,7 @@ clientmenu:
 			if(ht != NULL && ht != ctrlTree.GetSelectedItem())
 				ctrlTree.SelectItem(ht);
 			ctrlTree.ClientToScreen(&pt);
-			changeType = CHANGE_TREE;
+			changeType = CHANGE_TREE_SINGLE;
 		}
 
 		OMenu directoryMenu;
@@ -1372,38 +1414,6 @@ int64_t DirectoryListingFrame::getDownloadSize(bool isWhole) {
 		}
 	}
 	return size;
-}
-
-LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
-	if(kd->wVKey == VK_BACK) {
-		up();
-	} else if(kd->wVKey == VK_TAB) {
-		onTab();
-	} else if(kd->wVKey == VK_LEFT && WinUtil::isAlt()) {
-		back();
-	} else if(kd->wVKey == VK_RIGHT && WinUtil::isAlt()) {
-		forward();
-	} else if(kd->wVKey == VK_RETURN) {
-		if(ctrlList.GetSelectedCount() == 1) {
-			const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
-			if(ii->type == ItemInfo::DIRECTORY) {
-				HTREEITEM ht = ctrlTree.GetChildItem(ctrlTree.GetSelectedItem());
-				while(ht != NULL) {
-					if((DirectoryListing::Directory*)ctrlTree.GetItemData(ht) == ii->dir) {
-						ctrlTree.SelectItem(ht);
-						break;
-					}
-					ht = ctrlTree.GetNextSiblingItem(ht);
-				}
-			} else {
-				handleDownload(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
-			}
-		} else {
-			handleDownload(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
-		}
-	}
-	return 0;
 }
 
 void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {

@@ -92,6 +92,7 @@ public:
 		NOTIFY_HANDLER(IDC_FILES, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_FILES, NM_DBLCLK, onDoubleClickFiles)
 		NOTIFY_HANDLER(IDC_FILES, LVN_ITEMCHANGED, onItemChanged)
+		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_DBLCLK, onDoubleClickDirs)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_KEYDOWN, onKeyDownDirs)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_SELCHANGED, onSelChangedDirectories)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CLICK, onClickTree)
@@ -163,6 +164,7 @@ public:
 	LRESULT onCopyDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDoubleClickFiles(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
+	LRESULT onDoubleClickDirs(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
 	LRESULT onSelChangedDirectories(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
 	LRESULT onClickTree(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled);
 	LRESULT onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
@@ -198,10 +200,7 @@ public:
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
 
-	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		ctrlList.SetFocus();
-		return 0;
-	}
+	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	void onFind();
 	void setWindowTitle();
@@ -224,23 +223,9 @@ public:
 	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
+	LRESULT onKeyDownDirs(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
-	LRESULT onKeyDownDirs(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-		NMTVKEYDOWN* kd = (NMTVKEYDOWN*) pnmh;
-		if(kd->wVKey == VK_TAB) {
-			onTab();
-		}
-		return 0;
-	}
-
-	void onTab() {
-		HWND focus = ::GetFocus();
-		if(focus == ctrlTree.m_hWnd) {
-			ctrlList.SetFocus();
-		} else if(focus == ctrlList.m_hWnd) {
-			ctrlTree.SetFocus();
-		}
-	}
+	void onTab();
 	
 	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		PostMessage(WM_CLOSE);
@@ -291,9 +276,10 @@ private:
 
 	enum ChangeType {
 		CHANGE_LIST,
-		CHANGE_TREE,
-		CHANGE_EXPAND_ONLY,
-		CHANGE_COLLAPSE,
+		CHANGE_TREE_SINGLE,
+		CHANGE_TREE_DOUBLE,
+		CHANGE_TREE_EXPAND,
+		CHANGE_TREE_COLLAPSE,
 	};
 
 	ChangeType changeType;
@@ -332,6 +318,8 @@ private:
 
 		int getImageIndex() const;
 	};
+
+	void onListItemAction();
 
 	CContainedWindow statusContainer;
 	CContainedWindow treeContainer;
