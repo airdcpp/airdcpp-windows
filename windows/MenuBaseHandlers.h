@@ -25,7 +25,6 @@
 #include "../client/ClientManager.h"
 #include "../client/FavoriteManager.h"
 #include "../client/format.h"
-#include "../client/QueueItem.h"
 #include "../client/ShareManager.h"
 #include "../client/TargetUtil.h"
 #include "../client/UserInfoBase.h"
