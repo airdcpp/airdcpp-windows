@@ -1749,5 +1749,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="SfvTooLarge">The SFV file is too large to be loaded (%s)</String>
 		<String Name="CantOpenSfv">Failed to open the SFV file</String>
 		<String Name="RemoteProtocolUnsupported">The remote user doesn't support %s protocol</String>
+		<String Name="ConnectingInProgress">Connecting to the hub in progress</String>
 	</Strings>
 </Language>
