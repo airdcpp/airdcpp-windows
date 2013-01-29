@@ -45,13 +45,14 @@ HubFrame::FrameMap HubFrame::frames;
 HubFrame::IgnoreMap HubFrame::ignoreList;
 bool HubFrame::shutdown = false;
 
-int HubFrame::columnSizes[] = { 100, 75, 75, 75, 100, 75, 130, 100, 50, 40, 40, 40, 40, 300 };
+int HubFrame::columnSizes[] = { 100, 75, 75, 75, 100, 75, 130, 130, 100, 50, 40, 40, 40, 40, 40, 300 };
 int HubFrame::columnIndexes[] = { OnlineUser::COLUMN_NICK, OnlineUser::COLUMN_SHARED, OnlineUser::COLUMN_EXACT_SHARED,
-	OnlineUser::COLUMN_DESCRIPTION, OnlineUser::COLUMN_TAG,	OnlineUser::COLUMN_ULSPEED, OnlineUser::COLUMN_DLSPEED, OnlineUser::COLUMN_IP, OnlineUser::COLUMN_EMAIL,
-	OnlineUser::COLUMN_VERSION, OnlineUser::COLUMN_MODE, OnlineUser::COLUMN_HUBS, OnlineUser::COLUMN_SLOTS, OnlineUser::COLUMN_CID };
+	OnlineUser::COLUMN_DESCRIPTION, OnlineUser::COLUMN_TAG,	OnlineUser::COLUMN_ULSPEED, OnlineUser::COLUMN_DLSPEED, OnlineUser::COLUMN_IP4, OnlineUser::COLUMN_IP6, OnlineUser::COLUMN_EMAIL,
+	OnlineUser::COLUMN_VERSION, OnlineUser::COLUMN_MODE4, OnlineUser::COLUMN_MODE6, OnlineUser::COLUMN_FILES, OnlineUser::COLUMN_HUBS, OnlineUser::COLUMN_SLOTS, OnlineUser::COLUMN_CID };
+
 ResourceManager::Strings HubFrame::columnNames[] = { ResourceManager::NICK, ResourceManager::SHARED, ResourceManager::EXACT_SHARED, 
-	ResourceManager::DESCRIPTION, ResourceManager::TAG, ResourceManager::SETCZDC_UPLOAD_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED, ResourceManager::IP_BARE, ResourceManager::EMAIL,
-	ResourceManager::VERSION, ResourceManager::MODE, ResourceManager::HUBS, ResourceManager::SLOTS, ResourceManager::CID };
+	ResourceManager::DESCRIPTION, ResourceManager::TAG, ResourceManager::SETCZDC_UPLOAD_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED, ResourceManager::IP_V4, ResourceManager::IP_V6, ResourceManager::EMAIL,
+	ResourceManager::VERSION, ResourceManager::MODE_V4, ResourceManager::MODE_V6, ResourceManager::SHARED_FILES, ResourceManager::HUBS, ResourceManager::SLOTS, ResourceManager::CID };
 
 LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -2123,7 +2124,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 		}
 
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
-		if(SETTING(GET_USER_COUNTRY) && (ctrlUsers.findColumn(cd->iSubItem) == OnlineUser::COLUMN_IP)) {
+		if(SETTING(GET_USER_COUNTRY) && (ctrlUsers.findColumn(cd->iSubItem) == OnlineUser::COLUMN_IP4 || ctrlUsers.findColumn(cd->iSubItem) == OnlineUser::COLUMN_IP6)) {
 			CRect rc;
 			OnlineUser* ou = (OnlineUser*)cd->nmcd.lItemlParam;
 			ctrlUsers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);

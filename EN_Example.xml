@@ -1750,5 +1750,9 @@ Do you want to use this destination anyway?</String>
 		<String Name="CantOpenSfv">Failed to open the SFV file</String>
 		<String Name="RemoteProtocolUnsupported">The remote user doesn't support %s protocol</String>
 		<String Name="ConnectingInProgress">Connecting to the hub in progress</String>
+		<String Name="ModeV4">Mode (IPv4)</String>
+		<String Name="ModeV6">Mode (IPv6)</String>
+		<String Name="IpV4">Ip (IPv4)</String>
+		<String Name="IpV6">Ip (IPv6)</String>
 	</Strings>
 </Language>
