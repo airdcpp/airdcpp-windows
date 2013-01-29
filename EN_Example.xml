@@ -1754,5 +1754,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="ModeV6">Mode (IPv6)</String>
 		<String Name="IpV4">Ip (IPv4)</String>
 		<String Name="IpV6">Ip (IPv6)</String>
+		<String Name="NoNattSupport">The remote user doesn't support passive-passive connections</String>
 	</Strings>
 </Language>
