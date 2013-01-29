@@ -285,8 +285,8 @@ private:
 		SearchInfo(const SearchResultPtr& aSR);
 		~SearchInfo() {	}
 
-		const UserPtr& getUser() const { return sr->getUser(); }
-		const string& getHubUrl() const { return sr->getHubURL(); }
+		const UserPtr& getUser() const { return sr->getUser().user; }
+		const string& getHubUrl() const { return sr->getUser().hint; }
 
 		bool collapsed;
 		size_t hits;
