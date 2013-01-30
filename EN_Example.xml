@@ -1755,5 +1755,9 @@ Do you want to use this destination anyway?</String>
 		<String Name="IpV4">Ip (IPv4)</String>
 		<String Name="IpV6">Ip (IPv6)</String>
 		<String Name="NoNattSupport">The remote user doesn't support passive-passive connections</String>
+		<String Name="HbriValidatingX">Validating the %s address...</String>
+		<String Name="HbriValidationFailed">Validation failed: %s. %s connectivity has been disabled in this hub.</String>
+		<String Name="ValidationSucceed">Validation succeed</String>
+		<String Name="InvalidHubResponse">The hub returned an invalid response</String>
 	</Strings>
 </Language>
