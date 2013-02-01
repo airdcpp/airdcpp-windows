@@ -698,7 +698,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			}
 		case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
 		case COLUMN_CONNECTION: return Text::toT(ClientManager::getInstance()->getConnection(sr->getUser()));
-		case COLUMN_HUB: return Text::toT(sr->getHubName());
+		case COLUMN_HUB: return WinUtil::getHubNames(sr->getUser()).first;
 		case COLUMN_EXACT_SIZE: return sr->getSize() > 0 ? Util::formatExactSize(sr->getSize()) : Util::emptyStringT;
 		case COLUMN_IP: {
 			string ip = sr->getIP();

@@ -1759,5 +1759,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="HbriValidationFailed">Validation failed: %s. %s connectivity has been disabled in this hub.</String>
 		<String Name="ValidationSucceed">Validation succeed</String>
 		<String Name="InvalidHubResponse">The hub returned an invalid response</String>
+		<String Name="PreferredMapper">Preferred port mapping interface</String>
 	</Strings>
 </Language>

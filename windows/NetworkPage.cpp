@@ -22,6 +22,7 @@
 #include "../client/Socket.h"
 #include "../client/AirUtil.h"
 #include "../client/UpdateManager.h"
+#include "../client/MappingManager.h"
 
 #include "Resource.h"
 #include "NetworkPage.h"
@@ -59,12 +60,14 @@ PropPage::TextItem NetworkPage::texts[] = {
 	{ IDC_IPUPDATE, ResourceManager::UPDATE_IP },
 	{ IDC_GETIP, ResourceManager::GET_IP },
 	{ IDC_SETTINGS_MANUAL_CONFIG, ResourceManager::SETTINGS_MANUAL_CONFIG },
+	{ IDC_SETTINGS_MAPPER_DESC, ResourceManager::PREFERRED_MAPPER },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item NetworkPage::items[] = {
 	{ IDC_CONNECTION_DETECTION,	SettingsManager::AUTO_DETECT_CONNECTION,	PropPage::T_BOOL	},
 	{ IDC_EXTERNAL_IP,	SettingsManager::EXTERNAL_IP,	PropPage::T_STR }, 
+	{ IDC_MAPPER,		SettingsManager::MAPPER,		PropPage::T_STR }, 
 	{ IDC_PORT_TCP,		SettingsManager::TCP_PORT,		PropPage::T_INT }, 
 	{ IDC_PORT_UDP,		SettingsManager::UDP_PORT,		PropPage::T_INT }, 
 	{ IDC_PORT_TLS,		SettingsManager::TLS_PORT,		PropPage::T_INT },
@@ -126,6 +129,7 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	fixControls();
 
+	// Bind address
 	BindCombo.Attach(GetDlgItem(IDC_BIND_ADDRESS));
 	getAddresses();
 
@@ -135,6 +139,22 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		bindAddresses.emplace(SETTING(BIND_ADDRESS), Util::emptyString);
 	}
 	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(SETTING(BIND_ADDRESS)).c_str()));
+
+
+	// Mapper
+	MapperCombo.Attach(GetDlgItem(IDC_MAPPER));
+	const auto& setting = SETTING(MAPPER);
+	int sel = 0;
+
+	auto mappers = MappingManager::getInstance()->getMappers();
+	for(const auto& name: mappers) {
+		int pos = MapperCombo.AddString(Text::toT(name).c_str());
+		//auto pos = mapper->addValue(Text::toT(name));
+		if(!sel && name == setting)
+			sel = pos;
+	}
+
+	MapperCombo.SetCurSel(sel);
 
 	return TRUE;
 }
@@ -157,7 +177,7 @@ void NetworkPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_PORT_UDP), !auto_detect && (upnp || direct));
 	::EnableWindow(GetDlgItem(IDC_PORT_TLS), !auto_detect && (upnp || direct));
 
-
+	::EnableWindow(GetDlgItem(IDC_MAPPER), upnp);
 
 	::EnableWindow(GetDlgItem(IDC_IPUPDATE),!auto_detect && (direct || upnp));
 	::EnableWindow(GetDlgItem(IDC_GETIP),!auto_detect && ( direct || upnp));

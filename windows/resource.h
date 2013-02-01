@@ -735,6 +735,7 @@
 #define IDC_SETTINGS_BIND_ADDRESS_HELP  1287
 #define IDC_REGEXP_TESTER_BUTTON        1288
 #define IDC_BIND_ADDRESS2               1288
+#define IDC_MAPPER                      1288
 #define IDC_S                           1290
 #define IDC_FLAT                        1291
 #define IDC_S2                          1291
@@ -773,6 +774,8 @@
 #define IDC_ADLSEARCH_RAW_ACTION        1301
 #define IDC_PRIO_HIGH_SIZE              1301
 #define IDC_REFRESH_SPIN                1301
+#define IDC_SETTINGS_MAPPER             1301
+#define IDC_SETTINGS_MAPPER_DESC        1301
 #define IDC_PRIO_NORMAL_SIZE            1302
 #define IDC_ROLLBACK_SPIN               1302
 #define IDC_INCOMING_SPIN               1302
@@ -1587,7 +1590,7 @@
 #define IDC_SEND_MESSAGE                42786
 #define IDC_FILTER_FOCUS                42788
 #define IDC_AUTOSEARCH                  42789
-#define IDC_OWN_LIST_ADL				42790
+#define IDC_OWN_LIST_ADL                42790
 #define IDC_BROWSE_OWN_LIST             42791
 #define ID_WINDOW_MINIMIZE_ALL          57654
 #define ID_WINDOW_RESTORE_ALL           57655

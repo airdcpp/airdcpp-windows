@@ -60,6 +60,7 @@ private:
 	static Item items[];
 	static TextItem texts[];
 	CComboBox BindCombo;
+	CComboBox MapperCombo;
 
 	void completeDownload();
 
