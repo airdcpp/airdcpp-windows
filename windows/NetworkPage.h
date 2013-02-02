@@ -26,11 +26,6 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 #include "../client/UpdateManagerListener.h"
-#include "../client/SimpleXML.h"
-#include "../client/version.h"
-
-#include <IPHlpApi.h>
-#pragma comment(lib, "iphlpapi.lib")
 
 class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage, private UpdateManagerListener
 {
@@ -62,13 +57,10 @@ private:
 	CComboBox BindCombo;
 	CComboBox MapperCombo;
 
-	void completeDownload();
-
 	void fixControls();
 	void getAddresses();
 
 	map<string, string> bindAddresses;
-	IP_ADAPTER_ADDRESSES* adapterInfo;
 	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
 };
 

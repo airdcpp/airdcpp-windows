@@ -957,6 +957,8 @@
 #define IDC_CURRENT_LIST_BROWSE         1372
 #define IDC_VIEW_BL                     1372
 #define IDC_SETTINGS_MB2                1372
+#define IDC_CONNECTION_DETECTION2       1372
+#define IDC_ENABLE_IPV6                 1372
 #define IDC_SETTINGS_KIB                1373
 #define IDC_ICONS_RESTORE               1374
 #define IDC_PLAYER_COMBO                1375

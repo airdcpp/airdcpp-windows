@@ -746,8 +746,20 @@ BEGIN
     LTEXT           "Username",IDC_SETTINGS_SOCKS5_USERNAME,29,76,84,8
     LTEXT           "Password",IDC_SETTINGS_SOCKS5_PASSWORD,123,76,71,8
     GROUPBOX        "Outgoing Connection Settings",IDC_SETTINGS_OUTGOING,7,9,286,117,WS_GROUP
-    LTEXT           "HTTP Proxy (for hublist only)",IDC_SETTINGS_HTTP_PROXY,11,135,247,8
-    EDITTEXT        IDC_PROXY,11,149,247,14,ES_AUTOHSCROLL
+    LTEXT           "HTTP Proxy (for hublist only)",IDC_SETTINGS_HTTP_PROXY,11,131,247,8
+    EDITTEXT        IDC_PROXY,11,145,247,14,ES_AUTOHSCROLL
+    CONTROL         "Active mode (no router or manual router configuration)",IDC_ACTIVE,
+                    "Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,15,258,260,10
+    CONTROL         "Active mode (let the client configure my router with NAT-PMP / UPnP)",IDC_ACTIVE_UPNP,
+                    "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,271,263,10
+    CONTROL         "Firewall (passive mode, worst case)",IDC_PASSIVE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,15,285,260,10
+    GROUPBOX        "Incoming Connection Settings (See help / FAQ if unsure)",IDC_SETTINGS_INCOMING,7,226,279,79,WS_GROUP
+    GROUPBOX        "Bind Address",IDC_SETTINGS_BIND_ADDRESS,7,183,277,39
+    LTEXT           "Network interface for all connections",IDC_SETTINGS_BIND_ADDRESS_HELP,12,192,153,8
+    COMBOBOX        IDC_BIND_ADDRESS,13,205,264,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable automatic incoming connection type detection",IDC_CONNECTION_DETECTION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,242,261,10
+    CONTROL         "Enable IPv6",IDC_ENABLE_IPV6,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,7,168,261,10
 END
 
 IDD_ABOUTBOX DIALOGEX 0, 0, 251, 285
@@ -1364,11 +1376,11 @@ BEGIN
     GROUPBOX        "Incoming Connection Settings (See help / FAQ if unsure)",IDC_SETTINGS_INCOMING,9,49,279,79,WS_GROUP
     LTEXT           "TCP",IDC_SETTINGS_PORT_TCP,199,164,25,8,NOT WS_GROUP
     LTEXT           "UDP",IDC_SETTINGS_PORT_UDP,199,183,26,8
-    GROUPBOX        "Bind Address",IDC_SETTINGS_BIND_ADDRESS,9,6,277,35
+    GROUPBOX        "Bind Address",IDC_SETTINGS_BIND_ADDRESS,9,6,277,40
     LTEXT           "Network interface for all connections",IDC_SETTINGS_BIND_ADDRESS_HELP,14,19,153,8
     LTEXT           "TLS/TCP",IDC_SETTINGS_PORT_TLS,199,202,26,8
     EDITTEXT        IDC_PORT_TLS,241,200,30,14,ES_AUTOHSCROLL | ES_NUMBER
-    COMBOBOX        IDC_BIND_ADDRESS,140,18,140,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_BIND_ADDRESS,14,31,263,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Update IP on startup",IDC_IPUPDATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,191,135,10
     PUSHBUTTON      "Get IP",IDC_GETIP,119,163,45,14
     CONTROL         "Enable automatic incoming connection type detection",IDC_CONNECTION_DETECTION,

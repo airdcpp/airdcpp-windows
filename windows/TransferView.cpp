@@ -27,7 +27,6 @@
 #include "../client/QueueItem.h"
 #include "../client/GeoManager.h"
 #include "../client/AirUtil.h"
-#include "../client/format.h"
 #include "../client/Localization.h"
 
 #include <boost/range/algorithm/for_each.hpp>
@@ -598,10 +597,9 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 			if(compare(ui.token, ii->token) == 0) {
 				pos = j;
 				return ii;
-			} else if(ii->isBundle) {
-				const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
-				for(vector<ItemInfo*>::const_iterator k = children.begin(); k != children.end(); k++) {
-					ItemInfo* ii = *k;
+			} else if(ii->isBundle && compare(ii->bundle, ui.bundle) == 0) {
+				const auto& children = ctrlTransfers.findChildren(ii->getGroupCond());
+				for(const auto ii: children) {
 					if(compare(ui.token, ii->token) == 0) {
 						return ii;
 					}
@@ -609,8 +607,7 @@ TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) c
 			}
 		}
 	}
-	//LogManager::getInstance()->message("Transferview, token not found: " + ui.token + ", total items: " + Util::toString(ctrlTransfers.GetItemCount()));
-	return NULL;
+	return nullptr;
 }
 
 LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -950,7 +947,6 @@ void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueI
 }
 
 void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) {
-	//LogManager::getInstance()->message("Failed " + aCqi->getToken());
 	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
 	if(aCqi->getUser()->isSet(User::OLD_CLIENT)) {
 		ui->setStatusString(TSTRING(SOURCE_TOO_OLD));
@@ -979,7 +975,6 @@ static tstring getFile(const Transfer::Type& type, const tstring& fileName) {
 
 
 TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
-	//LogManager::getInstance()->message("create parent with bundle " + Text::fromT(bundle));
 	ItemInfo* ii = new ItemInfo(user, bundle, download);
 	ii->running = 0;
 	ii->hits = 0;
@@ -1025,17 +1020,16 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 				if ((users == 1 || hits == 2) && user.user) {
 					return WinUtil::getNicks(user);
 				} else {
-					return Text::toT(str(boost::format(CSTRING(X_USERS_WAITING)) % users %
-						((hits-running-1) > 0 ? hits-running-1 : 0)));
+					return TSTRING_F(X_USERS_WAITING, users % ((hits-running-1) > 0 ? hits-running-1 : 0));
 				}
 			} else if (hits == -1 || isBundle) {
 				return WinUtil::getNicks(user);
 			} else {
-				return Text::toT(str(boost::format(CSTRING(X_USERS)) % hits));
+				return TSTRING_F(X_USERS, hits);
 			}
 		case COLUMN_HUB: 
 			if (isBundle) {
-				return Text::toT(str(boost::format(CSTRING(X_CONNECTIONS)) % running));
+				return TSTRING_F(X_CONNECTIONS, running);
 			} else {
 				return WinUtil::getHubNames(user).first;
 			}
