@@ -1249,8 +1249,23 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 						auto u = s.getUser();
 						auto target = ii->getTarget();
-						getListMenu->appendItem(nick, [=] { QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW); });
-						browseMenu->appendItem(nick, [=] { QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST); });
+
+						getListMenu->appendItem(nick, [=] {
+							try {
+								QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW);
+							} catch (const QueueException& e) {
+								ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
+							}
+						});
+
+						browseMenu->appendItem(nick, [=] {
+							try {
+								QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+							} catch (const QueueException& e) {
+								ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
+							}
+						});
+
 						removeMenu->appendItem(nick, [=] { QueueManager::getInstance()->removeSource(target, u, QueueItem::Source::FLAG_REMOVED); });
 						removeAllMenu->appendItem(nick, [=]{ MainFrame::getMainFrame()->addThreadedTask([=] { QueueManager::getInstance()->removeSource(u, QueueItem::Source::FLAG_REMOVED); }); });
 

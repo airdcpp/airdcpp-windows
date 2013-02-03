@@ -28,17 +28,155 @@
 #include "NetworkPage.h"
 #include "WinUtil.h"
 
-NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s) {
+COptionsSheet::COptionsSheet(UINT uStartPage, HWND hWndParent, SettingsManager* s) :
+  CPropertySheetImpl<COptionsSheet> ((LPCTSTR)NULL, uStartPage, hWndParent ),
+  m_bCentered(false), ipv6Page(new ProtocolPage(s, true)), ipv4Page(new ProtocolPage(s, false))
+{
+    m_psh.dwFlags |= PSH_NOAPPLYNOW | PSH_NOCONTEXTHELP;
+
+    AddPage(ipv4Page->getPSP());
+    AddPage(ipv6Page->getPSP());
+}
+
+
+//////////////////////////////////////////////////////////////////////
+// Message handlers
+
+void COptionsSheet::OnShowWindow ( BOOL bShowing, int nReason )
+{
+    if ( bShowing && !m_bCentered )
+        {
+        m_bCentered = true;
+        CenterWindow ( m_psh.hwndParent );
+        }
+}
+
+void COptionsSheet::onInit() {
+	CRect rcClient, rcTab, rcPage, rcWindow;
+	CWindow tab = GetTabControl();
+	CWindow page = IndexToHwnd(this->m_psh.nStartPage);
+
+	GetClientRect(&rcClient);
+
+	tab.GetWindowRect(&rcTab);
+	page.GetClientRect(&rcPage);
+	page.MapWindowPoints(m_hWnd,&rcPage);
+	GetWindowRect(&rcWindow);
+	::MapWindowPoints(NULL, m_hWnd, (LPPOINT)&rcTab, 2);
+
+	//ScrollWindow(SPACE_LEFT + TREE_WIDTH + SPACE_MID-rcPage.left, SPACE_TOP-rcPage.top);
+	//rcWindow.right += SPACE_LEFT + TREE_WIDTH + SPACE_MID - rcPage.left - (rcClient.Width()-rcTab.right) + SPACE_RIGHT;
+	//rcWindow.bottom += SPACE_TOP - rcPage.top;
+
+	tab.ShowWindow(SW_HIDE);
+
+	MoveWindow(&rcWindow, TRUE);
+
+	//tabContainer.SubclassWindow(tab.m_hWnd);
+}
+
+NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s), /*protocols(0, m_hWnd, s),*/ ipv6Page(new ProtocolPage(s, true)), ipv4Page(new ProtocolPage(s, false)) {
 	SetTitle(CTSTRING(SETTINGS_NETWORK));
 	m_psp.dwFlags |= PSP_RTLREADING;
-	UpdateManager::getInstance()->addListener(this);
 }
 
 NetworkPage::~NetworkPage() {
-	UpdateManager::getInstance()->removeListener(this);
 }
 
 PropPage::TextItem NetworkPage::texts[] = {
+	//ports
+	{ IDC_SETTINGS_PORTS, ResourceManager::SETTINGS_PORTS },
+	{ IDC_SETTINGS_PORT_TCP, ResourceManager::SETTINGS_TCP_PORT },
+	{ IDC_SETTINGS_PORT_UDP, ResourceManager::SETTINGS_UDP_PORT },
+	{ IDC_SETTINGS_PORT_TLS, ResourceManager::SETTINGS_TLS_PORT },
+
+	//mapper
+	{ IDC_SETTINGS_MAPPER_DESC, ResourceManager::PREFERRED_MAPPER },
+	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+};
+
+PropPage::Item NetworkPage::items[] = {
+	//ports
+	{ IDC_PORT_TCP,		SettingsManager::TCP_PORT,		PropPage::T_INT }, 
+	{ IDC_PORT_UDP,		SettingsManager::UDP_PORT,		PropPage::T_INT }, 
+	{ IDC_PORT_TLS,		SettingsManager::TLS_PORT,		PropPage::T_INT },
+
+	//mapper
+	{ IDC_MAPPER,		SettingsManager::MAPPER,		PropPage::T_STR }, 
+	{ 0, 0, PropPage::T_END }
+};
+
+void NetworkPage::write()
+{
+	PropPage::write((HWND)(*this), items);
+}
+
+LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+{
+	PropPage::translate((HWND)(*this), texts);
+	PropPage::read((HWND)(*this), items);
+
+	// Mapper
+	MapperCombo.Attach(GetDlgItem(IDC_MAPPER));
+	const auto& setting = SETTING(MAPPER);
+	int sel = 0;
+
+	auto mappers = ConnectivityManager::getInstance()->getMappers(false);
+	for(const auto& name: mappers) {
+		int pos = MapperCombo.AddString(Text::toT(name).c_str());
+		//auto pos = mapper->addValue(Text::toT(name));
+		if(!sel && name == setting)
+			sel = pos;
+	}
+
+	MapperCombo.SetCurSel(sel);
+	//protocols.onInit();
+
+	CRect rcPage;
+	GetClientRect(&rcPage);
+	//CRect rcClient, rcTab, rcPage, rcWindow;
+	//CWindow tab = GetTabControl();
+	//CWindow page = IndexToHwnd(this->m_psh.nStartPage);
+
+	//GetClientRect(&rcClient);
+
+	//tab.GetWindowRect(&rcTab);
+	//GetClientRect(&rcPage);
+	//page.MapWindowPoints(m_hWnd,&rcPage);
+	//GetWindowRect(&rcWindow);
+	//::MapWindowPoints(NULL, m_hWnd, (LPPOINT)&rcTab, 2);
+
+	//ScrollWindow(SPACE_LEFT + TREE_WIDTH + SPACE_MID-rcPage.left, SPACE_TOP-rcPage.top);
+	//rcWindow.right += SPACE_LEFT + TREE_WIDTH + SPACE_MID - rcPage.left - (rcClient.Width()-rcTab.right) + SPACE_RIGHT;
+	//rcWindow.bottom += SPACE_TOP - rcPage.top;
+
+	//ipv4Page->ShowWindow(SW_HIDE);
+
+	//MoveWindow(&rcWindow, TRUE);
+
+	//ipv4Page->SubclassWindow(GetDlgItem(IDC_TREE1));
+	//DialogBox(
+
+	//DialogBox(hInst, MAKEINTRESOURCE(IDD_CHILD), hParent, Child);
+	//CreateDialog();
+	ipv4Page->ShowWindow(SW_SHOW);
+	ipv4Page->MoveWindow(rcPage);
+	return TRUE;
+}
+
+
+
+
+ProtocolPage::ProtocolPage(SettingsManager *s, bool v6) :  PropPage(s), v6(v6) {
+	UpdateManager::getInstance()->addListener(this);
+}
+
+ProtocolPage::~ProtocolPage() {
+	UpdateManager::getInstance()->removeListener(this);
+}
+
+
+PropPage::TextItem ProtocolPage::texts[] = {
 	//bind address
 	{ IDC_SETTINGS_BIND_ADDRESS, ResourceManager::SETTINGS_BIND_ADDRESS },
 	{ IDC_SETTINGS_BIND_ADDRESS_HELP, ResourceManager::SETTINGS_BIND_ADDRESS_HELP },
@@ -56,19 +194,10 @@ PropPage::TextItem NetworkPage::texts[] = {
 	{ IDC_IPUPDATE, ResourceManager::UPDATE_IP },
 	{ IDC_GETIP, ResourceManager::GET_IP },
 	{ IDC_SETTINGS_MANUAL_CONFIG, ResourceManager::SETTINGS_MANUAL_CONFIG },
-
-	//ports
-	{ IDC_SETTINGS_PORTS, ResourceManager::SETTINGS_PORTS },
-	{ IDC_SETTINGS_PORT_TCP, ResourceManager::SETTINGS_TCP_PORT },
-	{ IDC_SETTINGS_PORT_UDP, ResourceManager::SETTINGS_UDP_PORT },
-	{ IDC_SETTINGS_PORT_TLS, ResourceManager::SETTINGS_TLS_PORT },
-
-	//mapper
-	{ IDC_SETTINGS_MAPPER_DESC, ResourceManager::PREFERRED_MAPPER },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-PropPage::Item NetworkPage::items[] = {
+PropPage::Item ProtocolPage::items4[] = {
 	//auto detection
 	{ IDC_CONNECTION_DETECTION,	SettingsManager::AUTO_DETECT_CONNECTION,	PropPage::T_BOOL	},
 
@@ -76,30 +205,23 @@ PropPage::Item NetworkPage::items[] = {
 	{ IDC_EXTERNAL_IP,	SettingsManager::EXTERNAL_IP,	PropPage::T_STR }, 
 	{ IDC_OVERRIDE,		SettingsManager::NO_IP_OVERRIDE, PropPage::T_BOOL },
 	{ IDC_IPUPDATE, SettingsManager::IP_UPDATE, PropPage::T_BOOL },
-
-	//ports
-	{ IDC_PORT_TCP,		SettingsManager::TCP_PORT,		PropPage::T_INT }, 
-	{ IDC_PORT_UDP,		SettingsManager::UDP_PORT,		PropPage::T_INT }, 
-	{ IDC_PORT_TLS,		SettingsManager::TLS_PORT,		PropPage::T_INT },
-
-	//mapper
-	{ IDC_MAPPER,		SettingsManager::MAPPER,		PropPage::T_STR }, 
 	{ 0, 0, PropPage::T_END }
 };
 
-void NetworkPage::write()
+PropPage::Item ProtocolPage::items6[] = {
+	//auto detection
+	{ IDC_CONNECTION_DETECTION,	SettingsManager::AUTO_DETECT_CONNECTION6,	PropPage::T_BOOL	},
+
+	//manual config
+	{ IDC_EXTERNAL_IP,	SettingsManager::EXTERNAL_IP6,	PropPage::T_STR }, 
+	{ IDC_OVERRIDE,		SettingsManager::NO_IP_OVERRIDE, PropPage::T_BOOL },
+	{ IDC_IPUPDATE, SettingsManager::IP_UPDATE, PropPage::T_BOOL },
+	{ 0, 0, PropPage::T_END }
+};
+
+void ProtocolPage::write()
 {
-	TCHAR tmp[1024];
-	GetDlgItemText(IDC_SERVER, tmp, 1024);
-	tstring x = tmp;
-
-	tstring::size_type i;
-	while((i = x.find(' ')) != string::npos)
-		x.erase(i, 1);
-
-	SetDlgItemText(IDC_SERVER, x.c_str());
-	
-	PropPage::write((HWND)(*this), items);
+	PropPage::write((HWND)(*this), v6 ? items6 : items4);
 
 	// Set connection active/passive
 	int ct = SettingsManager::INCOMING_ACTIVE;
@@ -118,7 +240,7 @@ void NetworkPage::write()
 	SettingsManager::getInstance()->set(SettingsManager::BIND_ADDRESS, pos->first);
 }
 
-LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+LRESULT ProtocolPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	
@@ -130,7 +252,7 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		default: CheckDlgButton(IDC_ACTIVE, BST_CHECKED); break;
 	}
 
-	PropPage::read((HWND)(*this), items);
+	PropPage::read((HWND)(*this), v6 ? items6 : items4);
 
 	fixControls();
 
@@ -145,26 +267,10 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	}
 	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(SETTING(BIND_ADDRESS)).c_str()));
 
-
-	// Mapper
-	MapperCombo.Attach(GetDlgItem(IDC_MAPPER));
-	const auto& setting = SETTING(MAPPER);
-	int sel = 0;
-
-	auto mappers = ConnectivityManager::getInstance()->getMappers(false);
-	for(const auto& name: mappers) {
-		int pos = MapperCombo.AddString(Text::toT(name).c_str());
-		//auto pos = mapper->addValue(Text::toT(name));
-		if(!sel && name == setting)
-			sel = pos;
-	}
-
-	MapperCombo.SetCurSel(sel);
-
 	return TRUE;
 }
 
-void NetworkPage::fixControls() {
+void ProtocolPage::fixControls() {
 	BOOL auto_detect = IsDlgButtonChecked(IDC_CONNECTION_DETECTION) == BST_CHECKED;
 	BOOL direct = IsDlgButtonChecked(IDC_ACTIVE) == BST_CHECKED;
 	BOOL upnp = IsDlgButtonChecked(IDC_ACTIVE_UPNP) == BST_CHECKED;
@@ -189,19 +295,19 @@ void NetworkPage::fixControls() {
 
 }
 
-void NetworkPage::getAddresses() {
+void ProtocolPage::getAddresses() {
 	AirUtil::getIpAddresses(bindAddresses, false);
 	bindAddresses.emplace("0.0.0.0", "Any");
 	for(auto& addr: bindAddresses)
 		BindCombo.AddString(Text::toT(addr.first + (!addr.second.empty() ? " (" + addr.second + ")" : Util::emptyString)).c_str());
 }
 
-LRESULT NetworkPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT ProtocolPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	fixControls();
 	return 0;
 }
 
-void NetworkPage::on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept {
+void ProtocolPage::on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept {
 	if (key == SettingsManager::EXTERNAL_IP) {
 		if(!value.empty()) {
 			SetDlgItemText(IDC_SERVER, Text::toT(value).c_str());
@@ -212,7 +318,7 @@ void NetworkPage::on(UpdateManagerListener::SettingUpdated, size_t key, const st
 	}
 }
 	
-LRESULT NetworkPage::onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
+LRESULT ProtocolPage::onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 	::EnableWindow(GetDlgItem(IDC_GETIP), FALSE);
 	UpdateManager::getInstance()->checkIP(true, false);
 	return S_OK;

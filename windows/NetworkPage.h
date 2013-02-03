@@ -27,14 +27,14 @@
 #include "PropPage.h"
 #include "../client/UpdateManagerListener.h"
 
-class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage, private UpdateManagerListener
+class ProtocolPage : public CDialogImpl<ProtocolPage>, /*public CPropertyPage<IDD_PROTOCOLPAGE>,*/ public PropPage, private UpdateManagerListener
 {
 public:
-	NetworkPage(SettingsManager *s);
-	~NetworkPage();
+	ProtocolPage(SettingsManager *s, bool v6);
+	~ProtocolPage();
+	enum { IDD = IDD_PROTOCOLPAGE };
 
-
-	BEGIN_MSG_MAP(NetworkPage)
+	BEGIN_MSG_MAP(ProtocolPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		COMMAND_ID_HANDLER(IDC_CONNECTION_DETECTION, onClickedActive)
 		COMMAND_ID_HANDLER(IDC_ACTIVE, onClickedActive)
@@ -47,21 +47,76 @@ public:
 	LRESULT onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 
-	// Common PropPage interface
-	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
+	PROPSHEETPAGE *getPSP() { return /*(PROPSHEETPAGE *)*this*/nullptr; }
 	void write();
-	
 private:
-	static Item items[];
+	static Item items4[];
+	static Item items6[];
 	static TextItem texts[];
 	CComboBox BindCombo;
-	CComboBox MapperCombo;
 
 	void fixControls();
 	void getAddresses();
 
 	map<string, string> bindAddresses;
 	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
+	bool v6;
+};
+
+
+class COptionsSheet : public CPropertySheetImpl<COptionsSheet>
+{
+public:
+    // Construction
+    COptionsSheet (UINT uStartPage, HWND hWndParent, SettingsManager* s);
+
+    // Maps
+    BEGIN_MSG_MAP(COptionsSheet)
+        MSG_WM_SHOWWINDOW(OnShowWindow)
+        CHAIN_MSG_MAP(CPropertySheetImpl<COptionsSheet>)
+    END_MSG_MAP()
+
+    // Message handlers
+    void OnShowWindow ( BOOL bShowing, int nReason );
+	void onInit();
+
+    // Property pages
+   // CBackgroundOptsPage         m_pgBackground;
+   // CPropertyPage<IDD_ABOUTBOX> m_pgAbout;
+
+    // Implementation
+protected:
+	unique_ptr<ProtocolPage> ipv6Page;
+	unique_ptr<ProtocolPage> ipv4Page;
+    bool m_bCentered;
+};
+
+
+class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage
+{
+public:
+	NetworkPage(SettingsManager *s);
+	~NetworkPage();
+
+
+	BEGIN_MSG_MAP(NetworkPage)
+		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
+	END_MSG_MAP()
+
+	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
+	// Common PropPage interface
+	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
+	void write();
+	
+private:
+	//COptionsSheet protocols;
+	static Item items[];
+	static TextItem texts[];
+	CComboBox MapperCombo;
+
+	unique_ptr<ProtocolPage> ipv6Page;
+	unique_ptr<ProtocolPage> ipv4Page;
 };
 
 #endif // !defined(NETWORK_PAGE_H)

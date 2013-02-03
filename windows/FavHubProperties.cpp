@@ -45,9 +45,6 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_FH_PASSWORD, CTSTRING(PASSWORD));
 	SetDlgItemText(IDC_FH_USER_DESC, CTSTRING(DESCRIPTION));
 	SetDlgItemText(IDC_FH_CONN, CTSTRING(FAVORITE_HUB_CONNECTION));
-	SetDlgItemText(IDC_DEFAULT, CTSTRING(DEFAULT));
-	SetDlgItemText(IDC_ACTIVE, CTSTRING(ACTIVE_MODE));
-	SetDlgItemText(IDC_PASSIVE, CTSTRING(PASSIVE_MODE));
 	SetDlgItemText(IDC_STEALTH, CTSTRING(STEALTH_MODE));
 	SetDlgItemText(IDC_FAV_NO_PM, CTSTRING(FAV_NO_PM));
 	SetDlgItemText(IDC_SHOW_JOIN, CTSTRING(FAV_SHOW_JOIN));
@@ -73,7 +70,6 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_HUBPASS, Text::toT(entry->getPassword()).c_str());
 	SetDlgItemText(IDC_HUBUSERDESCR, Text::toT(entry->get(HubSettings::Description)).c_str());
 	CheckDlgButton(IDC_STEALTH, entry->getStealth() ? BST_CHECKED : BST_UNCHECKED);
-	SetDlgItemText(IDC_SERVER, Text::toT(entry->get(HubSettings::UserIp)).c_str());
 	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
 
 	CheckDlgButton(IDC_SHOW_JOIN, toInt(entry->get(HubSettings::ShowJoins)));
@@ -84,7 +80,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
 
 	auto searchInterval = entry->get(HubSettings::SearchInterval);
-	CheckDlgButton(IDC_SEARCH_INTERVAL_DEFAULT, searchInterval == -1 ? BST_CHECKED : BST_UNCHECKED);
+	CheckDlgButton(IDC_SEARCH_INTERVAL_DEFAULT, searchInterval == HubSettings::getMinInt() ? BST_CHECKED : BST_UNCHECKED);
 	SetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, Util::toStringW(searchInterval).c_str());
 
 	bool isAdcHub = entry->isAdcHub();
@@ -135,13 +131,32 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 
 	combo.Detach();
 
-	auto conn = entry->get(HubSettings::Connection);
-	if(conn == -1)
-		CheckRadioButton(IDC_ACTIVE, IDC_DEFAULT, IDC_DEFAULT);
-	else if(conn == SettingsManager::INCOMING_ACTIVE)
-		CheckRadioButton(IDC_ACTIVE, IDC_DEFAULT, IDC_ACTIVE);
-	else if(conn == SettingsManager::INCOMING_PASSIVE)
-		CheckRadioButton(IDC_ACTIVE, IDC_DEFAULT, IDC_PASSIVE);
+	// connection modes
+	auto appendCombo = [](CComboBox& combo, int curMode) {
+		combo.InsertString(0, CTSTRING(DEFAULT));
+		combo.InsertString(1, CTSTRING(DISABLED));
+		combo.InsertString(2, CTSTRING(ACTIVE_MODE));
+		combo.InsertString(3, CTSTRING(PASSIVE_MODE));
+
+		if(curMode == HubSettings::getMinInt())
+			combo.SetCurSel(0);
+		else if(curMode == SettingsManager::INCOMING_DISABLED)
+			combo.SetCurSel(1);
+		else if(curMode == SettingsManager::INCOMING_ACTIVE)
+			combo.SetCurSel(2);
+		else if(curMode == SettingsManager::INCOMING_PASSIVE)
+			combo.SetCurSel(3);
+	};
+
+	modeCombo4.Attach(GetDlgItem(IDC_MODE4));
+	modeCombo6.Attach(GetDlgItem(IDC_MODE6));
+
+	appendCombo(modeCombo4, entry->get(HubSettings::Connection));
+	appendCombo(modeCombo6, entry->get(HubSettings::Connection6));
+
+	//external ips
+	SetDlgItemText(IDC_SERVER4, Text::toT(entry->get(HubSettings::UserIp)).c_str());
+	SetDlgItemText(IDC_SERVER6, Text::toT(entry->get(HubSettings::UserIp6)).c_str());
 
 	fixControls();
 
@@ -266,15 +281,12 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		GetDlgItemText(IDC_HUBUSERDESCR, buf, 256);
 		entry->get(HubSettings::Description) = Text::fromT(buf);
 
-		GetDlgItemText(IDC_SERVER, buf, 512);
-		entry->get(HubSettings::UserIp) = Text::fromT(buf);
-
 		entry->get(HubSettings::ShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN));
 		entry->get(HubSettings::FavShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN));
 		entry->get(HubSettings::LogMainChat) = to3bool(IsDlgButtonChecked(IDC_LOGMAINCHAT));
 		entry->get(HubSettings::ChatNotify) = to3bool(IsDlgButtonChecked(IDC_CHAT_NOTIFY));
 
-		auto val = -1;
+		auto val = HubSettings::getMinInt();
 		if (!IsDlgButtonChecked(IDC_SEARCH_INTERVAL_DEFAULT)) {
 			GetDlgItemText(IDC_FAV_SEARCH_INTERVAL_BOX, buf, 512);
 			val = Util::toInt(Text::fromT(buf));
@@ -298,13 +310,28 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		}
 		combo.Detach();
 
-		int	ct = -1;
-		if(IsDlgButtonChecked(IDC_ACTIVE))
-			ct = SettingsManager::INCOMING_ACTIVE;
-		else if(IsDlgButtonChecked(IDC_PASSIVE))
-			ct = SettingsManager::INCOMING_PASSIVE;
 
-		entry->get(HubSettings::Connection) = ct;
+		// connection modes
+		auto getConnMode = [](const CComboBox& combo) -> int {
+			 if (combo.GetCurSel() == 1)
+				return SettingsManager::INCOMING_DISABLED;
+			else if (combo.GetCurSel() == 2)
+				return SettingsManager::INCOMING_ACTIVE;
+			else if (combo.GetCurSel() == 3)
+				return SettingsManager::INCOMING_PASSIVE;
+
+			return HubSettings::getMinInt();
+		};
+
+		entry->get(HubSettings::Connection) = getConnMode(modeCombo4);
+		entry->get(HubSettings::Connection6) = getConnMode(modeCombo6);
+
+		//external ip addresses
+		GetDlgItemText(IDC_SERVER4, buf, 512);
+		entry->get(HubSettings::UserIp) = Text::fromT(buf);
+
+		GetDlgItemText(IDC_SERVER6, buf, 512);
+		entry->get(HubSettings::UserIp6) = Text::fromT(buf);
 
 		auto p = ShareManager::getInstance()->getProfiles();
 

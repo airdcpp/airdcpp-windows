@@ -64,6 +64,9 @@ protected:
 	CComboBox ctrlProfile;
 	bool loaded;
 	void fixControls();
+
+	CComboBox modeCombo4;
+	CComboBox modeCombo6;
 };
 
 #endif // !defined(FAV_HUB_PROPERTIES_H)

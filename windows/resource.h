@@ -45,11 +45,13 @@
 #define IDC_HUBLIST                     131
 #define IDC_SERVER                      133
 #define IDC_EXTERNAL_IP                 133
+#define IDC_SERVER4                     133
 #define IDC_USKIPLIST                   134
 #define IDC_LOGMAINCHAT                 134
 #define IDC_FILES                       135
 #define IDC_LOGMAINCHAT2                135
 #define IDC_SETTINGS_SCAN_OPTIONS       135
+#define IDC_SERVER6                     135
 #define IDC_COPY_STATUS                 136
 #define IDC_ITEMS                       137
 #define IDC_WINAMP_BACK                 141
@@ -469,6 +471,7 @@
 #define IDC_SETTINGS_DESCRIPTION2       1136
 #define IDC_SETTINGS_IP                 1138
 #define IDC_SETTINGS_PORT               1139
+#define IDC_SETTINGS_IP2                1139
 #define IDC_SETTINGS_SOCKS5_IP          1140
 #define IDC_SETTINGS_SOCKS5_PORT        1141
 #define IDC_SETTINGS_SOCKS5_USERNAME    1142
@@ -757,10 +760,13 @@
 #define IDC_MULTISOURCE_COMBO           1296
 #define IDC_CH_ICONS                    1296
 #define IDC_SEARCH_INT_BOX              1296
+#define IDC_FH_CONN2                    1296
+#define IDC_CONN_IPV4                   1296
 #define IDC_PUB_LIST_CONFIG             1297
 #define IDC_ODC_STYLE                   1297
 #define IDC_OVERRIDE                    1297
 #define IDC_CH_BLEND                    1297
+#define IDC_CONN_IPV6                   1297
 #define IDC_WINDOWS_STARTUP             1298
 #define IDC_SETTINGS_PORTS              1298
 #define IDC_SETTINGS_AUTO_OPEN          1299
@@ -1065,7 +1071,9 @@
 #define IDC_UPDATE_VERSION_LANGUAGE_LBL 1455
 #define IDC_FAV_SHAREPROFILE            1455
 #define IDC_UPDATE_LOCATION             1456
+#define IDC_MODE4                       1456
 #define IDC_CURRENT_LIST_STR            1457
+#define IDC_MODE6                       1457
 #define IDC_UPDATE_LOCATION_STR         1458
 #define IDC_UPDATE_LANGUAGE_CURRENT     1458
 #define IDC_CURRENT_LIST                1459
@@ -1430,6 +1438,7 @@
 #define IDC_IGNORE_CLEAR                15008
 #define IDD_PROXYPAGE                   15008
 #define IDC_IGNORELIST                  15009
+#define IDD_PROTOCOLPAGE                15009
 #define IDC_IGNORE_USE_REGEXP_OR_WC     15010
 #define IDC_IGNORELIST_EDIT             15011
 #define IDC_MISC_IGNORE                 15012
