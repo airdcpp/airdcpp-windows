@@ -171,7 +171,7 @@ LRESULT ProxyPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	auto cur = bindAddresses.find(setting);
 	if (cur == bindAddresses.end()) {
 		BindCombo.AddString(Text::toT(setting).c_str());
-		bindAddresses.emplace(setting, "Unknown");
+		//bindAddresses.emplace(setting, "Unknown");
 	}
 	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(setting).c_str()));
 
@@ -197,9 +197,9 @@ LRESULT ProxyPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 void ProxyPage::getAddresses(bool v6) {
 	AirUtil::getIpAddresses(bindAddresses, true);
-	bindAddresses.emplace(v6 ? "::" : "0.0.0.0", "Any");
+	//bindAddresses.emplace(v6 ? "::" : "0.0.0.0", "Any");
 	for(auto& addr: bindAddresses)
-		BindCombo.AddString(Text::toT(addr.first + (!addr.second.empty() ? " (" + addr.second + ")" : Util::emptyString)).c_str());
+		BindCombo.AddString(Text::toT(addr.first + (!addr.second.first.empty() ? " (" + addr.second.first + ")" : Util::emptyString)).c_str());
 }
 
 LRESULT ProxyPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

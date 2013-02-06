@@ -263,7 +263,7 @@ LRESULT ProtocolPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	auto cur = bindAddresses.find(SETTING(BIND_ADDRESS));
 	if (cur == bindAddresses.end()) {
 		BindCombo.AddString(Text::toT(SETTING(BIND_ADDRESS)).c_str());
-		bindAddresses.emplace(SETTING(BIND_ADDRESS), Util::emptyString);
+		bindAddresses.emplace(SETTING(BIND_ADDRESS), make_pair(Util::emptyString, 0));
 	}
 	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(SETTING(BIND_ADDRESS)).c_str()));
 
@@ -297,9 +297,9 @@ void ProtocolPage::fixControls() {
 
 void ProtocolPage::getAddresses() {
 	AirUtil::getIpAddresses(bindAddresses, false);
-	bindAddresses.emplace("0.0.0.0", "Any");
+	bindAddresses.emplace("0.0.0.0", make_pair("Any", 0));
 	for(auto& addr: bindAddresses)
-		BindCombo.AddString(Text::toT(addr.first + (!addr.second.empty() ? " (" + addr.second + ")" : Util::emptyString)).c_str());
+		BindCombo.AddString(Text::toT(addr.first + (!addr.second.first.empty() ? " (" + addr.second.first + ")" : Util::emptyString)).c_str());
 }
 
 LRESULT ProtocolPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

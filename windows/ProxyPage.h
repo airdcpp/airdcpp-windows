@@ -67,7 +67,7 @@ private:
 
 	CComboBox BindCombo;
 	void getAddresses(bool v6);
-	map<string, string> bindAddresses;
+	AirUtil::IPMap bindAddresses;
 	//IP_ADAPTER_ADDRESSES* adapterInfo;
 };
 
