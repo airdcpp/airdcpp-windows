@@ -591,18 +591,16 @@ int TransferView::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, u
 }
 
 TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) const {
-	if (!ui.token.empty()) {
-		for(int j = 0; j < ctrlTransfers.GetItemCount(); ++j) {
-			ItemInfo* ii = ctrlTransfers.getItemData(j);
-			if(compare(ui.token, ii->token) == 0) {
-				pos = j;
-				return ii;
-			} else if(ii->isBundle && compare(ii->bundle, ui.bundle) == 0) {
-				const auto& children = ctrlTransfers.findChildren(ii->getGroupCond());
-				for(const auto ii: children) {
-					if(compare(ui.token, ii->token) == 0) {
-						return ii;
-					}
+	for(int j = 0; j < ctrlTransfers.GetItemCount(); ++j) {
+		ItemInfo* ii = ctrlTransfers.getItemData(j);
+		if(compare(ui.token, ii->token) == 0) {
+			pos = j;
+			return ii;
+		} else if(ii->isBundle) {
+			const auto& children = ctrlTransfers.findChildren(ii->getGroupCond());
+			for(const auto ii: children) {
+				if(compare(ui.token, ii->token) == 0) {
+					return ii;
 				}
 			}
 		}

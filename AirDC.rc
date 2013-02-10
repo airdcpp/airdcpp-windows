@@ -202,7 +202,7 @@ BEGIN
     LTEXT           "Current version:",IDC_UPDATE_VERSION_CURRENT_LBL,43,19,89,12
     LTEXT           "2.30",IDC_UPDATE_VERSION_CURRENT,131,19,50,12
     LTEXT           "Latest version:",IDC_UPDATE_VERSION_LATEST_LBL,43,32,86,12
-    LTEXT           "2.40",IDC_UPDATE_VERSION_LATEST,131,31,55,12
+    LTEXT           "2.50",IDC_UPDATE_VERSION_LATEST,131,31,55,12
     GROUPBOX        "History",IDC_UPDATE_HISTORY,7,75,272,134
     ICON            IDR_UPDATE,IDC_STATIC,14,19,21,20
     LTEXT           "More information...",IDC_LINK,18,215,91,12
@@ -772,11 +772,11 @@ BEGIN
     GROUPBOX        "",IDC_STATIC,7,4,234,101
     GROUPBOX        "Greetz && Contributors",IDC_STATIC,7,106,234,82,BS_CENTER
     GROUPBOX        "Latest version",IDC_STATIC,5,194,238,24,BS_CENTER
-    CTEXT           "2.41",IDC_LATEST,10,205,227,8
+    CTEXT           "2.50",IDC_LATEST,10,205,227,8
     GROUPBOX        "Totals",IDC_STATIC,5,223,238,39,BS_CENTER
     CTEXT           "Upload: xx.xx MiB, Download: xx.xx MiB",IDC_TOTALS,11,234,227,8
     CTEXT           "Ratio (Up/Down): x.xx",IDC_RATIO,11,247,227,8
-    CTEXT           "AirDC++ v2.41 By Night and maksalaatikko",IDC_VERSION,13,34,227,9
+    CTEXT           "AirDC++ v2.50 By Night and maksalaatikko",IDC_VERSION,13,34,227,9
     EDITTEXT        IDC_TTH,44,89,196,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER
     LTEXT           "TTH:",IDC_STATIC,22,89,18,12
     EDITTEXT        IDC_AIRTHANKS,12,119,225,66,ES_MULTILINE | ES_READONLY | WS_VSCROLL
@@ -1620,12 +1620,12 @@ BEGIN
             VALUE "Comments", "http://www.airdcpp.net"
             VALUE "CompanyName", "AirDC++ Team"
             VALUE "FileDescription", "AirDC++"
-            VALUE "FileVersion", "2.43.0.0"
+            VALUE "FileVersion", "2.50.0.0"
             VALUE "InternalName", "AirDC++"
             VALUE "LegalCopyright", "Based on DC++"
             VALUE "OriginalFilename", "AirDC.exe"
             VALUE "ProductName", "AirDC++"
-            VALUE "ProductVersion", "2.43"
+            VALUE "ProductVersion", "2.50"
         END
     END
     BLOCK "VarFileInfo"
