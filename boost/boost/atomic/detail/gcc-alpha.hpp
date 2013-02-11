@@ -7,8 +7,13 @@
 //  See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <boost/atomic/detail/config.hpp>
 #include <boost/atomic/detail/base.hpp>
 #include <boost/atomic/detail/builder.hpp>
+
+#ifdef BOOST_ATOMIC_HAS_PRAGMA_ONCE
+#pragma once
+#endif
 
 /*
   Refer to http://h71000.www7.hp.com/doc/82final/5601/5601pro_004.html
@@ -44,7 +49,7 @@ namespace boost {
 namespace atomics {
 namespace detail {
 
-static inline void fence_before(memory_order order)
+inline void fence_before(memory_order order)
 {
     switch(order) {
         case memory_order_consume:
@@ -56,7 +61,7 @@ static inline void fence_before(memory_order order)
     }
 }
 
-static inline void fence_after(memory_order order)
+inline void fence_after(memory_order order)
 {
     switch(order) {
         case memory_order_acquire:

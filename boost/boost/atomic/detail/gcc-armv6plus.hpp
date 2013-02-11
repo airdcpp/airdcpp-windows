@@ -9,6 +9,14 @@
 //  Copyright (c) 2009 Phil Endecott
 //  ARM Code by Phil Endecott, based on other architectures.
 
+#include <cstddef>
+#include <boost/cstdint.hpp>
+#include <boost/atomic/detail/config.hpp>
+
+#ifdef BOOST_ATOMIC_HAS_PRAGMA_ONCE
+#pragma once
+#endif
+
 // From the ARM Architecture Reference Manual for architecture v6:
 //
 // LDREX{<cond>} <Rd>, [<Rn>]
@@ -49,7 +57,7 @@ namespace detail {
 // indicates the mode, so 1 is added to indicate that the destination code is Thumb.
 // A temporary register is needed for the address and is passed as an argument to these
 // macros.  It must be one of the "low" registers accessible to Thumb code, specified
-// usng the "l" attribute in the asm statement.
+// using the "l" attribute in the asm statement.
 //
 // Architecture v7 introduces "Thumb 2", which does include (almost?) all of the ARM
 // instruction set.  So in v7 we don't need to change to ARM mode; we can write "universal
@@ -76,7 +84,7 @@ namespace detail {
 #define BOOST_ATOMIC_ARM_DMB "mcr\tp15, 0, r0, c7, c10, 5\n"
 #endif
 
-static inline void
+inline void
 arm_barrier(void)
 {
     int brtmp;
@@ -88,7 +96,7 @@ arm_barrier(void)
     );
 }
 
-static inline void
+inline void
 platform_fence_before(memory_order order)
 {
     switch(order) {
@@ -101,7 +109,7 @@ platform_fence_before(memory_order order)
     }
 }
 
-static inline void
+inline void
 platform_fence_after(memory_order order)
 {
     switch(order) {
@@ -113,27 +121,27 @@ platform_fence_after(memory_order order)
     }
 }
 
-static inline void
+inline void
 platform_fence_before_store(memory_order order)
 {
     platform_fence_before(order);
 }
 
-static inline void
+inline void
 platform_fence_after_store(memory_order order)
 {
     if (order == memory_order_seq_cst)
         arm_barrier();
 }
 
-static inline void
+inline void
 platform_fence_after_load(memory_order order)
 {
     platform_fence_after(order);
 }
 
 template<typename T>
-bool
+inline bool
 platform_cmpxchg32(T & expected, T desired, volatile T * ptr)
 {
     int success;
@@ -163,7 +171,7 @@ platform_cmpxchg32(T & expected, T desired, volatile T * ptr)
 }
 
 #define BOOST_ATOMIC_THREAD_FENCE 2
-static inline void
+inline void
 atomic_thread_fence(memory_order order)
 {
     switch(order) {
@@ -177,7 +185,7 @@ atomic_thread_fence(memory_order order)
 }
 
 #define BOOST_ATOMIC_SIGNAL_FENCE 2
-static inline void
+inline void
 atomic_signal_fence(memory_order)
 {
     __asm__ __volatile__ ("" ::: "memory");

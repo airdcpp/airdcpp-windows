@@ -7,11 +7,19 @@
 //  See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <cstddef>
+#include <boost/cstdint.hpp>
+#include <boost/atomic/detail/config.hpp>
+
+#ifdef BOOST_ATOMIC_HAS_PRAGMA_ONCE
+#pragma once
+#endif
+
 namespace boost {
 namespace atomics {
 namespace detail {
 
-static inline void
+inline void
 platform_fence_before(memory_order order)
 {
     switch(order) {
@@ -31,7 +39,7 @@ platform_fence_before(memory_order order)
     }
 }
 
-static inline void
+inline void
 platform_fence_after(memory_order order)
 {
     switch(order) {
@@ -54,7 +62,7 @@ platform_fence_after(memory_order order)
     }
 }
 
-static inline void
+inline void
 platform_fence_after_store(memory_order order)
 {
     switch(order) {
@@ -65,7 +73,7 @@ platform_fence_after_store(memory_order order)
 }
 
 
-static inline void
+inline void
 platform_fence_after_load(memory_order order)
 {
     platform_fence_after(order);
@@ -128,7 +136,7 @@ public:
 namespace boost {
 
 #define BOOST_ATOMIC_THREAD_FENCE 2
-static inline void
+inline void
 atomic_thread_fence(memory_order order)
 {
     switch(order) {
@@ -153,7 +161,7 @@ atomic_thread_fence(memory_order order)
 }
 
 #define BOOST_ATOMIC_SIGNAL_FENCE 2
-static inline void
+inline void
 atomic_signal_fence(memory_order)
 {
     __asm__ __volatile__ ("" ::: "memory");
@@ -172,7 +180,7 @@ class base_atomic<T, int, 1, true> {
     typedef int32_t storage_type;
 public:
     explicit base_atomic(value_type v) : v_(v) {}
-    base_atomic(void) : v_(0) {}
+    base_atomic(void) {}
 
     void
     store(value_type v, memory_order order = memory_order_seq_cst) volatile
@@ -294,7 +302,7 @@ class base_atomic<T, int, 1, false> {
     typedef uint32_t storage_type;
 public:
     explicit base_atomic(value_type v) : v_(v) {}
-    base_atomic(void) : v_(0) {}
+    base_atomic(void) {}
 
     void
     store(value_type v, memory_order order = memory_order_seq_cst) volatile
@@ -416,7 +424,7 @@ class base_atomic<T, int, 2, true> {
     typedef int32_t storage_type;
 public:
     explicit base_atomic(value_type v) : v_(v) {}
-    base_atomic(void) : v_(0) {}
+    base_atomic(void) {}
 
     void
     store(value_type v, memory_order order = memory_order_seq_cst) volatile
@@ -538,7 +546,7 @@ class base_atomic<T, int, 2, false> {
     typedef uint32_t storage_type;
 public:
     explicit base_atomic(value_type v) : v_(v) {}
-    base_atomic(void) : v_(0) {}
+    base_atomic(void) {}
 
     void
     store(value_type v, memory_order order = memory_order_seq_cst) volatile
@@ -951,15 +959,14 @@ class base_atomic<T, void, 1, Sign> {
     typedef T value_type;
     typedef uint32_t storage_type;
 public:
-    explicit base_atomic(value_type v)
+    explicit base_atomic(value_type const& v) : v_(0)
     {
-        v_ = 0;
         memcpy(&v_, &v, sizeof(value_type));
     }
     base_atomic(void) {}
 
     void
-    store(value_type v, memory_order order = memory_order_seq_cst) volatile
+    store(value_type const& v, memory_order order = memory_order_seq_cst) volatile
     {
         storage_type tmp = 0;
         memcpy(&tmp, &v, sizeof(value_type));
@@ -979,7 +986,7 @@ public:
     }
 
     value_type
-    exchange(value_type v, memory_order order = memory_order_seq_cst) volatile
+    exchange(value_type const& v, memory_order order = memory_order_seq_cst) volatile
     {
         value_type tmp = load(memory_order_relaxed);
         do {} while(!compare_exchange_weak(tmp, v, order, memory_order_relaxed));
@@ -989,7 +996,7 @@ public:
     bool
     compare_exchange_strong(
         value_type & expected,
-        value_type desired,
+        value_type const& desired,
         memory_order success_order,
         memory_order failure_order) volatile
     {
@@ -1015,7 +1022,7 @@ public:
     bool
     compare_exchange_weak(
         value_type & expected,
-        value_type desired,
+        value_type const& desired,
         memory_order success_order,
         memory_order failure_order) volatile
     {
@@ -1041,15 +1048,14 @@ class base_atomic<T, void, 2, Sign> {
     typedef T value_type;
     typedef uint32_t storage_type;
 public:
-    explicit base_atomic(value_type v)
+    explicit base_atomic(value_type const& v) : v_(0)
     {
-        v_ = 0;
         memcpy(&v_, &v, sizeof(value_type));
     }
     base_atomic(void) {}
 
     void
-    store(value_type v, memory_order order = memory_order_seq_cst) volatile
+    store(value_type const& v, memory_order order = memory_order_seq_cst) volatile
     {
         storage_type tmp = 0;
         memcpy(&tmp, &v, sizeof(value_type));
@@ -1069,7 +1075,7 @@ public:
     }
 
     value_type
-    exchange(value_type v, memory_order order = memory_order_seq_cst) volatile
+    exchange(value_type const& v, memory_order order = memory_order_seq_cst) volatile
     {
         value_type tmp = load(memory_order_relaxed);
         do {} while(!compare_exchange_weak(tmp, v, order, memory_order_relaxed));
@@ -1079,7 +1085,7 @@ public:
     bool
     compare_exchange_strong(
         value_type & expected,
-        value_type desired,
+        value_type const& desired,
         memory_order success_order,
         memory_order failure_order) volatile
     {
@@ -1105,7 +1111,7 @@ public:
     bool
     compare_exchange_weak(
         value_type & expected,
-        value_type desired,
+        value_type const& desired,
         memory_order success_order,
         memory_order failure_order) volatile
     {
@@ -1131,16 +1137,16 @@ class base_atomic<T, void, 4, Sign> {
     typedef T value_type;
     typedef uint32_t storage_type;
 public:
-    explicit base_atomic(value_type v)
+    explicit base_atomic(value_type const& v) : v_(0)
     {
         memcpy(&v_, &v, sizeof(value_type));
     }
     base_atomic(void) {}
 
     void
-    store(value_type v, memory_order order = memory_order_seq_cst) volatile
+    store(value_type const& v, memory_order order = memory_order_seq_cst) volatile
     {
-        storage_type tmp;
+        storage_type tmp = 0;
         memcpy(&tmp, &v, sizeof(value_type));
         platform_fence_before(order);
         const_cast<volatile storage_type &>(v_) = tmp;
@@ -1158,7 +1164,7 @@ public:
     }
 
     value_type
-    exchange(value_type v, memory_order order = memory_order_seq_cst) volatile
+    exchange(value_type const& v, memory_order order = memory_order_seq_cst) volatile
     {
         value_type tmp = load(memory_order_relaxed);
         do {} while(!compare_exchange_weak(tmp, v, order, memory_order_relaxed));
@@ -1168,11 +1174,11 @@ public:
     bool
     compare_exchange_strong(
         value_type & expected,
-        value_type desired,
+        value_type const& desired,
         memory_order success_order,
         memory_order failure_order) volatile
     {
-        storage_type expected_s, desired_s;
+        storage_type expected_s = 0, desired_s = 0;
         memcpy(&expected_s, &expected, sizeof(value_type));
         memcpy(&desired_s, &desired, sizeof(value_type));
         platform_fence_before(success_order);
@@ -1194,7 +1200,7 @@ public:
     bool
     compare_exchange_weak(
         value_type & expected,
-        value_type desired,
+        value_type const& desired,
         memory_order success_order,
         memory_order failure_order) volatile
     {
