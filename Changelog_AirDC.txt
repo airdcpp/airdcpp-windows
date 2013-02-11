@@ -802,3 +802,14 @@ Fixed:
 
 - Client hanging when merging bundles or adding new files in them
 - Add missing translations
+
+
+2.43
+
+Fixed:
+
+- Fix same segments being downloaded multiple times (when segmented downloading is enabled)
+- Fix wrong directory dupe colors in file lists in some cases
+- Fix possible crashes when downloading file lists from the queue tab
+- The installer will now detect Windows 8 correctly
+- Avoid problems on update check when using Avast antivirus

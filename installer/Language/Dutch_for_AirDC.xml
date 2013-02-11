@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Dutch_for_AirDC" Author="Kaas" Version="2.40" Revision="3">
+<Language Name="Dutch_for_AirDC" Author="Kaas" Version="2.42" Revision="2">
 	<Strings>
         <String Name="AairdcppLanguageFile">Dutch_for_AirDC.xml</String>
-        <String Name="AairdcppLanguageVersion">2.403</String>
+        <String Name="AairdcppLanguageVersion">2.422</String>
         <String Name="Active">Actief</String>
         <String Name="ActiveSearchString">Actieve zoekterm</String>
         <String Name="Add">&amp;Voeg toe</String>
@@ -23,20 +23,19 @@
         <String Name="AdlsType">Zoek soort</String>
         <String Name="AdlsUnits">Zoek eenheid</String>
         <String Name="All">Alles</String>
-        <String Name="All3UsersOffline">Alle 3 de gebruikers zijn offline</String>
-        <String Name="All4UsersOffline">Alle 4 de gebruikers zijn offline</String>
         <String Name="AllDownloadSlotsTaken">Alle downloadsloten zijn bezet</String>
-        <String Name="AllFileSlotsTaken">Alle bestandssloten zijn bezet</String>
         <String Name="AllUsersOffline">Alle %d gebruikers zijn offline</String>
-        <String Name="AlternatesSend">Zoek TTH alternatieven voor: </String>
         <String Name="AntiPassiveSearch">-- WAARSCHUWING --
 -- U bent in actieve mode, maar u heeft de passieve zoekoptie geactiveerd. --
 -- Gebruik geen passieve zoekoptie als u zoekresultaten zonder deze optie hebt --
 -- omdat u geen zoekresultaten van passieve gebruikers krijgt !!! --
 -- Zet de optie uit bij de instellingen =&gt; AirDC++ =&gt; Gebruik altijd Passieve Mode voor zoekopdracht --
 
+
+
+
+
 </String>
-        <String Name="AllowNatTraversal">Sta NAT Traversal toe voor communicatie met passieve gebruikers</String>
         <String Name="Any">Elke</String>
         <String Name="AtLeast">Minimaal</String>
         <String Name="AtMost">Maximaal</String>
@@ -79,11 +78,9 @@
         <String Name="Connecting">Verbinding maken...</String>
         <String Name="ConnectingForced">Verbinding forceren</String>
         <String Name="ConnectingTo">Verbinden met </String>
-        <String Name="ConnectingToServer">Verbinden met server</String>
         <String Name="Connection">Verbinding</String>
         <String Name="ConnectionClosed">Verbinding verbroken</String>
         <String Name="ConnectionDetection">Gebruik automatische binnenkomende verbindings detectie</String>
-        <String Name="ConnectionError">Verbindingsfout</String>
         <String Name="ConnectionTimeout">Verbindings timeout</String>
         <String Name="ContinueSearch">Hervat zoeken</String>
         <String Name="Copy">Kopiëren</String>
@@ -98,7 +95,6 @@
         <String Name="Country">Land</String>
         <String Name="CurrentVersion">Huidige versie</String>
         <String Name="CurrentLanguage">Huidige taal</String>
-        <String Name="DataRetrieved">Gegevens teruggehaald</String>
         <String Name="DecompressionError">Fout tijdens uitpakken</String>
         <String Name="Default">Standaard</String>
         <String Name="Description">Omschrijving</String>
@@ -111,8 +107,7 @@
         <String Name="DisconnectedUser">Downloadende gebruiker verlaat de hub: </String>
         <String Name="Document">Document</String>
         <String Name="Done">Gereed</String>
-        <String Name="DontAddSegmentText">Geen extra deel downloaden bij snelheid hoger dan</String>
-        <String Name="DontRemoveSlashPassword">/password voor wachtwoord niet verwijderen</String>
+        <String Name="DontAddSegmentText">Geen nieuw segment  starten bij snelheid hoger dan</String>
         <String Name="DontShareTempDirectory">De tijdelijke downloadmap mag niet gedeeld worden</String>
         <String Name="Download">Download</String>
         <String Name="DownloadFailed">Download mislukt: </String>
@@ -193,9 +188,7 @@
         <String Name="FinishedUpload">Verzonden: %s naar: %s</String>
         <String Name="FinishedUploads">Complete uploads</String>
         <String Name="Folder">Map</String>
-        <String Name="Forbidden">Verboden</String>
-        <String Name="ForbiddenDollarFile">Bestanden met '$' kunnen niet gedownload of gedeeld worden: </String>
-        <String Name="ForceAttempt">Verbinding forceren</String>
+        <String Name="ForceAttempt">Forceer poging</String>
         <String Name="Gib">GiB</String>
         <String Name="GenerateCertificates">Genereer certificaten</String>
         <String Name="GetFileList">Bestandslijst bekijken</String>
@@ -212,7 +205,6 @@
         <String Name="HashProgressStats">Hash statistieken</String>
         <String Name="HashProgressText">Even geduld a.u.b. terwijl AirDC++ de data hashed (bestanden worden niet gedeeld voordat ze gehashed zijn)...</String>
         <String Name="HashReadFailed">Kan hashdata niet lezen</String>
-        <String Name="HashRebuilt">Hash database gerepareerd</String>
         <String Name="HashingFailed">Hashen mislukt: </String>
         <String Name="HashingFinished">Hashen gereed: </String>
         <String Name="Hibernate">Slaapstand</String>
@@ -398,7 +390,6 @@
         <String Name="OnlyFreeSlots">Alleen gebruikers met vrije sloten</String>
         <String Name="OnlyWhereOp">Alleen waar ik Operator ben</String>
         <String Name="Open">Openen</String>
-        <String Name="OpenDownloadPage">Downloadpagina openen?</String>
         <String Name="OpenFolder">Open map</String>
         <String Name="OpenHubLog">Open hub logboek</String>
         <String Name="OpenUserLog">Open gebruikers logboek</String>
@@ -450,7 +441,6 @@
         <String Name="RegexpTester">RegExp Tester</String>
         <String Name="RegexpMatch">Overeenkomst!</String>
         <String Name="RegexpMismatch">Geen overeenkomst.</String>
-        <String Name="RegexpInvalid">RegExp niet correct!</String>
         <String Name="Regexp">RegExp</String>
         <String Name="Queued">Wachtrij: </String>
         <String Name="QuickConnect">Snel verbinden</String>
@@ -520,7 +510,7 @@
         <String Name="SetczdcSmallFiles">Kleine bestandsgrootte</String>
         <String Name="SetczdcStyles">Beschikbare stijlen</String>
         <String Name="SetczdcTextColor">Tekstkleur</String>
-        <String Name="SetczdcTextStyle">Tekststijl</String>
+        <String Name="SetczdcTextStyle">Algemene stijl</String>
         <String Name="SetczdcTimeDown">Gedurende meer dan</String>
         <String Name="SetczdcTo">tot</String>
         <String Name="SetczdcUpload">Upload</String>
@@ -584,12 +574,8 @@
         <String Name="SettingsFavoriteDirs">Favoriete downloadmappen</String>
         <String Name="SettingsFavoriteDirsPage">Favorieten</String>
         <String Name="SettingsFileName">Bestandsnaam</String>
-        <String Name="SettingsFilesMax">Max. gelijktijdige bestanden (0 = onbeperkt)</String>
         <String Name="SettingsFilterMessages">Filter verbindings- en foutopsporingsberichten</String>
         <String Name="SettingsFilterEnter">Bij gebruik ENTER-toets het zoek- gebruiker- of lijstenfilter activeren</String>
-        <String Name="SettingsFirewallNat">Firewall met handmatige poortinstelling</String>
-        <String Name="SettingsFirewallPassive">Firewall (passief, slechtste geval)</String>
-        <String Name="SettingsFirewallUpnp">Firewall met UPnP</String>
         <String Name="SettingsFormat">Settings setup</String>
         <String Name="SettingsGeneral">Algemeen</String>
         <String Name="SettingsGetUserCountry">Toon nationaliteit gebruiker</String>
@@ -611,7 +597,6 @@
         <String Name="SettingsLogging">Loggen</String>
         <String Name="SettingsLogs">Logboeken</String>
         <String Name="SettingsMaxCompress">Max. compressie niveau</String>
-        <String Name="SettingsMaxHashSpeed">Max. hash snelheid</String>
         <String Name="SettingsMaxTabRows">Max. tab rijen</String>
         <String Name="SettingsMinimizeOnStartup">Start programma geminimaliseerd</String>
         <String Name="SettingsMinimizeTray">Minimaliseer naar syteemvak</String>
@@ -650,7 +635,7 @@
         <String Name="SettingsSbMaxSources">Max. bronnen wachtrijvergelijken</String>
         <String Name="SettingsSearchHistory">Zoekgeschiedenis</String>
         <String Name="SettingsSelectColor">Kies kleur</String>
-        <String Name="SettingsSelectTextFace">&amp;Textstijl</String>
+        <String Name="SettingsSelectTextFace">&amp;Text stijl</String>
         <String Name="SettingsSelectWindowColor">Venster kleur</String>
         <String Name="SettingsSendUnknownCommands">Zend onbekende / opdrachten naar hub</String>
         <String Name="SettingsShareHidden">Deel verborgen bestanden</String>
@@ -682,14 +667,13 @@
         <String Name="SettingsUdpPort">UDP Poort</String>
         <String Name="SettingsUnfinishedDownloadDirectory">Tijdelijk map voor lopende downloads</String>
         <String Name="SettingsUploadLineSpeed">Verbindingssnelheid (Upload)</String>
-        <String Name="SettingsUploads">Delen</String>
+        <String Name="SettingsSharingpage">Delen</String>
         <String Name="SettingsUploadsMinSpeed">Open een extra slot als snelheid lager is dan (0 = uit)</String>
         <String Name="SettingsUploadsSlots">Verzend sloten</String>
         <String Name="SettingsUrlHandler">Installeer URL verwerker bij start (voor verwerken van dchub://link)</String>
         <String Name="SettingsUseCtrlForLineHistory">Gebruik Ctrl voor geschiedenis</String>
         <String Name="SettingsUseOldSharingUi">Gebruik oude interface voor delen</String>
         <String Name="SettingsUseSystemIcons">Gebruik systeem-iconen in bestandslijst (vertraagt het bladeren)</String>
-        <String Name="SettingsUseVerticalView">Gebruik verticale indeling als standaard</String>
         <String Name="SettingsUserColors">Gebruikerslijst kleur</String>
         <String Name="SettingsUserCommands">Gebruikersopdrachten</String>
         <String Name="SettingsUserMenu">Gebruikersmenu items</String>
@@ -702,7 +686,7 @@
         <String Name="SettingsZdcProgressOverride2">Overschrijf systeemkleuren</String>
         <String Name="Shared">Gedeeld</String>
         <String Name="SharedFiles">Gedeelde bestanden</String>
-        <String Name="ShowPopupAway">Alleen popups weergeven in afwezig modus</String>
+        <String Name="ShowPopupAway">Alleen popups weergeven in afwezigheids modus</String>
         <String Name="ShowPopupMinimized">Alleen popups weergeven als programma geminimaliseerd is</String>
         <String Name="Shutdown">Computer uitschakelen</String>
         <String Name="ShutdownAction">Actie bij uitschakelen</String>
@@ -734,13 +718,10 @@
         <String Name="SpecifySearchString">Zoekterm opgeven</String>
         <String Name="SpecifyServer">Doelserver opgeven</String>
         <String Name="Speed">Snelheid</String>
-        <String Name="SslError">SSL Fout</String>
         <String Name="Started">Gestart</String>
         <String Name="Status">Status</String>
         <String Name="StealthMode">Op deze hub DC++ emuleren</String>
         <String Name="StoredPasswordSent">Opgeslagen wachtwoord verstuurd...</String>
-        <String Name="StringNotFound">Term niet gevonden: </String>
-        <String Name="Supports">Ondersteuning</String>
         <String Name="Suspend">Sluimerstand</String>
         <String Name="TabsOnTop">Tabs boven</String>
         <String Name="Tag">Label</String>
@@ -775,11 +756,6 @@
 - %z, %Z - tijdzone naam, niets als onbekend
 - %% - procent teken
 
-
-
-
-
-
 Standaard: %H:%M:%S</String>
         <String Name="TimestampHelpDesc">Tijdsaanduiding hulp</String>
         <String Name="TimestampsDisabled">Tijdsaanduiding uit</String>
@@ -811,9 +787,6 @@ Standaard: %H:%M:%S</String>
         <String Name="UploadStarting">Upload gestart...</String>
         <String Name="UploadedBytes">Verzonden %s (%.01f%%) in %s</String>
         <String Name="UploadedTo"> Verzonden naar </String>
-        <String Name="UpnpFailedToCreateMappings">Het maken van poort mappings is mislukt. NAT a.u.b. handmatig instellen.</String>
-        <String Name="UpnpFailedToGetExternalIp">Extern IP via UPnP verkrijgen is mislukt. A.u.b. handmatig instellen.</String>
-        <String Name="UpnpFailedToRemoveMappings">Kon poort mappings niet verwijderen</String>
         <String Name="UseExplorerTheme">Gebruik verkenner thema lijst en map schermen</String>
         <String Name="User">Gebruiker</String>
         <String Name="UserCmdCommand">Opdracht</String>
@@ -840,6 +813,92 @@ De context bepaalt wanneer een bepaalde opdracht zichtbaar is:
 Hub Menu: Rechtermuis op de hub-tab
 Chat Menu: Rechtermuis op chat- en PM-tab
 Search Menu: Rechtermuis op zoektab
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 Parameters:
 Name: Naam (gebruik '\' voor submenus)
@@ -894,14 +953,13 @@ Bij parameters, kan je %[xxx] variablen en datum/tijd gebruiken (%Y, %m, ...). d
 - %[path]	Speelt volledige pad
 - %[directory]	Speelt map naam
 - %[filename]	Speelt Bestandsnaam
+- %[parentdir]  Map naam van %[directory]
 Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] @ %[bitrate] &lt;Winamp %[version]&gt;</String>
         <String Name="WinampHelpDesc">Winamp hulp</String>
         <String Name="Yes">Ja</String>
-        <String Name="ZonealarmWarning">ZoneAlarm werd op de pc gevonden. Dit programma kan fouten in downloads veroorzaken. Verwijder ZoneAlarm en installeer een alternatief programma.</String>
-        <String Name="AdlsRegexp">Regexp</String>
         <String Name="BackgroundImage">Achtergrond afbeelding</String>
         <String Name="MenuReconnectDisconnected">Alle verbroken verbindingen herstellen</String>
-        <String Name="SettingsFulTabs">AirDC++\Tabs</String>
+        <String Name="SettingsAirTabspage">Tabs</String>
         <String Name="HubBoldTabs">Maak tabs vetgedrukt bij hub bericht</String>
         <String Name="TabShowIcons">Toon iconen op tabs</String>
         <String Name="BlendTabs">Verander gewicht in plaats van bold</String>
@@ -1003,7 +1061,6 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="Begin">Begin</String>
         <String Name="End">Einde</String>
         <String Name="NatSort">Gebruik natuurlijke sorteermethode</String>
-        <String Name="SetairdcAntiVir">Virusscan na afgeronde download</String>
         <String Name="UpdateIp">IP bij opstarten vernieuwen</String>
         <String Name="SettingsServerCommands">Toon server opdracht al status berichten</String>
         <String Name="SetClientCommands">Toon gebruikers opdrachten als status berichten</String>
@@ -1025,10 +1082,7 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="HighlightMatchOptions">vergelijk instelligen</String>
         <String Name="HighlightActions">Akties</String>
         <String Name="HighlightTextToMatch">Tekst om te vergelijken</String>
-        <String Name="HighlightOk">OK</String>
-        <String Name="HighlightCancel">Anuleren</String>
         <String Name="SettingsStMatchType">Vergelijk type</String>
-        <String Name="SettingsBtnUpdate">Update</String>
         <String Name="SettingsBtnMoveup">Omhoog</String>
         <String Name="SettingsBtnMovedown">Omlaag</String>
         <String Name="SettingsBtnBgcolor">Achtergond kleur</String>
@@ -1040,26 +1094,16 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="SettingsWholeLine">Volledige regel</String>
         <String Name="SettingsEntireWord">Volledig woord</String>
         <String Name="SettingsTabColor">Verander tab kleur</String>
-        <String Name="SettingsLastlog">Voeg toe aan geschiedenis</String>
         <String Name="Bold">Vet</String>
         <String Name="Italic">Schuin</String>
         <String Name="Underline">Onderstreep</String>
         <String Name="Strikeout">Doorstreep</String>
         <String Name="Preset">Voorinstelling</String>
         <String Name="PresetAddAll">Allen toevoegen</String>
-        <String Name="PresetMyNick">Mijn naam</String>
-        <String Name="PresetMyMessages">Mijn berichten</String>
-        <String Name="PresetUsers">Gebruikers</String>
-        <String Name="PresetTimestamp">Tijdsaanduiding</String>
-        <String Name="PresetUrls">URLs</String>
-        <String Name="PresetMe">/me</String>
-        <String Name="PresetStatus">Status berichten</String>
         <String Name="PresetJoins">Binnenkomers</String>
         <String Name="PresetParts">Vertrekkers</String>
         <String Name="PresetReleases">Releases</String>
         <String Name="PresetWinampSpam">Winamp spam</String>
-        <String Name="PresetKickedUsers">Getrapte gebruikers</String>
-        <String Name="PresetDchub">Hub links</String>
         <String Name="SettingsBtnTextcolor">Tekst kleur</String>
         <String Name="AddEmpty">Kan geen lege term toevoegen</String>
         <String Name="BadRegexp">Verkeerd geformuleerde RegExp</String>
@@ -1067,8 +1111,7 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="FlashWindowOnPm">Knipper vernster bij PM</String>
         <String Name="FlashWindowOnNewPm">Knipper vernster bij PM van nieuwe gebruiker</String>
         <String Name="FlashWindowOnMynick">Knipper venster bij mijn naam in de chat</String>
-        <String Name="SettingsAirautosearch">Automatisch zoeken</String>
-        <String Name="AutosearchEnable">Zoek voor de bestanden / TTH</String>
+        <String Name="SettingsAirsearch">Zoek</String>
         <String Name="AutosearchEnableTime">Zoek Automatisch elke</String>
         <String Name="AutosearchRecheckText">Controleer alle items na</String>
         <String Name="SettingsValue">Waarde</String>
@@ -1076,23 +1119,12 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="LineEmpty">Regel mag niet leeg zijn</String>
         <String Name="SearchTth">Zoek op TTH</String>
         <String Name="Pause">Pause</String>
-        <String Name="SettingsAirappearance">AirDC++\Weergave</String>
+        <String Name="SettingsAirappearancepage">Airweergave</String>
         <String Name="GetIp">Ververs ip</String>
         <String Name="UseHighlight">Gebruik Highlights</String>
         <String Name="SettingsDupeDescription">Achtergrond kleur gebruikt in bestandslijsten om te zien welke bestanden al gedeeld worden</String>
         <String Name="SettingsShowQueueBars">Laat voorgangsbalk zien in wachtrij</String>
         <String Name="SettingsLanguage">Taal"</String>
-        <String Name="SettingsLswe">Zweeds</String>
-        <String Name="SettingsLfin">Fins</String>
-        <String Name="SettingsLita">Italiaan</String>
-        <String Name="SettingsLhun">Hongaars</String>
-        <String Name="SettingsLro">Roemeens</String>
-        <String Name="SettingsLdan">Deens</String>
-        <String Name="SettingsLeng">Engels</String>
-        <String Name="SettingsLpor">Portugees</String>
-        <String Name="SettingsLpol">Pools</String>
-        <String Name="SettingsLfr">Frans</String>
-        <String Name="SettingsLd">Nederlands</String>
         <String Name="OpenFirst">Open eerste X aantal hubs bij opstarten</String>
         <String Name="Paste">Plakken</String>
         <String Name="SearchSites">Zoeksites</String>
@@ -1102,10 +1134,8 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="RefreshFileList">Ververs bestandslijst</String>
         <String Name="UseRegexp">Gebruik RegExp</String>
         <String Name="FavDlSpeed">Voeg gebruiker toe als favoriet, bij download snelheid groter dan</String>
-        <String Name="Filewdir">Bestandsnaam met pad</String>
         <String Name="CaseSensitive">Hoofdlettergevoelig</String>
         <String Name="InvalidRegexp">Ongeldige RegExp!</String>
-        <String Name="CaseInsensitiveRegexp">Niet hoofdlettergevoelige RegExp</String>
         <String Name="Match">Vergelijk</String>
         <String Name="Raw">Raw</String>
         <String Name="DirectoryShared">Map is al gedeeld</String>
@@ -1185,7 +1215,6 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="ViewHistory">Bekijk Chat Geschiedenis</String>
         <String Name="UnableToMove">Kon voltooid bestand niet verplaatsen</String>
         <String Name="AsReport">Rapporteer doel gevonden in main chat</String>
-        <String Name="SettingsLger">Duits</String>
         <String Name="FileMissing">BESTAND MIST: </String>
         <String Name="MenuScanMissing">Scan je share voor missende/extra files</String>
         <String Name="ScanFolderMissing">Scan de map voor missende/extra files</String>
@@ -1216,7 +1245,6 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="CrcStopped">SFV check gestopt</String>
         <String Name="CrcFileError">Niet gelukt om volgende bestand te controleren: </String>
         <String Name="NoCrc32">Geen SFV bestand gevonden of het geselecteerde bestand komt er niet in voor</String>
-        <String Name="NoFilesInFolder">Lege map</String>
         <String Name="CantOpenSfv">Kan SFV bestand niet openen: </String>
         <String Name="SeeSyslogForResults">Open systeemlog om de scan resultaten te zien</String>
         <String Name="Stop">Stop</String>
@@ -1232,7 +1260,6 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="SpotifyHelp">/spotify - Voor Spotify media spammen
 - %[title]        Artiest en titel van het afgespeelde item
 - %[link]        Spotify link voor het nummer dat afgespeeld wordt
-
 
 Empty = Default String -&gt; /me speelt op Spotify: %[title] %[link]</String>
         <String Name="SpotifyHelpDesc">Spotify Help</String>
@@ -1262,7 +1289,6 @@ Empty = Default String -&gt; /me speelt op Spotify: %[title] %[link]</String>
         <String Name="ProfilePrivate">Prive Hubs</String>
         <String Name="SettingsMcnNote">* Verlagen van de upload anders dan de standaard instelling resulteerd in het instellen van de download instelling in dezelfde waarde</String>
         <String Name="SettingsUseTargetdrive">Gebruik doelschijf voor onvolledige bestanden</String>
-        <String Name="RemoveOnHit">Verwijder na gevonden</String>
         <String Name="CheckUseSkiplist">Negeer onderdelen die voorkomen in de share skiplist</String>
         <String Name="CheckIgnoreZeroByte">Negeer 0 byte bestanden</String>
         <String Name="NoFilesAvailable">Geen bestanden om te downloaden</String>
@@ -1384,7 +1410,8 @@ Empty = Default String -&gt; /me speelt op Spotify: %[title] %[link]</String>
 Commando in chat: / commands Example: /google \"Movie Name\"
 Commando kan meer dan 1 caracter zijn, maar geen spatie.
 
-De zoek opdracht aan het einde van de URL wordt gekozen met je rechter muis op een woord in Chat/Zoek/Bestandslijst vensters,
+De zoek opdracht aan het einde van de URL wordt gekozen met je rechter muis
+op een woord in Chat/Zoek/Bestandslijst vensters,
 Bij selecteren van een spatie of er wordt niks gevonden,
 komt er niks bij aan het eind van de URL, en de pagina opent alleen maar.
 Voorbeeld: http://domain.com/search=
@@ -1645,7 +1672,6 @@ Schone zoek opdracht betekend dat een poging zal worden gedaan een titel van de 
         <String Name="MandatoryUpdate">Verplichte update</String>
         <String Name="AttemptAutoUpdate">AirDC++ gaat nu proberen je huidige installatie automatisch te updaten</String>
         <String Name="LoadingGui">Laden van de user interface</String>
-        <String Name="UnloadingGui">Ontladen van de user interface</String>
         <String Name="PartialFilelist">Gedeeltelijke bestandslijst</String>
         <String Name="DownloadLimit">Download limiet</String>
         <String Name="UploadLimit">Upload limiet</String>
@@ -1746,5 +1772,73 @@ Schone zoek opdracht betekend dat een poging zal worden gedaan een titel van de 
         <String Name="DecreaseNum">Verlaag huidig getal</String>
         <String Name="SettingsDelayHours">Uren om te zoeken naar proper</String>
         <String Name="XNoReleaseFiles">%d mappen zonder bestanden.</String>
-        </Strings>
+        <String Name="MenuHide">Verberg</String>
+        <String Name="ClosingWindows">Sluit vensters</String>
+        <String Name="UseDefault">Gebruik standaard</String>
+        <String Name="GlobalSettingOverrides">Ingesteld op standaard instellingen</String>
+        <String Name="HasherX">Hasher #%d</String>
+        <String Name="CreatingMagnetFor">Maakt magnet link voor een bestand %s...</String>
+        <String Name="MagnetCreatedFor">Magnet link gemaakt voor bestand %s</String>
+        <String Name="HashingXLeft">Hashed %s, %s te gaan</String>
+        <String Name="MagnetCreatedForX">Magnet links waren gemaakt voor %d bestanden</String>
+        <String Name="CreatingMagnetForX">Magnet links maken voor %d bestanden...</String>
+        <String Name="PmMagnetSharedWarning">Download map %s is een gedeelde map. Bestanden verstuurd in PM kunnen gevoelige informatie bevatten die jij of de verzender niet beschikbaar willen maken voor andere gebruikers.
+
+Wil de de doelmap alsnog gebruiken??</String>
+        <String Name="SettingsPassive">Passieve instelling(slechtste optie, meeste beperkingen)</String>
+        <String Name="SettingsActiveUpnp">Actieve instelling met NAT-PMP/UPnP (laat AirDC je settings instellen)</String>
+        <String Name="SettingsActive">Actieve instelling (geen router of handmatige router ingesteld)</String>
+        <String Name="SettingsManualConfig">Handmatige router/firewall instelling</String>
+        <String Name="MaxVolHashers">Max hashers per volume</String>
+        <String Name="MaxHashingThreads">Max hash threads</String>
+        <String Name="HashingOptions">Hash opties</String>
+        <String Name="RefreshOptions">Ververs opties</String>
+        <String Name="ExpiredAsRemoved">Een vervallen auto zoekopdracht is verwijderd: %s</String>
+        <String Name="Proxies">Proxies</String>
+        <String Name="PassiveMode">Passieve instelling</String>
+        <String Name="ActiveMode">Actieve instelling</String>
+        <String Name="RemoveAfterCompleted">Verwijder na voltooing</String>
+        <String Name="AwayMode">Afwezigheids modus</String>
+        <String Name="AwayIdleTimeBegin">Automatisch afwezig bericht instellen na</String>
+        <String Name="AwayIdleTimeEnd">Minuten van inactiviteit (0 = uit)</String>
+        <String Name="SettingsMaxHasherSpeed">Max snelheid per hasher</String>
+        <String Name="RefreshingShare">Ververs share</String>
+        <String Name="ConnActiveFailed">Actieve instelling niet gelukt; handmatig instellen is geadviseerd voor betere verbindingen</String>
+        <String Name="ConnNatDetected">Lokaal netwerk met mogelijk NAT ontdekt, poging poorten in te stellen...</String>
+        <String Name="ConnDirectDetected">Publiek IP address gevonden, kiest actieve modus met directe verbinding</String>
+        <String Name="ConnPortXFailed">Niet mogelijk om  %1% poort(en) te openen; handmatig instellen is nodig voor betere verbindingen</String>
+        <String Name="ConnDetermining">Onderzoekt de beste verbindings instelling...</String>
+        <String Name="MapperNoInterface">Geen poort instelling beschikbaar</String>
+        <String Name="MapperInProgress">Een andere poort instellings poging is bezig...</String>
+        <String Name="MapperInitFailed">Instellen van de %1% interface mislukt.</String>
+        <String Name="MapperCreatingFailed">Instelen van porten mislukt</String>
+        <String Name="MapperInterfaceFailed">Instellen van de %1% poort mislukt (%2% %3%) met de %4% interface.</String>
+        <String Name="MapperCreatingSuccessLong">Poorten succesvol ingesteld (Overdracht: %1%, Beveiligde overdracht: %2%, Zoeken: %3%) op de/het %4% apparaat met de %5% interface.</String>
+        <String Name="MapperCreatingSuccess">Poorten succesvol ingesteld op de/het %1% apparaat met de %2% interface.</String>
+        <String Name="MapperRemovingFailed">Poorten NIET succesvol verwijderd van de/het %1% apparaat met de %2% interface.</String>
+        <String Name="MapperRemovingSuccess">Poorten succesvol verwijderd van de/het %1% apparaat met de %2% interface.</String>
+        <String Name="MapperXPortX">%1% %2% poort (%3% %4%)</String>
+        <String Name="MapperIpFailed">Niet gelukt extern IP te verkrijgen.</String>
+        <String Name="Connectivity">Verbinding</String>
+        <String Name="PortMapping">Poort instelling</String>
+        <String Name="Generic">Algemeen</String>
+        <String Name="Transfer">Overdracht</String>
+        <String Name="EncryptedTransfer">Beveiligde overdracht</String>
+        <String Name="TreeLoadFailed">Hash data laden mislukt voor een TTH %s: %s (overweeg te rebuilden m.b.v. /rebuild)</String>
+        <String Name="HasherXCreated">Hasher #%d gemaakt</String>
+        <String Name="ShowDirectoryTree">Bekijk directory boom</String>
+        <String Name="AdditionalUpLimits">Extra upload limieten</String>
+        <String Name="EnableParameters">Parameters instellen</String>
+        <String Name="GeoipUpdating">Updaten van de %1% GeoIP database...</String>
+        <String Name="GeoipUpdated">De %1% GeoIP database is successvol geupdate</String>
+        <String Name="GeoipUpdatingFailed">De %1% GeoIP database kon niet worden geupdate</String>
+        <String Name="AsXFoundFrom">Een %s %s was gevonden van een gebruiker %s</String>
+        <String Name="FavDirectory">Voorkeurs map</String>
+        <String Name="TrasferRateLimiting">Overdrachts snelheid beperken</String>
+        <String Name="HoursLower">uren</String>
+	<String Name="HashRebuiltUnused">Hash database is hersteld: %d bestandsnamen %d mappen niet meer aanwezig zijn verwijderd</String>
+	<String Name="RebuildFailedEntries">Kan %d mappen niet vinden in je hash bestand; Aanbevolen om je share te verversen (/refresh) omdat evt missende bestanden gehashed moeten worden (aantal van %s) indien ze nog geshared worden</String>
+	<String Name="HashRebuiltNoUnused">Hash database is hersteld, geen problemen gevonden.</String>
+	<String Name="SettingsUseSpaceWarning">Waarschuwen voor onvoldoende schijfruimte op je downloadschijf.</String>
+	</Strings>
 </Language>
