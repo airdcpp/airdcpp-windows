@@ -206,7 +206,9 @@ checkos:
   IfErrors xp_or_below nt
 nt:
   StrCmp $R8 '6.0' vistaplus
-  StrCmp $R8 '6.1' 0 xp_or_below
+  StrCmp $R8 '6.1' vistaplus
+  StrCmp $R8 '6.2' vistaplus
+  StrCmp $R8 '6.3' 0 xp_or_below
 vistaplus:
   StrCpy $R8 "1"
   goto end

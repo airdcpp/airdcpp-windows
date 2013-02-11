@@ -1990,23 +1990,21 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			ctrlQueue.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 			CBarShader statusBar(rc.Height(), rc.Width(), SETTING(PROGRESS_BACK_COLOR), qii->getSize());
 
-			vector<Segment> v;
+			vector<Segment> downloaded, running, done;
+			QueueManager::getInstance()->getChunksVisualisation(qii->getQueueItem(), running, downloaded, done);
 
 			// running chunks
-			v = QueueManager::getInstance()->getChunksVisualisation(qii->getQueueItem(), 0);
-			for(const auto& s: v) {
+			for(const auto& s: running) {
 				statusBar.FillRange(s.getStart(), s.getEnd(), SETTING(COLOR_RUNNING));
 			}
 
 			// downloaded bytes
-			v = QueueManager::getInstance()->getChunksVisualisation(qii->getQueueItem(), 1);
-			for(const auto& s: v) {
+			for(const auto& s: downloaded) {
 				statusBar.FillRange(s.getStart(), s.getEnd(), SETTING(COLOR_DOWNLOADED));
 			}
 
 			// done chunks
-			v = QueueManager::getInstance()->getChunksVisualisation(qii->getQueueItem(), 2);
-			for(const auto& s: v) {
+			for(const auto& s: done) {
 				statusBar.FillRange(s.getStart(), s.getEnd(), SETTING(COLOR_DONE));
 			}
 
