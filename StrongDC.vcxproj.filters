@@ -1226,5 +1226,14 @@
     <Image Include="res\ExecMasked.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\FavUser.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\apply.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\cancel.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

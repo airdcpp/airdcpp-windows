@@ -744,7 +744,7 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 		// Strange, can't get the correct width of the last field...
 		ctrlStatus.GetRect(4, sr);
-		sr.left = sr.right + 2;
+		sr.left = sr.right;
 		sr.right = sr.left + 16;
 		ctrlShowUsers.MoveWindow(sr);
 	}

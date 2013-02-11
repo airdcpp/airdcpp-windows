@@ -767,6 +767,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Image Include="res\apply.ico" />
     <Image Include="res\AutoSearch\Collecting.ico" />
     <Image Include="res\AutoSearch\Disabled.ico" />
     <Image Include="res\AutoSearch\Manual.ico" />
@@ -778,8 +779,10 @@
     <Image Include="res\AutoSearch\Waiting.ico" />
     <Image Include="res\Bot.ico" />
     <Image Include="res\Botoff.ico" />
+    <Image Include="res\cancel.ico" />
     <Image Include="res\download_user.ico" />
     <Image Include="res\ExecMasked.ico" />
+    <Image Include="res\FavUser.ico" />
     <Image Include="res\file.ico" />
     <Image Include="res\folder.ico" />
     <Image Include="res\folder_incomplete.ico" />

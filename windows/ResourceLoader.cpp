@@ -248,6 +248,9 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_TOTAL_DOWN:	return _T("TotalDown.ico");
 		case IDI_SHARED:		return _T("Shared.ico");
 		case IDI_DIR_LOADING_OL:return _T("ExecMasked.ico");
+		case IDI_FAV_USER:		return _T("FavUser.ico");
+		case IDI_APPLY	:		return _T("apply.ico");
+		case IDI_CANCEL:		return _T("cancel.ico");
 
 		default: return Util::emptyStringT;
 	}

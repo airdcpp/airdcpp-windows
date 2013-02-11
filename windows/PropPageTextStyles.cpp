@@ -26,7 +26,6 @@
 #include "OperaColorsPage.h"
 #include "PropertiesDlg.h"
 
-
 PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_AVAILABLE_STYLES, ResourceManager::SETCZDC_STYLES },
 	{ IDC_BACK_COLOR, ResourceManager::SETCZDC_BACK_COLOR },
@@ -408,6 +407,7 @@ LRESULT PropPageTextStyles::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	ctrlTabExample.Detach();
 	ctrlTheme.Detach();
 	SettingsManager::getInstance()->removeListener(this);
+
 	return 1;
 }
 
@@ -419,7 +419,13 @@ static const TCHAR defExt[] = _T(".dctheme");
 		xml.resetCurrentChild();
 
 
-void PropPageTextStyles::LoadTheme(const string& path) {
+void PropPageTextStyles::LoadTheme(const string& path, bool silent/* = false*/) {
+
+	//backup the old theme for cancelling
+	if(initial){
+		SaveTheme(Util::getPath(Util::PATH_THEMES) + "backup.dctheme", true);
+		initial = false;
+	}
 		
 	SimpleXML xml;
 	try {
@@ -534,7 +540,7 @@ void PropPageTextStyles::LoadTheme(const string& path) {
 	xml.stepOut();
 
 	if(xml.findChild("Icons")) {
-		if(MessageBox(CTSTRING(ICONS_IN_THEME), _T("AirDC++") _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+		if(silent || MessageBox(CTSTRING(ICONS_IN_THEME), _T("AirDC++") _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 			xml.stepIn();
 			importData("IconPath", ICON_PATH);
 			//toolbars not exported to avoid absolute local paths in toolbar settings.
@@ -546,17 +552,15 @@ void PropPageTextStyles::LoadTheme(const string& path) {
 	}
 	xml.resetCurrentChild();
 	if(xml.findChild("Highlights")) {
-		if(MessageBox(CTSTRING(HIGHLIGHTS_IN_THEME), _T("AirDC++") _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+		if(silent || MessageBox(CTSTRING(HIGHLIGHTS_IN_THEME), _T("AirDC++") _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 			HighlightManager::getInstance()->clearList();
 			HighlightManager::getInstance()->load(xml);
 		}
 	}
 	xml.resetCurrentChild();
-			
-	//SendMessage(WM_DESTROY,0,0);
-	//SettingsManager::getInstance()->save();
-	//SendMessage(WM_INITDIALOG,0,0);
-	SettingsManager::getInstance()->reloadPages();
+	
+	if(!silent)
+		SettingsManager::getInstance()->reloadPages();
 	
 	fontdirty = true;
 
@@ -574,7 +578,6 @@ LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	if(WinUtil::browseFile(x, m_hWnd, false, x, types, defExt) == IDOK) {
 		LoadTheme(Text::fromT(x));
 	}
-//	RefreshPreview();
 	return 0;
 }
 
@@ -582,143 +585,149 @@ LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 	xml.addTag(x, SETTING(y)); \
 	xml.addChildAttrib(type, curType);
 
-LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring x = _T("");	
-	if(WinUtil::browseFile(x, m_hWnd, true, x, types, defExt) == IDOK) {
-		SimpleXML xml;
-		xml.addTag("DCPlusPlus");
-		xml.stepIn();
-		xml.addTag("Settings");
-		xml.stepIn();
+void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
+	SimpleXML xml;
+	xml.addTag("DCPlusPlus");
+	xml.stepIn();
+	xml.addTag("Settings");
+	xml.stepIn();
 
-		string type("type"), curType("string");
-		exportData("Font", TEXT_FONT);
+	string type("type"), curType("string");
+	exportData("Font", TEXT_FONT);
 
-		curType = "int";
-		exportData("BackgroundColor", BACKGROUND_COLOR);
-		exportData("TextColor", TEXT_COLOR);
-		exportData("DownloadBarColor", DOWNLOAD_BAR_COLOR);
-		exportData("UploadBarColor", UPLOAD_BAR_COLOR);
-		exportData("TextGeneralBackColor", TEXT_GENERAL_BACK_COLOR);
-		exportData("TextGeneralForeColor", TEXT_GENERAL_FORE_COLOR);
-		exportData("TextGeneralBold", TEXT_GENERAL_BOLD);
-		exportData("TextGeneralItalic", TEXT_GENERAL_ITALIC);
-		exportData("TextMyOwnBackColor", TEXT_MYOWN_BACK_COLOR);
-		exportData("TextMyOwnForeColor", TEXT_MYOWN_FORE_COLOR);
-		exportData("TextMyOwnBold", TEXT_MYOWN_BOLD);
-		exportData("TextMyOwnItalic", TEXT_MYOWN_ITALIC);
-		exportData("TextPrivateBackColor", TEXT_PRIVATE_BACK_COLOR);
-		exportData("TextPrivateForeColor", TEXT_PRIVATE_FORE_COLOR);
-		exportData("TextPrivateBold", TEXT_PRIVATE_BOLD);
-		exportData("TextPrivateItalic", TEXT_PRIVATE_ITALIC);
-		exportData("TextSystemBackColor", TEXT_SYSTEM_BACK_COLOR);
-		exportData("TextSystemForeColor", TEXT_SYSTEM_FORE_COLOR);
-		exportData("TextSystemBold", TEXT_SYSTEM_BOLD);
-		exportData("TextSystemItalic", TEXT_SYSTEM_ITALIC);
-		exportData("TextServerBackColor", TEXT_SERVER_BACK_COLOR);
-		exportData("TextServerForeColor", TEXT_SERVER_FORE_COLOR);
-		exportData("TextServerBold", TEXT_SERVER_BOLD);
-		exportData("TextServerItalic", TEXT_SERVER_ITALIC);
-		exportData("TextTimestampBackColor", TEXT_TIMESTAMP_BACK_COLOR);
-		exportData("TextTimestampForeColor", TEXT_TIMESTAMP_FORE_COLOR);
-		exportData("TextTimestampBold", TEXT_TIMESTAMP_BOLD);
-		exportData("TextTimestampItalic", TEXT_TIMESTAMP_ITALIC);
-		exportData("TextMyNickBackColor", TEXT_MYNICK_BACK_COLOR);
-		exportData("TextMyNickForeColor", TEXT_MYNICK_FORE_COLOR);
-		exportData("TextMyNickBold", TEXT_MYNICK_BOLD);
-		exportData("TextMyNickItalic", TEXT_MYNICK_ITALIC);
-		exportData("TextFavBackColor", TEXT_FAV_BACK_COLOR);
-		exportData("TextFavForeColor", TEXT_FAV_FORE_COLOR);
-		exportData("TextFavBold", TEXT_FAV_BOLD);
-		exportData("TextFavItalic", TEXT_FAV_ITALIC);
-		exportData("TextURLBackColor", TEXT_URL_BACK_COLOR);
-		exportData("TextURLForeColor", TEXT_URL_FORE_COLOR);
-		exportData("TextURLBold", TEXT_URL_BOLD);
-		exportData("TextURLItalic", TEXT_URL_ITALIC);
-		exportData("ProgressTextDown", PROGRESS_TEXT_COLOR_DOWN);
-		exportData("ProgressTextUp", PROGRESS_TEXT_COLOR_UP);
-		exportData("ErrorColor", ERROR_COLOR);
-		exportData("ProgressOverrideColors", PROGRESS_OVERRIDE_COLORS);
-		exportData("MenubarTwoColors", MENUBAR_TWO_COLORS);
-		exportData("MenubarLeftColor", MENUBAR_LEFT_COLOR);
-		exportData("MenubarRightColor", MENUBAR_RIGHT_COLOR);
-		exportData("MenubarBumped", MENUBAR_BUMPED);
-		exportData("Progress3DDepth", PROGRESS_3DDEPTH);
-		exportData("ProgressOverrideColors2", PROGRESS_OVERRIDE_COLORS2);
-		exportData("TextOPBackColor", TEXT_OP_BACK_COLOR);
-		exportData("TextOPForeColor", TEXT_OP_FORE_COLOR);
-		exportData("TextOPBold", TEXT_OP_BOLD);
-		exportData("TextOPItalic", TEXT_OP_ITALIC);
-		exportData("TextNormBackColor", TEXT_NORM_BACK_COLOR);
-		exportData("TextNormForeColor", TEXT_NORM_FORE_COLOR);
-		exportData("TextNormBold", TEXT_NORM_BOLD);
-		exportData("TextNormItalic", TEXT_NORM_ITALIC);
-		exportData("SearchAlternateColour", SEARCH_ALTERNATE_COLOUR);
-		exportData("ProgressBackColor", PROGRESS_BACK_COLOR);
-		exportData("ProgressCompressColor", PROGRESS_COMPRESS_COLOR);
-		exportData("ProgressSegmentColor", PROGRESS_SEGMENT_COLOR);
-		exportData("ColorDone", COLOR_DONE);
-		exportData("ColorDownloaded", COLOR_DOWNLOADED);
-		exportData("ColorRunning", COLOR_RUNNING);
-		exportData("ReservedSlotColor", RESERVED_SLOT_COLOR);
-		exportData("IgnoredColor", IGNORED_COLOR);
-		exportData("FavoriteColor", FAVORITE_COLOR);
-		exportData("NormalColour", NORMAL_COLOUR);
-		exportData("PasiveColor", PASIVE_COLOR);
-		exportData("OpColor", OP_COLOR);
-		exportData("ProgressbaroDCStyle", PROGRESSBAR_ODC_STYLE);
-		exportData("UnderlineLinks", UNDERLINE_LINKS);
-		exportData("UnderlineDupes", UNDERLINE_DUPES);
-		exportData("TextDupeBackColor", TEXT_DUPE_BACK_COLOR);
-		exportData("TextDupeColor", DUPE_COLOR);
-		exportData("TextDupeBold", TEXT_DUPE_BOLD);
-		exportData("TextDupeItalic", TEXT_DUPE_ITALIC);
-		exportData("TextQueueBackColor", TEXT_QUEUE_BACK_COLOR);
-		exportData("QueueColor", QUEUE_COLOR);
-		exportData("TextQueueBold", TEXT_QUEUE_BOLD);
-		exportData("TextQueueItalic", TEXT_QUEUE_ITALIC);
-		exportData("UnderlineQueue", UNDERLINE_QUEUE);
-		//tabs
-		exportData("tabactivebg", TAB_ACTIVE_BG);
-		exportData("TabActiveText", TAB_ACTIVE_TEXT);
-		exportData("TabActiveBorder", TAB_ACTIVE_BORDER);
-		exportData("TabInactiveBg", TAB_INACTIVE_BG);
-		exportData("TabInactiveBgDisconnected", TAB_INACTIVE_BG_DISCONNECTED);
-		exportData("TabInactiveText", TAB_INACTIVE_TEXT);
-		exportData("TabInactiveBorder", TAB_INACTIVE_BORDER);
-		exportData("TabInactiveBgNotify", TAB_INACTIVE_BG_NOTIFY);
-		exportData("TabDirtyBlend", TAB_DIRTY_BLEND);
-		exportData("BlendTabs", BLEND_TABS);
-		exportData("TabSize", TAB_SIZE);
+	curType = "int";
+	exportData("BackgroundColor", BACKGROUND_COLOR);
+	exportData("TextColor", TEXT_COLOR);
+	exportData("DownloadBarColor", DOWNLOAD_BAR_COLOR);
+	exportData("UploadBarColor", UPLOAD_BAR_COLOR);
+	exportData("TextGeneralBackColor", TEXT_GENERAL_BACK_COLOR);
+	exportData("TextGeneralForeColor", TEXT_GENERAL_FORE_COLOR);
+	exportData("TextGeneralBold", TEXT_GENERAL_BOLD);
+	exportData("TextGeneralItalic", TEXT_GENERAL_ITALIC);
+	exportData("TextMyOwnBackColor", TEXT_MYOWN_BACK_COLOR);
+	exportData("TextMyOwnForeColor", TEXT_MYOWN_FORE_COLOR);
+	exportData("TextMyOwnBold", TEXT_MYOWN_BOLD);
+	exportData("TextMyOwnItalic", TEXT_MYOWN_ITALIC);
+	exportData("TextPrivateBackColor", TEXT_PRIVATE_BACK_COLOR);
+	exportData("TextPrivateForeColor", TEXT_PRIVATE_FORE_COLOR);
+	exportData("TextPrivateBold", TEXT_PRIVATE_BOLD);
+	exportData("TextPrivateItalic", TEXT_PRIVATE_ITALIC);
+	exportData("TextSystemBackColor", TEXT_SYSTEM_BACK_COLOR);
+	exportData("TextSystemForeColor", TEXT_SYSTEM_FORE_COLOR);
+	exportData("TextSystemBold", TEXT_SYSTEM_BOLD);
+	exportData("TextSystemItalic", TEXT_SYSTEM_ITALIC);
+	exportData("TextServerBackColor", TEXT_SERVER_BACK_COLOR);
+	exportData("TextServerForeColor", TEXT_SERVER_FORE_COLOR);
+	exportData("TextServerBold", TEXT_SERVER_BOLD);
+	exportData("TextServerItalic", TEXT_SERVER_ITALIC);
+	exportData("TextTimestampBackColor", TEXT_TIMESTAMP_BACK_COLOR);
+	exportData("TextTimestampForeColor", TEXT_TIMESTAMP_FORE_COLOR);
+	exportData("TextTimestampBold", TEXT_TIMESTAMP_BOLD);
+	exportData("TextTimestampItalic", TEXT_TIMESTAMP_ITALIC);
+	exportData("TextMyNickBackColor", TEXT_MYNICK_BACK_COLOR);
+	exportData("TextMyNickForeColor", TEXT_MYNICK_FORE_COLOR);
+	exportData("TextMyNickBold", TEXT_MYNICK_BOLD);
+	exportData("TextMyNickItalic", TEXT_MYNICK_ITALIC);
+	exportData("TextFavBackColor", TEXT_FAV_BACK_COLOR);
+	exportData("TextFavForeColor", TEXT_FAV_FORE_COLOR);
+	exportData("TextFavBold", TEXT_FAV_BOLD);
+	exportData("TextFavItalic", TEXT_FAV_ITALIC);
+	exportData("TextURLBackColor", TEXT_URL_BACK_COLOR);
+	exportData("TextURLForeColor", TEXT_URL_FORE_COLOR);
+	exportData("TextURLBold", TEXT_URL_BOLD);
+	exportData("TextURLItalic", TEXT_URL_ITALIC);
+	exportData("ProgressTextDown", PROGRESS_TEXT_COLOR_DOWN);
+	exportData("ProgressTextUp", PROGRESS_TEXT_COLOR_UP);
+	exportData("ErrorColor", ERROR_COLOR);
+	exportData("ProgressOverrideColors", PROGRESS_OVERRIDE_COLORS);
+	exportData("MenubarTwoColors", MENUBAR_TWO_COLORS);
+	exportData("MenubarLeftColor", MENUBAR_LEFT_COLOR);
+	exportData("MenubarRightColor", MENUBAR_RIGHT_COLOR);
+	exportData("MenubarBumped", MENUBAR_BUMPED);
+	exportData("Progress3DDepth", PROGRESS_3DDEPTH);
+	exportData("ProgressOverrideColors2", PROGRESS_OVERRIDE_COLORS2);
+	exportData("TextOPBackColor", TEXT_OP_BACK_COLOR);
+	exportData("TextOPForeColor", TEXT_OP_FORE_COLOR);
+	exportData("TextOPBold", TEXT_OP_BOLD);
+	exportData("TextOPItalic", TEXT_OP_ITALIC);
+	exportData("TextNormBackColor", TEXT_NORM_BACK_COLOR);
+	exportData("TextNormForeColor", TEXT_NORM_FORE_COLOR);
+	exportData("TextNormBold", TEXT_NORM_BOLD);
+	exportData("TextNormItalic", TEXT_NORM_ITALIC);
+	exportData("SearchAlternateColour", SEARCH_ALTERNATE_COLOUR);
+	exportData("ProgressBackColor", PROGRESS_BACK_COLOR);
+	exportData("ProgressCompressColor", PROGRESS_COMPRESS_COLOR);
+	exportData("ProgressSegmentColor", PROGRESS_SEGMENT_COLOR);
+	exportData("ColorDone", COLOR_DONE);
+	exportData("ColorDownloaded", COLOR_DOWNLOADED);
+	exportData("ColorRunning", COLOR_RUNNING);
+	exportData("ReservedSlotColor", RESERVED_SLOT_COLOR);
+	exportData("IgnoredColor", IGNORED_COLOR);
+	exportData("FavoriteColor", FAVORITE_COLOR);
+	exportData("NormalColour", NORMAL_COLOUR);
+	exportData("PasiveColor", PASIVE_COLOR);
+	exportData("OpColor", OP_COLOR);
+	exportData("ProgressbaroDCStyle", PROGRESSBAR_ODC_STYLE);
+	exportData("UnderlineLinks", UNDERLINE_LINKS);
+	exportData("UnderlineDupes", UNDERLINE_DUPES);
+	exportData("TextDupeBackColor", TEXT_DUPE_BACK_COLOR);
+	exportData("TextDupeColor", DUPE_COLOR);
+	exportData("TextDupeBold", TEXT_DUPE_BOLD);
+	exportData("TextDupeItalic", TEXT_DUPE_ITALIC);
+	exportData("TextQueueBackColor", TEXT_QUEUE_BACK_COLOR);
+	exportData("QueueColor", QUEUE_COLOR);
+	exportData("TextQueueBold", TEXT_QUEUE_BOLD);
+	exportData("TextQueueItalic", TEXT_QUEUE_ITALIC);
+	exportData("UnderlineQueue", UNDERLINE_QUEUE);
+	//tabs
+	exportData("tabactivebg", TAB_ACTIVE_BG);
+	exportData("TabActiveText", TAB_ACTIVE_TEXT);
+	exportData("TabActiveBorder", TAB_ACTIVE_BORDER);
+	exportData("TabInactiveBg", TAB_INACTIVE_BG);
+	exportData("TabInactiveBgDisconnected", TAB_INACTIVE_BG_DISCONNECTED);
+	exportData("TabInactiveText", TAB_INACTIVE_TEXT);
+	exportData("TabInactiveBorder", TAB_INACTIVE_BORDER);
+	exportData("TabInactiveBgNotify", TAB_INACTIVE_BG_NOTIFY);
+	exportData("TabDirtyBlend", TAB_DIRTY_BLEND);
+	exportData("BlendTabs", BLEND_TABS);
+	exportData("TabSize", TAB_SIZE);
 	
-		xml.stepOut();
+	xml.stepOut();
 		
-		if(!HighlightManager::getInstance()->emptyList())
-			HighlightManager::getInstance()->save(xml);
-		/*
-		Don't export icon stuff, user might have absolute path for toolbars. Icon packs can be included by editing the .dctheme example.
+	/*
+	Don't manually export icon stuff, user might have absolute path for toolbars. Icon packs can be included by editing the .dctheme example.
+	*/
+	if(backup) {
 		curType = "string";
-		string empty = "";
 		xml.addTag("Icons");
 		xml.stepIn();
 		exportData("IconPath", ICON_PATH);
-		xml.addTag("ToolbarImage", empty);
-		xml.addChildAttrib(curType, curType);
-		xml.addTag("ToolbarHot", empty);
-		xml.addChildAttrib(type, curType);
+		exportData("ToolbarImage", TOOLBARIMAGE);
+		exportData("ToolbarHot", TOOLBARHOTIMAGE);
 		xml.stepOut();
-		*/
+	}
+	
 
-		try {
-			File ff(Text::fromT(x) , File::WRITE, File::CREATE | File::TRUNCATE);
-			BufferedOutputStream<false> f(&ff);
-			f.write(SimpleXML::utf8Header);
-			xml.toXML(&f);
-			f.flush();
-			ff.close();
-		} catch(const FileException&) {
-			// ...
-		}
+	if(!HighlightManager::getInstance()->emptyList())
+		HighlightManager::getInstance()->save(xml);
+
+	try {
+		File ff(path, File::WRITE, File::CREATE | File::TRUNCATE);
+		BufferedOutputStream<false> f(&ff);
+		f.write(SimpleXML::utf8Header);
+		xml.toXML(&f);
+		f.flush();
+		ff.close();
+	} catch(const FileException&) {
+		// ...
+	}
+	
+}
+
+LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	tstring x = _T("");	
+	if(WinUtil::browseFile(x, m_hWnd, true, x, types, defExt) == IDOK) {
+		SaveTheme(Text::fromT(x), false);
 	}
 	return 0;
 }

@@ -356,5 +356,7 @@ LRESULT OperaColorsPage::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		ctrlBumped.Detach();
 	if (ctrlMenubarDrawer.m_hWnd != NULL)
 		ctrlMenubarDrawer.Detach();
+	if (progress.m_hWnd != NULL)	
+		progress.Detach();
 	return 1;
 }

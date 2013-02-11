@@ -30,11 +30,13 @@
 
 #include "../client/FavoriteManager.h"
 
+#define STATUS_MAP 10
+
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::FAVORITE_USERS, IDC_FAVUSERS>,
 	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, private SettingsManagerListener {
 public:
 	
-	UsersFrame() : closed(false), startup(true) { }
+	UsersFrame();
 	~UsersFrame() { images.Destroy(); }
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("UsersFrame"), IDR_USERS, 0, COLOR_3DFACE);
@@ -50,6 +52,8 @@ public:
 		NOTIFY_HANDLER(IDC_USERS, LVN_ITEMCHANGED, onItemChanged)
 		NOTIFY_HANDLER(IDC_USERS, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_USERS, NM_DBLCLK, onDoubleClick)
+		NOTIFY_HANDLER(IDC_USERS, NM_CLICK, onClick)
+		NOTIFY_HANDLER(IDC_USERS, NM_CUSTOMDRAW, onCustomDrawList)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
@@ -61,18 +65,24 @@ public:
 		CHAIN_MSG_MAP(uibBase)
 		CHAIN_MSG_MAP(splitBase)
 		CHAIN_MSG_MAP(baseClass)
+		ALT_MSG_MAP(STATUS_MAP)
+			COMMAND_ID_HANDLER(IDC_SHOW_INFO, onShow)
+			COMMAND_ID_HANDLER(IDC_SHOW_FAV, onShow)
 	END_MSG_MAP()
 		
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onRemove(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onEdit(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
+	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onInfoTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
+	LRESULT onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
+	LRESULT onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 
@@ -90,7 +100,9 @@ public:
 private:
 	enum {
 		COLUMN_FIRST,
-		COLUMN_NICK = COLUMN_FIRST,
+		COLUMN_FAVORITE = COLUMN_FIRST,
+		COLUMN_SLOT,
+		COLUMN_NICK,
 		COLUMN_NICKS,
 		COLUMN_HUB,
 		COLUMN_SEEN,
@@ -99,33 +111,58 @@ private:
 	};
 
 	enum {
+		USER_ON_ICON,
+		USER_OFF_ICON,
+		FAVORITE_ON_ICON,
+		//FAVORITE_OFF_ICON,
+		GRANT_OFF_ICON,
+		GRANT_ON_ICON
+	};
+
+	enum {
 		USER_UPDATED
 	};
 
 	class UserInfo : public UserInfoBase {
 	public:
-		UserInfo(const FavoriteUser& u) : user(HintedUser(u.getUser(), u.getUrl())) { 
-			update(u);
+		UserInfo(const UserPtr& u, const string& aUrl) : user(u), hubUrl(aUrl), isFavorite(false), grantSlot(false) { 
+			//update(user);
 		}
+		~UserInfo(){ }
 
 		inline const tstring& getText(int col) const { return columns[col]; }
 
-		inline static int compareItems(const UserInfo* a, const UserInfo* b, int col) {
-			return Util::DefaultSort(a->columns[col].c_str(), b->columns[col].c_str());
+		static int compareItems(const UserInfo* a, const UserInfo* b, int col) {
+			switch(col) {
+			case COLUMN_FAVORITE: return compare(a->isFavorite, b->isFavorite);
+			case COLUMN_SLOT: return compare(a->grantSlot, b->grantSlot);
+			default: return Util::DefaultSort(a->columns[col].c_str(), b->columns[col].c_str());
+			}
 		}
 		
-		int getImageIndex() const { return 2; }
+		int getImageIndex() const { return getImage(0); }
+
+		int getImage(int col) const {
+			switch(col) {
+			case COLUMN_FAVORITE: return getUser()->isOnline() ? isFavorite ? FAVORITE_ON_ICON : USER_ON_ICON : USER_OFF_ICON; //todo fav_off
+			case COLUMN_SLOT: return grantSlot ? GRANT_ON_ICON : GRANT_OFF_ICON; //todo show given extra slot
+			default: return -1;
+			}
+		}
+
 
 		void remove() { FavoriteManager::getInstance()->removeFavoriteUser(getUser()); }
 
-		void update(const FavoriteUser& u);
+		void update(const UserPtr& u);
 
 		tstring columns[COLUMN_LAST];
 
-		const UserPtr& getUser() const { return user.user; }
-		const string& getHubUrl() const { return user.hint; }
+		const UserPtr& getUser() const { return user; }
+		GETSET(string, hubUrl, HubUrl);
+		UserPtr user;
 
-		HintedUser user;
+		bool grantSlot;
+		bool isFavorite;
 	};
 
 	CStatusBarCtrl ctrlStatus;
@@ -133,25 +170,44 @@ private:
 	TypedListViewCtrl<UserInfo, IDC_USERS> ctrlUsers;
 	CImageList images;
 	RichTextBox ctrlInfo;
+	CContainedWindow ctrlShowInfoContainer;
+	CButton ctrlShowInfo;
+	CButton ctrlShowFav;
+	CToolTipCtrl ctrlTooltips;
 
-	void updateInfoText(const UserInfo* ui);
+	std::unordered_map<UserPtr, UserInfo, User::Hash> userInfos;
+
+	void callAsync(function<void ()> f) {
+		PostMessage(WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(f));
+	}
 
 	bool closed;
-	
+	bool showInfo;
 	bool startup;
+	bool listFav;
+
+	void updateInfoText(const UserInfo* ui);
+	void updateList();
+	bool show(const UserPtr &u, bool any) const;
+	void addUser(const UserPtr& aUser, const string& aUrl);
+	void updateUser(const UserPtr& aUser);
+	
+	void setImages(UserInfo* ui, int pos = -1);
+
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
 
 	// FavoriteManagerListener
-	void on(UserAdded, const FavoriteUser& aUser) noexcept { addUser(aUser); }
-	void on(UserRemoved, const FavoriteUser& aUser) noexcept { removeUser(aUser); }
-	void on(StatusChanged, const UserPtr& aUser) noexcept { PostMessage(WM_SPEAKER, (WPARAM)USER_UPDATED, (LPARAM)new Identity(aUser, 0)); }
+	void on(UserAdded, const FavoriteUser& aUser) noexcept;
+	void on(UserRemoved, const FavoriteUser& aUser) noexcept;
+	void on(StatusChanged, const UserPtr& aUser) noexcept;
+
+	// ClientManagerListner
+	void on(UserConnected, const OnlineUser& aUser, bool) noexcept;
+	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
+	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML&s /*xml*/) noexcept;
-
-	void addUser(const FavoriteUser& aUser);
-	void updateUser(const UserPtr& aUser);
-	void removeUser(const FavoriteUser& aUser);
 };
 
 #endif // !defined(USERS_FRAME_H)

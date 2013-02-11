@@ -7,7 +7,6 @@
 #include "RichTextBox.h"
 #include "../client/SettingsManager.h"
 
-
 class PropPageTextStyles: public CPropertyPage<IDD_TEXT_STYLES>, public PropPage, private SettingsManagerListener
 {
 public:
@@ -17,9 +16,12 @@ public:
 		title = _tcsdup((TSTRING(SETTINGS_APPEARANCE) + _T('\\') + TSTRING(SETTINGS_TEXT_STYLES)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
+		initial = true;
 	};
 	~PropPageTextStyles() {
 		free(title);
+		if(Util::fileExists(Util::getPath(Util::PATH_THEMES) + "backup.dctheme"))
+			File::deleteFile(Util::getPath(Util::PATH_THEMES) + "backup.dctheme");
 	};
 
 	BEGIN_MSG_MAP_EX(PropPageTextStyles)
@@ -31,9 +33,6 @@ public:
 		COMMAND_HANDLER(IDC_TEXT_COLOR, BN_CLICKED, onEditForeColor)
 		COMMAND_HANDLER(IDC_TEXT_STYLE, BN_CLICKED, onEditTextStyle)
 		COMMAND_HANDLER(IDC_ICONS_RESTORE, BN_CLICKED, onRestoreIcons)
-		//COMMAND_HANDLER(IDC_SELWINCOLOR, BN_CLICKED, onEditBackground)
-		//COMMAND_HANDLER(IDC_ERROR_COLOR, BN_CLICKED, onEditError)
-		//COMMAND_HANDLER(IDC_ALTERNATE_COLOR, BN_CLICKED, onEditAlternate)
 		COMMAND_ID_HANDLER(IDC_SELTEXT, onClickedText)
 
 		COMMAND_HANDLER(IDC_TABCOLOR_LIST, LBN_SELCHANGE, onTabListChange)
@@ -52,9 +51,6 @@ public:
 	LRESULT onEditForeColor(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onEditTextStyle(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onClickedText(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	//LRESULT onEditBackground(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	//LRESULT onEditError(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	//LRESULT onEditAlternate(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onTabListChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedResetTabColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClientSelectTabColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -78,11 +74,13 @@ public:
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 	
-	typedef std::map<string, string> themeMap;
-	themeMap themes;
-	void LoadTheme(const string& path);
+	void LoadTheme(const string& path, bool silent = false);
+	void SaveTheme(const string& path, bool backup);
 
 private:
+	typedef std::map<string, string> themeMap;
+	themeMap themes;
+
 	void RefreshPreview();
 
 	class TextStyleSettings: public CHARFORMAT2 {
@@ -102,7 +100,7 @@ private:
 
 	string m_sText;
 	string m_sPreviewText;
-
+	
 	PropPageTextStyles *m_pParent;
 	SettingsManager *settings;
 	SettingsManager::IntSetting m_iBackColor;
@@ -115,6 +113,10 @@ private:
 	virtual void on(SettingsManagerListener::ReloadPages, int) {
 		SendMessage(WM_DESTROY,0,0);
 		SendMessage(WM_INITDIALOG,0,0);
+	}
+	virtual void on(SettingsManagerListener::Cancel, int) {
+		if(!initial)
+			LoadTheme(Util::getPath(Util::PATH_THEMES) + "backup.dctheme", true);
 	}
 
 protected:
@@ -148,6 +150,7 @@ protected:
 	CButton cmdSetTabColor;
 	CEdit ctrlTabExample;
 	bool fontdirty;
+	bool initial;
 	void PopulateThemes();
 
 };

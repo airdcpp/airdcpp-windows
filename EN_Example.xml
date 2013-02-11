@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Example Language" Author="AirDC++ Team" Version="2.50" Revision="1">
+<Language Name="Example Language" Author="AirDC++ Team" Version="2.43" Revision="1">
 	<Strings>
 		<String Name="AairdcppLanguageFile">EN_Example.xml</String>
 		<String Name="AairdcppLanguageVersion">1.00</String>
@@ -1759,6 +1759,9 @@ Do you want to use this destination anyway?</String>
 		<String Name="HbriValidationFailed">Validation failed: %s. %s connectivity has been disabled in this hub.</String>
 		<String Name="ValidationSucceed">Validation succeed</String>
 		<String Name="InvalidHubResponse">The hub returned an invalid response</String>
+		<String Name="ShowHideInformation">Show/Hide user information</String>
+		<String Name="Favorite">Favorite</String>
+		<String Name="AutoGrantSlot">Auto grant slot</String>
 		<String Name="PreferredMapper">Preferred port mapping interface</String>
 	</Strings>
 </Language>

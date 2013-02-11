@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -286,10 +286,13 @@
 #define IDI_SHARED                      484
 #define IDI_DIR_LOADING_OL              485
 #define IDI_PROXY                       488
+#define IDI_FAV_USER                    489
 #define IDD_FORMVIEW                    500
 #define IDR_WINAMP                      501
 #define IDD_PARAM_DLG                   502
 #define IDD_FAVHUBGROUPS                503
+#define IDI_APPLY                       504
+#define IDI_CANCEL                      505
 #define IDC_REFRESH                     1000
 #define IDC_NICK                        1001
 #define IDC_EMAIL                       1002
@@ -1579,6 +1582,9 @@
 #define IDC_FIND_TEXT                   15129
 #define IDC_FILTER                      15130
 #define IDC_EMOT                        15131
+#define IDC_SHOW_INFO                   15132
+#define IDC_SHOW_FAV                    15133
+#define IDC_SHOW_ONLINE                 15134
 #define ID_TOGGLE_TOOLBAR               15999
 #define ID_TOGGLE_TBSTATUS              16900
 #define ID_LOCK_TB                      18900

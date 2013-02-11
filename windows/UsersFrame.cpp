@@ -22,12 +22,12 @@
 #include "ResourceLoader.h"
 #include "UsersFrame.h"
 #include "LineDlg.h"
-#include "TextFrame.h"
 #include "../client/ClientManager.h"
+#include "../client/QueueManager.h"
 
-int UsersFrame::columnIndexes[] = { COLUMN_NICK, COLUMN_NICKS, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION };
-int UsersFrame::columnSizes[] = { 150, 200, 300, 150, 200 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::AUTO_GRANT, ResourceManager::ONLINE_NICKS, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION };
+int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_NICKS, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION };
+int UsersFrame::columnSizes[] = { 25, 25, 150, 200, 300, 150, 200 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::ONLINE_NICKS, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION };
 
 struct FieldName {
 	string field;
@@ -72,6 +72,11 @@ static const FieldName fields[] =
 	{ "", _T(""), 0 }
 };
 
+UsersFrame::UsersFrame() : closed(false), startup(true), 
+	ctrlShowInfoContainer(WC_BUTTON, this, STATUS_MAP), 
+	showInfo(SETTING(FAV_USERS_SHOW_INFO)),
+	listFav(SETTING(FAV_USERS_ONLY_FAV))
+{ }
 
 LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -79,8 +84,8 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlStatus.Attach(m_hWndStatusBar);
 
 	ctrlUsers.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_USERS);
-	ctrlUsers.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
+		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS, WS_EX_CLIENTEDGE, IDC_USERS);
+	ctrlUsers.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_SUBITEMIMAGES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 	
 	ctrlInfo.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL | WS_HSCROLL | ES_MULTILINE, WS_EX_CLIENTEDGE);
 	ctrlInfo.Subclass();
@@ -96,15 +101,40 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
 	images.AddIcon(ResourceLoader::loadIcon(IDR_PRIVATE, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDR_PRIVATE_OFF, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDI_FAV_USER, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDI_CANCEL, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDI_APPLY, 16));
 	ctrlUsers.SetImageList(images, LVSIL_SMALL);
 
 	ctrlUsers.SetBkColor(WinUtil::bgColor);
 	ctrlUsers.SetTextBkColor(WinUtil::bgColor);
 	ctrlUsers.SetTextColor(WinUtil::textColor);
+
+	ctrlShowInfo.Create(ctrlStatus.m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_SHOW_INFO);
+	ctrlShowInfo.SetButtonStyle(BS_AUTOCHECKBOX, false);
+	ctrlShowInfo.SetFont(WinUtil::systemFont);
+	ctrlShowInfo.SetCheck(showInfo ? BST_CHECKED : BST_UNCHECKED);
+	
+	ctrlShowFav.Create(ctrlStatus.m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_SHOW_FAV);
+	ctrlShowFav.SetWindowText(CTSTRING(FAVORITE_USERS));
+	ctrlShowFav.SetButtonStyle(BS_AUTOCHECKBOX, false);
+	ctrlShowFav.SetFont(WinUtil::systemFont);
+	ctrlShowFav.SetCheck(listFav ? BST_CHECKED : BST_UNCHECKED);
+
+	ctrlShowInfoContainer.SubclassWindow(ctrlStatus.m_hWnd);
+
+	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	 
+	ctrlTooltips.SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);	  
+	CToolInfo ti(TTF_SUBCLASS, ctrlShowInfo.m_hWnd);
+	ti.cbSize = sizeof(CToolInfo);
+	ti.lpszText = (LPWSTR)CTSTRING(SHOW_HIDE_INFORMATION);
+	ctrlTooltips.AddTool(&ti);
+	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
+	ctrlTooltips.Activate(TRUE);
 	
 	// Create listview columns
-	WinUtil::splitTokens(columnIndexes, SETTING(USERSFRAME_ORDER), COLUMN_LAST);
-	WinUtil::splitTokens(columnSizes, SETTING(USERSFRAME_WIDTHS), COLUMN_LAST);
+	WinUtil::splitTokens(columnIndexes, SETTING(USERS_FRAME_ORDER), COLUMN_LAST);
+	WinUtil::splitTokens(columnSizes, SETTING(USERS_FRAME_WIDTHS), COLUMN_LAST);
 	
 	for(uint8_t j=0; j<COLUMN_LAST; j++) {
 		ctrlUsers.InsertColumn(j, CTSTRING_I(columnNames[j]), LVCFMT_LEFT, columnSizes[j], j);
@@ -113,16 +143,18 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlUsers.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlUsers.setSortColumn(COLUMN_NICK);
 
+	ClientManager::getInstance()->lockRead();
+	auto ul = ClientManager::getInstance()->getUsers();
+	for(auto& u: ul | map_values)
+		userInfos.emplace(u, UserInfo(u, Util::emptyString));
+
+	ClientManager::getInstance()->unlockRead();
+	updateList();
+
 	FavoriteManager::getInstance()->addListener(this);
+	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
-	ctrlUsers.SetRedraw(FALSE);
-
-	auto ul = FavoriteManager::getInstance()->getFavoriteUsers();
-	for(auto& u: ul | map_values)
-		addUser(u);
-
-	ctrlUsers.SetRedraw(TRUE);
 	CRect rc(SETTING(USERS_LEFT), SETTING(USERS_TOP), SETTING(USERS_RIGHT), SETTING(USERS_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
@@ -162,7 +194,7 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		usersMenu.AppendMenu(MF_SEPARATOR);
 		usersMenu.AppendMenu(MF_STRING, IDC_EDIT, CTSTRING(PROPERTIES));
 		usersMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-
+		
 		if (!x.empty())
 			usersMenu.InsertSeparatorFirst(x);
 		
@@ -173,7 +205,29 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 	bHandled = FALSE;
 	return FALSE; 
 }
-	
+
+LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+
+	LPNMLVCUSTOMDRAW cd = (LPNMLVCUSTOMDRAW)pnmh;
+	switch(cd->nmcd.dwDrawStage) {
+
+		case CDDS_PREPAINT:
+			return CDRF_NOTIFYITEMDRAW;
+
+		case CDDS_ITEMPREPAINT: {
+			UserInfo *ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
+			if (ui != NULL && ui->isFavorite) {
+				cd->clrText = SETTING(FAVORITE_COLOR);
+			}
+			return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+		}
+
+		default:
+			return CDRF_DODEFAULT;
+	}
+}
+
+
 void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	RECT rect;
 	GetClientRect(&rect);
@@ -191,6 +245,24 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		w[2] = w[0] + (tmp-16);
 			
 		ctrlStatus.SetParts(3, w);
+
+		ctrlStatus.GetRect(0, sr);
+		sr.left += 2;
+		sr.right = ctrlShowFav.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowFav.m_hWnd, WinUtil::systemFont) + 16;
+		ctrlShowFav.MoveWindow(sr);
+		
+		ctrlStatus.GetRect(2, sr);
+		sr.left = sr.right;
+		sr.right = sr.left + 16;
+		ctrlShowInfo.MoveWindow(sr);
+	}
+	
+	if(!showInfo) {
+		if(GetSinglePaneMode() == SPLIT_PANE_NONE)
+			SetSinglePaneMode(SPLIT_PANE_LEFT);
+	} else {
+		if(GetSinglePaneMode() != SPLIT_PANE_NONE)
+			SetSinglePaneMode(SPLIT_PANE_NONE);
 	}
 		
 	CRect rc = rect;
@@ -199,9 +271,34 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 }
 
 LRESULT UsersFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	vector<UserInfo*> removeList;
 	int i = -1;
-	while( (i = ctrlUsers.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-		ctrlUsers.getItemData(i)->remove();
+	while( (i =  ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		UserInfo *ui = ctrlUsers.getItemData(i);
+		if(ui->isFavorite) {
+			removeList.push_back(ui);
+		}
+	}
+	for(auto& u: removeList){
+		u->remove();
+	}
+	return 0;
+}
+
+LRESULT UsersFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	switch(wID) {
+		case IDC_SHOW_INFO: {
+			showInfo = !showInfo;
+			SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_SHOW_INFO, showInfo);
+			UpdateLayout(FALSE);
+			break;
+		}
+		case IDC_SHOW_FAV: {
+			listFav = !listFav;
+			updateList();
+			SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_ONLY_FAV, listFav);
+			break;
+		}
 	}
 	return 0;
 }
@@ -210,6 +307,8 @@ LRESULT UsersFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 	if(ctrlUsers.GetSelectedCount() == 1) {
 		int i = ctrlUsers.GetNextItem(-1, LVNI_SELECTED);
 		UserInfo* ui = ctrlUsers.getItemData(i);
+		if(!ui->isFavorite)
+			return 0;
 		dcassert(i != -1);
 		LineDlg dlg;
 		dlg.description = TSTRING(DESCRIPTION);
@@ -224,20 +323,44 @@ LRESULT UsersFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 	return 0;
 }
 
-LRESULT UsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT UsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+	if(startup)
+		return 0;
+
 	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
-	if(!startup && l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
-		FavoriteManager::getInstance()->setAutoGrant(ctrlUsers.getItemData(l->iItem)->user, ctrlUsers.GetCheckState(l->iItem) != FALSE);
- 	}
 	 if ( (l->uChanged & LVIF_STATE) && (l->uNewState & LVIS_SELECTED) != (l->uOldState & LVIS_SELECTED) ) {
 		if (l->uNewState & LVIS_SELECTED){
-			if(l->iItem != -1) {
+			if(l->iItem != -1)
 				updateInfoText(ctrlUsers.getItemData(l->iItem));
-			}
 		} else { //deselected
 			ctrlInfo.SetWindowText(_T(""));
 		}
 	 }
+	bHandled = FALSE;
+  	return 0;
+}
+
+LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+	if(startup)
+		return 0;
+
+	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
+
+	if(l->iItem != -1) {
+		auto ui = ctrlUsers.getItemData(l->iItem);
+		if(l->iSubItem == COLUMN_SLOT && ui->isFavorite) {
+			FavoriteManager::getInstance()->setAutoGrant(ui->getUser(), !ui->grantSlot);
+			ui->grantSlot = !ui->grantSlot;
+			setImages(ui, l->iItem); //todo: only need to update slot image
+		} else if(l->iSubItem == COLUMN_FAVORITE) {
+			if(ui->isFavorite)
+				FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
+			else
+				FavoriteManager::getInstance()->addFavoriteUser(HintedUser(ui->getUser(), ui->getHubUrl()));
+		}
+	}
+	
+	bHandled = FALSE;
   	return 0;
 }
 
@@ -245,7 +368,25 @@ LRESULT UsersFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 	NMITEMACTIVATE* item = (NMITEMACTIVATE*) pnmh;
 
 	if(item->iItem != -1) {
-		PostMessage(WM_COMMAND, IDC_GETLIST, 0);
+	    switch(SETTING(USERLIST_DBLCLICK)) {
+		    case 0:
+				ctrlUsers.getItemData(item->iItem)->getList();
+		        break;
+		    case 1: break; //public message
+		    case 2:
+				ctrlUsers.getItemData(item->iItem)->pm();
+		        break;
+		    case 3:
+		        ctrlUsers.getItemData(item->iItem)->matchQueue();
+		        break;
+		    case 4:
+		        ctrlUsers.getItemData(item->iItem)->grant();
+		        break;
+		    case 5: break; //already a favorite user
+			case 6:
+				ctrlUsers.getItemData(item->iItem)->browseList();
+				break;
+		}	
 	} else {
 		bHandled = FALSE;
 	}
@@ -268,113 +409,142 @@ LRESULT UsersFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	return 0;
 }
 void UsersFrame::updateInfoText(const UserInfo* ui){
-	vector<Identity> idents = ClientManager::getInstance()->getIdentities(ui->getUser());
+	if(!showInfo)
+		return;
+	map<string, Identity> idents = ClientManager::getInstance()->getIdentities(ui->getUser());
 	if(!idents.empty()) {
-		auto info = idents[0].getInfo();
-		for(size_t i = 1; i < idents.size(); ++i) {
-			for(auto& j: idents[i].getInfo()) {
-				info[j.first] = j.second;
+		tstring tmp = _T("");
+		for(auto& id: idents) {
+			auto info = id.second.getInfo();
+		
+			tmp += _T("\r\nUser Information: \r\n");
+			tmp += _T("Hub: ") + Text::toT(id.first) + _T("\r\n");
+			for(auto f = fields; !f->field.empty(); ++f) {
+				auto i = info.find(f->field);
+				if(i != info.end()) {
+					tmp += f->name + f->convert(i->second) + _T("\r\n");
+					info.erase(i);
+				}
 			}
 		}
-		tstring tmp = _T("\r\n");
-		tmp += _T("User Information: \r\n");
-		for(auto f = fields; !f->field.empty(); ++f) {
-			auto i = info.find(f->field);
-			if(i != info.end()) {
-				tmp += f->name + f->convert(i->second) + _T("\r\n");
-				info.erase(i);
-			}
-		}
+		tmp += _T("\r\nQueued from user: ") + Text::toT(Util::formatBytes(QueueManager::getInstance()->getUserQueuedSize(ui->getUser()))); 
 		ctrlInfo.SetWindowText(tmp.c_str());
 	} else
 		ctrlInfo.SetWindowText(_T(""));
 }
 
-void UsersFrame::addUser(const FavoriteUser& aUser) {
-	int i = ctrlUsers.insertItem(new UserInfo(aUser), 0);
-	bool b = aUser.isSet(FavoriteUser::FLAG_GRANTSLOT);
-	ctrlUsers.SetCheckState(i, b);
-	updateUser(aUser.getUser());
+void UsersFrame::addUser(const UserPtr& aUser, const string& aUrl) {
+	if(!show(aUser, true)) {
+		return;
+	}
+
+	auto ui = userInfos.find(aUser);
+	if(ui == userInfos.end()) {
+		auto x = userInfos.emplace(aUser, UserInfo(aUser, aUrl)).first;
+		if(show(aUser, false)) {
+			x->second.update(aUser);
+			ctrlUsers.insertItem(&x->second, 0);
+		}
+	} else {
+		updateUser(aUser);
+	}
 }
 
 void UsersFrame::updateUser(const UserPtr& aUser) {
-	for(int i = 0; i < ctrlUsers.GetItemCount(); ++i) {
-		UserInfo *ui = ctrlUsers.getItemData(i);
-		if(ui->user == aUser) {
-			ui->columns[COLUMN_SEEN] = aUser->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", FavoriteManager::getInstance()->getLastSeen(aUser)));
-			if(aUser->isOnline()) {
-				ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 0, 0, 0, NULL);
-				ui->columns[COLUMN_NICKS] = WinUtil::getNicks(aUser, Util::emptyString);
-				ui->columns[COLUMN_HUB] = WinUtil::getHubNames(aUser, Util::emptyString).first;
-			} else {
-				ui->columns[COLUMN_NICKS] =  TSTRING(OFFLINE);
-				ctrlUsers.SetItem(i,0,LVIF_IMAGE, NULL, 1, 0, 0, NULL);
+	auto i = userInfos.find(aUser);
+	if(i != userInfos.end()) {
+		auto ui = &i->second;
+		ui->update(aUser);
+		if(!show(aUser, false)) {
+			ctrlUsers.deleteItem(ui);
+			if(!show(aUser, true)) {
+				userInfos.erase(aUser);
 			}
-			ctrlUsers.updateItem(i);
-		}
-	}
-}
-
-void UsersFrame::removeUser(const FavoriteUser& aUser) {
-	for(int i = 0; i < ctrlUsers.GetItemCount(); ++i) {
-		const UserInfo *ui = ctrlUsers.getItemData(i);
-		if(ui->user == aUser.getUser()) {
-			ctrlUsers.DeleteItem(i);
-			delete ui;
 			return;
 		}
+
+		int pos = ctrlUsers.findItem(ui);
+		if(pos != -1) {
+			ctrlUsers.updateItem(pos);
+		} else {
+			pos = ctrlUsers.insertItem(ui, 0);
+		}
+
+		setImages(ui, pos);
+
 	}
 }
 
-LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(!closed) {
-		FavoriteManager::getInstance()->removeListener(this);
-		SettingsManager::getInstance()->removeListener(this);
-		closed = true;
-		WinUtil::setButtonPressed(IDC_FAVUSERS, false);
-		PostMessage(WM_CLOSE);
-		return 0;
+void UsersFrame::updateList() {
+	ctrlUsers.SetRedraw(FALSE);
+	ctrlUsers.DeleteAllItems();
+	ctrlInfo.SetWindowText(_T(""));
+
+	for(auto& ui: userInfos | map_values){
+		if(!show(ui.getUser(), false)) {
+			continue;
+		}
+		int i = ctrlUsers.insertItem(&ui,0);
+		ui.update(ui.getUser());
+		setImages(&ui, i);
+		ctrlUsers.updateItem(i);
+	}
+	ctrlUsers.SetRedraw(TRUE);
+}
+
+static bool isFav(const UserPtr &u) { return FavoriteManager::getInstance()->isFavoriteUser(u); }
+
+//currently we dont list offline users unless they are favorites
+bool UsersFrame::show(const UserPtr &u, bool any) const {
+	if(any && (u->isOnline() || isFav(u))) {
+		return true;
+	} else if(listFav && !isFav(u)){
+		return false;
+	} else if(!u->isOnline() && !isFav(u)){
+		return false;
+	}
+	return true;
+}
+
+void UsersFrame::setImages(UserInfo *ui, int pos/* = -1*/) {
+	if(pos == -1)
+		pos = ctrlUsers.findItem(ui);
+
+	ctrlUsers.SetItem(pos, COLUMN_FAVORITE, LVIF_IMAGE, NULL, ui->getImage(COLUMN_FAVORITE), 0, 0, NULL);
+	ctrlUsers.SetItem(pos, COLUMN_SLOT, LVIF_IMAGE, NULL, ui->getImage(COLUMN_SLOT), 0, 0, NULL);
+
+}
+
+void UsersFrame::UserInfo::update(const UserPtr& u) {
+	auto fu = FavoriteManager::getInstance()->getFavoriteUser(u);
+	if(fu) {
+		isFavorite = true;
+		grantSlot = fu->isSet(FavoriteUser::FLAG_GRANTSLOT);
+		setHubUrl(fu->getUrl());
+		columns[COLUMN_NICK] = Text::toT(fu->getNick());
+		columns[COLUMN_NICKS] =  u->isOnline() ? WinUtil::getNicks(u, Util::emptyString) : TSTRING(OFFLINE);
+		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u, Util::emptyString).first : Text::toT(fu->getUrl());
+		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen()));
+		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
 	} else {
-		CRect rc;
-		if(!IsIconic()){
-			//Get position of window
-			GetWindowRect(&rc);
-				
-			//convert the position so it's relative to main window
-			::ScreenToClient(GetParent(), &rc.TopLeft());
-			::ScreenToClient(GetParent(), &rc.BottomRight());
-				
-			//save the position
-			SettingsManager::getInstance()->set(SettingsManager::USERS_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
-			SettingsManager::getInstance()->set(SettingsManager::USERS_TOP, (rc.top > 0 ? rc.top : 0));
-			SettingsManager::getInstance()->set(SettingsManager::USERS_LEFT, (rc.left > 0 ? rc.left : 0));
-			SettingsManager::getInstance()->set(SettingsManager::USERS_RIGHT, (rc.right > 0 ? rc.right : 0));
-			SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_SPLITTER_POS, m_nProportionalPos);
-		}
-		WinUtil::saveHeaderOrder(ctrlUsers, SettingsManager::USERSFRAME_ORDER, 
-			SettingsManager::USERSFRAME_WIDTHS, COLUMN_LAST, columnIndexes, columnSizes);
-	
-		for(int i = 0; i < ctrlUsers.GetItemCount(); ++i) {
-			delete ctrlUsers.getItemData(i);
-		}
+		isFavorite = false;
+		grantSlot = false;
 
-		bHandled = FALSE;
-		return 0;
+		//get the nick and update the hint if empty
+		string nick = ClientManager::getInstance()->getNick(u, hubUrl);
+		columns[COLUMN_NICK] = Text::toT(nick);
+		columns[COLUMN_NICKS] =  u->isOnline() ?  WinUtil::getNicks(u, Util::emptyString) : TSTRING(OFFLINE);
+		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u, Util::emptyString).first : Util::emptyStringT;
+		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : TSTRING(OFFLINE);
+		columns[COLUMN_DESCRIPTION] = Util::emptyStringT;
 	}
 }
 
-void UsersFrame::UserInfo::update(const FavoriteUser& u) {
-	columns[COLUMN_NICK] = Text::toT(u.getNick());
-	columns[COLUMN_NICKS] =  user.user->isOnline() ? WinUtil::getNicks(u.getUser(), Util::emptyString) : TSTRING(OFFLINE);
-	columns[COLUMN_HUB] = user.user->isOnline() ? WinUtil::getHubNames(u.getUser(), Util::emptyString).first : Text::toT(u.getUrl());
-	columns[COLUMN_SEEN] = user.user->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", u.getLastSeen()));
-	columns[COLUMN_DESCRIPTION] = Text::toT(u.getDescription());
-}
+LRESULT UsersFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
+	auto f = reinterpret_cast<Dispatcher::F*>(lParam);
+	(*f)();
+	delete f;
 
-LRESULT UsersFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	if(wParam == USER_UPDATED) {
-		updateUser(((Identity*)lParam)->getUser());
-	}
 	return 0;
 }
 			
@@ -398,7 +568,44 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 			MessageBox(CTSTRING(NO_LOG_FOR_USER), CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 		}	
 	}
+	return 0;
+}
+
+LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	if(!closed) {
+		FavoriteManager::getInstance()->removeListener(this);
+		ClientManager::getInstance()->removeListener(this);
+		SettingsManager::getInstance()->removeListener(this);
+		closed = true;
+		WinUtil::setButtonPressed(IDC_FAVUSERS, false);
+		PostMessage(WM_CLOSE);
 		return 0;
+	} else {
+		CRect rc;
+		if(!IsIconic()){
+			//Get position of window
+			GetWindowRect(&rc);
+				
+			//convert the position so it's relative to main window
+			::ScreenToClient(GetParent(), &rc.TopLeft());
+			::ScreenToClient(GetParent(), &rc.BottomRight());
+				
+			//save the position
+			SettingsManager::getInstance()->set(SettingsManager::USERS_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
+			SettingsManager::getInstance()->set(SettingsManager::USERS_TOP, (rc.top > 0 ? rc.top : 0));
+			SettingsManager::getInstance()->set(SettingsManager::USERS_LEFT, (rc.left > 0 ? rc.left : 0));
+			SettingsManager::getInstance()->set(SettingsManager::USERS_RIGHT, (rc.right > 0 ? rc.right : 0));
+			SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_SPLITTER_POS, m_nProportionalPos);
+		}
+		WinUtil::saveHeaderOrder(ctrlUsers, SettingsManager::USERS_FRAME_ORDER, 
+			SettingsManager::USERS_FRAME_WIDTHS, COLUMN_LAST, columnIndexes, columnSizes);
+	
+		ctrlUsers.DeleteAllItems();
+		userInfos.clear();
+
+		bHandled = FALSE;
+		return 0;
+	}
 }
 
 void UsersFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
@@ -415,4 +622,28 @@ void UsersFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept 
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
+}
+void UsersFrame::on(UserAdded, const FavoriteUser& aUser) noexcept { 
+	callAsync([=] { addUser(aUser.getUser(), aUser.getUrl()); } ); 
+}
+void UsersFrame::on(UserRemoved, const FavoriteUser& aUser) noexcept { 
+	callAsync([=] { updateUser(aUser.getUser()); } ); 
+}
+void UsersFrame::on(StatusChanged, const UserPtr& aUser) noexcept { 
+	callAsync([=] { updateUser(aUser); } ); 
+}
+
+void UsersFrame::on(UserConnected, const OnlineUser& aUser, bool) noexcept {
+	UserPtr user = aUser.getUser();
+	string hint = aUser.getHubUrl();
+	callAsync([=] { addUser(user, hint); });
+}
+
+void UsersFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
+	UserPtr user = aUser.getUser();
+	callAsync([=] { updateUser(user); });
+}
+
+void UsersFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept {
+	callAsync([=] { updateUser(aUser); });
 }

@@ -36,6 +36,7 @@ public:
 
 	BEGIN_MSG_MAP(PropertiesDlg)
 		COMMAND_ID_HANDLER(IDOK, onOK)
+		COMMAND_ID_HANDLER(IDCANCEL, onCancel)
 		CHAIN_MSG_MAP(TreePropertySheet)
 	ALT_MSG_MAP(TreePropertySheet::TAB_MESSAGE_MAP)
 		MESSAGE_HANDLER(TCM_SETCURSEL, TreePropertySheet::onSetCurSel)
@@ -45,6 +46,7 @@ public:
 	~PropertiesDlg();
 
 	LRESULT onOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT onCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 protected:
 	void write();
 	

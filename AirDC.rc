@@ -1546,6 +1546,7 @@ BEGIN
 
     IDD_NETWORKPAGE, DIALOG
     BEGIN
+        TOPMARGIN, 116
     END
 
     IDD_PROTOCOLPAGE, DIALOG
@@ -2220,6 +2221,9 @@ IDI_COLLECTING          ICON                    "res\\AutoSearch\\Collecting.ico
 IDI_POSTSEARCH          ICON                    "res\\AutoSearch\\PostSearch.ico"
 IDI_SHARED              ICON                    "res\\Shared.ico"
 IDI_DIR_LOADING_OL      ICON                    "res\\ExecMasked.ico"
+IDI_FAV_USER            ICON                    "res\\FavUser.ico"
+IDI_APPLY               ICON                    "res\\apply.ico"
+IDI_CANCEL              ICON                    "res\\cancel.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 

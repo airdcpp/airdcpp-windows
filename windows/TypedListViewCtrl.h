@@ -657,7 +657,7 @@ public:
 			}
 		}
 
-		bHandled = false;
+		bHandled = FALSE;
 		return 0;
 	} 
 
