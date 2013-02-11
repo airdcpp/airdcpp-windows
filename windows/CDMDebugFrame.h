@@ -72,7 +72,7 @@ public:
 private:
 	bool stop;
 	Semaphore s;
-	boost::lockfree::queue<string> cmdList;
+	boost::lockfree::queue<string*> cmdList;
 
 	int run();
 

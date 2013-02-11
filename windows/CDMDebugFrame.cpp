@@ -193,7 +193,6 @@ LRESULT CDMDebugFrame::onClear(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 
 int CDMDebugFrame::run() {
 	setThreadPriority(Thread::LOW);
-	string x;
 	stop = false;
 
 	while(true) {
@@ -201,10 +200,11 @@ int CDMDebugFrame::run() {
 		if(stop)
 			break;
 
+		unique_ptr<string> x;
 		if(!cmdList.pop(x)) {
 			continue;
 		}
-		addLine(x);
+		addLine(*x);
 	}
 		
 	stop = false;
@@ -212,7 +212,7 @@ int CDMDebugFrame::run() {
 }
 
 void CDMDebugFrame::addCmd(const string& cmd) {
-	cmdList.push(cmd);
+	cmdList.push(new string(cmd));
 	s.signal();
 }
 
