@@ -64,11 +64,6 @@ private:
 	void fixControls();
 
 	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
-
-	CComboBox BindCombo;
-	void getAddresses(bool v6);
-	AirUtil::IPMap bindAddresses;
-	//IP_ADAPTER_ADDRESSES* adapterInfo;
 };
 
 #endif // !defined(PROXY_PAGE_H)

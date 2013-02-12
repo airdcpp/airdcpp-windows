@@ -58,7 +58,7 @@ private:
 	void fixControls();
 	void getAddresses();
 
-	AirUtil::IPMap bindAddresses;
+	AirUtil::IpList bindAddresses;
 	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
 	bool v6;
 };

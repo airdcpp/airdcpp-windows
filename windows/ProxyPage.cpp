@@ -163,18 +163,6 @@ LRESULT ProxyPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		default: CheckDlgButton(IDC_DIRECT_OUT, BST_CHECKED); break;
 	}
 
-	// Bind address
-	BindCombo.Attach(GetDlgItem(IDC_BIND_ADDRESS));
-	getAddresses(true);
-
-	const auto& setting = SETTING(BIND_ADDRESS6);
-	auto cur = bindAddresses.find(setting);
-	if (cur == bindAddresses.end()) {
-		BindCombo.AddString(Text::toT(setting).c_str());
-		//bindAddresses.emplace(setting, "Unknown");
-	}
-	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(setting).c_str()));
-
 
 	PropPage::read((HWND)(*this), items);
 
@@ -193,13 +181,6 @@ LRESULT ProxyPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	desc.LimitText(250);
 	desc.Detach();
 	return TRUE;
-}
-
-void ProxyPage::getAddresses(bool v6) {
-	AirUtil::getIpAddresses(bindAddresses, true);
-	//bindAddresses.emplace(v6 ? "::" : "0.0.0.0", "Any");
-	for(auto& addr: bindAddresses)
-		BindCombo.AddString(Text::toT(addr.first + (!addr.second.first.empty() ? " (" + addr.second.first + ")" : Util::emptyString)).c_str());
 }
 
 LRESULT ProxyPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

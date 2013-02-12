@@ -406,6 +406,7 @@ private:
 	void on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string& oldTarget) noexcept;
 	void on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept { on(QueueManagerListener::BundlePriority(), aBundle); };
+	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept { on(QueueManagerListener::BundlePriority(), aBundle); };
 	void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
