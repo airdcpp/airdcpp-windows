@@ -1398,12 +1398,12 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
 		Bundle::StringBundleList bundles = dii->getBundles();
 		bool mainBundle = false;
-		BundlePtr b = NULL;
+		BundlePtr b = nullptr;
 		if (!bundles.empty()) {
 			if (bundles.size() == 1) {
 				b = bundles.front().second;
-				mainBundle = !AirUtil::isSub(curDir, b->getTarget());
-				if (mainBundle) {
+				mainBundle = stricmp(curDir, b->getTarget()) == 0;
+				if (mainBundle || !AirUtil::isSub(curDir, b->getTarget())) {
 					dirMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
 					dirMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITY));
 				} else {
