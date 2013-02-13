@@ -522,8 +522,8 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		grantSlot = fu->isSet(FavoriteUser::FLAG_GRANTSLOT);
 		setHubUrl(fu->getUrl());
 		columns[COLUMN_NICK] = Text::toT(fu->getNick());
-		columns[COLUMN_NICKS] =  u->isOnline() ? WinUtil::getNicks(u, Util::emptyString) : TSTRING(OFFLINE);
-		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u, Util::emptyString).first : Text::toT(fu->getUrl());
+		columns[COLUMN_NICKS] =  u->isOnline() ? WinUtil::getNicks(u) : TSTRING(OFFLINE);
+		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u).first : Text::toT(fu->getUrl());
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen()));
 		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
 	} else {
@@ -533,8 +533,8 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		//get the nick and update the hint if empty
 		string nick = ClientManager::getInstance()->getNick(u, hubUrl);
 		columns[COLUMN_NICK] = Text::toT(nick);
-		columns[COLUMN_NICKS] =  u->isOnline() ?  WinUtil::getNicks(u, Util::emptyString) : TSTRING(OFFLINE);
-		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u, Util::emptyString).first : Util::emptyStringT;
+		columns[COLUMN_NICKS] =  u->isOnline() ?  WinUtil::getNicks(u) : TSTRING(OFFLINE);
+		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u).first : Util::emptyStringT;
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : TSTRING(OFFLINE);
 		columns[COLUMN_DESCRIPTION] = Util::emptyStringT;
 	}

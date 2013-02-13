@@ -177,7 +177,7 @@ void PrivateFrame::updateOnlineStatus() {
 	dcassert(!replyTo.hint.empty());
 
 	//get the hub and online status
-	auto hubsInfoNew = move(WinUtil::getHubNames(cid, hint));
+	auto hubsInfoNew = move(WinUtil::getHubNames(cid));
 	if (!hubsInfoNew.second && !online) {
 		//nothing to update... probably a delayed event
 		return;
@@ -189,7 +189,7 @@ void PrivateFrame::updateOnlineStatus() {
 	if (!hubs.empty())
 		oldHubPair = hubs[oldSel]; // cache the old hub name
 
-	hubs = ClientManager::getInstance()->getHubs(cid, hint);
+	hubs = ClientManager::getInstance()->getHubs(cid);
 	while (ctrlHubSel.GetCount()) {
 		ctrlHubSel.DeleteString(0);
 	}
@@ -198,7 +198,7 @@ void PrivateFrame::updateOnlineStatus() {
 	if(hubsInfoNew.second) {	
 		setDisconnected(false);
 		if(!online) {
-			addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint) + _T(" - ") + hubsInfoNew.first + _T("]"));
+			addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + WinUtil::getNicks(replyTo.user->getCID()) + _T(" - ") + hubsInfoNew.first + _T("]"));
 			setIcon(userOnline);
 		}
 	} else {
@@ -240,7 +240,7 @@ void PrivateFrame::updateOnlineStatus() {
 
 	hubNames = move(hubsInfoNew.first);
 	online = hubsInfoNew.second;
-	SetWindowText((WinUtil::getNicks(replyTo.user->getCID(), replyTo.hint) + _T(" - ") + hubNames).c_str());
+	SetWindowText((WinUtil::getNicks(replyTo.user->getCID()) + _T(" - ") + hubNames).c_str());
 }
 
 void PrivateFrame::showHubSelection(bool show) {
@@ -281,7 +281,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 				tstring message = aMessage.substr(0, 250);
 				WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 			} else {
-				WinUtil::showPopup(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + p->hubNames, TSTRING(PRIVATE_MESSAGE));
+				WinUtil::showPopup(WinUtil::getNicks(replyTo) + _T(" - ") + p->hubNames, TSTRING(PRIVATE_MESSAGE));
 			}
 		}
 
@@ -304,7 +304,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 					tstring message = aMessage.substr(0, 250);
 					WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 				} else {
-					WinUtil::showPopup(WinUtil::getNicks(replyTo, c->getHubUrl()) + _T(" - ") + i->second->hubNames, TSTRING(PRIVATE_MESSAGE));
+					WinUtil::showPopup(WinUtil::getNicks(replyTo) + _T(" - ") + i->second->hubNames, TSTRING(PRIVATE_MESSAGE));
 				}
 			}
 
@@ -415,10 +415,10 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine) {
 void PrivateFrame::fillLogParams(ParamMap& params) const {
 	const CID& cid = replyTo.user->getCID();
 	const string& hint = replyTo.hint;
-	params["hubNI"] = [&] { return Util::toString(ClientManager::getInstance()->getHubNames(cid, hint)); };
-	params["hubURL"] = [&] { return Util::toString(ClientManager::getInstance()->getHubUrls(cid, hint)); };
+	params["hubNI"] = [&] { return Text::fromT(hubNames); };
+	params["hubURL"] = [&] { return hint; };
 	params["userCID"] = [&cid] { return cid.toBase32(); };
-	params["userNI"] = [&] { return ClientManager::getInstance()->getNicks(cid, hint)[0]; };
+	params["userNI"] = [&] { return ClientManager::getInstance()->getNick(replyTo.user, hint); };
 	params["myCID"] = [] { return ClientManager::getInstance()->getMe()->getCID().toBase32(); };
 }
 
@@ -469,7 +469,7 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	OMenu tabMenu;
 	tabMenu.CreatePopupMenu();	
 
-	tabMenu.InsertSeparatorFirst(Text::toT(ClientManager::getInstance()->getNicks(replyTo.user->getCID(), replyTo.hint)[0]));
+	tabMenu.InsertSeparatorFirst(Text::toT(ClientManager::getInstance()->getNicks(replyTo.user->getCID())[0]));
 	if(SETTING(LOG_PRIVATE_CHAT)) {
 		tabMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG,  CTSTRING(OPEN_USER_LOG));
 		tabMenu.AppendMenu(MF_SEPARATOR);
@@ -479,7 +479,7 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	tabMenu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR_CHAT));
 	appendUserItems(tabMenu, true, replyTo.user);
 
-	prepareMenu(tabMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(replyTo.user->getCID(), replyTo.hint));
+	prepareMenu(tabMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(replyTo.user->getCID()));
 	if(!(tabMenu.GetMenuState(tabMenu.GetMenuItemCount()-1, MF_BYPOSITION) & MF_SEPARATOR)) {	
 		tabMenu.AppendMenu(MF_SEPARATOR);
 	}

@@ -275,7 +275,7 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 	} else if(stricmp(cmd.c_str(), _T("ignorelist"))==0) {
 		tstring ignorelist = _T("Ignored users:");
 		for(auto i = ignoreList.begin(); i != ignoreList.end(); ++i)
-			ignorelist += _T(" ") + Text::toT(ClientManager::getInstance()->getNicks((*i)->getCID(), Util::emptyString)[0]); // ignore user isn't hub dependent
+			ignorelist += _T(" ") + Text::toT(ClientManager::getInstance()->getNicks((*i)->getCID())[0]);
 		status = ignorelist;
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
 		WinUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));

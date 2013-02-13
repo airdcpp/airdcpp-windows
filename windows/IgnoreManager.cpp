@@ -37,13 +37,11 @@ void IgnoreManager::save(SimpleXML& aXml) {
 
 
 void IgnoreManager::storeIgnore(const UserPtr& user) {
-	
-	ignoredUsers.insert( WinUtil::getNicks(user, Util::emptyString));
+	ignoredUsers.insert(WinUtil::getNicks(user));
 }
 
 void IgnoreManager::removeIgnore(const UserPtr& user) {
-
-	ignoredUsers.erase( WinUtil::getNicks(user, Util::emptyString));
+	ignoredUsers.erase(WinUtil::getNicks(user));
 }
 
 

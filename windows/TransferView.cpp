@@ -200,7 +200,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				const ItemInfo* itemI = ctrlTransfers.getItemData(i);
 				
 				if(itemI->user.user)
-					prepareMenu(transferMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(itemI->user.user->getCID(), itemI->user.hint));
+					prepareMenu(transferMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(itemI->user.user->getCID()));
 			}
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 			transferMenu.AppendMenu(MF_SEPARATOR);

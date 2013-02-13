@@ -564,17 +564,18 @@ void SearchFrame::onEnter() {
 }
 
 void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept {
-	// Check that this is really a relevant search result...
-	{
-		Lock l(cs);
-
-		if(search.empty()) {
+	if(!aResult->getToken().empty()) {
+		if (token != aResult->getToken()) {
+			droppedResults++;
+			PostMessage(WM_SPEAKER, FILTER_RESULT);
 			return;
 		}
 
-		if(!aResult->getToken().empty() && token != aResult->getToken()) {
-			droppedResults++;
-			PostMessage(WM_SPEAKER, FILTER_RESULT);
+		//no futher validation, trust that the other client knows what he's sending...
+	} else {
+		// Check that this is really a relevant search result...
+		Lock l(cs);
+		if(search.empty()) {
 			return;
 		}
 		
@@ -586,7 +587,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 			}
 		} else {
 			// match all here
-			for(auto& s: search) {
+			for(const auto& s: search) {
 				if((*s.begin() != '-' && Util::findSubString(aResult->getFile(), s) == -1) ||
 					(*s.begin() == '-' && s.size() != 1 && Util::findSubString(aResult->getFile(), s.substr(1)) != -1)
 					) 

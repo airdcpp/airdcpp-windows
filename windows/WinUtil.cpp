@@ -1326,12 +1326,12 @@ int WinUtil::getOsMinor()
 	return ver.dwMinorVersion;
 }
 
-tstring WinUtil::getNicks(const CID& cid, const string& hintUrl) {
-	return Text::toT(Util::toString(ClientManager::getInstance()->getNicks(cid, hintUrl)));
+tstring WinUtil::getNicks(const CID& cid) {
+	return Text::toT(Util::toString(ClientManager::getInstance()->getNicks(cid)));
 }
 
-tstring WinUtil::getNicks(const UserPtr& u, const string& hintUrl) {
-	return getNicks(u->getCID(), hintUrl);
+tstring WinUtil::getNicks(const UserPtr& u) {
+	return getNicks(u->getCID());
 }
 
 static pair<tstring, bool> formatHubNames(const StringList& hubs) {
@@ -1342,12 +1342,12 @@ static pair<tstring, bool> formatHubNames(const StringList& hubs) {
 	}
 }
 
-pair<tstring, bool> WinUtil::getHubNames(const CID& cid, const string& hintUrl) {
-	return formatHubNames(ClientManager::getInstance()->getHubNames(cid, hintUrl));
+pair<tstring, bool> WinUtil::getHubNames(const CID& cid) {
+	return formatHubNames(ClientManager::getInstance()->getHubNames(cid));
 }
 
-pair<tstring, bool> WinUtil::getHubNames(const UserPtr& u, const string& hintUrl) {
-	return getHubNames(u->getCID(), hintUrl);
+pair<tstring, bool> WinUtil::getHubNames(const UserPtr& u) {
+	return getHubNames(u->getCID());
 }
 
 void WinUtil::getContextMenuPos(CListViewCtrl& aList, POINT& aPt) {
