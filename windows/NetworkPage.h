@@ -27,7 +27,7 @@
 #include "PropPage.h"
 #include "../client/UpdateManagerListener.h"
 
-class ProtocolPage : public CDialogImpl<ProtocolPage>, /*public CPropertyPage<IDD_PROTOCOLPAGE>,*/ public PropPage, private UpdateManagerListener
+class ProtocolPage : public CPropertyPage<IDD_PROTOCOLPAGE>, public SettingTab, private UpdateManagerListener
 {
 public:
 	ProtocolPage(SettingsManager *s, bool v6);
@@ -47,7 +47,7 @@ public:
 	LRESULT onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 
-	PROPSHEETPAGE *getPSP() { return /*(PROPSHEETPAGE *)*this*/nullptr; }
+	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 private:
 	static Item items4[];
@@ -110,7 +110,7 @@ public:
 	void write();
 	
 private:
-	//COptionsSheet protocols;
+	COptionsSheet protocols;
 	static Item items[];
 	static TextItem texts[];
 	CComboBox MapperCombo;

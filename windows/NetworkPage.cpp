@@ -75,7 +75,7 @@ void COptionsSheet::onInit() {
 	//tabContainer.SubclassWindow(tab.m_hWnd);
 }
 
-NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s), /*protocols(0, m_hWnd, s),*/ ipv6Page(new ProtocolPage(s, true)), ipv4Page(new ProtocolPage(s, false)) {
+NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s), protocols(0, m_hWnd, s), ipv6Page(new ProtocolPage(s, true)), ipv4Page(new ProtocolPage(s, false)) {
 	SetTitle(CTSTRING(SETTINGS_NETWORK));
 	m_psp.dwFlags |= PSP_RTLREADING;
 }
@@ -167,7 +167,7 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 
 
-ProtocolPage::ProtocolPage(SettingsManager *s, bool v6) :  PropPage(s), v6(v6) {
+ProtocolPage::ProtocolPage(SettingsManager *s, bool v6) :  SettingTab(s), v6(v6) {
 	UpdateManager::getInstance()->addListener(this);
 }
 
@@ -221,7 +221,7 @@ PropPage::Item ProtocolPage::items6[] = {
 
 void ProtocolPage::write()
 {
-	PropPage::write((HWND)(*this), v6 ? items6 : items4);
+	SettingTab::write((HWND)(*this), v6 ? items6 : items4);
 
 	// Set connection active/passive
 	int ct = SettingsManager::INCOMING_ACTIVE;
@@ -240,7 +240,7 @@ void ProtocolPage::write()
 
 LRESULT ProtocolPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	PropPage::translate((HWND)(*this), texts);
+	SettingTab::translate((HWND)(*this), texts);
 	
 	::EnableWindow(GetDlgItem(IDC_ACTIVE_UPNP), FALSE);
 	switch(SETTING(INCOMING_CONNECTIONS)) {
@@ -250,7 +250,7 @@ LRESULT ProtocolPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		default: CheckDlgButton(IDC_ACTIVE, BST_CHECKED); break;
 	}
 
-	PropPage::read((HWND)(*this), v6 ? items6 : items4);
+	SettingTab::read((HWND)(*this), v6 ? items6 : items4);
 
 	fixControls();
 

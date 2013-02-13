@@ -26,7 +26,7 @@
 
 #define SETTING_STR_MAXLEN 1024
 
-void PropPage::read(HWND page, Item const* items, ListItem* listItems /* = NULL */, HWND list /* = 0 */) {
+void SettingTab::read(HWND page, Item const* items, ListItem* listItems /* = NULL */, HWND list /* = 0 */) {
 
 	/*SettingsManager* settings = SettingsManager::getInstance();
 
@@ -140,7 +140,7 @@ void PropPage::read(HWND page, Item const* items, ListItem* listItems /* = NULL 
 	}
 }
 
-void PropPage::write(HWND page, Item const* items, ListItem* listItems /* = NULL */, HWND list /* = NULL */)
+void SettingTab::write(HWND page, Item const* items, ListItem* listItems /* = NULL */, HWND list /* = NULL */)
 {
 	dcassert(page != NULL);
 
@@ -218,7 +218,7 @@ void PropPage::write(HWND page, Item const* items, ListItem* listItems /* = NULL
 	}
 }
 
-void PropPage::translate(HWND page, TextItem* textItems) 
+void SettingTab::translate(HWND page, TextItem* textItems) 
 {
 	if (textItems != NULL) {
 		for(int i = 0; textItems[i].itemID != 0; i++) {

@@ -38,13 +38,10 @@
 	updown.Detach();
 
 
-class PropPage
-{
-public:
-	PropPage(SettingsManager *src) : settings(src) { }
-	virtual ~PropPage() { }
+class SettingTab {
 
-	virtual PROPSHEETPAGE *getPSP() = 0;
+public:
+	SettingTab(SettingsManager *src) : settings(src) { }
 	virtual void write() = 0;
 
 	enum Type { T_STR, T_INT, T_BOOL, T_CUSTOM, T_INT64, T_END };
@@ -73,6 +70,15 @@ protected:
 	void read(HWND page, Item const* items, ListItem* listItems = NULL, HWND list = NULL);
 	void write(HWND page, Item const* items, ListItem* listItems = NULL, HWND list = NULL);
 	void translate(HWND page, TextItem* textItems);
+};
+
+class PropPage : public SettingTab
+{
+public:
+	PropPage(SettingsManager *src) : SettingTab(src) { }
+	virtual ~PropPage() { }
+
+	virtual PROPSHEETPAGE *getPSP() = 0;
 };
 
 #endif // !defined(PROP_PAGE_H)

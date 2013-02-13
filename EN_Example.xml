@@ -1394,7 +1394,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SelectDirectory">Select directory</String>
 		<String Name="XIsSameThan">The directory %s also exists in %s</String>
 		<String Name="HorizontalQueue">Use horizontal splitter in Download Queue window</String>
-		<String Name="AutoAddSourcesDisabled">The option to automatically add sources from search results is disabled so the search won't be performed</String>
 		<String Name="TypeTargetPath">Direct path</String>
 		<String Name="TypeTargetFavorite">Favorite directory (the real path will be picked when matches are found)</String>
 		<String Name="TypeTargetShare">Shared directory (the real path will be picked when matches are found)</String>
