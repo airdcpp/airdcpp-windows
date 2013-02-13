@@ -1586,6 +1586,7 @@
 #define IDC_SHOW_INFO                   15132
 #define IDC_SHOW_FAV                    15133
 #define IDC_SHOW_ONLINE                 15134
+#define IDC_DUPLICATE	                15135
 #define ID_TOGGLE_TOOLBAR               15999
 #define ID_TOGGLE_TBSTATUS              16900
 #define ID_LOCK_TB                      18900

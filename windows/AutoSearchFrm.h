@@ -50,6 +50,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_ADD, onAdd)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_CHANGE, onChange)
+		COMMAND_ID_HANDLER(IDC_DUPLICATE, onDuplicate)
 		COMMAND_ID_HANDLER(IDC_MOVE_UP, onMoveUp)
 		COMMAND_ID_HANDLER(IDC_MOVE_DOWN, onMoveDown)
 		COMMAND_ID_HANDLER(IDC_ENABLE, onEnable)
@@ -68,6 +69,7 @@ public:
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onMoveUp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onMoveDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -161,6 +163,9 @@ private:
 	static int columnIndexes[COLUMN_LAST];
 	ExListViewCtrl ctrlAutoSearch;
 
+	void appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg);
+	void setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg);
+
 	void updateList() {
 
 		ctrlAutoSearch.SetRedraw(FALSE);
@@ -174,8 +179,9 @@ private:
 
 		ctrlAutoSearch.SetRedraw(TRUE);
 		ctrlAutoSearch.Invalidate();
-		
 	}
+
+	void addFromDialog(const AutoSearchDlg& dlg);
 
 	void save() {
 		AutoSearchManager::getInstance()->AutoSearchSave();
@@ -188,7 +194,7 @@ private:
 	int findItem(ProfileToken aToken);
 	void removeItem(const AutoSearchPtr as);
 
-	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDown, ctrlUp;
+	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDown, ctrlUp, ctrlDuplicate;
 	CEdit ctrlAsTime;
 	CStatic ctrlAsTimeLabel;
 	CUpDownCtrl Timespin;

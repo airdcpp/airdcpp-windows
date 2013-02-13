@@ -107,6 +107,11 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlChange.SetWindowText(CTSTRING(SETTINGS_CHANGE));
 	ctrlChange.SetFont(WinUtil::systemFont);
 
+	ctrlDuplicate.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		BS_PUSHBUTTON , 0, IDC_DUPLICATE);
+	ctrlDuplicate.SetWindowText(CTSTRING(DUPLICATE));
+	ctrlDuplicate.SetFont(WinUtil::systemFont);
+
 	ctrlDown.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_MOVE_DOWN);
 	ctrlDown.SetWindowText(CTSTRING(SETTINGS_BTN_MOVEDOWN ));
@@ -200,6 +205,9 @@ void AutoSearchFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 	rc.OffsetRect(button_width+2, 0);
 	ctrlChange.MoveWindow(rc);
+
+	rc.OffsetRect(button_width+2, 0);
+	ctrlDuplicate.MoveWindow(rc);
 	
 	//add a small space between these buttons
 	rc.OffsetRect(10 + button_width +2, 0);
@@ -272,6 +280,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		
 		asMenu.AppendMenu(MF_STRING, IDC_ADD, CTSTRING(ADD));
 		asMenu.AppendMenu(MF_STRING, IDC_CHANGE, CTSTRING(SETTINGS_CHANGE));
+		asMenu.AppendMenu(MF_STRING, IDC_DUPLICATE, CTSTRING(DUPLICATE));
 		asMenu.AppendMenu(MF_STRING, IDC_MOVE_UP, CTSTRING(SETTINGS_BTN_MOVEUP));
 		asMenu.AppendMenu(MF_STRING, IDC_MOVE_DOWN, CTSTRING(SETTINGS_BTN_MOVEDOWN));
 
@@ -351,41 +360,101 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 	return FALSE; 
 }
 
+void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg) {
+	dlg.searchString = as->getSearchString();
+	dlg.fileTypeStr = as->getFileType();
+	dlg.action = as->getAction();
+	dlg.remove = as->getRemove();
+	dlg.target = as->getTarget();
+	dlg.userMatch = as->getNickPattern();
+	dlg.matcherString = as->getMatcherString();
+	dlg.matcherType = as->getMethod();
+	dlg.expireTime = as->getExpireTime();
+	dlg.searchDays = as->searchDays;
+	dlg.startTime = as->startTime;
+	dlg.endTime = as->endTime;
+	dlg.targetType = as->getTargetType();
+	dlg.checkQueued = as->getCheckAlreadyQueued();
+	dlg.checkShared = as->getCheckAlreadyShared();
+	dlg.matchFullPath = as->getMatchFullPath();
+
+	if (as->getCurNumber() != dlg.curNumber)
+		as->setLastIncFinish(0);
+	dlg.curNumber = as->getCurNumber();
+	dlg.numberLen = as->getNumberLen();
+	dlg.maxNumber = as->getMaxNumber();
+	dlg.useParams = as->getUseParams();
+}
+
+void AutoSearchFrame::setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg) {
+	as->setSearchString(dlg.searchString);
+	as->setFileType(dlg.fileTypeStr);
+	as->setAction((AutoSearch::ActionType)dlg.action);
+	as->setRemove(dlg.remove);
+	as->setTargetType(dlg.targetType);
+	as->setTarget(dlg.target);
+	as->setMethod((StringMatch::Method)dlg.matcherType);
+	as->setMatcherString(dlg.matcherString);
+	as->setUserMatcher(dlg.userMatch);
+	as->setExpireTime(dlg.expireTime);
+	as->setCheckAlreadyQueued(dlg.checkQueued);
+	as->setCheckAlreadyShared(dlg.checkShared);
+	as->setMatchFullPath(dlg.matchFullPath);
+
+	as->startTime = dlg.startTime;
+	as->endTime = dlg.endTime;
+	as->searchDays = dlg.searchDays;
+
+	as->setCurNumber(dlg.curNumber);
+	as->setMaxNumber(dlg.maxNumber);
+	as->setNumberLen(dlg.numberLen);
+	as->setUseParams(dlg.useParams);
+}
 
 LRESULT AutoSearchFrame::onAdd(WORD , WORD , HWND , BOOL& ) {
 	AutoSearchDlg dlg;
 	dlg.expireTime = SETTING(AUTOSEARCH_EXPIRE_DAYS) > 0 ? GET_TIME() + (SETTING(AUTOSEARCH_EXPIRE_DAYS)*24*60*60) : 0;
 	dlg.fileTypeStr = SETTING(LAST_AS_FILETYPE);
 	if(dlg.DoModal() == IDOK) {
-		string search = dlg.searchString + "\r\n";
-		string::size_type j = 0;
-		string::size_type i = 0;
-
 		SettingsManager::getInstance()->set(SettingsManager::LAST_AS_FILETYPE, dlg.fileTypeStr);
-	
-		while((i = search.find("\r\n", j)) != string::npos) {
-			string str = search.substr(j, i-j);
-			j = i +2;
-			if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
-				AutoSearchPtr as = new AutoSearch(true, str, dlg.fileTypeStr, (AutoSearch::ActionType)dlg.action, dlg.remove, 
-					dlg.target, dlg.targetType, (StringMatch::Method)dlg.matcherType, dlg.matcherString, dlg.userMatch, dlg.expireTime, dlg.checkQueued, 
-					dlg.checkShared, dlg.matchFullPath);
-				as->startTime = dlg.startTime;
-				as->endTime = dlg.endTime;
-				as->searchDays = dlg.searchDays;
+		addFromDialog(dlg);
+	}
+	return 0;
+}
 
-				as->setCurNumber(dlg.curNumber);
-				as->setMaxNumber(dlg.maxNumber);
-				as->setNumberLen(dlg.numberLen);
-				as->setUseParams(dlg.useParams);
+LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if(ctrlAutoSearch.GetSelectedCount() == 1) {
+		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
+		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
 
-				AutoSearchManager::getInstance()->addAutoSearch(as, false);
-			} else if(search.size() < 5) { // dont report if empty line between/end when adding multiple
-				MessageBox(CTSTRING(LINE_EMPTY_OR_TOO_SHORT));
-			}
+		AutoSearchDlg dlg;
+		appendDialogParams(as, dlg);
+
+		if(dlg.DoModal() == IDOK) {
+			addFromDialog(dlg);
 		}
 	}
 	return 0;
+}
+
+void AutoSearchFrame::addFromDialog(const AutoSearchDlg& dlg) {
+	string search = dlg.searchString + "\r\n";
+	string::size_type j = 0;
+	string::size_type i = 0;
+	
+	while((i = search.find("\r\n", j)) != string::npos) {
+		string str = search.substr(j, i-j);
+		j = i +2;
+		if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
+			AutoSearchPtr as = new AutoSearch;
+
+			setItemProperties(as, dlg);
+
+			AutoSearchManager::getInstance()->addAutoSearch(as, false);
+		} else if(search.size() < 5) { // dont report if empty line between/end when adding multiple
+			MessageBox(CTSTRING(LINE_EMPTY_OR_TOO_SHORT));
+		}
+	}
 }
 
 LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
@@ -394,54 +463,10 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
 
 		AutoSearchDlg dlg;
-		dlg.searchString = as->getSearchString();
-		dlg.fileTypeStr = as->getFileType();
-		dlg.action = as->getAction();
-		dlg.remove = as->getRemove();
-		dlg.target = as->getTarget();
-		dlg.userMatch = as->getNickPattern();
-		dlg.matcherString = as->getMatcherString();
-		dlg.matcherType = as->getMethod();
-		dlg.expireTime = as->getExpireTime();
-		dlg.searchDays = as->searchDays;
-		dlg.startTime = as->startTime;
-		dlg.endTime = as->endTime;
-		dlg.targetType = as->getTargetType();
-		dlg.checkQueued = as->getCheckAlreadyQueued();
-		dlg.checkShared = as->getCheckAlreadyShared();
-		dlg.matchFullPath = as->getMatchFullPath();
-
-		if (as->getCurNumber() != dlg.curNumber)
-			as->setLastIncFinish(0);
-		dlg.curNumber = as->getCurNumber();
-		dlg.numberLen = as->getNumberLen();
-		dlg.maxNumber = as->getMaxNumber();
-		dlg.useParams = as->getUseParams();
+		appendDialogParams(as, dlg);
 
 		if(dlg.DoModal() == IDOK) {
-			as->setSearchString(dlg.searchString);
-			as->setFileType(dlg.fileTypeStr);
-			as->setAction((AutoSearch::ActionType)dlg.action);
-			as->setRemove(dlg.remove);
-			as->setTargetType(dlg.targetType);
-			as->setTarget(dlg.target);
-			as->setMethod((StringMatch::Method)dlg.matcherType);
-			as->setMatcherString(dlg.matcherString);
-			as->setUserMatcher(dlg.userMatch);
-			as->setExpireTime(dlg.expireTime);
-			as->setCheckAlreadyQueued(dlg.checkQueued);
-			as->setCheckAlreadyShared(dlg.checkShared);
-			as->setMatchFullPath(dlg.matchFullPath);
-
-			as->startTime = dlg.startTime;
-			as->endTime = dlg.endTime;
-			as->searchDays = dlg.searchDays;
-
-			as->setCurNumber(dlg.curNumber);
-			as->setMaxNumber(dlg.maxNumber);
-			as->setNumberLen(dlg.numberLen);
-			as->setUseParams(dlg.useParams);
-
+			setItemProperties(as, dlg);
 			if (AutoSearchManager::getInstance()->updateAutoSearch(as)) {
 				ctrlAutoSearch.DeleteItem(sel);
 				addEntry(as, sel);
@@ -529,6 +554,7 @@ LRESULT AutoSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHa
 	
 	::EnableWindow(GetDlgItem(IDC_REMOVE), (ctrlAutoSearch.GetSelectedCount() >= 1));
 	::EnableWindow(GetDlgItem(IDC_CHANGE), (ctrlAutoSearch.GetSelectedCount() == 1));
+	::EnableWindow(GetDlgItem(IDC_DUPLICATE), (ctrlAutoSearch.GetSelectedCount() == 1));
 	::EnableWindow(GetDlgItem(IDC_MOVE_UP), (ctrlAutoSearch.GetSelectedCount() == 1));
 	::EnableWindow(GetDlgItem(IDC_MOVE_DOWN), (ctrlAutoSearch.GetSelectedCount() == 1));
 	

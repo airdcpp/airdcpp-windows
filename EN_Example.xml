@@ -1764,5 +1764,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="PreferredMapper">Preferred port mapping interface</String>
 		<String Name="BindAddressMissing">The %s bind address %s doesn't appear to be available. Do you want to switch to listen to all interfaces?</String>
 		<String Name="SettingsLogAlreadyShared">Show warning about trying to download already shared files</String>
+		<String Name="Duplicate">Duplicate</String>
 	</Strings>
 </Language>
