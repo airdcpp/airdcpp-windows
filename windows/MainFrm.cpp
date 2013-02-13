@@ -1468,7 +1468,7 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 				passdlg.description = TSTRING(PASSWORD_DESC);
 				passdlg.title = TSTRING(PASSWORD_TITLE);
 				passdlg.ok = TSTRING(UNLOCK);
-				if(passdlg.DoModal(/*m_hWnd*/) == IDOK){
+				if(passdlg.DoModal(NULL) == IDOK){
 					tstring tmp = passdlg.line;
 					if (tmp == Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
 						ShowWindow(SW_SHOW);

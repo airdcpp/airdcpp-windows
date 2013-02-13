@@ -352,7 +352,7 @@ LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			FavoriteManager::getInstance()->setAutoGrant(ui->getUser(), !ui->grantSlot);
 			ui->grantSlot = !ui->grantSlot;
 			setImages(ui, l->iItem); //todo: only need to update slot image
-		} else if(l->iSubItem == COLUMN_FAVORITE) {
+		} else if(l->iSubItem == COLUMN_FAVORITE) {  //TODO: confirm removal.
 			if(ui->isFavorite)
 				FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
 			else
