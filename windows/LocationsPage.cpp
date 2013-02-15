@@ -58,7 +58,7 @@ PropPage::Item LocationsPage::items[] = {
 	{ IDC_DOWNLOADDIR,	SettingsManager::DOWNLOAD_DIRECTORY, PropPage::T_STR }, 
 	{ IDC_FAVDIRS_SHOW_SHARED, SettingsManager::SHOW_SHARED_DIRS_FAV, PropPage::T_BOOL },
 	{ IDC_FORMAT_REMOTE_TIME, SettingsManager::FORMAT_DIR_REMOTE_TIME, PropPage::T_BOOL },
-	{ IDC_CLEAR_DIR_HISTORY, SettingsManager::CLEAR_DIR_HISTORY, PropPage::T_BOOL },
+	{ IDC_CLEAR_DIR_HISTORY, SettingsManager::HISTORY_DIR_CLEAR, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 

@@ -1773,6 +1773,29 @@ void WinUtil::appendLanguageMenu(CComboBoxEx& ctrlLanguage) {
 	ctrlLanguage.SetCurSel(Localization::curLanguage);
 }
 
+void WinUtil::appendHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aType) {
+	// Add new items to the history dropdown list
+	while (ctrlCombo.GetCount())
+		ctrlCombo.DeleteString(0);
+
+	const auto& lastSearches = SettingsManager::getInstance()->getHistory(aType);
+	for(const auto& s: lastSearches) {
+		ctrlCombo.InsertString(0, s.c_str());
+	}
+}
+
+string WinUtil::addHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aType) {
+	string ret;
+	TCHAR *buf = new TCHAR[ctrlCombo.GetWindowTextLength()+1];
+	ctrlCombo.GetWindowText(buf, ctrlCombo.GetWindowTextLength()+1);
+	ret = Text::fromT(buf);
+	if(!ret.empty() && SettingsManager::getInstance()->addToHistory(buf, aType))
+		appendHistory(ctrlCombo, aType);
+
+	delete[] buf;
+	return ret;
+}
+
 void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
 	if (WinUtil::getOsMajor() == 6)
 		Edit_SetCueBannerTextFocused(hwnd, text, drawFocus);

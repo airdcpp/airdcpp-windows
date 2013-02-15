@@ -417,6 +417,8 @@ public:
 	static int setButtonPressed(int nID, bool bPressed = true);
 
 	static void appendLanguageMenu(CComboBoxEx& ctrlLanguage);
+	static void appendHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);
+	static string addHistory(CComboBox& ctrlExcluded, SettingsManager::HistoryType aType);
 
 	static string getReport(const Identity& identity, HWND hwnd);
 

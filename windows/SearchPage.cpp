@@ -43,7 +43,7 @@ PropPage::Item SearchPage::items[] = {
 	{ IDC_SKIPLIST_PRESET2, SettingsManager::SKIP_MSG_02, PropPage::T_STR },
 	{ IDC_SKIPLIST_PRESET3, SettingsManager::SKIP_MSG_03, PropPage::T_STR },
 	{ IDC_INTERVAL, SettingsManager::MINIMUM_SEARCH_INTERVAL, PropPage::T_INT },
-	{ IDC_SEARCH_HISTORY, SettingsManager::SEARCH_HISTORY, PropPage::T_INT }, 
+	{ IDC_SEARCH_HISTORY, SettingsManager::HISTORY_SEARCH_MAX, PropPage::T_INT }, 
 	{ IDC_EXPIRY_DAYS, SettingsManager::AUTOSEARCH_EXPIRE_DAYS, PropPage::T_INT }, 
 	{ IDC_DELAY_HOURS, SettingsManager::AS_DELAY_HOURS, PropPage::T_INT }, 
 	{ 0, 0, PropPage::T_END }

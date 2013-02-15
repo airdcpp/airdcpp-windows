@@ -453,7 +453,7 @@ LRESULT DirectoryListingFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, B
 }
 
 void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
-	auto search = dl->curSearch;
+	auto& search = dl->curSearch;
 	if (!search)
 		return;
 
@@ -477,11 +477,11 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 				break;
 			}
 		} else if(ii->type == ItemInfo::FILE && !search->isDirectory) {
-			if(search->matchesDirectFile(ii->file->getName(), ii->file->getSize())) {
+			if(search->matchesFile(ii->file->getName(), ii->file->getSize())) {
 				found = true;
 				break;
 			}
-		} else if(search->matchesDirectDirectoryName(ii->dir->getName())) {
+		} else if(search->matchesDirectory(ii->dir->getName())) {
 			if (search->matchesSize(ii->dir->getTotalSize(false))) {
 				found = true;
 				break;

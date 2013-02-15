@@ -28,6 +28,7 @@
 #include "RichTextBox.h"
 #include "MenuBaseHandlers.h"
 
+#include "../client/AdcSearch.h"
 #include "../client/Client.h"
 #include "../client/SearchManager.h"
 
@@ -145,7 +146,6 @@ public:
 		return 0;
 	}
 
-	void updateSkipList();
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void runUserCommand(UserCommand& uc);
 
@@ -435,7 +435,7 @@ private:
 	CContainedWindow purgeContainer;
 	CContainedWindow ctrlFilterContainer;
 	CContainedWindow ctrlFilterSelContainer;
-	CContainedWindow ctrlSkiplistContainer;
+	CContainedWindow ctrlExcludedContainer;
 	CContainedWindow SkipBoolContainer;
 	tstring filter;
 	
@@ -447,19 +447,18 @@ private:
 	SearchInfoList ctrlResults;
 	TypedListViewCtrl<HubInfo, IDC_HUB> ctrlHubs;
 
-	StringList search;
+	unique_ptr<AdcSearch> curSearch;
 	StringList wholeTargets;
 	SearchInfo::List pausedResults;
 
 	CEdit ctrlFilter;
 	CComboBox ctrlFilterSel;
-	CComboBox ctrlSkiplist;
+	CComboBox ctrlExcluded;
 
 	StringMatch searchSkipList;
 
 	bool onlyFree;
 	bool UseSkiplist;
-	bool isHash;
 	bool expandSR;
 	bool running;
 	bool exactSize1;
@@ -493,6 +492,7 @@ private:
 	StringList lastDisabledHubs;
 
 	void onEnter();
+
 	void onTab(bool shift);
 	
 	void on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept;

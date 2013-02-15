@@ -76,10 +76,10 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	hubsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
 	ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 	ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
-	ctrlSkiplistContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
+	ctrlExcludedContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 	SkipBoolContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
-	showUI(true), onlyFree(false), closed(false), isHash(false), UseSkiplist(false), droppedResults(0), resultsCount(0),
+	showUI(true), onlyFree(false), closed(false), UseSkiplist(false), droppedResults(0), resultsCount(0),
 	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false)
 {	
 	SearchManager::getInstance()->addListener(this);
@@ -94,11 +94,6 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	ctrlSearchBox.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
-
-	auto lastSearches = SettingsManager::getInstance()->getSearchHistory();
-	for(const auto& s: lastSearches) {
-		ctrlSearchBox.InsertString(0, s.c_str());
-	}
 
 	searchBoxContainer.SubclassWindow(ctrlSearchBox.m_hWnd);
 	ctrlSearchBox.SetExtendedUI();
@@ -117,11 +112,15 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ES_AUTOHSCROLL | ES_NUMBER, WS_EX_CLIENTEDGE);
 	sizeContainer.SubclassWindow(ctrlSize.m_hWnd);
 	
-	ctrlSkiplist.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+	ctrlExcluded.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
-	ctrlSkiplist.SetFont(WinUtil::font);
-	ctrlSkiplist.SetWindowText(Text::toT(SETTING(SKIPLIST_SEARCH)).c_str());
-	ctrlSkiplistContainer.SubclassWindow(ctrlSkiplist.m_hWnd);
+	ctrlExcluded.SetFont(WinUtil::font);
+	ctrlExcluded.SetWindowText(Text::toT(SETTING(SKIPLIST_SEARCH)).c_str());
+	ctrlExcludedContainer.SubclassWindow(ctrlExcluded.m_hWnd);
+
+	WinUtil::appendHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
+	WinUtil::appendHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
+
 	searchSkipList.pattern = SETTING(SKIPLIST_SEARCH);
 	searchSkipList.setMethod(StringMatch::WILDCARD);
 	searchSkipList.prepare();
@@ -255,11 +254,6 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ctrlSizeMode.SetCurSel(0);
 
 	ctrlFileType.fillList(!initialString.empty() ? initialType : SETTING(LAST_SEARCH_FILETYPE), WinUtil::textColor, WinUtil::bgColor);
-	
-	ctrlSkiplist.AddString(Text::toT(SETTING(SKIP_MSG_01)).c_str());
-	ctrlSkiplist.AddString(Text::toT(SETTING(SKIP_MSG_02)).c_str());
-	ctrlSkiplist.AddString(Text::toT(SETTING(SKIP_MSG_03)).c_str());
-
 
 	// Create listview columns
 	WinUtil::splitTokens(columnIndexes, SETTING(SEARCHFRAME_ORDER), COLUMN_LAST);
@@ -406,14 +400,6 @@ void SearchFrame::onEnter() {
 	if (onlyFree != SETTING(FREE_SLOTS_DEFAULT))
 		SettingsManager::getInstance()->set(SettingsManager::FREE_SLOTS_DEFAULT, onlyFree);
 
-	updateSkipList();
-
-	TCHAR *buf = new TCHAR[ctrlSkiplist.GetWindowTextLength()+1];
-	ctrlSkiplist.GetWindowText(buf, ctrlSkiplist.GetWindowTextLength()+1);
-	SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SEARCH, Text::fromT(buf));
-	delete[] buf;
-	
-
 	if (expandSR != SETTING(EXPAND_DEFAULT))
 		SettingsManager::getInstance()->set(SettingsManager::EXPAND_DEFAULT, expandSR);
 
@@ -437,9 +423,15 @@ void SearchFrame::onEnter() {
 	if(!clients.size())
 		return;
 
-	tstring s(ctrlSearch.GetWindowTextLength() + 1, _T('\0'));
+	/*tstring s(ctrlSearch.GetWindowTextLength() + 1, _T('\0'));
 	ctrlSearch.GetWindowText(&s[0], s.size());
 	s.resize(s.size()-1);
+	if(s.empty())
+		return;*/
+
+	string s = WinUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
+	if (s.empty())
+		return;
 
 	tstring size(ctrlSize.GetWindowTextLength() + 1, _T('\0'));
 	ctrlSize.GetWindowText(&size[0], size.size());
@@ -467,33 +459,13 @@ void SearchFrame::onEnter() {
 
 	::EnableWindow(GetDlgItem(IDC_SEARCH_PAUSE), TRUE);
 	ctrlPauseSearch.SetWindowText(CTSTRING(PAUSE_SEARCH));
-	StringList excluded;
-	
-	{
-		Lock l(cs);
-		search = StringTokenizer<string>(Text::fromT(s), ' ').getTokens();
-		s.clear();
-		//strip out terms beginning with -
-		for(auto si = search.begin(); si != search.end(); ) {
-			if(si->empty()) {
-				si = search.erase(si);
-				continue;
-			}
-			if ((*si)[0] != '-') {
-				s += Text::toT(*si + ' ');	
-			} else {
-				auto ex = *si;
-				excluded.push_back(ex.erase(0, 1));
-			}
-			++si;
-		}
 
+
+	string excluded = WinUtil::addHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
+	/*{
+		Lock l(cs);
 		s = s.substr(0, max(s.size(), static_cast<tstring::size_type>(1)) - 1);
-		token = Util::toString(Util::rand());
-	}
-	
-	if(s.empty())
-		return;
+	}*/
 
 	SearchManager::SizeModes mode((SearchManager::SizeModes)ctrlMode.GetCurSel());
 	if(llsize == 0)
@@ -504,32 +476,23 @@ void SearchFrame::onEnter() {
 
 	ctrlStatus.SetText(3, _T(""));
 	ctrlStatus.SetText(4, _T(""));
-	target = s;
+	target = Text::toT(s);
 	::InvalidateRect(m_hWndStatusBar, NULL, TRUE);
 
 	droppedResults = 0;
 	resultsCount = 0;
 	running = true;
 
-	// Add new searches to the last-search dropdown list
-	if(SettingsManager::getInstance()->addSearchToHistory(s)) {
-		while (ctrlSearchBox.GetCount())
-			ctrlSearchBox.DeleteString(0);
-
-		auto lastSearches = SettingsManager::getInstance()->getSearchHistory();
-		for(const auto& s: lastSearches) {
-			ctrlSearchBox.InsertString(0, s.c_str());
-		}
-	}
-
 	if (ctrlSearchBox.GetCount())
 		ctrlSearchBox.SetCurSel(0);
-	SetWindowText((TSTRING(SEARCH) + _T(" - ") + s).c_str());
+	SetWindowText((TSTRING(SEARCH) + _T(" - ") + target).c_str());
 	
 	// stop old search
 	ClientManager::getInstance()->cancelSearch((void*)this);	
 
-	// Get ADC searchtype extensions if any is selected
+
+
+	// Get ADC search type extensions if any is selected
 	StringList extList;
 	int ftype=0;
 	string typeName;
@@ -543,19 +506,25 @@ void SearchFrame::onEnter() {
 	if (initialString.empty() && typeName != SETTING(LAST_SEARCH_FILETYPE))
 		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, typeName);
 
-	isHash = (ftype == SearchManager::TYPE_TTH);
 
-	{
+
+	// perform the search
+	auto newSearch = AdcSearch::getSearch(s, excluded, exactSize2, ftype, mode, extList);
+	if (newSearch) {
 		Lock l(cs);
-		
+		curSearch.reset(newSearch);
+		token = Util::toString(Util::rand());
+
 		searchStartTime = GET_TICK();
-		// more 5 seconds for transfering results
-		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, Text::fromT(s), llsize, 
-			(SearchManager::TypeModes)ftype, mode, token, extList, excluded, Search::MANUAL, (void*)this) + 5000;
+		// more 5 seconds for transferring results
+		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, s, llsize, 
+			(SearchManager::TypeModes)ftype, mode, token, extList, AdcSearch::parseSearchString(excluded), Search::MANUAL, (void*)this) + 5000;
 
 		waiting = true;
 	}
 	
+
+
 	ctrlStatus.SetText(2, (TSTRING(TIME_LEFT) + _T(" ") + Util::formatSecondsW((searchEndTime - searchStartTime) / 1000)).c_str());
 
 	if(SETTING(CLEAR_SEARCH)) // Only clear if the search was sent
@@ -566,42 +535,28 @@ void SearchFrame::onEnter() {
 void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept {
 	if(!aResult->getToken().empty()) {
 		if (token != aResult->getToken()) {
-			droppedResults++;
-			PostMessage(WM_SPEAKER, FILTER_RESULT);
 			return;
 		}
 
-		//no futher validation, trust that the other client knows what he's sending...
+		//no further validation, trust that the other client knows what he's sending...
 	} else {
 		// Check that this is really a relevant search result...
 		Lock l(cs);
-		if(search.empty()) {
+		if (!curSearch)
 			return;
-		}
-		
-		if(isHash) {
-			if(aResult->getType() != SearchResult::TYPE_FILE || TTHValue(search[0]) != aResult->getTTH()) {
-				droppedResults++;
-				PostMessage(WM_SPEAKER, FILTER_RESULT);
-				return;
+
+		bool valid = true;
+		if (aResult->getType() == SearchResult::TYPE_DIRECTORY) {
+			if (!curSearch->matchesDirectory(aResult->getFile())) {
+				valid = false;
 			}
 		} else {
-			// match all here
-			for(const auto& s: search) {
-				if((*s.begin() != '-' && Util::findSubString(aResult->getFile(), s) == -1) ||
-					(*s.begin() == '-' && s.size() != 1 && Util::findSubString(aResult->getFile(), s.substr(1)) != -1)
-					) 
-				{
-					droppedResults++;
-					PostMessage(WM_SPEAKER, FILTER_RESULT);
-					return;
-				}
-	
-
+			if (!(curSearch->hasRoot ? curSearch->root == aResult->getTTH() : curSearch->matchesFile(aResult->getFile(), aResult->getSize()))) {
+				valid = false;
 			}
 		}
 
-		if(!isHash && UseSkiplist && searchSkipList.match(aResult->getFileName())) {
+		if (!valid) {
 			droppedResults++;
 			PostMessage(WM_SPEAKER, FILTER_RESULT);
 			return;
@@ -924,7 +879,7 @@ LRESULT SearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		SearchManager::getInstance()->removeListener(this);
  		ClientManager::getInstance()->removeListener(this);
 		frames.erase(m_hWnd);
-		updateSkipList();
+		//updateSkipList();
 
 		closed = true;
 		PostMessage(WM_CLOSE);
@@ -1088,7 +1043,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		rc.top += spacing;
 		rc.bottom = rc.top + 21;
 
-		ctrlSkiplist.MoveWindow(rc);
+		ctrlExcluded.MoveWindow(rc);
 		ctrlSkipBool.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
 
 		// "Hubs"
@@ -1131,7 +1086,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlSizeMode.MoveWindow(rc);
 		ctrlFileType.MoveWindow(rc);
 		ctrlPauseSearch.MoveWindow(rc);
-		ctrlSkiplist.MoveWindow(rc);
+		ctrlExcluded.MoveWindow(rc);
 	}
 
 	POINT pt;
@@ -1563,7 +1518,7 @@ LRESULT SearchFrame::onItemChangedHub(int /* idCtrl */, LPNMHDR pnmh, BOOL& /* b
 LRESULT SearchFrame::onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) 
 {
 	ctrlSearchBox.ResetContent();
-	SettingsManager::getInstance()->clearSearchHistory();
+	SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_SEARCH);
 	return 0;
 }
 
@@ -1695,7 +1650,7 @@ LRESULT SearchFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*
 
 	return 0;
 }
-void SearchFrame::updateSkipList() {
+/*void SearchFrame::updateSkipList() {
 	if (UseSkiplist != SETTING(SEARCH_SKIPLIST))
 		SettingsManager::getInstance()->set(SettingsManager::SEARCH_SKIPLIST, UseSkiplist);
 
@@ -1713,7 +1668,7 @@ void SearchFrame::updateSkipList() {
 		}
 		delete[] buf;
 	}
-}
+}*/
 
 bool SearchFrame::parseFilter(FilterModes& mode, int64_t& size) {
 	tstring::size_type start = (tstring::size_type)tstring::npos;

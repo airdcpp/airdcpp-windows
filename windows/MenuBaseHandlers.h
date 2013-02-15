@@ -256,14 +256,13 @@ public:
 			if(!WinUtil::browseDirectory(target, ((T*)this)->m_hWnd))
 				return;
 
-			SettingsManager::getInstance()->addDirToHistory(target);
 		} else {
 			target = Text::toT(SETTING(DOWNLOAD_DIRECTORY) + fileName);
 			if(!WinUtil::browseFile(target, ((T*)this)->m_hWnd))
 				return;
 
-			SettingsManager::getInstance()->addDirToHistory(Util::getFilePath(target));
 		}
+		SettingsManager::getInstance()->addToHistory(showDirDialog ? target : Util::getFilePath(target), SettingsManager::HISTORY_DIR);
 		onDownload(Text::fromT(target), useWhole);
 	}
 
@@ -304,7 +303,7 @@ public:
 		appendVirtualItems(targetMenu, wholeDir, true);
 
 		//Append dir history
-		auto ldl = SettingsManager::getInstance()->getDirHistory();
+		const auto& ldl = SettingsManager::getInstance()->getHistory(SettingsManager::HISTORY_DIR);
 		if(!ldl.empty()) {
 			targetMenu.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
 			for(auto& i: ldl) {
@@ -313,7 +312,7 @@ public:
 			}
 
 			targetMenu.appendSeparator();
-			targetMenu.appendItem(TSTRING(CLEAR_HISTORY), [] { SettingsManager::getInstance()->clearDirHistory(); });
+			targetMenu.appendItem(TSTRING(CLEAR_HISTORY), [] { SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_DIR); });
 		}
 
 		//Append TTH locations

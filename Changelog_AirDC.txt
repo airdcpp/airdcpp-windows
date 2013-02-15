@@ -814,3 +814,4 @@ Fixed:
 - Fix possible crashes when downloading file lists from the queue tab
 - The installer will now detect Windows 8 correctly
 - Avoid problems on update check when using Avast antivirus
+- Fix per-hub passive mode

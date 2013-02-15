@@ -174,7 +174,7 @@ void PrivateFrame::updateOnlineStatus() {
 	const CID& cid = replyTo.user->getCID();
 	const string& hint = replyTo.hint;
 
-	dcassert(!replyTo.hint.empty());
+	dcassert(!hint.empty());
 
 	//get the hub and online status
 	auto hubsInfoNew = move(WinUtil::getHubNames(cid));
@@ -198,7 +198,7 @@ void PrivateFrame::updateOnlineStatus() {
 	if(hubsInfoNew.second) {	
 		setDisconnected(false);
 		if(!online) {
-			addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + WinUtil::getNicks(replyTo.user->getCID()) + _T(" - ") + hubsInfoNew.first + _T("]"));
+			addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + WinUtil::getNicks(cid) + _T(" - ") + hubsInfoNew.first + _T("]"));
 			setIcon(userOnline);
 		}
 	} else {
@@ -214,12 +214,12 @@ void PrivateFrame::updateOnlineStatus() {
 			showHubSelection(true);
 		}
 
-		boost::for_each(hubs, [&](const StringPair &hub) {
+		for (const auto& hub: hubs) {
 			auto idx = ctrlHubSel.AddString(Text::toT(hub.second).c_str());
-			if(hub.first == replyTo.hint) {
+			if(hub.first == hint) {
 				ctrlHubSel.SetCurSel(idx);
 			}
-		});
+		}
 
 		if(ctrlHubSel.GetCurSel() == -1) {
 			//the hub was not found
@@ -229,7 +229,7 @@ void PrivateFrame::updateOnlineStatus() {
 				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
 			else
 				addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)));
-		} else if (!oldHubPair.first.empty() && oldHubPair.first != replyTo.hint) {
+		} else if (!oldHubPair.first.empty() && oldHubPair.first != hint) {
 			addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
 		} else if (!ctrlClient.getClient()) {
 			changeClient();
@@ -240,7 +240,7 @@ void PrivateFrame::updateOnlineStatus() {
 
 	hubNames = move(hubsInfoNew.first);
 	online = hubsInfoNew.second;
-	SetWindowText((WinUtil::getNicks(replyTo.user->getCID()) + _T(" - ") + hubNames).c_str());
+	SetWindowText((WinUtil::getNicks(cid) + _T(" - ") + hubNames).c_str());
 }
 
 void PrivateFrame::showHubSelection(bool show) {
@@ -428,8 +428,6 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 			WinUtil::hiddenCreateEx(this);
 		else
 			CreateEx(WinUtil::mdiClient);
-
-		//updateOnlineStatus();
 	}
 
 	CRect r;
