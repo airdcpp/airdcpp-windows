@@ -74,8 +74,10 @@ static const FieldName fields[] =
 
 UsersFrame::UsersFrame() : closed(false), startup(true), 
 	ctrlShowInfoContainer(WC_BUTTON, this, STATUS_MAP), 
+	ctrlFilterContainer(WC_EDIT, this, STATUS_MAP), 
 	showInfo(SETTING(FAV_USERS_SHOW_INFO)),
-	listFav(SETTING(FAV_USERS_ONLY_FAV))
+	listFav(SETTING(FAV_USERS_ONLY_FAV)),
+	filter(COLUMN_LAST, [this] { updateList(); })
 { }
 
 LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -142,6 +144,11 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	
 	ctrlUsers.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlUsers.setSortColumn(COLUMN_NICK);
+
+	filter.addFilterBox(ctrlStatus.m_hWnd);
+	filter.addColumnBox(ctrlStatus.m_hWnd, ctrlUsers.getColumnList());
+	filter.addMethodBox(ctrlStatus.m_hWnd);
+	ctrlFilterContainer.SubclassWindow(filter.getFilterBox().m_hWnd); //subclass the CEdit in order to handle its messages.
 
 	ClientManager::getInstance()->lockRead();
 	auto ul = ClientManager::getInstance()->getUsers();
@@ -247,8 +254,18 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		ctrlStatus.SetParts(3, w);
 
 		ctrlStatus.GetRect(0, sr);
-		sr.left += 2;
-		sr.right = ctrlShowFav.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowFav.m_hWnd, WinUtil::systemFont) + 16;
+		//filters
+		sr.left += 5;
+		sr.right = sr.left + 130;
+		filter.getFilterBox().MoveWindow(sr);
+		sr.left  = sr.right + 4;
+		sr.right = sr.left + 100;
+		filter.getFilterColumnBox().MoveWindow(sr);
+		sr.left  = sr.right + 4;
+		sr.right = sr.left + 100;
+		filter.getFilterMethodBox().MoveWindow(sr);
+		sr.left = sr.right +4;
+		sr.right = sr.left + ctrlShowFav.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowFav.m_hWnd, WinUtil::systemFont) + 16;
 		ctrlShowFav.MoveWindow(sr);
 		
 		ctrlStatus.GetRect(2, sr);
@@ -264,7 +281,6 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		if(GetSinglePaneMode() != SPLIT_PANE_NONE)
 			SetSinglePaneMode(SPLIT_PANE_NONE);
 	}
-		
 	CRect rc = rect;
 	ctrlUsers.MoveWindow(rc);
 	SetSplitterRect(rc);
@@ -351,7 +367,7 @@ LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 		if(l->iSubItem == COLUMN_SLOT && ui->isFavorite) {
 			FavoriteManager::getInstance()->setAutoGrant(ui->getUser(), !ui->grantSlot);
 			ui->grantSlot = !ui->grantSlot;
-			setImages(ui, l->iItem); //todo: only need to update slot image
+			setImages(ui, l->iItem); // TODO: only need to update slot image
 		} else if(l->iSubItem == COLUMN_FAVORITE) {  //TODO: confirm removal.
 			if(ui->isFavorite)
 				FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
@@ -441,7 +457,7 @@ void UsersFrame::addUser(const UserPtr& aUser, const string& aUrl) {
 	auto ui = userInfos.find(aUser);
 	if(ui == userInfos.end()) {
 		auto x = userInfos.emplace(aUser, UserInfo(aUser, aUrl)).first;
-		if(show(aUser, false)) {
+		if(matches(x->second)) {
 			x->second.update(aUser);
 			ctrlUsers.insertItem(&x->second, 0);
 		}
@@ -462,16 +478,16 @@ void UsersFrame::updateUser(const UserPtr& aUser) {
 			}
 			return;
 		}
+		if(matches(*ui)) {
+			int pos = ctrlUsers.findItem(ui);
+			if(pos != -1) {
+				ctrlUsers.updateItem(pos);
+			} else {
+				pos = ctrlUsers.insertItem(ui, 0);
+			}
 
-		int pos = ctrlUsers.findItem(ui);
-		if(pos != -1) {
-			ctrlUsers.updateItem(pos);
-		} else {
-			pos = ctrlUsers.insertItem(ui, 0);
+			setImages(ui, pos);
 		}
-
-		setImages(ui, pos);
-
 	}
 }
 
@@ -480,21 +496,32 @@ void UsersFrame::updateList() {
 	ctrlUsers.DeleteAllItems();
 	ctrlInfo.SetWindowText(_T(""));
 
-	for(auto& ui: userInfos | map_values){
-		if(!show(ui.getUser(), false)) {
-			continue;
+	auto i = userInfos.begin();
+	auto filterPrep = filter.prepare();
+	auto filterInfoF = [this, &i](int column) { return Text::fromT(i->second.getText(column)); };
+
+	for(; i != userInfos.end(); ++i) {
+		if((filter.empty() || filter.match(filterPrep, filterInfoF)) && show(i->second.getUser(), false)) {
+			int p = ctrlUsers.insertItem(&i->second,0);
+			i->second.update(i->second.getUser());
+			setImages(&i->second, p);
+			ctrlUsers.updateItem(p);
 		}
-		int i = ctrlUsers.insertItem(&ui,0);
-		ui.update(ui.getUser());
-		setImages(&ui, i);
-		ctrlUsers.updateItem(i);
 	}
 	ctrlUsers.SetRedraw(TRUE);
 }
 
+bool UsersFrame::matches(const UserInfo &ui) {
+	if(!filter.empty() && !filter.match(filter.prepare(), [this, &ui](int column) { return Text::fromT(ui.getText(column)); })) {
+		return false;
+	}
+
+	return show(ui.getUser(), false);
+}
+
 static bool isFav(const UserPtr &u) { return FavoriteManager::getInstance()->isFavoriteUser(u); }
 
-//currently we dont list offline users unless they are favorites
+//currently we don't list offline users unless they are favorites
 bool UsersFrame::show(const UserPtr &u, bool any) const {
 	if(any && (u->isOnline() || isFav(u))) {
 		return true;

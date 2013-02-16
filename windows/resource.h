@@ -1236,7 +1236,9 @@
 #define IDC_AWAY_IDLE_TEXT_BEGIN        1695
 #define IDC_AWAY_MODE                   1696
 #define IDC_TAB1                        1697
+#define IDC_SCROLLBAR1                  1698
 #define IDC_EDIT4                       1699
+#define IDC_SCROLLBAR2                  1699
 #define IDC_PREVIEW_APP                 1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_TOOLBAR_ADD                 2200
@@ -1586,7 +1588,7 @@
 #define IDC_SHOW_INFO                   15132
 #define IDC_SHOW_FAV                    15133
 #define IDC_SHOW_ONLINE                 15134
-#define IDC_DUPLICATE	                15135
+#define IDC_DUPLICATE                   15135
 #define ID_TOGGLE_TOOLBAR               15999
 #define ID_TOGGLE_TBSTATUS              16900
 #define ID_LOCK_TB                      18900
@@ -1623,7 +1625,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1698
+#define _APS_NEXT_CONTROL_VALUE         1700
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

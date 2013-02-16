@@ -1765,5 +1765,9 @@ Do you want to use this destination anyway?</String>
 		<String Name="BindAddressMissing">The %s bind address %s doesn't appear to be available. Do you want to switch to listen to all interfaces?</String>
 		<String Name="SettingsLogAlreadyShared">Show warning about trying to download already shared files</String>
 		<String Name="Duplicate">Duplicate</String>
+		<String Name="PartialMatch">Partial match</String>
+		<String Name="RegularExpression">RegEx</String>
+		<String Name="Wildcard">Wildcard</String>
+		<String Name="ExactMatch">Exact match</String>
 	</Strings>
 </Language>

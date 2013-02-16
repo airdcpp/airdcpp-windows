@@ -513,10 +513,12 @@ public:
 			}
 		}
 	}
-
 	//find the original position of the column at the current position.
 	inline uint8_t findColumn(int col) const { return columnIndexes[col]; }	
-	
+
+	typedef vector< ColumnInfo* > ColumnList;
+	ColumnList& getColumnList() { return columnList; }
+
 private:
 	int sortColumn;
 	bool sortAscending;
@@ -530,7 +532,6 @@ private:
 		return (t->sortAscending ? result : -result);
 	}
 
-	typedef vector< ColumnInfo* > ColumnList;
 	typedef ColumnList::const_iterator ColumnIter;
 
 	ColumnList columnList;

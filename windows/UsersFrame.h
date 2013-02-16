@@ -27,6 +27,7 @@
 #include "TypedListViewCtrl.h"
 #include "MenuBaseHandlers.h"
 #include "RichTextBox.h"
+#include "ListFilter.h"
 
 #include "../client/FavoriteManager.h"
 
@@ -62,12 +63,14 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_EDIT, onEdit)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
+
 		CHAIN_MSG_MAP(uibBase)
 		CHAIN_MSG_MAP(splitBase)
 		CHAIN_MSG_MAP(baseClass)
 		ALT_MSG_MAP(STATUS_MAP)
 			COMMAND_ID_HANDLER(IDC_SHOW_INFO, onShow)
 			COMMAND_ID_HANDLER(IDC_SHOW_FAV, onShow)
+			CHAIN_MSG_MAP_MEMBER(filter)
 	END_MSG_MAP()
 		
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -171,9 +174,12 @@ private:
 	CImageList images;
 	RichTextBox ctrlInfo;
 	CContainedWindow ctrlShowInfoContainer;
+	CContainedWindow ctrlFilterContainer;
 	CButton ctrlShowInfo;
 	CButton ctrlShowFav;
 	CToolTipCtrl ctrlTooltips;
+
+	ListFilter filter;
 
 	std::unordered_map<UserPtr, UserInfo, User::Hash> userInfos;
 
@@ -188,6 +194,7 @@ private:
 
 	void updateInfoText(const UserInfo* ui);
 	void updateList();
+	bool matches(const UserInfo& ui);
 	bool show(const UserPtr &u, bool any) const;
 	void addUser(const UserPtr& aUser, const string& aUrl);
 	void updateUser(const UserPtr& aUser);
