@@ -300,6 +300,7 @@
     </ClCompile>
     <ClCompile Include="client\StringDefs.cpp" />
     <ClCompile Include="client\StringMatch.cpp" />
+    <ClCompile Include="client\StringSearch.cpp" />
     <ClCompile Include="client\TargetUtil.cpp" />
     <ClCompile Include="client\Text.cpp" />
     <ClCompile Include="client\Thread.cpp" />
@@ -383,6 +384,7 @@
     <ClInclude Include="client\GetSet.h" />
     <ClInclude Include="client\HashBloom.h" />
     <ClInclude Include="client\HashCalc.h" />
+    <ClInclude Include="client\HashedFile.h" />
     <ClInclude Include="client\HashManager.h" />
     <ClInclude Include="client\HashValue.h" />
     <ClInclude Include="client\HighlightManager.h" />

@@ -281,6 +281,9 @@
     <ClCompile Include="client\QueueItemBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\StringSearch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -725,6 +728,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\QueueItemBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\HashedFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

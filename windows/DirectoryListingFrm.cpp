@@ -1503,6 +1503,7 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 			switch(col) {
 				case COLUMN_EXACTSIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
 				case COLUMN_SIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
+				case COLUMN_DATE: return compare(a->dir->getDate(), b->dir->getDate());
 				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
 			}
 		} else {
@@ -1514,6 +1515,7 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 		switch(col) {
 			case COLUMN_EXACTSIZE: return compare(a->file->getSize(), b->file->getSize());
 			case COLUMN_SIZE: return compare(a->file->getSize(), b->file->getSize());
+			case COLUMN_DATE: return compare(a->file->getDate(), b->file->getDate());
 			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), false);
 		}
 	}
@@ -1534,7 +1536,10 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize(true)) : Util::formatExactSize(file->getSize());
 		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
 		case COLUMN_TTH: return (type == FILE && !SettingsManager::lanMode) ? Text::toT(file->getTTH().toBase32()) : Util::emptyStringT;
-		case COLUMN_DATE: return (type == DIRECTORY && dir->getDate() > 0) ? Text::toT(Util::getDateTime(dir->getDate())) : Util::emptyStringT;
+		case COLUMN_DATE: {
+			auto date = type == DIRECTORY ? dir->getDate() : file->getDate();
+			return date > 0 ? Text::toT(Util::getDateTime(date)) : Util::emptyStringT;
+		}
 		default: return Util::emptyStringT;
 	}
 }

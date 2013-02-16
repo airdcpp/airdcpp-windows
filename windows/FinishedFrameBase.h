@@ -388,9 +388,9 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 					UINT idCommand = shellMenu.ShowContextMenu(m_hWnd, pt);
 					if(idCommand != 0) {
 						PostMessage(WM_COMMAND, idCommand);
-
-						bShellMenuShown = true;
 					}
+
+					bShellMenuShown = true;
 				}
 			}
 

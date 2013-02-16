@@ -815,3 +815,4 @@ Fixed:
 - The installer will now detect Windows 8 correctly
 - Avoid problems on update check when using Avast antivirus
 - Fix per-hub passive mode
+- Fix empty hub names in finished transfers, fix the shell menu actions
