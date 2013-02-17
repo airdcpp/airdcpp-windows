@@ -28,7 +28,7 @@
 #include "NetworkPage.h"
 #include "WinUtil.h"
 
-COptionsSheet::COptionsSheet(UINT uStartPage, HWND hWndParent, SettingsManager* s) :
+/*COptionsSheet::COptionsSheet(UINT uStartPage, HWND hWndParent, SettingsManager* s) :
   CPropertySheetImpl<COptionsSheet> ((LPCTSTR)NULL, uStartPage, hWndParent ),
   m_bCentered(false), ipv6Page(new ProtocolPage(s, true)), ipv4Page(new ProtocolPage(s, false))
 {
@@ -73,9 +73,11 @@ void COptionsSheet::onInit() {
 	MoveWindow(&rcWindow, TRUE);
 
 	//tabContainer.SubclassWindow(tab.m_hWnd);
-}
+}*/
 
-NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s), protocols(0, m_hWnd, s), ipv6Page(new ProtocolPage(s, true)), ipv4Page(new ProtocolPage(s, false)) {
+NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s) {
+	/*ipv6Page(new ProtocolPage(s, true)), ipv4Page(new ProtocolPage(s, false))*/
+	/*protocols(0, m_hWnd, s),*/
 	SetTitle(CTSTRING(SETTINGS_NETWORK));
 	m_psp.dwFlags |= PSP_RTLREADING;
 }
@@ -109,6 +111,10 @@ PropPage::Item NetworkPage::items[] = {
 void NetworkPage::write()
 {
 	PropPage::write((HWND)(*this), items);
+	if (ipv4Page)
+		ipv4Page->write();
+	if (ipv6Page)
+		ipv6Page->write();
 }
 
 LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -130,41 +136,41 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	}
 
 	MapperCombo.SetCurSel(sel);
-	//protocols.onInit();
 
-	CRect rcPage;
-	GetClientRect(&rcPage);
-	//CRect rcClient, rcTab, rcPage, rcWindow;
-	//CWindow tab = GetTabControl();
-	//CWindow page = IndexToHwnd(this->m_psh.nStartPage);
+	ctrlIPv4.Attach(GetDlgItem(IDC_IPV4));
+	ctrlIPv6.Attach(GetDlgItem(IDC_IPV6));
 
-	//GetClientRect(&rcClient);
-
-	//tab.GetWindowRect(&rcTab);
-	//GetClientRect(&rcPage);
-	//page.MapWindowPoints(m_hWnd,&rcPage);
-	//GetWindowRect(&rcWindow);
-	//::MapWindowPoints(NULL, m_hWnd, (LPPOINT)&rcTab, 2);
-
-	//ScrollWindow(SPACE_LEFT + TREE_WIDTH + SPACE_MID-rcPage.left, SPACE_TOP-rcPage.top);
-	//rcWindow.right += SPACE_LEFT + TREE_WIDTH + SPACE_MID - rcPage.left - (rcClient.Width()-rcTab.right) + SPACE_RIGHT;
-	//rcWindow.bottom += SPACE_TOP - rcPage.top;
-
-	//ipv4Page->ShowWindow(SW_HIDE);
-
-	//MoveWindow(&rcWindow, TRUE);
-
-	//ipv4Page->SubclassWindow(GetDlgItem(IDC_TREE1));
-	//DialogBox(
-
-	//DialogBox(hInst, MAKEINTRESOURCE(IDD_CHILD), hParent, Child);
-	//CreateDialog();
-	ipv4Page->ShowWindow(SW_SHOW);
-	ipv4Page->MoveWindow(rcPage);
+	showProtocol(false);
 	return TRUE;
 }
 
+LRESULT NetworkPage::onClickProtocol(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	//hide the current window
+	bool v6 = wID == IDC_IPV6;
+	auto& curWindow = wID == IDC_IPV6 ? ipv4Page : ipv6Page;
+	if (curWindow)
+		curWindow->ShowWindow(SW_HIDE);
 
+	CheckDlgButton(!v6 ? IDC_IPV6 : IDC_IPV4, BST_UNCHECKED);
+
+	showProtocol(wID == IDC_IPV6);
+	return TRUE;
+}
+
+void NetworkPage::showProtocol(bool v6) {
+	auto& shownPage = v6 ? ipv6Page : ipv4Page;
+	if (!shownPage) {
+		shownPage.reset(new ProtocolPage(SettingsManager::getInstance(), v6));
+		shownPage->Create(this->m_hWnd);
+	}
+
+	shownPage->ShowWindow(SW_SHOW);
+
+	ctrlIPv6.SetState(v6);
+	ctrlIPv4.SetState(!v6);
+
+	//CheckDlgButton(v6 ? IDC_IPV6 : IDC_IPV4, BST_PUSHED);
+}
 
 
 ProtocolPage::ProtocolPage(SettingsManager *s, bool v6) :  SettingTab(s), v6(v6) {
@@ -214,8 +220,8 @@ PropPage::Item ProtocolPage::items6[] = {
 
 	//manual config
 	{ IDC_EXTERNAL_IP,	SettingsManager::EXTERNAL_IP6,	PropPage::T_STR }, 
-	{ IDC_OVERRIDE,		SettingsManager::NO_IP_OVERRIDE, PropPage::T_BOOL },
-	{ IDC_IPUPDATE, SettingsManager::IP_UPDATE, PropPage::T_BOOL },
+	{ IDC_OVERRIDE,		SettingsManager::NO_IP_OVERRIDE6, PropPage::T_BOOL },
+	{ IDC_IPUPDATE, SettingsManager::IP_UPDATE6, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -224,30 +230,43 @@ void ProtocolPage::write()
 	SettingTab::write((HWND)(*this), v6 ? items6 : items4);
 
 	// Set connection active/passive
-	int ct = SettingsManager::INCOMING_ACTIVE;
-
-	if(IsDlgButtonChecked(IDC_ACTIVE_UPNP))
-		ct = SettingsManager::INCOMING_ACTIVE_UPNP;
-	else if(IsDlgButtonChecked(IDC_PASSIVE))
-		ct = SettingsManager::INCOMING_PASSIVE;
-
-	if(SETTING(INCOMING_CONNECTIONS) != ct) {
-		settings->set(SettingsManager::INCOMING_CONNECTIONS, ct);
+	int ct = SettingsManager::INCOMING_DISABLED;
+	if (IsDlgButtonChecked(IDC_PROTOCOL_ENABLED) == BST_CHECKED) {
+		if(IsDlgButtonChecked(IDC_ACTIVE))
+			ct = SettingsManager::INCOMING_ACTIVE;
+		else if(IsDlgButtonChecked(IDC_ACTIVE_UPNP))
+			ct = SettingsManager::INCOMING_ACTIVE_UPNP;
+		else if(IsDlgButtonChecked(IDC_PASSIVE))
+			ct = SettingsManager::INCOMING_PASSIVE;
 	}
 
-	SettingsManager::getInstance()->set(SettingsManager::BIND_ADDRESS, bindAddresses[BindCombo.GetCurSel()].ip);
+
+	const auto& setting = v6 ? SettingsManager::INCOMING_CONNECTIONS6 : SettingsManager::INCOMING_CONNECTIONS;
+	if(setting != ct) {
+		settings->set(setting, ct);
+	}
+
+	settings->set(v6 ? SettingsManager::BIND_ADDRESS6 : SettingsManager::BIND_ADDRESS, bindAddresses[BindCombo.GetCurSel()].ip);
 }
 
 LRESULT ProtocolPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	SettingTab::translate((HWND)(*this), texts);
 	
-	::EnableWindow(GetDlgItem(IDC_ACTIVE_UPNP), FALSE);
-	switch(SETTING(INCOMING_CONNECTIONS)) {
+	SetDlgItemText(IDC_PROTOCOL_ENABLED, CTSTRING_F(ENABLE_CONNECTIVITY, (v6 ? "IPv6" : "IPv4")));
+
+	auto mode = v6 ? SETTING(INCOMING_CONNECTIONS6) : SETTING(INCOMING_CONNECTIONS);
+	if (mode == SettingsManager::INCOMING_DISABLED) {
+		CheckDlgButton(IDC_PROTOCOL_ENABLED, BST_UNCHECKED);
+		CheckDlgButton(IDC_ACTIVE, BST_CHECKED);
+	} else {
+		CheckDlgButton(IDC_PROTOCOL_ENABLED, BST_CHECKED);
+		switch(mode) {
 		case SettingsManager::INCOMING_ACTIVE: CheckDlgButton(IDC_ACTIVE, BST_CHECKED); break;
 		case SettingsManager::INCOMING_ACTIVE_UPNP: CheckDlgButton(IDC_ACTIVE_UPNP, BST_CHECKED); break;
 		case SettingsManager::INCOMING_PASSIVE: CheckDlgButton(IDC_PASSIVE, BST_CHECKED); break;
 		default: CheckDlgButton(IDC_ACTIVE, BST_CHECKED); break;
+		}
 	}
 
 	SettingTab::read((HWND)(*this), v6 ? items6 : items4);
@@ -258,46 +277,49 @@ LRESULT ProtocolPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	BindCombo.Attach(GetDlgItem(IDC_BIND_ADDRESS));
 	getAddresses();
 
-	auto cur = boost::find_if(bindAddresses, [](const AirUtil::AddressInfo& aInfo) { return aInfo.ip == SETTING(BIND_ADDRESS); });
+	const auto& setting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
+	auto cur = boost::find_if(bindAddresses, [&setting](const AirUtil::AddressInfo& aInfo) { return aInfo.ip == setting; });
 	if (cur == bindAddresses.end()) {
-		BindCombo.AddString(Text::toT(SETTING(BIND_ADDRESS)).c_str());
-		bindAddresses.emplace_back(STRING(UNKNOWN), SETTING(BIND_ADDRESS), 0);
+		BindCombo.AddString(Text::toT(setting).c_str());
+		bindAddresses.emplace_back(STRING(UNKNOWN), setting, 0);
 	}
-	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(SETTING(BIND_ADDRESS)).c_str()));
+	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(setting).c_str()));
 
 	return TRUE;
 }
 
 void ProtocolPage::fixControls() {
+	BOOL enabled = IsDlgButtonChecked(IDC_PROTOCOL_ENABLED) == BST_CHECKED;
 	BOOL auto_detect = IsDlgButtonChecked(IDC_CONNECTION_DETECTION) == BST_CHECKED;
 	BOOL direct = IsDlgButtonChecked(IDC_ACTIVE) == BST_CHECKED;
 	BOOL upnp = IsDlgButtonChecked(IDC_ACTIVE_UPNP) == BST_CHECKED;
 
-	::EnableWindow(GetDlgItem(IDC_ACTIVE), !auto_detect);
-	::EnableWindow(GetDlgItem(IDC_ACTIVE_UPNP), !auto_detect);
-	::EnableWindow(GetDlgItem(IDC_PASSIVE), !auto_detect);
-	::EnableWindow(GetDlgItem(IDC_SETTINGS_IP), !auto_detect);
-	::EnableWindow(GetDlgItem(IDC_BIND_ADDRESS), !auto_detect);
+	::EnableWindow(GetDlgItem(IDC_CONNECTION_DETECTION), enabled);
+	::EnableWindow(GetDlgItem(IDC_ACTIVE), !auto_detect && enabled);
+	::EnableWindow(GetDlgItem(IDC_ACTIVE_UPNP), !auto_detect && enabled);
+	::EnableWindow(GetDlgItem(IDC_PASSIVE), !auto_detect && enabled);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_IP), !auto_detect && enabled);
+	::EnableWindow(GetDlgItem(IDC_BIND_ADDRESS), !auto_detect && enabled);
 
-	::EnableWindow(GetDlgItem(IDC_EXTERNAL_IP), !auto_detect);
-	::EnableWindow(GetDlgItem(IDC_OVERRIDE), !auto_detect);
+	::EnableWindow(GetDlgItem(IDC_EXTERNAL_IP), !auto_detect && enabled);
+	::EnableWindow(GetDlgItem(IDC_OVERRIDE), !auto_detect && enabled);
 
-	::EnableWindow(GetDlgItem(IDC_PORT_TCP), !auto_detect && (upnp || direct));
-	::EnableWindow(GetDlgItem(IDC_PORT_UDP), !auto_detect && (upnp || direct));
-	::EnableWindow(GetDlgItem(IDC_PORT_TLS), !auto_detect && (upnp || direct));
+	::EnableWindow(GetDlgItem(IDC_PORT_TCP), !auto_detect && (upnp || direct) && enabled);
+	::EnableWindow(GetDlgItem(IDC_PORT_UDP), !auto_detect && (upnp || direct) && enabled);
+	::EnableWindow(GetDlgItem(IDC_PORT_TLS), !auto_detect && (upnp || direct) && enabled);
 
-	::EnableWindow(GetDlgItem(IDC_MAPPER), upnp);
+	::EnableWindow(GetDlgItem(IDC_MAPPER), upnp && enabled);
 
-	::EnableWindow(GetDlgItem(IDC_IPUPDATE),!auto_detect && (direct || upnp));
-	::EnableWindow(GetDlgItem(IDC_GETIP),!auto_detect && ( direct || upnp));
+	::EnableWindow(GetDlgItem(IDC_IPUPDATE),!auto_detect && (direct || upnp) && enabled);
+	::EnableWindow(GetDlgItem(IDC_GETIP),!auto_detect && ( direct || upnp) && enabled);
 
 }
 
 void ProtocolPage::getAddresses() {
-	AirUtil::getIpAddresses(bindAddresses, false);
-	sort(bindAddresses.begin(), bindAddresses.end(), [](const AirUtil::AddressInfo& lhs, const AirUtil::AddressInfo& rhs) { return compare(lhs.ip, rhs.ip); });
+	AirUtil::getIpAddresses(bindAddresses, v6);
+	sort(bindAddresses.begin(), bindAddresses.end(), [](const AirUtil::AddressInfo& lhs, const AirUtil::AddressInfo& rhs) { /*return compare(lhs.ip, rhs.ip) < 0;*/ return stricmp(lhs.adapterName, rhs.adapterName) < 0; });
 
-	bindAddresses.emplace_back("Any", "0.0.0.0", 0);
+	bindAddresses.emplace_back("Any", v6 ? "::" : "0.0.0.0", 0);
 	for(auto& addr: bindAddresses)
 		BindCombo.AddString(Text::toT(addr.ip + (!addr.adapterName.empty() ? " (" + addr.adapterName + ")" : Util::emptyString)).c_str());
 }
@@ -308,7 +330,7 @@ LRESULT ProtocolPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 }
 
 void ProtocolPage::on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept {
-	if (key == SettingsManager::EXTERNAL_IP) {
+	if ((key == SettingsManager::EXTERNAL_IP && !v6) || (key == SettingsManager::EXTERNAL_IP6 && v6)) {
 		if(!value.empty()) {
 			SetDlgItemText(IDC_SERVER, Text::toT(value).c_str());
 		} else {
@@ -320,6 +342,6 @@ void ProtocolPage::on(UpdateManagerListener::SettingUpdated, size_t key, const s
 	
 LRESULT ProtocolPage::onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 	::EnableWindow(GetDlgItem(IDC_GETIP), FALSE);
-	UpdateManager::getInstance()->checkIP(true, false);
+	UpdateManager::getInstance()->checkIP(true, v6);
 	return S_OK;
 }

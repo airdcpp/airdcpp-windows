@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -789,6 +789,8 @@
 #define IDC_ROLLBACK_SPIN               1302
 #define IDC_INCOMING_SPIN               1302
 #define IDC_SETTINGS_MANUAL_CONFIG3     1302
+#define IDC_SETTINGS_MAPPER_DESC2       1302
+#define IDC_PROTOCOL_OPTIONS            1302
 #define IDC_ACTIVE_UPNP                 1303
 #define IDC_PRIO_LOW_SIZE               1303
 #define IDC_SHUTDOWNACTION              1303
@@ -968,6 +970,7 @@
 #define IDC_SETTINGS_MB2                1372
 #define IDC_CONNECTION_DETECTION2       1372
 #define IDC_ENABLE_IPV6                 1372
+#define IDC_PROTOCOL_ENABLED            1372
 #define IDC_SETTINGS_KIB                1373
 #define IDC_ICONS_RESTORE               1374
 #define IDC_PLAYER_COMBO                1375
@@ -1240,7 +1243,9 @@
 #define IDC_EDIT4                       1699
 #define IDC_SCROLLBAR2                  1699
 #define IDC_PREVIEW_APP                 1700
+#define IDC_IPV4                        1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
+#define IDC_IPV6                        1701
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1625,7 +1630,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1700
+#define _APS_NEXT_CONTROL_VALUE         1701
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

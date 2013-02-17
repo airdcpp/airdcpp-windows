@@ -27,7 +27,7 @@
 #include "PropPage.h"
 #include "../client/UpdateManagerListener.h"
 
-class ProtocolPage : public CPropertyPage<IDD_PROTOCOLPAGE>, public SettingTab, private UpdateManagerListener
+class ProtocolPage : /*public CPropertyPage<IDD_PROTOCOLPAGE>,*/ public SettingTab, public CDialogImpl<ProtocolPage>, private UpdateManagerListener
 {
 public:
 	ProtocolPage(SettingsManager *s, bool v6);
@@ -40,6 +40,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_ACTIVE, onClickedActive)
 		COMMAND_ID_HANDLER(IDC_PASSIVE, onClickedActive)
 		COMMAND_ID_HANDLER(IDC_ACTIVE_UPNP, onClickedActive)
+		COMMAND_ID_HANDLER(IDC_PROTOCOL_ENABLED, onClickedActive)
 		COMMAND_ID_HANDLER(IDC_GETIP, onGetIP)
 	END_MSG_MAP()
 
@@ -47,7 +48,7 @@ public:
 	LRESULT onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 
-	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
+	//PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 private:
 	static Item items4[];
@@ -64,7 +65,7 @@ private:
 };
 
 
-class COptionsSheet : public CPropertySheetImpl<COptionsSheet>
+/*class COptionsSheet : public CPropertySheetImpl<COptionsSheet>
 {
 public:
     // Construction
@@ -89,7 +90,7 @@ protected:
 	unique_ptr<ProtocolPage> ipv6Page;
 	unique_ptr<ProtocolPage> ipv4Page;
     bool m_bCentered;
-};
+};*/
 
 
 class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage
@@ -98,25 +99,33 @@ public:
 	NetworkPage(SettingsManager *s);
 	~NetworkPage();
 
-
+	//typedef CDialogImpl<ProtocolPage> protocolBase;
 	BEGIN_MSG_MAP(NetworkPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
+		COMMAND_ID_HANDLER(IDC_IPV4, onClickProtocol)
+		COMMAND_ID_HANDLER(IDC_IPV6, onClickProtocol)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onClickProtocol(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 	
 private:
-	COptionsSheet protocols;
+	//COptionsSheet protocols;
 	static Item items[];
 	static TextItem texts[];
 	CComboBox MapperCombo;
 
 	unique_ptr<ProtocolPage> ipv6Page;
 	unique_ptr<ProtocolPage> ipv4Page;
+
+	CButton ctrlIPv4;
+	CButton ctrlIPv6;
+
+	void showProtocol(bool v6);
 };
 
 #endif // !defined(NETWORK_PAGE_H)
