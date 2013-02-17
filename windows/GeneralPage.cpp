@@ -48,7 +48,7 @@ PropPage::TextItem GeneralPage::texts[] = {
 PropPage::Item GeneralPage::items[] = {
 	{ IDC_NICK,			SettingsManager::NICK,			PropPage::T_STR }, 
 	{ IDC_EMAIL,		SettingsManager::EMAIL,			PropPage::T_STR }, 
-	{ IDC_DESCRIPTION,	SettingsManager::DESCRIPTION,	PropPage::T_STR },
+	{ IDC_USERDESC,		SettingsManager::DESCRIPTION,	PropPage::T_STR },
 	{ IDC_AUTO_AWAY,	SettingsManager::AUTO_AWAY,	    PropPage::T_BOOL },
  	{ IDC_DEFAULT_AWAY_MESSAGE, SettingsManager::DEFAULT_AWAY_MESSAGE, PropPage::T_STR },
 	{ IDC_AWAY_IDLE_TIME, SettingsManager::AWAY_IDLE_TIME, PropPage::T_INT },
@@ -99,51 +99,18 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	WinUtil::appendLanguageMenu(ctrlLanguage);
 
-	nick.Attach(GetDlgItem(IDC_NICK));
-	nick.LimitText(35);
-	nick.Detach();
+	CEdit tmp;
+	tmp.Attach(GetDlgItem(IDC_NICK));
+	tmp.LimitText(35);
+	tmp.Detach();
 
-	desc.Attach(GetDlgItem(IDC_DESCRIPTION));
-	desc.LimitText(35);
-	desc.Detach();
-	desc.Attach(GetDlgItem(IDC_SETTINGS_EMAIL));
-	desc.LimitText(35);
-	desc.Detach();
-	return TRUE;
-}
+	tmp.Attach(GetDlgItem(IDC_USERDESC));
+	tmp.LimitText(35);
+	tmp.Detach();
 
-LRESULT GeneralPage::onTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/)
-{
-	TCHAR buf[SETTINGS_BUF_LEN];
-
-	GetDlgItemText(wID, buf, SETTINGS_BUF_LEN);
-	tstring old = buf;
-
-
-	// Strip '$', '|', '<', '>' and ' ' from text
-	TCHAR *b = buf, *f = buf, c;
-	while( (c = *b++) != 0 )
-	{
-		if(c != '$' && c != '|' && (wID == IDC_DESCRIPTION || c != ' ') && ( (wID != IDC_NICK && wID != IDC_DESCRIPTION && wID != IDC_SETTINGS_EMAIL) || (c != '<' && c != '>') ) )
-			*f++ = c;
-	}
-
-	*f = '\0';
-
-	if(old != buf)
-	{
-		// Something changed; update window text without changing cursor pos
-		CEdit tmp;
-		tmp.Attach(hWndCtl);
-		int start, end;
-		tmp.GetSel(start, end);
-		tmp.SetWindowText(buf);
-		if(start > 0) start--;
-		if(end > 0) end--;
-		tmp.SetSel(start, end);
-		tmp.Detach();
-	}
-
+	tmp.Attach(GetDlgItem(IDC_EMAIL));
+	tmp.LimitText(35);
+	tmp.Detach();
 	return TRUE;
 }
 

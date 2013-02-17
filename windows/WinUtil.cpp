@@ -1846,3 +1846,37 @@ bool WinUtil::isElevated() {
 	}
 	return fRet ? true : false;
 }
+
+LRESULT WinUtil::onUserFieldChar(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
+	TCHAR buf[1024];
+
+	::GetWindowText(hWndCtl, buf, 1024);
+	tstring old = buf;
+
+
+	// Strip '$', '|', '<', '>' and ' ' from text
+	TCHAR *b = buf, *f = buf, c;
+	while( (c = *b++) != 0 )
+	{
+		if(c != '$' && c != '|' && (wID == IDC_USERDESC || c != ' ') && ( (wID != IDC_NICK && wID != IDC_USERDESC && wID != IDC_EMAIL) || (c != '<' && c != '>') ) )
+			*f++ = c;
+	}
+
+	*f = '\0';
+
+	if(old != buf)
+	{
+		// Something changed; update window text without changing cursor pos
+		CEdit tmp;
+		tmp.Attach(hWndCtl);
+		int start, end;
+		tmp.GetSel(start, end);
+		tmp.SetWindowText(buf);
+		if(start > 0) start--;
+		if(end > 0) end--;
+		tmp.SetSel(start, end);
+		tmp.Detach();
+	}
+
+	return TRUE;
+}

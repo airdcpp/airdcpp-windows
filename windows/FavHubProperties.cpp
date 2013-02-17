@@ -66,9 +66,10 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	SetDlgItemText(IDC_HUBNAME, Text::toT(entry->getName()).c_str());
 	SetDlgItemText(IDC_HUBDESCR, Text::toT(entry->getDescription()).c_str());
 	SetDlgItemText(IDC_HUBADDR, Text::toT(entry->getServerStr()).c_str());
-	SetDlgItemText(IDC_HUBNICK, Text::toT(entry->get(HubSettings::Nick)).c_str());
+	SetDlgItemText(IDC_NICK, Text::toT(entry->get(HubSettings::Nick)).c_str());
 	SetDlgItemText(IDC_HUBPASS, Text::toT(entry->getPassword()).c_str());
-	SetDlgItemText(IDC_HUBUSERDESCR, Text::toT(entry->get(HubSettings::Description)).c_str());
+	SetDlgItemText(IDC_USERDESC, Text::toT(entry->get(HubSettings::Description)).c_str());
+	SetDlgItemText(IDC_EMAIL, Text::toT(entry->get(HubSettings::Email)).c_str());
 	CheckDlgButton(IDC_STEALTH, entry->getStealth() ? BST_CHECKED : BST_UNCHECKED);
 	CheckDlgButton(IDC_FAV_NO_PM, entry->getFavNoPM() ? BST_CHECKED : BST_UNCHECKED);
 
@@ -165,10 +166,13 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	tmp.SetFocus();
 	tmp.SetSel(0,-1);
 	tmp.Detach();
-	tmp.Attach(GetDlgItem(IDC_HUBNICK));
+	tmp.Attach(GetDlgItem(IDC_NICK));
 	tmp.LimitText(35);
 	tmp.Detach();
-	tmp.Attach(GetDlgItem(IDC_HUBUSERDESCR));
+	tmp.Attach(GetDlgItem(IDC_USERDESC));
+	tmp.LimitText(50);
+	tmp.Detach();
+	tmp.Attach(GetDlgItem(IDC_EMAIL));
 	tmp.LimitText(50);
 	tmp.Detach();
 	tmp.Attach(GetDlgItem(IDC_HUBPASS));
@@ -275,11 +279,14 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		entry->setFavNoPM(IsDlgButtonChecked(IDC_FAV_NO_PM) == 1);
 
 		//Hub settings
-		GetDlgItemText(IDC_HUBNICK, buf, 256);
+		GetDlgItemText(IDC_NICK, buf, 256);
 		entry->get(HubSettings::Nick) = Text::fromT(buf);
 
-		GetDlgItemText(IDC_HUBUSERDESCR, buf, 256);
+		GetDlgItemText(IDC_USERDESC, buf, 256);
 		entry->get(HubSettings::Description) = Text::fromT(buf);
+
+		GetDlgItemText(IDC_EMAIL, buf, 256);
+		entry->get(HubSettings::Email) = Text::fromT(buf);
 
 		entry->get(HubSettings::ShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN));
 		entry->get(HubSettings::FavShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN));
@@ -352,58 +359,30 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 	return 0;
 }
 
-LRESULT FavHubProperties::OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/)
-{
-	TCHAR buf[256];
-
-	GetDlgItemText(wID, buf, 256);
-	tstring old = buf;
-
-	// Strip '$', '|' and ' ' from text
-	TCHAR *b = buf, *f = buf, c;
-	while( (c = *b++) != 0 )
-	{
-		if(c != '$' && c != '|' && (wID == IDC_HUBUSERDESCR || c != ' ') && ( (wID != IDC_HUBNICK) || (c != '<' && c != '>')) )
-			*f++ = c;
-	}
-
-	*f = '\0';
-
-	if(old != buf)
-	{
-		// Something changed; update window text without changing cursor pos
-		CEdit tmp;
-		tmp.Attach(hWndCtl);
-		int start, end;
-		tmp.GetSel(start, end);
-		tmp.SetWindowText(buf);
-		if(start > 0) start--;
-		if(end > 0) end--;
-		tmp.SetSel(start, end);
-		tmp.Detach();
-	}
-
+LRESULT FavHubProperties::OnTextChanged(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (!loaded)
 		return 0;
 	
-	CComboBox combo;
-	combo.Attach(GetDlgItem(IDC_ENCODING));
-	tstring address;
-	address.resize(1024);
-	address.resize(GetDlgItemText(IDC_HUBADDR, &address[0], 1024));
+	if (wID == IDC_HUBADDR) {
+		CComboBox combo;
+		combo.Attach(GetDlgItem(IDC_ENCODING));
+		tstring address;
+		address.resize(1024);
+		address.resize(GetDlgItemText(IDC_HUBADDR, &address[0], 1024));
 
-	if(AirUtil::isAdcHub(Text::fromT(address))) {
-		if (!hideShare)
-			ctrlProfile.EnableWindow(true);
-		combo.SetCurSel(4); // select UTF-8 for ADC hubs
-		::EnableWindow(GetDlgItem(IDC_STEALTH),	0);
-		combo.EnableWindow(false);
-	} else {
-		ctrlProfile.EnableWindow(false);
-		::EnableWindow(GetDlgItem(IDC_STEALTH),	1);
-		combo.EnableWindow(true);
+		if(AirUtil::isAdcHub(Text::fromT(address))) {
+			if (!hideShare)
+				ctrlProfile.EnableWindow(true);
+			combo.SetCurSel(4); // select UTF-8 for ADC hubs
+			::EnableWindow(GetDlgItem(IDC_STEALTH),	0);
+			combo.EnableWindow(false);
+		} else {
+			ctrlProfile.EnableWindow(false);
+			::EnableWindow(GetDlgItem(IDC_STEALTH),	1);
+			combo.EnableWindow(true);
+		}
+		combo.Detach();
 	}
-	combo.Detach();
 
 	return TRUE;
 }

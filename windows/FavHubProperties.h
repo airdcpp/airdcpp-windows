@@ -23,9 +23,11 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "stdafx.h"
 #include <atlcrack.h>
-#include "ExListViewCtrl.h"
-#include "../client/ShareManager.h"
+
+#include "../client/HubEntry.h"
+#include "WinUtil.h"
 
 class FavHubProperties : public CDialogImpl<FavHubProperties>
 {
@@ -37,9 +39,10 @@ public:
 	
 	BEGIN_MSG_MAP_EX(FavHubProperties)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		COMMAND_HANDLER(IDC_HUBNICK, EN_CHANGE, OnTextChanged)
-		COMMAND_HANDLER(IDC_HUBPASS, EN_CHANGE, OnTextChanged)
-		COMMAND_HANDLER(IDC_HUBUSERDESCR, EN_CHANGE, OnTextChanged)
+		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, WinUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, WinUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, WinUtil::onUserFieldChar)
+		//COMMAND_HANDLER(IDC_HUBPASS, EN_CHANGE, OnTextChanged)
 		COMMAND_HANDLER(IDC_HUBADDR, EN_CHANGE, OnTextChanged)
 		COMMAND_ID_HANDLER(IDC_HIDE_SHARE, onClickedHideShare)
 		COMMAND_ID_HANDLER(IDC_EDIT_PROFILES, OnEditProfiles)

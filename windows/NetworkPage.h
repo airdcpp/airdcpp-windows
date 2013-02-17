@@ -27,7 +27,7 @@
 #include "PropPage.h"
 #include "../client/UpdateManagerListener.h"
 
-class ProtocolPage : /*public CPropertyPage<IDD_PROTOCOLPAGE>,*/ public SettingTab, public CDialogImpl<ProtocolPage>, private UpdateManagerListener
+class ProtocolPage : public SettingTab, public CDialogImpl<ProtocolPage>, private UpdateManagerListener
 {
 public:
 	ProtocolPage(SettingsManager *s, bool v6);
@@ -48,7 +48,6 @@ public:
 	LRESULT onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 
-	//PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 private:
 	static Item items4[];
@@ -65,41 +64,12 @@ private:
 };
 
 
-/*class COptionsSheet : public CPropertySheetImpl<COptionsSheet>
-{
-public:
-    // Construction
-    COptionsSheet (UINT uStartPage, HWND hWndParent, SettingsManager* s);
-
-    // Maps
-    BEGIN_MSG_MAP(COptionsSheet)
-        MSG_WM_SHOWWINDOW(OnShowWindow)
-        CHAIN_MSG_MAP(CPropertySheetImpl<COptionsSheet>)
-    END_MSG_MAP()
-
-    // Message handlers
-    void OnShowWindow ( BOOL bShowing, int nReason );
-	void onInit();
-
-    // Property pages
-   // CBackgroundOptsPage         m_pgBackground;
-   // CPropertyPage<IDD_ABOUTBOX> m_pgAbout;
-
-    // Implementation
-protected:
-	unique_ptr<ProtocolPage> ipv6Page;
-	unique_ptr<ProtocolPage> ipv4Page;
-    bool m_bCentered;
-};*/
-
-
 class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage
 {
 public:
 	NetworkPage(SettingsManager *s);
 	~NetworkPage();
 
-	//typedef CDialogImpl<ProtocolPage> protocolBase;
 	BEGIN_MSG_MAP(NetworkPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		COMMAND_ID_HANDLER(IDC_IPV4, onClickProtocol)
@@ -114,7 +84,6 @@ public:
 	void write();
 	
 private:
-	//COptionsSheet protocols;
 	static Item items[];
 	static TextItem texts[];
 	CComboBox MapperCombo;

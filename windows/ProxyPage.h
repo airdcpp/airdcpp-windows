@@ -26,8 +26,6 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 
-#include "../client/UpdateManagerListener.h"
-
 class ProxyPage : public CPropertyPage<IDD_PROXYPAGE>, public PropPage
 {
 public:
@@ -39,17 +37,10 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		COMMAND_ID_HANDLER(IDC_SOCKS5, onClickedActive)
 		COMMAND_ID_HANDLER(IDC_DIRECT_OUT, onClickedActive)
-
-		COMMAND_ID_HANDLER(IDC_CONNECTION_DETECTION, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_ACTIVE, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_PASSIVE, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_ACTIVE_UPNP, onClickedActive)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
@@ -62,8 +53,6 @@ private:
 
 	TCHAR* title;
 	void fixControls();
-
-	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
 };
 
 #endif // !defined(PROXY_PAGE_H)

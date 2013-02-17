@@ -25,6 +25,7 @@
 
 #include <atlcrack.h>
 #include "PropPage.h"
+#include "WinUtil.h"
 
 class GeneralPage : public CPropertyPage<IDD_GENERALPAGE>, public PropPage
 {
@@ -37,9 +38,9 @@ public:
 
 	BEGIN_MSG_MAP_EX(GeneralPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
-		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, onTextChanged)
-		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, onTextChanged)
-		COMMAND_HANDLER(IDC_DESCRIPTION, EN_CHANGE, onTextChanged)
+		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, WinUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, WinUtil::onUserFieldChar)
+		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, WinUtil::onUserFieldChar)
 		COMMAND_ID_HANDLER(IDC_PUBLIC, onProfile)
 		COMMAND_ID_HANDLER(IDC_RAR, onProfile)
 		COMMAND_ID_HANDLER(IDC_PRIVATE_HUB, onProfile)
@@ -47,7 +48,6 @@ public:
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
-	LRESULT onTextChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRadioButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
@@ -58,8 +58,6 @@ public:
 private:
 	static Item items[];
 	static TextItem texts[];
-	CEdit nick;
-	CEdit desc;
 	CComboBoxEx ctrlLanguage;
 };
 

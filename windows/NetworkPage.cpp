@@ -28,56 +28,7 @@
 #include "NetworkPage.h"
 #include "WinUtil.h"
 
-/*COptionsSheet::COptionsSheet(UINT uStartPage, HWND hWndParent, SettingsManager* s) :
-  CPropertySheetImpl<COptionsSheet> ((LPCTSTR)NULL, uStartPage, hWndParent ),
-  m_bCentered(false), ipv6Page(new ProtocolPage(s, true)), ipv4Page(new ProtocolPage(s, false))
-{
-    m_psh.dwFlags |= PSH_NOAPPLYNOW | PSH_NOCONTEXTHELP;
-
-    AddPage(ipv4Page->getPSP());
-    AddPage(ipv6Page->getPSP());
-}
-
-
-//////////////////////////////////////////////////////////////////////
-// Message handlers
-
-void COptionsSheet::OnShowWindow ( BOOL bShowing, int nReason )
-{
-    if ( bShowing && !m_bCentered )
-        {
-        m_bCentered = true;
-        CenterWindow ( m_psh.hwndParent );
-        }
-}
-
-void COptionsSheet::onInit() {
-	CRect rcClient, rcTab, rcPage, rcWindow;
-	CWindow tab = GetTabControl();
-	CWindow page = IndexToHwnd(this->m_psh.nStartPage);
-
-	GetClientRect(&rcClient);
-
-	tab.GetWindowRect(&rcTab);
-	page.GetClientRect(&rcPage);
-	page.MapWindowPoints(m_hWnd,&rcPage);
-	GetWindowRect(&rcWindow);
-	::MapWindowPoints(NULL, m_hWnd, (LPPOINT)&rcTab, 2);
-
-	//ScrollWindow(SPACE_LEFT + TREE_WIDTH + SPACE_MID-rcPage.left, SPACE_TOP-rcPage.top);
-	//rcWindow.right += SPACE_LEFT + TREE_WIDTH + SPACE_MID - rcPage.left - (rcClient.Width()-rcTab.right) + SPACE_RIGHT;
-	//rcWindow.bottom += SPACE_TOP - rcPage.top;
-
-	tab.ShowWindow(SW_HIDE);
-
-	MoveWindow(&rcWindow, TRUE);
-
-	//tabContainer.SubclassWindow(tab.m_hWnd);
-}*/
-
 NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s) {
-	/*ipv6Page(new ProtocolPage(s, true)), ipv4Page(new ProtocolPage(s, false))*/
-	/*protocols(0, m_hWnd, s),*/
 	SetTitle(CTSTRING(SETTINGS_NETWORK));
 	m_psp.dwFlags |= PSP_RTLREADING;
 }
@@ -168,8 +119,6 @@ void NetworkPage::showProtocol(bool v6) {
 
 	ctrlIPv6.SetState(v6);
 	ctrlIPv4.SetState(!v6);
-
-	//CheckDlgButton(v6 ? IDC_IPV6 : IDC_IPV4, BST_PUSHED);
 }
 
 
@@ -277,14 +226,6 @@ LRESULT ProtocolPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	BindCombo.Attach(GetDlgItem(IDC_BIND_ADDRESS));
 	getAddresses();
 
-	const auto& setting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
-	auto cur = boost::find_if(bindAddresses, [&setting](const AirUtil::AddressInfo& aInfo) { return aInfo.ip == setting; });
-	if (cur == bindAddresses.end()) {
-		BindCombo.AddString(Text::toT(setting).c_str());
-		bindAddresses.emplace_back(STRING(UNKNOWN), setting, 0);
-	}
-	BindCombo.SetCurSel(BindCombo.FindString(0, Text::toT(setting).c_str()));
-
 	return TRUE;
 }
 
@@ -316,12 +257,29 @@ void ProtocolPage::fixControls() {
 }
 
 void ProtocolPage::getAddresses() {
+	//get the addresses and sort them
 	AirUtil::getIpAddresses(bindAddresses, v6);
-	sort(bindAddresses.begin(), bindAddresses.end(), [](const AirUtil::AddressInfo& lhs, const AirUtil::AddressInfo& rhs) { /*return compare(lhs.ip, rhs.ip) < 0;*/ return stricmp(lhs.adapterName, rhs.adapterName) < 0; });
+	sort(bindAddresses.begin(), bindAddresses.end(), [](const AirUtil::AddressInfo& lhs, const AirUtil::AddressInfo& rhs) { 
+		/*return compare(lhs.ip, rhs.ip) < 0;*/ 
+		return stricmp(lhs.adapterName, rhs.adapterName) < 0; 
+	});
 
-	bindAddresses.emplace_back("Any", v6 ? "::" : "0.0.0.0", 0);
+	//fill the combo
+	bindAddresses.emplace(bindAddresses.begin(), "Any", v6 ? "::" : "0.0.0.0", 0);
 	for(auto& addr: bindAddresses)
-		BindCombo.AddString(Text::toT(addr.ip + (!addr.adapterName.empty() ? " (" + addr.adapterName + ")" : Util::emptyString)).c_str());
+		//BindCombo.AddString(Text::toT(addr.ip + (!addr.adapterName.empty() ? " (" + addr.adapterName + ")" : Util::emptyString)).c_str());
+		BindCombo.AddString(Text::toT(addr.adapterName + " (" + addr.ip + ")").c_str());
+
+
+	//select the address
+	const auto& setting = v6 ? SETTING(BIND_ADDRESS6) : SETTING(BIND_ADDRESS);
+	auto cur = boost::find_if(bindAddresses, [&setting](const AirUtil::AddressInfo& aInfo) { return aInfo.ip == setting; });
+	if (cur == bindAddresses.end()) {
+		BindCombo.AddString(Text::toT(setting).c_str());
+		bindAddresses.emplace_back(STRING(UNKNOWN), setting, 0);
+		cur = bindAddresses.end()-1;
+	}
+	BindCombo.SetCurSel(distance(bindAddresses.begin(), cur));
 }
 
 LRESULT ProtocolPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

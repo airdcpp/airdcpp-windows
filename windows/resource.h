@@ -346,7 +346,6 @@
 #define IDC_SHOW_TREE                   1036
 #define IDC_QUEUE                       1037
 #define IDC_SET_FONTS                   1038
-#define IDC_HUBNICK                     1041
 #define IDC_HUBPASS                     1042
 #define IDC_NEWFAV                      1042
 #define IDC_HUBNAME                     1043
@@ -448,7 +447,7 @@
 #define IDC_ADLLIST                     1113
 #define IDC_MOVE_UP                     1114
 #define IDC_MOVE_DOWN                   1115
-#define IDC_HUBUSERDESCR                1116
+#define IDC_USERDESC                    1116
 #define IDC_FINISHED_UL                 1117
 #define IDC_SEARCH_STRING               1118
 #define IDC_SEARCH_HISTORY              1118
@@ -660,6 +659,8 @@
 #define IDC_MOVEDOWN                    1251
 #define IDC_PROFILES_NOTE               1251
 #define IDC_SETTINGS_FAVORITE_DIRECTORIES 1252
+#define IDC_EMAIL_DESC                  1252
+#define IDC_EMAIL_LBL                   1252
 #define IDC_SHUTDOWN_SPIN               1253
 #define IDC_STATISTICS                  1253
 #define IDC_FAVORITE_DIRECTORIES        1253
