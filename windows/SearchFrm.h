@@ -254,6 +254,7 @@ private:
 		COLUMN_EXACT_SIZE,
 		COLUMN_IP,		
 		COLUMN_TTH,
+		COLUMN_DATE,
 		COLUMN_LAST
 	};
 

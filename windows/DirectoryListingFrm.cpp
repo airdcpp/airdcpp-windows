@@ -1536,10 +1536,7 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize(true)) : Util::formatExactSize(file->getSize());
 		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
 		case COLUMN_TTH: return (type == FILE && !SettingsManager::lanMode) ? Text::toT(file->getTTH().toBase32()) : Util::emptyStringT;
-		case COLUMN_DATE: {
-			auto date = type == DIRECTORY ? dir->getDate() : file->getDate();
-			return date > 0 ? Text::toT(Util::getDateTime(date)) : Util::emptyStringT;
-		}
+		case COLUMN_DATE: return Util::getDateTimeW(type == DIRECTORY ? dir->getDate() : file->getDate());
 		default: return Util::emptyStringT;
 	}
 }
