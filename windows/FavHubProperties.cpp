@@ -22,6 +22,7 @@
 #include "MainFrm.h"
 
 #include "FavHubProperties.h"
+#include "PropertiesDlg.h"
 
 #include "../client/FavoriteManager.h"
 #include "../client/ResourceManager.h"
@@ -229,7 +230,7 @@ void FavHubProperties::appendProfiles() {
 }
 
 LRESULT FavHubProperties::OnEditProfiles(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	MainFrame::getMainFrame()->openSettings(9);
+	MainFrame::getMainFrame()->openSettings(PropertiesDlg::PAGE_SHARING);
 	while(ctrlProfile.GetCount()) {
 		ctrlProfile.DeleteString(0);
 	}

@@ -25,7 +25,7 @@
 #include "resource.h"
 #include "WinUtil.h"
 
-SplashWindow::SplashWindow() {
+SplashWindow::SplashWindow() : progress(0) {
 	
 	CRect rc;
 	rc.bottom = GetSystemMetrics(SM_CYFULLSCREEN);
@@ -74,6 +74,21 @@ HWND SplashWindow::getHWND() {
 }
 
 void SplashWindow::operator()(const string& status) {
+	//this->status = _T("Loading...");
+	this->status = Text::toT(status);
+	progress = 0;
+	//callAsync([this] { draw(); });
+	draw();
+}
+
+void SplashWindow::operator()(float progress) {
+	this->progress = progress;
+	//callAsync([this] { draw(); });
+	draw();
+}
+
+
+void SplashWindow::draw() {
 	// Get some information
 	HDC dc = GetDC(splash.m_hWnd);
 	RECT rc;
@@ -120,7 +135,7 @@ void SplashWindow::operator()(const string& status) {
 		//::SetTextColor(dc, RGB(255,255,255)); // white text
 		//::SetTextColor(dc, RGB(0,0,0)); // black text
 		::SetTextColor(dc, RGB(104,104,104)); //grey text
-		::DrawText(dc, (_T(".:: ") + Text::toT(status) + _T(" ::.")).c_str(), _tcslen((_T(".:: ") + Text::toT(status) + _T(" ::.")).c_str()), &rc2, DT_RIGHT);
+		::DrawText(dc, (_T(".:: ") + status + _T(" ::.")).c_str(), _tcslen((_T(".:: ") + status + _T(" ::.")).c_str()), &rc2, DT_RIGHT);
 		DeleteObject(hFont);
 	}
 

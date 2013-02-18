@@ -190,12 +190,15 @@ void ProtocolPage::write()
 	}
 
 
-	const auto& setting = v6 ? SettingsManager::INCOMING_CONNECTIONS6 : SettingsManager::INCOMING_CONNECTIONS;
-	if(setting != ct) {
-		settings->set(setting, ct);
+	const auto mode = v6 ? SettingsManager::INCOMING_CONNECTIONS6 : SettingsManager::INCOMING_CONNECTIONS;
+	if(ct > 0 || !settings->isDefault(mode)) {
+		settings->set(mode, ct);
 	}
 
-	settings->set(v6 ? SettingsManager::BIND_ADDRESS6 : SettingsManager::BIND_ADDRESS, bindAddresses[BindCombo.GetCurSel()].ip);
+	auto sel = BindCombo.GetCurSel();
+	const auto bind = v6 ? SettingsManager::BIND_ADDRESS6 : SettingsManager::BIND_ADDRESS;
+	if (sel > 0 || !settings->isDefault(bind))
+		settings->set(bind, bindAddresses[sel].ip);
 }
 
 LRESULT ProtocolPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

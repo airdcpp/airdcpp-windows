@@ -108,14 +108,14 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 
 PropertiesDlg::~PropertiesDlg()
 {
-	for(int i=0; i<numPages; i++) {
+	for(int i=0; i < PAGE_LAST; i++) {
 		delete pages[i];
 	}
 }
 
 void PropertiesDlg::write()
 {
-	for(int i=0; i<numPages; i++)
+	for(int i=0; i < PAGE_LAST; i++)
 	{
 		// Check HWND of page to see if it has been created
 		const HWND page = PropSheet_IndexToHwnd((HWND)*this, i);

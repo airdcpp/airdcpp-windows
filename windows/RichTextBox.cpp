@@ -1167,7 +1167,7 @@ HintedUser RichTextBox::getMagnetSource() {
 	if (u && !u->isSet(User::BOT))
 		return HintedUser(u, client->getHubUrl());
 
-	return HintedUser(nullptr, Util::emptyString);
+	return HintedUser();
 }
 
 LRESULT RichTextBox::onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

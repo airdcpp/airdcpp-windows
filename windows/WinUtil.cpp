@@ -1121,7 +1121,7 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 
 		return true;
 	} else if(host == "magnet") {
-		parseMagnetUri(str, HintedUser(nullptr, Util::emptyString));
+		parseMagnetUri(str, HintedUser());
 		return true;
 	}
 

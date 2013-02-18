@@ -299,7 +299,7 @@ private:
 		}
 
 		UpdateInfo(string aToken, bool isDownload, bool isTransferFailed = false) : 
-			updateMask(0), user(HintedUser(NULL, Util::emptyString)), download(isDownload), token(aToken), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
+			updateMask(0), user(HintedUser()), download(isDownload), token(aToken), transferFailed(isTransferFailed), flagIndex(0), type(Transfer::TYPE_LAST)
 		{ }
 
 		uint32_t updateMask;

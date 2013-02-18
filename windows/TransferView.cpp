@@ -733,7 +733,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 void TransferView::ItemInfo::updateUser(const vector<ItemInfo*>& aChildren) {
-	HintedUser u = HintedUser(nullptr, Util::emptyString);
+	HintedUser u;
 	for(auto ii: aChildren) {
 		if (!u.user) {
 			u = ii->user;

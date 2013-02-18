@@ -58,11 +58,11 @@ PropPage::Item GeneralPage::items[] = {
 void GeneralPage::write()
 {
 	if(IsDlgButtonChecked(IDC_PUBLIC)){
-		AirUtil::setProfile(0);
+		AirUtil::setProfile(SettingsManager::PROFILE_PUBLIC);
 	} else if(IsDlgButtonChecked(IDC_RAR)) {
-		AirUtil::setProfile(1);
+		AirUtil::setProfile(SettingsManager::PROFILE_RAR);
 	} else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
-		AirUtil::setProfile(2);
+		AirUtil::setProfile(SettingsManager::PROFILE_PRIVATE);
 	}
 
 	Localization::setLanguage(ctrlLanguage.GetCurSel());
@@ -81,19 +81,15 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	switch(SETTING(SETTINGS_PROFILE)) {
 		case SettingsManager::PROFILE_PUBLIC: 
 			CheckDlgButton(IDC_PUBLIC, BST_CHECKED);
-			//setRarProfile(false);
 			break;
 		case SettingsManager::PROFILE_RAR: 
 			CheckDlgButton(IDC_RAR, BST_CHECKED);
-			//setRarProfile(true);
 			break;
 		case SettingsManager::PROFILE_PRIVATE: 
 			CheckDlgButton(IDC_PRIVATE_HUB, BST_CHECKED); 
-			//setRarProfile(false);
 			break;
 		default: 
 			CheckDlgButton(IDC_PUBLIC, BST_CHECKED);
-			//setRarProfile(false);
 			break;
 	}
 
@@ -115,20 +111,5 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 }
 
 LRESULT GeneralPage::onProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(IsDlgButtonChecked(IDC_PUBLIC)){
-		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
-		CheckDlgButton(IDC_PRIVATE_HUB, BST_UNCHECKED);
-		//setRarProfile(false);
-	}
-	else if(IsDlgButtonChecked(IDC_RAR)){
-		CheckDlgButton(IDC_PRIVATE_HUB, BST_UNCHECKED);
-		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
-		//setRarProfile(true);
-	}
-	else {
-		CheckDlgButton(IDC_RAR, BST_UNCHECKED);
-		CheckDlgButton(IDC_PUBLIC, BST_UNCHECKED);
-		//setRarProfile(false);
-	}
 	return TRUE;
 }

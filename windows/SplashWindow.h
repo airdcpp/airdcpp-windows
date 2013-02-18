@@ -37,15 +37,22 @@ public:
 
 	void operator()(const string& status);
 
+	void operator()(float progress);
 	HWND getHWND();
 private:
+	void draw();
 	void loadImage();
 	tstring title;
+
 	CWindow splash;
 	CEdit dummy;
 	ExCImage img;
+
 	int width;
 	int height;
+
+	tstring status;
+	float progress;
 };
 
 #endif
