@@ -362,6 +362,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg) {
 	dlg.searchString = as->getSearchString();
+	dlg.excludedWords = as->getExcludedString();
 	dlg.fileTypeStr = as->getFileType();
 	dlg.action = as->getAction();
 	dlg.remove = as->getRemove();
@@ -388,6 +389,7 @@ void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg&
 
 void AutoSearchFrame::setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg) {
 	as->setSearchString(dlg.searchString);
+	as->setExcludedString(dlg.excludedWords);
 	as->setFileType(dlg.fileTypeStr);
 	as->setAction((AutoSearch::ActionType)dlg.action);
 	as->setRemove(dlg.remove);

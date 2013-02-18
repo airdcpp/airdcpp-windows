@@ -91,6 +91,7 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_CHECK_QUEUED), CTSTRING(AUTOSEARCH_CHECK_QUEUED));
 	::SetWindowText(GetDlgItem(IDC_CHECK_SHARED), CTSTRING(AUTOSEARCH_CHECK_SHARED));
 	::SetWindowText(GetDlgItem(IDC_MATCH_FULL_PATH), CTSTRING(MATCH_FULL_PATH));
+	::SetWindowText(GetDlgItem(IDC_AS_EXCLUDED_LABEL), CTSTRING(EXCLUDED_WORDS_DESC));
 
 	::SetWindowText(GetDlgItem(IDC_SEARCH_TIMES_LABEL), CTSTRING(SEARCH_TIMES));
 	::SetWindowText(GetDlgItem(IDC_ADVANCED_LABEL), CTSTRING(SETTINGS_ADVANCED));
@@ -121,12 +122,18 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	cMatcherType.AddString(CTSTRING(REGEXP));
 	cMatcherType.AddString(CTSTRING(WILDCARDS));
 
+
 	if (matcherType == StringMatch::EXACT) {
 		CheckDlgButton(IDC_EXACT_MATCH, true);
 		cMatcherType.SetCurSel(0);
 	} else {
 		cMatcherType.SetCurSel(matcherType);
 	}
+
+	ATTACH(IDC_AS_EXCLUDED, cExcludedWords);
+	WinUtil::appendHistory(cExcludedWords, SettingsManager::HISTORY_EXCLUDE);
+	cExcludedWords.SetWindowText(Text::toT(excludedWords).c_str());
+
 
 	CheckDlgButton(IDC_REMOVE_AFTER_COMPLETED, remove);
 	CheckDlgButton(IDC_CHECK_QUEUED, checkQueued);
@@ -343,6 +350,8 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		} else {
 			expireTime = 0;
 		}
+
+		excludedWords = WinUtil::addHistory(cExcludedWords, SettingsManager::HISTORY_EXCLUDE);
 
 		bool useDefaultTimes = IsDlgButtonChecked(IDC_CUSTOM_SEARCH_TIMES) != BST_CHECKED;
 		searchDays[1] = (IsDlgButtonChecked(IDC_MON) == BST_CHECKED || useDefaultTimes);

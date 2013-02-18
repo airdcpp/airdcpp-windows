@@ -1141,6 +1141,8 @@
 #define IDC_USE_EXPIRY                  1547
 #define IDC_REQUIRE_EXACT_MATCH         1548
 #define IDC_EXACT_MATCH                 1548
+#define IDC_DL_TO2                      1549
+#define IDC_AS_EXCLUDED_LABEL           1549
 #define IDC_AUTOPRIORITY                1572
 #define IDC_SETTINGS_ODC_MENUBAR        1612
 #define IDC_SETTINGS_ODC_MENUBAR_USETWO 1613
@@ -1535,6 +1537,7 @@
 #define IDC_TARGET_TYPE                 15060
 #define IDC_AUTOSEARCH_ENABLE           15061
 #define IDC_CUR_NUMBER_LBL              15061
+#define IDC_AS_EXCLUDED                 15061
 #define IDC_AUTOSEARCH_RECHECK_TIME     15062
 #define IDC_MAX_NUMBER_LBL              15062
 #define IDC_AUTOSEARCH_RECHECK_SPIN     15063

@@ -118,7 +118,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	ctrlExcluded.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
-	ctrlExcluded.SetFont(WinUtil::font);
+	ctrlExcluded.SetFont(WinUtil::systemFont);
 	ctrlExcludedContainer.SubclassWindow(ctrlExcluded.m_hWnd);
 
 	WinUtil::appendHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
@@ -152,13 +152,13 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
 
 	ctrlFilterContainer.SubclassWindow(ctrlFilter.m_hWnd);
-	ctrlFilter.SetFont(WinUtil::font);
+	ctrlFilter.SetFont(WinUtil::systemFont);
 
 	ctrlFilterSel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL |
 		WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
 
 	ctrlFilterSelContainer.SubclassWindow(ctrlFilterSel.m_hWnd);
-	ctrlFilterSel.SetFont(WinUtil::font);
+	ctrlFilterSel.SetFont(WinUtil::systemFont);
 
 	searchLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	searchLabel.SetFont(WinUtil::systemFont, FALSE);

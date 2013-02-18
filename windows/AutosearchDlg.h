@@ -35,7 +35,7 @@
 
 class AutoSearchDlg : public CDialogImpl<AutoSearchDlg>, public DownloadBaseHandler<AutoSearchDlg> {
 public:
-	string searchString, comment, target, userMatch, matcherString, fileTypeStr;
+	string searchString, comment, target, userMatch, matcherString, fileTypeStr, excludedWords;
 	uint8_t matcherType, action;
 	TargetUtil::TargetType targetType;
 	SearchTime startTime;
@@ -124,6 +124,7 @@ private:
 	CButton cSelectDir;
 	CButton cAdvanced;
 	CComboBox cMatcherType;
+	CComboBox cExcludedWords;
 	CStatic cTargetType;
 
 	CDateTimePickerCtrl ctrlExpire, ctrlSearchStart, ctrlSearchEnd;
