@@ -40,6 +40,17 @@ PropPage::TextItem MiscPage::texts[] = {
 	{ IDC_PASSWD_PROTECT_TRAY_CHCKBOX, ResourceManager::PASSWD_PROTECT_TRAY_CHCKBOX },
 	{ IDC_PASSWD_PROTECT_CHCKBOX, ResourceManager::PASSWD_PROTECT_CHCKBOX },
 	{ IDC_SKIP_SUBTRACT_TEXT, ResourceManager::SKIP_SUBTRACT_TEXT },
+
+	//histories
+	{ IDC_HISTORY, ResourceManager::HISTORIES },
+
+	{ IDC_SEARCH_HIST_LBL, ResourceManager::SEARCH_STRINGS },
+	{ IDC_EXCLUDE_HIST_LBL, ResourceManager::EXCLUDED_SEARCH_WORDS },
+	{ IDC_DIR_HIST_LBL, ResourceManager::DIR_HISTORY },
+
+	{ IDC_SEARCH_HIST_CLEAR, ResourceManager::CLEAR_EXIT },
+	{ IDC_EXCLUDE_HIST_CLEAR, ResourceManager::CLEAR_EXIT },
+	{ IDC_DIR_HIST_CLEAR, ResourceManager::CLEAR_EXIT },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -50,6 +61,15 @@ PropPage::Item MiscPage::items[] = {
 	{ IDC_PASSWD_PROTECT_TRAY_CHCKBOX, SettingsManager::PASSWD_PROTECT_TRAY, PropPage::T_BOOL },
 	{ IDC_ALLOW_CONNECTION_TO_PASSED_HUBS, SettingsManager::DISALLOW_CONNECTION_TO_PASSED_HUBS, PropPage::T_BOOL },
 	{ IDC_SKIP_SUBTRACT, SettingsManager::SKIP_SUBTRACT, PropPage::T_INT },
+
+	//histories
+	{ IDC_SEARCH_HIST, SettingsManager::HISTORY_SEARCH_MAX, PropPage::T_BOOL },
+	{ IDC_EXCLUDE_HIST, SettingsManager::HISTORY_EXCLUDE_MAX, PropPage::T_BOOL },
+	{ IDC_DIR_HIST, SettingsManager::HISTORY_DIR_MAX, PropPage::T_BOOL },
+
+	{ IDC_SEARCH_HIST_CLEAR, SettingsManager::HISTORY_SEARCH_MAX, PropPage::T_BOOL },
+	{ IDC_EXCLUDE_HIST_CLEAR, SettingsManager::HISTORY_EXCLUDE_MAX, PropPage::T_BOOL },
+	{ IDC_DIR_HIST_CLEAR, SettingsManager::HISTORY_DIR_MAX, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -57,6 +77,11 @@ LRESULT MiscPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
+
+	//histories
+	setMinMax(IDC_SEARCH_HIST_SPIN, 0, 50);
+	setMinMax(IDC_EXCLUDE_HIST_SPIN, 0, 50);
+	setMinMax(IDC_DIR_HIST_SPIN, 0, 50);
 
 	CurSel = SETTING(MEDIA_PLAYER);
 	

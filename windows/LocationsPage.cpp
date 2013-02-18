@@ -46,7 +46,6 @@ PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_FORMAT_REMOTE_TIME, ResourceManager::SETTINGS_FORMAT_REMOTE_TIME },
 	{ IDC_AUTOPATH_CAPTION, ResourceManager::AUTOPATH_CAPTION }, 
 	{ IDC_SETTINGS_OPTIONS, ResourceManager::SETTINGS_OPTIONS }, 
-	{ IDC_CLEAR_DIR_HISTORY, ResourceManager::CLEAR_DIR_HISTORY }, 
 	{ IDC_MOVEDOWN, ResourceManager::MOVE_DOWN }, 
 	{ IDC_MOVEUP, ResourceManager::MOVE_UP }, 
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
@@ -58,7 +57,6 @@ PropPage::Item LocationsPage::items[] = {
 	{ IDC_DOWNLOADDIR,	SettingsManager::DOWNLOAD_DIRECTORY, PropPage::T_STR }, 
 	{ IDC_FAVDIRS_SHOW_SHARED, SettingsManager::SHOW_SHARED_DIRS_FAV, PropPage::T_BOOL },
 	{ IDC_FORMAT_REMOTE_TIME, SettingsManager::FORMAT_DIR_REMOTE_TIME, PropPage::T_BOOL },
-	{ IDC_CLEAR_DIR_HISTORY, SettingsManager::HISTORY_DIR_CLEAR, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 

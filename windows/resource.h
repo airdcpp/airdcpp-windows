@@ -1247,6 +1247,15 @@
 #define IDC_IPV4                        1700
 #define IDC_HASH_PROGRESS_AUTO_CLOSE    1701
 #define IDC_IPV6                        1701
+#define IDC_SEARCH_HIST_LBL             1701
+#define IDC_SEARCH_HIST                 1702
+#define IDC_SEARCH_HIST_SPIN            1703
+#define IDC_EXCLUDE_HIST_LBL            1704
+#define IDC_EXCLUDE_HIST                1705
+#define IDC_EXCLUDE_HIST_SPIN           1706
+#define IDC_DIR_HIST_LBL                1707
+#define IDC_DIR_HIST                    1708
+#define IDC_DIR_HIST_SPIN               1709
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1287,8 +1296,12 @@
 #define IDC_PASSWD_PROTECT_CHCKBOX      8671
 #define IDC_PASSWD_BUTTON               8672
 #define IDC_PSWD_CHNG_STATIC            8673
+#define IDC_SEARCH_HIST_CLEAR           8673
 #define IDC_PSWD_CHNG_OLD               8674
+#define IDC_EXCLUDE_HIST_CLEAR          8674
 #define IDC_PSWD_CHNG_NEW               8675
+#define IDC_EXCLUDE_HIST_CLEAR2         8675
+#define IDC_DIR_HIST_CLEAR              8675
 #define IDC_PSWD_CHNG_CONFIRM_NEW       8676
 #define IDC_LINE2                       8677
 #define IDC_LINE3                       8678
@@ -1595,6 +1608,7 @@
 #define IDC_SHOW_FAV                    15133
 #define IDC_SHOW_ONLINE                 15134
 #define IDC_DUPLICATE                   15135
+#define IDC_USE_EXCLUDED                15136
 #define ID_TOGGLE_TOOLBAR               15999
 #define ID_TOGGLE_TBSTATUS              16900
 #define ID_LOCK_TB                      18900
@@ -1631,7 +1645,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        347
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1701
+#define _APS_NEXT_CONTROL_VALUE         1704
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

@@ -35,7 +35,6 @@
 #include "../client/ClientManagerListener.h"
 #include "../client/FavoriteManager.h"
 #include "../client/SearchResult.h"
-#include "../client/StringMatch.h"
 #include "UCHandler.h"
 #include "SearchTypeCombo.h"
 
@@ -90,7 +89,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy)
 		COMMAND_ID_HANDLER(IDC_FREESLOTS, onFreeSlots)
 		COMMAND_ID_HANDLER(IDC_COLLAPSED, onCollapsed)
-		COMMAND_ID_HANDLER(IDC_USKIPLIST, onUseSkiplist)
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
 		COMMAND_ID_HANDLER(IDC_BROWSELIST, onBrowseList)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchByTTH)
@@ -101,6 +99,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenFolder)
 		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
+		COMMAND_ID_HANDLER(IDC_USE_EXCLUDED, onUseExcluded)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uicBase)
 		CHAIN_MSG_MAP(baseClass)
@@ -186,10 +185,8 @@ public:
 		onlyFree = (ctrlSlots.GetCheck() == 1);
 		return 0;
 	}
-	LRESULT onUseSkiplist(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		UseSkiplist = (ctrlSkipBool.GetCheck() == 1);
-		return 0;
-	}
+
+	LRESULT onUseExcluded(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onCollapsed(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		expandSR = (ctrlCollapsed.GetCheck() == 1);
@@ -437,11 +434,10 @@ private:
 	CContainedWindow ctrlFilterContainer;
 	CContainedWindow ctrlFilterSelContainer;
 	CContainedWindow ctrlExcludedContainer;
-	CContainedWindow SkipBoolContainer;
 	tstring filter;
 	
 	CStatic searchLabel, sizeLabel, optionLabel, typeLabel, hubsLabel, srLabel;
-	CButton ctrlSlots, ctrlShowUI, ctrlCollapsed, ctrlSkipBool;
+	CButton ctrlSlots, ctrlShowUI, ctrlCollapsed, ctrlExcludedBool;
 	bool showUI;
 
 	CImageList images;
@@ -456,10 +452,7 @@ private:
 	CComboBox ctrlFilterSel;
 	CComboBox ctrlExcluded;
 
-	StringMatch searchSkipList;
-
 	bool onlyFree;
-	bool UseSkiplist;
 	bool expandSR;
 	bool running;
 	bool exactSize1;
@@ -493,6 +486,7 @@ private:
 	StringList lastDisabledHubs;
 
 	void onEnter();
+	void fixControls();
 
 	void onTab(bool shift);
 	

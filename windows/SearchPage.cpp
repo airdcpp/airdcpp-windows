@@ -21,16 +21,11 @@
 #include "WebShortcutsProperties.h"
 
 PropPage::TextItem SearchPage::texts[] = {
-	{ IDC_SEARH_SKIPLIST_PRESET,				ResourceManager::SETTINGS_SEARH_SKIPLIST_PRESET },
-	{ IDC_PRE1,									ResourceManager::PRESET1 },
-	{ IDC_PRE2,									ResourceManager::PRESET2 },
-	{ IDC_PRE3,									ResourceManager::PRESET3 },
 	{ IDC_WEB_SHORTCUTS_ADD,					ResourceManager::ADD						},
 	{ IDC_WEB_SHORTCUTS_REMOVE,					ResourceManager::REMOVE						},
 	{ IDC_WEB_SHORTCUTS_PROPERTIES,				ResourceManager::PROPERTIES					},
 	{ IDC_SB_WEB_SHORTCUTS,						ResourceManager::SETTINGS_SB_WEB_SHORTCUTS	},
 	{ IDC_INTERVAL_TEXT,						ResourceManager::MINIMUM_SEARCH_INTERVAL },
-	{ IDC_SETTINGS_SEARCH_HISTORY,				ResourceManager::SETTINGS_SEARCH_HISTORY },
 	{ IDC_SEARCHING_OPTIONS,					ResourceManager::SETTINGS_SEARCHING_OPTIONS	},
 	{ IDC_EXPIRY_DAYS_LABEL,					ResourceManager::SETTINGS_EXPIRY_DAYS	},
 	{ IDC_DELAY_HOURS_LABEL,					ResourceManager::SETTINGS_DELAY_HOURS	},
@@ -39,11 +34,7 @@ PropPage::TextItem SearchPage::texts[] = {
 };
 
 PropPage::Item SearchPage::items[] = {
-	{ IDC_SKIPLIST_PRESET1, SettingsManager::SKIP_MSG_01, PropPage::T_STR },
-	{ IDC_SKIPLIST_PRESET2, SettingsManager::SKIP_MSG_02, PropPage::T_STR },
-	{ IDC_SKIPLIST_PRESET3, SettingsManager::SKIP_MSG_03, PropPage::T_STR },
 	{ IDC_INTERVAL, SettingsManager::MINIMUM_SEARCH_INTERVAL, PropPage::T_INT },
-	{ IDC_SEARCH_HISTORY, SettingsManager::HISTORY_SEARCH_MAX, PropPage::T_INT }, 
 	{ IDC_EXPIRY_DAYS, SettingsManager::AUTOSEARCH_EXPIRE_DAYS, PropPage::T_INT }, 
 	{ IDC_DELAY_HOURS, SettingsManager::AS_DELAY_HOURS, PropPage::T_INT }, 
 	{ 0, 0, PropPage::T_END }

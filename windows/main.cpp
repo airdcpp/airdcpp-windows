@@ -405,7 +405,6 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	dcassert(WinUtil::splash);
 	loader = std::async([=] {
-		//TODO: also show some progress?
 		shutdown(
 			[&](const string& str) { (*WinUtil::splash)(str); },
 			[=](float progress) { (*WinUtil::splash)(progress); }

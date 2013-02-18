@@ -77,9 +77,8 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 	ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
 	ctrlExcludedContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-	SkipBoolContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
-	showUI(true), onlyFree(false), closed(false), UseSkiplist(false), droppedResults(0), resultsCount(0),
+	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0),
 	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false)
 {	
 	SearchManager::getInstance()->addListener(this);
@@ -112,18 +111,19 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ES_AUTOHSCROLL | ES_NUMBER, WS_EX_CLIENTEDGE);
 	sizeContainer.SubclassWindow(ctrlSize.m_hWnd);
 	
+	ctrlExcludedBool.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_USE_EXCLUDED);
+	ctrlExcludedBool.SetButtonStyle(BS_AUTOCHECKBOX, FALSE);
+	ctrlExcludedBool.SetFont(WinUtil::systemFont, FALSE);
+	ctrlExcludedBool.SetWindowText(CTSTRING(EXCLUDED_WORDS_DESC));
+
 	ctrlExcluded.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
 	ctrlExcluded.SetFont(WinUtil::font);
-	ctrlExcluded.SetWindowText(Text::toT(SETTING(SKIPLIST_SEARCH)).c_str());
 	ctrlExcludedContainer.SubclassWindow(ctrlExcluded.m_hWnd);
 
 	WinUtil::appendHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
 	WinUtil::appendHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
-
-	searchSkipList.pattern = SETTING(SKIPLIST_SEARCH);
-	searchSkipList.setMethod(StringMatch::WILDCARD);
-	searchSkipList.prepare();
+	ctrlExcluded.SetWindowText(Text::toT(SETTING(LAST_SEARCH_EXCLUDED)).c_str());
 
 	ctrlSizeMode.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
@@ -168,12 +168,6 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	sizeLabel.SetFont(WinUtil::systemFont, FALSE);
 	sizeLabel.SetWindowText(CTSTRING(SIZE));
 
-	ctrlSkipBool.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_USKIPLIST);
-	ctrlSkipBool.SetButtonStyle(BS_AUTOCHECKBOX, FALSE);
-	ctrlSkipBool.SetFont(WinUtil::systemFont, FALSE);
-	ctrlSkipBool.SetWindowText(CTSTRING(SKIPLIST));
-	SkipBoolContainer.SubclassWindow(ctrlSkipBool.m_hWnd);
-
 	typeLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	typeLabel.SetFont(WinUtil::systemFont, FALSE);
 	typeLabel.SetWindowText(CTSTRING(FILE_TYPE));
@@ -206,9 +200,9 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ctrlSlots.SetCheck(true);
 		onlyFree = true;
 	}
-	if(SETTING(SEARCH_SKIPLIST)) {
-		ctrlSkipBool.SetCheck(true);
-		UseSkiplist = true;
+
+	if(SETTING(SEARCH_USE_EXCLUDED)) {
+		ctrlExcludedBool.SetCheck(true);
 	}
 
 	if(SETTING(EXPAND_DEFAULT)) {
@@ -320,8 +314,19 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	ctrlStatus.SetText(1, 0, SBT_OWNERDRAW);
 	
+	fixControls();
 	bHandled = FALSE;
 	return 1;
+}
+
+LRESULT SearchFrame::onUseExcluded(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	fixControls();
+	return 0;
+}
+
+void SearchFrame::fixControls() {
+	bool useExcluded = ctrlExcludedBool.GetCheck() == TRUE;
+	ctrlExcluded.EnableWindow(useExcluded);
 }
 
 LRESULT SearchFrame::onMeasure(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -460,8 +465,15 @@ void SearchFrame::onEnter() {
 	::EnableWindow(GetDlgItem(IDC_SEARCH_PAUSE), TRUE);
 	ctrlPauseSearch.SetWindowText(CTSTRING(PAUSE_SEARCH));
 
+	string excluded;
+	bool useExcluded = ctrlExcludedBool.GetCheck() == TRUE;
+	SettingsManager::getInstance()->set(SettingsManager::SEARCH_USE_EXCLUDED, useExcluded);
+	if (useExcluded) {
+		excluded = WinUtil::addHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
+		if (!excluded.empty())
+			SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_EXCLUDED, excluded);
+	}
 
-	string excluded = WinUtil::addHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
 	/*{
 		Lock l(cs);
 		s = s.substr(0, max(s.size(), static_cast<tstring::size_type>(1)) - 1);
@@ -880,7 +892,6 @@ LRESULT SearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		SearchManager::getInstance()->removeListener(this);
  		ClientManager::getInstance()->removeListener(this);
 		frames.erase(m_hWnd);
-		//updateSkipList();
 
 		closed = true;
 		PostMessage(WM_CLOSE);
@@ -1038,14 +1049,14 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		rc.bottom += 21;
 		ctrlCollapsed.MoveWindow(rc);
 
-		//Skiplist
+		//Excluded words
 		rc.left = lMargin;
 		rc.right = width - rMargin;		
 		rc.top += spacing;
 		rc.bottom = rc.top + 21;
 
 		ctrlExcluded.MoveWindow(rc);
-		ctrlSkipBool.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
+		ctrlExcludedBool.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
 
 		// "Hubs"
 		rc.left = lMargin;
@@ -1146,7 +1157,7 @@ LRESULT SearchFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 	HDC hDC = (HDC)wParam;
 
 	if(hWnd == searchLabel.m_hWnd || hWnd == sizeLabel.m_hWnd || hWnd == optionLabel.m_hWnd || hWnd == typeLabel.m_hWnd
-		|| hWnd == hubsLabel.m_hWnd || hWnd == ctrlSlots.m_hWnd || hWnd == ctrlSkipBool.m_hWnd || hWnd == ctrlCollapsed.m_hWnd || hWnd == srLabel.m_hWnd) {
+		|| hWnd == hubsLabel.m_hWnd || hWnd == ctrlSlots.m_hWnd || hWnd == ctrlExcludedBool.m_hWnd || hWnd == ctrlCollapsed.m_hWnd || hWnd == srLabel.m_hWnd) {
 		::SetBkColor(hDC, ::GetSysColor(COLOR_3DFACE));
 		::SetTextColor(hDC, ::GetSysColor(COLOR_BTNTEXT));
 		return (LRESULT)::GetSysColorBrush(COLOR_3DFACE);
@@ -1652,25 +1663,6 @@ LRESULT SearchFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*
 
 	return 0;
 }
-/*void SearchFrame::updateSkipList() {
-	if (UseSkiplist != SETTING(SEARCH_SKIPLIST))
-		SettingsManager::getInstance()->set(SettingsManager::SEARCH_SKIPLIST, UseSkiplist);
-
-	if (UseSkiplist) {
-		TCHAR *buf = new TCHAR[ctrlSkiplist.GetWindowTextLength()+1];
-		ctrlSkiplist.GetWindowText(buf, ctrlSkiplist.GetWindowTextLength()+1);
-		string skipList = Text::fromT(buf);
-
-		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SEARCH, skipList);
-
-		{
-			Lock l (cs);
-			searchSkipList.pattern = skipList;
-			searchSkipList.prepare();
-		}
-		delete[] buf;
-	}
-}*/
 
 bool SearchFrame::parseFilter(FilterModes& mode, int64_t& size) {
 	tstring::size_type start = (tstring::size_type)tstring::npos;
