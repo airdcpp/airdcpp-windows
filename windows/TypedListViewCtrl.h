@@ -28,16 +28,23 @@
 #include "../client/StringTokenizer.h"
 #include "ListViewArrows.h"
 
+enum ColumnType{
+	COLUMN_TEXT,
+	COLUMN_NUMERIC,
+	COLUMN_DATES
+};
+
 class ColumnInfo {
 public:
-	ColumnInfo(const tstring &aName, int aPos, int aFormat, int aWidth): name(aName), pos(aPos), width(aWidth), 
-		format(aFormat), visible(true) {}
+	ColumnInfo(const tstring &aName, int aPos, int aFormat, int aWidth, ColumnType aColType): name(aName), pos(aPos), width(aWidth), 
+		format(aFormat), visible(true), colType(aColType) {}
 	~ColumnInfo() {}
 		tstring name;
 		bool visible;
 		int pos;
 		int width;
 		int format;
+		ColumnType colType;
 };
 
 template<class T, int ctrlId>
@@ -316,9 +323,9 @@ public:
 	iterator begin() { return iterator(this); }
 	iterator end() { return iterator(this, GetItemCount()); }
 
-	int InsertColumn(uint8_t nCol, const tstring &columnHeading, int nFormat = LVCFMT_LEFT, int nWidth = -1, int nSubItem = -1 ){
+	int InsertColumn(uint8_t nCol, const tstring &columnHeading, int nFormat = LVCFMT_LEFT, int nWidth = -1, int nSubItem = -1, ColumnType aColType = COLUMN_TEXT ){
 		if(nWidth == 0) nWidth = 80;
-		columnList.push_back(new ColumnInfo(columnHeading, nCol, nFormat, nWidth));
+		columnList.push_back(new ColumnInfo(columnHeading, nCol, nFormat, nWidth, aColType));
 		columnIndexes.push_back(nCol);
 		return CListViewCtrl::InsertColumn(nCol, columnHeading.c_str(), nFormat, nWidth, nSubItem);
 	}

@@ -36,11 +36,12 @@ void ListFilter::addFilterBox(HWND parent) {
 
 }
 
-void ListFilter::addColumnBox(HWND parent, vector<ColumnInfo*>& columns){
+void ListFilter::addColumnBox(HWND parent, vector<ColumnInfo*>& aColumns){
 	RECT rc = { 0, 0, 100, 110 };
 	column.Create(parent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL |
 		WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
 	column.SetFont(WinUtil::systemFont);
+	columns = aColumns;
 	for(auto& col : columns)
 		column.AddString(((*col).name).c_str());
 
@@ -135,6 +136,8 @@ ListFilter::Preparation ListFilter::prepare() {
 	if(prep.method < StringMatch::METHOD_LAST) {
 		matcher.setMethod(static_cast<StringMatch::Method>(prep.method));
 		matcher.prepare();
+	} else {
+		prep.size = prepareSize();
 	}
 
 	return prep;
@@ -154,6 +157,16 @@ bool ListFilter::match(const Preparation& prep, InfoFunction infoF) const {
 		} else {
 			return matcher.match(infoF(prep.column));
 		}
+	} else {
+		auto size = Util::toDouble(infoF(prep.column));
+		switch(prep.method - StringMatch::METHOD_LAST) {
+		case EQUAL: return size == prep.size;
+		case GREATER_EQUAL: return size >= prep.size;
+		case LESS_EQUAL: return size <= prep.size;
+		case GREATER: return size > prep.size;
+		case LESS: return size < prep.size;
+		case NOT_EQUAL: return size != prep.size;
+		}
 	}
 	return false;
 }
@@ -170,5 +183,59 @@ void ListFilter::textUpdated(const string& filter) {
 }
 
 void ListFilter::columnChanged() {
+	if(column.IsWindow() && method.IsWindow()) {
+		auto n = getMethod();
+		size_t col = getColumn();
+
+		if(col < colCount && columns[col]->colType == COLUMN_NUMERIC) {
+			if(n <= StringMatch::METHOD_LAST) {
+				method.AddString(_T("="));
+				method.AddString(_T(">="));
+				method.AddString(_T("<="));
+				method.AddString(_T(">"));
+				method.AddString(_T("<"));
+				method.AddString(_T("!="));
+			}
+
+		} else if(n > StringMatch::METHOD_LAST) {
+			for(size_t i = StringMatch::METHOD_LAST; i < n; ++i) {
+				method.DeleteString(StringMatch::METHOD_LAST);
+			}
+			if(getMethod() == -1) {
+				method.SetCurSel(StringMatch::PARTIAL);
+			}
+		}
+	}
+
 	updateFunction();
+}
+double ListFilter::prepareSize() const {
+	size_t end;
+	int64_t multiplier;
+
+	if((end = Util::findSubString(matcher.pattern, ("TiB"))) != string::npos) {
+		multiplier = 1024LL * 1024LL * 1024LL * 1024LL;
+	} else if((end = Util::findSubString(matcher.pattern, ("GiB"))) != string::npos) {
+		multiplier = 1024 * 1024 * 1024;
+	} else if((end = Util::findSubString(matcher.pattern, ("MiB"))) != string::npos) {
+		multiplier = 1024 * 1024;
+	} else if((end = Util::findSubString(matcher.pattern, ("KiB"))) != string::npos) {
+		multiplier = 1024;
+	} else if((end = Util::findSubString(matcher.pattern, ("TB"))) != string::npos) {
+		multiplier = 1000LL * 1000LL * 1000LL * 1000LL;
+	} else if((end = Util::findSubString(matcher.pattern, ("GB"))) != string::npos) {
+		multiplier = 1000 * 1000 * 1000;
+	} else if((end = Util::findSubString(matcher.pattern, ("MB"))) != string::npos) {
+		multiplier = 1000 * 1000;
+	} else if((end = Util::findSubString(matcher.pattern, ("KB"))) != string::npos) {
+		multiplier = 1000;
+	} else {
+		multiplier = 1;
+	}
+
+	if(end == tstring::npos) {
+		end = matcher.pattern.length();
+	}
+
+	return Util::toDouble(matcher.pattern.substr(0, end)) * multiplier;
 }

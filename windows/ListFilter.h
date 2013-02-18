@@ -84,11 +84,24 @@ public:
 
 private:
 
+	enum {
+		EQUAL,
+		GREATER_EQUAL,
+		LESS_EQUAL,
+		GREATER,
+		LESS,
+		NOT_EQUAL
+	};
+
+	vector<ColumnInfo*> columns;
+
 	void textUpdated(const string& filter);
 	void columnChanged();
+	double prepareSize() const;
 
 	StringMatch::Method defMethod;
 	int defMatchColumn;
+
 
 	size_t getMethod();
 	size_t getColumn();

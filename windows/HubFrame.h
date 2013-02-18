@@ -40,6 +40,7 @@
 #include "atlstr.h"
 #include "WinUtil.h"
 #include "UCHandler.h"
+#include "ListFilter.h"
 
 #define FILTER_MESSAGE_MAP 8
 #define SHOW_USERS 9
@@ -117,11 +118,7 @@ public:
 	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
 		MESSAGE_HANDLER(WM_CHAR, onFilterChar)
-		MESSAGE_HANDLER(WM_CLEAR, onFilterChar)
-		MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
-		MESSAGE_HANDLER(WM_CUT, onFilterChar)
-		MESSAGE_HANDLER(WM_PASTE, onFilterChar)
-		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onSelChange)
+		CHAIN_MSG_MAP_MEMBER(filter)
 	END_MSG_MAP()
 
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -137,8 +134,6 @@ public:
 	LRESULT onFollow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onEnterUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onGetToolTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
-	LRESULT onFilterChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClientEnLink(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) { return ctrlClient.onClientEnLink(uMsg, wParam, lParam, bHandled); }
@@ -156,6 +151,16 @@ public:
 	LRESULT onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenMyList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+
+	LRESULT onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+		//handle focus switch
+		if(uMsg == WM_CHAR && wParam == VK_TAB) {
+			handleTab(WinUtil::isShift());
+			return 0;
+		}
+		bHandled = FALSE;
+		return 0;
+	}
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	bool sendMessage(const tstring& aMessage, bool isThirdPerson);
@@ -217,16 +222,6 @@ private:
 		GET_SHUTDOWN, SET_SHUTDOWN, KICK_MSG, UPDATE_TAB_ICONS
 	};
 
-	enum FilterModes{
-		NONE,
-		EQUAL,
-		GREATER_EQUAL,
-		LESS_EQUAL,
-		GREATER,
-		LESS,
-		NOT_EQUAL
-	};
-
 	struct UserTask : public Task {
 		UserTask(const OnlineUserPtr& ou) : onlineUser(ou) { }
 		~UserTask() { }
@@ -279,6 +274,7 @@ private:
 	CContainedWindow ctrlShowUsersContainer;
 	CContainedWindow ctrlFilterContainer;
 	CContainedWindow ctrlFilterSelContainer;
+	CContainedWindow ctrlFilterMethodContainer;
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
 
@@ -286,15 +282,12 @@ private:
 	OMenu userMenu;
 
 	CButton ctrlShowUsers;
-	CEdit ctrlFilter;
-	CComboBox ctrlFilterSel;
+
 	typedef TypedListViewCtrl<OnlineUser, IDC_USERS> CtrlUsers;
 	CtrlUsers ctrlUsers;
 	
 	int statusSizes[4];
 	
-	tstring filter;
-
 	bool closed;
 	bool showUsers;
 	bool forceClose;
@@ -323,8 +316,8 @@ private:
 	void removeUser(const OnlineUserPtr& aUser);
 
 	void updateUserList(OnlineUserPtr ui = NULL);
-	bool parseFilter(FilterModes& mode, int64_t& size);
-	bool matchFilter(const OnlineUser& ui, int sel, const boost::wregex aReg, bool doSizeCompare = false, FilterModes mode = NONE, int64_t size = 0);
+
+	ListFilter filter;
 
 	void addAsFavorite();
 	void removeFavoriteHub();

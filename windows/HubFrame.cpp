@@ -64,19 +64,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
 
-	ctrlFilter.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
-
-	ctrlFilterContainer.SubclassWindow(ctrlFilter.m_hWnd);
-	ctrlFilter.SetFont(WinUtil::font);
-	WinUtil::addCue(ctrlFilter.m_hWnd, CTSTRING(FILTER_DOTS), TRUE);
-
-	ctrlFilterSel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL |
-		WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
-
-	ctrlFilterSelContainer.SubclassWindow(ctrlFilterSel.m_hWnd);
-	ctrlFilterSel.SetFont(WinUtil::font);
-
 	ctrlUsers.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_USERS);
 	ctrlUsers.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
@@ -118,14 +105,21 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	}
     	
 	for(uint8_t j = 0; j < OnlineUser::COLUMN_LAST; ++j) {
+		ColumnType ctp = (j == OnlineUser::COLUMN_SHARED || 
+			j == OnlineUser::COLUMN_EXACT_SHARED || 
+			j == OnlineUser::COLUMN_SLOTS) ? COLUMN_NUMERIC : COLUMN_TEXT;
 		int fmt = (j == OnlineUser::COLUMN_SHARED || j == OnlineUser::COLUMN_EXACT_SHARED || j == OnlineUser::COLUMN_SLOTS) ? LVCFMT_RIGHT : LVCFMT_LEFT;
-		ctrlUsers.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
-		ctrlFilterSel.AddString(CTSTRING_I(columnNames[j]));
+		ctrlUsers.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j, ctp);
 	}
-	
+
+	filter.addFilterBox(m_hWnd);
+	filter.addColumnBox(m_hWnd, ctrlUsers.getColumnList());
+	filter.addMethodBox(m_hWnd);
+	ctrlFilterContainer.SubclassWindow(filter.getFilterBox().m_hWnd);
+	ctrlFilterSelContainer.SubclassWindow(filter.getFilterColumnBox().m_hWnd);
+	ctrlFilterMethodContainer.SubclassWindow(filter.getFilterMethodBox().m_hWnd);
+
 	ctrlUsers.setColumnOrderArray(OnlineUser::COLUMN_LAST, columnIndexes);
-	ctrlFilterSel.AddString(CTSTRING(ANY));
-	ctrlFilterSel.SetCurSel(0);
 	
 	if(fhe) {
 		ctrlUsers.setVisible(fhe->getHeaderVisible());
@@ -199,8 +193,10 @@ HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate
 		ctrlShowUsersContainer(WC_BUTTON, this, SHOW_USERS),
 		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
+		ctrlFilterMethodContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
 		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
+		filter(OnlineUser::COLUMN_LAST, [this] { updateUserList(); updateUsers = true;}),
 		ChatFrameBase(this)
 {
 	client = ClientManager::getInstance()->createClient(Text::fromT(aServer));
@@ -780,7 +776,7 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	rc.bottom -= 2;
 	rc.top = rc.bottom - h - 5;
 	rc.left +=2;
-	rc.right -= (showUsers ? 200 : 0) + buttonsize;
+	rc.right -= (showUsers ? 320 : 0) + buttonsize;
 	ctrlMessage.MoveWindow(rc);
 
 //ApexDC
@@ -803,18 +799,26 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	if(showUsers){
 		rc.left = rc.right + 2;
 		rc.right = rc.left + 116;
-		ctrlFilter.MoveWindow(rc);
+		filter.getFilterBox().MoveWindow(rc);
 
 		rc.left = rc.right + 4;
-		rc.right = rc.left + 76;
+		rc.right = rc.left + 96;
 		rc.top = rc.top + 0;
 		rc.bottom = rc.bottom + 120;
-		ctrlFilterSel.MoveWindow(rc);
+		filter.getFilterColumnBox().MoveWindow(rc);
+
+		rc.left = rc.right + 4;
+		rc.right = rc.left + 96;
+		rc.top = rc.top + 0;
+		rc.bottom = rc.bottom + 120;
+		filter.getFilterMethodBox().MoveWindow(rc);
+
 	} else {
 		rc.left = 0;
 		rc.right = 0;
-		ctrlFilter.MoveWindow(rc);
-		ctrlFilterSel.MoveWindow(rc);
+		filter.getFilterBox().MoveWindow(rc);
+		filter.getFilterColumnBox().MoveWindow(rc);
+		filter.getFilterMethodBox().MoveWindow(rc);
 	}
 }
 
@@ -1583,145 +1587,7 @@ void HubFrame::openLinksInTopic() {
 	}
 }
 
-LRESULT HubFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(uMsg == WM_CHAR && wParam == VK_TAB) {
-		handleTab(WinUtil::isShift());
-		return 0;
-	}
-	if(uMsg == WM_PASTE) {
-		if(!IsClipboardFormatAvailable(CF_TEXT))
-			return 0;
-		if(!::OpenClipboard(WinUtil::mainWnd))
-			return 0;
-	}
-	
-	if(!SETTING(FILTER_ENTER) || (wParam == VK_RETURN)) {
-		if(uMsg == WM_PASTE) {
-			HGLOBAL hglb = GetClipboardData(CF_TEXT); 
-			if(hglb != NULL) { 
-				char* lptstr = (char*)GlobalLock(hglb); 
-				if(lptstr != NULL) {
-					string tmp(lptstr);
-					filter = Text::toT(tmp);
-					GlobalUnlock(hglb);
-				}
-			}
-			CloseClipboard();
-		}else if(uMsg == WM_CUT) {
-			int begin, end;
-			ctrlFilter.GetSel(begin, end);
-			tstring buf;
-			buf.resize(ctrlFilter.GetWindowTextLength());
-			buf.resize(ctrlFilter.GetWindowText(&buf[0], ctrlFilter.GetWindowTextLength() + 1));
-			buf.erase(begin, end);
-			filter = buf;
-		}else if(uMsg == WM_CLEAR) {
-			filter.clear();
-		} else {
-			TCHAR *buf = new TCHAR[ctrlFilter.GetWindowTextLength()+1];
-			ctrlFilter.GetWindowText(buf, ctrlFilter.GetWindowTextLength()+1);
-			filter = buf;
-			delete[] buf;
-		}
-		updateUserList();
-		updateUsers = true;
-	}
-
-	bHandled = FALSE;
-
-	return 0;
-}
-
-LRESULT HubFrame::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
-	TCHAR *buf = new TCHAR[ctrlFilter.GetWindowTextLength()+1];
-	ctrlFilter.GetWindowText(buf, ctrlFilter.GetWindowTextLength()+1);
-	filter = buf;
-	delete[] buf;
-	
-	updateUserList();
-	updateUsers = true;
-
-	bHandled = FALSE;
-
-	return 0;
-}
-
-bool HubFrame::parseFilter(FilterModes& mode, int64_t& size) {
-	tstring::size_type start = (tstring::size_type)tstring::npos;
-	tstring::size_type end = (tstring::size_type)tstring::npos;
-	int64_t multiplier = 1;
-	
-	if(filter.empty()) {
-		return false;
-	}
-	if(filter.compare(0, 2, _T(">=")) == 0) {
-		mode = GREATER_EQUAL;
-		start = 2;
-	} else if(filter.compare(0, 2, _T("<=")) == 0) {
-		mode = LESS_EQUAL;
-		start = 2;
-	} else if(filter.compare(0, 2, _T("==")) == 0) {
-		mode = EQUAL;
-		start = 2;
-	} else if(filter.compare(0, 2, _T("!=")) == 0) {
-		mode = NOT_EQUAL;
-		start = 2;
-	} else if(filter[0] == _T('<')) {
-		mode = LESS;
-		start = 1;
-	} else if(filter[0] == _T('>')) {
-		mode = GREATER;
-		start = 1;
-	} else if(filter[0] == _T('=')) {
-		mode = EQUAL;
-		start = 1;
-	}
-
-	if(start == tstring::npos)
-		return false;
-	if(filter.length() <= start)
-		return false;
-
-	if((end = Util::findSubString(filter, _T("TiB"))) != tstring::npos) {
-		multiplier = 1024LL * 1024LL * 1024LL * 1024LL;
-	} else if((end = Util::findSubString(filter, _T("GiB"))) != tstring::npos) {
-		multiplier = 1024*1024*1024;
-	} else if((end = Util::findSubString(filter, _T("MiB"))) != tstring::npos) {
-		multiplier = 1024*1024;
-	} else if((end = Util::findSubString(filter, _T("KiB"))) != tstring::npos) {
-		multiplier = 1024;
-	} else if((end = Util::findSubString(filter, _T("TB"))) != tstring::npos) {
-		multiplier = 1000LL * 1000LL * 1000LL * 1000LL;
-	} else if((end = Util::findSubString(filter, _T("GB"))) != tstring::npos) {
-		multiplier = 1000*1000*1000;
-	} else if((end = Util::findSubString(filter, _T("MB"))) != tstring::npos) {
-		multiplier = 1000*1000;
-	} else if((end = Util::findSubString(filter, _T("kB"))) != tstring::npos) {
-		multiplier = 1000;
-	} else if((end = Util::findSubString(filter, _T("B"))) != tstring::npos) {
-		multiplier = 1;
-	}
-
-	if(end == tstring::npos) {
-		end = filter.length();
-	}
-	
-	tstring tmpSize = filter.substr(start, end-start);
-	size = static_cast<int64_t>(Util::toDouble(Text::fromT(tmpSize)) * multiplier);
-	
-	return true;
-}
-
 void HubFrame::updateUserList(OnlineUserPtr ui) {
-	int64_t size = -1;
-	FilterModes mode = NONE;
-
-	boost::wregex reg;
-	try {
-		reg.assign(Text::toT(AirUtil::regexEscape(Text::fromT(filter), false)), boost::regex_constants::icase);
-	} catch (...) { 
-		return;
-	}
 	
 	//single update?
 	//avoid refreshing the whole list and just update the current item
@@ -1736,10 +1602,10 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 				ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
 			}
 		} else {
-			int sel = ctrlFilterSel.GetCurSel();
-			bool doSizeCompare = sel == OnlineUser::COLUMN_SHARED && parseFilter(mode, size);
+			auto filterPrep = filter.prepare();
+			auto filterInfoF = [this, &ui](int column) { return Text::fromT(ui->getText(column)); };
 
-			if(matchFilter(*ui, sel, reg, doSizeCompare, mode, size)) {
+			if(filter.match(filterPrep, filterInfoF)) {
 				if(ctrlUsers.findItem(ui.get()) == -1) {
 					ui->inc();
 					ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
@@ -1767,11 +1633,13 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 				}
 			}
 		} else {
-			int sel = ctrlFilterSel.GetCurSel();
-			bool doSizeCompare = sel == OnlineUser::COLUMN_SHARED && parseFilter(mode, size);
+			auto i = l.begin();
+			auto filterPrep = filter.prepare();
+			auto filterInfoF = [this, &i](int column) { return Text::fromT((*i)->getText(column)); };
 
-			for(const auto& ui: l){
-				if(!ui->isHidden() && matchFilter(*ui, sel, reg, doSizeCompare, mode, size)) {
+			for(; i != l.end(); ++i){
+				auto ui = *i;
+				if(!ui->isHidden() && (filter.empty() || filter.match(filterPrep, filterInfoF))) {
 					ui->inc();
 					ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
 				}
@@ -1780,21 +1648,22 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		ctrlUsers.SetRedraw(TRUE);
 	}
 }
-
 void HubFrame::handleTab(bool reverse) {
 	HWND focus = GetFocus();
 
 	if(reverse) {
-		if(focus == ctrlFilterSel.m_hWnd) {
-			ctrlFilter.SetFocus();
-		} else if(focus == ctrlFilter.m_hWnd) {
+		if(focus == filter.getFilterMethodBox().m_hWnd) {
+			filter.getFilterColumnBox().SetFocus();
+		} else if(focus == filter.getFilterColumnBox().m_hWnd) {
+			filter.getFilterBox().SetFocus();
+		} else if(focus == filter.getFilterBox().m_hWnd) {
 			ctrlMessage.SetFocus();
 		} else if(focus == ctrlMessage.m_hWnd) {
 			ctrlUsers.SetFocus();
 		} else if(focus == ctrlUsers.m_hWnd) {
 			ctrlClient.SetFocus();
 		} else if(focus == ctrlClient.m_hWnd) {
-			ctrlFilterSel.SetFocus();
+			filter.getFilterMethodBox().SetFocus();
 		}
 	} else {
 		if(focus == ctrlClient.m_hWnd) {
@@ -1802,51 +1671,15 @@ void HubFrame::handleTab(bool reverse) {
 		} else if(focus == ctrlUsers.m_hWnd) {
 			ctrlMessage.SetFocus();
 		} else if(focus == ctrlMessage.m_hWnd) {
-			ctrlFilter.SetFocus();
-		} else if(focus == ctrlFilter.m_hWnd) {
-			ctrlFilterSel.SetFocus();
-		} else if(focus == ctrlFilterSel.m_hWnd) {
+			filter.getFilterBox().SetFocus();
+		} else if(focus == filter.getFilterBox().m_hWnd) {
+			filter.getFilterColumnBox().SetFocus();
+		} else if(focus == filter.getFilterColumnBox().m_hWnd) {
+			filter.getFilterMethodBox().SetFocus();
+		} else if(focus == filter.getFilterMethodBox().m_hWnd) {
 			ctrlClient.SetFocus();
 		}
 	}
-}
-
-bool HubFrame::matchFilter(const OnlineUser& ui, int sel, const boost::wregex aReg, bool doSizeCompare, FilterModes mode, int64_t size) {
-	if(filter.empty())
-		return true;
-
-	bool insert = false;
-	if(doSizeCompare) {
-		switch(mode) {
-			case EQUAL: insert = (size == ui.getIdentity().getBytesShared()); break;
-			case GREATER_EQUAL: insert = (size <=  ui.getIdentity().getBytesShared()); break;
-			case LESS_EQUAL: insert = (size >=  ui.getIdentity().getBytesShared()); break;
-			case GREATER: insert = (size < ui.getIdentity().getBytesShared()); break;
-			case LESS: insert = (size > ui.getIdentity().getBytesShared()); break;
-			case NOT_EQUAL: insert = (size != ui.getIdentity().getBytesShared()); break;
-			case NONE: ; break;
-		}
-	} else {
-		try {
-			if(sel >= OnlineUser::COLUMN_LAST) {
-				for(uint8_t i = OnlineUser::COLUMN_FIRST; i < OnlineUser::COLUMN_LAST; ++i) {
-					tstring s = ui.getText(i);
-					if(boost::regex_search(s.begin(), s.end(), aReg)) {
-						insert = true;
-						break;
-					}
-				}
-			} else {
-				tstring s = ui.getText(static_cast<uint8_t>(sel));
-				if(boost::regex_search(s.begin(), s.end(), aReg))
-					insert = true;
-			}
-		} catch(...) {
-			insert = true;
-		}
-	}
-
-	return insert;
 }
 
 //void HubFrame::addClientLine(const tstring& aLine, CHARFORMAT2& cf, bool inChat /* = true */) {
@@ -2204,8 +2037,6 @@ void HubFrame::setFonts() {
 
 	ctrlClient.SetFont(WinUtil::font, FALSE);
 	ctrlMessage.SetFont(WinUtil::font, FALSE);
-	ctrlFilter.SetFont(WinUtil::font, FALSE);
-	ctrlFilterSel.SetFont(WinUtil::font, FALSE);
 	
 	ctrlClient.SetSelectionCharFormat(WinUtil::m_ChatTextLog);
 	ctrlClient.SetSelNone();
