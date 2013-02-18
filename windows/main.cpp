@@ -316,10 +316,6 @@ public:
 	}
 };
 
-/*static void callAsync(function<void ()> f) {
-	PostMessage(WinUtil::splash->getHWND(), WM_SPEAKER, 5555, (LPARAM)new Dispatcher::F(f));
-}*/
-
 static unique_ptr<MainFrame> mainWindow;
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
@@ -369,7 +365,6 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				SetProcessDefaultLayout(LAYOUT_RTL);
 			}
 
-			//MainFrame wndMain;
 			MainFrame* wndMain = new MainFrame;
 			mainWindow.reset(wndMain);
 
@@ -407,11 +402,19 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	});
 
 	int nRet = theLoop.Run();
-	
-	_Module.RemoveMessageLoop();
 
 	dcassert(WinUtil::splash);
-	shutdown([&](const string& str) { (*WinUtil::splash)(str); });
+	loader = std::async([=] {
+		//TODO: also show some progress?
+		shutdown(
+			[&](const string& str) { (*WinUtil::splash)(str); },
+			[=](float progress) { (*WinUtil::splash)(progress); }
+		);
+		WinUtil::splash->callAsync([=] { PostQuitMessage(0); });
+	});
+
+	nRet = theLoop.Run();
+	_Module.RemoveMessageLoop();
 
 	WinUtil::runPendingUpdate();
 	return nRet;
