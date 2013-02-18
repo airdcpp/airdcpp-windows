@@ -39,6 +39,13 @@ public:
 
 	void operator()(float progress);
 	HWND getHWND();
+
+	/*enum AsyncType {
+		ASYNC_DRAW = 5000,
+		ASYNC_FINISH
+	};*/
+
+	void callAsync(function<void ()> f/*, AsyncType aType*/);
 private:
 	void draw();
 	void loadImage();

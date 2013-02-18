@@ -48,6 +48,8 @@
 #include "LineDlg.h"
 #include "Wizard.h"
 #include <delayimp.h>
+#include <future>
+
 CAppModule _Module;
 
 CriticalSection cs;
@@ -304,11 +306,21 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg) {
 		if (WinUtil::findDialog) {
 			return IsDialogMessage(WinUtil::findDialog, pMsg);
+		} else if (pMsg->message == WM_SPEAKER && pMsg->wParam == 5000) {
+			auto f = reinterpret_cast<Dispatcher::F*>(pMsg->lParam);
+			(*f)();
+			delete f;
+			return TRUE;
 		}
 		return FALSE;
 	}
 };
 
+/*static void callAsync(function<void ()> f) {
+	PostMessage(WinUtil::splash->getHWND(), WM_SPEAKER, 5555, (LPARAM)new Dispatcher::F(f));
+}*/
+
+static unique_ptr<MainFrame> mainWindow;
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
 	checkCommonControls();
@@ -324,67 +336,76 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	WinUtil::splash = unique_ptr<SplashWindow>(new SplashWindow());
 	(*WinUtil::splash)("Starting up");
 
-	startup(
-		[&](const string& str) { (*WinUtil::splash)(str); },
-		[&](const string& str, bool isQuestion) { 
-			auto ret = ::MessageBox(WinUtil::splash->getHWND(), Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), isQuestion ? MB_YESNO | MB_ICONQUESTION : MB_OK); 
-			return isQuestion ? ret == IDYES : true;
+	std::future<void> loader;
+	loader = std::async([=] {
+		startup(
+			[&](const string& str) { (*WinUtil::splash)(str); },
+			[&](const string& str, bool isQuestion) { 
+				auto ret = ::MessageBox(WinUtil::splash->getHWND(), Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), isQuestion ? MB_YESNO | MB_ICONQUESTION : MB_OK); 
+				return isQuestion ? ret == IDYES : true;
 		},
-		[&]() { 
-			WizardDlg dlg;
-			dlg.DoModal(/*m_hWnd*/);
+			[&]() { 
+				WizardDlg dlg;
+				dlg.DoModal(/*m_hWnd*/);
 		},
-		[=](float progress) { (*WinUtil::splash)(progress); }
-	);
-	
+			[=](float progress) { (*WinUtil::splash)(progress); }
+		);
 
-	if(SETTING(PASSWD_PROTECT)) {
-		PassDlg dlg;
-		dlg.description = TSTRING(PASSWORD_DESC);
-		dlg.title = TSTRING(PASSWORD_TITLE);
-		dlg.ok = TSTRING(UNLOCK);
-		if(dlg.DoModal(/*m_hWnd*/) == IDOK){
-			tstring tmp = dlg.line;
-			if (tmp != Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
-				ExitProcess(1);
+		WinUtil::splash->callAsync([=] {
+			if(SETTING(PASSWD_PROTECT)) {
+				PassDlg dlg;
+				dlg.description = TSTRING(PASSWORD_DESC);
+				dlg.title = TSTRING(PASSWORD_TITLE);
+				dlg.ok = TSTRING(UNLOCK);
+				if(dlg.DoModal(/*m_hWnd*/) == IDOK){
+					tstring tmp = dlg.line;
+					if (tmp != Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
+						ExitProcess(1);
+					}
+				}
 			}
-		}
-	}
 
-	if(ResourceManager::getInstance()->isRTL()) {
-		SetProcessDefaultLayout(LAYOUT_RTL);
-	}
+			if(ResourceManager::getInstance()->isRTL()) {
+				SetProcessDefaultLayout(LAYOUT_RTL);
+			}
 
-	MainFrame wndMain;
+			//MainFrame wndMain;
+			MainFrame* wndMain = new MainFrame;
+			mainWindow.reset(wndMain);
 
-	CRect rc = wndMain.rcDefault;
+			CRect rc = wndMain->rcDefault;
+			if( (SETTING(MAIN_WINDOW_POS_X) != CW_USEDEFAULT) &&
+				(SETTING(MAIN_WINDOW_POS_Y) != CW_USEDEFAULT) &&
+				(SETTING(MAIN_WINDOW_SIZE_X) != CW_USEDEFAULT) &&
+				(SETTING(MAIN_WINDOW_SIZE_Y) != CW_USEDEFAULT) ) {
 
-	if( (SETTING(MAIN_WINDOW_POS_X) != CW_USEDEFAULT) &&
-		(SETTING(MAIN_WINDOW_POS_Y) != CW_USEDEFAULT) &&
-		(SETTING(MAIN_WINDOW_SIZE_X) != CW_USEDEFAULT) &&
-		(SETTING(MAIN_WINDOW_SIZE_Y) != CW_USEDEFAULT) ) {
+					rc.left = SETTING(MAIN_WINDOW_POS_X);
+					rc.top = SETTING(MAIN_WINDOW_POS_Y);
+					rc.right = rc.left + SETTING(MAIN_WINDOW_SIZE_X);
+					rc.bottom = rc.top + SETTING(MAIN_WINDOW_SIZE_Y);
+					// Now, let's ensure we have sane values here...
+					if( (rc.left < 0 ) || (rc.top < 0) || (rc.right - rc.left < 10) || ((rc.bottom - rc.top) < 10) ) {
+						rc = wndMain->rcDefault;
+					}
+			}
 
-		rc.left = SETTING(MAIN_WINDOW_POS_X);
-		rc.top = SETTING(MAIN_WINDOW_POS_Y);
-		rc.right = rc.left + SETTING(MAIN_WINDOW_SIZE_X);
-		rc.bottom = rc.top + SETTING(MAIN_WINDOW_SIZE_Y);
-		// Now, let's ensure we have sane values here...
-		if( (rc.left < 0 ) || (rc.top < 0) || (rc.right - rc.left < 10) || ((rc.bottom - rc.top) < 10) ) {
-			rc = wndMain.rcDefault;
-		}
-	}
+			int rtl = ResourceManager::getInstance()->isRTL() ? WS_EX_RTLREADING : 0;
+			if(wndMain->CreateEx(NULL, rc, 0, rtl | WS_EX_APPWINDOW | WS_EX_WINDOWEDGE) == NULL) {
+				ATLTRACE(_T("Main window creation failed!\n"));
+				//throw("Main window creation failed");
+				//return 0;
+			}
 
-	int rtl = ResourceManager::getInstance()->isRTL() ? WS_EX_RTLREADING : 0;
-	if(wndMain.CreateEx(NULL, rc, 0, rtl | WS_EX_APPWINDOW | WS_EX_WINDOWEDGE) == NULL) {
-		ATLTRACE(_T("Main window creation failed!\n"));
-		return 0;
-	}
-	
-	if(SETTING(MINIMIZE_ON_STARTUP)) {
-		wndMain.ShowWindow(SW_SHOWMINIMIZED);
-	} else {
-		wndMain.ShowWindow(((nCmdShow == SW_SHOWDEFAULT) || (nCmdShow == SW_SHOWNORMAL)) ? SETTING(MAIN_WINDOW_STATE) : nCmdShow);
-	}
+			if(SETTING(MINIMIZE_ON_STARTUP)) {
+				wndMain->ShowWindow(SW_SHOWMINIMIZED);
+			} else {
+				wndMain->ShowWindow(((nCmdShow == SW_SHOWDEFAULT) || (nCmdShow == SW_SHOWNORMAL)) ? SETTING(MAIN_WINDOW_STATE) : nCmdShow);
+			}
+
+			WinUtil::splash.reset();
+		});
+	});
+
 	int nRet = theLoop.Run();
 	
 	_Module.RemoveMessageLoop();

@@ -49,7 +49,7 @@ SplashWindow::SplashWindow() : progress(0) {
 	rc.bottom = rc.top + height;
 	splash.ReleaseDC(dc);
 	splash.HideCaret();
-	splash.SetWindowPos(HWND_TOPMOST, &rc, SWP_SHOWWINDOW);
+	splash.SetWindowPos(dummy.m_hWnd, &rc, SWP_SHOWWINDOW);
 	splash.CenterWindow();
 
 	title = _T(VERSIONSTRING) _T(" ") _T(CONFIGURATION_TYPE);
@@ -73,20 +73,22 @@ HWND SplashWindow::getHWND() {
 	return splash.m_hWnd;
 }
 
+void SplashWindow::callAsync(function<void ()> f/*, AsyncType aType*/) {
+	PostMessage(splash.m_hWnd, WM_SPEAKER, 5000, (LPARAM)new Dispatcher::F(f));
+}
+
 void SplashWindow::operator()(const string& status) {
-	//this->status = _T("Loading...");
 	this->status = Text::toT(status);
 	progress = 0;
-	//callAsync([this] { draw(); });
-	draw();
+	callAsync([this] { draw(); });
 }
 
 void SplashWindow::operator()(float progress) {
-	this->progress = progress;
-	//callAsync([this] { draw(); });
-	draw();
+	if (this->progress == 0.00 || progress - this->progress >= 0.01) {
+		this->progress = progress;
+		callAsync([this] { draw(); });
+	}
 }
-
 
 void SplashWindow::draw() {
 	// Get some information
@@ -135,7 +137,9 @@ void SplashWindow::draw() {
 		//::SetTextColor(dc, RGB(255,255,255)); // white text
 		//::SetTextColor(dc, RGB(0,0,0)); // black text
 		::SetTextColor(dc, RGB(104,104,104)); //grey text
-		::DrawText(dc, (_T(".:: ") + status + _T(" ::.")).c_str(), _tcslen((_T(".:: ") + status + _T(" ::.")).c_str()), &rc2, DT_RIGHT);
+
+		tstring tmp = (_T(".:: ") + status + (progress > 0 ? _T(" (") + Util::toStringW(static_cast<int>(progress*100.00)) + _T("%)") : Util::emptyStringT) + _T(" ::."));
+		::DrawText(dc, tmp.c_str(), _tcslen((tmp).c_str()), &rc2, DT_RIGHT);
 		DeleteObject(hFont);
 	}
 
