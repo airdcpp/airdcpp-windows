@@ -665,7 +665,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 				return Text::toT(sr->getFile());
 			}
 		case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
-		case COLUMN_CONNECTION: return Text::toT(ClientManager::getInstance()->getConnection(sr->getUser()));
+		case COLUMN_CONNECTION: return Text::toT(sr->getConnectionStr());
 		case COLUMN_HUB: return WinUtil::getHubNames(sr->getUser()).first;
 		case COLUMN_EXACT_SIZE: return sr->getSize() > 0 ? Util::formatExactSize(sr->getSize()) : Util::emptyStringT;
 		case COLUMN_IP: {
@@ -1229,12 +1229,12 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 	if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
 		SearchInfoList::ParentPair* pp = ctrlResults.findParentPair(sr->getTTH());
 		if(pp) {
-			if((sr->getUser() == pp->parent->getUser()) && (sr->getFile() == pp->parent->sr->getFile())) {	 	
+			if(sr == pp->parent->sr) {	 	
 				delete si;
 				return;	 	
 			} 	
 			for(auto c: pp->children){	 	
-				if((sr->getUser() == c->getUser()) && (sr->getFile() == c->sr->getFile())) {	 	
+				if(sr ==  c->sr) {	 	
 					delete si;
 					return;	 	
 				} 	
@@ -1242,9 +1242,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		}
 	} else {
 		for(auto p: ctrlResults.getParents() | map_values) {
-			SearchInfo* si2 = p.parent;
-	        const SearchResultPtr& sr2 = si2->sr;
-			if((sr->getUser() == sr2->getUser()) && (sr->getFile() == sr2->getFile())) {
+			if(sr == p.parent->sr) {
 				delete si;	 	
 				return;	 	
 			}

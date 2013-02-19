@@ -104,29 +104,33 @@ LRESULT DownloadPage::onTick(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 
 void DownloadPage::checkItems() {
 	/* Segments */
-	::EnableWindow(GetDlgItem(IDC_MIN_SEGMENT_SIZE_LABEL),	IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
-	::EnableWindow(GetDlgItem(IDC_MIN_SEGMENT_SIZE),		IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
-	::EnableWindow(GetDlgItem(IDC_SETTINGS_KIB),			IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+	BOOL usingSegments = IsDlgButtonChecked(IDC_ENABLE_SEGMENTS);
+	::EnableWindow(GetDlgItem(IDC_MIN_SEGMENT_SIZE_LABEL),	usingSegments);
+	::EnableWindow(GetDlgItem(IDC_MIN_SEGMENT_SIZE),		usingSegments);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_KIB),			usingSegments);
 
-	::EnableWindow(GetDlgItem(IDC_SEG_NUMBER_EDIT),			IsDlgButtonChecked(IDC_CHUNKCOUNT) && IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
-	::EnableWindow(GetDlgItem(IDC_CHUNKCOUNT),				IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+	::EnableWindow(GetDlgItem(IDC_SEG_NUMBER_EDIT),			IsDlgButtonChecked(IDC_CHUNKCOUNT) && usingSegments);
+	::EnableWindow(GetDlgItem(IDC_CHUNKCOUNT),				usingSegments);
 
-	::EnableWindow(GetDlgItem(IDC_DONTBEGIN_EDIT),			IsDlgButtonChecked(IDC_DONTBEGIN) && IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
-	::EnableWindow(GetDlgItem(IDC_KBPS),					IsDlgButtonChecked(IDC_DONTBEGIN) && IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
-	::EnableWindow(GetDlgItem(IDC_DONTBEGIN),				IsDlgButtonChecked(IDC_ENABLE_SEGMENTS));
+	::EnableWindow(GetDlgItem(IDC_DONTBEGIN_EDIT),			IsDlgButtonChecked(IDC_DONTBEGIN) && usingSegments);
+	::EnableWindow(GetDlgItem(IDC_KBPS),					IsDlgButtonChecked(IDC_DONTBEGIN) && usingSegments);
+	::EnableWindow(GetDlgItem(IDC_DONTBEGIN),				usingSegments);
 
 	/* Searching */
-	::EnableWindow(GetDlgItem(IDC_MATCH),					IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
-	::EnableWindow(GetDlgItem(IDC_MATCH_QUEUE_TEXT),		IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	BOOL autoAddSources = IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES);
+	BOOL searchAlt = IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT);
 
-	::EnableWindow(GetDlgItem(IDC_ALLOW_MATCH_FULL),		IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
-	::EnableWindow(GetDlgItem(IDC_AUTO_SEARCH_ALT),			IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_MATCH),					autoAddSources);
+	::EnableWindow(GetDlgItem(IDC_MATCH_QUEUE_TEXT),		autoAddSources);
 
-	::EnableWindow(GetDlgItem(IDC_INTERVAL_TEXT),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
-	::EnableWindow(GetDlgItem(IDC_SEARCH_INTERVAL),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
-	::EnableWindow(GetDlgItem(IDC_MINUTES),					IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_ALLOW_MATCH_FULL),		autoAddSources);
+	::EnableWindow(GetDlgItem(IDC_AUTO_SEARCH_ALT),			autoAddSources);
 
-	::EnableWindow(GetDlgItem(IDC_AUTO_SEARCH_LIMIT),			IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
-	::EnableWindow(GetDlgItem(IDC_SETTINGS_AUTO_SEARCH_LIMIT),	IsDlgButtonChecked(IDC_AUTO_SEARCH_ALT) && IsDlgButtonChecked(IDC_AUTO_ADD_SOURCES));
+	::EnableWindow(GetDlgItem(IDC_INTERVAL_TEXT),			searchAlt && autoAddSources);
+	::EnableWindow(GetDlgItem(IDC_SEARCH_INTERVAL),			searchAlt && autoAddSources);
+	::EnableWindow(GetDlgItem(IDC_MINUTES),					searchAlt && autoAddSources);
+
+	::EnableWindow(GetDlgItem(IDC_AUTO_SEARCH_LIMIT),			searchAlt && autoAddSources);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_AUTO_SEARCH_LIMIT),	searchAlt && autoAddSources);
 }
 
