@@ -1229,12 +1229,12 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 	if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
 		SearchInfoList::ParentPair* pp = ctrlResults.findParentPair(sr->getTTH());
 		if(pp) {
-			if(sr == pp->parent->sr) {	 	
+			if((sr->getUser() == pp->parent->getUser()) && (sr->getFile() == pp->parent->sr->getFile())) {	 	
 				delete si;
 				return;	 	
 			} 	
 			for(auto c: pp->children){	 	
-				if(sr ==  c->sr) {	 	
+				if((sr->getUser() == c->getUser()) && (sr->getFile() == c->sr->getFile())) {	 	
 					delete si;
 					return;	 	
 				} 	
@@ -1242,12 +1242,14 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		}
 	} else {
 		for(auto p: ctrlResults.getParents() | map_values) {
-			if(sr == p.parent->sr) {
+			SearchInfo* si2 = p.parent;
+			const SearchResultPtr& sr2 = si2->sr;
+			if((sr->getUser() == sr2->getUser()) && (sr->getFile() == sr2->getFile())) {
 				delete si;	 	
 				return;	 	
 			}
 		}	 	
-    }
+	}
 
 	if(running) {
 		bool resort = false;
