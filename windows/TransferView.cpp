@@ -154,28 +154,6 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		copyMenu.CreatePopupMenu();
 		priorityMenu.CreatePopupMenu();
 		//previewMenu.InsertSeparatorFirst(TSTRING(PREVIEW_MENU));
-
-		if(ii->download) {
-			if(!ii->target.empty()) {
-				if (selCount == 1) {
-					previewMenu = transferMenu.getMenu();
-					WinUtil::appendPreviewMenu(previewMenu, Text::fromT(ii->target));
-				}
-
-				if(!ii->bundle.empty() && QueueManager::getInstance()->getAutoDrop(ii->bundle)) {
-					transferMenu.CheckMenuItem(IDC_MENU_SLOWDISCONNECT, MF_BYCOMMAND | MF_CHECKED);
-				}
-			} 
-			if (parent) {
-				BundlePtr aBundle = QueueManager::getInstance()->getBundle(ii->bundle);
-				if (aBundle) {
-					QueueItemBase::Priority p = aBundle->getPriority();
-					priorityMenu.CheckMenuItem(p + 1, MF_BYPOSITION | MF_CHECKED);
-					if(aBundle->getAutoPriority())
-						priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
-				}
-			}
-		}
 		
 		if(!parent) {
 			transferMenu.InsertSeparatorFirst(TSTRING(MENU_TRANSFERS));
@@ -251,6 +229,28 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGH, CTSTRING(HIGH));
 		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST, CTSTRING(HIGHEST));
 		priorityMenu.AppendMenu(MF_STRING, IDC_AUTOPRIORITY, CTSTRING(AUTO));
+
+		if(ii->download) {
+			if(!ii->target.empty()) {
+				if (selCount == 1) {
+					previewMenu = transferMenu.getMenu();
+					WinUtil::appendPreviewMenu(previewMenu, Text::fromT(ii->target));
+				}
+
+				if(!ii->bundle.empty() && QueueManager::getInstance()->getAutoDrop(ii->bundle)) {
+					transferMenu.CheckMenuItem(IDC_MENU_SLOWDISCONNECT, MF_BYCOMMAND | MF_CHECKED);
+				}
+			} 
+			if (parent) {
+				BundlePtr aBundle = QueueManager::getInstance()->getBundle(ii->bundle);
+				if (aBundle) {
+					QueueItemBase::Priority p = aBundle->getPriority();
+					priorityMenu.CheckMenuItem(p + 1, MF_BYPOSITION | MF_CHECKED);
+					if(aBundle->getAutoPriority())
+						priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
+				}
+			}
+		}
 
 		transferMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE; 
