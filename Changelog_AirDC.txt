@@ -853,6 +853,7 @@ Changed:
 
 Fixed:
 
+- Fix very poor performance when adding lots of files for hashing (100k+)
 - Fix port mapping problems when there are multiple networking interfaces available
 - Fix problems when connecting NMDC search results to a correct hub
 - Fix the check marks in the transfer view context menu
