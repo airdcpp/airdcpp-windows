@@ -161,6 +161,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	FavoriteManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
+	UploadManager::getInstance()->addListener(this);
 
 	CRect rc(SETTING(USERS_LEFT), SETTING(USERS_TOP), SETTING(USERS_RIGHT), SETTING(USERS_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -364,11 +365,15 @@ LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 
 	if(l->iItem != -1) {
 		auto ui = ctrlUsers.getItemData(l->iItem);
-		if(l->iSubItem == COLUMN_SLOT && ui->isFavorite) {
-			FavoriteManager::getInstance()->setAutoGrant(ui->getUser(), !ui->grantSlot);
+		if(l->iSubItem == COLUMN_SLOT) {
 			ui->grantSlot = !ui->grantSlot;
-			setImages(ui, l->iItem); // TODO: only need to update slot image
-		} else if(l->iSubItem == COLUMN_FAVORITE) {  //TODO: confirm removal.
+			if(ui->isFavorite){
+				FavoriteManager::getInstance()->setAutoGrant(ui->getUser(), ui->grantSlot);
+				setImages(ui, l->iItem);
+			} else {
+				ui->grantSlot ? ui->grantTimeless() : ui->ungrant(); // timeless grant
+			}
+		} else if((l->iSubItem == COLUMN_FAVORITE) && !listFav) {  //TODO: confirm removal.
 			if(ui->isFavorite)
 				FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
 			else
@@ -555,7 +560,7 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
 	} else {
 		isFavorite = false;
-		grantSlot = false;
+		grantSlot = hasReservedSlot();
 
 		//get the nick and update the hint if empty
 		string nick = ClientManager::getInstance()->getNick(u, hubUrl);
@@ -603,6 +608,7 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		FavoriteManager::getInstance()->removeListener(this);
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
+		UploadManager::getInstance()->removeListener(this);
 		closed = true;
 		WinUtil::setButtonPressed(IDC_FAVUSERS, false);
 		PostMessage(WM_CLOSE);
@@ -672,5 +678,9 @@ void UsersFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser)
 }
 
 void UsersFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept {
+	callAsync([=] { updateUser(aUser); });
+}
+
+void UsersFrame::on(UploadManagerListener::SlotsUpdated, const UserPtr& aUser) noexcept {
 	callAsync([=] { updateUser(aUser); });
 }

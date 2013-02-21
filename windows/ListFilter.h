@@ -103,8 +103,8 @@ private:
 	int defMatchColumn;
 
 
-	size_t getMethod();
-	size_t getColumn();
+	size_t getMethod() const;
+	size_t getColumn() const;
 	
 	const size_t colCount;
 	const UpdateFunction updateFunction;

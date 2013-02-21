@@ -110,14 +110,14 @@ LRESULT ListFilter::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BO
 }
 
 
-size_t ListFilter::getMethod() {
+size_t ListFilter::getMethod() const {
 	if(!method.IsWindow()) 
 		return defMethod;
 
 	return method.GetCurSel();
 }
 
-size_t ListFilter::getColumn() {
+size_t ListFilter::getColumn() const {
 	if(!column.IsWindow()) 
 		return defMatchColumn;
 

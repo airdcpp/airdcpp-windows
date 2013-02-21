@@ -30,11 +30,13 @@
 #include "ListFilter.h"
 
 #include "../client/FavoriteManager.h"
+#include "../client/UploadManager.h"
 
 #define STATUS_MAP 10
 
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::FAVORITE_USERS, IDC_FAVUSERS>,
-	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, private SettingsManagerListener {
+	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
+	private SettingsManagerListener, private UploadManagerListener {
 public:
 	
 	UsersFrame();
@@ -215,6 +217,8 @@ private:
 	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML&s /*xml*/) noexcept;
+
+	void on(UploadManagerListener::SlotsUpdated, const UserPtr& aUser) noexcept;
 };
 
 #endif // !defined(USERS_FRAME_H)

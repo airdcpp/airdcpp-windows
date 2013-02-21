@@ -53,7 +53,40 @@ void ResourceLoader::unload() {
 	flagImages.Destroy();
 }
 void ResourceLoader::loadUserImages() {
+		/*
+	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   10, 10);
+	const unsigned baseCount = UserInfoBase::USER_ICON_MOD_START;
+	const unsigned modifierCount = UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START;
 
+	HICON bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
+	HICON modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16), loadIcon(IDI_USER_OP, 16), loadIcon(IDI_FAV_USER, 16) };
+
+	for(size_t iBase = 0; iBase < baseCount; ++iBase) {
+		for(size_t i = 0, n = modifierCount * modifierCount; i < n; ++i) {
+			CImageList icons;
+			icons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
+
+			icons.AddIcon(bases[iBase]);
+
+			for(size_t iMod = 0; iMod < modifierCount; ++iMod)
+				if(i & (1 << iMod))
+					icons.AddIcon(modifiers[iMod]);
+
+			const size_t n = icons.GetImageCount();
+			if(n > 1) {
+				CImageList  tmp;
+				tmp.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
+				tmp.AddIcon(MergeImages(icons, 0, icons, 1));
+
+				for(size_t i = 2; i < n; ++i)
+					tmp.ReplaceIcon(0, MergeImages(tmp, 0, icons, i));
+			
+				userImages.AddIcon(tmp.GetIcon(0, ILD_TRANSPARENT));
+			} else 
+				userImages.AddIcon(icons.GetIcon(0, ILD_TRANSPARENT));
+		}
+	}
+	*/
 	//first construct the overlay images.
 	CImageList overLays;
 	overLays.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);

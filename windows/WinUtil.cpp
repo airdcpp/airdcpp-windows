@@ -263,6 +263,12 @@ void UserInfoBase::grant() {
 		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 600);
 	}
 }
+
+void UserInfoBase::grantTimeless() {
+	if(getUser()) {
+		UploadManager::getInstance()->reserveSlot(HintedUser(getUser(), getHubUrl()), 0);
+	}
+}
 void UserInfoBase::removeAll() {
 	MainFrame::getMainFrame()->addThreadedTask([=] { 
 		if(getUser()) {
@@ -288,6 +294,11 @@ void UserInfoBase::grantWeek() {
 void UserInfoBase::ungrant() {
 	if(getUser()) {
 		UploadManager::getInstance()->unreserveSlot(getUser());
+	}
+}
+bool UserInfoBase::hasReservedSlot() {
+	if(getUser()) {
+		return UploadManager::getInstance()->hasReservedSlot(getUser());
 	}
 }
 
