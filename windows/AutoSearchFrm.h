@@ -164,7 +164,7 @@ private:
 	ExListViewCtrl ctrlAutoSearch;
 
 	void appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg);
-	void setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg);
+	void setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg, const string& aSearchString);
 
 	void updateList() {
 

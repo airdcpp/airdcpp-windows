@@ -1504,7 +1504,7 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 				case COLUMN_EXACTSIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
 				case COLUMN_SIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
 				case COLUMN_DATE: return compare(a->dir->getDate(), b->dir->getDate());
-				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
+				default: return Util::DefaultSort(a->dir->getName().c_str(), b->dir->getName().c_str(), true);
 			}
 		} else {
 			return -1;
@@ -1516,7 +1516,7 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 			case COLUMN_EXACTSIZE: return compare(a->file->getSize(), b->file->getSize());
 			case COLUMN_SIZE: return compare(a->file->getSize(), b->file->getSize());
 			case COLUMN_DATE: return compare(a->file->getDate(), b->file->getDate());
-			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), false);
+			default: return Util::DefaultSort(a->file->getName().c_str(), b->file->getName().c_str(), false);
 		}
 	}
 }

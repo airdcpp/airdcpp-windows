@@ -34,18 +34,18 @@ enum ChildrenState {
 };
 
 template<class PT, class T>
-class TypedTreeCtrl : public CWindowImpl<TypedTreeCtrl<PT, T>, CTreeViewCtrl>
+class TypedTreeCtrl : public CTreeViewCtrl
 {
 
 public:
 	TypedTreeCtrl(PT* aParent) : parent(aParent)  { }
 	~TypedTreeCtrl() {  }
 
-	BEGIN_MSG_MAP(thisClass)
-		REFLECTED_NOTIFY_CODE_HANDLER(TVN_GETINFOTIP, OnGetChildInfo)
+	/*BEGIN_MSG_MAP(thisClass)
+		NOTIFY(TVN_GETINFOTIP, OnGetChildInfo)
 		REFLECTED_NOTIFY_CODE_HANDLER(TVN_GETDISPINFO, OnGetItemDispInfo)
 		REFLECTED_NOTIFY_CODE_HANDLER(TVN_ITEMEXPANDING, OnItemExpanding)
-	END_MSG_MAP();
+	END_MSG_MAP();*/
 
 	LRESULT OnGetChildInfo(int /*idCtrl*/, NMHDR* pNMHDR, BOOL &bHandled) {
 		NMTVDISPINFO *pDispInfo = reinterpret_cast<NMTVDISPINFO*>(pNMHDR);

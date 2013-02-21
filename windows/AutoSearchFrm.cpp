@@ -387,8 +387,8 @@ void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg&
 	dlg.useParams = as->getUseParams();
 }
 
-void AutoSearchFrame::setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg) {
-	as->setSearchString(dlg.searchString);
+void AutoSearchFrame::setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg, const string& aSearchString) {
+	as->setSearchString(aSearchString);
 	as->setExcludedString(dlg.excludedWords);
 	as->setFileType(dlg.fileTypeStr);
 	as->setAction((AutoSearch::ActionType)dlg.action);
@@ -450,7 +450,7 @@ void AutoSearchFrame::addFromDialog(const AutoSearchDlg& dlg) {
 		if(str.size() >= 5) { //dont accept shorter search strings than 5 chars
 			AutoSearchPtr as = new AutoSearch;
 
-			setItemProperties(as, dlg);
+			setItemProperties(as, dlg, str);
 
 			AutoSearchManager::getInstance()->addAutoSearch(as, false);
 		} else if(search.size() < 5) { // dont report if empty line between/end when adding multiple
@@ -468,7 +468,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		appendDialogParams(as, dlg);
 
 		if(dlg.DoModal() == IDOK) {
-			setItemProperties(as, dlg);
+			setItemProperties(as, dlg, dlg.searchString);
 			if (AutoSearchManager::getInstance()->updateAutoSearch(as)) {
 				ctrlAutoSearch.DeleteItem(sel);
 				addEntry(as, sel);
