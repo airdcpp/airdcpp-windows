@@ -816,3 +816,46 @@ Fixed:
 - Avoid problems on update check when using Avast antivirus
 - Fix per-hub passive mode
 - Fix empty hub names in finished transfers, fix the shell menu actions
+
+
+2.50
+
+Added:
+
+- Full IPv6 support in ADC hubs (transfers, port mapping, separate modes for IPv4 and IPv6, hybrid support for both protocols)
+- New tree control in file lists: reduces the loading times and shows the expand sign also for incomplete folders (the other user must have version 2.42 or newer)
+- Replace the search skiplist with a list of excluded words, add also for auto search
+- Show dates for all files in partial lists
+- Show dates in search
+- Add a column for shared files in the user list (ADC only)
+- Allow choosing the preferred port mapping interface
+- Check that the bind address is valid when starting the client
+- Allow setting a custom email address for favorite hubs
+- Allow duplicating auto search items
+- Allow using quotation marks in search strings and excluded words for exact matching with strings containing spaces
+- Show the progress in percentages on startup/shutdown for selected steps
+
+
+Changed:
+
+- Various sharing optimizations (the CPU usage has been reduced significantly and RAM usage a bit too, less freezes)
+- Don't save various setting files on shutdown if there is nothing new to save
+- Count queued file lists in maximum number of sources for matching lists on search results
+- Pick the best users for matching bundles if the maximum number of sources has reached (based on the connection speed and free slots)
+- Use the matching limit and picking also for new items queued by auto search
+- Remove the lists queued for matching when the bundle is removed/finished
+- Improve the error reporting when initiating the transfer fails
+- Prefer sending passive search replies via the correct hub
+- Remove the password length limit for fav hubs
+- Performance optimizations when searching ADC hubs
+- Change the way of storing history items: option to clear each history on exit and set the maximum limit for each history
+
+
+Fixed:
+
+- Fix port mapping problems when there are multiple networking interfaces available
+- Fix problems when connecting NMDC search results to a correct hub
+- Fix the check marks in the transfer view context menu
+- Correct the loaded page when editing profiles from fav hubs
+- The splash screen won't go to "not responding" state on startup/shutdown
+- Restore "view as text" in the search tab

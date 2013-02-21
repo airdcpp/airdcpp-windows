@@ -191,7 +191,7 @@ void ProtocolPage::write()
 
 
 	const auto mode = v6 ? SettingsManager::INCOMING_CONNECTIONS6 : SettingsManager::INCOMING_CONNECTIONS;
-	if(ct > 0 || !settings->isDefault(mode)) {
+	if(ct != settings->getDefault(mode) || !settings->isDefault(mode)) {
 		settings->set(mode, ct);
 	}
 

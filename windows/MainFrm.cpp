@@ -383,7 +383,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	} catch (const FileException) {	}
 
 	try {
-		ConnectivityManager::getInstance()->setup(true);
+		ConnectivityManager::getInstance()->setup(true, true);
 	} catch (const Exception& e) {
 		showPortsError(e.getError());
 	}
@@ -956,7 +956,8 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 	auto prevUDP = SETTING(UDP_PORT);
 	auto prevTLS = SETTING(TLS_PORT);
 
-	auto prevConn = SETTING(INCOMING_CONNECTIONS);
+	auto prevConn4 = SETTING(INCOMING_CONNECTIONS);
+	auto prevConn6 = SETTING(INCOMING_CONNECTIONS6);
 	auto prevMapper = SETTING(MAPPER);
 	auto prevBind = SETTING(BIND_ADDRESS);
 	auto prevBind6 = SETTING(BIND_ADDRESS6);
@@ -991,10 +992,16 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			UpdateManager::getInstance()->checkLanguage();
 		}
 
+		bool v4Changed = SETTING(INCOMING_CONNECTIONS) != prevConn4 ||
+			SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
+			SETTING(MAPPER) != prevMapper || SETTING(BIND_ADDRESS) != prevBind || SETTING(BIND_ADDRESS6) != prevBind6;
+
+		bool v6Changed = SETTING(INCOMING_CONNECTIONS6) != prevConn6 ||
+			SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
+			/*SETTING(MAPPER) != prevMapper ||*/ SETTING(BIND_ADDRESS6) != prevBind6;
+
 		try {
-			ConnectivityManager::getInstance()->setup(SETTING(INCOMING_CONNECTIONS) != prevConn ||
-				SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
-				SETTING(MAPPER) != prevMapper || SETTING(BIND_ADDRESS) != prevBind || SETTING(BIND_ADDRESS6) != prevBind6);
+			ConnectivityManager::getInstance()->setup(v4Changed, v6Changed);
 		} catch (const Exception& e) {
 			showPortsError(e.getError());
 		}

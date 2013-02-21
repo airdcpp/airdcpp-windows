@@ -627,7 +627,6 @@
 		<String Name="SettingsRequiresRestart">Note; most of these options require that you restart AirDC++</String>
 		<String Name="SettingsReset">Reset</String>
 		<String Name="SettingsSbMaxSources">Max sources for match queue</String>
-		<String Name="SettingsSearchHistory">Search history</String>
 		<String Name="SettingsSelectColor">Select color</String>
 		<String Name="SettingsSelectTextFace">General Text style</String>
 		<String Name="SettingsSelectWindowColor">Window color</String>
@@ -1087,11 +1086,6 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="DisallowConnectionToPassedHubs">Automatically disconnect hubs if not registered</String>
 		<String Name="DontShareDownloadDirectory">The download directory cannot be shared</String>
 		<String Name="BoldHubTabsOnKick">Bold hub's tabs on kick messages</String>
-		<String Name="Skiplist">Skiplist, Wildcards, Separate | </String>
-		<String Name="SettingsSearhSkiplistPreset">Presets for Search Skiplist, Separate with | *wildcards allowed</String>
-		<String Name="Preset1">Preset1</String>
-		<String Name="Preset2">Preset2</String>
-		<String Name="Preset3">Preset3</String>
 		<String Name="DirectoryIsHidden">Directory is hidden</String>
 		<String Name="DirectoryNotFound">Directory not shared</String>
 		<String Name="Group">Group</String>
@@ -1449,7 +1443,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="HideShareShort">Hide share</String>
 		<String Name="ProfileName">Profile name</String>
 		<String Name="LockTb">Lock Toolbars</String>
-		<String Name="ClearDirHistory">Clear directory history on exit</String>
 		<String Name="GetFullList">Get full list</String>
 		<String Name="NoResultsFound">No results were found</String>
 		<String Name="SearchTimedOut">Search timed out</String>
@@ -1769,5 +1762,12 @@ Do you want to use this destination anyway?</String>
 		<String Name="RegularExpression">RegEx</String>
 		<String Name="Wildcard">Wildcard</String>
 		<String Name="ExactMatch">Exact match</String>
+		<String Name="EnableConnectivity">Enable %s connectivity</String>
+		<String Name="ClearExit">Clear on exit</String>
+		<String Name="SearchStrings">Search strings</String>
+		<String Name="ExcludedSearchWords">Excluded search words</String>
+		<String Name="DirHistory">Download locations</String>
+		<String Name="ExcludedWordsDesc">Excluded words (separate with space)</String>
+		<String Name="Histories">Histories</String>
 	</Strings>
 </Language>

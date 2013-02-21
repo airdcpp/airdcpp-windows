@@ -150,10 +150,8 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		bool parent = ii->isBundle;
 
 		transferMenu.CreatePopupMenu();
-		//previewMenu.CreatePopupMenu();
 		copyMenu.CreatePopupMenu();
 		priorityMenu.CreatePopupMenu();
-		//previewMenu.InsertSeparatorFirst(TSTRING(PREVIEW_MENU));
 		
 		if(!parent) {
 			transferMenu.InsertSeparatorFirst(TSTRING(MENU_TRANSFERS));

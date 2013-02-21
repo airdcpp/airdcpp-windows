@@ -1099,6 +1099,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlFileType.MoveWindow(rc);
 		ctrlPauseSearch.MoveWindow(rc);
 		ctrlExcluded.MoveWindow(rc);
+		ctrlExcludedBool.MoveWindow(rc);
 	}
 
 	POINT pt;

@@ -63,13 +63,13 @@ PropPage::Item MiscPage::items[] = {
 	{ IDC_SKIP_SUBTRACT, SettingsManager::SKIP_SUBTRACT, PropPage::T_INT },
 
 	//histories
-	{ IDC_SEARCH_HIST, SettingsManager::HISTORY_SEARCH_MAX, PropPage::T_BOOL },
-	{ IDC_EXCLUDE_HIST, SettingsManager::HISTORY_EXCLUDE_MAX, PropPage::T_BOOL },
-	{ IDC_DIR_HIST, SettingsManager::HISTORY_DIR_MAX, PropPage::T_BOOL },
+	{ IDC_SEARCH_HIST, SettingsManager::HISTORY_SEARCH_MAX, PropPage::T_INT },
+	{ IDC_EXCLUDE_HIST, SettingsManager::HISTORY_EXCLUDE_MAX, PropPage::T_INT },
+	{ IDC_DIR_HIST, SettingsManager::HISTORY_DIR_MAX, PropPage::T_INT },
 
-	{ IDC_SEARCH_HIST_CLEAR, SettingsManager::HISTORY_SEARCH_MAX, PropPage::T_BOOL },
-	{ IDC_EXCLUDE_HIST_CLEAR, SettingsManager::HISTORY_EXCLUDE_MAX, PropPage::T_BOOL },
-	{ IDC_DIR_HIST_CLEAR, SettingsManager::HISTORY_DIR_MAX, PropPage::T_BOOL },
+	{ IDC_SEARCH_HIST_CLEAR, SettingsManager::HISTORY_SEARCH_CLEAR, PropPage::T_BOOL },
+	{ IDC_EXCLUDE_HIST_CLEAR, SettingsManager::HISTORY_EXCLUDE_CLEAR, PropPage::T_BOOL },
+	{ IDC_DIR_HIST_CLEAR, SettingsManager::HISTORY_DIR_CLEAR, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 
