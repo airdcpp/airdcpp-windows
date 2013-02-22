@@ -227,8 +227,27 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 			if (ui != NULL && ui->isFavorite) {
 				cd->clrText = SETTING(FAVORITE_COLOR);
 			}
+
 			return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 		}
+		
+		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
+			//fix the image background colors for selected item when explorer theme is disabled
+			if(!SETTING(USE_EXPLORER_THEME) && (cd->iSubItem == COLUMN_FAVORITE || cd->iSubItem == COLUMN_SLOT)) {
+				const int nItem = static_cast<int>(cd->nmcd.dwItemSpec);
+				if(!ctrlUsers.GetItemState(nItem, LVNI_SELECTED)) 
+					return CDRF_DODEFAULT;
+				UserInfo *ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
+				CRect rc;
+				ctrlUsers.GetSubItemRect(nItem, cd->iSubItem, LVIR_BOUNDS, rc);
+				::FillRect(cd->nmcd.hdc, rc, CreateSolidBrush(GetSysColor(COLOR_HIGHLIGHT)));
+	
+				ctrlUsers.GetSubItemRect(nItem, cd->iSubItem, LVIR_ICON, rc);
+				images.DrawEx(ui->getImage(cd->iSubItem), cd->nmcd.hdc, rc, GetSysColor(COLOR_HIGHLIGHT), CLR_DEFAULT, ILD_NORMAL);
+				return CDRF_SKIPDEFAULT;
+			}
+			return CDRF_DODEFAULT;
+		}		
 
 		default:
 			return CDRF_DODEFAULT;

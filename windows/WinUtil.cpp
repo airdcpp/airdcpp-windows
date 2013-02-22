@@ -300,6 +300,7 @@ bool UserInfoBase::hasReservedSlot() {
 	if(getUser()) {
 		return UploadManager::getInstance()->hasReservedSlot(getUser());
 	}
+	return false;
 }
 
 bool WinUtil::getVersionInfo(OSVERSIONINFOEX& ver) {
