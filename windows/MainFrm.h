@@ -35,7 +35,7 @@
 #include "../client/ShareScannerManager.h"
 
 #include "PopupManager.h"
-
+#include "Dispatchers.h"
 #include "FlatTabCtrl.h"
 #include "SingleInstance.h"
 #include "TransferView.h"

@@ -375,7 +375,7 @@ int FolderTree::GetSelIconIndex(const tstring &sFilename)
 	return sfi.iIcon;
 }
 
-HTREEITEM FolderTree::InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo *pItem, bool bShared, int nIcon, int nSelIcon, bool bCheckForChildren, ShareDirInfo::list& sharedDirs)
+HTREEITEM FolderTree::InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo *pItem, bool bShared, int nIcon, int nSelIcon, bool bCheckForChildren, ShareDirInfo::List& sharedDirs)
 {
 	tstring sLabel;
 
@@ -426,7 +426,7 @@ HTREEITEM FolderTree::InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo *pIte
 	return hItem;
 }
 
-void FolderTree::DisplayDrives(HTREEITEM hParent, bool bUseSetRedraw, ShareDirInfo::list& shared)
+void FolderTree::DisplayDrives(HTREEITEM hParent, bool bUseSetRedraw, ShareDirInfo::List& shared)
 {
 	//CWaitCursor c;
 
@@ -551,7 +551,7 @@ void FolderTree::DisplayPath(const tstring &sPath, HTREEITEM hParent, bool bUseS
 		SetRedraw(true);
 }
 
-void FolderTree::checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent, ShareDirInfo::list& sharedDirs) {
+void FolderTree::checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent, ShareDirInfo::List& sharedDirs) {
 	string parentPath = Text::fromT(aParentPath);
 	for(auto sd: sharedDirs) {
 		if (sd->found)
@@ -1419,7 +1419,7 @@ LRESULT FolderTree::OnUnChecked(HTREEITEM hItem, BOOL& /*bHandled*/)
 	return 0;
 }
 
-bool FolderTree::GetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::list& aShared)
+bool FolderTree::GetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::List& aShared)
 {
 	string searchStr;
 	int startPos = 0;
@@ -1459,7 +1459,7 @@ bool FolderTree::GetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::list&
 	return false;
 }
 
-void FolderTree::SetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::list& aShared)
+void FolderTree::SetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::List& aShared)
 {
 	SetHasSharedChildren(hItem, GetHasSharedChildren(hItem, aShared));
 }

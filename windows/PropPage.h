@@ -32,6 +32,8 @@
 #include "../client/ResourceManager.h"
 #include "../client/Speaker.h"
 
+#include "Dispatchers.h"
+
 #define setMinMax(x, y, z) \
 	updown.Attach(GetDlgItem(x)); \
 	updown.SetRange32(y, z); \
@@ -43,6 +45,7 @@ class SettingTab {
 public:
 	SettingTab(SettingsManager *src) : settings(src) { }
 	virtual void write() = 0;
+	virtual Dispatcher::F getThreadedTask() { return nullptr; }
 
 	enum Type { T_STR, T_INT, T_BOOL, T_CUSTOM, T_INT64, T_END };
 
@@ -75,10 +78,11 @@ protected:
 class PropPage : public SettingTab
 {
 public:
-	PropPage(SettingsManager *src) : SettingTab(src) { }
+	PropPage(SettingsManager *src, bool aManaged = false) : SettingTab(src), managed(aManaged) { }
 	virtual ~PropPage() { }
 
 	virtual PROPSHEETPAGE *getPSP() = 0;
+	bool managed;
 };
 
 #endif // !defined(PROP_PAGE_H)

@@ -1,3 +1,4 @@
+TaskList
 /* 
  * Copyright (C) 2001-2013 Jacek Sieka, arnetheduck on gmail point com
  *
@@ -983,65 +984,76 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 
 	if(dlg.DoModal(m_hWnd) == IDOK) 
 	{
-		SettingsManager::getInstance()->save();
-		if(missedAutoConnect && !SETTING(NICK).empty()) {
-			PostMessage(WM_SPEAKER, AUTO_CONNECT);
-		}
+		PropertiesDlg::TaskList tasks;
+		dlg.getThreadedTasks(tasks);
 
-		if (prevTranslation != SETTING(LANGUAGE_FILE)) {
-			UpdateManager::getInstance()->checkLanguage();
-		}
-
-		bool v4Changed = SETTING(INCOMING_CONNECTIONS) != prevConn4 ||
-			SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
-			SETTING(MAPPER) != prevMapper || SETTING(BIND_ADDRESS) != prevBind || SETTING(BIND_ADDRESS6) != prevBind6;
-
-		bool v6Changed = SETTING(INCOMING_CONNECTIONS6) != prevConn6 ||
-			SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
-			/*SETTING(MAPPER) != prevMapper ||*/ SETTING(BIND_ADDRESS6) != prevBind6;
-
-		try {
-			ConnectivityManager::getInstance()->setup(v4Changed, v6Changed);
-		} catch (const Exception& e) {
-			showPortsError(e.getError());
-		}
-
-		auto outConns = CONNSETTING(OUTGOING_CONNECTIONS);
-		if(outConns != prevProxy || outConns == SettingsManager::OUTGOING_SOCKS5) {
-			Socket::socksUpdated();
-		}
-
-
-		ClientManager::getInstance()->infoUpdated();
-
-
-		if (prevHighPrio != SETTING(HIGH_PRIO_FILES) || prevHighPrioRegex != SETTING(HIGHEST_PRIORITY_USE_REGEXP) || prevDownloadSkiplist != SETTING(SKIPLIST_DOWNLOAD) ||
-			prevDownloadSkiplistRegex != SETTING(DOWNLOAD_SKIPLIST_USE_REGEXP)) {
-			
-				QueueManager::getInstance()->setMatchers();
-		}
-
-		if (prevShareSkiplist != SETTING(SKIPLIST_SHARE) || prevShareSkiplistRegex != SETTING(SHARE_SKIPLIST_USE_REGEXP)) {
-			ShareManager::getInstance()->setSkipList();
-		}
-
-		if (prevFreeSlotMatcher != SETTING(FREE_SLOTS_EXTENSIONS)) {
-			UploadManager::getInstance()->setFreeSlotMatcher();
-		}
-
-		bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;
-		if(SETTING(GET_USER_COUNTRY) != prevGeo) {
-			if(SETTING(GET_USER_COUNTRY)) {
-				GeoManager::getInstance()->init();
-				UpdateManager::getInstance()->checkGeoUpdate();
-			} else {
-				GeoManager::getInstance()->close();
-				rebuildGeo = false;
+		addThreadedTask([=] {
+			for(auto& t: tasks) {
+				if (t.first)
+					t.first();
+				delete t.second;
 			}
-		}
-		if(rebuildGeo) {
-			GeoManager::getInstance()->rebuild();
-		}
+
+			SettingsManager::getInstance()->save();
+			if(missedAutoConnect && !SETTING(NICK).empty()) {
+				PostMessage(WM_SPEAKER, AUTO_CONNECT);
+			}
+
+			if (prevTranslation != SETTING(LANGUAGE_FILE)) {
+				UpdateManager::getInstance()->checkLanguage();
+			}
+
+			bool v4Changed = SETTING(INCOMING_CONNECTIONS) != prevConn4 ||
+				SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
+				SETTING(MAPPER) != prevMapper || SETTING(BIND_ADDRESS) != prevBind || SETTING(BIND_ADDRESS6) != prevBind6;
+
+			bool v6Changed = SETTING(INCOMING_CONNECTIONS6) != prevConn6 ||
+				SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
+				/*SETTING(MAPPER) != prevMapper ||*/ SETTING(BIND_ADDRESS6) != prevBind6;
+
+			try {
+				ConnectivityManager::getInstance()->setup(v4Changed, v6Changed);
+			} catch (const Exception& e) {
+				showPortsError(e.getError());
+			}
+
+			auto outConns = CONNSETTING(OUTGOING_CONNECTIONS);
+			if(outConns != prevProxy || outConns == SettingsManager::OUTGOING_SOCKS5) {
+				Socket::socksUpdated();
+			}
+
+
+			ClientManager::getInstance()->infoUpdated();
+
+
+			if (prevHighPrio != SETTING(HIGH_PRIO_FILES) || prevHighPrioRegex != SETTING(HIGHEST_PRIORITY_USE_REGEXP) || prevDownloadSkiplist != SETTING(SKIPLIST_DOWNLOAD) ||
+				prevDownloadSkiplistRegex != SETTING(DOWNLOAD_SKIPLIST_USE_REGEXP)) {
+			
+					QueueManager::getInstance()->setMatchers();
+			}
+
+			if (prevShareSkiplist != SETTING(SKIPLIST_SHARE) || prevShareSkiplistRegex != SETTING(SHARE_SKIPLIST_USE_REGEXP)) {
+				ShareManager::getInstance()->setSkipList();
+			}
+
+			if (prevFreeSlotMatcher != SETTING(FREE_SLOTS_EXTENSIONS)) {
+				UploadManager::getInstance()->setFreeSlotMatcher();
+			}
+
+			bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;
+			if(SETTING(GET_USER_COUNTRY) != prevGeo) {
+				if(SETTING(GET_USER_COUNTRY)) {
+					GeoManager::getInstance()->init();
+					UpdateManager::getInstance()->checkGeoUpdate();
+				} else {
+					GeoManager::getInstance()->close();
+					rebuildGeo = false;
+				}
+			}
+			if(rebuildGeo) {
+				GeoManager::getInstance()->rebuild();
+			}
+		});
  
 		if(SETTING(SORT_FAVUSERS_FIRST) != lastSortFavUsersFirst)
 			HubFrame::resortUsers();

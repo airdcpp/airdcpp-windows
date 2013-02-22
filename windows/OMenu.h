@@ -24,40 +24,13 @@
 #endif // _MSC_VER > 1000
 
 #include "../client/typedefs.h"
-#include <functional>
 #include "../client/GetSet.h"
+
+#include "Dispatchers.h"
 
 namespace dcpp {
 
 class OMenu;
-
-namespace Dispatchers {
-
-template<typename T>
-struct Base {
-	typedef std::function<T> F;
-
-	Base(const F& f_) : f(f_) { }
-
-protected:
-	F f;
-};
-
-template<LRESULT value = 0, bool handled = true>
-struct VoidVoid : public Base<void ()> {
-
-	VoidVoid(const F& f_) : Base<void ()>(f_) { }
-
-	bool operator()(const MSG& msg, LRESULT& ret) const {
-		this->f();
-		ret = value;
-		return handled;
-	}
-};
-
-}
-
-typedef Dispatchers::VoidVoid<> Dispatcher;
 
 struct OMenuItem {
 	typedef vector<unique_ptr<OMenuItem>> List;

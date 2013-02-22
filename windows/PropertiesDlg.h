@@ -25,6 +25,7 @@
 
 #include "PropPage.h"
 #include "TreePropertySheet.h"
+#include "Dispatchers.h"
 
 
 class PropertiesDlg : public TreePropertySheet
@@ -79,12 +80,15 @@ public:
 	PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage);
 	~PropertiesDlg();
 
+	typedef vector<pair<Dispatcher::F, PropPage*>> TaskList;
+
+	void getThreadedTasks(TaskList& tasks);
 	LRESULT onOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 protected:
 	void write();
 	
-
+	bool saved;
 	PropPage *pages[PAGE_LAST];
 };
 

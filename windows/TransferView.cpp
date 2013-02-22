@@ -1145,7 +1145,7 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 			ui->setSize(b->getSize());
 			ui->setPos(b->getDownloadedBytes());
 			ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
-			ui->setTimeLeft((totalSpeed > 0) ? ((ui->size - ui->pos) / totalSpeed) : 0);
+			ui->setTimeLeft(b->getSecondsLeft());
 			ui->setSpeed(totalSpeed);
 			ui->setUsers(b->getRunningUsers().size());
 			ui->setRunning(b->getRunning());
@@ -1363,7 +1363,7 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 			ui->setSize(b->getSize());
 			ui->setPos(b->getUploaded());
 			ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
-			ui->setTimeLeft((totalSpeed > 0) ? ((ui->size - ui->pos) / totalSpeed) : 0);
+			ui->setTimeLeft(b->getSecondsLeft());
 			ui->setSpeed(totalSpeed);
 			ui->setUsers(1);
 			if (b->getSingleUser()) {

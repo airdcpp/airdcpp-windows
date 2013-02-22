@@ -59,7 +59,7 @@
 #include "SearchTypesPage.h"
 
 
-PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage) : TreePropertySheet(CTSTRING(SETTINGS), initialPage, parent)
+PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage) : TreePropertySheet(CTSTRING(SETTINGS), initialPage, parent), saved(false)
 {
 
 	int n = 0;
@@ -109,7 +109,15 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 PropertiesDlg::~PropertiesDlg()
 {
 	for(int i=0; i < PAGE_LAST; i++) {
-		delete pages[i];
+		if (!pages[i]->managed || !saved)
+			delete pages[i];
+	}
+}
+
+void PropertiesDlg::getThreadedTasks(TaskList& tasks) {
+	for(int i=0; i < PAGE_LAST; i++) {
+		if (pages[i]->managed)
+			tasks.emplace_back(pages[i]->getThreadedTask(), pages[i]);
 	}
 }
 
@@ -131,6 +139,7 @@ LRESULT PropertiesDlg::onOK(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	write();
 	bHandled = FALSE;
 	WinUtil::lastSettingPage = curPage;
+	saved = true;
 	//SettingsManager::getInstance()->set(SettingsManager::LAST_SETTING_PAGE, curPage);
 	return TRUE;
 }

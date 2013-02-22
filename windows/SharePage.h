@@ -86,6 +86,7 @@ public:
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
+	Dispatcher::F getThreadedTask();
 
 	enum ConfirmOption {
 		CONFIRM_REMOVE,
@@ -104,36 +105,40 @@ protected:
 	map<string, FolderTree*> ftl;
 
 	void showProfile();
-	void applyChanges(bool isQuit);
 	void fixControls();
 	void removeDir(const string& aPath, ProfileToken aProfile, int8_t& autoRemove, bool checkDupes=true, int remainingItems=0);
 	bool addDirectory(const tstring& aPath);
-	ShareDirInfo::list removeDirs, newDirs, changedDirs, tempViewItems;
+	ShareDirInfo::List removeDirs, changedDirs, tempViewItems;
+	ShareDirInfo::List newDirs;
 
 	bool addExcludeFolder(const string& aPath);
 	bool removeExcludeFolder(const string& path);
-	bool shareFolder(const string& path, ShareDirInfo::list& aShared);
+	bool shareFolder(const string& path, ShareDirInfo::List& aShared);
 
 	ShareProfile::set addProfiles;
 	ProfileTokenList removeProfiles;
 	vector<pair<ShareProfilePtr, string>> renameProfiles;
 	ShareProfilePtr getSelectedProfile();
-	ShareDirInfo::list getItemsByPath(const string& aPath, bool listRemoved);
+	ShareDirInfo::List getItemsByPath(const string& aPath, bool listRemoved);
 
-	ShareDirInfo::map shareDirs;
+	ShareDirInfo::Map shareDirs;
 	vector<ShareProfilePtr> profiles;
 	CComboBox ctrlProfile;
 
-	ShareDirInfo::list getViewItems(ProfileToken aProfile, bool getDiffItems=false);
+	ShareDirInfo::List getViewItems(ProfileToken aProfile, bool getDiffItems=false);
 	StringSet getExcludedDirs();
 
 	ShareProfilePtr getProfile(ProfileToken aProfile);
 
 	ProfileTokenStringList excludedAdd, excludedRemove;
 
-	void deleteDirectoryInfoItems();
 	void deleteTempViewItems();
 	bool showShareDlg(const ShareProfile::list& spList, ProfileToken curProfile, const tstring& curName, ProfileTokenList& profiles, tstring& newName, bool rename);
+
+	void applyChanges(bool isQuit);
+
+	bool hasChanged();
+
 };
 
 #endif // !defined(SHARE_PAGE_H)

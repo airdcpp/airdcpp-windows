@@ -157,8 +157,8 @@ protected:
 	int GetSelIconIndex(const tstring& sFilename);
 	int GetSelIconIndex(HTREEITEM hItem);
 	int GetSelIconIndex(LPITEMIDLIST lpPIDL);
-	HTREEITEM InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo* pItem, bool bShared, int nIcon, int nSelIcon, bool bCheckForChildren, ShareDirInfo::list& sharedDirs);
-	void DisplayDrives(HTREEITEM hParent, bool bUseSetRedraw, ShareDirInfo::list& shared);
+	HTREEITEM InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo* pItem, bool bShared, int nIcon, int nSelIcon, bool bCheckForChildren, ShareDirInfo::List& sharedDirs);
+	void DisplayDrives(HTREEITEM hParent, bool bUseSetRedraw, ShareDirInfo::List& shared);
 	void DisplayPath(const tstring& sPath, HTREEITEM hParent, bool bUseSetRedraw = true);
 	tstring GetDriveLabel(const tstring& sDrive);
 	tstring GetCorrectedLabel(FolderTreeItemInfo* pItem);
@@ -177,14 +177,14 @@ protected:
 	int DeleteChildren(HTREEITEM hItem, bool bUpdateChildIndicator);
 	BOOL GetSerialNumber(const tstring& sDrive, DWORD& dwSerialNumber);
 	void SetHasSharedChildren(HTREEITEM hItem, bool bHasSharedChildren);
-	void SetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::list& aShared);
-	bool GetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::list& aShared);
+	void SetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::List& aShared);
+	bool GetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::List& aShared);
 	HTREEITEM HasSharedParent(HTREEITEM hItem);
 	void ShareParentButNotSiblings(HTREEITEM hItem);
 	void UpdateChildItems(HTREEITEM hItem, bool bChecked);
 	void UpdateParentItems(HTREEITEM hItem);
 
-	void checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent, ShareDirInfo::list& sharedDirs);
+	void checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent, ShareDirInfo::List& sharedDirs);
 	
 	//Member variables
 	tstring			m_sRootFolder;

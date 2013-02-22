@@ -616,6 +616,7 @@
     <ClInclude Include="windows\CSplitterEx.h" />
     <ClInclude Include="windows\DirectoryListingDlg.h" />
     <ClInclude Include="windows\DirectoryListingFrm.h" />
+    <ClInclude Include="windows\Dispatchers.h" />
     <ClInclude Include="windows\EmoticonsManager.h" />
     <ClInclude Include="windows\AirAppearancePage.h" />
     <ClInclude Include="windows\ChatFrameBase.h" />
