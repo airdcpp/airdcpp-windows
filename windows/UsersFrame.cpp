@@ -243,6 +243,7 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 				::FillRect(cd->nmcd.hdc, rc, CreateSolidBrush(GetSysColor(COLOR_HIGHLIGHT)));
 	
 				ctrlUsers.GetSubItemRect(nItem, cd->iSubItem, LVIR_ICON, rc);
+				rc.top +=1; // hmm, why is the position off when getting the icon rect?
 				images.DrawEx(ui->getImage(cd->iSubItem), cd->nmcd.hdc, rc, GetSysColor(COLOR_HIGHLIGHT), CLR_DEFAULT, ILD_NORMAL);
 				return CDRF_SKIPDEFAULT;
 			}

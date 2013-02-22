@@ -667,15 +667,15 @@ void AutoSearchFrame::removeItem(const AutoSearchPtr as) {
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& as) noexcept { 
-	MainFrame::getMainFrame()->callAsync([=] { removeItem(as); setDirty(); }); 
+	MainFrame::getMainFrame()->callAsync([=] { removeItem(as); if(SETTING(AUTOSEARCH_BOLD)) setDirty(); }); 
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept { 
-	MainFrame::getMainFrame()->callAsync([=] { addEntry(as, ctrlAutoSearch.GetItemCount()); setDirty();  });
+	MainFrame::getMainFrame()->callAsync([=] { addEntry(as, ctrlAutoSearch.GetItemCount()); if(SETTING(AUTOSEARCH_BOLD)) setDirty();  });
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as, bool aSetDirty) noexcept {
-	MainFrame::getMainFrame()->callAsync([=] { updateItem(as); if (aSetDirty) setDirty();  }); 
+	MainFrame::getMainFrame()->callAsync([=] { updateItem(as); if (aSetDirty && SETTING(AUTOSEARCH_BOLD)) setDirty();  }); 
 }
 
 tstring AutoSearchFrame::formatSearchDate(const time_t aTime) {
