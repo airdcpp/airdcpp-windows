@@ -155,7 +155,6 @@ private:
 			}
 		}
 
-
 		void remove() { FavoriteManager::getInstance()->removeFavoriteUser(getUser()); }
 
 		void update(const UserPtr& u);
@@ -202,6 +201,7 @@ private:
 	void updateUser(const UserPtr& aUser);
 	
 	void setImages(UserInfo* ui, int pos = -1);
+	void updateStatus();
 
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];

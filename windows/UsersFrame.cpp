@@ -170,6 +170,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	WinUtil::SetIcon(m_hWnd, IDI_FAVORITE_USERS);
 
 	startup = false;
+	updateStatus();
 
 	bHandled = FALSE;
 	return TRUE;
@@ -266,7 +267,7 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		CRect sr;
 		int w[3];
 		ctrlStatus.GetClientRect(sr);
-		int tmp = (sr.Width()) > 316 ? 216 : ((sr.Width() > 116) ? sr.Width()-100 : 16);
+		int tmp = (sr.Width() /2) - 16;
 			
 		w[0] = sr.right - tmp;
 		w[1] = w[0] + (tmp-16)/2;
@@ -489,6 +490,7 @@ void UsersFrame::addUser(const UserPtr& aUser, const string& aUrl) {
 	} else {
 		updateUser(aUser);
 	}
+	updateStatus();
 }
 
 void UsersFrame::updateUser(const UserPtr& aUser) {
@@ -514,6 +516,7 @@ void UsersFrame::updateUser(const UserPtr& aUser) {
 			setImages(ui, pos);
 		}
 	}
+	updateStatus();
 }
 
 void UsersFrame::updateList() {
@@ -534,6 +537,7 @@ void UsersFrame::updateList() {
 		}
 	}
 	ctrlUsers.SetRedraw(TRUE);
+	updateStatus();
 }
 
 bool UsersFrame::matches(const UserInfo &ui) {
@@ -565,6 +569,9 @@ void UsersFrame::setImages(UserInfo *ui, int pos/* = -1*/) {
 	ctrlUsers.SetItem(pos, COLUMN_FAVORITE, LVIF_IMAGE, NULL, ui->getImage(COLUMN_FAVORITE), 0, 0, NULL);
 	ctrlUsers.SetItem(pos, COLUMN_SLOT, LVIF_IMAGE, NULL, ui->getImage(COLUMN_SLOT), 0, 0, NULL);
 
+}
+void UsersFrame::updateStatus() {
+	ctrlStatus.SetText(1, (Text::toT(Util::toString(ctrlUsers.GetItemCount()) + " ") + TSTRING(USERS)).c_str());
 }
 
 void UsersFrame::UserInfo::update(const UserPtr& u) {
