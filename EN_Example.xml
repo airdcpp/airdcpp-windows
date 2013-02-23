@@ -1769,5 +1769,7 @@ Do you want to use this destination anyway?</String>
 		<String Name="DirHistory">Download locations</String>
 		<String Name="ExcludedWordsDesc">Excluded words (separate with space)</String>
 		<String Name="Histories">Histories</String>
+		<String Name="SharedDirRemoved">The directory %s has been removed from the share</String>
+		<String Name="XSharedDirsRemoved">%d directories have been removed from the share</String>
 	</Strings>
 </Language>

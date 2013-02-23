@@ -466,12 +466,13 @@ void SearchFrame::onEnter() {
 	ctrlPauseSearch.SetWindowText(CTSTRING(PAUSE_SEARCH));
 
 	string excluded;
-	bool useExcluded = ctrlExcludedBool.GetCheck() == TRUE;
-	SettingsManager::getInstance()->set(SettingsManager::SEARCH_USE_EXCLUDED, useExcluded);
-	if (useExcluded) {
+	usingExcludes = ctrlExcludedBool.GetCheck() == TRUE;
+	SettingsManager::getInstance()->set(SettingsManager::SEARCH_USE_EXCLUDED, usingExcludes);
+	if (usingExcludes) {
 		excluded = WinUtil::addHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
-		if (!excluded.empty())
+		if (!excluded.empty()) {
 			SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_EXCLUDED, excluded);
+		}
 	}
 
 	/*{
@@ -550,7 +551,14 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 			return;
 		}
 
-		//no further validation, trust that the other client knows what he's sending...
+		//no further validation, trust that the other client knows what he's sending... unless we are using excludes
+		if (usingExcludes) {
+			Lock l (cs);
+			if (curSearch && curSearch->isExcluded(aResult->getFile())) {
+				PostMessage(WM_SPEAKER, FILTER_RESULT);
+				return;
+			}
+		}
 	} else {
 		// Check that this is really a relevant search result...
 		Lock l(cs);
@@ -569,7 +577,6 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		}
 
 		if (!valid) {
-			droppedResults++;
 			PostMessage(WM_SPEAKER, FILTER_RESULT);
 			return;
 		}
@@ -579,7 +586,6 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 	if((onlyFree && aResult->getFreeSlots() < 1) ||
 	   (exactSize1 && (aResult->getSize() != exactSize2)))
 	{
-		droppedResults++;
 		PostMessage(WM_SPEAKER, FILTER_RESULT);
 		return;
 	}
@@ -1226,6 +1232,7 @@ LRESULT SearchFrame::onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 void SearchFrame::addSearchResult(SearchInfo* si) {
 	const SearchResultPtr& sr = si->sr;
+
     // Check previous search results for dupes
 	if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
 		SearchInfoList::ParentPair* pp = ctrlResults.findParentPair(sr->getTTH());
@@ -1286,19 +1293,24 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 	}
 }
 
+void SearchFrame::onResultFiltered() {
+	droppedResults++;
+	ctrlStatus.SetText(4, (Util::toStringW(droppedResults) + _T(" ") + TSTRING(FILTERED)).c_str());
+}
+
 LRESULT SearchFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
  	switch(wParam) {
 	case ADD_RESULT:
 		addSearchResult((SearchInfo*)(lParam));
 		break;
 	case FILTER_RESULT:
-		ctrlStatus.SetText(4, (Util::toStringW(droppedResults) + _T(" ") + TSTRING(FILTERED)).c_str());
+		onResultFiltered();
 		break;
  	case HUB_ADDED:
- 			onHubAdded((HubInfo*)(lParam));
+ 		onHubAdded((HubInfo*)(lParam));
 		break;
  	case HUB_CHANGED:
- 			onHubChanged((HubInfo*)(lParam));
+ 		onHubChanged((HubInfo*)(lParam));
 		break;
  	case HUB_REMOVED:
 		{

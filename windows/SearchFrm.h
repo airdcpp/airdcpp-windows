@@ -452,6 +452,7 @@ private:
 	CComboBox ctrlFilterSel;
 	CComboBox ctrlExcluded;
 
+	bool usingExcludes;
 	bool onlyFree;
 	bool expandSR;
 	bool running;
@@ -487,6 +488,8 @@ private:
 
 	void onEnter();
 	void fixControls();
+
+	void onResultFiltered();
 
 	void onTab(bool shift);
 	
