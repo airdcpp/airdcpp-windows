@@ -860,3 +860,6 @@ Fixed:
 - Correct the loaded page when editing profiles from fav hubs
 - The splash screen won't go to "not responding" state on startup/shutdown
 - Restore "view as text" in the search tab
+- Handle excluded words correctly with incoming ADC searches
+- Fix duplicate items in file lists when reloading downloaded directories
+- Fix a problem with merging file list directories that both contain files
