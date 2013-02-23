@@ -106,18 +106,19 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 
 }
 
-PropertiesDlg::~PropertiesDlg()
-{
-	for(int i=0; i < PAGE_LAST; i++) {
-		if (!pages[i]->managed || !saved)
-			delete pages[i];
-	}
-}
+PropertiesDlg::~PropertiesDlg() { }
 
-void PropertiesDlg::getThreadedTasks(TaskList& tasks) {
+void PropertiesDlg::deletePages(TaskList& tasks) {
 	for(int i=0; i < PAGE_LAST; i++) {
-		if (pages[i]->managed)
-			tasks.emplace_back(pages[i]->getThreadedTask(), pages[i]);
+		if (saved) {
+			auto t = pages[i]->getThreadedTask();
+			if (t) {
+				tasks.emplace_back(pages[i]->getThreadedTask(), pages[i]);
+				continue;
+			}
+		}
+		
+		delete pages[i];
 	}
 }
 

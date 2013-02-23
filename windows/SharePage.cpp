@@ -52,7 +52,7 @@ PropPage::TextItem SharePage::texts[] = {
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-SharePage::SharePage(SettingsManager *s) : PropPage(s, true), ft(nullptr) {
+SharePage::SharePage(SettingsManager *s) : PropPage(s), ft(nullptr) {
 	SetTitle(CTSTRING(SETTINGS_SHARINGPAGE));
 	m_psp.dwFlags |= PSP_RTLREADING;
 }

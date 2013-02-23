@@ -1,4 +1,3 @@
-TaskList
 /* 
  * Copyright (C) 2001-2013 Jacek Sieka, arnetheduck on gmail point com
  *
@@ -985,12 +984,11 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 	if(dlg.DoModal(m_hWnd) == IDOK) 
 	{
 		PropertiesDlg::TaskList tasks;
-		dlg.getThreadedTasks(tasks);
+		dlg.deletePages(tasks);
 
 		addThreadedTask([=] {
 			for(auto& t: tasks) {
-				if (t.first)
-					t.first();
+				t.first();
 				delete t.second;
 			}
 

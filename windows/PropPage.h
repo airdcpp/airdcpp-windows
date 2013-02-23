@@ -78,11 +78,10 @@ protected:
 class PropPage : public SettingTab
 {
 public:
-	PropPage(SettingsManager *src, bool aManaged = false) : SettingTab(src), managed(aManaged) { }
+	PropPage(SettingsManager *src) : SettingTab(src) { }
 	virtual ~PropPage() { }
 
 	virtual PROPSHEETPAGE *getPSP() = 0;
-	bool managed;
 };
 
 #endif // !defined(PROP_PAGE_H)

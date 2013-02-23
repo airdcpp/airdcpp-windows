@@ -82,7 +82,7 @@ public:
 
 	typedef vector<pair<Dispatcher::F, PropPage*>> TaskList;
 
-	void getThreadedTasks(TaskList& tasks);
+	void deletePages(TaskList& tasks);
 	LRESULT onOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 protected:
