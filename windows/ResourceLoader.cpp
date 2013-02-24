@@ -291,10 +291,10 @@ tstring ResourceLoader::getIconName(int aDefault) {
 void ResourceLoader::loadFileImages() {
 
 	fileImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 4);
-	fileImages.AddIcon(loadIcon(IDI_FILE, 16)); fileImageCount++;
 	fileImages.AddIcon(loadIcon(IDI_FOLDER, 16)); fileImageCount++;
 	fileImages.AddIcon(loadIcon(IDI_FOLDER_INC, 16)); fileImageCount++;
 	fileImages.AddIcon(loadIcon(IDI_FOLDER, 16)); fileImageCount++;
+	fileImages.AddIcon(loadIcon(IDI_FILE, 16)); fileImageCount++;
 
 	if(SETTING(USE_SYSTEM_ICONS)) {
 		SHFILEINFO fi;
@@ -397,7 +397,7 @@ int ResourceLoader::getIconIndex(const tstring& aFileName) {
 		fileIndexes[x] = fileImageCount++;
 		return fileImageCount - 1;
 	} else {
-		return 2;
+		return FILE;
 	}
 }
 

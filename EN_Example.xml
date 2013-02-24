@@ -237,8 +237,8 @@
 		<String Name="InvalidSize">Invalid size</String>
 		<String Name="InvalidTargetFile">Invalid target file (missing directory, check default download directory setting)</String>
 		<String Name="InvalidTree">Full tree does not match TTH root</String>
-		<String Name="Ip">Ip: </String>
-		<String Name="IpBare">Ip</String>
+		<String Name="Ip">IP: </String>
+		<String Name="IpBare">IP</String>
 		<String Name="Items">Items</String>
 		<String Name="JoinShowingOff">Join/part showing off</String>
 		<String Name="JoinShowingOn">Join/part showing on</String>
@@ -1744,8 +1744,8 @@ Do you want to use this destination anyway?</String>
 		<String Name="ConnectingInProgress">Connecting to the hub in progress</String>
 		<String Name="ModeV4">Mode (IPv4)</String>
 		<String Name="ModeV6">Mode (IPv6)</String>
-		<String Name="IpV4">Ip (IPv4)</String>
-		<String Name="IpV6">Ip (IPv6)</String>
+		<String Name="IpV4">IP (v4)</String>
+		<String Name="IpV6">IP (v6)</String>
 		<String Name="NoNattSupport">The remote user doesn't support passive-passive connections</String>
 		<String Name="HbriValidatingX">Validating the %s address...</String>
 		<String Name="HbriValidationFailed">Validation failed: %s. %s connectivity has been disabled in this hub.</String>

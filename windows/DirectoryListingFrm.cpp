@@ -57,11 +57,12 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 		aHWND = frame->CreateEx(WinUtil::mdiClient);
 	}
 	if(aHWND != 0) {
-		frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
-		if (aList->getPartialList())
+		if (aList->getPartialList()) {
 			aList->addPartialListTask(aDir, aXML);
-		else
+		} else {
+			frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 			aList->addFullListTask(aDir);
+		}
 		frames.emplace(frame->m_hWnd, frame);
 	} else {
 		delete frame;
@@ -394,7 +395,8 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 
 	ctrlTree.SelectItem(NULL);
 
-	if (ctrlTree.IsExpanded(ht)) {
+	bool isExpanded = ctrlTree.IsExpanded(ht);
+	if (isExpanded) {
 		ctrlTree.Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
 	}
 
@@ -402,7 +404,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 
 	d->sortDirs();
 
-	if (initialChange || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
+	if (isExpanded || initialChange || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
 		ctrlTree.Expand(ht);
 
 
@@ -906,6 +908,8 @@ LRESULT DirectoryListingFrame::onKeyDownDirs(int /*idCtrl*/, LPNMHDR pnmh, BOOL&
 	NMTVKEYDOWN* kd = (NMTVKEYDOWN*) pnmh;
 	if(kd->wVKey == VK_TAB) {
 		onTab();
+	} else if(kd->wVKey == VK_DOWN || kd->wVKey == VK_DOWN) {
+		changeType = CHANGE_TREE_SINGLE;
 	}
 	return 0;
 }
