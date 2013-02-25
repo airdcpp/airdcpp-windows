@@ -592,8 +592,10 @@ void DirectoryListingFrame::DisableWindow(){
 	disabled = true;
 	ctrlList.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-	SendMessage(WM_ENABLE,(WPARAM)FALSE,0);
-	SendMessage(WM_ENABLE,(WPARAM)FALSE,0);
+
+	//can't use EnableWindow as that message seems the get queued for the list view...
+	ctrlList.SetWindowLong(GWL_STYLE, ctrlList.GetWindowLong(GWL_STYLE) | WS_DISABLED);
+	ctrlTree.SetWindowLong(GWL_STYLE, ctrlTree.GetWindowLong(GWL_STYLE) | WS_DISABLED);
 }
 
 void DirectoryListingFrame::EnableWindow(){
