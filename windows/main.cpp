@@ -159,13 +159,13 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 	f.setEndPos(0);
 	
 	DWORD exceptionCode = e->ExceptionRecord->ExceptionCode ;
-	string archStr = "x32";
+	string archStr = "x86";
 #ifdef _WIN64
 	archStr = "x64";
 #endif
 
 	sprintf(buf, "Code: %x ( %s )\r\nVersion: %s %s\r\n", 
-		exceptionCode, getExceptionName(exceptionCode).c_str(), VERSIONSTRING, archStr);
+		exceptionCode, getExceptionName(exceptionCode).c_str(), VERSIONSTRING, archStr.c_str());
 
 	f.write(buf, strlen(buf));
 	sprintf(buf, "Build: %s\r\n", 

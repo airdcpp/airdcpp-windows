@@ -2168,6 +2168,7 @@ IDI_USER_AWAY           ICON                    "res\\UserlistImages\\UserAway.i
 IDI_USER_BOT            ICON                    "res\\UserlistImages\\UserBot.ico"
 IDI_USER_PASSIVE        ICON                    "res\\UserlistImages\\UserNoCon.ico"
 IDI_USER_OP             ICON                    "res\\UserlistImages\\UserOP.ico"
+IDI_USER_NOCONNECT      ICON                    "res\\UserlistImages\\UserNoconnect.ico"
 //IDI_FAV_USER            ICON                    "res\\UserlistImages\\FavUser.ico"
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"

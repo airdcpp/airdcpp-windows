@@ -849,6 +849,7 @@ Changed:
 - Remove the password length limit for fav hubs
 - Performance optimizations when searching ADC hubs
 - Change the way of storing history items: option to clear each history on exit and set the maximum limit for each history
+- /rebuild will remove entries also for files that have been removed from the share during the current session
 
 
 Fixed:
@@ -863,3 +864,4 @@ Fixed:
 - Handle excluded words correctly with incoming ADC searches
 - Fix duplicate items in file lists when reloading downloaded directories
 - Fix a problem with merging file list directories that both contain files
+- Avoid hashers getting freezed
