@@ -450,6 +450,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 }
 
 LRESULT DirectoryListingFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	changeType = CHANGE_LIST;
 	updateStatus();
 	return 0;
 }
@@ -591,8 +592,8 @@ void DirectoryListingFrame::DisableWindow(){
 	disabled = true;
 	ctrlList.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-	ctrlTree.EnableWindow(FALSE);
-	ctrlList.EnableWindow(FALSE);
+	SendMessage(WM_ENABLE,(WPARAM)FALSE,0);
+	SendMessage(WM_ENABLE,(WPARAM)FALSE,0);
 }
 
 void DirectoryListingFrame::EnableWindow(){
@@ -1156,6 +1157,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
 
 	if (reinterpret_cast<HWND>(wParam) == ctrlList && ctrlList.GetSelectedCount() > 0) {
+		changeType = CHANGE_LIST;
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
 		if(pt.x == -1 && pt.y == -1) {
