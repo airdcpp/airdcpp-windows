@@ -87,7 +87,7 @@ DirectoryListingFrame::~DirectoryListingFrame() {
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept {
-	auto f = [=] { onLoadingFinished(aStart, aDir, reloadList, changeDir); };
+	auto f = [=] { onLoadingFinished(aStart, aDir, reloadList, changeDir, loadInGUIThread); };
 	if (loadInGUIThread) {
 		callAsync(f);
 	} else {
@@ -95,7 +95,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	}
 }
 
-void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir) {
+void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool /*usingGuiThread*/) {
 	bool searching = dl->isCurrentSearchPath(aDir);
 
 	if (!dl->getPartialList())
@@ -116,18 +116,20 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 		if (dl->getPartialList()) {
 			if (aDir.empty()) {
 				msg = STRING(PARTIAL_LIST_LOADED);
-			} else {
+			} /*else if (!usingGuiThread) {
 				//msg = STRING_F(DIRECTORY_LOADED, Util::getLastDir(aDir));
-			}
+				msg = Util::emptyString;
+			}*/
 		} else {
 			msg = STRING_F(FILELIST_LOADED_IN, Util::formatSeconds(loadTime, true));
 		}
 
+		changeWindowState(true);
+
 		callAsync([=] {
 			initStatus();
-			if (!msg.empty())
-				updateStatus(Text::toT(msg));
-			changeWindowState(true);
+			//if (!msg.empty())
+			updateStatus(Text::toT(msg));
 
 			//notify the user that we've loaded the list
 			setDirty();
@@ -135,8 +137,12 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 	} else {
 		findSearchHit(true);
 		changeWindowState(true);
-		callAsync([=] { updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())); });
+		callAsync([=] { 
+			updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
+			dl->setWaiting(false);
+		});
 	}
+
 	dl->setWaiting(false);
 }
 
@@ -149,10 +155,14 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const st
 	}
 }
 
-void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted) noexcept {
+void DirectoryListingFrame::on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept {
 	callAsync([=] { 
-		changeWindowState(false);
-		ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
+		if (changeDir) {
+			DisableWindow(false);
+		} else {
+			changeWindowState(false);
+			ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
+		}
 		dl->setWaiting(false);
 	});
 	
@@ -307,7 +317,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 }
 
 void DirectoryListingFrame::changeWindowState(bool enable) {
-	ctrlMatchQueue.EnableWindow(enable);
+	ctrlMatchQueue.EnableWindow(enable && !dl->getIsOwnList());
 	ctrlADLMatch.EnableWindow(enable);
 	ctrlFind.EnableWindow(enable);
 	ctrlFindNext.EnableWindow(dl->curSearch ? TRUE : FALSE);
@@ -588,23 +598,28 @@ void DirectoryListingFrame::updateStatus() {
 	}
 }
 
-void DirectoryListingFrame::DisableWindow(){
+void DirectoryListingFrame::DisableWindow(bool redraw){
 	disabled = true;
-	ctrlList.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-	ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+
+	if (redraw) {
+		ctrlList.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+		ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+	}
 
 	//can't use EnableWindow as that message seems the get queued for the list view...
 	ctrlList.SetWindowLong(GWL_STYLE, ctrlList.GetWindowLong(GWL_STYLE) | WS_DISABLED);
 	ctrlTree.SetWindowLong(GWL_STYLE, ctrlTree.GetWindowLong(GWL_STYLE) | WS_DISABLED);
 }
 
-void DirectoryListingFrame::EnableWindow(){
+void DirectoryListingFrame::EnableWindow(bool redraw){
 	disabled = false;
-	ctrlTree.EnableWindow(TRUE);
-	ctrlList.EnableWindow(TRUE);
-	//it should be redrawn without these, but is it??
-	//ctrlList.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
-	//ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+	ctrlList.SetWindowLong(GWL_STYLE, ctrlList.GetWindowLong(GWL_STYLE) & ~ WS_DISABLED);
+	ctrlTree.SetWindowLong(GWL_STYLE, ctrlTree.GetWindowLong(GWL_STYLE) & ~ WS_DISABLED);
+
+	if (redraw) {
+		ctrlList.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+		ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+	}
 }
 
 void DirectoryListingFrame::initStatus() {
@@ -1026,8 +1041,10 @@ LRESULT DirectoryListingFrame::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, 
 }
 
 LRESULT DirectoryListingFrame::onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (dl->getPartialList() && MessageBox(CTSTRING(ADL_DL_FULL_LIST), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-		ctrlStatus.SetText(0, CTSTRING(DOWNLOADING_LIST));
+	if (dl->getPartialList() && (dl->getIsOwnList() || MessageBox(CTSTRING(ADL_DL_FULL_LIST), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)) {
+		if (!dl->getIsOwnList())
+			ctrlStatus.SetText(0, CTSTRING(DOWNLOADING_LIST));
+
 		dl->setMatchADL(true);
 		convertToFull();
 	} else {

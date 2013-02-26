@@ -373,15 +373,15 @@ private:
 	typedef FrameMap::iterator FrameIter;
 
 	static FrameMap frames;
-	void DisableWindow();
-	void EnableWindow();
+	void DisableWindow(bool redraw = true);
+	void EnableWindow(bool redraw = true);
 
 	bool disabled;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept;
 	void on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept;
-	void on(DirectoryListingListener::LoadingStarted) noexcept;
+	void on(DirectoryListingListener::LoadingStarted, bool changeDir) noexcept;
 	void on(DirectoryListingListener::QueueMatched, const string& aMessage) noexcept;
 	void on(DirectoryListingListener::Close) noexcept;
 	void on(DirectoryListingListener::SearchStarted) noexcept;
@@ -393,7 +393,7 @@ private:
 	void filterList();
 	void createRoot();
 	void convertToFull();
-	void onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir);
+	void onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool usingGuiThread);
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)
