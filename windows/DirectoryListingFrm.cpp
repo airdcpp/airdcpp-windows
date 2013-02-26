@@ -322,7 +322,7 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 	ctrlFind.EnableWindow(enable);
 	ctrlFindNext.EnableWindow(dl->curSearch ? TRUE : FALSE);
 	ctrlFindPrev.EnableWindow(dl->curSearch ? TRUE : FALSE);
-	ctrlListDiff.EnableWindow(dl->getPartialList() ? false : enable);
+	ctrlListDiff.EnableWindow(dl->getPartialList() && !dl->getIsOwnList() ? false : enable);
 	ctrlFilter.EnableWindow(enable);
 
 	if (enable) {

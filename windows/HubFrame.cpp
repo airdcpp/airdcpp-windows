@@ -212,9 +212,8 @@ HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate
 	memset(statusSizes, 0, sizeof(statusSizes));
 }
 
-bool HubFrame::sendMessage(const tstring& aMessage, bool isThirdPerson) {
-	client->hubMessage(Text::fromT(aMessage), isThirdPerson);
-	return true;
+bool HubFrame::sendMessage(const tstring& aMessage, string& error_, bool isThirdPerson) {
+	return client->hubMessage(Text::fromT(aMessage), error_, isThirdPerson);
 }
 
 bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) {	

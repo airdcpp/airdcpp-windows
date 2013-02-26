@@ -34,7 +34,7 @@
 class FrameMessageBase {
 public:
 	virtual bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) = 0;
-	virtual bool sendMessage(const tstring& aMessage, bool thirdPerson) = 0;
+	virtual bool sendMessage(const tstring& aMessage, string& error_, bool thirdPerson) = 0;
 	virtual void addStatusLine(const tstring& aStatus) = 0;
 	virtual void onTab() { };
 	virtual void UpdateLayout(BOOL /*resizeBars*/) { };
@@ -111,6 +111,8 @@ protected:
 
 	void setStatusText(const tstring& aLine);
 	CStatusBarCtrl ctrlStatus;
+
+	bool sendFrameMessage(const tstring& aMsg, bool thirdPerson = false);
 private:
 	FrameMessageBase* frame;
 

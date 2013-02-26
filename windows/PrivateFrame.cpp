@@ -268,7 +268,9 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 			{
 				ParamMap params;
 				from.getParams(params, "user", false);
-				p->sendMessage(Text::toT(AirUtil::getAwayMessage(params)));
+
+				string error;
+				p->sendMessage(Text::toT(AirUtil::getAwayMessage(params)), error);
 			}
 		}
 
@@ -336,8 +338,8 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 			::ShowWindow(p->m_hWnd, SW_RESTORE);
 		p->MDIActivate(p->m_hWnd);
 	}
-	if(!msg.empty())
-		p->sendMessage(msg);
+
+	p->sendFrameMessage(msg);
 }
 /*
  update the re used frame to the correct hub, 
@@ -375,11 +377,11 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 	return true;
 }
 
-bool PrivateFrame::sendMessage(const tstring& msg, bool thirdPerson) {
+bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
 	if(replyTo.user->isOnline()) {
-		ClientManager::getInstance()->privateMessage(replyTo, Text::fromT(msg), thirdPerson);
-		return true;
+		return ClientManager::getInstance()->privateMessage(replyTo, Text::fromT(msg), error_, thirdPerson);
 	}
+	error_ = STRING(USER_OFFLINE);
 	return false;
 }
 

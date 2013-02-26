@@ -464,13 +464,25 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	}
 	if(checkCommand(cmd, param, message, status, thirdPerson)){
 		if(!message.empty()) {
-			frame->sendMessage(message, thirdPerson);
+			sendFrameMessage(message, thirdPerson);
 		}
 		if(!status.empty()) {
 			frame->addStatusLine(status);
 		}
 	}
 	return 0;
+}
+
+bool ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool thirdPerson /*false*/) {
+	if (!aMsg.empty()) {
+		string error;
+		if (frame->sendMessage(aMsg, error, thirdPerson)) {
+			return true;
+		} else {
+			frame->addStatusLine(Text::toT(error));
+		}
+	}
+	return false;
 }
 
 void ChatFrameBase::appendTextLine(const tstring& aText, bool addSpace) {
@@ -598,9 +610,8 @@ void ChatFrameBase::onEnter() {
 	}
 
 	if (!message.empty()) {
-		if (frame->sendMessage(message, thirdPerson)) {
+		if (sendFrameMessage(message, thirdPerson))
 			ctrlMessage.SetWindowText(Util::emptyStringT.c_str());
-		}
 	} else {
 		ctrlMessage.SetWindowText(Util::emptyStringT.c_str());
 	}

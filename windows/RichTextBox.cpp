@@ -1427,7 +1427,9 @@ LRESULT RichTextBox::onCopyActualLine(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 LRESULT RichTextBox::onBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(!selectedIP.empty()) {
 		tstring s = _T("!banip ") + selectedIP;
-		client->hubMessage(Text::fromT(s));
+
+		string error;
+		client->hubMessage(Text::fromT(s), error);
 	}
 	SetSelNone();
 	return 0;
@@ -1436,7 +1438,9 @@ LRESULT RichTextBox::onBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 LRESULT RichTextBox::onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(!selectedIP.empty()) {
 		tstring s = _T("!unban ") + selectedIP;
-		client->hubMessage(Text::fromT(s));
+
+		string error;
+		client->hubMessage(Text::fromT(s), error);
 	}
 	SetSelNone();
 	return 0;

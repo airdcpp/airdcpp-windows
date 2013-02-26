@@ -153,7 +153,7 @@ public:
 			HintedUser user(u, Util::emptyString);
 			unique_ptr<DirectoryListing> dl(new DirectoryListing(user, false, i, false, false));
 			try {
-				dl->loadFile(i);
+				dl->loadFile();
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);

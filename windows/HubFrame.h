@@ -163,7 +163,7 @@ public:
 	}
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
-	bool sendMessage(const tstring& aMessage, bool isThirdPerson);
+	bool sendMessage(const tstring& aMessage, string& error_, bool isThirdPerson);
 	void addLine(const tstring& aLine);
 	void addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo = true);
 	void addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo = true);

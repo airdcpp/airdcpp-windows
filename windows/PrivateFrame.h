@@ -119,7 +119,7 @@ public:
 	void readLog();
 	
 	void addClientLine(const tstring& aLine);
-	bool sendMessage(const tstring& msg, bool thirdPerson = false);
+	bool sendMessage(const tstring& msg, string& error_, bool thirdPerson = false);
 
 	struct UserListHandler {
 		UserListHandler(PrivateFrame* _pf) : pf(_pf) { }
