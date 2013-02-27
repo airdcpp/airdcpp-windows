@@ -471,8 +471,13 @@ void WinUtil::init(HWND hWnd) {
 	progressFont = CreateFontIndirect(&lf3);
 	TBprogressTextColor = SETTING(TB_PROGRESS_TEXT_COLOR);
 
-	//default to systemFont like it was before, only load if changed...
-	listViewFont = systemFont;
+	//default to system theme Font like it was before, only load if changed...
+	//should we use this as systemFont?
+	NONCLIENTMETRICS ncm;
+	ncm.cbSize = sizeof(ncm);
+	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
+	listViewFont = CreateFontIndirect(&(ncm.lfCaptionFont)); 
+
 	if(!SETTING(LIST_VIEW_FONT).empty()){
 		::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf3), &lf3);
 		decodeFont(Text::toT(SETTING(LIST_VIEW_FONT)), lf3);
