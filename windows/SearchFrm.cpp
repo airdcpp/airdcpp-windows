@@ -522,7 +522,7 @@ void SearchFrame::onEnter() {
 
 
 	// perform the search
-	auto newSearch = AdcSearch::getSearch(s, excluded, exactSize2, ftype, mode, extList);
+	auto newSearch = AdcSearch::getSearch(s, excluded, exactSize2, ftype, mode, extList, AdcSearch::MATCH_FULL_PATH, false);
 	if (newSearch) {
 		Lock l(cs);
 		curSearch.reset(newSearch);
