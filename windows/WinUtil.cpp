@@ -476,7 +476,7 @@ void WinUtil::init(HWND hWnd) {
 	NONCLIENTMETRICS ncm;
 	ncm.cbSize = sizeof(ncm);
 	SystemParametersInfo(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
-	listViewFont = CreateFontIndirect(&(ncm.lfCaptionFont)); 
+	listViewFont = CreateFontIndirect(&(ncm.lfMessageFont)); 
 
 	if(!SETTING(LIST_VIEW_FONT).empty()){
 		::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf3), &lf3);
