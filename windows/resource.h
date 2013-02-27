@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by I:\projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -843,6 +843,7 @@
 #define IDC_EDIT_TEMPSHARES             1313
 #define IDC_TMP_REMOVE                  1313
 #define IDC_TB_PROG_STYLE               1313
+#define IDC_LIST_VIEW_FONT              1313
 #define IDC_SETTINGS_BOLD_CONTENTS      1314
 #define IDC_SHARE_SKIPLIST_USE_REGEXP   1314
 #define IDC_UPDATE_CLIENTS              1314

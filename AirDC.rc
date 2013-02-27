@@ -324,16 +324,17 @@ BEGIN
     COMBOBOX        IDC_BLOOM_MODE,151,128,113,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
 END
 
-IDD_USERLIST_COLOURS DIALOGEX 0, 0, 275, 242
+IDD_USERLIST_COLOURS DIALOGEX 0, 0, 276, 266
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 EXSTYLE WS_EX_STATICEDGE
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    PUSHBUTTON      "Change",IDC_CHANGE_COLOR,18,148,48,15
+    PUSHBUTTON      "Change",IDC_CHANGE_COLOR,18,144,48,15
     CONTROL         "",IDC_PREVIEW,"RichEdit50W",WS_BORDER | WS_TABSTOP | 0x884,125,19,138,120
     LISTBOX         IDC_USERLIST_COLORS,16,19,106,120,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "User list",IDC_STATIC,7,10,261,225
+    GROUPBOX        "User list",IDC_STATIC,7,10,261,189
+    PUSHBUTTON      "List-View font",IDC_LIST_VIEW_FONT,70,144,76,14
 END
 
 IDD_HUB_LIST DIALOGEX 0, 0, 263, 187
@@ -545,6 +546,10 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
+    IDD_OPERACOLORS, DIALOG
+    BEGIN
+    END
+
     IDD_DOWNLOADDIR, DIALOG
     BEGIN
     END
@@ -555,6 +560,12 @@ BEGIN
 
     IDD_UPDATE, DIALOG
     BEGIN
+    END
+
+    IDD_USERLIST_COLOURS, DIALOG
+    BEGIN
+        RIGHTMARGIN, 275
+        BOTTOMMARGIN, 242
     END
 
     IDD_DOWNLOADPAGE, DIALOG
@@ -2169,7 +2180,6 @@ IDI_USER_BOT            ICON                    "res\\UserlistImages\\UserBot.ic
 IDI_USER_PASSIVE        ICON                    "res\\UserlistImages\\UserNoCon.ico"
 IDI_USER_OP             ICON                    "res\\UserlistImages\\UserOP.ico"
 IDI_USER_NOCONNECT      ICON                    "res\\UserlistImages\\UserNoconnect.ico"
-//IDI_FAV_USER            ICON                    "res\\UserlistImages\\FavUser.ico"
 IDI_GENERAL             ICON                    "res\\SettingsTree\\General.ico"
 IDI_CONNECTIONS         ICON                    "res\\SettingsTree\\Connections.ico"
 IDI_DOWNLOADS           ICON                    "res\\SettingsTree\\Downloads.ico"

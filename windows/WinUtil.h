@@ -171,6 +171,7 @@ public:
 	static HFONT tabFont;
 	static HFONT OEMFont;
 	static HFONT progressFont;
+	static HFONT listViewFont;
 	static CMenu mainMenu;
 	static OMenu grantMenu;
 	static int lastSettingPage;

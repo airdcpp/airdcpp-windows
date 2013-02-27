@@ -107,10 +107,12 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	images.AddIcon(ResourceLoader::loadIcon(IDI_CANCEL, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_APPLY, 16));
 	ctrlUsers.SetImageList(images, LVSIL_SMALL);
-
+	
+	ctrlUsers.SetFont(WinUtil::listViewFont); //this will also change the columns font
 	ctrlUsers.SetBkColor(WinUtil::bgColor);
 	ctrlUsers.SetTextBkColor(WinUtil::bgColor);
-	ctrlUsers.SetTextColor(WinUtil::textColor);
+	ctrlUsers.SetTextColor(SETTING(NORMAL_COLOUR)); //user list color for normal user
+	ctrlUsers.noDefaultItemImages = true;
 
 	ctrlShowInfo.Create(ctrlStatus.m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_SHOW_INFO);
 	ctrlShowInfo.SetButtonStyle(BS_AUTOCHECKBOX, false);
@@ -143,6 +145,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	}
 	
 	ctrlUsers.setColumnOrderArray(COLUMN_LAST, columnIndexes);
+	ctrlUsers.setVisible(SETTING(USERS_FRAME_VISIBLE));
 	ctrlUsers.setSortColumn(COLUMN_NICK);
 
 	filter.addFilterBox(ctrlStatus.m_hWnd);
@@ -225,31 +228,33 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 
 		case CDDS_ITEMPREPAINT: {
 			UserInfo *ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
-			if (ui != NULL && ui->isFavorite) {
+			if (!listFav && (ui != NULL) && ui->isFavorite) {
 				cd->clrText = SETTING(FAVORITE_COLOR);
 			}
 
 			return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 		}
-		
+		/*
 		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
 			//fix the image background colors for selected item when explorer theme is disabled
-			if(!SETTING(USE_EXPLORER_THEME) && (cd->iSubItem == COLUMN_FAVORITE || cd->iSubItem == COLUMN_SLOT)) {
-				const int nItem = static_cast<int>(cd->nmcd.dwItemSpec);
-				if(!ctrlUsers.GetItemState(nItem, LVNI_SELECTED)) 
-					return CDRF_DODEFAULT;
+			const int nItem = static_cast<int>(cd->nmcd.dwItemSpec);
+			if(!SETTING(USE_EXPLORER_THEME) && ctrlUsers.GetItemState(nItem, LVNI_SELECTED)) {
+				const uint8_t col = ctrlUsers.findColumn(cd->iSubItem);
+				if((col != COLUMN_FAVORITE) && (col != COLUMN_SLOT)){
+					bHandled = FALSE;
+					return 0;
+				} 
+
 				UserInfo *ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
 				CRect rc;
-				ctrlUsers.GetSubItemRect(nItem, cd->iSubItem, LVIR_BOUNDS, rc);
+				ctrlUsers.GetSubItemRect(nItem, cd->iSubItem, LVIR_BOUNDS, rc); //why doesnt lvir_bounds get the correct subitem rect? 
 				::FillRect(cd->nmcd.hdc, rc, CreateSolidBrush(GetSysColor(COLOR_HIGHLIGHT)));
 	
 				ctrlUsers.GetSubItemRect(nItem, cd->iSubItem, LVIR_ICON, rc);
-				rc.top +=1; // hmm, why is the position off when getting the icon rect?
-				images.DrawEx(ui->getImage(cd->iSubItem), cd->nmcd.hdc, rc, GetSysColor(COLOR_HIGHLIGHT), CLR_DEFAULT, ILD_NORMAL);
-				return CDRF_SKIPDEFAULT;
+				images.DrawEx(ui->getImage(ctrlUsers.findColumn(cd->iSubItem)), cd->nmcd.hdc, rc, GetSysColor(COLOR_HIGHLIGHT), CLR_DEFAULT, ILD_NORMAL);
+				return CDRF_NEWFONT | CDRF_DOERASE;
 			}
-			return CDRF_DODEFAULT;
-		}		
+		}	*/
 
 		default:
 			return CDRF_DODEFAULT;
@@ -386,7 +391,7 @@ LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 
 	if(l->iItem != -1) {
 		auto ui = ctrlUsers.getItemData(l->iItem);
-		if(l->iSubItem == COLUMN_SLOT) {
+		if(ctrlUsers.findColumn(l->iSubItem) == COLUMN_SLOT) {
 			ui->grantSlot = !ui->grantSlot;
 			if(ui->isFavorite){
 				FavoriteManager::getInstance()->setAutoGrant(ui->getUser(), ui->grantSlot);
@@ -394,7 +399,7 @@ LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			} else {
 				ui->grantSlot ? ui->grantTimeless() : ui->ungrant(); // timeless grant
 			}
-		} else if((l->iSubItem == COLUMN_FAVORITE) && !listFav) {  //TODO: confirm removal.
+		} else if((ctrlUsers.findColumn(l->iSubItem) == COLUMN_FAVORITE) && !listFav) {  //TODO: confirm removal.
 			if(ui->isFavorite)
 				FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
 			else
@@ -566,8 +571,8 @@ void UsersFrame::setImages(UserInfo *ui, int pos/* = -1*/) {
 	if(pos == -1)
 		pos = ctrlUsers.findItem(ui);
 
-	ctrlUsers.SetItem(pos, COLUMN_FAVORITE, LVIF_IMAGE, NULL, ui->getImage(COLUMN_FAVORITE), 0, 0, NULL);
-	ctrlUsers.SetItem(pos, COLUMN_SLOT, LVIF_IMAGE, NULL, ui->getImage(COLUMN_SLOT), 0, 0, NULL);
+	ctrlUsers.SetItem(pos, ctrlUsers.findColumnIndex(COLUMN_FAVORITE), LVIF_IMAGE, NULL, ui->getImage(COLUMN_FAVORITE), 0, 0, NULL);
+	ctrlUsers.SetItem(pos, ctrlUsers.findColumnIndex(COLUMN_SLOT), LVIF_IMAGE, NULL, ui->getImage(COLUMN_SLOT), 0, 0, NULL);
 
 }
 void UsersFrame::updateStatus() {
@@ -657,8 +662,8 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			SettingsManager::getInstance()->set(SettingsManager::USERS_RIGHT, (rc.right > 0 ? rc.right : 0));
 			SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_SPLITTER_POS, m_nProportionalPos);
 		}
-		WinUtil::saveHeaderOrder(ctrlUsers, SettingsManager::USERS_FRAME_ORDER, 
-			SettingsManager::USERS_FRAME_WIDTHS, COLUMN_LAST, columnIndexes, columnSizes);
+
+		ctrlUsers.saveHeaderOrder(SettingsManager::USERS_FRAME_ORDER,SettingsManager::USERS_FRAME_WIDTHS,SettingsManager::USERS_FRAME_VISIBLE);
 	
 		ctrlUsers.DeleteAllItems();
 		userInfos.clear();
@@ -679,6 +684,11 @@ void UsersFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept 
 		ctrlUsers.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}
+	if(ctrlUsers.GetFont() != WinUtil::listViewFont){
+		ctrlUsers.SetFont(WinUtil::listViewFont);
+		refresh = true;
+	}
+
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}

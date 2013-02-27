@@ -34,6 +34,9 @@ LRESULT UserListColours::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	PropPage::translate((HWND)(*this), texts);
 	SettingsManager::getInstance()->addListener(this);
 
+	::GetObject(WinUtil::listViewFont, sizeof(currentFont), &currentFont);
+	fontChanged = false;
+
 	normalColour = SETTING(NORMAL_COLOUR);
 	favoriteColour = SETTING(FAVORITE_COLOR);
 	reservedSlotColour = SETTING(RESERVED_SLOT_COLOR);
@@ -85,6 +88,8 @@ LRESULT UserListColours::onChangeColour(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 }
 
 void UserListColours::refreshPreview() {
+	
+	n_Preview.SetFont(CreateFontIndirect(&currentFont));
 
 	CHARFORMAT2 cf;
 	n_Preview.SetWindowText(_T(""));
@@ -118,6 +123,21 @@ void UserListColours::refreshPreview() {
 	n_Preview.InvalidateRect( NULL );
 }
 
+void UserListColours::EditTextStyle() {
+	LOGFONT font;
+
+	font = currentFont;
+
+	CFontDialog d(&font, CF_SCREENFONTS, NULL, *this);
+	//d.m_cf.rgbColors = textclr;
+	if(d.DoModal() == IDOK){
+		fontChanged = true;
+		currentFont = font;
+		refreshPreview();
+	}
+	
+}
+
 void UserListColours::write() {
 
 	SettingsManager::getInstance()->set(SettingsManager::NORMAL_COLOUR, normalColour);
@@ -126,6 +146,12 @@ void UserListColours::write() {
 	SettingsManager::getInstance()->set(SettingsManager::IGNORED_COLOR, ignoredColour);
 	SettingsManager::getInstance()->set(SettingsManager::PASIVE_COLOR, pasiveColour);
 	SettingsManager::getInstance()->set(SettingsManager::OP_COLOR, opColour);
+
+	//prevent changing the font handle unless its really changed, keeps it compareable for real changes.
+	if(fontChanged) {
+		WinUtil::listViewFont = CreateFontIndirect(&currentFont);
+		SettingsManager::getInstance()->set(SettingsManager::LIST_VIEW_FONT, Text::fromT(WinUtil::encodeFont(currentFont)));
+	}
 
 }
 

@@ -822,6 +822,7 @@
     <Image Include="res\TotalUp.ico" />
     <Image Include="res\types.bmp" />
     <Image Include="res\upload_user.ico" />
+    <Image Include="res\UserlistImages\UserNoconnect.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

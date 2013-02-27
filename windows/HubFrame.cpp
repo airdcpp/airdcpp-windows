@@ -127,6 +127,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	    ctrlUsers.setVisible(SETTING(HUBFRAME_VISIBLE));
     }
 	
+	ctrlUsers.SetFont(WinUtil::listViewFont); //this will also change the columns font
 	ctrlUsers.SetBkColor(WinUtil::bgColor);
 	ctrlUsers.SetTextBkColor(WinUtil::bgColor);
 	ctrlUsers.SetTextColor(WinUtil::textColor);
@@ -1898,6 +1899,11 @@ void HubFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 		needRedraw = true;
 		ctrlUsers.SetTextColor(WinUtil::textColor);
 	}
+	if(ctrlUsers.GetFont() != WinUtil::listViewFont){
+		ctrlUsers.SetFont(WinUtil::listViewFont);
+		needRedraw = true;
+	}
+
 	if(needRedraw)
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }

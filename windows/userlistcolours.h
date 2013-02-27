@@ -22,6 +22,7 @@ public:
 	BEGIN_MSG_MAP(UserListColours)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		COMMAND_HANDLER(IDC_CHANGE_COLOR, BN_CLICKED, onChangeColour)
+		COMMAND_ID_HANDLER(IDC_LIST_VIEW_FONT, onEditFont)
 		MESSAGE_HANDLER(WM_DESTROY, OnDestroy)
 		REFLECT_NOTIFICATIONS()
 	END_MSG_MAP()
@@ -36,6 +37,11 @@ public:
 		return 1;
 	}
 
+	LRESULT onEditFont(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */) {
+		EditTextStyle();
+		return 0;
+	}
+
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
@@ -44,6 +50,7 @@ public:
 private:
 
 	void refreshPreview();
+	void EditTextStyle();
 
 	CListBox n_lsbList;
 	int normalColour;
@@ -52,6 +59,8 @@ private:
 	int ignoredColour;
 	int pasiveColour;
 	int opColour; 
+	LOGFONT currentFont;
+	bool fontChanged;
 
 	virtual void on(SettingsManagerListener::ReloadPages, int) {
 		SendMessage(WM_DESTROY,0,0);

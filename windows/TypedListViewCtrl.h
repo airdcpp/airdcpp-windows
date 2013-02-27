@@ -52,7 +52,7 @@ class TypedListViewCtrl : public CWindowImpl<TypedListViewCtrl<T, ctrlId>, CList
 	public ListViewArrows<TypedListViewCtrl<T, ctrlId> >
 {
 public:
-	TypedListViewCtrl() : sortColumn(-1), sortAscending(true), hBrBg(WinUtil::bgBrush), leftMargin(0) { }
+	TypedListViewCtrl() : sortColumn(-1), sortAscending(true), hBrBg(WinUtil::bgBrush), leftMargin(0), noDefaultItemImages(false) { }
 	~TypedListViewCtrl() { for_each(columnList.begin(), columnList.end(), DeleteFunction()); }
 
 	typedef TypedListViewCtrl<T, ctrlId> thisClass;
@@ -408,9 +408,10 @@ public:
 				LVITEM lvItem;
 				lvItem.iItem = i;
 				lvItem.iSubItem = 0;
-				lvItem.mask = LVIF_IMAGE | LVIF_PARAM;
+				lvItem.mask = LVIF_PARAM | (noDefaultItemImages ? 0 : LVIF_IMAGE);
 				GetItem(&lvItem);
-				lvItem.iImage = ((T*)lvItem.lParam)->getImageIndex();
+				if(!noDefaultItemImages)
+					lvItem.iImage = ((T*)lvItem.lParam)->getImageIndex();
 				SetItem(&lvItem);
 				updateItem(i);
 			}
@@ -486,6 +487,9 @@ public:
 		visible.erase(visible.size()-1, 1);
 
 	}
+	bool isColumnVisible(int col) {
+		return columnList[col]->visible;
+	}
 	
 	void setVisible(const string& vis) {
 		StringTokenizer<string> tok(vis, ',');
@@ -522,9 +526,16 @@ public:
 	}
 	//find the original position of the column at the current position.
 	inline uint8_t findColumn(int col) const { return columnIndexes[col]; }	
+	
+	//find the current position of the column with original position
+	inline int findColumnIndex(int col) const { 
+		auto i = find(columnIndexes.begin(), columnIndexes.end(), col);
+		return distance(columnIndexes.begin(), i); 
+	}	
 
 	typedef vector< ColumnInfo* > ColumnList;
 	ColumnList& getColumnList() { return columnList; }
+	bool noDefaultItemImages;
 
 private:
 	int sortColumn;
@@ -570,9 +581,10 @@ private:
 					LVITEM lvItem;
 					lvItem.iItem = i;
 					lvItem.iSubItem = 0;
-					lvItem.mask = LVIF_PARAM | LVIF_IMAGE;
+					lvItem.mask = LVIF_PARAM | (noDefaultItemImages ? 0 : LVIF_IMAGE);
 					GetItem(&lvItem);
-					lvItem.iImage = ((T*)lvItem.lParam)->getImageIndex();
+					if(!noDefaultItemImages)
+						lvItem.iImage = ((T*)lvItem.lParam)->getImageIndex();
 					SetItem(&lvItem);
 				}
 				break;

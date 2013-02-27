@@ -145,7 +145,7 @@ private:
 			}
 		}
 		
-		int getImageIndex() const { return getImage(0); }
+		int getImageIndex() const { return -1; }
 
 		int getImage(int col) const {
 			switch(col) {
@@ -203,8 +203,8 @@ private:
 	void setImages(UserInfo* ui, int pos = -1);
 	void updateStatus();
 
-	static int columnSizes[COLUMN_LAST];
-	static int columnIndexes[COLUMN_LAST];
+	static int columnSizes[];
+	static int columnIndexes[];
 
 	// FavoriteManagerListener
 	void on(UserAdded, const FavoriteUser& aUser) noexcept;
