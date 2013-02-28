@@ -407,7 +407,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	
 	slotsIcon = ResourceLoader::loadIcon(IDI_SLOTS, 16);
 	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
-	awayIconON = ResourceLoader::userImages.GetIcon(4);
+	const int i = UserInfoBase::USER_ICON_AWAY * (UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START) * (UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START);
+	awayIconON = ResourceLoader::userImages.GetIcon(i);
 	awayIconOFF = ResourceLoader::userImages.GetIcon(0);
 	infoIcon = ResourceLoader::loadIcon(IDI_INFO, 16);
 	warningIcon = ResourceLoader::loadIcon(IDI_IWARNING, 16);
