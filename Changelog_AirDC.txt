@@ -850,6 +850,8 @@ Changed:
 - Performance optimizations when searching ADC hubs
 - Change the way of storing history items: option to clear each history on exit and set the maximum limit for each history
 - /rebuild will remove entries also for files that have been removed from the share during the current session
+- Improve the error reporting when sending of a main/pm message fails
+- Calculate the bundle priorities instantly after they've been loaded on startup
 
 
 Fixed:
@@ -865,3 +867,4 @@ Fixed:
 - Fix duplicate items in file lists when reloading downloaded directories
 - Fix a problem with merging file list directories that both contain files
 - Avoid hashers getting freezed
+- Fix a crash when generating crash reports (32 bit version only)
