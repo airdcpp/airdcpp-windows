@@ -434,6 +434,7 @@
     <ClInclude Include="client\SimpleXMLReader.h" />
     <ClInclude Include="client\Singleton.h" />
     <ClInclude Include="client\Socket.h" />
+    <ClInclude Include="client\SortedVector.h" />
     <ClInclude Include="client\Speaker.h" />
     <ClInclude Include="client\SSL.h" />
     <ClInclude Include="client\SSLSocket.h" />

@@ -733,6 +733,9 @@
     <ClInclude Include="client\HashedFile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="client\SortedVector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="client\StringDefs.h">
