@@ -147,9 +147,15 @@ LRESULT SystemFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, 
 }
 
 LRESULT SystemFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	auto_ptr<pair<LogManager::MessageData, tstring> > msg((pair<LogManager::MessageData, tstring>*)wParam);
-	
-	addLine(msg->first, msg->second);
+	TaskQueue::List tl;
+	messages.get(tl);
+
+	for(auto& t: tl) {
+		if(t.first == ADD_LINE) {
+			MessageTask& msg = static_cast<MessageTask&>(*t.second);
+			addLine(msg.data, Text::toT(msg.str));
+		}
+	}
 	setDirty();
 	return 0;
 }
@@ -170,8 +176,8 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	End = Begin = ctrlPad.GetTextLengthEx(GTL_NUMCHARS);
 
 
-	tstring Text = msg + _T(" "); //kinda strange, but adding line endings in the start of new line makes it that way.
-	tstring time = Text::toT("\r\n   [" + Util::getTimeStamp(md.time) + "] ");
+	tstring Text = msg + _T("\r\n"); 
+	tstring time = Text::toT(" [" + Util::getTimeStamp(md.time) + "] ");
 	tstring line = time + Text;
 
 	LONG limitText = ctrlPad.GetLimitText();
@@ -194,27 +200,6 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 
 	ctrlPad.AppendText(line.c_str());
 	
-	ctrlPad.SetSel(End+2, End+3);
-	
-	switch(md.severity) {
-	
-		case LogManager::LOG_INFO:
-			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(),hbInfo, false);
-			break;
-		case LogManager::LOG_WARNING:
-			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbWarning, false);
-			break;
-		case LogManager::LOG_ERROR:
-			CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbError, false);
-			if(!errorNotified && !getActive()) { 
-				setIcon(tabError);
-				errorNotified = true;
-			}
-			break;
-		default:
-			break;
-	}
-
 	End += time.size() -1;
 	ctrlPad.SetSel(Begin, End);
 	ctrlPad.SetSelectionCharFormat(WinUtil::m_TextStyleTimestamp);
@@ -227,6 +212,27 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	}
 
 	Colorize(Text, End); //timestamps should always be timestamps right?
+
+	ctrlPad.SetSel(Begin, Begin);
+
+	switch(md.severity) {
+
+	case LogManager::LOG_INFO:
+		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(),hbInfo, false);
+		break;
+	case LogManager::LOG_WARNING:
+		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbWarning, false);
+		break;
+	case LogManager::LOG_ERROR:
+		CImageDataObject::InsertBitmap(ctrlPad.GetOleInterface(), hbError, false);
+		if(!errorNotified && !getActive()) { 
+			setIcon(tabError);
+			errorNotified = true;
+		}
+		break;
+	default:
+		break;
+	}
 	
 	ctrlPad.SetSel(SavedBegin, SavedEnd); //restore the user selection
 
@@ -296,7 +302,8 @@ void SystemFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept
 }
 
 void SystemFrame::on(Message, time_t t, const string& message, uint8_t sev) {
-	PostMessage(WM_SPEAKER, (WPARAM)(new pair<LogManager::MessageData, tstring>(LogManager::MessageData(t, (LogManager::Severity)sev), Text::toT(message))));
+	speak(ADD_LINE, message, LogManager::MessageData(t, (LogManager::Severity)sev));
+	//PostMessage(WM_SPEAKER, (WPARAM)(new pair<LogManager::MessageData, tstring>(LogManager::MessageData(t, (LogManager::Severity)sev), Text::toT(message))));
 }
 
 LRESULT SystemFrame::onRefreshSettings(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {

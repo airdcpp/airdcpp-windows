@@ -25,6 +25,7 @@
 
 #include "FlatTabCtrl.h"
 #include "../client/LogManager.h"
+#include "../client/TaskQueue.h"
 
 #define SYSTEM_LOG_MESSAGE_MAP 42
 
@@ -34,7 +35,7 @@ class SystemFrame : public MDITabChildWindowImpl<SystemFrame>, public StaticFram
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("SystemFrame"), IDR_SYSTEM_LOG, 0, COLOR_3DFACE);
 
-	SystemFrame() : ctrlClientContainer(_T("edit"), this, SYSTEM_LOG_MESSAGE_MAP), errorNotified(false) { 
+	SystemFrame() : ctrlClientContainer(_T("edit"), this, SYSTEM_LOG_MESSAGE_MAP), errorNotified(false), lButtonDown(false), hasMessages(false) { 
 		hbError = NULL;
 		hbInfo = NULL;
 		hbWarning = NULL;
@@ -68,7 +69,11 @@ public:
 		CHAIN_MSG_MAP(baseClass)
 	ALT_MSG_MAP(SYSTEM_LOG_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onLButton)
+		MESSAGE_HANDLER(WM_LBUTTONDOWN, onLButtonDown)
+		MESSAGE_HANDLER(WM_LBUTTONUP, onLButtonUp)
 	END_MSG_MAP()
+
+	enum Tasks { ADD_LINE };
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 
@@ -92,6 +97,22 @@ public:
 	LRESULT onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopyDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT onLButtonDown(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+		lButtonDown = true;
+		bHandled = FALSE;
+		return 0;
+	}
+
+	LRESULT onLButtonUp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+		lButtonDown = false;
+		if(hasMessages)
+			PostMessage(WM_SPEAKER);
+
+		hasMessages = false;
+		bHandled = FALSE;
+		return 0;
+	}
 
 	LRESULT OnFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlPad.SetFocus();
@@ -119,6 +140,13 @@ public:
 
 private:
 	
+	struct MessageTask : public StringTask {
+		MessageTask(const string& msg, LogManager::MessageData _data) : StringTask(msg), data(_data) { }
+
+		LogManager::MessageData data;
+	};
+
+
 	CContainedWindow ctrlClientContainer;
 
 	CRichEditCtrl ctrlPad;
@@ -140,10 +168,24 @@ private:
 	HICON tabNormal;
 
 	bool errorNotified;
+	bool lButtonDown;
+	bool hasMessages;
+	TaskQueue messages;
 
 	bool scrollIsAtEnd();
 	tstring selWord;
 	tstring WordFromPos(const POINT& p);
+
+	/* add the messages as tasks, if the user is currently making a selection don't add text to the window
+	before mouse button is up and selection is complete */
+	void speak(Tasks s, const string& msg, LogManager::MessageData mdata) { 
+		messages.add(static_cast<uint8_t>(s), unique_ptr<Task>(new MessageTask(msg, mdata)));
+		if(!lButtonDown)
+			PostMessage(WM_SPEAKER); 
+		else
+			hasMessages = true;
+	}
+
 };
 
 #endif // !defined(SYSTEM_FRAME_H)
