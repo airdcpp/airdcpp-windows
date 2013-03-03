@@ -124,9 +124,12 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_DIRECTORY, onCopyDir);
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
+
 		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
 		COMMAND_ID_HANDLER(IDC_OPEN_FILE, onOpenDupe)
 		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
+		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER_TREE, onOpenDupeTree)
+
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
 		COMMAND_ID_HANDLER(IDC_VIEW_NFO, onViewNFO)
 		COMMAND_ID_HANDLER(IDC_RELOAD, onReload)
@@ -178,6 +181,7 @@ public:
 	LRESULT onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onOpenDupeTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onSearchLeft(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -264,8 +268,11 @@ public:
 	ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Directory* d) const;
 	int getIconIndex(const DirectoryListing::Directory* d) const;
 	void expandDir(DirectoryListing::Directory* d, bool /*collapsing*/);
-	bool isBold(const DirectoryListing::Directory* d);
+	bool isBold(const DirectoryListing::Directory* d) const;
 private:
+	void openDupe(const DirectoryListing::Directory* d);
+	void openDupe(const DirectoryListing::File* f, bool openDir);
+
 	void updateStatus(const tstring& aMsg);
 	string curPath;
 	void changeWindowState(bool enable);

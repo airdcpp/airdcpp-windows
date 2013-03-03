@@ -1773,5 +1773,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="XSharedDirsRemoved">%d directories have been removed from the share</String>
 		<String Name="PmPermissionDenied">You aren't allowed to send private messages to this user</String>
 		<String Name="MainPermissionDenied">You aren't allowed to send messages to main chat</String>
+		<String Name="Inactive">Inactive</String>
 	</Strings>
 </Language>

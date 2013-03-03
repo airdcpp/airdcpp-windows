@@ -1614,6 +1614,7 @@
 #define IDC_SHOW_ONLINE                 15134
 #define IDC_DUPLICATE                   15135
 #define IDC_USE_EXCLUDED                15136
+#define IDC_OPEN_FOLDER_TREE            15137
 #define ID_TOGGLE_TOOLBAR               15999
 #define ID_TOGGLE_TBSTATUS              16900
 #define ID_LOCK_TB                      18900

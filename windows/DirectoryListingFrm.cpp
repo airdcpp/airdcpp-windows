@@ -369,7 +369,7 @@ void DirectoryListingFrame::expandDir(DirectoryListing::Directory* d, bool colla
 	}
 }
 
-bool DirectoryListingFrame::isBold(const DirectoryListing::Directory* d) {
+bool DirectoryListingFrame::isBold(const DirectoryListing::Directory* d) const {
 	return d->getAdls();
 }
 
@@ -607,14 +607,14 @@ void DirectoryListingFrame::DisableWindow(bool redraw){
 	}
 
 	//can't use EnableWindow as that message seems the get queued for the list view...
-	ctrlList.SetWindowLong(GWL_STYLE, ctrlList.GetWindowLong(GWL_STYLE) | WS_DISABLED);
-	ctrlTree.SetWindowLong(GWL_STYLE, ctrlTree.GetWindowLong(GWL_STYLE) | WS_DISABLED);
+	ctrlList.SetWindowLongPtr(GWL_STYLE, ctrlList.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
+	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
 }
 
 void DirectoryListingFrame::EnableWindow(bool redraw){
 	disabled = false;
-	ctrlList.SetWindowLong(GWL_STYLE, ctrlList.GetWindowLong(GWL_STYLE) & ~ WS_DISABLED);
-	ctrlTree.SetWindowLong(GWL_STYLE, ctrlTree.GetWindowLong(GWL_STYLE) & ~ WS_DISABLED);
+	ctrlList.SetWindowLongPtr(GWL_STYLE, ctrlList.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
+	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
 
 	if (redraw) {
 		ctrlList.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
@@ -1256,8 +1256,7 @@ clientmenu:
 				fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			fileMenu.AppendMenu(MF_SEPARATOR);
 		
-			if (ctrlList.GetSelectedCount() == 1 && (dl->getIsOwnList() || (ii->type == ItemInfo::DIRECTORY && 
-				(ShareManager::getInstance()->isDirShared(ii->dir->getPath()) || ii->dir->getDupe() == QUEUE_DUPE)))) {
+			if (ctrlList.GetSelectedCount() == 1 && (dl->getIsOwnList() || (ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() != DUPE_NONE))) {
 				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 				fileMenu.AppendMenu(MF_SEPARATOR);
 			} else if(ctrlList.GetSelectedCount() == 1 && !dl->getIsOwnList() && ii->type == ItemInfo::FILE && (ii->file->getDupe() == SHARE_DUPE || ii->file->getDupe() == FINISHED_DUPE)) {
@@ -1313,6 +1312,8 @@ clientmenu:
 		return TRUE; 
 	} else if(reinterpret_cast<HWND>(wParam) == ctrlTree && ctrlTree.GetSelectedItem() != NULL) { 
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+
+		DirectoryListing::Directory* dir = nullptr;
 		
 		if(pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlTree, pt);
@@ -1324,6 +1325,7 @@ clientmenu:
 				ctrlTree.SelectItem(ht);
 			ctrlTree.ClientToScreen(&pt);
 			changeType = CHANGE_TREE_SINGLE;
+			dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
 		}
 
 		OMenu directoryMenu;
@@ -1343,6 +1345,10 @@ clientmenu:
 			directoryMenu.AppendMenu(MF_STRING, IDC_RELOAD_DIR, CTSTRING(RELOAD));
 		}
 		
+		if (dl->getIsOwnList() || (dir && dir->getDupe() != DUPE_NONE)) {
+			directoryMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER_TREE, CTSTRING(OPEN_FOLDER));
+		}
+
 		// Strange, windows doesn't change the selection on right-click... (!)
 			
 		directoryMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
@@ -1965,44 +1971,68 @@ LRESULT DirectoryListingFrame::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 
 LRESULT DirectoryListingFrame::onOpenDupe(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	const ItemInfo* ii = ctrlList.getSelectedItem();
-	try {
-		tstring path;
-		if(ii->type == ItemInfo::FILE) {
-			if (dl->getIsOwnList()) {
-				StringList localPaths;
-				dl->getLocalPaths(ii->file, localPaths);
-				if (!localPaths.empty()) {
-					path = Text::toT(localPaths.front());
-				}
-			} else {
-				path = AirUtil::getDupePath(ii->file->getDupe(), ii->file->getTTH());
-			}
-		} else {
-			if (dl->getIsOwnList()) {
-				StringList localPaths;
-				dl->getLocalPaths(ii->dir, localPaths);
-				if (!localPaths.empty()) {
-					path = Text::toT(localPaths.front());
-				}
-			} else {
-				path = AirUtil::getDirDupePath(ii->dir->getDupe(), ii->dir->getPath());
-			}
-		}
+	if(ii->type == ItemInfo::FILE)
+		openDupe(ii->file, wID == IDC_OPEN_FOLDER);
+	else
+		openDupe(ii->dir);
 
-		if (path.empty()) {
-			return 0;
-		}
+	return 0;
+}
 
-		if(wID == IDC_OPEN_FILE) {
-			WinUtil::openFile(path);
-		} else {
-			WinUtil::openFolder(path);
-		}
-	} catch(const ShareException& e) {
-		ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+LRESULT DirectoryListingFrame::onOpenDupeTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	HTREEITEM t = ctrlTree.GetSelectedItem();
+	if(t != NULL) {
+		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		openDupe(dir);
 	}
 
 	return 0;
+}
+
+void DirectoryListingFrame::openDupe(const DirectoryListing::Directory* d) {
+	try {
+		tstring path;
+		if (dl->getIsOwnList()) {
+			StringList localPaths;
+			dl->getLocalPaths(d, localPaths);
+			if (!localPaths.empty()) {
+				path = Text::toT(localPaths.front());
+			}
+		} else {
+			path = AirUtil::getDirDupePath(d->getDupe(), d->getPath());
+		}
+
+		if (!path.empty()) {
+			WinUtil::openFolder(path);
+		}
+	} catch(const ShareException& e) {
+		updateStatus(Text::toT(e.getError()));
+	}
+}
+
+void DirectoryListingFrame::openDupe(const DirectoryListing::File* f, bool openDir) {
+	try {
+		tstring path;
+		if (dl->getIsOwnList()) {
+			StringList localPaths;
+			dl->getLocalPaths(f, localPaths);
+			if (!localPaths.empty()) {
+				path = Text::toT(localPaths.front());
+			}
+		} else {
+			path = AirUtil::getDupePath(f->getDupe(), f->getTTH());
+		}
+
+		if (!path.empty()) {
+			if(!openDir) {
+				WinUtil::openFile(path);
+			} else {
+				WinUtil::openFolder(path);
+			}
+		}
+	} catch(const ShareException& e) {
+		updateStatus(Text::toT(e.getError()));
+	}
 }
 
 LRESULT DirectoryListingFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

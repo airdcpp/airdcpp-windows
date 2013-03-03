@@ -834,6 +834,7 @@ Added:
 - Allow duplicating auto search items
 - Allow using quotation marks in search strings and excluded words for exact matching with strings containing spaces
 - Show the progress in percentages on startup/shutdown for selected steps
+- Allow opening dupe folders also from the tree in file lists
 
 
 Changed:
@@ -852,6 +853,7 @@ Changed:
 - /rebuild will remove entries also for files that have been removed from the share during the current session
 - Improve the error reporting when sending of a main/pm message fails
 - Calculate the bundle priorities instantly after they've been loaded on startup
+- Don't send a junk TTHs with directory search replies in ADC
 
 
 Fixed:
@@ -868,3 +870,4 @@ Fixed:
 - Fix a problem with merging file list directories that both contain files
 - Avoid hashers getting freezed
 - Fix a crash when generating crash reports (32 bit version only)
+- Fix auto search problems when the bundles fail scanning

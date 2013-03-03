@@ -64,6 +64,7 @@ public:
 		TVITEM* pItem = &(pDispInfo)->item;
     
 		if (pItem->mask & TVIF_TEXT) {
+			pItem->mask |= TVIF_DI_SETITEM;
 			lstrcpyn(pItem->pszText, Text::toT(((T*)pItem->lParam)->getName()).c_str(), pItem->cchTextMax);
 		}
     
