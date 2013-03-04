@@ -284,6 +284,8 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_FAV_USER:		return _T("FavUser.ico");
 		case IDI_APPLY	:		return _T("apply.ico");
 		case IDI_CANCEL:		return _T("cancel.ico");
+		case IDI_EXPAND_UP:		return _T("expand_up.ico");
+		case IDI_EXPAND_DOWN:	return _T("expand_down.ico");
 
 		default: return Util::emptyStringT;
 	}

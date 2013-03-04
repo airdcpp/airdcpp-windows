@@ -2243,6 +2243,8 @@ IDI_DIR_LOADING_OL      ICON                    "res\\ExecMasked.ico"
 IDI_FAV_USER            ICON                    "res\\FavUser.ico"
 IDI_APPLY               ICON                    "res\\apply.ico"
 IDI_CANCEL              ICON                    "res\\cancel.ico"
+IDI_EXPAND_UP           ICON                    "res\\expand_up.ico"
+IDI_EXPAND_DOWN         ICON                    "res\\expand_down.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 

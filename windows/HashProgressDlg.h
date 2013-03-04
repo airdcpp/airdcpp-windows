@@ -63,9 +63,11 @@ public:
 	void setAutoClose(bool val);
 
 private:
+	bool stopped;
 	bool autoClose;
 	int64_t startBytes;
 	size_t startFiles;
+	uint64_t startTime;
 	CProgressBarCtrl progress;
 	bool init;
 	int hashers;

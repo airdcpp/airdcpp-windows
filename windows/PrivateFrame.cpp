@@ -532,16 +532,15 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	}
 	
 	int h = WinUtil::fontHeight + 4;
+	const int maxLines = resizePressed && SETTING(MAX_RESIZE_LINES) <= 1 ? 2 : SETTING(MAX_RESIZE_LINES);
 
-//ApexDC
-	if(SETTING(MAX_RESIZE_LINES) != 1 && lineCount != 0) {
-		if(lineCount < SETTING(MAX_RESIZE_LINES)) {
+	if((maxLines != 1) && lineCount != 0) {
+		if(lineCount < maxLines) {
 			h = WinUtil::fontHeight * lineCount + 4;
 		} else {
-			h = WinUtil::fontHeight * SETTING(MAX_RESIZE_LINES) + 4;
+			h = WinUtil::fontHeight * maxLines + 4;
 		}
-	}
-//End
+	} 
 
 	CRect rc = rect;
 	rc.bottom -= h + 10;
@@ -549,7 +548,10 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	
 	int buttonsize = 24 +2;
 	if(ctrlMagnet.IsWindow())
-		buttonsize = buttonsize *2;
+		buttonsize += 26;
+
+	if(ctrlResize.IsWindow())
+		buttonsize += 26;
 
 	rc = rect;
 	rc.bottom -= 2;
@@ -562,9 +564,16 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	if(h != (WinUtil::fontHeight + 4)) {
 		rc.bottom -= h - (WinUtil::fontHeight + 4);
 	}
+
+	if(ctrlResize.IsWindow()) {
+		//resize lines button
+		rc.left = rc.right + 2;
+		rc.right += 24;
+		ctrlResize.MoveWindow(rc);
+	}
+
 	rc.left = rc.right + 2;
   	rc.right += 24;
-  	 
   	ctrlEmoticons.MoveWindow(rc);
 	
 	if(ctrlMagnet.IsWindow()){

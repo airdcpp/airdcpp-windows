@@ -44,7 +44,7 @@
 extern EmoticonsManager* emoticonsManager;
 
 ChatFrameBase::ChatFrameBase(FrameMessageBase* aFrameBase) : /*clientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP)*/ frame(aFrameBase), menuItems(0),
-		lineCount(1), curCommandPosition(0), cancelHashing(false) {
+		lineCount(1), curCommandPosition(0), cancelHashing(false), resizePressed(false) {
 }
 
 ChatFrameBase::~ChatFrameBase() { }
@@ -82,8 +82,14 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	ctrlClient.SetBackgroundColor(WinUtil::bgColor);
 	//ctrlClient.setClient(aClient);
 
+	expandDown = ResourceLoader::loadIcon(IDI_EXPAND_DOWN, 16);
+	expandUp = ResourceLoader::loadIcon(IDI_EXPAND_UP, 16);
 
-	ctrlMessage.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+	ctrlResize.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_RESIZE);
+	ctrlResize.SetIcon(expandUp);
+	ctrlResize.SetFont(WinUtil::font);
+
+	ctrlMessage.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL |
 		ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL, WS_EX_CLIENTEDGE);
 	ctrlMessage.SetFont(WinUtil::font);
 	ctrlMessage.SetLimitText(9999);
@@ -96,6 +102,7 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 
 	ctrlTooltips.Create(m_hWnd, rcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	
 	ctrlTooltips.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(INSERT_EMOTICON));
+	ctrlTooltips.AddTool(ctrlResize.m_hWnd, CTSTRING(MULTILINE_INPUT));
 	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
 	ctrlTooltips.Activate(TRUE);
 
@@ -327,7 +334,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			newLineCount += 1;
 		}
 
-		if(newLineCount != lineCount) {
+		if((!resizePressed) && newLineCount != lineCount) {
 			if(lineCount >= SETTING(MAX_RESIZE_LINES) && newLineCount >= SETTING(MAX_RESIZE_LINES)) {
 				lineCount = newLineCount;
 			} else {
@@ -343,6 +350,24 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 void ChatFrameBase::getLineText(tstring& s) {
 	s.resize(ctrlMessage.GetWindowTextLength());
 	ctrlMessage.GetWindowText(&s[0], ctrlMessage.GetWindowTextLength() + 1);
+}
+
+LRESULT ChatFrameBase::onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
+	resizePressed = !resizePressed;
+	ctrlResize.SetIcon(resizePressed ? expandDown : expandUp);
+
+	//resize with the button even if user has set max lines for disabling the function otherwise.
+	const int maxLines = SETTING(MAX_RESIZE_LINES) <= 1 ? 2 : SETTING(MAX_RESIZE_LINES);
+
+	int newLineCount = resizePressed ? maxLines : 0;
+
+	if(newLineCount != lineCount) {
+		lineCount = newLineCount;
+		frame->UpdateLayout(FALSE);
+	}
+
+	bHandled = FALSE;
+	return 0;
 }
 
 LRESULT ChatFrameBase::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/){
@@ -564,6 +589,11 @@ void ChatFrameBase::onEnter() {
 	tstring message;
 	tstring status;
 	bool thirdPerson = false;
+
+	if(resizePressed && !WinUtil::isShift()) { //Shift + Enter to send
+		ctrlMessage.AppendText(_T("\r\n"));
+		return;
+	}
 
 	if(ctrlMessage.GetWindowTextLength() > 0) {
 		tstring s;

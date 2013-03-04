@@ -1774,5 +1774,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="PmPermissionDenied">You aren't allowed to send private messages to this user</String>
 		<String Name="MainPermissionDenied">You aren't allowed to send messages to main chat</String>
 		<String Name="Inactive">Inactive</String>
+		<String Name="MultilineInput">Multiline input area</String>
 	</Strings>
 </Language>

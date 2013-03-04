@@ -50,6 +50,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_WINAMP_SPAM, onWinampSpam)
 		COMMAND_ID_HANDLER(IDC_EMOT, onEmoticons)
 		COMMAND_ID_HANDLER(IDC_SEND_MESSAGE, onSendMessage)
+		COMMAND_ID_HANDLER(IDC_RESIZE, onResize)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_FORWARDMSG, OnForwardMsg)
@@ -70,6 +71,7 @@ public:
 		onEnter();
 		return 0;
 	}
+	LRESULT onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
 
 protected:
 	ChatFrameBase(FrameMessageBase* aFrameBase);
@@ -84,11 +86,17 @@ protected:
 
 	OMenu emoMenu;
 
+	HICON expandUp;
+	HICON expandDown;
+
 	CEdit ctrlMessage;
 	CButton ctrlEmoticons;
 	CButton ctrlMagnet;
+	CButton ctrlResize;
 	ExCImage hEmoticonBmp;
 	CToolTipCtrl ctrlTooltips;
+	bool resizePressed;
+
 
 	RichTextBox ctrlClient;
 

@@ -294,6 +294,8 @@
 #define IDD_FAVHUBGROUPS                503
 #define IDI_APPLY                       504
 #define IDI_CANCEL                      505
+#define IDI_EXPAND_UP					506
+#define IDI_EXPAND_DOWN					507
 #define IDC_REFRESH                     1000
 #define IDC_NICK                        1001
 #define IDC_EMAIL                       1002
@@ -1117,6 +1119,7 @@
 #define IDC_RESIZE_LINES                1507
 #define IDC_RESIZE_LINES_SPIN           1508
 #define IDC_MAX_RESIZE_LINES_STR        1509
+#define IDC_RESIZE						1510
 #define IDC_USERLIST_COLORS             1517
 #define IDC_METACRITIC                  1521
 #define IDC_TABCOLOR_LIST               1522
