@@ -542,6 +542,7 @@ void UsersFrame::updateList() {
 		}
 	}
 	ctrlUsers.SetRedraw(TRUE);
+	ctrlUsers.resort();
 	updateStatus();
 }
 
