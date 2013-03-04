@@ -176,7 +176,7 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	End = Begin = ctrlPad.GetTextLengthEx(GTL_NUMCHARS);
 
 
-	tstring Text = msg + _T("\r\n"); 
+	tstring Text = msg + _T(" \r\n"); 
 	tstring time = Text::toT(" [" + Util::getTimeStamp(md.time) + "] ");
 	tstring line = time + Text;
 
@@ -211,7 +211,7 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 		ctrlPad.SetSelectionCharFormat(ec);
 	}
 
-	Colorize(Text, End); //timestamps should always be timestamps right?
+	Colorize(Text, End+1); //timestamps should always be timestamps right?
 
 	ctrlPad.SetSel(Begin, Begin);
 
