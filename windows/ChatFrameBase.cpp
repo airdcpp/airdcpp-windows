@@ -807,7 +807,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		for(auto& sp: profiles)
 			pts.insert(sp->getToken());
 
-		ShareManager::getInstance()->setDirty(pts, false, true);
+		ShareManager::getInstance()->setProfilesDirty(pts, true);
 	} else if(stricmp(cmd.c_str(), _T("away")) == 0) {
 		if(AirUtil::getAway() && param.empty()) {
 			AirUtil::setAway(AWAY_OFF);
