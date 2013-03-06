@@ -23,6 +23,8 @@
 #include "HubFrame.h"
 #include "FavHubProperties.h"
 #include "FavHubGroupsDlg.h"
+
+#include "../client/ConnectivityManager.h"
 #include "../client/ClientManager.h"
 #include "../client/version.h"
 
@@ -334,10 +336,17 @@ LRESULT FavoriteHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	if((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1)
 	{
 		FavoriteHubEntry* e = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
+
+		bool isActive = ClientManager::getInstance()->isActive();
 		dcassert(e != NULL);
 		FavHubProperties dlg(e);
 		if(dlg.DoModal(m_hWnd) == IDOK)
 		{
+			if (ClientManager::getInstance()->isActive() != isActive) {
+				ConnectivityManager::getInstance()->setup(true, true);
+			}
+
+
 			StateKeeper keeper(ctrlHubs);
 			fillList();
 		}
