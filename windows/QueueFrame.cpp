@@ -1432,12 +1432,12 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
 			}
 
-			auto formatUser = [this] (Bundle::SourceTuple& bs) -> tstring {
-				auto u = get<Bundle::SOURCE_USER>(bs);
+			auto formatUser = [this] (Bundle::BundleSource& bs) -> tstring {
+				auto& u = bs.user;
 				tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(u));
 				// add hub hint to menu
 				bool addHint = !u.hint.empty(), addSpeed = u.user->getSpeed() > 0;
-				nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(get<Bundle::SOURCE_FILES>(bs));
+				nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(bs.files);
 				if(addHint || addSpeed) {
 					nick += _T(", ");
 					if (addSpeed) {
@@ -1457,8 +1457,8 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			//current sources
 			auto bundleSources = move(QueueManager::getInstance()->getBundleSources(b));
 			for(auto& bs: bundleSources) {
-				auto u = get<Bundle::SOURCE_USER>(bs);
-				removeMenu->appendItem(formatUser(bs), [b, u] { QueueManager::getInstance()->removeBundleSource(b, u); });
+				auto u = bs.user;
+				removeMenu->appendItem(formatUser(bs), [=] { QueueManager::getInstance()->removeBundleSource(b, u); });
 			}
 			if (!bundleSources.empty()) {
 				removeMenu->appendSeparator();
@@ -1466,7 +1466,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 					MainFrame::getMainFrame()->addThreadedTask([=] { 
 						auto sources = move(QueueManager::getInstance()->getBundleSources(b));
 						for(auto& si: sources)
-							QueueManager::getInstance()->removeBundleSource(b, get<Bundle::SOURCE_USER>(si).user);
+							QueueManager::getInstance()->removeBundleSource(b, si.user.user);
 					});
 				});
 			}
@@ -1474,8 +1474,8 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			//bad sources
 			auto badBundleSources = move(QueueManager::getInstance()->getBadBundleSources(b));
 			for(auto& bs: badBundleSources) {
-				auto u = get<Bundle::SOURCE_USER>(bs);
-				readdMenu->appendItem(formatUser(bs), [b, u] { QueueManager::getInstance()->readdBundleSource(b, u); });
+				auto u = bs.user;
+				readdMenu->appendItem(formatUser(bs), [=] { QueueManager::getInstance()->readdBundleSource(b, u); });
 			}
 			if (!badBundleSources.empty()) {
 				readdMenu->appendSeparator();
@@ -1483,7 +1483,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 					MainFrame::getMainFrame()->addThreadedTask([=] { 
 						auto sources = move(QueueManager::getInstance()->getBadBundleSources(b));
 						for(auto& si: sources)
-							QueueManager::getInstance()->readdBundleSource(b, get<Bundle::SOURCE_USER>(si));
+							QueueManager::getInstance()->readdBundleSource(b, si.user);
 					});
 				});
 			}

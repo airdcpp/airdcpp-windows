@@ -31,12 +31,13 @@
 
 #include "../client/FavoriteManager.h"
 #include "../client/UploadManager.h"
+#include "../client/QueueManagerListener.h"
 
 #define STATUS_MAP 10
 
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::FAVORITE_USERS, IDC_FAVUSERS>,
 	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
-	private SettingsManagerListener, private UploadManagerListener {
+	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener {
 public:
 	
 	UsersFrame();
@@ -112,6 +113,7 @@ private:
 		COLUMN_HUB,
 		COLUMN_SEEN,
 		COLUMN_DESCRIPTION,
+		COLUMN_QUEUED,
 		COLUMN_LAST
 	};
 
@@ -137,13 +139,7 @@ private:
 
 		inline const tstring& getText(int col) const { return columns[col]; }
 
-		static int compareItems(const UserInfo* a, const UserInfo* b, int col) {
-			switch(col) {
-			case COLUMN_FAVORITE: return compare(a->isFavorite, b->isFavorite);
-			case COLUMN_SLOT: return compare(a->grantSlot, b->grantSlot);
-			default: return Util::DefaultSort(a->columns[col].c_str(), b->columns[col].c_str());
-			}
-		}
+		static int compareItems(const UserInfo* a, const UserInfo* b, int col);
 		
 		int getImageIndex() const { return -1; }
 
@@ -219,6 +215,8 @@ private:
 	void on(SettingsManagerListener::Save, SimpleXML&s /*xml*/) noexcept;
 
 	void on(UploadManagerListener::SlotsUpdated, const UserPtr& aUser) noexcept;
+
+	void on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept;
 };
 
 #endif // !defined(USERS_FRAME_H)

@@ -19,15 +19,17 @@
 #include "stdafx.h"
 #include "Resource.h"
 
+#include "MainFrm.h"
 #include "ResourceLoader.h"
 #include "UsersFrame.h"
 #include "LineDlg.h"
+
 #include "../client/ClientManager.h"
 #include "../client/QueueManager.h"
 
-int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_NICKS, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION };
-int UsersFrame::columnSizes[] = { 25, 25, 150, 200, 300, 150, 200 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::ONLINE_NICKS, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION };
+int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_NICKS, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION, COLUMN_QUEUED };
+int UsersFrame::columnSizes[] = { 25, 25, 150, 200, 300, 150, 200, 100 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::ONLINE_NICKS, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION, ResourceManager::QUEUED };
 
 struct FieldName {
 	string field;
@@ -165,6 +167,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 	UploadManager::getInstance()->addListener(this);
+	QueueManager::getInstance()->addListener(this);
 
 	CRect rc(SETTING(USERS_LEFT), SETTING(USERS_TOP), SETTING(USERS_RIGHT), SETTING(USERS_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -190,6 +193,7 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 		UserPtr u = nullptr;
 		tstring x;
+
 		if (ctrlUsers.GetSelectedCount() == 1) {
 			auto ui = ctrlUsers.getItemData(WinUtil::getFirstSelectedIndex(ctrlUsers));
 			x = ui->columns[COLUMN_NICK];
@@ -203,6 +207,63 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		usersMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG, CTSTRING(OPEN_USER_LOG));
 		usersMenu.AppendMenu(MF_SEPARATOR);
 		appendUserItems(usersMenu, true, u);
+
+		Bundle::SourceBundleList sourceBundles, badSourceBundles;
+		if (u) {
+			QueueManager::getInstance()->getSourceInfo(u, sourceBundles, badSourceBundles);
+
+			if (!sourceBundles.empty() || !badSourceBundles.empty()) {
+				usersMenu.appendSeparator();
+
+				auto formatBundle = [this] (pair<BundlePtr, Bundle::BundleSource>& bs) -> tstring {
+					return Text::toT(bs.first->getName()) + _T(" (") + Util::toStringW(bs.second.files) + _T(" ") + TSTRING(FILES) + _T(", ") + Util::formatBytesW(bs.second.size) + _T(")");
+				};
+
+				//current sources
+				if (!sourceBundles.empty()) {
+					auto removeMenu = usersMenu.createSubMenu(TSTRING(REMOVE_SOURCE), true);
+
+					for(auto& bs: sourceBundles) {
+						removeMenu->appendItem(formatBundle(bs), [=] { 
+							MainFrame::getMainFrame()->addThreadedTask([=] {
+								QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user); 
+							});
+						});
+					}
+
+					removeMenu->appendSeparator();
+					removeMenu->appendItem(TSTRING(ALL), [=] {
+						MainFrame::getMainFrame()->addThreadedTask([=] {
+							for(auto& bs: sourceBundles) {
+								QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user.user);
+							}
+						});
+					});
+				}
+
+				//bad sources
+				if (!badSourceBundles.empty()) {
+					auto readdMenu = usersMenu.createSubMenu(TSTRING(READD_SOURCE), true);
+					for(auto& bs: badSourceBundles) {
+						readdMenu->appendItem(formatBundle(bs), [=] { 
+							MainFrame::getMainFrame()->addThreadedTask([=] {
+								QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.user); 
+							});
+						});
+					}
+
+					readdMenu->appendSeparator();
+					readdMenu->appendItem(TSTRING(ALL), [=] { 
+						MainFrame::getMainFrame()->addThreadedTask([=] {
+							for(auto& bs: badSourceBundles) {
+								QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.user);
+							}
+						});
+					});
+				}
+			}
+		}
+
 		usersMenu.AppendMenu(MF_SEPARATOR);
 		usersMenu.AppendMenu(MF_STRING, IDC_EDIT, CTSTRING(PROPERTIES));
 		usersMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
@@ -455,6 +516,16 @@ LRESULT UsersFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	}
 	return 0;
 }
+
+int UsersFrame::UserInfo::compareItems(const UserInfo* a, const UserInfo* b, int col) {
+	switch(col) {
+	case COLUMN_FAVORITE: return compare(a->isFavorite, b->isFavorite);
+	case COLUMN_SLOT: return compare(a->grantSlot, b->grantSlot);
+	case COLUMN_QUEUED: return compare(a->user->getQueued(), b->user->getQueued());
+	default: return Util::DefaultSort(a->columns[col].c_str(), b->columns[col].c_str());
+	}
+}
+
 void UsersFrame::updateInfoText(const UserInfo* ui){
 	if(!showInfo)
 		return;
@@ -603,6 +674,8 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : TSTRING(OFFLINE);
 		columns[COLUMN_DESCRIPTION] = Util::emptyStringT;
 	}
+
+	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());
 }
 
 LRESULT UsersFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -642,6 +715,8 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		UploadManager::getInstance()->removeListener(this);
+		QueueManager::getInstance()->removeListener(this);
+
 		closed = true;
 		WinUtil::setButtonPressed(IDC_FAVUSERS, false);
 		PostMessage(WM_CLOSE);
@@ -720,5 +795,9 @@ void UsersFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUse
 }
 
 void UsersFrame::on(UploadManagerListener::SlotsUpdated, const UserPtr& aUser) noexcept {
+	callAsync([=] { updateUser(aUser); });
+}
+
+void UsersFrame::on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept {
 	callAsync([=] { updateUser(aUser); });
 }
