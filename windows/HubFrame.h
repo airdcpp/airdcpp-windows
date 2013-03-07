@@ -40,6 +40,7 @@
 #include "WinUtil.h"
 #include "UCHandler.h"
 #include "ListFilter.h"
+#include "Async.h"
 
 #define FILTER_MESSAGE_MAP 8
 #define SHOW_USERS 9
@@ -48,7 +49,7 @@ class ChatFrameBase;
 
 class HubFrame : public MDITabChildWindowImpl<HubFrame>, private ClientListener, 
 	public CSplitterImpl<HubFrame>, private FavoriteManagerListener,
-	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, private ChatFrameBase, private FrameMessageBase
+	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, private ChatFrameBase, private FrameMessageBase, private Async<HubFrame>
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("HubFrame"), IDR_HUB, 0, COLOR_3DFACE);
@@ -122,7 +123,6 @@ public:
 	END_MSG_MAP()
 
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopyAll(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopyHubInfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -214,10 +214,8 @@ public:
 
 	static ResourceManager::Strings columnNames[OnlineUser::COLUMN_LAST];
 private:
-	enum Tasks { UPDATE_USER_JOIN, UPDATE_USER, REMOVE_USER, ADD_CHAT_LINE,
-		ADD_STATUS_LINE, ADD_SILENT_STATUS_LINE, SET_WINDOW_TITLE, GET_PASSWORD, 
-		PRIVATE_MESSAGE, CONNECTED, DISCONNECTED,
-		GET_SHUTDOWN, SET_SHUTDOWN, KICK_MSG, UPDATE_TAB_ICONS
+	enum Tasks { UPDATE_USER_JOIN, UPDATE_USER, REMOVE_USER, ADD_SILENT_STATUS_LINE, 
+		GET_SHUTDOWN, SET_SHUTDOWN, KICK_MSG, UPDATE_TAB_ICONS, ADD_STATUS_LINE
 	};
 
 	struct UserTask : public Task {
@@ -225,25 +223,6 @@ private:
 		~UserTask() { }
 		
 		const OnlineUserPtr onlineUser;
-	};
-
-	struct StatusTask : public StringTask {
-		StatusTask(const string& msg, bool _inChat = true) : StringTask(msg), inChat(_inChat) { }
-		
-		bool inChat;
-	};
-	
-	struct MessageTask : public StringTask {
-		MessageTask(const Identity& from_, const string& m) : StringTask(m), from(from_) { }
-		MessageTask(const Identity& from_, const OnlineUserPtr& to_, const OnlineUserPtr& replyTo_, const string& m) : StringTask(m),
-			from(from_), to(to_->getUser()), replyTo(replyTo_->getUser()), hub(replyTo_->getIdentity().isHub()), bot(replyTo_->getIdentity().isBot()) { }
-
-		const Identity from;
-		const UserPtr to;
-		const UserPtr replyTo;
-
-		bool hub;
-		bool bot;
 	};
 	
 	friend class PrivateFrame;
@@ -298,6 +277,7 @@ private:
 	TaskQueue tasks;
 	bool updateUsers;
 	bool resort;
+	bool statusDirty;
 
 	ParamMap ucLineParams;
 	string getLogPath(bool status = false) const;
@@ -332,6 +312,18 @@ private:
 
 	void updateStatusBar();
 
+	void onPrivateMessage(const ChatMessage& message);
+	void onChatMessage(const ChatMessage& message);
+	void onUpdateTabIcons();
+	void onPassword();
+
+	void onConnected();
+	void onDisconnected();
+
+	void setWindowTitle(const string& aTitle);
+
+	void execTasks();
+
 	// FavoriteManagerListener
 	void on(FavoriteManagerListener::UserAdded, const FavoriteUser& /*aUser*/) noexcept;
 	void on(FavoriteManagerListener::UserRemoved, const FavoriteUser& /*aUser*/) noexcept;
@@ -357,11 +349,7 @@ private:
 	void on(AddLine, const Client*, const string&) noexcept;
 	void on(ClientListener::SetIcons, const Client*, int aCountType) noexcept;
 
-	void speak(Tasks s) { tasks.add(static_cast<uint8_t>(s), nullptr); PostMessage(WM_SPEAKER); }
-	void speak(Tasks s, const string& msg, bool inChat = true) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new StatusTask(msg, inChat))); PostMessage(WM_SPEAKER); }
 	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
-	void speak(Tasks s, const Identity& from, const string& line) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new MessageTask(from, line))); PostMessage(WM_SPEAKER); }
-	void speak(Tasks s, const OnlineUserPtr& from, const OnlineUserPtr& to, const OnlineUserPtr& replyTo, const string& line) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new MessageTask(from->getIdentity(), to, replyTo, line))); PostMessage(WM_SPEAKER); }
 	void openLinksInTopic();
 };
 

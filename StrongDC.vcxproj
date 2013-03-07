@@ -609,6 +609,7 @@
     <ClInclude Include="windows\ADLSearchFrame.h" />
     <ClInclude Include="windows\ADLSProperties.h" />
     <ClInclude Include="windows\AdvancedPage.h" />
+    <ClInclude Include="windows\Async.h" />
     <ClInclude Include="windows\AutoSearchFrm.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\ChatCommands.h" />

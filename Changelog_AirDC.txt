@@ -854,6 +854,7 @@ Changed:
 - Improve the error reporting when sending of a main/pm message fails
 - Calculate the bundle priorities instantly after they've been loaded on startup
 - Don't send a junk TTHs with directory search replies in ADC
+- Prevent freezes when selecting a large number of items in user list or file list, or when joining hubs
 
 
 Fixed:
@@ -861,6 +862,7 @@ Fixed:
 - Fix very poor performance when adding lots of files for hashing (100k+)
 - Fix port mapping problems when there are multiple networking interfaces available
 - Fix problems when connecting NMDC search results to a correct hub
+- Fix crashes when sharing subdirs of other shared dirs in different profiles
 - Fix the check marks in the transfer view context menu
 - Correct the loaded page when editing profiles from fav hubs
 - The splash screen won't go to "not responding" state on startup/shutdown
@@ -871,3 +873,7 @@ Fixed:
 - Avoid hashers getting freezed
 - Fix a crash when generating crash reports (32 bit version only)
 - Fix auto search problems when the bundles fail scanning
+- Fix the total user count for hubs
+- Fix sending magnet links in chatrooms
+- Set the share skiplist before the startup refresh
+- Start listening for connections when using passive mode and setting a favorite hub active

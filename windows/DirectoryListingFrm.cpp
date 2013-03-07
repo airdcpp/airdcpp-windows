@@ -73,7 +73,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false)
+		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), Async(this)
 {
 	dl->addListener(this);
 }
@@ -1820,20 +1820,8 @@ void DirectoryListingFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/
 	}
 }
 
-void DirectoryListingFrame::callAsync(function<void ()> f) {
-	PostMessage(WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(f));
-}
-
 void DirectoryListingFrame::updateStatus(const tstring& aMsg) {
 	ctrlStatus.SetText(0, aMsg.c_str());
-}
-
-LRESULT DirectoryListingFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
-	auto f = reinterpret_cast<Dispatcher::F*>(lParam);
-	(*f)();
-	delete f;
-
-	return 0;
 }
 
 LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
