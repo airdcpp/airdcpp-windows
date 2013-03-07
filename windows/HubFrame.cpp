@@ -497,13 +497,6 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 }
 
 void HubFrame::onPrivateMessage(const ChatMessage& message) {
-	//tstring nick = Text::toT(message.from->getIdentity().getNick());
-	/*if(IgnoreManager::getInstance()->isIgnored(nick)) {
-		ignoreList.insert(pm.from.getUser());
-	} else if(!IgnoreManager::getInstance()->isIgnored(pm.from.getNick()) && (ignoreList.find(pm.from.getUser()) != ignoreList.end())) {
-		ignoreList.erase(pm.from.getUser());
-	}*/
-
 	const auto& identity = message.from->getIdentity();
 	tstring nick = Text::toT(identity.getNick());
 
@@ -511,6 +504,7 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 	if(!message.from->getUser() || (ignoreList.find(message.from->getUser()) == ignoreList.end()) || (identity.isOp() && !client->isOp())) {
 		bool myPM = message.replyTo->getUser() == ClientManager::getInstance()->getMe();
 		const UserPtr& user = myPM ? message.to->getUser() : message.replyTo->getUser();
+		auto text = message.format();
 
 		if(identity.isHub()) {
 			if(SETTING(IGNORE_HUB_PMS)) {
@@ -529,12 +523,12 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 		}
 
 		if(ignore) {
-			addStatus(TSTRING(IGNORED_MESSAGE) + _T(" ") + Text::toT(message.text), WinUtil::m_ChatTextSystem, false);
+			addStatus(TSTRING(IGNORED_MESSAGE) + _T(" ") + Text::toT(text), WinUtil::m_ChatTextSystem, false);
 		} else {
 			if (window) {
-				PrivateFrame::gotMessage(identity, message.to->getUser(), message.replyTo->getUser(), Text::toT(message.text), client);
+				PrivateFrame::gotMessage(identity, message.to->getUser(), message.replyTo->getUser(), Text::toT(text), client);
 			} else {
-				addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + nick + _T(": ") + Text::toT(message.text), WinUtil::m_ChatTextPrivate);
+				addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + nick + _T(": ") + Text::toT(text), WinUtil::m_ChatTextPrivate);
 			}
 
 			HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;//GetTopLevelWindow();
@@ -544,12 +538,6 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 }
 
 void HubFrame::onChatMessage(const ChatMessage& msg) {
-	/*if(IgnoreManager::getInstance()->isIgnored(msg.from.getNick())) {
-		ignoreList.insert(msg.from.getUser());
-	} else if(!IgnoreManager::getInstance()->isIgnored(msg.from.getNick()) && (ignoreList.find(msg.from.getUser()) != ignoreList.end())) {
-		ignoreList.erase(msg.from.getUser());
-	}*/
-
 	const auto& identity = msg.from->getIdentity();
 	if(!msg.from->getUser() || (ignoreList.find(msg.from->getUser()) == ignoreList.end()) || (identity.isOp() && !client->isOp())) {
 		addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
