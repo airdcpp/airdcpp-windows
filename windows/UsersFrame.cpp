@@ -78,7 +78,8 @@ UsersFrame::UsersFrame() : closed(false), startup(true),
 	ctrlShowInfoContainer(WC_BUTTON, this, STATUS_MAP), 
 	ctrlFilterContainer(WC_EDIT, this, STATUS_MAP), 
 	showInfo(SETTING(FAV_USERS_SHOW_INFO)),
-	listFav(SETTING(FAV_USERS_ONLY_FAV)),
+	listFav(SETTING(USERS_FILTER_FAVORITE)),
+	filterQueued(SETTING(USERS_FILTER_QUEUE)),
 	filter(COLUMN_LAST, [this] { updateList(); })
 { }
 
@@ -126,6 +127,12 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlShowFav.SetButtonStyle(BS_AUTOCHECKBOX, false);
 	ctrlShowFav.SetFont(WinUtil::systemFont);
 	ctrlShowFav.SetCheck(listFav ? BST_CHECKED : BST_UNCHECKED);
+
+	ctrlShowQueued.Create(ctrlStatus.m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_QUEUED);
+	ctrlShowQueued.SetWindowText(CTSTRING(QUEUED_BUNDLES));
+	ctrlShowQueued.SetButtonStyle(BS_AUTOCHECKBOX, false);
+	ctrlShowQueued.SetFont(WinUtil::systemFont);
+	ctrlShowQueued.SetCheck(filterQueued ? BST_CHECKED : BST_UNCHECKED);
 
 	ctrlShowInfoContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
@@ -352,9 +359,14 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		sr.left  = sr.right + 4;
 		sr.right = sr.left + 100;
 		filter.getFilterMethodBox().MoveWindow(sr);
+
 		sr.left = sr.right +4;
 		sr.right = sr.left + ctrlShowFav.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowFav.m_hWnd, WinUtil::systemFont) + 16;
 		ctrlShowFav.MoveWindow(sr);
+
+		sr.left = sr.right +4;
+		sr.right = sr.left + ctrlShowQueued.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowQueued.m_hWnd, WinUtil::systemFont) + 16;
+		ctrlShowQueued.MoveWindow(sr);
 		
 		ctrlStatus.GetRect(2, sr);
 		sr.left = sr.right;
@@ -400,7 +412,13 @@ LRESULT UsersFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 		case IDC_SHOW_FAV: {
 			listFav = !listFav;
 			updateList();
-			SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_ONLY_FAV, listFav);
+			SettingsManager::getInstance()->set(SettingsManager::USERS_FILTER_FAVORITE, listFav);
+			break;
+		}
+		case IDC_FILTER_QUEUED: {
+			filterQueued = !filterQueued;
+			updateList();
+			SettingsManager::getInstance()->set(SettingsManager::USERS_FILTER_QUEUE, filterQueued);
 			break;
 		}
 	}
@@ -631,6 +649,8 @@ static bool isFav(const UserPtr &u) { return FavoriteManager::getInstance()->isF
 bool UsersFrame::show(const UserPtr &u, bool any) const {
 	if(any && (u->isOnline() || isFav(u))) {
 		return true;
+	} else if(filterQueued && u->getQueued() == 0){
+		return false;
 	} else if(listFav && !isFav(u)){
 		return false;
 	} else if(!u->isOnline() && !isFav(u)){

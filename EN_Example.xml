@@ -436,7 +436,6 @@
 		<String Name="RegexpMatch">It's a match!</String>
 		<String Name="RegexpMismatch">It's not a match.</String>
 		<String Name="Regexp">RegExp</String>
-		<String Name="Queued">Queued: </String>
 		<String Name="QuickConnect">Quick Connect</String>
 		<String Name="Rating">Rating</String>
 		<String Name="Ratio">Ratio</String>
@@ -1775,5 +1774,7 @@ Do you want to use this destination anyway?</String>
 		<String Name="MainPermissionDenied">You aren't allowed to send messages to main chat</String>
 		<String Name="Inactive">Inactive</String>
 		<String Name="MultilineInput">Multiline input area</String>
+		<String Name="Queued">Queued</String>
+		<String Name="BundlesQueued">Queued bundle files</String>
 	</Strings>
 </Language>

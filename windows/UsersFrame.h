@@ -73,6 +73,7 @@ public:
 		ALT_MSG_MAP(STATUS_MAP)
 			COMMAND_ID_HANDLER(IDC_SHOW_INFO, onShow)
 			COMMAND_ID_HANDLER(IDC_SHOW_FAV, onShow)
+			COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
 			CHAIN_MSG_MAP_MEMBER(filter)
 	END_MSG_MAP()
 		
@@ -174,6 +175,7 @@ private:
 	CContainedWindow ctrlFilterContainer;
 	CButton ctrlShowInfo;
 	CButton ctrlShowFav;
+	CButton ctrlShowQueued;
 	CToolTipCtrl ctrlTooltips;
 
 	ListFilter filter;
@@ -188,6 +190,7 @@ private:
 	bool showInfo;
 	bool startup;
 	bool listFav;
+	bool filterQueued;
 
 	void updateInfoText(const UserInfo* ui);
 	void updateList();

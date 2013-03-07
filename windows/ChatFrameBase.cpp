@@ -449,7 +449,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 			}
 
 			if (!cancelHashing) {
-				bool useKey = getUser() && (!getUser()->isSet(User::BOT) || !getUser()->isSet(User::NMDC));
+				bool useKey = getUser() && !getUser()->isSet(User::BOT) && !getUser()->isSet(User::NMDC);
 				ShareManager::getInstance()->addTempShare((useKey ? getUser()->getCID().toBase32() : Util::emptyString), tth, path, size, getClient()->getShareProfile());
 			}
 			ret += Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size));

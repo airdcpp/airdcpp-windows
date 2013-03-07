@@ -32,7 +32,6 @@
 #include "../client/Client.h"
 #include "../client/User.h"
 #include "../client/ClientManager.h"
-#include "../client/TimerManager.h"
 #include "../client/FastAlloc.h"
 #include "../client/DirectoryListing.h"
 #include "../client/TaskQueue.h"
@@ -48,7 +47,7 @@ struct CompareItems;
 class ChatFrameBase;
 
 class HubFrame : public MDITabChildWindowImpl<HubFrame>, private ClientListener, 
-	public CSplitterImpl<HubFrame>, private FavoriteManagerListener, private TimerManagerListener,
+	public CSplitterImpl<HubFrame>, private FavoriteManagerListener,
 	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, private ChatFrameBase, private FrameMessageBase
 {
 public:
@@ -80,6 +79,7 @@ public:
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_MOUSEMOVE, onStyleChange)
 		MESSAGE_HANDLER(WM_CAPTURECHANGED, onStyleChanged)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
 		COMMAND_ID_HANDLER(IDC_FOLLOW, onFollow)
 		COMMAND_ID_HANDLER(IDC_ADD_AS_FAVORITE, onAddAsFavorite)
@@ -121,6 +121,7 @@ public:
 		CHAIN_MSG_MAP_MEMBER(filter)
 	END_MSG_MAP()
 
+	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopyAll(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -201,10 +202,7 @@ public:
 		return 0;
 	}
 
-	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
-		updateStatusBar();
-		return 0;
-	}
+	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
 	LRESULT onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
@@ -218,7 +216,7 @@ public:
 private:
 	enum Tasks { UPDATE_USER_JOIN, UPDATE_USER, REMOVE_USER, ADD_CHAT_LINE,
 		ADD_STATUS_LINE, ADD_SILENT_STATUS_LINE, SET_WINDOW_TITLE, GET_PASSWORD, 
-		PRIVATE_MESSAGE, STATS, CONNECTED, DISCONNECTED,
+		PRIVATE_MESSAGE, CONNECTED, DISCONNECTED,
 		GET_SHUTDOWN, SET_SHUTDOWN, KICK_MSG, UPDATE_TAB_ICONS
 	};
 
@@ -332,15 +330,13 @@ private:
     string sColumsWidth;
     string sColumsVisible;
 
-	void updateStatusBar() { if(m_hWnd) speak(STATS); }
+	void updateStatusBar();
 
 	// FavoriteManagerListener
 	void on(FavoriteManagerListener::UserAdded, const FavoriteUser& /*aUser*/) noexcept;
 	void on(FavoriteManagerListener::UserRemoved, const FavoriteUser& /*aUser*/) noexcept;
 	void resortForFavsFirst(bool justDoIt = false);
 
-	// TimerManagerListener
-	void on(TimerManagerListener::Second, uint64_t /*aTick*/) noexcept;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	// ClientListener

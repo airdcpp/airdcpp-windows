@@ -73,7 +73,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this)
+		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false)
 {
 	dl->addListener(this);
 }
@@ -313,7 +313,18 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	setWindowTitle();
 	WinUtil::SetIcon(m_hWnd, dl->getIsOwnList() ? IDI_OWNLIST : IDI_OPEN_LIST);
 	bHandled = FALSE;
+
+	::SetTimer(m_hWnd, 0, 500, 0);
+
 	return 1;
+}
+
+LRESULT DirectoryListingFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	if (statusDirty) {
+		updateStatus();
+		statusDirty = false;
+	}
+	return 0;
 }
 
 void DirectoryListingFrame::changeWindowState(bool enable) {
@@ -461,7 +472,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 
 LRESULT DirectoryListingFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
 	changeType = CHANGE_LIST;
-	updateStatus();
+	statusDirty = true;
 	return 0;
 }
 

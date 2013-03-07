@@ -110,6 +110,7 @@ public:
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		COMMAND_ID_HANDLER(IDC_GO_TO_DIRECTORY, onGoToDirectory)
 		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchByTTH)
@@ -161,6 +162,7 @@ public:
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 	END_MSG_MAP()
 
+	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onFilterChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -362,6 +364,7 @@ private:
 
 	bool updating;
 	bool closed;
+	bool statusDirty;
 
 	int statusSizes[13];
 	

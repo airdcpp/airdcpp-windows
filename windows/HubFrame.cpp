@@ -154,9 +154,9 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	client->connect();
 
 	FavoriteManager::getInstance()->addListener(this);
-    TimerManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 
+	::SetTimer(m_hWnd, 0, 500, 0);
 	return 1;
 }
 
@@ -594,35 +594,6 @@ LRESULT HubFrame::onSpeaker(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /* lParam
 			//SetMDIFrameMenu();	
 			MDIRefreshMenu();
 
-		} else if(t.first == STATS) {
-			size_t AllUsers = client->getUserCount();
-			size_t ShownUsers = ctrlUsers.GetItemCount();
-			
-			tstring text[3];
-			
-			if(AllUsers != ShownUsers) {
-				text[0] = Util::toStringW(ShownUsers) + _T("/") + Util::toStringW(AllUsers) + _T(" ") + TSTRING(HUB_USERS);
-			} else {
-				text[0] = Util::toStringW(AllUsers) + _T(" ") + TSTRING(HUB_USERS);
-			}
-			int64_t available = client->getAvailable();
-			text[1] = Util::formatBytesW(available);
-			
-			if(AllUsers > 0)
-				text[2] = Util::formatBytesW(available / AllUsers) + _T("/") + TSTRING(USER);
-
-			bool update = false;
-			for(int i = 0; i < 3; i++) {
-				int size = WinUtil::getTextWidth(text[i], ctrlStatus.m_hWnd);
-				if(size != statusSizes[i + 1]) {
-					statusSizes[i + 1] = size;
-					update = true;
-				}
-				ctrlStatus.SetText(i + 2, text[i].c_str());
-			}
-			
-			if(update)
-				UpdateLayout();
 		} else if(t.first == GET_PASSWORD) {
 			if(client->getPassword().size() > 0) {
 				client->password(client->getPassword());
@@ -850,7 +821,6 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 			DestroyIcon(HubIcon);
 
 			SettingsManager::getInstance()->removeListener(this);
-			TimerManager::getInstance()->removeListener(this);
 			FavoriteManager::getInstance()->removeListener(this);
 			client->removeListener(this);
 			client->disconnect(true);
@@ -1427,12 +1397,48 @@ void HubFrame::resortForFavsFirst(bool justDoIt /* = false */) {
 	}
 }
 
-void HubFrame::on(Second, uint64_t /*aTick*/) noexcept {
+LRESULT HubFrame::onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	updateUsers = true;
+	return 0;
+}
+
+LRESULT HubFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	if(updateUsers) {
 		updateStatusBar();
 		updateUsers = false;
-		PostMessage(WM_SPEAKER);
 	}
+	return 0;
+}
+
+void HubFrame::updateStatusBar() { 
+	size_t AllUsers = client->getUserCount();
+	size_t ShownUsers = ctrlUsers.GetItemCount();
+
+	tstring text[3];
+
+	if(AllUsers != ShownUsers) {
+		text[0] = Util::toStringW(ShownUsers) + _T("/") + Util::toStringW(AllUsers) + _T(" ") + TSTRING(HUB_USERS);
+	} else {
+		text[0] = Util::toStringW(AllUsers) + _T(" ") + TSTRING(HUB_USERS);
+	}
+	int64_t available = client->getAvailable();
+	text[1] = Util::formatBytesW(available);
+
+	if(AllUsers > 0)
+		text[2] = Util::formatBytesW(available / AllUsers) + _T("/") + TSTRING(USER);
+
+	bool update = false;
+	for(int i = 0; i < 3; i++) {
+		int size = WinUtil::getTextWidth(text[i], ctrlStatus.m_hWnd);
+		if(size != statusSizes[i + 1]) {
+			statusSizes[i + 1] = size;
+			update = true;
+		}
+		ctrlStatus.SetText(i + 2, text[i].c_str());
+	}
+
+	if(update)
+		UpdateLayout();
 }
 
 void HubFrame::on(ClientListener::SetIcons, const Client*, int aCountType) noexcept { 
