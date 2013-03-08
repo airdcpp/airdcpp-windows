@@ -835,7 +835,7 @@ void MainFrame::updateStatus(TStringList* aList) {
 }
 
 void MainFrame::on(LogManagerListener::Message, time_t t, const string& m, uint8_t sev) noexcept {
-	addStatus(m, t, sev);
+	callAsync([=] { addStatus(m, t, sev); });
 }
 
 void MainFrame::addStatus(const string& aMsg, time_t aTime, uint8_t severity) {
