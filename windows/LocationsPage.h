@@ -26,7 +26,6 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
-#include "WinUtil.h"
 
 class LocationsPage : public CPropertyPage<IDD_LOCATIONSPAGE>, public PropPage
 {

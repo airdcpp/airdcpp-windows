@@ -23,6 +23,7 @@
 #include "../client/AirUtil.h"
 #include "../client/UpdateManager.h"
 #include "../client/ConnectivityManager.h"
+#include "../client/version.h"
 
 #include "Resource.h"
 #include "NetworkPage.h"

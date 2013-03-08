@@ -25,6 +25,8 @@
 #include "PrivateFrame.h"
 #include "TextFrame.h"
 #include "ResourceLoader.h"
+#include "MainFrm.h"
+#include "IgnoreManager.h"
 
 #include "../client/DirectoryListingManager.h"
 #include "../client/ChatMessage.h"

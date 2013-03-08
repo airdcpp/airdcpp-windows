@@ -69,6 +69,15 @@ LRESULT StatsFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	}	
 }
 
+StatsFrame::StatsFrame() : width(0), height(0), timerId(0), twidth(0), lastTick(GET_TICK()), scrollTick(0),
+	lastUp(Socket::getTotalUp()), lastDown(Socket::getTotalDown()), max(0), closed(false) 
+{ 
+	backgr.CreateSolidBrush(WinUtil::bgColor);
+	upload.CreatePen(PS_SOLID, 0, SETTING(UPLOAD_BAR_COLOR));
+	download.CreatePen(PS_SOLID, 0, SETTING(DOWNLOAD_BAR_COLOR));
+	foregr.CreatePen(PS_SOLID, 0, WinUtil::textColor);
+}
+
 void StatsFrame::drawLine(CDC& dc, StatIter begin, StatIter end, CRect& rc, CRect& crc) {
 	int x = crc.right;
 	

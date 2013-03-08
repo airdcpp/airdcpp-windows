@@ -26,6 +26,8 @@
 #include "ADLSearchFrame.h"
 #include "AdlsProperties.h"
 
+#include "../client/LogManager.h"
+
 int ADLSearchFrame::columnIndexes[] = { 
 	COLUMN_ACTIVE_SEARCH_STRING,
 	COLUMN_SOURCE_TYPE,

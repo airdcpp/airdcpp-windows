@@ -26,7 +26,6 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
-#include "../client/File.h"
 
 class MiscPage : public CPropertyPage<IDD_MISC_PAGE>, public PropPage
 {

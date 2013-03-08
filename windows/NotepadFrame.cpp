@@ -90,6 +90,18 @@ LRESULT NotepadFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	}
 }
 
+LRESULT NotepadFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	HWND hWnd = (HWND)lParam;
+	HDC hDC = (HDC)wParam;
+	if(hWnd == ctrlPad.m_hWnd) {
+		::SetBkColor(hDC, WinUtil::bgColor);
+		::SetTextColor(hDC, WinUtil::textColor);
+		return (LRESULT)WinUtil::bgBrush;
+	}
+	bHandled = FALSE;
+	return FALSE;
+}
+
 void NotepadFrame::UpdateLayout(BOOL /*bResizeBars*/ /* = TRUE */)
 {
 	CRect rc;

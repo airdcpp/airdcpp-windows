@@ -28,6 +28,7 @@
 #include "../client/GeoManager.h"
 #include "../client/AirUtil.h"
 #include "../client/Localization.h"
+#include "../client/version.h"
 
 #include <boost/range/algorithm/for_each.hpp>
 #include <boost/range/algorithm_ext/for_each.hpp>

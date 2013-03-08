@@ -14,7 +14,6 @@
 #define CLEAR_MESSAGE_MAP 20
 
 #include "FlatTabCtrl.h"
-#include "WinUtil.h"
 
 #include "../client/DebugManager.h"
 #include "../client/Semaphore.h"

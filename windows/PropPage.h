@@ -30,7 +30,6 @@
 
 #include "../client/SettingsManager.h"
 #include "../client/ResourceManager.h"
-#include "../client/Speaker.h"
 
 #include "Dispatchers.h"
 

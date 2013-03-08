@@ -24,9 +24,6 @@
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
 
-#include "../client/Util.h"
-#include "../client/ResourceManager.h"
-
 #include "ExListViewCtrl.h"
 
 class FavoriteDirDlg : public CDialogImpl<FavoriteDirDlg> {

@@ -24,7 +24,6 @@
 #endif // _MSC_VER > 1000
 
 #include "../Client/SettingsManager.h"
-#include "../client/FavoriteManager.h"
 #include "../client/StringTokenizer.h"
 #include "ListViewArrows.h"
 

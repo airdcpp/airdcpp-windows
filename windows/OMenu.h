@@ -24,7 +24,6 @@
 #endif // _MSC_VER > 1000
 
 #include "../client/typedefs.h"
-#include "../client/GetSet.h"
 
 #include "Dispatchers.h"
 

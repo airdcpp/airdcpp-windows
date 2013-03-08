@@ -25,7 +25,6 @@
 
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
-#include "RichTextBox.h"
 #include "UserInfoBaseHandler.h"
 #include "DownloadBaseHandler.h"
 
@@ -34,8 +33,8 @@
 #include "../client/SearchManager.h"
 
 #include "../client/ClientManagerListener.h"
-#include "../client/FavoriteManager.h"
 #include "../client/SearchResult.h"
+
 #include "UCHandler.h"
 #include "SearchTypeCombo.h"
 

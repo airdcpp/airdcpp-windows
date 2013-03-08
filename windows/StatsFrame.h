@@ -23,23 +23,12 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "../client/TimerManager.h"
-
 #include "FlatTabCtrl.h"
-#include "WinUtil.h"
 
 class StatsFrame : public MDITabChildWindowImpl<StatsFrame>, public StaticFrame<StatsFrame, ResourceManager::NETWORK_STATISTICS, IDC_NET_STATS>
 {
 public:
-	StatsFrame() : width(0), height(0), timerId(0), twidth(0), lastTick(GET_TICK()), scrollTick(0),
-		lastUp(Socket::getTotalUp()), lastDown(Socket::getTotalDown()), max(0), closed(false) 
-	{ 
-		backgr.CreateSolidBrush(WinUtil::bgColor);
-		upload.CreatePen(PS_SOLID, 0, SETTING(UPLOAD_BAR_COLOR));
-		download.CreatePen(PS_SOLID, 0, SETTING(DOWNLOAD_BAR_COLOR));
-		foregr.CreatePen(PS_SOLID, 0, WinUtil::textColor);
-	}
-
+	StatsFrame();
 	~StatsFrame() { }
 
 	static CFrameWndClassInfo& GetWndClassInfo() { 

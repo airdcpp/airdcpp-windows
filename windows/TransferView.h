@@ -38,7 +38,6 @@
 #include "UCHandler.h"
 #include "TypedListViewCtrl.h"
 #include "resource.h"
-#include "SearchFrm.h"
 #include "UserInfoBaseHandler.h"
 
 class TransferView : public CWindowImpl<TransferView>, private DownloadManagerListener, 

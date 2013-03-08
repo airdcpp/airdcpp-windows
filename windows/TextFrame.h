@@ -24,7 +24,6 @@
 #endif // _MSC_VER > 1000
 
 #include "FlatTabCtrl.h"
-#include "WinUtil.h"
 #include "RichTextBox.h"
 #include "atlstr.h"
 

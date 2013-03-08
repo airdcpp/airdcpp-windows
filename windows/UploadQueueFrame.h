@@ -28,7 +28,6 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 #include "UserInfoBaseHandler.h"
-#include "../client/TimerManager.h"
 #include "../client/UploadManager.h"
 
 #define SHOWTREE_MESSAGE_MAP 12

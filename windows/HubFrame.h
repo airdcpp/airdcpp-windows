@@ -25,7 +25,6 @@
 
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
-#include "MainFrm.h"
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
 
@@ -33,9 +32,8 @@
 #include "../client/User.h"
 #include "../client/ClientManager.h"
 #include "../client/FastAlloc.h"
-#include "../client/DirectoryListing.h"
 #include "../client/TaskQueue.h"
-#include "IgnoreManager.h"
+
 #include "atlstr.h"
 #include "WinUtil.h"
 #include "UCHandler.h"

@@ -27,6 +27,7 @@
 #include "../client/FavoriteManager.h"
 #include "../client/ResourceManager.h"
 #include "../client/tribool.h"
+#include "../client/ShareManager.h"
 
 
 FavHubProperties::FavHubProperties(FavoriteHubEntry *_entry) : entry(_entry), loaded(false) { }

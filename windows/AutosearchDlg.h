@@ -26,7 +26,6 @@
 #include <bitset>
 #include "../client/Util.h"
 #include "../client/TargetUtil.h"
-#include "../client/ResourceManager.h"
 #include "../client/AutoSearchManager.h"
 #include "DownloadBaseHandler.h"
 #include "SearchTypeCombo.h"
