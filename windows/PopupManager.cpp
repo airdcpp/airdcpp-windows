@@ -23,6 +23,7 @@
 #include "WinUtil.h"
 #include "PopupManager.h"
 #include "MainFrm.h"
+#include "PopupDlg.h"
 
 
 PopupManager* Singleton< PopupManager >::instance = NULL;

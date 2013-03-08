@@ -532,8 +532,7 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 			}
 
 			if (!identity.isHub() && !identity.isBot()) {
-				HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;//GetTopLevelWindow();
-				::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_PM_TRAY_ICON, NULL);
+				MainFrame::getMainFrame()->onChatMessage(true);
 			}
 		}
 	}
@@ -544,8 +543,7 @@ void HubFrame::onChatMessage(const ChatMessage& msg) {
 	if(!msg.from->getUser() || (ignoreList.find(msg.from->getUser()) == ignoreList.end()) || (identity.isOp() && !client->isOp())) {
 		addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
 		if(client->get(HubSettings::ChatNotify)) {
-			HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;
-			::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_HUB_TRAY_ICON, NULL);
+			MainFrame::getMainFrame()->onChatMessage(false);
 		}
 	}
 }
@@ -1581,51 +1579,14 @@ void HubFrame::on(AddLine, const Client*, const string& line) noexcept {
 }
 
 void HubFrame::openLinksInTopic() {
-	int length = GetWindowTextLength();
-	TCHAR* buf = new TCHAR[length + 1];
+	StringList urls;
 	
-	GetWindowText(buf, length);
-	
-	tstring topic = buf;
-	delete[] buf;
-
-	int pos = -1;
-	TStringList urls;
-	
-	while( (pos = topic.find(_T("http://"), pos+1)) != string::npos ){
-		int pos2 = topic.find(_T(" "), pos+1);
-		urls.push_back(topic.substr(pos, pos2-pos));
-	}
-	pos = -1;
-	while( (pos = topic.find(_T("www."), pos+1)) != string::npos ) {
-		if(topic[pos-1] != _T('/')) {
-			int pos2 = topic.find(_T(" "), pos+1);
-			urls.push_back(topic.substr(pos, pos2-pos));
-		}
-	}
-
-	pos = -1;
-	while( (pos = topic.find(_T("https://"), pos+1)) != string::npos ){
-		int pos2 = topic.find(_T(" "), pos+1);
-		urls.push_back(topic.substr(pos, pos2-pos));
-	}
-
-	pos = -1;
-	while( (pos = topic.find(_T("mms://"), pos+1)) != string::npos ){
-		int pos2 = topic.find(_T(" "), pos+1);
-		urls.push_back(topic.substr(pos, pos2-pos));
-	}
-
-	pos = -1;
-	while( (pos = topic.find(_T("ftp://"), pos+1)) != string::npos ){
-		int pos2 = topic.find(_T(" "), pos+1);
-		urls.push_back(topic.substr(pos, pos2-pos));
-	}
+	boost::regex linkReg(AirUtil::getLinkUrl());
+	AirUtil::getRegexMatches(client->getHubDescription(), urls, linkReg);
 
 	for(auto& url: urls) {
-		string tmp = Text::fromT(url);
-		Util::sanitizeUrl(tmp);
-		WinUtil::openLink(Text::toT(tmp));
+		Util::sanitizeUrl(url);
+		WinUtil::openLink(Text::toT(url));
 	}
 }
 

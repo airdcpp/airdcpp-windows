@@ -245,7 +245,6 @@ private:
 	tstring selectedIP;
 	tstring selectedUser;
 	tstring selectedWord;
-	boost::wregex regUrl, regRelease, regPath;
 	uint64_t lastTick;
 	bool isLink(POINT pt);
 	ChatLink* getLink(POINT pt, CHARRANGE& cr);

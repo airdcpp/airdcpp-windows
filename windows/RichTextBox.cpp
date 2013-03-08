@@ -53,9 +53,6 @@ RichTextBox::RichTextBox() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(f
 		emoticonsManager = new EmoticonsManager();
 	}
 
-	regPath.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])*)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
-	regRelease.assign(Text::toT(AirUtil::getReleaseRegLong(true)));
-	regUrl.assign(_T("(((?:[a-z][\\w-]{0,10})?:/{1,3}|www\\d{0,3}[.]|magnet:\\?[^\\s=]+=|spotify:|[a-z0-9.\\-]+[.][a-z]{2,4}/)(?:[^\\s()<>]+|\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\))+(?:\\(([^\\s()<>]+|(\\([^\\s()<>]+\\)))*\\)|[^\\s`()\\[\\]{};:'\".,<>?«»“”‘’]))"), boost::regex_constants::icase);
 	showHandCursor=false;
 	lastTick = GET_TICK();
 	emoticonsManager->inc();
@@ -415,7 +412,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 			boost::match_results<tstring::const_iterator> result;
 			int pos=0;
 
-			while(boost::regex_search(start, end, result, regUrl, boost::match_default)) {
+			while(boost::regex_search(start, end, result, WinUtil::chatLinkReg, boost::match_default)) {
 				size_t linkStart = pos + lSelBegin + result.position();
 				size_t linkEnd = pos + lSelBegin + result.position() + result.length();
 				SetSel(linkStart, linkEnd);
@@ -460,7 +457,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 		boost::match_results<tstring::const_iterator> result;
 		int pos=0;
 
-		while(boost::regex_search(start, end, result, regRelease, boost::match_default)) {
+		while(boost::regex_search(start, end, result, WinUtil::chatReleaseReg, boost::match_default)) {
 			CHARRANGE cr;
 			cr.cpMin = pos + lSelBegin + result.position();
 			cr.cpMax = pos + lSelBegin + result.position() + result.length();
@@ -485,7 +482,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 		boost::match_results<tstring::const_iterator> result;
 		int pos=0;
 
-		while(boost::regex_search(start, end, result, regPath, boost::match_default)) {
+		while(boost::regex_search(start, end, result, WinUtil::pathReg, boost::match_default)) {
 			CHARRANGE cr;
 			cr.cpMin = pos + lSelBegin + result.position();
 			cr.cpMax = pos + lSelBegin + result.position() + result.length();

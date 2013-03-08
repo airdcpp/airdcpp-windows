@@ -43,13 +43,14 @@
 #include "OMenu.h"
 #include "picturewindow.h"
 #include "CProgressCtrlEx.h"
+#include "Async.h"
 
 #define STATUS_MESSAGE_MAP 9
 #define POPUP_UID 19000
 
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>,
-		private TimerManagerListener, private QueueManagerListener,
+		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
 		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener
 {
 public:
@@ -58,19 +59,6 @@ public:
 	DECLARE_FRAME_WND_CLASS(_T(APPNAME), IDR_MAINFRAME)
 
 	CMDICommandBarCtrl m_CmdBar;
-
-	enum {
-		STATS,
-		AUTO_CONNECT,
-		PARSE_COMMAND_LINE,
-		VIEW_FILE_AND_DELETE,
-		SET_STATUSTEXT,
-		STATUS_MESSAGE,
-		ASYNC,
-		SET_PM_TRAY_ICON,
-		SET_HUB_TRAY_ICON,
-		UPDATE_TBSTATUS_REFRESHING
-	};
 
 	BOOL PreTranslateMessage(MSG* pMsg)
 	{
@@ -182,7 +170,7 @@ public:
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
 
 		COMMAND_ID_HANDLER(IDC_WINAMP_START, onWinampStart)
-		NOTIFY_CODE_HANDLER(TBN_DROPDOWN, onDropDown)
+		NOTIFY_CODE_HANDLER(TBN_DROPDOWN, onRefreshDropDown)
 		CHAIN_MDI_CHILD_COMMANDS()
 		CHAIN_MSG_MAP(CUpdateUI<MainFrame>)
 		CHAIN_MSG_MAP(CMDIFrameWindowImpl<MainFrame>)
@@ -207,7 +195,6 @@ public:
 
 
 	LRESULT onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onHashProgress(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -246,7 +233,7 @@ public:
 	LRESULT onSwitchWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenSysLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	LRESULT onDropDown(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT onRefreshDropDown(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onSetFont(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnViewTBStatusBar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnLockTB(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -261,37 +248,15 @@ public:
 		return WMU_WHERE_ARE_YOU;
 	}
 
-	LRESULT onTray(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) { 
-		updateTray(false);
-		trayUID++;
-		updateTray(true); 
-		return 0;
-	}
-
 	LRESULT onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onTray(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onRowsChanged(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
-	LRESULT onRowsChanged(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		UpdateLayout();
-		Invalidate();
-		return 0;
-	}
 	void terminate();
 
 	void TestWrite(bool downloads, bool incomplete, bool appPath);
 
-	LRESULT onSelected(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		HWND hWnd = (HWND)wParam;
-		if(MDIGetActive() != hWnd) {
-			MDIActivate(hWnd);
-		} else if(SETTING(TOGGLE_ACTIVE_WINDOW)) {
-			::SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
-			MDINext(hWnd);
-			hWnd = MDIGetActive();
-		}
-		if(::IsIconic(hWnd))
-			::ShowWindow(hWnd, SW_RESTORE);
-		return 0;
-	}
+	LRESULT onSelected(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	LRESULT onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	
@@ -326,29 +291,8 @@ public:
 		return 0;
 	}
 
-	LRESULT onWindowMinimizeAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		HWND tmpWnd = GetWindow(GW_CHILD); //getting client window
-		tmpWnd = ::GetWindow(tmpWnd, GW_CHILD); //getting first child window
-		while (tmpWnd!=NULL) {
-			::CloseWindow(tmpWnd);
-			tmpWnd = ::GetWindow(tmpWnd, GW_HWNDNEXT);
-		}
-		return 0;
-	}
-	LRESULT onWindowRestoreAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		HWND tmpWnd = GetWindow(GW_CHILD); //getting client window
-		HWND ClientWnd = tmpWnd; //saving client window handle
-		tmpWnd = ::GetWindow(tmpWnd, GW_CHILD); //getting first child window
-		BOOL bmax;
-		while (tmpWnd!=NULL) {
-			::ShowWindow(tmpWnd, SW_RESTORE);
-			::SendMessage(ClientWnd,WM_MDIGETACTIVE,NULL,(LPARAM)&bmax);
-			if(bmax)break; //bmax will be true if active child 
-					//window is maximized, so if bmax then break
-			tmpWnd = ::GetWindow(tmpWnd, GW_HWNDNEXT);
-		}
-		return 0;
-	}	
+	LRESULT onWindowMinimizeAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onWindowRestoreAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);	
 
 	LRESULT onShutDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		setShutDown(!getShutDown());
@@ -389,15 +333,17 @@ public:
 		ShowPopup(szMsg, szTitle, NIIF_USER, hIcon, force);
 	}
 	void ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags = NIIF_INFO, HICON hIcon = NULL, bool force = false);
-	void callAsync(function<void ()> f);
 
 	void addThreadedTask(std::function<void ()> aF);
 	concurrency::task_group threadedTasks;
 
 	/* Displays a message box that will also display correctly with the splash */
 	void showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& aTitle = Util::emptyStringT);
+	void onChatMessage(bool pm);
 private:
-	//vector<concurrency::task<void>> threadedTasks;
+	void updateStatus(TStringList* aItems);
+	void addStatus(const string& aMsg, time_t aTime, uint8_t severity);
+
 	NOTIFYICONDATA pmicon;
 	NOTIFYICONDATA hubicon;
 	
@@ -405,7 +351,7 @@ private:
 	static MainFrame* anyMF;
 	
 	enum { MAX_CLIENT_LINES = 10 };
-	TStringList lastLinesList;
+	deque<tstring> lastLinesList;
 	tstring lastLines;
 	CToolTipCtrl ctrlTooltips;
 
@@ -511,18 +457,7 @@ private:
 		STATUS_QUEUED,
 		STATUS_SHUTDOWN,
 		STATUS_LAST
-
 	};
-	
-	struct LogInfo {
-		LogInfo(const tstring& msg_, time_t& time_, uint8_t& severity_) : 
-		 msg(msg_), time(time_), severity(severity_) { }
-
-		tstring msg;
-		time_t time;
-		uint8_t severity;
-	};
-
 	
 	LRESULT onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/);
 
@@ -530,12 +465,8 @@ private:
 
 	void autoConnect(const FavoriteHubEntry::List& fl);
 
-	MainFrame(const MainFrame&) { dcassert(0); }
-
 	// LogManagerListener
-	virtual void on(LogManagerListener::Message, time_t t, const string& m, uint8_t sev) noexcept { 
-		PostMessage(WM_SPEAKER, STATUS_MESSAGE, (LPARAM)new LogInfo(tstring(Text::toT(m)), t, sev)); 
-	}
+	virtual void on(LogManagerListener::Message, time_t t, const string& m, uint8_t sev) noexcept;
 
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;

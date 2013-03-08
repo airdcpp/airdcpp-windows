@@ -946,7 +946,7 @@ void SharePage::applyChanges(bool /*isQuit*/) {
 		favReset += FavoriteManager::getInstance()->resetProfiles(removeProfiles, ShareManager::getInstance()->getShareProfile(SP_DEFAULT)); //reset for favorite hubs
 		ShareManager::getInstance()->removeProfiles(removeProfiles); //remove from profiles
 		if (favReset > 0)
-			MainFrame::getMainFrame()->callAsync([=] { ::MessageBox(MainFrame::getMainFrame()->m_hWnd, CWSTRING_F(X_FAV_PROFILES_RESET, favReset), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK); });
+			MainFrame::getMainFrame()->callAsync([=] { ::MessageBox(WinUtil::mainWnd, CWSTRING_F(X_FAV_PROFILES_RESET, favReset), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK); });
 
 		//aRemoveProfiles.clear();
 	}

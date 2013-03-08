@@ -508,6 +508,7 @@
     <ClCompile Include="windows\ListFilter.cpp" />
     <ClCompile Include="windows\MiscPage.cpp" />
     <ClCompile Include="windows\DownloadingOptionsPage.cpp" />
+    <ClCompile Include="windows\PopupDlg.cpp" />
     <ClCompile Include="windows\ProxyPage.cpp" />
     <ClCompile Include="windows\ResourceLoader.cpp" />
     <ClCompile Include="windows\SearchTypeCombo.cpp" />

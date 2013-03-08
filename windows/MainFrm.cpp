@@ -83,7 +83,7 @@ MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastU
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
 bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false), trayUID(0),
-statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
+statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), Async(this)
 
 
 { 
@@ -374,9 +374,9 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
 
 	if(!WinUtil::isShift() && !Util::hasParam("/noautoconnect"))
-		PostMessage(WM_SPEAKER, AUTO_CONNECT);
+		callAsync([=] { autoConnect(FavoriteManager::getInstance()->getFavoriteHubs()); });
 
-	PostMessage(WM_SPEAKER, PARSE_COMMAND_LINE);
+	callAsync([=] { parseCommandLine(GetCommandLine()); });
 
 	try {
 		File::ensureDirectory(SETTING(LOG_DIRECTORY));
@@ -714,116 +714,178 @@ HWND MainFrame::createToolbar() {
 	return ctrlToolbar.m_hWnd;
 }
 
-LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	if(wParam == VIEW_FILE_AND_DELETE) {
-		auto_ptr<tstring> file(reinterpret_cast<tstring*>(lParam));
-		TextFrame::openWindow(*file, TextFrame::NORMAL);
-		File::deleteFile(Text::fromT(*file));
-	} else if(wParam == STATS) {
-		checkAwayIdle();
+LRESULT MainFrame::onWindowMinimizeAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	HWND tmpWnd = GetWindow(GW_CHILD); //getting client window
+	tmpWnd = ::GetWindow(tmpWnd, GW_CHILD); //getting first child window
+	while (tmpWnd!=NULL) {
+		::CloseWindow(tmpWnd);
+		tmpWnd = ::GetWindow(tmpWnd, GW_HWNDNEXT);
+	}
+	return 0;
+}
 
-		auto_ptr<TStringList> pstr(reinterpret_cast<TStringList*>(lParam));
-		const TStringList& str = *pstr;
-		if(ctrlStatus.IsWindow()) {
-			bool u = false;
-			ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? awayIconON : awayIconOFF);
-			auto pos = 0;
-			for(int i = STATUS_SHARED; i < STATUS_SHUTDOWN; i++) {
-				
-				const int w = WinUtil::getTextWidth(str[pos], ctrlStatus.m_hWnd);
-				
-				if(i == STATUS_SLOTS) {
-					if(str[pos][0] == '0') // a hack, do this some other way.
-						ctrlStatus.SetIcon(STATUS_SLOTS, slotsFullIcon);
-					else
-						ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
-				}
-		
-				if(statusSizes[i-1] < w || statusSizes[i-1] > (w + 50) ) {
-					statusSizes[i-1] = w;
-					u = true;
-				}
+LRESULT MainFrame::onSelected(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	HWND hWnd = (HWND)wParam;
+	if(MDIGetActive() != hWnd) {
+		MDIActivate(hWnd);
+	} else if(SETTING(TOGGLE_ACTIVE_WINDOW)) {
+		::SetWindowPos(hWnd, HWND_BOTTOM, 0, 0, 0, 0, SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+		MDINext(hWnd);
+		hWnd = MDIGetActive();
+	}
+	if(::IsIconic(hWnd))
+		::ShowWindow(hWnd, SW_RESTORE);
+	return 0;
+}
 
-				ctrlStatus.SetText(i, str[pos].c_str());
-				pos++;
+LRESULT MainFrame::onWindowRestoreAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	HWND tmpWnd = GetWindow(GW_CHILD); //getting client window
+	HWND ClientWnd = tmpWnd; //saving client window handle
+	tmpWnd = ::GetWindow(tmpWnd, GW_CHILD); //getting first child window
+	BOOL bmax;
+	while (tmpWnd!=NULL) {
+		::ShowWindow(tmpWnd, SW_RESTORE);
+		::SendMessage(ClientWnd,WM_MDIGETACTIVE,NULL,(LPARAM)&bmax);
+		if(bmax)break; //bmax will be true if active child 
+		//window is maximized, so if bmax then break
+		tmpWnd = ::GetWindow(tmpWnd, GW_HWNDNEXT);
+	}
+	return 0;
+}
+
+LRESULT MainFrame::onTray(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) { 
+	updateTray(false);
+	trayUID++;
+	updateTray(true); 
+	return 0;
+}
+
+LRESULT MainFrame::onRowsChanged(UINT /*uMsg*/, WPARAM /* wParam */, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	UpdateLayout();
+	Invalidate();
+	return 0;
+}
+
+void MainFrame::updateStatus(TStringList* aList) {
+	checkAwayIdle();
+	if(ctrlStatus.IsWindow()) {
+		const auto& str = *aList;
+		bool u = false;
+		ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? awayIconON : awayIconOFF);
+		auto pos = 0;
+		for(int i = STATUS_SHARED; i < STATUS_SHUTDOWN; i++) {
+
+			const int w = WinUtil::getTextWidth(str[pos], ctrlStatus.m_hWnd);
+
+			if(i == STATUS_SLOTS) {
+				if(str[pos][0] == '0') // a hack, do this some other way.
+					ctrlStatus.SetIcon(STATUS_SLOTS, slotsFullIcon);
+				else
+					ctrlStatus.SetIcon(STATUS_SLOTS, slotsIcon);
 			}
 
-			if(u)
-				UpdateLayout(TRUE);
+			if(statusSizes[i-1] < w || statusSizes[i-1] > (w + 50) ) {
+				statusSizes[i-1] = w;
+				u = true;
+			}
 
-			if (bShutdown) {
-				uint64_t iSec = GET_TICK() / 1000;
-				if(!isShutdownStatus) {
-					ctrlStatus.SetIcon(STATUS_SHUTDOWN, hShutdownIcon);
-					isShutdownStatus = true;
-				}
-				if (DownloadManager::getInstance()->getDownloadCount() > 0) {
-					iCurrentShutdownTime = iSec;
-					ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
-				} else {
-					int64_t timeLeft = SETTING(SHUTDOWN_TIMEOUT) - (iSec - iCurrentShutdownTime);
-					ctrlStatus.SetText(STATUS_SHUTDOWN, (_T(" ") + Util::formatSecondsW(timeLeft, timeLeft < 3600)).c_str(), SBT_POPOUT);
-					if (iCurrentShutdownTime + SETTING(SHUTDOWN_TIMEOUT) <= iSec) {
-						bool bDidShutDown = false;
-						bDidShutDown = WinUtil::shutDown(SETTING(SHUTDOWN_ACTION));
-						if (bDidShutDown) {
-							// Should we go faster here and force termination?
-							// We "could" do a manual shutdown of this app...
-						} else {
-							LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN), LogManager::LOG_ERROR);
-							ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
-						}
-						// We better not try again. It WON'T work...
-						bShutdown = false;
-					}
-				}
-			} else {
-				if(isShutdownStatus) {
-					ctrlStatus.SetIcon(STATUS_SHUTDOWN, NULL);
-					isShutdownStatus = false;
-				}
+			ctrlStatus.SetText(i, str[pos].c_str());
+			pos++;
+		}
+
+		if(u)
+			UpdateLayout(TRUE);
+
+		if (bShutdown) {
+			uint64_t iSec = GET_TICK() / 1000;
+			if(!isShutdownStatus) {
+				ctrlStatus.SetIcon(STATUS_SHUTDOWN, hShutdownIcon);
+				isShutdownStatus = true;
+			}
+			if (DownloadManager::getInstance()->getDownloadCount() > 0) {
+				iCurrentShutdownTime = iSec;
 				ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
-			}
-		}
-	} else if(wParam == AUTO_CONNECT) {
-		autoConnect(FavoriteManager::getInstance()->getFavoriteHubs());
-	} else if(wParam == PARSE_COMMAND_LINE) {
-		parseCommandLine(GetCommandLine());
-	} else if(wParam == STATUS_MESSAGE) {
-		//tstring* msg = (tstring*)lParam;
-		LogInfo *msg = (LogInfo*)lParam;
-		if(ctrlStatus.IsWindow()) {
-			//tstring line = Text::toT("[" + Util::getShortTimeString() + "] ") + *msg;
-			tstring line = Text::toT("[" + Util::getTimeStamp(msg->time) + "] ") + msg->msg;
-
-			ctrlStatus.SetText(STATUS_LASTLINES, line.c_str());
-			while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
-				lastLinesList.erase(lastLinesList.begin());
-			if (_tcschr(line.c_str(), _T('\r')) == NULL) {
-				lastLinesList.push_back(line);
 			} else {
-				lastLinesList.push_back(line.substr(0, line.find(_T('\r'))));
+				int64_t timeLeft = SETTING(SHUTDOWN_TIMEOUT) - (iSec - iCurrentShutdownTime);
+				ctrlStatus.SetText(STATUS_SHUTDOWN, (_T(" ") + Util::formatSecondsW(timeLeft, timeLeft < 3600)).c_str(), SBT_POPOUT);
+				if (iCurrentShutdownTime + SETTING(SHUTDOWN_TIMEOUT) <= iSec) {
+					bool bDidShutDown = false;
+					bDidShutDown = WinUtil::shutDown(SETTING(SHUTDOWN_ACTION));
+					if (bDidShutDown) {
+						// Should we go faster here and force termination?
+						// We "could" do a manual shutdown of this app...
+					} else {
+						LogManager::getInstance()->message(STRING(FAILED_TO_SHUTDOWN), LogManager::LOG_ERROR);
+						ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
+					}
+					// We better not try again. It WON'T work...
+					bShutdown = false;
+				}
 			}
-			switch(msg->severity) {
-				case LogManager::LOG_INFO:
-					ctrlStatus.SetIcon(STATUS_LASTLINES, infoIcon);
-					break;
-				case LogManager::LOG_WARNING:
-					ctrlStatus.SetIcon(STATUS_LASTLINES, warningIcon);
-					break;
-				case LogManager::LOG_ERROR:
-					ctrlStatus.SetIcon(STATUS_LASTLINES, errorIcon);
-					break;
-				default:
-					break;
+		} else {
+			if(isShutdownStatus) {
+				ctrlStatus.SetIcon(STATUS_SHUTDOWN, NULL);
+				isShutdownStatus = false;
 			}
+			ctrlStatus.SetText(STATUS_SHUTDOWN, _T(""));
 		}
-		delete msg;
-	} else if(wParam == WM_CLOSE) {
-		PopupManager::getInstance()->Remove((int)lParam);
-	} else if(wParam == SET_PM_TRAY_ICON) {
-		if((!bIsPM) && (!WinUtil::isAppActive || bAppMinimized)) {
-			bIsPM = true;
+	}
+
+	delete aList;
+}
+
+void MainFrame::on(LogManagerListener::Message, time_t t, const string& m, uint8_t sev) noexcept {
+	addStatus(m, t, sev);
+}
+
+void MainFrame::addStatus(const string& aMsg, time_t aTime, uint8_t severity) {
+	if(ctrlStatus.IsWindow()) {
+		tstring line = Text::toT("[" + Util::getTimeStamp(aTime) + "] " + aMsg);
+
+		ctrlStatus.SetText(STATUS_LASTLINES, line.c_str());
+		while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
+			lastLinesList.pop_front();
+
+		if (_tcschr(line.c_str(), _T('\r')) == NULL) {
+			lastLinesList.push_back(line);
+		} else {
+			lastLinesList.push_back(line.substr(0, line.find(_T('\r'))));
+		}
+
+		switch(severity) {
+		case LogManager::LOG_INFO:
+			ctrlStatus.SetIcon(STATUS_LASTLINES, infoIcon);
+			break;
+		case LogManager::LOG_WARNING:
+			ctrlStatus.SetIcon(STATUS_LASTLINES, warningIcon);
+			break;
+		case LogManager::LOG_ERROR:
+			ctrlStatus.SetIcon(STATUS_LASTLINES, errorIcon);
+			break;
+		default:
+			break;
+		}
+	}
+}
+
+void MainFrame::onChatMessage(bool pm) {
+	if(!bIsPM && (!WinUtil::isAppActive || bAppMinimized)) { //using IsPM to avoid the 2 icons getting mixed up
+		bIsPM = true;
+		if (!pm) {
+			if(taskbarList) {
+				taskbarList->SetOverlayIcon(m_hWnd, hubicon.hIcon, NULL);
+			}
+			if(bTrayIcon) {
+				NOTIFYICONDATA nid;
+				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
+				nid.cbSize = sizeof(NOTIFYICONDATA);
+				nid.hWnd = m_hWnd;
+				nid.uID = trayUID;
+				nid.uFlags = NIF_ICON;
+				nid.hIcon = hubicon.hIcon;
+				::Shell_NotifyIcon(NIM_MODIFY, &nid);
+			}
+		} else {
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, pmicon.hIcon, NULL);
 			}
@@ -838,32 +900,7 @@ LRESULT MainFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& 
 				::Shell_NotifyIcon(NIM_MODIFY, &nid);
 			}
 		}
-    } else if(wParam == SET_HUB_TRAY_ICON) {
-		if((!bIsPM) && (!WinUtil::isAppActive || bAppMinimized)) { //using IsPM to avoid the 2 icons getting mixed up
-			bIsPM = true;
-			if(taskbarList) {
-				taskbarList->SetOverlayIcon(m_hWnd, hubicon.hIcon, NULL);
-			}
-			if(bTrayIcon) {
-				NOTIFYICONDATA nid;
-				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
-				nid.cbSize = sizeof(NOTIFYICONDATA);
-				nid.hWnd = m_hWnd;
-				nid.uID = trayUID;
-				nid.uFlags = NIF_ICON;
-				nid.hIcon = hubicon.hIcon;
-				::Shell_NotifyIcon(NIM_MODIFY, &nid);
-			}
-		}
-	} else if(wParam == UPDATE_TBSTATUS_REFRESHING) {
-		updateTBStatusRefreshing();
-    } else if(wParam == ASYNC) {
-		auto f = reinterpret_cast<Dispatcher::F*>(lParam);
-		(*f)();
-		delete f;
-    }
-
-	return 0;
+	}
 }
 
 void MainFrame::parseCommandLine(const tstring& cmdLine)
@@ -994,9 +1031,6 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			}
 
 			SettingsManager::getInstance()->save();
-			if(missedAutoConnect && !SETTING(NICK).empty()) {
-				PostMessage(WM_SPEAKER, AUTO_CONNECT);
-			}
 
 			if (prevTranslation != SETTING(LANGUAGE_FILE)) {
 				UpdateManager::getInstance()->checkLanguage();
@@ -1053,6 +1087,10 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 				GeoManager::getInstance()->rebuild();
 			}
 		});
+
+		if(SETTING(DISCONNECT_SPEED) < 1) {
+			SettingsManager::getInstance()->set(SettingsManager::DISCONNECT_SPEED, 1);
+		}
  
 		if(SETTING(SORT_FAVUSERS_FIRST) != lastSortFavUsersFirst)
 			HubFrame::resortUsers();
@@ -1087,6 +1125,10 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 		if(tabsontop != SETTING(TABS_ON_TOP)) {
 			tabsontop = SETTING(TABS_ON_TOP);
 			UpdateLayout();
+		}
+
+		if(missedAutoConnect && !SETTING(NICK).empty()) {
+			autoConnect(FavoriteManager::getInstance()->getFavoriteHubs());
 		}
 	}
 }
@@ -1881,20 +1923,16 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	str->push_back(up + _T("] ") + Util::formatBytesW(updiff*1000I64/diff) + _T("/s"));
 	str->push_back(Util::formatBytesW(queueSize < 0 ? 0 : queueSize));
 
-	PostMessage(WM_SPEAKER, STATS, (LPARAM)str);
+	callAsync([=] { updateStatus(str); });
 	SettingsManager::getInstance()->set(SettingsManager::TOTAL_UPLOAD, SETTING(TOTAL_UPLOAD) + updiff);
 	SettingsManager::getInstance()->set(SettingsManager::TOTAL_DOWNLOAD, SETTING(TOTAL_DOWNLOAD) + downdiff);
 	lastUpdate = aTick;
 	lastUp = totalUp;
 	lastDown = totalDown;
 
-	if(SETTING(DISCONNECT_SPEED) < 1) {
-		SettingsManager::getInstance()->set(SettingsManager::DISCONNECT_SPEED, 1);
-	}
-
 	if(TBStatusCtrl.IsWindowVisible()){
 		if(ShareManager::getInstance()->isRefreshing()){
-			PostMessage(WM_SPEAKER, UPDATE_TBSTATUS_REFRESHING, 0);
+			callAsync([=] { updateTBStatusRefreshing(); });
 		} else {
 			string file;
 			int64_t bytes = 0;
@@ -1924,7 +1962,10 @@ void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr& qi, const
 	}
 
 	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && qi->isSet(QueueItem::FLAG_TEXT)) {
-		PostMessage(WM_SPEAKER, VIEW_FILE_AND_DELETE, (LPARAM) new tstring(Text::toT(qi->getTarget())));
+		callAsync([=] {
+			TextFrame::openWindow(Text::toT(qi->getTarget()), TextFrame::NORMAL);
+			File::deleteFile(qi->getTarget());
+		});
 	}
 }
 
@@ -2095,7 +2136,7 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	return 0;
 }
 
-LRESULT MainFrame::onDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	LPNMTOOLBAR tb = (LPNMTOOLBAR)pnmh;
 	OMenu dropMenu;
 	dropMenu.CreatePopupMenu();
@@ -2164,10 +2205,6 @@ void MainFrame::checkAwayIdle() {
 			awayIdle ? AirUtil::setAway(AWAY_OFF) : AirUtil::setAway(AWAY_IDLE);
 		}
 	}
-}
-
-void MainFrame::callAsync(function<void ()> f) {
-	PostMessage(WM_SPEAKER, ASYNC, (LPARAM)new Dispatcher::F(f));
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noexcept {

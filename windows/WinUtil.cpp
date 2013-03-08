@@ -51,6 +51,10 @@
 #include "BarShader.h"
 #include "ExMessageBox.h"
 
+boost::wregex WinUtil::pathReg;
+boost::wregex WinUtil::chatLinkReg;
+boost::wregex WinUtil::chatReleaseReg;
+
 unique_ptr<SplashWindow> WinUtil::splash;
 HBRUSH WinUtil::bgBrush = NULL;
 COLORREF WinUtil::textColor = 0;
@@ -338,6 +342,10 @@ void WinUtil::preInit() {
 }
 
 void WinUtil::init(HWND hWnd) {
+	pathReg.assign(_T("((?<=\\s)(([A-Za-z0-9]:)|(\\\\))(\\\\[^\\\\:]+)(\\\\([^\\s:])([^\\\\:])*)*((\\.[a-z0-9]{2,10})|(\\\\))(?=(\\s|$|:|,)))"));
+	chatReleaseReg.assign(Text::toT(AirUtil::getReleaseRegLong(true)));
+	chatLinkReg.assign(Text::toT(AirUtil::getLinkUrl()), boost::regex_constants::icase);
+
 	mainWnd = hWnd;
 
 	mainMenu.CreateMenu();

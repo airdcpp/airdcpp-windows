@@ -161,6 +161,10 @@ public:
 		ResourceManager::Strings translatedString;
 	};
 
+	static boost::wregex pathReg;
+	static boost::wregex chatLinkReg;
+	static boost::wregex chatReleaseReg;
+
 	static HBRUSH bgBrush;
 	static COLORREF textColor;
 	static COLORREF bgColor;
