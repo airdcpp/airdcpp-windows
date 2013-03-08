@@ -531,8 +531,10 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 				addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + nick + _T(": ") + Text::toT(text), WinUtil::m_ChatTextPrivate);
 			}
 
-			HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;//GetTopLevelWindow();
-			::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_PM_TRAY_ICON, NULL);
+			if (!identity.isHub() && !identity.isBot()) {
+				HWND hMainWnd = MainFrame::getMainFrame()->m_hWnd;//GetTopLevelWindow();
+				::PostMessage(hMainWnd, WM_SPEAKER, MainFrame::SET_PM_TRAY_ICON, NULL);
+			}
 		}
 	}
 }
@@ -1057,7 +1059,6 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 LRESULT HubFrame::onOpenMyList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	//DirectoryListingFrame::openWindow(Text::toT(client->getShareProfile()), Text::toT(Util::emptyString), HintedUser(ClientManager::getInstance()->getMe(), client->getHubUrl()), 0, true);
 	DirectoryListingManager::getInstance()->openOwnList(client->getShareProfile());
 	return 0;
 }
@@ -1320,7 +1321,7 @@ void HubFrame::addStatus(const tstring& aLine, CHARFORMAT2& cf, bool inChat /* =
 
 	ctrlStatus.SetText(0, sLine);
 	while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
-		lastLinesList.erase(lastLinesList.begin());
+		lastLinesList.pop_front();
 	lastLinesList.push_back(sLine);
 
 	if (SETTING(BOLD_HUB)) {

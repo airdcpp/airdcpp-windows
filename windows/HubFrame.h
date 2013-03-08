@@ -283,7 +283,7 @@ private:
 	string getLogPath(bool status = false) const;
 
 	enum { MAX_CLIENT_LINES = 5 };
-	TStringList lastLinesList;
+	deque<tstring> lastLinesList;
 	tstring lastLines;
 	CToolTipCtrl ctrlTooltips;
 	

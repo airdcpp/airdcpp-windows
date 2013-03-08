@@ -717,7 +717,7 @@ int CALLBACK WinUtil::browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LP
 }
 
 bool WinUtil::browseDirectory(tstring& target, HWND owner /* = NULL */) {
-	TCHAR buf[MAX_PATH];
+	TCHAR buf[UNC_MAX_PATH];
 	BROWSEINFO bi;
 	LPMALLOC ma;
 	
@@ -734,8 +734,8 @@ bool WinUtil::browseDirectory(tstring& target, HWND owner /* = NULL */) {
 		SHGetPathFromIDList(pidl, buf);
 		target = buf;
 		
-		if(target.size() > 0 && target[target.size()-1] != _T('\\'))
-			target+=_T('\\');
+		if(target.size() > 0 && target[target.size()-1] != PATH_SEPARATOR)
+			target += PATH_SEPARATOR;
 		
 		if(SHGetMalloc(&ma) != E_FAIL) {
 			ma->Free(pidl);
@@ -756,7 +756,7 @@ bool WinUtil::MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& t
 }
 
 bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* = true */, const tstring& initialDir /* = Util::emptyString */, const TCHAR* types /* = NULL */, const TCHAR* defExt /* = NULL */) {
-	TCHAR buf[MAX_PATH];
+	TCHAR buf[UNC_MAX_PATH];
 	OPENFILENAME ofn = { 0 };       // common dialog box structure
 	target = Text::toT(Util::validateFileName(Text::fromT(target)));
 	_tcscpy(buf, target.c_str());
