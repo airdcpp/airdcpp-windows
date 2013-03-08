@@ -32,7 +32,7 @@
 #include "TypedListViewCtrl.h"
 #include "ImageDataObject.h"
 #include "UCHandler.h"
-#include "MenuBaseHandlers.h"
+#include "DownloadBaseHandler.h"
 
 #ifndef MSFTEDIT_CLASS
 #define MSFTEDIT_CLASS L"RICHEDIT50W";

@@ -24,7 +24,6 @@
 #include "../client/ColorSettings.h"
 #include "../client/HighlightManager.h"
 #include "../client/StringTokenizer.h"
-#include "../client/version.h"
 #include "Resource.h"
 #include "FulHighlightPage.h"
 #include "FulHighlightDialog.h"

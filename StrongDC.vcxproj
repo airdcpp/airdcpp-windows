@@ -619,6 +619,7 @@
     <ClInclude Include="windows\DirectoryListingDlg.h" />
     <ClInclude Include="windows\DirectoryListingFrm.h" />
     <ClInclude Include="windows\Dispatchers.h" />
+    <ClInclude Include="windows\DownloadBaseHandler.h" />
     <ClInclude Include="windows\EmoticonsManager.h" />
     <ClInclude Include="windows\AirAppearancePage.h" />
     <ClInclude Include="windows\ChatFrameBase.h" />
@@ -638,7 +639,7 @@
     <ClInclude Include="windows\AppearancePage.h" />
     <ClInclude Include="windows\AutosearchDlg.h" />
     <ClInclude Include="windows\FavoriteDirDlg.h" />
-    <ClInclude Include="windows\MenuBaseHandlers.h" />
+    <ClInclude Include="windows\UserInfoBaseHandler.h" />
     <ClInclude Include="windows\SearchPage.h" />
     <ClInclude Include="windows\AVIPreview.h" />
     <ClInclude Include="windows\BarShader.h" />

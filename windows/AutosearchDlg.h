@@ -28,7 +28,7 @@
 #include "../client/TargetUtil.h"
 #include "../client/ResourceManager.h"
 #include "../client/AutoSearchManager.h"
-#include "MenuBaseHandlers.h"
+#include "DownloadBaseHandler.h"
 #include "SearchTypeCombo.h"
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))

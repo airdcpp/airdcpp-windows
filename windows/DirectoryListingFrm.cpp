@@ -38,6 +38,7 @@
 #include "../client/ShareScannerManager.h"
 #include "../client/Wildcards.h"
 #include "../client/DirectoryListingManager.h"
+#include "../client/version.h"
 #include "TextFrame.h"
 
 
@@ -73,7 +74,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), Async(this)
+		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false)
 {
 	dl->addListener(this);
 }

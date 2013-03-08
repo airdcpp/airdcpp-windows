@@ -26,7 +26,8 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 #include "RichTextBox.h"
-#include "MenuBaseHandlers.h"
+#include "UserInfoBaseHandler.h"
+#include "DownloadBaseHandler.h"
 
 #include "../client/AdcSearch.h"
 #include "../client/Client.h"

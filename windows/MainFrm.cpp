@@ -68,6 +68,7 @@
 #include "../client/UpdateManager.h"
 #include "../client/GeoManager.h"
 #include "../client/ThrottleManager.h"
+#include "../client/version.h"
 
 MainFrame* MainFrame::anyMF = NULL;
 bool MainFrame::bShutdown = false;
@@ -83,7 +84,7 @@ MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastU
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
 bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false), trayUID(0),
-statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), Async(this)
+statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
 
 
 { 

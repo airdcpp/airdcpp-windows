@@ -23,9 +23,10 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "Async.h"
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
-#include "MenuBaseHandlers.h"
+#include "UserInfoBaseHandler.h"
 #include "RichTextBox.h"
 #include "ListFilter.h"
 
@@ -37,7 +38,7 @@
 
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::FAVORITE_USERS, IDC_FAVUSERS>,
 	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
-	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener {
+	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener, private Async<UsersFrame> {
 public:
 	
 	UsersFrame();
@@ -92,8 +93,6 @@ public:
 	LRESULT onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
-
-	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	
 	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlUsers.SetFocus();
@@ -181,10 +180,6 @@ private:
 	ListFilter filter;
 
 	std::unordered_map<UserPtr, UserInfo, User::Hash> userInfos;
-
-	void callAsync(function<void ()> f) {
-		PostMessage(WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(f));
-	}
 
 	bool closed;
 	bool showInfo;

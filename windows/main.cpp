@@ -37,6 +37,7 @@
 #include "../client/MappingManager.h"
 #include "../client/UpdateManager.h"
 #include "../client/Updater.h"
+#include "../client/version.h"
 
 #include "SplashWindow.h"
 #include "ShellExecAsUser.h"

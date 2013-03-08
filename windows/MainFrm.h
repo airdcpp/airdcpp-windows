@@ -56,7 +56,7 @@ class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFr
 public:
 	MainFrame();
 	virtual ~MainFrame();
-	DECLARE_FRAME_WND_CLASS(_T(APPNAME), IDR_MAINFRAME)
+	DECLARE_FRAME_WND_CLASS(_T("AirDC++"), IDR_MAINFRAME)
 
 	CMDICommandBarCtrl m_CmdBar;
 

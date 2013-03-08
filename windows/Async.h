@@ -31,9 +31,9 @@ template<class Parent>
 class Async {
 
 public:
-	Async(Parent* aParent) : parent(aParent) {}
+	Async() {}
 	void callAsync(std::function<void ()> f) {
-		PostMessage(parent->m_hWnd, WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(f));
+		PostMessage(((Parent*)this)->m_hWnd, WM_SPEAKER, NULL, (LPARAM)new Dispatcher::F(f));
 	}
 
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -43,8 +43,6 @@ public:
 
 		return 0;
 	}
-private:
-	Parent* parent;
 };
 
 }

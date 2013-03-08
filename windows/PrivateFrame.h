@@ -28,6 +28,7 @@
 #include "../client/DelayedEvents.h"
 #include "../client/UserInfoBase.h"
 
+#include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
 #include "FlatTabCtrl.h"
 #include "UCHandler.h"

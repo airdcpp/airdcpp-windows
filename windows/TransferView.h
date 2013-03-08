@@ -39,7 +39,7 @@
 #include "TypedListViewCtrl.h"
 #include "resource.h"
 #include "SearchFrm.h"
-#include "MenuBaseHandlers.h"
+#include "UserInfoBaseHandler.h"
 
 class TransferView : public CWindowImpl<TransferView>, private DownloadManagerListener, 
 	private UploadManagerListener, private ConnectionManagerListener, private QueueManagerListener,

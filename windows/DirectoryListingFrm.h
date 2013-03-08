@@ -29,7 +29,8 @@
 #include "FlatTabCtrl.h"
 #include "FilteredListViewCtrl.h"
 #include "UCHandler.h"
-#include "MenuBaseHandlers.h"
+#include "UserInfoBaseHandler.h"
+#include "DownloadBaseHandler.h"
 #include "TypedTreeCtrl.h"
 
 #include "Async.h"

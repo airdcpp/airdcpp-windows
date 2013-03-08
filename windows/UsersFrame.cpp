@@ -697,14 +697,6 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 
 	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());
 }
-
-LRESULT UsersFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
-	auto f = reinterpret_cast<Dispatcher::F*>(lParam);
-	(*f)();
-	delete f;
-
-	return 0;
-}
 			
 LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlUsers.GetSelectedCount() == 1) {

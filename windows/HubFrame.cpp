@@ -198,7 +198,7 @@ HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate
 		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		filter(OnlineUser::COLUMN_LAST, [this] { updateUserList(); updateUsers = true;}),
-		ChatFrameBase(this), statusDirty(true), Async(this)
+		ChatFrameBase(this), statusDirty(true)
 {
 	client = ClientManager::getInstance()->createClient(Text::fromT(aServer));
 	client->setShareProfile(aShareProfile);

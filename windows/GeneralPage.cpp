@@ -18,7 +18,6 @@
 
 #include "stdafx.h"
 
-#include "../client/version.h"
 #include "../client/AirUtil.h"
 #include "../client/Localization.h"
 #include "Resource.h"

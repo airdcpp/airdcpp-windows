@@ -26,7 +26,7 @@
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 #include "MainFrm.h"
-#include "MenuBaseHandlers.h"
+#include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
 
 #include "../client/Client.h"

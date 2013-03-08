@@ -40,6 +40,7 @@
 #include "../client/ClientManager.h"
 #include "../client/ConnectivityManager.h"
 #include "../client/ThrottleManager.h"
+#include "../client/version.h"
 
 extern EmoticonsManager* emoticonsManager;
 
