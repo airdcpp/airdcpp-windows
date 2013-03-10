@@ -1777,5 +1777,7 @@ Do you want to use this destination anyway?</String>
 		<String Name="Queued">Queued</String>
 		<String Name="BundlesQueued">Queued bundle files</String>
 		<String Name="ScanResultNote">Detailed scanning results are shown in a separate tab.</String>
+		<String Name="XDirectoriesRefreshed">%d directories have been refreshed</String>
+		<String Name="FileListRefreshInitiatedXPaths">File list refresh initiated for %d directories</String>
 	</Strings>
 </Language>
