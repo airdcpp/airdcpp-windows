@@ -1776,5 +1776,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="MultilineInput">Multiline input area</String>
 		<String Name="Queued">Queued</String>
 		<String Name="BundlesQueued">Queued bundle files</String>
+		<String Name="ScanResultNote">Detailed scanning results are shown in a separate tab.</String>
 	</Strings>
 </Language>

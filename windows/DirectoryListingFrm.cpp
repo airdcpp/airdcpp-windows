@@ -426,7 +426,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 
 	d->sortDirs();
 
-	if (isExpanded || initialChange || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
+	if (changeDir && (isExpanded || initialChange || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE))
 		ctrlTree.Expand(ht);
 
 

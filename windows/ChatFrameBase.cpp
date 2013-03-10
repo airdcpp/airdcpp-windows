@@ -390,7 +390,8 @@ LRESULT ChatFrameBase::onDropFiles(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam
 	}
 	DragFinish(drop);
 
-	addMagnet(paths);
+	if (!paths.empty())
+		addMagnet(paths);
 	return 0;
 }
 
