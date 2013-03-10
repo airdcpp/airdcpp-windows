@@ -170,7 +170,11 @@ public:
 		//have we created it yet?
 		if (hasChildren(ht) && !IsExpanded(ht)) {
 			Expand(ht, TVE_EXPAND);
-			return findItem(ht, name);
+			auto ret = findItem(ht, name);
+
+			//leave it as it was...
+			Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
+			return ht;
 		}
 
 		return NULL;

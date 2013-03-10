@@ -499,11 +499,11 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 }
 
 void HubFrame::onPrivateMessage(const ChatMessage& message) {
-	const auto& identity = message.from->getIdentity();
+	const auto& identity = message.replyTo->getIdentity();
 	tstring nick = Text::toT(identity.getNick());
 
 	bool ignore = false, window = false;
-	if(!message.from->getUser() || (ignoreList.find(message.from->getUser()) == ignoreList.end()) || (identity.isOp() && !client->isOp())) {
+	if(!message.from->getUser() || (ignoreList.find(message.from->getUser()) == ignoreList.end()) || (message.from->getIdentity().isOp() && !client->isOp())) {
 		bool myPM = message.replyTo->getUser() == ClientManager::getInstance()->getMe();
 		const UserPtr& user = myPM ? message.to->getUser() : message.replyTo->getUser();
 		auto text = message.format();
