@@ -418,11 +418,9 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 	ctrlTree.SelectItem(NULL);
 
 	bool isExpanded = ctrlTree.IsExpanded(ht);
-	if (isExpanded) {
-		ctrlTree.Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
-	}
 
-	dcassert(ctrlTree.GetChildItem(ht) == NULL);
+	//make sure that all subitems are removed
+	ctrlTree.Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
 
 	d->sortDirs();
 

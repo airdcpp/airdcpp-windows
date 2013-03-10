@@ -173,8 +173,8 @@ public:
 			auto ret = findItem(ht, name);
 
 			//leave it as it was...
-			Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
-			return ht;
+			Expand(ht, TVE_COLLAPSE);
+			return ret;
 		}
 
 		return NULL;
