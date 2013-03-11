@@ -528,7 +528,7 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 			addStatus(TSTRING(IGNORED_MESSAGE) + _T(" ") + Text::toT(text), WinUtil::m_ChatTextSystem, false);
 		} else {
 			if (window) {
-				PrivateFrame::gotMessage(identity, message.to->getUser(), message.replyTo->getUser(), Text::toT(text), client);
+				PrivateFrame::gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), client);
 			} else {
 				addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + nick + _T(": ") + Text::toT(text), WinUtil::m_ChatTextPrivate);
 			}
