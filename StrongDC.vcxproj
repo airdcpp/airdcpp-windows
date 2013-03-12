@@ -788,6 +788,8 @@
     <Image Include="res\cancel.ico" />
     <Image Include="res\download_user.ico" />
     <Image Include="res\ExecMasked.ico" />
+    <Image Include="res\expand_down.ico" />
+    <Image Include="res\expand_up.ico" />
     <Image Include="res\FavUser.ico" />
     <Image Include="res\file.ico" />
     <Image Include="res\folder.ico" />

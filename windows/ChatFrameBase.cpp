@@ -86,9 +86,16 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	expandDown = ResourceLoader::loadIcon(IDI_EXPAND_DOWN, 16);
 	expandUp = ResourceLoader::loadIcon(IDI_EXPAND_UP, 16);
 
-	ctrlResize.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_RESIZE);
-	ctrlResize.SetIcon(expandUp);
-	ctrlResize.SetFont(WinUtil::font);
+	ctrlTooltips.Create(m_hWnd, rcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	
+	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
+	ctrlTooltips.Activate(TRUE);
+
+	if(SETTING(SHOW_MULTILINE)){
+		ctrlResize.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_RESIZE);
+		ctrlResize.SetIcon(expandUp);
+		ctrlResize.SetFont(WinUtil::font);
+		ctrlTooltips.AddTool(ctrlResize.m_hWnd, CTSTRING(MULTILINE_INPUT));
+	}
 
 	ctrlMessage.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_VSCROLL |
 		ES_AUTOHSCROLL | ES_MULTILINE | ES_AUTOVSCROLL, WS_EX_CLIENTEDGE);
@@ -96,22 +103,19 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	ctrlMessage.SetLimitText(9999);
 	lineCount = 1; //ApexDC
 
+	if(SETTING(SHOW_EMOTICON)){
+		ctrlEmoticons.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_BITMAP | BS_CENTER, 0, IDC_EMOT);
+		hEmoticonBmp.LoadFromResource(IDR_EMOTICON, _T("PNG"), _Module.get_m_hInst());
+		ctrlEmoticons.SetBitmap(hEmoticonBmp);
+		ctrlTooltips.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(INSERT_EMOTICON));
+	}
 
-	ctrlEmoticons.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_BITMAP | BS_CENTER, 0, IDC_EMOT);
-	hEmoticonBmp.LoadFromResource(IDR_EMOTICON, _T("PNG"), _Module.get_m_hInst());
-  	ctrlEmoticons.SetBitmap(hEmoticonBmp);
-
-	ctrlTooltips.Create(m_hWnd, rcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	
-	ctrlTooltips.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(INSERT_EMOTICON));
-	ctrlTooltips.AddTool(ctrlResize.m_hWnd, CTSTRING(MULTILINE_INPUT));
-	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
-	ctrlTooltips.Activate(TRUE);
-
-	bool tmp = (getUser() && (!getUser()->isSet(User::BOT) && !getUser()->isSet(User::NMDC)));
-	ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
-	ctrlMagnet.SetIcon(ResourceLoader::loadIcon(IDI_MAGNET, 20));
-	ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, tmp ? CTSTRING(SEND_FILE_PM) : CTSTRING(SEND_FILE_HUB));
-	
+	if(SETTING(SHOW_MAGNET)) {
+		bool tmp = (getUser() && (!getUser()->isSet(User::BOT) && !getUser()->isSet(User::NMDC)));
+		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
+		ctrlMagnet.SetIcon(ResourceLoader::loadIcon(IDI_MAGNET, 20));
+		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, tmp ? CTSTRING(SEND_FILE_PM) : CTSTRING(SEND_FILE_HUB));
+	}
 }
 
 LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {

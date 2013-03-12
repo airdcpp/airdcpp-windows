@@ -729,7 +729,11 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	}
 	SetSplitterRect(rc);
 
-	int buttonsize = 24 +2;
+	int buttonsize = 0;
+	
+	if(ctrlEmoticons.IsWindow())
+		buttonsize +=26;
+
 	if(ctrlMagnet.IsWindow())
 		buttonsize += 26;
 
@@ -756,9 +760,11 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		ctrlResize.MoveWindow(rc);
 	}
 
-	rc.left = rc.right + 2;
-	rc.right += 24;
-	ctrlEmoticons.MoveWindow(rc);
+	if(ctrlEmoticons.IsWindow()) {
+		rc.left = rc.right + 2;
+		rc.right += 24;
+		ctrlEmoticons.MoveWindow(rc);
+	}
 	
 	if(ctrlMagnet.IsWindow()){
 		//magnet button

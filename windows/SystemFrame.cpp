@@ -146,7 +146,7 @@ LRESULT SystemFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, 
 	return 0;
 }
 
-LRESULT SystemFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT SystemFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	TaskQueue::List tl;
 	messages.get(tl);
 
@@ -164,7 +164,7 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	ctrlPad.SetRedraw(FALSE);
 	
 	POINT pt = { 0 };
-	bool scroll = scrollIsAtEnd();
+	bool scroll = !lButtonDown && scrollIsAtEnd();
 	ctrlPad.GetScrollPos(&pt);
 
 	LONG SavedBegin, SavedEnd;
@@ -237,7 +237,7 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	ctrlPad.SetSel(SavedBegin, SavedEnd); //restore the user selection
 
 	if(scroll) {                
-		ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
+		scrollToEnd();
 	} else {
 		ctrlPad.SetScrollPos(&pt);
 	}
@@ -262,11 +262,7 @@ void SystemFrame::Colorize(const tstring& line, LONG Begin){
 }
 
 void SystemFrame::scrollToEnd() {
-	POINT pt = { 0 };
-
-	ctrlPad.GetScrollPos(&pt);
 	ctrlPad.PostMessage(EM_SCROLL, SB_BOTTOM, 0);
-	ctrlPad.SetScrollPos(&pt);
 }
 
 bool SystemFrame::scrollIsAtEnd() {
@@ -275,7 +271,7 @@ bool SystemFrame::scrollIsAtEnd() {
 	si.fMask = SIF_ALL;
 	ctrlPad.GetScrollInfo(SB_VERT, &si);
 
-	return (si.nPage == 0 || ((size_t)si.nPos >= (size_t)si.nMax - si.nPage - 5) && ((size_t)si.nTrackPos >= (size_t)si.nMax - si.nPage - 5));
+	return si.nPage == 0 || ((size_t)si.nPos >= ((size_t)si.nMax - si.nPage - 5)) && ((size_t)si.nTrackPos >= ((size_t)si.nMax - si.nPage - 5));
 }
 
 
@@ -417,7 +413,7 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 
 LRESULT SystemFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if(wParam != SIZE_MINIMIZED) { 
-		if((HIWORD(lParam) > 0) && scrollIsAtEnd()) 
+		if((HIWORD(lParam) > 0)/* && scrollIsAtEnd()*/) 
 			scrollToEnd();
 
 		if(errorNotified) {

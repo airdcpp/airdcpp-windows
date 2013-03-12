@@ -504,7 +504,7 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	GetClientRect(&rect);
 	// position bars and offset their dimensions
 	UpdateBarsPosition(rect, bResizeBars);
-	
+
 	if(ctrlStatus.IsWindow()) {
 		CRect sr;
 		ctrlStatus.GetClientRect(sr);
@@ -546,7 +546,10 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	rc.bottom -= h + 10;
 	ctrlClient.MoveWindow(rc);
 	
-	int buttonsize = 24 +2;
+	int buttonsize = 0;
+	if(ctrlEmoticons.IsWindow() && SETTING(SHOW_EMOTICON))
+		buttonsize +=26;
+
 	if(ctrlMagnet.IsWindow())
 		buttonsize += 26;
 
@@ -572,9 +575,11 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		ctrlResize.MoveWindow(rc);
 	}
 
-	rc.left = rc.right + 2;
-  	rc.right += 24;
-  	ctrlEmoticons.MoveWindow(rc);
+	if(ctrlEmoticons.IsWindow()){
+		rc.left = rc.right + 2;
+  		rc.right += 24;
+  		ctrlEmoticons.MoveWindow(rc);
+	}
 	
 	if(ctrlMagnet.IsWindow()){
 		//magnet button

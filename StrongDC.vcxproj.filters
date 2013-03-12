@@ -717,9 +717,6 @@
     <ClCompile Include="windows\ListFilter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\PopupDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1016,6 +1013,9 @@
     <ClInclude Include="windows\CSplitterEx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\MenuBaseHandlers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="windows\SearchTypesPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -1086,15 +1086,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\Dispatchers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\Async.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\DownloadBaseHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\UserInfoBaseHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -1254,6 +1245,12 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\UserlistImages\UserNoconnect.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\expand_up.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\expand_down.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
