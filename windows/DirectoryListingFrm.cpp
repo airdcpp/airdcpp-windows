@@ -968,7 +968,7 @@ LRESULT DirectoryListingFrame::onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, 
 					if (!paths.empty())
 						TextFrame::openWindow(Text::toT(paths.front()), TextFrame::NORMAL);
 				} else {
-					dl->download(ii->file, Util::getOpenPath(Text::fromT(ii->getText(COLUMN_FILENAME))), true, QueueItem::HIGHEST);
+					dl->openFile(ii->file, true);
 				}
 			}
 		} catch(const Exception& e) {
@@ -1399,8 +1399,8 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItemBase:
 
 			try {
 				if(ii->type == ItemInfo::FILE) {
-					dl->download(ii->file, aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), false, 
-						WinUtil::isShift() ? QueueItem::HIGHEST : prio);
+					WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getDate(), 
+						0, WinUtil::isShift() ? QueueItem::HIGHEST : prio);
 				} else {
 					dl->addDirDownloadTask(ii->dir, aTarget, aTargetType, isSizeUnknown, WinUtil::isShift() ? QueueItem::HIGHEST : prio);
 				} 
@@ -1958,8 +1958,7 @@ LRESULT DirectoryListingFrame::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 			const ItemInfo* ii =  ctrlList.getItemData(sel);
 			if(ii->type == ItemInfo::FILE) {
 				try {
-					QueueManager::getInstance()->addFile(Util::getOpenPath(ii->file->getName()),
-						ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getPath(), QueueItem::FLAG_OPEN);
+					dl->openFile(ii->file, false);
 				} catch(const Exception&) { }
 			}
 		}

@@ -694,9 +694,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 void SearchFrame::SearchInfo::view() {
 	try {
 		if(sr->getType() == SearchResult::TYPE_FILE) {
-			QueueManager::getInstance()->addFile(Util::getOpenPath(sr->getFileName()),
-				sr->getSize(), sr->getTTH(), sr->getUser(), sr->getFile(), 
-				QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_TEXT);
+			QueueManager::getInstance()->addOpenedItem(sr->getFileName(), sr->getSize(), sr->getTTH(), sr->getUser(), true);
 		}
 	} catch(const Exception&) {
 	}
@@ -710,8 +708,7 @@ void SearchFrame::SearchInfo::open() {
 				if (!path.empty())
 					WinUtil::openFile(path);
 			} else {
-				QueueManager::getInstance()->addFile(Util::getOpenPath(sr->getFileName()),
-					sr->getSize(), sr->getTTH(), sr->getUser(), sr->getFile(), QueueItem::FLAG_OPEN);
+				QueueManager::getInstance()->addOpenedItem(sr->getFileName(), sr->getSize(), sr->getTTH(), sr->getUser(), false);
 			}
 		}
 	} catch(const Exception&) {
@@ -724,9 +721,7 @@ void SearchFrame::SearchInfo::viewNfo() {
 	reg.assign("(.+\\.nfo)", boost::regex_constants::icase);
 	if ((sr->getType() == SearchResult::TYPE_FILE) && (regex_match(sr->getFileName(), reg))) {
 		try {
-			QueueManager::getInstance()->addFile(Util::getOpenPath(sr->getFileName()),
-				sr->getSize(), sr->getTTH(), sr->getUser(), sr->getFile(), 
-				QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_TEXT);
+			QueueManager::getInstance()->addOpenedItem(sr->getFileName(), sr->getSize(), sr->getTTH(), sr->getUser(), true);
 		} catch(const Exception&) {
 		}
 	} else {
@@ -751,16 +746,12 @@ void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
 	try {
 		if(si->sr->getType() == SearchResult::TYPE_FILE) {
 			string target = tgt + (noAppend ? Util::emptyString : Text::fromT(si->getText(COLUMN_FILENAME)));
-			QueueManager::getInstance()->addFile(target, si->sr->getSize(), 
-				si->sr->getTTH(), si->sr->getUser(), si->sr->getFile(), 0, true, p);
+
+			WinUtil::addFileDownload(target, si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), si->sr->getDate(), 0, p);
 			
 			const auto& children = sf->getUserList().findChildren(si->getGroupCond());
-			for(const auto j: children) {
-				try {
-					QueueManager::getInstance()->addFile(target, j->sr->getSize(), j->sr->getTTH(), 
-						si->sr->getUser(), si->sr->getFile(), 0, true, p);
-				} catch(const Exception&) {
-				}
+			for(const auto& j: children) {
+				WinUtil::addFileDownload(target, j->sr->getSize(), j->sr->getTTH(), j->sr->getUser(), j->sr->getDate(), 0, p);
 			}
 		} else {
 			DirectoryListingManager::getInstance()->addDirectoryDownload(si->sr->getFile(), si->sr->getUser(), tgt, targetType, unknownSize ? ASK_USER : NO_CHECK, p);

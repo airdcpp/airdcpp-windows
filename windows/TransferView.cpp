@@ -241,7 +241,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				}
 			} 
 			if (parent) {
-				BundlePtr aBundle = QueueManager::getInstance()->getBundle(ii->bundle);
+				BundlePtr aBundle = QueueManager::getInstance()->findBundle(ii->bundle);
 				if (aBundle) {
 					QueueItemBase::Priority p = aBundle->getPriority();
 					priorityMenu.CheckMenuItem(p + 1, MF_BYPOSITION | MF_CHECKED);
@@ -980,7 +980,7 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	ii->bundle = bundle;
 
 	if (download) {
-		BundlePtr b = QueueManager::getInstance()->getBundle(bundle);
+		BundlePtr b = QueueManager::getInstance()->findBundle(bundle);
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();

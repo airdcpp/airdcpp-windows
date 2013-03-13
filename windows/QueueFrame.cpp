@@ -1161,7 +1161,7 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
 		//BundleList bundles = dii->getBundles();
 		if (dii->getBundles().size() == 1) {
-			BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front().second->getToken());
+			BundlePtr b = QueueManager::getInstance()->findBundle(dii->getBundles().front().second->getToken());
 			if (curDir == newDir)
 				return 0;
 
@@ -1563,7 +1563,7 @@ LRESULT QueueFrame::onSearchBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 			if (i != bundleMap.end()) {
 				DirItemInfo* dii = ((DirItemInfo*)ctrlDirs.GetItemData(i->second));
 				dcassert(dii->getBundles().front().second);
-				BundlePtr b = QueueManager::getInstance()->getBundle(dii->getBundles().front().second->getToken());
+				BundlePtr b = QueueManager::getInstance()->findBundle(dii->getBundles().front().second->getToken());
 				if (b) {
 					QueueManager::getInstance()->searchBundle(b, true);
 				}

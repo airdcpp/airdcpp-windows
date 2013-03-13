@@ -1782,5 +1782,8 @@ Do you want to use this destination anyway?</String>
 		<String Name="ShowMultilineButton">"Show Multiline message button in chat windows</String>
 		<String Name="ShowMagnetButton">"Show Magnet button in chat windows</String>
 		<String Name="FileListRefreshInitiatedXPaths">File list refresh initiated for %d directories</String>
+		<String Name="CantOpenEmptyFile">A zero-byte file can't be opened</String>
+		<String Name="ListAlreadyQueued">The file list is queued already</String>
+		<String Name="FileXQueued">The file %s has been added in queue (%s)</String>
 	</Strings>
 </Language>

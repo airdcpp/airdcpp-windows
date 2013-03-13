@@ -1144,7 +1144,7 @@ LRESULT RichTextBox::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	} else {
 		auto u = getMagnetSource();
 		try {
-			QueueManager::getInstance()->addFile(Util::getOpenPath(m.fname), m.fsize, m.getTTH(), u, Util::emptyString, QueueItem::FLAG_OPEN);
+			QueueManager::getInstance()->addOpenedItem(m.fname, m.fsize, m.getTTH(), u, false);
 		} catch(...) { }
 	}
 	return 0;
@@ -1211,9 +1211,7 @@ void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority 
 				return;
 		}
 
-		try {
-			QueueManager::getInstance()->addFile(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, Util::emptyString, getUser() ? QueueItem::FLAG_PRIVATE : 0);
-		} catch (...) {}
+		WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, getUser() ? QueueItem::FLAG_PRIVATE : 0);
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, aTargetType, true);
 	}
