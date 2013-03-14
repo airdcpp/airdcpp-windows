@@ -286,7 +286,7 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
-			AutoSearch::BundleStatusMap bsl;
+			BundleList bundles;
 			AutoSearch::FinishedPathMap fpl;
 			auto as = AutoSearchManager::getInstance()->getSearchByIndex(index);
 			title = Text::toT(as->getDisplayName());
@@ -302,22 +302,22 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 				}, as->getCurNumber() > 0);
 			}
 
-			AutoSearchManager::getInstance()->getMenuInfo(as, bsl, fpl);
-			if (!bsl.empty() || !fpl.empty()) {
+			AutoSearchManager::getInstance()->getMenuInfo(as, bundles, fpl);
+			if (!bundles.empty() || !fpl.empty()) {
 				asMenu.appendSeparator();
-				if (!bsl.empty()) {
+				if (!bundles.empty()) {
 					auto bundleMenu = asMenu.createSubMenu(CTSTRING(REMOVE_BUNDLE), true);
-					for(auto j=bsl.begin(); j != bsl.end(); j++) {
-						string token = j->first->getToken();
-						bundleMenu->appendItem(Text::toT(j->first->getName()), [=] { WinUtil::removeBundle(token); });
+					for(auto& b: bundles) {
+						string token = b->getToken();
+						bundleMenu->appendItem(Text::toT(b->getName()), [=] { WinUtil::removeBundle(token); });
 					}
 				}
 
 				auto pathMenu = asMenu.createSubMenu(CTSTRING(OPEN_FOLDER), false);
-				if (!bsl.empty()) {
+				if (!bundles.empty()) {
 					pathMenu->InsertSeparatorFirst(CTSTRING(QUEUED_BUNDLES));
-					for(auto j=bsl.begin(); j != bsl.end(); j++) {
-						string path = j->first->getTarget();
+					for(auto& b: bundles) {
+						string path = b->getTarget();
 						pathMenu->appendItem(Text::toT(path), [=] { WinUtil::openFolder(Text::toT(path)); });
 					}
 				}
