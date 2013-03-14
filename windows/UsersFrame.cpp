@@ -563,7 +563,7 @@ void UsersFrame::updateInfoText(const UserInfo* ui){
 				}
 			}
 		}
-		tmp += _T("\r\nQueued from user: ") + Text::toT(Util::formatBytes(QueueManager::getInstance()->getUserQueuedSize(ui->getUser()))); 
+		tmp += _T("\r\nQueued from user: ") + Text::toT(Util::formatBytes(ui->getUser()->getQueued())); 
 		ctrlInfo.SetWindowText(tmp.c_str());
 	} else
 		ctrlInfo.SetWindowText(_T(""));

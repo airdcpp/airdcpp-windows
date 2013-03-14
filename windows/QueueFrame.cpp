@@ -195,8 +195,8 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			int64_t min_seg_size = (SETTING(MIN_SEGMENT_SIZE)*1024);
 
 			auto qm = QueueManager::getInstance();
-			qm->lockRead();
-			ScopedFunctor([qm] { qm->unlockRead(); });
+
+			auto lock = qm->lockRead();
 			if(getSize() < min_seg_size){
 				return Util::toStringW(qi->getDownloads().size()) + _T("/") + Util::toStringW(1);
 			} else {
@@ -1124,13 +1124,7 @@ void QueueFrame::moveSelectedDir() {
 			if (!sourceBundle->isFileBundle()) {
 				auto sourceDir = curDir;
 				MainFrame::getMainFrame()->addThreadedTask([=] {
-					if (AirUtil::isParentOrExact(sourceDir, sourceBundle->getTarget())) {
-						//we are moving the root bundle dir or some of it's parents
-						QueueManager::getInstance()->moveBundle(sourceDir, newDir, sourceBundle, moveFinished);
-					} else {
-						//we are moving a subfolder of a bundle
-						QueueManager::getInstance()->splitBundle(sourceDir, newDir, sourceBundle, moveFinished);
-					}
+					QueueManager::getInstance()->moveBundleDir(sourceDir, newDir, sourceBundle, moveFinished);
 				});
 			} else {
 				//move queue items
@@ -1167,11 +1161,7 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 
 			auto sourceDir = curDir;
 			MainFrame::getMainFrame()->addThreadedTask([=] {
-				if (isCurDir(b->getTarget())) {
-					QueueManager::getInstance()->moveBundle(sourceDir, newDir, b, true);
-				} else {
-					QueueManager::getInstance()->splitBundle(sourceDir, newDir, b, true);
-				}
+				QueueManager::getInstance()->moveBundleDir(sourceDir, newDir, b, true);
 			});
 		}
 	}

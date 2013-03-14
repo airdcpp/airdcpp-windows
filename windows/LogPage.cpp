@@ -60,7 +60,6 @@ PropPage::ListItem LogPage::systemItems[] = {
 	{ SettingsManager::REPORT_SKIPLIST,				ResourceManager::REPORT_SKIPLIST }, 
 	{ SettingsManager::LOG_HASHING,					ResourceManager::LOG_HASHING }, 
 	{ SettingsManager::LOG_SCHEDULED_REFRESHES,		ResourceManager::SETTINGS_LOG_SCHEDULED_REFRESHES }, 
-	{ SettingsManager::LOG_ALREADY_SHARED,			ResourceManager::SETTINGS_LOG_ALREADY_SHARED }, 
 	
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };

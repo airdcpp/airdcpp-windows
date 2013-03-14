@@ -1889,7 +1889,7 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 		return;
 
 	Util::increaseUptime();
-	uint64_t queueSize = QueueManager::getInstance()->fileQueue.getTotalQueueSize();
+	uint64_t queueSize = QueueManager::getInstance()->getTotalQueueSize();
 	int64_t totalDown = Socket::getTotalDown();
 	int64_t totalUp = Socket::getTotalUp();
 

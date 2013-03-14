@@ -1402,7 +1402,6 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="ClearMessages">Clear messages</String>
 		<String Name="UseSeqOrder">Use sequential order</String>
 		<String Name="LanguageNote">Note: you need to restart the client for the new language to take effect</String>
-		<String Name="FileAlreadyQueued">The file %s already exists in the queue as %s</String>
 		<String Name="FileListRefreshInitiatedRpath">File list refresh initiated for the path %s</String>
 		<String Name="FileListRefreshInitiatedVpath">File list refresh initiated for the virtual directory \"%s\"</String>
 		<String Name="FileListRefreshInitiatedIncoming">File list refresh initiated for the incoming directories</String>
@@ -1755,7 +1754,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="AutoGrantSlot">Auto grant slot</String>
 		<String Name="PreferredMapper">Preferred port mapping interface</String>
 		<String Name="BindAddressMissing">The %s bind address %s doesn't appear to be available. Do you want to switch to listen to all interfaces?</String>
-		<String Name="SettingsLogAlreadyShared">Show warning about trying to download already shared files</String>
 		<String Name="Duplicate">Duplicate</String>
 		<String Name="PartialMatch">Partial match</String>
 		<String Name="RegularExpression">RegEx</String>
@@ -1785,5 +1783,9 @@ Do you want to use this destination anyway?</String>
 		<String Name="CantOpenEmptyFile">A zero-byte file can't be opened</String>
 		<String Name="ListAlreadyQueued">The file list is queued already</String>
 		<String Name="FileXQueued">The file %s has been added in queue (%s)</String>
+		<String Name="AddBundleErrorsOcc">The following error(s) occurred when queueing the bundle %s from an user %s: %s</String>
+		<String Name="XFileCount">%s (%d out of %d bundle files)</String>
+		<String Name="XFileNames">%s (files %s)</String>
+		<String Name="FileAlreadyQueued">The file exists in queue already</String>
 	</Strings>
 </Language>
