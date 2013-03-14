@@ -76,6 +76,7 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_DRAWITEM, onDrawItem)
 		MESSAGE_HANDLER(WM_MEASUREITEM, onMeasure)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
 		COMMAND_ID_HANDLER(IDC_VIEW_NFO, onViewNfo)
 		COMMAND_ID_HANDLER(IDC_MATCH, onMatchPartial)
@@ -120,6 +121,7 @@ public:
 		images.Destroy();
 	}
 
+	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onDrawItem(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -373,6 +375,7 @@ private:
 		SearchResultPtr sr;
 		GETSET(uint8_t, flagIndex, FlagIndex);
 		GETSET(DupeType, dupe, Dupe);
+		GETSET(tstring, ipText, IpText);
 	};
 	
 	struct HubInfo : public FastAlloc<HubInfo> {
@@ -452,6 +455,7 @@ private:
 	CComboBox ctrlFilterSel;
 	CComboBox ctrlExcluded;
 
+	bool statusDirty;
 	bool usingExcludes;
 	bool onlyFree;
 	bool expandSR;

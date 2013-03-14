@@ -759,7 +759,6 @@ Default: %H:%M:%S</String>
 		<String Name="TrustedCertificatesPath">Trusted certificates path</String>
 		<String Name="CertificatesConstuction">Under construction, restart AirDC++ to see effects...</String>
 		<String Name="CertificatesExperimental">Experimental feature, don't consider AirDC++ secure in any way</String>
-		<String Name="TthAlreadyShared">A file with the same hash already exists in your share</String>
 		<String Name="TthInconsistency">TTH Inconsistency</String>
 		<String Name="TthRoot">TTH Root</String>
 		<String Name="TwoColors">Two colors</String>
@@ -1278,7 +1277,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ExistingBundlesMerged">%d existing bundles have been merged into it</String>
 		<String Name="FilebundleMerged">The file bundle %s has been merged into bundle %s</String>
 		<String Name="FilebundleMoved">The file bundle %s has been moved to %s</String>
-		<String Name="BundleMerged">The bundle %s has been merged into existing bundle %s (%d items were merged)</String>
+		<String Name="BundleMerged">The directory %s has been merged into existing bundle %s (%d items were merged)</String>
 		<String Name="XBundleItemsAdded">%d items were added into an existing bundle %s</String>
 		<String Name="BundleItemAdded">The file %s has been added into an existing bundle %s</String>
 		<String Name="BundleMoved">The bundle %s has been moved to %s</String>
@@ -1785,7 +1784,8 @@ Do you want to use this destination anyway?</String>
 		<String Name="FileXQueued">The file %s has been added in queue (%s)</String>
 		<String Name="AddBundleErrorsOcc">The following error(s) occurred when queueing the bundle %s from an user %s: %s</String>
 		<String Name="XFileCount">%s (%d out of %d bundle files)</String>
-		<String Name="XFileNames">%s (files %s)</String>
-		<String Name="FileAlreadyQueued">The file exists in queue already</String>
+		<String Name="XFileNames">%s (affected file(s): %s)</String>
+		<String Name="FileAlreadyQueued">A file with the same hash exists in a queued directory %s</String>
+		<String Name="TthAlreadyShared">A file with the same hash exists in a shared directory %s</String>
 	</Strings>
 </Language>

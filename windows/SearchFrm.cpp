@@ -79,7 +79,7 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	ctrlExcludedContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
 	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0),
-	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false)
+	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false)
 {	
 	SearchManager::getInstance()->addListener(this);
 	useGrouping = SETTING(GROUP_SEARCH_RESULTS);
@@ -314,6 +314,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	ctrlStatus.SetText(1, 0, SBT_OWNERDRAW);
 	
+	::SetTimer(m_hWnd, 0, 200, 0);
 	fixControls();
 	bHandled = FALSE;
 	return 1;
@@ -620,13 +621,16 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 			dupe = SettingsManager::lanMode ? AirUtil::checkFileDupe(sr->getFile(), sr->getSize()) : AirUtil::checkFileDupe(sr->getTTH(), sr->getFileName());
 	}
 
-	if (!sr->getIP().empty()) {
+	string ip = sr->getIP();
+	if (!ip.empty()) {
 		// Only attempt to grab a country mapping if we actually have an IP address
 		string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
 		if(!tmpCountry.empty()) {
+			ip = tmpCountry + " (" + ip + ")";
 			flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
 		}
 	}
+	ipText = Text::toT(ip);
 }
 
 
@@ -674,17 +678,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 		case COLUMN_CONNECTION: return Text::toT(sr->getConnectionStr());
 		case COLUMN_HUB: return WinUtil::getHubNames(sr->getUser()).first;
 		case COLUMN_EXACT_SIZE: return sr->getSize() > 0 ? Util::formatExactSize(sr->getSize()) : Util::emptyStringT;
-		case COLUMN_IP: {
-			string ip = sr->getIP();
-			if (!ip.empty()) {
-				// Only attempt to grab a country mapping if we actually have an IP address
-				string tmpCountry = GeoManager::getInstance()->getCountry(sr->getIP());
-				if(!tmpCountry.empty()) {
-					ip = tmpCountry + " (" + ip + ")";
-				}
-			}
-			return Text::toT(ip);
-		}
+		case COLUMN_IP: return ipText;
 		case COLUMN_TTH: return (sr->getType() == SearchResult::TYPE_FILE && !SettingsManager::lanMode) ? Text::toT(sr->getTTH().toBase32()) : Util::emptyStringT;
 		case COLUMN_DATE: return Util::getDateTimeW(sr->getDate());
 		default: return Util::emptyStringT;
@@ -1272,7 +1266,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		if (SETTING(BOLD_SEARCH)) {
 			setDirty();
 		}
-		ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T(" ") + TSTRING(FILES)).c_str());
+		//ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T(" ") + TSTRING(FILES)).c_str());
 
 		if(resort) {
 			ctrlResults.resort();
@@ -1280,8 +1274,23 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 	} else {
 		// searching is paused, so store the result but don't show it in the GUI (show only information: visible/all results)
 		pausedResults.push_back(si);
-		ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T("/") + Util::toStringW(pausedResults.size() + resultsCount) + _T(" ") + WSTRING(FILES)).c_str());
+		//ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T("/") + Util::toStringW(pausedResults.size() + resultsCount) + _T(" ") + WSTRING(FILES)).c_str());
 	}
+
+	statusDirty = true;
+}
+
+LRESULT SearchFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	if (statusDirty) {
+		statusDirty = false;
+		if (running) {
+			ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T(" ") + TSTRING(FILES)).c_str());
+		} else {
+			ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T("/") + Util::toStringW(pausedResults.size() + resultsCount) + _T(" ") + WSTRING(FILES)).c_str());
+		}
+	}
+
+	return 0;
 }
 
 void SearchFrame::onResultFiltered() {
