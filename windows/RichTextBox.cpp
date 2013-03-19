@@ -1167,10 +1167,14 @@ HintedUser RichTextBox::getMagnetSource() {
 	return HintedUser();
 }
 
+string RichTextBox::getTempShareKey() const {
+	return (user && !user->isSet(User::BOT) && !user->isSet(User::NMDC)) ? user->getCID().toBase32() : Util::emptyString;
+}
+
 LRESULT RichTextBox::onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string link = Text::fromT(selectedWord);
 	Magnet m = Magnet(link);
-	ShareManager::getInstance()->removeTempShare(user ? user->getCID().toBase32() : Util::emptyString, m.getTTH());
+	ShareManager::getInstance()->removeTempShare(getTempShareKey(), m.getTTH());
 	for (auto cl: links | map_values) {
 		if (cl->getType() == ChatLink::TYPE_MAGNET && cl->url == link) {
 			updateDupeType(cl);

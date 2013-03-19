@@ -26,11 +26,11 @@
 #include "../client/SettingsManager.h"
 
 int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_SEARCH_STATUS, COLUMN_LASTSEARCH, COLUMN_BUNDLES, COLUMN_ACTION, COLUMN_EXPIRATION,
-	COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH };
+	COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH, COLUMN_ERROR };
 
-int AutoSearchFrame::columnSizes[] = { 300, 125, 150, 125, 500, 100, 100, 300, 100, 200 };
+int AutoSearchFrame::columnSizes[] = { 300, 125, 150, 125, 500, 100, 100, 300, 100, 200, 300 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::SETTINGS_VALUE, ResourceManager::TYPE, ResourceManager::SEARCHING_STATUS, ResourceManager::LAST_SEARCH, 
-ResourceManager::BUNDLES, ResourceManager::ACTION, ResourceManager::EXPIRATION, ResourceManager::PATH, ResourceManager::AUTO_REMOVE, ResourceManager::USER_MATCH };
+ResourceManager::BUNDLES, ResourceManager::ACTION, ResourceManager::EXPIRATION, ResourceManager::PATH, ResourceManager::AUTO_REMOVE, ResourceManager::USER_MATCH, ResourceManager::LAST_ERROR };
 
 LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	
@@ -228,7 +228,7 @@ LRESULT AutoSearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 		case CDDS_ITEMPREPAINT:
 			{
 				auto status = ((AutoSearch*)cd->nmcd.lItemlParam)->getStatus();
-				if(status == AutoSearch::STATUS_FAILED_EXTRAS || status == AutoSearch::STATUS_FAILED_MISSING) {
+				if(status == AutoSearch::STATUS_FAILED_EXTRAS || status == AutoSearch::STATUS_FAILED_MISSING || !((AutoSearch*)cd->nmcd.lItemlParam)->getLastError().empty()) {
 					cd->clrText = SETTING(ERROR_COLOR);
 					return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 				}		
@@ -333,6 +333,14 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 					pathMenu->appendItem(CTSTRING(CLEAR_FINISHED_PATHS), [=] { AutoSearchManager::getInstance()->clearPaths(as); });
 				}
 			}
+
+			if (!as->getLastError().empty()) {
+				asMenu.appendSeparator();
+				asMenu.appendItem(TSTRING(CLEAR_ERROR), [=] { 
+					as->setLastError(Util::emptyString); 
+					updateItem(as);
+				});
+			}
 		}
 
 		asMenu.AppendMenu(MF_SEPARATOR);
@@ -379,8 +387,6 @@ void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg&
 	dlg.checkShared = as->getCheckAlreadyShared();
 	dlg.matchFullPath = as->getMatchFullPath();
 
-	if (as->getCurNumber() != dlg.curNumber)
-		as->setLastIncFinish(0);
 	dlg.curNumber = as->getCurNumber();
 	dlg.numberLen = as->getNumberLen();
 	dlg.maxNumber = as->getMaxNumber();
@@ -402,6 +408,9 @@ void AutoSearchFrame::setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& 
 	as->setCheckAlreadyQueued(dlg.checkQueued);
 	as->setCheckAlreadyShared(dlg.checkShared);
 	as->setMatchFullPath(dlg.matchFullPath);
+
+	if (as->getCurNumber() != dlg.curNumber)
+		as->setLastIncFinish(0);
 
 	as->startTime = dlg.startTime;
 	as->endTime = dlg.endTime;
@@ -627,6 +636,7 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	lst.push_back(Text::toT(target));
 	lst.push_back(Text::toT(as->getRemove()? "Yes" : "No"));
 	lst.push_back(Text::toT(as->getNickPattern()));
+	lst.push_back(Text::toT(as->getLastError()));
 
 	bool b = as->getEnabled();
 	int i = ctrlAutoSearch.insert(pos, lst, as->getStatus(), (LPARAM)as.get());
@@ -654,6 +664,7 @@ void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
 		ctrlAutoSearch.SetItemText(pos, COLUMN_BUNDLES, Text::toT(AutoSearchManager::getInstance()->getBundleStatuses(as)).c_str());
 		ctrlAutoSearch.SetItemText(pos, COLUMN_SEARCH_STATUS, Text::toT(as->getSearchingStatus()).c_str());
 		ctrlAutoSearch.SetItemText(pos, COLUMN_EXPIRATION, Text::toT(as->getExpiration()).c_str());
+		ctrlAutoSearch.SetItemText(pos, COLUMN_ERROR, Text::toT(as->getLastError()).c_str());
 
 		ctrlAutoSearch.SetItem(pos, 0 ,LVIF_IMAGE, NULL, as->getStatus(), 0, 0, NULL);
 	}

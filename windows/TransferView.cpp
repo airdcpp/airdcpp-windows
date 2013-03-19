@@ -1040,7 +1040,7 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 		case COLUMN_FILE:
 			if (isBundle) {
 				tstring ret;
-				if (target[target.size() -1] == '\\') {
+				if (!target.empty() && target[target.size() -1] == '\\') {
 					ret = Util::getLastDir(target); //directory bundle
 				} else {
 					ret = Util::getFileName(target); //file bundle
