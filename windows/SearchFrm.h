@@ -23,6 +23,7 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
+#include "Async.h"
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
 #include "UserInfoBaseHandler.h"
@@ -45,7 +46,7 @@
 class SearchFrame : public MDITabChildWindowImpl<SearchFrame>, 
 	private SearchManagerListener, private ClientManagerListener,
 	public UCHandler<SearchFrame>, public UserInfoBaseHandler<SearchFrame>, public DownloadBaseHandler<SearchFrame>,
-	private SettingsManagerListener, private TimerManagerListener
+	private SettingsManagerListener, private TimerManagerListener, private Async<SearchFrame>
 {
 public:
 	static void openWindow(const tstring& str = Util::emptyStringW, LONGLONG size = 0, SearchManager::SizeModes mode = SearchManager::SIZE_ATLEAST, const string& type = SEARCH_TYPE_ANY);
@@ -66,10 +67,10 @@ public:
 		NOTIFY_HANDLER(IDC_RESULTS, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_HUB, LVN_ITEMCHANGED, onItemChangedHub)
 		NOTIFY_HANDLER(IDC_RESULTS, NM_CUSTOMDRAW, onCustomDraw)
+		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
-		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
@@ -77,9 +78,6 @@ public:
 		MESSAGE_HANDLER(WM_DRAWITEM, onDrawItem)
 		MESSAGE_HANDLER(WM_MEASUREITEM, onMeasure)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
-		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
-		COMMAND_ID_HANDLER(IDC_VIEW_NFO, onViewNfo)
-		COMMAND_ID_HANDLER(IDC_MATCH, onMatchPartial)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
 		COMMAND_ID_HANDLER(IDC_SEARCH_PAUSE, onPause)
@@ -92,13 +90,9 @@ public:
 		COMMAND_ID_HANDLER(IDC_COLLAPSED, onCollapsed)
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
 		COMMAND_ID_HANDLER(IDC_BROWSELIST, onBrowseList)
-		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchByTTH)
-		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES_DIR, onSearchDir)
 		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
 		COMMAND_ID_HANDLER(IDC_PURGE, onPurge)
-		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenFolder)
-		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(IDC_USE_EXCLUDED, onUseExcluded)
 		CHAIN_COMMANDS(ucBase)
@@ -130,18 +124,12 @@ public:
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onDoubleClickResults(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
-	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
-	LRESULT onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onFilterChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		PostMessage(WM_CLOSE);
 		return 0;
@@ -152,26 +140,24 @@ public:
 
 	void removeSelected();
 
-	LRESULT onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ctrlResults.forEachSelected(&SearchInfo::open);
+	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		handleGetList(false);
 		return 0;
 	}
 
-	LRESULT onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ctrlResults.forEachSelected(&SearchInfo::view);
+	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		handleGetList(true);
 		return 0;
 	}
 
-	LRESULT onViewNfo(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ctrlResults.forEachSelected(&SearchInfo::viewNfo);
-		return 0;
-	}
-	
-	LRESULT onMatchPartial(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ctrlResults.forEachSelected(&SearchInfo::matchPartial);
-		return 0;
-	}
-	
+	void handleSearchTTH();
+	void handleGetList(bool isPartial);
+	void handleOpenItem(bool isClientView);
+	void handleViewNfo();
+	void handleMatchPartial();
+	void handleSearchDir();
+	void handleOpenFolder();
+
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		removeSelected();
 		return 0;
@@ -236,8 +222,8 @@ private:
 	enum {
 		COLUMN_FIRST,
 		COLUMN_FILENAME = COLUMN_FIRST,
-		COLUMN_HITS,
-		COLUMN_NICK,
+		COLUMN_FILES,
+		COLUMN_USERS,
 		COLUMN_TYPE,
 		COLUMN_SIZE,
 		COLUMN_PATH,
@@ -286,34 +272,6 @@ private:
 		size_t hits;
 		SearchInfo* parent;
 
-		void getList();
-		void browseList();
-
-		void open();
-		void view();
-		void viewNfo();
-		void matchPartial();
-		struct Download {
-			Download(const string& aTarget, SearchFrame* aSf, QueueItemBase::Priority aPrio, bool aNoAppend, TargetUtil::TargetType aTargetType, bool aIsSizeUnknown) : tgt(aTarget), 
-				sf(aSf), p(aPrio), noAppend(aNoAppend), targetType(aTargetType), unknownSize(aIsSizeUnknown) { }
-			void operator()(SearchInfo* si);
-
-			const string& tgt;
-			SearchFrame* sf;
-			QueueItemBase::Priority p;
-			bool noAppend;
-			TargetUtil::TargetType targetType;
-			bool unknownSize;
-		};
-		struct DownloadWhole {
-			DownloadWhole(const string& aTarget, QueueItemBase::Priority aPrio, TargetUtil::TargetType aTargetType, bool aIsSizeUnknown) : tgt(aTarget), p(aPrio), targetType(aTargetType), 
-				unknownSize(aIsSizeUnknown) { }
-				void operator()(SearchInfo* si);
-			const string& tgt;
-			QueueItemBase::Priority p;
-			TargetUtil::TargetType targetType;
-			bool unknownSize;
-		};
 		struct CheckTTH {
 			CheckTTH() : op(true), firstHubs(true), hasTTH(false), firstTTH(true) { }
 				void operator()(SearchInfo* si);
@@ -327,38 +285,11 @@ private:
 	
 		const tstring getText(uint8_t col) const;
 	
-		static int compareItems(const SearchInfo* a, const SearchInfo* b, uint8_t col) {
-			if(!a->sr || !b->sr)
-				return 0;
-	
-			switch(col) {
-				// I think its nicer to sort the names too, otherwise could do it with typecolumn
-				case COLUMN_FILENAME: 
-					if(a->sr->getType() == b->sr->getType())
-						return lstrcmpi(a->getText(COLUMN_FILENAME).c_str(), b->getText(COLUMN_FILENAME).c_str());
-					else 
-						return ( a->sr->getType() == SearchResult::TYPE_DIRECTORY ) ? -1 : 1;
-
-				case COLUMN_TYPE: 
-					if(a->sr->getType() == b->sr->getType())
-						return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
-					else
-						return(a->sr->getType() == SearchResult::TYPE_DIRECTORY) ? -1 : 1;
-				case COLUMN_HITS: return compare(a->hits, b->hits);
-				case COLUMN_SLOTS: 
-					if(a->sr->getFreeSlots() == b->sr->getFreeSlots())
-						return compare(a->sr->getSlots(), b->sr->getSlots());
-					else
-						return compare(a->sr->getFreeSlots(), b->sr->getFreeSlots());
-				case COLUMN_SIZE:
-				case COLUMN_EXACT_SIZE: return compare(a->sr->getSize(), b->sr->getSize());
-				default: return lstrcmpi(a->getText(col).c_str(), b->getText(col).c_str());
-			}
-		}
+		static int compareItems(const SearchInfo* a, const SearchInfo* b, uint8_t col);
 
 		int getImageIndex() const;
 		
-		inline SearchInfo* createParent() { return this; }
+		inline SearchInfo* createParent() { return new SearchInfo(*this); }
 		inline const TTHValue& getGroupCond() const { return sr->getTTH(); }
 
 		bool isDupe() const { return dupe != NONE; }
@@ -372,6 +303,8 @@ private:
 		GETSET(tstring, ipText, IpText);
 	};
 	
+	void performAction(std::function<void (const SearchInfo* aInfo)> f, bool oncePerParent=false);
+
 	struct HubInfo : public FastAlloc<HubInfo> {
 		HubInfo(const tstring& aUrl, const tstring& aName, bool aOp) : url(aUrl),
 			name(aName), op(aOp) { }
@@ -387,16 +320,6 @@ private:
 		tstring url;
 		tstring name;
 		bool op;
-	};
-
-	// WM_SPEAKER
-	enum Speakers {
-		ADD_RESULT,
-		FILTER_RESULT,
-		HUB_ADDED,
-		HUB_CHANGED,
-		HUB_REMOVED,
-		QUEUE_STATS
 	};
 
 	tstring initialString;
@@ -495,9 +418,10 @@ private:
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 
 	// ClientManagerListener
-	void on(ClientConnected, const Client* c) noexcept { speak(HUB_ADDED, c); }
-	void on(ClientUpdated, const Client* c) noexcept { speak(HUB_CHANGED, c); }
-	void on(ClientDisconnected, const string& aHubUrl) noexcept { PostMessage(WM_SPEAKER, HUB_REMOVED, (LPARAM)new string(aHubUrl)); }
+	void on(ClientConnected, const Client* c) noexcept;
+	void on(ClientUpdated, const Client* c) noexcept;
+	void on(ClientDisconnected, const string& aHubUrl) noexcept;
+
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void initHubs();
@@ -510,11 +434,6 @@ private:
 	void addSearchResult(SearchInfo* si);
 
 	LRESULT onItemChangedHub(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
-
-	void speak(Speakers s, const Client* aClient) {
-		HubInfo* hubInfo = new HubInfo(Text::toT(aClient->getHubUrl()), Text::toT(aClient->getHubName()), aClient->getMyIdentity().isOp());
-		PostMessage(WM_SPEAKER, WPARAM(s), LPARAM(hubInfo)); 
-	}
 };
 
 #endif // !defined(SEARCH_FRM_H)

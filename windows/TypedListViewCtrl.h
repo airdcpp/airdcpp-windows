@@ -1027,6 +1027,22 @@ public:
 
 	ParentMap& getParents() { return parents; }
 
+
+	template<class _Function>
+	_Function filteredForEachSelectedT(_Function pred) {
+		unordered_set<K> doneParents;
+		int i = -1;
+		while( (i = GetNextItem(i, LVNI_SELECTED)) != -1) {
+			auto d = getItemData(i);
+			if (!d->parent) {
+				doneParents.insert(d->getGroupCond());
+				pred(d);
+			} else if (doneParents.find(d->getGroupCond()) == doneParents.end()) {
+				pred(d);
+			}
+		}
+		return pred;
+	}
 private:
 
    	/** map of all parent items with their associated children */

@@ -37,11 +37,11 @@
 #include <boost/range/numeric.hpp>
 
 
-int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_HITS, COLUMN_NICK, COLUMN_TYPE, COLUMN_SIZE,
+int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_FILES, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
 	COLUMN_PATH, COLUMN_SLOTS, COLUMN_CONNECTION, COLUMN_HUB, COLUMN_EXACT_SIZE, COLUMN_IP, COLUMN_TTH, COLUMN_DATE };
 int SearchFrame::columnSizes[] = { 210, 80, 100, 50, 80, 100, 40, 70, 150, 80, 100, 150, 100 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  ResourceManager::HIT_COUNT, ResourceManager::USER, ResourceManager::TYPE, ResourceManager::SIZE,
+static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  ResourceManager::FILES, ResourceManager::USER, ResourceManager::TYPE, ResourceManager::SIZE,
 	ResourceManager::PATH, ResourceManager::SLOTS, ResourceManager::CONNECTION, 
 	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 
@@ -265,7 +265,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if(SETTING(SORT_DIRS)) {
 		ctrlResults.setSortColumn(COLUMN_FILENAME);
 	} else {
-		ctrlResults.setSortColumn(COLUMN_HITS);
+		ctrlResults.setSortColumn(COLUMN_USERS);
 		ctrlResults.setAscending(false);
 	}
 	ctrlResults.SetBkColor(WinUtil::bgColor);
@@ -556,7 +556,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		if (usingExcludes) {
 			RLock l (cs);
 			if (curSearch && curSearch->isExcluded(aResult->getFile())) {
-				PostMessage(WM_SPEAKER, FILTER_RESULT);
+				callAsync([this] { onResultFiltered(); });
 				return;
 			}
 		}
@@ -578,7 +578,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		}
 
 		if (!valid) {
-			PostMessage(WM_SPEAKER, FILTER_RESULT);
+			callAsync([this] { onResultFiltered(); });
 			return;
 		}
 	}
@@ -587,13 +587,13 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 	if((onlyFree && aResult->getFreeSlots() < 1) ||
 	   (exactSize1 && (aResult->getSize() != exactSize2)))
 	{
-		PostMessage(WM_SPEAKER, FILTER_RESULT);
+		callAsync([this] { onResultFiltered(); });
 		return;
 	}
 
 
 	SearchInfo* i = new SearchInfo(aResult);
-	PostMessage(WM_SPEAKER, ADD_RESULT, (LPARAM)i);
+	callAsync([=] { addSearchResult(i); });
 }
 
 void SearchFrame::removeSelected() {
@@ -609,9 +609,11 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	
 	if(waiting) {
 		if(aTick < searchEndTime + 1000){
-			TCHAR buf[64];
-			_stprintf(buf, _T("%s %s"), CTSTRING(TIME_LEFT), Util::formatSecondsW(searchEndTime > aTick ? (searchEndTime - aTick) / 1000 : 0).c_str());
-			PostMessage(WM_SPEAKER, QUEUE_STATS, (LPARAM)new tstring(buf));		
+			auto text = TSTRING(TIME_LEFT) + _T(" ") + Util::formatSecondsW(searchEndTime > aTick ? (searchEndTime - aTick) / 1000 : 0);
+			callAsync([=] {
+				ctrlStatus.SetText(2, text.c_str());
+				::InvalidateRect(m_hWndStatusBar, NULL, TRUE);
+			});
 		}
 	
 		if(aTick > searchEndTime) {
@@ -621,7 +623,7 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 }
 
 SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), dupe(DUPE_NONE) { 
-
+	//check the dupe
 	if(SETTING(DUPE_SEARCH)) {
 		if (sr->getType() == SearchResult::TYPE_DIRECTORY)
 			dupe = AirUtil::checkDirDupe(sr->getFile(), sr->getSize());
@@ -629,6 +631,7 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 			dupe = SettingsManager::lanMode ? AirUtil::checkFileDupe(sr->getFile(), sr->getSize()) : AirUtil::checkFileDupe(sr->getTTH(), sr->getFileName());
 	}
 
+	//get the ip info
 	string ip = sr->getIP();
 	if (!ip.empty()) {
 		// Only attempt to grab a country mapping if we actually have an IP address
@@ -646,21 +649,63 @@ int SearchFrame::SearchInfo::getImageIndex() const {
 	return sr->getType() == SearchResult::TYPE_FILE ? ResourceLoader::getIconIndex(Text::toT(sr->getFile())) : ResourceLoader::DIR_NORMAL;
 }
 
+int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo* b, uint8_t col) {
+	if(!a->sr || !b->sr)
+		return 0;
+	
+	switch(col) {
+		// I think its nicer to sort the names too, otherwise could do it with typecolumn
+		case COLUMN_FILENAME: 
+			if(a->sr->getType() == b->sr->getType())
+				return lstrcmpi(a->getText(COLUMN_FILENAME).c_str(), b->getText(COLUMN_FILENAME).c_str());
+			else 
+				return ( a->sr->getType() == SearchResult::TYPE_DIRECTORY ) ? -1 : 1;
+
+		case COLUMN_TYPE: 
+			if(a->sr->getType() == b->sr->getType())
+				return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
+			else
+				return(a->sr->getType() == SearchResult::TYPE_DIRECTORY) ? -1 : 1;
+		case COLUMN_FILES: 
+			if(a->sr->getType() != b->sr->getType())
+				return a->sr->getType() == SearchResult::TYPE_DIRECTORY;
+			else
+				return compare(a->sr->getFileCount(), b->sr->getFileCount());
+		case COLUMN_SLOTS: 
+			if(a->sr->getFreeSlots() == b->sr->getFreeSlots())
+				return compare(a->sr->getSlots(), b->sr->getSlots());
+			else
+				return compare(a->sr->getFreeSlots(), b->sr->getFreeSlots());
+		case COLUMN_SIZE:
+		case COLUMN_EXACT_SIZE: return compare(a->sr->getSize(), b->sr->getSize());
+		case COLUMN_USERS:
+			if (a->hits != 1 || b->hits != 1)
+				return compare(a->hits, b->hits);
+			else
+				return lstrcmpi(a->getText(col).c_str(), b->getText(col).c_str());
+
+		default: return lstrcmpi(a->getText(col).c_str(), b->getText(col).c_str());
+	}
+}
 
 const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 	switch(col) {
 		case COLUMN_FILENAME:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
-				if(sr->getFile().rfind(_T('\\')) == tstring::npos) {
-					return Text::toT(sr->getFile());
-				} else {
-	    			return Text::toT(Util::getFileName(sr->getFile()));
-				}      
+	    		return Text::toT(Util::getFileName(sr->getFile()));    
 			} else {
 				return Text::toT(sr->getFileName());
 			}
-		case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : Util::toStringW(hits + 1) + _T(' ') + TSTRING(USERS);
-		case COLUMN_NICK: return WinUtil::getNicks(sr->getUser());
+		case COLUMN_FILES: 
+			if (sr->getFileCount() >= 0)
+				return Util::toStringW(sr->getFileCount());
+			else
+				return Util::emptyStringW;
+		case COLUMN_USERS:
+			if (hits > 1)
+				return Util::toStringW(hits) + _T(' ') + TSTRING(USERS);
+			else
+				return WinUtil::getNicks(sr->getUser());
 		case COLUMN_TYPE:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
 				tstring type = Text::toT(Util::getFileExt(Text::fromT(getText(COLUMN_FILENAME))));
@@ -683,106 +728,173 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 				return Text::toT(sr->getFile());
 			}
 		case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
-		case COLUMN_CONNECTION: return Text::toT(sr->getConnectionStr());
-		case COLUMN_HUB: return WinUtil::getHubNames(sr->getUser()).first;
+		case COLUMN_CONNECTION:
+			if (hits > 1) {
+				//auto p = ctrlResults.
+			} else {
+				return Text::toT(sr->getConnectionStr());
+			}
+		case COLUMN_HUB: 
+			if (hits > 1)
+				return Util::emptyStringW;
+			else
+				return WinUtil::getHubNames(sr->getUser()).first;
 		case COLUMN_EXACT_SIZE: return sr->getSize() > 0 ? Util::formatExactSize(sr->getSize()) : Util::emptyStringT;
-		case COLUMN_IP: return ipText;
+		case COLUMN_IP: 
+			if (hits > 1)
+				return Util::emptyStringW;
+			else
+				return ipText;
 		case COLUMN_TTH: return (sr->getType() == SearchResult::TYPE_FILE && !SettingsManager::lanMode) ? Text::toT(sr->getTTH().toBase32()) : Util::emptyStringT;
 		case COLUMN_DATE: return Util::getDateTimeW(sr->getDate());
 		default: return Util::emptyStringT;
 	}
 }
 
-void SearchFrame::SearchInfo::view() {
-	try {
-		if(sr->getType() == SearchResult::TYPE_FILE) {
-			QueueManager::getInstance()->addOpenedItem(sr->getFileName(), sr->getSize(), sr->getTTH(), sr->getUser(), true);
-		}
-	} catch(const Exception&) {
-	}
-}
-
-void SearchFrame::SearchInfo::open() {
-	try {
-		if(sr->getType() == SearchResult::TYPE_FILE) {
-			if (dupe) {
-				tstring path = AirUtil::getDupePath(dupe, sr->getTTH());
-				if (!path.empty())
-					WinUtil::openFile(path);
+void SearchFrame::performAction(std::function<void (const SearchInfo* aInfo)> f, bool oncePerParent /*false*/) {
+	ctrlResults.filteredForEachSelectedT([&](const SearchInfo* si) {
+		if (si->hits > 1) {
+			//perform only for the children
+			const auto& children = ctrlResults.findChildren(si->getGroupCond());
+			if (oncePerParent && !children.empty()) {
+				f(children.front());
 			} else {
-				QueueManager::getInstance()->addOpenedItem(sr->getFileName(), sr->getSize(), sr->getTTH(), sr->getUser(), false);
+				boost::for_each(children, f);
 			}
+		} else {
+			//perform for the parent
+			f(si);
 		}
-	} catch(const Exception&) {
-	}
+	});
 }
 
-void SearchFrame::SearchInfo::viewNfo() {
-	string path = Util::getReleaseDir(Text::fromT(getText(COLUMN_PATH)), false);
-	boost::regex reg;
-	reg.assign("(.+\\.nfo)", boost::regex_constants::icase);
-	if ((sr->getType() == SearchResult::TYPE_FILE) && (regex_match(sr->getFileName(), reg))) {
+
+/* Action handlers */
+
+void SearchFrame::handleOpenItem(bool isClientView) {
+	auto open = [=](const SearchInfo* si) {
 		try {
-			QueueManager::getInstance()->addOpenedItem(sr->getFileName(), sr->getSize(), sr->getTTH(), sr->getUser(), true);
+			if(si->sr->getType() == SearchResult::TYPE_FILE) {
+				QueueManager::getInstance()->addOpenedItem(si->sr->getFileName(), si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), isClientView);
+			}
 		} catch(const Exception&) {
 		}
-	} else {
+	};
+
+	performAction(open, true);
+}
+
+void SearchFrame::handleViewNfo() {
+	auto viewNfo = [=](const SearchInfo* si) {
+		if (si->sr->getType() == SearchResult::TYPE_FILE && Util::getFileExt(si->sr->getFileName()) == ".nfo") {
+			try {
+				QueueManager::getInstance()->addOpenedItem(si->sr->getFileName(), si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), true);
+			} catch(const Exception&) {
+				// Ignore for now...
+			}
+		} else {
+			string path = Util::getReleaseDir(Text::fromT(si->getText(COLUMN_PATH)), false);
+			try {
+				QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, path);
+			} catch(const Exception&) {
+				// Ignore for now...
+			}
+		}
+	};
+
+	performAction(viewNfo, true);
+}
+
+void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
+	ctrlResults.filteredForEachSelectedT([&](const SearchInfo* si) {
+		//get the target
+		string target = aTarget;
+		if (!useWhole && aTarget[aTarget.length()-1] == PATH_SEPARATOR)
+			target += si->sr->getFileName();
+
+		bool fileDownload = si->sr->getType() == SearchResult::TYPE_FILE && !useWhole;
+		auto download = [&](const SearchResultPtr& aSR) {
+			if (fileDownload) {
+				WinUtil::addFileDownload(target, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
+			} else {
+				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), aSR->getUser(), target, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, p);
+			}
+		};
+
+		if (si->hits > 1) {
+			//perform only for the children
+			SearchResultList results;
+			const auto& children = ctrlResults.findChildren(si->getGroupCond());
+			for (auto si: children)
+				results.push_back(si->sr);
+
+			SearchResult::pickResults(results, SETTING(MAX_AUTO_MATCH_SOURCES));
+
+			boost::for_each(results, download);
+		} else {
+			//perform for the parent
+			download(si->sr);
+		}
+	});
+}
+
+void SearchFrame::handleGetList(bool isPartial) {
+	auto getList = [&, isPartial](const SearchInfo* si) {
 		try {
-			QueueManager::getInstance()->addList(sr->getUser(), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, path);
+			QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | (isPartial ? QueueItem::FLAG_PARTIAL_LIST : 0), si->sr->getFilePath());
 		} catch(const Exception&) {
 			// Ignore for now...
 		}
-	}
-}
-void SearchFrame::SearchInfo::matchPartial() {
-	string path = Util::getReleaseDir(Text::fromT(getText(COLUMN_PATH)), false);
-	try {
-		QueueManager::getInstance()->addList(sr->getUser(), QueueItem::FLAG_MATCH_QUEUE | (sr->getUser().user->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST, path);
-	} catch(const Exception&) {
-		//...
-	}
+	};
+
+	performAction(getList);
 }
 
-
-void SearchFrame::SearchInfo::Download::operator()(SearchInfo* si) {
-	try {
-		if(si->sr->getType() == SearchResult::TYPE_FILE) {
-			string target = tgt + (noAppend ? Util::emptyString : Text::fromT(si->getText(COLUMN_FILENAME)));
-
-			WinUtil::addFileDownload(target, si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), si->sr->getDate(), 0, p);
-			
-			const auto& children = sf->getUserList().findChildren(si->getGroupCond());
-			for(const auto& j: children) {
-				WinUtil::addFileDownload(target, j->sr->getSize(), j->sr->getTTH(), j->sr->getUser(), j->sr->getDate(), 0, p);
-			}
-		} else {
-			DirectoryListingManager::getInstance()->addDirectoryDownload(si->sr->getFile(), si->sr->getUser(), tgt, targetType, unknownSize ? ASK_USER : NO_CHECK, p);
+void SearchFrame::handleMatchPartial() {
+	auto matchPartial = [&](const SearchInfo* si) {
+		string path = Util::getReleaseDir(si->sr->getFilePath(), false);
+		try {
+			QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_MATCH_QUEUE | (si->sr->getUser().user->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST, path);
+		} catch(const Exception&) {
+			//...
 		}
-	} catch(const Exception&) {
+	};
+
+	performAction(matchPartial);
+}
+
+void SearchFrame::handleSearchDir() {
+	if(ctrlResults.GetSelectedCount() == 1) {
+		const SearchInfo* si = ctrlResults.getSelectedItem();
+		WinUtil::searchAny(Text::toT(Util::getReleaseDir(si->sr->getFile(), true)));
 	}
 }
 
-void SearchFrame::SearchInfo::DownloadWhole::operator()(SearchInfo* si) {
-	try {
-		DirectoryListingManager::getInstance()->addDirectoryDownload(si->sr->getType() == SearchResult::TYPE_FILE ? Text::fromT(si->getText(COLUMN_PATH)) : si->sr->getFile(),
-			si->sr->getUser(), tgt, targetType, unknownSize ? ASK_USER : NO_CHECK, p);
-	} catch(const Exception&) {
+void SearchFrame::handleOpenFolder() {
+	if(ctrlResults.GetSelectedCount() == 1) {
+		const SearchInfo* si = ctrlResults.getSelectedItem();
+		try {
+			tstring path;
+			if(si->sr->getType() == SearchResult::TYPE_DIRECTORY) {
+				path = AirUtil::getDirDupePath(si->getDupe(), si->sr->getFile());
+			} else {
+				path = AirUtil::getDupePath(si->getDupe(), si->sr->getTTH());
+			}
+
+			if (!path.empty())
+				WinUtil::openFolder(path);
+		} catch(const ShareException& se) {
+			LogManager::getInstance()->message(se.getError(), LogManager::LOG_ERROR);
+		}
 	}
 }
 
-void SearchFrame::SearchInfo::getList() {
-	try {
-		QueueManager::getInstance()->addList(sr->getUser(), QueueItem::FLAG_CLIENT_VIEW, Text::fromT(getText(COLUMN_PATH)));
-	} catch(const Exception&) {
-		// Ignore for now...
-	}
-}
-
-void SearchFrame::SearchInfo::browseList() {
-	try {
-		QueueManager::getInstance()->addList(sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST, Text::fromT(getText(COLUMN_PATH)));
-	} catch(const Exception&) {
-		// Ignore for now...
+void SearchFrame::handleSearchTTH() {
+	if(ctrlResults.GetSelectedCount() == 1) {
+		const SearchInfo* si = ctrlResults.getSelectedItem();
+		if(si->sr->getType() == SearchResult::TYPE_FILE) {
+			WinUtil::searchHash(si->sr->getTTH(), si->sr->getFileName(), si->sr->getSize());
+		}
 	}
 }
 
@@ -805,14 +917,6 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 		StringList sl = ClientManager::getInstance()->getHubUrls(si->sr->getUser());
 		hubs.insert( hubs.end(), sl.begin(), sl.end() );
 		//Util::intersect(hubs, ClientManager::getInstance()->getHubs(si->sr->getUser()->getCID()));
-	}
-}
-
-void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
-	if (useWhole) {
-		ctrlResults.forEachSelectedT(SearchInfo::DownloadWhole(aTarget, p, aTargetType, isSizeUnknown));
-	} else {
-		ctrlResults.forEachSelectedT(SearchInfo::Download(aTarget, this, p, aTarget[aTarget.length()-1] != PATH_SEPARATOR, aTargetType, isSizeUnknown));
 	}
 }
 
@@ -877,7 +981,7 @@ LRESULT SearchFrame::onDoubleClickResults(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		if (item->ptAction.x < rect.left)
 			return 0;
 
-		ctrlResults.forEachSelectedT(SearchInfo::Download(SETTING(DOWNLOAD_DIRECTORY), this, WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false));
+		handleDownload(SETTING(DOWNLOAD_DIRECTORY), WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
 	}
 	return 0;
 }
@@ -1211,18 +1315,6 @@ void SearchFrame::onTab(bool shift) {
 	::SetFocus(wnds[(i + (shift ? -1 : 1)) % size]);
 }
 
-LRESULT SearchFrame::onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlResults.GetSelectedCount() == 1) {
-		int i = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
-		const SearchResultPtr& sr = ctrlResults.getItemData(i)->sr;
-		if(sr->getType() == SearchResult::TYPE_FILE) {
-			WinUtil::searchHash(sr->getTTH(), sr->getFileName(), sr->getSize());
-		}
-	}
-
-	return 0;
-}
-
 void SearchFrame::addSearchResult(SearchInfo* si) {
 	const SearchResultPtr& sr = si->sr;
 
@@ -1256,7 +1348,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		bool resort = false;
 		resultsCount++;
 
-		if(ctrlResults.getSortColumn() == COLUMN_HITS && resultsCount % 15 == 0) {
+		if(ctrlResults.getSortColumn() == COLUMN_USERS && resultsCount % 15 == 0) {
 			resort = true;
 		}
 
@@ -1274,7 +1366,6 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		if (SETTING(BOLD_SEARCH)) {
 			setDirty();
 		}
-		//ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T(" ") + TSTRING(FILES)).c_str());
 
 		if(resort) {
 			ctrlResults.resort();
@@ -1282,7 +1373,6 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 	} else {
 		// searching is paused, so store the result but don't show it in the GUI (show only information: visible/all results)
 		pausedResults.push_back(si);
-		//ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T("/") + Util::toStringW(pausedResults.size() + resultsCount) + _T(" ") + WSTRING(FILES)).c_str());
 	}
 
 	statusDirty = true;
@@ -1306,38 +1396,16 @@ void SearchFrame::onResultFiltered() {
 	ctrlStatus.SetText(4, (Util::toStringW(droppedResults) + _T(" ") + TSTRING(FILTERED)).c_str());
 }
 
-LRESULT SearchFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
- 	switch(wParam) {
-	case ADD_RESULT:
-		addSearchResult((SearchInfo*)(lParam));
-		break;
-	case FILTER_RESULT:
-		onResultFiltered();
-		break;
- 	case HUB_ADDED:
- 		onHubAdded((HubInfo*)(lParam));
-		break;
- 	case HUB_CHANGED:
- 		onHubChanged((HubInfo*)(lParam));
-		break;
- 	case HUB_REMOVED:
-		{
- 			onHubRemoved(Text::toT(*(string*)(lParam)));
-			delete (string*)lParam;
-		}
- 		break;
-	case QUEUE_STATS:
-	{
-		tstring* t = (tstring*)(lParam);
-		ctrlStatus.SetText(2, (*t).c_str());
-		
-		::InvalidateRect(m_hWndStatusBar, NULL, TRUE);
-		delete t;
-	}
-		break;
-	}
+void SearchFrame::on(ClientConnected, const Client* c) noexcept { 
+	callAsync([=] { onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp())); });
+}
 
-	return 0;
+void SearchFrame::on(ClientUpdated, const Client* c) noexcept { 
+	callAsync([=] { onHubChanged(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp())); });
+}
+
+void SearchFrame::on(ClientDisconnected, const string& aHubUrl) noexcept { 
+	callAsync([=] { onHubRemoved(Text::toT(aHubUrl)); });
 }
 
 LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -1395,28 +1463,28 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 
 			if (hasFiles && (!hasDupes || ctrlResults.GetSelectedCount() == 1)) {
-				resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
-				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
+				resultsMenu.appendItem(TSTRING(VIEW_AS_TEXT), [&] { handleOpenItem(true); });
+				resultsMenu.appendItem(TSTRING(OPEN), [&] { handleOpenItem(false); });
 			}
 
 			if((ctrlResults.GetSelectedCount() == 1) && hasDupes) {
-				resultsMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+				resultsMenu.appendItem(TSTRING(OPEN_FOLDER), [&] { handleOpenFolder(); });
 				resultsMenu.AppendMenu(MF_SEPARATOR);
 			}
 
-			resultsMenu.AppendMenu(MF_STRING, IDC_VIEW_NFO, CTSTRING(VIEW_NFO));
-			resultsMenu.AppendMenu(MF_STRING, IDC_MATCH, CTSTRING(MATCH_PARTIAL));
+			resultsMenu.appendItem(TSTRING(VIEW_NFO), [&] { handleViewNfo(); });
+			resultsMenu.appendItem(TSTRING(MATCH_PARTIAL), [&] { handleMatchPartial(); });
 
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 			if (hasFiles)
-				resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
+				resultsMenu.appendItem(SettingsManager::lanMode ? TSTRING(SEARCH_FOR_ALTERNATES) : TSTRING(SEARCH_TTH), [&] { handleSearchTTH(); });
 
-			resultsMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES_DIR, CTSTRING(SEARCH_DIRECTORY));
+			resultsMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [&] { handleSearchDir(); });
 
 			WinUtil::appendSearchMenu(resultsMenu, [=](const WebShortcut* ws) {
-				ctrlResults.forEachSelectedT([=](const SearchInfo* ii) { 
+				performAction([=](const SearchInfo* ii) { 
 					WinUtil::searchSite(ws, ii->sr->getFile()); 
-				});
+				}, true);
 			});
 
 			resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)copyMenu, CTSTRING(COPY));
@@ -1502,16 +1570,6 @@ void SearchFrame::onHubRemoved(tstring&& aHubUrl) {
 	delete ctrlHubs.getItemData(nItem);
 	ctrlHubs.DeleteItem(nItem);
 	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
-}
-
-LRESULT SearchFrame::onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ctrlResults.forEachSelected(&SearchInfo::getList);
-	return 0;
-}
-
-LRESULT SearchFrame::onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ctrlResults.forEachSelected(&SearchInfo::browseList);
-	return 0;
 }
 
 LRESULT SearchFrame::onPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -1642,6 +1700,9 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		if(SETTING(GET_USER_COUNTRY) && (ctrlResults.findColumn(cd->iSubItem) == COLUMN_IP)) {
 			CRect rc;
 			SearchInfo* si = (SearchInfo*)cd->nmcd.lItemlParam;
+			if (si->hits > 1)
+				return CDRF_DODEFAULT;
+
 			ctrlResults.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
 			SetTextColor(cd->nmcd.hdc, cd->clrText);
@@ -1845,38 +1906,4 @@ void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
-}
-
-LRESULT SearchFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlResults.GetSelectedCount() == 1) {
-
-		int pos = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
-		dcassert(pos != -1);
-
-		if ( pos >= 0 ) {
-			const SearchResultPtr& sr = ctrlResults.getItemData(pos)->sr;
-			WinUtil::searchAny(Text::toT(Util::getReleaseDir(sr->getFile(), true)));
-		}
-	}
-	return S_OK;
-}
-LRESULT SearchFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	
-	if(ctrlResults.GetSelectedCount() == 1) {
-		const SearchInfo* si = ctrlResults.getSelectedItem();
-		try {
-			tstring path;
-			if(si->sr->getType() == SearchResult::TYPE_DIRECTORY) {
-				path = AirUtil::getDirDupePath(si->getDupe(), si->sr->getFile());
-			} else {
-				path = AirUtil::getDupePath(si->getDupe(), si->sr->getTTH());
-			}
-
-			if (!path.empty())
-				WinUtil::openFolder(path);
-		} catch(const ShareException& se) {
-			LogManager::getInstance()->message(se.getError(), LogManager::LOG_ERROR);
-		}
-	}
-	return 0;
 }
