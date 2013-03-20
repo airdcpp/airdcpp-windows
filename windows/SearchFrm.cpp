@@ -525,7 +525,7 @@ void SearchFrame::onEnter() {
 	// perform the search
 	auto newSearch = AdcSearch::getSearch(s, excluded, exactSize2, ftype, mode, extList, AdcSearch::MATCH_FULL_PATH, false);
 	if (newSearch) {
-		Lock l(cs);
+		WLock l(cs);
 		curSearch.reset(newSearch);
 		token = Util::toString(Util::rand());
 
@@ -554,7 +554,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 
 		//no further validation, trust that the other client knows what he's sending... unless we are using excludes
 		if (usingExcludes) {
-			Lock l (cs);
+			RLock l (cs);
 			if (curSearch && curSearch->isExcluded(aResult->getFile())) {
 				PostMessage(WM_SPEAKER, FILTER_RESULT);
 				return;
@@ -562,7 +562,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		}
 	} else {
 		// Check that this is really a relevant search result...
-		Lock l(cs);
+		RLock l(cs);
 		if (!curSearch)
 			return;
 
@@ -596,8 +596,16 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 	PostMessage(WM_SPEAKER, ADD_RESULT, (LPARAM)i);
 }
 
+void SearchFrame::removeSelected() {
+	int i = -1;
+	WLock l(cs);
+	while( (i = ctrlResults.GetNextItem(-1, LVNI_SELECTED)) != -1) {
+		ctrlResults.removeGroupedItem(ctrlResults.getItemData(i));
+	}
+}
+
 void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
-	Lock l(cs);
+	RLock l(cs);
 	
 	if(waiting) {
 		if(aTick < searchEndTime + 1000){

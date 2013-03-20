@@ -96,11 +96,20 @@ void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_
 	}
 }
 
-void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool /*usingGuiThread*/) {
+void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool usingGuiThread) {
+	//keep the messages in right order...
+	auto runF = [=](std::function<void ()> aF) {
+		if (!usingGuiThread) {
+			callAsync(aF);
+		} else {
+			aF();
+		}
+	};
+
 	bool searching = dl->isCurrentSearchPath(aDir);
 
 	if (!dl->getPartialList())
-		callAsync([=] { updateStatus(CTSTRING(UPDATING_VIEW)); });
+		runF([=] { updateStatus(CTSTRING(UPDATING_VIEW)); });
 
 	if (searching)
 		resetFilter();
@@ -127,7 +136,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 
 		changeWindowState(true);
 
-		callAsync([=] {
+		runF([=] {
 			initStatus();
 			//if (!msg.empty())
 			updateStatus(Text::toT(msg));
@@ -138,7 +147,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 	} else {
 		findSearchHit(true);
 		changeWindowState(true);
-		callAsync([=] { 
+		runF([=] { 
 			updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
 			dl->setWaiting(false);
 		});

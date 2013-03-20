@@ -150,13 +150,7 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void runUserCommand(UserCommand& uc);
 
-	void removeSelected() {
-		int i = -1;
-		Lock l(cs);
-		while( (i = ctrlResults.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			ctrlResults.removeGroupedItem(ctrlResults.getItemData(i));
-		}
-	}
+	void removeSelected();
 
 	LRESULT onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		ctrlResults.forEachSelected(&SearchInfo::open);
@@ -470,7 +464,7 @@ private:
 	uint64_t searchStartTime;
 	tstring target;
 	
-	CriticalSection cs;
+	SharedMutex cs;
 	size_t droppedResults;
 
 	bool closed;
