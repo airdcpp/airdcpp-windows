@@ -1152,16 +1152,16 @@ LRESULT RichTextBox::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 
 HintedUser RichTextBox::getMagnetSource() {
 	UserPtr u = nullptr;
-	if (user) {
+	if (user && !user->isSet(User::BOT)) {
 		u = user;
 	} else if (client && !author.empty()) {
 		OnlineUserPtr ou = client->findUser(Text::fromT(author));
-		if (ou) {
+		if (ou && !ou->getUser()->isSet(User::BOT)) {
 			u = ou->getUser();
 		}
 	}
 
-	if (u && !u->isSet(User::BOT))
+	if (u)
 		return HintedUser(u, client->getHubUrl());
 
 	return HintedUser();

@@ -793,7 +793,7 @@ void SearchFrame::handleViewNfo() {
 				// Ignore for now...
 			}
 		} else {
-			string path = Util::getReleaseDir(Text::fromT(si->getText(COLUMN_PATH)), false);
+			string path = Util::getReleaseDir(si->sr->getFilePath(), false);
 			try {
 				QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, path);
 			} catch(const Exception&) {
