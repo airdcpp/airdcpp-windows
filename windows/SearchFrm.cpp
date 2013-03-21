@@ -667,10 +667,10 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 			else
 				return(a->sr->getType() == SearchResult::TYPE_DIRECTORY) ? -1 : 1;
 		case COLUMN_FILES: 
-			if(a->sr->getType() != b->sr->getType())
-				return a->sr->getType() == SearchResult::TYPE_DIRECTORY;
-			else
+			if(a->sr->getType() == b->sr->getType())
 				return compare(a->sr->getFileCount(), b->sr->getFileCount());
+			else
+				return a->sr->getType() == SearchResult::TYPE_DIRECTORY ? 1 : -1;
 		case COLUMN_SLOTS: 
 			if(a->sr->getFreeSlots() == b->sr->getFreeSlots())
 				return compare(a->sr->getSlots(), b->sr->getSlots());
@@ -698,7 +698,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			}
 		case COLUMN_FILES: 
 			if (sr->getFileCount() >= 0)
-				return Util::toStringW(sr->getFileCount());
+				return TSTRING_F(X_FILES, sr->getFileCount());
 			else
 				return Util::emptyStringW;
 		case COLUMN_USERS:
