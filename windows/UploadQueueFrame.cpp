@@ -157,7 +157,7 @@ LRESULT UploadQueueFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	if(usingUserMenu) {
 		UserPtr User = getSelectedUser();
 		if(User) {
-			UploadManager::getInstance()->clearUserFiles(User);
+			UploadManager::getInstance()->clearUserFiles(User, true);
 		}
 	} else {
 		int i = -1;
@@ -166,11 +166,32 @@ LRESULT UploadQueueFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 			RemoveUsers.push_back(((UploadQueueItem*)ctrlList.getItemData(i))->getUser());
 		}
 		for(UserList::const_iterator i = RemoveUsers.begin(); i != RemoveUsers.end(); ++i) {
-			UploadManager::getInstance()->clearUserFiles(*i);
+			UploadManager::getInstance()->clearUserFiles(*i, true);
 		}
 	}
 	updateStatus();
 	return 0;
+}
+
+void UploadQueueFrame::removeSelected() {
+	int i = -1;
+	UserList RemoveUsers;
+	while((i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		// Ok let's cheat here, if you try to remove more users here is not working :(
+		RemoveUsers.push_back(((UploadQueueItem*)ctrlList.getItemData(i))->getUser());
+	}
+	for(auto i = RemoveUsers.begin(); i != RemoveUsers.end(); ++i) {
+		UploadManager::getInstance()->clearUserFiles(*i, true);
+	}
+	updateStatus();
+}
+	
+void UploadQueueFrame::removeSelectedUser() {
+	UserPtr User = getSelectedUser();
+	if(User) {
+		UploadManager::getInstance()->clearUserFiles(User, true);
+	}
+	updateStatus();
 }
 
 LRESULT UploadQueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {

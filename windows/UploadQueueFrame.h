@@ -165,26 +165,8 @@ private:
 		return 0;
 	}
 
-	void removeSelected() {
-		int i = -1;
-		UserList RemoveUsers;
-		while((i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			// Ok let's cheat here, if you try to remove more users here is not working :(
-			RemoveUsers.push_back(((UploadQueueItem*)ctrlList.getItemData(i))->getUser());
-		}
-		for(auto i = RemoveUsers.begin(); i != RemoveUsers.end(); ++i) {
-			UploadManager::getInstance()->clearUserFiles(*i);
-		}
-		updateStatus();
-	}
-	
-	void removeSelectedUser() {
-		UserPtr User = getSelectedUser();
-		if(User) {
-			UploadManager::getInstance()->clearUserFiles(User);
-		}
-		updateStatus();
-	}
+	void removeSelected();
+	void removeSelectedUser();
 
 	// Communication with manager
 	void LoadAll();
