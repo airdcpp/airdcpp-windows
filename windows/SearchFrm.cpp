@@ -807,17 +807,17 @@ void SearchFrame::handleViewNfo() {
 
 void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
 	ctrlResults.filteredForEachSelectedT([&](const SearchInfo* si) {
-		//get the target
-		string target = aTarget;
+		//get the target for file downloads (file names may differ for grouped results)
+		string fileTarget = aTarget;
 		if (!useWhole && aTarget[aTarget.length()-1] == PATH_SEPARATOR)
-			target += si->sr->getFileName();
+			fileTarget += si->sr->getFileName();
 
 		bool fileDownload = si->sr->getType() == SearchResult::TYPE_FILE && !useWhole;
 		auto download = [&](const SearchResultPtr& aSR) {
 			if (fileDownload) {
-				WinUtil::addFileDownload(target, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
+				WinUtil::addFileDownload(fileTarget, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
 			} else {
-				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), aSR->getUser(), target, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, p);
+				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), aSR->getUser(), aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, p);
 			}
 		};
 
