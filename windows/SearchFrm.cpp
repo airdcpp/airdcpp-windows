@@ -847,7 +847,7 @@ void SearchFrame::handleGetList(bool isPartial) {
 		}
 	};
 
-	performAction(getList);
+	performAction(getList, true);
 }
 
 void SearchFrame::handleMatchPartial() {
@@ -860,7 +860,7 @@ void SearchFrame::handleMatchPartial() {
 		}
 	};
 
-	performAction(matchPartial);
+	performAction(matchPartial, true);
 }
 
 void SearchFrame::handleSearchDir() {
