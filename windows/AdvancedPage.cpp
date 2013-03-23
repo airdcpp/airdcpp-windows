@@ -60,6 +60,7 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::UPDATE_IP_HOURLY, ResourceManager::UPDATE_IP_EVERY },
 	{ SettingsManager::SEARCH_SAVE_HUBS_STATE, ResourceManager::SAVE_HUBS_STATE },
 	{ SettingsManager::FREE_SPACE_WARN, ResourceManager::SETTINGS_USE_SPACE_WARNING },
+	{  SettingsManager::NMDC_MAGNET_WARN, ResourceManager::SETTINGS_NMDC_MAGNET_WARNING},
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

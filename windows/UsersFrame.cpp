@@ -361,11 +361,11 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		filter.getFilterMethodBox().MoveWindow(sr);
 
 		sr.left = sr.right +4;
-		sr.right = sr.left + ctrlShowFav.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowFav.m_hWnd, WinUtil::systemFont) + 16;
+		sr.right = sr.left + ctrlShowFav.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowFav.m_hWnd, WinUtil::systemFont) + 20;
 		ctrlShowFav.MoveWindow(sr);
 
-		sr.left = sr.right +4;
-		sr.right = sr.left + ctrlShowQueued.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowQueued.m_hWnd, WinUtil::systemFont) + 16;
+		sr.left = sr.right + 4;
+		sr.right = sr.left + ctrlShowQueued.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowQueued.m_hWnd, WinUtil::systemFont) + 24;
 		ctrlShowQueued.MoveWindow(sr);
 		
 		ctrlStatus.GetRect(2, sr);
@@ -563,7 +563,6 @@ void UsersFrame::updateInfoText(const UserInfo* ui){
 				}
 			}
 		}
-		tmp += _T("\r\nQueued from user: ") + Text::toT(Util::formatBytes(ui->getUser()->getQueued())); 
 		ctrlInfo.SetWindowText(tmp.c_str());
 	} else
 		ctrlInfo.SetWindowText(_T(""));

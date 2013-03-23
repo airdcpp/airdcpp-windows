@@ -37,14 +37,14 @@
 LRESULT SystemFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	ctrlPad.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		WS_VSCROLL | ES_MULTILINE | ES_NOHIDESEL, WS_EX_CLIENTEDGE);
+		WS_VSCROLL | ES_MULTILINE | ES_NOHIDESEL | ES_READONLY, WS_EX_CLIENTEDGE);
 
-	ctrlPad.SetReadOnly(TRUE);
 	ctrlPad.SetFont(WinUtil::font);
 	ctrlPad.SetBackgroundColor(WinUtil::bgColor); 
 	ctrlPad.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
 	ctrlPad.LimitText(96*1024); //now that we have icons we might want to limit even lower, the ram usage grows when many icons in view.
 	ctrlClientContainer.SubclassWindow(ctrlPad.m_hWnd);
+	textHeight = WinUtil::getTextHeight(ctrlPad.m_hWnd, WinUtil::font);
 	
 	if(!hbInfo)
 		hbInfo = ResourceLoader::getBitmapFromIcon(IDI_INFO, WinUtil::bgColor,  ICON_SIZE, ICON_SIZE);
@@ -166,6 +166,7 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	POINT pt = { 0 };
 	bool scroll = !lButtonDown && scrollIsAtEnd();
 	ctrlPad.GetScrollPos(&pt);
+	int curPos = ctrlPad.CharFromPos(pt); //current scroll position by character pos
 
 	LONG SavedBegin, SavedEnd;
 	LONG Begin = 0; 
@@ -190,12 +191,15 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 		End = Begin -=RemoveEnd;
 		SavedBegin -= RemoveEnd;
 		SavedEnd -= RemoveEnd;
+
 		//fix the scroll position if text was removed from the start
-		pt.y -= ctrlPad.PosFromChar(RemoveEnd).y;
+		POINT p = { 0 };
+		curPos -= RemoveEnd;
+		p = ctrlPad.PosFromChar(curPos);
+		pt.y = p.y;
 
 		ctrlPad.SetSel(0, RemoveEnd);
 		ctrlPad.ReplaceSel(_T(""));
-
 	}
 
 	ctrlPad.AppendText(line.c_str());
@@ -236,7 +240,7 @@ void SystemFrame::addLine(LogManager::MessageData md, const tstring& msg) {
 	
 	ctrlPad.SetSel(SavedBegin, SavedEnd); //restore the user selection
 
-	if(scroll) {                
+	if(scroll/* && (SavedBegin == SavedEnd)*/) { 
 		scrollToEnd();
 	} else {
 		ctrlPad.SetScrollPos(&pt);
@@ -270,8 +274,8 @@ bool SystemFrame::scrollIsAtEnd() {
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_ALL;
 	ctrlPad.GetScrollInfo(SB_VERT, &si);
-
-	return si.nPage == 0 || ((size_t)si.nPos >= ((size_t)si.nMax - si.nPage - 5)) && ((size_t)si.nTrackPos >= ((size_t)si.nMax - si.nPage - 5));
+	const int tmp = (si.nMax - (int)si.nPage - textHeight);
+	return si.nPage == 0 || (si.nPos >= tmp) && (si.nTrackPos >= tmp);
 }
 
 

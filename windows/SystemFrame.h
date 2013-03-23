@@ -51,6 +51,7 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
+		MESSAGE_HANDLER(WM_VSCROLL, onScroll)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_REFRESH_SETTINGS, onRefreshSettings)
@@ -71,6 +72,7 @@ public:
 		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onLButton)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, onLButtonDown)
 		MESSAGE_HANDLER(WM_LBUTTONUP, onLButtonUp)
+		MESSAGE_HANDLER(WM_VSCROLL, onScroll)
 	END_MSG_MAP()
 
 	enum Tasks { ADD_LINE };
@@ -103,6 +105,24 @@ public:
 		bHandled = FALSE;
 		return 0;
 	}
+	LRESULT onScroll(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+		switch(LOWORD(wParam))  {
+			case SB_THUMBTRACK:
+				lButtonDown = true;
+				break;
+			case SB_THUMBPOSITION:
+				lButtonDown = false;
+				if(hasMessages)
+					PostMessage(WM_SPEAKER);
+				hasMessages = false;
+				break;
+			default:
+				break;
+		}
+		bHandled = FALSE;
+		return 0;
+	}
+
 
 	LRESULT onLButtonUp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		lButtonDown = false;
@@ -175,6 +195,7 @@ private:
 	bool scrollIsAtEnd();
 	tstring selWord;
 	tstring WordFromPos(const POINT& p);
+	int textHeight;
 
 	/* add the messages as tasks, if the user is currently making a selection don't add text to the window
 	before mouse button is up and selection is complete */
