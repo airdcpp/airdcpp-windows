@@ -1616,7 +1616,6 @@ would you still like to load them?</String>
 		<String Name="DirectoryLoaded">The directory %s has been loaded</String>
 		<String Name="RedirectFailover">A redirection request was received via a failover address; press the follow redirect button to connect to %s</String>
 		<String Name="NmdcMagnetWarning">In NMDC hubs the file will be shared so everyone can access it, continue?</String>
-		<String Name="NmdcHubPrivate">NMDC hub Private chat!</String>
 		<String Name="DontAskAgain">Don't ask me again</String>
 		<String Name="DontShowAgain">Don't show this again</String>
 		<String Name="DataParsingFailed">Failed to parse the data</String>
@@ -1791,6 +1790,14 @@ Do you want to use this destination anyway?</String>
 		<String Name="AsError">%s: %s (on %s from an user %s)</String>
 		<String Name="LastError">Last error</String>
 		<String Name="ClearError">Clear error</String>
+		<String Name="MinDupeCheckSize">No dupe check for files smaller than</String>
 		<String Name="SettingsNmdcMagnetWarning">Warn me about sending files in private chat at nmdc hubs</String>
+		<String Name="ElevatedWarning">You appear to run the client with administrative privileges. This may disable the following client functionality:
+
+- Clicking on web links in chat doesn't work
+- All drives aren't shown in the sharing settings
+- Drag and drop functionality can't be used
+
+You may also notice other unexcepted behaviour, so it is heavily recommended that you switch the client to run with normal privileges.</String>
 	</Strings>
 </Language>

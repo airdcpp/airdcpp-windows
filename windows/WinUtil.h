@@ -231,6 +231,7 @@ public:
 	static void playSound(const tstring& sound);
 
 	static bool MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& txt);
+	static void ShowMessageBox(SettingsManager::BoolSetting i, const tstring& txt);
 
 	struct ConnectFav {
 		void operator()(UserPtr aUser, const string& aUrl) const;

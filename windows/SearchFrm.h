@@ -222,7 +222,8 @@ private:
 	enum {
 		COLUMN_FIRST,
 		COLUMN_FILENAME = COLUMN_FIRST,
-		COLUMN_FILES,
+		//COLUMN_FILES,
+		COLUMN_HITS,
 		COLUMN_USERS,
 		COLUMN_TYPE,
 		COLUMN_SIZE,
@@ -289,7 +290,8 @@ private:
 
 		int getImageIndex() const;
 		
-		inline SearchInfo* createParent() { return new SearchInfo(*this); }
+		//inline SearchInfo* createParent() { return new SearchInfo(*this); }
+		inline SearchInfo* createParent() { return this; }
 		inline const TTHValue& getGroupCond() const { return sr->getTTH(); }
 
 		bool isDupe() const { return dupe != NONE; }

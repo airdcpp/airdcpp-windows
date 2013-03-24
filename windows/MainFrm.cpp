@@ -432,6 +432,11 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		currentPic = SETTING(BACKGROUND_IMAGE);
 		m_PictureWindow.Load(Text::toT(currentPic).c_str());
 	}
+
+	if (WinUtil::getOsMajor() >= 6 && WinUtil::isElevated()) {
+		WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING));
+	}
+
 	if(SETTING(TESTWRITE)) {
 		TestWrite(true, true, true);
 	}

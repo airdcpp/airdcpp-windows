@@ -37,11 +37,11 @@
 #include <boost/range/numeric.hpp>
 
 
-int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_FILES, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
+int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_HITS, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
 	COLUMN_PATH, COLUMN_SLOTS, COLUMN_CONNECTION, COLUMN_HUB, COLUMN_EXACT_SIZE, COLUMN_IP, COLUMN_TTH, COLUMN_DATE };
 int SearchFrame::columnSizes[] = { 210, 80, 100, 50, 80, 100, 40, 70, 150, 80, 100, 150, 100 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  ResourceManager::FILES, ResourceManager::USER, ResourceManager::TYPE, ResourceManager::SIZE,
+static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  ResourceManager::HITS, ResourceManager::USER, ResourceManager::TYPE, ResourceManager::SIZE,
 	ResourceManager::PATH, ResourceManager::SLOTS, ResourceManager::CONNECTION, 
 	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 
@@ -265,7 +265,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if(SETTING(SORT_DIRS)) {
 		ctrlResults.setSortColumn(COLUMN_FILENAME);
 	} else {
-		ctrlResults.setSortColumn(COLUMN_USERS);
+		ctrlResults.setSortColumn(COLUMN_HITS);
 		ctrlResults.setAscending(false);
 	}
 	ctrlResults.SetBkColor(WinUtil::bgColor);
@@ -666,11 +666,13 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 				return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
 			else
 				return(a->sr->getType() == SearchResult::TYPE_DIRECTORY) ? -1 : 1;
-		case COLUMN_FILES: 
+		/*case COLUMN_FILES: 
 			if(a->sr->getType() == b->sr->getType())
 				return compare(a->sr->getFileCount(), b->sr->getFileCount());
 			else
-				return a->sr->getType() == SearchResult::TYPE_DIRECTORY ? 1 : -1;
+				return a->sr->getType() == SearchResult::TYPE_DIRECTORY ? 1 : -1;*/
+
+		case COLUMN_HITS: return compare(a->hits, b->hits);
 		case COLUMN_SLOTS: 
 			if(a->sr->getFreeSlots() == b->sr->getFreeSlots())
 				return compare(a->sr->getSlots(), b->sr->getSlots());
@@ -678,12 +680,12 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 				return compare(a->sr->getFreeSlots(), b->sr->getFreeSlots());
 		case COLUMN_SIZE:
 		case COLUMN_EXACT_SIZE: return compare(a->sr->getSize(), b->sr->getSize());
-		case COLUMN_USERS:
+		/*case COLUMN_USERS:
 			if (a->hits != 1 || b->hits != 1)
 				return compare(a->hits, b->hits);
 			else
-				return lstrcmpi(a->getText(col).c_str(), b->getText(col).c_str());
-
+				return lstrcmpi(a->getText(col).c_str(), b->getText(col).c_str());*/
+		case COLUMN_DATE: return compare(a->sr->getDate(), b->sr->getDate());
 		default: return lstrcmpi(a->getText(col).c_str(), b->getText(col).c_str());
 	}
 }
@@ -696,16 +698,18 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			} else {
 				return Text::toT(sr->getFileName());
 			}
-		case COLUMN_FILES: 
+		/*case COLUMN_FILES: 
 			if (sr->getFileCount() >= 0)
 				return TSTRING_F(X_FILES, sr->getFileCount());
 			else
-				return Util::emptyStringW;
-		case COLUMN_USERS:
+				return Util::emptyStringW;*/
+		/*case COLUMN_USERS:
 			if (hits > 1)
 				return Util::toStringW(hits) + _T(' ') + TSTRING(USERS);
 			else
-				return WinUtil::getNicks(sr->getUser());
+				return WinUtil::getNicks(sr->getUser());*/
+		case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : Util::toStringW(hits + 1) + _T(' ') + TSTRING(USERS);
+		case COLUMN_USERS: return WinUtil::getNicks(sr->getUser());
 		case COLUMN_TYPE:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
 				tstring type = Text::toT(Util::getFileExt(Text::fromT(getText(COLUMN_FILENAME))));
@@ -729,21 +733,21 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			}
 		case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
 		case COLUMN_CONNECTION:
-			if (hits > 1) {
+			/*if (hits > 1) {
 				//auto p = ctrlResults.
-			} else {
+			} else {*/
 				return Text::toT(sr->getConnectionStr());
-			}
+			//}
 		case COLUMN_HUB: 
-			if (hits > 1)
+			/*if (hits > 1)
 				return Util::emptyStringW;
-			else
+			else*/
 				return WinUtil::getHubNames(sr->getUser()).first;
 		case COLUMN_EXACT_SIZE: return sr->getSize() > 0 ? Util::formatExactSize(sr->getSize()) : Util::emptyStringT;
 		case COLUMN_IP: 
-			if (hits > 1)
+			/*if (hits > 1)
 				return Util::emptyStringW;
-			else
+			else*/
 				return ipText;
 		case COLUMN_TTH: return (sr->getType() == SearchResult::TYPE_FILE && !SettingsManager::lanMode) ? Text::toT(sr->getTTH().toBase32()) : Util::emptyStringT;
 		case COLUMN_DATE: return Util::getDateTimeW(sr->getDate());
@@ -751,9 +755,9 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 	}
 }
 
-void SearchFrame::performAction(std::function<void (const SearchInfo* aInfo)> f, bool oncePerParent /*false*/) {
+void SearchFrame::performAction(std::function<void (const SearchInfo* aInfo)> f, bool /*oncePerParent false*/) {
 	ctrlResults.filteredForEachSelectedT([&](const SearchInfo* si) {
-		if (si->hits > 1) {
+		/*if (si->hits > 1) {
 			//perform only for the children
 			const auto& children = ctrlResults.findChildren(si->getGroupCond());
 			if (oncePerParent && !children.empty()) {
@@ -761,10 +765,10 @@ void SearchFrame::performAction(std::function<void (const SearchInfo* aInfo)> f,
 			} else {
 				boost::for_each(children, f);
 			}
-		} else {
+		} else {*/
 			//perform for the parent
 			f(si);
-		}
+		//}
 	});
 }
 
@@ -824,6 +828,8 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 		if (si->hits > 1) {
 			//perform only for the children
 			SearchResultList results;
+
+			results.push_back(si->sr);
 			const auto& children = ctrlResults.findChildren(si->getGroupCond());
 			for (auto si: children)
 				results.push_back(si->sr);
@@ -1348,7 +1354,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		bool resort = false;
 		resultsCount++;
 
-		if(ctrlResults.getSortColumn() == COLUMN_USERS && resultsCount % 15 == 0) {
+		if(ctrlResults.getSortColumn() == COLUMN_HITS && resultsCount % 15 == 0) {
 			resort = true;
 		}
 

@@ -763,6 +763,15 @@ bool WinUtil::MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& t
 	return ret == IDYES;
 }
 
+void WinUtil::ShowMessageBox(SettingsManager::BoolSetting i, const tstring& txt) {
+	if (SettingsManager::getInstance()->get(i)) {
+		UINT bCheck = BST_UNCHECKED;
+		::MessageBox(WinUtil::mainWnd, txt.c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), CTSTRING(DONT_SHOW_AGAIN), MB_OK | MB_ICONWARNING | MB_DEFBUTTON2, bCheck);
+		if (bCheck == BST_CHECKED)
+			SettingsManager::getInstance()->set(i, false);
+	}
+}
+
 bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* = true */, const tstring& initialDir /* = Util::emptyString */, const TCHAR* types /* = NULL */, const TCHAR* defExt /* = NULL */) {
 	TCHAR buf[UNC_MAX_PATH];
 	OPENFILENAME ofn = { 0 };       // common dialog box structure

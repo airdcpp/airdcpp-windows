@@ -418,11 +418,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 
 	//warn the user that nmdc share will be public access.
 	if((getUser() && getUser()->isSet(User::NMDC))) {
-		UINT bCheck = SETTING(NMDC_MAGNET_WARN) ? BST_UNCHECKED : BST_CHECKED;
-		if(bCheck == BST_UNCHECKED)
-			::MessageBox(WinUtil::mainWnd, CTSTRING(NMDC_MAGNET_WARNING), CTSTRING(NMDC_HUB_PRIVATE), CTSTRING(DONT_SHOW_AGAIN), MB_OK | MB_ICONWARNING | MB_DEFBUTTON2, bCheck);
-		
-		SettingsManager::getInstance()->set(SettingsManager::NMDC_MAGNET_WARN, bCheck != BST_CHECKED);
+		WinUtil::ShowMessageBox(SettingsManager::NMDC_MAGNET_WARN, CTSTRING(NMDC_MAGNET_WARNING));
 	}
 
 	setStatusText(aPaths.size() > 1 ? TSTRING_F(CREATING_MAGNET_FOR_X, aPaths.size()) : TSTRING_F(CREATING_MAGNET_FOR, Text::toT(aPaths.front())));

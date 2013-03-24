@@ -29,6 +29,8 @@ PropPage::TextItem DownloadingOptionsPage::texts[] = {
 	{ IDC_SETTINGS_KBPS5, ResourceManager::KBPS },
 	{ IDC_SETTINGS_KBPS6, ResourceManager::KBPS },
 	{ IDC_SETTINGS_KBPS7, ResourceManager::KBPS },
+	{ IDC_SETTINGS_KIB, ResourceManager::KiB },
+	{ IDC_MIN_DUPE_SIZE_LBL, ResourceManager::MIN_DUPE_CHECK_SIZE },
 	{ IDC_SETTINGS_MINUTES, ResourceManager::SECONDS },
 	{ IDC_MONITOR_SLOW_SPEED, ResourceManager::SETTINGS_AUTO_DROP_SLOW_SOURCES },
 	{ IDC_CZDC_SLOW_DISCONNECT, ResourceManager::SETCZDC_SLOW_DISCONNECT },
@@ -59,6 +61,7 @@ PropPage::Item DownloadingOptionsPage::items[] = {
 	{ IDC_DOWNLOAD_SKIPLIST_USE_REGEXP, SettingsManager::DOWNLOAD_SKIPLIST_USE_REGEXP, PropPage::T_BOOL },
 	{ IDC_USE_DISCONNECT_DEFAULT, SettingsManager::USE_SLOW_DISCONNECTING_DEFAULT, PropPage::T_BOOL },
 	{ IDC_BUNDLE_RECENT_HOURS, SettingsManager::RECENT_BUNDLE_HOURS, PropPage::T_INT },
+	{ IDC_MIN_DUPE_CHECK_SIZE, SettingsManager::MIN_DUPE_CHECK_SIZE, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 

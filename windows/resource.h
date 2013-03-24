@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by I:\projects\airsvn\trunk\AirDC.rc
+// Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -294,8 +294,8 @@
 #define IDD_FAVHUBGROUPS                503
 #define IDI_APPLY                       504
 #define IDI_CANCEL                      505
-#define IDI_EXPAND_UP					506
-#define IDI_EXPAND_DOWN					507
+#define IDI_EXPAND_UP                   506
+#define IDI_EXPAND_DOWN                 507
 #define IDC_REFRESH                     1000
 #define IDC_NICK                        1001
 #define IDC_EMAIL                       1002
@@ -1119,7 +1119,7 @@
 #define IDC_RESIZE_LINES                1507
 #define IDC_RESIZE_LINES_SPIN           1508
 #define IDC_MAX_RESIZE_LINES_STR        1509
-#define IDC_RESIZE						1510
+#define IDC_RESIZE                      1510
 #define IDC_USERLIST_COLORS             1517
 #define IDC_METACRITIC                  1521
 #define IDC_TABCOLOR_LIST               1522
@@ -1533,10 +1533,13 @@
 #define IDC_TYPE                        15056
 #define IDC_HOURS                       15056
 #define IDC_MATCHER_TYPE                15057
+#define IDC_MIN_DUPE_SIZE_LBL           15057
 #define IDC_AUTOSEARCH_ENABLE_TIME      15058
 #define IDC_START_TIME                  15058
+#define IDC_MIN_DUPE_CHECK_SIZE         15058
 #define IDC_AUTOSEARCH_EVERY            15059
 #define IDC_END_TIME                    15059
+#define IDC_SETTINGS_KBPS9              15059
 #define IDC_AUTOSEARCH_SPIN             15060
 #define IDC_AS_ACTION_STATIC2           15060
 #define IDC_TARGET_TYPE                 15060
@@ -1618,7 +1621,7 @@
 #define IDC_DUPLICATE                   15135
 #define IDC_USE_EXCLUDED                15136
 #define IDC_OPEN_FOLDER_TREE            15137
-#define IDC_FILTER_QUEUED					15138
+#define IDC_FILTER_QUEUED               15138
 #define ID_TOGGLE_TOOLBAR               15999
 #define ID_TOGGLE_TBSTATUS              16900
 #define ID_LOCK_TB                      18900
