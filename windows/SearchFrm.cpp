@@ -552,6 +552,11 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 			return;
 		}
 
+		if (curSearch && curSearch->itemType == AdcSearch::TYPE_FILE && aResult->getType() != SearchResult::TYPE_FILE) {
+			callAsync([this] { onResultFiltered(); });
+			return;
+		}
+
 		//no further validation, trust that the other client knows what he's sending... unless we are using excludes
 		if (usingExcludes) {
 			RLock l (cs);

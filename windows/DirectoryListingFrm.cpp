@@ -508,12 +508,12 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 				found = true;
 				break;
 			}
-		} else if(ii->type == ItemInfo::FILE && !search->isDirectory) {
+		} else if(ii->type == ItemInfo::FILE && search->itemType != AdcSearch::TYPE_DIRECTORY) {
 			if(search->matchesFile(ii->file->getName(), ii->file->getSize())) {
 				found = true;
 				break;
 			}
-		} else if(search->matchesDirectory(ii->dir->getName())) {
+		} else if(search->itemType != AdcSearch::TYPE_FILE && search->matchesDirectory(ii->dir->getName())) {
 			if (search->matchesSize(ii->dir->getTotalSize(false))) {
 				found = true;
 				break;

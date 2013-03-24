@@ -104,6 +104,7 @@ void SearchTypeCombo::fillList(const string& aSelection, COLORREF aTextColor, CO
 	addListItem(0, TSTRING(ANY), SEARCH_TYPE_ANY);
 	addListItem(7, TSTRING(DIRECTORY), SEARCH_TYPE_DIRECTORY);
 	addListItem(8, _T("TTH"), SEARCH_TYPE_TTH);
+	addListItem(9, TSTRING(FILE), SEARCH_TYPE_FILE);
 
 	for(auto& id: types | map_keys) {
 		string name = id;
