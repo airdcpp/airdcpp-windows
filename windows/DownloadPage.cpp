@@ -62,9 +62,7 @@ PropPage::Item DownloadPage::items[] = {
 
 PropPage::ListItem DownloadPage::optionItems[] = {
 	{ SettingsManager::ADD_FINISHED_INSTANTLY, ResourceManager::ADD_FINISHED_INSTANTLY },
-	{ SettingsManager::SCAN_DL_BUNDLES, ResourceManager::SETTINGS_SCAN_FINISHED_BUNDLES },
 	{ SettingsManager::OVERLAP_SLOW_SOURCES, ResourceManager::SETTINGS_OVERLAP_SLOW_SOURCES },
-	{ SettingsManager::AUTO_COMPLETE_BUNDLES, ResourceManager::SETTINGS_AUTO_COMPLETE_BUNDLES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

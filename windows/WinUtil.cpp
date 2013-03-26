@@ -1368,6 +1368,18 @@ int WinUtil::getOsMinor()
 	return ver.dwMinorVersion;
 }
 
+bool WinUtil::isDesktopOs() {
+	OSVERSIONINFOEX ver;
+	memzero(&ver, sizeof(OSVERSIONINFOEX));
+	if(!GetVersionEx((OSVERSIONINFO*)&ver)) 
+	{
+		ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+	}
+	GetVersionEx((OSVERSIONINFO*)&ver);
+	ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+	return ver.wProductType == VER_NT_WORKSTATION;
+}
+
 tstring WinUtil::getNicks(const CID& cid) {
 	return Text::toT(Util::toString(ClientManager::getInstance()->getNicks(cid)));
 }

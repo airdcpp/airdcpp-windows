@@ -176,6 +176,7 @@
 #define IDD_DIALOG3                     345
 #define IDD_LIMITPAGE                   345
 #define IDD_AUTOSEARCH_PARAMS           346
+#define IDD_SCANNING_OPTIONS            347
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
@@ -1258,11 +1259,18 @@
 #define IDC_SEARCH_HIST                 1702
 #define IDC_SEARCH_HIST_SPIN            1703
 #define IDC_EXCLUDE_HIST_LBL            1704
+#define IDC_BUNDLE_OPTIONS              1704
 #define IDC_EXCLUDE_HIST                1705
+#define IDC_BUNDLE_OPTIONS_LBL          1705
 #define IDC_EXCLUDE_HIST_SPIN           1706
+#define IDC_SHARINGLIST                 1706
 #define IDC_DIR_HIST_LBL                1707
+#define IDC_LOG_SCANS                   1707
 #define IDC_DIR_HIST                    1708
+#define IDC_SCAN_LOG_PATH               1708
 #define IDC_DIR_HIST_SPIN               1709
+#define IDC_LOG_SCAN_PATH_LBL           1709
+#define IDC_LOGGING                     1710
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1656,9 +1664,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        347
+#define _APS_NEXT_RESOURCE_VALUE        348
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1704
+#define _APS_NEXT_CONTROL_VALUE         1711
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

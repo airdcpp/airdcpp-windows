@@ -433,7 +433,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		m_PictureWindow.Load(Text::toT(currentPic).c_str());
 	}
 
-	if (WinUtil::getOsMajor() >= 6 && WinUtil::isElevated()) {
+	if (WinUtil::getOsMajor() >= 6 && WinUtil::getOsMinor() >= 2 && WinUtil::isDesktopOs() && WinUtil::isElevated()) {
 		WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING));
 	}
 

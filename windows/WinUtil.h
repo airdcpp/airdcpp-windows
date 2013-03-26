@@ -356,6 +356,7 @@ public:
 	
 	static int getOsMajor();
 	static int getOsMinor();
+	static bool isDesktopOs();
 	
 	//returns the position where the context menu should be
 	//opened if it was invoked from the keyboard.

@@ -26,17 +26,10 @@
 
 
 PropPage::ListItem SharingOptionsPage::listItems[] = {
-	{ SettingsManager::CHECK_MISSING, ResourceManager::CHECK_MISSING },
-	{ SettingsManager::CHECK_SFV, ResourceManager::CHECK_SFV },
-	{ SettingsManager::CHECK_NFO, ResourceManager::CHECK_NFO },
-	{ SettingsManager::CHECK_MP3_DIR, ResourceManager::CHECK_MP3_DIR },
-	{ SettingsManager::CHECK_EXTRA_SFV_NFO, ResourceManager::CHECK_EXTRA_SFV_NFO },
-	{ SettingsManager::CHECK_EXTRA_FILES, ResourceManager::CHECK_EXTRA_FILES },
-	{ SettingsManager::CHECK_DUPES, ResourceManager::CHECK_DUPES },
-	{ SettingsManager::CHECK_EMPTY_DIRS, ResourceManager::CHECK_EMPTY_DIRS },
-	{ SettingsManager::CHECK_EMPTY_RELEASES, ResourceManager::CHECK_EMPTY_RELEASES },
-	{ SettingsManager::CHECK_USE_SKIPLIST, ResourceManager::CHECK_USE_SKIPLIST },
-	{ SettingsManager::CHECK_IGNORE_ZERO_BYTE, ResourceManager::CHECK_IGNORE_ZERO_BYTE },
+	{ SettingsManager::SHARE_HIDDEN, ResourceManager::SETTINGS_SHARE_HIDDEN },
+	{ SettingsManager::REMOVE_FORBIDDEN, ResourceManager::SETCZDC_REMOVE_FORBIDDEN },
+	{ SettingsManager::NO_ZERO_BYTE, ResourceManager::SETTINGS_NO_ZERO_BYTE },
+	{ SettingsManager::SKIP_EMPTY_DIRS_SHARE, ResourceManager::DONT_SHARE_EMPTY_DIRS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -60,9 +53,6 @@ PropPage::TextItem SharingOptionsPage::texts[] = {
 	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
 	{ IDC_HASHING_THREADS_LBL, ResourceManager::MAX_HASHING_THREADS },
 	{ IDC_MAX_VOL_HASHERS_LBL, ResourceManager::MAX_VOL_HASHERS },
-
-	//scanning
-	{ IDC_SETTINGS_SCAN_OPTIONS, ResourceManager::SETTINGS_SCAN_OPTIONS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -75,7 +65,6 @@ PropPage::Item SharingOptionsPage::items[] = {
 	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_DONT_SHARE_BIGGER_VALUE, SettingsManager::MAX_FILE_SIZE_SHARED, PropPage::T_INT },
-	{ IDC_SHAREHIDDEN, SettingsManager::SHARE_HIDDEN, PropPage::T_BOOL },
 
 	//hashing
 	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
@@ -89,7 +78,7 @@ PropPage::Item SharingOptionsPage::items[] = {
 LRESULT SharingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
-	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_SCANLIST));
+	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_SHARINGLIST));
 
 	//refresh
 	setMinMax(IDC_REFRESH_SPIN, 0, 3000);
@@ -105,7 +94,7 @@ LRESULT SharingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 }
 
 void SharingOptionsPage::write() {
-	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SCANLIST));
+	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SHARINGLIST));
 	
 	//set to the defaults
 	//if(SETTING(SKIPLIST_SHARE).empty())

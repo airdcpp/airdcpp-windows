@@ -57,6 +57,7 @@
 #include "SearchPage.h"
 #include "AirAppearancePage.h"
 #include "SearchTypesPage.h"
+#include "ScanPage.h"
 
 
 PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage) : TreePropertySheet(CTSTRING(SETTINGS), initialPage, parent), saved(false)
@@ -95,6 +96,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = new IgnorePage(s);
 	pages[n++] = new SearchPage(s);
 	pages[n++] = new SearchTypesPage(s);
+	pages[n++] = new ScanPage(s);
 	
 	for(int i=0; i < n; i++) {
 		AddPage(pages[i]->getPSP());

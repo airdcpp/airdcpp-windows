@@ -44,7 +44,6 @@ LRESULT SearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items);
 	
-	setMinMax(IDC_SEARCH_HISTORY_SPIN, 1, 100);
 	setMinMax(IDC_INTERVAL_SPIN, 5, 9999);
 	setMinMax(IDC_EXPIRY_SPIN, 0, 90);
 	setMinMax(IDC_DELAY_SPIN, 0, 999);
