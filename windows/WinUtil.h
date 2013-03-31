@@ -357,6 +357,10 @@ public:
 	static int getOsMajor();
 	static int getOsMinor();
 	static bool isDesktopOs();
+
+	//static void appendPrioMenu(OMenu& aParent, QueueItemBase* aBase, bool isBundle, function<void (QueueItemBase::Priority aPrio)> prioF, function<void ()> autoPrioF);
+	static void appendBundlePrioMenu(OMenu& aParent, const BundlePtr& aBundle, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF);
+	static void appendFilePrioMenu(OMenu& aParent, const QueueItemPtr& aFile, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF);
 	
 	//returns the position where the context menu should be
 	//opened if it was invoked from the keyboard.

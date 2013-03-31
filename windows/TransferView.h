@@ -67,20 +67,6 @@ public:
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
 		MESSAGE_HANDLER(WM_NOTIFYFORMAT, onNotifyFormat)
-		COMMAND_ID_HANDLER(IDC_FORCE, onForce)
-		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
-		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDirectory)
-		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
-		COMMAND_ID_HANDLER(IDC_REMOVEALL, onRemoveAll)
-		COMMAND_ID_HANDLER(IDC_OPEN_BUNDLE_FOLDER, onOpenBundleFolder)
-		COMMAND_ID_HANDLER(IDC_REMOVE_BUNDLE, onRemoveBundle)
-		COMMAND_ID_HANDLER(IDC_REMOVE_BUNDLE_SOURCE, onRemoveBundleSource)
-		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
-		COMMAND_ID_HANDLER(IDC_DISCONNECT_ALL, onDisconnectAll)
-		COMMAND_ID_HANDLER(IDC_COLLAPSE_ALL, onCollapseAll)
-		COMMAND_ID_HANDLER(IDC_EXPAND_ALL, onExpandAll)
-		COMMAND_ID_HANDLER(IDC_MENU_SLOWDISCONNECT, onSlowDisconnect)
-		COMMAND_ID_HANDLER(IDC_REMOVE_FILE, onRemoveFile)
 		COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_FILENAME, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy);
@@ -90,10 +76,9 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_SPEED, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_STATUS, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_ALL, onCopy);
-		COMMAND_ID_HANDLER(IDC_AUTOPRIORITY, onAutoPriority)
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
-		COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onPriority)
+		//COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onPriority)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 	END_MSG_MAP()
@@ -102,60 +87,15 @@ public:
 	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
-	LRESULT onForce(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);			
-	LRESULT onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onSearchDirectory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-	LRESULT onDisconnectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onSlowDisconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onRemoveFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onOpenBundleFolder(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onAutoPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	void handlePriority(uint8_t aPrio);
 
 	void runUserCommand(UserCommand& uc);
 	void prepareClose();
 
-	LRESULT onCollapseAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		CollapseAll();
-		return 0;
-	}
-
-	LRESULT onExpandAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ExpandAll();
-		return 0;
-	}
-
-	LRESULT onKeyDownTransfers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-		NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
-		if(kd->wVKey == VK_DELETE) {
-			ctrlTransfers.forEachSelected(&ItemInfo::disconnect);
-		}
-		return 0;
-	}
-
-	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ctrlTransfers.forEachSelected(&ItemInfo::disconnect);
-		return 0;
-	}
-
-	LRESULT onRemoveBundleSource(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ctrlTransfers.forEachSelected(&ItemInfo::removeBundleSource);
-		return 0;
-	}
-
-	LRESULT onRemoveAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ctrlTransfers.forEachSelected(&ItemInfo::removeAll);
-		return 0;
-	}
-
-	LRESULT onRemoveBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		ctrlTransfers.forEachSelected(&ItemInfo::removeBundle);
-		return 0;
-	}
+	LRESULT onKeyDownTransfers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	LRESULT onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		ctrlTransfers.deleteAllItems();
@@ -255,11 +195,6 @@ private:
 		const UserPtr& getUser() const { return user.user; }
 		const string& getHubUrl() const { return user.hint; }
 
-		void disconnect();
-		void removeAll();
-		void removeBundle();
-		void removeBundleSource();
-
 		double getRatio() const { return (pos > 0) ? (double)actual / (double)pos : 1.0; }
 
 		const tstring getText(uint8_t col) const;
@@ -356,11 +291,33 @@ private:
 
 	ParamMap ucLineParams;
 
+
+	/* Menu handlers */
+
+	void performActionFiles(std::function<void (const ItemInfo* aInfo)> f, bool oncePerParent=false);
+	void performActionBundles(std::function<void (const ItemInfo* aInfo)> f);
+
+	void handleCollapseAll();
+	void handleExpandAll();
+	void handleSlowDisconnect();
+	void handleRemoveBundle();
+	void handleRemoveBundleSource();
+	void handleOpenFolder();
+	void handleForced();
+	void handleSearchDir();
+	void handleSearchAlternates();
+	void handleRemoveFile();
+	void handleAutoPrio();
+	void handleDisconnect();
+
+	/* Listeners */
+
 	void on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) noexcept;
 	void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) noexcept;
 	void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) noexcept;
 	void on(ConnectionManagerListener::StatusChanged, const ConnectionQueueItem* aCqi) noexcept { onUpdateFileInfo(aCqi->getHintedUser(), aCqi->getToken(), true); };
 	void on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept;
+	void on(ConnectionManagerListener::Forced, const ConnectionQueueItem* aCqi) noexcept;
 
 	void on(DownloadManagerListener::Requesting, const Download* aDownload) noexcept;	
 	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { 
@@ -398,9 +355,6 @@ private:
 	void onBundleStatus(const BundlePtr& aBundle, bool removed);
 	void onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree, const string& bundleToken);
 	void starting(UpdateInfo* ui, const Transfer* t);
-	
-	void CollapseAll();
-	void ExpandAll();
 
 	ItemInfo* findItem(const UpdateInfo& ui, int& pos) const;
 	void updateItem(int ii, uint32_t updateMask);

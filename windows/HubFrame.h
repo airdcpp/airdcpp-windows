@@ -38,22 +38,19 @@
 #include "WinUtil.h"
 #include "UCHandler.h"
 #include "ListFilter.h"
-#include "Async.h"
 
 #define FILTER_MESSAGE_MAP 8
 #define SHOW_USERS 9
 struct CompareItems;
 class ChatFrameBase;
 
-class HubFrame : public MDITabChildWindowImpl<HubFrame>, private ClientListener, 
-	public CSplitterImpl<HubFrame>, private FavoriteManagerListener,
-	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, private ChatFrameBase, private FrameMessageBase, private Async<HubFrame>
+class HubFrame : private ClientListener, public CSplitterImpl<HubFrame>, private FavoriteManagerListener,
+	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("HubFrame"), IDR_HUB, 0, COLOR_3DFACE);
 
 	typedef CSplitterImpl<HubFrame> splitBase;
-	typedef MDITabChildWindowImpl<HubFrame> baseClass;
 	typedef UCHandler<HubFrame> ucBase;
 	typedef UserInfoBaseHandler<HubFrame> uibBase;
 	typedef ChatFrameBase chatBase;
@@ -71,7 +68,6 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
-		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
@@ -102,7 +98,6 @@ public:
 		CHAIN_MSG_MAP(chatBase)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
-		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(splitBase)
 	ALT_MSG_MAP(EDIT_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CHAR, onChar)

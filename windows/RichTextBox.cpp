@@ -110,7 +110,21 @@ tstring RichTextBox::rtfEscape(const tstring& str) {
 	return escaped;
 }
 
-bool RichTextBox::AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
+void RichTextBox::unifyLineEndings(tstring& aText) {
+	tstring::size_type j = 0; 
+	while((j = aText.find(_T("\r"), j)) != tstring::npos)
+		aText.erase(j, 1);
+}
+
+void RichTextBox::AppendText(tstring& sMsg) {
+	SetRedraw(FALSE);
+	unifyLineEndings(sMsg);
+	SetWindowText(sMsg.c_str());
+	FormatEmoticonsAndLinks(sMsg, 0, false);
+	SetRedraw(TRUE);
+}
+
+bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo/* = true*/) {
 	SetRedraw(FALSE);
 	matchedTab = false;
 
@@ -126,9 +140,7 @@ bool RichTextBox::AppendText(const Identity& i, const tstring& sMyNick, const ts
 	LONG lSelBeginSaved, lSelEndSaved;
 
 	// Unify line endings
-	tstring::size_type j = 0; 
-	while((j = sMsg.find(_T("\r"), j)) != tstring::npos)
-		sMsg.erase(j, 1);
+	unifyLineEndings(sMsg);
 
 	GetSel(lSelBeginSaved, lSelEndSaved);
 	lSelEnd = lSelBegin = GetTextLengthEx(GTL_NUMCHARS);

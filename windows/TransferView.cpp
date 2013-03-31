@@ -145,29 +145,29 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			WinUtil::getContextMenuPos(ctrlTransfers, pt);
 		}
 
-		OMenu transferMenu, copyMenu, priorityMenu;
+		OMenu transferMenu, copyMenu;
 		OMenu* previewMenu = nullptr;
 		const ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
 		bool parent = ii->isBundle;
 
 		transferMenu.CreatePopupMenu();
 		copyMenu.CreatePopupMenu();
-		priorityMenu.CreatePopupMenu();
+		//priorityMenu.CreatePopupMenu();
 		
 		if(!parent) {
 			transferMenu.InsertSeparatorFirst(TSTRING(MENU_TRANSFERS));
 			appendUserItems(transferMenu);
 			setDefaultItem(transferMenu);
 			
-			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_FILE, CTSTRING(REMOVE_FILE));
+			transferMenu.appendItem(TSTRING(REMOVE_FILE), [=] { handleRemoveFile(); });
 			transferMenu.AppendMenu(MF_SEPARATOR);
-			transferMenu.AppendMenu(MF_STRING, IDC_FORCE, CTSTRING(FORCE_ATTEMPT));
+			transferMenu.appendItem(TSTRING(FORCE_ATTEMPT), [=] { handleForced(); });
 
 			if(ii->download) {
 				transferMenu.AppendMenu(MF_SEPARATOR);
-				transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE_SOURCE, CTSTRING(REMOVE_BUNDLE_SOURCE));
-				transferMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
-				transferMenu.AppendMenu(MF_STRING, IDC_MENU_SLOWDISCONNECT, CTSTRING(SETCZDC_DISCONNECTING_ENABLE));
+				//transferMenu.appendItem(TSTRING(REMOVE_BUNDLE_SOURCE), [=] { handleRemoveBundleSource(); });
+				transferMenu.appendItem(TSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchAlternates(); });
+				//transferMenu.appendItem(TSTRING(SETCZDC_DISCONNECTING_ENABLE), [=] { handleSlowDisconnect(); });
 				if (previewMenu)
 					previewMenu->appendThis(TSTRING(PREVIEW_MENU), true);
 			}
@@ -181,30 +181,36 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			}
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 			transferMenu.AppendMenu(MF_SEPARATOR);
-			transferMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(CLOSE_CONNECTION));
+			transferMenu.appendItem(TSTRING(CLOSE_CONNECTION), [=] { handleDisconnect(); });
 		} else {
 			transferMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
 			if (ii->users == 1) {
 				appendUserItems(transferMenu);
 				setDefaultItem(transferMenu);
 				if(ii->download)
-					transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE_SOURCE, CTSTRING(REMOVE_BUNDLE_SOURCE));
+					transferMenu.appendItem(TSTRING(REMOVE_BUNDLE_SOURCE), [=] { handleRemoveBundleSource(); });
 			}
 			transferMenu.AppendMenu(MF_SEPARATOR);
-			transferMenu.AppendMenu(MF_STRING, IDC_OPEN_BUNDLE_FOLDER, CTSTRING(OPEN_FOLDER));
+			transferMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
 			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
-			transferMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
+			transferMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [=] { handleSearchDir(); });
 			transferMenu.AppendMenu(MF_SEPARATOR);
-			transferMenu.AppendMenu(MF_STRING, IDC_FORCE, CTSTRING(CONNECT_ALL));
-			transferMenu.AppendMenu(MF_STRING, IDC_DISCONNECT_ALL, CTSTRING(DISCONNECT_ALL));
+			transferMenu.appendItem(TSTRING(CONNECT_ALL), [=] { handleForced(); });
+			transferMenu.appendItem(TSTRING(DISCONNECT_ALL), [=] { handleDisconnect(); });
 			transferMenu.AppendMenu(MF_SEPARATOR);
-			transferMenu.AppendMenu(MF_STRING, IDC_EXPAND_ALL, CTSTRING(EXPAND_ALL));
-			transferMenu.AppendMenu(MF_STRING, IDC_COLLAPSE_ALL, CTSTRING(COLLAPSE_ALL));
+			transferMenu.appendItem(TSTRING(EXPAND_ALL), [=] { handleExpandAll(); });
+			transferMenu.appendItem(TSTRING(COLLAPSE_ALL), [=] { handleCollapseAll(); });
 			if(ii->download) {
 				transferMenu.AppendMenu(MF_SEPARATOR);
-				transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITY));
-				transferMenu.AppendMenu(MF_STRING, IDC_MENU_SLOWDISCONNECT, CTSTRING(SETCZDC_DISCONNECTING_ENABLE));
-				transferMenu.AppendMenu(MF_STRING, IDC_REMOVE_BUNDLE, CTSTRING(REMOVE_BUNDLE));
+
+				BundlePtr b = QueueManager::getInstance()->findBundle(ii->bundle);
+
+				//simplify when http://connect.microsoft.com/VisualStudio/feedback/details/694400 has been fixed.....
+				WinUtil::appendBundlePrioMenu(transferMenu, b, [this](uint8_t aPrio) { handlePriority(aPrio); }, [this] { handleAutoPrio(); });
+
+				//transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITY));
+				transferMenu.appendItem(TSTRING(SETCZDC_DISCONNECTING_ENABLE), [=] { handleSlowDisconnect(); });
+				transferMenu.appendItem(TSTRING(REMOVE_BUNDLE), [=] { handleRemoveBundle(); });
 			}
 		}
 			
@@ -220,14 +226,15 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_STATUS, CTSTRING(STATUS));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_ALL, CTSTRING(ALL));
 
-		priorityMenu.InsertSeparatorFirst(TSTRING(PRIORITY));
+		/*priorityMenu.InsertSeparatorFirst(TSTRING(PRIORITY));
 		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_PAUSED, CTSTRING(PAUSED));
 		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOWEST, CTSTRING(LOWEST));
 		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOW, CTSTRING(LOW));
 		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_NORMAL, CTSTRING(NORMAL));
 		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGH, CTSTRING(HIGH));
 		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST, CTSTRING(HIGHEST));
-		priorityMenu.AppendMenu(MF_STRING, IDC_AUTOPRIORITY, CTSTRING(AUTO));
+		priorityMenu.appendItem(TSTRING(AUTO), [=] { handleAutoPrio(); });*/
+		//priorityMenu.AppendMenu(MF_STRING, IDC_AUTOPRIORITY, CTSTRING(AUTO));
 
 		if(ii->download) {
 			if(!ii->target.empty()) {
@@ -241,13 +248,15 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				}
 			} 
 			if (parent) {
-				BundlePtr aBundle = QueueManager::getInstance()->findBundle(ii->bundle);
-				if (aBundle) {
+				//BundlePtr aBundle = QueueManager::getInstance()->findBundle(ii->bundle);
+
+				//WinUtil::appendBundlePrioMenu(priorityMenu, aBundle);
+				/*if (aBundle) {
 					QueueItemBase::Priority p = aBundle->getPriority();
 					priorityMenu.CheckMenuItem(p + 1, MF_BYPOSITION | MF_CHECKED);
 					if(aBundle->getAutoPriority())
 						priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
-				}
+				}*/
 			}
 		}
 
@@ -279,51 +288,6 @@ void TransferView::runUserCommand(UserCommand& uc) {
 		
 		ClientManager::getInstance()->userCommand(itemI->user, uc, tmp, true);
 	}
-}
-
-LRESULT TransferView::onForce(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		ItemInfo* ii = ctrlTransfers.getItemData(i);
-		ctrlTransfers.SetItemText(i, COLUMN_STATUS, CTSTRING(CONNECTING_FORCED));
-
-		if(ii->isBundle) {
-			const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
-			for(auto ii: children) {
-				int h = ctrlTransfers.findItem(ii);
-				if(h != -1)
-					ctrlTransfers.SetItemText(h, COLUMN_STATUS, CTSTRING(CONNECTING_FORCED));
-
-				ii->transferFailed = false;
-				ConnectionManager::getInstance()->force(ii->token);
-			}
-		} else {
-			ii->transferFailed = false;
-			ConnectionManager::getInstance()->force(ii->token);
-		}
-	}
-	return 0;
-}
-
-void TransferView::ItemInfo::removeAll() {
-	if(hits <= 1) {
-		QueueManager::getInstance()->removeSource(user, QueueItem::Source::FLAG_REMOVED);
-	} else {
-		if(!SETTING(CONFIRM_QUEUE_REMOVAL) || ::MessageBox(0, _T("Do you really want to remove this item?"), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
-			QueueManager::getInstance()->remove(Text::fromT(target));
-	}
-}
-
-void TransferView::ItemInfo::removeBundle() {
-	WinUtil::removeBundle(bundle);
-}
-
-LRESULT TransferView::onOpenBundleFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
-	if (ii) {
-		WinUtil::openFolder(ii->target);
-	}
-	return 0;
 }
 
 LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
@@ -745,47 +709,6 @@ void TransferView::ItemInfo::updateUser(const vector<ItemInfo*>& aChildren) {
 		user = u;
 }
 
-LRESULT TransferView::onRemoveFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const ItemInfo *ii = ctrlTransfers.getItemData(i);
-		if(Transfer::TYPE_FULL_LIST)
-			QueueManager::getInstance()->remove(Text::fromT(ii->getText(COLUMN_PATH) + Util::getFileName(ii->target)));
-		else
-			QueueManager::getInstance()->remove(Text::fromT(ii->getText(COLUMN_PATH) + ii->getText(COLUMN_FILE)));
-	}
-
-	return 0;
-}
-
-LRESULT TransferView::onSearchDirectory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const ItemInfo *ii = ctrlTransfers.getItemData(i);
-		if (ii->isBundle) {
-			size_t pos = ii->target.rfind(' ');
-			WinUtil::searchAny(Util::getLastDir(ii->target.substr(0, pos != string::npos ? pos : ii->target.length())));
-		}
-	}
-
-	return 0;
-}
-
-LRESULT TransferView::onSearchAlternates(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const ItemInfo *ii = ctrlTransfers.getItemData(i);
-
-		TTHValue tth;
-		int64_t size = 0;
-		if(QueueManager::getInstance()->getSearchInfo(Text::fromT(ii->target), tth, size)) {
-			WinUtil::searchHash(tth, Util::getFileName(Text::fromT(ii->target)), size);
-		}
-	}
-
-	return 0;
-}
-
 void TransferView::ItemInfo::update(const UpdateInfo& ui) {
 	if(ui.type != Transfer::TYPE_LAST)
 		type = ui.type;
@@ -917,6 +840,12 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 	speak(ADD_ITEM, ui);
 }
 
+void TransferView::on(ConnectionManagerListener::Forced, const ConnectionQueueItem* aCqi) noexcept {
+	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload(), false);
+	ui->setStatusString(TSTRING(CONNECTING_FORCED));
+	speak(UPDATE_ITEM, ui);
+}
+
 void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToken, bool updateStatus) {
 	string aTarget, bundleToken;	int64_t aSize; int aFlags = 0;
 	if(QueueManager::getInstance()->getQueueInfo(aUser, aTarget, aSize, aFlags, bundleToken)) {
@@ -1002,7 +931,7 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 }
 
 inline const string& TransferView::ItemInfo::getGroupCond() const {
-	dcassert(!bundle.empty());
+	//dcassert(!bundle.empty());
 	if (!bundle.empty()) {
 		return bundle;
 	} else {
@@ -1548,55 +1477,57 @@ void TransferView::onBundleName(const BundlePtr& aBundle) {
 	speak(UPDATE_BUNDLE, ui);
 }
 
-LRESULT TransferView::onPriority(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	QueueItemBase::Priority p;
-
-	switch(wID) {
-		case IDC_PRIORITY_PAUSED: p = QueueItem::PAUSED; break;
-		case IDC_PRIORITY_LOWEST: p = QueueItem::LOWEST; break;
-		case IDC_PRIORITY_LOW: p = QueueItem::LOW; break;
-		case IDC_PRIORITY_NORMAL: p = QueueItem::NORMAL; break;
-		case IDC_PRIORITY_HIGH: p = QueueItem::HIGH; break;
-		case IDC_PRIORITY_HIGHEST: p = QueueItem::HIGHEST; break;
-		default: p = QueueItem::DEFAULT; break;
-	}
-
-	int i = -1;
-	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const ItemInfo *ii = ctrlTransfers.getItemData(i);
-		if (ii->isBundle) {
-			QueueManager::getInstance()->setBundlePriority(ii->bundle, p);
-		}
-	}
-
-	return 0;
-}
-
-LRESULT TransferView::onAutoPriority(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
-
-
-	int i = -1;
-	while( (i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const ItemInfo *ii = ctrlTransfers.getItemData(i);
-		if (ii->isBundle) {
-			QueueManager::getInstance()->setBundleAutoPriority(ii->bundle);
-		}
+LRESULT TransferView::onKeyDownTransfers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
+	if(kd->wVKey == VK_DELETE) {
+		handleDisconnect();
 	}
 	return 0;
 }
 
 
-void TransferView::ItemInfo::removeBundleSource() {
-	if (!bundle.empty()) {
-		QueueManager::getInstance()->removeBundleSource(bundle, user);
-	}
+void TransferView::performActionFiles(std::function<void (const ItemInfo* aInfo)> f, bool oncePerParent /*false*/) {
+	ctrlTransfers.filteredForEachSelectedT([&](const ItemInfo* ii) {
+		if (ii->hits > 1) {
+			//perform only for the children
+			const auto& children = ctrlTransfers.findChildren(ii->getGroupCond());
+			if (oncePerParent && !children.empty()) {
+				f(children.front());
+			} else {
+				boost::for_each(children, f);
+			}
+		} else {
+			//perform for the parent
+			f(ii);
+		}
+	});
 }
 
-void TransferView::ItemInfo::disconnect() {
-	ConnectionManager::getInstance()->disconnect(token);
+void TransferView::performActionBundles(std::function<void (const ItemInfo* aInfo)> f) {
+	ctrlTransfers.forEachSelectedT([&](const ItemInfo* ii) {
+		if (ii->isBundle) {
+			f(ii);
+		}
+	});
 }
 
-void TransferView::CollapseAll() {
+void TransferView::handlePriority(uint8_t aPrio) {
+	auto setPrio = [=](const ItemInfo* ii) {
+		QueueManager::getInstance()->setBundlePriority(ii->bundle, static_cast<QueueItemBase::Priority>(aPrio));
+	};
+
+	performActionBundles(setPrio);
+}
+
+void TransferView::handleAutoPrio() {
+	auto setAutoPrio = [=](const ItemInfo* ii) {
+		QueueManager::getInstance()->setBundleAutoPriority(ii->bundle);
+	};
+
+	performActionBundles(setAutoPrio);
+}
+
+void TransferView::handleCollapseAll() {
 	for(int q = ctrlTransfers.GetItemCount()-1; q != -1; --q) {
 		ItemInfo* m = (ItemInfo*)ctrlTransfers.getItemData(q);
 		if(m->download && m->parent) {
@@ -1609,7 +1540,7 @@ void TransferView::CollapseAll() {
 	}
 }
 
-void TransferView::ExpandAll() {
+void TransferView::handleExpandAll() {
 	for(auto i: ctrlTransfers.getParents()) {
 		ItemInfo* l = i.second.parent;
 		if(l->collapsed) {
@@ -1618,36 +1549,108 @@ void TransferView::ExpandAll() {
 	}
 }
 
-LRESULT TransferView::onDisconnectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const ItemInfo* ii = ctrlTransfers.getItemData(i);
-		
-		const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
-		for(auto ii: children) {
-			ii->disconnect();
+void TransferView::handleSlowDisconnect() {
+	auto slowDisconnect = [=](const ItemInfo* ii) {
+		QueueManager::getInstance()->onSlowDisconnect(ii->bundle);
+	};
 
-			int h = ctrlTransfers.findItem(ii);
-			if(h != -1)
-				ctrlTransfers.SetItemText(h, COLUMN_STATUS, CTSTRING(DISCONNECTED));
-		}
-
-		ctrlTransfers.SetItemText(i, COLUMN_STATUS, CTSTRING(DISCONNECTED));
-	}
-	return 0;
+	performActionBundles(slowDisconnect);
 }
 
-LRESULT TransferView::onSlowDisconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const ItemInfo *ii = ctrlTransfers.getItemData(i);
-		if (!ii->bundle.empty()) {
-			QueueManager::getInstance()->onSlowDisconnect(ii->bundle);
-		}
-	}
+void TransferView::handleRemoveFile() {
+	auto remove = [=](const ItemInfo* ii) {
+		QueueManager::getInstance()->removeFile(Text::fromT(ii->target));
+	};
 
-	return 0;
+	performActionFiles(remove);
 }
+
+void TransferView::handleSearchDir() {
+	auto search = [=](const ItemInfo* ii) {
+		size_t pos = ii->target.rfind(' ');
+		WinUtil::searchAny(Util::getLastDir(ii->target.substr(0, pos != string::npos ? pos : ii->target.length())));
+	};
+
+	performActionBundles(search);
+}
+
+
+void TransferView::handleSearchAlternates() {
+	auto search = [=](const ItemInfo* ii) {
+		TTHValue tth;
+		int64_t size = 0;
+		if(QueueManager::getInstance()->getSearchInfo(Text::fromT(ii->target), tth, size)) {
+			WinUtil::searchHash(tth, Util::getFileName(Text::fromT(ii->target)), size);
+		}
+	};
+
+	performActionFiles(search);
+}
+
+void TransferView::handleForced() {
+	auto force = [=](const ItemInfo* ii) {
+		if (!ii->isBundle)
+			ConnectionManager::getInstance()->force(ii->token);
+	};
+
+	performActionFiles(force);
+
+
+	/*int i = -1;
+	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		ItemInfo* ii = ctrlTransfers.getItemData(i);
+		ctrlTransfers.SetItemText(i, COLUMN_STATUS, CTSTRING(CONNECTING_FORCED));
+
+		if(ii->isBundle) {
+			const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
+			for(auto ii: children) {
+				int h = ctrlTransfers.findItem(ii);
+				if(h != -1)
+					ctrlTransfers.SetItemText(h, COLUMN_STATUS, CTSTRING(CONNECTING_FORCED));
+
+				//ii->transferFailed = false;
+				ConnectionManager::getInstance()->force(ii->token);
+			}
+		} else {
+			//ii->transferFailed = false;
+			ConnectionManager::getInstance()->force(ii->token);
+		}
+	}*/
+}
+
+void TransferView::handleRemoveBundle() {
+	auto removeBundle = [=](const ItemInfo* ii) {
+		WinUtil::removeBundle(ii->bundle);
+	};
+
+	performActionFiles(removeBundle);
+}
+
+void TransferView::handleRemoveBundleSource() {
+	auto removeSource = [=](const ItemInfo* ii) {
+		if (!ii->bundle.empty())
+			QueueManager::getInstance()->removeBundleSource(ii->bundle, ii->user);
+	};
+
+	performActionBundles(removeSource);
+}
+
+void TransferView::handleDisconnect() {
+	auto disconnect = [=](const ItemInfo* ii) {
+		ConnectionManager::getInstance()->disconnect(ii->token);
+	};
+
+	performActionFiles(disconnect);
+}
+
+void TransferView::handleOpenFolder() {
+	ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
+	if (ii) {
+		WinUtil::openFolder(ii->target);
+	}
+}
+
+
 
 void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;

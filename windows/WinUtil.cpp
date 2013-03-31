@@ -1545,6 +1545,52 @@ void WinUtil::appendPreviewMenu(OMenu* previewMenu, const string& aTarget) {
 	}
 }
 
+template<typename T> 
+static void appendPrioMenu(OMenu& aParent, const T& aBase, bool isBundle, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF) {
+	tstring text;
+	if (isBundle) {
+		text = aBase ? TSTRING(SET_BUNDLE_PRIORITY) : TSTRING(SET_BUNDLE_PRIORITIES);
+	} else {
+		text = aBase ? TSTRING(SET_FILE_PRIORITY) : TSTRING(SET_FILE_PRIORITIES);
+	}
+	//auto text = TSTRING(SET_FILE_PRIORITIES)
+
+	auto priorityMenu = aParent.createSubMenu(text, true);
+
+	int curItem = 0;
+	auto appendItem = [=, &curItem](const tstring& aString, QueueItemBase::Priority aPrio) {
+		curItem++;
+		priorityMenu->appendItem(aString, [=] { 		
+			prioF(aPrio);
+		});
+
+		if (aBase && aBase->getPriority() == aPrio) {
+			priorityMenu->CheckMenuItem(curItem, MF_BYPOSITION | MF_CHECKED);
+		}
+	};
+
+	appendItem(TSTRING(PAUSED), QueueItemBase::PAUSED);
+	appendItem(TSTRING(LOWEST), QueueItemBase::LOWEST);
+	appendItem(TSTRING(LOW), QueueItemBase::LOW);
+	appendItem(TSTRING(NORMAL), QueueItemBase::NORMAL);
+	appendItem(TSTRING(HIGH), QueueItemBase::HIGH);
+	appendItem(TSTRING(HIGHEST), QueueItemBase::HIGHEST);
+
+	curItem++;
+	//priorityMenu->appendSeparator();
+	priorityMenu->appendItem(TSTRING(AUTO), autoPrioF);
+	if (aBase && aBase->getAutoPriority())
+		priorityMenu->CheckMenuItem(curItem, MF_BYPOSITION | MF_CHECKED);
+}
+	
+void WinUtil::appendBundlePrioMenu(OMenu& aParent, const BundlePtr& aBundle, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF) {
+	appendPrioMenu<BundlePtr>(aParent, aBundle, true, prioF, autoPrioF);
+}
+
+void WinUtil::appendFilePrioMenu(OMenu& aParent, const QueueItemPtr& aFile, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF) {
+	appendPrioMenu<QueueItemPtr>(aParent, aFile, true, prioF, autoPrioF);
+}
+
 bool WinUtil::shutDown(int action) {
 	// Prepare for shutdown
 	UINT iForceIfHung = 0;

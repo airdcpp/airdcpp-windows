@@ -42,7 +42,7 @@ PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(repl
 	ctrlHubSelContainer(WC_COMBOBOX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
-	ChatFrameBase(this), UserInfoBaseHandler(false, true)
+	UserInfoBaseHandler(false, true)
 {
 	ctrlClient.setClient(c);
 	ctrlClient.setUser(replyTo_.user);
@@ -73,8 +73,9 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	readLog();
 
 	WinUtil::SetIcon(m_hWnd, userBot ? IDI_BOT : IDR_PRIVATE);
+
 	//add the updateonlinestatus in the wnd message queue so the frame and tab can finish creating first.
-	PostMessage(WM_SPEAKER, USER_UPDATED);
+	runSpeakerTask();
 
 	bHandled = FALSE;
 	return 1;
@@ -120,16 +121,11 @@ void PrivateFrame::addSpeakerTask(bool addDelay) {
 	if (addDelay)
 		delayEvents.addEvent(replyTo.user->getCID(), [this] { runSpeakerTask(); }, 1000);
 	else
-		PostMessage(WM_SPEAKER, USER_UPDATED);
+		runSpeakerTask();
 }
 
 void PrivateFrame::runSpeakerTask() {
-	PostMessage(WM_SPEAKER, USER_UPDATED);
-}
-
-LRESULT PrivateFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
-	updateOnlineStatus();
-	return 0;
+	callAsync([this] { updateOnlineStatus(); });
 }
 
 LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
@@ -442,12 +438,8 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 		LOG(LogManager::PM, params);
 	}
 
-	bool notify = false;
-	if(SETTING(TIME_STAMPS)) {
-		notify = ctrlClient.AppendText(from, Text::toT(SETTING(NICK)), Text::toT("[" + Util::getShortTimeString() + "] "), aLine + _T('\n'), cf);
-	} else {
-		notify = ctrlClient.AppendText(from, Text::toT(SETTING(NICK)), _T(""), aLine + _T('\n'), cf);
-	}
+	auto myNick = Text::toT(ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::Nick) : SETTING(NICK));
+	bool notify = ctrlClient.AppendChat(from, myNick, SETTING(TIME_STAMPS) ? Text::toT("[" + Util::getShortTimeString() + "] ") : _T(""), aLine + _T('\n'), cf);
 	addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()));
 
 	if(notify)
@@ -618,7 +610,7 @@ void PrivateFrame::readLog() {
 		int i = linesCount > (SETTING(SHOW_LAST_LINES_LOG) + 1) ? linesCount - SETTING(SHOW_LAST_LINES_LOG) : 0;
 
 		for(; i < linesCount; ++i){
-			ctrlClient.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextLog, true);
+			ctrlClient.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextLog, true);
 		}
 		f.close();
 	} catch(const FileException&){

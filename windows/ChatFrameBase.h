@@ -25,36 +25,33 @@
 
 #include <ppl.h>
 
+#include "Async.h"
 #include "OMenu.h"
 #include "resource.h"
 #include "RichTextBox.h"
 #include "ResourceLoader.h"
 #include "ExCImage.h"
-
-class FrameMessageBase {
-public:
-	virtual bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) = 0;
-	virtual bool sendMessage(const tstring& aMessage, string& error_, bool thirdPerson) = 0;
-	virtual void addStatusLine(const tstring& aStatus) = 0;
-	virtual void onTab() { };
-	virtual void UpdateLayout(BOOL /*resizeBars*/) { };
-};
+#include "FlatTabCtrl.h"
 
 
 #define EDIT_MESSAGE_MAP 10		// This could be any number, really...
 
-class ChatFrameBase {
+class ChatFrameBase : public MDITabChildWindowImpl<ChatFrameBase>, public Async<ChatFrameBase> {
 public:
+	typedef MDITabChildWindowImpl<ChatFrameBase> baseClass;
+
 	BEGIN_MSG_MAP(ChatFrameBase)
 		COMMAND_ID_HANDLER(IDC_BMAGNET, onAddMagnet)
 		COMMAND_ID_HANDLER(IDC_WINAMP_SPAM, onWinampSpam)
 		COMMAND_ID_HANDLER(IDC_EMOT, onEmoticons)
 		COMMAND_ID_HANDLER(IDC_SEND_MESSAGE, onSendMessage)
 		COMMAND_ID_HANDLER(IDC_RESIZE, onResize)
+		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_FORWARDMSG, OnForwardMsg)
 		COMMAND_RANGE_HANDLER(IDC_EMOMENU, IDC_EMOMENU + menuItems, onEmoPackChange)
+		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -73,8 +70,14 @@ public:
 	}
 	LRESULT onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
 
+
+	virtual bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) = 0;
+	virtual bool sendMessage(const tstring& aMessage, string& error_, bool thirdPerson) = 0;
+	virtual void addStatusLine(const tstring& aStatus) = 0;
+	virtual void onTab() { };
+	virtual void UpdateLayout(BOOL bResizeBars = TRUE) = 0;
 protected:
-	ChatFrameBase(FrameMessageBase* aFrameBase);
+	ChatFrameBase();
 	~ChatFrameBase();
 
 	//CContainedWindow ctrlMessageContainer;
@@ -122,8 +125,6 @@ protected:
 
 	bool sendFrameMessage(const tstring& aMsg, bool thirdPerson = false);
 private:
-	FrameMessageBase* frame;
-
 	/**
 	 * Check if this is a common /-command.
 	 * @param cmd The whole text string, will be updated to contain only the command.

@@ -1401,7 +1401,6 @@ void MainFrame::getMagnetForFile() {
 	tstring file;
 	if(WinUtil::browseFile(file, m_hWnd, false, lastTTHdir) == IDOK) {
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_GRAYED);
-		//Thread::setThreadPriority(Thread::LOW);
 
 		auto path = Text::fromT(file);
 		TTHValue tth;
@@ -1417,7 +1416,6 @@ void MainFrame::getMagnetForFile() {
 			CInputBox ibox(m_hWnd);
 			ibox.DoModal(_T("Tiger Tree Hash"), file.c_str(), Text::toT(tth.toBase32()).c_str(), Text::toT(magnetlink).c_str());
 		} catch(...) { }
-		//SetThreadPriority(NORMAL);
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_ENABLED);
 	}
 }
@@ -2146,21 +2144,21 @@ LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 	LPNMTOOLBAR tb = (LPNMTOOLBAR)pnmh;
 	OMenu dropMenu;
 	dropMenu.CreatePopupMenu();
-	dropMenu.appendItem(CTSTRING(ALL), [] { ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL); });
-	dropMenu.appendItem(CTSTRING(INCOMING), [] { ShareManager::getInstance()->refresh(true, ShareManager::TYPE_MANUAL); });
+	dropMenu.appendItem(CTSTRING(ALL), [this] { addThreadedTask([=] { ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL); }); });
+	dropMenu.appendItem(CTSTRING(INCOMING), [this] { addThreadedTask([=] {  ShareManager::getInstance()->refresh(true, ShareManager::TYPE_MANUAL); }); });
 	dropMenu.appendSeparator();
 
 	auto l = ShareManager::getInstance()->getGroupedDirectories();
 	for(auto& i: l) {
 		if (i.second.size() > 1) {
 			auto vMenu = dropMenu.createSubMenu(Text::toT(i.first).c_str(), true);
-			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refresh(i.first); });
+			vMenu->appendItem(CTSTRING(ALL), [=] { addThreadedTask([=] { ShareManager::getInstance()->refresh(i.first); }); });
 			vMenu->appendSeparator();
 			for(const auto& s: i.second) {
-				vMenu->appendItem(Text::toT(s).c_str(), [=] { ShareManager::getInstance()->refresh(s); });
+				vMenu->appendItem(Text::toT(s).c_str(), [=] { addThreadedTask([=] { ShareManager::getInstance()->refresh(s); }); });
 			}
 		} else {
-			dropMenu.appendItem(Text::toT(i.first).c_str(), [=] { ShareManager::getInstance()->refresh(i.first); });
+			dropMenu.appendItem(Text::toT(i.first).c_str(), [=] { addThreadedTask([=] { ShareManager::getInstance()->refresh(i.first); }); });
 		}
 	}
 

@@ -77,7 +77,7 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 				int i = totalLines > (SETTING(LOG_LINES) +1) ? totalLines - SETTING(LOG_LINES) : 0;
 
 				for(; i < totalLines; ++i){
-					ctrlPad.AppendText(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
+					ctrlPad.AppendChat(Identity(NULL, 0), _T("- "), _T(""), Text::toT(lines[i]) + _T('\n'), WinUtil::m_ChatTextGeneral, true);
 				}
 				SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 			} else if (textType == LOG) {
@@ -88,27 +88,22 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 				//if openlog just add the whole text
 				tmp = f.read();
 				ctrlPad.SetWindowText(Text::toT(tmp).c_str());
+				//ctrlPad.AppendText(text);
+
 				SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());
 			} else if (textType == REPORT) {
-				ctrlPad.SetRedraw(FALSE);
 				ctrlPad.setFormatPaths(true);
-				ctrlPad.SetWindowText(text.c_str());
-				ctrlPad.FormatEmoticonsAndLinks(text, 0, false);
+				ctrlPad.AppendText(text);
 
 				ctrlPad.setAutoScrollToEnd(false);
 				ctrlPad.SetSel(0, 0); //set scroll position to top
 
 				SetWindowText(file.c_str());
-				ctrlPad.SetRedraw(TRUE);
 			}
 		} else if(textType == NORMAL) {
 			File f(Text::fromT(file), File::READ, File::OPEN);
 			tmp = Text::toDOS(f.read());
 			tmp = Text::toUtf8(tmp);
-
-			tstring::size_type j = 0; 
-			while((j = tmp.find("\r", j)) != string::npos)
-				tmp.erase(j, 1);
 
 			//edit text style, disable dwEffects, bold, italic etc. looks really bad with bold font.
 			CHARFORMAT2 cf;
@@ -131,11 +126,11 @@ LRESULT TextFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		
 			//ctrlPad.SetTextEx((LPCTSTR)tmp.c_str(), ST_SELECTION, CP_UTF8);
 			tstring msg = Text::toT(tmp);
-			ctrlPad.SetWindowText(msg.c_str());
 			ctrlPad.setFormatLinks(true);
 			ctrlPad.setFormatReleases(true);
 
-			ctrlPad.FormatEmoticonsAndLinks(msg, 0, false);
+			ctrlPad.AppendText(msg);
+
 			ctrlPad.setAutoScrollToEnd(false);
 			ctrlPad.SetSel(0, 0); //set scroll position to top
 			SetWindowText(Text::toT(Util::getFileName(Text::fromT(file))).c_str());

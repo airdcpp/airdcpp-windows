@@ -44,7 +44,7 @@
 
 extern EmoticonsManager* emoticonsManager;
 
-ChatFrameBase::ChatFrameBase(FrameMessageBase* aFrameBase) : /*clientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP)*/ frame(aFrameBase), menuItems(0),
+ChatFrameBase::ChatFrameBase() : /*clientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP)*/ menuItems(0),
 		lineCount(1), curCommandPosition(0), cancelHashing(false), resizePressed(false) {
 }
 
@@ -148,7 +148,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 	}
 
 	if(wParam == VK_TAB) {
-		frame->onTab();
+		onTab();
 		return 0;
 	} else if((GetFocus() == ctrlMessage.m_hWnd) && (GetKeyState(VK_CONTROL) & 0x8000) && !(GetKeyState(VK_MENU) & 0x8000) && (wParam == 'A')){
 		ctrlMessage.SetSelAll();
@@ -344,7 +344,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				lineCount = newLineCount;
 			} else {
 				lineCount = newLineCount;
-				frame->UpdateLayout(FALSE);
+				UpdateLayout(FALSE);
 			}
 		}
 //End
@@ -368,7 +368,7 @@ LRESULT ChatFrameBase::onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 
 	if(newLineCount != lineCount) {
 		lineCount = newLineCount;
-		frame->UpdateLayout(FALSE);
+		UpdateLayout(FALSE);
 	}
 
 	bHandled = FALSE;
@@ -438,7 +438,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 					if (aTimeLeft == 0)
 						return;
 
-					MainFrame::getMainFrame()->callAsync([=] {
+					callAsync([=] {
 						tstring status = TSTRING_F(HASHING_X_LEFT, Text::toT(aFileName) % Text::toT(Util::formatTime(aTimeLeft, true)));
 						if (aPaths.size() > 1) 
 							status += _T(" (") + Text::toLower(TSTRING(FILE)) + _T(" ") + Util::toStringW(pos) + _T("/") + Util::toStringW(aPaths.size()) + _T(")");
@@ -457,7 +457,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 			pos++;
 		}
 
-		MainFrame::getMainFrame()->callAsync([=] {
+		callAsync([=] {
 			if (!cancelHashing) {
 				setStatusText(aPaths.size() > 1 ? TSTRING_F(MAGNET_CREATED_FOR_X, aPaths.size()) : TSTRING_F(MAGNET_CREATED_FOR, Text::toT(aPaths.front())));
 				appendTextLine(ret, true);
@@ -485,7 +485,7 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	} else if(SETTING(MEDIA_PLAYER) == 4) {
 		cmd = _T("/spotify");
 	} else {
-		frame->addStatusLine(CTSTRING(NO_MEDIA_SPAM));
+		addStatusLine(CTSTRING(NO_MEDIA_SPAM));
 		return 0;
 	}
 	if(checkCommand(cmd, param, message, status, thirdPerson)){
@@ -493,7 +493,7 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 			sendFrameMessage(message, thirdPerson);
 		}
 		if(!status.empty()) {
-			frame->addStatusLine(status);
+			addStatusLine(status);
 		}
 	}
 	return 0;
@@ -502,10 +502,10 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 bool ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool thirdPerson /*false*/) {
 	if (!aMsg.empty()) {
 		string error;
-		if (frame->sendMessage(aMsg, error, thirdPerson)) {
+		if (sendMessage(aMsg, error, thirdPerson)) {
 			return true;
 		} else {
-			frame->addStatusLine(Text::toT(error));
+			addStatusLine(Text::toT(error));
 		}
 	}
 	return false;
@@ -613,7 +613,7 @@ void ChatFrameBase::onEnter() {
 			tstring cmd = s;
 			tstring param;
 			if(SETTING(CLIENT_COMMANDS)) {
-				frame->addStatusLine(_T("Client command: ") + s);
+				addStatusLine(_T("Client command: ") + s);
 			}
 		
 			if(!checkCommand(cmd, param, message, status, thirdPerson)) {
@@ -637,7 +637,7 @@ void ChatFrameBase::onEnter() {
 	}
 
 	if (!status.empty()) {
-		frame->addStatusLine(status);
+		addStatusLine(status);
 	}
 
 	if (!message.empty()) {
@@ -936,7 +936,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 			status = _T("Supported version of Winamp is not running");
 		}
 	} else {
-		return frame->checkFrameCommand(cmd, param, message, status, thirdPerson);
+		return checkFrameCommand(cmd, param, message, status, thirdPerson);
 	}
 
 	//check if /me was added by the command

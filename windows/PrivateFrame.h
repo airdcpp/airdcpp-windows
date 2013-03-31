@@ -30,13 +30,12 @@
 
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
-#include "FlatTabCtrl.h"
 #include "UCHandler.h"
 
 #define HUB_SEL_MAP 9
 
-class PrivateFrame : public MDITabChildWindowImpl<PrivateFrame>, public UserInfoBaseHandler<PrivateFrame>, public UserInfoBase,
-	private ClientManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, private ChatFrameBase, private FrameMessageBase
+class PrivateFrame : public UserInfoBaseHandler<PrivateFrame>, public UserInfoBase,
+	private ClientManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
 	static void gotMessage(const Identity& from, const UserPtr& to, const UserPtr& replyTo, const tstring& aMessage, Client* c);
@@ -51,7 +50,6 @@ public:
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("PrivateFrame"), IDR_PRIVATE, 0, COLOR_3DFACE);
 
-	typedef MDITabChildWindowImpl<PrivateFrame> baseClass;
 	typedef UCHandler<PrivateFrame> ucBase;
 	typedef ChatFrameBase chatBase;
 	typedef UserInfoBaseHandler<PrivateFrame> uibBase;
@@ -62,7 +60,6 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
-		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_FORWARDMSG, OnRelayMsg)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
@@ -74,7 +71,6 @@ public:
 		CHAIN_MSG_MAP(chatBase)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
-		CHAIN_MSG_MAP(baseClass)
 	ALT_MSG_MAP(EDIT_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 		MESSAGE_HANDLER(WM_KEYDOWN, onChar)
@@ -103,7 +99,6 @@ public:
 		return 0;
 	}
 
-	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 

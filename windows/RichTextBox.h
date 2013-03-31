@@ -169,7 +169,8 @@ public:
 	static tstring rtfEscape(const tstring& str);
 
 	//void AdjustTextSize();
-	bool AppendText(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = true);
+	void AppendText(tstring& sMsg);
+	bool AppendChat(const Identity& i, const tstring& sMyNick, const tstring& sTime, tstring sMsg, CHARFORMAT2& cf, bool bUseEmo = true);
 	void AppendHTML(const string& aTxt);
 	tstring getLinkText(const ENLINK& link);
 	LRESULT handleLink(ENLINK& link);
@@ -211,6 +212,7 @@ private:
 	bool HitNick(const POINT& p, tstring& sNick, int& iBegin , int& iEnd);
 	bool HitIP(const POINT& p, tstring& sIP, int& iBegin, int& iEnd);
 	bool updateAuthor();
+	static void unifyLineEndings(tstring& aText);
 
 	tstring WordFromPos(const POINT& p);
 	tstring LineFromPos(const POINT& p) const;

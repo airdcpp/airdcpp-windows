@@ -200,7 +200,7 @@ HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate
 		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		filter(OnlineUser::COLUMN_LAST, [this] { updateUserList(); updateUsers = true;}),
-		ChatFrameBase(this), statusDirty(true)
+		statusDirty(true)
 {
 	client = ClientManager::getInstance()->createClient(Text::fromT(aServer));
 	client->setShareProfile(aShareProfile);
@@ -1007,7 +1007,7 @@ void HubFrame::addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf,
 		LOG(LogManager::CHAT, params);
 	}
 
-	bool notify = ctrlClient.AppendText(i, Text::toT(client->get(HubSettings::Nick)), timeStamps ? Text::toT("[" + Util::getShortTimeString() + "] ") : Util::emptyStringT, aLine + _T('\n'), cf, bUseEmo);
+	bool notify = ctrlClient.AppendChat(i, Text::toT(client->get(HubSettings::Nick)), timeStamps ? Text::toT("[" + Util::getShortTimeString() + "] ") : Util::emptyStringT, aLine + _T('\n'), cf, bUseEmo);
 	if(notify)
 		setNotify();
 
