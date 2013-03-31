@@ -1437,7 +1437,7 @@ bool DirectoryListingFrame::showDirDialog(string& fileName) {
 
 void DirectoryListingFrame::appendDownloadItems(OMenu& aMenu, bool isTree) {
 	//Append general items
-	aMenu.appendItem(CTSTRING(DOWNLOAD), [this, isTree] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isTree); }, true, true);
+	aMenu.appendItem(CTSTRING(DOWNLOAD), [this, isTree] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isTree); }, OMenu::FLAG_DEFAULT);
 
 	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
 	appendDownloadTo(*targetMenu, isTree);

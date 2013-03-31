@@ -1627,10 +1627,9 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 	for(auto value: values) {
 		auto enabled = (disabled && !value) || (!disabled && value == x);
 		auto formatted = Text::toT(Util::formatBytes(value * 1024));
-		auto pos = limiterMenu->appendItem(value ? formatted + _T("/s") : CTSTRING(DISABLED),
-			[setting, value] { ThrottleManager::setSetting(setting, value); }, !enabled);
-		if(enabled)
-			limiterMenu->CheckMenuItem(pos, MF_BYPOSITION | MF_CHECKED);
+		limiterMenu->appendItem(value ? formatted + _T("/s") : CTSTRING(DISABLED),
+			[setting, value] { ThrottleManager::setSetting(setting, value); }, enabled ? OMenu::FLAG_CHECKED | OMenu::FLAG_DISABLED : 0);
+
 		if(!value)
 			limiterMenu->AppendMenu(MF_SEPARATOR);
 	}
@@ -2144,21 +2143,21 @@ LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 	LPNMTOOLBAR tb = (LPNMTOOLBAR)pnmh;
 	OMenu dropMenu;
 	dropMenu.CreatePopupMenu();
-	dropMenu.appendItem(CTSTRING(ALL), [this] { addThreadedTask([=] { ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL); }); });
-	dropMenu.appendItem(CTSTRING(INCOMING), [this] { addThreadedTask([=] {  ShareManager::getInstance()->refresh(true, ShareManager::TYPE_MANUAL); }); });
+	dropMenu.appendItem(CTSTRING(ALL), [] { ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL); }, OMenu::FLAG_THREADED);
+	dropMenu.appendItem(CTSTRING(INCOMING), [] { ShareManager::getInstance()->refresh(true, ShareManager::TYPE_MANUAL); }, OMenu::FLAG_THREADED);
 	dropMenu.appendSeparator();
 
 	auto l = ShareManager::getInstance()->getGroupedDirectories();
 	for(auto& i: l) {
 		if (i.second.size() > 1) {
 			auto vMenu = dropMenu.createSubMenu(Text::toT(i.first).c_str(), true);
-			vMenu->appendItem(CTSTRING(ALL), [=] { addThreadedTask([=] { ShareManager::getInstance()->refresh(i.first); }); });
+			vMenu->appendItem(CTSTRING(ALL), [=] { ShareManager::getInstance()->refresh(i.first); }, OMenu::FLAG_THREADED);
 			vMenu->appendSeparator();
 			for(const auto& s: i.second) {
-				vMenu->appendItem(Text::toT(s).c_str(), [=] { addThreadedTask([=] { ShareManager::getInstance()->refresh(s); }); });
+				vMenu->appendItem(Text::toT(s).c_str(), [=] { ShareManager::getInstance()->refresh(s); }, OMenu::FLAG_THREADED);
 			}
 		} else {
-			dropMenu.appendItem(Text::toT(i.first).c_str(), [=] { addThreadedTask([=] { ShareManager::getInstance()->refresh(i.first); }); });
+			dropMenu.appendItem(Text::toT(i.first).c_str(), [=] { ShareManager::getInstance()->refresh(i.first); }, OMenu::FLAG_THREADED);
 		}
 	}
 

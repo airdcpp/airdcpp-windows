@@ -48,6 +48,13 @@ struct OMenuItem {
  */
 class OMenu : public CMenu {
 public:
+	enum {
+		FLAG_DEFAULT	= 0x00,
+		FLAG_THREADED	= 0x01,
+		FLAG_CHECKED	= 0x04,
+		FLAG_DISABLED	= 0x08,
+	};
+
 	OMenu(OMenu* aParent = nullptr);
 	~OMenu();
 
@@ -66,7 +73,7 @@ public:
 	/* These should be used when submenus are created within a separate function/scope */
 	OMenu* createSubMenu(const tstring& aTitle, bool appendSeparator = false);
 	OMenu* getMenu();
-	void appendThis(const tstring& aTitle, bool appendSeparator = false, bool disableIfEmpty = true);
+	void appendThis(const tstring& aTitle, bool appendSeparator = false);
 
 	void CheckOwnerDrawn(UINT uItem, BOOL byPosition);
 
@@ -85,7 +92,7 @@ public:
 		RemoveFirstItem(GetMenuItemCount());
 	}
 
-	unsigned appendItem(const tstring& text, const Dispatcher::F& f = Dispatcher::F(), bool enabled = true, bool defaultItem = false);
+	unsigned appendItem(const tstring& text, const Dispatcher::F& f = Dispatcher::F(), int aFlags = 0);
 	BOOL InsertMenuItem(UINT uItem, BOOL bByPosition, LPMENUITEMINFO lpmii);
 
 	void open(HWND aHWND, unsigned flags = TPM_LEFTALIGN | TPM_RIGHTBUTTON, CPoint pt = GetMessagePos());

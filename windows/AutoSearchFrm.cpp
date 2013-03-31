@@ -296,10 +296,10 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 				asMenu.appendSeparator();
 				asMenu.appendItem(TSTRING(INCREASE_NUM), [=] { 
 					AutoSearchManager::getInstance()->changeNumber(as, true);
-				}, as->getMaxNumber() == 0 || as->getCurNumber() < as->getMaxNumber());
+				}, (as->getMaxNumber() > 0 && as->getCurNumber() >= as->getMaxNumber()) ? OMenu::FLAG_DISABLED : 0);
 				asMenu.appendItem(TSTRING(DECREASE_NUM), [=] { 
 					AutoSearchManager::getInstance()->changeNumber(as, false);
-				}, as->getCurNumber() > 0);
+				}, as->getCurNumber() == 0 ? OMenu::FLAG_DISABLED : 0);
 			}
 
 			AutoSearchManager::getInstance()->getMenuInfo(as, bundles, fpl);

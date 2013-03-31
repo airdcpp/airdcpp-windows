@@ -950,7 +950,7 @@ bool SearchFrame::showDirDialog(string& fileName) {
 
 
 void SearchFrame::appendDownloadItems(OMenu& aMenu, bool hasFiles) {
-	aMenu.appendItem(CTSTRING(DOWNLOAD), [this] { onDownload(SETTING(DOWNLOAD_DIRECTORY), false); }, true, false);
+	aMenu.appendItem(CTSTRING(DOWNLOAD), [this] { onDownload(SETTING(DOWNLOAD_DIRECTORY), false); }, OMenu::FLAG_DEFAULT);
 
 	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
 	appendDownloadTo(*targetMenu, false);

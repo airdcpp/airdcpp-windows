@@ -231,21 +231,17 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 					auto removeMenu = usersMenu.createSubMenu(TSTRING(REMOVE_SOURCE), true);
 
 					for(auto& bs: sourceBundles) {
-						removeMenu->appendItem(formatBundle(bs), [=] { 
-							MainFrame::getMainFrame()->addThreadedTask([=] {
+						removeMenu->appendItem(formatBundle(bs), [=] {
 								QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user); 
-							});
-						});
+						}, OMenu::FLAG_THREADED);
 					}
 
 					removeMenu->appendSeparator();
 					removeMenu->appendItem(TSTRING(ALL), [=] {
-						MainFrame::getMainFrame()->addThreadedTask([=] {
-							for(auto& bs: sourceBundles) {
-								QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user.user);
-							}
-						});
-					});
+						for(auto& bs: sourceBundles) {
+							QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user.user);
+						}
+					}, OMenu::FLAG_THREADED);
 				}
 
 				//bad sources
@@ -253,20 +249,16 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 					auto readdMenu = usersMenu.createSubMenu(TSTRING(READD_SOURCE), true);
 					for(auto& bs: badSourceBundles) {
 						readdMenu->appendItem(formatBundle(bs), [=] { 
-							MainFrame::getMainFrame()->addThreadedTask([=] {
-								QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.user); 
-							});
-						});
+							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.user); 
+						}, OMenu::FLAG_THREADED);
 					}
 
 					readdMenu->appendSeparator();
-					readdMenu->appendItem(TSTRING(ALL), [=] { 
-						MainFrame::getMainFrame()->addThreadedTask([=] {
-							for(auto& bs: badSourceBundles) {
-								QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.user);
-							}
-						});
-					});
+					readdMenu->appendItem(TSTRING(ALL), [=] {
+						for(auto& bs: badSourceBundles) {
+							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.user);
+						}
+					}, OMenu::FLAG_THREADED);
 				}
 			}
 		}

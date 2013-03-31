@@ -1799,5 +1799,9 @@ Do you want to use this destination anyway?</String>
 - Drag and drop functionality can't be used
 
 You may also notice other unexcepted behaviour, so it is heavily recommended that you switch the client to run with normal privileges.</String>
+		<String Name="DontShareEmptyDirs">Don't share empty directories</String>
+		<String Name="ScanningOptions">Scanning options</String>
+		<String Name="LogShareScan">Save the results to a log file when scanning the share</String>
+		<String Name="LogShareScanPath">Log filename (relative to the global log directory)</String>
 	</Strings>
 </Language>

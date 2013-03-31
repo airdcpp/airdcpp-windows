@@ -20,6 +20,7 @@
 
 #include "WinUtil.h"
 #include "BarShader.h"
+#include "MainFrm.h"
 
 
 namespace dcpp {
@@ -54,7 +55,7 @@ BOOL OMenu::CreatePopupMenu() {
 
 OMenu* OMenu::createSubMenu(const tstring& aTitle, bool appendSeparator /*false*/) {
 	auto menu = getMenu();
-	menu->appendThis(aTitle, appendSeparator, false);
+	menu->appendThis(aTitle, appendSeparator);
 	return menu;
 }
 
@@ -69,12 +70,9 @@ bool OMenu::hasItems() {
 	return GetMenuItemCount() > 0;
 }
 
-void OMenu::appendThis(const tstring& aTitle, bool appendSeparator /*false*/, bool disableIfEmpty /*true*/) {
+void OMenu::appendThis(const tstring& aTitle, bool appendSeparator /*false*/) {
 	dcassert(parent);
 	parent->AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)*this, aTitle.c_str());
-	if (disableIfEmpty && !hasItems())
-		parent->EnableMenuItem((UINT_PTR)(HMENU)*this, MFS_DISABLED);
-
 	if (appendSeparator)
 		InsertSeparatorFirst(aTitle);
 }
@@ -139,6 +137,24 @@ BOOL OMenu::InsertMenuItem(UINT uItem, BOOL bByPosition, LPMENUITEMINFO lpmii) {
 }
 
 void OMenu::open(HWND aHWND, unsigned flags /*= TPM_LEFTALIGN | TPM_RIGHTBUTTON*/, CPoint pt /*= GetMessagePos()*/) {
+	//check empty submenus
+	for (auto& m: subMenuList) {
+		auto itemCount = m->GetMenuItemCount();
+		if (itemCount > 1)
+			continue;
+
+		if (itemCount == 1) {
+			MENUITEMINFO mii = {0};
+			mii.cbSize = sizeof(MENUITEMINFO);
+			mii.fMask = MIIM_TYPE | MIIM_DATA | MIIM_SUBMENU;
+			GetMenuItemInfo(0, TRUE, &mii);
+			if (!mii.dwItemData)
+				continue;
+		}
+
+		EnableMenuItem((UINT_PTR)(HMENU)*m.get(), MFS_DISABLED);
+	}
+
 	flags |= TPM_RETURNCMD;
 	unsigned ret = ::TrackPopupMenu(m_hMenu, flags, pt.x, pt.y, 0, aHWND, 0);
 	if(ret >= start) {
@@ -160,19 +176,24 @@ void OMenu::addItem(OMenuItem* mi) {
 	parent ? parent->addItem(mi) : items.push_back(unique_ptr<OMenuItem>(mi));
 }
 
-unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f, bool enabled, bool defaultItem) {
+unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f /*nullptr*/, int flags /*0*/) {
 	// init structure for new item
 	CMenuItemInfo info;
 	info.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA;
 	info.fType = MFT_STRING;
 
-	if(!enabled) {
+	if(flags & FLAG_DISABLED) {
 		info.fMask |= MIIM_STATE;
 		info.fState |= MFS_DISABLED;
 	}
-	if(defaultItem) {
+	if(flags & FLAG_DEFAULT) {
 		info.fMask |= MIIM_STATE;
 		info.fState |= MFS_DEFAULT;
+	}
+
+	if(flags & FLAG_CHECKED) {
+		info.fMask |= MIIM_STATE;
+		info.fState |= MFS_CHECKED;
 	}
 
 	info.dwTypeData = const_cast< LPTSTR >( text.c_str() );
@@ -183,7 +204,7 @@ unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f, bool ena
 	if(f) {
 		OMenuItem* mi = new OMenuItem();
 		mi->ownerdrawn = false;
-		mi->f = f;
+		mi->f = flags & FLAG_THREADED ? [=] { MainFrame::getMainFrame()->addThreadedTask(f); } : f;
 		mi->text = text;
 		mi->parent = this;
 

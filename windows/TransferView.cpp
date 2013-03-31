@@ -146,13 +146,21 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		}
 
 		OMenu transferMenu, copyMenu;
-		OMenu* previewMenu = nullptr;
 		const ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
 		bool parent = ii->isBundle;
 
 		transferMenu.CreatePopupMenu();
+
 		copyMenu.CreatePopupMenu();
-		//priorityMenu.CreatePopupMenu();
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_IP, CTSTRING(IP_BARE));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_HUB, CTSTRING(HUB));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SPEED, CTSTRING(SPEED));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_STATUS, CTSTRING(STATUS));
+		copyMenu.AppendMenu(MF_STRING, IDC_COPY_ALL, CTSTRING(ALL));
 		
 		if(!parent) {
 			transferMenu.InsertSeparatorFirst(TSTRING(MENU_TRANSFERS));
@@ -165,11 +173,11 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			if(ii->download) {
 				transferMenu.AppendMenu(MF_SEPARATOR);
-				//transferMenu.appendItem(TSTRING(REMOVE_BUNDLE_SOURCE), [=] { handleRemoveBundleSource(); });
 				transferMenu.appendItem(TSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchAlternates(); });
-				//transferMenu.appendItem(TSTRING(SETCZDC_DISCONNECTING_ENABLE), [=] { handleSlowDisconnect(); });
-				if (previewMenu)
-					previewMenu->appendThis(TSTRING(PREVIEW_MENU), true);
+
+				if(!ii->target.empty() && selCount == 1) {
+					WinUtil::appendPreviewMenu(transferMenu, Text::fromT(ii->target));
+				}
 			}
 
 			int i = -1;
@@ -203,60 +211,13 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			if(ii->download) {
 				transferMenu.AppendMenu(MF_SEPARATOR);
 
-				BundlePtr b = QueueManager::getInstance()->findBundle(ii->bundle);
+				BundlePtr b = selCount == 1 ? QueueManager::getInstance()->findBundle(ii->bundle) : nullptr;
 
 				//simplify when http://connect.microsoft.com/VisualStudio/feedback/details/694400 has been fixed.....
 				WinUtil::appendBundlePrioMenu(transferMenu, b, [this](uint8_t aPrio) { handlePriority(aPrio); }, [this] { handleAutoPrio(); });
 
-				//transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)priorityMenu, CTSTRING(SET_BUNDLE_PRIORITY));
-				transferMenu.appendItem(TSTRING(SETCZDC_DISCONNECTING_ENABLE), [=] { handleSlowDisconnect(); });
+				transferMenu.appendItem(TSTRING(SETCZDC_DISCONNECTING_ENABLE), [=] { handleSlowDisconnect(); }, (b && b->isSet(Bundle::FLAG_AUTODROP)) ? OMenu::FLAG_CHECKED : 0);
 				transferMenu.appendItem(TSTRING(REMOVE_BUNDLE), [=] { handleRemoveBundle(); });
-			}
-		}
-			
-
-		transferMenu.CheckMenuItem(IDC_MENU_SLOWDISCONNECT, MF_BYCOMMAND | MF_UNCHECKED);
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_IP, CTSTRING(IP_BARE));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_HUB, CTSTRING(HUB));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SPEED, CTSTRING(SPEED));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_STATUS, CTSTRING(STATUS));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_ALL, CTSTRING(ALL));
-
-		/*priorityMenu.InsertSeparatorFirst(TSTRING(PRIORITY));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_PAUSED, CTSTRING(PAUSED));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOWEST, CTSTRING(LOWEST));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_LOW, CTSTRING(LOW));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_NORMAL, CTSTRING(NORMAL));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGH, CTSTRING(HIGH));
-		priorityMenu.AppendMenu(MF_STRING, IDC_PRIORITY_HIGHEST, CTSTRING(HIGHEST));
-		priorityMenu.appendItem(TSTRING(AUTO), [=] { handleAutoPrio(); });*/
-		//priorityMenu.AppendMenu(MF_STRING, IDC_AUTOPRIORITY, CTSTRING(AUTO));
-
-		if(ii->download) {
-			if(!ii->target.empty()) {
-				if (selCount == 1) {
-					previewMenu = transferMenu.getMenu();
-					WinUtil::appendPreviewMenu(previewMenu, Text::fromT(ii->target));
-				}
-
-				if(!ii->bundle.empty() && QueueManager::getInstance()->getAutoDrop(ii->bundle)) {
-					transferMenu.CheckMenuItem(IDC_MENU_SLOWDISCONNECT, MF_BYCOMMAND | MF_CHECKED);
-				}
-			} 
-			if (parent) {
-				//BundlePtr aBundle = QueueManager::getInstance()->findBundle(ii->bundle);
-
-				//WinUtil::appendBundlePrioMenu(priorityMenu, aBundle);
-				/*if (aBundle) {
-					QueueItemBase::Priority p = aBundle->getPriority();
-					priorityMenu.CheckMenuItem(p + 1, MF_BYPOSITION | MF_CHECKED);
-					if(aBundle->getAutoPriority())
-						priorityMenu.CheckMenuItem(7, MF_BYPOSITION | MF_CHECKED);
-				}*/
 			}
 		}
 

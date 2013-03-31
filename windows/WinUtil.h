@@ -422,7 +422,7 @@ public:
 	}
 
 	static void ClearPreviewMenu(OMenu &previewMenu);
-	static void appendPreviewMenu(OMenu* previewMenu, const string& aTarget);
+	static void appendPreviewMenu(OMenu& parent, const string& aTarget);
 	static bool shutDown(int action);
 	static int getFirstSelectedIndex(CListViewCtrl& list);
 	static int setButtonPressed(int nID, bool bPressed = true);

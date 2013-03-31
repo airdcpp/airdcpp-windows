@@ -1517,7 +1517,9 @@ void WinUtil::saveReBarSettings(HWND bar) {
 }
 
 
-void WinUtil::appendPreviewMenu(OMenu* previewMenu, const string& aTarget) {
+void WinUtil::appendPreviewMenu(OMenu& parent, const string& aTarget) {
+	auto previewMenu = parent.createSubMenu(TSTRING(PREVIEW_MENU), true);
+
 	auto lst = FavoriteManager::getInstance()->getPreviewApps();
 	auto ext = Util::getFileExt(aTarget);
 	if (ext.empty()) return;
@@ -1562,11 +1564,7 @@ static void appendPrioMenu(OMenu& aParent, const T& aBase, bool isBundle, functi
 		curItem++;
 		priorityMenu->appendItem(aString, [=] { 		
 			prioF(aPrio);
-		});
-
-		if (aBase && aBase->getPriority() == aPrio) {
-			priorityMenu->CheckMenuItem(curItem, MF_BYPOSITION | MF_CHECKED);
-		}
+		}, aBase && aBase->getPriority() == aPrio ? OMenu::FLAG_CHECKED | OMenu::FLAG_DISABLED : 0);
 	};
 
 	appendItem(TSTRING(PAUSED), QueueItemBase::PAUSED);
@@ -1578,9 +1576,7 @@ static void appendPrioMenu(OMenu& aParent, const T& aBase, bool isBundle, functi
 
 	curItem++;
 	//priorityMenu->appendSeparator();
-	priorityMenu->appendItem(TSTRING(AUTO), autoPrioF);
-	if (aBase && aBase->getAutoPriority())
-		priorityMenu->CheckMenuItem(curItem, MF_BYPOSITION | MF_CHECKED);
+	priorityMenu->appendItem(TSTRING(AUTO), autoPrioF, aBase && aBase->getAutoPriority() ? OMenu::FLAG_CHECKED : 0);
 }
 	
 void WinUtil::appendBundlePrioMenu(OMenu& aParent, const BundlePtr& aBundle, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF) {
@@ -1709,7 +1705,11 @@ void WinUtil::removeBundle(const string& aBundleToken) {
 				}
 			}
 		}
-		QueueManager::getInstance()->removeBundle(aBundle, false, moveFinished);
+
+		MainFrame::getMainFrame()->addThreadedTask([=] {
+			auto b = aBundle;
+			QueueManager::getInstance()->removeBundle(b, false, moveFinished);
+		});
 	}
 }
 
