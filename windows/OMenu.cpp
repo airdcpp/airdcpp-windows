@@ -204,7 +204,13 @@ unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f /*nullptr
 	if(f) {
 		OMenuItem* mi = new OMenuItem();
 		mi->ownerdrawn = false;
-		mi->f = flags & FLAG_THREADED ? [=] { MainFrame::getMainFrame()->addThreadedTask(f); } : f;
+		if (flags & FLAG_THREADED) {
+			mi->f = [=] { MainFrame::getMainFrame()->addThreadedTask(f); };
+		} else {
+			mi->f = f;
+		}
+
+		//mi->f = (flags & FLAG_THREADED) ? [=] { MainFrame::getMainFrame()->addThreadedTask(f); } : f;
 		mi->text = text;
 		mi->parent = this;
 

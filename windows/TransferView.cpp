@@ -1550,33 +1550,10 @@ void TransferView::handleSearchAlternates() {
 
 void TransferView::handleForced() {
 	auto force = [=](const ItemInfo* ii) {
-		if (!ii->isBundle)
-			ConnectionManager::getInstance()->force(ii->token);
+		ConnectionManager::getInstance()->force(ii->token);
 	};
 
 	performActionFiles(force);
-
-
-	/*int i = -1;
-	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		ItemInfo* ii = ctrlTransfers.getItemData(i);
-		ctrlTransfers.SetItemText(i, COLUMN_STATUS, CTSTRING(CONNECTING_FORCED));
-
-		if(ii->isBundle) {
-			const vector<ItemInfo*>& children = ctrlTransfers.findChildren(ii->getGroupCond());
-			for(auto ii: children) {
-				int h = ctrlTransfers.findItem(ii);
-				if(h != -1)
-					ctrlTransfers.SetItemText(h, COLUMN_STATUS, CTSTRING(CONNECTING_FORCED));
-
-				//ii->transferFailed = false;
-				ConnectionManager::getInstance()->force(ii->token);
-			}
-		} else {
-			//ii->transferFailed = false;
-			ConnectionManager::getInstance()->force(ii->token);
-		}
-	}*/
 }
 
 void TransferView::handleRemoveBundle() {
@@ -1589,8 +1566,7 @@ void TransferView::handleRemoveBundle() {
 
 void TransferView::handleRemoveBundleSource() {
 	auto removeSource = [=](const ItemInfo* ii) {
-		if (!ii->bundle.empty())
-			QueueManager::getInstance()->removeBundleSource(ii->bundle, ii->user);
+		QueueManager::getInstance()->removeBundleSource(ii->bundle, ii->user);
 	};
 
 	performActionBundles(removeSource);
