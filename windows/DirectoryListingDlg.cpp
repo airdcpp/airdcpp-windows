@@ -33,16 +33,18 @@
 DirectoryListingDlg::DirectoryListingDlg() : fileTypeStr(SEARCH_TYPE_ANY), fileType(0), size(0), sizeMode(0), useCurDir(false) { }
 
 DirectoryListingDlg::~DirectoryListingDlg() {
-	ctrlSearch.Detach();
-	ctrlFileType.Detach();
+	//ctrlSearch.Detach();
+	//ctrlFileType.Detach();
 }
 
 LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
 	ATTACH(IDC_SEARCH_STRING, ctrlSearch);
 	ctrlSearch.SetFocus();
-	ctrlSearch.SetWindowText(Text::toT(searchStr).c_str());
-	ctrlSearch.SetSelAll(TRUE);
+	//ctrlSearch.SetWindowText(Text::toT(searchStr).c_str());
+	WinUtil::appendHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
+
+	//ctrlSearch.SetSelAll(TRUE);
 
 	ATTACH(IDC_FILETYPES, ctrlFileType);
 	ATTACH(IDC_SEARCH_SIZE, ctrlSize);
@@ -68,7 +70,9 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 	::SetWindowText(GetDlgItem(IDC_SIZE_LABEL), CTSTRING(SIZE));
 	::SetWindowText(GetDlgItem(IDC_USE_CUR_DIR), CTSTRING(SEARCH_CUR_DIR));
 
+	fileTypeStr = SETTING(LAST_FL_FILETYPE);
 	ctrlFileType.fillList(fileTypeStr);
+
 
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(SEARCH));
@@ -86,8 +90,7 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 
 		sizeMode = ctrlSizeMode.GetCurSel();
 
-		ctrlSearch.GetWindowText(buf, 512);
-		searchStr = Text::fromT(buf);
+		searchStr = WinUtil::addHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
 
 		ctrlSize.GetWindowText(buf, 512);
 		double lsize = Util::toDouble(Text::fromT(buf));
@@ -103,6 +106,8 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 		useCurDir = IsDlgButtonChecked(IDC_USE_CUR_DIR) == BST_CHECKED;
 
 		size = lsize;
+
+		SettingsManager::getInstance()->set(SettingsManager::LAST_FL_FILETYPE, fileTypeStr);
 	}
 	EndDialog(wID);
 	return 0;

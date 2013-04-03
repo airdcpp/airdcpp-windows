@@ -124,6 +124,7 @@ protected:
 	CStatusBarCtrl ctrlStatus;
 
 	bool sendFrameMessage(const tstring& aMsg, bool thirdPerson = false);
+	string getAwayMessage();
 private:
 	/**
 	 * Check if this is a common /-command.

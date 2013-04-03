@@ -266,7 +266,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 				from.getParams(params, "user", false);
 
 				string error;
-				p->sendMessage(Text::toT(AirUtil::getAwayMessage(params)), error);
+				p->sendMessage(Text::toT(AirUtil::getAwayMessage(p->getAwayMessage(), params)), error);
 			}
 		}
 

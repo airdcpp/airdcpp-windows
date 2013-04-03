@@ -54,7 +54,7 @@ public:
 	LRESULT onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 private:
-	CEdit ctrlSearch;
+	CComboBox ctrlSearch;
 	SearchTypeCombo ctrlFileType;
 	CEdit ctrlSize;
 	CComboBox ctrlSizeMode;

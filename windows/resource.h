@@ -53,7 +53,9 @@
 #define IDC_SETTINGS_SCAN_OPTIONS       135
 #define IDC_SERVER6                     135
 #define IDC_COPY_STATUS                 136
+#define IDC_AWAY_MSG                    136
 #define IDC_ITEMS                       137
+#define IDC_FAILOVER                    137
 #define IDC_WINAMP_BACK                 141
 #define IDC_WINAMP_PLAY                 142
 #define IDC_WINAMP_STOP                 143
@@ -668,6 +670,8 @@
 #define IDC_SHUTDOWN_SPIN               1253
 #define IDC_STATISTICS                  1253
 #define IDC_FAVORITE_DIRECTORIES        1253
+#define IDC_FH_PASSWORD2                1253
+#define IDC_AWAY_MSG_LBL                1253
 #define IDC_KB                          1254
 #define IDC_TAB_SIZE                    1254
 #define IDC_SEG_NUMBER                  1255

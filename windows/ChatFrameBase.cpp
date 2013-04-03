@@ -722,6 +722,10 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /ctopic\t\t\t\t\tOpen Link in Topic\n\
 /ratio, /r\t\t\t\t\tShow Ratio in chat\n\n");
 
+string ChatFrameBase::getAwayMessage() {
+	return ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::AwayMsg) : SETTING(DEFAULT_AWAY_MESSAGE);
+}
+
 bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) {
 	string::size_type i = cmd.find(' ');
 	if(i != string::npos) {
@@ -810,17 +814,16 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 
 		ShareManager::getInstance()->setProfilesDirty(pts, true);
 	} else if(stricmp(cmd.c_str(), _T("away")) == 0) {
-		if(AirUtil::getAway() && param.empty()) {
+		if(AirUtil::getAway()) {
 			AirUtil::setAway(AWAY_OFF);
 			MainFrame::setAwayButton(false);
 			status = TSTRING(AWAY_MODE_OFF);
 		} else {
 			AirUtil::setAway(AWAY_MANUAL);
 			MainFrame::setAwayButton(true);
-			AirUtil::setAwayMessage(Text::fromT(param));
 			
 			ParamMap sm;
-			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(AirUtil::getAwayMessage(sm));
+			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(AirUtil::getAwayMessage(getAwayMessage(), sm));
 		}
 	} else if(WebShortcuts::getInstance()->getShortcutByKey(cmd) != NULL) {
 		WinUtil::searchSite(WebShortcuts::getInstance()->getShortcutByKey(cmd), Text::fromT(param), false);
