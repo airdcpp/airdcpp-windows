@@ -835,6 +835,13 @@ Added:
 - Allow using quotation marks in search strings and excluded words for exact matching with strings containing spaces
 - Show the progress in percentages on startup/shutdown for selected steps
 - Allow opening dupe folders also from the tree in file lists
+- Add an option to not to share empty directories
+- Use the history also for searches in file lists, save the previous file type
+- Allow saving a log file when scanning the share
+- Show a warning message when running the client with administrative priviledges (Win 8 only)
+- Allow setting minimum file size for dupe check when queuing new items (small dupes are ignored only if all other queued files in the bundle aren't dupes too)
+- Save possible errors for auto search items when queueuing new bundles
+- Add the type "File" in the file type menu in search to avoid getting directory results
 
 
 Changed:
@@ -852,9 +859,12 @@ Changed:
 - Change the way of storing history items: option to clear each history on exit and set the maximum limit for each history
 - /rebuild will remove entries also for files that have been removed from the share during the current session
 - Improve the error reporting when sending of a main/pm message fails
+- Add proper error reporting when queueing of bundle files fails
 - Calculate the bundle priorities instantly after they've been loaded on startup
 - Don't send a junk TTHs with directory search replies in ADC
 - Prevent freezes when selecting a large number of items in user list or file list, or when joining hubs
+- Mark the current prio when there are multiple bundles selected in the transfer view / queue tab and they all use the same prio
+- Download skiplist is also matched for bundle subdirectories (instead of only file names)
 
 
 Fixed:
@@ -877,3 +887,13 @@ Fixed:
 - Fix sending magnet links in chatrooms
 - Set the share skiplist before the startup refresh
 - Start listening for connections when using passive mode and setting a favorite hub active
+- Fix loading of certificates with wide character paths (DC++)
+- Transfer with no download slot can now be forced normally
+- Fix max total hashers when multiple per volume hashers are used
+- Fix generating a random CID if the settings directory isn't accessible
+- Fix reading of SFV files that have multiple whitespaces between the CRC value and the file name
+- Fix a bug with directories not being scanned correctly if the group name contained the char _
+- Improve the reliability of removing the temp updater files
+- Fix downloading magnet links from chatrooms
+- Prevent the ADL search XML file being cleared when there is no disk space available to save it
+- Fix a crash when dragging folder in chat window

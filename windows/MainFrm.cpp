@@ -438,7 +438,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	}
 
 	if(SETTING(TESTWRITE)) {
-		TestWrite(true, true, true);
+		TestWrite(true, true, Util::usingLocalMode());
 	}
 
 	//WinUtil::splash.reset();
@@ -2073,7 +2073,8 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 				error += _T("Error: test write to Downloads folder failed. \r\n");
 			}
 	}
-		if(incomplete && (SETTING(TEMP_DOWNLOAD_DIRECTORY).find("%[targetdrive]") == string::npos)) {
+
+	if(incomplete && (SETTING(TEMP_DOWNLOAD_DIRECTORY).find("%[targetdrive]") == string::npos)) {
 		try {
 			File::ensureDirectory(SETTING(TEMP_DOWNLOAD_DIRECTORY));
 			File::copyFile((filename), (SETTING(TEMP_DOWNLOAD_DIRECTORY) + "testwrite.tmp"));
@@ -2093,9 +2094,9 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 				File::deleteFile(Util::getPath(Util::PATH_RESOURCES) + "testwrite.tmp");
 				ready = true;
 			}
-				} catch (const Exception&) {
-				error += _T("Error: test write to Application folder failed. \r\n");
-			}
+		} catch (const Exception&) {
+			error += _T("Error: test write to Application folder failed. \r\n");
+		}
 	}
 
 
