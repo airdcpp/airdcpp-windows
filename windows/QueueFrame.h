@@ -111,13 +111,8 @@ public:
 		return 0;
 	}
 
-	void handleAutoPrio();
-	void handlePriority(uint8_t aPrio);
-
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void removeDir(HTREEITEM ht);
-	void setPriority(HTREEITEM ht, const QueueItemBase::Priority& p);
-	void setAutoPriority(HTREEITEM ht, const bool& ap);
 	void changePriority(bool inc);
 
 	LRESULT onItemChangedQueue(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {

@@ -90,7 +90,6 @@ public:
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	void handlePriority(uint8_t aPrio);
 
 	void runUserCommand(UserCommand& uc);
 	void prepareClose();
@@ -307,7 +306,6 @@ private:
 	void handleSearchDir();
 	void handleSearchAlternates();
 	void handleRemoveFile();
-	void handleAutoPrio();
 	void handleDisconnect();
 
 	/* Listeners */

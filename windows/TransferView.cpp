@@ -208,17 +208,26 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			transferMenu.AppendMenu(MF_SEPARATOR);
 			transferMenu.appendItem(TSTRING(EXPAND_ALL), [=] { handleExpandAll(); });
 			transferMenu.appendItem(TSTRING(COLLAPSE_ALL), [=] { handleCollapseAll(); });
-			if(ii->download) {
-				transferMenu.AppendMenu(MF_SEPARATOR);
+		}
 
-				BundlePtr b = selCount == 1 ? QueueManager::getInstance()->findBundle(ii->bundle) : nullptr;
 
-				//simplify when http://connect.microsoft.com/VisualStudio/feedback/details/694400 has been fixed.....
-				WinUtil::appendBundlePrioMenu(transferMenu, b, [this](uint8_t aPrio) { handlePriority(aPrio); }, [this] { handleAutoPrio(); });
-
-				transferMenu.appendItem(TSTRING(SETCZDC_DISCONNECTING_ENABLE), [=] { handleSlowDisconnect(); }, (b && b->isSet(Bundle::FLAG_AUTODROP)) ? OMenu::FLAG_CHECKED : 0);
-				transferMenu.appendItem(TSTRING(REMOVE_BUNDLE), [=] { handleRemoveBundle(); });
+		BundleList bundles;
+		performActionBundles([&](const ItemInfo* ii) {
+			if (ii->download) {
+				BundlePtr b = QueueManager::getInstance()->findBundle(ii->bundle);
+				if (b)
+					bundles.push_back(b);
 			}
+		});
+
+		if (!bundles.empty()) {
+			transferMenu.appendSeparator();
+			WinUtil::appendBundlePrioMenu(transferMenu, bundles);
+
+			auto usingDisconnect = all_of(bundles.begin(), bundles.end(), [](const BundlePtr& aBundle) { return aBundle->isSet(Bundle::FLAG_AUTODROP); });
+			transferMenu.appendItem(TSTRING(SETCZDC_DISCONNECTING_ENABLE), [=] { handleSlowDisconnect(); }, usingDisconnect ? OMenu::FLAG_CHECKED : 0);
+
+			transferMenu.appendItem(TSTRING(REMOVE_BUNDLE), [=] { handleRemoveBundle(); });
 		}
 
 		transferMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
@@ -1470,22 +1479,6 @@ void TransferView::performActionBundles(std::function<void (const ItemInfo* aInf
 			f(ii);
 		}
 	});
-}
-
-void TransferView::handlePriority(uint8_t aPrio) {
-	auto setPrio = [=](const ItemInfo* ii) {
-		QueueManager::getInstance()->setBundlePriority(ii->bundle, static_cast<QueueItemBase::Priority>(aPrio));
-	};
-
-	performActionBundles(setPrio);
-}
-
-void TransferView::handleAutoPrio() {
-	auto setAutoPrio = [=](const ItemInfo* ii) {
-		QueueManager::getInstance()->setBundleAutoPriority(ii->bundle);
-	};
-
-	performActionBundles(setAutoPrio);
 }
 
 void TransferView::handleCollapseAll() {

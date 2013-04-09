@@ -970,7 +970,7 @@ string WinUtil::makeMagnet(const TTHValue& aHash, const string& aFile, int64_t s
  void WinUtil::registerDchubHandler() {
 	HKEY hk;
 	TCHAR Buf[512];
-	tstring app = _T("\"") + Text::toT(Util::getAppName()) + _T("\" %1");
+	tstring app = _T("\"") + Text::toT(Util::getAppName()) + _T("\" \"%1\"");
 	Buf[0] = 0;
 
 	if(::RegOpenKeyEx(HKEY_CURRENT_USER, _T("SOFTWARE\\Classes\\dchub\\Shell\\Open\\Command"), 0, KEY_WRITE | KEY_READ, &hk) == ERROR_SUCCESS) {
@@ -1548,14 +1548,27 @@ void WinUtil::appendPreviewMenu(OMenu& parent, const string& aTarget) {
 }
 
 template<typename T> 
-static void appendPrioMenu(OMenu& aParent, const T& aBase, bool isBundle, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF) {
+static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF) {
+	if (aBase.empty())
+		return;
+
 	tstring text;
+
 	if (isBundle) {
-		text = aBase ? TSTRING(SET_BUNDLE_PRIORITY) : TSTRING(SET_BUNDLE_PRIORITIES);
+		text = aBase.size() == 1 ? TSTRING(SET_BUNDLE_PRIORITY) : TSTRING(SET_BUNDLE_PRIORITIES);
 	} else {
-		text = aBase ? TSTRING(SET_FILE_PRIORITY) : TSTRING(SET_FILE_PRIORITIES);
+		text = aBase.size() == 1 ? TSTRING(SET_FILE_PRIORITY) : TSTRING(SET_FILE_PRIORITIES);
 	}
-	//auto text = TSTRING(SET_FILE_PRIORITIES)
+
+	QueueItemBase::Priority p = QueueItemBase::DEFAULT;
+	for (auto& aItem: aBase) {
+		if (aItem->getPriority() != p && p != QueueItemBase::DEFAULT) {
+			p = QueueItemBase::DEFAULT;
+			break;
+		}
+
+		p = aItem->getPriority();
+	}
 
 	auto priorityMenu = aParent.createSubMenu(text, true);
 
@@ -1564,7 +1577,7 @@ static void appendPrioMenu(OMenu& aParent, const T& aBase, bool isBundle, functi
 		curItem++;
 		priorityMenu->appendItem(aString, [=] { 		
 			prioF(aPrio);
-		}, aBase && aBase->getPriority() == aPrio ? OMenu::FLAG_CHECKED | OMenu::FLAG_DISABLED : 0);
+		}, OMenu::FLAG_THREADED | (p == aPrio ? OMenu::FLAG_CHECKED /*| OMenu::FLAG_DISABLED*/ : 0));
 	};
 
 	appendItem(TSTRING(PAUSED), QueueItemBase::PAUSED);
@@ -1576,15 +1589,37 @@ static void appendPrioMenu(OMenu& aParent, const T& aBase, bool isBundle, functi
 
 	curItem++;
 	//priorityMenu->appendSeparator();
-	priorityMenu->appendItem(TSTRING(AUTO), autoPrioF, aBase && aBase->getAutoPriority() ? OMenu::FLAG_CHECKED : 0);
+
+	auto usingAutoPrio = all_of(aBase.begin(), aBase.end(), [](const T& item) { return item->getAutoPriority(); });
+	priorityMenu->appendItem(TSTRING(AUTO), autoPrioF, OMenu::FLAG_THREADED | (usingAutoPrio ? OMenu::FLAG_CHECKED : 0));
 }
 	
-void WinUtil::appendBundlePrioMenu(OMenu& aParent, const BundlePtr& aBundle, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF) {
-	appendPrioMenu<BundlePtr>(aParent, aBundle, true, prioF, autoPrioF);
+void WinUtil::appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles) {
+	auto prioF = [=](uint8_t aPrio) {
+		for (auto& b: aBundles)
+			QueueManager::getInstance()->setBundlePriority(b->getToken(), static_cast<QueueItemBase::Priority>(aPrio));
+	};
+
+	auto autoPrioF = [=] {
+		for (auto& b: aBundles)
+			QueueManager::getInstance()->setBundleAutoPriority(b->getToken());
+	};
+
+	appendPrioMenu<BundlePtr>(aParent, aBundles, true, prioF, autoPrioF);
 }
 
-void WinUtil::appendFilePrioMenu(OMenu& aParent, const QueueItemPtr& aFile, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF) {
-	appendPrioMenu<QueueItemPtr>(aParent, aFile, true, prioF, autoPrioF);
+void WinUtil::appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles) {
+	auto prioF = [=](uint8_t aPrio) {
+		for (auto& qi: aFiles)
+			QueueManager::getInstance()->setQIPriority(qi->getTarget(), static_cast<QueueItemBase::Priority>(aPrio));
+	};
+
+	auto autoPrioF = [=] {
+		for (auto& qi: aFiles)
+			QueueManager::getInstance()->setQIAutoPriority(qi->getTarget(), !qi->getAutoPriority());
+	};
+
+	appendPrioMenu<QueueItemPtr>(aParent, aFiles, true, prioF, autoPrioF);
 }
 
 bool WinUtil::shutDown(int action) {

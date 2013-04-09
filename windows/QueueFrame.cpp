@@ -32,6 +32,8 @@
 #include "../client/ScopedFunctor.h"
 #include "BarShader.h"
 
+#include <boost/range/algorithm/copy.hpp>
+
 #define FILE_LIST_NAME _T("File Lists")
 #define TEMP_NAME _T("Temp items")
 
@@ -1190,6 +1192,11 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		if(ctrlQueue.GetSelectedCount() > 0) { 
 			usingDirMenu = false;
 
+			QueueItemList ql;
+			ctrlQueue.forEachSelectedT([&](QueueItemInfo* qii) {
+				ql.push_back(qii->getQueueItem());
+			});
+
 			if(ctrlQueue.GetSelectedCount() == 1) {
 				OMenu* pmMenu = fileMenu.getMenu();
 				OMenu* browseMenu = fileMenu.getMenu();
@@ -1312,7 +1319,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 				fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
 
-				WinUtil::appendFilePrioMenu(fileMenu, ii->getQueueItem(), [this](uint8_t aPrio) { handlePriority(aPrio); }, [this] { handleAutoPrio(); });
+				WinUtil::appendFilePrioMenu(fileMenu, ql);
 
 				browseMenu->appendThis(TSTRING(BROWSE_FILE_LIST), true);
 				getListMenu->appendThis(TSTRING(GET_FILE_LIST), true);
@@ -1340,7 +1347,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				fileMenu.InsertSeparatorFirst(TSTRING(FILES));
 				fileMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)segmentsMenu, CTSTRING(MAX_SEGMENTS_NUMBER));
 
-				WinUtil::appendFilePrioMenu(fileMenu, nullptr, [this](uint8_t aPrio) { handlePriority(aPrio); }, [this] { handleAutoPrio(); });
+				WinUtil::appendFilePrioMenu(fileMenu, ql);
 
 				fileMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_RENAME_FILE));
 				fileMenu.AppendMenu(MF_SEPARATOR);
@@ -1379,25 +1386,28 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		bool mainBundle = false;
 		BundlePtr b = nullptr;
 		if (!bundles.empty()) {
+			BundleList bl;
+			boost::copy(bundles | map_values, back_inserter(bl));
 			if (bundles.size() == 1) {
 				b = bundles.front().second;
-				mainBundle = stricmp(curDir, b->getTarget()) == 0;
-				if (mainBundle || !AirUtil::isSub(curDir, b->getTarget())) {
+				//mainBundle = stricmp(curDir, b->getTarget()) == 0;
+				if (!AirUtil::isSub(curDir, bl.front()->getTarget())) {
 					dirMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
-					WinUtil::appendBundlePrioMenu(dirMenu, b, [this](uint8_t aPrio) { handlePriority(aPrio); }, [this] { handleAutoPrio(); });
+					WinUtil::appendBundlePrioMenu(dirMenu, bl);
 				} else {
-					int files = QueueManager::getInstance()->getDirItemCount(b, curDir);
-					if (files == 1) {
+					QueueItemList ql;
+					QueueManager::getInstance()->getDirItems(bl.front(), curDir, ql);
+					if (ql.size() == 1) {
 						dirMenu.InsertSeparatorFirst(CTSTRING(FILE));
-						WinUtil::appendBundlePrioMenu(dirMenu, b, [this](uint8_t aPrio) { handlePriority(aPrio); }, [this] { handleAutoPrio(); });
+						WinUtil::appendBundlePrioMenu(dirMenu, bl);
 					} else {
-						dirMenu.InsertSeparatorFirst(CTSTRING_F(X_FILES, files));
-						WinUtil::appendFilePrioMenu(dirMenu, nullptr, [this](uint8_t aPrio) { handlePriority(aPrio); }, [this] { handleAutoPrio(); });
+						dirMenu.InsertSeparatorFirst(CTSTRING_F(X_FILES, ql.size()));
+						WinUtil::appendFilePrioMenu(dirMenu, ql);
 					}
 				}
 			} else {
 				dirMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bundles.size()));
-				WinUtil::appendBundlePrioMenu(dirMenu, nullptr, [this](uint8_t aPrio) { handlePriority(aPrio); }, [this] { handleAutoPrio(); });
+				WinUtil::appendBundlePrioMenu(dirMenu, bl);
 			}
 		} else {
 			dirMenu.InsertSeparatorFirst(TSTRING(FOLDER));
@@ -1543,25 +1553,6 @@ LRESULT QueueFrame::onSearchBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
-void QueueFrame::handleAutoPrio() {	
-
-	if(usingDirMenu) {
-		//setAutoPriority(ctrlDirs.GetSelectedItem(), true);
-		int finishedFiles = 0, fileBundles = 0;
-		BundleList bundles;
-		QueueManager::getInstance()->getBundleInfo(curDir, bundles, finishedFiles, fileBundles);
-		if (!bundles.empty()) {
-			QueueManager::getInstance()->setBundlePriorities(curDir, bundles, Bundle::DEFAULT, true);
-		}
-	} else {
-		int i = -1;
-		while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			QueueManager::getInstance()->setQIAutoPriority(ctrlQueue.getItemData(i)->getTarget(),!ctrlQueue.getItemData(i)->getAutoPriority());
-		}
-	}
-	//return 0;
-}
-
 LRESULT QueueFrame::onSegments(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
 	while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
@@ -1572,38 +1563,6 @@ LRESULT QueueFrame::onSegments(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	}
 
 	return 0;
-}
-
-void QueueFrame::handlePriority(uint8_t aPrio) {
-	/*QueueItemBase::Priority p;
-
-	switch(wID) {
-		case IDC_PRIORITY_PAUSED: p = QueueItem::PAUSED; break;
-		case IDC_PRIORITY_LOWEST: p = QueueItem::LOWEST; break;
-		case IDC_PRIORITY_LOW: p = QueueItem::LOW; break;
-		case IDC_PRIORITY_NORMAL: p = QueueItem::NORMAL; break;
-		case IDC_PRIORITY_HIGH: p = QueueItem::HIGH; break;
-		case IDC_PRIORITY_HIGHEST: p = QueueItem::HIGHEST; break;
-		default: p = QueueItem::DEFAULT; break;
-	}*/
-
-	if(usingDirMenu) {
-		int tmp1=0, tmp2=0;
-		BundleList bundles;
-		QueueManager::getInstance()->getBundleInfo(curDir, bundles, tmp1, tmp2);
-		if (!bundles.empty()) {
-			QueueManager::getInstance()->setBundlePriorities(curDir, bundles, static_cast<QueueItemBase::Priority>(aPrio));
-		}
-		//setPriority(ctrlDirs.GetSelectedItem(), p);
-	} else {
-		int i = -1;
-		while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			QueueManager::getInstance()->setQIAutoPriority(ctrlQueue.getItemData(i)->getTarget(), false);
-			QueueManager::getInstance()->setQIPriority(ctrlQueue.getItemData(i)->getTarget(), static_cast<QueueItemBase::Priority>(aPrio));
-		}
-	}
-
-	//return 0;
 }
 
 void QueueFrame::removeDir(HTREEITEM ht) {
@@ -1643,39 +1602,7 @@ void QueueFrame::changePriority(bool inc){
 			case QueueItem::LOWEST:  p = inc ? QueueItem::LOW     : QueueItem::PAUSED; break;
 			case QueueItem::PAUSED:  p = QueueItem::LOWEST; break;
 		}
-		QueueManager::getInstance()->setQIAutoPriority(ctrlQueue.getItemData(i)->getTarget(), false);
 		QueueManager::getInstance()->setQIPriority(ctrlQueue.getItemData(i)->getTarget(), p);
-	}
-}
-
-void QueueFrame::setPriority(HTREEITEM ht, const QueueItemBase::Priority& p) {
-	if(ht == NULL)
-		return;
-	HTREEITEM child = ctrlDirs.GetChildItem(ht);
-	while(child) {
-		setPriority(child, p);
-		child = ctrlDirs.GetNextSiblingItem(child);
-	}
-	const string& name = getDir(ht);
-	DirectoryPairC dp = directories.equal_range(name);
-	for(auto i = dp.first; i != dp.second; ++i) {
-		QueueManager::getInstance()->setQIAutoPriority(i->second->getTarget(), false);
-		QueueManager::getInstance()->setQIPriority(i->second->getTarget(), p);
-	}
-}
-
-void QueueFrame::setAutoPriority(HTREEITEM ht, const bool& ap) {
-	if(ht == NULL)
-		return;
-	HTREEITEM child = ctrlDirs.GetChildItem(ht);
-	while(child) {
-		setAutoPriority(child, ap);
-		child = ctrlDirs.GetNextSiblingItem(child);
-	}
-	const string& name = getDir(ht);
-	auto dp = directories.equal_range(name);
-	for(auto i = dp.first; i != dp.second; ++i) {
-		QueueManager::getInstance()->setQIAutoPriority(i->second->getTarget(), ap);
 	}
 }
 
