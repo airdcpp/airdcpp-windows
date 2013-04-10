@@ -1390,7 +1390,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			boost::copy(bundles | map_values, back_inserter(bl));
 			if (bundles.size() == 1) {
 				b = bundles.front().second;
-				//mainBundle = stricmp(curDir, b->getTarget()) == 0;
+				mainBundle = stricmp(curDir, b->getTarget()) == 0;
 				if (!AirUtil::isSub(curDir, bl.front()->getTarget())) {
 					dirMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
 					WinUtil::appendBundlePrioMenu(dirMenu, bl);

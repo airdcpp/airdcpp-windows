@@ -1806,5 +1806,6 @@ You may also notice other unexcepted behaviour, so it is heavily recommended tha
 		<String Name="CustomAwayMessage">Custom away message</String>
 		<String Name="AcceptFailoversFav">Accept failover addresses from the hub</String>
 		<String Name="AcceptFailoversGlobal">Accept failover addresses from favorite hubs</String>
+		<String Name="InvalidTthSearch">Invalid input value for TTH search</String>
 	</Strings>
 </Language>

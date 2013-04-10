@@ -517,6 +517,14 @@ void SearchFrame::onEnter() {
 		ftype = SearchManager::TYPE_ANY;
 	}
 
+	if(ftype == SearchManager::TYPE_TTH) {
+		s.erase(std::remove_if(s.begin(), s.end(), [](char c) { return c == ' ' || c == '\t' || c == '\r' || c == '\n'; }), s.end());
+		if(s.size() != 39 || !Encoder::isBase32(s.c_str())) {
+			ctrlStatus.SetText(1, CTSTRING(INVALID_TTH_SEARCH));
+			return;
+		}
+	}
+
 	if (initialString.empty() && typeName != SETTING(LAST_SEARCH_FILETYPE))
 		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, typeName);
 
