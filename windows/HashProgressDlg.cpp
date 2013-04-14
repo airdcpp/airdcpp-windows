@@ -24,6 +24,7 @@
 #include "../client/Text.h"
 #include "../client/SettingsManager.h"
 #include "../client/Thread.h"
+#include "../client/TimerManager.h"
 
 
 HashProgressDlg::HashProgressDlg(bool aAutoClose /*false*/) : autoClose(aAutoClose), startBytes(0), startFiles(0), init(false), hashers(0), startTime(0), stopped(false) { }

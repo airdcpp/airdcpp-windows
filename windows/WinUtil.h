@@ -38,7 +38,11 @@
 
 #include "resource.h"
 #include "OMenu.h"
+
+/* Work around DBTYPE name conflict with Berkeley DB */
+#define DBTYPE MS_DBTYPE
 #include <atlcomtime.h>
+#undef DBTYPE
 
 class RichTextBox;
 

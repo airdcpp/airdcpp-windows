@@ -369,6 +369,7 @@
 #define IDC_SETTINGS_BTN_TARGETDRIVE    1050
 #define IDC_BUFFERSIZE                  1051
 #define IDC_LANGUAGE                    1052
+#define IDC_DB_CACHE_SIZE               1052
 #define IDC_BROWSE                      1053
 #define IDC_COPY_USER_ALL               1054
 #define IDC_THANKS                      1055
@@ -520,6 +521,7 @@
 #define IDC_SETTINGS_ROLLBACK           1167
 #define IDC_SETTINGS_WRITE_BUFFER       1169
 #define IDC_SETTINGS_MAX_TAB_ROWS       1170
+#define IDC_DB_CACHE_SIZE_LBL           1170
 #define IDC_SETTINGS_USER_MENU          1171
 #define IDC_SETTINGS_KB                 1172
 #define IDC_SETTINGS_B                  1173
@@ -1275,6 +1277,7 @@
 #define IDC_DIR_HIST_SPIN               1709
 #define IDC_LOG_SCAN_PATH_LBL           1709
 #define IDC_LOGGING                     1710
+#define IDC_DB_CACHE_AUTOSET            1711
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1670,7 +1673,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        348
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1711
+#define _APS_NEXT_CONTROL_VALUE         1712
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

@@ -56,7 +56,6 @@
 #include "../client/ConnectionManager.h"
 #include "../client/ConnectivityManager.h"
 #include "../client/DownloadManager.h"
-#include "../client/HashManager.h"
 #include "../client/UploadManager.h"
 #include "../client/StringTokenizer.h"
 #include "../client/ShareManager.h"

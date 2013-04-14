@@ -42,6 +42,11 @@ PropPage::TextItem SDCPage::texts[] = {
 	{ IDC_LOG_LINESTEXT, ResourceManager::MAX_LOG_LINES },
 	{ IDC_DECREASE_RAM, ResourceManager::DECREASE_RAM },
 	{ IDC_BLOOM_MODE_LBL, ResourceManager::BLOOM_MODE },
+
+	//DB cache
+	{ IDC_SETTINGS_MB, ResourceManager::MiB },
+	{ IDC_DB_CACHE_AUTOSET, ResourceManager::AUTO },
+	{ IDC_DB_CACHE_SIZE_LBL, ResourceManager::DB_CACHE_SIZE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -54,6 +59,10 @@ PropPage::Item SDCPage::items[] = {
 	{ IDC_DOWNCONN, SettingsManager::DOWNCONN_PER_SEC, PropPage::T_INT },
 	{ IDC_LOG_LINES, SettingsManager::LOG_LINES, PropPage::T_INT },
 	{ IDC_DECREASE_RAM, SettingsManager::DECREASE_RAM, PropPage::T_BOOL },
+
+	//DB cache
+	{ IDC_DB_CACHE_AUTOSET, SettingsManager::DB_CACHE_AUTOSET, PropPage::T_BOOL },
+	{ IDC_DB_CACHE_SIZE, SettingsManager::DB_CACHE_SIZE, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 

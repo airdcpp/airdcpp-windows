@@ -847,6 +847,8 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		message = Text::toT(ChatCommands::generateStats());
 	} else if(stricmp(cmd.c_str(), _T("prvstats")) == 0) {
 		status = Text::toT(ChatCommands::generateStats());
+	} else if(stricmp(cmd.c_str(), _T("dbstats")) == 0) {
+		status = Text::toT(HashManager::getInstance()->getDbStats());
 	} else if(stricmp(cmd.c_str(), _T("speed")) == 0) {
 		status = ChatCommands::Speedinfo();
 	} else if(stricmp(cmd.c_str(), _T("info")) == 0) {
