@@ -1559,7 +1559,7 @@ void TransferView::handleRemoveBundle() {
 
 void TransferView::handleRemoveBundleSource() {
 	auto removeSource = [=](const ItemInfo* ii) {
-		QueueManager::getInstance()->removeBundleSource(ii->bundle, ii->user);
+		QueueManager::getInstance()->removeBundleSource(ii->bundle, ii->user, QueueItem::Source::FLAG_REMOVED);
 	};
 
 	performActionBundles(removeSource);

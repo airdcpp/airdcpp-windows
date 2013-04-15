@@ -232,14 +232,14 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 					for(auto& bs: sourceBundles) {
 						removeMenu->appendItem(formatBundle(bs), [=] {
-								QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user); 
+								QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user, QueueItem::Source::FLAG_REMOVED); 
 						}, OMenu::FLAG_THREADED);
 					}
 
 					removeMenu->appendSeparator();
 					removeMenu->appendItem(TSTRING(ALL), [=] {
 						for(auto& bs: sourceBundles) {
-							QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user.user);
+							QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user.user, QueueItem::Source::FLAG_REMOVED);
 						}
 					}, OMenu::FLAG_THREADED);
 				}

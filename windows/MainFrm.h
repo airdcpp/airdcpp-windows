@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#include <ppl.h>
+#include "../client/concurrency.h"
 
 #include "../client/TimerManager.h"
 #include "../client/FavoriteManager.h"
@@ -335,7 +335,7 @@ public:
 	void ShowPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags = NIIF_INFO, HICON hIcon = NULL, bool force = false);
 
 	void addThreadedTask(std::function<void ()> aF);
-	concurrency::task_group threadedTasks;
+	task_group threadedTasks;
 
 	/* Displays a message box that will also display correctly with the splash */
 	void showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& aTitle = Util::emptyStringT);

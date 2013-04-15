@@ -52,6 +52,7 @@ public:
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 protected:
+	CComboBox disconnectMode;
 
 	static Item items[];
 	static TextItem texts[];

@@ -23,7 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include <ppl.h>
+#include "../client/concurrency.h"
 
 #include "Async.h"
 #include "OMenu.h"
@@ -118,7 +118,7 @@ protected:
 	void getLineText(tstring& s);
 
 	bool cancelHashing;
-	concurrency::task_group tasks;
+	task_group tasks;
 
 	void setStatusText(const tstring& aLine);
 	CStatusBarCtrl ctrlStatus;

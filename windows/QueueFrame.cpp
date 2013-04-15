@@ -1249,7 +1249,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 						});
 
 						// remove source (this file)
-						removeMenu->appendItem(nick, [=] { QueueManager::getInstance()->removeSource(target, u, QueueItem::Source::FLAG_REMOVED); }, OMenu::FLAG_THREADED);
+						removeMenu->appendItem(nick, [=] { QueueManager::getInstance()->removeFileSource(target, u, QueueItem::Source::FLAG_REMOVED); }, OMenu::FLAG_THREADED);
 
 						//remove source (all files)
 						removeAllMenu->appendItem(nick, [=]{ QueueManager::getInstance()->removeSource(u, QueueItem::Source::FLAG_REMOVED); }, OMenu::FLAG_THREADED);
@@ -1267,7 +1267,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 						removeMenu->appendItem(TSTRING(ALL), [=] {
 							auto sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
 							for(auto& si: sources)
-								QueueManager::getInstance()->removeSource(ii->getTarget(), si.getUser(), QueueItem::Source::FLAG_REMOVED);
+								QueueManager::getInstance()->removeFileSource(ii->getTarget(), si.getUser(), QueueItem::Source::FLAG_REMOVED);
 						}, OMenu::FLAG_THREADED);
 					}
 					
@@ -1442,14 +1442,14 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			auto bundleSources = move(QueueManager::getInstance()->getBundleSources(b));
 			for(auto& bs: bundleSources) {
 				auto u = bs.user;
-				removeMenu->appendItem(formatUser(bs), [=] { QueueManager::getInstance()->removeBundleSource(b, u); });
+				removeMenu->appendItem(formatUser(bs), [=] { QueueManager::getInstance()->removeBundleSource(b, u, QueueItem::Source::FLAG_REMOVED); });
 			}
 			if (!bundleSources.empty()) {
 				removeMenu->appendSeparator();
 				removeMenu->appendItem(TSTRING(ALL), [b] {
 					auto sources = move(QueueManager::getInstance()->getBundleSources(b));
 					for(auto& si: sources)
-						QueueManager::getInstance()->removeBundleSource(b, si.user.user);
+						QueueManager::getInstance()->removeBundleSource(b, si.user.user, QueueItem::Source::FLAG_REMOVED);
 				}, OMenu::FLAG_THREADED);
 			}
 
@@ -1945,7 +1945,7 @@ LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 		QueueItem::SourceList sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
 		for(const auto& s: sources) {
 			if(!s.getUser().user->isOnline()) {
-				QueueManager::getInstance()->removeSource(ii->getTarget(), s.getUser().user, QueueItem::Source::FLAG_REMOVED);
+				QueueManager::getInstance()->removeFileSource(ii->getTarget(), s.getUser().user, QueueItem::Source::FLAG_REMOVED);
 			}
 		}
 	}

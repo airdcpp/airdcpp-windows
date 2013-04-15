@@ -1278,6 +1278,7 @@
 #define IDC_LOG_SCAN_PATH_LBL           1709
 #define IDC_LOGGING                     1710
 #define IDC_DB_CACHE_AUTOSET            1711
+#define IDC_AUTO_DISCONNECT_MODE        1712
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1555,6 +1556,8 @@
 #define IDC_AUTOSEARCH_EVERY            15059
 #define IDC_END_TIME                    15059
 #define IDC_SETTINGS_KBPS9              15059
+#define IDC_CZDC_TIME_DOWN2             15059
+#define IDC_AUTO_DISCONNECT_MODE_LBL    15059
 #define IDC_AUTOSEARCH_SPIN             15060
 #define IDC_AS_ACTION_STATIC2           15060
 #define IDC_TARGET_TYPE                 15060
@@ -1673,7 +1676,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        348
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1712
+#define _APS_NEXT_CONTROL_VALUE         1713
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

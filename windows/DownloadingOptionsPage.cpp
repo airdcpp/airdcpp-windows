@@ -31,6 +31,7 @@ PropPage::TextItem DownloadingOptionsPage::texts[] = {
 	{ IDC_SETTINGS_KBPS7, ResourceManager::KBPS },
 	{ IDC_SETTINGS_KIB, ResourceManager::KiB },
 	{ IDC_MIN_DUPE_SIZE_LBL, ResourceManager::MIN_DUPE_CHECK_SIZE },
+
 	{ IDC_SETTINGS_MINUTES, ResourceManager::SECONDS },
 	{ IDC_MONITOR_SLOW_SPEED, ResourceManager::SETTINGS_AUTO_DROP_SLOW_SOURCES },
 	{ IDC_CZDC_SLOW_DISCONNECT, ResourceManager::SETCZDC_SLOW_DISCONNECT },
@@ -42,6 +43,8 @@ PropPage::TextItem DownloadingOptionsPage::texts[] = {
 	{ IDC_CZDC_MIN_FILE_SIZE, ResourceManager::SETCZDC_MIN_FILE_SIZE },
 	{ IDC_SETTINGS_MB, ResourceManager::MiB },
 	{ IDC_REMOVE_IF, ResourceManager::NEW_DISCONNECT },
+	{ IDC_AUTO_DISCONNECT_MODE_LBL, ResourceManager::REMOVE_SOURCE_FROM },
+
 	{ IDC_SB_SKIPLIST_DOWNLOAD,	ResourceManager::SETTINGS_SKIPLIST_DOWNLOAD	},
 	{ IDC_DL_SKIPPING_OPTIONS,	ResourceManager::SETTINGS_SKIPPING_OPTIONS	},
 	{ IDC_DOWNLOAD_SKIPLIST_USE_REGEXP, ResourceManager::USE_REGEXP },
@@ -85,6 +88,15 @@ LRESULT DownloadingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, L
 	setMinMax(IDC_SOURCES_SPIN, 1, 99999);
 	setMinMax(IDC_RECENT_SPIN, 0, 99999);
 
+	disconnectMode.Attach(GetDlgItem(IDC_AUTO_DISCONNECT_MODE));
+	disconnectMode.AddString(CTSTRING(FILE));
+	disconnectMode.AddString(CTSTRING(BUNDLE));
+	disconnectMode.AddString(CTSTRING(WHOLE_QUEUE));
+	/*disconnectMode.AddString(Text::toLower(TSTRING(FILE)).c_str());
+	disconnectMode.AddString(Text::toLower(TSTRING(BUNDLE)).c_str());
+	disconnectMode.AddString(Text::toLower(TSTRING(WHOLE_QUEUE)).c_str());*/
+	disconnectMode.SetCurSel(SETTING(DL_AUTO_DISCONNECT_MODE));
+
 	// Do specialized reading here
 	return TRUE;
 }
@@ -93,6 +105,8 @@ void DownloadingOptionsPage::write() {
 
 	PropPage::write((HWND)*this, items);
 	PropPage::write((HWND)*this, items, optionItems, GetDlgItem(IDC_OTHER_SKIPPING_OPTIONS));
+
+	SettingsManager::getInstance()->set(SettingsManager::DL_AUTO_DISCONNECT_MODE, disconnectMode.GetCurSel());
 }
 
 

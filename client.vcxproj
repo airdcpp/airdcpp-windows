@@ -348,6 +348,7 @@
     <ClInclude Include="client\ClientManagerListener.h" />
     <ClInclude Include="client\ColorSettings.h" />
     <ClInclude Include="client\compiler.h" />
+    <ClInclude Include="client\concurrency.h" />
     <ClInclude Include="client\ConnectionManager.h" />
     <ClInclude Include="client\ConnectionManagerListener.h" />
     <ClInclude Include="client\ConnectivityManager.h" />
