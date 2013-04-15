@@ -1616,7 +1616,7 @@ void WinUtil::appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles) {
 
 	auto autoPrioF = [=] {
 		for (auto& qi: aFiles)
-			QueueManager::getInstance()->setQIAutoPriority(qi->getTarget(), !qi->getAutoPriority());
+			QueueManager::getInstance()->setQIAutoPriority(qi->getTarget());
 	};
 
 	appendPrioMenu<QueueItemPtr>(aParent, aFiles, true, prioF, autoPrioF);
