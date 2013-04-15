@@ -1810,5 +1810,9 @@ You may also notice other unexcepted behaviour, so it is heavily recommended tha
 		<String Name="DbCacheSize">Database cache size</String>
 		<String Name="RemoveSourceFrom">Remove the source from</String>
 		<String Name="WholeQueue">Whole queue</String>
+		<String Name="Month">Month</String>
+		<String Name="Months">Months</String>
+		<String Name="Year">Year</String>
+		<String Name="Years">Years</String>
 	</Strings>
 </Language>

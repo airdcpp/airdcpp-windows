@@ -1619,7 +1619,7 @@ void WinUtil::appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles) {
 			QueueManager::getInstance()->setQIAutoPriority(qi->getTarget());
 	};
 
-	appendPrioMenu<QueueItemPtr>(aParent, aFiles, true, prioF, autoPrioF);
+	appendPrioMenu<QueueItemPtr>(aParent, aFiles, false, prioF, autoPrioF);
 }
 
 bool WinUtil::shutDown(int action) {
