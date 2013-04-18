@@ -55,9 +55,9 @@ LRESULT SearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	ctrlWebShortcuts.GetClientRect(rc);
 	rc.right -= GetSystemMetrics(SM_CXVSCROLL);
 	ctrlWebShortcuts.InsertColumn(0, CTSTRING(SETTINGS_NAME), LVCFMT_LEFT, rc.Width() / 5, 0);
-	ctrlWebShortcuts.InsertColumn(1, _T("Key"), LVCFMT_LEFT, rc.Width() / 5, 1);
-	ctrlWebShortcuts.InsertColumn(2, _T("Url"), LVCFMT_LEFT, rc.Width() * 3 / 5, 2);
-	ctrlWebShortcuts.InsertColumn(3, _T("Clean"), LVCFMT_LEFT, rc.Width() / 5, 3);
+	ctrlWebShortcuts.InsertColumn(1, CTSTRING(KEY), LVCFMT_LEFT, rc.Width() / 5, 1);
+	ctrlWebShortcuts.InsertColumn(2, CTSTRING(PROPPAGE_URL), LVCFMT_LEFT, rc.Width() * 3 / 5, 2);
+	ctrlWebShortcuts.InsertColumn(3, CTSTRING(CLEAN), LVCFMT_LEFT, rc.Width() / 5, 3);
 	ctrlWebShortcuts.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 
 	for (WebShortcut::Iter i = wsList.begin(); i != wsList.end(); ++i) {

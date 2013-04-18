@@ -41,8 +41,25 @@
 #include "../client/TargetUtil.h"
 
 #define FILTER_MESSAGE_MAP 8
-#define STATUS_MESSAGE_MAP 9
+#define PATH_MESSAGE_MAP 9
 #define CONTROL_MESSAGE_MAP 10
+
+struct cmdBarButton {
+	int id, image;
+	ResourceManager::Strings tooltip;
+};
+
+
+static const cmdBarButton cmdBarButtons[] = {
+	{IDC_GETLIST, -2, ResourceManager::GET_FULL_LIST},
+	{IDC_MATCH_ADL, -2, ResourceManager::MATCH_ADL},
+	{IDC_MATCH_QUEUE, -2, ResourceManager::MATCH_QUEUE},
+	{IDC_FILELIST_DIFF, -2, ResourceManager::FILE_LIST_DIFF},
+	{IDC_FIND, 0, ResourceManager::FIND},
+	{IDC_PREV, 1, ResourceManager::PREVIOUS_SHORT},
+	{IDC_NEXT, 2, ResourceManager::NEXT},
+};
+
 class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>, 
 	public UCHandler<DirectoryListingFrame>, private SettingsManagerListener, public UserInfoBaseHandler<DirectoryListingFrame>,
 	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener, private Async<DirectoryListingFrame>
@@ -71,18 +88,11 @@ public:
 		STATUS_TOTAL_FILES,
 		STATUS_SELECTED_FILES,
 		STATUS_SELECTED_SIZE,
-		STATUS_GET_FULL_LIST,
-		STATUS_MATCH_ADL,
-		STATUS_FILE_LIST_DIFF,
-		STATUS_MATCH_QUEUE,
-		STATUS_FIND,
-		STATUS_PREV,
-		STATUS_NEXT,
 		STATUS_FILTER,
 		STATUS_DUMMY,
 		STATUS_LAST
 	};
-	
+
 	DirectoryListingFrame(DirectoryListing* aList);
 	 ~DirectoryListingFrame();
 
@@ -143,6 +153,20 @@ public:
 
 		COMMAND_ID_HANDLER(IDC_SEARCHLEFT, onSearchLeft)
 		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
+		
+		COMMAND_ID_HANDLER(IDC_FIND, onFind)
+		COMMAND_ID_HANDLER(IDC_NEXT, onNext)
+		COMMAND_ID_HANDLER(IDC_PREV, onPrev)
+		
+		COMMAND_ID_HANDLER(IDC_UP, onUp)
+		COMMAND_ID_HANDLER(IDC_FORWARD, onForward)
+		COMMAND_ID_HANDLER(IDC_BACK, onBack)
+
+		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
+		COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
+		COMMAND_ID_HANDLER(IDC_GETLIST, onGetFullList)
+		NOTIFY_CODE_HANDLER(TBN_DROPDOWN, onListDiff)
+
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 
 		CHAIN_COMMANDS(ucBase)
@@ -152,14 +176,8 @@ public:
 	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
 		MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
-	ALT_MSG_MAP(STATUS_MESSAGE_MAP)
-		COMMAND_ID_HANDLER(IDC_FIND, onFind)
-		COMMAND_ID_HANDLER(IDC_NEXT, onNext)
-		COMMAND_ID_HANDLER(IDC_PREV, onPrev)
-		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
-		COMMAND_ID_HANDLER(IDC_FILELIST_DIFF, onListDiff)
-		COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
-		COMMAND_ID_HANDLER(IDC_GETLIST, onGetFullList)
+	ALT_MSG_MAP(PATH_MESSAGE_MAP)
+		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onSelChange)
 	ALT_MSG_MAP(CONTROL_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_XBUTTONUP, onXButtonUp)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
@@ -227,8 +245,13 @@ public:
 	LRESULT onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
+	LRESULT onUp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onForward(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onBack(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
+
 	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onListDiff(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onListDiff(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
@@ -334,7 +357,7 @@ private:
 
 	void onListItemAction();
 
-	CContainedWindow statusContainer;
+	CContainedWindow pathContainer;
 	CContainedWindow treeContainer;
 	CContainedWindow listContainer;
 	
@@ -346,11 +369,12 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	HTREEITEM treeRoot;
 	
-	CButton ctrlFind, ctrlFindNext, ctrlFindPrev;
-	CButton ctrlListDiff;
-	CButton ctrlMatchQueue;
-	CButton ctrlADLMatch;
-	CButton ctrlGetFullList;
+	CToolBarCtrl ctrlToolbar;
+	CToolBarCtrl arrowBar;
+	CComboBox ctrlPath;
+
+	void addCmdBarButtons();
+	void addarrowBarButtons();
 
 	CEdit ctrlFilter;
 	CContainedWindow ctrlFilterContainer;

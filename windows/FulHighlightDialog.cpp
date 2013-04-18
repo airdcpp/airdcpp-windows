@@ -49,12 +49,13 @@ PropPage::TextItem FulHighlightDialog::texts[] = {
 	{ IDC_POPUP,		 ResourceManager::SETTINGS_POPUP			},
 	{ IDC_SOUND,		 ResourceManager::SETTINGS_PLAY_SOUND		},
 	{ IDC_WHOLELINE,	 ResourceManager::SETTINGS_WHOLE_LINE		},
-	{ IDC_CASESENSITIVE, ResourceManager::CASE_SENSITIVE	},
+	{ IDC_CASESENSITIVE, ResourceManager::CASE_SENSITIVE			},
 	{ IDC_WHOLEWORD,	 ResourceManager::SETTINGS_ENTIRE_WORD		},
-	{ IDC_HCONTEXT_TEXT, ResourceManager::HIGHLIGHT_CONTEXT		},
+	{ IDC_HCONTEXT_TEXT, ResourceManager::HIGHLIGHT_CONTEXT			},
 	{ IDOK,				 ResourceManager::OK						},
 	{ IDCANCEL,			 ResourceManager::CANCEL					},
-	{ IDC_MATCH_COL_TEXT,ResourceManager::MATCH_COLUMN					},
+	{ IDC_MATCH_COL_TEXT,ResourceManager::MATCH_COLUMN				},
+	{ IDC_TABCOLOR,		 ResourceManager::CHANGE_TAB_COLOR			},
 	{ 0,				 ResourceManager::SETTINGS_AUTO_AWAY		}
 };
 
@@ -84,9 +85,9 @@ LRESULT FulHighlightDialog::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 
 	ctrlMatchType.SetCurSel(1);
 
-	ctrlContext.AddString(_T("Context Chat"));
-	ctrlContext.AddString(_T("Context NickList"));
-	ctrlContext.AddString(_T("Context Filelist"));
+	ctrlContext.AddString(CTSTRING(CONTEXT_CHAT));
+	ctrlContext.AddString(CTSTRING(CONTEXT_NICKLIST));
+	ctrlContext.AddString(CTSTRING(CONTEXT_FILELIST));
 
 	CenterWindow(WinUtil::mainWnd);
 	SetWindowText(CTSTRING(HIGHLIGHT_DIALOG_TITLE));
@@ -214,7 +215,7 @@ void FulHighlightDialog::fix() {
 		onClickedBox(0, IDC_HAS_FG_COLOR, NULL, t);
 		onClickedBox(0, IDC_SOUND, NULL, t);
 
-		ctrlText.SetWindowText(_T("Use $Re: for Regexp"));
+		ctrlText.SetWindowText(CTSTRING(HL_REGEXP));
 	}
 }
 void FulHighlightDialog::populateMatchCombo() {

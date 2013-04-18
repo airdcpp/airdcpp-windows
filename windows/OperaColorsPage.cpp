@@ -42,6 +42,7 @@ PropPage::TextItem OperaColorsPage::texts[] = {
 	{ IDC_CZDC_PROGRESS_COLOR, ResourceManager::SETCZDC_PROGRESSBAR_COLORS },
 	{ IDC_CZDC_PROGRESS_TEXT, ResourceManager::SETCZDC_PROGRESSBAR_TEXT },
 	{ IDC_SETTINGS_ODC_MENUBAR2, ResourceManager::SETCZDC_PROGRESSBAR_COLORS },
+	{ IDC_TB_PROG_STYLE, ResourceManager::COLOR_FONT },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

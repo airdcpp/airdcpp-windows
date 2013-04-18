@@ -708,7 +708,7 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		
 	int h = WinUtil::fontHeight + 4;
 
-	const int maxLines = resizePressed && SETTING(MAX_RESIZE_LINES) <= 1 ? 2 : SETTING(MAX_RESIZE_LINES);
+	const int maxLines = resizePressed && (SETTING(MAX_RESIZE_LINES) <= 1) ? 2 : SETTING(MAX_RESIZE_LINES);
 
 	if((maxLines != 1) && lineCount != 0) {
 		if(lineCount < maxLines) {

@@ -93,9 +93,8 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	ctrlSearchBox.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
-
-	searchBoxContainer.SubclassWindow(ctrlSearchBox.m_hWnd);
 	ctrlSearchBox.SetExtendedUI();
+	searchBoxContainer.SubclassWindow(ctrlSearchBox.m_hWnd);
 	
 	ctrlPurge.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_PURGE);

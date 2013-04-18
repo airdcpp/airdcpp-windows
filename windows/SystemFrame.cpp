@@ -274,7 +274,7 @@ bool SystemFrame::scrollIsAtEnd() {
 	si.cbSize = sizeof(si);
 	si.fMask = SIF_ALL;
 	ctrlPad.GetScrollInfo(SB_VERT, &si);
-	const int tmp = (si.nMax - (int)si.nPage - textHeight);
+	const int tmp = si.nMax - (int)si.nPage - textHeight;
 	return si.nPage == 0 || (si.nPos >= tmp) && (si.nTrackPos >= tmp);
 }
 

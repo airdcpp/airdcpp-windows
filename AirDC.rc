@@ -358,7 +358,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,198,156,50,14
 END
 
-IDD_WINDOWSPAGE DIALOGEX 0, 0, 276, 281
+IDD_WINDOWSPAGE DIALOGEX 0, 0, 276, 303
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 EXSTYLE WS_EX_STATICEDGE
 CAPTION "Dialog"
@@ -366,10 +366,10 @@ FONT 8, "MS Shell Dlg", 400, 0, 0xEE
 BEGIN
     GROUPBOX        "Auto-open at startup",IDC_SETTINGS_AUTO_OPEN,7,7,262,95
     CONTROL         "",IDC_WINDOWS_STARTUP,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,13,17,248,77
-    GROUPBOX        "Window options",IDC_SETTINGS_WINDOWS_OPTIONS,7,107,262,94
-    CONTROL         "",IDC_WINDOWS_OPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,13,120,248,75
-    GROUPBOX        "Confirmation dialog options",IDC_SETTINGS_CONFIRM_OPTIONS,7,218,262,56
-    CONTROL         "",IDC_CONFIRM_OPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,13,210,248,57
+    GROUPBOX        "Window options",IDC_SETTINGS_WINDOWS_OPTIONS,7,105,262,94
+    CONTROL         "",IDC_WINDOWS_OPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,13,118,248,75
+    GROUPBOX        "Confirmation dialog options",IDC_SETTINGS_CONFIRM_OPTIONS,7,203,262,96
+    CONTROL         "",IDC_CONFIRM_OPTIONS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,13,215,248,75
 END
 
 IDD_EMOTICONS_DLG DIALOGEX 0, 0, 48, 22
@@ -574,6 +574,11 @@ BEGIN
     BEGIN
         RIGHTMARGIN, 275
         BOTTOMMARGIN, 242
+    END
+
+    IDD_WINDOWSPAGE, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 281
     END
 
     IDD_DOWNLOADPAGE, DIALOG
@@ -2282,6 +2287,13 @@ IDI_APPLY               ICON                    "res\\apply.ico"
 IDI_CANCEL              ICON                    "res\\cancel.ico"
 IDI_EXPAND_UP           ICON                    "res\\expand_up.ico"
 IDI_EXPAND_DOWN         ICON                    "res\\expand_down.ico"
+IDI_UP                  ICON                    "res\\up.ico"
+IDI_DOWN                ICON                    "res\\down.ico"
+IDI_NEXT                ICON                    "res\\next.ico"
+IDI_PREV                ICON                    "res\\previous.ico"
+IDI_BACK                ICON                    "res\\back.ico"
+IDI_FORWARD             ICON                    "res\\forward.ico"
+IDI_FIND                ICON                    "res\\Find.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 

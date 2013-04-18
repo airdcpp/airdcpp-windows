@@ -29,6 +29,8 @@ CImageList ResourceLoader::settingsTreeImages;
 CImageList ResourceLoader::fileImages;
 CImageList ResourceLoader::userImages;
 CImageList ResourceLoader::flagImages;
+CImageList ResourceLoader::arrowImages;
+CImageList ResourceLoader::filelistTbImages;
 COLORREF ResourceLoader::GrayPalette[256];
 
 void ResourceLoader::load() {
@@ -282,14 +284,46 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_SHARED:		return _T("Shared.ico");
 		case IDI_DIR_LOADING_OL:return _T("ExecMasked.ico");
 		case IDI_FAV_USER:		return _T("FavUser.ico");
-		case IDI_APPLY	:		return _T("apply.ico");
+		case IDI_APPLY:			return _T("apply.ico");
 		case IDI_CANCEL:		return _T("cancel.ico");
 		case IDI_EXPAND_UP:		return _T("expand_up.ico");
 		case IDI_EXPAND_DOWN:	return _T("expand_down.ico");
+		case IDI_UP:            return _T("res\\up.ico");
+		case IDI_DOWN:			return _T("res\\down.ico");
+		case IDI_NEXT:			return _T("res\\next.ico");
+		case IDI_PREV:			return _T("res\\previous.ico");
+		case IDI_BACK:			return _T("res\\back.ico");
+		case IDI_FORWARD:		return _T("res\\forward.ico");
+		case IDI_FIND:			return _T("res\\Find.ico");
 
 		default: return Util::emptyStringT;
 	}
 }
+
+//TODO: other imagelists as reference and built when needed like this.
+CImageList& ResourceLoader::loadArrowImages() {
+	if(arrowImages == NULL){
+		const int size = 22;
+		arrowImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 4);
+		arrowImages.AddIcon(loadIcon(IDI_UP, size));
+		arrowImages.AddIcon(loadIcon(IDI_DOWN, size));
+		arrowImages.AddIcon(loadIcon(IDI_FORWARD, size));
+		arrowImages.AddIcon(loadIcon(IDI_BACK, size));
+	}
+	return arrowImages;
+}
+
+CImageList& ResourceLoader::loadFilelistTbImages() {
+	if(filelistTbImages == NULL){
+		const int size = 16;
+		filelistTbImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 4);
+		filelistTbImages.AddIcon(loadIcon(IDI_FIND, size));
+		filelistTbImages.AddIcon(loadIcon(IDI_PREV, size));
+		filelistTbImages.AddIcon(loadIcon(IDI_NEXT, size));
+	}
+	return filelistTbImages;
+}
+
 void ResourceLoader::loadFileImages() {
 
 	fileImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 4);

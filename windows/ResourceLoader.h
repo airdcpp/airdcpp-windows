@@ -45,6 +45,8 @@ public:
 	static void loadCmdBarImageList(CImageList& images);
 	static void loadFlagImages();
 	static void loadUserImages();
+	static CImageList& loadArrowImages();
+	static CImageList& loadFilelistTbImages();
 	
 	static HICON loadIcon(int aDefault, int size = 0);
 	static HICON convertGrayscaleIcon(HICON hIcon);
@@ -57,6 +59,8 @@ public:
 	static CImageList fileImages;
 	static CImageList userImages;
 	static CImageList flagImages;
+	static CImageList arrowImages;
+	static CImageList filelistTbImages;
 
 	enum {
 		DIR_NORMAL,

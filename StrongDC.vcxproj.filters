@@ -1268,5 +1268,26 @@
     <Image Include="res\expand_down.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\up.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\down.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\next.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\previous.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\back.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\forward.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Find.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>
