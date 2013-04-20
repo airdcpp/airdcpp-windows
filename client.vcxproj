@@ -112,7 +112,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\minizip;$(SolutionDir)\geoip;$(SolutionDir)\boost;$(SolutionDir)\bzip2;$(SolutionDir)\openssl\include;$(SolutionDir)\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\hamsterdb\include;$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\minizip;$(SolutionDir)\geoip;$(SolutionDir)\boost;$(SolutionDir)\bzip2;$(SolutionDir)\openssl\include;$(SolutionDir)\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
@@ -124,7 +124,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>HAVE_NATUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;HAVE_NATUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <ResourceCompile>
@@ -195,7 +195,7 @@
       <FavorSizeOrSpeed>Size</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\hamsterdb\include;$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -217,7 +217,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -353,6 +353,7 @@
     <ClInclude Include="client\ConnectionManagerListener.h" />
     <ClInclude Include="client\ConnectivityManager.h" />
     <ClInclude Include="client\CryptoManager.h" />
+    <ClInclude Include="client\DbHandler.h" />
     <ClInclude Include="client\DCPlusPlus.h" />
     <ClInclude Include="client\debug.h" />
     <ClInclude Include="client\DebugManager.h" />
@@ -383,6 +384,7 @@
     <ClInclude Include="client\GeoIP.h" />
     <ClInclude Include="client\GeoManager.h" />
     <ClInclude Include="client\GetSet.h" />
+    <ClInclude Include="client\HamsterDB.h" />
     <ClInclude Include="client\HashBloom.h" />
     <ClInclude Include="client\HashCalc.h" />
     <ClInclude Include="client\HashedFile.h" />
@@ -395,6 +397,7 @@
     <ClInclude Include="client\HttpDownload.h" />
     <ClInclude Include="client\HubEntry.h" />
     <ClInclude Include="client\HubSettings.h" />
+    <ClInclude Include="client\LevelDB.h" />
     <ClInclude Include="client\Localization.h" />
     <ClInclude Include="client\LogManager.h" />
     <ClInclude Include="client\LogManagerListener.h" />
@@ -519,6 +522,9 @@
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <LinkLibraryDependencies>true</LinkLibraryDependencies>
       <UseLibraryDependencyInputs>false</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <ProjectReference Include="leveldb\LevelDB.vcxproj">
+      <Project>{a7ff59d3-eafd-43a1-8aa7-5087229c75d1}</Project>
     </ProjectReference>
     <ProjectReference Include="MakeDefs\MakeDefs.vcxproj">
       <Project>{aef82786-9da2-4cdf-8602-02643cafc727}</Project>

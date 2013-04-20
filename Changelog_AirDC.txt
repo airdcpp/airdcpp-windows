@@ -865,7 +865,7 @@ Changed:
 - Prevent freezes when selecting a large number of items in user list or file list, or when joining hubs
 - Mark the current prio when there are multiple bundles selected in the transfer view / queue tab and they all use the same prio
 - Download skiplist is also matched for bundle subdirectories (instead of only file names)
-
+- Validate the TTH before performing a search (manual searches only)
 
 Fixed:
 
@@ -874,7 +874,7 @@ Fixed:
 - Fix problems when connecting NMDC search results to a correct hub
 - Fix crashes when sharing subdirs of other shared dirs in different profiles
 - Fix the check marks in the transfer view context menu
-- Correct the loaded page when editing profiles from fav hubs
+- Correct the loaded page when editing profiles from the fav hubs
 - The splash screen won't go to "not responding" state on startup/shutdown
 - Restore "view as text" in the search tab
 - Handle excluded words correctly with incoming ADC searches
@@ -882,13 +882,13 @@ Fixed:
 - Fix a problem with merging file list directories that both contain files
 - Avoid hashers getting freezed
 - Fix a crash when generating crash reports (32 bit version only)
-- Fix auto search problems when the bundles fail scanning
+- Fix auto search problems when bundles fail scanning
 - Fix the total user count for hubs
 - Fix sending magnet links in chatrooms
 - Set the share skiplist before the startup refresh
 - Start listening for connections when using passive mode and setting a favorite hub active
 - Fix loading of certificates with wide character paths (DC++)
-- Transfer with no download slot can now be forced normally
+- Transfers with no download slot can now be forced normally
 - Fix max total hashers when multiple per volume hashers are used
 - Fix generating a random CID if the settings directory isn't accessible
 - Fix reading of SFV files that have multiple whitespaces between the CRC value and the file name
@@ -896,4 +896,5 @@ Fixed:
 - Improve the reliability of removing the temp updater files
 - Fix downloading magnet links from chatrooms
 - Prevent the ADL search XML file being cleared when there is no disk space available to save it
-- Fix a crash when dragging folder in chat window
+- Fix a crash when dragging folder in the chat window
+- No test write in the application folder when not using a local setting directory

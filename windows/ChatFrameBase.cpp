@@ -851,6 +851,9 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		status = Text::toT(HashManager::getInstance()->getDbStats());
 	} else if(stricmp(cmd.c_str(), _T("sharestats")) == 0) {
 		status = Text::toT(ShareManager::getInstance()->getStats());
+	} else if(stricmp(cmd.c_str(), _T("debugdb")) == 0) {
+		auto debug = HashManager::getInstance()->setDebug();
+		status = debug ? _T("Database debugging enabled") : _T("Database debugging disabled");
 	} else if(stricmp(cmd.c_str(), _T("speed")) == 0) {
 		status = ChatCommands::Speedinfo();
 	} else if(stricmp(cmd.c_str(), _T("info")) == 0) {

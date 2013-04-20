@@ -739,6 +739,15 @@
     <ClInclude Include="client\concurrency.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="client\DbHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\LevelDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\HamsterDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="client\StringDefs.h">
