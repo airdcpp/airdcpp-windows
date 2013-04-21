@@ -1,3 +1,38 @@
+	* Rename custom_directory to GeoIP_custom_directory. ( Boris Zentner )
+	* Make sure the database match the requested type. This is helpful for
+	  Databases with the same default name and the general geoiplookup form
+	  ( geoiplookup without a specific database ) ( Boris Zentner )
+	* apps/geoiplookup6.c use the ipnum instead of the hostname for lookups.
+	  ( Boris Zentner )
+	* Use configure.ac instead of configure.in ( Boris Zentner )
+	* Region lookup is a bit faster ( Boris Zentner )
+	* Add pkg-config file ( Bastien Nocera )
+	* Updates required to build a Windows DLL under MinGW ( Gerald Combs )
+	* Make API thread safe ( Boris Zentner )
+	* geoiplookup's default charset is UTF8
+	  -l change the charset back to iso8859-1 ( Boris Zentner )
+	* geoipupdate skips \r otherwise it might be part of the last
+	  product_id ( Boris Zentner )
+	* Update time zones ( Boris Zentner )
+	* Update Region codes ( Boris Zentner )
+	* Remove the unused CITYCONFIDENCE* database types ( Boris Zentner )
+	* bootstrap rebuilds ltmain.sh ( Boris Zentner )
+	* Update README.OSX for Lion ( Boris Zentner )
+	* Change Macedonia to Macedonia, The Former Yugoslav Republic of
+	  ( Boris Zentner )
+	* Add region_name to geoiplookup GEOIP_CITY_EDITION_REV1 ( Boris Zentner )
+	* Add region_name to geoiplookup GEOIP_CITY_EDITION_REV0 ( Chris Johnson )
+	* Add a --disable-data-files option. This allows you to build and install
+	    the library without having a data/GeoIP.dat file. This is useful when
+	    building the library from a checkout of the source tree, rather than a
+	    tarball ( Dave Rolsky )
+	* Add GEOIP_ACCURACYRADIUS_EDITION and GEOIP_ACCURACYRADIUS_EDITION_V6
+	  ( Boris Zentner )
+	* Add more database types GEOIP_COUNTRYCONF_EDITION,
+	    GEOIP_CITYCONF_EDITION, GEOIP_REGIONCONF_EDITION and
+	    GEOIP_POSTALCONF_EDITION ( Boris Zentner )
+	* Fix default filenames for GEOIP_NETSPEED_EDITION_REV1 and
+	    GEOIP_NETSPEED_EDITION_REV1_V6 ( Boris Zentner )
 1.4.8
 	* Fix GEOIP_DOMAIN_EDITION_V6 ( Boris Zentner )
 	* Add new Datatypes GEOIP_NETSPEED_EDITION_REV1_V6 and
@@ -41,7 +76,7 @@
 	* Fix typo/segfault in GeoIP_id_by_name_v6 ( Boris Zentner )
 	* Update libGeoIP/regionName.c with FIPS codes 20100529 ( Boris Zentner )
 	* Remove buffered IO functions, to fix issues with dup'ed file
-            descriptors ( Boris Zentner )
+	    descriptors ( Boris Zentner )
 	* Fix very minor memleak in geoipupdate ( Boris Zentner )
 	* Add GEOIP_CITYCONFIDENCEDIST_EDITION, GEOIP_LARGE_COUNTRY_EDITION
 	    and GEOIP_LARGE_COUNTRY_EDITION_V6 database types ( Boris Zentner )

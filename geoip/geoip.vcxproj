@@ -19,9 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="E:\projects\dcplusplus\geoip\GeoIP_internal.h" />
+    <ClInclude Include="E:\projects\dcplusplus\geoip\incl.h" />
     <ClInclude Include="GeoIP.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="E:\projects\dcplusplus\geoip\GeoIP_depreciated.c" />
     <ClCompile Include="GeoIP.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

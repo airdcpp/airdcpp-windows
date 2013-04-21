@@ -18,9 +18,18 @@
     <ClInclude Include="GeoIP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="E:\projects\dcplusplus\geoip\GeoIP_internal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="E:\projects\dcplusplus\geoip\incl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GeoIP.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\projects\dcplusplus\geoip\GeoIP_depreciated.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
