@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Danish Language" Author="ICU2M8/What2Write" Version="2.42" Revision="1">
+<Language Name="Danish Language" Author="ICU2M8/What2Write" Version="2.43" Revision="3">
 	<Strings>	
 		<String Name="AairdcppLanguageFile">Danish_for_AirDC.xml</String>
-		<String Name="AairdcppLanguageVersion">2.421</String>
+		<String Name="AairdcppLanguageVersion">2.433</String>
 		<String Name="Active">Aktiv</String>
 		<String Name="ActiveSearchString">Aktiver / Søgestreng</String>
 		<String Name="Add">Tilføj</String>
@@ -591,7 +591,7 @@
 		<String Name="SettingsLogUploads">Log uploads</String>
 		<String Name="SettingsLogging">Logning</String>
 		<String Name="SettingsLogs">Logs</String>
-		<String Name="SettingsMaxCompress">Maks. niveau for komprimering</String>
+		<String Name="SettingsMaxCompress">Maks. komprimering-niveau</String>
 		<String Name="SettingsMaxTabRows">Maks. fanekolonner</String>
 		<String Name="SettingsMinimizeOnStartup">Minimer ved opstart</String>
 		<String Name="SettingsMinimizeTray">Minimer til systembakken</String>
@@ -1153,7 +1153,6 @@ Empty = Default String -&gt; +me afspiller: %[title] &lt;Media Player Klassisk&g
 		<String Name="CrcStopped">SFV-kontrol stoppet</String>
 		<String Name="CrcFileError">Kan ikke kontrollere filen: </String>
 		<String Name="NoCrc32">Ingen SFV-fil fundet eller den valgte fil er ikke nævnt i den</String>
-		<String Name="CantOpenSfv">Kunne ikke åbne SFV-filen: </String>
 		<String Name="SeeSyslogForResults">Åbent Systemlog for at se resultatet af scanningen</String>
 		<String Name="Stop">Stop</String>
 		<String Name="ChatNotify">Vis notify ikon på chat-beskeder</String>
@@ -1260,7 +1259,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ConfirmMoveDirFinishedBundlePart">Den valgte pakkemappe indeholder total %d afsluttede filer. Vil du også ønsker at flytte dem?</String>
 		<String Name="MatchAdl">ADLSearch</String>
 		<String Name="MatchingAdl">Matcher filliste med ADLSearch, kan dette tage et stykke tid, hvis listen er stor ...</String>
-		<String Name="LogHashing">Vis hashing filer i systemlog</String>
+		<String Name="LogHashing">Vis hashing af filer i systemlog</String>
 		<String Name="AdlsearchInProgress">Den ADLSearchliste kan ikke ændres, mens matchning er i gang!</String>
 		<String Name="PriopageOrderBalanced">Afbalanceret (baseret på kilder og deres hastigheder)</String>
 		<String Name="PriopageOrderProgress">Sæt prioriteter automatisk baseret på fremgang</String>
@@ -1279,7 +1278,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="MatchPartial">Sammenlign partiallist</String>
 		<String Name="FavdirsShowShared">Vis delte mapper i \" Download til "\ menuen</String>
 		<String Name="ConfirmSizeWarning">Der er kun %s tilbage i mappen %s, mens %s er nødvendig. Ønsker du at fortsætte?</String>
-		<String Name="BundleAltSearch">Søger efter pakken %s for alternativer, %d søgning(er) i kø.</String>
+		<String Name="BundleAltSearch">Søger efter pakken %s for alternative kilder, %d søgning(er) i kø.</String>
 		<String Name="BundleAltSearchRecent">Søger efter alternativer for en nylig pakke %s, %d søgning(r) i kø.</String>
 		<String Name="NextSearchIn">Næste søgning om %d minutter</String>
 		<String Name="NextRecentSearchIn">Næste seneste søgning om %d minutter</String>
@@ -1396,7 +1395,6 @@ Rengøre søgeudtryk betyder at titlen, vil blive filtreret fra strengen. fx \ "
 		<String Name="SelectDirectory">Vælg mappe</String>
 		<String Name="XIsSameThan">Mappen %s findes også i %s</String>
 		<String Name="HorizontalQueue">Brug vandrette delelinje i downloadkø-vinduet</String>
-		<String Name="AutoAddSourcesDisabled">The option to automatically add sources from search results is disabled so the search won't be performed	Mulighed for automatisk at tilføje kilder fra søgeresultaterne er deaktiveret, så søgningen bliver ikke udført</String>
 		<String Name="TypeTargetPath">Direkte sti</String>
 		<String Name="TypeTargetFavorite">Favoritmappe (den reelle sti bliver hentet, når kilder er fundet)</String>
 		<String Name="TypeTargetShare">Delt mappe (den reelle sti bliver hentet, når kilder er fundet)</String>
@@ -1664,7 +1662,7 @@ vil du stadig gerne indlæse dem?</String>
 		<String Name="FailedBundleSearched">En mislykket pakke %s er blevet søgt efter</String>
 		<String Name="FailedBundleSearchedIn">En mislykket pakke %s , vil blive søgt efter om %d sekunder</String>
 		<String Name="AwayOn">Ikke tilstedetilstand TIL - Klik for at justere</String>
-		<String Name="AwayOff">Ikke tilstedetilstand FRA - Klik for at justere</String>
+		<String Name="AwayOff">Ikke tilstede tilstand FRA - Klik for at justere</String>
 		<String Name="SettingsAutoCompleteBundles">Prøv at færdiggøre pakker med manglende filer automatisk</String>
 		<String Name="RequireExactMatch">Kræv en eksakt match</String>
 		<String Name="ClearHistory">Ryd historikken</String>
@@ -1727,7 +1725,7 @@ vil du stadig gerne indlæse dem?</String>
 		<String Name="MapperXPortX">%1% %2% port (%3% %4%)</String>
 		<String Name="MapperIpFailed">Kunne ikke hente ekstern IP</String>
 		<String Name="Connectivity">Forbindelse</String>
-		<String Name="PortMapping">Port mapping</String>
+		<String Name="PortMapping">Port-mapping</String>
 		<String Name="Generic">Generisk</String>
 		<String Name="Transfer">Overfør</String>
 		<String Name="EncryptedTransfer">Krypteret overførsel</String>
@@ -1747,5 +1745,25 @@ vil du stadig gerne indlæse dem?</String>
 		<String Name="RebuildFailedEntries">Kunne ikke indlæse %d mappekæder fra hash-data'en; det anbefales at opdatere din share da de filer (i alt %s) skal genhashes hvis de stadig deles</String>
 		<String Name="HashRebuiltNoUnused">Hash database er blevet genopbygget og ingen uudnyttede poster blev fundet</String>
 		<String Name="SettingsUseSpaceWarning">Advar mig om ikke tilstrækkelig plads tilbage på destinationsdrevet</String>
+		<String Name="SfvTooLarge">SFV-fil er for stor til at blive indlæst (%s)</String>
+		<String Name="CantOpenSfv">Kunne ikke åbne SFV-fil</String>
+		<String Name="RemoteProtocolUnsupported">Brugeren understøtter ikke %s protokol</String>
+		<String Name="ConnectingInProgress">Tilslutning til hub'en i gang</String>
+		<String Name="ModeV4">Tilstand (IPv4)</String>
+		<String Name="ModeV6">Tilstand (IPv6)</String>
+		<String Name="IpV4">Ip (IPv4)</String>
+		<String Name="IpV6">Ip (IPv6)</String>
+		<String Name="NoNattSupport">Brugeren understøtter ikke passiv-passiv forbindelser</String>
+		<String Name="HbriValidatingX">Validerer %s adressen...</String>
+		<String Name="HbriValidationFailed">Validering mislykkedes:%s. %s-forbindelser er blevet deaktiveret i denne hub.</String>
+		<String Name="ValidationSucceed">Validering lykkedes</String>
+		<String Name="InvalidHubResponse">Hubben returnerede et ugyldigt svar </String>
+		<String Name="ShowHideInformation">Vis/skjul brugeroplysninger</String>
+		<String Name="Favorite">Favorit</String>
+		<String Name="AutoGrantSlot">Auto tildeling af slot</String>
+		<String Name="PreferredMapper">Foretrukken port-mapping-interface</String>
+		<String Name="BindAddressMissing">%s binde-adressen %s er ikke til rådighed. Ønsker du at skifte til at "lytte" til alle grænseflader?</String>
+		<String Name="SettingsLogAlreadyShared">Vis advarsel ved forsøg på at hente allerede delte filer</String>
+		<String Name="Duplicate">Dupliker</String>
 	</Strings>
 </Language>

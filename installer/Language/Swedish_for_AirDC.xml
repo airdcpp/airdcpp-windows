@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Swedish for AirDC++" Author="BigAir, steve72" Version="2.41" Revision="4">
+<Language Name="Swedish for AirDC++" Author="BigAir, steve72" Version="2.43" Revision="10">
 	<Strings>
 		<String Name="AairdcppLanguageFile">Swedish_for_AirDC.xml</String>
 		<String Name="AairdcppLanguageVersion">2.41</String>
@@ -151,7 +151,7 @@
 		<String Name="DuplicateSource">dubblettkälla</String>
 		<String Name="Eb">EiB</String>
 		<String Name="EditAccel">Ändra</String>
-		<String Name="Email">E-Post</String>
+		<String Name="Email">E-post</String>
 		<String Name="EnableMultiSource">Aktivera segmenterad nedladdning</String>
 		<String Name="EnterNick">Ange ett användarnamn i inställningarna</String>
 		<String Name="EnterPassword">Ange ett lösenord</String>
@@ -526,7 +526,7 @@
 		<String Name="SeekBeyondEnd">Begäran att söka efter slutet på data</String>
 		<String Name="Segment">Segment</String>
 		<String Name="Segments">Segment</String>
-		<String Name="SelectAll">Välj alla</String>
+		<String Name="SelectAll">Markera allt</String>
 		<String Name="SelectUserList">Markera användaren i listan</String>
 		<String Name="SendPrivateMessage">Skicka privat meddelande</String>
 		<String Name="SendPublicMessage">Skicka offentligt meddelande</String>
@@ -1250,7 +1250,7 @@ Tom = Standardsträng -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</
 		<String Name="SettingsIncomingRefreshTime">Uppdatera inkommande var</String>
 		<String Name="SettingsUseAdls">Använd ADLSök på fillistor</String>
 		<String Name="SettingsUseAdlsOwnList">Använd ADLSök på egen full fillista</String>
-		<String Name="SettingDontDlAlreadyQueued">Lägg inte till dubbletter i nedladdningskön</String>
+		<String Name="SettingDontDlAlreadyQueued">Lägg inte till kopior i nedladdningskön</String>
 		<String Name="FileWithSameTth">En fil med samma TTH-värde finns redan i nedladdningskön</String>
 		<String Name="FavShowJoin">Visa när en favoritanvändare ansluter / lämnar huben</String>
 		<String Name="UpnpRemovedMappings">Lyckades ta bort portmappningar</String>
@@ -1319,7 +1319,7 @@ Tom = Standardsträng -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</
 		<String Name="Stop">Stopp</String>
 		<String Name="ChatNotify">Visa aviseringsikon vid chattmeddelande</String>
 		<String Name="Notify">Använd aviseringsikon</String>
-		<String Name="ViewNfo">Hämta och visa NFO-fil</String>
+		<String Name="ViewNfo">Hitta och visa NFO-fil</String>
 		<String Name="NoNfoFound">Ingen NFO-fil hittades</String>
 		<String Name="ScanRunning">Söker...</String>
 		<String Name="NoPartialSupport">Den andra klienten stödjer inte denna funktion</String>
@@ -1366,7 +1366,7 @@ Tom = Standard sträng -&gt; /me spelar på Spotify: %[title] %[link]</String>
 		<String Name="SearchAdded">Sökresultat lagt till Autosöklistan: </String>
 		<String Name="CheckUseSkiplist">Ignorera filer som matchar uteslutningslistan</String>
 		<String Name="CheckIgnoreZeroByte">Ignorera tomma filer</String>
-		<String Name="NoFilesAvailable">Inga filer att ladd ned</String>
+		<String Name="NoFilesAvailable">Inga filer att ladda ned</String>
 		<String Name="MatchingFileList">Matcha fillistor, detta kan ta lång tid om listorna är stora.</String>
 		<String Name="SkipSubtractText">Ladda inte ned mappar med färre än 2 filer eller är mindre än</String>
 		<String Name="ProppageDupeText">Dubblettmappar / filer</String>
@@ -1421,7 +1421,7 @@ Tom = Standard sträng -&gt; /me spelar på Spotify: %[title] %[link]</String>
 		<String Name="DlBundleFinished">Filsamlingen är nedladdad</String>
 		<String Name="UploadQueue">Uppladdningskö</String>
 		<String Name="RemoveBundleSource">Ta bort användare från filsamlingen</String>
-		<String Name="Reload">Ladda om</String>
+		<String Name="Reload">Uppdatera</String>
 		<String Name="ProppageShareDupeText">Utdelade dubbletter av mappar / filer</String>
 		<String Name="ProppageQueueDupeText">Köade dubbletter av mappar / filer</String>
 		<String Name="ScanShareFinished">Utdelningen är genomsökt efter saknade / extra filer</String>
@@ -1541,8 +1541,8 @@ Observera: Söktermen är skiftlägeskänslig! Med filtrera söktermen menas att
 		<String Name="PathsFavdirs">Sökvägar (Den med mest utrymme på disken väljs, tillåter tidsvariabler)</String>
 		<String Name="Paths">Sökvägar</String>
 		<String Name="SearchFilename">Sök filnamn</String>
-		<String Name="RenameDir">Döp om mappen</String>
-		<String Name="MoveDir">Flytta mappen</String>
+		<String Name="RenameDir">Döp om mapp</String>
+		<String Name="MoveDir">Flytta mapp...</String>
 		<String Name="MoveRenameFile">Flytta / Döp om fil(er)</String>
 		<String Name="PlainText">Vanlig text</String>
 		<String Name="Wildcards">Jokertecken</String>
@@ -1657,7 +1657,7 @@ Observera: Söktermen är skiftlägeskänslig! Med filtrera söktermen menas att
 		<String Name="PreviousShort">Förra</String>
 		<String Name="SettingsPopunderFullList">Öppna ny full fillista i bakgrunden</String>
 		<String Name="SettingsPopunderPartialList">Öppna ny förenklad fillista i bakgrunden</String>
-		<String Name="FindText">Hitta text</String>
+		<String Name="FindText">Sök text</String>
 		<String Name="SearchTypesNote">Observera: Egna söktyper används bara i ADC hubbar. I NMDC hubbar: Använd bara fördefinerade söktyper, en sökning utförs bara om det är standardfiländelser. En egen söktyp gör att sökningar kommer att misslyckas.</String>
 		<String Name="SettingsShareProfileNote">Observera: En egen profil för utdelningen kan bara avändas i ADC hubbar. NMDC hubbar måste använda standardprofilen.</String>
 		<String Name="SettingsSharingOptions">Alternativ för utdelning</String>
@@ -1667,7 +1667,7 @@ Observera: Söktermen är skiftlägeskänslig! Med filtrera söktermen menas att
 		<String Name="RenameDlgDesc">Ändra namn även i följande profil</String>
 		<String Name="NoFileAccess">Åtkomst nekas</String>
 		<String Name="ConfirmProfileRemoval">Vill du ta bort profilen %s?</String>
-		<String Name="SourceNoEncryption">Den anslutande ADC klienten använder inte TLS-kryptering</String>
+		<String Name="SourceNoEncryption">ADC klienten du försöker ansluta till använder inte TLS-kryptering</String>
 		<String Name="EncryptionForced">På (tvingande i ADC hubbar)</String>
 		<String Name="TransferEncryption">Kryptera överföring</String>
 		<String Name="UserOfflinePmChange">Användaren kopplade ned i %s, meddelanden kommer nu igenom %s</String>
@@ -1713,7 +1713,7 @@ Observera: Söktermen är skiftlägeskänslig! Med filtrera söktermen menas att
 		<String Name="ViewedFileTooBig">Filen %s är för stor för att visas (filstorleken är %s medans största tillåtna fil är 1 MiB)</String>
 		<String Name="SendFilePm">Skicka en fil (tillgänglig bara för mottagaren)</String>
 		<String Name="SendFileHub">Skicka en fil (tillgänglig för alla användare)</String>
-		<String Name="InsertEmoticon">Insätt emoticon</String>
+		<String Name="InsertEmoticon">Infoga emoticon</String>
 		<String Name="StopSharing">Sluta dela</String>
 		<String Name="MagnetInfotext">En magnet länk upptäcktes för en fil \"%s\" (%s). Välj vad du vill göra.</String>
 		<String Name="DownloadOpen">Ladda ned och och öppna</String>
@@ -1746,7 +1746,7 @@ Vill du använda det nya temat?</String>
 		<String Name="ScanningResultsOn">Resultat av genomsökning på %s</String>
 		<String Name="MandatoryUpdate">Obligatorisk uppdatering</String>
 		<String Name="AttemptAutoUpdate">AirDC++ kommer nu att försöka uppdatera din installation automatiskt</String>
-		<String Name="LoadingGui">Laddar gränssnittet</String>
+		<String Name="LoadingGui">Laddar det grafiska gränssnittet</String>
 		<String Name="PartialFilelist">Förenklad fillista</String>
 		<String Name="DownloadLimit">Nedladdningsbegränsning</String>
 		<String Name="UploadLimit">Uppladdningsbegränsning</String>
@@ -1775,7 +1775,7 @@ Vill du använda det nya temat?</String>
 		<String Name="EndlessRedirectionLoop">ändlös omdirgeringsloop (%1%)</String>
 		<String Name="ManualUpdateMsg">Du skickas till hämtningssidan så att en automatisk uppdatering kan utföras</String>
 		<String Name="ConfirmSizeWarningQueue">Det finns redan %s köade filer i den här mappen %s och bara %s utrymme kvar. Vill du köa %s till?</String>
-		<String Name="OpenHubFilelist">Öppna hubens fillista (%s)</String>
+		<String Name="OpenHubFilelist">Öppna min fillista i denna hub (%s)</String>
 		<String Name="SmallUpSlots">Minislots (slots för fillistor och små filer)</String>
 		<String Name="MaxChatResizeLines">Max rader att ändra meddelanderuta på vid långa meddelande</String>
 		<String Name="MaxPmHistoryLines">Max rader att visa i meddelandehistoriken</String>
@@ -1814,7 +1814,7 @@ Vill du använda det nya temat?</String>
 		<String Name="Never">Aldrig</String>
 		<String Name="Bundles">Filsamlingar</String>
 		<String Name="AutoRemove">Ta bort automatiskt</String>
-		<String Name="OnlineNicks">Användarens namn i olika hubnar</String>
+		<String Name="OnlineNicks">Användarens namn i olika hubbar</String>
 		<String Name="DlStatusPopup">Nedladdningshastighet - klicka för att ändra begränsning</String>
 		<String Name="UlStatusPopup">Uppladdningshastighet - klicka för att ändra begränsning</String>
 		<String Name="Uploaded">Uppladdat</String>
@@ -1822,17 +1822,17 @@ Vill du använda det nya temat?</String>
 		<String Name="XBundlesQueued">%d filsamlingar har lagts till i nedladdningskön</String>
 		<String Name="XFinishedBundles">%d färdig(a) filsamling(ar)</String>
 		<String Name="ActiveFor">Aktiv för %s</String>
-		<String Name="WaitingLeft">Tid kvar innan sökning(%s)</String>
+		<String Name="WaitingLeft">Tid kvar innan sökning (%s)</String>
 		<String Name="InactiveQueued">Avvaktar (filer köade)</String>
-		<String Name="MatchingManual">Matching enbart (manuell sökning)</String>
+		<String Name="MatchingManual">Matchning enbart (manuell sökning)</String>
 		<String Name="BundleXQueued">%s (Köat)</String>
 		<String Name="BundleXFilesMissing">%s (saknade filer)</String>
 		<String Name="BundleXExtraFiles">%s (extra filer)</String>
-		<String Name="FailedBundleSearched">Misslyckad filsamling %s har sökts efter</String>
+		<String Name="FailedBundleSearched">Den misslyckade filsamlingen %s har sökts efter</String>
 		<String Name="FailedBundleSearchedIn">Misslyckad filsamlingen %s kommer att sökas efter om %d sekunder</String>
 		<String Name="AwayOn">Bortaläge PÅ - klicka för att ändra</String>
 		<String Name="AwayOff">Bortaläge AV - klicka för att ändra</String>
-		<String Name="SettingsAutoCompleteBundles">Komplettera filsamlingar som saknar filer automatiskt</String>
+		<String Name="SettingsAutoCompleteBundles">Komplettera automatiskt filsamlingar som saknar filer</String>
 		<String Name="RequireExactMatch">Kräver en exakt matchning</String>
 		<String Name="ClearHistory">Rensa historik</String>
 		<String Name="SettingsLogScheduledRefreshes">Visa schemalagd uppdatering av fillistan i systemloggen</String>
@@ -1846,7 +1846,7 @@ Vill du använda det nya temat?</String>
 		<String Name="IncreaseNum">Öka nuvarande nummer</String>
 		<String Name="DecreaseNum">Minska nuvarande nummer</String>
 		<String Name="SettingsDelayHours">Antal timmar en sökning efter PROPER-release pågår</String>
-		<String Name="XNoReleaseFiles">%d mappar saknar "release" filer</String>
+		<String Name="XNoReleaseFiles">%d mapp(ar) saknar "release" filer</String>
 		<String Name="MenuHide">Göm</String>
 		<String Name="ClosingWindows">Stänger fönster</String>
 		<String Name="UseDefault">Standard</String>
@@ -1877,14 +1877,14 @@ Vill du fortfarande använda denna mapp?</String>
 		<String Name="AwayIdleTimeBegin">Visa som "Borta" efter</String>
 		<String Name="AwayIdleTimeEnd">minuter av inaktivitet (0=avstängt)</String>
 		<String Name="SettingsMaxHasherSpeed">Max hastighet per hashare (0=snabbast)</String>
-		<String Name="LoadingQueue">Laddar nedladdningkön...</String>
+		<String Name="LoadingQueue">Laddar nedladdningskön...</String>
 		<String Name="RefreshingShare">Uppdaterar utdelning</String>
 		<String Name="ConnActiveFailed">Kan inte använda aktivt läge; en manuell konfiguration rekommeneras för en bättre anslutning</String>
 		<String Name="ConnNatDetected">Lokalt nätverk med NAT upptäckt; försöker skapa portmappning...</String>
 		<String Name="ConnDirectDetected">En pubilk IP-adress upptäcktes, väljer aktivt läge med direktanslutning</String>
 		<String Name="ConnPortXFailed">Kan inte öppna %1% port(ar); anslutningsinställningarna måste konfigureras manuellt</String>
 		<String Name="ConnDetermining">Fastställer bästa anslutningsinställningar...</String>
-		<String Name="MapperNoInterface">Inget gränssnitt för portmappniningar finns tillgängligt</String>
+		<String Name="MapperNoInterface">Inget nätverksgränssnitt för portmappniningar finns tillgängligt</String>
 		<String Name="MapperInProgress">Ett annat portmappningsförsök pågår...</String>
 		<String Name="MapperInitFailed">Kunde inte starta gränssnittet %1% </String>
 		<String Name="MapperCreatingFailed">Misslyckades med att skapa portmappning</String>
@@ -1931,5 +1931,65 @@ Vill du fortfarande använda denna mapp?</String>
 		<String Name="ValidationSucceed">Validering lyckades</String>
 		<String Name="InvalidHubResponse">Hubben returnerade ett ogiltigt svar</String>
 		<String Name="PreferredMapper">Föredragna portmappingsgränssnittet</String>
+		<String Name="BindAddressMissing">Den %s-tilldelade adressen %s verkar inte vara tillgänglig. Vill du byta och lyssna på alla nätverksgränssnitt?</String>
+		<String Name="SettingsLogAlreadyShared">Visa varning vid nedladdning av redan utdelade filer</String>
+		<String Name="Duplicate">Kopiera</String>
+		<String Name="PartialMatch">Matcha del</String>
+		<String Name="RegularExpression">RegEx</String>
+		<String Name="Wildcard">Jokertecken</String>
+		<String Name="ExactMatch">Exakt matchning</String>
+		<String Name="EnableConnectivity">Aktivera %s anslutning</String>
+		<String Name="ClearExit">Rensa vid avslut</String>
+		<String Name="SearchStrings">Söksträngar</String>
+		<String Name="ExcludedSearchWords">Uteslutna sökord</String>
+		<String Name="DirHistory">Nedladdningsmappar</String>
+		<String Name="ExcludedWordsDesc">Uteslut ord (separera med mellanslag)</String>
+		<String Name="Histories">Hitoriker</String>
+		<String Name="SharedDirRemoved">Mappen %s har tagits bort från utdelningen</String>
+		<String Name="XSharedDirsRemoved">%d mappar har tagits bort från utdelningen</String>
+		<String Name="PmPermissionDenied">Du har inte behörighet att skicka privata meddelanden till denna användare</String>
+		<String Name="MainPermissionDenied">Du har inte behörighet att skicka meddelanden till huvudchatten</String>
+		<String Name="Inactive">Inaktiv</String>
+		<String Name="MultilineInput">Flerradersinmatning</String>
+		<String Name="Queued">Köad</String>
+        <String Name="BundlesQueued">Köade filsamlingsfiler</String>
+		<String Name="ScanResultNote">Detaljerad information om genomsökningen visas i en separat flik.</String>
+		<String Name="XDirectoriesRefreshed">%d mappar har uppdaterats</String>
+		<String Name="FileListRefreshInitiatedXPaths">Uppdatering av fillistan för %d mappar har startat</String>
+		<String Name="ShowEmoticonButton">Visa knapp för Emoticons i chattfönster</String>
+		<String Name="ShowMultilineButton">Visa knapp för flerradersinmatning i chattfönster</String>
+		<String Name="ShowMagnetButton">Visa knapp för magnetlänkar i chattfönster</String>
+		<String Name="CantOpenEmptyFile">En tom fil kan inte öppnas</String>
+		<String Name="ListAlreadyQueued">Fillistan är redan köad</String>
+		<String Name="FileXQueued">Filen %s har lagts till i kön (%s)</String>
+		<String Name="AddBundleErrorsOcc">Följande fel inträffade när filsamlingen %s köades från användare %s: %s</String>
+		<String Name="XFileCount">%s (%d av %d filsamlingsfiler)</String>
+		<String Name="XFileNames">%s (filer %s)</String>
+		<String Name="FileAlreadyQueued">Filen finns i nedladdningskön redan</String>
+		<String Name="XFileCount">%s (%d av %d filsamlingfiler påverkades)</String>
+		<String Name="XFileNames">%s (fil(er) påverkade: %s)</String>
+		<String Name="FileAlreadyQueued">En fil med samma hashvärde existerar redan i en köad mapp %s</String>
+		<String Name="TthAlreadyShared">En fil med samma hashvärde existerar redan i en utdelad mapp %s</String>
+		<String Name="AllBundleFilesExist">Alla %d filerna finns redan på disken</String>
+		<String Name="TargetFileExists">Filen finns på disken redan</String>
+		<String Name="AsError">%s: %s (på %s från användare %s)</String>
+		<String Name="LastError">Sista felet</String>
+		<String Name="ClearError">Rensa fel</String>
+		<String Name="MinDupeCheckSize">Ingen kontroll av dubletter på filer mindre än</String>
+		<String Name="SettingsNmdcMagnetWarning">Varna mig vid skickande av filer i privata chattar i nmdc hubbar</String>
+		<String Name="ElevatedWarning">Det verkar som om du kör klienten med administrativa rättigheter. Det kan stänga av följande funktionalitet i klienten:
+	  	
+- Klicka på weblänkar i chatt fungerar ej
+- Alla diskenheter syns ej i utdelningsinställningarna
+- Drag och släpp funktionaltitet kan inte användas
+
+Du kan också uppleva andra oväntade beteenden. Det rekommenderas därför starkt att du byter kör klienten med normala rättigheter.</String>
+		<String Name="DontShareEmptyDirs">Dela inte ut tomma mappar</String>
+		<String Name="ScanningOptions">Inställningar för genomsökning</String>
+		<String Name="LogShareScan">Spara resultatet från en genomsökning av utdelningen till en loggfil</String>
+		<String Name="LogShareScanPath">Namn på loggfil (i relation till den globala loggmappen)</String>
+		<String Name="CustomAwayMessage">"Borta"-meddelande för denna hub</String>
+		<String Name="AcceptFailoversFav">Acceptera backupadresser från huben</String>
+		<String Name="AcceptFailoversGlobal">Acceptera backupadresser från favorithubbar</String>
 	</Strings>
 </Language>

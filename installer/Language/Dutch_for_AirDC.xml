@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Dutch_for_AirDC" Author="Kaas" Version="2.42" Revision="2">
+<Language Name="Dutch_for_AirDC" Author="Kaas" Version="2.43" Revision="3">
 	<Strings>
         <String Name="AairdcppLanguageFile">Dutch_for_AirDC.xml</String>
-        <String Name="AairdcppLanguageVersion">2.422</String>
+        <String Name="AairdcppLanguageVersion">2.433</String>
         <String Name="Active">Actief</String>
         <String Name="ActiveSearchString">Actieve zoekterm</String>
         <String Name="Add">&amp;Voeg toe</String>
@@ -1098,7 +1098,7 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="Italic">Schuin</String>
         <String Name="Underline">Onderstreep</String>
         <String Name="Strikeout">Doorstreep</String>
-        <String Name="Preset">Voorinstelling</String>
+        <String Name="Preset">Waarde</String>
         <String Name="PresetAddAll">Allen toevoegen</String>
         <String Name="PresetJoins">Binnenkomers</String>
         <String Name="PresetParts">Vertrekkers</String>
@@ -1182,9 +1182,9 @@ Leeg = Standaardregel -&gt; +me luistert nu naar: %[title] &lt;Media Player Clas
         <String Name="BoldHubTabsOnKick">Maak hub tab vet bij kick berichten</String>
         <String Name="Skiplist">Oversla lijsten, Willekeurige, Scheiden met | </String>
         <String Name="SettingsSearhSkiplistPreset">Instellingen voor zoek oversla lijsten, scheiden met |,  * toegestaan</String>
-        <String Name="Preset1">Voorinstelling1</String>
-        <String Name="Preset2">Voorinstelling2</String>
-        <String Name="Preset3">Voorinstelling3</String>
+        <String Name="Preset1">Waarde</String>
+        <String Name="Preset2">Waarde</String>
+        <String Name="Preset3">Waarde</String>
         <String Name="DirectoryIsHidden">Directory is verborgen</String>
         <String Name="DirectoryNotFound">Directory niet gedeeld</String>
         <String Name="Group">Groep</String>
@@ -1582,8 +1582,8 @@ Schone zoek opdracht betekend dat een poging zal worden gedaan een titel van de 
         <String Name="SettingsPopunderFullList">Open nieuwe volledige bestandslijsten op de achtergrond</String>
         <String Name="SettingsPopunderPartialList">Open nieuwe gedeeltelijke bestandslijsten op de achtergrond</String>
         <String Name="FindText">Zoek tekst</String>
-        <String Name="SearchTypesNote">PS; Custom zoek types werken alleen in ADC hubs! In NMDC hubs zal het gebruik van voorgedefinieerde zoek types alleen zoeken op sets van vooringestelde niet te definieren extensies; het gebruik van zelfgedefinieerde types zal standaard zoeken op elke extensie.</String>
-        <String Name="SettingsShareProfileNote">PS; Custom share profielen werken alleen in ADC hubs. NMDC hubs gebruiken het standaard profiel.</String>
+        <String Name="SearchTypesNote">PS: Custom zoek types werken alleen in ADC hubs! In NMDC hubs zal het gebruik van voorgedefinieerde zoek types alleen zoeken op sets van vooringestelde niet te definieren extensies; het gebruik van zelfgedefinieerde types zal standaard zoeken op elke extensie.</String>
+        <String Name="SettingsShareProfileNote">PS: Custom share profielen werken alleen in ADC hubs. NMDC hubs gebruiken het standaard profiel.</String>
         <String Name="SettingsSharingOptions">Deel opties</String>
         <String Name="SettingsMisc">Willekeurig</String>
         <String Name="FilterDots">Filter...</String>
@@ -1668,7 +1668,7 @@ Schone zoek opdracht betekend dat een poging zal worden gedaan een titel van de 
         <String Name="AutoSearchSmall">Automatisch zoeken</String>
         <String Name="AutoSearch">Automatisch zoeken</String>
         <String Name="SettingsPopunderText">Open nieuwe text bestanden op de achtergrond</String>
-        <String Name="ScanningResultsOn">Scanned resultaten op %s</String>
+        <String Name="ScanningResultsOn">Gescannde resultaten op %s</String>
         <String Name="MandatoryUpdate">Verplichte update</String>
         <String Name="AttemptAutoUpdate">AirDC++ gaat nu proberen je huidige installatie automatisch te updaten</String>
         <String Name="LoadingGui">Laden van de user interface</String>
@@ -1748,7 +1748,7 @@ Schone zoek opdracht betekend dat een poging zal worden gedaan een titel van de 
         <String Name="XFinishedBundles">%d voltooide bundel(s)</String>
         <String Name="ActiveFor">Actief gedurende %s</String>
         <String Name="WaitingLeft">Wachten (%s left)</String>
-        <String Name="InactiveQueued">Inactieve (gestanden ge-queued)</String>
+        <String Name="InactiveQueued">Inactief (bestanden gequeued)</String>
         <String Name="MatchingManual">Alleen vergelijken (manuele zoekopdracht)</String>
         <String Name="BundleXQueued">%s (ge-queued)</String>
         <String Name="BundleXFilesMissing">%s (missende bestanden)</String>
