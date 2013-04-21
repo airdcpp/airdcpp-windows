@@ -125,7 +125,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PreprocessorDefinitions>SNAPPY;WIN32;NDEBUG;_LIB;LEVELDB_PLATFORM_WINDOWS;OS_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>COMPILER_MSVC;SNAPPY;WIN32;NDEBUG;_LIB;LEVELDB_PLATFORM_WINDOWS;OS_WIN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -148,7 +148,6 @@
     <ClCompile Include="db\db_impl.cc" />
     <ClCompile Include="db\db_iter.cc" />
     <ClCompile Include="db\filename.cc" />
-    <ClCompile Include="db\leveldb_main.cc" />
     <ClCompile Include="db\log_reader.cc" />
     <ClCompile Include="db\log_writer.cc" />
     <ClCompile Include="db\memtable.cc" />

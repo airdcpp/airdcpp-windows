@@ -1826,5 +1826,7 @@ You may also notice other unexcepted behaviour, so it is heavily recommended tha
 		<String Name="Months">Months</String>
 		<String Name="Year">Year</String>
 		<String Name="Years">Years</String>
+		<String Name="UpgradingHashdata">Upgrading hash database</String>
+		<String Name="TlsError">TLS error</String>
 	</Strings>
 </Language>

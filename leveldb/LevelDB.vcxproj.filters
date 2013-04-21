@@ -33,9 +33,6 @@
     <ClCompile Include="db\filename.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="db\leveldb_main.cc">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="db\log_reader.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
