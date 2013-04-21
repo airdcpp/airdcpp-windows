@@ -245,7 +245,7 @@ std::wstring GetCurrentDirW()
 
 std::string& ModifyPath(std::string& path)
 {
-    if(path[0] == '/' || path[0] == '\\'){
+    if((path[0] == '/' && path[1] != '/') || (path[0] == '\\' && path[1] != '\\')){
         path = CurrentDir + path;
     }
     std::replace(path.begin(),path.end(),'/','\\');
@@ -255,7 +255,7 @@ std::string& ModifyPath(std::string& path)
 
 std::wstring& ModifyPath(std::wstring& path)
 {
-    if(path[0] == L'/' || path[0] == L'\\'){
+    if((path[0] == L'/' && path[1] != L'/') || (path[0] == L'\\' && path[1] != L'\\')){
         path = CurrentDirW + path;
     }
     std::replace(path.begin(),path.end(),L'/',L'\\');
