@@ -42,9 +42,14 @@ public:
 
 	BEGIN_MSG_MAP(SDCPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
+		COMMAND_ID_HANDLER(IDC_DB_CACHE_AUTOSET, onAutoBuffer)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT, WPARAM, LPARAM, BOOL&);
+	LRESULT onAutoBuffer(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		fixControls();
+		return 0;
+	}
 	
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
@@ -60,6 +65,8 @@ protected:
 	CComboBox ctrlBloom;
 
 	TCHAR* title;
+
+	void fixControls();
 };
 
 #endif //SDCPage_H

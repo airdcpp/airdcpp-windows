@@ -19,13 +19,13 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="E:\projects\dcplusplus\geoip\GeoIP_internal.h" />
-    <ClInclude Include="E:\projects\dcplusplus\geoip\incl.h" />
     <ClInclude Include="GeoIP.h" />
+    <ClInclude Include="GeoIP_internal.h" />
+    <ClInclude Include="incl.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="E:\projects\dcplusplus\geoip\GeoIP_depreciated.c" />
     <ClCompile Include="GeoIP.c" />
+    <ClCompile Include="GeoIP_depreciated.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{40440579-27AF-4E34-8374-CA64B340F1D9}</ProjectGuid>

@@ -66,6 +66,13 @@ PropPage::Item SDCPage::items[] = {
 	{ 0, 0, PropPage::T_END }
 };
 
+void SDCPage::fixControls() {
+	BOOL autoBuf = IsDlgButtonChecked(IDC_DB_CACHE_AUTOSET) == BST_CHECKED;
+	::EnableWindow(GetDlgItem(IDC_DB_BUFFER_SPIN),		!autoBuf);
+	::EnableWindow(GetDlgItem(IDC_DB_CACHE_SIZE),		!autoBuf);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_MB),			!autoBuf);
+}
+
 LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
@@ -80,6 +87,8 @@ LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	setMinMax(IDC_SHUTDOWN_SPIN , 1, 3600);
 	setMinMax(IDC_LOG_LINES_SPIN, 0, 1000);
+
+	setMinMax(IDC_DB_BUFFER_SPIN, 1, 4000);
 
 	ctrlBloom.Attach(GetDlgItem(IDC_BLOOM_MODE));
 	ctrlBloom.AddString(CTSTRING(DISABLED));
@@ -129,6 +138,7 @@ LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	transferlistaction.Detach();
 	chataction.Detach();
 	
+	fixControls();
 	return TRUE;
 }
 
