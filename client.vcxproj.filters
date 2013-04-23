@@ -748,6 +748,9 @@
     <ClInclude Include="client\HamsterDB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="client\BerkeleyDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="client\StringDefs.h">
