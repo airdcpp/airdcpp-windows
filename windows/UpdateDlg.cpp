@@ -94,8 +94,8 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	m_Changelog.SetFont(WinUtil::font);
 	m_Changelog.SetBackgroundColor(WinUtil::bgColor); 
 	m_Changelog.SetDefaultCharFormat(WinUtil::m_ChatTextGeneral);
-	m_Changelog.AppendHTML(message);
 	m_Changelog.setAutoScrollToEnd(false);
+	m_Changelog.AppendHTML(message);
 	m_Changelog.SetSel(0, 0); //set scroll position to top
 
 	//m_Changelog.AppendText(Text::toT(message), WinUtil::m_ChatTextGeneral);

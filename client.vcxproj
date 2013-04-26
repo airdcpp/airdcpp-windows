@@ -265,6 +265,7 @@
     <ClCompile Include="client\HttpDownload.cpp" />
     <ClCompile Include="client\HubEntry.cpp" />
     <ClCompile Include="client\HubSettings.cpp" />
+    <ClCompile Include="client\LevelDB.cpp" />
     <ClCompile Include="client\Localization.cpp" />
     <ClCompile Include="client\LogManager.cpp" />
     <ClCompile Include="client\Magnet.cpp" />

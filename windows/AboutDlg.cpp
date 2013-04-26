@@ -29,7 +29,7 @@
 #include "../client/UpdateManager.h"
 
 static const TCHAR Airthanks[] = 
-_T("Thanks to Alehk, en_dator, Charlie, Freebow, Herman, Juckpuck, Peken, PeTaKe, Sepenoob, Skalman, Sopor, steve72, Toans and Zoolut1oN for testing the client and helping to make it better.\r\n")
+_T("Thanks to Absolon, Alehk, en_dator, Charlie, Freebow, Herman, Juckpuck, Mad, Peken, PeTaKe, Sepenoob, Skalman, Sopor, steve72, Toans, whinner and Zoolut1oN for testing the client and helping to make it better.\r\n")
 _T("Thanks also to all other Test users.\r\n")
 _T("Thanks savone, spaljeni for the graphic works.\r\n")
 _T("Thanks NT and Yada for the work on the code\r\n")
