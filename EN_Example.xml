@@ -1828,5 +1828,20 @@ You may also notice other unexcepted behaviour, so it is heavily recommended tha
 		<String Name="Years">Years</String>
 		<String Name="UpgradingHashdata">Upgrading hash database</String>
 		<String Name="TlsError">TLS error</String>
+		<String Name="DbMigrationFreeSpace">There is only %s of free space in the location %s while %s is needed in order to upgrade the hash database. Please free up some space and run the client again.</String>
+		<String Name="DbMigrationInfo">%s uses a new format for storing the information about hashed files in order to improve performance and reduce resource usage.
+
+The client will now convert the database to use the new format. This will take from a few seconds to several hours, depending on the amount of shared files and the hard disk speed.</String>
+		<String Name="WantContinue">Do you want to continue?</String>
+		<String Name="DbMigrationComplete">The hash database has been upgraded.
+
+Converted file entries: %s
+Converted tree entries: %s
+Failed tree entries: %s
+
+The old database files in the settings directory have been renamed to HashIndex.xml.bak (%s) and HashData.dat.bak (%s). Those files can safely be removed.</String>
+		<String Name="CompactingX">Compacting %s...</String>
+		<String Name="FileIndex">File index</String>
+		<String Name="HashData">Hash data</String>
 	</Strings>
 </Language>

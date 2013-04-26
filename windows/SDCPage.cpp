@@ -45,7 +45,6 @@ PropPage::TextItem SDCPage::texts[] = {
 
 	//DB cache
 	{ IDC_SETTINGS_MB, ResourceManager::MiB },
-	{ IDC_DB_CACHE_AUTOSET, ResourceManager::AUTO },
 	{ IDC_DB_CACHE_SIZE_LBL, ResourceManager::DB_CACHE_SIZE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
@@ -61,17 +60,9 @@ PropPage::Item SDCPage::items[] = {
 	{ IDC_DECREASE_RAM, SettingsManager::DECREASE_RAM, PropPage::T_BOOL },
 
 	//DB cache
-	{ IDC_DB_CACHE_AUTOSET, SettingsManager::DB_CACHE_AUTOSET, PropPage::T_BOOL },
 	{ IDC_DB_CACHE_SIZE, SettingsManager::DB_CACHE_SIZE, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
-
-void SDCPage::fixControls() {
-	BOOL autoBuf = IsDlgButtonChecked(IDC_DB_CACHE_AUTOSET) == BST_CHECKED;
-	::EnableWindow(GetDlgItem(IDC_DB_BUFFER_SPIN),		!autoBuf);
-	::EnableWindow(GetDlgItem(IDC_DB_CACHE_SIZE),		!autoBuf);
-	::EnableWindow(GetDlgItem(IDC_SETTINGS_MB),			!autoBuf);
-}
 
 LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
@@ -137,8 +128,7 @@ LRESULT SDCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	userlistaction.Detach();
 	transferlistaction.Detach();
 	chataction.Detach();
-	
-	fixControls();
+
 	return TRUE;
 }
 

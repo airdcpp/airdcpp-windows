@@ -52,31 +52,42 @@ Fixed:
 - Fix port mapping problems when there are multiple networking interfaces available
 - Fix problems when connecting NMDC search results to a correct hub
 - Fix crashes when sharing subdirs of other shared dirs in different profiles
-- Fix the check marks in the transfer view context menu
-- Correct the loaded page when editing profiles from the fav hubs
 - The splash screen won't go to "not responding" state on startup/shutdown
 - Restore "view as text" in the search tab
 - Handle excluded words correctly with incoming ADC searches
 - Fix duplicate items in file lists when reloading downloaded directories
-- Fix a problem with merging file list directories that both contain files
-- Avoid hashers getting freezed
-- Fix a crash when generating crash reports (32 bit version only)
 - Fix auto search problems when bundles fail scanning
-- Fix the total user count for hubs
-- Fix sending magnet links in chatrooms
 - Set the share skiplist before the startup refresh
 - Start listening for connections when using passive mode and setting a favorite hub active
-- Fix loading of certificates with wide character paths (DC++)
 - Transfers with no download slot can now be forced normally
-- Fix max total hashers when multiple per volume hashers are used
-- Fix generating a random CID if the settings directory isn't accessible
-- Fix reading of SFV files that have multiple whitespaces between the CRC value and the file name
 - Fix a bug with directories not being scanned correctly if the group name contained the char _
-- Improve the reliability of removing the temp updater files
-- Fix downloading magnet links from chatrooms
 - Prevent the ADL search XML file being cleared when there is no disk space available to save it
-- Fix a crash when dragging folder in the chat window
+
+
+2.44
+
+Changed:
+
+- Improve the error reporting for SSL errors (DC++)
+
+Fixed:
+
+- Fix possible problems causing downloads getting corrupted
+- Fix generating a random CID if the settings directory isn't accessible
+- Fix a problem with merging file list directories that both contain files
+- Fix max total hashers when multiple per volume hashers are used
+- Fix reading of SFV files that have multiple whitespaces between the CRC value and the file name
+- Improve the reliability of removing temp updater files
+- Fix downloading magnet links from chatrooms
+- Correct the loaded page when editing profiles from favorite hubs
+- Restore "View as text" in the search tab
+- Fix a crash when dragging folders in the chat window
+- Fix a crash when generating a crash report (32 bit version only)
+- Fix loading of certificates with wide character paths (צהו for example) (DC++)
+- Fix the check marks in the transfer view context menu
 - No test write in the application folder when not using a local setting directory
+- Fix the total user count for hubs
+
 
 2.43
 
