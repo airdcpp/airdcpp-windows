@@ -340,7 +340,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		startup(
 			[&](const string& str) { (*WinUtil::splash)(str); },
 			[&](const string& str, bool isQuestion, bool isError) { 
-				auto ret = ::MessageBox(WinUtil::splash->getHWND(), Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION)); 
+				auto ret = ::MessageBox(WinUtil::splash->getHWND(), Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_SETFOREGROUND | (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION)); 
 				return isQuestion ? ret == IDYES : true;
 		},
 			[&]() { 
