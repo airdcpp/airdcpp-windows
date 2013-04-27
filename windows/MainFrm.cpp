@@ -101,6 +101,11 @@ LRESULT MainFrame::onOpenDownloads(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
+LRESULT MainFrame::onOpenLogDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	WinUtil::openFolder(Text::toT(SETTING(LOG_DIRECTORY)));
+	return 0;
+}
+
 MainFrame::~MainFrame() {
 	m_CmdBar.m_hImageList = NULL;
 
