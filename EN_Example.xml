@@ -1844,5 +1844,22 @@ The old database files in the settings directory have been renamed to HashIndex.
 		<String Name="FileIndex">File index</String>
 		<String Name="HashData">Hash data</String>
 		<String Name="OpenLogDir">Open log directory</String>
+		<String Name="RepairingX">Repairing %s</String>
+		<String Name="ReadFailedX">Failed to read from %s: %s</String>
+		<String Name="WriteFailedX">Failed to write into %s: %s</String>
+		<String Name="RebuildFailed">Rebuild failed</String>
+		<String Name="DbOpenFailed">Failed to open %s: %s
+
+%s will now exit.</String>
+		<String Name="DbOpenFailedIo">Failed to open %s: %s
+
+Make sure that there isn't another instance of %s using the same settings directory and that the directory %s is accessible. %s will now exit.</String>
+		<String Name="DbOpenFailedRepair">Failed to open %s: %s
+
+%s will now attempt to repair it automatically.</String>
+		<String Name="DbRepairFailed">Failed to repair %s: %s
+
+Make sure that the path %s is accessible and there isn't there isn't another instance of %s using the same settings directory. Remove the directory in case the error can't be fixed.</String>
+		<String Name="DbCorruptedRestart">Please restart the client and %s will attempt to repair the database automatically on the startup.</String>
 	</Strings>
 </Language>
