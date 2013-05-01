@@ -453,6 +453,8 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 			if (!cancelHashing) {
 				ShareManager::getInstance()->addTempShare(ctrlClient.getTempShareKey(), tth, path, size, getClient()->getShareProfile());
 			}
+			if (!ret.empty())
+				ret += _T(" ");
 			ret += Text::toT(WinUtil::makeMagnet(tth, Util::getFileName(path), size));
 			pos++;
 		}

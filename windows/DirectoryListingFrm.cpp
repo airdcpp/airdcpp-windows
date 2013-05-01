@@ -485,7 +485,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 	//make sure that all subitems are removed
 	ctrlTree.Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
 
-	d->sortDirs();
+	//d->sortDirs();
 
 	if (initialChange || isExpanded || (changeDir && (changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)))
 		ctrlTree.Expand(ht);

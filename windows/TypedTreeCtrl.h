@@ -157,8 +157,10 @@ public:
 
 	HTREEITEM findItem(HTREEITEM ht, const string& name) {
 		string::size_type i = name.find('\\');
-		if(i == string::npos)
+		if(i == string::npos) {
+			((T*)GetItemData(ht))->sortDirs(false);
 			return ht;
+		}
 	
 		for(HTREEITEM child = GetChildItem(ht); child != NULL; child = GetNextSiblingItem(child)) {
 			T* d = (T*)GetItemData(child);
@@ -169,6 +171,7 @@ public:
 
 		//have we created it yet?
 		if (hasChildren(ht) && !IsExpanded(ht)) {
+			((T*)GetItemData(ht))->sortDirs(false);
 			Expand(ht, TVE_EXPAND);
 			auto ret = findItem(ht, name);
 
