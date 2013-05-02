@@ -357,9 +357,7 @@ public:
 	static void openFolder(const tstring& file);
 	
 	static double toBytes(TCHAR* aSize);
-	
-	static int getOsMajor();
-	static int getOsMinor();
+
 	static bool isDesktopOs();
 
 	//static void appendPrioMenu(OMenu& aParent, QueueItemBase* aBase, bool isBundle, function<void (QueueItemBase::Priority aPrio)> prioF, function<void ()> autoPrioF);

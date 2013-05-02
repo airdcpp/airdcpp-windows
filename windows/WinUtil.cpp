@@ -1195,7 +1195,7 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser) {
 			auto sel = SETTING(MAGNET_ACTION);
 			BOOL remember = false;
 			if (SETTING(MAGNET_ASK)) {
-				if (WinUtil::getOsMajor() >= 6) {
+				if (Util::getOsMajor() >= 6) {
 					CTaskDialog taskdlg;
 
 					tstring msg = CTSTRING_F(MAGNET_INFOTEXT, Text::toT(m.fname) % Util::formatBytesW(m.fsize));
@@ -1345,31 +1345,6 @@ double WinUtil::toBytes(TCHAR* aSize) {
 	}
 }
 
-int WinUtil::getOsMajor() {
-	OSVERSIONINFOEX ver;
-	memzero(&ver, sizeof(OSVERSIONINFOEX));
-	if(!GetVersionEx((OSVERSIONINFO*)&ver)) 
-	{
-		ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	}
-	GetVersionEx((OSVERSIONINFO*)&ver);
-	ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-	return ver.dwMajorVersion;
-}
-
-int WinUtil::getOsMinor() 
-{
-	OSVERSIONINFOEX ver;
-	memzero(&ver, sizeof(OSVERSIONINFOEX));
-	if(!GetVersionEx((OSVERSIONINFO*)&ver)) 
-	{
-		ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
-	}
-	GetVersionEx((OSVERSIONINFO*)&ver);
-	ver.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-	return ver.dwMinorVersion;
-}
-
 bool WinUtil::isDesktopOs() {
 	OSVERSIONINFOEX ver;
 	memzero(&ver, sizeof(OSVERSIONINFOEX));
@@ -1474,7 +1449,7 @@ void WinUtil::loadReBarSettings(HWND bar) {
 	
 	REBARBANDINFO rbi = { 0 };
 	ZeroMemory(&rbi, sizeof(rbi));
-	rbi.cbSize = WinUtil::getOsMajor() >= 6 ? REBARBANDINFOW_V6_SIZE : REBARBANDINFOW_V3_SIZE;
+	rbi.cbSize = Util::getOsMajor() >= 6 ? REBARBANDINFOW_V6_SIZE : REBARBANDINFOW_V3_SIZE;
 	rbi.fMask = RBBIM_ID | RBBIM_SIZE | RBBIM_STYLE;
 	
 	StringTokenizer<string> st(SETTING(TOOLBAR_POS), ';');
@@ -1506,7 +1481,7 @@ void WinUtil::saveReBarSettings(HWND bar) {
 	
 	REBARBANDINFO rbi = { 0 };
 	ZeroMemory(&rbi, sizeof(rbi));
-	rbi.cbSize = WinUtil::getOsMajor() >= 6 ? REBARBANDINFOW_V6_SIZE : REBARBANDINFOW_V3_SIZE;
+	rbi.cbSize = Util::getOsMajor() >= 6 ? REBARBANDINFOW_V6_SIZE : REBARBANDINFOW_V3_SIZE;
 	rbi.fMask = RBBIM_ID | RBBIM_SIZE | RBBIM_STYLE;
 	
 	for(unsigned int i = 0; i < rebar.GetBandCount(); i++)
@@ -1932,7 +1907,7 @@ string WinUtil::addHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aT
 }
 
 void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
-	if (WinUtil::getOsMajor() == 6)
+	if (Util::getOsMajor() == 6)
 		Edit_SetCueBannerTextFocused(hwnd, text, drawFocus);
 }
 
@@ -1954,7 +1929,7 @@ void WinUtil::addUpdate(const string& aUpdater) {
 void WinUtil::runPendingUpdate() {
 	if(updated && !updateCommand.first.empty()) {
 		auto cmd = updateCommand.second + Util::getParams(false);
-		ShellExecute(NULL, WinUtil::getOsMajor() >= 6 ? _T("runas") : NULL, updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
+		ShellExecute(NULL, Util::getOsMajor() >= 6 ? _T("runas") : NULL, updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
 	}
 }
 

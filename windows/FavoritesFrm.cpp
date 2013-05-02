@@ -457,7 +457,7 @@ void FavoriteHubsFrame::fillList()
 		LVGROUP lg = {0};
 		lg.cbSize = sizeof(lg);
 		lg.iGroupId = i;
-		lg.state = LVGS_NORMAL | (WinUtil::getOsMajor() >= 6 ? LVGS_COLLAPSIBLE : 0);
+		lg.state = LVGS_NORMAL | (Util::getOsMajor() >= 6 ? LVGS_COLLAPSIBLE : 0);
 		lg.mask = LVGF_GROUPID | LVGF_HEADER | LVGF_STATE | LVGF_ALIGN;
 		lg.uAlign = LVGA_HEADER_LEFT;
 

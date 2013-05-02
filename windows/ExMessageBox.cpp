@@ -59,7 +59,7 @@ LRESULT CALLBACK CheckMessageBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 		case WM_ERASEBKGND:
 		{
 			// Vista+ has grey strip
-			if (WinUtil::getOsMajor() >= 6)
+			if (Util::getOsMajor() >= 6)
 			{
 				RECT rc = {0};
 				HDC dc = (HDC)wParam;
@@ -89,7 +89,7 @@ LRESULT CALLBACK CheckMessageBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 		case WM_CTLCOLORSTATIC:
 		{
 			// Vista+ has grey strip
-			if ((WinUtil::getOsMajor() >= 6) && ((HWND)lParam == GetDlgItem(hWnd, 2025)))
+			if ((Util::getOsMajor() >= 6) && ((HWND)lParam == GetDlgItem(hWnd, 2025)))
 			{
 				HDC hdc = (HDC)wParam;
 				SetBkMode(hdc, TRANSPARENT);
@@ -147,7 +147,7 @@ LRESULT CALLBACK CheckMessageBoxProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			int iCheckboxHeight = (cyMenuSize > size.cy) ? cyMenuSize : size.cy;
 			
 			// Vista+ has a different kind of layout altogether
-			if (WinUtil::getOsMajor() >= 6)
+			if (Util::getOsMajor() >= 6)
 			{
 				// Align checkbox with buttons (aproximately)
 				int iCheckboxTop = int(iClientHeightBefore - (iCheckboxHeight * 1.70));

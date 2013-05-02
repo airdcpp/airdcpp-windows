@@ -87,7 +87,7 @@ statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
 
 
 { 
-	if(WinUtil::getOsMajor() >= 6) {
+	if(Util::getOsMajor() >= 6) {
 		user32lib = LoadLibrary(_T("user32"));
 		_d_ChangeWindowMessageFilter = (LPFUNC)GetProcAddress(user32lib, "ChangeWindowMessageFilter");
 	}
@@ -117,7 +117,7 @@ MainFrame::~MainFrame() {
 	WinUtil::uninit();
 	ResourceLoader::unload();
 
-	if(WinUtil::getOsMajor() >= 6)
+	if(Util::getOsMajor() >= 6)
 		FreeLibrary(user32lib);
 }
 
@@ -204,12 +204,12 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	trayMessage = RegisterWindowMessage(_T("TaskbarCreated"));
 
-	if(WinUtil::getOsMajor() >= 6) {
+	if(Util::getOsMajor() >= 6) {
 		// 1 == MSGFLT_ADD
 		_d_ChangeWindowMessageFilter(trayMessage, 1);
 		_d_ChangeWindowMessageFilter(WMU_WHERE_ARE_YOU, 1);
 
-		if(WinUtil::getOsMajor() > 6 || WinUtil::getOsMinor() >= 1) {
+		if(Util::getOsMajor() > 6 || Util::getOsMinor() >= 1) {
 			tbButtonMessage = RegisterWindowMessage(_T("TaskbarButtonCreated"));
 			_d_ChangeWindowMessageFilter(tbButtonMessage, 1);
 			_d_ChangeWindowMessageFilter(WM_COMMAND, 1);
@@ -271,7 +271,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(ID_WIZARD);
 
 	// use Vista-styled menus on Vista/Win7
-	if(WinUtil::getOsMajor() >= 6)
+	if(Util::getOsMajor() >= 6)
 		m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());
 
 		// remove old menu
@@ -437,7 +437,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		m_PictureWindow.Load(Text::toT(currentPic).c_str());
 	}
 
-	if (WinUtil::getOsMajor() >= 6 && WinUtil::getOsMinor() >= 2 && WinUtil::isDesktopOs() && WinUtil::isElevated()) {
+	if (Util::getOsMajor() >= 6 && Util::getOsMinor() >= 2 && WinUtil::isDesktopOs() && WinUtil::isElevated()) {
 		WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING));
 	}
 
@@ -453,7 +453,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 }
 
 LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	if(WinUtil::getOsMajor() < 6 || (WinUtil::getOsMajor() == 6 && WinUtil::getOsMinor() < 1))
+	if(Util::getOsMajor() < 6 || (Util::getOsMajor() == 6 && Util::getOsMinor() < 1))
 		return 0;
 
 	taskbarList.Release();

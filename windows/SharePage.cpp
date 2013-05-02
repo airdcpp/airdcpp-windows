@@ -669,7 +669,7 @@ void SharePage::removeDir(const string& rPath, ProfileToken aProfile, int8_t& co
 
 	if (checkDupes) {
 		auto dirItems = getItemsByPath(rPath, false);
-		if (!dirItems.empty() && WinUtil::getOsMajor() >= 6) { //MessageBox(CTSTRING_F(X_PROFILE_DIRS_EXISTS, (int)dirItems.size()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+		if (!dirItems.empty() && Util::getOsMajor() >= 6) { //MessageBox(CTSTRING_F(X_PROFILE_DIRS_EXISTS, (int)dirItems.size()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 			if (confirmOption == CONFIRM_ASK) {
 				CTaskDialog taskdlg;
 

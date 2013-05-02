@@ -70,7 +70,7 @@ int ShellExecAsUser(const TCHAR *pcOperation, const TCHAR *pcFileName, const TCH
 {
 	int bSuccess = 0;
 
-	if (WinUtil::getOsMajor() >= 6) {
+	if (Util::getOsMajor() >= 6) {
 		HRESULT hr = CoInitialize(NULL);
 		if((hr == S_FALSE) || (hr == S_OK))
 		{
