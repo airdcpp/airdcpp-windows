@@ -449,10 +449,9 @@ bool DirectoryListingFrame::isBold(const DirectoryListing::Directory* d) const {
 }
 
 void DirectoryListingFrame::createRoot() {
-	string nick = ClientManager::getInstance()->getNicks(dl->getHintedUser())[0];
 //	const auto icon = getIconIndex(dl->getRoot());
 	const auto icon = ResourceLoader::DIR_NORMAL;
-	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(nick).c_str(), icon, icon, 0, 0, (LPARAM)dl->getRoot(), NULL, NULL);
+	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(dl->getNick(true)).c_str(), icon, icon, 0, 0, (LPARAM)dl->getRoot(), NULL, NULL);
 	dcassert(treeRoot); 
 }
 
@@ -470,7 +469,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 	}
 
 	auto oldSel = ctrlTree.GetSelectedItem();
-	HTREEITEM ht = reloadList ? treeRoot : ctrlTree.findItem(treeRoot, Text::fromT(root));
+	HTREEITEM ht = ctrlTree.findItem(treeRoot, reloadList ? Util::emptyString : Text::fromT(root));
 	if(ht == NULL) {
 		ht = treeRoot;
 	}
@@ -696,12 +695,16 @@ void DirectoryListingFrame::EnableWindow(bool redraw){
 }
 
 void DirectoryListingFrame::initStatus() {
-	int totalFiles = 0;
+	size_t totalFiles = 0;
 	int64_t totalSize = 0;
 	if (dl->getPartialList() && !dl->getHintedUser().user->isNMDC()) {
-		auto si = ClientManager::getInstance()->getShareInfo(dl->getHintedUser());
-		totalSize = si.first;
-		totalFiles = si.second;
+		if (!dl->getIsOwnList()) {
+			auto si = ClientManager::getInstance()->getShareInfo(dl->getHintedUser());
+			totalSize = si.first;
+			totalFiles = si.second;
+		} else {
+			ShareManager::getInstance()->getProfileInfo(Util::toInt(dl->getFileName()), totalSize, totalFiles);
+		}
 	} else {
 		totalSize = dl->getTotalListSize();
 		totalFiles = dl->getTotalFileCount();
@@ -1575,7 +1578,7 @@ void DirectoryListingFrame::clearList() {
 
 void DirectoryListingFrame::setWindowTitle() {
 	if(error.empty())
-		SetWindowText((WinUtil::getNicks(dl->getHintedUser()) + _T(" - ") + WinUtil::getHubNames(dl->getHintedUser()).first).c_str());
+		SetWindowText((Text::toT(dl->getNick(false)) + _T(" - ") + WinUtil::getHubNames(dl->getHintedUser()).first).c_str());
 	else
 		SetWindowText(error.c_str());		
 }
@@ -1701,7 +1704,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 			const ItemInfo* ii = ctrlList.getItemData(xsel);
 			switch (wID) {
 				case IDC_COPY_NICK:
-					sCopy += WinUtil::getNicks(dl->getHintedUser());
+					sCopy += Text::toT(dl->getNick(false));
 					break;
 				case IDC_COPY_FILENAME:
 					sCopy += ii->getText(COLUMN_FILENAME);
@@ -1821,7 +1824,7 @@ LRESULT DirectoryListingFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/
 
 	OMenu tabMenu;
 	tabMenu.CreatePopupMenu();
-	tstring nick = Text::toT(ClientManager::getInstance()->getNicks(dl->getHintedUser())[0]);
+	tstring nick = Text::toT(dl->getNick(true));
 	tabMenu.InsertSeparatorFirst(nick);
 
 	appendUserItems(tabMenu);
