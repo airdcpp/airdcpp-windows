@@ -30,7 +30,6 @@
 #include "../client/QueueManager.h"
 #include "../client/FastAlloc.h"
 #include "../client/TaskQueue.h"
-#include "boost/unordered_map.hpp"
 
 #include <boost/noncopyable.hpp>
 
@@ -309,8 +308,8 @@ private:
 	HTREEITEM fileLists;
 	HTREEITEM tempItems;
 
-	typedef boost::unordered_multimap<string, QueueItemInfo*, noCaseStringHash, noCaseStringEq> DirectoryMap;
-	typedef boost::unordered_map<string, HTREEITEM> BundleMap;
+	typedef unordered_multimap<string, QueueItemInfo*, noCaseStringHash, noCaseStringEq> DirectoryMap;
+	typedef unordered_map<string, HTREEITEM> BundleMap;
 	typedef DirectoryMap::iterator DirectoryIter;
 	typedef DirectoryMap::const_iterator DirectoryIterC;
 	typedef pair<DirectoryIterC, DirectoryIterC> DirectoryPairC;
