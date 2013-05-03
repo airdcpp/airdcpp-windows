@@ -884,6 +884,8 @@
 #define IDC_SLOTS_GROUP2                1316
 #define IDC_PRIO_LOW_SIZE2              1316
 #define IDC_SETTINGS_SECONDS            1316
+#define IDC_SHARE_SKIPLIST_USE_REGEXP2  1316
+#define IDC_REPAIR_HASHDB               1316
 #define IDC_SOCKET_IN_BUFFER            1317
 #define IDC_UPDATE_LANGUAGE             1317
 #define IDC_GROUP                       1317
@@ -1070,6 +1072,7 @@
 #define IDC_BROWSE_PRIVATE_KEY          1423
 #define IDC_SETTINGS_AUTO_SEARCH_LIMIT2 1423
 #define IDC_SETTINGS_DOWNCONN           1423
+#define IDC_MULTITHREADED_REFRESH_LBL   1423
 #define IDC_CLOSE_ALL_OFFLINE_PM        1424
 #define IDC_BROWSE_CERTIFICATE          1424
 #define IDC_DOWNCONN                    1424
@@ -1291,6 +1294,7 @@
 #define IDC_LOGGING                     1710
 #define IDC_DB_CACHE_AUTOSET            1711
 #define IDC_AUTO_DISCONNECT_MODE        1712
+#define IDC_MULTITHREADED_REFRESH       1713
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1689,7 +1693,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        348
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1713
+#define _APS_NEXT_CONTROL_VALUE         1714
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

@@ -53,6 +53,7 @@ public:
 	void write();
 	
 protected:
+	CComboBox ctrlThreadedRefresh;
 
 	static Item items[];
 	static TextItem texts[];

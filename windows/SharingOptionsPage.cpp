@@ -24,6 +24,8 @@
 #include "WinUtil.h"
 #include "PropertiesDlg.h"
 
+#include "../client/HashManager.h"
+
 
 PropPage::ListItem SharingOptionsPage::listItems[] = {
 	{ SettingsManager::SHARE_HIDDEN, ResourceManager::SETTINGS_SHARE_HIDDEN },
@@ -46,6 +48,7 @@ PropPage::TextItem SharingOptionsPage::texts[] = {
 	{ IDC_MINUTES, ResourceManager::MINUTES },
 	{ IDC_SETTINGS_AUTO_REFRESH_TIME, ResourceManager::SETTINGS_AUTO_REFRESH_TIME },
 	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
+	{ IDC_MULTITHREADED_REFRESH_LBL, ResourceManager::MULTITHREADED_REFRESH },
 
 	//hashing
 	{ IDC_HASHING_OPTIONS, ResourceManager::HASHING_OPTIONS },
@@ -53,6 +56,7 @@ PropPage::TextItem SharingOptionsPage::texts[] = {
 	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
 	{ IDC_HASHING_THREADS_LBL, ResourceManager::MAX_HASHING_THREADS },
 	{ IDC_MAX_VOL_HASHERS_LBL, ResourceManager::MAX_VOL_HASHERS },
+	{ IDC_REPAIR_HASHDB, ResourceManager::SETTINGS_DB_REPAIR },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -89,6 +93,15 @@ LRESULT SharingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	setMinMax(IDC_VOL_HASHERS_SPIN, 1, 30);
 	setMinMax(IDC_HASHING_THREADS_SPIN, 1, 50);
 
+	ctrlThreadedRefresh.Attach(GetDlgItem(IDC_MULTITHREADED_REFRESH));
+	ctrlThreadedRefresh.InsertString(0, CTSTRING(NEVER));
+	ctrlThreadedRefresh.InsertString(1, CTSTRING(MANUAL_REFRESHES));
+	ctrlThreadedRefresh.InsertString(2, CTSTRING(ALWAYS));
+
+	ctrlThreadedRefresh.SetCurSel(SETTING(REFRESH_THREADING));
+
+	CheckDlgButton(IDC_REPAIR_HASHDB, HashManager::getInstance()->isRepairScheduled());
+
 	// Do specialized reading here
 	return TRUE;
 }
@@ -96,6 +109,9 @@ LRESULT SharingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 void SharingOptionsPage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SHARINGLIST));
 	
+	settings->set(SettingsManager::REFRESH_THREADING, ctrlThreadedRefresh.GetCurSel());
+	HashManager::getInstance()->onScheduleRepair(IsDlgButtonChecked(IDC_REPAIR_HASHDB) > 0 ? true : false);
+
 	//set to the defaults
 	//if(SETTING(SKIPLIST_SHARE).empty())
 	//	settings->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);

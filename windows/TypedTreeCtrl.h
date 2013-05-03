@@ -133,7 +133,8 @@ public:
 		return GetItem(&tvItem) && (tvItem.cChildren != 0);
 	}
 
-	void insertItems(const T* aDir, HTREEITEM aParent) {
+	void insertItems(T* aDir, HTREEITEM aParent) {
+		aDir->sortDirs(false);
 		for (auto& d: aDir->directories | reversed) {
 			TVINSERTSTRUCT tvs = {0};
  
@@ -158,7 +159,6 @@ public:
 	HTREEITEM findItem(HTREEITEM ht, const string& name) {
 		string::size_type i = name.find('\\');
 		if(i == string::npos) {
-			((T*)GetItemData(ht))->sortDirs(false);
 			return ht;
 		}
 	
@@ -171,7 +171,6 @@ public:
 
 		//have we created it yet?
 		if (hasChildren(ht) && !IsExpanded(ht)) {
-			((T*)GetItemData(ht))->sortDirs(false);
 			Expand(ht, TVE_EXPAND);
 			auto ret = findItem(ht, name);
 

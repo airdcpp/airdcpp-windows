@@ -469,7 +469,7 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 	}
 
 	auto oldSel = ctrlTree.GetSelectedItem();
-	HTREEITEM ht = ctrlTree.findItem(treeRoot, reloadList ? Util::emptyString : Text::fromT(root));
+	HTREEITEM ht = reloadList ? treeRoot : ctrlTree.findItem(treeRoot, Text::fromT(root));
 	if(ht == NULL) {
 		ht = treeRoot;
 	}
