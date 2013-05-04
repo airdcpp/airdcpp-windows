@@ -723,6 +723,9 @@
     <ClCompile Include="windows\ScanPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\ShareDirectories.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1101,6 +1104,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\ScanPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\ShareDirectories.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

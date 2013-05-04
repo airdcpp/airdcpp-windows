@@ -179,6 +179,7 @@
 #define IDD_LIMITPAGE                   345
 #define IDD_AUTOSEARCH_PARAMS           346
 #define IDD_SCANNING_OPTIONS            347
+#define IDD_SHAREDIRS                   348
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
@@ -1693,7 +1694,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        348
+#define _APS_NEXT_RESOURCE_VALUE        349
 #define _APS_NEXT_COMMAND_VALUE         32795
 #define _APS_NEXT_CONTROL_VALUE         1715
 #define _APS_NEXT_SYMED_VALUE           136

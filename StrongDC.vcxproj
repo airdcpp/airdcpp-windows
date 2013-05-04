@@ -514,6 +514,7 @@
     <ClCompile Include="windows\ResourceLoader.cpp" />
     <ClCompile Include="windows\ScanPage.cpp" />
     <ClCompile Include="windows\SearchTypeCombo.cpp" />
+    <ClCompile Include="windows\ShareDirectories.cpp" />
     <ClCompile Include="windows\SharingOptionsPage.cpp" />
     <ClCompile Include="windows\AppearancePage.cpp" />
     <ClCompile Include="windows\AutosearchDlg.cpp" />
@@ -634,6 +635,7 @@
     <ClInclude Include="windows\ProxyPage.h" />
     <ClInclude Include="windows\ScanPage.h" />
     <ClInclude Include="windows\SearchTypeCombo.h" />
+    <ClInclude Include="windows\ShareDirectories.h" />
     <ClInclude Include="windows\SplashWindow.h" />
     <ClInclude Include="windows\MiscPage.h" />
     <ClInclude Include="windows\DownloadingOptionsPage.h" />

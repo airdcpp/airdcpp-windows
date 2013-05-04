@@ -21,6 +21,8 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 //Pull in the WNet Lib automatically
 #pragma comment(lib, "mpr.lib")
 
+#define curProfile parent->getCurProfile()
+
 FolderTreeItemInfo::FolderTreeItemInfo() : m_pNetResource(nullptr), m_bNetworkNode(false) {
 }
 
@@ -118,7 +120,7 @@ bool ShareEnumerator::IsShared(const tstring& sPath) {
 	return bShared;
 }
 
-FolderTree::FolderTree(SharePage* aSp) : sp(aSp)
+FolderTree::FolderTree(ShareDirectories* aSp) : sp(aSp)
 {
 	m_dwFileHideFlags = FILE_ATTRIBUTE_HIDDEN | FILE_ATTRIBUTE_SYSTEM |
 						FILE_ATTRIBUTE_OFFLINE | FILE_ATTRIBUTE_TEMPORARY;
@@ -1403,7 +1405,7 @@ LRESULT FolderTree::OnUnChecked(HTREEITEM hItem, BOOL& /*bHandled*/)
 			path += PATH_SEPARATOR;
 
 		sp->removeExcludeFolder(path);
-		int8_t confirmOption = SharePage::CONFIRM_ASK;
+		int8_t confirmOption = ShareDirectories::CONFIRM_ASK;
 		sp->removeDir(path, sp->curProfile, confirmOption);
 		UpdateParentItems(hItem);
 	} else if(GetChecked(GetParentItem(hItem))) {

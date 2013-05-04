@@ -12,10 +12,10 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 #pragma once
 #include <shlobj.h>
 #include <lm.h>
-#include "SharePage.h"
+#include "ShareDirectories.h"
 #include "../client/ShareManager.h"
 
-class SharePage;
+class ShareDirectories;
 
 //Class which gets stored int the item data on the tree control
 
@@ -93,7 +93,7 @@ const DWORD DRIVE_ATTRIBUTE_RAMDISK     = 0x00000020;
 class FolderTree : public CWindowImpl<FolderTree, CTreeViewCtrl>
 {
 public:
-	FolderTree(SharePage* sp);
+	FolderTree(ShareDirectories* sp);
 	~FolderTree();
 	
 	BEGIN_MSG_MAP(FolderTree)
@@ -149,7 +149,7 @@ public:
     BOOL SetChecked(HTREEITEM hItem, bool fCheck);
 
 protected:
-	SharePage* sp;
+	ShareDirectories* sp;
 	bool IsExpanded(HTREEITEM hItem);
 	int GetIconIndex(const tstring& sFilename);
 	int GetIconIndex(HTREEITEM hItem);
