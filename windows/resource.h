@@ -283,6 +283,7 @@
 #define IDI_SEARCHING                   460
 #define IDI_COLLECTING                  461
 #define IDI_POSTSEARCH                  462
+#define IDI_EXPIRED                     463
 #define IDI_SLOTS                       480
 #define IDI_SLOTSFULL                   481
 #define IDI_TOTAL_UP                    482
@@ -1295,6 +1296,7 @@
 #define IDC_DB_CACHE_AUTOSET            1711
 #define IDC_AUTO_DISCONNECT_MODE        1712
 #define IDC_MULTITHREADED_REFRESH       1713
+#define IDC_REMOVE_EXPIRED_AS           1714
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1693,7 +1695,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        348
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1714
+#define _APS_NEXT_CONTROL_VALUE         1715
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

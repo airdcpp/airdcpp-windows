@@ -29,6 +29,7 @@ PropPage::TextItem SearchPage::texts[] = {
 	{ IDC_SEARCHING_OPTIONS,					ResourceManager::SETTINGS_SEARCHING_OPTIONS	},
 	{ IDC_EXPIRY_DAYS_LABEL,					ResourceManager::SETTINGS_EXPIRY_DAYS	},
 	{ IDC_DELAY_HOURS_LABEL,					ResourceManager::SETTINGS_DELAY_HOURS	},
+	{ IDC_REMOVE_EXPIRED_AS,					ResourceManager::REMOVE_EXPIRED_AS },
 	{ IDC_AUTO_SEARCH,							ResourceManager::AUTO_SEARCH },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
@@ -37,6 +38,7 @@ PropPage::Item SearchPage::items[] = {
 	{ IDC_INTERVAL, SettingsManager::MINIMUM_SEARCH_INTERVAL, PropPage::T_INT },
 	{ IDC_EXPIRY_DAYS, SettingsManager::AUTOSEARCH_EXPIRE_DAYS, PropPage::T_INT }, 
 	{ IDC_DELAY_HOURS, SettingsManager::AS_DELAY_HOURS, PropPage::T_INT }, 
+	{ IDC_REMOVE_EXPIRED_AS, SettingsManager::REMOVE_EXPIRED_AS, PropPage::T_BOOL }, 
 	{ 0, 0, PropPage::T_END }
 };
 

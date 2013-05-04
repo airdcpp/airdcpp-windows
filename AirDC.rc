@@ -1293,7 +1293,7 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CAPTIO
 EXSTYLE WS_EX_STATICEDGE
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Web Shortcuts",IDC_SB_WEB_SHORTCUTS,2,104,297,215
+    GROUPBOX        "Web Shortcuts",IDC_SB_WEB_SHORTCUTS,2,108,297,211
     CONTROL         "",IDC_WEB_SHORTCUTS_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,11,125,283,166
     PUSHBUTTON      "Add",IDC_WEB_SHORTCUTS_ADD,9,298,50,14
     PUSHBUTTON      "Remove",IDC_WEB_SHORTCUTS_REMOVE,63,298,50,14
@@ -1301,7 +1301,7 @@ BEGIN
     RTEXT           "Minimum search interval",IDC_INTERVAL_TEXT,15,19,88,8
     LTEXT           "s",IDC_S,145,19,8,8
     GROUPBOX        "Seaching options",IDC_SEARCHING_OPTIONS,2,5,298,35
-    GROUPBOX        "Auto search",IDC_AUTO_SEARCH,2,47,298,43
+    GROUPBOX        "Auto search",IDC_AUTO_SEARCH,2,47,298,57
     LTEXT           "The default expiry days (0 = won't expire)",IDC_EXPIRY_DAYS_LABEL,9,61,205,8
     EDITTEXT        IDC_EXPIRY_DAYS,219,60,30,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_EXPIRY_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,241,59,11,14
@@ -1310,6 +1310,8 @@ BEGIN
     LTEXT           "Hours to search for proper when using incrementation",IDC_DELAY_HOURS_LABEL,9,75,206,8
     EDITTEXT        IDC_DELAY_HOURS,219,74,30,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_DELAY_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,241,73,11,14
+    CONTROL         "Remove expired auto search items instead of disabling them",IDC_REMOVE_EXPIRED_AS,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,13,90,226,10,WS_EX_RIGHT
 END
 
 IDD_AIRAPPEARANCEPAGE DIALOGEX 0, 0, 275, 292
@@ -2284,6 +2286,7 @@ IDI_MANUAL              ICON                    "res\\AutoSearch\\Manual.ico"
 IDI_DISABLED            ICON                    "res\\AutoSearch\\Disabled.ico"
 IDI_COLLECTING          ICON                    "res\\AutoSearch\\Collecting.ico"
 IDI_POSTSEARCH          ICON                    "res\\AutoSearch\\PostSearch.ico"
+IDI_EXPIRED             ICON                    "res\\AutoSearch\\Expired.ico"
 IDI_SHARED              ICON                    "res\\Shared.ico"
 IDI_DIR_LOADING_OL      ICON                    "res\\ExecMasked.ico"
 IDI_FAV_USER            ICON                    "res\\FavUser.ico"

@@ -1289,5 +1289,8 @@
     <Image Include="res\Find.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\AutoSearch\Expired.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

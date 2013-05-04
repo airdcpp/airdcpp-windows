@@ -55,6 +55,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	statusImg.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_DISABLED));
+	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_EXPIRED));
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_MANUAL));
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_SEARCHING));
 	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_COLLECTING));
@@ -570,7 +571,10 @@ LRESULT AutoSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHa
 	::EnableWindow(GetDlgItem(IDC_MOVE_DOWN), (ctrlAutoSearch.GetSelectedCount() == 1));
 	
 	if(!loading && l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
-		AutoSearchManager::getInstance()->setActiveItem(l->iItem, Util::toBool(ctrlAutoSearch.GetCheckState(l->iItem)));	
+		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(l->iItem);
+		if (as) {
+			AutoSearchManager::getInstance()->setItemActive(as, Util::toBool(ctrlAutoSearch.GetCheckState(l->iItem)));
+		}	
 	}
 	return 0;		
 }
