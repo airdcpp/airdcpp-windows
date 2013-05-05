@@ -643,7 +643,13 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	lst.push_back(Text::toT(as->getLastError()));
 
 	bool b = as->getEnabled();
+
+
+	//don't disable/enable the item here
+	loading = true;
 	int i = ctrlAutoSearch.insert(pos, lst, as->getStatus(), (LPARAM)as.get());
+	loading = false;
+
 	ctrlAutoSearch.SetCheckState(i, b);
 }
 
