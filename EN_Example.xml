@@ -1685,7 +1685,7 @@ Do you want to use this destination anyway?</String>
 		<String Name="MaxHashingThreads">Max hashing threads</String>
 		<String Name="HashingOptions">Hashing options</String>
 		<String Name="RefreshOptions">Refreshing options</String>
-		<String Name="ExpiredAsRemoved">An expired auto search has been removed: %s</String>
+		<String Name="ExpiredAsRemoved">An expired item %s has been removed</String>
 		<String Name="Proxies">Proxies</String>
 		<String Name="PassiveMode">Passive mode</String>
 		<String Name="ActiveMode">Active mode</String>
@@ -1865,5 +1865,8 @@ Make sure that the path %s is accessible and there isn't there isn't another ins
 		<String Name="ManualRefreshes">Manual refreshes only</String>
 		<String Name="DbErrorHint">You can set the database to be verified and repaired from the \"Sharing options\" tab in Settings (if needed)</String>
 		<String Name="SettingsDbRepair">Verify and repair the hash database on next startup</String>
+		<String Name="DbXRepaired">%s has been verified and repaired successfully. Detailed information about the process has been saved in %s</String>
+		<String Name="ExpiredAsDisabled">An expired item %s has been disabled</String>
+		<String Name="RemoveExpiredAs">Remove expired auto search items instead of disabling them</String>
 	</Strings>
 </Language>

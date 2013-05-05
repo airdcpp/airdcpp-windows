@@ -579,9 +579,6 @@
     <ClCompile Include="windows\StatsFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\SystemFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -724,6 +721,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="windows\ShareDirectories.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
