@@ -94,18 +94,7 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	WinUtil::appendLanguageMenu(ctrlLanguage);
 
-	CEdit tmp;
-	tmp.Attach(GetDlgItem(IDC_NICK));
-	tmp.LimitText(35);
-	tmp.Detach();
-
-	tmp.Attach(GetDlgItem(IDC_USERDESC));
-	tmp.LimitText(35);
-	tmp.Detach();
-
-	tmp.Attach(GetDlgItem(IDC_EMAIL));
-	tmp.LimitText(35);
-	tmp.Detach();
+	WinUtil::setUserFieldLimits(m_hWnd);
 	return TRUE;
 }
 

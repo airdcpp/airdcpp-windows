@@ -20,12 +20,13 @@
 
 #include "Wizard.h"
 
-SetupWizard::SetupWizard() : CAeroWizardFrameImpl<SetupWizard>(_T("Setup Wizard")) { 
+SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupWizard>(_T("Setup Wizard")), initial(isInitial) { 
 	auto s = SettingsManager::getInstance();
 
 	int n = 0;
-	pages[n++] = new WizardGeneral(s);
-	pages[n++] = new WizardConnspeed(s);
+	pages[n++] = new WizardGeneral(s, this);
+	pages[n++] = new WizardProfile(s, this);
+	pages[n++] = new WizardConnspeed(s, this);
 	pages[n++] = new WizardAutoConnectivity(s, this);
 	pages[n++] = new WizardSharing(s, this);
 

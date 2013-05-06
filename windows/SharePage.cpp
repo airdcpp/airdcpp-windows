@@ -76,6 +76,11 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlProfile.SetCurSel(0);
 
 	dirPage->Create(this->m_hWnd);
+	//CRect rc;
+	//::GetWindowRect(GetDlgItem(IDC_SETTINGS_SHARED_DIRECTORIES), rc);
+	//::AdjustWindowRect(rc, GetWindowLongPtr(GWL_STYLE), false);
+	//dirPage->SetWindowPos(m_hWnd, rc.left+10, rc.top+10, 0, 0, SWP_NOSIZE);
+	dirPage->SetWindowPos(HWND_TOP, 17, 150, 0, 0, SWP_NOSIZE);
 	dirPage->ShowWindow(SW_SHOW);
 	return TRUE;
 }

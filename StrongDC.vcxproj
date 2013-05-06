@@ -606,6 +606,7 @@
     <ClCompile Include="windows\WizardAutoConnectivity.cpp" />
     <ClCompile Include="windows\WizardConnspeed.cpp" />
     <ClCompile Include="windows\WizardGeneral.cpp" />
+    <ClCompile Include="windows\WizardProfile.cpp" />
     <ClCompile Include="windows\WizardSharing.cpp" />
     <ClCompile Include="windows\WMPlayerRemoteApi.cpp" />
   </ItemGroup>
@@ -739,6 +740,7 @@
     <ClInclude Include="windows\WizardAutoConnectivity.h" />
     <ClInclude Include="windows\WizardConnspeed.h" />
     <ClInclude Include="windows\WizardGeneral.h" />
+    <ClInclude Include="windows\WizardProfile.h" />
     <ClInclude Include="windows\WizardSharing.h" />
     <ClInclude Include="windows\WMPlayerRemoteApi.h" />
   </ItemGroup>

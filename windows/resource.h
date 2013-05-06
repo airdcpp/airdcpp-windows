@@ -184,6 +184,7 @@
 #define IDD_WIZARD_SHARING              351
 #define IDD_WIZARD_AUTOCONN             352
 #define IDD_WIZARD_MANUALCONN           353
+#define IDD_WIZARD_PROFILE              354
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
@@ -319,6 +320,7 @@
 #define IDC_NICK                        1001
 #define IDC_EMAIL                       1002
 #define IDC_DESCRIPTION                 1003
+#define IDC_EMAIL2                      1003
 #define IDC_READD_ALL                   1004
 #define IDC_DESCRIPTION2                1004
 #define IDC_PROFILES_DESC               1004
@@ -962,8 +964,10 @@
 #define IDC_CONNECTION2                 1349
 #define IDC_RAR                         1350
 #define IDC_PRIVATE_HUB                 1351
+#define IDC_LAN                         1352
 #define IDC_DOWNLOAD_TEXT               1353
 #define IDC_DOWN_SPEED                  1354
+#define IDC_CONNSPEED_INTRO             1355
 #define IDC_WINAMP_BROWSE               1356
 #define IDC_DOWN_SPEED_SPIN             1356
 #define IDC_UP_SPEED_SPIN               1357
@@ -1020,6 +1024,8 @@
 #define IDC_SETTINGS_PROFILE            1385
 #define IDC_WIZARD_SKIPLIST             1385
 #define IDC_SPEEDTEST                   1386
+#define IDC_WIZARD_SKIPLIST2            1386
+#define IDC_DISABLE_ENCRYPTION          1386
 #define IDC_MAX_DL_WIZ                  1388
 #define IDC_MAX_DL_SPEED_WIZ            1389
 #define IDC_UPLOAD_SLOTS_WIZ            1390
@@ -1302,6 +1308,14 @@
 #define IDC_REMOVE_EXPIRED_AS           1714
 #define IDC_AUTO_DETECT                 1715
 #define IDC_CONNECTIVITY_LOG            1716
+#define IDC_AUTOCONN_INTRO              1717
+#define IDC_GENERAL_INTRO               1718
+#define IDC_PROFILE_INTRO               1719
+#define IDC_SHARING_INTRO               1720
+#define IDC_PUBLIC_DESC                 1721
+#define IDC_RAR_DESC                    1722
+#define IDC_RAR_DESC2                   1723
+#define IDC_LAN_DESC                    1723
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1366,6 +1380,7 @@
 #define IDC_WEB_SHORTCUTS_NAME_DESC     8690
 #define IDC_WEB_SHORTCUT_KEY_DESC       8691
 #define IDC_WEB_SHORTCUTS_LIST          8692
+#define IDC_NORMAL_DESC                 8693
 #define IDR_TRAY_PM                     10000
 #define IDR_TRAY_HUB                    10001
 #define IDC_EXTRASLOTSSPIN              10002
@@ -1698,9 +1713,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        354
+#define _APS_NEXT_RESOURCE_VALUE        355
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1717
+#define _APS_NEXT_CONTROL_VALUE         1723
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

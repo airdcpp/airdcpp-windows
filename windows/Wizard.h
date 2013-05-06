@@ -28,12 +28,14 @@
 #include "WizardAutoConnectivity.h"
 #include "WizardGeneral.h"
 #include "WizardConnspeed.h"
+#include "WizardProfile.h"
 #include "WizardSharing.h"
 
 class SetupWizard : public CAeroWizardFrameImpl<SetupWizard> { 
 public: 
 	enum Pages { 
 		PAGE_GENERAL,
+		PAGE_PROFILE,
 		PAGE_CONNSPEED,
 		PAGE_AUTOCONN,
 		PAGE_SHARING,
@@ -44,15 +46,26 @@ public:
 		CHAIN_MSG_MAP(__super) 
 	END_MSG_MAP() 
 		
-	SetupWizard();
+	SetupWizard(bool isInitial = false);
 	~SetupWizard();
+
+	template<class T>
+	T* getPage(Pages aPage) {
+		const HWND page = PropSheet_IndexToHwnd((HWND)*this, aPage);
+		if(page != NULL) {
+			return (T*)pages[aPage];
+		}
+		return nullptr;
+	}
 
 	//LRESULT onFinish(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	//LRESULT onCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 
 	int OnWizardFinish();
+	bool isInitialRun() { return initial; }
 private: 
 	PropPage *pages[PAGE_LAST];
+	bool initial;
 };
 
 #endif

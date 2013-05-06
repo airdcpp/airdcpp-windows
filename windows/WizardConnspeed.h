@@ -22,9 +22,11 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "PropPage.h"
+#include "Wizard.h"
 
 #include "WTL\atldlgs.h"
 
+class SetupWizard;
 class WizardConnspeed : public PropPage, public CAeroWizardPageImpl<WizardConnspeed> { 
 public: 
 	BEGIN_MSG_MAP(WizardConnspeed) 
@@ -48,7 +50,7 @@ public:
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 
 	enum { IDD = IDD_WIZARD_CONNSPEED }; 
-	WizardConnspeed(SettingsManager *s);
+	WizardConnspeed(SettingsManager *s, SetupWizard* aWizard);
 
 	void write();
 private: 
@@ -63,6 +65,8 @@ private:
 
 	CComboBox ctrlUpload;	
 	CComboBox ctrlDownload;
+
+	SetupWizard* wizard;
 }; 
 
 #endif

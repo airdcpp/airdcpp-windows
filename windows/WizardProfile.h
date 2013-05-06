@@ -16,42 +16,43 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_WIZARD_GENERAL
-#define DCPLUSPLUS_WIZARD_GENERAL
+#ifndef DCPLUSPLUS_WIZARD_PROFILE
+#define DCPLUSPLUS_WIZARD_PROFILE
 
 #include "stdafx.h"
 #include "resource.h"
 #include "PropPage.h"
-#include "WinUtil.h"
-
 #include "Wizard.h"
+
 #include "WTL\atldlgs.h"
 
 class SetupWizard;
-class WizardGeneral : public PropPage, public CAeroWizardPageImpl<WizardGeneral> { 
+class WizardProfile : public PropPage, public CAeroWizardPageImpl<WizardProfile> { 
 public: 
-	BEGIN_MSG_MAP(WizardGeneral) 
+	BEGIN_MSG_MAP(WizardProfile) 
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, WinUtil::onUserFieldChar)
+		COMMAND_ID_HANDLER(IDC_NORMAL, OnSelProfile)
+		COMMAND_ID_HANDLER(IDC_RAR, OnSelProfile)
+		COMMAND_ID_HANDLER(IDC_LAN, OnSelProfile)
 	END_MSG_MAP() 
 			
 	LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
+	LRESULT OnSelProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	enum { IDD = IDD_WIZARD_GENERAL }; 
+	enum { IDD = IDD_WIZARD_PROFILE }; 
 
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 
-	WizardGeneral(SettingsManager *s, SetupWizard* aWizard);
+	WizardProfile(SettingsManager *s, SetupWizard* aWizard);
 
 	void write();
-	int OnWizardNext();
-private: 
-	static Item items[];
+
+	int getCurProfile();
+private:
 	static TextItem texts[];
 
-	CComboBoxEx ctrlLanguage;
+	void fixcontrols();
+
 	SetupWizard* wizard;
 }; 
 

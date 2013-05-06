@@ -2005,6 +2005,21 @@ void WinUtil::appendSpeedCombo(CComboBox& aCombo, SettingsManager::StrSetting aS
 	aCombo.SetCurSel(aCombo.FindString(0, Text::toT(curSpeed).c_str()));
 }
 
+void WinUtil::setUserFieldLimits(HWND hWnd) {
+	CEdit tmp;
+	tmp.Attach(GetDlgItem(hWnd, IDC_NICK));
+	tmp.LimitText(35);
+	tmp.Detach();
+
+	tmp.Attach(GetDlgItem(hWnd, IDC_USERDESC));
+	tmp.LimitText(35);
+	tmp.Detach();
+
+	tmp.Attach(GetDlgItem(hWnd, IDC_EMAIL));
+	tmp.LimitText(35);
+	tmp.Detach();
+}
+
 LRESULT WinUtil::onUserFieldChar(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
 	TCHAR buf[1024];
 

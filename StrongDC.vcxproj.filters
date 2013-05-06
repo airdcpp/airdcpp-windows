@@ -738,6 +738,9 @@
     <ClCompile Include="windows\WizardAutoConnectivity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\WizardProfile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1131,6 +1134,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\WizardAutoConnectivity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\WizardProfile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

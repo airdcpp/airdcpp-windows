@@ -452,6 +452,7 @@ public:
 	static HWND findDialog;
 	static LRESULT onUserFieldChar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	static bool onConnSpeedChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/);
+	static void setUserFieldLimits(HWND hWnd);
 
 	static void appendSpeedCombo(CComboBox& aCombo, SettingsManager::StrSetting aSetting);
 

@@ -21,13 +21,7 @@
 #include "WizardSharing.h"
 
 PropPage::TextItem WizardSharing::texts[] = {
-	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
-	{ IDC_ADD_PROFILE, ResourceManager::ADD_PROFILE },
-	{ IDC_ADD_PROFILE_COPY, ResourceManager::ADD_PROFILE_COPY },
-	{ IDC_REMOVE_PROFILE, ResourceManager::REMOVE_PROFILE },
-	{ IDC_SETTINGS_SHARE_PROFILES, ResourceManager::SHARE_PROFILES },
-	{ IDC_SHARE_PROFILE_NOTE, ResourceManager::SETTINGS_SHARE_PROFILE_NOTE },
-	{ IDC_RENAME_PROFILE, ResourceManager::SETTINGS_RENAME_FOLDER },
+	//{ IDC_SHARING_INTRO, ResourceManager::DESCRIPTION },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -38,13 +32,13 @@ LRESULT WizardSharing::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM 
 
 	dirPage->Create(this->m_hWnd);
 	//dirPage->MoveWindow(10, 10, 0, 0);
-	dirPage->SetWindowPos(HWND_TOP, 10, 10, 0, 0, SWP_NOSIZE);
+	dirPage->SetWindowPos(HWND_TOP, 10, 100, 0, 0, SWP_NOSIZE);
 	dirPage->ShowWindow(SW_SHOW);
 	return TRUE; 
 }
 
 WizardSharing::WizardSharing(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), dirPage(unique_ptr<ShareDirectories>(new ShareDirectories(this, s))), wizard(aWizard) { 
-	SetHeaderTitle(_T("Sharing")); 
+	SetHeaderTitle(_T("Sharing"));
 } 
 
 void WizardSharing::write() {
