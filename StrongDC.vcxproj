@@ -230,8 +230,9 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PrecompiledHeader>Use</PrecompiledHeader>
-      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>
+      </PrecompiledHeaderFile>
       <AssemblerOutput>
       </AssemblerOutput>
       <WarningLevel>Level4</WarningLevel>
@@ -602,6 +603,10 @@
     <ClCompile Include="windows\WindowsPage.cpp" />
     <ClCompile Include="windows\WinUtil.cpp" />
     <ClCompile Include="windows\Wizard.cpp" />
+    <ClCompile Include="windows\WizardAutoConnectivity.cpp" />
+    <ClCompile Include="windows\WizardConnspeed.cpp" />
+    <ClCompile Include="windows\WizardGeneral.cpp" />
+    <ClCompile Include="windows\WizardSharing.cpp" />
     <ClCompile Include="windows\WMPlayerRemoteApi.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -731,6 +736,10 @@
     <ClInclude Include="windows\WindowsPage.h" />
     <ClInclude Include="windows\WinUtil.h" />
     <ClInclude Include="windows\Wizard.h" />
+    <ClInclude Include="windows\WizardAutoConnectivity.h" />
+    <ClInclude Include="windows\WizardConnspeed.h" />
+    <ClInclude Include="windows\WizardGeneral.h" />
+    <ClInclude Include="windows\WizardSharing.h" />
     <ClInclude Include="windows\WMPlayerRemoteApi.h" />
   </ItemGroup>
   <ItemGroup>

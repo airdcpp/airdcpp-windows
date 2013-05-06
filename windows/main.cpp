@@ -344,7 +344,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				return isQuestion ? ret == IDYES : true;
 		},
 			[&]() { 
-				WizardDlg dlg;
+				SetupWizard dlg;
 				dlg.DoModal(/*m_hWnd*/);
 		},
 			[=](float progress) { (*WinUtil::splash)(progress); }

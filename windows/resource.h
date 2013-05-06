@@ -150,7 +150,6 @@
 #define IDD_FULHIGHLIGHTPROPERTIES      313
 #define IDD_HIGHLIGHTDIALOG             313
 #define IDD_DIALOG1                     314
-#define IDD_WIZARD                      314
 #define IDD_DIRLIST_DLG                 316
 #define IDD_FAVORITEDIR                 320
 #define IDD_TEMPSHARE_DLG               321
@@ -180,6 +179,11 @@
 #define IDD_AUTOSEARCH_PARAMS           346
 #define IDD_SCANNING_OPTIONS            347
 #define IDD_SHAREDIRS                   348
+#define IDD_WIZARD_GENERAL              349
+#define IDD_WIZARD_CONNSPEED            350
+#define IDD_WIZARD_SHARING              351
+#define IDD_WIZARD_AUTOCONN             352
+#define IDD_WIZARD_MANUALCONN           353
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
@@ -954,7 +958,6 @@
 #define IDC_SYS_LOG                     1344
 #define IDC_POPUP_TIME_STR              1345
 #define IDC_SYSTEM_LIST                 1345
-#define IDNEXT                          1347
 #define IDC_LIST1                       1348
 #define IDC_CONNECTION2                 1349
 #define IDC_RAR                         1350
@@ -1025,7 +1028,6 @@
 #define IDC_MAX_MSG_LENGTH_STR          1392
 #define IDC_MAX_AUTO_WIZ                1392
 #define IDC_POPUP_COLORS                1393
-#define IDC_WIZARD_NOTETOP              1393
 #define IDC_POPUP_BACKCOLOR             1394
 #define IDC_WIZARD_NOTESPEED            1394
 #define IDC_POPUPFILE                   1395
@@ -1298,6 +1300,8 @@
 #define IDC_AUTO_DISCONNECT_MODE        1712
 #define IDC_MULTITHREADED_REFRESH       1713
 #define IDC_REMOVE_EXPIRED_AS           1714
+#define IDC_AUTO_DETECT                 1715
+#define IDC_CONNECTIVITY_LOG            1716
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1694,9 +1698,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        349
+#define _APS_NEXT_RESOURCE_VALUE        354
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1715
+#define _APS_NEXT_CONTROL_VALUE         1717
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

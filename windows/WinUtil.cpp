@@ -1957,6 +1957,54 @@ bool WinUtil::isElevated() {
 	return fRet ? true : false;
 }
 
+bool WinUtil::onConnSpeedChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl) {
+	tstring speed;
+	speed.resize(1024);
+	speed.resize(::GetWindowText(hWndCtl, &speed[0], 1024));
+	if (!speed.empty() && wNotifyCode != CBN_SELENDOK) {
+		boost::wregex reg;
+		if(speed[speed.size() -1] == '.')
+			reg.assign(_T("(\\d+\\.)"));
+		else
+			reg.assign(_T("(\\d+(\\.\\d+)?)"));
+		if (!regex_match(speed, reg)) {
+			CComboBox tmp;
+			tmp.Attach(hWndCtl);
+			DWORD dwSel;
+			if ((dwSel = tmp.GetEditSel()) != CB_ERR) {
+				tstring::iterator it = speed.begin() +  HIWORD(dwSel)-1;
+				speed.erase(it);
+				tmp.SetEditSel(0,-1);
+				tmp.SetWindowText(speed.c_str());
+				tmp.SetEditSel(HIWORD(dwSel)-1, HIWORD(dwSel)-1);
+				tmp.Detach();
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
+void WinUtil::appendSpeedCombo(CComboBox& aCombo, SettingsManager::StrSetting aSetting) {
+	auto curSpeed = SettingsManager::getInstance()->get(aSetting);
+	bool found=false;
+
+	//add the speed strings	
+	for(const auto& speed: SettingsManager::connectionSpeeds) {
+		if (Util::toDouble(curSpeed) < Util::toDouble(speed) && !found) {
+			aCombo.AddString(Text::toT(curSpeed).c_str());
+			found=true;
+		} else if (curSpeed == speed) {
+			found=true;
+		}
+		aCombo.AddString(Text::toT(speed).c_str());
+	}
+
+	//set current upload speed setting
+	aCombo.SetCurSel(aCombo.FindString(0, Text::toT(curSpeed).c_str()));
+}
+
 LRESULT WinUtil::onUserFieldChar(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
 	TCHAR buf[1024];
 

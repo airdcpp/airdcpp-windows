@@ -74,6 +74,11 @@ protected:
 	void fixControls();
 	int maxMCNExtras(double speed);
 	static Item items[];
+
+	static Item uploadItems[];
+	static Item downloadItems[];
+	static Item mcnItems[];
+
 	static TextItem texts[];
 	TCHAR* title;
 };

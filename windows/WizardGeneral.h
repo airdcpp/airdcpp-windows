@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_SETUP_WIZARD
-#define DCPLUSPLUS_SETUP_WIZARD
+#ifndef DCPLUSPLUS_WIZARD_GENERAL
+#define DCPLUSPLUS_WIZARD_GENERAL
 
 #include "stdafx.h"
 #include "resource.h"
@@ -25,34 +25,33 @@
 
 #include "WTL\atldlgs.h"
 
-#include "WizardAutoConnectivity.h"
-#include "WizardGeneral.h"
-#include "WizardConnspeed.h"
-#include "WizardSharing.h"
-
-class SetupWizard : public CAeroWizardFrameImpl<SetupWizard> { 
+class WizardGeneral : public PropPage, public CAeroWizardPageImpl<WizardGeneral> { 
 public: 
-	enum Pages { 
-		PAGE_GENERAL,
-		PAGE_CONNSPEED,
-		PAGE_AUTOCONN,
-		PAGE_SHARING,
-		PAGE_LAST
-	};
-
-	BEGIN_MSG_MAP(SampleWizard) 
-		CHAIN_MSG_MAP(__super) 
+	BEGIN_MSG_MAP(WizardGeneral) 
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
+		COMMAND_ID_HANDLER(IDC_PUBLIC, OnSelProfile)
+		COMMAND_ID_HANDLER(IDC_RAR, OnSelProfile)
+		COMMAND_ID_HANDLER(IDC_PRIVATE_HUB, OnSelProfile)
 	END_MSG_MAP() 
-		
-	SetupWizard();
-	~SetupWizard();
+			
+	LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
+	LRESULT OnSelProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	//LRESULT onFinish(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	//LRESULT onCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	enum { IDD = IDD_WIZARD_GENERAL }; 
 
-	int OnWizardFinish();
+	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
+
+	WizardGeneral(SettingsManager *s);
+
+	void write();
 private: 
-	PropPage *pages[PAGE_LAST];
-};
+	static Item items[];
+	static TextItem texts[];
+
+	CEdit nickline;
+	CComboBoxEx ctrlLanguage;
+
+	void fixcontrols();
+}; 
 
 #endif

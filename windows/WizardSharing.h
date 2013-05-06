@@ -16,43 +16,38 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_SETUP_WIZARD
-#define DCPLUSPLUS_SETUP_WIZARD
+#ifndef DCPLUSPLUS_WIZARD_SHARING
+#define DCPLUSPLUS_WIZARD_SHARING
 
 #include "stdafx.h"
 #include "resource.h"
 #include "PropPage.h"
+#include "ShareDirectories.h"
+#include "Wizard.h"
 
 #include "WTL\atldlgs.h"
 
-#include "WizardAutoConnectivity.h"
-#include "WizardGeneral.h"
-#include "WizardConnspeed.h"
-#include "WizardSharing.h"
-
-class SetupWizard : public CAeroWizardFrameImpl<SetupWizard> { 
+class SetupWizard;
+class WizardSharing : public SharePageBase, public PropPage, public CAeroWizardPageImpl<WizardSharing> { 
 public: 
-	enum Pages { 
-		PAGE_GENERAL,
-		PAGE_CONNSPEED,
-		PAGE_AUTOCONN,
-		PAGE_SHARING,
-		PAGE_LAST
-	};
-
-	BEGIN_MSG_MAP(SampleWizard) 
+	BEGIN_MSG_MAP(WizardSharing) 
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog) 
 		CHAIN_MSG_MAP(__super) 
 	END_MSG_MAP() 
-		
-	SetupWizard();
-	~SetupWizard();
 
-	//LRESULT onFinish(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	//LRESULT onCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
+	LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
+	
+	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 
+	enum { IDD = IDD_WIZARD_SHARING }; 
+	WizardSharing(SettingsManager *s, SetupWizard* wizard);
+
+	void write();
 	int OnWizardFinish();
 private: 
-	PropPage *pages[PAGE_LAST];
-};
+	SetupWizard* wizard;
+	static TextItem texts[];
+	unique_ptr<ShareDirectories> dirPage;
+}; 
 
 #endif
