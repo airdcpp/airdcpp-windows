@@ -741,6 +741,12 @@
     <ClCompile Include="windows\WizardProfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\ProtocolPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\WizardManualConnectivity.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1137,6 +1143,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\WizardProfile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\ProtocolPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\WizardManualConnectivity.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

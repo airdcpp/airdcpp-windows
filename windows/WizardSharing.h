@@ -30,9 +30,10 @@
 class SetupWizard;
 class WizardSharing : public SharePageBase, public PropPage, public CAeroWizardPageImpl<WizardSharing> { 
 public: 
+	typedef CAeroWizardPageImpl<WizardSharing> baseClass;
 	BEGIN_MSG_MAP(WizardSharing) 
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog) 
-		CHAIN_MSG_MAP(__super) 
+		CHAIN_MSG_MAP(baseClass) 
 	END_MSG_MAP() 
 
 	LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
@@ -44,6 +45,10 @@ public:
 
 	void write();
 	int OnWizardFinish();
+	int OnSetActive();
+	int OnWizardBack();
+
+	Dispatcher::F getThreadedTask();
 private: 
 	SetupWizard* wizard;
 	static TextItem texts[];

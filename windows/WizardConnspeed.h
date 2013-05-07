@@ -29,6 +29,7 @@
 class SetupWizard;
 class WizardConnspeed : public PropPage, public CAeroWizardPageImpl<WizardConnspeed> { 
 public: 
+	typedef CAeroWizardPageImpl<WizardConnspeed> baseClass;
 	BEGIN_MSG_MAP(WizardConnspeed) 
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_HANDLER(IDC_DOWN_SPEED, CBN_SELENDOK, OnDownSpeed)
@@ -38,7 +39,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_DL_AUTODETECT_WIZ, OnDetect)
 		COMMAND_ID_HANDLER(IDC_UL_AUTODETECT_WIZ, OnDetect)
 		COMMAND_ID_HANDLER(IDC_SPEEDTEST, onSpeedtest)
-		CHAIN_MSG_MAP(__super) 
+		CHAIN_MSG_MAP(baseClass) 
 	END_MSG_MAP() 
 
 	LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
@@ -53,6 +54,8 @@ public:
 	WizardConnspeed(SettingsManager *s, SetupWizard* aWizard);
 
 	void write();
+
+	int OnSetActive();
 private: 
 	static Item items[];
 	static Item uploadItems[];

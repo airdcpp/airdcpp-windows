@@ -110,7 +110,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 
 PropertiesDlg::~PropertiesDlg() { }
 
-void PropertiesDlg::deletePages(TaskList& tasks) {
+void PropertiesDlg::deletePages(PropPage::TaskList& tasks) {
 	for(int i=0; i < PAGE_LAST; i++) {
 		if (saved) {
 			auto t = pages[i]->getThreadedTask();

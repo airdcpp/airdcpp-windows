@@ -1316,6 +1316,7 @@
 #define IDC_RAR_DESC                    1722
 #define IDC_RAR_DESC2                   1723
 #define IDC_LAN_DESC                    1723
+#define IDC_MANUAL_CONFIG               1723
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1715,7 +1716,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        355
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1723
+#define _APS_NEXT_CONTROL_VALUE         1724
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

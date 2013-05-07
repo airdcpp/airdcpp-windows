@@ -30,9 +30,10 @@ PropPage::TextItem WizardProfile::texts[] = {
 };
 
 LRESULT WizardProfile::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
-	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
-
 	//PropPage::translate((HWND)(*this), texts);
+	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
+	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
+	EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
 
 	switch(SETTING(SETTINGS_PROFILE)) {
 		case SettingsManager::PROFILE_PUBLIC: CheckDlgButton(IDC_NORMAL, BST_CHECKED); break;
@@ -81,4 +82,11 @@ LRESULT WizardProfile::OnSelProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 void WizardProfile::fixcontrols() {
 	::EnableWindow(GetDlgItem(IDC_WIZARD_SKIPLIST),	IsDlgButtonChecked(IDC_RAR));
 	::EnableWindow(GetDlgItem(IDC_DISABLE_ENCRYPTION),	IsDlgButtonChecked(IDC_LAN));
+}
+
+int WizardProfile::OnSetActive() {
+	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
+	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
+	EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
+	return 0;
 }

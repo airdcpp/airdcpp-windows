@@ -32,9 +32,6 @@ PropPage::TextItem WizardAutoConnectivity::texts[] = {
 };
 
 LRESULT WizardAutoConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
-	ShowWizardButtons( PSWIZB_BACK  | PSWIZB_NEXT | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
-	EnableWizardButtons(PSWIZB_NEXT, 0);
-
 	log.Attach(GetDlgItem(IDC_CONNECTIVITY_LOG));
 	log.Subclass();
 
@@ -42,6 +39,7 @@ LRESULT WizardAutoConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/
 	log.SetEventMask( log.GetEventMask() | ENM_LINK );
 
 	cAutoDetect.Attach(GetDlgItem(IDC_AUTO_DETECT));
+	cAutoDetect.EnableWindow(ConnectivityManager::getInstance()->isRunning() ? FALSE : TRUE);
 
 	return TRUE; 
 }
@@ -59,11 +57,27 @@ void WizardAutoConnectivity::write() {
 
 }
 
-int WizardAutoConnectivity::OnWizardNext() { 
+int WizardAutoConnectivity::OnWizardNext() {
+	if (!usingManualConnectivity()) {
+		wizard->SetActivePage(SetupWizard::PAGE_SHARING);
+		return SetupWizard::PAGE_SHARING;
+	}
+	return 0;
+}
+
+bool WizardAutoConnectivity::usingManualConnectivity() {
+	return IsDlgButtonChecked(IDC_MANUAL_CONFIG) > 0;
+}
+
+int WizardAutoConnectivity::OnSetActive() {
+	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
+	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
+	EnableWizardButtons(PSWIZB_NEXT, ConnectivityManager::getInstance()->isRunning() ? 0 : PSWIZB_NEXT);
 	return 0;
 }
 
 LRESULT WizardAutoConnectivity::OnDetectConnection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	EnableWizardButtons(PSWIZB_NEXT, 0);
 	ConnectivityManager::getInstance()->detectConnection();
 	return 0;
 }

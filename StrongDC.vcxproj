@@ -125,9 +125,8 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
@@ -176,7 +175,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>HAVE_NATUPNP_H;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WTL_NEW_PAGE_NOTIFY_HANDLERS;HAVE_NATUPNP_H;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Cpp0xSupport>true</Cpp0xSupport>
       <ShowIncludes>false</ShowIncludes>
     </ClCompile>
@@ -230,9 +229,8 @@
       <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
       <RuntimeTypeInfo>false</RuntimeTypeInfo>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <PrecompiledHeaderFile>
-      </PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
       <AssemblerOutput>
       </AssemblerOutput>
       <WarningLevel>Level4</WarningLevel>
@@ -512,6 +510,7 @@
     <ClCompile Include="windows\MiscPage.cpp" />
     <ClCompile Include="windows\DownloadingOptionsPage.cpp" />
     <ClCompile Include="windows\PopupDlg.cpp" />
+    <ClCompile Include="windows\ProtocolPage.cpp" />
     <ClCompile Include="windows\ProxyPage.cpp" />
     <ClCompile Include="windows\ResourceLoader.cpp" />
     <ClCompile Include="windows\ScanPage.cpp" />
@@ -587,7 +586,12 @@
     <ClCompile Include="windows\SplashWindow.cpp" />
     <ClCompile Include="windows\SpyFrame.cpp" />
     <ClCompile Include="windows\StatsFrame.cpp" />
-    <ClCompile Include="windows\stdafx.cpp" />
+    <ClCompile Include="windows\stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
     <ClCompile Include="windows\SystemFrame.cpp" />
     <ClCompile Include="windows\TextFrame.cpp" />
     <ClCompile Include="windows\toolbarpage.cpp" />
@@ -606,6 +610,7 @@
     <ClCompile Include="windows\WizardAutoConnectivity.cpp" />
     <ClCompile Include="windows\WizardConnspeed.cpp" />
     <ClCompile Include="windows\WizardGeneral.cpp" />
+    <ClCompile Include="windows\WizardManualConnectivity.cpp" />
     <ClCompile Include="windows\WizardProfile.cpp" />
     <ClCompile Include="windows\WizardSharing.cpp" />
     <ClCompile Include="windows\WMPlayerRemoteApi.cpp" />
@@ -634,6 +639,7 @@
     <ClInclude Include="windows\LimitPage.h" />
     <ClInclude Include="windows\ExCImage.h" />
     <ClInclude Include="windows\ListFilter.h" />
+    <ClInclude Include="windows\ProtocolPage.h" />
     <ClInclude Include="windows\ProxyPage.h" />
     <ClInclude Include="windows\ScanPage.h" />
     <ClInclude Include="windows\SearchTypeCombo.h" />
@@ -740,6 +746,7 @@
     <ClInclude Include="windows\WizardAutoConnectivity.h" />
     <ClInclude Include="windows\WizardConnspeed.h" />
     <ClInclude Include="windows\WizardGeneral.h" />
+    <ClInclude Include="windows\WizardManualConnectivity.h" />
     <ClInclude Include="windows\WizardProfile.h" />
     <ClInclude Include="windows\WizardSharing.h" />
     <ClInclude Include="windows\WMPlayerRemoteApi.h" />

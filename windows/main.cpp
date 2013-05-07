@@ -337,6 +337,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	std::future<void> loader;
 	loader = std::async([=] {
+		unique_ptr<SetupWizard> wizard = nullptr;
 		startup(
 			[&](const string& str) { (*WinUtil::splash)(str); },
 			[&](const string& str, bool isQuestion, bool isError) { 
@@ -344,12 +345,25 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				return isQuestion ? ret == IDYES : true;
 		},
 			[&]() { 
-				SetupWizard dlg(true);
-				dlg.DoModal(/*m_hWnd*/);
+				wizard.reset(new SetupWizard(true));
+				if (wizard->DoModal(/*m_hWnd*/) != IDOK) {
+					//the wizard was cancelled
+					wizard.reset(nullptr);
+				}
 		},
 			[=](float progress) { (*WinUtil::splash)(progress); }
 		);
 
+		//apply the share changes from wizard (if available)
+		if (wizard) {
+			PropPage::TaskList tasks;
+			wizard->deletePages(tasks);
+			for(auto& t: tasks) {
+				t.first();
+				delete t.second;
+			}
+			wizard.reset(nullptr);
+		}
 
 		PopupManager::newInstance();
 		IgnoreManager::newInstance();

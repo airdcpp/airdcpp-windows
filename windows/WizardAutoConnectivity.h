@@ -28,15 +28,17 @@
 
 #include "../client/ConnectivityManager.h"
 
-#include "WTL\atldlgs.h"
+#include <atldlgs.h>
 
 class SetupWizard;
 class WizardAutoConnectivity : public PropPage, public CAeroWizardPageImpl<WizardAutoConnectivity>, private ConnectivityManagerListener, private Async<WizardAutoConnectivity> { 
 public: 
+	typedef CAeroWizardPageImpl<WizardAutoConnectivity> baseClass;
 	BEGIN_MSG_MAP(WizardAutoConnectivity) 
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog) 
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker) 
 		COMMAND_ID_HANDLER(IDC_AUTO_DETECT, OnDetectConnection) 
+		CHAIN_MSG_MAP(baseClass) 
 	END_MSG_MAP() 
 
 	LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
@@ -50,6 +52,9 @@ public:
 
 	void write();
 	int OnWizardNext();
+	int OnSetActive();
+
+	bool usingManualConnectivity();
 private: 
 	SetupWizard* wizard;
 	static TextItem texts[];

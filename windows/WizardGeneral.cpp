@@ -40,9 +40,6 @@ PropPage::Item WizardGeneral::items[] = {
 
 
 LRESULT WizardGeneral::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
-	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
-	//EnableWizardButtons(PSWIZB_BACK, 0);
-
 	PropPage::read((HWND)*this, items);
 	PropPage::translate((HWND)(*this), texts);
 
@@ -71,4 +68,11 @@ int WizardGeneral::OnWizardNext() {
 	}
 
 	return FALSE;
+}
+
+int WizardGeneral::OnSetActive() {
+	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
+	EnableWizardButtons(PSWIZB_BACK, 0);
+	EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
+	return 0;
 }

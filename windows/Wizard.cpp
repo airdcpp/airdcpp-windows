@@ -20,7 +20,10 @@
 
 #include "Wizard.h"
 
-SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupWizard>(_T("Setup Wizard")), initial(isInitial) { 
+
+SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupWizard>(_T("Setup Wizard")), initial(isInitial), saved(false) {
+	//m_psh.pfnCallback = &PropSheetProc;
+
 	auto s = SettingsManager::getInstance();
 
 	int n = 0;
@@ -28,6 +31,7 @@ SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupW
 	pages[n++] = new WizardProfile(s, this);
 	pages[n++] = new WizardConnspeed(s, this);
 	pages[n++] = new WizardAutoConnectivity(s, this);
+	pages[n++] = new WizardManualConnectivity(s, this);
 	pages[n++] = new WizardSharing(s, this);
 
 	for(int i=0; i < n; i++) {
@@ -35,13 +39,24 @@ SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupW
 	}
 }
 
-SetupWizard::~SetupWizard() {
+SetupWizard::~SetupWizard() { }
+
+void SetupWizard::deletePages(PropPage::TaskList& tasks) {
 	for(int i=0; i < PAGE_LAST; i++) {
+		if (saved) {
+			auto t = pages[i]->getThreadedTask();
+			if (t) {
+				tasks.emplace_back(pages[i]->getThreadedTask(), pages[i]);
+				continue;
+			}
+		}
+		
 		delete pages[i];
 	}
 }
 
 int SetupWizard::OnWizardFinish() {
+	saved = true;
 	for(int i=0; i < PAGE_LAST; i++)
 	{
 		// Check HWND of page to see if it has been created

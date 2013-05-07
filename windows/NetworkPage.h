@@ -24,45 +24,9 @@
 #endif // _MSC_VER > 1000
 
 #include <atlcrack.h>
+
 #include "PropPage.h"
-#include "../client/UpdateManagerListener.h"
-
-class ProtocolPage : public SettingTab, public CDialogImpl<ProtocolPage>, private UpdateManagerListener
-{
-public:
-	ProtocolPage(SettingsManager *s, bool v6);
-	~ProtocolPage();
-	enum { IDD = IDD_PROTOCOLPAGE };
-
-	BEGIN_MSG_MAP(ProtocolPage)
-		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
-		COMMAND_ID_HANDLER(IDC_CONNECTION_DETECTION, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_ACTIVE, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_PASSIVE, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_ACTIVE_UPNP, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_PROTOCOL_ENABLED, onClickedActive)
-		COMMAND_ID_HANDLER(IDC_GETIP, onGetIP)
-	END_MSG_MAP()
-
-	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
-
-	void write();
-private:
-	static Item items4[];
-	static Item items6[];
-	static TextItem texts[];
-	CComboBox BindCombo;
-
-	void fixControls();
-	void getAddresses();
-
-	AirUtil::IpList bindAddresses;
-	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
-	bool v6;
-};
-
+#include "ProtocolPage.h"
 
 class NetworkPage : public CPropertyPage<IDD_NETWORKPAGE>, public PropPage
 {

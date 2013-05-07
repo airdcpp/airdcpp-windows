@@ -23,9 +23,10 @@
 #include "resource.h"
 #include "PropPage.h"
 
-#include "WTL\atldlgs.h"
+#include <atldlgs.h>
 
 #include "WizardAutoConnectivity.h"
+#include "WizardManualConnectivity.h"
 #include "WizardGeneral.h"
 #include "WizardConnspeed.h"
 #include "WizardProfile.h"
@@ -33,17 +34,20 @@
 
 class SetupWizard : public CAeroWizardFrameImpl<SetupWizard> { 
 public: 
+	enum { WM_USER_INITDIALOG = WM_APP + 501 };
 	enum Pages { 
 		PAGE_GENERAL,
 		PAGE_PROFILE,
 		PAGE_CONNSPEED,
 		PAGE_AUTOCONN,
+		PAGE_MANUALCONN,
 		PAGE_SHARING,
 		PAGE_LAST
 	};
 
+	typedef CAeroWizardFrameImpl<SetupWizard> baseClass;
 	BEGIN_MSG_MAP(SampleWizard) 
-		CHAIN_MSG_MAP(__super) 
+		CHAIN_MSG_MAP(baseClass) 
 	END_MSG_MAP() 
 		
 	SetupWizard(bool isInitial = false);
@@ -58,14 +62,13 @@ public:
 		return nullptr;
 	}
 
-	//LRESULT onFinish(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	//LRESULT onCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-
 	int OnWizardFinish();
 	bool isInitialRun() { return initial; }
+	void deletePages(PropPage::TaskList& tasks);
 private: 
 	PropPage *pages[PAGE_LAST];
 	bool initial;
+	bool saved;
 };
 
 #endif

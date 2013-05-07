@@ -77,6 +77,8 @@ protected:
 class PropPage : public SettingTab
 {
 public:
+	typedef vector<pair<Dispatcher::F, PropPage*>> TaskList;
+
 	PropPage(SettingsManager *src) : SettingTab(src) { }
 	virtual ~PropPage() { }
 

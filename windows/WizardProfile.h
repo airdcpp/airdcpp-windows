@@ -29,11 +29,13 @@
 class SetupWizard;
 class WizardProfile : public PropPage, public CAeroWizardPageImpl<WizardProfile> { 
 public: 
+	typedef CAeroWizardPageImpl<WizardProfile> baseClass;
 	BEGIN_MSG_MAP(WizardProfile) 
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDC_NORMAL, OnSelProfile)
 		COMMAND_ID_HANDLER(IDC_RAR, OnSelProfile)
 		COMMAND_ID_HANDLER(IDC_LAN, OnSelProfile)
+		CHAIN_MSG_MAP(baseClass) 
 	END_MSG_MAP() 
 			
 	LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
@@ -48,6 +50,8 @@ public:
 	void write();
 
 	int getCurProfile();
+
+	int OnSetActive();
 private:
 	static TextItem texts[];
 

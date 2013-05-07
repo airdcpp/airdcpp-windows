@@ -2075,9 +2075,11 @@ BEGIN
     CONTROL         "",IDC_CONNECTIVITY_LOG,"RichEdit50W",WS_BORDER | WS_VSCROLL | WS_TABSTOP | 0x804,15,87,253,116
     DEFPUSHBUTTON   "Auto detect",IDC_AUTO_DETECT,19,50,60,14
     LTEXT           "Configure the network settings so transfers will work.",IDC_AUTOCONN_INTRO,7,7,297,21
+    CONTROL         "I want to configure connectivity settings manually",IDC_MANUAL_CONFIG,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,215,235,10
 END
 
-IDD_WIZARD_MANUALCONN DIALOGEX 0, 0, 309, 239
+IDD_WIZARD_MANUALCONN DIALOGEX 0, 0, 309, 260
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -2092,7 +2094,7 @@ BEGIN
     GROUPBOX        "Settings Profiles",IDC_STATIC,19,47,277,184
     CONTROL         "Normal",IDC_NORMAL,"Button",BS_AUTORADIOBUTTON,25,63,108,10
     CONTROL         "RAR Hubs",IDC_RAR,"Button",BS_AUTORADIOBUTTON,25,98,82,10
-	CONTROL         "LAN/WAN Hubs",IDC_LAN,"Button",BS_AUTORADIOBUTTON,25,146,80,10
+    CONTROL         "LAN/WAN Hubs",IDC_LAN,"Button",BS_AUTORADIOBUTTON,25,146,80,10
     LTEXT           "The client is used in normal private/public hubs for transferring files via internet. Use this profile if unsure.",IDC_NORMAL_DESC,35,75,242,23
     LTEXT           "The client is used for transferring files that are split in RAR archives (or in other small-sized formats)",IDC_RAR_DESC,36,111,240,17
     CONTROL         "Install the RAR profile skiplist",IDC_WIZARD_SKIPLIST,
@@ -2243,7 +2245,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 302
         TOPMARGIN, 7
-        BOTTOMMARGIN, 232
+        BOTTOMMARGIN, 253
     END
 
     IDD_WIZARD_PROFILE, DIALOG

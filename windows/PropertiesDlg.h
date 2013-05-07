@@ -81,9 +81,7 @@ public:
 	PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage);
 	~PropertiesDlg();
 
-	typedef vector<pair<Dispatcher::F, PropPage*>> TaskList;
-
-	void deletePages(TaskList& tasks);
+	void deletePages(PropPage::TaskList& tasks);
 	LRESULT onOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 protected:

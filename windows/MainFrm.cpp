@@ -1031,7 +1031,7 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 
 	if(dlg.DoModal(m_hWnd) == IDOK) 
 	{
-		PropertiesDlg::TaskList tasks;
+		PropPage::TaskList tasks;
 		dlg.deletePages(tasks);
 
 		addThreadedTask([=] {

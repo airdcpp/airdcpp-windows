@@ -16,47 +16,39 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef DCPLUSPLUS_WIZARD_GENERAL
-#define DCPLUSPLUS_WIZARD_GENERAL
+#ifndef DCPLUSPLUS_WIZARD_MANUALCONN
+#define DCPLUSPLUS_WIZARD_MANUALCONN
 
 #include "stdafx.h"
 #include "resource.h"
 #include "PropPage.h"
-#include "WinUtil.h"
-
 #include "Wizard.h"
 
 #include <atldlgs.h>
 
 class SetupWizard;
-class WizardGeneral : public PropPage, public CAeroWizardPageImpl<WizardGeneral> { 
+class WizardManualConnectivity : public PropPage, public CAeroWizardPageImpl<WizardManualConnectivity> { 
 public: 
-	typedef CAeroWizardPageImpl<WizardGeneral> baseClass;
-	BEGIN_MSG_MAP(WizardGeneral) 
+	typedef CAeroWizardPageImpl<WizardManualConnectivity> baseClass;
+	BEGIN_MSG_MAP(WizardManualConnectivity) 
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
-		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, WinUtil::onUserFieldChar)
 		CHAIN_MSG_MAP(baseClass) 
 	END_MSG_MAP() 
-			
+
 	LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
-
-	enum { IDD = IDD_WIZARD_GENERAL }; 
-
+	
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 
-	WizardGeneral(SettingsManager *s, SetupWizard* aWizard);
+	enum { IDD = IDD_WIZARD_MANUALCONN }; 
+	WizardManualConnectivity(SettingsManager *s, SetupWizard* wizard);
+	~WizardManualConnectivity();
 
 	void write();
 	int OnWizardNext();
 	int OnSetActive();
 private: 
-	static Item items[];
-	static TextItem texts[];
-
-	CComboBoxEx ctrlLanguage;
 	SetupWizard* wizard;
+	static TextItem texts[];
 }; 
 
 #endif

@@ -54,9 +54,6 @@ PropPage::Item WizardConnspeed::downloadItems[] = {
 };
 
 LRESULT WizardConnspeed::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
-	//ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL);
-	//EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
-
 	ctrlDownload.Attach(GetDlgItem(IDC_DOWN_SPEED));
 	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
 
@@ -198,7 +195,7 @@ void WizardConnspeed::fixcontrols() {
 void WizardConnspeed::setDownloadLimits(double value) {
 	if (IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ)) {
 		auto page = wizard->getPage<WizardProfile>(SetupWizard::PAGE_PROFILE);
-		int dlSlots=AirUtil::getSlots(true, value, page->getCurProfile() == SettingsManager::PROFILE_RAR ? true : false);
+		int dlSlots=AirUtil::getSlots(true, value, page && page->getCurProfile() == SettingsManager::PROFILE_RAR ? true : false);
 		SetDlgItemText(IDC_DOWNLOAD_SLOTS, Util::toStringW(dlSlots).c_str());
 	
 		int dlLimit=AirUtil::getSpeedLimit(true, value);
@@ -210,7 +207,7 @@ void WizardConnspeed::setUploadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ)) {
 		auto page = wizard->getPage<WizardProfile>(SetupWizard::PAGE_PROFILE);
-		int ulSlots=AirUtil::getSlots(false, value, page->getCurProfile() == SettingsManager::PROFILE_RAR  ? true : false);
+		int ulSlots=AirUtil::getSlots(false, value, page && page->getCurProfile() == SettingsManager::PROFILE_RAR  ? true : false);
 		SetDlgItemText(IDC_UPLOAD_SLOTS, Util::toStringW(ulSlots).c_str());
 	
 		int ulLimit=AirUtil::getSpeedLimit(false, value);
@@ -219,4 +216,11 @@ void WizardConnspeed::setUploadLimits(double value) {
 		int autoOpened=AirUtil::getMaxAutoOpened(value);
 		SetDlgItemText(IDC_MAX_AUTO_OPENED, Util::toStringW(autoOpened).c_str());
 	}
+}
+
+int WizardConnspeed::OnSetActive() {
+	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
+	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
+	EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
+	return 0;
 }

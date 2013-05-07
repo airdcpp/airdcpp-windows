@@ -26,10 +26,6 @@ PropPage::TextItem WizardSharing::texts[] = {
 };
 
 LRESULT WizardSharing::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
-	ShowWizardButtons( PSWIZB_BACK  | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_FINISH | PSWIZB_CANCEL); 
-	//EnableWizardButtons(PSWIZB_BACK, 0); 
-	//SetButtonText(PSWIZB_NEXT, L"&Finish"); 
-
 	dirPage->Create(this->m_hWnd);
 	//dirPage->MoveWindow(10, 10, 0, 0);
 	dirPage->SetWindowPos(HWND_TOP, 10, 100, 0, 0, SWP_NOSIZE);
@@ -42,9 +38,29 @@ WizardSharing::WizardSharing(SettingsManager *s, SetupWizard* aWizard) : PropPag
 } 
 
 void WizardSharing::write() {
-	dirPage->applyChanges(true);
+	//dirPage->applyChanges(true);
 }
 
 int WizardSharing::OnWizardFinish() { 
 	return wizard->OnWizardFinish();
+}
+
+Dispatcher::F WizardSharing::getThreadedTask() {
+	return dirPage->getThreadedTask();
+}
+
+int WizardSharing::OnSetActive() {
+	ShowWizardButtons( PSWIZB_BACK  | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_FINISH | PSWIZB_CANCEL);
+	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
+	return 0;
+}
+
+int WizardSharing::OnWizardBack() {
+	auto p = wizard->getPage<WizardAutoConnectivity>(SetupWizard::PAGE_AUTOCONN);
+	if (p && !p->usingManualConnectivity()) {
+		wizard->SetActivePage(SetupWizard::PAGE_AUTOCONN);
+		return SetupWizard::PAGE_AUTOCONN;
+	}
+
+	return 0;
 }
