@@ -1394,9 +1394,6 @@ BEGIN
     EDITTEXT        IDC_PORT_TLS,236,297,30,14,ES_AUTOHSCROLL | ES_NUMBER
     GROUPBOX        "Preferred port mapping interface",IDC_SETTINGS_MAPPER_DESC,10,248,159,43
     COMBOBOX        IDC_MAPPER,18,265,140,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Protocol options",IDC_PROTOCOL_OPTIONS,9,31,263,200,NOT WS_VISIBLE
-    PUSHBUTTON      "IPv4",IDC_IPV4,10,6,63,14
-    PUSHBUTTON      "IPv6",IDC_IPV6,77,6,61,14
 END
 
 IDD_PROTOCOLPAGE DIALOGEX 0, 20, 296, 229
@@ -2084,6 +2081,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
+    LTEXT           "Configure the network settings so transfers will work.",IDC_MANUALCONN_INTRO,7,15,297,21
 END
 
 IDD_WIZARD_PROFILE DIALOGEX 0, 0, 319, 252
@@ -2103,6 +2101,15 @@ BEGIN
     LTEXT           "The client is mainly used for transferring files in local network (e.g. LAN parties) or in another closed network (e.g. university netwok)",IDC_LAN_DESC,35,159,246,19
     CONTROL         "Disable transfer encryption (reduces resource usage)",IDC_DISABLE_ENCRYPTION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,35,179,218,10
+END
+
+IDD_PROTOCOLBASE DIALOGEX 0, 0, 310, 254
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_BORDER
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Protocol options",IDC_PROTOCOL_OPTIONS,9,31,263,200,NOT WS_VISIBLE
+    PUSHBUTTON      "IPv4",IDC_IPV4,10,6,63,14
+    PUSHBUTTON      "IPv6",IDC_IPV6,77,6,61,14
 END
 
 
@@ -2254,6 +2261,14 @@ BEGIN
         RIGHTMARGIN, 312
         TOPMARGIN, 7
         BOTTOMMARGIN, 245
+    END
+
+    IDD_PROTOCOLBASE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 303
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 247
     END
 END
 #endif    // APSTUDIO_INVOKED

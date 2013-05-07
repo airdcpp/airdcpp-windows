@@ -65,6 +65,7 @@ private:
 	void setDownloadLimits(double value);
 	void setUploadLimits(double value);
 	void fixcontrols();
+	void updateAutoValues();
 
 	CComboBox ctrlUpload;	
 	CComboBox ctrlDownload;

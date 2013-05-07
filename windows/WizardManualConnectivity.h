@@ -24,6 +24,8 @@
 #include "PropPage.h"
 #include "Wizard.h"
 
+#include "ProtocolPage.h"
+
 #include <atldlgs.h>
 
 class SetupWizard;
@@ -49,6 +51,8 @@ public:
 private: 
 	SetupWizard* wizard;
 	static TextItem texts[];
+
+	unique_ptr<ProtocolBase> protocols;
 }; 
 
 #endif

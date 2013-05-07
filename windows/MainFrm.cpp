@@ -964,7 +964,18 @@ LRESULT MainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 }
 LRESULT MainFrame::OnWizard(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	SetupWizard dlg;
-	dlg.DoModal(m_hWnd);
+	if (dlg.DoModal(m_hWnd) == IDOK) {
+		PropPage::TaskList tasks;
+		dlg.deletePages(tasks);
+		if (!tasks.empty()) {
+			addThreadedTask([=] {
+				for(auto& t: tasks) {
+					t.first();
+					delete t.second;
+				}
+			});
+		}
+	}
 	return 0;
 }
 LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

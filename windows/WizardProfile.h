@@ -51,6 +51,7 @@ public:
 
 	int getCurProfile();
 
+	int OnWizardNext();
 	int OnSetActive();
 private:
 	static TextItem texts[];

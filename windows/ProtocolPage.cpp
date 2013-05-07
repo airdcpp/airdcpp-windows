@@ -29,6 +29,102 @@
 #include "ProtocolPage.h"
 #include "WinUtil.h"
 
+
+ProtocolBase::ProtocolBase(SettingsManager *s) : SettingTab(s) {
+	//SetTitle(CTSTRING(SETTINGS_NETWORK));
+	//m_psp.dwFlags |= PSP_RTLREADING;
+}
+
+ProtocolBase::~ProtocolBase() {
+}
+
+PropPage::TextItem ProtocolBase::texts[] = {
+	//ports
+	{ IDC_SETTINGS_PORTS, ResourceManager::SETTINGS_PORTS },
+	{ IDC_SETTINGS_PORT_TCP, ResourceManager::SETTINGS_TCP_PORT },
+	{ IDC_SETTINGS_PORT_UDP, ResourceManager::SETTINGS_UDP_PORT },
+	{ IDC_SETTINGS_PORT_TLS, ResourceManager::SETTINGS_TLS_PORT },
+
+	//mapper
+	{ IDC_SETTINGS_MAPPER_DESC, ResourceManager::PREFERRED_MAPPER },
+	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+};
+
+PropPage::Item ProtocolBase::items[] = {
+	//ports
+	{ IDC_PORT_TCP,		SettingsManager::TCP_PORT,		PropPage::T_INT }, 
+	{ IDC_PORT_UDP,		SettingsManager::UDP_PORT,		PropPage::T_INT }, 
+	{ IDC_PORT_TLS,		SettingsManager::TLS_PORT,		PropPage::T_INT },
+
+	//mapper
+	{ IDC_MAPPER,		SettingsManager::MAPPER,		PropPage::T_STR }, 
+	{ 0, 0, PropPage::T_END }
+};
+
+void ProtocolBase::write()
+{
+	SettingTab::write((HWND)(*this), items);
+	if (ipv4Page)
+		ipv4Page->write();
+	if (ipv6Page)
+		ipv6Page->write();
+}
+
+LRESULT ProtocolBase::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
+{
+	//SettingTab::translate((HWND)(*this), texts);
+	//SettingTab::read((HWND)(*this), items);
+
+	// Mapper
+	/*MapperCombo.Attach(GetDlgItem(IDC_MAPPER));
+	const auto& setting = SETTING(MAPPER);
+	int sel = 0;
+
+	auto mappers = ConnectivityManager::getInstance()->getMappers(false);
+	for(const auto& name: mappers) {
+		int pos = MapperCombo.AddString(Text::toT(name).c_str());
+		//auto pos = mapper->addValue(Text::toT(name));
+		if(!sel && name == setting)
+			sel = pos;
+	}
+
+	MapperCombo.SetCurSel(sel);*/
+
+	ctrlIPv4.Attach(GetDlgItem(IDC_IPV4));
+	ctrlIPv6.Attach(GetDlgItem(IDC_IPV6));
+
+	showProtocol(false);
+	return TRUE;
+}
+
+LRESULT ProtocolBase::onClickProtocol(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	//hide the current window
+	bool v6 = wID == IDC_IPV6;
+	auto& curWindow = wID == IDC_IPV6 ? ipv4Page : ipv6Page;
+	if (curWindow)
+		curWindow->ShowWindow(SW_HIDE);
+
+	CheckDlgButton(!v6 ? IDC_IPV6 : IDC_IPV4, BST_UNCHECKED);
+
+	showProtocol(wID == IDC_IPV6);
+	return TRUE;
+}
+
+void ProtocolBase::showProtocol(bool v6) {
+	auto& shownPage = v6 ? ipv6Page : ipv4Page;
+	if (!shownPage) {
+		shownPage.reset(new ProtocolPage(SettingsManager::getInstance(), v6));
+		shownPage->Create(this->m_hWnd);
+	}
+
+	shownPage->ShowWindow(SW_SHOW);
+
+	ctrlIPv6.SetState(v6);
+	ctrlIPv4.SetState(!v6);
+}
+
+
+
 ProtocolPage::ProtocolPage(SettingsManager *s, bool v6) :  SettingTab(s), v6(v6) {
 	UpdateManager::getInstance()->addListener(this);
 }

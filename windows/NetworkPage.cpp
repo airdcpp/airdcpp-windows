@@ -23,7 +23,7 @@
 
 #include "../client/ConnectivityManager.h"
 
-NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s) {
+NetworkPage::NetworkPage(SettingsManager *s) : PropPage(s), protocols(new ProtocolBase(s)) {
 	SetTitle(CTSTRING(SETTINGS_NETWORK));
 	m_psp.dwFlags |= PSP_RTLREADING;
 }
@@ -57,10 +57,7 @@ PropPage::Item NetworkPage::items[] = {
 void NetworkPage::write()
 {
 	PropPage::write((HWND)(*this), items);
-	if (ipv4Page)
-		ipv4Page->write();
-	if (ipv6Page)
-		ipv6Page->write();
+	protocols->write();
 }
 
 LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
@@ -83,35 +80,13 @@ LRESULT NetworkPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	MapperCombo.SetCurSel(sel);
 
-	ctrlIPv4.Attach(GetDlgItem(IDC_IPV4));
-	ctrlIPv6.Attach(GetDlgItem(IDC_IPV6));
-
-	showProtocol(false);
+	protocols->Create(this->m_hWnd);
+	//CRect rc;
+	//::GetWindowRect(GetDlgItem(IDC_SETTINGS_SHARED_DIRECTORIES), rc);
+	//::AdjustWindowRect(rc, GetWindowLongPtr(GWL_STYLE), false);
+	//dirPage->SetWindowPos(m_hWnd, rc.left+10, rc.top+10, 0, 0, SWP_NOSIZE);
+	protocols->SetWindowPos(HWND_TOP, 17, 10, 0, 0, SWP_NOSIZE);
+	protocols->ShowWindow(SW_SHOW);
+	
 	return TRUE;
-}
-
-LRESULT NetworkPage::onClickProtocol(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	//hide the current window
-	bool v6 = wID == IDC_IPV6;
-	auto& curWindow = wID == IDC_IPV6 ? ipv4Page : ipv6Page;
-	if (curWindow)
-		curWindow->ShowWindow(SW_HIDE);
-
-	CheckDlgButton(!v6 ? IDC_IPV6 : IDC_IPV4, BST_UNCHECKED);
-
-	showProtocol(wID == IDC_IPV6);
-	return TRUE;
-}
-
-void NetworkPage::showProtocol(bool v6) {
-	auto& shownPage = v6 ? ipv6Page : ipv4Page;
-	if (!shownPage) {
-		shownPage.reset(new ProtocolPage(SettingsManager::getInstance(), v6));
-		shownPage->Create(this->m_hWnd);
-	}
-
-	shownPage->ShowWindow(SW_SHOW);
-
-	ctrlIPv6.SetState(v6);
-	ctrlIPv4.SetState(!v6);
 }

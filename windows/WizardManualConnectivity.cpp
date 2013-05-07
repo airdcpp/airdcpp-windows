@@ -32,10 +32,18 @@ PropPage::TextItem WizardManualConnectivity::texts[] = {
 };
 
 LRESULT WizardManualConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	protocols->Create(this->m_hWnd);
+	//CRect rc;
+	//::GetWindowRect(GetDlgItem(IDC_SETTINGS_SHARED_DIRECTORIES), rc);
+	//::AdjustWindowRect(rc, GetWindowLongPtr(GWL_STYLE), false);
+	//dirPage->SetWindowPos(m_hWnd, rc.left+10, rc.top+10, 0, 0, SWP_NOSIZE);
+	protocols->SetWindowPos(HWND_TOP, 10, 50, 0, 0, SWP_NOSIZE);
+	protocols->ShowWindow(SW_SHOW);
+
 	return TRUE; 
 }
 
-WizardManualConnectivity::WizardManualConnectivity(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard) { 
+WizardManualConnectivity::WizardManualConnectivity(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard), protocols(new ProtocolBase(s)) { 
 	SetHeaderTitle(_T("Manual connection setup"));
 } 
 
@@ -43,7 +51,7 @@ WizardManualConnectivity::~WizardManualConnectivity() {
 }
 
 void WizardManualConnectivity::write() {
-	//dirPage->applyChanges(true);
+	protocols->write();
 }
 
 int WizardManualConnectivity::OnWizardNext() { 

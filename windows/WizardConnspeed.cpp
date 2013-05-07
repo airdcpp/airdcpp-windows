@@ -111,6 +111,11 @@ LRESULT WizardConnspeed::onSpeedtest(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 
 LRESULT WizardConnspeed::OnDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
+	updateAutoValues();
+	return 0;
+}
+
+void WizardConnspeed::updateAutoValues() {
 	fixcontrols();
 
 	TCHAR buf1[64];
@@ -122,7 +127,6 @@ LRESULT WizardConnspeed::OnDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	GetDlgItemText(IDC_CONNECTION, buf2, sizeof(buf2) +1);
 	double valueUL = Util::toDouble(Text::fromT(buf2));
 	setUploadLimits(valueUL);
-	return 0;
 }
 
 LRESULT WizardConnspeed::OnDownSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
@@ -222,5 +226,8 @@ int WizardConnspeed::OnSetActive() {
 	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
 	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
 	EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
+
+	//update in case the profile has been changed
+	updateAutoValues();
 	return 0;
 }

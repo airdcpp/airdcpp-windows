@@ -41,10 +41,15 @@ LRESULT WizardAutoConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/
 	cAutoDetect.Attach(GetDlgItem(IDC_AUTO_DETECT));
 	cAutoDetect.EnableWindow(ConnectivityManager::getInstance()->isRunning() ? FALSE : TRUE);
 
+	if (SETTING(NICK).empty() && CONNSETTING(AUTO_DETECT_CONNECTION) && CONNSETTING(AUTO_DETECT_CONNECTION)) {
+		//initial run
+		detectConnection();
+	}
+
 	return TRUE; 
 }
 
-WizardAutoConnectivity::WizardAutoConnectivity(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard) { 
+WizardAutoConnectivity::WizardAutoConnectivity(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard), v4State(STATE_UNKNOWN), v6State(STATE_UNKNOWN) { 
 	SetHeaderTitle(_T("Connectivity detection"));
 	ConnectivityManager::getInstance()->addListener(this);
 } 
@@ -77,9 +82,13 @@ int WizardAutoConnectivity::OnSetActive() {
 }
 
 LRESULT WizardAutoConnectivity::OnDetectConnection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	detectConnection();
+	return 0;
+}
+
+void WizardAutoConnectivity::detectConnection() {
 	EnableWizardButtons(PSWIZB_NEXT, 0);
 	ConnectivityManager::getInstance()->detectConnection();
-	return 0;
 }
 
 void WizardAutoConnectivity::addLogLine(tstring& msg) {
@@ -96,7 +105,8 @@ void WizardAutoConnectivity::on(Message, const string& message) noexcept {
 	});
 }
 
-void WizardAutoConnectivity::on(Started, bool /*v6*/) noexcept {
+void WizardAutoConnectivity::on(Started, bool v6) noexcept {
+	(v6 ? v6State :v4State) = STATE_DETECTING;
 	callAsync([this] {
 		cAutoDetect.EnableWindow(FALSE);
 		log.SetTextEx(_T(""));
@@ -104,11 +114,25 @@ void WizardAutoConnectivity::on(Started, bool /*v6*/) noexcept {
 	});
 }
 
-void WizardAutoConnectivity::on(Finished, bool /*v6*/, bool /*failed*/) noexcept {
+void WizardAutoConnectivity::on(Finished, bool v6, bool failed) noexcept {
+	if (v6){
+		v6State = failed ? STATE_FAILED : STATE_SUCCEED;
+	} else {
+		v4State = failed ? STATE_FAILED : STATE_SUCCEED;
+	}
+
+	/*if (failed) {
+		string msg = "Setting up " + v6 ? "IPv6" : "IPv4" + "failed; it's recommended to set up the connectivity manually";
+	}*/
+
 	callAsync([this] {
 		cAutoDetect.EnableWindow(TRUE);
 		//edit->setEnabled(true);
-		EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT); 
+		EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
+
+		if (v6State != STATE_DETECTING && v4State != STATE_DETECTING) {
+			EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
+		}
 	});
 }
 

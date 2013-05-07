@@ -430,6 +430,7 @@
     <ClInclude Include="client\SearchResult.h" />
     <ClInclude Include="client\Segment.h" />
     <ClInclude Include="client\Semaphore.h" />
+    <ClInclude Include="client\SettingItem.h" />
     <ClInclude Include="client\SettingsManager.h" />
     <ClInclude Include="client\SFVReader.h" />
     <ClInclude Include="client\SharedFileStream.h" />

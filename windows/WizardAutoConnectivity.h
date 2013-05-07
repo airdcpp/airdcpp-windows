@@ -56,6 +56,16 @@ public:
 
 	bool usingManualConnectivity();
 private: 
+	enum ProtocolState {
+		STATE_UNKNOWN,
+		STATE_DETECTING,
+		STATE_FAILED,
+		STATE_SUCCEED
+	};
+
+	ProtocolState v4State;
+	ProtocolState v6State;
+
 	SetupWizard* wizard;
 	static TextItem texts[];
 	RichTextBox log;
@@ -63,6 +73,7 @@ private:
 	CButton cAutoDetect;
 
 	void addLogLine(tstring& msg);
+	void detectConnection();
 
 	// ConnectivityManagerListener
 	void on(Message, const string& message) noexcept;
