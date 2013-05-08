@@ -609,6 +609,7 @@
     <ClCompile Include="windows\Wizard.cpp" />
     <ClCompile Include="windows\WizardAutoConnectivity.cpp" />
     <ClCompile Include="windows\WizardConnspeed.cpp" />
+    <ClCompile Include="windows\WizardFinish.cpp" />
     <ClCompile Include="windows\WizardGeneral.cpp" />
     <ClCompile Include="windows\WizardManualConnectivity.cpp" />
     <ClCompile Include="windows\WizardProfile.cpp" />
@@ -745,6 +746,7 @@
     <ClInclude Include="windows\Wizard.h" />
     <ClInclude Include="windows\WizardAutoConnectivity.h" />
     <ClInclude Include="windows\WizardConnspeed.h" />
+    <ClInclude Include="windows\WizardFinish.h" />
     <ClInclude Include="windows\WizardGeneral.h" />
     <ClInclude Include="windows\WizardManualConnectivity.h" />
     <ClInclude Include="windows\WizardProfile.h" />

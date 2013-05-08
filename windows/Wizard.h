@@ -31,6 +31,7 @@
 #include "WizardConnspeed.h"
 #include "WizardProfile.h"
 #include "WizardSharing.h"
+#include "WizardFinish.h"
 
 class SetupWizard : public CAeroWizardFrameImpl<SetupWizard> { 
 public: 
@@ -42,6 +43,7 @@ public:
 		PAGE_AUTOCONN,
 		PAGE_MANUALCONN,
 		PAGE_SHARING,
+		PAGE_FINISH,
 		PAGE_LAST
 	};
 

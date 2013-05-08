@@ -747,6 +747,9 @@
     <ClCompile Include="windows\WizardManualConnectivity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\WizardFinish.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1149,6 +1152,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\WizardManualConnectivity.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\WizardFinish.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

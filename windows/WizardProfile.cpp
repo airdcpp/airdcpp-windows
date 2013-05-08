@@ -30,45 +30,6 @@ PropPage::TextItem WizardProfile::texts[] = {
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
-SettingItem normalSettings[] = { 
-	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
-	{ SettingsManager::CHECK_SFV, false, ResourceManager::CHECK_SFV },
-	{ SettingsManager::CHECK_NFO, false, ResourceManager::CHECK_NFO },
-	{ SettingsManager::CHECK_EXTRA_SFV_NFO, false, ResourceManager::CHECK_EXTRA_SFV_NFO },
-	{ SettingsManager::CHECK_EXTRA_FILES, false, ResourceManager::CHECK_EXTRA_FILES },
-	{ SettingsManager::CHECK_DUPES, false, ResourceManager::CHECK_DUPES },
-	{ SettingsManager::MAX_FILE_SIZE_SHARED, 0, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ SettingsManager::SEARCH_TIME, 10, ResourceManager::MINIMUM_SEARCH_INTERVAL },
-	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
-	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
-};
-
-SettingItem rarSettings[] = {
-	{ SettingsManager::MULTI_CHUNK, false, ResourceManager::SEGMENTS },
-	{ SettingsManager::CHECK_SFV, true, ResourceManager::CHECK_SFV },
-	{ SettingsManager::CHECK_NFO, true, ResourceManager::CHECK_NFO },
-	{ SettingsManager::CHECK_EXTRA_SFV_NFO, true, ResourceManager::CHECK_EXTRA_SFV_NFO },
-	{ SettingsManager::CHECK_EXTRA_FILES, true, ResourceManager::CHECK_EXTRA_FILES },
-	{ SettingsManager::CHECK_DUPES, true, ResourceManager::CHECK_DUPES },
-	{ SettingsManager::MAX_FILE_SIZE_SHARED, 600, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ SettingsManager::SEARCH_TIME, 5, ResourceManager::MINIMUM_SEARCH_INTERVAL },
-	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
-	{ SettingsManager::AUTO_FOLLOW, false, ResourceManager::SETTINGS_AUTO_FOLLOW },
-};
-
-SettingItem lanSettings[] = {
-	{ SettingsManager::MULTI_CHUNK, true, ResourceManager::SEGMENTS },
-	{ SettingsManager::CHECK_SFV, false, ResourceManager::CHECK_SFV },
-	{ SettingsManager::CHECK_NFO, false, ResourceManager::CHECK_NFO },
-	{ SettingsManager::CHECK_EXTRA_SFV_NFO, false, ResourceManager::CHECK_EXTRA_SFV_NFO },
-	{ SettingsManager::CHECK_EXTRA_FILES, false, ResourceManager::CHECK_EXTRA_FILES },
-	{ SettingsManager::CHECK_DUPES, false, ResourceManager::CHECK_DUPES },
-	{ SettingsManager::MAX_FILE_SIZE_SHARED, 0, ResourceManager::DONT_SHARE_BIGGER_THAN },
-	{ SettingsManager::SEARCH_TIME, 5, ResourceManager::MINIMUM_SEARCH_INTERVAL },
-	//{ SettingsManager::AUTO_SEARCH_LIMIT, 5 },
-	{ SettingsManager::AUTO_FOLLOW, true, ResourceManager::SETTINGS_AUTO_FOLLOW },
-};
-
 LRESULT WizardProfile::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
 	//PropPage::translate((HWND)(*this), texts);
 	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
@@ -78,7 +39,7 @@ LRESULT WizardProfile::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM 
 	switch(SETTING(SETTINGS_PROFILE)) {
 		case SettingsManager::PROFILE_PUBLIC: CheckDlgButton(IDC_NORMAL, BST_CHECKED); break;
 		case SettingsManager::PROFILE_RAR: CheckDlgButton(IDC_RAR, BST_CHECKED); break;
-		case SettingsManager::PROFILE_PRIVATE: CheckDlgButton(IDC_PRIVATE_HUB, BST_CHECKED); break;
+		case SettingsManager::PROFILE_LAN: CheckDlgButton(IDC_LAN, BST_CHECKED); break;
 		default: CheckDlgButton(IDC_NORMAL, BST_CHECKED); break;
 	}
 
@@ -92,52 +53,62 @@ WizardProfile::WizardProfile(SettingsManager *s, SetupWizard* aWizard) : PropPag
 	SetHeaderTitle(_T("Profile"));
 }
 
-const SettingItem (&getArray(int newProfile))[9] {
-	if (newProfile == SettingsManager::PROFILE_RAR) {
-		return rarSettings;
-	} else if (newProfile == SettingsManager::PROFILE_LAN) {
-		return lanSettings;
-	} else {
-		return normalSettings;
-	}
-}
-
 int WizardProfile::OnWizardNext() {
 	return 0;
 }
 
 void WizardProfile::write() {
-	if(IsDlgButtonChecked(IDC_NORMAL)) {
-		AirUtil::setProfile(0);
-	} else if(IsDlgButtonChecked(IDC_RAR)) {
-		AirUtil::setProfile(1, IsDlgButtonChecked(IDC_WIZARD_SKIPLIST) ? true : false);
-	} else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)) {
-		AirUtil::setProfile(2);
+	auto newProfile = getCurProfile();
+	if (newProfile == SettingsManager::PROFILE_LAN && IsDlgButtonChecked(IDC_DISABLE_ENCRYPTION)) {
+		SettingsManager::getInstance()->set(SettingsManager::TLS_MODE, static_cast<int>(SettingsManager::TLS_DISABLED));
+	} else if (newProfile == SettingsManager::PROFILE_RAR && IsDlgButtonChecked(IDC_WIZARD_SKIPLIST)) {
+		SettingsManager::getInstance()->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
+		SettingsManager::getInstance()->set(SettingsManager::SKIPLIST_SHARE, "(.*(\\.(scn|asd|lnk|cmd|conf|dll|url|log|crc|dat|sfk|mxm|txt|message|iso|inf|sub|exe|img|bin|aac|mrg|tmp|xml|sup|ini|db|debug|pls|ac3|ape|par2|htm(l)?|bat|idx|srt|doc(x)?|ion|b4s|bgl|cab|cat|bat)$))|((All-Files-CRC-OK|xCOMPLETEx|imdb.nfo|- Copy|(.*\\s\\(\\d\\).*)).*$)");
+		ShareManager::getInstance()->setSkipList();
 	}
 
-	auto newProfile = getCurProfile();
+	SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, newProfile);
+	SettingsManager::getInstance()->applyProfileDefaults();
+
+	// a custom set value that differs from the one used by the profile? don't replace those without confirmation
 	vector<SettingItem> conflicts;
-	
-	for (const auto& newSetting: getArray(newProfile)) {
-		// a custom set value that differs from the one used by the profile? don't replace those without confirmation
+	for (const auto& newSetting: SettingsManager::profileSettings[newProfile]) {
 		if (newSetting.isSet() && !newSetting.isProfileCurrent()) {
 			conflicts.push_back(newSetting);
-		} else {
-			//we can set the default right away
-			newSetting.setDefault(false);
 		}
 	}
 
 	if (!conflicts.empty()) {
-		string msg = "The following settings currently have manually set values:\r\n\r\n";
+		string msg;
 		for (const auto& setting: conflicts) {
 			msg += "Setting name: " + setting.getName() + "\r\n";
 			msg += "Current value: " + setting.currentToString() + "\r\n";
 			msg += "Profile value: " + setting.profileToString() + "\r\n\r\n";
 		}
 
-		msg += "Do you want to use the profile values anyway?";
-		if (MessageBox(Text::toT(msg).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING),  MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+		CTaskDialog taskdlg;
+
+		tstring descText = _T("There are x settings that have manually set values. Do you want to replace those with the values used by this profile?");
+		taskdlg.SetContentText(descText.c_str());
+
+		auto tmp = Text::toT(msg);
+		taskdlg.SetExpandedInformationText(tmp.c_str());
+		taskdlg.SetExpandedControlText(_T("Show conflicting settings"));
+		TASKDIALOG_BUTTON buttons[] =
+		{
+			{ 0, _T("Use the profile settings"), },
+			{ 1, _T("Keep my current settings"), },
+		};
+		taskdlg.ModifyFlags(0, TDF_USE_COMMAND_LINKS | TDF_EXPAND_FOOTER_AREA);
+		taskdlg.SetWindowTitle(_T("Manually configured settings found"));
+		taskdlg.SetCommonButtons(TDCBF_CANCEL_BUTTON);
+		taskdlg.SetMainIcon(TD_INFORMATION_ICON);
+
+		taskdlg.SetButtons(buttons, _countof(buttons));
+
+		int sel = 0;
+        taskdlg.DoModal(m_hWnd, &sel, 0, 0);
+		if (sel == 0) {
 			for (const auto& setting: conflicts) {
 				setting.setDefault(true);
 			}
@@ -150,8 +121,8 @@ int WizardProfile::getCurProfile() {
 		return SettingsManager::PROFILE_PUBLIC;
 	} else if(IsDlgButtonChecked(IDC_RAR)) {
 		return SettingsManager::PROFILE_RAR;
-	} else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
-		return SettingsManager::PROFILE_PRIVATE;;
+	} else if(IsDlgButtonChecked(IDC_LAN)){
+		return SettingsManager::PROFILE_LAN;;
 	}
 
 	return SettingsManager::PROFILE_PUBLIC;

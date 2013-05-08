@@ -2112,6 +2112,14 @@ BEGIN
     PUSHBUTTON      "IPv6",IDC_IPV6,77,6,61,14
 END
 
+IDD_WIZARD_FINISH DIALOGEX 0, 0, 309, 207
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Congratulations! You completed the wizard without crashing it.",IDC_FINISH_INTRO,16,9,288,88
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2269,6 +2277,14 @@ BEGIN
         RIGHTMARGIN, 303
         TOPMARGIN, 7
         BOTTOMMARGIN, 247
+    END
+
+    IDD_WIZARD_FINISH, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 200
     END
 END
 #endif    // APSTUDIO_INVOKED

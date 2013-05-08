@@ -199,7 +199,7 @@ void WizardConnspeed::fixcontrols() {
 void WizardConnspeed::setDownloadLimits(double value) {
 	if (IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ)) {
 		auto page = wizard->getPage<WizardProfile>(SetupWizard::PAGE_PROFILE);
-		int dlSlots=AirUtil::getSlots(true, value, page && page->getCurProfile() == SettingsManager::PROFILE_RAR ? true : false);
+		int dlSlots=AirUtil::getSlots(true, value, static_cast<SettingsManager::SettingProfile>(page ? page->getCurProfile() : SETTING(SETTINGS_PROFILE)));
 		SetDlgItemText(IDC_DOWNLOAD_SLOTS, Util::toStringW(dlSlots).c_str());
 	
 		int dlLimit=AirUtil::getSpeedLimit(true, value);
@@ -211,7 +211,7 @@ void WizardConnspeed::setUploadLimits(double value) {
 
 	if (IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ)) {
 		auto page = wizard->getPage<WizardProfile>(SetupWizard::PAGE_PROFILE);
-		int ulSlots=AirUtil::getSlots(false, value, page && page->getCurProfile() == SettingsManager::PROFILE_RAR  ? true : false);
+		int ulSlots=AirUtil::getSlots(false, value, static_cast<SettingsManager::SettingProfile>(page ? page->getCurProfile() : SETTING(SETTINGS_PROFILE)));
 		SetDlgItemText(IDC_UPLOAD_SLOTS, Util::toStringW(ulSlots).c_str());
 	
 		int ulLimit=AirUtil::getSpeedLimit(false, value);

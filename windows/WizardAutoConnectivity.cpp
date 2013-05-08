@@ -126,11 +126,8 @@ void WizardAutoConnectivity::on(Finished, bool v6, bool failed) noexcept {
 	}*/
 
 	callAsync([this] {
-		cAutoDetect.EnableWindow(TRUE);
-		//edit->setEnabled(true);
-		EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
-
 		if (v6State != STATE_DETECTING && v4State != STATE_DETECTING) {
+			cAutoDetect.EnableWindow(TRUE);
 			EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
 		}
 	});

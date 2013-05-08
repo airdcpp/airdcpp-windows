@@ -33,6 +33,7 @@ SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupW
 	pages[n++] = new WizardAutoConnectivity(s, this);
 	pages[n++] = new WizardManualConnectivity(s, this);
 	pages[n++] = new WizardSharing(s, this);
+	pages[n++] = new WizardFinish(s, this);
 
 	for(int i=0; i < n; i++) {
 		AddPage(pages[i]->getPSP());

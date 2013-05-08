@@ -50,7 +50,13 @@ Dispatcher::F WizardSharing::getThreadedTask() {
 }
 
 int WizardSharing::OnSetActive() {
-	ShowWizardButtons( PSWIZB_BACK  | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_FINISH | PSWIZB_CANCEL);
+	if (wizard->isInitialRun()) {
+		ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
+		EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
+	} else {
+		ShowWizardButtons( PSWIZB_BACK  | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_FINISH | PSWIZB_CANCEL);
+	}
+
 	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
 	return 0;
 }

@@ -186,6 +186,7 @@
 #define IDD_WIZARD_MANUALCONN           353
 #define IDD_WIZARD_PROFILE              354
 #define IDD_PROTOCOLBASE                355
+#define IDD_WIZARD_FINISH               356
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
@@ -1319,6 +1320,7 @@
 #define IDC_LAN_DESC                    1723
 #define IDC_MANUAL_CONFIG               1723
 #define IDC_MANUALCONN_INTRO            1724
+#define IDC_FINISH_INTRO                1725
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1716,9 +1718,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        356
+#define _APS_NEXT_RESOURCE_VALUE        357
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1725
+#define _APS_NEXT_CONTROL_VALUE         1726
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

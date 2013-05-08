@@ -243,7 +243,7 @@ int SpeedPage::maxMCNExtras(double speed) {
 void SpeedPage::setDownloadLimits(double value) {
 	int dlSlots=0;
 	if (IsDlgButtonChecked(IDC_DL_AUTODETECT)) {
-		dlSlots=AirUtil::getSlots(true, value, SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR);
+		dlSlots=AirUtil::getSlots(true, value);
 		SetDlgItemText(IDC_DOWNLOADS, Util::toStringW(dlSlots).c_str());
 	
 		int dlLimit=AirUtil::getSpeedLimit(true, value);
@@ -265,7 +265,7 @@ void SpeedPage::setUploadLimits(double value) {
 	int ulSlots=0;
 	if (IsDlgButtonChecked(IDC_UL_AUTODETECT)) {
 
-		ulSlots=AirUtil::getSlots(false, value, SETTING(SETTINGS_PROFILE) == SettingsManager::PROFILE_RAR);
+		ulSlots=AirUtil::getSlots(false, value);
 		SetDlgItemText(IDC_SLOTS, Util::toStringW(ulSlots).c_str());
 	
 		int ulLimit=AirUtil::getSpeedLimit(false, value);

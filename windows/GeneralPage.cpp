@@ -56,13 +56,13 @@ PropPage::Item GeneralPage::items[] = {
 
 void GeneralPage::write()
 {
-	if(IsDlgButtonChecked(IDC_PUBLIC)){
+	/*if(IsDlgButtonChecked(IDC_PUBLIC)){
 		AirUtil::setProfile(SettingsManager::PROFILE_PUBLIC);
 	} else if(IsDlgButtonChecked(IDC_RAR)) {
 		AirUtil::setProfile(SettingsManager::PROFILE_RAR);
 	} else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
 		AirUtil::setProfile(SettingsManager::PROFILE_PRIVATE);
-	}
+	}*/
 
 	Localization::setLanguage(ctrlLanguage.GetCurSel());
 	PropPage::write((HWND)(*this), items);
@@ -77,7 +77,7 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	ctrlLanguage.Attach(GetDlgItem(IDC_LANGUAGE));
 
-	switch(SETTING(SETTINGS_PROFILE)) {
+	/*switch(SETTING(SETTINGS_PROFILE)) {
 		case SettingsManager::PROFILE_PUBLIC: 
 			CheckDlgButton(IDC_PUBLIC, BST_CHECKED);
 			break;
@@ -90,7 +90,7 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 		default: 
 			CheckDlgButton(IDC_PUBLIC, BST_CHECKED);
 			break;
-	}
+	}*/
 
 	WinUtil::appendLanguageMenu(ctrlLanguage);
 

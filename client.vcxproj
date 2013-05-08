@@ -282,6 +282,7 @@
     <ClCompile Include="client\SearchManager.cpp" />
     <ClCompile Include="client\SearchQueue.cpp" />
     <ClCompile Include="client\SearchResult.cpp" />
+    <ClCompile Include="client\SettingItem.cpp" />
     <ClCompile Include="client\SettingsManager.cpp" />
     <ClCompile Include="client\SFVReader.cpp" />
     <ClCompile Include="client\SharedFileStream.cpp" />
