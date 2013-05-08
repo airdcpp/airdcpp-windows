@@ -21,23 +21,30 @@
 #include "WizardProfile.h"
 
 #include "../client/AirUtil.h"
-#include "../client/SettingItem.h"
 
 PropPage::TextItem WizardProfile::texts[] = {
-	//{ IDC_PROFILE_INTRO, ResourceManager::DESCRIPTION },
-	//{ IDC_NORMAL_DESC, ResourceManager::DESCRIPTION },
-	//{ IDC_RAR_DESC, ResourceManager::DESCRIPTION },
+	{ IDC_USER_PROFILE_BOX, ResourceManager::USER_PROFILE_PLAIN },
+	{ IDC_PROFILE_INTRO, ResourceManager::WIZARD_PROFILE_INTRO },
+	{ IDC_WIZARD_SKIPLIST, ResourceManager::INSTALL_RAR_SKIPLIST },
+	{ IDC_DISABLE_ENCRYPTION, ResourceManager::LAN_DISABLE_ENCRYPTION },
+	{ IDC_NORMAL_DESC, ResourceManager::PROFILE_NORMAL_DESC },
+	{ IDC_RAR_DESC, ResourceManager::PROFILE_RAR_DESC },
+	{ IDC_LAN_DESC, ResourceManager::PROFILE_LAN_DESC },
+	{ IDC_NORMAL, ResourceManager::NORMAL },
+	{ IDC_RAR, ResourceManager::RAR_HUBS },
+	{ IDC_LAN, ResourceManager::LAN_HUBS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 LRESULT WizardProfile::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
-	//PropPage::translate((HWND)(*this), texts);
+	PropPage::translate((HWND)(*this), texts);
+
 	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 
 	EnableWizardButtons(PSWIZB_BACK, PSWIZB_BACK);
 	EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
 
 	switch(SETTING(SETTINGS_PROFILE)) {
-		case SettingsManager::PROFILE_PUBLIC: CheckDlgButton(IDC_NORMAL, BST_CHECKED); break;
+		case SettingsManager::PROFILE_NORMAL: CheckDlgButton(IDC_NORMAL, BST_CHECKED); break;
 		case SettingsManager::PROFILE_RAR: CheckDlgButton(IDC_RAR, BST_CHECKED); break;
 		case SettingsManager::PROFILE_LAN: CheckDlgButton(IDC_LAN, BST_CHECKED); break;
 		default: CheckDlgButton(IDC_NORMAL, BST_CHECKED); break;
@@ -49,11 +56,57 @@ LRESULT WizardProfile::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM 
 	return TRUE; 
 }
 
-WizardProfile::WizardProfile(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard) { 
-	SetHeaderTitle(_T("Profile"));
+WizardProfile::WizardProfile(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard), lastProfile(SETTING(SETTINGS_PROFILE)) { 
+	SetHeaderTitle(CTSTRING(USER_PROFILE_SEL));
 }
 
 int WizardProfile::OnWizardNext() {
+	auto newProfile = getCurProfile();
+	if (newProfile != lastProfile) {
+		// a custom set value that differs from the one used by the profile? don't replace those without confirmation
+		for (const auto& newSetting: SettingsManager::profileSettings[newProfile]) {
+			if (newSetting.isSet() && !newSetting.isProfileCurrent()) {
+				conflicts.push_back(newSetting);
+			}
+		}
+
+		if (!conflicts.empty()) {
+			string msg;
+			for (const auto& setting: conflicts) {
+				msg += STRING_F(SETTING_NAME_X, setting.getName()) + "\r\n";
+				msg += STRING_F(CURRENT_VALUE_X, setting.currentToString()) + "\r\n";
+				msg += STRING_F(PROFILE_VALUE_X, setting.profileToString()) + "\r\n\r\n";
+			}
+
+			CTaskDialog taskdlg;
+
+			tstring tmp1 = TSTRING_F(MANUALLY_CONFIGURED_MSG, conflicts.size() % Text::toT(SettingsManager::getInstance()->getProfileName(newProfile)).c_str());
+			taskdlg.SetContentText(tmp1.c_str());
+
+			auto tmp2 = Text::toT(msg);
+			taskdlg.SetExpandedInformationText(tmp2.c_str());
+			taskdlg.SetExpandedControlText(CTSTRING(SHOW_CONFLICTING));
+			TASKDIALOG_BUTTON buttons[] =
+			{
+				{ 0, CTSTRING(USE_PROFILE_SETTINGS), },
+				{ 1, CTSTRING(USE_CURRENT_SETTINGS), },
+			};
+			taskdlg.ModifyFlags(0, TDF_USE_COMMAND_LINKS | TDF_EXPAND_FOOTER_AREA);
+			taskdlg.SetWindowTitle(CTSTRING(MANUALLY_CONFIGURED_DETECTED));
+			taskdlg.SetCommonButtons(TDCBF_CANCEL_BUTTON);
+			taskdlg.SetMainIcon(TD_INFORMATION_ICON);
+
+			taskdlg.SetButtons(buttons, _countof(buttons));
+
+			int sel = 0;
+			taskdlg.DoModal(m_hWnd, &sel, 0, 0);
+			if (sel == 1) {
+				conflicts.clear();
+			}
+
+			lastProfile = newProfile;
+		}
+	}
 	return 0;
 }
 
@@ -70,62 +123,21 @@ void WizardProfile::write() {
 	SettingsManager::getInstance()->set(SettingsManager::SETTINGS_PROFILE, newProfile);
 	SettingsManager::getInstance()->applyProfileDefaults();
 
-	// a custom set value that differs from the one used by the profile? don't replace those without confirmation
-	vector<SettingItem> conflicts;
-	for (const auto& newSetting: SettingsManager::profileSettings[newProfile]) {
-		if (newSetting.isSet() && !newSetting.isProfileCurrent()) {
-			conflicts.push_back(newSetting);
-		}
-	}
-
-	if (!conflicts.empty()) {
-		string msg;
-		for (const auto& setting: conflicts) {
-			msg += "Setting name: " + setting.getName() + "\r\n";
-			msg += "Current value: " + setting.currentToString() + "\r\n";
-			msg += "Profile value: " + setting.profileToString() + "\r\n\r\n";
-		}
-
-		CTaskDialog taskdlg;
-
-		tstring descText = _T("There are x settings that have manually set values. Do you want to replace those with the values used by this profile?");
-		taskdlg.SetContentText(descText.c_str());
-
-		auto tmp = Text::toT(msg);
-		taskdlg.SetExpandedInformationText(tmp.c_str());
-		taskdlg.SetExpandedControlText(_T("Show conflicting settings"));
-		TASKDIALOG_BUTTON buttons[] =
-		{
-			{ 0, _T("Use the profile settings"), },
-			{ 1, _T("Keep my current settings"), },
-		};
-		taskdlg.ModifyFlags(0, TDF_USE_COMMAND_LINKS | TDF_EXPAND_FOOTER_AREA);
-		taskdlg.SetWindowTitle(_T("Manually configured settings found"));
-		taskdlg.SetCommonButtons(TDCBF_CANCEL_BUTTON);
-		taskdlg.SetMainIcon(TD_INFORMATION_ICON);
-
-		taskdlg.SetButtons(buttons, _countof(buttons));
-
-		int sel = 0;
-        taskdlg.DoModal(m_hWnd, &sel, 0, 0);
-		if (sel == 0) {
-			for (const auto& setting: conflicts) {
-				setting.setDefault(true);
-			}
-		}
+	for (const auto& setting: conflicts) {
+		setting.setDefault(true);
 	}
 }
 
 int WizardProfile::getCurProfile() {
 	if(IsDlgButtonChecked(IDC_NORMAL)){
-		return SettingsManager::PROFILE_PUBLIC;
+		return SettingsManager::PROFILE_NORMAL;
 	} else if(IsDlgButtonChecked(IDC_RAR)) {
 		return SettingsManager::PROFILE_RAR;
 	} else if(IsDlgButtonChecked(IDC_LAN)){
 		return SettingsManager::PROFILE_LAN;;
 	}
 
-	return SettingsManager::PROFILE_PUBLIC;
+	return SettingsManager::PROFILE_NORMAL;
 }
 
 LRESULT WizardProfile::OnSelProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

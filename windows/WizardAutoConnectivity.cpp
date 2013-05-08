@@ -21,17 +21,22 @@
 #include "WizardAutoConnectivity.h"
 
 PropPage::TextItem WizardAutoConnectivity::texts[] = {
-	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
-	{ IDC_ADD_PROFILE, ResourceManager::ADD_PROFILE },
-	{ IDC_ADD_PROFILE_COPY, ResourceManager::ADD_PROFILE_COPY },
-	{ IDC_REMOVE_PROFILE, ResourceManager::REMOVE_PROFILE },
-	{ IDC_SETTINGS_SHARE_PROFILES, ResourceManager::SHARE_PROFILES },
-	{ IDC_SHARE_PROFILE_NOTE, ResourceManager::SETTINGS_SHARE_PROFILE_NOTE },
-	{ IDC_RENAME_PROFILE, ResourceManager::SETTINGS_RENAME_FOLDER },
+	{ IDC_IPV4_AUTODETECT, ResourceManager::ALLOW_AUTO_DETECT_V4 },
+	{ IDC_IPV6_AUTODETECT, ResourceManager::ALLOW_AUTO_DETECT_V6 },
+	{ IDC_AUTOCONN_INTRO, ResourceManager::WIZARD_AUTO_CONNECTIVITY_INTRO },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
+PropPage::Item WizardAutoConnectivity::items[] = {
+	{ IDC_IPV4_AUTODETECT,		SettingsManager::AUTO_DETECT_CONNECTION,		PropPage::T_BOOL }, 
+	{ IDC_IPV6_AUTODETECT,		SettingsManager::AUTO_DETECT_CONNECTION6,		PropPage::T_BOOL },
+	{ 0, 0, PropPage::T_END }
+};
+
 LRESULT WizardAutoConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	PropPage::read((HWND)*this, items);
+	PropPage::translate((HWND)(*this), texts);
+
 	log.Attach(GetDlgItem(IDC_CONNECTIVITY_LOG));
 	log.Subclass();
 
@@ -41,6 +46,11 @@ LRESULT WizardAutoConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/
 	cAutoDetect.Attach(GetDlgItem(IDC_AUTO_DETECT));
 	cAutoDetect.EnableWindow(ConnectivityManager::getInstance()->isRunning() ? FALSE : TRUE);
 
+	cDetectIPv4.Attach(GetDlgItem(IDC_IPV4_AUTODETECT));
+	cDetectIPv6.Attach(GetDlgItem(IDC_IPV6_AUTODETECT));
+
+	cManualDetect.Attach(GetDlgItem(IDC_MANUAL_CONFIG));
+
 	if (SETTING(NICK).empty() && CONNSETTING(AUTO_DETECT_CONNECTION) && CONNSETTING(AUTO_DETECT_CONNECTION)) {
 		//initial run
 		detectConnection();
@@ -49,8 +59,17 @@ LRESULT WizardAutoConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/
 	return TRUE; 
 }
 
+LRESULT WizardAutoConnectivity::OnTickAutoDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (cDetectIPv4.GetCheck() == 0 && cDetectIPv6.GetCheck() == 0) {
+		cAutoDetect.EnableWindow(FALSE);
+	} else if (v6State != STATE_DETECTING && v4State != STATE_DETECTING) {
+		cAutoDetect.EnableWindow(TRUE);
+	}
+	return 0;
+}
+
 WizardAutoConnectivity::WizardAutoConnectivity(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard), v4State(STATE_UNKNOWN), v6State(STATE_UNKNOWN) { 
-	SetHeaderTitle(_T("Connectivity detection"));
+	SetHeaderTitle(CTSTRING(AUTO_CONNECTIVITY_DETECTION));
 	ConnectivityManager::getInstance()->addListener(this);
 } 
 
@@ -59,7 +78,7 @@ WizardAutoConnectivity::~WizardAutoConnectivity() {
 }
 
 void WizardAutoConnectivity::write() {
-
+	PropPage::write((HWND)(*this), items);
 }
 
 int WizardAutoConnectivity::OnWizardNext() {
@@ -71,7 +90,7 @@ int WizardAutoConnectivity::OnWizardNext() {
 }
 
 bool WizardAutoConnectivity::usingManualConnectivity() {
-	return IsDlgButtonChecked(IDC_MANUAL_CONFIG) > 0;
+	return cManualDetect.GetCheck() > 0;
 }
 
 int WizardAutoConnectivity::OnSetActive() {
@@ -88,6 +107,13 @@ LRESULT WizardAutoConnectivity::OnDetectConnection(WORD /*wNotifyCode*/, WORD /*
 
 void WizardAutoConnectivity::detectConnection() {
 	EnableWizardButtons(PSWIZB_NEXT, 0);
+
+	// apply immediately so that ConnectivityManager updates.
+	if ((cDetectIPv4.GetCheck() > 0 ? true : false) != CONNSETTING(AUTO_DETECT_CONNECTION))
+		SettingsManager::getInstance()->set(SettingsManager::AUTO_DETECT_CONNECTION, cDetectIPv4.GetCheck() > 0);
+	if ((cDetectIPv6.GetCheck() > 0 ? true : false) != CONNSETTING(AUTO_DETECT_CONNECTION6))
+		SettingsManager::getInstance()->set(SettingsManager::AUTO_DETECT_CONNECTION6, cDetectIPv6.GetCheck() > 0);
+
 	ConnectivityManager::getInstance()->detectConnection();
 }
 

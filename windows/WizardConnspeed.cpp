@@ -25,7 +25,26 @@
 
 
 PropPage::TextItem WizardConnspeed::texts[] = {
-	//{ IDC_CONNSPEED_INTRO, ResourceManager::DESCRIPTION },
+	{ IDC_CONNSPEED_INTRO, ResourceManager::WIZARD_CONNECTION_SPEED_INTRO },
+	{ IDC_SPEEDTEST, ResourceManager::TEST_SPEED_ONLINE },
+
+
+	{ IDC_LINE_SPEED, ResourceManager::LINE_SPEED },
+	{ IDC_SETTINGS_UPLOAD_LINE_SPEED, ResourceManager::SETCZDC_UPLOAD_SPEED },
+	{ IDC_SETTINGS_DOWNLOAD_LINE_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED },
+	{ IDC_SETTINGS_MEBIBITS, ResourceManager::MBITSPS },
+	{ IDC_SETTINGS_MEBIBITS2, ResourceManager::MBITSPS },
+	{ IDC_SLOTS_GROUP, ResourceManager::UPLOAD_LIMITS },
+	{ IDC_SETTINGS_UPLOADS_SLOTS, ResourceManager::SETTINGS_UPLOADS_SLOTS },
+	{ IDC_SETTINGS_UPLOADS_MIN_SPEED, ResourceManager::SETTINGS_UPLOADS_MIN_SPEED },
+	{ IDC_SETTINGS_KBPS, ResourceManager::KBPS },
+	{ IDC_SETTINGS_KBPS2, ResourceManager::KBPS },
+	{ IDC_SETTINGS_AUTO_SLOTS, ResourceManager::SETTINGS_AUTO_SLOTS	},
+	{ IDC_DL_AUTODETECT, ResourceManager::AUTODETECT },
+	{ IDC_UL_AUTODETECT, ResourceManager::AUTODETECT },
+	{ IDC_SETTINGS_DOWNLOAD_LIMITS, ResourceManager::DOWNLOAD_LIMITS },
+	{ IDC_SETTINGS_DOWNLOADS_MAX, ResourceManager::SETTINGS_DOWNLOADS_MAX },
+	{ IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE, ResourceManager::SETTINGS_DOWNLOADS_SPEED_PAUSE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -33,8 +52,8 @@ PropPage::Item WizardConnspeed::items[] = {
 	{ IDC_CONNECTION, SettingsManager::UPLOAD_SPEED, PropPage::T_STR },
 	{ IDC_DOWN_SPEED, SettingsManager::DOWNLOAD_SPEED, PropPage::T_STR },
 
-	{ IDC_DL_AUTODETECT_WIZ, SettingsManager::DL_AUTODETECT, PropPage::T_BOOL },
-	{ IDC_UL_AUTODETECT_WIZ, SettingsManager::UL_AUTODETECT, PropPage::T_BOOL },
+	{ IDC_DL_AUTODETECT, SettingsManager::DL_AUTODETECT, PropPage::T_BOOL },
+	{ IDC_UL_AUTODETECT, SettingsManager::UL_AUTODETECT, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -53,7 +72,9 @@ PropPage::Item WizardConnspeed::downloadItems[] = {
 	{ 0, 0, PropPage::T_END }
 };
 
-LRESULT WizardConnspeed::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+LRESULT WizardConnspeed::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
+	PropPage::translate((HWND)(*this), texts);
+
 	ctrlDownload.Attach(GetDlgItem(IDC_DOWN_SPEED));
 	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
 
@@ -78,16 +99,18 @@ LRESULT WizardConnspeed::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARA
 	SetDlgItemText(IDC_MAX_UPLOAD_SP, Text::toT(Util::toString(AirUtil::getSpeedLimit(false))).c_str());
 	SetDlgItemText(IDC_MAX_AUTO_OPENED, Text::toT(Util::toString(AirUtil::getMaxAutoOpened())).c_str());
 
+	cAutoDL.Attach(GetDlgItem(IDC_DL_AUTODETECT));
+	cAutoUL.Attach(GetDlgItem(IDC_UL_AUTODETECT));
 
-	CheckDlgButton(IDC_DL_AUTODETECT_WIZ, SETTING(DL_AUTODETECT) ? BST_CHECKED : BST_UNCHECKED);
-	CheckDlgButton(IDC_UL_AUTODETECT_WIZ, SETTING(UL_AUTODETECT) ? BST_CHECKED : BST_UNCHECKED);
+	cAutoDL.SetCheck(SETTING(DL_AUTODETECT) ? BST_CHECKED : BST_UNCHECKED);
+	cAutoUL.SetCheck(SETTING(UL_AUTODETECT) ? BST_CHECKED : BST_UNCHECKED);
 
 	fixcontrols();
 	return TRUE; 
 }
 
 WizardConnspeed::WizardConnspeed(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard) { 
-	SetHeaderTitle(_T("Connection speed")); 
+	SetHeaderTitle(CTSTRING(CONNECTION_SPEED)); 
 } 
 
 void WizardConnspeed::write() {
@@ -95,11 +118,11 @@ void WizardConnspeed::write() {
 	PropPage::write((HWND)(*this), items);
 
 	// only write those when not using auto detection
-	if(IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ) == 0) {
+	if(cAutoUL.GetCheck() == 0) {
 		PropPage::write((HWND)(*this), uploadItems);
 	}
 
-	if(IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ) == 0) {
+	if(cAutoDL.GetCheck() == 0) {
 		PropPage::write((HWND)(*this), downloadItems);
 	}
 }
@@ -170,19 +193,24 @@ LRESULT WizardConnspeed::OnUploadSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl,
 }
 
 void WizardConnspeed::fixcontrols() {
-	BOOL dl = IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ) != BST_CHECKED;
-	::EnableWindow(GetDlgItem(IDC_DOWNLOAD_SLOTS),				dl);
-	::EnableWindow(GetDlgItem(IDC_MAX_DOWNLOAD_SP),				dl);
-	::EnableWindow(GetDlgItem(IDC_MAX_DL_WIZ),				dl);
-	::EnableWindow(GetDlgItem(IDC_MAX_DL_SPEED_WIZ),				dl);
+	BOOL dl = cAutoDL.GetCheck() == 0;
+	::EnableWindow(GetDlgItem(IDC_DOWNLOAD_SLOTS),					dl);
+	::EnableWindow(GetDlgItem(IDC_MAX_DOWNLOAD_SP),					dl);
 
-	BOOL ul = IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ) != BST_CHECKED;
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_DOWNLOADS_MAX),			dl);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE),	dl);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_KBPS2),					dl);
+
+
+	BOOL ul = cAutoUL.GetCheck() == 0;
 	::EnableWindow(GetDlgItem(IDC_UPLOAD_SLOTS),				ul);
 	::EnableWindow(GetDlgItem(IDC_MAX_UPLOAD_SP),				ul);
 	::EnableWindow(GetDlgItem(IDC_MAX_AUTO_OPENED),				ul);
-	::EnableWindow(GetDlgItem(IDC_MAX_AUTO_WIZ),				ul);
-	::EnableWindow(GetDlgItem(IDC_OPEN_EXTRA_WIZ),				ul);
-	::EnableWindow(GetDlgItem(IDC_UPLOAD_SLOTS_WIZ),			ul);
+
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_UPLOADS_MIN_SPEED),	ul);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_AUTO_SLOTS),			ul);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_UPLOADS_SLOTS),		ul);
+	::EnableWindow(GetDlgItem(IDC_SETTINGS_KBPS),				ul);
 
 
 	TCHAR buf[64];
@@ -197,7 +225,7 @@ void WizardConnspeed::fixcontrols() {
 }
 
 void WizardConnspeed::setDownloadLimits(double value) {
-	if (IsDlgButtonChecked(IDC_DL_AUTODETECT_WIZ)) {
+	if (cAutoDL.GetCheck() > 0) {
 		auto page = wizard->getPage<WizardProfile>(SetupWizard::PAGE_PROFILE);
 		int dlSlots=AirUtil::getSlots(true, value, static_cast<SettingsManager::SettingProfile>(page ? page->getCurProfile() : SETTING(SETTINGS_PROFILE)));
 		SetDlgItemText(IDC_DOWNLOAD_SLOTS, Util::toStringW(dlSlots).c_str());
@@ -208,8 +236,7 @@ void WizardConnspeed::setDownloadLimits(double value) {
 }
 
 void WizardConnspeed::setUploadLimits(double value) {
-
-	if (IsDlgButtonChecked(IDC_UL_AUTODETECT_WIZ)) {
+	if (cAutoUL.GetCheck() > 0) {
 		auto page = wizard->getPage<WizardProfile>(SetupWizard::PAGE_PROFILE);
 		int ulSlots=AirUtil::getSlots(false, value, static_cast<SettingsManager::SettingProfile>(page ? page->getCurProfile() : SETTING(SETTINGS_PROFILE)));
 		SetDlgItemText(IDC_UPLOAD_SLOTS, Util::toStringW(ulSlots).c_str());

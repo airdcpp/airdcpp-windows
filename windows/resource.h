@@ -1218,8 +1218,11 @@
 #define IDC_ADVANCED                    1640
 #define IDC_LANGUAGE_NOTE               1641
 #define IDC_CONF_PARAMS                 1641
+#define IDC_CURRENT_PROFILE             1642
 #define IDC_AUTOSELECT_METHOD           1643
 #define IDC_AUTOPATH_METHOD             1644
+#define IDC_CURRENT_PROFILE2            1644
+#define IDC_CURRENT_PROFILE_NAME        1644
 #define IDC_TB_SIZE                     1645
 #define IDC_TBAR_NOTE                   1646
 #define IDC_TB_NOTE                     1646
@@ -1315,12 +1318,17 @@
 #define IDC_PROFILE_INTRO               1719
 #define IDC_SHARING_INTRO               1720
 #define IDC_PUBLIC_DESC                 1721
+#define IDC_SHARING_SP_NOTE             1721
 #define IDC_RAR_DESC                    1722
 #define IDC_RAR_DESC2                   1723
 #define IDC_LAN_DESC                    1723
 #define IDC_MANUAL_CONFIG               1723
 #define IDC_MANUALCONN_INTRO            1724
+#define IDC_IPV4_AUTODETECT             1724
 #define IDC_FINISH_INTRO                1725
+#define IDC_IPV6_AUTODETECT             1725
+#define IDC_USER_PROFILE_BOX            1727
+#define IDC_PROFILE_TIP                 1728
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1720,7 +1728,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        357
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1726
+#define _APS_NEXT_CONTROL_VALUE         1729
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

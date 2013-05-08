@@ -21,20 +21,23 @@
 #include "WizardSharing.h"
 
 PropPage::TextItem WizardSharing::texts[] = {
-	//{ IDC_SHARING_INTRO, ResourceManager::DESCRIPTION },
+	{ IDC_SHARING_INTRO, ResourceManager::WIZARD_SHARING_INTRO },
+	{ IDC_SHARING_SP_NOTE, ResourceManager::WIZARD_SHARING_SP_NOTE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 LRESULT WizardSharing::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	PropPage::translate((HWND)(*this), texts);
+
 	dirPage->Create(this->m_hWnd);
 	//dirPage->MoveWindow(10, 10, 0, 0);
-	dirPage->SetWindowPos(HWND_TOP, 10, 100, 0, 0, SWP_NOSIZE);
+	dirPage->SetWindowPos(HWND_TOP, 10, 65, 0, 0, SWP_NOSIZE);
 	dirPage->ShowWindow(SW_SHOW);
 	return TRUE; 
 }
 
 WizardSharing::WizardSharing(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), dirPage(unique_ptr<ShareDirectories>(new ShareDirectories(this, s))), wizard(aWizard) { 
-	SetHeaderTitle(_T("Sharing"));
+	SetHeaderTitle(CTSTRING(SETTINGS_SHARED_DIRECTORIES));
 } 
 
 void WizardSharing::write() {

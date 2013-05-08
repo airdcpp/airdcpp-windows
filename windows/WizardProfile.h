@@ -20,11 +20,14 @@
 #define DCPLUSPLUS_WIZARD_PROFILE
 
 #include "stdafx.h"
+
+#include <atldlgs.h>
+
 #include "resource.h"
 #include "PropPage.h"
 #include "Wizard.h"
 
-#include "WTL\atldlgs.h"
+#include "../client/SettingItem.h"
 
 class SetupWizard;
 class WizardProfile : public PropPage, public CAeroWizardPageImpl<WizardProfile> { 
@@ -59,6 +62,8 @@ private:
 	void fixcontrols();
 
 	SetupWizard* wizard;
+	int lastProfile;
+	vector<SettingItem> conflicts;
 }; 
 
 #endif

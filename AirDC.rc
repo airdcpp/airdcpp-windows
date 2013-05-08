@@ -830,9 +830,6 @@ BEGIN
     RTEXT           "Description",IDC_SETTINGS_DESCRIPTION,14,54,74,8
     EDITTEXT        IDC_USERDESC,94,51,164,14,ES_AUTOHSCROLL
     GROUPBOX        "Settings Profiles",IDC_SETTINGS_PROFILE,7,79,294,60,WS_GROUP
-    CONTROL         "Public Hubs (Default)",IDC_PUBLIC,"Button",BS_AUTORADIOBUTTON,14,97,155,10
-    CONTROL         "Rar-Hubs",IDC_RAR,"Button",BS_AUTORADIOBUTTON,14,109,168,10
-    CONTROL         "Private Hubs",IDC_PRIVATE_HUB,"Button",BS_AUTORADIOBUTTON,14,120,168,12
     CONTROL         "",IDC_LANGUAGE,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,15,156,246,117
     GROUPBOX        "Language",IDC_LANGUAGE_CAPTION,7,144,294,53
     LTEXT           "Note: you need to restart the client for the new language to take effect",IDC_LANGUAGE_NOTE,15,176,248,15
@@ -845,6 +842,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,257,238,10
     LTEXT           "Automatically set away mode after",IDC_AWAY_IDLE_TEXT_BEGIN,11,273,120,8,0,WS_EX_RIGHT
     LTEXT           "minutes of inactivity (0 = disabled)",IDC_AWAY_IDLE_TEXT_END,166,273,125,8
+    LTEXT           "Current user profile:",IDC_CURRENT_PROFILE,14,91,99,15
+    LTEXT           "You may change the profile from the Settings Wizard (""File"" -> ""Settings Wizard"")",IDC_PROFILE_TIP,14,108,248,15
+    LTEXT           "Normal",IDC_CURRENT_PROFILE_NAME,159,89,99,15
 END
 
 IDD_ADVANCEDPAGE DIALOGEX 0, 0, 311, 323
@@ -2016,52 +2016,51 @@ BEGIN
     LTEXT           "Enter general information that you want to be displayed to other users",IDC_GENERAL_INTRO,7,7,297,21
 END
 
-IDD_WIZARD_CONNSPEED DIALOGEX 0, 0, 311, 278
+IDD_WIZARD_CONNSPEED DIALOGEX 0, 0, 311, 254
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    COMBOBOX        IDC_CONNECTION,214,49,48,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Upload speed",IDC_STATIC,163,52,48,8,0,WS_EX_RIGHT
-    LTEXT           "Mbits/s",IDC_STATIC,267,49,24,8
-    COMBOBOX        IDC_DOWN_SPEED,75,49,48,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Mbits/s",IDC_STATIC,126,52,24,8
-    LTEXT           "Download Speed",IDC_DOWNLOAD_TEXT,13,52,58,8,0,WS_EX_RIGHT
-    LTEXT           "Please set the ACTUAL speed of your connection (click the test button below if you are unsure). You can also write the speed manually if it's not listed.",IDC_WIZARD_NOTESPEED,17,68,272,17
-    EDITTEXT        IDC_MAX_DOWNLOAD_SP,177,161,39,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_DOWN_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,213,161,11,14
-    RTEXT           "No new Downloads if speed is over:",IDC_MAX_DL_SPEED_WIZ,57,163,116,8
-    LTEXT           "KB/s",IDC_STATIC,227,161,15,8
-    EDITTEXT        IDC_DOWNLOAD_SLOTS,177,145,45,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_DOWNLOAD_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,213,145,11,14
-    RTEXT           "Maximum simultaneous Downloads:",IDC_MAX_DL_WIZ,57,147,117,8
-    EDITTEXT        IDC_UPLOAD_SLOTS,178,214,48,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_UPLOAD_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,215,214,11,14
-    RTEXT           "Upload Slots:",IDC_UPLOAD_SLOTS_WIZ,57,217,117,8
-    GROUPBOX        "Connection and Limits",IDC_STATIC,7,35,291,238
-    CONTROL         "Detect download limits from the line speed",IDC_DL_AUTODETECT_WIZ,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,126,202,10
-    CONTROL         "Detect upload limits from the line speed",IDC_UL_AUTODETECT_WIZ,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,201,202,10
-    EDITTEXT        IDC_MAX_UPLOAD_SP,178,231,39,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_UP_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,215,230,11,14
-    RTEXT           "Open an extra slot if speed is below",IDC_OPEN_EXTRA_WIZ,58,233,116,8
-    LTEXT           "KB/s",IDC_STATIC,229,233,15,8
-    EDITTEXT        IDC_MAX_AUTO_OPENED,178,248,48,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_AUTO_SLOTS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,215,247,11,14
-    RTEXT           "Maximum auto opened",IDC_MAX_AUTO_WIZ,57,249,117,8
-    GROUPBOX        "Upload slots and limits",IDC_STATIC,28,188,233,82
-    GROUPBOX        "Download slots and limits",IDC_STATIC,29,113,232,68
-    PUSHBUTTON      "Test your speed online",IDC_SPEEDTEST,89,89,126,14
+    COMBOBOX        IDC_CONNECTION,214,42,48,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Upload speed",IDC_SETTINGS_UPLOAD_LINE_SPEED,163,45,48,8,0,WS_EX_RIGHT
+    LTEXT           "Mbits/s",IDC_SETTINGS_MEBIBITS2,267,42,24,8
+    COMBOBOX        IDC_DOWN_SPEED,75,42,48,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Mbits/s",IDC_SETTINGS_MEBIBITS,126,45,24,8
+    LTEXT           "Download Speed",IDC_SETTINGS_DOWNLOAD_LINE_SPEED,13,45,58,8,0,WS_EX_RIGHT
+    EDITTEXT        IDC_MAX_DOWNLOAD_SP,177,137,39,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_DOWN_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,213,137,11,14
+    RTEXT           "No new Downloads if speed is over:",IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE,57,139,116,8
+    LTEXT           "KB/s",IDC_SETTINGS_KBPS2,227,137,15,8
+    EDITTEXT        IDC_DOWNLOAD_SLOTS,177,121,45,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_DOWNLOAD_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,213,121,11,14
+    RTEXT           "Maximum simultaneous Downloads:",IDC_SETTINGS_DOWNLOADS_MAX,57,123,117,8
+    EDITTEXT        IDC_UPLOAD_SLOTS,178,190,48,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_UPLOAD_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,215,190,11,14
+    RTEXT           "Upload Slots:",IDC_SETTINGS_UPLOADS_SLOTS,57,193,117,8
+    CONTROL         "Detect download limits from the line speed",IDC_DL_AUTODETECT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,102,202,10
+    CONTROL         "Detect upload limits from the line speed",IDC_UL_AUTODETECT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,177,202,10
+    EDITTEXT        IDC_MAX_UPLOAD_SP,178,207,39,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_UP_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,215,206,11,14
+    RTEXT           "Open an extra slot if speed is below",IDC_SETTINGS_UPLOADS_MIN_SPEED,58,209,116,8
+    LTEXT           "KB/s",IDC_SETTINGS_KBPS,229,209,15,8
+    EDITTEXT        IDC_MAX_AUTO_OPENED,178,224,48,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_AUTO_SLOTS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,215,223,11,14
+    RTEXT           "Maximum auto opened",IDC_SETTINGS_AUTO_SLOTS,57,227,117,8
+    GROUPBOX        "Upload slots and limits",IDC_SLOTS_GROUP,28,164,233,82
+    GROUPBOX        "Download slots and limits",IDC_SETTINGS_DOWNLOAD_LIMITS,29,89,232,68
+    PUSHBUTTON      "Test your speed online",IDC_SPEEDTEST,89,64,126,14
     LTEXT           "Choose your download and upload speed. You may also type in custom values if your speed isn't listed. Please be as accurate as possible.",IDC_CONNSPEED_INTRO,7,7,297,21
 END
 
-IDD_WIZARD_SHARING DIALOGEX 0, 0, 309, 251
+IDD_WIZARD_SHARING DIALOGEX 0, 0, 309, 261
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     LTEXT           "Choose the folders that you want to share to other users. Note that you may create additional share profiles later from the settings if you want to share different files in different hubs.",IDC_SHARING_INTRO,7,7,297,31
+    LTEXT           "Choose the folders that you want to share to other users. Note that you may create additional share profiles later from the settings if you want to share different files in different hubs.",IDC_SHARING_SP_NOTE,7,229,297,31
 END
 
 IDD_WIZARD_AUTOCONN DIALOGEX 0, 0, 309, 242
@@ -2069,11 +2068,15 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_CONNECTIVITY_LOG,"RichEdit50W",WS_BORDER | WS_VSCROLL | WS_TABSTOP | 0x804,15,87,253,116
-    DEFPUSHBUTTON   "Auto detect",IDC_AUTO_DETECT,19,50,60,14
+    CONTROL         "",IDC_CONNECTIVITY_LOG,"RichEdit50W",WS_BORDER | WS_VSCROLL | WS_TABSTOP | 0x804,15,87,274,116
+    DEFPUSHBUTTON   "Auto detect",IDC_AUTO_DETECT,15,64,60,14
     LTEXT           "Configure the network settings so transfers will work.",IDC_AUTOCONN_INTRO,7,7,297,21
     CONTROL         "I want to configure connectivity settings manually",IDC_MANUAL_CONFIG,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,215,235,10
+    CONTROL         "Let AirDC++ detect IPv4 settings automatically",IDC_IPV4_AUTODETECT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,28,235,10
+    CONTROL         "Let AirDC++ detect IPv6 settings automatically",IDC_IPV6_AUTODETECT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,41,235,10
 END
 
 IDD_WIZARD_MANUALCONN DIALOGEX 0, 0, 309, 260
@@ -2081,7 +2084,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Configure the network settings so transfers will work.",IDC_MANUALCONN_INTRO,7,15,297,21
+    LTEXT           "Configure the network settings so transfers will work.",IDC_MANUALCONN_INTRO,7,6,297,21
 END
 
 IDD_WIZARD_PROFILE DIALOGEX 0, 0, 319, 252
@@ -2089,18 +2092,18 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Settings Profiles",IDC_STATIC,19,47,277,184
-    CONTROL         "Normal",IDC_NORMAL,"Button",BS_AUTORADIOBUTTON,25,63,108,10
-    CONTROL         "RAR Hubs",IDC_RAR,"Button",BS_AUTORADIOBUTTON,25,98,82,10
-    CONTROL         "LAN/WAN Hubs",IDC_LAN,"Button",BS_AUTORADIOBUTTON,25,146,80,10
-    LTEXT           "The client is used in normal private/public hubs for transferring files via internet. Use this profile if unsure.",IDC_NORMAL_DESC,35,75,242,23
-    LTEXT           "The client is used for transferring files that are split in RAR archives (or in other small-sized formats)",IDC_RAR_DESC,36,111,240,17
+    CONTROL         "Normal",IDC_NORMAL,"Button",BS_AUTORADIOBUTTON,24,57,108,10
+    CONTROL         "RAR Hubs",IDC_RAR,"Button",BS_AUTORADIOBUTTON,24,92,82,10
+    CONTROL         "LAN/WAN Hubs",IDC_LAN,"Button",BS_AUTORADIOBUTTON,24,140,80,10
+    LTEXT           "The client is used in normal private/public hubs for transferring files via internet. Use this profile if unsure.",IDC_NORMAL_DESC,34,69,242,23
+    LTEXT           "The client is used for transferring files that are split in RAR archives (or in other small-sized formats)",IDC_RAR_DESC,35,105,240,17
     CONTROL         "Install the RAR profile skiplist",IDC_WIZARD_SKIPLIST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,35,129,137,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,34,123,137,10
     LTEXT           "Choose how you will use the client. This will optimize various client options to be most suitable for your usage case.",IDC_PROFILE_INTRO,16,9,288,21
-    LTEXT           "The client is mainly used for transferring files in local network (e.g. LAN parties) or in another closed network (e.g. university netwok)",IDC_LAN_DESC,35,159,246,19
+    LTEXT           "The client is mainly used for transferring files in local network (e.g. LAN parties) or in another closed network (e.g. university netwok)",IDC_LAN_DESC,34,153,246,19
     CONTROL         "Disable transfer encryption (reduces resource usage)",IDC_DISABLE_ENCRYPTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,35,179,218,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,34,173,218,10
+    GROUPBOX        "Settings Profiles",IDC_USER_PROFILE_BOX,18,41,277,184
 END
 
 IDD_PROTOCOLBASE DIALOGEX 0, 0, 310, 254
@@ -2236,7 +2239,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 304
         TOPMARGIN, 7
-        BOTTOMMARGIN, 271
+        BOTTOMMARGIN, 247
     END
 
     IDD_WIZARD_SHARING, DIALOG
@@ -2244,7 +2247,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 302
         TOPMARGIN, 7
-        BOTTOMMARGIN, 244
+        BOTTOMMARGIN, 260
     END
 
     IDD_WIZARD_AUTOCONN, DIALOG

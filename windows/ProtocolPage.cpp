@@ -63,7 +63,7 @@ PropPage::Item ProtocolBase::items[] = {
 
 void ProtocolBase::write()
 {
-	SettingTab::write((HWND)(*this), items);
+	//SettingTab::write((HWND)(*this), items);
 	if (ipv4Page)
 		ipv4Page->write();
 	if (ipv6Page)

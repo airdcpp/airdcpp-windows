@@ -27,7 +27,7 @@ PropPage::TextItem WizardGeneral::texts[] = {
 	{ IDC_SETTINGS_NICK, ResourceManager::NICK },
 	{ IDC_SETTINGS_EMAIL, ResourceManager::EMAIL },
 	{ IDC_SETTINGS_DESCRIPTION, ResourceManager::DESCRIPTION },
-	//{ IDC_PROFILE_INTRO, ResourceManager::DESCRIPTION },
+	{ IDC_GENERAL_INTRO, ResourceManager::WIZARD_GENERAL_INTRO },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -52,7 +52,7 @@ LRESULT WizardGeneral::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM 
 }
 
 WizardGeneral::WizardGeneral(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard) { 
-	SetHeaderTitle(_T("General")); 
+	SetHeaderTitle(CTSTRING(SETTINGS_PERSONAL_INFORMATION)); 
 } 
 
 void WizardGeneral::write() {

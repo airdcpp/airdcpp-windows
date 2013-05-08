@@ -21,16 +21,17 @@
 #include "WizardFinish.h"
 
 PropPage::TextItem WizardFinish::texts[] = {
-	//{ IDC_SHARING_INTRO, ResourceManager::DESCRIPTION },
+	{ IDC_FINISH_INTRO, ResourceManager::WIZARD_FINISHED_INTRO },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 LRESULT WizardFinish::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	PropPage::translate((HWND)(*this), texts);
 	return TRUE; 
 }
 
 WizardFinish::WizardFinish(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard) { 
-	SetHeaderTitle(_T("Wizard completed"));
+	SetHeaderTitle(CTSTRING(WIZARD_FINISHED_TITLE));
 } 
 
 void WizardFinish::write() {

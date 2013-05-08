@@ -21,30 +21,26 @@
 #include "WizardManualConnectivity.h"
 
 PropPage::TextItem WizardManualConnectivity::texts[] = {
-	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
-	{ IDC_ADD_PROFILE, ResourceManager::ADD_PROFILE },
-	{ IDC_ADD_PROFILE_COPY, ResourceManager::ADD_PROFILE_COPY },
-	{ IDC_REMOVE_PROFILE, ResourceManager::REMOVE_PROFILE },
-	{ IDC_SETTINGS_SHARE_PROFILES, ResourceManager::SHARE_PROFILES },
-	{ IDC_SHARE_PROFILE_NOTE, ResourceManager::SETTINGS_SHARE_PROFILE_NOTE },
-	{ IDC_RENAME_PROFILE, ResourceManager::SETTINGS_RENAME_FOLDER },
+	{ IDC_MANUALCONN_INTRO, ResourceManager::WIZARD_MANUAL_CONNECTIVITY_INTRO },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 LRESULT WizardManualConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
+	PropPage::translate((HWND)(*this), texts);
+
 	protocols->Create(this->m_hWnd);
 	//CRect rc;
 	//::GetWindowRect(GetDlgItem(IDC_SETTINGS_SHARED_DIRECTORIES), rc);
 	//::AdjustWindowRect(rc, GetWindowLongPtr(GWL_STYLE), false);
 	//dirPage->SetWindowPos(m_hWnd, rc.left+10, rc.top+10, 0, 0, SWP_NOSIZE);
-	protocols->SetWindowPos(HWND_TOP, 10, 50, 0, 0, SWP_NOSIZE);
+	protocols->SetWindowPos(HWND_TOP, 10, 35, 0, 0, SWP_NOSIZE);
 	protocols->ShowWindow(SW_SHOW);
 
 	return TRUE; 
 }
 
 WizardManualConnectivity::WizardManualConnectivity(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard), protocols(new ProtocolBase(s)) { 
-	SetHeaderTitle(_T("Manual connection setup"));
+	SetHeaderTitle(CTSTRING(MANUAL_CONNECTIVITY_SETUP));
 } 
 
 WizardManualConnectivity::~WizardManualConnectivity() {

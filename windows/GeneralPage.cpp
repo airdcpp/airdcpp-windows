@@ -31,9 +31,6 @@ PropPage::TextItem GeneralPage::texts[] = {
 	{ IDC_SETTINGS_EMAIL, ResourceManager::EMAIL },
 	{ IDC_SETTINGS_DESCRIPTION, ResourceManager::DESCRIPTION },
 	{ IDC_SETTINGS_PROFILE, ResourceManager::SETTINGS_PROFILE },
-	{ IDC_PUBLIC, ResourceManager::PROFILE_PUBLIC },
-	{ IDC_RAR, ResourceManager::PROFILE_RAR },
-	{ IDC_PRIVATE_HUB, ResourceManager::PROFILE_PRIVATE },
 	{ IDC_LANGUAGE_CAPTION, ResourceManager::SETTINGS_LANGUAGE },
 	{ IDC_LANGUAGE_NOTE, ResourceManager::LANGUAGE_NOTE },
 	{ IDC_AUTO_AWAY, ResourceManager::SETTINGS_AUTO_AWAY },
@@ -41,6 +38,8 @@ PropPage::TextItem GeneralPage::texts[] = {
 	{ IDC_AWAY_MODE, ResourceManager::AWAY_MODE },
 	{ IDC_AWAY_IDLE_TEXT_BEGIN, ResourceManager::AWAY_IDLE_TIME_BEGIN },
 	{ IDC_AWAY_IDLE_TEXT_END, ResourceManager::AWAY_IDLE_TIME_END },
+	{ IDC_CURRENT_PROFILE, ResourceManager::CURRENT_USER_PROFILE },
+	{ IDC_PROFILE_TIP, ResourceManager::USER_PROFILE_TIP },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -56,14 +55,6 @@ PropPage::Item GeneralPage::items[] = {
 
 void GeneralPage::write()
 {
-	/*if(IsDlgButtonChecked(IDC_PUBLIC)){
-		AirUtil::setProfile(SettingsManager::PROFILE_PUBLIC);
-	} else if(IsDlgButtonChecked(IDC_RAR)) {
-		AirUtil::setProfile(SettingsManager::PROFILE_RAR);
-	} else if(IsDlgButtonChecked(IDC_PRIVATE_HUB)){
-		AirUtil::setProfile(SettingsManager::PROFILE_PRIVATE);
-	}*/
-
 	Localization::setLanguage(ctrlLanguage.GetCurSel());
 	PropPage::write((HWND)(*this), items);
 }
@@ -77,20 +68,7 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	ctrlLanguage.Attach(GetDlgItem(IDC_LANGUAGE));
 
-	/*switch(SETTING(SETTINGS_PROFILE)) {
-		case SettingsManager::PROFILE_PUBLIC: 
-			CheckDlgButton(IDC_PUBLIC, BST_CHECKED);
-			break;
-		case SettingsManager::PROFILE_RAR: 
-			CheckDlgButton(IDC_RAR, BST_CHECKED);
-			break;
-		case SettingsManager::PROFILE_PRIVATE: 
-			CheckDlgButton(IDC_PRIVATE_HUB, BST_CHECKED); 
-			break;
-		default: 
-			CheckDlgButton(IDC_PUBLIC, BST_CHECKED);
-			break;
-	}*/
+	::SetWindowText(GetDlgItem(IDC_CURRENT_PROFILE_NAME), Text::toT(SettingsManager::getInstance()->getProfileName(SETTING(SETTINGS_PROFILE))).c_str());
 
 	WinUtil::appendLanguageMenu(ctrlLanguage);
 

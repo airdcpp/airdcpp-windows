@@ -37,12 +37,15 @@ public:
 	BEGIN_MSG_MAP(WizardAutoConnectivity) 
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog) 
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker) 
-		COMMAND_ID_HANDLER(IDC_AUTO_DETECT, OnDetectConnection) 
+		COMMAND_ID_HANDLER(IDC_AUTO_DETECT, OnDetectConnection)
+		COMMAND_ID_HANDLER(IDC_IPV4_AUTODETECT, OnTickAutoDetect) 
+		COMMAND_ID_HANDLER(IDC_IPV6_AUTODETECT, OnTickAutoDetect) 
 		CHAIN_MSG_MAP(baseClass) 
 	END_MSG_MAP() 
 
 	LRESULT OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */);
 	LRESULT OnDetectConnection(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnTickAutoDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 
@@ -67,10 +70,18 @@ private:
 	ProtocolState v6State;
 
 	SetupWizard* wizard;
+
+	static Item items[];
 	static TextItem texts[];
+
 	RichTextBox log;
 
 	CButton cAutoDetect;
+
+	CButton cDetectIPv4;
+	CButton cDetectIPv6;
+
+	CButton cManualDetect;
 
 	void addLogLine(tstring& msg);
 	void detectConnection();
