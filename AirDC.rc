@@ -2031,29 +2031,29 @@ BEGIN
     COMBOBOX        IDC_DOWN_SPEED,75,42,48,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Mbits/s",IDC_SETTINGS_MEBIBITS,126,45,24,8
     LTEXT           "Download Speed",IDC_SETTINGS_DOWNLOAD_LINE_SPEED,13,45,58,8,0,WS_EX_RIGHT
-    EDITTEXT        IDC_MAX_DOWNLOAD_SP,177,137,39,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_DOWN_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,213,137,11,14
-    RTEXT           "No new Downloads if speed is over:",IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE,35,139,138,8
-    LTEXT           "KB/s",IDC_SETTINGS_KBPS2,227,137,15,8
-    EDITTEXT        IDC_DOWNLOAD_SLOTS,177,121,45,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_DOWNLOAD_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,213,121,11,14
-    RTEXT           "Maximum simultaneous Downloads:",IDC_SETTINGS_DOWNLOADS_MAX,31,123,143,8
-    EDITTEXT        IDC_UPLOAD_SLOTS,178,190,48,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_UPLOAD_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,215,190,11,14
-    RTEXT           "Upload Slots:",IDC_SETTINGS_UPLOADS_SLOTS,42,193,132,8
+    EDITTEXT        IDC_MAX_DOWNLOAD_SP,220,137,46,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_DOWN_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,256,137,11,14
+    RTEXT           "No new Downloads if speed is over:",IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE,15,140,199,8
+    LTEXT           "KB/s",IDC_SETTINGS_KBPS2,270,139,15,8
+    EDITTEXT        IDC_DOWNLOAD_SLOTS,220,121,46,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_DOWNLOAD_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,256,121,11,14
+    RTEXT           "Maximum simultaneous Downloads:",IDC_SETTINGS_DOWNLOADS_MAX,11,124,201,8
+    EDITTEXT        IDC_UPLOAD_SLOTS,220,192,48,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_UPLOAD_S_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,257,192,11,14
+    RTEXT           "Upload Slots:",IDC_SETTINGS_UPLOADS_SLOTS,15,195,199,8
     CONTROL         "Detect download limits from the line speed",IDC_DL_AUTODETECT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,33,102,202,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,101,202,10
     CONTROL         "Detect upload limits from the line speed",IDC_UL_AUTODETECT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,32,177,202,10
-    EDITTEXT        IDC_MAX_UPLOAD_SP,178,207,39,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_UP_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,215,206,11,14
-    RTEXT           "Open an extra slot if speed is below",IDC_SETTINGS_UPLOADS_MIN_SPEED,38,209,136,8
-    LTEXT           "KB/s",IDC_SETTINGS_KBPS,229,209,15,8
-    EDITTEXT        IDC_MAX_AUTO_OPENED,178,224,48,14,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_AUTO_SLOTS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,215,223,11,14
-    RTEXT           "Maximum auto opened",IDC_SETTINGS_AUTO_SLOTS,38,227,136,8
-    GROUPBOX        "Upload slots and limits",IDC_SLOTS_GROUP,28,164,233,82
-    GROUPBOX        "Download slots and limits",IDC_SETTINGS_DOWNLOAD_LIMITS,29,89,232,68
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,178,202,10
+    EDITTEXT        IDC_MAX_UPLOAD_SP,220,208,48,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_UP_SPEED_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,257,208,11,14
+    RTEXT           "Open an extra slot if speed is below",IDC_SETTINGS_UPLOADS_MIN_SPEED,16,211,201,8
+    LTEXT           "KB/s",IDC_SETTINGS_KBPS,271,211,15,8
+    EDITTEXT        IDC_MAX_AUTO_OPENED,220,224,48,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_AUTO_SLOTS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS,257,223,11,14
+    RTEXT           "Maximum auto opened",IDC_SETTINGS_AUTO_SLOTS,14,226,203,8
+    GROUPBOX        "Upload slots and limits",IDC_SLOTS_GROUP,7,165,297,82
+    GROUPBOX        "Download slots and limits",IDC_SETTINGS_DOWNLOAD_LIMITS,7,88,297,71
     PUSHBUTTON      "Test your speed online",IDC_SPEEDTEST,75,64,151,14
     LTEXT           "Choose your download and upload speed. You may also type in custom values if your speed isn't listed. Please be as accurate as possible.",IDC_CONNSPEED_INTRO,7,7,297,25
 END
@@ -2096,18 +2096,18 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "Normal",IDC_NORMAL,"Button",BS_AUTORADIOBUTTON,24,57,119,10
-    CONTROL         "RAR Hubs",IDC_RAR,"Button",BS_AUTORADIOBUTTON,24,92,101,10
-    CONTROL         "LAN/WAN Hubs",IDC_LAN,"Button",BS_AUTORADIOBUTTON,24,140,92,10
-    LTEXT           "The client is used in normal private/public hubs for transferring files via internet. Use this profile if unsure.",IDC_NORMAL_DESC,34,69,242,23
-    LTEXT           "The client is used for transferring files that are split in RAR archives (or in other small-sized formats)",IDC_RAR_DESC,35,105,240,17
+    CONTROL         "Normal",IDC_NORMAL,"Button",BS_AUTORADIOBUTTON,19,57,119,10
+    CONTROL         "RAR Hubs",IDC_RAR,"Button",BS_AUTORADIOBUTTON,19,101,101,10
+    CONTROL         "LAN/WAN Hubs",IDC_LAN,"Button",BS_AUTORADIOBUTTON,19,169,92,10
+    LTEXT           "The client is used in normal private/public hubs for transferring files via internet. Use this profile if unsure.",IDC_NORMAL_DESC,29,69,269,27
+    LTEXT           "The client is used for transferring files that are split in RAR archives (or in other small-sized formats)",IDC_RAR_DESC,30,112,266,26
     CONTROL         "Install the RAR profile skiplist",IDC_WIZARD_SKIPLIST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,34,123,254,10
-    LTEXT           "Choose how you will use the client. This will optimize various client options to be most suitable for your usage case.",IDC_PROFILE_INTRO,16,9,288,21
-    LTEXT           "The client is mainly used for transferring files in local network (e.g. LAN parties) or in another closed network (e.g. university netwok)",IDC_LAN_DESC,34,153,246,19
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,141,268,10
+    LTEXT           "Choose how you will use the client. This will optimize various client options to be most suitable for your usage case.",IDC_PROFILE_INTRO,7,9,305,27
+    LTEXT           "The client is mainly used for transferring files in local network (e.g. LAN parties) or in another closed network (e.g. university netwok)",IDC_LAN_DESC,29,180,271,25
     CONTROL         "Disable transfer encryption (reduces resource usage)",IDC_DISABLE_ENCRYPTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,34,173,257,10
-    GROUPBOX        "Settings Profiles",IDC_USER_PROFILE_BOX,18,41,277,184
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,208,269,10
+    GROUPBOX        "Settings Profiles",IDC_USER_PROFILE_BOX,7,41,305,190
 END
 
 IDD_PROTOCOLBASE DIALOGEX 0, 0, 310, 254
@@ -2320,7 +2320,7 @@ IDI_SETTINGS            ICON                    "res\\ToolbarImages\\Settings.ic
 IDI_SHUTDOWN            ICON                    "res\\ToolbarImages\\Exit.ico"
 IDI_NETSTATS            ICON                    "res\\ToolbarImages\\NetStats.ico"
 IDI_FOLLOW              ICON                    "res\\ToolbarImages\\Follow.ico"
-IDI_USERS      ICON                    "res\\ToolbarImages\\UsersFrame.ico"
+IDI_USERS               ICON                    "res\\ToolbarImages\\UsersFrame.ico"
 IDI_OPEN_LIST           ICON                    "res\\ToolbarImages\\OpenFileList.ico"
 IDI_NOTEPAD             ICON                    "res\\ToolbarImages\\Notepad.ico"
 IDI_OPEN_DOWNLOADS      ICON                    "res\\ToolbarImages\\OpenDLDir.ico"
@@ -2405,7 +2405,7 @@ IDI_VIDEO               ICON                    "res\\searchTypes\\Video.ico"
 IDI_DIRECTORY           ICON                    "res\\searchTypes\\Directory.ico"
 IDI_TTH                 ICON                    "res\\searchTypes\\tth.ico"
 IDI_CUSTOM              ICON                    "res\\searchTypes\\Custom.ico"
-IDI_SFILE	            ICON                    "res\\searchTypes\\file.ico"
+IDI_SFILE               ICON                    "res\\searchTypes\\file.ico"
 IDI_MPSTART             ICON                    "res\\MediaToolbar\\start.ico"
 IDI_MPSPAM              ICON                    "res\\MediaToolbar\\spam.ico"
 IDI_MPBACK              ICON                    "res\\MediaToolbar\\back.ico"
@@ -2432,8 +2432,8 @@ IDI_FAV_USER            ICON                    "res\\UsersFrame\\FavUser.ico"
 IDI_FAV_USER_OFF        ICON                    "res\\UsersFrame\\FavUserOff.ico"
 IDI_GRANT_ON            ICON                    "res\\UsersFrame\\grant.ico"
 IDI_GRANT_OFF           ICON                    "res\\UsersFrame\\grantOff.ico"
-IDI_USER_ON				ICON                    "res\\UsersFrame\\online.ico"
-IDI_USER_OFF			ICON                    "res\\UsersFrame\\offline.ico"
+IDI_USER_ON             ICON                    "res\\UsersFrame\\online.ico"
+IDI_USER_OFF            ICON                    "res\\UsersFrame\\offline.ico"
 IDI_EXPAND_UP           ICON                    "res\\expand_up.ico"
 IDI_EXPAND_DOWN         ICON                    "res\\expand_down.ico"
 IDI_UP                  ICON                    "res\\up.ico"

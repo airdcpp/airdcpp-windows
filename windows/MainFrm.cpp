@@ -1526,14 +1526,13 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL);
+	addThreadedTask([] { ShareManager::getInstance()->refresh(false, ShareManager::TYPE_MANUAL); });
 	return 0;
 }
 
 LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-
-		ShareScannerManager::getInstance()->scan();
-		return 0;
+	addThreadedTask([] { ShareScannerManager::getInstance()->scan(); });
+	return 0;
 }
 
 LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {

@@ -840,6 +840,7 @@
     <Image Include="res\searchTypes\Directory.ico" />
     <Image Include="res\searchTypes\Document.ico" />
     <Image Include="res\searchTypes\Exec.ico" />
+    <Image Include="res\searchTypes\file.ico" />
     <Image Include="res\searchTypes\Pic.ico" />
     <Image Include="res\searchTypes\tth.ico" />
     <Image Include="res\searchTypes\Video.ico" />
@@ -857,6 +858,12 @@
     <Image Include="res\up.ico" />
     <Image Include="res\upload_user.ico" />
     <Image Include="res\UserlistImages\UserNoconnect.ico" />
+    <Image Include="res\UsersFrame\FavUser.ico" />
+    <Image Include="res\UsersFrame\FavUserOff.ico" />
+    <Image Include="res\UsersFrame\grant.ico" />
+    <Image Include="res\UsersFrame\grantOff.ico" />
+    <Image Include="res\UsersFrame\offline.ico" />
+    <Image Include="res\UsersFrame\online.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

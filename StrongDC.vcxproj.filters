@@ -242,9 +242,6 @@
     <None Include="res\ToolbarImages\Follow.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="res\ToolbarImages\FavoriteUser.ico">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="res\ToolbarImages\OpenFileList.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -408,6 +405,9 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="res\UserlistImages\UserAirDC.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\ToolbarImages\UsersFrame.ico">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
@@ -1344,6 +1344,27 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\AutoSearch\Expired.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\searchTypes\file.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\FavUser.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\FavUserOff.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\grant.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\grantOff.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\online.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\UsersFrame\offline.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>
