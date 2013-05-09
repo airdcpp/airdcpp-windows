@@ -2054,6 +2054,52 @@ LRESULT WinUtil::onUserFieldChar(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, B
 	return TRUE;
 }
 
+void WinUtil::getProfileConflicts(HWND aParent, int aProfile, SettingItem::List& conflicts) {
+	conflicts.clear();
+
+	// a custom set value that differs from the one used by the profile? don't replace those without confirmation
+	for (const auto& newSetting: SettingsManager::profileSettings[aProfile]) {
+		if (newSetting.isSet() && !newSetting.isProfileCurrent()) {
+			conflicts.push_back(newSetting);
+		}
+	}
+
+	if (!conflicts.empty()) {
+		string msg;
+		for (const auto& setting: conflicts) {
+			msg += STRING_F(SETTING_NAME_X, setting.getName()) + "\r\n";
+			msg += STRING_F(CURRENT_VALUE_X, setting.currentToString()) + "\r\n";
+			msg += STRING_F(PROFILE_VALUE_X, setting.profileToString()) + "\r\n\r\n";
+		}
+
+		CTaskDialog taskdlg;
+
+		tstring tmp1 = TSTRING_F(MANUALLY_CONFIGURED_MSG, conflicts.size() % Text::toT(SettingsManager::getInstance()->getProfileName(aProfile)).c_str());
+		taskdlg.SetContentText(tmp1.c_str());
+
+		auto tmp2 = Text::toT(msg);
+		taskdlg.SetExpandedInformationText(tmp2.c_str());
+		taskdlg.SetExpandedControlText(CTSTRING(SHOW_CONFLICTING));
+		TASKDIALOG_BUTTON buttons[] =
+		{
+			{ 0, CTSTRING(USE_PROFILE_SETTINGS), },
+			{ 1, CTSTRING(USE_CURRENT_SETTINGS), },
+		};
+		taskdlg.ModifyFlags(0, TDF_USE_COMMAND_LINKS | TDF_EXPAND_FOOTER_AREA);
+		taskdlg.SetWindowTitle(CTSTRING(MANUALLY_CONFIGURED_DETECTED));
+		taskdlg.SetCommonButtons(TDCBF_CANCEL_BUTTON);
+		taskdlg.SetMainIcon(TD_INFORMATION_ICON);
+
+		taskdlg.SetButtons(buttons, _countof(buttons));
+
+		int sel = 0;
+		taskdlg.DoModal(aParent, &sel, 0, 0);
+		if (sel == 1) {
+			conflicts.clear();
+		}
+	}
+}
+
 void WinUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags /*0*/, int8_t prio /*0*/) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {

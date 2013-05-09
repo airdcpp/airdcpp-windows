@@ -32,23 +32,12 @@ NetworkPage::~NetworkPage() {
 }
 
 PropPage::TextItem NetworkPage::texts[] = {
-	//ports
-	{ IDC_SETTINGS_PORTS, ResourceManager::SETTINGS_PORTS },
-	{ IDC_SETTINGS_PORT_TCP, ResourceManager::SETTINGS_TCP_PORT },
-	{ IDC_SETTINGS_PORT_UDP, ResourceManager::SETTINGS_UDP_PORT },
-	{ IDC_SETTINGS_PORT_TLS, ResourceManager::SETTINGS_TLS_PORT },
-
 	//mapper
 	{ IDC_SETTINGS_MAPPER_DESC, ResourceManager::PREFERRED_MAPPER },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item NetworkPage::items[] = {
-	//ports
-	{ IDC_PORT_TCP,		SettingsManager::TCP_PORT,		PropPage::T_INT }, 
-	{ IDC_PORT_UDP,		SettingsManager::UDP_PORT,		PropPage::T_INT }, 
-	{ IDC_PORT_TLS,		SettingsManager::TLS_PORT,		PropPage::T_INT },
-
 	//mapper
 	{ IDC_MAPPER,		SettingsManager::MAPPER,		PropPage::T_STR }, 
 	{ 0, 0, PropPage::T_END }

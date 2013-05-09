@@ -71,6 +71,7 @@ private:
 	PropPage *pages[PAGE_LAST];
 	bool initial;
 	bool saved;
+	bool pagesDeleted;
 };
 
 #endif

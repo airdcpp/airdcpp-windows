@@ -31,6 +31,7 @@
 #include "../client/WebShortcuts.h"
 #include "../client/TargetUtil.h"
 #include "../client/AirUtil.h"
+#include "../client/SettingItem.h"
 
 #include "SplashWindow.h"
 
@@ -453,6 +454,8 @@ public:
 	static LRESULT onUserFieldChar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	static bool onConnSpeedChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/);
 	static void setUserFieldLimits(HWND hWnd);
+
+	static void getProfileConflicts(HWND aParent, int aProfile, SettingItem::List& conflicts);
 
 	static void appendSpeedCombo(CComboBox& aCombo, SettingsManager::StrSetting aSetting);
 

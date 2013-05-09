@@ -46,7 +46,7 @@ PropPage::TextItem ProtocolBase::texts[] = {
 	{ IDC_SETTINGS_PORT_TLS, ResourceManager::SETTINGS_TLS_PORT },
 
 	//mapper
-	{ IDC_SETTINGS_MAPPER_DESC, ResourceManager::PREFERRED_MAPPER },
+	//{ IDC_SETTINGS_MAPPER_DESC, ResourceManager::PREFERRED_MAPPER },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -57,13 +57,13 @@ PropPage::Item ProtocolBase::items[] = {
 	{ IDC_PORT_TLS,		SettingsManager::TLS_PORT,		PropPage::T_INT },
 
 	//mapper
-	{ IDC_MAPPER,		SettingsManager::MAPPER,		PropPage::T_STR }, 
+	//{ IDC_MAPPER,		SettingsManager::MAPPER,		PropPage::T_STR }, 
 	{ 0, 0, PropPage::T_END }
 };
 
 void ProtocolBase::write()
 {
-	//SettingTab::write((HWND)(*this), items);
+	SettingTab::write((HWND)(*this), items);
 	if (ipv4Page)
 		ipv4Page->write();
 	if (ipv6Page)
@@ -72,8 +72,8 @@ void ProtocolBase::write()
 
 LRESULT ProtocolBase::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
-	//SettingTab::translate((HWND)(*this), texts);
-	//SettingTab::read((HWND)(*this), items);
+	SettingTab::translate((HWND)(*this), texts);
+	SettingTab::read((HWND)(*this), items);
 
 	// Mapper
 	/*MapperCombo.Attach(GetDlgItem(IDC_MAPPER));
@@ -127,10 +127,12 @@ void ProtocolBase::showProtocol(bool v6) {
 
 ProtocolPage::ProtocolPage(SettingsManager *s, bool v6) :  SettingTab(s), v6(v6) {
 	UpdateManager::getInstance()->addListener(this);
+	ConnectivityManager::getInstance()->addListener(this);
 }
 
 ProtocolPage::~ProtocolPage() {
 	UpdateManager::getInstance()->removeListener(this);
+	ConnectivityManager::getInstance()->removeListener(this);
 }
 
 
@@ -208,6 +210,7 @@ LRESULT ProtocolPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 {
 	SettingTab::translate((HWND)(*this), texts);
 	
+	cAutoDetect.Attach(GetDlgItem(IDC_CONNECTION_DETECTION));
 	SetDlgItemText(IDC_PROTOCOL_ENABLED, CTSTRING_F(ENABLE_CONNECTIVITY, (v6 ? "IPv6" : "IPv4")));
 
 	auto mode = v6 ? SETTING(INCOMING_CONNECTIONS6) : SETTING(INCOMING_CONNECTIONS);
@@ -293,6 +296,14 @@ LRESULT ProtocolPage::onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	return 0;
 }
 
+LRESULT ProtocolPage::onClickedAutoDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	// apply immediately so that ConnectivityManager updates.
+	SettingsManager::getInstance()->set(v6 ? SettingsManager::AUTO_DETECT_CONNECTION6 : SettingsManager::AUTO_DETECT_CONNECTION, cAutoDetect.GetCheck() > 0);
+	ConnectivityManager::getInstance()->fire(ConnectivityManagerListener::SettingChanged());
+	fixControls();
+	return 0;
+}
+
 void ProtocolPage::on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept {
 	if ((key == SettingsManager::EXTERNAL_IP && !v6) || (key == SettingsManager::EXTERNAL_IP6 && v6)) {
 		if(!value.empty()) {
@@ -308,4 +319,22 @@ LRESULT ProtocolPage::onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWnd
 	::EnableWindow(GetDlgItem(IDC_GETIP), FALSE);
 	UpdateManager::getInstance()->checkIP(true, v6);
 	return S_OK;
+}
+
+void ProtocolPage::on(SettingChanged) noexcept {
+	callAsync([this] {
+		cAutoDetect.SetCheck((v6 ? SETTING(AUTO_DETECT_CONNECTION6) : SETTING(AUTO_DETECT_CONNECTION)) ? TRUE : FALSE);
+
+		fixControls();
+
+		// reload settings in case they have been changed (eg by the "Edit detected settings" feature).
+
+		/*active->setChecked(false);
+		upnp->setChecked(false);
+		passive->setChecked(false);
+
+		mapper->clear();*/
+
+		//read();
+	});
 }

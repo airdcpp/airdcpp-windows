@@ -34,7 +34,6 @@ PropPage::Item WizardAutoConnectivity::items[] = {
 };
 
 LRESULT WizardAutoConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) { 
-	PropPage::read((HWND)*this, items);
 	PropPage::translate((HWND)(*this), texts);
 
 	log.Attach(GetDlgItem(IDC_CONNECTIVITY_LOG));
@@ -51,7 +50,8 @@ LRESULT WizardAutoConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/
 
 	cManualDetect.Attach(GetDlgItem(IDC_MANUAL_CONFIG));
 
-	if (SETTING(NICK).empty() && CONNSETTING(AUTO_DETECT_CONNECTION) && CONNSETTING(AUTO_DETECT_CONNECTION)) {
+	updateAuto();
+	if (SETTING(NICK).empty() && SETTING(AUTO_DETECT_CONNECTION) && SETTING(AUTO_DETECT_CONNECTION)) {
 		//initial run
 		detectConnection();
 	}
@@ -60,12 +60,23 @@ LRESULT WizardAutoConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/
 }
 
 LRESULT WizardAutoConnectivity::OnTickAutoDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	// apply immediately so that ConnectivityManager updates.
+	if ((cDetectIPv4.GetCheck() > 0 ? true : false) != SETTING(AUTO_DETECT_CONNECTION))
+		SettingsManager::getInstance()->set(SettingsManager::AUTO_DETECT_CONNECTION, cDetectIPv4.GetCheck() > 0);
+	if ((cDetectIPv6.GetCheck() > 0 ? true : false) != SETTING(AUTO_DETECT_CONNECTION6))
+		SettingsManager::getInstance()->set(SettingsManager::AUTO_DETECT_CONNECTION6, cDetectIPv6.GetCheck() > 0);
+
+	ConnectivityManager::getInstance()->fire(ConnectivityManagerListener::SettingChanged());
+	return 0;
+}
+
+void WizardAutoConnectivity::updateAuto() {
+	PropPage::read((HWND)*this, items);
 	if (cDetectIPv4.GetCheck() == 0 && cDetectIPv6.GetCheck() == 0) {
 		cAutoDetect.EnableWindow(FALSE);
 	} else if (v6State != STATE_DETECTING && v4State != STATE_DETECTING) {
 		cAutoDetect.EnableWindow(TRUE);
 	}
-	return 0;
 }
 
 WizardAutoConnectivity::WizardAutoConnectivity(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard), v4State(STATE_UNKNOWN), v6State(STATE_UNKNOWN) { 
@@ -107,21 +118,14 @@ LRESULT WizardAutoConnectivity::OnDetectConnection(WORD /*wNotifyCode*/, WORD /*
 
 void WizardAutoConnectivity::detectConnection() {
 	EnableWizardButtons(PSWIZB_NEXT, 0);
-
-	// apply immediately so that ConnectivityManager updates.
-	if ((cDetectIPv4.GetCheck() > 0 ? true : false) != CONNSETTING(AUTO_DETECT_CONNECTION))
-		SettingsManager::getInstance()->set(SettingsManager::AUTO_DETECT_CONNECTION, cDetectIPv4.GetCheck() > 0);
-	if ((cDetectIPv6.GetCheck() > 0 ? true : false) != CONNSETTING(AUTO_DETECT_CONNECTION6))
-		SettingsManager::getInstance()->set(SettingsManager::AUTO_DETECT_CONNECTION6, cDetectIPv6.GetCheck() > 0);
-
 	ConnectivityManager::getInstance()->detectConnection();
 }
 
-void WizardAutoConnectivity::addLogLine(tstring& msg) {
+void WizardAutoConnectivity::addLogLine(tstring& msg, CHARFORMAT2W& cf /*WinUtil::m_ChatTextGeneral*/) {
 	/// @todo factor out to dwt
 	//log->addTextSteady(Text::toT("{\\urtf1\n") + log->rtfEscape(msg + Text::toT("\r\n")) + Text::toT("}\n"));
 	//log.AppendText(msg);
-	log.AppendChat(Identity(NULL, 0), _T(" -"), Util::emptyStringT, msg, WinUtil::m_ChatTextGeneral, false);
+	log.AppendChat(Identity(NULL, 0), _T(" -"), Util::emptyStringT, msg, cf, false);
 }
 
 void WizardAutoConnectivity::on(Message, const string& message) noexcept {
@@ -134,9 +138,8 @@ void WizardAutoConnectivity::on(Message, const string& message) noexcept {
 void WizardAutoConnectivity::on(Started, bool v6) noexcept {
 	(v6 ? v6State :v4State) = STATE_DETECTING;
 	callAsync([this] {
-		cAutoDetect.EnableWindow(FALSE);
+		changeControlState(false);
 		log.SetTextEx(_T(""));
-		//edit->setEnabled(false);
 	});
 }
 
@@ -153,12 +156,35 @@ void WizardAutoConnectivity::on(Finished, bool v6, bool failed) noexcept {
 
 	callAsync([this] {
 		if (v6State != STATE_DETECTING && v4State != STATE_DETECTING) {
-			cAutoDetect.EnableWindow(TRUE);
+			CHARFORMAT2 cf;
+			memzero(&cf, sizeof(CHARFORMAT2));
+			cf.cbSize = sizeof(cf);
+			cf.dwReserved = 0;
+			cf.dwMask = CFM_COLOR | CFM_BOLD | CFM_ITALIC;
+			cf.dwEffects = 0;
+			cf.crTextColor = RGB(3, 93, 35);
+
+			tstring msg = _T("Automatic connectivity detection finished. Click \"Next\" to continue to the next step.");
+			addLogLine(msg, cf);
+
+			/*if (v6State == STATE_FAILED || v4State == STATE_FAILED) {
+				cManualDetect.SetCheck(TRUE);
+			} else {
+
+			}*/
+			changeControlState(true);
 			EnableWizardButtons(PSWIZB_NEXT, PSWIZB_NEXT);
 		}
 	});
 }
 
+void WizardAutoConnectivity::changeControlState(bool enable) {
+	cAutoDetect.EnableWindow(enable ? TRUE : false);
+	cDetectIPv4.EnableWindow(enable ? TRUE : false);
+	cDetectIPv6.EnableWindow(enable ? TRUE : false);
+	//cAutoDetect.EnableWindow(enable ? TRUE : false);
+}
+
 void WizardAutoConnectivity::on(SettingChanged) noexcept {
-	//callAsync([this] { updateAuto(); });
+	callAsync([this] { updateAuto(); });
 }

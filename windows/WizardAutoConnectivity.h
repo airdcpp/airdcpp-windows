@@ -83,8 +83,11 @@ private:
 
 	CButton cManualDetect;
 
-	void addLogLine(tstring& msg);
+	void addLogLine(tstring& msg, CHARFORMAT2W& cf = WinUtil::m_ChatTextGeneral);
 	void detectConnection();
+
+	void updateAuto();
+	void changeControlState(bool enable);
 
 	// ConnectivityManagerListener
 	void on(Message, const string& message) noexcept;

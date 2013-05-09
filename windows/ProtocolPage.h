@@ -20,12 +20,15 @@
 #define DCPLUSPLUS_PROTOCOL_PAGE
 
 #include <atlcrack.h>
+
+#include "Async.h"
 #include "PropPage.h"
 
 #include "../client/AirUtil.h"
+#include "../client/ConnectivityManager.h"
 #include "../client/UpdateManagerListener.h"
 
-class ProtocolPage : public SettingTab, public CDialogImpl<ProtocolPage>, private UpdateManagerListener
+class ProtocolPage : public SettingTab, public CDialogImpl<ProtocolPage>, private UpdateManagerListener, private ConnectivityManagerListener, private Async<ProtocolPage>
 {
 public:
 	ProtocolPage(SettingsManager *s, bool v6);
@@ -34,7 +37,8 @@ public:
 
 	BEGIN_MSG_MAP(ProtocolPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
-		COMMAND_ID_HANDLER(IDC_CONNECTION_DETECTION, onClickedActive)
+		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker) 
+		COMMAND_ID_HANDLER(IDC_CONNECTION_DETECTION, onClickedAutoDetect)
 		COMMAND_ID_HANDLER(IDC_ACTIVE, onClickedActive)
 		COMMAND_ID_HANDLER(IDC_PASSIVE, onClickedActive)
 		COMMAND_ID_HANDLER(IDC_ACTIVE_UPNP, onClickedActive)
@@ -44,6 +48,7 @@ public:
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClickedActive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedAutoDetect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 
 	void write();
@@ -52,13 +57,19 @@ private:
 	static Item items6[];
 	static TextItem texts[];
 	CComboBox BindCombo;
+	CButton cAutoDetect;
 
 	void fixControls();
 	void getAddresses();
 
 	AirUtil::IpList bindAddresses;
-	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
 	bool v6;
+
+	// UpdateManagerListener
+	void on(UpdateManagerListener::SettingUpdated, size_t key, const string& value) noexcept;
+
+	// ConnectivityManagerListener
+	void on(SettingChanged) noexcept;
 };
 
 class ProtocolBase : public CDialogImpl<ProtocolBase>, public SettingTab

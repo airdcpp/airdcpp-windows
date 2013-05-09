@@ -21,7 +21,7 @@
 #include "Wizard.h"
 
 
-SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupWizard>(_T("Setup Wizard")), initial(isInitial), saved(false) {
+SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupWizard>(_T("Setup Wizard")), initial(isInitial), saved(false), pagesDeleted(false) {
 	//m_psh.pfnCallback = &PropSheetProc;
 
 	auto s = SettingsManager::getInstance();
@@ -40,9 +40,16 @@ SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupW
 	}
 }
 
-SetupWizard::~SetupWizard() { }
+SetupWizard::~SetupWizard() { 
+	if (!pagesDeleted) {
+		for(int i=0; i < PAGE_LAST; i++) {
+			delete pages[i];
+		}
+	}
+}
 
 void SetupWizard::deletePages(PropPage::TaskList& tasks) {
+	pagesDeleted = true;
 	for(int i=0; i < PAGE_LAST; i++) {
 		if (saved) {
 			auto t = pages[i]->getThreadedTask();
