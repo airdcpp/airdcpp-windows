@@ -85,7 +85,7 @@ public:
 			WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS | LVS_SINGLESEL, WS_EX_CLIENTEDGE, id);
 		ctrlList.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
-		ctrlList.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
+		ctrlList.SetImageList(ResourceLoader::getFileImages(), LVSIL_SMALL);
 		ctrlList.SetBkColor(WinUtil::bgColor);
 		ctrlList.SetTextBkColor(WinUtil::bgColor);
 		ctrlList.SetTextColor(WinUtil::textColor);

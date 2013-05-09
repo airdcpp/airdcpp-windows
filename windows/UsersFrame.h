@@ -36,7 +36,7 @@
 
 #define STATUS_MAP 10
 
-class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::FAVORITE_USERS, IDC_FAVUSERS>,
+class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::USERS, IDC_FAVUSERS>,
 	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
 	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener, private Async<UsersFrame> {
 public:
@@ -75,6 +75,7 @@ public:
 			COMMAND_ID_HANDLER(IDC_SHOW_INFO, onShow)
 			COMMAND_ID_HANDLER(IDC_SHOW_FAV, onShow)
 			COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
+			COMMAND_ID_HANDLER(IDC_SHOW_ONLINE, onShow)
 			CHAIN_MSG_MAP_MEMBER(filter)
 	END_MSG_MAP()
 		
@@ -118,12 +119,13 @@ private:
 	};
 
 	enum {
+		FAVORITE_ON_ICON,
+		FAVORITE_OFF_ICON,
 		USER_ON_ICON,
 		USER_OFF_ICON,
-		FAVORITE_ON_ICON,
-		//FAVORITE_OFF_ICON,
-		GRANT_OFF_ICON,
-		GRANT_ON_ICON
+		GRANT_ON_ICON,
+		GRANT_OFF_ICON
+
 	};
 
 	enum {
@@ -143,10 +145,11 @@ private:
 		
 		int getImageIndex() const { return -1; }
 
-		int getImage(int col) const {
+		int getImage(int col) {
 			switch(col) {
-			case COLUMN_FAVORITE: return getUser()->isOnline() ? isFavorite ? FAVORITE_ON_ICON : USER_ON_ICON : USER_OFF_ICON; //todo fav_off
+			case COLUMN_FAVORITE: return isFavorite ? FAVORITE_ON_ICON : FAVORITE_OFF_ICON;
 			case COLUMN_SLOT: return grantSlot ? GRANT_ON_ICON : GRANT_OFF_ICON; //todo show given extra slot
+			case COLUMN_SEEN: return user->isOnline() ? USER_ON_ICON : USER_OFF_ICON;
 			default: return -1;
 			}
 		}
@@ -175,6 +178,8 @@ private:
 	CButton ctrlShowInfo;
 	CButton ctrlShowFav;
 	CButton ctrlShowQueued;
+	CButton ctrlShowOnline;
+
 	CToolTipCtrl ctrlTooltips;
 
 	ListFilter filter;
@@ -186,6 +191,7 @@ private:
 	bool startup;
 	bool listFav;
 	bool filterQueued;
+	bool filterOnline;
 
 	void updateInfoText(const UserInfo* ui);
 	void updateList();
@@ -208,7 +214,7 @@ private:
 	// ClientManagerListner
 	void on(UserConnected, const OnlineUser& aUser, bool) noexcept;
 	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
-	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept;
+	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML&s /*xml*/) noexcept;
 

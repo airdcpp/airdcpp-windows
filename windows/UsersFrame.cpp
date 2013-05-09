@@ -80,6 +80,7 @@ UsersFrame::UsersFrame() : closed(false), startup(true),
 	showInfo(SETTING(FAV_USERS_SHOW_INFO)),
 	listFav(SETTING(USERS_FILTER_FAVORITE)),
 	filterQueued(SETTING(USERS_FILTER_QUEUE)),
+	filterOnline(SETTING(USERS_FILTER_ONLINE)),
 	filter(COLUMN_LAST, [this] { updateList(); })
 { }
 
@@ -104,11 +105,13 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
-	images.AddIcon(ResourceLoader::loadIcon(IDR_PRIVATE, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDR_PRIVATE_OFF, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_FAV_USER, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_CANCEL, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_APPLY, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDI_FAV_USER_OFF, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDI_USER_ON, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDI_USER_OFF, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDI_GRANT_ON, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDI_GRANT_OFF, 16));
+
 	ctrlUsers.SetImageList(images, LVSIL_SMALL);
 	
 	ctrlUsers.SetFont(WinUtil::listViewFont); //this will also change the columns font
@@ -133,6 +136,12 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlShowQueued.SetButtonStyle(BS_AUTOCHECKBOX, false);
 	ctrlShowQueued.SetFont(WinUtil::systemFont);
 	ctrlShowQueued.SetCheck(filterQueued ? BST_CHECKED : BST_UNCHECKED);
+
+	ctrlShowOnline.Create(ctrlStatus.m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_SHOW_ONLINE);
+	ctrlShowOnline.SetWindowText(CTSTRING(ONLINE));
+	ctrlShowOnline.SetButtonStyle(BS_AUTOCHECKBOX, false);
+	ctrlShowOnline.SetFont(WinUtil::systemFont);
+	ctrlShowOnline.SetCheck(filterOnline ? BST_CHECKED : BST_UNCHECKED);
 
 	ctrlShowInfoContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
@@ -164,8 +173,11 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	ClientManager::getInstance()->lockRead();
 	auto ul = ClientManager::getInstance()->getUsers();
-	for(auto& u: ul | map_values)
+	for(auto& u: ul | map_values) {
+		if(u->getCID() == CID()) //these are not users. hub?
+			continue;
 		userInfos.emplace(u, UserInfo(u, Util::emptyString));
+	}
 
 	ClientManager::getInstance()->unlockRead();
 	updateList();
@@ -180,7 +192,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
 
-	WinUtil::SetIcon(m_hWnd, IDI_FAVORITE_USERS);
+	WinUtil::SetIcon(m_hWnd, IDI_USERS);
 
 	startup = false;
 	updateStatus();
@@ -359,6 +371,10 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		sr.left = sr.right + 4;
 		sr.right = sr.left + ctrlShowQueued.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowQueued.m_hWnd, WinUtil::systemFont) + 24;
 		ctrlShowQueued.MoveWindow(sr);
+
+		sr.left = sr.right + 8;
+		sr.right = sr.left + ctrlShowOnline.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowOnline.m_hWnd, WinUtil::systemFont) + 24;
+		ctrlShowOnline.MoveWindow(sr);
 		
 		ctrlStatus.GetRect(2, sr);
 		sr.left = sr.right;
@@ -411,6 +427,12 @@ LRESULT UsersFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 			filterQueued = !filterQueued;
 			updateList();
 			SettingsManager::getInstance()->set(SettingsManager::USERS_FILTER_QUEUE, filterQueued);
+			break;
+		}
+		case IDC_SHOW_ONLINE: {
+			filterOnline = !filterOnline;
+			updateList();
+			SettingsManager::getInstance()->set(SettingsManager::USERS_FILTER_ONLINE, filterOnline);
 			break;
 		}
 	}
@@ -636,15 +658,14 @@ bool UsersFrame::matches(const UserInfo &ui) {
 
 static bool isFav(const UserPtr &u) { return FavoriteManager::getInstance()->isFavoriteUser(u); }
 
-//currently we don't list offline users unless they are favorites
 bool UsersFrame::show(const UserPtr &u, bool any) const {
-	if(any && (u->isOnline() || isFav(u))) {
+	if(any && (u->isOnline() || isFav(u) || u->getQueued())) {
 		return true;
+	} else if(filterOnline && !u->isOnline()){
+		return false;
 	} else if(filterQueued && u->getQueued() == 0){
 		return false;
 	} else if(listFav && !isFav(u)){
-		return false;
-	} else if(!u->isOnline() && !isFav(u)){
 		return false;
 	}
 	return true;
@@ -656,6 +677,7 @@ void UsersFrame::setImages(UserInfo *ui, int pos/* = -1*/) {
 
 	ctrlUsers.SetItem(pos, ctrlUsers.findColumnIndex(COLUMN_FAVORITE), LVIF_IMAGE, NULL, ui->getImage(COLUMN_FAVORITE), 0, 0, NULL);
 	ctrlUsers.SetItem(pos, ctrlUsers.findColumnIndex(COLUMN_SLOT), LVIF_IMAGE, NULL, ui->getImage(COLUMN_SLOT), 0, 0, NULL);
+	ctrlUsers.SetItem(pos, ctrlUsers.findColumnIndex(COLUMN_SEEN), LVIF_IMAGE, NULL, ui->getImage(COLUMN_SEEN), 0, 0, NULL);
 
 }
 void UsersFrame::updateStatus() {
@@ -667,19 +689,45 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 	if(fu) {
 		isFavorite = true;
 		grantSlot = fu->isSet(FavoriteUser::FLAG_GRANTSLOT);
-		setHubUrl(fu->getUrl());
-		columns[COLUMN_NICK] = Text::toT(fu->getNick());
+		
+		/* too complex, and too many locking calls, but keep if here if someone whines too much about the favorite users nick updating..
+		
+		//prefer to use the hint the favorite user was added from.
+		if(!fu->getUrl().empty() && ClientManager::getInstance()->isConnected(fu->getUrl())){
+			setHubUrl(fu->getUrl());
+		} else if(u->isOnline()) {
+			//allways have online hub hint.
+			auto hubs = ClientManager::getInstance()->getHubs(u->getCID());
+			setHubUrl(hubs[0].first);
+		}
+
+
+		string nick = fu->getNick();
+		if(nick.empty()) {
+			//no saved nick
+			auto ui = move(ClientManager::getInstance()->getNickHubPair(u->getCID(), hubUrl));
+			nick = ui.first;
+		}*/
+
+		/*get the correct nick,hub combination, updates the hint if empty, 
+		this should get the favorite users saved nick anyway if the hubUrl is saved for it and its online*/
+		auto ui = move(ClientManager::getInstance()->getNickHubPair(u->getCID(), fu->getUrl().empty() ? hubUrl : fu->getUrl()));
+		setHubUrl(ui.second);
+
+		columns[COLUMN_NICK] = u->isOnline() ? Text::toT(ui.first) : fu->getNick().empty() ? Text::toT(ui.first) : Text::toT(fu->getNick());
 		columns[COLUMN_NICKS] =  u->isOnline() ? WinUtil::getNicks(u) : TSTRING(OFFLINE);
-		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u).first : Text::toT(fu->getUrl());
-		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen()));
+		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u).first : Text::toT(fu->getUrl()); 
+		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : fu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen())) : TSTRING(UNKNOWN);
 		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
 	} else {
 		isFavorite = false;
 		grantSlot = hasReservedSlot();
 
-		//get the nick and update the hint if empty
-		string nick = ClientManager::getInstance()->getNick(u, hubUrl);
-		columns[COLUMN_NICK] = Text::toT(nick);
+		//get the correct nick,hub combination, updates the hint if empty
+		auto ui = move(ClientManager::getInstance()->getNickHubPair(u->getCID(), hubUrl));
+		setHubUrl(ui.second);
+		
+		columns[COLUMN_NICK] = Text::toT(ui.first);
 		columns[COLUMN_NICKS] =  u->isOnline() ?  WinUtil::getNicks(u) : TSTRING(OFFLINE);
 		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u).first : Util::emptyStringT;
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : TSTRING(OFFLINE);
@@ -783,17 +831,24 @@ void UsersFrame::on(StatusChanged, const UserPtr& aUser) noexcept {
 }
 
 void UsersFrame::on(UserConnected, const OnlineUser& aUser, bool) noexcept {
+	if(aUser.getUser()->getCID() == CID())
+		return;
+
 	UserPtr user = aUser.getUser();
 	string hint = aUser.getHubUrl();
 	callAsync([=] { addUser(user, hint); });
 }
 
 void UsersFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
+	if(aUser.getUser()->getCID() == CID())
+		return;
 	UserPtr user = aUser.getUser();
 	callAsync([=] { updateUser(user); });
 }
 
-void UsersFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser) noexcept {
+void UsersFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool) noexcept {
+	if(aUser->getCID() == CID())
+		return;
 	callAsync([=] { updateUser(aUser); });
 }
 

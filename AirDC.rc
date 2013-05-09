@@ -566,6 +566,10 @@ BEGIN
     BEGIN
     END
 
+    IDD_HASH_PROGRESS, DIALOG
+    BEGIN
+    END
+
     IDD_SDCPAGE, DIALOG
     BEGIN
     END
@@ -2316,7 +2320,7 @@ IDI_SETTINGS            ICON                    "res\\ToolbarImages\\Settings.ic
 IDI_SHUTDOWN            ICON                    "res\\ToolbarImages\\Exit.ico"
 IDI_NETSTATS            ICON                    "res\\ToolbarImages\\NetStats.ico"
 IDI_FOLLOW              ICON                    "res\\ToolbarImages\\Follow.ico"
-IDI_FAVORITE_USERS      ICON                    "res\\ToolbarImages\\FavoriteUser.ico"
+IDI_USERS      ICON                    "res\\ToolbarImages\\UsersFrame.ico"
 IDI_OPEN_LIST           ICON                    "res\\ToolbarImages\\OpenFileList.ico"
 IDI_NOTEPAD             ICON                    "res\\ToolbarImages\\Notepad.ico"
 IDI_OPEN_DOWNLOADS      ICON                    "res\\ToolbarImages\\OpenDLDir.ico"
@@ -2401,6 +2405,7 @@ IDI_VIDEO               ICON                    "res\\searchTypes\\Video.ico"
 IDI_DIRECTORY           ICON                    "res\\searchTypes\\Directory.ico"
 IDI_TTH                 ICON                    "res\\searchTypes\\tth.ico"
 IDI_CUSTOM              ICON                    "res\\searchTypes\\Custom.ico"
+IDI_SFILE	            ICON                    "res\\searchTypes\\file.ico"
 IDI_MPSTART             ICON                    "res\\MediaToolbar\\start.ico"
 IDI_MPSPAM              ICON                    "res\\MediaToolbar\\spam.ico"
 IDI_MPBACK              ICON                    "res\\MediaToolbar\\back.ico"
@@ -2423,9 +2428,12 @@ IDI_POSTSEARCH          ICON                    "res\\AutoSearch\\PostSearch.ico
 IDI_EXPIRED             ICON                    "res\\AutoSearch\\Expired.ico"
 IDI_SHARED              ICON                    "res\\Shared.ico"
 IDI_DIR_LOADING_OL      ICON                    "res\\ExecMasked.ico"
-IDI_FAV_USER            ICON                    "res\\FavUser.ico"
-IDI_APPLY               ICON                    "res\\apply.ico"
-IDI_CANCEL              ICON                    "res\\cancel.ico"
+IDI_FAV_USER            ICON                    "res\\UsersFrame\\FavUser.ico"
+IDI_FAV_USER_OFF        ICON                    "res\\UsersFrame\\FavUserOff.ico"
+IDI_GRANT_ON            ICON                    "res\\UsersFrame\\grant.ico"
+IDI_GRANT_OFF           ICON                    "res\\UsersFrame\\grantOff.ico"
+IDI_USER_ON				ICON                    "res\\UsersFrame\\online.ico"
+IDI_USER_OFF			ICON                    "res\\UsersFrame\\offline.ico"
 IDI_EXPAND_UP           ICON                    "res\\expand_up.ico"
 IDI_EXPAND_DOWN         ICON                    "res\\expand_down.ico"
 IDI_UP                  ICON                    "res\\up.ico"

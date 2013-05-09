@@ -113,7 +113,7 @@ static const toolbarButton ToolbarButtons[] = {
 	{ID_FILE_RECONNECT, 1, IDI_RECONNECT, false, ResourceManager::MENU_RECONNECT},
 	{IDC_FOLLOW, 2, IDI_FOLLOW, false, ResourceManager::MENU_FOLLOW_REDIRECT},
 	{IDC_FAVORITES, 3,IDI_FAVORITEHUBS, true, ResourceManager::MENU_FAVORITE_HUBS},
-	{IDC_FAVUSERS, 4, IDI_FAVORITE_USERS, true, ResourceManager::MENU_FAVORITE_USERS},
+	{IDC_FAVUSERS, 4, IDI_USERS, true, ResourceManager::MENU_FAVORITE_USERS},
 	{IDC_RECENTS, 5, IDI_RECENTS, true, ResourceManager::MENU_FILE_RECENT_HUBS},
 	{IDC_QUEUE, 6, IDI_QUEUE, true, ResourceManager::MENU_DOWNLOAD_QUEUE},
 	{IDC_FINISHED, 7, IDI_FINISHED_DL, true, ResourceManager::FINISHED_DOWNLOADS},

@@ -50,8 +50,8 @@ LRESULT UploadQueueFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		SetWindowTheme(ctrlQueued.m_hWnd, L"explorer", NULL);
 	}
 
-	ctrlQueued.SetImageList(ResourceLoader::fileImages, TVSIL_NORMAL);
-	ctrlList.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
+	ctrlQueued.SetImageList(ResourceLoader::getFileImages(), TVSIL_NORMAL);
+	ctrlList.SetImageList(ResourceLoader::getFileImages(), LVSIL_SMALL);
 
 	m_nProportionalPos = 2500;
 	SetSplitterPanes(ctrlQueued.m_hWnd, ctrlList.m_hWnd);

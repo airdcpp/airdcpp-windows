@@ -66,8 +66,8 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		SetWindowTheme(ctrlDirs.m_hWnd, L"explorer", NULL);
 	}
 
-	ctrlDirs.SetImageList(ResourceLoader::fileImages, TVSIL_NORMAL);
-	ctrlQueue.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
+	ctrlDirs.SetImageList(ResourceLoader::getFileImages(), TVSIL_NORMAL);
+	ctrlQueue.SetImageList(ResourceLoader::getFileImages(), LVSIL_SMALL);
 	
 	t_bVertical = !SETTING(HORIZONTAL_QUEUE);
 	m_nProportionalPos = SETTING(QUEUE_SPLITTER_POS);

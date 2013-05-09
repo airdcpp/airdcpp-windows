@@ -444,7 +444,7 @@
     <None Include="res\ToolbarImages\Clock.ico" />
     <None Include="res\ToolbarImages\Exit.ico" />
     <None Include="res\ToolbarImages\Favorites.ico" />
-    <None Include="res\ToolbarImages\FavoriteUser.ico" />
+    <None Include="res\ToolbarImages\UsersFrame.ico" />
     <None Include="res\ToolbarImages\FinishedDL.ico" />
     <None Include="res\ToolbarImages\FinishedUL.ico" />
     <None Include="res\ToolbarImages\Follow.ico" />

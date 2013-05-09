@@ -192,7 +192,7 @@
 #define IDI_SHUTDOWN                    361
 #define IDI_NETSTATS                    362
 #define IDI_FOLLOW                      363
-#define IDI_FAVORITE_USERS              364
+#define IDI_USERS						364
 #define IDI_OPEN_LIST                   365
 #define IDI_NOTEPAD                     366
 #define IDI_OPEN_DOWNLOADS              367
@@ -304,8 +304,8 @@
 #define IDR_WINAMP                      501
 #define IDD_PARAM_DLG                   502
 #define IDD_FAVHUBGROUPS                503
-#define IDI_APPLY                       504
-#define IDI_CANCEL                      505
+#define IDI_GRANT_ON                    504
+#define IDI_GRANT_OFF                   505
 #define IDI_EXPAND_UP                   506
 #define IDI_EXPAND_DOWN                 507
 #define IDI_UP                          508
@@ -315,6 +315,10 @@
 #define IDI_BACK                        512
 #define IDI_FORWARD                     513
 #define IDI_FIND                        514
+#define IDI_SFILE                       515
+#define IDI_FAV_USER_OFF                516
+#define IDI_USER_ON						517
+#define IDI_USER_OFF					518
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999

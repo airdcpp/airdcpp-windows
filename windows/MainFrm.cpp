@@ -117,7 +117,7 @@ MainFrame::~MainFrame() {
 	WinUtil::uninit();
 	ResourceLoader::unload();
 
-	if(Util::getOsMajor() >= 6)
+	if((Util::getOsMajor() >= 6) && user32lib)
 		FreeLibrary(user32lib);
 }
 
@@ -413,8 +413,8 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	slotsIcon = ResourceLoader::loadIcon(IDI_SLOTS, 16);
 	slotsFullIcon = ResourceLoader::loadIcon(IDI_SLOTSFULL, 16);
 	const int i = UserInfoBase::USER_ICON_AWAY * (UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START) * (UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START);
-	awayIconON = ResourceLoader::userImages.GetIcon(i);
-	awayIconOFF = ResourceLoader::userImages.GetIcon(0);
+	awayIconON = ResourceLoader::getUserImages().GetIcon(i);
+	awayIconOFF = ResourceLoader::getUserImages().GetIcon(0);
 	infoIcon = ResourceLoader::loadIcon(IDI_INFO, 16);
 	warningIcon = ResourceLoader::loadIcon(IDI_IWARNING, 16);
 	errorIcon = ResourceLoader::loadIcon(IDI_IERROR, 16);;

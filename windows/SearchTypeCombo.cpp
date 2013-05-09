@@ -73,7 +73,7 @@ LRESULT SearchTypeCombo::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 						DrawFocusRect(dis->hDC, &dis->rcItem);
 				}
 
-				ImageList_Draw(ResourceLoader::searchImages, ii->imageIndex, dis->hDC, 
+				ImageList_Draw(ResourceLoader::getSearchTypeIcons(), ii->imageIndex, dis->hDC, 
 					dis->rcItem.left + 2, 
 					dis->rcItem.top, 
 					ILD_TRANSPARENT);
@@ -113,7 +113,7 @@ void SearchTypeCombo::fillList(const string& aSelection, COLORREF aTextColor, CO
 			imagePos = name[0] - '0';
 			name = SearchManager::getTypeStr(name[0] - '0');
 		} else {
-			imagePos = 9;
+			imagePos = 10;
 		}
 
 		addListItem(imagePos, Text::toT(name), id);

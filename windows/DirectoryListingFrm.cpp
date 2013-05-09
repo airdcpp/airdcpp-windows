@@ -249,8 +249,8 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlList.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlList.setVisible(SETTING(DIRECTORYLISTINGFRAME_VISIBLE));
 
-	ctrlTree.SetImageList(ResourceLoader::fileImages, TVSIL_NORMAL);
-	ctrlList.SetImageList(ResourceLoader::fileImages, LVSIL_SMALL);
+	ctrlTree.SetImageList(ResourceLoader::getFileImages(), TVSIL_NORMAL);
+	ctrlList.SetImageList(ResourceLoader::getFileImages(), LVSIL_SMALL);
 	ctrlList.setSortColumn(COLUMN_FILENAME);
 
 	ctrlFilter.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | ES_AUTOHSCROLL, WS_EX_CLIENTEDGE, IDC_FILTER);
@@ -271,7 +271,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	//arrow buttons
 	arrowBar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 	arrowBar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
-	arrowBar.SetImageList(ResourceLoader::loadArrowImages());
+	arrowBar.SetImageList(ResourceLoader::getArrowImages());
 	arrowBar.SetButtonStructSize();
 	addarrowBarButtons();
 	arrowBar.AutoSize();
@@ -285,7 +285,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	//Cmd bar
 	ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 	ctrlToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
-	ctrlToolbar.SetImageList(ResourceLoader::loadFilelistTbImages());
+	ctrlToolbar.SetImageList(ResourceLoader::getFilelistTbImages());
 	ctrlToolbar.SetButtonStructSize();
 	addCmdBarButtons();
 	ctrlToolbar.AutoSize();
@@ -1937,7 +1937,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
            ctrlList.GetItemRect(nItem, &rcIcon, LVIR_ICON);
 
            // Draw the icon.
-           ResourceLoader::fileImages.DrawEx(rItem.iImage, cd->nmcd.hdc, rcIcon, WinUtil::bgColor, GetSysColor(COLOR_3DDKSHADOW), ILD_BLEND50);
+           ResourceLoader::getFileImages().DrawEx(rItem.iImage, cd->nmcd.hdc, rcIcon, WinUtil::bgColor, GetSysColor(COLOR_3DDKSHADOW), ILD_BLEND50);
            return CDRF_SKIPDEFAULT;
         }
     }

@@ -83,7 +83,7 @@ void TreePropertySheet::addTree()
 		SetWindowTheme(ctrlTree.m_hWnd, L"explorer", NULL);
 	}
 	
-	ctrlTree.SetImageList(ResourceLoader::settingsTreeImages, TVSIL_NORMAL);
+	ctrlTree.SetImageList(ResourceLoader::getSettingsTreeIcons(), TVSIL_NORMAL);
 }
 
 void TreePropertySheet::fillTree() {

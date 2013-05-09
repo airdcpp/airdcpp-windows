@@ -135,7 +135,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlUsers.SetTextColor(WinUtil::textColor);
 	ctrlUsers.setFlickerFree(WinUtil::bgBrush);
 	ctrlUsers.setSortColumn(OnlineUser::COLUMN_NICK);
-	ctrlUsers.SetImageList(ResourceLoader::userImages, LVSIL_SMALL);
+	ctrlUsers.SetImageList(ResourceLoader::getUserImages(), LVSIL_SMALL);
 
 	WinUtil::SetIcon(m_hWnd, IDI_HUB);
 
@@ -1899,7 +1899,7 @@ LRESULT HubFrame::onStyleChanged(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
 void HubFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool needRedraw = false;
-	ctrlUsers.SetImageList(ResourceLoader::userImages, LVSIL_SMALL);
+	ctrlUsers.SetImageList(ResourceLoader::getUserImages(), LVSIL_SMALL);
 	//ctrlUsers.Invalidate();
 	if(ctrlUsers.GetBkColor() != WinUtil::bgColor) {
 		needRedraw = true;

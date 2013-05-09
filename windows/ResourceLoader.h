@@ -39,14 +39,16 @@ class ResourceLoader
 public:
 	static void load();
 	static void unload();
-	static void loadSettingsTreeIcons();
-	static void loadSearchTypeIcons();
 	static void loadWinampToolbarIcons(CImageList& winampImages);
 	static void loadCmdBarImageList(CImageList& images);
 	static void loadFlagImages();
-	static void loadUserImages();
-	static CImageList& loadArrowImages();
-	static CImageList& loadFilelistTbImages();
+
+	static CImageList& getSettingsTreeIcons();
+	static CImageList& getSearchTypeIcons();
+	static CImageList& getUserImages();
+	static CImageList& getFileImages();
+	static CImageList& getArrowImages();
+	static CImageList& getFilelistTbImages();
 	
 	static HICON loadIcon(int aDefault, int size = 0);
 	static HICON convertGrayscaleIcon(HICON hIcon);
@@ -54,13 +56,7 @@ public:
 	
 	static tstring getIconPath(const tstring& filename);
 
-	static CImageList searchImages;
-	static CImageList settingsTreeImages;
-	static CImageList fileImages;
-	static CImageList userImages;
 	static CImageList flagImages;
-	static CImageList arrowImages;
-	static CImageList filelistTbImages;
 
 	enum {
 		DIR_NORMAL,
@@ -78,11 +74,17 @@ private:
 	static ImageMap fileIndexes;
 
 	static int fileImageCount;
-	static void loadFileImages();
 	static COLORREF GrayPalette[256];
 	static HICON MergeImages(HIMAGELIST hImglst1, int pos, HIMAGELIST hImglst2, int pos2);
 	static tstring getIconName(int aDefault);
 	static HICON loadDefaultIcon(int icon, int size=0);
+
+	static CImageList settingsTreeImages;
+	static CImageList searchImages;
+	static CImageList userImages;
+	static CImageList fileImages;
+	static CImageList arrowImages;
+	static CImageList filelistTbImages;
 	
 	static tstring m_IconPath;
 

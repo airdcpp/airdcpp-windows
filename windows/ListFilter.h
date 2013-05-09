@@ -27,7 +27,6 @@
 a helper class for adding and handling list filters, any of the objects can be added to any parent 
 and moved to proper placement as individuals.
 The messages in this class can be chained by member to the parents message map with CHAIN_MSG_MAP_MEMBER(<FilterObjectName>)
-TODO: numerical columns matching
 */
 
 class ListFilter : boost::noncopyable {

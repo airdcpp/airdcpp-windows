@@ -37,11 +37,6 @@ void ResourceLoader::load() {
 
 	m_IconPath = Text::toT(SETTING(ICON_PATH));
 
-	loadFileImages();
-	loadUserImages();
-	loadSearchTypeIcons();
-	loadSettingsTreeIcons();
-
 	for(int i = 0; i < 256; i++){
 		GrayPalette[i] = RGB(255-i, 255-i, 255-i);
 	}
@@ -54,66 +49,44 @@ void ResourceLoader::unload() {
 	userImages.Destroy();
 	flagImages.Destroy();
 }
-void ResourceLoader::loadUserImages() {
-		
-	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   10, 10);
-	const unsigned baseCount = UserInfoBase::USER_ICON_MOD_START;
-	const unsigned modifierCount = UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START;
 
-	HICON bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
-	HICON modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16), loadIcon(IDI_USER_OP, 16), loadIcon(IDI_USER_NOCONNECT, 16)/*, loadIcon(IDI_FAV_USER, 16)*/ };
+CImageList& ResourceLoader::getUserImages() {
+	
+	if(userImages.IsNull()) {
+		userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   10, 10);
+		const unsigned baseCount = UserInfoBase::USER_ICON_MOD_START;
+		const unsigned modifierCount = UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START;
 
-	for(size_t iBase = 0; iBase < baseCount; ++iBase) {
-		for(size_t i = 0, n = modifierCount * modifierCount; i < n; ++i) {
-			CImageList icons;
-			icons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
+		HICON bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
+		HICON modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16), loadIcon(IDI_USER_OP, 16), loadIcon(IDI_USER_NOCONNECT, 16)/*, loadIcon(IDI_FAV_USER, 16)*/ };
 
-			icons.AddIcon(bases[iBase]);
+		for(size_t iBase = 0; iBase < baseCount; ++iBase) {
+			for(size_t i = 0, n = modifierCount * modifierCount; i < n; ++i) {
+				CImageList icons;
+				icons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
 
-			for(size_t iMod = 0; iMod < modifierCount; ++iMod)
-				if(i & (1 << iMod))
-					icons.AddIcon(modifiers[iMod]);
+				icons.AddIcon(bases[iBase]);
 
-			const size_t n = icons.GetImageCount();
-			if(n > 1) {
-				CImageList  tmp;
-				tmp.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
-				tmp.AddIcon(MergeImages(icons, 0, icons, 1));
+				for(size_t iMod = 0; iMod < modifierCount; ++iMod)
+					if(i & (1i64 << iMod))
+						icons.AddIcon(modifiers[iMod]);
 
-				for(size_t i = 2; i < n; ++i)
-					tmp.ReplaceIcon(0, MergeImages(tmp, 0, icons, i));
+				const size_t n = icons.GetImageCount();
+				if(n > 1) {
+					CImageList  tmp;
+					tmp.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
+					tmp.AddIcon(MergeImages(icons, 0, icons, 1));
+
+					for(size_t i = 2; i < n; ++i)
+						tmp.ReplaceIcon(0, MergeImages(tmp, 0, icons, i));
 			
-				userImages.AddIcon(tmp.GetIcon(0, ILD_TRANSPARENT));
-			} else 
-				userImages.AddIcon(icons.GetIcon(0, ILD_TRANSPARENT));
+					userImages.AddIcon(tmp.GetIcon(0, ILD_TRANSPARENT));
+				} else 
+					userImages.AddIcon(icons.GetIcon(0, ILD_TRANSPARENT));
+			}
 		}
 	}
-	
-	//first construct the overlay images.
-	/*CImageList overLays;
-	overLays.Create(16, 16, ILC_COLOR32 | ILC_MASK, 3, 3);
-	overLays.AddIcon(loadIcon(IDI_USER_PASSIVE, 16));
-	overLays.AddIcon(loadIcon(IDI_USER_OP, 16));
-	overLays.AddIcon(MergeImages(overLays, 0, overLays, 1));
-
-	//start constructing the userlist images from the bases
-	userImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,   10, 10);
-	int pos = userImages.AddIcon(loadIcon(IDI_USER_BASE, 16));
-	for(int i = 0; i < overLays.GetImageCount(); i++){
-		userImages.AddIcon(MergeImages(userImages, pos, overLays, i));
-	}
-
-	pos = userImages.AddIcon(loadIcon(IDI_USER_AWAY, 16));
-	for(int i = 0; i < overLays.GetImageCount(); i++){
-		userImages.AddIcon(MergeImages(userImages, pos, overLays, i));
-	}
-
-	pos = userImages.AddIcon(loadIcon(IDI_USER_BOT, 16));
-	for(int i = 0; i < overLays.GetImageCount(); i++){
-		userImages.AddIcon(MergeImages(userImages, pos, overLays, i));
-	}
-	overLays.Destroy();*/
-	
+	return userImages;
 }
 HICON ResourceLoader::MergeImages(HIMAGELIST hImglst1, int pos, HIMAGELIST hImglst2, int pos2) {
 	/* Adding the merge images to a same Imagelist before merging makes the transparency work on xp */
@@ -211,7 +184,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_SHUTDOWN:		return _T("ToolbarImages\\Exit.ico");
 		case IDI_NETSTATS:		return _T("ToolbarImages\\NetStats.ico");
 		case IDI_FOLLOW:		return _T("ToolbarImages\\Follow.ico");
-		case IDI_FAVORITE_USERS:return _T("ToolbarImages\\FavoriteUser.ico");
+		case IDI_USERS:			return _T("ToolbarImages\\UsersFrame.ico");
 		case IDI_OPEN_LIST:		return _T("ToolbarImages\\OpenFileList.ico");
 		case IDI_NOTEPAD:		return _T("ToolbarImages\\Notepad.ico");
 		case IDI_OPEN_DOWNLOADS:return _T("ToolbarImages\\OpenDLDir.ico");
@@ -251,6 +224,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_DIRECTORY:		return _T("searchTypes\\Directory.ico");
 		case IDI_TTH:			return _T("searchTypes\\tth.ico");
 		case IDI_CUSTOM:		return _T("searchTypes\\Custom.ico");
+		case IDI_SFILE:			return _T("searchTypes\\file.ico");
 		case IDI_MPSTART:		return _T("MediaToolbar\\start.ico");
 		case IDI_MPSPAM:		return _T("MediaToolbar\\spam.ico");
 		case IDI_MPBACK:		return _T("MediaToolbar\\back.ico");
@@ -283,9 +257,12 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_TOTAL_DOWN:	return _T("TotalDown.ico");
 		case IDI_SHARED:		return _T("Shared.ico");
 		case IDI_DIR_LOADING_OL:return _T("ExecMasked.ico");
-		case IDI_FAV_USER:		return _T("FavUser.ico");
-		case IDI_APPLY:			return _T("apply.ico");
-		case IDI_CANCEL:		return _T("cancel.ico");
+		case IDI_FAV_USER:		return _T("UsersFrame\\FavUser.ico");
+		case IDI_FAV_USER_OFF:	return _T("UsersFrame\\FavUserOff.ico");
+		case IDI_GRANT_ON:		return _T("UsersFrame\\grant.ico");
+		case IDI_GRANT_OFF:		return _T("UsersFrame\\grantOff.ico");
+		case IDI_USER_ON:		return _T("UsersFrame\\online.ico");
+		case IDI_USER_OFF:		return _T("UsersFrame\\offline.ico");
 		case IDI_EXPAND_UP:		return _T("expand_up.ico");
 		case IDI_EXPAND_DOWN:	return _T("expand_down.ico");
 		case IDI_UP:            return _T("res\\up.ico");
@@ -301,8 +278,8 @@ tstring ResourceLoader::getIconName(int aDefault) {
 }
 
 //TODO: other imagelists as reference and built when needed like this.
-CImageList& ResourceLoader::loadArrowImages() {
-	if(arrowImages == NULL){
+CImageList& ResourceLoader::getArrowImages() {
+	if(arrowImages.IsNull()){
 		const int size = 22;
 		arrowImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 4);
 		arrowImages.AddIcon(loadIcon(IDI_UP, size));
@@ -313,8 +290,8 @@ CImageList& ResourceLoader::loadArrowImages() {
 	return arrowImages;
 }
 
-CImageList& ResourceLoader::loadFilelistTbImages() {
-	if(filelistTbImages == NULL){
+CImageList& ResourceLoader::getFilelistTbImages() {
+	if(filelistTbImages.IsNull()){
 		const int size = 16;
 		filelistTbImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 4);
 		filelistTbImages.AddIcon(loadIcon(IDI_FIND, size));
@@ -324,96 +301,107 @@ CImageList& ResourceLoader::loadFilelistTbImages() {
 	return filelistTbImages;
 }
 
-void ResourceLoader::loadFileImages() {
+CImageList& ResourceLoader::getFileImages() {
 
-	fileImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 4);
-	fileImages.AddIcon(loadIcon(IDI_FOLDER, 16)); fileImageCount++;
-	fileImages.AddIcon(loadIcon(IDI_FOLDER_INC, 16)); fileImageCount++;
-	fileImages.AddIcon(loadIcon(IDI_FOLDER, 16)); fileImageCount++;
-	fileImages.AddIcon(loadIcon(IDI_FILE, 16)); fileImageCount++;
+	if(fileImages.IsNull()) {
+		fileImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 4);
+		fileImages.AddIcon(loadIcon(IDI_FOLDER, 16)); fileImageCount++;
+		fileImages.AddIcon(loadIcon(IDI_FOLDER_INC, 16)); fileImageCount++;
+		fileImages.AddIcon(loadIcon(IDI_FOLDER, 16)); fileImageCount++;
+		fileImages.AddIcon(loadIcon(IDI_FILE, 16)); fileImageCount++;
 
-	if(SETTING(USE_SYSTEM_ICONS)) {
-		SHFILEINFO fi;
-		memzero(&fi, sizeof(SHFILEINFO));
-		if(::SHGetFileInfo(_T("./"), FILE_ATTRIBUTE_DIRECTORY, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES)) {
-			fileImages.ReplaceIcon(DIR_NORMAL, fi.hIcon);
+		if(SETTING(USE_SYSTEM_ICONS)) {
+			SHFILEINFO fi;
+			memzero(&fi, sizeof(SHFILEINFO));
+			if(::SHGetFileInfo(_T("./"), FILE_ATTRIBUTE_DIRECTORY, &fi, sizeof(fi), SHGFI_ICON | SHGFI_SMALLICON | SHGFI_USEFILEATTRIBUTES)) {
+				fileImages.ReplaceIcon(DIR_NORMAL, fi.hIcon);
 
-			auto mergeIcon = [&] (int resourceID, int8_t iconIndex) -> void {
-				HICON overlayIcon = loadIcon(resourceID);
+				auto mergeIcon = [&] (int resourceID, int8_t iconIndex) -> void {
+					HICON overlayIcon = loadIcon(resourceID);
 
-				CImageList tmpIcons;
-				tmpIcons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 2, 1);
-				tmpIcons.AddIcon(fi.hIcon);
-				tmpIcons.AddIcon(overlayIcon);
+					CImageList tmpIcons;
+					tmpIcons.Create(16, 16, ILC_COLOR32 | ILC_MASK, 2, 1);
+					tmpIcons.AddIcon(fi.hIcon);
+					tmpIcons.AddIcon(overlayIcon);
 
-				CImageList mergeList(ImageList_Merge(tmpIcons, 0, tmpIcons, 1, 0, 0));
-				HICON icDirIcon = mergeList.GetIcon(0);
-				fileImages.ReplaceIcon(iconIndex, icDirIcon);
+					CImageList mergeList(ImageList_Merge(tmpIcons, 0, tmpIcons, 1, 0, 0));
+					HICON icDirIcon = mergeList.GetIcon(0);
+					fileImages.ReplaceIcon(iconIndex, icDirIcon);
 
-				mergeList.Destroy();
-				tmpIcons.Destroy();
+					mergeList.Destroy();
+					tmpIcons.Destroy();
 
-				::DestroyIcon(icDirIcon);
-				::DestroyIcon(overlayIcon);
-			};
+					::DestroyIcon(icDirIcon);
+					::DestroyIcon(overlayIcon);
+				};
 
-			mergeIcon(IDI_DIR_INC_OL, DIR_INCOMPLETE);
-			mergeIcon(IDI_DIR_LOADING_OL, DIR_LOADING);
+				mergeIcon(IDI_DIR_INC_OL, DIR_INCOMPLETE);
+				mergeIcon(IDI_DIR_LOADING_OL, DIR_LOADING);
 			
-			::DestroyIcon(fi.hIcon);
+				::DestroyIcon(fi.hIcon);
+			}
 		}
+
 	}
+	return fileImages;
 }
 
-void ResourceLoader::loadSettingsTreeIcons() {
-	int size = 16;
-	settingsTreeImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 30);
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_GENERAL, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_CONNECTIONS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SPEED, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_LIMITS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PROXY, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_DOWNLOADS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_LOCATIONS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PREVIEW, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PRIORITIES, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_QUEUE, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SHARING, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SHAREOPTIONS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_APPEARANCE, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_FONTS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PROGRESS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_USERLIST, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SOUNDS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_TOOLBAR, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_WINDOWS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_TABS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_POPUPS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_HIGHLIGHTS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_AIRAPPEARANCE, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_ADVANCED, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_EXPERTS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_LOGS, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_UC, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_CERTIFICATES, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_MISC, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_IGNORE, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SEARCH, size));
-	settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SEARCHTYPES, size));
+CImageList& ResourceLoader::getSettingsTreeIcons() {
+	if(settingsTreeImages.IsNull()) {
+		int size = 16;
+		settingsTreeImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 30);
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_GENERAL, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_CONNECTIONS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SPEED, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_LIMITS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PROXY, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_DOWNLOADS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_LOCATIONS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PREVIEW, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PRIORITIES, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_QUEUE, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SHARING, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SHAREOPTIONS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_APPEARANCE, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_FONTS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PROGRESS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_USERLIST, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SOUNDS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_TOOLBAR, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_WINDOWS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_TABS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_POPUPS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_HIGHLIGHTS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_AIRAPPEARANCE, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_ADVANCED, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_EXPERTS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_LOGS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_UC, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_CERTIFICATES, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_MISC, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_IGNORE, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SEARCH, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SEARCHTYPES, size));
+	}
+	return settingsTreeImages;
 }
 
-void ResourceLoader::loadSearchTypeIcons() {
-	searchImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 15);
-	searchImages.AddIcon(loadIcon(IDI_ANY, 16));
-	searchImages.AddIcon(loadIcon(IDI_AUDIO, 16));
-	searchImages.AddIcon(loadIcon(IDI_COMPRESSED, 16));
-	searchImages.AddIcon(loadIcon(IDI_DOCUMENT, 16));
-	searchImages.AddIcon(loadIcon(IDI_EXEC, 16));
-	searchImages.AddIcon(loadIcon(IDI_PICTURE, 16));
-	searchImages.AddIcon(loadIcon(IDI_VIDEO, 16));
-	searchImages.AddIcon(loadIcon(IDI_DIRECTORY,16));
-	searchImages.AddIcon(loadIcon(IDI_TTH, 16));
-	searchImages.AddIcon(loadIcon(IDI_CUSTOM, 16));
+CImageList&  ResourceLoader::getSearchTypeIcons() {
+	if(searchImages.IsNull()) {
+		searchImages.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 15);
+		searchImages.AddIcon(loadIcon(IDI_ANY, 16));
+		searchImages.AddIcon(loadIcon(IDI_AUDIO, 16));
+		searchImages.AddIcon(loadIcon(IDI_COMPRESSED, 16));
+		searchImages.AddIcon(loadIcon(IDI_DOCUMENT, 16));
+		searchImages.AddIcon(loadIcon(IDI_EXEC, 16));
+		searchImages.AddIcon(loadIcon(IDI_PICTURE, 16));
+		searchImages.AddIcon(loadIcon(IDI_VIDEO, 16));
+		searchImages.AddIcon(loadIcon(IDI_DIRECTORY,16));
+		searchImages.AddIcon(loadIcon(IDI_TTH, 16));
+		searchImages.AddIcon(loadIcon(IDI_SFILE, 16));
+		searchImages.AddIcon(loadIcon(IDI_CUSTOM, 16));
+	}
+	return searchImages;
 }
 
 int ResourceLoader::getIconIndex(const tstring& aFileName) {
@@ -445,7 +433,7 @@ void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.AddIcon(ResourceLoader::loadIcon(IDI_FOLLOW, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_RECENTS, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_FAVORITEHUBS, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_FAVORITE_USERS, 16));
+	images.AddIcon(ResourceLoader::loadIcon(IDI_USERS, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_QUEUE, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_FINISHED_DL, 16));
 	images.AddIcon(ResourceLoader::loadIcon(IDI_UPLOAD_QUEUE, 16));
@@ -490,7 +478,7 @@ void ResourceLoader::loadWinampToolbarIcons(CImageList& winampImages) {
 	winampImages.AddIcon(loadIcon(IDI_MPVOLUMEDOWN, size));
 }
 
-void ResourceLoader::loadFlagImages() { 
+void ResourceLoader::loadFlagImages() {
 	flagImages.CreateFromImage(IDB_FLAGS, 25, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED); 
 }
 

@@ -351,6 +351,7 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 	for(const auto& pUser: ul | map_values) {
 		lSearchFrom = 0;
 		sNick = Text::toT(pUser.getNick());
+		if(sNick.empty()) continue;
 		std::transform(sNick.begin(), sNick.end(), sNick.begin(), _totlower);
 
 		while((lMyNickStart = (long)sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
