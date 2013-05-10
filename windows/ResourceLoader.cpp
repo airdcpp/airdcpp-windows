@@ -272,6 +272,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_BACK:			return _T("res\\back.ico");
 		case IDI_FORWARD:		return _T("res\\forward.ico");
 		case IDI_FIND:			return _T("res\\Find.ico");
+		case IDI_RELOAD:		return _T("res\\reload.ico");
 
 		default: return Util::emptyStringT;
 	}
@@ -294,6 +295,7 @@ CImageList& ResourceLoader::getFilelistTbImages() {
 	if(filelistTbImages.IsNull()){
 		const int size = 16;
 		filelistTbImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 4);
+		filelistTbImages.AddIcon(loadIcon(IDI_RELOAD, size));
 		filelistTbImages.AddIcon(loadIcon(IDI_FIND, size));
 		filelistTbImages.AddIcon(loadIcon(IDI_PREV, size));
 		filelistTbImages.AddIcon(loadIcon(IDI_NEXT, size));

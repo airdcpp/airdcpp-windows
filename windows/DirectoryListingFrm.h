@@ -51,13 +51,14 @@ struct cmdBarButton {
 
 
 static const cmdBarButton cmdBarButtons[] = {
+	{IDC_RELOAD_DIR, 0, ResourceManager::RELOAD},
 	{IDC_GETLIST, -2, ResourceManager::GET_FULL_LIST},
 	{IDC_MATCH_ADL, -2, ResourceManager::MATCH_ADL},
 	{IDC_MATCH_QUEUE, -2, ResourceManager::MATCH_QUEUE},
 	{IDC_FILELIST_DIFF, -2, ResourceManager::FILE_LIST_DIFF},
-	{IDC_FIND, 0, ResourceManager::FIND},
-	{IDC_PREV, 1, ResourceManager::PREVIOUS_SHORT},
-	{IDC_NEXT, 2, ResourceManager::NEXT},
+	{IDC_FIND, 1, ResourceManager::FIND},
+	{IDC_PREV, 2, ResourceManager::PREVIOUS_SHORT},
+	{IDC_NEXT, 3, ResourceManager::NEXT},
 };
 
 class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>, 

@@ -318,6 +318,7 @@
 #define IDI_FAV_USER_OFF                516
 #define IDI_USER_ON                     517
 #define IDI_USER_OFF                    518
+#define IDI_RELOAD						519
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999

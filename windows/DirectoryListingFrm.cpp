@@ -283,7 +283,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	pathContainer.SubclassWindow(ctrlPath.m_hWnd);
 
 	//Cmd bar
-	ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
+	ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 	ctrlToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
 	ctrlToolbar.SetImageList(ResourceLoader::getFilelistTbImages());
 	ctrlToolbar.SetButtonStructSize();
@@ -354,7 +354,7 @@ void DirectoryListingFrame::addCmdBarButtons() {
 
 	int buttonsCount = sizeof(cmdBarButtons) / sizeof(cmdBarButtons[0]);
 	for(int i = 0; i < buttonsCount; i++){
-		if(i == 4) {
+		if(i == 4 || i == 1) {
 			nTB.fsStyle = TBSTYLE_SEP;
 			ctrlToolbar.AddButtons(1, &nTB);
 		}
@@ -362,7 +362,7 @@ void DirectoryListingFrame::addCmdBarButtons() {
 		nTB.iBitmap = cmdBarButtons[i].image;
 		nTB.idCommand = cmdBarButtons[i].id;
 		nTB.fsState = TBSTATE_ENABLED;
-		nTB.fsStyle = BTNS_SHOWTEXT | TBSTYLE_AUTOSIZE;
+		nTB.fsStyle = i == 0 ? TBSTYLE_AUTOSIZE : BTNS_SHOWTEXT | TBSTYLE_AUTOSIZE;
 		nTB.iString = ctrlToolbar.AddStrings(CTSTRING_I((ResourceManager::Strings)cmdBarButtons[i].tooltip));
 		ctrlToolbar.AddButtons(1, &nTB);
 	}
@@ -403,9 +403,11 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 	if (enable) {
 		EnableWindow();
 		ctrlToolbar.EnableButton(IDC_GETLIST, dl->getPartialList() && !dl->getIsOwnList());
+		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, dl->getPartialList() && !dl->getIsOwnList());
 	} else {
 		DisableWindow();
-		ctrlToolbar.EnableButton(IDC_GETLIST, false);
+		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, FALSE);
+		ctrlToolbar.EnableButton(IDC_GETLIST, FALSE);
 	}
 }
 

@@ -27,9 +27,9 @@
 #include "../client/ClientManager.h"
 #include "../client/QueueManager.h"
 
-int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_NICKS, COLUMN_HUB, COLUMN_SEEN, COLUMN_DESCRIPTION, COLUMN_QUEUED };
-int UsersFrame::columnSizes[] = { 25, 25, 150, 200, 300, 150, 200, 100 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::ONLINE_NICKS, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::DESCRIPTION, ResourceManager::QUEUED };
+int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION };
+int UsersFrame::columnSizes[] = { 25, 25, 200, 300, 150, 100, 200 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::QUEUED, ResourceManager::DESCRIPTION };
 
 struct FieldName {
 	string field;
@@ -690,51 +690,54 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		isFavorite = true;
 		grantSlot = fu->isSet(FavoriteUser::FLAG_GRANTSLOT);
 		
-		/* too complex, and too many locking calls, but keep if here if someone whines too much about the favorite users nick updating..
-		
-		//prefer to use the hint the favorite user was added from.
-		if(!fu->getUrl().empty() && ClientManager::getInstance()->isConnected(fu->getUrl())){
-			setHubUrl(fu->getUrl());
-		} else if(u->isOnline()) {
-			//allways have online hub hint.
-			auto hubs = ClientManager::getInstance()->getHubs(u->getCID());
-			setHubUrl(hubs[0].first);
-		}
-
-
-		string nick = fu->getNick();
-		if(nick.empty()) {
-			//no saved nick
-			auto ui = move(ClientManager::getInstance()->getNickHubPair(u->getCID(), hubUrl));
-			nick = ui.first;
-		}*/
-
-		/*get the correct nick,hub combination, updates the hint if empty, 
-		this should get the favorite users saved nick anyway if the hubUrl is saved for it and its online*/
-		auto ui = move(ClientManager::getInstance()->getNickHubPair(u->getCID(), fu->getUrl().empty() ? hubUrl : fu->getUrl()));
-		setHubUrl(ui.second);
+		setHubUrl(fu->getUrl().empty() ? hubUrl : fu->getUrl());
+		auto ui = move(formatNicks(u));
 
 		columns[COLUMN_NICK] = u->isOnline() ? Text::toT(ui.first) : fu->getNick().empty() ? Text::toT(ui.first) : Text::toT(fu->getNick());
-		columns[COLUMN_NICKS] =  u->isOnline() ? WinUtil::getNicks(u) : TSTRING(OFFLINE);
-		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u).first : Text::toT(fu->getUrl()); 
+		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(fu->getUrl()); 
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : fu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen())) : TSTRING(UNKNOWN);
 		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
 	} else {
 		isFavorite = false;
 		grantSlot = hasReservedSlot();
 
-		//get the correct nick,hub combination, updates the hint if empty
-		auto ui = move(ClientManager::getInstance()->getNickHubPair(u->getCID(), hubUrl));
-		setHubUrl(ui.second);
-		
+		auto ui = formatNicks(u);
 		columns[COLUMN_NICK] = Text::toT(ui.first);
-		columns[COLUMN_NICKS] =  u->isOnline() ?  WinUtil::getNicks(u) : TSTRING(OFFLINE);
-		columns[COLUMN_HUB] = u->isOnline() ? WinUtil::getHubNames(u).first : Util::emptyStringT;
+		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(getHubUrl());
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : TSTRING(OFFLINE);
 		columns[COLUMN_DESCRIPTION] = Util::emptyStringT;
 	}
 
 	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());
+}
+
+StringPair UsersFrame::UserInfo::formatNicks(const UserPtr& u) {
+
+	//get the correct nick,hub combination, updates the hint if empty
+	auto nicks = move(ClientManager::getInstance()->getNickHubPair(u->getCID(), hubUrl));
+	string nick = nicks.begin()->first;
+	string hubs = nicks.begin()->second;
+
+	if(nicks.size() > 1) {
+		string tmp;
+		hubs += " (";
+		for(auto i = nicks.begin()+1; i != nicks.end(); ++i){
+			hubs += i->second + ",";
+
+			if(stricmp(nick, i->first) == 0) //only unique nicks
+				continue;
+
+			tmp += i->first + ",";
+		}
+
+		if(!tmp.empty()) {
+			tmp[tmp.length()-1] = ')';
+			nick += " (" + tmp;
+		}
+		hubs[hubs.length()-1] = ')';
+
+	}
+	return make_pair(nick, hubs);
 }
 			
 LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
