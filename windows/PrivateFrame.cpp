@@ -384,6 +384,7 @@ bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPer
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		hEmoticonBmp.Destroy();
+		LogManager::getInstance()->removePmCache(replyTo.user);
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		closed = true;
@@ -435,7 +436,7 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 		ParamMap params;
 		params["message"] = [&aLine] { return Text::fromT(aLine); };
 		fillLogParams(params);
-		LOG(LogManager::PM, params);
+		LogManager::getInstance()->log(replyTo.user, params);
 	}
 
 	auto myNick = Text::toT(ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::Nick) : SETTING(NICK));
@@ -584,7 +585,7 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 string PrivateFrame::getLogPath() const {
 	ParamMap params;
 	fillLogParams(params);
-	return LogManager::getInstance()->getPath(LogManager::PM, params);
+	return LogManager::getInstance()->getPath(replyTo.user, params);
 }
 
 void PrivateFrame::readLog() {

@@ -181,7 +181,7 @@
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
-      <PreprocessorDefinitions>_WIN32_WINNT=0x0600;_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <PreLinkEvent>
       <Command>
@@ -242,6 +242,7 @@
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <PreLinkEvent>
       <Message>Deleting old pdb file...</Message>
@@ -312,6 +313,7 @@
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ResourceCompile>
     <PreLinkEvent>
       <Message>Deleting old pdb file...</Message>
@@ -558,7 +560,6 @@
     </ClCompile>
     <ClCompile Include="windows\LineDlg.cpp" />
     <ClCompile Include="windows\LogPage.cpp" />
-    <ClCompile Include="windows\MagnetDlg.cpp" />
     <ClCompile Include="windows\main.cpp" />
     <ClCompile Include="windows\MainFrm.cpp" />
     <ClCompile Include="windows\NetworkPage.cpp" />
@@ -688,9 +689,7 @@
     <ClInclude Include="windows\InputBox.h" />
     <ClInclude Include="windows\iTunesCOMInterface.h" />
     <ClInclude Include="windows\LineDlg.h" />
-    <ClInclude Include="windows\ListViewArrows.h" />
     <ClInclude Include="windows\LogPage.h" />
-    <ClInclude Include="windows\MagnetDlg.h" />
     <ClInclude Include="windows\MainFrm.h" />
     <ClInclude Include="windows\memdc.h" />
     <ClInclude Include="windows\NetworkPage.h" />

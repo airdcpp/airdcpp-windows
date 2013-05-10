@@ -19,6 +19,8 @@
 #include "stdafx.h"
 #include "ListFilter.h"
 
+#include "WinUtil.h"
+
 
 ListFilter::ListFilter(size_t colCount, UpdateFunction updateF) :
 	colCount(colCount),

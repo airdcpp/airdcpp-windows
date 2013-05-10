@@ -750,7 +750,7 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		params["userNI"] = ClientManager::getInstance()->getNicks(ui->getUser()->getCID())[0];
 		params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
 
-		string file = LogManager::getInstance()->getPath(LogManager::PM, params);
+		string file = LogManager::getInstance()->getPath(ui->getUser(), params);
 		if(Util::fileExists(file)) {
 			WinUtil::viewLog(file);
 		} else {

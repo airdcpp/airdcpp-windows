@@ -507,9 +507,6 @@
     <ClCompile Include="windows\LogPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\MagnetDlg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -857,13 +854,7 @@
     <ClInclude Include="windows\LineDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\ListViewArrows.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\LogPage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\MagnetDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\MainFrm.h">

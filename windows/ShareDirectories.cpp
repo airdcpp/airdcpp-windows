@@ -549,8 +549,8 @@ void ShareDirectories::removeDir(const string& rPath, ProfileToken aProfile, int
 				taskdlg.SetMainInstructionText(msg.c_str());
 				TASKDIALOG_BUTTON buttons[] =
 				{
-					{ IDC_MAGNET_SEARCH, CTSTRING(REMOVE_OTHER_PROFILES), },
-					{ IDC_MAGNET_QUEUE, CTSTRING(LEAVE_OTHER_PROFILES), },
+					{ IDC_REMOVE_OTHER, CTSTRING(REMOVE_OTHER_PROFILES), },
+					{ IDC_LEAVE_OTHER, CTSTRING(LEAVE_OTHER_PROFILES), },
 				};
 				taskdlg.ModifyFlags(0, TDF_USE_COMMAND_LINKS);
 
@@ -577,12 +577,13 @@ void ShareDirectories::removeDir(const string& rPath, ProfileToken aProfile, int
 				}
 
 				if (remember) {
-					confirmOption = sel-1231;
+					confirmOption = sel == IDC_REMOVE_OTHER ? CONFIRM_REMOVE : CONFIRM_LEAVE;
 				} 
 					
-				if (sel-1231 == CONFIRM_LEAVE)
+				if (sel == IDC_LEAVE_OTHER)
 					return;
 			} else if (confirmOption == CONFIRM_LEAVE) {
+				//the remember option was used with a previous item
 				return;
 			}
 

@@ -47,7 +47,6 @@
 #include "boost/format.hpp"
 
 #include "HubFrame.h"
-#include "MagnetDlg.h"
 #include "BarShader.h"
 #include "ExMessageBox.h"
 
@@ -1195,42 +1194,29 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser) {
 			auto sel = SETTING(MAGNET_ACTION);
 			BOOL remember = false;
 			if (SETTING(MAGNET_ASK)) {
-				if (Util::getOsMajor() >= 6) {
-					CTaskDialog taskdlg;
+				CTaskDialog taskdlg;
 
-					tstring msg = CTSTRING_F(MAGNET_INFOTEXT, Text::toT(m.fname) % Util::formatBytesW(m.fsize));
-					taskdlg.SetContentText(msg.c_str());
-					TASKDIALOG_BUTTON buttons[] =
-					{
-						{ IDC_MAGNET_OPEN, CTSTRING(DOWNLOAD_OPEN), },
-						{ IDC_MAGNET_QUEUE, CTSTRING(SAVE_DEFAULT), },
-						{ IDC_MAGNET_SEARCH, CTSTRING(MAGNET_DLG_SEARCH), },
-					};
-					taskdlg.ModifyFlags(0, TDF_ALLOW_DIALOG_CANCELLATION | TDF_USE_COMMAND_LINKS);
-					taskdlg.SetWindowTitle(CTSTRING(MAGNET_DLG_TITLE));
-					taskdlg.SetCommonButtons(TDCBF_CANCEL_BUTTON);
+				tstring msg = CTSTRING_F(MAGNET_INFOTEXT, Text::toT(m.fname) % Util::formatBytesW(m.fsize));
+				taskdlg.SetContentText(msg.c_str());
+				TASKDIALOG_BUTTON buttons[] =
+				{
+					{ IDC_MAGNET_OPEN, CTSTRING(DOWNLOAD_OPEN), },
+					{ IDC_MAGNET_QUEUE, CTSTRING(SAVE_DEFAULT), },
+					{ IDC_MAGNET_SEARCH, CTSTRING(MAGNET_DLG_SEARCH), },
+				};
+				taskdlg.ModifyFlags(0, TDF_ALLOW_DIALOG_CANCELLATION | TDF_USE_COMMAND_LINKS);
+				taskdlg.SetWindowTitle(CTSTRING(MAGNET_DLG_TITLE));
+				taskdlg.SetCommonButtons(TDCBF_CANCEL_BUTTON);
 
 
-					taskdlg.SetButtons(buttons, _countof(buttons));
-					//taskdlg.SetExpandedInformationText(_T("More information"));
-					taskdlg.SetMainIcon(IDI_MAGNET);
-					taskdlg.SetVerificationText(CTSTRING(MAGNET_DLG_REMEMBER));
+				taskdlg.SetButtons(buttons, _countof(buttons));
+				//taskdlg.SetExpandedInformationText(_T("More information"));
+				taskdlg.SetMainIcon(IDI_MAGNET);
+				taskdlg.SetVerificationText(CTSTRING(MAGNET_DLG_REMEMBER));
 
-                    taskdlg.DoModal(mainWnd, &sel, 0, &remember);
-					if (sel == IDCANCEL) {
-						return;
-					}
-				} else {
-					MagnetDlg dlg(m.hash, Text::toT(m.fname), m.fsize);
-					if (dlg.DoModal(mainWnd) == IDOK) {
-						if (dlg.sel == IDC_MAGNET_NOTHING) {
-							return;
-						}
-						sel = dlg.sel;
-						remember = dlg.remember;
-					} else {
-						return;
-					}
+                taskdlg.DoModal(mainWnd, &sel, 0, &remember);
+				if (sel == IDCANCEL) {
+					return;
 				}
 
 				sel = sel - IDC_MAGNET_SEARCH;
@@ -2082,8 +2068,8 @@ void WinUtil::getProfileConflicts(HWND aParent, int aProfile, SettingItem::List&
 		taskdlg.SetExpandedControlText(CTSTRING(SHOW_CONFLICTING));
 		TASKDIALOG_BUTTON buttons[] =
 		{
-			{ 0, CTSTRING(USE_PROFILE_SETTINGS), },
-			{ 1, CTSTRING(USE_CURRENT_SETTINGS), },
+			{ IDC_USE_PROFILE, CTSTRING(USE_PROFILE_SETTINGS), },
+			{ IDC_USE_OWN, CTSTRING(USE_CURRENT_SETTINGS), },
 		};
 		taskdlg.ModifyFlags(0, TDF_USE_COMMAND_LINKS | TDF_EXPAND_FOOTER_AREA);
 		taskdlg.SetWindowTitle(CTSTRING(MANUALLY_CONFIGURED_DETECTED));
@@ -2094,7 +2080,7 @@ void WinUtil::getProfileConflicts(HWND aParent, int aProfile, SettingItem::List&
 
 		int sel = 0;
 		taskdlg.DoModal(aParent, &sel, 0, 0);
-		if (sel == 1) {
+		if (sel == IDC_USE_OWN) {
 			conflicts.clear();
 		}
 	}

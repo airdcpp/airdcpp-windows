@@ -23,6 +23,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "OMenu.h"
+#include "resource.h"
+
 #include "../client/FavoriteManager.h"
 
 template<class T>

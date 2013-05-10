@@ -2,6 +2,7 @@
 // Microsoft Visual C++ generated include file.
 // Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
+
 #define IDOK2                           3
 #define IDCANCEL2                       3
 #define IDC_EDIT_PROFILES               3
@@ -121,7 +122,6 @@
 #define IDD_UPDATE                      274
 #define IDR_UPDATE                      276
 #define IDB_SHUTDOWN                    278
-#define IDD_MAGNET                      281
 #define IDI_MAGNET                      283
 #define IDD_HASH_PROGRESS               284
 #define IDD_POPUPS                      287
@@ -192,7 +192,7 @@
 #define IDI_SHUTDOWN                    361
 #define IDI_NETSTATS                    362
 #define IDI_FOLLOW                      363
-#define IDI_USERS						364
+#define IDI_USERS                       364
 #define IDI_OPEN_LIST                   365
 #define IDI_NOTEPAD                     366
 #define IDI_OPEN_DOWNLOADS              367
@@ -317,8 +317,8 @@
 #define IDI_FIND                        514
 #define IDI_SFILE                       515
 #define IDI_FAV_USER_OFF                516
-#define IDI_USER_ON						517
-#define IDI_USER_OFF					518
+#define IDI_USER_ON                     517
+#define IDI_USER_OFF                    518
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999
@@ -651,20 +651,11 @@
 #define IDC_TTH                         1230
 #define IDC_DOWNLOADDIR_NAME            1231
 #define IDC_SEARCH_SIZE                 1231
-#define IDC_MAGNET_SEARCH               1231
 #define IDC_DOWNLOADDIR_EXT             1232
-#define IDC_MAGNET_QUEUE                1232
 #define IDC_MAGNET_OPEN                 1233
 #define IDC_CLIENT_FORMATTED_TAG        1233
-#define IDC_MAGNET_NOTHING              1234
-#define IDC_MAGNET_REMEMBER             1235
-#define IDC_MAGNET_HASH                 1236
 #define IDC_CLIENT_CONNECTION           1236
-#define IDC_MAGNET_NAME                 1237
 #define IDC_ADD_LINE                    1238
-#define IDC_MAGNET_DISP_NAME            1238
-#define IDC_MAGNET_DISP_HASH            1239
-#define IDC_MAGNET_TEXT                 1240
 #define IDC_SETTINGS_TIME_STAMPS_FORMAT 1241
 #define IDC_TIME_STAMPS_FORMAT          1242
 #define IDC_CLIENT_CHEATING_DESCRIPTION 1243
@@ -1398,6 +1389,12 @@
 #define IDC_WEB_SHORTCUT_KEY_DESC       8691
 #define IDC_WEB_SHORTCUTS_LIST          8692
 #define IDC_NORMAL_DESC                 8693
+#define IDC_REMOVE_OTHER                8694
+#define IDC_USE_OWN						8694
+#define IDC_LEAVE_OTHER					8695
+#define IDC_USE_PROFILE					8695
+#define IDC_MAGNET_QUEUE				8696
+#define IDC_MAGNET_SEARCH				8697
 #define IDR_TRAY_PM                     10000
 #define IDR_TRAY_HUB                    10001
 #define IDC_EXTRASLOTSSPIN              10002
@@ -1506,8 +1503,6 @@
 #define IDC_COPY_DIRECTORY              10155
 #define IDC_SFV_CHECH_FOLDER            10161
 #define IDC_REBUILD_TOOLBAR             10162
-#define IDC_MAGNET_SIZE                 10164
-#define IDC_MAGNET_DISP_SIZE            10165
 #define IDC_TIMESTAMP_HELP              10167
 #define IDC_CHECKSFV                    10168
 #define IDC_COUNTRY_FORMAT_HELP         10168
@@ -1735,4 +1730,8 @@
 #define _APS_NEXT_CONTROL_VALUE         1729
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
+#endif
+
+#ifndef _WIN32_WINNT
+# define _WIN32_WINNT 0x600
 #endif
