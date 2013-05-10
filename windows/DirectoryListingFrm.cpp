@@ -403,7 +403,7 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 	if (enable) {
 		EnableWindow();
 		ctrlToolbar.EnableButton(IDC_GETLIST, dl->getPartialList() && !dl->getIsOwnList());
-		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, dl->getPartialList() && !dl->getIsOwnList());
+		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, dl->getPartialList());
 	} else {
 		DisableWindow();
 		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, FALSE);
