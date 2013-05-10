@@ -41,24 +41,29 @@ public:
 		COMMAND_HANDLER(IDC_NICK, EN_CHANGE, WinUtil::onUserFieldChar)
 		COMMAND_HANDLER(IDC_EMAIL, EN_CHANGE, WinUtil::onUserFieldChar)
 		COMMAND_HANDLER(IDC_USERDESC, EN_CHANGE, WinUtil::onUserFieldChar)
-		COMMAND_ID_HANDLER(IDC_PUBLIC, onProfile)
-		COMMAND_ID_HANDLER(IDC_RAR, onProfile)
-		COMMAND_ID_HANDLER(IDC_PRIVATE_HUB, onProfile)
+		COMMAND_ID_HANDLER(IDC_NORMAL, onSelProfile)
+		COMMAND_ID_HANDLER(IDC_RAR, onSelProfile)
+		COMMAND_ID_HANDLER(IDC_LAN, onSelProfile)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onGetIP(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onClickedRadioButton(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onSelProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	virtual void write();
 	
 private:
+	int getCurProfile();
+
 	static Item items[];
 	static TextItem texts[];
 	CComboBoxEx ctrlLanguage;
+
+	int lastProfile;
+	SettingItem::List conflicts;
 };
 
 #endif // !defined(GENERAL_PAGE_H)

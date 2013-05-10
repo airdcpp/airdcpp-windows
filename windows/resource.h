@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by C:\Projects\airsvn\trunk\AirDC.rc
 //
-
 #define IDOK2                           3
 #define IDCANCEL2                       3
 #define IDC_EDIT_PROFILES               3
@@ -957,6 +956,9 @@
 #define IDC_SYS_LOG                     1344
 #define IDC_POPUP_TIME_STR              1345
 #define IDC_SYSTEM_LIST                 1345
+#define IDC_MISC                        1346
+#define IDC_SYSTEM_LIST2                1347
+#define IDC_MISC_OPTIONS                1347
 #define IDC_LIST1                       1348
 #define IDC_CONNECTION2                 1349
 #define IDC_RAR                         1350
@@ -1162,6 +1164,7 @@
 #define IDC_TARGET_PATH                 1535
 #define IDC_REMOVE_ON_HIT2              1536
 #define IDC_USE_MATCHER                 1536
+#define _WIN32_WINNT                    0x600
 #define IDC_MATCHER_PATTERN             1537
 #define IDC_PATTERN                     1538
 #define IDC_MON                         1539
@@ -1390,11 +1393,11 @@
 #define IDC_WEB_SHORTCUTS_LIST          8692
 #define IDC_NORMAL_DESC                 8693
 #define IDC_REMOVE_OTHER                8694
-#define IDC_USE_OWN						8694
-#define IDC_LEAVE_OTHER					8695
-#define IDC_USE_PROFILE					8695
-#define IDC_MAGNET_QUEUE				8696
-#define IDC_MAGNET_SEARCH				8697
+#define IDC_USE_OWN                     8694
+#define IDC_LEAVE_OTHER                 8695
+#define IDC_USE_PROFILE                 8695
+#define IDC_MAGNET_QUEUE                8696
+#define IDC_MAGNET_SEARCH               8697
 #define IDR_TRAY_PM                     10000
 #define IDR_TRAY_HUB                    10001
 #define IDC_EXTRASLOTSSPIN              10002
@@ -1730,8 +1733,4 @@
 #define _APS_NEXT_CONTROL_VALUE         1729
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
-#endif
-
-#ifndef _WIN32_WINNT
-# define _WIN32_WINNT 0x600
 #endif

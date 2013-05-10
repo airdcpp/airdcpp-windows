@@ -57,6 +57,7 @@ protected:
 	static TextItem texts[];
 	static ListItem listItems[];
 	static ListItem systemItems[];
+	static ListItem miscItems[];
 	TCHAR* title;
 
 	ExListViewCtrl logOptions;

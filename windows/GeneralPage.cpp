@@ -38,8 +38,9 @@ PropPage::TextItem GeneralPage::texts[] = {
 	{ IDC_AWAY_MODE, ResourceManager::AWAY_MODE },
 	{ IDC_AWAY_IDLE_TEXT_BEGIN, ResourceManager::AWAY_IDLE_TIME_BEGIN },
 	{ IDC_AWAY_IDLE_TEXT_END, ResourceManager::AWAY_IDLE_TIME_END },
-	{ IDC_CURRENT_PROFILE, ResourceManager::CURRENT_USER_PROFILE },
-	{ IDC_PROFILE_TIP, ResourceManager::USER_PROFILE_TIP },
+	{ IDC_NORMAL, ResourceManager::NORMAL },
+	{ IDC_RAR, ResourceManager::RAR_HUBS },
+	{ IDC_LAN, ResourceManager::LAN_HUBS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -57,12 +58,35 @@ void GeneralPage::write()
 {
 	Localization::setLanguage(ctrlLanguage.GetCurSel());
 	PropPage::write((HWND)(*this), items);
+
+	auto newProfile = getCurProfile();
+	if (newProfile != SETTING(SETTINGS_PROFILE))
+		SettingsManager::getInstance()->setProfile(newProfile, conflicts);
+}
+
+int GeneralPage::getCurProfile() {
+	if(IsDlgButtonChecked(IDC_NORMAL)){
+		return SettingsManager::PROFILE_NORMAL;
+	} else if(IsDlgButtonChecked(IDC_RAR)) {
+		return SettingsManager::PROFILE_RAR;
+	} else if(IsDlgButtonChecked(IDC_LAN)){
+		return SettingsManager::PROFILE_LAN;;
+	}
+
+	return SettingsManager::PROFILE_NORMAL;
 }
 
 LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)(*this), items);
+
+	switch(SETTING(SETTINGS_PROFILE)) {
+		case SettingsManager::PROFILE_NORMAL: CheckDlgButton(IDC_NORMAL, BST_CHECKED); break;
+		case SettingsManager::PROFILE_RAR: CheckDlgButton(IDC_RAR, BST_CHECKED); break;
+		case SettingsManager::PROFILE_LAN: CheckDlgButton(IDC_LAN, BST_CHECKED); break;
+		default: CheckDlgButton(IDC_NORMAL, BST_CHECKED); break;
+	}
 
 	setMinMax(IDC_AWAY_SPIN, 0, 60);
 
@@ -76,6 +100,12 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	return TRUE;
 }
 
-LRESULT GeneralPage::onProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT GeneralPage::onSelProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	auto newProfile = getCurProfile();
+	if (newProfile != lastProfile) {
+		WinUtil::getProfileConflicts(m_hWnd, newProfile, conflicts);
+		lastProfile = newProfile;
+	}
+
 	return TRUE;
 }

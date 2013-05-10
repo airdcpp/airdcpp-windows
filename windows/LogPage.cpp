@@ -32,6 +32,7 @@ PropPage::TextItem LogPage::texts[] = {
 	{ IDC_BROWSE_LOG,			ResourceManager::BROWSE_ACCEL },
 	{ IDC_SETTINGS_FORMAT,		ResourceManager::SETTINGS_FORMAT },
 	{ IDC_SETTINGS_FILE_NAME,	ResourceManager::SETTINGS_FILE_NAME },
+	{ IDC_MISC,					ResourceManager::SETTINGS_MISC },
 	{ 0,						ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -64,11 +65,18 @@ PropPage::ListItem LogPage::systemItems[] = {
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
+PropPage::ListItem LogPage::miscItems[] = {
+	{ SettingsManager::PM_LOG_GROUP_CID,			ResourceManager::LOG_COMBINE_ADC_PM },
+
+	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+};
+
 LRESULT LogPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	PropPage::translate((HWND)(*this), texts);
 	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_LOG_OPTIONS));
 	PropPage::read((HWND)*this, items, systemItems, GetDlgItem(IDC_SYSTEM_LIST));
+	PropPage::read((HWND)*this, items, miscItems, GetDlgItem(IDC_MISC_OPTIONS));
 
 	for(int i = 0; i < LogManager::LAST; ++i) {
 		TStringPair pair;
@@ -132,6 +140,7 @@ void LogPage::write()
 {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_LOG_OPTIONS));
 	PropPage::write((HWND)*this, items, systemItems, GetDlgItem(IDC_SYSTEM_LIST));
+	PropPage::write((HWND)*this, items, miscItems, GetDlgItem(IDC_MISC_OPTIONS));
 
 	const string& s = SETTING(LOG_DIRECTORY);
 	if(s.length() > 0 && s[s.length() - 1] != '\\') {
