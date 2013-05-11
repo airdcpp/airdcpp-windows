@@ -375,7 +375,6 @@ public:
 	static bool getUCParams(HWND parent, const UserCommand& cmd, ParamMap& params) noexcept;
 
 	static tstring getNicks(const CID& cid);
-	static tstring getNicks(const UserPtr& u) { return getNicks(u->getCID()); }
 	static tstring getNicks(const HintedUser& user);
 
 	/** @return Pair of hubnames as a string and a bool representing the user's online status */

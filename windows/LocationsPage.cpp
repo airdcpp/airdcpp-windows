@@ -75,7 +75,7 @@ LRESULT LocationsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	favoriteDirs = FavoriteManager::getInstance()->getFavoriteDirs();
 	for(auto j = favoriteDirs.begin(); j != favoriteDirs.end(); j++) {
 		int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(j->first).c_str());
-		ctrlDirectories.SetItemText(i, 1, Text::toT(Util::toString(j->second)).c_str());
+		ctrlDirectories.SetItemText(i, 1, Text::toT(Util::listToString(j->second)).c_str());
 	}
 
 	ctrlAutoSelect.Attach(GetDlgItem(IDC_AUTOPATH_METHOD));
@@ -239,7 +239,7 @@ void LocationsPage::addDirs(const string& vName, const StringList& aPaths){
 		pos = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(vName) );
 	}
 	dcassert(pos != -1);
-	ctrlDirectories.SetItemText(pos, 1, Text::toT(Util::toString(paths)).c_str());
+	ctrlDirectories.SetItemText(pos, 1, Text::toT(Util::listToString(paths)).c_str());
 }
 
 bool LocationsPage::removeFavoriteDir(const string& vName) {

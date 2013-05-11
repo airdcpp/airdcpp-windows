@@ -162,11 +162,15 @@ public:
 						names.push_back(i->hubName);
 
 						auto matchPos = i;
-						while ((matchPos = find_if(i+1, shareList.end(), [i](User::UserHubInfo uhi) { return uhi.shared == i->shared; })) != shareList.end()) {
+
+						//erase all following entries with the same share size
+						while ((matchPos = find_if(i+1, shareList.end(), [&i](const User::UserHubInfo& uhi) { return uhi.shared == i->shared; })) != shareList.end()) {
 							names.push_back(matchPos->hubName);
 							shareList.erase(matchPos);
 						}
-						i->hubName = Util::toString(names);
+
+						//combine the hub names with this share size
+						i->hubName = Util::listToString(names);
 					}
 
 					if (shareList.size() > 1) {

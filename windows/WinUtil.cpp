@@ -1344,7 +1344,7 @@ bool WinUtil::isDesktopOs() {
 }
 
 tstring WinUtil::getNicks(const CID& cid) {
-	return Text::toT(Util::toString(ClientManager::getInstance()->getNicks(cid)));
+	return Text::toT(Util::listToString(ClientManager::getInstance()->getNicks(cid)));
 }
 
 tstring WinUtil::getNicks(const HintedUser& user) {
@@ -1355,7 +1355,7 @@ static pair<tstring, bool> formatHubNames(const StringList& hubs) {
 	if(hubs.empty()) {
 		return make_pair(CTSTRING(OFFLINE), false);
 	} else {
-		return make_pair(Text::toT(Util::toString(hubs)), true);
+		return make_pair(Text::toT(Util::listToString(hubs)), true);
 	}
 }
 

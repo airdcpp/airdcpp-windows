@@ -196,7 +196,7 @@ void PrivateFrame::updateOnlineStatus() {
 		//the user is online
 
 		hubNames = WinUtil::getHubNames(replyTo);
-		nicks = WinUtil::getNicks(replyTo);
+		nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
 		setDisconnected(false);
 
 		if(!online) {
@@ -256,10 +256,13 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 	bool myPM = replyTo == ClientManager::getInstance()->getMe();
 	const UserPtr& user = myPM ? to : replyTo;
 	
+	auto hintedUser = HintedUser(user, c->getHubUrl());
+
 	auto i = frames.find(user);
 	if(i == frames.end()) {
 		if(frames.size() > 200) return;
-		p = new PrivateFrame(HintedUser(user, c->getHubUrl()), c);
+
+		p = new PrivateFrame(hintedUser, c);
 		frames[user] = p;
 		
 		p->addLine(from, aMessage);
@@ -284,7 +287,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 				tstring message = aMessage.substr(0, 250);
 				WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 			} else {
-				WinUtil::showPopup(WinUtil::getNicks(replyTo) + _T(" - ") + p->hubNames, TSTRING(PRIVATE_MESSAGE));
+				WinUtil::showPopup(WinUtil::getNicks(hintedUser) + _T(" - ") + p->hubNames, TSTRING(PRIVATE_MESSAGE));
 			}
 		}
 
@@ -307,7 +310,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 					tstring message = aMessage.substr(0, 250);
 					WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 				} else {
-					WinUtil::showPopup(WinUtil::getNicks(replyTo) + _T(" - ") + i->second->hubNames, TSTRING(PRIVATE_MESSAGE));
+					WinUtil::showPopup(WinUtil::getNicks(hintedUser) + _T(" - ") + i->second->hubNames, TSTRING(PRIVATE_MESSAGE));
 				}
 			}
 

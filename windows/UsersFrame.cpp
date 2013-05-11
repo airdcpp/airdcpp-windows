@@ -757,8 +757,8 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		dcassert(i != -1);
 
 		ParamMap params;
-		params["hubNI"] = Util::toString(ClientManager::getInstance()->getHubNames(ui->getUser()->getCID()));
-		params["hubURL"] = Util::toString(ClientManager::getInstance()->getHubUrls(ui->getUser()->getCID()));
+		params["hubNI"] = Util::listToString(ClientManager::getInstance()->getHubNames(ui->getUser()->getCID()));
+		params["hubURL"] = Util::listToString(ClientManager::getInstance()->getHubUrls(ui->getUser()->getCID()));
 		params["userCID"] = ui->getUser()->getCID().toBase32(); 
 		params["userNI"] = ClientManager::getInstance()->getNicks(ui->getUser()->getCID())[0];
 		params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
