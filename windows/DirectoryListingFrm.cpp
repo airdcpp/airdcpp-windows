@@ -1580,7 +1580,7 @@ void DirectoryListingFrame::clearList() {
 
 void DirectoryListingFrame::setWindowTitle() {
 	if(error.empty())
-		SetWindowText((Text::toT(dl->getNick(false)) + _T(" - ") + WinUtil::getHubNames(dl->getHintedUser()).first).c_str());
+		SetWindowText((Text::toT(dl->getNick(false)) + _T(" - ") + WinUtil::getHubNames(dl->getHintedUser())).c_str());
 	else
 		SetWindowText(error.c_str());		
 }

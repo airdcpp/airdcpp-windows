@@ -179,6 +179,7 @@ void PrivateFrame::updateOnlineStatus() {
 		return;
 	}
 
+	auto tmp = WinUtil::getHubNames(cid);
 
 	auto oldSel = ctrlHubSel.GetStyle() & WS_VISIBLE ? ctrlHubSel.GetCurSel() : 0;
 	StringPair oldHubPair;
@@ -191,10 +192,15 @@ void PrivateFrame::updateOnlineStatus() {
 	}
 
 	//General things
-	if(hubsInfoNew.second) {	
+	if(hubsInfoNew.second) {
+		//the user is online
+
+		hubNames = WinUtil::getHubNames(replyTo);
+		nicks = WinUtil::getNicks(replyTo);
 		setDisconnected(false);
+
 		if(!online) {
-			addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + WinUtil::getNicks(cid) + _T(" - ") + hubsInfoNew.first + _T("]"));
+			addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"));
 			setIcon(userOnline);
 		}
 	} else {
@@ -234,9 +240,8 @@ void PrivateFrame::updateOnlineStatus() {
 		showHubSelection(false);
 	}
 
-	hubNames = move(hubsInfoNew.first);
 	online = hubsInfoNew.second;
-	SetWindowText((WinUtil::getNicks(cid) + _T(" - ") + hubNames).c_str());
+	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
 }
 
 void PrivateFrame::showHubSelection(bool show) {
@@ -462,7 +467,7 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	OMenu tabMenu;
 	tabMenu.CreatePopupMenu();	
 
-	tabMenu.InsertSeparatorFirst(Text::toT(ClientManager::getInstance()->getNicks(replyTo.user->getCID())[0]));
+	tabMenu.InsertSeparatorFirst(Text::toT(ClientManager::getInstance()->getNick(replyTo.user, replyTo.hint, false)));
 	if(SETTING(LOG_PRIVATE_CHAT)) {
 		tabMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG,  CTSTRING(OPEN_USER_LOG));
 		tabMenu.AppendMenu(MF_SEPARATOR);

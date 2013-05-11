@@ -754,7 +754,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			/*if (hits > 1)
 				return Util::emptyStringW;
 			else*/
-				return WinUtil::getHubNames(sr->getUser()).first;
+				return WinUtil::getHubNames(sr->getUser());
 		case COLUMN_EXACT_SIZE: return sr->getSize() > 0 ? Util::formatExactSize(sr->getSize()) : Util::emptyStringT;
 		case COLUMN_IP: 
 			/*if (hits > 1)

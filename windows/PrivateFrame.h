@@ -172,6 +172,7 @@ private:
 	CContainedWindow ctrlHubSelContainer;
 
 	bool closed;
+	tstring nicks;
 	tstring hubNames;
 	ParamMap ucLineParams;
 

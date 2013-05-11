@@ -1347,8 +1347,8 @@ tstring WinUtil::getNicks(const CID& cid) {
 	return Text::toT(Util::toString(ClientManager::getInstance()->getNicks(cid)));
 }
 
-tstring WinUtil::getNicks(const UserPtr& u) {
-	return getNicks(u->getCID());
+tstring WinUtil::getNicks(const HintedUser& user) {
+	return Text::toT(ClientManager::getInstance()->getFormatedNicks(user));
 }
 
 static pair<tstring, bool> formatHubNames(const StringList& hubs) {
@@ -1363,8 +1363,8 @@ pair<tstring, bool> WinUtil::getHubNames(const CID& cid) {
 	return formatHubNames(ClientManager::getInstance()->getHubNames(cid));
 }
 
-pair<tstring, bool> WinUtil::getHubNames(const UserPtr& u) {
-	return getHubNames(u->getCID());
+tstring WinUtil::getHubNames(const HintedUser& aUser) {
+	return Text::toT(ClientManager::getInstance()->getFormatedHubNames(aUser));
 }
 
 void WinUtil::getContextMenuPos(CListViewCtrl& aList, POINT& aPt) {

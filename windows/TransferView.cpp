@@ -927,7 +927,7 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 			if (isBundle) {
 				return TSTRING_F(X_CONNECTIONS, running);
 			} else {
-				return WinUtil::getHubNames(user).first;
+				return WinUtil::getHubNames(user);
 			}
 		case COLUMN_STATUS: return statusString;
 		case COLUMN_TIMELEFT: return (status == STATUS_RUNNING) ? Util::formatSecondsW(timeLeft) : Util::emptyStringT;

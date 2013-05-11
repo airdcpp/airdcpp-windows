@@ -375,13 +375,13 @@ public:
 	static bool getUCParams(HWND parent, const UserCommand& cmd, ParamMap& params) noexcept;
 
 	static tstring getNicks(const CID& cid);
-	static tstring getNicks(const UserPtr& u);
-	static tstring getNicks(const HintedUser& user) { return getNicks(user.user->getCID()); }
+	static tstring getNicks(const UserPtr& u) { return getNicks(u->getCID()); }
+	static tstring getNicks(const HintedUser& user);
 
 	/** @return Pair of hubnames as a string and a bool representing the user's online status */
 	static pair<tstring, bool> getHubNames(const CID& cid);
-	static pair<tstring, bool> getHubNames(const UserPtr& u);
-	static pair<tstring, bool> getHubNames(const HintedUser& user) { return getHubNames(user.user->getCID()); }
+	static pair<tstring, bool> getHubNames(const UserPtr& u) { return getHubNames(u->getCID()); }
+	static tstring getHubNames(const HintedUser& user);
 	
 	static void splitTokens(int* array, const string& tokens, int maxItems = -1) noexcept;
 	static void saveHeaderOrder(CListViewCtrl& ctrl, SettingsManager::StrSetting order, 
