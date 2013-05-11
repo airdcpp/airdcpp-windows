@@ -192,6 +192,7 @@ private:
 	bool listFav;
 	bool filterQueued;
 	bool filterOnline;
+	BOOL hitIcon(int aItem, int aSubItem);
 
 	void updateInfoText(const UserInfo* ui);
 	void updateList();

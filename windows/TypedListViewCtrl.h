@@ -56,12 +56,23 @@ public:
 	typedef CListViewCtrl baseClass;
 
 	BEGIN_MSG_MAP(thisClass)
+		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_MENUCOMMAND, onHeaderMenu)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBkgnd)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_ENABLE, onEnable)
 	END_MSG_MAP();
+
+	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+
+		 if(SETTING(USE_EXPLORER_THEME)) {
+			SetWindowTheme(m_hWnd, L"explorer", NULL);
+         }
+
+		bHandled = FALSE;
+		return 0;
+	}
 
 	class iterator : public ::iterator<random_access_iterator_tag, T*> {
 	public:

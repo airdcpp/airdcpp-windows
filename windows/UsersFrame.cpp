@@ -484,7 +484,7 @@ LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 
 	if(l->iItem != -1) {
 		auto ui = ctrlUsers.getItemData(l->iItem);
-		if(ctrlUsers.findColumn(l->iSubItem) == COLUMN_SLOT) {
+		if((ctrlUsers.findColumn(l->iSubItem) == COLUMN_SLOT) && hitIcon(l->iItem, l->iSubItem)) {
 			ui->grantSlot = !ui->grantSlot;
 			if(ui->isFavorite){
 				FavoriteManager::getInstance()->setAutoGrant(ui->getUser(), ui->grantSlot);
@@ -492,7 +492,7 @@ LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			} else {
 				ui->grantSlot ? ui->grantTimeless() : ui->ungrant(); // timeless grant
 			}
-		} else if((ctrlUsers.findColumn(l->iSubItem) == COLUMN_FAVORITE) && !listFav) {  //TODO: confirm removal.
+		} else if((ctrlUsers.findColumn(l->iSubItem) == COLUMN_FAVORITE) && !listFav && hitIcon(l->iItem, l->iSubItem)) {  //TODO: confirm removal.
 			if(ui->isFavorite)
 				FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
 			else
@@ -503,6 +503,16 @@ LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	bHandled = FALSE;
   	return 0;
 }
+
+BOOL UsersFrame::hitIcon(int aItem, int aSubItem) {
+	CRect rc;
+	CPoint pt = GetMessagePos();
+	ctrlUsers.ScreenToClient(&pt);
+	ctrlUsers.GetSubItemRect(aItem, aSubItem, LVIR_ICON, rc);
+
+	return PtInRect(&rc, pt);
+}
+
 
 LRESULT UsersFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMITEMACTIVATE* item = (NMITEMACTIVATE*) pnmh;
