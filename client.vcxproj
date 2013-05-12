@@ -250,6 +250,7 @@
     <ClCompile Include="client\DirectoryListingManager.cpp" />
     <ClCompile Include="client\Download.cpp" />
     <ClCompile Include="client\DownloadManager.cpp" />
+    <ClCompile Include="client\DualString.cpp" />
     <ClCompile Include="client\Encoder.cpp" />
     <ClCompile Include="client\FavoriteManager.cpp" />
     <ClCompile Include="client\File.cpp" />
@@ -448,6 +449,7 @@
     <ClInclude Include="client\SSLSocket.h" />
     <ClInclude Include="client\stdinc.h" />
     <ClInclude Include="client\Streams.h" />
+    <ClInclude Include="client\DualString.h" />
     <ClInclude Include="client\StringMatch.h" />
     <ClInclude Include="client\TargetUtil.h" />
     <ClInclude Include="client\ThrottleManager.h" />
