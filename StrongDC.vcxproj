@@ -642,6 +642,7 @@
     <ClInclude Include="windows\LimitPage.h" />
     <ClInclude Include="windows\ExCImage.h" />
     <ClInclude Include="windows\ListFilter.h" />
+    <ClInclude Include="windows\ListViewArrows.h" />
     <ClInclude Include="windows\ProtocolPage.h" />
     <ClInclude Include="windows\ProxyPage.h" />
     <ClInclude Include="windows\ScanPage.h" />

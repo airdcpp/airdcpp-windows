@@ -32,6 +32,7 @@ PropPage::ListItem SharingOptionsPage::listItems[] = {
 	{ SettingsManager::REMOVE_FORBIDDEN, ResourceManager::SETCZDC_REMOVE_FORBIDDEN },
 	{ SettingsManager::NO_ZERO_BYTE, ResourceManager::SETTINGS_NO_ZERO_BYTE },
 	{ SettingsManager::SKIP_EMPTY_DIRS_SHARE, ResourceManager::DONT_SHARE_EMPTY_DIRS },
+	{ SettingsManager::SHARE_FOLLOW_SYMLINKS, ResourceManager::FOLLOW_SYMLINKS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

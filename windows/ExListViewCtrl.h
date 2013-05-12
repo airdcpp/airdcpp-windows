@@ -23,9 +23,11 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "ListViewArrows.h"
 #include "WinUtil.h"
 
-class ExListViewCtrl : public CWindowImpl<ExListViewCtrl, CListViewCtrl, CControlWinTraits>
+class ExListViewCtrl : public CWindowImpl<ExListViewCtrl, CListViewCtrl, CControlWinTraits>,
+	public ListViewArrows<ExListViewCtrl>
 {
 	int sortColumn;
 	int sortType;
@@ -42,16 +44,23 @@ public:
 		SORT_BYTES
 	};
 
+	typedef ListViewArrows<ExListViewCtrl> arrowBase;
+
 	BEGIN_MSG_MAP(ExListViewCtrl)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
+		CHAIN_MSG_MAP(arrowBase)
 	END_MSG_MAP()
 
 	void setSort(int aColumn, int aType, bool aAscending = true, int (*aFun)(LPARAM, LPARAM, int) = NULL) {
+		bool doUpdateArrow = (aColumn != sortColumn || aAscending != ascending);
+		
 		sortColumn = aColumn;
 		sortType = aType;
 		ascending = aAscending;
 		fun = aFun;
 		resort();
+		if (doUpdateArrow)
+			updateArrow();
 	}
 
 	void resort() {

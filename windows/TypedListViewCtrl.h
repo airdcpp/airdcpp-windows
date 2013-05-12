@@ -25,6 +25,7 @@
 
 #include "../Client/SettingsManager.h"
 #include "../client/StringTokenizer.h"
+#include "ListViewArrows.h"
 
 enum ColumnType{
 	COLUMN_TEXT,
@@ -46,7 +47,8 @@ public:
 };
 
 template<class T, int ctrlId>
-class TypedListViewCtrl : public CWindowImpl<TypedListViewCtrl<T, ctrlId>, CListViewCtrl, CControlWinTraits>
+class TypedListViewCtrl : public CWindowImpl<TypedListViewCtrl<T, ctrlId>, CListViewCtrl, CControlWinTraits>,
+	public ListViewArrows<TypedListViewCtrl<T, ctrlId> >
 {
 public:
 	TypedListViewCtrl() : sortColumn(-1), sortAscending(true), hBrBg(WinUtil::bgBrush), leftMargin(0), noDefaultItemImages(false) { }
@@ -54,6 +56,7 @@ public:
 
 	typedef TypedListViewCtrl<T, ctrlId> thisClass;
 	typedef CListViewCtrl baseClass;
+	typedef ListViewArrows<thisClass> arrowBase;
 
 	BEGIN_MSG_MAP(thisClass)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
@@ -62,6 +65,7 @@ public:
 		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBkgnd)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_ENABLE, onEnable)
+		CHAIN_MSG_MAP(arrowBase)
 	END_MSG_MAP();
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -203,6 +207,7 @@ public:
 		} else {
 			sortColumn = -1;
 		}
+		updateArrow();
 		resort();
 		return 0;
 	}
@@ -315,12 +320,14 @@ public:
 
 	void setSortColumn(int aSortColumn) {
 		sortColumn = aSortColumn;
+		updateArrow();
 	}
 	int getSortColumn() const { return sortColumn; }
 	uint8_t getRealSortColumn() const { return findColumn(sortColumn); }
 	bool isAscending() const { return sortAscending; }
 	void setAscending(bool s) {
 		sortAscending = s;
+		updateArrow();
 	}
 
 	iterator begin() { return iterator(this); }

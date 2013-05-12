@@ -1148,6 +1148,9 @@
     <ClInclude Include="windows\WizardFinish.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\ListViewArrows.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\SettingsTree\SearchTypes.ico">
