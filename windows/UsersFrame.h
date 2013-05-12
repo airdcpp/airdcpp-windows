@@ -158,7 +158,6 @@ private:
 		void update(const UserPtr& u);
 
 		tstring columns[COLUMN_LAST];
-		StringPair formatNicks(const UserPtr& u);
 
 		const UserPtr& getUser() const { return user; }
 		GETSET(string, hubUrl, HubUrl);

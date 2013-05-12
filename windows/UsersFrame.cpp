@@ -701,7 +701,9 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		grantSlot = fu->isSet(FavoriteUser::FLAG_GRANTSLOT);
 		
 		setHubUrl(fu->getUrl().empty() ? hubUrl : fu->getUrl());
-		auto ui = move(formatNicks(u));
+
+		//gets nicks and hubnames and updates the hint url
+		auto ui = move(ClientManager::getInstance()->getNickHubPair(HintedUser(u, hubUrl)));
 
 		columns[COLUMN_NICK] = u->isOnline() ? Text::toT(ui.first) : fu->getNick().empty() ? Text::toT(ui.first) : Text::toT(fu->getNick());
 		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(fu->getUrl()); 
@@ -710,8 +712,10 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 	} else {
 		isFavorite = false;
 		grantSlot = hasReservedSlot();
+		
+		//gets nicks and hubnames and updates the hint url
+		auto ui = move(ClientManager::getInstance()->getNickHubPair(HintedUser(u, hubUrl)));
 
-		auto ui = formatNicks(u);
 		columns[COLUMN_NICK] = Text::toT(ui.first);
 		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(getHubUrl());
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : TSTRING(OFFLINE);
@@ -721,34 +725,6 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());
 }
 
-StringPair UsersFrame::UserInfo::formatNicks(const UserPtr& u) {
-
-	//get the correct nick,hub combination, updates the hint if empty
-	auto nicks = move(ClientManager::getInstance()->getNickHubPair(u->getCID(), hubUrl));
-	string nick = nicks.begin()->first;
-	string hubs = nicks.begin()->second;
-
-	if(nicks.size() > 1) {
-		string tmp;
-		hubs += " (";
-		for(auto i = nicks.begin()+1; i != nicks.end(); ++i){
-			hubs += i->second + ",";
-
-			if(stricmp(nick, i->first) == 0) //only unique nicks
-				continue;
-
-			tmp += i->first + ",";
-		}
-
-		if(!tmp.empty()) {
-			tmp[tmp.length()-1] = ')';
-			nick += " (" + tmp;
-		}
-		hubs[hubs.length()-1] = ')';
-
-	}
-	return make_pair(nick, hubs);
-}
 			
 LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(ctrlUsers.GetSelectedCount() == 1) {

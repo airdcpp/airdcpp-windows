@@ -384,6 +384,7 @@ CImageList& ResourceLoader::getSettingsTreeIcons() {
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_IGNORE, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SEARCH, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SEARCHTYPES, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SCAN, size));
 	}
 	return settingsTreeImages;
 }
