@@ -293,6 +293,9 @@
     <ClCompile Include="client\DualString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\DirectoryMonitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -764,6 +767,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\DualString.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\DirectoryMonitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\DirectoryMonitorListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

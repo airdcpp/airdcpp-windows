@@ -248,6 +248,7 @@
     <ClCompile Include="client\DCPlusPlus.cpp" />
     <ClCompile Include="client\DirectoryListing.cpp" />
     <ClCompile Include="client\DirectoryListingManager.cpp" />
+    <ClCompile Include="client\DirectoryMonitor.cpp" />
     <ClCompile Include="client\Download.cpp" />
     <ClCompile Include="client\DownloadManager.cpp" />
     <ClCompile Include="client\DualString.cpp" />
@@ -366,6 +367,8 @@
     <ClInclude Include="client\DirectoryListingListener.h" />
     <ClInclude Include="client\DirectoryListingManager.h" />
     <ClInclude Include="client\DirectoryListingManagerListener.h" />
+    <ClInclude Include="client\DirectoryMonitor.h" />
+    <ClInclude Include="client\DirectoryMonitorListener.h" />
     <ClInclude Include="client\Download.h" />
     <ClInclude Include="client\DownloadManager.h" />
     <ClInclude Include="client\DownloadManagerListener.h" />
