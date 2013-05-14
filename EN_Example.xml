@@ -1899,5 +1899,6 @@ Make sure that the path %s is accessible and there isn't there isn't another ins
 		<String Name="UploadLimits">Upload Limits</String>
 		<String Name="Ipv6NoPublicIp">IPv6 connectivity has been disabled as no public IPv6 address was detected</String>
 		<String Name="LogCombineAdcPm">Use a single log file per CID for ADC users</String>
+		<String Name="FollowSymlinks">Follow symbolic links</String>
 	</Strings>
 </Language>
