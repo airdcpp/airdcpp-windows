@@ -319,10 +319,10 @@ public:
 	}
 };
 
-static unique_ptr<MainFrame> mainWindow;
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
 	checkCommonControls();
+	static unique_ptr<MainFrame> wndMain = nullptr;
 
 	CMessageLoop theLoop;	
 
@@ -392,8 +392,8 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				SetProcessDefaultLayout(LAYOUT_RTL);
 			}
 
-			MainFrame* wndMain = new MainFrame;
-			mainWindow.reset(wndMain);
+			wndMain.reset(new MainFrame);
+			//MainFrame::anyMF = wndMain; created on MainFrame constructor.
 
 			CRect rc = wndMain->rcDefault;
 			if( (SETTING(MAIN_WINDOW_POS_X) != CW_USEDEFAULT) &&
