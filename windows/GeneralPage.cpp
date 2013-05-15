@@ -58,10 +58,6 @@ void GeneralPage::write()
 {
 	Localization::setLanguage(ctrlLanguage.GetCurSel());
 	PropPage::write((HWND)(*this), items);
-
-	auto newProfile = getCurProfile();
-	if (newProfile != SETTING(SETTINGS_PROFILE))
-		SettingsManager::getInstance()->setProfile(newProfile, conflicts);
 }
 
 int GeneralPage::getCurProfile() {
@@ -74,6 +70,18 @@ int GeneralPage::getCurProfile() {
 	}
 
 	return SettingsManager::PROFILE_NORMAL;
+}
+
+// make sure that this is set after the other settings
+Dispatcher::F GeneralPage::getThreadedTask() {
+	auto newProfile = getCurProfile();
+	if (newProfile != SETTING(SETTINGS_PROFILE)) {
+		return Dispatcher::F([=] { 
+			SettingsManager::getInstance()->setProfile(newProfile, conflicts);
+		});
+	}
+
+	return nullptr;
 }
 
 LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)

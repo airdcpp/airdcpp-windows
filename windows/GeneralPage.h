@@ -54,7 +54,7 @@ public:
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	virtual void write();
-	
+	virtual Dispatcher::F getThreadedTask();
 private:
 	int getCurProfile();
 
