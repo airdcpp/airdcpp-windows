@@ -802,6 +802,8 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		AutoSearchManager::getInstance()->runSearches();
 	} else if(stricmp(cmd.c_str(), _T("clientstats")) == 0) {
 		status = Text::toT(ClientManager::getInstance()->getClientStats());
+	} else if(stricmp(cmd.c_str(), _T("handlechanges")) == 0) {
+		ShareManager::getInstance()->handleChangedFiles(GET_TICK(), true);
 	} else if(stricmp(cmd.c_str(), _T("allow")) == 0) {
 		if(!param.empty()) {
 			QueueManager::getInstance()->shareBundle(Text::fromT(param));
