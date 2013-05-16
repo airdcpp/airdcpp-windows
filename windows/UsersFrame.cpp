@@ -415,6 +415,8 @@ LRESULT UsersFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 			showInfo = !showInfo;
 			SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_SHOW_INFO, showInfo);
 			UpdateLayout(FALSE);
+			if(ctrlUsers.GetSelectedCount() == 1)
+				updateInfoText(ctrlUsers.getSelectedItem());
 			break;
 		}
 		case IDC_SHOW_FAV: {
