@@ -213,6 +213,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		case COLUMN_PRIORITY: {
 			tstring priority;
 			switch(getPriority()) {
+				case QueueItem::PAUSED_FORCE: priority = TSTRING(PAUSED_FORCED); break;
 				case QueueItem::PAUSED: priority = TSTRING(PAUSED); break;
 				case QueueItem::LOWEST: priority = TSTRING(LOWEST); break;
 				case QueueItem::LOW: priority = TSTRING(LOW); break;
@@ -1588,7 +1589,7 @@ void QueueFrame::changePriority(bool inc){
 	while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1){
 		QueueItemBase::Priority p = ctrlQueue.getItemData(i)->getPriority();
 
-		if ((inc && p == QueueItem::HIGHEST) || (!inc && p == QueueItem::PAUSED)){
+		if ((inc && p == QueueItem::HIGHEST) || (!inc && p == QueueItem::PAUSED_FORCE)){
 			// Trying to go higher than HIGHEST or lower than PAUSED
 			// so do nothing
 			continue;
@@ -1601,6 +1602,7 @@ void QueueFrame::changePriority(bool inc){
 			case QueueItem::LOW:     p = inc ? QueueItem::NORMAL  : QueueItem::LOWEST; break;
 			case QueueItem::LOWEST:  p = inc ? QueueItem::LOW     : QueueItem::PAUSED; break;
 			case QueueItem::PAUSED:  p = QueueItem::LOWEST; break;
+			case QueueItem::PAUSED_FORCE:  p = QueueItem::PAUSED_FORCE; break;
 		}
 		QueueManager::getInstance()->setQIPriority(ctrlQueue.getItemData(i)->getTarget(), p);
 	}

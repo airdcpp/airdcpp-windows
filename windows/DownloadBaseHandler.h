@@ -144,6 +144,7 @@ public:
 			priorityMenu->appendItem(aTitle.c_str(), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, p); });
 		};
 
+		addItem(CTSTRING(PAUSED_FORCED), QueueItem::PAUSED_FORCE);
 		addItem(CTSTRING(PAUSED), QueueItem::PAUSED);
 		addItem(CTSTRING(LOWEST), QueueItem::LOWEST);
 		addItem(CTSTRING(LOW), QueueItem::LOW);

@@ -1511,7 +1511,7 @@ void WinUtil::appendPreviewMenu(OMenu& parent, const string& aTarget) {
 }
 
 template<typename T> 
-static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle, function<void (uint8_t aPrio)> prioF, function<void ()> autoPrioF) {
+static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle, function<void (QueueItemBase::Priority aPrio)> prioF, function<void ()> autoPrioF) {
 	if (aBase.empty())
 		return;
 
@@ -1543,6 +1543,7 @@ static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle
 		}, OMenu::FLAG_THREADED | (p == aPrio ? OMenu::FLAG_CHECKED /*| OMenu::FLAG_DISABLED*/ : 0));
 	};
 
+	appendItem(TSTRING(PAUSED_FORCED), QueueItemBase::PAUSED_FORCE);
 	appendItem(TSTRING(PAUSED), QueueItemBase::PAUSED);
 	appendItem(TSTRING(LOWEST), QueueItemBase::LOWEST);
 	appendItem(TSTRING(LOW), QueueItemBase::LOW);
@@ -1558,9 +1559,9 @@ static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle
 }
 	
 void WinUtil::appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles) {
-	auto prioF = [=](uint8_t aPrio) {
+	auto prioF = [=](QueueItemBase::Priority aPrio) {
 		for (auto& b: aBundles)
-			QueueManager::getInstance()->setBundlePriority(b->getToken(), static_cast<QueueItemBase::Priority>(aPrio));
+			QueueManager::getInstance()->setBundlePriority(b->getToken(), aPrio);
 	};
 
 	auto autoPrioF = [=] {
@@ -1572,9 +1573,9 @@ void WinUtil::appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles) {
 }
 
 void WinUtil::appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles) {
-	auto prioF = [=](uint8_t aPrio) {
+	auto prioF = [=](QueueItemBase::Priority aPrio) {
 		for (auto& qi: aFiles)
-			QueueManager::getInstance()->setQIPriority(qi->getTarget(), static_cast<QueueItemBase::Priority>(aPrio));
+			QueueManager::getInstance()->setQIPriority(qi->getTarget(), aPrio);
 	};
 
 	auto autoPrioF = [=] {
