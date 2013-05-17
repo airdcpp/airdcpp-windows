@@ -1179,61 +1179,12 @@ LRESULT DirectoryListingFrame::onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*
 }
 
 LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	StringList localPaths;
-	string error;
-	if(ctrlList.GetSelectedCount() >= 1) {
-		int sel = -1;
-		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-			try {
-				const ItemInfo* ii = ctrlList.getItemData(sel);
-				if(ii->type == ItemInfo::FILE) {
-					dl->getLocalPaths(ii->file, localPaths);
-				} else if(ii->type == ItemInfo::DIRECTORY) {
-					dl->getLocalPaths(ii->dir, localPaths);
-				}
-			
-			} catch(ShareException& e) { 
-				error = e.getError();
-			}
-		}
-	}
-	if(!localPaths.empty()) {
-		ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
-		ShareScannerManager::getInstance()->scan(localPaths);
-	} else 
-		ctrlStatus.SetText(0, Text::toT(error).c_str());
-	
+	scanShare(false, false);
 	return 0;
 }
 
 LRESULT DirectoryListingFrame::onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-
-	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
-
-	StringList scanList;
-	string error;
-	
-	if(ctrlList.GetSelectedCount() >= 1) {
-		int sel = -1;
-		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-			const ItemInfo* ii = ctrlList.getItemData(sel);
-			try {
-				if (ii->type == ItemInfo::FILE) {
-					dl->getLocalPaths(ii->file, scanList);
-				} else if (ii->type == ItemInfo::DIRECTORY)  {
-					dl->getLocalPaths(ii->dir, scanList);
-				}
-			} catch(ShareException& e) { 
-				error = e.getError();
-			}
-		}
-	}
-
-	if (!scanList.empty()) {
-		ShareScannerManager::getInstance()->scan(scanList, true);
-	} else 
-		ctrlStatus.SetText(0, Text::toT(error).c_str());
-
+	scanShare(false, true);
 	return 0;
 }
 
@@ -1291,10 +1242,15 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					pShellMenu->AppendMenu(MF_STRING, IDC_GO_TO_DIRECTORY, CTSTRING(GO_TO_DIRECTORY));
 				}
 
-				if(ctrlList.GetSelectedCount() == 1) {	 
+				if(ctrlList.GetSelectedCount() == 1) {
 					pShellMenu->AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));	 
 					pShellMenu->AppendMenu(MF_SEPARATOR);	 
 				}
+
+				if (ii->type == ItemInfo::DIRECTORY) {
+					pShellMenu->AppendMenu(MF_STRING, IDC_REFRESH_FILE_LIST, CTSTRING(REFRESH));
+				}
+
 				pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 				pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 				pShellMenu->AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
@@ -1351,6 +1307,10 @@ clientmenu:
 				fileMenu.AppendMenu(MF_SEPARATOR);
 			} else if (hasFiles) {
 				fileMenu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
+			}
+
+			if (dl->getIsOwnList() && !hasFiles) {
+				fileMenu.AppendMenu(MF_STRING, IDC_REFRESH_FILE_LIST, CTSTRING(REFRESH));
 			}
 
 			if(dl->getIsOwnList() && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
@@ -1432,7 +1392,8 @@ clientmenu:
 		}
 		
 		if (dl->getIsOwnList() || (dir && dir->getDupe() != DUPE_NONE)) {
-			directoryMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER_TREE, CTSTRING(OPEN_FOLDER));
+			directoryMenu.appendItem(TSTRING(REFRESH), [this] { refreshShare(true); });
+			directoryMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { scanShare(true, false); });
 		}
 
 		// Strange, windows doesn't change the selection on right-click... (!)
@@ -1445,6 +1406,63 @@ clientmenu:
 	
 	bHandled = FALSE;
 	return FALSE; 
+}
+
+LRESULT DirectoryListingFrame::onRefreshShare(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	refreshShare(false);
+	return 0;
+}
+
+void DirectoryListingFrame::refreshShare(bool usingTree) {
+	StringList refresh;
+	if (getLocalPaths(refresh, usingTree, true)) {
+		ShareManager::getInstance()->addRefreshTask(ShareManager::REFRESH_DIRS, refresh, ShareManager::TYPE_MANUAL);
+	}
+}
+
+void DirectoryListingFrame::scanShare(bool usingTree, bool isSfvCheck) {
+	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
+
+	StringList scanList;
+	if (getLocalPaths(scanList, usingTree, false)) {
+		//ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
+		ShareScannerManager::getInstance()->scan(scanList, isSfvCheck);
+	}
+}
+
+bool DirectoryListingFrame::getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly) {
+	string error;
+	
+	if (usingTree) {
+		HTREEITEM t = ctrlTree.GetSelectedItem();
+		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
+		try {
+			dl->getLocalPaths(dir, paths_);
+		} catch(ShareException& e) { 
+			error = e.getError();
+		}
+	} else if(ctrlList.GetSelectedCount() >= 1) {
+		int sel = -1;
+		while((sel = ctrlList.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+			const ItemInfo* ii = ctrlList.getItemData(sel);
+			try {
+				if (!dirsOnly && ii->type == ItemInfo::FILE) {
+					dl->getLocalPaths(ii->file, paths_);
+				} else if (ii->type == ItemInfo::DIRECTORY)  {
+					dl->getLocalPaths(ii->dir, paths_);
+				}
+			} catch(ShareException& e) { 
+				error = e.getError();
+			}
+		}
+	}
+
+	if (paths_.empty()) {
+		ctrlStatus.SetText(0, Text::toT(error).c_str());
+		return false;
+	}
+
+	return true;
 }
 
 LRESULT DirectoryListingFrame::onXButtonUp(UINT /*uMsg*/, WPARAM wParam, LPARAM /* lParam */, BOOL& /* bHandled */) {

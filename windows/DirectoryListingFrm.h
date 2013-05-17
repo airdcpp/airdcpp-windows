@@ -151,6 +151,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_RELOAD_DIR, onReloadDir)
 		COMMAND_ID_HANDLER(IDC_FINDMISSING, onFindMissing)
 		COMMAND_ID_HANDLER(IDC_CHECKSFV, onCheckSFV)
+		COMMAND_ID_HANDLER(IDC_REFRESH_FILE_LIST, onRefreshShare)
 
 		COMMAND_ID_HANDLER(IDC_SEARCHLEFT, onSearchLeft)
 		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
@@ -216,8 +217,12 @@ public:
 	LRESULT onViewNFO(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onReload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onRefreshShare(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	void refreshShare(bool usingTree);
+	void scanShare(bool usingTree, bool isSfvCheck);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
@@ -296,6 +301,7 @@ public:
 	void expandDir(DirectoryListing::Directory* d, bool /*collapsing*/);
 	bool isBold(const DirectoryListing::Directory* d) const;
 private:
+	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
 	void openDupe(const DirectoryListing::Directory* d);
 	void openDupe(const DirectoryListing::File* f, bool openDir);
 
