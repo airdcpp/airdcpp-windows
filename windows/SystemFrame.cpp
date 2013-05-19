@@ -408,7 +408,7 @@ tstring SystemFrame::WordFromPos(const POINT& p) {
 	if(cr.cpMax != cr.cpMin) {
 		TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
 		ctrlPad.GetSelText(buf);
-		ret = Util::replace(buf, _T("\r"), _T("\r\n"));
+		ret = Util::replaceT(buf, _T("\r"), _T("\r\n"));
 		delete[] buf;
 	}
 

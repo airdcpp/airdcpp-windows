@@ -2063,7 +2063,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::Directory* d) {
 				path = Text::toT(localPaths.front());
 			}
 		} else {
-			path = AirUtil::getDirDupePath(d->getDupe(), d->getPath());
+			path = Text::toT(AirUtil::getDirDupePath(d->getDupe(), d->getPath()));
 		}
 
 		if (!path.empty()) {
@@ -2084,7 +2084,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::File* f, bool openD
 				path = Text::toT(localPaths.front());
 			}
 		} else {
-			path = AirUtil::getDupePath(f->getDupe(), f->getTTH());
+			path = Text::toT(AirUtil::getDupePath(f->getDupe(), f->getTTH()));
 		}
 
 		if (!path.empty()) {

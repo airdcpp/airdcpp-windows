@@ -760,7 +760,7 @@ LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 		if(cr.cpMax != cr.cpMin) {
 			TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
 			GetSelText(buf);
-			selectedWord = Util::replace(buf, _T("\r"), _T("\r\n"));
+			selectedWord = Util::replaceT(buf, _T("\r"), _T("\r\n"));
 			delete[] buf;
 		} else {
 			selectedWord = WordFromPos(pt);
@@ -1153,7 +1153,7 @@ LRESULT RichTextBox::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	if (dupeType > 0) {
 		auto p = AirUtil::getDupePath(dupeType, m.getTTH());
 		if (!p.empty())
-			Util::openFile(Text::fromT(p));
+			Util::openFile(p);
 	} else {
 		auto u = getMagnetSource();
 		try {
@@ -1200,7 +1200,7 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	tstring path;
 	try{
 		if (isRelease) {
-			path = AirUtil::getDirDupePath(dupeType, Text::fromT(selectedWord));
+			path = Text::toT(AirUtil::getDirDupePath(dupeType, Text::fromT(selectedWord)));
 		} else if (isPath) {
 			path = Util::getFilePath(selectedWord);
 		} else {
@@ -1208,7 +1208,7 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 			if (m.hash.empty())
 				return 0;
 
-			path = AirUtil::getDupePath(dupeType, m.getTTH());
+			path = Text::toT(AirUtil::getDupePath(dupeType, m.getTTH()));
 			if (!path.empty())
 				path = Util::getFilePath(path);
 

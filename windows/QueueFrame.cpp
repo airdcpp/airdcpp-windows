@@ -416,7 +416,7 @@ HTREEITEM QueueFrame::createDir(TVINSERTSTRUCT& tvi, string&& dir, const BundleP
 			name = dii->getBundleName(false);
 		} else {
 			mainBundle=true;
-			name = aBundle->getBundleText();
+			name = Text::toT(aBundle->getBundleText());
 		}
 		tvi.item.state = TVIS_BOLD;
 		tvi.item.stateMask = TVIS_BOLD;
@@ -456,7 +456,7 @@ HTREEITEM QueueFrame::createSplitDir(TVINSERTSTRUCT& tvi, string&& dir, HTREEITE
 	for (auto& bp: dii->getBundles()) {
 		diiNew->addBundle(bp.second);
 		if (stricmp(dir, bp.first) == 0) {
-			name = bp.second->getBundleText();
+			name = Text::toT(bp.second->getBundleText());
 			updateMap = true;
 			setBold=true;
 			break;
@@ -594,7 +594,7 @@ HTREEITEM QueueFrame::addBundleDir(const string& dir, const BundlePtr& aBundle, 
 					i = n.length();
 					DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(next);
 					if (dii->getBundles().empty() && !aBundle->isFileBundle() && compare(n, aBundle->getTarget()) == 0) {
-						ctrlDirs.SetItemText(next, aBundle->getBundleText().c_str());
+						ctrlDirs.SetItemText(next, Text::toT(aBundle->getBundleText()).c_str());
 						ctrlDirs.SetItemState(next, TVIS_BOLD, TVIS_BOLD);
 						dcassert(bundleMap.find(aBundle->getTarget()) == bundleMap.end());
 						bundleMap[aBundle->getTarget()] = next;
@@ -917,7 +917,7 @@ LRESULT QueueFrame::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 			const string& path = ui.ii->getDir();
 			auto i = bundleMap.find(path);
 			if (i != bundleMap.end()) {
-				ctrlDirs.SetItemText(i->second, const_cast<TCHAR*>(ui.ii->getBundles().front().second->getBundleText().c_str()));
+				ctrlDirs.SetItemText(i->second, const_cast<TCHAR*>(Text::toT(ui.ii->getBundles().front().second->getBundleText()).c_str()));
 			}
 			delete ui.ii;
 		} else if(ti.first == UPDATE_ITEM) {

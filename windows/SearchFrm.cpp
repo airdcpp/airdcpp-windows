@@ -894,9 +894,9 @@ void SearchFrame::handleOpenFolder() {
 		try {
 			tstring path;
 			if(si->sr->getType() == SearchResult::TYPE_DIRECTORY) {
-				path = AirUtil::getDirDupePath(si->getDupe(), si->sr->getFile());
+				path = Text::toT(AirUtil::getDirDupePath(si->getDupe(), si->sr->getFile()));
 			} else {
-				path = AirUtil::getDupePath(si->getDupe(), si->sr->getTTH());
+				path = Text::toT(AirUtil::getDupePath(si->getDupe(), si->sr->getTTH()));
 			}
 
 			if (!path.empty())

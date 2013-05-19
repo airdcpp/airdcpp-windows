@@ -107,6 +107,7 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 
 		size = lsize;
 
+		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), fileType, extList, fileTypeStr);
 		SettingsManager::getInstance()->set(SettingsManager::LAST_FL_FILETYPE, fileTypeStr);
 	}
 	EndDialog(wID);
@@ -114,8 +115,8 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 }
 
 LRESULT DirectoryListingDlg::onTypeChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	extList.clear();
-	SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), fileType, extList, fileTypeStr);
+	//extList.clear();
+	//SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), fileType, extList, fileTypeStr);
 	//fixControls();
 	return 0;
 }
