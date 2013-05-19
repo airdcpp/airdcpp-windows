@@ -60,24 +60,21 @@ void GeneralPage::write()
 	PropPage::write((HWND)(*this), items);
 }
 
-int GeneralPage::getCurProfile() {
+void GeneralPage::updateCurProfile() {
 	if(IsDlgButtonChecked(IDC_NORMAL)){
-		return SettingsManager::PROFILE_NORMAL;
+		curProfile = SettingsManager::PROFILE_NORMAL;
 	} else if(IsDlgButtonChecked(IDC_RAR)) {
-		return SettingsManager::PROFILE_RAR;
+		curProfile = SettingsManager::PROFILE_RAR;
 	} else if(IsDlgButtonChecked(IDC_LAN)){
-		return SettingsManager::PROFILE_LAN;;
+		curProfile = SettingsManager::PROFILE_LAN;;
 	}
-
-	return SettingsManager::PROFILE_NORMAL;
 }
 
 // make sure that this is set after the other settings
 Dispatcher::F GeneralPage::getThreadedTask() {
-	auto newProfile = getCurProfile();
-	if (newProfile != SETTING(SETTINGS_PROFILE)) {
+	if (curProfile != SETTING(SETTINGS_PROFILE)) {
 		return Dispatcher::F([=] { 
-			SettingsManager::getInstance()->setProfile(newProfile, conflicts);
+			SettingsManager::getInstance()->setProfile(curProfile, conflicts);
 		});
 	}
 
@@ -105,14 +102,15 @@ LRESULT GeneralPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	WinUtil::appendLanguageMenu(ctrlLanguage);
 
 	WinUtil::setUserFieldLimits(m_hWnd);
+	updateCurProfile();
 	return TRUE;
 }
 
 LRESULT GeneralPage::onSelProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	auto newProfile = getCurProfile();
-	if (newProfile != lastProfile) {
-		WinUtil::getProfileConflicts(m_hWnd, newProfile, conflicts);
-		lastProfile = newProfile;
+	auto lastProfile = curProfile;
+	updateCurProfile();
+	if (curProfile != lastProfile) {
+		WinUtil::getProfileConflicts(m_hWnd, curProfile, conflicts);
 	}
 
 	return TRUE;

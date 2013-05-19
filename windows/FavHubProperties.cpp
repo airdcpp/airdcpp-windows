@@ -296,7 +296,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		GetDlgItemText(IDC_EMAIL, buf, 256);
 		entry->get(HubSettings::Email) = Text::fromT(buf);
 
-		GetDlgItemText(IDC_AWAY_MSG, buf, 256);
+		GetDlgItemText(IDC_AWAY_MSG, buf, 1024);
 		entry->get(HubSettings::AwayMsg) = Text::fromT(buf);
 
 		entry->get(HubSettings::ShowJoins) = to3bool(IsDlgButtonChecked(IDC_SHOW_JOIN));

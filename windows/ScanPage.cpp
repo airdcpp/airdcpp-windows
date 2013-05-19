@@ -43,6 +43,7 @@ PropPage::ListItem ScanPage::listItems[] = {
 PropPage::ListItem ScanPage::bundleItems[] = {
 	{ SettingsManager::SCAN_DL_BUNDLES, ResourceManager::SETTINGS_SCAN_FINISHED_BUNDLES },
 	{ SettingsManager::AUTO_COMPLETE_BUNDLES, ResourceManager::SETTINGS_AUTO_COMPLETE_BUNDLES },
+	{ SettingsManager::SCAN_MONITORED_FOLDERS, ResourceManager::SCAN_MONITORED_FOLDERS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

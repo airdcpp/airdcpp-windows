@@ -30,7 +30,7 @@
 class GeneralPage : public CPropertyPage<IDD_GENERALPAGE>, public PropPage
 {
 public:
-	GeneralPage(SettingsManager *s) : PropPage(s) {
+	GeneralPage(SettingsManager *s) : PropPage(s), curProfile(SettingsManager::PROFILE_NORMAL) {
 		SetTitle(CTSTRING(SETTINGS_GENERAL));
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}
@@ -56,13 +56,13 @@ public:
 	virtual void write();
 	virtual Dispatcher::F getThreadedTask();
 private:
-	int getCurProfile();
+	void updateCurProfile();
 
 	static Item items[];
 	static TextItem texts[];
 	CComboBoxEx ctrlLanguage;
 
-	int lastProfile;
+	int curProfile;
 	SettingItem::List conflicts;
 };
 

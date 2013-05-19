@@ -24,6 +24,7 @@
 #endif // _MSC_VER > 1000
 
 #include <atlcrack.h>
+
 #include "../client/ResourceManager.h"
 #include "../client/Text.h"
 
@@ -126,7 +127,7 @@ public:
 				}
 			}
 			line.resize(ctrlLine.GetWindowTextLength() + 1);
-			line.resize(GetDlgItemText(IDC_LINE, &line[0], line.size()));
+			GetDlgItemText(IDC_LINE, &line[0], line.size());
 		}
 		EndDialog(wID);
 		return 0;

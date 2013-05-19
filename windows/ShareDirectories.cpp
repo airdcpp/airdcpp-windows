@@ -225,7 +225,7 @@ void ShareDirectories::showProfile() {
 	if(SETTING(USE_OLD_SHARING_UI)) {
 		// Prepare shared dir list
 		auto shares = getViewItems(curProfile, true);
-		for(auto sdi: shares) {
+		for(auto& sdi: shares) {
 			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(sdi->vname), 0, (LPARAM)sdi.get());
 			ctrlDirectories.SetItemText(i, 1, Text::toT(sdi->path).c_str());
 			ctrlDirectories.SetItemText(i, 2, Util::formatBytesW(sdi->size).c_str());
@@ -337,7 +337,7 @@ LRESULT ShareDirectories::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh,
 			return 0; //we are probably loading an initial listing...
 
 		auto dirItems = getItemsByPath(sdi->path, true);
-		for(auto sdi: dirItems)
+		for(auto& sdi: dirItems)
 			sdi->incoming = boxChecked;
 
 		auto s = find(newDirs.begin(), newDirs.end(), sdi);
@@ -460,6 +460,7 @@ void ShareDirectories::onRemoveProfile() {
 
 LRESULT ShareDirectories::onClickedAddDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
+	//add selected merged items missing from this profile
 	int i = -1;
 	bool added = false;
 	while((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
@@ -497,6 +498,10 @@ LRESULT ShareDirectories::onClickedRemoveDir(WORD /*wNotifyCode*/, WORD /*wID*/,
 		auto sdi = (ShareDirInfo*)ctrlDirectories.GetItemData(i);
 		if (sdi->diffState != ShareDirInfo::DIFF_REMOVED) {
 			selectedDirs--;
+
+			//the dir info gets deleted if this is a newly added item, just make sure that there's a reference by getting the items
+			auto tmpItems = getViewItems(curProfile, false);
+
 			removeDir(sdi->path, curProfile, confirmOption, true, selectedDirs);
 			if (sdi->diffState == ShareDirInfo::DIFF_NORMAL && curProfile != SP_DEFAULT) {
 				sdi->diffState = ShareDirInfo::DIFF_REMOVED;
@@ -527,6 +532,7 @@ void ShareDirectories::removeDir(const string& rPath, ProfileToken aProfile, int
 		}
 	}
 
+	//erase this dir (from newly added or shared)
 	auto p = boost::find_if(newDirs, [&rPath, aProfile](const ShareDirInfoPtr& sdi) { return sdi->path == rPath && sdi->profile == aProfile; });
 	if (p != newDirs.end()) {
 		newDirs.erase(p);
@@ -538,8 +544,9 @@ void ShareDirectories::removeDir(const string& rPath, ProfileToken aProfile, int
 	}
 
 	if (checkDupes) {
+		//check if this item exists in other profiles
 		auto dirItems = getItemsByPath(rPath, false);
-		if (!dirItems.empty() && Util::getOsMajor() >= 6) { //MessageBox(CTSTRING_F(X_PROFILE_DIRS_EXISTS, (int)dirItems.size()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+		if (!dirItems.empty() && Util::getOsMajor() >= 6) {
 			if (confirmOption == CONFIRM_ASK) {
 				CTaskDialog taskdlg;
 
@@ -587,7 +594,7 @@ void ShareDirectories::removeDir(const string& rPath, ProfileToken aProfile, int
 				return;
 			}
 
-			for (auto sdi: dirItems) 
+			for (auto& sdi: dirItems) 
 				removeDir(sdi->path, sdi->profile, confirmOption, false);
 		}
 	}
@@ -616,6 +623,7 @@ bool ShareDirectories::showShareDlg(const ShareProfile::list& spList, ProfileTok
 
 		newName = virt.line;
 	}
+	newName = Text::toT(ShareManager::getInstance()->validateVirtual(Text::fromT(newName)));
 	return true;
 }
 
@@ -727,7 +735,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 			auto items = getItemsByPath(rPath, true);
 			if (pt == SP_DEFAULT) {
 				//update the diff info in case this path exists in other profiles
-				for (auto sdi: items)
+				for (auto& sdi: items)
 					sdi->diffState = ShareDirInfo::DIFF_NORMAL;
 			} else {
 				//check if this exists in the default profile (and the default profile isn't also being added now)
