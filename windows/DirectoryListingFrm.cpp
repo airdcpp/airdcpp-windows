@@ -568,7 +568,7 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 				found = true;
 				break;
 			}
-		} else if(search->itemType != AdcSearch::TYPE_FILE && search->matchesDirectory(ii->dir->getName())) {
+		} else if(ii->type == ItemInfo::DIRECTORY && search->itemType != AdcSearch::TYPE_FILE && search->matchesDirectory(ii->dir->getName())) {
 			if (search->matchesSize(ii->dir->getTotalSize(false))) {
 				found = true;
 				break;
@@ -1256,7 +1256,8 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 				pShellMenu->AppendMenu(MF_STRING, IDC_FINDMISSING, CTSTRING(SCAN_FOLDER_MISSING));
 				pShellMenu->AppendMenu(MF_STRING, IDC_CHECKSFV, CTSTRING(RUN_SFV_CHECK));
 				pShellMenu->AppendMenu(MF_SEPARATOR);
-				pShellMenu->AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+				if (ii->type == ItemInfo::FILE)
+					pShellMenu->AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 				pShellMenu->AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
 				pShellMenu->AppendMenu(MF_SEPARATOR);
 
@@ -1324,7 +1325,8 @@ clientmenu:
 
 			fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
 			fileMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
-			fileMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+			if (hasFiles)
+				fileMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 
 			fileMenu.AppendMenu(MF_SEPARATOR);
 
