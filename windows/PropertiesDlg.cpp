@@ -112,7 +112,7 @@ PropertiesDlg::~PropertiesDlg() { }
 
 void PropertiesDlg::deletePages(PropPage::TaskList& tasks) {
 	for(int i=0; i < PAGE_LAST; i++) {
-		if (saved) {
+		if (saved && PropSheet_IndexToHwnd((HWND)*this, i)) {
 			auto t = pages[i]->getThreadedTask();
 			if (t) {
 				tasks.emplace_back(pages[i]->getThreadedTask(), pages[i]);

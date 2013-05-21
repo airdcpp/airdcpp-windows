@@ -1,0 +1,14 @@
+=== modified file 'miniupnpc/miniwget.c'
+--- miniupnpc/miniwget.c	2011-08-09 11:15:32 +0000
++++ miniupnpc/miniwget.c	2011-08-09 11:25:03 +0000
+@@ -17,6 +17,9 @@
+ #define MIN(x,y) (((x)<(y))?(x):(y))
+ #define snprintf _snprintf
+ #define socklen_t int
++#ifdef strncasecmp
++#undef strncasecmp
++#endif
+ #ifndef strncasecmp
+ #if defined(_MSC_VER) && (_MSC_VER >= 1400)
+ #define strncasecmp _memicmp
+

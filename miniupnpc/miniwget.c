@@ -18,6 +18,9 @@
 #define MIN(x,y) (((x)<(y))?(x):(y))
 #define snprintf _snprintf
 #define socklen_t int
+#ifdef strncasecmp
+#undef strncasecmp
+#endif
 #ifndef strncasecmp
 #if defined(_MSC_VER) && (_MSC_VER >= 1400)
 #define strncasecmp _memicmp
