@@ -117,6 +117,9 @@ void SpeedPage::fixControls() {
 
 LRESULT SpeedPage::onSpeedChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/)
 {
+	if (loading)
+		return FALSE;
+
 	if (WinUtil::onConnSpeedChanged(wNotifyCode, wID, hWndCtl)) {
 		updateValues(wNotifyCode);
 		validateMCNLimits(wNotifyCode);
@@ -125,7 +128,7 @@ LRESULT SpeedPage::onSpeedChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 }
 
 LRESULT SpeedPage::onSlotsChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if ((wID == IDC_DOWNLOADS && IsDlgButtonChecked(IDC_DL_AUTODETECT)) || (wID == IDC_SLOTS && IsDlgButtonChecked(IDC_UL_AUTODETECT))) {
+	if (loading || (wID == IDC_DOWNLOADS && IsDlgButtonChecked(IDC_DL_AUTODETECT)) || (wID == IDC_SLOTS && IsDlgButtonChecked(IDC_UL_AUTODETECT))) {
 		return FALSE;
 	}
 	updateValues(wNotifyCode);
@@ -242,7 +245,7 @@ int SpeedPage::maxMCNExtras(double speed) {
 
 void SpeedPage::setDownloadLimits(double value) {
 	int dlSlots=0;
-	if (IsDlgButtonChecked(IDC_DL_AUTODETECT)) {
+	if (cAutoDL.GetCheck() > 0) {
 		dlSlots=AirUtil::getSlots(true, value);
 		SetDlgItemText(IDC_DOWNLOADS, Util::toStringW(dlSlots).c_str());
 	
@@ -263,7 +266,7 @@ void SpeedPage::setDownloadLimits(double value) {
 
 void SpeedPage::setUploadLimits(double value) {
 	int ulSlots=0;
-	if (IsDlgButtonChecked(IDC_UL_AUTODETECT)) {
+	if (cAutoUL.GetCheck() > 0) {
 
 		ulSlots=AirUtil::getSlots(false, value);
 		SetDlgItemText(IDC_SLOTS, Util::toStringW(ulSlots).c_str());
@@ -292,11 +295,19 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlDownload.Attach(GetDlgItem(IDC_DL_SPEED));
 	ctrlUpload.Attach(GetDlgItem(IDC_CONNECTION));
 
+	cAutoDL.Attach(GetDlgItem(IDC_DL_AUTODETECT));
+	cAutoUL.Attach(GetDlgItem(IDC_UL_AUTODETECT));
+
 	WinUtil::appendSpeedCombo(ctrlDownload, SettingsManager::DOWNLOAD_SPEED);
 	WinUtil::appendSpeedCombo(ctrlUpload, SettingsManager::UPLOAD_SPEED);
 
 
 	PropPage::read((HWND)*this, items);
+	PropPage::read((HWND)*this, downloadItems);
+	PropPage::read((HWND)*this, uploadItems);
+
+	// set the correct values if using auto detection
+	updateValues(0);
 
 	setMinMax(IDC_SLOTSPIN, 1, UD_MAXVAL);
 	setMinMax(IDC_MIN_UPLOAD_SPIN, 0, UD_MAXVAL);
@@ -312,17 +323,7 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	fixControls();
 
-	//update auto detection values
-	SetDlgItemText(IDC_DOWNLOADS, Util::toStringW(AirUtil::getSlots(true)).c_str());
-	SetDlgItemText(IDC_MAXSPEED, Util::toStringW(AirUtil::getSpeedLimit(true)).c_str());
-
-	SetDlgItemText(IDC_SLOTS, Util::toStringW(AirUtil::getSlots(false)).c_str());
-	SetDlgItemText(IDC_MIN_UPLOAD_SPEED, Util::toStringW(AirUtil::getSpeedLimit(false)).c_str());
-	SetDlgItemText(IDC_AUTO_SLOTS, Util::toStringW(AirUtil::getMaxAutoOpened()).c_str());
-
-	SetDlgItemText(IDC_MCNDLSLOTS, Util::toStringW(AirUtil::getSlotsPerUser(true)).c_str());
-	SetDlgItemText(IDC_MCNULSLOTS, Util::toStringW(AirUtil::getSlotsPerUser(false)).c_str());
-
+	loading = false;
 	return TRUE;
 }
 

@@ -613,7 +613,7 @@ void HubFrame::execTasks() {
 					WinUtil::showPopup(Text::toT(u.onlineUser->getIdentity().getNick() + " - " + client->getHubName()), TSTRING(FAVUSER_ONLINE));
 				}
 
-				if (client->get(HubSettings::ShowJoins) || (client->get(HubSettings::FavShowJoins) && isFavorite)) {
+				if (!u.onlineUser->isHidden() && client->get(HubSettings::ShowJoins) || (client->get(HubSettings::FavShowJoins) && isFavorite)) {
 				 	addLine(_T("*** ") + TSTRING(JOINS) + Text::toT(u.onlineUser->getIdentity().getNick()), WinUtil::m_ChatTextSystem, SETTING(HUB_BOLD_TABS));
 				}	
 			}
@@ -621,7 +621,7 @@ void HubFrame::execTasks() {
 			const UserTask& u = static_cast<UserTask&>(*t.second);
 			removeUser(u.onlineUser);
 
-			if (client->get(HubSettings::ShowJoins) || (client->get(HubSettings::FavShowJoins) && FavoriteManager::getInstance()->isFavoriteUser(u.onlineUser->getUser()))) {
+			if (!u.onlineUser->isHidden() && client->get(HubSettings::ShowJoins) || (client->get(HubSettings::FavShowJoins) && FavoriteManager::getInstance()->isFavoriteUser(u.onlineUser->getUser()))) {
 				addLine(Text::toT("*** " + STRING(PARTS) + " " + u.onlineUser->getIdentity().getNick()), WinUtil::m_ChatTextSystem, SETTING(HUB_BOLD_TABS));
 			}
 		}

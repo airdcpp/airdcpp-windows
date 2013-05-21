@@ -445,7 +445,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		TestWrite(true, true, Util::usingLocalMode());
 	}
 
-	//WinUtil::splash.reset();
+	WinUtil::splash.reset();
 
 	// We want to pass this one on to the splitter...hope it get's there...
 	bHandled = FALSE;

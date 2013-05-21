@@ -31,7 +31,7 @@
 class SpeedPage : public CPropertyPage<IDD_SPEEDPAGE>, public PropPage
 {
 public:
-	SpeedPage(SettingsManager *s) : PropPage(s) {
+	SpeedPage(SettingsManager *s) : PropPage(s), loading(true) {
 		title = _tcsdup((TSTRING(SETTINGS_NETWORK) + _T('\\') + TSTRING(SETTINGS_SPEED_SLOTS)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
@@ -71,6 +71,10 @@ public:
 protected:
 	CComboBox ctrlUpload;
 	CComboBox ctrlDownload;
+
+	CButton cAutoUL;
+	CButton cAutoDL;
+
 	void fixControls();
 	int maxMCNExtras(double speed);
 	static Item items[];
@@ -81,6 +85,8 @@ protected:
 
 	static TextItem texts[];
 	TCHAR* title;
+
+	bool loading;
 };
 
 #endif //SPEED_PAGE_H
