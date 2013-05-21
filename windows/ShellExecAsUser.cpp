@@ -11,6 +11,8 @@
 #include "../client/Text.h"
 #include "WinUtil.h"
 
+#include <sddl.h>
+
 namespace dcpp {
 
 #undef ShellExecute
@@ -68,6 +70,43 @@ private:
 
 int ShellExecAsUser(const TCHAR *pcOperation, const TCHAR *pcFileName, const TCHAR *pcParameters, const HWND parentHwnd)
 {
+	/*BOOL bRet;
+	HANDLE hToken;
+	HANDLE hNewToken;
+
+	// Notepad is used as an example
+	//WCHAR wszProcessName[MAX_PATH] = L"C:\\Windows\\Notepad.exe";
+
+	// Low integrity SID: 0x1000 = 4096. To use Medium integrity, use 0x2000 = 8192
+	WCHAR wszIntegritySid[20] = L"S-1-16-4096";
+	PSID pIntegritySid = NULL;
+
+	TOKEN_MANDATORY_LABEL TIL = {0};
+	PROCESS_INFORMATION ProcInfo = {0};
+	STARTUPINFO StartupInfo = {0};
+	ULONG ExitCode = 0;
+
+	if (OpenProcessToken(GetCurrentProcess(), MAXIMUM_ALLOWED, &hToken)) {
+		if (DuplicateTokenEx(hToken, MAXIMUM_ALLOWED, NULL, SecurityImpersonation, TokenPrimary, &hNewToken)) {
+			if (ConvertStringSidToSid(wszIntegritySid, &pIntegritySid)) {
+				TIL.Label.Attributes = SE_GROUP_INTEGRITY;
+				TIL.Label.Sid = pIntegritySid;
+
+				// Set the process integrity level
+				if (SetTokenInformation(hNewToken, TokenIntegrityLevel, &TIL, sizeof(TOKEN_MANDATORY_LABEL) + GetLengthSid(pIntegritySid))) {
+					// Create the new process at Low integrity
+					bRet = CreateProcessAsUser(hNewToken, NULL, (LPWSTR)pcFileName, NULL, NULL, FALSE, 0, NULL, NULL, &StartupInfo, &ProcInfo);
+				}
+
+				LocalFree(pIntegritySid);
+			}
+			CloseHandle(hNewToken);
+		}
+		CloseHandle(hToken);
+	}
+
+	return bRet;*/
+
 	int bSuccess = 0;
 
 	if (Util::getOsMajor() >= 6) {
@@ -144,6 +183,7 @@ int ShellExecAsUser(const TCHAR *pcOperation, const TCHAR *pcFileName, const TCH
 
 	if(bSuccess < 1)
 	{
+		dcassert(0);
 		HINSTANCE hInst = ShellExecuteW(parentHwnd, pcOperation, pcFileName, pcParameters, NULL, SW_SHOWNORMAL);
 		if(((int) hInst) <= 32) bSuccess = -1;
 	}

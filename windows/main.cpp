@@ -453,6 +453,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	SingleInstance dcapp(_T(INST_NAME));
 	LPTSTR* argv = __targv;
 	int argc = --__argc;
+	Util::initialize();
 
 	auto checkParams = [&argc, &argv] () -> void {
 		while (argc > 0) {

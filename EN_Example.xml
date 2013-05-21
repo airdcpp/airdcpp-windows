@@ -1547,7 +1547,7 @@ loading them will override your old highlights,
 would you still like to load them?</String>
 		<String Name="SearchTimes">Search times</String>
 		<String Name="FailoverAuth">This hub requires authentication via a failover address; aborting connection and switching to the default address</String>
-		<String Name="MenuBrowseOwnList">Browse own list</String>
+		<String Name="MenuBrowseOwnList">Browse own list	Ctrl+O</String>
 		<String Name="AutosearchAdded">A new item %s has been added</String>
 		<String Name="AutosearchAddedSearched">A new item %s has been added and it has been searched for</String>
 		<String Name="AutosearchAddedSearchedIn">A new item %s has been added and it will be searched for in %d seconds</String>
@@ -1640,8 +1640,6 @@ would you still like to load them?</String>
 		<String Name="InactiveQueued">Inactive (files queued)</String>
 		<String Name="MatchingManual">Matching only (manual search)</String>
 		<String Name="BundleXQueued">%s (queued)</String>
-		<String Name="BundleXFilesMissing">%s (missing files)</String>
-		<String Name="BundleXExtraFiles">%s (extra files)</String>
 		<String Name="FailedBundleSearched">A failed bundle %s has been searched for</String>
 		<String Name="FailedBundleSearchedIn">A failed bundle %s will be searched for in %d seconds</String>
 		<String Name="AwayOn">Away mode ON - Click to adjust</String>
@@ -1900,5 +1898,13 @@ Make sure that the path %s is accessible and there isn't there isn't another ins
 		<String Name="Ipv6NoPublicIp">IPv6 connectivity has been disabled as no public IPv6 address was detected</String>
 		<String Name="LogCombineAdcPm">Use a single log file per CID for ADC users</String>
 		<String Name="FollowSymlinks">Follow symbolic links</String>
+		<String Name="PausedForced">Paused (forced)</String>
+		<String Name="ScanMonitoredFolders">Scan new directories in share for missing/extra files (monitoring only)</String>
+		<String Name="ForceShareScan">Refresh the directory after fixing the problem(s) to add it in share</String>
+		<String Name="ScanShareDirFailed">The directory %s won't be shared because the following problems were found: %s</String>
+		<String Name="ScanningFailedX">Scanning failed: %s</String>
+		<String Name="XFilesFailedHashing">%d files failed to hash</String>
+		<String Name="XFailedSharing">%s (failed sharing)</String>
+		<String Name="XMissingFiles">%s (missing files)</String>
 	</Strings>
 </Language>

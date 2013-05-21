@@ -122,7 +122,10 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	WinUtil::appendHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
 	WinUtil::appendHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
-	ctrlExcluded.SetWindowText(Text::toT(SETTING(LAST_SEARCH_EXCLUDED)).c_str());
+
+	auto pos = ctrlExcluded.FindStringExact(0, Text::toT(SETTING(LAST_SEARCH_EXCLUDED)).c_str());
+	if (pos != -1)
+		ctrlExcluded.SetWindowText(Text::toT(SETTING(LAST_SEARCH_EXCLUDED)).c_str());
 
 	ctrlSizeMode.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);

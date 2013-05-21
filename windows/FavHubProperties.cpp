@@ -249,7 +249,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 {
 	if(wID == IDOK)
 	{
-		TCHAR buf[512];
+		TCHAR buf[1024];
 		GetDlgItemText(IDC_HUBADDR, buf, 256);
 		if(buf[0] == '\0') {
 			MessageBox(CTSTRING(INCOMPLETE_FAV_HUB), _T(""), MB_ICONWARNING | MB_OK);
