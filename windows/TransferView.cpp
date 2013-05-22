@@ -1440,6 +1440,11 @@ void TransferView::on(UploadManagerListener::BundleSizeName, const string& bundl
 	speak(UPDATE_BUNDLE, ui);
 }
 
+void TransferView::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
+	if (aBundle->getStatus() == Bundle::STATUS_DOWNLOADED)
+		onBundleComplete(aBundle->getToken(), aBundle->getName(), false); 
+}
+
 void TransferView::onBundleName(const BundlePtr& aBundle) {
 	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setTarget(Text::toT(aBundle->getTarget()));

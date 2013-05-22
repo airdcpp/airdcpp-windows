@@ -834,6 +834,16 @@ void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle)
 
 void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) {
 	//for_each(aBundle->getQueueItems().begin(), aBundle->getQueueItems().end(), [&](QueueItemPtr qi) { speak(REMOVE_ITEM, new StringTask(qi->getTarget())); });
+	onBundleRemoved(aBundle); 
+}
+
+void QueueFrame::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept {
+	if (aBundle->getStatus() == Bundle::STATUS_DOWNLOADED) {
+		onBundleRemoved(aBundle); 
+	}
+}
+
+void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) noexcept {
 	speak(REMOVE_BUNDLE, new DirItemInfoTask(new DirItemInfo(aBundle->getTarget(), aBundle)));
 }
 

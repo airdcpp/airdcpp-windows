@@ -30,7 +30,7 @@
 class GeneralPage : public CPropertyPage<IDD_GENERALPAGE>, public PropPage
 {
 public:
-	GeneralPage(SettingsManager *s) : PropPage(s), curProfile(SettingsManager::PROFILE_NORMAL) {
+	GeneralPage(SettingsManager *s) : PropPage(s), curProfile(-1) {
 		SetTitle(CTSTRING(SETTINGS_GENERAL));
 		m_psp.dwFlags |= PSP_RTLREADING;
 	}

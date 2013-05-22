@@ -338,7 +338,7 @@ private:
 	void on(UploadManagerListener::BundleComplete, const string& bundleToken, const string& bundleName) noexcept { onBundleComplete(bundleToken, bundleName, true); }
 	void on(UploadManagerListener::BundleSizeName, const string& bundleToken, const string& newTarget, int64_t aSize) noexcept;
 
-	void on(QueueManagerListener::BundleFinished, const BundlePtr& aBundle) noexcept { onBundleComplete(aBundle->getToken(), aBundle->getName(), false); }
+	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept { onBundleStatus(aBundle, true); }
 	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleTarget, const BundlePtr& aBundle) noexcept { onBundleName(aBundle); }

@@ -403,9 +403,11 @@ private:
 	void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
-	void on(QueueManagerListener::BundleFinished, const BundlePtr& aBundle) noexcept { on(QueueManagerListener::BundleRemoved(), aBundle); }
+	void on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept;
 
 	void on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t aTick) noexcept;
+
+	void onBundleRemoved(const BundlePtr& aBundle) noexcept;
 };
 
 #endif // !defined(QUEUE_FRAME_H)
