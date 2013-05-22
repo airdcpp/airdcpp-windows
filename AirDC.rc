@@ -2097,7 +2097,7 @@ BEGIN
     LTEXT           "Congratulations! You completed the wizard without crashing it.",IDC_FINISH_INTRO,16,9,288,88
 END
 
-IDD_HASHINGPAGE DIALOGEX 0, 0, 309, 293
+IDD_HASHINGPAGE DIALOGEX 0, 0, 309, 313
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -2114,12 +2114,12 @@ BEGIN
     EDITTEXT        IDC_MAX_VOL_HASHERS,247,57,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_VOL_HASHERS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,269,57,11,14
     CONTROL         "Verify and repair the hash database on next startup (use in case of fatal errors only)",IDC_REPAIR_HASHDB,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | BS_MULTILINE | WS_TABSTOP,16,240,263,23,WS_EX_RIGHT
-    GROUPBOX        "Maintenance",IDC_MAINTENANCE,7,89,296,180
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | BS_MULTILINE | WS_TABSTOP,16,243,273,23,WS_EX_RIGHT
+    GROUPBOX        "Maintenance",IDC_MAINTENANCE,7,89,296,190
     PUSHBUTTON      "Optimize databases",IDC_OPTIMIZE_DB_FAST,48,145,209,14
-    LTEXT           "This will remove the database entries for files and trees that aren't shared anymore.",IDC_OPTIMIZE_DB_LBL,16,161,286,16
-    PUSHBUTTON      "Optimize and check the integrity of databases",IDC_VERIFY_DB,47,184,210,14
-    LTEXT           "This will perform a normal optimization and additionally check the integrity for all tree entries in case of data corruption. Corrupted database entries will be deleted. Recommended only if you receive notifications about corrupted entries.",IDC_VERIFY_DB_LBL,13,201,275,27
+    LTEXT           "This will remove the database entries for files and trees that aren't shared anymore.",IDC_OPTIMIZE_DB_LBL,20,161,266,16
+    PUSHBUTTON      "Optimize and check the integrity of databases",IDC_VERIFY_DB,47,187,210,14
+    LTEXT           "This will perform a normal optimization and additionally check the integrity for all tree entries in case of data corruption. Corrupted database entries will be deleted. Recommended only if you receive notifications about corrupted entries.",IDC_VERIFY_DB_LBL,20,204,268,27
     LTEXT           "File index size:",IDC_FILE_INDEX_SIZE_LBL,18,106,116,8
     LTEXT           "Hash data size:",IDC_HASH_DATA_SIZE_LBL,17,122,110,8
     LTEXT           "1,54 MiB",IDC_FILE_INDEX_SIZE,135,106,116,8
@@ -2297,7 +2297,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 302
         TOPMARGIN, 7
-        BOTTOMMARGIN, 286
+        BOTTOMMARGIN, 306
     END
 END
 #endif    // APSTUDIO_INVOKED

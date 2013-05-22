@@ -305,6 +305,7 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	PropPage::read((HWND)*this, items);
 	PropPage::read((HWND)*this, downloadItems);
 	PropPage::read((HWND)*this, uploadItems);
+	PropPage::read((HWND)*this, mcnItems);
 
 	// set the correct values if using auto detection
 	updateValues(0);
