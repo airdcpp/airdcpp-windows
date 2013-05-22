@@ -835,9 +835,10 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		if (!param.empty()) {
 			WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(param))));
 		}
-	} else if(stricmp(cmd.c_str(), _T("rebuild")) == 0) {
-		LogManager::getInstance()->message(STRING(REBUILD_STARTED), LogManager::LOG_INFO);
-		HashManager::getInstance()->rebuild();
+	} else if(stricmp(cmd.c_str(), _T("optimizedb")) == 0) {
+		HashManager::getInstance()->startMaintenance(false);
+	} else if(stricmp(cmd.c_str(), _T("verifydb")) == 0) {
+		HashManager::getInstance()->startMaintenance(true);
 	} else if(stricmp(cmd.c_str(), _T("shutdown")) == 0) {
 		MainFrame::setShutDown(!(MainFrame::getShutDown()));
 		if (MainFrame::getShutDown()) {

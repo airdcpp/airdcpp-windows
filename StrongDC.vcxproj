@@ -506,6 +506,7 @@
     <ClCompile Include="windows\AirAppearancePage.cpp" />
     <ClCompile Include="windows\ChatFrameBase.cpp" />
     <ClCompile Include="windows\ExMessageBox.cpp" />
+    <ClCompile Include="windows\HashingPage.cpp" />
     <ClCompile Include="windows\HashProgressDlg.cpp" />
     <ClCompile Include="windows\HtmlToRtf.cpp" />
     <ClCompile Include="windows\LimitPage.cpp" />
@@ -638,6 +639,7 @@
     <ClInclude Include="windows\ChatFrameBase.h" />
     <ClInclude Include="windows\ExMessageBox.h" />
     <ClInclude Include="windows\FilteredListViewCtrl.h" />
+    <ClInclude Include="windows\HashingPage.h" />
     <ClInclude Include="windows\HtmlToRtf.h" />
     <ClInclude Include="windows\LimitPage.h" />
     <ClInclude Include="windows\ExCImage.h" />
@@ -846,6 +848,7 @@
     <Image Include="res\searchTypes\Pic.ico" />
     <Image Include="res\searchTypes\tth.ico" />
     <Image Include="res\searchTypes\Video.ico" />
+    <Image Include="res\SettingsTree\Hashing.ico" />
     <Image Include="res\SettingsTree\Limiter.ico" />
     <Image Include="res\SettingsTree\Proxy.ico" />
     <Image Include="res\SettingsTree\SearchTypes.ico" />

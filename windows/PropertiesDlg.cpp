@@ -58,6 +58,7 @@
 #include "AirAppearancePage.h"
 #include "SearchTypesPage.h"
 #include "ScanPage.h"
+#include "HashingPage.h"
 
 
 PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage) : TreePropertySheet(CTSTRING(SETTINGS), initialPage, parent), saved(false)
@@ -76,6 +77,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = new DownloadingOptionsPage(s);
 	pages[n++] = new SharePage(s);
 	pages[n++] = new SharingOptionsPage(s);
+	pages[n++] = new HashingPage(s);
 	pages[n++] = new AppearancePage(s);
 	pages[n++] = new PropPageTextStyles(s);
 	pages[n++] = new OperaColorsPage(s);

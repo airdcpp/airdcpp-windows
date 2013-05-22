@@ -72,8 +72,8 @@ void GeneralPage::updateCurProfile() {
 
 // make sure that this is set after the other settings
 Dispatcher::F GeneralPage::getThreadedTask() {
-	if (curProfile > 0 && (curProfile != SETTING(SETTINGS_PROFILE) || !conflicts.empty())) {
-		return Dispatcher::F([=] { 
+	if (curProfile >= 0 && (curProfile != SETTING(SETTINGS_PROFILE) || !conflicts.empty())) {
+		return Dispatcher::F([this] { 
 			SettingsManager::getInstance()->setProfile(curProfile, conflicts);
 		});
 	}

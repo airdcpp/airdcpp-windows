@@ -127,7 +127,7 @@ public:
 				}
 			}
 			line.resize(ctrlLine.GetWindowTextLength() + 1);
-			GetDlgItemText(IDC_LINE, &line[0], line.size());
+			line.resize(GetDlgItemText(IDC_LINE, &line[0], line.size()));
 		}
 		EndDialog(wID);
 		return 0;

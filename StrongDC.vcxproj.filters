@@ -747,6 +747,9 @@
     <ClCompile Include="windows\WizardFinish.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\HashingPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1151,6 +1154,9 @@
     <ClInclude Include="windows\ListViewArrows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\HashingPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\SettingsTree\SearchTypes.ico">
@@ -1362,6 +1368,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\reload.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\SettingsTree\Hashing.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

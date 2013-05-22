@@ -186,6 +186,7 @@
 #define IDD_WIZARD_PROFILE              354
 #define IDD_PROTOCOLBASE                355
 #define IDD_WIZARD_FINISH               356
+#define IDD_HASHINGPAGE                 357
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
@@ -318,7 +319,8 @@
 #define IDI_FAV_USER_OFF                516
 #define IDI_USER_ON                     517
 #define IDI_USER_OFF                    518
-#define IDI_RELOAD						519
+#define IDI_RELOAD                      519
+#define IDI_HASHING						520
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999
@@ -644,16 +646,23 @@
 #define IDC_CLIENT_STATUS               1227
 #define IDC_MAX_VOL_HASHERS_LBL         1227
 #define IDC_NORMAL                      1228
+#define IDC_OPTIMIZE_DB_LBL             1228
 #define IDC_TOOLBAR_IMAGE_BOX           1229
 #define IDC_VERSION_MISMATCH            1229
+#define IDC_VERIFY_DB_LBL               1229
 #define IDC_DOWNLOADDIR_DIR             1230
 #define IDC_USE_EXTRA_VERSION           1230
 #define IDC_TTH                         1230
+#define IDC_FILE_INDEX_SIZE_LBL         1230
 #define IDC_DOWNLOADDIR_NAME            1231
 #define IDC_SEARCH_SIZE                 1231
+#define IDC_HASH_DATA_SIZE_LBL          1231
 #define IDC_DOWNLOADDIR_EXT             1232
+#define IDC_FILE_INDEX_SIZE             1232
 #define IDC_MAGNET_OPEN                 1233
 #define IDC_CLIENT_FORMATTED_TAG        1233
+#define IDC_HASH_DATA_SIZE2             1233
+#define IDC_HASH_DATA_SIZE              1233
 #define IDC_CLIENT_CONNECTION           1236
 #define IDC_ADD_LINE                    1238
 #define IDC_SETTINGS_TIME_STAMPS_FORMAT 1241
@@ -876,6 +885,7 @@
 #define IDC_SETTINGS_ALT_SEARCH         1314
 #define IDC_SETTINGS_SEARCH_MATCHING    1314
 #define IDC_CALC_PRIO_EVERY             1314
+#define IDC_VERIFY_DB                   1314
 #define IDC_SETTINGS_CONFIRM_OPTIONS    1315
 #define IDC_FAV_DL                      1315
 #define IDC_LINE_SPEED                  1315
@@ -1278,6 +1288,7 @@
 #define IDC_AUTO_DETECTION_USE_LIMITED  1690
 #define IDC_REFRESHING_OPTIONS          1691
 #define IDC_HASHING_OPTIONS             1692
+#define IDC_MAINTENANCE                 1693
 #define IDC_AWAY_MINS                   1694
 #define IDC_AWAY_IDLE_TEXT_END          1694
 #define IDC_AWAY_IDLE_TEXT_BEGIN        1695
@@ -1328,6 +1339,7 @@
 #define IDC_IPV6_AUTODETECT             1725
 #define IDC_USER_PROFILE_BOX            1727
 #define IDC_PROFILE_TIP                 1728
+#define IDC_OPTIMIZE_DB_FAST            1729
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1729,9 +1741,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        357
+#define _APS_NEXT_RESOURCE_VALUE        358
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1729
+#define _APS_NEXT_CONTROL_VALUE         1730
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

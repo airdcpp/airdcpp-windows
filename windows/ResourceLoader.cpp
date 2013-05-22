@@ -364,6 +364,7 @@ CImageList& ResourceLoader::getSettingsTreeIcons() {
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_QUEUE, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SHARING, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_SHAREOPTIONS, size));
+		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_HASHING, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_APPEARANCE, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_FONTS, size));
 		settingsTreeImages.AddIcon(loadDefaultIcon(IDI_PROGRESS, size));

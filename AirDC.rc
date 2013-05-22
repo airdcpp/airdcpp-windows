@@ -1175,10 +1175,10 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    EDITTEXT        IDC_SKIPLIST_SHARE,9,174,282,14,ES_AUTOHSCROLL
-    GROUPBOX        "Skiplist Share",IDC_SB_SKIPLIST_SHARE,3,145,296,63
-    LTEXT           "Don't share the following files (separate files with '|', wildcards allowed):",IDC_ST_SKIPLIST_SHARE_EXT,9,158,239,13
-    CONTROL         "Regexp",IDC_SHARE_SKIPLIST_USE_REGEXP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,195,70,8
+    EDITTEXT        IDC_SKIPLIST_SHARE,9,115,282,14,ES_AUTOHSCROLL
+    GROUPBOX        "Skiplist Share",IDC_SB_SKIPLIST_SHARE,3,86,296,63
+    LTEXT           "Don't share the following files (separate files with '|', wildcards allowed):",IDC_ST_SKIPLIST_SHARE_EXT,9,99,239,13
+    CONTROL         "Regexp",IDC_SHARE_SKIPLIST_USE_REGEXP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,136,70,8
     CONTROL         "",IDC_SHARINGLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,8,217,284,81
     RTEXT           "Don't share files bigger than",IDC_DONT_SHARE_BIGGER_THAN,137,39,102,8,NOT WS_GROUP
     EDITTEXT        IDC_DONT_SHARE_BIGGER_VALUE,243,36,32,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
@@ -1188,25 +1188,12 @@ BEGIN
     EDITTEXT        IDC_AUTO_REFRESH_TIME,79,18,31,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_REFRESH_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,101,18,11,14
     LTEXT           "m",IDC_STATIC,113,21,8,8
-    LTEXT           "Max speed per hasher",IDC_SETTINGS_MAX_HASH_SPEED,144,112,90,8,0,WS_EX_RIGHT
-    LTEXT           "MiB/s",IDC_SETTINGS_MBS,279,114,18,8
-    EDITTEXT        IDC_MAX_HASH_SPEED,243,111,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_HASH_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,265,111,11,14
     EDITTEXT        IDC_INCOMING_REFRESH_TIME,243,18,31,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_INCOMING_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,265,18,11,14
     LTEXT           "Incoming Refresh Time",IDC_SETTINGS_INCOMING_REFRESH_TIME,137,20,100,8,0,WS_EX_RIGHT
     LTEXT           "m",IDC_STATIC,279,20,8,8
-    GROUPBOX        "Hashing options",IDC_HASHING_OPTIONS,3,80,296,63
-    RTEXT           "Max hashing threads",IDC_HASHING_THREADS_LBL,11,97,73,8
-    EDITTEXT        IDC_HASHING_THREADS,93,94,31,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_HASHING_THREADS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,115,94,11,14
-    LTEXT           "Max hashers per volume",IDC_MAX_VOL_HASHERS_LBL,147,96,87,8,0,WS_EX_RIGHT
-    EDITTEXT        IDC_MAX_VOL_HASHERS,243,95,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "",IDC_VOL_HASHERS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,265,95,11,14
     RTEXT           "Multithreaded file list refresh",IDC_MULTITHREADED_REFRESH_LBL,10,56,132,8
     COMBOBOX        IDC_MULTITHREADED_REFRESH,151,55,124,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Verify and repair the hash database on next startup",IDC_REPAIR_HASHDB,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,15,128,260,8,WS_EX_RIGHT
 END
 
 IDD_AUTOSEARCH_DLG DIALOGEX 0, 0, 389, 301
@@ -1654,7 +1641,7 @@ BEGIN
     "T",            IDC_FOLLOW,             VIRTKEY, CONTROL, NOINVERT
     "N",            IDC_NOTEPAD,            VIRTKEY, CONTROL, NOINVERT
     "L",            IDC_OPEN_FILE_LIST,     VIRTKEY, CONTROL, NOINVERT
-	"O",            IDC_BROWSE_OWN_LIST,    VIRTKEY, CONTROL, NOINVERT
+    "O",            IDC_BROWSE_OWN_LIST,    VIRTKEY, CONTROL, NOINVERT
     "Y",            IDC_PRIVATEMESSAGE,     VIRTKEY, CONTROL, NOINVERT
     "D",            IDC_QUEUE,              VIRTKEY, CONTROL, NOINVERT
     "E",            IDC_REFRESH_FILE_LIST,  VIRTKEY, CONTROL, NOINVERT
@@ -2110,6 +2097,35 @@ BEGIN
     LTEXT           "Congratulations! You completed the wizard without crashing it.",IDC_FINISH_INTRO,16,9,288,88
 END
 
+IDD_HASHINGPAGE DIALOGEX 0, 0, 309, 293
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Maximum speed per hasher",IDC_SETTINGS_MAX_HASH_SPEED,28,42,210,8,0,WS_EX_RIGHT
+    LTEXT           "MiB/s",IDC_SETTINGS_MBS,283,44,18,8
+    EDITTEXT        IDC_MAX_HASH_SPEED,247,41,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_HASH_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,269,41,11,14
+    GROUPBOX        "Hashing options",IDC_HASHING_OPTIONS,7,9,296,68
+    RTEXT           "Maximum number of hashing threads",IDC_HASHING_THREADS_LBL,34,26,208,8
+    EDITTEXT        IDC_HASHING_THREADS,247,23,31,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_HASHING_THREADS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,269,23,11,14
+    LTEXT           "Maximum number of hashers per volume",IDC_MAX_VOL_HASHERS_LBL,19,58,219,8,0,WS_EX_RIGHT
+    EDITTEXT        IDC_MAX_VOL_HASHERS,247,57,31,13,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_VOL_HASHERS_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,269,57,11,14
+    CONTROL         "Verify and repair the hash database on next startup (use in case of fatal errors only)",IDC_REPAIR_HASHDB,
+                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | BS_MULTILINE | WS_TABSTOP,16,240,263,23,WS_EX_RIGHT
+    GROUPBOX        "Maintenance",IDC_MAINTENANCE,7,89,296,180
+    PUSHBUTTON      "Optimize databases",IDC_OPTIMIZE_DB_FAST,48,145,209,14
+    LTEXT           "This will remove the database entries for files and trees that aren't shared anymore.",IDC_OPTIMIZE_DB_LBL,16,161,286,16
+    PUSHBUTTON      "Optimize and check the integrity of databases",IDC_VERIFY_DB,47,184,210,14
+    LTEXT           "This will perform a normal optimization and additionally check the integrity for all tree entries in case of data corruption. Corrupted database entries will be deleted. Recommended only if you receive notifications about corrupted entries.",IDC_VERIFY_DB_LBL,13,201,275,27
+    LTEXT           "File index size:",IDC_FILE_INDEX_SIZE_LBL,18,106,116,8
+    LTEXT           "Hash data size:",IDC_HASH_DATA_SIZE_LBL,17,122,110,8
+    LTEXT           "1,54 MiB",IDC_FILE_INDEX_SIZE,135,106,116,8
+    LTEXT           "30,03 MiB",IDC_HASH_DATA_SIZE,135,121,116,8
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -2275,6 +2291,14 @@ BEGIN
         TOPMARGIN, 7
         BOTTOMMARGIN, 200
     END
+
+    IDD_HASHINGPAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 286
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -2377,6 +2401,7 @@ IDI_SHAREOPTIONS        ICON                    "res\\SettingsTree\\ShareOptions
 IDI_SEARCHTYPES         ICON                    "res\\SettingsTree\\SearchTypes.ico"
 IDI_IGNORE              ICON                    "res\\SettingsTree\\Ignore.ico"
 IDI_PROXY               ICON                    "res\\SettingsTree\\Proxy.ico"
+IDI_HASHING             ICON                    "res\\SettingsTree\\Hashing.ico"
 IDI_ANY                 ICON                    "res\\searchTypes\\Any.ico"
 IDI_AUDIO               ICON                    "res\\searchTypes\\Audio.ico"
 IDI_COMPRESSED          ICON                    "res\\searchTypes\\Compressed.ico"

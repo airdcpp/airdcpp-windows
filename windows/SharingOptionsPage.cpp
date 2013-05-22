@@ -24,8 +24,6 @@
 #include "WinUtil.h"
 #include "PropertiesDlg.h"
 
-#include "../client/HashManager.h"
-
 
 PropPage::ListItem SharingOptionsPage::listItems[] = {
 	{ SettingsManager::SHARE_HIDDEN, ResourceManager::SETTINGS_SHARE_HIDDEN },
@@ -50,14 +48,6 @@ PropPage::TextItem SharingOptionsPage::texts[] = {
 	{ IDC_SETTINGS_AUTO_REFRESH_TIME, ResourceManager::SETTINGS_AUTO_REFRESH_TIME },
 	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
 	{ IDC_MULTITHREADED_REFRESH_LBL, ResourceManager::MULTITHREADED_REFRESH },
-
-	//hashing
-	{ IDC_HASHING_OPTIONS, ResourceManager::HASHING_OPTIONS },
-	{ IDC_SETTINGS_MAX_HASH_SPEED, ResourceManager::SETTINGS_MAX_HASHER_SPEED },
-	{ IDC_SETTINGS_MBS, ResourceManager::MBPS },
-	{ IDC_HASHING_THREADS_LBL, ResourceManager::MAX_HASHING_THREADS },
-	{ IDC_MAX_VOL_HASHERS_LBL, ResourceManager::MAX_VOL_HASHERS },
-	{ IDC_REPAIR_HASHDB, ResourceManager::SETTINGS_DB_REPAIR },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -70,11 +60,6 @@ PropPage::Item SharingOptionsPage::items[] = {
 	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_DONT_SHARE_BIGGER_VALUE, SettingsManager::MAX_FILE_SIZE_SHARED, PropPage::T_INT },
-
-	//hashing
-	{ IDC_MAX_HASH_SPEED, SettingsManager::MAX_HASH_SPEED, PropPage::T_INT },
-	{ IDC_HASHING_THREADS, SettingsManager::MAX_HASHING_THREADS, PropPage::T_INT },
-	{ IDC_MAX_VOL_HASHERS, SettingsManager::HASHERS_PER_VOLUME, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -89,19 +74,12 @@ LRESULT SharingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	setMinMax(IDC_REFRESH_SPIN, 0, 3000);
 	setMinMax(IDC_INCOMING_SPIN, 0, 1000);
 
-	//hashing
-	setMinMax(IDC_HASH_SPIN, 0, 9999);
-	setMinMax(IDC_VOL_HASHERS_SPIN, 1, 30);
-	setMinMax(IDC_HASHING_THREADS_SPIN, 1, 50);
-
 	ctrlThreadedRefresh.Attach(GetDlgItem(IDC_MULTITHREADED_REFRESH));
 	ctrlThreadedRefresh.InsertString(0, CTSTRING(NEVER));
 	ctrlThreadedRefresh.InsertString(1, CTSTRING(MANUAL_REFRESHES));
 	ctrlThreadedRefresh.InsertString(2, CTSTRING(ALWAYS));
 
 	ctrlThreadedRefresh.SetCurSel(SETTING(REFRESH_THREADING));
-
-	CheckDlgButton(IDC_REPAIR_HASHDB, HashManager::getInstance()->isRepairScheduled());
 
 	// Do specialized reading here
 	return TRUE;
@@ -111,7 +89,6 @@ void SharingOptionsPage::write() {
 	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_SHARINGLIST));
 	
 	settings->set(SettingsManager::REFRESH_THREADING, ctrlThreadedRefresh.GetCurSel());
-	HashManager::getInstance()->onScheduleRepair(IsDlgButtonChecked(IDC_REPAIR_HASHDB) > 0 ? true : false);
 
 	//set to the defaults
 	//if(SETTING(SKIPLIST_SHARE).empty())
