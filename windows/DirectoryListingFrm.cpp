@@ -564,7 +564,7 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 				break;
 			}
 		} else if(ii->type == ItemInfo::FILE && search->itemType != AdcSearch::TYPE_DIRECTORY) {
-			if(search->matchesFile(ii->file->getName(), ii->file->getSize())) {
+			if(search->matchesFileLower(Text::toLower(ii->file->getName()), ii->file->getSize(), ii->file->getDate())) {
 				found = true;
 				break;
 			}

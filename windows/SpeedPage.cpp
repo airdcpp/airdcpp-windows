@@ -349,6 +349,12 @@ void SpeedPage::write() {
 
 		if(SETTING(SET_MINISLOT_SIZE) < 64)
 			settings->set(SettingsManager::SET_MINISLOT_SIZE, 64);
+
+		if(SETTING(MAX_MCN_DOWNLOADS) < 1)
+			settings->set(SettingsManager::MAX_MCN_DOWNLOADS, 1);
+
+		if(SETTING(MAX_MCN_UPLOADS) < 1)
+			settings->set(SettingsManager::MAX_MCN_UPLOADS, 1);
 	}
 
 	if (!SETTING(MCN_AUTODETECT)) {

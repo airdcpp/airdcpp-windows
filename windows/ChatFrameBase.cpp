@@ -684,10 +684,10 @@ _T("\r\n-- Keep your downloads close, but keep your uploads even closer\r\n") LI
 tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /refresh\t\t\t\t\t(refresh share)\n\
-/rebuild\t\t\t\t\t(rebuild hash data)\n\
+/optimizedb\t\t\t\t\t(remove unused entries from the hash databases)\n\
+/verifydb\t\t\t\t\t(optimize and verify the integrity of the hash databases)\n\
 /savequeue\t\t\t\t(save Download Queue)\n\
 /stop\t\t\t\t\t(stop SFV check)\n\
-/save\t\t\t\t\t(save share cache shares.xml)\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /search <string>\t\t\t\t(search for...)\n\
 /whois [IP]\t\t\t\t(find info about user from the ip address)\n\
@@ -802,6 +802,10 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		AutoSearchManager::getInstance()->runSearches();
 	} else if(stricmp(cmd.c_str(), _T("clientstats")) == 0) {
 		status = Text::toT(ClientManager::getInstance()->getClientStats());
+	} else if(stricmp(cmd.c_str(), _T("monitordebug")) == 0) {
+		auto cur = ShareManager::getInstance()->getMonitorDebug();
+		ShareManager::getInstance()->setMonitorDebug(!cur);
+		status = cur ? _T("Debug disabled") : _T("Debug enabled");
 	} else if(stricmp(cmd.c_str(), _T("handlechanges")) == 0) {
 		ShareManager::getInstance()->handleChangedFiles(GET_TICK(), true);
 	} else if(stricmp(cmd.c_str(), _T("allow")) == 0) {
