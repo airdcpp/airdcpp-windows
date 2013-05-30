@@ -161,7 +161,8 @@ void HashProgressDlg::updateStats() {
 		if(filestat == 0 || speed == 0) {
 			SetDlgItemText(IDC_TIME_LEFT, Text::toT("-:--:-- " + STRING(LEFT)).c_str());
 		} else {
-			SetDlgItemText(IDC_TIME_LEFT, (Util::formatSecondsW(filestat) + _T(" ") + TSTRING(LEFT)).c_str());
+			int64_t timeleft = (startBytes - (startBytes - bytes)) / speed;
+			SetDlgItemText(IDC_TIME_LEFT, (Util::formatSecondsW(timeleft) + _T(" ") + TSTRING(LEFT)).c_str());
 		}
 	}
 

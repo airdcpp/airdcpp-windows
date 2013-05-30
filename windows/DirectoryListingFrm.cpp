@@ -354,7 +354,7 @@ void DirectoryListingFrame::addCmdBarButtons() {
 
 	int buttonsCount = sizeof(cmdBarButtons) / sizeof(cmdBarButtons[0]);
 	for(int i = 0; i < buttonsCount; i++){
-		if(i == 4 || i == 1) {
+		if(i == 5 || i == 1) {
 			nTB.fsStyle = TBSTYLE_SEP;
 			ctrlToolbar.AddButtons(1, &nTB);
 		}

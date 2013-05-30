@@ -705,7 +705,9 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		setHubUrl(fu->getUrl().empty() ? hubUrl : fu->getUrl());
 
 		//gets nicks and hubnames and updates the hint url
-		auto ui = move(ClientManager::getInstance()->getNickHubPair(HintedUser(u, hubUrl)));
+		string url = getHubUrl();
+		auto ui = move(ClientManager::getInstance()->getNickHubPair(u, url));
+		setHubUrl(url);
 
 		columns[COLUMN_NICK] = u->isOnline() ? Text::toT(ui.first) : fu->getNick().empty() ? Text::toT(ui.first) : Text::toT(fu->getNick());
 		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(fu->getUrl()); 
@@ -716,7 +718,9 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		grantSlot = hasReservedSlot();
 		
 		//gets nicks and hubnames and updates the hint url
-		auto ui = move(ClientManager::getInstance()->getNickHubPair(HintedUser(u, hubUrl)));
+		string url = getHubUrl();
+		auto ui = move(ClientManager::getInstance()->getNickHubPair(u, url));
+		setHubUrl(url);
 
 		columns[COLUMN_NICK] = Text::toT(ui.first);
 		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(getHubUrl());
