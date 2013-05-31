@@ -320,7 +320,7 @@
 #define IDI_USER_ON                     517
 #define IDI_USER_OFF                    518
 #define IDI_RELOAD                      519
-#define IDI_HASHING						520
+#define IDI_HASHING                     520
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999
@@ -1096,6 +1096,7 @@
 #define IDC_CLOSE_ALL_OFFLINE_PM        1424
 #define IDC_BROWSE_CERTIFICATE          1424
 #define IDC_DOWNCONN                    1424
+#define IDC_MONITORING_MODE_LBL         1424
 #define IDC_CLOSE_ALL_DIR_LIST          1425
 #define IDC_BROWSE_TRUSTED_PATH         1425
 #define IDC_CLOSE_ALL_SEARCH_FRAME      1426
@@ -1321,6 +1322,8 @@
 #define IDC_AUTO_DISCONNECT_MODE        1712
 #define IDC_MULTITHREADED_REFRESH       1713
 #define IDC_REMOVE_EXPIRED_AS           1714
+#define IDC_MULTITHREADED_REFRESH2      1714
+#define IDC_MONITORING_MODE             1714
 #define IDC_AUTO_DETECT                 1715
 #define IDC_CONNECTIVITY_LOG            1716
 #define IDC_AUTOCONN_INTRO              1717

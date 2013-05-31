@@ -28,6 +28,7 @@ PropPage::TextItem WizardGeneral::texts[] = {
 	{ IDC_SETTINGS_EMAIL, ResourceManager::EMAIL },
 	{ IDC_SETTINGS_DESCRIPTION, ResourceManager::DESCRIPTION },
 	{ IDC_GENERAL_INTRO, ResourceManager::WIZARD_GENERAL_INTRO },
+	{ IDC_SETTINGS_PERSONAL_INFORMATION, ResourceManager::SETTINGS_PERSONAL_INFORMATION },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

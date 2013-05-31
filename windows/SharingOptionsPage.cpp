@@ -24,6 +24,8 @@
 #include "WinUtil.h"
 #include "PropertiesDlg.h"
 
+#include "../client/ShareManager.h"
+
 
 PropPage::ListItem SharingOptionsPage::listItems[] = {
 	{ SettingsManager::SHARE_HIDDEN, ResourceManager::SETTINGS_SHARE_HIDDEN },
@@ -48,6 +50,7 @@ PropPage::TextItem SharingOptionsPage::texts[] = {
 	{ IDC_SETTINGS_AUTO_REFRESH_TIME, ResourceManager::SETTINGS_AUTO_REFRESH_TIME },
 	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
 	{ IDC_MULTITHREADED_REFRESH_LBL, ResourceManager::MULTITHREADED_REFRESH },
+	{ IDC_MONITORING_MODE_LBL, ResourceManager::MONITORING_CHANGES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -81,6 +84,14 @@ LRESULT SharingOptionsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 
 	ctrlThreadedRefresh.SetCurSel(SETTING(REFRESH_THREADING));
 
+
+	ctrlMonitoringMode.Attach(GetDlgItem(IDC_MONITORING_MODE));
+	ctrlMonitoringMode.InsertString(0, CTSTRING(DISABLED));
+	ctrlMonitoringMode.InsertString(1, CTSTRING(INCOMING_ONLY));
+	ctrlMonitoringMode.InsertString(2, CTSTRING(ALL_DIRS));
+
+	ctrlMonitoringMode.SetCurSel(SETTING(MONITORING_MODE));
+
 	// Do specialized reading here
 	return TRUE;
 }
@@ -90,9 +101,21 @@ void SharingOptionsPage::write() {
 	
 	settings->set(SettingsManager::REFRESH_THREADING, ctrlThreadedRefresh.GetCurSel());
 
+	monitoringMode = ctrlMonitoringMode.GetCurSel();
 	//set to the defaults
 	//if(SETTING(SKIPLIST_SHARE).empty())
 	//	settings->set(SettingsManager::SHARE_SKIPLIST_USE_REGEXP, true);
+}
+
+Dispatcher::F SharingOptionsPage::getThreadedTask() {
+	if (monitoringMode >= 0 && SETTING(MONITORING_MODE) != monitoringMode) {
+		settings->set(SettingsManager::MONITORING_MODE, monitoringMode);
+		return Dispatcher::F([this] { 
+			ShareManager::getInstance()->rebuildMonitoring();
+		});
+	}
+
+	return nullptr;
 }
  
 

@@ -44,6 +44,7 @@ PropPage::TextItem ProtocolBase::texts[] = {
 	{ IDC_SETTINGS_PORT_TCP, ResourceManager::SETTINGS_TCP_PORT },
 	{ IDC_SETTINGS_PORT_UDP, ResourceManager::SETTINGS_UDP_PORT },
 	{ IDC_SETTINGS_PORT_TLS, ResourceManager::SETTINGS_TLS_PORT },
+	{ IDC_PROTOCOL_OPTIONS, ResourceManager::PROTOCOL_OPTIONS },
 
 	//mapper
 	//{ IDC_SETTINGS_MAPPER_DESC, ResourceManager::PREFERRED_MAPPER },

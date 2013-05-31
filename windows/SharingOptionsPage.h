@@ -31,7 +31,7 @@
 class SharingOptionsPage : public CPropertyPage<IDD_SHARING_OPTIONS>, public PropPage
 {
 public:
-	SharingOptionsPage(SettingsManager *s) : PropPage(s) {
+	SharingOptionsPage(SettingsManager *s) : PropPage(s), monitoringMode(-1) {
 		title = _tcsdup((TSTRING(SETTINGS_SHARINGPAGE) + _T('\\') + TSTRING(SETTINGS_SHARING_OPTIONS)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
@@ -54,12 +54,16 @@ public:
 	
 protected:
 	CComboBox ctrlThreadedRefresh;
+	CComboBox ctrlMonitoringMode;
+
+	Dispatcher::F getThreadedTask();
 
 	static Item items[];
 	static TextItem texts[];
 	static ListItem listItems[];
 	TCHAR* title;
 
+	int monitoringMode;
 };
 
 #endif // !defined(SHARINGOPTIONS_PAGE_H)

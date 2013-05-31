@@ -24,6 +24,8 @@ PropPage::TextItem WizardAutoConnectivity::texts[] = {
 	{ IDC_IPV4_AUTODETECT, ResourceManager::ALLOW_AUTO_DETECT_V4 },
 	{ IDC_IPV6_AUTODETECT, ResourceManager::ALLOW_AUTO_DETECT_V6 },
 	{ IDC_AUTOCONN_INTRO, ResourceManager::WIZARD_AUTO_CONNECTIVITY_INTRO },
+	{ IDC_AUTO_DETECT, ResourceManager::DETECT_NOW },
+	{ IDC_MANUAL_CONFIG, ResourceManager::CONN_USE_MANUAL_CONFIG },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

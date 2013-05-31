@@ -1918,5 +1918,14 @@ Do you want to continue?</String>
 		<String Name="Maintenance">Maintenance</String>
 		<String Name="FileIndexSize">File index size:</String>
 		<String Name="HashDataSize">Hash data size:</String>
+		<String Name="MonitoringChanges">Monitoring for share changes</String>
+		<String Name="AllDirs">All directories</String>
+		<String Name="IncomingOnly">Incoming directories only</String>
+		<String Name="XMonitoringAdded">%d directories have been added for monitoring</String>
+		<String Name="XMonitoringRemoved">%d directories have been removed from monitoring</String>
+		<String Name="FailedAddMonitoring">Failed to add the directory %s for monitoring: %s</String>
+		<String Name="DetectNow">Detect now</String>
+		<String Name="ConnUseManualConfig">I want to configure connectivity settings manually</String>
+		<String Name="ProtocolOptions">Protocol options</String>
 	</Strings>
 </Language>

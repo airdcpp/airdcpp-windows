@@ -117,7 +117,7 @@ void PropertiesDlg::deletePages(PropPage::TaskList& tasks) {
 		if (saved) {
 			auto t = pages[i]->getThreadedTask();
 			if (t) {
-				tasks.emplace_back(pages[i]->getThreadedTask(), pages[i]);
+				tasks.emplace_back(t, pages[i]);
 				continue;
 			}
 		}

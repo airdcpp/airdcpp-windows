@@ -21,7 +21,7 @@
 #include "Wizard.h"
 
 
-SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupWizard>(_T("Setup Wizard")), initial(isInitial), saved(false), pagesDeleted(false) {
+SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupWizard>(CTSTRING(WIZARD)), initial(isInitial), saved(false), pagesDeleted(false) {
 	//m_psh.pfnCallback = &PropSheetProc;
 
 	auto s = SettingsManager::getInstance();
