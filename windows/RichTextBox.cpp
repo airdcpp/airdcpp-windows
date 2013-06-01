@@ -1373,7 +1373,7 @@ LRESULT RichTextBox::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*
 	for(auto l: links | reversed) {
 		if(compare(l.second->url, link) == 0) {
 			if (l.second->getType() == ChatLink::TYPE_MAGNET) {
-				WinUtil::parseMagnetUri(Text::toT(l.second->url), getMagnetSource());
+				WinUtil::parseMagnetUri(Text::toT(l.second->url), getMagnetSource(), this);
 			} else {
 				WinUtil::openLink(Text::toT(l.second->url));
 			}
@@ -1395,7 +1395,8 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	if (cl->getType() == ChatLink::TYPE_MAGNET) {
 		selectedLine = LineFromPos(pt);
 		updateAuthor();
-		WinUtil::parseMagnetUri(Text::toT(cl->url), move(getMagnetSource()));
+		selectedWord = Text::toT(cl->url);
+		WinUtil::parseMagnetUri(Text::toT(cl->url), getMagnetSource(), this);
 	} else {
 		//the url regex also detects web links without any protocol part
 		auto link = cl->url;

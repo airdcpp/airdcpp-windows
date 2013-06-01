@@ -643,6 +643,9 @@ string Players::getWinAmpSpam() {
 		TCHAR titleBuffer[2048];
 		GetWindowText(hwndWinamp, titleBuffer, sizeof(titleBuffer));
 		tstring title = titleBuffer;
+		if (title.empty())
+			return Util::emptyString;
+
 		params["rawtitle"] = Text::fromT(title);
 		// there's some winamp bug with scrolling. wa5.09x and 5.1 or something.. see:
 		// http://forums.winamp.com/showthread.php?s=&postid=1768775#post1768775

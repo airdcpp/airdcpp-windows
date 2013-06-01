@@ -659,7 +659,6 @@
 #define IDC_HASH_DATA_SIZE_LBL          1231
 #define IDC_DOWNLOADDIR_EXT             1232
 #define IDC_FILE_INDEX_SIZE             1232
-#define IDC_MAGNET_OPEN                 1233
 #define IDC_CLIENT_FORMATTED_TAG        1233
 #define IDC_HASH_DATA_SIZE2             1233
 #define IDC_HASH_DATA_SIZE              1233
@@ -1412,8 +1411,9 @@
 #define IDC_USE_OWN                     8694
 #define IDC_LEAVE_OTHER                 8695
 #define IDC_USE_PROFILE                 8695
-#define IDC_MAGNET_QUEUE                8696
-#define IDC_MAGNET_SEARCH               8697
+#define IDC_MAGNET_SEARCH               8696
+#define IDC_MAGNET_QUEUE                8697
+#define IDC_MAGNET_OPEN                 8698
 #define IDR_TRAY_PM                     10000
 #define IDR_TRAY_HUB                    10001
 #define IDC_EXTRASLOTSSPIN              10002

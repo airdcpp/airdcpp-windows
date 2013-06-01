@@ -2119,9 +2119,9 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | BS_MULTILINE | WS_TABSTOP,16,243,273,23,WS_EX_RIGHT
     GROUPBOX        "Maintenance",IDC_MAINTENANCE,7,89,296,190
     PUSHBUTTON      "Optimize databases",IDC_OPTIMIZE_DB_FAST,48,145,209,14
-    LTEXT           "This will remove the database entries for files and trees that aren't shared anymore.",IDC_OPTIMIZE_DB_LBL,20,161,266,16
+    LTEXT           "This will remove the database entries for files and trees that aren't shared anymore.",IDC_OPTIMIZE_DB_LBL,17,161,276,16
     PUSHBUTTON      "Optimize and check the integrity of databases",IDC_VERIFY_DB,47,187,210,14
-    LTEXT           "This will perform a normal optimization and additionally check the integrity for all tree entries in case of data corruption. Corrupted database entries will be deleted. Recommended only if you receive notifications about corrupted entries.",IDC_VERIFY_DB_LBL,20,204,268,27
+    LTEXT           "This will perform a normal optimization and additionally check the integrity for all tree entries in case of data corruption. Corrupted database entries will be deleted. Recommended only if you receive notifications about corrupted entries.",IDC_VERIFY_DB_LBL,16,204,277,27
     LTEXT           "File index size:",IDC_FILE_INDEX_SIZE_LBL,18,106,116,8
     LTEXT           "Hash data size:",IDC_HASH_DATA_SIZE_LBL,17,122,110,8
     LTEXT           "1,54 MiB",IDC_FILE_INDEX_SIZE,135,106,116,8

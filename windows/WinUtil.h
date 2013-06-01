@@ -344,7 +344,7 @@ public:
 	static void unRegisterMagnetHandler();
 
 	static bool parseDBLClick(const tstring& aString);
-	static void parseMagnetUri(const tstring& aUrl, const HintedUser& aUser);
+	static void parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichTextBox* ctrlEdit = nullptr);
 
 	static bool urlDcADCRegistered;
 	static bool urlMagnetRegistered;

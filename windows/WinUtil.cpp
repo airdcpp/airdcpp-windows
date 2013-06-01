@@ -1186,7 +1186,7 @@ void WinUtil::SetIcon(HWND hWnd, int aDefault, bool big) {
 	::SendMessage(hWnd, WM_SETICON, big ? ICON_BIG : ICON_SMALL, (LPARAM)hIcon);
 }
 
-void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser) {
+void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichTextBox* ctrlEdit /*nullptr*/) {
 	if (strnicmp(aUrl.c_str(), _T("magnet:?"), 8) == 0) {
 		//LogManager::getInstance()->message(STRING(MAGNET_DLG_TITLE) + ": " + Text::fromT(aUrl), LogManager::LOG_INFO);
 		Magnet m = Magnet(Text::fromT(aUrl));
@@ -1230,7 +1230,11 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser) {
 				if (sel == SettingsManager::MAGNET_SEARCH) {
 					WinUtil::searchHash(m.getTTH(), m.fname, m.fsize);
 				} else if (sel == SettingsManager::MAGNET_DOWNLOAD) {
-					addFileDownload(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aUser, 0);
+					if (ctrlEdit) {
+						ctrlEdit->handleDownload(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
+					} else {
+						addFileDownload(SETTING(DOWNLOAD_DIRECTORY) + m.fname, m.fsize, m.getTTH(), aUser, 0);
+					}
 				} else if (sel == SettingsManager::MAGNET_OPEN) {
 					QueueManager::getInstance()->addOpenedItem(m.fname, m.fsize, m.getTTH(), aUser, false);
 				}
