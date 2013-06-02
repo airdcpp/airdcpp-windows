@@ -46,9 +46,9 @@ ShowUninstDetails show
    
 ; The file to write
 !ifdef X64
-  OutFile "AirDC_Installer64.exe"
+  OutFile "AirDC_Installer_2.50_r1532_x64.exe"
 !else
-  OutFile "AirDC_Installer.exe"
+  OutFile "AirDC_Installer_2.50_r1532_x86.exe""
 !endif
 
 ; The default installation directory
@@ -213,7 +213,9 @@ vistaplus:
   StrCpy $R8 "1"
   goto end
 xp_or_below:
-  StrCpy $R8 "0"
+	MessageBox MB_OK|MB_ICONEXCLAMATION "This version is only compatible with Windows Vista or newer operating system. You will be forwarded to www.airdcpp.net for downloading a version that is compatible with your Windows version."
+	ShellExecAsUser::ShellExecAsUser "open" 'http://www.airdcpp.net/download'
+	Quit
 end:
   ; Set the program component really required (read only)
   IntOp $0 ${SF_SELECTED} | ${SF_RO}

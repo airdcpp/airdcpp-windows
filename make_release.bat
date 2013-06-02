@@ -20,5 +20,5 @@ cd compiled\x64
 cd %solutionDir%
 
 set fileName=airdcpp_VERSION_src.7z
-7za a -t7z %solutionDir%\%fileName% boost bzip2 client geoip installer MakeDefs miniupnpc minizip natpmp openssl regex res windows zlib AirDC.rc AirDC.sln Changelog_AirDC.txt client.vcxproj client.vcxproj.filters EN_Example.xml StrongDC.vcxproj StrongDC.vcxproj.filters
+7za a -t7z %solutionDir%\%fileName% boost bzip2 client geoip installer leveldb MakeDefs miniupnpc minizip natpmp openssl regex res snappy windows zlib AirDC.rc AirDC.sln Changelog_AirDC.txt client.vcxproj client.vcxproj.filters EN_Example.xml StrongDC.vcxproj StrongDC.vcxproj.filters
 cd %solutionDir%

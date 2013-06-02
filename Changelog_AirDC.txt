@@ -2,15 +2,20 @@
 
 Added:
 
+- New user tab that will display general information about the users in all hubs + total queued files from each user
+- New database engine for storing information about hashed files (reduces resource usage and freezes, improves reliability)
 - Full IPv6 support in ADC hubs (transfers, port mapping, separate modes for IPv4 and IPv6, hybrid support for both protocols)
 - New tree control in file lists: reduces the loading times and shows the expand sign also for incomplete folders (the other user must have version 2.42 or newer)
+- New multipage settings wizard with more options
 - Replace the search skiplist with a list of excluded words, add also for auto search
 - Show dates for all files in partial lists
 - Show dates in search
+- Any subdirectory can be refreshed from own file list and with the refresh command
+- Add a new priority "Paused (forced)": http://www.airdcpp.net/forum/viewtopic.php?t=3738&p=7551#p7551
 - Add a column for shared files in the user list (ADC only)
 - Allow choosing the preferred port mapping interface
 - Check that the bind address is valid when starting the client
-- Allow setting a custom email address for favorite hubs
+- Allow setting a custom away message and email address for favorite hubs
 - Allow duplicating auto search items
 - Allow using quotation marks in search strings and excluded words for exact matching with strings containing spaces
 - Show the progress in percentages on startup/shutdown for selected steps
@@ -22,10 +27,16 @@ Added:
 - Allow setting minimum file size for dupe check when queuing new items (small dupes are ignored only if all other queued files in the bundle aren't dupes too)
 - Save possible errors for auto search items when queueuing new bundles
 - Add the type "File" in the file type menu in search to avoid getting directory results
+- Add an option for following symlinks for shared files
+- Single log per CID for ADC users by default
+- Add a menu item for opening the log directory
+- Allow choosing the queue removal mode when auto disconnecting downloads
+- Add an option for not allowing failover addresses for favorite hubs (hub-specific and global)
 
 Changed:
 
-- Various sharing optimizations (the CPU usage has been reduced significantly and RAM usage a bit too, less freezes)
+- Various sharing optimizations (CPU usage and RAM usage have been reduced significantly with large shares, less freezes)
+- Change the way how combined nicks and hub names are displayed in ADC hubs
 - Don't save various setting files on shutdown if there is nothing new to save
 - Count queued file lists in maximum number of sources for matching lists on search results
 - Pick the best users for matching bundles if the maximum number of sources has reached (based on the connection speed and free slots)
@@ -45,10 +56,12 @@ Changed:
 - Mark the current prio when there are multiple bundles selected in the transfer view / queue tab and they all use the same prio
 - Download skiplist is also matched for bundle subdirectories (instead of only file names)
 - Validate the TTH before performing a search (manual searches only)
+- Don't change finished download connections to disconnected state
 
 Fixed:
 
 - Fix very poor performance when adding lots of files for hashing (100k+)
+- Fix a problem with rebuild not removing all unused entries for hashed files
 - Fix port mapping problems when there are multiple networking interfaces available
 - Fix problems when connecting NMDC search results to a correct hub
 - Fix crashes when sharing subdirs of other shared dirs in different profiles
@@ -62,6 +75,12 @@ Fixed:
 - Transfers with no download slot can now be forced normally
 - Fix a bug with directories not being scanned correctly if the group name contained the char _
 - Prevent the ADL search XML file being cleared when there is no disk space available to save it
+- Prevent infinite requests for a single TTH when the tree can't be added in the database
+- Start the client as normal user when launching from the installer 
+- Don't display join/part messages for hidden users
+- Fix possible crashes when auto detecting connection settings
+- Avoid possible invalid CRC errors while hashing after an invalid SFV file has been replaced
+- Fix total size and total files with own partial list when no hubs are open
 
 
 2.44
