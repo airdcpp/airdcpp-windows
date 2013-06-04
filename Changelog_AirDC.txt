@@ -81,6 +81,8 @@ Fixed:
 - Fix possible crashes when auto detecting connection settings
 - Avoid possible invalid CRC errors while hashing after an invalid SFV file has been replaced
 - Fix total size and total files with own partial list when no hubs are open
+- Fix hub encoding in NMDC hubs
+- Fix password not being requested in some cases when password protected tray is enabled
 
 
 2.44

@@ -1227,6 +1227,19 @@ void MainFrame::updateTray(bool add /* = true */) {
 	}
 }
 
+LRESULT MainFrame::onOpen(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	if (checkPassword())
+		return TRUE;
+
+	ShowWindow(SW_HIDE);
+	return FALSE;
+}
+
+LRESULT MainFrame::onSizing(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	bHandled = TRUE;
+	return TRUE;
+}
+
 LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	if(wParam == SIZE_MINIMIZED) {
@@ -1535,30 +1548,33 @@ LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	return 0;
 }
 
+bool MainFrame::checkPassword() {
+	if(SETTING(MINIMIZE_TRAY) && SETTING(PASSWD_PROTECT_TRAY) && bAppMinimized) {
+		if(hasPassdlg) //prevent dialog from showing twice, findwindow doesnt seem to work with this??
+			return 0;
+
+		hasPassdlg = true;
+		PassDlg passdlg;
+		passdlg.description = TSTRING(PASSWORD_DESC);
+		passdlg.title = TSTRING(PASSWORD_TITLE);
+		passdlg.ok = TSTRING(UNLOCK);
+		if(passdlg.DoModal(NULL) == IDOK) {
+			hasPassdlg = false;
+			if (passdlg.line != Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
+				MessageBox(CTSTRING(INVALID_PASSWORD), _T(APPNAME) _T(" ") _T(VERSIONSTRING));
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+
 LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	if (lParam == WM_LBUTTONUP) {
 		if(bAppMinimized) {
-			if(SETTING(PASSWD_PROTECT_TRAY)) {
-				if(hasPassdlg) //prevent dialog from showing twice, findwindow doesnt seem to work with this??
-					return 0;
-
-				hasPassdlg = true;
-				PassDlg passdlg;
-				passdlg.description = TSTRING(PASSWORD_DESC);
-				passdlg.title = TSTRING(PASSWORD_TITLE);
-				passdlg.ok = TSTRING(UNLOCK);
-				if(passdlg.DoModal(NULL) == IDOK){
-					tstring tmp = passdlg.line;
-					if (tmp == Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
-						ShowWindow(SW_SHOW);
-						ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
-					}
-					hasPassdlg = false;
-				}
-			} else {
-				ShowWindow(SW_SHOW);
-				ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
-			}
+			ShowWindow(SW_SHOW);
+			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
 		} else {
 			ShowWindow(SW_HIDE);
 			ShowWindow(SW_MINIMIZE);
@@ -2188,28 +2204,8 @@ LRESULT MainFrame::onRefreshDropDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 
 LRESULT MainFrame::onAppShow(WORD /*wNotifyCode*/,WORD /*wParam*/, HWND, BOOL& /*bHandled*/) {
 	if (::IsIconic(m_hWnd)) {
-		if(SETTING(PASSWD_PROTECT_TRAY)) {
-			if(hasPassdlg)
-				return 0;
-
-			hasPassdlg = true;
-			PassDlg passdlg;
-			passdlg.description = TSTRING(PASSWORD_DESC);
-			passdlg.title = TSTRING(PASSWORD_TITLE);
-			passdlg.ok = TSTRING(UNLOCK);
-			if(passdlg.DoModal(/*m_hWnd*/) == IDOK){
-				tstring tmp = passdlg.line;
-				if (tmp == Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
-					ShowWindow(SW_SHOW);
-					ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
-				}
-				hasPassdlg = false;
-			}
-		} else {
-			ShowWindow(SW_SHOW);
-			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
-		}
-
+		ShowWindow(SW_SHOW);
+		ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
 	} else {
 		ShowWindow(SW_HIDE);
 		ShowWindow(SW_MINIMIZE);

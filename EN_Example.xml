@@ -1927,5 +1927,6 @@ Do you want to continue?</String>
 		<String Name="DetectNow">Detect now</String>
 		<String Name="ConnUseManualConfig">I want to configure connectivity settings manually</String>
 		<String Name="ProtocolOptions">Protocol options</String>
+		<String Name="InvalidPassword">Invalid password</String>
 	</Strings>
 </Language>
