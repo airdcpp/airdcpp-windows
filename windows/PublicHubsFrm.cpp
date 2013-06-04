@@ -196,24 +196,7 @@ LRESULT PublicHubsFrame::onDoubleClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL
 		return 0;
 	
 	NMITEMACTIVATE* item = (NMITEMACTIVATE*) pnmh;
-
-	if(item->iItem != -1) {
-		TCHAR buf[256];
-		
-		RecentHubEntry r;
-		ctrlHubs.GetItemText(item->iItem, COLUMN_NAME, buf, 256);
-		r.setName(Text::fromT(buf));
-		ctrlHubs.GetItemText(item->iItem, COLUMN_DESCRIPTION, buf, 256);
-		r.setDescription(Text::fromT(buf));
-		ctrlHubs.GetItemText(item->iItem, COLUMN_USERS, buf, 256);
-		r.setUsers(Text::fromT(buf));
-		ctrlHubs.GetItemText(item->iItem, COLUMN_SHARED, buf, 256);
-		r.setShared(Text::fromT(buf));
-		ctrlHubs.GetItemText(item->iItem, COLUMN_SERVER, buf, 256);
-		r.setServer(Text::fromT(buf));
-		FavoriteManager::getInstance()->addRecent(r);
-		HubFrame::openWindow(buf);
-	}
+	connectHub(item->iItem, SP_DEFAULT);
 
 	return 0;
 }
@@ -223,12 +206,7 @@ LRESULT PublicHubsFrame::onEnter(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHa
 		return 0;
 
 	int item = ctrlHubs.GetNextItem(-1, LVNI_FOCUSED);
-	if(item != -1) {
-		TCHAR buf[256];
-
-		ctrlHubs.GetItemText(item, COLUMN_SERVER, buf, 256);
-		HubFrame::openWindow(buf);
-	}
+	connectHub(item, SP_DEFAULT);
 
 	return 0;
 }
@@ -246,8 +224,8 @@ LRESULT PublicHubsFrame::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*
 		ConnectDlg dlg(true);
 		dlg.title = TSTRING(CONNECT_WITH_PROFILE);
 		dlg.address = buf;
-		if(dlg.DoModal(m_hWnd) == IDOK){
-			HubFrame::openWindow(buf, 0, true, dlg.curProfile);
+		if(dlg.DoModal(m_hWnd) == IDOK) {
+			connectHub(item, dlg.curProfile);
 		}
 	}
 
@@ -269,31 +247,38 @@ LRESULT PublicHubsFrame::onClickedConfigure(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	return 0;
 }
 
+void PublicHubsFrame::connectHub(int pos, ProfileToken shareProfile) {
+	if (pos == -1)
+		return;
+
+	if(!checkNick())
+		return;
+
+	TCHAR buf[256];
+
+	RecentHubEntry r;
+	ctrlHubs.GetItemText(pos, COLUMN_NAME, buf, 256);
+	r.setName(Text::fromT(buf));
+	ctrlHubs.GetItemText(pos, COLUMN_DESCRIPTION, buf, 256);
+	r.setDescription(Text::fromT(buf));
+	ctrlHubs.GetItemText(pos, COLUMN_USERS, buf, 256);
+	r.setUsers(Text::fromT(buf));
+	ctrlHubs.GetItemText(pos, COLUMN_SHARED, buf, 256);
+	r.setShared(Text::fromT(buf));
+	ctrlHubs.GetItemText(pos, COLUMN_SERVER, buf, 256);
+	r.setServer(Text::fromT(buf));
+	FavoriteManager::getInstance()->addRecent(r);
+				
+	HubFrame::openWindow(buf, 0, true, shareProfile);
+}
+
 LRESULT PublicHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(!checkNick())
 		return 0;
 
-	if(ctrlHubs.GetSelectedCount() >= 1) {
-		TCHAR buf[256];
-		int i = -1;
-		while( (i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
-
-		RecentHubEntry r;
-		ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
-		r.setName(Text::fromT(buf));
-		ctrlHubs.GetItemText(i, COLUMN_DESCRIPTION, buf, 256);
-		r.setDescription(Text::fromT(buf));
-		ctrlHubs.GetItemText(i, COLUMN_USERS, buf, 256);
-		r.setUsers(Text::fromT(buf));
-		ctrlHubs.GetItemText(i, COLUMN_SHARED, buf, 256);
-		r.setShared(Text::fromT(buf));
-		ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
-		r.setServer(Text::fromT(buf));
-		FavoriteManager::getInstance()->addRecent(r);
-				
-		HubFrame::openWindow(buf);
-	}
+	int i = -1;
+	while((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		connectHub(i, SP_DEFAULT);
 	}
 	return 0;
 }

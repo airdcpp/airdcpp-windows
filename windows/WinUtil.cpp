@@ -29,6 +29,7 @@
 #include "LineDlg.h"
 #include "MainFrm.h"
 
+#include "../client/ScopedFunctor.h"
 #include "../client/Util.h"
 #include "../client/Localization.h"
 #include "../client/StringTokenizer.h"
@@ -54,6 +55,7 @@ boost::wregex WinUtil::pathReg;
 boost::wregex WinUtil::chatLinkReg;
 boost::wregex WinUtil::chatReleaseReg;
 
+PassDlg* WinUtil::passDlg = nullptr;
 unique_ptr<SplashWindow> WinUtil::splash;
 HBRUSH WinUtil::bgBrush = NULL;
 COLORREF WinUtil::textColor = 0;
@@ -2099,6 +2101,26 @@ void WinUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHVal
 			//...
 		}
 	});
+}
+
+bool WinUtil::checkClientPassword() {
+	if(passDlg)
+		return false;
+
+	passDlg = new PassDlg;
+	ScopedFunctor([] { delete passDlg; passDlg = nullptr; });
+
+	passDlg->description = TSTRING(PASSWORD_DESC);
+	passDlg->title = TSTRING(PASSWORD_TITLE);
+	passDlg->ok = TSTRING(UNLOCK);
+	if(passDlg->DoModal(NULL) == IDOK) {
+		if (passDlg->line != Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
+			MessageBox(mainWnd, CTSTRING(INVALID_PASSWORD), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONERROR);
+			return false;
+		}
+	}
+
+	return true;
 }
 
 /*void WinUtil::addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags 0, bool addBad true) {

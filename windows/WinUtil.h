@@ -33,6 +33,7 @@
 #include "../client/AirUtil.h"
 #include "../client/SettingItem.h"
 
+#include "LineDlg.h"
 #include "SplashWindow.h"
 
 #include <boost/bind.hpp>
@@ -170,6 +171,7 @@ public:
 	static boost::wregex chatLinkReg;
 	static boost::wregex chatReleaseReg;
 
+	static PassDlg* passDlg;
 	static HBRUSH bgBrush;
 	static COLORREF textColor;
 	static COLORREF bgColor;
@@ -234,6 +236,8 @@ public:
 	static void loadReBarSettings(HWND bar);
 	static void saveReBarSettings(HWND bar);
 	static void playSound(const tstring& sound);
+
+	static bool checkClientPassword();
 
 	static bool MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& txt);
 	static void ShowMessageBox(SettingsManager::BoolSetting i, const tstring& txt);

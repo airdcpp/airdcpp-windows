@@ -94,7 +94,6 @@ public:
 		MESSAGE_HANDLER(WM_APP+242, onTrayIcon)
 		MESSAGE_HANDLER(WM_DESTROY, onDestroy)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
-		MESSAGE_HANDLER(WM_SIZING, onSizing)
 		MESSAGE_HANDLER(WM_QUERYOPEN, onOpen)
 		MESSAGE_HANDLER(WM_ENDSESSION, onEndSession)
 		MESSAGE_HANDLER(trayMessage, onTray)
@@ -197,7 +196,6 @@ public:
 	END_UPDATE_UI_MAP()
 
 	LRESULT onOpen(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onSizing(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onHashProgress(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -346,7 +344,6 @@ public:
 	void showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& aTitle = Util::emptyStringT);
 	void onChatMessage(bool pm);
 private:
-	bool checkPassword();
 	void updateStatus(TStringList* aItems);
 	void addStatus(const string& aMsg, time_t aTime, uint8_t severity);
 
@@ -446,7 +443,6 @@ private:
 	HWND createToolbar();
 	HWND createWinampToolbar();
 	void updateTray(bool add = true);
-	bool hasPassdlg;
 	void updateTooltipRect();
 	void checkAwayIdle();
 

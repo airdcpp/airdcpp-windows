@@ -23,6 +23,8 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "resource.h"
+
 #include "../client/ShareManager.h"
 #include "../client/AirUtil.h"
 

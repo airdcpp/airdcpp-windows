@@ -101,6 +101,7 @@ public:
 	}
 	
 private:
+	void connectHub(int pos, ProfileToken shareProfile);
 	enum {
 		COLUMN_FIRST,
 		COLUMN_NAME = COLUMN_FIRST,

@@ -82,7 +82,7 @@ bool MainFrame::isShutdownStatus = false;
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
-bTrayIcon(false), bAppMinimized(false), bIsPM(false), hasPassdlg(false), hashProgress(false), trayUID(0),
+bTrayIcon(false), bAppMinimized(false), bIsPM(false), hashProgress(false), trayUID(0),
 statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
 
 
@@ -1228,15 +1228,11 @@ void MainFrame::updateTray(bool add /* = true */) {
 }
 
 LRESULT MainFrame::onOpen(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if (checkPassword())
-		return TRUE;
+	if(SETTING(MINIMIZE_TRAY) && SETTING(PASSWD_PROTECT_TRAY) && bAppMinimized && !WinUtil::checkClientPassword()) {
+		ShowWindow(SW_HIDE);
+		return FALSE;
+	}
 
-	ShowWindow(SW_HIDE);
-	return FALSE;
-}
-
-LRESULT MainFrame::onSizing(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	bHandled = TRUE;
 	return TRUE;
 }
 
@@ -1546,28 +1542,6 @@ LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	addThreadedTask([] { ShareScannerManager::getInstance()->scan(); });
 	return 0;
-}
-
-bool MainFrame::checkPassword() {
-	if(SETTING(MINIMIZE_TRAY) && SETTING(PASSWD_PROTECT_TRAY) && bAppMinimized) {
-		if(hasPassdlg) //prevent dialog from showing twice, findwindow doesnt seem to work with this??
-			return 0;
-
-		hasPassdlg = true;
-		PassDlg passdlg;
-		passdlg.description = TSTRING(PASSWORD_DESC);
-		passdlg.title = TSTRING(PASSWORD_TITLE);
-		passdlg.ok = TSTRING(UNLOCK);
-		if(passdlg.DoModal(NULL) == IDOK) {
-			hasPassdlg = false;
-			if (passdlg.line != Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
-				MessageBox(CTSTRING(INVALID_PASSWORD), _T(APPNAME) _T(" ") _T(VERSIONSTRING));
-				return false;
-			}
-		}
-	}
-
-	return true;
 }
 
 LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {

@@ -375,17 +375,8 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		IgnoreManager::newInstance();
 
 		WinUtil::splash->callAsync([=] {
-			if(SETTING(PASSWD_PROTECT)) {
-				PassDlg dlg;
-				dlg.description = TSTRING(PASSWORD_DESC);
-				dlg.title = TSTRING(PASSWORD_TITLE);
-				dlg.ok = TSTRING(UNLOCK);
-				if(dlg.DoModal(/*m_hWnd*/) == IDOK){
-					tstring tmp = dlg.line;
-					if (tmp != Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
-						ExitProcess(1);
-					}
-				}
+			if(SETTING(PASSWD_PROTECT) && !WinUtil::checkClientPassword()) {
+				ExitProcess(1);
 			}
 
 			if(ResourceManager::getInstance()->isRTL()) {
