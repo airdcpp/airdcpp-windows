@@ -75,6 +75,9 @@ protected:
 	CButton cAutoUL;
 	CButton cAutoDL;
 
+	CEdit ctrlMcnUL;
+	CEdit ctrlMcnDL;
+
 	void fixControls();
 	int maxMCNExtras(double speed);
 	static Item items[];

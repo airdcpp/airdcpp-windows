@@ -122,7 +122,7 @@ LRESULT SpeedPage::onSpeedChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL
 
 	if (WinUtil::onConnSpeedChanged(wNotifyCode, wID, hWndCtl)) {
 		updateValues(wNotifyCode);
-		validateMCNLimits(wNotifyCode);
+		//validateMCNLimits(wNotifyCode);
 	}
 	return TRUE;
 }
@@ -161,11 +161,14 @@ void SpeedPage::updateValues(WORD wNotifyCode) {
 }
 
 LRESULT SpeedPage::checkMCN(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	validateMCNLimits(wNotifyCode);
+	//validateMCNLimits(wNotifyCode);
 	return TRUE;
 }
 
 void SpeedPage::validateMCNLimits(WORD wNotifyCode) {
+	if (loading)
+		return;
+
 	if (IsDlgButtonChecked(IDC_MCN_AUTODETECT)) {
 		return;
 	}
@@ -188,38 +191,43 @@ void SpeedPage::validateMCNLimits(WORD wNotifyCode) {
 	}
 	double downloadvalue = Util::toDouble(Text::fromT(buf2));
 
-	int downloadAutoSlots=AirUtil::getSlotsPerUser(true, downloadvalue);
-	int uploadAutoSlots=AirUtil::getSlotsPerUser(false, uploadvalue);
+	int downloadAutoSlots = AirUtil::getSlotsPerUser(true, downloadvalue);
+	int uploadAutoSlots = AirUtil::getSlotsPerUser(false, uploadvalue);
 
-	int mcnExtrasDL=maxMCNExtras(downloadvalue);
-	int mcnExtrasUL=maxMCNExtras(uploadvalue);
+	int mcnExtrasDL = maxMCNExtras(downloadvalue);
+	int mcnExtrasUL = maxMCNExtras(uploadvalue);
 
-	tstring aSlotsDL;
-	aSlotsDL.resize(40);
-	aSlotsDL.resize(GetDlgItemText(IDC_MCNDLSLOTS, &aSlotsDL[0], 40));
+	ctrlMcnDL.GetWindowText(buf, 40);
+	int fieldDlSlots = Util::toInt(Text::fromT(buf));
 
-	tstring aSlotsUL;
-	aSlotsUL.resize(40);
-	aSlotsUL.resize(GetDlgItemText(IDC_MCNULSLOTS, &aSlotsUL[0], 40));
+	ctrlMcnUL.GetWindowText(buf, 40);
+	int fieldUlSlots = Util::toInt(Text::fromT(buf));
 
+	/*if (fieldDlSlots == 0 && ctrlMcnDL.GetWindowTextLength() > 0) {
+		ctrlMcnDL.SetWindowText(_T(""));
+	}
 
-	if ((Util::toInt(Text::fromT(aSlotsDL)) > downloadAutoSlots + mcnExtrasDL)) {
+	if (fieldUlSlots == 0 && ctrlMcnUL.GetWindowTextLength() > 0) {
+		ctrlMcnUL.SetWindowText(_T(""));
+	}*/
+
+	if (fieldDlSlots == 0 || (fieldDlSlots > downloadAutoSlots + mcnExtrasDL)) {
 		if ((downloadAutoSlots + mcnExtrasDL) > 0) {
-			SetDlgItemText(IDC_MCNDLSLOTS, Util::toStringW(downloadAutoSlots + mcnExtrasDL).c_str());
+			fieldDlSlots = downloadAutoSlots + mcnExtrasDL;
+			ctrlMcnDL.SetWindowText(Util::toStringW(fieldDlSlots).c_str());
 		}
 	}
 
-	if ((Util::toInt(Text::fromT(aSlotsUL)) > uploadAutoSlots + mcnExtrasUL)) {
+	if (fieldUlSlots == 0 || (fieldUlSlots > uploadAutoSlots + mcnExtrasUL)) {
 		if ((uploadAutoSlots + mcnExtrasUL) > 0) {
-			SetDlgItemText(IDC_MCNULSLOTS, Util::toStringW(uploadAutoSlots + mcnExtrasUL).c_str());
+			fieldUlSlots = uploadAutoSlots + mcnExtrasUL;
+			ctrlMcnUL.SetWindowText(Util::toStringW(fieldUlSlots).c_str());
 		}
 	}
 
-	if ((Util::toInt(Text::fromT(aSlotsDL)) > Util::toInt(Text::fromT(aSlotsUL))) && (Util::toInt(Text::fromT(aSlotsUL)) < uploadAutoSlots)) {
-		//LogManager::getInstance()->message("Change3");
-		if (Util::toInt(Text::fromT(aSlotsUL)) > 0) {
-			SetDlgItemText(IDC_MCNDLSLOTS, aSlotsUL.c_str());
-		}
+	// download slots can't be more than upload slots
+	if ((fieldDlSlots > fieldUlSlots) && fieldUlSlots < uploadAutoSlots) {
+		ctrlMcnDL.SetWindowText(Util::toStringW(fieldUlSlots).c_str());
 	}
 
 	return;
@@ -298,6 +306,9 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	cAutoDL.Attach(GetDlgItem(IDC_DL_AUTODETECT));
 	cAutoUL.Attach(GetDlgItem(IDC_UL_AUTODETECT));
 
+	ctrlMcnUL.Attach(GetDlgItem(IDC_MCNULSLOTS));
+	ctrlMcnDL.Attach(GetDlgItem(IDC_MCNDLSLOTS));
+
 	WinUtil::appendSpeedCombo(ctrlDownload, SettingsManager::DOWNLOAD_SPEED);
 	WinUtil::appendSpeedCombo(ctrlUpload, SettingsManager::UPLOAD_SPEED);
 
@@ -349,15 +360,16 @@ void SpeedPage::write() {
 
 		if(SETTING(SET_MINISLOT_SIZE) < 64)
 			settings->set(SettingsManager::SET_MINISLOT_SIZE, 64);
-
-		if(SETTING(MAX_MCN_DOWNLOADS) < 1)
-			settings->set(SettingsManager::MAX_MCN_DOWNLOADS, 1);
-
-		if(SETTING(MAX_MCN_UPLOADS) < 1)
-			settings->set(SettingsManager::MAX_MCN_UPLOADS, 1);
 	}
 
 	if (!SETTING(MCN_AUTODETECT)) {
+		validateMCNLimits(0);
 		PropPage::write((HWND)(*this), mcnItems);
+
+		/*if(SETTING(MAX_MCN_DOWNLOADS) < 1)
+			settings->set(SettingsManager::MAX_MCN_DOWNLOADS, AirUtil::getSlotsPerUser(true, Util::toDouble(SETTING(DOWNLOAD_SPEED))));
+
+		if(SETTING(MAX_MCN_UPLOADS) < 1)
+			settings->set(SettingsManager::MAX_MCN_UPLOADS, AirUtil::getSlotsPerUser(false, Util::toDouble(SETTING(UPLOAD_SPEED))));*/
 	}	
 }
