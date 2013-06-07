@@ -40,7 +40,7 @@ public:
 
 	void SetPath(const tstring& strPath);
 	OMenu* GetMenu();
-	UINT ShowContextMenu(HWND hWnd, CPoint pt);
+	void ShowContextMenu(HWND hWnd, CPoint pt);
 
 private:
 	bool bDelete;

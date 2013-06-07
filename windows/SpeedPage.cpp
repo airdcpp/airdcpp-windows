@@ -160,7 +160,7 @@ void SpeedPage::updateValues(WORD wNotifyCode) {
 	setDownloadLimits(downloadvalue);
 }
 
-LRESULT SpeedPage::checkMCN(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT SpeedPage::checkMCN(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	//validateMCNLimits(wNotifyCode);
 	return TRUE;
 }

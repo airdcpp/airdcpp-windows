@@ -152,7 +152,7 @@ void WizardConnspeed::updateAutoValues() {
 	setUploadLimits(valueUL);
 }
 
-LRESULT WizardConnspeed::OnDownSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
+LRESULT WizardConnspeed::OnDownSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
 	WinUtil::onConnSpeedChanged(wNotifyCode, wID, hWndCtl);
 	TCHAR buf2[64];
 	switch(wNotifyCode) {
@@ -172,7 +172,7 @@ LRESULT WizardConnspeed::OnDownSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, B
 	return 0;
 }
 
-LRESULT WizardConnspeed::OnUploadSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled)
+LRESULT WizardConnspeed::OnUploadSpeed(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/)
 {
 	WinUtil::onConnSpeedChanged(wNotifyCode, wID, hWndCtl);
 	TCHAR buf2[64];

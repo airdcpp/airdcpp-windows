@@ -230,8 +230,8 @@ public:
 	static tstring getTitle(const tstring& searchTerm);
 	static void searchSite(const WebShortcut* ws, const string& strSearchString, bool getReleaseDir = true);
 
-	static void appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f);
-	static void appendSearchMenu(OMenu& aParent, const string& aPath, bool getReleaseDir = true);
+	static void appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f, bool appendTitle = true);
+	static void appendSearchMenu(OMenu& aParent, const string& aPath, bool getReleaseDir = true, bool appendTitle = true);
 
 	static void loadReBarSettings(HWND bar);
 	static void saveReBarSettings(HWND bar);

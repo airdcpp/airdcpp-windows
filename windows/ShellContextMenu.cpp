@@ -122,13 +122,13 @@ OMenu* CShellContextMenu::GetMenu()
 	return m_Menu;
 }
 
-UINT CShellContextMenu::ShowContextMenu(HWND hWnd, CPoint pt)
+void CShellContextMenu::ShowContextMenu(HWND hWnd, CPoint pt)
 {
 	int iMenuType = 0;	// to know which version of IContextMenu is supported
 	LPCONTEXTMENU pContextMenu;	// common pointer to IContextMenu and higher version interface
 
 	if(!GetContextMenu((LPVOID*)&pContextMenu, iMenuType))	
-		return 0;	// something went wrong
+		return;	// something went wrong
 
 	if(!m_Menu)
 	{
@@ -137,6 +137,8 @@ UINT CShellContextMenu::ShowContextMenu(HWND hWnd, CPoint pt)
 		m_Menu = new OMenu;
 		m_Menu->CreatePopupMenu();
 	}
+
+	m_Menu->disableEmptyMenus();
 
 	// lets fill the popupmenu 
 	pContextMenu->QueryContextMenu(m_Menu->m_hMenu, m_Menu->GetMenuItemCount(), ID_SHELLCONTEXTMENU_MIN, ID_SHELLCONTEXTMENU_MAX, CMF_NORMAL | CMF_EXPLORE);
@@ -158,17 +160,17 @@ UINT CShellContextMenu::ShowContextMenu(HWND hWnd, CPoint pt)
 	if(OldWndProc) // unsubclass
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(OldWndProc));
 
-	if(idCommand >= ID_SHELLCONTEXTMENU_MIN && idCommand <= ID_SHELLCONTEXTMENU_MAX)
-	{
+	if(idCommand >= ID_SHELLCONTEXTMENU_MIN && idCommand <= ID_SHELLCONTEXTMENU_MAX) {
 		InvokeCommand(pContextMenu, idCommand - ID_SHELLCONTEXTMENU_MIN);
-		idCommand = 0;
+	} else {
+		m_Menu->checkCommand(hWnd, idCommand);
 	}
 
 	pContextMenu->Release();
 	g_IContext2 = NULL;
 	g_IContext3 = NULL;
 
-	return idCommand;
+	//return idCommand;
 }
 
 void CShellContextMenu::FreePIDLArray(LPITEMIDLIST* pidlArray)

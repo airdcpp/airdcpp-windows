@@ -1227,7 +1227,7 @@ void MainFrame::updateTray(bool add /* = true */) {
 	}
 }
 
-LRESULT MainFrame::onOpen(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT MainFrame::onOpen(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	if(SETTING(MINIMIZE_TRAY) && SETTING(PASSWD_PROTECT_TRAY) && bAppMinimized && !WinUtil::checkClientPassword()) {
 		ShowWindow(SW_HIDE);
 		return FALSE;

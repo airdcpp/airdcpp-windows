@@ -1202,7 +1202,6 @@ void DirectoryListingFrame::selectItem(const tstring& name) {
 LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	OMenu copyMenu;
 	copyMenu.CreatePopupMenu();
-	copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
@@ -1261,21 +1260,18 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 				pShellMenu->AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
 				pShellMenu->AppendMenu(MF_SEPARATOR);
 
-				WinUtil::appendSearchMenu(*pShellMenu, localPaths.front());
+				WinUtil::appendSearchMenu(*pShellMenu, localPaths.front(), true, false);
 
 				pShellMenu->AppendMenu(MF_SEPARATOR);
 
-				UINT idCommand = shellMenu.ShowContextMenu(m_hWnd, pt);
-				if(idCommand != 0) {
-					PostMessage(WM_COMMAND, idCommand);
-				}
-					
+				shellMenu.ShowContextMenu(m_hWnd, pt);
 			} else {
 				goto clientmenu;
 			}
 		} else {
 
 clientmenu:
+			copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
 			fileMenu.CreatePopupMenu();
 		
 			targets.clear();

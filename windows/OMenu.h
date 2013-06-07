@@ -103,7 +103,11 @@ public:
 
 	static LRESULT onMeasureItem(HWND hWnd, UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	static LRESULT onDrawItem(HWND hWnd, UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
+
+	void disableEmptyMenus();
+	void checkCommand(HWND aHWND, unsigned cmd);
 private:
+	//friend class CShellContextMenu;
 	unsigned start;
 	OMenuItem::List items;
 	vector<unique_ptr<OMenu>> subMenuList;

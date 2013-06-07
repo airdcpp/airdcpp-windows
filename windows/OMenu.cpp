@@ -138,6 +138,14 @@ BOOL OMenu::InsertMenuItem(UINT uItem, BOOL bByPosition, LPMENUITEMINFO lpmii) {
 
 void OMenu::open(HWND aHWND, unsigned flags /*= TPM_LEFTALIGN | TPM_RIGHTBUTTON*/, CPoint pt /*= GetMessagePos()*/) {
 	//check empty submenus
+	disableEmptyMenus();
+
+	flags |= TPM_RETURNCMD;
+	unsigned ret = ::TrackPopupMenu(m_hMenu, flags, pt.x, pt.y, 0, aHWND, 0);
+	checkCommand(aHWND, ret);
+}
+
+void OMenu::disableEmptyMenus() {
 	for (auto& m: subMenuList) {
 		auto itemCount = m->GetMenuItemCount();
 		if (itemCount > 1)
@@ -154,18 +162,18 @@ void OMenu::open(HWND aHWND, unsigned flags /*= TPM_LEFTALIGN | TPM_RIGHTBUTTON*
 
 		EnableMenuItem((UINT_PTR)(HMENU)*m.get(), MFS_DISABLED);
 	}
+}
 
-	flags |= TPM_RETURNCMD;
-	unsigned ret = ::TrackPopupMenu(m_hMenu, flags, pt.x, pt.y, 0, aHWND, 0);
-	if(ret >= start) {
-		if(ret - start < items.size()) {
-			items[ret - start].get()->f();
+void OMenu::checkCommand(HWND aHWND, unsigned cmd){
+	if(cmd >= start) {
+		if(cmd - start < items.size()) {
+			items[cmd - start].get()->f();
 			return;
 		}
 	}
 
 	//not found
-	::PostMessage(aHWND, WM_COMMAND, ret, NULL);
+	::PostMessage(aHWND, WM_COMMAND, cmd, NULL);
 }
 
 unsigned OMenu::getNextID() { 

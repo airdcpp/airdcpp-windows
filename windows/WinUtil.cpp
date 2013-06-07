@@ -1665,15 +1665,15 @@ void WinUtil::searchAny(const tstring& aSearch) {
 	}
 }
 
-void WinUtil::appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f) {
-	OMenu* searchMenu = aParent.createSubMenu(TSTRING(SEARCH_SITES), true);
+void WinUtil::appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f, bool appendTitle /*true*/) {
+	OMenu* searchMenu = aParent.createSubMenu(TSTRING(SEARCH_SITES), appendTitle);
 	for(auto ws: WebShortcuts::getInstance()->list) {
 		searchMenu->appendItem(ws->name, [=] { f(ws); });
 	}
 }
 
-void WinUtil::appendSearchMenu(OMenu& aParent, const string& aPath, bool getReleaseDir /*true*/) {
-	appendSearchMenu(aParent, [=](const WebShortcut* ws) { searchSite(ws, aPath, getReleaseDir); });
+void WinUtil::appendSearchMenu(OMenu& aParent, const string& aPath, bool getReleaseDir /*true*/, bool appendTitle /*true*/) {
+	appendSearchMenu(aParent, [=](const WebShortcut* ws) { searchSite(ws, aPath, getReleaseDir); }, appendTitle);
 }
 
 void WinUtil::searchSite(const WebShortcut* ws, const string& aSearchTerm, bool getReleaseDir) {
@@ -1950,7 +1950,7 @@ bool WinUtil::isElevated() {
 	return fRet ? true : false;
 }
 
-bool WinUtil::onConnSpeedChanged(WORD wNotifyCode, WORD wID, HWND hWndCtl) {
+bool WinUtil::onConnSpeedChanged(WORD wNotifyCode, WORD /*wID*/, HWND hWndCtl) {
 	tstring speed;
 	speed.resize(1024);
 	speed.resize(::GetWindowText(hWndCtl, &speed[0], 1024));
