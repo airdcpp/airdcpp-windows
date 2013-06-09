@@ -462,8 +462,8 @@ bool Win32MapFile::_UnmapCurrentRegion()
             // Defer syncing this data until next Sync() call, if any
             _pending_sync = true;
         }
-        UnmapViewOfFile(_base);
-        CloseHandle(_base_handle);
+        if (!UnmapViewOfFile(_base) || !CloseHandle(_base_handle))
+            result = false;
         _file_offset += _limit - _base;
         _base = NULL;
         _base_handle = NULL;
@@ -971,7 +971,7 @@ Status Win32Env::NewRandomAccessFile( const std::string& fname, RandomAccessFile
     if(!pFile->isEnable()){
         delete pFile;
         *result = NULL;
-        sRet = Status::IOError(path,"Could not create random access file.");
+        sRet = Status::IOError(path, Win32::GetLastErrSz());
     }else
         *result = pFile;
     return sRet;

@@ -82,7 +82,7 @@
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\leveldb\include;$(SolutionDir)\snappy;$(SolutionDir)\leveldb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\leveldb\port\win;$(SolutionDir)\leveldb\include;$(SolutionDir)\snappy;$(SolutionDir)\leveldb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -97,7 +97,7 @@
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>$(SolutionDir)\leveldb;$(SolutionDir)\leveldb\include;$(SolutionDir)\snappy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\leveldb\port\win;$(SolutionDir)\leveldb;$(SolutionDir)\leveldb\include;$(SolutionDir)\snappy;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -113,7 +113,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)\leveldb\include;$(SolutionDir)\snappy;$(SolutionDir)\leveldb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\leveldb\port\win;$(SolutionDir)\leveldb\include;$(SolutionDir)\snappy;$(SolutionDir)\leveldb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <TargetMachine>MachineX86</TargetMachine>
@@ -129,7 +129,7 @@
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <AdditionalIncludeDirectories>$(SolutionDir)\leveldb\include;$(SolutionDir)\snappy;$(SolutionDir)\leveldb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\leveldb\port\win;$(SolutionDir)\leveldb\include;$(SolutionDir)\snappy;$(SolutionDir)\leveldb;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

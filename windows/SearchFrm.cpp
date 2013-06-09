@@ -840,8 +840,8 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 			}
 		};
 
-		if (si->hits > 1) {
-			//perform only for the children
+		if (si->hits >= 1) {
+			//perform also for the children
 			SearchResultList results;
 
 			results.push_back(si->sr);

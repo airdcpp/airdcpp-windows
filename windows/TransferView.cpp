@@ -1559,7 +1559,7 @@ void TransferView::handleRemoveBundle() {
 		WinUtil::removeBundle(ii->bundle);
 	};
 
-	performActionFiles(removeBundle);
+	performActionBundles(removeBundle);
 }
 
 void TransferView::handleRemoveBundleSource() {

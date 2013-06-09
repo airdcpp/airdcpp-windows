@@ -1928,5 +1928,7 @@ Do you want to continue?</String>
 		<String Name="ConnUseManualConfig">I want to configure connectivity settings manually</String>
 		<String Name="ProtocolOptions">Protocol options</String>
 		<String Name="InvalidPassword">Invalid password</String>
+		<String Name="SettingsFinishedNoHash">Allow adding finished Bundles in share without hashing</String>
+		<String Name="TreeLoadFailedDb">Failed to load hash data for a TTH root %s: %s (consider verifying your databases by typing %s)</String>
 	</Strings>
 </Language>

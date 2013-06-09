@@ -7,6 +7,7 @@ Added:
 - Full IPv6 support in ADC hubs (transfers, port mapping, separate modes for IPv4 and IPv6, hybrid support for both protocols)
 - New tree control in file lists: reduces the loading times and shows the expand sign also for incomplete folders (the other user must have version 2.42 or newer)
 - New multipage settings wizard with more options
+- Allow instant sharing of finished bundles without hashing them
 - Replace the search skiplist with a list of excluded words, add also for auto search
 - Show dates for all files in partial lists
 - Show dates in search
@@ -83,6 +84,7 @@ Fixed:
 - Fix total size and total files with own partial list when no hubs are open
 - Fix hub encoding in NMDC hubs
 - Fix password not being requested in some cases when password protected tray is enabled
+- Fix various cases when MCN download connections may have not been created
 
 
 2.44
