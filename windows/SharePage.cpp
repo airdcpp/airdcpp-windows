@@ -38,8 +38,8 @@
 
 PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
-	{ IDC_ADD_PROFILE, ResourceManager::ADD_PROFILE },
-	{ IDC_ADD_PROFILE_COPY, ResourceManager::ADD_PROFILE_COPY },
+	{ IDC_ADD_PROFILE, ResourceManager::ADD_PROFILE_DOTS },
+	//{ IDC_ADD_PROFILE_COPY, ResourceManager::ADD_PROFILE_COPY },
 	{ IDC_REMOVE_PROFILE, ResourceManager::REMOVE_PROFILE },
 	{ IDC_SETTINGS_SHARE_PROFILES, ResourceManager::SHARE_PROFILES },
 	{ IDC_SHARE_PROFILE_NOTE, ResourceManager::SETTINGS_SHARE_PROFILE_NOTE },
@@ -59,6 +59,7 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	PropPage::translate((HWND)(*this), texts);
 
 	GetDlgItem(IDC_EDIT_TEMPSHARES).EnableWindow((ShareManager::getInstance()->hasTempShares()) ? 1 : 0);
+	ctrlAddProfile.Attach(GetDlgItem(IDC_ADD_PROFILE));
 
 	curProfile = SP_DEFAULT;
 
@@ -103,43 +104,55 @@ LRESULT SharePage::onEditTempShares(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	return 0;
 }
 
-LRESULT SharePage::onClickedAddProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	auto newProfile = addProfile();
-	if (newProfile) {
-		curProfile = newProfile->getToken();
-		dirPage->showProfile();
-		fixControls();
-	}
+LRESULT SharePage::onClickedDefault(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	return 0;
 }
 
-ShareProfilePtr SharePage::addProfile() {
-	LineDlg virt;
-	virt.title = TSTRING(NAME);
-	virt.description = TSTRING(PROFILE_NAME_DESC);
-	if(virt.DoModal(m_hWnd) == IDOK) {
-		string name = Text::fromT(virt.line);
-		auto spNew = ShareProfilePtr(new ShareProfile(name));
-		ctrlProfile.AddString(Text::toT(name).c_str());
-		ctrlProfile.SetCurSel(ctrlProfile.GetCount()-1);
-		profiles.push_back(spNew);
-		addProfiles.insert(spNew);
-		return spNew;
-	}
-	return nullptr;
+LRESULT SharePage::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	ctrlAddProfile.SetState(false);
+	return 0;
 }
 
-LRESULT SharePage::onClickedCopyProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	auto newProfile = addProfile();
-	if (!newProfile)
-		return 0;
+LRESULT SharePage::onClickedAddProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	CRect rect;
+	ctrlAddProfile.GetWindowRect(rect);
+	auto pt = rect.BottomRight();
+	pt.x = pt.x-rect.Width();
+	ctrlAddProfile.SetState(true);
 
-	dirPage->onCopyProfile(newProfile->getToken());
+	OMenu targetMenu;
+	targetMenu.CreatePopupMenu();
+	targetMenu.appendItem(CTSTRING(NEW_PROFILE_DOTS), [this] { handleAddProfile(false); });
+	targetMenu.appendItem(CTSTRING(COPY_FROM_THIS_DOTS), [this] { handleAddProfile(true); });
+	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
+	return 0;
+}
 
+void SharePage::handleAddProfile(bool copy) {
+	LineDlg virt;
+	virt.title = copy ? TSTRING(COPY_PROFILE) : TSTRING(NEW_PROFILE);
+	virt.description = TSTRING(PROFILE_NAME_DESC);
+	if(virt.DoModal(m_hWnd) != IDOK) {
+		return;
+	}
+
+	//create the profile
+	string name = Text::fromT(virt.line);
+	auto newProfile = ShareProfilePtr(new ShareProfile(name));
+	if (copy) {
+		dirPage->onCopyProfile(newProfile->getToken());
+	}
+
+	//add in lists
+	profiles.push_back(newProfile);
+	addProfiles.insert(newProfile);
+
+	//set the selection
+	ctrlProfile.AddString(Text::toT(name).c_str());
+	ctrlProfile.SetCurSel(ctrlProfile.GetCount()-1);
 	curProfile = newProfile->getToken();
 	dirPage->showProfile();
 	fixControls();
-	return 0;
 }
 
 LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

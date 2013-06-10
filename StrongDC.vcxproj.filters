@@ -750,6 +750,9 @@
     <ClCompile Include="windows\HashingPage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\WizardLanguage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1155,6 +1158,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\HashingPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\WizardLanguage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

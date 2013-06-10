@@ -39,9 +39,10 @@ public:
 
 	BEGIN_MSG_MAP_EX(SharePage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
+		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 		COMMAND_HANDLER(IDC_PROFILE_SEL, CBN_SELCHANGE , onProfileChanged)
-		COMMAND_ID_HANDLER(IDC_ADD_PROFILE, onClickedAddProfile)
-		COMMAND_ID_HANDLER(IDC_ADD_PROFILE_COPY, onClickedCopyProfile)
+		COMMAND_HANDLER(IDC_ADD_PROFILE, BN_CLICKED, onClickedAddProfile)
+		COMMAND_ID_HANDLER(IDC_SET_DEFAULT, onClickedDefault)
 		COMMAND_ID_HANDLER(IDC_REMOVE_PROFILE, onClickedRemoveProfile)
 		COMMAND_ID_HANDLER(IDC_RENAME_PROFILE, onClickedRenameProfile)
 		COMMAND_ID_HANDLER(IDC_APPLY_CHANGES, onApplyChanges)
@@ -51,18 +52,21 @@ public:
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClickedAddProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onClickedCopyProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onClickedDefault(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onProfileChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onEditTempShares(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onApplyChanges(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 	Dispatcher::F getThreadedTask();
 protected:
+	void handleAddProfile(bool copy);
+
 	ProfileToken getCurProfile() { return curProfile; }
 	const vector<ShareProfilePtr>& getProfiles() { return profiles; }
 
@@ -71,8 +75,6 @@ protected:
 
 	friend class FolderTree;
 	static TextItem texts[];
-
-	ShareProfilePtr addProfile();
 
 	void fixControls();
 
@@ -83,6 +85,7 @@ protected:
 
 	vector<ShareProfilePtr> profiles;
 	CComboBox ctrlProfile;
+	CButton ctrlAddProfile;
 
 	ShareProfilePtr getProfile(ProfileToken aProfile);
 

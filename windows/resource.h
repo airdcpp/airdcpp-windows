@@ -187,6 +187,7 @@
 #define IDD_PROTOCOLBASE                355
 #define IDD_WIZARD_FINISH               356
 #define IDD_HASHINGPAGE                 357
+#define IDD_WIZARD_LANGUAGE             358
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
@@ -348,6 +349,8 @@
 #define IDC_RECHECK                     1013
 #define IDC_REMOVE_PROFILE              1013
 #define IDC_TOTAL                       1014
+#define IDC_REMOVE_PROFILE2             1014
+#define IDC_SET_DEFAULT                 1014
 #define IDC_SLOTS                       1015
 #define IDC_ADD_PROFILE                 1015
 #define IDC_SLOTSPIN                    1016
@@ -504,7 +507,10 @@
 #define IDC_SETTINGS_DESCRIPTION        1135
 #define IDC_SETTINGS_ODC_SHUTDOWNTIMEOUT 1135
 #define IDC_SETTINGS_DESCRIPTION2       1136
+#define IDC_REQUIRED                    1136
+#define IDC_OPTIONAL                    1137
 #define IDC_SETTINGS_IP                 1138
+#define IDC_OPTIONAL2                   1138
 #define IDC_SETTINGS_PORT               1139
 #define IDC_SETTINGS_IP2                1139
 #define IDC_SETTINGS_SOCKS5_IP          1140
@@ -1342,6 +1348,8 @@
 #define IDC_USER_PROFILE_BOX            1727
 #define IDC_PROFILE_TIP                 1728
 #define IDC_OPTIMIZE_DB_FAST            1729
+#define IDC_LANGUAGE_INTRO              1730
+#define IDC_LANGUAGE_INTRO2             1731
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1744,9 +1752,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        358
+#define _APS_NEXT_RESOURCE_VALUE        359
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1730
+#define _APS_NEXT_CONTROL_VALUE         1731
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

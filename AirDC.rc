@@ -844,14 +844,14 @@ EXSTYLE WS_EX_ACCEPTFILES | WS_EX_STATICEDGE
 FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
     PUSHBUTTON      "Edit Magnet/TempShares",IDC_EDIT_TEMPSHARES,200,292,91,14
-    PUSHBUTTON      "Remove profile",IDC_REMOVE_PROFILE,74,37,70,14,WS_DISABLED
-    PUSHBUTTON      "Add  profile",IDC_ADD_PROFILE,230,19,62,14
+    PUSHBUTTON      "Remove profile",IDC_REMOVE_PROFILE,73,37,70,14,WS_DISABLED
+    PUSHBUTTON      "Add profile...",IDC_ADD_PROFILE,221,19,71,14
     PUSHBUTTON      "&Rename",IDC_RENAME_PROFILE,12,37,58,14
-    PUSHBUTTON      "Add copy from this",IDC_ADD_PROFILE_COPY,148,37,77,14
-    COMBOBOX        IDC_PROFILE_SEL,12,20,213,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_PROFILE_SEL,12,20,206,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     GROUPBOX        "Share Profiles",IDC_SETTINGS_SHARE_PROFILES,7,8,292,69
     LTEXT           "Note; Added share profiles can only be used in ADC hubs. NMDC hubs are forced to use the default profile.",IDC_SHARE_PROFILE_NOTE,12,54,254,17
     GROUPBOX        "Shared directories",IDC_SETTINGS_SHARED_DIRECTORIES,8,82,291,201
+    PUSHBUTTON      "Set as default",IDC_SET_DEFAULT,148,37,70,14,NOT WS_VISIBLE | WS_DISABLED
 END
 
 IDD_APPEARANCEPAGE DIALOGEX 0, 0, 275, 309
@@ -1387,6 +1387,17 @@ BEGIN
     CONTROL         "Enable IPv4 connectivity",IDC_PROTOCOL_ENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,15,261,10
 END
 
+IDD_WIZARD_LANGUAGE DIALOGEX 0, 0, 309, 252
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_LANGUAGE,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,16,78,275,117
+    LTEXT           "Welcome to AirDC++ Setup Wizard. This wizard will help you with setting up some general settings that are required to make the file transfers work.",IDC_LANGUAGE_INTRO,7,7,295,21
+    LTEXT           "Please choose your language:",IDC_LANGUAGE_INTRO2,14,64,197,13
+    LTEXT           "Note: All languages may not be fully translated. If you want to help with translating the client, please visit the home page for more infromation.",IDC_LANGUAGE_NOTE,7,111,287,26
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -1538,6 +1549,14 @@ BEGIN
     BEGIN
         RIGHTMARGIN, 295
         BOTTOMMARGIN, 223
+    END
+
+    IDD_WIZARD_LANGUAGE, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 302
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 245
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -1972,16 +1991,16 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_LANGUAGE,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,24,129,129,117
-    GROUPBOX        "Language",IDC_STATIC,17,115,145,37
-    GROUPBOX        "Personal information",IDC_SETTINGS_PERSONAL_INFORMATION,15,42,269,67
-    RTEXT           "Nick",IDC_SETTINGS_NICK,22,55,74,8
-    EDITTEXT        IDC_NICK,102,52,164,14,ES_AUTOHSCROLL
-    RTEXT           "E-Mail",IDC_SETTINGS_EMAIL,22,72,74,8
-    EDITTEXT        IDC_EMAIL,102,69,164,14,ES_AUTOHSCROLL
-    RTEXT           "Description",IDC_SETTINGS_DESCRIPTION,22,89,74,8
-    EDITTEXT        IDC_USERDESC,102,86,164,14,ES_AUTOHSCROLL
-    LTEXT           "Enter general information that you want to be displayed to other users",IDC_GENERAL_INTRO,7,7,297,21
+    RTEXT           "Nick",IDC_SETTINGS_NICK,5,56,74,8
+    EDITTEXT        IDC_NICK,85,53,164,14,ES_AUTOHSCROLL
+    RTEXT           "E-Mail",IDC_SETTINGS_EMAIL,5,88,74,8
+    EDITTEXT        IDC_EMAIL,85,85,164,14,ES_AUTOHSCROLL
+    RTEXT           "Description",IDC_SETTINGS_DESCRIPTION,5,72,74,8
+    EDITTEXT        IDC_USERDESC,85,69,164,14,ES_AUTOHSCROLL
+    LTEXT           "Please enter some general information that you want to be displayed to other users",IDC_GENERAL_INTRO,7,7,297,21
+    RTEXT           "(required)",IDC_REQUIRED,252,56,34,8
+    RTEXT           "(optional)",IDC_OPTIONAL,251,72,34,8
+    RTEXT           "(optional)",IDC_OPTIONAL2,251,88,34,8
 END
 
 IDD_WIZARD_CONNSPEED DIALOGEX 0, 0, 311, 254
@@ -2096,7 +2115,7 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Dialog"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Congratulations! You completed the wizard without crashing it.",IDC_FINISH_INTRO,16,9,288,88
+    LTEXT           "f",IDC_FINISH_INTRO,16,9,288,88
 END
 
 IDD_HASHINGPAGE DIALOGEX 0, 0, 309, 313

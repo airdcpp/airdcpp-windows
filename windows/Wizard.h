@@ -32,11 +32,13 @@
 #include "WizardProfile.h"
 #include "WizardSharing.h"
 #include "WizardFinish.h"
+#include "WizardLanguage.h"
 
 class SetupWizard : public CAeroWizardFrameImpl<SetupWizard> { 
 public: 
 	enum { WM_USER_INITDIALOG = WM_APP + 501 };
 	enum Pages { 
+		PAGE_LANGUAGE,
 		PAGE_GENERAL,
 		PAGE_PROFILE,
 		PAGE_CONNSPEED,

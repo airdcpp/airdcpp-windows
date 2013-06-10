@@ -27,6 +27,7 @@ SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupW
 	auto s = SettingsManager::getInstance();
 
 	int n = 0;
+	pages[n++] = new WizardLanguage(s, this);
 	pages[n++] = new WizardGeneral(s, this);
 	pages[n++] = new WizardProfile(s, this);
 	pages[n++] = new WizardConnspeed(s, this);
