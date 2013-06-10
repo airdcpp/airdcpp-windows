@@ -131,7 +131,7 @@ void WizardAutoConnectivity::addLogLine(tstring& msg, CHARFORMAT2W& cf /*WinUtil
 }
 
 void WizardAutoConnectivity::on(Message, const string& message) noexcept {
-	callAsync([this, message] { 
+	wizard->callAsync([this, message] { 
 		auto msg = Text::toT(message) + _T("\n");
 		addLogLine(msg); 
 	});
@@ -139,7 +139,7 @@ void WizardAutoConnectivity::on(Message, const string& message) noexcept {
 
 void WizardAutoConnectivity::on(Started, bool v6) noexcept {
 	(v6 ? v6State :v4State) = STATE_DETECTING;
-	callAsync([this] {
+	wizard->callAsync([this] {
 		changeControlState(false);
 		log.SetTextEx(_T(""));
 	});
@@ -156,7 +156,7 @@ void WizardAutoConnectivity::on(Finished, bool v6, bool failed) noexcept {
 		string msg = "Setting up " + v6 ? "IPv6" : "IPv4" + "failed; it's recommended to set up the connectivity manually";
 	}*/
 
-	callAsync([this] {
+	wizard->callAsync([this] {
 		if (v6State != STATE_DETECTING && v4State != STATE_DETECTING) {
 			CHARFORMAT2 cf;
 			memzero(&cf, sizeof(CHARFORMAT2));
@@ -188,5 +188,5 @@ void WizardAutoConnectivity::changeControlState(bool enable) {
 }
 
 void WizardAutoConnectivity::on(SettingChanged) noexcept {
-	callAsync([this] { updateAuto(); });
+	wizard->callAsync([this] { updateAuto(); });
 }

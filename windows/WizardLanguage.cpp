@@ -32,7 +32,7 @@ LRESULT WizardLanguage::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM
 	return TRUE; 
 }
 
-WizardLanguage::WizardLanguage(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard) { 
+WizardLanguage::WizardLanguage(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard), dl(nullptr) { 
 	SetHeaderTitle(CTSTRING(SETTINGS_PERSONAL_INFORMATION)); 
 } 
 
@@ -42,17 +42,32 @@ void WizardLanguage::write() {
 }
 
 int WizardLanguage::OnWizardNext() {
-	if (wizard->isInitialRun()) {
-		/*auto sel = ctrlLanguage.GetCurSel();
-		if (sel > 0) {
+	auto sel = ctrlLanguage.GetCurSel();
+	if (sel > 0) {
+		Localization::setLanguage(sel);
 
-		}*/
+		dl = new LanguageDownloadDlg(wizard->m_hWnd, [this] { completeLanguageCheck(); }, wizard->isInitialRun());
+		if (!dl->show()) {
+			dl->close();
+			dl = nullptr;
+			return FALSE;
+		}
 
-		Localization::loadLanguage(ctrlLanguage.GetCurSel());
+		return -1;
 	}
 
 	return FALSE;
 }
+
+void WizardLanguage::completeLanguageCheck() {
+	if (wizard->isInitialRun())
+		Localization::loadLanguage(ctrlLanguage.GetCurSel());
+
+	wizard->SetActivePage(SetupWizard::PAGE_GENERAL);
+	dl = nullptr;
+}
+
+WizardLanguage::~WizardLanguage() { }
 
 int WizardLanguage::OnSetActive() {
 	ShowWizardButtons( PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_FINISH | PSWIZB_CANCEL, PSWIZB_BACK | PSWIZB_NEXT | PSWIZB_CANCEL); 

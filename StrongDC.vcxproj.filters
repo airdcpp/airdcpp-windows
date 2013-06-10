@@ -1163,6 +1163,9 @@
     <ClInclude Include="windows\WizardLanguage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="windows\LanguageDownloadDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\SettingsTree\SearchTypes.ico">

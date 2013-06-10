@@ -4,24 +4,24 @@
 		<String Name="AairdcppLanguageFile">EN_Example.xml</String>
 		<String Name="AairdcppLanguageVersion">1.00</String>
 		<String Name="Active">Active</String>
-		<String Name="ActiveSearchString">Enabled / Search String</String>
+		<String Name="ActiveSearchString">Enabled / Search string</String>
 		<String Name="Add">Add</String>
 		<String Name="AddAsSource">Add as source</String>
 		<String Name="AddFinishedInstantly">Add finished Bundles to share instantly (if shared)</String>
-		<String Name="AddToFavorites">Add To Favorites</String>
-		<String Name="AddToQueue">Add to Queue</String>
+		<String Name="AddToFavorites">Add to favorites</String>
+		<String Name="AddToQueue">Add to queue</String>
 		<String Name="Added">Added</String>
-		<String Name="AdlSearch">Automatic Directory Listing Search</String>
-		<String Name="AdlsDestination">Destination Directory</String>
+		<String Name="AdlSearch">Automatic Directory Listing search</String>
+		<String Name="AdlsDestination">Destination directory</String>
 		<String Name="AdlsDiscard">Discard</String>
-		<String Name="AdlsDownload">Download Matches</String>
-		<String Name="AdlsFullPath">Full Path</String>
-		<String Name="AdlsProperties">ADLSearch Properties</String>
-		<String Name="AdlsSearchString">Search String</String>
-		<String Name="AdlsSizeMax">Max FileSize</String>
-		<String Name="AdlsSizeMin">Min FileSize</String>
-		<String Name="AdlsType">Search Type</String>
-		<String Name="AdlsUnits">Size Type</String>
+		<String Name="AdlsDownload">Download matches</String>
+		<String Name="AdlsFullPath">Full path</String>
+		<String Name="AdlsProperties">ADL search properties</String>
+		<String Name="AdlsSearchString">Search string</String>
+		<String Name="AdlsSizeMax">Max filesize</String>
+		<String Name="AdlsSizeMin">Min filesize</String>
+		<String Name="AdlsType">Search type</String>
+		<String Name="AdlsUnits">Size type</String>
 		<String Name="All">All</String>
 		<String Name="AllDownloadSlotsTaken">All download slots taken</String>
 		<String Name="AllUsersOffline">All %d users offline</String>
@@ -29,7 +29,7 @@
 -- You are in active mode, but have activated passive search. --
 -- Don't use passive search if you have search results without this option --
 -- because you don't get search result from passive clients !!! --
--- Turn it off in settings =&gt; AirDC++ =&gt; Always use Passive Mode for Search --
+-- Turn it off in settings =&gt; AirDC++ =&gt; Always use passive mode for search --
 </String>
 		<String Name="Any">Any</String>
 		<String Name="AtLeast">At least</String>
@@ -57,7 +57,7 @@
 		<String Name="Cipher">Cipher</String>
 		<String Name="Close">Close</String>
 		<String Name="CloseConnection">Close connection</String>
-		<String Name="CollapseAll">Collapse All</String>
+		<String Name="CollapseAll">Collapse all</String>
 		<String Name="ColorOp">User is OP</String>
 		<String Name="ColorPasive">Passive user</String>
 		<String Name="CommandTooLong">Maximum command length exceeded</String>
@@ -65,7 +65,7 @@
 		<String Name="Compressed">Compressed</String>
 		<String Name="CompressionError">Error during compression</String>
 		<String Name="Configure">Configure</String>
-		<String Name="ConfiguredHubLists">Configured Public Hub Lists</String>
+		<String Name="ConfiguredHubLists">Configured public hub lists</String>
 		<String Name="Connect">Connect</String>
 		<String Name="ConnectAll">Connect to all users</String>
 		<String Name="ConnectFavuserHub">Connect to hub</String>
@@ -77,13 +77,13 @@
 		<String Name="ConnectionClosed">Connection closed</String>
 		<String Name="ConnectionDetection">Enable automatic incoming connection type detection</String>
 		<String Name="ConnectionTimeout">Connection timeout</String>
-		<String Name="ContinueSearch">Continue Search</String>
+		<String Name="ContinueSearch">Continue search</String>
 		<String Name="Copy">Copy</String>
-		<String Name="CopyAll">Copy All</String>
+		<String Name="CopyAll">Copy all</String>
 		<String Name="CopyHub">Copy address to clipboard</String>
 		<String Name="CopyLine">Copy actual line</String>
-		<String Name="CopyMagnetLink">Copy magnet link to clipboard</String>
-		<String Name="CopyNick">Copy nick</String>
+		<String Name="CopyMagnetLink">Copy MAGNET link to clipboard</String>
+		<String Name="CopyNick">Nick</String>
 		<String Name="Coral">Use Coral network when downloading hub lists (improves reliability)</String>
 		<String Name="CouldNotOpenTargetFile">Could not open target file: </String>
 		<String Name="Count">Count</String>
@@ -136,10 +136,10 @@
 		<String Name="ErrorHashing">Error hashing </String>
 		<String Name="ErrorSavingHash">Error saving hash data: </String>
 		<String Name="Errors">Errors</String>
-		<String Name="ExactShared">Exact Share</String>
+		<String Name="ExactShared">Exact share</String>
 		<String Name="ExactSize">Exact size</String>
 		<String Name="Executable">Executable</String>
-		<String Name="ExpandAll">Expand All</String>
+		<String Name="ExpandAll">Expand all</String>
 		<String Name="ExpandedResults">Expand search results</String>
 		<String Name="ExtraHubSlots">Slot ratio</String>
 		<String Name="ExtraSlotsSet">Extra slots set</String>
@@ -153,12 +153,12 @@
 		<String Name="FavoriteHubAlreadyExists">Hub already exists as a favorite</String>
 		<String Name="FavoriteHubDoesNotExist">This hub is not a favorite hub</String>
 		<String Name="FavoriteHubIdentity">Identification (leave blank for defaults)</String>
-		<String Name="FavoriteHubProperties">Favorite Hub Properties</String>
+		<String Name="FavoriteHubProperties">Favorite hub properties</String>
 		<String Name="FavoriteHubConnection">Connection</String>
 		<String Name="FavoriteHubRemoved">Favorite hub removed</String>
-		<String Name="FavoriteHubs">Favorite Hubs</String>
+		<String Name="FavoriteHubs">Favorite hubs</String>
 		<String Name="FavoriteUserAdded">Favorite user added</String>
-		<String Name="FavoriteUsers">Favorite Users</String>
+		<String Name="FavoriteUsers">Favorite users</String>
 		<String Name="FavuserOnline">Favorite user online</String>
 		<String Name="File">File</String>
 		<String Name="FileAlreadyFinished">File is already finished</String>
@@ -179,9 +179,9 @@
 		<String Name="Filtered">Filtered</String>
 		<String Name="Find">Find</String>
 		<String Name="FinishedDownload">Download finished: %s</String>
-		<String Name="FinishedDownloads">Finished Downloads</String>
+		<String Name="FinishedDownloads">Finished downloads</String>
 		<String Name="FinishedUpload">Upload finished: %s To: %s</String>
-		<String Name="FinishedUploads">Finished Uploads</String>
+		<String Name="FinishedUploads">Finished uploads</String>
 		<String Name="Folder">Folder</String>
 		<String Name="ForceAttempt">Force attempt</String>
 		<String Name="Gib">GiB</String>
@@ -192,7 +192,7 @@
 		<String Name="GrantExtraSlotDay">Grant extra slot (day)</String>
 		<String Name="GrantExtraSlotHour">Grant extra slot (hour)</String>
 		<String Name="GrantExtraSlotWeek">Grant extra slot (week)</String>
-		<String Name="GrantSlotsMenu">Extra Slots</String>
+		<String Name="GrantSlotsMenu">Extra slots</String>
 		<String Name="GroupSearchResults">Group search results by TTH</String>
 		<String Name="HashDatabase">Hash database</String>
 		<String Name="HashProgress">Creating file index...</String>
@@ -207,7 +207,7 @@
 		<String Name="Highest">Highest</String>
 		<String Name="History">History</String>
 		<String Name="HitCount">Hits</String>
-		<String Name="HitRatio">Hit Ratio: </String>
+		<String Name="HitRatio">Hit ratio: </String>
 		<String Name="Hits">Hits: </String>
 		<String Name="Hub">Hub</String>
 		<String Name="HubAddress">Address</String>
@@ -219,7 +219,7 @@
 		<String Name="HubListLoadedFromCache">Hub list loaded from cache...</String>
 		<String Name="HubName">Name</String>
 		<String Name="HubSegments">Hub / Connections</String>
-		<String Name="HubTopic">Hub Topic :</String>
+		<String Name="HubTopic">Hub topic :</String>
 		<String Name="HubUsers">Users</String>
 		<String Name="HublistCacheCorrupted">Cached hub list is corrupted or unsupported...</String>
 		<String Name="HublistDownloadCorrupted">Downloaded hub list is corrupted or unsupported...</String>
@@ -228,7 +228,7 @@
 		<String Name="CheckForbidden">Shared forbidden file : %s</String>
 		<String Name="ChooseFolder">Choose folder</String>
 		<String Name="IgnoreTthSearches">Ignore TTH searches</String>
-		<String Name="IgnoreUser">Ignore User</String>
+		<String Name="IgnoreUser">Ignore user</String>
 		<String Name="IgnoredMessage">Ignored message: </String>
 		<String Name="IncompleteFavHub">Hub address cannot be empty.</String>
 		<String Name="IntegrityCheck">Integrity check: %s (%s)</String>
@@ -252,11 +252,11 @@
 		<String Name="LastChange">Last change: </String>
 		<String Name="LastSeen">Time last seen</String>
 		<String Name="LatestVersion">Latest version</String>
-		<String Name="Langdownload">Download Language</String>
+		<String Name="Langdownload">Download language</String>
 		<String Name="Left">left</String>
 		<String Name="LeftColor">Left color</String>
 		<String Name="LibCrash">Application ""%s"" caused an unhandled exception in AirDC++. Please uninstall it, upgrade it or use an alternate product.</String>
-		<String Name="Limit">Upload Limit</String>
+		<String Name="Limit">Upload limit</String>
 		<String Name="ListenerFailed">Listening socket failed (you need to restart AirDC++): </String>
 		<String Name="Loading">Loading AirDC++, please wait...</String>
 		<String Name="LoadingFileList">Loading file list, this may take a while if the list is large.</String>
@@ -267,69 +267,67 @@
 		<String Name="PreviewName">Name:</String>
 		<String Name="PreviewApplication">Application:</String>
 		<String Name="PreviewArguments">Arguments: (%[file] %[dir] available)</String>
-		<String Name="PreviewExtension">Apply to Extensions: (avi;mov;divx)</String>
+		<String Name="PreviewExtension">Apply to extensions: (avi;mov;divx)</String>
 		<String Name="MagnetAsk">Ask for Magnet action</String>
 		<String Name="MagnetDlgFile">Filename:</String>
-		<String Name="MagnetDlgHash">File Hash:</String>
+		<String Name="MagnetDlgHash">File hash:</String>
 		<String Name="MagnetDlgNothing">Do nothing</String>
 		<String Name="MagnetDlgQueue">Add this file to your download queue</String>
 		<String Name="MagnetDlgRemember">Do the same action next time without asking</String>
 		<String Name="MagnetDlgSearch">Start a search for this file</String>
-		<String Name="MagnetDlgSize">File Size:</String>
+		<String Name="MagnetDlgSize">File size:</String>
 		<String Name="MagnetDlgTextBad">A MAGNET link was given to AirDC++, but it didn't contain a valid file hash for use on the Direct Connect network.  No action will be taken.</String>
 		<String Name="MagnetDlgTextGood">AirDC++ has detected a MAGNET link with a file hash that can be searched for on the Direct Connect network.  What would you like to do?</String>
 		<String Name="MagnetDlgTitle">MAGNET Link detected</String>
 		<String Name="MagnetHandlerDesc">Download files from the Direct Connect network</String>
 		<String Name="MagnetHandlerRoot">AirDC++</String>
 		<String Name="MagnetShellDesc">URL:MAGNET URI</String>
-		<String Name="ManageGroups">Manage Groups</String>
+		<String Name="ManageGroups">Manage groups</String>
 		<String Name="MatchQueue">Match queue</String>
-		<String Name="MaxHubs">Max Hubs</String>
+		<String Name="MaxHubs">Max hubs</String>
 		<String Name="MaxSegmentsNumber">Max number of segments</String>
-		<String Name="MaxSize">Max Size</String>
-		<String Name="MaxUsers">Max Users</String>
-		<String Name="Maxhubs">Max hubs</String>
-		<String Name="Maxusers">Max users</String>
+		<String Name="MaxSize">Max size</String>
+		<String Name="MaxUsers">Max users</String>
 		<String Name="Mib">MiB</String>
 		<String Name="Mbitsps">MBits/s</String>
 		<String Name="Mbps">MB/s</String>
 		<String Name="MenuAbout">About AirDC++</String>
-		<String Name="MenuAdlSearch">ADL Search</String>
+		<String Name="MenuAdlSearch">ADL search</String>
 		<String Name="MenuArrange">Arrange icons</String>
 		<String Name="MenuCascade">Cascade</String>
-		<String Name="MenuCdmdebugMessages">CDM Debug Messages</String>
+		<String Name="MenuCdmdebugMessages">CDM debug messages</String>
 		<String Name="MenuCloseAllDirList">Close all file list windows</String>
 		<String Name="MenuCloseAllOfflinePm">Close all offline PM windows</String>
 		<String Name="MenuCloseAllPm">Close all PM windows</String>
 		<String Name="MenuCloseAllSearchframe">Close all search windows</String>
 		<String Name="MenuCloseDisconnected">Close disconnected</String>
-		<String Name="MenuDiscuss">AirDC++ Discussion forum</String>
+		<String Name="MenuDiscuss">AirDC++ discussion forum</String>
 		<String Name="MenuDonate">Donate</String>
-		<String Name="MenuDownloadQueue">Download Queue	Ctrl+D</String>
+		<String Name="MenuDownloadQueue">Download queue	Ctrl+D</String>
 		<String Name="MenuExit">Exit</String>
 		<String Name="MenuFaq">Frequently asked questions</String>
-		<String Name="MenuFavoriteHubs">Favorite Hubs	Ctrl+H</String>
+		<String Name="MenuFavoriteHubs">Favorite hubs	Ctrl+H</String>
 		<String Name="MenuFavoriteUsers">Users	Ctrl+U</String>
 		<String Name="MenuFile">File</String>
-		<String Name="MenuFileRecentHubs">Recent Hubs</String>
+		<String Name="MenuFileRecentHubs">Recent hubs</String>
 		<String Name="MenuFollowRedirect">Follow last redirect	Ctrl+T</String>
 		<String Name="MenuHashProgress">Indexing progress</String>
 		<String Name="MenuHelp">Help</String>
 		<String Name="MenuHelpGeoipfile">GeoIP database update</String>
 		<String Name="MenuHelpTranslations">Translations</String>
-		<String Name="MenuHomepage">AirDC++ Homepage</String>
-		<String Name="MenuHorizontalTile">Horizontal Tile</String>
-		<String Name="MenuMinimizeAll">Minimize All</String>
-		<String Name="MenuNetworkStatistics">Network Statistics</String>
+		<String Name="MenuHomepage">AirDC++ homepage</String>
+		<String Name="MenuHorizontalTile">Horizontal tile</String>
+		<String Name="MenuMinimizeAll">Minimize all</String>
+		<String Name="MenuNetworkStatistics">Network statistics</String>
 		<String Name="MenuNotepad">Notepad	Ctrl+N</String>
 		<String Name="MenuOpenDownloadsDir">Open downloads directory</String>
 		<String Name="MenuOpenFileList">Open file list...	Ctrl+L</String>
 		<String Name="MenuOpenMatchAll">Match downloaded lists</String>
-		<String Name="MenuPublicHubs">Public Hubs	Ctrl+P</String>
-		<String Name="MenuQuickConnect">Quick Connect ...	Ctrl+Q</String>
+		<String Name="MenuPublicHubs">Public hubs	Ctrl+P</String>
+		<String Name="MenuQuickConnect">Quick connect ...	Ctrl+Q</String>
 		<String Name="MenuReconnect">Reconnect	Ctrl+R</String>
 		<String Name="MenuRefreshFileList">Refresh file list	Ctrl+E</String>
-		<String Name="MenuRestoreAll">Restore All</String>
+		<String Name="MenuRestoreAll">Restore all</String>
 		<String Name="MenuSearch">Search	Ctrl+S</String>
 		<String Name="MenuSearchSpy">Search spy</String>
 		<String Name="MenuSettings">Settings...</String>
@@ -339,21 +337,21 @@
 		<String Name="MenuTransferView">Transfers	Ctrl+3</String>
 		<String Name="MenuTransfers">Transfers</String>
 		<String Name="MenuTth">Get TTH for file...</String>
-		<String Name="MenuVerticalTile">Vertical Tile</String>
+		<String Name="MenuVerticalTile">Vertical tile</String>
 		<String Name="MenuView">View</String>
 		<String Name="MenuWindow">Window</String>
 		<String Name="Menubar">Menu bar</String>
-		<String Name="MinShare">Min Share</String>
-		<String Name="MinSlots">Min Slots</String>
+		<String Name="MinShare">Min share</String>
+		<String Name="MinSlots">Min slots</String>
 		<String Name="MinimumSearchInterval">Minimum search interval</String>
 		<String Name="Minshare">Min share</String>
 		<String Name="Minslots">Min slots</String>
 		<String Name="Minutes">Minutes</String>
 		<String Name="Mode">Mode</String>
-		<String Name="MoveDown">Move Down</String>
-		<String Name="MoveUp">Move Up</String>
+		<String Name="MoveDown">Move down</String>
+		<String Name="MoveUp">Move up</String>
 		<String Name="MynickInChat">My nick in main chat</String>
-		<String Name="NetworkStatistics">Network Statistics</String>
+		<String Name="NetworkStatistics">Network statistics</String>
 		<String Name="New">New...</String>
 		<String Name="NewDisconnect">Remove user from queue, if speed is below</String>
 		<String Name="Next">Next</String>
@@ -393,7 +391,7 @@
 		<String Name="PassiveUser">Passive user</String>
 		<String Name="Password">Password</String>
 		<String Name="Path">Path</String>
-		<String Name="PauseSearch">Pause Search</String>
+		<String Name="PauseSearch">Pause search</String>
 		<String Name="Paused">Paused</String>
 		<String Name="Pib">PiB</String>
 		<String Name="Picture">Picture</String>
@@ -430,22 +428,22 @@
 		<String Name="ProgressVerified">Queue progressbar - verified chunks</String>
 		<String Name="ProgressbarOdcStyle">Use oDC style of progressbar in Transfers</String>
 		<String Name="Properties">Properties</String>
-		<String Name="PublicHubs">Public Hubs</String>
+		<String Name="PublicHubs">Public hubs</String>
 		<String Name="Purge">Purge</String>
-		<String Name="RegexpTester">RegExp Tester</String>
+		<String Name="RegexpTester">RegExp tester</String>
 		<String Name="RegexpMatch">It's a match!</String>
 		<String Name="RegexpMismatch">It's not a match.</String>
 		<String Name="Regexp">RegExp</String>
-		<String Name="QuickConnect">Quick Connect</String>
+		<String Name="QuickConnect">Quick connect</String>
 		<String Name="Rating">Rating</String>
 		<String Name="Ratio">Ratio</String>
 		<String Name="ReaddSource">Re-add source</String>
 		<String Name="ReallyExit">Really exit?</String>
-		<String Name="ReallyClose">Really Close?</String>
+		<String Name="ReallyClose">Really close?</String>
 		<String Name="ReallyRemove">Really remove?</String>
 		<String Name="Reason">Reason</String>
 		<String Name="Reboot">Reboot</String>
-		<String Name="RecentHubs">Recent Hubs</String>
+		<String Name="RecentHubs">Recent hubs</String>
 		<String Name="RecheckFile">Recheck integrity</String>
 		<String Name="RedirectAlreadyConnected">Redirect request received to a hub that's already connected</String>
 		<String Name="RedirectUser">Redirect user(s)</String>
@@ -461,7 +459,7 @@
 		<String Name="RemoveSource">Remove source</String>
 		<String Name="RenamedTo"> renamed to </String>
 		<String Name="Report">Report user</String>
-		<String Name="ReportAlternates">Show auto search for alternates in System Log</String>
+		<String Name="ReportAlternates">Show auto search for alternates in system log</String>
 		<String Name="Resume">Resume</String>
 		<String Name="RetrievingData">Retrieving data</String>
 		<String Name="RightColor">Right color</String>
@@ -472,8 +470,8 @@
 		<String Name="SearchInResults">Search in results</String>
 		<String Name="SearchOptions">Search options</String>
 		<String Name="SearchSpamFrom">Search spam detected from </String>
-		<String Name="SearchSpy">Search Spy</String>
-		<String Name="SearchString">Search String</String>
+		<String Name="SearchSpy">Search spy</String>
+		<String Name="SearchString">Search string</String>
 		<String Name="SearchingFor">Searching for </String>
 		<String Name="Seconds">Seconds</String>
 		<String Name="Segment">Segment</String>
@@ -487,18 +485,18 @@
 		<String Name="SetczdcBackColor">Back color</String>
 		<String Name="SetczdcDefaultStyle">Default style</String>
 		<String Name="SetczdcDisconnectingEnable">Enable slow downloads disconnecting</String>
-		<String Name="SetczdcDownloadSpeed">Download Speed</String>
+		<String Name="SetczdcDownloadSpeed">Download speed</String>
 		<String Name="SetczdcErrorColor">Error color</String>
 		<String Name="SetczdcIDownSpeed">Disconnect download if speed is below</String>
-		<String Name="SetczdcMagnetUriHandler">Install Magnet URI handler on startup</String>
+		<String Name="SetczdcMagnetUriHandler">Install MAGNET URI handler on startup</String>
 		<String Name="SetczdcMinFileSize">And file size is more than</String>
-		<String Name="SetczdcPassiveSearch">Always use passive mode for Search (Use only if you know what this doing !!!)</String>
+		<String Name="SetczdcPassiveSearch">Always use passive mode for search (use only if you know what this doing!)</String>
 		<String Name="SetczdcPmLines">Lines from log on new PM</String>
 		<String Name="SetczdcPreview">Preview</String>
 		<String Name="SetczdcPrivateSound">Private message sound</String>
 		<String Name="SetczdcProgressbarColors">Progressbar colors</String>
 		<String Name="SetczdcProgressbarText">Progressbar text colors</String>
-		<String Name="SetczdcRemoveForbidden">Remove Forbidden (Unfinished Kazaa, Win MX, GetRight, eMule, AirDC++)</String>
+		<String Name="SetczdcRemoveForbidden">Remove forbidden (unfinished Kazaa, Win MX, GetRight, eMule, AirDC++)</String>
 		<String Name="SetczdcSlowDisconnect">Disconnecting slow downloads</String>
 		<String Name="SetczdcSmallFiles">Small file size</String>
 		<String Name="SetczdcStyles">Available styles</String>
@@ -507,13 +505,13 @@
 		<String Name="SetczdcTimeDown">More than</String>
 		<String Name="SetczdcTo">to</String>
 		<String Name="SetczdcUpload">Upload</String>
-		<String Name="SetczdcUploadSpeed">Upload Speed</String>
-		<String Name="SetczdcWinamp">Media Toolbar settings</String>
-		<String Name="SetczdcWinampPath">Media Player Path:</String>
+		<String Name="SetczdcUploadSpeed">Upload speed</String>
+		<String Name="SetczdcWinamp">Media toolbar settings</String>
+		<String Name="SetczdcWinampPath">Media player path:</String>
 		<String Name="SetstrongdcPartialSlots">Extra slots for uploading partially downloaded files</String>
 		<String Name="Settings">Settings</String>
 		<String Name="SettingsAddFolder">Add folder</String>
-		<String Name="SettingsAdlsBreakOnFirst">Break on first ADLSearch match</String>
+		<String Name="SettingsAdlsBreakOnFirst">Break on first ADL search match</String>
 		<String Name="SettingsAdvanced">Advanced</String>
 		<String Name="SettingsAdvancedSuppressMainChat">Suppress main chat</String>
 		<String Name="SettingsAdvanced3">Experts only</String>
@@ -526,16 +524,16 @@
 		<String Name="SettingsAutoKick">Automatically disconnect users who leave the hub</String>
 		<String Name="SettingsAutoKickNoFavs">Don't automatically disconnect favorite users who leave the hub</String>
 		<String Name="SettingsAutoOpen">Auto-open at startup</String>
-		<String Name="SettingsAutoPriorityDefault">Use Auto Priority by default</String>
+		<String Name="SettingsAutoPriorityDefault">Use auto priority by default</String>
 		<String Name="SettingsAutoRefreshTime">Auto refresh time</String>
 		<String Name="SettingsAutoSearchLimit">Max sources for auto search</String>
 		<String Name="SettingsAutoSlots">Maximum auto opened</String>
-		<String Name="SettingsAvipreview">File Preview</String>
+		<String Name="SettingsAvipreview">File preview</String>
 		<String Name="SettingsBindAddress">Bind address</String>
 		<String Name="SettingsBindAddressHelp">Network interface for all connections</String>
 		<String Name="SettingsBoldOptions">Tab bolding on content change</String>
 		<String Name="SettingsClearSearch">Clear search box after each search</String>
-		<String Name="SettingsColorAlternate">Search Alternate</String>
+		<String Name="SettingsColorAlternate">Search alternate</String>
 		<String Name="SettingsColorFavorite">Favorite</String>
 		<String Name="SettingsColorIgnored">Ignored</String>
 		<String Name="SettingsColorNormal">Normal</String>
@@ -543,13 +541,13 @@
 		<String Name="SettingsColors">Other colors</String>
 		<String Name="SettingsCommand">Command</String>
 		<String Name="SettingsCompressTransfers">Enable safe and compressed transfers</String>
-		<String Name="SettingsConfigureHubLists">Configure Public Hub Lists</String>
+		<String Name="SettingsConfigureHubLists">Configure public hub lists</String>
 		<String Name="SettingsConfirmDialogOptions">Confirm dialog options</String>
 		<String Name="SettingsConfirmExit">Confirm application exit</String>
 		<String Name="SettingsConfirmHubRemoval">Confirm favorite hub removal</String>
 		<String Name="SettingsConfirmItemRemoval">Confirm item removal in download queue</String>
 		<String Name="SettingsCzdc">AirDC++</String>
-		<String Name="SettingsCzdcExtraDownloads">Highest Priority Extra Download Slots</String>
+		<String Name="SettingsCzdcExtraDownloads">Highest priority extra download slots</String>
 		<String Name="SettingsDefaultAwayMsg">Default away message</String>
 		<String Name="SettingsDirect">Direct connection</String>
 		<String Name="SettingsDirectories">Directories</String>
@@ -571,7 +569,7 @@
 		<String Name="SettingsFilterEnter">Activate search/user list filter by pressing Enter</String>
 		<String Name="SettingsFormat">Format</String>
 		<String Name="SettingsGeneral">General</String>
-		<String Name="SettingsGetUserCountry">Get User Country</String>
+		<String Name="SettingsGetUserCountry">Get user country</String>
 		<String Name="SettingsHubUserCommands">Accept custom user commands from hub</String>
 		<String Name="SettingsChange">Change</String>
 		<String Name="SettingsIgnoreHubPms">Ignore private messages from the hub</String>
@@ -593,7 +591,7 @@
 		<String Name="SettingsMaxTabRows">Max tab rows</String>
 		<String Name="SettingsMinimizeOnStartup">Minimize at program startup</String>
 		<String Name="SettingsMinimizeTray">Minimize to tray</String>
-		<String Name="SettingsMouseOver">Mouse Over</String>
+		<String Name="SettingsMouseOver">Mouse over</String>
 		<String Name="SettingsName">Name</String>
 		<String Name="SettingsNetwork">Connection settings</String>
 		<String Name="SettingsNoAwaymsgToBots">Don't send the away message to bots</String>
@@ -604,7 +602,7 @@
 		<String Name="SettingsOptions">Options</String>
 		<String Name="SettingsOutgoing">Outgoing connection settings</String>
 		<String Name="SettingsOverride">Don't allow hub/UPnP to override</String>
-		<String Name="SettingsPersonalInformation">Personal Information</String>
+		<String Name="SettingsPersonalInformation">Personal information</String>
 		<String Name="SettingsPmBeep">Make an annoying sound every time a private message is received</String>
 		<String Name="SettingsPmBeepOpen">Make an annoying sound when a private message window is opened</String>
 		<String Name="SettingsPopunderPm">Open new private message windows in the background</String>
@@ -619,15 +617,15 @@
 		<String Name="SettingsPrioLowest">Set lowest prio for newly added files larger than Low prio size</String>
 		<String Name="SettingsPrioNormal">Normal prio max size</String>
 		<String Name="SettingsPromptPassword">Popup box to input password for hubs</String>
-		<String Name="SettingsPublicHubList">Public Hubs list</String>
-		<String Name="SettingsPublicHubListUrl">Public Hubs list URL</String>
+		<String Name="SettingsPublicHubList">Public hubs list</String>
+		<String Name="SettingsPublicHubListUrl">Public hubs list URL</String>
 		<String Name="SettingsQueue">Queue</String>
 		<String Name="SettingsRenameFolder">Rename</String>
 		<String Name="SettingsRequiresRestart">Note; most of these options require that you restart AirDC++</String>
 		<String Name="SettingsReset">Reset</String>
 		<String Name="SettingsSbMaxSources">Max sources for match queue</String>
 		<String Name="SettingsSelectColor">Select color</String>
-		<String Name="SettingsSelectTextFace">General Text style</String>
+		<String Name="SettingsSelectTextFace">General text style</String>
 		<String Name="SettingsSelectWindowColor">Window color</String>
 		<String Name="SettingsSendUnknownCommands">Send unknown /commands to the hub</String>
 		<String Name="SettingsShareHidden">Share hidden files</String>
@@ -648,13 +646,13 @@
 		<String Name="SettingsStatusInChat">View status messages in main chat</String>
 		<String Name="SettingsTcpPort">TCP</String>
 		<String Name="SettingsTlsPort">TLS/TCP</String>
-		<String Name="SettingsTextStyles">Colors &amp; Fonts</String>
+		<String Name="SettingsTextStyles">Colors &amp; fonts</String>
 		<String Name="SettingsTimeStamps">Show timestamps in chat by default</String>
 		<String Name="SettingsTimeStampsFormat">Set timestamps</String>
 		<String Name="SettingsToggleActiveWindow">Toggle window when selecting an active tab</String>
 		<String Name="SettingsToolbar">Toolbar</String>
 		<String Name="SettingsToolbarAdd">Add --&gt;</String>
-		<String Name="SettingsToolbarImage">Toolbar Images</String>
+		<String Name="SettingsToolbarImage">Toolbar images</String>
 		<String Name="SettingsToolbarRemove">&lt;-- Remove</String>
 		<String Name="SettingsUdpPort">UDP Port</String>
 		<String Name="SettingsUnfinishedDownloadDirectory">Unfinished downloads directory</String>
@@ -666,9 +664,9 @@
 		<String Name="SettingsUseCtrlForLineHistory">Use CTRL for line history</String>
 		<String Name="SettingsUseOldSharingUi">Use old sharing user interface</String>
 		<String Name="SettingsUseSystemIcons">Use system icons when browsing files (slows browsing down a bit)</String>
-		<String Name="SettingsUserColors">User List Colors</String>
-		<String Name="SettingsUserCommands">User Commands</String>
-		<String Name="SettingsUserMenu">User Menu Items</String>
+		<String Name="SettingsUserColors">User list colors</String>
+		<String Name="SettingsUserCommands">User commands</String>
+		<String Name="SettingsUserMenu">User menu items</String>
 		<String Name="SettingsWindows">Windows</String>
 		<String Name="SettingsWindowsOptions">Window options</String>
 		<String Name="SettingsWriteBuffer">Write buffer size</String>
@@ -677,7 +675,7 @@
 		<String Name="SettingsZdcProgressOverride">Override system colors</String>
 		<String Name="SettingsZdcProgressOverride2">Override system colors</String>
 		<String Name="Shared">Shared</String>
-		<String Name="SharedFiles">Shared Files</String>
+		<String Name="SharedFiles">Shared files</String>
 		<String Name="ShowPopupAway">Display popup in away mode only</String>
 		<String Name="ShowPopupMinimized">Display popup when minimized only</String>
 		<String Name="Shutdown">Shutdown computer</String>
@@ -700,13 +698,13 @@
 		<String Name="SocksSetupError">Failed to set up the socks server for UDP relay (check socks address and port)</String>
 		<String Name="SoundDownloadBegins">Download begins</String>
 		<String Name="SoundDownloadFinished">Download finished</String>
-		<String Name="SoundException">Unhandled Exception</String>
+		<String Name="SoundException">Unhandled exception</String>
 		<String Name="SoundSourceAdded">Alternate source added</String>
 		<String Name="SoundTthInvalid">File is corrupted</String>
 		<String Name="SoundTypingNotify">Typing sound</String>
 		<String Name="SoundUploadFinished">Upload finished</String>
 		<String Name="SourceTooOld">Remote client does not fully support TTH - cannot download</String>
-		<String Name="SourceType">Source Type</String>
+		<String Name="SourceType">Source type</String>
 		<String Name="SpecifySearchString">Specify a search string</String>
 		<String Name="SpecifyServer">Specify a server to connect to</String>
 		<String Name="Speed">Speed</String>
@@ -748,7 +746,7 @@
 - %% - Percent sign
 
 Default: %H:%M:%S</String>
-		<String Name="TimestampHelpDesc">Timestamps Help</String>
+		<String Name="TimestampHelpDesc">Timestamps help</String>
 		<String Name="TimestampsDisabled">Timestamps disabled</String>
 		<String Name="TimestampsEnabled">Timestamps enabled</String>
 		<String Name="TooMuchData">More data was sent than was expected</String>
@@ -759,7 +757,7 @@ Default: %H:%M:%S</String>
 		<String Name="CertificatesConstuction">Under construction, restart AirDC++ to see effects...</String>
 		<String Name="CertificatesExperimental">Experimental feature, don't consider AirDC++ secure in any way</String>
 		<String Name="TthInconsistency">TTH Inconsistency</String>
-		<String Name="TthRoot">TTH Root</String>
+		<String Name="TthRoot">TTH root</String>
 		<String Name="TwoColors">Two colors</String>
 		<String Name="Type">Type</String>
 		<String Name="UcSubmenu">Place user commands to submenu</String>
@@ -769,7 +767,7 @@ Default: %H:%M:%S</String>
 		<String Name="UnableToSendFile">Unable to send file </String>
 		<String Name="UnfinishedFileNotFound">Unfinished file not found</String>
 		<String Name="UnfinishedFileTooSmall">Unfinished file too small</String>
-		<String Name="UnignoreUser">Unignore User</String>
+		<String Name="UnignoreUser">Unignore user</String>
 		<String Name="Unknown">Unknown</String>
 		<String Name="UnknownCommand">Unknown command: </String>
 		<String Name="UpdateCheck">Update check</String>
@@ -783,30 +781,30 @@ Default: %H:%M:%S</String>
 		<String Name="UserCmdContext">Context</String>
 		<String Name="UserCmdFilelistMenu">File list Menu</String>
 		<String Name="UserCmdHub">Hub IP / DNS (empty = all, 'op' = where operator)</String>
-		<String Name="UserCmdHubMenu">Hub Menu</String>
+		<String Name="UserCmdHubMenu">Hub menu</String>
 		<String Name="UserCmdChat">Chat</String>
 		<String Name="UserCmdOnce">Send once per nick</String>
 		<String Name="UserCmdParameters">Parameters</String>
 		<String Name="UserCmdPm">PM</String>
 		<String Name="UserCmdPreview">Text sent to hub</String>
-		<String Name="UserCmdSearchMenu">Search Menu</String>
+		<String Name="UserCmdSearchMenu">Search menu</String>
 		<String Name="UserCmdTo">To</String>
-		<String Name="UserCmdType">Command Type</String>
-		<String Name="UserCmdUserMenu">User Menu</String>
-		<String Name="UserCmdWindow">Create / Modify Command</String>
+		<String Name="UserCmdType">Command type</String>
+		<String Name="UserCmdUserMenu">User menu</String>
+		<String Name="UserCmdWindow">Create / modify command</String>
 		<String Name="UserCmdDescription">Command Types:
 Separator: Adds a separator to the menu
 Raw: Sends raw command to the hub (experts only, end it with '|'!)
 Chat: Sends command as if you were typing it in the chat
 PM: Sends command as if you sent it by pm
 Contexts determine where the command is shown:
-Hub Menu: Hub tab (at the bottom of the screen) right-click menu
-Chat Menu: User right-click menu in chat and PM tab menu
-Search Menu: Search right-click menu
+Hub menu: Hub tab (at the bottom of the screen) right-click menu
+Chat menu: User right-click menu in chat and PM tab menu
+Search menu: Search right-click menu
 Parameters:
 Name: Name (use '/' to create submenus)
 Command: Command text (may contain parameters)
-Hub: Hub ip as typed when connecting (empty = all hubs, \"op\" = hubs where you're op)
+Hub: Hub IP as typed when connecting (empty = all hubs, \"op\" = hubs where you're op)
 To: PM recipient
 Only once: Send only once per user from search frame
 In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m, ...). The following are available:
@@ -820,13 +818,13 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 %[userI4]: user ip (if supported by hub)
 %[fileFN]: filename (search context only)
 %[line:reason]: opens up a window asking for \"reason\"</String>
-		<String Name="UserDescription">User Description</String>
+		<String Name="UserDescription">User description</String>
 		<String Name="UserOffline">User offline</String>
 		<String Name="UserOnline">Running... (user online)</String>
 		<String Name="UserWentOffline">User went offline</String>
 		<String Name="UserWentOnline">User went online</String>
-		<String Name="Userinfo">Info User</String>
-		<String Name="UserlistIcons">Userlist Icons</String>
+		<String Name="Userinfo">Info user</String>
+		<String Name="UserlistIcons">Userlist icons</String>
 		<String Name="Userlistdblclickaction">Userlist double click action</String>
 		<String Name="Users">Users</String>
 		<String Name="UsersOnline">Running... (%d of %d users online)</String>
@@ -837,12 +835,12 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 		<String Name="VirtualNameLong">Name under which the others see the directory</String>
 		<String Name="Waiting">Waiting...</String>
 		<String Name="WaitingTime">Waiting time</String>
-		<String Name="WaitingUserOnline">Waiting (User online)</String>
+		<String Name="WaitingUserOnline">Waiting (user online)</String>
 		<String Name="WaitingUsersOnline">Waiting (%d of %d users online)</String>
 		<String Name="WhatsThis">What's this?</String>
 		<String Name="WhoIs">Whois </String>
 		<String Name="WinampHelp">/winamp - Works with 1.x, 2.x, 5.x (no WinAmp 3 support)
-- %[version]	Numerical Version (ex: 2.91)
+- %[version]	Numerical version (ex: 2.91)
 - %[state]	Playing state (ex: stopped/paused/playing)
 - %[title]		Window title from Winamp - if you want to change this for mp3s, Winamp &gt; Pref &gt; Input &gt; MPEG &gt; Title
 - %[rawtitle]	Window title from Winamp (if %[title] not working propertly)
@@ -854,21 +852,21 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 - %[sample]	Sample frequency (ex. 22kHz)
 - %[channels]	Number of channels (ex. stereo / mono)
 - %[path]	Playing full Filepath
-- %[directory]	Playing DirectoryName
-- %[filename]	Playing FileName
-- %[parentdir]	Parent Directory name of %[directory]
- Empty = Default String -&gt; winamp(%[version]) %[state](%[title]) stats(%[percent] of %[length] %[bar])</String>
-		<String Name="WinampHelpDesc">Winamp Help</String>
+- %[directory]	Playing directoryname
+- %[filename]	Playing filename
+- %[parentdir]	Parent directory name of %[directory]
+ Empty = Default string -&gt; winamp(%[version]) %[state](%[title]) stats(%[percent] of %[length] %[bar])</String>
+		<String Name="WinampHelpDesc">Winamp help</String>
 		<String Name="Yes">Yes</String>
 		<String Name="BackgroundImage">Background image</String>
 		<String Name="MenuReconnectDisconnected">Reconnect disconnected</String>
 		<String Name="SettingsAirTabspage">Tabs</String>
-		<String Name="HubBoldTabs">Make tabs bold on status messages in Hubs</String>
+		<String Name="HubBoldTabs">Make tabs bold on status messages in hubs</String>
 		<String Name="TabShowIcons">Show icons in tabs</String>
 		<String Name="BlendTabs">Blend tabs instead of using bold font</String>
-		<String Name="SettingsSbTabColors">Tab Colors</String>
+		<String Name="SettingsSbTabColors">Tab colors</String>
 		<String Name="SettingsSbTabSize">Size of string to display in tabs</String>
-		<String Name="SettingsBtnColor">Select Color</String>
+		<String Name="SettingsBtnColor">Select color</String>
 		<String Name="SettingsSbDirtyBlend">Blending</String>
 		<String Name="TabActiveBg">Active background color</String>
 		<String Name="TabActiveText">Active text color</String>
@@ -888,7 +886,7 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 		<String Name="WinampVolUp">Volume up</String>
 		<String Name="WinampVolHalf">Volume 50%</String>
 		<String Name="WinampVolDown">Volume down</String>
-		<String Name="ToggleToolbar">Media Toolbar	Ctrl+4</String>
+		<String Name="ToggleToolbar">Media toolbar	Ctrl+4</String>
 		<String Name="WinampSpam">Post media spam to main chat</String>
 		<String Name="PopupTime">Popup time</String>
 		<String Name="PmPreview">Show preview of private message on popup</String>
@@ -915,7 +913,7 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 - %[rating]	Users rating, represented with *'s (if available)
 
 Empty = Default String -&gt; +me %[title] at %[bitrate] &lt;Windows Media Player %[version]&gt;</String>
-		<String Name="WmpHelpDesc">Windows Media Player Help</String>
+		<String Name="WmpHelpDesc">Windows Media Player help</String>
 		<String Name="ItunesHelp">/itunes - For iTunes media spamming
 - %[version]	Numerical Version (ex: 7.0.2.16)
 - %[album]	Name of the album the current track is from
@@ -933,7 +931,7 @@ Empty = Default String -&gt; +me %[title] at %[bitrate] &lt;Windows Media Player
 - %[state]	Current state of iTunes (playing/stopped)
 
 Empty = Default String -&gt; +me playing: %[title] at %[bitrate] &lt;iTunes %[version]&gt;</String>
-		<String Name="ItunesHelpDesc">iTunes Help</String>
+		<String Name="ItunesHelpDesc">iTunes help</String>
 		<String Name="MpcHelp">/mpc - For Media Player Classic media spamming
 - %[filename]	Name of the file currently playing
 - %[title]		Name of the currently playing item (without file extension)
@@ -944,10 +942,10 @@ Empty = Default String -&gt; +me playing: %[title] at %[bitrate] &lt;iTunes %[ve
 - %[bar]		ASCII progress bar, 10 characters wide no including brackets (ex. [----|-----])
 - %[length]	Total length of the current file
 
-Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</String>
-		<String Name="MpcHelpDesc">Media Player Classic Help</String>
+Empty = Default string -&gt; +me playing: %[title] &lt;Media Player Classic&gt;</String>
+		<String Name="MpcHelpDesc">Media Player Classic help</String>
 		<String Name="NoMediaSpam">Selected player doesn't support media spams</String>
-		<String Name="WinampStart">Start Media Player</String>
+		<String Name="WinampStart">Start Media player</String>
 		<String Name="WinampMenu">Winamp</String>
 		<String Name="WinampRefresh">Refresh</String>
 		<String Name="WinampArtist">Artist</String>
@@ -965,13 +963,13 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="End">End</String>
 		<String Name="NatSort">Use natural sorting</String>
 		<String Name="UpdateIp">Update IP on startup</String>
-		<String Name="SettingsServerCommands">Show Server Commands as status messages</String>
-		<String Name="SetClientCommands">Show Client Commands as status messages</String>
-		<String Name="SettingsAirdownloads">Download Options</String>
+		<String Name="SettingsServerCommands">Show server commands as status messages</String>
+		<String Name="SetClientCommands">Show client commands as status messages</String>
+		<String Name="SettingsAirdownloads">Download options</String>
 		<String Name="SettingsAirdownloadsSegment">Segments</String>
 		<String Name="SettingsAirdownloadsSegmentSize">Minimum segment size</String>
 		<String Name="StSkiplistShare">Don't share the following files (separate files with '|', wildcards allowed):</String>
-		<String Name="StSkiplistShareBorder">Skiplist Share</String>
+		<String Name="StSkiplistShareBorder">Skiplist share</String>
 		<String Name="StMinislotsExt">Grant minislot automatically for the following file extensions: (separate extensions with '|', wildcards allowed)</String>
 		<String Name="SbMinislots">Minislots</String>
 		<String Name="RemoveFile">Remove file from queue</String>
@@ -985,18 +983,18 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="HighlightMatchOptions">Match options</String>
 		<String Name="HighlightActions">Actions</String>
 		<String Name="HighlightTextToMatch">Text to match</String>
-		<String Name="SettingsStMatchType">Match Type</String>
-		<String Name="SettingsBtnMoveup">Move Up</String>
-		<String Name="SettingsBtnMovedown">Move Down</String>
-		<String Name="SettingsBtnBgcolor">Background Color</String>
-		<String Name="SettingsSelectSound">Select Sound File</String>
-		<String Name="SettingsPopup">Display Popup</String>
-		<String Name="SettingsPlaySound">Play Sound</String>
-		<String Name="SettingsFlashWindow">Flash Window</String>
-		<String Name="SettingsIncludeNicklist">Highlight for Nicklist (Wildcards or $Re: for Regex)</String>
-		<String Name="SettingsWholeLine">Whole Line</String>
-		<String Name="SettingsEntireWord">Entire Word</String>
-		<String Name="SettingsTabColor">Change Tabcolor</String>
+		<String Name="SettingsStMatchType">Match type</String>
+		<String Name="SettingsBtnMoveup">Move up</String>
+		<String Name="SettingsBtnMovedown">Move down</String>
+		<String Name="SettingsBtnBgcolor">Background color</String>
+		<String Name="SettingsSelectSound">Select sound file</String>
+		<String Name="SettingsPopup">Display popup</String>
+		<String Name="SettingsPlaySound">Play sound</String>
+		<String Name="SettingsFlashWindow">Flash window</String>
+		<String Name="SettingsIncludeNicklist">Highlight for nicklist (wildcards or $Re: for regex)</String>
+		<String Name="SettingsWholeLine">Whole line</String>
+		<String Name="SettingsEntireWord">Entire word</String>
+		<String Name="SettingsTabColor">Change tabcolor</String>
 		<String Name="Bold">Bold</String>
 		<String Name="Italic">Italic</String>
 		<String Name="Underline">Underline</String>
@@ -1007,7 +1005,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="PresetParts">Parts</String>
 		<String Name="PresetReleases">Releases</String>
 		<String Name="PresetWinampSpam">Winamp spam</String>
-		<String Name="SettingsBtnTextcolor">Text Color</String>
+		<String Name="SettingsBtnTextcolor">Text color</String>
 		<String Name="AddEmpty">Can't add an empty string</String>
 		<String Name="BadRegexp">Badly formatted regular expression</String>
 		<String Name="Airdc">AirDC++</String>
@@ -1016,7 +1014,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="FlashWindowOnMynick">Flash window on my nick in PM/Hub</String>
 		<String Name="SettingsAirsearch">Search</String>
 		<String Name="AutosearchEnableTime">Automatically search every</String>
-		<String Name="AutosearchRecheckText">Recheck All items after</String>
+		<String Name="AutosearchRecheckText">Recheck all items after</String>
 		<String Name="SettingsValue">Value</String>
 		<String Name="Action">Action</String>
 		<String Name="LineEmpty">Line must not be empty</String>
@@ -1026,34 +1024,34 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="GetIp">Get IP</String>
 		<String Name="UseHighlight">Use Highlights</String>
 		<String Name="SettingsDupeDescription">Background color used in file lists to show files that are already shared</String>
-		<String Name="SettingsShowQueueBars">Show Progress bars in Queue</String>
+		<String Name="SettingsShowQueueBars">Show progress bars in queue</String>
 		<String Name="SettingsLanguage">Language</String>
-		<String Name="OpenFirst">Open First X Hubs at Startup</String>
+		<String Name="OpenFirst">Open first X hubs at startup</String>
 		<String Name="Paste">Paste</String>
-		<String Name="SearchSites">Search Sites</String>
-		<String Name="ImportTheme">Import Theme</String>
-		<String Name="ExportTheme">Export Theme</String>
+		<String Name="SearchSites">Search sites</String>
+		<String Name="ImportTheme">Import theme</String>
+		<String Name="ExportTheme">Export theme</String>
 		<String Name="SettingsLnor">Norwegian</String>
 		<String Name="RefreshFileList">Refresh file list</String>
-		<String Name="UseRegexp">Use Regexp</String>
-		<String Name="FavDlSpeed">Add User to Favorites If Download Speed is over</String>
+		<String Name="UseRegexp">Use regexp</String>
+		<String Name="FavDlSpeed">Add user to favorites if download speed is over</String>
 		<String Name="CaseSensitive">Case sensitive</String>
-		<String Name="InvalidRegexp">Invalid RegExp!</String>
+		<String Name="InvalidRegexp">Invalid regexp!</String>
 		<String Name="Match">Match</String>
 		<String Name="Raw">Raw</String>
 		<String Name="DirectoryShared">Directory already shared</String>
 		<String Name="DirectoryParent">Remove all subdirectories before adding this one</String>
 		<String Name="OpenLogsInternal">Open log files internally (performance may decrease when opening huge log files)</String>
-		<String Name="MenuOpenSystemlog">Open System Log</String>
+		<String Name="MenuOpenSystemlog">Open system log</String>
 		<String Name="Name">Name</String>
-		<String Name="SettingsDupeText">Use Dupe Color for Text instead of Background</String>
+		<String Name="SettingsDupeText">Use dupe color for text instead of background</String>
 		<String Name="Info">Info</String>
-		<String Name="SystemLog">System Log</String>
+		<String Name="SystemLog">System log</String>
 		<String Name="OpenSystemLog">Open system log</String>
 		<String Name="NoSystemLog">No system log exists</String>
 		<String Name="FileListPartial">file list partial</String>
 		<String Name="AutosearchDlg">Add/Change auto search</String>
-		<String Name="PreviewDlg">Add/Change Preview Command</String>
+		<String Name="PreviewDlg">Add/Change preview command</String>
 		<String Name="PopupColors">Popup colors</String>
 		<String Name="ProppageGeneralText">General text</String>
 		<String Name="ProppageGeneralChatText">General chat text</String>
@@ -1070,23 +1068,23 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="ProppageNorm">Other users</String>
 		<String Name="SettingsDupeSearch">Use dupe color in search</String>
 		<String Name="SettingsLrus">Russian</String>
-		<String Name="FileAlreadyShared">Trying to Download File already shared! File: </String>
+		<String Name="FileAlreadyShared">Trying to download file already shared! File: </String>
 		<String Name="PasswdProtectStatic">Client protection</String>
 		<String Name="PasswdProtectChckbox">Enable password protection</String>
 		<String Name="PasswordDesc">Please enter password:</String>
-		<String Name="PasswordTitle">Authentication Required To Preform This Action</String>
+		<String Name="PasswordTitle">Authentication required to preform this action</String>
 		<String Name="Unlock">Unlock</String>
-		<String Name="PasswdProtectTrayChckbox">Protect Tray</String>
+		<String Name="PasswdProtectTrayChckbox">Protect tray</String>
 		<String Name="Note">Note; If you disable password protection your password will be reset!</String>
-		<String Name="ReaddAll">Re-add all Sources</String>
+		<String Name="ReaddAll">Re-add all sources</String>
 		<String Name="HubNotProtected">No password was required/provided at login, disconnecting hub. (Setting @ MiscPage)</String>
 		<String Name="DisallowConnectionToPassedHubs">Automatically disconnect hubs if not registered</String>
 		<String Name="DontShareDownloadDirectory">The download directory cannot be shared</String>
-		<String Name="BoldHubTabsOnKick">Bold hub's tabs on kick messages</String>
+		<String Name="BoldHubTabsOnKick">Bold hub tabs on kick messages</String>
 		<String Name="DirectoryIsHidden">Directory is hidden</String>
 		<String Name="DirectoryNotFound">Directory not shared</String>
 		<String Name="Group">Group</String>
-		<String Name="QueueSize">Queue Size</String>
+		<String Name="QueueSize">Queue size</String>
 		<String Name="AutoAddSource">Automatically add download sources from search</String>
 		<String Name="Update">Update</String>
 		<String Name="UpnpNoImplementation">No UPnP implementation available</String>
@@ -1094,25 +1092,25 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="TestWrite">Test Write to AirDC++ folders on startup</String>
 		<String Name="SettingsIncomingRefreshTime">Incoming refresh time</String>
 		<String Name="SettingDontDlAlreadyQueued">Don't download files already in queue</String>
-		<String Name="FavShowJoin">Show User Joins / Parts</String>
+		<String Name="FavShowJoin">Show user joins / parts</String>
 		<String Name="UpnpRemovedMappings">Successfully removed port mappings</String>
-		<String Name="SystemShowFinishedUploads">Show Finished Uploads in System Log</String>
-		<String Name="SystemShowFinishedDownloads">Show Finished Downloads in System Log</String>
+		<String Name="SystemShowFinishedUploads">Show finished uploads in system log</String>
+		<String Name="SystemShowFinishedDownloads">Show finished downloads in system log</String>
 		<String Name="Wizard">Settings Wizard</String>
-		<String Name="FormatRelease">Format Release Names as Links in chat</String>
-		<String Name="CopyDirectory">Copy Directory</String>
+		<String Name="FormatRelease">Format release names as links in chat</String>
+		<String Name="CopyDirectory">Copy directory</String>
 		<String Name="ErrorHashingCrc32">calculated CRC32 does not match the one found in SFV file.</String>
 		<String Name="SearchDirectory">Search directory</String>
 		<String Name="SearchGoogleTitle">Search Google (title only)</String>
 		<String Name="SearchGoogleFull">Search Google (full release name)</String>
 		<String Name="SearchTvcom">Search TV.com</String>
-		<String Name="SearchImdb">Search Imdb</String>
-		<String Name="SearchMetacritic">Search Metacritic</String>
-		<String Name="FavLogChat">Log Main chat</String>
-		<String Name="MaxLogLines">Max View History Lines</String>
-		<String Name="ViewHistory">View Chat History</String>
-		<String Name="UnableToMove">Could not Move Finished File</String>
-		<String Name="AsReport">Report Hit in Main chat</String>
+		<String Name="SearchImdb">Search IMDB</String>
+		<String Name="SearchMetacritic">Search metacritic</String>
+		<String Name="FavLogChat">Log main chat</String>
+		<String Name="MaxLogLines">Max view history lines</String>
+		<String Name="ViewHistory">View chat history</String>
+		<String Name="UnableToMove">Could not move finished file</String>
+		<String Name="AsReport">Report hit in main chat</String>
 		<String Name="FileMissing">FILE MISSING: </String>
 		<String Name="MenuScanMissing">Scan share for missing/extra files</String>
 		<String Name="ScanFolderMissing">Scan folder for missing/extra files</String>
@@ -1130,11 +1128,11 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="CheckDupes">Check duplicate directory names</String>
 		<String Name="SettingsScanOptions">Scanning options for missing/extra files</String>
 		<String Name="SortDirs">Sort directories first in search window</String>
-		<String Name="DecreaseRam">Decrease Ram WorkingSet size on minimize</String>
+		<String Name="DecreaseRam">Decrease RAM workingset size on minimize</String>
 		<String Name="RunSfvCheck">Perform SFV check</String>
 		<String Name="SfvCheckFolder">Perform SFV check (whole folder)</String>
 		<String Name="SfvCheckFile">Perform SFV check (file only)</String>
-		<String Name="CrcFailed">CRC Mismatch: </String>
+		<String Name="CrcFailed">CRC mismatch: </String>
 		<String Name="CrcOk">CRC OK: </String>
 		<String Name="CrcRemaining">files remaining: </String>
 		<String Name="CrcFinished">SFV check finished: there were %d files with proper checksum and %d files with invalid checksum (unable to check %d files)</String>
@@ -1142,10 +1140,10 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 		<String Name="CrcStopped">SFV check stopped</String>
 		<String Name="CrcFileError">Unable to check file: </String>
 		<String Name="NoCrc32">No SFV file found or the selected file isn't listed in it</String>
-		<String Name="SeeSyslogForResults">Open System Log to see the scan results</String>
+		<String Name="SeeSyslogForResults">Open system log to see the scan results</String>
 		<String Name="Stop">Stop</String>
 		<String Name="ChatNotify">Show notify icon on main chat messages</String>
-		<String Name="Notify">Use Chat Notify Icon</String>
+		<String Name="Notify">Use chat notify icon</String>
 		<String Name="ViewNfo">Find and view NFO</String>
 		<String Name="NoNfoFound">No NFO files found!</String>
 		<String Name="ScanRunning">Scan in progress</String>
@@ -1158,7 +1156,7 @@ Empty = Default String -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 - %[link]		Spotify link to the track being played
 
 Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
-		<String Name="SpotifyHelpDesc">Spotify Help</String>
+		<String Name="SpotifyHelpDesc">Spotify help</String>
 		<String Name="SpotifyTrack">Play this track on Spotify</String>
 		<String Name="SpotifyArtist">View this artist on Spotify</String>
 		<String Name="SpotifyAlbum">View this album on Spotify</String>
@@ -1175,17 +1173,17 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SettingsNoZeroByte">Don't share 0 Byte files</String>
 		<String Name="SettingsDownloadLineSpeed">Line Speed (download)</String>
 		<String Name="Autodetect">Detect automatically</String>
-		<String Name="LineSpeed">Line Speed</String>
-		<String Name="UploadLimitsAdd">Upload Limits (manually set)</String>
-		<String Name="DownloadLimits">Download Limits</String>
-		<String Name="SettingsProfile">Settings Profile</String>
+		<String Name="LineSpeed">Line speed</String>
+		<String Name="UploadLimitsAdd">Upload limits (manually set)</String>
+		<String Name="DownloadLimits">Download limits</String>
+		<String Name="SettingsProfile">Settings profile</String>
 		<String Name="SettingsMcnNote">* Lowering the upload connections from the default value will result the download connections to be set to the same value</String>
-		<String Name="SettingsUseTargetdrive">Use Target Drive for unfinished files</String>
+		<String Name="SettingsUseTargetdrive">Use target drive for unfinished files</String>
 		<String Name="CheckUseSkiplist">Ignore items matching the share skiplist</String>
 		<String Name="CheckIgnoreZeroByte">Ignore zero byte files</String>
 		<String Name="NoFilesAvailable">No files to download</String>
 		<String Name="MatchingFileList">Matching file lists, this may take a while if the lists are large.</String>
-		<String Name="SkipSubtractText">Subtract list: Skip Dirs with ONLY 2 or less files smaller than</String>
+		<String Name="SkipSubtractText">Subtract list: Skip dirs with ONLY 2 or less files smaller than</String>
 		<String Name="ProppageDupeMsg">Release.Example-AIRDC</String>
 		<String Name="ProppageUnderlineLinks">Underline links</String>
 		<String Name="ProppageUnderlineDupes">Underline dupes</String>
@@ -1195,7 +1193,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="LanguageVersion">Language version</String>
 		<String Name="ListHlText">HighLight matches in file lists (wildcards, | separate)</String>
 		<String Name="ListHlExample">Example, *NORDIC* (this may slow down file list loading...)</String>
-		<String Name="SettingsDupes">Dupes Settings</String>
+		<String Name="SettingsDupes">Dupes settings</String>
 		<String Name="ReportSkiplist">Show files blocked by the skiplist in system log</String>
 		<String Name="XUsers">%d users</String>
 		<String Name="XUsersWaiting">%d user(s) (%d waiting)</String>
@@ -1228,7 +1226,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="XFoldersExtras">%d folders with extra files</String>
 		<String Name="XEmptyFolders">%d empty folders</String>
 		<String Name="XDupeFolders">%d duplicate folders</String>
-		<String Name="ExtraFilesSampledirX">Extra files in Sample folder: %s</String>
+		<String Name="ExtraFilesSampledirX">Extra files in sample folder: %s</String>
 		<String Name="ExtraFilesRlsdirX">The following extra files have been found from a release folder %s: %s</String>
 		<String Name="ConfirmRemoveDirMultiple">The selected folder contains %d directory bundles and %d file bundles. Are you sure want to remove them?</String>
 		<String Name="ConfirmRemoveDirBundle">Are you sure want to remove the bundle %s?</String>
@@ -1242,23 +1240,23 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="ConfirmMoveDirFinishedMultiple">The bundles in the selected directory contain total of %d finished files. Do you also want to move them?</String>
 		<String Name="ConfirmMoveDirFinishedBundle">The selected bundle contains total of %d finished files. Do you also want to move them?</String>
 		<String Name="ConfirmMoveDirFinishedBundlePart">The selected bundle directory contains total of %d finished files. Do you also want to move them?</String>
-		<String Name="MatchAdl">ADLSearch</String>
+		<String Name="MatchAdl">ADL search</String>
 		<String Name="MatchingAdl">Matching file list with ADL search, this might take a while if the list is large...</String>
 		<String Name="LogHashing">Show each hashed file in system log</String>
-		<String Name="AdlsearchInProgress">The ADLSearch list can't be modified while matching is in progress!</String>
+		<String Name="AdlsearchInProgress">The ADL search list can't be modified while matching is in progress!</String>
 		<String Name="PriopageOrderBalanced">Balanced (based on sources and their speeds)</String>
 		<String Name="PriopageOrderProgress">Set priorities automatically based on the progress</String>
 		<String Name="PriopageBalanceQis">Also prioritize the order among bundle files</String>
 		<String Name="Priorities">Priorities</String>
-		<String Name="UseFtpLogger">Use external sfv checking (ex. FTPLogger, Enable this only if you know what you are doing)  </String>
+		<String Name="UseFtpLogger">Use external sfv checking (ex. FTPLogger, enable this only if you know what you are doing)</String>
 		<String Name="IconsInTheme">The selected theme has custom icons, do you wish to load them?
  You will need to restart AirDC++ for the icons to load.</String>
-		<String Name="IconsRestore">Restore Default icons?
+		<String Name="IconsRestore">Restore default icons?
  You will need to restart AirDC++ for the icons to load.</String>
-		<String Name="IconsDefault">Default Icons</String>
+		<String Name="IconsDefault">Default icons</String>
 		<String Name="ThemeText">Themes: </String>
-		<String Name="EnableAutosearch">Enable Item(s)</String>
-		<String Name="DisableAutosearch">Disable Item(s)</String>
+		<String Name="EnableAutosearch">Enable item(s)</String>
+		<String Name="DisableAutosearch">Disable item(s)</String>
 		<String Name="SearchBundleAlt">Search bundle for alternatives</String>
 		<String Name="MatchPartial">Match partial list</String>
 		<String Name="FavdirsShowShared">Show shared directories in the \"Download to\" menu</String>
@@ -1279,8 +1277,8 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="NotInSharedDir">The bundle %s isn't in a shared folder, please add it in share manually</String>
 		<String Name="BundleHashFailed">Failed to hash the bundle %s, not shared</String>
 		<String Name="BundleSharingFailed">Failed to add the bundle %s in share</String>
-		<String Name="AsUserMatch">Only from users with nick Matching:  (Wildcards, | separate)</String>
-		<String Name="UserMatch">User Match</String>
+		<String Name="AsUserMatch">Only from users with nick Matching:  (wildcards, | separate)</String>
+		<String Name="UserMatch">User match</String>
 		<String Name="SettingsAllowMatchFullList">Use full file lists as last resort if adding sources fails</String>
 		<String Name="MatchedFilesBundle">Matched %d file(s) in the bundle %s, of which %d were new</String>
 		<String Name="MatchedFilesXBundles">Matched %d file(s) in %d bundles, of which %d were new</String>
@@ -1297,7 +1295,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="DownloadSkiplistMatch">The file matches the download skiplist</String>
 		<String Name="SettingsExpandBundles">Automatically expand bundles in Transfer view</String>
 		<String Name="SettingsOverlapSlowSources">Allow fast users to overlap slower ones if there is nothing else to download</String>
-		<String Name="SettingsSbWebShortcuts">Web Shortcuts</String>
+		<String Name="SettingsSbWebShortcuts">Web shortcuts</String>
 		<String Name="SettingsWsDescr">Web shortcuts are used to open web pages with specific contents.
 The key is used in chat / commands Example: /google \"Movie Name\"
 Key can be more than one character, but can not be a space.
@@ -1311,15 +1309,15 @@ An example: http://domain.com/search=
 Note: The key is case sensitive!
 
 Clean search term means a title will be attempted to pick from the string. e.g \"Movie.Name.2003.DVDRip.XviD-ABC\" will become \"Movie Name\"</String>
-		<String Name="NameRequired">Name Required</String>
-		<String Name="NameInUse">Name Already in use</String>
-		<String Name="KeyInUse">Key Already in use</String>
-		<String Name="SettingsWsHowto">How To use</String>
+		<String Name="NameRequired">Name required</String>
+		<String Name="NameInUse">Name already in use</String>
+		<String Name="KeyInUse">Key already in use</String>
+		<String Name="SettingsWsHowto">How to use</String>
 		<String Name="SettingsWsClean">Clean search term</String>
 		<String Name="Webshortcuts">WebShortCuts</String>
 		<String Name="CountryInformation">Country information</String>
 		<String Name="SettingsCountryFormat">Country format</String>
-		<String Name="SettingsCountryFormatHelpDesc">Country Format Help</String>
+		<String Name="SettingsCountryFormatHelpDesc">Country format help</String>
 		<String Name="SettingsCountryFormatHelp">This box allows customization of the way user country information is displayed throughout the interface. Default: %[2code] - %[name]
 
   Available variables: 
@@ -1336,13 +1334,13 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SavingShare">Saving the share cache</String>
 		<String Name="ShuttingDown">Shutting down.</String>
 		<String Name="SettingsHttpProxy">HTTP Proxy</String>
-		<String Name="SettingsDownloadLocations">Download Locations</String>
-		<String Name="SettingsSegmentedDownloads">Segmented Downloads</String>
+		<String Name="SettingsDownloadLocations">Download locations</String>
+		<String Name="SettingsSegmentedDownloads">Segmented downloads</String>
 		<String Name="SettingsAutoBundleSearch">Automatically search for alternative bundle sources</String>
-		<String Name="SettingsSearchingOptions">Searching Options</String>
-		<String Name="SettingsSearchMatching">Search Matching</String>
+		<String Name="SettingsSearchingOptions">Searching options</String>
+		<String Name="SettingsSearchMatching">Search matching</String>
 		<String Name="SettingsSkippingOptions">Skipping options</String>
-		<String Name="SettingsSkiplistDownload">Download Skiplist (separate files with '|', wildcards allowed)</String>
+		<String Name="SettingsSkiplistDownload">Download skiplist (separate files with '|', wildcards allowed)</String>
 		<String Name="SettingsHighPrioFiles">High priority files (separate files with '|', wildcards allowed)</String>
 		<String Name="SettingsFormatRemoteTime">Use the date of the remote directory for time parameters</String>
 		<String Name="DisconnectBundleSpeed">And the bundle speed exceeds</String>
@@ -1353,8 +1351,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="PathsFavdirs">Paths (the one with most disk space will be picked, allows time variables)</String>
 		<String Name="Paths">Paths</String>
 		<String Name="SearchFilename">Search filename</String>
-		<String Name="RenameDir">Rename Directory</String>
-		<String Name="MoveDir">Move Directory</String>
+		<String Name="RenameDir">Rename directory</String>
+		<String Name="MoveDir">Move directory</String>
 		<String Name="MoveRenameFile">Move/Rename file(s)</String>
 		<String Name="SettingsCalculatePrioAuto">Calculate bundle priorities automatically</String>
 		<String Name="SettingsAutoprioFiles">Calculate priorities also for individual files</String>
@@ -1376,16 +1374,16 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SettingsExpiryDays">The default expiry days for items (0 = won't expire)</String>
 		<String Name="StartTime">Start time</String>
 		<String Name="EndTime">End time</String>
-		<String Name="LastSearch">Last Search</String>
+		<String Name="LastSearch">Last search</String>
 		<String Name="SelectDirectory">Select directory</String>
 		<String Name="XIsSameThan">The directory %s also exists in %s</String>
-		<String Name="HorizontalQueue">Use horizontal splitter in Download Queue window</String>
+		<String Name="HorizontalQueue">Use horizontal splitter in download queue window</String>
 		<String Name="TypeTargetPath">Direct path</String>
 		<String Name="TypeTargetFavorite">Favorite directory (the real path will be picked when matches are found)</String>
 		<String Name="TypeTargetShare">Shared directory (the real path will be picked when matches are found)</String>
 		<String Name="LocationType">Location type</String>
 		<String Name="ForceHashNotification">Refresh the directory after fixing the problem(s) to rescan the bundle (or type \"/allow %s\" to force it to be hashed in share if the problem(s) can't be fixed)</String>
-		<String Name="LineEmptyOrTooShort">Search String empty or too Short! (min. 5 chars allowed)</String>
+		<String Name="LineEmptyOrTooShort">Search string empty or too short! (min. 5 chars allowed)</String>
 		<String Name="AutosearchCheckQueued">Don't download directories already in queue</String>
 		<String Name="AutosearchCheckShared">Don't download directories already in share</String>
 		<String Name="PortBysy">Unable to open %s port. Searching or file transfers will not work correctly until you change settings or turn off any application that might be using that port.</String>
@@ -1411,16 +1409,14 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="AutoSelect">Auto select based on free space</String>
 		<String Name="GetBrowseList">Get/browse file list</String>
 		<String Name="SettingsToolbarSize">Toolbar icon size</String>
-		<String Name="SettingsToolbarNote">Note! Changing Toolbar Images or icon size require a client restart to take effect.</String>
-		<String Name="SettingsWtoolbarSize">Media Toolbar Icon size</String>
-		<String Name="ToggleTbstatus">Toolbar Progressbar	Ctrl+5</String>
+		<String Name="SettingsToolbarNote">Note! Changing toolbar images or icon size require a client restart to take effect.</String>
+		<String Name="SettingsWtoolbarSize">Media toolbar icon size</String>
+		<String Name="ToggleTbstatus">Toolbar progressbar	Ctrl+5</String>
 		<String Name="XFavProfilesReset">%d favorite hubs have been reset to use the default share profile</String>
-		<String Name="ShareProfile">Share Profile</String>
-		<String Name="ShareProfiles">Share Profiles</String>
+		<String Name="ShareProfile">Share profile</String>
+		<String Name="ShareProfiles">Share profiles</String>
 		<String Name="ProfileExists">A profile with the same name exists already</String>
 		<String Name="XProfileDirsExists">This directory also exists in %d other profile(s)</String>
-		<String Name="AddProfile">Add profile</String>
-		<String Name="AddProfileCopy">Add copy from this</String>
 		<String Name="RemoveProfile">Remove profile</String>
 		<String Name="ApplyChanges">Apply changes</String>
 		<String Name="AddInAllProfiles">Add this directory in all profiles</String>
@@ -1461,8 +1457,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SearchCurDir">Search within the current directory</String>
 		<String Name="UpdatingView">Updating the view...</String>
 		<String Name="AdlDlFullList">Do you want to switch to full file list before matching the ADL search?</String>
-		<String Name="HighlightContext">Highlight Context</String>
-		<String Name="SettingsContextFilelist">Highlight for Directories in File list (Wildcards or $Re: for Regex)</String>
+		<String Name="HighlightContext">Highlight context</String>
+		<String Name="SettingsContextFilelist">Highlight for directories in file list (wildcards or $Re: for regex)</String>
 		<String Name="ResetExtensionsConfirm">This will delete all defined search types and restore the default ones. Do you want to continue?</String>
 		<String Name="NotEnoughSpacePaused">Not enough free space left on the target path %s (free space: %s while %s is needed). Using paused priority.</String>
 		<String Name="NotEnoughSpaceQueuedPaused">Not enough free space left on the target path %s (free space: %s, queued files: %s while %s is needed). Using paused priority.</String>
@@ -1473,7 +1469,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="FindText">Find text</String>
 		<String Name="SearchTypesNote">Note; Custom search types will only be applied to ADC hubs! On NMDC hubs, using a predefined search type will only search for a set of predefined, unconfigurable extensions; using a custom type will default to searching for any extension.</String>
 		<String Name="SettingsShareProfileNote">Note; Added share profiles can only be used in ADC hubs. NMDC hubs are forced to use the default profile.</String>
-		<String Name="SettingsSharingOptions">Sharing Options</String>
+		<String Name="SettingsSharingOptions">Sharing options</String>
 		<String Name="SettingsMisc">Miscellaneous</String>
 		<String Name="FilterDots">Filter...</String>
 		<String Name="AddDlgDesc">Add also in the following profiles</String>
@@ -1520,7 +1516,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="IntegrityCheckFailed">File integrity check failed</String>
 		<String Name="UpdaterWriteFailed">Failed to write the update file</String>
 		<String Name="UpdateAlreadyDownloaded">This version has already been downloaded. Please restart the client to apply the changes.</String>
-		<String Name="Updater">AirDC++ Updater</String>
+		<String Name="Updater">AirDC++ updater</String>
 		<String Name="UpdaterInProgress">Updating in progress, please wait a while for it to complete and try again.</String>
 		<String Name="NoIncomingConfigured">You don't have any incoming directories configured!</String>
 		<String Name="ViewedFileTooBig">The file %s is too big to be viewed in the client (the file size is %s while the limit is 1 MiB)</String>
@@ -1554,8 +1550,7 @@ would you still like to load them?</String>
 		<String Name="ItemNameExists">An item with the same name exists already</String>
 		<String Name="ItemSearched">%s has been searched for</String>
 		<String Name="ItemSearchedIn">%s will be searched in %d seconds</String>
-		<String Name="AutoSearchSmall">Auto search</String>
-		<String Name="AutoSearch">Auto Search</String>
+		<String Name="AutoSearch">Auto search</String>
 		<String Name="SettingsPopunderText">Open new text files in the background</String>
 		<String Name="ScanningResultsOn">Scanning results on %s</String>
 		<String Name="MandatoryUpdate">Mandatory Update</String>
@@ -1574,17 +1569,17 @@ would you still like to load them?</String>
 		<String Name="TotalSize">Total size: %s</String>
 		<String Name="FullListDlLimit">Maximum number of files for getting full file list with \"Get/Browse file list\"</String>
 		<String Name="SetTransferLimiting">Limit transfer speeds</String>
-		<String Name="SetAlternateLimiting">Use Alternate Limiting from</String>
+		<String Name="SetAlternateLimiting">Use alternate limiting from</String>
 		<String Name="MaxUploadRate">Maximum upload rate (0 = infinite)</String>
 		<String Name="MaxDownloadRate">Maximum download rate (0 = infinite)</String>
 		<String Name="AdvancedUploadLimits">Advanced upload limits</String>
-		<String Name="SettingsSpeedSlots">Speed &amp; Slots</String>
+		<String Name="SettingsSpeedSlots">Speed &amp; slots</String>
 		<String Name="Noon">Noon</String>
 		<String Name="Midnight">Midnight</String>
 		<String Name="Am"> AM</String>
 		<String Name="Pm"> PM</String>
-		<String Name="SettingsLimitsAdvanced">Limits &amp; Advanced</String>
-		<String Name="AlternateLimiting">Alternate Limiting</String>
+		<String Name="SettingsLimitsAdvanced">Limits &amp; advanced</String>
+		<String Name="AlternateLimiting">Alternate limiting</String>
 		<String Name="SaveHubsState">Remember previously enabled hubs in search window</String>
 		<String Name="EndlessRedirectionLoop">Endless redirection loop (%1%)</String>
 		<String Name="ManualUpdateMsg">You will be forwarded to the downloading page as automatic updating can't be performed</String>
@@ -1597,7 +1592,7 @@ would you still like to load them?</String>
 		<String Name="BloomMode">Bloom filter mode</String>
 		<String Name="SettingsConfirmHubClose">Confirm hub closing</String>
 		<String Name="SettingsConfirmAsRemove">Confirm item removal in auto search</String>
-		<String Name="MatchColumn">Match Column</String>
+		<String Name="MatchColumn">Match column</String>
 		<String Name="UnknownUser">Unknown user</String>
 		<String Name="NoAccessOnlineHubs">No access to this file via any online hub</String>
 		<String Name="SearchDisabledX">Search disabled: %s</String>
@@ -1627,9 +1622,9 @@ would you still like to load them?</String>
 		<String Name="Never">Never</String>
 		<String Name="Bundles">Bundles</String>
 		<String Name="AutoRemove">Auto remove</String>
-		<String Name="OnlineNicks">Online Nicks</String>
-		<String Name="DlStatusPopup">Download speed - Click to adjust limiter value</String>
-		<String Name="UlStatusPopup">Upload speed - Click to adjust limiter value</String>
+		<String Name="OnlineNicks">Online nicks</String>
+		<String Name="DlStatusPopup">Download speed - click to adjust limiter value</String>
+		<String Name="UlStatusPopup">Upload speed - click to adjust limiter value</String>
 		<String Name="Uploaded">Uploaded</String>
 		<String Name="SwitchingToAddress">Switching to the address %s</String>
 		<String Name="XBundlesQueued">%d bundles queued</String>
@@ -1641,8 +1636,8 @@ would you still like to load them?</String>
 		<String Name="BundleXQueued">%s (queued)</String>
 		<String Name="FailedBundleSearched">A failed bundle %s has been searched for</String>
 		<String Name="FailedBundleSearchedIn">A failed bundle %s will be searched for in %d seconds</String>
-		<String Name="AwayOn">Away mode ON - Click to adjust</String>
-		<String Name="AwayOff">Away mode OFF - Click to adjust</String>
+		<String Name="AwayOn">Away mode ON - click to adjust</String>
+		<String Name="AwayOff">Away mode OFF - click to adjust</String>
 		<String Name="SettingsAutoCompleteBundles">Try to to complete bundles with missing files automatically</String>
 		<String Name="RequireExactMatch">Require an exact match</String>
 		<String Name="ClearHistory">Clear history</String>
@@ -1683,7 +1678,7 @@ Do you want to use this destination anyway?</String>
 		<String Name="PassiveMode">Passive mode</String>
 		<String Name="ActiveMode">Active mode</String>
 		<String Name="RemoveAfterCompleted">Remove after completed</String>
-		<String Name="AwayMode">Away Mode</String>
+		<String Name="AwayMode">Away mode</String>
 		<String Name="AwayIdleTimeBegin">Automatically set away mode after</String>
 		<String Name="AwayIdleTimeEnd">minutes of inactivity (0 = disabled)</String>
 		<String Name="SettingsMaxHasherSpeed">Maximum speed per hasher (0 = unlimited)</String>
@@ -1763,9 +1758,9 @@ Do you want to use this destination anyway?</String>
 		<String Name="BundlesQueued">Queued bundle files</String>
 		<String Name="ScanResultNote">Detailed scanning results are shown in a separate tab.</String>
 		<String Name="XDirectoriesRefreshed">%d directories have been refreshed</String>
-		<String Name="ShowEmoticonButton">Show Emoticon button in chat windows</String>
-		<String Name="ShowMultilineButton">"Show Multiline message button in chat windows</String>
-		<String Name="ShowMagnetButton">"Show Magnet button in chat windows</String>
+		<String Name="ShowEmoticonButton">Show emoticon button in chat windows</String>
+		<String Name="ShowMultilineButton">"Show multiline message button in chat windows</String>
+		<String Name="ShowMagnetButton">"Show MAGNET button in chat windows</String>
 		<String Name="FileListRefreshInitiatedXPaths">File list refresh initiated for %d directories</String>
 		<String Name="CantOpenEmptyFile">A zero-byte file can't be opened</String>
 		<String Name="ListAlreadyQueued">The file list is queued already</String>
@@ -1777,12 +1772,12 @@ Do you want to use this destination anyway?</String>
 		<String Name="TthAlreadyShared">A file with the same hash exists in a shared directory %s</String>
 		<String Name="AllBundleFilesExist">All %d files exist on the disk already</String>
 		<String Name="TargetFileExists">File exists on the disk already</String>
-		<String Name="ContextChat">Context Chat</String>
-		<String Name="ContextNicklist">Context Nicklist</String>
-		<String Name="ContextFilelist">Context Filelist</String>
-		<String Name="ChangeTabColor">Change Tab color</String>
-		<String Name="HlRegexp">Use $Re: for Regexp</String>
-		<String Name="ColorFont">Color &amp; Font</String>
+		<String Name="ContextChat">Context chat</String>
+		<String Name="ContextNicklist">Context nicklist</String>
+		<String Name="ContextFilelist">Context filelist</String>
+		<String Name="ChangeTabColor">Change tab color</String>
+		<String Name="HlRegexp">Use $Re: for regexp</String>
+		<String Name="ColorFont">Color &amp; font</String>
 		<String Name="Key">Key</String>
 		<String Name="Clean">Clean</String>
 		<String Name="LevelUp">Up one level</String>
@@ -1865,12 +1860,20 @@ Make sure that the path %s is accessible and there isn't there isn't another ins
 		<String Name="ProfileNormalDesc">The client is used in normal private/public hubs for transferring files via internet. Use this profile if unsure.</String>
 		<String Name="ProfileRarDesc">The client is used for transferring files that are split in RAR archives (or in other small-sized formats).</String>
 		<String Name="ProfileLanDesc">The client is used for transferring files in local network (e.g. LAN parties) or in another closed network (e.g. university netwok).</String>
-		<String Name="WizardGeneralIntro">Enter general information that you want to be displayed to other users</String>
+		<String Name="WizardGeneralIntro">Please enter some general information that you want to be displayed to other users</String>
 		<String Name="WizardProfileIntro">Choose how you will use the client. This will optimize various client options to be most suitable for your usage case.</String>
 		<String Name="WizardSharingIntro">Choose the folders that you want to share to other users. This step isn't mandatory, but sharing files to other users will allow joining more hubs.</String>
 		<String Name="WizardSharingSpNote">The folders are added in the default share profile. Note that you may create additional share profiles later from the settings to allow sharing different files in different hubs.</String>
 		<String Name="WizardFinishedTitle">Wizard completed</String>
-		<String Name="WizardFinishedIntro">The wizard has been completed successfully.</String>
+		<String Name="WizardFinishedIntro">The wizard has been completed successfully. After exiting the wizard, you are ready to connect to hubs. The following methods can be used:
+
+
+1. Open public hublist (\"View\" -&gt; \"Public hubs\" and choose the hub that you wish to connect
+
+2. If you already have the address that you want to connect, you can add it in favorite hubs (\"View\" -&gt; \"Favorite hubs\") or connect directly by using quick connect (\"File\" -&gt; \"Quick connect\")
+
+
+If you want more information about the client features or you have questions to ask, see the \"Help\" menu.</String>
 		<String Name="InstallRarSkiplist">Install the RAR profile share skiplist to avoid sharing of unwanted files</String>
 		<String Name="LanDisableEncryption">Disable transfer encryption (reduces resource usage with high speed transfers)</String>
 		<String Name="WizardConnectionSpeedIntro">Choose your download and upload speed. You may also type in custom values if your speed isn't listed. Please be as accurate as possible and set the ACTUAL speed of your connection.</String>
@@ -1930,5 +1933,12 @@ Do you want to continue?</String>
 		<String Name="InvalidPassword">Invalid password</String>
 		<String Name="SettingsFinishedNoHash">Allow adding finished Bundles in share without hashing</String>
 		<String Name="TreeLoadFailedDb">Failed to load hash data for a TTH root %s: %s (consider verifying your databases by typing %s)</String>
+		<String Name="RequiredBrackets">(required)</String>
+		<String Name="OptionalBrackets">(optional)</String>
+		<String Name="NewProfileDots">New profile...</String>
+		<String Name="CopyFromThisDots">Copy from this...</String>
+		<String Name="NewProfile">New profile</String>
+		<String Name="CopyProfile">Copy profile</String>
+		<String Name="AddProfileDots">Add profile...</String>
 	</Strings>
 </Language>

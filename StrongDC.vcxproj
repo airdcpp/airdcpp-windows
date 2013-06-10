@@ -642,6 +642,7 @@
     <ClInclude Include="windows\FilteredListViewCtrl.h" />
     <ClInclude Include="windows\HashingPage.h" />
     <ClInclude Include="windows\HtmlToRtf.h" />
+    <ClInclude Include="windows\LanguageDownloadDlg.h" />
     <ClInclude Include="windows\LimitPage.h" />
     <ClInclude Include="windows\ExCImage.h" />
     <ClInclude Include="windows\ListFilter.h" />

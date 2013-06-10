@@ -24,13 +24,14 @@
 #include "PropPage.h"
 
 #include "Wizard.h"
+#include "LanguageDownloadDlg.h"
 
 #include <atldlgs.h>
 
 //#include "../client/UpdateManagerListener.h"
 
 class SetupWizard;
-class WizardLanguage : public PropPage, public CAeroWizardPageImpl<WizardLanguage>/*, private UpdateManagerListener*/ { 
+class WizardLanguage : public PropPage, public CAeroWizardPageImpl<WizardLanguage> { 
 public: 
 	typedef CAeroWizardPageImpl<WizardLanguage> baseClass;
 	BEGIN_MSG_MAP(WizardLanguage) 
@@ -45,18 +46,17 @@ public:
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 
 	WizardLanguage(SettingsManager *s, SetupWizard* aWizard);
+	~WizardLanguage();
 
 	void write();
 	int OnWizardNext();
 	int OnSetActive();
 
 private:
+	void completeLanguageCheck();
 	CComboBoxEx ctrlLanguage;
 	SetupWizard* wizard;
-
-	/*void on(UpdateManagerListener::LanguageDownloading) noexcept;
-	void on(UpdateManagerListener::LanguageFinished) noexcept;
-	void on(UpdateManagerListener::LanguageFailed, const string& aError) noexcept;*/
+	LanguageDownloadDlg* dl;
 }; 
 
 #endif

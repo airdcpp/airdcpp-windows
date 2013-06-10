@@ -22,6 +22,7 @@
 #include "stdafx.h"
 #include "resource.h"
 #include "PropPage.h"
+#include "Async.h"
 
 #include <atldlgs.h>
 
@@ -34,7 +35,7 @@
 #include "WizardFinish.h"
 #include "WizardLanguage.h"
 
-class SetupWizard : public CAeroWizardFrameImpl<SetupWizard> { 
+class SetupWizard : public CAeroWizardFrameImpl<SetupWizard>, public Async<SetupWizard> { 
 public: 
 	enum { WM_USER_INITDIALOG = WM_APP + 501 };
 	enum Pages { 
@@ -50,7 +51,8 @@ public:
 	};
 
 	typedef CAeroWizardFrameImpl<SetupWizard> baseClass;
-	BEGIN_MSG_MAP(SampleWizard) 
+	BEGIN_MSG_MAP(SampleWizard)
+		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		CHAIN_MSG_MAP(baseClass) 
 	END_MSG_MAP() 
 		

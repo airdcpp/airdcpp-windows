@@ -173,11 +173,6 @@ Section "Themes"
   File /r /x .svn Themes
 SectionEnd
 
-Section "Language Translations" 
-  SetOutPath "$LOCALAPPDATA\AirDC++\"
-  File /r /x .svn Language
-SectionEnd
-
 Section "Store settings in your user profile folder" loc
   ; Change to nonlocal dcppboot if the checkbox left checked
   SetOutPath $INSTDIR

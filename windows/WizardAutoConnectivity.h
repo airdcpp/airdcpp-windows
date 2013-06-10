@@ -19,7 +19,6 @@
 #ifndef DCPLUSPLUS_WIZARD_AUTOCONN
 #define DCPLUSPLUS_WIZARD_AUTOCONN
 
-#include "Async.h"
 #include "stdafx.h"
 #include "resource.h"
 #include "PropPage.h"
@@ -31,12 +30,11 @@
 #include <atldlgs.h>
 
 class SetupWizard;
-class WizardAutoConnectivity : public PropPage, public CAeroWizardPageImpl<WizardAutoConnectivity>, private ConnectivityManagerListener, private Async<WizardAutoConnectivity> { 
+class WizardAutoConnectivity : public PropPage, public CAeroWizardPageImpl<WizardAutoConnectivity>, private ConnectivityManagerListener { 
 public: 
 	typedef CAeroWizardPageImpl<WizardAutoConnectivity> baseClass;
 	BEGIN_MSG_MAP(WizardAutoConnectivity) 
-		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog) 
-		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker) 
+		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		COMMAND_ID_HANDLER(IDC_AUTO_DETECT, OnDetectConnection)
 		COMMAND_ID_HANDLER(IDC_IPV4_AUTODETECT, OnTickAutoDetect) 
 		COMMAND_ID_HANDLER(IDC_IPV6_AUTODETECT, OnTickAutoDetect) 
