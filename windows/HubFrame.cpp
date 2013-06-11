@@ -605,7 +605,7 @@ void HubFrame::execTasks() {
 		} else if(t.first == UPDATE_USER_JOIN) {
 			UserTask& u = static_cast<UserTask&>(*t.second);
 			if(updateUser(u)) {
-				bool isFavorite = FavoriteManager::getInstance()->isFavoriteUser(u.onlineUser->getUser());
+				bool isFavorite = u.onlineUser->getUser()->isFavorite();
 				if (isFavorite && (!SETTING(SOUND_FAVUSER).empty()) && (!SETTING(SOUNDS_DISABLED)))
 					WinUtil::playSound(Text::toT(SETTING(SOUND_FAVUSER)));
 
@@ -621,7 +621,7 @@ void HubFrame::execTasks() {
 			const UserTask& u = static_cast<UserTask&>(*t.second);
 			removeUser(u.onlineUser);
 
-			if (!u.onlineUser->isHidden() && client->get(HubSettings::ShowJoins) || (client->get(HubSettings::FavShowJoins) && FavoriteManager::getInstance()->isFavoriteUser(u.onlineUser->getUser()))) {
+			if (!u.onlineUser->isHidden() && client->get(HubSettings::ShowJoins) || (client->get(HubSettings::FavShowJoins) && u.onlineUser->getUser()->isFavorite())) {
 				addLine(Text::toT("*** " + STRING(PARTS) + " " + u.onlineUser->getIdentity().getNick()), WinUtil::m_ChatTextSystem, SETTING(HUB_BOLD_TABS));
 			}
 		}
@@ -1931,7 +1931,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 	case CDDS_ITEMPREPAINT: {
 			OnlineUser* ui = (OnlineUser*)cd->nmcd.lItemlParam;
 			// tstring user = ui->getText(OnlineUser::COLUMN_NICK); 
-			if (FavoriteManager::getInstance()->isFavoriteUser(ui->getUser())) {
+			if (ui->getUser()->isFavorite()) {
 				cd->clrText = SETTING(FAVORITE_COLOR);
 			} else if (UploadManager::getInstance()->hasReservedSlot(ui->getUser())) {
 				cd->clrText = SETTING(RESERVED_SLOT_COLOR);

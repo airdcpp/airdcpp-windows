@@ -101,7 +101,7 @@ public:
 					noFullList = false;
 				}
 
-				bool fav = FavoriteManager::getInstance()->isFavoriteUser(ui->getUser());
+				bool fav = ui->getUser()->isFavorite();
 				if(fav)
 					nonFavOnly = false;
 				if(!fav)

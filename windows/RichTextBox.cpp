@@ -231,7 +231,7 @@ bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const ts
 			SetSel(lSelBegin + iLen + 1, lSelBegin + iLen + iAuthorLen);
 			SetSelectionCharFormat(WinUtil::m_TextStyleMyNick);
 		} else {
-			bool isFavorite = FavoriteManager::getInstance()->isFavoriteUser(i.getUser());
+			bool isFavorite = i.getUser()->isFavorite();
 
 			//if(isFavorite || i.isOp()) {
 				SetSel(lSelBegin, lSelBegin + iLen + 1);
@@ -266,7 +266,7 @@ bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const ts
 					if(client) {
 						const OnlineUserPtr ou = client->findUser(Text::fromT(nick));
 						if(ou) {
-							isFavorite = FavoriteManager::getInstance()->isFavoriteUser(ou->getUser());
+							isFavorite = ou->getUser()->isFavorite();
 							isOp = ou->getIdentity().isOp();
 						}
                     }

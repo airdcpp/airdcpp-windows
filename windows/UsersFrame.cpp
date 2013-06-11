@@ -668,7 +668,7 @@ bool UsersFrame::matches(const UserInfo &ui) {
 	return show(ui.getUser(), false);
 }
 
-static bool isFav(const UserPtr &u) { return FavoriteManager::getInstance()->isFavoriteUser(u); }
+static bool isFav(const UserPtr &u) { return u->isFavorite(); }
 
 bool UsersFrame::show(const UserPtr &u, bool any) const {
 	if(any && (u->isOnline() || isFav(u) || u->getQueued())) {
