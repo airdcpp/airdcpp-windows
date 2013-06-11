@@ -1940,5 +1940,11 @@ Do you want to continue?</String>
 		<String Name="NewProfile">New profile</String>
 		<String Name="CopyProfile">Copy profile</String>
 		<String Name="AddProfileDots">Add profile...</String>
+		<String Name="XSharedFilesRemoved">%d files from the directory %s have been removed from share</String>
+		<String Name="XSharedFilesAdded">%d files in directory %s have been added in share</String>
+		<String Name="SharedFileDeleted">The file %s has been removed from share</String>
+		<String Name="SharedFileAdded">The file %s has been added in share</String>
+		<String Name="SharedDirRenamed">The shared directory %s has been renamed to %s</String>
+		<String Name="SharedFileRenamed">The shared file %s has been renamed to %s</String>
 	</Strings>
 </Language>

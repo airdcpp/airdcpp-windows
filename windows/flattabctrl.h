@@ -334,7 +334,7 @@ public:
 	}
 
 	void SwitchTo(bool next = true){
-		TabInfo::ListIter i = tabs.begin();
+		auto i = tabs.begin();
 		for(; i != tabs.end(); ++i){
 			if((*i)->hWnd == active->hWnd){
 				if(next){
@@ -354,7 +354,7 @@ public:
 		
 	}
 	void SwitchWindow(int aWindow){
-		TabInfo::ListIter i = tabs.begin();
+		auto i = tabs.begin();
 
 		//find the right tab
 		for(int j = 0; i != tabs.end() && j < aWindow; ++i, ++j);
@@ -494,8 +494,7 @@ public:
 		mi.fMask = MIIM_ID | MIIM_TYPE | MIIM_DATA | MIIM_STATE;
 		mi.fType = MFT_STRING | MFT_RADIOCHECK;
 
-		for(TabInfo::ListIter i = tabs.begin(); i != tabs.end(); ++i) {
-			TabInfo* ti = *i;
+		for(auto ti: tabs) {
 			if(ti->row == -1) {
 				mi.dwTypeData = (LPTSTR)ti->name.c_str();
 				mi.dwItemData = (ULONG_PTR)ti->hWnd;
@@ -537,7 +536,7 @@ public:
 	}
 
 	void update(){
-		TabInfo::ListIter i = tabs.begin();
+		auto i = tabs.begin();
 		int j = 1;
 		for(; i != tabs.end(); ++i, ++j){
 			if(j <= 10)

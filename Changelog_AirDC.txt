@@ -58,6 +58,7 @@ Changed:
 - Download skiplist is also matched for bundle subdirectories (instead of only file names)
 - Validate the TTH before performing a search (manual searches only)
 - Don't change finished download connections to disconnected state
+- Language files aren't shipped with the client, they are only downloaded when enabled by the user
 
 Fixed:
 
@@ -85,6 +86,7 @@ Fixed:
 - Fix hub encoding in NMDC hubs
 - Fix password not being requested in some cases when password protected tray is enabled
 - Fix various cases when MCN download connections may have not been created
+- Fix language file locations
 
 
 2.44
