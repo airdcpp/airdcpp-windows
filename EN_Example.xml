@@ -457,7 +457,6 @@
 		<String Name="RemoveFromAll">Remove user from queue</String>
 		<String Name="RemoveOffline">Remove offline users</String>
 		<String Name="RemoveSource">Remove source</String>
-		<String Name="RenamedTo"> renamed to </String>
 		<String Name="Report">Report user</String>
 		<String Name="ReportAlternates">Show auto search for alternates in system log</String>
 		<String Name="Resume">Resume</String>
@@ -1946,5 +1945,6 @@ Do you want to continue?</String>
 		<String Name="SharedFileAdded">The file %s has been added in share</String>
 		<String Name="SharedDirRenamed">The shared directory %s has been renamed to %s</String>
 		<String Name="SharedFileRenamed">The shared file %s has been renamed to %s</String>
+		<String Name="MoveFileFailed">Failed to move the file %s to %s (%s)</String>
 	</Strings>
 </Language>
