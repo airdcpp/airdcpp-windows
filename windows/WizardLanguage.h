@@ -53,6 +53,7 @@ public:
 	int OnSetActive();
 
 private:
+	bool checkLanguage();
 	void completeLanguageCheck();
 	CComboBoxEx ctrlLanguage;
 	SetupWizard* wizard;

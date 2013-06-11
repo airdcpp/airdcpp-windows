@@ -38,25 +38,32 @@ WizardLanguage::WizardLanguage(SettingsManager *s, SetupWizard* aWizard) : PropP
 
 void WizardLanguage::write() {
 	//set the language
-	Localization::setLanguage(ctrlLanguage.GetCurSel());
+	//if (!wizard->isInitialRun())
+	//	checkLanguage();
 }
 
 int WizardLanguage::OnWizardNext() {
-	auto sel = ctrlLanguage.GetCurSel();
-	if (sel > 0) {
-		Localization::setLanguage(sel);
-
-		dl = new LanguageDownloadDlg(wizard->m_hWnd, [this] { completeLanguageCheck(); }, wizard->isInitialRun());
-		if (!dl->show()) {
-			dl->close();
-			dl = nullptr;
-			return FALSE;
-		}
-
+	if (wizard->isInitialRun() && checkLanguage()) {
 		return -1;
 	}
 
 	return FALSE;
+}
+
+bool WizardLanguage::checkLanguage() {
+	auto sel = ctrlLanguage.GetCurSel();
+	Localization::setLanguage(sel);
+	if (sel > 0) {
+		dl = new LanguageDownloadDlg(wizard->m_hWnd, [this] { completeLanguageCheck(); }, wizard->isInitialRun());
+		if (!dl->show()) {
+			dl->close();
+			dl = nullptr;
+			return false;
+		}
+		return true;
+	}
+
+	return false;
 }
 
 void WizardLanguage::completeLanguageCheck() {
