@@ -244,7 +244,7 @@
 		<String Name="JoinShowingOn">Join/part showing on</String>
 		<String Name="Joins">Joins: </String>
 		<String Name="Kib">KiB</String>
-		<String Name="Kbps">kB/s</String>
+		<String Name="Kbps">KiB/s</String>
 		<String Name="KeepFinishedFiles">Keep finished files in the queue</String>
 		<String Name="KickUser">Kick user(s)</String>
 		<String Name="KickUserFile">Kick user(s) with filename</String>
@@ -1247,7 +1247,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="PriopageOrderProgress">Set priorities automatically based on the progress</String>
 		<String Name="PriopageBalanceQis">Also prioritize the order among bundle files</String>
 		<String Name="Priorities">Priorities</String>
-		<String Name="UseFtpLogger">Use external sfv checking (ex. FTPLogger, enable this only if you know what you are doing)</String>
+		<String Name="UseFtpLogger">Use external sfv checking (enable this only if you know what you are doing)</String>
 		<String Name="IconsInTheme">The selected theme has custom icons, do you wish to load them?
  You will need to restart AirDC++ for the icons to load.</String>
 		<String Name="IconsRestore">Restore default icons?

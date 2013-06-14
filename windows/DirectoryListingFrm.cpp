@@ -1112,11 +1112,11 @@ LRESULT DirectoryListingFrame::onListDiff(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 	}
 
 	POINT pt;
-	pt.x = tb->rcButton.right;
+	pt.x = tb->rcButton.left;
 	pt.y = tb->rcButton.bottom;
 	ctrlToolbar.ClientToScreen(&pt);
 	
-	sMenu.open(m_hWnd, TPM_LEFTALIGN, pt);
+	sMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return TBDDRET_DEFAULT;
 
 }
