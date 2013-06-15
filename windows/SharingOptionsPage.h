@@ -55,6 +55,7 @@ public:
 protected:
 	CComboBox ctrlThreadedRefresh;
 	CComboBox ctrlMonitoringMode;
+	CComboBox ctrlDelayMode;
 
 	Dispatcher::F getThreadedTask();
 

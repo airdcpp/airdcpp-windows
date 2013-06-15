@@ -807,7 +807,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		ShareManager::getInstance()->setMonitorDebug(!cur);
 		status = cur ? _T("Debug disabled") : _T("Debug enabled");
 	} else if(stricmp(cmd.c_str(), _T("handlechanges")) == 0) {
-		ShareManager::getInstance()->handleChangedFiles(GET_TICK(), true);
+		ShareManager::getInstance()->handleChangedFiles();
 	} else if(stricmp(cmd.c_str(), _T("allow")) == 0) {
 		if(!param.empty()) {
 			QueueManager::getInstance()->shareBundle(Text::fromT(param));
