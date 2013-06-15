@@ -59,6 +59,7 @@ Changed:
 - Validate the TTH before performing a search (manual searches only)
 - Don't change finished download connections to disconnected state
 - Language files aren't shipped with the client, they are only downloaded when enabled by the user
+- Ignoring private messages from a hub doesn't apply to favorite users and operators
 
 Fixed:
 
@@ -87,6 +88,7 @@ Fixed:
 - Fix password not being requested in some cases when password protected tray is enabled
 - Fix various cases when MCN download connections may have not been created
 - Fix language file locations
+- Fix ignoring private messages for favorite ADC hubs
 
 
 2.44
