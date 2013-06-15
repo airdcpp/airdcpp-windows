@@ -526,6 +526,7 @@ void SearchFrame::onEnter() {
 			return;
 		}
 	}
+	ctrlStatus.SetText(1, 0, SBT_OWNERDRAW);
 
 	if (initialString.empty() && typeName != SETTING(LAST_SEARCH_FILETYPE))
 		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_FILETYPE, typeName);
