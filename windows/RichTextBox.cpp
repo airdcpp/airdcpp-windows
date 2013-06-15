@@ -16,10 +16,16 @@
 
 #include "stdafx.h"
 #include "Resource.h"
+
+#include "../client/AutoSearchManager.h"
 #include "../client/FavoriteManager.h"
+#include "../client/IgnoreManager.h"
+#include "../client/Magnet.h"
 #include "../client/UploadManager.h"
 #include "../client/QueueManager.h"
 #include "../client/Util.h"
+
+#include "../client/highlightmanager.h"
 
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
@@ -33,12 +39,8 @@
 #include "LineDlg.h"
 #include "atlstr.h"
 #include "MainFrm.h"
-#include "IgnoreManager.h"
 #include "TextFrame.h"
-#include "../client/highlightmanager.h"
-#include "../client/AutoSearchManager.h"
 #include "ResourceLoader.h"
-#include "../client/Magnet.h"
 
 #include "HtmlToRtf.h"
 
@@ -1546,7 +1548,7 @@ LRESULT RichTextBox::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/,
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
 		HubFrame::ignoreList.insert(ou->getUser());
-		IgnoreManager::getInstance()->storeIgnore(ou->getUser());
+		IgnoreManager::getInstance()->storeIgnore(ou->getIdentity().getNick());
 	}
 	return 0;
 }
@@ -1555,7 +1557,7 @@ LRESULT RichTextBox::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
 		HubFrame::ignoreList.erase(ou->getUser());
-		IgnoreManager::getInstance()->removeIgnore(ou->getUser());
+		IgnoreManager::getInstance()->removeIgnore(ou->getIdentity().getNick());
 	}
 	return 0;
 }

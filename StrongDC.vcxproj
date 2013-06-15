@@ -547,7 +547,6 @@
     <ClCompile Include="windows\FulTabsPage.cpp" />
     <ClCompile Include="windows\GeneralPage.cpp" />
     <ClCompile Include="windows\HubFrame.cpp" />
-    <ClCompile Include="windows\IgnoreManager.cpp" />
     <ClCompile Include="windows\IgnorePage.cpp" />
     <ClCompile Include="windows\ImageDataObject.cpp" />
     <ClCompile Include="windows\InputBox.cpp" />
@@ -688,7 +687,6 @@
     <ClInclude Include="windows\GeneralPage.h" />
     <ClInclude Include="windows\HashProgressDlg.h" />
     <ClInclude Include="windows\HubFrame.h" />
-    <ClInclude Include="windows\IgnoreManager.h" />
     <ClInclude Include="windows\IgnorePage.h" />
     <ClInclude Include="windows\ImageDataObject.h" />
     <ClInclude Include="windows\InputBox.h" />

@@ -51,8 +51,6 @@
 #include <delayimp.h>
 #include <future>
 
-#include "IgnoreManager.h"
-
 CAppModule _Module;
 
 CriticalSection cs;
@@ -372,7 +370,6 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		}
 
 		PopupManager::newInstance();
-		IgnoreManager::newInstance();
 
 		WinUtil::splash->callAsync([=] {
 			if(SETTING(PASSWD_PROTECT) && !WinUtil::checkClientPassword()) {
@@ -423,13 +420,13 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	dcassert(WinUtil::splash);
 	loader = std::async([=] {
-		IgnoreManager::deleteInstance();
 		PopupManager::deleteInstance();
 
 		shutdown(
 			[&](const string& str) { (*WinUtil::splash)(str); },
 			[=](float progress) { (*WinUtil::splash)(progress); }
 		);
+
 		WinUtil::splash->callAsync([=] { PostQuitMessage(0); });
 	});
 

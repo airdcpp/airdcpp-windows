@@ -26,8 +26,8 @@
 #include "TextFrame.h"
 #include "ResourceLoader.h"
 #include "MainFrm.h"
-#include "IgnoreManager.h"
 
+#include "../client/IgnoreManager.h"
 #include "../client/DirectoryListingManager.h"
 #include "../client/ChatMessage.h"
 #include "../client/QueueManager.h"
@@ -272,8 +272,8 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 		}
 	} else if(stricmp(cmd.c_str(), _T("ignorelist"))==0) {
 		tstring ignorelist = _T("Ignored users:");
-		for(auto i = ignoreList.begin(); i != ignoreList.end(); ++i)
-			ignorelist += _T(" ") + Text::toT(ClientManager::getInstance()->getNicks((*i)->getCID())[0]);
+		for(const auto& i: ignoreList)
+			ignorelist += _T(" ") + Text::toT(ClientManager::getInstance()->getNicks(i->getCID())[0]);
 		status = ignorelist;
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
 		WinUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));
@@ -499,50 +499,76 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 }
 
 void HubFrame::onPrivateMessage(const ChatMessage& message) {
+	bool myPM = message.replyTo->getUser() == ClientManager::getInstance()->getMe();
+	const UserPtr& user = myPM ? message.to->getUser() : message.replyTo->getUser();
 	const auto& identity = message.replyTo->getIdentity();
 	tstring nick = Text::toT(identity.getNick());
+	bool hasFrame = PrivateFrame::isOpen(user);
 
-	bool ignore = false, window = false;
-	if(!message.from->getUser() || (ignoreList.find(message.from->getUser()) == ignoreList.end()) || (message.from->getIdentity().isOp() && !client->isOp())) {
-		bool myPM = message.replyTo->getUser() == ClientManager::getInstance()->getMe();
-		const UserPtr& user = myPM ? message.to->getUser() : message.replyTo->getUser();
-		auto text = message.format();
+	//check ignores
+	if (!hasFrame) {
+		/*auto sendPm = [&] {
+			string tmp;
+			client->privateMessage(message.replyTo, "Private messages sent via this hub are ignored", tmp);
+		};*/
 
-		if(identity.isHub()) {
-			if(SETTING(IGNORE_HUB_PMS)) {
-				ignore = true;
-			} else if(SETTING(POPUP_HUB_PMS) || PrivateFrame::isOpen(user)) {
-				window = true;
-			}
-		} else if(identity.isBot()) {
-			if(SETTING(IGNORE_BOT_PMS)) {
-				ignore = true;
-			} else if(SETTING(POPUP_BOT_PMS) || PrivateFrame::isOpen(user)) {
-				window = true;
-			}
-		} else if(SETTING(POPUP_PMS) || PrivateFrame::isOpen(user) || myPM) {
-			window = true;
+		// don't be that restrictive with the fav hub option
+		if (client->getFavNoPM() && (client->isOp() || !message.replyTo->getIdentity().isOp()) && !message.replyTo->getIdentity().isBot() && !message.replyTo->getUser()->isFavorite()) {
+			string tmp;
+			if (!myPM)
+				client->privateMessage(message.replyTo, "Private messages sent via this hub are ignored", tmp);
+			return;
 		}
 
-		if(ignore) {
-			addStatus(TSTRING(IGNORED_MESSAGE) + _T(" ") + Text::toT(text), WinUtil::m_ChatTextSystem, false);
-		} else {
-			if (window) {
-				PrivateFrame::gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), client);
-			} else {
-				addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + nick + _T(": ") + Text::toT(text), WinUtil::m_ChatTextPrivate);
-			}
+		if (IgnoreManager::getInstance()->isIgnored(identity.getNick())) {
+			//bots can always be ignored
+			if (message.replyTo->getIdentity().isBot())
+				return;
 
-			if (!identity.isHub() && !identity.isBot()) {
-				MainFrame::getMainFrame()->onChatMessage(true);
+			if (client->isOp() || !message.replyTo->getIdentity().isOp()) {
+				return;
 			}
+		}
+	}
+
+	//we can handle the message
+	bool ignore = false, window = false;
+	auto text = message.format();
+
+	if(identity.isHub()) {
+		if(SETTING(IGNORE_HUB_PMS) && !hasFrame) {
+			ignore = true;
+		} else if(SETTING(POPUP_HUB_PMS) || hasFrame) {
+			window = true;
+		}
+	} else if(identity.isBot()) {
+		if(SETTING(IGNORE_BOT_PMS) && !hasFrame) {
+			ignore = true;
+		} else if(SETTING(POPUP_BOT_PMS) || hasFrame) {
+			window = true;
+		}
+	} else if(SETTING(POPUP_PMS) || hasFrame || myPM) {
+		window = true;
+	}
+
+	if(ignore) {
+		addStatus(TSTRING(IGNORED_MESSAGE) + _T(" ") + Text::toT(text), WinUtil::m_ChatTextSystem, false);
+	} else {
+		if (window) {
+			PrivateFrame::gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), client);
+		} else {
+			addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + nick + _T(": ") + Text::toT(text), WinUtil::m_ChatTextPrivate);
+		}
+
+		if (!identity.isHub() && !identity.isBot()) {
+			MainFrame::getMainFrame()->onChatMessage(true);
 		}
 	}
 }
 
 void HubFrame::onChatMessage(const ChatMessage& msg) {
 	const auto& identity = msg.from->getIdentity();
-	if(!msg.from->getUser() || (ignoreList.find(msg.from->getUser()) == ignoreList.end()) || (identity.isOp() && !client->isOp())) {
+	if(!IgnoreManager::getInstance()->isIgnored(identity.getNick()) || (identity.isOp() && !client->isOp() && !identity.isBot())) {
 		addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
 		if(client->get(HubSettings::ChatNotify)) {
 			MainFrame::getMainFrame()->onChatMessage(false);
@@ -604,6 +630,12 @@ void HubFrame::execTasks() {
 			//updateUser(u);
 		} else if(t.first == UPDATE_USER_JOIN) {
 			UserTask& u = static_cast<UserTask&>(*t.second);
+			if(IgnoreManager::getInstance()->isIgnored(u.onlineUser->getIdentity().getNick())) {
+				ignoreList.insert(u.onlineUser->getUser());
+			} else {
+				ignoreList.erase(u.onlineUser->getUser());
+			}
+
 			if(updateUser(u)) {
 				bool isFavorite = u.onlineUser->getUser()->isFavorite();
 				if (isFavorite && (!SETTING(SOUND_FAVUSER).empty()) && (!SETTING(SOUNDS_DISABLED)))
@@ -1752,8 +1784,8 @@ bool HubFrame::PreparePopupMenu(CWindow* /*pCtrl*/, OMenu& menu ) {
 
 		if(count == 1) {
 			const OnlineUserPtr ou = ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED));
-			if (client->isOp() || !ou->getIdentity().isOp()) {
-				if(ignoreList.find(ou->getUser()) == ignoreList.end()) {
+			if (client->isOp() || !ou->getIdentity().isOp() || ou->getIdentity().isBot()) {
+				if(!IgnoreManager::getInstance()->isIgnored(ou->getIdentity().getNick())) {
 					menu.AppendMenu(MF_STRING, IDC_IGNORE, CTSTRING(IGNORE_USER));
 				} else {    
 					menu.AppendMenu(MF_STRING, IDC_UNIGNORE, CTSTRING(UNIGNORE_USER));
@@ -2068,7 +2100,7 @@ LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BO
 	if(client->isConnected()) {
 		while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			ignoreList.insert(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
-			IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+			IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getIdentity().getNick());
 		}
 	}
 	return 0;
@@ -2079,7 +2111,7 @@ LRESULT HubFrame::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, 
 	if(client->isConnected()) {
 		while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			ignoreList.erase(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
-				IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+			IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getIdentity().getNick());
 		}
 	}
 	return 0;

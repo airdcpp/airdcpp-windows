@@ -20,7 +20,7 @@
 #include "Resource.h"
 
 #include "IgnorePage.h"
-#include "IgnoreManager.h"
+#include "../client/IgnoreManager.h"
 #include "../client/version.h"
 #include "WinUtil.h"
 
@@ -51,8 +51,8 @@ LRESULT IgnorePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	ignoreListCtrl.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 
 	ignoreList = IgnoreManager::getInstance()->getIgnoredUsers();
-	for(TStringHash::iterator i = ignoreList.begin(); i != ignoreList.end(); ++i) {
-		ignoreListCtrl.insert(ignoreListCtrl.GetItemCount(), *i);
+	for(auto& def: ignoreList) {
+		ignoreListCtrl.insert(ignoreListCtrl.GetItemCount(), Text::toT(def));
 	}
 
 	return TRUE;
@@ -75,8 +75,7 @@ LRESULT IgnorePage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL&
 LRESULT IgnorePage::onIgnoreAdd(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 	TCHAR buf[256];
 	if(GetDlgItemText(IDC_IGNORELIST_EDIT, buf, 256)) {
-		pair<TStringHashIter, bool> p = ignoreList.insert(buf);
-	
+		auto p = ignoreList.insert(Text::fromT(buf));
 		if(p.second) {
 			ignoreListCtrl.insert(ignoreListCtrl.GetItemCount(), buf);
 		} else {
@@ -96,7 +95,7 @@ LRESULT IgnorePage::onIgnoreRemove(WORD /* wNotifyCode */, WORD /*wID*/, HWND /*
 	while((i = ignoreListCtrl.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 		ignoreListCtrl.GetItemText(i, 0, buf, 256);
 
-		ignoreList.erase(buf);
+		ignoreList.erase(Text::fromT(buf));
 		ignoreListCtrl.DeleteItem(i);
 	}
 

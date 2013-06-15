@@ -489,9 +489,6 @@
     <ClCompile Include="windows\HubFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\IgnoreManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\IgnorePage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -843,9 +840,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\HubFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\IgnoreManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\IgnorePage.h">

@@ -76,13 +76,10 @@ public:
 	void write();
 	
 private:
-	typedef unordered_set<tstring> TStringHash;
-	typedef TStringHash::iterator TStringHashIter;
-
 	static Item items[];
 	static TextItem texts[];
 	TCHAR* title;
-	TStringHash ignoreList;
+	StringSet ignoreList;
 	ExListViewCtrl ignoreListCtrl;
 };
 
