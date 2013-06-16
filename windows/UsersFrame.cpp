@@ -494,7 +494,7 @@ LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			} else {
 				ui->grantSlot ? ui->grantTimeless() : ui->ungrant(); // timeless grant
 			}
-		} else if((ctrlUsers.findColumn(l->iSubItem) == COLUMN_FAVORITE) && !listFav && hitIcon(l->iItem, l->iSubItem)) {  //TODO: confirm removal.
+		} else if((ctrlUsers.findColumn(l->iSubItem) == COLUMN_FAVORITE) && hitIcon(l->iItem, l->iSubItem)) {  //TODO: confirm removal.
 			if(ui->isFavorite)
 				FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
 			else
