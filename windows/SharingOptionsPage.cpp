@@ -54,6 +54,7 @@ PropPage::TextItem SharingOptionsPage::texts[] = {
 	{ IDC_MONITORING_MODE_LBL, ResourceManager::MONITORING_CHANGES },
 	{ IDC_MONITORING_OPTIONS, ResourceManager::MONITORING_OPTIONS },
 	{ IDC_DELAY_MODE_LBL, ResourceManager::SETTINGS_DELAY_MODE },
+	{ IDC_MONITORING_SECONDS_LBL, ResourceManager::SETTINGS_MONITORING_SECONDS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

@@ -1608,7 +1608,7 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 				case COLUMN_EXACTSIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
 				case COLUMN_SIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
 				case COLUMN_DATE: return compare(a->dir->getDate(), b->dir->getDate());
-				case COLUMN_FILENAME: return Util::DefaultSort(a->dir->getName().c_str(), b->dir->getName().c_str(), true);
+				case COLUMN_FILENAME: return Util::DefaultSort(Text::toT(a->dir->getName()).c_str(), Text::toT(b->dir->getName()).c_str(), true);
 				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
 			}
 		} else {
@@ -1621,7 +1621,7 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 			case COLUMN_EXACTSIZE: return compare(a->file->getSize(), b->file->getSize());
 			case COLUMN_SIZE: return compare(a->file->getSize(), b->file->getSize());
 			case COLUMN_DATE: return compare(a->file->getDate(), b->file->getDate());
-			case COLUMN_FILENAME: return Util::DefaultSort(a->file->getName().c_str(), b->file->getName().c_str(), false);
+			case COLUMN_FILENAME: return Util::DefaultSort(Text::toT(a->file->getName()).c_str(), Text::toT(b->file->getName()).c_str(), false);
 			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), false);
 		}
 	}
