@@ -1946,7 +1946,7 @@ Do you want to continue?</String>
 		<String Name="SharedDirRenamed">The shared directory %s has been renamed to %s</String>
 		<String Name="SharedFileRenamed">The shared file %s has been renamed to %s</String>
 		<String Name="MoveFileFailed">Failed to move the file %s to %s (%s)</String>
-		<String Name="SettingsMonitoringSeconds">Minimum seconds since the last modification before applying the changes in share</String>
+		<String Name="SettingsMonitoringSeconds">Min. seconds since the last modification before applying the changes in share</String>
 		<String Name="MonitoringOptions">Monitoring options</String>
 		<String Name="SettingsDelayMode">Count the last modification time</String>
 		<String Name="MonitorDelayDir">on per-directory basis</String>
