@@ -645,7 +645,7 @@
 		<String Name="SettingsStatusInChat">View status messages in main chat</String>
 		<String Name="SettingsTcpPort">TCP</String>
 		<String Name="SettingsTlsPort">TLS/TCP</String>
-		<String Name="SettingsTextStyles">Colors &amp;&amp; fonts</String>
+		<String Name="SettingsTextStyles">Colors &amp; fonts</String>
 		<String Name="SettingsTimeStamps">Show timestamps in chat by default</String>
 		<String Name="SettingsTimeStampsFormat">Set timestamps</String>
 		<String Name="SettingsToggleActiveWindow">Toggle window when selecting an active tab</String>
@@ -1952,5 +1952,7 @@ Do you want to continue?</String>
 		<String Name="MonitorDelayDir">on per-directory basis</String>
 		<String Name="MonitorDelayVolume">on per-volume basis</String>
 		<String Name="MonitorDelayAny">from any modification</String>
+		<String Name="SelectTheme">Select theme</String>
+		<String Name="ColorsAndTextStyles">Colors and text styles</String>
 	</Strings>
 </Language>

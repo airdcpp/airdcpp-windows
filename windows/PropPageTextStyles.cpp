@@ -35,7 +35,7 @@ PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_SELTEXT, ResourceManager::SETTINGS_SELECT_TEXT_FACE },
 	{ IDC_RESET_TAB_COLOR, ResourceManager::SETTINGS_RESET },
 	{ IDC_SELECT_TAB_COLOR, ResourceManager::SETTINGS_SELECT_COLOR },
-	{ IDC_STYLES, ResourceManager::SETTINGS_TEXT_STYLES },
+	{ IDC_STYLES, ResourceManager::COLORS_AND_TEXT_STYLES },
 	{ IDC_CHATCOLORS, ResourceManager::SETTINGS_COLORS },
 	{ IDC_IMPORT, ResourceManager::IMPORT_THEME },
 	{ IDC_EXPORT, ResourceManager::EXPORT_THEME },
@@ -194,7 +194,7 @@ void PropPageTextStyles::PopulateThemes() {
 		}
 	}
 	
-	ctrlTheme.AddString(_T("[Select Theme]"));
+	ctrlTheme.AddString(CTSTRING(SELECT_THEME));
 	
 	for(themeMap::const_iterator m = themes.begin(); m != themes.end(); ++m) {
 		ctrlTheme.AddString(Text::toT(m->first).c_str());
