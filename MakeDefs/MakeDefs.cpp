@@ -129,6 +129,9 @@ int __cdecl main(int argc, char* argv[])
 			while( (k = xmldef.find("\\\\")) != string::npos) {
 				xmldef.replace(k, 2, "\\");
 			}
+			while( (k = xmldef.find("\\\"")) != string::npos) {
+				xmldef.replace(k, 2, "\"");
+			}
 			ex.addTag("String", xmldef);
 			ex.addChildAttrib("Name", name);
 

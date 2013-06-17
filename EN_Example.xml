@@ -803,7 +803,7 @@ Search menu: Search right-click menu
 Parameters:
 Name: Name (use '/' to create submenus)
 Command: Command text (may contain parameters)
-Hub: Hub IP as typed when connecting (empty = all hubs, \"op\" = hubs where you're op)
+Hub: Hub IP as typed when connecting (empty = all hubs, "op" = hubs where you're op)
 To: PM recipient
 Only once: Send only once per user from search frame
 In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m, ...). The following are available:
@@ -816,7 +816,7 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 %[userSSshort]: user shared bytes (formatted) (user &amp;&amp; search context only)
 %[userI4]: user ip (if supported by hub)
 %[fileFN]: filename (search context only)
-%[line:reason]: opens up a window asking for \"reason\"</String>
+%[line:reason]: opens up a window asking for "reason"</String>
 		<String Name="UserDescription">User description</String>
 		<String Name="UserOffline">User offline</String>
 		<String Name="UserOnline">Running... (user online)</String>
@@ -1192,7 +1192,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="LanguageVersion">Language version</String>
 		<String Name="ListHlText">HighLight matches in file lists (wildcards, | separate)</String>
 		<String Name="ListHlExample">Example, *NORDIC* (this may slow down file list loading...)</String>
-		<String Name="SettingsDupes">Dupes settings</String>
+		<String Name="SettingsDupes">Dupe settings</String>
 		<String Name="ReportSkiplist">Show files blocked by the skiplist in system log</String>
 		<String Name="XUsers">%d users</String>
 		<String Name="XUsersWaiting">%d user(s) (%d waiting)</String>
@@ -1258,7 +1258,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="DisableAutosearch">Disable item(s)</String>
 		<String Name="SearchBundleAlt">Search bundle for alternatives</String>
 		<String Name="MatchPartial">Match partial list</String>
-		<String Name="FavdirsShowShared">Show shared directories in the \"Download to\" menu</String>
+		<String Name="FavdirsShowShared">Show shared directories in the "Download to" menu</String>
 		<String Name="ConfirmSizeWarning">There is only %s remaining in the directory %s while %s is needed. Do you want to continue?</String>
 		<String Name="BundleAltSearch">Searching the bundle %s for alternatives, %d search(es) queued.</String>
 		<String Name="BundleAltSearchRecent">Searching alternates for a RECENT bundle %s, %d search(es) queued.</String>
@@ -1296,7 +1296,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</String>
 		<String Name="SettingsOverlapSlowSources">Allow fast users to overlap slower ones if there is nothing else to download</String>
 		<String Name="SettingsSbWebShortcuts">Web shortcuts</String>
 		<String Name="SettingsWsDescr">Web shortcuts are used to open web pages with specific contents.
-The key is used in chat / commands Example: /google \"Movie Name\"
+The key is used in chat / commands Example: /google "Movie Name"
 Key can be more than one character, but can not be a space.
 
 If the URL contains param %s its replaced by the search string, otherwise the search string is added to the end of URL.
@@ -1307,7 +1307,7 @@ An example: http://domain.com/search=
 
 Note: The key is case sensitive!
 
-Clean search term means a title will be attempted to pick from the string. e.g \"Movie.Name.2003.DVDRip.XviD-ABC\" will become \"Movie Name\"</String>
+Clean search term means a title will be attempted to pick from the string. e.g "Movie.Name.2003.DVDRip.XviD-ABC" will become "Movie Name"</String>
 		<String Name="NameRequired">Name required</String>
 		<String Name="NameInUse">Name already in use</String>
 		<String Name="KeyInUse">Key already in use</String>
@@ -1381,7 +1381,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="TypeTargetFavorite">Favorite directory (the real path will be picked when matches are found)</String>
 		<String Name="TypeTargetShare">Shared directory (the real path will be picked when matches are found)</String>
 		<String Name="LocationType">Location type</String>
-		<String Name="ForceHashNotification">Refresh the directory after fixing the problem(s) to rescan the bundle (or type \"/allow %s\" to force it to be hashed in share if the problem(s) can't be fixed)</String>
+		<String Name="ForceHashNotification">Refresh the directory after fixing the problem(s) to rescan the bundle (or type "/allow %s" to force it to be hashed in share if the problem(s) can't be fixed)</String>
 		<String Name="LineEmptyOrTooShort">Search string empty or too short! (min. 5 chars allowed)</String>
 		<String Name="AutosearchCheckQueued">Don't download directories already in queue</String>
 		<String Name="AutosearchCheckShared">Don't download directories already in share</String>
@@ -1393,7 +1393,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="UseSeqOrder">Use sequential order</String>
 		<String Name="LanguageNote">Note: you need to restart the client for the new language to take effect</String>
 		<String Name="FileListRefreshInitiatedRpath">File list refresh initiated for the path %s</String>
-		<String Name="FileListRefreshInitiatedVpath">File list refresh initiated for the virtual directory \"%s\"</String>
+		<String Name="FileListRefreshInitiatedVpath">File list refresh initiated for the virtual directory "%s"</String>
 		<String Name="FileListRefreshInitiatedIncoming">File list refresh initiated for the incoming directories</String>
 		<String Name="DeleteFile">Delete file</String>
 		<String Name="DeleteFileConfirm">Are you sure want to delete the file %s?</String>
@@ -1428,7 +1428,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="Link">Link</String>
 		<String Name="HideShareShort">Hide share</String>
 		<String Name="ProfileName">Profile name</String>
-		<String Name="LockTb">Lock Toolbars</String>
+		<String Name="LockTb">Lock toolbars</String>
 		<String Name="GetFullList">Get full list</String>
 		<String Name="NoResultsFound">No results were found</String>
 		<String Name="SearchTimedOut">Search timed out</String>
@@ -1510,8 +1510,8 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="BackgroundUpdaterStart">Starting to download a new client version (%s)...</String>
 		<String Name="UpdaterRestart">Update installation successful. Would you like to restart AirDC++ now to complete the update process?</String>
 		<String Name="UpdateDownloaded">The update has been downloaded successfully and it will be installed on next startup</String>
-		<String Name="LanguageUpdated">The language \"%1%\" has been successfully updated. Changes will take effect after restarting the client.</String>
-		<String Name="LanguageUpdateFailed">Failed to update the language \"%1%\" (%s)</String>
+		<String Name="LanguageUpdated">The language "%1%" has been successfully updated. Changes will take effect after restarting the client.</String>
+		<String Name="LanguageUpdateFailed">Failed to update the language "%1%" (%s)</String>
 		<String Name="IntegrityCheckFailed">File integrity check failed</String>
 		<String Name="UpdaterWriteFailed">Failed to write the update file</String>
 		<String Name="UpdateAlreadyDownloaded">This version has already been downloaded. Please restart the client to apply the changes.</String>
@@ -1523,7 +1523,7 @@ Clean search term means a title will be attempted to pick from the string. e.g \
 		<String Name="SendFileHub">Send a file (it will be available to all users)</String>
 		<String Name="InsertEmoticon">Insert emoticon</String>
 		<String Name="StopSharing">Stop sharing</String>
-		<String Name="MagnetInfotext">A magnet link was detected for a file \"%s\" (%s). Please choose the action to perform.</String>
+		<String Name="MagnetInfotext">A magnet link was detected for a file "%s" (%s). Please choose the action to perform.</String>
 		<String Name="DownloadOpen">Download and open</String>
 		<String Name="SaveDefault">Save in the default download directory</String>
 		<String Name="MoreInformation">More information...</String>
@@ -1552,7 +1552,7 @@ would you still like to load them?</String>
 		<String Name="AutoSearch">Auto search</String>
 		<String Name="SettingsPopunderText">Open new text files in the background</String>
 		<String Name="ScanningResultsOn">Scanning results on %s</String>
-		<String Name="MandatoryUpdate">Mandatory Update</String>
+		<String Name="MandatoryUpdate">Mandatory update</String>
 		<String Name="AttemptAutoUpdate">AirDC++ will now attempt to update your installation automatically</String>
 		<String Name="LoadingGui">Loading the user interface</String>
 		<String Name="PartialFilelist">Partial file list</String>
@@ -1566,7 +1566,7 @@ would you still like to load them?</String>
 		<String Name="NewLimit">New limit (KiB/s) (0 = infinite)</String>
 		<String Name="TotalFiles">Total files: %d</String>
 		<String Name="TotalSize">Total size: %s</String>
-		<String Name="FullListDlLimit">Maximum number of files for getting full file list with \"Get/Browse file list\"</String>
+		<String Name="FullListDlLimit">Maximum number of files for getting full file list with "Get/Browse file list"</String>
 		<String Name="SetTransferLimiting">Limit transfer speeds</String>
 		<String Name="SetAlternateLimiting">Use alternate limiting from</String>
 		<String Name="MaxUploadRate">Maximum upload rate (0 = infinite)</String>
@@ -1715,7 +1715,6 @@ Do you want to use this destination anyway?</String>
 		<String Name="TrasferRateLimiting">Transfer rate limiting</String>
 		<String Name="HoursLower">hours</String>
 		<String Name="OwnListAdl">Match own list with ADL search</String>
-		<String Name="RebuildFailedEntries">Failed to load %d tree entries from the hash data; it's recommended to refresh your share as those files (total of %s) must be rehashed if they are still shared</String>
 		<String Name="SettingsUseSpaceWarning">Warn me about Insufficient space left on target drive</String>
 		<String Name="SfvTooLarge">The SFV file is too large to be loaded (%s)</String>
 		<String Name="CantOpenSfv">Failed to open the SFV file</String>
@@ -1846,7 +1845,7 @@ Make sure that the path %s is accessible and there isn't there isn't another ins
 		<String Name="MultithreadedRefresh">Multithreaded file list refresh</String>
 		<String Name="Always">Always</String>
 		<String Name="ManualRefreshes">Manual refreshes only</String>
-		<String Name="DbErrorHint">You can set the database to be verified and repaired from the \"Sharing options\" tab in Settings (if needed)</String>
+		<String Name="DbErrorHint">You can set the database to be verified and repaired from the "Sharing options" tab in Settings (if needed)</String>
 		<String Name="SettingsDbRepair">Verify and repair the hash database on next startup (use in case of fatal errors only)</String>
 		<String Name="DbXRepaired">%s has been verified and repaired successfully. Detailed information about the process has been saved in %s</String>
 		<String Name="ExpiredAsDisabled">An expired item %s has been disabled</String>
@@ -1867,12 +1866,12 @@ Make sure that the path %s is accessible and there isn't there isn't another ins
 		<String Name="WizardFinishedIntro">The wizard has been completed successfully. After exiting the wizard, you are ready to connect to hubs. The following methods can be used:
 
 
-1. Open public hublist (\"View\" -&gt; \"Public hubs\" and choose the hub that you wish to connect
+1. Open public hublist ("View" -&gt; "Public hubs" and choose the hub that you wish to connect
 
-2. If you already have the address that you want to connect, you can add it in favorite hubs (\"View\" -&gt; \"Favorite hubs\") or connect directly by using quick connect (\"File\" -&gt; \"Quick connect\")
+2. If you already have the address that you want to connect, you can add it in favorite hubs ("View" -&gt; "Favorite hubs") or connect directly by using quick connect ("File" -&gt; "Quick connect")
 
 
-If you want more information about the client features or you have questions to ask, see the \"Help\" menu.</String>
+If you want more information about the client features or you have questions to ask, see the "Help" menu.</String>
 		<String Name="InstallRarSkiplist">Install the RAR profile share skiplist to avoid sharing of unwanted files</String>
 		<String Name="LanDisableEncryption">Disable transfer encryption (reduces resource usage with high speed transfers)</String>
 		<String Name="WizardConnectionSpeedIntro">Choose your download and upload speed. You may also type in custom values if your speed isn't listed. Please be as accurate as possible and set the ACTUAL speed of your connection.</String>
@@ -1954,5 +1953,8 @@ Do you want to continue?</String>
 		<String Name="MonitorDelayAny">from any modification</String>
 		<String Name="SelectTheme">Select theme</String>
 		<String Name="ColorsAndTextStyles">Colors and text styles</String>
+		<String Name="RebuildFailedEntriesVerify">There were %d shared TTHs without a corresponding hash tree entry and %d invalid tree entries that couldn't be loaded</String>
+		<String Name="RebuildFailedEntriesOptimize">%d shared TTHs without a corresponding hash tree entry were found</String>
+		<String Name="RebuildRefreshPrompt">It's recommended to refresh your share as those files (total of %s) must be rehashed if they are still shared</String>
 	</Strings>
 </Language>

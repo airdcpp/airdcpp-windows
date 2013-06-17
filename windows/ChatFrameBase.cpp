@@ -808,6 +808,8 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		status = cur ? _T("Debug disabled") : _T("Debug enabled");
 	} else if(stricmp(cmd.c_str(), _T("handlechanges")) == 0) {
 		ShareManager::getInstance()->handleChangedFiles();
+	} else if(stricmp(cmd.c_str(), _T("compact")) == 0) {
+		MainFrame::getMainFrame()->addThreadedTask([this] { HashManager::getInstance()->compact(); });
 	} else if(stricmp(cmd.c_str(), _T("allow")) == 0) {
 		if(!param.empty()) {
 			QueueManager::getInstance()->shareBundle(Text::fromT(param));

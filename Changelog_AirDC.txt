@@ -2,6 +2,7 @@
 
 Added:
 
+- Allow the client to monitor shared folders for changes in real time
 - New user tab that will display general information about the users in all hubs + total queued files from each user
 - New database engine for storing information about hashed files (reduces resource usage and freezes, improves reliability)
 - Full IPv6 support in ADC hubs (transfers, port mapping, separate modes for IPv4 and IPv6, hybrid support for both protocols)
@@ -89,6 +90,7 @@ Fixed:
 - Fix various cases when MCN download connections may have not been created
 - Fix language file locations
 - Fix ignoring private messages for favorite ADC hubs
+- Fix a few ADC vulnerabilities
 
 
 2.44
