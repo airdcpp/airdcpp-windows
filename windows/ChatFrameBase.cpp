@@ -683,46 +683,46 @@ _T("\r\n-- Keep your downloads close, but keep your uploads even closer\r\n") LI
 
 tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
-/refresh\t\t\t\t\t(refresh share)\n\
-/optimizedb\t\t\t\t\t(remove unused entries from the hash databases)\n\
-/verifydb\t\t\t\t\t(optimize and verify the integrity of the hash databases)\n\
-/savequeue\t\t\t\t(save Download Queue)\n\
-/stop\t\t\t\t\t(stop SFV check)\n\
+/refresh\t\t\t\t\tRefresh share\n\
+/optimizedb\t\t\t\tRemove unused entries from the hash databases\n\
+/verifydb\t\t\t\tOptimize and verify the integrity of the hash databases\n\
+/savequeue\t\t\t\tSave download queue\n\
+/stop\t\t\t\t\tStop SFV check\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
-/search <string>\t\t\t\t(search for...)\n\
-/whois [IP]\t\t\t\t(find info about user from the ip address)\n\
+/search <string>\t\t\t\tSearch for...\n\
+/whois [IP]\t\t\t\tFind info about user from the IP address\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
-/slots # \t\t\t\t\t(upload slots)\n\
-/extraslots # \t\t\t\t(set extra slots)\n\
-/smallfilesize # \t\t\t\t(set smallfile size)\n\
-/ts \t\t\t\t\t(show timestamp in mainchat)\n\
-/connection \t\t\t\t(Show connection settings, IP & ports)\n\
-/showjoins \t\t\t\t(show user joins in mainchat)\n\
-/shutdown \t\t\t\t(system shutdown)\n\
+/slots # \t\t\t\tUpload slots\n\
+/extraslots # \t\t\t\tSet extra slots\n\
+/smallfilesize # \t\t\t\tSet smallfile size\n\
+/ts \t\t\t\t\tShow timestamp in mainchat\n\
+/connection \t\t\t\tShow connection settings, IP & ports\n\
+/showjoins \t\t\t\tShow user joins in mainchat\n\
+/shutdown \t\t\t\tSystem shutdown\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
-/AirDC++ \t\t\t\t\t(Show AirDC++ version in mainchat)\n\
+/AirDC++ \t\t\t\tShow AirDC++ version in mainchat\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
-/away <msg>\t\t\t\t(set away message)\n\
-/winamp, /w\t\t\t\t(Shows Winamp spam in mainchat)\n\
-/spotify, /s\t\t\t\t(Shows Spotify spam in mainchat)\n\
-/itunes\t\t\t\t\t(Shows iTunes spam in mainchat)\n\
-/wmp\t\t\t\t\t(Shows Windows Media Player spam in mainchat)\n\
-/mpc\t\t\t\t\t(Shows Media Player Classic spam in mainchat)\n\
-/clear,/c\t\t\t\t\t(Clears mainchat)\n\
-/speed\t\t\t\t\t(show download/upload speeds in mainchat)\n\
-/stats\t\t\t\t\t(Show stats in mainchat)\n\
-/prvstats\t\t\t\t\t(View stats visible only to yourself)\n\
-/info\t\t\t\t\t(View system info visible only to yourself)\n\
-/log system\t\t\t\t(open system log)\n\
-/log downloads \t\t\t\t(open downloads log)\n\
-/log uploads\t\t\t\t(open uploads log)\n\
-/df \t\t\t\t\tShow Disk Space info (Only Visible to yourself)\n\
-/dfs \t\t\t\t\tShow Disk Space info (as Public message)\n\
-/disks, /di \t\t\t\t\tShow Detailed Disk Info about all mounted disks\n\
-/uptime \t\t\t\t\tShow Uptime Info\n\
-/topic\t\t\t\t\tShow Topic\n\
-/ctopic\t\t\t\t\tOpen Link in Topic\n\
-/ratio, /r\t\t\t\t\tShow Ratio in chat\n\n");
+/away <msg>\t\t\t\tSet away message\n\
+/winamp, /w\t\t\t\tShows Winamp spam in mainchat\n\
+/spotify, /s\t\t\t\tShows Spotify spam in mainchat\n\
+/itunes\t\t\t\t\tShows iTunes spam in mainchat\n\
+/wmp\t\t\t\t\tShows Windows Media Player spam in mainchat\n\
+/mpc\t\t\t\t\tShows Media Player Classic spam in mainchat\n\
+/clear,/c\t\t\t\tClears mainchat\n\
+/speed\t\t\t\t\tShow download/upload speeds in mainchat\n\
+/stats\t\t\t\t\tShow stats in mainchat\n\
+/prvstats\t\t\t\tView stats visible only to yourself\n\
+/info\t\t\t\t\tView system info visible only to yourself\n\
+/log system\t\t\t\tOpen system log\n\
+/log downloads \t\t\t\tOpen downloads log\n\
+/log uploads\t\t\t\tOpen uploads log\n\
+/df \t\t\t\t\tShow disk space info (only visible to yourself)\n\
+/dfs \t\t\t\t\tShow disk space info (as public message)\n\
+/disks, /di \t\t\t\tShow detailed disk info about all mounted disks\n\
+/uptime \t\t\t\t\tShow uptime info\n\
+/topic\t\t\t\t\tShow topic\n\
+/ctopic\t\t\t\t\tOpen link in topic\n\
+/ratio, /r\t\t\t\tShow ratio in chat\n\n");
 
 string ChatFrameBase::getAwayMessage() {
 	return ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::AwayMsg) : SETTING(DEFAULT_AWAY_MESSAGE);
