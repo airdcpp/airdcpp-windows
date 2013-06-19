@@ -22,6 +22,7 @@
 #include "SystemFrame.h"
 #include "WinUtil.h"
 #include "TextFrame.h"
+#include "MainFrm.h"
 #include "ResourceLoader.h"
 
 #include "../client/File.h"
@@ -442,8 +443,8 @@ LRESULT SystemFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 LRESULT SystemFrame::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string path = Text::fromT(selWord);
 	string msg = str(boost::format(STRING(DELETE_FILE_CONFIRM)) % path);
-	if(MessageBox(Text::toT(msg).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-		File::deleteFile(path);
+	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg).c_str())) {
+		MainFrame::getMainFrame()->addThreadedTask([=] { File::deleteFileEx(path, 3, !ShareManager::getInstance()->isRealPathShared(path)); });
 	}
 
 	ctrlPad.SetSelNone();

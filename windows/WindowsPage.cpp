@@ -68,6 +68,7 @@ WindowsPage::ListItem WindowsPage::confirmItems[] = {
 	{ SettingsManager::CONFIRM_QUEUE_REMOVAL, ResourceManager::SETTINGS_CONFIRM_ITEM_REMOVAL },
 	{ SettingsManager::CONFIRM_HUB_CLOSING, ResourceManager::SETTINGS_CONFIRM_HUB_CLOSE },
 	{ SettingsManager::CONFIRM_AS_REMOVAL, ResourceManager::SETTINGS_CONFIRM_AS_REMOVE },
+	{ SettingsManager::CONFIRM_FILE_DELETIONS, ResourceManager::CONFIRM_FILE_DELETIONS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

@@ -1050,8 +1050,8 @@ LRESULT RichTextBox::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 LRESULT RichTextBox::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string path = Text::fromT(selectedWord);
 	string msg = str(boost::format(STRING(DELETE_FILE_CONFIRM)) % path);
-	if(MessageBox(Text::toT(msg).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-		File::deleteFile(path);
+	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg).c_str())) {
+		MainFrame::getMainFrame()->addThreadedTask([=] { File::deleteFileEx(path, 3, !ShareManager::getInstance()->isRealPathShared(path)); });
 	}
 
 	SetSelNone();
