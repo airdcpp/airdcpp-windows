@@ -1133,6 +1133,7 @@ void QueueFrame::moveSelectedDir() {
 			return;
 		}
 		
+		StringPairList fileBundles;
 		for(auto& sourceBundle: bundles) {
 			if (!sourceBundle->isFileBundle()) {
 				auto sourceDir = curDir;
@@ -1141,9 +1142,11 @@ void QueueFrame::moveSelectedDir() {
 				});
 			} else {
 				//move queue items
-				QueueManager::getInstance()->moveFileBundle(sourceBundle, AirUtil::convertMovePath(sourceBundle->getTarget(), curDir, newDir));
+				fileBundles.emplace_back(sourceBundle->getTarget(), AirUtil::convertMovePath(sourceBundle->getTarget(), curDir, newDir));
 			}
 		}
+
+		QueueManager::getInstance()->moveFiles(fileBundles);
 	}
 }
 

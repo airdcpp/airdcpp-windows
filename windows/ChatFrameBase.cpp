@@ -685,14 +685,17 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /refresh\t\t\t\t\tRefresh share\n\
 /optimizedb\t\t\t\tRemove unused entries from the hash databases\n\
-/verifydb\t\t\t\tOptimize and verify the integrity of the hash databases\n\
+/verifydb\t\t\t\t\tOptimize and verify the integrity of the hash databases\n\
 /savequeue\t\t\t\tSave download queue\n\
 /stop\t\t\t\t\tStop SFV check\n\
+/sharestats\t\t\t\tShow general share statistics\n\
+/dbstats\t\t\t\t\tShow techical statistics about the hash database backend\n\
+/monitordebug\t\t\t\tShow each change notification for monitored directories\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /search <string>\t\t\t\tSearch for...\n\
 /whois [IP]\t\t\t\tFind info about user from the IP address\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
-/slots # \t\t\t\tUpload slots\n\
+/slots # \t\t\t\t\tUpload slots\n\
 /extraslots # \t\t\t\tSet extra slots\n\
 /smallfilesize # \t\t\t\tSet smallfile size\n\
 /ts \t\t\t\t\tShow timestamp in mainchat\n\
@@ -700,7 +703,7 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /showjoins \t\t\t\tShow user joins in mainchat\n\
 /shutdown \t\t\t\tSystem shutdown\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
-/AirDC++ \t\t\t\tShow AirDC++ version in mainchat\n\
+/AirDC++ \t\t\t\t\tShow AirDC++ version in mainchat\n\
 ------------------------------------------------------------------------------------------------------------------------------------------------------------\n\
 /away <msg>\t\t\t\tSet away message\n\
 /winamp, /w\t\t\t\tShows Winamp spam in mainchat\n\
@@ -708,10 +711,11 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /itunes\t\t\t\t\tShows iTunes spam in mainchat\n\
 /wmp\t\t\t\t\tShows Windows Media Player spam in mainchat\n\
 /mpc\t\t\t\t\tShows Media Player Classic spam in mainchat\n\
-/clear,/c\t\t\t\tClears mainchat\n\
+/clear,/c\t\t\t\t\tClears chat\n\
 /speed\t\t\t\t\tShow download/upload speeds in mainchat\n\
 /stats\t\t\t\t\tShow stats in mainchat\n\
-/prvstats\t\t\t\tView stats visible only to yourself\n\
+/clientstats\t\t\t\tShow general statistics about the clients in all hubs\n\
+/prvstats\t\t\t\t\tView stats visible only to yourself\n\
 /info\t\t\t\t\tView system info visible only to yourself\n\
 /log system\t\t\t\tOpen system log\n\
 /log downloads \t\t\t\tOpen downloads log\n\
@@ -722,9 +726,8 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /uptime \t\t\t\t\tShow uptime info\n\
 /topic\t\t\t\t\tShow topic\n\
 /ctopic\t\t\t\t\tOpen link in topic\n\
-/ratio, /r\t\t\t\tShow ratio in chat\n\
-/clear, /r\t\t\t\tClear the window content\n\
-/close, /r\t\t\t\tClose the current tab\n\n");
+/ratio, /r\t\t\t\t\tShow ratio in chat\n\
+/close, /r\t\t\t\t\tClose the current tab\n\n");
 
 string ChatFrameBase::getAwayMessage() {
 	return ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::AwayMsg) : SETTING(DEFAULT_AWAY_MESSAGE);
