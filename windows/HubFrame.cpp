@@ -278,7 +278,7 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
 		WinUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));
 	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
-		status = _T("*** ") + ChatFrameBase::commands + _T(", /join <hub-ip>, /ts, /showjoins, /favshowjoins, /close, /userlist, /favorite, /pm <user> [message], /getlist <user>, /ignorelist, /removefavorite");
+		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for the hub tab: /join <hub-ip>, /ts, /showjoins, /favshowjoins, /close, /userlist, /favorite, /pm <user> [message], /getlist <user>, /ignorelist, /removefavorite");
 	} else if(stricmp(cmd.c_str(), _T("pm")) == 0) {
 		string::size_type j = param.find(_T(' '));
 		if(j != string::npos) {

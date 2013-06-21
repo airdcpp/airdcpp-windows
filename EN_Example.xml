@@ -1956,5 +1956,7 @@ Do you want to continue?</String>
 		<String Name="RebuildFailedEntriesVerify">There were %d shared TTHs without a corresponding hash tree entry and %d invalid tree entries that couldn't be loaded</String>
 		<String Name="RebuildFailedEntriesOptimize">%d shared TTHs without a corresponding hash tree entry were found</String>
 		<String Name="RebuildRefreshPrompt">It's recommended to refresh your share as those files (total of %s) must be rehashed if they are still shared</String>
+		<String Name="ConfirmFileDeletions">Confirm file deletions</String>
+		<String Name="MonitorDirFailed">A failed directory %s has been removed from monitoring: %s</String>
 	</Strings>
 </Language>

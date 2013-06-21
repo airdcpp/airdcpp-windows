@@ -722,7 +722,9 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /uptime \t\t\t\t\tShow uptime info\n\
 /topic\t\t\t\t\tShow topic\n\
 /ctopic\t\t\t\t\tOpen link in topic\n\
-/ratio, /r\t\t\t\tShow ratio in chat\n\n");
+/ratio, /r\t\t\t\tShow ratio in chat\n\
+/clear, /r\t\t\t\tClear the window content\n\
+/close, /r\t\t\t\tClose the current tab\n\n");
 
 string ChatFrameBase::getAwayMessage() {
 	return ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::AwayMsg) : SETTING(DEFAULT_AWAY_MESSAGE);
