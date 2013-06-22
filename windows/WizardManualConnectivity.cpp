@@ -33,7 +33,9 @@ LRESULT WizardManualConnectivity::OnInitDialog(UINT /*message*/, WPARAM /*wParam
 	//::GetWindowRect(GetDlgItem(IDC_SETTINGS_SHARED_DIRECTORIES), rc);
 	//::AdjustWindowRect(rc, GetWindowLongPtr(GWL_STYLE), false);
 	//dirPage->SetWindowPos(m_hWnd, rc.left+10, rc.top+10, 0, 0, SWP_NOSIZE);
-	protocols->SetWindowPos(HWND_TOP, 0, 35, 0, 0, SWP_NOSIZE);
+
+	auto factor = WinUtil::getFontFactor();
+	protocols->SetWindowPos(HWND_TOP, 0, 35*factor, 0, 0, SWP_NOSIZE);
 	protocols->ShowWindow(SW_SHOW);
 
 	return TRUE; 

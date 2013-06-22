@@ -1786,7 +1786,7 @@ Do you want to use this destination anyway?</String>
 		<String Name="LastError">Last error</String>
 		<String Name="ClearError">Clear error</String>
 		<String Name="MinDupeCheckSize">No dupe check for files smaller than</String>
-		<String Name="SettingsNmdcMagnetWarning">Warn me about sending files in private chat at nmdc hubs</String>
+		<String Name="SettingsNmdcMagnetWarning">Warn me about sending files in private chat via NMDC hubs</String>
 		<String Name="ElevatedWarning">You appear to run the client with administrative privileges. This may disable the following client functionality:
 
 - Clicking on web links in chat doesn't work
@@ -1958,5 +1958,7 @@ Do you want to continue?</String>
 		<String Name="RebuildRefreshPrompt">It's recommended to refresh your share as those files (total of %s) must be rehashed if they are still shared</String>
 		<String Name="ConfirmFileDeletions">Confirm file deletions</String>
 		<String Name="MonitorDirFailed">A failed directory %s has been removed from monitoring: %s</String>
+		<String Name="NoAschNote">This user doesn't support the advanced searching features in partial lists, which may result in lower hit counts.</String>
+		<String Name="PartialSchNmdcNote">Searching from the whole share via partial list isn't supported in NMDC hubs. It's recommended to use the full list instead.</String>
 	</Strings>
 </Language>

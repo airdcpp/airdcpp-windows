@@ -611,7 +611,7 @@ void DirectoryListingFrame::onFind() {
 	searchPos = 0;
 
 	// Prompt for substring to find
-	DirectoryListingDlg dlg(dl->supportsASCH());
+	DirectoryListingDlg dlg(dl);
 	if(dlg.DoModal() != IDOK)
 		return;
 

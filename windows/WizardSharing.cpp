@@ -31,7 +31,9 @@ LRESULT WizardSharing::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM 
 
 	dirPage->Create(this->m_hWnd);
 	//dirPage->MoveWindow(10, 10, 0, 0);
-	dirPage->SetWindowPos(HWND_TOP, 10, 65, 0, 0, SWP_NOSIZE);
+
+	auto factor = WinUtil::getFontFactor();
+	dirPage->SetWindowPos(HWND_TOP, 10*factor, 65*factor, 0, 0, SWP_NOSIZE);
 	dirPage->ShowWindow(SW_SHOW);
 	return TRUE; 
 }

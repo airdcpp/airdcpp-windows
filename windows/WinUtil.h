@@ -212,6 +212,7 @@ public:
 	static bool mutesounds;
 	static DWORD comCtlVersion;
 
+	static double getFontFactor();
 	static bool updated;
 	static TStringPair updateCommand;
 

@@ -77,12 +77,22 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlProfile.SetCurSel(0);
 
 	dirPage->Create(this->m_hWnd);
-	//CRect rc;
-	//::GetWindowRect(GetDlgItem(IDC_SETTINGS_SHARED_DIRECTORIES), rc);
+
+	auto factor = WinUtil::getFontFactor();
+	dirPage->SetWindowPos(HWND_TOP, 22*factor, 155*factor, 0, 0, SWP_NOSIZE);
+
+	/*CRect rc;
+	::GetWindowRect(GetDlgItem(IDC_SETTINGS_SHARED_DIRECTORIES), rc);
+	POINT p;
+	p.x = rc.left;
+	p.y = rc.top;
+	::ScreenToClient(m_hWnd, &p);
 	//::AdjustWindowRect(rc, GetWindowLongPtr(GWL_STYLE), false);
-	//dirPage->SetWindowPos(m_hWnd, rc.left+10, rc.top+10, 0, 0, SWP_NOSIZE);
-	dirPage->SetWindowPos(HWND_TOP, 17, 150, 0, 0, SWP_NOSIZE);
+	dirPage->SetWindowPos(HWND_TOP, p.x+15, p.y+25, 0, 0, SWP_NOSIZE);
+	//dirPage->MoveWindow(rc.left+10, rc.top+10, 0, 0);
+	//dirPage->SetWindowPos(HWND_TOP, 17, 150, 0, 0, SWP_NOSIZE);*/
 	dirPage->ShowWindow(SW_SHOW);
+	//ClientToScreen(
 	return TRUE;
 }
 

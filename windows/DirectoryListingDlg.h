@@ -23,7 +23,9 @@
 #pragma once
 #endif // _MSC_VER > 1000
 #include <atlcrack.h>
+
 #include "SearchTypeCombo.h"
+#include "../client/DirectoryListing.h"
 
 class DirectoryListingDlg : public CDialogImpl<DirectoryListingDlg> {
 public:
@@ -36,7 +38,7 @@ public:
 
 	enum { IDD = IDD_DIRLIST_DLG };
 
-	DirectoryListingDlg(bool aSupportsASCH);
+	DirectoryListingDlg(DirectoryListing* aDl);
 	~DirectoryListingDlg();
 
 	BEGIN_MSG_MAP_EX(DirectoryListingDlg)
@@ -59,6 +61,6 @@ private:
 	CEdit ctrlSize;
 	CComboBox ctrlSizeMode;
 	CComboBox ctrlSizeUnit;
-	bool supportsASCH;
+	DirectoryListing* dl;
 };
 #endif

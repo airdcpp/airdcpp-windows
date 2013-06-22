@@ -30,7 +30,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-DirectoryListingDlg::DirectoryListingDlg(bool aSupportsASCH) : fileTypeStr(SEARCH_TYPE_ANY), fileType(0), size(0), sizeMode(0), useCurDir(false), supportsASCH(aSupportsASCH) { }
+DirectoryListingDlg::DirectoryListingDlg(DirectoryListing* aDl) : fileTypeStr(SEARCH_TYPE_ANY), fileType(0), size(0), sizeMode(0), useCurDir(false), dl(aDl) { }
 
 DirectoryListingDlg::~DirectoryListingDlg() {
 	//ctrlSearch.Detach();
@@ -70,8 +70,15 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 	::SetWindowText(GetDlgItem(IDC_SIZE_LABEL), CTSTRING(SIZE));
 
 	::SetWindowText(GetDlgItem(IDC_USE_CUR_DIR), CTSTRING(SEARCH_CUR_DIR));
-	if (!supportsASCH)
+	if (!dl->supportsASCH() || dl->getHintedUser().user->isNMDC()) {
 		::EnableWindow(GetDlgItem(IDC_USE_CUR_DIR),	FALSE);
+		::ShowWindow(GetDlgItem(IDC_NO_ASCH_NOTE), SW_SHOW);
+		if (dl->getHintedUser().user->isNMDC()) {
+			::SetWindowText(GetDlgItem(IDC_NO_ASCH_NOTE), CTSTRING(PARTIAL_SCH_NMDC_NOTE));
+		} else {
+			::SetWindowText(GetDlgItem(IDC_NO_ASCH_NOTE), CTSTRING(NO_ASCH_NOTE));
+		}
+	}
 
 	fileTypeStr = SETTING(LAST_FL_FILETYPE);
 	ctrlFileType.fillList(fileTypeStr);

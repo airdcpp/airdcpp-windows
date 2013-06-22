@@ -176,6 +176,10 @@ COLORREF HLS_TRANSFORM (COLORREF rgb, int percent_L, int percent_S) {
 	return HLS2RGB (HLS(h, l, s));
 }
 
+double WinUtil::getFontFactor() {
+	return static_cast<float>(::GetDeviceCaps(::GetDC(reinterpret_cast<HWND>(0)), LOGPIXELSX )) / 96.0;
+}
+
 void WinUtil::playSound(const tstring& sound) {
 	if(sound == _T("beep")) {
 		::MessageBeep(MB_OK);
