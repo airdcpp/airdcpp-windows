@@ -36,7 +36,7 @@ public:
 
 	enum { IDD = IDD_DIRLIST_DLG };
 
-	DirectoryListingDlg();
+	DirectoryListingDlg(bool aSupportsASCH);
 	~DirectoryListingDlg();
 
 	BEGIN_MSG_MAP_EX(DirectoryListingDlg)
@@ -59,5 +59,6 @@ private:
 	CEdit ctrlSize;
 	CComboBox ctrlSizeMode;
 	CComboBox ctrlSizeUnit;
+	bool supportsASCH;
 };
 #endif

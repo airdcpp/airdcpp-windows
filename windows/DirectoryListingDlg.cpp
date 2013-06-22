@@ -30,7 +30,7 @@
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-DirectoryListingDlg::DirectoryListingDlg() : fileTypeStr(SEARCH_TYPE_ANY), fileType(0), size(0), sizeMode(0), useCurDir(false) { }
+DirectoryListingDlg::DirectoryListingDlg(bool aSupportsASCH) : fileTypeStr(SEARCH_TYPE_ANY), fileType(0), size(0), sizeMode(0), useCurDir(false), supportsASCH(aSupportsASCH) { }
 
 DirectoryListingDlg::~DirectoryListingDlg() {
 	//ctrlSearch.Detach();
@@ -68,7 +68,10 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 	::SetWindowText(GetDlgItem(IDC_DL_SEARCH_DESC), CTSTRING(SEARCH_STRING));
 	::SetWindowText(GetDlgItem(IDC_DL_TYPE_TEXT), CTSTRING(FILE_TYPE));
 	::SetWindowText(GetDlgItem(IDC_SIZE_LABEL), CTSTRING(SIZE));
+
 	::SetWindowText(GetDlgItem(IDC_USE_CUR_DIR), CTSTRING(SEARCH_CUR_DIR));
+	if (!supportsASCH)
+		::EnableWindow(GetDlgItem(IDC_USE_CUR_DIR),	FALSE);
 
 	fileTypeStr = SETTING(LAST_FL_FILETYPE);
 	ctrlFileType.fillList(fileTypeStr);
