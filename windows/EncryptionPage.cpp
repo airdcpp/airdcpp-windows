@@ -25,25 +25,28 @@
 #include "WinUtil.h"
 
 PropPage::TextItem EncryptionPage::texts[] = {
-	{ IDC_STATIC1, ResourceManager::PRIVATE_KEY_FILE },
-	{ IDC_STATIC2, ResourceManager::OWN_CERTIFICATE_FILE },
-	{ IDC_STATIC3, ResourceManager::TRUSTED_CERTIFICATES_PATH },
+	{ IDC_CERT_USE_DEFAULT_PATHS, ResourceManager::USE_DEFAULT_CERT_PATHS },
+	{ IDC_PRIV_KEY_LBL, ResourceManager::PRIVATE_KEY_FILE },
+	{ IDC_OWN_CERT_LBL, ResourceManager::OWN_CERTIFICATE_FILE },
 	{ IDC_GENERATE_CERTS, ResourceManager::GENERATE_CERTIFICATES },
+
+	{ IDC_TRUSTED_PATH_LBL, ResourceManager::TRUSTED_CERTIFICATES_PATH },
 	{ IDC_ALLOW_UNTRUSTED_HUBS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_HUBS },
 	{ IDC_ALLOW_UNTRUSTED_CLIENTS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_CLIENTS },
 
 	{ IDC_TRANSFER_ENCRYPTION_LBL, ResourceManager::TRANSFER_ENCRYPTION },
+	{ IDC_TRUSTED_CERT_NOTE, ResourceManager::TRUSTED_CERT_NOTE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
 PropPage::Item EncryptionPage::items[] = {
+	{ IDC_CERT_USE_DEFAULT_PATHS, SettingsManager::USE_DEFAULT_CERT_PATHS, PropPage::T_BOOL },
 	{ IDC_TLS_CERTIFICATE_FILE, SettingsManager::TLS_CERTIFICATE_FILE, PropPage::T_STR },
 	{ IDC_TLS_PRIVATE_KEY_FILE, SettingsManager::TLS_PRIVATE_KEY_FILE, PropPage::T_STR },
+
 	{ IDC_TLS_TRUSTED_CERTIFICATES_PATH, SettingsManager::TLS_TRUSTED_CERTIFICATES_PATH, PropPage::T_STR },
 	{ IDC_ALLOW_UNTRUSTED_HUBS, SettingsManager::ALLOW_UNTRUSTED_HUBS, PropPage::T_BOOL },
 	{ IDC_ALLOW_UNTRUSTED_CLIENTS, SettingsManager::ALLOW_UNTRUSTED_CLIENTS, PropPage::T_BOOL },
-
-
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -59,6 +62,8 @@ LRESULT EncryptionPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	ctrlTransferEncryption.AddString(CTSTRING(ENABLED));
 	ctrlTransferEncryption.AddString(CTSTRING(ENCRYPTION_FORCED));
 	ctrlTransferEncryption.SetCurSel(SETTING(TLS_MODE));
+
+	fixControls();
 	return TRUE;
 }
 
@@ -66,6 +71,8 @@ void EncryptionPage::write() {
 	PropPage::write((HWND)*this, items);
 
 	SettingsManager::getInstance()->set(SettingsManager::TLS_MODE, ctrlTransferEncryption.GetCurSel());
+	CryptoManager::setCertPaths();
+	AirUtil::updateCachedSettings();
 }
 
 LRESULT EncryptionPage::onBrowsePrivateKey(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -76,6 +83,20 @@ LRESULT EncryptionPage::onBrowsePrivateKey(WORD /*wNotifyCode*/, WORD /*wID*/, H
 		edt.SetWindowText(&target[0]);
 	}
 	return 0;
+}
+
+LRESULT EncryptionPage::onUseDefaults(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	fixControls();
+	return 0;
+}
+
+void EncryptionPage::fixControls() {
+	BOOL manualPaths = IsDlgButtonChecked(IDC_CERT_USE_DEFAULT_PATHS) != BST_CHECKED;
+	::EnableWindow(GetDlgItem(IDC_PRIV_KEY_LBL),			manualPaths);
+	::EnableWindow(GetDlgItem(IDC_OWN_CERT_LBL),			manualPaths);
+	::EnableWindow(GetDlgItem(IDC_GENERATE_CERTS),			manualPaths);
+	::EnableWindow(GetDlgItem(IDC_TLS_CERTIFICATE_FILE),	manualPaths);
+	::EnableWindow(GetDlgItem(IDC_TLS_PRIVATE_KEY_FILE),	manualPaths);
 }
 
 LRESULT EncryptionPage::onBrowseCertificate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

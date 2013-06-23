@@ -40,12 +40,14 @@ public:
 
 	BEGIN_MSG_MAP(EncryptionPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
+		COMMAND_ID_HANDLER(IDC_CERT_USE_DEFAULT_PATHS, onUseDefaults)
 		COMMAND_ID_HANDLER(IDC_BROWSE_PRIVATE_KEY, onBrowsePrivateKey)
 		COMMAND_ID_HANDLER(IDC_BROWSE_CERTIFICATE, onBrowseCertificate)
 		COMMAND_ID_HANDLER(IDC_BROWSE_TRUSTED_PATH, onBrowseTrustedPath)
 		COMMAND_ID_HANDLER(IDC_GENERATE_CERTS, onGenerateCerts)
 	END_MSG_MAP()
 
+	LRESULT onUseDefaults(WORD wNotifyCode, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowsePrivateKey(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowseCertificate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBrowseTrustedPath(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -57,6 +59,7 @@ public:
 	void write();
 	
 protected:
+	void fixControls();
 	static Item items[];
 	static TextItem texts[];
 	TCHAR* title;

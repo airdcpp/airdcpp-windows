@@ -631,8 +631,10 @@
 #define IDC_CLIENT_EXTENDED_TAG         1221
 #define IDC_DU                          1221
 #define IDC_POPUPTYPE                   1221
+#define IDC_OWN_CERT_LBL                1221
 #define IDC_STATIC3                     1222
 #define IDC_CLIENT_LOCK                 1222
+#define IDC_TRUSTED_PATH_LBL            1222
 #define IDC_CLIENT_PK                   1223
 #define IDC_MAX_HASH_SPEED              1223
 #define IDC_TRANSFER_ENCRYPTION_LBL     1223
@@ -779,9 +781,12 @@
 #define IDC_SKIPLIST_PRESET3            1286
 #define IDC_STATIC1                     1287
 #define IDC_SETTINGS_BIND_ADDRESS_HELP  1287
+#define IDC_PRIV_KEY_LBL                1287
 #define IDC_REGEXP_TESTER_BUTTON        1288
 #define IDC_BIND_ADDRESS2               1288
 #define IDC_MAPPER                      1288
+#define IDC_PRIV_KEY_LBL2               1288
+#define IDC_TRUSTED_CERT_NOTE           1288
 #define IDC_S                           1290
 #define IDC_FLAT                        1291
 #define IDC_S2                          1291
@@ -1356,6 +1361,9 @@
 #define IDC_OPTIMIZE_DB_FAST            1729
 #define IDC_LANGUAGE_INTRO              1730
 #define IDC_LANGUAGE_INTRO2             1731
+#define IDC_TRUSTED_CERTS               1731
+#define IDC_OWN_CERT                    1732
+#define IDC_CERT_USE_DEFAULT_PATHS      1733
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1763,7 +1771,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        359
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1731
+#define _APS_NEXT_CONTROL_VALUE         1734
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif
