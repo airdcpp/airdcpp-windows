@@ -1553,7 +1553,8 @@ static void appendPrioMenu(OMenu& aParent, const vector<T>& aBase, bool isBundle
 		}, OMenu::FLAG_THREADED | (p == aPrio ? OMenu::FLAG_CHECKED /*| OMenu::FLAG_DISABLED*/ : 0));
 	};
 
-	appendItem(TSTRING(PAUSED_FORCED), QueueItemBase::PAUSED_FORCE);
+	if (isBundle)
+		appendItem(TSTRING(PAUSED_FORCED), QueueItemBase::PAUSED_FORCE);
 	appendItem(TSTRING(PAUSED), QueueItemBase::PAUSED);
 	appendItem(TSTRING(LOWEST), QueueItemBase::LOWEST);
 	appendItem(TSTRING(LOW), QueueItemBase::LOW);
