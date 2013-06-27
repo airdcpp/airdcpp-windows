@@ -205,6 +205,8 @@ public:
 	bool showDirDialog(string& fileName);
 	HintedUser getMagnetSource();
 private:
+	void clearSelInfo();
+	void updateSelectedWord(POINT pt);
 	static UINT	WM_FINDREPLACE;
 	TCHAR*		findBuffer;
 	const WORD	findBufferSize;

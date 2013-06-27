@@ -61,6 +61,8 @@ Changed:
 - Don't change finished download connections to disconnected state
 - Language files aren't shipped with the client, they are only downloaded when enabled by the user
 - Ignoring private messages from a hub doesn't apply to favorite users and operators
+- Set the own certificate paths automatically based on the settings dir by default
+- Convert shortened magnet links to plain links when copying text from chat
 
 Fixed:
 

@@ -736,12 +736,15 @@ DupeType RichTextBox::updateDupeType(ChatLink* aChatLink) {
 	return aChatLink->getDupe();
 }
 
-LRESULT RichTextBox::OnRButtonDown(POINT pt) {
-	selectedLine = LineFromPos(pt);
+void RichTextBox::clearSelInfo() {
+	selectedLine.clear();
 	selectedUser.clear();
 	selectedIP.clear();
+	dupeType = DUPE_NONE, isMagnet = false, isTTH = false, isRelease = false, isPath = false;
+	selectedWord.clear();
+}
 
-	dupeType = DUPE_NONE, isMagnet=false, isTTH=false, isRelease=false, isPath=false;
+void RichTextBox::updateSelectedWord(POINT pt) {
 	CHARRANGE cr;
 	GetSel(cr);
 
@@ -759,20 +762,38 @@ LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 			dupeType = updateDupeType(cl);
 		}
 	} else {
-		if(cr.cpMax != cr.cpMin) {
+		if (cr.cpMax != cr.cpMin) {
+			//Get the text
 			TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
 			GetSelText(buf);
-			selectedWord = Util::replaceT(buf, _T("\r"), _T("\r\n"));
-			delete[] buf;
-		} else {
+			selectedWord = buf;
+			delete [] buf;
+
+			//Replace shortened links in the range.
+			for (auto l : links | reversed) {
+				if (l.first.cpMin >= cr.cpMin && l.first.cpMax <= cr.cpMax) {
+					selectedWord.replace(l.first.cpMin - cr.cpMin, l.second->getDisplayText().length(), Text::toT(l.second->url));
+				}
+			}
+
+			//Change line breaks
+			selectedWord = Util::replaceT(selectedWord, _T("\r"), _T("\r\n"));
+		}
+		else {
 			selectedWord = WordFromPos(pt);
 			if (selectedWord.length() == 39) {
 				isTTH = true;
 			}
 		}
 	}
+}
 
+LRESULT RichTextBox::OnRButtonDown(POINT pt) {
+	clearSelInfo();
+
+	updateSelectedWord(pt);
 	updateAuthor();
+	selectedLine = LineFromPos(pt);
 
 	// Po kliku dovnitr oznaceneho textu si zkusime poznamenat pripadnej nick ci ip...
 	// jinak by nam to neuznalo napriklad druhej klik na uz oznaceny nick =)
@@ -1139,10 +1160,19 @@ void RichTextBox::findText(tstring& /*aTxt*/) {
 }
 
 LRESULT RichTextBox::onChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(((GetKeyState(VkKeyScan('F') & 0xFF) & 0xFF00) > 0 && (GetKeyState(VK_CONTROL) & 0xFF00) > 0) || wParam == VK_F3){
+	if (((GetKeyState(VkKeyScan('F') & 0xFF) & 0xFF00) > 0 && (GetKeyState(VK_CONTROL) & 0xFF00) > 0) || wParam == VK_F3){
 		findText();
 		return 1;
 	}
+
+	if ((GetKeyState(VkKeyScan('C') & 0xFF) & 0xFF00) > 0 && (GetKeyState(VK_CONTROL) & 0xFF00) > 0) {
+		POINT pt = { -1, -1 };
+		updateSelectedWord(pt);
+		WinUtil::setClipboard(selectedWord);
+		clearSelInfo();
+		return 1;
+	}
+
 	bHandled = FALSE;
 	return 0;
 }
@@ -1412,13 +1442,7 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 }
 
 LRESULT RichTextBox::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	CHARRANGE cr;
-	GetSel(cr);
-	if(cr.cpMax != cr.cpMin)
-		Copy();
-	else
-		WinUtil::setClipboard(selectedWord);
-	
+	WinUtil::setClipboard(selectedWord);
 	return 0;
 }
 
