@@ -268,8 +268,7 @@ void Parser::parseFont(const string& s) {
 	// remove empty strings.
 	l.erase(std::remove_if(l.begin(), l.end(), [](const string& s) { return s.empty(); }), l.end());
 
-	auto params = l.size();
-	if(params < 2) // the last 2 params (font size & font family) are compulsory.
+	if(l.size() < 2) // the last 2 params (font size & font family) are compulsory.
 		return;
 
 	// the last param (font family) may contain spaces; merge if that is the case.
@@ -294,12 +293,12 @@ void Parser::parseFont(const string& s) {
 	parseFontSize(size);
 
 	// parse the optional third to last param (font weight).
-	if(params > 2 && Util::toInt(*(l.end() - 3)) >= FW_BOLD) {
+	if(l.size() > 2 && Util::toInt(*(l.end() - 3)) >= FW_BOLD) {
 		contexts.back().setFlag(Context::Bold);
 	}
 
 	// parse the optional first param (font style).
-	if(params > 2 && l[0] == "italic") {
+	if(l.size() > 2 && l[0] == "italic") {
 		contexts.back().setFlag(Context::Italic);
 	}
 }

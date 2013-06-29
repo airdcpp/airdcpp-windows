@@ -83,7 +83,6 @@
 		<String Name="CopyHub">Copy address to clipboard</String>
 		<String Name="CopyLine">Copy actual line</String>
 		<String Name="CopyMagnetLink">Copy MAGNET link to clipboard</String>
-		<String Name="CopyNick">Nick</String>
 		<String Name="Coral">Use Coral network when downloading hub lists (improves reliability)</String>
 		<String Name="CouldNotOpenTargetFile">Could not open target file: </String>
 		<String Name="Count">Count</String>
@@ -1962,5 +1961,6 @@ Do you want to continue?</String>
 		<String Name="PartialSchNmdcNote">Searching from the whole share via partial list isn't supported in NMDC hubs. It's recommended to use the full list instead.</String>
 		<String Name="UseDefaultCertPaths">Store in the the default location</String>
 		<String Name="TrustedCertNote">WARNING: Don't change the trusted certificate settings unless you know what you are doing</String>
+		<String Name="NoResultsSpecifiedTime">No results were received in the specified time</String>
 	</Strings>
 </Language>

@@ -193,7 +193,15 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchStarted) noexcept
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept {
-	callAsync([=] { updateStatus(timedOut ? TSTRING(SEARCH_TIMED_OUT) : TSTRING(NO_RESULTS_FOUND)); });
+	callAsync([=] {
+		tstring msg;
+		if (timedOut) {
+			msg = dl->supportsASCH() ? TSTRING(SEARCH_TIMED_OUT) : TSTRING(NO_RESULTS_SPECIFIED_TIME);
+		} else {
+			msg = TSTRING(NO_RESULTS_FOUND);
+		}
+		updateStatus(msg); 
+	});
 	changeWindowState(true);
 }
 
@@ -1171,11 +1179,22 @@ LRESULT DirectoryListingFrame::onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*
 LRESULT DirectoryListingFrame::onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if((GetKeyState(VkKeyScan('F') & 0xFF) & 0xFF00) > 0 && WinUtil::isCtrl()){
 		onFind();
-		return 0;
+		return 1;
+	}
+
+	if ((GetKeyState(VkKeyScan('C') & 0xFF) & 0xFF00) > 0 && WinUtil::isCtrl()){
+		HWND focus = ::GetFocus();
+		if (focus == ctrlTree.m_hWnd) {
+			onCopyDir();
+		} else {
+			BOOL tmp;
+			onCopy(0, IDC_COPY_FILENAME, 0, tmp);
+		}
+		return 1;
 	}
 		
 	bHandled = FALSE;
-	return 1;
+	return 0;
 }
 
 LRESULT DirectoryListingFrame::onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -1202,7 +1221,7 @@ void DirectoryListingFrame::selectItem(const tstring& name) {
 LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	OMenu copyMenu;
 	copyMenu.CreatePopupMenu();
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(COPY_NICK));
+	copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(NICK));
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
 	copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
@@ -1356,37 +1375,35 @@ clientmenu:
 		return TRUE; 
 	} else if(reinterpret_cast<HWND>(wParam) == ctrlTree && ctrlTree.GetSelectedItem() != NULL) { 
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-
-		DirectoryListing::Directory* dir = nullptr;
-		
 		if(pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlTree, pt);
-		} else {
-			ctrlTree.ScreenToClient(&pt);
-			UINT a = 0;
-			HTREEITEM ht = ctrlTree.HitTest(pt, &a);
-			if(ht != NULL && ht != ctrlTree.GetSelectedItem())
-				ctrlTree.SelectItem(ht);
-			ctrlTree.ClientToScreen(&pt);
-			changeType = CHANGE_TREE_SINGLE;
-			dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
 		}
 
-		OMenu directoryMenu;
+		ctrlTree.ScreenToClient(&pt);
 
+		UINT a = 0;
+		HTREEITEM ht = ctrlTree.HitTest(pt, &a);
+		if(ht != NULL && ht != ctrlTree.GetSelectedItem())
+			ctrlTree.SelectItem(ht);
+		ctrlTree.ClientToScreen(&pt);
+		changeType = CHANGE_TREE_SINGLE;
+		auto dir = ht ? (DirectoryListing::Directory*)ctrlTree.GetItemData(ht) : nullptr;
+
+
+		OMenu directoryMenu;
 		directoryMenu.CreatePopupMenu();
 
 		appendDownloadMenu(directoryMenu, DownloadBaseHandler::FILELIST, true, false);
-		directoryMenu.AppendMenu(MF_SEPARATOR);
+		directoryMenu.appendSeparator();
 
 		WinUtil::appendSearchMenu(directoryMenu, curPath);
-		directoryMenu.AppendMenu(MF_SEPARATOR);
+		directoryMenu.appendSeparator();
 
-		directoryMenu.AppendMenu(MF_STRING,IDC_COPY_DIRECTORY, CTSTRING(COPY_DIRECTORY));
-		directoryMenu.AppendMenu(MF_STRING, IDC_SEARCHLEFT, CTSTRING(SEARCH));
+		directoryMenu.appendItem(TSTRING(COPY_DIRECTORY), [=] { onCopyDir(); });
+		directoryMenu.appendItem(TSTRING(SEARCH), [=] { if (dir) WinUtil::searchAny(Text::toT(dir->getName())); });
 		if (dl->getPartialList()) {
-			directoryMenu.AppendMenu(MF_SEPARATOR);
-			directoryMenu.AppendMenu(MF_STRING, IDC_RELOAD_DIR, CTSTRING(RELOAD));
+			directoryMenu.appendSeparator();
+			directoryMenu.appendItem(TSTRING(RELOAD), [=] { onReloadPartial(true); });
 		}
 		
 		if (dl->getIsOwnList() || (dir && dir->getDupe() != DUPE_NONE)) {
@@ -1782,7 +1799,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 	return S_OK;
 }
 
-LRESULT DirectoryListingFrame::onCopyDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void DirectoryListingFrame::onCopyDir() {
 	tstring sCopy;
 	tstring directory;
 	HTREEITEM t = ctrlTree.GetSelectedItem();
@@ -1791,7 +1808,6 @@ LRESULT DirectoryListingFrame::onCopyDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 	if (!sCopy.empty()) {
 		WinUtil::setClipboard(sCopy);
 	}
-	return S_OK;
 }
 
 
@@ -2112,23 +2128,6 @@ LRESULT DirectoryListingFrame::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 	}
 
 	WinUtil::searchAny(searchTerm);
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onSearchLeft(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-
-	tstring searchTerm;
-	HTREEITEM t = ctrlTree.GetSelectedItem();
-	if(t != NULL) {
-		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		searchTerm = Text::toT((dir)->getName());
-		WinUtil::searchAny(searchTerm);
-	}
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	onReloadPartial(true);
 	return 0;
 }
 
