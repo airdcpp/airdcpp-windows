@@ -125,7 +125,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 	if (uMsg != WM_KEYDOWN && uMsg != WM_CUT && uMsg != WM_PASTE) { //ApexDC
 		switch(wParam) {
 			case VK_RETURN:
-				if( (GetKeyState(VK_CONTROL) & 0x8000) || (GetKeyState(VK_MENU) & 0x8000) ) {
+				if ((GetKeyState(VK_CONTROL) & 0x8000) || (GetKeyState(VK_SHIFT) & 0x8000) || (GetKeyState(VK_MENU) & 0x8000)) {
 					bHandled = FALSE;
 				}
 				break;
@@ -167,7 +167,8 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 	switch(wParam) {
 		case VK_RETURN:
 			if( (GetKeyState(VK_CONTROL) & 0x8000) || 
-				(GetKeyState(VK_MENU) & 0x8000) ) {
+				(GetKeyState(VK_MENU) & 0x8000)  ||
+				(GetKeyState(VK_SHIFT) & 0x8000)) {
 					bHandled = FALSE;
 				} else {
 					onEnter();
@@ -335,7 +336,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				if(charIndex <= 0)
 					newLineCount -= 1;
 			}
-		} else if(WinUtil::isCtrl() && wParam == VK_RETURN) {
+		} else if((WinUtil::isCtrl() || WinUtil::isShift()) && wParam == VK_RETURN) {
 			newLineCount += 1;
 		}
 

@@ -78,7 +78,7 @@ protected:
 
 	void fixControls();
 
-	ShareProfile::set addProfiles;
+	ShareProfile::Set addProfiles;
 	ProfileTokenList removeProfiles;
 	vector<pair<ShareProfilePtr, string>> renameProfiles;
 	ShareProfilePtr getSelectedProfile();

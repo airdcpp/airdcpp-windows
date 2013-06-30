@@ -600,7 +600,7 @@ void ShareDirectories::removeDir(const string& rPath, ProfileToken aProfile, int
 	}
 }
 
-bool ShareDirectories::showShareDlg(const ShareProfile::list& spList, ProfileToken /*curProfile*/, const tstring& curName, ProfileTokenList& profilesTokens, tstring& newName, bool rename) {
+bool ShareDirectories::showShareDlg(const ShareProfile::List& spList, ProfileToken /*curProfile*/, const tstring& curName, ProfileTokenList& profilesTokens, tstring& newName, bool rename) {
 	if (!spList.empty()) {
 		SharePageDlg virt;
 		virt.rename = rename;
@@ -643,7 +643,7 @@ LRESULT ShareDirectories::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/,
 		auto items = getItemsByPath(sdi->path, false);
 		tstring newName;
 
-		ShareProfile::list spList;
+		ShareProfile::List spList;
 		for(auto j: items) {
 			if (j->profile != curProfile)
 				spList.push_back(parent->getProfile(j->profile));
@@ -698,7 +698,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 		}
 	}
 
-	ShareProfile::list spList;
+	ShareProfile::List spList;
 	ProfileTokenList profileTokens;
 	tstring newName;
 	profileTokens.push_back(curProfile);

@@ -34,6 +34,7 @@ Added:
 - Add a menu item for opening the log directory
 - Allow choosing the queue removal mode when auto disconnecting downloads
 - Add an option for not allowing failover addresses for favorite hubs (hub-specific and global)
+- Shift + Return can also be used to create a new line in chat tabs
 
 Changed:
 

@@ -412,7 +412,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				wndMain->ShowWindow(((nCmdShow == SW_SHOWDEFAULT) || (nCmdShow == SW_SHOWNORMAL)) ? SETTING(MAIN_WINDOW_STATE) : nCmdShow);
 			}
 
-			WinUtil::splash.reset();
+			WinUtil::splash.reset(nullptr);
 		});
 	});
 
@@ -518,6 +518,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 					ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Util::getParams(true).c_str(), NULL, SW_SHOWNORMAL);
 				}
 
+				WinUtil::splash.reset(nullptr);
 				return FALSE;
 			}
 			return FALSE;

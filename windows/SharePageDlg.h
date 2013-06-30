@@ -44,7 +44,7 @@ public:
 	CListViewCtrl ctrlList;
 
 
-	ShareProfile::list profiles;
+	ShareProfile::List profiles;
 
 	enum { IDD = IDD_SHAREPAGE_DLG };
 	

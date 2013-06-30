@@ -99,7 +99,7 @@ protected:
 
 	unique_ptr<FolderTree> ft;
 
-	bool showShareDlg(const ShareProfile::list& spList, ProfileToken aCurProfile, const tstring& curName, ProfileTokenList& profiles, tstring& newName, bool rename);
+	bool showShareDlg(const ShareProfile::List& spList, ProfileToken aCurProfile, const tstring& curName, ProfileTokenList& profiles, tstring& newName, bool rename);
 	void removeDir(const string& aPath, ProfileToken aProfile, int8_t& autoRemove, bool checkDupes=true, int remainingItems=0);
 	bool addDirectory(const tstring& aPath);
 
