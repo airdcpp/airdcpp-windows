@@ -792,8 +792,9 @@ LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 	clearSelInfo();
 
 	updateSelectedWord(pt);
-	updateAuthor();
 	selectedLine = LineFromPos(pt);
+
+	updateAuthor();
 
 	// Po kliku dovnitr oznaceneho textu si zkusime poznamenat pripadnej nick ci ip...
 	// jinak by nam to neuznalo napriklad druhej klik na uz oznaceny nick =)

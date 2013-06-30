@@ -94,6 +94,7 @@ Fixed:
 - Fix language file locations
 - Fix ignoring private messages for favorite ADC hubs
 - Fix a few ADC vulnerabilities
+- Fix a bug that may cause bundles not be loaded on startup
 
 
 2.44
