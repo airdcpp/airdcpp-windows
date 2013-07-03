@@ -4,10 +4,10 @@
 //  file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 #define BOOST_THREAD_VERSION 2
-#define BOOST_THREAD_PROVIDES_GENERIC_SHARED_MUTEX_ON_WIN
+//#define BOOST_THREAD_PROVIDES_GENERIC_SHARED_MUTEX_ON_WIN
 //#define BOOST_THREAD_USES_LOG
 
-#include <boost/thread/thread.hpp>
+#include <boost/thread/thread_only.hpp>
 #include <boost/thread/shared_mutex.hpp>
 #include <boost/detail/no_exceptions_support.hpp>
 //#include <boost/thread/detail/log.hpp>

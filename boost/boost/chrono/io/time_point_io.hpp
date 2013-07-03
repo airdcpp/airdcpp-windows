@@ -33,7 +33,10 @@
 #include <locale>
 #include <string.h>
 
-#define  BOOST_CHRONO_INTERNAL_TIMEGM defined BOOST_WINDOWS && ! defined(__CYGWIN__)
+#define  BOOST_CHRONO_INTERNAL_TIMEGM \
+  ( defined BOOST_WINDOWS && ! defined(__CYGWIN__) ) || \
+  ( (defined(sun) || defined(__sun)) && defined __GNUC__)
+
 #define  BOOST_CHRONO_INTERNAL_GMTIME defined BOOST_WINDOWS && ! defined(__CYGWIN__)
 
 #define  BOOST_CHRONO_USES_INTERNAL_TIME_GET
@@ -200,6 +203,7 @@ namespace boost
             case 'd':
             case 'e':
               get_day(tm->tm_mday, b, e, err, ct);
+              //std::cerr << "tm_mday= "<< tm->tm_mday << std::endl;
 
                 break;
 //            case 'D':
@@ -216,6 +220,7 @@ namespace boost
 //                break;
             case 'H':
               get_hour(tm->tm_hour, b, e, err, ct);
+              //std::cerr << "tm_hour= "<< tm->tm_hour << std::endl;
                 break;
 //            case 'I':
 //              that_.get_12_hour(tm->tm_hour, b, e, err, ct);
@@ -225,9 +230,11 @@ namespace boost
 //                break;
             case 'm':
               get_month(tm->tm_mon, b, e, err, ct);
+              //std::cerr << "tm_mon= "<< tm->tm_mon << std::endl;
                 break;
             case 'M':
               get_minute(tm->tm_min, b, e, err, ct);
+              //std::cerr << "tm_min= "<< tm->tm_min << std::endl;
                 break;
 //            case 'n':
 //            case 't':
@@ -273,6 +280,7 @@ namespace boost
                 break;
             case 'Y':
               get_year4(tm->tm_year, b, e, err, ct);
+              //std::cerr << "tm_year= "<< tm->tm_year << std::endl;
                 break;
 //            case '%':
 //              that_.get_percent(b, e, err, ct);
@@ -594,19 +602,24 @@ namespace boost
     std::basic_istream<CharT, Traits>&
     operator>>(std::basic_istream<CharT, Traits>& is, time_point<Clock, Duration>& tp)
     {
+      //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
       std::ios_base::iostate err = std::ios_base::goodbit;
 
       BOOST_TRY
       {
+        //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
         typename std::basic_istream<CharT, Traits>::sentry ipfx(is);
         if (bool(ipfx))
         {
+          //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
           if (!std::has_facet<time_point_get<CharT> >(is.getloc()))
           {
+            //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
             time_point_get<CharT> ().get(is, std::istreambuf_iterator<CharT, Traits>(), is, err, tp);
           }
           else
           {
+            //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
             std::use_facet<time_point_get<CharT> >(is.getloc()).get(is, std::istreambuf_iterator<CharT, Traits>(), is,
                 err, tp);
           }
@@ -614,26 +627,34 @@ namespace boost
       }
       BOOST_CATCH (...)
       {
+        //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
         bool flag = false;
         BOOST_TRY
         {
+          //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
           is.setstate(std::ios_base::failbit);
         }
         BOOST_CATCH (std::ios_base::failure )
         {
+          //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
           flag = true;
         }
         BOOST_CATCH_END
+        //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
         if (flag) throw;
+        //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
       }
       BOOST_CATCH_END
       if (err) is.setstate(err);
+      //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
       return is;
     }
 
 
     namespace detail
     {
+
+//#if BOOST_CHRONO_INTERNAL_TIMEGM
 
     inline int32_t is_leap(int32_t year)
     {
@@ -690,6 +711,7 @@ namespace boost
 
       return result;
     }
+//#endif
 
     /**
     * from_ymd could be made more efficient by using a table
@@ -725,10 +747,19 @@ namespace boost
        { -1, 30, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365 }
      };
 
+     //tm->tm_year=0;
+     //tm->tm_mon=0;
+     //tm->tm_mday=0;
+     //tm->tm_hour=0;
+     //tm->tm_min=0;
+     //tm->tm_sec=0;
+
      const time_t seconds_in_day = 3600 * 24;
      int32_t days_since_epoch = static_cast<int32_t>(*t / seconds_in_day);
      int32_t hms = static_cast<int32_t>(*t - seconds_in_day*days_since_epoch);
      if (hms < 0) {
+       //std::cout << "days_since_epoch "<< days_since_epoch << std::endl;
+       //std::cout << "hms "<< hms << std::endl;
        days_since_epoch-=1;
        hms = seconds_in_day+hms;
      }
@@ -752,10 +783,20 @@ namespace boost
        tm->tm_mday = doy - days_in_year_before[leap][day_of_year_month[leap][doy] - 1];
 
 
+     //std::cout << "days_since_epoch "<< days_since_epoch << std::endl;
+     //std::cout << "hms "<< hms << std::endl;
      tm->tm_hour = hms / 3600;
      const int ms = hms % 3600;
      tm->tm_min = ms / 60;
      tm->tm_sec = ms % 60;
+
+     //std::cout << "t  " << *t << std::endl;
+     //std::cout << "year  " << tm->tm_year << std::endl;
+     //std::cout << "month " << tm->tm_mon << std::endl;
+     //std::cout << "day   " << tm->tm_mday << std::endl;
+//     std::cout << "hour  " << tm->tm_hour << std::endl;
+//     std::cout << "min   " << tm->tm_min << std::endl;
+//     std::cout << "sec   " << tm->tm_sec << std::endl;
 
      return tm;
    }
@@ -769,12 +810,15 @@ namespace boost
     std::basic_ostream<CharT, Traits>&
     operator<<(std::basic_ostream<CharT, Traits>& os, const time_point<system_clock, Duration>& tp)
     {
+      //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
       typename std::basic_ostream<CharT, Traits>::sentry ok(os);
       if (bool(ok))
       {
+        //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
         bool failed = false;
         BOOST_TRY
         {
+          //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
           const CharT* pb = 0; //nullptr;
           const CharT* pe = pb;
           std::basic_string<CharT> fmt = get_time_fmt<CharT> (os);
@@ -787,6 +831,7 @@ namespace boost
           std::tm tm;
           if (tz == timezone::local)
           {
+            //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
 #if defined BOOST_WINDOWS && ! defined(__CYGWIN__)
             std::tm *tmp = 0;
             if ((tmp=localtime(&t)) == 0)
@@ -799,6 +844,7 @@ namespace boost
           }
           else
           {
+            //std::cerr << __FILE__ << "[" << __LINE__ << "] "<< t <<  std::endl;
 #if BOOST_CHRONO_INTERNAL_GMTIME
             if (detail::internal_gmtime(&t, &tm) == 0) failed = true;
 
@@ -813,11 +859,14 @@ namespace boost
 #endif
 
           }
+          //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
           if (!failed)
           {
+            //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
             const std::time_put<CharT>& tpf = std::use_facet<std::time_put<CharT> >(loc);
             if (pb == pe)
             {
+              //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
               CharT pattern[] =
               { '%', 'Y', '-', '%', 'm', '-', '%', 'd', ' ', '%', 'H', ':', '%', 'M', ':' };
               pb = pattern;
@@ -825,23 +874,34 @@ namespace boost
               failed = tpf.put(os, os, os.fill(), &tm, pb, pe).failed();
               if (!failed)
               {
+                //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
                 duration<double> d = tp - system_clock::from_time_t(t) + seconds(tm.tm_sec);
+                //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
                 if (d.count() < 10) os << CharT('0');
                 //if (! os.good()) {
+                  //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
                 //  throw "exception";
                 //}
+                //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
                 std::ios::fmtflags flgs = os.flags();
+                //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
                 os.setf(std::ios::fixed, std::ios::floatfield);
                 //if (! os.good()) {
+                  //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
                 //throw "exception";
                 //}
+                //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< " " << d.count()  << std::endl;
                 os << d.count();
                 //if (! os.good()) {
+                  //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
                 //throw "exception";
                 //}
+                //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< " " << d.count() << std::endl;
                 os.flags(flgs);
+                //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
                 if (tz == timezone::local)
                 {
+                  //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
                   CharT sub_pattern[] =
                   { ' ', '%', 'z' };
                   pb = sub_pattern;
@@ -850,28 +910,35 @@ namespace boost
                 }
                 else
                 {
+                  //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
                   CharT sub_pattern[] =
                   { ' ', '+', '0', '0', '0', '0', 0 };
                   os << sub_pattern;
                 }
+                //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
               }
+              //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
             }
             else
             {
+              //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
               failed = tpf.put(os, os, os.fill(), &tm, pb, pe).failed();
             }
           }
         }
         BOOST_CATCH (...)
         {
+          //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
           failed = true;
         }
         BOOST_CATCH_END
         if (failed)
         {
+          //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
           os.setstate(std::ios_base::failbit | std::ios_base::badbit);
         }
       }
+      //std::cerr << __FILE__ << "[" << __LINE__ << "]"<< std::endl;
       return os;
     }
 #endif
@@ -984,6 +1051,7 @@ namespace boost
               err |= std::ios_base::failbit;
               goto exit;
             }
+            //std::cerr << "sec= "<< sec << std::endl;
             It i(is);
             It eof;
             c = *i;
@@ -993,6 +1061,7 @@ namespace boost
               goto exit;
             }
             minutes min = detail::extract_z(i, eof, err, ct);
+            //std::cerr << "min= "<< min.count() << std::endl;
 
             if (err & std::ios_base::failbit) goto exit;
             time_t t;

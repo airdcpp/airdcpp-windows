@@ -229,12 +229,6 @@ inline typename enable_if_c<!is_trivial_cpp_int<cpp_int_backend<MinBits1, MaxBit
    limb_type offset = static_cast<limb_type>(s / cpp_int_backend<MinBits1, MaxBits1, SignType1, Checked1, Allocator1>::limb_bits);
    limb_type shift  = static_cast<limb_type>(s % cpp_int_backend<MinBits1, MaxBits1, SignType1, Checked1, Allocator1>::limb_bits);
 
-   /*
-   static const unsigned max_bits = max_bits<cpp_int_backend<MinBits1, MaxBits1, SignType1, Checked1, Allocator1> >::value;
-   static const unsigned max_limbs = max_bits / cpp_int_backend<MinBits1, MaxBits1, SignType1, Checked1, Allocator1>::limb_bits
-      + (max_bits % cpp_int_backend<MinBits1, MaxBits1, SignType1, Checked1, Allocator1>::limb_bits ? 1 : 0);
-   */
-
    unsigned ors = result.size();
    if((ors == 1) && (!*result.limbs()))
       return; // shifting zero yields zero.
@@ -244,8 +238,7 @@ inline typename enable_if_c<!is_trivial_cpp_int<cpp_int_backend<MinBits1, MaxBit
    rs += offset;
    result.resize(rs, rs);
    bool truncated = result.size() != rs;
-   if(truncated)
-      rs = result.size();
+
    typename cpp_int_backend<MinBits1, MaxBits1, SignType1, Checked1, Allocator1>::limb_pointer pr = result.limbs();
 
    if(offset > rs)
@@ -255,11 +248,10 @@ inline typename enable_if_c<!is_trivial_cpp_int<cpp_int_backend<MinBits1, MaxBit
       return;
    }
 
-   unsigned i = 0;
+   unsigned i = rs - result.size();
    if(shift)
    {
       // This code only works when shift is non-zero, otherwise we invoke undefined behaviour!
-      i = 0;
       if(!truncated)
       {
          if(rs > ors + offset)
@@ -298,10 +290,7 @@ inline typename enable_if_c<!is_trivial_cpp_int<cpp_int_backend<MinBits1, MaxBit
    //
    // We may have shifted off the end and have leading zeros:
    //
-   if(truncated)
-   {
-      result.normalize();
-   }
+   result.normalize();
 }
 
 template <unsigned MinBits1, unsigned MaxBits1, cpp_integer_type SignType1, cpp_int_check_type Checked1, class Allocator1>
@@ -366,7 +355,7 @@ BOOST_MP_FORCEINLINE typename enable_if<is_trivial_cpp_int<cpp_int_backend<MinBi
    eval_right_shift(cpp_int_backend<MinBits1, MaxBits1, SignType1, Checked1, Allocator1>& result, T s) BOOST_NOEXCEPT_IF((is_non_throwing_cpp_int<cpp_int_backend<MinBits1, MaxBits1, SignType1, Checked1, Allocator1> >::value))
 {
    // Nothing to check here... just make sure we don't invoke undefined behavior:
-   *result.limbs() = (static_cast<unsigned>(s) >= sizeof(*result.limbs()) * CHAR_BIT) ? 0 : *result.limbs() >>= s;
+   *result.limbs() = (static_cast<unsigned>(s) >= sizeof(*result.limbs()) * CHAR_BIT) ? 0 : *result.limbs() >> s;
 }
 
 template <unsigned MinBits1, unsigned MaxBits1, cpp_integer_type SignType1, cpp_int_check_type Checked1, class Allocator1, unsigned MinBits2, unsigned MaxBits2, cpp_integer_type SignType2, cpp_int_check_type Checked2, class Allocator2>

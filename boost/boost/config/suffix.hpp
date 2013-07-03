@@ -4,7 +4,7 @@
 //  Copyright (c) 2001-2003 John Maddock
 //  Copyright (c) 2001 Darin Adler
 //  Copyright (c) 2001 Peter Dimov
-//  Copyright (c) 2002 Bill Kempf 
+//  Copyright (c) 2002 Bill Kempf
 //  Copyright (c) 2002 Jens Maurer
 //  Copyright (c) 2002-2003 David Abrahams
 //  Copyright (c) 2003 Gennaro Prota
@@ -146,7 +146,7 @@
 #  endif
 
 //
-// Without partial specialization, partial 
+// Without partial specialization, partial
 // specialization with default args won't work either:
 //
 #  if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION) \
@@ -632,7 +632,7 @@ namespace std{ using ::type_info; }
 // Set some default values GPU support
 //
 #  ifndef BOOST_GPU_ENABLED
-#  define BOOST_GPU_ENABLED 
+#  define BOOST_GPU_ENABLED
 #  endif
 
 // BOOST_FORCEINLINE ---------------------------------------------//
@@ -641,10 +641,83 @@ namespace std{ using ::type_info; }
 #  if defined(_MSC_VER)
 #    define BOOST_FORCEINLINE __forceinline
 #  elif defined(__GNUC__) && __GNUC__ > 3
-#    define BOOST_FORCEINLINE inline __attribute__ ((always_inline))
+     // Clang also defines __GNUC__ (as 4)
+#    define BOOST_FORCEINLINE inline __attribute__ ((__always_inline__))
 #  else
 #    define BOOST_FORCEINLINE inline
 #  endif
+#endif
+
+// BOOST_NOINLINE ---------------------------------------------//
+// Macro to use in place of 'inline' to prevent a function to be inlined
+#if !defined(BOOST_NOINLINE)
+#  if defined(_MSC_VER)
+#    define BOOST_NOINLINE __declspec(noinline)
+#  elif defined(__GNUC__) && __GNUC__ > 3
+     // Clang also defines __GNUC__ (as 4)
+#    define BOOST_NOINLINE __attribute__ ((__noinline__))
+#  else
+#    define BOOST_NOINLINE
+#  endif
+#endif
+
+// Branch prediction hints
+// These macros are intended to wrap conditional expressions that yield true or false
+//
+//  if (BOOST_LIKELY(var == 10))
+//  {
+//     // the most probable code here
+//  }
+//
+#if !defined(BOOST_LIKELY)
+#  define BOOST_LIKELY(x) x
+#endif
+#if !defined(BOOST_UNLIKELY)
+#  define BOOST_UNLIKELY(x) x
+#endif
+
+// Type and data alignment specification
+//
+#if !defined(BOOST_NO_CXX11_ALIGNAS)
+#  define BOOST_ALIGNMENT(x) alignas(x)
+#elif defined(_MSC_VER)
+#  define BOOST_ALIGNMENT(x) __declspec(align(x))
+#elif defined(__GNUC__)
+#  define BOOST_ALIGNMENT(x) __attribute__ ((__aligned__(x)))
+#else
+#  define BOOST_NO_ALIGNMENT
+#  define BOOST_ALIGNMENT(x)
+#endif
+
+// Defaulted and deleted function declaration helpers
+// These macros are intended to be inside a class definition.
+// BOOST_DEFAULTED_FUNCTION accepts the function declaration and its
+// body, which will be used if the compiler doesn't support defaulted functions.
+// BOOST_DELETED_FUNCTION only accepts the function declaration. It
+// will expand to a private function declaration, if the compiler doesn't support
+// deleted functions. Because of this it is recommended to use BOOST_DELETED_FUNCTION
+// in the end of the class definition.
+//
+//  class my_class
+//  {
+//  public:
+//      // Default-constructible
+//      BOOST_DEFAULTED_FUNCTION(my_class(), {})
+//      // Copying prohibited
+//      BOOST_DELETED_FUNCTION(my_class(my_class const&))
+//      BOOST_DELETED_FUNCTION(my_class& operator= (my_class const&))
+//  };
+//
+#if !(defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) || defined(BOOST_NO_CXX11_NON_PUBLIC_DEFAULTED_FUNCTIONS))
+#   define BOOST_DEFAULTED_FUNCTION(fun, body) fun = default;
+#else
+#   define BOOST_DEFAULTED_FUNCTION(fun, body) fun body
+#endif
+
+#if !defined(BOOST_NO_CXX11_DELETED_FUNCTIONS)
+#   define BOOST_DELETED_FUNCTION(fun) fun = delete;
+#else
+#   define BOOST_DELETED_FUNCTION(fun) private: fun;
 #endif
 
 //
@@ -671,7 +744,7 @@ namespace std{ using ::type_info; }
 #endif
 
 //  Use BOOST_NO_CXX11_HDR_ARRAY instead of BOOST_NO_0X_HDR_ARRAY
-#if defined(BOOST_NO_CXX11_HDR_ARRAY) && !defined(BOOST_NO_BOOST_NO_0X_HDR_ARRAY)
+#if defined(BOOST_NO_CXX11_HDR_ARRAY) && !defined(BOOST_NO_0X_HDR_ARRAY)
 #  define BOOST_NO_0X_HDR_ARRAY
 #endif
 //  Use BOOST_NO_CXX11_HDR_CHRONO instead of BOOST_NO_0X_HDR_CHRONO
@@ -695,7 +768,7 @@ namespace std{ using ::type_info; }
 #  define BOOST_NO_0X_HDR_FUTURE
 #endif
 
-//  Use BOOST_NO_CXX11_HDR_INITIALIZER_LIST 
+//  Use BOOST_NO_CXX11_HDR_INITIALIZER_LIST
 //  instead of BOOST_NO_0X_HDR_INITIALIZER_LIST or BOOST_NO_INITIALIZER_LISTS
 #ifdef BOOST_NO_CXX11_HDR_INITIALIZER_LIST
 # ifndef BOOST_NO_0X_HDR_INITIALIZER_LIST
@@ -874,17 +947,29 @@ namespace std{ using ::type_info; }
 //
 #ifdef BOOST_NO_CXX11_NOEXCEPT
 #  define BOOST_NOEXCEPT
+#  define BOOST_NOEXCEPT_OR_NOTHROW throw()
 #  define BOOST_NOEXCEPT_IF(Predicate)
 #  define BOOST_NOEXCEPT_EXPR(Expression) false
 #else
 #  define BOOST_NOEXCEPT noexcept
+#  define BOOST_NOEXCEPT_OR_NOTHROW noexcept
 #  define BOOST_NOEXCEPT_IF(Predicate) noexcept((Predicate))
 #  define BOOST_NOEXCEPT_EXPR(Expression) noexcept((Expression))
+#endif
+//
+// Helper macro BOOST_FALLTHROUGH
+// Fallback definition of BOOST_FALLTHROUGH macro used to mark intended
+// fall-through between case labels in a switch statement. We use a definition
+// that requires a semicolon after it to avoid at least one type of misuse even
+// on unsupported compilers.
+//
+#ifndef BOOST_FALLTHROUGH
+#  define BOOST_FALLTHROUGH ((void)0)
 #endif
 
 //
 // constexpr workarounds
-// 
+//
 #if defined(BOOST_NO_CXX11_CONSTEXPR)
 #define BOOST_CONSTEXPR
 #define BOOST_CONSTEXPR_OR_CONST const

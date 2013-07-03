@@ -139,13 +139,13 @@ namespace flex_string_details
         case 0:
             while (b != e)
             {
-                *b = c; ++b;
-        case 7: *b = c; ++b;
-        case 6: *b = c; ++b;
-        case 5: *b = c; ++b;
-        case 4: *b = c; ++b;
-        case 3: *b = c; ++b;
-        case 2: *b = c; ++b;
+                *b = c; ++b; BOOST_FALLTHROUGH;
+        case 7: *b = c; ++b; BOOST_FALLTHROUGH;
+        case 6: *b = c; ++b; BOOST_FALLTHROUGH;
+        case 5: *b = c; ++b; BOOST_FALLTHROUGH;
+        case 4: *b = c; ++b; BOOST_FALLTHROUGH;
+        case 3: *b = c; ++b; BOOST_FALLTHROUGH;
+        case 2: *b = c; ++b; BOOST_FALLTHROUGH;
         case 1: *b = c; ++b;
             }
         }
@@ -344,7 +344,7 @@ private:
             // 11-17-2000: comment added: 
             //     No need to allocate (capacity + 1) to 
             //     accommodate the terminating 0, because Data already
-            //     has one one character in there
+            //     has one character in there
             pData_ = static_cast<Data*>(
                 malloc(sizeof(Data) + capacity * sizeof(E)));
             if (!pData_) boost::throw_exception(std::bad_alloc());

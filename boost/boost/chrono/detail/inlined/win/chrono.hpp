@@ -132,7 +132,6 @@ namespace chrono_detail
   std::time_t system_clock::to_time_t(const system_clock::time_point& t) BOOST_NOEXCEPT
   {
       __int64 temp = t.time_since_epoch().count();
-
       temp /= 10000000;
       return static_cast<std::time_t>( temp );
   }
@@ -142,7 +141,6 @@ namespace chrono_detail
   {
       __int64 temp = t;
       temp *= 10000000;
-
       return time_point(duration(temp));
   }
 

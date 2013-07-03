@@ -5,7 +5,7 @@
  * Subject to the Boost Software License, Version 1.0. (See accompanying
  * file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
  * Author: Jeff Garland, Bart Garst
- * $Date: 2011-07-26 10:40:21 -0700 (Tue, 26 Jul 2011) $
+ * $Date: 2011-07-22 17:15:45 +0300 (pe, 22 heinä 2011) $
  */
 
 #include <cstdlib>

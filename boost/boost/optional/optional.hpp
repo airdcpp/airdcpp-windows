@@ -17,6 +17,7 @@
 
 #include <new>
 #include <algorithm>
+#include <iosfwd>
 
 #include <boost/config.hpp>
 #include <boost/assert.hpp>
@@ -127,7 +128,7 @@ class aligned_storage
     union
     // This works around GCC warnings about breaking strict aliasing rules when casting storage address to T*
 #if defined(BOOST_OPTIONAL_DETAIL_USE_ATTRIBUTE_MAY_ALIAS)
-    __attribute__((may_alias))
+    __attribute__((__may_alias__))
 #endif
     dummy_u
     {
@@ -476,7 +477,7 @@ class optional_base : public optional_tag
 #if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x581))
     void destroy_impl ( is_not_reference_tag ) { get_ptr_impl()->internal_type::~internal_type() ; m_initialized = false ; }
 #else
-    void destroy_impl ( is_not_reference_tag ) { get_ptr_impl()->T::~T() ; m_initialized = false ; }
+    void destroy_impl ( is_not_reference_tag ) { get_ptr_impl()->~T() ; m_initialized = false ; }
 #endif
 
     void destroy_impl ( is_reference_tag     ) { m_initialized = false ; }
@@ -742,6 +743,11 @@ get_pointer ( optional<T>& opt )
 {
   return opt.get_ptr() ;
 }
+
+// Forward declaration to prevent operator safe-bool from being used.
+template<class CharType, class CharTrait, class T>
+std::basic_ostream<CharType, CharTrait>&
+operator<<(std::basic_ostream<CharType, CharTrait>& out, optional<T> const& v);
 
 // optional's relational operators ( ==, !=, <, >, <=, >= ) have deep-semantics (compare values).
 // WARNING: This is UNLIKE pointers. Use equal_pointees()/less_pointess() in generic code instead.

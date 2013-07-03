@@ -239,3 +239,6 @@ implementation. If no such instance exists, `native_handle()` and `native_handle
 [include shared_mutex_ref.qbk]
 
 [endsect]
+
+
+

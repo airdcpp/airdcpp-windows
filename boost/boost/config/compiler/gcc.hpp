@@ -1,17 +1,24 @@
-//  (C) Copyright John Maddock 2001 - 2003. 
-//  (C) Copyright Darin Adler 2001 - 2002. 
-//  (C) Copyright Jens Maurer 2001 - 2002. 
-//  (C) Copyright Beman Dawes 2001 - 2003. 
-//  (C) Copyright Douglas Gregor 2002. 
-//  (C) Copyright David Abrahams 2002 - 2003. 
-//  (C) Copyright Synge Todo 2003. 
-//  Use, modification and distribution are subject to the 
-//  Boost Software License, Version 1.0. (See accompanying file 
+//  (C) Copyright John Maddock 2001 - 2003.
+//  (C) Copyright Darin Adler 2001 - 2002.
+//  (C) Copyright Jens Maurer 2001 - 2002.
+//  (C) Copyright Beman Dawes 2001 - 2003.
+//  (C) Copyright Douglas Gregor 2002.
+//  (C) Copyright David Abrahams 2002 - 2003.
+//  (C) Copyright Synge Todo 2003.
+//  Use, modification and distribution are subject to the
+//  Boost Software License, Version 1.0. (See accompanying file
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
 
 //  See http://www.boost.org for most recent version.
 
-//  GNU C++ compiler setup:
+//  GNU C++ compiler setup.
+
+//
+// Define BOOST_GCC so we know this is "real" GCC and not some pretender:
+//
+#if !defined(__CUDACC__)
+#define BOOST_GCC (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
+#endif
 
 #if __GNUC__ < 3
 #   if __GNUC_MINOR__ == 91
@@ -73,6 +80,11 @@
 #  endif
 #endif
 
+// GCC prior to 3.4 had #pragma once too but it didn't work well with filesystem links
+#if __GNUC__ > 3 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 4)
+#define BOOST_HAS_PRAGMA_ONCE
+#endif
+
 #if __GNUC__ < 4 || ( __GNUC__ == 4 && __GNUC_MINOR__ < 4 )
 // Previous versions of GCC did not completely implement value-initialization:
 // GCC Bug 30111, "Value-initialization of POD base class doesn't initialize
@@ -97,7 +109,7 @@
 //
 #if !defined(__MINGW32__) && !defined(linux) && !defined(__linux) && !defined(__linux__)
 # define BOOST_HAS_THREADS
-#endif 
+#endif
 
 //
 // gcc has "long long"
@@ -111,12 +123,16 @@
 #define BOOST_HAS_NRVO
 #endif
 
+// Branch prediction hints
+#define BOOST_LIKELY(x) __builtin_expect(x, 1)
+#define BOOST_UNLIKELY(x) __builtin_expect(x, 0)
+
 //
 // Dynamic shared object (DSO) and dynamic-link library (DLL) support
 //
 #if __GNUC__ >= 4
 #  if (defined(_WIN32) || defined(__WIN32__) || defined(WIN32)) && !defined(__CYGWIN__)
-     // All Win32 development environments, including 64-bit Windows and MinGW, define 
+     // All Win32 development environments, including 64-bit Windows and MinGW, define
      // _WIN32 or one of its variant spellings. Note that Cygwin is a POSIX environment,
      // so does not define _WIN32 or its variants.
 #    define BOOST_HAS_DECLSPEC
@@ -128,7 +144,7 @@
 #  endif
 #  define BOOST_SYMBOL_VISIBLE __attribute__((visibility("default")))
 #else
-// config/platform/win32.hpp will define BOOST_SYMBOL_EXPORT, etc., unless already defined  
+// config/platform/win32.hpp will define BOOST_SYMBOL_EXPORT, etc., unless already defined
 #  define BOOST_SYMBOL_EXPORT
 #endif
 
@@ -147,9 +163,16 @@
 #endif
 
 //
-// Recent GCC versions have __int128 when in 64-bit mode:
+// Recent GCC versions have __int128 when in 64-bit mode.
 //
-#if defined(__SIZEOF_INT128__)
+// We disable this if the compiler is really nvcc as it
+// doesn't actually support __int128 as of CUDA_VERSION=5000
+// even though it defines __SIZEOF_INT128__.
+// See https://svn.boost.org/trac/boost/ticket/8048
+// Only re-enable this for nvcc if you're absolutely sure
+// of the circumstances under which it's supported:
+//
+#if defined(__SIZEOF_INT128__) && !defined(__CUDACC__)
 #  define BOOST_HAS_INT128
 #endif
 
@@ -169,7 +192,7 @@
 #  define BOOST_NO_CXX11_RVALUE_REFERENCES
 #  define BOOST_NO_CXX11_STATIC_ASSERT
 
-// Variadic templates compiler: 
+// Variadic templates compiler:
 //   http://www.generic-programming.org/~dgregor/cpp/variadic-templates.html
 #  if defined(__VARIADIC_TEMPLATES) || (__GNUC__ > 4) || ((__GNUC__ == 4) && (__GNUC_MINOR__ >= 4) && defined(__GXX_EXPERIMENTAL_CXX0X__))
 #    define BOOST_HAS_VARIADIC_TMPL
@@ -188,10 +211,17 @@
 #  define BOOST_NO_CXX11_HDR_INITIALIZER_LIST
 #  define BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 #  define BOOST_NO_CXX11_DELETED_FUNCTIONS
+#  define BOOST_NO_CXX11_TRAILING_RESULT_TYPES
+#  define BOOST_NO_CXX11_INLINE_NAMESPACES
 #endif
 
 #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 5)
 #  define BOOST_NO_SFINAE_EXPR
+#endif
+
+// GCC 4.5 forbids declaration of defaulted functions in private or protected sections
+#if !defined(BOOST_NO_CXX11_DEFAULTED_FUNCTIONS) && (__GNUC__ == 4 && __GNUC_MINOR__ <= 5)
+#  define BOOST_NO_CXX11_NON_PUBLIC_DEFAULTED_FUNCTIONS
 #endif
 
 // C++0x features in 4.5.0 and later
@@ -222,12 +252,24 @@
 #define BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
 #endif
 
+// C++0x features in 4.7.n and later
+//
 #if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 7) || !defined(__GXX_EXPERIMENTAL_CXX0X__)
 #  define BOOST_NO_CXX11_TEMPLATE_ALIASES
+#  define BOOST_NO_CXX11_USER_DEFINED_LITERALS
 #endif
-// C++0x features not supported at all yet
+
+// C++0x features in 4.8.n and later
 //
-#define BOOST_NO_CXX11_DECLTYPE_N3276
+#if __GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 8) || !defined(__GXX_EXPERIMENTAL_CXX0X__)
+#  define BOOST_NO_CXX11_ALIGNAS
+#endif
+
+// C++0x features in 4.8.1 and later
+//
+#if (__GNUC__*10000 + __GNUC_MINOR__*100 + __GNUC_PATCHLEVEL__ < 40801) || !defined(__GXX_EXPERIMENTAL_CXX0X__)
+#  define BOOST_NO_CXX11_DECLTYPE_N3276
+#endif
 
 #ifndef BOOST_COMPILER
 #  define BOOST_COMPILER "GNU C++ version " __VERSION__

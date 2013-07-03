@@ -100,8 +100,19 @@ void test_base_operators(T value1, T value2, T value3)
     }
 }
 
-template<typename T, typename D>
-void test_additive_operators(T value, D delta)
+// T requires an int constructor
+template <typename T>
+void test_constexpr_ctor()
+{
+#ifndef BOOST_NO_CXX11_CONSTEXPR
+    const T value(0);
+    const boost::atomic<T> tester(value);
+    BOOST_CHECK( tester == value );
+#endif
+}
+
+template<typename T, typename D, typename AddType>
+void test_additive_operators_with_type(T value, D delta)
 {
     /* note: the tests explicitly cast the result of any addition
     to the type to be tested to force truncation of the result to
@@ -111,14 +122,14 @@ void test_additive_operators(T value, D delta)
     {
         boost::atomic<T> a(value);
         T n = a.fetch_add(delta);
-        BOOST_CHECK( a.load() == T(value + delta) );
+        BOOST_CHECK( a.load() == T((AddType)value + delta) );
         BOOST_CHECK( n == value );
     }
 
     {
         boost::atomic<T> a(value);
         T n = a.fetch_sub(delta);
-        BOOST_CHECK( a.load() == T(value - delta) );
+        BOOST_CHECK( a.load() == T((AddType)value - delta) );
         BOOST_CHECK( n == value );
     }
 
@@ -126,45 +137,51 @@ void test_additive_operators(T value, D delta)
     {
         boost::atomic<T> a(value);
         T n = (a += delta);
-        BOOST_CHECK( a.load() == T(value + delta) );
-        BOOST_CHECK( n == T(value + delta) );
+        BOOST_CHECK( a.load() == T((AddType)value + delta) );
+        BOOST_CHECK( n == T((AddType)value + delta) );
     }
 
     {
         boost::atomic<T> a(value);
         T n = (a -= delta);
-        BOOST_CHECK( a.load() == T(value - delta) );
-        BOOST_CHECK( n == T(value - delta) );
+        BOOST_CHECK( a.load() == T((AddType)value - delta) );
+        BOOST_CHECK( n == T((AddType)value - delta) );
     }
 
     /* overloaded increment/decrement */
     {
         boost::atomic<T> a(value);
         T n = a++;
-        BOOST_CHECK( a.load() == T(value + 1) );
+        BOOST_CHECK( a.load() == T((AddType)value + 1) );
         BOOST_CHECK( n == value );
     }
 
     {
         boost::atomic<T> a(value);
         T n = ++a;
-        BOOST_CHECK( a.load() == T(value + 1) );
-        BOOST_CHECK( n == T(value + 1) );
+        BOOST_CHECK( a.load() == T((AddType)value + 1) );
+        BOOST_CHECK( n == T((AddType)value + 1) );
     }
 
     {
         boost::atomic<T> a(value);
         T n = a--;
-        BOOST_CHECK( a.load() == T(value - 1) );
+        BOOST_CHECK( a.load() == T((AddType)value - 1) );
         BOOST_CHECK( n == value );
     }
 
     {
         boost::atomic<T> a(value);
         T n = --a;
-        BOOST_CHECK( a.load() == T(value - 1) );
-        BOOST_CHECK( n == T(value - 1) );
+        BOOST_CHECK( a.load() == T((AddType)value - 1) );
+        BOOST_CHECK( n == T((AddType)value - 1) );
     }
+}
+
+template<typename T, typename D>
+void test_additive_operators(T value, D delta)
+{
+    test_additive_operators_with_type<T, D, T>(value, delta);
 }
 
 template<typename T>
@@ -264,6 +281,7 @@ void test_pointer_api(void)
     test_additive_operators<T*>(&values[1], 1);
 
     test_base_operators<void*>(&values[0], &values[1], &values[2]);
+    test_additive_operators_with_type<void*, int, char*>(&values[1], 1);
 
     boost::atomic<void *> ptr;
     boost::atomic<intptr_t> integral;

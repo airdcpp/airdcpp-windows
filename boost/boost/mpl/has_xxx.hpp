@@ -12,9 +12,9 @@
 //
 // See http://www.boost.org/libs/mpl for documentation.
 
-// $Id: has_xxx.hpp 64146 2010-07-19 00:46:31Z djwalker $
-// $Date: 2010-07-18 17:46:31 -0700 (Sun, 18 Jul 2010) $
-// $Revision: 64146 $
+// $Id: has_xxx.hpp 72020 2011-05-17 18:16:59Z jfalcou $
+// $Date: 2011-05-17 21:16:59 +0300 (ti, 17 touko 2011) $
+// $Revision: 72020 $
 
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/aux_/na_spec.hpp>
@@ -290,18 +290,24 @@ struct trait \
 #   if !defined(BOOST_MPL_HAS_XXX_NO_WRAPPED_TYPES)
 #     if BOOST_WORKAROUND(BOOST_MSVC, <= 1400)
 #       define BOOST_MPL_HAS_XXX_NO_WRAPPED_TYPES 1
+#     else
+#       define BOOST_MPL_HAS_XXX_NO_WRAPPED_TYPES 0
 #     endif
 #   endif
 
 #   if !defined(BOOST_MPL_HAS_XXX_NO_EXPLICIT_TEST_FUNCTION)
 #     if (defined(BOOST_NO_EXPLICIT_FUNCTION_TEMPLATE_ARGUMENTS))
 #       define BOOST_MPL_HAS_XXX_NO_EXPLICIT_TEST_FUNCTION 1
+#     else
+#       define BOOST_MPL_HAS_XXX_NO_EXPLICIT_TEST_FUNCTION 0
 #     endif
 #   endif
 
 #   if !defined(BOOST_MPL_HAS_XXX_NEEDS_TEMPLATE_SFINAE)
 #     if BOOST_WORKAROUND(BOOST_MSVC, <= 1400)
 #       define BOOST_MPL_HAS_XXX_NEEDS_TEMPLATE_SFINAE 1
+#     else
+#       define BOOST_MPL_HAS_XXX_NEEDS_TEMPLATE_SFINAE 0
 #     endif
 #   endif
 
