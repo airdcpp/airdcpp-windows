@@ -418,8 +418,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	int nRet = theLoop.Run();
 
-	PopupManager::deleteInstance();
-
+	//PopupManager::deleteInstance();
 	//shutdown(nullptr, nullptr);
 
 	dcassert(WinUtil::splash);
