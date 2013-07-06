@@ -196,7 +196,7 @@ LRESULT PublicHubsFrame::onDoubleClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL
 		return 0;
 	
 	NMITEMACTIVATE* item = (NMITEMACTIVATE*) pnmh;
-	connectHub(item->iItem, SP_DEFAULT);
+	connectHub(item->iItem, SETTING(DEFAULT_SP));
 
 	return 0;
 }
@@ -206,7 +206,7 @@ LRESULT PublicHubsFrame::onEnter(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHa
 		return 0;
 
 	int item = ctrlHubs.GetNextItem(-1, LVNI_FOCUSED);
-	connectHub(item, SP_DEFAULT);
+	connectHub(item, SETTING(DEFAULT_SP));
 
 	return 0;
 }
@@ -278,7 +278,7 @@ LRESULT PublicHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 
 	int i = -1;
 	while((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		connectHub(i, SP_DEFAULT);
+		connectHub(i, SETTING(DEFAULT_SP));
 	}
 	return 0;
 }
@@ -309,7 +309,7 @@ LRESULT PublicHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
 		e.setServerStr(Text::fromT(buf));
 
-		e.setShareProfile(ShareManager::getInstance()->getShareProfile(SP_DEFAULT));
+		e.setShareProfile(ShareManager::getInstance()->getShareProfile(SETTING(DEFAULT_SP)));
 		FavoriteManager::getInstance()->addFavorite(e);
 		}
 	}

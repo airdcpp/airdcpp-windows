@@ -70,7 +70,6 @@ protected:
 
 	ProfileToken getCurProfile() { return curProfile; }
 	ProfileToken getDefaultProfile() { return defaultProfile; }
-	//const vector<ShareProfilePtr>& getProfiles() { return profiles; }
 
 	unique_ptr<ShareDirectories> dirPage;
 	ProfileToken curProfile;
@@ -81,18 +80,10 @@ protected:
 
 	void fixControls();
 
-	//ShareProfile::Set addProfiles;
-	//ProfileTokenList removeProfiles;
-	//vector<pair<ShareProfilePtr, string>> renameProfiles;
-	//ShareProfilePtr getSelectedProfile();
-
-	//vector<ShareProfilePtr> profiles;
 	CComboBox ctrlProfile;
 	CButton ctrlAddProfile;
 
-	//ShareProfilePtr getProfile(ProfileToken aProfile);
-
-	void applyChanges(bool isQuit);
+	void applyChanges(bool isQuit, bool resetAdcHubs);
 
 	bool hasChanged();
 };

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<Language Name="Example Language" Author="AirDC++ Team" Version="2.50" Revision="1">
+<Language Name="Example Language" Author="AirDC++ Team" Version="2.51" Revision="1">
 	<Strings>
 		<String Name="AairdcppLanguageFile">EN_Example.xml</String>
 		<String Name="AairdcppLanguageVersion">1.00</String>
@@ -351,7 +351,6 @@
 		<String Name="MoveUp">Move up</String>
 		<String Name="MynickInChat">My nick in main chat</String>
 		<String Name="NetworkStatistics">Network statistics</String>
-		<String Name="New">New...</String>
 		<String Name="NewDisconnect">Remove user from queue, if speed is below</String>
 		<String Name="Next">Next</String>
 		<String Name="Nick">Nick</String>
@@ -1636,7 +1635,7 @@ would you still like to load them?</String>
 		<String Name="FailedBundleSearchedIn">A failed bundle %s will be searched for in %d seconds</String>
 		<String Name="AwayOn">Away mode ON - click to adjust</String>
 		<String Name="AwayOff">Away mode OFF - click to adjust</String>
-		<String Name="SettingsAutoCompleteBundles">Try to to complete bundles with missing files automatically</String>
+		<String Name="SettingsAutoCompleteBundles">Try to complete bundles with missing files automatically</String>
 		<String Name="RequireExactMatch">Require an exact match</String>
 		<String Name="ClearHistory">Clear history</String>
 		<String Name="SettingsLogScheduledRefreshes">Show scheduled file list refreshes in system log</String>
@@ -1962,5 +1961,9 @@ Do you want to continue?</String>
 		<String Name="UseDefaultCertPaths">Store in the the default location</String>
 		<String Name="TrustedCertNote">WARNING: Don't change the trusted certificate settings unless you know what you are doing</String>
 		<String Name="NoResultsSpecifiedTime">No results were received in the specified time</String>
+		<String Name="MaxRunningBundles">Maximum number of running bundles (0 = infinite)</String>
+		<String Name="ChangeSpAskHubs">Do you want to set the current ADC hubs using the old default profile "%s" to use the new default profile "%s"?</String>
+		<String Name="NewDots">New...</String>
+		<String Name="New">New</String>
 	</Strings>
 </Language>

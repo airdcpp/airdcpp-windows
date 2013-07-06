@@ -39,7 +39,6 @@
 PropPage::TextItem SharePage::texts[] = {
 	{ IDC_SETTINGS_SHARED_DIRECTORIES, ResourceManager::SETTINGS_SHARED_DIRECTORIES },
 	{ IDC_ADD_PROFILE, ResourceManager::ADD_PROFILE_DOTS },
-	//{ IDC_ADD_PROFILE_COPY, ResourceManager::ADD_PROFILE_COPY },
 	{ IDC_REMOVE_PROFILE, ResourceManager::REMOVE_PROFILE },
 	{ IDC_SETTINGS_SHARE_PROFILES, ResourceManager::SHARE_PROFILES },
 	{ IDC_SHARE_PROFILE_NOTE, ResourceManager::SETTINGS_SHARE_PROFILE_NOTE },
@@ -75,15 +74,6 @@ LRESULT SharePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	ctrlProfile.Attach(GetDlgItem(IDC_PROFILE_SEL));
 	setProfileList();
 
-	//auto profileList = ShareManager::getInstance()->getProfileInfos();
-	/*int n = 0;
-	for(const auto& sp: profileList) {
-		if (sp->getToken() != SP_HIDDEN) {
-			ctrlProfile.InsertString(n, Text::toT(sp->getDisplayName()).c_str());
-			n++;
-			profiles.push_back(sp);
-		}
-	}*/
 
 	ctrlProfile.SetCurSel(0);
 
@@ -205,14 +195,6 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		(*p)->state = ShareProfileInfo::STATE_REMOVED;
 	}
 
-	/*auto n = find(addProfiles.begin(), addProfiles.end(), p);
-	if (n != addProfiles.end()) {
-		addProfiles.erase(n);
-	} else {
-		removeProfiles.push_back(p->getToken());
-	}
-	renameProfiles.erase(remove_if(renameProfiles.begin(), renameProfiles.end(), CompareFirst<ShareProfilePtr, string>(p)), renameProfiles.end());*/
-
 	dirPage->onRemoveProfile();
 
 	/* Switch to default profile */
@@ -227,10 +209,6 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 LRESULT SharePage::onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	auto profile = profiles[ctrlProfile.GetCurSel()];
 	auto name = Text::toT(profile->name);
-	//auto p = boost::find_if(renameProfiles, CompareFirst<ShareProfilePtr, string>(profile));
-	//if (p != renameProfiles.end()) {
-	//	name = Text::toT(p->second);
-	//}
 
 	LineDlg virt;
 	virt.title = TSTRING(PROFILE_NAME);
@@ -253,13 +231,6 @@ LRESULT SharePage::onClickedRenameProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 		profile->state = ShareProfileInfo::STATE_RENAMED;
 	}
 
-	/*if (p != renameProfiles.end()) {
-		p->second = Text::fromT(virt.line);
-		return 0;
-	}
-
-	renameProfiles.emplace_back(profile, Text::fromT(virt.line));*/
-
 	fixControls();
 	return 0;
 }
@@ -273,8 +244,15 @@ void SharePage::write() { }
 
 Dispatcher::F SharePage::getThreadedTask() {
 	if (hasChanged()) {
+		bool resetAdcHubs = false;
+		if (defaultProfile != SETTING(DEFAULT_SP) && (ClientManager::getInstance()->hasAdcHubs() || FavoriteManager::getInstance()->hasAdcHubs())) {
+			tstring oldName = Text::toT(getProfile(SETTING(DEFAULT_SP))->name);
+			tstring newName = Text::toT(getProfile(defaultProfile)->name);
+			resetAdcHubs = ::MessageBox(m_hWnd, CTSTRING_F(CHANGE_SP_ASK_HUBS, oldName.c_str() % newName.c_str()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
+		}
+
 		return Dispatcher::F([=] { 
-			applyChanges(true); 
+			applyChanges(true, resetAdcHubs);
 		});
 	}
 
@@ -288,20 +266,14 @@ void SharePage::fixControls() {
 }
 
 bool SharePage::hasChanged() {
-	return any_of(profiles.begin(), profiles.end(), [](const ShareProfileInfoPtr& aProfile) { return aProfile->state != ShareProfileInfo::STATE_NORMAL; }) || dirPage->hasChanged();
+	return defaultProfile != SETTING(DEFAULT_SP) || any_of(profiles.begin(), profiles.end(), [](const ShareProfileInfoPtr& aProfile) { return aProfile->state != ShareProfileInfo::STATE_NORMAL; }) || dirPage->hasChanged();
 }
 
-void SharePage::applyChanges(bool isQuit) {
+void SharePage::applyChanges(bool isQuit, bool resetAdcHubs) {
 	ShareProfileInfo::List handledProfiles;
 	auto getHandled = [&](ShareProfileInfo::State aState) {
 		handledProfiles.clear();
 		copy_if(profiles.begin(), profiles.end(), back_inserter(handledProfiles), [aState](const ShareProfileInfoPtr& sp) { return sp->state == aState; });
-		/*for (auto l : profiles) {
-			for (auto& sdi : l) {
-				if (sdi->state == aState)
-					dirs.push_back(sdi);
-			}
-		}*/
 	};
 
 	getHandled(ShareProfileInfo::STATE_ADDED);
@@ -310,7 +282,10 @@ void SharePage::applyChanges(bool isQuit) {
 	}
 
 	if (defaultProfile != SETTING(DEFAULT_SP)) {
-		//..
+		auto oldDefault = SETTING(DEFAULT_SP);
+		SettingsManager::getInstance()->set(SettingsManager::DEFAULT_SP, defaultProfile);
+		FavoriteManager::getInstance()->resetProfile(oldDefault, defaultProfile, !resetAdcHubs);
+		ClientManager::getInstance()->resetProfile(oldDefault, defaultProfile, !resetAdcHubs);
 	}
 
 	getHandled(ShareProfileInfo::STATE_REMOVED);

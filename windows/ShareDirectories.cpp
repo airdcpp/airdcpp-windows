@@ -139,9 +139,11 @@ void ShareDirectories::rebuildDiffs() {
 	auto& defaultDirs = shareDirs[defaultProfile];
 
 	// erase diff dirs from the default profile first
-	for (auto i = defaultDirs.begin(); i != defaultDirs.end(); ) {
-		if ((*i)->diffState != ShareDirInfo::DIFF_NORMAL) {
+	for (auto i = defaultDirs.begin(); i != defaultDirs.end();) {
+		if ((*i)->diffState == ShareDirInfo::DIFF_REMOVED) {
 			i = defaultDirs.erase(i);
+		} else if ((*i)->diffState == ShareDirInfo::DIFF_ADDED) {
+			(*i)->diffState = ShareDirInfo::DIFF_NORMAL;
 		} else {
 			i++;
 		}
@@ -150,9 +152,10 @@ void ShareDirectories::rebuildDiffs() {
 	for (auto& pdp : shareDirs) {
 		if (pdp.first != defaultProfile) {
 			for (auto i = pdp.second.begin(); i != pdp.second.end();) {
-				if ((*i)->diffState != ShareDirInfo::DIFF_NORMAL) {
-					// remove old diff items
+				if ((*i)->diffState == ShareDirInfo::DIFF_REMOVED) {
 					i = pdp.second.erase(i);
+				} else if ((*i)->diffState == ShareDirInfo::DIFF_ADDED) {
+					(*i)->diffState = ShareDirInfo::DIFF_NORMAL;
 				} else {
 					// mark items that aren't in the default profile
 					auto p = find_if(defaultDirs, ShareDirInfo::PathCompare((*i)->path));
@@ -252,7 +255,7 @@ void ShareDirectories::showProfile() {
 
 			int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(sdi->vname), 0, (LPARAM)sdi.get());
 			ctrlDirectories.SetItemText(i, 1, Text::toT(sdi->path).c_str());
-			ctrlDirectories.SetItemText(i, 2, Util::formatBytesW(sdi->size).c_str());
+			ctrlDirectories.SetItemText(i, 2, sdi->state == ShareDirInfo::STATE_ADDED && sdi->size == 0 ? CTSTRING(NEW) : Util::formatBytesW(sdi->size).c_str());
 			ctrlDirectories.SetCheckState(i, sdi->incoming);
 		}
 		ctrlDirectories.setSort(0, ExListViewCtrl::SORT_FUNC, true, sort);
@@ -791,7 +794,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 			if(SETTING(USE_OLD_SHARING_UI) && pt == curProfile) {
 				int i = ctrlDirectories.insert(ctrlDirectories.GetItemCount(), Text::toT(dir->vname), 0, (LPARAM)dir.get());
 				ctrlDirectories.SetItemText(i, 1, Text::toT(dir->path).c_str());
-				ctrlDirectories.SetItemText(i, 2, dir->size == 0 ? _T("New") : Util::formatBytesW(dir->size).c_str());
+				ctrlDirectories.SetItemText(i, 2, dir->size == 0 ? CTSTRING(NEW) : Util::formatBytesW(dir->size).c_str());
 			}
 		}
 

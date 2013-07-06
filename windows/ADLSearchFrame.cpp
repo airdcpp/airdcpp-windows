@@ -103,7 +103,7 @@ LRESULT ADLSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	// Create buttons
 	ctrlAdd.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_ADD);
-	ctrlAdd.SetWindowText(CTSTRING(NEW));
+	ctrlAdd.SetWindowText(CTSTRING(NEW_DOTS));
 	ctrlAdd.SetFont(WinUtil::font);
 
 	ctrlEdit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
@@ -138,7 +138,7 @@ LRESULT ADLSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 
 	// Create context menu
 	contextMenu.CreatePopupMenu();
-	contextMenu.AppendMenu(MF_STRING, IDC_ADD,    CTSTRING(NEW));
+	contextMenu.AppendMenu(MF_STRING, IDC_ADD, CTSTRING(NEW_DOTS));
 	contextMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 	contextMenu.AppendMenu(MF_STRING, IDC_EDIT,   CTSTRING(PROPERTIES));
 

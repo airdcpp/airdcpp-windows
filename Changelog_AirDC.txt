@@ -50,7 +50,7 @@ Changed:
 - Remove the password length limit for fav hubs
 - Performance optimizations when searching ADC hubs
 - Change the way of storing history items: option to clear each history on exit and set the maximum limit for each history
-- /rebuild will remove entries also for files that have been removed from the share during the current session
+- Hash database cleanup will remove entries also for files that have been removed from the share during the current session or that have been moved inside the share
 - Improve the error reporting when sending of a main/pm message fails
 - Add proper error reporting when queueing of bundle files fails
 - Calculate the bundle priorities instantly after they've been loaded on startup

@@ -171,7 +171,7 @@ public:
 		shutdown = true;
 	}
 
-	static void openWindow(const tstring& server, int chatusersplit = 0, bool userliststate = true, ProfileToken aShareProfile = SP_DEFAULT,
+	static void openWindow(const tstring& server, int chatusersplit = 0, bool userliststate = true, ProfileToken aShareProfile = SETTING(DEFAULT_SP),
 		        string sColumsOrder = Util::emptyString, string sColumsWidth = Util::emptyString, string sColumsVisible = Util::emptyString);
 	static void resortUsers();	
 	static void closeDisconnected();

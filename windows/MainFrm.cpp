@@ -1489,7 +1489,7 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 }
 
 LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ProfileToken profile = SP_DEFAULT;
+	ProfileToken profile = SETTING(DEFAULT_SP);
 
 	auto profiles = ShareManager::getInstance()->getProfiles();
 	if (profiles.size() > 2) {
