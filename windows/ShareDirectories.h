@@ -30,9 +30,13 @@
 
 class SharePageBase {
 public:
-	virtual ProfileToken getCurProfile() { return SP_DEFAULT; }
-	virtual const vector<ShareProfilePtr>& getProfiles() { return ShareManager::getInstance()->getProfiles(); }
-	virtual ShareProfilePtr getProfile(ProfileToken aProfile) { return ShareManager::getInstance()->getProfile(aProfile); }
+	SharePageBase();
+	virtual ProfileToken getCurProfile() { return SETTING(DEFAULT_SP); }
+	virtual ProfileToken getDefaultProfile() { return SETTING(DEFAULT_SP); }
+	virtual ShareProfileInfo::List getProfiles() { return profiles; }
+	virtual ShareProfileInfoPtr getProfile(ProfileToken aProfile);
+protected:
+	ShareProfileInfo::List profiles;
 };
 
 class ShareDirectories : public SettingTab, public CDialogImpl<ShareDirectories>
@@ -91,6 +95,7 @@ public:
 	bool hasChanged();
 	void applyChanges(bool isQuit);
 	void showProfile();
+	void rebuildDiffs();
 protected:
 	//ProfileToken curProfile;
 	friend class FolderTree;
@@ -99,27 +104,26 @@ protected:
 
 	unique_ptr<FolderTree> ft;
 
-	bool showShareDlg(const ShareProfile::List& spList, ProfileToken aCurProfile, const tstring& curName, ProfileTokenList& profiles, tstring& newName, bool rename);
+	bool showShareDlg(const ShareProfileInfo::List& spList, ProfileToken aCurProfile, const tstring& curName, ProfileTokenList& profiles, tstring& newName, bool rename);
 	void removeDir(const string& aPath, ProfileToken aProfile, int8_t& autoRemove, bool checkDupes=true, int remainingItems=0);
 	bool addDirectory(const tstring& aPath);
 
-	ShareDirInfo::List removeDirs, changedDirs, tempViewItems;
-	ShareDirInfo::List newDirs;
+	//ShareDirInfo::List removeDirs, changedDirs, tempViewItems;
+	//ShareDirInfo::List newDirs;
 
 	bool addExcludeFolder(const string& aPath);
 	bool removeExcludeFolder(const string& path);
-	bool shareFolder(const string& path, ShareDirInfo::List& aShared);
+	bool shareFolder(const string& path);
 
-	ShareDirInfo::List getItemsByPath(const string& aPath, bool listRemoved);
+	ShareDirInfo::List getItemsByPath(const string& aPath, bool listRemoved, bool listDiffs);
 
 	ShareDirInfo::Map shareDirs;
 
-	ShareDirInfo::List getViewItems(ProfileToken aProfile, bool getDiffItems=false);
+	//ShareDirInfo::List getViewItems(ProfileToken aProfile, bool getDiffItems=false);
+	ShareDirInfo::List& getCurItems() { return shareDirs[parent->getCurProfile()]; }
 	StringSet getExcludedDirs();
 
 	ProfileTokenStringList excludedAdd, excludedRemove;
-
-	void deleteTempViewItems();
 
 	SharePageBase* parent; 
 };

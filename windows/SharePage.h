@@ -65,29 +65,32 @@ public:
 	void write();
 	Dispatcher::F getThreadedTask();
 protected:
+	void setProfileList();
 	void handleAddProfile(bool copy);
 
 	ProfileToken getCurProfile() { return curProfile; }
-	const vector<ShareProfilePtr>& getProfiles() { return profiles; }
+	ProfileToken getDefaultProfile() { return defaultProfile; }
+	//const vector<ShareProfilePtr>& getProfiles() { return profiles; }
 
 	unique_ptr<ShareDirectories> dirPage;
 	ProfileToken curProfile;
+	ProfileToken defaultProfile;
 
 	friend class FolderTree;
 	static TextItem texts[];
 
 	void fixControls();
 
-	ShareProfile::Set addProfiles;
-	ProfileTokenList removeProfiles;
-	vector<pair<ShareProfilePtr, string>> renameProfiles;
-	ShareProfilePtr getSelectedProfile();
+	//ShareProfile::Set addProfiles;
+	//ProfileTokenList removeProfiles;
+	//vector<pair<ShareProfilePtr, string>> renameProfiles;
+	//ShareProfilePtr getSelectedProfile();
 
-	vector<ShareProfilePtr> profiles;
+	//vector<ShareProfilePtr> profiles;
 	CComboBox ctrlProfile;
 	CButton ctrlAddProfile;
 
-	ShareProfilePtr getProfile(ProfileToken aProfile);
+	//ShareProfilePtr getProfile(ProfileToken aProfile);
 
 	void applyChanges(bool isQuit);
 

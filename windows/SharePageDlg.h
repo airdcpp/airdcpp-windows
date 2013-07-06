@@ -44,7 +44,7 @@ public:
 	CListViewCtrl ctrlList;
 
 
-	ShareProfile::List profiles;
+	ShareProfileInfo::List profiles;
 
 	enum { IDD = IDD_SHAREPAGE_DLG };
 	
@@ -123,7 +123,7 @@ public:
 			int pos = 0;
 			while(pos < ctrlList.GetItemCount()) {
 				if (ctrlList.GetCheckState(pos++)) {
-					selectedProfiles.push_back(profiles[pos-1]->getToken());
+					selectedProfiles.push_back(profiles[pos-1]->token);
 				}
 			}
 			line.resize(ctrlLine.GetWindowTextLength() + 1);

@@ -13,7 +13,6 @@ Copyright (c) 1999 - 2003 by PJ Naughter.  (Web: www.naughter.com, Email: pjna@n
 #include <shlobj.h>
 #include <lm.h>
 #include "ShareDirectories.h"
-#include "../client/ShareManager.h"
 
 class ShareDirectories;
 
@@ -157,8 +156,8 @@ protected:
 	int GetSelIconIndex(const tstring& sFilename);
 	int GetSelIconIndex(HTREEITEM hItem);
 	int GetSelIconIndex(LPITEMIDLIST lpPIDL);
-	HTREEITEM InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo* pItem, bool bShared, int nIcon, int nSelIcon, bool bCheckForChildren, ShareDirInfo::List& sharedDirs);
-	void DisplayDrives(HTREEITEM hParent, bool bUseSetRedraw, ShareDirInfo::List& shared);
+	HTREEITEM InsertFileItem(HTREEITEM hParent, FolderTreeItemInfo* pItem, bool bShared, int nIcon, int nSelIcon, bool bCheckForChildren);
+	void DisplayDrives(HTREEITEM hParent, bool bUseSetRedraw);
 	void DisplayPath(const tstring& sPath, HTREEITEM hParent, bool bUseSetRedraw = true);
 	tstring GetDriveLabel(const tstring& sDrive);
 	tstring GetCorrectedLabel(FolderTreeItemInfo* pItem);
@@ -177,14 +176,14 @@ protected:
 	int DeleteChildren(HTREEITEM hItem, bool bUpdateChildIndicator);
 	BOOL GetSerialNumber(const tstring& sDrive, DWORD& dwSerialNumber);
 	void SetHasSharedChildren(HTREEITEM hItem, bool bHasSharedChildren);
-	void SetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::List& aShared);
-	bool GetHasSharedChildren(HTREEITEM hItem, const ShareDirInfo::List& aShared);
+	void SetHasSharedChildren(HTREEITEM hItem);
+	bool GetHasSharedChildren(HTREEITEM hItem);
 	HTREEITEM HasSharedParent(HTREEITEM hItem);
 	void ShareParentButNotSiblings(HTREEITEM hItem);
 	void UpdateChildItems(HTREEITEM hItem, bool bChecked);
 	void UpdateParentItems(HTREEITEM hItem);
 
-	void checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent, ShareDirInfo::List& sharedDirs);
+	void checkRemovedDirs(const tstring& aParentPath, HTREEITEM hParent);
 	
 	//Member variables
 	tstring			m_sRootFolder;

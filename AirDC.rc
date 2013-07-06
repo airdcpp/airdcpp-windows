@@ -893,7 +893,7 @@ BEGIN
     GROUPBOX        "Share profiles",IDC_SETTINGS_SHARE_PROFILES,7,8,292,69
     LTEXT           "Note; Added share profiles can only be used in ADC hubs. NMDC hubs are forced to use the default profile.",IDC_SHARE_PROFILE_NOTE,12,54,254,17
     GROUPBOX        "Shared directories",IDC_SETTINGS_SHARED_DIRECTORIES,8,82,291,201
-    PUSHBUTTON      "Set as default",IDC_SET_DEFAULT,148,37,70,14,NOT WS_VISIBLE | WS_DISABLED
+    PUSHBUTTON      "Set as default",IDC_SET_DEFAULT,148,37,70,14,WS_DISABLED
 END
 
 IDD_APPEARANCEPAGE DIALOGEX 0, 0, 275, 309

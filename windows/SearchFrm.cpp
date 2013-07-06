@@ -843,9 +843,7 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 
 		if (si->hits >= 1) {
 			//perform also for the children
-			SearchResultList results;
-
-			results.push_back(si->sr);
+			SearchResultList results = { si->sr };
 			const auto& children = ctrlResults.findChildren(si->getGroupCond());
 			for (auto si: children)
 				results.push_back(si->sr);
