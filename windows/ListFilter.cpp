@@ -47,7 +47,7 @@ void ListFilter::addColumnBox(HWND parent, vector<ColumnInfo*>& aColumns){
 	for(auto& col : columns)
 		column.AddString(((*col).name).c_str());
 
-	column.AddString(_T("Any"));
+	column.AddString(CTSTRING(ANY));
 	column.SetCurSel(colCount);
 }
 

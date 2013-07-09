@@ -167,13 +167,6 @@ void ShareDirectories::rebuildDiffs() {
 				}
 			}
 
-			/*for (auto& sdi : pdp.second) {
-				auto p = find_if(defaultDirs, ShareDirInfo::PathCompare(sdi->path));
-				if (p == defaultDirs.end() || !(*p)->isCurItem()) {
-					sdi->diffState = ShareDirInfo::DIFF_ADDED;
-				}
-			}*/
-
 			// add items from default profile that are missing from this profile
 			for (const auto& sdiDefault : defaultDirs) {
 				if (sdiDefault->isCurItem() && find_if(pdp.second, ShareDirInfo::PathCompare(sdiDefault->path)) == pdp.second.end()) {

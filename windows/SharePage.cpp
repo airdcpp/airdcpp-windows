@@ -283,9 +283,11 @@ void SharePage::applyChanges(bool isQuit, bool resetAdcHubs) {
 
 	if (defaultProfile != SETTING(DEFAULT_SP)) {
 		auto oldDefault = SETTING(DEFAULT_SP);
+		ClientManager::getInstance()->resetProfile(oldDefault, defaultProfile, !resetAdcHubs);
+
+		//ensure that favorite hubs get the correct display name in the tab
 		SettingsManager::getInstance()->set(SettingsManager::DEFAULT_SP, defaultProfile);
 		FavoriteManager::getInstance()->resetProfile(oldDefault, defaultProfile, !resetAdcHubs);
-		ClientManager::getInstance()->resetProfile(oldDefault, defaultProfile, !resetAdcHubs);
 	}
 
 	getHandled(ShareProfileInfo::STATE_REMOVED);
