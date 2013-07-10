@@ -84,13 +84,16 @@ int __cdecl main(int argc, char* argv[])
 		varStr += " = {\r\n";
 		varName += " = {\r\n";
 		
-		ex.addTag("Language");
+		/*ex.addTag("Language");
 		ex.addChildAttrib("Name", string("Example Language"));
 		ex.addChildAttrib("Author", string("AirDC++ Team"));
 		ex.addChildAttrib("Version", string(VERSIONSTRING));
 		ex.addChildAttrib("Revision", string("1"));
 		ex.stepIn();
 		ex.addTag("Strings");
+		ex.stepIn();*/
+
+		ex.addTag("recources");
 		ex.stepIn();
 		string name;
 		string def;
@@ -132,8 +135,10 @@ int __cdecl main(int argc, char* argv[])
 			while( (k = xmldef.find("\\\"")) != string::npos) {
 				xmldef.replace(k, 2, "\"");
 			}
-			ex.addTag("String", xmldef);
-			ex.addChildAttrib("Name", name);
+			//ex.addTag("String", xmldef);
+			//ex.addChildAttrib("Name", name);
+			ex.addTag("string", xmldef);
+			ex.addChildAttrib("name", name);
 
 			varStr += def + ", \r\n";
 			varName += '\"' + name + "\", \r\n";

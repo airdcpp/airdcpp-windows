@@ -273,7 +273,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_FORWARD:		return _T("res\\forward.ico");
 		case IDI_FIND:			return _T("res\\Find.ico");
 		case IDI_RELOAD:		return _T("res\\reload.ico");
-
+		case IDR_UPDATE:		return _T("Update.ico");
 		default: return Util::emptyStringT;
 	}
 }

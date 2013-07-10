@@ -18,8 +18,9 @@
 
 #include "stdafx.h"
 #include "../client/version.h"
-#include "Resource.h"
 
+#include "Resource.h"
+#include "ResourceLoader.h"
 #include "UpdateDlg.h"
 
 #include "../client/Util.h"
@@ -109,7 +110,8 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	SetWindowText(CTSTRING(UPDATE_CHECK));
 
-	m_hIcon = ::LoadIcon(_Module.get_m_hInst(), MAKEINTRESOURCE(IDR_UPDATE));
+	m_hIcon = ResourceLoader::loadIcon(IDR_UPDATE, 48);
+	//m_hIcon = ::LoadIcon(_Module.get_m_hInst(), MAKEINTRESOURCE(IDR_UPDATE));
 	SetIcon(m_hIcon, FALSE);
 	SetIcon(m_hIcon, TRUE);
 	SetWindowPos(HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
