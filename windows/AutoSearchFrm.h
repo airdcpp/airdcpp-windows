@@ -38,7 +38,7 @@ public:
 	typedef MDITabChildWindowImpl<AutoSearchFrame> baseClass;
 
 	AutoSearchFrame() : loading(true), closed(false) { }
-	~AutoSearchFrame() { statusImg.Destroy(); }
+	~AutoSearchFrame() { }
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("AutoSearchFrame"), IDR_AUTOSEARCH, 0, COLOR_3DFACE);
 		
@@ -143,7 +143,6 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 
 private:
-	CImageList statusImg;
 	enum {
 		COLUMN_FIRST,
 		COLUMN_VALUE = COLUMN_FIRST,

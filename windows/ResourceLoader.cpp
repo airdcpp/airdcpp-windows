@@ -24,6 +24,7 @@
 tstring ResourceLoader::m_IconPath;
 ResourceLoader::ImageMap ResourceLoader::fileIndexes;
 int ResourceLoader::fileImageCount;
+CImageList ResourceLoader::autoSearchStatuses;
 CImageList ResourceLoader::searchImages;
 CImageList ResourceLoader::settingsTreeImages;
 CImageList ResourceLoader::fileImages;
@@ -274,6 +275,17 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_FIND:			return _T("res\\Find.ico");
 		case IDI_RELOAD:		return _T("res\\reload.ico");
 		case IDR_UPDATE:		return _T("Update.ico");
+
+		case IDI_SEARCHING:		return _T("res\\AutoSearch\\Searching.ico");
+		case IDI_QUEUED_OK:		return _T("res\\AutoSearch\\QueuedOK.ico");
+		case IDI_QUEUED_ERROR:	return _T("res\\AutoSearch\\QueuedError.ico");
+		case IDI_SEARCH_ERROR:	return _T("res\\AutoSearch\\SearchError.ico");
+		case IDI_WAITING:		return _T("res\\AutoSearch\\Waiting.ico");
+		case IDI_MANUAL:		return _T("res\\AutoSearch\\Manual.ico");
+		case IDI_DISABLED:		return _T("res\\AutoSearch\\Disabled.ico");
+		case IDI_COLLECTING:	return _T("res\\AutoSearch\\Collecting.ico");
+		case IDI_POSTSEARCH:	return _T("res\\AutoSearch\\PostSearch.ico");
+		case IDI_EXPIRED:		return _T("res\\AutoSearch\\Expired.ico");
 		default: return Util::emptyStringT;
 	}
 }
@@ -408,6 +420,24 @@ CImageList&  ResourceLoader::getSearchTypeIcons() {
 	return searchImages;
 }
 
+CImageList&  ResourceLoader::getAutoSearchStatuses() {
+	if (autoSearchStatuses.IsNull()) {
+		autoSearchStatuses.Create(16, 16, ILC_COLOR32 | ILC_MASK, 0, 2);
+		autoSearchStatuses.AddIcon(loadIcon(IDI_DISABLED));
+		autoSearchStatuses.AddIcon(loadIcon(IDI_EXPIRED));
+		autoSearchStatuses.AddIcon(loadIcon(IDI_MANUAL));
+		autoSearchStatuses.AddIcon(loadIcon(IDI_SEARCHING));
+		autoSearchStatuses.AddIcon(loadIcon(IDI_COLLECTING));
+		autoSearchStatuses.AddIcon(loadIcon(IDI_WAITING));
+		autoSearchStatuses.AddIcon(loadIcon(IDI_POSTSEARCH));
+		autoSearchStatuses.AddIcon(loadIcon(IDI_QUEUED_OK));
+		autoSearchStatuses.AddIcon(loadIcon(IDI_QUEUED_ERROR));
+		autoSearchStatuses.AddIcon(loadIcon(IDI_SEARCH_ERROR));
+	}
+
+	return autoSearchStatuses;
+}
+
 int ResourceLoader::getIconIndex(const tstring& aFileName) {
 	if(SETTING(USE_SYSTEM_ICONS)) {
 		SHFILEINFO fi;
@@ -432,39 +462,39 @@ int ResourceLoader::getIconIndex(const tstring& aFileName) {
 void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 33);
 	//use default ones totally here too?
-	images.AddIcon(ResourceLoader::loadIcon(IDI_PUBLICHUBS, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_RECONNECT, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_FOLLOW, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_RECENTS, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_FAVORITEHUBS, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_USERS, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_QUEUE, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_FINISHED_DL, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_UPLOAD_QUEUE, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_FINISHED_UL, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_SEARCH, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_ADLSEARCH, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_SEARCHSPY, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_OPEN_LIST, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_OWNLIST, 16)); 
-	images.AddIcon(ResourceLoader::loadIcon(IDI_ADLSEARCH, 16)); 
-	images.AddIcon(ResourceLoader::loadIcon(IDI_MATCHLIST, 16)); 
-	images.AddIcon(ResourceLoader::loadIcon(IDI_REFRESH, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_SCAN, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_OPEN_DOWNLOADS, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_QCONNECT, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_SETTINGS, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_GET_TTH, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDR_UPDATE, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_SHUTDOWN, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_NOTEPAD, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_NETSTATS, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_CDM, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_LOGS, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_AUTOSEARCH, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_INDEXING, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDR_MAINFRAME, 16));
-	images.AddIcon(ResourceLoader::loadIcon(IDI_WIZARD, 16));
+	images.AddIcon(loadIcon(IDI_PUBLICHUBS, 16));
+	images.AddIcon(loadIcon(IDI_RECONNECT, 16));
+	images.AddIcon(loadIcon(IDI_FOLLOW, 16));
+	images.AddIcon(loadIcon(IDI_RECENTS, 16));
+	images.AddIcon(loadIcon(IDI_FAVORITEHUBS, 16));
+	images.AddIcon(loadIcon(IDI_USERS, 16));
+	images.AddIcon(loadIcon(IDI_QUEUE, 16));
+	images.AddIcon(loadIcon(IDI_FINISHED_DL, 16));
+	images.AddIcon(loadIcon(IDI_UPLOAD_QUEUE, 16));
+	images.AddIcon(loadIcon(IDI_FINISHED_UL, 16));
+	images.AddIcon(loadIcon(IDI_SEARCH, 16));
+	images.AddIcon(loadIcon(IDI_ADLSEARCH, 16));
+	images.AddIcon(loadIcon(IDI_SEARCHSPY, 16));
+	images.AddIcon(loadIcon(IDI_OPEN_LIST, 16));
+	images.AddIcon(loadIcon(IDI_OWNLIST, 16)); 
+	images.AddIcon(loadIcon(IDI_ADLSEARCH, 16)); 
+	images.AddIcon(loadIcon(IDI_MATCHLIST, 16)); 
+	images.AddIcon(loadIcon(IDI_REFRESH, 16));
+	images.AddIcon(loadIcon(IDI_SCAN, 16));
+	images.AddIcon(loadIcon(IDI_OPEN_DOWNLOADS, 16));
+	images.AddIcon(loadIcon(IDI_QCONNECT, 16));
+	images.AddIcon(loadIcon(IDI_SETTINGS, 16));
+	images.AddIcon(loadIcon(IDI_GET_TTH, 16));
+	images.AddIcon(loadIcon(IDR_UPDATE, 16));
+	images.AddIcon(loadIcon(IDI_SHUTDOWN, 16));
+	images.AddIcon(loadIcon(IDI_NOTEPAD, 16));
+	images.AddIcon(loadIcon(IDI_NETSTATS, 16));
+	images.AddIcon(loadIcon(IDI_CDM, 16));
+	images.AddIcon(loadIcon(IDI_LOGS, 16));
+	images.AddIcon(loadIcon(IDI_AUTOSEARCH, 16));
+	images.AddIcon(loadIcon(IDI_INDEXING, 16));
+	images.AddIcon(loadIcon(IDR_MAINFRAME, 16));
+	images.AddIcon(loadIcon(IDI_WIZARD, 16));
 }
 
 void ResourceLoader::loadWinampToolbarIcons(CImageList& winampImages) {

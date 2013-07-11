@@ -51,20 +51,7 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	}
 	
 	ctrlAutoSearch.SetColumnOrderArray(COLUMN_LAST, columnIndexes);
-
-
-	statusImg.Create(16, 16, ILC_COLOR32 | ILC_MASK,  0, 2);
-	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_DISABLED));
-	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_EXPIRED));
-	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_MANUAL));
-	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_SEARCHING));
-	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_COLLECTING));
-	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_WAITING));
-	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_POSTSEARCH));
-	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_QUEUED_OK));
-	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_QUEUED_ERROR));
-	statusImg.AddIcon(ResourceLoader::loadIcon(IDI_SEARCH_ERROR));
-	ctrlAutoSearch.SetImageList(statusImg, LVSIL_SMALL);
+	ctrlAutoSearch.SetImageList(ResourceLoader::getAutoSearchStatuses(), LVSIL_SMALL);
 
 
 	/*AutoSearch every time */

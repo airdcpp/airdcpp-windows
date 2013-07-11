@@ -43,6 +43,7 @@ public:
 	static void loadCmdBarImageList(CImageList& images);
 	static void loadFlagImages();
 
+	static CImageList& getAutoSearchStatuses();
 	static CImageList& getSettingsTreeIcons();
 	static CImageList& getSearchTypeIcons();
 	static CImageList& getUserImages();
@@ -85,6 +86,7 @@ private:
 	static CImageList fileImages;
 	static CImageList arrowImages;
 	static CImageList filelistTbImages;
+	static CImageList autoSearchStatuses;
 	
 	static tstring m_IconPath;
 
