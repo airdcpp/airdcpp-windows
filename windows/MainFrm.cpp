@@ -510,7 +510,7 @@ HWND MainFrame::createTBStatusBar() {
 
 
 void MainFrame::showPortsError(const string& port) {
-	showMessageBox(Text::toT(str(boost::format(STRING(PORT_BYSY)) % port)).c_str(), MB_OK | MB_ICONEXCLAMATION);
+	showMessageBox(Text::toT(STRING_F(PORT_BYSY, port)), MB_OK | MB_ICONEXCLAMATION);
 }
 
 HWND MainFrame::createWinampToolbar() {

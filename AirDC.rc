@@ -471,6 +471,9 @@ BEGIN
     GROUPBOX        "Line speed",IDC_LINE_SPEED,8,2,272,35
     LTEXT           "* Lowering the upload connections from the default value will result the download connections to be set to the same value",IDC_SETTINGS_MCN_NOTE,21,259,241,17
     LTEXT           "kB/s",IDC_SETTINGS_KBPS,255,91,14,8
+    EDITTEXT        IDC_MAX_RUNNING_BUNDLES,8,289,41,14,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_MAX_RUNNING_BUNDLES_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,38,289,11,14
+    LTEXT           "Maximum number of running bundles (0 = infinite)",IDC_MAX_RUNNING_BUNDLES_LBL,52,292,205,8
 END
 
 IDD_HIGHLIGHTPAGE DIALOGEX 0, 0, 275, 238

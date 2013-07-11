@@ -49,6 +49,8 @@ PropPage::TextItem SpeedPage::texts[] = {
 	{ IDC_SETTINGS_MAX_MCN_DL, ResourceManager::SETTINGS_MAX_MCN_DL },
 	{ IDC_SETTINGS_MAX_MCN_UL, ResourceManager::SETTINGS_MAX_MCN_UL },
 	{ IDC_SETTINGS_MCN_NOTE, ResourceManager::SETTINGS_MCN_NOTE },
+
+	{ IDC_MAX_RUNNING_BUNDLES_LBL, ResourceManager::MAX_RUNNING_BUNDLES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY },
 };
 
@@ -58,6 +60,8 @@ PropPage::Item SpeedPage::items[] = {
 	{ IDC_UL_AUTODETECT, SettingsManager::UL_AUTODETECT, PropPage::T_BOOL },
 	{ IDC_DL_AUTODETECT, SettingsManager::DL_AUTODETECT, PropPage::T_BOOL },
 	{ IDC_MCN_AUTODETECT, SettingsManager::MCN_AUTODETECT, PropPage::T_BOOL },
+
+	{ IDC_MAX_RUNNING_BUNDLES, SettingsManager::MAX_RUNNING_BUNDLES, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -330,8 +334,10 @@ LRESULT SpeedPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	setMinMax(IDC_SPEEDSPIN, 0, 90000);
 	setMinMax(IDC_EXTRASLOTSSPIN, 0, 100);
 
-	setMinMax(IDC_MCN_SPIN, 1, 90000);
-	setMinMax(IDC_MCN_SPIN2, 1, 100);
+	setMinMax(IDC_MCN_SPIN, 1, 1000);
+	setMinMax(IDC_MCN_SPIN2, 1, 1000);
+
+	setMinMax(IDC_MAX_RUNNING_BUNDLES_SPIN, 0, 1000);
 
 	fixControls();
 

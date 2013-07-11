@@ -409,7 +409,9 @@
 #define IDC_SPEEDSPIN                   1059
 #define IDC_FAVUSERS                    1060
 #define IDC_PROXY                       1060
+#define IDC_MAX_RUNNING_BUNDLES         1060
 #define IDC_ADD_TO_FAVORITES            1061
+#define IDC_MAX_RUNNING_BUNDLES_SPIN    1061
 #define IDC_FILESPIN                    1062
 #define IDC_HELP_HOMEPAGE               1063
 #define IDC_MCNDLSLOTS                  1063
@@ -533,6 +535,8 @@
 #define IDC_SETTINGS_DOWNLOADS_SPEED_PAUSE 1149
 #define IDC_AUTOPATH_CAPTION            1149
 #define IDC_SETTINGS_SPEEDS_NOT_ACCURATE 1150
+#define IDC_MAX_DL_BUNDLES_LBL          1150
+#define IDC_MAX_RUNNING_BUNDLES_LBL     1150
 #define IDC_SETTINGS_PUBLIC_HUB_LIST    1151
 #define IDC_SETTINGS_PUBLIC_HUB_LIST_URL 1152
 #define IDC_SETTINGS_HTTP_PROXY         1153

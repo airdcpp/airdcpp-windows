@@ -1071,7 +1071,7 @@ LRESULT RichTextBox::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 LRESULT RichTextBox::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	string path = Text::fromT(selectedWord);
-	string msg = str(boost::format(STRING(DELETE_FILE_CONFIRM)) % path);
+	string msg = STRING_F(DELETE_FILE_CONFIRM, path);
 	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg).c_str())) {
 		MainFrame::getMainFrame()->addThreadedTask([=] { File::deleteFileEx(path, 3, !ShareManager::getInstance()->isRealPathShared(path)); });
 	}
