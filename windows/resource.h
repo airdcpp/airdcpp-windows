@@ -907,7 +907,6 @@
 #define IDC_SETTINGS_KB7                1315
 #define IDC_FINISHED_OPTIONS            1315
 #define IDC_AUTOPRIO_INTERVAL           1315
-#define IDC_SHARE_SKIPLIST_USE_REGEXP3  1315
 #define IDC_STARTUP_REFRESH             1315
 #define IDC_CONFIRM_OPTIONS             1316
 #define IDC_RADIO1                      1316
@@ -1370,6 +1369,7 @@
 #define IDC_TRUSTED_CERTS               1731
 #define IDC_OWN_CERT                    1732
 #define IDC_CERT_USE_DEFAULT_PATHS      1733
+#define IDC_UPDATE_ICON                 1734
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1777,7 +1777,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        359
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1734
+#define _APS_NEXT_CONTROL_VALUE         1735
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

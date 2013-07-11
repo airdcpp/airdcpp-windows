@@ -29,13 +29,13 @@
 #include "MainFrm.h"
 
 UpdateDlg::UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersionString, const string& infoUrl, bool bAutoUpdate, int aBuildID, const string& bAutoUpdateUrl)
-	: title(aTitle), message(aMessage), versionString(aVersionString), infoLink(infoUrl), autoUpdate(bAutoUpdate), m_hIcon(NULL), 
+	: title(aTitle), message(aMessage), versionString(aVersionString), infoLink(infoUrl), autoUpdate(bAutoUpdate),
 	autoUpdateUrl(bAutoUpdateUrl), buildID(aBuildID), versionAvailable(false) { };
 
 
 UpdateDlg::~UpdateDlg() {
-	if (m_hIcon)
-		DeleteObject((HGDIOBJ)m_hIcon);
+	//if (m_hIcon)
+	//	DeleteObject((HGDIOBJ)m_hIcon);
 };
 
 LRESULT UpdateDlg::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -110,10 +110,15 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	SetWindowText(CTSTRING(UPDATE_CHECK));
 
-	m_hIcon = ResourceLoader::loadIcon(IDR_UPDATE, 48);
-	//m_hIcon = ::LoadIcon(_Module.get_m_hInst(), MAKEINTRESOURCE(IDR_UPDATE));
-	SetIcon(m_hIcon, FALSE);
-	SetIcon(m_hIcon, TRUE);
+	m_hIcon16 = ResourceLoader::loadIcon(IDR_UPDATE, 16);
+	m_hIcon32 = ResourceLoader::loadIcon(IDR_UPDATE, 32);
+
+	CStatic tmp;
+	tmp.Attach(GetDlgItem(IDC_UPDATE_ICON));
+	tmp.SetIcon(m_hIcon32);
+
+	SetIcon(m_hIcon16, FALSE);
+	SetIcon(m_hIcon16, TRUE);
 	SetWindowPos(HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 	CenterWindow(GetParent());
 	ShowWindow(SW_HIDE);   

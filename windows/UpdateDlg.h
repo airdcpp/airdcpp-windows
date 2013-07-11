@@ -93,7 +93,8 @@ private:
 
 	string versionString;
 	bool autoUpdate;
-	HICON m_hIcon;
+	CIcon m_hIcon16;
+	CIcon m_hIcon32;
 
 	RichTextBox m_Changelog;
 };
