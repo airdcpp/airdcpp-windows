@@ -907,6 +907,8 @@
 #define IDC_SETTINGS_KB7                1315
 #define IDC_FINISHED_OPTIONS            1315
 #define IDC_AUTOPRIO_INTERVAL           1315
+#define IDC_SHARE_SKIPLIST_USE_REGEXP3  1315
+#define IDC_STARTUP_REFRESH             1315
 #define IDC_CONFIRM_OPTIONS             1316
 #define IDC_RADIO1                      1316
 #define IDC_PRIVATE                     1316
