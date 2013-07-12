@@ -1705,7 +1705,7 @@ Do you want to use this destination anyway?</string>
 	<string name="TrasferRateLimiting">Transfer rate limiting</string>
 	<string name="HoursLower">hours</string>
 	<string name="OwnListAdl">Match own list with ADL search</string>
-	<string name="SettingsUseSpaceWarning">Warn me about Insufficient space left on target drive</string>
+	<string name="SettingsUseSpaceWarning">Warn me about insufficient space left on target drive</string>
 	<string name="SfvTooLarge">The SFV file is too large to be loaded (%1%)</string>
 	<string name="CantOpenSfv">Failed to open the SFV file</string>
 	<string name="RemoteProtocolUnsupported">The remote user doesn't support %1% protocol</string>

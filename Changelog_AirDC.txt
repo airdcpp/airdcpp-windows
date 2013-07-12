@@ -1,3 +1,27 @@
+2.51
+
+Added:
+
+- Allow changing the default share profile
+- Add an option to refresh the share after client startup (enabled by default)
+- Add a setting for maximum running bundles
+- Detect Windows 8.1 and 2012 R2
+
+Changed:
+
+- Enable monitoring for all shared folders by default, disable scheduled refresh
+- Make a few hardcoded icons customizable
+
+Fixed:
+
+- Fix a few share monitoring bugs
+- Fix a possible crash after shutdown
+- Prevent INF/MyInfo spam when adding new shared items via monitoring or from the queue
+- Fix issues with the lowest queue priority
+- Fix a bug with no search results not being returned for root directory matches after refresh
+- Fix download connection not being changed to idle state with non-MCN transfers
+
+
 2.50
 
 Added:

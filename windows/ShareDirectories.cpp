@@ -377,7 +377,7 @@ ShareDirInfo::List ShareDirectories::getItemsByPath(const string& aPath, bool li
 		if (p != d.end() /*&& (*p)->diffState == ShareDirInfo::DIFF_NORMAL*/) {
 			if (!listRemoved && (*p)->state == ShareDirInfo::STATE_REMOVED)
 				continue;
-			if (!listDiffs && (*p)->diffState != ShareDirInfo::DIFF_NORMAL)
+			if (!listDiffs && (*p)->diffState == ShareDirInfo::DIFF_REMOVED)
 				continue;
 
 			dirItems.push_back(*p);
@@ -525,7 +525,7 @@ void ShareDirectories::removeDir(const string& rPath, ProfileToken aProfile, int
 	if (aProfile == defaultProfile) {
 		auto items = getItemsByPath(rPath, true, true);
 		for (const auto& sdi: items) {
-			if (sdi->profile != defaultProfile) {
+			if (sdi->profile != defaultProfile && sdi->diffState == ShareDirInfo::DIFF_REMOVED) {
 				auto& profileDirs = shareDirs[sdi->profile];
 				auto p = find_if(profileDirs, ShareDirInfo::PathCompare(rPath));
 				profileDirs.erase(p);
