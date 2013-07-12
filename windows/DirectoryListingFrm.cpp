@@ -70,7 +70,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 	}
 }
 
-DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
+DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) : DownloadBaseHandler(DownloadBaseHandler::FILELIST),
 	pathContainer(WC_COMBOBOX, this, PATH_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
@@ -987,7 +987,7 @@ void DirectoryListingFrame::onListItemAction() {
 		if (ctrlList.GetSelectedCount() == 1) {
 			const ItemInfo* ii = ctrlList.getItemData(ctrlList.GetNextItem(-1, LVNI_SELECTED));
 			if(ii->type == ItemInfo::FILE) {
-				handleDownload(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
+				onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 			} else {
 				changeType = CHANGE_LIST;
 				HTREEITEM ht = ctrlTree.findItem(t, ii->dir->getName() + "\\");
@@ -996,7 +996,7 @@ void DirectoryListingFrame::onListItemAction() {
 				}
 			}
 		} else {
-			handleDownload(SETTING(DOWNLOAD_DIRECTORY), QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
+			onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 		}
 	}
 }
@@ -1309,7 +1309,7 @@ clientmenu:
 				}
 			}
 
-			appendDownloadMenu(fileMenu, DownloadBaseHandler::FILELIST, false, !allComplete);
+			appendDownloadMenu(fileMenu, false, !allComplete);
 			if (hasFiles)
 				fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			fileMenu.AppendMenu(MF_SEPARATOR);
@@ -1393,7 +1393,7 @@ clientmenu:
 		OMenu directoryMenu;
 		directoryMenu.CreatePopupMenu();
 
-		appendDownloadMenu(directoryMenu, DownloadBaseHandler::FILELIST, true, false);
+		appendDownloadMenu(directoryMenu, true, false);
 		directoryMenu.appendSeparator();
 
 		WinUtil::appendSearchMenu(directoryMenu, curPath);
@@ -1535,15 +1535,15 @@ bool DirectoryListingFrame::showDirDialog(string& fileName) {
 	return true;
 }
 
-void DirectoryListingFrame::appendDownloadItems(OMenu& aMenu, bool isTree) {
+void DirectoryListingFrame::appendDownloadItems(OMenu& aMenu, bool isTree, bool isSizeUnknown) {
 	//Append general items
-	aMenu.appendItem(CTSTRING(DOWNLOAD), [this, isTree] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isTree); }, OMenu::FLAG_DEFAULT);
+	aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isTree, isSizeUnknown, QueueItemBase::DEFAULT); }, OMenu::FLAG_DEFAULT);
 
 	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-	appendDownloadTo(*targetMenu, isTree);
+	appendDownloadTo(*targetMenu, isTree, isSizeUnknown);
 
 	//Append the "Download with prio" menu
-	appendPriorityMenu(aMenu, isTree);
+	appendPriorityMenu(aMenu, isTree, isSizeUnknown);
 }
 
 int64_t DirectoryListingFrame::getDownloadSize(bool isWhole) {

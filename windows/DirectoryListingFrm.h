@@ -287,7 +287,7 @@ public:
 	UserListHandler getUserList() { return UserListHandler(*dl); }
 
 	/* DownloadBaseHandler functions */
-	void appendDownloadItems(OMenu& aMenu, bool isWhole);
+	void appendDownloadItems(OMenu& aMenu, bool isWhole, bool isSizeUnknown);
 	int64_t getDownloadSize(bool isWhole);
 	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);

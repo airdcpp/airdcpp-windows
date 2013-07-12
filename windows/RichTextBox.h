@@ -199,7 +199,7 @@ public:
 	GETSET(bool, allowClear, AllowClear);
 
 	/* DownloadBaseHandler functions */
-	void appendDownloadItems(OMenu& aMenu, bool isWhole);
+	void appendDownloadItems(OMenu& aMenu, bool isWhole, bool isSizeUnknown);
 	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);

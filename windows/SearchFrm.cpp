@@ -60,7 +60,7 @@ void SearchFrame::closeAll() {
 		::PostMessage(f, WM_CLOSE, 0, 0);
 }
 
-SearchFrame::SearchFrame() : 
+SearchFrame::SearchFrame() : DownloadBaseHandler(DownloadBaseHandler::SEARCH),
 searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	searchContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
 	purgeContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
@@ -958,17 +958,17 @@ bool SearchFrame::showDirDialog(string& fileName) {
 }
 
 
-void SearchFrame::appendDownloadItems(OMenu& aMenu, bool hasFiles) {
-	aMenu.appendItem(CTSTRING(DOWNLOAD), [this] { onDownload(SETTING(DOWNLOAD_DIRECTORY), false); }, OMenu::FLAG_DEFAULT);
+void SearchFrame::appendDownloadItems(OMenu& aMenu, bool hasFiles, bool isSizeUnknown) {
+	aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), false, isSizeUnknown, QueueItemBase::DEFAULT); }, OMenu::FLAG_DEFAULT);
 
 	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-	appendDownloadTo(*targetMenu, false);
-	appendPriorityMenu(aMenu, false);
+	appendDownloadTo(*targetMenu, false, isSizeUnknown);
+	appendPriorityMenu(aMenu, false, isSizeUnknown);
 
 	if (hasFiles) {
-		aMenu.appendItem(CTSTRING(DOWNLOAD_WHOLE_DIR), [this] { onDownload(SETTING(DOWNLOAD_DIRECTORY), true); });
+		aMenu.appendItem(CTSTRING(DOWNLOAD_WHOLE_DIR), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), true, isSizeUnknown, QueueItemBase::DEFAULT); });
 		auto targetMenuWhole = aMenu.createSubMenu(TSTRING(DOWNLOAD_WHOLE_DIR_TO), true);
-		appendDownloadTo(*targetMenuWhole, true);
+		appendDownloadTo(*targetMenuWhole, true, isSizeUnknown);
 	}
 }
 
@@ -1001,7 +1001,7 @@ LRESULT SearchFrame::onDoubleClickResults(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 		if (item->ptAction.x < rect.left)
 			return 0;
 
-		handleDownload(SETTING(DOWNLOAD_DIRECTORY), WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT, false, TargetUtil::TARGET_PATH, false);
+		onDownload(SETTING(DOWNLOAD_DIRECTORY), false, ctrlResults.getItemData(item->iItem)->getUser()->isNMDC(), WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 	}
 	return 0;
 }
@@ -1478,7 +1478,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 				targets = QueueManager::getInstance()->getTargets(TTHValue(Text::fromT(cs.tth)));
 			}
 
-			appendDownloadMenu(resultsMenu, DownloadBaseHandler::SEARCH, hasFiles, hasNmdcDirsOnly);
+			appendDownloadMenu(resultsMenu, hasFiles, hasNmdcDirsOnly);
 
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 

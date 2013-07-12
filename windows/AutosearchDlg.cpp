@@ -29,7 +29,7 @@
 	GetDlgItemText(id, buf, 1024); \
 	var = Text::fromT(buf);
 
-AutoSearchDlg::AutoSearchDlg() : fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0,0), 
+AutoSearchDlg::AutoSearchDlg() : DownloadBaseHandler(DownloadBaseHandler::AUTO_SEARCH), fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0, 0),
 	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true), matchFullPath(false), curNumber(1), maxNumber(0),
 	numberLen(2), useParams(false) { }
 
@@ -258,7 +258,7 @@ LRESULT AutoSearchDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	OMenu targetMenu;
 	targetMenu.CreatePopupMenu();
 	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
-	appendDownloadMenu(targetMenu, DownloadBaseHandler::AUTO_SEARCH, false, true);
+	appendDownloadMenu(targetMenu, false, true);
 
 	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;
@@ -272,8 +272,8 @@ void AutoSearchDlg::handleDownload(const string& aTarget, QueueItemBase::Priorit
 	updateTargetTypeText();
 }
 
-void AutoSearchDlg::appendDownloadItems(OMenu& aMenu, bool /*isWhole*/) {
-	appendDownloadTo(aMenu, false);
+void AutoSearchDlg::appendDownloadItems(OMenu& aMenu, bool /*isWhole*/, bool /*isSizeUnknown*/) {
+	appendDownloadTo(aMenu, false, false);
 }
 
 void AutoSearchDlg::updateTargetTypeText() {

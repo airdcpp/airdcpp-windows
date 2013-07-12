@@ -49,7 +49,7 @@ EmoticonsManager* emoticonsManager = NULL;
 #define MAX_EMOTICONS 48
 UINT RichTextBox::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
-RichTextBox::RichTextBox() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr), formatLinks(false),
+RichTextBox::RichTextBox() : DownloadBaseHandler(DownloadBaseHandler::RICHBOX), ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr), formatLinks(false),
 	formatPaths(false), formatReleases(false), allowClear(false) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
@@ -951,14 +951,14 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 						menu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(STOP_SHARING));
 					} else if (!author.empty()) {
 						targets = QueueManager::getInstance()->getTargets(m.getTTH());
-						appendDownloadMenu(menu, DownloadBaseHandler::MAGNET, false, false);
+						appendDownloadMenu(menu, false, false);
 					}
 
 					if (!author.empty() || dupeType == SHARE_DUPE || dupeType == FINISHED_DUPE)
 						menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 				} else if (isRelease) {
 					//autosearch menus
-					appendDownloadMenu(menu, DownloadBaseHandler::AUTO_SEARCH, true, true);
+					appendDownloadMenu(menu, true, true);
 				}
 			}
 		}
@@ -1277,11 +1277,11 @@ bool RichTextBox::showDirDialog(string& fileName) {
 }
 
 
-void RichTextBox::appendDownloadItems(OMenu& aMenu, bool isWhole) {
-	aMenu.appendItem(CTSTRING(DOWNLOAD), [this, isWhole] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isWhole); });
+void RichTextBox::appendDownloadItems(OMenu& aMenu, bool isWhole, bool isSizeUnknown) {
+	aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isWhole, isSizeUnknown, QueueItemBase::DEFAULT); });
 
 	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-	appendDownloadTo(*targetMenu, isWhole);
+	appendDownloadTo(*targetMenu, isWhole, isSizeUnknown);
 }
 
 int64_t RichTextBox::getDownloadSize(bool /*isWhole*/) {

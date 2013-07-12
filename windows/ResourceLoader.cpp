@@ -49,6 +49,7 @@ void ResourceLoader::unload() {
 	fileImages.Destroy();
 	userImages.Destroy();
 	flagImages.Destroy();
+	autoSearchStatuses.Destroy();
 }
 
 CImageList& ResourceLoader::getUserImages() {
