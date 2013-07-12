@@ -68,10 +68,13 @@ PropPage::Item SharingOptionsPage::items[] = {
 	//refreshing
 	{ IDC_AUTO_REFRESH_TIME, SettingsManager::AUTO_REFRESH_TIME, PropPage::T_INT },
 	{ IDC_INCOMING_REFRESH_TIME, SettingsManager::INCOMING_REFRESH_TIME, PropPage::T_INT },
-	{ IDC_DONT_SHARE_BIGGER_VALUE, SettingsManager::MAX_FILE_SIZE_SHARED, PropPage::T_INT },
+	{ IDC_STARTUP_REFRESH, SettingsManager::STARTUP_REFRESH, PropPage::T_BOOL },
 
 	//monitoring
 	{ IDC_MONITORING_SECONDS, SettingsManager::MONITORING_DELAY, PropPage::T_INT },
+
+	//general
+	{ IDC_DONT_SHARE_BIGGER_VALUE, SettingsManager::MAX_FILE_SIZE_SHARED, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
