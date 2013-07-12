@@ -755,7 +755,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 				}
 			} else {
 				//create new directory
-				ShareDirInfoPtr dir = new ShareDirInfo(vPath, pt, rPath, false, ShareDirInfo::STATE_ADDED);
+				dir = new ShareDirInfo(vPath, pt, rPath, false, ShareDirInfo::STATE_ADDED);
 
 				// diff stuff
 				if (pt == defaultProfile) {
