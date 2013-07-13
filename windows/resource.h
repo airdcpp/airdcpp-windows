@@ -1221,6 +1221,7 @@
 #define IDC_USER_MATCH_TEXT             1620
 #define IDC_FAVDIRS_SHOW_SHARED2        1620
 #define IDC_CLEAR_DIR_HISTORY           1620
+#define IDC_UNFINISHED_STORE_DESTINATION 1620
 #define IDC_FDNAME_TEXT                 1621
 #define IDC_FDPATH_TEXT                 1622
 #define IDC_FAVDIR_EXPLAIN              1624

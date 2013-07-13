@@ -37,12 +37,14 @@ PropPage::TextItem LocationsPage::texts[] = {
 	{ IDC_ADD, ResourceManager::SETTINGS_ADD_FOLDER },
 	{ IDC_RENAME, ResourceManager::SETTINGS_CHANGE },
 	{ IDC_FAVDIRS_SHOW_SHARED, ResourceManager::FAVDIRS_SHOW_SHARED },
+
 	{ IDC_SETTINGS_DIRECTORIES, ResourceManager::SETTINGS_DIRECTORIES }, 
 	{ IDC_SETTINGS_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_DOWNLOAD_DIRECTORY },
 	{ IDC_BROWSEDIR, ResourceManager::BROWSE_ACCEL },
 	{ IDC_SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY, ResourceManager::SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY }, 
 	{ IDC_BROWSETEMPDIR, ResourceManager::BROWSE },
-	{ IDC_SETTINGS_BTN_TARGETDRIVE, ResourceManager::SETTINGS_USE_TARGETDRIVE },
+	{ IDC_UNFINISHED_STORE_DESTINATION, ResourceManager::UNFINISHED_STORE_DESTINATION },
+
 	{ IDC_FORMAT_REMOTE_TIME, ResourceManager::SETTINGS_FORMAT_REMOTE_TIME },
 	{ IDC_AUTOPATH_CAPTION, ResourceManager::AUTOPATH_CAPTION }, 
 	{ IDC_SETTINGS_OPTIONS, ResourceManager::SETTINGS_OPTIONS }, 
@@ -53,6 +55,7 @@ PropPage::TextItem LocationsPage::texts[] = {
 
 
 PropPage::Item LocationsPage::items[] = {
+	{ IDC_UNFINISHED_STORE_DESTINATION, SettingsManager::DCTMP_STORE_DESTINATION, PropPage::T_BOOL },
 	{ IDC_TEMP_DOWNLOAD_DIRECTORY, SettingsManager::TEMP_DOWNLOAD_DIRECTORY, PropPage::T_STR },
 	{ IDC_DOWNLOADDIR,	SettingsManager::DOWNLOAD_DIRECTORY, PropPage::T_STR }, 
 	{ IDC_FAVDIRS_SHOW_SHARED, SettingsManager::SHOW_SHARED_DIRS_FAV, PropPage::T_BOOL },
@@ -82,10 +85,15 @@ LRESULT LocationsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlAutoSelect.AddString(CTSTRING(AUTOSELECT_MOST_SPACE));
 	ctrlAutoSelect.AddString(CTSTRING(AUTOSELECT_LEAST_SPACE));
 	ctrlAutoSelect.SetCurSel(SETTING(DL_AUTOSELECT_METHOD));
-
+	fixControls();
 	return TRUE;
 }
 
+void LocationsPage::fixControls() {
+	BOOL useCustomDir = IsDlgButtonChecked(IDC_UNFINISHED_STORE_DESTINATION) != BST_CHECKED;
+	::EnableWindow(GetDlgItem(IDC_TEMP_DOWNLOAD_DIRECTORY), useCustomDir);
+	::EnableWindow(GetDlgItem(IDC_BROWSETEMPDIR), useCustomDir);
+}
 
 void LocationsPage::write()
 {	

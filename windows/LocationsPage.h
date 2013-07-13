@@ -50,6 +50,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_RENAME, onClickedRename)
 		COMMAND_ID_HANDLER(IDC_MOVEUP, onMove)
 		COMMAND_ID_HANDLER(IDC_MOVEDOWN, onMove)
+		COMMAND_ID_HANDLER(IDC_UNFINISHED_STORE_DESTINATION, onStoreDestination)
 
 		COMMAND_ID_HANDLER(IDC_BROWSEDIR, onClickedBrowseDir)
 		COMMAND_ID_HANDLER(IDC_BROWSETEMPDIR, onClickedBrowseTempDir)
@@ -68,12 +69,18 @@ public:
 	LRESULT onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedBrowseTempDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClickedTargetdrive(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onStoreDestination(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
+		fixControls();
+		return 0;
+	}
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 	
 protected:
+	void fixControls();
+
 	static Item items[];
 	static TextItem texts[];
 	ExListViewCtrl ctrlDirectories;

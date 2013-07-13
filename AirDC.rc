@@ -180,13 +180,14 @@ BEGIN
     LTEXT           "Unfinished downloads directory (empty = download directly to target)",IDC_SETTINGS_UNFINISHED_DOWNLOAD_DIRECTORY,13,44,247,8
     EDITTEXT        IDC_TEMP_DOWNLOAD_DIRECTORY,13,54,197,14,ES_AUTOHSCROLL
     PUSHBUTTON      "Browse...",IDC_BROWSETEMPDIR,217,54,44,14
-    PUSHBUTTON      "Use targetdrive for unfinished files",IDC_SETTINGS_BTN_TARGETDRIVE,13,73,164,14
     CONTROL         "Use the date of the remote directory for time parameters",IDC_FORMAT_REMOTE_TIME,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,262,246,10
     CONTROL         "",IDC_FAVORITE_DIRECTORIES,"SysListView32",LVS_REPORT | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,14,106,247,107,WS_EX_ACCEPTFILES
     GROUPBOX        "Options",IDC_SETTINGS_OPTIONS,7,239,261,75
     LTEXT           "When using auto selection, choose the path with...",IDC_AUTOPATH_CAPTION,11,284,242,8
     COMBOBOX        IDC_AUTOPATH_METHOD,11,295,206,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Store unfinished files in the destination directory",IDC_UNFINISHED_STORE_DESTINATION,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,71,246,10
 END
 
 IDD_UPDATE DIALOGEX 0, 0, 287, 251

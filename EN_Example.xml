@@ -1167,7 +1167,6 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</string>
 	<string name="DownloadLimits">Download limits</string>
 	<string name="SettingsProfile">Settings profile</string>
 	<string name="SettingsMcnNote">* Lowering the upload connections from the default value will result the download connections to be set to the same value</string>
-	<string name="SettingsUseTargetdrive">Use target drive for unfinished files</string>
 	<string name="CheckUseSkiplist">Ignore items matching the share skiplist</string>
 	<string name="CheckIgnoreZeroByte">Ignore zero byte files</string>
 	<string name="NoFilesAvailable">No files to download</string>
@@ -1958,4 +1957,5 @@ Do you want to continue?</string>
 	<string name="NewDots">New...</string>
 	<string name="New">New</string>
 	<string name="SettingsStartupRefresh">Refresh the share after client startup</string>
+	<string name="UnfinishedStoreDestination">Store unfinished files in the final destination directory</string>
 </recources>
