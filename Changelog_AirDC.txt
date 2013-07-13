@@ -4,7 +4,9 @@ Added:
 
 - Allow changing the default share profile
 - Add an option to refresh the share after client startup (enabled by default)
+- Ddd an option to store the unfinished files in the final destination directory (enabled by default)
 - Add a setting for maximum running bundles
+- Append directory dupe directories in the "Download to" menu
 - Detect Windows 8.1 and 2012 R2
 
 Changed:
@@ -20,6 +22,8 @@ Fixed:
 - Fix issues with the lowest queue priority
 - Fix a bug with no search results not being returned for root directory matches after refresh
 - Fix download connection not being changed to idle state with non-MCN transfers
+- Fix dragging of new folders in share
+- Perform the check for free space also when adding items in download by doubleclicking
 
 
 2.50
