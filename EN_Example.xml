@@ -1958,4 +1958,6 @@ Do you want to continue?</string>
 	<string name="New">New</string>
 	<string name="SettingsStartupRefresh">Refresh the share after client startup</string>
 	<string name="UnfinishedStoreDestination">Store unfinished files in the final destination directory</string>
+	<string name="QueuedDupePaths">Dupe paths (queue)</string>
+	<string name="SharedDupePaths">Dupe paths (share)</string>
 </recources>

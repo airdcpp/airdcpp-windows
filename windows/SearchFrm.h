@@ -207,7 +207,6 @@ public:
 	}
 
 	/* DownloadBaseHandler functions */
-	void appendDownloadItems(OMenu& aMenu, bool isWhole, bool isSizeUnknown);
 	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
@@ -274,14 +273,17 @@ private:
 		SearchInfo* parent;
 
 		struct CheckTTH {
-			CheckTTH() : op(true), firstHubs(true), hasTTH(false), firstTTH(true) { }
-				void operator()(SearchInfo* si);
+			CheckTTH() : op(true), firstHubs(true), firstPath(true), firstTTH(true) { }
+
+			void operator()(SearchInfo* si);
 			bool firstHubs;
 			StringList hubs;
 			bool op;
-			bool hasTTH;
+
 			bool firstTTH;
-			tstring tth;
+			bool firstPath;
+			optional<TTHValue> tth;
+			optional<string> path;
 		};
 	
 		const tstring getText(uint8_t col) const;

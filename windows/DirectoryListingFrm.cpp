@@ -70,7 +70,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 	}
 }
 
-DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) : DownloadBaseHandler(DownloadBaseHandler::FILELIST),
+DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	pathContainer(WC_COMBOBOX, this, PATH_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
@@ -1293,10 +1293,18 @@ clientmenu:
 			copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
 			fileMenu.CreatePopupMenu();
 		
-			targets.clear();
-			if(ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
-				targets = QueueManager::getInstance()->getTargets(ii->file->getTTH());
+			optional<TTHValue> tth;
+			optional<string> path;
+
+			if (ii->type == ItemInfo::FILE) {
+				if (ctrlList.GetSelectedCount() == 1)
+					tth = ii->file->getTTH();
+
+				path = ii->file->getPath();
+			} else if (ctrlList.GetSelectedCount() == 1) {
+				path = ii->dir->getPath();
 			}
+
 
 			int i = -1;
 			bool allComplete=true, hasFiles=false;
@@ -1309,7 +1317,7 @@ clientmenu:
 				}
 			}
 
-			appendDownloadMenu(fileMenu, false, !allComplete);
+			appendDownloadMenu(fileMenu, DownloadBaseHandler::TYPE_PRIMARY, !allComplete, tth, path);
 			if (hasFiles)
 				fileMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
 			fileMenu.AppendMenu(MF_SEPARATOR);
@@ -1393,7 +1401,7 @@ clientmenu:
 		OMenu directoryMenu;
 		directoryMenu.CreatePopupMenu();
 
-		appendDownloadMenu(directoryMenu, true, false);
+		appendDownloadMenu(directoryMenu, DownloadBaseHandler::TYPE_SECONDARY, false, nullptr, dir->getPath());
 		directoryMenu.appendSeparator();
 
 		WinUtil::appendSearchMenu(directoryMenu, curPath);
@@ -1533,17 +1541,6 @@ bool DirectoryListingFrame::showDirDialog(string& fileName) {
 	}
 
 	return true;
-}
-
-void DirectoryListingFrame::appendDownloadItems(OMenu& aMenu, bool isTree, bool isSizeUnknown) {
-	//Append general items
-	aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isTree, isSizeUnknown, QueueItemBase::DEFAULT); }, OMenu::FLAG_DEFAULT);
-
-	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-	appendDownloadTo(*targetMenu, isTree, isSizeUnknown);
-
-	//Append the "Download with prio" menu
-	appendPriorityMenu(aMenu, isTree, isSizeUnknown);
 }
 
 int64_t DirectoryListingFrame::getDownloadSize(bool isWhole) {

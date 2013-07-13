@@ -106,9 +106,9 @@ public:
 	LRESULT onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 
-	/* DownloadBaseHandler functions */
-	void appendDownloadItems(OMenu& aMenu, bool isWhole, bool isSizeUnknown);
+	/* DownloadBaseHandler */
 	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
+
 	void switchMode();
 	void insertNumber();
 private:

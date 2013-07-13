@@ -49,7 +49,7 @@ EmoticonsManager* emoticonsManager = NULL;
 #define MAX_EMOTICONS 48
 UINT RichTextBox::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
-RichTextBox::RichTextBox() : DownloadBaseHandler(DownloadBaseHandler::RICHBOX), ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr), formatLinks(false),
+RichTextBox::RichTextBox() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr), formatLinks(false),
 	formatPaths(false), formatReleases(false), allowClear(false) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
@@ -936,7 +936,6 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 				menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
 			}
 
-			targets.clear();
 			if (isMagnet || isRelease) {
 				if (dupeType > 0) {
 					menu.AppendMenu(MF_SEPARATOR);
@@ -950,15 +949,14 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 						/* show an option to remove the item */
 						menu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(STOP_SHARING));
 					} else if (!author.empty()) {
-						targets = QueueManager::getInstance()->getTargets(m.getTTH());
-						appendDownloadMenu(menu, false, false);
+						appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), nullptr);
 					}
 
 					if (!author.empty() || dupeType == SHARE_DUPE || dupeType == FINISHED_DUPE)
 						menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
 				} else if (isRelease) {
 					//autosearch menus
-					appendDownloadMenu(menu, true, true);
+					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, nullptr, Text::fromT(selectedWord) + PATH_SEPARATOR, false);
 				}
 			}
 		}
@@ -1252,7 +1250,7 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
-void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority /*p*/, bool isRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
+void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
 	if (!isRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
@@ -1261,7 +1259,7 @@ void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority 
 				return;
 		}
 
-		WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, getUser() ? QueueItem::FLAG_PRIVATE : 0);
+		WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, getUser() ? QueueItem::FLAG_PRIVATE : 0, p);
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, aTargetType, true);
 	}
@@ -1274,14 +1272,6 @@ bool RichTextBox::showDirDialog(string& fileName) {
 		return false;
 	}
 	return true;
-}
-
-
-void RichTextBox::appendDownloadItems(OMenu& aMenu, bool isWhole, bool isSizeUnknown) {
-	aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), isWhole, isSizeUnknown, QueueItemBase::DEFAULT); });
-
-	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-	appendDownloadTo(*targetMenu, isWhole, isSizeUnknown);
 }
 
 int64_t RichTextBox::getDownloadSize(bool /*isWhole*/) {

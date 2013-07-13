@@ -60,7 +60,7 @@ void SearchFrame::closeAll() {
 		::PostMessage(f, WM_CLOSE, 0, 0);
 }
 
-SearchFrame::SearchFrame() : DownloadBaseHandler(DownloadBaseHandler::SEARCH),
+SearchFrame::SearchFrame() :
 searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	searchContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
 	purgeContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP), 
@@ -920,14 +920,22 @@ void SearchFrame::handleSearchTTH() {
 
 void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 	if(firstTTH) {
-		tth = si->getText(COLUMN_TTH);
-		hasTTH = true;
+		tth = si->sr->getTTH();
 		firstTTH = false;
-	} else if(hasTTH) {
-		if(tth != si->getText(COLUMN_TTH)) {
-			hasTTH = false;
+	} else if(tth) {
+		if (tth != si->sr->getTTH()) {
+			tth.reset();
 		}
 	} 
+
+	if (firstPath) {
+		path = si->sr->getFile();
+		firstPath = false;
+	} else if (path) {
+		if (path != si->sr->getFile()) {
+			path.reset();
+		}
+	}
 
 	if(firstHubs && hubs.empty()) {
 		hubs = ClientManager::getInstance()->getHubUrls(si->sr->getUser());
@@ -955,21 +963,6 @@ bool SearchFrame::showDirDialog(string& fileName) {
 	}
 
 	return true;
-}
-
-
-void SearchFrame::appendDownloadItems(OMenu& aMenu, bool hasFiles, bool isSizeUnknown) {
-	aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), false, isSizeUnknown, QueueItemBase::DEFAULT); }, OMenu::FLAG_DEFAULT);
-
-	auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
-	appendDownloadTo(*targetMenu, false, isSizeUnknown);
-	appendPriorityMenu(aMenu, false, isSizeUnknown);
-
-	if (hasFiles) {
-		aMenu.appendItem(CTSTRING(DOWNLOAD_WHOLE_DIR), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), true, isSizeUnknown, QueueItemBase::DEFAULT); });
-		auto targetMenuWhole = aMenu.createSubMenu(TSTRING(DOWNLOAD_WHOLE_DIR_TO), true);
-		appendDownloadTo(*targetMenuWhole, true, isSizeUnknown);
-	}
 }
 
 int64_t SearchFrame::getDownloadSize(bool /*isWhole*/) {
@@ -1473,12 +1466,13 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			else
 				resultsMenu.InsertSeparatorFirst(Util::toStringW(((SearchInfo*)ctrlResults.getSelectedItem())->hits + 1) + _T(" ") + TSTRING(USERS));
 
-			targets.clear();
-			if (hasFiles && cs.hasTTH) {
+			//targets.clear();
+			/*if (hasFiles && cs.hasTTH) {
 				targets = QueueManager::getInstance()->getTargets(TTHValue(Text::fromT(cs.tth)));
-			}
+			}*/
 
-			appendDownloadMenu(resultsMenu, hasFiles, hasNmdcDirsOnly);
+			auto tmp = cs.path ? *cs.path : "GFASGSAGS";
+			appendDownloadMenu(resultsMenu, hasFiles ? DownloadBaseHandler::TYPE_BOTH : DownloadBaseHandler::TYPE_PRIMARY, hasNmdcDirsOnly, hasFiles ? cs.tth : nullptr, cs.path);
 
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 
