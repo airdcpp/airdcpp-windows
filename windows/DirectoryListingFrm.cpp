@@ -330,14 +330,14 @@ void DirectoryListingFrame::addarrowBarButtons() {
 	TBBUTTON nTB;
 	memzero(&nTB, sizeof(TBBUTTON));
 	
-	nTB.iBitmap = 3;
+	nTB.iBitmap = 2;
 	nTB.idCommand = IDC_BACK;
 	nTB.fsState = TBSTATE_ENABLED;
 	nTB.fsStyle = BTNS_BUTTON | TBSTYLE_AUTOSIZE;
 	nTB.iString = arrowBar.AddStrings(CTSTRING(BACK));
 	arrowBar.AddButtons(1, &nTB);
 
-	nTB.iBitmap = 2;
+	nTB.iBitmap = 1;
 	nTB.idCommand = IDC_FORWARD;
 	nTB.fsState = TBSTATE_ENABLED;
 	nTB.fsStyle = BTNS_BUTTON | TBSTYLE_AUTOSIZE;

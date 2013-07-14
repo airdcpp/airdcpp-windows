@@ -310,7 +310,6 @@
 #define IDI_EXPAND_UP                   506
 #define IDI_EXPAND_DOWN                 507
 #define IDI_UP                          508
-#define IDI_DOWN                        509
 #define IDI_NEXT                        510
 #define IDI_PREV                        511
 #define IDI_BACK                        512

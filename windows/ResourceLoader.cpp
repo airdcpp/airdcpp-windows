@@ -267,15 +267,15 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_USER_OFF:		return _T("UsersFrame\\offline.ico");
 		case IDI_EXPAND_UP:		return _T("expand_up.ico");
 		case IDI_EXPAND_DOWN:	return _T("expand_down.ico");
-		case IDI_UP:            return _T("up.ico");
-		case IDI_DOWN:			return _T("down.ico");
-		case IDI_NEXT:			return _T("next.ico");
-		case IDI_PREV:			return _T("previous.ico");
-		case IDI_BACK:			return _T("back.ico");
-		case IDI_FORWARD:		return _T("forward.ico");
-		case IDI_FIND:			return _T("Find.ico");
-		case IDI_RELOAD:		return _T("reload.ico");
 		case IDR_UPDATE:		return _T("Update.ico");
+
+		case IDI_UP:            return _T("BrowserBar\\Up.ico");
+		case IDI_NEXT:			return _T("BrowserBar\\NextResult.ico");
+		case IDI_PREV:			return _T("BrowserBar\\PreviousResult.ico");
+		case IDI_BACK:			return _T("BrowserBar\\Back.ico");
+		case IDI_FORWARD:		return _T("BrowserBar\\Forward.ico");
+		case IDI_FIND:			return _T("BrowserBar\\Find.ico");
+		case IDI_RELOAD:		return _T("BrowserBar\\Reload.ico");
 
 		case IDI_SEARCHING:		return _T("AutoSearch\\Searching.ico");
 		case IDI_QUEUED_OK:		return _T("AutoSearch\\QueuedOK.ico");
@@ -295,9 +295,8 @@ tstring ResourceLoader::getIconName(int aDefault) {
 CImageList& ResourceLoader::getArrowImages() {
 	if(arrowImages.IsNull()){
 		const int size = 22;
-		arrowImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 4);
+		arrowImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, 3);
 		arrowImages.AddIcon(loadIcon(IDI_UP, size));
-		arrowImages.AddIcon(loadIcon(IDI_DOWN, size));
 		arrowImages.AddIcon(loadIcon(IDI_FORWARD, size));
 		arrowImages.AddIcon(loadIcon(IDI_BACK, size));
 	}
