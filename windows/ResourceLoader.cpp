@@ -267,26 +267,26 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_USER_OFF:		return _T("UsersFrame\\offline.ico");
 		case IDI_EXPAND_UP:		return _T("expand_up.ico");
 		case IDI_EXPAND_DOWN:	return _T("expand_down.ico");
-		case IDI_UP:            return _T("res\\up.ico");
-		case IDI_DOWN:			return _T("res\\down.ico");
-		case IDI_NEXT:			return _T("res\\next.ico");
-		case IDI_PREV:			return _T("res\\previous.ico");
-		case IDI_BACK:			return _T("res\\back.ico");
-		case IDI_FORWARD:		return _T("res\\forward.ico");
-		case IDI_FIND:			return _T("res\\Find.ico");
-		case IDI_RELOAD:		return _T("res\\reload.ico");
+		case IDI_UP:            return _T("up.ico");
+		case IDI_DOWN:			return _T("down.ico");
+		case IDI_NEXT:			return _T("next.ico");
+		case IDI_PREV:			return _T("previous.ico");
+		case IDI_BACK:			return _T("back.ico");
+		case IDI_FORWARD:		return _T("forward.ico");
+		case IDI_FIND:			return _T("Find.ico");
+		case IDI_RELOAD:		return _T("reload.ico");
 		case IDR_UPDATE:		return _T("Update.ico");
 
-		case IDI_SEARCHING:		return _T("res\\AutoSearch\\Searching.ico");
-		case IDI_QUEUED_OK:		return _T("res\\AutoSearch\\QueuedOK.ico");
-		case IDI_QUEUED_ERROR:	return _T("res\\AutoSearch\\QueuedError.ico");
-		case IDI_SEARCH_ERROR:	return _T("res\\AutoSearch\\SearchError.ico");
-		case IDI_WAITING:		return _T("res\\AutoSearch\\Waiting.ico");
-		case IDI_MANUAL:		return _T("res\\AutoSearch\\Manual.ico");
-		case IDI_DISABLED:		return _T("res\\AutoSearch\\Disabled.ico");
-		case IDI_COLLECTING:	return _T("res\\AutoSearch\\Collecting.ico");
-		case IDI_POSTSEARCH:	return _T("res\\AutoSearch\\PostSearch.ico");
-		case IDI_EXPIRED:		return _T("res\\AutoSearch\\Expired.ico");
+		case IDI_SEARCHING:		return _T("AutoSearch\\Searching.ico");
+		case IDI_QUEUED_OK:		return _T("AutoSearch\\QueuedOK.ico");
+		case IDI_QUEUED_ERROR:	return _T("AutoSearch\\QueuedError.ico");
+		case IDI_SEARCH_ERROR:	return _T("AutoSearch\\SearchError.ico");
+		case IDI_WAITING:		return _T("AutoSearch\\Waiting.ico");
+		case IDI_MANUAL:		return _T("AutoSearch\\Manual.ico");
+		case IDI_DISABLED:		return _T("AutoSearch\\Disabled.ico");
+		case IDI_COLLECTING:	return _T("AutoSearch\\Collecting.ico");
+		case IDI_POSTSEARCH:	return _T("AutoSearch\\PostSearch.ico");
+		case IDI_EXPIRED:		return _T("AutoSearch\\Expired.ico");
 		default: return Util::emptyStringT;
 	}
 }
