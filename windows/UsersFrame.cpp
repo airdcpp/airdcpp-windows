@@ -28,7 +28,7 @@
 #include "../client/QueueManager.h"
 
 int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION };
-int UsersFrame::columnSizes[] = { 25, 25, 200, 300, 150, 100, 200 };
+int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::QUEUED, ResourceManager::DESCRIPTION };
 
 struct FieldName {

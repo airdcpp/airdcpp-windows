@@ -814,6 +814,9 @@ Dispatcher::F ShareDirectories::getThreadedTask() {
 }*/
 
 bool ShareDirectories::hasChanged() {
+	if (!excludedAdd.empty() || !excludedRemove.empty())
+		return true;
+
 	for (auto l : shareDirs | map_values) {
 		for (const auto& sd : l) {
 			if (sd->state != ShareDirInfo::STATE_NORMAL)
