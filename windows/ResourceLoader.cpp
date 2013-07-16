@@ -194,6 +194,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_UPLOAD_QUEUE:	return _T("ToolbarImages\\uQueue.ico");
 		case IDI_SCAN :			return _T("ToolbarImages\\ScanMissing.ico");
 		case IDI_AUTOSEARCH:	return _T("ToolbarImages\\AutoSearch.ico");
+		case IDI_LOGDIR:		return _T("ToolbarImages\\LogDir.ico");
 		case IDI_TEXT:			return _T("text.ico");
 		case IDI_IERROR:		return _T("error.ico");
 		case IDI_IWARNING:		return _T("warning.ico");
@@ -495,6 +496,7 @@ void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.AddIcon(loadIcon(IDI_INDEXING, 16));
 	images.AddIcon(loadIcon(IDR_MAINFRAME, 16));
 	images.AddIcon(loadIcon(IDI_WIZARD, 16));
+	images.AddIcon(loadIcon(IDI_LOGDIR, 16));
 }
 
 void ResourceLoader::loadWinampToolbarIcons(CImageList& winampImages) {

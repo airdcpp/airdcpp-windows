@@ -269,12 +269,13 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(IDC_HASH_PROGRESS);
 	m_CmdBar.m_arrCommand.Add(ID_APP_ABOUT);
 	m_CmdBar.m_arrCommand.Add(ID_WIZARD);
+	m_CmdBar.m_arrCommand.Add(IDC_OPEN_LOG_DIR);
 
 	// use Vista-styled menus on Vista/Win7
 	if(Util::getOsMajor() >= 6)
 		m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());
 
-		// remove old menu
+	// remove old menu
 	SetMenu(NULL);
 
 	tbarcreated = false;

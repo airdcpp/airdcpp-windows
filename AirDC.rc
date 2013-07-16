@@ -2415,6 +2415,7 @@ IDI_LOGS                ICON                    "res\\ToolbarImages\\SystemLog.i
 IDI_UPLOAD_QUEUE        ICON                    "res\\ToolbarImages\\uQueue.ico"
 IDI_SCAN                ICON                    "res\\ToolbarImages\\ScanMissing.ico"
 IDI_AUTOSEARCH          ICON                    "res\\ToolbarImages\\AutoSearch.ico"
+IDI_LOGDIR				ICON                    "res\\ToolbarImages\\LogDir.ico"
 IDI_TEXT                ICON                    "res\\text.ico"
 IDI_IERROR              ICON                    "res\\error.ico"
 IDI_IWARNING            ICON                    "res\\warning.ico"

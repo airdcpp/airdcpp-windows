@@ -827,17 +827,22 @@ void SearchFrame::handleViewNfo() {
 
 void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
 	ctrlResults.filteredForEachSelectedT([&](const SearchInfo* si) {
-		//get the target for file downloads (file names may differ for grouped results)
-		string fileTarget = aTarget;
-		if (!useWhole && aTarget[aTarget.length()-1] == PATH_SEPARATOR)
-			fileTarget += si->sr->getFileName();
-
 		bool fileDownload = si->sr->getType() == SearchResult::TYPE_FILE && !useWhole;
+
+		// names/case sizes may differ for grouped results
+		optional<string> path;
 		auto download = [&](const SearchResultPtr& aSR) {
 			if (fileDownload) {
-				WinUtil::addFileDownload(fileTarget, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
+				if (!path) {
+					path = target[target.length() - 1] == '\\' ? aTarget + si->sr->getFileName() : aTarget;
+				}
+				WinUtil::addFileDownload(*path, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
 			} else {
-				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), aSR->getUser(), aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, p);
+				if (!path) {
+					//only pick the last dir, different paths are always needed
+					path = Util::getLastDir(aSR->getFilePath());
+				}
+				DirectoryListingManager::getInstance()->addDirectoryDownload(Util::getParentDir(aSR->getFilePath()) + *path + "\\", aSR->getUser(), aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, p);
 			}
 		};
 
