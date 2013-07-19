@@ -43,6 +43,7 @@
 #define FILTER_MESSAGE_MAP 8
 #define PATH_MESSAGE_MAP 9
 #define CONTROL_MESSAGE_MAP 10
+#define COMBO_SEL_MAP 11
 
 struct cmdBarButton {
 	int id, image;
@@ -89,6 +90,7 @@ public:
 		STATUS_TOTAL_FILES,
 		STATUS_SELECTED_FILES,
 		STATUS_SELECTED_SIZE,
+		STATUS_HUB,
 		STATUS_FILTER,
 		STATUS_DUMMY,
 		STATUS_LAST
@@ -164,8 +166,11 @@ public:
 	ALT_MSG_MAP(CONTROL_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_XBUTTONUP, onXButtonUp)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
+	ALT_MSG_MAP(COMBO_SEL_MAP)
+		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onComboSelChanged)
 	END_MSG_MAP()
 
+	LRESULT onComboSelChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onFilterChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -372,7 +377,7 @@ private:
 	bool closed;
 	bool statusDirty;
 
-	int statusSizes[13];
+	int statusSizes[STATUS_LAST];
 	
 	DirectoryListing* dl;
 
@@ -410,6 +415,20 @@ private:
 	void createRoot();
 	void convertToFull();
 	void onLoadingFinished(int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool usingGuiThread);
+
+
+	CComboBox selCombo;
+
+	void updateSelCombo();
+	User::UserInfoList hubs;
+	bool online;
+	void onComboSelChanged();
+	void showSelCombo(bool show);
+
+	tstring nicks;
+	tstring hubNames;
+
+	CContainedWindow selComboContainer;
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

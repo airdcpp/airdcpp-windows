@@ -1490,31 +1490,10 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 }
 
 LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ProfileToken profile = SETTING(DEFAULT_SP);
-
+	ProfileToken profile = SETTING(LAST_LIST_PROFILE);
 	auto profiles = ShareManager::getInstance()->getProfiles();
-	if (profiles.size() > 2) {
-		StringList tmpList;
-		int selPos = 0, pos=0;
-		for(auto j = profiles.begin(); j != profiles.end() && (*j)->getToken() != SP_HIDDEN; j++) {
-			if ((*j)->getToken() == SETTING(LAST_LIST_PROFILE))
-				selPos = pos;
-			tmpList.push_back((*j)->getDisplayName());
-			pos++;
-		}
-
-		ComboDlg dlg;
-		dlg.setList(tmpList);
-		dlg.description = CTSTRING(SHARE_PROFILE);
-		dlg.title = wID == IDC_OWN_LIST_ADL ? CTSTRING(OWN_LIST_ADL) : CTSTRING(MENU_BROWSE_OWN_LIST);
-		dlg.curSel = selPos;
-		if(dlg.DoModal() == IDOK) {
-			profile = profiles[dlg.curSel]->getProfileList()->getProfile();
-			SettingsManager::getInstance()->set(SettingsManager::LAST_LIST_PROFILE, profile);
-		} else {
-			return 0;
-		}
-	}
+	if (boost::find_if(profiles, [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
+		profile = SETTING(DEFAULT_SP);
 
 	DirectoryListingManager::getInstance()->openOwnList(profile, wID == IDC_OWN_LIST_ADL);
 	return 0;
