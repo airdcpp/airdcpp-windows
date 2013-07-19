@@ -31,7 +31,7 @@ IContextMenu3* CShellContextMenu::g_IContext3 = NULL;
 WNDPROC CShellContextMenu::OldWndProc = NULL;
 
 CShellContextMenu::CShellContextMenu() :
-	bDelete(false),
+	bInitialized(false),
 	m_psfFolder(NULL),
 	m_pidlArray(NULL),
 	m_Menu(NULL)
@@ -40,7 +40,7 @@ CShellContextMenu::CShellContextMenu() :
 
 CShellContextMenu::~CShellContextMenu() {
 	// free all allocated datas
-	if(m_psfFolder && bDelete)
+	if (m_psfFolder && bInitialized)
 		m_psfFolder->Release();
 	m_psfFolder = NULL;
 	FreePIDLArray(m_pidlArray);
@@ -53,7 +53,7 @@ CShellContextMenu::~CShellContextMenu() {
 void CShellContextMenu::SetPath(const tstring& strPath)
 {
 	// free all allocated datas
-	if(m_psfFolder && bDelete)
+	if(m_psfFolder && bInitialized)
 		m_psfFolder->Release();
 	m_psfFolder = NULL;
 	FreePIDLArray(m_pidlArray);
@@ -109,7 +109,7 @@ void CShellContextMenu::SetPath(const tstring& strPath)
 	psfFolder->Release();
 	psfDesktop->Release();
 
-	bDelete = true;	// indicates that m_psfFolder should be deleted by CShellContextMenu
+	bInitialized = true;	// indicates that m_psfFolder should be deleted by CShellContextMenu
 }
 
 OMenu* CShellContextMenu::GetMenu()
@@ -124,6 +124,11 @@ OMenu* CShellContextMenu::GetMenu()
 
 void CShellContextMenu::ShowContextMenu(HWND hWnd, CPoint pt)
 {
+	if (!bInitialized) {
+		m_Menu->open(hWnd, TPM_LEFTALIGN, pt);
+		return;
+	}
+
 	int iMenuType = 0;	// to know which version of IContextMenu is supported
 	LPCONTEXTMENU pContextMenu;	// common pointer to IContextMenu and higher version interface
 
@@ -139,6 +144,7 @@ void CShellContextMenu::ShowContextMenu(HWND hWnd, CPoint pt)
 	}
 
 	m_Menu->disableEmptyMenus();
+	m_Menu->appendSeparator();
 
 	// lets fill the popupmenu 
 	pContextMenu->QueryContextMenu(m_Menu->m_hMenu, m_Menu->GetMenuItemCount(), ID_SHELLCONTEXTMENU_MIN, ID_SHELLCONTEXTMENU_MAX, CMF_NORMAL | CMF_EXPLORE);

@@ -43,7 +43,7 @@ public:
 	void ShowContextMenu(HWND hWnd, CPoint pt);
 
 private:
-	bool bDelete;
+	bool bInitialized;
 	OMenu* m_Menu;
 	IShellFolder* m_psfFolder;
 	LPITEMIDLIST* m_pidlArray;

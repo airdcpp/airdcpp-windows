@@ -383,7 +383,6 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 					pShellMenu->AppendMenu(MF_SEPARATOR);
 					pShellMenu->AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 					pShellMenu->AppendMenu(MF_STRING, IDC_TOTAL, CTSTRING(REMOVE_ALL));
-					pShellMenu->AppendMenu(MF_SEPARATOR);
 
 					shellMenu.ShowContextMenu(m_hWnd, pt);
 					bShellMenuShown = true;

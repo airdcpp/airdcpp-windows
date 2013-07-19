@@ -381,6 +381,8 @@
 #define IDC_SHOW_TREE                   1036
 #define IDC_QUEUE                       1037
 #define IDC_SET_FONTS                   1038
+#define IDC_SEARCHDIR                   1038
+#define IDC_VIEW_AS_TEXT                1039
 #define IDC_HUBPASS                     1042
 #define IDC_NEWFAV                      1042
 #define IDC_HUBNAME                     1043
@@ -476,7 +478,6 @@
 #define IDC_INTERVAL                    1107
 #define IDC_CLOSE_DISCONNECTED          1108
 #define IDC_MATCH                       1108
-#define IDC_OPEN_FOLDER                 1109
 #define IDC_MAX_TAB_ROWS                1109
 #define IDC_OPEN_FILE                   1110
 #define IDC_SETTINGS_ODC_MENUBAR_BUMPED 1110
@@ -496,11 +497,10 @@
 #define IDC_MIN_FILE_SIZE               1121
 #define IDC_MAX_FILE_SIZE               1122
 #define IDC_AUTOQUEUE                   1123
-#define IDC_GO_TO_DIRECTORY             1124
+#define IDC_OPEN_FOLDER		            1124
 #define IDC_IS_FORBIDDEN                1124
 #define IDC_MATCH_QUEUE                 1125
 #define IDC_IS_FORBIDDEN2               1125
-#define IDC_VIEW_AS_TEXT                1129
 #define IDC_PAGE                        1130
 #define IDC_NET_STATS                   1131
 #define IDC_SETTINGS_PERSONAL_INFORMATION 1132
@@ -1393,7 +1393,6 @@
 #define IDC_PARTIAL_SLOTS               3027
 #define IDC_PARTIAL_SLOTS_SPIN          3028
 #define IDC_SEARCHLEFT                  3029
-#define IDC_SEARCHDIR                   3030
 #define IDC_AUTOSEARCHFRM               3031
 #define IDC_ENABLE                      3032
 #define IDC_DISABLE                     3033
@@ -1552,7 +1551,6 @@
 #define IDC_SFV_CHECH_FOLDER            10161
 #define IDC_REBUILD_TOOLBAR             10162
 #define IDC_TIMESTAMP_HELP              10167
-#define IDC_CHECKSFV                    10168
 #define IDC_COUNTRY_FORMAT_HELP         10168
 #define IDC_SFV_CHECH_FILE              10169
 #define IDC_USERLIST_DBLCLICK           10190
@@ -1739,7 +1737,6 @@
 #define IDC_SHOW_ONLINE                 15134
 #define IDC_DUPLICATE                   15135
 #define IDC_USE_EXCLUDED                15136
-#define IDC_OPEN_FOLDER_TREE            15137
 #define IDC_FILTER_QUEUED               15138
 #define IDC_OPEN_LOG_DIR                15139
 #define ID_TOGGLE_TOOLBAR               15999

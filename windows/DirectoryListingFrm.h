@@ -125,9 +125,6 @@ public:
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
-		COMMAND_ID_HANDLER(IDC_GO_TO_DIRECTORY, onGoToDirectory)
-		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
-		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchByTTH)
 		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_DATE, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
@@ -138,20 +135,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_EXACT_SIZE, onCopy);
 		COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy);
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
-
-		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
-		COMMAND_ID_HANDLER(IDC_OPEN_FILE, onOpenDupe)
-		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
-		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER_TREE, onOpenDupeTree)
-
-		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
-		COMMAND_ID_HANDLER(IDC_VIEW_NFO, onViewNFO)
-		COMMAND_ID_HANDLER(IDC_RELOAD, onReload)
-		COMMAND_ID_HANDLER(IDC_FINDMISSING, onFindMissing)
-		COMMAND_ID_HANDLER(IDC_CHECKSFV, onCheckSFV)
-		COMMAND_ID_HANDLER(IDC_REFRESH_FILE_LIST, onRefreshShare)
-
-		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
 		
 		COMMAND_ID_HANDLER(IDC_FIND, onFind)
 		COMMAND_ID_HANDLER(IDC_NEXT, onNext)
@@ -161,6 +144,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_FORWARD, onForward)
 		COMMAND_ID_HANDLER(IDC_BACK, onBack)
 
+		COMMAND_ID_HANDLER(IDC_RELOAD, onReloadList)
 		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
 		COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetFullList)
@@ -186,10 +170,7 @@ public:
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onFilterChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onViewAsText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onSearchByTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onGoToDirectory(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDoubleClickFiles(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
 	LRESULT onDoubleClickDirs(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
 	LRESULT onSelChangedDirectories(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
@@ -200,25 +181,24 @@ public:
 	LRESULT onXButtonUp(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onOpenDupeTree(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
-	LRESULT onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onFindMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onCheckSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onViewNFO(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onReload(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onRefreshShare(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onReloadList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
-	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-	void refreshShare(bool usingTree);
-	void scanShare(bool usingTree, bool isSfvCheck);
+	void onRefreshShare(bool usingTree);
+	void onScanShare(bool usingTree, bool isSfvCheck);
 
 	void onCopyDir();
+	void onOpen();
+	void onOpenDupeDir();
+	void onViewAsText();
+	void onViewNFO();
+	void onGoToDirectory();
+
+	void onSearch();
+	void onSearchDir();
+	void onSearchByTTH();
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
