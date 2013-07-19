@@ -413,8 +413,3 @@ private:
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)
-
-/**
- * @file
- * $Id: DirectoryListingFrm.h 500 2010-06-25 22:08:18Z bigmuscle $
- */

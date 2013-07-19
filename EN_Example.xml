@@ -1960,4 +1960,6 @@ Do you want to continue?</string>
 	<string name="UnfinishedStoreDestination">Store unfinished files in the final destination directory</string>
 	<string name="QueuedDupePaths">Dupe paths (queue)</string>
 	<string name="SharedDupePaths">Dupe paths (share)</string>
+	<string name="UnableConnectUser">Unable to download from this user</string>
+	<string name="RefreshInShare">Refresh in share</string>
 </recources>

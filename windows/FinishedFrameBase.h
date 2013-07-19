@@ -554,8 +554,3 @@ ResourceManager::NICK, ResourceManager::HUB, ResourceManager::SIZE, ResourceMana
 int FinishedItem::getImageIndex() const { return ResourceLoader::getIconIndex(Text::toT(getTarget())); }
 
 #endif // !defined(FINISHED_FRAME_BASE_H)
-
-/**
-* @file
-* $Id: FinishedFrameBase.h 466 2009-11-13 18:47:25Z BigMuscle $
-*/
