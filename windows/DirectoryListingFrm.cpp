@@ -587,7 +587,7 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 				break;
 			}
 		} else if(ii->type == ItemInfo::FILE && search->itemType != AdcSearch::TYPE_DIRECTORY) {
-			if(search->matchesFileLower(Text::toLower(ii->file->getName()), ii->file->getSize(), ii->file->getDate())) {
+			if(search->matchesFileLower(Text::toLower(ii->file->getName()), ii->file->getSize(), ii->file->getRemoteDate())) {
 				found = true;
 				break;
 			}
@@ -663,6 +663,7 @@ void DirectoryListingFrame::updateStatus() {
 	if(!updating && ctrlStatus.IsWindow()) {
 		int cnt = ctrlList.GetSelectedCount();
 		int64_t total = 0;
+		auto d = dl->findDirectory(curPath);
 		if(cnt == 0) {
 			cnt = ctrlList.GetItemCount();
 			auto d = dl->findDirectory(curPath);
@@ -689,6 +690,14 @@ void DirectoryListingFrame::updateStatus() {
 			u = true;
 		}
 		ctrlStatus.SetText(STATUS_SELECTED_SIZE, tmp.c_str());
+
+		tmp = _T("Updated on: ") + Text::toT(Util::formatTime("%c", d ? d->getUpdateDate() : 0));
+		w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+		if (statusSizes[STATUS_UPDATED] < w) {
+			statusSizes[STATUS_UPDATED] = w;
+			u = true;
+		}
+		ctrlStatus.SetText(STATUS_UPDATED, tmp.c_str());
 
 		tmp = getComboDesc();
 		ctrlStatus.SetText(STATUS_HUB, tmp.c_str());
@@ -1314,11 +1323,14 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 		UINT a = 0;
 		HTREEITEM ht = ctrlTree.HitTest(pt, &a);
-		if(ht != NULL && ht != ctrlTree.GetSelectedItem())
+		if (!ht)
+			return 0;
+
+		if(ht != ctrlTree.GetSelectedItem())
 			ctrlTree.SelectItem(ht);
 		ctrlTree.ClientToScreen(&pt);
 		changeType = CHANGE_TREE_SINGLE;
-		auto dir = ht ? (DirectoryListing::Directory*)ctrlTree.GetItemData(ht) : nullptr;
+		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
 
 
 		OMenu directoryMenu;
@@ -1372,7 +1384,7 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItemBase:
 
 			try {
 				if (ii->type == ItemInfo::FILE) {
-					WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getDate(),
+					WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
 						0, WinUtil::isShift() ? QueueItem::HIGHEST : prio);
 				}
 				else {
@@ -1876,7 +1888,7 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 			switch(col) {
 				case COLUMN_EXACTSIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
 				case COLUMN_SIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
-				case COLUMN_DATE: return compare(a->dir->getDate(), b->dir->getDate());
+				case COLUMN_DATE: return compare(a->dir->getRemoteDate(), b->dir->getRemoteDate());
 				case COLUMN_FILENAME: return Util::DefaultSort(Text::toT(a->dir->getName()).c_str(), Text::toT(b->dir->getName()).c_str(), true);
 				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
 			}
@@ -1889,7 +1901,7 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 		switch(col) {
 			case COLUMN_EXACTSIZE: return compare(a->file->getSize(), b->file->getSize());
 			case COLUMN_SIZE: return compare(a->file->getSize(), b->file->getSize());
-			case COLUMN_DATE: return compare(a->file->getDate(), b->file->getDate());
+			case COLUMN_DATE: return compare(a->file->getRemoteDate(), b->file->getRemoteDate());
 			case COLUMN_FILENAME: return Util::DefaultSort(Text::toT(a->file->getName()).c_str(), Text::toT(b->file->getName()).c_str(), false);
 			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), false);
 		}
@@ -1911,7 +1923,7 @@ const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize(true)) : Util::formatExactSize(file->getSize());
 		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
 		case COLUMN_TTH: return (type == FILE && !SettingsManager::lanMode) ? Text::toT(file->getTTH().toBase32()) : Util::emptyStringT;
-		case COLUMN_DATE: return Util::getDateTimeW(type == DIRECTORY ? dir->getDate() : file->getDate());
+		case COLUMN_DATE: return Util::getDateTimeW(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
 		default: return Util::emptyStringT;
 	}
 }
@@ -2223,7 +2235,7 @@ void DirectoryListingFrame::updateSelCombo() {
 		const CID& cid = dl->getUser()->getCID();
 		const string& hint = dl->getHubUrl();
 
-		dcassert(!hint.empty());
+		dcassert(!hint.empty() || !dl->getPartialList());
 
 		//get the hub and online status
 		auto hubsInfoNew = move(WinUtil::getHubNames(cid));
