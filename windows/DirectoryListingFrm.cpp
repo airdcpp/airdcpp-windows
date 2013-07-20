@@ -334,6 +334,9 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 
 	::SetTimer(m_hWnd, 0, 500, 0);
 
+	if (!dl->getIsOwnList())
+		ClientManager::getInstance()->addListener(this);
+
 	callAsync([this] { updateSelCombo(); });
 	return 1;
 }
@@ -956,9 +959,9 @@ void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enabl
 			dl->addPartialListTask(Util::emptyString, dl->getPath(d), aReload == RELOAD_ALL);
 		} else if(dl->getUser()->isOnline()) {
 			try {
+				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
 				d->setLoading(true);
 				ctrlTree.updateItemImage(d);
-				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, dl->getPath(d));
 				//ctrlStatus.SetText(STATUS_TEXT, CTSTRING(DOWNLOADING_LIST));
 			} catch(const QueueException& e) {
 				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
@@ -1942,6 +1945,8 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	
 	if(!closed) {
 		SettingsManager::getInstance()->removeListener(this);
+		if (!dl->getIsOwnList())
+			ClientManager::getInstance()->removeListener(this);
 
 		ctrlList.SetRedraw(FALSE);
 		clearList();
@@ -2164,16 +2169,32 @@ LRESULT DirectoryListingFrame::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, H
 }
 
 
-void DirectoryListingFrame::onComboSelChanged() {
+void DirectoryListingFrame::onComboSelChanged(bool manual) {
 	if (dl->getIsOwnList()) {
 		auto token = ShareManager::getInstance()->getProfiles()[selCombo.GetCurSel()]->getToken();
 		dl->setFileName(Util::toString(token));
 		onReloadPartial(false);
 		SettingsManager::getInstance()->set(SettingsManager::LAST_LIST_PROFILE, token);
 	} else {
-		dl->setHintedUser(HintedUser(dl->getUser(), hubs[selCombo.GetCurSel()].hubUrl));
+		auto& newHub = hubs[selCombo.GetCurSel()];
+		if (manual) {
+			auto p = boost::find_if(hubs, [this](const User::UserHubInfo& uhi) { return uhi.hubUrl == dl->getHubUrl(); });
+			if (p != hubs.end()) {
+				auto& oldHub = *p;
+				auto diff = newHub.shared > 0 ? abs(static_cast<double>(oldHub.shared) / static_cast<double>(newHub.shared)) : oldHub.shared;
+				if ((diff < 0.95 || diff > 1.05) && MessageBox(CTSTRING_F(LIST_SIZE_DIFF_NOTE, Text::toT(newHub.hubName) % Util::formatBytesW(newHub.shared) % Text::toT(oldHub.hubName) % Util::formatBytesW(oldHub.shared)),
+					_T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+
+						try {
+							QueueManager::getInstance()->addList(HintedUser(dl->getUser(), newHub.hubUrl), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
+						}
+						catch (...) { }
+				}
+			}
+		}
+
+		dl->setHintedUser(HintedUser(dl->getUser(), newHub.hubUrl));
 	}
-	//replyTo.hint = hubs[ctrlHubSel.GetCurSel()].first;
 }
 
 void DirectoryListingFrame::updateSelCombo() {
@@ -2195,7 +2216,7 @@ void DirectoryListingFrame::updateSelCombo() {
 		if (selCombo.GetCurSel() == -1) {
 			// the profile was not found
 			selCombo.SetCurSel(0);
-			onComboSelChanged();
+			onComboSelChanged(false);
 		}
 	} else {
 
@@ -2259,7 +2280,7 @@ void DirectoryListingFrame::updateSelCombo() {
 			if (selCombo.GetCurSel() == -1) {
 				//the hub was not found
 				selCombo.SetCurSel(0);
-				onComboSelChanged();
+				onComboSelChanged(false);
 				//if (!online) //the user came online but not in the previous hub
 				//addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
 				//else
@@ -2292,11 +2313,26 @@ void DirectoryListingFrame::showSelCombo(bool show) {
 
 LRESULT DirectoryListingFrame::onComboSelChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
 	//auto hp = hubs[selCombo.GetCurSel()];
-	onComboSelChanged();
+	onComboSelChanged(true);
 
 	updateSelCombo();
 	//addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hp.second)));
 
 	bHandled = FALSE;
 	return 0;
+}
+
+void DirectoryListingFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept {
+	if (aUser.getUser() == dl->getUser())
+		callAsync([this] { updateSelCombo(); });
+}
+
+void DirectoryListingFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept {
+	if (aUser == dl->getUser())
+		callAsync([this] { updateSelCombo(); });
+}
+
+void DirectoryListingFrame::on(ClientManagerListener::UserUpdated, const UserPtr& aUser) noexcept {
+	if (aUser == dl->getUser())
+		callAsync([this] { updateSelCombo(); });
 }

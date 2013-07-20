@@ -36,6 +36,7 @@
 #include "Async.h"
 
 
+#include "../client/ClientManagerListener.h"
 #include "../client/DirectoryListing.h"
 #include "../client/DirectoryListingListener.h"
 #include "../client/TargetUtil.h"
@@ -64,7 +65,8 @@ static const cmdBarButton cmdBarButtons[] = {
 
 class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>, 
 	public UCHandler<DirectoryListingFrame>, private SettingsManagerListener, public UserInfoBaseHandler<DirectoryListingFrame>,
-	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener, private Async<DirectoryListingFrame>
+	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener, private Async<DirectoryListingFrame>,
+	private ClientManagerListener
 {
 public:
 	static void openWindow(DirectoryListing* aList, const string& aDir, const string& aXML);
@@ -418,6 +420,11 @@ private:
 	void on(DirectoryListingListener::Filter) noexcept;
 	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
 
+	// ClientManagerListener
+	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
+	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
+	void on(ClientManagerListener::UserUpdated, const UserPtr& aUser) noexcept;
+
 	void filterList();
 	void createRoot();
 	void convertToFull();
@@ -429,7 +436,7 @@ private:
 	void updateSelCombo();
 	User::UserInfoList hubs;
 	bool online;
-	void onComboSelChanged();
+	void onComboSelChanged(bool manual);
 	void showSelCombo(bool show);
 	tstring getComboDesc();
 
