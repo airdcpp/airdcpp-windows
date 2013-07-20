@@ -220,7 +220,6 @@ public:
 	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	void onFind();
-	void setWindowTitle();
 
 	LRESULT OnEraseBackground(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		return 1;
@@ -292,7 +291,14 @@ private:
 	
 	string filter;
 	void updateItems(const DirectoryListing::Directory* d, BOOL enableRedraw);
-	void changeDir(DirectoryListing::Directory* d, BOOL enableRedraw, bool reload = false);
+
+	enum ReloadMode {
+		RELOAD_NONE,
+		RELOAD_DIR,
+		RELOAD_ALL
+	};
+
+	void changeDir(DirectoryListing::Directory* d, BOOL enableRedraw, ReloadMode aReload = RELOAD_NONE);
 	void findSearchHit(bool newDir = false);
 	int searchPos;
 	bool gotoPrev;
@@ -410,6 +416,7 @@ private:
 	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;
 	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
 	void on(DirectoryListingListener::Filter) noexcept;
+	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
 
 	void filterList();
 	void createRoot();
@@ -424,6 +431,7 @@ private:
 	bool online;
 	void onComboSelChanged();
 	void showSelCombo(bool show);
+	tstring getComboDesc();
 
 	tstring nicks;
 	tstring hubNames;

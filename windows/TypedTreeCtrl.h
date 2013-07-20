@@ -192,11 +192,13 @@ public:
 	void updateItemImage(const T* item) { 
 		HTREEITEM ht = findItem(GetRootItem(), item->getPath());
 		if (ht) {
-			//int index = parent->getIconIndex(item);
-			//SetItemImage(ht, index, index);
-			SetItemImage(ht, I_IMAGECALLBACK, I_IMAGECALLBACK);
-			RedrawWindow();
+			updateItemImage(ht);
 		}
+	}
+
+	void updateItemImage(HTREEITEM ht) {
+		SetItemImage(ht, I_IMAGECALLBACK, I_IMAGECALLBACK);
+		RedrawWindow();
 	}
 private:
 	PT* parent;

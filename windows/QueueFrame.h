@@ -65,6 +65,7 @@ public:
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		COMMAND_ID_HANDLER(IDC_SEARCH_BUNDLE, onSearchBundle)
 		COMMAND_ID_HANDLER(IDC_SEARCH_ALTERNATES, onSearchAlternates)
 		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchAlternates)
@@ -86,7 +87,7 @@ public:
 		MESSAGE_HANDLER(BM_SETCHECK, onShowTree)
 	END_MSG_MAP()
 
-
+	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
 	LRESULT onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onSegments(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPM(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -327,6 +328,7 @@ private:
 	int queueItems;
 
 	bool closed;
+	bool statusDirty;
 	
 	static int columnIndexes[COLUMN_LAST];
 	static int columnSizes[COLUMN_LAST];
@@ -380,7 +382,7 @@ private:
 	const string& getDir(HTREEITEM ht) const { dcassert(ht != NULL); return ((DirItemInfo*)(ctrlDirs.GetItemData(ht)))->getDir(); }
 
 	void on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept;
-	void on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool updateStatus) noexcept;
+	void on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool finished) noexcept;
 	void on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) noexcept;
 	void on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept { on(QueueManagerListener::SourcesUpdated(), aQI); }
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;

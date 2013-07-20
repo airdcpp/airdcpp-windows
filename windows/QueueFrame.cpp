@@ -119,6 +119,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	updateStatus();
 
 	WinUtil::SetIcon(m_hWnd, IDI_QUEUE);
+	::SetTimer(m_hWnd, 0, 500, 0);
 
 	bHandled = FALSE;
 	return 1;
@@ -782,10 +783,20 @@ void QueueFrame::removeBundle(const string& aDir, bool isFileBundle) {
 	}
 }
 
-void QueueFrame::on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool updateStatus) {
+LRESULT QueueFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+	if (statusDirty) {
+		updateStatus();
+		statusDirty = false;
+	}
+	return 0;
+}
+
+void QueueFrame::on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool /*finished*/) {
 	speak(REMOVE_ITEM, new StringTask(aQI->getTarget()));
-	if (updateStatus)
-		speak(UPDATE_STATUS_ITEMS, new StringTask(aQI->getTarget()));
+	statusDirty = true;
+
+	//if (updateStatus)
+	//	speak(UPDATE_STATUS_ITEMS, new StringTask(aQI->getTarget()));
 }
 
 void QueueFrame::on(QueueManagerListener::Moved, const QueueItemPtr&, const string& oldTarget) {

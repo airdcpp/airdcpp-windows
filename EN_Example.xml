@@ -1962,4 +1962,6 @@ Do you want to continue?</string>
 	<string name="SharedDupePaths">Dupe paths (share)</string>
 	<string name="UnableConnectUser">Unable to download from this user</string>
 	<string name="RefreshInShare">Refresh in share</string>
+	<string name="BrowseVia">Browse via</string>
+	<string name="ListSizeDiffNote">The share size in hub %1% (%2%) is different than in the current hub %3% (%4%). Do you want to reload the list?</string>
 </recources>

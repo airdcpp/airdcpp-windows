@@ -59,7 +59,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 	}
 	if(aHWND != 0) {
 		if (aList->getPartialList()) {
-			aList->addPartialListTask(aDir, aXML);
+			aList->addPartialListTask(aDir, aXML, false);
 		} else {
 			frame->ctrlStatus.SetText(0, CTSTRING(LOADING_FILE_LIST));
 			aList->addFullListTask(aDir);
@@ -282,7 +282,9 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	
 	memzero(statusSizes, sizeof(statusSizes));
 	statusSizes[STATUS_FILTER] = 150;
-	statusSizes[STATUS_HUB] = 150;
+
+	int desclen = WinUtil::getTextWidth(getComboDesc(), ctrlStatus.m_hWnd);
+	statusSizes[STATUS_HUB] = 150 + desclen;
 
 	ctrlStatus.SetParts(STATUS_LAST, statusSizes);
 
@@ -327,7 +329,6 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
 		MoveWindow(rc, TRUE);
 	
-	setWindowTitle();
 	WinUtil::SetIcon(m_hWnd, dl->getIsOwnList() ? IDI_OWNLIST : IDI_OPEN_LIST);
 	bHandled = FALSE;
 
@@ -686,9 +687,15 @@ void DirectoryListingFrame::updateStatus() {
 		}
 		ctrlStatus.SetText(STATUS_SELECTED_SIZE, tmp.c_str());
 
+		tmp = getComboDesc();
+		ctrlStatus.SetText(STATUS_HUB, tmp.c_str());
 		if(u)
 			UpdateLayout(TRUE);
 	}
+}
+
+tstring DirectoryListingFrame::getComboDesc() {
+	return (dl->getIsOwnList() ? TSTRING(SHARE_PROFILE) : TSTRING(BROWSE_VIA));
 }
 
 void DirectoryListingFrame::DisableWindow(bool redraw){
@@ -807,6 +814,17 @@ LRESULT DirectoryListingFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM
 
 void DirectoryListingFrame::on(DirectoryListingListener::Filter) noexcept {
 	callAsync([this] { filterList(); });
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept {
+	callAsync([=] {
+		HTREEITEM ht = ctrlTree.findItem(treeRoot, aDir);
+		if (ht) {
+			ctrlTree.updateItemImage(ht);
+		}
+
+		updateStatus(Text::toT(aDir) + _T(": ") + TSTRING(TARGET_REMOVED));
+	});
 }
 
 void DirectoryListingFrame::filterList() {
@@ -929,13 +947,13 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 	updateStatus();
 }
 
-void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enableRedraw, bool reload) {
-	if (!reload)
+void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enableRedraw, ReloadMode aReload /*RELOAD_NONE*/) {
+	if (aReload == RELOAD_NONE)
 		updateItems(d, enableRedraw);
 
-	if(!d->isComplete() || reload) {
+	if(!d->isComplete() || aReload != RELOAD_NONE) {
 		if (dl->getIsOwnList()) {
-			dl->addPartialListTask(Util::emptyString, dl->getPath(d));
+			dl->addPartialListTask(Util::emptyString, dl->getPath(d), aReload == RELOAD_ALL);
 		} else if(dl->getUser()->isOnline()) {
 			try {
 				d->setLoading(true);
@@ -1545,11 +1563,11 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::File* f, bool openD
 	}
 }
 
-void DirectoryListingFrame::onReloadPartial(bool /*dirOnly*/) {
+void DirectoryListingFrame::onReloadPartial(bool dirOnly) {
 	HTREEITEM t = ctrlTree.GetSelectedItem();
 	if (t != NULL) {
 		DirectoryListing::Directory* dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		changeDir(dir, TRUE, true);
+		changeDir(dir, TRUE, dirOnly ? RELOAD_DIR : RELOAD_ALL);
 	}
 }
 
@@ -1821,7 +1839,8 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		const long bspace = 10;
 		sr.bottom -= 1;
 
-		sr.left = w[STATUS_HUB - 1] + bspace;
+		int desclen = WinUtil::getTextWidth(getComboDesc(), ctrlStatus.m_hWnd);
+		sr.left = w[STATUS_HUB - 1] + desclen;
 		sr.right = w[STATUS_HUB];
 		selCombo.MoveWindow(sr);
 
@@ -1846,13 +1865,6 @@ void DirectoryListingFrame::clearList() {
 		delete ctrlList.getItemData(i);
 	}
 	ctrlList.DeleteAllItems();
-}
-
-void DirectoryListingFrame::setWindowTitle() {
-	if(error.empty())
-		SetWindowText((Text::toT(dl->getNick(false)) + _T(" - ") + WinUtil::getHubNames(dl->getHintedUser())).c_str());
-	else
-		SetWindowText(error.c_str());		
 }
 
 int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col) {
@@ -2162,7 +2174,6 @@ void DirectoryListingFrame::onComboSelChanged() {
 		dl->setHintedUser(HintedUser(dl->getUser(), hubs[selCombo.GetCurSel()].hubUrl));
 	}
 	//replyTo.hint = hubs[ctrlHubSel.GetCurSel()].first;
-	//ctrlClient.setClient(ClientManager::getInstance()->getClient(replyTo.hint));
 }
 
 void DirectoryListingFrame::updateSelCombo() {
@@ -2186,90 +2197,90 @@ void DirectoryListingFrame::updateSelCombo() {
 			selCombo.SetCurSel(0);
 			onComboSelChanged();
 		}
+	} else {
 
-		return;
-	}
+		const CID& cid = dl->getUser()->getCID();
+		const string& hint = dl->getHubUrl();
 
-	const CID& cid = dl->getUser()->getCID();
-	const string& hint = dl->getHubUrl();
+		dcassert(!hint.empty());
 
-	dcassert(!hint.empty());
-
-	//get the hub and online status
-	auto hubsInfoNew = move(WinUtil::getHubNames(cid));
-	if (!hubsInfoNew.second && !online) {
-		//nothing to update... probably a delayed event
-		return;
-	}
-
-	auto tmp = WinUtil::getHubNames(cid);
-
-	auto oldSel = selCombo.GetStyle() & WS_VISIBLE ? selCombo.GetCurSel() : 0;
-	StringPair oldHubPair;
-	if (!hubs.empty())
-		oldHubPair = { hubs[oldSel].hubName, hubs[oldSel].hubUrl }; // cache the old hub name
-
-	hubs.clear();
-	ClientManager::getInstance()->getUserInfoList(dl->getUser(), hubs);
-	while (selCombo.GetCount()) {
-		selCombo.DeleteString(0);
-	}
-
-	//General things
-	if (hubsInfoNew.second) {
-		//the user is online
-
-		hubNames = WinUtil::getHubNames(dl->getHintedUser());
-		nicks = WinUtil::getNicks(dl->getHintedUser());
-		setDisconnected(false);
-
-		if (!online) {
-			//addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"));
-			//setIcon(userOnline);
-		}
-	}
-	else {
-		setDisconnected(true);
-		//setIcon(userOffline);
-		//addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"));
-		//ctrlClient.setClient(nullptr);
-	}
-
-	//ADC related changes
-	if (hubsInfoNew.second && !dl->getUser()->isNMDC() && !hubs.empty()) {
-		if (!(selCombo.GetStyle() & WS_VISIBLE)) {
-			showSelCombo(true);
+		//get the hub and online status
+		auto hubsInfoNew = move(WinUtil::getHubNames(cid));
+		if (!hubsInfoNew.second && !online) {
+			//nothing to update... probably a delayed event
+			return;
 		}
 
-		for (const auto& hub : hubs) {
-			auto idx = selCombo.AddString(Text::toT((hub.hubName + " (" + Util::formatBytes(hub.shared) + ")")).c_str());
-			if (hub.hubUrl == hint) {
-				selCombo.SetCurSel(idx);
+		auto tmp = WinUtil::getHubNames(cid);
+
+		auto oldSel = selCombo.GetStyle() & WS_VISIBLE ? selCombo.GetCurSel() : 0;
+		StringPair oldHubPair;
+		if (!hubs.empty())
+			oldHubPair = { hubs[oldSel].hubName, hubs[oldSel].hubUrl }; // cache the old hub name
+
+		hubs.clear();
+		ClientManager::getInstance()->getUserInfoList(dl->getUser(), hubs);
+		while (selCombo.GetCount()) {
+			selCombo.DeleteString(0);
+		}
+
+		//General things
+		if (hubsInfoNew.second) {
+			//the user is online
+
+			hubNames = WinUtil::getHubNames(dl->getHintedUser());
+			nicks = WinUtil::getNicks(dl->getHintedUser());
+			setDisconnected(false);
+
+			if (!online) {
+				//addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"));
+				//setIcon(userOnline);
 			}
+		} else {
+			setDisconnected(true);
+			//setIcon(userOffline);
+			//addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"));
+			//ctrlClient.setClient(nullptr);
 		}
 
-		if (selCombo.GetCurSel() == -1) {
-			//the hub was not found
-			selCombo.SetCurSel(0);
-			onComboSelChanged();
-			//if (!online) //the user came online but not in the previous hub
+		//ADC related changes
+		if (hubsInfoNew.second && !dl->getUser()->isNMDC() && !hubs.empty()) {
+			if (!(selCombo.GetStyle() & WS_VISIBLE)) {
+				showSelCombo(true);
+			}
+
+			for (const auto& hub : hubs) {
+				auto idx = selCombo.AddString(Text::toT((hub.hubName + " (" + Util::formatBytes(hub.shared) + ")")).c_str());
+				if (hub.hubUrl == hint) {
+					selCombo.SetCurSel(idx);
+				}
+			}
+
+			if (selCombo.GetCurSel() == -1) {
+				//the hub was not found
+				selCombo.SetCurSel(0);
+				onComboSelChanged();
+				//if (!online) //the user came online but not in the previous hub
 				//addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
-			//else
+				//else
 				//addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)));
+			} else if (!oldHubPair.first.empty() && oldHubPair.first != hint) {
+				//addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
+			}
+			//else if (!ctrlClient.getClient()) {
+			//	changeClient();
+			//}
+		} else {
+			showSelCombo(false);
 		}
-		else if (!oldHubPair.first.empty() && oldHubPair.first != hint) {
-			//addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
-		}
-		//else if (!ctrlClient.getClient()) {
-		//	changeClient();
-		//}
-	}
-	else {
-		showSelCombo(false);
+
+		online = hubsInfoNew.second;
 	}
 
-	online = hubsInfoNew.second;
-	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
+	if (nicks.empty())
+		nicks = Text::toT(dl->getNick(false));
+
+	SetWindowText((nicks + (hubNames.empty() ? Util::emptyStringT : _T(" - ") + hubNames)).c_str());
 }
 
 void DirectoryListingFrame::showSelCombo(bool show) {
