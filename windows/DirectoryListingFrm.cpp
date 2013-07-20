@@ -2186,7 +2186,7 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 					_T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 
 						try {
-							QueueManager::getInstance()->addList(HintedUser(dl->getUser(), newHub.hubUrl), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
+							QueueManager::getInstance()->addList(HintedUser(dl->getUser(), newHub.hubUrl), (dl->getPartialList() ? QueueItem::FLAG_PARTIAL_LIST : 0) | QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
 						}
 						catch (...) { }
 				}

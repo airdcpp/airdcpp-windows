@@ -974,9 +974,12 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 	}
 }
 
-void TransferView::on(DownloadManagerListener::Requesting, const Download* d) noexcept {
+void TransferView::on(DownloadManagerListener::Requesting, const Download* d, bool hubChanged) noexcept {
 	//LogManager::getInstance()->message("Requesting " + d->getToken());
 	UpdateInfo* ui = new UpdateInfo(d->getToken(), true);
+	if (hubChanged)
+		ui->setUser(d->getHintedUser());
+
 	starting(ui, d);
 	
 	ui->setActual(d->getActual());

@@ -272,7 +272,7 @@ private:
 		string bundle;
 		void setUsers(const int16_t aUsers) { users = aUsers; updateMask |= MASK_USERS; }
 		int16_t users;
-		void setUser(const HintedUser aUser) { user = aUser; updateMask |= MASK_USER; }
+		void setUser(const HintedUser& aUser) { user = aUser; updateMask |= MASK_USER; }
 		QueueItemBase::Priority prio;
 		void setPriority(QueueItemBase::Priority aPrio) { prio = aPrio; updateMask |= MASK_PRIORITY; }
 		HintedUser user;
@@ -317,7 +317,7 @@ private:
 	void on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept;
 	void on(ConnectionManagerListener::Forced, const ConnectionQueueItem* aCqi) noexcept;
 
-	void on(DownloadManagerListener::Requesting, const Download* aDownload) noexcept;	
+	void on(DownloadManagerListener::Requesting, const Download* aDownload, bool hubChanged) noexcept;	
 	void on(DownloadManagerListener::Complete, const Download* aDownload, bool isTree) noexcept { 
 		onTransferComplete(aDownload, false, Util::getFileName(aDownload->getPath()), isTree, (aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString));
 	}
