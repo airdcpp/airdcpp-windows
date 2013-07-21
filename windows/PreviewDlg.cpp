@@ -57,7 +57,7 @@ LRESULT PreviewDlg::OnBrowse(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, 
 	GetDlgItemText(IDC_PREVIEW_APPLICATION, buf, MAX_PATH);
 	tstring x = buf;
 
-	if(WinUtil::browseFile(x, m_hWnd, false,  Util::emptyStringT, _T("Programs\0*.exe")) == IDOK) {
+	if (WinUtil::browseFile(x, m_hWnd, false, Util::emptyStringT, Util::emptyStringT, _T("Programs\0*.exe")) == IDOK) {
 		SetDlgItemText(IDC_PREVIEW_APPLICATION, x.c_str());
 	}
 

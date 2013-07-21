@@ -1503,7 +1503,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	const TCHAR types[] = _T("File Lists\0*.DcLst;*.xml.bz2\0All Files\0*.*\0");
 
 	tstring file;
-	if(WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), types)) {
+	if (WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), TSTRING(OPEN_FILE_LIST), types)) {
 		UserPtr u = DirectoryListing::getUserFromFilename(Text::fromT(file));
 		if(u) {
 			DirectoryListingManager::getInstance()->openFileList(HintedUser(u, Util::emptyString), Text::fromT(file));

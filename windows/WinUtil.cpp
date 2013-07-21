@@ -779,7 +779,7 @@ void WinUtil::ShowMessageBox(SettingsManager::BoolSetting i, const tstring& txt)
 	}
 }
 
-bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* = true */, const tstring& initialDir /* = Util::emptyString */, const TCHAR* types /* = NULL */, const TCHAR* defExt /* = NULL */) {
+bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* = true */, const tstring& initialDir /* = Util::emptyString */, const tstring& aTitle /*= Util::emptyStringW*/, const TCHAR* types /* = NULL */, const TCHAR* defExt /* = NULL */) {
 	TCHAR buf[UNC_MAX_PATH];
 	OPENFILENAME ofn = { 0 };       // common dialog box structure
 	target = Text::toT(Util::validateFileName(Text::fromT(target)));
@@ -791,6 +791,9 @@ bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* 
 	ofn.lpstrFilter = types;
 	ofn.lpstrDefExt = defExt;
 	ofn.nFilterIndex = 1;
+	if (!aTitle.empty()) {
+		ofn.lpstrTitle = aTitle.c_str();
+	}
 
 	if(!initialDir.empty()) {
 		ofn.lpstrInitialDir = initialDir.c_str();

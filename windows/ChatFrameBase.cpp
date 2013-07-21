@@ -110,11 +110,15 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	}
 
 	if(SETTING(SHOW_MAGNET)) {
-		bool tmp = (getUser() && (!getUser()->isSet(User::BOT) && !getUser()->isSet(User::NMDC)));
 		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
 		ctrlMagnet.SetIcon(ResourceLoader::loadIcon(IDI_SEND_FILE, 16));
-		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, tmp ? CTSTRING(SEND_FILE_PM) : CTSTRING(SEND_FILE_HUB));
+		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, getSendFileTitle().c_str());
 	}
+}
+
+const tstring& ChatFrameBase::getSendFileTitle() {
+	bool tmp = (getUser() && (!getUser()->isSet(User::BOT) && !getUser()->isSet(User::NMDC)));
+	return tmp ? TSTRING(SEND_FILE_PM) : TSTRING(SEND_FILE_HUB);
 }
 
 LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -404,10 +408,8 @@ LRESULT ChatFrameBase::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		return 0;
 
 	 tstring file;
-	 if(WinUtil::browseFile(file, /*m_hWnd*/ 0, false) == IDOK) {
-		 StringList tmp;
-		 tmp.push_back(Text::fromT(file));
-		 addMagnet(tmp);
+	 if (WinUtil::browseFile(file, /*m_hWnd*/ 0, false, Util::emptyStringT, getSendFileTitle()) == IDOK) {
+		 addMagnet({ Text::fromT(file) });
 	 }
 	 return 0;
  }

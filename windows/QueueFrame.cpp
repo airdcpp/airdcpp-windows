@@ -1064,7 +1064,7 @@ void QueueFrame::moveSelected() {
 		ext2 += _T("*.*\0*.*\0\0");
 
 		tstring path = Text::toT(ii->getPath());
-		if(WinUtil::browseFile(target, m_hWnd, true, path, ext2.c_str(), ext.empty() ? NULL : ext.c_str())) {
+		if (WinUtil::browseFile(target, m_hWnd, true, path, TSTRING(MOVE_RENAME_FILE), ext2.c_str(), ext.empty() ? NULL : ext.c_str())) {
 			StringPairList ret;
 			ret.emplace_back(ii->getTarget(), Text::fromT(target));
 			QueueManager::getInstance()->moveFiles(ret);

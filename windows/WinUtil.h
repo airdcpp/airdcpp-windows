@@ -329,7 +329,7 @@ public:
 
 	static tstring encodeFont(LOGFONT const& font);
 	
-	static bool browseFile(tstring& target, HWND owner = NULL, bool save = true, const tstring& initialDir = Util::emptyStringW, const TCHAR* types = NULL, const TCHAR* defExt = NULL);
+	static bool browseFile(tstring& target, HWND owner = NULL, bool save = true, const tstring& initialDir = Util::emptyStringW, const tstring& aTitle = Util::emptyStringW, const TCHAR* types = NULL, const TCHAR* defExt = NULL);
 	static bool browseDirectory(tstring& target, HWND owner = NULL);
 
 	// Hash related
