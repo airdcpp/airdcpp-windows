@@ -391,7 +391,6 @@ bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPer
 
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		hEmoticonBmp.Destroy();
 		LogManager::getInstance()->removePmCache(replyTo.user);
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);

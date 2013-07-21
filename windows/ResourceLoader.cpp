@@ -269,6 +269,9 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_EXPAND_UP:		return _T("expand_up.ico");
 		case IDI_EXPAND_DOWN:	return _T("expand_down.ico");
 		case IDR_UPDATE:		return _T("Update.ico");
+		case IDR_EMOTICON:		return _T("Emoticon.ico");
+		case IDI_MAGNET:		return _T("Magnet.ico");
+		case IDI_SEND_FILE:		return _T("send_file.ico");
 
 		case IDI_UP:            return _T("BrowserBar\\Up.ico");
 		case IDI_NEXT:			return _T("BrowserBar\\NextResult.ico");

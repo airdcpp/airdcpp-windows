@@ -150,6 +150,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_BACK, onBack)
 
 		COMMAND_ID_HANDLER(IDC_RELOAD, onReloadList)
+		COMMAND_ID_HANDLER(IDC_RELOAD_DIR, onReloadDir)
 		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
 		COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetFullList)
@@ -193,6 +194,7 @@ public:
 	LRESULT onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onReloadList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
+	LRESULT onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
 	void onRefreshShare(bool usingTree);
 	void onScanShare(bool usingTree, bool isSfvCheck);

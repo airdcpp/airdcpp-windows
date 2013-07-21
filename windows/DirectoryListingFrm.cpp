@@ -691,7 +691,7 @@ void DirectoryListingFrame::updateStatus() {
 		}
 		ctrlStatus.SetText(STATUS_SELECTED_SIZE, tmp.c_str());
 
-		tmp = _T("Updated on: ") + Text::toT(Util::formatTime("%c", d ? d->getUpdateDate() : 0));
+		tmp = TSTRING_F(UPDATED_ON_X, Text::toT(Util::formatTime("%c", d ? d->getUpdateDate() : 0)));
 		w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
 		if (statusSizes[STATUS_UPDATED] < w) {
 			statusSizes[STATUS_UPDATED] = w;
@@ -2020,6 +2020,11 @@ LRESULT DirectoryListingFrame::onReloadList(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	} else {
 		convertToFull();
 	}
+	return 0;
+}
+
+LRESULT DirectoryListingFrame::onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
+	onReloadPartial(true);
 	return 0;
 }
 

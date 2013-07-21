@@ -33,7 +33,6 @@ IDB_SPLASH              PNG                     "res\\splash.png"
 
 IDB_STATE               BITMAP                  "res\\state.bmp"
 IDB_FLAGS               BITMAP                  "res\\flags.bmp"
-IDB_EMOTICON            BITMAP                  "res\\emoticon.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -630,6 +629,8 @@ END
 IDR_MAINFRAME           ICON                    "res\\AirDCPlusPlus.ico"
 IDR_UPDATE              ICON                    "res\\Update.ico"
 IDI_MAGNET              ICON                    "res\\magnet.ico"
+IDR_EMOTICON            ICON                    "res\\emoticon.ico"
+IDI_SEND_FILE           ICON                    "res\\send_file.ico"
 #endif    // Czech (Czech Republic) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -1772,12 +1773,6 @@ END
 LANGUAGE LANG_FINNISH, SUBLANG_DEFAULT
 #pragma code_page(1252)
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// PNG
-//
-
-IDR_EMOTICON            PNG                     "res\\emoticon.png"
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -322,6 +322,7 @@
 #define IDI_RELOAD                      519
 #define IDI_HASHING                     520
 #define IDI_LOGDIR						521
+#define IDI_SEND_FILE					522
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999

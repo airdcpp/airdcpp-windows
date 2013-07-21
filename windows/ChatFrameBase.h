@@ -96,7 +96,6 @@ protected:
 	CButton ctrlEmoticons;
 	CButton ctrlMagnet;
 	CButton ctrlResize;
-	ExCImage hEmoticonBmp;
 	CToolTipCtrl ctrlTooltips;
 	bool resizePressed;
 

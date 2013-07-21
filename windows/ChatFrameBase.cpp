@@ -105,15 +105,14 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 
 	if(SETTING(SHOW_EMOTICON)){
 		ctrlEmoticons.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_BITMAP | BS_CENTER, 0, IDC_EMOT);
-		hEmoticonBmp.LoadFromResource(IDR_EMOTICON, _T("PNG"), _Module.get_m_hInst());
-		ctrlEmoticons.SetBitmap(hEmoticonBmp);
+		ctrlEmoticons.SetIcon(ResourceLoader::loadIcon(IDR_EMOTICON, 16));
 		ctrlTooltips.AddTool(ctrlEmoticons.m_hWnd, CTSTRING(INSERT_EMOTICON));
 	}
 
 	if(SETTING(SHOW_MAGNET)) {
 		bool tmp = (getUser() && (!getUser()->isSet(User::BOT) && !getUser()->isSet(User::NMDC)));
 		ctrlMagnet.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_BMAGNET);
-		ctrlMagnet.SetIcon(ResourceLoader::loadIcon(IDI_MAGNET, 20));
+		ctrlMagnet.SetIcon(ResourceLoader::loadIcon(IDI_SEND_FILE, 16));
 		ctrlTooltips.AddTool(ctrlMagnet.m_hWnd, tmp ? CTSTRING(SEND_FILE_PM) : CTSTRING(SEND_FILE_HUB));
 	}
 }

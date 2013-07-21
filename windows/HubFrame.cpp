@@ -843,7 +843,6 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 				r->setShared(Util::toString(client->getAvailable()));
 				FavoriteManager::getInstance()->updateRecent(r);
 			}
-			DeleteObject(hEmoticonBmp);
 			DestroyIcon(HubOpIcon);
 			DestroyIcon(HubRegIcon);
 			DestroyIcon(HubIcon);
