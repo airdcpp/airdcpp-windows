@@ -571,7 +571,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		//no further validation, trust that the other client knows what he's sending... unless we are using excludes
 		if (usingExcludes) {
 			RLock l (cs);
-			if (curSearch && curSearch->isExcluded(aResult->getFile())) {
+			if (curSearch && curSearch->isExcluded(aResult->getPath())) {
 				callAsync([this] { onResultFiltered(); });
 				return;
 			}
@@ -584,11 +584,11 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 
 		bool valid = true;
 		if (aResult->getType() == SearchResult::TYPE_DIRECTORY) {
-			if (!curSearch->matchesDirectory(aResult->getFile())) {
+			if (!curSearch->matchesDirectory(aResult->getPath())) {
 				valid = false;
 			}
 		} else {
-			if (!(curSearch->hasRoot ? curSearch->root == aResult->getTTH() : curSearch->matchesFileLower(Text::toLower(aResult->getFile()), aResult->getSize(), aResult->getDate()))) {
+			if (!(curSearch->hasRoot ? curSearch->root == aResult->getTTH() : curSearch->matchesFileLower(Text::toLower(aResult->getPath()), aResult->getSize(), aResult->getDate()))) {
 				valid = false;
 			}
 		}
@@ -642,9 +642,9 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 	//check the dupe
 	if(SETTING(DUPE_SEARCH)) {
 		if (sr->getType() == SearchResult::TYPE_DIRECTORY)
-			dupe = AirUtil::checkDirDupe(sr->getFile(), sr->getSize());
+			dupe = AirUtil::checkDirDupe(sr->getPath(), sr->getSize());
 		else
-			dupe = SettingsManager::lanMode ? AirUtil::checkFileDupe(sr->getFile(), sr->getSize()) : AirUtil::checkFileDupe(sr->getTTH(), sr->getFileName());
+			dupe = SettingsManager::lanMode ? AirUtil::checkFileDupe(sr->getPath(), sr->getSize()) : AirUtil::checkFileDupe(sr->getTTH(), sr->getFileName());
 	}
 
 	//get the ip info
@@ -662,7 +662,7 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 
 
 int SearchFrame::SearchInfo::getImageIndex() const {
-	return sr->getType() == SearchResult::TYPE_FILE ? ResourceLoader::getIconIndex(Text::toT(sr->getFile())) : ResourceLoader::DIR_NORMAL;
+	return sr->getType() == SearchResult::TYPE_FILE ? ResourceLoader::getIconIndex(Text::toT(sr->getPath())) : ResourceLoader::DIR_NORMAL;
 }
 
 int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo* b, uint8_t col) {
@@ -710,7 +710,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 	switch(col) {
 		case COLUMN_FILENAME:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
-	    		return Text::toT(Util::getFileName(sr->getFile()));    
+				return Text::toT(Util::getFileName(sr->getPath()));
 			} else {
 				return Text::toT(sr->getFileName());
 			}
@@ -743,9 +743,9 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			}				
 		case COLUMN_PATH:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
-				return Text::toT(Util::getFilePath(sr->getFile()));
+				return Text::toT(Util::getFilePath(sr->getPath()));
 			} else {
-				return Text::toT(sr->getFile());
+				return Text::toT(sr->getPath());
 			}
 		case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
 		case COLUMN_CONNECTION:
@@ -834,15 +834,15 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 		auto download = [&](const SearchResultPtr& aSR) {
 			if (fileDownload) {
 				if (!path) {
-					path = target[target.length() - 1] == '\\' ? aTarget + si->sr->getFileName() : aTarget;
+					path = aTarget.back() == '\\' ? aTarget + si->sr->getFileName() : aTarget;
 				}
 				WinUtil::addFileDownload(*path, aSR->getSize(), aSR->getTTH(), aSR->getUser(), aSR->getDate(), 0, p);
 			} else {
 				if (!path) {
 					//only pick the last dir, different paths are always needed
-					path = Util::getLastDir(aSR->getFilePath());
+					path = aSR->getFileName();
 				}
-				DirectoryListingManager::getInstance()->addDirectoryDownload(Util::getParentDir(aSR->getFilePath()) + *path + "\\", aSR->getUser(), aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, p);
+				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), aSR->getUser(), aTarget + *path + PATH_SEPARATOR, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, p);
 			}
 		};
 
@@ -891,7 +891,7 @@ void SearchFrame::handleMatchPartial() {
 void SearchFrame::handleSearchDir() {
 	if(ctrlResults.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.getSelectedItem();
-		WinUtil::searchAny(Text::toT(Util::getReleaseDir(si->sr->getFile(), true)));
+		WinUtil::searchAny(Text::toT(Util::getReleaseDir(si->sr->getPath(), true)));
 	}
 }
 
@@ -901,7 +901,7 @@ void SearchFrame::handleOpenFolder() {
 		try {
 			tstring path;
 			if(si->sr->getType() == SearchResult::TYPE_DIRECTORY) {
-				path = Text::toT(AirUtil::getDirDupePath(si->getDupe(), si->sr->getFile()));
+				path = Text::toT(AirUtil::getDirDupePath(si->getDupe(), si->sr->getPath()));
 			} else {
 				path = Text::toT(AirUtil::getDupePath(si->getDupe(), si->sr->getTTH()));
 			}
@@ -934,10 +934,10 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 	} 
 
 	if (firstPath) {
-		path = si->sr->getFile();
+		path = si->sr->getPath();
 		firstPath = false;
 	} else if (path) {
-		if (path != si->sr->getFile()) {
+		if (path != si->sr->getPath()) {
 			path.reset();
 		}
 	}
@@ -1255,13 +1255,13 @@ void SearchFrame::runUserCommand(UserCommand& uc) {
 		}
 
 
-		ucParams["fileFN"] = [sr] { return sr->getFile(); };
+		ucParams["fileFN"] = [sr] { return sr->getPath(); };
 		ucParams["fileSI"] = [sr] { return Util::toString(sr->getSize()); };
 		ucParams["fileSIshort"] = [sr] { return Util::formatBytes(sr->getSize()); };
 		if(sr->getType() == SearchResult::TYPE_FILE) {
 			ucParams["fileTR"] = [sr] { return sr->getTTH().toBase32(); };
 		}
-		ucParams["fileMN"] = [sr] { return WinUtil::makeMagnet(sr->getTTH(), sr->getFile(), sr->getSize()); };
+		ucParams["fileMN"] = [sr] { return WinUtil::makeMagnet(sr->getTTH(), sr->getPath(), sr->getSize()); };
 
 		// compatibility with 0.674 and earlier
 		ucParams["file"] = ucParams["fileFN"];
@@ -1340,12 +1340,12 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 	if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
 		SearchInfoList::ParentPair* pp = ctrlResults.findParentPair(sr->getTTH());
 		if(pp) {
-			if((sr->getUser() == pp->parent->getUser()) && (sr->getFile() == pp->parent->sr->getFile())) {	 	
+			if ((sr->getUser() == pp->parent->getUser()) && (sr->getPath() == pp->parent->sr->getPath())) {
 				delete si;
 				return;	 	
 			} 	
 			for(auto c: pp->children){	 	
-				if((sr->getUser() == c->getUser()) && (sr->getFile() == c->sr->getFile())) {	 	
+				if ((sr->getUser() == c->getUser()) && (sr->getPath() == c->sr->getPath())) {
 					delete si;
 					return;	 	
 				} 	
@@ -1355,7 +1355,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		for(auto p: ctrlResults.getParents() | map_values) {
 			SearchInfo* si2 = p.parent;
 			const SearchResultPtr& sr2 = si2->sr;
-			if((sr->getUser() == sr2->getUser()) && (sr->getFile() == sr2->getFile())) {
+			if ((sr->getUser() == sr2->getUser()) && (sr->getPath() == sr2->getPath())) {
 				delete si;	 	
 				return;	 	
 			}
@@ -1502,7 +1502,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			WinUtil::appendSearchMenu(resultsMenu, [=](const WebShortcut* ws) {
 				performAction([=](const SearchInfo* ii) { 
-					WinUtil::searchSite(ws, ii->sr->getFile()); 
+					WinUtil::searchSite(ws, ii->sr->getPath());
 				}, true);
 			});
 
@@ -1652,17 +1652,13 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 					}
 					break;
 				case IDC_COPY_DIR:
-					sCopy += Text::toT(Util::getReleaseDir(sr->getFile(), true));
+					sCopy += Text::toT(Util::getReleaseDir(sr->getPath(), true));
 					break;
 				case IDC_COPY_SIZE:
 					sCopy += Util::formatBytesW(sr->getSize());
 					break;
 				case IDC_COPY_PATH:
-					if(sr->getType() == SearchResult::TYPE_FILE) {
-						sCopy += ((Util::getFilePath(Text::toT(sr->getFile()))) + (Util::getFileName(Text::toT(sr->getFile()))));
-					} else {
-						sCopy += Text::toT(sr->getFile());
-					}
+					sCopy += Text::toT(sr->getPath());
 					break;
 				case IDC_COPY_LINK:
 					if(sr->getType() == SearchResult::TYPE_FILE) {
