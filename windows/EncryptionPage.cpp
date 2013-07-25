@@ -97,6 +97,8 @@ void EncryptionPage::fixControls() {
 	::EnableWindow(GetDlgItem(IDC_GENERATE_CERTS),			manualPaths);
 	::EnableWindow(GetDlgItem(IDC_TLS_CERTIFICATE_FILE),	manualPaths);
 	::EnableWindow(GetDlgItem(IDC_TLS_PRIVATE_KEY_FILE),	manualPaths);
+	::EnableWindow(GetDlgItem(IDC_BROWSE_PRIVATE_KEY),		manualPaths);
+	::EnableWindow(GetDlgItem(IDC_BROWSE_CERTIFICATE),		manualPaths);
 }
 
 LRESULT EncryptionPage::onBrowseCertificate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
