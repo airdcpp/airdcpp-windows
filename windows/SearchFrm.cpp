@@ -840,7 +840,7 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 			} else {
 				if (!path) {
 					//only pick the last dir, different paths are always needed
-					path = aSR->getFileName();
+					path = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getLastDir(aSR->getFilePath());
 				}
 				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), aSR->getUser(), aTarget + *path + PATH_SEPARATOR, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, p);
 			}
