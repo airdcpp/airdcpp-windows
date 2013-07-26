@@ -3,16 +3,20 @@
 Added:
 
 - Allow changing the default share profile
+- Display the via which the file list is browsed through and allow changing it
+- Allow changing the share profile in own list
 - Add an option to refresh the share after client startup (enabled by default)
 - Ddd an option to store the unfinished files in the final destination directory (enabled by default)
 - Add a setting for maximum running bundles
 - Append directory dupe directories in the "Download to" menu
 - Detect Windows 8.1 and 2012 R2
+- Implement "Find and view NFO" for own list
 
 Changed:
 
 - Enable monitoring for all shared folders by default, disable scheduled refresh
-- Make a few hardcoded icons customizable
+- Make various hardcoded icons customizable by the themes
+- Don't remove slow sources from files that have no other sources
 
 Fixed:
 
@@ -24,6 +28,9 @@ Fixed:
 - Fix download connection not being changed to idle state with non-MCN transfers
 - Fix dragging of new folders in share
 - Perform the check for free space also when adding items in download by doubleclicking
+- Preserve the case size when downloading grouped directories
+- Fix a bug in the share profile permission check for uploads
+- Connectivity mode detection fixes
 
 
 2.50

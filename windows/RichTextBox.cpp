@@ -1205,7 +1205,7 @@ HintedUser RichTextBox::getMagnetSource() {
 		}
 	}
 
-	if (u)
+	if (u && client)
 		return HintedUser(u, client->getHubUrl());
 
 	return HintedUser();
