@@ -11,12 +11,14 @@ Added:
 - Append directory dupe directories in the "Download to" menu
 - Detect Windows 8.1 and 2012 R2
 - Implement "Find and view NFO" for own list
+- Report duplicate files when generating file lists
 
 Changed:
 
 - Enable monitoring for all shared folders by default, disable scheduled refresh
 - Make various hardcoded icons customizable by the themes
 - Don't remove slow sources from files that have no other sources
+- Speed up the directory dupe check for subdirectories
 
 Fixed:
 
@@ -31,6 +33,8 @@ Fixed:
 - Preserve the case size when downloading grouped directories
 - Fix a bug in the share profile permission check for uploads
 - Connectivity mode detection fixes
+- Fix a crash when trying to download magnet links from offline users
+- Fix the check for duplicate directory names when scanning the share for missing/extra files
 
 
 2.50

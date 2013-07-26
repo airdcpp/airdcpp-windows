@@ -201,13 +201,13 @@ public:
 
 	void onCopyDir();
 	void onOpen();
-	void onOpenDupeDir();
+	void onOpenDupeDir(bool usingTree);
 	void onViewAsText();
 	void onViewNFO();
 	void onGoToDirectory();
 
-	void onSearch();
-	void onSearchDir();
+	void onSearchFile();
+	void onSearchDir(bool usingTree);
 	void onSearchByTTH();
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);

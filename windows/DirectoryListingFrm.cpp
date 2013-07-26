@@ -1241,11 +1241,11 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			fileMenu.appendSeparator();
 		
 		if (ctrlList.GetSelectedCount() == 1 && (dl->getIsOwnList() || (ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() != DUPE_NONE))) {
-			fileMenu.appendItem(TSTRING(OPEN_FOLDER), [this] { onOpenDupeDir(); });
+			fileMenu.appendItem(TSTRING(OPEN_FOLDER), [this] { onOpenDupeDir(false); });
 			fileMenu.appendSeparator();
 		} else if(ctrlList.GetSelectedCount() == 1 && !dl->getIsOwnList() && ii->type == ItemInfo::FILE && (ii->file->getDupe() == SHARE_DUPE || ii->file->getDupe() == FINISHED_DUPE)) {
 			fileMenu.appendItem(TSTRING(OPEN), [this] { onOpen(); });
-			fileMenu.appendItem(TSTRING(OPEN_FOLDER), [this] { onOpenDupeDir(); });
+			fileMenu.appendItem(TSTRING(OPEN_FOLDER), [this] { onOpenDupeDir(false); });
 			fileMenu.appendSeparator();
 		} else if (hasFiles) {
 			fileMenu.appendItem(TSTRING(OPEN), [this] { onOpen(); });
@@ -1268,9 +1268,9 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		if (ctrlList.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE)
 			fileMenu.appendItem(TSTRING(SEARCH_TTH), [this] { onSearchByTTH(); });
 
-		fileMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { onSearchDir(); });
+		fileMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { onSearchDir(false); });
 		if (hasFiles)
-			fileMenu.appendItem(TSTRING(SEARCH), [this] { onSearch(); });
+			fileMenu.appendItem(TSTRING(SEARCH), [this] { onSearchFile(); });
 
 		fileMenu.appendSeparator();
 
@@ -1336,14 +1336,16 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		OMenu directoryMenu;
 		directoryMenu.CreatePopupMenu();
 
-		appendDownloadMenu(directoryMenu, DownloadBaseHandler::TYPE_SECONDARY, false, nullptr, dir->getPath());
-		directoryMenu.appendSeparator();
+		if (!dl->getIsOwnList()) {
+			appendDownloadMenu(directoryMenu, DownloadBaseHandler::TYPE_SECONDARY, false, nullptr, dir->getPath());
+			directoryMenu.appendSeparator();
+		}
 
 		WinUtil::appendSearchMenu(directoryMenu, curPath);
 		directoryMenu.appendSeparator();
 
 		directoryMenu.appendItem(TSTRING(COPY_DIRECTORY), [=] { onCopyDir(); });
-		directoryMenu.appendItem(TSTRING(SEARCH), [=] { if (dir) WinUtil::searchAny(Text::toT(dir->getName())); });
+		directoryMenu.appendItem(TSTRING(SEARCH), [=] { onSearchDir(true); });
 		if (dl->getPartialList()) {
 			directoryMenu.appendSeparator();
 			directoryMenu.appendItem(TSTRING(RELOAD), [=] { onReloadPartial(true); });
@@ -1352,6 +1354,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		if (dl->getIsOwnList() || (dir && dir->getDupe() != DUPE_NONE)) {
 			directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { onRefreshShare(true); });
 			directoryMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { onScanShare(true, false); });
+			directoryMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { onOpenDupeDir(true); });
 		}
 
 		// Strange, windows doesn't change the selection on right-click... (!)
@@ -1429,14 +1432,20 @@ void DirectoryListingFrame::onSearchByTTH() {
 	return;
 }
 
-void DirectoryListingFrame::onSearchDir() {
-	const ItemInfo* ii = ctrlList.getSelectedItem();
+void DirectoryListingFrame::onSearchDir(bool usingTree) {
 	tstring dir;
-	if (ii->type == ItemInfo::FILE) {
-		dir = Text::toT(Util::getReleaseDir(ii->file->getPath(), true));
-	}
-	else if (ii->type == ItemInfo::DIRECTORY){
-		dir = ii->getText(COLUMN_FILENAME);
+	if (usingTree) {
+		HTREEITEM t = ctrlTree.GetSelectedItem();
+		if (t != NULL) {
+			dir = Text::toT(((DirectoryListing::Directory*)ctrlTree.GetItemData(t))->getName());
+		}
+	} else {
+		const ItemInfo* ii = ctrlList.getSelectedItem();
+		if (ii->type == ItemInfo::FILE) {
+			dir = Text::toT(Util::getReleaseDir(ii->file->getPath(), true));
+		} else {
+			dir = ii->getText(COLUMN_FILENAME);
+		}
 	}
 
 	WinUtil::searchAny(dir);
@@ -1519,12 +1528,20 @@ void DirectoryListingFrame::onOpen() {
 	}
 }
 
-void DirectoryListingFrame::onOpenDupeDir() {
-	const ItemInfo* ii = ctrlList.getSelectedItem();
-	if (ii->type == ItemInfo::FILE)
-		openDupe(ii->file->getParent());
-	else
-		openDupe(ii->dir);
+void DirectoryListingFrame::onOpenDupeDir(bool usingTree) {
+	if (usingTree) {
+		HTREEITEM t = ctrlTree.GetSelectedItem();
+		if (t != NULL) {
+			openDupe((DirectoryListing::Directory*)ctrlTree.GetItemData(t));
+		}
+	} else {
+		const ItemInfo* ii = ctrlList.getSelectedItem();
+		if (ii->type == ItemInfo::FILE) {
+			openDupe(ii->file->getParent());
+		} else {
+			openDupe(ii->dir);
+		}
+	}
 }
 
 void DirectoryListingFrame::openDupe(const DirectoryListing::Directory* d) {
@@ -1586,7 +1603,7 @@ void DirectoryListingFrame::onReloadPartial(bool dirOnly) {
 	}
 }
 
-void DirectoryListingFrame::onSearch() {
+void DirectoryListingFrame::onSearchFile() {
 
 	tstring searchTerm;
 	if (ctrlList.GetSelectedCount() == 1) {
