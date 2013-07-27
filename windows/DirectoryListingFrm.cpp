@@ -699,7 +699,12 @@ void DirectoryListingFrame::updateStatus() {
 		}
 		ctrlStatus.SetText(STATUS_UPDATED, tmp.c_str());
 
-		tmp = getComboDesc();
+		if (selCombo.GetStyle() & WS_VISIBLE) {
+			tmp = getComboDesc();
+		} else {
+			tmp = TSTRING(USER_OFFLINE);
+		}
+
 		ctrlStatus.SetText(STATUS_HUB, tmp.c_str());
 		if(u)
 			UpdateLayout(TRUE);
@@ -1871,10 +1876,14 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		const long bspace = 10;
 		sr.bottom -= 1;
 
-		int desclen = WinUtil::getTextWidth(getComboDesc(), ctrlStatus.m_hWnd);
-		sr.left = w[STATUS_HUB - 1] + desclen;
-		sr.right = w[STATUS_HUB];
-		selCombo.MoveWindow(sr);
+		if (selCombo.GetStyle() & WS_VISIBLE) {
+			int desclen = WinUtil::getTextWidth(getComboDesc(), ctrlStatus.m_hWnd);
+			sr.left = w[STATUS_HUB - 1] + desclen;
+			sr.right = w[STATUS_HUB];
+			selCombo.MoveWindow(sr);
+		} else {
+
+		}
 
 		sr.left = w[STATUS_FILTER - 1] + bspace;
 		sr.right = w[STATUS_FILTER];
@@ -2295,7 +2304,6 @@ void DirectoryListingFrame::updateSelCombo() {
 			setDisconnected(true);
 			//setIcon(userOffline);
 			//addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"));
-			//ctrlClient.setClient(nullptr);
 		}
 
 		//ADC related changes
@@ -2342,7 +2350,8 @@ void DirectoryListingFrame::showSelCombo(bool show) {
 	selCombo.ShowWindow(show);
 	selCombo.EnableWindow(show);
 
-	UpdateLayout();
+	updateStatus();
+	//UpdateLayout();
 }
 
 LRESULT DirectoryListingFrame::onComboSelChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
