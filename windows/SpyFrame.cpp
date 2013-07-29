@@ -169,7 +169,7 @@ LRESULT SpyFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /
 		delete x;
 
 		ctrlStatus.SetText(2, (TSTRING(TOTAL) + _T(" ") + Util::toStringW(total)).c_str());
-		ctrlStatus.SetText(4, (TSTRING(HITS) + _T(" ") + Util::toStringW(ShareManager::getInstance()->getHits())).c_str());
+		ctrlStatus.SetText(4, (TSTRING(HIT_COUNT) + _T(": ") + Util::toStringW(ShareManager::getInstance()->getHits())).c_str());
 		double ratio = total > 0 ? ((double)ShareManager::getInstance()->getHits()) / (double)total : 0.0;
 		ctrlStatus.SetText(5, (TSTRING(HIT_RATIO) + _T(" ") + Util::toStringW(ratio)).c_str());
 	} else if(wParam == TICK_AVG) {

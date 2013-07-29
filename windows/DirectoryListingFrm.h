@@ -285,6 +285,7 @@ public:
 	void expandDir(DirectoryListing::Directory* d, bool /*collapsing*/);
 	bool isBold(const DirectoryListing::Directory* d) const;
 private:
+	void updateHistoryCombo();
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
 	void openDupe(const DirectoryListing::Directory* d);
 	void openDupe(const DirectoryListing::File* f, bool openDir);
@@ -314,6 +315,7 @@ private:
 		CHANGE_TREE_DOUBLE,
 		CHANGE_TREE_EXPAND,
 		CHANGE_TREE_COLLAPSE,
+		CHANGE_HISTORY,
 	};
 
 	ChangeType changeType;

@@ -72,9 +72,9 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 
 DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	pathContainer(WC_COMBOBOX, this, PATH_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
-		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(0),
+		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(1),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP)
+		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), history({ aList->getPath(aList->getRoot()) })
 {
 	dl->addListener(this);
 }
@@ -337,7 +337,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	if (!dl->getIsOwnList())
 		ClientManager::getInstance()->addListener(this);
 
-	callAsync([this] { updateSelCombo(); });
+	callAsync([this] { updateHistoryCombo(); updateSelCombo(); });
 	return 1;
 }
 void DirectoryListingFrame::addarrowBarButtons() {
@@ -486,6 +486,14 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 		ctrlTree.DeleteAllItems();
 		ctrlList.DeleteAllItems();
 		createRoot();
+
+		if (dl->getIsOwnList()) {
+			history.clear();
+			historyIndex = 1;
+
+			while (ctrlPath.GetCount())
+				ctrlPath.DeleteString(0);
+		}
 	}
 
 	bool initialChange = !ctrlTree.hasChildren(treeRoot);
@@ -776,18 +784,24 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 		DirectoryListing::Directory* d = (DirectoryListing::Directory*)p->itemNew.lParam;
 		//check if we really selected a new item.
 		if(curPath != dl->getPath(d)) {
-			addHistory(dl->getPath(d));
-			ctrlPath.ResetContent();
-			for(auto& i: history) {
-				ctrlPath.AddString(i.empty() ? _T("\\") : Text::toT(i).c_str());
-			}
-			ctrlPath.SetCurSel(historyIndex - 1);
+			if (changeType != CHANGE_HISTORY)
+				addHistory(dl->getPath(d));
+
+			updateHistoryCombo();
 		}
 
 		curPath = dl->getPath(d);
 		changeDir(d, TRUE);
 	}
 	return 0;
+}
+
+void DirectoryListingFrame::updateHistoryCombo() {
+	ctrlPath.ResetContent();
+	for (auto& i : history) {
+		ctrlPath.AddString(Text::toT(Util::toAdcFile(i)).c_str());
+	}
+	ctrlPath.SetCurSel(historyIndex - 1);
 }
 
 LRESULT DirectoryListingFrame::onClickTree(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {
@@ -930,32 +944,55 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 	updating = true;
 	clearList();
 
+	int curPos = 0;
+	int selectedPos = -1;
+	optional<string> selectedName;
+	if (changeType == CHANGE_HISTORY) {
+		if (historyIndex < history.size() && (!d->getParent() || Util::getParentDir(history[historyIndex]) == d->getPath())) {
+			selectedName = Util::getLastDir(history[historyIndex]);
+		}
+
+		changeType = CHANGE_LIST; //reset
+	}
+
 	if (!filter.empty()) {
 		boost::regex reg(filter, boost::regex_constants::icase);
 
-		for(auto d: d->directories) {
+		for (const auto d : d->directories) {
 			string s = d->getName();
 			if(boost::regex_search(s.begin(), s.end(), reg)) {
-				ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), getIconIndex(d));
+				if (selectedName && compare(*selectedName, s) == 0) {
+					selectedPos = curPos;
+				}
+
+				ctrlList.insertItem(curPos++, new ItemInfo(d), getIconIndex(d));
 			}
 		}
 
-		for(auto f: d->files) {
+		for (const auto f : d->files) {
 			string s = f->getName();
 			if(boost::regex_search(s.begin(), s.end(), reg)) {
 				ItemInfo* ii = new ItemInfo(f);
-				ctrlList.insertItem(ctrlList.GetItemCount(), ii, ResourceLoader::getIconIndex(ii->getText(COLUMN_FILENAME)));
+				ctrlList.insertItem(curPos++, ii, ResourceLoader::getIconIndex(ii->getText(COLUMN_FILENAME)));
 			}
 		}
 	} else {
-		for(auto d: d->directories) {
-			ctrlList.insertItem(ctrlList.GetItemCount(), new ItemInfo(d), getIconIndex(d));
+		for(const auto d: d->directories) {
+			if (selectedName && compare(*selectedName, d->getName()) == 0) {
+				selectedPos = curPos;
+			}
+
+			ctrlList.insertItem(curPos++, new ItemInfo(d), getIconIndex(d));
 		}
 
-		for(auto f: d->files) {
+		for (const auto f : d->files) {
 			ItemInfo* ii = new ItemInfo(f);
-			ctrlList.insertItem(ctrlList.GetItemCount(), ii, ResourceLoader::getIconIndex(ii->getText(COLUMN_FILENAME)));
+			ctrlList.insertItem(curPos++, ii, ResourceLoader::getIconIndex(ii->getText(COLUMN_FILENAME)));
 		}
+	}
+
+	if (selectedPos != -1) {
+		ctrlList.SelectItem(selectedPos);
 	}
 
 	ctrlList.resort();
@@ -967,6 +1004,7 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 void DirectoryListingFrame::changeDir(DirectoryListing::Directory* d, BOOL enableRedraw, ReloadMode aReload /*RELOAD_NONE*/) {
 	if (aReload == RELOAD_NONE)
 		updateItems(d, enableRedraw);
+
 
 	if(!d->isComplete() || aReload != RELOAD_NONE) {
 		if (dl->getIsOwnList()) {
@@ -998,21 +1036,25 @@ void DirectoryListingFrame::up() {
 
 void DirectoryListingFrame::back() {
 	if(history.size() > 1 && historyIndex > 1) {
-		size_t n = min(historyIndex, history.size()) - 1;
-		deque<string> tmp = history;
-		selectItem(Text::toT(history[n - 1]));
-		historyIndex = n;
-		history = tmp;
+		changeType = CHANGE_HISTORY;
+		historyIndex--;
+		//size_t n = min(historyIndex, history.size()) - 1;
+		//deque<string> tmp = history;
+		selectItem(Text::toT(history[historyIndex-1]));
+		//historyIndex = n;
+		//history = tmp;
 	}
 }
 
 void DirectoryListingFrame::forward() {
 	if(history.size() > 1 && historyIndex < history.size()) {
-		size_t n = min(historyIndex, history.size() - 1);
-		deque<string> tmp = history;
-		selectItem(Text::toT(history[n]));
-		historyIndex = n + 1;
-		history = tmp;
+		changeType = CHANGE_HISTORY;
+		historyIndex++;
+		//size_t n = min(historyIndex, history.size() - 1);
+		//deque<string> tmp = history;
+		selectItem(Text::toT(history[historyIndex-1]));
+		//historyIndex = n + 1;
+		//history = tmp;
 	}
 }
 
@@ -1375,32 +1417,24 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 }
 
 void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItemBase::Priority prio, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
+	auto downloadDir = [&](const DirectoryListing::Directory* d) {
+		DirectoryListingManager::getInstance()->addDirectoryDownload(d->getPath(), d->getName(), dl->getHintedUser(), aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, WinUtil::isShift() ? QueueItem::HIGHEST : prio, false);
+	};
+
 	if (usingTree) {
 		HTREEITEM t = ctrlTree.GetSelectedItem();
 		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(t);
-		try {
-			dl->addDirDownloadTask(dir, aTarget, aTargetType, isSizeUnknown, WinUtil::isShift() ? QueueItem::HIGHEST : prio);
-		}
-		catch (const Exception& e) {
-			ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
-		}
+		downloadDir(dir);
 	}
 	else if (ctrlList.GetSelectedCount() >= 1) {
 		int i = -1;
 		while ((i = ctrlList.GetNextItem(i, LVNI_SELECTED)) != -1) {
 			const ItemInfo* ii = ctrlList.getItemData(i);
-
-			try {
-				if (ii->type == ItemInfo::FILE) {
-					WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
-						0, WinUtil::isShift() ? QueueItem::HIGHEST : prio);
-				}
-				else {
-					dl->addDirDownloadTask(ii->dir, aTarget, aTargetType, isSizeUnknown, WinUtil::isShift() ? QueueItem::HIGHEST : prio);
-				}
-			}
-			catch (const Exception& e) {
-				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+			if (ii->type == ItemInfo::FILE) {
+				WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
+					0, WinUtil::isShift() ? QueueItem::HIGHEST : prio);
+			} else {
+				downloadDir(ii->dir);
 			}
 		}
 	}

@@ -1965,10 +1965,11 @@ void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListin
 	callAsync([=] { DirectoryListingFrame::openWindow(aList, aDir, aXML); });
 }
 
-void MainFrame::on(DirectoryListingManagerListener::PromptAction, const string& aName, const string& aMessage) noexcept {
+void MainFrame::on(DirectoryListingManagerListener::PromptAction, completionF aF, const string& aMessage) noexcept {
 	bool accept = !SETTING(FREE_SPACE_WARN) || ::MessageBox(m_hWnd, Text::toT(aMessage).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
 	//bool accept = WinUtil::MessageBoxConfirm(SettingsManager::FREE_SPACE_WARN, Text::toT(aMessage));
-	DirectoryListingManager::getInstance()->handleSizeConfirmation(aName, accept);
+	//DirectoryListingManager::getInstance()->handleSizeConfirmation(aName, accept);
+	aF(accept);
 }
 
 LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {

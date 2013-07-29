@@ -478,7 +478,7 @@ private:
 
 	// DirectoryListingManagerListener
 	void on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir, const string& aXML) noexcept;
-	void on(DirectoryListingManagerListener::PromptAction, const string& aName, const string& aMessage) noexcept;
+	void on(DirectoryListingManagerListener::PromptAction, completionF aF, const string& aMessage) noexcept;
 
 	void onUpdateAvailable(const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept;
 	void onBadVersion(const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;

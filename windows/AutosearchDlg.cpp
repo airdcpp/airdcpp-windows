@@ -259,7 +259,7 @@ LRESULT AutoSearchDlg::onClickLocation(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 	targetMenu.CreatePopupMenu();
 	targetMenu.InsertSeparatorFirst(CTSTRING(DOWNLOAD_TO));
 	//appendDownloadMenu(targetMenu, false, true);
-	appendDownloadTo(targetMenu, false, false, nullptr, nullptr);
+	appendDownloadTo(targetMenu, false, true, nullptr, nullptr);
 
 	targetMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 	return 0;
