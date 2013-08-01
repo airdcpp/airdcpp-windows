@@ -2398,12 +2398,12 @@ LRESULT DirectoryListingFrame::onComboSelChanged(WORD /*wNotifyCode*/, WORD /*wI
 	return 0;
 }
 
-void DirectoryListingFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept {
+void DirectoryListingFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool /*wasOffline*/) noexcept {
 	if (aUser.getUser() == dl->getUser())
 		callAsync([this] { updateSelCombo(); });
 }
 
-void DirectoryListingFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept {
+void DirectoryListingFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool /*wentOffline*/) noexcept {
 	if (aUser == dl->getUser())
 		callAsync([this] { updateSelCombo(); });
 }

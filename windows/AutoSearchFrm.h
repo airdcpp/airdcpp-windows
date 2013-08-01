@@ -28,10 +28,12 @@
 #include "ExListViewCtrl.h"
 
 #include "AutoSearchDlg.h"
+#include "Async.h"
+
 #include "../client/AutoSearchManager.h"
 
 class AutoSearchFrame : public MDITabChildWindowImpl<AutoSearchFrame>, public StaticFrame<AutoSearchFrame, ResourceManager::AUTO_SEARCH, IDC_AUTOSEARCH>,
-	 private AutoSearchManagerListener, private SettingsManagerListener
+	private AutoSearchManagerListener, private SettingsManagerListener, public Async<AutoSearchFrame>
 {
 public:
 	
@@ -47,15 +49,13 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
+		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		COMMAND_ID_HANDLER(IDC_ADD, onAdd)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_CHANGE, onChange)
 		COMMAND_ID_HANDLER(IDC_DUPLICATE, onDuplicate)
 		COMMAND_ID_HANDLER(IDC_MOVE_UP, onMoveUp)
 		COMMAND_ID_HANDLER(IDC_MOVE_DOWN, onMoveDown)
-		COMMAND_ID_HANDLER(IDC_ENABLE, onEnable)
-		COMMAND_ID_HANDLER(IDC_DISABLE, onDisable)
-		COMMAND_ID_HANDLER(IDC_SEARCH, onSearchAs)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_ITEMCHANGED, onItemChanged)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_AUTOSEARCH, LVN_KEYDOWN, onKeyDown)
@@ -75,9 +75,11 @@ public:
 	LRESULT onMoveDown(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	LRESULT onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
+
+	void handleSearch(bool onBackground);
+	void handleState(bool disabled);
 
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/){
 		NMITEMACTIVATE* asItem = (NMITEMACTIVATE*)pnmh;
@@ -85,23 +87,6 @@ public:
 			PostMessage(WM_COMMAND, IDC_CHANGE, 0);
 		} else if(asItem->iItem == -1) {
 			PostMessage(WM_COMMAND, IDC_ADD, 0);
-		}
-		return 0;
-	}
-	
-	LRESULT onEnable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		//just set the checkstate, onitemchanged will handle it from there
-		int i = -1;
-		while( (i = ctrlAutoSearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			ctrlAutoSearch.SetCheckState(i, TRUE);
-		}
-		return 0;
-	}
-	LRESULT onDisable(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		//just set the checkstate, onitemchanged will handle it from there
-		int i = -1;
-		while( (i = ctrlAutoSearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			ctrlAutoSearch.SetCheckState(i, FALSE);
 		}
 		return 0;
 	}
@@ -209,5 +194,6 @@ private:
 	virtual void on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& aToken) noexcept;
 	virtual void on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept;
 	virtual void on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as, bool setDirty) noexcept;
+	virtual void on(AutoSearchManagerListener::SearchForeground, const AutoSearchPtr& as, const string& searchString) noexcept;
 };
 #endif // !defined(AUTOSEARCH_FRM_H)

@@ -22,6 +22,7 @@
 
 #include "AutoSearchFrm.h"
 #include "ResourceLoader.h"
+#include "SearchFrm.h"
 
 #include "../client/SettingsManager.h"
 
@@ -250,20 +251,21 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 
 		auto index = WinUtil::getFirstSelectedIndex(ctrlAutoSearch);
 		if(ctrlAutoSearch.GetSelectedCount() > 1) {
-			asMenu.AppendMenu(MF_STRING, IDC_ENABLE, CTSTRING(ENABLE_AUTOSEARCH));
-			asMenu.AppendMenu(MF_STRING, IDC_DISABLE, CTSTRING(DISABLE_AUTOSEARCH));
-			asMenu.AppendMenu(MF_SEPARATOR);
+			asMenu.appendItem(TSTRING(ENABLE_AUTOSEARCH), [=] { handleState(false); });
+			asMenu.appendItem(TSTRING(DISABLE_AUTOSEARCH), [=] { handleState(true); });
+			asMenu.appendSeparator();
 			//only remove and add is enabled
 		} else if(ctrlAutoSearch.GetSelectedCount() == 1) {
-			asMenu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
-			asMenu.AppendMenu(MF_SEPARATOR);
+			asMenu.appendItem(TSTRING(SEARCH), [=] { handleSearch(true); });
+			asMenu.appendItem(TSTRING(SEARCH_FOREGROUND), [=] { handleSearch(false); });
+			asMenu.appendSeparator();
 			
 			if(ctrlAutoSearch.GetCheckState(index) == 1) {
-				asMenu.AppendMenu(MF_STRING, IDC_DISABLE, CTSTRING(DISABLE_AUTOSEARCH));
+				asMenu.appendItem(TSTRING(DISABLE_AUTOSEARCH), [=] { handleState(true); });
 			} else {
-				asMenu.AppendMenu(MF_STRING, IDC_ENABLE, CTSTRING(ENABLE_AUTOSEARCH));
+				asMenu.appendItem(TSTRING(ENABLE_AUTOSEARCH), [=] { handleState(false); });
 			}
-			asMenu.AppendMenu(MF_SEPARATOR);
+			asMenu.appendSeparator();
 		}
 		
 		asMenu.AppendMenu(MF_STRING, IDC_ADD, CTSTRING(ADD));
@@ -355,6 +357,8 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 	bHandled = FALSE;
 	return FALSE; 
 }
+
+
 
 void AutoSearchFrame::appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg) {
 	dlg.searchString = as->getSearchString();
@@ -537,15 +541,28 @@ LRESULT AutoSearchFrame::onMoveDown(WORD , WORD , HWND , BOOL& ) {
 	}
 	return 0;
 }
-LRESULT AutoSearchFrame::onSearchAs(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void AutoSearchFrame::handleSearch(bool onBackground) {
 	if(ctrlAutoSearch.GetSelectedCount() == 1) {
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
-		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
-		if(as) {
-			AutoSearchManager::getInstance()->searchItem(as, AutoSearchManager::TYPE_MANUAL);
-		}
+		MainFrame::getMainFrame()->addThreadedTask([=] {
+			AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
+			if (as) {
+				AutoSearchManager::getInstance()->searchItem(as, onBackground ? AutoSearchManager::TYPE_MANUAL_BG : AutoSearchManager::TYPE_MANUAL_FG);
+			}
+		});
 	}
-	return 0;
+}
+
+void AutoSearchFrame::on(AutoSearchManagerListener::SearchForeground, const AutoSearchPtr& as, const string& searchString) noexcept {
+	callAsync([=] { SearchFrame::openWindow(Text::toT(searchString), 0, SearchManager::SIZE_DONTCARE, as->getFileType()); });
+}
+
+void AutoSearchFrame::handleState(bool disabled) {
+	//just set the checkstate, onitemchanged will handle it from there
+	int i = -1;
+	while ((i = ctrlAutoSearch.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		ctrlAutoSearch.SetCheckState(i, disabled ? FALSE : TRUE);
+	}
 }
 
 LRESULT AutoSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
@@ -675,15 +692,15 @@ void AutoSearchFrame::removeItem(const AutoSearchPtr as) {
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::RemoveItem, const AutoSearchPtr& as) noexcept { 
-	MainFrame::getMainFrame()->callAsync([=] { removeItem(as); if(SETTING(AUTOSEARCH_BOLD)) setDirty(); }); 
+	callAsync([=] { removeItem(as); if(SETTING(AUTOSEARCH_BOLD)) setDirty(); }); 
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::AddItem, const AutoSearchPtr& as) noexcept { 
-	MainFrame::getMainFrame()->callAsync([=] { addEntry(as, ctrlAutoSearch.GetItemCount()); if(SETTING(AUTOSEARCH_BOLD)) setDirty();  });
+	callAsync([=] { addEntry(as, ctrlAutoSearch.GetItemCount()); if(SETTING(AUTOSEARCH_BOLD)) setDirty();  });
 }
 
 void AutoSearchFrame::on(AutoSearchManagerListener::UpdateItem, const AutoSearchPtr& as, bool aSetDirty) noexcept {
-	MainFrame::getMainFrame()->callAsync([=] { updateItem(as); if (aSetDirty && SETTING(AUTOSEARCH_BOLD)) setDirty();  }); 
+	callAsync([=] { updateItem(as); if (aSetDirty && SETTING(AUTOSEARCH_BOLD)) setDirty();  }); 
 }
 
 tstring AutoSearchFrame::formatSearchDate(const time_t aTime) {

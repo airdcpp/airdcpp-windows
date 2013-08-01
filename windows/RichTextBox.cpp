@@ -203,6 +203,11 @@ bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const ts
 	SetSel(0, sLine.length());
 	SetSelectionCharFormat(enc);
 
+	bool isFavorite = false, isOp = false;
+	if (i.getUser()) {
+		isFavorite = i.getUser()->isFavorite();
+		isOp = i.isOp();
+	}
 
 	// Format TimeStamp
 	if(!sTime.empty()) {
@@ -233,7 +238,6 @@ bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const ts
 			SetSel(lSelBegin + iLen + 1, lSelBegin + iLen + iAuthorLen);
 			SetSelectionCharFormat(WinUtil::m_TextStyleMyNick);
 		} else {
-			bool isFavorite = i.getUser()->isFavorite();
 
 			//if(isFavorite || i.isOp()) {
 				SetSel(lSelBegin, lSelBegin + iLen + 1);
@@ -260,18 +264,8 @@ bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const ts
             case _T('<'):
 				tstring::size_type iAuthorLen = sMsg.find(thirdPerson ? _T(' ') : _T('>'), thirdPerson ? 2 : 1);
 				if(iAuthorLen != tstring::npos) {
-                    bool isOp = false, isFavorite = false;
-
-                    
 					tstring nick(sMsg.c_str() + 1);
 					nick.erase(iAuthorLen - 1);
-					if(client) {
-						const OnlineUserPtr ou = client->findUser(Text::fromT(nick));
-						if(ou) {
-							isFavorite = ou->getUser()->isFavorite();
-							isOp = ou->getIdentity().isOp();
-						}
-                    }
                     
 					lSelBegin = lSelEnd;
 					lSelEnd += iAuthorLen;

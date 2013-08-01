@@ -293,11 +293,19 @@ void AutoSearchDlg::updateTargetTypeText() {
 	cTargetType.SetWindowText(targetText.c_str());
 }
 
+
 void AutoSearchDlg::insertNumber() {
 	tstring str;
+	tstring insert = _T("%[inc]");
 	str.resize(ctrlSearch.GetWindowTextLength()+1);
-	str.resize(GetDlgItemText(IDC_AS_SEARCH_STRING, &str[0], ctrlSearch.GetWindowTextLength()+1));
-	str += _T("%[inc]");
+	str.resize(GetDlgItemText(IDC_AS_SEARCH_STRING, &str[0], ctrlSearch.GetWindowTextLength()+1+insert.size()));
+
+	int lSelBegin = 0, lSelEnd = 0;
+	ctrlSearch.GetSel(lSelBegin, lSelEnd);
+
+	str.insert(lSelBegin, insert);
+	//str.insert()
+	//str += _T("%[inc]");
 	ctrlSearch.SetWindowText(str.c_str());
 }
 

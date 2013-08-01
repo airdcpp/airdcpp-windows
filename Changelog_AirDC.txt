@@ -6,12 +6,13 @@ Added:
 - Display the via which the file list is browsed through and allow changing it
 - Allow changing the share profile in own list
 - Add an option to refresh the share after client startup (enabled by default)
-- Ddd an option to store the unfinished files in the final destination directory (enabled by default)
+- Add an option to store the unfinished files in the final destination directory (enabled by default)
 - Add a setting for maximum running bundles
 - Append directory dupe directories in the "Download to" menu
 - Detect Windows 8.1 and 2012 R2
 - Implement "Find and view NFO" for own list
 - Report duplicate files when generating file lists
+- Add a new menu option to search auto search items on foreground
 
 Changed:
 
@@ -19,6 +20,9 @@ Changed:
 - Make various hardcoded icons customizable by the themes
 - Don't remove slow sources from files that have no other sources
 - Speed up the directory dupe check for subdirectories
+- Try to remember the previous list positions when using back/forward functions in file lists
+- Partial lists and small files will always override the download slot settings
+- Insert the inc param in the cursor position (auto search)
 
 Fixed:
 
@@ -35,6 +39,11 @@ Fixed:
 - Connectivity mode detection fixes
 - Fix a crash when trying to download magnet links from offline users
 - Fix the check for duplicate directory names when scanning the share for missing/extra files
+- Fix extra paths in the file list browsing history and a few other problems
+- Fix a few cases where connecting items might have been removed when there were queued items available but no download slots available
+- Fix cases where multiple items might have been added for auto search items
+- Fix problems with directory downloads if the other client refuses to give fully recursive list
+- Fix a crash with async hub calls
 
 
 2.50
