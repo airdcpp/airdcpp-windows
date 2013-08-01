@@ -74,7 +74,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	pathContainer(WC_COMBOBOX, this, PATH_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 		listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(1),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), history({ aList->getPath(aList->getRoot()) })
+		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP)
 {
 	dl->addListener(this);
 }
@@ -477,6 +477,7 @@ void DirectoryListingFrame::createRoot() {
 //	const auto icon = getIconIndex(dl->getRoot());
 	const auto icon = ResourceLoader::DIR_NORMAL;
 	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(dl->getNick(true)).c_str(), icon, icon, 0, 0, (LPARAM)dl->getRoot(), NULL, NULL);
+	history.push_back(dl->getPath(dl->getRoot()));
 	dcassert(treeRoot); 
 }
 
@@ -485,15 +486,13 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 	if (reloadList) {
 		ctrlTree.DeleteAllItems();
 		ctrlList.DeleteAllItems();
-		createRoot();
-
 		if (dl->getIsOwnList()) {
 			history.clear();
 			historyIndex = 1;
-
-			while (ctrlPath.GetCount())
-				ctrlPath.DeleteString(0);
 		}
+
+		createRoot();
+		updateHistoryCombo();
 	}
 
 	bool initialChange = !ctrlTree.hasChildren(treeRoot);
