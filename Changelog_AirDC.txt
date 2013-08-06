@@ -26,11 +26,12 @@ Changed:
 
 Fixed:
 
+- Fix a monitoring bug that caused the whole directory to be removed from share after deleting a single file from it
 - Fix issues with the lowest queue priority
 - Perform the check for free space also when adding items in download by doubleclicking
 - Preserve the case size when downloading grouped directories
 - Connectivity mode detection fixes
-- Fix extra paths in the file list browsing history and a few other problems
+- Fix extra paths in the file list browsing history and a few other problems related to browsing history
 - Fix cases where multiple items might have been added for auto search items
 - Fix problems with directory downloads if the other client refuses to give fully recursive list
 

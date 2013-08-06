@@ -937,7 +937,7 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 		path = si->sr->getPath();
 		firstPath = false;
 	} else if (path) {
-		if (path != si->sr->getPath()) {
+		if (AirUtil::getDirName(*path).first != AirUtil::getDirName(si->sr->getFilePath()).first) {
 			path.reset();
 		}
 	}
@@ -1088,11 +1088,11 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlShowUI.MoveWindow(sr);
 	}
 
+	int const width = 220, spacing = 50, labelH = 16, comboH = 140, lMargin = 2, rMargin = 4;
 	if(showUI)
 	{
-		int const width = 220, spacing = 50, labelH = 16, comboH = 140, lMargin = 2, rMargin = 4;
 		CRect rc = rect;
-
+		rc.bottom -= 26;
 		rc.left += width;
 		ctrlResults.MoveWindow(rc);
 
@@ -1142,7 +1142,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		typeLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
 
 		// "Search filter"
-		rc.left = lMargin;
+		/*rc.left = lMargin;
 		rc.right = (width - rMargin) / 2 - 3;		
 		rc.top += spacing;
 		rc.bottom = rc.top + 21;
@@ -1155,13 +1155,14 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlFilterSel.MoveWindow(rc);
 		rc.bottom -= comboH;
 
-		srLabel.MoveWindow(lMargin * 2, rc.top - labelH, width - rMargin, labelH-1);
+		srLabel.MoveWindow(lMargin * 2, rc.top - labelH, width - rMargin, labelH-1);*/
 
 		// "Search options"
 		rc.left = lMargin+4;
 		rc.right = width - rMargin;
 		rc.top += spacing;
-		rc.bottom += spacing;
+		//rc.bottom += spacing;
+		rc.bottom = rc.top + 17;
 
 		optionLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
 		ctrlSlots.MoveWindow(rc);
@@ -1209,6 +1210,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 	else
 	{
 		CRect rc = rect;
+		rc.bottom -= 26;
 		ctrlResults.MoveWindow(rc);
 
 		rc.SetRect(0,0,0,0);
@@ -1222,6 +1224,27 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlExcluded.MoveWindow(rc);
 		ctrlExcludedBool.MoveWindow(rc);
 	}
+
+	CRect rc = rect;
+	rc.bottom -= 26;
+
+	// "Search filter"
+	rc.left += lMargin * 2;
+	if (showUI)
+		rc.left += width;
+	rc.top = rc.bottom + 2;
+	rc.bottom = rc.top + 22;
+	rc.right = rc.left + WinUtil::getTextWidth(CTSTRING(SEARCH_IN_RESULTS), m_hWnd);
+	srLabel.MoveWindow(rc.left, rc.top + 4, rc.right - rc.left, rc.bottom - rc.top);
+
+	rc.left = rc.right + lMargin;
+	rc.right = rc.left + 150;
+	ctrlFilter.MoveWindow(rc);
+
+	rc.left = rc.right + lMargin;
+	rc.right = rc.left + 120;
+	ctrlFilterSel.MoveWindow(rc);
+
 
 	POINT pt;
 	pt.x = 10; 
