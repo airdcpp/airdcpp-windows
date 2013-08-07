@@ -217,7 +217,7 @@ public:
 					for (auto& target : targets) {
 						//use the parent if it's a dir
 						//string displayText = isDir ? Util::getParentDir(target) + " (" + Util::getLastDir(target) + ")" : target;
-						targetMenu.appendItem(Text::toT(target).c_str(), [=] { onDownload(isDir ? Util::getParentDir(target) : target, wholeDir, isSizeUnknown, QueueItemBase::DEFAULT); });
+						targetMenu.appendItem(Text::toT(Util::getParentDir(target)).c_str(), [=] { onDownload(isDir ? Util::getParentDir(target) : target, wholeDir, isSizeUnknown, QueueItemBase::DEFAULT); });
 					}
 				}
 			};

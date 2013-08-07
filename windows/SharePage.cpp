@@ -188,11 +188,16 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	if (MessageBox(CTSTRING_F(CONFIRM_PROFILE_REMOVAL, Text::toT((*p)->name)), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES)
 		return 0;
 
+	auto profile = *p;
 	/* Remove the profile */
 	if ((*p)->state == ShareProfileInfo::STATE_ADDED) {
 		profiles.erase(p);
 	} else {
 		(*p)->state = ShareProfileInfo::STATE_REMOVED;
+
+		//move to the back to keep the combo order up to date
+		profiles.erase(p);
+		profiles.push_back(profile);
 	}
 
 	dirPage->onRemoveProfile();

@@ -588,7 +588,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 				valid = false;
 			}
 		} else {
-			if (!(curSearch->hasRoot ? curSearch->root == aResult->getTTH() : curSearch->matchesFileLower(Text::toLower(aResult->getPath()), aResult->getSize(), aResult->getDate()))) {
+			if (!(curSearch->root ? *curSearch->root == aResult->getTTH() : curSearch->matchesFileLower(Text::toLower(aResult->getPath()), aResult->getSize(), aResult->getDate()))) {
 				valid = false;
 			}
 		}

@@ -588,8 +588,8 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 	// Check file names in list pane
 	while(searchPos < ctrlList.GetItemCount() && searchPos >= 0) {
 		const ItemInfo* ii = ctrlList.getItemData(searchPos);
-		if (search->hasRoot && ii->type == ItemInfo::FILE) {
-			if (search->root == ii->file->getTTH()) {
+		if (search->root && ii->type == ItemInfo::FILE) {
+			if (*search->root == ii->file->getTTH()) {
 				found = true;
 				break;
 			}
