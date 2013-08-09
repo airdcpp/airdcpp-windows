@@ -460,7 +460,6 @@
 	<string name="SearchFor">Search for</string>
 	<string name="SearchForAlternates">Search for alternates</string>
 	<string name="SearchForFile">Search for file</string>
-	<string name="SearchInResults">Search in results</string>
 	<string name="SearchOptions">Search options</string>
 	<string name="SearchSpamFrom">Search spam detected from </string>
 	<string name="SearchSpy">Search spy</string>

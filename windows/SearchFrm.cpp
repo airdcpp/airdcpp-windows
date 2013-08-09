@@ -76,10 +76,12 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	hubsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
 	ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 	ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
+	ctrlFilterMethodContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
 	ctrlExcludedContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
 	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0),
-	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false)
+	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false),
+	filter(COLUMN_LAST, [this] { updateSearchList(); })
 {	
 	SearchManager::getInstance()->addListener(this);
 	useGrouping = SETTING(GROUP_SEARCH_RESULTS);
@@ -150,18 +152,6 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlHubs.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_CHECKBOXES | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 	hubsContainer.SubclassWindow(ctrlHubs.m_hWnd);	
 
-	ctrlFilter.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		ES_AUTOHSCROLL, WS_EX_CLIENTEDGE);
-
-	ctrlFilterContainer.SubclassWindow(ctrlFilter.m_hWnd);
-	ctrlFilter.SetFont(WinUtil::systemFont);
-
-	ctrlFilterSel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL |
-		WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
-
-	ctrlFilterSelContainer.SubclassWindow(ctrlFilterSel.m_hWnd);
-	ctrlFilterSel.SetFont(WinUtil::systemFont);
-
 	searchLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	searchLabel.SetFont(WinUtil::systemFont, FALSE);
 	searchLabel.SetWindowText(CTSTRING(SEARCH_FOR));
@@ -173,10 +163,6 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	typeLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	typeLabel.SetFont(WinUtil::systemFont, FALSE);
 	typeLabel.SetWindowText(CTSTRING(FILE_TYPE));
-
-	srLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
-	srLabel.SetFont(WinUtil::systemFont, FALSE);
-	srLabel.SetWindowText(CTSTRING(SEARCH_IN_RESULTS));
 
 	optionLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	optionLabel.SetFont(WinUtil::systemFont, FALSE);
@@ -260,6 +246,12 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ctrlResults.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
 	}
 
+	filter.addFilterBox(m_hWnd);
+	filter.addColumnBox(m_hWnd, ctrlResults.getColumnList());
+	filter.addMethodBox(m_hWnd);
+	ctrlFilterContainer.SubclassWindow(filter.getFilterBox().m_hWnd);
+	ctrlFilterSelContainer.SubclassWindow(filter.getFilterColumnBox().m_hWnd);
+	ctrlFilterMethodContainer.SubclassWindow(filter.getFilterMethodBox().m_hWnd);
 	ctrlResults.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 
 	ctrlResults.setVisible(SETTING(SEARCHFRAME_VISIBLE));
@@ -300,11 +292,6 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		SetWindowText(CTSTRING(SEARCH));
 		::EnableWindow(GetDlgItem(IDC_SEARCH_PAUSE), FALSE);
 	}
-
-	for(int j = 0; j < COLUMN_LAST; j++) {
-		ctrlFilterSel.AddString(CTSTRING_I(columnNames[j]));
-	}
-	ctrlFilterSel.SetCurSel(0);
 
 	CRect rc(SETTING(SEARCH_LEFT), SETTING(SEARCH_TOP), SETTING(SEARCH_RIGHT), SETTING(SEARCH_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -1141,22 +1128,6 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 
 		typeLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
 
-		// "Search filter"
-		/*rc.left = lMargin;
-		rc.right = (width - rMargin) / 2 - 3;		
-		rc.top += spacing;
-		rc.bottom = rc.top + 21;
-		
-		ctrlFilter.MoveWindow(rc);
-
-		rc.left = (width - rMargin) / 2 + 3;
-		rc.right = width - rMargin;
-		rc.bottom = rc.top + comboH + 21;
-		ctrlFilterSel.MoveWindow(rc);
-		rc.bottom -= comboH;
-
-		srLabel.MoveWindow(lMargin * 2, rc.top - labelH, width - rMargin, labelH-1);*/
-
 		// "Search options"
 		rc.left = lMargin+4;
 		rc.right = width - rMargin;
@@ -1229,21 +1200,22 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 	rc.bottom -= 26;
 
 	// "Search filter"
-	rc.left += lMargin * 2;
 	if (showUI)
 		rc.left += width;
 	rc.top = rc.bottom + 2;
 	rc.bottom = rc.top + 22;
-	rc.right = rc.left + WinUtil::getTextWidth(CTSTRING(SEARCH_IN_RESULTS), m_hWnd);
-	srLabel.MoveWindow(rc.left, rc.top + 4, rc.right - rc.left, rc.bottom - rc.top);
+
+	rc.left = rc.left;
+	rc.right = rc.right - 250;
+	filter.getFilterBox().MoveWindow(rc);
 
 	rc.left = rc.right + lMargin;
-	rc.right = rc.left + 150;
-	ctrlFilter.MoveWindow(rc);
+	rc.right = rc.right + 120;
+	filter.getFilterColumnBox().MoveWindow(rc);
 
 	rc.left = rc.right + lMargin;
-	rc.right = rc.left + 120;
-	ctrlFilterSel.MoveWindow(rc);
+	rc.right = rc.right + 120;
+	filter.getFilterMethodBox().MoveWindow(rc);
 
 
 	POINT pt;
@@ -1302,7 +1274,7 @@ LRESULT SearchFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 	HDC hDC = (HDC)wParam;
 
 	if(hWnd == searchLabel.m_hWnd || hWnd == sizeLabel.m_hWnd || hWnd == optionLabel.m_hWnd || hWnd == typeLabel.m_hWnd
-		|| hWnd == hubsLabel.m_hWnd || hWnd == ctrlSlots.m_hWnd || hWnd == ctrlExcludedBool.m_hWnd || hWnd == ctrlCollapsed.m_hWnd || hWnd == srLabel.m_hWnd) {
+		|| hWnd == hubsLabel.m_hWnd || hWnd == ctrlSlots.m_hWnd || hWnd == ctrlExcludedBool.m_hWnd || hWnd == ctrlCollapsed.m_hWnd) {
 		::SetBkColor(hDC, ::GetSysColor(COLOR_3DFACE));
 		::SetTextColor(hDC, ::GetSysColor(COLOR_BTNTEXT));
 		return (LRESULT)::GetSysColorBrush(COLOR_3DFACE);
@@ -1769,131 +1741,31 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 	}
 }
 
-LRESULT SearchFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	if(!SETTING(FILTER_ENTER) || (wParam == VK_RETURN)) {
-		TCHAR *buf = new TCHAR[ctrlFilter.GetWindowTextLength()+1];
-		ctrlFilter.GetWindowText(buf, ctrlFilter.GetWindowTextLength()+1);
-		filter = buf;
-		delete[] buf;
-	
-		updateSearchList();
+LRESULT SearchFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+	//handle focus switch
+	if (uMsg == WM_CHAR && wParam == VK_TAB) {
+		onTab(WinUtil::isShift());
+		return 0;
 	}
-
-	bHandled = false;
-
+	bHandled = FALSE;
 	return 0;
-}
-
-bool SearchFrame::parseFilter(FilterModes& mode, int64_t& size) {
-	tstring::size_type start = (tstring::size_type)tstring::npos;
-	tstring::size_type end = (tstring::size_type)tstring::npos;
-	int64_t multiplier = 1;
-	
-	if(filter.compare(0, 2, _T(">=")) == 0) {
-		mode = GREATER_EQUAL;
-		start = 2;
-	} else if(filter.compare(0, 2, _T("<=")) == 0) {
-		mode = LESS_EQUAL;
-		start = 2;
-	} else if(filter.compare(0, 2, _T("==")) == 0) {
-		mode = EQUAL;
-		start = 2;
-	} else if(filter.compare(0, 2, _T("!=")) == 0) {
-		mode = NOT_EQUAL;
-		start = 2;
-	} else if(filter[0] == _T('<')) {
-		mode = LESS;
-		start = 1;
-	} else if(filter[0] == _T('>')) {
-		mode = GREATER;
-		start = 1;
-	} else if(filter[0] == _T('=')) {
-		mode = EQUAL;
-		start = 1;
-	}
-
-	if(start == tstring::npos)
-		return false;
-	if(filter.length() <= start)
-		return false;
-
-	if((end = Util::findSubString(filter, _T("TiB"))) != tstring::npos) {
-		multiplier = 1024LL * 1024LL * 1024LL * 1024LL;
-	} else if((end = Util::findSubString(filter, _T("GiB"))) != tstring::npos) {
-		multiplier = 1024*1024*1024;
-	} else if((end = Util::findSubString(filter, _T("MiB"))) != tstring::npos) {
-		multiplier = 1024*1024;
-	} else if((end = Util::findSubString(filter, _T("KiB"))) != tstring::npos) {
-		multiplier = 1024;
-	} else if((end = Util::findSubString(filter, _T("TB"))) != tstring::npos) {
-		multiplier = 1000LL * 1000LL * 1000LL * 1000LL;
-	} else if((end = Util::findSubString(filter, _T("GB"))) != tstring::npos) {
-		multiplier = 1000*1000*1000;
-	} else if((end = Util::findSubString(filter, _T("MB"))) != tstring::npos) {
-		multiplier = 1000*1000;
-	} else if((end = Util::findSubString(filter, _T("kB"))) != tstring::npos) {
-		multiplier = 1000;
-	} else if((end = Util::findSubString(filter, _T("B"))) != tstring::npos) {
-		multiplier = 1;
-	}
-
-
-	if(end == tstring::npos) {
-		end = filter.length();
-	}
-	
-	tstring tmpSize = filter.substr(start, end-start);
-	size = static_cast<int64_t>(Util::toDouble(Text::fromT(tmpSize)) * multiplier);
-	
-	return true;
-}
-
-bool SearchFrame::matchFilter(SearchInfo* si, int sel, bool doSizeCompare, FilterModes mode, int64_t size) {
-	bool insert = false;
-
-	if(filter.empty()) {
-		insert = true;
-	} else if(doSizeCompare) {
-		switch(mode) {
-			case EQUAL: insert = (size == si->sr->getSize()); break;
-			case GREATER_EQUAL: insert = (size <=  si->sr->getSize()); break;
-			case LESS_EQUAL: insert = (size >=  si->sr->getSize()); break;
-			case GREATER: insert = (size < si->sr->getSize()); break;
-			case LESS: insert = (size > si->sr->getSize()); break;
-			case NOT_EQUAL: insert = (size != si->sr->getSize()); break;
-		}
-	} else {
-		try {
-			boost::wregex reg(filter, boost::regex_constants::icase);
-			tstring s = si->getText(static_cast<uint8_t>(sel));
-
-			insert = boost::regex_search(s.begin(), s.end(), reg);
-		} catch(...) {
-			insert = true;
-		}
-	}
-	return insert;
-}
-	
+}	
 
 void SearchFrame::updateSearchList(SearchInfo* si) {
-	int64_t size = -1;
-	FilterModes mode = NONE;
+	auto filterPrep = filter.prepare();
+	auto filterInfoF = [&](int column) { return Text::fromT(si->getText(column)); };
 
-	int sel = ctrlFilterSel.GetCurSel();
-	bool doSizeCompare = sel == COLUMN_SIZE && parseFilter(mode, size);
-
-	if(si != NULL) {
-//		if(!matchFilter(si, sel, doSizeCompare, mode, size))
-//			ctrlResults.deleteItem(si);
+	if(si) {
+		if(!filter.match(filterPrep, filterInfoF))
+			ctrlResults.deleteItem(si);
 	} else {
 		ctrlResults.SetRedraw(FALSE);
 		ctrlResults.DeleteAllItems();
 
 		for(auto aSI: ctrlResults.getParents() | map_values) {
-			SearchInfo* si = aSI.parent;
+			si = aSI.parent;
 			si->collapsed = true;
-			if(matchFilter(si, sel, doSizeCompare, mode, size)) {
+			if(filter.match(filterPrep, filterInfoF)) {
 				dcassert(ctrlResults.findItem(si) == -1);
 				int k = ctrlResults.insertItem(si, si->getImageIndex());
 
@@ -1911,19 +1783,6 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 		}
 		ctrlResults.SetRedraw(TRUE);
 	}
-}
-
-LRESULT SearchFrame::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
-	TCHAR *buf = new TCHAR[ctrlFilter.GetWindowTextLength()+1];
-	ctrlFilter.GetWindowText(buf, ctrlFilter.GetWindowTextLength()+1);
-	filter = buf;
-	delete[] buf;
-	
-	updateSearchList();
-	
-	bHandled = false;
-
-	return 0;
 }
 
 void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {

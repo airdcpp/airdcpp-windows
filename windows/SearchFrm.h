@@ -38,6 +38,7 @@
 
 #include "UCHandler.h"
 #include "SearchTypeCombo.h"
+#include "ListFilter.h"
 
 #define SEARCH_MESSAGE_MAP 6		// This could be any number, really...
 #define SHOWUI_MESSAGE_MAP 7
@@ -106,8 +107,9 @@ public:
 		MESSAGE_HANDLER(BM_SETCHECK, onShowUI)
 	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
+		MESSAGE_HANDLER(WM_CHAR, onFilterChar)
 		MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
-		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onSelChange)
+		CHAIN_MSG_MAP_MEMBER(filter)
 	END_MSG_MAP()
 
 	SearchFrame();
@@ -127,7 +129,6 @@ public:
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onFilterChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCloseWindow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -244,16 +245,6 @@ private:
 		IMAGE_FAST
 	};
 
-	enum FilterModes{
-		NONE,
-		EQUAL,
-		GREATER_EQUAL,
-		LESS_EQUAL,
-		GREATER,
-		LESS,
-		NOT_EQUAL
-	};
-
 	class SearchInfo : public UserInfoBase {
 	public:
 		typedef SearchInfo* Ptr;
@@ -296,7 +287,7 @@ private:
 		inline SearchInfo* createParent() { return this; }
 		inline const TTHValue& getGroupCond() const { return sr->getTTH(); }
 
-		bool isDupe() const { return dupe != NONE; }
+		bool isDupe() const { return dupe != DUPE_NONE; }
 		bool isShareDupe() const { return dupe == SHARE_DUPE || dupe == PARTIAL_SHARE_DUPE; }
 		bool isQueueDupe() const { return dupe == QUEUE_DUPE || dupe == FINISHED_DUPE; }
 		//string getHubUrl() { return sr->getHubURL(); }
@@ -340,7 +331,8 @@ private:
 	SearchTypeCombo ctrlFileType;
 	CButton ctrlDoSearch;
 	CButton ctrlPauseSearch;
-	CButton ctrlPurge;	
+	CButton ctrlPurge;
+	ListFilter filter;
 	
 	CContainedWindow searchContainer;
 	CContainedWindow searchBoxContainer;
@@ -357,10 +349,10 @@ private:
 	CContainedWindow purgeContainer;
 	CContainedWindow ctrlFilterContainer;
 	CContainedWindow ctrlFilterSelContainer;
+	CContainedWindow ctrlFilterMethodContainer;
 	CContainedWindow ctrlExcludedContainer;
-	tstring filter;
 	
-	CStatic searchLabel, sizeLabel, optionLabel, typeLabel, hubsLabel, srLabel;
+	CStatic searchLabel, sizeLabel, optionLabel, typeLabel, hubsLabel;
 	CButton ctrlSlots, ctrlShowUI, ctrlCollapsed, ctrlExcludedBool;
 	bool showUI;
 
@@ -372,8 +364,6 @@ private:
 	StringList wholeTargets;
 	SearchInfo::List pausedResults;
 
-	CEdit ctrlFilter;
-	CComboBox ctrlFilterSel;
 	CComboBox ctrlExcluded;
 
 	bool statusDirty;
@@ -432,9 +422,7 @@ private:
 	void onHubAdded(HubInfo* info);
 	void onHubChanged(HubInfo* info);
 	void onHubRemoved(tstring&& aHubUrl);
-	bool matchFilter(SearchInfo* si, int sel, bool doSizeCompare = false, FilterModes mode = NONE, int64_t size = 0);
-	bool parseFilter(FilterModes& mode, int64_t& size);
-	void updateSearchList(SearchInfo* si = NULL);
+	void updateSearchList(SearchInfo* si = nullptr);
 	void addSearchResult(SearchInfo* si);
 
 	LRESULT onItemChangedHub(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
