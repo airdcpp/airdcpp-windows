@@ -507,6 +507,7 @@
     <ClInclude Include="client\ZUtils.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram.cd" />
     <None Include="client\version.h.template" />
   </ItemGroup>
   <ItemGroup>

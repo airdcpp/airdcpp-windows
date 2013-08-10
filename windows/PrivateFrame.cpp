@@ -45,7 +45,7 @@ PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(repl
 	UserInfoBaseHandler(false, true)
 {
 	ctrlClient.setClient(c);
-	ctrlClient.setUser(replyTo_.user);
+	ctrlClient.setPmUser(replyTo_.user);
 }
 
 LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -368,8 +368,7 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 		FavoriteManager::getInstance()->addFavoriteUser(replyTo);
 		addClientLine(TSTRING(FAVORITE_USER_ADDED));
 	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0) {
-		BOOL bTmp;
-		onGetList(0,0,0,bTmp);
+		handleGetList();
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
 		WinUtil::openFile(Text::toT(getLogPath()));
 	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {

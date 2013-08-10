@@ -49,7 +49,7 @@ EmoticonsManager* emoticonsManager = NULL;
 #define MAX_EMOTICONS 48
 UINT RichTextBox::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
-RichTextBox::RichTextBox() : ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), user(nullptr), formatLinks(false),
+RichTextBox::RichTextBox() : UserInfoBaseHandler(true, true), ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), pmUser(nullptr), formatLinks(false),
 	formatPaths(false), formatReleases(false), allowClear(false) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
@@ -343,18 +343,21 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 	}
 
 	// highlight all occurences of favourite users' nicks
-	FavoriteManager::FavoriteMap ul = FavoriteManager::getInstance()->getFavoriteUsers();
-	for(const auto& pUser: ul | map_values) {
-		lSearchFrom = 0;
-		sNick = Text::toT(pUser.getNick());
-		if(sNick.empty()) continue;
-		std::transform(sNick.begin(), sNick.end(), sNick.begin(), _totlower);
+	{
+		RLock l(FavoriteManager::getInstance()->cs);
+		auto& ul = FavoriteManager::getInstance()->getFavoriteUsers();
+		for (const auto& pUser : ul | map_values) {
+			lSearchFrom = 0;
+			sNick = Text::toT(pUser.getNick());
+			if (sNick.empty()) continue;
+			std::transform(sNick.begin(), sNick.end(), sNick.begin(), _totlower);
 
-		while((lMyNickStart = (long)sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
-			lMyNickEnd = lMyNickStart + (long)sNick.size();
-			SetSel(lSelBegin + lMyNickStart, lSelBegin + lMyNickEnd);
-			SetSelectionCharFormat(WinUtil::m_TextStyleFavUsers);
-			lSearchFrom = lMyNickEnd;
+			while ((lMyNickStart = (long) sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
+				lMyNickEnd = lMyNickStart + (long) sNick.size();
+				SetSel(lSelBegin + lMyNickStart, lSelBegin + lMyNickEnd);
+				SetSelectionCharFormat(WinUtil::m_TextStyleFavUsers);
+				lSearchFrom = lMyNickEnd;
+			}
 		}
 	}
 	
@@ -435,7 +438,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 					type = ChatLink::TYPE_SPOTIFY;
 				}
 
-				ChatLink* cl = new ChatLink(link, type, user);
+				ChatLink* cl = new ChatLink(link, type, pmUser);
 				formatLink(cl->getDupe(), false);
 
 				//replace the text displayed in chat
@@ -474,7 +477,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 			SetSel(cr.cpMin, cr.cpMax);
 
 			std::string link (result[0].first, result[0].second);
-			ChatLink* cl = new ChatLink(link, ChatLink::TYPE_RELEASE, user);
+			ChatLink* cl = new ChatLink(link, ChatLink::TYPE_RELEASE, pmUser);
 
 			formatLink(cl->getDupe(), true);
 
@@ -724,7 +727,7 @@ void RichTextBox::formatLink(DupeType aDupeType, bool isRelease) {
 
 DupeType RichTextBox::updateDupeType(ChatLink* aChatLink) {
 	auto oldDT = aChatLink->getDupe();
-	if (oldDT != aChatLink->updateDupeType(user)) {
+	if (oldDT != aChatLink->updateDupeType(pmUser)) {
 		formatLink(aChatLink->getDupe(), isRelease);
 	}
 	return aChatLink->getDupe();
@@ -845,6 +848,19 @@ LRESULT RichTextBox::onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	return 0;
 }
 
+const UserPtr& RichTextBox::getUser() const {
+	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
+	if (ou) {
+		return ou->getUser();
+	}
+	
+	return pmUser;
+}
+
+const string& RichTextBox::getHubUrl() const {
+	return client ? client->getHubUrl() : Util::emptyString;
+}
+
 LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
 	SCROLLBARINFO sbi;
 	memset(&sbi, 0, sizeof(SCROLLBARINFO));
@@ -939,7 +955,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 				menu.AppendMenu(MF_SEPARATOR);
 				if (isMagnet) {
 					Magnet m = Magnet(Text::fromT(selectedWord));
-					if (client && ShareManager::getInstance()->isTempShared(user ? user->getCID().toBase32() : Util::emptyString, m.getTTH())) {
+					if (client && ShareManager::getInstance()->isTempShared(pmUser ? pmUser->getCID().toBase32() : Util::emptyString, m.getTTH())) {
 						/* show an option to remove the item */
 						menu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(STOP_SHARING));
 					} else if (!author.empty()) {
@@ -976,19 +992,21 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			menu.AppendMenu(MF_SEPARATOR);
 		}		
 
-		if (!user) {
+		if (!pmUser) {
 			menu.AppendMenu(MF_STRING, IDC_SELECT_USER, CTSTRING(SELECT_USER_LIST));
 			menu.AppendMenu(MF_SEPARATOR);
 		}
 		
 		if(!isMe) {
-			if (!user || user->isSet(User::BOT)) {
+			if (!pmUser || pmUser->isSet(User::BOT)) {
 				menu.AppendMenu(MF_STRING, IDC_PUBLIC_MESSAGE, CTSTRING(SEND_PUBLIC_MESSAGE));
-				menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
+				//menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
 				menu.AppendMenu(MF_SEPARATOR);
 			}
 			
 			const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
+			appendUserItems(menu, true, ou->getUser());
+
 			if (client->isOp() || !ou->getIdentity().isOp()) {
 				if(HubFrame::ignoreList.find(ou->getUser()) == HubFrame::ignoreList.end()) {
 					menu.AppendMenu(MF_STRING, IDC_IGNORE, CTSTRING(IGNORE_USER));
@@ -1001,16 +1019,6 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		
 		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
 		
-		if(!isMe) {
-			menu.AppendMenu(MF_POPUP, (UINT)(HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
-			menu.AppendMenu(MF_SEPARATOR);
-			menu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
-			menu.AppendMenu(MF_STRING, IDC_BROWSELIST, CTSTRING(BROWSE_FILE_LIST));
-			menu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
-			menu.AppendMenu(MF_SEPARATOR);
-			menu.AppendMenu(MF_STRING, IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
-		}
-
 		// add user commands
 		prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
 
@@ -1190,8 +1198,8 @@ LRESULT RichTextBox::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 
 HintedUser RichTextBox::getMagnetSource() {
 	UserPtr u = nullptr;
-	if (user && !user->isSet(User::BOT)) {
-		u = user;
+	if (pmUser && !pmUser->isSet(User::BOT)) {
+		u = pmUser;
 	} else if (client && !author.empty()) {
 		OnlineUserPtr ou = client->findUser(Text::fromT(author));
 		if (ou && !ou->getUser()->isSet(User::BOT)) {
@@ -1206,7 +1214,7 @@ HintedUser RichTextBox::getMagnetSource() {
 }
 
 string RichTextBox::getTempShareKey() const {
-	return (user && !user->isSet(User::BOT) && !user->isSet(User::NMDC)) ? user->getCID().toBase32() : Util::emptyString;
+	return (pmUser && !pmUser->isSet(User::BOT) && !pmUser->isSet(User::NMDC)) ? pmUser->getCID().toBase32() : Util::emptyString;
 }
 
 LRESULT RichTextBox::onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -1248,12 +1256,12 @@ void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority 
 	if (!isRelease) {
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
-		if (getUser() && ShareManager::getInstance()->isDirShared(aTarget, m.fsize) > 0 && 
+		if (pmUser && ShareManager::getInstance()->isDirShared(aTarget, m.fsize) > 0 &&
 			MessageBox(CTSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 				return;
 		}
 
-		WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length()-1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, getUser() ? QueueItem::FLAG_PRIVATE : 0, p);
+		WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : m.fname), m.fsize, m.getTTH(), u, 0, pmUser ? QueueItem::FLAG_PRIVATE : 0, p);
 	} else {
 		AutoSearchManager::getInstance()->addAutoSearch(Text::fromT(selectedWord), aTarget, aTargetType, true);
 	}
@@ -1489,66 +1497,6 @@ LRESULT RichTextBox::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 			MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
 		}
 	}
-
-	return 0;
-}
-
-LRESULT RichTextBox::onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
-	if(ou)
-		PrivateFrame::openWindow(HintedUser(ou->getUser(), client->getHubUrl()), Util::emptyStringT, client);
-
-	return 0;
-}
-
-LRESULT RichTextBox::onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
-	if(ou)
-		ou->getList();
-
-	return 0;
-}
-
-LRESULT RichTextBox::onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
-	if(ou)
-		ou->browseList();
-
-	return 0;
-}
-LRESULT RichTextBox::onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
-	if(ou)
-		ou->matchQueue();
-
-	return 0;
-}
-
-LRESULT RichTextBox::onGrantSlot(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
-	if(ou) {
-		uint64_t time = 0;
-		switch(wID) {
-			case IDC_GRANTSLOT:			time = 600; break;
-			case IDC_GRANTSLOT_DAY:		time = 3600; break;
-			case IDC_GRANTSLOT_HOUR:	time = 24*3600; break;
-			case IDC_GRANTSLOT_WEEK:	time = 7*24*3600; break;
-			case IDC_UNGRANTSLOT:		time = 0; break;
-		}
-		
-		if(time > 0)
-			UploadManager::getInstance()->reserveSlot(HintedUser(ou->getUser(), client->getHubUrl()), time);
-		else
-			UploadManager::getInstance()->unreserveSlot(ou->getUser());
-	}
-
-	return 0;
-}
-
-LRESULT RichTextBox::onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
-	if(ou)
-		ou->addFav();
 
 	return 0;
 }

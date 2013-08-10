@@ -45,6 +45,9 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  Resour
 	ResourceManager::PATH, ResourceManager::SLOTS, ResourceManager::CONNECTION, 
 	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 
+//static ColumnType columnTypes [] = { ColumnType::COLUMN_TEXT,  };
+
+
 SearchFrame::FrameMap SearchFrame::frames;
 
 void SearchFrame::openWindow(const tstring& str /* = Util::emptyString */, LONGLONG size /* = 0 */, SearchManager::SizeModes mode /* = SearchManager::SIZE_ATLEAST */, const string& type /* = SEARCH_TYPE_ANY */) {

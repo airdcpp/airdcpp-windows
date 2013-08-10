@@ -217,7 +217,7 @@ LRESULT UploadQueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
 		appendUserItems(contextMenu);
 		contextMenu.AppendMenu(MF_SEPARATOR);
 		contextMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-		contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+		contextMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE;
 	} else if(usingUserMenu && ctrlQueued.GetSelectedItem() != NULL) {
      	if(pt.x == -1 && pt.y == -1) {
@@ -239,7 +239,7 @@ LRESULT UploadQueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPa
 		appendUserItems(contextMenu);
 		contextMenu.AppendMenu(MF_SEPARATOR);
 		contextMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));        
-		contextMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+		contextMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE;
 	}	
 	return FALSE; 

@@ -41,7 +41,6 @@
 #include "../client/DirectoryListingListener.h"
 #include "../client/TargetUtil.h"
 
-#define FILTER_MESSAGE_MAP 8
 #define PATH_MESSAGE_MAP 9
 #define CONTROL_MESSAGE_MAP 10
 #define COMBO_SEL_MAP 11
@@ -94,7 +93,6 @@ public:
 		STATUS_SELECTED_SIZE,
 		STATUS_UPDATED,
 		STATUS_HUB,
-		STATUS_FILTER,
 		STATUS_DUMMY,
 		STATUS_LAST
 	};
@@ -110,17 +108,17 @@ public:
 		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_GETDISPINFO, ctrlTree.OnGetItemDispInfo)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_ITEMEXPANDING, ctrlTree.OnItemExpanding)
 
-		NOTIFY_HANDLER(IDC_FILES, LVN_GETDISPINFO, ctrlList.onGetDispInfo)
-		NOTIFY_HANDLER(IDC_FILES, LVN_COLUMNCLICK, ctrlList.onColumnClick)
-
+		NOTIFY_HANDLER(IDC_FILES, LVN_GETDISPINFO, ctrlFiles.list.onGetDispInfo)
+		NOTIFY_HANDLER(IDC_FILES, LVN_COLUMNCLICK, ctrlFiles.list.onColumnClick)
 		NOTIFY_HANDLER(IDC_FILES, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_FILES, NM_DBLCLK, onDoubleClickFiles)
 		NOTIFY_HANDLER(IDC_FILES, LVN_ITEMCHANGED, onItemChanged)
+		NOTIFY_HANDLER(IDC_FILES, NM_CUSTOMDRAW, onCustomDrawList)
+
 		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_DBLCLK, onDoubleClickDirs)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_KEYDOWN, onKeyDownDirs)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_SELCHANGED, onSelChangedDirectories)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CLICK, onClickTree)
-		NOTIFY_HANDLER(IDC_FILES, NM_CUSTOMDRAW, onCustomDrawList)
 		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CUSTOMDRAW, onCustomDrawTree)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
@@ -162,9 +160,7 @@ public:
 		CHAIN_COMMANDS(uibBase)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<DirectoryListingFrame>)
-	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
-		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
-		MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
+		//CHAIN_MSG_MAP_MEMBER(ctrlFiles)
 	ALT_MSG_MAP(PATH_MESSAGE_MAP)
 		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onSelChange)
 	ALT_MSG_MAP(CONTROL_MESSAGE_MAP)
@@ -177,7 +173,6 @@ public:
 	LRESULT onComboSelChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
-	LRESULT onFilterChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDoubleClickFiles(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
@@ -256,24 +251,7 @@ public:
 		return 0;
 	}
 	
-	struct UserListHandler {
-		UserListHandler(DirectoryListing& _dl) : dl(_dl) { }
-		
-		void forEachSelected(void (UserInfoBase::*func)()) {
-			(dl.*func)();
-		}
-		
-		template<class _Function>
-		_Function forEachSelectedT(_Function pred) {
-			pred(&dl);
-			return pred;
-		}
-		
-	private:
-		DirectoryListing& dl;	
-	};
-	
-	UserListHandler getUserList() { return UserListHandler(*dl); }
+	UserListHandler<DirectoryListing> getUserList() { return UserListHandler<DirectoryListing>(*dl); }
 
 	/* DownloadBaseHandler functions */
 	int64_t getDownloadSize(bool isWhole);
@@ -284,6 +262,7 @@ public:
 	int getIconIndex(const DirectoryListing::Directory* d) const;
 	void expandDir(DirectoryListing::Directory* d, bool /*collapsing*/);
 	bool isBold(const DirectoryListing::Directory* d) const;
+	void createColumns();
 private:
 	void updateHistoryCombo();
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
@@ -295,8 +274,8 @@ private:
 	void changeWindowState(bool enable);
 	void onReloadPartial(bool dirOnly);
 	
-	string filter;
 	void updateItems(const DirectoryListing::Directory* d, BOOL enableRedraw);
+	void insertItems(const optional<string>& selectedName);
 
 	enum ReloadMode {
 		RELOAD_NONE,
@@ -360,12 +339,12 @@ private:
 	CContainedWindow pathContainer;
 	CContainedWindow treeContainer;
 	CContainedWindow listContainer;
-	
+
 	deque<string> history;
 	size_t historyIndex;
 	
 	TypedTreeCtrl<DirectoryListingFrame, DirectoryListing::Directory> ctrlTree;
-	FilteredListViewCtrl<ItemInfo, IDC_FILES> ctrlList;
+	FilteredListViewCtrl<DirectoryListingFrame, ItemInfo, IDC_FILES> ctrlFiles;
 	CStatusBarCtrl ctrlStatus;
 	HTREEITEM treeRoot;
 	
@@ -375,9 +354,6 @@ private:
 
 	void addCmdBarButtons();
 	void addarrowBarButtons();
-
-	CEdit ctrlFilter;
-	CContainedWindow ctrlFilterContainer;
 
 	//string currentDir;
 	tstring error;
@@ -422,7 +398,6 @@ private:
 	void on(DirectoryListingListener::SearchFailed, bool timedOut) noexcept;
 	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;
 	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
-	void on(DirectoryListingListener::Filter) noexcept;
 	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
 
 	// ClientManagerListener

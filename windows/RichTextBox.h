@@ -26,6 +26,7 @@
 #include "../client/ColorSettings.h"
 #include "../client/TargetUtil.h"
 #include "../client/ChatMessage.h"
+#include "../client/UserInfoBase.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -33,6 +34,7 @@
 #include "ImageDataObject.h"
 #include "UCHandler.h"
 #include "DownloadBaseHandler.h"
+#include "UserInfoBaseHandler.h"
 
 #ifndef MSFTEDIT_CLASS
 #define MSFTEDIT_CLASS L"RICHEDIT50W";
@@ -40,7 +42,7 @@
 
 class UserInfo;
 
-class RichTextBox: public CRichEditCtrl, public CMessageMap, public UCHandler<RichTextBox>, public DownloadBaseHandler<RichTextBox>
+class RichTextBox : public CRichEditCtrl, public CMessageMap, public UCHandler<RichTextBox>, public DownloadBaseHandler<RichTextBox>, public UserInfoBaseHandler<RichTextBox>, public UserInfoBase
 {
 public:
 
@@ -72,16 +74,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_FIND_TEXT, onFindText)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_USER_HISTORY, onOpenUserLog)
-		COMMAND_ID_HANDLER(IDC_PRIVATEMESSAGE, onPrivateMessage)
-		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
-		COMMAND_ID_HANDLER(IDC_BROWSELIST, onBrowseList)
-		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
-		COMMAND_ID_HANDLER(IDC_GRANTSLOT, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_GRANTSLOT_HOUR, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_GRANTSLOT_DAY, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_GRANTSLOT_WEEK, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_UNGRANTSLOT, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_ADD_TO_FAVORITES, onAddToFavorites)
 		COMMAND_ID_HANDLER(IDC_IGNORE, onIgnore)
 		COMMAND_ID_HANDLER(IDC_UNIGNORE, onUnignore)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
@@ -132,12 +124,7 @@ public:
 	LRESULT onWhoisIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onGrantSlot(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
 	LRESULT onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
 
@@ -190,7 +177,7 @@ public:
 
 	void FormatEmoticonsAndLinks(tstring& sText, /*tstring& sTextLower,*/ LONG lSelBegin, bool bUseEmo);
 	GETSET(Client*, client, Client);
-	GETSET(UserPtr, user, User);
+	GETSET(UserPtr, pmUser, PmUser);
 
 	GETSET(bool, autoScrollToEnd, AutoScrollToEnd);
 	GETSET(bool, formatLinks, FormatLinks);
@@ -203,6 +190,12 @@ public:
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
 	HintedUser getMagnetSource();
+
+	UserListHandler<RichTextBox> getUserList() { return UserListHandler<RichTextBox>(*this); }
+protected:
+	// UserInfoBase
+	const UserPtr& getUser() const;
+	const string& getHubUrl() const;
 private:
 	void clearSelInfo();
 	void updateSelectedWord(POINT pt);

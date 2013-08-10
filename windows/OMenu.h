@@ -49,8 +49,8 @@ struct OMenuItem {
 class OMenu : public CMenu {
 public:
 	enum {
-		FLAG_DEFAULT	= 0x00,
-		FLAG_THREADED	= 0x01,
+		FLAG_DEFAULT	= 0x01,
+		FLAG_THREADED	= 0x02,
 		FLAG_CHECKED	= 0x04,
 		FLAG_DISABLED	= 0x08,
 	};

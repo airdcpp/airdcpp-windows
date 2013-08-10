@@ -791,5 +791,6 @@
     <None Include="client\version.h.template">
       <Filter>Header Files</Filter>
     </None>
+    <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

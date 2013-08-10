@@ -80,7 +80,7 @@ public:
 	CComboBox method;
 
 	void SetDefaultMatchColumn(int i) { defMatchColumn = i; } //for setting the match column without column box
-
+	void clear();
 private:
 
 	enum {

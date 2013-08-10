@@ -30,40 +30,53 @@
 #include "WinUtil.h"
 #include <boost/bind.hpp>
 
+// emulation for non-list objects
+template<class T>
+struct UserListHandler {
+	UserListHandler(T& _aHandler) : handler(_aHandler) { }
+
+	void forEachSelected(void (UserInfoBase::*func)()) {
+		(handler.*func)();
+	}
+
+	template<class _Function>
+	_Function forEachSelectedT(_Function pred) {
+		pred(&handler);
+		return pred;
+	}
+
+private:
+	T& handler;
+};
+
 template<class T>
 class UserInfoBaseHandler {
 public:
 	BEGIN_MSG_MAP(UserInfoBaseHandler)
-		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
-		COMMAND_ID_HANDLER(IDC_BROWSELIST, onBrowseList)
-		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
 		COMMAND_ID_HANDLER(IDC_PRIVATEMESSAGE, onPrivateMessage)
 		COMMAND_ID_HANDLER(IDC_ADD_TO_FAVORITES, onAddToFavorites)
 		COMMAND_RANGE_HANDLER(IDC_GRANTSLOT, IDC_UNGRANTSLOT, onGrantSlot)
 		COMMAND_ID_HANDLER(IDC_REMOVEALL, onRemoveAll)
 		COMMAND_ID_HANDLER(IDC_CONNECT, onConnectFav)
-		COMMAND_ID_HANDLER(IDC_GETBROWSELIST, onGetBrowseList)
 	END_MSG_MAP()
 	bool pmItems;
 	bool listItems;
 
 	UserInfoBaseHandler(bool appendPmItems=true, bool appendListItems=true) : pmItems(appendPmItems), listItems(appendListItems) { }
-	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+
+	void handleMatchQueue() {
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::matchQueue, _1));
-		return 0;
 	}
-	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	void handleGetList() {
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getList, _1));
-		return 0;
 	}
-	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	void handleBrowseList() {
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::browseList, _1));
-		return 0;
 	}
-	LRESULT onGetBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	void handleGetBrowseList() {
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getBrowseList, _1));
-		return 0;
 	}
+
 	LRESULT onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		((T*)this)->getUserList().forEachSelected(&UserInfoBase::addFav);
 		return 0;
@@ -116,7 +129,7 @@ public:
 	};
 
 	template<class K>
-	void appendListMenu(UserPtr aUser, const User::UserInfoList& list, OMenu* subMenu, bool addShareInfo) {
+	void appendListMenu(const UserPtr& aUser, const User::UserInfoList& list, OMenu* subMenu, bool addShareInfo) {
 		for (auto& i: list) {
 			string url = i.hubUrl;
 			subMenu->appendItem(Text::toT(i.hubName) + (addShareInfo ? (_T(" (") + Util::formatBytesW(i.shared) + _T(")")) : Util::emptyStringT), 
@@ -124,30 +137,31 @@ public:
 		}
 	}
 
-	void appendUserItems(OMenu& menu, bool showFullList = true, UserPtr aUser = nullptr) {
+	void appendUserItems(OMenu& menu, bool showFullList = true, const UserPtr& aUser = nullptr) {
 		UserTraits traits = ((T*)this)->getUserList().forEachSelectedT(UserTraits());
 		bool multipleHubs = false;
 
-		auto appendSingleDownloadItems = [&menu, traits, showFullList] () -> void {
-			menu.AppendMenu(MF_SEPARATOR);
-			int defaultItem = 0;
+		auto appendSingleDownloadItems = [&](bool hubUnknown) -> void {
+			bool defaultSet = false;
+			int commonFlags = aUser && hubUnknown ? OMenu::FLAG_DISABLED : 0;
+			int defaultFlag = commonFlags > 0 ? commonFlags : OMenu::FLAG_DEFAULT;
+
+			menu.appendSeparator();
 			if (showFullList || traits.allFullList) {
-				menu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
-				defaultItem = IDC_GETLIST;
+				menu.appendItem(TSTRING(GET_FILE_LIST), [=] { handleGetList(); }, defaultFlag);
+				defaultSet = true;
 			}
 			if (!traits.noFullList && !traits.allFullList) {
-				menu.AppendMenu(MF_STRING, IDC_GETBROWSELIST, CTSTRING(GET_BROWSE_LIST));
-				defaultItem = IDC_GETBROWSELIST;
+				menu.appendItem(TSTRING(GET_BROWSE_LIST), [=] { handleGetBrowseList(); }, defaultFlag);
+				defaultSet = true;
 			}
-			menu.AppendMenu(MF_STRING, IDC_BROWSELIST, CTSTRING(BROWSE_FILE_LIST));
-			menu.AppendMenu(MF_STRING, IDC_MATCH_QUEUE, CTSTRING(MATCH_QUEUE));
-			menu.AppendMenu(MF_SEPARATOR);
-
-			menu.SetMenuDefaultItem(defaultItem > 0 ? defaultItem : IDC_BROWSELIST);
+			menu.appendItem(TSTRING(BROWSE_FILE_LIST), [=] { handleBrowseList(); }, defaultSet ? commonFlags : defaultFlag);
+			menu.appendItem(TSTRING(MATCH_QUEUE), [=] { handleMatchQueue(); }, commonFlags);
+			menu.appendSeparator();
 		};
 
+		User::UserInfoList list;
 		if (aUser) {
-			User::UserInfoList list;
 			ClientManager::getInstance()->getUserInfoList(aUser, list);
 			if (list.size() > 1) {
 				multipleHubs = true;
@@ -158,8 +172,7 @@ public:
 					//combine items in the list based on the share size
 					User::UserInfoList shareList(list.begin(), list.end());
 					for (auto i = shareList.begin(); i != shareList.end(); ++i) {
-						StringList names;
-						names.push_back(i->hubName);
+						StringList names { i->hubName };
 
 						auto matchPos = i;
 
@@ -174,16 +187,15 @@ public:
 					}
 
 					if (shareList.size() > 1) {
-						menu.AppendMenu(MF_SEPARATOR);
+						menu.appendSeparator();
 						appendListMenu<WinUtil::BrowseList>(aUser, shareList, menu.createSubMenu(CTSTRING(BROWSE_FILE_LIST)), true);
 						if (showFullList || traits.allFullList)
 							appendListMenu<WinUtil::GetList>(aUser, shareList, menu.createSubMenu(CTSTRING(GET_FILE_LIST)), true);
 						if (!traits.noFullList && !traits.allFullList)
 							appendListMenu<WinUtil::GetBrowseList>(aUser, shareList, menu.createSubMenu(CTSTRING(GET_BROWSE_LIST)), true);
 						appendListMenu<WinUtil::MatchQueue>(aUser, shareList, menu.createSubMenu(CTSTRING(MATCH_QUEUE)), true);
-						//menu.AppendMenu(MF_SEPARATOR);
 					} else {
-						appendSingleDownloadItems();
+						appendSingleDownloadItems(false);
 					}
 				}
 
@@ -197,7 +209,7 @@ public:
 				menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
 
 			if (listItems) {
-				appendSingleDownloadItems();
+				appendSingleDownloadItems(list.empty() ? true : false);
 			} else {
 				menu.SetMenuDefaultItem(IDC_PRIVATEMESSAGE);
 			}

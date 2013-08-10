@@ -65,6 +65,10 @@ void ListFilter::addMethodBox(HWND parent){
 
 }
 
+void ListFilter::clear() {
+
+}
+
 LRESULT ListFilter::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	tstring filter = Util::emptyStringT;
 

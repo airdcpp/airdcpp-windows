@@ -1137,7 +1137,7 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 
 		if(PreparePopupMenu(&ctrlUsers, Mnu)) {
 			prepareMenu(Mnu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
-			Mnu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+			Mnu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		}
 	}
 	bHandled = FALSE;
