@@ -45,7 +45,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  Resour
 	ResourceManager::PATH, ResourceManager::SLOTS, ResourceManager::CONNECTION, 
 	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 
-//static ColumnType columnTypes [] = { ColumnType::COLUMN_TEXT,  };
+static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTER_SEARCH_SHARED, SettingsManager::FILTER_SEARCH_QUEUED, SettingsManager::FILTER_SEARCH_INVERSED };
 
 
 SearchFrame::FrameMap SearchFrame::frames;
@@ -80,7 +80,7 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	ctrlExcludedContainer(WC_EDIT, this, EXCLUDE_MESSAGE_MAP),
 	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
 	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0),
-	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); })
+	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); }, filterSettings)
 {	
 	SearchManager::getInstance()->addListener(this);
 	useGrouping = SETTING(GROUP_SEARCH_RESULTS);
@@ -153,13 +153,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	fileTypeContainer.SubclassWindow(ctrlFileType.m_hWnd);
 
 	ctrlResults.Create(m_hWnd);
-	
-	/*ctrlResults.list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_RESULTS);
-
-	ctrlResults.list.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);*/
 	resultsContainer.SubclassWindow(ctrlResults.list.m_hWnd);
-	
 	ctrlResults.list.SetImageList(ResourceLoader::getFileImages(), LVSIL_SMALL);
 
 	ctrlHubs.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
@@ -1358,8 +1352,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 			ctrlResults.list.getParents().emplace(const_cast<TTHValue*>(&sr->getTTH()), pp);
 		}
 
-		if(!ctrlResults.filter.empty())
-			updateSearchList(si);
+		updateSearchList(si);
 
 		if (SETTING(BOLD_SEARCH)) {
 			setDirty();
@@ -1741,8 +1734,9 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 	auto filterInfoF = [&](int column) { return Text::fromT(si->getText(column)); };
 
 	if(si) {
-		if (!ctrlResults.filter.match(filterPrep, filterInfoF))
+		if (!ctrlResults.checkDupe(si->getDupe()) || (!ctrlResults.filter.empty() && !ctrlResults.filter.match(filterPrep, filterInfoF))) {
 			ctrlResults.list.deleteItem(si);
+		}
 	} else {
 		ctrlResults.list.SetRedraw(FALSE);
 		ctrlResults.list.DeleteAllItems();

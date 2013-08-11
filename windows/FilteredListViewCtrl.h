@@ -25,6 +25,7 @@
 #include "TypedListViewCtrl.h"
 
 #include "../client/AirUtil.h"
+#include "../client/SettingsManager.h"
 
 #define FILTER_MESSAGE_MAP 8
 
@@ -32,6 +33,13 @@ template<class ContainerT, class ParentT, int ctrlId>
 class FilteredListViewCtrl : public CWindowImpl<FilteredListViewCtrl<ContainerT, ParentT, ctrlId>>  {
 
 public:
+	enum Settings {
+		SETTING_SHARED,
+		SETTING_QUEUED,
+		SETTING_INVERSED,
+		SETTING_LAST
+	};
+
 	typedef FilteredListViewCtrl<ContainerT, ParentT, ctrlId> thisClass;
 	BEGIN_MSG_MAP(thisClass)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
@@ -51,11 +59,16 @@ public:
 		//MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
 	END_MSG_MAP();
 
-	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF) : filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), filter(colCount, [this] { onUpdate(); }), columnCount(colCount), /*, listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),*/
+	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings) : filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
+		filter(colCount, [this] { onUpdate(); }), columnCount(colCount), /*, listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),*/
 		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
 		ctrlFilterMethodContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP)
-	{}
+	{
+		filterShared = SettingsManager::getInstance()->get(settings[SETTING_SHARED]);
+		filterQueued = SettingsManager::getInstance()->get(settings[SETTING_QUEUED]);
+		filter.setInverse(SettingsManager::getInstance()->get(settings[SETTING_INVERSED]));
+	}
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, ctrlId);
@@ -167,20 +180,20 @@ public:
 	LRESULT onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
 		switch (wID) {
 			case IDC_FILTER_QUEUED: {
-				//SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_SHOW_INFO, showInfo);
 				filterQueued = !filterQueued;
+				SettingsManager::getInstance()->set(settings[SETTING_QUEUED], filterQueued);
 				updateF();
 				break;
 			}
 			case IDC_FILTER_SHARED: {
-				//SettingsManager::getInstance()->set(SettingsManager::USERS_FILTER_FAVORITE, listFav);
 				filterShared = !filterShared;
+				SettingsManager::getInstance()->set(settings[SETTING_SHARED], filterShared);
 				updateF();
 				break;
 			}
 			case IDC_FILTER_INVERSE: {
-				//SettingsManager::getInstance()->set(SettingsManager::USERS_FILTER_FAVORITE, listFav);
 				filter.setInverse(!filter.getInverse());
+				SettingsManager::getInstance()->set(settings[SETTING_INVERSED], filter.getInverse());
 				updateF();
 				break;
 			}
@@ -232,6 +245,7 @@ public:
 	ListFilter filter;
 	ContainerT list;
 private:
+	SettingsManager::BoolSetting* settings;
 	ParentT* parent;
 	size_t columnCount;
 

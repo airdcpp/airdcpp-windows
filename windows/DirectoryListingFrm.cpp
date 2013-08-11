@@ -48,6 +48,8 @@ int DirectoryListingFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_TYPE, COL
 int DirectoryListingFrame::columnSizes[] = { 300, 60, 100, 100, 200, 100 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::TYPE, ResourceManager::EXACT_SIZE, ResourceManager::SIZE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
+static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::FILTER_FL_SHARED, SettingsManager::FILTER_FL_QUEUED, SettingsManager::FILTER_FL_INVERSED };
+
 
 void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aDir, const string& aXML) {
 
@@ -75,7 +77,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	pathContainer(WC_COMBOBOX, this, PATH_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 	listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(1),
 		treeRoot(NULL), skipHits(0), files(0), updating(false), dl(aList), 
-		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), ctrlFiles(this, COLUMN_LAST, [this] { filterList(); })
+		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), ctrlFiles(this, COLUMN_LAST, [this] { filterList(); }, filterSettings)
 {
 	dl->addListener(this);
 }
@@ -1878,8 +1880,6 @@ void DirectoryListingFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 		ctrlStatus.SetParts(STATUS_LAST, w);
 		ctrlStatus.GetRect(0, sr);
-
-		const long bspace = 10;
 		sr.bottom -= 1;
 
 		if (selCombo.GetStyle() & WS_VISIBLE) {
