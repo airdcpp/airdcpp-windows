@@ -3,6 +3,7 @@
 Added:
 
 - Allow changing the default share profile
+- New filter for file list and search tabs
 - Display the via which the file list is browsed through and allow changing it
 - Allow changing the share profile in own list
 - Add an option to refresh the share after client startup (enabled by default)

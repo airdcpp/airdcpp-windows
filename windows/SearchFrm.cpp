@@ -45,7 +45,8 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  Resour
 	ResourceManager::PATH, ResourceManager::SLOTS, ResourceManager::CONNECTION, 
 	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 
-static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTER_SEARCH_SHARED, SettingsManager::FILTER_SEARCH_QUEUED, SettingsManager::FILTER_SEARCH_INVERSED };
+static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTER_SEARCH_SHARED, SettingsManager::FILTER_SEARCH_QUEUED, SettingsManager::FILTER_SEARCH_INVERSED, SettingsManager::FILTER_SEARCH_TOP, 
+	SettingsManager::FILTER_SEARCH_PARTIAL_DUPES, SettingsManager::FILTER_SEARCH_RESET_CHANGE };
 
 
 SearchFrame::FrameMap SearchFrame::frames;

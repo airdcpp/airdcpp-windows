@@ -68,6 +68,12 @@ void ListFilter::addMethodBox(HWND parent){
 void ListFilter::clear() {
 	text.SetWindowText(_T(""));
 	//textUpdated(Util::emptyString);
+	matcher.pattern = Util::emptyString;
+}
+
+void ListFilter::setInverse(bool aInverse) {
+	inverse = aInverse;
+	WinUtil::addCue(text.m_hWnd, inverse ? CTSTRING(EXCLUDE_DOTS) : CTSTRING(FILTER_DOTS), FALSE);
 }
 
 LRESULT ListFilter::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {

@@ -23,6 +23,7 @@
 
 #include "ListFilter.h"
 #include "TypedListViewCtrl.h"
+#include "OMenu.h"
 
 #include "../client/AirUtil.h"
 #include "../client/SettingsManager.h"
@@ -37,6 +38,9 @@ public:
 		SETTING_SHARED,
 		SETTING_QUEUED,
 		SETTING_INVERSED,
+		SETTING_TOP,
+		SETTING_PARTIAL_DUPES,
+		SETTING_RESET_CHANGE,
 		SETTING_LAST
 	};
 
@@ -47,10 +51,11 @@ public:
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
+		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 
 		COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
 		COMMAND_ID_HANDLER(IDC_FILTER_SHARED, onShow)
-		COMMAND_ID_HANDLER(IDC_FILTER_INVERSE, onShow)
+		COMMAND_ID_HANDLER(IDC_FILTER_OPTIONS, onClickOptions)
 		FORWARD_NOTIFICATIONS()
 	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
 		CHAIN_MSG_MAP_MEMBER(filter)
@@ -59,7 +64,7 @@ public:
 		//MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
 	END_MSG_MAP();
 
-	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings) : filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
+	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings) : onTop(true), resetOnChange(true), filterPartialDupes(false), filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
 		filter(colCount, [this] { onUpdate(); }), columnCount(colCount), /*, listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),*/
 		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
@@ -67,6 +72,9 @@ public:
 	{
 		filterShared = SettingsManager::getInstance()->get(settings[SETTING_SHARED]);
 		filterQueued = SettingsManager::getInstance()->get(settings[SETTING_QUEUED]);
+		onTop = SettingsManager::getInstance()->get(settings[SETTING_TOP]);
+		filterPartialDupes = SettingsManager::getInstance()->get(settings[SETTING_PARTIAL_DUPES]);
+		resetOnChange = SettingsManager::getInstance()->get(settings[SETTING_RESET_CHANGE]);
 		filter.setInverse(SettingsManager::getInstance()->get(settings[SETTING_INVERSED]));
 	}
 
@@ -98,20 +106,60 @@ public:
 		ctrlShared.SetFont(WinUtil::systemFont);
 		ctrlShared.SetCheck(filterShared ? BST_CHECKED : BST_UNCHECKED);
 
-		ctrlInverse.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_INVERSE);
-		ctrlInverse.SetWindowText(CTSTRING(HIDE_MATCHES));
-		ctrlInverse.SetButtonStyle(BS_AUTOCHECKBOX, false);
-		ctrlInverse.SetFont(WinUtil::systemFont);
-		ctrlInverse.SetCheck(filter.getInverse() ? BST_CHECKED : BST_UNCHECKED);
+		ctrlOptions.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_OPTIONS);
+		ctrlOptions.SetWindowText(CTSTRING(OPTIONS_DOTS));
+		ctrlOptions.SetFont(WinUtil::systemFont);
 
 		bHandled = FALSE;
+		return 0;
+	}
+
+	LRESULT onClickOptions(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
+		CRect rect;
+		ctrlOptions.GetWindowRect(rect);
+		auto pt = rect.BottomRight();
+		pt.x = pt.x - rect.Width();
+		ctrlOptions.SetState(true);
+
+		OMenu optionMenu;
+		optionMenu.CreatePopupMenu();
+		optionMenu.appendItem(TSTRING(EXCLUDE_MATCHES), [this] {
+			filter.setInverse(!filter.getInverse());
+			SettingsManager::getInstance()->set(settings[SETTING_INVERSED], filter.getInverse());
+			updateF();
+		}, filter.getInverse() ? OMenu::FLAG_CHECKED : 0);
+
+		optionMenu.appendItem(TSTRING(SHOW_ON_TOP), [this] {
+			onTop = !onTop;
+			SettingsManager::getInstance()->set(settings[SETTING_TOP], onTop);
+			UpdateLayout();
+		}, onTop ? OMenu::FLAG_CHECKED : 0);
+
+		//ugly hack!
+		optionMenu.appendItem(settings[SETTING_RESET_CHANGE] == SettingsManager::FILTER_FL_RESET_CHANGE ? TSTRING(RESET_FOLDER_CHANGE) : TSTRING(RESET_NEW_SEARCH), [this] {
+			resetOnChange = !resetOnChange;
+			SettingsManager::getInstance()->set(settings[SETTING_RESET_CHANGE], resetOnChange);
+		}, resetOnChange ? OMenu::FLAG_CHECKED : 0);
+
+		optionMenu.appendItem(TSTRING(PARTIAL_DUPES_EQUAL), [this] {
+			filterPartialDupes = !filterPartialDupes;
+			SettingsManager::getInstance()->set(settings[SETTING_PARTIAL_DUPES], filterPartialDupes);
+			updateF();
+		}, filterPartialDupes ? OMenu::FLAG_CHECKED : 0);
+
+		optionMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
+		return 0;
+	}
+
+	LRESULT onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+		ctrlOptions.SetState(false);
 		return 0;
 	}
 
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 		HWND hWnd = (HWND) lParam;
 		HDC hDC = (HDC) wParam;
-		if (hWnd == ctrlQueued.m_hWnd || hWnd == ctrlShared.m_hWnd ||hWnd == ctrlInverse.m_hWnd) {
+		if (hWnd == ctrlQueued.m_hWnd || hWnd == ctrlShared.m_hWnd) {
 			::SetBkColor(hDC, WinUtil::bgColor);
 			::SetTextColor(hDC, WinUtil::textColor);
 			return (LRESULT) WinUtil::bgBrush;
@@ -131,21 +179,28 @@ public:
 		const int lMargin = 4;
 		const int sharedWidth = WinUtil::getTextWidth(TSTRING(SHARED), ctrlShared.m_hWnd) + 20;
 		const int queuedWidth = WinUtil::getTextWidth(TSTRING(QUEUED), ctrlQueued.m_hWnd) + 20;
-		const int inverseWidth = WinUtil::getTextWidth(TSTRING(HIDE_MATCHES), ctrlInverse.m_hWnd) + 20;
+		const int optionsWidth = WinUtil::getTextWidth(TSTRING(SETTINGS_OPTIONS), ctrlOptions.m_hWnd) + 20;
 
 		RECT rect;
 		GetClientRect(&rect);
 
 		CRect rc = rect;
-		rc.bottom -= 26;
-		list.MoveWindow(rc);
+		if (onTop) {
+			rc.top += 40;
+			list.MoveWindow(rc);
 
-		// "Search filter"
-		rc.top = rc.bottom + 2;
-		rc.bottom = rc.top + 22;
+			rc.bottom = rc.top - 10;
+			rc.top = rc.bottom - 20;
+		} else {
+			rc.bottom -= 40;
+			list.MoveWindow(rc);
 
-		rc.left = rc.left;
-		rc.right = rc.right - 250 - sharedWidth - queuedWidth - inverseWidth - 10;
+			rc.top = rc.bottom + 10;
+			rc.bottom = rc.top + 20;
+		}
+
+		rc.left = rc.left + 5;
+		rc.right = rc.right - 250 - sharedWidth - queuedWidth - optionsWidth - 10;
 		filter.getFilterBox().MoveWindow(rc);
 
 		rc.left = rc.right + lMargin;
@@ -165,12 +220,8 @@ public:
 		ctrlShared.MoveWindow(rc);
 
 		rc.left = rc.right + lMargin;
-		rc.right = rc.left + inverseWidth;
-		ctrlInverse.MoveWindow(rc);
-
-		//sr.left = sr.right + 8;
-		//sr.right = sr.left + ctrlShowOnline.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowOnline.m_hWnd, WinUtil::systemFont) + 24;
-		//ctrlShowOnline.MoveWindow(sr);
+		rc.right = rc.left + optionsWidth;
+		ctrlOptions.MoveWindow(rc);
 	}
 
 	LRESULT onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
@@ -187,12 +238,6 @@ public:
 				updateF();
 				break;
 			}
-			case IDC_FILTER_INVERSE: {
-				filter.setInverse(!filter.getInverse());
-				SettingsManager::getInstance()->set(settings[SETTING_INVERSED], filter.getInverse());
-				updateF();
-				break;
-			}
 		}
 		return 0;
 	}
@@ -205,9 +250,9 @@ public:
 	}
 
 	bool checkDupe(DupeType aDupe) {
-		if (!filterQueued && aDupe == QUEUE_DUPE) {
+		if (!filterQueued && (aDupe == QUEUE_DUPE || (filterPartialDupes && aDupe == PARTIAL_QUEUE_DUPE))) {
 			return false;
-		} else if (!filterShared && aDupe == SHARE_DUPE) {
+		} else if (!filterShared && (aDupe == SHARE_DUPE || (filterPartialDupes && aDupe == PARTIAL_SHARE_DUPE))) {
 			return false;
 		}
 
@@ -240,6 +285,12 @@ public:
 
 	ListFilter filter;
 	ContainerT list;
+
+	void onListChanged(bool forceReset) {
+		if (resetOnChange || forceReset) {
+			filter.clear();
+		}
+	}
 private:
 	SettingsManager::BoolSetting* settings;
 	ParentT* parent;
@@ -255,10 +306,12 @@ private:
 
 	CButton ctrlQueued;
 	CButton ctrlShared;
-	CButton ctrlInverse;
+	CButton ctrlOptions;
 	bool filterQueued;
 	bool filterShared;
-	//CButton ctrlShowOnline;
+	bool resetOnChange;
+	bool filterPartialDupes;
+	bool onTop;
 };
 
 #endif // FILTEREDLISTVIEW_H_

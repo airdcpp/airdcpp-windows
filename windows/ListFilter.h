@@ -82,7 +82,8 @@ public:
 	void SetDefaultMatchColumn(int i) { defMatchColumn = i; } //for setting the match column without column box
 	void clear();
 
-	GETSET(bool, inverse, Inverse);
+	void setInverse(bool aInverse);
+	bool getInverse() const { return inverse;  }
 private:
 
 	enum {
@@ -111,5 +112,6 @@ private:
 	const UpdateFunction updateFunction;
 
 	StringMatch matcher;
+	bool inverse;
 };
 #endif

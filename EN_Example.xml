@@ -1968,6 +1968,12 @@ Do you want to continue?</string>
 	<string name="ReportDuplicateFiles">Report duplicate files when generating file lists</string>
 	<string name="DuplicateFilesDetected">%1% duplicate files were detected when generating file list from directories %2%</string>
 	<string name="SearchForeground">Search (foreground)</string>
-	<string name="HideMatches">Hide matches</string>
+	<string name="ExcludeMatches">Exclude matches</string>
 	<string name="HubUnknown">No known hub</string>
+	<string name="ExcludeDots">Exclude...</string>
+	<string name="ResetFolderChange">Reset when switching directory</string>
+	<string name="ResetNewSearch">Reset on new search</string>
+	<string name="PartialDupesEqual">Treat partial dupes similar to exact dupes</string>
+	<string name="ShowOnTop">Show on top</string>
+	<string name="OptionsDots">Options...</string>
 </recources>

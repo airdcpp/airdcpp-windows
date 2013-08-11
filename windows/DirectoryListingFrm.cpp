@@ -48,7 +48,7 @@ int DirectoryListingFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_TYPE, COL
 int DirectoryListingFrame::columnSizes[] = { 300, 60, 100, 100, 200, 100 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::TYPE, ResourceManager::EXACT_SIZE, ResourceManager::SIZE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
-static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::FILTER_FL_SHARED, SettingsManager::FILTER_FL_QUEUED, SettingsManager::FILTER_FL_INVERSED };
+static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTER_FL_SHARED, SettingsManager::FILTER_FL_QUEUED, SettingsManager::FILTER_FL_INVERSED, SettingsManager::FILTER_FL_TOP, SettingsManager::FILTER_FL_PARTIAL_DUPES, SettingsManager::FILTER_FL_RESET_CHANGE };
 
 
 void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aDir, const string& aXML) {
@@ -978,6 +978,7 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 		changeType = CHANGE_LIST; //reset
 	}
 
+	ctrlFiles.onListChanged(false);
 	insertItems(selectedName);
 
 	ctrlFiles.list.resort();
