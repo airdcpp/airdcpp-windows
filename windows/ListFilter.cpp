@@ -98,7 +98,7 @@ LRESULT ListFilter::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BO
 				}
 			}
 			CloseClipboard();
-		}else if(uMsg == WM_CUT) {
+		} else if(uMsg == WM_CUT || uMsg == WM_CLEAR) {
 			int begin, end;
 			text.GetSel(begin, end);
 			tstring buf;
@@ -106,8 +106,6 @@ LRESULT ListFilter::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BO
 			buf.resize(text.GetWindowText(&buf[0], text.GetWindowTextLength() + 1));
 			buf.erase(begin, end);
 			filter = buf;
-		}else if(uMsg == WM_CLEAR) {
-			filter.clear();
 		} else {
 			TCHAR *buf = new TCHAR[text.GetWindowTextLength()+1];
 			text.GetWindowText(buf, text.GetWindowTextLength()+1);

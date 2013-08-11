@@ -121,6 +121,7 @@ private:
 	}
 
 	OMenu* parent;
+	bool defaultSet;
 };
 
 #define MESSAGE_HANDLER_HWND(msg, func) \

@@ -142,20 +142,17 @@ public:
 		bool multipleHubs = false;
 
 		auto appendSingleDownloadItems = [&](bool hubUnknown) -> void {
-			bool defaultSet = false;
 			int commonFlags = aUser && hubUnknown ? OMenu::FLAG_DISABLED : 0;
 			int defaultFlag = commonFlags > 0 ? commonFlags : OMenu::FLAG_DEFAULT;
 
 			menu.appendSeparator();
 			if (showFullList || traits.allFullList) {
 				menu.appendItem(TSTRING(GET_FILE_LIST), [=] { handleGetList(); }, defaultFlag);
-				defaultSet = true;
 			}
 			if (!traits.noFullList && !traits.allFullList) {
 				menu.appendItem(TSTRING(GET_BROWSE_LIST), [=] { handleGetBrowseList(); }, defaultFlag);
-				defaultSet = true;
 			}
-			menu.appendItem(TSTRING(BROWSE_FILE_LIST), [=] { handleBrowseList(); }, defaultSet ? commonFlags : defaultFlag);
+			menu.appendItem(TSTRING(BROWSE_FILE_LIST), [=] { handleBrowseList(); }, defaultFlag);
 			menu.appendItem(TSTRING(MATCH_QUEUE), [=] { handleMatchQueue(); }, commonFlags);
 			menu.appendSeparator();
 		};

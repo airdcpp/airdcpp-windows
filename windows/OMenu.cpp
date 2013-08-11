@@ -32,7 +32,7 @@ OMenu::~OMenu() {
 	}
 }
 
-OMenu::OMenu(OMenu* aParent /*nullptr*/) : CMenu(), start(IDC_MENURANGE), parent(aParent) { 
+OMenu::OMenu(OMenu* aParent /*nullptr*/) : CMenu(), start(IDC_MENURANGE), parent(aParent), defaultSet(false) { 
 	if (!parent) {
 		MENUINFO mi = { sizeof(MENUINFO), MIM_STYLE, MNS_NOTIFYBYPOS };
 		::SetMenuInfo(m_hMenu, &mi);
@@ -194,9 +194,10 @@ unsigned OMenu::appendItem(const tstring& text, const Dispatcher::F& f /*nullptr
 		info.fMask |= MIIM_STATE;
 		info.fState |= MFS_DISABLED;
 	}
-	if(flags & FLAG_DEFAULT) {
+	if (flags & FLAG_DEFAULT && !defaultSet) {
 		info.fMask |= MIIM_STATE;
 		info.fState |= MFS_DEFAULT;
+		defaultSet = true;
 	}
 
 	if(flags & FLAG_CHECKED) {
