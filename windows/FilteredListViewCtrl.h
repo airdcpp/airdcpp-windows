@@ -77,10 +77,6 @@ public:
 
 		parent->createColumns();
 
-		list.SetBkColor(WinUtil::bgColor);
-		list.SetTextBkColor(WinUtil::bgColor);
-		list.SetTextColor(WinUtil::textColor);
-
 		filter.addFilterBox(m_hWnd);
 		filter.addColumnBox(m_hWnd, list.getColumnList());
 		filter.addMethodBox(m_hWnd);

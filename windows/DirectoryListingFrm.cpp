@@ -260,6 +260,9 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	treeContainer.SubclassWindow(ctrlTree);
 	ctrlFiles.Create(m_hWnd);
 	listContainer.SubclassWindow(ctrlFiles.list);
+	ctrlFiles.list.SetBkColor(WinUtil::bgColor);
+	ctrlFiles.list.SetTextBkColor(WinUtil::bgColor);
+	ctrlFiles.list.SetTextColor(WinUtil::textColor);
 	
 	ctrlTree.SetBkColor(WinUtil::bgColor);
 	ctrlTree.SetTextColor(WinUtil::textColor);

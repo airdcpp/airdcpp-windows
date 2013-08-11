@@ -256,11 +256,12 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ctrlResults.list.setSortColumn(COLUMN_HITS);
 		ctrlResults.list.setAscending(false);
 	}
-	/*ctrlResults.list.SetBkColor(WinUtil::bgColor);
+
+	ctrlResults.list.SetBkColor(WinUtil::bgColor);
 	ctrlResults.list.SetTextBkColor(WinUtil::bgColor);
 	ctrlResults.list.SetTextColor(WinUtil::textColor);
 	ctrlResults.list.SetFont(WinUtil::systemFont, FALSE);	// use WinUtil::font instead to obey Appearace settings
-	ctrlResults.list.setFlickerFree(WinUtil::bgBrush);*/
+	ctrlResults.list.setFlickerFree(WinUtil::bgBrush);
 	
 	ctrlHubs.InsertColumn(0, _T("Dummy"), LVCFMT_LEFT, LVSCW_AUTOSIZE, 0);
 	ctrlHubs.SetBkColor(WinUtil::bgColor);
