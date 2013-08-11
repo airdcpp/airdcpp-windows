@@ -265,7 +265,7 @@ public:
 
 	/* FilteredListViewCtrl */
 	void createColumns();
-	size_t getDirectoryItemCount() const;
+	size_t getTotalListItemCount() const;
 private:
 	void updateHistoryCombo();
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
@@ -347,7 +347,7 @@ private:
 	size_t historyIndex;
 	
 	TypedTreeCtrl<DirectoryListingFrame, DirectoryListing::Directory> ctrlTree;
-	FilteredListViewCtrl<DirectoryListingFrame, ItemInfo, IDC_FILES> ctrlFiles;
+	FilteredListViewCtrl < TypedListViewCtrl<ItemInfo, IDC_FILES>, DirectoryListingFrame, IDC_FILES> ctrlFiles;
 	CStatusBarCtrl ctrlStatus;
 	HTREEITEM treeRoot;
 	

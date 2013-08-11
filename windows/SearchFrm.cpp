@@ -77,17 +77,28 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	doSearchContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	resultsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
 	hubsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
-	ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-	ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
-	ctrlFilterMethodContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
-	ctrlExcludedContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
+	ctrlExcludedContainer(WC_EDIT, this, EXCLUDE_MESSAGE_MAP),
 	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
 	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0),
-	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false),
-	filter(COLUMN_LAST, [this] { updateSearchList(); })
+	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); })
 {	
 	SearchManager::getInstance()->addListener(this);
 	useGrouping = SETTING(GROUP_SEARCH_RESULTS);
+}
+
+void SearchFrame::createColumns() {
+	// Create listview columns
+	WinUtil::splitTokens(columnIndexes, SETTING(SEARCHFRAME_ORDER), COLUMN_LAST);
+	WinUtil::splitTokens(columnSizes, SETTING(SEARCHFRAME_WIDTHS), COLUMN_LAST);
+
+	for (uint8_t j = 0; j < COLUMN_LAST; j++) {
+		int fmt = (j == COLUMN_SIZE || j == COLUMN_EXACT_SIZE) ? LVCFMT_RIGHT : LVCFMT_LEFT;
+		ctrlResults.list.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
+	}
+}
+
+size_t SearchFrame::getTotalListItemCount() const {
+	return 0;
 }
 
 LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -141,14 +152,15 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	fileTypeContainer.SubclassWindow(ctrlFileType.m_hWnd);
 
+	ctrlResults.Create(m_hWnd);
 	
-	ctrlResults.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+	/*ctrlResults.list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_RESULTS);
 
-	ctrlResults.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
-	resultsContainer.SubclassWindow(ctrlResults.m_hWnd);
+	ctrlResults.list.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);*/
+	resultsContainer.SubclassWindow(ctrlResults.list.m_hWnd);
 	
-	ctrlResults.SetImageList(ResourceLoader::getFileImages(), LVSIL_SMALL);
+	ctrlResults.list.SetImageList(ResourceLoader::getFileImages(), LVSIL_SMALL);
 
 	ctrlHubs.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_NOCOLUMNHEADER, WS_EX_CLIENTEDGE, IDC_HUB);
@@ -240,36 +252,21 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	ctrlFileType.fillList(!initialString.empty() ? initialType : SETTING(LAST_SEARCH_FILETYPE), WinUtil::textColor, WinUtil::bgColor);
 
-	// Create listview columns
-	WinUtil::splitTokens(columnIndexes, SETTING(SEARCHFRAME_ORDER), COLUMN_LAST);
-	WinUtil::splitTokens(columnSizes, SETTING(SEARCHFRAME_WIDTHS), COLUMN_LAST);
+	ctrlResults.list.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 
-	for(uint8_t j = 0; j < COLUMN_LAST; j++) {
-		int fmt = (j == COLUMN_SIZE || j == COLUMN_EXACT_SIZE) ? LVCFMT_RIGHT : LVCFMT_LEFT;
-		ctrlResults.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
-	}
-
-	filter.addFilterBox(m_hWnd);
-	filter.addColumnBox(m_hWnd, ctrlResults.getColumnList());
-	filter.addMethodBox(m_hWnd);
-	ctrlFilterContainer.SubclassWindow(filter.getFilterBox().m_hWnd);
-	ctrlFilterSelContainer.SubclassWindow(filter.getFilterColumnBox().m_hWnd);
-	ctrlFilterMethodContainer.SubclassWindow(filter.getFilterMethodBox().m_hWnd);
-	ctrlResults.setColumnOrderArray(COLUMN_LAST, columnIndexes);
-
-	ctrlResults.setVisible(SETTING(SEARCHFRAME_VISIBLE));
+	ctrlResults.list.setVisible(SETTING(SEARCHFRAME_VISIBLE));
 	
 	if(SETTING(SORT_DIRS)) {
-		ctrlResults.setSortColumn(COLUMN_FILENAME);
+		ctrlResults.list.setSortColumn(COLUMN_FILENAME);
 	} else {
-		ctrlResults.setSortColumn(COLUMN_HITS);
-		ctrlResults.setAscending(false);
+		ctrlResults.list.setSortColumn(COLUMN_HITS);
+		ctrlResults.list.setAscending(false);
 	}
-	ctrlResults.SetBkColor(WinUtil::bgColor);
-	ctrlResults.SetTextBkColor(WinUtil::bgColor);
-	ctrlResults.SetTextColor(WinUtil::textColor);
-	ctrlResults.SetFont(WinUtil::systemFont, FALSE);	// use WinUtil::font instead to obey Appearace settings
-	ctrlResults.setFlickerFree(WinUtil::bgBrush);
+	/*ctrlResults.list.SetBkColor(WinUtil::bgColor);
+	ctrlResults.list.SetTextBkColor(WinUtil::bgColor);
+	ctrlResults.list.SetTextColor(WinUtil::textColor);
+	ctrlResults.list.SetFont(WinUtil::systemFont, FALSE);	// use WinUtil::font instead to obey Appearace settings
+	ctrlResults.list.setFlickerFree(WinUtil::bgBrush);*/
 	
 	ctrlHubs.InsertColumn(0, _T("Dummy"), LVCFMT_LEFT, LVSCW_AUTOSIZE, 0);
 	ctrlHubs.SetBkColor(WinUtil::bgColor);
@@ -451,9 +448,9 @@ void SearchFrame::onEnter() {
 	for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
 	pausedResults.clear();
 
-	ctrlResults.SetRedraw(FALSE);
-	ctrlResults.deleteAllItems();	
-	ctrlResults.SetRedraw(TRUE);
+	ctrlResults.list.SetRedraw(FALSE);
+	ctrlResults.list.deleteAllItems();	
+	ctrlResults.list.SetRedraw(TRUE);
 
 	::EnableWindow(GetDlgItem(IDC_SEARCH_PAUSE), TRUE);
 	ctrlPauseSearch.SetWindowText(CTSTRING(PAUSE_SEARCH));
@@ -605,8 +602,8 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 void SearchFrame::removeSelected() {
 	int i = -1;
 	WLock l(cs);
-	while( (i = ctrlResults.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-		ctrlResults.removeGroupedItem(ctrlResults.getItemData(i));
+	while( (i = ctrlResults.list.GetNextItem(-1, LVNI_SELECTED)) != -1) {
+		ctrlResults.list.removeGroupedItem(ctrlResults.list.getItemData(i));
 	}
 }
 
@@ -740,7 +737,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 		case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
 		case COLUMN_CONNECTION:
 			/*if (hits > 1) {
-				//auto p = ctrlResults.
+				//auto p = ctrlResults.list.
 			} else {*/
 				return Text::toT(sr->getConnectionStr());
 			//}
@@ -762,10 +759,10 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 }
 
 void SearchFrame::performAction(std::function<void (const SearchInfo* aInfo)> f, bool /*oncePerParent false*/) {
-	ctrlResults.filteredForEachSelectedT([&](const SearchInfo* si) {
+	ctrlResults.list.filteredForEachSelectedT([&](const SearchInfo* si) {
 		/*if (si->hits > 1) {
 			//perform only for the children
-			const auto& children = ctrlResults.findChildren(si->getGroupCond());
+			const auto& children = ctrlResults.list.findChildren(si->getGroupCond());
 			if (oncePerParent && !children.empty()) {
 				f(children.front());
 			} else {
@@ -816,7 +813,7 @@ void SearchFrame::handleViewNfo() {
 }
 
 void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool useWhole, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
-	ctrlResults.filteredForEachSelectedT([&](const SearchInfo* si) {
+	ctrlResults.list.filteredForEachSelectedT([&](const SearchInfo* si) {
 		bool fileDownload = si->sr->getType() == SearchResult::TYPE_FILE && !useWhole;
 
 		// names/case sizes may differ for grouped results
@@ -839,7 +836,7 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 		if (si->hits >= 1) {
 			//perform also for the children
 			SearchResultList results = { si->sr };
-			const auto& children = ctrlResults.findChildren(si->getGroupCond());
+			const auto& children = ctrlResults.list.findChildren(si->getGroupCond());
 			for (auto si: children)
 				results.push_back(si->sr);
 
@@ -879,15 +876,15 @@ void SearchFrame::handleMatchPartial() {
 }
 
 void SearchFrame::handleSearchDir() {
-	if(ctrlResults.GetSelectedCount() == 1) {
-		const SearchInfo* si = ctrlResults.getSelectedItem();
+	if(ctrlResults.list.GetSelectedCount() == 1) {
+		const SearchInfo* si = ctrlResults.list.getSelectedItem();
 		WinUtil::searchAny(Text::toT(Util::getReleaseDir(si->sr->getPath(), true)));
 	}
 }
 
 void SearchFrame::handleOpenFolder() {
-	if(ctrlResults.GetSelectedCount() == 1) {
-		const SearchInfo* si = ctrlResults.getSelectedItem();
+	if(ctrlResults.list.GetSelectedCount() == 1) {
+		const SearchInfo* si = ctrlResults.list.getSelectedItem();
 		try {
 			tstring path;
 			if(si->sr->getType() == SearchResult::TYPE_DIRECTORY) {
@@ -905,8 +902,8 @@ void SearchFrame::handleOpenFolder() {
 }
 
 void SearchFrame::handleSearchTTH() {
-	if(ctrlResults.GetSelectedCount() == 1) {
-		const SearchInfo* si = ctrlResults.getSelectedItem();
+	if(ctrlResults.list.GetSelectedCount() == 1) {
+		const SearchInfo* si = ctrlResults.list.getSelectedItem();
 		if(si->sr->getType() == SearchResult::TYPE_FILE) {
 			WinUtil::searchHash(si->sr->getTTH(), si->sr->getFileName(), si->sr->getSize());
 		}
@@ -944,10 +941,10 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 }
 
 bool SearchFrame::showDirDialog(string& fileName) {
-	if(ctrlResults.GetSelectedCount() == 1) {
-		int i = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
+	if(ctrlResults.list.GetSelectedCount() == 1) {
+		int i = ctrlResults.list.GetNextItem(-1, LVNI_SELECTED);
 		dcassert(i != -1);
-		const SearchInfo* si = ctrlResults.getItemData(i);
+		const SearchInfo* si = ctrlResults.list.getItemData(i);
 		
 		if (si->sr->getType() == SearchResult::TYPE_DIRECTORY)
 			return true;
@@ -963,8 +960,8 @@ bool SearchFrame::showDirDialog(string& fileName) {
 int64_t SearchFrame::getDownloadSize(bool /*isWhole*/) {
 	int sel = -1;
 	map<string, int64_t> countedDirs;
-	while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-		const SearchResultPtr& sr = ctrlResults.getItemData(sel)->sr;
+	while((sel = ctrlResults.list.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+		const SearchResultPtr& sr = ctrlResults.list.getItemData(sel)->sr;
 		auto s = countedDirs.find(sr->getFileName());
 		if (s != countedDirs.end()) {
 			if (s->second < sr->getSize()) {
@@ -983,13 +980,13 @@ LRESULT SearchFrame::onDoubleClickResults(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 	
 	if (item->iItem != -1) {
 		CRect rect;
-		ctrlResults.GetItemRect(item->iItem, rect, LVIR_ICON);
+		ctrlResults.list.GetItemRect(item->iItem, rect, LVIR_ICON);
 
 		// if double click on state icon, ignore...
 		if (item->ptAction.x < rect.left)
 			return 0;
 
-		onDownload(SETTING(DOWNLOAD_DIRECTORY), false, ctrlResults.getItemData(item->iItem)->getUser()->isNMDC(), WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
+		onDownload(SETTING(DOWNLOAD_DIRECTORY), false, ctrlResults.list.getItemData(item->iItem)->getUser()->isNMDC(), WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 	}
 	return 0;
 }
@@ -1008,11 +1005,11 @@ LRESULT SearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		PostMessage(WM_CLOSE);
 		return 0;
 	} else {
-		ctrlResults.SetRedraw(FALSE);
+		ctrlResults.list.SetRedraw(FALSE);
 		
-		ctrlResults.deleteAllItems();
+		ctrlResults.list.deleteAllItems();
 		
-		ctrlResults.SetRedraw(TRUE);
+		ctrlResults.list.SetRedraw(TRUE);
 
 		// delete all results which came in paused state
 		for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
@@ -1043,7 +1040,7 @@ LRESULT SearchFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 			SettingsManager::getInstance()->set(SettingsManager::SEARCH_RIGHT, (rc.right > 0 ? rc.right : 0));
 		}
 
-		ctrlResults.saveHeaderOrder(SettingsManager::SEARCHFRAME_ORDER, SettingsManager::SEARCHFRAME_WIDTHS, 
+		ctrlResults.list.saveHeaderOrder(SettingsManager::SEARCHFRAME_ORDER, SettingsManager::SEARCHFRAME_WIDTHS, 
 			SettingsManager::SEARCHFRAME_VISIBLE);
 
 		
@@ -1082,9 +1079,9 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 	if(showUI)
 	{
 		CRect rc = rect;
-		rc.bottom -= 26;
-		rc.left += width;
-		ctrlResults.MoveWindow(rc);
+		//rc.bottom -= 26;
+		//rc.left += width;
+		//ctrlResults.list.MoveWindow(rc);
 
 		// "Search for"
 		rc.right = width - rMargin;
@@ -1184,8 +1181,8 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 	else
 	{
 		CRect rc = rect;
-		rc.bottom -= 26;
-		ctrlResults.MoveWindow(rc);
+		//rc.bottom -= 26;
+		//ctrlResults.list.MoveWindow(rc);
 
 		rc.SetRect(0,0,0,0);
 		ctrlSearchBox.MoveWindow(rc);
@@ -1200,25 +1197,10 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 	}
 
 	CRect rc = rect;
-	rc.bottom -= 26;
-
-	// "Search filter"
-	if (showUI)
+	if (showUI) {
 		rc.left += width;
-	rc.top = rc.bottom + 2;
-	rc.bottom = rc.top + 22;
-
-	rc.left = rc.left;
-	rc.right = rc.right - 250;
-	filter.getFilterBox().MoveWindow(rc);
-
-	rc.left = rc.right + lMargin;
-	rc.right = rc.right + 120;
-	filter.getFilterColumnBox().MoveWindow(rc);
-
-	rc.left = rc.right + lMargin;
-	rc.right = rc.right + 120;
-	filter.getFilterMethodBox().MoveWindow(rc);
+	}
+	ctrlResults.MoveWindow(&rc);
 
 
 	POINT pt;
@@ -1228,7 +1210,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 	if(hWnd != NULL && !ctrlSearch.IsWindow() && hWnd != ctrlSearchBox.m_hWnd) {
 		ctrlSearch.Attach(hWnd); 
 		searchContainer.SubclassWindow(ctrlSearch.m_hWnd);
-	}	
+	}
 }
 
 void SearchFrame::runUserCommand(UserCommand& uc) {
@@ -1240,8 +1222,8 @@ void SearchFrame::runUserCommand(UserCommand& uc) {
 	set<CID> users;
 
 	int sel = -1;
-	while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-		const SearchResultPtr& sr = ctrlResults.getItemData(sel)->sr;
+	while((sel = ctrlResults.list.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+		const SearchResultPtr& sr = ctrlResults.list.getItemData(sel)->sr;
 
 		if(!sr->getUser().user->isOnline())
 			continue;
@@ -1314,7 +1296,7 @@ void SearchFrame::onTab(bool shift) {
 	HWND wnds[] = {
 		ctrlSearch.m_hWnd, ctrlPurge.m_hWnd, ctrlMode.m_hWnd, ctrlSize.m_hWnd, ctrlSizeMode.m_hWnd, 
 		ctrlFileType.m_hWnd, ctrlSlots.m_hWnd, ctrlCollapsed.m_hWnd, ctrlDoSearch.m_hWnd, ctrlSearch.m_hWnd, 
-		ctrlResults.m_hWnd
+		ctrlResults.list.m_hWnd
 	};
 	
 	HWND focus = GetFocus();
@@ -1336,7 +1318,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 
     // Check previous search results for dupes
 	if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
-		SearchInfoList::ParentPair* pp = ctrlResults.findParentPair(sr->getTTH());
+		SearchInfoList::ParentPair* pp = ctrlResults.list.findParentPair(sr->getTTH());
 		if(pp) {
 			if ((sr->getUser() == pp->parent->getUser()) && (sr->getPath() == pp->parent->sr->getPath())) {
 				delete si;
@@ -1350,7 +1332,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 			}	 	
 		}
 	} else {
-		for(auto p: ctrlResults.getParents() | map_values) {
+		for(auto p: ctrlResults.list.getParents() | map_values) {
 			SearchInfo* si2 = p.parent;
 			const SearchResultPtr& sr2 = si2->sr;
 			if ((sr->getUser() == sr2->getUser()) && (sr->getPath() == sr2->getPath())) {
@@ -1364,19 +1346,19 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		bool resort = false;
 		resultsCount++;
 
-		if(ctrlResults.getSortColumn() == COLUMN_HITS && resultsCount % 15 == 0) {
+		if(ctrlResults.list.getSortColumn() == COLUMN_HITS && resultsCount % 15 == 0) {
 			resort = true;
 		}
 
 		if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
-			ctrlResults.insertGroupedItem(si, expandSR);
+			ctrlResults.list.insertGroupedItem(si, expandSR);
 		} else {
 			SearchInfoList::ParentPair pp = { si, SearchInfoList::emptyVector };
-			ctrlResults.insertItem(si, si->getImageIndex());
-			ctrlResults.getParents().emplace(const_cast<TTHValue*>(&sr->getTTH()), pp);
+			ctrlResults.list.insertItem(si, si->getImageIndex());
+			ctrlResults.list.getParents().emplace(const_cast<TTHValue*>(&sr->getTTH()), pp);
 		}
 
-		if(!filter.empty())
+		if(!ctrlResults.filter.empty())
 			updateSearchList(si);
 
 		if (SETTING(BOLD_SEARCH)) {
@@ -1384,7 +1366,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 		}
 
 		if(resort) {
-			ctrlResults.resort();
+			ctrlResults.list.resort();
 		}
 	} else {
 		// searching is paused, so store the result but don't show it in the GUI (show only information: visible/all results)
@@ -1425,19 +1407,19 @@ void SearchFrame::on(ClientDisconnected, const string& aHubUrl) noexcept {
 }
 
 LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	if (reinterpret_cast<HWND>(wParam) == ctrlResults && ctrlResults.GetSelectedCount() > 0) {
+	if (reinterpret_cast<HWND>(wParam) == ctrlResults.list && ctrlResults.list.GetSelectedCount() > 0) {
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 	
 		if(pt.x == -1 && pt.y == -1) {
-			WinUtil::getContextMenuPos(ctrlResults, pt);
+			WinUtil::getContextMenuPos(ctrlResults.list, pt);
 		}
 		
-		if(ctrlResults.GetSelectedCount() > 0) {
+		if(ctrlResults.list.GetSelectedCount() > 0) {
 			bool hasFiles=false, hasDupes=false, hasNmdcDirsOnly=true;
 
 			int sel = -1;
-			while((sel = ctrlResults.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-				SearchInfo* si = ctrlResults.getItemData(sel);
+			while((sel = ctrlResults.list.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+				SearchInfo* si = ctrlResults.list.getItemData(sel);
 				if (si->sr->getType() == SearchResult::TYPE_FILE) {
 					hasFiles = true;
 					hasNmdcDirsOnly = false;
@@ -1450,7 +1432,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			}
 
 			OMenu resultsMenu, copyMenu;
-			SearchInfo::CheckTTH cs = ctrlResults.forEachSelectedT(SearchInfo::CheckTTH());
+			SearchInfo::CheckTTH cs = ctrlResults.list.forEachSelectedT(SearchInfo::CheckTTH());
 
 			copyMenu.CreatePopupMenu();
 			resultsMenu.CreatePopupMenu();
@@ -1464,10 +1446,10 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
 			copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
 
-			if(ctrlResults.GetSelectedCount() > 1)
-				resultsMenu.InsertSeparatorFirst(Util::toStringW(ctrlResults.GetSelectedCount()) + _T(" ") + TSTRING(FILES));
+			if(ctrlResults.list.GetSelectedCount() > 1)
+				resultsMenu.InsertSeparatorFirst(Util::toStringW(ctrlResults.list.GetSelectedCount()) + _T(" ") + TSTRING(FILES));
 			else
-				resultsMenu.InsertSeparatorFirst(Util::toStringW(((SearchInfo*)ctrlResults.getSelectedItem())->hits + 1) + _T(" ") + TSTRING(USERS));
+				resultsMenu.InsertSeparatorFirst(Util::toStringW(((SearchInfo*)ctrlResults.list.getSelectedItem())->hits + 1) + _T(" ") + TSTRING(USERS));
 
 			//targets.clear();
 			/*if (hasFiles && cs.hasTTH) {
@@ -1479,12 +1461,12 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			resultsMenu.AppendMenu(MF_SEPARATOR);
 
-			if (hasFiles && (!hasDupes || ctrlResults.GetSelectedCount() == 1)) {
+			if (hasFiles && (!hasDupes || ctrlResults.list.GetSelectedCount() == 1)) {
 				resultsMenu.appendItem(TSTRING(VIEW_AS_TEXT), [&] { handleOpenItem(true); });
 				resultsMenu.appendItem(TSTRING(OPEN), [&] { handleOpenItem(false); });
 			}
 
-			if((ctrlResults.GetSelectedCount() == 1) && hasDupes) {
+			if((ctrlResults.list.GetSelectedCount() == 1) && hasDupes) {
 				resultsMenu.appendItem(TSTRING(OPEN_FOLDER), [&] { handleOpenFolder(); });
 				resultsMenu.AppendMenu(MF_SEPARATOR);
 			}
@@ -1601,7 +1583,7 @@ LRESULT SearchFrame::onPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 		}
 
 		// update controls texts
-		ctrlStatus.SetText(3, (Util::toStringW(ctrlResults.GetItemCount()) + _T(" ") + TSTRING(FILES)).c_str());			
+		ctrlStatus.SetText(3, (Util::toStringW(ctrlResults.list.GetItemCount()) + _T(" ") + TSTRING(FILES)).c_str());			
 		ctrlPauseSearch.SetWindowText(CTSTRING(PAUSE_SEARCH));
 	} else {
 		running = false;
@@ -1633,11 +1615,11 @@ LRESULT SearchFrame::onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 
 LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring sCopy;
-	if (ctrlResults.GetSelectedCount() >= 1) {
-		int xsel = ctrlResults.GetNextItem(-1, LVNI_SELECTED);
+	if (ctrlResults.list.GetSelectedCount() >= 1) {
+		int xsel = ctrlResults.list.GetNextItem(-1, LVNI_SELECTED);
 
 		for (;;) {
-			const SearchResultPtr& sr = ctrlResults.getItemData(xsel)->sr;
+			const SearchResultPtr& sr = ctrlResults.list.getItemData(xsel)->sr;
 			switch (wID) {
 				case IDC_COPY_NICK:
 					sCopy +=  WinUtil::getNicks(sr->getUser());
@@ -1677,7 +1659,7 @@ LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BO
 					return 0;
 			}
 
-			xsel = ctrlResults.GetNextItem(xsel, LVNI_SELECTED);
+			xsel = ctrlResults.list.GetNextItem(xsel, LVNI_SELECTED);
 			if (xsel == -1) {
 				break;
 			}
@@ -1710,19 +1692,19 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 	}
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
-		if(SETTING(GET_USER_COUNTRY) && (ctrlResults.findColumn(cd->iSubItem) == COLUMN_IP)) {
+		if(SETTING(GET_USER_COUNTRY) && (ctrlResults.list.findColumn(cd->iSubItem) == COLUMN_IP)) {
 			CRect rc;
 			SearchInfo* si = (SearchInfo*)cd->nmcd.lItemlParam;
 			if (si->hits > 1)
 				return CDRF_DODEFAULT;
 
-			ctrlResults.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
+			ctrlResults.list.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
 			SetTextColor(cd->nmcd.hdc, cd->clrText);
-			DrawThemeBackground(GetWindowTheme(ctrlResults.m_hWnd), cd->nmcd.hdc, LVP_LISTITEM, 3, &rc, &rc );
+			DrawThemeBackground(GetWindowTheme(ctrlResults.list.m_hWnd), cd->nmcd.hdc, LVP_LISTITEM, 3, &rc, &rc );
 
 			TCHAR buf[256];
-			ctrlResults.GetItemText((int)cd->nmcd.dwItemSpec, cd->iSubItem, buf, 255);
+			ctrlResults.list.GetItemText((int)cd->nmcd.dwItemSpec, cd->iSubItem, buf, 255);
 			buf[255] = 0;
 			if(_tcslen(buf) > 0) {
 				rc.left += 2;
@@ -1755,51 +1737,51 @@ LRESULT SearchFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, B
 }	
 
 void SearchFrame::updateSearchList(SearchInfo* si) {
-	auto filterPrep = filter.prepare();
+	auto filterPrep = ctrlResults.filter.prepare();
 	auto filterInfoF = [&](int column) { return Text::fromT(si->getText(column)); };
 
 	if(si) {
-		if(!filter.match(filterPrep, filterInfoF))
-			ctrlResults.deleteItem(si);
+		if (!ctrlResults.filter.match(filterPrep, filterInfoF))
+			ctrlResults.list.deleteItem(si);
 	} else {
-		ctrlResults.SetRedraw(FALSE);
-		ctrlResults.DeleteAllItems();
+		ctrlResults.list.SetRedraw(FALSE);
+		ctrlResults.list.DeleteAllItems();
 
-		for(auto aSI: ctrlResults.getParents() | map_values) {
+		for(auto aSI: ctrlResults.list.getParents() | map_values) {
 			si = aSI.parent;
 			si->collapsed = true;
-			if(filter.match(filterPrep, filterInfoF)) {
-				dcassert(ctrlResults.findItem(si) == -1);
-				int k = ctrlResults.insertItem(si, si->getImageIndex());
+			if (ctrlResults.checkDupe(si->getDupe()) && (ctrlResults.filter.empty() || ctrlResults.filter.match(filterPrep, filterInfoF))) {
+				dcassert(ctrlResults.list.findItem(si) == -1);
+				int k = ctrlResults.list.insertItem(si, si->getImageIndex());
 
-				const auto& children = ctrlResults.findChildren(si->getGroupCond());
+				const auto& children = ctrlResults.list.findChildren(si->getGroupCond());
 				if(!children.empty()) {
 					if(si->collapsed) {
-						ctrlResults.SetItemState(k, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);	
+						ctrlResults.list.SetItemState(k, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);	
 					} else {
-						ctrlResults.SetItemState(k, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);	
+						ctrlResults.list.SetItemState(k, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);	
 					}
 				} else {
-					ctrlResults.SetItemState(k, INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);	
+					ctrlResults.list.SetItemState(k, INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);	
 				}
 			}
 		}
-		ctrlResults.SetRedraw(TRUE);
+		ctrlResults.list.SetRedraw(TRUE);
 	}
 }
 
 void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
 	bool refresh = false;
-	if(ctrlResults.GetBkColor() != WinUtil::bgColor) {
-		ctrlResults.SetBkColor(WinUtil::bgColor);
-		ctrlResults.SetTextBkColor(WinUtil::bgColor);
-		ctrlResults.setFlickerFree(WinUtil::bgBrush);
+	if(ctrlResults.list.GetBkColor() != WinUtil::bgColor) {
+		ctrlResults.list.SetBkColor(WinUtil::bgColor);
+		ctrlResults.list.SetTextBkColor(WinUtil::bgColor);
+		ctrlResults.list.setFlickerFree(WinUtil::bgBrush);
 		ctrlHubs.SetBkColor(WinUtil::bgColor);
 		ctrlHubs.SetTextBkColor(WinUtil::bgColor);
 		refresh = true;
 	}
-	if(ctrlResults.GetTextColor() != WinUtil::textColor) {
-		ctrlResults.SetTextColor(WinUtil::textColor);
+	if(ctrlResults.list.GetTextColor() != WinUtil::textColor) {
+		ctrlResults.list.SetTextColor(WinUtil::textColor);
 		ctrlHubs.SetTextColor(WinUtil::textColor);
 		refresh = true;
 	}

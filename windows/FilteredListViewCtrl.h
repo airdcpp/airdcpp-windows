@@ -28,11 +28,11 @@
 
 #define FILTER_MESSAGE_MAP 8
 
-template<class ParentT, class T, int ctrlId>
-class FilteredListViewCtrl : public CWindowImpl<FilteredListViewCtrl<ParentT, T, ctrlId>>  {
+template<class ContainerT, class ParentT, int ctrlId>
+class FilteredListViewCtrl : public CWindowImpl<FilteredListViewCtrl<ContainerT, ParentT, ctrlId>>  {
 
 public:
-	typedef FilteredListViewCtrl<ParentT, T, ctrlId> thisClass;
+	typedef FilteredListViewCtrl<ContainerT, ParentT, ctrlId> thisClass;
 	BEGIN_MSG_MAP(thisClass)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
@@ -207,7 +207,7 @@ public:
 
 	void onUpdate() {
 		int timeOut = 0;
-		auto items = parent->getDirectoryItemCount();
+		auto items = parent->getTotalListItemCount();
 		if (items < 1000) {
 			timeOut = 100;
 		} else if (items < 10000) {
@@ -230,7 +230,7 @@ public:
 	}
 
 	ListFilter filter;
-	TypedListViewCtrl<T, ctrlId> list;
+	ContainerT list;
 private:
 	ParentT* parent;
 	size_t columnCount;

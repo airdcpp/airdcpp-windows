@@ -25,7 +25,7 @@
 
 #include "Async.h"
 #include "FlatTabCtrl.h"
-#include "TypedListViewCtrl.h"
+#include "FilteredListViewCtrl.h"
 #include "UserInfoBaseHandler.h"
 #include "DownloadBaseHandler.h"
 
@@ -42,7 +42,7 @@
 
 #define SEARCH_MESSAGE_MAP 6		// This could be any number, really...
 #define SHOWUI_MESSAGE_MAP 7
-#define FILTER_MESSAGE_MAP 8
+#define EXCLUDE_MESSAGE_MAP 8
 
 class SearchFrame : public MDITabChildWindowImpl<SearchFrame>, 
 	private SearchManagerListener, private ClientManagerListener,
@@ -60,9 +60,9 @@ public:
 	typedef UserInfoBaseHandler<SearchFrame> uicBase;
 
 	BEGIN_MSG_MAP(SearchFrame)
-		NOTIFY_HANDLER(IDC_RESULTS, LVN_GETDISPINFO, ctrlResults.onGetDispInfo)
-		NOTIFY_HANDLER(IDC_RESULTS, LVN_COLUMNCLICK, ctrlResults.onColumnClick)
-		NOTIFY_HANDLER(IDC_RESULTS, LVN_GETINFOTIP, ctrlResults.onInfoTip)
+		NOTIFY_HANDLER(IDC_RESULTS, LVN_GETDISPINFO, ctrlResults.list.onGetDispInfo)
+		NOTIFY_HANDLER(IDC_RESULTS, LVN_COLUMNCLICK, ctrlResults.list.onColumnClick)
+		NOTIFY_HANDLER(IDC_RESULTS, LVN_GETINFOTIP, ctrlResults.list.onInfoTip)
 		NOTIFY_HANDLER(IDC_HUB, LVN_GETDISPINFO, ctrlHubs.onGetDispInfo)
 		NOTIFY_HANDLER(IDC_RESULTS, NM_DBLCLK, onDoubleClickResults)
 		NOTIFY_HANDLER(IDC_RESULTS, LVN_KEYDOWN, onKeyDown)
@@ -105,11 +105,10 @@ public:
 		MESSAGE_HANDLER(WM_KEYUP, onChar)
 	ALT_MSG_MAP(SHOWUI_MESSAGE_MAP)
 		MESSAGE_HANDLER(BM_SETCHECK, onShowUI)
-	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
+	ALT_MSG_MAP(EXCLUDE_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
-		MESSAGE_HANDLER(WM_CHAR, onFilterChar)
-		MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
-		CHAIN_MSG_MAP_MEMBER(filter)
+		//MESSAGE_HANDLER(WM_CHAR, onFilterChar)
+		//MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
 	END_MSG_MAP()
 
 	SearchFrame();
@@ -211,12 +210,17 @@ public:
 	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	int64_t getDownloadSize(bool isWhole);
 	bool showDirDialog(string& fileName);
+
+	/* FilteredListViewCtrl */
+	void createColumns();
+	size_t getTotalListItemCount() const;
 private:
 	class SearchInfo;
 	
 public:	
-	typedef TypedTreeListViewCtrl<SearchInfo, IDC_RESULTS, TTHValue, hash<TTHValue*>, equal_to<TTHValue*>> SearchInfoList;
-	SearchInfoList& getUserList() { return ctrlResults; }
+	typedef TypedTreeListViewCtrl < SearchInfo, IDC_RESULTS, TTHValue, hash<TTHValue*>, equal_to < TTHValue*>> SearchInfoList;
+	typedef FilteredListViewCtrl<SearchInfoList, SearchFrame, IDC_RESULTS> FilteredList;
+	SearchInfoList& getUserList() { return ctrlResults.list; }
 
 private:
 	enum {
@@ -332,7 +336,6 @@ private:
 	CButton ctrlDoSearch;
 	CButton ctrlPauseSearch;
 	CButton ctrlPurge;
-	ListFilter filter;
 	
 	CContainedWindow searchContainer;
 	CContainedWindow searchBoxContainer;
@@ -347,9 +350,6 @@ private:
 	CContainedWindow resultsContainer;
 	CContainedWindow hubsContainer;
 	CContainedWindow purgeContainer;
-	CContainedWindow ctrlFilterContainer;
-	CContainedWindow ctrlFilterSelContainer;
-	CContainedWindow ctrlFilterMethodContainer;
 	CContainedWindow ctrlExcludedContainer;
 	
 	CStatic searchLabel, sizeLabel, optionLabel, typeLabel, hubsLabel;
@@ -357,7 +357,7 @@ private:
 	bool showUI;
 
 	CImageList images;
-	SearchInfoList ctrlResults;
+	FilteredList ctrlResults;
 	TypedListViewCtrl<HubInfo, IDC_HUB> ctrlHubs;
 
 	unique_ptr<AdcSearch> curSearch;

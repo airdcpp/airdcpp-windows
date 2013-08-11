@@ -659,7 +659,7 @@ LRESULT DirectoryListingFrame::onPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	return 0;
 }
 
-size_t DirectoryListingFrame::getDirectoryItemCount() const {
+size_t DirectoryListingFrame::getTotalListItemCount() const {
 	auto d = dl->findDirectory(curPath);
 	if (d) {
 		return d->files.size() + d->directories.size();
