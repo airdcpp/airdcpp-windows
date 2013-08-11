@@ -208,7 +208,6 @@ public:
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
 	void runUserCommand(UserCommand& uc);
-	void resetFilter();
 
 	void refreshTree(const tstring& root, bool reloadList, bool changeDir);
 
@@ -258,11 +257,15 @@ public:
 	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
 	
+	/* TypedTreeViewCtrl */
 	ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Directory* d) const;
 	int getIconIndex(const DirectoryListing::Directory* d) const;
 	void expandDir(DirectoryListing::Directory* d, bool /*collapsing*/);
 	bool isBold(const DirectoryListing::Directory* d) const;
+
+	/* FilteredListViewCtrl */
 	void createColumns();
+	size_t getDirectoryItemCount() const;
 private:
 	void updateHistoryCombo();
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);

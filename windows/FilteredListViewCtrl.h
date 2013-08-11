@@ -24,6 +24,8 @@
 #include "ListFilter.h"
 #include "TypedListViewCtrl.h"
 
+#include "../client/AirUtil.h"
+
 #define FILTER_MESSAGE_MAP 8
 
 template<class ParentT, class T, int ctrlId>
@@ -35,6 +37,12 @@ public:
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
+		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
+		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
+
+		COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
+		COMMAND_ID_HANDLER(IDC_FILTER_SHARED, onShow)
+		COMMAND_ID_HANDLER(IDC_FILTER_INVERSE, onShow)
 		FORWARD_NOTIFICATIONS()
 	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
 		CHAIN_MSG_MAP_MEMBER(filter)
@@ -43,7 +51,7 @@ public:
 		//MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
 	END_MSG_MAP();
 
-	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF) : updateF(aUpdateF), parent(aParent), filter(colCount, [this] { onUpdate(); }), columnCount(colCount), /*, listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),*/
+	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF) : filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), filter(colCount, [this] { onUpdate(); }), columnCount(colCount), /*, listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),*/
 		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
 		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
 		ctrlFilterMethodContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP)
@@ -68,8 +76,40 @@ public:
 		ctrlFilterSelContainer.SubclassWindow(filter.getFilterColumnBox().m_hWnd);
 		ctrlFilterMethodContainer.SubclassWindow(filter.getFilterMethodBox().m_hWnd);
 
+
+		ctrlQueued.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_QUEUED);
+		ctrlQueued.SetWindowText(CTSTRING(QUEUED));
+		ctrlQueued.SetButtonStyle(BS_AUTOCHECKBOX, false);
+		ctrlQueued.SetFont(WinUtil::systemFont);
+		ctrlQueued.SetCheck(filterQueued ? BST_CHECKED : BST_UNCHECKED);
+
+		ctrlShared.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_SHARED);
+		ctrlShared.SetWindowText(CTSTRING(SHARED));
+		ctrlShared.SetButtonStyle(BS_AUTOCHECKBOX, false);
+		ctrlShared.SetFont(WinUtil::systemFont);
+		ctrlShared.SetCheck(filterShared ? BST_CHECKED : BST_UNCHECKED);
+
+		ctrlInverse.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_INVERSE);
+		ctrlInverse.SetWindowText(CTSTRING(HIDE_MATCHES));
+		ctrlInverse.SetButtonStyle(BS_AUTOCHECKBOX, false);
+		ctrlInverse.SetFont(WinUtil::systemFont);
+		ctrlInverse.SetCheck(filter.getInverse() ? BST_CHECKED : BST_UNCHECKED);
+
 		bHandled = FALSE;
 		return 0;
+	}
+
+	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+		HWND hWnd = (HWND) lParam;
+		HDC hDC = (HDC) wParam;
+		if (hWnd == ctrlQueued.m_hWnd || hWnd == ctrlShared.m_hWnd ||hWnd == ctrlInverse.m_hWnd) {
+			::SetBkColor(hDC, WinUtil::bgColor);
+			::SetTextColor(hDC, WinUtil::textColor);
+			return (LRESULT) WinUtil::bgBrush;
+		}
+
+		bHandled = FALSE;
+		return FALSE;
 	}
 
 	LRESULT onSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -80,6 +120,9 @@ public:
 
 	void UpdateLayout(BOOL /*bResizeBars*/ = TRUE) {
 		const int lMargin = 4;
+		const int sharedWidth = WinUtil::getTextWidth(TSTRING(SHARED), ctrlShared.m_hWnd) + 20;
+		const int queuedWidth = WinUtil::getTextWidth(TSTRING(QUEUED), ctrlQueued.m_hWnd) + 20;
+		const int inverseWidth = WinUtil::getTextWidth(TSTRING(HIDE_MATCHES), ctrlInverse.m_hWnd) + 20;
 
 		RECT rect;
 		GetClientRect(&rect);
@@ -93,7 +136,7 @@ public:
 		rc.bottom = rc.top + 22;
 
 		rc.left = rc.left;
-		rc.right = rc.right - 250;
+		rc.right = rc.right - 250 - sharedWidth - queuedWidth - inverseWidth - 10;
 		filter.getFilterBox().MoveWindow(rc);
 
 		rc.left = rc.right + lMargin;
@@ -103,6 +146,46 @@ public:
 		rc.left = rc.right + lMargin;
 		rc.right = rc.right + 120;
 		filter.getFilterMethodBox().MoveWindow(rc);
+
+		rc.left = rc.right + lMargin;
+		rc.right = rc.left + queuedWidth;
+		ctrlQueued.MoveWindow(rc);
+
+		rc.left = rc.right + lMargin;
+		rc.right = rc.left + sharedWidth;
+		ctrlShared.MoveWindow(rc);
+
+		rc.left = rc.right + lMargin;
+		rc.right = rc.left + inverseWidth;
+		ctrlInverse.MoveWindow(rc);
+
+		//sr.left = sr.right + 8;
+		//sr.right = sr.left + ctrlShowOnline.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowOnline.m_hWnd, WinUtil::systemFont) + 24;
+		//ctrlShowOnline.MoveWindow(sr);
+	}
+
+	LRESULT onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
+		switch (wID) {
+			case IDC_FILTER_QUEUED: {
+				//SettingsManager::getInstance()->set(SettingsManager::FAV_USERS_SHOW_INFO, showInfo);
+				filterQueued = !filterQueued;
+				updateF();
+				break;
+			}
+			case IDC_FILTER_SHARED: {
+				//SettingsManager::getInstance()->set(SettingsManager::USERS_FILTER_FAVORITE, listFav);
+				filterShared = !filterShared;
+				updateF();
+				break;
+			}
+			case IDC_FILTER_INVERSE: {
+				//SettingsManager::getInstance()->set(SettingsManager::USERS_FILTER_FAVORITE, listFav);
+				filter.setInverse(!filter.getInverse());
+				updateF();
+				break;
+			}
+		}
+		return 0;
 	}
 
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -112,9 +195,19 @@ public:
 		return 0;
 	}
 
+	bool checkDupe(DupeType aDupe) {
+		if (!filterQueued && aDupe == QUEUE_DUPE) {
+			return false;
+		} else if (!filterShared && aDupe == SHARE_DUPE) {
+			return false;
+		}
+
+		return true;
+	}
+
 	void onUpdate() {
 		int timeOut = 0;
-		int items = list.GetItemCount();
+		auto items = parent->getDirectoryItemCount();
 		if (items < 1000) {
 			timeOut = 100;
 		} else if (items < 10000) {
@@ -130,6 +223,12 @@ public:
 		::SetTimer(m_hWnd, 1, timeOut, NULL);
 	}
 
+	void changeFilterState(bool enable) {
+		filter.text.EnableWindow(enable);
+		filter.column.EnableWindow(enable);
+		filter.method.EnableWindow(enable);
+	}
+
 	ListFilter filter;
 	TypedListViewCtrl<T, ctrlId> list;
 private:
@@ -143,6 +242,13 @@ private:
 	CContainedWindow ctrlFilterContainer;
 	CContainedWindow ctrlFilterSelContainer;
 	CContainedWindow ctrlFilterMethodContainer;
+
+	CButton ctrlQueued;
+	CButton ctrlShared;
+	CButton ctrlInverse;
+	bool filterQueued;
+	bool filterShared;
+	//CButton ctrlShowOnline;
 };
 
 #endif // FILTEREDLISTVIEW_H_

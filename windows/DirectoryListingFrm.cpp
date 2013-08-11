@@ -113,7 +113,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 		runF([=] { updateStatus(CTSTRING(UPDATING_VIEW)); });
 
 	if (searching)
-		resetFilter();
+		ctrlFiles.filter.clear();
 
 	try{
 		refreshTree(Text::toT(aDir), reloadList, changeDir);
@@ -212,7 +212,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::SearchFailed, bool time
 
 void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept {
 	if (isSearchChange)
-		resetFilter();
+		ctrlFiles.filter.clear();
 
 	selectItem(Text::toT(aDir));
 	if (isSearchChange) {
@@ -406,14 +406,15 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 	ctrlToolbar.EnableButton(IDC_MATCH_QUEUE, enable && !dl->getIsOwnList());
 	ctrlToolbar.EnableButton(IDC_MATCH_ADL, enable);
 	ctrlToolbar.EnableButton(IDC_FIND, enable);
-	ctrlToolbar.EnableButton(IDC_NEXT, dl->curSearch ? TRUE : FALSE);
-	ctrlToolbar.EnableButton(IDC_PREV, dl->curSearch ? TRUE : FALSE);
-	ctrlToolbar.EnableButton(IDC_FILELIST_DIFF, dl->getPartialList() && !dl->getIsOwnList() ? false : enable);
+	ctrlToolbar.EnableButton(IDC_NEXT, enable && dl->curSearch ? TRUE : FALSE);
+	ctrlToolbar.EnableButton(IDC_PREV, enable && dl->curSearch ? TRUE : FALSE);
+	ctrlToolbar.EnableButton(IDC_FILELIST_DIFF, enable && dl->getPartialList() && !dl->getIsOwnList() ? false : enable);
 	arrowBar.EnableButton(IDC_UP, enable);
 	arrowBar.EnableButton(IDC_FORWARD, enable);
 	arrowBar.EnableButton(IDC_BACK, enable);
 	ctrlPath.EnableWindow(enable);
-	//ctrlFilter.EnableWindow(enable);
+	ctrlFiles.changeFilterState(enable);
+	selCombo.EnableWindow(enable);
 
 	if (enable) {
 		EnableWindow();
@@ -658,21 +659,42 @@ LRESULT DirectoryListingFrame::onPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 	return 0;
 }
 
+size_t DirectoryListingFrame::getDirectoryItemCount() const {
+	auto d = dl->findDirectory(curPath);
+	if (d) {
+		return d->files.size() + d->directories.size();
+	}
+
+	dcassert(0);
+	return 0;
+}
+
 void DirectoryListingFrame::updateStatus() {
 	if(!updating && ctrlStatus.IsWindow()) {
-		int cnt = ctrlFiles.list.GetSelectedCount();
+		int selectedCount = ctrlFiles.list.GetSelectedCount();
+		int totalCount = 0;
+		int displayCount = 0;
 		int64_t total = 0;
 		auto d = dl->findDirectory(curPath);
-		if(cnt == 0) {
-			cnt = ctrlFiles.list.GetItemCount();
-			auto d = dl->findDirectory(curPath);
-			if (d)
+		if (selectedCount == 0) {
+			displayCount = ctrlFiles.list.GetItemCount();
+			if (d) {
+				totalCount = d->files.size() + d->directories.size();
 				total = d->getTotalSize(d != dl->getRoot());
+			}
 		} else {
 			total = ctrlFiles.list.forEachSelectedT(ItemInfo::TotalSize()).total;
 		}
 
-		tstring tmp = TSTRING(ITEMS) + _T(": ") + Util::toStringW(cnt);
+		tstring tmp = TSTRING(ITEMS) + _T(": ");
+
+		if (selectedCount != 0) {
+			tmp += Util::toStringW(selectedCount);
+		} else if (displayCount != totalCount) {
+			tmp += Util::toStringW(displayCount) + _T("/") + Util::toStringW(totalCount);
+		} else {
+			tmp += Util::toStringW(displayCount);
+		}
 		bool u = false;
 
 		int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
@@ -809,10 +831,6 @@ void DirectoryListingFrame::addHistory(const string& name) {
 	historyIndex = history.size();
 }
 
-void DirectoryListingFrame::resetFilter() {
-	//ctrlFilter.SetWindowTextW(_T(""));
-}
-
 void DirectoryListingFrame::on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept {
 	callAsync([=] {
 		HTREEITEM ht = ctrlTree.findItem(treeRoot, aDir);
@@ -918,7 +936,7 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 
 	ctrlFiles.list.DeleteAllItems();
 	for (; i != curDir->directories.end(); ++i) {
-		if (ctrlFiles.filter.empty() || ctrlFiles.filter.match(filterPrep, filterInfoDir)) {
+		if (ctrlFiles.checkDupe((*i)->getDupe()) && (ctrlFiles.filter.empty() || ctrlFiles.filter.match(filterPrep, filterInfoDir))) {
 			if (selectedName && compare(*selectedName, (*i)->getName()) == 0) {
 				selectedPos = curPos;
 			}
@@ -931,7 +949,7 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 	auto filterInfoFile = [this, &f](int column) { return (*f)->getName(); };
 
 	for (; f != curDir->files.end(); ++f) {
-		if (ctrlFiles.filter.empty() || ctrlFiles.filter.match(filterPrep, filterInfoFile)) {
+		if (ctrlFiles.checkDupe((*f)->getDupe()) && (ctrlFiles.filter.empty() || ctrlFiles.filter.match(filterPrep, filterInfoFile))) {
 			ctrlFiles.list.insertItem(curPos++, new ItemInfo(*f), ResourceLoader::getIconIndex(Text::toT((*f)->getName())));
 		}
 	}
@@ -946,8 +964,6 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 	updating = true;
 	clearList();
 
-	//int curPos = 0;
-	//int selectedPos = -1;
 	optional<string> selectedName;
 	if (changeType == CHANGE_HISTORY) {
 		if (historyIndex < history.size() && (!d->getParent() || Util::getParentDir(history[historyIndex]) == d->getPath())) {
@@ -956,42 +972,6 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 
 		changeType = CHANGE_LIST; //reset
 	}
-
-	/*if (!filter.empty()) {
-		boost::regex reg(filter, boost::regex_constants::icase);
-
-		for (const auto d : d->directories) {
-			string s = d->getName();
-			if(boost::regex_search(s.begin(), s.end(), reg)) {
-				if (selectedName && compare(*selectedName, s) == 0) {
-					selectedPos = curPos;
-				}
-
-				ctrlFiles.list.insertItem(curPos++, new ItemInfo(d), getIconIndex(d));
-			}
-		}
-
-		for (const auto f : d->files) {
-			string s = f->getName();
-			if(boost::regex_search(s.begin(), s.end(), reg)) {
-				ItemInfo* ii = new ItemInfo(f);
-				ctrlFiles.list.insertItem(curPos++, ii, ResourceLoader::getIconIndex(ii->getText(COLUMN_FILENAME)));
-			}
-		}
-	} else {
-		for(const auto d: d->directories) {
-			if (selectedName && compare(*selectedName, d->getName()) == 0) {
-				selectedPos = curPos;
-			}
-
-			ctrlFiles.list.insertItem(curPos++, new ItemInfo(d), getIconIndex(d));
-		}
-
-		for (const auto f : d->files) {
-			ItemInfo* ii = new ItemInfo(f);
-			ctrlFiles.list.insertItem(curPos++, ii, ResourceLoader::getIconIndex(ii->getText(COLUMN_FILENAME)));
-		}
-	}*/
 
 	insertItems(selectedName);
 

@@ -81,6 +81,8 @@ public:
 
 	void SetDefaultMatchColumn(int i) { defMatchColumn = i; } //for setting the match column without column box
 	void clear();
+
+	GETSET(bool, inverse, Inverse);
 private:
 
 	enum {

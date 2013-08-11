@@ -26,8 +26,8 @@ ListFilter::ListFilter(size_t colCount, UpdateFunction updateF) :
 	colCount(colCount),
 	updateFunction(updateF),
 	defMethod(StringMatch::PARTIAL),
-	defMatchColumn(colCount)
-
+	defMatchColumn(colCount),
+	inverse(false)
 {
 }
 void ListFilter::addFilterBox(HWND parent) {
@@ -66,7 +66,8 @@ void ListFilter::addMethodBox(HWND parent){
 }
 
 void ListFilter::clear() {
-
+	text.SetWindowText(_T(""));
+	//textUpdated(Util::emptyString);
 }
 
 LRESULT ListFilter::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -153,28 +154,30 @@ bool ListFilter::match(const Preparation& prep, InfoFunction infoF) const {
 	if(empty())
 		return true;
 
+	bool hasMatch = false;
 	if(prep.method < StringMatch::METHOD_LAST) {
 		if(prep.column >= colCount) {
 			for(size_t i = 0; i < colCount; ++i) {
 				if(matcher.match(infoF(i))) {
-					return true;
+					hasMatch = true;
+					break;
 				}
 			}
 		} else {
-			return matcher.match(infoF(prep.column));
+			hasMatch = matcher.match(infoF(prep.column));
 		}
 	} else {
 		auto size = Util::toDouble(infoF(prep.column));
 		switch(prep.method - StringMatch::METHOD_LAST) {
-		case EQUAL: return size == prep.size;
-		case GREATER_EQUAL: return size >= prep.size;
-		case LESS_EQUAL: return size <= prep.size;
-		case GREATER: return size > prep.size;
-		case LESS: return size < prep.size;
-		case NOT_EQUAL: return size != prep.size;
+		case EQUAL: hasMatch = size == prep.size; break;
+		case GREATER_EQUAL: hasMatch = size >= prep.size; break;
+		case LESS_EQUAL: hasMatch = size <= prep.size; break;
+		case GREATER: hasMatch = size > prep.size; break;
+		case LESS: hasMatch = size < prep.size; break;
+		case NOT_EQUAL: hasMatch = size != prep.size; break;
 		}
 	}
-	return false;
+	return inverse ? !hasMatch : hasMatch;
 }
 
 bool ListFilter::empty() const {
