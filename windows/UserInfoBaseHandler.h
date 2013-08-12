@@ -64,16 +64,16 @@ public:
 
 	UserInfoBaseHandler(bool appendPmItems=true, bool appendListItems=true) : pmItems(appendPmItems), listItems(appendListItems) { }
 
-	void handleMatchQueue() {
+	virtual void handleMatchQueue() {
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::matchQueue, _1));
 	}
-	void handleGetList() {
+	virtual void handleGetList() {
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getList, _1));
 	}
-	void handleBrowseList() {
+	virtual void handleBrowseList() {
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::browseList, _1));
 	}
-	void handleGetBrowseList() {
+	virtual void handleGetBrowseList() {
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getBrowseList, _1));
 	}
 

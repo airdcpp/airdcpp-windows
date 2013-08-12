@@ -846,10 +846,15 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 	});
 }
 
-void SearchFrame::handleGetList(bool isPartial) {
-	auto getList = [&, isPartial](const SearchInfo* si) {
+void SearchFrame::handleGetList(ListType aType) {
+	auto getList = [&, aType](const SearchInfo* si) {
+		int flags = aType == TYPE_PARTIAL ? QueueItem::FLAG_PARTIAL_LIST : 0;
+		if (aType == TYPE_MIXED && (!si->getUser()->isSet(User::NMDC) && ClientManager::getInstance()->getShareInfo(si->sr->getUser()).second >= SETTING(FULL_LIST_DL_LIMIT))) {
+			flags = QueueItem::FLAG_PARTIAL_LIST;
+		}
+
 		try {
-			QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | (isPartial ? QueueItem::FLAG_PARTIAL_LIST : 0), si->sr->getFilePath());
+			QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_CLIENT_VIEW | flags, si->sr->getFilePath());
 		} catch(const Exception&) {
 			// Ignore for now...
 		}

@@ -89,8 +89,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy)
 		COMMAND_ID_HANDLER(IDC_FREESLOTS, onFreeSlots)
 		COMMAND_ID_HANDLER(IDC_COLLAPSED, onCollapsed)
-		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
-		COMMAND_ID_HANDLER(IDC_BROWSELIST, onBrowseList)
 		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
 		COMMAND_ID_HANDLER(IDC_PURGE, onPurge)
@@ -141,18 +139,26 @@ public:
 
 	void removeSelected();
 
-	LRESULT onGetList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		handleGetList(false);
-		return 0;
+	enum ListType {
+		TYPE_FULL,
+		TYPE_PARTIAL,
+		TYPE_MIXED
+	};
+
+	void handleGetList() {
+		handleGetList(TYPE_FULL);
 	}
 
-	LRESULT onBrowseList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		handleGetList(true);
-		return 0;
+	void handleBrowseList() {
+		handleGetList(TYPE_PARTIAL);
+	}
+
+	void handleGetBrowseList() {
+		handleGetList(TYPE_MIXED);
 	}
 
 	void handleSearchTTH();
-	void handleGetList(bool isPartial);
+	void handleGetList(ListType aType);
 	void handleOpenItem(bool isClientView);
 	void handleViewNfo();
 	void handleMatchPartial();
