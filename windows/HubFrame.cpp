@@ -117,9 +117,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	filter.addFilterBox(m_hWnd);
 	filter.addColumnBox(m_hWnd, ctrlUsers.getColumnList());
 	filter.addMethodBox(m_hWnd);
-	ctrlFilterContainer.SubclassWindow(filter.getFilterBox().m_hWnd);
-	ctrlFilterSelContainer.SubclassWindow(filter.getFilterColumnBox().m_hWnd);
-	ctrlFilterMethodContainer.SubclassWindow(filter.getFilterMethodBox().m_hWnd);
 
 	ctrlUsers.setColumnOrderArray(OnlineUser::COLUMN_LAST, columnIndexes);
 	
@@ -194,9 +191,6 @@ HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate
 		timeStamps(SETTING(TIME_STAMPS)),
 		hubchatusersplit(chatusersplit),
 		ctrlShowUsersContainer(WC_BUTTON, this, SHOW_USERS),
-		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
-		ctrlFilterMethodContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
 		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		filter(OnlineUser::COLUMN_LAST, [this] { updateUserList(); updateUsers = true;}),

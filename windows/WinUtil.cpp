@@ -2021,20 +2021,57 @@ time_t WinUtil::parseDate(CEdit& ctrlDate, CComboBox& ctrlDateUnit) {
 	date.resize(date.size() - 1);
 
 	time_t ldate = Util::toUInt32(Text::fromT(date));
-	switch (ctrlDateUnit.GetCurSel()) {
-	case 0:
-		ldate *= 60 * 60; break;
-	case 1:
-		ldate *= 60 * 60 * 24; break;
-	case 2:
-		ldate *= 60 * 60 * 24 * 7; break;
-	case 3:
-		ldate *= 60 * 60 * 24 * 30; break;
-	case 4:
-		ldate *= 60 * 60 * 24 * 365; break;
+	if (ldate > 0) {
+		switch (ctrlDateUnit.GetCurSel()) {
+		case 0:
+			ldate *= 60 * 60; break;
+		case 1:
+			ldate *= 60 * 60 * 24; break;
+		case 2:
+			ldate *= 60 * 60 * 24 * 7; break;
+		case 3:
+			ldate *= 60 * 60 * 24 * 30; break;
+		case 4:
+			ldate *= 60 * 60 * 24 * 365; break;
+		}
+
+		ldate = GET_TIME() - ldate;
 	}
 
-	return GET_TIME() - ldate;
+	return ldate;
+}
+
+void WinUtil::appendSizeCombos(CComboBox& aUnitCombo, CComboBox& aModeCombo, int aUnitSel /*= 2*/, int aModeSel /*= 1*/) {
+	aUnitCombo.AddString(CTSTRING(B));
+	aUnitCombo.AddString(CTSTRING(KiB));
+	aUnitCombo.AddString(CTSTRING(MiB));
+	aUnitCombo.AddString(CTSTRING(GiB));
+	aUnitCombo.SetCurSel(aUnitSel);
+
+
+	aModeCombo.AddString(CTSTRING(NORMAL));
+	aModeCombo.AddString(CTSTRING(AT_LEAST));
+	aModeCombo.AddString(CTSTRING(AT_MOST));
+	aModeCombo.AddString(CTSTRING(EXACT_SIZE));
+	aModeCombo.SetCurSel(aModeSel);
+}
+
+time_t WinUtil::parseSize(CEdit& ctrlSize, CComboBox& ctrlSizeMode) {
+	tstring size(ctrlSize.GetWindowTextLength() + 1, _T('\0'));
+	ctrlSize.GetWindowText(&size[0], size.size());
+	size.resize(size.size() - 1);
+
+	double lsize = Util::toDouble(Text::fromT(size));
+	switch (ctrlSizeMode.GetCurSel()) {
+	case 1:
+		lsize *= 1024.0; break;
+	case 2:
+		lsize *= 1024.0*1024.0; break;
+	case 3:
+		lsize *= 1024.0*1024.0*1024.0; break;
+	}
+
+	return static_cast<int64_t>(lsize);
 }
 
 void WinUtil::setUserFieldLimits(HWND hWnd) {

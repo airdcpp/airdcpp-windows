@@ -45,22 +45,17 @@ public:
 	virtual ~ListFilter() {}
 
 	BEGIN_MSG_MAP(ListFilter)
-		MESSAGE_HANDLER(WM_CHAR, onFilterChar)
+		/*MESSAGE_HANDLER(WM_CHAR, onFilterChar)
 		MESSAGE_HANDLER(WM_CLEAR, onFilterChar)
 		MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
 		MESSAGE_HANDLER(WM_CUT, onFilterChar)
-		MESSAGE_HANDLER(WM_PASTE, onFilterChar)
+		MESSAGE_HANDLER(WM_PASTE, onFilterChar)*/
 		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onSelChange)
+		COMMAND_CODE_HANDLER(EN_CHANGE, onFilterChar)
 	END_MSG_MAP()
 
-	LRESULT onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
-
-	
-	LRESULT onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
-		columnChanged();
-		bHandled = FALSE;
-		return 0;
-	}
+	LRESULT onFilterChar(WORD /*wNotifyCode*/, WORD, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
+	LRESULT onSelChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
 
 	void addFilterBox(HWND parent);
 	void addColumnBox(HWND parent, vector<ColumnInfo*>& columns);
@@ -99,7 +94,9 @@ private:
 
 	void textUpdated(const string& filter);
 	void columnChanged();
+
 	double prepareSize() const;
+	time_t prepareDate() const;
 
 	StringMatch::Method defMethod;
 	int defMatchColumn;

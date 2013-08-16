@@ -48,6 +48,8 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  Resour
 static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTER_SEARCH_SHARED, SettingsManager::FILTER_SEARCH_QUEUED, SettingsManager::FILTER_SEARCH_INVERSED, SettingsManager::FILTER_SEARCH_TOP, 
 	SettingsManager::FILTER_SEARCH_PARTIAL_DUPES, SettingsManager::FILTER_SEARCH_RESET_CHANGE };
 
+static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_TEXT, COLUMN_DATES };
+
 
 SearchFrame::FrameMap SearchFrame::frames;
 
@@ -96,7 +98,7 @@ void SearchFrame::createColumns() {
 
 	for (uint8_t j = 0; j < COLUMN_LAST; j++) {
 		int fmt = (j == COLUMN_SIZE || j == COLUMN_EXACT_SIZE) ? LVCFMT_RIGHT : LVCFMT_LEFT;
-		ctrlResults.list.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
+		ctrlResults.list.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j, columnTypes[j]);
 	}
 }
 
@@ -121,9 +123,9 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlPurge.SetFont(WinUtil::systemFont);
 	purgeContainer.SubclassWindow(ctrlPurge.m_hWnd);
 	
-	ctrlMode.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+	ctrlSizeMode.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
-	modeContainer.SubclassWindow(ctrlMode.m_hWnd);
+	modeContainer.SubclassWindow(ctrlSizeMode.m_hWnd);
 
 	ctrlSize.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		ES_AUTOHSCROLL | ES_NUMBER, WS_EX_CLIENTEDGE);
@@ -154,9 +156,9 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if (pos != -1)
 		ctrlExcluded.SetWindowText(Text::toT(SETTING(LAST_SEARCH_EXCLUDED)).c_str());
 
-	ctrlSizeMode.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+	ctrlSizeUnit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
-	sizeModeContainer.SubclassWindow(ctrlSizeMode.m_hWnd);
+	sizeModeContainer.SubclassWindow(ctrlSizeUnit.m_hWnd);
 
 	ctrlFileType.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST | CBS_HASSTRINGS | CBS_OWNERDRAWFIXED, WS_EX_CLIENTEDGE, IDC_FILETYPES);
@@ -240,27 +242,13 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	ctrlSearchBox.SetFont(WinUtil::systemFont, FALSE);
 	ctrlSize.SetFont(WinUtil::systemFont, FALSE);
-	ctrlMode.SetFont(WinUtil::systemFont, FALSE);
 	ctrlSizeMode.SetFont(WinUtil::systemFont, FALSE);
+	ctrlSizeUnit.SetFont(WinUtil::systemFont, FALSE);
 	ctrlFileType.SetFont(WinUtil::systemFont, FALSE);
 	ctrlDate.SetFont(WinUtil::systemFont, FALSE);
 	ctrlDateUnit.SetFont(WinUtil::systemFont, FALSE);
-
-	ctrlMode.AddString(CTSTRING(NORMAL));
-	ctrlMode.AddString(CTSTRING(AT_LEAST));
-	ctrlMode.AddString(CTSTRING(AT_MOST));
-	ctrlMode.AddString(CTSTRING(EXACT_SIZE));
-	ctrlMode.SetCurSel(1);
 	
-	ctrlSizeMode.AddString(CTSTRING(B));
-	ctrlSizeMode.AddString(CTSTRING(KiB));
-	ctrlSizeMode.AddString(CTSTRING(MiB));
-	ctrlSizeMode.AddString(CTSTRING(GiB));
-	if(initialSize == 0)
-		ctrlSizeMode.SetCurSel(2);
-	else
-		ctrlSizeMode.SetCurSel(0);
-
+	WinUtil::appendSizeCombos(ctrlSizeUnit, ctrlSizeMode);
 	WinUtil::appendDateUnitCombo(ctrlDateUnit, 1);
 
 	ctrlFileType.fillList(!initialString.empty() ? initialType : SETTING(LAST_SEARCH_FILETYPE), WinUtil::textColor, WinUtil::bgColor);
@@ -299,7 +287,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	if(!initialString.empty()) {
 		ctrlSearch.SetWindowText(initialString.c_str());
-		ctrlMode.SetCurSel(initialMode);
+		ctrlSizeMode.SetCurSel(initialMode);
 		ctrlSize.SetWindowText(Util::toStringW(initialSize).c_str());
 		onEnter();
 	} else {
@@ -403,8 +391,6 @@ LRESULT SearchFrame::onDrawItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& b
 }
 
 void SearchFrame::onEnter() {
-	StringList clients;
-	
 	// Change Default Settings If Changed
 	if (onlyFree != SETTING(FREE_SLOTS_DEFAULT))
 		SettingsManager::getInstance()->set(SettingsManager::FREE_SLOTS_DEFAULT, onlyFree);
@@ -422,6 +408,7 @@ void SearchFrame::onEnter() {
 		SettingsManager::getInstance()->set(SettingsManager::LAST_SEARCH_DISABLED_HUBS, Util::toString(",", lastDisabledHubs));
 	}
 
+	StringList clients;
 	int n = ctrlHubs.GetItemCount();
 	for(int i = 1; i < n; i++) {
 		if(ctrlHubs.GetCheckState(i)) {
@@ -432,32 +419,12 @@ void SearchFrame::onEnter() {
 	if(!clients.size())
 		return;
 
-	/*tstring s(ctrlSearch.GetWindowTextLength() + 1, _T('\0'));
-	ctrlSearch.GetWindowText(&s[0], s.size());
-	s.resize(s.size()-1);
-	if(s.empty())
-		return;*/
 
 	string s = WinUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
 	if (s.empty())
 		return;
 
-	tstring size(ctrlSize.GetWindowTextLength() + 1, _T('\0'));
-	ctrlSize.GetWindowText(&size[0], size.size());
-	size.resize(size.size()-1);
-		
-	double lsize = Util::toDouble(Text::fromT(size));
-	switch(ctrlSizeMode.GetCurSel()) {
-		case 1:
-			lsize*=1024.0; break;
-		case 2:
-			lsize*=1024.0*1024.0; break;
-		case 3:
-			lsize*=1024.0*1024.0*1024.0; break;
-	}
-
-	int64_t llsize = (int64_t)lsize;
-
+	auto llsize = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 	auto ldate = WinUtil::parseDate(ctrlDate, ctrlDateUnit);
 
 	// delete all results which came in paused state
@@ -486,7 +453,7 @@ void SearchFrame::onEnter() {
 		s = s.substr(0, max(s.size(), static_cast<tstring::size_type>(1)) - 1);
 	}*/
 
-	SearchManager::SizeModes mode((SearchManager::SizeModes)ctrlMode.GetCurSel());
+	SearchManager::SizeModes mode((SearchManager::SizeModes)ctrlSizeMode.GetCurSel());
 	if(llsize == 0)
 		mode = SearchManager::SIZE_DONTCARE;
 
@@ -1125,7 +1092,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		rc.top += spacing;
 		rc.bottom = rc.top + comboH;
 		rc.right = w2/3;
-		ctrlMode.MoveWindow(rc);
+		ctrlSizeMode.MoveWindow(rc);
 
 		sizeLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
 
@@ -1137,7 +1104,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		rc.left = rc.right + lMargin;
 		rc.right = width - rMargin;
 		rc.bottom = rc.top + comboH;
-		ctrlSizeMode.MoveWindow(rc);
+		ctrlSizeUnit.MoveWindow(rc);
 		
 		// "File type"
 		rc.left = lMargin;
@@ -1155,7 +1122,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		rc.top += spacing;
 		rc.bottom = rc.top + comboH;
 		//rc.right = w2 / 3;
-		//ctrlMode.MoveWindow(rc);
+		//ctrlSizeMode.MoveWindow(rc);
 
 		dateLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH - 1);
 
@@ -1227,10 +1194,10 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 
 		rc.SetRect(0,0,0,0);
 		ctrlSearchBox.MoveWindow(rc);
-		ctrlMode.MoveWindow(rc);
+		ctrlSizeMode.MoveWindow(rc);
 		ctrlPurge.MoveWindow(rc);
 		ctrlSize.MoveWindow(rc);
-		ctrlSizeMode.MoveWindow(rc);
+		ctrlSizeUnit.MoveWindow(rc);
 		ctrlFileType.MoveWindow(rc);
 		ctrlPauseSearch.MoveWindow(rc);
 		ctrlExcluded.MoveWindow(rc);
@@ -1355,7 +1322,7 @@ LRESULT SearchFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& b
 
 void SearchFrame::onTab(bool shift) {
 	HWND wnds[] = {
-		ctrlSearch.m_hWnd, ctrlPurge.m_hWnd, ctrlMode.m_hWnd, ctrlSize.m_hWnd, ctrlSizeMode.m_hWnd, 
+		ctrlSearch.m_hWnd, ctrlPurge.m_hWnd, ctrlSizeMode.m_hWnd, ctrlSize.m_hWnd, ctrlSizeUnit.m_hWnd, 
 		ctrlFileType.m_hWnd, ctrlSlots.m_hWnd, ctrlCollapsed.m_hWnd, ctrlDoSearch.m_hWnd, ctrlSearch.m_hWnd, 
 		ctrlResults.list.m_hWnd
 	};

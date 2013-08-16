@@ -71,12 +71,12 @@ public:
 		CHAIN_MSG_MAP(uibBase)
 		CHAIN_MSG_MAP(splitBase)
 		CHAIN_MSG_MAP(baseClass)
-		ALT_MSG_MAP(STATUS_MAP)
-			COMMAND_ID_HANDLER(IDC_SHOW_INFO, onShow)
-			COMMAND_ID_HANDLER(IDC_SHOW_FAV, onShow)
-			COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
-			COMMAND_ID_HANDLER(IDC_SHOW_ONLINE, onShow)
-			CHAIN_MSG_MAP_MEMBER(filter)
+		CHAIN_MSG_MAP_MEMBER(filter)
+	ALT_MSG_MAP(STATUS_MAP)
+		COMMAND_ID_HANDLER(IDC_SHOW_INFO, onShow)
+		COMMAND_ID_HANDLER(IDC_SHOW_FAV, onShow)
+		COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
+		COMMAND_ID_HANDLER(IDC_SHOW_ONLINE, onShow)
 	END_MSG_MAP()
 		
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -173,7 +173,6 @@ private:
 	CImageList images;
 	RichTextBox ctrlInfo;
 	CContainedWindow ctrlShowInfoContainer;
-	CContainedWindow ctrlFilterContainer;
 	CButton ctrlShowInfo;
 	CButton ctrlShowFav;
 	CButton ctrlShowQueued;

@@ -50,18 +50,8 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 	ATTACH(IDC_SEARCH_SIZE, ctrlSize);
 
 	ATTACH(IDC_SIZE_MODE, ctrlSizeMode);
-	ctrlSizeMode.AddString(CTSTRING(NORMAL));
-	ctrlSizeMode.AddString(CTSTRING(AT_LEAST));
-	ctrlSizeMode.AddString(CTSTRING(AT_MOST));
-	ctrlSizeMode.AddString(CTSTRING(EXACT_SIZE));
-	ctrlSizeMode.SetCurSel(1);
-
 	ATTACH(IDC_SIZE_UNIT, ctrlSizeUnit);
-	ctrlSizeUnit.AddString(CTSTRING(B));
-	ctrlSizeUnit.AddString(CTSTRING(KiB));
-	ctrlSizeUnit.AddString(CTSTRING(MiB));
-	ctrlSizeUnit.AddString(CTSTRING(GiB));
-	ctrlSizeUnit.SetCurSel(0);
+	WinUtil::appendSizeCombos(ctrlSizeMode, ctrlSizeUnit);
 
 	::SetWindowText(GetDlgItem(IDOK), (CTSTRING(OK)));
 	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
@@ -92,30 +82,15 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 
 LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(wID == IDOK) {
-		TCHAR buf[512];
 		if (ctrlSearch.GetWindowTextLength() == 0) {
 			MessageBox(CTSTRING(LINE_EMPTY));
 			return 0;
 		}
 
 		sizeMode = ctrlSizeMode.GetCurSel();
-
 		searchStr = WinUtil::addHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
-
-		ctrlSize.GetWindowText(buf, 512);
-		double lsize = Util::toDouble(Text::fromT(buf));
-		switch(ctrlSizeUnit.GetCurSel()) {
-			case 1:
-				lsize*=1024.0; break;
-			case 2:
-				lsize*=1024.0*1024.0; break;
-			case 3:
-				lsize*=1024.0*1024.0*1024.0; break;
-		}
-
+		size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 		useCurDir = IsDlgButtonChecked(IDC_USE_CUR_DIR) == BST_CHECKED;
-
-		size = lsize;
 
 		SearchManager::getInstance()->getSearchType(ctrlFileType.GetCurSel(), fileType, extList, fileTypeStr);
 		SettingsManager::getInstance()->set(SettingsManager::LAST_FL_FILETYPE, fileTypeStr);

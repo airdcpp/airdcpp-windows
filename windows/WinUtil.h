@@ -466,6 +466,9 @@ public:
 	static void appendDateUnitCombo(CComboBox& aCombo, int aSel = 1);
 	static time_t parseDate(CEdit& aDate, CComboBox& aCombo);
 
+	static void appendSizeCombos(CComboBox& aUnitCombo, CComboBox& aModeCombo, int aUnitSel = 2, int aModeSel = 1);
+	static int64_t parseSize(CEdit& aSize, CComboBox& aSizeUnit);
+
 	static void addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags = 0, int8_t prio = -1);
 	//static void addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags = 0, bool addBad = true);
 private:

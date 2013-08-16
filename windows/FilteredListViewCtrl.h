@@ -28,8 +28,6 @@
 #include "../client/AirUtil.h"
 #include "../client/SettingsManager.h"
 
-#define FILTER_MESSAGE_MAP 8
-
 template<class ContainerT, class ParentT, int ctrlId>
 class FilteredListViewCtrl : public CWindowImpl<FilteredListViewCtrl<ContainerT, ParentT, ctrlId>>  {
 
@@ -57,19 +55,12 @@ public:
 		COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
 		COMMAND_ID_HANDLER(IDC_FILTER_SHARED, onShow)
 		COMMAND_ID_HANDLER(IDC_FILTER_OPTIONS, onClickOptions)
-		FORWARD_NOTIFICATIONS()
-	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
 		CHAIN_MSG_MAP_MEMBER(filter)
-		//MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
-		//MESSAGE_HANDLER(WM_CHAR, onFilterChar)
-		//MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
+		FORWARD_NOTIFICATIONS()
 	END_MSG_MAP();
 
 	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings) : onTop(true), resetOnChange(true), filterPartialDupes(false), filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
-		filter(colCount, [this] { onUpdate(); }), columnCount(colCount), /*, listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),*/
-		ctrlFilterContainer(WC_EDIT, this, FILTER_MESSAGE_MAP),
-		ctrlFilterSelContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP),
-		ctrlFilterMethodContainer(WC_COMBOBOX, this, FILTER_MESSAGE_MAP)
+		filter(colCount, [this] { onUpdate(); }), columnCount(colCount) /*, listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),*/
 	{
 		filterShared = SettingsManager::getInstance()->get(settings[SETTING_SHARED]);
 		filterQueued = SettingsManager::getInstance()->get(settings[SETTING_QUEUED]);
@@ -89,11 +80,6 @@ public:
 		filter.addFilterBox(m_hWnd);
 		filter.addColumnBox(m_hWnd, list.getColumnList());
 		filter.addMethodBox(m_hWnd);
-
-		ctrlFilterContainer.SubclassWindow(filter.getFilterBox().m_hWnd);
-		ctrlFilterSelContainer.SubclassWindow(filter.getFilterColumnBox().m_hWnd);
-		ctrlFilterMethodContainer.SubclassWindow(filter.getFilterMethodBox().m_hWnd);
-
 
 		ctrlQueued.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_QUEUED);
 		ctrlQueued.SetWindowText(CTSTRING(QUEUED));
@@ -334,10 +320,6 @@ private:
 	CContainedWindow listContainer;
 
 	std::function<void ()> updateF;
-
-	CContainedWindow ctrlFilterContainer;
-	CContainedWindow ctrlFilterSelContainer;
-	CContainedWindow ctrlFilterMethodContainer;
 
 	CButton ctrlQueued;
 	CButton ctrlShared;

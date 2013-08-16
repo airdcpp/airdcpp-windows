@@ -39,7 +39,6 @@
 #include "UCHandler.h"
 #include "ListFilter.h"
 
-#define FILTER_MESSAGE_MAP 8
 #define SHOW_USERS 9
 struct CompareItems;
 class ChatFrameBase;
@@ -99,6 +98,7 @@ public:
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 		CHAIN_MSG_MAP(splitBase)
+		CHAIN_MSG_MAP_MEMBER(filter)
 	ALT_MSG_MAP(EDIT_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 		MESSAGE_HANDLER(WM_KEYDOWN, onChar)
@@ -109,10 +109,6 @@ public:
 		MESSAGE_HANDLER(WM_LBUTTONDBLCLK, onLButton)
 	ALT_MSG_MAP(SHOW_USERS)
 		MESSAGE_HANDLER(BM_SETCHECK, onShowUsers)
-	ALT_MSG_MAP(FILTER_MESSAGE_MAP)
-		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
-		MESSAGE_HANDLER(WM_CHAR, onFilterChar)
-		CHAIN_MSG_MAP_MEMBER(filter)
 	END_MSG_MAP()
 
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -242,9 +238,6 @@ private:
 	string cachedHubname;
 	bool wentoffline;
 	CContainedWindow ctrlShowUsersContainer;
-	CContainedWindow ctrlFilterContainer;
-	CContainedWindow ctrlFilterSelContainer;
-	CContainedWindow ctrlFilterMethodContainer;
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
 

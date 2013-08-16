@@ -76,7 +76,6 @@ static const FieldName fields[] =
 
 UsersFrame::UsersFrame() : closed(false), startup(true), 
 	ctrlShowInfoContainer(WC_BUTTON, this, STATUS_MAP), 
-	ctrlFilterContainer(WC_EDIT, this, STATUS_MAP), 
 	showInfo(SETTING(FAV_USERS_SHOW_INFO)),
 	listFav(SETTING(USERS_FILTER_FAVORITE)),
 	filterQueued(SETTING(USERS_FILTER_QUEUE)),
@@ -169,7 +168,6 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	filter.addFilterBox(ctrlStatus.m_hWnd);
 	filter.addColumnBox(ctrlStatus.m_hWnd, ctrlUsers.getColumnList());
 	filter.addMethodBox(ctrlStatus.m_hWnd);
-	ctrlFilterContainer.SubclassWindow(filter.getFilterBox().m_hWnd); //subclass the CEdit in order to handle its messages.
 
 	ClientManager::getInstance()->lockRead();
 	auto ul = ClientManager::getInstance()->getUsers();

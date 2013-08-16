@@ -339,8 +339,8 @@ private:
 	CEdit ctrlSearch;
 	CComboBox ctrlSearchBox;
 	CEdit ctrlSize;
-	CComboBox ctrlMode;
 	CComboBox ctrlSizeMode;
+	CComboBox ctrlSizeUnit;
 	SearchTypeCombo ctrlFileType;
 	CButton ctrlDoSearch;
 	CButton ctrlPauseSearch;

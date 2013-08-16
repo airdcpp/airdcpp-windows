@@ -76,44 +76,12 @@ void ListFilter::setInverse(bool aInverse) {
 	WinUtil::addCue(text.m_hWnd, inverse ? CTSTRING(EXCLUDE_DOTS) : CTSTRING(FILTER_DOTS), FALSE);
 }
 
-LRESULT ListFilter::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
-	tstring filter = Util::emptyStringT;
-
-	if(uMsg == WM_PASTE) {
-		if(!IsClipboardFormatAvailable(CF_TEXT))
-			return 0;
-		if(!::OpenClipboard(WinUtil::mainWnd))
-			return 0;
-	}
-
-	if(!SETTING(FILTER_ENTER) || (wParam == VK_RETURN)) {
-		if(uMsg == WM_PASTE) {
-			HGLOBAL hglb = GetClipboardData(CF_TEXT); 
-			if(hglb != NULL) { 
-				char* lptstr = (char*)GlobalLock(hglb); 
-				if(lptstr != NULL) {
-					string tmp(lptstr);
-					filter = Text::toT(tmp);
-					GlobalUnlock(hglb);
-				}
-			}
-			CloseClipboard();
-		} else if(uMsg == WM_CUT || uMsg == WM_CLEAR) {
-			int begin, end;
-			text.GetSel(begin, end);
-			tstring buf;
-			buf.resize(text.GetWindowTextLength());
-			buf.resize(text.GetWindowText(&buf[0], text.GetWindowTextLength() + 1));
-			buf.erase(begin, end);
-			filter = buf;
-		} else {
-			TCHAR *buf = new TCHAR[text.GetWindowTextLength()+1];
-			text.GetWindowText(buf, text.GetWindowTextLength()+1);
-			filter = buf;
-			delete[] buf;
-		}
-
-		textUpdated(Text::fromT(filter));
+LRESULT ListFilter::onFilterChar(WORD /*wNotifyCode*/, WORD, HWND hWndCtl, BOOL & bHandled) {
+	if (hWndCtl == text.m_hWnd) {
+		TCHAR *buf = new TCHAR[text.GetWindowTextLength() + 1];
+		text.GetWindowText(buf, text.GetWindowTextLength() + 1);
+		textUpdated(Text::fromT(buf));
+		delete [] buf;
 	}
 
 	bHandled = FALSE;
@@ -147,8 +115,10 @@ ListFilter::Preparation ListFilter::prepare() {
 	if(prep.method < StringMatch::METHOD_LAST) {
 		matcher.setMethod(static_cast<StringMatch::Method>(prep.method));
 		matcher.prepare();
-	} else {
+	} else if (columns[prep.column]->colType == COLUMN_NUMERIC) {
 		prep.size = prepareSize();
+	} else if (columns[prep.column]->colType == COLUMN_DATES) {
+		prep.size = prepareDate();
 	}
 
 	return prep;
@@ -197,31 +167,66 @@ void ListFilter::textUpdated(const string& filter) {
 
 void ListFilter::columnChanged() {
 	if(column.IsWindow() && method.IsWindow()) {
-		auto n = getMethod();
+		auto n = method.GetCount();
 		size_t col = getColumn();
 
-		if(col < colCount && columns[col]->colType == COLUMN_NUMERIC) {
-			if(n <= StringMatch::METHOD_LAST) {
-				method.AddString(_T("="));
-				method.AddString(_T(">="));
-				method.AddString(_T("<="));
-				method.AddString(_T(">"));
-				method.AddString(_T("<"));
-				method.AddString(_T("!="));
-			}
+		for (size_t i = StringMatch::METHOD_LAST; i < n; ++i) {
+			method.DeleteString(StringMatch::METHOD_LAST);
+		}
 
-		} else if(n > StringMatch::METHOD_LAST) {
-			for(size_t i = StringMatch::METHOD_LAST; i < n; ++i) {
-				method.DeleteString(StringMatch::METHOD_LAST);
-			}
-			if(getMethod() == -1) {
-				method.SetCurSel(StringMatch::PARTIAL);
-			}
+		if (getMethod() == -1) {
+			method.SetCurSel(StringMatch::PARTIAL);
+		}
+
+		if (col < colCount && (columns[col]->colType == COLUMN_NUMERIC || columns[col]->colType == COLUMN_DATES)) {
+			method.AddString(_T("="));
+			method.AddString(_T(">="));
+			method.AddString(_T("<="));
+			method.AddString(_T(">"));
+			method.AddString(_T("<"));
+			method.AddString(_T("!="));
 		}
 	}
-
-	updateFunction();
 }
+
+LRESULT ListFilter::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
+	if (hWndCtl == column.m_hWnd || hWndCtl == method.m_hWnd) {
+		if (hWndCtl == column.m_hWnd)
+			columnChanged();
+
+		updateFunction();
+	}
+	bHandled = FALSE;
+	return 0;
+}
+
+time_t ListFilter::prepareDate() const {
+	size_t end;
+	time_t multiplier;
+
+	if ((end = Util::findSubString(matcher.pattern, ("y"))) != string::npos) {
+		multiplier = 60 * 60 * 24 * 365;
+	}
+	else if ((end = Util::findSubString(matcher.pattern, ("m"))) != string::npos) {
+		multiplier = 60 * 60 * 24 * 30;
+	}
+	else if ((end = Util::findSubString(matcher.pattern, ("w"))) != string::npos) {
+		multiplier = 60 * 60 * 24 * 7;
+	}
+	else if ((end = Util::findSubString(matcher.pattern, ("d"))) != string::npos) {
+		multiplier = 60 * 60 * 24;
+	}
+	else {
+		multiplier = 1;
+	}
+
+	if (end == tstring::npos) {
+		end = matcher.pattern.length();
+	}
+
+	return GET_TIME() - (Util::toInt64(matcher.pattern.substr(0, end)) * multiplier);
+}
+
 double ListFilter::prepareSize() const {
 	size_t end;
 	int64_t multiplier;

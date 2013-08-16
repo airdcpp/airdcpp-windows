@@ -50,6 +50,7 @@ int DirectoryListingFrame::columnSizes[] = { 300, 60, 100, 100, 200, 100 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::TYPE, ResourceManager::EXACT_SIZE, ResourceManager::SIZE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTER_FL_SHARED, SettingsManager::FILTER_FL_QUEUED, SettingsManager::FILTER_FL_INVERSED, SettingsManager::FILTER_FL_TOP, SettingsManager::FILTER_FL_PARTIAL_DUPES, SettingsManager::FILTER_FL_RESET_CHANGE };
 
+static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_DATES };
 
 void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aDir, const string& aXML) {
 
@@ -235,7 +236,7 @@ void DirectoryListingFrame::createColumns() {
 	for (uint8_t j = 0; j < COLUMN_LAST; j++)
 	{
 		int fmt = ((j == COLUMN_SIZE) || (j == COLUMN_EXACTSIZE) || (j == COLUMN_TYPE)) ? LVCFMT_RIGHT : LVCFMT_LEFT;
-		ctrlFiles.list.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
+		ctrlFiles.list.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j, columnTypes[j]);
 	}
 	ctrlFiles.list.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlFiles.list.setVisible(SETTING(DIRECTORYLISTINGFRAME_VISIBLE));
