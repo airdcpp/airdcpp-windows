@@ -78,7 +78,9 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	doSearchContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	resultsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
 	hubsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
-	ctrlExcludedContainer(WC_EDIT, this, EXCLUDE_MESSAGE_MAP),
+	dateContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP),
+	dateUnitContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
+	excludedContainer(WC_EDIT, this, EXCLUDE_MESSAGE_MAP),
 	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
 	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0),
 	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); }, filterSettings)
@@ -126,6 +128,14 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlSize.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		ES_AUTOHSCROLL | ES_NUMBER, WS_EX_CLIENTEDGE);
 	sizeContainer.SubclassWindow(ctrlSize.m_hWnd);
+
+	ctrlDate.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		ES_AUTOHSCROLL | ES_NUMBER, WS_EX_CLIENTEDGE);
+	dateContainer.SubclassWindow(ctrlSize.m_hWnd);
+
+	ctrlDateUnit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
+	dateUnitContainer.SubclassWindow(ctrlDateUnit.m_hWnd);
 	
 	ctrlExcludedBool.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_USE_EXCLUDED);
 	ctrlExcludedBool.SetButtonStyle(BS_AUTOCHECKBOX, FALSE);
@@ -135,7 +145,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlExcluded.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
 	ctrlExcluded.SetFont(WinUtil::systemFont);
-	ctrlExcludedContainer.SubclassWindow(ctrlExcluded.m_hWnd);
+	excludedContainer.SubclassWindow(ctrlExcluded.m_hWnd);
 
 	WinUtil::appendHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
 	WinUtil::appendHistory(ctrlExcluded, SettingsManager::HISTORY_EXCLUDE);
@@ -181,6 +191,10 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	hubsLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
 	hubsLabel.SetFont(WinUtil::systemFont, FALSE);
 	hubsLabel.SetWindowText(CTSTRING(HUBS));
+
+	dateLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	dateLabel.SetFont(WinUtil::systemFont, FALSE);
+	dateLabel.SetWindowText(CTSTRING(MAXIMUM_AGE));
 
 	ctrlSlots.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FREESLOTS);
 	ctrlSlots.SetButtonStyle(BS_AUTOCHECKBOX, FALSE);
@@ -229,6 +243,8 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlMode.SetFont(WinUtil::systemFont, FALSE);
 	ctrlSizeMode.SetFont(WinUtil::systemFont, FALSE);
 	ctrlFileType.SetFont(WinUtil::systemFont, FALSE);
+	ctrlDate.SetFont(WinUtil::systemFont, FALSE);
+	ctrlDateUnit.SetFont(WinUtil::systemFont, FALSE);
 
 	ctrlMode.AddString(CTSTRING(NORMAL));
 	ctrlMode.AddString(CTSTRING(AT_LEAST));
@@ -244,6 +260,8 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ctrlSizeMode.SetCurSel(2);
 	else
 		ctrlSizeMode.SetCurSel(0);
+
+	WinUtil::appendDateUnitCombo(ctrlDateUnit, 1);
 
 	ctrlFileType.fillList(!initialString.empty() ? initialType : SETTING(LAST_SEARCH_FILETYPE), WinUtil::textColor, WinUtil::bgColor);
 
@@ -440,6 +458,8 @@ void SearchFrame::onEnter() {
 
 	int64_t llsize = (int64_t)lsize;
 
+	auto ldate = WinUtil::parseDate(ctrlDate, ctrlDateUnit);
+
 	// delete all results which came in paused state
 	for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
 	pausedResults.clear();
@@ -526,7 +546,7 @@ void SearchFrame::onEnter() {
 		searchStartTime = GET_TICK();
 		// more 5 seconds for transferring results
 		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, s, llsize, 
-			(SearchManager::TypeModes)ftype, mode, token, extList, AdcSearch::parseSearchString(excluded), Search::MANUAL, (void*)this) + 5000;
+			(SearchManager::TypeModes)ftype, mode, token, extList, AdcSearch::parseSearchString(excluded), Search::MANUAL, ldate, SearchManager::DATE_NEWER, false, (void*)this) + 5000;
 
 		waiting = true;
 	}
@@ -1129,6 +1149,26 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 
 		typeLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
 
+		// "Date"
+		rc.left = lMargin + 4;
+		rc.right = width - rMargin;
+		rc.top += spacing;
+		rc.bottom = rc.top + comboH;
+		//rc.right = w2 / 3;
+		//ctrlMode.MoveWindow(rc);
+
+		dateLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH - 1);
+
+		rc.left = lMargin;
+		rc.right = w2 / 2;
+		rc.bottom = rc.top + 21;
+		ctrlDate.MoveWindow(rc);
+
+		rc.left = rc.right + lMargin;
+		rc.right += w2 / 2;
+		rc.bottom = rc.top + comboH;
+		ctrlDateUnit.MoveWindow(rc);
+
 		// "Search options"
 		rc.left = lMargin+4;
 		rc.right = width - rMargin;
@@ -1195,6 +1235,8 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlPauseSearch.MoveWindow(rc);
 		ctrlExcluded.MoveWindow(rc);
 		ctrlExcludedBool.MoveWindow(rc);
+		ctrlDate.MoveWindow(rc);
+		ctrlDateUnit.MoveWindow(rc);
 	}
 
 	CRect rc = rect;
@@ -1212,6 +1254,24 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlSearch.Attach(hWnd); 
 		searchContainer.SubclassWindow(ctrlSearch.m_hWnd);
 	}
+}
+
+LRESULT SearchFrame::onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+	// draw the background
+	WTL::CDCHandle dc(reinterpret_cast<HDC>(wParam));
+	RECT rc;
+	GetClientRect(&rc);
+	dc.FillRect(&rc, GetSysColorBrush(COLOR_3DFACE));
+
+	// draw the borders
+	HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, GetSysColor(COLOR_APPWORKSPACE)));
+	//MoveToEx(dc, rc.left, rc.top, (LPPOINT) NULL);
+	//LineTo(dc, rc.left, rc.top + 40);
+
+	MoveToEx(dc, rc.left, rc.top, (LPPOINT) NULL);
+	LineTo(dc, rc.right, rc.top);
+	DeleteObject(SelectObject(dc, oldPen));
+	return TRUE;
 }
 
 void SearchFrame::runUserCommand(UserCommand& uc) {
@@ -1260,7 +1320,7 @@ LRESULT SearchFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 	HDC hDC = (HDC)wParam;
 
 	if(hWnd == searchLabel.m_hWnd || hWnd == sizeLabel.m_hWnd || hWnd == optionLabel.m_hWnd || hWnd == typeLabel.m_hWnd
-		|| hWnd == hubsLabel.m_hWnd || hWnd == ctrlSlots.m_hWnd || hWnd == ctrlExcludedBool.m_hWnd || hWnd == ctrlCollapsed.m_hWnd) {
+		|| hWnd == hubsLabel.m_hWnd || hWnd == ctrlSlots.m_hWnd || hWnd == ctrlExcludedBool.m_hWnd || hWnd == ctrlCollapsed.m_hWnd || hWnd == dateLabel) {
 		::SetBkColor(hDC, ::GetSysColor(COLOR_3DFACE));
 		::SetTextColor(hDC, ::GetSysColor(COLOR_BTNTEXT));
 		return (LRESULT)::GetSysColorBrush(COLOR_3DFACE);

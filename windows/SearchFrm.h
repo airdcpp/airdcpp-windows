@@ -79,6 +79,7 @@ public:
 		MESSAGE_HANDLER(WM_DRAWITEM, onDrawItem)
 		MESSAGE_HANDLER(WM_MEASUREITEM, onMeasure)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
+		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBackground)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
 		COMMAND_ID_HANDLER(IDC_SEARCH_PAUSE, onPause)
@@ -115,6 +116,7 @@ public:
 		images.Destroy();
 	}
 
+	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
@@ -343,6 +345,8 @@ private:
 	CButton ctrlDoSearch;
 	CButton ctrlPauseSearch;
 	CButton ctrlPurge;
+	CEdit ctrlDate;
+	CComboBox ctrlDateUnit;
 	
 	CContainedWindow searchContainer;
 	CContainedWindow searchBoxContainer;
@@ -357,9 +361,11 @@ private:
 	CContainedWindow resultsContainer;
 	CContainedWindow hubsContainer;
 	CContainedWindow purgeContainer;
-	CContainedWindow ctrlExcludedContainer;
+	CContainedWindow excludedContainer;
+	CContainedWindow dateContainer;
+	CContainedWindow dateUnitContainer;
 	
-	CStatic searchLabel, sizeLabel, optionLabel, typeLabel, hubsLabel;
+	CStatic searchLabel, sizeLabel, optionLabel, typeLabel, hubsLabel, dateLabel;
 	CButton ctrlSlots, ctrlShowUI, ctrlCollapsed, ctrlExcludedBool;
 	bool showUI;
 

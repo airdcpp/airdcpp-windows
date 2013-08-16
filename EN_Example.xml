@@ -1971,9 +1971,10 @@ Do you want to continue?</string>
 	<string name="ExcludeMatches">Exclude matches</string>
 	<string name="HubUnknown">No known hub</string>
 	<string name="ExcludeDots">Exclude...</string>
-	<string name="ResetFolderChange">Reset when switching directory</string>
-	<string name="ResetNewSearch">Reset on new search</string>
+	<string name="ResetFolderChange">Reset the string when switching directory</string>
+	<string name="ResetNewSearch">Reset the string on new search</string>
 	<string name="PartialDupesEqual">Treat partial dupes similar to exact dupes</string>
-	<string name="ShowOnTop">Show on top</string>
+	<string name="ShowOnTop">Show above the list</string>
 	<string name="OptionsDots">Options...</string>
+	<string name="MaximumAge">Maximum age</string>
 </recources>

@@ -2006,6 +2006,37 @@ void WinUtil::appendSpeedCombo(CComboBox& aCombo, SettingsManager::StrSetting aS
 	aCombo.SetCurSel(aCombo.FindString(0, Text::toT(curSpeed).c_str()));
 }
 
+void WinUtil::appendDateUnitCombo(CComboBox& ctrlDateUnit, int aSel /*= 1*/) {
+	ctrlDateUnit.AddString(CTSTRING(HOURS));
+	ctrlDateUnit.AddString(CTSTRING(DAYS));
+	ctrlDateUnit.AddString(CTSTRING(WEEKS));
+	ctrlDateUnit.AddString(CTSTRING(MONTHS));
+	ctrlDateUnit.AddString(CTSTRING(YEARS));
+	ctrlDateUnit.SetCurSel(aSel);
+}
+
+time_t WinUtil::parseDate(CEdit& ctrlDate, CComboBox& ctrlDateUnit) {
+	tstring date(ctrlDate.GetWindowTextLength() + 1, _T('\0'));
+	ctrlDate.GetWindowText(&date[0], date.size());
+	date.resize(date.size() - 1);
+
+	time_t ldate = Util::toUInt32(Text::fromT(date));
+	switch (ctrlDateUnit.GetCurSel()) {
+	case 0:
+		ldate *= 60 * 60; break;
+	case 1:
+		ldate *= 60 * 60 * 24; break;
+	case 2:
+		ldate *= 60 * 60 * 24 * 7; break;
+	case 3:
+		ldate *= 60 * 60 * 24 * 30; break;
+	case 4:
+		ldate *= 60 * 60 * 24 * 365; break;
+	}
+
+	return GET_TIME() - ldate;
+}
+
 void WinUtil::setUserFieldLimits(HWND hWnd) {
 	CEdit tmp;
 	tmp.Attach(GetDlgItem(hWnd, IDC_NICK));

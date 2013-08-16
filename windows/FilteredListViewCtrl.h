@@ -52,6 +52,7 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLOREDIT, onCtlColor)
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
+		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBackground)
 
 		COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
 		COMMAND_ID_HANDLER(IDC_FILTER_SHARED, onShow)
@@ -106,7 +107,7 @@ public:
 		ctrlShared.SetFont(WinUtil::systemFont);
 		ctrlShared.SetCheck(filterShared ? BST_CHECKED : BST_UNCHECKED);
 
-		ctrlOptions.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_OPTIONS);
+		ctrlOptions.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_PUSHBUTTON, NULL, IDC_FILTER_OPTIONS);
 		ctrlOptions.SetWindowText(CTSTRING(OPTIONS_DOTS));
 		ctrlOptions.SetFont(WinUtil::systemFont);
 
@@ -156,13 +157,47 @@ public:
 		return 0;
 	}
 
+	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+		// draw the background
+		WTL::CDCHandle dc(reinterpret_cast<HDC>(wParam));
+		RECT rc;
+		GetClientRect(&rc);
+		dc.FillRect(&rc, GetSysColorBrush(COLOR_3DFACE));
+		//dc.FillRect(&rc, WinUtil::bgBrush);
+
+		// draw the left border
+		HGDIOBJ oldPen = SelectObject(dc, CreatePen(PS_SOLID, 1, GetSysColor(COLOR_APPWORKSPACE)));
+		MoveToEx(dc, rc.left, rc.top, (LPPOINT) NULL);
+		LineTo(dc, rc.left, rc.bottom);
+
+		// draw the right border
+		MoveToEx(dc, rc.right, rc.top, (LPPOINT) NULL);
+		LineTo(dc, rc.right, rc.bottom);
+
+		if (onTop) {
+			// draw the top border
+			MoveToEx(dc, rc.left, rc.top, (LPPOINT) NULL);
+			LineTo(dc, rc.right, rc.top);
+		} else {
+			// draw the bottom border
+			MoveToEx(dc, rc.left, rc.bottom-1, (LPPOINT) NULL);
+			LineTo(dc, rc.right, rc.bottom-1);
+		}
+
+		DeleteObject(SelectObject(dc, oldPen));
+		return TRUE;
+	}
+
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 		HWND hWnd = (HWND) lParam;
-		HDC hDC = (HDC) wParam;
 		if (hWnd == ctrlQueued.m_hWnd || hWnd == ctrlShared.m_hWnd) {
-			::SetBkColor(hDC, WinUtil::bgColor);
-			::SetTextColor(hDC, WinUtil::textColor);
-			return (LRESULT) WinUtil::bgBrush;
+			HDC hDC = (HDC) wParam;
+			::SetBkColor(hDC, ::GetSysColor(COLOR_3DFACE));
+			return (LRESULT)::GetSysColorBrush(COLOR_3DFACE);
+			//::SetBkColor(hDC, WinUtil::bgColor);
+			//::SetTextColor(hDC, WinUtil::textColor);
+			//::SetBkMode(hDC, TRANSPARENT);
+			//return (LRESULT) GetStockObject(HOLLOW_BRUSH);
 		}
 
 		bHandled = FALSE;
