@@ -115,7 +115,7 @@ void DirectoryListingFrame::updateItemCache(const string& aPath, ReloadMode aRel
 
 	list.files.clear();
 	for (const auto& f : curDir->files) {
-		list.directories.insert(new ItemInfo(f));
+		list.files.insert(new ItemInfo(f));
 	}
 }
 
