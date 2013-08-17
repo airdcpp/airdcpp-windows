@@ -1322,46 +1322,45 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 		UINT a = 0;
 		HTREEITEM ht = ctrlTree.HitTest(pt, &a);
-		if (!ht)
-			return 0;
-
-		if(ht != ctrlTree.GetSelectedItem())
-			ctrlTree.SelectItem(ht);
-		ctrlTree.ClientToScreen(&pt);
-		changeType = CHANGE_TREE_SINGLE;
-		auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
+		if (ht) {
+			if (ht != ctrlTree.GetSelectedItem())
+				ctrlTree.SelectItem(ht);
+			ctrlTree.ClientToScreen(&pt);
+			changeType = CHANGE_TREE_SINGLE;
+			auto dir = (DirectoryListing::Directory*)ctrlTree.GetItemData(ht);
 
 
-		OMenu directoryMenu;
-		directoryMenu.CreatePopupMenu();
+			OMenu directoryMenu;
+			directoryMenu.CreatePopupMenu();
 
-		if (!dl->getIsOwnList()) {
-			appendDownloadMenu(directoryMenu, DownloadBaseHandler::TYPE_SECONDARY, false, nullptr, dir->getPath());
+			if (!dl->getIsOwnList()) {
+				appendDownloadMenu(directoryMenu, DownloadBaseHandler::TYPE_SECONDARY, false, nullptr, dir->getPath());
+				directoryMenu.appendSeparator();
+			}
+
+			WinUtil::appendSearchMenu(directoryMenu, curPath);
 			directoryMenu.appendSeparator();
-		}
 
-		WinUtil::appendSearchMenu(directoryMenu, curPath);
-		directoryMenu.appendSeparator();
+			directoryMenu.appendItem(TSTRING(COPY_DIRECTORY), [=] { onCopyDir(); });
+			directoryMenu.appendItem(TSTRING(SEARCH), [=] { onSearchDir(true); });
+			if (dl->getPartialList()) {
+				directoryMenu.appendSeparator();
+				directoryMenu.appendItem(TSTRING(RELOAD), [=] { onReloadPartial(true); });
+			}
 
-		directoryMenu.appendItem(TSTRING(COPY_DIRECTORY), [=] { onCopyDir(); });
-		directoryMenu.appendItem(TSTRING(SEARCH), [=] { onSearchDir(true); });
-		if (dl->getPartialList()) {
-			directoryMenu.appendSeparator();
-			directoryMenu.appendItem(TSTRING(RELOAD), [=] { onReloadPartial(true); });
-		}
-		
-		if (dl->getIsOwnList() || (dir && dir->getDupe() != DUPE_NONE)) {
-			directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { onRefreshShare(true); });
-			directoryMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { onScanShare(true, false); });
-			directoryMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { onOpenDupeDir(true); });
-		}
+			if (dl->getIsOwnList() || (dir && dir->getDupe() != DUPE_NONE)) {
+				directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { onRefreshShare(true); });
+				directoryMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { onScanShare(true, false); });
+				directoryMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { onOpenDupeDir(true); });
+			}
 
-		// Strange, windows doesn't change the selection on right-click... (!)
-			
-		directoryMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
-		directoryMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
-			
-		return TRUE; 
+			// Strange, windows doesn't change the selection on right-click... (!)
+
+			directoryMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
+			directoryMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+
+			return TRUE;
+		}
 	} 
 	
 	bHandled = FALSE;
