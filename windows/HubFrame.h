@@ -320,6 +320,7 @@ private:
 	// ClientListener
 	void on(Connecting, const Client*) noexcept;
 	void on(Connected, const Client*) noexcept;
+	void on(UserConnected, const Client*, const OnlineUserPtr&) noexcept;
 	void on(UserUpdated, const Client*, const OnlineUserPtr&) noexcept;
 	void on(UsersUpdated, const Client*, const OnlineUserList&) noexcept;
 	void on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr&) noexcept;

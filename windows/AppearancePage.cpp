@@ -32,6 +32,7 @@ PropPage::TextItem AppearancePage::texts[] = {
 	{ IDC_SETTINGS_REQUIRES_RESTART, ResourceManager::SETTINGS_REQUIRES_RESTART },
 	{ IDC_SETTINGS_GET_USER_COUNTRY, ResourceManager::SETTINGS_GET_USER_COUNTRY }, 
 	{ IDC_SETTINGS_COUNTRY_FORMAT, ResourceManager::SETTINGS_COUNTRY_FORMAT }, 
+	{ IDC_DATE_FORMAT_LBL, ResourceManager::FILE_DATE_FORMAT },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -39,6 +40,7 @@ PropPage::Item AppearancePage::items[] = {
 	{ IDC_TIME_STAMPS_FORMAT, SettingsManager::TIME_STAMPS_FORMAT, PropPage::T_STR },
 	{ IDC_COUNTRY_FORMAT, SettingsManager::COUNTRY_FORMAT, PropPage::T_STR },
 	{ IDC_LANGUAGE, SettingsManager::LANGUAGE_FILE, PropPage::T_STR },
+	{ IDC_DATE_FORMAT, SettingsManager::DATE_FORMAT, PropPage::T_STR },
 	{ 0, 0, PropPage::T_END }
 };
 

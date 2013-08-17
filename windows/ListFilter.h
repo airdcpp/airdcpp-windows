@@ -45,11 +45,6 @@ public:
 	virtual ~ListFilter() {}
 
 	BEGIN_MSG_MAP(ListFilter)
-		/*MESSAGE_HANDLER(WM_CHAR, onFilterChar)
-		MESSAGE_HANDLER(WM_CLEAR, onFilterChar)
-		MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
-		MESSAGE_HANDLER(WM_CUT, onFilterChar)
-		MESSAGE_HANDLER(WM_PASTE, onFilterChar)*/
 		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onSelChange)
 		COMMAND_CODE_HANDLER(EN_CHANGE, onFilterChar)
 	END_MSG_MAP()

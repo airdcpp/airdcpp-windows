@@ -1376,5 +1376,14 @@
     <Image Include="res\SettingsTree\Hashing.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\emoticon.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\send_file.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ToolbarImages\LogDir.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

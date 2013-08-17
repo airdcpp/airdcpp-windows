@@ -206,17 +206,15 @@ time_t ListFilter::prepareDate() const {
 
 	if ((end = Util::findSubString(matcher.pattern, ("y"))) != string::npos) {
 		multiplier = 60 * 60 * 24 * 365;
-	}
-	else if ((end = Util::findSubString(matcher.pattern, ("m"))) != string::npos) {
+	} else if ((end = Util::findSubString(matcher.pattern, ("m"))) != string::npos) {
 		multiplier = 60 * 60 * 24 * 30;
-	}
-	else if ((end = Util::findSubString(matcher.pattern, ("w"))) != string::npos) {
+	} else if ((end = Util::findSubString(matcher.pattern, ("w"))) != string::npos) {
 		multiplier = 60 * 60 * 24 * 7;
-	}
-	else if ((end = Util::findSubString(matcher.pattern, ("d"))) != string::npos) {
+	} else if ((end = Util::findSubString(matcher.pattern, ("d"))) != string::npos) {
 		multiplier = 60 * 60 * 24;
-	}
-	else {
+	} else if ((end = Util::findSubString(matcher.pattern, ("h"))) != string::npos) {
+		multiplier = 60 * 60;
+	} else {
 		multiplier = 1;
 	}
 
@@ -224,7 +222,8 @@ time_t ListFilter::prepareDate() const {
 		end = matcher.pattern.length();
 	}
 
-	return GET_TIME() - (Util::toInt64(matcher.pattern.substr(0, end)) * multiplier);
+	time_t ret = Util::toInt64(matcher.pattern.substr(0, end)) * multiplier;
+	return ret > 0 ? GET_TIME() - ret : ret;
 }
 
 double ListFilter::prepareSize() const {

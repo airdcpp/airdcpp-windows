@@ -918,6 +918,8 @@ BEGIN
     GROUPBOX        "Country format",IDC_SETTINGS_COUNTRY_FORMAT,8,236,117,38
     EDITTEXT        IDC_COUNTRY_FORMAT,16,251,84,15,ES_AUTOHSCROLL
     PUSHBUTTON      "?",IDC_COUNTRY_FORMAT_HELP,104,251,14,14
+    GROUPBOX        "Date format",IDC_DATE_FORMAT_LBL,147,196,117,38
+    EDITTEXT        IDC_DATE_FORMAT,155,211,84,15,ES_AUTOHSCROLL
 END
 
 IDD_LOGPAGE DIALOGEX 0, 0, 294, 318
@@ -1773,7 +1775,6 @@ END
 LANGUAGE LANG_FINNISH, SUBLANG_DEFAULT
 #pragma code_page(1252)
 
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
@@ -2410,7 +2411,7 @@ IDI_LOGS                ICON                    "res\\ToolbarImages\\SystemLog.i
 IDI_UPLOAD_QUEUE        ICON                    "res\\ToolbarImages\\uQueue.ico"
 IDI_SCAN                ICON                    "res\\ToolbarImages\\ScanMissing.ico"
 IDI_AUTOSEARCH          ICON                    "res\\ToolbarImages\\AutoSearch.ico"
-IDI_LOGDIR				ICON                    "res\\ToolbarImages\\LogDir.ico"
+IDI_LOGDIR              ICON                    "res\\ToolbarImages\\LogDir.ico"
 IDI_TEXT                ICON                    "res\\text.ico"
 IDI_IERROR              ICON                    "res\\error.ico"
 IDI_IWARNING            ICON                    "res\\warning.ico"

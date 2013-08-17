@@ -95,6 +95,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_PURGE, onPurge)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(IDC_USE_EXCLUDED, onUseExcluded)
+		COMMAND_CODE_HANDLER(EN_CHANGE, onEditChange)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uicBase)
 		CHAIN_MSG_MAP(baseClass)
@@ -116,6 +117,7 @@ public:
 		images.Destroy();
 	}
 
+	LRESULT onEditChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onEraseBackground(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL & /*bHandled*/);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
@@ -364,9 +366,10 @@ private:
 	CContainedWindow excludedContainer;
 	CContainedWindow dateContainer;
 	CContainedWindow dateUnitContainer;
+	CContainedWindow aschContainer;
 	
-	CStatic searchLabel, sizeLabel, optionLabel, typeLabel, hubsLabel, dateLabel;
-	CButton ctrlSlots, ctrlShowUI, ctrlCollapsed, ctrlExcludedBool;
+	CStatic searchLabel, sizeLabel, optionLabel, typeLabel, hubsLabel, dateLabel, aschLabel;
+	CButton ctrlSlots, ctrlShowUI, ctrlCollapsed, ctrlExcludedBool, ctrlRequireAsch;
 	bool showUI;
 
 	CImageList images;
@@ -439,6 +442,7 @@ private:
 	void addSearchResult(SearchInfo* si);
 
 	LRESULT onItemChangedHub(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
+	void updateHubInfoString();
 };
 
 #endif // !defined(SEARCH_FRM_H)

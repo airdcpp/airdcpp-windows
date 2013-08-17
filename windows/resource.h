@@ -321,8 +321,8 @@
 #define IDI_USER_OFF                    518
 #define IDI_RELOAD                      519
 #define IDI_HASHING                     520
-#define IDI_LOGDIR						521
-#define IDI_SEND_FILE					522
+#define IDI_LOGDIR                      521
+#define IDI_SEND_FILE                   522
 #define IDC_BACK                        997
 #define IDC_FORWARD                     998
 #define IDC_UP                          999
@@ -498,7 +498,7 @@
 #define IDC_MIN_FILE_SIZE               1121
 #define IDC_MAX_FILE_SIZE               1122
 #define IDC_AUTOQUEUE                   1123
-#define IDC_OPEN_FOLDER		            1124
+#define IDC_OPEN_FOLDER                 1124
 #define IDC_IS_FORBIDDEN                1124
 #define IDC_MATCH_QUEUE                 1125
 #define IDC_IS_FORBIDDEN2               1125
@@ -687,9 +687,12 @@
 #define IDC_FH_IDENT                    1244
 #define IDC_COUNTRY_FORMAT              1244
 #define IDC_FH_NAME                     1245
+#define IDC_DATE_FORMAT_LBL             1245
 #define IDC_MAXCOMPRESS                 1246
 #define IDC_HASH_PROGRESS               1246
 #define IDC_FH_ADDRESS                  1246
+#define IDC_COUNTRY_FORMAT2             1246
+#define IDC_DATE_FORMAT                 1246
 #define IDC_MAX_COMPRESSION             1247
 #define IDC_HASH_INDEXING               1247
 #define IDC_FH_HUB_DESC                 1247

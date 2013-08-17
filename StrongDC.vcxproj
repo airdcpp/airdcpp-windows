@@ -815,6 +815,7 @@
     <Image Include="res\cancel.ico" />
     <Image Include="res\down.ico" />
     <Image Include="res\download_user.ico" />
+    <Image Include="res\emoticon.ico" />
     <Image Include="res\ExecMasked.ico" />
     <Image Include="res\expand_down.ico" />
     <Image Include="res\expand_up.ico" />
@@ -849,6 +850,7 @@
     <Image Include="res\searchTypes\Pic.ico" />
     <Image Include="res\searchTypes\tth.ico" />
     <Image Include="res\searchTypes\Video.ico" />
+    <Image Include="res\send_file.ico" />
     <Image Include="res\SettingsTree\Hashing.ico" />
     <Image Include="res\SettingsTree\Limiter.ico" />
     <Image Include="res\SettingsTree\Proxy.ico" />
@@ -858,6 +860,7 @@
     <Image Include="res\SlotsFull.ico" />
     <Image Include="res\splash.png" />
     <Image Include="res\text.ico" />
+    <Image Include="res\ToolbarImages\LogDir.ico" />
     <Image Include="res\TotalDown.ico" />
     <Image Include="res\TotalUp.ico" />
     <Image Include="res\types.bmp" />

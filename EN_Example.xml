@@ -1977,4 +1977,7 @@ Do you want to continue?</string>
 	<string name="ShowOnTop">Show above the list</string>
 	<string name="OptionsDots">Options...</string>
 	<string name="MaximumAge">Maximum age</string>
+	<string name="SearchSupportedOnly">Search only from supported clients</string>
+	<string name="FileDateFormat">File date format</string>
+	<string name="AschSupportCount">Users with Advanced Search support: %1%/%2%</string>
 </recources>

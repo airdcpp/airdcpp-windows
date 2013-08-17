@@ -1493,6 +1493,11 @@ void HubFrame::on(Connecting, const Client*) noexcept {
 void HubFrame::on(Connected, const Client*) noexcept { 
 	callAsync([=] { onConnected(); });
 }
+
+void HubFrame::on(UserConnected, const Client* c, const OnlineUserPtr& user) noexcept {
+	on(UserUpdated(), c, user);
+}
+
 void HubFrame::on(UserUpdated, const Client*, const OnlineUserPtr& user) noexcept {
 	auto task = new UserTask(user);
 	callAsync([this, task] {

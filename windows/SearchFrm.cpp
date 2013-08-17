@@ -83,6 +83,7 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	dateContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP),
 	dateUnitContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
 	excludedContainer(WC_EDIT, this, EXCLUDE_MESSAGE_MAP),
+	aschContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
 	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0),
 	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); }, filterSettings)
@@ -203,6 +204,18 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlSlots.SetFont(WinUtil::systemFont, FALSE);
 	ctrlSlots.SetWindowText(CTSTRING(ONLY_FREE_SLOTS));
 	slotsContainer.SubclassWindow(ctrlSlots.m_hWnd);
+
+	ctrlRequireAsch.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FREESLOTS);
+	ctrlRequireAsch.SetButtonStyle(BS_AUTOCHECKBOX, FALSE);
+	ctrlRequireAsch.SetFont(WinUtil::systemFont, FALSE);
+	ctrlRequireAsch.EnableWindow(FALSE);
+
+	aschLabel.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
+	aschLabel.SetFont(WinUtil::systemFont, FALSE);
+
+	auto label = TSTRING(SEARCH_SUPPORTED_ONLY) + _T(" *");
+	ctrlRequireAsch.SetWindowText(label.c_str());
+	aschContainer.SubclassWindow(ctrlRequireAsch.m_hWnd);
 
 	ctrlCollapsed.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_COLLAPSED);
 	ctrlCollapsed.SetButtonStyle(BS_AUTOCHECKBOX, FALSE);
@@ -416,7 +429,7 @@ void SearchFrame::onEnter() {
 		}
 	}
 
-	if(!clients.size())
+	if(clients.empty())
 		return;
 
 
@@ -426,6 +439,7 @@ void SearchFrame::onEnter() {
 
 	auto llsize = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 	auto ldate = WinUtil::parseDate(ctrlDate, ctrlDateUnit);
+	bool aschOnly = ctrlRequireAsch.GetCheck() > 0;
 
 	// delete all results which came in paused state
 	for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
@@ -513,7 +527,7 @@ void SearchFrame::onEnter() {
 		searchStartTime = GET_TICK();
 		// more 5 seconds for transferring results
 		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, s, llsize, 
-			(SearchManager::TypeModes)ftype, mode, token, extList, AdcSearch::parseSearchString(excluded), Search::MANUAL, ldate, SearchManager::DATE_NEWER, false, (void*)this) + 5000;
+			(SearchManager::TypeModes)ftype, mode, token, extList, AdcSearch::parseSearchString(excluded), Search::MANUAL, ldate, SearchManager::DATE_NEWER, aschOnly, (void*) this) + 5000;
 
 		waiting = true;
 	}
@@ -525,6 +539,15 @@ void SearchFrame::onEnter() {
 	if(SETTING(CLEAR_SEARCH)) // Only clear if the search was sent
 		ctrlSearch.SetWindowText(_T(""));
 
+}
+
+LRESULT SearchFrame::onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL & bHandled) {
+	if (hWndCtl == ctrlDate.m_hWnd) {
+		ctrlRequireAsch.EnableWindow(ctrlDate.LineLength() > 0);
+	}
+
+	bHandled = FALSE;
+	return FALSE;
 }
 
 void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept {
@@ -1121,10 +1144,8 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		rc.right = width - rMargin;
 		rc.top += spacing;
 		rc.bottom = rc.top + comboH;
-		//rc.right = w2 / 3;
-		//ctrlSizeMode.MoveWindow(rc);
 
-		dateLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH - 1);
+		dateLabel.MoveWindow(rc.left, rc.top - labelH, width - rMargin, labelH - 1);
 
 		rc.left = lMargin;
 		rc.right = w2 / 2;
@@ -1133,8 +1154,15 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 
 		rc.left = rc.right + lMargin;
 		rc.right += w2 / 2;
-		rc.bottom = rc.top + comboH;
+		//rc.bottom = rc.top + comboH;
 		ctrlDateUnit.MoveWindow(rc);
+
+		rc.left = lMargin + 4;
+		rc.right = width - rMargin;
+		rc.top = rc.bottom+5;
+		rc.bottom = rc.top + 21;
+
+		ctrlRequireAsch.MoveWindow(rc);
 
 		// "Search options"
 		rc.left = lMargin+4;
@@ -1173,6 +1201,13 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlHubs.MoveWindow(rc);
 
 		hubsLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
+
+		rc.left = lMargin + 4;
+		rc.right = width - rMargin;
+		rc.top = rc.bottom + 5;
+		rc.bottom = rc.top + WinUtil::getTextHeight(aschLabel.m_hWnd, WinUtil::systemFont)*2;
+
+		aschLabel.MoveWindow(rc);
 
 		// "Pause Search"
 		rc.right = width - rMargin;
@@ -1287,7 +1322,7 @@ LRESULT SearchFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 	HDC hDC = (HDC)wParam;
 
 	if(hWnd == searchLabel.m_hWnd || hWnd == sizeLabel.m_hWnd || hWnd == optionLabel.m_hWnd || hWnd == typeLabel.m_hWnd
-		|| hWnd == hubsLabel.m_hWnd || hWnd == ctrlSlots.m_hWnd || hWnd == ctrlExcludedBool.m_hWnd || hWnd == ctrlCollapsed.m_hWnd || hWnd == dateLabel) {
+		|| hWnd == hubsLabel.m_hWnd || hWnd == ctrlSlots.m_hWnd || hWnd == ctrlExcludedBool.m_hWnd || hWnd == ctrlCollapsed.m_hWnd || hWnd == dateLabel || hWnd == ctrlRequireAsch || hWnd == aschLabel) {
 		::SetBkColor(hDC, ::GetSysColor(COLOR_3DFACE));
 		::SetTextColor(hDC, ::GetSysColor(COLOR_BTNTEXT));
 		return (LRESULT)::GetSysColorBrush(COLOR_3DFACE);
@@ -1324,7 +1359,7 @@ void SearchFrame::onTab(bool shift) {
 	HWND wnds[] = {
 		ctrlSearch.m_hWnd, ctrlPurge.m_hWnd, ctrlSizeMode.m_hWnd, ctrlSize.m_hWnd, ctrlSizeUnit.m_hWnd, 
 		ctrlFileType.m_hWnd, ctrlSlots.m_hWnd, ctrlCollapsed.m_hWnd, ctrlDoSearch.m_hWnd, ctrlSearch.m_hWnd, 
-		ctrlResults.list.m_hWnd
+		ctrlResults.list.m_hWnd, ctrlRequireAsch.m_hWnd
 	};
 	
 	HWND focus = GetFocus();
@@ -1548,7 +1583,22 @@ void SearchFrame::initHubs() {
 
 	clientMgr->unlockRead();
 	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
+	updateHubInfoString();
 
+}
+
+void SearchFrame::updateHubInfoString() {
+	OrderedStringSet clients;
+	int n = ctrlHubs.GetItemCount();
+	for (int i = 1; i < n; i++) {
+		if (ctrlHubs.GetCheckState(i)) {
+			clients.insert(Text::fromT(ctrlHubs.getItemData(i)->url));
+		}
+	}
+
+	auto p = ClientManager::getInstance()->countAschSupport(clients);
+	tstring txt = _T("* ") + TSTRING_F(ASCH_SUPPORT_COUNT, p.first % p.second);
+	aschLabel.SetWindowText(txt.c_str());
 }
 
 void SearchFrame::onHubAdded(HubInfo* info) {
@@ -1557,9 +1607,10 @@ void SearchFrame::onHubAdded(HubInfo* info) {
 	if(ctrlHubs.GetCheckState(0))
 		enable = info->op;
 	else
-		enable = lastDisabledHubs.empty() ? TRUE : find(lastDisabledHubs.begin(), lastDisabledHubs.end(), Text::fromT(info->url)) == lastDisabledHubs.end() ? TRUE : FALSE;
+		enable = lastDisabledHubs.empty() ? TRUE : find(lastDisabledHubs, Text::fromT(info->url)) == lastDisabledHubs.end() ? TRUE : FALSE;
 	ctrlHubs.SetCheckState(nItem, enable);
 	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
+	updateHubInfoString();
 }
 
 void SearchFrame::onHubChanged(HubInfo* info) {
@@ -1580,6 +1631,7 @@ void SearchFrame::onHubChanged(HubInfo* info) {
 		ctrlHubs.SetCheckState(nItem, info->op);
 
 	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
+	updateHubInfoString();
 }
 
 void SearchFrame::onHubRemoved(tstring&& aHubUrl) {
@@ -1596,6 +1648,7 @@ void SearchFrame::onHubRemoved(tstring&& aHubUrl) {
 	delete ctrlHubs.getItemData(nItem);
 	ctrlHubs.DeleteItem(nItem);
 	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
+	updateHubInfoString();
 }
 
 LRESULT SearchFrame::onPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -1630,11 +1683,11 @@ LRESULT SearchFrame::onItemChangedHub(int /* idCtrl */, LPNMHDR pnmh, BOOL& /* b
 		}
 	}
 
+	updateHubInfoString();
 	return 0;
 }
 
-LRESULT SearchFrame::onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) 
-{
+LRESULT SearchFrame::onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	ctrlSearchBox.ResetContent();
 	SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_SEARCH);
 	return 0;

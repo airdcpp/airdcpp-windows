@@ -60,7 +60,7 @@ public:
 	END_MSG_MAP();
 
 	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings) : onTop(true), resetOnChange(true), filterPartialDupes(false), filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
-		filter(colCount, [this] { onUpdate(); }), columnCount(colCount) /*, listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),*/
+		filter(colCount, [this] { onUpdate(); }), columnCount(colCount)
 	{
 		filterShared = SettingsManager::getInstance()->get(settings[SETTING_SHARED]);
 		filterQueued = SettingsManager::getInstance()->get(settings[SETTING_QUEUED]);
@@ -72,7 +72,6 @@ public:
 
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 		list.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, ctrlId);
-		//listContainer.SubclassWindow(list);
 		list.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
 
 		parent->createColumns();
@@ -316,8 +315,6 @@ private:
 	SettingsManager::BoolSetting* settings;
 	ParentT* parent;
 	size_t columnCount;
-
-	CContainedWindow listContainer;
 
 	std::function<void ()> updateF;
 
