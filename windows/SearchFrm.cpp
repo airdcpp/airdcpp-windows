@@ -86,7 +86,7 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	aschContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
 	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0),
-	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); }, filterSettings)
+	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); }, filterSettings, COLUMN_LAST)
 {	
 	SearchManager::getInstance()->addListener(this);
 	useGrouping = SETTING(GROUP_SEARCH_RESULTS);

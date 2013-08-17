@@ -105,7 +105,7 @@ public:
 			ChildrenState state = parent->getChildrenState(curDir);
 			/* now create the children */
 			if (state == CHILDREN_CREATED || state == CHILDREN_PART_PENDING) {
-				insertItems(curDir, pNMTreeView->itemNew.hItem);
+				parent->insertTreeItems(curDir, pNMTreeView->itemNew.hItem);
 			} else if (state == CHILDREN_ALL_PENDING) {
 				//items aren't ready, don't change the state and notify the parent
 				parent->expandDir(curDir, false);
@@ -133,27 +133,24 @@ public:
 		return GetItem(&tvItem) && (tvItem.cChildren != 0);
 	}
 
-	void insertItems(T* aDir, HTREEITEM aParent) {
-		aDir->sortDirs(false);
-		for (auto& d: aDir->directories | reversed) {
-			TVINSERTSTRUCT tvs = {0};
+	void insertItem(T* aDir, HTREEITEM aParent, bool bold) {
+		TVINSERTSTRUCT tvs = {0};
  
-			tvs.item.mask = TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_CHILDREN|TVIF_PARAM;
-			tvs.item.pszText = LPSTR_TEXTCALLBACK ;
-			tvs.item.iImage = I_IMAGECALLBACK ;
-			tvs.item.iSelectedImage = I_IMAGECALLBACK ;
-			tvs.item.cChildren = I_CHILDRENCALLBACK;
-			tvs.item.lParam = (LPARAM)d;
-			if (parent->isBold(d)) {
-				tvs.item.mask |= TVIF_STATE;
-				tvs.item.state = TVIS_BOLD;
-				tvs.item.stateMask = TVIS_BOLD;
-			}
-	    
-			tvs.hParent = aParent;
-			tvs.hInsertAfter = TVI_FIRST;
-    			InsertItem( &tvs ) ;
+		tvs.item.mask = TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_CHILDREN|TVIF_PARAM;
+		tvs.item.pszText = LPSTR_TEXTCALLBACK ;
+		tvs.item.iImage = I_IMAGECALLBACK ;
+		tvs.item.iSelectedImage = I_IMAGECALLBACK ;
+		tvs.item.cChildren = I_CHILDRENCALLBACK;
+		tvs.item.lParam = (LPARAM)aDir;
+		if (bold) {
+			tvs.item.mask |= TVIF_STATE;
+			tvs.item.state = TVIS_BOLD;
+			tvs.item.stateMask = TVIS_BOLD;
 		}
+	    
+		tvs.hParent = aParent;
+		tvs.hInsertAfter = TVI_FIRST;
+    		InsertItem( &tvs ) ;
 	}
 
 	HTREEITEM findItem(HTREEITEM ht, const string& name) {

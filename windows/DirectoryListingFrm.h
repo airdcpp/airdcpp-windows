@@ -23,6 +23,8 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
+#include <boost/ptr_container/ptr_set.hpp>
+
 #include "../client/User.h"
 #include "../client/FastAlloc.h"
 
@@ -225,8 +227,6 @@ public:
 		return 1;
 	}
 
-	void clearList();
-
 	LRESULT onFind(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -262,7 +262,7 @@ public:
 	ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Directory* d) const;
 	int getIconIndex(const DirectoryListing::Directory* d) const;
 	void expandDir(DirectoryListing::Directory* d, bool /*collapsing*/);
-	bool isBold(const DirectoryListing::Directory* d) const;
+	void insertTreeItems(const DirectoryListing::Directory* d, HTREEITEM aParent);
 
 	/* FilteredListViewCtrl */
 	void createColumns();
@@ -324,6 +324,7 @@ private:
 
 		ItemInfo(DirectoryListing::File* f) : type(FILE), file(f) { }
 		ItemInfo(DirectoryListing::Directory* d) : type(DIRECTORY), dir(d) { }
+		~ItemInfo() { }
 
 		const tstring getText(uint8_t col) const;
 		
@@ -336,6 +337,14 @@ private:
 		static int compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col);
 
 		int getImageIndex() const;
+		DupeType getDupe() const { return type == DIRECTORY ? dir->getDupe() : file->getDupe(); }
+		const string& getName() const { return type == DIRECTORY ? dir->getName() : file->getName(); }
+
+		struct NameSort : public std::binary_function<ItemInfo, ItemInfo, bool> {
+			bool operator()(const ItemInfo& a, const ItemInfo& b) const {
+				return compareItems(&a, &b, DirectoryListingFrame::COLUMN_FILENAME) > 0;
+			}
+		};
 	};
 
 	void onListItemAction();
@@ -428,6 +437,16 @@ private:
 	tstring hubNames;
 
 	CContainedWindow selComboContainer;
+
+	typedef boost::ptr_set<ItemInfo, ItemInfo::NameSort> ItemInfoSet;
+	struct ItemInfoCache {
+		ItemInfoSet files;
+		ItemInfoSet directories;
+	};
+
+	unordered_map<string, ItemInfoCache, noCaseStringHash, noCaseStringEq> itemInfos;
+	void updateItemCache(const string& aPath, ReloadMode aReloadMode);
+	//unordered_map<void*, unique_ptr<ItemInfo>> itemInfos;
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

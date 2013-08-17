@@ -59,8 +59,8 @@ public:
 		FORWARD_NOTIFICATIONS()
 	END_MSG_MAP();
 
-	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings) : onTop(true), resetOnChange(true), filterPartialDupes(false), filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
-		filter(colCount, [this] { onUpdate(); }), columnCount(colCount)
+	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings, int aInitialColumn) : onTop(true), resetOnChange(true), filterPartialDupes(false), filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
+		filter(colCount, [this] { onUpdate(); }), columnCount(colCount), initialColumn(aInitialColumn)
 	{
 		filterShared = SettingsManager::getInstance()->get(settings[SETTING_SHARED]);
 		filterQueued = SettingsManager::getInstance()->get(settings[SETTING_QUEUED]);
@@ -79,6 +79,7 @@ public:
 		filter.addFilterBox(m_hWnd);
 		filter.addColumnBox(m_hWnd, list.getColumnList());
 		filter.addMethodBox(m_hWnd);
+		filter.getFilterColumnBox().SetCurSel(initialColumn);
 
 		ctrlQueued.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_QUEUED);
 		ctrlQueued.SetWindowText(CTSTRING(QUEUED));
@@ -326,6 +327,7 @@ private:
 	bool resetOnChange;
 	bool filterPartialDupes;
 	bool onTop;
+	int initialColumn;
 };
 
 #endif // FILTEREDLISTVIEW_H_
