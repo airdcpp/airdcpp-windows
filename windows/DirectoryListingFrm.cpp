@@ -120,7 +120,7 @@ void DirectoryListingFrame::updateItemCache(const string& aPath, ReloadMode aRel
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept {
-	if (changeDir || reloadList)
+	//if (changeDir || reloadList || AirUtil::isParentOrExact(curPath, aDir))
 		updateItemCache(aDir, reloadList ? RELOAD_ALL : RELOAD_DIR);
 
 	auto f = [=] { onLoadingFinished(aStart, aDir, reloadList, changeDir, loadInGUIThread); };

@@ -82,10 +82,11 @@ searchBoxContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	hubsContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
 	dateContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP),
 	dateUnitContainer(WC_LISTVIEW, this, SEARCH_MESSAGE_MAP),
-	excludedContainer(WC_EDIT, this, EXCLUDE_MESSAGE_MAP),
+	excludedBoolContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
+	excludedContainer(WC_EDIT, this, SEARCH_MESSAGE_MAP),
 	aschContainer(WC_COMBOBOX, this, SEARCH_MESSAGE_MAP),
 	initialSize(0), initialMode(SearchManager::SIZE_ATLEAST), initialType(SEARCH_TYPE_ANY),
-	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0),
+	showUI(true), onlyFree(false), closed(false), droppedResults(0), resultsCount(0), aschOnly(false),
 	expandSR(false), exactSize1(false), exactSize2(0), searchEndTime(0), searchStartTime(0), waiting(false), statusDirty(false), ctrlResults(this, COLUMN_LAST, [this] { updateSearchList(); }, filterSettings, COLUMN_LAST)
 {	
 	SearchManager::getInstance()->addListener(this);
@@ -134,7 +135,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 	ctrlDate.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		ES_AUTOHSCROLL | ES_NUMBER, WS_EX_CLIENTEDGE);
-	dateContainer.SubclassWindow(ctrlSize.m_hWnd);
+	dateContainer.SubclassWindow(ctrlDate.m_hWnd);
 
 	ctrlDateUnit.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
@@ -144,6 +145,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlExcludedBool.SetButtonStyle(BS_AUTOCHECKBOX, FALSE);
 	ctrlExcludedBool.SetFont(WinUtil::systemFont, FALSE);
 	ctrlExcludedBool.SetWindowText(CTSTRING(EXCLUDED_WORDS_DESC));
+	excludedBoolContainer.SubclassWindow(ctrlExcludedBool.m_hWnd);
 
 	ctrlExcluded.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
 		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
@@ -205,7 +207,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlSlots.SetWindowText(CTSTRING(ONLY_FREE_SLOTS));
 	slotsContainer.SubclassWindow(ctrlSlots.m_hWnd);
 
-	ctrlRequireAsch.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FREESLOTS);
+	ctrlRequireAsch.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_ASCH_ONLY);
 	ctrlRequireAsch.SetButtonStyle(BS_AUTOCHECKBOX, FALSE);
 	ctrlRequireAsch.SetFont(WinUtil::systemFont, FALSE);
 	ctrlRequireAsch.EnableWindow(FALSE);
@@ -235,6 +237,11 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if(SETTING(EXPAND_DEFAULT)) {
 		ctrlCollapsed.SetCheck(true);
 		expandSR = true;
+	}
+
+	if (SETTING(SEARCH_ASCH_ONLY)) {
+		ctrlRequireAsch.SetCheck(true);
+		aschOnly = true;
 	}
 
 	ctrlShowUI.Create(ctrlStatus.m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN);
@@ -411,6 +418,9 @@ void SearchFrame::onEnter() {
 	if (expandSR != SETTING(EXPAND_DEFAULT))
 		SettingsManager::getInstance()->set(SettingsManager::EXPAND_DEFAULT, expandSR);
 
+	if (aschOnly != SETTING(SEARCH_ASCH_ONLY))
+		SettingsManager::getInstance()->set(SettingsManager::SEARCH_ASCH_ONLY, aschOnly);
+
 	if(SETTING(SEARCH_SAVE_HUBS_STATE)){
 		lastDisabledHubs.clear();
 		for(int i = 0; i < ctrlHubs.GetItemCount(); i++) {
@@ -439,7 +449,7 @@ void SearchFrame::onEnter() {
 
 	auto llsize = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 	auto ldate = WinUtil::parseDate(ctrlDate, ctrlDateUnit);
-	bool aschOnly = ctrlRequireAsch.GetCheck() > 0;
+	bool asch = ldate > 0 && aschOnly;
 
 	// delete all results which came in paused state
 	for_each(pausedResults.begin(), pausedResults.end(), DeleteFunction());
@@ -527,7 +537,7 @@ void SearchFrame::onEnter() {
 		searchStartTime = GET_TICK();
 		// more 5 seconds for transferring results
 		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, s, llsize, 
-			(SearchManager::TypeModes)ftype, mode, token, extList, AdcSearch::parseSearchString(excluded), Search::MANUAL, ldate, SearchManager::DATE_NEWER, aschOnly, (void*) this) + 5000;
+			(SearchManager::TypeModes)ftype, mode, token, extList, AdcSearch::parseSearchString(excluded), Search::MANUAL, ldate, SearchManager::DATE_NEWER, asch, (void*) this) + 5000;
 
 		waiting = true;
 	}
@@ -1337,7 +1347,7 @@ LRESULT SearchFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& b
 	switch(wParam) {
 	case VK_TAB:
 		if(uMsg == WM_KEYDOWN) {
-			onTab(WinUtil::isShift());
+			onTab();
 		}
 		break;
 	case VK_RETURN:
@@ -1355,11 +1365,12 @@ LRESULT SearchFrame::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& b
 	return 0;
 }
 
-void SearchFrame::onTab(bool shift) {
+void SearchFrame::onTab() {
 	HWND wnds[] = {
 		ctrlSearch.m_hWnd, ctrlPurge.m_hWnd, ctrlSizeMode.m_hWnd, ctrlSize.m_hWnd, ctrlSizeUnit.m_hWnd, 
-		ctrlFileType.m_hWnd, ctrlSlots.m_hWnd, ctrlCollapsed.m_hWnd, ctrlDoSearch.m_hWnd, ctrlSearch.m_hWnd, 
-		ctrlResults.list.m_hWnd, ctrlRequireAsch.m_hWnd
+		ctrlFileType.m_hWnd, ctrlDate.m_hWnd, ctrlDateUnit.m_hWnd, ctrlRequireAsch.m_hWnd, ctrlSlots.m_hWnd, ctrlCollapsed.m_hWnd, 
+		ctrlExcludedBool.m_hWnd, ctrlExcluded.m_hWnd,
+		ctrlDoSearch.m_hWnd, ctrlSearch.m_hWnd, ctrlResults.list.m_hWnd
 	};
 	
 	HWND focus = GetFocus();
@@ -1367,13 +1378,7 @@ void SearchFrame::onTab(bool shift) {
 		focus = ctrlSearch.m_hWnd;
 	
 	static const int size = sizeof(wnds) / sizeof(wnds[0]);
-	int i;
-	for(i = 0; i < size; i++) {
-		if(wnds[i] == focus)
-			break;
-	}
-
-	::SetFocus(wnds[(i + (shift ? -1 : 1)) % size]);
+	WinUtil::handleTab(focus, wnds, size);
 }
 
 void SearchFrame::addSearchResult(SearchInfo* si) {
@@ -1809,7 +1814,7 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 LRESULT SearchFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	//handle focus switch
 	if (uMsg == WM_CHAR && wParam == VK_TAB) {
-		onTab(WinUtil::isShift());
+		onTab();
 		return 0;
 	}
 	bHandled = FALSE;

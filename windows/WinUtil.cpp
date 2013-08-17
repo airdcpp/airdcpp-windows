@@ -2074,6 +2074,25 @@ time_t WinUtil::parseSize(CEdit& ctrlSize, CComboBox& ctrlSizeMode) {
 	return static_cast<int64_t>(lsize);
 }
 
+void WinUtil::handleTab(HWND focus, HWND* ctrlHwnds, int hwndCount) {
+	bool shift = isShift();
+
+	int i;
+	for (i = 0; i < hwndCount; i++) {
+		if (ctrlHwnds[i] == focus)
+			break;
+	}
+
+	// don't focus to a disabled control
+	for (auto s = 0; s < hwndCount; ++s) {
+		i = (i + (shift ? -1 : 1)) % hwndCount;
+		if (::IsWindowEnabled(ctrlHwnds[i])) {
+			::SetFocus(ctrlHwnds[i]);
+			break;
+		}
+	}
+}
+
 void WinUtil::setUserFieldLimits(HWND hWnd) {
 	CEdit tmp;
 	tmp.Attach(GetDlgItem(hWnd, IDC_NICK));

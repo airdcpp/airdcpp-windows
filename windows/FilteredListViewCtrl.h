@@ -28,6 +28,8 @@
 #include "../client/AirUtil.h"
 #include "../client/SettingsManager.h"
 
+#define KEY_MESSAGE_MAP 7
+
 template<class ContainerT, class ParentT, int ctrlId>
 class FilteredListViewCtrl : public CWindowImpl<FilteredListViewCtrl<ContainerT, ParentT, ctrlId>>  {
 
@@ -57,10 +59,18 @@ public:
 		COMMAND_ID_HANDLER(IDC_FILTER_OPTIONS, onClickOptions)
 		CHAIN_MSG_MAP_MEMBER(filter)
 		FORWARD_NOTIFICATIONS()
+		ALT_MSG_MAP(KEY_MESSAGE_MAP)
+		MESSAGE_HANDLER(WM_CHAR, onChar)
 	END_MSG_MAP();
 
 	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings, int aInitialColumn) : onTop(true), resetOnChange(true), filterPartialDupes(false), filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
-		filter(colCount, [this] { onUpdate(); }), columnCount(colCount), initialColumn(aInitialColumn)
+		filter(colCount, [this] { onUpdate(); }), columnCount(colCount), initialColumn(aInitialColumn),
+		filterMethodContainer(WC_COMBOBOX, this, KEY_MESSAGE_MAP),
+		filterContainer(WC_EDIT, this, KEY_MESSAGE_MAP),
+		filterColumnContainer(WC_COMBOBOX, this, KEY_MESSAGE_MAP),
+		queuedContainer(WC_COMBOBOX, this, KEY_MESSAGE_MAP),
+		sharedContainer(WC_EDIT, this, KEY_MESSAGE_MAP),
+		optionsContainer(WC_COMBOBOX, this, KEY_MESSAGE_MAP)
 	{
 		filterShared = SettingsManager::getInstance()->get(settings[SETTING_SHARED]);
 		filterQueued = SettingsManager::getInstance()->get(settings[SETTING_QUEUED]);
@@ -96,6 +106,13 @@ public:
 		ctrlOptions.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_PUSHBUTTON, NULL, IDC_FILTER_OPTIONS);
 		ctrlOptions.SetWindowText(CTSTRING(OPTIONS_DOTS));
 		ctrlOptions.SetFont(WinUtil::systemFont);
+
+		filterContainer.SubclassWindow(filter.getFilterBox().m_hWnd);
+		filterMethodContainer.SubclassWindow(filter.getFilterMethodBox().m_hWnd);
+		filterColumnContainer.SubclassWindow(filter.getFilterColumnBox().m_hWnd);
+		queuedContainer.SubclassWindow(ctrlQueued.m_hWnd);
+		sharedContainer.SubclassWindow(ctrlShared.m_hWnd);
+		optionsContainer.SubclassWindow(ctrlOptions.m_hWnd);
 
 		bHandled = FALSE;
 		return 0;
@@ -312,6 +329,30 @@ public:
 			filter.clear();
 		}
 	}
+
+	LRESULT onChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+		switch (wParam) {
+		case VK_TAB:
+			//if (uMsg == WM_KEYDOWN) {
+				onTab();
+			//}
+			break;
+		default:
+			bHandled = FALSE;
+		}
+		return 0;
+	}
+
+	void onTab() {
+		HWND wnds [] = {
+			filter.getFilterBox().m_hWnd, filter.getFilterColumnBox().m_hWnd, filter.getFilterMethodBox().m_hWnd, ctrlQueued.m_hWnd, ctrlShared.m_hWnd, ctrlOptions.m_hWnd
+		};
+
+		HWND focus = GetFocus();
+
+		static const int size = sizeof(wnds) / sizeof(wnds[0]);
+		WinUtil::handleTab(focus, wnds, size);
+	}
 private:
 	SettingsManager::BoolSetting* settings;
 	ParentT* parent;
@@ -328,6 +369,13 @@ private:
 	bool filterPartialDupes;
 	bool onTop;
 	int initialColumn;
+
+	CContainedWindow filterContainer;
+	CContainedWindow filterMethodContainer;
+	CContainedWindow filterColumnContainer;
+	CContainedWindow queuedContainer;
+	CContainedWindow sharedContainer;
+	CContainedWindow optionsContainer;
 };
 
 #endif // FILTEREDLISTVIEW_H_

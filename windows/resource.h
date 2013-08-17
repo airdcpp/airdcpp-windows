@@ -1571,6 +1571,7 @@
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
+#define IDC_ASCH_ONLY					11014
 #define ID_SHELLCONTEXTMENU_MIN         12000
 #define ID_SHELLCONTEXTMENU_MAX         14000
 #define IDC_REGEXP                      15000

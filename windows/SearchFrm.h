@@ -42,7 +42,6 @@
 
 #define SEARCH_MESSAGE_MAP 6		// This could be any number, really...
 #define SHOWUI_MESSAGE_MAP 7
-#define EXCLUDE_MESSAGE_MAP 8
 
 class SearchFrame : public MDITabChildWindowImpl<SearchFrame>, 
 	private SearchManagerListener, private ClientManagerListener,
@@ -89,6 +88,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy)
 		COMMAND_ID_HANDLER(IDC_FREESLOTS, onFreeSlots)
+		COMMAND_ID_HANDLER(IDC_ASCH_ONLY, onAschOnly)
 		COMMAND_ID_HANDLER(IDC_COLLAPSED, onCollapsed)
 		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
@@ -106,10 +106,6 @@ public:
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 	ALT_MSG_MAP(SHOWUI_MESSAGE_MAP)
 		MESSAGE_HANDLER(BM_SETCHECK, onShowUI)
-	ALT_MSG_MAP(EXCLUDE_MESSAGE_MAP)
-		MESSAGE_HANDLER(WM_CTLCOLORLISTBOX, onCtlColor)
-		//MESSAGE_HANDLER(WM_CHAR, onFilterChar)
-		//MESSAGE_HANDLER(WM_KEYUP, onFilterChar)
 	END_MSG_MAP()
 
 	SearchFrame();
@@ -176,6 +172,11 @@ public:
 
 	LRESULT onFreeSlots(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		onlyFree = (ctrlSlots.GetCheck() == 1);
+		return 0;
+	}
+
+	LRESULT onAschOnly(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
+		aschOnly = (ctrlRequireAsch.GetCheck() == 1);
 		return 0;
 	}
 
@@ -363,6 +364,7 @@ private:
 	CContainedWindow resultsContainer;
 	CContainedWindow hubsContainer;
 	CContainedWindow purgeContainer;
+	CContainedWindow excludedBoolContainer;
 	CContainedWindow excludedContainer;
 	CContainedWindow dateContainer;
 	CContainedWindow dateUnitContainer;
@@ -390,6 +392,7 @@ private:
 	bool exactSize1;
 	bool useGrouping;
 	bool waiting;
+	bool aschOnly;
 	int64_t exactSize2;
 	int64_t resultsCount;
 
@@ -422,7 +425,7 @@ private:
 
 	void onResultFiltered();
 
-	void onTab(bool shift);
+	void onTab();
 	
 	void on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept;
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
