@@ -499,10 +499,17 @@ void DirectoryListingFrame::expandDir(DirectoryListing::Directory* d, bool colla
 	}
 }
 
-void DirectoryListingFrame::insertTreeItems(const DirectoryListing::Directory* d, HTREEITEM aParent) {
-	const auto& dirs = itemInfos [dl->getPath(d)].directories;
-	for (const auto& d : dirs) {
-		ctrlTree.insertItem(d.dir, aParent, d.dir->getAdls());
+void DirectoryListingFrame::insertTreeItems(const DirectoryListing::Directory* aDir, HTREEITEM aParent) {
+	auto p = itemInfos.find(dl->getPath(aDir));
+	if (p != itemInfos.end()) {
+		const auto& dirs = p->second.directories;
+		for (const auto& d : dirs) {
+			ctrlTree.insertItem(d.dir, aParent, d.dir->getAdls());
+		}
+	} else {
+		// We haven't been there before... most likely the list was opened via search. Fill the cache and try again.
+		updateItemCache(dl->getPath(aDir), RELOAD_NONE);
+		insertTreeItems(aDir, aParent);
 	}
 }
 
