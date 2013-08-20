@@ -30,6 +30,7 @@
 int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION };
 int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::QUEUED, ResourceManager::DESCRIPTION };
+static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT };
 
 struct FieldName {
 	string field;
@@ -158,7 +159,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	WinUtil::splitTokens(columnSizes, SETTING(USERS_FRAME_WIDTHS), COLUMN_LAST);
 	
 	for(uint8_t j=0; j<COLUMN_LAST; j++) {
-		ctrlUsers.InsertColumn(j, CTSTRING_I(columnNames[j]), LVCFMT_LEFT, columnSizes[j], j);
+		ctrlUsers.InsertColumn(j, CTSTRING_I(columnNames[j]), LVCFMT_LEFT, columnSizes[j], j, columnTypes[j]);
 	}
 	
 	ctrlUsers.setColumnOrderArray(COLUMN_LAST, columnIndexes);
@@ -644,9 +645,15 @@ void UsersFrame::updateList() {
 	auto i = userInfos.begin();
 	auto filterPrep = filter.prepare();
 	auto filterInfoF = [this, &i](int column) { return Text::fromT(i->second.getText(column)); };
+	auto filterNumericF = [&](int column) -> double {
+		switch (column) {
+		case COLUMN_QUEUED: return i->first->getQueued();
+		default: dcassert(0); return 0;
+		}
+	};
 
 	for(; i != userInfos.end(); ++i) {
-		if((filter.empty() || filter.match(filterPrep, filterInfoF)) && show(i->second.getUser(), false)) {
+		if ((filter.empty() || filter.match(filterPrep, filterInfoF, filterNumericF)) && show(i->second.getUser(), false)) {
 			int p = ctrlUsers.insertItem(&i->second,0);
 			i->second.update(i->second.getUser());
 			setImages(&i->second, p);
@@ -659,7 +666,14 @@ void UsersFrame::updateList() {
 }
 
 bool UsersFrame::matches(const UserInfo &ui) {
-	if(!filter.empty() && !filter.match(filter.prepare(), [this, &ui](int column) { return Text::fromT(ui.getText(column)); })) {
+	auto filterNumericF = [&](int column) -> double {
+		switch (column) {
+		case COLUMN_QUEUED: return ui.getUser()->getQueued();
+		default: dcassert(0); return 0;
+		}
+	};
+
+	if (!filter.empty() && !filter.match(filter.prepare(), [this, &ui](int column) { return Text::fromT(ui.getText(column)); }, filterNumericF)) {
 		return false;
 	}
 

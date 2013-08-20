@@ -32,6 +32,7 @@ The messages in this class can be chained by member to the parents message map w
 class ListFilter : boost::noncopyable {
 	typedef std::function<void ()> UpdateFunction;
 	typedef std::function<string (size_t)> InfoFunction;
+	typedef std::function<double(size_t)> NumericFunction;
 
 	struct Preparation {
 		size_t column;
@@ -61,7 +62,7 @@ public:
 	CEdit& getFilterBox() { return text; } 
 
 	Preparation prepare();
-	bool match(const Preparation& prep, InfoFunction infoF) const;
+	bool match(const Preparation& prep, InfoFunction infoF, NumericFunction numericF) const;
 
 	bool empty() const;
 

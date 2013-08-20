@@ -124,7 +124,7 @@ ListFilter::Preparation ListFilter::prepare() {
 	return prep;
 }
 
-bool ListFilter::match(const Preparation& prep, InfoFunction infoF) const {
+bool ListFilter::match(const Preparation& prep, InfoFunction infoF, NumericFunction numericF) const {
 	if(empty())
 		return true;
 
@@ -141,7 +141,7 @@ bool ListFilter::match(const Preparation& prep, InfoFunction infoF) const {
 			hasMatch = matcher.match(infoF(prep.column));
 		}
 	} else {
-		auto size = Util::toDouble(infoF(prep.column));
+		auto size = numericF(prep.column);
 		switch(prep.method - StringMatch::METHOD_LAST) {
 		case EQUAL: hasMatch = size == prep.size; break;
 		case GREATER_EQUAL: hasMatch = size >= prep.size; break;

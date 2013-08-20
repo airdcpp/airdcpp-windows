@@ -918,9 +918,18 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 			return Text::fromT((*i).getText(column));
 	};
 
+	auto numericInfo = [this, &i](int column) -> double {
+		switch (column) {
+			case COLUMN_SIZE:
+			case COLUMN_EXACTSIZE: return i->type == ItemInfo::DIRECTORY ? i->dir->getTotalSize(true) : i->file->getSize();
+			case COLUMN_DATE: return i->type == ItemInfo::DIRECTORY ? i->dir->getRemoteDate() : i->file->getRemoteDate();
+			default: dcassert(0); return 0;
+		}
+	};
+
 	auto doInsert = [&](const decltype(dirs)& map) {
 		for (; i != map.crend(); ++i) {
-			if (ctrlFiles.checkDupe((*i).getDupe()) && (ctrlFiles.filter.empty() || ctrlFiles.filter.match(filterPrep, filterInfo))) {
+			if (ctrlFiles.checkDupe((*i).getDupe()) && (ctrlFiles.filter.empty() || ctrlFiles.filter.match(filterPrep, filterInfo, numericInfo))) {
 				if (selectedName && compare(*selectedName, (*i).getName()) == 0) {
 					selectedPos = curPos;
 				}

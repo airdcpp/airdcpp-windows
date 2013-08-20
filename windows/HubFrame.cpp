@@ -1633,30 +1633,35 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 	//single update?
 	//avoid refreshing the whole list and just update the current item
 	//instead
+	auto filterPrep = filter.prepare();
+	auto filterInfoF = [this, &ui](int column) { return Text::fromT(ui->getText(column)); };
+	auto filterNumericF = [&](int column) -> double {
+		switch (column) {
+		case OnlineUser::COLUMN_EXACT_SHARED:
+		case OnlineUser::COLUMN_SHARED: return ui->getIdentity().getBytesShared();
+		case OnlineUser::COLUMN_SLOTS: return ui->getIdentity().getSlots();
+		case OnlineUser::COLUMN_DLSPEED: return Util::toFloat(ui->getIdentity().getDownloadSpeed());
+		case OnlineUser::COLUMN_ULSPEED: return Util::toFloat(ui->getIdentity().getUploadSpeed());
+		default: dcassert(0); return 0;
+		}
+	};
+
 	if(ui) {
 		if(ui->isHidden()) {
 			return;
 		}
-		if(filter.empty()) {
-			if(ctrlUsers.findItem(ui.get()) == -1) {
+
+
+		if (filter.empty() || filter.match(filterPrep, filterInfoF, filterNumericF)) {
+			if (ctrlUsers.findItem(ui.get()) == -1) {
 				ui->inc();
 				ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
 			}
 		} else {
-			auto filterPrep = filter.prepare();
-			auto filterInfoF = [this, &ui](int column) { return Text::fromT(ui->getText(column)); };
-
-			if(filter.match(filterPrep, filterInfoF)) {
-				if(ctrlUsers.findItem(ui.get()) == -1) {
-					ui->inc();
-					ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
-				}
-			} else {
-				int i = ctrlUsers.findItem(ui.get());
-				if(i != -1) {
-					ctrlUsers.DeleteItem(i);
-					ui->dec();
-				}
+			int i = ctrlUsers.findItem(ui.get());
+			if (i != -1) {
+				ctrlUsers.DeleteItem(i);
+				ui->dec();
 			}
 		}
 	} else {
@@ -1675,12 +1680,9 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 			}
 		} else {
 			auto i = l.begin();
-			auto filterPrep = filter.prepare();
-			auto filterInfoF = [this, &i](int column) { return Text::fromT((*i)->getText(column)); };
-
 			for(; i != l.end(); ++i){
-				auto ui = *i;
-				if(!ui->isHidden() && (filter.empty() || filter.match(filterPrep, filterInfoF))) {
+				ui = *i;
+				if (!ui->isHidden() && (filter.empty() || filter.match(filterPrep, filterInfoF, filterNumericF))) {
 					ui->inc();
 					ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
 				}

@@ -969,6 +969,22 @@ public:
 		DeleteAllItems();
 	}
 
+	//count the parents and their children that exist in the list
+	size_t getTotalItemCount() {
+		size_t ret = 0;
+		for (int i = 0; i < GetItemCount(); i++) {
+			T* si = getItemData(i);
+			if (si->parent) {
+				//only count the parents
+				continue;
+			} else {
+				ret += si->hits+1;
+			}
+		}
+		
+		return ret;
+	}
+
 	LRESULT onColumnClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 		NMLISTVIEW* l = (NMLISTVIEW*)pnmh;
 		if(l->iSubItem != getSortColumn()) {

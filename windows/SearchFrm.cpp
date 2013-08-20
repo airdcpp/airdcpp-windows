@@ -105,7 +105,7 @@ void SearchFrame::createColumns() {
 }
 
 size_t SearchFrame::getTotalListItemCount() const {
-	return 0;
+	return resultsCount;
 }
 
 LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
@@ -1438,19 +1438,25 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 	} else {
 		// searching is paused, so store the result but don't show it in the GUI (show only information: visible/all results)
 		pausedResults.push_back(si);
+		statusDirty = true;
 	}
-
-	statusDirty = true;
 }
 
 LRESULT SearchFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	if (statusDirty) {
 		statusDirty = false;
-		if (running) {
-			ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T(" ") + TSTRING(FILES)).c_str());
+
+		tstring text;
+		auto curCount = ctrlResults.list.getTotalItemCount();
+		if (curCount != static_cast<size_t>(resultsCount)) {
+			text = Util::toStringW(curCount) + _T("/") + Util::toStringW(resultsCount) + _T(" ") + TSTRING(FILES);
+		} else if (running || pausedResults.size() == 0) {
+			text = Util::toStringW(resultsCount) + _T(" ") + TSTRING(FILES);
 		} else {
-			ctrlStatus.SetText(3, (Util::toStringW(resultsCount) + _T("/") + Util::toStringW(pausedResults.size() + resultsCount) + _T(" ") + WSTRING(FILES)).c_str());
+			text = Util::toStringW(resultsCount) + _T("/") + Util::toStringW(pausedResults.size() + resultsCount) + _T(" ") + WSTRING(FILES);
 		}
+
+		ctrlStatus.SetText(3, text.c_str());
 	}
 
 	return 0;
@@ -1668,12 +1674,13 @@ LRESULT SearchFrame::onPause(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 		}
 
 		// update controls texts
-		ctrlStatus.SetText(3, (Util::toStringW(ctrlResults.list.GetItemCount()) + _T(" ") + TSTRING(FILES)).c_str());			
 		ctrlPauseSearch.SetWindowText(CTSTRING(PAUSE_SEARCH));
 	} else {
 		running = false;
 		ctrlPauseSearch.SetWindowText(CTSTRING(CONTINUE_SEARCH));
 	}
+
+	statusDirty = true;
 	return 0;
 }
 
@@ -1824,9 +1831,20 @@ LRESULT SearchFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, B
 void SearchFrame::updateSearchList(SearchInfo* si) {
 	auto filterPrep = ctrlResults.filter.prepare();
 	auto filterInfoF = [&](int column) { return Text::fromT(si->getText(column)); };
+	auto filterNumericF = [&](int column) -> double { 
+		switch (column) {
+			case COLUMN_HITS: return si->hits;
+			case COLUMN_SLOTS: return si->sr->getFreeSlots();
+			case COLUMN_SIZE:
+			case COLUMN_EXACT_SIZE: return si->sr->getSize();
+			case COLUMN_DATE: return si->sr->getDate();
+			case COLUMN_CONNECTION: return si->sr->getConnectionInt();
+			default: dcassert(0); return 0;
+		}
+	};
 
 	if(si) {
-		if (!ctrlResults.checkDupe(si->getDupe()) || (!ctrlResults.filter.empty() && !ctrlResults.filter.match(filterPrep, filterInfoF))) {
+		if (!ctrlResults.checkDupe(si->getDupe()) || (!ctrlResults.filter.empty() && !ctrlResults.filter.match(filterPrep, filterInfoF, filterNumericF))) {
 			ctrlResults.list.deleteItem(si);
 		}
 	} else {
@@ -1836,7 +1854,7 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 		for(auto aSI: ctrlResults.list.getParents() | map_values) {
 			si = aSI.parent;
 			si->collapsed = true;
-			if (ctrlResults.checkDupe(si->getDupe()) && (ctrlResults.filter.empty() || ctrlResults.filter.match(filterPrep, filterInfoF))) {
+			if (ctrlResults.checkDupe(si->getDupe()) && (ctrlResults.filter.empty() || ctrlResults.filter.match(filterPrep, filterInfoF, filterNumericF))) {
 				dcassert(ctrlResults.list.findItem(si) == -1);
 				int k = ctrlResults.list.insertItem(si, si->getImageIndex());
 
@@ -1854,6 +1872,8 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 		}
 		ctrlResults.list.SetRedraw(TRUE);
 	}
+
+	statusDirty = true;
 }
 
 void SearchFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
