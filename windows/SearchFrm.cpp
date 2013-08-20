@@ -1114,11 +1114,16 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		searchLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
 
 		// "Purge"
-		rc.right = rc.left + spacing;
 		rc.left = lMargin;
+		rc.right = rc.left + 100;
 		rc.top += 25;
 		rc.bottom = rc.top + 21;
 		ctrlPurge.MoveWindow(rc);
+
+		// "Search"
+		rc.left = rc.right + lMargin;
+		rc.right = width - rMargin;
+		ctrlDoSearch.MoveWindow(rc);
 
 		// "Size"
 		int w2 = width - rMargin - lMargin;
@@ -1225,11 +1230,6 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		rc.top = rc.bottom + labelH;
 		rc.bottom = rc.top + 21;
 		ctrlPauseSearch.MoveWindow(rc);
-
-		// "Search"
-		rc.left = lMargin;
-		rc.right = rc.left + 100;
-		ctrlDoSearch.MoveWindow(rc);
 	}
 	else
 	{
