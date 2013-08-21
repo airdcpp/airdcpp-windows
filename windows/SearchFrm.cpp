@@ -290,7 +290,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlResults.list.SetFont(WinUtil::systemFont, FALSE);	// use WinUtil::font instead to obey Appearace settings
 	ctrlResults.list.setFlickerFree(WinUtil::bgBrush);
 	
-	ctrlHubs.InsertColumn(0, _T("Dummy"), LVCFMT_LEFT, LVSCW_AUTOSIZE, 0);
+	ctrlHubs.InsertColumn(0, _T("Dummy"), LVCFMT_LEFT, 0, 0);
 	ctrlHubs.SetBkColor(WinUtil::bgColor);
 	ctrlHubs.SetTextBkColor(WinUtil::bgColor);
 	ctrlHubs.SetTextColor(WinUtil::textColor);
@@ -1096,7 +1096,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		ctrlShowUI.MoveWindow(sr);
 	}
 
-	int const width = 220, spacing = 50, labelH = 16, comboH = 140, lMargin = 2, rMargin = 4;
+	int const width = 240, spacing = 50, labelH = 16, comboH = 140, lMargin = 2, rMargin = 4;
 	if(showUI)
 	{
 		CRect rc = rect;
@@ -1127,6 +1127,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 
 		// "Size"
 		int w2 = width - rMargin - lMargin;
+		rc.left = lMargin;
 		rc.top += spacing;
 		rc.bottom = rc.top + comboH;
 		rc.right = w2/3;
@@ -1214,6 +1215,7 @@ void SearchFrame::UpdateLayout(BOOL bResizeBars)
 		}
 
 		ctrlHubs.MoveWindow(rc);
+		ctrlHubs.SetColumnWidth(0, rc.Width()-4);
 
 		hubsLabel.MoveWindow(rc.left + lMargin, rc.top - labelH, width - rMargin, labelH-1);
 
@@ -1593,7 +1595,6 @@ void SearchFrame::initHubs() {
 	}
 
 	clientMgr->unlockRead();
-	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
 	updateHubInfoString();
 
 }
@@ -1620,7 +1621,6 @@ void SearchFrame::onHubAdded(HubInfo* info) {
 	else
 		enable = lastDisabledHubs.empty() ? TRUE : find(lastDisabledHubs, Text::fromT(info->url)) == lastDisabledHubs.end() ? TRUE : FALSE;
 	ctrlHubs.SetCheckState(nItem, enable);
-	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
 	updateHubInfoString();
 }
 
@@ -1641,7 +1641,6 @@ void SearchFrame::onHubChanged(HubInfo* info) {
 	if (ctrlHubs.GetCheckState(0))
 		ctrlHubs.SetCheckState(nItem, info->op);
 
-	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
 	updateHubInfoString();
 }
 
@@ -1658,7 +1657,6 @@ void SearchFrame::onHubRemoved(tstring&& aHubUrl) {
 
 	delete ctrlHubs.getItemData(nItem);
 	ctrlHubs.DeleteItem(nItem);
-	ctrlHubs.SetColumnWidth(0, LVSCW_AUTOSIZE);
 	updateHubInfoString();
 }
 

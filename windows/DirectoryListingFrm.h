@@ -268,6 +268,7 @@ public:
 	void createColumns();
 	size_t getTotalListItemCount() const;
 private:
+	bool allowPopup() const;
 	void updateHistoryCombo();
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
 	void openDupe(const DirectoryListing::Directory* d);
@@ -412,6 +413,7 @@ private:
 	void on(DirectoryListingListener::ChangeDirectory, const string& aDir, bool isSearchChange) noexcept;
 	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
 	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
+	void on(DirectoryListingListener::SetActive) noexcept;
 
 	// ClientManagerListener
 	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
@@ -446,7 +448,6 @@ private:
 
 	unordered_map<string, ItemInfoCache, noCaseStringHash, noCaseStringEq> itemInfos;
 	void updateItemCache(const string& aPath, ReloadMode aReloadMode);
-	//unordered_map<void*, unique_ptr<ItemInfo>> itemInfos;
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

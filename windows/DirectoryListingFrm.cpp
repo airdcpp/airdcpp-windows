@@ -56,7 +56,7 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 
 	HWND aHWND = NULL;
 	DirectoryListingFrame* frame = new DirectoryListingFrame(aList);
-	if((SETTING(POPUNDER_FILELIST) && !aList->getPartialList()) || (SETTING(POPUNDER_PARTIAL_LIST) && aList->getPartialList())) {
+	if(!frame->allowPopup()) {
 		aHWND = WinUtil::hiddenCreateEx(frame);
 	} else {
 		aHWND = frame->CreateEx(WinUtil::mdiClient);
@@ -72,6 +72,10 @@ void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aD
 	} else {
 		delete frame;
 	}
+}
+
+bool DirectoryListingFrame::allowPopup() const {
+	return dl->getIsOwnList() || (!SETTING(POPUNDER_FILELIST) && !dl->getPartialList()) || (!SETTING(POPUNDER_PARTIAL_LIST) && dl->getPartialList());
 }
 
 DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
@@ -259,6 +263,11 @@ void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const 
 
 void DirectoryListingFrame::on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept {
 	callAsync([=] { updateStatus(Text::toT(aMessage)); });
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::SetActive) noexcept {
+	if (allowPopup())
+		callAsync([=] { MDIActivate(m_hWnd); });
 }
 
 void DirectoryListingFrame::createColumns() {
@@ -523,6 +532,7 @@ void DirectoryListingFrame::createRoot() {
 
 void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bool changeDir) {
 	ctrlTree.SetRedraw(FALSE);
+
 	if (reloadList) {
 		ctrlTree.DeleteAllItems();
 		ctrlFiles.list.DeleteAllItems();
@@ -540,7 +550,6 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 		ctrlTree.setHasChildren(treeRoot, true);
 	}
 
-	auto oldSel = ctrlTree.GetSelectedItem();
 	HTREEITEM ht = reloadList ? treeRoot : ctrlTree.findItem(treeRoot, Text::fromT(root));
 	if(ht == NULL) {
 		ht = treeRoot;
@@ -555,16 +564,13 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 
 	//make sure that all subitems are removed
 	ctrlTree.Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
-
-	//d->sortDirs();
-
 	if (initialChange || isExpanded || (changeDir && (changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)))
 		ctrlTree.Expand(ht);
 
 
 	if (changeDir) {
 		if (changeType == CHANGE_TREE_EXPAND)
-			ctrlTree.SelectItem(oldSel);
+			ctrlTree.SelectItem(ctrlTree.findItem(treeRoot, curPath));
 		else
 			selectItem(root);
 	} else {
@@ -587,19 +593,13 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 		if (!AirUtil::isParentOrExact(loadedDir, curPath))
 			updating = true; //prevent reloading the listview unless we are in the directory already (recursive partial lists with directory downloads from tree)
 
-		if (AirUtil::isSub(curPath, loadedDir)) {
-			//the old tree item isn't valid anymore
-			oldSel = ctrlTree.findItem(treeRoot, curPath);
-			if (!oldSel)
-				oldSel = ht;
-		}
-
-		ctrlTree.SelectItem(oldSel);
+		ctrlTree.SelectItem(ctrlTree.findItem(treeRoot, curPath));
 		updating = false;
 	}
 
 	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
 		dl->checkShareDupes();
+
 	ctrlTree.SetRedraw(TRUE);
 }
 
