@@ -150,7 +150,7 @@ public:
 
 	}
 	int run() {
-		for(auto& i: files) {
+		for(const auto& i: files) {
 			UserPtr u = DirectoryListing::getUserFromFilename(i);
 			if(!u)
 				continue;
@@ -162,13 +162,7 @@ public:
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
-
-				auto nick = ClientManager::getInstance()->getFormatedNicks(user);
-				if (nick.empty()) {
-					nick = DirectoryListing::getNickFromFilename(i);
-				}
-
-				LogManager::getInstance()->message(nick + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles, false), LogManager::LOG_INFO);
+				LogManager::getInstance()->message(dl->getNick(false) + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles, false), LogManager::LOG_INFO);
 			} catch(const Exception&) {
 
 			}

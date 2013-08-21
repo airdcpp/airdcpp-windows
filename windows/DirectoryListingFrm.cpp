@@ -114,12 +114,27 @@ void DirectoryListingFrame::updateItemCache(const string& aPath, ReloadMode aRel
 
 	auto curDir = dl->findDirectory(aPath);
 	for (const auto& d : curDir->directories) {
-		list.directories.insert(new ItemInfo(d));
+		list.directories.emplace(d);
 	}
 
 	list.files.clear();
 	for (const auto& f : curDir->files) {
-		list.files.insert(new ItemInfo(f));
+		list.files.emplace(f);
+	}
+
+	//check that all parents exist
+	if (!aPath.empty()) {
+		auto parent = Util::getParentDir(aPath, true);
+		auto p = itemInfos.find(parent);
+		if (p != itemInfos.end()) {
+			auto p2 = p->second.directories.find(ItemInfo(curDir));
+			if (p2 != p->second.directories.end()) {
+				// no need to update anything
+				return;
+			}
+		}
+
+		updateItemCache(parent, RELOAD_NONE);
 	}
 }
 
@@ -267,7 +282,11 @@ void DirectoryListingFrame::on(DirectoryListingListener::UpdateStatusMessage, co
 
 void DirectoryListingFrame::on(DirectoryListingListener::SetActive) noexcept {
 	if (allowPopup())
-		callAsync([=] { MDIActivate(m_hWnd); });
+		callAsync([this] { MDIActivate(m_hWnd); });
+}
+
+void DirectoryListingFrame::on(DirectoryListingListener::HubChanged) noexcept {
+	callAsync([this] { updateSelCombo(); });
 }
 
 void DirectoryListingFrame::createColumns() {
@@ -510,15 +529,12 @@ void DirectoryListingFrame::expandDir(DirectoryListing::Directory* d, bool colla
 
 void DirectoryListingFrame::insertTreeItems(const DirectoryListing::Directory* aDir, HTREEITEM aParent) {
 	auto p = itemInfos.find(aDir->getPath());
+	dcassert(p != itemInfos.end());
 	if (p != itemInfos.end()) {
 		const auto& dirs = p->second.directories;
 		for (const auto& d : dirs) {
 			ctrlTree.insertItem(d.dir, aParent, d.dir->getAdls());
 		}
-	} else {
-		// We haven't been there before... most likely the list was opened via search. Fill the cache and try again.
-		updateItemCache(aDir->getPath(), RELOAD_NONE);
-		insertTreeItems(aDir, aParent);
 	}
 }
 
@@ -1506,14 +1522,12 @@ void DirectoryListingFrame::onViewNFO() {
 						}
 					}
 					catch (...) {}
-				}
-				else if (!ii->dir->isComplete() || ii->dir->findIncomplete()) {
+				} else if (!ii->dir->isComplete() || ii->dir->findIncomplete()) {
 					try {
 						QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, ii->dir->getPath());
 					}
 					catch (const Exception&) {}
-				}
-				else if (!dl->findNfo(ii->dir->getPath())) {
+				} else if (!dl->findNfo(ii->dir->getPath())) {
 					//ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
 				}
 			}
@@ -2228,7 +2242,7 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 			}
 		}
 
-		dl->setHintedUser(HintedUser(dl->getUser(), newHub.hubUrl));
+		dl->setHubUrl(newHub.hubUrl);
 	}
 }
 

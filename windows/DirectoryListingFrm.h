@@ -23,8 +23,6 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#include <boost/ptr_container/ptr_set.hpp>
-
 #include "../client/User.h"
 #include "../client/FastAlloc.h"
 
@@ -414,6 +412,7 @@ private:
 	void on(DirectoryListingListener::UpdateStatusMessage, const string& aMessage) noexcept;
 	void on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept;
 	void on(DirectoryListingListener::SetActive) noexcept;
+	void on(DirectoryListingListener::HubChanged) noexcept;
 
 	// ClientManagerListener
 	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
@@ -440,7 +439,7 @@ private:
 
 	CContainedWindow selComboContainer;
 
-	typedef boost::ptr_set<ItemInfo, ItemInfo::NameSort> ItemInfoSet;
+	typedef set<ItemInfo, ItemInfo::NameSort> ItemInfoSet;
 	struct ItemInfoCache {
 		ItemInfoSet files;
 		ItemInfoSet directories;
