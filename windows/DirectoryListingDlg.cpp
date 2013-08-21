@@ -87,7 +87,7 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 			return 0;
 		}
 
-		sizeMode = ctrlSizeMode.GetCurSel();
+		sizeMode = ctrlSizeMode.GetCurSel()-1;
 		searchStr = WinUtil::addHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
 		size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 		useCurDir = IsDlgButtonChecked(IDC_USE_CUR_DIR) == BST_CHECKED;

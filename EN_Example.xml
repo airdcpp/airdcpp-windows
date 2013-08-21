@@ -808,7 +808,8 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 %[line:reason]: opens up a window asking for "reason"</string>
 	<string name="UserDescription">User description</string>
 	<string name="UserOffline">User offline</string>
-	<string name="UserOnline">Running... (user online)</string>
+	<string name="UserOnline">User online</string>
+	<string name="UserOnlineRunning">Running... (user online)</string>
 	<string name="UserWentOffline">User went offline</string>
 	<string name="UserWentOnline">User went online</string>
 	<string name="Userinfo">Info user</string>

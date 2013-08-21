@@ -426,11 +426,11 @@ private:
 
 	CComboBox selCombo;
 
-	void updateSelCombo();
+	void updateSelCombo(bool init = false);
 	User::UserInfoList hubs;
 	bool online;
 	void onComboSelChanged(bool manual);
-	void showSelCombo(bool show);
+	void showSelCombo(bool show, bool init);
 	tstring getComboDesc();
 
 	tstring nicks;

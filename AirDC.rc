@@ -1864,7 +1864,7 @@ BEGIN
     CONTROL         "Search within the current directory",IDC_USE_CUR_DIR,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,68,197,10
     COMBOBOX        IDC_FILETYPES,62,31,80,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_SEARCH_STRING,61,14,201,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_SEARCH_STRING,61,14,201,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP | CBS_AUTOHSCROLL
     LTEXT           "This user doesn't support the advanced searching features in partial lists, which may result in lower hit counts.",IDC_NO_ASCH_NOTE,10,101,272,16,NOT WS_VISIBLE
 END
 

@@ -162,8 +162,13 @@ public:
 				int matches=0, newFiles=0;
 				BundleList bundles;
 				QueueManager::getInstance()->matchListing(*dl, matches, newFiles, bundles);
-				LogManager::getInstance()->message(ClientManager::getInstance()->getFormatedNicks(user) + ": " + 
-					AirUtil::formatMatchResults(matches, newFiles, bundles, false), LogManager::LOG_INFO);
+
+				auto nick = ClientManager::getInstance()->getFormatedNicks(user);
+				if (nick.empty()) {
+					nick = DirectoryListing::getNickFromFilename(i);
+				}
+
+				LogManager::getInstance()->message(nick + ": " + AirUtil::formatMatchResults(matches, newFiles, bundles, false), LogManager::LOG_INFO);
 			} catch(const Exception&) {
 
 			}

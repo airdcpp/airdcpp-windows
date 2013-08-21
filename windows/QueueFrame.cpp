@@ -163,18 +163,17 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 					online++;
 			}
 
+			auto size = sources.size();
 			if(isFinished()) {
 				return TSTRING(DOWNLOAD_FINISHED_IDLE);
 			} else if(isWaiting()) {
 				if(online > 0) {
-					size_t size = QueueManager::getInstance()->getSourcesCount(qi);
 					if(size == 1) {
 						return TSTRING(WAITING_USER_ONLINE);
 					} else {
 						return TSTRING_F(WAITING_USERS_ONLINE, online % size);
 					}
 				} else {
-					size_t size = QueueManager::getInstance()->getSourcesCount(qi);
 					if(size == 0) {
 						return TSTRING(NO_USERS_TO_DOWNLOAD_FROM);
 					} else if(size == 1) {
@@ -186,9 +185,8 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 					}
 				}
 			} else {
-				size_t size = QueueManager::getInstance()->getSourcesCount(qi);
 				if(size == 1) {
-					return TSTRING(USER_ONLINE);
+					return TSTRING(USER_ONLINE_RUNNING);
 				} else {
 					return TSTRING_F(USERS_ONLINE, online % size);
 				}
