@@ -53,11 +53,7 @@ template<class T>
 class UserInfoBaseHandler {
 public:
 	BEGIN_MSG_MAP(UserInfoBaseHandler)
-		COMMAND_ID_HANDLER(IDC_PRIVATEMESSAGE, onPrivateMessage)
-		COMMAND_ID_HANDLER(IDC_ADD_TO_FAVORITES, onAddToFavorites)
 		COMMAND_RANGE_HANDLER(IDC_GRANTSLOT, IDC_UNGRANTSLOT, onGrantSlot)
-		COMMAND_ID_HANDLER(IDC_REMOVEALL, onRemoveAll)
-		COMMAND_ID_HANDLER(IDC_CONNECT, onConnectFav)
 	END_MSG_MAP()
 	bool pmItems;
 	bool listItems;
@@ -77,17 +73,15 @@ public:
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getBrowseList, _1));
 	}
 
-	LRESULT onAddToFavorites(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	virtual void handleAddToFavorites() {
 		((T*)this)->getUserList().forEachSelected(&UserInfoBase::addFav);
-		return 0;
 	}
-	virtual LRESULT onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	virtual void handlePrivateMessage() {
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::pm, _1));
-		return 0;
 	}
-	LRESULT onConnectFav(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+
+	virtual void handleConnectFav() {
 		((T*)this)->getUserList().forEachSelected(&UserInfoBase::connectFav);
-		return 0;
 	}
 	LRESULT onGrantSlot(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		switch(wID) {
@@ -99,9 +93,8 @@ public:
 		}
 		return 0;
 	}
-	LRESULT onRemoveAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) { 
+	virtual void handleRemoveAll() { 
 		((T*)this)->getUserList().forEachSelected(&UserInfoBase::removeAll);
-		return 0;
 	}
 
 	struct UserTraits {
@@ -203,23 +196,20 @@ public:
 		
 		if (!multipleHubs) {
 			if (pmItems)
-				menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
+				menu.appendItem(TSTRING(SEND_PRIVATE_MESSAGE), [=] { handlePrivateMessage(); }, !listItems ? OMenu::FLAG_DEFAULT : 0);
 
-			if (listItems) {
+			if (listItems)
 				appendSingleDownloadItems(list.empty() ? true : false);
-			} else {
-				menu.SetMenuDefaultItem(IDC_PRIVATEMESSAGE);
-			}
 
 			//if(!traits.nonFavOnly)
 			//	menu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT_FAVUSER_HUB));
 		}
 
 		if(!traits.favOnly) {
-			menu.AppendMenu(MF_STRING, IDC_ADD_TO_FAVORITES, CTSTRING(ADD_TO_FAVORITES));
-			menu.AppendMenu(MF_SEPARATOR);
+			menu.appendItem(TSTRING(ADD_TO_FAVORITES), [=] { handleAddToFavorites(); });
+			menu.appendSeparator();
 		}
-		menu.AppendMenu(MF_STRING, IDC_REMOVEALL, CTSTRING(REMOVE_FROM_ALL));
+		menu.appendItem(TSTRING(REMOVE_FROM_ALL), [=] { handleRemoveAll(); });
 		menu.AppendMenu(MF_POPUP, (UINT)(HMENU)WinUtil::grantMenu, CTSTRING(GRANT_SLOTS_MENU));
 	}	
 };

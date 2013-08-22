@@ -154,7 +154,7 @@ private:
 	static FrameMap frames;
 	CComboBox ctrlHubSel;
 
-	void updateOnlineStatus();
+	void updateOnlineStatus(bool ownChange = false);
 	StringPairList hubs;
 	bool online;
 	void changeClient();
@@ -176,7 +176,7 @@ private:
 	tstring hubNames;
 	ParamMap ucLineParams;
 
-	void updateFrameOnlineStatus(const HintedUser& newUser, Client* c);
+	void checkClientChanged(const HintedUser& newUser, Client* c, bool ownChange);
 	TStringList prevCommands;
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;

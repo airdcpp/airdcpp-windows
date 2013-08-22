@@ -192,19 +192,20 @@ public:
 	LRESULT onReloadList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
-	void onRefreshShare(bool usingTree);
-	void onScanShare(bool usingTree, bool isSfvCheck);
+	void handleRefreshShare(bool usingTree);
+	void handleScanShare(bool usingTree, bool isSfvCheck);
 
-	void onCopyDir();
-	void onOpen();
-	void onOpenDupeDir(bool usingTree);
-	void onViewAsText();
-	void onViewNFO();
-	void onGoToDirectory();
+	void handleCopyDir();
+	void handleOpenFile();
+	void handleOpenDupeDir(bool usingTree);
+	void handleViewAsText();
+	void handleViewNFO(bool usingTree);
+	void handleGoToDirectory(bool usingTree);
 
-	void onSearchFile();
-	void onSearchDir(bool usingTree);
-	void onSearchByTTH();
+	void handleSearchByName(bool usingTree, bool dirsOnly);
+	void handleSearchByTTH();
+
+	void handleReloadPartial(bool dirOnly);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
@@ -248,23 +249,13 @@ public:
 		PostMessage(WM_CLOSE);
 		return 0;
 	}
-	
+
 	UserListHandler<DirectoryListing> getUserList() { return UserListHandler<DirectoryListing>(*dl); }
 
 	/* DownloadBaseHandler functions */
 	int64_t getDownloadSize(bool isWhole);
 	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
-	
-	/* TypedTreeViewCtrl */
-	ChildrenState DirectoryListingFrame::getChildrenState(const DirectoryListing::Directory* d) const;
-	int getIconIndex(const DirectoryListing::Directory* d) const;
-	void expandDir(DirectoryListing::Directory* d, bool /*collapsing*/);
-	void insertTreeItems(const DirectoryListing::Directory* d, HTREEITEM aParent);
-
-	/* FilteredListViewCtrl */
-	void createColumns();
-	size_t getTotalListItemCount() const;
 private:
 	bool allowPopup() const;
 	void updateHistoryCombo();
@@ -275,7 +266,6 @@ private:
 	void updateStatus(const tstring& aMsg);
 	string curPath;
 	void changeWindowState(bool enable);
-	void onReloadPartial(bool dirOnly);
 	
 	void updateItems(const DirectoryListing::Directory* d, BOOL enableRedraw);
 	void insertItems(const optional<string>& selectedName);
@@ -286,7 +276,6 @@ private:
 		RELOAD_ALL
 	};
 
-	void changeDir(DirectoryListing::Directory* d, BOOL enableRedraw, ReloadMode aReload = RELOAD_NONE);
 	void findSearchHit(bool newDir = false);
 	int searchPos;
 	bool gotoPrev;
@@ -338,15 +327,20 @@ private:
 		int getImageIndex() const;
 		DupeType getDupe() const { return type == DIRECTORY ? dir->getDupe() : file->getDupe(); }
 		const string& getName() const { return type == DIRECTORY ? dir->getName() : file->getName(); }
+		string getPath() const { return type == DIRECTORY ? dir->getPath() : file->getPath(); }
 
-		struct NameSort : public std::binary_function<ItemInfo, ItemInfo, bool> {
+		struct NameSort {
 			bool operator()(const ItemInfo& a, const ItemInfo& b) const {
 				return compareItems(&a, &b, DirectoryListingFrame::COLUMN_FILENAME) > 0;
 			}
 		};
 	};
 
+	unique_ptr<ItemInfo> root;
+
+	void handleItemAction(bool usingTree, std::function<void (const ItemInfo* ii)> aF, bool firstOnly = false);
 	void onListItemAction();
+	void changeDir(const ItemInfo* d, BOOL enableRedraw, ReloadMode aReload = RELOAD_NONE);
 
 	CContainedWindow pathContainer;
 	CContainedWindow treeContainer;
@@ -355,8 +349,14 @@ private:
 	deque<string> history;
 	size_t historyIndex;
 	
-	TypedTreeCtrl<DirectoryListingFrame, DirectoryListing::Directory> ctrlTree;
-	FilteredListViewCtrl < TypedListViewCtrl<ItemInfo, IDC_FILES>, DirectoryListingFrame, IDC_FILES> ctrlFiles;
+	typedef TypedTreeCtrl<DirectoryListingFrame, ItemInfo> TreeType;
+	friend class TreeType;
+	TreeType ctrlTree;
+
+	typedef FilteredListViewCtrl < TypedListViewCtrl<ItemInfo, IDC_FILES>, DirectoryListingFrame, IDC_FILES> ListType;
+	friend class ListType;
+	ListType ctrlFiles;
+
 	CStatusBarCtrl ctrlStatus;
 	HTREEITEM treeRoot;
 	
@@ -447,6 +447,16 @@ private:
 
 	unordered_map<string, ItemInfoCache, noCaseStringHash, noCaseStringEq> itemInfos;
 	void updateItemCache(const string& aPath, ReloadMode aReloadMode);
+protected:
+	/* TypedTreeViewCtrl */
+	ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* d) const;
+	int getIconIndex(const ItemInfo* d) const;
+	void expandDir(ItemInfo* d, bool /*collapsing*/);
+	void insertTreeItems(const ItemInfo* d, HTREEITEM aParent);
+
+	/* FilteredListViewCtrl */
+	void createColumns();
+	size_t getTotalListItemCount() const;
 };
 
 #endif // !defined(DIRECTORY_LISTING_FRM_H)

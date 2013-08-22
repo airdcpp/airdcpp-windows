@@ -140,7 +140,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	HubRegIcon = ResourceLoader::loadIcon(IDI_HUBREG, 16);
 	HubIcon =  ResourceLoader::loadIcon(IDI_HUB, 16);
 
-	if(fhe != NULL){
+	if(fhe){
 		//retrieve window position
 		CRect rc(fhe->getLeft(), fhe->getTop(), fhe->getRight(), fhe->getBottom());
 		
@@ -1796,13 +1796,6 @@ bool HubFrame::PreparePopupMenu(CWindow* /*pCtrl*/, OMenu& menu ) {
 	}
 	
 	menu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
-   
-
-	/*if(AirUtil::isAdcHub(client->getHubUrl()))
-		menu.SetMenuDefaultItem(IDC_BROWSELIST);
-	else
-		menu.SetMenuDefaultItem( IDC_GETLIST );*/
-
 	return true;
 }
 
@@ -1825,15 +1818,6 @@ LRESULT HubFrame::onSelectUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	}
 	ctrlUsers.SetRedraw(TRUE);
 	ctrlUsers.EnsureVisible(pos, FALSE);
-
-	return 0;
-}
-
-LRESULT HubFrame::onPrivateMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	int i = -1;
-	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		PrivateFrame::openWindow(HintedUser(ctrlUsers.getItemData(i)->getUser(), client->getHubUrl()), Util::emptyStringT, client);
-	}
 
 	return 0;
 }

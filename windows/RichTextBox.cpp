@@ -1005,7 +1005,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			}
 			
 			const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
-			appendUserItems(menu, true, ou->getUser());
+			appendUserItems(menu, true);
 
 			if (client->isOp() || !ou->getIdentity().isOp()) {
 				if(HubFrame::ignoreList.find(ou->getUser()) == HubFrame::ignoreList.end()) {

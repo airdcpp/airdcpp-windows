@@ -133,7 +133,7 @@ public:
 		return GetItem(&tvItem) && (tvItem.cChildren != 0);
 	}
 
-	void insertItem(T* aDir, HTREEITEM aParent, bool bold) {
+	void insertItem(const T* aDir, HTREEITEM aParent, bool bold) {
 		TVINSERTSTRUCT tvs = {0};
  
 		tvs.item.mask = TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE|TVIF_CHILDREN|TVIF_PARAM;

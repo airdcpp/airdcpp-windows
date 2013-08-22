@@ -38,7 +38,7 @@
 PrivateFrame::FrameMap PrivateFrame::frames;
 
 PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
-	created(false), closed(false), online(true), curCommandPosition(0), 
+	created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0), 
 	ctrlHubSelContainer(WC_COMBOBOX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
@@ -132,8 +132,7 @@ LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	auto hp = hubs[ctrlHubSel.GetCurSel()];
 	changeClient();
 
-	updateOnlineStatus();
-	addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hp.second)));
+	updateOnlineStatus(true);
 
 	bHandled = FALSE;
 	return 0;
@@ -166,7 +165,7 @@ void PrivateFrame::changeClient() {
 	ctrlClient.setClient(ClientManager::getInstance()->getClient(replyTo.hint));
 }
 
-void PrivateFrame::updateOnlineStatus() {
+void PrivateFrame::updateOnlineStatus(bool ownChange) {
 	const CID& cid = replyTo.user->getCID();
 	const string& hint = replyTo.hint;
 
@@ -175,72 +174,79 @@ void PrivateFrame::updateOnlineStatus() {
 	//get the hub and online status
 	auto hubsInfoNew = move(WinUtil::getHubNames(cid));
 	if (!hubsInfoNew.second && !online) {
-		//nothing to update... probably a delayed event
-		return;
-	}
-
-	auto tmp = WinUtil::getHubNames(cid);
-
-	auto oldSel = ctrlHubSel.GetStyle() & WS_VISIBLE ? ctrlHubSel.GetCurSel() : 0;
-	StringPair oldHubPair;
-	if (!hubs.empty())
-		oldHubPair = hubs[oldSel]; // cache the old hub name
-
-	hubs = ClientManager::getInstance()->getHubs(cid);
-	while (ctrlHubSel.GetCount()) {
-		ctrlHubSel.DeleteString(0);
-	}
-
-	//General things
-	if(hubsInfoNew.second) {
-		//the user is online
-
-		hubNames = WinUtil::getHubNames(replyTo);
-		nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
-		setDisconnected(false);
-
-		if(!online) {
-			addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"));
-			setIcon(userOnline);
-		}
+		//nothing to update... probably a delayed event or we are opening the tab for the first time
+		if (nicks.empty())
+			nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
+		if (hubNames.empty())
+			hubNames = TSTRING(OFFLINE);
 	} else {
-		setDisconnected(true);
-		setIcon(userOffline);
-		addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"));
-		ctrlClient.setClient(nullptr);
-	}
+		auto oldSel = ctrlHubSel.GetStyle() & WS_VISIBLE ? ctrlHubSel.GetCurSel() : 0;
+		StringPair oldHubPair;
+		if (!hubs.empty())
+			oldHubPair = hubs[oldSel]; // cache the old hub name
 
-	//ADC related changes
-	if(hubsInfoNew.second && !replyTo.user->isNMDC() && !hubs.empty()) {
-		if(!(ctrlHubSel.GetStyle() & WS_VISIBLE)) {
-			showHubSelection(true);
+		hubs = ClientManager::getInstance()->getHubs(cid);
+		while (ctrlHubSel.GetCount()) {
+			ctrlHubSel.DeleteString(0);
 		}
 
-		for (const auto& hub: hubs) {
-			auto idx = ctrlHubSel.AddString(Text::toT(hub.second).c_str());
-			if(hub.first == hint) {
-				ctrlHubSel.SetCurSel(idx);
+		//General things
+		if (hubsInfoNew.second) {
+			//the user is online
+
+			hubNames = WinUtil::getHubNames(replyTo);
+			nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
+			setDisconnected(false);
+
+			if (!online) {
+				addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"));
+				setIcon(userOnline);
 			}
+		} else {
+			if (nicks.empty())
+				nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
+
+			setDisconnected(true);
+			setIcon(userOffline);
+			addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"));
+			ctrlClient.setClient(nullptr);
 		}
 
-		if(ctrlHubSel.GetCurSel() == -1) {
-			//the hub was not found
-			ctrlHubSel.SetCurSel(0);
-			changeClient();
-			if (!online) //the user came online but not in the previous hub
+		//ADC related changes
+		if (hubsInfoNew.second && !replyTo.user->isNMDC() && !hubs.empty()) {
+			if (!(ctrlHubSel.GetStyle() & WS_VISIBLE)) {
+				showHubSelection(true);
+			}
+
+			for (const auto& hub : hubs) {
+				auto idx = ctrlHubSel.AddString(Text::toT(hub.second).c_str());
+				if (hub.first == hint) {
+					ctrlHubSel.SetCurSel(idx);
+				}
+			}
+
+			if (ownChange && ctrlHubSel.GetCurSel() == -1) {
 				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
-			else
-				addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)));
-		} else if (!oldHubPair.first.empty() && oldHubPair.first != hint) {
-			addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
-		} else if (!ctrlClient.getClient()) {
-			changeClient();
+			} else if (ctrlHubSel.GetCurSel() == -1) {
+				//the hub was not found
+				ctrlHubSel.SetCurSel(0);
+				changeClient();
+				if (!online) //the user came online but not in the previous hub
+					addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
+				else
+					addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)));
+			} else if (!oldHubPair.first.empty() && oldHubPair.first != hint) {
+				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
+			} else if (!ctrlClient.getClient()) {
+				changeClient();
+			}
+		} else {
+			showHubSelection(false);
 		}
-	} else {
-		showHubSelection(false);
+
+		online = hubsInfoNew.second;
 	}
 
-	online = hubsInfoNew.second;
 	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
 }
 
@@ -300,7 +306,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 		}
 	} else {
 		if(!myPM) {
-			i->second->updateFrameOnlineStatus(HintedUser(user, c->getHubUrl()), c);
+			i->second->checkClientChanged(HintedUser(user, c->getHubUrl()), c, false);
 			if(SETTING(FLASH_WINDOW_ON_PM) && !SETTING(FLASH_WINDOW_ON_NEW_PM)) {
 				WinUtil::FlashWindow();
 			}
@@ -337,7 +343,8 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 		//p->updateOnlineStatus();
 	} else {
 		p = i->second;
-		p->updateFrameOnlineStatus(replyTo, c); 
+		p->checkClientChanged(replyTo, c, true);
+
 		if(::IsIconic(p->m_hWnd))
 			::ShowWindow(p->m_hWnd, SW_RESTORE);
 		p->MDIActivate(p->m_hWnd);
@@ -349,12 +356,12 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
  update the re used frame to the correct hub, 
  so it doesnt appear offline while user is sending us messages with another hub :P
 */
-void PrivateFrame::updateFrameOnlineStatus(const HintedUser& newUser, Client* c) {
+void PrivateFrame::checkClientChanged(const HintedUser& newUser, Client* c, bool ownChange) {
 
 	if(!replyTo.user->isNMDC() && replyTo.hint != newUser.hint) {
 		replyTo.hint = newUser.hint;
 		ctrlClient.setClient(c);
-		updateOnlineStatus();
+		updateOnlineStatus(ownChange);
 	}
 }
 
