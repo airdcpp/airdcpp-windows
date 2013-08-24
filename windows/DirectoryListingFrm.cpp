@@ -1869,7 +1869,11 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 				case COLUMN_EXACTSIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
 				case COLUMN_SIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
 				case COLUMN_DATE: return compare(a->dir->getRemoteDate(), b->dir->getRemoteDate());
-				case COLUMN_FILENAME: return Util::DefaultSort(Text::toT(a->dir->getName()).c_str(), Text::toT(b->dir->getName()).c_str(), true);
+				case COLUMN_FILENAME: {
+						if (a->dir->getType() == DirectoryListing::Directory::TYPE_ADLS && b->dir->getType() != DirectoryListing::Directory::TYPE_ADLS) return false;
+						if (a->dir->getType() != DirectoryListing::Directory::TYPE_ADLS && b->dir->getType() == DirectoryListing::Directory::TYPE_ADLS) return true;
+						return Util::DefaultSort(Text::toT(a->dir->getName()).c_str(), Text::toT(b->dir->getName()).c_str(), true);
+					}
 				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
 			}
 		} else {
@@ -1919,7 +1923,7 @@ int DirectoryListingFrame::getIconIndex(const ItemInfo* ii) const {
 	if (ii->dir->getLoading())
 		return ResourceLoader::DIR_LOADING;
 	
-	if (ii->dir->getType() == DirectoryListing::Directory::TYPE_NORMAL || dl->getIsOwnList())
+	if (ii->dir->getType() == DirectoryListing::Directory::TYPE_NORMAL || ii->dir->getType() == DirectoryListing::Directory::TYPE_ADLS || dl->getIsOwnList())
 		return ResourceLoader::DIR_NORMAL;
 
 	return ResourceLoader::DIR_INCOMPLETE;

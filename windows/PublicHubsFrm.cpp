@@ -440,26 +440,25 @@ void PublicHubsFrame::updateList() {
 
 	bool doSizeCompare = parseFilter(mode, size);
 	
-	for(HubEntry::List::const_iterator i = hubs.begin(); i != hubs.end(); ++i) {
-		if(matchFilter(*i, sel, doSizeCompare, mode, size)) {
-
+	for(const auto& i: hubs) {
+		if(matchFilter(i, sel, doSizeCompare, mode, size)) {
 			TStringList l;
 			l.resize(COLUMN_LAST);
-			l[COLUMN_NAME] = Text::toT(i->getName());
-			l[COLUMN_DESCRIPTION] = Text::toT(i->getDescription());
-			l[COLUMN_USERS] = Util::toStringW(i->getUsers());
-			l[COLUMN_SERVER] = Text::toT(i->getServer());
-			l[COLUMN_COUNTRY] = Text::toT(i->getCountry());
-			l[COLUMN_SHARED] = Util::formatBytesW(i->getShared());
-			l[COLUMN_MINSHARE] = Util::formatBytesW(i->getMinShare());
-			l[COLUMN_MINSLOTS] = Util::toStringW(i->getMinSlots());
-			l[COLUMN_MAXHUBS] = Util::toStringW(i->getMaxHubs());
-			l[COLUMN_MAXUSERS] = Util::toStringW(i->getMaxUsers());
-			l[COLUMN_RELIABILITY] = Util::toStringW(i->getReliability());
-			l[COLUMN_RATING] = Text::toT(i->getRating());
-			ctrlHubs.insert(ctrlHubs.GetItemCount(), l, Localization::getFlagIndexByName(i->getCountry().c_str()));
+			l[COLUMN_NAME] = Text::toT(i.getName());
+			l[COLUMN_DESCRIPTION] = Text::toT(i.getDescription());
+			l[COLUMN_USERS] = Util::toStringW(i.getUsers());
+			l[COLUMN_SERVER] = Text::toT(i.getServer());
+			l[COLUMN_COUNTRY] = Text::toT(i.getCountry());
+			l[COLUMN_SHARED] = Util::formatBytesW(i.getShared());
+			l[COLUMN_MINSHARE] = Util::formatBytesW(i.getMinShare());
+			l[COLUMN_MINSLOTS] = Util::toStringW(i.getMinSlots());
+			l[COLUMN_MAXHUBS] = Util::toStringW(i.getMaxHubs());
+			l[COLUMN_MAXUSERS] = Util::toStringW(i.getMaxUsers());
+			l[COLUMN_RELIABILITY] = Util::toStringW(i.getReliability());
+			l[COLUMN_RATING] = Text::toT(i.getRating());
+			ctrlHubs.insert(ctrlHubs.GetItemCount(), l, Localization::getFlagIndexByName(i.getCountry().c_str()));
 			visibleHubs++;
-			users += i->getUsers();
+			users += i.getUsers();
 		}
 	}
 	

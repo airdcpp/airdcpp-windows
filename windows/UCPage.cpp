@@ -154,10 +154,10 @@ LRESULT UCPage::onMoveDown(WORD , WORD , HWND , BOOL& ) {
 LRESULT UCPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 {
 	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
-	::EnableWindow(GetDlgItem(IDC_MOVE_UP), (lv->uNewState & LVIS_FOCUSED));
-	::EnableWindow(GetDlgItem(IDC_MOVE_DOWN), (lv->uNewState & LVIS_FOCUSED));
-	::EnableWindow(GetDlgItem(IDC_CHANGE_MENU), (lv->uNewState & LVIS_FOCUSED));
-	::EnableWindow(GetDlgItem(IDC_REMOVE_MENU), (lv->uNewState & LVIS_FOCUSED));
+	::EnableWindow(GetDlgItem(IDC_MOVE_UP), (lv->uNewState & LVIS_SELECTED));
+	::EnableWindow(GetDlgItem(IDC_MOVE_DOWN), (lv->uNewState & LVIS_SELECTED));
+	::EnableWindow(GetDlgItem(IDC_CHANGE_MENU), (lv->uNewState & LVIS_SELECTED));
+	::EnableWindow(GetDlgItem(IDC_REMOVE_MENU), (lv->uNewState & LVIS_SELECTED));
 	return 0;
 }
 

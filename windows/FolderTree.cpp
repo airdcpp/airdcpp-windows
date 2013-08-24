@@ -1444,7 +1444,7 @@ bool FolderTree::GetHasSharedChildren(HTREEITEM hItem)
 
 	auto& sharedDirs = sp->getCurItems();
 	for(auto& sd: sharedDirs) {
-		if(sd->state != ShareDirInfo::DIFF_REMOVED && sd->diffState == ShareDirInfo::DIFF_NORMAL && sd->path.size() > searchStr.size() + startPos) {
+		if(sd->state != ShareDirInfo::DIFF_REMOVED && (sd->diffState == ShareDirInfo::DIFF_NORMAL || sd->diffState == ShareDirInfo::DIFF_ADDED) && sd->path.size() > searchStr.size() + startPos) {
 			if(stricmp(sd->path.substr(startPos, searchStr.size()), searchStr) == 0) {
 				if(searchStr.size() <= 3) {
 					return true;

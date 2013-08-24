@@ -38,6 +38,7 @@ class ListFilter : boost::noncopyable {
 		size_t column;
 		size_t method;
 		double size;
+		ColumnType type;
 	};
 
 
@@ -77,13 +78,14 @@ public:
 	bool getInverse() const { return inverse;  }
 private:
 
-	enum {
+	enum FilterMode {
 		EQUAL,
 		GREATER_EQUAL,
 		LESS_EQUAL,
 		GREATER,
 		LESS,
-		NOT_EQUAL
+		NOT_EQUAL,
+		LAST
 	};
 
 	vector<ColumnInfo*> columns;
@@ -91,8 +93,8 @@ private:
 	void textUpdated(const string& filter);
 	void columnChanged();
 
-	double prepareSize() const;
-	time_t prepareDate() const;
+	pair<double, bool> prepareSize() const;
+	pair<double, bool> prepareDate() const;
 
 	StringMatch::Method defMethod;
 	int defMatchColumn;
@@ -106,5 +108,9 @@ private:
 
 	StringMatch matcher;
 	bool inverse;
+	bool usingTypedMethod;
+
+	FilterMode mode;
+	inline bool matchNumeric(FilterMode mode, double toCompare, double filterVal) const;
 };
 #endif
