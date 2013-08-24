@@ -34,11 +34,29 @@ class ListFilter : boost::noncopyable {
 	typedef std::function<string (size_t)> InfoFunction;
 	typedef std::function<double(size_t)> NumericFunction;
 
+	enum FilterMode {
+		EQUAL,
+		GREATER_EQUAL,
+		LESS_EQUAL,
+		GREATER,
+		LESS,
+		NOT_EQUAL,
+		LAST
+	};
+
 	struct Preparation {
+		Preparation(const StringMatch& aMatch) : matcher(aMatch) { }
+
 		size_t column;
 		size_t method;
-		double size;
+		double num;
 		ColumnType type;
+		NumericFunction numericF;
+		InfoFunction infoF;
+		const StringMatch& matcher;
+
+		bool matchNumeric(int column) const;
+		bool matchText(int column) const;
 	};
 
 
@@ -62,8 +80,8 @@ public:
 	CComboBox& getFilterMethodBox() { return method; } 
 	CEdit& getFilterBox() { return text; } 
 
-	Preparation prepare();
-	bool match(const Preparation& prep, InfoFunction infoF, NumericFunction numericF) const;
+	Preparation prepare(InfoFunction infoF, NumericFunction numericF);
+	bool match(const Preparation& prep) const;
 
 	bool empty() const;
 
@@ -77,24 +95,14 @@ public:
 	void setInverse(bool aInverse);
 	bool getInverse() const { return inverse;  }
 private:
-
-	enum FilterMode {
-		EQUAL,
-		GREATER_EQUAL,
-		LESS_EQUAL,
-		GREATER,
-		LESS,
-		NOT_EQUAL,
-		LAST
-	};
-
 	vector<ColumnInfo*> columns;
 
-	void textUpdated(const string& filter);
+	void textUpdated();
 	void columnChanged();
 
 	pair<double, bool> prepareSize() const;
-	pair<double, bool> prepareDate() const;
+	pair<double, bool> prepareTime() const;
+	pair<double, bool> prepareSpeed() const;
 
 	StringMatch::Method defMethod;
 	int defMatchColumn;
@@ -111,6 +119,6 @@ private:
 	bool usingTypedMethod;
 
 	FilterMode mode;
-	inline bool matchNumeric(FilterMode mode, double toCompare, double filterVal) const;
+	string getText() const;
 };
 #endif

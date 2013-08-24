@@ -643,7 +643,6 @@ void UsersFrame::updateList() {
 	ctrlInfo.SetWindowText(_T(""));
 
 	auto i = userInfos.begin();
-	auto filterPrep = filter.prepare();
 	auto filterInfoF = [this, &i](int column) { return Text::fromT(i->second.getText(column)); };
 	auto filterNumericF = [&](int column) -> double {
 		switch (column) {
@@ -652,8 +651,10 @@ void UsersFrame::updateList() {
 		}
 	};
 
+	auto filterPrep = filter.prepare(filterInfoF, filterNumericF);
+
 	for(; i != userInfos.end(); ++i) {
-		if ((filter.empty() || filter.match(filterPrep, filterInfoF, filterNumericF)) && show(i->second.getUser(), false)) {
+		if ((filter.empty() || filter.match(filterPrep)) && show(i->second.getUser(), false)) {
 			int p = ctrlUsers.insertItem(&i->second,0);
 			i->second.update(i->second.getUser());
 			setImages(&i->second, p);
@@ -673,7 +674,7 @@ bool UsersFrame::matches(const UserInfo &ui) {
 		}
 	};
 
-	if (!filter.empty() && !filter.match(filter.prepare(), [this, &ui](int column) { return Text::fromT(ui.getText(column)); }, filterNumericF)) {
+	if (!filter.empty() && !filter.match(filter.prepare([this, &ui](int column) { return Text::fromT(ui.getText(column)); }, filterNumericF))) {
 		return false;
 	}
 

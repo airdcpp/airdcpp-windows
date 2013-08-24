@@ -56,6 +56,10 @@ ResourceManager::Strings HubFrame::columnNames[] = { ResourceManager::NICK, Reso
 	ResourceManager::DESCRIPTION, ResourceManager::TAG, ResourceManager::SETCZDC_UPLOAD_SPEED, ResourceManager::SETCZDC_DOWNLOAD_SPEED, ResourceManager::IP_V4, ResourceManager::IP_V6, ResourceManager::EMAIL,
 	ResourceManager::VERSION, ResourceManager::MODE_V4, ResourceManager::MODE_V6, ResourceManager::SHARED_FILES, ResourceManager::HUBS, ResourceManager::SLOTS, ResourceManager::CID };
 
+static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_SIZE, COLUMN_SIZE, 
+	COLUMN_TEXT, COLUMN_TEXT, COLUMN_SPEED, COLUMN_SPEED, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, 
+	COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_NUMERIC, COLUMN_NUMERIC, COLUMN_TEXT };
+
 LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
@@ -107,11 +111,8 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	}
     	
 	for(uint8_t j = 0; j < OnlineUser::COLUMN_LAST; ++j) {
-		ColumnType ctp = (j == OnlineUser::COLUMN_SHARED || 
-			j == OnlineUser::COLUMN_EXACT_SHARED || 
-			j == OnlineUser::COLUMN_SLOTS) ? COLUMN_NUMERIC : COLUMN_TEXT;
 		int fmt = (j == OnlineUser::COLUMN_SHARED || j == OnlineUser::COLUMN_EXACT_SHARED || j == OnlineUser::COLUMN_SLOTS) ? LVCFMT_RIGHT : LVCFMT_LEFT;
-		ctrlUsers.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j, ctp);
+		ctrlUsers.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j, columnTypes[j]);
 	}
 
 	filter.addFilterBox(m_hWnd);
@@ -1633,7 +1634,6 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 	//single update?
 	//avoid refreshing the whole list and just update the current item
 	//instead
-	auto filterPrep = filter.prepare();
 	auto filterInfoF = [this, &ui](int column) { return Text::fromT(ui->getText(column)); };
 	auto filterNumericF = [&](int column) -> double {
 		switch (column) {
@@ -1642,9 +1642,13 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		case OnlineUser::COLUMN_SLOTS: return ui->getIdentity().getSlots();
 		case OnlineUser::COLUMN_DLSPEED: return Util::toFloat(ui->getIdentity().getDownloadSpeed());
 		case OnlineUser::COLUMN_ULSPEED: return Util::toFloat(ui->getIdentity().getUploadSpeed());
+		case OnlineUser::COLUMN_FILES: return Util::toFloat(ui->getIdentity().getSharedFiles());
+		case OnlineUser::COLUMN_HUBS: return ui->getIdentity().getTotalHubCount();
 		default: dcassert(0); return 0;
 		}
 	};
+
+	auto filterPrep = filter.prepare(filterInfoF, filterNumericF);
 
 	if(ui) {
 		if(ui->isHidden()) {
@@ -1652,7 +1656,7 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		}
 
 
-		if (filter.empty() || filter.match(filterPrep, filterInfoF, filterNumericF)) {
+		if (filter.empty() || filter.match(filterPrep)) {
 			if (ctrlUsers.findItem(ui.get()) == -1) {
 				ui->inc();
 				ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
@@ -1682,7 +1686,7 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 			auto i = l.begin();
 			for(; i != l.end(); ++i){
 				ui = *i;
-				if (!ui->isHidden() && (filter.empty() || filter.match(filterPrep, filterInfoF, filterNumericF))) {
+				if (!ui->isHidden() && (filter.empty() || filter.match(filterPrep))) {
 					ui->inc();
 					ctrlUsers.insertItem(ui.get(), UserInfoBase::getImage(ui->getIdentity(), client));
 				}

@@ -30,7 +30,9 @@
 enum ColumnType{
 	COLUMN_TEXT,
 	COLUMN_NUMERIC,
-	COLUMN_DATES
+	COLUMN_SIZE,
+	COLUMN_TIME,
+	COLUMN_SPEED
 };
 
 class ColumnInfo {
@@ -38,12 +40,15 @@ public:
 	ColumnInfo(const tstring &aName, int aPos, int aFormat, int aWidth, ColumnType aColType): name(aName), pos(aPos), width(aWidth), 
 		format(aFormat), visible(true), colType(aColType) {}
 	~ColumnInfo() {}
-		tstring name;
-		bool visible;
-		int pos;
-		int width;
-		int format;
-		ColumnType colType;
+
+	bool isNumericType() const { return colType != COLUMN_TEXT; }
+
+	tstring name;
+	bool visible;
+	int pos;
+	int width;
+	int format;
+	ColumnType colType;
 };
 
 template<class T, int ctrlId>

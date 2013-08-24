@@ -84,12 +84,18 @@ void ListFilter::setInverse(bool aInverse) {
 	WinUtil::addCue(text.m_hWnd, inverse ? CTSTRING(EXCLUDE_DOTS) : CTSTRING(FILTER_DOTS), FALSE);
 }
 
+string ListFilter::getText() const {
+	string ret;
+	TCHAR *buf = new TCHAR[text.GetWindowTextLength() + 1];
+	text.GetWindowText(buf, text.GetWindowTextLength() + 1);
+	ret = Text::fromT(buf);
+	delete [] buf;
+	return ret;
+}
+
 LRESULT ListFilter::onFilterChar(WORD /*wNotifyCode*/, WORD, HWND hWndCtl, BOOL & bHandled) {
 	if (hWndCtl == text.m_hWnd) {
-		TCHAR *buf = new TCHAR[text.GetWindowTextLength() + 1];
-		text.GetWindowText(buf, text.GetWindowTextLength() + 1);
-		textUpdated(Text::fromT(buf));
-		delete [] buf;
+		textUpdated();
 	}
 
 	bHandled = FALSE;
@@ -112,8 +118,8 @@ size_t ListFilter::getColumn() const {
 }
 
 
-ListFilter::Preparation ListFilter::prepare() {
-	Preparation prep = Preparation();
+ListFilter::Preparation ListFilter::prepare(InfoFunction aInfoF, NumericFunction aNumericF) {
+	Preparation prep = Preparation(matcher);
 	if(empty())
 		return prep;
 
@@ -123,43 +129,49 @@ ListFilter::Preparation ListFilter::prepare() {
 
 	if (prep.method < StringMatch::METHOD_LAST || prep.column >= colCount) {
 		if (mode != LAST) {
-			prep.type = COLUMN_DATES;
-			auto ret = prepareDate();
+			prep.type = COLUMN_TIME;
+			auto ret = prepareTime();
+
 			if (!ret.second) {
-				prep.type = COLUMN_NUMERIC;
+				prep.type = COLUMN_SIZE;
 				ret = prepareSize();
 			}
-			prep.size = ret.first;
+
+			if (!ret.second) {
+				prep.type = COLUMN_SPEED;
+				ret = prepareSpeed();
+			}
+
+			if (!ret.second) {
+				prep.type = COLUMN_NUMERIC;
+				prep.num = Util::toDouble(matcher.pattern);
+			} else {
+				prep.num = ret.first;
+			}
 		}
 
 		matcher.setMethod(static_cast<StringMatch::Method>(prep.method));
 		matcher.prepare();
+	} else if (columns[prep.column]->colType == COLUMN_SIZE) {
+		prep.type = COLUMN_SIZE;
+		prep.num = prepareSize().first;
+	} else if (columns[prep.column]->colType == COLUMN_TIME) {
+		prep.type = COLUMN_TIME;
+		prep.num = prepareTime().first;
+	} else if (columns[prep.column]->colType == COLUMN_SPEED) {
+		prep.type = COLUMN_SPEED;
+		prep.num = prepareSpeed().first;
 	} else if (columns[prep.column]->colType == COLUMN_NUMERIC) {
 		prep.type = COLUMN_NUMERIC;
-		prep.size = prepareSize().first;
-	} else if (columns[prep.column]->colType == COLUMN_DATES) {
-		prep.type = COLUMN_DATES;
-		prep.size = prepareDate().first;
+		prep.num = Util::toDouble(matcher.pattern);
 	}
 
+	prep.infoF = aInfoF;
+	prep.numericF = aNumericF;
 	return prep;
 }
 
-inline bool ListFilter::matchNumeric(FilterMode mode, double toCompare, double filterVal) const {
-	switch (mode) {
-	case EQUAL: return toCompare == filterVal;
-	case GREATER_EQUAL: return toCompare >= filterVal;
-	case LESS_EQUAL: return toCompare <= filterVal;
-	case GREATER: return toCompare > filterVal;
-	case LESS: return toCompare < filterVal;
-	case NOT_EQUAL: return toCompare != filterVal;
-	}
-
-	dcassert(0);
-	return false;
-}
-
-bool ListFilter::match(const Preparation& prep, InfoFunction infoF, NumericFunction numericF) const {
+bool ListFilter::match(const Preparation& prep) const {
 	if(empty())
 		return true;
 
@@ -167,33 +179,52 @@ bool ListFilter::match(const Preparation& prep, InfoFunction infoF, NumericFunct
 	if(prep.column >= colCount) {
 		if (prep.method < StringMatch::METHOD_LAST) {
 			for (size_t i = 0; i < colCount; ++i) {
-				if (matcher.match(infoF(i))) {
+				if (prep.matchText(i)) {
 					hasMatch = true;
 					break;
 				}
 			}
 		} else {
 			for (size_t i = 0; i < colCount; ++i) {
-				if (prep.type == columns[i]->colType && matchNumeric(static_cast<FilterMode>(prep.method - StringMatch::METHOD_LAST), numericF(i), prep.size)) {
+				if (prep.type == columns[i]->colType && prep.matchNumeric(i)) {
 					hasMatch = true;
 					break;
 				}
 			}
 		}
 	} else if (prep.method < StringMatch::METHOD_LAST || columns[prep.column]->colType == COLUMN_TEXT) {
-		hasMatch = matcher.match(infoF(prep.column));
+		hasMatch = prep.matchText(prep.column);
 	} else {
-		hasMatch = matchNumeric(static_cast<FilterMode>(prep.method - StringMatch::METHOD_LAST), numericF(prep.column), prep.size);
+		hasMatch = prep.matchNumeric(prep.column);
 	}
 	return inverse ? !hasMatch : hasMatch;
+}
+
+bool ListFilter::Preparation::matchNumeric(int column) const {
+	auto toCompare = numericF(column);
+	switch (method - StringMatch::METHOD_LAST) {
+	case EQUAL: return toCompare == num;
+	case GREATER_EQUAL: return toCompare >= num;
+	case LESS_EQUAL: return toCompare <= num;
+	case GREATER: return toCompare > num;
+	case LESS: return toCompare < num;
+	case NOT_EQUAL: return toCompare != num;
+	}
+
+	dcassert(0);
+	return false;
+}
+
+bool ListFilter::Preparation::matchText(int column) const {
+	return matcher.match(infoF(column));
 }
 
 bool ListFilter::empty() const {
 	return matcher.pattern.empty();
 }
 
-void ListFilter::textUpdated(const string& aFilter) {
-	auto filter = aFilter;
+void ListFilter::textUpdated() {
+	auto filter = getText();
 
 	mode = LAST;
 	auto start = string::npos;
@@ -247,7 +278,7 @@ void ListFilter::columnChanged() {
 			method.SetCurSel(StringMatch::PARTIAL);
 		}
 
-		if (col >= colCount || (columns[col]->colType == COLUMN_NUMERIC || columns[col]->colType == COLUMN_DATES)) {
+		if (col >= colCount || columns[col]->isNumericType()) {
 			method.AddString(_T("="));
 			method.AddString(_T(">="));
 			method.AddString(_T("<="));
@@ -255,6 +286,9 @@ void ListFilter::columnChanged() {
 			method.AddString(_T("<"));
 			method.AddString(_T("!="));
 		}
+
+		textUpdated();
+		usingTypedMethod = false;
 	}
 }
 
@@ -271,7 +305,7 @@ LRESULT ListFilter::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl
 	return 0;
 }
 
-pair<double, bool> ListFilter::prepareDate() const {
+pair<double, bool> ListFilter::prepareTime() const {
 	size_t end;
 	time_t multiplier;
 	auto hasType = [&end, this](string&& id) {
@@ -279,6 +313,7 @@ pair<double, bool> ListFilter::prepareDate() const {
 		return end != string::npos;
 	};
 
+	bool hasMatch = true;
 	if (hasType("y")) {
 		multiplier = 60 * 60 * 24 * 365;
 	} else if (hasType("m")) {
@@ -289,7 +324,12 @@ pair<double, bool> ListFilter::prepareDate() const {
 		multiplier = 60 * 60 * 24;
 	} else if (hasType("h")) {
 		multiplier = 60 * 60;
+	} else if (hasType("min")) {
+		multiplier = 60;
+	} else if (hasType("s")) {
+		multiplier = 1;
 	} else {
+		hasMatch = false;
 		multiplier = 1;
 	}
 
@@ -298,7 +338,7 @@ pair<double, bool> ListFilter::prepareDate() const {
 	}
 
 	time_t ret = Util::toInt64(matcher.pattern.substr(0, end)) * multiplier;
-	return make_pair(ret > 0 ? GET_TIME() - ret : ret, multiplier > 1);
+	return make_pair(ret > 0 ? GET_TIME() - ret : ret, hasMatch);
 }
 
 pair<double, bool> ListFilter::prepareSize() const {
@@ -330,6 +370,41 @@ pair<double, bool> ListFilter::prepareSize() const {
 	}
 
 	if(end == tstring::npos) {
+		end = matcher.pattern.length();
+	}
+
+	return make_pair(Util::toDouble(matcher.pattern.substr(0, end)) * multiplier, multiplier > 1);
+}
+
+pair<double, bool> ListFilter::prepareSpeed() const {
+	size_t end;
+	int64_t multiplier;
+	auto hasType = [&end, this](string && id) {
+		end = Util::findSubString(matcher.pattern, id, matcher.pattern.size() - id.size());
+		return end != string::npos;
+	};
+
+	if (hasType("tbit")) {
+		multiplier = 1000LL * 1000LL * 1000LL * 1000LL / 8LL;
+	} else if (hasType("gbit")) {
+		multiplier = 1000 * 1000 * 1000 / 8;
+	} else if (hasType("mbit")) {
+		multiplier = 1000 * 1000 / 8;
+	} else if (hasType("kbit")) {
+		multiplier = 1000 / 8;
+	} else if (hasType("tibit")) {
+		multiplier = 1024LL * 1024LL * 1024LL * 1024LL / 8LL;
+	} else if (hasType("gibit")) {
+		multiplier = 1024 * 1024 * 1024 / 8;
+	} else if (hasType("mibit")) {
+		multiplier = 1024 * 1024 / 8;
+	} else if (hasType("kibit")) {
+		multiplier = 1024 / 8;
+	} else {
+		multiplier = 1;
+	}
+
+	if (end == tstring::npos) {
 		end = matcher.pattern.length();
 	}
 

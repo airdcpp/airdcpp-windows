@@ -48,7 +48,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  Resour
 static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTER_SEARCH_SHARED, SettingsManager::FILTER_SEARCH_QUEUED, SettingsManager::FILTER_SEARCH_INVERSED, SettingsManager::FILTER_SEARCH_TOP, 
 	SettingsManager::FILTER_SEARCH_PARTIAL_DUPES, SettingsManager::FILTER_SEARCH_RESET_CHANGE };
 
-static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_TEXT, COLUMN_DATES };
+static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_TEXT, COLUMN_SIZE, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_SPEED, COLUMN_TEXT, COLUMN_SIZE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TIME };
 
 
 SearchFrame::FrameMap SearchFrame::frames;
@@ -1827,7 +1827,6 @@ LRESULT SearchFrame::onFilterChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, B
 }	
 
 void SearchFrame::updateSearchList(SearchInfo* si) {
-	auto filterPrep = ctrlResults.filter.prepare();
 	auto filterInfoF = [&](int column) { return Text::fromT(si->getText(column)); };
 	auto filterNumericF = [&](int column) -> double { 
 		switch (column) {
@@ -1840,9 +1839,10 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 			default: dcassert(0); return 0;
 		}
 	};
+	auto filterPrep = ctrlResults.filter.prepare(filterInfoF, filterNumericF);
 
 	if(si) {
-		if (!ctrlResults.checkDupe(si->getDupe()) || (!ctrlResults.filter.empty() && !ctrlResults.filter.match(filterPrep, filterInfoF, filterNumericF))) {
+		if (!ctrlResults.checkDupe(si->getDupe()) || (!ctrlResults.filter.empty() && !ctrlResults.filter.match(filterPrep))) {
 			ctrlResults.list.deleteItem(si);
 		}
 	} else {
@@ -1852,7 +1852,7 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 		for(auto aSI: ctrlResults.list.getParents() | map_values) {
 			si = aSI.parent;
 			si->collapsed = true;
-			if (ctrlResults.checkDupe(si->getDupe()) && (ctrlResults.filter.empty() || ctrlResults.filter.match(filterPrep, filterInfoF, filterNumericF))) {
+			if (ctrlResults.checkDupe(si->getDupe()) && (ctrlResults.filter.empty() || ctrlResults.filter.match(filterPrep))) {
 				dcassert(ctrlResults.list.findItem(si) == -1);
 				int k = ctrlResults.list.insertItem(si, si->getImageIndex());
 

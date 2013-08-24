@@ -50,7 +50,7 @@ int DirectoryListingFrame::columnSizes[] = { 300, 60, 100, 100, 200, 130 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::TYPE, ResourceManager::EXACT_SIZE, ResourceManager::SIZE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
 static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTER_FL_SHARED, SettingsManager::FILTER_FL_QUEUED, SettingsManager::FILTER_FL_INVERSED, SettingsManager::FILTER_FL_TOP, SettingsManager::FILTER_FL_PARTIAL_DUPES, SettingsManager::FILTER_FL_RESET_CHANGE };
 
-static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_DATES };
+static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_SIZE, COLUMN_SIZE, COLUMN_TEXT, COLUMN_TIME };
 
 void DirectoryListingFrame::openWindow(DirectoryListing* aList, const string& aDir, const string& aXML) {
 
@@ -932,7 +932,6 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 	const auto& dirs = itemInfos[curPath].directories;
 	auto i = dirs.crbegin();
 
-	auto filterPrep = ctrlFiles.filter.prepare();
 	auto filterInfo = [this, &i](int column) -> string {
 		// speed this up a bit
 		if (column == COLUMN_FILENAME)
@@ -950,9 +949,11 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 		}
 	};
 
+	auto filterPrep = ctrlFiles.filter.prepare(filterInfo, numericInfo);
+
 	auto doInsert = [&](const decltype(dirs)& map) {
 		for (; i != map.crend(); ++i) {
-			if (ctrlFiles.checkDupe((*i).getDupe()) && (ctrlFiles.filter.empty() || ctrlFiles.filter.match(filterPrep, filterInfo, numericInfo))) {
+			if (ctrlFiles.checkDupe((*i).getDupe()) && (ctrlFiles.filter.empty() || ctrlFiles.filter.match(filterPrep))) {
 				if (selectedName && compare(*selectedName, (*i).getName()) == 0) {
 					selectedPos = curPos;
 				}

@@ -278,7 +278,7 @@ private:
 	bool updateUser(const UserTask& u);
 	void removeUser(const OnlineUserPtr& aUser);
 
-	void updateUserList(OnlineUserPtr ui = NULL);
+	void updateUserList(OnlineUserPtr ui = nullptr);
 
 	ListFilter filter;
 
