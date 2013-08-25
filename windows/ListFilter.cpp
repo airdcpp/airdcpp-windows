@@ -203,12 +203,14 @@ bool ListFilter::match(const Preparation& prep) const {
 bool ListFilter::Preparation::matchNumeric(int column) const {
 	auto toCompare = numericF(column);
 	switch (method - StringMatch::METHOD_LAST) {
-	case EQUAL: return toCompare == num;
-	case GREATER_EQUAL: return toCompare >= num;
-	case LESS_EQUAL: return toCompare <= num;
-	case GREATER: return toCompare > num;
-	case LESS: return toCompare < num;
-	case NOT_EQUAL: return toCompare != num;
+		case EQUAL: return toCompare == num;
+		case NOT_EQUAL: return toCompare != num;
+
+		//inverse the match for time types (smaller number actually means bigger age)
+		case GREATER_EQUAL: return type == COLUMN_TIME ? toCompare <= num : toCompare >= num;
+		case LESS_EQUAL: return type == COLUMN_TIME ? toCompare >= num : toCompare <= num;
+		case GREATER: return type == COLUMN_TIME ? toCompare < num : toCompare > num; break;
+		case LESS: return type == COLUMN_TIME ? toCompare > num : toCompare < num; break;
 	}
 
 	dcassert(0);

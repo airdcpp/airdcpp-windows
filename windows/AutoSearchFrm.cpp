@@ -452,7 +452,6 @@ void AutoSearchFrame::addFromDialog(const AutoSearchDlg& dlg) {
 			AutoSearchPtr as = new AutoSearch;
 
 			setItemProperties(as, dlg, str);
-
 			AutoSearchManager::getInstance()->addAutoSearch(as, false);
 		} else if(search.size() < 5) { // dont report if empty line between/end when adding multiple
 			MessageBox(CTSTRING(LINE_EMPTY_OR_TOO_SHORT));

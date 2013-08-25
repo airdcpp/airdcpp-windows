@@ -323,6 +323,12 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		str.resize(GetDlgItemText(IDC_AS_SEARCH_STRING, &str[0], ctrlSearch.GetWindowTextLength()+1));
 		searchString = Text::fromT(str);
 
+		if (AutoSearchManager::getInstance()->hasNameDupe(searchString, false)) {
+			auto msg = str + _T(": ") + TSTRING(ITEM_NAME_EXISTS) + _T("\r\n\r\n") + TSTRING(AS_ADD_DUPE_CONFIRM);
+			if (MessageBox(msg.c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES)
+				return 0;
+		}
+
 		action = cAction.GetCurSel();
 		remove = IsDlgButtonChecked(IDC_REMOVE_AFTER_COMPLETED) ? true : false;
 		checkQueued = IsDlgButtonChecked(IDC_CHECK_QUEUED) ? true : false;

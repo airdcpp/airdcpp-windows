@@ -1213,7 +1213,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</string>
 	<string name="XFoldersExtras">%1% folders with extra files</string>
 	<string name="XEmptyFolders">%1% empty folders</string>
 	<string name="XDupeFolders">%1% duplicate folders</string>
-	<string name="ExtraFilesSampledirX">Extra files in sample folder: </string>
+	<string name="ExtraFilesSampledirX">Extra files in sample folder: %1%</string>
 	<string name="ExtraFilesRlsdirX">The following extra files have been found from a release folder %1%: %2%</string>
 	<string name="ConfirmRemoveDirMultiple">The selected folder contains %1% directory bundles and %2% file bundles. Are you sure want to remove them?</string>
 	<string name="ConfirmRemoveDirBundle">Are you sure want to remove the bundle %1%?</string>
@@ -1884,7 +1884,7 @@ If you want more information about the client features or you have questions to 
 	<string name="FollowSymlinks">Follow symbolic links</string>
 	<string name="PausedForced">Paused (forced)</string>
 	<string name="ScanMonitoredFolders">Scan new directories in share for missing/extra files (monitoring only)</string>
-	<string name="ForceShareScan">Refresh the directory after fixing the problem(s) to add it in share</string>
+	<string name="ForceShareScan">Please fix the issue to have it rescanned automatically or for the directory to be added in share by performing a manual refresh</string>
 	<string name="ScanShareDirFailed">The directory %1% won't be shared because the following problems were found: %2%</string>
 	<string name="ScanningFailedX">Scanning failed: %1%</string>
 	<string name="XFilesFailedHashing">%1% files failed to hash</string>
@@ -1981,4 +1981,5 @@ Do you want to continue?</string>
 	<string name="SearchSupportedOnly">Search only from supported clients</string>
 	<string name="FileDateFormat">File date format</string>
 	<string name="AschSupportCount">Users with Advanced Search support: %1%/%2%</string>
+	<string name="AsAddDupeConfirm">Do you want to continue with adding this item anyway?</string>
 </recources>
