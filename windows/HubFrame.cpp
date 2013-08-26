@@ -1640,8 +1640,8 @@ void HubFrame::updateUserList(OnlineUserPtr ui) {
 		case OnlineUser::COLUMN_EXACT_SHARED:
 		case OnlineUser::COLUMN_SHARED: return ui->getIdentity().getBytesShared();
 		case OnlineUser::COLUMN_SLOTS: return ui->getIdentity().getSlots();
-		case OnlineUser::COLUMN_DLSPEED: return Util::toFloat(ui->getIdentity().getDownloadSpeed());
-		case OnlineUser::COLUMN_ULSPEED: return Util::toFloat(ui->getIdentity().getUploadSpeed());
+		case OnlineUser::COLUMN_DLSPEED: return ui->getIdentity().getAdcConnectionSpeed(true);
+		case OnlineUser::COLUMN_ULSPEED: return ui->getUser()->isNMDC() ? Util::toFloat(ui->getIdentity().getConnectionString()) : ui->getIdentity().getAdcConnectionSpeed(false);
 		case OnlineUser::COLUMN_FILES: return Util::toFloat(ui->getIdentity().getSharedFiles());
 		case OnlineUser::COLUMN_HUBS: return ui->getIdentity().getTotalHubCount();
 		default: dcassert(0); return 0;

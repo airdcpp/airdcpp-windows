@@ -468,24 +468,19 @@ void PublicHubsFrame::updateList() {
 	updateStatus();
 }
 
+void PublicHubsFrame::setStatusText(const tstring& aStr) {
+	ctrlStatus.SetText(0, aStr.c_str());
+}
+
+void PublicHubsFrame::onFinished(const tstring& aStatus) {
+	hubs = FavoriteManager::getInstance()->getPublicHubs();
+	updateList();
+	setStatusText(aStatus);
+}
+
 void PublicHubsFrame::updateStatus() {
 	ctrlStatus.SetText(1, (TSTRING(HUBS) + _T(": ") + Util::toStringW(visibleHubs)).c_str());
 	ctrlStatus.SetText(2, (TSTRING(USERS) + _T(": ") + Util::toStringW(users)).c_str());
-}
-
-LRESULT PublicHubsFrame::onSpeaker(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-	if(wParam == FINISHED) {
-		hubs = FavoriteManager::getInstance()->getPublicHubs();
-		updateList();
-		tstring* x = (tstring*)lParam;
-		ctrlStatus.SetText(0, (*x).c_str());
-		delete x;
-	} else if(wParam == SET_TEXT) {
-		tstring* x = (tstring*)lParam;
-		ctrlStatus.SetText(0, (*x).c_str());
-		delete x;
-	}
-	return 0;
 }
 
 LRESULT PublicHubsFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -654,26 +649,26 @@ bool PublicHubsFrame::matchFilter(const HubEntry& entry, const int& sel, bool do
 }
 
 void PublicHubsFrame::on(DownloadStarting, const string& l) noexcept { 
-	speak(SET_TEXT, TSTRING(DOWNLOADING_HUB_LIST) + _T(" (") + Text::toT(l) + _T(")")); 
+	callAsync([=] { setStatusText(TSTRING(DOWNLOADING_HUB_LIST) + _T(" (") + Text::toT(l) + _T(")")); });
 }
 
 void PublicHubsFrame::on(DownloadFailed, const string& l) noexcept { 
-	speak(SET_TEXT, TSTRING(DOWNLOAD_FAILED) + _T(" ") + Text::toT(l)); 
+	callAsync([=] { setStatusText(TSTRING(DOWNLOAD_FAILED) + _T(" ") + Text::toT(l)); });
 }
 
 void PublicHubsFrame::on(DownloadFinished, const string& l, bool /*fromCoral*/) noexcept { 
-	speak(FINISHED, TSTRING(HUB_LIST_DOWNLOADED) + _T(" (") + Text::toT(l) + _T(")"));
+	callAsync([=] { onFinished(TSTRING(HUB_LIST_DOWNLOADED) + _T(" (") + Text::toT(l) + _T(")")); });
 }
 
 void PublicHubsFrame::on(LoadedFromCache, const string& l, const string& d) noexcept { 
-	speak(FINISHED, TSTRING(HUB_LIST_LOADED_FROM_CACHE) + _T(" (") + Text::toT(l) + _T(")") + _T(" Download Date: ") + Text::toT(d)); 
+	callAsync([=] { onFinished(TSTRING(HUB_LIST_LOADED_FROM_CACHE) + _T(" (") + Text::toT(l) + _T(")") + _T(" Download Date: ") + Text::toT(d)); });
 }
 
 void PublicHubsFrame::on(Corrupted, const string& l) noexcept {
 	if (l.empty()) {
-		speak(FINISHED, TSTRING(HUBLIST_CACHE_CORRUPTED));
+		callAsync([=] { onFinished(TSTRING(HUBLIST_CACHE_CORRUPTED)); });
 	} else {	
-		speak(FINISHED, TSTRING(HUBLIST_DOWNLOAD_CORRUPTED) + _T(" (") + Text::toT(l) + _T(")"));
+		callAsync([=] { onFinished(TSTRING(HUBLIST_DOWNLOAD_CORRUPTED) + _T(" (") + Text::toT(l) + _T(")")); });
 	}
 }
 

@@ -466,8 +466,7 @@ LRESULT DirectoryListingFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 
 void DirectoryListingFrame::changeWindowState(bool enable) {
-
-	ctrlToolbar.EnableButton(IDC_MATCH_QUEUE, enable && !dl->getIsOwnList());
+	ctrlToolbar.EnableButton(IDC_MATCH_QUEUE, enable && !dl->isMyCID());
 	ctrlToolbar.EnableButton(IDC_MATCH_ADL, enable);
 	ctrlToolbar.EnableButton(IDC_FIND, enable);
 	ctrlToolbar.EnableButton(IDC_NEXT, enable && dl->curSearch ? TRUE : FALSE);
@@ -482,7 +481,7 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 
 	if (enable) {
 		EnableWindow();
-		ctrlToolbar.EnableButton(IDC_GETLIST, dl->getPartialList() && !dl->getIsOwnList());
+		ctrlToolbar.EnableButton(IDC_GETLIST, dl->getPartialList() && !dl->isMyCID());
 		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, dl->getPartialList());
 	} else {
 		DisableWindow();
@@ -738,7 +737,7 @@ size_t DirectoryListingFrame::getTotalListItemCount() const {
 }
 
 void DirectoryListingFrame::updateStatus() {
-	if(!updating && ctrlStatus.IsWindow()) {
+	if (!updating && ctrlStatus.IsWindow()) {
 		int selectedCount = ctrlFiles.list.GetSelectedCount();
 		int totalCount = 0;
 		int displayCount = 0;
@@ -766,7 +765,7 @@ void DirectoryListingFrame::updateStatus() {
 		bool u = false;
 
 		int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-		if(statusSizes[STATUS_SELECTED_FILES] < w) {
+		if (statusSizes[STATUS_SELECTED_FILES] < w) {
 			statusSizes[STATUS_SELECTED_FILES] = w;
 			u = true;
 		}
@@ -774,7 +773,7 @@ void DirectoryListingFrame::updateStatus() {
 
 		tmp = TSTRING(SIZE) + _T(": ") + Util::formatBytesW(total);
 		w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-		if(statusSizes[STATUS_SELECTED_SIZE] < w) {
+		if (statusSizes[STATUS_SELECTED_SIZE] < w) {
 			statusSizes[STATUS_SELECTED_SIZE] = w;
 			u = true;
 		}
@@ -790,6 +789,8 @@ void DirectoryListingFrame::updateStatus() {
 
 		if (selCombo.GetStyle() & WS_VISIBLE) {
 			tmp = getComboDesc();
+		} else if (dl->isMyCID()) {
+			tmp = TSTRING(OWN_FILELIST);
 		} else if (!dl->getUser()->isNMDC() || !dl->getUser()->isOnline()) {
 			tmp = TSTRING(USER_OFFLINE);
 		} else {
@@ -1987,7 +1988,7 @@ LRESULT DirectoryListingFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/
 	tabMenu.InsertSeparatorFirst(nick);
 
 	appendUserItems(tabMenu);
-	if (!dl->getPartialList() || !dl->getIsOwnList()) {
+	if (!dl->getPartialList() && !dl->isMyCID()) {
 		tabMenu.AppendMenu(MF_SEPARATOR);
 		tabMenu.AppendMenu(MF_STRING, IDC_RELOAD, CTSTRING(RELOAD));
 	}
@@ -2219,7 +2220,7 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 			selCombo.SetCurSel(0);
 			onComboSelChanged(false);
 		}
-	} else {
+	} else if (!dl->isMyCID()) {
 
 		const CID& cid = dl->getUser()->getCID();
 		const string& hint = dl->getHubUrl();
@@ -2296,6 +2297,8 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		}
 
 		online = hubsInfoNew.second;
+	} else {
+		showSelCombo(false, init);
 	}
 
 	if (nicks.empty())

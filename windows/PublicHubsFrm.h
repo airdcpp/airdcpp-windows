@@ -23,6 +23,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
+#include "Async.h"
 #include "FlatTabCtrl.h"
 #include "ExListViewCtrl.h"
 #include "Resource.h"
@@ -31,7 +32,7 @@
 
 #define FILTER_MESSAGE_MAP 8
 class PublicHubsFrame : public MDITabChildWindowImpl<PublicHubsFrame>, public StaticFrame<PublicHubsFrame, ResourceManager::PUBLIC_HUBS, ID_FILE_CONNECT>, 
-	private FavoriteManagerListener, private SettingsManagerListener
+	private FavoriteManagerListener, private SettingsManagerListener, public Async<PublicHubsFrame>
 {
 public:
 	PublicHubsFrame() : users(0), hubs(0), closed(false), filter(Util::emptyString),
@@ -78,7 +79,6 @@ public:
 	LRESULT onClickedRefresh(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onClickedConfigure(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onClickedConnect(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);	
 	LRESULT onCopyHub(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -119,11 +119,6 @@ private:
 		COLUMN_LAST
 	};
 
-	enum {
-		FINISHED,
-		SET_TEXT
-	};
-
 	enum FilterModes{
 		NONE,
 		EQUAL,
@@ -157,12 +152,8 @@ private:
 	static int columnIndexes[];
 	static int columnSizes[];
 	
-
-
-	void speak(int x, const tstring& l) {
-		PostMessage(WM_SPEAKER, x, (LPARAM)new tstring(l));
-	}
-	
+	void onFinished(const tstring& aStatus);
+	void setStatusText(const tstring& aStr);
 	void updateStatus();
 	void updateList();
 	void updateDropDown();

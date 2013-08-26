@@ -73,7 +73,7 @@ public:
 	LRESULT onSelChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
 
 	void addFilterBox(HWND parent);
-	void addColumnBox(HWND parent, vector<ColumnInfo*>& columns);
+	void addColumnBox(HWND parent, vector<ColumnInfo*>& columns, int initialSel = -1);
 	void addMethodBox(HWND parent);
 
 	CComboBox& getFilterColumnBox() { return column; } 
@@ -98,7 +98,7 @@ private:
 	vector<ColumnInfo*> columns;
 
 	void textUpdated();
-	void columnChanged();
+	void columnChanged(bool doFilter);
 
 	pair<double, bool> prepareSize() const;
 	pair<double, bool> prepareTime() const;

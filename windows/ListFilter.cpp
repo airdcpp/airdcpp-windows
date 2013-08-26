@@ -17,6 +17,8 @@
  */
 
 #include "stdafx.h"
+
+#include "Async.h"
 #include "ListFilter.h"
 
 #include "WinUtil.h"
@@ -40,7 +42,7 @@ void ListFilter::addFilterBox(HWND parent) {
 
 }
 
-void ListFilter::addColumnBox(HWND parent, vector<ColumnInfo*>& aColumns){
+void ListFilter::addColumnBox(HWND parent, vector<ColumnInfo*>& aColumns, int initialSel) {
 	RECT rc = { 0, 0, 100, 110 };
 	column.Create(parent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL |
 		WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
@@ -50,7 +52,8 @@ void ListFilter::addColumnBox(HWND parent, vector<ColumnInfo*>& aColumns){
 		column.AddString(((*col).name).c_str());
 
 	column.AddString(CTSTRING(ANY));
-	column.SetCurSel(colCount);
+	column.SetCurSel(initialSel != -1 ? initialSel : colCount);
+	callAsync(parent, [this] { columnChanged(false); });
 }
 
 
@@ -63,14 +66,7 @@ void ListFilter::addMethodBox(HWND parent){
 	for(auto& str : methods) 
 		method.AddString(str.c_str());
 
-	method.AddString(_T("="));
-	method.AddString(_T(">="));
-	method.AddString(_T("<="));
-	method.AddString(_T(">"));
-	method.AddString(_T("<"));
-	method.AddString(_T("!="));
 	method.SetCurSel(defMethod); 
-
 }
 
 void ListFilter::clear() {
@@ -267,7 +263,7 @@ void ListFilter::textUpdated() {
 	updateFunction();
 }
 
-void ListFilter::columnChanged() {
+void ListFilter::columnChanged(bool doFilter) {
 	if(column.IsWindow() && method.IsWindow()) {
 		auto n = method.GetCount();
 		size_t col = getColumn();
@@ -289,7 +285,8 @@ void ListFilter::columnChanged() {
 			method.AddString(_T("!="));
 		}
 
-		textUpdated();
+		if (doFilter)
+			textUpdated();
 		usingTypedMethod = false;
 	}
 }
@@ -297,7 +294,7 @@ void ListFilter::columnChanged() {
 LRESULT ListFilter::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
 	if (hWndCtl == column.m_hWnd || hWndCtl == method.m_hWnd) {
 		if (hWndCtl == column.m_hWnd)
-			columnChanged();
+			columnChanged(true);
 		if (hWndCtl == method.m_hWnd)
 			usingTypedMethod = false;
 
