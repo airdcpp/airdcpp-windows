@@ -113,6 +113,10 @@ void DirectoryListingFrame::updateItemCache(const string& aPath, ReloadMode aRel
 	list.directories.clear();
 
 	auto curDir = dl->findDirectory(aPath);
+	if (!curDir) {
+		return;
+	}
+
 	for (const auto& d : curDir->directories) {
 		list.directories.emplace(d);
 	}

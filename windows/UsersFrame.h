@@ -132,9 +132,7 @@ private:
 
 	class UserInfo : public UserInfoBase {
 	public:
-		UserInfo(const UserPtr& u, const string& aUrl) : user(u), hubUrl(aUrl), isFavorite(false), grantSlot(false) { 
-			//update(user);
-		}
+		UserInfo(const UserPtr& u, const string& aUrl);
 		~UserInfo(){ }
 
 		inline const tstring& getText(int col) const { return columns[col]; }

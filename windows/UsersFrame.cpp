@@ -602,7 +602,7 @@ void UsersFrame::addUser(const UserPtr& aUser, const string& aUrl) {
 	if(ui == userInfos.end()) {
 		auto x = userInfos.emplace(aUser, UserInfo(aUser, aUrl)).first;
 		if(matches(x->second)) {
-			x->second.update(aUser);
+			//x->second.update(aUser);
 			ctrlUsers.insertItem(&x->second, 0);
 		}
 	} else {
@@ -656,7 +656,7 @@ void UsersFrame::updateList() {
 	for(; i != userInfos.end(); ++i) {
 		if ((filter.empty() || filter.match(filterPrep)) && show(i->second.getUser(), false)) {
 			int p = ctrlUsers.insertItem(&i->second,0);
-			i->second.update(i->second.getUser());
+			//i->second.update(i->second.getUser());
 			setImages(&i->second, p);
 			ctrlUsers.updateItem(p);
 		}
@@ -707,6 +707,11 @@ void UsersFrame::setImages(UserInfo *ui, int pos/* = -1*/) {
 }
 void UsersFrame::updateStatus() {
 	ctrlStatus.SetText(1, (Text::toT(Util::toString(ctrlUsers.GetItemCount()) + " ") + TSTRING(USERS)).c_str());
+}
+
+
+UsersFrame::UserInfo::UserInfo(const UserPtr& u, const string& aUrl) : user(u), hubUrl(aUrl), isFavorite(false), grantSlot(false) {
+	update(user);
 }
 
 void UsersFrame::UserInfo::update(const UserPtr& u) {
