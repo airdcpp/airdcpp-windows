@@ -1329,16 +1329,16 @@ void WinUtil::saveHeaderOrder(CListViewCtrl& ctrl, SettingsManager::StrSetting o
 double WinUtil::toBytes(TCHAR* aSize) {
 	double bytes = _tstof(aSize);
 
-	if (_tcsstr(aSize, CTSTRING(PiB))) {
-		return bytes * 1024.0 * 1024.0 * 1024.0 * 1024.0 * 1024.0;
-	} else if (_tcsstr(aSize, CTSTRING(TiB))) {
-		return bytes * 1024.0 * 1024.0 * 1024.0 * 1024.0;
-	} else if (_tcsstr(aSize, CTSTRING(GiB))) {
-		return bytes * 1024.0 * 1024.0 * 1024.0;
-	} else if (_tcsstr(aSize, CTSTRING(MiB))) {
-		return bytes * 1024.0 * 1024.0;
-	} else if (_tcsstr(aSize, CTSTRING(KiB))) {
-		return bytes * 1024.0;
+	if (_tcsstr(aSize, CTSTRING(PiB)) || _tcsstr(aSize, CTSTRING(PB))) {
+		return Util::convertSize(bytes, Util::PB);
+	} else if (_tcsstr(aSize, CTSTRING(TiB)) || _tcsstr(aSize, CTSTRING(TB))) {
+		return Util::convertSize(bytes, Util::TB);
+	} else if (_tcsstr(aSize, CTSTRING(GiB)) || _tcsstr(aSize, CTSTRING(GB))) {
+		return Util::convertSize(bytes, Util::GB);
+	} else if (_tcsstr(aSize, CTSTRING(MiB)) || _tcsstr(aSize, CTSTRING(MB))) {
+		return Util::convertSize(bytes, Util::MB);
+	} else if (_tcsstr(aSize, CTSTRING(KiB)) || _tcsstr(aSize, CTSTRING(KB))) {
+		return Util::convertSize(bytes, Util::KB);
 	} else {
 		return bytes;
 	}
@@ -2043,9 +2043,9 @@ time_t WinUtil::parseDate(CEdit& ctrlDate, CComboBox& ctrlDateUnit) {
 
 void WinUtil::appendSizeCombos(CComboBox& aUnitCombo, CComboBox& aModeCombo, int aUnitSel /*= 2*/, int aModeSel /*= 1*/) {
 	aUnitCombo.AddString(CTSTRING(B));
-	aUnitCombo.AddString(CTSTRING(KiB));
-	aUnitCombo.AddString(CTSTRING(MiB));
-	aUnitCombo.AddString(CTSTRING(GiB));
+	aUnitCombo.AddString(SIZECTSTRING(KB));
+	aUnitCombo.AddString(SIZECTSTRING(MB));
+	aUnitCombo.AddString(SIZECTSTRING(GB));
 	aUnitCombo.SetCurSel(aUnitSel);
 
 
@@ -2064,11 +2064,11 @@ time_t WinUtil::parseSize(CEdit& ctrlSize, CComboBox& ctrlSizeMode) {
 	double lsize = Util::toDouble(Text::fromT(size));
 	switch (ctrlSizeMode.GetCurSel()) {
 	case 1:
-		lsize *= 1024.0; break;
+		lsize = Util::convertSize(lsize, Util::KB); break;
 	case 2:
-		lsize *= 1024.0*1024.0; break;
+		lsize = Util::convertSize(lsize, Util::MB); break;
 	case 3:
-		lsize *= 1024.0*1024.0*1024.0; break;
+		lsize = Util::convertSize(lsize, Util::GB); break;
 	}
 
 	return static_cast<int64_t>(lsize);

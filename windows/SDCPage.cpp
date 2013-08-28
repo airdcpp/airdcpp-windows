@@ -44,7 +44,7 @@ PropPage::TextItem SDCPage::texts[] = {
 	{ IDC_BLOOM_MODE_LBL, ResourceManager::BLOOM_MODE },
 
 	//DB cache
-	{ IDC_SETTINGS_MB, ResourceManager::MiB },
+	{ IDC_SETTINGS_MB, RM_MB },
 	{ IDC_DB_CACHE_SIZE_LBL, ResourceManager::DB_CACHE_SIZE },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };

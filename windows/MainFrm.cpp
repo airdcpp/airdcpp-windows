@@ -1586,7 +1586,7 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 		upload ? SettingsManager::MAX_UPLOAD_SPEED_MAIN : SettingsManager::MAX_DOWNLOAD_SPEED_MAIN);
 	auto x = SettingsManager::getInstance()->get(setting);
 	bool disabled = x > 0 ? false : true;
-	auto lineSpeed = upload ? Util::toDouble(SETTING(UPLOAD_SPEED))*1024/8 : Util::toDouble(SETTING(DOWNLOAD_SPEED))*1024/8;
+	auto lineSpeed = upload ? Util::toDouble(SETTING(UPLOAD_SPEED)) * 1000 / 8 : Util::toDouble(SETTING(DOWNLOAD_SPEED)) * 1000 / 8;
 	if(!x) {
 		x = lineSpeed;
 	}
@@ -1598,7 +1598,7 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 		x * 10 / 11, x * 5 / 6, x * 2 / 3, x / 2, x / 3, x / 4, x / 5, x / 10, x / 100 };
 
 	// set ensures ordered unique members; remove_if performs range and relevancy checking.
-	auto minDelta = (x >= 1024) ? (20 * pow(1024, floor(log(static_cast<float>(x)) / log(1024.)) - 1)) : 
+	auto minDelta = (x >= 1000) ? (20 * pow(1000, floor(log(static_cast<float>(x)) / log(1000.)) - 1)) :
 		(x >= 100) ? 5 : 0; // aint 5KB/s accurate enough?
 	
 	set<int> values(arr, std::remove_if(arr, arr + sizeof(arr) / sizeof(int), [x, minDelta, lineSpeed](int i) {
@@ -1610,7 +1610,7 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 
 	for(auto value: values) {
 		auto enabled = (disabled && !value) || (!disabled && value == x);
-		auto formatted = Text::toT(Util::formatBytes(value * 1024));
+		auto formatted = Util::formatBytesW(Util::convertSize(value, Util::KB));
 		limiterMenu->appendItem(value ? formatted + _T("/s") : CTSTRING(DISABLED),
 			[setting, value] { ThrottleManager::setSetting(setting, value); }, enabled ? OMenu::FLAG_CHECKED | OMenu::FLAG_DISABLED : 0);
 
@@ -1896,13 +1896,13 @@ void MainFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 
 	auto dl = ThrottleManager::getDownLimit();
 	if (dl > 0)
-		down += Text::toT(Util::formatBytes(dl * 1024));
+		down += Util::formatBytesW(Util::convertSize(dl, Util::KB));
 	else
 		down += _T("-");
 
 	auto ul = ThrottleManager::getUpLimit();
 	if (ul > 0)
-		up += Text::toT(Util::formatBytes(ul * 1024));
+		up += Util::formatBytesW(Util::convertSize(ul, Util::KB));
 	else
 		up += _T("-");
 

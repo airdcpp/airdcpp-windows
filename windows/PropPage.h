@@ -38,6 +38,15 @@
 	updown.SetRange32(y, z); \
 	updown.Detach();
 
+#ifdef USE_BINARY_UNITS
+#define KBS ResourceManager::KiBS
+#define MB ResourceManager::MiB
+#define KB ResourceManager::KiB
+#else
+#define RM_KBS ResourceManager::KBS
+#define RM_MB ResourceManager::MB
+#define RM_KB ResourceManager::KB
+#endif
 
 class SettingTab {
 

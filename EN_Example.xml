@@ -120,7 +120,7 @@
 	<string name="DownloadingList">Downloading list...</string>
 	<string name="DownloadsRunning">Downloads running, please disconnect them</string>
 	<string name="DuplicateSource">Duplicate source</string>
-	<string name="Eb">EiB</string>
+	<string name="Eib">EiB</string>
 	<string name="EditAccel">Edit</string>
 	<string name="Email">E-Mail</string>
 	<string name="EnableMultiSource">Enable segmented downloads</string>
@@ -239,7 +239,8 @@
 	<string name="JoinShowingOn">Join/part showing on</string>
 	<string name="Joins">Joins: </string>
 	<string name="Kib">KiB</string>
-	<string name="Kbps">KiB/s</string>
+	<string name="Kibs">KiB/s</string>
+	<string name="Kbs">KB/s</string>
 	<string name="KeepFinishedFiles">Keep finished files in the queue</string>
 	<string name="KickUser">Kick user(s)</string>
 	<string name="KickUserFile">Kick user(s) with filename</string>
@@ -1982,4 +1983,10 @@ Do you want to continue?</string>
 	<string name="FileDateFormat">File date format</string>
 	<string name="AschSupportCount">Users with Advanced Search support: %1%/%2%</string>
 	<string name="AsAddDupeConfirm">Do you want to continue with adding this item anyway?</string>
+	<string name="Kb">KB</string>
+	<string name="Mb">MB</string>
+	<string name="Gb">GB</string>
+	<string name="Tb">TB</string>
+	<string name="Pb">PB</string>
+	<string name="Eb">EB</string>
 </recources>

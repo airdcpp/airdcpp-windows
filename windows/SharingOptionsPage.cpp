@@ -44,7 +44,7 @@ PropPage::TextItem SharingOptionsPage::texts[] = {
 
 	//sharing options
 	{ IDC_REFRESHING_OPTIONS, ResourceManager::REFRESH_OPTIONS },
-	{ IDC_SETTINGS_MB2, ResourceManager::MiB },
+	{ IDC_SETTINGS_MB2, RM_MB },
 	{ IDC_MINUTES, ResourceManager::MINUTES },
 	{ IDC_SETTINGS_AUTO_REFRESH_TIME, ResourceManager::SETTINGS_AUTO_REFRESH_TIME },
 	{ IDC_SETTINGS_INCOMING_REFRESH_TIME, ResourceManager::SETTINGS_INCOMING_REFRESH_TIME },
