@@ -1586,7 +1586,7 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 		upload ? SettingsManager::MAX_UPLOAD_SPEED_MAIN : SettingsManager::MAX_DOWNLOAD_SPEED_MAIN);
 	auto x = SettingsManager::getInstance()->get(setting);
 	bool disabled = x > 0 ? false : true;
-	auto lineSpeed = upload ? Util::toDouble(SETTING(UPLOAD_SPEED)) * 1000 / 8 : Util::toDouble(SETTING(DOWNLOAD_SPEED)) * 1000 / 8;
+	auto lineSpeed = upload ? Util::toDouble(SETTING(UPLOAD_SPEED))*1024/8 : Util::toDouble(SETTING(DOWNLOAD_SPEED))*1024/8;
 	if(!x) {
 		x = lineSpeed;
 	}
@@ -1598,7 +1598,7 @@ void MainFrame::fillLimiterMenu(OMenu* limiterMenu, bool upload) {
 		x * 10 / 11, x * 5 / 6, x * 2 / 3, x / 2, x / 3, x / 4, x / 5, x / 10, x / 100 };
 
 	// set ensures ordered unique members; remove_if performs range and relevancy checking.
-	auto minDelta = (x >= 1000) ? (20 * pow(1000, floor(log(static_cast<float>(x)) / log(1000.)) - 1)) :
+	auto minDelta = (x >= 1024) ? (20 * pow(1024, floor(log(static_cast<float>(x)) / log(1024.)) - 1)) : 
 		(x >= 100) ? 5 : 0; // aint 5KB/s accurate enough?
 	
 	set<int> values(arr, std::remove_if(arr, arr + sizeof(arr) / sizeof(int), [x, minDelta, lineSpeed](int i) {

@@ -240,7 +240,6 @@
 	<string name="Joins">Joins: </string>
 	<string name="Kib">KiB</string>
 	<string name="Kibs">KiB/s</string>
-	<string name="Kbs">KB/s</string>
 	<string name="KeepFinishedFiles">Keep finished files in the queue</string>
 	<string name="KickUser">Kick user(s)</string>
 	<string name="KickUserFile">Kick user(s) with filename</string>
@@ -549,7 +548,7 @@
 	<string name="SettingsDownloadDirectory">Default download directory</string>
 	<string name="SettingsDownloads">Downloads</string>
 	<string name="SettingsDownloadsMax">Maximum simultaneous downloads (0 = infinite)</string>
-	<string name="SettingsDownloadsSpeedPause">No new downloads if speed exceeds (kB/s, 0 = disable)</string>
+	<string name="SettingsDownloadsSpeedPause">No new downloads if speed exceeds (KiB/s, 0 = disable)</string>
 	<string name="SettingsExpandQueue">Automatically expand folders in Queue</string>
 	<string name="SettingsExtensions">Extensions</string>
 	<string name="SettingsExternalIp">External / WAN IP</string>
@@ -1983,10 +1982,4 @@ Do you want to continue?</string>
 	<string name="FileDateFormat">File date format</string>
 	<string name="AschSupportCount">Users with Advanced Search support: %1%/%2%</string>
 	<string name="AsAddDupeConfirm">Do you want to continue with adding this item anyway?</string>
-	<string name="Kb">KB</string>
-	<string name="Mb">MB</string>
-	<string name="Gb">GB</string>
-	<string name="Tb">TB</string>
-	<string name="Pb">PB</string>
-	<string name="Eb">EB</string>
 </recources>

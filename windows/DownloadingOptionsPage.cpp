@@ -26,10 +26,10 @@
 #include "PropertiesDlg.h"
 
 PropPage::TextItem DownloadingOptionsPage::texts[] = {
-	{ IDC_SETTINGS_KBPS5, RM_KBS },
-	{ IDC_SETTINGS_KBPS6, RM_KBS },
-	{ IDC_SETTINGS_KBPS7, RM_KBS },
-	{ IDC_SETTINGS_KIB, RM_KB },
+	{ IDC_SETTINGS_KBPS5, ResourceManager::KiBS },
+	{ IDC_SETTINGS_KBPS6, ResourceManager::KiBS },
+	{ IDC_SETTINGS_KBPS7, ResourceManager::KiBS },
+	{ IDC_SETTINGS_KIB, ResourceManager::KiB },
 	{ IDC_MIN_DUPE_SIZE_LBL, ResourceManager::MIN_DUPE_CHECK_SIZE },
 
 	{ IDC_SETTINGS_MINUTES, ResourceManager::SECONDS },
@@ -41,7 +41,7 @@ PropPage::TextItem DownloadingOptionsPage::texts[] = {
 	{ IDC_RUNNING_DOWNLOADS_LABEL, ResourceManager::DISCONNECT_RUNNING_DOWNLOADS },
 	{ IDC_DISCONNECTING_ENABLE, ResourceManager::SETCZDC_DISCONNECTING_ENABLE },
 	{ IDC_CZDC_MIN_FILE_SIZE, ResourceManager::SETCZDC_MIN_FILE_SIZE },
-	{ IDC_SETTINGS_MB, RM_MB },
+	{ IDC_SETTINGS_MB, ResourceManager::MiB },
 	{ IDC_REMOVE_IF, ResourceManager::NEW_DISCONNECT },
 	{ IDC_AUTO_DISCONNECT_MODE_LBL, ResourceManager::REMOVE_SOURCE_FROM },
 
