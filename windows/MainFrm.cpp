@@ -197,6 +197,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	DirectoryListingManager::getInstance()->addListener(this);
 	UpdateManager::getInstance()->addListener(this);
 	ShareScannerManager::getInstance()->addListener(this);
+	ClientManager::getInstance()->addListener(this);
 
 	WinUtil::init(m_hWnd);
 	ResourceLoader::load();
@@ -378,8 +379,12 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(SETTING(LOCK_TB)) PostMessage(WM_COMMAND, ID_LOCK_TB);
 	if(SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
 
-	if(!WinUtil::isShift() && !Util::hasParam("/noautoconnect"))
-		callAsync([=] { autoConnect(FavoriteManager::getInstance()->getFavoriteHubs()); });
+	if (!WinUtil::isShift() && !Util::hasParam("/noautoconnect")) {
+		if (!SETTING(NICK).empty())
+			addThreadedTask([=] { FavoriteManager::getInstance()->autoConnect(); });
+		else
+			missedAutoConnect = true;
+	}
 
 	callAsync([=] { parseCommandLine(GetCommandLine()); });
 
@@ -1107,6 +1112,10 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			if(rebuildGeo) {
 				GeoManager::getInstance()->rebuild();
 			}
+
+			if (missedAutoConnect && !SETTING(NICK).empty()) {
+				FavoriteManager::getInstance()->autoConnect();
+			}
 		});
 
 		if(SETTING(DISCONNECT_SPEED) < 1) {
@@ -1147,10 +1156,6 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			tabsontop = SETTING(TABS_ON_TOP);
 			UpdateLayout();
 		}
-
-		if(missedAutoConnect && !SETTING(NICK).empty()) {
-			autoConnect(FavoriteManager::getInstance()->getFavoriteHubs());
-		}
 	}
 }
 
@@ -1173,26 +1178,6 @@ LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 		pDispInfo->lpszText = AirUtil::getAway() ? (LPWSTR)CTSTRING(AWAY_ON) : (LPWSTR)CTSTRING(AWAY_OFF);
 	}
 	return 0;
-}
-
-void MainFrame::autoConnect(const FavoriteHubEntry::List& fl) {
-		
-	missedAutoConnect = false;
-	for(const auto entry: fl) {
-		if(entry->getConnect()) {
- 			if(!SETTING(NICK).empty()) {
-				RecentHubEntry r;
-				r.setName(entry->getName());
-				r.setDescription(entry->getDescription());
-				r.setUsers("*");
-				r.setShared("*");
-				r.setServer(entry->getServers()[0].first);
-				FavoriteManager::getInstance()->addRecent(r);
-				HubFrame::openWindow(Text::toT(entry->getServers()[0].first), entry->getChatUserSplit(), entry->getUserListState());
- 			} else
- 				missedAutoConnect = true;
- 		}				
-	}
 }
 
 void MainFrame::updateTray(bool add /* = true */) {
@@ -1858,14 +1843,8 @@ LRESULT MainFrame::onQuickConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if(SETTING(NICK).empty())
 			return 0;
 
-		RecentHubEntry r;
-		r.setName("*");
-		r.setDescription("*");
-		r.setUsers("*");
-		r.setShared("*");
-		r.setServer(Text::fromT(dlg.address));
-		FavoriteManager::getInstance()->addRecent(r);
-		HubFrame::openWindow(dlg.address, 0, true, dlg.curProfile);
+		RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(dlg.address));
+		WinUtil::connectHub(r, dlg.curProfile);
 	}
 	return 0;
 }
@@ -1966,9 +1945,12 @@ void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListin
 
 void MainFrame::on(DirectoryListingManagerListener::PromptAction, completionF aF, const string& aMessage) noexcept {
 	bool accept = !SETTING(FREE_SPACE_WARN) || ::MessageBox(m_hWnd, Text::toT(aMessage).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
-	//bool accept = WinUtil::MessageBoxConfirm(SettingsManager::FREE_SPACE_WARN, Text::toT(aMessage));
-	//DirectoryListingManager::getInstance()->handleSizeConfirmation(aName, accept);
 	aF(accept);
+}
+
+void MainFrame::on(ClientManagerListener::ClientCreated, const Client* c) noexcept {
+	auto url = Text::toT(c->getHubUrl());
+	callAsync([=] { HubFrame::openWindow(url); });
 }
 
 LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -2117,6 +2099,7 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	DirectoryListingManager::getInstance()->removeListener(this);
 	UpdateManager::getInstance()->removeListener(this);
 	ShareScannerManager::getInstance()->removeListener(this);
+	ClientManager::getInstance()->removeListener(this);
 
 	//if(bTrayIcon) {
 		updateTray(false);

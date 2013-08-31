@@ -25,6 +25,7 @@
 
 #include "../client/concurrency.h"
 
+#include "../client/ClientManagerListener.h"
 #include "../client/TimerManager.h"
 #include "../client/FavoriteManager.h"
 #include "../client/QueueManagerListener.h"
@@ -51,7 +52,7 @@
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>,
 		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
-		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener
+		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener, private ClientManagerListener
 {
 public:
 	MainFrame();
@@ -465,8 +466,6 @@ private:
 
 	void showPortsError(const string& port);
 
-	void autoConnect(const FavoriteHubEntry::List& fl);
-
 	// LogManagerListener
 	virtual void on(LogManagerListener::Message, time_t t, const string& m, uint8_t sev) noexcept;
 
@@ -490,6 +489,8 @@ private:
 	void on(UpdateManagerListener::UpdateFailed, const string& line) noexcept;
 
 	void on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept;
+
+	void on(ClientManagerListener::ClientCreated, const Client*) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)

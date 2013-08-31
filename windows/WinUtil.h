@@ -472,6 +472,8 @@ public:
 	static void handleTab(HWND aCurFocus, HWND* ctrlHwnds, int hwndCount);
 	static void addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags = 0, int8_t prio = -1);
 	//static void addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags = 0, bool addBad = true);
+
+	static void connectHub(const RecentHubEntryPtr& aEntry, ProfileToken aProfile);
 private:
 	static int CALLBACK browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LPARAM pData);
 

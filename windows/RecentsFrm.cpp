@@ -81,32 +81,100 @@ LRESULT RecentHubsFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	return TRUE;
 }
 
-LRESULT RecentHubsFrame::onDoubleClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	NMITEMACTIVATE* item = (NMITEMACTIVATE*) pnmh;
-
-	if(item->iItem != -1) {
-		RecentHubEntry* entry = (RecentHubEntry*)ctrlHubs.GetItemData(item->iItem);
-		HubFrame::openWindow(Text::toT(entry->getServer()));
-	}
+LRESULT RecentHubsFrame::onDoubleClickHublist(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+	connectSelected();
 	return 0;
 }
 
 LRESULT RecentHubsFrame::onEnter(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
-	int item = ctrlHubs.GetNextItem(-1, LVNI_FOCUSED);
-
-	if(item != -1) {
-		RecentHubEntry* entry = (RecentHubEntry*)ctrlHubs.GetItemData(item);
-		HubFrame::openWindow(Text::toT(entry->getServer()));
-	}
-
+	connectSelected();
 	return 0;
 }
 
 LRESULT RecentHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	connectSelected();
+	return 0;
+}
+
+void RecentHubsFrame::connectSelected() {
 	int i = -1;
-	while( (i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		RecentHubEntry* entry = (RecentHubEntry*)ctrlHubs.GetItemData(i);
-		HubFrame::openWindow(Text::toT(entry->getServer()));
+	while ((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		auto r = FavoriteManager::getInstance()->getRecentHubEntry(((RecentHubEntry*) ctrlHubs.GetItemData(i))->getServer());
+		WinUtil::connectHub(r, SETTING(DEFAULT_SP));
+	}
+}
+
+LRESULT RecentHubsFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/) {
+	if (reinterpret_cast<HWND>(wParam) == ctrlHubs && ctrlHubs.GetSelectedCount() > 0) {
+		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click 
+
+		CRect rc;
+		ctrlHubs.GetHeader().GetWindowRect(&rc);
+		if (PtInRect(&rc, pt)) {
+			return 0;
+		}
+
+		if (pt.x == -1 && pt.y == -1) {
+			WinUtil::getContextMenuPos(ctrlHubs, pt);
+		}
+
+		hubsMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+
+		return TRUE;
+	}
+
+	return FALSE;
+}
+
+LRESULT RecentHubsFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+	ctrlHubs.SetFocus();
+	return 0;
+}
+
+LRESULT RecentHubsFrame::onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {
+	NMLISTVIEW* l = (NMLISTVIEW*) pnmh;
+	if (l->iSubItem == ctrlHubs.getSortColumn()) {
+		if (!ctrlHubs.isAscending())
+			ctrlHubs.setSort(-1, ctrlHubs.getSortType());
+		else
+			ctrlHubs.setSortDirection(false);
+	} else {
+		if (l->iSubItem == 2 || l->iSubItem == 3) {
+			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_INT);
+		} else {
+			ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING_NOCASE);
+		}
+	}
+	return 0;
+}
+
+void RecentHubsFrame::updateList(const RecentHubEntryList& fl) {
+	ctrlHubs.SetRedraw(FALSE);
+	for (const auto& i : fl) {
+		addEntry(i, ctrlHubs.GetItemCount());
+	}
+	ctrlHubs.SetRedraw(TRUE);
+	ctrlHubs.Invalidate();
+}
+
+void RecentHubsFrame::addEntry(const RecentHubEntryPtr& entry, int pos) {
+	TStringList l;
+	l.push_back(Text::toT(entry->getName()));
+	l.push_back(Text::toT(entry->getDescription()));
+	l.push_back(Text::toT(entry->getUsers()));
+	l.push_back(Text::toT(Util::formatBytes(entry->getShared())));
+	l.push_back(Text::toT(entry->getServer()));
+
+	ctrlHubs.insert(pos, l, 0, (LPARAM) entry.get());
+}
+
+LRESULT RecentHubsFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {
+	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
+	if (kd->wVKey == VK_DELETE) {
+		int i = -1;
+		while ((i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
+			FavoriteManager::getInstance()->removeRecent((RecentHubEntry*) ctrlHubs.GetItemData(i));
+		}
 	}
 	return 0;
 }
@@ -116,15 +184,15 @@ LRESULT RecentHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	
 	if(ctrlHubs.GetSelectedCount() == 1) {
 		int i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED);
-		FavoriteHubEntry e;
+		FavoriteHubEntryPtr e;
 		ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
-		e.setName(Text::fromT(buf));
+		e->setName(Text::fromT(buf));
 
 		ctrlHubs.GetItemText(i, COLUMN_DESCRIPTION, buf, 256);
-		e.setDescription(Text::fromT(buf));
+		e->setDescription(Text::fromT(buf));
 
 		ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
-		e.setServerStr(Text::fromT(buf));
+		e->setServerStr(Text::fromT(buf));
 
 		FavoriteManager::getInstance()->addFavorite(e);
 	}
@@ -194,7 +262,7 @@ LRESULT RecentHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	int i = -1;
 	if((i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1)
 	{
-		RecentHubEntry* r = (RecentHubEntry*)ctrlHubs.GetItemData(i);
+		auto r = FavoriteManager::getInstance()->getRecentHubEntry(((RecentHubEntry*)ctrlHubs.GetItemData(i))->getServer());
 		dcassert(r != NULL);
 		LineDlg dlg;
 		dlg.description = TSTRING(DESCRIPTION);

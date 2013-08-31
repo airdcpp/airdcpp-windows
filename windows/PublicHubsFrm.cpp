@@ -256,20 +256,20 @@ void PublicHubsFrame::connectHub(int pos, ProfileToken shareProfile) {
 
 	TCHAR buf[256];
 
-	RecentHubEntry r;
-	ctrlHubs.GetItemText(pos, COLUMN_NAME, buf, 256);
-	r.setName(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_DESCRIPTION, buf, 256);
-	r.setDescription(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_USERS, buf, 256);
-	r.setUsers(Text::fromT(buf));
-	ctrlHubs.GetItemText(pos, COLUMN_SHARED, buf, 256);
-	r.setShared(Text::fromT(buf));
 	ctrlHubs.GetItemText(pos, COLUMN_SERVER, buf, 256);
-	r.setServer(Text::fromT(buf));
+
+	RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(buf));
+	ctrlHubs.GetItemText(pos, COLUMN_NAME, buf, 256);
+	r->setName(Text::fromT(buf));
+	ctrlHubs.GetItemText(pos, COLUMN_DESCRIPTION, buf, 256);
+	r->setDescription(Text::fromT(buf));
+	ctrlHubs.GetItemText(pos, COLUMN_USERS, buf, 256);
+	r->setUsers(Text::fromT(buf));
+	ctrlHubs.GetItemText(pos, COLUMN_SHARED, buf, 256);
+	r->setShared(Text::fromT(buf));
 	FavoriteManager::getInstance()->addRecent(r);
 				
-	HubFrame::openWindow(buf, 0, true, shareProfile);
+	WinUtil::connectHub(r, shareProfile);
 }
 
 LRESULT PublicHubsFrame::onClickedConnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -299,18 +299,18 @@ LRESULT PublicHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		int i = -1;
 		while( (i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
 
-		FavoriteHubEntry e;
-		ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
-		e.setName(Text::fromT(buf));
+			FavoriteHubEntryPtr e;
+			ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
+			e->setName(Text::fromT(buf));
 
-		ctrlHubs.GetItemText(i, COLUMN_DESCRIPTION, buf, 256);
-		e.setDescription(Text::fromT(buf));
+			ctrlHubs.GetItemText(i, COLUMN_DESCRIPTION, buf, 256);
+			e->setDescription(Text::fromT(buf));
 
-		ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
-		e.setServerStr(Text::fromT(buf));
+			ctrlHubs.GetItemText(i, COLUMN_SERVER, buf, 256);
+			e->setServerStr(Text::fromT(buf));
 
-		e.setShareProfile(ShareManager::getInstance()->getShareProfile(SETTING(DEFAULT_SP)));
-		FavoriteManager::getInstance()->addFavorite(e);
+			e->setShareProfile(ShareManager::getInstance()->getShareProfile(SETTING(DEFAULT_SP)));
+			FavoriteManager::getInstance()->addFavorite(e);
 		}
 	}
 	return 0;

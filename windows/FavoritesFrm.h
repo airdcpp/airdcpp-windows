@@ -159,14 +159,14 @@ private:
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
 
-	void addEntry(const FavoriteHubEntry* entry, int pos, int groupIndex);
+	void addEntry(const FavoriteHubEntryPtr& entry, int pos, int groupIndex);
 	void handleMove(bool up);
 	TStringList getSortedGroups() const;
 	void fillList();
 	void openSelected();
 
-	void on(FavoriteAdded, const FavoriteHubEntry* /*e*/)  noexcept { StateKeeper keeper(ctrlHubs); fillList(); }
-	void on(FavoriteRemoved, const FavoriteHubEntry* e) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)e)); }
+	void on(FavoriteAdded, const FavoriteHubEntryPtr& /*e*/)  noexcept { StateKeeper keeper(ctrlHubs); fillList(); }
+	void on(FavoriteRemoved, const FavoriteHubEntryPtr& e) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)e.get())); }
 	void on(FavoritesUpdated) noexcept { fillList(); }
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 	void on(ClientConnected, const Client* c) noexcept { 

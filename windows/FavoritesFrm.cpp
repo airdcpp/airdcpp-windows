@@ -181,19 +181,16 @@ void FavoriteHubsFrame::openSelected() {
 	int i = -1;
 	while( (i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		FavoriteHubEntry* entry = (FavoriteHubEntry*)ctrlHubs.GetItemData(i);
-		RecentHubEntry r;
-		r.setName(entry->getName());
-		r.setDescription(entry->getDescription());
-		r.setUsers("*");
-		r.setShared("*");
-		r.setServer(entry->getServers()[0].first);
-		FavoriteManager::getInstance()->addRecent(r);
-		HubFrame::openWindow(Text::toT(entry->getServers()[0].first), entry->getChatUserSplit(), entry->getUserListState());
+
+		RecentHubEntryPtr r = new RecentHubEntry(entry->getServers()[0].first);
+		r->setName(entry->getName());
+		r->setDescription(entry->getDescription());
+		WinUtil::connectHub(r, entry->getShareProfile()->getToken());
 	}
 	return;
 }
 
-void FavoriteHubsFrame::addEntry(const FavoriteHubEntry* entry, int pos, int groupIndex) {
+void FavoriteHubsFrame::addEntry(const FavoriteHubEntryPtr& entry, int pos, int groupIndex) {
 	TStringList l;
 	l.push_back(Text::toT(entry->getName()));
 	l.push_back(Text::toT(entry->getDescription()));
@@ -203,7 +200,7 @@ void FavoriteHubsFrame::addEntry(const FavoriteHubEntry* entry, int pos, int gro
 	l.push_back(Text::toT(entry->get(HubSettings::Description)));
 	l.push_back(Text::toT(entry->getShareProfile()->getDisplayName()));
 	bool b = entry->getConnect();
-	int i = ctrlHubs.insert(pos, l, 0, (LPARAM)entry);
+	int i = ctrlHubs.insert(pos, l, 0, (LPARAM)entry.get());
 	ctrlHubs.SetCheckState(i, b);
 
     LVITEM lvItem = { 0 };
@@ -356,8 +353,8 @@ LRESULT FavoriteHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 LRESULT FavoriteHubsFrame::onNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	FavoriteHubEntry e;
-	FavHubProperties dlg(&e);
+	FavoriteHubEntryPtr e;
+	FavHubProperties dlg(e.get());
 
 	if(dlg.DoModal((HWND)*this) == IDOK) {
 		FavoriteManager::getInstance()->addFavorite(e);
@@ -468,7 +465,7 @@ void FavoriteHubsFrame::fillList()
 	}
 
 	const FavoriteHubEntryList& fl = FavoriteManager::getInstance()->getFavoriteHubs();
-	for(auto fhe: fl) {
+	for(const auto& fhe: fl) {
 		const string& group = fhe->getGroup();
 
 		int index = 0;

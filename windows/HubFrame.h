@@ -166,8 +166,7 @@ public:
 		shutdown = true;
 	}
 
-	static void openWindow(const tstring& server, int chatusersplit = 0, bool userliststate = true, ProfileToken aShareProfile = SETTING(DEFAULT_SP),
-		        string sColumsOrder = Util::emptyString, string sColumsWidth = Util::emptyString, string sColumsVisible = Util::emptyString);
+	static void openWindow(const tstring& server);
 	static void resortUsers();	
 	static void closeDisconnected();
 	static void reconnectDisconnected();
@@ -215,7 +214,7 @@ private:
 	
 	friend class PrivateFrame;
 	
-	HubFrame(const tstring& aServer, int chatusersplit, bool userliststate, ProfileToken aShareProfile);
+	HubFrame(const tstring& aServer);
 	~HubFrame();
 
 	typedef unordered_map<tstring, HubFrame*> FrameMap;
@@ -303,7 +302,7 @@ private:
 	void onPassword();
 
 	void onConnected();
-	void onDisconnected();
+	void onDisconnected(const string& aReason);
 
 	void setWindowTitle(const string& aTitle);
 
@@ -333,7 +332,8 @@ private:
 	void on(SearchFlood, const Client*, const string&) noexcept;	
 	void on(HubTopic, const Client*, const string&) noexcept;
 	void on(AddLine, const Client*, const string&) noexcept;
-	void on(ClientListener::SetIcons, const Client*, int aCountType) noexcept;
+	void on(SetIcons, const Client*, int aCountType) noexcept;
+	void on(SetActive, const Client*) noexcept;
 
 	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
 	void openLinksInTopic();

@@ -323,23 +323,25 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 	tstring sNick(sMyNick.length(), NULL);
 	std::transform(sMyNick.begin(), sMyNick.end(), sNick.begin(), _totlower);
 
-	bool found = false;
-	while((lMyNickStart = (long)sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
-		lMyNickEnd = lMyNickStart + (long)sNick.size();
-		SetSel(lSelBegin + lMyNickStart, lSelBegin + lMyNickEnd);
-		SetSelectionCharFormat(WinUtil::m_TextStyleMyNick);
-		lSearchFrom = lMyNickEnd;
-		found = true;
-	}
-	
-	if(found) {
-		if(	!SETTING(CHATNAMEFILE).empty() && !SETTING(SOUNDS_DISABLED) &&
-			!sAuthor.empty() && (stricmp(sAuthor.c_str(), sNick) != 0)) {
-				WinUtil::playSound(Text::toT(SETTING(CHATNAMEFILE)));	 	
-        }
-		if(SETTING(FLASH_WINDOW_ON_MYNICK) 
-			&& !sAuthor.empty() && (stricmp(sAuthor.c_str(), sNick) != 0))
-					WinUtil::FlashWindow();
+	if (!sNick.empty()) {
+		bool found = false;
+		while ((lMyNickStart = (long) sMsgLower.find(sNick, lSearchFrom)) != tstring::npos) {
+			lMyNickEnd = lMyNickStart + (long) sNick.size();
+			SetSel(lSelBegin + lMyNickStart, lSelBegin + lMyNickEnd);
+			SetSelectionCharFormat(WinUtil::m_TextStyleMyNick);
+			lSearchFrom = lMyNickEnd;
+			found = true;
+		}
+
+		if (found) {
+			if (!SETTING(CHATNAMEFILE).empty() && !SETTING(SOUNDS_DISABLED) &&
+				!sAuthor.empty() && (stricmp(sAuthor.c_str(), sNick) != 0)) {
+					WinUtil::playSound(Text::toT(SETTING(CHATNAMEFILE)));
+			}
+			if (SETTING(FLASH_WINDOW_ON_MYNICK)
+				&& !sAuthor.empty() && (stricmp(sAuthor.c_str(), sNick) != 0))
+				WinUtil::FlashWindow();
+		}
 	}
 
 	// highlight all occurences of favourite users' nicks
@@ -1890,7 +1892,8 @@ LRESULT RichTextBox::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lPar
 	dlg.title = TSTRING(CONNECT_WITH_PROFILE);
 	dlg.address = selectedWord;
 	if(dlg.DoModal(m_hWnd) == IDOK){
-		HubFrame::openWindow(selectedWord, 0, true, dlg.curProfile);
+		RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(selectedWord));
+		WinUtil::connectHub(r, dlg.curProfile);
 	}
 
 	return 0;

@@ -101,7 +101,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	ctrlTooltips.SetDelayTime(TTDT_AUTOPOP, 15000);
 	ctrlTooltips.Activate(TRUE);
 
-	const FavoriteHubEntry *fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
+	auto fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
 	if(fhe) {
 		WinUtil::splitTokens(columnIndexes, fhe->getHeaderOrder(), OnlineUser::COLUMN_LAST);
 		WinUtil::splitTokens(columnSizes, fhe->getHeaderWidths(), OnlineUser::COLUMN_LAST);
@@ -160,20 +160,12 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	return 1;
 }
 
-void HubFrame::openWindow(const tstring& aServer, int chatusersplit, bool userliststate, ProfileToken aShareProfile, string sColumsOrder, string sColumsWidth, string sColumsVisible) {
-	FrameIter i = frames.find(aServer);
+void HubFrame::openWindow(const tstring& aServer) {
+	auto i = frames.find(aServer);
 	if(i == frames.end()) {
-		HubFrame* frm = new HubFrame(aServer, chatusersplit, userliststate, aShareProfile);
+		HubFrame* frm = new HubFrame(aServer);
 		frames[aServer] = frm;
-
-//		int nCmdShow = SW_SHOWDEFAULT;
 		frm->CreateEx(WinUtil::mdiClient, frm->rcDefault);
-//		if(windowtype)
-//			frm->ShowWindow(((nCmdShow == SW_SHOWDEFAULT) || (nCmdShow == SW_SHOWNORMAL)) ? windowtype : nCmdShow);
-	} else {
-		if(::IsIconic(i->second->m_hWnd))
-			::ShowWindow(i->second->m_hWnd, SW_RESTORE);
-		i->second->MDIActivate(i->second->m_hWnd);
 	}
 }
 
@@ -186,23 +178,25 @@ HubFrame::~HubFrame() {
 	clearTaskList();
 }
 
-HubFrame::HubFrame(const tstring& aServer, int chatusersplit, bool userliststate, ProfileToken aShareProfile) : 
+HubFrame::HubFrame(const tstring& aServer) : 
 		waitingForPW(false), extraSort(false), server(aServer), closed(false), forceClose(false),
 		showUsers(SETTING(GET_USER_INFO)), updateUsers(false), resort(false), countType(Client::COUNT_NORMAL),
 		timeStamps(SETTING(TIME_STAMPS)),
-		hubchatusersplit(chatusersplit),
+		hubchatusersplit(0),
 		ctrlShowUsersContainer(WC_BUTTON, this, SHOW_USERS),
 		ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 		filter(OnlineUser::COLUMN_LAST, [this] { updateUserList(); updateUsers = true;}),
 		statusDirty(true)
 {
-	client = ClientManager::getInstance()->createClient(Text::fromT(aServer));
-	client->setShareProfile(aShareProfile);
+	client = ClientManager::getInstance()->getClient(Text::fromT(server));
+	dcassert(client);
 	client->addListener(this);
 
-	if(FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server)) != NULL) {
-		showUsers = userliststate;
+	auto fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
+	if(fhe) {
+		hubchatusersplit = fhe->getChatUserSplit();
+		showUsers = fhe->getUserListState();
 	} else {
 		showUsers = SETTING(GET_USER_INFO);
 	}
@@ -219,7 +213,8 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 		if(!param.empty()) {
 			redirect = param;
 			if(SETTING(JOIN_OPEN_NEW_WINDOW)) {
-				HubFrame::openWindow(param);
+				RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(param));
+				WinUtil::connectHub(r, SETTING(DEFAULT_SP));
 			} else {
 				BOOL whatever = FALSE;
 				onFollow(0, 0, 0, whatever);
@@ -312,21 +307,21 @@ struct CompareItems {
 };
 
 void HubFrame::addAsFavorite() {
-	const FavoriteHubEntry* existingHub = FavoriteManager::getInstance()->getFavoriteHubEntry(client->getHubUrl());
+	auto existingHub = FavoriteManager::getInstance()->getFavoriteHubEntry(client->getHubUrl());
 	if(!existingHub) {
-		FavoriteHubEntry aEntry;
+		FavoriteHubEntryPtr e = new FavoriteHubEntry();
 		TCHAR buf[256];
 		this->GetWindowText(buf, 255);
-		aEntry.setServerStr(Text::fromT(server));
-		aEntry.setName(Text::fromT(buf));
-		aEntry.setDescription(Text::fromT(buf));
-		aEntry.setConnect(true);
-		aEntry.setShareProfile(ShareManager::getInstance()->getShareProfile(client->getShareProfile(), true));
+		e->setServerStr(Text::fromT(server));
+		e->setName(Text::fromT(buf));
+		e->setDescription(Text::fromT(buf));
+		e->setConnect(true);
+		e->setShareProfile(ShareManager::getInstance()->getShareProfile(client->getShareProfile(), true));
 		if(!client->getPassword().empty()) {
-			aEntry.setPassword(client->getPassword());
+			e->setPassword(client->getPassword());
 		}
-		aEntry.setConnect(true);
-		FavoriteManager::getInstance()->addFavorite(aEntry);
+		e->setConnect(true);
+		FavoriteManager::getInstance()->addFavorite(e);
 		addStatus(TSTRING(FAVORITE_HUB_ADDED), WinUtil::m_ChatTextSystem );
 	} else {
 		addStatus(TSTRING(FAVORITE_HUB_ALREADY_EXISTS), WinUtil::m_ChatTextSystem);
@@ -334,7 +329,7 @@ void HubFrame::addAsFavorite() {
 }
 
 void HubFrame::removeFavoriteHub() {
-	const FavoriteHubEntry* removeHub = FavoriteManager::getInstance()->getFavoriteHubEntry(client->getHubUrl());
+	auto removeHub = FavoriteManager::getInstance()->getFavoriteHubEntry(client->getHubUrl());
 	if(removeHub) {
 		FavoriteManager::getInstance()->removeFavorite(removeHub);
 		addStatus(TSTRING(FAVORITE_HUB_REMOVED), WinUtil::m_ChatTextSystem);
@@ -502,11 +497,6 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 
 	//check ignores
 	if (!hasFrame) {
-		/*auto sendPm = [&] {
-			string tmp;
-			client->privateMessage(message.replyTo, "Private messages sent via this hub are ignored", tmp);
-		};*/
-
 		// don't be that restrictive with the fav hub option
 		if (client->getFavNoPM() && (client->isOp() || !message.replyTo->getIdentity().isOp()) && !message.replyTo->getIdentity().isBot() && !message.replyTo->getUser()->isFavorite()) {
 			string tmp;
@@ -571,7 +561,9 @@ void HubFrame::onChatMessage(const ChatMessage& msg) {
 	}
 }
 
-void HubFrame::onDisconnected() {
+void HubFrame::onDisconnected(const string& aReason) {
+	addStatus(Text::toT(aReason), WinUtil::m_ChatTextServer);
+
 	clearUserList();
 	setDisconnected(true);
 	wentoffline = true;
@@ -829,14 +821,13 @@ void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		if(shutdown || forceClose ||  WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_HUB_CLOSING, TSTRING(REALLY_CLOSE))) {
-			RecentHubEntry* r = FavoriteManager::getInstance()->getRecentHubEntry(Text::fromT(server));
+			auto r = FavoriteManager::getInstance()->getRecentHubEntry(client->getHubUrl());
 			if(r) {
 				TCHAR buf[256];
 				this->GetWindowText(buf, 255);
 				r->setName(Text::fromT(buf));
 				r->setUsers(Util::toString(client->getUserCount()));
 				r->setShared(Util::toString(client->getAvailable()));
-				FavoriteManager::getInstance()->updateRecent(r);
 			}
 			DestroyIcon(HubOpIcon);
 			DestroyIcon(HubRegIcon);
@@ -861,8 +852,8 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 		string tmp, tmp2, tmp3;
 		ctrlUsers.saveHeaderOrder(tmp, tmp2, tmp3);
 
-		FavoriteHubEntry *fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
-		if(fhe != NULL) {
+		auto fhe = FavoriteManager::getInstance()->getFavoriteHubEntry(Text::fromT(server));
+		if(fhe) {
 			CRect rc;
 			if(!IsIconic()){
 				//Get position of window
@@ -1291,19 +1282,13 @@ LRESULT HubFrame::onFollow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,
 		clearUserList();
 		ClientManager::getInstance()->putClient(client);
 		clearTaskList();
-		client = ClientManager::getInstance()->createClient(Text::fromT(server));
 
+		RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(redirect));
+		client = ClientManager::getInstance()->createClient(r, SETTING(DEFAULT_SP));
+		dcassert(client);
+		client->addListener(this);
 		ctrlClient.setClient(client);
 
-		RecentHubEntry r;
-		r.setName("*");
-		r.setDescription("***");
-		r.setUsers("*");
-		r.setShared("*");
-		r.setServer(Text::fromT(redirect));
-		FavoriteManager::getInstance()->addRecent(r);
-
-		client->addListener(this);
 		client->connect();
 	}
 	return 0;
@@ -1524,7 +1509,9 @@ void HubFrame::on(ClientListener::UserRemoved, const Client*, const OnlineUserPt
 
 void HubFrame::on(Redirect, const Client*, const string& line) noexcept { 
 	if(ClientManager::getInstance()->isConnected(line)) {
-		callAsync([=] { addStatus(TSTRING(REDIRECT_ALREADY_CONNECTED), WinUtil::m_ChatTextServer); });
+		callAsync([=] { 
+			addStatus(TSTRING(REDIRECT_ALREADY_CONNECTED), WinUtil::m_ChatTextServer);
+		});
 		return;
 	}
 
@@ -1546,8 +1533,7 @@ void HubFrame::on(Redirect, const Client*, const string& line) noexcept {
 }
 void HubFrame::on(Failed, const string&, const string& line) noexcept {
 	callAsync([=] {
-		addStatus(Text::toT(line), WinUtil::m_ChatTextServer);
-		onDisconnected();
+		onDisconnected(line);
 	});
 }
 void HubFrame::on(GetPassword, const Client*) noexcept { 
@@ -1615,6 +1601,14 @@ void HubFrame::on(HubTopic, const Client*, const string& line) noexcept {
 }
 void HubFrame::on(AddLine, const Client*, const string& line) noexcept {
 	callAsync([=] { addStatus(Text::toT(line), WinUtil::m_ChatTextServer); });
+}
+
+void HubFrame::on(SetActive, const Client*) noexcept {
+	callAsync([=] { 
+		if (::IsIconic(m_hWnd))
+			::ShowWindow(m_hWnd, SW_RESTORE);
+		MDIActivate(m_hWnd);
+	});
 }
 
 void HubFrame::openLinksInTopic() {

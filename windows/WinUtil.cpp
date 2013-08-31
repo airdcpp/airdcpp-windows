@@ -235,7 +235,8 @@ void WinUtil::GetBrowseList::operator()(UserPtr aUser, const string& aUrl) const
 void WinUtil::ConnectFav::operator()(UserPtr aUser, const string& aUrl) const {
 	if(aUser) {
 		if(!aUrl.empty()) {
-			HubFrame::openWindow(Text::toT(aUrl));
+			RecentHubEntryPtr r = new RecentHubEntry(aUrl);
+			connectHub(r, SETTING(DEFAULT_SP));
 		}
 	}
 }
@@ -2195,6 +2196,12 @@ void WinUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHVal
 		} catch (...) {
 			//...
 		}
+	});
+}
+
+void WinUtil::connectHub(const RecentHubEntryPtr& aEntry, ProfileToken aProfile) {
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		ClientManager::getInstance()->createClient(aEntry, aProfile);
 	});
 }
 

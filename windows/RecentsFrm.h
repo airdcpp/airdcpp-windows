@@ -72,50 +72,12 @@ public:
 	LRESULT onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	
-	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-		if(reinterpret_cast<HWND>(wParam) == ctrlHubs && ctrlHubs.GetSelectedCount() > 0) {
-			POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click 
-
-			CRect rc;
-			ctrlHubs.GetHeader().GetWindowRect(&rc);
-			if (PtInRect(&rc, pt)) {
-				return 0;
-			}
-
-	        if(pt.x == -1 && pt.y == -1) {
-			    WinUtil::getContextMenuPos(ctrlHubs, pt);
-            }	
-		
-			hubsMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
-
-			return TRUE; 
-		}
-		
-		return FALSE; 
-	}
-	
-	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		ctrlHubs.SetFocus();
-		return 0;
-	}
-
-	LRESULT onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-		NMLISTVIEW* l = (NMLISTVIEW*)pnmh;
-		if(l->iSubItem == ctrlHubs.getSortColumn()) {
-			if (!ctrlHubs.isAscending())
-				ctrlHubs.setSort(-1, ctrlHubs.getSortType());
-			else
-				ctrlHubs.setSortDirection(false);
-		} else {
-			if(l->iSubItem == 2 || l->iSubItem == 3) {
-				ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_INT);
-			} else {
-				ctrlHubs.setSort(l->iSubItem, ExListViewCtrl::SORT_STRING_NOCASE);
-			}
-		}
-		return 0;
-	}
+	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL & /*bHandled*/);
+	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
+	LRESULT onColumnClickHublist(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
+	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
 private:
+	void connectSelected();
 	enum {
 		COLUMN_FIRST,
 		COLUMN_NAME = COLUMN_FIRST,
@@ -138,43 +100,15 @@ private:
 	static int columnSizes[COLUMN_LAST];
 	static int columnIndexes[COLUMN_LAST];
 	
-	void updateList(const RecentHubEntry::List& fl) {
-		ctrlHubs.SetRedraw(FALSE);
-		for(RecentHubEntry::List::const_iterator i = fl.begin(); i != fl.end(); ++i) {
-			addEntry(*i, ctrlHubs.GetItemCount());
-		}
-		ctrlHubs.SetRedraw(TRUE);
-		ctrlHubs.Invalidate();
-	}
-
-	void addEntry(const RecentHubEntry* entry, int pos) {
-		TStringList l;
-		l.push_back(Text::toT(entry->getName()));
-		l.push_back(Text::toT(entry->getDescription()));
-		l.push_back(Text::toT(entry->getUsers()));
-		l.push_back(Text::toT(Util::formatBytes(entry->getShared())));
-		l.push_back(Text::toT(entry->getServer()));
-
-		ctrlHubs.insert(pos, l, 0, (LPARAM)entry);
-	}
-	
-	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-		NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
-		if(kd->wVKey == VK_DELETE) {
-			int i = -1;
-			while( (i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-				FavoriteManager::getInstance()->removeRecent((RecentHubEntry*)ctrlHubs.GetItemData(i));
-			}
-		}
-		return 0;
-	}
+	void updateList(const RecentHubEntryList& fl);
+	void addEntry(const RecentHubEntryPtr& entry, int pos);
 
 	
-	void on(RecentAdded, const RecentHubEntry* entry) noexcept { addEntry(entry, ctrlHubs.GetItemCount()); }
-	void on(RecentRemoved, const RecentHubEntry* entry) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)entry)); }
-	void on(RecentUpdated, const RecentHubEntry* entry) noexcept {
+	void on(RecentAdded, const RecentHubEntryPtr& entry) noexcept { addEntry(entry, ctrlHubs.GetItemCount()); }
+	void on(RecentRemoved, const RecentHubEntryPtr& entry) noexcept { ctrlHubs.DeleteItem(ctrlHubs.find((LPARAM)entry.get())); }
+	void on(RecentUpdated, const RecentHubEntryPtr& entry) noexcept {
 		int i = -1;
-		if((i = ctrlHubs.find((LPARAM)entry)) != -1) {
+		if((i = ctrlHubs.find((LPARAM)entry.get())) != -1) {
 			ctrlHubs.SetItemText(i, COLUMN_NAME, Text::toT(entry->getName()).c_str());
 			ctrlHubs.SetItemText(i, COLUMN_DESCRIPTION, Text::toT(entry->getDescription()).c_str());
 			ctrlHubs.SetItemText(i, COLUMN_USERS, Text::toT(entry->getUsers()).c_str());

@@ -32,7 +32,7 @@
 class FavHubProperties : public CDialogImpl<FavHubProperties>
 {
 public:
-	FavHubProperties(FavoriteHubEntry *_entry);
+	FavHubProperties(FavoriteHubEntry* entry);
 	~FavHubProperties() { }
 
 	enum { IDD = IDD_FAVORITEHUB };
