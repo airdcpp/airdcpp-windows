@@ -38,20 +38,8 @@
 class PopupManager : public Singleton< PopupManager >, private TimerManagerListener
 {
 public:
-	PopupManager() : height(90), width(200), offset(0), activated(true), id(0) {
-		user32lib = LoadLibrary(_T("user32"));
-		if(user32lib)
-			_d_SetLayeredWindowAttributes = (LPFUNC)GetProcAddress(user32lib, "SetLayeredWindowAttributes");
-	
-		TimerManager::getInstance()->addListener(this);
-
-	}
-
-	~PopupManager() {
-		TimerManager::getInstance()->removeListener(this);
-		::DeleteObject(hBitmap);
-		FreeLibrary(user32lib);
-	}
+	PopupManager();
+	~PopupManager();
 
 	enum { BALLOON, CUSTOM, SPLASH, WINDOW };
 	
@@ -66,6 +54,7 @@ public:
 	
 	void Mute(bool mute) { activated = !mute; }
 
+	GETSET(bool, creating, Creating);
 private:
 	typedef list< PopupWnd* > PopupList;
 	typedef PopupList::iterator PopupIter;

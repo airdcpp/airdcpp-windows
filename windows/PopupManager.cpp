@@ -25,8 +25,20 @@
 #include "MainFrm.h"
 #include "PopupDlg.h"
 
+PopupManager::PopupManager() : height(90), width(200), offset(0), activated(true), id(0), creating(false) {
+	user32lib = LoadLibrary(_T("user32"));
+	if (user32lib)
+		_d_SetLayeredWindowAttributes = (LPFUNC) GetProcAddress(user32lib, "SetLayeredWindowAttributes");
 
-PopupManager* Singleton< PopupManager >::instance = NULL;
+	TimerManager::getInstance()->addListener(this);
+
+}
+
+PopupManager::~PopupManager() {
+	TimerManager::getInstance()->removeListener(this);
+	::DeleteObject(hBitmap);
+	FreeLibrary(user32lib);
+}
 
 void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, HICON /*hIcon*/, bool force) {
 	if(!activated)
@@ -107,8 +119,10 @@ void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, HI
 	}
 
 	//move the window to the top of the z-order and display it
-	p->SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+	creating = true;
+	p->SetWindowPos(HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOSENDCHANGING);
 	p->ShowWindow(SW_SHOWNA);
+	creating = false;
 		
 	//restore focus to window
 	::SetFocus(gotFocus);
@@ -132,7 +146,7 @@ void PopupManager::AutoRemove(){
 	}
 
 	//check all popups and see if we need to remove anyone
-	PopupList::const_iterator i = popups.begin();
+	auto i = popups.begin();
 	for(; i != popups.end(); ++i) {
 
 		if((*i)->visible + SETTING(POPUP_TIME) * 1000 < GET_TICK()) {

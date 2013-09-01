@@ -1955,25 +1955,27 @@ void MainFrame::on(ClientManagerListener::ClientCreated, const Client* c) noexce
 
 LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	bHandled = FALSE;
-	WinUtil::isAppActive = (wParam == 1);	//wParam == TRUE if window is activated, FALSE if deactivated
-	if(wParam == 1) {
-		if(bIsPM) {
-			bIsPM = false;
+	if (!PopupManager::getInstance()->getCreating()) {
+		WinUtil::isAppActive = (wParam == 1);	//wParam == TRUE if window is activated, FALSE if deactivated
+		if (wParam == 1) {
+			if (bIsPM) {
+				bIsPM = false;
 
-			if(taskbarList) {
-				taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);
-			}
+				if (taskbarList) {
+					taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);
+				}
 
-			if (bTrayIcon == true) {
-				NOTIFYICONDATA nid;
-				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
-				nid.cbSize = sizeof(NOTIFYICONDATA);
-				nid.hWnd = m_hWnd;
-				nid.uID = trayUID;
-				nid.uFlags = NIF_ICON;
-				nid.hIcon = GetIcon(false);
-				//nid.hIcon = mainSmallIcon;
-				::Shell_NotifyIcon(NIM_MODIFY, &nid);
+				if (bTrayIcon == true) {
+					NOTIFYICONDATA nid;
+					ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
+					nid.cbSize = sizeof(NOTIFYICONDATA);
+					nid.hWnd = m_hWnd;
+					nid.uID = trayUID;
+					nid.uFlags = NIF_ICON;
+					nid.hIcon = GetIcon(false);
+					//nid.hIcon = mainSmallIcon;
+					::Shell_NotifyIcon(NIM_MODIFY, &nid);
+				}
 			}
 		}
 	}
