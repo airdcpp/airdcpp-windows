@@ -11,6 +11,8 @@
 #error This file should only be included when compiling with MSVC.
 #endif
 
+#include <BaseTsd.h>
+
 // Define C99 equivalent types.
 typedef signed char           int8_t;
 typedef signed short          int16_t;
@@ -20,5 +22,6 @@ typedef unsigned char         uint8_t;
 typedef unsigned short        uint16_t;
 typedef unsigned int          uint32_t;
 typedef unsigned long long    uint64_t;
+typedef SSIZE_T				  ssize_t;
 
 #endif  // STORAGE_LEVELDB_PORT_WIN_STDINT_H_
