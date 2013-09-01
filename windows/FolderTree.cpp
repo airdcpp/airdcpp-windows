@@ -1371,16 +1371,11 @@ LRESULT FolderTree::OnChecked(HTREEITEM hItem, BOOL &bHandled)
 	else
 	{
         // if no parent folder is checked then this is a new root dir
-		LineDlg virt;
-		virt.title = TSTRING(VIRTUAL_NAME);
-		virt.description = TSTRING(VIRTUAL_NAME_LONG);
-
 		tstring path = pItem->m_sFQPath;
-		if( path[ path.length() -1 ] != '\\' )
-			path += '\\';
-
-		if (!sp->addDirectory(path))
+		if (!sp->addDirectory(path)) {
+			bHandled = TRUE;
 			return 1;
+		}
 
 		UpdateParentItems(hItem);
 	}

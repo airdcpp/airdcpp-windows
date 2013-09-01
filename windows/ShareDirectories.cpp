@@ -538,13 +538,16 @@ void ShareDirectories::removeDir(const string& rPath, ProfileToken aProfile, int
 	// erase/mark as removed
 	auto& list = shareDirs[aProfile];
 	auto p = find_if(list, ShareDirInfo::PathCompare(rPath));
-	if ((*p)->diffState == ShareDirInfo::DIFF_NORMAL && curProfile != defaultProfile) {
-		(*p)->diffState = ShareDirInfo::DIFF_REMOVED;
-		(*p)->state = ShareDirInfo::STATE_NORMAL;
-	} else if ((*p)->state == ShareDirInfo::STATE_ADDED) {
-		list.erase(p);
-	} else if ((*p)->isCurItem()) {
-		(*p)->state = ShareDirInfo::STATE_REMOVED;
+	dcassert(p != list.end());
+	if (p != list.end()) {
+		if ((*p)->diffState == ShareDirInfo::DIFF_NORMAL && curProfile != defaultProfile) {
+			(*p)->diffState = ShareDirInfo::DIFF_REMOVED;
+			(*p)->state = ShareDirInfo::STATE_NORMAL;
+		} else if ((*p)->state == ShareDirInfo::STATE_ADDED) {
+			list.erase(p);
+		} else if ((*p)->isCurItem()) {
+			(*p)->state = ShareDirInfo::STATE_REMOVED;
+		}
 	}
 
 
@@ -792,8 +795,10 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 		}
 
 		ctrlDirectories.resort();
+		return true;
 	}
-	return true;
+
+	return false;
 }
 
 void ShareDirectories::write() { }

@@ -989,7 +989,6 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 		if(SETTING(LOG_PRIVATE_CHAT)) {
 			menu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG,  CTSTRING(OPEN_USER_LOG));
-			menu.AppendMenu(MF_SEPARATOR);
 			menu.AppendMenu(MF_STRING, IDC_USER_HISTORY,  CTSTRING(VIEW_HISTORY));
 			menu.AppendMenu(MF_SEPARATOR);
 		}		
@@ -1003,7 +1002,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			if (!pmUser || pmUser->isSet(User::BOT)) {
 				menu.AppendMenu(MF_STRING, IDC_PUBLIC_MESSAGE, CTSTRING(SEND_PUBLIC_MESSAGE));
 				//menu.AppendMenu(MF_STRING, IDC_PRIVATEMESSAGE, CTSTRING(SEND_PRIVATE_MESSAGE));
-				menu.AppendMenu(MF_SEPARATOR);
+				//menu.AppendMenu(MF_SEPARATOR);
 			}
 			
 			const OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));

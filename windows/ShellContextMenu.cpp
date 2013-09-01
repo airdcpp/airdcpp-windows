@@ -161,7 +161,7 @@ void CShellContextMenu::ShowContextMenu(HWND hWnd, CPoint pt)
 	else
 		OldWndProc = NULL;
 
-	UINT idCommand = m_Menu->TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN, pt.x, pt.y, hWnd);
+	UINT idCommand = m_Menu->TrackPopupMenu(TPM_RETURNCMD | TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, hWnd);
 
 	if(OldWndProc) // unsubclass
 		SetWindowLongPtr(hWnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(OldWndProc));
