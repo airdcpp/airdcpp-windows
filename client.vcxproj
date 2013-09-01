@@ -195,7 +195,7 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>false</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\hamsterdb\include;$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\geoip;$(SolutionDir);$(SolutionDir)\hamsterdb\include;$(SolutionDir)\leveldb\helpers;$(SolutionDir)\leveldb\include;$(SolutionDir)\bzip2;$(SolutionDir)\zlib;$(SolutionDir)\boost;$(SolutionDir)\openssl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Sync</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
