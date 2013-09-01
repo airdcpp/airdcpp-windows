@@ -430,7 +430,7 @@ LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
 
-		AutoSearchDlg dlg;
+		AutoSearchDlg dlg(as);
 		appendDialogParams(as, dlg);
 
 		if(dlg.DoModal() == IDOK) {
@@ -464,7 +464,7 @@ LRESULT AutoSearchFrame::onChange(WORD , WORD , HWND , BOOL& ) {
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
 
-		AutoSearchDlg dlg;
+		AutoSearchDlg dlg(as);
 		appendDialogParams(as, dlg);
 
 		if(dlg.DoModal() == IDOK) {

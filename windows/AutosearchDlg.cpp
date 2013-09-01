@@ -29,19 +29,11 @@
 	GetDlgItemText(id, buf, 1024); \
 	var = Text::fromT(buf);
 
-AutoSearchDlg::AutoSearchDlg() : fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0, 0),
+AutoSearchDlg::AutoSearchDlg(const AutoSearchPtr& aAutoSearch) : as(aAutoSearch), fileTypeStr(SEARCH_TYPE_ANY), action(0), matcherType(0), remove(false), targetType(TargetUtil::TARGET_PATH), startTime(0, 0),
 	endTime(23, 59), searchDays("1111111"), loading(true), checkQueued(true), checkShared(true), searchType(0), advanced(true), matchFullPath(false), curNumber(1), maxNumber(0),
 	numberLen(2), useParams(false) { }
 
-AutoSearchDlg::~AutoSearchDlg() {
-	ctrlSearch.Detach();
-	ctrlFileType.Detach();
-	cAction.Detach();
-	ftImage.Destroy();
-	ctrlTarget.Detach();
-	ctrlUserMatch.Detach();
-	cMatcherType.Detach();
-}
+AutoSearchDlg::~AutoSearchDlg() { }
 
 LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ATTACH(IDC_AS_SEARCH_STRING, ctrlSearch);
@@ -323,7 +315,7 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		str.resize(GetDlgItemText(IDC_AS_SEARCH_STRING, &str[0], ctrlSearch.GetWindowTextLength()+1));
 		searchString = Text::fromT(str);
 
-		if (AutoSearchManager::getInstance()->hasNameDupe(searchString, false)) {
+		if (AutoSearchManager::getInstance()->hasNameDupe(searchString, false, as)) {
 			auto msg = str + _T(": ") + TSTRING(ITEM_NAME_EXISTS) + _T("\r\n\r\n") + TSTRING(AS_ADD_DUPE_CONFIRM);
 			if (MessageBox(msg.c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES)
 				return 0;

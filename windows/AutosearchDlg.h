@@ -54,7 +54,7 @@ public:
 
 	enum { IDD = IDD_AUTOSEARCH_DLG };
 
-	AutoSearchDlg();
+	AutoSearchDlg(const AutoSearchPtr& aAutoSearch = nullptr);
 	~AutoSearchDlg();
 
 	BEGIN_MSG_MAP_EX(AutoSearchDlg)
@@ -132,5 +132,6 @@ private:
 	bool advanced;
 
 	int searchType;
+	AutoSearchPtr as;
 };
 #endif
