@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<recources>
+<resources>
 	<string name="AairdcppLanguageFile">EN_Example.xml</string>
 	<string name="AairdcppLanguageVersion">1.00</string>
 	<string name="Active">Active</string>
@@ -1982,4 +1982,4 @@ Do you want to continue?</string>
 	<string name="FileDateFormat">File date format</string>
 	<string name="AschSupportCount">Users with Advanced Search support: %1%/%2%</string>
 	<string name="AsAddDupeConfirm">Do you want to continue with adding this item anyway?</string>
-</recources>
+</resources>

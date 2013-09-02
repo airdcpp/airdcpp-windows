@@ -1271,8 +1271,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 					tth = ii->file->getTTH();
 
 				path = ii->file->getPath();
-			}
-			else if (ctrlFiles.list.GetSelectedCount() == 1) {
+			} else if (ctrlFiles.list.GetSelectedCount() == 1) {
 				path = ii->dir->getPath();
 			}
 
@@ -1399,7 +1398,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 				directoryMenu.appendItem(TSTRING(RELOAD), [=] { handleReloadPartial(true); });
 			}
 
-			if (dl->getIsOwnList() || (dir && dir->getDupe() != DUPE_NONE)) {
+			if (dl->getIsOwnList() || (dir && dl->getPartialList() && dir->getDupe() != DUPE_NONE)) {
 				directoryMenu.appendSeparator();
 				directoryMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenDupeDir(true); });
 				directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(true); });

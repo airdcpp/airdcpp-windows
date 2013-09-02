@@ -93,7 +93,7 @@ int __cdecl main(int argc, char* argv[])
 		ex.addTag("Strings");
 		ex.stepIn();*/
 
-		ex.addTag("recources");
+		ex.addTag("resources");
 		ex.stepIn();
 		string name;
 		string def;
