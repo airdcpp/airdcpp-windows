@@ -82,7 +82,7 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	pathContainer(WC_COMBOBOX, this, PATH_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 	listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(1),
 		treeRoot(nullptr), skipHits(0), files(0), updating(false), dl(aList), 
-		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), ctrlFiles(this, COLUMN_LAST, [this] { filterList(); }, filterSettings, COLUMN_FILENAME)
+		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), ctrlFiles(this, COLUMN_LAST, [this] { filterList(); }, filterSettings, COLUMN_LAST)
 {
 	dl->addListener(this);
 }
@@ -940,13 +940,7 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 	const auto& dirs = itemInfos[curPath].directories;
 	auto i = dirs.crbegin();
 
-	auto filterInfo = [this, &i](int column) -> string {
-		// speed this up a bit
-		if (column == COLUMN_FILENAME)
-			return (*i).getName();
-		else
-			return Text::fromT((*i).getText(column));
-	};
+	auto filterInfo = [this, &i](int column) { return (*i).getTextNormal(column); };
 
 	auto numericInfo = [this, &i](int column) -> double {
 		switch (column) {
@@ -1909,21 +1903,30 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 
 const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 	switch(col) {
-		case COLUMN_FILENAME: return type == DIRECTORY ? Text::toT(dir->getName()) : Text::toT(file->getName());
-		case COLUMN_TYPE: 
-			if(type == FILE) {
-				tstring type = Util::getFileExt(Text::toT(file->getName()));
-				if(type.size() > 0 && type[0] == '.')
-					type.erase(0, 1);
-				return type;
-			} else {
-				return Util::emptyStringT;
-			}
-		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize(true)) : Util::formatExactSize(file->getSize());
+		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSizeW(dir->getTotalSize(true)) : Util::formatExactSizeW(file->getSize());
 		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
-		case COLUMN_TTH: return (type == FILE && !SettingsManager::lanMode) ? Text::toT(file->getTTH().toBase32()) : Util::emptyStringT;
 		case COLUMN_DATE: return Util::getDateTimeW(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
-		default: return Util::emptyStringT;
+		default: return Text::toT(getTextNormal(col));
+	}
+}
+
+const string DirectoryListingFrame::ItemInfo::getTextNormal(uint8_t col) const {
+	switch (col) {
+	case COLUMN_FILENAME: return type == DIRECTORY ? dir->getName() : file->getName();
+	case COLUMN_TYPE:
+		if (type == FILE) {
+			auto type = Util::getFileExt(file->getName());
+			if (type.size() > 0 && type[0] == '.')
+				type.erase(0, 1);
+			return type;
+		} else {
+			return Util::emptyString;
+		}
+	case COLUMN_TTH: return (type == FILE && !SettingsManager::lanMode) ? file->getTTH().toBase32() : Util::emptyString;
+	case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize(true)) : Util::formatExactSize(file->getSize());
+	case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytes(dir->getTotalSize(true)) : Util::formatBytes(file->getSize());
+	case COLUMN_DATE: return Util::getDateTime(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
+	default: return Util::emptyString;
 	}
 }
 

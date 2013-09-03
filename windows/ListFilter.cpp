@@ -42,7 +42,7 @@ void ListFilter::addFilterBox(HWND parent) {
 
 }
 
-void ListFilter::addColumnBox(HWND parent, vector<ColumnInfo*>& aColumns, int initialSel) {
+void ListFilter::addColumnBox(HWND parent, vector<ColumnInfo*>& aColumns, int initialSel /*-1*/, HWND async /*NULL*/) {
 	RECT rc = { 0, 0, 100, 110 };
 	column.Create(parent, rc, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | WS_HSCROLL |
 		WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE);
@@ -53,7 +53,7 @@ void ListFilter::addColumnBox(HWND parent, vector<ColumnInfo*>& aColumns, int in
 
 	column.AddString(CTSTRING(ANY));
 	column.SetCurSel(initialSel != -1 ? initialSel : colCount);
-	callAsync(parent, [this] { columnChanged(false); });
+	callAsync(async ? async : parent, [this] { columnChanged(false); });
 }
 
 

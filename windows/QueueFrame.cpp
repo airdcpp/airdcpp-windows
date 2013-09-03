@@ -239,7 +239,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			return tmp.empty() ? TSTRING(NO_USERS) : tmp;
 		}
 		case COLUMN_PATH: return Text::toT(getPath());
-		case COLUMN_EXACT_SIZE: return (getSize() == -1) ? TSTRING(UNKNOWN) : Util::formatExactSize(getSize());
+		case COLUMN_EXACT_SIZE: return (getSize() == -1) ? TSTRING(UNKNOWN) : Util::formatExactSizeW(getSize());
 		case COLUMN_ERRORS: {
 			tstring tmp;
 			QueueItem::SourceList badSources = QueueManager::getInstance()->getBadSources(qi);

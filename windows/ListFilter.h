@@ -73,7 +73,7 @@ public:
 	LRESULT onSelChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& bHandled);
 
 	void addFilterBox(HWND parent);
-	void addColumnBox(HWND parent, vector<ColumnInfo*>& columns, int initialSel = -1);
+	void addColumnBox(HWND parent, vector<ColumnInfo*>& columns, int initialSel = -1, HWND async = NULL);
 	void addMethodBox(HWND parent);
 
 	CComboBox& getFilterColumnBox() { return column; } 

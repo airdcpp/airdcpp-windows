@@ -87,7 +87,7 @@ public:
 		parent->createColumns();
 
 		filter.addFilterBox(m_hWnd);
-		filter.addColumnBox(m_hWnd, list.getColumnList(), initialColumn);
+		filter.addColumnBox(m_hWnd, list.getColumnList(), initialColumn, parent->m_hWnd);
 		filter.addMethodBox(m_hWnd);
 
 		ctrlQueued.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_QUEUED);

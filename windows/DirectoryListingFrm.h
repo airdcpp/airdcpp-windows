@@ -317,6 +317,7 @@ private:
 		~ItemInfo() { }
 
 		const tstring getText(uint8_t col) const;
+		const string getTextNormal(uint8_t col) const;
 		
 		struct TotalSize {
 			TotalSize() : total(0) { }
