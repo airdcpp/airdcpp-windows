@@ -228,7 +228,6 @@ public:
 	static void searchAny(const tstring& aSearch);
 	static void SetIcon(HWND hWnd, int aDefault, bool big = false);
 
-	static tstring getTitle(const tstring& searchTerm);
 	static void searchSite(const WebShortcut* ws, const string& strSearchString, bool getReleaseDir = true);
 
 	static void appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f, bool appendTitle = true);

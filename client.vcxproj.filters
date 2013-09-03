@@ -137,9 +137,6 @@
     <ClCompile Include="client\TimerManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="client\TraceManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="client\Transfer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -521,9 +518,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\TimerManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\TraceManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\Transfer.h">

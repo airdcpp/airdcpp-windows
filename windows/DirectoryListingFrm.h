@@ -35,7 +35,7 @@
 
 #include "Async.h"
 
-
+#include "../client/concurrency.h"
 #include "../client/ClientManagerListener.h"
 #include "../client/DirectoryListing.h"
 #include "../client/DirectoryListingListener.h"
@@ -257,12 +257,14 @@ public:
 	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
 private:
+	task_group tasks;
 	bool allowPopup() const;
 	void updateHistoryCombo();
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
 	void openDupe(const DirectoryListing::Directory* d);
 	void openDupe(const DirectoryListing::File* f, bool openDir);
 
+	// safe to be called from any thread
 	void updateStatus(const tstring& aMsg);
 	string curPath;
 	void changeWindowState(bool enable);

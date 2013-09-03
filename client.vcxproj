@@ -312,7 +312,6 @@
     <ClCompile Include="client\ThrottleManager.cpp" />
     <ClCompile Include="client\TigerHash.cpp" />
     <ClCompile Include="client\TimerManager.cpp" />
-    <ClCompile Include="client\TraceManager.cpp" />
     <ClCompile Include="client\Transfer.cpp" />
     <ClCompile Include="client\UDPServer.cpp" />
     <ClCompile Include="client\UpdateManager.cpp" />
@@ -490,7 +489,6 @@
     <ClInclude Include="client\Thread.h" />
     <ClInclude Include="client\TigerHash.h" />
     <ClInclude Include="client\TimerManager.h" />
-    <ClInclude Include="client\TraceManager.h" />
     <ClInclude Include="client\Transfer.h" />
     <ClInclude Include="client\Upload.h" />
     <ClInclude Include="client\UploadManager.h" />

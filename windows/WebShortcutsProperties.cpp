@@ -32,9 +32,9 @@ LRESULT WebShortcutsProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&) {
 	SetDlgItemText(IDC_WEB_SHORTCUTS_DESC, CTSTRING(SETTINGS_WS_DESCR));
 	SetDlgItemText(IDC_WEB_SHORTCUTS_CLEAN, CTSTRING(SETTINGS_WS_CLEAN));
 
-	SetDlgItemText(IDC_WEB_SHORTCUT_NAME,	ws->name.c_str());
-	SetDlgItemText(IDC_WEB_SHORTCUT_KEY,	ws->key.c_str());
-	SetDlgItemText(IDC_WEB_SHORTCUT_URL,	ws->url.c_str());
+	SetDlgItemText(IDC_WEB_SHORTCUT_NAME,	Text::toT(ws->name).c_str());
+	SetDlgItemText(IDC_WEB_SHORTCUT_KEY,	Text::toT(ws->key).c_str());
+	SetDlgItemText(IDC_WEB_SHORTCUT_URL,	Text::toT(ws->url).c_str());
 	CheckDlgButton(IDC_WEB_SHORTCUTS_CLEAN, ws->clean ? BST_CHECKED : BST_UNCHECKED);
 
 	::SetFocus(GetDlgItem(IDC_WEB_SHORTCUT_NAME));
@@ -54,7 +54,8 @@ LRESULT WebShortcutsProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND 
 			MessageBox(CTSTRING(NAME_REQUIRED), sName.c_str(), MB_OK | MB_ICONEXCLAMATION);
 			return 0;
 		}
-		WebShortcut* _ws = WebShortcuts::getShortcutByName(wslist, sName);
+
+		auto _ws = WebShortcuts::getShortcutByName(wslist, Text::fromT(sName));
 		if ( _ws != NULL && _ws != ws ) {
 			MessageBox(CTSTRING(NAME_IN_USE), sName.c_str(), MB_OK | MB_ICONEXCLAMATION);
 			return 0;
@@ -64,7 +65,7 @@ LRESULT WebShortcutsProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND 
 		tstring sKey = buf;
 		// Check if key is busy
 		if (!sKey.empty()) {
-			_ws = WebShortcuts::getShortcutByKey(wslist, sKey);
+			_ws = WebShortcuts::getShortcutByKey(wslist, Text::fromT(sKey));
 			if ( _ws != NULL && _ws != ws ) {
 				MessageBox(CTSTRING(KEY_IN_USE), (sName + _T(" (") + sKey + _T(")")).c_str(), MB_OK | MB_ICONEXCLAMATION);
 				return 0;
@@ -76,9 +77,9 @@ LRESULT WebShortcutsProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND 
 
 		bool bClean = (IsDlgButtonChecked(IDC_WEB_SHORTCUTS_CLEAN) == BST_CHECKED);
 
-		ws->name = sName;
-		ws->key = sKey;
-		ws->url = sUrl;
+		ws->name = Text::fromT(sName);
+		ws->key = Text::fromT(sKey);
+		ws->url = Text::fromT(sUrl);
 		ws->clean = bClean;
 	}
 

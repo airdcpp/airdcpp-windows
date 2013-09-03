@@ -842,8 +842,8 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 			ParamMap sm;
 			status = TSTRING(AWAY_MODE_ON) + _T(" ") + Text::toT(AirUtil::getAwayMessage(getAwayMessage(), sm));
 		}
-	} else if(WebShortcuts::getInstance()->getShortcutByKey(cmd) != NULL) {
-		WinUtil::searchSite(WebShortcuts::getInstance()->getShortcutByKey(cmd), Text::fromT(param), false);
+	} else if (WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd))) {
+		WinUtil::searchSite(WebShortcuts::getInstance()->getShortcutByKey(Text::fromT(cmd)), Text::fromT(param), false);
 	} else if(stricmp(cmd.c_str(), _T("u")) == 0) {
 		if (!param.empty()) {
 			WinUtil::openLink(Text::toT(Util::encodeURI(Text::fromT(param))));

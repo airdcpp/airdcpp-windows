@@ -62,8 +62,7 @@ LRESULT SearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	ctrlWebShortcuts.InsertColumn(3, CTSTRING(CLEAN), LVCFMT_LEFT, rc.Width() / 5, 3);
 	ctrlWebShortcuts.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 
-	for (WebShortcut::Iter i = wsList.begin(); i != wsList.end(); ++i) {
-		WebShortcut* ws = *i;
+	for (auto ws: wsList) {
 		addListItem(ws);
 	}
 
@@ -149,3 +148,28 @@ void SearchPage::write() {
 
 	PropPage::write((HWND)*this, items);
 }
+
+void SearchPage::updateListItem(int pos) {
+	dcassert(pos >= 0 && (unsigned int) pos < wsList.size());
+	ctrlWebShortcuts.SetItemText(pos, 0, Text::toT(wsList[pos]->name).c_str());
+	ctrlWebShortcuts.SetItemText(pos, 1, Text::toT(wsList[pos]->key).c_str());
+	ctrlWebShortcuts.SetItemText(pos, 2, Text::toT(wsList[pos]->url).c_str());
+}
+
+void SearchPage::addListItem(WebShortcut* ws) {
+	TStringList cols;
+	cols.push_back(Text::toT(ws->name));
+	cols.push_back(Text::toT(ws->key));
+	cols.push_back(Text::toT(ws->url));
+	cols.push_back(ws->clean ? TSTRING(YES) : TSTRING(NO));
+	ctrlWebShortcuts.insert(cols);
+	cols.clear();
+}
+
+SearchPage::~SearchPage() {
+	for (auto i : wsList)
+		delete i;
+
+	ctrlWebShortcuts.Detach();
+	free(title);
+};

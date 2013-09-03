@@ -36,13 +36,7 @@ public:
 		SetTitle(title);
 	};
 
-	~SearchPage() {
-		for (WebShortcut::Iter i = wsList.begin(); i != wsList.end(); ++i)
-			delete *i;
-		
-		ctrlWebShortcuts.Detach();
-		free(title);
-	};
+	~SearchPage();
 
 	BEGIN_MSG_MAP_EX(SearchPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
@@ -66,22 +60,8 @@ public:
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
 	void write();
 
-	void updateListItem(int pos) {
-		dcassert(pos >= 0 && (unsigned int)pos < wsList.size());
-		ctrlWebShortcuts.SetItemText(pos, 0, wsList[pos]->name.c_str());
-		ctrlWebShortcuts.SetItemText(pos, 1, wsList[pos]->key.c_str());
-		ctrlWebShortcuts.SetItemText(pos, 2, wsList[pos]->url.c_str());
-	}
-
-	void addListItem(WebShortcut* ws) {
-		TStringList cols;
-		cols.push_back(ws->name);
-		cols.push_back(ws->key);
-		cols.push_back(ws->url);
-		cols.push_back(ws->clean? _T("Yes") : _T("No"));
-		ctrlWebShortcuts.insert(cols);
-		cols.clear();
-	}
+	void updateListItem(int pos);
+	void addListItem(WebShortcut* ws);
 	
 protected:
 

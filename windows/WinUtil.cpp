@@ -43,9 +43,7 @@
 #include "../client/version.h"
 #include "../client/Magnet.h"
 
-#include "boost/algorithm/string/replace.hpp"
-#include "boost/algorithm/string/trim.hpp"
-#include "boost/format.hpp"
+#include <boost/format.hpp>
 
 #include "HubFrame.h"
 #include "BarShader.h"
@@ -1677,7 +1675,7 @@ void WinUtil::searchAny(const tstring& aSearch) {
 void WinUtil::appendSearchMenu(OMenu& aParent, function<void (const WebShortcut* ws)> f, bool appendTitle /*true*/) {
 	OMenu* searchMenu = aParent.createSubMenu(TSTRING(SEARCH_SITES), appendTitle);
 	for(auto ws: WebShortcuts::getInstance()->list) {
-		searchMenu->appendItem(ws->name, [=] { f(ws); });
+		searchMenu->appendItem(Text::toT(ws->name), [=] { f(ws); });
 	}
 }
 
@@ -1686,23 +1684,24 @@ void WinUtil::appendSearchMenu(OMenu& aParent, const string& aPath, bool getRele
 }
 
 void WinUtil::searchSite(const WebShortcut* ws, const string& aSearchTerm, bool getReleaseDir) {
-	if(ws == NULL)
+	if(!ws)
 		return;
 
-	tstring searchTerm = Text::toT(getReleaseDir ? Util::getReleaseDir(aSearchTerm, true) : Util::getLastDir(aSearchTerm));
+	string searchTerm = getReleaseDir ? Util::getReleaseDir(aSearchTerm, true) : Util::getLastDir(aSearchTerm);
 
 	if(ws->clean && !searchTerm.empty()) {
-		searchTerm = WinUtil::getTitle(searchTerm);
+		searchTerm = AirUtil::getTitle(searchTerm);
 	}
 	
-	if(!searchTerm.empty())
-		if(ws->url.find(_T("%s")) != tstring::npos){
-			WinUtil::openLink(Text::toT(str(boost::format(Text::fromT(ws->url)) %Util::encodeURI(Text::fromT(searchTerm)))));
+	if (!searchTerm.empty()) {
+		if (ws->url.find("%s") != string::npos) {
+			WinUtil::openLink(Text::toT(str(boost::format(ws->url) % Util::encodeURI(searchTerm))));
 		} else {
-			WinUtil::openLink((ws->url) + Text::toT(Util::encodeURI(Text::fromT(searchTerm))));
+			WinUtil::openLink(Text::toT(ws->url + Util::encodeURI(searchTerm)));
 		}
-	else
-		WinUtil::openLink(ws->url);
+	} else {
+		WinUtil::openLink(Text::toT(ws->url));
+	}
 }
 
 void WinUtil::removeBundle(const string& aBundleToken) {
@@ -1773,52 +1772,6 @@ COLORREF WinUtil::blendColors(COLORREF aForeGround, COLORREF aBackGround) {
 	b = static_cast<BYTE>(( static_cast<DWORD>(GetBValue(aForeGround)) + static_cast<DWORD>(GetBValue(aBackGround)) ) / 2);
 					
 	return RGB(r, g, b);
-}
-
-tstring WinUtil::getTitle(const tstring& searchTerm) {
-	tstring ret = Text::toLower(searchTerm);
-
-	//Remove group name
-	size_t pos = ret.rfind(_T("-"));
-	if (pos != string::npos)
-		ret = ret.substr(0, pos);
-
-	//replace . with space
-	pos = 0;
-	while ((pos = ret.find_first_of(_T("._"), pos)) != string::npos) {
-		ret.replace(pos, 1, _T(" "));
-	}
-
-	//remove words after year/episode
-	boost::wregex reg;
-	reg.assign(_T("(((\\[)?((19[0-9]{2})|(20[0-1][0-9]))|(s[0-9]([0-9])?(e|d)[0-9]([0-9])?)|(Season(\\.)[0-9]([0-9])?)).*)"));
-
-	boost::match_results<tstring::const_iterator> result;
-	tstring::const_iterator start = ret.begin();
-	tstring::const_iterator end = ret.end();
-
-	if (boost::regex_search(start, end, result, reg, boost::match_default)) {
-		ret = ret.substr(0, result.position());
-	}
-
-	//boost::regex_replace(ret, reg, Util::emptyStringT, boost::match_default | boost::format_sed);
-
-	//remove extra words
-	string extrawords[] = {"multisubs","multi","dvdrip","dvdr","real proper","proper","ultimate directors cut","directors cut","dircut","x264","pal","complete","limited","ntsc","bd25",
-							"bd50","bdr","bd9","retail","bluray","nordic","720p","1080p","read nfo","dts","hdtv","pdtv","hddvd","repack","internal","custom","subbed","unrated","recut",
-							"extended","dts51","finsub","swesub","dksub","nosub","remastered","2disc","rf","fi","swe","stv","r5","festival","anniversary edition","bdrip","ac3", "xvid",
-							"ws","int"};
-	pos = 0;
-	ret += ' ';
-	auto arrayLength = sizeof ( extrawords ) / sizeof ( *extrawords );
-	while(pos < arrayLength) {
-		boost::replace_all(ret, " " + extrawords[pos] + " ", " ");
-		pos++;
-	}
-
-	//trim spaces from the end
-	boost::trim_right(ret);
-	return ret;
 }
 
 void WinUtil::viewLog(const string& path, bool aHistory /*false*/) {

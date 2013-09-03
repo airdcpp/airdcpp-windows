@@ -500,12 +500,14 @@ LRESULT DirectoryListingFrame::onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/,
 }
 
 void DirectoryListingFrame::convertToFull() {
-	if (dl->getIsOwnList())
+	if (dl->getIsOwnList()) {
 		dl->addFullListTask(curPath);
-	else {
-		try {
-			QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, curPath);
-		} catch(...) {}
+	} else {
+		tasks.run([=] {
+			try {
+				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_CLIENT_VIEW, curPath);
+			} catch (...) {}
+		});
 	}
 }
 
@@ -825,6 +827,7 @@ void DirectoryListingFrame::DisableWindow(bool redraw){
 }
 
 void DirectoryListingFrame::EnableWindow(bool redraw){
+	tasks.wait();
 	disabled = false;
 	ctrlFiles.list.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
 	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
@@ -1016,16 +1019,18 @@ void DirectoryListingFrame::changeDir(const ItemInfo* ii, BOOL enableRedraw, Rel
 		if (dl->getIsOwnList()) {
 			dl->addPartialListTask(Util::emptyString, d->getPath(), aReload == RELOAD_ALL);
 		} else if(dl->getUser()->isOnline()) {
-			try {
-				QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, d->getPath());
-				d->setLoading(true);
-				ctrlTree.updateItemImage(ii);
-				//ctrlStatus.SetText(STATUS_TEXT, CTSTRING(DOWNLOADING_LIST));
-			} catch(const QueueException& e) {
-				ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
-			}
+			tasks.run([=] {
+				try {
+					QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_CLIENT_VIEW, d->getPath());
+					d->setLoading(true);
+					//callAsync([]= ctrlTree.updateItemImage(ii);
+					//ctrlStatus.SetText(STATUS_TEXT, CTSTRING(DOWNLOADING_LIST));
+				} catch (const QueueException& e) {
+					updateStatus(Text::toT(e.getError()));
+				}
+			});
 		} else {
-			ctrlStatus.SetText(STATUS_TEXT, CTSTRING(USER_OFFLINE));
+			updateStatus(CTSTRING(USER_OFFLINE));
 		}
 	}
 }
@@ -1441,7 +1446,10 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItemBase:
 			WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
 				0, WinUtil::isShift() ? QueueItem::HIGHEST : prio);
 		} else {
-			DirectoryListingManager::getInstance()->addDirectoryDownload(ii->getPath(), ii->getName(), dl->getHintedUser(), aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, WinUtil::isShift() ? QueueItem::HIGHEST : prio, false);
+			tasks.run([=] {
+				DirectoryListingManager::getInstance()->addDirectoryDownload(ii->getPath(), ii->getName(), dl->getHintedUser(),
+					aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, WinUtil::isShift() ? QueueItem::HIGHEST : prio, false);
+			});
 		}
 	});
 }
@@ -1494,29 +1502,31 @@ void DirectoryListingFrame::handleGoToDirectory(bool usingTree) {
 
 void DirectoryListingFrame::handleViewNFO(bool usingTree) {
 	handleItemAction(usingTree, [this](const ItemInfo* ii) {
-		if (ii->type == ItemInfo::DIRECTORY) {
-			if (dl->getIsOwnList()) {
-				try {
-					SearchResultList results;
-					auto s = unique_ptr<AdcSearch>(AdcSearch::getSearch(Util::emptyString, Util::emptyString, 0, SearchManager::TYPE_ANY, SearchManager::SIZE_DONTCARE, { ".nfo" }, AdcSearch::MATCH_NAME, false));
-					ShareManager::getInstance()->search(results, *s.get(), 10, Util::toInt(dl->getFileName()), ClientManager::getInstance()->getMyCID(), Util::toAdcFile(ii->dir->getPath()));
+		tasks.run([=] {
+			if (ii->type == ItemInfo::DIRECTORY) {
+				if (dl->getIsOwnList()) {
+					try {
+						SearchResultList results;
+						auto s = unique_ptr<AdcSearch>(AdcSearch::getSearch(Util::emptyString, Util::emptyString, 0, SearchManager::TYPE_ANY, SearchManager::SIZE_DONTCARE, { ".nfo" }, AdcSearch::MATCH_NAME, false));
+						ShareManager::getInstance()->search(results, *s.get(), 10, Util::toInt(dl->getFileName()), ClientManager::getInstance()->getMyCID(), Util::toAdcFile(ii->dir->getPath()));
 
-					if (!results.empty()) {
-						auto path = Text::toT(ShareManager::getInstance()->getRealPath(results.front()->getTTH()));
-						if (!path.empty())
-							TextFrame::openWindow(path, TextFrame::NORMAL);
-					} else {
-						updateStatus(Text::toT(ii->dir->getName()) + _T(": ") + TSTRING(NO_NFO_FOUND));
-					}
-				} catch (...) {}
-			} else if (!ii->dir->isComplete() || ii->dir->findIncomplete()) {
-				try {
-					QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, ii->dir->getPath());
-				} catch (const Exception&) {}
-			} else if (!dl->findNfo(ii->dir->getPath())) {
-				//ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+						if (!results.empty()) {
+							auto path = Text::toT(ShareManager::getInstance()->getRealPath(results.front()->getTTH()));
+							if (!path.empty())
+								callAsync([=] { TextFrame::openWindow(path, TextFrame::NORMAL); });
+						} else {
+							updateStatus(Text::toT(ii->dir->getName()) + _T(": ") + TSTRING(NO_NFO_FOUND));
+						}
+					} catch (...) {}
+				} else if (!ii->dir->isComplete() || ii->dir->findIncomplete()) {
+					try {
+						QueueManager::getInstance()->addList(dl->getHintedUser(), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, ii->dir->getPath());
+					} catch (const Exception&) {}
+				} else if (!dl->findNfo(ii->dir->getPath())) {
+					//ctrlStatus.SetText(STATUS_TEXT, Text::toT(e.getError()).c_str());
+				}
 			}
-		}
+		});
 	});
 }
 
@@ -1960,6 +1970,7 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 		//changeWindowState(false);
 		//ctrlStatus.SetText(0, _T("Closing down, please wait..."));
 		//dl->close();
+		tasks.wait();
 		return 0;
 	} else {
 		CRect rc;
@@ -2040,7 +2051,7 @@ void DirectoryListingFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/
 }
 
 void DirectoryListingFrame::updateStatus(const tstring& aMsg) {
-	ctrlStatus.SetText(0, aMsg.c_str());
+	callAsync([=] { ctrlStatus.SetText(STATUS_TEXT, aMsg.c_str()); });
 }
 
 LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
@@ -2189,11 +2200,11 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 				auto diff = newHub.shared > 0 ? abs(static_cast<double>(oldHub.shared) / static_cast<double>(newHub.shared)) : oldHub.shared;
 				if ((diff < 0.95 || diff > 1.05) && MessageBox(CTSTRING_F(LIST_SIZE_DIFF_NOTE, Text::toT(newHub.hubName) % Util::formatBytesW(newHub.shared) % Text::toT(oldHub.hubName) % Util::formatBytesW(oldHub.shared)),
 					_T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-
-						try {
-							QueueManager::getInstance()->addList(HintedUser(dl->getUser(), newHub.hubUrl), (dl->getPartialList() ? QueueItem::FLAG_PARTIAL_LIST : 0) | QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
-						}
-						catch (...) { }
+						tasks.run([=] {
+							try {
+								QueueManager::getInstance()->addList(HintedUser(dl->getUser(), newHub.hubUrl), (dl->getPartialList() ? QueueItem::FLAG_PARTIAL_LIST : 0) | QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
+							} catch (...) {}
+						});
 				}
 			}
 		}
