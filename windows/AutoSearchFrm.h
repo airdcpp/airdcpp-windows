@@ -77,53 +77,13 @@ public:
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
+	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/);
+	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/);
+	LRESULT onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
+	LRESULT onAsRTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
 	void handleSearch(bool onBackground);
 	void handleState(bool disabled);
-
-	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/){
-		NMITEMACTIVATE* asItem = (NMITEMACTIVATE*)pnmh;
-		if(asItem->iItem >= 0) {
-			PostMessage(WM_COMMAND, IDC_CHANGE, 0);
-		} else if(asItem->iItem == -1) {
-			PostMessage(WM_COMMAND, IDC_ADD, 0);
-		}
-		return 0;
-	}
-
-	LRESULT onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		ctrlAutoSearch.SetFocus();
-		return 0;
-	}
-
-	LRESULT onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-		if(loading)
-			return 0;
-
-		tstring val(ctrlAsTime.GetWindowTextLength() +2, _T('\0'));
-		ctrlAsTime.GetWindowText(&val[0],val.size());
-		int value = Util::toInt(Text::fromT(val));
-		if(value < 1) {
-			value = 1;
-			ctrlAsTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
-		}
-		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_EVERY, value);
-		return 0;
-	}
-	LRESULT onAsRTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-		if(loading)
-			return 0;
-
-		tstring val(ctrlAsRTime.GetWindowTextLength() +2, _T('\0'));
-		ctrlAsRTime.GetWindowText(&val[0],val.size());
-		int value = Util::toInt(Text::fromT(val));
-		if(value < 30) {
-			value = 30;
-			ctrlAsRTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
-		}
-		SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_RECHECK_TIME, value);
-		return 0;
-	}
 
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 
@@ -151,21 +111,7 @@ private:
 	void appendDialogParams(const AutoSearchPtr& as, AutoSearchDlg& dlg);
 	void setItemProperties(AutoSearchPtr& as, const AutoSearchDlg& dlg, const string& aSearchString);
 
-	void updateList() {
-
-		ctrlAutoSearch.SetRedraw(FALSE);
-		
-		AutoSearchList lst = AutoSearchManager::getInstance()->getSearchItems();
-		
-		for(auto i = lst.begin(); i != lst.end(); ++i) {
-			const AutoSearchPtr as = *i;	
-			addEntry(as, ctrlAutoSearch.GetItemCount());
-		}
-
-		ctrlAutoSearch.SetRedraw(TRUE);
-		ctrlAutoSearch.Invalidate();
-	}
-
+	void updateList();
 	void addFromDialog(const AutoSearchDlg& dlg);
 
 	void save() {

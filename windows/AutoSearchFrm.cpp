@@ -226,7 +226,66 @@ LRESULT AutoSearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 		default:
 			return CDRF_DODEFAULT;
 	}
-}	
+}
+
+LRESULT AutoSearchFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL & /*bHandled*/) {
+	NMITEMACTIVATE* l = (NMITEMACTIVATE*) pnmh;
+	if (l->iItem >= 0) {
+		PostMessage(WM_COMMAND, IDC_CHANGE, 0);
+	} else if (l->iItem == -1) {
+		PostMessage(WM_COMMAND, IDC_ADD, 0);
+	}
+	return 0;
+}
+
+void AutoSearchFrame::updateList() {
+	ctrlAutoSearch.SetRedraw(FALSE);
+
+	AutoSearchList lst = AutoSearchManager::getInstance()->getSearchItems();
+
+	for (auto i = lst.begin(); i != lst.end(); ++i) {
+		const AutoSearchPtr as = *i;
+		addEntry(as, ctrlAutoSearch.GetItemCount());
+	}
+
+	ctrlAutoSearch.SetRedraw(TRUE);
+	ctrlAutoSearch.Invalidate();
+}
+
+LRESULT AutoSearchFrame::onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
+	if (loading)
+		return 0;
+
+	tstring val(ctrlAsTime.GetWindowTextLength() + 2, _T('\0'));
+	ctrlAsTime.GetWindowText(&val[0], val.size());
+	int value = Util::toInt(Text::fromT(val));
+	if (value < 1) {
+		value = 1;
+		ctrlAsTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
+	}
+	SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_EVERY, value);
+	return 0;
+}
+
+LRESULT AutoSearchFrame::onAsRTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
+	if (loading)
+		return 0;
+
+	tstring val(ctrlAsRTime.GetWindowTextLength() + 2, _T('\0'));
+	ctrlAsRTime.GetWindowText(&val[0], val.size());
+	int value = Util::toInt(Text::fromT(val));
+	if (value < 30) {
+		value = 30;
+		ctrlAsRTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
+	}
+	SettingsManager::getInstance()->set(SettingsManager::AUTOSEARCH_RECHECK_TIME, value);
+	return 0;
+}
+
+LRESULT AutoSearchFrame::onSetFocus(UINT /* uMsg */, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL & /*bHandled*/) {
+	ctrlAutoSearch.SetFocus();
+	return 0;
+}
 
 LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 
@@ -564,7 +623,7 @@ void AutoSearchFrame::handleState(bool disabled) {
 	}
 }
 
-LRESULT AutoSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT AutoSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
 	
 	::EnableWindow(GetDlgItem(IDC_REMOVE), (ctrlAutoSearch.GetSelectedCount() >= 1));
@@ -577,7 +636,9 @@ LRESULT AutoSearchFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHa
 		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(l->iItem);
 		if (as) {
 			AutoSearchManager::getInstance()->setItemActive(as, Util::toBool(ctrlAutoSearch.GetCheckState(l->iItem)));
-		}	
+		}
+		bHandled = TRUE;
+		return 1;
 	}
 	return 0;		
 }
