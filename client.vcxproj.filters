@@ -74,9 +74,6 @@
     <ClCompile Include="client\HashManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="client\HighlightManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="client\NmdcHub.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -337,9 +334,6 @@
     <ClInclude Include="client\ClientManagerListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="client\ColorSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="client\ConnectionManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -413,9 +407,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\HashValue.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\HighlightManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\HubEntry.h">

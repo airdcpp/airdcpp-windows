@@ -19,9 +19,9 @@
 #ifndef COLORSETTINGS_H
 #define COLORSETTINGS_H
 
-#include "stdinc.h"
-#include "DCPlusPlus.h"
-#include "GetSet.h"
+#include "stdafx.h"
+
+#include "../client/GetSet.h"
 
 namespace dcpp {
 class ColorSettings

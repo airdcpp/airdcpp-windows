@@ -26,8 +26,9 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
+#include "ColorSettings.h"
+
 #include "../client/SettingsManager.h"
-#include "../client/HighlightManager.h"
 #include "../client/User.h"
 
 class FulHighlightDialog: public CDialogImpl<FulHighlightDialog>

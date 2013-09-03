@@ -26,8 +26,9 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
+#include "HighlightManager.h"
+
 #include "../client/SettingsManager.h"
-#include "../client/HighlightManager.h"
 
 class FulHighlightPage: public CPropertyPage<IDD_HIGHLIGHTPAGE>, public PropPage, private SettingsManagerListener
 {

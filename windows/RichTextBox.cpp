@@ -25,8 +25,6 @@
 #include "../client/QueueManager.h"
 #include "../client/Util.h"
 
-#include "../client/highlightmanager.h"
-
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
 #include <boost/format.hpp>
@@ -34,6 +32,7 @@
 
 #include "RichTextBox.h"
 #include "EmoticonsManager.h"
+#include "Highlightmanager.h"
 #include "HubFrame.h"
 #include "PrivateFrame.h"
 #include "LineDlg.h"

@@ -26,6 +26,8 @@
 #include "TextFrame.h"
 #include "ResourceLoader.h"
 #include "MainFrm.h"
+#include "ColorSettings.h"
+#include "HighlightManager.h"
 
 #include "../client/IgnoreManager.h"
 #include "../client/DirectoryListingManager.h"
@@ -38,8 +40,6 @@
 #include "../client/LogManager.h"
 #include "../client/SettingsManager.h"
 #include "../client/Wildcards.h"
-#include "../client/ColorSettings.h"
-#include "../client/HighlightManager.h"
 #include "../client/Localization.h"
 #include "../client/GeoManager.h"
 

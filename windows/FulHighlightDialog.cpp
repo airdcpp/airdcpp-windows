@@ -21,11 +21,10 @@
 #include "Resource.h"
 
 #include "../client/SettingsManager.h"
-#include "../client/ColorSettings.h"
-#include "../client/HighlightManager.h"
 #include "../client/StringTokenizer.h"
 #include "../client/version.h"
 
+#include "HighlightManager.h"
 #include "FulHighlightDialog.h"
 #include "WinUtil.h"
 

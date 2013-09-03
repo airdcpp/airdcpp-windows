@@ -28,8 +28,8 @@
 #include "LineDlg.h"
 #include "ShellContextMenu.h"
 #include "ListFilter.h"
+#include "HighlightManager.h"
 
-#include "../client/HighlightManager.h"
 #include "../client/File.h"
 #include "../client/QueueManager.h"
 #include "../client/StringTokenizer.h"

@@ -23,13 +23,13 @@
 
 #include "../client/AirUtil.h"
 #include "../client/Client.h"
-#include "../client/ColorSettings.h"
 #include "../client/TargetUtil.h"
 #include "../client/ChatMessage.h"
 #include "../client/UserInfoBase.h"
 
 #include <boost/algorithm/string.hpp>
 
+#include "ColorSettings.h"
 #include "TypedListViewCtrl.h"
 #include "ImageDataObject.h"
 #include "UCHandler.h"

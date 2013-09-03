@@ -1,0 +1,14 @@
+# -*- coding: utf-8 -*-
+
+Import('env')
+
+header_files = env.Glob('*.hh')
+gui_files = env.Glob('*.cc')
+obj_files = []
+
+env.Append(CPPDEFINES='PACKAGE=\'\"%s\"\'' % env['package'])
+
+# Build the gui_files
+obj_files = env.Object(gui_files)
+
+Return('obj_files')

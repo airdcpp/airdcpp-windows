@@ -16,7 +16,6 @@
 
 #include "stdafx.h"
 #include "../client/SettingsManager.h"
-#include "../client/HighlightManager.h"
 #include "../client/SimpleXML.h"
 #include "../client/version.h"
 
@@ -25,6 +24,7 @@
 #include "WinUtil.h"
 #include "OperaColorsPage.h"
 #include "PropertiesDlg.h"
+#include "HighlightManager.h"
 
 PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_AVAILABLE_STYLES, ResourceManager::SETCZDC_STYLES },

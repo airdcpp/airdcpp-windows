@@ -353,7 +353,7 @@ LRESULT FavoriteHubsFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 
 LRESULT FavoriteHubsFrame::onNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	FavoriteHubEntryPtr e;
+	FavoriteHubEntryPtr e = new FavoriteHubEntry();
 	FavHubProperties dlg(e.get());
 
 	if(dlg.DoModal((HWND)*this) == IDOK) {

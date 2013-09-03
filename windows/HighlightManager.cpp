@@ -16,10 +16,9 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-#include "stdinc.h"
-#include "DCPlusPlus.h"
+#include "stdafx.h"
 
-#include "highlightmanager.h"
+#include "HighlightManager.h"
 
 namespace dcpp {
 HighlightManager::HighlightManager(void)
