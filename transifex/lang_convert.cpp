@@ -22,7 +22,9 @@
 #include <string>
 
 #include "../client/typedefs.h"
+
 #include "../client/File.h"
+#include "../client/Localization.h"
 #include "../client/SimpleXML.h"
 #include "../client/Util.h"
 
@@ -51,7 +53,7 @@ Strings arr[] {
 int getVersion(dcpp::SimpleXML& xml) {
 	if (xml.findChild("Language")) {
 		//xml.stepIn();
-		auto version = xml.getIntChildAttrib("Version");
+		auto version = xml.getIntChildAttrib(LANGVER_TAG);
 		return version;
 	}
 	
@@ -124,7 +126,7 @@ int main(int argc, char* argv[])
 		xml.fromXML(cur);
 
 		getVersion(xml); // move to the current location
-		xml.replaceChildAttrib("Version", dcpp::Util::toString(version + 1));
+		xml.replaceChildAttrib(LANGVER_TAG, dcpp::Util::toString(version + 1));
 
 		try {
 			dcpp::File f(target, dcpp::File::WRITE, dcpp::File::CREATE | dcpp::File::TRUNCATE);

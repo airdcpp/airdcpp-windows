@@ -12,8 +12,8 @@ CORE_PACKAGE = 'libdcpp'
 BUILD_PATH = '#/build/'
 
 BUILD_FLAGS = {
-	'common'  : ['-g', '-I#', '-D_GNU_SOURCE', '-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64', '-D_REENTRANT', '-D__cdecl=""', '-std=c++11', '-Wfatal-errors', '-fexceptions'],
-	'debug'   : ['-ggdb', '-Wall', '-D_DEBUG', '-Wno-reorder' ], 
+	'common'  : ['-I#', '-D_GNU_SOURCE', '-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64', '-D_REENTRANT', '-D__cdecl=""', '-std=c++11', '-Wfatal-errors', '-fexceptions'],
+	'debug'   : ['-g', '-ggdb', '-Wall', '-D_DEBUG', '-Wno-reorder' ], 
 	'release' : ['-O3', '-fomit-frame-pointer', '-DNDEBUG']
 }
 
@@ -86,7 +86,7 @@ vars.AddVariables(
 
 env = Environment(ENV = os.environ, variables = vars, package = PACKAGE)
 
-env['mode'] = 'debug' if env.get('debug') else 'debug'
+env['mode'] = 'debug' if env.get('debug') else 'release'
 env['build_path'] = BUILD_PATH + env['mode'] + '/'
 
 if os.environ.has_key('CXX'):
