@@ -35,7 +35,7 @@ struct Strings {
 
 Strings arr[] {
 	{ "<?xml version=\'1.0\' encoding=\'UTF-8\'?>", "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" }, 
-	{ "<resources>",		"<Language Name=\"Lang\" Author=\"FlylinkDC++ Development Team\" Revision=\"1\">\n	<Strings>" }, 
+	{ "<resources>",		"<Language Name=\"Lang\" Author=\"AirDC++ Translation Team\" Revision=\"1\">\n	<Strings>" }, 
 	{ "  <string name",		"<String Name" }, 
 	{ "</string>",			"</String>" },
 	{ "</resources>",		"	</Strings>\n</Language>" },
