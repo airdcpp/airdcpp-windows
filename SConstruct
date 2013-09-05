@@ -12,8 +12,8 @@ CORE_PACKAGE = 'libdcpp'
 BUILD_PATH = '#/build/'
 
 BUILD_FLAGS = {
-	'common'  : ['-I#', '-D_GNU_SOURCE', '-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64', '-D_REENTRANT', '-D__cdecl=""', '-std=c++11', '-Wfatal-errors', '-fexceptions'],
-	'debug'   : ['-g', '-ggdb', '-Wall', '-D_DEBUG'], 
+	'common'  : ['-g', '-I#', '-D_GNU_SOURCE', '-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64', '-D_REENTRANT', '-D__cdecl=""', '-std=c++11', '-Wfatal-errors', '-fexceptions'],
+	'debug'   : ['-ggdb', '-Wall', '-D_DEBUG'], 
 	'release' : ['-O3', '-fomit-frame-pointer', '-DNDEBUG']
 }
 

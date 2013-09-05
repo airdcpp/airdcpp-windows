@@ -945,7 +945,7 @@ void SearchFrame::SearchInfo::CheckTTH::operator()(SearchInfo* si) {
 		path = si->sr->getPath();
 		firstPath = false;
 	} else if (path) {
-		if (AirUtil::getDirName(*path).first != AirUtil::getDirName(si->sr->getFilePath()).first) {
+		if (AirUtil::getDirName(*path, '\\').first != AirUtil::getDirName(si->sr->getFilePath(), '\\').first) {
 			path.reset();
 		}
 	}

@@ -188,7 +188,7 @@ void PropPageTextStyles::PopulateThemes() {
 	
 	if(themes.empty()) {
 		string path = Util::getPath(Util::PATH_THEMES);
-		for(FileFindIter i(path + "*.dctheme"); i != FileFindIter(); ++i) {
+		for(FileFindIter i(path, "*.dctheme"); i != FileFindIter(); ++i) {
 			string filepath = path + i->getFileName();
 			themes.insert(make_pair(i->getFileName(), filepath));
 		}
