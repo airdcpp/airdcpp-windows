@@ -490,7 +490,7 @@ private:
 
 	void on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept;
 
-	void on(ClientManagerListener::ClientCreated, const Client*) noexcept;
+	void on(ClientManagerListener::ClientCreated, Client*) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)

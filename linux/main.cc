@@ -1,5 +1,5 @@
 /*
- * Copyright © 2004-2008 Jens Oknelid, paskharen@gmail.com
+* Copyright (C) 2012-2013 AirDC++ Project
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@
 #include <client/version.h>
 #include <client/Util.h>
 #include <client/TimerManager.h>
+#include <client/Text.h>
+
+#include "MainConsole.h"
 
 #include <iostream>
 #include <signal.h>
@@ -212,7 +215,17 @@ int main(int argc, char *argv[])
 	}*/
 
 	// Start the DC++ client core
-	dcpp::startup(nullptr, nullptr, nullptr, nullptr);
+	dcpp::startup(nullptr, 
+		[&](const std::string& str, bool isQuestion, bool isError) {
+			if (isQuestion) {
+				std::cout << dcpp::Text::fromUtf8(str) << std::endl;
+				return false;
+			} else {
+				std::cout << dcpp::Text::fromUtf8(str) << std::endl;
+			}
+
+			return true;
+	}, nullptr, nullptr);
 
 	dcpp::TimerManager::getInstance()->start();
 
@@ -222,6 +235,11 @@ int main(int argc, char *argv[])
 	//g_set_application_name("AirDC++");
 
 	signal(SIGPIPE, SIG_IGN);
+	unique_ptr<MainConsole> console(new MainConsole);
+
+	console->run();
+
+	console.reset();
 
 	/*WulforSettingsManager::newInstance();
 	WulforManager::start();

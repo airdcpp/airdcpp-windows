@@ -1948,7 +1948,7 @@ void MainFrame::on(DirectoryListingManagerListener::PromptAction, completionF aF
 	aF(accept);
 }
 
-void MainFrame::on(ClientManagerListener::ClientCreated, const Client* c) noexcept {
+void MainFrame::on(ClientManagerListener::ClientCreated, Client* c) noexcept {
 	auto url = Text::toT(c->getHubUrl());
 	callAsync([=] { HubFrame::openWindow(url); });
 }

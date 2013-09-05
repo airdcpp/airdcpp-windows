@@ -13,7 +13,7 @@ BUILD_PATH = '#/build/'
 
 BUILD_FLAGS = {
 	'common'  : ['-g', '-I#', '-D_GNU_SOURCE', '-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64', '-D_REENTRANT', '-D__cdecl=""', '-std=c++11', '-Wfatal-errors', '-fexceptions'],
-	'debug'   : ['-ggdb', '-Wall', '-D_DEBUG'], 
+	'debug'   : ['-ggdb', '-Wall', '-D_DEBUG', '-Wno-reorder' ], 
 	'release' : ['-O3', '-fomit-frame-pointer', '-DNDEBUG']
 }
 
@@ -86,7 +86,7 @@ vars.AddVariables(
 
 env = Environment(ENV = os.environ, variables = vars, package = PACKAGE)
 
-env['mode'] = 'debug' if env.get('debug') else 'release'
+env['mode'] = 'debug' if env.get('debug') else 'debug'
 env['build_path'] = BUILD_PATH + env['mode'] + '/'
 
 if os.environ.has_key('CXX'):
@@ -276,14 +276,14 @@ if not 'install' in COMMAND_LINE_TARGETS:
 
 else:
 
-	text_files = env.Glob('*.txt')
+	#text_files = env.Glob('*.txt')
 	prefix = env['FAKE_ROOT'] + env['PREFIX']
-	desktop_file = os.path.join('data', PACKAGE + '.desktop')
-	app_icon_filter = lambda icon: os.path.splitext(icon)[0] == PACKAGE
-	regular_icon_filter = lambda icon: os.path.splitext(icon)[0] != PACKAGE
+	#desktop_file = os.path.join('data', PACKAGE + '.desktop')
+	#app_icon_filter = lambda icon: os.path.splitext(icon)[0] == PACKAGE
+	#regular_icon_filter = lambda icon: os.path.splitext(icon)[0] != PACKAGE
 
-	env.Alias('install', env.Install(dir = os.path.join(prefix, 'share', PACKAGE, 'glade'), source = glade_files))
-	env.Alias('install', env.Install(dir = os.path.join(prefix, 'share', 'doc', PACKAGE), source = text_files))
-	env.Alias('install', env.Install(dir = os.path.join(prefix, 'share', 'applications'), source = desktop_file))
+	#env.Alias('install', env.Install(dir = os.path.join(prefix, 'share', PACKAGE, 'glade'), source = glade_files))
+	#env.Alias('install', env.Install(dir = os.path.join(prefix, 'share', 'doc', PACKAGE), source = text_files))
+	#env.Alias('install', env.Install(dir = os.path.join(prefix, 'share', 'applications'), source = desktop_file))
 	env.Alias('install', env.Install(dir = os.path.join(prefix, 'bin'), source = PACKAGE))
 
