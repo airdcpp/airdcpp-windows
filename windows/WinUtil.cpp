@@ -192,34 +192,44 @@ void WinUtil::PM::operator()(UserPtr aUser, const string& aUrl) const {
 }
 
 void WinUtil::MatchQueue::operator()(UserPtr aUser, const string& aUrl) const {
-	if(aUser) {
+	if (!aUser)
+		return;
+
+	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
 			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_MATCH_QUEUE);
 		} catch(const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
 		}
-	}
+	});
 }
 
 void WinUtil::GetList::operator()(UserPtr aUser, const string& aUrl) const {
-	if(aUser) {
+	if (!aUser)
+		return;
+	
+	MainFrame::getMainFrame()->addThreadedTask([=] {
 		try {
 			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW);
 		} catch(const Exception& e) {
 			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);		
 		}
-	}
+	});
 }
+
 void WinUtil::BrowseList::operator()(UserPtr aUser, const string& aUrl) const {
 	if(!aUser)
 		return;
 
-	try {
-		QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
-	} catch(const Exception& e) {
-		LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);		
-	}
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		try {
+			QueueManager::getInstance()->addList(HintedUser(aUser, aUrl), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+		} catch (const Exception& e) {
+			LogManager::getInstance()->message(e.getError(), LogManager::LOG_ERROR);
+		}
+	});
 }
+
 void WinUtil::GetBrowseList::operator()(UserPtr aUser, const string& aUrl) const {
 	if(!aUser)
 		return;
@@ -1152,7 +1162,8 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 		Util::stricmp(proto.c_str(), "dchub") == 0 )
 	{
 		if(!host.empty()) {
-			HubFrame::openWindow(Text::toT(url));
+			RecentHubEntryPtr r = new RecentHubEntry(url);
+			MainFrame::getMainFrame()->addThreadedTask([=] { ClientManager::getInstance()->createClient(r, SETTING(DEFAULT_SP)); });
 		}
 
 		if(!file.empty()) {
@@ -1161,14 +1172,17 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 				file = file.substr(1);
 				if(file.empty()) return true;
 			}
-			try {
-				UserPtr user = ClientManager::getInstance()->findLegacyUser(file);
-				if(user)
-					QueueManager::getInstance()->addList(HintedUser(user, url), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
-				// @todo else report error
-			} catch (const Exception&) {
-				// ...
-			}
+
+			MainFrame::getMainFrame()->addThreadedTask([=] {
+				try {
+					UserPtr user = ClientManager::getInstance()->findLegacyUser(file);
+					if (user)
+						QueueManager::getInstance()->addList(HintedUser(user, url), QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+					// @todo else report error
+				} catch (const Exception&) {
+					// ...
+				}
+			});
 		}
 
 		return true;

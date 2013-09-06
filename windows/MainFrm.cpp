@@ -1474,12 +1474,14 @@ void MainFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */)
 }
 
 LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ProfileToken profile = SETTING(LAST_LIST_PROFILE);
-	auto profiles = ShareManager::getInstance()->getProfiles();
-	if (boost::find_if(profiles, [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
-		profile = SETTING(DEFAULT_SP);
+	addThreadedTask([=] {
+		ProfileToken profile = SETTING(LAST_LIST_PROFILE);
+		auto profiles = ShareManager::getInstance()->getProfiles();
+		if (find_if(profiles, [profile](const ShareProfilePtr& aProfile) { return aProfile->getToken() == profile; }) == profiles.end())
+			profile = SETTING(DEFAULT_SP);
 
-	DirectoryListingManager::getInstance()->openOwnList(profile, wID == IDC_OWN_LIST_ADL);
+		DirectoryListingManager::getInstance()->openOwnList(profile, wID == IDC_OWN_LIST_ADL);
+	});
 	return 0;
 }
 
@@ -1490,7 +1492,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	if (WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), TSTRING(OPEN_FILE_LIST), types)) {
 		UserPtr u = DirectoryListing::getUserFromFilename(Text::fromT(file));
 		if(u) {
-			DirectoryListingManager::getInstance()->openFileList(HintedUser(u, Util::emptyString), Text::fromT(file));
+			addThreadedTask([=] { DirectoryListingManager::getInstance()->openFileList(HintedUser(u, Util::emptyString), Text::fromT(file)); });
 		} else {
 			MessageBox(CTSTRING(INVALID_LISTNAME), _T(APPNAME) _T(" ") _T(VERSIONSTRING));
 		}
@@ -2006,7 +2008,7 @@ LRESULT MainFrame::onAway(WORD , WORD , HWND, BOOL& ) {
 }
 
 LRESULT MainFrame::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	UpdateManager::getInstance()->checkVersion(true);
+	addThreadedTask([] { UpdateManager::getInstance()->checkVersion(true); });
 	return S_OK;
 }
 
@@ -2181,7 +2183,7 @@ void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater
 void MainFrame::onUpdateAvailable(const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
 	UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
 	if (dlg.DoModal(m_hWnd)  == IDC_UPDATE_DOWNLOAD) {
-		UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, build, true);
+		addThreadedTask([=] { UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, build, true); });
 		ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 	}
 }
@@ -2200,7 +2202,7 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 		PostMessage(WM_CLOSE);
 	} else {
 		if(!UpdateManager::getInstance()->isUpdating()) {
-			UpdateManager::getInstance()->downloadUpdate(updateUrl, buildID, true);
+			addThreadedTask([=] { UpdateManager::getInstance()->downloadUpdate(updateUrl, buildID, true); });
 			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 		} else {
 			showMessageBox(CTSTRING(UPDATER_IN_PROGRESS), MB_OK | MB_ICONINFORMATION);
