@@ -28,12 +28,12 @@
 #define _ATL_NO_DOCHOSTUIHANDLER
 
 #include "stdafx.h"
+
+#include "../client/GetSet.h"
 #include "../client/Singleton.h"
 #include "../client/TimerManager.h"
 
 #include "PopupDlg.h"
-
-#define DOWNLOAD_COMPLETE 6
 
 class PopupManager : public Singleton< PopupManager >, private TimerManagerListener
 {
@@ -54,7 +54,7 @@ public:
 	
 	void Mute(bool mute) { activated = !mute; }
 
-	GETSET(bool, creating, Creating);
+	IGETSET(bool, creating, Creating, false);
 private:
 	typedef list< PopupWnd* > PopupList;
 	typedef PopupList::iterator PopupIter;

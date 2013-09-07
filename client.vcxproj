@@ -233,6 +233,7 @@
     <ClCompile Include="client\AdcSearch.cpp" />
     <ClCompile Include="client\ADLSearch.cpp" />
     <ClCompile Include="client\AirUtil.cpp" />
+    <ClCompile Include="client\AutoSearch.cpp" />
     <ClCompile Include="client\AutoSearchManager.cpp" />
     <ClCompile Include="client\BufferedSocket.cpp" />
     <ClCompile Include="client\Bundle.cpp" />
@@ -337,6 +338,7 @@
     <ClInclude Include="client\ADLSearch.h" />
     <ClInclude Include="client\AirUtil.h" />
     <ClInclude Include="client\atomic.h" />
+    <ClInclude Include="client\AutoSearch.h" />
     <ClInclude Include="client\AutoSearchManager.h" />
     <ClInclude Include="client\AutosearchManagerListener.h" />
     <ClInclude Include="client\BerkeleyDB.h" />

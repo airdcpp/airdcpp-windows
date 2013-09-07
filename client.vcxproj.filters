@@ -299,6 +299,9 @@
     <ClCompile Include="client\ColorSettings.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\AutoSearch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -776,6 +779,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\ColorSettings.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\AutoSearch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
