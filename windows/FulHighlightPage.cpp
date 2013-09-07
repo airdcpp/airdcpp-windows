@@ -23,8 +23,8 @@
 #include "../client/SettingsManager.h"
 #include "../client/StringTokenizer.h"
 
-#include "ColorSettings.h"
-#include "HighlightManager.h"
+#include "../client/ColorSettings.h"
+#include "../client/HighlightManager.h"
 #include "Resource.h"
 #include "FulHighlightPage.h"
 #include "FulHighlightDialog.h"

@@ -4,6 +4,7 @@ Added:
 
 - Allow changing the default share profile
 - New filter for file list and search tabs
+- Allow specifying maximum age for a file when searching
 - Display the via which the file list is browsed through and allow changing it
 - Allow changing the share profile in own list
 - Add an option to refresh the share after client startup (enabled by default)
@@ -24,10 +25,17 @@ Changed:
 - Try to remember the previous list positions when using back/forward functions in file lists
 - Partial lists and small files will always override the download slot settings
 - Insert the inc param in the cursor position (auto search)
+- Perform dupe check with all hashers when queuing files for hashing and multiple hashers per volume are allowed
+- Allow adding multiple auto search items with the same name
+- Old saved file list will now behave correctly when opening them from disk, allow queueing files from them
+- Avoid system log spam when the same monitored directory fails scanning and no changes have been made
+- Allow setting background file list active when a new list is requested
 
 Fixed:
 
+- Use correct units for connection speeds
 - Fix a monitoring bug that caused the whole directory to be removed from share after deleting a single file from it
+- Fix a monitoring bug causing new files remain unnoticed if they were renamed right after creation
 - Fix issues with the lowest queue priority
 - Perform the check for free space also when adding items in download by doubleclicking
 - Preserve the case size when downloading grouped directories
@@ -35,6 +43,13 @@ Fixed:
 - Fix extra paths in the file list browsing history and a few other problems related to browsing history
 - Fix cases where multiple items might have been added for auto search items
 - Fix problems with directory downloads if the other client refuses to give fully recursive list
+- Fix system log spam when disabled auto search items expire
+- Fix PM/chat icon issues with custom balloon popups
+- Fix an issue with some segmented uploads
+- Fix duplicate items in partial lists in some cases
+- Prevent identity faking with transfers (ADC)
+- Fix invalid status messages in PM tabs
+- Fix transfer timeouts right after connecting to an ADC hub
 
 
 2.51

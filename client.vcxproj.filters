@@ -293,6 +293,12 @@
     <ClCompile Include="client\IgnoreManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\HighlightManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\ColorSettings.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -764,6 +770,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\IgnoreManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\HighlightManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\ColorSettings.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

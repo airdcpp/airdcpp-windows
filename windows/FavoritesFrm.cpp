@@ -431,8 +431,8 @@ void FavoriteHubsFrame::handleMove(bool up) {
 TStringList FavoriteHubsFrame::getSortedGroups() const {
 	set<tstring, noCaseStringLess> sorted_groups;
 	const FavHubGroups& favHubGroups = FavoriteManager::getInstance()->getFavHubGroups();
-	for(auto i = favHubGroups.begin(), iend = favHubGroups.end(); i != iend; ++i)
-		sorted_groups.insert(Text::toT(i->first));
+	for(const auto& fhg: favHubGroups | map_keys)
+		sorted_groups.insert(Text::toT(fhg));
 
 	TStringList groups(sorted_groups.begin(), sorted_groups.end());
 	groups.insert(groups.begin(), Util::emptyStringT); // default group (otherwise, hubs without group don't show up)

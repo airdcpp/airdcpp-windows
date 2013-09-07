@@ -508,7 +508,6 @@
     <ClCompile Include="windows\ExMessageBox.cpp" />
     <ClCompile Include="windows\HashingPage.cpp" />
     <ClCompile Include="windows\HashProgressDlg.cpp" />
-    <ClCompile Include="windows\HighlightManager.cpp" />
     <ClCompile Include="windows\HtmlToRtf.cpp" />
     <ClCompile Include="windows\LimitPage.cpp" />
     <ClCompile Include="windows\ListFilter.cpp" />
@@ -629,7 +628,6 @@
     <ClInclude Include="windows\AutoSearchFrm.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\ChatCommands.h" />
-    <ClInclude Include="windows\ColorSettings.h" />
     <ClInclude Include="windows\CProgressCtrlEx.h" />
     <ClInclude Include="windows\CSplitterEx.h" />
     <ClInclude Include="windows\DirectoryListingDlg.h" />
@@ -642,7 +640,6 @@
     <ClInclude Include="windows\ExMessageBox.h" />
     <ClInclude Include="windows\FilteredListViewCtrl.h" />
     <ClInclude Include="windows\HashingPage.h" />
-    <ClInclude Include="windows\HighlightManager.h" />
     <ClInclude Include="windows\HtmlToRtf.h" />
     <ClInclude Include="windows\LanguageDownloadDlg.h" />
     <ClInclude Include="windows\LimitPage.h" />

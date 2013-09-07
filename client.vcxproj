@@ -242,6 +242,7 @@
     <ClCompile Include="client\CID.cpp" />
     <ClCompile Include="client\Client.cpp" />
     <ClCompile Include="client\ClientManager.cpp" />
+    <ClCompile Include="client\ColorSettings.cpp" />
     <ClCompile Include="client\ConnectionManager.cpp" />
     <ClCompile Include="client\ConnectivityManager.cpp" />
     <ClCompile Include="client\CryptoManager.cpp" />
@@ -262,6 +263,7 @@
     <ClCompile Include="client\GeoManager.cpp" />
     <ClCompile Include="client\HashBloom.cpp" />
     <ClCompile Include="client\HashManager.cpp" />
+    <ClCompile Include="client\HighlightManager.cpp" />
     <ClCompile Include="client\HttpConnection.cpp" />
     <ClCompile Include="client\HttpDownload.cpp" />
     <ClCompile Include="client\HubEntry.cpp" />
@@ -350,6 +352,7 @@
     <ClInclude Include="client\ClientListener.h" />
     <ClInclude Include="client\ClientManager.h" />
     <ClInclude Include="client\ClientManagerListener.h" />
+    <ClInclude Include="client\ColorSettings.h" />
     <ClInclude Include="client\compiler.h" />
     <ClInclude Include="client\concurrency.h" />
     <ClInclude Include="client\ConnectionManager.h" />
@@ -395,6 +398,7 @@
     <ClInclude Include="client\HashedFile.h" />
     <ClInclude Include="client\HashManager.h" />
     <ClInclude Include="client\HashValue.h" />
+    <ClInclude Include="client\HighlightManager.h" />
     <ClInclude Include="client\HintedUser.h" />
     <ClInclude Include="client\HttpConnection.h" />
     <ClInclude Include="client\HttpConnectionListener.h" />

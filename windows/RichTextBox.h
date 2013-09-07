@@ -29,7 +29,7 @@
 
 #include <boost/algorithm/string.hpp>
 
-#include "ColorSettings.h"
+#include "../client/ColorSettings.h"
 #include "TypedListViewCtrl.h"
 #include "ImageDataObject.h"
 #include "UCHandler.h"

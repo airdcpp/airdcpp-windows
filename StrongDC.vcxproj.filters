@@ -750,9 +750,6 @@
     <ClCompile Include="windows\WizardLanguage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\HighlightManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1161,12 +1158,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\LanguageDownloadDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\ColorSettings.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\HighlightManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

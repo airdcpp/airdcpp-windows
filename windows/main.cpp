@@ -46,7 +46,6 @@
 #include "ResourceLoader.h"
 #include "MainFrm.h"
 #include "PopupManager.h"
-#include "HighlightManager.h"
 #include "LineDlg.h"
 #include "Wizard.h"
 #include <delayimp.h>
@@ -371,7 +370,6 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		}
 
 		PopupManager::newInstance();
-		HighlightManager::newInstance();
 
 		WinUtil::splash->callAsync([=] {
 			if(SETTING(PASSWD_PROTECT) && !WinUtil::checkClientPassword()) {
@@ -425,7 +423,6 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	dcassert(WinUtil::splash);
 	loader = std::async([=] {
-		HighlightManager::deleteInstance();
 		PopupManager::deleteInstance();
 
 		shutdown(

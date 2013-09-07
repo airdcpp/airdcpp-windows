@@ -24,7 +24,7 @@
 #include "../client/StringTokenizer.h"
 #include "../client/version.h"
 
-#include "HighlightManager.h"
+#include "../client/HighlightManager.h"
 #include "FulHighlightDialog.h"
 #include "WinUtil.h"
 
@@ -275,7 +275,7 @@ void FulHighlightDialog::getValues(){
 	else
 		cs.setMatchColumn(0);
 
-	cs.setSoundFile( soundFile );
+	cs.setSoundFile(Text::fromT(soundFile));
 
 	cs.setRegexp();
 
@@ -309,7 +309,7 @@ void FulHighlightDialog::initControls() {
 		fgColor = cs.getFgColor();
 
 	if(cs.getPlaySound())
-		soundFile = cs.getSoundFile();
+		soundFile = Text::toT(cs.getSoundFile());
 
 	BOOL t;
 	onClickedBox(0, IDC_HAS_BG_COLOR, NULL, t);

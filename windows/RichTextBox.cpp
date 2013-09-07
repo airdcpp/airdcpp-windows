@@ -19,6 +19,7 @@
 
 #include "../client/AutoSearchManager.h"
 #include "../client/FavoriteManager.h"
+#include "../client/HighlightManager.h"
 #include "../client/IgnoreManager.h"
 #include "../client/Magnet.h"
 #include "../client/UploadManager.h"
@@ -32,7 +33,6 @@
 
 #include "RichTextBox.h"
 #include "EmoticonsManager.h"
-#include "Highlightmanager.h"
 #include "HubFrame.h"
 #include "PrivateFrame.h"
 #include "LineDlg.h"
@@ -1750,7 +1750,7 @@ void RichTextBox::CheckAction(ColorSettings* cs, const tstring& line) {
 
 	if(cs->getPlaySound() && !matchedSound ){
 		matchedSound = true;
-		WinUtil::playSound(cs->getSoundFile());
+		WinUtil::playSound(Text::toT(cs->getSoundFile()));
 	}
 
 	if(cs->getFlashWindow())

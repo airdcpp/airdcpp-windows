@@ -26,7 +26,7 @@
 #include <atlcrack.h>
 #include "PropPage.h"
 #include "ExListViewCtrl.h"
-#include "ColorSettings.h"
+#include "../client/ColorSettings.h"
 
 #include "../client/SettingsManager.h"
 #include "../client/User.h"
