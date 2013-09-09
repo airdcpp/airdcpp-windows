@@ -200,6 +200,12 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 
 			//notify the user that we've loaded the list
 			setDirty();
+
+			if (changeType == CHANGE_LIST) {
+				ctrlFiles.list.SetFocus();
+			} else {
+				ctrlTree.SetFocus();
+			}
 		});
 	} else {
 		findSearchHit(true);
@@ -821,9 +827,18 @@ void DirectoryListingFrame::DisableWindow(bool redraw){
 		ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
 
-	//can't use EnableWindow as that message seems the get queued for the list view...
-	ctrlFiles.list.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
-	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
+	// can't use EnableWindow as that message seems the get queued for the list view...
+	//ctrlFiles.list.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
+	//ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
+	ctrlFiles.list.EnableWindow(FALSE);
+	ctrlTree.EnableWindow(FALSE);
+
+	// clear the message queue
+	MSG uMsg;
+	while (PeekMessage(&uMsg, NULL, 0, 0, PM_REMOVE) > 0) {
+		TranslateMessage(&uMsg);
+		DispatchMessage(&uMsg);
+	}
 }
 
 void DirectoryListingFrame::EnableWindow(bool redraw){
@@ -1086,7 +1101,7 @@ void DirectoryListingFrame::onListItemAction() {
 	}
 }
 
-LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
 	if(kd->wVKey == VK_BACK) {
 		up();
@@ -1098,18 +1113,31 @@ LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*b
 		forward();
 	} else if(kd->wVKey == VK_RETURN) {
 		onListItemAction();
+	} else if (checkCommonKey(kd->wVKey)) {
+		bHandled = TRUE;
+		return 1;
 	}
 	return 0;
 }
 
-LRESULT DirectoryListingFrame::onKeyDownDirs(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT DirectoryListingFrame::onKeyDownDirs(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMTVKEYDOWN* kd = (NMTVKEYDOWN*) pnmh;
-	if(kd->wVKey == VK_TAB) {
-		onTab();
-	} else if(kd->wVKey == VK_DOWN || kd->wVKey == VK_DOWN) {
+	if(kd->wVKey == VK_DOWN || kd->wVKey == VK_DOWN) {
 		changeType = CHANGE_TREE_SINGLE;
+	} else if (checkCommonKey(kd->wVKey)) {
+		bHandled = TRUE;
+		return 1;
 	}
 	return 0;
+}
+
+bool DirectoryListingFrame::checkCommonKey(int key) {
+	if (key == VK_TAB) {
+		onTab();
+		return true;
+	}
+
+	return false;
 }
 
 void DirectoryListingFrame::onTab() {
@@ -1211,6 +1239,12 @@ LRESULT DirectoryListingFrame::onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*
 		
 	bHandled = FALSE;
 	return 0;
+}
+
+LRESULT DirectoryListingFrame::onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (dl->getPartialList())
+		handleReloadPartial(true);
+	return 1;
 }
 
 void DirectoryListingFrame::selectItem(const tstring& name) {

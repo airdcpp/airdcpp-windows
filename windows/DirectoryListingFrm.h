@@ -128,6 +128,7 @@ public:
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
+		COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
 		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_DATE, onCopy)
 		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
@@ -171,6 +172,7 @@ public:
 		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onComboSelChanged)
 	END_MSG_MAP()
 
+	LRESULT onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onComboSelChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
@@ -257,6 +259,7 @@ public:
 	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
 private:
+	bool checkCommonKey(int key);
 	task_group tasks;
 	bool allowPopup() const;
 	void updateHistoryCombo();

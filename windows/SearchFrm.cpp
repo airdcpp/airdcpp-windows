@@ -574,7 +574,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		//no further validation, trust that the other client knows what he's sending... unless we are using excludes
 		//if (usingExcludes) {
 			RLock l (cs);
-			if (curSearch && ((usingExcludes && curSearch->isExcluded(aResult->getPath())) || curSearch->isIndirectExclude(aResult->getFileName()))) {
+			if (curSearch && ((usingExcludes && curSearch->isExcluded(aResult->getPath())) || (SETTING(IGNORE_INDIRECT_SR) && curSearch->isIndirectExclude(aResult->getFileName())))) {
 				callAsync([this] { onResultFiltered(); });
 				return;
 			}

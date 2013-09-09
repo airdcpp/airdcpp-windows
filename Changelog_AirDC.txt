@@ -5,7 +5,7 @@ Added:
 - Allow changing the default share profile
 - New filter for file list and search tabs
 - Allow specifying maximum age for a file when searching
-- Display the via which the file list is browsed through and allow changing it
+- Display the hub via which the file list is browsed through and allow changing it
 - Allow changing the share profile in own list
 - Add an option to refresh the share after client startup (enabled by default)
 - Add an option to store the unfinished files in the final destination directory (enabled by default)
@@ -33,6 +33,7 @@ Changed:
 
 Fixed:
 
+- Prevent identity faking with transfers (ADC)
 - Use correct units for connection speeds
 - Fix a monitoring bug that caused the whole directory to be removed from share after deleting a single file from it
 - Fix a monitoring bug causing new files remain unnoticed if they were renamed right after creation
@@ -47,9 +48,9 @@ Fixed:
 - Fix PM/chat icon issues with custom balloon popups
 - Fix an issue with some segmented uploads
 - Fix duplicate items in partial lists in some cases
-- Prevent identity faking with transfers (ADC)
 - Fix invalid status messages in PM tabs
 - Fix transfer timeouts right after connecting to an ADC hub
+- Avoid deadlocks when downloading file lists
 
 
 2.51
