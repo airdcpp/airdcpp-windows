@@ -46,9 +46,9 @@ ShowUninstDetails show
    
 ; The file to write
 !ifdef X64
-  OutFile "AirDC_Installer_2.50_r1532_x64.exe"
+  OutFile "AirDC_Installer_2.60_r1701_x64.exe"
 !else
-  OutFile "AirDC_Installer_2.50_r1532_x86.exe"
+  OutFile "AirDC_Installer_2.60_r1701_x86.exe"
 !endif
 
 ; The default installation directory
