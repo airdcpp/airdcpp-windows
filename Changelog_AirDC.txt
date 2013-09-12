@@ -35,6 +35,7 @@ Fixed:
 
 - Prevent identity faking with transfers (ADC)
 - Use correct units for connection speeds
+- Fix file list related crashes
 - Fix a monitoring bug that caused the whole directory to be removed from share after deleting a single file from it
 - Fix a monitoring bug causing new files remain unnoticed if they were renamed right after creation
 - Fix issues with the lowest queue priority
@@ -51,6 +52,7 @@ Fixed:
 - Fix invalid status messages in PM tabs
 - Fix transfer timeouts right after connecting to an ADC hub
 - Avoid deadlocks when downloading file lists
+- Don't remove trees for queued items when optimizing the hash database
 
 
 2.51

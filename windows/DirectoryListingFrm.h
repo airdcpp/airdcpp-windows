@@ -62,11 +62,10 @@ static const cmdBarButton cmdBarButtons[] = {
 	{IDC_NEXT, 3, ResourceManager::NEXT},
 };
 
-class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>, 
+class DirectoryListingFrame : public MDITabChildWindowImpl<DirectoryListingFrame>, public CSplitterImpl<DirectoryListingFrame>,
 	public UCHandler<DirectoryListingFrame>, private SettingsManagerListener, public UserInfoBaseHandler<DirectoryListingFrame>,
 	public DownloadBaseHandler<DirectoryListingFrame>, private DirectoryListingListener, private Async<DirectoryListingFrame>,
-	private ClientManagerListener
-{
+	private ClientManagerListener {
 public:
 	static void openWindow(DirectoryListing* aList, const string& aDir, const string& aXML);
 	static void closeAll();
@@ -84,7 +83,7 @@ public:
 		COLUMN_DATE,
 		COLUMN_LAST
 	};
-		
+
 	enum {
 		STATUS_TEXT,
 		STATUS_TOTAL_SIZE,
@@ -98,28 +97,12 @@ public:
 	};
 
 	DirectoryListingFrame(DirectoryListing* aList);
-	 ~DirectoryListingFrame();
+	~DirectoryListingFrame();
 
 
 	DECLARE_FRAME_WND_CLASS(_T("DirectoryListingFrame"), IDR_DIRECTORY)
 
 	BEGIN_MSG_MAP(DirectoryListingFrame)
-		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_GETINFOTIP, ctrlTree.OnGetChildInfo)
-		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_GETDISPINFO, ctrlTree.OnGetItemDispInfo)
-		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_ITEMEXPANDING, ctrlTree.OnItemExpanding)
-
-		NOTIFY_HANDLER(IDC_FILES, LVN_GETDISPINFO, ctrlFiles.list.onGetDispInfo)
-		NOTIFY_HANDLER(IDC_FILES, LVN_COLUMNCLICK, ctrlFiles.list.onColumnClick)
-		NOTIFY_HANDLER(IDC_FILES, LVN_KEYDOWN, onKeyDown)
-		NOTIFY_HANDLER(IDC_FILES, NM_DBLCLK, onDoubleClickFiles)
-		NOTIFY_HANDLER(IDC_FILES, LVN_ITEMCHANGED, onItemChanged)
-		NOTIFY_HANDLER(IDC_FILES, NM_CUSTOMDRAW, onCustomDrawList)
-
-		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_DBLCLK, onDoubleClickDirs)
-		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_KEYDOWN, onKeyDownDirs)
-		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_SELCHANGED, onSelChangedDirectories)
-		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CLICK, onClickTree)
-		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CUSTOMDRAW, onCustomDrawTree)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
@@ -128,34 +111,55 @@ public:
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
-		COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
-		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
-		COMMAND_ID_HANDLER(IDC_COPY_DATE, onCopy)
-		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
-		COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_FILENAME, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_DIR, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_EXACT_SIZE, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy);
+
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
-		
-		COMMAND_ID_HANDLER(IDC_FIND, onFind)
-		COMMAND_ID_HANDLER(IDC_NEXT, onNext)
-		COMMAND_ID_HANDLER(IDC_PREV, onPrev)
-		
-		COMMAND_ID_HANDLER(IDC_UP, onUp)
-		COMMAND_ID_HANDLER(IDC_FORWARD, onForward)
-		COMMAND_ID_HANDLER(IDC_BACK, onBack)
 
-		COMMAND_ID_HANDLER(IDC_RELOAD, onReloadList)
-		COMMAND_ID_HANDLER(IDC_RELOAD_DIR, onReloadDir)
-		COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
-		COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
-		COMMAND_ID_HANDLER(IDC_GETLIST, onGetFullList)
-		NOTIFY_CODE_HANDLER(TBN_DROPDOWN, onListDiff)
+		if (windowState != STATE_DISABLED) {
+			NOTIFY_HANDLER(IDC_FILES, LVN_GETDISPINFO, ctrlFiles.list.onGetDispInfo)
+			NOTIFY_HANDLER(IDC_FILES, LVN_COLUMNCLICK, ctrlFiles.list.onColumnClick)
+			NOTIFY_HANDLER(IDC_FILES, LVN_KEYDOWN, onKeyDown)
+			NOTIFY_HANDLER(IDC_FILES, NM_DBLCLK, onDoubleClickFiles)
+			NOTIFY_HANDLER(IDC_FILES, LVN_ITEMCHANGED, onItemChanged)
 
-		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
+			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_ITEMEXPANDING, ctrlTree.OnItemExpanding)
+			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_GETDISPINFO, ctrlTree.OnGetItemDispInfo)
+			NOTIFY_HANDLER(IDC_DIRECTORIES, NM_DBLCLK, onDoubleClickDirs)
+			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_KEYDOWN, onKeyDownDirs)
+			NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CLICK, onClickTree)
+			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_SELCHANGED, onSelChangedDirectories)
+			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_GETINFOTIP, ctrlTree.OnGetChildInfo)
+
+			NOTIFY_HANDLER(IDC_FILES, NM_CUSTOMDRAW, onCustomDrawList)
+			NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CUSTOMDRAW, onCustomDrawTree)
+
+			COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
+			COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
+			COMMAND_ID_HANDLER(IDC_COPY_DATE, onCopy)
+			COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
+			COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy);
+			COMMAND_ID_HANDLER(IDC_COPY_FILENAME, onCopy);
+			COMMAND_ID_HANDLER(IDC_COPY_DIR, onCopy);
+			COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy);
+			COMMAND_ID_HANDLER(IDC_COPY_EXACT_SIZE, onCopy);
+			COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy);
+
+			COMMAND_ID_HANDLER(IDC_FIND, onFind)
+			COMMAND_ID_HANDLER(IDC_NEXT, onNext)
+			COMMAND_ID_HANDLER(IDC_PREV, onPrev)
+
+			COMMAND_ID_HANDLER(IDC_UP, onUp)
+			COMMAND_ID_HANDLER(IDC_FORWARD, onForward)
+			COMMAND_ID_HANDLER(IDC_BACK, onBack)
+
+			COMMAND_ID_HANDLER(IDC_RELOAD, onReloadList)
+			COMMAND_ID_HANDLER(IDC_RELOAD_DIR, onReloadDir)
+			COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
+			COMMAND_ID_HANDLER(IDC_MATCH_ADL, onMatchADL)
+			COMMAND_ID_HANDLER(IDC_GETLIST, onGetFullList)
+			NOTIFY_CODE_HANDLER(TBN_DROPDOWN, onListDiff)
+
+			MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
+		}
 
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
@@ -213,9 +217,9 @@ public:
 	void findFile(bool findNext);
 	void runUserCommand(UserCommand& uc);
 
-	void refreshTree(const tstring& root, bool reloadList, bool changeDir);
+	void refreshTree(const string& root, bool reloadList, bool changeDir);
 
-	void selectItem(const tstring& name);
+	void selectItem(const string& name);
 	
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
@@ -270,9 +274,9 @@ private:
 	// safe to be called from any thread
 	void updateStatus(const tstring& aMsg);
 	string curPath;
-	void changeWindowState(bool enable);
+	void changeWindowState(bool enable, bool redraw = true);
 	
-	void updateItems(const DirectoryListing::Directory* d, BOOL enableRedraw);
+	void updateItems(const DirectoryListing::Directory* d);
 	void insertItems(const optional<string>& selectedName);
 
 	enum ReloadMode {
@@ -292,6 +296,7 @@ private:
 		CHANGE_TREE_EXPAND,
 		CHANGE_TREE_COLLAPSE,
 		CHANGE_HISTORY,
+		CHANGE_LAST
 	};
 
 	ChangeType changeType;
@@ -346,7 +351,7 @@ private:
 
 	void handleItemAction(bool usingTree, std::function<void (const ItemInfo* ii)> aF, bool firstOnly = false);
 	void onListItemAction();
-	void changeDir(const ItemInfo* d, BOOL enableRedraw, ReloadMode aReload = RELOAD_NONE);
+	void changeDir(const ItemInfo* d, ReloadMode aReload = RELOAD_NONE);
 
 	CContainedWindow pathContainer;
 	CContainedWindow treeContainer;
@@ -404,7 +409,14 @@ private:
 	void DisableWindow(bool redraw = true);
 	void EnableWindow(bool redraw = true);
 
-	bool disabled;
+	enum WindowState {
+		STATE_ENABLED,
+		STATE_ENABLING,
+		STATE_DISABLED,
+		STATE_DISABLING
+	};
+
+	WindowState windowState;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept;

@@ -82,7 +82,9 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 	pathContainer(WC_COMBOBOX, this, PATH_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
 	listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(1),
 		treeRoot(nullptr), skipHits(0), files(0), updating(false), dl(aList), 
-		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), disabled(false), ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), ctrlFiles(this, COLUMN_LAST, [this] { filterList(); }, filterSettings, COLUMN_LAST)
+		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), windowState(STATE_ENABLED), 
+		ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), 
+		ctrlFiles(this, COLUMN_LAST, [this] { callAsync([this] { filterList(); }); }, filterSettings, COLUMN_LAST)
 {
 	dl->addListener(this);
 }
@@ -145,6 +147,9 @@ void DirectoryListingFrame::updateItemCache(const string& aPath, ReloadMode aRel
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept {
 	updateItemCache(aDir, reloadList ? RELOAD_ALL : RELOAD_DIR);
 
+	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
+		dl->checkShareDupes();
+
 	auto f = [=] { onLoadingFinished(aStart, aDir, reloadList, changeDir, loadInGUIThread); };
 	if (loadInGUIThread) {
 		callAsync(f);
@@ -171,11 +176,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 	if (searching)
 		ctrlFiles.filter.clear();
 
-	try{
-		refreshTree(Text::toT(aDir), reloadList, changeDir);
-	} catch(const AbortException) {
-		return;
-	}
+	refreshTree(aDir, reloadList, changeType != CHANGE_TREE_EXPAND && changeDir ? true : false);
 
 	if (!searching) {
 		int64_t loadTime = (GET_TICK() - aStart) / 1000;
@@ -191,7 +192,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 			msg = STRING_F(FILELIST_LOADED_IN, Util::formatSeconds(loadTime, true));
 		}
 
-		changeWindowState(true);
+		//changeWindowState(true);
 
 		runF([=] {
 			initStatus();
@@ -209,7 +210,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 		});
 	} else {
 		findSearchHit(true);
-		changeWindowState(true);
+		//changeWindowState(true);
 		runF([=] { 
 			updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
 			dl->setWaiting(false);
@@ -276,7 +277,7 @@ void DirectoryListingFrame::on(DirectoryListingListener::ChangeDirectory, const 
 	if (isSearchChange)
 		ctrlFiles.filter.clear();
 
-	selectItem(Text::toT(aDir));
+	selectItem(aDir);
 	if (isSearchChange) {
 		callAsync([=] { updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount())); });
 		findSearchHit(true);
@@ -475,7 +476,7 @@ LRESULT DirectoryListingFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	return 0;
 }
 
-void DirectoryListingFrame::changeWindowState(bool enable) {
+void DirectoryListingFrame::changeWindowState(bool enable, bool redraw) {
 	ctrlToolbar.EnableButton(IDC_MATCH_QUEUE, enable && !dl->isMyCID());
 	ctrlToolbar.EnableButton(IDC_MATCH_ADL, enable);
 	ctrlToolbar.EnableButton(IDC_FIND, enable);
@@ -490,11 +491,11 @@ void DirectoryListingFrame::changeWindowState(bool enable) {
 	selCombo.EnableWindow(enable);
 
 	if (enable) {
-		EnableWindow();
+		EnableWindow(redraw);
 		ctrlToolbar.EnableButton(IDC_GETLIST, dl->getPartialList() && !dl->isMyCID());
 		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, dl->getPartialList());
 	} else {
-		DisableWindow();
+		DisableWindow(redraw);
 		ctrlToolbar.EnableButton(IDC_RELOAD_DIR, FALSE);
 		ctrlToolbar.EnableButton(IDC_GETLIST, FALSE);
 	}
@@ -532,9 +533,11 @@ ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* ii) const 
 }
 
 void DirectoryListingFrame::expandDir(ItemInfo* ii, bool collapsing) {
-	changeType = collapsing ? CHANGE_TREE_COLLAPSE : CHANGE_TREE_EXPAND;
+	if (changeType != CHANGE_TREE_DOUBLE)
+		changeType = collapsing ? CHANGE_TREE_COLLAPSE : CHANGE_TREE_EXPAND;
+
 	if (collapsing || !ii->dir->isComplete()) {
-		changeDir(ii, TRUE);
+		changeDir(ii);
 	}
 }
 
@@ -562,10 +565,10 @@ void DirectoryListingFrame::createRoot() {
 	dcassert(treeRoot); 
 }
 
-void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bool changeDir) {
+void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadList, bool aChangeDir) {
 	ctrlTree.SetRedraw(FALSE);
 
-	if (reloadList) {
+	if (aReloadList) {
 		ctrlTree.DeleteAllItems();
 		ctrlFiles.list.DeleteAllItems();
 		if (dl->getIsOwnList()) {
@@ -577,12 +580,14 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 		updateHistoryCombo();
 	}
 
+	//check the root children state
 	bool initialChange = !ctrlTree.hasChildren(treeRoot);
 	if (initialChange && !dl->getRoot()->directories.empty()) {
 		ctrlTree.setHasChildren(treeRoot, true);
 	}
 
-	HTREEITEM ht = reloadList ? treeRoot : ctrlTree.findItem(treeRoot, Text::fromT(root));
+	//get the item for our new dir
+	HTREEITEM ht = aReloadList ? treeRoot : ctrlTree.findItem(treeRoot, aLoadedDir);
 	if(!ht) {
 		ht = treeRoot;
 	}
@@ -590,48 +595,40 @@ void DirectoryListingFrame::refreshTree(const tstring& root, bool reloadList, bo
 	auto d = ((ItemInfo*)ctrlTree.GetItemData(ht))->dir;
 	d->setLoading(false);
 
-	ctrlTree.SelectItem(NULL);
-
 	bool isExpanded = ctrlTree.IsExpanded(ht);
 
-	//make sure that all subitems are removed
+	windowState = STATE_ENABLING; //some protected messages need to be handled in order for expanding to work
+
+	//make sure that all subitems are removed and expand if needed
 	ctrlTree.Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
-	if (initialChange || isExpanded || (changeDir && (changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)))
+	if (initialChange || isExpanded || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
 		ctrlTree.Expand(ht);
 
-
-	if (changeDir) {
-		if (changeType == CHANGE_TREE_EXPAND)
-			ctrlTree.SelectItem(ctrlTree.findItem(treeRoot, curPath));
-		else
-			selectItem(root);
-	} else {
-		auto loadedDir = Text::fromT(root);
-
-		if (curPath == Util::getParentDir(loadedDir, true)) {
-			//set the dir complete
-			int j = ctrlFiles.list.GetItemCount();        
-			for(int i = 0; i < j; i++) {
-				const ItemInfo* ii = ctrlFiles.list.getItemData(i);
-				if (ii->type == ii->DIRECTORY && ii->dir->getPath() == loadedDir) {
-					ctrlFiles.list.SetItem(i, 0, LVIF_IMAGE, NULL, ResourceLoader::DIR_NORMAL, 0, 0, NULL);
-					ctrlFiles.list.updateItem(i);
-					updateStatus();
-					break;
-				}
-			}
-		}
-
-		if (!AirUtil::isParentOrExact(loadedDir, curPath))
-			updating = true; //prevent reloading the listview unless we are in the directory already (recursive partial lists with directory downloads from tree)
-
-		ctrlTree.SelectItem(ctrlTree.findItem(treeRoot, curPath));
-		updating = false;
+	// select out new item
+	if (aChangeDir) {
+		selectItem(aChangeDir ? aLoadedDir : curPath);
+		ctrlFiles.list.SetRedraw(FALSE);
 	}
 
-	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
-		dl->checkShareDupes();
+	changeWindowState(true, !aChangeDir);
+	if (aChangeDir) {
+		// insert the new items
+		updateItems(d);
+	} else if (curPath == Util::getParentDir(aLoadedDir, true)) {
+		// find the loaded directory and set it as complete
+		int j = ctrlFiles.list.GetItemCount();        
+		for(int i = 0; i < j; i++) {
+			const ItemInfo* ii = ctrlFiles.list.getItemData(i);
+			if (ii->type == ii->DIRECTORY && ii->dir->getPath() == aLoadedDir) {
+				ctrlFiles.list.SetItem(i, 0, LVIF_IMAGE, NULL, ResourceLoader::DIR_NORMAL, 0, 0, NULL);
+				ctrlFiles.list.updateItem(i);
+				updateStatus();
+				break;
+			}
+		}
+	}
 
+	changeType = CHANGE_LAST;
 	ctrlTree.SetRedraw(TRUE);
 }
 
@@ -820,32 +817,38 @@ tstring DirectoryListingFrame::getComboDesc() {
 }
 
 void DirectoryListingFrame::DisableWindow(bool redraw){
-	disabled = true;
-
+	windowState = STATE_DISABLING;
 	if (redraw) {
 		ctrlFiles.list.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 		ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
+	windowState = STATE_DISABLED;
 
+	tasks.wait();
 	// can't use EnableWindow as that message seems the get queued for the list view...
-	//ctrlFiles.list.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
-	//ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
-	ctrlFiles.list.EnableWindow(FALSE);
-	ctrlTree.EnableWindow(FALSE);
+	ctrlFiles.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
+	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
+	//SetWindowLongPtr(GWL_STYLE, GetWindowLongPtr(GWL_STYLE) | WS_DISABLED);
 
 	// clear the message queue
+	/*MSG uMsg;
+	while (PeekMessage(&uMsg, NULL, 0, 0, PM_REMOVE) > 0) {
+		TranslateMessage(&uMsg);
+		DispatchMessage(&uMsg);
+	}*/
+}
+
+void DirectoryListingFrame::EnableWindow(bool redraw){
 	MSG uMsg;
 	while (PeekMessage(&uMsg, NULL, 0, 0, PM_REMOVE) > 0) {
 		TranslateMessage(&uMsg);
 		DispatchMessage(&uMsg);
 	}
-}
 
-void DirectoryListingFrame::EnableWindow(bool redraw){
-	tasks.wait();
-	disabled = false;
-	ctrlFiles.list.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
+	windowState = STATE_ENABLED;
+	ctrlFiles.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
 	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
+	//SetWindowLongPtr(GWL_STYLE, GetWindowLongPtr(GWL_STYLE) & ~WS_DISABLED);
 
 	if (redraw) {
 		ctrlFiles.list.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
@@ -888,8 +891,7 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 
 	if(p->itemNew.state & TVIS_SELECTED) {
 		auto ii = (ItemInfo*)p->itemNew.lParam;
-		//check if we really selected a new item.
-		if(curPath != ii->dir->getPath()) {
+		if (curPath != ii->dir->getPath()) {
 			if (changeType != CHANGE_HISTORY)
 				addHistory(ii->dir->getPath());
 
@@ -897,7 +899,7 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 		}
 
 		curPath = ii->dir->getPath();
-		changeDir(ii, TRUE);
+		changeDir(ii);
 	}
 	return 0;
 }
@@ -936,6 +938,10 @@ void DirectoryListingFrame::on(DirectoryListingListener::RemovedQueue, const str
 }
 
 void DirectoryListingFrame::filterList() {
+	// in case it's a timed event
+	if (windowState != STATE_ENABLED)
+		return;
+
 	updating = true;
 	ctrlFiles.list.SetRedraw(FALSE);
 
@@ -994,7 +1000,7 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 	}
 }
 
-void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BOOL enableRedraw) {
+void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d) {
 	ctrlFiles.list.SetRedraw(FALSE);
 	updating = true;
 	if (itemInfos.find(d->getPath()) == itemInfos.end()) {
@@ -1013,15 +1019,15 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d, BO
 	ctrlFiles.onListChanged(false);
 	insertItems(selectedName);
 
-	ctrlFiles.list.SetRedraw(enableRedraw);
+	ctrlFiles.list.SetRedraw(TRUE);
 	updating = false;
 	updateStatus();
 }
 
-void DirectoryListingFrame::changeDir(const ItemInfo* ii, BOOL enableRedraw, ReloadMode aReload /*RELOAD_NONE*/) {
+void DirectoryListingFrame::changeDir(const ItemInfo* ii, ReloadMode aReload /*RELOAD_NONE*/) {
 	auto d = ii->dir;
 	if (aReload == RELOAD_NONE)
-		updateItems(d, enableRedraw);
+		updateItems(d);
 
 
 	if(!d->isComplete() || aReload != RELOAD_NONE) {
@@ -1058,7 +1064,7 @@ void DirectoryListingFrame::back() {
 	if(history.size() > 1 && historyIndex > 1) {
 		changeType = CHANGE_HISTORY;
 		historyIndex--;
-		selectItem(Text::toT(history[historyIndex-1]));
+		selectItem(history[historyIndex-1]);
 	}
 }
 
@@ -1066,7 +1072,7 @@ void DirectoryListingFrame::forward() {
 	if(history.size() > 1 && historyIndex < history.size()) {
 		changeType = CHANGE_HISTORY;
 		historyIndex++;
-		selectItem(Text::toT(history[historyIndex-1]));
+		selectItem(history[historyIndex-1]);
 	}
 }
 
@@ -1247,9 +1253,10 @@ LRESULT DirectoryListingFrame::onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*
 	return 1;
 }
 
-void DirectoryListingFrame::selectItem(const tstring& name) {
-	HTREEITEM ht = ctrlTree.findItem(treeRoot, Text::fromT(name));
+void DirectoryListingFrame::selectItem(const string& name) {
+	HTREEITEM ht = ctrlTree.findItem(treeRoot, name);
 	if(ht) {
+		curPath = ((ItemInfo*) ctrlTree.GetItemData(ht))->dir->getPath();
 		if (changeType == CHANGE_LIST)
 			ctrlTree.EnsureVisible(ht);
 		ctrlTree.SelectItem(ht);
@@ -1524,7 +1531,7 @@ void DirectoryListingFrame::handleGoToDirectory(bool usingTree) {
 		}
 
 		if (!path.empty())
-			selectItem(Text::toT(path));
+			selectItem(path);
 	}, true);
 }
 
@@ -1629,7 +1636,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::File* f, bool openD
 void DirectoryListingFrame::handleReloadPartial(bool dirOnly) {
 	handleItemAction(true, [=](const ItemInfo* ii) {
 		if (!ii->dir->getAdls())
-			changeDir(ii, TRUE, dirOnly ? RELOAD_DIR : RELOAD_ALL);
+			changeDir(ii, dirOnly ? RELOAD_DIR : RELOAD_ALL);
 	});
 }
 
@@ -1783,7 +1790,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 				break;
 			case IDC_COPY_PATH:
 				if (ii->type == ItemInfo::FILE){
-					sCopy += Text::toT(ii->file->getPath() + ii->file->getName());
+					sCopy += Text::toT(ii->file->getPath());
 				}
 				else if (ii->type == ItemInfo::DIRECTORY){
 					if (ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()) {
@@ -2100,11 +2107,12 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
-		if(disabled){
+		if (windowState != STATE_ENABLED) {
 			cd->clrTextBk = WinUtil::bgColor;
 			cd->clrText = GetSysColor(COLOR_3DDKSHADOW);
 			return CDRF_NEWFONT | CDRF_NOTIFYPOSTPAINT;
 		}
+
 		ItemInfo *ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
 		//dupe colors have higher priority than highlights.
 		if (SETTING(DUPES_IN_FILELIST) && !dl->getIsOwnList() && ii) {
@@ -2144,7 +2152,7 @@ LRESULT DirectoryListingFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BO
 	}
 
     case CDDS_ITEMPOSTPAINT: {
-       if (disabled && ctrlFiles.list.findColumn(cd->iSubItem) == COLUMN_FILENAME) {
+		if (windowState != STATE_ENABLED && ctrlFiles.list.findColumn(cd->iSubItem) == COLUMN_FILENAME) {
            LVITEM rItem;
            int nItem = static_cast<int>(cd->nmcd.dwItemSpec);
 
@@ -2178,7 +2186,7 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT: {
-		if(disabled){
+		if(windowState != STATE_ENABLED) {
 			cd->clrTextBk = WinUtil::bgColor;
 			cd->clrText = GetSysColor(COLOR_3DDKSHADOW);
 			return CDRF_NEWFONT;
@@ -2216,7 +2224,7 @@ LRESULT DirectoryListingFrame::onBack(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 }
 
 LRESULT DirectoryListingFrame::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
-	selectItem(Text::toT(history[ctrlPath.GetCurSel()]));
+	selectItem(history[ctrlPath.GetCurSel()]);
 	bHandled= FALSE;
 	return 0;
 }

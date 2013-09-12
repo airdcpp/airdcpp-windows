@@ -1884,6 +1884,7 @@ If you want more information about the client features or you have questions to 
 	<string name="ScanMonitoredFolders">Scan new directories in share for missing/extra files (monitoring only)</string>
 	<string name="ForceShareScan">Please fix the issue to have it rescanned automatically or for the directory to be added in share by performing a manual refresh</string>
 	<string name="ScanShareDirFailed">The directory %1% won't be shared because the following problems were found: %2%</string>
+	<string name="ScanShareExistingFailed">Changes made in the directory %1% won't be applied to share because the following problems were found: %2%</string>
 	<string name="ScanningFailedX">Scanning failed: %1%</string>
 	<string name="XFilesFailedHashing">%1% files failed to hash</string>
 	<string name="XFailedSharing">%1% (failed sharing)</string>

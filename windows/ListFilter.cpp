@@ -70,9 +70,11 @@ void ListFilter::addMethodBox(HWND parent){
 }
 
 void ListFilter::clear() {
-	text.SetWindowText(_T(""));
-	//textUpdated(Util::emptyString);
-	matcher.pattern = Util::emptyString;
+	if (!matcher.pattern.empty()) {
+		text.SetWindowText(_T(""));
+		//textUpdated(Util::emptyString);
+		matcher.pattern = Util::emptyString;
+	}
 }
 
 void ListFilter::setInverse(bool aInverse) {
@@ -91,7 +93,7 @@ string ListFilter::getText() const {
 
 LRESULT ListFilter::onFilterChar(WORD /*wNotifyCode*/, WORD, HWND hWndCtl, BOOL & bHandled) {
 	if (hWndCtl == text.m_hWnd) {
-		textUpdated();
+		textUpdated(false);
 	}
 
 	bHandled = FALSE;
@@ -221,7 +223,7 @@ bool ListFilter::empty() const {
 	return matcher.pattern.empty();
 }
 
-void ListFilter::textUpdated() {
+void ListFilter::textUpdated(bool alwaysUpdate) {
 	auto filter = getText();
 
 	mode = LAST;
@@ -259,8 +261,10 @@ void ListFilter::textUpdated() {
 		method.SetCurSel(0);
 	}
 
-	matcher.pattern = filter;
-	updateFunction();
+	if (alwaysUpdate || filter != matcher.pattern) {
+		matcher.pattern = filter;
+		updateFunction();
+	}
 }
 
 void ListFilter::columnChanged(bool doFilter) {
@@ -286,7 +290,7 @@ void ListFilter::columnChanged(bool doFilter) {
 		}
 
 		if (doFilter)
-			textUpdated();
+			textUpdated(true);
 		usingTypedMethod = false;
 	}
 }

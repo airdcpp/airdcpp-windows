@@ -97,7 +97,7 @@ public:
 private:
 	vector<ColumnInfo*> columns;
 
-	void textUpdated();
+	void textUpdated(bool alwaysUpdate);
 	void columnChanged(bool doFilter);
 
 	pair<double, bool> prepareSize() const;
