@@ -599,14 +599,17 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 
 	windowState = STATE_ENABLING; //some protected messages need to be handled in order for expanding to work
 
-	//make sure that all subitems are removed and expand if needed
+	// make sure that all tree subitems are removed and expand again if needed
 	ctrlTree.Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
 	if (initialChange || isExpanded || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
 		ctrlTree.Expand(ht);
 
 	// select out new item
 	if (aChangeDir) {
-		selectItem(aChangeDir ? aLoadedDir : curPath);
+		if (aChangeDir)
+			curPath = aLoadedDir;
+
+		selectItem(curPath);
 		ctrlFiles.list.SetRedraw(FALSE);
 	}
 
@@ -1256,7 +1259,6 @@ LRESULT DirectoryListingFrame::onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*
 void DirectoryListingFrame::selectItem(const string& name) {
 	HTREEITEM ht = ctrlTree.findItem(treeRoot, name);
 	if(ht) {
-		curPath = ((ItemInfo*) ctrlTree.GetItemData(ht))->dir->getPath();
 		if (changeType == CHANGE_LIST)
 			ctrlTree.EnsureVisible(ht);
 		ctrlTree.SelectItem(ht);
