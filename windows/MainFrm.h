@@ -25,6 +25,7 @@
 
 #include "../client/concurrency.h"
 
+#include "../client/AutoSearchManagerListener.h"
 #include "../client/ClientManagerListener.h"
 #include "../client/TimerManager.h"
 #include "../client/FavoriteManager.h"
@@ -52,7 +53,8 @@
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>,
 		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
-		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener, private ClientManagerListener
+		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener, private ClientManagerListener,
+		private AutoSearchManagerListener
 {
 public:
 	MainFrame();
@@ -491,6 +493,8 @@ private:
 	void on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept;
 
 	void on(ClientManagerListener::ClientCreated, Client*) noexcept;
+
+	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)

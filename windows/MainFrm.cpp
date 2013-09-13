@@ -1937,6 +1937,24 @@ void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr& qi, const
 	}
 }
 
+void MainFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept {
+	// ask for auto search items with an exact match only (added via main chat/system log/scanning)
+	auto searches = AutoSearchManager::getInstance()->getSearchesByString(aBundle->getName());
+	//searches.erase(boost::remove_if(searches, [](const AutoSearchPtr& as) { return as->getMethod() != StringMatch::EXACT; }), searches.end());
+
+	if (!searches.empty()) {
+		callAsync([=] {
+			for (auto as : searches) {
+				if (::MessageBox(m_hWnd, CTSTRING_F(BUNDLE_REMOVED_AS, Text::toT(as->getSearchString())), 
+					_T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+
+					AutoSearchManager::getInstance()->removeAutoSearch(as);
+				}
+			}
+		});
+	};
+}
+
 void MainFrame::on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept {
 	callAsync([=] { TextFrame::openWindow(Text::toT(aTitle), Text::toT(aText), TextFrame::REPORT); });
 }

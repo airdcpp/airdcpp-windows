@@ -1981,4 +1981,7 @@ Do you want to continue?</string>
 	<string name="FileDateFormat">File date format</string>
 	<string name="AschSupportCount">Users with Advanced Search support: %1%/%2%</string>
 	<string name="AsAddDupeConfirm">Do you want to continue with adding this item anyway?</string>
+	<string name="BundleRemovedAs">There's an auto search with the same name associated to the bundle %1%.
+
+Do you want to remove the auto search item as well?</string>
 </resources>

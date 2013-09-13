@@ -130,7 +130,7 @@ void DirectoryListingFrame::updateItemCache(const string& aPath, ReloadMode aRel
 
 	//check that this directory exists in all parents
 	if (!aPath.empty()) {
-		auto parent = Util::getParentDir(aPath, true);
+		auto parent = Util::getNmdcParentDir(aPath);
 		auto p = itemInfos.find(parent);
 		if (p != itemInfos.end()) {
 			auto p2 = p->second.directories.find(ItemInfo(curDir));
@@ -617,7 +617,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 	if (aChangeDir) {
 		// insert the new items
 		updateItems(d);
-	} else if (curPath == Util::getParentDir(aLoadedDir, true)) {
+	} else if (curPath == Util::getNmdcParentDir(aLoadedDir)) {
 		// find the loaded directory and set it as complete
 		int j = ctrlFiles.list.GetItemCount();        
 		for(int i = 0; i < j; i++) {
@@ -1012,7 +1012,7 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d) {
 
 	optional<string> selectedName;
 	if (changeType == CHANGE_HISTORY) {
-		if (historyIndex < history.size() && (!d->getParent() || Util::getParentDir(history[historyIndex]) == d->getPath())) {
+		if (historyIndex < history.size() && (!d->getParent() || Util::getNmdcParentDir(history[historyIndex]) == d->getPath())) {
 			selectedName = Util::getLastDir(history[historyIndex]);
 		}
 

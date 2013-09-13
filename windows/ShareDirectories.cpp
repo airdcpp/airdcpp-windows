@@ -32,10 +32,6 @@
 #include "SharePageDlg.h"
 #include "MainFrm.h"
 
-#include <boost/range/algorithm/for_each.hpp>
-#include <boost/range/algorithm/remove_if.hpp>
-#include <boost/range/algorithm/find_if.hpp>
-
 #define curProfile parent->getCurProfile()
 #define defaultProfile parent->getDefaultProfile()
 
