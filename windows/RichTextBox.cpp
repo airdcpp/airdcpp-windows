@@ -420,8 +420,8 @@ void RichTextBox::FormatChatLine(const tstring& sMyNick, tstring& sText, CHARFOR
 void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/ LONG lSelBegin, bool bUseEmo) {
 	if (formatLinks) {
 		try {
-			tstring::const_iterator start = sMsg.begin();
-			tstring::const_iterator end = sMsg.end();
+			auto start = sMsg.cbegin();
+			auto end = sMsg.cend();
 			boost::match_results<tstring::const_iterator> result;
 			int pos=0;
 
@@ -451,7 +451,8 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 				CHARRANGE cr;
 				cr.cpMin = linkStart;
 				cr.cpMax = linkStart + displayText.length();
-				links.emplace_back(cr, cl);
+				//links.emplace_back(cr, cl);
+				links.insert_sorted(ChatLinkPair(cr, cl));
 
 				pos=pos+result.position() + displayText.length();
 				start = result[0].first + displayText.length();
@@ -465,8 +466,8 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 
 	//Format release names
 	if(formatReleases && (SETTING(FORMAT_RELEASE) || SETTING(DUPES_IN_CHAT))) {
-		tstring::const_iterator start = sMsg.begin();
-		tstring::const_iterator end = sMsg.end();
+		auto start = sMsg.cbegin();
+		auto end = sMsg.cend();
 		boost::match_results<tstring::const_iterator> result;
 		int pos=0;
 
@@ -482,7 +483,7 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 
 			formatLink(cl->getDupe(), true);
 
-			links.emplace_back(cr, cl);
+			links.insert_sorted(ChatLinkPair(cr, cl));
 			start = result[0].second;
 			pos=pos+result.position() + result.length();
 		}
@@ -490,8 +491,8 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 
 	//Format local paths
 	if (formatPaths) {
-		tstring::const_iterator start = sMsg.begin();
-		tstring::const_iterator end = sMsg.end();
+		auto start = sMsg.cbegin();
+		auto end = sMsg.cend();
 		boost::match_results<tstring::const_iterator> result;
 		int pos=0;
 
@@ -505,7 +506,8 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 
 			std::string path (result[0].first, result[0].second);
 			ChatLink* cl = new ChatLink(path, ChatLink::TYPE_PATH, nullptr);
-			links.emplace_back(cr, cl);
+			//links.emplace_back(cr, cl);
+			links.insert_sorted(ChatLinkPair(cr, cl));
 
 			start = result[0].second;
 			pos=pos+result.position() + result.length();
@@ -553,10 +555,10 @@ void RichTextBox::FormatEmoticonsAndLinks(tstring& sMsg, /*tstring& sMsgLower,*/
 					++lSelBegin;
 
 					//fix the positions for links after this emoticon....
-					for(auto l: links | reversed) {
+					for(auto& l: links | reversed) {
 						if (l.first.cpMin > lSelBegin) {
-							l.first.cpMin = l.first.cpMin - foundEmoticon->getEmoticonText().size() + 1;
-							l.first.cpMax = l.first.cpMax - foundEmoticon->getEmoticonText().size() + 1;
+							l.first.cpMin -= foundEmoticon->getEmoticonText().size()-1;
+							l.first.cpMax -= foundEmoticon->getEmoticonText().size()-1;
 						} else {
 							break;
 						}
@@ -743,13 +745,12 @@ void RichTextBox::clearSelInfo() {
 }
 
 void RichTextBox::updateSelectedWord(POINT pt) {
-	CHARRANGE cr;
-	GetSel(cr);
+	auto p = getLink(pt);
+	if (p != links.crend()) {
+		auto cl = p->second;
 
-	ChatLink* cl = getLink(pt, cr);
-	if (cl) {
 		selectedWord = Text::toT(cl->url);
-		SetSel(cr.cpMin, cr.cpMax);
+		SetSel(p->first.cpMin, p->first.cpMax);
 
 		isMagnet = cl->getType() == ChatLink::TYPE_MAGNET;
 		isRelease = cl->getType() == ChatLink::TYPE_RELEASE;
@@ -760,6 +761,8 @@ void RichTextBox::updateSelectedWord(POINT pt) {
 			dupeType = updateDupeType(cl);
 		}
 	} else {
+		CHARRANGE cr;
+		GetSel(cr);
 		if (cr.cpMax != cr.cpMin) {
 			//Get the text
 			TCHAR *buf = new TCHAR[cr.cpMax - cr.cpMin + 1];
@@ -1336,49 +1339,22 @@ LRESULT RichTextBox::onMouseMove(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BO
 	return FALSE;
 }
 
-bool RichTextBox::isLink(POINT pt) {
-	int iCharPos = CharFromPos(pt), /*line = LineFromChar(iCharPos),*/ len = LineLength(iCharPos) + 1;
-	if(len < 3)
-		return false;
-
-	POINT p_ichar = PosFromChar(iCharPos);
-	if(pt.x > (p_ichar.x + 3)) { //+3 is close enough, dont want to be too strict about it?
-		return false;
-	}
-
-	if(pt.y > (p_ichar.y +  (t_height*1.5))) { //times 1.5 so dont need to be totally exact
-		return false;
-	}
-
-
-	for(auto l: links | reversed) {
-		if( iCharPos >= l.first.cpMin && iCharPos <= l.first.cpMax ) {
-			return true;
-		}
-	}
-
-	return false;
+bool RichTextBox::isLink(POINT& pt) {
+	return getLink(pt) != links.crend();
 }
 
-ChatLink* RichTextBox::getLink(POINT pt, CHARRANGE& cr) {
-	int iCharPos = CharFromPos(pt);
-	POINT p_ichar = PosFromChar(iCharPos);
-	
-	//Validate that we are actually clicking over a link.
-	if(pt.x > (p_ichar.x + 3)) { 
-		return nullptr;
-	}
-	if(pt.y > (p_ichar.y +  (t_height*1.5))) {
-		return nullptr;
+RichTextBox::LinkList::const_reverse_iterator RichTextBox::getLink(POINT& pt) {
+	int iCharPos = CharFromPos(pt), /*line = LineFromChar(iCharPos),*/ len = LineLength(iCharPos) + 1;
+	if (len < 3) {
+		return links.crend();
 	}
 
-	for(auto l: links | reversed) {
-		if( iCharPos >= l.first.cpMin && iCharPos <= l.first.cpMax ) {
-			cr = l.first;
-			return l.second;
-		}
-	}
-	return nullptr;
+	// check if we are beyond the end of the line
+	auto iNextWordPos = FindWordBreak(WB_MOVEWORDRIGHT, iCharPos);
+	if (LineFromChar(iCharPos) != LineFromChar(iNextWordPos))
+		return links.crend();
+
+	return find_if(links.crbegin(), links.crend(), [iCharPos](const ChatLinkPair& l) { return iCharPos >= l.first.cpMin && iCharPos <= l.first.cpMax; });
 }
 
 LRESULT RichTextBox::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -1411,12 +1387,11 @@ LRESULT RichTextBox::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*
 bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
-	CHARRANGE cr;
-	ChatLink* cl = getLink(pt, cr);
-	if (!cl)
-		return 0;
+	auto p = getLink(pt);
+	if (p == links.crend())
+		return false;
 
-
+	auto cl = p->second;
 	if (cl->getType() == ChatLink::TYPE_MAGNET) {
 		selectedLine = LineFromPos(pt);
 		updateAuthor();

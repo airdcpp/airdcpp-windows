@@ -26,6 +26,7 @@
 #include "../client/TargetUtil.h"
 #include "../client/ChatMessage.h"
 #include "../client/UserInfoBase.h"
+#include "../client/SortedVector.h"
 
 #include <boost/algorithm/string.hpp>
 
@@ -244,17 +245,31 @@ private:
 	tstring selectedUser;
 	tstring selectedWord;
 	uint64_t lastTick;
-	bool isLink(POINT pt);
-	ChatLink* getLink(POINT pt, CHARRANGE& cr);
+	bool isLink(POINT& pt);
 	bool showHandCursor;
 
-	vector<pair<CHARRANGE, ChatLink*>> links;
+	typedef pair<CHARRANGE, ChatLink*> ChatLinkPair;
+
+	struct LinkSortOrder {
+		int operator()(long left, long right) const {
+			return compare(left, right);
+		}
+	};
+
+	struct LinkStartPos {
+		long operator()(const ChatLinkPair& a) const { return a.first.cpMin; }
+	};
+
+	typedef SortedVector<ChatLinkPair, deque, long, LinkSortOrder, LinkStartPos> LinkList;
+	LinkList links;
+	//vector<pair<CHARRANGE, ChatLink*>> links;
 
 	HCURSOR		handCursor;
 	HCURSOR		arrowCursor;
 
 	void formatLink(DupeType aDupeType, bool isRelease);
 	DupeType updateDupeType(ChatLink* aChatLink);
+	LinkList::const_reverse_iterator getLink(POINT& pt);
 };
 
 
