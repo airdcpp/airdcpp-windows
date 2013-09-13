@@ -580,6 +580,8 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 		updateHistoryCombo();
 	}
 
+	windowState = STATE_ENABLING; //some protected messages need to be handled in order for expanding to work
+
 	//check the root children state
 	bool initialChange = !ctrlTree.hasChildren(treeRoot);
 	if (initialChange && !dl->getRoot()->directories.empty()) {
@@ -596,8 +598,6 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 	d->setLoading(false);
 
 	bool isExpanded = ctrlTree.IsExpanded(ht);
-
-	windowState = STATE_ENABLING; //some protected messages need to be handled in order for expanding to work
 
 	// make sure that all tree subitems are removed and expand again if needed
 	ctrlTree.Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);

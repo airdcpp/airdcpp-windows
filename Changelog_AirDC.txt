@@ -15,6 +15,8 @@ Added:
 - Implement "Find and view NFO" for own list
 - Report duplicate files when generating file lists
 - Add a new menu option to search auto search items on foreground
+- Show a question box when removing a bundle and there's an auto search item with the same name if the auto search should be removed as well
+- Ctrl+R in a partial file list will reload the current directory
 
 Changed:
 
@@ -53,6 +55,8 @@ Fixed:
 - Fix transfer timeouts right after connecting to an ADC hub
 - Avoid deadlocks when downloading file lists
 - Don't remove trees for queued items when optimizing the hash database
+- Fix link positions going wrong in messages containing emoticons
+- Fix link clicking issues in text files
 
 
 2.51
