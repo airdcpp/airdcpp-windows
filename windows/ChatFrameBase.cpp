@@ -447,8 +447,8 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 						setStatusText(status);
 					});
 				});
-			} catch (const Exception& e) { 
-				LogManager::getInstance()->message(STRING(HASHING_FAILED) + " " + e.getError(), LogManager::LOG_ERROR);
+			} catch (const Exception& e) {
+				callAsync([=] { setStatusText(TSTRING(HASHING_FAILED) + _T(" ") + Text::toT(e.getError())); });
 				return;
 			}
 

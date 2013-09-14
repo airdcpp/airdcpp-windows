@@ -259,6 +259,8 @@ public:
 		rc.left = rc.right + lMargin;
 		rc.right = rc.left + optionsWidth;
 		ctrlOptions.MoveWindow(rc);
+
+		ShowScrollBar(SB_BOTH, FALSE);
 	}
 
 	LRESULT onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {

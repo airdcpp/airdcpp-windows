@@ -67,7 +67,6 @@ RichTextBox::RichTextBox() : UserInfoBaseHandler(true, true), ccw(_T("edit"), th
 }
 
 RichTextBox::~RichTextBox() {
-	//shortLinks.clear();//ApexDC
 	if(emoticonsManager->unique()) {
 		emoticonsManager->dec();
 		emoticonsManager = NULL;
@@ -75,7 +74,7 @@ RichTextBox::~RichTextBox() {
 		emoticonsManager->dec();
 	}
 
-	for (auto cl: links)
+	for (auto& cl: links)
 		delete cl.second;
 
 	delete[] findBuffer;
@@ -1186,16 +1185,19 @@ LRESULT RichTextBox::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	if (m.hash.empty())
 		return 0;
 
-	if (dupeType > 0) {
-		auto p = AirUtil::getDupePath(dupeType, m.getTTH());
-		if (!p.empty())
-			Util::openFile(p);
-	} else {
-		auto u = getMagnetSource();
-		try {
-			QueueManager::getInstance()->addOpenedItem(m.fname, m.fsize, m.getTTH(), u, false);
-		} catch(...) { }
-	}
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		if (dupeType > 0) {
+			auto p = AirUtil::getDupePath(dupeType, m.getTTH());
+			if (!p.empty())
+				Util::openFile(p);
+		} else {
+			auto u = getMagnetSource();
+			try {
+				QueueManager::getInstance()->addOpenedItem(m.fname, m.fsize, m.getTTH(), u, false);
+			} catch (...) {}
+		}
+	});
+
 	return 0;
 }
 
