@@ -51,7 +51,6 @@ PropPage::TextItem FulHighlightDialog::texts[] = {
 	{ IDC_CASESENSITIVE, ResourceManager::CASE_SENSITIVE			},
 	{ IDC_WHOLEWORD,	 ResourceManager::SETTINGS_ENTIRE_WORD		},
 	{ IDC_HCONTEXT_TEXT, ResourceManager::HIGHLIGHT_CONTEXT			},
-	{ IDOK,				 ResourceManager::OK						},
 	{ IDCANCEL,			 ResourceManager::CANCEL					},
 	{ IDC_MATCH_COL_TEXT,ResourceManager::MATCH_COLUMN				},
 	{ IDC_TABCOLOR,		 ResourceManager::CHANGE_TAB_COLOR			},

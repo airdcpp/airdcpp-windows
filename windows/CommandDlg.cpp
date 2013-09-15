@@ -26,7 +26,6 @@
 #include "CommandDlg.h"
 
 WinUtil::TextItem CommandDlg::texts[] = {
-	{ IDOK, ResourceManager::OK },
 	{ IDCANCEL, ResourceManager::CANCEL },
 	{ IDC_SETTINGS_TYPE, ResourceManager::USER_CMD_TYPE },
 	{ IDC_SETTINGS_SEPARATOR, ResourceManager::SEPARATOR },

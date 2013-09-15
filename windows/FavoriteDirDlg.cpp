@@ -48,7 +48,6 @@ LRESULT FavoriteDirDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	ATTACH(IDC_FDNAME, ctrlName);
 	ctrlName.SetWindowText(vName.c_str());
 
-	::SetWindowText(GetDlgItem(IDOK), CTSTRING(OK));
 	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
 	::SetWindowText(GetDlgItem(IDC_SETTINGS_FAVDIR_PATHS), CTSTRING(PATHS_FAVDIRS));
 	::SetWindowText(GetDlgItem(IDC_FDNAME_TEXT), CTSTRING(FAVORITE_DIR_NAME));

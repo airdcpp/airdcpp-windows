@@ -438,7 +438,7 @@ private:
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void initHubs();
-	void onHubAdded(HubInfo* info);
+	void onHubAdded(HubInfo* info, bool updateInfoString);
 	void onHubChanged(HubInfo* info);
 	void onHubRemoved(tstring&& aHubUrl);
 	void updateSearchList(SearchInfo* si = nullptr);

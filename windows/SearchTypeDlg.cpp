@@ -54,7 +54,6 @@ LRESULT SearchTypeDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlExtensions.InsertColumn(0, _T("Dummy"), LVCFMT_LEFT, (rc.Width() - 17), 0);
 	//ctrlExtensions.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 
-	::SetWindowText(GetDlgItem(IDOK), (CTSTRING(OK)));
 	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
 	::SetWindowText(GetDlgItem(IDC_NAME_LABEL), CTSTRING(NAME));
 	::SetWindowText(GetDlgItem(IDC_REMOVE), CTSTRING(REMOVE));

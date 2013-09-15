@@ -1470,7 +1470,7 @@ void SearchFrame::onResultFiltered() {
 }
 
 void SearchFrame::on(ClientConnected, const Client* c) noexcept { 
-	callAsync([=] { onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp())); });
+	callAsync([=] { onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp()), true); });
 }
 
 void SearchFrame::on(ClientUpdated, const Client* c) noexcept { 
@@ -1591,12 +1591,11 @@ void SearchFrame::initHubs() {
 		if (!c->isConnected())
 			continue;
 
-		onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp()));
+		onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp()), false);
 	}
 
 	clientMgr->unlockRead();
 	updateHubInfoString();
-
 }
 
 void SearchFrame::updateHubInfoString() {
@@ -1613,7 +1612,7 @@ void SearchFrame::updateHubInfoString() {
 	aschLabel.SetWindowText(txt.c_str());
 }
 
-void SearchFrame::onHubAdded(HubInfo* info) {
+void SearchFrame::onHubAdded(HubInfo* info, bool updateInfoString) {
 	int nItem = ctrlHubs.insertItem(info, 0);
 	BOOL enable = TRUE;
 	if(ctrlHubs.GetCheckState(0))
@@ -1621,7 +1620,9 @@ void SearchFrame::onHubAdded(HubInfo* info) {
 	else
 		enable = lastDisabledHubs.empty() ? TRUE : find(lastDisabledHubs, Text::fromT(info->url)) == lastDisabledHubs.end() ? TRUE : FALSE;
 	ctrlHubs.SetCheckState(nItem, enable);
-	updateHubInfoString();
+
+	if (updateInfoString)
+		updateHubInfoString();
 }
 
 void SearchFrame::onHubChanged(HubInfo* info) {

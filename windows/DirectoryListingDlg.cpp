@@ -53,7 +53,6 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 	ATTACH(IDC_SIZE_UNIT, ctrlSizeUnit);
 	WinUtil::appendSizeCombos(ctrlSizeMode, ctrlSizeUnit);
 
-	::SetWindowText(GetDlgItem(IDOK), (CTSTRING(OK)));
 	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
 	::SetWindowText(GetDlgItem(IDC_DL_SEARCH_DESC), CTSTRING(SEARCH_STRING));
 	::SetWindowText(GetDlgItem(IDC_DL_TYPE_TEXT), CTSTRING(FILE_TYPE));

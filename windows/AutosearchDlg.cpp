@@ -50,7 +50,6 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlUserMatch.SetWindowText(Text::toT(userMatch).c_str());
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);	
-	::SetWindowText(GetDlgItem(IDOK), (TSTRING(OK)).c_str());
 	::SetWindowText(GetDlgItem(IDCANCEL), (TSTRING(CANCEL)).c_str());
 	::SetWindowText(GetDlgItem(IDC_SEARCH_FAKE_DLG_SEARCH_STRING), (TSTRING(SEARCH_STRING)).c_str());
 	::SetWindowText(GetDlgItem(IDC_AS_ACTION_STATIC), (TSTRING(ACTION)).c_str());

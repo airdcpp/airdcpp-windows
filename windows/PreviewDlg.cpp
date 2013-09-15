@@ -23,7 +23,6 @@
 #include "WinUtil.h"
 
 WinUtil::TextItem PreviewDlg::texts[] = {
-	{ IDOK, ResourceManager::OK },
 	{ IDCANCEL, ResourceManager::CANCEL },
 	{ IDC_PREVIEW_BROWSE, ResourceManager::BROWSE },
 	{ IDC_PREVIEW_NAME_TEXT, ResourceManager::PREVIEW_NAME },
