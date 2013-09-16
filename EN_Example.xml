@@ -1474,7 +1474,7 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="HashingFinishedDir">The directory %1% has finished hashing: %2% files (%3%) have been hashed in %4% (%5%)</string>
 	<string name="HashingFinishedFile">The file %1% (%2%) has finished hashing in %3% (%4%)</string>
 	<string name="HashingFinishedTotalPlain">Hashing finished</string>
-	<string name="BundleXShared">The bundle %1% has been added into share</string>
+	<string name="BundleXShared">The bundle %1% has been added in share</string>
 	<string name="Hour">Hour</string>
 	<string name="Hours">Hours</string>
 	<string name="Day">Day</string>

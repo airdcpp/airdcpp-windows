@@ -866,7 +866,11 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 	} else if(stricmp(cmd.c_str(), _T("prvstats")) == 0) {
 		status = Text::toT(ChatCommands::generateStats());
 	} else if(stricmp(cmd.c_str(), _T("dbstats")) == 0) {
-		status = Text::toT(HashManager::getInstance()->getDbStats());
+		status = _T("Collecing statistics, please wait... (this may take a few minutes with large databases)");
+		tasks.run([this] { 
+			auto text = Text::toT(HashManager::getInstance()->getDbStats());
+			callAsync([=] { addStatusLine(text); });
+		});
 	} else if(stricmp(cmd.c_str(), _T("sharestats")) == 0) {
 		status = Text::toT(ShareManager::getInstance()->getStats());
 	} else if(stricmp(cmd.c_str(), _T("speed")) == 0) {

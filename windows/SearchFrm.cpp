@@ -328,6 +328,9 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	::SetTimer(m_hWnd, 0, 200, 0);
 	fixControls();
 	bHandled = FALSE;
+	created = true;
+
+	updateHubInfoString();
 	return 1;
 }
 
@@ -1470,7 +1473,7 @@ void SearchFrame::onResultFiltered() {
 }
 
 void SearchFrame::on(ClientConnected, const Client* c) noexcept { 
-	callAsync([=] { onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp()), true); });
+	callAsync([=] { onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp())); });
 }
 
 void SearchFrame::on(ClientUpdated, const Client* c) noexcept { 
@@ -1591,14 +1594,16 @@ void SearchFrame::initHubs() {
 		if (!c->isConnected())
 			continue;
 
-		onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp()), false);
+		onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp()));
 	}
 
 	clientMgr->unlockRead();
-	updateHubInfoString();
 }
 
 void SearchFrame::updateHubInfoString() {
+	if (!created) // deadlock when the hubs are initialized
+		return;
+
 	OrderedStringSet clients;
 	int n = ctrlHubs.GetItemCount();
 	for (int i = 1; i < n; i++) {
@@ -1612,7 +1617,7 @@ void SearchFrame::updateHubInfoString() {
 	aschLabel.SetWindowText(txt.c_str());
 }
 
-void SearchFrame::onHubAdded(HubInfo* info, bool updateInfoString) {
+void SearchFrame::onHubAdded(HubInfo* info) {
 	int nItem = ctrlHubs.insertItem(info, 0);
 	BOOL enable = TRUE;
 	if(ctrlHubs.GetCheckState(0))
@@ -1621,8 +1626,7 @@ void SearchFrame::onHubAdded(HubInfo* info, bool updateInfoString) {
 		enable = lastDisabledHubs.empty() ? TRUE : find(lastDisabledHubs, Text::fromT(info->url)) == lastDisabledHubs.end() ? TRUE : FALSE;
 	ctrlHubs.SetCheckState(nItem, enable);
 
-	if (updateInfoString)
-		updateHubInfoString();
+	updateHubInfoString();
 }
 
 void SearchFrame::onHubChanged(HubInfo* info) {

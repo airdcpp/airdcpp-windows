@@ -438,7 +438,7 @@ private:
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void initHubs();
-	void onHubAdded(HubInfo* info, bool updateInfoString);
+	void onHubAdded(HubInfo* info);
 	void onHubChanged(HubInfo* info);
 	void onHubRemoved(tstring&& aHubUrl);
 	void updateSearchList(SearchInfo* si = nullptr);
@@ -446,6 +446,7 @@ private:
 
 	LRESULT onItemChangedHub(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
 	void updateHubInfoString();
+	bool created = false;
 };
 
 #endif // !defined(SEARCH_FRM_H)
