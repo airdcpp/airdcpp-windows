@@ -2255,7 +2255,7 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 			}
 		}
 
-		dl->setHubUrl(newHub.hubUrl);
+		dl->setHubUrl(newHub.hubUrl, true);
 	}
 }
 

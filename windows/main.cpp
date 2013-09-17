@@ -336,27 +336,31 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	std::future<void> loader;
 	loader = std::async([&] {
 		unique_ptr<SetupWizard> wizard = nullptr;
-		startup(
-			[&](const string& str) { (*WinUtil::splash)(str); },
-			[&](const string& str, bool isQuestion, bool isError) { 
-				auto ret = ::MessageBox(WinUtil::splash->getHWND(), Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_SETFOREGROUND | (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION)); 
-				return isQuestion ? ret == IDYES : true;
-		},
-			[&]() {
-				Semaphore s;
-				WinUtil::splash->callAsync([&] {
-					wizard.reset(new SetupWizard(true));
-					if (wizard->DoModal(/*m_hWnd*/) != IDOK) {
-						//the wizard was cancelled
-						wizard.reset(nullptr);
-					}
-					s.signal();
-				});
+		try {
+			startup(
+				[&](const string& str) { (*WinUtil::splash)(str); },
+				[&](const string& str, bool isQuestion, bool isError) {
+					auto ret = ::MessageBox(WinUtil::splash->getHWND(), Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_SETFOREGROUND | (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION));
+					return isQuestion ? ret == IDYES : true;
+			},
+				[&]() {
+					Semaphore s;
+					WinUtil::splash->callAsync([&] {
+						wizard.reset(new SetupWizard(true));
+						if (wizard->DoModal(/*m_hWnd*/) != IDOK) {
+							//the wizard was cancelled
+							wizard.reset(nullptr);
+						}
+						s.signal();
+					});
 
-				s.wait();
-		},
-			[=](float progress) { (*WinUtil::splash)(progress); }
-		);
+					s.wait();
+			},
+				[=](float progress) { (*WinUtil::splash)(progress); }
+			);
+		} catch (...) {
+			ExitProcess(1);
+		}
 
 		//apply the share changes from wizard (if available)
 		if (wizard) {

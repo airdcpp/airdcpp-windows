@@ -447,7 +447,7 @@ private:
 
 	void updateSelCombo(bool init = false);
 	User::UserInfoList hubs;
-	bool online;
+	bool online = true;
 	void onComboSelChanged(bool manual);
 	void showSelCombo(bool show, bool init);
 	tstring getComboDesc();
