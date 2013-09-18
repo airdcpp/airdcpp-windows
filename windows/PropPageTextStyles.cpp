@@ -429,7 +429,7 @@ void PropPageTextStyles::LoadTheme(const string& path, bool silent/* = false*/) 
 		
 	SimpleXML xml;
 	try {
-		xml.fromXML(File(path, File::READ, File::OPEN, false).read());
+		xml.fromXML(File(path, File::READ, File::OPEN, File::BUFFER_SEQUENTIAL, false).read());
 	} catch(...) {
 		return;
 	}

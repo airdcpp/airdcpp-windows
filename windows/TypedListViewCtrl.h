@@ -552,6 +552,24 @@ public:
 	ColumnList& getColumnList() { return columnList; }
 	bool noDefaultItemImages;
 
+	optional<CPoint> getMenuPosition() {
+		CPoint pt = GetMessagePos();
+		if (pt.x == -1 && pt.y == -1) {
+			WinUtil::getContextMenuPos(*this, pt);
+		}
+
+		// check if we clicked on a scroll bar
+		ScreenToClient(&pt);
+
+		UINT flags = 0;
+		HitTest(pt, &flags);
+		if (!(flags & LVHT_ONITEM)) {
+			return nullptr;
+		}
+
+		ClientToScreen(&pt);
+		return pt;
+	}
 private:
 	int sortColumn;
 	bool sortAscending;

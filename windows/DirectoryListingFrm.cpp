@@ -1268,12 +1268,29 @@ void DirectoryListingFrame::selectItem(const string& name) {
 
 LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if (reinterpret_cast<HWND>(wParam) == ctrlFiles.list && ctrlFiles.list.GetSelectedCount() > 0) {
-		changeType = CHANGE_LIST;
-		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-
-		if(pt.x == -1 && pt.y == -1) {
+		/*POINT pt = GetMessagePos();
+		//POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+		if (pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlFiles.list, pt);
 		}
+
+		ctrlFiles.list.ScreenToClient(&pt);
+
+		UINT flags = 0;
+		ctrlFiles.list.HitTest(pt, &flags);
+		if (!(flags & LVHT_ONITEM)) {
+			bHandled = FALSE;
+			return FALSE;
+		}
+
+		ctrlFiles.list.ClientToScreen(&pt);*/
+
+		auto pt = ctrlFiles.list.getMenuPosition();
+		if (!pt) {
+			bHandled = FALSE;
+			return FALSE;
+		}
+
 		const ItemInfo* ii = ctrlFiles.list.getItemData(ctrlFiles.list.GetNextItem(-1, LVNI_SELECTED));
 
 		CShellContextMenu shellMenu;
@@ -1396,9 +1413,9 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 		prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubUrls(dl->getHintedUser().user->getCID()));
 		//fileMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
-		shellMenu.ShowContextMenu(m_hWnd, pt);
+		shellMenu.ShowContextMenu(m_hWnd, *pt);
 		return TRUE; 
-	} else if(reinterpret_cast<HWND>(wParam) == ctrlTree && ctrlTree.GetSelectedItem() != NULL) { 
+	} if(reinterpret_cast<HWND>(wParam) == ctrlTree && ctrlTree.GetSelectedItem() != NULL) { 
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 		if(pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlTree, pt);

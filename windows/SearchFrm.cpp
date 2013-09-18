@@ -1484,12 +1484,12 @@ void SearchFrame::on(ClientDisconnected, const string& aHubUrl) noexcept {
 	callAsync([=] { onHubRemoved(Text::toT(aHubUrl)); });
 }
 
-LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (reinterpret_cast<HWND>(wParam) == ctrlResults.list && ctrlResults.list.GetSelectedCount() > 0) {
-		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-	
-		if(pt.x == -1 && pt.y == -1) {
-			WinUtil::getContextMenuPos(ctrlResults.list, pt);
+		auto pt = ctrlResults.list.getMenuPosition();
+		if (!pt) {
+			bHandled = FALSE;
+			return FALSE;
 		}
 		
 		if(ctrlResults.list.GetSelectedCount() > 0) {
@@ -1529,12 +1529,6 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			else
 				resultsMenu.InsertSeparatorFirst(Util::toStringW(((SearchInfo*)ctrlResults.list.getSelectedItem())->hits + 1) + _T(" ") + TSTRING(USERS));
 
-			//targets.clear();
-			/*if (hasFiles && cs.hasTTH) {
-				targets = QueueManager::getInstance()->getTargets(TTHValue(Text::fromT(cs.tth)));
-			}*/
-
-			auto tmp = cs.path ? *cs.path : "GFASGSAGS";
 			appendDownloadMenu(resultsMenu, hasFiles ? DownloadBaseHandler::TYPE_BOTH : DownloadBaseHandler::TYPE_PRIMARY, hasNmdcDirsOnly, hasFiles ? cs.tth : nullptr, cs.path);
 
 			resultsMenu.AppendMenu(MF_SEPARATOR);
@@ -1573,7 +1567,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			resultsMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 
-			resultsMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+			resultsMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, *pt);
 			return TRUE; 
 		}
 	}

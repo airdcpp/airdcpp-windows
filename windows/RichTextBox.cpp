@@ -865,6 +865,7 @@ const string& RichTextBox::getHubUrl() const {
 }
 
 LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+	//check if we are clicking on a scrollbar
 	SCROLLBARINFO sbi;
 	memset(&sbi, 0, sizeof(SCROLLBARINFO));
 	sbi.cbSize = sizeof(SCROLLBARINFO);
