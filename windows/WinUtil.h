@@ -160,7 +160,7 @@ static const winamptoolbarButton WinampToolbarButtons[] = {
 
 class WinUtil {
 public:
-	static unique_ptr<SplashWindow> splash;
+	static SplashWindow* splash;
 
 	struct TextItem {
 		WORD itemID;

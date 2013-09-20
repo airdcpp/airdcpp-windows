@@ -307,11 +307,6 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg) {
 		if (WinUtil::findDialog) {
 			return IsDialogMessage(WinUtil::findDialog, pMsg);
-		} else if (pMsg->message == WM_SPEAKER && pMsg->wParam == 5000) {
-			auto f = reinterpret_cast<Dispatcher::F*>(pMsg->lParam);
-			(*f)();
-			delete f;
-			return TRUE;
 		}
 		return FALSE;
 	}
@@ -330,7 +325,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 	WinUtil::preInit();
 
-	WinUtil::splash = unique_ptr<SplashWindow>(new SplashWindow());
+	SplashWindow::create();
 	(*WinUtil::splash)("Starting up");
 
 	std::future<void> loader;
@@ -340,7 +335,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			startup(
 				[&](const string& str) { (*WinUtil::splash)(str); },
 				[&](const string& str, bool isQuestion, bool isError) {
-					auto ret = ::MessageBox(WinUtil::splash->getHWND(), Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_SETFOREGROUND | (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION));
+					auto ret = ::MessageBox(WinUtil::splash->m_hWnd, Text::toT(str).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_SETFOREGROUND | (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION));
 					return isQuestion ? ret == IDYES : true;
 			},
 				[&]() {
@@ -416,14 +411,11 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				wndMain->ShowWindow(((nCmdShow == SW_SHOWDEFAULT) || (nCmdShow == SW_SHOWNORMAL)) ? SETTING(MAIN_WINDOW_STATE) : nCmdShow);
 			}
 
-			WinUtil::splash.reset(nullptr);
+			WinUtil::splash->destroy();
 		});
 	});
 
 	int nRet = theLoop.Run();
-
-	//PopupManager::deleteInstance();
-	//shutdown(nullptr, nullptr);
 
 	dcassert(WinUtil::splash);
 	loader = std::async([=] {
@@ -441,7 +433,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	_Module.RemoveMessageLoop();
 
 	wndMain.reset(nullptr);
-	WinUtil::splash.reset(nullptr);
+	WinUtil::splash->destroy();
 
 	WinUtil::runPendingUpdate();
 	return nRet;
@@ -475,7 +467,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 			return FALSE;
 		} else if(_tcscmp(*argv, _T("/update")) == 0) {
 			if(--argc >= 1) {
-				WinUtil::splash = unique_ptr<SplashWindow>(new SplashWindow());
+				SplashWindow::create();
 				(*WinUtil::splash)("Updating");
 				string sourcePath = Util::getFilePath(Util::getAppName());
 				string installPath = Text::fromT(*++argv); argc--;
@@ -527,7 +519,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 					ShellExecute(NULL, NULL, Text::toT(installPath + Util::getFileName(Util::getAppName())).c_str(), Util::getParams(true).c_str(), NULL, SW_SHOWNORMAL);
 				}
 
-				WinUtil::splash.reset(nullptr);
+				WinUtil::splash->destroy();
 				return FALSE;
 			}
 			return FALSE;

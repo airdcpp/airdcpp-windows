@@ -54,7 +54,7 @@ boost::wregex WinUtil::chatLinkReg;
 boost::wregex WinUtil::chatReleaseReg;
 
 PassDlg* WinUtil::passDlg = nullptr;
-unique_ptr<SplashWindow> WinUtil::splash;
+SplashWindow* WinUtil::splash = nullptr;
 HBRUSH WinUtil::bgBrush = NULL;
 COLORREF WinUtil::textColor = 0;
 COLORREF WinUtil::bgColor = 0;

@@ -25,38 +25,73 @@
 #include "resource.h"
 #include "WinUtil.h"
 
-SplashWindow::SplashWindow() : progress(0) {
-	
+LRESULT SplashWindow::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	if (closing) {
+		bHandled = FALSE;
+		return 0;
+	}
+
+	ExitProcess(0);
+}
+
+SplashWindow::SplashWindow() {
+}
+
+void SplashWindow::create() {
+	WinUtil::splash = new SplashWindow();
+	WinUtil::splash->Create(NULL, rcDefault, _T("Static"), WS_POPUP | WS_VISIBLE | SS_USERITEM, 0);
+}
+
+void SplashWindow::OnFinalMessage(HWND /*hWnd*/) {
+	WinUtil::splash = nullptr;
+	delete this; 
+}
+
+LRESULT SplashWindow::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	CRect rc;
 	rc.bottom = GetSystemMetrics(SM_CYFULLSCREEN);
 	rc.top = (rc.bottom / 2) - 80;
 
 	rc.right = GetSystemMetrics(SM_CXFULLSCREEN);
 	rc.left = rc.right / 2 - 85;
-	
-	dummy.Create(GetDesktopWindow(), rc, _T(APPNAME) _T(" ") _T(VERSIONSTRING), WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
+
+	dummy.Create(GetDesktopWindow(), rc, _T(APPNAME) _T(" ") _T(VERSIONSTRING), WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		ES_CENTER | ES_READONLY, WS_EX_STATICEDGE);
-	splash.Create(_T("Static"), GetDesktopWindow(), splash.rcDefault, NULL, WS_POPUP | WS_VISIBLE | SS_USERITEM, 0);
-	splash.SetFont((HFONT)GetStockObject(DEFAULT_GUI_FONT));
-	
+	SetFont((HFONT) GetStockObject(DEFAULT_GUI_FONT));
+
 	//load the image
 	loadImage();
 	width = img.GetWidth();
 	height = img.GetHeight();
 
-	HDC dc = splash.GetDC();
+	HDC dc = GetDC();
 	rc.right = rc.left + width;
 	rc.bottom = rc.top + height;
-	splash.ReleaseDC(dc);
-	splash.HideCaret();
-	splash.SetWindowPos(dummy.m_hWnd, &rc, SWP_SHOWWINDOW);
-	splash.CenterWindow();
+	ReleaseDC(dc);
+	HideCaret();
+	SetWindowPos(dummy.m_hWnd, &rc, SWP_SHOWWINDOW);
+	CenterWindow();
 
 	title = _T(VERSIONSTRING) _T(" ") _T(CONFIGURATION_TYPE);
 
-	splash.SetFocus();
-	splash.RedrawWindow();
+	SetFocus();
+
+	LOGFONT logFont;
+	GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(logFont), &logFont);
+	lstrcpy(logFont.lfFaceName, TEXT("Tahoma"));
+
+	logFont.lfHeight = 12;
+	logFont.lfWeight = 700;
+	hFontStatus = CreateFontIndirect(&logFont);
+
+	logFont.lfHeight = 15;
+	logFont.lfWeight = 700;
+	hFontTitle = CreateFontIndirect(&logFont);
+
+	bHandled = FALSE;
+	return TRUE;
 }
+
 void SplashWindow::loadImage() {
 	if(img.Load(_T("splash.png")) != S_OK)
 		img.LoadFromResource(IDB_SPLASH, _T("PNG"), _Module.get_m_hInst());
@@ -65,36 +100,46 @@ void SplashWindow::loadImage() {
 SplashWindow::~SplashWindow() {
 	if(!img.IsNull())
 		img.Destroy();
-	splash.DestroyWindow();
-	dummy.DestroyWindow();
+
+	DeleteObject(hFontStatus);
+	DeleteObject(hFontTitle);
 }
 
-HWND SplashWindow::getHWND() {
-	return splash.m_hWnd;
-}
-
-void SplashWindow::callAsync(function<void ()> f/*, AsyncType aType*/) {
-	PostMessage(splash.m_hWnd, WM_SPEAKER, 5000, (LPARAM)new Dispatcher::F(f));
+void SplashWindow::destroy() {
+	closing = true;
+	PostMessage(WM_CLOSE, 0, 0);
 }
 
 void SplashWindow::operator()(const string& status) {
 	this->status = Text::toT(status);
 	progress = 0;
-	callAsync([this] { draw(); });
+	callAsync([this] { RedrawWindow(); });
 }
 
 void SplashWindow::operator()(float progress) {
 	if (this->progress == 0.00 || progress - this->progress >= 0.01) {
 		this->progress = progress;
-		callAsync([this] { draw(); });
+		callAsync([this] { RedrawWindow(); });
 	}
+}
+
+LRESULT SplashWindow::onPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	draw();
+	return 0;
+}
+
+
+LRESULT SplashWindow::onEraseBkgnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	bHandled = TRUE;
+	return TRUE;
 }
 
 void SplashWindow::draw() {
 	// Get some information
-	HDC dc = GetDC(splash.m_hWnd);
+	PAINTSTRUCT ps;
+	HDC dc = BeginPaint(&ps);
 	RECT rc;
-	GetWindowRect(splash.m_hWnd, &rc);
+	GetWindowRect(&rc);
 	OffsetRect(&rc, -rc.left, -rc.top);
 	RECT rc2 = rc;
 	rc2.top = rc2.bottom - 20; 
@@ -110,38 +155,22 @@ void SplashWindow::draw() {
 	BitBlt(dc, 0, 0 , width, height, comp, 0, 0, SRCCOPY);
 	DeleteDC(comp);
 
-	LOGFONT logFont;
-	HFONT hFont;
-	GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(logFont), &logFont);
-	lstrcpy(logFont.lfFaceName, TEXT("Tahoma"));
-	logFont.lfHeight = 15;
-	logFont.lfWeight = 700;
-	hFont = CreateFontIndirect(&logFont);		
-	SelectObject(dc, hFont);
+	SelectObject(dc, hFontTitle);
 	//::SetTextColor(dc, RGB(255,255,255)); //white text
 	//::SetTextColor(dc, RGB(0,0,0)); //black text
 	::SetTextColor(dc, RGB(104,104,104)); //grey text
 	::DrawText(dc, title.c_str(), _tcslen(title.c_str()), &rc2, DT_LEFT);
-	DeleteObject(hFont);
 
 	if(!status.empty()) {
 		rc2 = rc;
 		rc2.top = rc2.bottom - 20;
-		rc2.right = rc2.right - 20;
-		GetObject(GetStockObject(DEFAULT_GUI_FONT), sizeof(logFont), &logFont);
-		lstrcpy(logFont.lfFaceName, TEXT("Tahoma"));
-		logFont.lfHeight = 12;
-		logFont.lfWeight = 700;
-		hFont = CreateFontIndirect(&logFont);		
-		SelectObject(dc, hFont);
-		//::SetTextColor(dc, RGB(255,255,255)); // white text
-		//::SetTextColor(dc, RGB(0,0,0)); // black text
+		rc2.right = rc2.right - 20;	
+		SelectObject(dc, hFontStatus);
 		::SetTextColor(dc, RGB(104,104,104)); //grey text
 
 		tstring tmp = (_T(".:: ") + status + (progress > 0 ? _T(" (") + Util::toStringW(static_cast<int>(progress*100.00)) + _T("%)") : Util::emptyStringT) + _T(" ::."));
 		::DrawText(dc, tmp.c_str(), _tcslen((tmp).c_str()), &rc2, DT_RIGHT);
-		DeleteObject(hFont);
 	}
 
-	ReleaseDC(splash.m_hWnd, dc);
+	EndPaint(&ps);
 }

@@ -27,31 +27,40 @@
 #include "../client/typedefs.h"
 #include <atlimage.h>
 #include "ExCImage.h"
+#include "Async.h"
 
 using std::string;
 
-class SplashWindow {
+class SplashWindow : public CWindowImpl<SplashWindow, CWindow>, public Async<SplashWindow> {
 public:
+	BEGIN_MSG_MAP(SplashImpl)
+		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
+		MESSAGE_HANDLER(WM_CLOSE, onClose)
+		MESSAGE_HANDLER(WM_CREATE, OnCreate)
+		MESSAGE_HANDLER(WM_PAINT, onPaint)
+		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBkgnd)
+	END_MSG_MAP()
+
+	LRESULT onPaint(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
+	LRESULT onEraseBkgnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+
+	void OnFinalMessage(HWND /*hWnd*/);
+
 	SplashWindow();
 	virtual ~SplashWindow();
 
+	static void create();
+	void destroy();
+
 	void operator()(const string& status);
-
 	void operator()(float progress);
-	HWND getHWND();
-
-	/*enum AsyncType {
-		ASYNC_DRAW = 5000,
-		ASYNC_FINISH
-	};*/
-
-	void callAsync(function<void ()> f/*, AsyncType aType*/);
 private:
 	void draw();
 	void loadImage();
 	tstring title;
 
-	CWindow splash;
 	CEdit dummy;
 	ExCImage img;
 
@@ -59,7 +68,11 @@ private:
 	int height;
 
 	tstring status;
-	float progress;
+	float progress = 0;
+	bool closing = false;
+
+	HFONT hFontTitle;
+	HFONT hFontStatus;
 };
 
 #endif

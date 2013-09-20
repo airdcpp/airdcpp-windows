@@ -450,7 +450,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		TestWrite(true, true, Util::usingLocalMode());
 	}
 
-	WinUtil::splash.reset();
+	WinUtil::splash->destroy();
 
 	// We want to pass this one on to the splitter...hope it get's there...
 	bHandled = FALSE;
@@ -1304,7 +1304,7 @@ LRESULT MainFrame::onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 void MainFrame::showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& aTitle) {
-	::MessageBox(WinUtil::splash ? WinUtil::splash->getHWND() : m_hWnd, aMsg.c_str(), (!aTitle.empty() ? aTitle.c_str() : _T(APPNAME) _T(" ") _T(VERSIONSTRING)), aFlags);
+	::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : m_hWnd, aMsg.c_str(), (!aTitle.empty() ? aTitle.c_str() : _T(APPNAME) _T(" ") _T(VERSIONSTRING)), aFlags);
 }
 
 LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -1320,7 +1320,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			
 			HubFrame::ShutDown();
 
-			WinUtil::splash = unique_ptr<SplashWindow>(new SplashWindow());
+			SplashWindow::create();
 			(*WinUtil::splash)(STRING(CLOSING_WINDOWS));
 
 			updateTray(false);
