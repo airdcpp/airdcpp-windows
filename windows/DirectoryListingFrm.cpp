@@ -42,6 +42,9 @@
 #include "../client/version.h"
 #include "TextFrame.h"
 
+#include <boost/move/algorithm.hpp>
+#include <boost/range/algorithm/copy.hpp>
+
 
 DirectoryListingFrame::FrameMap DirectoryListingFrame::frames;
 int DirectoryListingFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_TYPE, COLUMN_EXACTSIZE, COLUMN_SIZE, COLUMN_TTH, COLUMN_DATE };
@@ -97,55 +100,58 @@ DirectoryListingFrame::~DirectoryListingFrame() {
 	DirectoryListingManager::getInstance()->removeList(dl->getUser());
 }
 
-void DirectoryListingFrame::updateItemCache(const string& aPath, ReloadMode aReloadMode) {
-	if (aReloadMode == RELOAD_DIR) {
-		for (auto i = itemInfos.begin(); i != itemInfos.end();) {
-			if (AirUtil::isSub(i->first, aPath)) {
-				itemInfos.erase(i++);
-			} else {
-				i++;
-			}
-		}
-	} else if (aReloadMode == RELOAD_ALL) {
-		itemInfos.clear();
-	}
-
-	auto& list = itemInfos[aPath];
-
-	list.directories.clear();
-
+void DirectoryListingFrame::updateItemCache(const string& aPath) {
 	auto curDir = dl->findDirectory(aPath);
 	if (!curDir) {
 		return;
 	}
 
-	for (const auto& d : curDir->directories) {
-		list.directories.emplace(d);
+	auto iic = make_unique<ItemInfoCache>();
+	for (auto& d : curDir->directories) {
+		iic->directories.emplace(d);
 	}
 
-	list.files.clear();
-	for (const auto& f : curDir->files) {
-		list.files.emplace(f);
+	for (auto& f : curDir->files) {
+		iic->files.emplace(f);
 	}
+
+	itemInfos.emplace(aPath, move(iic));
 
 	//check that this directory exists in all parents
 	if (!aPath.empty()) {
 		auto parent = Util::getNmdcParentDir(aPath);
 		auto p = itemInfos.find(parent);
 		if (p != itemInfos.end()) {
-			auto p2 = p->second.directories.find(ItemInfo(curDir));
-			if (p2 != p->second.directories.end()) {
+			auto p2 = p->second->directories.find(ItemInfo(curDir));
+			if (p2 != p->second->directories.end()) {
 				// no need to update anything
 				return;
 			}
 		}
 
-		updateItemCache(parent, RELOAD_NONE);
+		updateItemCache(parent);
 	}
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFinished, int64_t aStart, const string& aDir, bool reloadList, bool changeDir, bool loadInGUIThread) noexcept {
-	updateItemCache(aDir, reloadList ? RELOAD_ALL : RELOAD_DIR);
+	// cache all item infos so that they won't be deleted before we finish loading
+	vector<unique_ptr<ItemInfoCache>> removedInfos;
+	if (!reloadList) {
+		for (auto i = itemInfos.begin(); i != itemInfos.end();) {
+			if (AirUtil::isParentOrExact(aDir, i->first)) {
+				removedInfos.push_back(move(i->second));
+				itemInfos.erase(i++);
+			} else {
+				i++;
+			}
+		}
+	} else {
+		boost::copy(itemInfos | map_values, boost::back_move_inserter(removedInfos));
+		itemInfos.clear();
+	}
+
+
+	updateItemCache(aDir);
 
 	if (!dl->getIsOwnList() && SETTING(DUPES_IN_FILELIST))
 		dl->checkShareDupes();
@@ -192,7 +198,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 			msg = STRING_F(FILELIST_LOADED_IN, Util::formatSeconds(loadTime, true));
 		}
 
-		//changeWindowState(true);
+		changeWindowState(true);
 
 		runF([=] {
 			initStatus();
@@ -544,19 +550,20 @@ void DirectoryListingFrame::insertTreeItems(const ItemInfo* ii, HTREEITEM aParen
 	auto p = itemInfos.find(ii->getPath());
 	//dcassert(p != itemInfos.end());
 	if (p != itemInfos.end()) {
-		const auto& dirs = p->second.directories;
+		const auto& dirs = p->second->directories;
 		for (const auto& d : dirs) {
 			ctrlTree.insertItem(&d, aParent, d.dir->getAdls());
 		}
 	} else {
 		// We haven't been there before... Fill the cache and try again.
-		updateItemCache(ii->getPath(), RELOAD_NONE);
+		updateItemCache(ii->getPath());
 		insertTreeItems(ii, aParent);
 	}
 }
 
 void DirectoryListingFrame::createRoot() {
-	root.reset(new ItemInfo(dl->getRoot()));
+	auto r = dl->getRoot();
+	root.reset(new ItemInfo(r));
 //	const auto icon = getIconIndex(dl->getRoot());
 	const auto icon = ResourceLoader::DIR_NORMAL;
 	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(dl->getNick(true)).c_str(), icon, icon, 0, 0, (LPARAM)root.get(), NULL, NULL);
@@ -578,8 +585,6 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 		createRoot();
 		updateHistoryCombo();
 	}
-
-	windowState = STATE_ENABLING; //some protected messages need to be handled in order for expanding to work
 
 	//check the root children state
 	bool initialChange = !ctrlTree.hasChildren(treeRoot);
@@ -612,11 +617,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 		ctrlFiles.list.SetRedraw(FALSE);
 	}
 
-	changeWindowState(true, !aChangeDir);
-	if (aChangeDir) {
-		// insert the new items
-		updateItems(d);
-	} else if (curPath == Util::getNmdcParentDir(aLoadedDir)) {
+	if (!aChangeDir && curPath == Util::getNmdcParentDir(aLoadedDir)) {
 		// find the loaded directory and set it as complete
 		int j = ctrlFiles.list.GetItemCount();        
 		for(int i = 0; i < j; i++) {
@@ -628,6 +629,9 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 				break;
 			}
 		}
+	} else if (aChangeDir || AirUtil::isParentOrExact(aLoadedDir, curPath)) {
+		// insert the new items
+		updateItems(d);
 	}
 
 	changeType = CHANGE_LAST;
@@ -740,7 +744,7 @@ LRESULT DirectoryListingFrame::onPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 size_t DirectoryListingFrame::getTotalListItemCount() const {
 	auto ii = itemInfos.find(curPath);
 	if (ii != itemInfos.end()) {
-		return ii->second.directories.size() + ii->second.files.size();
+		return ii->second->directories.size() + ii->second->files.size();
 	}
 
 	dcassert(0);
@@ -819,12 +823,11 @@ tstring DirectoryListingFrame::getComboDesc() {
 }
 
 void DirectoryListingFrame::DisableWindow(bool redraw){
-	windowState = STATE_DISABLING;
+	windowState = STATE_DISABLED;
 	if (redraw) {
 		ctrlFiles.list.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 		ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
-	windowState = STATE_DISABLED;
 
 	tasks.wait();
 	// can't use EnableWindow as that message seems the get queued for the list view...
@@ -960,7 +963,7 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 	int curPos = 0;
 	int selectedPos = -1;
 
-	const auto& dirs = itemInfos[curPath].directories;
+	const auto& dirs = itemInfos[curPath]->directories;
 	auto i = dirs.crbegin();
 
 	auto filterInfo = [this, &i](int column) { return (*i).getTextNormal(column); };
@@ -989,7 +992,7 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 	};
 
 	doInsert(dirs);
-	const auto& files = itemInfos[curPath].files;
+	const auto& files = itemInfos[curPath]->files;
 	i = files.crbegin();
 	doInsert(files);
 
@@ -1002,11 +1005,11 @@ void DirectoryListingFrame::insertItems(const optional<string>& selectedName) {
 	}
 }
 
-void DirectoryListingFrame::updateItems(const DirectoryListing::Directory* d) {
+void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& d) {
 	ctrlFiles.list.SetRedraw(FALSE);
 	updating = true;
 	if (itemInfos.find(d->getPath()) == itemInfos.end()) {
-		updateItemCache(d->getPath(), RELOAD_NONE);
+		updateItemCache(d->getPath());
 	}
 
 	optional<string> selectedName;
@@ -1545,7 +1548,7 @@ void DirectoryListingFrame::handleGoToDirectory(bool usingTree) {
 		} else if (ii->type == ItemInfo::DIRECTORY)	{
 			if (!(ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()))
 				return;
-			path = ((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath();
+			path = ((DirectoryListing::AdlDirectory*)ii->dir.get())->getFullPath();
 		}
 
 		if (!path.empty())
@@ -1604,7 +1607,7 @@ void DirectoryListingFrame::handleOpenDupeDir(bool usingTree) {
 	});
 }
 
-void DirectoryListingFrame::openDupe(const DirectoryListing::Directory* d) {
+void DirectoryListingFrame::openDupe(const DirectoryListing::Directory::Ptr& d) {
 	try {
 		tstring path;
 		if (dl->getIsOwnList()) {
@@ -1812,7 +1815,7 @@ LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWn
 				}
 				else if (ii->type == ItemInfo::DIRECTORY){
 					if (ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()) {
-						sCopy += Text::toT(((DirectoryListing::AdlDirectory*)ii->dir)->getFullPath());
+						sCopy += Text::toT(((DirectoryListing::AdlDirectory*)ii->dir.get())->getFullPath());
 					}
 					else {
 						sCopy += Text::toT(ii->dir->getPath());

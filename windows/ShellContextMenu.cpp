@@ -125,7 +125,7 @@ OMenu* CShellContextMenu::GetMenu()
 void CShellContextMenu::ShowContextMenu(HWND hWnd, CPoint pt)
 {
 	if (!bInitialized) {
-		m_Menu->open(hWnd, TPM_LEFTALIGN, pt);
+		m_Menu->open(hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return;
 	}
 

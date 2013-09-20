@@ -114,23 +114,25 @@ public:
 
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 
-		if (windowState != STATE_DISABLED) {
-			NOTIFY_HANDLER(IDC_FILES, LVN_GETDISPINFO, ctrlFiles.list.onGetDispInfo)
-			NOTIFY_HANDLER(IDC_FILES, LVN_COLUMNCLICK, ctrlFiles.list.onColumnClick)
+		NOTIFY_HANDLER(IDC_FILES, LVN_GETDISPINFO, ctrlFiles.list.onGetDispInfo)
+		NOTIFY_HANDLER(IDC_FILES, LVN_COLUMNCLICK, ctrlFiles.list.onColumnClick)
+		NOTIFY_HANDLER(IDC_FILES, LVN_ITEMCHANGED, onItemChanged)
+
+		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_ITEMEXPANDING, ctrlTree.OnItemExpanding)
+		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_GETDISPINFO, ctrlTree.OnGetItemDispInfo)
+		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_SELCHANGED, onSelChangedDirectories)
+		NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_GETINFOTIP, ctrlTree.OnGetChildInfo)
+
+		NOTIFY_HANDLER(IDC_FILES, NM_CUSTOMDRAW, onCustomDrawList)
+		NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CUSTOMDRAW, onCustomDrawTree)
+
+		if (windowState == STATE_ENABLED) {
 			NOTIFY_HANDLER(IDC_FILES, LVN_KEYDOWN, onKeyDown)
 			NOTIFY_HANDLER(IDC_FILES, NM_DBLCLK, onDoubleClickFiles)
-			NOTIFY_HANDLER(IDC_FILES, LVN_ITEMCHANGED, onItemChanged)
 
-			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_ITEMEXPANDING, ctrlTree.OnItemExpanding)
-			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_GETDISPINFO, ctrlTree.OnGetItemDispInfo)
 			NOTIFY_HANDLER(IDC_DIRECTORIES, NM_DBLCLK, onDoubleClickDirs)
 			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_KEYDOWN, onKeyDownDirs)
 			NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CLICK, onClickTree)
-			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_SELCHANGED, onSelChangedDirectories)
-			NOTIFY_HANDLER(IDC_DIRECTORIES, TVN_GETINFOTIP, ctrlTree.OnGetChildInfo)
-
-			NOTIFY_HANDLER(IDC_FILES, NM_CUSTOMDRAW, onCustomDrawList)
-			NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CUSTOMDRAW, onCustomDrawTree)
 
 			COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
 			COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
@@ -268,7 +270,7 @@ private:
 	bool allowPopup() const;
 	void updateHistoryCombo();
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
-	void openDupe(const DirectoryListing::Directory* d);
+	void openDupe(const DirectoryListing::Directory::Ptr& d);
 	void openDupe(const DirectoryListing::File* f, bool openDir);
 
 	// safe to be called from any thread
@@ -276,7 +278,7 @@ private:
 	string curPath;
 	void changeWindowState(bool enable, bool redraw = true);
 	
-	void updateItems(const DirectoryListing::Directory* d);
+	void updateItems(const DirectoryListing::Directory::Ptr& d);
 	void insertItems(const optional<string>& selectedName);
 
 	enum ReloadMode {
@@ -315,13 +317,13 @@ private:
 			DIRECTORY
 		} type;
 		
-		union {
+		//union {
 			DirectoryListing::File* file;
-			DirectoryListing::Directory* dir;
-		};
+			DirectoryListing::Directory::Ptr dir;
+		//};
 
 		ItemInfo(DirectoryListing::File* f) : type(FILE), file(f) { }
-		ItemInfo(DirectoryListing::Directory* d) : type(DIRECTORY), dir(d) { }
+		ItemInfo(DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d) {}
 		~ItemInfo() { }
 
 		const tstring getText(uint8_t col) const;
@@ -411,9 +413,7 @@ private:
 
 	enum WindowState {
 		STATE_ENABLED,
-		STATE_ENABLING,
 		STATE_DISABLED,
-		STATE_DISABLING
 	};
 
 	WindowState windowState;
@@ -463,8 +463,8 @@ private:
 		ItemInfoSet directories;
 	};
 
-	unordered_map<string, ItemInfoCache, noCaseStringHash, noCaseStringEq> itemInfos;
-	void updateItemCache(const string& aPath, ReloadMode aReloadMode);
+	unordered_map<string, unique_ptr<ItemInfoCache>, noCaseStringHash, noCaseStringEq> itemInfos;
+	void updateItemCache(const string& aPath);
 protected:
 	/* TypedTreeViewCtrl */
 	ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* d) const;
