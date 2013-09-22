@@ -379,13 +379,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(SETTING(LOCK_TB)) PostMessage(WM_COMMAND, ID_LOCK_TB);
 	if(SETTING(OPEN_SYSTEM_LOG)) PostMessage(WM_COMMAND, IDC_SYSTEM_LOG);
 
-	if (!WinUtil::isShift() && !Util::hasParam("/noautoconnect")) {
-		if (!SETTING(NICK).empty())
-			addThreadedTask([=] { FavoriteManager::getInstance()->autoConnect(); });
-		else
-			missedAutoConnect = true;
-	}
-
 	callAsync([=] { parseCommandLine(GetCommandLine()); });
 
 	try {
@@ -451,6 +444,13 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	}
 
 	WinUtil::splash->destroy();
+
+	if (!WinUtil::isShift() && !Util::hasParam("/noautoconnect")) {
+		if (!SETTING(NICK).empty())
+			addThreadedTask([=] { FavoriteManager::getInstance()->autoConnect(); });
+		else
+			missedAutoConnect = true;
+	}
 
 	// We want to pass this one on to the splitter...hope it get's there...
 	bHandled = FALSE;

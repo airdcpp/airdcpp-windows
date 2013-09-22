@@ -408,10 +408,9 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			if(SETTING(MINIMIZE_ON_STARTUP)) {
 				wndMain->ShowWindow(SW_SHOWMINIMIZED);
 			} else {
+				WinUtil::isAppActive = true;
 				wndMain->ShowWindow(((nCmdShow == SW_SHOWDEFAULT) || (nCmdShow == SW_SHOWNORMAL)) ? SETTING(MAIN_WINDOW_STATE) : nCmdShow);
 			}
-
-			WinUtil::splash->destroy();
 		});
 	});
 
