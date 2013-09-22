@@ -82,16 +82,9 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
 		COMMAND_ID_HANDLER(IDC_SEARCH_PAUSE, onPause)
-		COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy)
-		COMMAND_ID_HANDLER(IDC_COPY_FILENAME, onCopy)
-		COMMAND_ID_HANDLER(IDC_COPY_DIR, onCopy)
-		COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy)
-		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy)
 		COMMAND_ID_HANDLER(IDC_FREESLOTS, onFreeSlots)
 		COMMAND_ID_HANDLER(IDC_ASCH_ONLY, onAschOnly)
 		COMMAND_ID_HANDLER(IDC_COLLAPSED, onCollapsed)
-		COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
-		COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
 		COMMAND_ID_HANDLER(IDC_PURGE, onPurge)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(IDC_USE_EXCLUDED, onUseExcluded)
@@ -124,7 +117,6 @@ public:
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onCtlColor(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onDoubleClickResults(int idCtrl, LPNMHDR pnmh, BOOL& bHandled);
-	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onFilterChar(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -157,6 +149,7 @@ public:
 		handleGetList(TYPE_MIXED);
 	}
 
+	void handleCopyMagnet();
 	void handleSearchTTH();
 	void handleGetList(ListType aType);
 	void handleOpenItem(bool isClientView);

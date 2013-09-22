@@ -30,7 +30,7 @@
 int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION };
 int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200 };
 static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::QUEUED, ResourceManager::DESCRIPTION };
-static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT };
+static ColumnType columnTypes [] = { COLUMN_IMAGE, COLUMN_IMAGE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT };
 
 struct FieldName {
 	string field;
@@ -273,6 +273,9 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				}
 			}
 		}
+
+		usersMenu.appendSeparator();
+		ctrlUsers.appendCopyMenu(usersMenu);
 
 		usersMenu.AppendMenu(MF_SEPARATOR);
 		usersMenu.AppendMenu(MF_STRING, IDC_EDIT, CTSTRING(PROPERTIES));

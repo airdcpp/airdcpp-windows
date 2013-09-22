@@ -888,7 +888,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 	} else if(stricmp(cmd.c_str(), _T("whois")) == 0) {
 		WinUtil::openLink(_T("http://www.ripe.net/perl/whois?form_type=simple&full_query_string=&searchtext=") + Text::toT(Util::encodeURI(Text::fromT(param))));
 	} else if((stricmp(cmd.c_str(), _T("clear")) == 0) || (stricmp(cmd.c_str(), _T("cls")) == 0)) {
-		ctrlClient.SetWindowText(Util::emptyStringT.c_str());
+		ctrlClient.handleEditClearAll();
 	} else if(Util::stricmp(cmd.c_str(), _T("conn")) == 0 || Util::stricmp(cmd.c_str(), _T("connection")) == 0) {
 		status = Text::toT(ConnectivityManager::getInstance()->getInformation());
 	} else if(stricmp(cmd.c_str(), _T("extraslots"))==0) {

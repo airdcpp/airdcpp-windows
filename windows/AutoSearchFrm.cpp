@@ -26,6 +26,8 @@
 
 #include "../client/SettingsManager.h"
 
+//static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TIME, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
+
 int AutoSearchFrame::columnIndexes[] = { COLUMN_VALUE, COLUMN_TYPE, COLUMN_SEARCH_STATUS, COLUMN_LASTSEARCH, COLUMN_BUNDLES, COLUMN_ACTION, COLUMN_EXPIRATION,
 	COLUMN_PATH, COLUMN_REMOVE, COLUMN_USERMATCH, COLUMN_ERROR };
 
@@ -489,7 +491,7 @@ LRESULT AutoSearchFrame::onDuplicate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 		int sel = ctrlAutoSearch.GetNextItem(-1, LVNI_SELECTED);
 		AutoSearchPtr as = AutoSearchManager::getInstance()->getSearchByIndex(sel);
 
-		AutoSearchDlg dlg(as);
+		AutoSearchDlg dlg;
 		appendDialogParams(as, dlg);
 
 		if(dlg.DoModal() == IDOK) {

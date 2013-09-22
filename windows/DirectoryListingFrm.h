@@ -135,15 +135,6 @@ public:
 			NOTIFY_HANDLER(IDC_DIRECTORIES, NM_CLICK, onClickTree)
 
 			COMMAND_ID_HANDLER(ID_FILE_RECONNECT, onFileReconnect)
-			COMMAND_ID_HANDLER(IDC_COPY_LINK, onCopy)
-			COMMAND_ID_HANDLER(IDC_COPY_DATE, onCopy)
-			COMMAND_ID_HANDLER(IDC_COPY_TTH, onCopy)
-			COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy);
-			COMMAND_ID_HANDLER(IDC_COPY_FILENAME, onCopy);
-			COMMAND_ID_HANDLER(IDC_COPY_DIR, onCopy);
-			COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy);
-			COMMAND_ID_HANDLER(IDC_COPY_EXACT_SIZE, onCopy);
-			COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy);
 
 			COMMAND_ID_HANDLER(IDC_FIND, onFind)
 			COMMAND_ID_HANDLER(IDC_NEXT, onNext)
@@ -183,7 +174,6 @@ public:
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
-	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onDoubleClickFiles(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
 	LRESULT onDoubleClickDirs(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
 	LRESULT onSelChangedDirectories(int idCtrl, LPNMHDR pnmh, BOOL& bHandled); 
@@ -199,6 +189,10 @@ public:
 	LRESULT onGetFullList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onReloadList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
+
+	void handleCopyMagnet();
+	void handleCopyPath();
+	void handleCopyDirectory();
 
 	void handleRefreshShare(bool usingTree);
 	void handleScanShare(bool usingTree, bool isSfvCheck);

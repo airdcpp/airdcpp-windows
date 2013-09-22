@@ -239,9 +239,6 @@ private:
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
 
-	OMenu copyMenu;
-	OMenu userMenu;
-
 	CButton ctrlShowUsers;
 
 	typedef TypedListViewCtrl<OnlineUser, IDC_USERS> CtrlUsers;

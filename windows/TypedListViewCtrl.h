@@ -26,13 +26,15 @@
 #include "../Client/SettingsManager.h"
 #include "../client/StringTokenizer.h"
 #include "ListViewArrows.h"
+#include "OMenu.h"
 
 enum ColumnType{
 	COLUMN_TEXT,
 	COLUMN_NUMERIC,
 	COLUMN_SIZE,
 	COLUMN_TIME,
-	COLUMN_SPEED
+	COLUMN_SPEED,
+	COLUMN_IMAGE
 };
 
 class ColumnInfo {
@@ -175,29 +177,27 @@ public:
 		tstring InfoTip;
 		tstring buffer;
 		buffer.resize(BUF_SIZE);
-		
-		int indexes[32];
-		GetColumnOrderArray(GetHeader().GetItemCount(), indexes);
-		LV_COLUMN lvCol;
 
 		for (int i = 0; i < GetHeader().GetItemCount(); ++i)
 		{
-			if (!NoColumnHeader) {
-				lvCol.mask = LVCF_TEXT;
-				lvCol.pszText = &buffer[0];
-				lvCol.cchTextMax = BUF_SIZE;
-				GetColumn(indexes[i], &lvCol);
-				InfoTip += lvCol.pszText;
-				InfoTip += _T(": ");
-			}
-			GetItemText(row, indexes[i],  &buffer[0], BUF_SIZE);
+			auto ci = columnList[i];
+			if (ci->colType != COLUMN_IMAGE) {
+				GetItemText(row, i, &buffer[0], BUF_SIZE);
+				if (!buffer.empty()) {
+					if (!InfoTip.empty())
+						InfoTip += _T("\r\n");
 
-			InfoTip += &buffer[0];
-			InfoTip += _T("\r\n");
+					if (!NoColumnHeader) {
+						InfoTip += ci->name;
+						InfoTip += _T(": ");
+					}
+
+					InfoTip += &buffer[0];
+					//buffer.clear();
+				}
+			}
 		}
 
-		if (InfoTip.size() > 2)
-			InfoTip.erase(InfoTip.size() - 2);
 		return InfoTip;
 	}
 
@@ -220,6 +220,49 @@ public:
 		if(sortColumn != -1) {
 			SortItems(&compareFunc, (LPARAM)this);
 		}
+	}
+
+	void appendCopyMenu(OMenu& parent, function<void(OMenu* copyMenu)> customItemF = nullptr) {
+		auto copyMenu = parent.createSubMenu(TSTRING(COPY), true);
+
+		for (int i = 0; i < GetHeader().GetItemCount(); ++i) {
+			auto ci = columnList[i];
+			if (ci->colType != COLUMN_IMAGE)
+				copyMenu->appendItem(ci->name, [=] { handleCopy([=](const T* aItem) { return aItem->getText(i); }); });
+		}
+
+		if (customItemF)
+			customItemF(copyMenu);
+
+		copyMenu->appendSeparator();
+		copyMenu->appendItem(TSTRING(ALL_COLUMNS), [=] { handleCopyAll(); });
+	}
+
+	void handleCopy(function<tstring(const T*)> textF) {
+		tstring sCopy;
+		forEachSelectedT([&](const T* aItem) {
+			if (!sCopy.empty())
+				sCopy += _T("\r\n");
+
+			sCopy += textF(aItem);
+		});
+
+		if (!sCopy.empty())
+			WinUtil::setClipboard(sCopy);
+	}
+
+	void handleCopyAll() {
+		tstring sCopy;
+
+		int sel = -1;
+		while ((sel = GetNextItem(sel, LVNI_SELECTED)) != -1) {
+			if (!sCopy.empty())
+				sCopy += _T("\r\n\r\n");
+			sCopy += GetColumnTexts(sel);
+		}
+
+		if (!sCopy.empty())
+			WinUtil::setClipboard(sCopy);
 	}
 
 	int insertItem(const T* item, int image) {

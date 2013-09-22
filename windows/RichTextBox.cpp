@@ -743,7 +743,9 @@ void RichTextBox::clearSelInfo() {
 	selectedWord.clear();
 }
 
-void RichTextBox::updateSelectedWord(POINT pt) {
+void RichTextBox::updateSelectedText(POINT pt) {
+	selectedLine = LineFromPos(pt);
+
 	auto p = getLink(pt);
 	if (p != links.crend()) {
 		auto cl = p->second;
@@ -791,8 +793,7 @@ void RichTextBox::updateSelectedWord(POINT pt) {
 LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 	clearSelInfo();
 
-	updateSelectedWord(pt);
-	selectedLine = LineFromPos(pt);
+	updateSelectedText(pt);
 
 	updateAuthor();
 
@@ -919,24 +920,25 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			menu.InsertSeparatorFirst(CTSTRING(RELEASE));
 		} else if (isPath) {
 			menu.InsertSeparatorFirst(CTSTRING(PATH));
-			menu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
-			menu.AppendMenu(MF_STRING, IDC_ADD_AUTO_SEARCH_DIR, CTSTRING(ADD_AUTO_SEARCH_DIR));
+			menu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { handleSearchDir(); });
+			menu.appendItem(TSTRING(ADD_AUTO_SEARCH_DIR), [this] { handleAddAutoSearchDir(); });
+
 			if (selectedWord[selectedWord.length()-1] != PATH_SEPARATOR) {
-				menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH_FILENAME));
+				menu.appendItem(TSTRING(SEARCH_FILENAME), [this] { handleSearch(); });
 				if (Util::fileExists(Text::fromT(selectedWord))) {
-					menu.AppendMenu(MF_SEPARATOR);
-					menu.AppendMenu(MF_STRING, IDC_DELETE_FILE, CTSTRING(DELETE_FILE));
+					menu.appendSeparator();
+					menu.appendItem(TSTRING(DELETE_FILE), [this] { handleDeleteFile(); });
 				} else {
-					menu.AppendMenu(MF_STRING, IDC_ADD_AUTO_SEARCH_FILE, CTSTRING(ADD_AUTO_SEARCH_FILE));
-					menu.AppendMenu(MF_SEPARATOR);
+					menu.appendItem(TSTRING(ADD_AUTO_SEARCH_FILE), [this] { handleAddAutoSearchFile(); });
+					menu.appendSeparator();
 				}
 			}
-			menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+			menu.appendItem(TSTRING(OPEN_FOLDER), [this] { handleOpenFolder(); });
 		} else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
 			menu.InsertSeparatorFirst(CTSTRING(LINK));
-			menu.AppendMenu(MF_STRING, IDC_OPEN_LINK, CTSTRING(CONNECT));
-			menu.AppendMenu(MF_STRING, IDC_CONNECT_WITH, CTSTRING(CONNECT_WITH_PROFILE));
-			menu.AppendMenu(MF_SEPARATOR);
+			menu.appendItem(TSTRING(CONNECT), [this] { handleOpenLink(); });
+			menu.appendItem(TSTRING(CONNECT_WITH_PROFILE), [this] { handleConnectWith(); });
+			menu.appendSeparator();
 		} else {
 			menu.InsertSeparatorFirst(CTSTRING(TEXT));
 		}
@@ -944,30 +946,31 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
 		menu.AppendMenu(MF_STRING, IDC_COPY_ACTUAL_LINE,  CTSTRING(COPY_LINE));
 		if (!isPath) {
-			menu.AppendMenu(MF_SEPARATOR);
-			menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
+			menu.appendSeparator();
+			menu.appendItem(TSTRING(SEARCH), [this] { handleSearch(); });
 			if (isTTH || isMagnet) {
-				menu.AppendMenu(MF_STRING, IDC_SEARCH_BY_TTH, SettingsManager::lanMode ? CTSTRING(SEARCH_FOR_ALTERNATES) : CTSTRING(SEARCH_TTH));
+				menu.appendItem(TSTRING(SEARCH_TTH), [this] { handleSearchTTH(); });
 			}
 
 			if (isMagnet || isRelease) {
 				if (dupeType > 0) {
-					menu.AppendMenu(MF_SEPARATOR);
-					menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
+					menu.appendSeparator();
+					menu.appendItem(TSTRING(OPEN_FOLDER), [this] { handleOpenFolder(); });
 				}
 
-				menu.AppendMenu(MF_SEPARATOR);
+				menu.appendSeparator();
 				if (isMagnet) {
+					auto isMyLink = Text::toT(client->getMyNick()) == author;
 					Magnet m = Magnet(Text::fromT(selectedWord));
 					if (client && ShareManager::getInstance()->isTempShared(pmUser ? pmUser->getCID().toBase32() : Util::emptyString, m.getTTH())) {
 						/* show an option to remove the item */
-						menu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(STOP_SHARING));
-					} else if (!author.empty()) {
+						menu.appendItem(TSTRING(STOP_SHARING), [this] { handleRemoveTemp(); });
+					} else if (!author.empty() && !isMyLink) {
 						appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), nullptr);
 					}
 
-					if (!author.empty() || dupeType == SHARE_DUPE || dupeType == FINISHED_DUPE)
-						menu.AppendMenu(MF_STRING, IDC_OPEN, CTSTRING(OPEN));
+					if ((!author.empty() && !isMyLink) || dupeType == SHARE_DUPE || dupeType == FINISHED_DUPE)
+						menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
 				} else if (isRelease) {
 					//autosearch menus
 					appendDownloadMenu(menu, DownloadBaseHandler::TYPE_SECONDARY, true, nullptr, Text::fromT(selectedWord) + PATH_SEPARATOR, false);
@@ -1012,11 +1015,11 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 			if (client->isOp() || !ou->getIdentity().isOp()) {
 				if(HubFrame::ignoreList.find(ou->getUser()) == HubFrame::ignoreList.end()) {
-					menu.AppendMenu(MF_STRING, IDC_IGNORE, CTSTRING(IGNORE_USER));
-				} else {    
-					menu.AppendMenu(MF_STRING, IDC_UNIGNORE, CTSTRING(UNIGNORE_USER));
+					menu.appendItem(TSTRING(IGNORE_USER), [this] { handleIgnore(); });
+				} else { 
+					menu.appendItem(TSTRING(UNIGNORE_USER), [this] { handleUnignore(); });
 				}
-				menu.AppendMenu(MF_SEPARATOR);
+				menu.appendSeparator();
 			}
 		}
 		
@@ -1054,11 +1057,11 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			}
 	}
 
-	menu.AppendMenu(MF_SEPARATOR);
-	menu.AppendMenu(MF_STRING, IDC_FIND_TEXT, CTSTRING(FIND_TEXT));
-	menu.AppendMenu(MF_STRING, ID_EDIT_SELECT_ALL, CTSTRING(SELECT_ALL));
+	menu.appendSeparator();
+	menu.appendItem(TSTRING(FIND_TEXT), [this] { findText(); });
+	menu.appendItem(TSTRING(SELECT_ALL), [this] { handleEditSelectAll(); });
 	if (allowClear)
-		menu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR_CHAT));
+		menu.appendItem(TSTRING(CLEAR_CHAT), [this] { handleEditClearAll(); });
 	
 	//flag to indicate pop up menu.
     m_bPopupMenu = true;
@@ -1067,12 +1070,11 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	return 0;
 }
 
-LRESULT RichTextBox::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleSearchDir() {
 	WinUtil::searchAny(Text::toT(Util::getReleaseDir(Text::fromT(selectedWord), true)));
-	return 0;
 }
 
-LRESULT RichTextBox::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleDeleteFile() {
 	string path = Text::fromT(selectedWord);
 	string msg = STRING_F(DELETE_FILE_CONFIRM, path);
 	if(WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_FILE_DELETIONS, Text::toT(msg).c_str())) {
@@ -1080,32 +1082,24 @@ LRESULT RichTextBox::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	}
 
 	SetSelNone();
-	return 0;
 }
 
-LRESULT RichTextBox::onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleAddAutoSearchFile() {
 	string targetPath = Util::getFilePath(Text::fromT(selectedWord));
 	string fileName = Util::getFileName(Text::fromT(selectedWord));
 
 	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, TargetUtil::TARGET_PATH, false);
 
 	SetSelNone();
-	return 0;
 }
 
-LRESULT RichTextBox::onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleAddAutoSearchDir() {
 	string targetPath = Util::getParentDir(Text::fromT(selectedWord));
 	string dirName = Util::getLastDir(selectedWord[selectedWord.length()-1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selectedWord)) : Text::fromT(selectedWord));
 
 	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true, false);
 
 	SetSelNone();
-	return 0;
-}
-
-LRESULT RichTextBox::onFindText(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	findText();
-	return 1;
 }
 
 LRESULT RichTextBox::onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -1171,7 +1165,7 @@ LRESULT RichTextBox::onChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOO
 
 	if ((GetKeyState(VkKeyScan('C') & 0xFF) & 0xFF00) > 0 && (GetKeyState(VK_CONTROL) & 0xFF00) > 0) {
 		POINT pt = { -1, -1 };
-		updateSelectedWord(pt);
+		updateSelectedText(pt);
 		WinUtil::setClipboard(selectedWord);
 		clearSelInfo();
 		return 1;
@@ -1181,25 +1175,23 @@ LRESULT RichTextBox::onChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOO
 	return 0;
 }
 
-LRESULT RichTextBox::onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleOpenFile() {
 	Magnet m = Magnet(Text::fromT(selectedWord));
 	if (m.hash.empty())
-		return 0;
+		return;
 
+	auto u = getMagnetSource();
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		if (dupeType > 0) {
 			auto p = AirUtil::getDupePath(dupeType, m.getTTH());
 			if (!p.empty())
-				Util::openFile(p);
+				WinUtil::openFile(Text::toT(p));
 		} else {
-			auto u = getMagnetSource();
 			try {
 				QueueManager::getInstance()->addOpenedItem(m.fname, m.fsize, m.getTTH(), u, false);
 			} catch (...) {}
 		}
 	});
-
-	return 0;
 }
 
 HintedUser RichTextBox::getMagnetSource() {
@@ -1223,19 +1215,18 @@ string RichTextBox::getTempShareKey() const {
 	return (pmUser && !pmUser->isSet(User::BOT) && !pmUser->isSet(User::NMDC)) ? pmUser->getCID().toBase32() : Util::emptyString;
 }
 
-LRESULT RichTextBox::onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleRemoveTemp() {
 	string link = Text::fromT(selectedWord);
 	Magnet m = Magnet(link);
 	ShareManager::getInstance()->removeTempShare(getTempShareKey(), m.getTTH());
-	for (auto cl: links | map_values) {
+	for (auto& cl: links | map_values) {
 		if (cl->getType() == ChatLink::TYPE_MAGNET && cl->url == link) {
 			updateDupeType(cl);
 		}
 	}
-	return 0;
 }
 
-LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleOpenFolder() {
 	tstring path;
 	try{
 		if (isRelease) {
@@ -1245,17 +1236,16 @@ LRESULT RichTextBox::onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 		} else {
 			Magnet m = Magnet(Text::fromT(selectedWord));
 			if (m.hash.empty())
-				return 0;
+				return;
 
 			path = Text::toT(AirUtil::getDupePath(dupeType, m.getTTH()));
 			if (!path.empty())
 				path = Util::getFilePath(path);
 
 		}
-	}catch(...) {}
+	} catch(...) {}
 
 	WinUtil::openFolder(path);
-	return 0;
 }
 
 void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {
@@ -1372,19 +1362,14 @@ LRESULT RichTextBox::onLeftButtonUp(UINT uMsg, WPARAM wParam, LPARAM lParam, BOO
 	return bHandled = TRUE ? 0: 1;
 }
 
-LRESULT RichTextBox::onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleOpenLink() {
 	string link = Text::fromT(selectedWord);
-	for(auto l: links | reversed) {
+	for(const auto& l: links | reversed) {
 		if(compare(l.second->url, link) == 0) {
-			if (l.second->getType() == ChatLink::TYPE_MAGNET) {
-				WinUtil::parseMagnetUri(Text::toT(l.second->url), getMagnetSource(), this);
-			} else {
-				WinUtil::openLink(Text::toT(l.second->url));
-			}
-			return 0;
+			openLink(l.second);
+			return;
 		}
 	}
-	return 0;
 }
 
 bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
@@ -1395,10 +1380,16 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 		return false;
 
 	auto cl = p->second;
+	updateSelectedText(pt);
+	updateAuthor();
+
+	openLink(cl);
+
+	return 1;
+}
+
+void RichTextBox::openLink(const ChatLink* cl) {
 	if (cl->getType() == ChatLink::TYPE_MAGNET) {
-		selectedLine = LineFromPos(pt);
-		updateAuthor();
-		selectedWord = Text::toT(cl->url);
 		WinUtil::parseMagnetUri(Text::toT(cl->url), getMagnetSource(), this);
 	} else {
 		//the url regex also detects web links without any protocol part
@@ -1408,8 +1399,6 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 
 		WinUtil::openLink(Text::toT(link));
 	}
-
-	return 1;
 }
 
 LRESULT RichTextBox::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -1417,14 +1406,12 @@ LRESULT RichTextBox::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
-LRESULT RichTextBox::onEditSelectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleEditSelectAll() {
 	SetSelAll();
-	return 0;
 }
 
-LRESULT RichTextBox::onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleEditClearAll() {
 	SetWindowText(_T(""));
-	return 0;
 }
 
 LRESULT RichTextBox::onCopyActualLine(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -1479,22 +1466,20 @@ LRESULT RichTextBox::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 	return 0;
 }
 
-LRESULT RichTextBox::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/){
+void RichTextBox::handleIgnore() {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
 		HubFrame::ignoreList.insert(ou->getUser());
 		IgnoreManager::getInstance()->storeIgnore(ou->getIdentity().getNick());
 	}
-	return 0;
 }
 
-LRESULT RichTextBox::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/){
+void RichTextBox::handleUnignore(){
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
 		HubFrame::ignoreList.erase(ou->getUser());
 		IgnoreManager::getInstance()->removeIgnore(ou->getIdentity().getNick());
 	}
-	return 0;
 }
 
 LRESULT RichTextBox::onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -1859,10 +1844,10 @@ LRESULT RichTextBox::handleLink(ENLINK& link) {
 	return 0;
 }
 
-LRESULT RichTextBox::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleConnectWith() {
 	string address = Text::fromT(selectedWord);
 	if (!AirUtil::isHubLink(address))
-		return 0;
+		return;
 
 	ConnectDlg dlg(true);
 	dlg.title = TSTRING(CONNECT_WITH_PROFILE);
@@ -1871,11 +1856,9 @@ LRESULT RichTextBox::onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lPar
 		RecentHubEntryPtr r = new RecentHubEntry(Text::fromT(selectedWord));
 		WinUtil::connectHub(r, dlg.curProfile);
 	}
-
-	return 0;
 }
 
-LRESULT RichTextBox::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleSearch() {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		WinUtil::searchAny(Text::toT(m.fname));
@@ -1885,10 +1868,9 @@ LRESULT RichTextBox::onSearch(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 		WinUtil::searchAny(selectedWord);
 	}
 	SetSelNone();
-	return 0;
 }
 
-LRESULT RichTextBox::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+void RichTextBox::handleSearchTTH() {
 	if (isMagnet) {
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		WinUtil::searchHash(m.getTTH(), m.fname, m.fsize);
@@ -1896,5 +1878,4 @@ LRESULT RichTextBox::onSearchTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 		WinUtil::searchHash(TTHValue(Text::fromT(selectedWord)), Util::emptyString, 0);
 	}
 	SetSelNone();
-	return 0;
 }

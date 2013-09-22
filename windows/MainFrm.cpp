@@ -1929,6 +1929,10 @@ void MainFrame::on(QueueManagerListener::Finished, const QueueItemPtr& qi, const
 			WinUtil::playSound(Text::toT(SETTING(FINISHFILE)));
 	}
 
+	if (qi->isSet(QueueItem::FLAG_OPEN)) {
+		addThreadedTask([=] { WinUtil::openFile(Text::toT(qi->getTarget())); });
+	}
+
 	if(qi->isSet(QueueItem::FLAG_CLIENT_VIEW) && qi->isSet(QueueItem::FLAG_TEXT)) {
 		callAsync([=] {
 			TextFrame::openWindow(Text::toT(qi->getTarget()), TextFrame::NORMAL);

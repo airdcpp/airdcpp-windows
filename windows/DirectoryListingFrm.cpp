@@ -1242,8 +1242,7 @@ LRESULT DirectoryListingFrame::onChar(UINT /*msg*/, WPARAM /*wParam*/, LPARAM /*
 		if (focus == ctrlTree.m_hWnd) {
 			handleCopyDir();
 		} else {
-			BOOL tmp;
-			onCopy(0, IDC_COPY_FILENAME, 0, tmp);
+			ctrlFiles.list.handleCopy([&](const ItemInfo* ii) { return ii->getText(0); });
 		}
 		return 1;
 	}
@@ -1271,23 +1270,6 @@ void DirectoryListingFrame::selectItem(const string& name) {
 
 LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if (reinterpret_cast<HWND>(wParam) == ctrlFiles.list && ctrlFiles.list.GetSelectedCount() > 0) {
-		/*POINT pt = GetMessagePos();
-		//POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
-		if (pt.x == -1 && pt.y == -1) {
-			WinUtil::getContextMenuPos(ctrlFiles.list, pt);
-		}
-
-		ctrlFiles.list.ScreenToClient(&pt);
-
-		UINT flags = 0;
-		ctrlFiles.list.HitTest(pt, &flags);
-		if (!(flags & LVHT_ONITEM)) {
-			bHandled = FALSE;
-			return FALSE;
-		}
-
-		ctrlFiles.list.ClientToScreen(&pt);*/
-
 		auto pt = ctrlFiles.list.getMenuPosition();
 		if (!pt) {
 			bHandled = FALSE;
@@ -1389,18 +1371,11 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		fileMenu.appendSeparator();
 
 		// copy menu
-		OMenu copyMenu;
-		copyMenu.CreatePopupMenu();
-		copyMenu.InsertSeparatorFirst(CTSTRING(COPY));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(NICK));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_EXACT_SIZE, CTSTRING(EXACT_SIZE));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
-		fileMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
+		ctrlFiles.list.appendCopyMenu(fileMenu, [this](OMenu* copyMenu) {
+			copyMenu->appendItem(TSTRING(PATH), [this] { handleCopyPath(); });
+			copyMenu->appendItem(TSTRING(MAGNET_LINK), [this] { handleCopyMagnet(); });
+			copyMenu->appendItem(TSTRING(DIRECTORY), [this] { handleCopyDirectory(); });
+		});
 
 
 		if(ctrlFiles.list.GetSelectedCount() == 1 && ii->type == ItemInfo::FILE) {
@@ -1776,78 +1751,39 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 	}
 }
 
-LRESULT DirectoryListingFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL & /*bHandled*/) {
-	tstring sCopy;
-	if (ctrlFiles.list.GetSelectedCount() >= 1) {
-		int xsel = ctrlFiles.list.GetNextItem(-1, LVNI_SELECTED);
-		for (;;) {
-			const ItemInfo* ii = ctrlFiles.list.getItemData(xsel);
-			switch (wID) {
-			case IDC_COPY_NICK:
-				sCopy += Text::toT(dl->getNick(false));
-				break;
-			case IDC_COPY_FILENAME:
-				sCopy += ii->getText(COLUMN_FILENAME);
-				break;
-			case IDC_COPY_SIZE:
-				sCopy += ii->getText(COLUMN_SIZE);
-				break;
-			case IDC_COPY_EXACT_SIZE:
-				sCopy += ii->getText(COLUMN_EXACTSIZE);
-				break;
-			case IDC_COPY_LINK:
-				if (ii->type == ItemInfo::FILE) {
-					sCopy += Text::toT(WinUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize()));
-				}
-				else if (ii->type == ItemInfo::DIRECTORY){
-					sCopy += Text::toT("Directories don't have Magnet links");
-				}
-				break;
-			case IDC_COPY_DATE:
-				sCopy += ii->getText(COLUMN_DATE);
-				break;
-			case IDC_COPY_TTH:
-				sCopy += ii->getText(COLUMN_TTH);
-				break;
-			case IDC_COPY_PATH:
-				if (ii->type == ItemInfo::FILE){
-					sCopy += Text::toT(ii->file->getPath());
-				}
-				else if (ii->type == ItemInfo::DIRECTORY){
-					if (ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()) {
-						sCopy += Text::toT(((DirectoryListing::AdlDirectory*)ii->dir.get())->getFullPath());
-					}
-					else {
-						sCopy += Text::toT(ii->dir->getPath());
-					}
-				}
-				break;
-			case IDC_COPY_DIR:
-				if (ii->type == ItemInfo::FILE){
-					sCopy += Text::toT(Util::getReleaseDir(ii->file->getPath(), true));
-				}
-				else if (ii->type == ItemInfo::DIRECTORY){
-					sCopy += ii->getText(COLUMN_FILENAME);
-				}
-				break;
-			default:
-				dcdebug("DIRECTORYLISTINGFRAME DON'T GO HERE\n");
-				return 0;
-			}
-			xsel = ctrlFiles.list.GetNextItem(xsel, LVNI_SELECTED);
-			if (xsel == -1) {
-				break;
-			}
-
-			sCopy += Text::toT("\r\n");
+void DirectoryListingFrame::handleCopyMagnet() {
+	ctrlFiles.list.handleCopy([&](const ItemInfo* ii) -> tstring {
+		if (ii->type == ItemInfo::FILE) {
+			return Text::toT(WinUtil::makeMagnet(ii->file->getTTH(), ii->file->getName(), ii->file->getSize()));
+		} else {
+			return Text::toT("Directories don't have Magnet links");
 		}
-
-		if (!sCopy.empty())
-			WinUtil::setClipboard(sCopy);
-	}
-	return S_OK;
+	});
 }
 
+void DirectoryListingFrame::handleCopyPath() {
+	ctrlFiles.list.handleCopy([&](const ItemInfo* ii) -> tstring {
+		if (ii->type == ItemInfo::FILE) {
+			return Text::toT(ii->file->getPath());
+		} else {
+			if (ii->dir->getAdls() && ii->dir->getParent() != dl->getRoot()) {
+				return Text::toT(((DirectoryListing::AdlDirectory*)ii->dir.get())->getFullPath());
+			} else {
+				return Text::toT(ii->dir->getPath());
+			}
+		}
+	});
+}
+
+void DirectoryListingFrame::handleCopyDirectory() {
+	ctrlFiles.list.handleCopy([&](const ItemInfo* ii) -> tstring {
+		if (ii->type == ItemInfo::FILE) {
+			return Text::toT(Util::getReleaseDir(ii->file->getPath(), true));
+		} else {
+			return ii->getText(COLUMN_FILENAME);
+		}
+	});
+}
 
 LRESULT DirectoryListingFrame::onXButtonUp(UINT /*uMsg*/, WPARAM wParam, LPARAM /* lParam */, BOOL& /* bHandled */) {
 	if(GET_XBUTTON_WPARAM(wParam) & XBUTTON1) {

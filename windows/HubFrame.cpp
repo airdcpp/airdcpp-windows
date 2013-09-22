@@ -1743,19 +1743,6 @@ void HubFrame::handleTab(bool reverse) {
 }
 */
 bool HubFrame::PreparePopupMenu(CWindow* /*pCtrl*/, OMenu& menu ) {
-	if (copyMenu.m_hMenu != NULL) {
-		copyMenu.DestroyMenu();
-		copyMenu.m_hMenu = NULL;
-	}
-
-	copyMenu.CreatePopupMenu();
-	copyMenu.InsertSeparatorFirst(TSTRING(COPY));
-
-	for(int j=0; j < OnlineUser::COLUMN_LAST; j++) {
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY + j, CTSTRING_I(columnNames[j]));
-	}
-	copyMenu.AppendMenu(MF_STRING, IDC_COPY_USER_ALL,  CTSTRING(INFO));
-
 	size_t count = ctrlUsers.GetSelectedCount();
 	bool isMe = false;
 
@@ -1792,7 +1779,7 @@ bool HubFrame::PreparePopupMenu(CWindow* /*pCtrl*/, OMenu& menu ) {
 		menu.AppendMenu(MF_SEPARATOR);
 	}
 	
-	menu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
+	ctrlUsers.appendCopyMenu(menu);
 	return true;
 }
 

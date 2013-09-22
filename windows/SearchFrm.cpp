@@ -1509,20 +1509,10 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam
 					hasDupes = true;
 			}
 
-			OMenu resultsMenu, copyMenu;
+			OMenu resultsMenu;
 			SearchInfo::CheckTTH cs = ctrlResults.list.forEachSelectedT(SearchInfo::CheckTTH());
 
-			copyMenu.CreatePopupMenu();
 			resultsMenu.CreatePopupMenu();
-
-			copyMenu.InsertSeparatorFirst(TSTRING(COPY));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(NICK));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_DIR, CTSTRING(DIRECTORY));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_TTH, CTSTRING(TTH_ROOT));
-			copyMenu.AppendMenu(MF_STRING, IDC_COPY_LINK, CTSTRING(COPY_MAGNET_LINK));
 
 			if(ctrlResults.list.GetSelectedCount() > 1)
 				resultsMenu.InsertSeparatorFirst(Util::toStringW(ctrlResults.list.GetSelectedCount()) + _T(" ") + TSTRING(FILES));
@@ -1531,7 +1521,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam
 
 			appendDownloadMenu(resultsMenu, hasFiles ? DownloadBaseHandler::TYPE_BOTH : DownloadBaseHandler::TYPE_PRIMARY, hasNmdcDirsOnly, hasFiles ? cs.tth : nullptr, cs.path);
 
-			resultsMenu.AppendMenu(MF_SEPARATOR);
+			resultsMenu.appendSeparator();
 
 			if (hasFiles && (!hasDupes || ctrlResults.list.GetSelectedCount() == 1)) {
 				resultsMenu.appendItem(TSTRING(VIEW_AS_TEXT), [&] { handleOpenItem(true); });
@@ -1540,13 +1530,13 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam
 
 			if((ctrlResults.list.GetSelectedCount() == 1) && hasDupes) {
 				resultsMenu.appendItem(TSTRING(OPEN_FOLDER), [&] { handleOpenFolder(); });
-				resultsMenu.AppendMenu(MF_SEPARATOR);
+				resultsMenu.appendSeparator();
 			}
 
 			resultsMenu.appendItem(TSTRING(VIEW_NFO), [&] { handleViewNfo(); });
 			resultsMenu.appendItem(TSTRING(MATCH_PARTIAL), [&] { handleMatchPartial(); });
 
-			resultsMenu.AppendMenu(MF_SEPARATOR);
+			resultsMenu.appendSeparator();
 			if (hasFiles)
 				resultsMenu.appendItem(SettingsManager::lanMode ? TSTRING(SEARCH_FOR_ALTERNATES) : TSTRING(SEARCH_TTH), [&] { handleSearchTTH(); });
 
@@ -1558,12 +1548,14 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam
 				}, true);
 			});
 
-			resultsMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)copyMenu, CTSTRING(COPY));
-			resultsMenu.AppendMenu(MF_SEPARATOR);
+			ctrlResults.list.appendCopyMenu(resultsMenu, [this](OMenu* copyMenu) {
+				copyMenu->appendItem(TSTRING(MAGNET_LINK), [this] { handleCopyMagnet(); });
+			});
+			resultsMenu.appendSeparator();
 
 			appendUserItems(resultsMenu, false);
 			prepareMenu(resultsMenu, UserCommand::CONTEXT_SEARCH, cs.hubs);
-			resultsMenu.AppendMenu(MF_SEPARATOR);
+			resultsMenu.appendSeparator();
 
 			resultsMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
 
@@ -1702,66 +1694,15 @@ LRESULT SearchFrame::onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	return 0;
 }
 
-LRESULT SearchFrame::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring sCopy;
-	if (ctrlResults.list.GetSelectedCount() >= 1) {
-		int xsel = ctrlResults.list.GetNextItem(-1, LVNI_SELECTED);
-
-		for (;;) {
-			const SearchResultPtr& sr = ctrlResults.list.getItemData(xsel)->sr;
-			switch (wID) {
-				case IDC_COPY_NICK:
-					sCopy +=  WinUtil::getNicks(sr->getUser());
-					break;
-				case IDC_COPY_FILENAME:
-					if(sr->getType() == SearchResult::TYPE_FILE) {
-						sCopy += Util::getFileName(Text::toT(sr->getFileName()));
-					} else {
-						sCopy += Text::toT(sr->getFileName());
-					}
-					break;
-				case IDC_COPY_DIR:
-					sCopy += Text::toT(Util::getReleaseDir(sr->getPath(), true));
-					break;
-				case IDC_COPY_SIZE:
-					sCopy += Util::formatBytesW(sr->getSize());
-					break;
-				case IDC_COPY_PATH:
-					sCopy += Text::toT(sr->getPath());
-					break;
-				case IDC_COPY_LINK:
-					if(sr->getType() == SearchResult::TYPE_FILE) {
-						WinUtil::copyMagnet(sr->getTTH(), sr->getFileName(), sr->getSize());
-					} else {
-						sCopy = Text::toT("Directories don't have Magnet links");
-					}
-					break;
-				case IDC_COPY_TTH:
-					if(sr->getType() == SearchResult::TYPE_FILE) {
-						sCopy += Text::toT(sr->getTTH().toBase32());
-					} else {
-						sCopy += Text::toT("Directories don't have TTH");
-					}
-					break;
-				default:
-					dcdebug("SEARCHFRAME DON'T GO HERE\n");
-					return 0;
-			}
-
-			xsel = ctrlResults.list.GetNextItem(xsel, LVNI_SELECTED);
-			if (xsel == -1) {
-				break;
-			}
-
-			sCopy += Text::toT("\r\n");
+void SearchFrame::handleCopyMagnet() {
+	ctrlResults.list.handleCopy([&](const SearchInfo* si) -> tstring {
+		if (si->sr->getType() == SearchResult::TYPE_FILE) {
+			return Text::toT(WinUtil::makeMagnet(si->sr->getTTH(), si->sr->getFileName(), si->sr->getSize()));
+		} else {
+			return Text::toT("Directories don't have Magnet links");
 		}
-
-		if (!sCopy.empty())
-			WinUtil::setClipboard(sCopy);
-	}
-	return S_OK;
+	});
 }
-
 
 LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	CRect rc;

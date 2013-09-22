@@ -66,30 +66,13 @@ public:
 
 		COMMAND_ID_HANDLER(IDC_COPY_ACTUAL_LINE, onCopyActualLine)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, onEditCopy)
-		COMMAND_ID_HANDLER(ID_EDIT_SELECT_ALL, onEditSelectAll)
-		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
 		COMMAND_ID_HANDLER(IDC_BAN_IP, onBanIP)
 		COMMAND_ID_HANDLER(IDC_UNBAN_IP, onUnBanIP)
 		COMMAND_ID_HANDLER(IDC_WHOIS_IP, onWhoisIP)
 
-		COMMAND_ID_HANDLER(IDC_FIND_TEXT, onFindText)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_USER_HISTORY, onOpenUserLog)
-		COMMAND_ID_HANDLER(IDC_IGNORE, onIgnore)
-		COMMAND_ID_HANDLER(IDC_UNIGNORE, onUnignore)
-		COMMAND_ID_HANDLER(IDC_SEARCH, onSearch)
-		COMMAND_ID_HANDLER(IDC_SEARCH_BY_TTH, onSearchTTH)
-		COMMAND_ID_HANDLER(IDC_CONNECT_WITH, onConnectWith)
-		COMMAND_ID_HANDLER(IDC_OPEN_LINK, onOpenLink)
-		COMMAND_ID_HANDLER(IDC_OPEN, onOpen)
 
-		COMMAND_ID_HANDLER(IDC_REMOVE, onRemoveTemp)
-		COMMAND_ID_HANDLER(IDC_DELETE_FILE, onDeleteFile)
-		COMMAND_ID_HANDLER(IDC_SEARCHDIR, onSearchDir)
-
-		COMMAND_ID_HANDLER(IDC_ADD_AUTO_SEARCH_FILE, onAddAutoSearchFile)
-		COMMAND_ID_HANDLER(IDC_ADD_AUTO_SEARCH_DIR, onAddAutoSearchDir)
-		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenDupe)
 		COMMAND_RANGE_HANDLER(IDC_COPY, IDC_COPY + OnlineUser::COLUMN_LAST, onCopyUserInfo)
 
 		CHAIN_COMMANDS(ucBase)
@@ -100,10 +83,10 @@ public:
 	RichTextBox();
 	~RichTextBox();
 
-	LRESULT onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onSearchDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	void handleDeleteFile();
+	void handleAddAutoSearchFile();
+	void handleAddAutoSearchDir();
+	void handleSearchDir();
 
 	LRESULT onMouseMove(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT OnRButtonDown(POINT pt);
@@ -117,8 +100,6 @@ public:
 	LRESULT onSetCursor(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 
 	LRESULT onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onEditSelectAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCopyActualLine(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onUnBanIP(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -126,22 +107,24 @@ public:
 
 	LRESULT onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	LRESULT onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
+	void handleEditSelectAll();
+	void handleEditClearAll();
 
-	LRESULT onOpenLink(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
-	LRESULT onConnectWith(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/);
+	void handleIgnore();
+	void handleUnignore();
+
+	void handleOpenLink();
+	void handleConnectWith();
 
 	LRESULT onCopyUserInfo(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	LRESULT onSearch(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onSearchTTH(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-//	void setClient(Client* pClient) { client = pClient; }
+	void handleSearch();
+	void handleSearchTTH();
 
-	LRESULT onOpenDupe(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onOpen(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onRemoveTemp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onFindText(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	void handleOpenFile();
+	void handleOpenFolder();
+	void handleRemoveTemp();
+
 	LRESULT onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 	LRESULT onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled);
 
@@ -199,7 +182,7 @@ protected:
 	const string& getHubUrl() const;
 private:
 	void clearSelInfo();
-	void updateSelectedWord(POINT pt);
+	void updateSelectedText(POINT pt);
 	static UINT	WM_FINDREPLACE;
 	TCHAR*		findBuffer;
 	const WORD	findBufferSize;
@@ -270,6 +253,7 @@ private:
 	void formatLink(DupeType aDupeType, bool isRelease);
 	DupeType updateDupeType(ChatLink* aChatLink);
 	LinkList::const_reverse_iterator getLink(POINT& pt);
+	void openLink(const ChatLink* link);
 };
 
 

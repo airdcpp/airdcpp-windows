@@ -1193,6 +1193,12 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
+void QueueFrame::handleCopyMagnet() {
+	ctrlQueue.handleCopy([](const QueueItemInfo* aII) {
+		return Text::toT(WinUtil::makeMagnet(aII->getTTH(), Util::getFileName(aII->getTarget()), aII->getSize()));
+	});
+}
+
 LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 
 	if (reinterpret_cast<HWND>(wParam) == ctrlQueue && ctrlQueue.GetSelectedCount() > 0) { 
@@ -1236,10 +1242,9 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				if(ii) {
 					segmentsMenu.CheckMenuItem(ii->getQueueItem()->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
 
-
-					copyMenu->appendItem(TSTRING(COPY_MAGNET_LINK), [=] { WinUtil::copyMagnet(ii->getTTH(), Util::getFileName(ii->getTarget()), ii->getSize()); });
-					for(int i = 0; i <COLUMN_LAST; ++i)
-						copyMenu->appendItem(TSTRING_I(columnNames[i]), [=] { WinUtil::setClipboard(ii->getText(i)); });
+					ctrlQueue.appendCopyMenu(fileMenu, [=](OMenu* copyMenu) {
+						copyMenu->appendItem(TSTRING(MAGNET_LINK), [=] { handleCopyMagnet(); });
+					});
 
 
 					bool hasPMItems = false;
@@ -1500,6 +1505,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			WinUtil::appendSearchMenu(dirMenu, curDir);
 			dirMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
+			dirMenu.appendItem(TSTRING(COPY_DIRECTORY), [this] { WinUtil::setClipboard(Text::toT(Util::getLastDir(curDir))); });
 			dirMenu.AppendMenu(MF_STRING, IDC_COPY, CTSTRING(COPY_DIRECTORY));
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			dirMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
@@ -1943,12 +1949,8 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	default:
 		return CDRF_DODEFAULT;
 	}
-}			
-
-LRESULT QueueFrame::onCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::setClipboard(Text::toT(Util::getLastDir(curDir)));
-	return 0;
 }
+
 LRESULT QueueFrame::onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	if(usingDirMenu) {
 		//..
