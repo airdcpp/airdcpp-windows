@@ -34,6 +34,7 @@ Changed:
 - Allow setting background file list active when a new list is requested
 - Downloads will go to the OS-defined download directory by default when using a global settings directory
 - Display an error message when trying to add the root application directory or the root settings directory in share
+- Auto search items with maximum number reached will expire instead of getting directly removed
 
 Fixed:
 
@@ -63,6 +64,9 @@ Fixed:
 - Double-clicking works properly when minimizing/restoring the client from the tray icon
 - Show a log message when a finished file bundle is added in share
 - Don't display the downloading options for own magnet links
+- Fix auto search items getting removed before the maximum number was reached when using the proper search period
+- Fix adding the finished path for auto search items that are about to expire
+
 
 
 2.51
