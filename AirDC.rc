@@ -1308,7 +1308,7 @@ BEGIN
     CONTROL         "Enable parameters",IDC_USE_PARAMS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,264,63,94,10
     PUSHBUTTON      "Configure...",IDC_CONF_PARAMS,273,74,66,14
     CONTROL         "Require exact match",IDC_EXACT_MATCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,264,52,104,10
-    COMBOBOX        IDC_AS_EXCLUDED,59,135,113,30,CBS_DROPDOWN | WS_VSCROLL | CBS_AUTOHSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_AS_EXCLUDED,59,135,113,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Excluded words",IDC_AS_EXCLUDED_LABEL,2,137,54,8
 END
 
@@ -1864,7 +1864,7 @@ BEGIN
     CONTROL         "Search within the current directory",IDC_USE_CUR_DIR,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,60,68,197,10
     COMBOBOX        IDC_FILETYPES,62,31,80,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_SEARCH_STRING,61,14,201,30,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP | CBS_AUTOHSCROLL
+    COMBOBOX        IDC_SEARCH_STRING,61,14,201,30,CBS_DROPDOWN | CBS_AUTOHSCROLL | WS_VSCROLL | WS_TABSTOP
     LTEXT           "This user doesn't support the advanced searching features in partial lists, which may result in lower hit counts.",IDC_NO_ASCH_NOTE,10,101,272,16,NOT WS_VISIBLE
 END
 
@@ -2003,7 +2003,7 @@ BEGIN
     PUSHBUTTON      "Insert in the search string",IDC_INSERT_NUMBER,63,159,123,14
     LTEXT           "If the number string is shorter than this value, the length will be filled by adding zeroes in front of the current number",IDC_AS_NUMLEN_HELP,12,135,224,23
     LTEXT           "The next number to search for",IDC_AS_CURNUMBER_HELP2,13,62,225,9
-    LTEXT           "The search item will be removed after a bundle with this number has been downloaded",IDC_AS_MAXNUMBER_HELP,12,92,225,16
+    LTEXT           "The search item will expire after a bundle with this number has been downloaded",IDC_AS_MAXNUMBER_HELP,12,92,225,16
     GROUPBOX        "Incrementing numbers",IDC_INCR_PARAMETERS,7,7,241,171
     LTEXT           "In addition to incrementing numbers, you may also insert time variables in the search string. Note that the parameters can also be used in the custom matcher.",IDC_AS_TIMEVAR_HELP,7,183,220,26
     LTEXT           "Available time variables",IDC_TIMEVAR_LINK,7,214,91,12

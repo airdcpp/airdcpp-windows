@@ -734,6 +734,8 @@ int AutoSearchFrame::findItem(ProfileToken aToken) {
 void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
 	int pos = findItem(as->getToken());
 	if (pos >= 0) {
+		ctrlAutoSearch.SetCheckState(pos, as->getEnabled());
+
 		ctrlAutoSearch.SetItemText(pos, COLUMN_VALUE, Text::toT(as->getDisplayName()).c_str());
 		ctrlAutoSearch.SetItemText(pos, COLUMN_LASTSEARCH, (as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
 		ctrlAutoSearch.SetItemText(pos, COLUMN_TYPE, Text::toT(as->getDisplayType()).c_str());
