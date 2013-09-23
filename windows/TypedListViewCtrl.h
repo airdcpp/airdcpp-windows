@@ -173,31 +173,37 @@ public:
 
 	tstring GetColumnTexts(int row) {
 #define BUF_SIZE 300
-		BOOL NoColumnHeader = (BOOL)(GetWindowLongPtr(GWL_STYLE) & LVS_NOCOLUMNHEADER);
+		BOOL NoColumnHeader = (BOOL) (GetWindowLongPtr(GWL_STYLE) & LVS_NOCOLUMNHEADER);
 		tstring InfoTip;
 		tstring buffer;
-		buffer.resize(BUF_SIZE);
+		TCHAR buf[512];
+		//buffer.resize(BUF_SIZE);
 
-		for (int i = 0; i < GetHeader().GetItemCount(); ++i)
-		{
-			auto ci = columnList[i];
-			if (ci->colType != COLUMN_IMAGE) {
-				GetItemText(row, i, &buffer[0], BUF_SIZE);
-				if (!buffer.empty()) {
-					if (!InfoTip.empty())
-						InfoTip += _T("\r\n");
+		int indexes[32];
+		GetColumnOrderArray(GetHeader().GetItemCount(), indexes);
+		LV_COLUMN lvCol;
 
-					if (!NoColumnHeader) {
-						InfoTip += ci->name;
-						InfoTip += _T(": ");
-					}
+		for (int i = 0; i < GetHeader().GetItemCount(); ++i) {
+			GetItemText(row, indexes[i], &buf[0], BUF_SIZE);
+			buffer = buf;
 
-					InfoTip += &buffer[0];
-					//buffer.clear();
+			if (!buffer.empty()) {
+				if (!NoColumnHeader) {
+					lvCol.mask = LVCF_TEXT;
+					lvCol.pszText = &buf[0];
+					lvCol.cchTextMax = BUF_SIZE;
+					GetColumn(indexes[i], &lvCol);
+					InfoTip += lvCol.pszText;
+					InfoTip += _T(": ");
 				}
+
+				InfoTip += buffer;
+				InfoTip += _T("\r\n");
 			}
 		}
 
+		if (InfoTip.size() > 2)
+			InfoTip.erase(InfoTip.size() - 2);
 		return InfoTip;
 	}
 
@@ -225,17 +231,21 @@ public:
 	void appendCopyMenu(OMenu& parent, function<void(OMenu* copyMenu)> customItemF = nullptr) {
 		auto copyMenu = parent.createSubMenu(TSTRING(COPY), true);
 
-		for (int i = 0; i < GetHeader().GetItemCount(); ++i) {
-			auto ci = columnList[i];
-			if (ci->colType != COLUMN_IMAGE)
-				copyMenu->appendItem(ci->name, [=] { handleCopy([=](const T* aItem) { return aItem->getText(i); }); });
+		int pos = 0;
+		for (const auto& ci : columnList) {
+			if (ci->colType != COLUMN_IMAGE) {
+				copyMenu->appendItem(ci->name, [=] { handleCopy([=](const T* aItem) { return aItem->getText(pos); }); });
+			}
+			pos++;
 		}
-
-		if (customItemF)
-			customItemF(copyMenu);
 
 		copyMenu->appendSeparator();
 		copyMenu->appendItem(TSTRING(ALL_COLUMNS), [=] { handleCopyAll(); });
+
+		if (customItemF) {
+			copyMenu->appendSeparator();
+			customItemF(copyMenu);
+		}
 	}
 
 	void handleCopy(function<tstring(const T*)> textF) {

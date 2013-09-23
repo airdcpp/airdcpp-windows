@@ -31,6 +31,8 @@ namespace dcpp {
 
 class OMenu;
 
+typedef vector<pair<tstring, Dispatcher::F>> MenuItemList;
+
 struct OMenuItem {
 	typedef vector<unique_ptr<OMenuItem>> List;
 

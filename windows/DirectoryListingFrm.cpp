@@ -1370,11 +1370,17 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 		fileMenu.appendSeparator();
 
+		/*MenuItemList customItems {
+			{ TSTRING(PATH), [this] { handleCopyPath(); } },
+			{ TSTRING(MAGNET_LINK), [this] { handleCopyMagnet(); } },
+			{ TSTRING(DIRECTORY), [this] { handleCopyDirectory(); } }
+		}*/
+
 		// copy menu
 		ctrlFiles.list.appendCopyMenu(fileMenu, [this](OMenu* copyMenu) {
-			copyMenu->appendItem(TSTRING(PATH), [this] { handleCopyPath(); });
-			copyMenu->appendItem(TSTRING(MAGNET_LINK), [this] { handleCopyMagnet(); });
 			copyMenu->appendItem(TSTRING(DIRECTORY), [this] { handleCopyDirectory(); });
+			copyMenu->appendItem(TSTRING(MAGNET_LINK), [this] { handleCopyMagnet(); });
+			copyMenu->appendItem(TSTRING(PATH), [this] { handleCopyPath(); });
 		});
 
 
