@@ -109,8 +109,6 @@ public:
 		return 0;
 	}
 
-	void handleCopyMagnet();
-
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void removeDir(HTREEITEM ht);
 	void changePriority(bool inc);
@@ -318,7 +316,8 @@ private:
 	BundleMap bundleMap;
 	string curDir;
 
-	TypedListViewCtrl<QueueItemInfo, IDC_QUEUE> ctrlQueue;
+	typedef TypedListViewCtrl<QueueItemInfo, IDC_QUEUE> ListType;
+	ListType ctrlQueue;
 	CTreeViewCtrl ctrlDirs;
 	
 	CStatusBarCtrl ctrlStatus;
@@ -346,6 +345,8 @@ private:
 
 	void updateQueue();
 	void updateStatus();
+
+	static tstring handleCopyMagnet(const QueueItemInfo* ii);
 	
 	/**
 	 * This one is different from the others because when a lot of files are removed

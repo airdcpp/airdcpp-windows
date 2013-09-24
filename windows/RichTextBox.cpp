@@ -772,7 +772,7 @@ void RichTextBox::updateSelectedText(POINT pt) {
 			delete [] buf;
 
 			//Replace shortened links in the range.
-			for (auto l : links | reversed) {
+			for (const auto& l : links | reversed) {
 				if (l.first.cpMin >= cr.cpMin && l.first.cpMax <= cr.cpMax) {
 					selectedWord.replace(l.first.cpMin - cr.cpMin, l.second->getDisplayText().length(), Text::toT(l.second->url));
 				}
@@ -1380,7 +1380,7 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 		return false;
 
 	auto cl = p->second;
-	updateSelectedText(pt);
+	//updateSelectedText(pt);
 	updateAuthor();
 
 	openLink(cl);

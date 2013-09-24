@@ -149,7 +149,6 @@ public:
 		handleGetList(TYPE_MIXED);
 	}
 
-	void handleCopyMagnet();
 	void handleSearchTTH();
 	void handleGetList(ListType aType);
 	void handleOpenItem(bool isClientView);
@@ -308,6 +307,8 @@ private:
 	};
 	
 	void performAction(std::function<void (const SearchInfo* aInfo)> f, bool oncePerParent=false);
+
+	static tstring handleCopyMagnet(const SearchInfo* si);
 
 	struct HubInfo : public FastAlloc<HubInfo> {
 		HubInfo(const tstring& aUrl, const tstring& aName, bool aOp) : url(aUrl),

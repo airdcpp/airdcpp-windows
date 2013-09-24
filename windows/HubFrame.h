@@ -286,7 +286,6 @@ private:
 
 	int hubchatusersplit;
 
-	bool PreparePopupMenu(CWindow *pCtrl, OMenu& pMenu);
 	string sColumsOrder;
     string sColumsWidth;
     string sColumsVisible;

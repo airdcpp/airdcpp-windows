@@ -82,8 +82,8 @@ public:
 			} else {
 				extraItems = 1;
 			}
-			for(UserCommand::List::iterator ui = userCommands.begin(); ui != userCommands.end(); ++ui) {
-				UserCommand& uc = *ui;
+
+			for(const auto& uc: userCommands) {
 				if(uc.getType() == UserCommand::TYPE_SEPARATOR) {
 					// Avoid double separators...
 					if( (cur.GetMenuItemCount() >= 1) &&
@@ -94,7 +94,7 @@ public:
 					}
 				} else if(uc.isRaw() || uc.isChat()) {
 					cur = SETTING(UC_SUBMENU) ? subMenu.m_hMenu : menu.m_hMenu;
-					for(StringList::const_iterator i = uc.getDisplayName().begin(), iend = uc.getDisplayName().end(); i != iend; ++i) {
+					for(auto i = uc.getDisplayName().begin(), iend = uc.getDisplayName().end(); i != iend; ++i) {
 						tstring name = Text::toT(*i);
 						if(i + 1 == iend) {
 							cur.AppendMenu(MF_STRING, IDC_USER_COMMAND + n, name.c_str());

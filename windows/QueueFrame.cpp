@@ -1193,10 +1193,8 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
-void QueueFrame::handleCopyMagnet() {
-	ctrlQueue.handleCopy([](const QueueItemInfo* aII) {
-		return Text::toT(WinUtil::makeMagnet(aII->getTTH(), Util::getFileName(aII->getTarget()), aII->getSize()));
-	});
+tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
+	return Text::toT(WinUtil::makeMagnet(aII->getTTH(), Util::getFileName(aII->getTarget()), aII->getSize()));
 }
 
 LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -1242,9 +1240,11 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				if(ii) {
 					segmentsMenu.CheckMenuItem(ii->getQueueItem()->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
 
-					ctrlQueue.appendCopyMenu(fileMenu, [=](OMenu* copyMenu) {
-						copyMenu->appendItem(TSTRING(MAGNET_LINK), [=] { handleCopyMagnet(); });
-					});
+					ListType::MenuItemList customItems {
+						{ TSTRING(MAGNET_LINK), &handleCopyMagnet }
+					};
+
+					ctrlQueue.appendCopyMenu(fileMenu, customItems);
 
 
 					bool hasPMItems = false;

@@ -228,24 +228,31 @@ public:
 		}
 	}
 
-	void appendCopyMenu(OMenu& parent, function<void(OMenu* copyMenu)> customItemF = nullptr) {
+	typedef deque < pair < tstring, function<tstring(const T*) >> > MenuItemList;
+	inline void appendCopyMenu(OMenu& parent) {
+		MenuItemList items;
+		appendCopyMenu(parent, items);
+	}
+
+	void appendCopyMenu(OMenu& parent, MenuItemList& items) {
 		auto copyMenu = parent.createSubMenu(TSTRING(COPY), true);
 
 		int pos = 0;
+		auto insertPos = items.begin();
 		for (const auto& ci : columnList) {
 			if (ci->colType != COLUMN_IMAGE) {
-				copyMenu->appendItem(ci->name, [=] { handleCopy([=](const T* aItem) { return aItem->getText(pos); }); });
+				insertPos = items.emplace(insertPos, ci->name, [=](const T* aItem) { return aItem->getText(pos); });
+				insertPos++;
 			}
 			pos++;
 		}
 
-		copyMenu->appendSeparator();
-		copyMenu->appendItem(TSTRING(ALL_COLUMNS), [=] { handleCopyAll(); });
-
-		if (customItemF) {
-			copyMenu->appendSeparator();
-			customItemF(copyMenu);
+		for (const auto& i : items) {
+			copyMenu->appendItem(i.first, [=] { handleCopy(i.second); });
 		}
+
+		copyMenu->appendSeparator();
+		copyMenu->appendItem(TSTRING(ALL), [=] { handleCopyAll(items); });
 	}
 
 	void handleCopy(function<tstring(const T*)> textF) {
@@ -261,14 +268,19 @@ public:
 			WinUtil::setClipboard(sCopy);
 	}
 
-	void handleCopyAll() {
+	void handleCopyAll(const MenuItemList& items) {
 		tstring sCopy;
 
 		int sel = -1;
 		while ((sel = GetNextItem(sel, LVNI_SELECTED)) != -1) {
-			if (!sCopy.empty())
-				sCopy += _T("\r\n\r\n");
-			sCopy += GetColumnTexts(sel);
+			for (const auto& i : items) {
+				auto colText = i.second(getItemData(sel));
+				if (!colText.empty()) {
+					if (!sCopy.empty())
+						sCopy += _T("\r\n");
+					sCopy += i.first + _T(": ") + colText;
+				}
+			}
 		}
 
 		if (!sCopy.empty())
@@ -605,10 +617,10 @@ public:
 	ColumnList& getColumnList() { return columnList; }
 	bool noDefaultItemImages;
 
-	optional<CPoint> getMenuPosition() {
-		CPoint pt = GetMessagePos();
+	optional<CPoint> getMenuPosition(POINT pt) {
 		if (pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(*this, pt);
+			return pt;
 		}
 
 		// check if we clicked on a scroll bar

@@ -749,9 +749,9 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			}				
 		case COLUMN_PATH:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
-				return Text::toT(Util::getFilePath(sr->getPath()));
+				return Text::toT(Util::toAdcFile(sr->getFilePath()));
 			} else {
-				return Text::toT(sr->getPath());
+				return Text::toT(Util::toAdcFile(sr->getPath()));
 			}
 		case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
 		case COLUMN_CONNECTION:
@@ -1484,9 +1484,9 @@ void SearchFrame::on(ClientDisconnected, const string& aHubUrl) noexcept {
 	callAsync([=] { onHubRemoved(Text::toT(aHubUrl)); });
 }
 
-LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
+LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if (reinterpret_cast<HWND>(wParam) == ctrlResults.list && ctrlResults.list.GetSelectedCount() > 0) {
-		auto pt = ctrlResults.list.getMenuPosition();
+		auto pt = ctrlResults.list.getMenuPosition({ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) });
 		if (!pt) {
 			bHandled = FALSE;
 			return FALSE;
@@ -1548,9 +1548,11 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam
 				}, true);
 			});
 
-			ctrlResults.list.appendCopyMenu(resultsMenu, [this](OMenu* copyMenu) {
-				copyMenu->appendItem(TSTRING(MAGNET_LINK), [this] { handleCopyMagnet(); });
-			});
+			SearchInfoList::MenuItemList customItems {
+				{ TSTRING(MAGNET_LINK), &handleCopyMagnet }
+			};
+
+			ctrlResults.list.appendCopyMenu(resultsMenu, customItems);
 			resultsMenu.appendSeparator();
 
 			appendUserItems(resultsMenu, false);
@@ -1694,14 +1696,12 @@ LRESULT SearchFrame::onPurge(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*
 	return 0;
 }
 
-void SearchFrame::handleCopyMagnet() {
-	ctrlResults.list.handleCopy([&](const SearchInfo* si) -> tstring {
-		if (si->sr->getType() == SearchResult::TYPE_FILE) {
-			return Text::toT(WinUtil::makeMagnet(si->sr->getTTH(), si->sr->getFileName(), si->sr->getSize()));
-		} else {
-			return Text::toT("Directories don't have Magnet links");
-		}
-	});
+tstring SearchFrame::handleCopyMagnet(const SearchInfo* si) {
+	if (si->sr->getType() == SearchResult::TYPE_FILE) {
+		return Text::toT(WinUtil::makeMagnet(si->sr->getTTH(), si->sr->getFileName(), si->sr->getSize()));
+	} else {
+		return Text::toT("Directories don't have Magnet links");
+	}
 }
 
 LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {

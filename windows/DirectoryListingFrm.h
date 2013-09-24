@@ -190,25 +190,6 @@ public:
 	LRESULT onReloadList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 	LRESULT onReloadDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL & /*bHandled*/);
 
-	void handleCopyMagnet();
-	void handleCopyPath();
-	void handleCopyDirectory();
-
-	void handleRefreshShare(bool usingTree);
-	void handleScanShare(bool usingTree, bool isSfvCheck);
-
-	void handleCopyDir();
-	void handleOpenFile();
-	void handleOpenDupeDir(bool usingTree);
-	void handleViewAsText();
-	void handleViewNFO(bool usingTree);
-	void handleGoToDirectory(bool usingTree);
-
-	void handleSearchByName(bool usingTree, bool dirsOnly);
-	void handleSearchByTTH();
-
-	void handleReloadPartial(bool dirOnly);
-
 	void UpdateLayout(BOOL bResizeBars = TRUE);
 	void findFile(bool findNext);
 	void runUserCommand(UserCommand& uc);
@@ -349,6 +330,25 @@ private:
 	void onListItemAction();
 	void changeDir(const ItemInfo* d, ReloadMode aReload = RELOAD_NONE);
 
+	static tstring handleCopyMagnet(const ItemInfo* ii);
+	static tstring handleCopyPath(const ItemInfo* ii);
+	static tstring handleCopyDirectory(const ItemInfo* ii);
+
+	void handleRefreshShare(bool usingTree);
+	void handleScanShare(bool usingTree, bool isSfvCheck);
+
+	void handleCopyDir();
+	void handleOpenFile();
+	void handleOpenDupeDir(bool usingTree);
+	void handleViewAsText();
+	void handleViewNFO(bool usingTree);
+	void handleGoToDirectory(bool usingTree);
+
+	void handleSearchByName(bool usingTree, bool dirsOnly);
+	void handleSearchByTTH();
+
+	void handleReloadPartial(bool dirOnly);
+
 	CContainedWindow pathContainer;
 	CContainedWindow treeContainer;
 	CContainedWindow listContainer;
@@ -360,7 +360,8 @@ private:
 	friend class TreeType;
 	TreeType ctrlTree;
 
-	typedef FilteredListViewCtrl < TypedListViewCtrl<ItemInfo, IDC_FILES>, DirectoryListingFrame, IDC_FILES> ListType;
+	typedef TypedListViewCtrl<ItemInfo, IDC_FILES> ListBaseType;
+	typedef FilteredListViewCtrl <ListBaseType, DirectoryListingFrame, IDC_FILES> ListType;
 	friend class ListType;
 	ListType ctrlFiles;
 

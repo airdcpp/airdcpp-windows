@@ -1100,31 +1100,58 @@ LRESULT HubFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BO
 }
 	
 LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	CRect rc;            // client area of window 
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
 	tabMenuShown = false;
-	OMenu Mnu;
-	Mnu.CreatePopupMenu();
 
-	ctrlUsers.GetHeader().GetWindowRect(&rc);
-		
-	if(PtInRect(&rc, pt) && showUsers) {
-		ctrlUsers.showMenu(pt);
-		return TRUE;
-	}
-		
 	if(reinterpret_cast<HWND>(wParam) == ctrlUsers && showUsers && (ctrlUsers.GetSelectedCount() > 0)) {
 		ctrlClient.setSelectedUser(Util::emptyStringT);
-		if ( ctrlUsers.GetSelectedCount() == 1 ) {
-			if(pt.x == -1 && pt.y == -1) {
-				WinUtil::getContextMenuPos(ctrlUsers, pt);
-			}
+		if(pt.x == -1 && pt.y == -1) {
+			WinUtil::getContextMenuPos(ctrlUsers, pt);
 		}
 
-		if(PreparePopupMenu(&ctrlUsers, Mnu)) {
-			prepareMenu(Mnu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
-			Mnu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+		OMenu menu;
+		menu.CreatePopupMenu();
+
+		auto count = ctrlUsers.GetSelectedCount();
+		bool isMe = false;
+
+		if (count == 1) {
+			auto sNick = Text::toT(((OnlineUser*) ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED)))->getIdentity().getNick());
+			isMe = (sNick == Text::toT(client->getMyNick()));
+
+			menu.InsertSeparatorFirst(sNick);
+
+			if (SETTING(LOG_PRIVATE_CHAT)) {
+				menu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG, CTSTRING(OPEN_USER_LOG));
+				menu.AppendMenu(MF_STRING, IDC_USER_HISTORY, CTSTRING(VIEW_HISTORY));
+				menu.AppendMenu(MF_SEPARATOR);
+			}
+		} else {
+			menu.InsertSeparatorFirst(Util::toStringW(count) + _T(" ") + TSTRING(HUB_USERS));
 		}
+
+		if (!isMe) {
+			menu.AppendMenu(MF_STRING, IDC_PUBLIC_MESSAGE, CTSTRING(SEND_PUBLIC_MESSAGE));
+			appendUserItems(menu);
+
+			if (count == 1) {
+				const OnlineUserPtr ou = ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED));
+				if (client->isOp() || !ou->getIdentity().isOp() || ou->getIdentity().isBot()) {
+					if (!IgnoreManager::getInstance()->isIgnored(ou->getIdentity().getNick())) {
+						menu.AppendMenu(MF_STRING, IDC_IGNORE, CTSTRING(IGNORE_USER));
+					} else {
+						menu.AppendMenu(MF_STRING, IDC_UNIGNORE, CTSTRING(UNIGNORE_USER));
+					}
+				}
+			}
+
+			menu.AppendMenu(MF_SEPARATOR);
+		}
+
+		ctrlUsers.appendCopyMenu(menu);
+
+		prepareMenu(menu, ::UserCommand::CONTEXT_USER, client->getHubUrl());
+		menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 	}
 	bHandled = FALSE;
 	return 0; 
@@ -1723,64 +1750,6 @@ void HubFrame::handleTab(bool reverse) {
 			ctrlClient.SetFocus();
 		}
 	}
-}
-
-//void HubFrame::addClientLine(const tstring& aLine, CHARFORMAT2& cf, bool inChat /* = true */) {
-/*	tstring line = _T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine;
-
-	ctrlStatus.SetText(0, line.c_str());
-	while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
-		lastLinesList.erase(lastLinesList.begin());
-	lastLinesList.push_back(line);
-	
-	if (SETTING(BOLD_HUB)) {
-		setDirty();
-	}
-	
-	if(SETTING(STATUS_IN_CHAT) && inChat) {
-		addLine(_T("*** ") + aLine, cf);
-	}
-}
-*/
-bool HubFrame::PreparePopupMenu(CWindow* /*pCtrl*/, OMenu& menu ) {
-	size_t count = ctrlUsers.GetSelectedCount();
-	bool isMe = false;
-
-	if(count == 1) {
-		tstring sNick = Text::toT(((OnlineUser*)ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED)))->getIdentity().getNick());
-	    isMe = (sNick == Text::toT(client->getMyNick()));
-
-		menu.InsertSeparatorFirst(sNick);
-
-		if(SETTING(LOG_PRIVATE_CHAT)) {
-			menu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG,  CTSTRING(OPEN_USER_LOG));
-			menu.AppendMenu(MF_STRING, IDC_USER_HISTORY,  CTSTRING(VIEW_HISTORY));
-			menu.AppendMenu(MF_SEPARATOR);
-		}
-	} else {
-		menu.InsertSeparatorFirst(Util::toStringW(count) + _T(" ") + TSTRING(HUB_USERS));
-	}
-
-	if(!isMe) {
-		menu.AppendMenu(MF_STRING, IDC_PUBLIC_MESSAGE, CTSTRING(SEND_PUBLIC_MESSAGE));
-		appendUserItems(menu);
-
-		if(count == 1) {
-			const OnlineUserPtr ou = ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED));
-			if (client->isOp() || !ou->getIdentity().isOp() || ou->getIdentity().isBot()) {
-				if(!IgnoreManager::getInstance()->isIgnored(ou->getIdentity().getNick())) {
-					menu.AppendMenu(MF_STRING, IDC_IGNORE, CTSTRING(IGNORE_USER));
-				} else {    
-					menu.AppendMenu(MF_STRING, IDC_UNIGNORE, CTSTRING(UNIGNORE_USER));
-				}
-			}
-		}
-
-		menu.AppendMenu(MF_SEPARATOR);
-	}
-	
-	ctrlUsers.appendCopyMenu(menu);
-	return true;
 }
 
 LRESULT HubFrame::onSelectUser(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

@@ -1511,7 +1511,7 @@ LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 }
 
 LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
-	if (lParam == WM_LBUTTONDBLCLK) {
+	if (lParam == WM_LBUTTONDBLCLK || lParam == WM_LBUTTONUP) {
 		if(bAppMinimized) {
 			ShowWindow(SW_SHOW);
 			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
