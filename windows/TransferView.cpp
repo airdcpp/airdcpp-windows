@@ -145,22 +145,11 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			WinUtil::getContextMenuPos(ctrlTransfers, pt);
 		}
 
-		OMenu transferMenu, copyMenu;
-		const ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
+		OMenu transferMenu;
+		const auto ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
 		bool parent = ii->isBundle;
 
 		transferMenu.CreatePopupMenu();
-
-		copyMenu.CreatePopupMenu();
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(NICK));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_PATH, CTSTRING(PATH));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_IP, CTSTRING(IP_BARE));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_HUB, CTSTRING(HUB));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SPEED, CTSTRING(SPEED));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_STATUS, CTSTRING(STATUS));
-		copyMenu.AppendMenu(MF_STRING, IDC_COPY_ALL, CTSTRING(ALL));
 		
 		if(!parent) {
 			transferMenu.InsertSeparatorFirst(TSTRING(MENU_TRANSFERS));
@@ -168,11 +157,11 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			setDefaultItem(transferMenu);
 			
 			transferMenu.appendItem(TSTRING(REMOVE_FILE), [=] { handleRemoveFile(); });
-			transferMenu.AppendMenu(MF_SEPARATOR);
+			transferMenu.appendSeparator();
 			transferMenu.appendItem(TSTRING(FORCE_ATTEMPT), [=] { handleForced(); });
 
 			if(ii->download) {
-				transferMenu.AppendMenu(MF_SEPARATOR);
+				transferMenu.appendSeparator();
 				transferMenu.appendItem(TSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchAlternates(); });
 
 				if(!ii->target.empty() && selCount == 1) {
@@ -182,13 +171,13 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 			int i = -1;
 			if((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-				const ItemInfo* itemI = ctrlTransfers.getItemData(i);
-				
+				const auto itemI = ctrlTransfers.getItemData(i);
 				if(itemI->user.user)
 					prepareMenu(transferMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(itemI->user.user->getCID()));
 			}
-			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
-			transferMenu.AppendMenu(MF_SEPARATOR);
+
+			ctrlTransfers.appendCopyMenu(transferMenu);
+			transferMenu.appendSeparator();
 			transferMenu.appendItem(TSTRING(CLOSE_CONNECTION), [=] { handleDisconnect(); });
 		} else {
 			transferMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
@@ -198,14 +187,16 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				if(ii->download)
 					transferMenu.appendItem(TSTRING(REMOVE_BUNDLE_SOURCE), [=] { handleRemoveBundleSource(); });
 			}
-			transferMenu.AppendMenu(MF_SEPARATOR);
+			transferMenu.appendSeparator();
 			transferMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
-			transferMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
+			ctrlTransfers.appendCopyMenu(transferMenu);
 			transferMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [=] { handleSearchDir(); });
-			transferMenu.AppendMenu(MF_SEPARATOR);
+			transferMenu.appendSeparator();
+
 			transferMenu.appendItem(TSTRING(CONNECT_ALL), [=] { handleForced(); });
 			transferMenu.appendItem(TSTRING(DISCONNECT_ALL), [=] { handleDisconnect(); });
-			transferMenu.AppendMenu(MF_SEPARATOR);
+			transferMenu.appendSeparator();
+
 			transferMenu.appendItem(TSTRING(EXPAND_ALL), [=] { handleExpandAll(); });
 			transferMenu.appendItem(TSTRING(COLLAPSE_ALL), [=] { handleCollapseAll(); });
 		}
@@ -214,7 +205,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 		BundleList bundles;
 		performActionBundles([&](const ItemInfo* ii) {
 			if (ii->download) {
-				BundlePtr b = QueueManager::getInstance()->findBundle(ii->bundle);
+				auto b = QueueManager::getInstance()->findBundle(ii->bundle);
 				if (b)
 					bundles.push_back(b);
 			}
@@ -246,7 +237,7 @@ void TransferView::runUserCommand(UserCommand& uc) {
 
 	int i = -1;
 	while((i = ctrlTransfers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const ItemInfo* itemI = ctrlTransfers.getItemData(i);
+		const auto itemI = ctrlTransfers.getItemData(i);
 		if(!itemI->user.user || !itemI->user.user->isOnline())
 			continue;
 
@@ -271,7 +262,7 @@ LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 		return CDRF_NOTIFYSUBITEMDRAW;
 
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
-		ItemInfo* ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
+		auto ii = reinterpret_cast<ItemInfo*>(cd->nmcd.lItemlParam);
 
 		int colIndex = ctrlTransfers.findColumn(cd->iSubItem);
 		cd->clrTextBk = WinUtil::bgColor;
@@ -424,7 +415,7 @@ LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 			}
 			return CDRF_SKIPDEFAULT;
 		} else if(SETTING(GET_USER_COUNTRY) && (colIndex == COLUMN_IP)) {
-			ItemInfo* ii = (ItemInfo*)cd->nmcd.lItemlParam;
+			auto ii = (ItemInfo*)cd->nmcd.lItemlParam;
 			CRect rc;
 			ctrlTransfers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
@@ -468,7 +459,7 @@ LRESULT TransferView::onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR pnmh, BOOL&
 		if (item->ptAction.x < rect.left)
 			return 0;
 
-		ItemInfo* i = ctrlTransfers.getItemData(item->iItem);
+		auto i = ctrlTransfers.getItemData(item->iItem);
 		if (!i->isBundle) {
 			switch(SETTING(TRANSFERLIST_DBLCLICK)) {
 				case 0:
@@ -525,13 +516,13 @@ int TransferView::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, u
 
 TransferView::ItemInfo* TransferView::findItem(const UpdateInfo& ui, int& pos) const {
 	for(int j = 0; j < ctrlTransfers.GetItemCount(); ++j) {
-		ItemInfo* ii = ctrlTransfers.getItemData(j);
+		auto ii = ctrlTransfers.getItemData(j);
 		if(compare(ui.token, ii->token) == 0) {
 			pos = j;
 			return ii;
 		} else if(ii->isBundle) {
 			const auto& children = ctrlTransfers.findChildren(ii->getGroupCond());
-			for(const auto ii: children) {
+			for(const auto& ii: children) {
 				if(compare(ui.token, ii->token) == 0) {
 					return ii;
 				}
@@ -552,7 +543,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 		if(i.first == ADD_ITEM) {
 			auto &ui = static_cast<UpdateInfo&>(*i.second);
 			//LogManager::getInstance()->message("Transferview, ADD_ITEM: " + ui.token);
-			ItemInfo* ii = new ItemInfo(ui.user, ui.token, ui.download);
+			auto ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
 			if (!ii->bundle.empty()) {
 				ctrlTransfers.insertBundle(ii, SETTING(EXPAND_BUNDLES));
@@ -564,10 +555,10 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			//LogManager::getInstance()->message("Transferview, REMOVE_ITEM: " + ui.token);
 
 			int pos = -1;
-			ItemInfo* ii = findItem(ui, pos);
+			auto ii = findItem(ui, pos);
 			if(ii) {
 				if (!ii->bundle.empty()) {
-					ItemInfo* parent = ii->parent;
+					auto parent = ii->parent;
 					if (ctrlTransfers.removeBundle(ii, true))
 						parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
 				} else {
@@ -580,10 +571,10 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			auto &ui = static_cast<UpdateInfo&>(*i.second);
 			//dcassert(!ui.target.empty());
 			int pos = -1;
-			ItemInfo* ii = findItem(ui, pos);
+			auto ii = findItem(ui, pos);
 			if(ii) {
 				if(!ii->bundle.empty() || !ui.bundle.empty())  {
-					ItemInfo* parent = ii->parent ? ii->parent : ii;
+					auto parent = ii->parent ? ii->parent : ii;
 
 					/* if bundle has changed, regroup the item */
 					bool changeParent = (ui.bundle != ii->bundle);
@@ -630,8 +621,8 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			}
 		} else if(i.first == UPDATE_BUNDLE) {
 			auto &ui = static_cast<UpdateInfo&>(*i.second);
-			ItemInfoList::ParentPair* pp = ctrlTransfers.findParentPair(ui.token);
-			
+
+			auto pp = ctrlTransfers.findParentPair(ui.token);
 			if(!pp) {
 				continue;
 			}
@@ -667,7 +658,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 void TransferView::ItemInfo::updateUser(const vector<ItemInfo*>& aChildren) {
 	HintedUser u;
-	for(auto ii: aChildren) {
+	for(const auto& ii: aChildren) {
 		if (!u.user) {
 			u = ii->user;
 		} else if (u.user != ii->user.user) {
@@ -779,18 +770,17 @@ void TransferView::updateItem(int ii, uint32_t updateMask) {
 }
 
 void TransferView::on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
+	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
 	ui->setUser(aCqi->getHintedUser());
 	speak(UPDATE_ITEM, ui);
 }
 
 void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
-
+	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
 	if(ui->download) {
 		string aTarget, bundleToken; int64_t aSize; int aFlags;
 		if(QueueManager::getInstance()->getQueueInfo(aCqi->getHintedUser(), aTarget, aSize, aFlags, bundleToken)) {
-			Transfer::Type type = Transfer::TYPE_FILE;
+			auto type = Transfer::TYPE_FILE;
 			if(aFlags & QueueItem::FLAG_USER_LIST)
 				type = Transfer::TYPE_FULL_LIST;
 			else if(aFlags & QueueItem::FLAG_PARTIAL_LIST)
@@ -811,7 +801,7 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 }
 
 void TransferView::on(ConnectionManagerListener::Forced, const ConnectionQueueItem* aCqi) noexcept {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload(), false);
+	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload(), false);
 	ui->setStatusString(TSTRING(CONNECTING_FORCED));
 	speak(UPDATE_ITEM, ui);
 }
@@ -819,8 +809,8 @@ void TransferView::on(ConnectionManagerListener::Forced, const ConnectionQueueIt
 void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToken, bool updateStatus) {
 	string aTarget, bundleToken;	int64_t aSize; int aFlags = 0;
 	if(QueueManager::getInstance()->getQueueInfo(aUser, aTarget, aSize, aFlags, bundleToken)) {
-		UpdateInfo* ui = new UpdateInfo(aToken, true);
-		Transfer::Type type = Transfer::TYPE_FILE;
+		auto ui = new UpdateInfo(aToken, true);
+		auto type = Transfer::TYPE_FILE;
 		if(aFlags & QueueItem::FLAG_USER_LIST)
 			type = Transfer::TYPE_FULL_LIST;
 		else if(aFlags & QueueItem::FLAG_PARTIAL_LIST)
@@ -843,7 +833,7 @@ void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueI
 }
 
 void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) {
-	UpdateInfo* ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
+	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
 	if(aCqi->getUser()->isSet(User::OLD_CLIENT)) {
 		ui->setStatusString(TSTRING(SOURCE_TOO_OLD));
 	} else {
@@ -871,7 +861,7 @@ static tstring getFile(const Transfer::Type& type, const tstring& fileName) {
 
 
 TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
-	ItemInfo* ii = new ItemInfo(user, bundle, download);
+	auto ii = new ItemInfo(user, bundle, download);
 	ii->running = 0;
 	ii->hits = 0;
 	dcassert(!bundle.empty());
@@ -879,14 +869,14 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 	ii->bundle = bundle;
 
 	if (download) {
-		BundlePtr b = QueueManager::getInstance()->findBundle(bundle);
+		auto b = QueueManager::getInstance()->findBundle(bundle);
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
 			ii->prio = b->getPriority();
 		}
 	} else {
-		UploadBundlePtr b = UploadManager::getInstance()->findBundle(bundle);
+		auto b = UploadManager::getInstance()->findBundle(bundle);
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
@@ -963,9 +953,10 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 	ui->setPos(t->getPos());
 	ui->setTarget(Text::toT(t->getPath()));
 	ui->setType(t->getType());
-	const UserConnection& uc = t->getUserConnection();
+	const auto& uc = t->getUserConnection();
 	ui->setCipher(Text::toT(uc.getCipherName()));
-	const string& ip = uc.getRemoteIp();
+
+	const auto& ip = uc.getRemoteIp();
 	const auto& country = GeoManager::getInstance()->getCountry(uc.getRemoteIp());
 	if(country.empty()) {
 		ui->setIP(Text::toT(ip), 0);
@@ -976,7 +967,7 @@ void TransferView::starting(UpdateInfo* ui, const Transfer* t) {
 
 void TransferView::on(DownloadManagerListener::Requesting, const Download* d, bool hubChanged) noexcept {
 	//LogManager::getInstance()->message("Requesting " + d->getToken());
-	UpdateInfo* ui = new UpdateInfo(d->getToken(), true);
+	auto ui = new UpdateInfo(d->getToken(), true);
 	if (hubChanged)
 		ui->setUser(d->getHintedUser());
 
@@ -993,7 +984,7 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d, bo
 
 void TransferView::on(DownloadManagerListener::Starting, const Download* aDownload) {
 	//LogManager::getInstance()->message("Starting " + aDownload->getToken());
-	UpdateInfo* ui = new UpdateInfo(aDownload->getToken(), true);
+	auto ui = new UpdateInfo(aDownload->getToken(), true);
 
 	ui->setStatus(ItemInfo::STATUS_RUNNING);
 	ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
@@ -1005,13 +996,13 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 }
 
 void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t /*aTick*/) {
-	for(auto b: bundles) {
+	for(const auto& b: bundles) {
 		double ratio = 0;
 		int64_t totalSpeed = 0;
 		bool partial=false, trusted=false, untrusted=false, tthcheck=false, zdownload=false, chunked=false, mcn=false;
 
-		UpdateInfo* ui = new UpdateInfo(b->getToken(), true);
-		for(auto d: b->getDownloads()) {
+		auto ui = new UpdateInfo(b->getToken(), true);
+		for(const auto& d: b->getDownloads()) {
 			if(d->getStart() > 0) {
 				if(d->isSet(Download::FLAG_PARTIAL)) {
 					partial = true;
@@ -1103,8 +1094,8 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 }
 
 void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
-	for(auto d: dl) {
-		UpdateInfo* ui = new UpdateInfo(d->getToken(), true);
+	for(const auto& d: dl) {
+		auto ui = new UpdateInfo(d->getToken(), true);
 		ui->setStatus(ItemInfo::STATUS_RUNNING);
 		ui->setActual(d->getActual());
 		ui->setPos(d->getPos());
@@ -1158,7 +1149,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 
 void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload, const string& aReason) {
 	//LogManager::getInstance()->message("Failed " + aDownload->getToken());
-	UpdateInfo* ui = new UpdateInfo(aDownload->getToken(), true, true);
+	auto ui = new UpdateInfo(aDownload->getToken(), true, true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
 	ui->setSize(aDownload->getSize());
@@ -1188,7 +1179,7 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc, const string& aReason) {
 	//LogManager::getInstance()->message("Status " + uc->getToken());
 	dcassert(!uc->getToken().empty());
-	UpdateInfo* ui = new UpdateInfo(uc->getToken(), true);
+	auto ui = new UpdateInfo(uc->getToken(), true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
 	ui->setStatusString(Text::toT(aReason));
@@ -1198,7 +1189,7 @@ void TransferView::on(DownloadManagerListener::Status, const UserConnection* uc,
 }
 
 void TransferView::on(DownloadManagerListener::TargetChanged, const string& aTarget, const string& aToken, const string& bundleToken) noexcept {
-	UpdateInfo* ui = new UpdateInfo(aToken, true);
+	auto ui = new UpdateInfo(aToken, true);
 	ui->setTarget(Text::toT(aTarget));
 	ui->setBundle(bundleToken);
 	speak(UPDATE_ITEM, ui);
@@ -1222,8 +1213,8 @@ void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
 }
 
 void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList& bundles) {
-	for(auto b: bundles) {
-		UpdateInfo* ui = new UpdateInfo(b->getToken(), false);
+	for(const auto& b: bundles) {
+		auto ui = new UpdateInfo(b->getToken(), false);
 
 
 		double ratio = 0;
@@ -1231,7 +1222,7 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 		
 		bool partial=false, trusted=false, untrusted=false, chunked=false, mcn=false, zupload=false;
 
-		for(auto u: b->getUploads()) {
+		for(const auto& u: b->getUploads()) {
 			if(u->getStart() > 0) {
 				if(u->isSet(Upload::FLAG_PARTIAL)) {
 					partial = true;
@@ -1323,13 +1314,13 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 }
 
 void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
-	for(auto u: ul) {
+	for(const auto& u: ul) {
 		if (u->getPos() == 0) continue;
 		if (u->getToken().empty()) {
 			continue;
 		}
 
-		UpdateInfo* ui = new UpdateInfo(u->getToken(), false);
+		auto ui = new UpdateInfo(u->getToken(), false);
 		ui->setActual(u->getStartPos() + u->getActual());
 		ui->setPos(u->getStartPos() + u->getPos());
 		ui->setTimeLeft(u->getSecondsLeft(true)); // we are interested when whole file is finished and not only one chunk
@@ -1376,7 +1367,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 
 void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, const string& aFileName, bool isTree, const string& bundleToken) {
 	//LogManager::getInstance()->message("Transfer complete " + aTransfer->getToken());
-	UpdateInfo* ui = new UpdateInfo(aTransfer->getToken(), !isUpload);
+	auto ui = new UpdateInfo(aTransfer->getToken(), !isUpload);
 
 	ui->setStatus(ItemInfo::STATUS_WAITING);	
 	ui->setPos(0);
@@ -1398,7 +1389,7 @@ void TransferView::onTransferComplete(const Transfer* aTransfer, bool isUpload, 
 }
 
 void TransferView::onBundleComplete(const string& bundleToken, const string& bundleName, bool isUpload) {
-	UpdateInfo* ui = new UpdateInfo(bundleToken, !isUpload);
+	auto ui = new UpdateInfo(bundleToken, !isUpload);
 
 	ui->setStatus(ItemInfo::STATUS_WAITING);	
 
@@ -1417,7 +1408,7 @@ void TransferView::onBundleComplete(const string& bundleToken, const string& bun
 }
 
 void TransferView::onBundleStatus(const BundlePtr& aBundle, bool removed) {
-	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
+	auto ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	if (removed) {
 		ui->setStatusString(TSTRING(BUNDLE_REMOVED));
@@ -1431,13 +1422,13 @@ void TransferView::onBundleStatus(const BundlePtr& aBundle, bool removed) {
 }
 
 void TransferView::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept {
-	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
+	auto ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setSize(aBundle->getSize());
 	speak(UPDATE_BUNDLE, ui);
 }
 
 void TransferView::on(UploadManagerListener::BundleSizeName, const string& bundleToken, const string& newTarget, int64_t aSize) noexcept {
-	UpdateInfo* ui = new UpdateInfo(bundleToken, false);
+	auto ui = new UpdateInfo(bundleToken, false);
 	ui->setSize(aSize);
 	ui->setTarget(Text::toT(newTarget));
 	speak(UPDATE_BUNDLE, ui);
@@ -1449,7 +1440,7 @@ void TransferView::on(QueueManagerListener::BundleStatusChanged, const BundlePtr
 }
 
 void TransferView::onBundleName(const BundlePtr& aBundle) {
-	UpdateInfo* ui = new UpdateInfo(aBundle->getToken(), true);
+	auto ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setTarget(Text::toT(aBundle->getTarget()));
 	ui->setPriority(aBundle->getPriority());
 	speak(UPDATE_BUNDLE, ui);
@@ -1491,7 +1482,7 @@ void TransferView::performActionBundles(std::function<void (const ItemInfo* aInf
 
 void TransferView::handleCollapseAll() {
 	for(int q = ctrlTransfers.GetItemCount()-1; q != -1; --q) {
-		ItemInfo* m = (ItemInfo*)ctrlTransfers.getItemData(q);
+		auto m = (ItemInfo*)ctrlTransfers.getItemData(q);
 		if(m->download && m->parent) {
 			ctrlTransfers.deleteItem(m); 
 		}
@@ -1503,8 +1494,8 @@ void TransferView::handleCollapseAll() {
 }
 
 void TransferView::handleExpandAll() {
-	for(auto i: ctrlTransfers.getParents()) {
-		ItemInfo* l = i.second.parent;
+	for(auto& p: ctrlTransfers.getParents()) {
+		auto l = p.second.parent;
 		if(l->collapsed) {
 			ctrlTransfers.Expand(l, ctrlTransfers.findItem(l));
 		}
@@ -1582,7 +1573,7 @@ void TransferView::handleDisconnect() {
 }
 
 void TransferView::handleOpenFolder() {
-	ItemInfo* ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
+	auto ii = ctrlTransfers.getItemData(ctrlTransfers.GetNextItem(-1, LVNI_SELECTED));
 	if (ii) {
 		WinUtil::openFolder(ii->target);
 	}
@@ -1606,63 +1597,4 @@ void TransferView::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 	if(refresh == true) {
 		RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 	}
-}
-
-LRESULT TransferView::onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	string sCopy;
-	size_t pos;
-	if(ctrlTransfers.GetSelectedCount() == 1) {
-		const ItemInfo* ii = ctrlTransfers.getSelectedItem();
-		tstring buf;
-
-		switch (wID) {
-			case IDC_COPY_NICK:
-				buf = ii->getText(COLUMN_USER);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_FILENAME:
-				buf = ii->getText(COLUMN_FILE);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_SIZE:
-				buf = ii->getText(COLUMN_SIZE);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_PATH:
-				buf = ii->getText(COLUMN_PATH);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_IP:
-				buf = ii->getText(COLUMN_IP);
-				sCopy = Text::fromT(buf);
-				pos = sCopy.rfind('(');
-				if (pos != string::npos)
-					sCopy = sCopy.substr(pos+1, sCopy.length()-pos-2);
-				break;
-			case IDC_COPY_HUB:
-				buf = ii->getText(COLUMN_HUB);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_SPEED:
-				buf = ii->getText(COLUMN_SPEED);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_STATUS:
-				buf = ii->getText(COLUMN_STATUS);
-				sCopy = Text::fromT(buf);
-				break;
-			case IDC_COPY_ALL:
-				buf = (ii->getText(COLUMN_USER) + _T("   ") + ii->getText(COLUMN_HUB) + _T("   ") + ii->getText(COLUMN_FILE) + _T("   ") + ii->getText(COLUMN_SIZE) + _T("   ") + ii->getText(COLUMN_PATH) + _T("   ") + ii->getText(COLUMN_IP)  + _T("   ") + ii->getText(COLUMN_SPEED)+  _T("  ") + ii->getText(COLUMN_STATUS));
-				sCopy = Text::fromT(buf);
-				break;
-
-			default:
-				dcdebug("TRANSFERVIEW DON'T GO HERE\n");
-				return 0;
-		}
-		
-		if (!sCopy.empty())
-			WinUtil::setClipboard(Text::toT(sCopy));
-	}
-	return S_OK;
 }

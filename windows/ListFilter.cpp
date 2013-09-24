@@ -141,7 +141,7 @@ ListFilter::Preparation ListFilter::prepare(InfoFunction aInfoF, NumericFunction
 			}
 
 			if (!ret.second) {
-				prep.type = COLUMN_NUMERIC;
+				prep.type = COLUMN_NUMERIC_OTHER;
 				prep.num = Util::toDouble(matcher.pattern);
 			} else {
 				prep.num = ret.first;
@@ -159,8 +159,8 @@ ListFilter::Preparation ListFilter::prepare(InfoFunction aInfoF, NumericFunction
 	} else if (columns[prep.column]->colType == COLUMN_SPEED) {
 		prep.type = COLUMN_SPEED;
 		prep.num = prepareSpeed().first;
-	} else if (columns[prep.column]->colType == COLUMN_NUMERIC) {
-		prep.type = COLUMN_NUMERIC;
+	} else if (columns[prep.column]->colType == COLUMN_NUMERIC_OTHER) {
+		prep.type = COLUMN_NUMERIC_OTHER;
 		prep.num = Util::toDouble(matcher.pattern);
 	}
 

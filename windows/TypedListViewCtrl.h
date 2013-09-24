@@ -30,10 +30,10 @@
 
 enum ColumnType{
 	COLUMN_TEXT,
-	COLUMN_NUMERIC,
 	COLUMN_SIZE,
 	COLUMN_TIME,
 	COLUMN_SPEED,
+	COLUMN_NUMERIC_OTHER,
 	COLUMN_IMAGE
 };
 
@@ -43,7 +43,7 @@ public:
 		format(aFormat), visible(true), colType(aColType) {}
 	~ColumnInfo() {}
 
-	bool isNumericType() const { return colType != COLUMN_TEXT; }
+	bool isNumericType() const { return colType != COLUMN_TEXT && colType != COLUMN_IMAGE; }
 
 	tstring name;
 	bool visible;
@@ -782,7 +782,7 @@ public:
 	void Collapse(T* parent, int itemPos) {
 		SetRedraw(false);
 		auto& children = findChildren(parent->getGroupCond());
-		for(const auto c: children)
+		for(const auto& c: children)
 			deleteItem(c);
 
 		parent->collapsed = true;
@@ -795,7 +795,7 @@ public:
 		const auto& children = findChildren(parent->getGroupCond());
 		if(children.size() > (size_t)(uniqueParent ? 1 : 0)) {
 			parent->collapsed = false;
-			for(const auto c: children)
+			for(const auto& c: children)
 				insertChild(c, itemPos + 1);
 
 			SetItemState(itemPos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
@@ -819,34 +819,34 @@ public:
 	}
 
 	inline T* findParent(const K& groupCond) const {
-		ParentMap::const_iterator i = parents.find(const_cast<K*>(&groupCond));
-		return i != parents.end() ? (*i).second.parent : NULL;
+		auto i = parents.find(const_cast<K*>(&groupCond));
+		return i != parents.end() ? (*i).second.parent : nullptr;
 	}
 
 	static const vector<T*> emptyVector;
 	inline const vector<T*>& findChildren(const K& groupCond) const {
-		ParentMap::const_iterator i = parents.find(const_cast<K*>(&groupCond));
+		auto i = parents.find(const_cast<K*>(&groupCond));
 		return i != parents.end() ? (*i).second.children : emptyVector;
 	}
 
 	inline ParentPair* findParentPair(const K& groupCond) {
-		ParentMap::iterator i = parents.find(const_cast<K*>(&groupCond));
-		return i != parents.end() ? &((*i).second) : NULL;
+		auto i = parents.find(const_cast<K*>(&groupCond));
+		return i != parents.end() ? &((*i).second) : nullptr;
 	}
 
 	void insertGroupedItem(T* item, bool autoExpand) {
-		T* parent = NULL;
+		T* parent = nullptr;
 		ParentPair* pp = findParentPair(item->getGroupCond());
 
 		int pos = -1;
 
-		if(pp == NULL) {
+		if(!pp) {
 			parent = item;
 
 			ParentPair newPP = { parent };
 			parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
 
-			parent->parent = NULL; // ensure that parent of this item is really NULL
+			parent->parent = nullptr; // ensure that parent of this item is really NULL
 			insertItem(getSortPos(parent), parent, parent->getImageIndex());
 			return;
 		} else if(pp->children.empty()) {
@@ -860,7 +860,7 @@ public:
 				ParentPair newPP = { parent };
 				pp = &(parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP).first->second);
 
-				parent->parent = NULL; // ensure that parent of this item is really NULL
+				parent->parent = nullptr; // ensure that parent of this item is really NULL
 				oldParent->parent = parent;
 				pp->children.push_back(oldParent); // mark old parent item as a child
 				parent->hits++;
@@ -899,12 +899,12 @@ public:
 
 
 	void insertBundle(T* item, bool autoExpand) {
-		T* parent = NULL;
+		T* parent = nullptr;
 		ParentPair* pp = findParentPair(item->getGroupCond());
 
 		int pos = -1;
 
-		if(pp == NULL) {
+		if(!pp) {
 			//LogManager::getInstance()->message("insertGroupedItem pp NULL BUNDLE");
 			parent  = item->createParent();
 			uniqueParent = false;
@@ -912,7 +912,7 @@ public:
 			ParentPair newPP = { parent };
 			pp = &(parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP).first->second);
 
-			parent->parent = NULL; // ensure that parent of this item is really NULL
+			parent->parent = nullptr; // ensure that parent of this item is really NULL
 			parent->hits++;
 
 			pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
@@ -952,11 +952,11 @@ public:
 		} else {
 			//LogManager::getInstance()->message("remove else");
 			T* parent = item->parent;
-			ParentPair* pp = findParentPair(parent->getGroupCond());
+			auto pp = findParentPair(parent->getGroupCond());
 
 			deleteItem(item);
 
-			vector<T*>::iterator n = find(pp->children.begin(), pp->children.end(), item);
+			auto n = find(pp->children.begin(), pp->children.end(), item);
 			if(n != pp->children.end()) {
 				pp->children.erase(n);
 				pp->parent->hits--;
@@ -981,7 +981,7 @@ public:
 
 
 	void removeParent(T* parent) {
-		ParentPair* pp = findParentPair(parent->getGroupCond());
+		auto pp = findParentPair(parent->getGroupCond());
 		if(pp) {
 			for(auto i: pp->children) {
 				deleteItem(i);
@@ -1002,7 +1002,7 @@ public:
 
 			deleteItem(item);
 
-			vector<T*>::iterator n = find(pp->children.begin(), pp->children.end(), item);
+			auto n = find(pp->children.begin(), pp->children.end(), item);
 			if(n != pp->children.end()) {
 				pp->children.erase(n);
 				pp->parent->hits--;
@@ -1021,7 +1021,7 @@ public:
 					ParentPair newPP = { parent };
 					parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
 
-					parent->parent = NULL; // ensure that parent of this item is really NULL
+					parent->parent = nullptr; // ensure that parent of this item is really NULL
 					deleteItem(parent);
 					insertItem(getSortPos(parent), parent, parent->getImageIndex());
 				}
@@ -1049,7 +1049,7 @@ public:
 			delete p.parent;
 		}
 		for(int i = 0; i < GetItemCount(); i++) {
-			T* si = getItemData(i);
+			auto si = getItemData(i);
 			delete si;
 		}
 
@@ -1102,7 +1102,7 @@ public:
 
 		int low = 0;
 		int mid = 0;
-		T* b = NULL;
+		T* b = nullptr;
 		int comp = 0;
 		while( low <= high ) {
 			mid = (low + high) / 2;

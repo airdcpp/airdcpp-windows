@@ -48,7 +48,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  Resour
 static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTER_SEARCH_SHARED, SettingsManager::FILTER_SEARCH_QUEUED, SettingsManager::FILTER_SEARCH_INVERSED, SettingsManager::FILTER_SEARCH_TOP, 
 	SettingsManager::FILTER_SEARCH_PARTIAL_DUPES, SettingsManager::FILTER_SEARCH_RESET_CHANGE };
 
-static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_TEXT, COLUMN_TEXT, COLUMN_SIZE, COLUMN_TEXT, COLUMN_NUMERIC, COLUMN_SPEED, COLUMN_TEXT, COLUMN_SIZE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TIME };
+static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT, COLUMN_SIZE, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_SPEED, COLUMN_TEXT, COLUMN_SIZE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TIME };
 
 
 SearchFrame::FrameMap SearchFrame::frames;

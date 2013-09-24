@@ -49,7 +49,7 @@ public:
 			if (pProgressDlg->QueryInterface(__uuidof(IOleWindow),(void**)&pOleWnd) == S_OK) {
 				//pProgressDlg->SetTitle(L"Title");
 				pProgressDlg->SetLine(1, _T("Checking for language updates..."), FALSE, NULL);
-				pProgressDlg->SetCancelMsg(_T("Canceling..."), NULL);
+				pProgressDlg->SetCancelMsg(_T("Cancelling..."), NULL);
 
 				if (pProgressDlg->StartProgressDialog(m_hwnd, NULL, PROGDLG_MARQUEEPROGRESS, NULL) == S_OK) {
 					isValid = true;

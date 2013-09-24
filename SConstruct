@@ -215,6 +215,15 @@ if not 'install' in COMMAND_LINE_TARGETS:
 		print '\tOpenSSL library (libssl) not found'
 		print '\tNote: You might have the lib but not the headers'
 		Exit(1)
+		
+	if not conf.CheckLib('stdc++'):
+		print '\tstdc++ library not found'
+		Exit(1)
+
+	if not conf.CheckLib('m'):
+		print '\tmath library not found'
+		Exit(1)
+
 
 	if conf.CheckHeader(['sys/types.h', 'sys/socket.h', 'ifaddrs.h', 'net/if.h']):
 		conf.env.Append(CPPDEFINES = 'HAVE_IFADDRS_H')

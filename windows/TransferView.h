@@ -67,15 +67,6 @@ public:
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
 		MESSAGE_HANDLER(WM_NOTIFYFORMAT, onNotifyFormat)
-		COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_FILENAME, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_SIZE, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_PATH, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_IP, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_HUB, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_SPEED, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_STATUS, onCopy);
-		COMMAND_ID_HANDLER(IDC_COPY_ALL, onCopy);
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
 		//COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onPriority)
@@ -89,7 +80,6 @@ public:
 	LRESULT onSize(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
-	LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	void runUserCommand(UserCommand& uc);
 	void prepareClose();
