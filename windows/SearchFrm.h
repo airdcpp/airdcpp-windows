@@ -222,7 +222,7 @@ private:
 	class SearchInfo;
 	
 public:	
-	typedef TypedTreeListViewCtrl < SearchInfo, IDC_RESULTS, TTHValue, hash<TTHValue*>, equal_to < TTHValue*>> SearchInfoList;
+	typedef TypedTreeListViewCtrl < SearchInfo, IDC_RESULTS, TTHValue, hash<TTHValue*>, equal_to < TTHValue*>, false> SearchInfoList;
 	typedef FilteredListViewCtrl<SearchInfoList, SearchFrame, IDC_RESULTS> FilteredList;
 	SearchInfoList& getUserList() { return ctrlResults.list; }
 

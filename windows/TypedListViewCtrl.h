@@ -717,7 +717,7 @@ private:
 };
 
 // Copyright (C) 2005-2010 Big Muscle, StrongDC++
-template<class T, int ctrlId, class K, class hashFunc, class equalKey>
+template<class T, int ctrlId, class K, class hashFunc, class equalKey, bool GroupUniqueChildren>
 class TypedTreeListViewCtrl : public TypedListViewCtrl<T, ctrlId> 
 {
 public:
@@ -725,7 +725,7 @@ public:
 	TypedTreeListViewCtrl() { }
 	~TypedTreeListViewCtrl() { states.Destroy(); }
 
-	typedef TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey> thisClass;
+	typedef TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey, GroupUniqueChildren> thisClass;
 	typedef TypedListViewCtrl<T, ctrlId> baseClass;
 	
 	struct ParentPair {
@@ -840,95 +840,66 @@ public:
 
 		int pos = -1;
 
-		if(!pp) {
-			parent = item;
-
-			ParentPair newPP = { parent };
-			parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
-
-			parent->parent = nullptr; // ensure that parent of this item is really NULL
-			insertItem(getSortPos(parent), parent, parent->getImageIndex());
-			return;
-		} else if(pp->children.empty()) {
-			T* oldParent = pp->parent;
-			parent = oldParent->createParent();
-			if(parent != oldParent) {
-				uniqueParent = true;
-				parents.erase(const_cast<K*>(&oldParent->getGroupCond()));
-				deleteItem(oldParent);
-
-				ParentPair newPP = { parent };
-				pp = &(parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP).first->second);
-
-				parent->parent = nullptr; // ensure that parent of this item is really NULL
-				oldParent->parent = parent;
-				pp->children.push_back(oldParent); // mark old parent item as a child
-				parent->hits++;
-
-				pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
-			} else {
-				uniqueParent = false;
-				pos = findItem(parent);
-			}
-
-			if(pos != -1)
-			{
-				if(autoExpand){
-					SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
-					parent->collapsed = false;
-				} else {
-					SetItemState(pos, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
-				}
-			}
-		} else {
-			parent = pp->parent;
-			pos = findItem(parent);
-		}
-
-		pp->children.push_back(item);
-		parent->hits++;
-		item->parent = parent;
-
-		if(pos != -1) {
-			if(!parent->collapsed) {
-				insertChild(item, pos + pp->children.size());
-			}
-			updateItem(pos);
-		}
-	}
-
-
-	void insertBundle(T* item, bool autoExpand) {
-		T* parent = nullptr;
-		ParentPair* pp = findParentPair(item->getGroupCond());
-
-		int pos = -1;
-
-		if(!pp) {
-			//LogManager::getInstance()->message("insertGroupedItem pp NULL BUNDLE");
-			parent  = item->createParent();
-			uniqueParent = false;
-
+		auto createParentPair = [&](T* parent, bool autoExpand, T* oldParent) {
 			ParentPair newPP = { parent };
 			pp = &(parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP).first->second);
 
 			parent->parent = nullptr; // ensure that parent of this item is really NULL
+			if (oldParent) {
+				oldParent->parent = parent;
+				pp->children.push_back(oldParent); // mark old parent item as a child
+			}
 			parent->hits++;
 
 			pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
-
-			if(pos != -1) {
-				if(autoExpand){
+			if (pos != -1) {
+				if (autoExpand) {
 					SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
 					parent->collapsed = false;
 				} else {
 					SetItemState(pos, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
 				}
 			}
+		};
+
+		if (!GroupUniqueChildren) {
+			if (!pp) {
+				parent = item;
+
+				ParentPair newPP = { parent };
+				parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
+
+				parent->parent = nullptr; // ensure that parent of this item is really NULL
+				insertItem(getSortPos(parent), parent, parent->getImageIndex());
+				return;
+			} else if (pp->children.empty()) {
+				auto oldParent = pp->parent;
+				parent = oldParent->createParent();
+				if (parent != oldParent) {
+					uniqueParent = true;
+					parents.erase(const_cast<K*>(&oldParent->getGroupCond()));
+					deleteItem(oldParent);
+
+					 createParentPair(parent, autoExpand, oldParent);
+				} else {
+					uniqueParent = false;
+					pos = findItem(parent);
+				}
+			} else {
+				parent = pp->parent;
+				pos = findItem(parent);
+			}
 		} else {
-			//LogManager::getInstance()->message("insertGroupedItem else");
-			parent = pp->parent;
-			pos = findItem(parent);
+			if (!pp) {
+				// always create a parent for this item
+				parent = item->createParent();
+				uniqueParent = false;
+
+				createParentPair(parent, autoExpand, nullptr);
+			} else {
+				parent = pp->parent;
+				pos = findItem(parent);
+			}
 		}
 
 		pp->children.push_back(item);
@@ -942,43 +913,6 @@ public:
 			updateItem(pos);
 		}
 	}
-
-
-	bool removeBundle(T* item, bool removeFromMemory = true) {
-		bool parentExists=true;
-		if(!item->parent) {
-			//LogManager::getInstance()->message("remove if");
-			removeParent(item);
-		} else {
-			//LogManager::getInstance()->message("remove else");
-			T* parent = item->parent;
-			auto pp = findParentPair(parent->getGroupCond());
-
-			deleteItem(item);
-
-			auto n = find(pp->children.begin(), pp->children.end(), item);
-			if(n != pp->children.end()) {
-				pp->children.erase(n);
-				pp->parent->hits--;
-			}
-	
-
-			if (pp->children.empty()) {
-				//LogManager::getInstance()->message("remove unique parent else");
-				deleteItem(parent);
-				parents.erase(const_cast<K*>(&parent->getGroupCond()));
-				delete parent;
-				parentExists=false;
-			} else {
-				updateItem(parent);
-			}
-		}
-
-		if(removeFromMemory)
-			delete item;
-		return parentExists;
-	}
-
 
 	void removeParent(T* parent) {
 		auto pp = findParentPair(parent->getGroupCond());
@@ -993,7 +927,9 @@ public:
 		deleteItem(parent);
 	}
 
-	void removeGroupedItem(T* item, bool removeFromMemory = true) {
+	bool removeGroupedItem(T* item, bool removeFromMemory = true) {
+		bool parentExists = true;
+
 		if(!item->parent) {
 			removeParent(item);
 		} else {
@@ -1008,34 +944,45 @@ public:
 				pp->parent->hits--;
 			}
 	
-			if(uniqueParent) {
-				dcassert(!pp->children.empty());
-				if(pp->children.size() == 1) {
-					const T* oldParent = parent;
-					parent = pp->children.front();
+			if (!GroupUniqueChildren) {
+				if(uniqueParent) {
+					dcassert(!pp->children.empty());
+					if(pp->children.size() == 1) {
+						const auto oldParent = parent;
+						parent = pp->children.front();
 
-					deleteItem(oldParent);
-					parents.erase(const_cast<K*>(&oldParent->getGroupCond()));
-					delete oldParent;
+						deleteItem(oldParent);
+						parents.erase(const_cast<K*>(&oldParent->getGroupCond()));
+						delete oldParent;
 
-					ParentPair newPP = { parent };
-					parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
+						ParentPair newPP = { parent };
+						parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
 
-					parent->parent = nullptr; // ensure that parent of this item is really NULL
-					deleteItem(parent);
-					insertItem(getSortPos(parent), parent, parent->getImageIndex());
-				}
-			} else {
-				if(pp->children.empty()) {
+						parent->parent = nullptr; // ensure that parent of this item is really NULL
+						deleteItem(parent);
+						insertItem(getSortPos(parent), parent, parent->getImageIndex());
+					}
+				} else if(pp->children.empty()) {
 					SetItemState(findItem(parent), INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);
 				}
-			}
 
-			updateItem(parent);
+				updateItem(parent);
+			} else {
+				if (pp->children.empty()) {
+					deleteItem(parent);
+					parents.erase(const_cast<K*>(&parent->getGroupCond()));
+					delete parent;
+					parentExists = false;
+				} else {
+					updateItem(parent);
+				}
+			}
 		}
 
 		if(removeFromMemory)
 			delete item;
+
+		return parentExists;
 	}
 
 	void deleteAllItems() {
@@ -1207,7 +1154,7 @@ private:
 	}
 };
 
-template<class T, int ctrlId, class K, class hashFunc, class equalKey>
-const vector<T*> TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey>::emptyVector;
+template<class T, int ctrlId, class K, class hashFunc, class equalKey, bool GroupUniqueChildren>
+const vector<T*> TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey, GroupUniqueChildren>::emptyVector;
 
 #endif // !defined(TYPED_LIST_VIEW_CTRL_H)

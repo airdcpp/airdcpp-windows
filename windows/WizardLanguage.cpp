@@ -33,7 +33,7 @@ LRESULT WizardLanguage::OnInitDialog(UINT /*message*/, WPARAM /*wParam*/, LPARAM
 }
 
 WizardLanguage::WizardLanguage(SettingsManager *s, SetupWizard* aWizard) : PropPage(s), wizard(aWizard), dl(nullptr) { 
-	SetHeaderTitle(CTSTRING(SETTINGS_PERSONAL_INFORMATION)); 
+	SetHeaderTitle(_T("Language selection")); 
 } 
 
 void WizardLanguage::write() {

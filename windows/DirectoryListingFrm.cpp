@@ -610,10 +610,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 
 	// select out new item
 	if (aChangeDir) {
-		if (aChangeDir)
-			curPath = aLoadedDir;
-
-		selectItem(curPath);
+		selectItem(d->getPath());
 		ctrlFiles.list.SetRedraw(FALSE);
 	}
 

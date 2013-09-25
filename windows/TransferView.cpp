@@ -546,7 +546,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			auto ii = new ItemInfo(ui.user, ui.token, ui.download);
 			ii->update(ui);
 			if (!ii->bundle.empty()) {
-				ctrlTransfers.insertBundle(ii, SETTING(EXPAND_BUNDLES));
+				ctrlTransfers.insertGroupedItem(ii, SETTING(EXPAND_BUNDLES));
 			} else {
 				ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 			}
@@ -559,7 +559,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 			if(ii) {
 				if (!ii->bundle.empty()) {
 					auto parent = ii->parent;
-					if (ctrlTransfers.removeBundle(ii, true))
+					if (ctrlTransfers.removeGroupedItem(ii, true))
 						parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
 				} else {
 					dcassert(pos != -1);
@@ -596,7 +596,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 						//LogManager::getInstance()->message("CHANGEPARENT, REMOVE");
 						if (ii->bundle.empty()) {
 							ctrlTransfers.DeleteItem(pos);
-						} else if (ctrlTransfers.removeBundle(ii, false)) {
+						} else if (ctrlTransfers.removeGroupedItem(ii, false)) {
 							parent->updateUser(ctrlTransfers.findChildren(parent->getGroupCond()));
 						}
 					}
@@ -607,7 +607,7 @@ LRESULT TransferView::onSpeaker(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 							ii->parent = nullptr;
 							ctrlTransfers.insertItem(ii, ii->download ? IMAGE_DOWNLOAD : IMAGE_UPLOAD);
 						} else {
-							ctrlTransfers.insertBundle(ii, ii->parent ? !ii->parent->collapsed : SETTING(EXPAND_BUNDLES));
+							ctrlTransfers.insertGroupedItem(ii, ii->parent ? !ii->parent->collapsed : SETTING(EXPAND_BUNDLES));
 						}
 					} else if(ii == parent || !parent->collapsed) {
 						updateItem(ctrlTransfers.findItem(ii), ui.updateMask);

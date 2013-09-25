@@ -102,7 +102,7 @@ public:
 private:
 	class ItemInfo;	
 public:
-	typedef TypedTreeListViewCtrl<ItemInfo, IDC_TRANSFERS, string, noCaseStringHash, noCaseStringEq> ItemInfoList;
+	typedef TypedTreeListViewCtrl<ItemInfo, IDC_TRANSFERS, string, noCaseStringHash, noCaseStringEq, true> ItemInfoList;
 	ItemInfoList& getUserList() { return ctrlTransfers; }
 private:
 	enum {
