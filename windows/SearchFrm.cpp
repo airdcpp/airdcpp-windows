@@ -1486,7 +1486,7 @@ void SearchFrame::on(ClientDisconnected, const string& aHubUrl) noexcept {
 
 LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if (reinterpret_cast<HWND>(wParam) == ctrlResults.list && ctrlResults.list.GetSelectedCount() > 0) {
-		auto pt = ctrlResults.list.getMenuPosition({ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) });
+		auto pt = WinUtil::getMenuPosition({ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) }, ctrlResults.list);
 		if (!pt) {
 			bHandled = FALSE;
 			return FALSE;

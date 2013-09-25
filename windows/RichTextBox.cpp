@@ -866,15 +866,9 @@ const string& RichTextBox::getHubUrl() const {
 }
 
 LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
-	//check if we are clicking on a scrollbar
-	SCROLLBARINFO sbi;
-	memset(&sbi, 0, sizeof(SCROLLBARINFO));
-	sbi.cbSize = sizeof(SCROLLBARINFO);
-	GetScrollBarInfo(m_hWnd, OBJID_VSCROLL, &sbi);
-
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };        // location of mouse click
 
-	if(pt.x == -1 && pt.y == -1) {
+	if (pt.x == -1 && pt.y == -1) {
 		CRect erc;
 		GetRect(&erc);
 		pt.x = erc.Width() / 2;
@@ -882,7 +876,8 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 		ClientToScreen(&pt);
 	}
 
-	if (sbi.rcScrollBar.left <= pt.x && sbi.rcScrollBar.right >= pt.x) {
+	//check if we are clicking on a scrollbar
+	if (WinUtil::isOnScrollbar(m_hWnd, pt)) {
 		//let the system handle those
 		bHandled = FALSE;
 		return 0;

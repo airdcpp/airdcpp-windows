@@ -369,12 +369,32 @@ public:
 	static void appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles);
 	static void appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles);
 	
+	template<typename T1>
+	static optional<CPoint> getMenuPosition(CPoint pt, T1& aWindow) {
+		if (pt.x == -1 && pt.y == -1) {
+			getContextMenuPos(aWindow, pt);
+			return pt;
+		}
+
+		// did we click on a scrollbar?
+		if (WinUtil::isOnScrollbar(aWindow.m_hWnd, pt)) {
+			return nullptr;
+		}
+
+		// get the current one instead of the pos where we clicked
+		// TODO: fix all menus then
+		//return GetMessagePos();
+		return pt;
+	}
+
 	//returns the position where the context menu should be
 	//opened if it was invoked from the keyboard.
 	//aPt is relative to the screen not the control.
 	static void getContextMenuPos(CListViewCtrl& aList, POINT& aPt);
 	static void getContextMenuPos(CTreeViewCtrl& aTree, POINT& aPt);
 	static void getContextMenuPos(CEdit& aEdit,			POINT& aPt);
+
+	static bool isOnScrollbar(HWND aHWND, POINT& aPt);
 	
 	static bool getUCParams(HWND parent, const UserCommand& cmd, ParamMap& params) noexcept;
 

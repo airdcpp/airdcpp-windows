@@ -608,12 +608,6 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 	if (initialChange || isExpanded || changeType == CHANGE_TREE_EXPAND || changeType == CHANGE_TREE_DOUBLE)
 		ctrlTree.Expand(ht);
 
-	// select out new item
-	if (aChangeDir) {
-		selectItem(d->getPath());
-		ctrlFiles.list.SetRedraw(FALSE);
-	}
-
 	if (!aChangeDir && curPath == Util::getNmdcParentDir(aLoadedDir)) {
 		// find the loaded directory and set it as complete
 		int j = ctrlFiles.list.GetItemCount();        
@@ -628,7 +622,8 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 		}
 	} else if (aChangeDir || AirUtil::isParentOrExact(aLoadedDir, curPath)) {
 		// insert the new items
-		updateItems(d);
+		ctrlTree.SelectItem(nullptr);
+		selectItem(d->getPath());
 	}
 
 	changeType = CHANGE_LAST;
@@ -1267,7 +1262,7 @@ void DirectoryListingFrame::selectItem(const string& name) {
 
 LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	if (reinterpret_cast<HWND>(wParam) == ctrlFiles.list && ctrlFiles.list.GetSelectedCount() > 0) {
-		auto pt = ctrlFiles.list.getMenuPosition({ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) });
+		auto pt = WinUtil::getMenuPosition({ GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) }, ctrlFiles.list);
 		if (!pt) {
 			bHandled = FALSE;
 			return FALSE;

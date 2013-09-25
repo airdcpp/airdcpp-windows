@@ -1426,6 +1426,26 @@ void WinUtil::getContextMenuPos(CEdit& aEdit, POINT& aPt) {
 	aEdit.ClientToScreen(&aPt);
 }
 
+bool WinUtil::isOnScrollbar(HWND m_hWnd, POINT& pt) {
+	SCROLLBARINFO sbi;
+	memset(&sbi, 0, sizeof(SCROLLBARINFO));
+	sbi.cbSize = sizeof(SCROLLBARINFO);
+
+	GetScrollBarInfo(m_hWnd, OBJID_VSCROLL, &sbi);
+	if (!(sbi.rgstate[0] & STATE_SYSTEM_INVISIBLE) && sbi.rcScrollBar.left <= pt.x && sbi.rcScrollBar.right >= pt.x) {
+		//let the system handle those
+		return true;
+	}
+
+	GetScrollBarInfo(m_hWnd, OBJID_HSCROLL, &sbi);
+	if (!(sbi.rgstate[0] & STATE_SYSTEM_INVISIBLE) && sbi.rcScrollBar.top <= pt.y && sbi.rcScrollBar.bottom >= pt.y) {
+		//let the system handle those
+		return true;
+	}
+
+	return false;
+}
+
 void WinUtil::openFolder(const tstring& file) {
 	if(file.empty() )
 		return;

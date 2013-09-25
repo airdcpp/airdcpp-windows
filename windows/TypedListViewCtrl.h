@@ -616,25 +616,6 @@ public:
 	typedef vector< ColumnInfo* > ColumnList;
 	ColumnList& getColumnList() { return columnList; }
 	bool noDefaultItemImages;
-
-	optional<CPoint> getMenuPosition(POINT pt) {
-		if (pt.x == -1 && pt.y == -1) {
-			WinUtil::getContextMenuPos(*this, pt);
-			return pt;
-		}
-
-		// check if we clicked on a scroll bar
-		ScreenToClient(&pt);
-
-		UINT flags = 0;
-		HitTest(pt, &flags);
-		if (!(flags & LVHT_ONITEM)) {
-			return nullptr;
-		}
-
-		ClientToScreen(&pt);
-		return pt;
-	}
 private:
 	int sortColumn;
 	bool sortAscending;
@@ -840,7 +821,7 @@ public:
 
 		int pos = -1;
 
-		auto createParentPair = [&](T* parent, bool autoExpand, T* oldParent) {
+		auto createParentPair = [&](T* parent, T* oldParent) {
 			ParentPair newPP = { parent };
 			pp = &(parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP).first->second);
 
@@ -852,6 +833,9 @@ public:
 			parent->hits++;
 
 			pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
+		};
+
+		auto updateCollapsedState = [&] {
 			if (pos != -1) {
 				if (autoExpand) {
 					SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
@@ -880,11 +864,13 @@ public:
 					parents.erase(const_cast<K*>(&oldParent->getGroupCond()));
 					deleteItem(oldParent);
 
-					 createParentPair(parent, autoExpand, oldParent);
+					createParentPair(parent, oldParent);
 				} else {
 					uniqueParent = false;
 					pos = findItem(parent);
 				}
+
+				updateCollapsedState();
 			} else {
 				parent = pp->parent;
 				pos = findItem(parent);
@@ -895,7 +881,8 @@ public:
 				parent = item->createParent();
 				uniqueParent = false;
 
-				createParentPair(parent, autoExpand, nullptr);
+				createParentPair(parent, nullptr);
+				updateCollapsedState();
 			} else {
 				parent = pp->parent;
 				pos = findItem(parent);
