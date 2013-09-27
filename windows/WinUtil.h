@@ -478,7 +478,7 @@ public:
 	static bool onConnSpeedChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/);
 	static void setUserFieldLimits(HWND hWnd);
 
-	static void getProfileConflicts(HWND aParent, int aProfile, SettingItem::List& conflicts);
+	static void getProfileConflicts(HWND aParent, int aProfile, ProfileSettingItem::List& conflicts);
 
 	static void appendSpeedCombo(CComboBox& aCombo, SettingsManager::StrSetting aSetting);
 

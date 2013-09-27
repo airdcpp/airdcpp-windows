@@ -2130,7 +2130,7 @@ LRESULT WinUtil::onUserFieldChar(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, B
 	return TRUE;
 }
 
-void WinUtil::getProfileConflicts(HWND aParent, int aProfile, SettingItem::List& conflicts) {
+void WinUtil::getProfileConflicts(HWND aParent, int aProfile, ProfileSettingItem::List& conflicts) {
 	conflicts.clear();
 
 	// a custom set value that differs from the one used by the profile? don't replace those without confirmation
@@ -2143,7 +2143,7 @@ void WinUtil::getProfileConflicts(HWND aParent, int aProfile, SettingItem::List&
 	if (!conflicts.empty()) {
 		string msg;
 		for (const auto& setting: conflicts) {
-			msg += STRING_F(SETTING_NAME_X, setting.getName()) + "\r\n";
+			msg += STRING_F(SETTING_NAME_X, setting.getDescription()) + "\r\n";
 			msg += STRING_F(CURRENT_VALUE_X, setting.currentToString()) + "\r\n";
 			msg += STRING_F(PROFILE_VALUE_X, setting.profileToString()) + "\r\n\r\n";
 		}

@@ -63,7 +63,7 @@ private:
 	CComboBoxEx ctrlLanguage;
 
 	int curProfile;
-	SettingItem::List conflicts;
+	ProfileSettingItem::List conflicts;
 };
 
 #endif // !defined(GENERAL_PAGE_H)

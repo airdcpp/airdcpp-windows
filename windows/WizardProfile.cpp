@@ -83,7 +83,7 @@ void WizardProfile::write() {
 	SettingsManager::getInstance()->applyProfileDefaults();
 
 	for (const auto& setting: conflicts) {
-		setting.setDefault(true);
+		setting.setProfileToDefault(true);
 	}
 }
 

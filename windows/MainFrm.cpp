@@ -68,6 +68,7 @@
 #include "../client/GeoManager.h"
 #include "../client/ThrottleManager.h"
 #include "../client/version.h"
+#include "../client/SettingHolder.h"
 
 MainFrame* MainFrame::anyMF = NULL;
 bool MainFrame::bShutdown = false;
@@ -1016,111 +1017,27 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 	PropertiesDlg dlg(m_hWnd, SettingsManager::getInstance(), initialPage);
 
-	auto prevTCP = SETTING(TCP_PORT);
-	auto prevUDP = SETTING(UDP_PORT);
-	auto prevTLS = SETTING(TLS_PORT);
-
-	auto prevConn4 = SETTING(INCOMING_CONNECTIONS);
-	auto prevConn6 = SETTING(INCOMING_CONNECTIONS6);
-	auto prevMapper = SETTING(MAPPER);
-	auto prevBind = SETTING(BIND_ADDRESS);
-	auto prevBind6 = SETTING(BIND_ADDRESS6);
-	auto prevProxy = CONNSETTING(OUTGOING_CONNECTIONS);
-
-
-	auto prevGeo = SETTING(GET_USER_COUNTRY);
-	auto prevGeoFormat = SETTING(COUNTRY_FORMAT);
-
 	bool lastSortFavUsersFirst = SETTING(SORT_FAVUSERS_FIRST);
-
-	auto prevHighPrio = SETTING(HIGH_PRIO_FILES);
-	auto prevHighPrioRegex = SETTING(HIGHEST_PRIORITY_USE_REGEXP);
-
-	auto prevShareSkiplist = SETTING(SKIPLIST_SHARE);
-	auto prevShareSkiplistRegex = SETTING(SHARE_SKIPLIST_USE_REGEXP);
-
-	auto prevDownloadSkiplist = SETTING(SKIPLIST_DOWNLOAD);
-	auto prevDownloadSkiplistRegex = SETTING(DOWNLOAD_SKIPLIST_USE_REGEXP);
-
-	auto prevFreeSlotMatcher = SETTING(FREE_SLOTS_EXTENSIONS);
-	auto prevTranslation = SETTING(LANGUAGE_FILE);
+	auto holder = make_unique<SettingHolder>([this](const string& e) { showPortsError(e); });
 
 	if(dlg.DoModal(m_hWnd) == IDOK) 
 	{
 		PropPage::TaskList tasks;
 		dlg.deletePages(tasks);
 
-		addThreadedTask([=] {
+		addThreadedTask([&] {
 			for(auto& t: tasks) {
 				t.first();
 				delete t.second;
 			}
 
 			SettingsManager::getInstance()->save();
-
-			if (prevTranslation != SETTING(LANGUAGE_FILE)) {
-				UpdateManager::getInstance()->checkLanguage();
-			}
-
-			bool v4Changed = SETTING(INCOMING_CONNECTIONS) != prevConn4 ||
-				SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
-				SETTING(MAPPER) != prevMapper || SETTING(BIND_ADDRESS) != prevBind || SETTING(BIND_ADDRESS6) != prevBind6;
-
-			bool v6Changed = SETTING(INCOMING_CONNECTIONS6) != prevConn6 ||
-				SETTING(TCP_PORT) != prevTCP || SETTING(UDP_PORT) != prevUDP || SETTING(TLS_PORT) != prevTLS ||
-				/*SETTING(MAPPER) != prevMapper ||*/ SETTING(BIND_ADDRESS6) != prevBind6;
-
-			try {
-				ConnectivityManager::getInstance()->setup(v4Changed, v6Changed);
-			} catch (const Exception& e) {
-				showPortsError(e.getError());
-			}
-
-			auto outConns = CONNSETTING(OUTGOING_CONNECTIONS);
-			if(outConns != prevProxy || outConns == SettingsManager::OUTGOING_SOCKS5) {
-				Socket::socksUpdated();
-			}
-
-
-			ClientManager::getInstance()->infoUpdated();
-
-
-			if (prevHighPrio != SETTING(HIGH_PRIO_FILES) || prevHighPrioRegex != SETTING(HIGHEST_PRIORITY_USE_REGEXP) || prevDownloadSkiplist != SETTING(SKIPLIST_DOWNLOAD) ||
-				prevDownloadSkiplistRegex != SETTING(DOWNLOAD_SKIPLIST_USE_REGEXP)) {
-			
-					QueueManager::getInstance()->setMatchers();
-			}
-
-			if (prevShareSkiplist != SETTING(SKIPLIST_SHARE) || prevShareSkiplistRegex != SETTING(SHARE_SKIPLIST_USE_REGEXP)) {
-				ShareManager::getInstance()->setSkipList();
-			}
-
-			if (prevFreeSlotMatcher != SETTING(FREE_SLOTS_EXTENSIONS)) {
-				UploadManager::getInstance()->setFreeSlotMatcher();
-			}
-
-			bool rebuildGeo = prevGeo && SETTING(COUNTRY_FORMAT) != prevGeoFormat;
-			if(SETTING(GET_USER_COUNTRY) != prevGeo) {
-				if(SETTING(GET_USER_COUNTRY)) {
-					GeoManager::getInstance()->init();
-					UpdateManager::getInstance()->checkGeoUpdate();
-				} else {
-					GeoManager::getInstance()->close();
-					rebuildGeo = false;
-				}
-			}
-			if(rebuildGeo) {
-				GeoManager::getInstance()->rebuild();
-			}
+			holder.reset();
 
 			if (missedAutoConnect && !SETTING(NICK).empty()) {
 				FavoriteManager::getInstance()->autoConnect();
 			}
 		});
-
-		if(SETTING(DISCONNECT_SPEED) < 1) {
-			SettingsManager::getInstance()->set(SettingsManager::DISCONNECT_SPEED, 1);
-		}
  
 		if(SETTING(SORT_FAVUSERS_FIRST) != lastSortFavUsersFirst)
 			HubFrame::resortUsers();
@@ -1128,7 +1045,7 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 		if(SETTING(URL_HANDLER)) {
 			WinUtil::registerDchubHandler();
 			WinUtil::registerADChubHandler();
-		WinUtil::registerADCShubHandler();
+			WinUtil::registerADCShubHandler();
 			WinUtil::urlDcADCRegistered = true;
 		} else if(WinUtil::urlDcADCRegistered) {
 			WinUtil::unRegisterDchubHandler();

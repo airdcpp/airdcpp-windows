@@ -63,7 +63,7 @@ private:
 
 	SetupWizard* wizard;
 	int lastProfile;
-	SettingItem::List conflicts;
+	ProfileSettingItem::List conflicts;
 }; 
 
 #endif
