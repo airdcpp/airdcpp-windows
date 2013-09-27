@@ -320,7 +320,6 @@ void HubFrame::addAsFavorite() {
 		if(!client->getPassword().empty()) {
 			e->setPassword(client->getPassword());
 		}
-		e->setConnect(true);
 		FavoriteManager::getInstance()->addFavorite(e);
 		addStatus(TSTRING(FAVORITE_HUB_ADDED), WinUtil::m_ChatTextSystem );
 	} else {
