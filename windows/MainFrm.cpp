@@ -1018,21 +1018,22 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 	PropertiesDlg dlg(m_hWnd, SettingsManager::getInstance(), initialPage);
 
 	bool lastSortFavUsersFirst = SETTING(SORT_FAVUSERS_FIRST);
-	auto holder = make_unique<SettingHolder>([this](const string& e) { showPortsError(e); });
+
+	// TODO: change to use unique_ptr and move captures when those are available
+	auto holder = make_shared<SettingHolder>([this](const string& e) { showPortsError(e); });
 
 	if(dlg.DoModal(m_hWnd) == IDOK) 
 	{
 		PropPage::TaskList tasks;
 		dlg.deletePages(tasks);
 
-		addThreadedTask([&] {
+		addThreadedTask([tasks, holder, this] {
 			for(auto& t: tasks) {
 				t.first();
 				delete t.second;
 			}
 
 			SettingsManager::getInstance()->save();
-			holder.reset();
 
 			if (missedAutoConnect && !SETTING(NICK).empty()) {
 				FavoriteManager::getInstance()->autoConnect();
