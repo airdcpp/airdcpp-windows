@@ -28,8 +28,10 @@
 #include "../client/QueueManager.h"
 
 int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION, COLUMN_LIMITER };
-int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200, 60 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::QUEUED, ResourceManager::DESCRIPTION, ResourceManager::LIMIT };
+int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200, 70 };
+
+static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::QUEUED, 
+	ResourceManager::DESCRIPTION, ResourceManager::OVERRIDE_LIMITER };
 static ColumnType columnTypes [] = { COLUMN_IMAGE, COLUMN_IMAGE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT };
 
 struct FieldName {
@@ -312,27 +314,15 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 
 			return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 		}
-		/*
+		
 		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
-			//fix the image background colors for selected item when explorer theme is disabled
-			const int nItem = static_cast<int>(cd->nmcd.dwItemSpec);
-			if(!SETTING(USE_EXPLORER_THEME) && ctrlUsers.GetItemState(nItem, LVNI_SELECTED)) {
-				const uint8_t col = ctrlUsers.findColumn(cd->iSubItem);
-				if((col != COLUMN_FAVORITE) && (col != COLUMN_SLOT)){
-					bHandled = FALSE;
-					return 0;
-				} 
-
-				UserInfo *ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
-				CRect rc;
-				ctrlUsers.GetSubItemRect(nItem, cd->iSubItem, LVIR_BOUNDS, rc); //why doesnt lvir_bounds get the correct subitem rect? 
-				::FillRect(cd->nmcd.hdc, rc, CreateSolidBrush(GetSysColor(COLOR_HIGHLIGHT)));
-	
-				ctrlUsers.GetSubItemRect(nItem, cd->iSubItem, LVIR_ICON, rc);
-				images.DrawEx(ui->getImage(ctrlUsers.findColumn(cd->iSubItem)), cd->nmcd.hdc, rc, GetSysColor(COLOR_HIGHLIGHT), CLR_DEFAULT, ILD_NORMAL);
-				return CDRF_NEWFONT | CDRF_DOERASE;
+			// dim fields that can't be changed for this user
+			auto ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
+			if (!ui->isFavorite && ctrlUsers.findColumn(cd->iSubItem) == COLUMN_LIMITER) {
+				cd->clrText = WinUtil::blendColors(SETTING(TEXT_COLOR), SETTING(BACKGROUND_COLOR));
+				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 			}
-		}	*/
+		}
 
 		default:
 			return CDRF_DODEFAULT;
@@ -742,7 +732,7 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(getHubUrl());
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : TSTRING(OFFLINE);
 		columns[COLUMN_DESCRIPTION] = Util::emptyStringT;
-		columns[COLUMN_LIMITER] = TSTRING(NO);
+		columns[COLUMN_LIMITER] = _T("-");
 	}
 
 	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());

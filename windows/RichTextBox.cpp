@@ -1375,7 +1375,7 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 		return false;
 
 	auto cl = p->second;
-	//updateSelectedText(pt);
+	updateSelectedText(pt);
 	updateAuthor();
 
 	openLink(cl);
