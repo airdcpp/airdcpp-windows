@@ -379,6 +379,11 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			ctrlSearchEnd.GetSystemTime(&e);
 			endTime.hour = e.wHour;
 			endTime.minute = e.wMinute;
+
+			if (endTime.hour < startTime.hour || (endTime.hour == startTime.hour && endTime.minute <= startTime.minute)) {
+				MessageBox(_T("End time must be greater than the start time!"));
+				return 0;
+			}
 		}
 
 		GetDlgItemText(IDC_U_MATCH, buf, 512);

@@ -39,8 +39,18 @@ enum ColumnType{
 
 class ColumnInfo {
 public:
-	ColumnInfo(const tstring &aName, int aPos, int aFormat, int aWidth, ColumnType aColType): name(aName), pos(aPos), width(aWidth), 
-		format(aFormat), visible(true), colType(aColType) {}
+	struct ClickHandler {
+		typedef function < void(int) > ClickF;
+		ClickHandler(ClickF aF, bool aDoubleClick) : f(aF), doubleClick(aDoubleClick) {}
+		ClickHandler() {}
+
+		ClickF f = nullptr;
+		bool doubleClick = false;
+	};
+
+	ColumnInfo(const tstring &aName, int aPos, int aFormat, int aWidth, ColumnType aColType, ClickHandler aClickHandler = ClickHandler()) : name(aName), pos(aPos), width(aWidth),
+		format(aFormat), visible(true), colType(aColType), clickHandler(move(aClickHandler)) {
+	}
 	~ColumnInfo() {}
 
 	bool isNumericType() const { return colType != COLUMN_TEXT && colType != COLUMN_IMAGE; }
@@ -51,6 +61,7 @@ public:
 	int width;
 	int format;
 	ColumnType colType;
+	ClickHandler clickHandler;
 };
 
 template<class T, int ctrlId>
@@ -72,6 +83,8 @@ public:
 		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBkgnd)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_ENABLE, onEnable)
+		REFLECTED_NOTIFY_CODE_HANDLER(NM_CLICK, onClick)
+		REFLECTED_NOTIFY_CODE_HANDLER(NM_DBLCLK, onDoubleClick)
 		CHAIN_MSG_MAP(arrowBase)
 	END_MSG_MAP();
 
@@ -142,6 +155,44 @@ public:
 		
 		bHandled = FALSE;
 		return 1;
+	}
+
+	void addClickHandler(int column, ColumnInfo::ClickHandler::ClickF af, bool doubleClick) {
+		columnList[column]->clickHandler = { af, doubleClick };
+	}
+
+	BOOL hitIcon(int aItem, int aSubItem) {
+		CRect rc;
+		CPoint pt = GetMessagePos();
+		ScreenToClient(&pt);
+		GetSubItemRect(aItem, aSubItem, LVIR_ICON, rc);
+
+		return PtInRect(&rc, pt);
+	}
+
+	LRESULT onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+		return handleClick(pnmh, bHandled, false);
+	}
+
+	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+		return handleClick(pnmh, bHandled, true);
+	}
+
+	LRESULT handleClick(LPNMHDR pnmh, BOOL& bHandled, bool doubleClick) {
+		NMITEMACTIVATE* l = (NMITEMACTIVATE*) pnmh;
+
+		if (l->iItem != -1) {
+			int col = findColumn(l->iSubItem);
+			auto& handler = columnList[col]->clickHandler;
+			if (handler.f && (doubleClick || !handler.doubleClick) && (columnList[col]->colType != COLUMN_IMAGE || hitIcon(l->iItem, l->iSubItem))) {
+				handler.f(l->iItem);
+				bHandled = TRUE;
+				return TRUE;
+			}
+		}
+
+		bHandled = FALSE;
+		return 0;
 	}
 
 	inline void setText(LVITEM& i, const tstring text) { lstrcpyn(i.pszText, text.c_str(), i.cchTextMax); }

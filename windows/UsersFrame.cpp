@@ -27,10 +27,10 @@
 #include "../client/ClientManager.h"
 #include "../client/QueueManager.h"
 
-int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION };
-int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::QUEUED, ResourceManager::DESCRIPTION };
-static ColumnType columnTypes [] = { COLUMN_IMAGE, COLUMN_IMAGE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT };
+int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION, COLUMN_LIMITER };
+int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200, 60 };
+static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::QUEUED, ResourceManager::DESCRIPTION, ResourceManager::LIMIT };
+static ColumnType columnTypes [] = { COLUMN_IMAGE, COLUMN_IMAGE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT };
 
 struct FieldName {
 	string field;
@@ -195,6 +195,10 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	startup = false;
 	updateStatus();
+
+	ctrlUsers.addClickHandler(COLUMN_FAVORITE, [this](int row) { handleClickFavorite(row); }, false);
+	ctrlUsers.addClickHandler(COLUMN_SLOT, [this](int row) { handleClickSlot(row); }, false);
+	ctrlUsers.addClickHandler(COLUMN_LIMITER, [this](int row) { handleClickLimiter(row); }, true);
 
 	bHandled = FALSE;
 	return TRUE;
@@ -480,43 +484,33 @@ LRESULT UsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
   	return 0;
 }
 
-LRESULT UsersFrame::onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
-	if(startup)
-		return 0;
 
-	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
-
-	if(l->iItem != -1) {
-		auto ui = ctrlUsers.getItemData(l->iItem);
-		if((ctrlUsers.findColumn(l->iSubItem) == COLUMN_SLOT) && hitIcon(l->iItem, l->iSubItem)) {
-			ui->grantSlot = !ui->grantSlot;
-			if(ui->isFavorite){
-				FavoriteManager::getInstance()->setAutoGrant(ui->getUser(), ui->grantSlot);
-				setImages(ui, l->iItem);
-			} else {
-				ui->grantSlot ? ui->grantTimeless() : ui->ungrant(); // timeless grant
-			}
-		} else if((ctrlUsers.findColumn(l->iSubItem) == COLUMN_FAVORITE) && hitIcon(l->iItem, l->iSubItem)) {  //TODO: confirm removal.
-			if(ui->isFavorite)
-				FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
-			else
-				FavoriteManager::getInstance()->addFavoriteUser(HintedUser(ui->getUser(), ui->getHubUrl()));
-		}
+void UsersFrame::handleClickSlot(int row) {
+	auto ui = ctrlUsers.getItemData(row);
+	ui->grantSlot = !ui->grantSlot;
+	if (ui->isFavorite) {
+		FavoriteManager::getInstance()->setAutoGrant(ui->getUser(), ui->grantSlot);
+		setImages(ui, row);
+	} else {
+		ui->grantSlot ? ui->grantTimeless() : ui->ungrant(); // timeless grant
 	}
-	
-	bHandled = FALSE;
-  	return 0;
 }
 
-BOOL UsersFrame::hitIcon(int aItem, int aSubItem) {
-	CRect rc;
-	CPoint pt = GetMessagePos();
-	ctrlUsers.ScreenToClient(&pt);
-	ctrlUsers.GetSubItemRect(aItem, aSubItem, LVIR_ICON, rc);
-
-	return PtInRect(&rc, pt);
+void UsersFrame::handleClickFavorite(int row) {
+	auto ui = ctrlUsers.getItemData(row);
+	if (ui->isFavorite)
+		FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
+	else
+		FavoriteManager::getInstance()->addFavoriteUser(HintedUser(ui->getUser(), ui->getHubUrl()));
 }
 
+void UsersFrame::handleClickLimiter(int row) {
+	auto ui = ctrlUsers.getItemData(row);
+	if (ui->isFavorite) {
+		FavoriteManager::getInstance()->changeLimiterOverride(ui->getUser());
+		updateUser(ui->getUser());
+	}
+}
 
 LRESULT UsersFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMITEMACTIVATE* item = (NMITEMACTIVATE*) pnmh;
@@ -734,6 +728,7 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(fu->getUrl()); 
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : fu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen())) : TSTRING(UNKNOWN);
 		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
+		columns[COLUMN_LIMITER] = fu->isSet(FavoriteUser::FLAG_SUPERUSER) ? TSTRING(YES) : TSTRING(NO);
 	} else {
 		isFavorite = false;
 		grantSlot = hasReservedSlot();
@@ -747,6 +742,7 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(getHubUrl());
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : TSTRING(OFFLINE);
 		columns[COLUMN_DESCRIPTION] = Util::emptyStringT;
+		columns[COLUMN_LIMITER] = TSTRING(NO);
 	}
 
 	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());

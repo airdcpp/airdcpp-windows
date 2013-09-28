@@ -56,8 +56,9 @@ public:
 		NOTIFY_HANDLER(IDC_USERS, LVN_GETINFOTIP, ctrlUsers.onInfoTip)
 		NOTIFY_HANDLER(IDC_USERS, LVN_ITEMCHANGED, onItemChanged)
 		NOTIFY_HANDLER(IDC_USERS, LVN_KEYDOWN, onKeyDown)
+		NOTIFY_HANDLER(IDC_USERS, NM_DBLCLK, ctrlUsers.onDoubleClick)
 		NOTIFY_HANDLER(IDC_USERS, NM_DBLCLK, onDoubleClick)
-		NOTIFY_HANDLER(IDC_USERS, NM_CLICK, onClick)
+		NOTIFY_HANDLER(IDC_USERS, NM_CLICK, ctrlUsers.onClick)
 		NOTIFY_HANDLER(IDC_USERS, NM_CUSTOMDRAW, onCustomDrawList)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
@@ -88,7 +89,6 @@ public:
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onInfoTip(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
-	LRESULT onClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
@@ -113,6 +113,7 @@ private:
 		COLUMN_SEEN,
 		COLUMN_QUEUED,
 		COLUMN_DESCRIPTION,
+		COLUMN_LIMITER,
 		COLUMN_LAST
 	};
 
@@ -187,7 +188,6 @@ private:
 	bool listFav;
 	bool filterQueued;
 	bool filterOnline;
-	BOOL hitIcon(int aItem, int aSubItem);
 
 	void updateInfoText(const UserInfo* ui);
 	void updateList();
@@ -198,6 +198,10 @@ private:
 	
 	void setImages(UserInfo* ui, int pos = -1);
 	void updateStatus();
+
+	void handleClickSlot(int row);
+	void handleClickFavorite(int row);
+	void handleClickLimiter(int row);
 
 	static int columnSizes[];
 	static int columnIndexes[];
