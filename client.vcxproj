@@ -97,6 +97,7 @@
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;HAVE_NATPMP_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x041d</Culture>
@@ -124,7 +125,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>WIN32;WIN64;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;HAVE_NATPMP_H;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Cpp0xSupport>true</Cpp0xSupport>
     </ClCompile>
     <ResourceCompile>
@@ -170,7 +171,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>_UNICODE;UNICODE;HAVE_WINUPNP_H;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_UNICODE;UNICODE;HAVE_NATPMP_H;HAVE_WINUPNP_H;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
@@ -217,7 +218,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <DisableSpecificWarnings>4996;%(DisableSpecificWarnings)</DisableSpecificWarnings>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <PreprocessorDefinitions>WIN32;WIN64;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;WIN64;HAVE_NATPMP_H;HAVE_WINUPNP_H;_UNICODE;UNICODE;HAS_PCH;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <ResourceCompile>
       <Culture>0x0409</Culture>
