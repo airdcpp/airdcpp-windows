@@ -40,7 +40,7 @@ enum ColumnType{
 class ColumnInfo {
 public:
 	struct ClickHandler {
-		typedef function < void(int) > ClickF;
+		typedef function < bool(int) > ClickF;
 		ClickHandler(ClickF aF, bool aDoubleClick) : f(aF), doubleClick(aDoubleClick) {}
 		ClickHandler() {}
 
@@ -185,9 +185,10 @@ public:
 			int col = findColumn(l->iSubItem);
 			auto& handler = columnList[col]->clickHandler;
 			if (handler.f && (doubleClick || !handler.doubleClick) && (columnList[col]->colType != COLUMN_IMAGE || hitIcon(l->iItem, l->iSubItem))) {
-				handler.f(l->iItem);
-				bHandled = TRUE;
-				return TRUE;
+				if (handler.f(l->iItem)) {
+					bHandled = TRUE;
+					return TRUE;
+				}
 			}
 		}
 

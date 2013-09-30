@@ -1397,6 +1397,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		UINT a = 0;
 		HTREEITEM ht = ctrlTree.HitTest(pt, &a);
 		if (ht) {
+			// Strange, windows doesn't change the selection on right-click... (!)
 			if (ht != ctrlTree.GetSelectedItem())
 				ctrlTree.SelectItem(ht);
 			ctrlTree.ClientToScreen(&pt);
@@ -1434,8 +1435,6 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 				directoryMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { handleScanShare(true, false); });
 				directoryMenu.appendItem(TSTRING(RUN_SFV_CHECK), [this] { handleScanShare(false, true); });
 			}
-
-			// Strange, windows doesn't change the selection on right-click... (!)
 
 			directoryMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
 			directoryMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
@@ -1739,7 +1738,6 @@ void DirectoryListingFrame::runUserCommand(UserCommand& uc) {
 		ucParams["tth"] = ucParams["fileTR"];
 
 		auto tmp = ucParams;
-		UserPtr tmpPtr = dl->getUser();
 		ClientManager::getInstance()->userCommand(dl->getHintedUser(), uc, tmp, true);
 	}
 }

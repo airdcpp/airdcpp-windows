@@ -381,7 +381,7 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			endTime.minute = e.wMinute;
 
 			if (endTime.hour < startTime.hour || (endTime.hour == startTime.hour && endTime.minute <= startTime.minute)) {
-				MessageBox(_T("End time must be greater than the start time!"));
+				MessageBox(CTSTRING(AS_END_GREATER));
 				return 0;
 			}
 		}

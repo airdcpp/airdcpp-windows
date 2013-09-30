@@ -44,7 +44,7 @@ static tstring formatBytes(const string& val) {
 }
 
 static tstring formatSpeed(const string& val) {
-	return Text::toT(boost::str(boost::format("%1%/s") % Util::formatBytes(val)));
+	return Text::toT(Util::formatConnectionSpeed(val));
 }
 
 static const FieldName fields[] =
@@ -198,9 +198,10 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	startup = false;
 	updateStatus();
 
-	ctrlUsers.addClickHandler(COLUMN_FAVORITE, [this](int row) { handleClickFavorite(row); }, false);
-	ctrlUsers.addClickHandler(COLUMN_SLOT, [this](int row) { handleClickSlot(row); }, false);
-	ctrlUsers.addClickHandler(COLUMN_LIMITER, [this](int row) { handleClickLimiter(row); }, true);
+	ctrlUsers.addClickHandler(COLUMN_FAVORITE, [this](int row) { return handleClickFavorite(row); }, false);
+	ctrlUsers.addClickHandler(COLUMN_SLOT, [this](int row) { return handleClickSlot(row); }, false);
+	ctrlUsers.addClickHandler(COLUMN_LIMITER, [this](int row) { return handleClickLimiter(row); }, true);
+	ctrlUsers.addClickHandler(COLUMN_DESCRIPTION, [this](int row) { return handleClickDesc(row); }, true);
 
 	bHandled = FALSE;
 	return TRUE;
@@ -215,26 +216,20 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			WinUtil::getContextMenuPos(ctrlUsers, pt);
 		}
 
-		UserPtr u = nullptr;
-		tstring x;
-
+		UserInfo* ui = nullptr;
 		if (ctrlUsers.GetSelectedCount() == 1) {
-			auto ui = ctrlUsers.getItemData(WinUtil::getFirstSelectedIndex(ctrlUsers));
-			x = ui->columns[COLUMN_NICK];
-			u = ui->getUser();
-		} else {
-			x = _T("");
+			ui = ctrlUsers.getItemData(WinUtil::getFirstSelectedIndex(ctrlUsers));
 		}
 	
 		OMenu usersMenu;
 		usersMenu.CreatePopupMenu();
 		usersMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG, CTSTRING(OPEN_USER_LOG));
 		usersMenu.AppendMenu(MF_SEPARATOR);
-		appendUserItems(usersMenu, true, u);
+		appendUserItems(usersMenu, true, ui ? ui->getUser() : nullptr);
 
-		Bundle::SourceBundleList sourceBundles, badSourceBundles;
-		if (u) {
-			QueueManager::getInstance()->getSourceInfo(u, sourceBundles, badSourceBundles);
+		if (ui) {
+			Bundle::SourceBundleList sourceBundles, badSourceBundles;
+			QueueManager::getInstance()->getSourceInfo(ui->getUser(), sourceBundles, badSourceBundles);
 
 			if (!sourceBundles.empty() || !badSourceBundles.empty()) {
 				usersMenu.appendSeparator();
@@ -244,12 +239,11 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				};
 
 				//current sources
+				auto removeMenu = usersMenu.createSubMenu(TSTRING(REMOVE_SOURCE), true);
 				if (!sourceBundles.empty()) {
-					auto removeMenu = usersMenu.createSubMenu(TSTRING(REMOVE_SOURCE), true);
-
 					for(auto& bs: sourceBundles) {
 						removeMenu->appendItem(formatBundle(bs), [=] {
-								QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user, QueueItem::Source::FLAG_REMOVED); 
+							QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user, QueueItem::Source::FLAG_REMOVED); 
 						}, OMenu::FLAG_THREADED);
 					}
 
@@ -262,8 +256,8 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				}
 
 				//bad sources
+				auto readdMenu = usersMenu.createSubMenu(TSTRING(READD_SOURCE), true);
 				if (!badSourceBundles.empty()) {
-					auto readdMenu = usersMenu.createSubMenu(TSTRING(READD_SOURCE), true);
 					for(auto& bs: badSourceBundles) {
 						readdMenu->appendItem(formatBundle(bs), [=] { 
 							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.user); 
@@ -283,12 +277,17 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		usersMenu.appendSeparator();
 		ctrlUsers.appendCopyMenu(usersMenu);
 
-		usersMenu.AppendMenu(MF_SEPARATOR);
-		usersMenu.AppendMenu(MF_STRING, IDC_EDIT, CTSTRING(PROPERTIES));
-		usersMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
+		if (ui && ui->isFavorite) {
+			int row = ctrlUsers.GetNextItem(-1, LVNI_SELECTED);
+			usersMenu.appendSeparator();
+			usersMenu.appendItem(TSTRING(OVERRIDE_LIMITER), [=] { handleClickLimiter(row); }, ui->noLimiter ? OMenu::FLAG_CHECKED : 0);
+			usersMenu.appendItem(TSTRING(PROPERTIES), [=] { handleClickDesc(row); });
+
+			usersMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
+		}
 		
-		if (!x.empty())
-			usersMenu.InsertSeparatorFirst(x);
+		if (ui)
+			usersMenu.InsertSeparatorFirst(ui->columns[COLUMN_NICK]);
 		
 		usersMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 
@@ -437,26 +436,6 @@ LRESULT UsersFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 	return 0;
 }
 
-LRESULT UsersFrame::onEdit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(ctrlUsers.GetSelectedCount() == 1) {
-		int i = ctrlUsers.GetNextItem(-1, LVNI_SELECTED);
-		UserInfo* ui = ctrlUsers.getItemData(i);
-		if(!ui->isFavorite)
-			return 0;
-		dcassert(i != -1);
-		LineDlg dlg;
-		dlg.description = TSTRING(DESCRIPTION);
-		dlg.title = ui->columns[COLUMN_NICK];
-		dlg.line = ui->columns[COLUMN_DESCRIPTION];
-		if(dlg.DoModal(m_hWnd)) {
-			FavoriteManager::getInstance()->setUserDescription(ui->user, Text::fromT(dlg.line));
-			ui->columns[COLUMN_DESCRIPTION] = dlg.line;
-			ctrlUsers.updateItem(i);
-		}	
-	}
-	return 0;
-}
-
 LRESULT UsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	if(startup)
 		return 0;
@@ -474,8 +453,24 @@ LRESULT UsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
   	return 0;
 }
 
+bool UsersFrame::handleClickDesc(int row) {
+	auto ui = ctrlUsers.getItemData(row);
+	if (!ui->isFavorite)
+		return true;
 
-void UsersFrame::handleClickSlot(int row) {
+	LineDlg dlg;
+	dlg.description = TSTRING(DESCRIPTION);
+	dlg.title = ui->columns[COLUMN_NICK];
+	dlg.line = ui->columns[COLUMN_DESCRIPTION];
+	if (dlg.DoModal(m_hWnd)) {
+		FavoriteManager::getInstance()->setUserDescription(ui->user, Text::fromT(dlg.line));
+		ui->columns[COLUMN_DESCRIPTION] = dlg.line;
+		ctrlUsers.updateItem(row);
+	}
+	return true;
+}
+
+bool UsersFrame::handleClickSlot(int row) {
 	auto ui = ctrlUsers.getItemData(row);
 	ui->grantSlot = !ui->grantSlot;
 	if (ui->isFavorite) {
@@ -484,22 +479,26 @@ void UsersFrame::handleClickSlot(int row) {
 	} else {
 		ui->grantSlot ? ui->grantTimeless() : ui->ungrant(); // timeless grant
 	}
+	return true;
 }
 
-void UsersFrame::handleClickFavorite(int row) {
+bool UsersFrame::handleClickFavorite(int row) {
 	auto ui = ctrlUsers.getItemData(row);
 	if (ui->isFavorite)
 		FavoriteManager::getInstance()->removeFavoriteUser(ui->getUser());
 	else
 		FavoriteManager::getInstance()->addFavoriteUser(HintedUser(ui->getUser(), ui->getHubUrl()));
+	return true;
 }
 
-void UsersFrame::handleClickLimiter(int row) {
+bool UsersFrame::handleClickLimiter(int row) {
 	auto ui = ctrlUsers.getItemData(row);
 	if (ui->isFavorite) {
 		FavoriteManager::getInstance()->changeLimiterOverride(ui->getUser());
 		updateUser(ui->getUser());
+		//return true;
 	}
+	return true;
 }
 
 LRESULT UsersFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
@@ -549,6 +548,7 @@ LRESULT UsersFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 
 int UsersFrame::UserInfo::compareItems(const UserInfo* a, const UserInfo* b, int col) {
 	switch(col) {
+	case COLUMN_LIMITER: if (a->isFavorite == b->isFavorite) return compare(a->noLimiter, b->noLimiter);
 	case COLUMN_FAVORITE: return compare(a->isFavorite, b->isFavorite);
 	case COLUMN_SLOT: return compare(a->grantSlot, b->grantSlot);
 	case COLUMN_QUEUED: return compare(a->user->getQueued(), b->user->getQueued());
@@ -702,9 +702,10 @@ UsersFrame::UserInfo::UserInfo(const UserPtr& u, const string& aUrl) : user(u), 
 }
 
 void UsersFrame::UserInfo::update(const UserPtr& u) {
-	auto fu = FavoriteManager::getInstance()->getFavoriteUser(u);
+	auto fu = !u->isSet(User::FAVORITE) ? nullptr : FavoriteManager::getInstance()->getFavoriteUser(u);
 	if(fu) {
 		isFavorite = true;
+		noLimiter = fu->isSet(FavoriteUser::FLAG_SUPERUSER);
 		grantSlot = fu->isSet(FavoriteUser::FLAG_GRANTSLOT);
 		
 		setHubUrl(fu->getUrl().empty() ? hubUrl : fu->getUrl());
@@ -718,8 +719,9 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(fu->getUrl()); 
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : fu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen())) : TSTRING(UNKNOWN);
 		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
-		columns[COLUMN_LIMITER] = fu->isSet(FavoriteUser::FLAG_SUPERUSER) ? TSTRING(YES) : TSTRING(NO);
+		columns[COLUMN_LIMITER] = noLimiter ? TSTRING(YES) : TSTRING(NO);
 	} else {
+		noLimiter = false;
 		isFavorite = false;
 		grantSlot = hasReservedSlot();
 		
@@ -746,11 +748,11 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		dcassert(i != -1);
 
 		ParamMap params;
-		params["hubNI"] = Util::listToString(ClientManager::getInstance()->getHubNames(ui->getUser()->getCID()));
-		params["hubURL"] = Util::listToString(ClientManager::getInstance()->getHubUrls(ui->getUser()->getCID()));
-		params["userCID"] = ui->getUser()->getCID().toBase32(); 
-		params["userNI"] = ClientManager::getInstance()->getNicks(ui->getUser()->getCID())[0];
-		params["myCID"] = ClientManager::getInstance()->getMe()->getCID().toBase32();
+		params["hubNI"] = [=] { return Util::listToString(ClientManager::getInstance()->getHubNames(ui->getUser()->getCID())); };
+		params["hubURL"] = [=] { return Util::listToString(ClientManager::getInstance()->getHubUrls(ui->getUser()->getCID())); };
+		params["userCID"] = [=] { return ui->getUser()->getCID().toBase32(); };
+		params["userNI"] = [=] { return ClientManager::getInstance()->getNicks(ui->getUser()->getCID())[0]; };
+		params["myCID"] = [=] { return ClientManager::getInstance()->getMe()->getCID().toBase32(); };
 
 		string file = LogManager::getInstance()->getPath(ui->getUser(), params);
 		if(Util::fileExists(file)) {

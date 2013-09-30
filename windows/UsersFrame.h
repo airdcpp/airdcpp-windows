@@ -66,7 +66,6 @@ public:
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
-		COMMAND_ID_HANDLER(IDC_EDIT, onEdit)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		CHAIN_MSG_MAP(uibBase)
 		CHAIN_MSG_MAP(splitBase)
@@ -82,7 +81,6 @@ public:
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onRemove(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
-	LRESULT onEdit(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
@@ -161,6 +159,7 @@ private:
 		GETSET(string, hubUrl, HubUrl);
 		UserPtr user;
 
+		bool noLimiter;
 		bool grantSlot;
 		bool isFavorite;
 	};
@@ -199,9 +198,10 @@ private:
 	void setImages(UserInfo* ui, int pos = -1);
 	void updateStatus();
 
-	void handleClickSlot(int row);
-	void handleClickFavorite(int row);
-	void handleClickLimiter(int row);
+	bool handleClickSlot(int row);
+	bool handleClickFavorite(int row);
+	bool handleClickLimiter(int row);
+	bool handleClickDesc(int row);
 
 	static int columnSizes[];
 	static int columnIndexes[];
