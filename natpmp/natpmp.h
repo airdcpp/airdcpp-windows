@@ -1,6 +1,6 @@
-/* $Id: natpmp.h,v 1.15 2011/07/15 08:30:11 nanard Exp $ */
+/* $Id: natpmp.h,v 1.17 2013/09/10 20:09:04 nanard Exp $ */
 /* libnatpmp
-Copyright (c) 2007-2011, Thomas BERNARD 
+Copyright (c) 2007-2013, Thomas BERNARD
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without

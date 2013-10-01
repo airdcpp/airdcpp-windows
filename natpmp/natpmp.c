@@ -1,6 +1,6 @@
-/* $Id: natpmp.c,v 1.14 2011/07/15 08:30:11 nanard Exp $ */
+/* $Id: natpmp.c,v 1.17 2013/09/11 07:22:25 nanard Exp $ */
 /* libnatpmp
-Copyright (c) 2007-2011, Thomas BERNARD 
+Copyright (c) 2007-2013, Thomas BERNARD
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -39,11 +39,10 @@ POSSIBILITY OF SUCH DAMAGE.
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <io.h>
-#if _MSC_VER < 1600
 #define EWOULDBLOCK WSAEWOULDBLOCK
 #define ECONNREFUSED WSAECONNREFUSED
-#endif
 #include "wingettimeofday.h"
+#define gettimeofday natpmp_gettimeofday
 #else
 #include <errno.h>
 #include <unistd.h>
@@ -54,13 +53,14 @@ POSSIBILITY OF SUCH DAMAGE.
 #endif
 #include "natpmp.h"
 #include "getgateway.h"
+#include <stdio.h>
 
 LIBSPEC int initnatpmp(natpmp_t * p, int forcegw, in_addr_t forcedgw)
 {
 #ifdef WIN32
 	u_long ioctlArg = 1;
 #else
-	int flags; 
+	int flags;
 #endif
 	struct sockaddr_in addr;
 	if(!p)
@@ -85,7 +85,7 @@ LIBSPEC int initnatpmp(natpmp_t * p, int forcegw, in_addr_t forcedgw)
 		if(getdefaultgateway(&(p->gateway)) < 0)
 			return NATPMP_ERR_CANNOTGETGATEWAY;
 	}
-	
+
 	memset(&addr, 0, sizeof(addr));
 	addr.sin_family = AF_INET;
 	addr.sin_port = htons(NATPMP_PORT);
@@ -196,7 +196,11 @@ LIBSPEC int readnatpmpresponse(natpmp_t * p, natpmpresp_t * response)
 	n = recvfrom(p->s, buf, sizeof(buf), 0,
 	             (struct sockaddr *)&addr, &addrlen);
 	if(n<0)
+#ifdef WIN32
+		switch(WSAGetLastError()) {
+#else
 		switch(errno) {
+#endif
 		/*case EAGAIN:*/
 		case EWOULDBLOCK:
 			n = NATPMP_TRYAGAIN;
