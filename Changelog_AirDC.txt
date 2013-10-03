@@ -17,6 +17,7 @@ Added:
 - Add a new menu option to search auto search items on foreground
 - Show a question box when removing a bundle and there's an auto search item with the same name if the auto search should be removed as well
 - Ctrl+R in a partial file list will reload the current directory
+- Add an option for favorite users to override the set bandwidth limiter
 
 Changed:
 
@@ -66,6 +67,8 @@ Fixed:
 - Don't display the downloading options for own magnet links
 - Fix auto search items getting removed before the maximum number was reached when using the proper search period
 - Fix adding the finished path for auto search items that are about to expire
+- Fix missing automatic connection detection in some cases after changing the connectivity settings
+- Fix segmented uploads being logged twice
 
 
 

@@ -1375,7 +1375,7 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 		return false;
 
 	auto cl = p->second;
-	updateSelectedText(pt);
+	selectedWord = Text::toT(cl->url); // for magnets
 	updateAuthor();
 
 	openLink(cl);

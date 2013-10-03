@@ -1,4 +1,13 @@
-$Id: Changelog.txt,v 1.29 2011/08/07 16:59:33 nanard Exp $
+$Id: Changelog.txt,v 1.32 2013/09/10 20:13:26 nanard Exp $
+
+2013/09/10:
+  small patch for MSVC >= 16
+  rename win32 implementation of gettimeofday() to natpmp_gettimeofday()
+
+2012/08/21:
+  Little change in Makefile
+  removed warnings in testgetgateway.c
+  Fixed bugs in command line argumentparsing in natpmpc.c
 
 2011/08/07:
   Patch to build on debian/kFreeBSD.
