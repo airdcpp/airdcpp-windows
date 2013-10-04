@@ -378,6 +378,11 @@ private:
 
 	CComboBox ctrlExcluded;
 
+	uint64_t firstResultTime = 0;
+	uint64_t resultCycleStart = 0;
+	uint64_t cycleResults = 0;
+	bool windowDisabled = false;
+
 	bool statusDirty;
 	bool usingExcludes;
 	bool onlyFree;

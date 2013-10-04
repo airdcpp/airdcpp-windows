@@ -543,6 +543,7 @@ void SearchFrame::onEnter() {
 			(SearchManager::TypeModes)ftype, mode, token, extList, AdcSearch::parseSearchString(excluded), Search::MANUAL, ldate, SearchManager::DATE_NEWER, asch, (void*) this) + 5000;
 
 		waiting = true;
+		firstResultTime = 0;
 	}
 	
 
@@ -1391,7 +1392,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 
     // Check previous search results for dupes
 	if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
-		SearchInfoList::ParentPair* pp = ctrlResults.list.findParentPair(sr->getTTH());
+		auto pp = ctrlResults.list.findParentPair(sr->getTTH());
 		if(pp) {
 			if ((sr->getUser() == pp->parent->getUser()) && (sr->getPath() == pp->parent->sr->getPath())) {
 				delete si;
@@ -1405,9 +1406,9 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 			}	 	
 		}
 	} else {
-		for(auto p: ctrlResults.list.getParents() | map_values) {
-			SearchInfo* si2 = p.parent;
-			const SearchResultPtr& sr2 = si2->sr;
+		for(auto& p: ctrlResults.list.getParents() | map_values) {
+			auto si2 = p.parent;
+			const auto& sr2 = si2->sr;
 			if ((sr->getUser() == sr2->getUser()) && (sr->getPath() == sr2->getPath())) {
 				delete si;	 	
 				return;	 	
@@ -1416,13 +1417,7 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 	}
 
 	if(running) {
-		bool resort = false;
 		resultsCount++;
-
-		if(ctrlResults.list.getSortColumn() == COLUMN_HITS && resultsCount % 15 == 0) {
-			resort = true;
-		}
-
 		if(si->sr->getTTH().data > 0 && useGrouping && (!si->getUser()->isNMDC() || si->sr->getType() == SearchResult::TYPE_FILE)) {
 			ctrlResults.list.insertGroupedItem(si, expandSR);
 		} else {
@@ -1433,13 +1428,20 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 
 		updateSearchList(si);
 
-		if (SETTING(BOLD_SEARCH)) {
-			setDirty();
-		}
+		if (resultCycleStart == 0) {
+			auto tick = GET_TICK();
+			resultCycleStart = tick;
+			if (firstResultTime == 0) {
+				firstResultTime = tick;
+			}
 
-		if(resort) {
-			ctrlResults.list.resort();
+			// only disable within 1 seconds from the first result so we can browse the received results without freezes
+			if (firstResultTime + 1000 > tick) {
+				windowDisabled = true;
+				ctrlResults.list.SetRedraw(FALSE);
+			}
 		}
+		cycleResults++;
 	} else {
 		// searching is paused, so store the result but don't show it in the GUI (show only information: visible/all results)
 		pausedResults.push_back(si);
@@ -1448,6 +1450,32 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 }
 
 LRESULT SearchFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	if (resultCycleStart > 0) {
+		auto tick = GET_TICK();
+		//LogManager::getInstance()->message(Util::toString((cycleTicks / cycleResults)) + " " + Util::toString(cycleTicks) + " " + Util::toString(cycleResults), LogManager::LOG_INFO);
+		if (((tick - resultCycleStart) / cycleResults) <= 4 && windowDisabled) { // 250 results per second
+			// keep on collecting...
+			ctrlStatus.SetText(3, CTSTRING(COLLECTING_RESULTS));
+			resultCycleStart = 0;
+			cycleResults = 0;
+			return 0;
+		}
+
+		resultCycleStart = 0;
+		cycleResults = 0;
+
+		ctrlResults.list.resort();
+		if (SETTING(BOLD_SEARCH)) {
+			setDirty();
+		}
+
+		ctrlResults.list.SetRedraw(TRUE);
+	} else if (windowDisabled) {
+		// make sure that we don't leave it disabled if no new results arrive...
+		ctrlResults.list.SetRedraw(TRUE);
+	}
+
+	windowDisabled = false;
 	if (statusDirty) {
 		statusDirty = false;
 

@@ -65,7 +65,7 @@ public:
     
 		if (pItem->mask & TVIF_TEXT) {
 			pItem->mask |= TVIF_DI_SETITEM;
-			lstrcpyn(pItem->pszText, Text::toT(((T*)pItem->lParam)->getName()).c_str(), pItem->cchTextMax);
+			lstrcpyn(pItem->pszText, ((T*)pItem->lParam)->getNameW().c_str(), pItem->cchTextMax);
 		}
     
 		if (pItem->mask & TVIF_IMAGE) {
@@ -153,15 +153,15 @@ public:
     		InsertItem( &tvs ) ;
 	}
 
-	HTREEITEM findItem(HTREEITEM ht, const string& name) {
-		string::size_type i = name.find('\\');
+	HTREEITEM findItem(HTREEITEM ht, const tstring& name) {
+		auto i = name.find('\\');
 		if(i == string::npos) {
 			return ht;
 		}
 	
 		for(HTREEITEM child = GetChildItem(ht); child != NULL; child = GetNextSiblingItem(child)) {
 			T* d = (T*)GetItemData(child);
-			if(d->getName() == name.substr(0, i)) {
+			if(d->getNameW() == name.substr(0, i)) {
 				return findItem(child, name.substr(i+1));
 			}
 		}

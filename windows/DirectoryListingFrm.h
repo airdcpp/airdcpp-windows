@@ -297,8 +297,8 @@ private:
 			DirectoryListing::Directory::Ptr dir;
 		//};
 
-		ItemInfo(DirectoryListing::File* f) : type(FILE), file(f) { }
-		ItemInfo(DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d) {}
+		ItemInfo(DirectoryListing::File* f) : type(FILE), file(f), name(Text::toT(f->getName())) { }
+		ItemInfo(DirectoryListing::Directory::Ptr& d) : type(DIRECTORY), dir(d), name(Text::toT(d->getName())) {}
 		~ItemInfo() { }
 
 		const tstring getText(uint8_t col) const;
@@ -322,6 +322,10 @@ private:
 				return compareItems(&a, &b, DirectoryListingFrame::COLUMN_FILENAME) > 0;
 			}
 		};
+
+		const tstring& getNameW() const { return name; }
+	private:
+		const tstring name;
 	};
 
 	unique_ptr<ItemInfo> root;

@@ -593,7 +593,7 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 	}
 
 	//get the item for our new dir
-	HTREEITEM ht = aReloadList ? treeRoot : ctrlTree.findItem(treeRoot, aLoadedDir);
+	HTREEITEM ht = aReloadList ? treeRoot : ctrlTree.findItem(treeRoot, Text::toT(aLoadedDir));
 	if(!ht) {
 		ht = treeRoot;
 	}
@@ -836,11 +836,11 @@ void DirectoryListingFrame::DisableWindow(bool redraw){
 }
 
 void DirectoryListingFrame::EnableWindow(bool redraw){
-	MSG uMsg;
+	/*MSG uMsg;
 	while (PeekMessage(&uMsg, NULL, 0, 0, PM_REMOVE) > 0) {
 		TranslateMessage(&uMsg);
 		DispatchMessage(&uMsg);
-	}
+	}*/
 
 	windowState = STATE_ENABLED;
 	ctrlFiles.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
@@ -925,7 +925,7 @@ void DirectoryListingFrame::addHistory(const string& name) {
 
 void DirectoryListingFrame::on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept {
 	callAsync([=] {
-		HTREEITEM ht = ctrlTree.findItem(treeRoot, aDir);
+		HTREEITEM ht = ctrlTree.findItem(treeRoot, Text::toT(aDir));
 		if (ht) {
 			ctrlTree.updateItemImage(ht);
 		}
@@ -1085,7 +1085,7 @@ LRESULT DirectoryListingFrame::onDoubleClickFiles(int /*idCtrl*/, LPNMHDR /*pnmh
 }
 
 void DirectoryListingFrame::onListItemAction() {
-	HTREEITEM t = ctrlTree.GetSelectedItem();
+	auto t = ctrlTree.GetSelectedItem();
 	if(t) {
 		if (ctrlFiles.list.GetSelectedCount() == 1) {
 			const ItemInfo* ii = ctrlFiles.list.getItemData(ctrlFiles.list.GetNextItem(-1, LVNI_SELECTED));
@@ -1093,7 +1093,7 @@ void DirectoryListingFrame::onListItemAction() {
 				onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
 			} else {
 				changeType = CHANGE_LIST;
-				HTREEITEM ht = ctrlTree.findItem(t, ii->dir->getName() + "\\");
+				auto ht = ctrlTree.findItem(t, ii->getNameW() + _T("\\"));
 				if (ht) {
 					ctrlTree.SelectItem(ht);
 				}
@@ -1250,7 +1250,7 @@ LRESULT DirectoryListingFrame::onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*
 }
 
 void DirectoryListingFrame::selectItem(const string& name) {
-	HTREEITEM ht = ctrlTree.findItem(treeRoot, name);
+	HTREEITEM ht = ctrlTree.findItem(treeRoot, Text::toT(name));
 	if(ht) {
 		if (changeType == CHANGE_LIST)
 			ctrlTree.EnsureVisible(ht);
@@ -1864,7 +1864,7 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 				case COLUMN_FILENAME: {
 						if (a->dir->getType() == DirectoryListing::Directory::TYPE_ADLS && b->dir->getType() != DirectoryListing::Directory::TYPE_ADLS) return false;
 						if (a->dir->getType() != DirectoryListing::Directory::TYPE_ADLS && b->dir->getType() == DirectoryListing::Directory::TYPE_ADLS) return true;
-						return Util::DefaultSort(Text::toT(a->dir->getName()).c_str(), Text::toT(b->dir->getName()).c_str(), true);
+						return Util::DefaultSort(a->getNameW().c_str(), b->getNameW().c_str(), true);
 					}
 				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
 			}
@@ -1878,8 +1878,8 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 			case COLUMN_EXACTSIZE: return compare(a->file->getSize(), b->file->getSize());
 			case COLUMN_SIZE: return compare(a->file->getSize(), b->file->getSize());
 			case COLUMN_DATE: return compare(a->file->getRemoteDate(), b->file->getRemoteDate());
-			case COLUMN_FILENAME: return Util::DefaultSort(Text::toT(a->file->getName()).c_str(), Text::toT(b->file->getName()).c_str(), false);
-			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), false);
+			case COLUMN_FILENAME: return Util::DefaultSort(a->getNameW().c_str(), b->getNameW().c_str(), true);
+			default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
 		}
 	}
 }
