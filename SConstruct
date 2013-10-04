@@ -12,7 +12,7 @@ CORE_PACKAGE = 'libdcpp'
 BUILD_PATH = '#/build/'
 
 BUILD_FLAGS = {
-	'common'  : ['-I#', '-D_GNU_SOURCE', '-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64', '-D_REENTRANT', '-D__cdecl=""', '-std=c++11', '-Wfatal-errors', '-fexceptions'],
+	'common'  : ['-I#', '-D_GNU_SOURCE', '-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64', '-D_REENTRANT', '-D__cdecl=""', '-std=c++11', '-Wfatal-errors', '-fexceptions', '-Wno-overloaded-virtual'],
 	'debug'   : ['-g', '-ggdb', '-Wall', '-D_DEBUG', '-Wno-reorder' ], 
 	'release' : ['-O3', '-fomit-frame-pointer', '-DNDEBUG']
 }
@@ -132,9 +132,15 @@ conf = env.Configure(
 
 if not 'install' in COMMAND_LINE_TARGETS:
 
-	if not conf.CheckCXXVersion(env['CXX'], 4, 7):
-		print 'Compiler version check failed. g++ 4.7 or later is needed'
-		Exit(1)
+	# Dependencies
+	if env['CXX'] == 'clang':
+		if not conf.CheckCXXVersion(env['CXX'], 3, 3):
+			 print 'Compiler version check failed. Supported compilers: clang 3.3 or later, g++ 4.7 or later'
+			 Exit(1)
+
+	elif not conf.CheckCXXVersion(env['CXX'], 4, 7):
+		 print 'Compiler version check failed. Supported compilers: clang 3.3 or later, g++ 4.7 or later'
+		 Exit(1)
 	
 	if not conf.CheckCXXHeader('boost/version.hpp', '<>'):
 		print '\tboost not found.'
