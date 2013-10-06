@@ -31,6 +31,7 @@
 
 #include "../client/AdcSearch.h"
 #include "../client/Client.h"
+#include "../client/CriticalSection.h"
 #include "../client/SearchManager.h"
 
 #include "../client/ClientManagerListener.h"
@@ -381,7 +382,7 @@ private:
 	uint64_t firstResultTime = 0;
 	uint64_t resultCycleStart = 0;
 	uint64_t cycleResults = 0;
-	bool windowDisabled = false;
+	bool collecting = false;
 
 	bool statusDirty;
 	bool usingExcludes;

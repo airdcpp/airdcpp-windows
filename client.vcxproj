@@ -247,6 +247,7 @@
     <ClCompile Include="client\ColorSettings.cpp" />
     <ClCompile Include="client\ConnectionManager.cpp" />
     <ClCompile Include="client\ConnectivityManager.cpp" />
+    <ClCompile Include="client\CriticalSection.cpp" />
     <ClCompile Include="client\CryptoManager.cpp" />
     <ClCompile Include="client\DCPlusPlus.cpp" />
     <ClCompile Include="client\DirectoryListing.cpp" />
@@ -362,6 +363,7 @@
     <ClInclude Include="client\ConnectionManager.h" />
     <ClInclude Include="client\ConnectionManagerListener.h" />
     <ClInclude Include="client\ConnectivityManager.h" />
+    <ClInclude Include="client\CriticalSection.h" />
     <ClInclude Include="client\CryptoManager.h" />
     <ClInclude Include="client\DbHandler.h" />
     <ClInclude Include="client\DCPlusPlus.h" />

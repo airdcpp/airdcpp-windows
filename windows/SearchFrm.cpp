@@ -1437,9 +1437,10 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 
 			// only disable within 1 seconds from the first result so we can browse the received results without freezes
 			if (firstResultTime + 1000 > tick) {
-				windowDisabled = true;
 				ctrlResults.list.SetRedraw(FALSE);
 			}
+
+			collecting = true;
 		}
 		cycleResults++;
 	} else {
@@ -1450,10 +1451,10 @@ void SearchFrame::addSearchResult(SearchInfo* si) {
 }
 
 LRESULT SearchFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	if (resultCycleStart > 0) {
+	if (collecting) {
 		auto tick = GET_TICK();
 		//LogManager::getInstance()->message(Util::toString((cycleTicks / cycleResults)) + " " + Util::toString(cycleTicks) + " " + Util::toString(cycleResults), LogManager::LOG_INFO);
-		if (((tick - resultCycleStart) / cycleResults) <= 4 && windowDisabled) { // 250 results per second
+		if (((tick - resultCycleStart) / cycleResults) <= 4) { // 250 results per second
 			// keep on collecting...
 			ctrlStatus.SetText(3, CTSTRING(COLLECTING_RESULTS));
 			resultCycleStart = 0;
@@ -1470,12 +1471,9 @@ LRESULT SearchFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		}
 
 		ctrlResults.list.SetRedraw(TRUE);
-	} else if (windowDisabled) {
-		// make sure that we don't leave it disabled if no new results arrive...
-		ctrlResults.list.SetRedraw(TRUE);
+		collecting = false;
 	}
 
-	windowDisabled = false;
 	if (statusDirty) {
 		statusDirty = false;
 

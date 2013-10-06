@@ -22,6 +22,7 @@ Added:
 Changed:
 
 - Enable monitoring for all shared folders by default, disable scheduled refresh
+- No GUI freezes when performing searches that return thousands of results
 - Make various hardcoded icons customizable by the themes
 - Don't remove slow sources from files that have no other sources
 - Speed up the directory dupe check for subdirectories
