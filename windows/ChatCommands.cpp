@@ -334,7 +334,7 @@ string ChatCommands::generateStats() {
 \t-=[ System: %s (Uptime: %s) ]=-\r\n\
 \t-=[ CPU: %s ]=-")
 
-		% Text::fromT(COMPLETEVERSIONSTRING)
+		% fullVersionString
 		% Util::formatTime(Util::getUptime(), false)
 		% Util::formatSeconds((kernelTime + userTime) / (10I64 * 1000I64 * 1000I64))
 		% Util::formatBytes(pmc.WorkingSetSize)

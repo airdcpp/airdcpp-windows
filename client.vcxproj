@@ -140,7 +140,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PreBuildEvent>
       <Message>Generating revision number...</Message>
-      <Command>"SubWCRev.exe" "$(SolutionDir)." "$(SolutionDir)client\version.h.template" "$(SolutionDir)client\version.h"</Command>
+      <Command>"SubWCRev.exe" "$(SolutionDir)." "$(SolutionDir)client\version-revno.inc.template" "$(SolutionDir)client\version-revno.inc"</Command>
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Full</Optimization>
@@ -184,7 +184,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <PreBuildEvent>
       <Message>Generating revision number...</Message>
-      <Command>"SubWCRev.exe" "$(SolutionDir)." "$(SolutionDir)client\version.h.template" "$(SolutionDir)client\version.h"</Command>
+      <Command>"SubWCRev.exe" "$(SolutionDir)." "$(SolutionDir)client\version-revno.inc.template" "$(SolutionDir)client\version-revno.inc"</Command>
     </PreBuildEvent>
     <Midl>
       <TargetEnvironment>X64</TargetEnvironment>
@@ -329,6 +329,7 @@
     <ClCompile Include="client\UserConnection.cpp" />
     <ClCompile Include="client\UserQueue.cpp" />
     <ClCompile Include="client\Util.cpp" />
+    <ClCompile Include="client\version.cpp" />
     <ClCompile Include="client\WebShortcuts.cpp" />
     <ClCompile Include="client\Wildcards.cpp" />
     <ClCompile Include="client\ZipFile.cpp" />
@@ -514,7 +515,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="ClassDiagram.cd" />
-    <None Include="client\version.h.template" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="boost\boost.vcxproj">

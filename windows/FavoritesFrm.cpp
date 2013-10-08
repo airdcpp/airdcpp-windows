@@ -364,7 +364,7 @@ LRESULT FavoriteHubsFrame::onNew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 
 bool FavoriteHubsFrame::checkNick() {
 	if(SETTING(NICK).empty()) {
-		MessageBox(CTSTRING(ENTER_NICK), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);
+		WinUtil::showMessageBox(TSTRING(ENTER_NICK), MB_ICONSTOP);
 		return false;
 	}
 	return true;
@@ -583,7 +583,7 @@ LRESULT FavoriteHubsFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND
 		if(Util::fileExists(file)){
 			WinUtil::viewLog(file);
 		} else {
-			MessageBox(CTSTRING(NO_LOG_FOR_HUB), CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
+			WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_HUB));	  
 		}
 	}
 	return 0;

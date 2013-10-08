@@ -220,7 +220,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	TimerManager::getInstance()->start();
 
 	// Set window name
-	SetWindowText(COMPLETEVERSIONSTRING);
+	SetWindowText(Text::toT(fullVersionString).c_str());
 
 	// Load images
 	// create command bar window
@@ -1867,9 +1867,7 @@ void MainFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle
 	if (!searches.empty()) {
 		callAsync([=] {
 			for (auto as : searches) {
-				if (::MessageBox(m_hWnd, CTSTRING_F(BUNDLE_REMOVED_AS, Text::toT(as->getSearchString())), 
-					_T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-
+				if (WinUtil::showQuestionBox(CTSTRING_F(BUNDLE_REMOVED_AS, Text::toT(as->getSearchString())), MB_ICONQUESTION)) {
 					AutoSearchManager::getInstance()->removeAutoSearch(as);
 				}
 			}
@@ -1886,7 +1884,7 @@ void MainFrame::on(DirectoryListingManagerListener::OpenListing, DirectoryListin
 }
 
 void MainFrame::on(DirectoryListingManagerListener::PromptAction, completionF aF, const string& aMessage) noexcept {
-	bool accept = !SETTING(FREE_SPACE_WARN) || ::MessageBox(m_hWnd, Text::toT(aMessage).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
+	bool accept = !SETTING(FREE_SPACE_WARN) || WinUtil::showQuestionBox(Text::toT(aMessage).c_str(), MB_ICONQUESTION);
 	aF(accept);
 }
 
@@ -2151,7 +2149,7 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 }
 
 void MainFrame::onUpdateComplete(const string& aUpdater) noexcept {
-	if(::MessageBox(m_hWnd, CTSTRING(UPDATER_RESTART), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON1) == IDYES) {
+	if(WinUtil::showQuestionBox(TSTRING(UPDATER_RESTART), MB_ICONQUESTION)) {
 		WinUtil::addUpdate(aUpdater);
 
 		oldshutdown = true;

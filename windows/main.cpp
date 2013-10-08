@@ -170,7 +170,7 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 
 	f.write(buf, strlen(buf));
 	sprintf(buf, "Build: %s\r\n", 
-		SVNVERSION);	
+		BUILD_NUMBER_STR);	
 	f.write(buf, strlen(buf));
 	
 	OSVERSIONINFOEX ver;

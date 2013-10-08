@@ -25,8 +25,6 @@
 #include "PropertiesDlg.h"
 #include "MainFrm.h"
 
-#include "../client/version.h"
-
 PropPage::TextItem HashingPage::texts[] = {
 	//hashing
 	{ IDC_HASHING_OPTIONS, ResourceManager::HASHING_OPTIONS },
@@ -114,10 +112,10 @@ void HashingPage::on(HashManagerListener::MaintananceStarted()) noexcept {
 
 
 void HashingPage::optimizeDb(bool verify) {
-	if (MessageBox(CTSTRING(OPTIMIZE_CONFIRMATION), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONEXCLAMATION) != IDYES) {
+	if (!WinUtil::showQuestionBox(CTSTRING(OPTIMIZE_CONFIRMATION), MB_ICONEXCLAMATION)) {
 		return;
 	}
 
 	MainFrame::getMainFrame()->addThreadedTask([=] { HashManager::getInstance()->startMaintenance(verify); });
-	MessageBox(CTSTRING(MAINTENANCE_STARTED_SETTINGS), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK);
+	WinUtil::showMessageBox(TSTRING(MAINTENANCE_STARTED_SETTINGS), MB_ICONINFORMATION);
 }

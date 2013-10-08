@@ -24,7 +24,6 @@
 #include "WinUtil.h"
 #include "PublicHubsListDlg.h"
 
-#include "../client/version.h"
 #include "../client/Localization.h"
 
 int PublicHubsFrame::columnIndexes[] = { 
@@ -420,7 +419,7 @@ void PublicHubsFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 bool PublicHubsFrame::checkNick() {
 	if(SETTING(NICK).empty()) {
-		MessageBox(CTSTRING(ENTER_NICK), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONSTOP | MB_OK);
+		WinUtil::showMessageBox(TSTRING(ENTER_NICK), MB_ICONSTOP);
 		return false;
 	}
 	return true;

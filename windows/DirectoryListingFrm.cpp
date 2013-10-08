@@ -39,7 +39,6 @@
 #include "../client/ShareScannerManager.h"
 #include "../client/Wildcards.h"
 #include "../client/DirectoryListingManager.h"
-#include "../client/version.h"
 #include "TextFrame.h"
 
 #include <boost/move/algorithm.hpp>
@@ -1208,7 +1207,7 @@ LRESULT DirectoryListingFrame::onExitMenuLoop(UINT /*uMsg*/, WPARAM /*wParam*/, 
 }
 
 LRESULT DirectoryListingFrame::onMatchADL(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if (dl->getPartialList() && (dl->getIsOwnList() || MessageBox(CTSTRING(ADL_DL_FULL_LIST), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)) {
+	if (dl->getPartialList() && (dl->getIsOwnList() || WinUtil::showQuestionBox(TSTRING(ADL_DL_FULL_LIST), MB_ICONQUESTION))) {
 		if (!dl->getIsOwnList())
 			ctrlStatus.SetText(0, CTSTRING(DOWNLOADING_LIST));
 
@@ -2185,13 +2184,15 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 			if (p != hubs.end()) {
 				auto& oldHub = *p;
 				auto diff = newHub.shared > 0 ? abs(static_cast<double>(oldHub.shared) / static_cast<double>(newHub.shared)) : oldHub.shared;
-				if ((diff < 0.95 || diff > 1.05) && MessageBox(CTSTRING_F(LIST_SIZE_DIFF_NOTE, Text::toT(newHub.hubName) % Util::formatBytesW(newHub.shared) % Text::toT(oldHub.hubName) % Util::formatBytesW(oldHub.shared)),
-					_T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+				if (diff < 0.95 || diff > 1.05) {
+					auto msg = TSTRING_F(LIST_SIZE_DIFF_NOTE, Text::toT(newHub.hubName) % Util::formatBytesW(newHub.shared) % Text::toT(oldHub.hubName) % Util::formatBytesW(oldHub.shared));
+					if (WinUtil::showQuestionBox(msg, MB_ICONQUESTION)) {
 						tasks.run([=] {
 							try {
 								QueueManager::getInstance()->addList(HintedUser(dl->getUser(), newHub.hubUrl), (dl->getPartialList() ? QueueItem::FLAG_PARTIAL_LIST : 0) | QueueItem::FLAG_CLIENT_VIEW, Util::emptyString);
 							} catch (...) {}
 						});
+					}
 				}
 			}
 		}

@@ -1828,7 +1828,7 @@ LRESULT HubFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/
 	if(Util::fileExists(file)) {
 		WinUtil::viewLog(file, wID == IDC_USER_HISTORY);
 	} else {
-		MessageBox(CTSTRING(NO_LOG_FOR_USER),CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
+		WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_USER));
 	}
 	return 0;
 }
@@ -1846,7 +1846,7 @@ LRESULT HubFrame::onOpenHubLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 	if(Util::fileExists(filename)){
 		WinUtil::viewLog(filename, wID == IDC_HISTORY);
 	} else {
-		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
+		WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_HUB));	  
 	}
 	return 0;
 }

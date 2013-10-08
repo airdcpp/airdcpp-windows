@@ -772,7 +772,7 @@ LRESULT UsersFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if(Util::fileExists(file)) {
 			WinUtil::viewLog(file);
 		} else {
-			MessageBox(CTSTRING(NO_LOG_FOR_USER), CTSTRING(NO_LOG_FOR_USER), MB_OK );	  
+			WinUtil::showMessageBox(TSTRING(NO_LOG_FOR_USER));	  
 		}	
 	}
 	return 0;

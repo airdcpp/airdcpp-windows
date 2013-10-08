@@ -19,7 +19,6 @@
 #include "stdafx.h"
 
 #include "../client/SearchManager.h"
-#include "../client/version.h"
 
 #include "Resource.h"
 #include "SearchTypesPage.h"
@@ -196,7 +195,7 @@ void SearchTypesPage::write() {
 }
 
 LRESULT SearchTypesPage::onResetDefaults(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	if(::MessageBox(0, CTSTRING(RESET_EXTENSIONS_CONFIRM), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
+	if(WinUtil::showQuestionBox(TSTRING(RESET_EXTENSIONS_CONFIRM), MB_ICONQUESTION)) {
 		SearchManager::getInstance()->setSearchTypeDefaults();
 		fillList();
 	}
@@ -204,5 +203,5 @@ LRESULT SearchTypesPage::onResetDefaults(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 }
 
 void SearchTypesPage::showError(const string& e) {
-	MessageBox(Text::toT(e).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
+	WinUtil::showMessageBox(Text::toT(e), MB_ICONEXCLAMATION);
 }

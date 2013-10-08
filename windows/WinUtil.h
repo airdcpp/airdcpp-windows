@@ -242,6 +242,9 @@ public:
 	static bool MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& txt);
 	static void ShowMessageBox(SettingsManager::BoolSetting i, const tstring& txt);
 
+	static void showMessageBox(const tstring& aText, int icon = MB_ICONINFORMATION);
+	static bool showQuestionBox(const tstring& aText, int icon = MB_ICONQUESTION, int defaultButton = MB_DEFBUTTON2);
+
 	struct ConnectFav {
 		void operator()(UserPtr aUser, const string& aUrl) const;
 	};

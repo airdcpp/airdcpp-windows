@@ -25,6 +25,7 @@
 #include "../client/UploadManager.h"
 #include "../client/QueueManager.h"
 #include "../client/Util.h"
+#include "../client/version.h"
 
 #include <algorithm>
 #include <boost/lambda/lambda.hpp>
@@ -1248,7 +1249,7 @@ void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority 
 		auto u = move(getMagnetSource());
 		Magnet m = Magnet(Text::fromT(selectedWord));
 		if (pmUser && ShareManager::getInstance()->isDirShared(aTarget, m.fsize) > 0 &&
-			MessageBox(CTSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+			!WinUtil::showQuestionBox(TSTRING_F(PM_MAGNET_SHARED_WARNING, Text::toT(Util::getFilePath(aTarget))), MB_ICONQUESTION)) {
 				return;
 		}
 

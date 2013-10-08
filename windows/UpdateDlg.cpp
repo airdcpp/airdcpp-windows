@@ -70,7 +70,7 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	ctrlDownload.SetWindowText(CTSTRING(DOWNLOAD));
 	
-	versionAvailable = (Util::toInt(SVNVERSION) < buildID);
+	versionAvailable = BUILD_NUMBER < buildID;
 	bool versionDownloaded = UpdateManager::getInstance()->getInstalledUpdate() == buildID;
 	ctrlDownload.EnableWindow(!versionDownloaded && versionAvailable);
 	//ctrlDownload.EnableWindow(!versionDownloaded);
@@ -90,7 +90,7 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION), CTSTRING(CLIENT_VERSION));
 	::SetWindowText(GetDlgItem(IDC_UPDATE_HISTORY), CTSTRING(HISTORY));
 
-	ctrlCurrentVersion.SetWindowText(Text::toT(SHORTVERSIONSTRING).c_str());
+	ctrlCurrentVersion.SetWindowText(Text::toT(shortVersionString).c_str());
 
 	m_Changelog.SetFont(WinUtil::font);
 	m_Changelog.SetBackgroundColor(WinUtil::bgColor); 

@@ -19,7 +19,6 @@
 #include "stdafx.h"
 
 #include "../client/Util.h"
-#include "../client/version.h"
 #include "../client/ClientManager.h"
 #include "../client/FavoriteManager.h"
 
@@ -185,7 +184,7 @@ LRESULT SharePage::onClickedRemoveProfile(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	}
 
 	auto p = find(profiles.begin(), profiles.end(), curProfile);
-	if (MessageBox(CTSTRING_F(CONFIRM_PROFILE_REMOVAL, Text::toT((*p)->name)), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES)
+	if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_PROFILE_REMOVAL, Text::toT((*p)->name)), MB_ICONQUESTION))
 		return 0;
 
 	auto profile = *p;
@@ -253,7 +252,7 @@ Dispatcher::F SharePage::getThreadedTask() {
 		if (defaultProfile != SETTING(DEFAULT_SP) && (ClientManager::getInstance()->hasAdcHubs() || FavoriteManager::getInstance()->hasAdcHubs())) {
 			tstring oldName = Text::toT(getProfile(SETTING(DEFAULT_SP))->name);
 			tstring newName = Text::toT(getProfile(defaultProfile)->name);
-			resetAdcHubs = ::MessageBox(m_hWnd, CTSTRING_F(CHANGE_SP_ASK_HUBS, oldName.c_str() % newName.c_str()), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES;
+			resetAdcHubs = WinUtil::showQuestionBox(TSTRING_F(CHANGE_SP_ASK_HUBS, oldName.c_str() % newName.c_str()), MB_ICONQUESTION);
 		}
 
 		return Dispatcher::F([=] { 
@@ -304,7 +303,7 @@ void SharePage::applyChanges(bool isQuit, bool resetAdcHubs) {
 		ShareManager::getInstance()->removeProfiles(handledProfiles); //remove from profiles
 
 		if (favReset > 0)
-			MainFrame::getMainFrame()->callAsync([=] { ::MessageBox(WinUtil::mainWnd, CWSTRING_F(X_FAV_PROFILES_RESET, favReset), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK); });
+			MainFrame::getMainFrame()->callAsync([=] { WinUtil::showMessageBox(TSTRING_F(X_FAV_PROFILES_RESET, favReset), MB_ICONINFORMATION); });
 
 	}
 

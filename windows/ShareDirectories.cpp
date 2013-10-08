@@ -19,7 +19,6 @@
 #include "stdafx.h"
 
 #include "../client/Util.h"
-#include "../client/version.h"
 #include "../client/ClientManager.h"
 #include "../client/FavoriteManager.h"
 
@@ -675,7 +674,7 @@ LRESULT ShareDirectories::onClickedRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/,
 				}
 			}
 		} else {
-			MessageBox(CTSTRING(SKIP_RENAME), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK);
+			WinUtil::showMessageBox(TSTRING(SKIP_RENAME));
 		}
 	}
 
@@ -694,7 +693,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 			continue;
 
 		if (AirUtil::isParentOrExact(sdi->path, Text::fromT(aPath))) {
-			MessageBox(CTSTRING(DIRECTORY_SHARED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK);
+			WinUtil::showMessageBox(CTSTRING(DIRECTORY_SHARED));
 			return false;
 		} else if (AirUtil::isSub(sdi->path, Text::fromT(aPath))) {
 			if (ft.get()) {
@@ -704,7 +703,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 				//break;
 			} else {
 				//Maybe we should find and remove the correct item from the list instead...
-				MessageBox(CTSTRING(DIRECTORY_PARENT), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_ICONINFORMATION | MB_OK);
+				WinUtil::showMessageBox(CTSTRING(DIRECTORY_PARENT));
 				return false;
 			}
 		}
@@ -732,7 +731,7 @@ bool ShareDirectories::addDirectory(const tstring& aPath){
 		try {
 			ShareManager::getInstance()->validatePath(rPath, vPath);
 		} catch(ShareException& e) { 
-			MessageBox(Text::toT(e.getError()).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
+			WinUtil::showMessageBox(Text::toT(e.getError()), MB_ICONEXCLAMATION);
 			return false;
 		}
 

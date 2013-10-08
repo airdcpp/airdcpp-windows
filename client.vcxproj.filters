@@ -308,6 +308,9 @@
     <ClCompile Include="client\CriticalSection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\version.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -803,9 +806,6 @@
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <None Include="client\version.h.template">
-      <Filter>Header Files</Filter>
-    </None>
     <None Include="ClassDiagram.cd" />
   </ItemGroup>
 </Project>

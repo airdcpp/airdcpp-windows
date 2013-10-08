@@ -40,6 +40,7 @@
 #include "../client/ClientManager.h"
 #include "../client/ConnectivityManager.h"
 #include "../client/ThrottleManager.h"
+#include "../client/UpdateManager.h"
 #include "../client/version.h"
 
 extern EmoticonsManager* emoticonsManager;
@@ -652,31 +653,25 @@ void ChatFrameBase::onEnter() {
 	}
 }
 
-#ifdef BETAVER
-#define LINE2 _T("-- http://www.airdcpp.net  <AirDC++ ") _T(VERSIONSTRING) _T("r") _T(SVNVERSION) _T(" / ") _T(DCVERSIONSTRING) _T(">")
-#else
-#define LINE2 _T("-- http://www.airdcpp.net  <AirDC++ ") _T(VERSIONSTRING) _T(" / ") _T(DCVERSIONSTRING) _T(">")
-#endif
-
-static TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n") LINE2,
-_T("\r\n-- Is it Superman? No, its AirDC++\r\n") LINE2,
-_T("\r\n-- My files are burning in my computer...Download are way too fast\r\n") LINE2,
-_T("\r\n-- STOP!! My client is too fast, slow down with the writings\r\n") LINE2,
-_T("\r\n-- We are always behind the corner waiting to grab your nuts..i mean files\r\n") LINE2,
-_T("\r\n-- Knock, knock....We are here to take your files again, we needed backup files too\r\n") LINE2,
-_T("\r\n-- Why bother searching when AirDC++ can take care of everything?\r\n") LINE2,
-_T("\r\n-- The only way to stop me to getting your files is closing the DC++\r\n") LINE2,
-_T("\r\n-- We love your files soo much, so we try to get them over and over again...\r\n") LINE2,
-_T("\r\n-- Let us thru the waiting line, we download faster than the lightning\r\n") LINE2,
-_T("\r\n-- Sometimes we download so fast that we accidently get the whole person on the other side...\r\n") LINE2,
-_T("\r\n-- Holy crap, my download speed is sooooo fast that it made a hole in the harddrive\r\n") LINE2,
-_T("\r\n-- Once you got access to it, dont let it go...\r\n") LINE2,
-_T("\r\n-- Do you feel the wind? Its the download that goes too fast..\r\n") LINE2,
-_T("\r\n-- No matter what, no matter where, it's always home if AirDC++ is there\r\n") LINE2,
-_T("\r\n-- Knock, knock...We are leaving back the trousers we accidently downloaded...\r\n") LINE2,
-_T("\r\n-- Are you blind? you already downloaded that movie 4 times already\r\n") LINE2,
-_T("\r\n-- My client has been in jail twice, has  yours?\r\n") LINE2,
-_T("\r\n-- Keep your downloads close, but keep your uploads even closer\r\n") LINE2
+static TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n"),
+_T("\r\n-- Is it Superman? No, its AirDC++\r\n"),
+_T("\r\n-- My files are burning in my computer...Download are way too fast\r\n"),
+_T("\r\n-- STOP!! My client is too fast, slow down with the writings\r\n"),
+_T("\r\n-- We are always behind the corner waiting to grab your nuts..i mean files\r\n"),
+_T("\r\n-- Knock, knock....We are here to take your files again, we needed backup files too\r\n"),
+_T("\r\n-- Why bother searching when AirDC++ can take care of everything?\r\n"),
+_T("\r\n-- The only way to stop me to getting your files is closing the DC++\r\n"),
+_T("\r\n-- We love your files soo much, so we try to get them over and over again...\r\n"),
+_T("\r\n-- Let us thru the waiting line, we download faster than the lightning\r\n"),
+_T("\r\n-- Sometimes we download so fast that we accidently get the whole person on the other side...\r\n"),
+_T("\r\n-- Holy crap, my download speed is sooooo fast that it made a hole in the harddrive\r\n"),
+_T("\r\n-- Once you got access to it, dont let it go...\r\n"),
+_T("\r\n-- Do you feel the wind? Its the download that goes too fast..\r\n"),
+_T("\r\n-- No matter what, no matter where, it's always home if AirDC++ is there\r\n"),
+_T("\r\n-- Knock, knock...We are leaving back the trousers we accidently downloaded...\r\n"),
+_T("\r\n-- Are you blind? you already downloaded that movie 4 times already\r\n"),
+_T("\r\n-- My client has been in jail twice, has  yours?\r\n"),
+_T("\r\n-- Keep your downloads close, but keep your uploads even closer\r\n")
 
 
 };
@@ -798,10 +793,8 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 			status = TSTRING(SPECIFY_SEARCH_STRING);
 		}
 	} else if(stricmp(cmd.c_str(), _T("airdc++")) == 0) {
-		message = msgs[GET_TICK() % MSGS];
-	} /*else if(stricmp(cmd.c_str(), _T("save")) == 0) {
-		ShareManager::getInstance()->save();
-	} */ else if(stricmp(cmd.c_str(), _T("calcprio")) == 0) {
+		message = msgs[GET_TICK() % MSGS] + Text::toT("-- " + UpdateManager::getInstance()->links.homepage + "  <" + APPNAME + shortVersionString + " / " DCVERSIONSTRING ">");
+	} else if(stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if(stricmp(cmd.c_str(), _T("generatelist")) == 0) {
 		ShareManager::getInstance()->generateOwnList(0);

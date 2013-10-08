@@ -16,14 +16,12 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#include <commctrl.h>
 #include "stdafx.h"
 #include "Resource.h"
 #include "WinUtil.h"
 #include "AutoSearchDlg.h"
-#include <commctrl.h>
 #include "AutosearchParams.h"
-
-//#include "../client/SearchManager.h"
 
 #define GET_TEXT(id, var) \
 	GetDlgItemText(id, buf, 1024); \
@@ -316,7 +314,7 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 
 		if (AutoSearchManager::getInstance()->hasNameDupe(searchString, false, as)) {
 			auto msg = str + _T(": ") + TSTRING(ITEM_NAME_EXISTS) + _T("\r\n\r\n") + TSTRING(AS_ADD_DUPE_CONFIRM);
-			if (MessageBox(msg.c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES)
+			if (!WinUtil::showQuestionBox(msg, MB_ICONQUESTION))
 				return 0;
 		}
 

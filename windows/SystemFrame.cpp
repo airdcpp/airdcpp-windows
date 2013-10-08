@@ -292,7 +292,7 @@ LRESULT SystemFrame::onSystemLog(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	if(Util::fileExists(filename)){
 		WinUtil::viewLog(filename);
 	} else {
-		MessageBox(CTSTRING(NO_LOG_FOR_HUB),CTSTRING(NO_LOG_FOR_HUB), MB_OK );	  
+		WinUtil::showMessageBox(TSTRING(NO_LOG_EXISTS));
 	}
 	
 	return 0; 

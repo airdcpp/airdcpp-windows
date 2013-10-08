@@ -251,7 +251,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		TCHAR buf[1024];
 		GetDlgItemText(IDC_HUBADDR, buf, 256);
 		if(buf[0] == '\0') {
-			MessageBox(CTSTRING(INCOMPLETE_FAV_HUB), _T(""), MB_ICONWARNING | MB_OK);
+			WinUtil::showMessageBox(TSTRING(INCOMPLETE_FAV_HUB), MB_ICONWARNING);
 			return 0;
 		}
 
@@ -260,7 +260,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		size_t pos = addresses.find(";");
 
 		if (!FavoriteManager::getInstance()->isUnique(pos != string::npos ? addresses.substr(0, pos) : addresses, entry->getToken())){
-			MessageBox(CTSTRING(FAVORITE_HUB_ALREADY_EXISTS), _T(" "), MB_ICONWARNING | MB_OK);
+			WinUtil::showMessageBox(TSTRING(FAVORITE_HUB_ALREADY_EXISTS), MB_ICONWARNING);
 			return 0;
 		}
 
@@ -268,7 +268,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		GetDlgItemText(IDC_ENCODING, buf, 512);
 		if(_tcschr(buf, _T('.')) == NULL && _tcscmp(buf, Text::toT(Text::utf8).c_str()) != 0 && _tcscmp(buf, _T("System default")) != 0)
 		{
-			MessageBox(_T("Invalid encoding!"), _T(""), MB_ICONWARNING | MB_OK);
+			WinUtil::showMessageBox(TSTRING(INVALID_ENCODING), MB_ICONWARNING);
 			return 0;
 		}
 

@@ -26,7 +26,6 @@
 #include "../client/QueueManager.h"
 #include "../client/TargetUtil.h"
 #include "../client/Util.h"
-#include "../client/version.h"
 
 #include "WinUtil.h"
 
@@ -233,7 +232,7 @@ public:
 
 	bool confirmDownload(TargetUtil::TargetInfo& targetInfo, int64_t aSize) {
 		//return WinUtil::MessageBoxConfirm(SettingsManager::FREE_SPACE_WARN, Text::toT(TargetUtil::getInsufficientSizeMessage(targetInfo, aSize)));
-		return !SETTING(FREE_SPACE_WARN) || (MessageBox(((T*)this)->m_hWnd, Text::toT(TargetUtil::getInsufficientSizeMessage(targetInfo, aSize)).c_str(), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES);
+		return !SETTING(FREE_SPACE_WARN) || WinUtil::showQuestionBox(Text::toT(TargetUtil::getInsufficientSizeMessage(targetInfo, aSize)), MB_ICONQUESTION);
 	}
 };
 
