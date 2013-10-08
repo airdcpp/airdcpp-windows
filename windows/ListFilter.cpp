@@ -272,7 +272,7 @@ void ListFilter::columnChanged(bool doFilter) {
 		auto n = method.GetCount();
 		size_t col = getColumn();
 
-		for (size_t i = StringMatch::METHOD_LAST; i < n; ++i) {
+		for (int i = StringMatch::METHOD_LAST; i < n; ++i) {
 			method.DeleteString(StringMatch::METHOD_LAST);
 		}
 

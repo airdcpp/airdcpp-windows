@@ -1599,19 +1599,19 @@ void SearchFrame::initHubs() {
 	ctrlHubs.insertItem(new HubInfo(Util::emptyStringT, TSTRING(ONLY_WHERE_OP), false), 0);
 	ctrlHubs.SetCheckState(0, false);
 
-	ClientManager* clientMgr = ClientManager::getInstance();
-	clientMgr->lockRead();
-	clientMgr->addListener(this);
+	ClientManager* cm = ClientManager::getInstance();
+	{
+		RLock l(cm->getCS());
+		cm->addListener(this);
 
-	const auto& clients = clientMgr->getClients();
-	for(auto c: clients | map_values) {
-		if (!c->isConnected())
-			continue;
+		const auto& clients = cm->getClients();
+		for (auto& c : clients | map_values) {
+			if (!c->isConnected())
+				continue;
 
-		onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp()));
+			onHubAdded(new HubInfo(Text::toT(c->getHubUrl()), Text::toT(c->getHubName()), c->getMyIdentity().isOp()));
+		}
 	}
-
-	clientMgr->unlockRead();
 }
 
 void SearchFrame::updateHubInfoString() {

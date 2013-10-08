@@ -140,14 +140,7 @@ private:
 		
 		int getImageIndex() const { return -1; }
 
-		int getImage(int col) {
-			switch(col) {
-			case COLUMN_FAVORITE: return isFavorite ? FAVORITE_ON_ICON : FAVORITE_OFF_ICON;
-			case COLUMN_SLOT: return grantSlot ? GRANT_ON_ICON : GRANT_OFF_ICON; //todo show given extra slot
-			case COLUMN_SEEN: return user->isOnline() ? USER_ON_ICON : USER_OFF_ICON;
-			default: return -1;
-			}
-		}
+		int getImage(int col) const;
 
 		void remove() { FavoriteManager::getInstance()->removeFavoriteUser(getUser()); }
 
@@ -195,7 +188,7 @@ private:
 	void addUser(const UserPtr& aUser, const string& aUrl);
 	void updateUser(const UserPtr& aUser);
 	
-	void setImages(UserInfo* ui, int pos = -1);
+	void setImages(const UserInfo* ui, int pos = -1);
 	void updateStatus();
 
 	bool handleClickSlot(int row);

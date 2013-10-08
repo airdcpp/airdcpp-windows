@@ -172,15 +172,16 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	filter.addColumnBox(ctrlStatus.m_hWnd, ctrlUsers.getColumnList());
 	filter.addMethodBox(ctrlStatus.m_hWnd);
 
-	ClientManager::getInstance()->lockRead();
-	auto ul = ClientManager::getInstance()->getUsers();
-	for(auto& u: ul | map_values) {
-		if(u->getCID() == CID()) //these are not users. hub?
-			continue;
-		userInfos.emplace(u, UserInfo(u, Util::emptyString));
+	auto cm = ClientManager::getInstance();
+	{
+		RLock l(cm->getCS());
+		for (auto& u : cm->getUsers() | map_values) {
+			if (u->getCID() == CID()) // hub
+				continue;
+			userInfos.emplace(u, UserInfo(u, Util::emptyString));
+		}
 	}
 
-	ClientManager::getInstance()->unlockRead();
 	updateList();
 
 	FavoriteManager::getInstance()->addListener(this);
@@ -600,27 +601,31 @@ void UsersFrame::addUser(const UserPtr& aUser, const string& aUrl) {
 
 void UsersFrame::updateUser(const UserPtr& aUser) {
 	auto i = userInfos.find(aUser);
-	if(i != userInfos.end()) {
-		auto ui = &i->second;
-		ui->update(aUser);
-		if(!show(aUser, false)) {
-			ctrlUsers.deleteItem(ui);
-			if(!show(aUser, true)) {
-				userInfos.erase(aUser);
-			}
-			return;
-		}
-		if(matches(*ui)) {
-			int pos = ctrlUsers.findItem(ui);
-			if(pos != -1) {
-				ctrlUsers.updateItem(pos);
-			} else {
-				pos = ctrlUsers.insertItem(ui, 0);
-			}
-
-			setImages(ui, pos);
-		}
+	if (i == userInfos.end()) {
+		return;
 	}
+
+	auto ui = &i->second;
+	ui->update(aUser);
+	if(!show(aUser, false)) {
+		ctrlUsers.deleteItem(ui);
+		if(!show(aUser, true)) {
+			userInfos.erase(aUser);
+		}
+		return;
+	}
+
+	if(matches(*ui)) {
+		int pos = ctrlUsers.findItem(ui);
+		if(pos != -1) {
+			ctrlUsers.updateItem(pos);
+		} else {
+			pos = ctrlUsers.insertItem(ui, 0);
+		}
+
+		setImages(ui, pos);
+	}
+
 	updateStatus();
 }
 
@@ -683,7 +688,7 @@ bool UsersFrame::show(const UserPtr &u, bool any) const {
 	return true;
 }
 
-void UsersFrame::setImages(UserInfo *ui, int pos/* = -1*/) {
+void UsersFrame::setImages(const UserInfo *ui, int pos/* = -1*/) {
 	if(pos == -1)
 		pos = ctrlUsers.findItem(ui);
 
@@ -738,6 +743,15 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 	}
 
 	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());
+}
+
+int UsersFrame::UserInfo::getImage(int col) const {
+	switch (col) {
+		case COLUMN_FAVORITE: return isFavorite ? FAVORITE_ON_ICON : FAVORITE_OFF_ICON;
+		case COLUMN_SLOT: return grantSlot ? GRANT_ON_ICON : GRANT_OFF_ICON; //todo show given extra slot
+		case COLUMN_SEEN: return user->isOnline() ? USER_ON_ICON : USER_OFF_ICON;
+		default: return -1;
+	}
 }
 
 			

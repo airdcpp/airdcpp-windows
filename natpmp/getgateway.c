@@ -118,6 +118,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #ifdef USE_WIN32_CODE_2
 #include <windows.h>
 #include <iphlpapi.h>
+#include <winsock2.h>
 #endif
 
 #include "getgateway.h"
