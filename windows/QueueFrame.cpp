@@ -1505,7 +1505,6 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			WinUtil::appendSearchMenu(dirMenu, curDir);
 			dirMenu.AppendMenu(MF_STRING, IDC_SEARCHDIR, CTSTRING(SEARCH_DIRECTORY));
 			dirMenu.appendItem(TSTRING(COPY_DIRECTORY), [this] { WinUtil::setClipboard(Text::toT(Util::getLastDir(curDir))); });
-			dirMenu.AppendMenu(MF_STRING, IDC_COPY, CTSTRING(COPY_DIRECTORY));
 			dirMenu.AppendMenu(MF_SEPARATOR);
 			dirMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 			dirMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_DIR));

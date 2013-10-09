@@ -131,7 +131,7 @@ private:
 
 	class UserInfo : public UserInfoBase {
 	public:
-		UserInfo(const UserPtr& u, const string& aUrl);
+		UserInfo(const UserPtr& u, const string& aUrl, bool updateInfo = true);
 		~UserInfo(){ }
 
 		inline const tstring& getText(int col) const { return columns[col]; }

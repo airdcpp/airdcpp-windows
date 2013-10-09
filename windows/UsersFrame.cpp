@@ -178,9 +178,13 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		for (auto& u : cm->getUsers() | map_values) {
 			if (u->getCID() == CID()) // hub
 				continue;
-			userInfos.emplace(u, UserInfo(u, Util::emptyString));
+			userInfos.emplace(u, UserInfo(u, Util::emptyString, false));
 		}
 	}
+
+	// outside the lock
+	for (auto& ui: userInfos | map_values)
+		ui.update(ui.getUser());
 
 	updateList();
 
@@ -590,7 +594,6 @@ void UsersFrame::addUser(const UserPtr& aUser, const string& aUrl) {
 	if(ui == userInfos.end()) {
 		auto x = userInfos.emplace(aUser, UserInfo(aUser, aUrl)).first;
 		if(matches(x->second)) {
-			//x->second.update(aUser);
 			ctrlUsers.insertItem(&x->second, 0);
 		}
 	} else {
@@ -648,7 +651,6 @@ void UsersFrame::updateList() {
 	for(; i != userInfos.end(); ++i) {
 		if ((filter.empty() || filter.match(filterPrep)) && show(i->second.getUser(), false)) {
 			int p = ctrlUsers.insertItem(&i->second,0);
-			//i->second.update(i->second.getUser());
 			setImages(&i->second, p);
 			ctrlUsers.updateItem(p);
 		}
@@ -702,8 +704,9 @@ void UsersFrame::updateStatus() {
 }
 
 
-UsersFrame::UserInfo::UserInfo(const UserPtr& u, const string& aUrl) : user(u), hubUrl(aUrl), isFavorite(false), grantSlot(false) {
-	update(user);
+UsersFrame::UserInfo::UserInfo(const UserPtr& u, const string& aUrl, bool updateInfo) : user(u), hubUrl(aUrl), isFavorite(false), grantSlot(false) {
+	if (updateInfo)
+		update(user);
 }
 
 void UsersFrame::UserInfo::update(const UserPtr& u) {
