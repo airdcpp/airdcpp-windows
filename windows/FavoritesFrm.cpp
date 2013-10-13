@@ -185,7 +185,7 @@ void FavoriteHubsFrame::openSelected() {
 		RecentHubEntryPtr r = new RecentHubEntry(entry->getServers()[0].first);
 		r->setName(entry->getName());
 		r->setDescription(entry->getDescription());
-		WinUtil::connectHub(r, entry->getShareProfile()->getToken());
+		ClientManager::getInstance()->createClient(r, entry->getShareProfile()->getToken()); // no multithreading because of disorder!
 	}
 	return;
 }

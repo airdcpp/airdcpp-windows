@@ -241,16 +241,18 @@ int SpeedPage::maxMCNExtras(double speed) {
 
 	int extras=0;
 
-	if (speed < 1) {
+	if (speed <= 1) {
 		extras=0;
-	} else if (speed >= 1 && speed <= 10) {
+	} else if (speed > 1 && speed < 5) {
 		extras=1;
-	}  else if (speed > 10 && speed <= 40) {
-		extras=2;
-	} else if (speed > 40 && speed < 100) {
+	} else if (speed >= 5 && speed <= 10) {
+		extras = 2;
+	} else if (speed > 10 && speed <= 40) {
 		extras=3;
-	} else if (speed >= 100) {
+	} else if (speed > 40 && speed < 100) {
 		extras=4;
+	} else if (speed >= 100) {
+		extras=5;
 	}
 	return extras;
 }
