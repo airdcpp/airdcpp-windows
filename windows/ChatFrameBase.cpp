@@ -793,7 +793,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 			status = TSTRING(SPECIFY_SEARCH_STRING);
 		}
 	} else if(stricmp(cmd.c_str(), _T("airdc++")) == 0) {
-		message = msgs[GET_TICK() % MSGS] + Text::toT("-- " + UpdateManager::getInstance()->links.homepage + "  <" + APPNAME + shortVersionString + " / " DCVERSIONSTRING ">");
+		message = msgs[GET_TICK() % MSGS] + Text::toT("-- " + UpdateManager::getInstance()->links.homepage + "  <" + APPNAME + " " + shortVersionString + " / " DCVERSIONSTRING ">");
 	} else if(stricmp(cmd.c_str(), _T("calcprio")) == 0) {
 		QueueManager::getInstance()->calculateBundlePriorities(true);
 	} else if(stricmp(cmd.c_str(), _T("generatelist")) == 0) {
