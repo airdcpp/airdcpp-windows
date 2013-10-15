@@ -358,10 +358,7 @@ public:
 	static int textUnderCursor(POINT p, CEdit& ctrl, tstring& x);
 	static int textUnderCursor(POINT p, CRichEditCtrl& ctrl, tstring& x);
 	static void openLink(const tstring& url);
-	static void openFile(const tstring& file) {
-	if(Util::fileExists(Text::fromT(file)))
-		::ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
-	}
+	static void openFile(const tstring& file);
 	static void openFolder(const tstring& file);
 	
 	static double toBytes(TCHAR* aSize);

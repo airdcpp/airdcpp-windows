@@ -1,3 +1,18 @@
+2.61
+
+Changed:
+
+- Improve the partial list browing speed when there are thousands of items in the tree
+
+Fixed:
+
+- Migrate the hash database correctly to the "Documents" directory (when needed)
+- Fix loading the content of share paths that have parent directories in other profiles
+- Fix loading the modify dates for root directories from the share cache and adding them in the dupe directory list
+- Open dupe files from the disk in file lists
+- Don't report root network shares as hidden
+- Don't keep on loading the same directories when moving in the file list tree by using the arrow keys
+
 2.60
 
 Added:
@@ -10,7 +25,7 @@ Added:
 - Add an option to refresh the share after client startup (enabled by default)
 - Add an option to store the unfinished files in the final destination directory (enabled by default)
 - Add a setting for maximum running bundles
-- Append directory dupe directories in the "Download to" menu
+- Append dupe directories in the "Download to" menu
 - Detect Windows 8.1 and 2012 R2
 - Implement "Find and view NFO" for own list
 - Report duplicate files when generating file lists

@@ -1454,6 +1454,13 @@ bool WinUtil::isOnScrollbar(HWND m_hWnd, POINT& pt) {
 	return false;
 }
 
+void WinUtil::openFile(const tstring& file) {
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		if (Util::fileExists(Text::fromT(file)))
+			::ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
+	});
+}
+
 void WinUtil::openFolder(const tstring& file) {
 	if(file.empty() )
 		return;

@@ -64,7 +64,7 @@ public:
 		TVITEM* pItem = &(pDispInfo)->item;
     
 		if (pItem->mask & TVIF_TEXT) {
-			pItem->mask |= TVIF_DI_SETITEM;
+			//pItem->mask |= TVIF_DI_SETITEM;
 			lstrcpyn(pItem->pszText, ((T*)pItem->lParam)->getNameW().c_str(), pItem->cchTextMax);
 		}
     
@@ -161,7 +161,7 @@ public:
 	
 		for(HTREEITEM child = GetChildItem(ht); child != NULL; child = GetNextSiblingItem(child)) {
 			T* d = (T*)GetItemData(child);
-			if(d->getNameW() == name.substr(0, i)) {
+			if(compare(d->getNameW(), name.substr(0, i)) == 0) {
 				return findItem(child, name.substr(i+1));
 			}
 		}

@@ -326,7 +326,11 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	//ctrlStatus.SetFont(WinUtil::boldFont);
 	ctrlStatus.SetFont(WinUtil::systemFont);
 
-	ctrlTree.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT, WS_EX_CLIENTEDGE, IDC_DIRECTORIES);
+	ctrlTree.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT | TVS_NOHSCROLL,
+		TVS_EX_DOUBLEBUFFER | WS_EX_CLIENTEDGE, IDC_DIRECTORIES);
+	ctrlTree.SetIndent(10);
+	ctrlTree.SetScrollTime(10);
+
 	if(SETTING(USE_EXPLORER_THEME)) {
 		SetWindowTheme(ctrlTree.m_hWnd, L"explorer", NULL);
 	}
@@ -1026,8 +1030,9 @@ void DirectoryListingFrame::changeDir(const ItemInfo* ii, ReloadMode aReload /*R
 		updateItems(d);
 
 
-	if(!d->isComplete() || aReload != RELOAD_NONE) {
+	if((!d->isComplete() || aReload != RELOAD_NONE) && !d->getLoading()) {
 		if (dl->getIsOwnList()) {
+			d->setLoading(true);
 			dl->addPartialListTask(Util::emptyString, d->getPath(), aReload == RELOAD_ALL);
 		} else if(dl->getUser()->isOnline()) {
 			tasks.run([=] {
@@ -1556,9 +1561,14 @@ void DirectoryListingFrame::handleOpenFile() {
 	handleItemAction(false, [this](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
 			try {
-				dl->openFile(ii->file, false);
+				if (ii->file->getDupe() == FINISHED_DUPE || ii->file->getDupe() == SHARE_DUPE) {
+					openDupe(ii->file, false);
+				} else {
+					dl->openFile(ii->file, false);
+				}
+			} catch (const Exception& e) {
+				updateStatus(Text::toT(e.getError()));
 			}
-			catch (const Exception&) {}
 		}
 	});
 }
@@ -1614,6 +1624,8 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::File* f, bool openD
 			else {
 				WinUtil::openFolder(path);
 			}
+		} else {
+			updateStatus(_T("File not found"));
 		}
 	} catch (const ShareException& e) {
 		updateStatus(Text::toT(e.getError()));
