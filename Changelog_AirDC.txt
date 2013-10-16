@@ -3,6 +3,8 @@
 Changed:
 
 - Improve the partial list browing speed when there are thousands of items in the tree
+- Stop the scan for missing files faster when quiting
+- Make the tree control more similar to Windows Explorer in file lists (when "Use Explorer theme" is enabled)
 
 Fixed:
 
@@ -14,6 +16,7 @@ Fixed:
 - Don't keep on loading the same directories when moving in the file list tree by using the arrow keys
 - Fix auto search items not getting associated with the queued bundles if a file list from the source was open already
 - Fix the focus in partial file lists when entering a new directory from the list view panel
+- Fix overlapping of slow sources
 
 2.60
 
