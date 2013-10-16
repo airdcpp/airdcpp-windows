@@ -46,6 +46,9 @@ public:
 		COMMAND_HANDLER(IDC_WINAMP_BROWSE, BN_CLICKED, onBrowsew)
 		COMMAND_ID_HANDLER(IDC_PASSWD_PROTECT_CHCKBOX, onChangeCont)
 		COMMAND_ID_HANDLER(IDC_PASSWD_BUTTON, OnPasswordChange)
+		COMMAND_ID_HANDLER(IDC_CLEAR_SEARCH_H, OnClearButton)
+		COMMAND_ID_HANDLER(IDC_CLEAR_EXCLUDE_H, OnClearButton)
+		COMMAND_ID_HANDLER(IDC_CLEAR_DL_H, OnClearButton)
 	END_MSG_MAP()
 
 
@@ -55,6 +58,7 @@ public:
 	LRESULT onBrowsew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onChangeCont(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT OnPasswordChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT OnClearButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	// Common PropPage interface
 	PROPSHEETPAGE *getPSP() { return (PROPSHEETPAGE *)*this; }
