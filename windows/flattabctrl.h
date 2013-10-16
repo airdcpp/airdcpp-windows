@@ -266,9 +266,9 @@ public:
 					// Bingo, this was clicked
 					HWND hWnd = GetParent();
 					if(hWnd) {
-						if(t == moving)
-							::SendMessage(hWnd, FTM_SELECTED, (WPARAM)t->hWnd, 0);
-						else{
+						if (t == moving) {
+							::SendMessage(hWnd, FTM_SELECTED, (WPARAM) t->hWnd, 0);
+						} else {
 							//check if the pointer is on the left or right half of the tab
 							//to determine where to insert the tab
 							moveTabs(t, xPos > (t->xpos + (t->getWidth()/2)));

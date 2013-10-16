@@ -329,9 +329,9 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlTree.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | TVS_HASBUTTONS | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT | TVS_NOHSCROLL,
 		TVS_EX_DOUBLEBUFFER | WS_EX_CLIENTEDGE, IDC_DIRECTORIES);
 	ctrlTree.SetIndent(10);
-	ctrlTree.SetScrollTime(10);
 
 	if(SETTING(USE_EXPLORER_THEME)) {
+		ctrlTree.SetExtendedStyle(TVS_EX_FADEINOUTEXPANDOS | TVS_EX_DOUBLEBUFFER, TVS_EX_FADEINOUTEXPANDOS | TVS_EX_DOUBLEBUFFER);
 		SetWindowTheme(ctrlTree.m_hWnd, L"explorer", NULL);
 	}
 	
@@ -626,6 +626,11 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 	} else if (aChangeDir || AirUtil::isParentOrExact(aLoadedDir, curPath)) {
 		// insert the new items
 		ctrlTree.SelectItem(nullptr);
+
+		// tweak to insert the items in the current thread
+		curPath = d->getPath();
+		updateItems(d);
+
 		selectItem(d->getPath());
 	}
 
@@ -898,8 +903,10 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 			updateHistoryCombo();
 		}
 
-		curPath = ii->dir->getPath();
-		changeDir(ii);
+		if (curPath != ii->dir->getPath()) {
+			curPath = ii->dir->getPath();
+			changeDir(ii);
+		}
 	}
 	return 0;
 }
