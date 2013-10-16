@@ -27,7 +27,7 @@
 PropPage::TextItem IgnorePage::texts[] = {
 	{ IDC_IGNORE_ADD, ResourceManager::ADD },
 	{ IDC_IGNORE_REMOVE, ResourceManager::REMOVE },
-	{ IDC_IGNORE_CLEAR, ResourceManager::IGNORE_CLEAR },
+	{ IDC_IGNORE_CLEAR, ResourceManager::CLEAR },
 	{ IDC_MISC_IGNORE, ResourceManager::IGNORED_USERS },
 	{ IDC_IGNORE_USE_REGEXP_OR_WC, ResourceManager::USE_REGEXP_OR_WC },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
