@@ -38,6 +38,7 @@
 #define IDC_USER_CMD_PREVIEW            126
 #define IDC_CLEAR                       127
 #define IDC_STOP                        127
+#define IDC_CLEAR_SEARCH_H              127
 #define IDC_COPY                        128
 #define IDR_HUB                         129
 #define IDC_PUB_LIST_DROPDOWN           130
@@ -905,6 +906,7 @@
 #define IDC_SETTINGS_SEARCH_MATCHING    1314
 #define IDC_CALC_PRIO_EVERY             1314
 #define IDC_VERIFY_DB                   1314
+#define IDC_CLEAR_EXCLUDE_H             1314
 #define IDC_SETTINGS_CONFIRM_OPTIONS    1315
 #define IDC_FAV_DL                      1315
 #define IDC_LINE_SPEED                  1315
@@ -921,6 +923,7 @@
 #define IDC_SETTINGS_SECONDS            1316
 #define IDC_SHARE_SKIPLIST_USE_REGEXP2  1316
 #define IDC_REPAIR_HASHDB               1316
+#define IDC_CLEAR_DL_H                  1316
 #define IDC_SOCKET_IN_BUFFER            1317
 #define IDC_UPDATE_LANGUAGE             1317
 #define IDC_GROUP                       1317
