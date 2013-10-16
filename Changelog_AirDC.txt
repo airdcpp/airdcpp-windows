@@ -12,6 +12,8 @@ Fixed:
 - Open dupe files from the disk in file lists
 - Don't report root network shares as hidden
 - Don't keep on loading the same directories when moving in the file list tree by using the arrow keys
+- Fix auto search items not getting associated with the queued bundles if a file list from the source was open already
+- Fix the focus in partial file lists when entering a new directory from the list view panel
 
 2.60
 

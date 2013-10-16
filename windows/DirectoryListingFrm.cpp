@@ -206,12 +206,6 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 
 			//notify the user that we've loaded the list
 			setDirty();
-
-			if (changeType == CHANGE_LIST) {
-				ctrlFiles.list.SetFocus();
-			} else {
-				ctrlTree.SetFocus();
-			}
 		});
 	} else {
 		findSearchHit(true);
@@ -632,6 +626,12 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 		updateItems(d);
 
 		selectItem(d->getPath());
+	}
+
+	if (changeType == CHANGE_LIST) {
+		ctrlFiles.list.SetFocus();
+	} else {
+		ctrlTree.SetFocus();
 	}
 
 	changeType = CHANGE_LAST;
