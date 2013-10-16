@@ -51,6 +51,11 @@ PropPage::TextItem MiscPage::texts[] = {
 	{ IDC_SEARCH_HIST_CLEAR, ResourceManager::CLEAR_EXIT },
 	{ IDC_EXCLUDE_HIST_CLEAR, ResourceManager::CLEAR_EXIT },
 	{ IDC_DIR_HIST_CLEAR, ResourceManager::CLEAR_EXIT },
+
+	{ IDC_CLEAR_SEARCH_H, ResourceManager::CLEAR },
+	{ IDC_CLEAR_EXCLUDE_H, ResourceManager::CLEAR },
+	{ IDC_CLEAR_DL_H, ResourceManager::CLEAR },
+
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -329,6 +334,24 @@ LRESULT MiscPage::OnPasswordChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 	}
 	return true;
 }
+
+LRESULT MiscPage::OnClearButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	switch (wID) {
+	case IDC_CLEAR_SEARCH_H:
+		SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_SEARCH);
+		break;
+	case IDC_CLEAR_EXCLUDE_H:
+		SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_EXCLUDE);
+		break;
+	case IDC_CLEAR_DL_H:
+		SettingsManager::getInstance()->clearHistory(SettingsManager::HISTORY_DIR);
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
+
 
 void MiscPage::fixControls() {
 	bool state = (IsDlgButtonChecked(IDC_PASSWD_PROTECT_CHCKBOX) != 0);
