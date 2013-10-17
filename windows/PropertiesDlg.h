@@ -82,14 +82,14 @@ public:
 	PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPage);
 	~PropertiesDlg();
 
-	void deletePages(PropPage::TaskList& tasks);
+	void getTasks(PropPage::TaskList& tasks);
 	LRESULT onOK(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	LRESULT onCancel(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 protected:
 	void write();
 	
 	bool saved;
-	PropPage *pages[PAGE_LAST];
+	unique_ptr<PropPage> pages[PAGE_LAST];
 };
 
 #endif // !defined(PROPERTIES_DLG_H)

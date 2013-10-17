@@ -3,7 +3,6 @@
 Changed:
 
 - Improve the partial list browing speed when there are thousands of items in the tree
-- Stop the scan for missing files faster when quiting
 - Make the tree control more similar to Windows Explorer in file lists (when "Use Explorer theme" is enabled)
 
 Fixed:
@@ -17,6 +16,8 @@ Fixed:
 - Fix auto search items not getting associated with the queued bundles if a file list from the source was open already
 - Fix the focus in partial file lists when entering a new directory from the list view panel
 - Fix overlapping of slow sources
+- Fix a crash when a bundle XML file can't be saved
+- Fix a memory leak when quiting from the settings with "Cancel"
 
 2.60
 

@@ -360,10 +360,9 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 		//apply the share changes from wizard (if available)
 		if (wizard) {
 			PropPage::TaskList tasks;
-			wizard->deletePages(tasks);
+			wizard->getTasks(tasks);
 			for(auto& t: tasks) {
-				t.first();
-				delete t.second;
+				t();
 			}
 			wizard.reset(nullptr);
 		}

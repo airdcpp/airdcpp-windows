@@ -63,16 +63,16 @@ public:
 	T* getPage(Pages aPage) {
 		const HWND page = PropSheet_IndexToHwnd((HWND)*this, aPage);
 		if(page != NULL) {
-			return (T*)pages[aPage];
+			return (T*)pages[aPage].get();
 		}
 		return nullptr;
 	}
 
 	int OnWizardFinish();
 	bool isInitialRun() { return initial; }
-	void deletePages(PropPage::TaskList& tasks);
+	void getTasks(PropPage::TaskList& tasks);
 private: 
-	PropPage *pages[PAGE_LAST];
+	unique_ptr<PropPage> pages[PAGE_LAST];
 	bool initial;
 	bool saved;
 	bool pagesDeleted;

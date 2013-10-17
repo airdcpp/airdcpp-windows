@@ -969,18 +969,15 @@ LRESULT MainFrame::OnAppAbout(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	return 0;
 }
 LRESULT MainFrame::OnWizard(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	SetupWizard dlg;
-	if (dlg.DoModal(m_hWnd) == IDOK) {
-		PropPage::TaskList tasks;
-		dlg.deletePages(tasks);
-		if (!tasks.empty()) {
-			addThreadedTask([=] {
-				for(auto& t: tasks) {
-					t.first();
-					delete t.second;
-				}
-			});
-		}
+	auto dlg = make_shared<SetupWizard>();
+	if (dlg->DoModal(m_hWnd) == IDOK) {
+		addThreadedTask([=] {
+			PropPage::TaskList tasks;
+			dlg->getTasks(tasks);
+			for(auto& t: tasks) {
+				t();
+			}
+		});
 	}
 	return 0;
 }
@@ -1015,26 +1012,22 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 void MainFrame::openSettings(uint16_t initialPage /*0*/) {
-	PropertiesDlg dlg(m_hWnd, SettingsManager::getInstance(), initialPage);
+	// TODO: change to use unique_ptr and move captures when those are available
+	auto holder = make_shared<SettingHolder>([this](const string& e) { showPortsError(e); });
+	auto dlg = make_shared<PropertiesDlg>(m_hWnd, SettingsManager::getInstance(), initialPage);
 
 	bool lastSortFavUsersFirst = SETTING(SORT_FAVUSERS_FIRST);
 
-	// TODO: change to use unique_ptr and move captures when those are available
-	auto holder = make_shared<SettingHolder>([this](const string& e) { showPortsError(e); });
-
-	if(dlg.DoModal(m_hWnd) == IDOK) 
+	if(dlg->DoModal(m_hWnd) == IDOK) 
 	{
-		PropPage::TaskList tasks;
-		dlg.deletePages(tasks);
-
-		addThreadedTask([tasks, holder, this] {
+		addThreadedTask([=] {
+			PropPage::TaskList tasks;
+			dlg->getTasks(tasks);
 			for(auto& t: tasks) {
-				t.first();
-				delete t.second;
+				t();
 			}
 
 			SettingsManager::getInstance()->save();
-
 			if (missedAutoConnect && !SETTING(NICK).empty()) {
 				FavoriteManager::getInstance()->autoConnect();
 			}

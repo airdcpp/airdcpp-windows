@@ -65,40 +65,40 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 {
 
 	int n = 0;
-	pages[n++] = new GeneralPage(s);
-	pages[n++] = new NetworkPage(s);
-	pages[n++] = new SpeedPage(s);
-	pages[n++] = new LimitPage(s);
-	pages[n++] = new ProxyPage(s);
-	pages[n++] = new DownloadPage(s);
-	pages[n++] = new LocationsPage(s);
-	pages[n++] = new AVIPreview(s);	
-	pages[n++] = new PriorityPage(s);
-	pages[n++] = new DownloadingOptionsPage(s);
-	pages[n++] = new SharePage(s);
-	pages[n++] = new SharingOptionsPage(s);
-	pages[n++] = new HashingPage(s);
-	pages[n++] = new AppearancePage(s);
-	pages[n++] = new PropPageTextStyles(s);
-	pages[n++] = new OperaColorsPage(s);
-	pages[n++] = new UserListColours(s);
-	pages[n++] = new Sounds(s);
-	pages[n++] = new ToolbarPage(s);
-	pages[n++] = new WindowsPage(s);
-	pages[n++] = new FulTabsPage(s);
-	pages[n++] = new Popups(s);
-	pages[n++] = new FulHighlightPage(s);
-	pages[n++] = new AirAppearancePage(s);
-	pages[n++] = new AdvancedPage(s);
-	pages[n++] = new SDCPage(s);
-	pages[n++] = new LogPage(s);
-	pages[n++] = new UCPage(s);	
-	pages[n++] = new EncryptionPage(s);
-	pages[n++] = new MiscPage(s);
-	pages[n++] = new IgnorePage(s);
-	pages[n++] = new SearchPage(s);
-	pages[n++] = new SearchTypesPage(s);
-	pages[n++] = new ScanPage(s);
+	pages[n++] = make_unique<GeneralPage>(s);
+	pages[n++] = make_unique<NetworkPage>(s);
+	pages[n++] = make_unique<SpeedPage>(s);
+	pages[n++] = make_unique<LimitPage>(s);
+	pages[n++] = make_unique<ProxyPage>(s);
+	pages[n++] = make_unique<DownloadPage>(s);
+	pages[n++] = make_unique<LocationsPage>(s);
+	pages[n++] = make_unique<AVIPreview>(s);
+	pages[n++] = make_unique<PriorityPage>(s);
+	pages[n++] = make_unique<DownloadingOptionsPage>(s);
+	pages[n++] = make_unique<SharePage>(s);
+	pages[n++] = make_unique<SharingOptionsPage>(s);
+	pages[n++] = make_unique<HashingPage>(s);
+	pages[n++] = make_unique<AppearancePage>(s);
+	pages[n++] = make_unique<PropPageTextStyles>(s);
+	pages[n++] = make_unique<OperaColorsPage>(s);
+	pages[n++] = make_unique<UserListColours>(s);
+	pages[n++] = make_unique<Sounds>(s);
+	pages[n++] = make_unique<ToolbarPage>(s);
+	pages[n++] = make_unique<WindowsPage>(s);
+	pages[n++] = make_unique<FulTabsPage>(s);
+	pages[n++] = make_unique<Popups>(s);
+	pages[n++] = make_unique<FulHighlightPage>(s);
+	pages[n++] = make_unique<AirAppearancePage>(s);
+	pages[n++] = make_unique<AdvancedPage>(s);
+	pages[n++] = make_unique<SDCPage>(s);
+	pages[n++] = make_unique<LogPage>(s);
+	pages[n++] = make_unique<UCPage>(s);
+	pages[n++] = make_unique<EncryptionPage>(s);
+	pages[n++] = make_unique<MiscPage>(s);
+	pages[n++] = make_unique<IgnorePage>(s);
+	pages[n++] = make_unique<SearchPage>(s);
+	pages[n++] = make_unique<SearchTypesPage>(s);
+	pages[n++] = make_unique<ScanPage>(s);
 	
 	for(int i=0; i < n; i++) {
 		AddPage(pages[i]->getPSP());
@@ -112,17 +112,14 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 
 PropertiesDlg::~PropertiesDlg() { }
 
-void PropertiesDlg::deletePages(PropPage::TaskList& tasks) {
+void PropertiesDlg::getTasks(PropPage::TaskList& tasks) {
 	for(int i=0; i < PAGE_LAST; i++) {
 		if (saved) {
 			auto t = pages[i]->getThreadedTask();
 			if (t) {
-				tasks.emplace_back(t, pages[i]);
-				continue;
+				tasks.emplace_back(t);
 			}
 		}
-		
-		delete pages[i];
 	}
 }
 
@@ -132,8 +129,7 @@ void PropertiesDlg::write()
 	{
 		// Check HWND of page to see if it has been created
 		const HWND page = PropSheet_IndexToHwnd((HWND)*this, i);
-
-		if(page != NULL)
+		if(page)
 			pages[i]->write();	
 	}
 	

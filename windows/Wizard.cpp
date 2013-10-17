@@ -27,14 +27,14 @@ SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupW
 	auto s = SettingsManager::getInstance();
 
 	int n = 0;
-	pages[n++] = new WizardLanguage(s, this);
-	pages[n++] = new WizardGeneral(s, this);
-	pages[n++] = new WizardProfile(s, this);
-	pages[n++] = new WizardConnspeed(s, this);
-	pages[n++] = new WizardAutoConnectivity(s, this);
-	pages[n++] = new WizardManualConnectivity(s, this);
-	pages[n++] = new WizardSharing(s, this);
-	pages[n++] = new WizardFinish(s, this);
+	pages[n++] = make_unique<WizardLanguage>(s, this);
+	pages[n++] = make_unique<WizardGeneral>(s, this);
+	pages[n++] = make_unique<WizardProfile>(s, this);
+	pages[n++] = make_unique<WizardConnspeed>(s, this);
+	pages[n++] = make_unique<WizardAutoConnectivity>(s, this);
+	pages[n++] = make_unique<WizardManualConnectivity>(s, this);
+	pages[n++] = make_unique<WizardSharing>(s, this);
+	pages[n++] = make_unique<WizardFinish>(s, this);
 	for(int i=0; i < n; i++) {
 		AddPage(pages[i]->getPSP());
 	}
@@ -42,37 +42,26 @@ SetupWizard::SetupWizard(bool isInitial /*false*/) : CAeroWizardFrameImpl<SetupW
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME, false);
 }
 
-SetupWizard::~SetupWizard() { 
-	if (!pagesDeleted) {
-		for(int i=0; i < PAGE_LAST; i++) {
-			delete pages[i];
-		}
-	}
-}
+SetupWizard::~SetupWizard() { }
 
-void SetupWizard::deletePages(PropPage::TaskList& tasks) {
+void SetupWizard::getTasks(PropPage::TaskList& tasks) {
 	pagesDeleted = true;
 	for(int i=0; i < PAGE_LAST; i++) {
 		if (saved) {
 			auto t = pages[i]->getThreadedTask();
 			if (t) {
-				tasks.emplace_back(pages[i]->getThreadedTask(), pages[i]);
-				continue;
+				tasks.emplace_back(pages[i]->getThreadedTask());
 			}
 		}
-		
-		delete pages[i];
 	}
 }
 
 int SetupWizard::OnWizardFinish() {
 	saved = true;
-	for(int i=0; i < PAGE_LAST; i++)
-	{
+	for(int i=0; i < PAGE_LAST; i++) {
 		// Check HWND of page to see if it has been created
 		const HWND page = PropSheet_IndexToHwnd((HWND)*this, i);
-
-		if(page != NULL)
+		if (page)
 			pages[i]->write();	
 	}
 	return FALSE;
