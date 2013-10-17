@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airsvn\trunk\AirDC.rc
+// Used by N:\projects\airdc-git\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1574,7 +1574,7 @@
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
-#define IDC_ASCH_ONLY					11014
+#define IDC_ASCH_ONLY                   11014
 #define ID_SHELLCONTEXTMENU_MIN         12000
 #define ID_SHELLCONTEXTMENU_MAX         14000
 #define IDC_REGEXP                      15000
