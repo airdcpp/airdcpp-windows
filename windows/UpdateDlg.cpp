@@ -28,9 +28,9 @@
 #include "WinUtil.h"
 #include "MainFrm.h"
 
-UpdateDlg::UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersionString, const string& infoUrl, bool bAutoUpdate, int aBuildID, const string& bAutoUpdateUrl)
+UpdateDlg::UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersionString, const string& infoUrl, bool bAutoUpdate, double aVersion, int aBuildID, const string& bAutoUpdateUrl)
 	: title(aTitle), message(aMessage), versionString(aVersionString), infoLink(infoUrl), autoUpdate(bAutoUpdate),
-	autoUpdateUrl(bAutoUpdateUrl), buildID(aBuildID), versionAvailable(false) { };
+	autoUpdateUrl(bAutoUpdateUrl), version(aVersion), buildID(aBuildID), versionAvailable(false) { };
 
 
 UpdateDlg::~UpdateDlg() {
@@ -70,8 +70,10 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 	ctrlDownload.SetWindowText(CTSTRING(DOWNLOAD));
 	
-	versionAvailable = BUILD_NUMBER < buildID;
-	bool versionDownloaded = UpdateManager::getInstance()->getInstalledUpdate() == buildID;
+	double currentVersion = Util::toDouble(VERSIONSTRING);
+	versionAvailable = version > currentVersion || (version == currentVersion && COMMIT_NUMBER < buildID);
+	auto installedUpdate = UpdateManager::getInstance()->getInstalledUpdate();
+	bool versionDownloaded = installedUpdate.first == version && installedUpdate.second == buildID;
 	ctrlDownload.EnableWindow(!versionDownloaded && versionAvailable);
 	//ctrlDownload.EnableWindow(!versionDownloaded);
 
@@ -90,7 +92,7 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION), CTSTRING(CLIENT_VERSION));
 	::SetWindowText(GetDlgItem(IDC_UPDATE_HISTORY), CTSTRING(HISTORY));
 
-	ctrlCurrentVersion.SetWindowText(Text::toT(shortVersionString).c_str());
+	ctrlCurrentVersion.SetWindowText(Text::toT(VERSIONSTRING "-" + Util::toString(COMMIT_NUMBER)).c_str());
 
 	m_Changelog.SetFont(WinUtil::font);
 	m_Changelog.SetBackgroundColor(WinUtil::bgColor); 
