@@ -2099,27 +2099,27 @@ void MainFrame::on(UpdateManagerListener::UpdateFailed, const string& line) noex
 	ShowPopup(Text::toT(line), CTSTRING(UPDATER), NIIF_ERROR, true);
 }
 
-void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
-	callAsync([=] { onUpdateAvailable(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl); });
+void MainFrame::on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, double version, int build, const string& autoUpdateUrl) noexcept{
+	callAsync([=] { onUpdateAvailable(title, message, aVersionString, infoUrl, autoUpdate, version, build, autoUpdateUrl); });
 }
 
-void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const string& infoUrl, const string& updateUrl, int buildID, bool autoUpdate) noexcept {
-	callAsync([=] { onBadVersion(message, infoUrl, updateUrl, buildID, autoUpdate); });
+void MainFrame::on(UpdateManagerListener::BadVersion, const string& message, const string& infoUrl, const string& updateUrl, double version, int buildID, bool autoUpdate) noexcept {
+	callAsync([=] { onBadVersion(message, infoUrl, updateUrl, version, buildID, autoUpdate); });
 }
 
 void MainFrame::on(UpdateManagerListener::UpdateComplete, const string& aUpdater) noexcept {
 	callAsync([=] { onUpdateComplete(aUpdater); });
 }
 
-void MainFrame::onUpdateAvailable(const string& title, const string& message, const string& version, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept {
-	UpdateDlg dlg(title, message, version, infoUrl, autoUpdate, build, autoUpdateUrl);
+void MainFrame::onUpdateAvailable(const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, double version, int build, const string& autoUpdateUrl) noexcept{
+	UpdateDlg dlg(title, message, aVersionString, infoUrl, autoUpdate, version, build, autoUpdateUrl);
 	if (dlg.DoModal(m_hWnd)  == IDC_UPDATE_DOWNLOAD) {
-		addThreadedTask([=] { UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, build, true); });
+		addThreadedTask([=] { UpdateManager::getInstance()->downloadUpdate(autoUpdateUrl, version, build, true); });
 		ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 	}
 }
 
-void MainFrame::onBadVersion(const string& message, const string& infoUrl, const string& updateUrl, int buildID, bool autoUpdate) noexcept {
+void MainFrame::onBadVersion(const string& message, const string& infoUrl, const string& updateUrl, double version, int buildID, bool autoUpdate) noexcept {
 	bool canAutoUpdate = autoUpdate && UpdateDlg::canAutoUpdate(updateUrl);
 
 	tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " APPNAME " " VERSIONSTRING);
@@ -2133,7 +2133,7 @@ void MainFrame::onBadVersion(const string& message, const string& infoUrl, const
 		PostMessage(WM_CLOSE);
 	} else {
 		if(!UpdateManager::getInstance()->isUpdating()) {
-			addThreadedTask([=] { UpdateManager::getInstance()->downloadUpdate(updateUrl, buildID, true); });
+			addThreadedTask([=] { UpdateManager::getInstance()->downloadUpdate(updateUrl, version, buildID, true); });
 			ShowPopup(CTSTRING(UPDATER_START), CTSTRING(UPDATER), NIIF_INFO, true);
 		} else {
 			showMessageBox(CTSTRING(UPDATER_IN_PROGRESS), MB_OK | MB_ICONINFORMATION);

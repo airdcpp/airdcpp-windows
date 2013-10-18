@@ -481,12 +481,12 @@ private:
 	void on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir, const string& aXML) noexcept;
 	void on(DirectoryListingManagerListener::PromptAction, completionF aF, const string& aMessage) noexcept;
 
-	void onUpdateAvailable(const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept;
-	void onBadVersion(const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;
+	void onUpdateAvailable(const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, double version, int build, const string& autoUpdateUrl) noexcept;
+	void onBadVersion(const string& message, const string& url, const string& update, double version, int buildID, bool canAutoUpdate) noexcept;
 	void onUpdateComplete(const string& updater) noexcept;
 
-	void on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl) noexcept;
-	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update, int buildID, bool canAutoUpdate) noexcept;
+	void on(UpdateManagerListener::UpdateAvailable, const string& title, const string& message, const string& aVersionString, const string& infoUrl, bool autoUpdate, double version, int build, const string& autoUpdateUrl) noexcept;
+	void on(UpdateManagerListener::BadVersion, const string& message, const string& url, const string& update, double version, int buildID, bool canAutoUpdate) noexcept;
 	void on(UpdateManagerListener::UpdateComplete, const string& updater) noexcept;
 	void on(UpdateManagerListener::UpdateFailed, const string& line) noexcept;
 
