@@ -55,7 +55,7 @@ LRESULT SplashWindow::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	rc.right = GetSystemMetrics(SM_CXFULLSCREEN);
 	rc.left = rc.right / 2 - 85;
 
-	dummy.Create(GetDesktopWindow(), rc, _T(APPNAME) _T(" ") _T(VERSIONSTRING), WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+	dummy.Create(GetDesktopWindow(), rc, Text::toT(fullVersionString).c_str(), WS_POPUP | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		ES_CENTER | ES_READONLY, WS_EX_STATICEDGE);
 	SetFont((HFONT) GetStockObject(DEFAULT_GUI_FONT));
 
@@ -72,7 +72,7 @@ LRESULT SplashWindow::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	SetWindowPos(dummy.m_hWnd, &rc, SWP_SHOWWINDOW);
 	CenterWindow();
 
-	title = _T(VERSIONSTRING) _T(" ") _T(CONFIGURATION_TYPE);
+	title = Text::toT(VERSIONSTRING + " " + CONFIGURATION_TYPE);
 
 	SetFocus();
 

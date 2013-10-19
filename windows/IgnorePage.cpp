@@ -79,7 +79,7 @@ LRESULT IgnorePage::onIgnoreAdd(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hW
 		if(p.second) {
 			ignoreListCtrl.insert(ignoreListCtrl.GetItemCount(), buf);
 		} else {
-			MessageBox(CTSTRING(ALREADY_IGNORED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK);
+			WinUtil::showMessageBox(TSTRING(ALREADY_IGNORED), MB_OK);
 		}
 	}
 

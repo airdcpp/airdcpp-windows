@@ -310,7 +310,7 @@ void ProtocolPage::on(UpdateManagerListener::SettingUpdated, size_t key, const s
 		if(!value.empty()) {
 			SetDlgItemText(IDC_SERVER, Text::toT(value).c_str());
 		} else {
-			::MessageBox(m_hWnd, CTSTRING(IP_UPDATE_FAILED), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
+			::MessageBox(m_hWnd, CTSTRING(IP_UPDATE_FAILED), Text::toT(fullVersionString).c_str(), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
 		}
 		::EnableWindow(GetDlgItem(IDC_GETIP), TRUE);
 	}
