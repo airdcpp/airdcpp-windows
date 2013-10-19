@@ -1012,7 +1012,7 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 void MainFrame::openSettings(uint16_t initialPage /*0*/) {
-	// TODO: change to use unique_ptr and move captures when those are available
+	// TODO: use move captures instead when those are available
 	auto holder = make_shared<SettingHolder>([this](const string& e) { showPortsError(e); });
 	auto dlg = make_shared<PropertiesDlg>(m_hWnd, SettingsManager::getInstance(), initialPage);
 

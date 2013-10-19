@@ -203,10 +203,10 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	startup = false;
 	updateStatus();
 
-	ctrlUsers.addClickHandler(COLUMN_FAVORITE, [this](int row) { return handleClickFavorite(row); }, false);
-	ctrlUsers.addClickHandler(COLUMN_SLOT, [this](int row) { return handleClickSlot(row); }, false);
-	ctrlUsers.addClickHandler(COLUMN_LIMITER, [this](int row) { return handleClickLimiter(row); }, true);
-	ctrlUsers.addClickHandler(COLUMN_DESCRIPTION, [this](int row) { return handleClickDesc(row); }, true);
+	ctrlUsers.addClickHandler(COLUMN_FAVORITE, bind(&UsersFrame::handleClickFavorite, this, placeholders::_1), false);
+	ctrlUsers.addClickHandler(COLUMN_SLOT, bind(&UsersFrame::handleClickSlot, this, placeholders::_1), false);
+	ctrlUsers.addClickHandler(COLUMN_LIMITER, bind(&UsersFrame::handleClickLimiter, this, placeholders::_1), true);
+	ctrlUsers.addClickHandler(COLUMN_DESCRIPTION, bind(&UsersFrame::handleClickDesc, this, placeholders::_1), true);
 
 	bHandled = FALSE;
 	return TRUE;

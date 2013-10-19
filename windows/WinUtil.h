@@ -36,8 +36,6 @@
 #include "LineDlg.h"
 #include "SplashWindow.h"
 
-#include <boost/bind.hpp>
-
 #include "resource.h"
 #include "OMenu.h"
 

@@ -17,7 +17,7 @@ Fixed:
 - Fix the focus in partial file lists when entering a new directory from the list view panel
 - Fix overlapping of slow sources
 - Fix a crash when a bundle XML file can't be saved
-- Fix a memory leak when quiting from the settings with "Cancel"
+- Fix a memory leak when quitting settings with "Cancel"
 
 2.60
 

@@ -124,9 +124,9 @@ public:
 	template<class K>
 	void appendListMenu(const UserPtr& aUser, const User::UserInfoList& list, OMenu* subMenu, bool addShareInfo) {
 		for (auto& i: list) {
-			string url = i.hubUrl;
-			subMenu->appendItem(Text::toT(i.hubName) + (addShareInfo ? (_T(" (") + Util::formatBytesW(i.shared) + _T(")")) : Util::emptyStringT), 
-				[this, aUser, url] { K()(aUser, url); });
+			auto url = i.hubUrl;
+			auto title = Text::toT(i.hubName) + (addShareInfo ? (_T(" (") + Util::formatBytesW(i.shared) + _T(")")) : Util::emptyStringT);
+			subMenu->appendItem(title, [=] { K()(aUser, url); });
 		}
 	}
 
@@ -156,7 +156,7 @@ public:
 			if (list.size() > 1) {
 				multipleHubs = true;
 				if (pmItems)
-					appendListMenu<WinUtil::PM>(aUser, list, menu.createSubMenu(CTSTRING(SEND_PRIVATE_MESSAGE)), false);
+					appendListMenu<WinUtil::PM>(aUser, list, menu.createSubMenu(TSTRING(SEND_PRIVATE_MESSAGE)), false);
 
 				if (listItems) {
 					//combine items in the list based on the share size
@@ -178,12 +178,12 @@ public:
 
 					if (shareList.size() > 1) {
 						menu.appendSeparator();
-						appendListMenu<WinUtil::BrowseList>(aUser, shareList, menu.createSubMenu(CTSTRING(BROWSE_FILE_LIST)), true);
+						appendListMenu<WinUtil::BrowseList>(aUser, shareList, menu.createSubMenu(TSTRING(BROWSE_FILE_LIST)), true);
 						if (showFullList || traits.allFullList)
-							appendListMenu<WinUtil::GetList>(aUser, shareList, menu.createSubMenu(CTSTRING(GET_FILE_LIST)), true);
+							appendListMenu<WinUtil::GetList>(aUser, shareList, menu.createSubMenu(TSTRING(GET_FILE_LIST)), true);
 						if (!traits.noFullList && !traits.allFullList)
-							appendListMenu<WinUtil::GetBrowseList>(aUser, shareList, menu.createSubMenu(CTSTRING(GET_BROWSE_LIST)), true);
-						appendListMenu<WinUtil::MatchQueue>(aUser, shareList, menu.createSubMenu(CTSTRING(MATCH_QUEUE)), true);
+							appendListMenu<WinUtil::GetBrowseList>(aUser, shareList, menu.createSubMenu(TSTRING(GET_BROWSE_LIST)), true);
+						appendListMenu<WinUtil::MatchQueue>(aUser, shareList, menu.createSubMenu(TSTRING(MATCH_QUEUE)), true);
 					} else {
 						appendSingleDownloadItems(false);
 					}
