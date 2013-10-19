@@ -37,7 +37,6 @@
 #include "FinishedULFrame.h"
 #include "TextFrame.h"
 #include "UpdateDlg.h"
-#include "StatsFrame.h"
 #include "UploadQueueFrame.h"
 #include "LineDlg.h"
 #include "PrivateFrame.h"
@@ -263,7 +262,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(IDC_UPDATE);
 	m_CmdBar.m_arrCommand.Add(ID_APP_EXIT);
 	m_CmdBar.m_arrCommand.Add(IDC_NOTEPAD);
-	m_CmdBar.m_arrCommand.Add(IDC_NET_STATS);
 	m_CmdBar.m_arrCommand.Add(IDC_CDMDEBUG_WINDOW);
 	m_CmdBar.m_arrCommand.Add(IDC_SYSTEM_LOG);
 	m_CmdBar.m_arrCommand.Add(IDC_AUTOSEARCH);
@@ -368,7 +366,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
 	if(SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
 	if(SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
-	if(SETTING(OPEN_NETWORK_STATISTICS)) PostMessage(WM_COMMAND, IDC_NET_STATS);
 	if(SETTING(OPEN_NOTEPAD)) PostMessage(WM_COMMAND, IDC_NOTEPAD);
 
 	if(!SETTING(SHOW_STATUSBAR)) PostMessage(WM_COMMAND, ID_VIEW_STATUS_BAR);
@@ -690,7 +687,7 @@ HWND MainFrame::createToolbar() {
 		ctrlToolbar.DeleteButton(0);
 
 	ctrlToolbar.SetButtonStructSize();
-	StringTokenizer<string> t(SETTING(TOOLBAR), ',');
+	StringTokenizer<string> t(SETTING(TOOLBAR_ORDER), ',');
 	StringList& l = t.getTokens();
 	
 	int buttonsCount = sizeof(ToolbarButtons) / sizeof(ToolbarButtons[0]);
@@ -991,7 +988,6 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		case IDC_QUEUE: QueueFrame::openWindow(); break;
 		case IDC_SEARCH_SPY: SpyFrame::openWindow(); break;
 		case IDC_FILE_ADL_SEARCH: ADLSearchFrame::openWindow(); break;
-		case IDC_NET_STATS: StatsFrame::openWindow(); break; 
 		case IDC_FINISHED: FinishedFrame::openWindow(); break;
 		case IDC_FINISHED_UL: FinishedULFrame::openWindow(); break;
 		case IDC_UPLOAD_QUEUE: UploadQueueFrame::openWindow(); break;
@@ -1060,9 +1056,6 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 		if(AirUtil::getAway()) ctrlToolbar.CheckButton(IDC_AWAY, true);
 		else ctrlToolbar.CheckButton(IDC_AWAY, false);
 
-		if(getShutDown()) ctrlToolbar.CheckButton(IDC_SHUTDOWN, true);
-		else ctrlToolbar.CheckButton(IDC_SHUTDOWN, false);
-	
 		if(tabsontop != SETTING(TABS_ON_TOP)) {
 			tabsontop = SETTING(TABS_ON_TOP);
 			UpdateLayout();

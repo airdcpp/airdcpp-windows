@@ -587,7 +587,6 @@
     <ClCompile Include="windows\Sounds.cpp" />
     <ClCompile Include="windows\SplashWindow.cpp" />
     <ClCompile Include="windows\SpyFrame.cpp" />
-    <ClCompile Include="windows\StatsFrame.cpp" />
     <ClCompile Include="windows\stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -725,7 +724,6 @@
     <ClInclude Include="windows\SingleInstance.h" />
     <ClInclude Include="windows\Sounds.h" />
     <ClInclude Include="windows\SpyFrame.h" />
-    <ClInclude Include="windows\StatsFrame.h" />
     <ClInclude Include="windows\stdafx.h" />
     <ClInclude Include="windows\SystemFrame.h" />
     <ClInclude Include="windows\TempShare_dlg.h" />

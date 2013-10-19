@@ -184,7 +184,6 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_SEARCHSPY:		return _T("ToolbarImages\\SearchSpy.ico");
 		case IDI_SETTINGS:		return _T("ToolbarImages\\Settings.ico");
 		case IDI_SHUTDOWN:		return _T("ToolbarImages\\Exit.ico");
-		case IDI_NETSTATS:		return _T("ToolbarImages\\NetStats.ico");
 		case IDI_FOLLOW:		return _T("ToolbarImages\\Follow.ico");
 		case IDI_USERS:			return _T("ToolbarImages\\UsersFrame.ico");
 		case IDI_OPEN_LIST:		return _T("ToolbarImages\\OpenFileList.ico");
@@ -492,7 +491,6 @@ void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.AddIcon(loadIcon(IDR_UPDATE, 16));
 	images.AddIcon(loadIcon(IDI_SHUTDOWN, 16));
 	images.AddIcon(loadIcon(IDI_NOTEPAD, 16));
-	images.AddIcon(loadIcon(IDI_NETSTATS, 16));
 	images.AddIcon(loadIcon(IDI_CDM, 16));
 	images.AddIcon(loadIcon(IDI_LOGS, 16));
 	images.AddIcon(loadIcon(IDI_AUTOSEARCH, 16));

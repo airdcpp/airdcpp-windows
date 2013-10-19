@@ -109,6 +109,7 @@ struct toolbarButton {
 };
 
 static const toolbarButton ToolbarButtons[] = {
+	/*
 	{ID_FILE_CONNECT, 0, IDI_PUBLICHUBS, true, ResourceManager::MENU_PUBLIC_HUBS},
 	{ID_FILE_RECONNECT, 1, IDI_RECONNECT, false, ResourceManager::MENU_RECONNECT},
 	{IDC_FOLLOW, 2, IDI_FOLLOW, false, ResourceManager::MENU_FOLLOW_REDIRECT},
@@ -122,17 +123,50 @@ static const toolbarButton ToolbarButtons[] = {
 	{ID_FILE_SEARCH, 10, IDI_SEARCH,false, ResourceManager::MENU_SEARCH},
 	{IDC_FILE_ADL_SEARCH, 11, IDI_ADLSEARCH, true, ResourceManager::MENU_ADL_SEARCH},
 	{IDC_SEARCH_SPY, 12, IDI_SEARCHSPY, true, ResourceManager::MENU_SEARCH_SPY},
-	{IDC_NET_STATS, 13, IDI_NETSTATS, true, ResourceManager::NETWORK_STATISTICS},
-	{IDC_OPEN_FILE_LIST, 14, IDI_OPEN_LIST, false, ResourceManager::MENU_OPEN_FILE_LIST},
-	{ID_FILE_SETTINGS, 15, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS},
-	{IDC_NOTEPAD, 16, IDI_NOTEPAD, true, ResourceManager::MENU_NOTEPAD},
-	{IDC_AWAY, 17, IDI_AWAY, true, ResourceManager::AWAY},
-	{IDC_SHUTDOWN, 18, IDI_SHUTDOWN, true, ResourceManager::SHUTDOWN},
-	{IDC_OPEN_DOWNLOADS, 19, IDI_OPEN_DOWNLOADS,false, ResourceManager::MENU_OPEN_DOWNLOADS_DIR},
-	{IDC_REFRESH_FILE_LIST, 20, IDI_REFRESH,false, ResourceManager::REFRESH_FILE_LIST},
-	{IDC_SYSTEM_LOG, 21, IDI_LOGS, true, ResourceManager::SYSTEM_LOG},
-	{IDC_SCAN_MISSING, 22, IDI_SCAN,false, ResourceManager::MENU_SCAN_MISSING},
-	{IDC_AUTOSEARCH, 23,  IDI_AUTOSEARCH, false, ResourceManager::AUTO_SEARCH},
+	{IDC_OPEN_FILE_LIST, 13, IDI_OPEN_LIST, false, ResourceManager::MENU_OPEN_FILE_LIST},
+	{ID_FILE_SETTINGS, 14, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS},
+	{IDC_NOTEPAD, 15, IDI_NOTEPAD, true, ResourceManager::MENU_NOTEPAD},
+	{IDC_AWAY, 16, IDI_AWAY, true, ResourceManager::AWAY},
+	{IDC_SHUTDOWN, 17, IDI_SHUTDOWN, true, ResourceManager::SHUTDOWN},
+	{IDC_OPEN_DOWNLOADS, 18, IDI_OPEN_DOWNLOADS,false, ResourceManager::MENU_OPEN_DOWNLOADS_DIR},
+	{IDC_REFRESH_FILE_LIST, 19, IDI_REFRESH,false, ResourceManager::REFRESH_FILE_LIST},
+	{IDC_SYSTEM_LOG, 20, IDI_LOGS, true, ResourceManager::SYSTEM_LOG},
+	{IDC_SCAN_MISSING, 21, IDI_SCAN,false, ResourceManager::MENU_SCAN_MISSING},
+	{IDC_AUTOSEARCH, 22,  IDI_AUTOSEARCH, false, ResourceManager::AUTO_SEARCH},
+	*/
+	
+	{ ID_FILE_CONNECT, 0, IDI_PUBLICHUBS, true, ResourceManager::MENU_PUBLIC_HUBS },
+	//separator
+	{ ID_FILE_RECONNECT, 1, IDI_RECONNECT, false, ResourceManager::MENU_RECONNECT },
+	{ IDC_FOLLOW, 2, IDI_FOLLOW, false, ResourceManager::MENU_FOLLOW_REDIRECT },
+	//separator
+	{ IDC_FAVORITES, 3, IDI_FAVORITEHUBS, true, ResourceManager::MENU_FAVORITE_HUBS },
+	{ IDC_FAVUSERS, 4, IDI_USERS, true, ResourceManager::MENU_FAVORITE_USERS },
+	{ IDC_RECENTS, 5, IDI_RECENTS, true, ResourceManager::MENU_FILE_RECENT_HUBS },
+	//separator
+	{ IDC_QUEUE, 6, IDI_QUEUE, true, ResourceManager::MENU_DOWNLOAD_QUEUE },
+	{ IDC_FINISHED, 7, IDI_FINISHED_DL, true, ResourceManager::FINISHED_DOWNLOADS },
+	{ IDC_UPLOAD_QUEUE, 8, IDI_UPLOAD_QUEUE, true, ResourceManager::UPLOAD_QUEUE },
+	{ IDC_FINISHED_UL, 9, IDI_FINISHED_UL, true, ResourceManager::FINISHED_UPLOADS },
+	//separator
+	{ ID_FILE_SEARCH, 10, IDI_SEARCH, false, ResourceManager::MENU_SEARCH },
+	{ IDC_FILE_ADL_SEARCH, 11, IDI_ADLSEARCH, true, ResourceManager::MENU_ADL_SEARCH },
+	{ IDC_SEARCH_SPY, 12, IDI_SEARCHSPY, true, ResourceManager::MENU_SEARCH_SPY },
+	{ IDC_AUTOSEARCH, 13, IDI_AUTOSEARCH, false, ResourceManager::AUTO_SEARCH },
+	//separator
+	{ IDC_NOTEPAD, 14, IDI_NOTEPAD, true, ResourceManager::MENU_NOTEPAD },
+	{ IDC_SYSTEM_LOG, 15, IDI_LOGS, true, ResourceManager::SYSTEM_LOG },
+	//separator
+	{ IDC_REFRESH_FILE_LIST, 16, IDI_REFRESH, false, ResourceManager::REFRESH_FILE_LIST },
+	{ IDC_SCAN_MISSING, 17, IDI_SCAN, false, ResourceManager::MENU_SCAN_MISSING },
+	//separator
+	{ IDC_OPEN_FILE_LIST, 18, IDI_OPEN_LIST, false, ResourceManager::MENU_OPEN_FILE_LIST },
+	{ IDC_OPEN_DOWNLOADS, 19, IDI_OPEN_DOWNLOADS, false, ResourceManager::MENU_OPEN_DOWNLOADS_DIR },
+	//separator
+	{ IDC_AWAY, 20, IDI_AWAY, true, ResourceManager::AWAY },
+	//separator
+	{ ID_FILE_SETTINGS, 21, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS },
+	
 };
 
 

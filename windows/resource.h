@@ -96,7 +96,6 @@
 #define IDR_ADLSEARCH                   233
 #define IDD_ADLS_PROPERTIES             234
 #define IDD_UCPAGE                      236
-#define IDR_NET_STATS                   237
 #define IDR_RECENTS                     238
 #define IDR_AUTOSEARCH                  239
 #define IDB_SPLASH                      240
@@ -192,7 +191,6 @@
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
-#define IDI_NETSTATS                    362
 #define IDI_FOLLOW                      363
 #define IDI_USERS                       364
 #define IDI_OPEN_LIST                   365
@@ -504,7 +502,6 @@
 #define IDC_MATCH_QUEUE                 1125
 #define IDC_IS_FORBIDDEN2               1125
 #define IDC_PAGE                        1130
-#define IDC_NET_STATS                   1131
 #define IDC_SETTINGS_PERSONAL_INFORMATION 1132
 #define IDC_SETTINGS_NICK               1133
 #define IDC_SETTINGS_EMAIL              1134

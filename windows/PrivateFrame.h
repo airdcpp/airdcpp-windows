@@ -161,7 +161,6 @@ private:
 	void showHubSelection(bool show);
 
 	HICON userOffline;
-	HICON userOnline;
 
 	HintedUser replyTo;
 	const UserPtr& getUser() const { return replyTo.user; }	
@@ -177,6 +176,7 @@ private:
 	ParamMap ucLineParams;
 
 	void checkClientChanged(const HintedUser& newUser, Client* c, bool ownChange);
+	void updateTabIcon(bool offline);
 	TStringList prevCommands;
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;
@@ -184,6 +184,7 @@ private:
 	// ClientManagerListener
 	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
 	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
+	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 

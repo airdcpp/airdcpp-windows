@@ -64,7 +64,6 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	
 	bool userBot = replyTo.user && replyTo.user->isSet(User::BOT);
 	userOffline = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
-	userOnline = userBot ? ResourceLoader::loadIcon(IDI_BOT) : ResourceLoader::loadIcon(IDR_PRIVATE);
 	created = true;
 
 	ClientManager::getInstance()->addListener(this);
@@ -151,6 +150,12 @@ void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aU
 	}
 }
 
+void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
+	if (aUser.getUser() == replyTo.user) {
+		callAsync([this] { updateTabIcon(false); });
+	}
+}
+
 void PrivateFrame::addStatusLine(const tstring& aLine) {
 	tstring status = _T(" *** ") + aLine + _T(" ***");
 	if(SETTING(STATUS_IN_CHAT)) {
@@ -197,17 +202,17 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			hubNames = WinUtil::getHubNames(replyTo);
 			nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
 			setDisconnected(false);
+			updateTabIcon(false);
 
 			if (!online) {
 				addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"));
-				setIcon(userOnline);
 			}
 		} else {
 			if (nicks.empty())
 				nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
 
 			setDisconnected(true);
-			setIcon(userOffline);
+			updateTabIcon(true);
 			addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"));
 			ctrlClient.setClient(nullptr);
 		}
@@ -401,7 +406,6 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		closed = true;
-		DestroyIcon(userOnline);
 		DestroyIcon(userOffline);
 		PostMessage(WM_CLOSE);
 		return 0;
@@ -593,6 +597,16 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		rc.right += 24;
 		ctrlMagnet.MoveWindow(rc);
 	}
+}
+
+void PrivateFrame::updateTabIcon(bool offline) {
+	if (offline) {
+		setIcon(userOffline);
+		return;
+	}
+	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(replyTo);
+	HICON icon = ResourceLoader::getUserImages().GetIcon(ou->getImageIndex());
+	setIcon(icon);
 }
 
 string PrivateFrame::getLogPath() const {

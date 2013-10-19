@@ -86,7 +86,7 @@ LRESULT ToolbarPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 	ctrlToolbar.InsertColumn(0, _T("Dummy"), LVCFMT_LEFT, rc.Width(), 0);
 	ctrlToolbar.SetImageList(MainFrame::getMainFrame()->ToolbarImages, LVSIL_SMALL);
 	
-	StringTokenizer<string> t(SETTING(TOOLBAR), ',');
+	StringTokenizer<string> t(SETTING(TOOLBAR_ORDER), ',');
 	StringList& l = t.getTokens();
 
 	int n = 0;
@@ -112,8 +112,8 @@ void ToolbarPage::write()
 		int j = ctrlToolbar.GetItemData(i);
 		toolbar += Util::toString(j);
 	}
-	if(toolbar != settings->get(SettingsManager::TOOLBAR)) {
-	settings->set(SettingsManager::TOOLBAR, toolbar);
+	if(toolbar != settings->get(SettingsManager::TOOLBAR_ORDER)) {
+	settings->set(SettingsManager::TOOLBAR_ORDER, toolbar);
 		::SendMessage(WinUtil::mainWnd, IDC_REBUILD_TOOLBAR, 0, 0);
 	}
 }
