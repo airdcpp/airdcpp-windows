@@ -1067,7 +1067,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 void RichTextBox::handleSearchDir() {
-	WinUtil::searchAny(Text::toT(Util::getReleaseDir(Text::fromT(selectedWord), true)));
+	WinUtil::searchAny(selectedWord);
 }
 
 void RichTextBox::handleDeleteFile() {

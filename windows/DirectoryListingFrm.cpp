@@ -1655,7 +1655,7 @@ void DirectoryListingFrame::handleSearchByName(bool usingTree, bool dirsOnly) {
 				if (thisSearched)
 					return;
 
-				name = Util::getReleaseDir(ii->file->getPath(), true);
+				name = AirUtil::getNmdcReleaseDir(ii->file->getPath(), true);
 				thisSearched = true;
 			} else {
 				name = ii->file->getName();
@@ -1782,7 +1782,7 @@ tstring DirectoryListingFrame::handleCopyPath(const ItemInfo* ii) {
 
 tstring DirectoryListingFrame::handleCopyDirectory(const ItemInfo* ii) {
 	if (ii->type == ItemInfo::FILE) {
-		return Text::toT(Util::getReleaseDir(ii->file->getPath(), true));
+		return Text::toT(AirUtil::getNmdcReleaseDir(ii->file->getPath(), true));
 	} else {
 		return ii->getText(COLUMN_FILENAME);
 	}
