@@ -37,8 +37,7 @@ _T("Thanks to Translators: \r\n")
 _T("xaozon, kryppy, B1ackBoX, shuttle, ICU2M8, en_dator, NT, Bl0m5t3r, Shuttle, LadyStardust, savone, aLti, MMWST, Lleexxii, What2Write, Kryppy, Toans, Kaas.\r\n");
 
 LRESULT AboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-
-	SetDlgItemText(IDC_VERSION, Text::toT(fullVersionString + " By Night and maksalaatikko \n").c_str());
+	SetDlgItemText(IDC_VERSION, _T("AirDC++ v") _T(VERSIONSTRING) _T(" By Night and maksalaatikko \n"));
 
 	CEdit ctrlThanks(GetDlgItem(IDC_AIRTHANKS));
 	ctrlThanks.FmtLines(TRUE);

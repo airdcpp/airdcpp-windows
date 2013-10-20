@@ -1208,7 +1208,7 @@ LRESULT MainFrame::onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 void MainFrame::showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& aTitle) {
-	::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : m_hWnd, aMsg.c_str(), (!aTitle.empty() ? aTitle.c_str() : Text::toT(fullVersionString).c_str()), aFlags);
+	::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : m_hWnd, aMsg.c_str(), (!aTitle.empty() ? aTitle.c_str() : _T(APPNAME) _T(" ") _T(VERSIONSTRING)), aFlags);
 }
 
 LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -1398,7 +1398,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if(u) {
 			addThreadedTask([=] { DirectoryListingManager::getInstance()->openFileList(HintedUser(u, Util::emptyString), Text::fromT(file)); });
 		} else {
-			MessageBox(CTSTRING(INVALID_LISTNAME), Text::toT(fullVersionString).c_str());
+			MessageBox(CTSTRING(INVALID_LISTNAME), _T(APPNAME) _T(" ") _T(VERSIONSTRING));
 		}
 	}
 	return 0;
@@ -2115,7 +2115,7 @@ void MainFrame::onUpdateAvailable(const string& title, const string& message, co
 void MainFrame::onBadVersion(const string& message, const string& infoUrl, const string& updateUrl, double version, int buildID, bool autoUpdate) noexcept {
 	bool canAutoUpdate = autoUpdate && UpdateDlg::canAutoUpdate(updateUrl);
 
-	tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " APPNAME " " + VERSIONSTRING);
+	tstring title = Text::toT(STRING(MANDATORY_UPDATE) + " - " APPNAME " " VERSIONSTRING);
 	showMessageBox(Text::toT(message + "\r\n\r\n" + (canAutoUpdate ? STRING(ATTEMPT_AUTO_UPDATE) : STRING(MANUAL_UPDATE_MSG))).c_str(), MB_OK | MB_ICONEXCLAMATION, title);
 
 	if(!canAutoUpdate) {
