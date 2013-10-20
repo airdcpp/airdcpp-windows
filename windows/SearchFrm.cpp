@@ -820,7 +820,7 @@ void SearchFrame::handleViewNfo() {
 				// Ignore for now...
 			}
 		} else {
-			string path = Util::getReleaseDir(si->sr->getFilePath(), false);
+			auto path = AirUtil::getNmdcReleaseDir(si->sr->getFilePath(), false);
 			try {
 				QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_VIEW_NFO | QueueItem::FLAG_PARTIAL_LIST | QueueItem::FLAG_RECURSIVE_LIST, path);
 			} catch(const Exception&) {
@@ -889,7 +889,7 @@ void SearchFrame::handleGetList(ListType aType) {
 
 void SearchFrame::handleMatchPartial() {
 	auto matchPartial = [&](const SearchInfo* si) {
-		string path = Util::getReleaseDir(si->sr->getFilePath(), false);
+		string path = AirUtil::getNmdcReleaseDir(si->sr->getFilePath(), false);
 		try {
 			QueueManager::getInstance()->addList(si->sr->getUser(), QueueItem::FLAG_MATCH_QUEUE | (si->sr->getUser().user->isNMDC() ? 0 : QueueItem::FLAG_RECURSIVE_LIST) | QueueItem::FLAG_PARTIAL_LIST, path);
 		} catch(const Exception&) {
@@ -903,7 +903,7 @@ void SearchFrame::handleMatchPartial() {
 void SearchFrame::handleSearchDir() {
 	if(ctrlResults.list.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.list.getSelectedItem();
-		WinUtil::searchAny(Text::toT(Util::getReleaseDir(si->sr->getPath(), true)));
+		WinUtil::searchAny(Text::toT(AirUtil::getNmdcReleaseDir(si->sr->getPath(), true)));
 	}
 }
 

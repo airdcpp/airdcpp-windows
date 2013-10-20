@@ -477,7 +477,7 @@ LRESULT SystemFrame::onEditCopy(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 }
 
 LRESULT SystemFrame::onCopyDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::setClipboard(Text::toT(Util::getReleaseDir(Text::fromT(selWord), true)));
+	WinUtil::setClipboard(Text::toT(AirUtil::getReleaseDir(Text::fromT(selWord), true)));
 	return 0;
 }
 
@@ -498,6 +498,6 @@ LRESULT SystemFrame::onSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT SystemFrame::onSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::searchAny(Text::toT(Util::getReleaseDir(Text::fromT(selWord), true)));
+	WinUtil::searchAny(Text::toT(AirUtil::getReleaseDir(Text::fromT(selWord), true)));
 	return 0;
 }
