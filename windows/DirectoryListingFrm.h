@@ -387,7 +387,6 @@ private:
 	size_t files;
 
 	bool updating;
-	bool closed;
 	bool statusDirty;
 
 	int statusSizes[STATUS_LAST];

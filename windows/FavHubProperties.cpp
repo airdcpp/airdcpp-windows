@@ -93,29 +93,29 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 
 	bool isAdcHub = entry->isAdcHub();
 
-	CComboBox combo;
-	combo.Attach(GetDlgItem(IDC_FAVGROUP_BOX));
-	combo.AddString(_T("---"));
-	combo.SetCurSel(0);
+	CComboBox tmpCombo;
+	tmpCombo.Attach(GetDlgItem(IDC_FAVGROUP_BOX));
+	tmpCombo.AddString(_T("---"));
+	tmpCombo.SetCurSel(0);
 
 	const FavHubGroups& favHubGroups = FavoriteManager::getInstance()->getFavHubGroups();
 	for(const auto& name: favHubGroups | map_keys) {
-		int pos = combo.AddString(Text::toT(name).c_str());
+		int pos = tmpCombo.AddString(Text::toT(name).c_str());
 		
 		if(name == entry->getGroup())
-			combo.SetCurSel(pos);
+			tmpCombo.SetCurSel(pos);
 	}
 
-	combo.Detach();
+	tmpCombo.Detach();
 
 	// TODO: add more encoding into wxWidgets version, this is enough now
 	// FIXME: following names are Windows only!
-	combo.Attach(GetDlgItem(IDC_ENCODING));
-	combo.AddString(_T("System default"));
-	combo.AddString(_T("English_United Kingdom.1252"));
-	combo.AddString(_T("Czech_Czech Republic.1250"));
-	combo.AddString(_T("Russian_Russia.1251"));
-	combo.AddString(Text::toT(Text::utf8).c_str());
+	ctrlEncoding.Attach(GetDlgItem(IDC_ENCODING));
+	ctrlEncoding.AddString(_T("System default"));
+	ctrlEncoding.AddString(_T("English_United Kingdom.1252"));
+	ctrlEncoding.AddString(_T("Czech_Czech Republic.1250"));
+	ctrlEncoding.AddString(_T("Russian_Russia.1251"));
+	ctrlEncoding.AddString(Text::toT(Text::utf8).c_str());
 
 	ctrlProfile.Attach(GetDlgItem(IDC_FAV_SHAREPROFILE));
 	appendProfiles();
@@ -124,20 +124,18 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 
 
 	if(isAdcHub) {
-		combo.SetCurSel(4); // select UTF-8 for ADC hubs
-		combo.EnableWindow(false);
+		ctrlEncoding.SetCurSel(4); // select UTF-8 for ADC hubs
+		ctrlEncoding.EnableWindow(false);
 		if (hideShare)
 			ctrlProfile.EnableWindow(false);
 	} else {
 		ctrlProfile.EnableWindow(false);
-		if(entry->getEncoding().empty()) {
-			combo.SetCurSel(0);
+		if(entry->get(HubSettings::NmdcEncoding).empty()) {
+			ctrlEncoding.SetCurSel(0);
 		} else {
-			combo.SetWindowText(Text::toT(entry->getEncoding()).c_str());
+			ctrlEncoding.SetWindowText(Text::toT(entry->get(HubSettings::NmdcEncoding)).c_str());
 		}
 	}
-
-	combo.Detach();
 
 	// connection modes
 	auto appendCombo = [](CComboBox& combo, int curMode) {
@@ -266,14 +264,15 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 
 		//validate the encoding
 		GetDlgItemText(IDC_ENCODING, buf, 512);
-		if(_tcschr(buf, _T('.')) == NULL && _tcscmp(buf, Text::toT(Text::utf8).c_str()) != 0 && _tcscmp(buf, _T("System default")) != 0)
+		if(_tcschr(buf, _T('.')) == NULL && _tcscmp(buf, Text::toT(Text::utf8).c_str()) != 0 && ctrlEncoding.GetCurSel() != 0)
 		{
 			WinUtil::showMessageBox(TSTRING(INVALID_ENCODING), MB_ICONWARNING);
 			return 0;
 		}
 
 		//set the values
-		entry->setEncoding(Text::fromT(buf));
+		if (ctrlEncoding.GetCurSel() > 0)
+			entry->get(HubSettings::NmdcEncoding) = Text::fromT(buf);
 		entry->setServerStr(addresses);
 
 		GetDlgItemText(IDC_HUBNAME, buf, 256);

@@ -220,7 +220,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::LoadingFailed, const string& aReason) noexcept {
-	if (!closed) {
+	if (!dl->getClosing()) {
 		callAsync([=] {
 			updateStatus(Text::toT(aReason));
 			if (!dl->getPartialList()) {
@@ -392,7 +392,6 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	ctrlTree.EnableWindow(FALSE);
 	
 	SettingsManager::getInstance()->addListener(this);
-	closed = false;
 
 	CRect rc(SETTING(DIRLIST_LEFT), SETTING(DIRLIST_TOP), SETTING(DIRLIST_RIGHT), SETTING(DIRLIST_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -1954,11 +1953,8 @@ void DirectoryListingFrame::closeAll(){
 }
 
 LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
-	//tell the thread to abort and wait until we get a notification
-	//that it's done.
-	dl->setAbort(true);
-	
-	if(!closed) {
+	if(!dl->getClosing()) {
+		dl->setClosing(true);
 		SettingsManager::getInstance()->removeListener(this);
 		if (!dl->getIsOwnList())
 			ClientManager::getInstance()->removeListener(this);
@@ -1969,7 +1965,6 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 		ctrlFiles.list.saveHeaderOrder(SettingsManager::DIRECTORYLISTINGFRAME_ORDER, SettingsManager::DIRECTORYLISTINGFRAME_WIDTHS,
 			SettingsManager::DIRECTORYLISTINGFRAME_VISIBLE);
 
-		closed = true;
 		PostMessage(WM_CLOSE);
 		//changeWindowState(false);
 		//ctrlStatus.SetText(0, _T("Closing down, please wait..."));

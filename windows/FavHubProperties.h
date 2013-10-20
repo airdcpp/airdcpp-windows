@@ -65,6 +65,7 @@ protected:
 
 	bool hideShare;
 	CComboBox ctrlProfile;
+	CComboBox ctrlEncoding;
 	bool loaded;
 	void fixControls();
 
