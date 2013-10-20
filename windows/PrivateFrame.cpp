@@ -605,8 +605,10 @@ void PrivateFrame::updateTabIcon(bool offline) {
 		return;
 	}
 	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(replyTo);
-	HICON icon = ResourceLoader::getUserImages().GetIcon(ou->getImageIndex());
-	setIcon(icon);
+	if (ou) {
+		HICON icon = ResourceLoader::getUserImages().GetIcon(ou->getImageIndex());
+		setIcon(icon);
+	}
 }
 
 string PrivateFrame::getLogPath() const {
