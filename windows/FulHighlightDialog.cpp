@@ -99,12 +99,12 @@ LRESULT FulHighlightDialog::onOk(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	try{
 		getValues();
 	}catch(...) {
-		MessageBox(CTSTRING(BAD_REGEXP), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
+		WinUtil::showMessageBox(TSTRING(BAD_REGEXP), MB_OK | MB_ICONEXCLAMATION);
 		return TRUE;
 	}
 
 	if(cs.getMatch().empty()){
-		MessageBox(CTSTRING(ADD_EMPTY), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
+		WinUtil::showMessageBox(TSTRING(ADD_EMPTY), MB_OK | MB_ICONEXCLAMATION);
 		return TRUE;
 	}
 
@@ -117,7 +117,7 @@ LRESULT FulHighlightDialog::onOk(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 				//....
 			}
 		} catch(...) {
-			MessageBox(CTSTRING(BAD_REGEXP), _T(APPNAME) _T(" ") _T(VERSIONSTRING), MB_OK | MB_ICONEXCLAMATION);
+			WinUtil::showMessageBox(TSTRING(BAD_REGEXP), MB_ICONEXCLAMATION);
 			return TRUE;
 		}
 

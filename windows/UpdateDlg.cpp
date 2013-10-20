@@ -92,7 +92,7 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION), CTSTRING(CLIENT_VERSION));
 	::SetWindowText(GetDlgItem(IDC_UPDATE_HISTORY), CTSTRING(HISTORY));
 
-	ctrlCurrentVersion.SetWindowText(Text::toT(VERSIONSTRING "-" + Util::toString(COMMIT_NUMBER)).c_str());
+	ctrlCurrentVersion.SetWindowText(Text::toT(VERSIONSTRING + "-" + Util::toString(COMMIT_NUMBER)).c_str());
 
 	m_Changelog.SetFont(WinUtil::font);
 	m_Changelog.SetBackgroundColor(WinUtil::bgColor); 
