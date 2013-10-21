@@ -282,7 +282,7 @@ LRESULT MiscPage::onChangeCont(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 				if(dlg.Newline == dlg.Confirmline) {
 					settings->set(SettingsManager::PASSWORD, Util::base64_encode(reinterpret_cast<const unsigned char*>(Text::fromT(dlg.Newline).c_str()), strlen(Text::fromT(dlg.Newline).c_str())));
 				} else {
-					::MessageBox(m_hWnd, _T("Passwords did not match!"), Text::toT(fullVersionString).c_str(), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
+					::MessageBox(m_hWnd, _T("Passwords did not match!"), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
 					::CheckDlgButton(*this, IDC_PASSWD_PROTECT_CHCKBOX, BST_UNCHECKED);
 				}
 			} else {
@@ -301,7 +301,7 @@ LRESULT MiscPage::onChangeCont(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 					::CheckDlgButton(*this, IDC_PASSWD_PROTECT_CHCKBOX, BST_UNCHECKED);
 					settings->set(SettingsManager::PASSWORD, "");
 				} else {
-					::MessageBox(m_hWnd, _T("Wrong password!"), Text::toT(fullVersionString).c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
+					::MessageBox(m_hWnd, _T("Wrong password!"), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
 				}
 			}
 		}
@@ -324,11 +324,11 @@ LRESULT MiscPage::OnPasswordChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 					if(dlg.Newline == dlg.Confirmline) {
 						settings->set(SettingsManager::PASSWORD, Util::base64_encode(reinterpret_cast<const unsigned char*>(Text::fromT(dlg.Newline).c_str()), strlen(Text::fromT(dlg.Newline).c_str())));
 					} else {
-						::MessageBox(m_hWnd, _T("Passwords did not match!"), Text::toT(fullVersionString).c_str(), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
+						::MessageBox(m_hWnd, _T("Passwords did not match!"), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_OK | MB_ICONINFORMATION | MB_TOPMOST);
 						::CheckDlgButton(*this, IDC_PASSWD_PROTECT_CHCKBOX, BST_CHECKED);
 					}
 				} else {
-					::MessageBox(m_hWnd, _T("Wrong password!"), Text::toT(fullVersionString).c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
+					::MessageBox(m_hWnd, _T("Wrong password!"), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_OK | MB_ICONEXCLAMATION | MB_TOPMOST);
 				}
 		}
 	}
