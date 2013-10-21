@@ -1988,4 +1988,5 @@ Do you want to remove the auto search item as well?</string>
 	<string name="CompleteItemXRemoved">A completed item %1% has been removed</string>
 	<string name="OverrideLimiter">Override limiter</string>
 	<string name="AsEndGreater">End time must be greater than the start time!</string>
+	<string name="ClosingWait">Closing, please wait...</string>
 </resources>

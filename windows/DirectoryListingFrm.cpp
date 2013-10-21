@@ -92,9 +92,6 @@ DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
 }
 
 DirectoryListingFrame::~DirectoryListingFrame() {
-	dl->join();
-	dl->removeListener(this);
-
 	// dl will be automatically deleted by DirectoryListingManager
 	DirectoryListingManager::getInstance()->removeList(dl->getUser());
 }
@@ -1965,11 +1962,18 @@ LRESULT DirectoryListingFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 		ctrlFiles.list.saveHeaderOrder(SettingsManager::DIRECTORYLISTINGFRAME_ORDER, SettingsManager::DIRECTORYLISTINGFRAME_WIDTHS,
 			SettingsManager::DIRECTORYLISTINGFRAME_VISIBLE);
 
-		PostMessage(WM_CLOSE);
-		//changeWindowState(false);
-		//ctrlStatus.SetText(0, _T("Closing down, please wait..."));
-		//dl->close();
-		tasks.wait();
+		updateStatus(TSTRING(CLOSING_WAIT));
+
+		// avoid locking the main thread because the loading thread may need it
+		tasks.run([this] {
+			dl->join();
+			dl->removeListener(this);
+
+			callAsync([this] {
+				PostMessage(WM_CLOSE);
+				tasks.wait();
+			});
+		});
 		return 0;
 	} else {
 		CRect rc;
