@@ -1230,7 +1230,6 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				OMenu* removeMenu = fileMenu.getMenu();
 				OMenu* readdMenu = fileMenu.getMenu();
 				OMenu* getListMenu = fileMenu.getMenu();
-				OMenu* copyMenu = fileMenu.getMenu();
 
 
 				/* Create submenus */
@@ -1238,13 +1237,6 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				const QueueItemInfo* ii = ctrlQueue.getItemData(ctrlQueue.GetNextItem(-1, LVNI_SELECTED));
 				if(ii) {
 					segmentsMenu.CheckMenuItem(ii->getQueueItem()->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
-
-					ListType::MenuItemList customItems {
-						{ TSTRING(MAGNET_LINK), &handleCopyMagnet }
-					};
-
-					ctrlQueue.appendCopyMenu(fileMenu, customItems);
-
 
 					bool hasPMItems = false;
 					auto sources = move(QueueManager::getInstance()->getSources(ii->getQueueItem()));
@@ -1352,11 +1344,14 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				browseMenu->appendThis(TSTRING(BROWSE_FILE_LIST), true);
 				getListMenu->appendThis(TSTRING(GET_FILE_LIST), true);
 				pmMenu->appendThis(TSTRING(SEND_PRIVATE_MESSAGE), true);
-				readdMenu->appendThis(TSTRING(READD_SOURCE), true);
 
-				copyMenu->appendThis(TSTRING(COPY), true);
 				fileMenu.AppendMenu(MF_SEPARATOR);
 
+				ListType::MenuItemList customItems{
+					{ TSTRING(MAGNET_LINK), &handleCopyMagnet }
+				};
+
+				ctrlQueue.appendCopyMenu(fileMenu, customItems);
 				WinUtil::appendSearchMenu(fileMenu, ii->getPath());
 
 				fileMenu.AppendMenu(MF_SEPARATOR);
@@ -1364,6 +1359,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				fileMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 				fileMenu.AppendMenu(MF_SEPARATOR);
 
+				readdMenu->appendThis(TSTRING(READD_SOURCE), true);
 				removeMenu->appendThis(TSTRING(REMOVE_SOURCE), true);
 				removeAllMenu->appendThis(TSTRING(REMOVE_FROM_ALL), true);
 
