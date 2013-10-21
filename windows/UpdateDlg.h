@@ -53,7 +53,7 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)	
 	END_MSG_MAP()
 
-	UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersionString, const string& infoUrl, bool autoUpdate, double aVersion, int aBuild, const string& autoUpdateUrl);
+	UpdateDlg(const string& aTitle, const string& aMessage, const string& aVersionString, const string& infoUrl, bool autoUpdate, int build, const string& autoUpdateUrl);
 	~UpdateDlg();
 
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
@@ -89,7 +89,6 @@ private:
 	string infoLink;
 	string title;
 	string autoUpdateUrl;
-	double version;
 	int buildID;
 
 	string versionString;
