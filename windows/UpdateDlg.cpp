@@ -92,7 +92,8 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 
 // only beta version has commit number in versionstring
 #ifdef BETAVER
-	ctrlCurrentVersion.SetWindowText(Text::toT(VERSIONSTRING + "-" + Util::toString(COMMIT_NUMBER)).c_str());
+	//ctrlCurrentVersion.SetWindowText(Text::toT(VERSIONSTRING + "-" + Util::toString(COMMIT_NUMBER)).c_str());
+	ctrlCurrentVersion.SetWindowText(Text::toT(shortVersionString).c_str());
 #else
 	ctrlCurrentVersion.SetWindowText(Text::toT(VERSIONSTRING).c_str());
 #endif
