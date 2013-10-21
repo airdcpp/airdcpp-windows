@@ -1,3 +1,15 @@
+2.70
+
+Changed:
+- Organize default toolbar buttons ( button order will be reset, sorry for that. )
+- Use settings profiles to customize toolbar for each profile
+- Reorder readd/remove source rightclick in queueframe, move All at the top.
+- Use the same icons in pm tab and userlist, ability to state away mode and reg status on tab icon.
+
+Removed:
+- Netstats window
+- Shutdown pc toolbar button function still available via /shutdown
+
 2.61
 
 Changed:

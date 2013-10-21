@@ -1208,7 +1208,7 @@ LRESULT MainFrame::onEndSession(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 }
 
 void MainFrame::showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& aTitle) {
-	::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : m_hWnd, aMsg.c_str(), (!aTitle.empty() ? aTitle.c_str() : Text::toT(fullVersionString).c_str()), aFlags);
+	::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : m_hWnd, aMsg.c_str(), (!aTitle.empty() ? aTitle.c_str() : Text::toT(APPNAME " " + shortVersionString).c_str()), aFlags);
 }
 
 LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
@@ -1398,7 +1398,7 @@ LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 		if(u) {
 			addThreadedTask([=] { DirectoryListingManager::getInstance()->openFileList(HintedUser(u, Util::emptyString), Text::fromT(file)); });
 		} else {
-			MessageBox(CTSTRING(INVALID_LISTNAME), Text::toT(fullVersionString).c_str());
+			MessageBox(CTSTRING(INVALID_LISTNAME), Text::toT(APPNAME " " + shortVersionString).c_str());
 		}
 	}
 	return 0;

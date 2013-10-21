@@ -1125,7 +1125,7 @@ LRESULT RichTextBox::onFind(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOO
 		//if we find the end of the document, notify the user and return
 		int result = (int)SendMessage(EM_FINDTEXTEX, (WPARAM)flags, (LPARAM)&ft);
 		if(-1 == result){
-			::MessageBox(WinUtil::findDialog, CTSTRING(NO_RESULTS_FOUND), Text::toT(fullVersionString).c_str(), MB_OK | MB_ICONINFORMATION);
+			::MessageBox(WinUtil::findDialog, CTSTRING(NO_RESULTS_FOUND), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_OK | MB_ICONINFORMATION);
 			return 0;
 		}
 
