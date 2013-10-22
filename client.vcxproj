@@ -377,6 +377,7 @@
     <ClInclude Include="client\DirectoryListingManagerListener.h" />
     <ClInclude Include="client\DirectoryMonitor.h" />
     <ClInclude Include="client\DirectoryMonitorListener.h" />
+    <ClInclude Include="client\DispatcherQueue.h" />
     <ClInclude Include="client\Download.h" />
     <ClInclude Include="client\DownloadManager.h" />
     <ClInclude Include="client\DownloadManagerListener.h" />
