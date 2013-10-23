@@ -62,20 +62,22 @@ public:
 		string fileName;
 		bool showDirDialog = useWhole || ((T*)this)->showDirDialog(fileName);
 
-		tstring target;
+		tstring targetT;
 		if (showDirDialog) {
-			target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
-			if(!WinUtil::browseDirectory(target, ((T*)this)->m_hWnd))
+			targetT = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
+			if (!WinUtil::browseDirectory(targetT, ((T*)this)->m_hWnd))
 				return;
 
 		} else {
-			target = Text::toT(SETTING(DOWNLOAD_DIRECTORY) + fileName);
-			if(!WinUtil::browseFile(target, ((T*)this)->m_hWnd))
+			targetT = Text::toT(SETTING(DOWNLOAD_DIRECTORY) + fileName);
+			if (!WinUtil::browseFile(targetT, ((T*)this)->m_hWnd))
 				return;
 
 		}
+
+		auto target = Text::fromT(targetT);
 		SettingsManager::getInstance()->addToHistory(showDirDialog ? target : Util::getFilePath(target), SettingsManager::HISTORY_DIR);
-		onDownload(Text::fromT(target), useWhole, isSizeUnknown, QueueItemBase::DEFAULT);
+		onDownload(target, useWhole, isSizeUnknown, QueueItemBase::DEFAULT);
 	}
 
 	void onDownloadVirtual(const string& aTarget, bool isFav, bool isWhole, bool isSizeUnknown) {
@@ -136,9 +138,8 @@ public:
 		const auto& ldl = SettingsManager::getInstance()->getHistory(SettingsManager::HISTORY_DIR);
 		if(!ldl.empty()) {
 			targetMenu.InsertSeparatorLast(TSTRING(PREVIOUS_FOLDERS));
-			for(auto& i: ldl) {
-				auto target = Text::fromT(i);
-				targetMenu.appendItem(i.c_str(), [=] { onDownload(target, wholeDir, isSizeUnknown, QueueItemBase::DEFAULT); });
+			for(auto& path: ldl) {
+				targetMenu.appendItem(Text::toT(path).c_str(), [=] { onDownload(path, wholeDir, isSizeUnknown, QueueItemBase::DEFAULT); });
 			}
 
 			targetMenu.appendSeparator();

@@ -1893,7 +1893,7 @@ void WinUtil::appendHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType a
 
 	const auto& lastSearches = SettingsManager::getInstance()->getHistory(aType);
 	for(const auto& s: lastSearches) {
-		ctrlCombo.InsertString(0, s.c_str());
+		ctrlCombo.InsertString(0, Text::toT(s).c_str());
 	}
 }
 
@@ -1902,7 +1902,7 @@ string WinUtil::addHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aT
 	TCHAR *buf = new TCHAR[ctrlCombo.GetWindowTextLength()+1];
 	ctrlCombo.GetWindowText(buf, ctrlCombo.GetWindowTextLength()+1);
 	ret = Text::fromT(buf);
-	if(!ret.empty() && SettingsManager::getInstance()->addToHistory(buf, aType))
+	if(!ret.empty() && SettingsManager::getInstance()->addToHistory(ret, aType))
 		appendHistory(ctrlCombo, aType);
 
 	delete[] buf;
