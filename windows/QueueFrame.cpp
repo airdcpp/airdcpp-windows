@@ -194,9 +194,6 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		case COLUMN_SEGMENTS: {
 			int64_t min_seg_size = (SETTING(MIN_SEGMENT_SIZE)*1024);
 
-			auto qm = QueueManager::getInstance();
-
-			auto lock = qm->lockRead();
 			if(getSize() < min_seg_size){
 				return Util::toStringW(qi->getDownloads().size()) + _T("/") + Util::toStringW(1);
 			} else {

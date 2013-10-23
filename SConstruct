@@ -86,6 +86,8 @@ vars.AddVariables(
 
 env = Environment(ENV = os.environ, variables = vars, package = PACKAGE)
 
+Execute('sh generate-version.sh') 
+
 env['mode'] = 'debug' if env.get('debug') else 'release'
 env['build_path'] = BUILD_PATH + env['mode'] + '/'
 
