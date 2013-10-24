@@ -865,7 +865,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 			callAsync([=] { addStatusLine(text); });
 		});
 	} else if(stricmp(cmd.c_str(), _T("sharestats")) == 0) {
-		status = Text::toT(ShareManager::getInstance()->getStats());
+		status = Text::toT(ShareManager::getInstance()->printStats());
 	} else if(stricmp(cmd.c_str(), _T("speed")) == 0) {
 		status = ChatCommands::Speedinfo();
 	} else if(stricmp(cmd.c_str(), _T("info")) == 0) {
