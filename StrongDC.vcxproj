@@ -594,6 +594,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="windows\SystemFrame.cpp" />
+    <ClCompile Include="windows\TempShare_dlg.cpp" />
     <ClCompile Include="windows\TextFrame.cpp" />
     <ClCompile Include="windows\toolbarpage.cpp" />
     <ClCompile Include="windows\TransferView.cpp" />

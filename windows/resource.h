@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by N:\projects\airdc-git\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -1375,6 +1375,8 @@
 #define IDC_OWN_CERT                    1732
 #define IDC_CERT_USE_DEFAULT_PATHS      1733
 #define IDC_UPDATE_ICON                 1734
+#define IDC_BUTTON2                     1735
+#define IDC_TMP_REMOVE_ALL              1735
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1782,7 +1784,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        359
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1735
+#define _APS_NEXT_CONTROL_VALUE         1736
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif
