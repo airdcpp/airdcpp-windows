@@ -37,6 +37,8 @@ public:
 	static string generateStats();
 	static string uptimeInfo();
 
+	static string ClientVersionInfo();
+
 	static TStringList FindVolumes();
 };
 
