@@ -1,14 +1,13 @@
 @echo off
 set file=%1client\version-revno.inc
 set tmpfile=%1client\version-revno.inc.tmp
+set cmd=git describe --abbrev"="4 --long
 
-call git describe --abbrev=4 > version.txt
-
-for /F "tokens=1,2,3 delims=-" %%a in (version.txt) do ( 
-	echo #define GIT_TAG %%a > %tmpfile%
-	echo #define GIT_COMMIT %%b >> %tmpfile%
+for /F "tokens=1,2,3 delims=-" %%a in ('%cmd%') do (
+	echo #define GIT_TAG "%%a" > %tmpfile%
+	echo #define GIT_COMMIT "%%b" >> %tmpfile%
 	echo #define GIT_HASH "%%c" >> %tmpfile%
-)
+) 
 
 for /F "tokens=*" %%a in ('git rev-list HEAD --count') do echo #define GIT_COMMIT_COUNT %%a >> %tmpfile%
 
@@ -25,4 +24,3 @@ goto :end
 	
 :end
 ECHO Y | DEL %tmpfile%
-ECHO Y | DEL version.txt
