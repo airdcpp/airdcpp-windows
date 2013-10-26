@@ -296,6 +296,12 @@ result += _T(" =-");
 return result;
 
 }
+
+string ChatCommands::ClientVersionInfo() {
+	//TODO: add something cleaner / better?
+	return APPNAME " " + shortVersionString + " / Build: " + BUILD_NUMBER_STR + " / Version Date: " + Util::getDateTime(getVersionDate());
+}
+
 string ChatCommands::getSysUptime(){
 			
 	static HINSTANCE kernel32lib = NULL;

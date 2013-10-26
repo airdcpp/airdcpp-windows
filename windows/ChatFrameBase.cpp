@@ -870,8 +870,12 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		status = ChatCommands::Speedinfo();
 	} else if(stricmp(cmd.c_str(), _T("info")) == 0) {
 		status = ChatCommands::UselessInfo();
-	} else if(stricmp(cmd.c_str(), _T("df")) == 0) {
+	}
+	else if (stricmp(cmd.c_str(), _T("df")) == 0) {
 		status = ChatCommands::DiskSpaceInfo();
+
+	} else if (stricmp(cmd.c_str(), _T("version")) == 0) {
+		status = Text::toT(ChatCommands::ClientVersionInfo());
 	} else if(stricmp(cmd.c_str(), _T("dfs")) == 0) {
 		message = ChatCommands::DiskSpaceInfo();
 	} else if(stricmp(cmd.c_str(), _T("uptime")) == 0) {
