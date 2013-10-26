@@ -1081,8 +1081,10 @@ void RichTextBox::handleDeleteFile() {
 }
 
 void RichTextBox::handleAddAutoSearchFile() {
-	string targetPath = Util::getFilePath(Text::fromT(selectedWord));
-	string fileName = Util::getFileName(Text::fromT(selectedWord));
+	string targetPath;
+	if (selectedWord.find(PATH_SEPARATOR) != tstring::npos)
+		targetPath = Util::getFilePath(Text::fromT(selectedWord));
+	auto fileName = Util::getFileName(Text::fromT(selectedWord));
 
 	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, TargetUtil::TARGET_PATH, false);
 
@@ -1090,7 +1092,7 @@ void RichTextBox::handleAddAutoSearchFile() {
 }
 
 void RichTextBox::handleAddAutoSearchDir() {
-	string targetPath = Util::getParentDir(Text::fromT(selectedWord));
+	string targetPath = Util::getParentDir(Text::fromT(selectedWord), PATH_SEPARATOR, true);
 	string dirName = Util::getLastDir(selectedWord[selectedWord.length()-1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selectedWord)) : Text::fromT(selectedWord));
 
 	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true, false);

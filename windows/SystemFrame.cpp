@@ -452,8 +452,10 @@ LRESULT SystemFrame::onDeleteFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 LRESULT SystemFrame::onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	string targetPath = Util::getFilePath(Text::fromT(selWord));
-	string fileName = Util::getFileName(Text::fromT(selWord));
+	string targetPath;
+	if (selWord.find(PATH_SEPARATOR) != tstring::npos)
+		targetPath = Util::getFilePath(Text::fromT(selWord));
+	auto fileName = Util::getFileName(Text::fromT(selWord));
 
 	AutoSearchManager::getInstance()->addAutoSearch(fileName, targetPath, TargetUtil::TARGET_PATH, false);
 
@@ -462,8 +464,8 @@ LRESULT SystemFrame::onAddAutoSearchFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWN
 }
 
 LRESULT SystemFrame::onAddAutoSearchDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	string targetPath = Util::getParentDir(Text::fromT(selWord));
-	string dirName = Util::getLastDir(selWord[selWord.length()-1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selWord)) : Text::fromT(selWord));
+	auto targetPath = Util::getParentDir(Text::fromT(selWord), PATH_SEPARATOR, true);
+	auto dirName = Util::getLastDir(selWord[selWord.length() - 1] != PATH_SEPARATOR ? Util::getFilePath(Text::fromT(selWord)) : Text::fromT(selWord));
 
 	AutoSearchManager::getInstance()->addAutoSearch(dirName, targetPath, TargetUtil::TARGET_PATH, true, false);
 
