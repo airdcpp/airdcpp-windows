@@ -353,6 +353,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			},
 				[=](float progress) { (*WinUtil::splash)(progress); }
 			);
+			(*WinUtil::splash)(STRING(LOADING_GUI));
 		} catch (...) {
 			ExitProcess(1);
 		}

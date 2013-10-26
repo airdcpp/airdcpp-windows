@@ -206,7 +206,7 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 		});
 	} else {
 		findSearchHit(true);
-		//changeWindowState(true);
+		changeWindowState(true);
 		runF([=] { 
 			updateStatus(TSTRING_F(X_RESULTS_FOUND, dl->getResultCount()));
 			dl->setWaiting(false);
