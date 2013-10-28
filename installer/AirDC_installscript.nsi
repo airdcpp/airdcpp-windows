@@ -89,22 +89,42 @@ Section "AirDC++ (required)" dcpp
   CopyFiles "$DOCUMENTS\AirDC++\*.xml" "$DOCUMENTS\AirDC++\BACKUP\"
   goto no_backup
 
-  check_programdir:
+ check_programdir:
   ; Maybe we're upgrading from an older version so lets check the old Settings directory
-  IfFileExists "$INSTDIR\Settings\*.xml" 0 no_backup
+  IfFileExists "$INSTDIR\Settings\*.xml" 0 check_dcpp
   MessageBox MB_YESNO|MB_ICONQUESTION "A previous installation of AirDC++ has been found in the target folder, do you want to backup settings and queue? (You can find them in $INSTDIR\BACKUP later)" IDNO no_backup
   CreateDirectory "$INSTDIR\BACKUP\"
   CopyFiles "$INSTDIR\Settings\*.xml" "$INSTDIR\BACKUP\"
   CopyFiles "$INSTDIR\Settings\*.dat" "$INSTDIR\BACKUP\"
+  goto no_backup
 
-;check_dcpp:
+ check_dcpp:
   ; Lets check the profile for possible DC++ settings to import
-  IfFileExists "$APPDATA\DC++\*.xml" 0 no_backup
-  MessageBox MB_YESNO|MB_ICONQUESTION "Settings of an existing DC++ installation has been found in the user profile, do you want to import settings and queue?" IDNO no_backup
+  IfFileExists "$APPDATA\DC++\*.xml" 0 check_apex
+  MessageBox MB_YESNO|MB_ICONQUESTION "Settings of an existing DC++ installation has been found in the user profile, do you want to import settings and queue?" IDNO check_apex
   CreateDirectory "$DOCUMENTS\AirDC++\"
   CopyFiles "$APPDATA\DC++\*.xml" "$DOCUMENTS\AirDC++\"
   CopyFiles "$APPDATA\DC++\*.dat" "$DOCUMENTS\AirDC++\"
   CopyFiles "$APPDATA\DC++\*.txt" "$DOCUMENTS\AirDC++\"
+  goto no_backup
+  
+ check_apex:
+  IfFileExists "$APPDATA\ApexDC++\*.xml" 0 check_strong
+  MessageBox MB_YESNO|MB_ICONQUESTION "Settings of an existing ApexDC++ installation has been found in the user profile, do you want to import settings and queue?" IDNO check_strong
+  CreateDirectory "$DOCUMENTS\AirDC++\"
+  CopyFiles "$APPDATA\ApexDC++\*.xml" "$DOCUMENTS\AirDC++\"
+  CopyFiles "$APPDATA\ApexDC++\*.dat" "$DOCUMENTS\AirDC++\"
+  CopyFiles "$APPDATA\ApexDC++\*.txt" "$DOCUMENTS\AirDC++\"
+  goto no_backup
+  
+ check_strong:
+  IfFileExists "$DOCUMENTS\StrongDC++\*.xml" 0 no_backup
+  MessageBox MB_YESNO|MB_ICONQUESTION "Settings of an existing StrongDC++ installation has been found in the user profile, do you want to import settings and queue?" IDNO no_backup
+  CreateDirectory "$DOCUMENTS\AirDC++\"
+  CopyFiles "$DOCUMENTS\StrongDC++\*.xml" "$DOCUMENTS\AirDC++\"
+  CopyFiles "$DOCUMENTS\StrongDC++\*.dat" "$DOCUMENTS\AirDC++\"
+  CopyFiles "$DOCUMENTS\StrongDC++\*.txt" "$DOCUMENTS\AirDC++\"
+  goto no_backup
 
 no_backup:
   ; Put file there
