@@ -40,11 +40,11 @@ struct FieldName {
 	tstring (*convert)(const string &val);
 };
 static tstring formatBytes(const string& val) {
-	return Text::toT(Util::formatBytes(val));
+	return Util::formatBytesW(Util::toInt(val));
 }
 
 static tstring formatSpeed(const string& val) {
-	return Text::toT(Util::formatConnectionSpeed(val));
+	return Util::formatConnectionSpeedW(Util::toInt64(val));
 }
 
 static const FieldName fields[] =

@@ -759,7 +759,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			/*if (hits > 1) {
 				//auto p = ctrlResults.list.
 			} else {*/
-				return Text::toT(sr->getConnectionStr());
+			return sr->isNMDC() ? Text::toT(sr->getConnectionStr()) : Util::formatConnectionSpeedW(sr->getConnectionInt());
 			//}
 		case COLUMN_HUB: 
 			/*if (hits > 1)

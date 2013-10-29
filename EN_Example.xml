@@ -1989,4 +1989,9 @@ Do you want to remove the auto search item as well?</string>
 	<string name="OverrideLimiter">Override limiter</string>
 	<string name="AsEndGreater">End time must be greater than the start time!</string>
 	<string name="ClosingWait">Closing, please wait...</string>
+	<string name="Pbits">Pbit/s</string>
+	<string name="Tbits">Tbit/s</string>
+	<string name="Gbits">Gbit/s</string>
+	<string name="Mbits">Mbit/s</string>
+	<string name="Kbits">Kbit/s</string>
 </resources>
