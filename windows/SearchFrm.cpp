@@ -336,12 +336,17 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 
 LRESULT SearchFrame::onUseExcluded(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	fixControls();
+	if (ctrlExcludedBool.GetCheck() == TRUE) { // The user just enabled, set the focus to the combobox
+		ctrlExcluded.SetFocus();
+	}
+
 	return 0;
 }
 
 void SearchFrame::fixControls() {
 	bool useExcluded = ctrlExcludedBool.GetCheck() == TRUE;
 	ctrlExcluded.EnableWindow(useExcluded);
+	ctrlExcluded.SetEditSel(-1,0); // deselect text
 }
 
 LRESULT SearchFrame::onMeasure(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
