@@ -1,14 +1,21 @@
-2.70
+2.62
 
-Changed:
-- Organize default toolbar buttons ( button order will be reset, sorry for that. )
-- Use settings profiles to customize toolbar for each profile
-- Reorder readd/remove source rightclick in queueframe, move All at the top.
-- Use the same icons in pm tab and userlist, ability to state away mode and reg status on tab icon.
+Added:
 
-Removed:
-- Netstats window
-- Shutdown pc toolbar button function still available via /shutdown
+- The installer will prompt for importing settings from DC++, ApexDC++ or StrongDC++ (new installations only)
+
+Fixed:
+
+- Fix a possible deadlock when closing the file list while it's being loaded
+- Fix a possible deadlock when performing share-related operations (refresh, monitoring, editing shares...)
+- Fix the messy file context menu in the queue tab
+- Fix searching in partial lists
+- Don't set the translation path when changing the client language to English
+- Fix possible issues with resolving addresses
+- Fix adding custom words from text to auto search
+- Fix a possible crash when moving bundles
+- Fix a bug when merging running bundles to a newly queued parent that makes the client consume all memory
+
 
 2.61
 
@@ -30,6 +37,7 @@ Fixed:
 - Fix overlapping of slow sources
 - Fix a crash when a bundle XML file can't be saved
 - Fix a memory leak when quitting settings with "Cancel"
+
 
 2.60
 
