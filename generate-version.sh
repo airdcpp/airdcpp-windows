@@ -25,6 +25,7 @@ else
 fi
 
 echo "#define GIT_COMMIT_COUNT `git rev-list HEAD --count`" >> $tmpFile
+echo "#define APPNAME_INC \"AirDC++\"" >> $tmpFile
 
 if diff -q "$file" "$tmpFile" > /dev/null; then
     : # files are the same

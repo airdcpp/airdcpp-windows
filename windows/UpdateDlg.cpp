@@ -90,13 +90,7 @@ LRESULT UpdateDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	::SetWindowText(GetDlgItem(IDC_UPDATE_VERSION), CTSTRING(CLIENT_VERSION));
 	::SetWindowText(GetDlgItem(IDC_UPDATE_HISTORY), CTSTRING(HISTORY));
 
-// only beta version has commit number in versionstring
-#ifdef BETAVER
-	//ctrlCurrentVersion.SetWindowText(Text::toT(VERSIONSTRING + "-" + Util::toString(COMMIT_NUMBER)).c_str());
 	ctrlCurrentVersion.SetWindowText(Text::toT(shortVersionString).c_str());
-#else
-	ctrlCurrentVersion.SetWindowText(Text::toT(VERSIONSTRING).c_str());
-#endif
 
 	m_Changelog.SetFont(WinUtil::font);
 	m_Changelog.SetBackgroundColor(WinUtil::bgColor); 

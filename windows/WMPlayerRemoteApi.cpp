@@ -22,7 +22,7 @@ HRESULT WMPlayerRemoteApi::QueryService(REFGUID /*ServiceGuid*/, REFIID refiid, 
 HRESULT WMPlayerRemoteApi::GetApplicationName(BSTR * bstrName) {
     HRESULT hresult = E_POINTER;
     if(bstrName) {
-        CComBSTR bstrApplicationName = _T(APPNAME);
+		CComBSTR bstrApplicationName = APPNAME;
 		*bstrName = bstrApplicationName.Detach();
         hresult = *bstrName? S_OK : E_POINTER;
     }

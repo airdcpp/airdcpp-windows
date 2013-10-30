@@ -772,7 +772,7 @@ bool WinUtil::MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& t
 	UINT ret = IDYES;
 	UINT bCheck = SettingsManager::getInstance()->get(i) ? BST_UNCHECKED : BST_CHECKED;
 	if(bCheck == BST_UNCHECKED)
-		ret = ::MessageBox(WinUtil::mainWnd, txt.c_str(), Text::toT(APPNAME " " + shortVersionString).c_str(), CTSTRING(DONT_ASK_AGAIN), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2, bCheck);
+		ret = ::MessageBox(WinUtil::mainWnd, txt.c_str(), Text::toT(shortVersionString).c_str(), CTSTRING(DONT_ASK_AGAIN), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2, bCheck);
 		
 	SettingsManager::getInstance()->set(i, bCheck != BST_CHECKED);
 	return ret == IDYES;
@@ -781,18 +781,18 @@ bool WinUtil::MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& t
 void WinUtil::ShowMessageBox(SettingsManager::BoolSetting i, const tstring& txt) {
 	if (SettingsManager::getInstance()->get(i)) {
 		UINT bCheck = BST_UNCHECKED;
-		::MessageBox(WinUtil::mainWnd, txt.c_str(), Text::toT(APPNAME " " + shortVersionString).c_str(), CTSTRING(DONT_SHOW_AGAIN), MB_OK | MB_ICONWARNING | MB_DEFBUTTON2, bCheck);
+		::MessageBox(WinUtil::mainWnd, txt.c_str(), Text::toT(shortVersionString).c_str(), CTSTRING(DONT_SHOW_AGAIN), MB_OK | MB_ICONWARNING | MB_DEFBUTTON2, bCheck);
 		if (bCheck == BST_CHECKED)
 			SettingsManager::getInstance()->set(i, false);
 	}
 }
 
 void WinUtil::showMessageBox(const tstring& aText, int icon) {
-	::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : WinUtil::mainWnd, aText.c_str(), Text::toT(APPNAME " " + shortVersionString).c_str(), icon | MB_OK);
+	::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : WinUtil::mainWnd, aText.c_str(), Text::toT(shortVersionString).c_str(), icon | MB_OK);
 }
 
 bool WinUtil::showQuestionBox(const tstring& aText, int icon, int defaultButton /*= MB_DEFBUTTON2*/) {
-	return ::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : WinUtil::mainWnd, aText.c_str(), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_YESNO | icon | defaultButton) == IDYES;
+	return ::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : WinUtil::mainWnd, aText.c_str(), Text::toT(shortVersionString).c_str(), MB_YESNO | icon | defaultButton) == IDYES;
 }
 
 bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* = true */, const tstring& initialDir /* = Util::emptyString */, const tstring& aTitle /*= Util::emptyStringW*/, const TCHAR* types /* = NULL */, const TCHAR* defExt /* = NULL */) {
@@ -1757,11 +1757,11 @@ void WinUtil::removeBundle(const string& aBundleToken) {
 	if (aBundle) {
 		int finishedFiles = QueueManager::getInstance()->getFinishedItemCount(aBundle);
 		bool moveFinished = true;
-		if(::MessageBox(0, CTSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(aBundle->getName())), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+		if(::MessageBox(0, CTSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(aBundle->getName())), Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 			return;
 		} else {
 			if (finishedFiles > 0) {
-				if(::MessageBox(mainWnd, CTSTRING_F(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE, finishedFiles), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
+				if(::MessageBox(mainWnd, CTSTRING_F(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE, finishedFiles), Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 					moveFinished = false;
 				}
 			}
@@ -2218,7 +2218,7 @@ bool WinUtil::checkClientPassword() {
 	passDlg->ok = TSTRING(UNLOCK);
 	if(passDlg->DoModal(NULL) == IDOK) {
 		if (passDlg->line != Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
-			MessageBox(mainWnd, CTSTRING(INVALID_PASSWORD), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_OK | MB_ICONERROR);
+			MessageBox(mainWnd, CTSTRING(INVALID_PASSWORD), Text::toT(shortVersionString).c_str(), MB_OK | MB_ICONERROR);
 			return false;
 		}
 	}

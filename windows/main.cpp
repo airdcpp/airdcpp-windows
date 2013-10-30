@@ -166,7 +166,7 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 #endif
 
 	sprintf(buf, "Code: %x ( %s )\r\nVersion: %s %s\r\n", 
-		exceptionCode, getExceptionName(exceptionCode).c_str(), VERSIONSTRING, archStr.c_str());
+		exceptionCode, getExceptionName(exceptionCode).c_str(), shortVersionString, archStr.c_str());
 
 	f.write(buf, strlen(buf));
 	sprintf(buf, "Build: %s\r\n", 
@@ -335,7 +335,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			startup(
 				[&](const string& str) { (*WinUtil::splash)(str); },
 				[&](const string& str, bool isQuestion, bool isError) {
-					auto ret = ::MessageBox(WinUtil::splash->m_hWnd, Text::toT(str).c_str(), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_SETFOREGROUND | (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION));
+					auto ret = ::MessageBox(WinUtil::splash->m_hWnd, Text::toT(str).c_str(), Text::toT(shortVersionString).c_str(), MB_SETFOREGROUND | (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION));
 					return isQuestion ? ret == IDYES : true;
 			},
 				[&]() {
@@ -493,7 +493,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 					if (!success) {
 						if (::MessageBox(NULL, Text::toT("Updating failed:\n\n" + error + "\n\nDo you want to retry installing the update?").c_str(), 
-							Text::toT(APPNAME " " + shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
+							Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
 								continue;
 						}
 					}
@@ -541,7 +541,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		// Allow for more than one instance...
 		if(_tcslen(lpstrCmdLine) == 0) {
 			if (::MessageBox(NULL, _T("There is already an instance of AirDC++ running.\nDo you want to launch another instance anyway?"), 
-				Text::toT(APPNAME " " + shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
+				Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2 | MB_TOPMOST) == IDYES) {
 					multiple = true;
 			}
 		}
@@ -597,7 +597,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 
 	HINSTANCE hInstRich = ::LoadLibrary(_T("MSFTEDIT.DLL"));
 	if (hInstRich == NULL) {
-		MessageBox(NULL, _T("AirDC++ isn't supported in operating systems older than Microsoft Windows XP3"), Text::toT(APPNAME " " + shortVersionString).c_str(), MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(NULL, _T("AirDC++ isn't supported in operating systems older than Microsoft Windows XP3"), Text::toT(shortVersionString).c_str(), MB_OK | MB_ICONEXCLAMATION);
 		return FALSE;
 	}
 
