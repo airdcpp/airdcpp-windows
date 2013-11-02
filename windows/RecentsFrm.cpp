@@ -184,7 +184,7 @@ LRESULT RecentHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	
 	if(ctrlHubs.GetSelectedCount() == 1) {
 		int i = ctrlHubs.GetNextItem(-1, LVNI_SELECTED);
-		FavoriteHubEntryPtr e;
+		FavoriteHubEntryPtr e = new FavoriteHubEntry();
 		ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
 		e->setName(Text::fromT(buf));
 

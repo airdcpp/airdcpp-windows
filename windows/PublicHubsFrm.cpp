@@ -298,7 +298,7 @@ LRESULT PublicHubsFrame::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		int i = -1;
 		while( (i = ctrlHubs.GetNextItem(i, LVNI_SELECTED)) != -1) {
 
-			FavoriteHubEntryPtr e;
+			FavoriteHubEntryPtr e = new FavoriteHubEntry();
 			ctrlHubs.GetItemText(i, COLUMN_NAME, buf, 256);
 			e->setName(Text::fromT(buf));
 
