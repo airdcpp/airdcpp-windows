@@ -40,7 +40,7 @@ struct FieldName {
 	tstring (*convert)(const string &val);
 };
 static tstring formatBytes(const string& val) {
-	return Util::formatBytesW(Util::toInt(val));
+	return Util::formatBytesW(Util::toInt64(val));
 }
 
 static tstring formatSpeed(const string& val) {
@@ -230,7 +230,7 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		usersMenu.CreatePopupMenu();
 		usersMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG, CTSTRING(OPEN_USER_LOG));
 		usersMenu.AppendMenu(MF_SEPARATOR);
-		appendUserItems(usersMenu, true, ui ? ui->getUser() : nullptr);
+		appendUserItems(usersMenu, true, ui ? ui->getUser() : nullptr, ui && !ui->getHubUrl().empty());
 
 		if (ui) {
 			Bundle::SourceBundleList sourceBundles, badSourceBundles;
@@ -716,7 +716,10 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		noLimiter = fu->isSet(FavoriteUser::FLAG_SUPERUSER);
 		grantSlot = fu->isSet(FavoriteUser::FLAG_GRANTSLOT);
 		
-		setHubUrl(fu->getUrl().empty() ? hubUrl : fu->getUrl());
+		if (fu->getUrl().empty())
+			fu->setUrl(hubUrl);
+
+		setHubUrl(fu->getUrl());
 
 		//gets nicks and hubnames and updates the hint url
 		string url = getHubUrl();
