@@ -81,6 +81,7 @@ private:
 
 	TCHAR* title;
 
+	CComboBox ctrlUpdates;
 };
 
 #endif // !defined(AIRDC_PAGE_H)

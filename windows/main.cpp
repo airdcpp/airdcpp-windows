@@ -366,6 +366,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				t();
 			}
 			wizard.reset(nullptr);
+			SettingsManager::getInstance()->save();
 		}
 
 		PopupManager::newInstance();

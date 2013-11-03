@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by N:\projects\airgit\AirDC.rc
+// Used by C:\Projects\airdc-git\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -938,6 +938,7 @@
 #define IDC_PRIO_BALANCED               1319
 #define IDC_SETTINGS_SOCKET_IN_BUFFER   1320
 #define IDC_PREVIEW_NAME_TEXT           1320
+#define IDC_PLAYER_PATH2                1320
 #define IDC_ICON_SIZE                   1321
 #define IDC_PREVIEW_APPLICATION_TEXT    1321
 #define IDC_ICON_SIZE_HOVER             1322
@@ -1043,6 +1044,7 @@
 #define IDC_MCN_SPIN                    1375
 #define IDC_REMOVE_FILE                 1376
 #define IDC_MCN_SPIN2                   1376
+#define IDC_UPDATE_CHANNEL              1376
 #define IDC_SETTINGS_MAX_MCN            1377
 #define IDC_SETTINGS_MAX_MCN_UL         1378
 #define IDC_MCN_AUTODETECT              1379
@@ -1754,6 +1756,7 @@
 #define IDC_BROWSELIST                  19000
 #define IDC_REMOVE_SOURCE               20000
 #define IDC_PM                          21000
+#define IDC_UPDATE_CHANNEL_DESC         21000
 #define IDC_READD                       22000
 #define IDC_REMOVE_SOURCES              23000
 #define IDC_MENURANGE                   24000

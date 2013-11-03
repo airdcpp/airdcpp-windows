@@ -56,6 +56,9 @@ PropPage::TextItem MiscPage::texts[] = {
 	{ IDC_CLEAR_EXCLUDE_H, ResourceManager::CLEAR },
 	{ IDC_CLEAR_DL_H, ResourceManager::CLEAR },
 
+	// updates
+	{ IDC_UPDATE_CHANNEL_DESC, ResourceManager::UPDATE_CHANNEL },
+
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -122,6 +125,17 @@ LRESULT MiscPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	}
 	
 	SetDlgItemText(IDC_WINAMP_PATH, Text::toT(SETTING(WINAMP_PATH)).c_str());
+
+
+	// updates
+	ctrlUpdates.Attach(GetDlgItem(IDC_UPDATE_CHANNEL));
+	ctrlUpdates.AddString(CTSTRING(CHANNEL_STABLE));
+	ctrlUpdates.AddString(CTSTRING(CHANNEL_BETA));
+	if (SETTING(UPDATE_CHANNEL) == SettingsManager::UPDATE_NIGHTLY || getVersionType() == VERSION_NIGHTLY) {
+		ctrlUpdates.AddString(CTSTRING(CHANNEL_NIGHTLY));
+	}
+
+	ctrlUpdates.SetCurSel(SETTING(UPDATE_CHANNEL));
 	
 	fixControls();
 
@@ -175,6 +189,7 @@ void MiscPage::write() {
 	SettingsManager::getInstance()->set(SettingsManager::MPLAYERC_FORMAT, Text::fromT(MPCStr).c_str());
 	SettingsManager::getInstance()->set(SettingsManager::SPOTIFY_FORMAT, Text::fromT(SpotifyStr).c_str());
 
+	SettingsManager::getInstance()->set(SettingsManager::UPDATE_CHANNEL, ctrlUpdates.GetCurSel());
 }
 LRESULT MiscPage::onClickedWinampHelp(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 		if(CurSel == 0) {
