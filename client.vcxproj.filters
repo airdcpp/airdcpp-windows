@@ -802,6 +802,9 @@
     <ClInclude Include="client\DispatcherQueue.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="client\OfflineUser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="client\StringDefs.h">

@@ -429,6 +429,7 @@
     <ClInclude Include="client\MerkleTreeOutputStream.h" />
     <ClInclude Include="client\NmdcHub.h" />
     <ClInclude Include="client\noexcept.h" />
+    <ClInclude Include="client\OfflineUser.h" />
     <ClInclude Include="client\OnlineUser.h" />
     <ClInclude Include="client\Pointer.h" />
     <ClInclude Include="client\pubkey.h" />

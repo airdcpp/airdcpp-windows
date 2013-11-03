@@ -731,7 +731,7 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : fu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen())) : TSTRING(UNKNOWN);
 		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
 		columns[COLUMN_LIMITER] = noLimiter ? TSTRING(YES) : TSTRING(NO);
-	} else {
+	} else if (u->isOnline()) {
 		noLimiter = false;
 		isFavorite = false;
 		grantSlot = hasReservedSlot();
@@ -742,10 +742,24 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 		setHubUrl(url);
 
 		columns[COLUMN_NICK] = Text::toT(ui.first);
-		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(getHubUrl());
-		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : TSTRING(OFFLINE);
+		columns[COLUMN_HUB] = Text::toT(ui.second);
+		columns[COLUMN_SEEN] = TSTRING(ONLINE);
 		columns[COLUMN_DESCRIPTION] = Util::emptyStringT;
 		columns[COLUMN_LIMITER] = _T("-");
+	} else { //user is offline
+		noLimiter = false;
+		isFavorite = false;
+		grantSlot = hasReservedSlot();
+
+		auto ofu = ClientManager::getInstance()->getOfflineUser(u->getCID());
+		if (ofu) {
+			setHubUrl(ofu->getUrl());
+			columns[COLUMN_NICK] = Text::toT(ofu->getNick());
+			columns[COLUMN_HUB] = Text::toT(ofu->getUrl());
+			columns[COLUMN_SEEN] = ofu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", ofu->getLastSeen())) : TSTRING(UNKNOWN);;
+			columns[COLUMN_DESCRIPTION] = Util::emptyStringT;
+			columns[COLUMN_LIMITER] = _T("-");
+		}
 	}
 
 	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());
