@@ -130,7 +130,7 @@ public:
 		}
 	}
 
-	void appendUserItems(OMenu& menu, bool showFullList = true, const UserPtr& aUser = nullptr) {
+	void appendUserItems(OMenu& menu, bool showFullList = true, const UserPtr& aUser = nullptr, bool allowOffline = false) {
 		UserTraits traits = ((T*)this)->getUserList().forEachSelectedT(UserTraits());
 		bool multipleHubs = false;
 
@@ -199,7 +199,7 @@ public:
 				menu.appendItem(TSTRING(SEND_PRIVATE_MESSAGE), [=] { handlePrivateMessage(); }, !listItems ? OMenu::FLAG_DEFAULT : 0);
 
 			if (listItems)
-				appendSingleDownloadItems(list.empty() ? true : false);
+				appendSingleDownloadItems(list.empty() && !allowOffline ? true : false);
 
 			//if(!traits.nonFavOnly)
 			//	menu.AppendMenu(MF_STRING, IDC_CONNECT, CTSTRING(CONNECT_FAVUSER_HUB));
