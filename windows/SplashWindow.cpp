@@ -72,7 +72,7 @@ LRESULT SplashWindow::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	SetWindowPos(dummy.m_hWnd, &rc, SWP_SHOWWINDOW);
 	CenterWindow();
 
-	title = Text::toT(VERSIONSTRING + " " + CONFIGURATION_TYPE);
+	title = Text::toT(VERSIONSTRING);
 
 	SetFocus();
 

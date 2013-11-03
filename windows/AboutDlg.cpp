@@ -38,7 +38,7 @@ _T("xaozon, kryppy, B1ackBoX, shuttle, ICU2M8, en_dator, NT, Bl0m5t3r, Shuttle, 
 
 LRESULT AboutDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
-	SetDlgItemText(IDC_VERSION, Text::toT(fullVersionString + " By Night and maksalaatikko \n").c_str());
+	SetDlgItemText(IDC_VERSION, Text::toT(shortVersionString + " By Night and maksalaatikko \n").c_str());
 
 	CEdit ctrlThanks(GetDlgItem(IDC_AIRTHANKS));
 	ctrlThanks.FmtLines(TRUE);

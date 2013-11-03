@@ -597,10 +597,6 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 	}	
 
 	HINSTANCE hInstRich = ::LoadLibrary(_T("MSFTEDIT.DLL"));
-	if (hInstRich == NULL) {
-		MessageBox(NULL, _T("AirDC++ isn't supported in operating systems older than Microsoft Windows XP3"), Text::toT(shortVersionString).c_str(), MB_OK | MB_ICONEXCLAMATION);
-		return FALSE;
-	}
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
  
