@@ -39,6 +39,13 @@ enum ColumnType{
 
 class ColumnInfo {
 public:
+	static tstring filterCountry(const tstring& aText) {
+		auto pos = aText.rfind(_T('('));
+		return pos != string::npos ? aText.substr(pos + 1, aText.length() - pos - 2) : aText;
+	}
+
+	typedef function < tstring(const tstring&) > CopyF;
+
 	struct ClickHandler {
 		typedef function < bool(int) > ClickF;
 		ClickHandler(ClickF aF, bool aDoubleClick) : f(aF), doubleClick(aDoubleClick) {}
@@ -62,6 +69,7 @@ public:
 	int format;
 	ColumnType colType;
 	ClickHandler clickHandler;
+	CopyF copyF = nullptr;
 };
 
 template<class T, int ctrlId>
@@ -159,6 +167,10 @@ public:
 
 	void addClickHandler(int column, ColumnInfo::ClickHandler::ClickF af, bool doubleClick) {
 		columnList[column]->clickHandler = { af, doubleClick };
+	}
+
+	void addCopyHandler(int column, ColumnInfo::CopyF af) {
+		columnList[column]->copyF = af;
 	}
 
 	BOOL hitIcon(int aItem, int aSubItem) {
@@ -293,7 +305,10 @@ public:
 		auto insertPos = items.begin();
 		for (const auto& ci : columnList) {
 			if (ci->colType != COLUMN_IMAGE) {
-				insertPos = items.emplace(insertPos, ci->name, [=](const T* aItem) { return aItem->getText(pos); });
+				insertPos = items.emplace(insertPos, ci->name, [=](const T* aItem) {
+					auto text = aItem->getText(pos);
+					return ci->copyF ? ci->copyF(text) : text; 
+				});
 				insertPos++;
 			}
 			pos++;

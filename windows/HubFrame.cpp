@@ -115,6 +115,9 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		ctrlUsers.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j, columnTypes[j]);
 	}
 
+	ctrlUsers.addCopyHandler(OnlineUser::COLUMN_IP4, &ColumnInfo::filterCountry);
+	ctrlUsers.addCopyHandler(OnlineUser::COLUMN_IP6, &ColumnInfo::filterCountry);
+
 	filter.addFilterBox(m_hWnd);
 	filter.addColumnBox(m_hWnd, ctrlUsers.getColumnList());
 	filter.addMethodBox(m_hWnd);

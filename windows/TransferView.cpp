@@ -73,6 +73,8 @@ LRESULT TransferView::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 		ctrlTransfers.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
 	}
 
+	ctrlTransfers.addCopyHandler(COLUMN_IP, &ColumnInfo::filterCountry);
+
 	ctrlTransfers.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlTransfers.setVisible(SETTING(MAINFRAME_VISIBLE));
 
