@@ -257,6 +257,8 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 						tmp += TSTRING(NO_NEEDED_PART);
 					} else if(bs.isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
 						tmp += TSTRING(CERTIFICATE_NOT_TRUSTED);
+					} else if (bs.isSet(QueueItem::Source::FLAG_NO_TREE)) {
+						tmp += TSTRING(NO_FULL_TREE);
 					}
 					tmp += _T(')');
 				}
