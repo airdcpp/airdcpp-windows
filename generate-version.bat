@@ -2,7 +2,7 @@
 set file=%1client\version.inc
 set tmpfile=%1client\version.inc.tmp
 
-for /F "tokens=*" %%a in ('git describe --abbrev"="4') do echo #define GIT_TAG "%%a" >> %tmpfile%
+for /F "tokens=*" %%a in ('git describe --abbrev"="4  --dirty"="-d') do echo #define GIT_TAG "%%a" >> %tmpfile%
 
 for /F "tokens=*" %%a in ('git rev-list HEAD --count') do echo #define GIT_COMMIT_COUNT %%a >> %tmpfile%
 
