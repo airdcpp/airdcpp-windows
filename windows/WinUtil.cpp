@@ -1974,8 +1974,8 @@ bool WinUtil::onConnSpeedChanged(WORD wNotifyCode, WORD /*wID*/, HWND hWndCtl) {
 			CComboBox tmp;
 			tmp.Attach(hWndCtl);
 			DWORD dwSel;
-			if ((dwSel = tmp.GetEditSel()) != CB_ERR) {
-				tstring::iterator it = speed.begin() +  HIWORD(dwSel)-1;
+			if ((dwSel = tmp.GetEditSel()) != CB_ERR && dwSel > 0) {
+				auto it = speed.begin() +  HIWORD(dwSel)-1;
 				speed.erase(it);
 				tmp.SetEditSel(0,-1);
 				tmp.SetWindowText(speed.c_str());
