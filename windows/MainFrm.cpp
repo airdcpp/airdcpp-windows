@@ -52,7 +52,6 @@
 #include "iTunesCOMInterface.h"
 #include "SystemFrame.h"
 
-#include "../client/ConnectionManager.h"
 #include "../client/ConnectivityManager.h"
 #include "../client/DownloadManager.h"
 #include "../client/UploadManager.h"
@@ -1255,8 +1254,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			ShowWindow(SW_HIDE);
 			transferView.prepareClose();
 			
-			SearchManager::getInstance()->disconnect();
-			ConnectionManager::getInstance()->disconnect();
+			ConnectivityManager::getInstance()->disconnect();
 
 			DWORD id;
 			stopperThread = CreateThread(NULL, 0, stopper, this, 0, &id);
