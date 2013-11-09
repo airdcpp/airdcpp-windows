@@ -1379,6 +1379,7 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 
 	auto cl = p->second;
 	selectedWord = Text::toT(cl->url); // for magnets
+	updateSelectedText(pt);
 	updateAuthor();
 
 	openLink(cl);
@@ -1388,7 +1389,8 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 
 void RichTextBox::openLink(const ChatLink* cl) {
 	if (cl->getType() == ChatLink::TYPE_MAGNET) {
-		WinUtil::parseMagnetUri(Text::toT(cl->url), getMagnetSource(), this);
+		auto u = getMagnetSource();
+		WinUtil::parseMagnetUri(Text::toT(cl->url), u, this);
 	} else {
 		//the url regex also detects web links without any protocol part
 		auto link = cl->url;

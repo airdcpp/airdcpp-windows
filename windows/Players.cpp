@@ -682,7 +682,7 @@ string Players::getWinAmpSpam() {
 					ReadProcessMemory(w_hHandle, lpath, &buf, MAX_PATH, &buf_len);
 		
 				string fpath = buf;
-				string dir = AirUtil::getReleaseDir(fpath, true);
+				string dir = AirUtil::getReleaseDir(Util::getFilePath(fpath), true);
 				params["path"] = fpath; //full filepath, probobly not even needed.
 				params["filename"] = Util::getFileName(fpath); //only filename
 				params["directory"] = dir;
