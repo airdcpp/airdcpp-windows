@@ -1363,7 +1363,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		// web shortcuts
 		WinUtil::appendSearchMenu(fileMenu, [=](const WebShortcut* ws) {
 			ctrlFiles.list.forEachSelectedT([=](const ItemInfo* ii) { 
-				WinUtil::searchSite(ws, ii->type == ItemInfo::DIRECTORY ? ii->dir->getPath() : ii->file->getPath(), ii->type == ItemInfo::DIRECTORY); 
+				WinUtil::searchSite(ws, ii->type == ItemInfo::DIRECTORY ? ii->dir->getPath() : ii->file->getPath()); 
 			});
 		});
 
