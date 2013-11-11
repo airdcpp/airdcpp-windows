@@ -159,10 +159,14 @@ bool RichTextBox::AppendChat(const Identity& i, const tstring& sMyNick, const ts
 
 		if(lNewTextLen >= lTextLimit) {
 			lRemoveChars = lSelEnd;
-			//shortLinks.clear();
 		} else {
-			while(lRemoveChars < lNewTextLen)
+			int lastRemoved = -1;
+			while (lRemoveChars < lNewTextLen) {
 				lRemoveChars = LineIndex(LineFromChar(multiplier++ * lTextLimit / 10));
+				if (lRemoveChars == lastRemoved) // it may get stuck which means an infinite loop
+					break;
+				lastRemoved = lRemoveChars;
+			}
 		}
 
 		//remove old links (the list must be in the same order than in text)
