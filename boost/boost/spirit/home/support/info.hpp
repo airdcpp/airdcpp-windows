@@ -28,11 +28,11 @@ namespace boost { namespace spirit
     // for uniformity.
     struct info
     {
-        struct nil_ {};
+        struct nil {};
 
         typedef
             boost::variant<
-                nil_
+                nil
               , utf8_string
               , recursive_wrapper<info>
               , recursive_wrapper<std::pair<info, info> >
@@ -41,7 +41,7 @@ namespace boost { namespace spirit
         value_type;
 
         explicit info(utf8_string const& tag_)
-          : tag(tag_), value(nil_()) {}
+          : tag(tag_), value(nil()) {}
 
         template <typename T>
         info(utf8_string const& tag_, T const& value_)
@@ -78,7 +78,7 @@ namespace boost { namespace spirit
         basic_info_walker(Callback& callback_, utf8_string const& tag_, int depth_)
           : callback(callback_), tag(tag_), depth(depth_) {}
 
-        void operator()(info::nil_) const
+        void operator()(info::nil) const
         {
             callback.element(tag, "", depth);
         }

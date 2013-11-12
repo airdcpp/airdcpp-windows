@@ -27,11 +27,10 @@
         };                                                                      \
     }                                                                           \
                                                                                 \
-    inline                                                                      \
     boost::phoenix::detail::expression::function_eval<                          \
         detail:: BOOST_PP_CAT(NAME, _impl_nullary)                              \
     >::type const                                                               \
-    NAME()                                                                      \
+    inline NAME()                                                               \
     {                                                                           \
         return boost::phoenix::detail::expression::                             \
                 function_eval<detail:: BOOST_PP_CAT(NAME, _impl_nullary)>       \
@@ -49,7 +48,7 @@
                                                                                 \
             template <typename This, BOOST_PHOENIX_typename_A(N)>               \
             struct result<This(BOOST_PHOENIX_A(N))>                             \
-            {typedef RESULT type;};                                             \
+            {typedef RESULT type;};                                            \
                                                                                 \
             template <BOOST_PHOENIX_typename_A(N)>                              \
             RESULT                                                              \
@@ -61,12 +60,11 @@
     }                                                                           \
                                                                                 \
     template <BOOST_PHOENIX_typename_A(N)>                                      \
-    inline                                                                      \
     typename                                                                    \
         boost::phoenix::detail::expression::function_eval<                      \
         detail:: BOOST_PP_CAT(BOOST_PP_CAT(NAME, _impl_), N)                    \
           , BOOST_PHOENIX_A(N)>::type const                                     \
-    NAME(BOOST_PHOENIX_A_const_ref_a(N))                                        \
+    inline NAME(BOOST_PHOENIX_A_const_ref_a(N))                                 \
     {                                                                           \
         return boost::phoenix::detail::expression::                             \
             function_eval<                                                      \

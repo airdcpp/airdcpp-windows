@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2012.
+//  (C) Copyright Gennadiy Rozental 2005-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 81012 $
+//  Version     : $Revision: 57992 $
 //
 //  Description : Runtime.Param library configuration
 // ***************************************************************************
@@ -70,10 +70,6 @@ typedef std::basic_ostream<char_type>                           out_stream;
 #ifdef BOOST_MSVC
 #pragma warning(push)
 #pragma warning(disable:4996) // putenv
-#endif
-
-#if defined(__MINGW32__)
-extern "C" int putenv( const char * );
 #endif
 
 #ifndef UNDER_CE

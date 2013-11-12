@@ -92,7 +92,7 @@ namespace std {
 }
 #endif
 
-#if defined(_CPPLIB_VER) && (_CPPLIB_VER < 540)
+#if !defined(__MSL_CPP__) && !defined(__LIBCOMO__)
     #define BOOST_CODECVT_DO_LENGTH_CONST const
 #else
     #define BOOST_CODECVT_DO_LENGTH_CONST

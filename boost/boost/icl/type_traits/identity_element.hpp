@@ -20,9 +20,8 @@ namespace boost{ namespace icl
 
     template <class Type>
     inline Type identity_element<Type>::value()
-    {
-        static Type _value;
-        return _value;
+    { 
+        return Type(); 
     }
 
     template<>

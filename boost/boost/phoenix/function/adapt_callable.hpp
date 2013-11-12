@@ -13,9 +13,8 @@
 #include <boost/preprocessor/repetition/repeat.hpp>
 
 #define BOOST_PHOENIX_ADAPT_CALLABLE_NULLARY(NAME, FUNC)                        \
-    inline                                                                      \
     boost::phoenix::detail::expression::function_eval<FUNC>::type const         \
-    NAME()                                                                      \
+    inline NAME()                                                               \
     {                                                                           \
         return boost::phoenix::detail::expression::                             \
                 function_eval<FUNC>::make(FUNC());                              \
@@ -25,12 +24,11 @@
 
 #define BOOST_PHOENIX_ADAPT_CALLABLE(NAME, FUNC, N)                             \
     template <BOOST_PHOENIX_typename_A(N)>                                      \
-    inline                                                                      \
     typename                                                                    \
         boost::phoenix::detail::expression::function_eval<                      \
             FUNC                                                                \
           , BOOST_PHOENIX_A(N)>::type const                                     \
-    NAME(BOOST_PHOENIX_A_const_ref_a(N))                                        \
+    inline NAME(BOOST_PHOENIX_A_const_ref_a(N))                                 \
     {                                                                           \
         return boost::phoenix::detail::expression::                             \
             function_eval<FUNC, BOOST_PHOENIX_A(N)>::                           \

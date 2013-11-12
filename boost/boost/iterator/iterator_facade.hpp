@@ -1,7 +1,6 @@
 // (C) Copyright David Abrahams 2002.
 // (C) Copyright Jeremy Siek    2002.
 // (C) Copyright Thomas Witt    2002.
-// (C) copyright Jeffrey Lee Hellrung, Jr. 2012.
 // Distributed under the Boost Software License, Version 1.0. (See
 // accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
@@ -14,7 +13,6 @@
 
 #include <boost/iterator/detail/facade_iterator_category.hpp>
 #include <boost/iterator/detail/enable_if.hpp>
-#include <boost/iterator/detail/operator_brackets_dispatch.hpp>
 
 #include <boost/static_assert.hpp>
 #include <boost/utility/addressof.hpp>
@@ -77,7 +75,7 @@ namespace boost
           , Return
           , int[3]
         >::type type;
-    };
+    };        
 #else
       : ::boost::iterators::enable_if<
            mpl::or_<
@@ -87,7 +85,7 @@ namespace boost
          , Return
         >
     {};
-#endif
+#endif 
 
     //
     // Generates associated types for an iterator_facade with the
@@ -96,7 +94,7 @@ namespace boost
     template <
         class ValueParam
       , class CategoryOrTraversal
-      , class Reference
+      , class Reference 
       , class Difference
     >
     struct iterator_facade_types
@@ -104,16 +102,16 @@ namespace boost
         typedef typename facade_iterator_category<
             CategoryOrTraversal, ValueParam, Reference
         >::type iterator_category;
-
+        
         typedef typename remove_const<ValueParam>::type value_type;
-
+        
         // Not the real associated pointer type
         typedef typename mpl::eval_if<
             boost::detail::iterator_writability_disabled<ValueParam,Reference>
           , add_pointer<const value_type>
           , add_pointer<value_type>
         >::type pointer;
-
+      
 # if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)                          \
     && (BOOST_WORKAROUND(_STLPORT_VERSION, BOOST_TESTED_AT(0x452))              \
         || BOOST_WORKAROUND(BOOST_DINKUMWARE_STDLIB, BOOST_TESTED_AT(310)))     \
@@ -159,7 +157,7 @@ namespace boost
      private:
         mutable value_type stored_value;
     };
-
+    
     //
     // In general, we can't determine that such an iterator isn't
     // writable -- we also need to store a copy of the old iterator so
@@ -211,7 +209,7 @@ namespace boost
         {
             return stored_iterator;
         }
-
+        
      private:
         mutable value_type stored_value;
         Iterator stored_iterator;
@@ -223,7 +221,7 @@ namespace boost
     struct is_non_proxy_reference_impl
     {
         static Reference r;
-
+        
         template <class R>
         static typename mpl::if_<
             is_convertible<
@@ -233,17 +231,17 @@ namespace boost
           , char[1]
           , char[2]
         >::type& helper(R const&);
-
+        
         BOOST_STATIC_CONSTANT(bool, value = sizeof(helper(r)) == 1);
     };
-
+        
     template <class Reference, class Value>
     struct is_non_proxy_reference
       : mpl::bool_<
             is_non_proxy_reference_impl<Reference, Value>::value
         >
     {};
-# else
+# else 
     template <class Reference, class Value>
     struct is_non_proxy_reference
       : is_convertible<
@@ -252,8 +250,8 @@ namespace boost
           , Value const volatile*
         >
     {};
-# endif
-
+# endif 
+        
     // A metafunction to choose the result type of postfix ++
     //
     // Because the C++98 input iterator requirements say that *r++ has
@@ -275,7 +273,7 @@ namespace boost
             mpl::and_<
                 // A proxy is only needed for readable iterators
                 is_convertible<Reference,Value const&>
-
+                
                 // No multipass iterator can have values that disappear
                 // before positions can be re-visited
               , mpl::not_<
@@ -298,7 +296,7 @@ namespace boost
     // standard's requirements. If *i is not a reference type, we must still
     // produce an lvalue to which a pointer can be formed.  We do that by
     // returning a proxy object containing an instance of the reference object.
-    template <class Reference>
+    template <class Reference, class Pointer>
     struct operator_arrow_dispatch // proxy references
     {
         struct proxy
@@ -317,10 +315,10 @@ namespace boost
         }
     };
 
-    template <class T>
-    struct operator_arrow_dispatch<T&> // "real" references
+    template <class T, class Pointer>
+    struct operator_arrow_dispatch<T&, Pointer> // "real" references
     {
-        typedef T* result_type;
+        typedef Pointer result_type;
         static result_type apply(T& x)
         {
             return boost::addressof(x);
@@ -330,11 +328,78 @@ namespace boost
 # if BOOST_WORKAROUND(BOOST_MSVC, < 1300)
     // Deal with ETI
     template<>
-    struct operator_arrow_dispatch<int>
+    struct operator_arrow_dispatch<int, int>
     {
         typedef int result_type;
     };
 # endif
+
+    // A proxy return type for operator[], needed to deal with
+    // iterators that may invalidate referents upon destruction.
+    // Consider the temporary iterator in *(a + n)
+    template <class Iterator>
+    class operator_brackets_proxy
+    {
+        // Iterator is actually an iterator_facade, so we do not have to
+        // go through iterator_traits to access the traits.
+        typedef typename Iterator::reference  reference;
+        typedef typename Iterator::value_type value_type;
+
+     public:
+        operator_brackets_proxy(Iterator const& iter)
+          : m_iter(iter)
+        {}
+
+        operator reference() const
+        {
+            return *m_iter;
+        }
+
+        operator_brackets_proxy& operator=(value_type const& val)
+        {
+            *m_iter = val;
+            return *this;
+        }
+
+     private:
+        Iterator m_iter;
+    };
+
+    // A metafunction that determines whether operator[] must return a
+    // proxy, or whether it can simply return a copy of the value_type.
+    template <class ValueType, class Reference>
+    struct use_operator_brackets_proxy
+      : mpl::not_<
+            mpl::and_<
+                // Really we want an is_copy_constructible trait here,
+                // but is_POD will have to suffice in the meantime.
+                boost::is_POD<ValueType>
+              , iterator_writability_disabled<ValueType,Reference>
+            >
+        >
+    {};
+        
+    template <class Iterator, class Value, class Reference>
+    struct operator_brackets_result
+    {
+        typedef typename mpl::if_<
+            use_operator_brackets_proxy<Value,Reference>
+          , operator_brackets_proxy<Iterator>
+          , Value
+        >::type type;
+    };
+
+    template <class Iterator>
+    operator_brackets_proxy<Iterator> make_operator_brackets_result(Iterator const& iter, mpl::true_)
+    {
+        return operator_brackets_proxy<Iterator>(iter);
+    }
+
+    template <class Iterator>
+    typename Iterator::value_type make_operator_brackets_result(Iterator const& iter, mpl::false_)
+    {
+      return *iter;
+    }
 
     struct choose_difference_type
     {
@@ -349,13 +414,13 @@ namespace boost
             , typename I1::difference_type
             , typename I2::difference_type
           >
-# else
+# else 
           mpl::eval_if<
               is_convertible<I2,I1>
             , iterator_difference<I1>
             , iterator_difference<I2>
           >
-# endif
+# endif 
         {};
 
     };
@@ -373,7 +438,7 @@ namespace boost
     operator op(                                                            \
         iterator_facade<Derived1, V1, TC1, Reference1, Difference1> const& lhs   \
       , iterator_facade<Derived2, V2, TC2, Reference2, Difference2> const& rhs)
-# else
+# else 
 #  define BOOST_ITERATOR_FACADE_INTEROP_HEAD(prefix, op, result_type)   \
     template <                                                          \
         class Derived1, class V1, class TC1, class Reference1, class Difference1 \
@@ -386,7 +451,7 @@ namespace boost
     operator op(                                                        \
         iterator_facade<Derived1, V1, TC1, Reference1, Difference1> const& lhs   \
       , iterator_facade<Derived2, V2, TC2, Reference2, Difference2> const& rhs)
-# endif
+# endif 
 
 #  define BOOST_ITERATOR_FACADE_PLUS_HEAD(prefix,args)              \
     template <class Derived, class V, class TC, class R, class D>   \
@@ -403,12 +468,12 @@ namespace boost
   //
   class iterator_core_access
   {
-# if defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)
+# if defined(BOOST_NO_MEMBER_TEMPLATE_FRIENDS)                  
       // Tasteless as this may seem, making all members public allows member templates
       // to work in the absence of member template friends.
    public:
 # else
-
+      
       template <class I, class V, class TC, class R, class D> friend class iterator_facade;
 
 #  define BOOST_ITERATOR_FACADE_RELATION(op)                                \
@@ -551,15 +616,14 @@ namespace boost
       > associated_types;
 
       typedef boost::detail::operator_arrow_dispatch<
-          Reference> operator_arrow_dispatch_;
-
-      typedef typename boost::detail::operator_brackets_dispatch<
-          Derived, Value, Reference>::type operator_brackets_dispatch_;
+          Reference
+        , typename associated_types::pointer
+      > operator_arrow_dispatch_;
 
    protected:
       // For use by derived classes
       typedef iterator_facade<Derived,Value,CategoryOrTraversal,Reference,Difference> iterator_facade_;
-
+      
    public:
 
       typedef typename associated_types::value_type value_type;
@@ -579,11 +643,16 @@ namespace boost
       {
           return operator_arrow_dispatch_::apply(*this->derived());
       }
-
-      typename operator_brackets_dispatch_::result_type
+        
+      typename boost::detail::operator_brackets_result<Derived,Value,reference>::type
       operator[](difference_type n) const
       {
-          return operator_brackets_dispatch_::apply(this->derived() + n);
+          typedef boost::detail::use_operator_brackets_proxy<Value,Reference> use_proxy;
+          
+          return boost::detail::make_operator_brackets_result<Derived>(
+              this->derived() + n
+            , use_proxy()
+          );
       }
 
       Derived& operator++()
@@ -602,7 +671,7 @@ namespace boost
           return tmp;
       }
 # endif
-
+      
       Derived& operator--()
       {
           iterator_core_access::decrement(this->derived());
@@ -657,14 +726,14 @@ namespace boost
   {
       typename boost::detail::postfix_increment_result<I,V,R,TC>::type
           tmp(*static_cast<I*>(&i));
-
+      
       ++i;
-
+      
       return tmp;
   }
-# endif
+# endif 
 
-
+  
   //
   // Comparison operator implementation. The library supplied operators
   // enables the user to provide fully interoperable constant/mutable

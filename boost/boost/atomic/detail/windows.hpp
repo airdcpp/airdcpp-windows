@@ -9,6 +9,7 @@
 //  See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
 
+#include <string.h>
 #include <cstddef>
 #include <boost/cstdint.hpp>
 #include <boost/type_traits/make_signed.hpp>
@@ -45,7 +46,7 @@ extern "C" void _mm_mfence(void);
 
 // Define compiler barriers
 #if defined(__INTEL_COMPILER)
-#define BOOST_ATOMIC_COMPILER_BARRIER __memory_barrier();
+#define BOOST_ATOMIC_COMPILER_BARRIER() __memory_barrier()
 #elif defined(_MSC_VER) && _MSC_VER >= 1310 && !defined(_WIN32_WCE)
 extern "C" void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
@@ -70,17 +71,6 @@ BOOST_FORCEINLINE void hardware_full_fence(void)
     BOOST_ATOMIC_INTERLOCKED_EXCHANGE(&tmp, 0);
 #endif
 }
-
-// Define compiler barriers
-#if defined(_MSC_VER) && _MSC_VER >= 1310 && !defined(_WIN32_WCE)
-extern "C" void _ReadWriteBarrier();
-#pragma intrinsic(_ReadWriteBarrier)
-#define BOOST_ATOMIC_COMPILER_BARRIER() _ReadWriteBarrier()
-#endif
-
-#ifndef BOOST_ATOMIC_COMPILER_BARRIER
-#define BOOST_ATOMIC_COMPILER_BARRIER()
-#endif
 
 BOOST_FORCEINLINE void
 platform_fence_before(memory_order)
@@ -749,7 +739,7 @@ class base_atomic<void*, void*, sizeof_pointer, Sign>
 {
 private:
     typedef base_atomic this_type;
-    typedef ptrdiff_t difference_type;
+    typedef std::ptrdiff_t difference_type;
     typedef void* value_type;
 
 protected:
@@ -844,7 +834,7 @@ class base_atomic<T*, void*, sizeof_pointer, Sign>
 private:
     typedef base_atomic this_type;
     typedef T* value_type;
-    typedef ptrdiff_t difference_type;
+    typedef std::ptrdiff_t difference_type;
 
 protected:
     typedef value_type value_arg_type;

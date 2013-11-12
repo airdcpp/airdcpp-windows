@@ -29,12 +29,12 @@ namespace boost
         class Allocator      = std::allocator<void*>
     >
     class ptr_vector : public 
-        ptr_sequence_adapter< T, std::vector<
-            typename ptr_container_detail::void_ptr<T>::type,Allocator>, 
+        ptr_sequence_adapter< T, 
+                              std::vector<void*,Allocator>, 
                               CloneAllocator >
     {  
-        typedef ptr_sequence_adapter< T, std::vector<
-            typename ptr_container_detail::void_ptr<T>::type,Allocator>, 
+        typedef ptr_sequence_adapter< T, 
+                                      std::vector<void*,Allocator>, 
                                       CloneAllocator > 
             base_class;
 

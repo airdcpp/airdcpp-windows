@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2008-2012.
+//  (C) Copyright Gennadiy Rozental 2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 82718 $
+//  Version     : $Revision: 49312 $
 //
 //  Description : contains definition for all test tools in test toolbox
 // ***************************************************************************
@@ -30,12 +30,11 @@
 // ************************************************************************** //
 
 namespace boost {
+
 namespace unit_test {
 
 class lazy_ostream {
 public:
-    virtual                 ~lazy_ostream()                                         {}
-
     static lazy_ostream&    instance()                                              { static lazy_ostream inst; return inst; }
 
     friend std::ostream&    operator<<( std::ostream& ostr, lazy_ostream const& o ) { return o( ostr ); }
@@ -46,7 +45,13 @@ public:
     // actual printing interface; to be accessed only by this class and children
     virtual std::ostream&   operator()( std::ostream& ostr ) const                  { return ostr; }
 protected:
-    explicit                lazy_ostream( bool p_empty = true ) : m_empty( p_empty )    {}
+    explicit                lazy_ostream( bool empty = true ) : m_empty( empty )    {}
+
+    // protected destructor to make sure right one is called
+#if BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x582))
+public:
+#endif
+    BOOST_TEST_PROTECTED_VIRTUAL ~lazy_ostream()                                    {}
 
 private:
     // Data members
@@ -55,43 +60,32 @@ private:
 
 //____________________________________________________________________________//
 
-template<typename PrevType, typename T, typename StorageT=T const&>
+template<typename T>
 class lazy_ostream_impl : public lazy_ostream {
 public:
-    lazy_ostream_impl( PrevType const& prev, T const& value )
+    lazy_ostream_impl( lazy_ostream const& prev, T value )
     : lazy_ostream( false )
     , m_prev( prev )
     , m_value( value )
-    {
-    }
-
+    {}
+private:
     virtual std::ostream&   operator()( std::ostream& ostr ) const
     {
         return m_prev(ostr) << m_value;
     }
-private:
+
     // Data members
-    PrevType const&         m_prev;
-    StorageT                m_value;
+    lazy_ostream const&     m_prev;
+    T                       m_value;
 };
 
 //____________________________________________________________________________//
 
 template<typename T>
-inline lazy_ostream_impl<lazy_ostream,T>
+inline lazy_ostream_impl<T const&>
 operator<<( lazy_ostream const& prev, T const& v )
 {
-    return lazy_ostream_impl<lazy_ostream,T>( prev, v );
-}
-
-//____________________________________________________________________________//
-
-template<typename PrevPrevType, typename TPrev, typename T>
-inline lazy_ostream_impl<lazy_ostream_impl<PrevPrevType,TPrev>,T>
-operator<<( lazy_ostream_impl<PrevPrevType,TPrev> const& prev, T const& v )
-{
-    typedef lazy_ostream_impl<PrevPrevType,TPrev> PrevType;
-    return lazy_ostream_impl<PrevType,T>( prev, v );
+    return lazy_ostream_impl<T const&>( prev, v );
 }
 
 //____________________________________________________________________________//
@@ -99,32 +93,18 @@ operator<<( lazy_ostream_impl<PrevPrevType,TPrev> const& prev, T const& v )
 #if BOOST_TEST_USE_STD_LOCALE
 
 template<typename R,typename S>
-inline lazy_ostream_impl<lazy_ostream,R& (BOOST_TEST_CALL_DECL *)(S&),R& (BOOST_TEST_CALL_DECL *)(S&)>
+inline lazy_ostream_impl<R& (BOOST_TEST_CALL_DECL *)(S&)>
 operator<<( lazy_ostream const& prev, R& (BOOST_TEST_CALL_DECL *man)(S&) )
 {
-    typedef R& (BOOST_TEST_CALL_DECL * ManipType)(S&);
-
-    return lazy_ostream_impl<lazy_ostream,ManipType,ManipType>( prev, man );
-}
-
-//____________________________________________________________________________//
-
-template<typename PrevPrevType, typename TPrev,typename R,typename S>
-inline lazy_ostream_impl<lazy_ostream_impl<PrevPrevType,TPrev>,R& (BOOST_TEST_CALL_DECL *)(S&),R& (BOOST_TEST_CALL_DECL *)(S&)>
-operator<<( lazy_ostream_impl<PrevPrevType,TPrev> const& prev, R& (BOOST_TEST_CALL_DECL *man)(S&) )
-{
-    typedef R& (BOOST_TEST_CALL_DECL * ManipType)(S&);
-
-    return lazy_ostream_impl<lazy_ostream_impl<PrevPrevType,TPrev>,ManipType,ManipType>( prev, man );
+    return lazy_ostream_impl<R& (BOOST_TEST_CALL_DECL *)(S&)>( prev, man );
 }
 
 //____________________________________________________________________________//
 
 #endif
 
-#define BOOST_TEST_LAZY_MSG( M ) (::boost::unit_test::lazy_ostream::instance() << M)
-
 } // namespace unit_test
+
 } // namespace boost
 
 //____________________________________________________________________________//

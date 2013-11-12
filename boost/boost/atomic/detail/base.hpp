@@ -402,7 +402,7 @@ class base_atomic<T *, void *, Size, Sign>
 private:
     typedef base_atomic this_type;
     typedef T * value_type;
-    typedef ptrdiff_t difference_type;
+    typedef std::ptrdiff_t difference_type;
     typedef lockpool::scoped_lock guard_type;
 
 protected:
@@ -500,7 +500,7 @@ class base_atomic<void *, void *, Size, Sign>
 {
 private:
     typedef base_atomic this_type;
-    typedef ptrdiff_t difference_type;
+    typedef std::ptrdiff_t difference_type;
     typedef void * value_type;
     typedef lockpool::scoped_lock guard_type;
 

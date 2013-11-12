@@ -36,7 +36,7 @@ namespace boost { namespace fusion
     {
         return deque<typename detail::as_fusion_element<T>::type...>(arg...);
     }
- }}
+}}
 
 #endif
 #endif

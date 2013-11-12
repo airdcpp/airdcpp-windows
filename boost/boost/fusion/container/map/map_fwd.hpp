@@ -19,7 +19,7 @@
 #else
 # if !defined(BOOST_FUSION_HAS_VARIADIC_MAP)
 #   define BOOST_FUSION_HAS_VARIADIC_MAP
-# endif
+#endif
 
 #include <boost/fusion/container/map/detail/map_impl.hpp>
 

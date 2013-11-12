@@ -29,7 +29,7 @@ namespace boost { namespace fusion
             struct apply
             {
                 typedef map<fusion::pair<Key, T&>...> type;
-            };
+        };
         };
     }
 
@@ -40,7 +40,7 @@ namespace boost { namespace fusion
         typedef map<fusion::pair<Key, T&>...> result_type;
         return result_type(arg...);
     }
- }}
+}}
 
 #endif
 #endif

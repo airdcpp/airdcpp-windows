@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2012.
+//  (C) Copyright Gennadiy Rozental 2001-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 81320 $
+//  Version     : $Revision: 49312 $
 //
 //  Description : defines class unit_test_result that is responsible for 
 //  gathering test results and presenting this information to end-user
@@ -17,7 +17,7 @@
 #define BOOST_TEST_RESULTS_COLLECTOR_HPP_071894GER
 
 // Boost.Test
-#include <boost/test/tree/observer.hpp>
+#include <boost/test/test_observer.hpp>
 
 #include <boost/test/detail/global_typedef.hpp>
 #include <boost/test/detail/fwd_decl.hpp>
@@ -30,6 +30,7 @@
 //____________________________________________________________________________//
 
 namespace boost {
+
 namespace unit_test {
 
 // ************************************************************************** //
@@ -53,10 +54,8 @@ public:
 
     counter_prop    p_assertions_passed;
     counter_prop    p_assertions_failed;
-    counter_prop    p_warnings_failed;
     counter_prop    p_expected_failures;
     counter_prop    p_test_cases_passed;
-    counter_prop    p_test_cases_warned;
     counter_prop    p_test_cases_failed;
     counter_prop    p_test_cases_skipped;
     counter_prop    p_test_cases_aborted;
@@ -80,29 +79,32 @@ public:
 class BOOST_TEST_DECL results_collector_t : public test_observer, public singleton<results_collector_t> {
 public:
     // test_observer interface implementation
-    virtual void        test_start( counter_t test_cases_amount );
+    void                test_start( counter_t test_cases_amount );
+    void                test_finish();
+    void                test_aborted();
 
-    virtual void        test_unit_start( test_unit const& );
-    virtual void        test_unit_finish( test_unit const&, unsigned long );
-    virtual void        test_unit_skipped( test_unit const& );
-    virtual void        test_unit_aborted( test_unit const& );
+    void                test_unit_start( test_unit const& );
+    void                test_unit_finish( test_unit const&, unsigned long elapsed );
+    void                test_unit_skipped( test_unit const& );
+    void                test_unit_aborted( test_unit const& );
 
-    virtual void        assertion_result( unit_test::assertion_result );
-    virtual void        exception_caught( execution_exception const& );
-
-    virtual int         priority() { return 2; }
+    void                assertion_result( bool passed );
+    void                exception_caught( execution_exception const& );
 
     // results access
     test_results const& results( test_unit_id ) const;
 
 private:
-    BOOST_TEST_SINGLETON_CONS( results_collector_t )
+    BOOST_TEST_SINGLETON_CONS( results_collector_t );
 };
 
 BOOST_TEST_SINGLETON_INST( results_collector )
 
 } // namespace unit_test
+
 } // namespace boost
+
+//____________________________________________________________________________//
 
 #include <boost/test/detail/enable_warnings.hpp>
 

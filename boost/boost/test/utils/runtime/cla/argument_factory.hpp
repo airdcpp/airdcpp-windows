@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2012.
+//  (C) Copyright Gennadiy Rozental 2005-2008.
 //  Use, modification, and distribution are subject to the 
 //  Boost Software License, Version 1.0. (See accompanying file 
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 81012 $
+//  Version     : $Revision: 57992 $
 //
 //  Description : generic typed_argument_factory implementation
 // ***************************************************************************
@@ -33,9 +33,11 @@
 
 #include <boost/test/utils/runtime/cla/iface/argument_factory.hpp>
 
+// Boost.Test
+#include <boost/test/utils/callback.hpp>
+
 // Boost
 #include <boost/optional.hpp>
-#include <boost/function/function2.hpp>
 
 namespace boost {
 
@@ -110,9 +112,9 @@ struct typed_argument_factory : public argument_factory {
 
 // !! private?
     // Data members
-    boost::function<void (parameter const&,T&)>                 m_value_handler;
-    boost::function<void (parser const&,boost::optional<T>&)>   m_value_generator;
-    boost::function<void (argv_traverser&,boost::optional<T>&)> m_value_interpreter;
+    unit_test::callback2<parameter const&,T&>                   m_value_handler;
+    unit_test::callback2<parser const&,boost::optional<T>&>     m_value_generator;
+    unit_test::callback2<argv_traverser&,boost::optional<T>&>   m_value_interpreter;
 };
 
 //____________________________________________________________________________//

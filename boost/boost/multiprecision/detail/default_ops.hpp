@@ -11,6 +11,7 @@
 #include <boost/math/special_functions/fpclassify.hpp>
 #include <boost/utility/enable_if.hpp>
 #include <boost/mpl/front.hpp>
+#include <boost/mpl/fold.hpp>
 #include <boost/cstdint.hpp>
 #include <boost/type_traits/make_unsigned.hpp>
 
@@ -808,6 +809,7 @@ struct terminal
 template<class R, class B>
 struct calculate_next_larger_type
 {
+   // Find which list we're looking through:
    typedef typename mpl::if_<
       is_signed<R>,
       typename B::signed_types,
@@ -817,11 +819,23 @@ struct calculate_next_larger_type
          typename B::float_types
       >::type
    >::type list_type;
+   // A predicate to find a type with enough bits:
    typedef typename has_enough_bits<R, std::numeric_limits<R>::digits>::template type<mpl::_> pred_type;
+   // See if the last type is in the list, if so we have to start after this:
    typedef typename mpl::find_if<
       list_type,
+      is_same<R, mpl::_>
+   >::type start_last;
+   // Where we're starting from, either the start of the sequence or the last type found:
+   typedef typename mpl::if_<is_same<start_last, typename mpl::end<list_type>::type>, typename mpl::begin<list_type>::type, start_last>::type start_seq;
+   // The range we're searching:
+   typedef mpl::iterator_range<start_seq, typename mpl::end<list_type>::type> range;
+   // Find the next type:
+   typedef typename mpl::find_if<
+      range,
       pred_type
    >::type iter_type;
+   // Either the next type, or a "terminal" to indicate we've run out of types to search:
    typedef typename mpl::eval_if<
       is_same<typename mpl::end<list_type>::type, iter_type>,
       mpl::identity<terminal<R> >,
@@ -1055,6 +1069,14 @@ inline int eval_msb(const T& val)
    {
       BOOST_THROW_EXCEPTION(std::range_error("Testing individual bits in negative values is not supported - results are undefined."));
    }
+   //
+   // This implementation is really really rubbish - it does
+   // a linear scan for the most-significant-bit.  We should really
+   // do a binary search, but as none of our backends actually needs
+   // this implementation, we'll leave it for now.  In fact for most
+   // backends it's likely that there will always be a more efficient
+   // native implementation possible.
+   //
    unsigned result = 0;
    T t(val);
    while(!eval_is_zero(t))
@@ -1106,6 +1128,63 @@ inline void eval_bit_unset(T& val, unsigned index)
    eval_bitwise_and(t, mask, val);
    if(!eval_is_zero(t))
       eval_bitwise_xor(val, mask);
+}
+
+template <class B>
+void eval_integer_sqrt(B& s, B& r, const B& x)
+{
+   //
+   // This is slow bit-by-bit integer square root, see for example
+   // http://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Binary_numeral_system_.28base_2.29
+   // There are better methods such as http://hal.inria.fr/docs/00/07/28/54/PDF/RR-3805.pdf
+   // and http://hal.inria.fr/docs/00/07/21/13/PDF/RR-4475.pdf which should be implemented
+   // at some point.
+   //
+   typedef typename boost::multiprecision::detail::canonical<unsigned char, B>::type ui_type;
+
+   s = ui_type(0u);
+   if(eval_get_sign(x) == 0)
+   {
+      r = ui_type(0u);
+      return;
+   }
+   int g = eval_msb(x);
+   if(g == 0)
+   {
+      r = ui_type(1);
+      return;
+   }
+   
+   B t;
+   r = x;
+   g /= 2;
+   int org_g = g;
+   eval_bit_set(s, g);
+   eval_bit_set(t, 2 * g);
+   eval_subtract(r, x, t);
+   --g;
+   if(eval_get_sign(r) == 0)
+      return;
+   int msbr = eval_msb(r);
+   do
+   {
+      if(msbr >= org_g + g + 1)
+      {
+         t = s;
+         eval_left_shift(t, g + 1);
+         eval_bit_set(t, 2 * g);
+         if(t.compare(r) <= 0)
+         {
+            eval_bit_set(s, g);
+            eval_subtract(r, t);
+            if(eval_get_sign(r) == 0)
+               return;
+            msbr = eval_msb(r);
+         }
+      }
+      --g;
+   }
+   while(g >= 0);
 }
 
 //
@@ -1456,6 +1535,26 @@ inline long long llround(const number<T, ExpressionTemplates>& v)
    return llround(v, boost::math::policies::policy<>());
 }
 #endif
+
+template <class B, expression_template_option ExpressionTemplates>
+inline typename enable_if_c<number_category<B>::value == number_kind_integer, number<B, ExpressionTemplates> >::type
+   sqrt(const number<B, ExpressionTemplates>& x)
+{
+   using default_ops::eval_integer_sqrt;
+   number<B, ExpressionTemplates> s, r;
+   eval_integer_sqrt(s.backend(), r.backend(), x.backend());
+   return s;
+}
+
+template <class B, expression_template_option ExpressionTemplates>
+inline typename enable_if_c<number_category<B>::value == number_kind_integer, number<B, ExpressionTemplates> >::type
+   sqrt(const number<B, ExpressionTemplates>& x, number<B, ExpressionTemplates>& r)
+{
+   using default_ops::eval_integer_sqrt;
+   number<B, ExpressionTemplates> s;
+   eval_integer_sqrt(s.backend(), r.backend(), x.backend());
+   return s;
+}
 
 #define UNARY_OP_FUNCTOR(func, category)\
 namespace detail{\

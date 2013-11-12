@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2012.
+//  (C) Copyright Gennadiy Rozental 2005-2008.
 //  Use, modification, and distribution are subject to the 
 //  Boost Software License, Version 1.0. (See accompanying file 
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 82756 $
+//  Version     : $Revision: 81913 $
 //
 //  Description : defines model of formal parameter
 // ***************************************************************************
@@ -78,10 +78,9 @@ public:
     }
 
     // access methods
-    bool            has_argument() const                        { return !!m_actual_argument; }
+    bool            has_argument() const                        { return m_actual_argument!=0; }
     argument const& actual_argument() const                     { return *m_actual_argument; }
     argument_ptr    actual_argument()                           { return m_actual_argument; }
-    void            reset()                                     { m_actual_argument.reset(); }
 
 
     // identification interface

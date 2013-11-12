@@ -85,7 +85,10 @@ void eval_sin(T& result, const T& x)
    {
    case FP_INFINITE:
    case FP_NAN:
-      result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      if(std::numeric_limits<number<T, et_on> >::has_quiet_NaN)
+         result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      else
+         BOOST_THROW_EXCEPTION(std::domain_error("Result is undefined or complex and there is no NaN for this number type."));
       return;
    case FP_ZERO:
       result = ui_type(0);
@@ -229,7 +232,10 @@ void eval_cos(T& result, const T& x)
    {
    case FP_INFINITE:
    case FP_NAN:
-      result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      if(std::numeric_limits<number<T, et_on> >::has_quiet_NaN)
+         result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      else
+         BOOST_THROW_EXCEPTION(std::domain_error("Result is undefined or complex and there is no NaN for this number type."));
       return;
    case FP_ZERO:
       result = ui_type(1);
@@ -286,10 +292,8 @@ void eval_cos(T& result, const T& x)
    const bool b_zero    = eval_get_sign(xx) == 0;
    const bool b_pi_half = com == 0;
 
-   // Check if the reduced argument is very close to 0 or pi/2.
-   const bool    b_near_zero    = xx.compare(fp_type(1e-4)) < 0;
-   eval_subtract(t, xx);
-   const bool    b_near_pi_half = t.compare(fp_type(1e-4)) < 0;
+   // Check if the reduced argument is very close to 0.
+   const bool    b_near_zero    = xx.compare(fp_type(1e-1)) < 0;
 
    if(b_zero)
    {
@@ -307,44 +311,10 @@ void eval_cos(T& result, const T& x)
       hyp0F1(result, n_pi, t);
       BOOST_MATH_INSTRUMENT_CODE(result.str(0, std::ios_base::scientific));
    }
-   else if(b_near_pi_half)
-   {
-      T t2(t);
-      eval_multiply(t, t);
-      eval_divide(t, si_type(-4));
-      n_pi = fp_type(1.5f);
-      hyp0F1(result, n_pi, t);
-      eval_multiply(result, t2);
-      BOOST_MATH_INSTRUMENT_CODE(result.str(0, std::ios_base::scientific));
-   }
    else
    {
-      // Scale to a small argument for an efficient Taylor series,
-      // implemented as a hypergeometric function. Use a standard
-      // divide by three identity a certain number of times.
-      // Here we use division by 3^9 --> (19683 = 3^9).
-
-      static const ui_type n_scale           = 9;
-      static const ui_type n_three_pow_scale = 19683;
-      eval_divide(xx, n_three_pow_scale);
-
-      eval_multiply(t, xx, xx);
-      eval_divide(t, si_type(-4));
-      n_pi = fp_type(0.5f);
-
-      // Now with small arguments, we are ready for a series expansion.
-      hyp0F1(result, n_pi, t);
-      BOOST_MATH_INSTRUMENT_CODE(result.str(0, std::ios_base::scientific));
-
-      // Convert back using multiple angle identity.
-      for(ui_type k = 0; k < n_scale; k++)
-      {
-         eval_multiply(t, result, result);
-         eval_multiply(t, result);
-         eval_multiply(t, ui_type(4));
-         eval_multiply(result, si_type(-3));
-         eval_add(result, t);
-      }
+      eval_subtract(t, xx);
+      eval_sin(result, t);
    }
    if(b_negate_cos)
       result.negate();
@@ -446,7 +416,10 @@ void eval_asin(T& result, const T& x)
    {
    case FP_NAN:
    case FP_INFINITE:
-      result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      if(std::numeric_limits<number<T, et_on> >::has_quiet_NaN)
+         result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      else
+         BOOST_THROW_EXCEPTION(std::domain_error("Result is undefined or complex and there is no NaN for this number type."));
       return;
    case FP_ZERO:
       result = ui_type(0);
@@ -463,7 +436,10 @@ void eval_asin(T& result, const T& x)
    int c = xx.compare(ui_type(1));
    if(c > 0)
    {
-      result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      if(std::numeric_limits<number<T, et_on> >::has_quiet_NaN)
+         result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      else
+         BOOST_THROW_EXCEPTION(std::domain_error("Result is undefined or complex and there is no NaN for this number type."));
       return;
    }
    else if(c == 0)
@@ -545,7 +521,10 @@ inline void eval_acos(T& result, const T& x)
    {
    case FP_NAN:
    case FP_INFINITE:
-      result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      if(std::numeric_limits<number<T, et_on> >::has_quiet_NaN)
+         result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      else
+         BOOST_THROW_EXCEPTION(std::domain_error("Result is undefined or complex and there is no NaN for this number type."));
       return;
    case FP_ZERO:
       result = get_constant_pi<T>();
@@ -558,7 +537,10 @@ inline void eval_acos(T& result, const T& x)
 
    if(c > 0)
    {
-      result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      if(std::numeric_limits<number<T, et_on> >::has_quiet_NaN)
+         result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      else
+         BOOST_THROW_EXCEPTION(std::domain_error("Result is undefined or complex and there is no NaN for this number type."));
       return;
    }
    else if(c == 0)
@@ -588,7 +570,7 @@ void eval_atan(T& result, const T& x)
    switch(eval_fpclassify(x))
    {
    case FP_NAN:
-      result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+      result = x;
       return;
    case FP_ZERO:
       result = ui_type(0);
@@ -703,7 +685,10 @@ void eval_atan2(T& result, const T& y, const T& x)
       {
          if(eval_fpclassify(x) == FP_INFINITE)
          {
-            result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+            if(std::numeric_limits<number<T, et_on> >::has_quiet_NaN)
+               result = std::numeric_limits<number<T, et_on> >::quiet_NaN().backend();
+            else
+               BOOST_THROW_EXCEPTION(std::domain_error("Result is undefined or complex and there is no NaN for this number type."));
          }
          else
          {

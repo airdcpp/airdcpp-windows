@@ -44,9 +44,8 @@
         {};                                                                     \
     }                                                                           \
     template <typename Operand>                                                 \
-    inline                                                                      \
     typename result_of::BOOST_PP_CAT(make_, name)<Operand>::type                \
-    BOOST_PP_CAT(make_, name)(Operand const & operand)                          \
+    inline BOOST_PP_CAT(make_, name)(Operand const & operand)                   \
     {                                                                           \
         return functional::BOOST_PP_CAT(make_, name)()(operand);                \
     }                                                                           \
@@ -84,9 +83,8 @@
         {};                                                                     \
     }                                                                           \
     template <typename Rhs, typename Lhs>                                       \
-    inline                                                                      \
     typename result_of::BOOST_PP_CAT(make_, name)<Rhs, Lhs>::type               \
-    BOOST_PP_CAT(make_, name)(Lhs const & lhs, Rhs const & rhs)                 \
+    inline BOOST_PP_CAT(make_, name)(Lhs const & lhs, Rhs const & rhs)          \
     {                                                                           \
         return functional::BOOST_PP_CAT(make_, name)()(lhs, rhs);               \
     }                                                                           \

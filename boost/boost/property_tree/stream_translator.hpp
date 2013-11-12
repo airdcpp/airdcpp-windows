@@ -140,7 +140,6 @@ namespace boost { namespace property_tree
                 i < (std::numeric_limits<signed char>::min)())
             {
                 s.clear(); // guarantees eof to be unset
-                e = 0;
                 return;
             }
             e = (signed char)i;
@@ -162,7 +161,6 @@ namespace boost { namespace property_tree
             // out of range?
             if(i > (std::numeric_limits<unsigned char>::max)()) {
                 s.clear(); // guarantees eof to be unset
-                e = 0;
                 return;
             }
             e = (unsigned char)i;

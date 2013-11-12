@@ -5,7 +5,7 @@
  * accompanying file LICENSE_1_0.txt or copy at
  * http://www.boost.org/LICENSE_1_0.txt)
  *
- * $Id: integer_traits.hpp 68802 2011-02-12 15:06:21Z steven_watanabe $
+ * $Id: integer_traits.hpp 85813 2013-09-21 20:17:00Z jewillco $
  *
  * Idea by Beman Dawes, Ed Brey, Steve Cleary, and Nathan Myers
  */

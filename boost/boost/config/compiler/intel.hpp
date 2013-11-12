@@ -47,11 +47,6 @@
 #  define BOOST_INTEL_LINUX BOOST_INTEL
 #endif
 
-#if (BOOST_INTEL_CXX_VERSION <= 500) && defined(_MSC_VER)
-#  define BOOST_NO_EXPLICIT_FUNCTION_TEMPLATE_ARGUMENTS
-#  define BOOST_NO_TEMPLATE_TEMPLATES
-#endif
-
 #if (BOOST_INTEL_CXX_VERSION <= 600)
 
 #  if defined(_MSC_VER) && (_MSC_VER <= 1300) // added check for <= VC 7 (Peter Dimov)
@@ -111,7 +106,7 @@
 #     define BOOST_FUNCTION_SCOPE_USING_DECLARATION_BREAKS_ADL
 #  endif
 #endif
-#if (defined(__GNUC__) && (__GNUC__ < 4)) || defined(_WIN32) || (BOOST_INTEL_CXX_VERSION <= 1200)
+#if (defined(__GNUC__) && (__GNUC__ < 4)) || (defined(_WIN32) && (BOOST_INTEL_CXX_VERSION <= 1200)) || (BOOST_INTEL_CXX_VERSION <= 1200)
 // GCC or VC emulation:
 #define BOOST_NO_TWO_PHASE_NAME_LOOKUP
 #endif
@@ -164,8 +159,8 @@ template<> struct assert_intrinsic_wchar_t<unsigned short> {};
 
 //
 // versions check:
-// we don't support Intel prior to version 5.0:
-#if BOOST_INTEL_CXX_VERSION < 500
+// we don't support Intel prior to version 6.0:
+#if BOOST_INTEL_CXX_VERSION < 600
 #  error "Compiler not supported or configured - please reconfigure"
 #endif
 
@@ -246,6 +241,42 @@ template<> struct assert_intrinsic_wchar_t<unsigned short> {};
 // continues to list scoped enum support as "Partial"
 //#  undef  BOOST_NO_CXX11_SCOPED_ENUMS
 #endif
+#if defined(BOOST_INTEL_STDCXX0X) && (BOOST_INTEL_CXX_VERSION >= 1310) && !defined(_MSC_VER)
+#  undef BOOST_NO_CXX11_INLINE_NAMESPACES
+#  undef BOOST_NO_CXX11_FUNCTION_TEMPLATE_DEFAULT_ARGS
+// This one generates internal compiler errors in multiprecision, disabled for now:
+//#  undef BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS  
+// This one generates errors when used with conditional exception specifications, for example in multiprecision:
+//#  undef BOOST_NO_CXX11_NOEXCEPT
+#  undef BOOST_NO_CXX11_RANGE_BASED_FOR
+#  undef BOOST_NO_CXX11_SCOPED_ENUMS
+#  undef BOOST_NO_CXX11_UNIFIED_INITIALIZATION_SYNTAX
+#endif
+#if (BOOST_INTEL_CXX_VERSION >= 1310)
+#  undef  BOOST_NO_SFINAE_EXPR
+#endif
+#if defined(BOOST_INTEL_STDCXX0X) && (BOOST_INTEL_CXX_VERSION >= 1400) && !defined(_MSC_VER)
+#  undef BOOST_NO_CXX11_UNICODE_LITERALS 
+#  undef BOOST_NO_CXX11_RAW_LITERALS 
+// This one generates errors when used with conditional exception specifications, for example in multiprecision:
+//#  undef BOOST_NO_CXX11_NOEXCEPT 
+// This breaks multiprecision:
+//#  undef BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS 
+#  undef BOOST_NO_CXX11_HDR_THREAD 
+#  undef BOOST_NO_CXX11_CHAR32_T 
+#  undef BOOST_NO_CXX11_CHAR16_T
+#endif
+
+#if defined(BOOST_INTEL_STDCXX0X) && (BOOST_INTEL_CXX_VERSION <= 1310)
+#  define BOOST_NO_CXX11_HDR_FUTURE
+#  define BOOST_NO_CXX11_HDR_INITIALIZER_LIST
+#endif
+
+#if defined(BOOST_INTEL_STDCXX0X) && (BOOST_INTEL_CXX_VERSION == 1400)
+// A regression in Intel's compiler means that <tuple> seems to be broken in this release as well as <future> :
+#  define BOOST_NO_CXX11_HDR_FUTURE
+#  define BOOST_NO_CXX11_HDR_TUPLE
+#endif
 
 #if defined(_MSC_VER) && (_MSC_VER <= 1700)
 //
@@ -256,7 +287,9 @@ template<> struct assert_intrinsic_wchar_t<unsigned short> {};
 #  define  BOOST_NO_CXX11_DELETED_FUNCTIONS
 #  define  BOOST_NO_CXX11_DEFAULTED_FUNCTIONS
 #  define  BOOST_NO_CXX11_TEMPLATE_ALIASES
-#  define  BOOST_NO_CXX11_TRAILING_RESULT_TYPES
+#  if(BOOST_INTEL_CXX_VERSION < 1310)
+#     define  BOOST_NO_CXX11_TRAILING_RESULT_TYPES
+#  endif
 #endif
 
 #if (BOOST_INTEL_CXX_VERSION < 1200)
@@ -266,9 +299,17 @@ template<> struct assert_intrinsic_wchar_t<unsigned short> {};
 #  define BOOST_NO_FENV_H
 #endif
 
+#if defined(_MSC_VER) && (_MSC_VER >= 1600)
+#  define BOOST_HAS_STDINT_H
+#endif
+
+#if defined(__LP64__) && defined(__GNUC__) && (BOOST_INTEL_CXX_VERSION >= 1310)
+#  define BOOST_HAS_INT128
+#endif
+
 //
 // last known and checked version:
-#if (BOOST_INTEL_CXX_VERSION > 1200)
+#if (BOOST_INTEL_CXX_VERSION > 1310)
 #  if defined(BOOST_ASSERT_CONFIG)
 #     error "Unknown compiler version - please run the configure tests and report the results"
 #  elif defined(_MSC_VER)

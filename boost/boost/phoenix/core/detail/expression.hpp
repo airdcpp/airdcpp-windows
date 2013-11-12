@@ -190,7 +190,6 @@ namespace boost { namespace phoenix                                             
 
 #define BOOST_PHOENIX_DEFINE_EXPRESSION_MAKE_EXPRESSION_DEFAULT(NAME_SEQ, GRAMMAR_SEQ, D) \
     template <BOOST_PHOENIX_typename_A(BOOST_PP_SEQ_SIZE(GRAMMAR_SEQ))>         \
-    inline                                                                      \
     typename                                                                    \
         result_of::BOOST_PP_CAT(                                                \
             make_                                                               \
@@ -198,7 +197,7 @@ namespace boost { namespace phoenix                                             
         )<                                                                      \
             BOOST_PHOENIX_A(BOOST_PP_SEQ_SIZE(GRAMMAR_SEQ))                     \
         >::type const                                                           \
-    BOOST_PP_CAT(                                                               \
+    inline BOOST_PP_CAT(                                                        \
         make_                                                                   \
       , BOOST_PP_SEQ_HEAD(BOOST_PP_SEQ_REVERSE(NAME_SEQ))                       \
     )(                                                                          \
@@ -310,12 +309,11 @@ namespace boost { namespace phoenix                                             
 
 #define BOOST_PHOENIX_DEFINE_EXPRESSION_MAKE_EXPRESSION_VARARG_R(Z, N, NAME)    \
     template <BOOST_PHOENIX_typename_A(N)>                                      \
-    inline                                                                      \
     typename                                                                    \
         result_of:: BOOST_PP_CAT(make_, NAME)<                                  \
             BOOST_PHOENIX_A(N)                                                  \
         >::type                                                                 \
-    BOOST_PP_CAT(make_, NAME)(BOOST_PHOENIX_A_const_ref_a(N))                   \
+    inline BOOST_PP_CAT(make_, NAME)(BOOST_PHOENIX_A_const_ref_a(N))            \
     {                                                                           \
         return functional::BOOST_PP_CAT(make_, NAME)()(BOOST_PHOENIX_a(N));     \
     }                                                                           \

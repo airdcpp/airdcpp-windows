@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2001-2012.
+//  (C) Copyright Gennadiy Rozental 2001-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 81012 $
+//  Version     : $Revision: 49312 $
 //
 //  Description : defines specific version of execution monitor used to managed 
 //  run unit of test cases. Translates execution exception into error level
@@ -20,12 +20,14 @@
 #include <boost/test/execution_monitor.hpp>
 #include <boost/test/detail/fwd_decl.hpp>
 #include <boost/test/utils/trivial_singleton.hpp>
+#include <boost/test/utils/callback.hpp>
 
 #include <boost/test/detail/suppress_warnings.hpp>
 
 //____________________________________________________________________________//
 
 namespace boost {
+
 namespace unit_test {
 
 // ************************************************************************** //
@@ -48,16 +50,19 @@ public:
     static bool is_critical_error( error_level e ) { return e <= fatal_error; }
 
     // monitor method
-    error_level execute_and_translate( boost::function<void ()> const& func, unsigned timeout = 0 );
+    error_level execute_and_translate( test_case const& );
 
 private:
-    BOOST_TEST_SINGLETON_CONS( unit_test_monitor_t )
+    BOOST_TEST_SINGLETON_CONS( unit_test_monitor_t );
 };
 
 BOOST_TEST_SINGLETON_INST( unit_test_monitor )
 
 } // namespace unit_test
+
 } // namespace boost
+
+//____________________________________________________________________________//
 
 #include <boost/test/detail/enable_warnings.hpp>
 

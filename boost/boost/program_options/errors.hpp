@@ -25,8 +25,7 @@ namespace boost { namespace program_options {
 
     inline std::string strip_prefixes(const std::string& text)
     {
-        // "--foo-bar" -> "foo-bar"
-        return text.substr(text.find_first_not_of("-/"));
+        return text.substr(text.find_last_of("-/") + 1);
     }
 
     /** Base class for all errors in the library. */

@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2004-2012.
+//  (C) Copyright Gennadiy Rozental 2004-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,9 +7,9 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 81320 $
+//  Version     : $Revision: 57992 $
 //
-//  Description : common code used by any agent serving as OF_XML printer
+//  Description : common code used by any agent serving as XML printer
 // ***************************************************************************
 
 #ifndef BOOST_TEST_XML_PRINTER_HPP_071894GER
@@ -33,6 +33,7 @@
 //____________________________________________________________________________//
 
 namespace boost {
+
 namespace unit_test {
 
 // ************************************************************************** //
@@ -81,22 +82,6 @@ print_escaped( std::ostream& where_to, T const& value )
 
 //____________________________________________________________________________//
 
-inline void
-print_escaped_cdata( std::ostream& where_to, const_string value )
-{
-    static const_string cdata_end( "]]>" );
-    
-    const_string::size_type pos = value.find( cdata_end );
-    if( pos == const_string::npos )
-        where_to << value;
-    else {
-        where_to << value.substr( 0, pos+2 ) << cdata_end 
-                 << BOOST_TEST_L( "<![CDATA[" ) << value.substr( pos+2 );
-    }
-}
-
-//____________________________________________________________________________//
-
 typedef custom_manip<struct attr_value_t> attr_value;
 
 template<typename T>
@@ -117,15 +102,16 @@ typedef custom_manip<struct cdata_t> cdata;
 inline std::ostream&
 operator<<( custom_printer<cdata> const& p, const_string value )
 {
-    *p << BOOST_TEST_L( "<![CDATA[" );
-    print_escaped_cdata( *p, value );
-    return  *p << BOOST_TEST_L( "]]>" );
+    return *p << BOOST_TEST_L( "<![CDATA[" ) << value << BOOST_TEST_L( "]]>" );
 }
 
 //____________________________________________________________________________//
 
 } // namespace unit_test
+
 } // namespace boost
+
+//____________________________________________________________________________//
 
 #include <boost/test/detail/enable_warnings.hpp>
 

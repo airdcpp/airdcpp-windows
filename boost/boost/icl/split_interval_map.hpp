@@ -78,13 +78,11 @@ public:
     explicit split_interval_map(const value_type& value_pair): base_type()
     { this->add(value_pair); }
 
-    /// Assignment from a base interval_map.
-    template<class SubType>
-    void assign(const interval_base_map<SubType,DomainT,CodomainT,
-                                        Traits,Compare,Combine,Section,Interval,Alloc>& src)
-    {
-        this->clear();
-        this->_map.insert(src.begin(), src.end());
+    /// Assignment operator
+    split_interval_map& operator = (const split_interval_map& src)
+    { 
+        base_type::operator=(src);
+        return *this;
     }
 
     /// Assignment operator for base type
@@ -92,9 +90,15 @@ public:
     split_interval_map& operator =
         (const interval_base_map<SubType,DomainT,CodomainT,
                                  Traits,Compare,Combine,Section,Interval,Alloc>& src)
-    { 
-        this->assign(src); 
-        return *this; 
+    { this->assign(src); return *this; }
+
+    /// Assignment from a base interval_map.
+    template<class SubType>
+    void assign(const interval_base_map<SubType,DomainT,CodomainT,
+                                        Traits,Compare,Combine,Section,Interval,Alloc>& src)
+    {
+        this->clear();
+        this->_map.insert(src.begin(), src.end());
     }
 
 #   ifndef BOOST_ICL_NO_CXX11_RVALUE_REFERENCES
@@ -108,22 +112,13 @@ public:
     {}
 
     /// Move assignment operator
-    split_interval_map& operator = (split_interval_map src)
+    split_interval_map& operator = (split_interval_map&& src)
     { 
         base_type::operator=(boost::move(src));
         return *this;
     }
 
     //==========================================================================
-#   else
-
-    /// Assignment operator
-    split_interval_map& operator = (const split_interval_map& src)
-    { 
-        base_type::operator=(src);
-        return *this;
-    }
-
 #   endif // BOOST_ICL_NO_CXX11_RVALUE_REFERENCES
 
 private:

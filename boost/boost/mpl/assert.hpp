@@ -10,9 +10,9 @@
 //
 // See http://www.boost.org/libs/mpl for documentation.
 
-// $Id: assert.hpp 84443 2013-05-23 14:42:25Z steven_watanabe $
-// $Date: 2013-05-23 17:42:25 +0300 (to, 23 touko 2013) $
-// $Revision: 84443 $
+// $Id: assert.hpp 86514 2013-10-29 13:15:03Z bemandawes $
+// $Date: 2013-10-29 06:15:03 -0700 (Tue, 29 Oct 2013) $
+// $Revision: 86514 $
 
 #include <boost/mpl/not.hpp>
 #include <boost/mpl/aux_/value_wknd.hpp>

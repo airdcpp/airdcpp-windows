@@ -554,6 +554,17 @@ public:
       return (bo_order_is_zero ? static_cast<ExponentType>(0) : static_cast<ExponentType>(exp + prefix));
    }
 
+   template<class Archive>
+   void serialize(Archive & ar, const unsigned int /*version*/)
+   {
+      for(unsigned i = 0; i < data.size(); ++i)
+         ar & data[i];
+      ar & exp;
+      ar & neg;
+      ar & fpclass;
+      ar & prec_elem;
+   }
+
 private:
    static bool data_elem_is_non_zero_predicate(const boost::uint32_t& d)  { return (d != static_cast<boost::uint32_t>(0u)); }
    static bool data_elem_is_non_nine_predicate(const boost::uint32_t& d)  { return (d != static_cast<boost::uint32_t>(cpp_dec_float::cpp_dec_float_elem_mask - 1)); }
@@ -1708,7 +1719,8 @@ cpp_dec_float<Digits10, ExponentType, Allocator> cpp_dec_float<Digits10, Exponen
    const size_t first_clear = (static_cast<size_t>(x.exp) / static_cast<size_t>(cpp_dec_float_elem_digits10)) + 1u;
    const size_t last_clear  =  static_cast<size_t>(cpp_dec_float_elem_number);
 
-   std::fill(x.data.begin() + first_clear, x.data.begin() + last_clear, static_cast<boost::uint32_t>(0u));
+   if(first_clear < last_clear)
+      std::fill(x.data.begin() + first_clear, x.data.begin() + last_clear, static_cast<boost::uint32_t>(0u));
 
    return x;
 }
@@ -2948,7 +2960,7 @@ namespace std
       BOOST_STATIC_CONSTEXPR ExponentType          max_exponent      = boost::multiprecision::cpp_dec_float<Digits10, ExponentType, Allocator>::cpp_dec_float_max_exp;      // Type differs from int.
       BOOST_STATIC_CONSTEXPR ExponentType          max_exponent10    = boost::multiprecision::cpp_dec_float<Digits10, ExponentType, Allocator>::cpp_dec_float_max_exp10;    // Type differs from int.
       BOOST_STATIC_CONSTEXPR int                     radix             = boost::multiprecision::cpp_dec_float<Digits10, ExponentType, Allocator>::cpp_dec_float_radix;
-      BOOST_STATIC_CONSTEXPR std::float_round_style  round_style       = std::round_to_nearest;
+      BOOST_STATIC_CONSTEXPR std::float_round_style  round_style       = std::round_indeterminate;
       BOOST_STATIC_CONSTEXPR bool                    has_infinity      = true;
       BOOST_STATIC_CONSTEXPR bool                    has_quiet_NaN     = true;
       BOOST_STATIC_CONSTEXPR bool                    has_signaling_NaN = false;

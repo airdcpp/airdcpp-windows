@@ -16,6 +16,5 @@
 #include <boost/phoenix/scope.hpp>
 #include <boost/phoenix/bind.hpp>
 #include <boost/phoenix/stl.hpp>
-#include <boost/phoenix/fusion.hpp>
 
 #endif

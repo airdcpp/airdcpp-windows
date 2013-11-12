@@ -7,7 +7,7 @@
  * Boost Software License, Version 1.0. (See accompanying
  * file LICENSE_1_0.txt or http://www.boost.org/LICENSE_1_0.txt)
  * Author:  Martin Andrian, Jeff Garland, Bart Garst
- * $Date: 2011-03-31 01:25:58 +0300 (to, 31 maalis 2011) $
+ * $Date: 2013-10-15 08:22:02 -0700 (Tue, 15 Oct 2013) $
  */
 
 #include <cctype>
@@ -822,7 +822,7 @@ namespace date_time {
         const_itr itr(m_time_duration_format.begin());
         while (itr != m_time_duration_format.end() && (sitr != stream_end)) {
           if (*itr == '%') {
-            ++itr;
+            if (++itr == m_time_duration_format.end()) break;
             if (*itr != '%') {
               switch(*itr) {
               case 'O':
@@ -994,7 +994,7 @@ namespace date_time {
         const_itr itr(this->m_format.begin());
         while (itr != this->m_format.end() && (sitr != stream_end)) {
           if (*itr == '%') {
-            ++itr;
+            if (++itr == this->m_format.end()) break;
             if (*itr != '%') {
               // the cases are grouped by date & time flags - not alphabetical order
               switch(*itr) {

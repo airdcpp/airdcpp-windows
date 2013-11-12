@@ -57,7 +57,8 @@ namespace boost
     struct void_functor_barrier_reseter
     {
       unsigned int size_;
-      void_completion_function fct_;template <typename F>
+      void_completion_function fct_;
+      template <typename F>
 #ifndef BOOST_NO_CXX11_HDR_FUNCTIONAL
       void_functor_barrier_reseter(unsigned int size, BOOST_THREAD_RV_REF(F) funct)
       : size_(size), fct_(boost::move(funct))
@@ -90,7 +91,7 @@ namespace boost
   }
   class barrier
   {
-    static inline unsigned int check(unsigned int count)
+    static inline unsigned int check_counter(unsigned int count)
     {
       if (count == 0) boost::throw_exception(
           thread_exception(system::errc::invalid_argument, "barrier constructor: count cannot be zero."));
@@ -104,7 +105,7 @@ namespace boost
     BOOST_THREAD_NO_COPYABLE( barrier)
 
     explicit barrier(unsigned int count) :
-      m_count(check(count)), m_generation(0), fct_(thread_detail::default_barrier_reseter(count))
+      m_count(check_counter(count)), m_generation(0), fct_(thread_detail::default_barrier_reseter(count))
     {
     }
 
@@ -120,7 +121,7 @@ namespace boost
         typename is_void<typename result_of<F>::type>::type, dummy*
         >::type=0
     )
-    : m_count(check(count)),
+    : m_count(check_counter(count)),
     m_generation(0),
     fct_(thread_detail::void_functor_barrier_reseter(count,
 #ifndef BOOST_NO_CXX11_HDR_FUNCTIONAL
@@ -142,10 +143,10 @@ namespace boost
         F funct,
 #endif
         typename enable_if<
-        typename is_same<typename result_of<F>::type, std::size_t>::type, dummy*
+        typename is_same<typename result_of<F>::type, unsigned int>::type, dummy*
         >::type=0
     )
-    : m_count(check(count)),
+    : m_count(check_counter(count)),
     m_generation(0),
     fct_(
 #ifndef BOOST_NO_CXX11_HDR_FUNCTIONAL
@@ -158,15 +159,15 @@ namespace boost
     }
 
     barrier(unsigned int count, void(*funct)()) :
-      m_count(check(count)), m_generation(0),
+      m_count(check_counter(count)), m_generation(0),
       fct_(funct
           ? thread_detail::size_completion_function(thread_detail::void_fct_ptr_barrier_reseter(count, funct))
           : thread_detail::size_completion_function(thread_detail::default_barrier_reseter(count))
       )
     {
     }
-    barrier(unsigned int count, std::size_t(*funct)()) :
-      m_count(check(count)), m_generation(0),
+    barrier(unsigned int count, unsigned int(*funct)()) :
+      m_count(check_counter(count)), m_generation(0),
       fct_(funct
           ? thread_detail::size_completion_function(funct)
           : thread_detail::size_completion_function(thread_detail::default_barrier_reseter(count))
@@ -182,7 +183,7 @@ namespace boost
       if (--m_count == 0)
       {
         m_generation++;
-        m_count = fct_();
+        m_count = static_cast<unsigned int>(fct_());
         BOOST_ASSERT(m_count != 0);
         m_cond.notify_all();
         return true;

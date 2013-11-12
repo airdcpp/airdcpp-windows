@@ -15,7 +15,7 @@
 # pragma once
 #endif
 
-#if defined(_MSC_VER) && (_MSC_VER == 1300)
+#if _MSC_VER == 1300 // experiment
 
 #include <boost/range/detail/collection_traits.hpp>
 #include <boost/range/iterator_range.hpp>
@@ -28,6 +28,6 @@
 #include <boost/range/iterator_range.hpp>
 #include <boost/range/sub_range.hpp>
 
-#endif // _MSC_VER == 1300
+#endif // _MSC_VER == 1300 // experiment
 
 #endif

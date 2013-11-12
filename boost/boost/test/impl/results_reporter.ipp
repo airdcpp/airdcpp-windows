@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2012.
+//  (C) Copyright Gennadiy Rozental 2005-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 81320 $
+//  Version     : $Revision: 57992 $
 //
 //  Description : result reporting facilties
 // ***************************************************************************
@@ -17,16 +17,13 @@
 
 // Boost.Test
 #include <boost/test/results_reporter.hpp>
+#include <boost/test/unit_test_suite_impl.hpp>
 #include <boost/test/results_collector.hpp>
 #include <boost/test/framework.hpp>
 #include <boost/test/output/plain_report_formatter.hpp>
 #include <boost/test/output/xml_report_formatter.hpp>
 
-#include <boost/test/tree/visitor.hpp>
-#include <boost/test/tree/test_unit.hpp>
-#include <boost/test/tree/traverse.hpp>
-
-#include <boost/test/unit_test_parameters.hpp>
+#include <boost/test/detail/unit_test_parameters.hpp>
 
 // Boost
 #include <boost/scoped_ptr.hpp>
@@ -41,7 +38,9 @@ typedef ::boost::io::ios_base_all_saver io_saver_type;
 //____________________________________________________________________________//
 
 namespace boost {
+
 namespace unit_test {
+
 namespace results_reporter {
 
 // ************************************************************************** //
@@ -127,10 +126,10 @@ void
 set_format( output_format rf )
 {
     switch( rf ) {
-    case OF_CLF:
+    case CLF:
         set_format( new output::plain_report_formatter );
         break;
-    case OF_XML:
+    case XML:
         set_format( new output::xml_report_formatter );
         break;
     default:
@@ -191,8 +190,12 @@ make_report( report_level l, test_unit_id id )
 //____________________________________________________________________________//
 
 } // namespace results_reporter
+
 } // namespace unit_test
+
 } // namespace boost
+
+//____________________________________________________________________________//
 
 #include <boost/test/detail/enable_warnings.hpp>
 

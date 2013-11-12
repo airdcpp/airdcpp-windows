@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2005-2012.
+//  (C) Copyright Gennadiy Rozental 2005-2008.
 //  Use, modification, and distribution are subject to the 
 //  Boost Software License, Version 1.0. (See accompanying file 
 //  LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 81012 $
+//  Version     : $Revision: 57992 $
 //
 //  Description : defines parser - public interface for CLA parsing and accessing
 // ***************************************************************************
@@ -100,8 +100,6 @@ public:
     // parameters access
     param_iterator      first_param() const;
     param_iterator      last_param() const;
-    unsigned            num_params() const  { return m_parameters.size(); }
-    void                reset();
 
     // arguments access
     const_argument_ptr  operator[]( cstring string_id ) const;

@@ -53,10 +53,6 @@
 #     endif
 #  endif
 
-#ifdef __ANDROID__
-#  define BOOST_TR1_GCC_INCLUDE_PATH include
-#endif
-
 
 #  if (defined(__SGI_STL_PORT) || defined(_STLPORT_VERSION)) && !defined(__BORLANDC__)
 #     ifdef __SUNPRO_CC
@@ -84,9 +80,6 @@
 #     define BOOST_TR1_STD_HEADER(name) <../include/dinkumware/name>
 
 #  elif defined(__clang__)
-#     define BOOST_TR1_STD_HEADER(name) <../include/name>
-
-#  elif defined(_CRAYC)
 #     define BOOST_TR1_STD_HEADER(name) <../include/name>
 
 #  elif defined(__GNUC__) && __GNUC__ >= 3

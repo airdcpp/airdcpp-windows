@@ -1,4 +1,4 @@
-//  (C) Copyright Gennadiy Rozental 2006-2012.
+//  (C) Copyright Gennadiy Rozental 2006-2008.
 //  Distributed under the Boost Software License, Version 1.0.
 //  (See accompanying file LICENSE_1_0.txt or copy at 
 //  http://www.boost.org/LICENSE_1_0.txt)
@@ -7,7 +7,7 @@
 //
 //  File        : $RCSfile$
 //
-//  Version     : $Revision: 81320 $
+//  Version     : $Revision: 49312 $
 //
 //  Description : defines portable debug interfaces
 // ***************************************************************************
@@ -17,10 +17,8 @@
 
 // Boost.Test
 #include <boost/test/detail/config.hpp>
+#include <boost/test/utils/callback.hpp>
 #include <boost/test/utils/basic_cstring/basic_cstring.hpp>
-
-// Boost
-#include <boost/function/function1.hpp>
 
 // STL
 #include <string>
@@ -30,6 +28,7 @@
 //____________________________________________________________________________//
 
 namespace boost {
+
 namespace debug {
 
 // ************************************************************************** //
@@ -57,13 +56,22 @@ struct dbg_startup_info {
     unit_test::const_string init_done_lock;
 };
 
-typedef boost::function<void (dbg_startup_info const&)> dbg_starter;
+typedef unit_test::callback1<dbg_startup_info const&> dbg_starter;
 
 // ************************************************************************** //
 // **************                debugger setup                ************** //
 // ************************************************************************** //
 
+#if BOOST_WORKAROUND( BOOST_MSVC, <1300)
+
+std::string BOOST_TEST_DECL set_debugger( unit_test::const_string dbg_id );
+
+#else 
+
 std::string BOOST_TEST_DECL set_debugger( unit_test::const_string dbg_id, dbg_starter s = dbg_starter() );
+
+#endif
+
 
 // ************************************************************************** //
 // **************    attach debugger to the current process    ************** //
@@ -75,7 +83,7 @@ bool BOOST_TEST_DECL attach_debugger( bool break_or_continue = true );
 // **************   switch on/off detect memory leaks feature  ************** //
 // ************************************************************************** //
 
-void BOOST_TEST_DECL detect_memory_leaks( bool on_off, unit_test::const_string report_file = unit_test::const_string() );
+void BOOST_TEST_DECL detect_memory_leaks( bool on_off );
 
 // ************************************************************************** //
 // **************      cause program to break execution in     ************** //
@@ -85,6 +93,7 @@ void BOOST_TEST_DECL detect_memory_leaks( bool on_off, unit_test::const_string r
 void BOOST_TEST_DECL break_memory_alloc( long mem_alloc_order_num );
 
 } // namespace debug
+
 } // namespace boost
 
 #include <boost/test/detail/enable_warnings.hpp>

@@ -27,7 +27,7 @@ namespace boost { namespace fusion
     {
         template <typename ...T>
         struct deque_tie
-        {
+    {
             typedef deque<T&...> type;
         };
     }

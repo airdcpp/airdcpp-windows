@@ -20,51 +20,12 @@
 #define BOOST_GCC (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
 #endif
 
-#if __GNUC__ < 3
-#   if __GNUC_MINOR__ == 91
-       // egcs 1.1 won't parse shared_ptr.hpp without this:
-#      define BOOST_NO_AUTO_PTR
-#   endif
-#   if __GNUC_MINOR__ < 95
-      //
-      // Prior to gcc 2.95 member templates only partly
-      // work - define BOOST_MSVC6_MEMBER_TEMPLATES
-      // instead since inline member templates mostly work.
-      //
-#     define BOOST_NO_MEMBER_TEMPLATES
-#     if __GNUC_MINOR__ >= 9
-#       define BOOST_MSVC6_MEMBER_TEMPLATES
-#     endif
-#   endif
-
-#   if __GNUC_MINOR__ < 96
-#     define BOOST_NO_SFINAE
-#   endif
-
-#   if __GNUC_MINOR__ <= 97
-#     define BOOST_NO_MEMBER_TEMPLATE_FRIENDS
-#     define BOOST_NO_OPERATORS_IN_NAMESPACE
-#   endif
-
-#   define BOOST_NO_USING_DECLARATION_OVERLOADS_FROM_TYPENAME_BASE
-#   define BOOST_FUNCTION_SCOPE_USING_DECLARATION_BREAKS_ADL
-#   define BOOST_NO_IS_ABSTRACT
-#   define BOOST_NO_CXX11_EXTERN_TEMPLATE
-// Variadic macros do not exist for gcc versions before 3.0
-#   define BOOST_NO_CXX11_VARIADIC_MACROS
-#elif __GNUC__ == 3
+#if __GNUC__ == 3
 #  if defined (__PATHSCALE__)
 #     define BOOST_NO_TWO_PHASE_NAME_LOOKUP
 #     define BOOST_NO_IS_ABSTRACT
 #  endif
-   //
-   // gcc-3.x problems:
-   //
-   // Bug specific to gcc 3.1 and 3.2:
-   //
-#  if ((__GNUC_MINOR__ == 1) || (__GNUC_MINOR__ == 2))
-#     define BOOST_NO_EXPLICIT_FUNCTION_TEMPLATE_ARGUMENTS
-#  endif
+
 #  if __GNUC_MINOR__ < 4
 #     define BOOST_NO_IS_ABSTRACT
 #  endif
@@ -119,9 +80,7 @@
 //
 // gcc implements the named return value optimization since version 3.1
 //
-#if __GNUC__ > 3 || ( __GNUC__ == 3 && __GNUC_MINOR__ >= 1 )
 #define BOOST_HAS_NRVO
-#endif
 
 // Branch prediction hints
 #define BOOST_LIKELY(x) __builtin_expect(x, 1)
@@ -136,13 +95,13 @@
      // _WIN32 or one of its variant spellings. Note that Cygwin is a POSIX environment,
      // so does not define _WIN32 or its variants.
 #    define BOOST_HAS_DECLSPEC
-#    define BOOST_SYMBOL_EXPORT __attribute__((dllexport))
-#    define BOOST_SYMBOL_IMPORT __attribute__((dllimport))
+#    define BOOST_SYMBOL_EXPORT __attribute__((__dllexport__))
+#    define BOOST_SYMBOL_IMPORT __attribute__((__dllimport__))
 #  else
-#    define BOOST_SYMBOL_EXPORT __attribute__((visibility("default")))
+#    define BOOST_SYMBOL_EXPORT __attribute__((__visibility__("default")))
 #    define BOOST_SYMBOL_IMPORT
 #  endif
-#  define BOOST_SYMBOL_VISIBLE __attribute__((visibility("default")))
+#  define BOOST_SYMBOL_VISIBLE __attribute__((__visibility__("default")))
 #else
 // config/platform/win32.hpp will define BOOST_SYMBOL_EXPORT, etc., unless already defined
 #  define BOOST_SYMBOL_EXPORT
@@ -283,8 +242,8 @@
 #endif
 
 // versions check:
-// we don't know gcc prior to version 2.90:
-#if (__GNUC__ == 2) && (__GNUC_MINOR__ < 90)
+// we don't know gcc prior to version 3.30:
+#if (__GNUC__ < 3) || (__GNUC__ == 3 && (__GNUC_MINOR__ < 3))
 #  error "Compiler not configured - please reconfigure"
 #endif
 //

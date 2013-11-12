@@ -19,7 +19,6 @@
 #include <boost/spirit/home/qi/parser.hpp>
 #include <boost/spirit/home/support/common_terminals.hpp>
 #include <boost/spirit/home/support/info.hpp>
-#include <boost/spirit/home/support/detail/is_spirit_tag.hpp>
 #include <boost/mpl/assert.hpp>
 #include <boost/type_traits/is_same.hpp>
 
@@ -29,10 +28,7 @@ namespace boost { namespace spirit
     {
         template <typename T, unsigned Radix, unsigned MinDigits
                 , int MaxDigits>
-        struct int_parser 
-        {
-            BOOST_SPIRIT_IS_TAG()
-        };
+        struct int_parser {};
     }
 
     namespace qi

@@ -33,9 +33,8 @@ namespace boost { namespace phoenix
     }
 
     template <typename T>
-    inline
     typename expression::value<T>::type const
-    val(T t)
+    inline val(T t)
     {
         return expression::value<T>::make(t);
     }

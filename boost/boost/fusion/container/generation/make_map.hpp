@@ -35,7 +35,7 @@ namespace boost { namespace fusion
                       , typename detail::as_fusion_element<T>::type
                     >...>
                 type;
-            };
+        };
         };
     }
 
@@ -56,7 +56,7 @@ namespace boost { namespace fusion
 
         return result_type(arg...);
     }
- }}
+}}
 
 #endif
 #endif
