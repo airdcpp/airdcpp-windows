@@ -1415,6 +1415,7 @@ void RichTextBox::handleEditSelectAll() {
 }
 
 void RichTextBox::handleEditClearAll() {
+	links.clear();
 	SetWindowText(_T(""));
 }
 
