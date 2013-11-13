@@ -103,7 +103,7 @@ void FulHighlightPage::write(){
 
 LRESULT FulHighlightPage::onAdd(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	FulHighlightDialog dlg;
-	if(dlg.DoModal(WinUtil::mainWnd) == IDOK) {
+	if(dlg.DoModal(m_hWnd) == IDOK) {
 		//add the string to the listview
 		highlights.push_back(dlg.getColorSetting());
 		int i = ctrlStrings.insert( ctrlStrings.GetItemCount(), Text::toT(getContextString(highlights.back().getContext())));
@@ -120,7 +120,7 @@ LRESULT FulHighlightPage::onUpdate(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		return TRUE;
 	
 	FulHighlightDialog dlg(highlights[sel]);
-	if(dlg.DoModal(WinUtil::mainWnd) == IDOK) {
+	if (dlg.DoModal(m_hWnd) == IDOK) {
 		ColorSettings old, cur;
 		old = highlights[sel];
 		cur = dlg.getColorSetting();
