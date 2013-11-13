@@ -1,3 +1,29 @@
+2.63
+
+Changes:
+
+- Improve the hybrid IPv4/IPv6 authentication
+- Show the IP address for ADC search results also when using passive mode
+- Filter the country part when copying IP addresses
+
+Fixed:
+
+- Fix uploading tree for files that are in queue
+- Fix various other partial file sharing issues
+- Fix the connection speed units on search tab
+- Fix crashes when adding favorite hubs from the public hublist or from recent hubs
+- Auto search: Don't consider removed bundles as finished
+- Fix a possible crash when editing the connection speed values
+- Fix a possible crash when removing running bundle files from queue
+- Don't expire auto search items using incrementation one number too early
+- Fix connectivity mode changes not being applied in some cases
+- Fix exact dupe directories being marked as partial dupes when they contain multiple subdirectories
+- Force filelist regeneration when performing full or manual refresh
+- Don't show connection speed higher than the configured value when having a limiter value set
+- Fix a possible freeze with long chat messages
+- Fix link positions going wrong after clearing the chat
+
+
 2.62
 
 Added:
