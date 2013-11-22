@@ -111,7 +111,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 	// TODO: add more encoding into wxWidgets version, this is enough now
 	// FIXME: following names are Windows only!
 	ctrlEncoding.Attach(GetDlgItem(IDC_ENCODING));
-	ctrlEncoding.AddString(_T("System default"));
+	ctrlEncoding.AddString(CTSTRING(SYSTEM_DEFAULT));
 	ctrlEncoding.AddString(_T("English_United Kingdom.1252"));
 	ctrlEncoding.AddString(_T("Czech_Czech Republic.1250"));
 	ctrlEncoding.AddString(_T("Russian_Russia.1251"));
@@ -130,7 +130,7 @@ LRESULT FavHubProperties::OnInitDialog(UINT, WPARAM, LPARAM, BOOL&)
 			ctrlProfile.EnableWindow(false);
 	} else {
 		ctrlProfile.EnableWindow(false);
-		if(entry->get(HubSettings::NmdcEncoding).empty()) {
+		if (entry->get(HubSettings::NmdcEncoding).empty() || entry->get(HubSettings::NmdcEncoding) == "System default") {
 			ctrlEncoding.SetCurSel(0);
 		} else {
 			ctrlEncoding.SetWindowText(Text::toT(entry->get(HubSettings::NmdcEncoding)).c_str());
@@ -271,8 +271,7 @@ LRESULT FavHubProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWnd
 		}
 
 		//set the values
-		if (ctrlEncoding.GetCurSel() > 0)
-			entry->get(HubSettings::NmdcEncoding) = Text::fromT(buf);
+		entry->get(HubSettings::NmdcEncoding) = ctrlEncoding.GetCurSel() > 0 ? Text::fromT(buf) : Util::emptyString;
 		entry->setServerStr(addresses);
 
 		GetDlgItemText(IDC_HUBNAME, buf, 256);
