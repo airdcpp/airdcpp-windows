@@ -81,7 +81,7 @@ bool MainFrame::isShutdownStatus = false;
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
-bTrayIcon(false), bAppMinimized(false), bIsPM(false), hashProgress(false), trayUID(0),
+bTrayIcon(false), bAppMinimized(false), bIsPM(false), hashProgress(false), trayUID(0), fMenuShutdown(false),
 statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
 
 
@@ -1211,15 +1211,21 @@ void MainFrame::showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& 
 }
 
 LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	if (!fMenuShutdown && SETTING(CLOSE_USE_MINIMIZE) && !oldshutdown && !closing) {
+		ShowWindow(SW_MINIMIZE);
+		return 0;
+	}
+	
+	fMenuShutdown = false;
+
 	if(!closing) {
 		if(UpdateManager::getInstance()->isUpdating()) {
 			showMessageBox(CTSTRING(UPDATER_IN_PROGRESS), MB_OK | MB_ICONINFORMATION);
-
 			bHandled = TRUE;
 			return 0;
 		}
 		
-		if( oldshutdown || WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_EXIT, TSTRING(REALLY_EXIT)) ) {
+		if (oldshutdown || WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_EXIT, TSTRING(REALLY_EXIT))) {
 			
 			HubFrame::ShutDown();
 

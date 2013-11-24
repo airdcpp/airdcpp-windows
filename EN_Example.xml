@@ -1634,7 +1634,7 @@ would you still like to load them?</string>
 	<string name="PostSearching">Searching for proper</string>
 	<string name="IncreaseNum">Increase current number</string>
 	<string name="DecreaseNum">Decrease current number</string>
-	<string name="SettingsDelayHours">Hours to search for proper when using incrementation</string>
+	<string name="SettingsDelayHours">Hours to search for PROPER when using incrementation</string>
 	<string name="XNoReleaseFiles">%1% folders with no release files</string>
 	<string name="MenuHide">Hide</string>
 	<string name="ClosingWindows">Closing windows</string>
@@ -1999,4 +1999,5 @@ Do you want to remove the auto search item as well?</string>
 	<string name="ChannelBeta">Stable and beta versions</string>
 	<string name="ChannelNightly">Nightly builds</string>
 	<string name="SystemDefault">System default</string>
+	<string name="CloseMinimizes">Close button minimizes AirDC</string>
 </resources>

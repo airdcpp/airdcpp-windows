@@ -140,7 +140,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <PreBuildEvent>
       <Message>Generating revision number...</Message>
-      <Command>(SolutionDir)generate-version.bat $(SolutionDir)</Command>
+      <Command>$(SolutionDir)generate-version.bat $(SolutionDir)</Command>
     </PreBuildEvent>
     <ClCompile>
       <Optimization>Full</Optimization>

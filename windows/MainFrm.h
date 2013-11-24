@@ -268,6 +268,7 @@ public:
 	}
 
 	LRESULT OnFileExit(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		fMenuShutdown = true;
 		PostMessage(WM_CLOSE);
 		return 0;
 	}
@@ -385,6 +386,7 @@ private:
 	bool bTrayIcon;
 	bool bAppMinimized;
 	bool bIsPM;
+	bool fMenuShutdown;
 
 	HashProgressDlg hashProgress;
 
