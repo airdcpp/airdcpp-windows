@@ -115,11 +115,11 @@ void LocationsPage::write()
 
 LRESULT LocationsPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 {
-	NM_LISTVIEW* lv = (NM_LISTVIEW*) pnmh;
-	::EnableWindow(GetDlgItem(IDC_REMOVE), (lv->uNewState & LVIS_FOCUSED));
-	::EnableWindow(GetDlgItem(IDC_RENAME), (lv->uNewState & LVIS_FOCUSED));
-	::EnableWindow(GetDlgItem(IDC_MOVEUP), (lv->uNewState & LVIS_FOCUSED));
-	::EnableWindow(GetDlgItem(IDC_MOVEDOWN), (lv->uNewState & LVIS_FOCUSED));
+	bool hasSel = ctrlDirectories.GetSelectedCount() > 0;
+	::EnableWindow(GetDlgItem(IDC_REMOVE), hasSel);
+	::EnableWindow(GetDlgItem(IDC_RENAME), hasSel);
+	::EnableWindow(GetDlgItem(IDC_MOVEUP), hasSel);
+	::EnableWindow(GetDlgItem(IDC_MOVEDOWN), hasSel);
 	return 0;		
 }
 
@@ -178,23 +178,34 @@ LRESULT LocationsPage::onClickedRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND 
 
 LRESULT LocationsPage::onClickedRename(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	TCHAR buf[MAX_PATH];
-
 	int i = -1;
 	while((i = ctrlDirectories.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		ctrlDirectories.GetItemText(i, 0, buf, MAX_PATH); //vname
 		
 		FavoriteDirDlg dlg;
-		dlg.vName = buf;
-		auto s = boost::find_if(favoriteDirs, CompareFirst<string, StringList>(Text::fromT(buf)));
-		dcassert(s != favoriteDirs.end());
-		dlg.paths = s->second;
+		auto oldItem = favoriteDirs[i];
+		dlg.vName = Text::toT(oldItem.first);
+		dlg.paths = oldItem.second;
 	
 		if(dlg.DoModal() == IDOK) {
-			if (removeFavoriteDir(Text::fromT(buf)))
-				ctrlDirectories.DeleteItem(i);
+			sort(dlg.paths.begin(), dlg.paths.end());
+			pair<string, StringList> newItem = { Text::fromT(dlg.vName), dlg.paths };
 
-			addDirs(Text::fromT(dlg.vName), dlg.paths);
+			if (stricmp(newItem.first, oldItem.first) != 0) { //vName changed check if one with the same name already exits.
+				auto k = boost::find_if(favoriteDirs, CompareFirst<string, StringList>(newItem.first));
+				if (k != favoriteDirs.end()) {
+					MessageBox(CTSTRING(ITEM_NAME_EXISTS), CTSTRING(NAME_IN_USE), MB_ICONEXCLAMATION | MB_OK);
+					//reset name and do a step back so the user can fix his mistake
+					newItem.first = oldItem.first;
+					//keep possible changes to paths
+					favoriteDirs[i] = newItem;
+					ctrlDirectories.SetItemText(i, 1, Text::toT(Util::listToString(dlg.paths)).c_str());
+					i = i - 1;
+					continue;
+				}
+			}
+			favoriteDirs[i] = newItem;
+			ctrlDirectories.SetItemText(i, 0, Text::toT(newItem.first).c_str());
+			ctrlDirectories.SetItemText(i, 1, Text::toT(Util::listToString(dlg.paths)).c_str());
 		}
 	}
 	return 0;
