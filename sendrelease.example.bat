@@ -17,17 +17,11 @@ set solutionDir=%CD%
 
 
 ::Check revision
-call svn update
-svn info > nul
-if errorlevel 1 goto :OnSVNError
+call git describe > nul
+if errorlevel 1 goto :OnGitError
 
-for /F "tokens=1,2 delims=: " %%a in ('svn info') do call :InfoProc "%%a" "%%b"
+for /F "tokens=*" %%a in ('git describe --abbrev"="4') do call :UpdateRevision "%%a"
 goto :end
-
-:InfoProc
-if %1=="Revision" call :UpdateRevision %2
-goto :end
-
 
 :UpdateRevision
 
@@ -107,8 +101,8 @@ echo This revision exists already on the FTP, aborting
 ECHO Y | DEL checkftp.txt
 goto :end
 
-:OnSVNError
-echo Error get revision from SVN
+:OnGitError
+echo Error get version from GIT
 goto :end
 
 :invalidParameters
