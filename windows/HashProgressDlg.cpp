@@ -36,23 +36,14 @@ LRESULT HashProgressDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	SetDlgItemText(IDOK, CTSTRING(HASH_PROGRESS_BACKGROUND));
 	SetDlgItemText(IDC_STATISTICS, CTSTRING(HASH_PROGRESS_STATS));
 	SetDlgItemText(IDC_HASH_INDEXING, CTSTRING(HASH_PROGRESS_TEXT));
-	// KUL - hash progress dialog patch (begin)
+
 	SetDlgItemText(IDC_SETTINGS_MAX_HASH_SPEED, CTSTRING(SETTINGS_MAX_HASHER_SPEED));
 	SetDlgItemText(IDC_MAX_HASH_SPEED, Text::toT(Util::toString(SETTING(MAX_HASH_SPEED))).c_str());
 	SetDlgItemText(IDC_PAUSE, HashManager::getInstance()->isHashingPaused() ? CTSTRING(RESUME) : CTSTRING(PAUSE));
 	SetDlgItemText(IDC_STOP, CTSTRING(STOP));
 
-	// KUL - hash progress dialog patch (end)
-
-	string tmp;
-	int64_t speed = 0;
-
-	startBytes = 0;
-	startFiles = 0;
 	hashers = 0;
-	HashManager::getInstance()->getStats(tmp, startBytes, startFiles, speed, hashers);
 
-	// KUL - hash progress dialog patch
 	CUpDownCtrl hashspin; 
 	hashspin.Attach(GetDlgItem(IDC_HASH_SPIN));
 	hashspin.SetRange(0, 999);
