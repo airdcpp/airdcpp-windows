@@ -113,7 +113,7 @@ void LocationsPage::write()
 	AirUtil::updateCachedSettings();
 }
 
-LRESULT LocationsPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
+LRESULT LocationsPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
 {
 	bool hasSel = ctrlDirectories.GetSelectedCount() > 0;
 	::EnableWindow(GetDlgItem(IDC_REMOVE), hasSel);

@@ -748,7 +748,7 @@ void RichTextBox::clearSelInfo() {
 	selectedWord.clear();
 }
 
-void RichTextBox::updateSelectedText(POINT pt) {
+void RichTextBox::updateSelectedText(POINT pt, bool selectLink) {
 	selectedLine = LineFromPos(pt);
 
 	auto p = getLink(pt);
@@ -756,7 +756,8 @@ void RichTextBox::updateSelectedText(POINT pt) {
 		auto cl = p->second;
 
 		selectedWord = Text::toT(cl->url);
-		SetSel(p->first.cpMin, p->first.cpMax);
+		if (selectLink)
+			SetSel(p->first.cpMin, p->first.cpMax);
 
 		isMagnet = cl->getType() == ChatLink::TYPE_MAGNET;
 		isRelease = cl->getType() == ChatLink::TYPE_RELEASE;
@@ -798,7 +799,7 @@ void RichTextBox::updateSelectedText(POINT pt) {
 LRESULT RichTextBox::OnRButtonDown(POINT pt) {
 	clearSelInfo();
 
-	updateSelectedText(pt);
+	updateSelectedText(pt, true);
 
 	updateAuthor();
 
@@ -1167,7 +1168,7 @@ LRESULT RichTextBox::onChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOO
 
 	if ((GetKeyState(VkKeyScan('C') & 0xFF) & 0xFF00) > 0 && (GetKeyState(VK_CONTROL) & 0xFF00) > 0) {
 		POINT pt = { -1, -1 };
-		updateSelectedText(pt);
+		updateSelectedText(pt, false);
 		WinUtil::setClipboard(selectedWord);
 		clearSelInfo();
 		return 1;
@@ -1383,7 +1384,7 @@ bool RichTextBox::onClientEnLink(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 
 	auto cl = p->second;
 	selectedWord = Text::toT(cl->url); // for magnets
-	updateSelectedText(pt);
+	updateSelectedText(pt, false);
 	updateAuthor();
 
 	openLink(cl);

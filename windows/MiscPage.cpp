@@ -131,7 +131,7 @@ LRESULT MiscPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlUpdates.Attach(GetDlgItem(IDC_UPDATE_CHANNEL));
 	ctrlUpdates.AddString(CTSTRING(CHANNEL_STABLE));
 	ctrlUpdates.AddString(CTSTRING(CHANNEL_BETA));
-	if (SETTING(UPDATE_CHANNEL) == SettingsManager::UPDATE_NIGHTLY || getVersionType() == VERSION_NIGHTLY) {
+	if (SETTING(UPDATE_CHANNEL) == VERSION_NIGHTLY || getVersionType() == VERSION_NIGHTLY) {
 		ctrlUpdates.AddString(CTSTRING(CHANNEL_NIGHTLY));
 	}
 

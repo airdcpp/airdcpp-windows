@@ -656,7 +656,7 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 		if (sr->getType() == SearchResult::TYPE_DIRECTORY)
 			dupe = AirUtil::checkDirDupe(sr->getPath(), sr->getSize());
 		else
-			dupe = SettingsManager::lanMode ? AirUtil::checkFileDupe(sr->getPath(), sr->getSize()) : AirUtil::checkFileDupe(sr->getTTH());
+			dupe = AirUtil::checkFileDupe(sr->getTTH());
 	}
 
 	//get the ip info

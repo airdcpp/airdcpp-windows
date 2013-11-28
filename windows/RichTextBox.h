@@ -182,7 +182,7 @@ protected:
 	const string& getHubUrl() const;
 private:
 	void clearSelInfo();
-	void updateSelectedText(POINT pt);
+	void updateSelectedText(POINT pt, bool selectLink);
 	static UINT	WM_FINDREPLACE;
 	TCHAR*		findBuffer;
 	const WORD	findBufferSize;
