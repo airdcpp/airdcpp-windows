@@ -81,7 +81,7 @@ bool MainFrame::isShutdownStatus = false;
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
-bTrayIcon(false), bAppMinimized(false), bIsPM(false), hashProgress(false), trayUID(0), fMenuShutdown(false),
+bTrayIcon(false), bAppMinimized(false), bHasPM(false), bHasMC(false), hashProgress(false), trayUID(0), fMenuShutdown(false),
 statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
 
 
@@ -394,6 +394,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME);
 	pmicon.hIcon = ResourceLoader::loadIcon(IDR_TRAY_PM, 16);
 	hubicon.hIcon = ResourceLoader::loadIcon(IDR_TRAY_HUB, 16);
+	hubPmicon.hIcon = ResourceLoader::loadIcon(IDI_MESSAGE, 16);
 
 	updateTray(true);
 
@@ -881,9 +882,26 @@ void MainFrame::addStatus(const string& aMsg, time_t aTime, uint8_t severity) {
 }
 
 void MainFrame::onChatMessage(bool pm) {
-	if(!bIsPM && (!WinUtil::isAppActive || bAppMinimized)) { //using IsPM to avoid the 2 icons getting mixed up
-		bIsPM = true;
-		if (!pm) {
+	if (!WinUtil::isAppActive || bAppMinimized) {
+		if ((bHasMC && pm) || (bHasPM && !pm)) {
+			bHasMC = true;
+			bHasPM = true;
+			if (taskbarList) {
+				taskbarList->SetOverlayIcon(m_hWnd, hubPmicon.hIcon, NULL);
+			}
+			if (bTrayIcon) {
+				NOTIFYICONDATA nid;
+				ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
+				nid.cbSize = sizeof(NOTIFYICONDATA);
+				nid.hWnd = m_hWnd;
+				nid.uID = trayUID;
+				nid.uFlags = NIF_ICON;
+				nid.hIcon = hubPmicon.hIcon;
+				::Shell_NotifyIcon(NIM_MODIFY, &nid);
+			}
+
+		} else if (!pm) {
+			bHasMC = true;
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, hubicon.hIcon, NULL);
 			}
@@ -898,6 +916,7 @@ void MainFrame::onChatMessage(bool pm) {
 				::Shell_NotifyIcon(NIM_MODIFY, &nid);
 			}
 		} else {
+			bHasPM = true;
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, pmicon.hIcon, NULL);
 			}
@@ -1157,8 +1176,9 @@ LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 				setAwayButton(false);
 			}
 		}
-		if(bIsPM) {
-			bIsPM = false;
+		if(bHasPM || bHasMC) {
+			bHasPM = false;
+			bHasMC = false;
 			if(taskbarList) {
 				taskbarList->SetOverlayIcon(m_hWnd, NULL , NULL);
 			}
@@ -1888,8 +1908,9 @@ LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/
 	if (!PopupManager::getInstance()->getCreating()) {
 		WinUtil::isAppActive = (wParam == 1);	//wParam == TRUE if window is activated, FALSE if deactivated
 		if (wParam == 1) {
-			if (bIsPM) {
-				bIsPM = false;
+			if (bHasMC || bHasPM) {
+				bHasPM = false;
+				bHasMC = false;
 
 				if (taskbarList) {
 					taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);

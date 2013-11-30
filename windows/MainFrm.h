@@ -351,6 +351,7 @@ private:
 
 	NOTIFYICONDATA pmicon;
 	NOTIFYICONDATA hubicon;
+	NOTIFYICONDATA hubPmicon;
 	
 	TransferView transferView;
 	static MainFrame* anyMF;
@@ -385,7 +386,8 @@ private:
 	bool awaybyminimize;
 	bool bTrayIcon;
 	bool bAppMinimized;
-	bool bIsPM;
+	bool bHasPM;
+	bool bHasMC;
 	bool fMenuShutdown;
 
 	HashProgressDlg hashProgress;

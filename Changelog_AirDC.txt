@@ -1,3 +1,30 @@
+2.70a
+
+Changes:
+
+- Last online time will now show for all offline users in usersframe
+- Reorder readd/remove source rightclick in queueframe, move All at the top
+- Settings profiles change toolbar buttons and order
+
+Added:
+
+- Option for Close button to minimize airdc
+- Remove all button for edit magnets dialog
+- Use the same icons in pm tab and userlist, ability to state away mode and reg status on tab icon
+- Clear buttons for histories in settings
+ 
+Fixed:
+
+- Fix Hash progress dialog files/h
+- Keep the order when changing items in favorite download directories
+- Fix magnet open error with no source user
+
+Removed:
+
+- Netstats window 
+- Shutdown pc toolbar button function still available via /shutdown
+
+
 2.63
 
 Changes:
