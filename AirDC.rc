@@ -1627,7 +1627,7 @@ END
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 IDR_TRAY_PM             ICON                    "res\\PM.ico"
-IDR_TRAY_HUB            ICON                    "res\\HubMessage.ico"
+IDR_TRAY_HUB            ICON                    "res\\Hubmessage.ico"
 IDR_PRIVATE             ICON                    "res\\User.ico"
 IDR_PRIVATE_OFF         ICON                    "res\\UserOff.ico"
 IDR_WINAMP_LOGO         ICON                    "res\\Winamp_logo.ico"
@@ -2449,7 +2449,7 @@ IDI_SLOTS               ICON                    "res\\Slots.ico"
 IDI_SLOTSFULL           ICON                    "res\\SlotsFull.ico"
 IDI_TOTAL_UP            ICON                    "res\\TotalUp.ico"
 IDI_TOTAL_DOWN          ICON                    "res\\TotalDown.ico"
-IDI_MESSAGE				ICON                    "res\\Message.ico"
+IDI_MESSAGE_OVERLAY		ICON                    "res\\message_overlay.ico"
 IDI_USER_BASE           ICON                    "res\\UserlistImages\\UserBase.ico"
 IDI_USER_AWAY           ICON                    "res\\UserlistImages\\UserAway.ico"
 IDI_USER_BOT            ICON                    "res\\UserlistImages\\UserBot.ico"
