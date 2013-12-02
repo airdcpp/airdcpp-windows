@@ -797,7 +797,7 @@ bool WinUtil::showQuestionBox(const tstring& aText, int icon, int defaultButton 
 bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* = true */, const tstring& initialDir /* = Util::emptyString */, const tstring& aTitle /*= Util::emptyStringW*/, const TCHAR* types /* = NULL */, const TCHAR* defExt /* = NULL */) {
 	TCHAR buf[UNC_MAX_PATH];
 	OPENFILENAME ofn = { 0 };       // common dialog box structure
-	target = Text::toT(Util::validateFileName(Text::fromT(target)));
+	target = Text::toT(Util::validatePath(Text::fromT(target)));
 	_tcscpy(buf, target.c_str());
 	// Initialize OPENFILENAME
 	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;

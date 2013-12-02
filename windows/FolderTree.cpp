@@ -1355,7 +1355,7 @@ BOOL FolderTree::SetChecked(HTREEITEM hItem, bool fCheck)
 LRESULT FolderTree::OnChecked(HTREEITEM hItem, BOOL &bHandled)
 {
 	FolderTreeItemInfo* pItem = (FolderTreeItemInfo*) GetItemData(hItem);
-	if(!Util::validatePath(Text::fromT(pItem->m_sFQPath)))
+	if(!Util::isPathValid(Text::fromT(pItem->m_sFQPath)))
 	{
 		// no checking myComp or network
 		bHandled = TRUE;

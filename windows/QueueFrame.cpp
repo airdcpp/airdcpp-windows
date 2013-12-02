@@ -1099,7 +1099,7 @@ void QueueFrame::moveSelectedDir() {
 	bool moveFinished = false;
 	
 	if(WinUtil::browseDirectory(name, m_hWnd)) {
-		string newDir = Util::validateFileName(Text::fromT(name) + Util::getLastDir(curDir) + PATH_SEPARATOR);
+		string newDir = Util::validatePath(Text::fromT(name) + Util::getLastDir(curDir) + PATH_SEPARATOR);
 		string tmp;
 		if (bundles.size() == 1) {
 			BundlePtr bundle = bundles.front();
@@ -1171,7 +1171,7 @@ LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 
 		size_t pos = cur.find(Util::getLastDir(cur));
 		string newDir = Text::fromT(cur.substr(0, pos));
-		newDir += Util::validateFileName(Text::fromT(virt.line));
+		newDir += Util::validatePath(Text::fromT(virt.line));
 		if (newDir[newDir.length()-1] != PATH_SEPARATOR)
 			newDir += PATH_SEPARATOR;
 
