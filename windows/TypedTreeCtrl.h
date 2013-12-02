@@ -153,7 +153,7 @@ public:
     		InsertItem( &tvs ) ;
 	}
 
-	HTREEITEM findItem(HTREEITEM ht, const tstring& name) {
+	HTREEITEM findItem(HTREEITEM ht, const tstring& name, bool first = true) {
 		auto i = name.find('\\');
 		if(i == string::npos) {
 			return ht;
@@ -167,16 +167,16 @@ public:
 		}
 
 		//have we created it yet?
-		if (hasChildren(ht) && !IsExpanded(ht)) {
+		if (first && hasChildren(ht) && !IsExpanded(ht)) {
 			Expand(ht, TVE_EXPAND);
-			auto ret = findItem(ht, name);
+			auto ret = findItem(ht, name, false);
 
 			//leave it as it was...
 			Expand(ht, TVE_COLLAPSE);
 			return ret;
 		}
 
-		return NULL;
+		return nullptr;
 	}
 
 	bool IsExpanded(HTREEITEM hItem) {

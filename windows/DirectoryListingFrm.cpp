@@ -1262,8 +1262,6 @@ void DirectoryListingFrame::selectItem(const string& name) {
 		if (changeType == CHANGE_LIST)
 			ctrlTree.EnsureVisible(ht);
 		ctrlTree.SelectItem(ht);
-	} else {
-		dcassert(0);
 	}
 }
 
