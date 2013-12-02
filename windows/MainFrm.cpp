@@ -394,7 +394,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	WinUtil::SetIcon(m_hWnd, IDR_MAINFRAME);
 	pmicon.hIcon = ResourceLoader::loadIcon(IDR_TRAY_PM, 16);
 	hubicon.hIcon = ResourceLoader::loadIcon(IDR_TRAY_HUB, 16);
-	hubPmicon.hIcon = ResourceLoader::loadIcon(IDI_MESSAGE, 16);
+	hubPmicon.hIcon = ResourceLoader::mergeIcons(pmicon.hIcon, ResourceLoader::loadIcon(IDI_MESSAGE_OVERLAY, 16), 16);
 
 	updateTray(true);
 

@@ -255,7 +255,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_SLOTSFULL:		return _T("SlotsFull.ico");
 		case IDR_TRAY_PM:		return _T("PM.ico");
 		case IDR_TRAY_HUB:		return _T("HubMessage.ico");
-		case IDI_MESSAGE:		return _T("Message.ico");
+		case IDI_MESSAGE_OVERLAY:		return _T("message_overlay.ico");
 		case IDI_TOTAL_UP:		return _T("TotalUp.ico");
 		case IDI_TOTAL_DOWN:	return _T("TotalDown.ico");
 		case IDI_SHARED:		return _T("Shared.ico");
@@ -295,7 +295,21 @@ tstring ResourceLoader::getIconName(int aDefault) {
 	}
 }
 
-//TODO: other imagelists as reference and built when needed like this.
+HICON ResourceLoader::mergeIcons(HICON tmp1, HICON tmp2, int size){
+	CImageList tmp;
+	tmp.Create(size, size, ILC_COLOR32 | ILC_MASK, 0, 0);
+	tmp.AddIcon(tmp1);
+	tmp.AddIcon(tmp2);
+	CImageList mergelist;
+	mergelist.Merge(tmp, 0, tmp, 1, 0, 0);
+
+	HICON merged = CopyIcon(mergelist.GetIcon(0, ILD_TRANSPARENT));
+	tmp.Destroy();
+	mergelist.Destroy();
+	return merged;
+}
+
+
 CImageList& ResourceLoader::getArrowImages() {
 	if(arrowImages.IsNull()){
 		const int size = 22;

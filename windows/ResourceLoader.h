@@ -67,6 +67,7 @@ public:
 	};
 
 	static int getIconIndex(const tstring& aFileName);
+	static HICON mergeIcons(HICON tmp1, HICON tmp2, int size);
 
 private:
 	
