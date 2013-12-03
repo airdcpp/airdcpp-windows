@@ -961,7 +961,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 				menu.appendSeparator();
 				if (isMagnet) {
-					auto isMyLink = Text::toT(client->getMyNick()) == author;
+					auto isMyLink = client && Text::toT(client->getMyNick()) == author;
 					Magnet m = Magnet(Text::fromT(selectedWord));
 					if (client && ShareManager::getInstance()->isTempShared(pmUser ? pmUser->getCID().toBase32() : Util::emptyString, m.getTTH())) {
 						/* show an option to remove the item */
