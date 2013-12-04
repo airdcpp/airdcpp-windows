@@ -1382,5 +1382,8 @@
     <Image Include="res\ToolbarImages\LogDir.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\message_overlay.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

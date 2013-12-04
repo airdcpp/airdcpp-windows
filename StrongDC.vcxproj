@@ -835,6 +835,7 @@
     <Image Include="res\MediaToolbar\stop.ico" />
     <Image Include="res\MediaToolbar\up.ico" />
     <Image Include="res\MediaToolbar\volume50.ico" />
+    <Image Include="res\message_overlay.ico" />
     <Image Include="res\next.ico" />
     <Image Include="res\overlay.ico" />
     <Image Include="res\previous.ico" />

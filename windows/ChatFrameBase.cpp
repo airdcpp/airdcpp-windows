@@ -683,7 +683,6 @@ tstring ChatFrameBase::commands = Text::toT("\n\t\t\t\t\tHELP\n\
 /refresh\t\t\t\t\tRefresh share\n\
 /optimizedb\t\t\t\tRemove unused entries from the hash databases\n\
 /verifydb\t\t\t\t\tOptimize and verify the integrity of the hash databases\n\
-/savequeue\t\t\t\tSave download queue\n\
 /stop\t\t\t\t\tStop SFV check\n\
 /sharestats\t\t\t\tShow general share statistics\n\
 /dbstats\t\t\t\t\tShow techical statistics about the hash database backend\n\
