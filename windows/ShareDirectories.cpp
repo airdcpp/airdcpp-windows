@@ -549,7 +549,7 @@ void ShareDirectories::removeDir(const string& rPath, ProfileToken aProfile, int
 	if (checkDupes) {
 		//check if this item exists in other profiles
 		auto dirItems = getItemsByPath(rPath, false, false);
-		if (!dirItems.empty() && Util::getOsMajor() >= 6) {
+		if (!dirItems.empty()) {
 			if (confirmOption == CONFIRM_ASK) {
 				CTaskDialog taskdlg;
 

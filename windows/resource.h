@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -309,7 +309,7 @@
 #define IDI_EXPAND_UP                   506
 #define IDI_EXPAND_DOWN                 507
 #define IDI_UP                          508
-#define IDI_MESSAGE_OVERLAY                     509
+#define IDI_MESSAGE_OVERLAY             509
 #define IDI_NEXT                        510
 #define IDI_PREV                        511
 #define IDI_BACK                        512

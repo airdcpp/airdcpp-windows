@@ -109,77 +109,76 @@ int ShellExecAsUser(const TCHAR *pcOperation, const TCHAR *pcFileName, const TCH
 
 	int bSuccess = 0;
 
-	if (Util::getOsMajor() >= 6) {
-		HRESULT hr = CoInitialize(NULL);
-		if((hr == S_FALSE) || (hr == S_OK))
+	HRESULT hr = CoInitialize(NULL);
+	if((hr == S_FALSE) || (hr == S_OK))
+	{
+		IShellWindows *psw = NULL;
+		hr = CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&psw));
+		if(SUCCEEDED(hr))
 		{
-			IShellWindows *psw = NULL;
-			hr = CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&psw));
-			if(SUCCEEDED(hr))
+			HWND hwnd = 0;
+			IDispatch* pdisp = NULL;
+			variant_t vEmpty;
+			if(S_OK == psw->FindWindowSW(&vEmpty.get(), &vEmpty.get(), SWC_DESKTOP, (long*)&hwnd, SWFO_NEEDDISPATCH, &pdisp))
 			{
-				HWND hwnd = 0;
-				IDispatch* pdisp = NULL;
-				variant_t vEmpty;
-				if(S_OK == psw->FindWindowSW(&vEmpty.get(), &vEmpty.get(), SWC_DESKTOP, (long*)&hwnd, SWFO_NEEDDISPATCH, &pdisp))
+				if((hwnd != NULL) && (hwnd != INVALID_HANDLE_VALUE))
 				{
-					if((hwnd != NULL) && (hwnd != INVALID_HANDLE_VALUE))
+					IShellBrowser *psb;
+					hr = IUnknown_QueryService(pdisp, SID_STopLevelBrowser, IID_PPV_ARGS(&psb));
+					if(SUCCEEDED(hr))
 					{
-						IShellBrowser *psb;
-						hr = IUnknown_QueryService(pdisp, SID_STopLevelBrowser, IID_PPV_ARGS(&psb));
+						IShellView *psv = NULL;
+						hr = psb->QueryActiveShellView(&psv);
 						if(SUCCEEDED(hr))
 						{
-							IShellView *psv = NULL;
-							hr = psb->QueryActiveShellView(&psv);
-							if(SUCCEEDED(hr))
+							IDispatch *pdispBackground = NULL;
+							HRESULT hr = psv->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&pdispBackground));
+							if (SUCCEEDED(hr))
 							{
-								IDispatch *pdispBackground = NULL;
-								HRESULT hr = psv->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&pdispBackground));
+								IShellFolderViewDual *psfvd = NULL;
+								hr = pdispBackground->QueryInterface(IID_PPV_ARGS(&psfvd));
 								if (SUCCEEDED(hr))
 								{
-									IShellFolderViewDual *psfvd = NULL;
-									hr = pdispBackground->QueryInterface(IID_PPV_ARGS(&psfvd));
+									IDispatch *pdisp = NULL;
+									hr = psfvd->get_Application(&pdisp);
 									if (SUCCEEDED(hr))
 									{
-										IDispatch *pdisp = NULL;
-										hr = psfvd->get_Application(&pdisp);
-										if (SUCCEEDED(hr))
+										IShellDispatch2 *psd;
+										hr = pdisp->QueryInterface(IID_PPV_ARGS(&psd));
+										if(SUCCEEDED(hr))
 										{
-											IShellDispatch2 *psd;
-											hr = pdisp->QueryInterface(IID_PPV_ARGS(&psd));
-											if(SUCCEEDED(hr))
-											{
-												variant_t verb(pcOperation);
-												variant_t file(pcFileName);
-												variant_t para(pcParameters);
-												variant_t show(SW_SHOWNORMAL);
-												hr = psd->ShellExecute(file.get().bstrVal, para.get(), vEmpty.get(), verb.get(), show.get());
-												if(SUCCEEDED(hr)) bSuccess = 1;
-												psd->Release();
-												psd = NULL;
-											}
-											pdisp->Release();
-											pdisp = NULL;
+											variant_t verb(pcOperation);
+											variant_t file(pcFileName);
+											variant_t para(pcParameters);
+											variant_t show(SW_SHOWNORMAL);
+											hr = psd->ShellExecute(file.get().bstrVal, para.get(), vEmpty.get(), verb.get(), show.get());
+											if(SUCCEEDED(hr)) bSuccess = 1;
+											psd->Release();
+											psd = NULL;
 										}
+										pdisp->Release();
+										pdisp = NULL;
 									}
-									pdispBackground->Release();
-									pdispBackground = NULL;
 								}
-								psv->Release();
-								psv = NULL;
+								pdispBackground->Release();
+								pdispBackground = NULL;
 							}
-							psb->Release();
-							psb = NULL;
+							psv->Release();
+							psv = NULL;
 						}
+						psb->Release();
+						psb = NULL;
 					}
-					pdisp->Release();
-					pdisp = NULL;
 				}
-				psw->Release();
-				psw = NULL;
+				pdisp->Release();
+				pdisp = NULL;
 			}
-			CoUninitialize();
+			psw->Release();
+			psw = NULL;
 		}
+		CoUninitialize();
 	}
+	
 
 	if(bSuccess < 1)
 	{

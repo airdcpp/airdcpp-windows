@@ -86,10 +86,9 @@ statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
 
 
 { 
-	if(Util::getOsMajor() >= 6) {
-		user32lib = LoadLibrary(_T("user32"));
-		_d_ChangeWindowMessageFilter = (LPFUNC)GetProcAddress(user32lib, "ChangeWindowMessageFilter");
-	}
+
+	user32lib = LoadLibrary(_T("user32"));
+	_d_ChangeWindowMessageFilter = (LPFUNC)GetProcAddress(user32lib, "ChangeWindowMessageFilter");
 
 	memzero(statusSizes, sizeof(statusSizes));
 	anyMF = this;
@@ -116,7 +115,7 @@ MainFrame::~MainFrame() {
 	WinUtil::uninit();
 	ResourceLoader::unload();
 
-	if((Util::getOsMajor() >= 6) && user32lib)
+	if(user32lib)
 		FreeLibrary(user32lib);
 }
 
@@ -203,16 +202,14 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 	trayMessage = RegisterWindowMessage(_T("TaskbarCreated"));
 
-	if(Util::getOsMajor() >= 6) {
-		// 1 == MSGFLT_ADD
-		_d_ChangeWindowMessageFilter(trayMessage, 1);
-		_d_ChangeWindowMessageFilter(WMU_WHERE_ARE_YOU, 1);
+	// 1 == MSGFLT_ADD
+	_d_ChangeWindowMessageFilter(trayMessage, 1);
+	_d_ChangeWindowMessageFilter(WMU_WHERE_ARE_YOU, 1);
 
-		if(Util::getOsMajor() > 6 || Util::getOsMinor() >= 1) {
-			tbButtonMessage = RegisterWindowMessage(_T("TaskbarButtonCreated"));
-			_d_ChangeWindowMessageFilter(tbButtonMessage, 1);
-			_d_ChangeWindowMessageFilter(WM_COMMAND, 1);
-		}
+	if (Util::IsOSVersionOrGreater(6, 1)) {
+		tbButtonMessage = RegisterWindowMessage(_T("TaskbarButtonCreated"));
+		_d_ChangeWindowMessageFilter(tbButtonMessage, 1);
+		_d_ChangeWindowMessageFilter(WM_COMMAND, 1);
 	}
 
 	TimerManager::getInstance()->start();
@@ -270,8 +267,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_LOG_DIR);
 
 	// use Vista-styled menus on Vista/Win7
-	if(Util::getOsMajor() >= 6)
-		m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());
+	m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());
 
 	// remove old menu
 	SetMenu(NULL);
@@ -433,7 +429,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		m_PictureWindow.Load(Text::toT(currentPic).c_str());
 	}
 
-	if (Util::getOsMajor() >= 6 && Util::getOsMinor() >= 2 && WinUtil::isDesktopOs() && WinUtil::isElevated()) {
+	if (Util::IsOSVersionOrGreater(6, 2) && WinUtil::isDesktopOs() && WinUtil::isElevated()) {
 		WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING));
 	}
 
@@ -456,7 +452,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 }
 
 LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-	if(Util::getOsMajor() < 6 || (Util::getOsMajor() == 6 && Util::getOsMinor() < 1))
+	if (!Util::IsOSVersionOrGreater(6, 1))
 		return 0;
 
 	taskbarList.Release();

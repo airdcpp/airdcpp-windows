@@ -1494,7 +1494,7 @@ void WinUtil::loadReBarSettings(HWND bar) {
 	
 	REBARBANDINFO rbi = { 0 };
 	ZeroMemory(&rbi, sizeof(rbi));
-	rbi.cbSize = Util::getOsMajor() >= 6 ? REBARBANDINFOW_V6_SIZE : REBARBANDINFOW_V3_SIZE;
+	rbi.cbSize = REBARBANDINFOW_V6_SIZE;
 	rbi.fMask = RBBIM_ID | RBBIM_SIZE | RBBIM_STYLE;
 	
 	StringTokenizer<string> st(SETTING(TOOLBAR_POS), ';');
@@ -1526,7 +1526,7 @@ void WinUtil::saveReBarSettings(HWND bar) {
 	
 	REBARBANDINFO rbi = { 0 };
 	ZeroMemory(&rbi, sizeof(rbi));
-	rbi.cbSize = Util::getOsMajor() >= 6 ? REBARBANDINFOW_V6_SIZE : REBARBANDINFOW_V3_SIZE;
+	rbi.cbSize = REBARBANDINFOW_V6_SIZE;
 	rbi.fMask = RBBIM_ID | RBBIM_SIZE | RBBIM_STYLE;
 	
 	for(unsigned int i = 0; i < rebar.GetBandCount(); i++)
@@ -1909,8 +1909,7 @@ string WinUtil::addHistory(CComboBox& ctrlCombo, SettingsManager::HistoryType aT
 }
 
 void WinUtil::addCue(HWND hwnd, LPCWSTR text, BOOL drawFocus) {
-	if (Util::getOsMajor() == 6)
-		Edit_SetCueBannerTextFocused(hwnd, text, drawFocus);
+	Edit_SetCueBannerTextFocused(hwnd, text, drawFocus);
 }
 
 void WinUtil::addUpdate(const string& aUpdater) {
@@ -1931,7 +1930,7 @@ void WinUtil::addUpdate(const string& aUpdater) {
 void WinUtil::runPendingUpdate() {
 	if(updated && !updateCommand.first.empty()) {
 		auto cmd = updateCommand.second + Text::toT(Util::getParams(false));
-		ShellExecute(NULL, Util::getOsMajor() >= 6 ? _T("runas") : NULL, updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
+		ShellExecute(NULL, _T("runas"), updateCommand.first.c_str(), cmd.c_str(), NULL, SW_SHOWNORMAL);
 	}
 }
 
