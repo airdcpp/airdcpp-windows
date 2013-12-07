@@ -679,8 +679,15 @@ HWND MainFrame::createToolbar() {
 		tbarcreated = true;
 	}
 
-	while(ctrlToolbar.GetButtonCount()>0)
+	vector<int> openFrames;
+	while (ctrlToolbar.GetButtonCount() > 0){
+		TBBUTTON b;
+		memzero(&b, sizeof(TBBUTTON));
+		ctrlToolbar.GetButton(0, &b);
+		if (ctrlToolbar.IsButtonChecked(b.idCommand))
+			openFrames.push_back(b.idCommand);
 		ctrlToolbar.DeleteButton(0);
+	}
 
 	ctrlToolbar.SetButtonStructSize();
 	StringTokenizer<string> t(SETTING(TOOLBAR_ORDER), ',');
@@ -719,6 +726,9 @@ HWND MainFrame::createToolbar() {
 		tbi.fsStyle |= BTNS_WHOLEDROPDOWN;
 		ctrlToolbar.SetButtonInfo(IDC_REFRESH_FILE_LIST, &tbi);
 	}
+
+	for (auto y : openFrames)
+		ctrlToolbar.CheckButton(y);
 
 	return ctrlToolbar.m_hWnd;
 }

@@ -1705,6 +1705,7 @@ int WinUtil::setButtonPressed(int nID, bool bPressed /* = true */) {
 		return -1;
 
 	MainFrame::getMainFrame()->getToolBar().CheckButton(nID, bPressed);
+
 	return 0;
 }
 
