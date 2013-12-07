@@ -41,8 +41,6 @@ PropPage::TextItem ToolbarPage::texts[] = {
 };
 
 PropPage::Item ToolbarPage::items[] = {
-	{ IDC_TOOLBAR_IMAGE, SettingsManager::TOOLBARIMAGE, PropPage::T_STR },
-	{ IDC_TOOLBAR_HOT_IMAGE, SettingsManager::TOOLBARHOTIMAGE, PropPage::T_STR },
 	{ IDC_ICON_SIZE, SettingsManager::TB_IMAGE_SIZE, PropPage::T_INT },
 	{ IDC_WTB_ICON_SIZE, SettingsManager::WTB_IMAGE_SIZE, PropPage::T_INT },
 	//{ IDC_ICON_SIZE_HOVER, SettingsManager::TB_IMAGE_SIZE_HOT, PropPage::T_INT },
@@ -127,16 +125,6 @@ void ToolbarPage::BrowseForPic(int DLGITEM) {
 	if(WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
 		SetDlgItemText(DLGITEM, x.c_str());
 	}
-}
-
-LRESULT ToolbarPage::onImageBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	BrowseForPic(IDC_TOOLBAR_IMAGE);
-	return 0;
-}
-
-LRESULT ToolbarPage::onHotBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	BrowseForPic(IDC_TOOLBAR_HOT_IMAGE);
-	return 0;
 }
 
 string name;

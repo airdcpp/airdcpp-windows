@@ -649,34 +649,29 @@ LRESULT MainFrame::onWinampButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 }
 
 HWND MainFrame::createToolbar() {
-	if(!tbarcreated) {
 
+	int buttonsCount = sizeof(ToolbarButtons) / sizeof(ToolbarButtons[0]);
+
+	if (!tbarcreated) {
 		ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
 		ctrlToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
+		
+		int i = 0;
+		const int size = SETTING(TB_IMAGE_SIZE);
 
-		if(!(SETTING(TOOLBARIMAGE) == "") && Util::fileExists(SETTING(TOOLBARIMAGE)) ) { //we expect to have the toolbarimage set before setting the Hot image.
-			ToolbarImages.CreateFromImage(Text::toT(SETTING(TOOLBARIMAGE)).c_str(), 0/*SETTING(TB_IMAGE_SIZE)*/, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-
-			if(!(SETTING(TOOLBARHOTIMAGE) == "")) { 
-				ToolbarImagesHot.CreateFromImage(Text::toT(SETTING(TOOLBARHOTIMAGE)).c_str(), 0/*SETTING(TB_IMAGE_SIZE_HOT)*/, 0, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED | LR_LOADFROMFILE);
-				ctrlToolbar.SetHotImageList(ToolbarImagesHot);
-			}
-		} else { //default ones are .ico
-			int i = 0;
-			const int size = SETTING(TB_IMAGE_SIZE);
-			int buttonsCount = sizeof(ToolbarButtons) / sizeof(ToolbarButtons[0]);
-			ToolbarImages.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, buttonsCount+1);
-			ToolbarImagesHot.Create(size, size, ILC_COLOR32 | ILC_MASK,  0, buttonsCount+1);
-			while(i < buttonsCount){
-				HICON icon = ResourceLoader::loadIcon(ToolbarButtons[i].nIcon, size);
-				ToolbarImages.AddIcon(icon);
-				ToolbarImagesHot.AddIcon(ResourceLoader::convertGrayscaleIcon(icon));
-				i++;
-			}
+		ToolbarImages.Create(size, size, ILC_COLOR32 | ILC_MASK, 0, buttonsCount + 1);
+		ToolbarImagesHot.Create(size, size, ILC_COLOR32 | ILC_MASK, 0, buttonsCount + 1);
+		while (i < buttonsCount){
+			HICON icon = ResourceLoader::loadIcon(ToolbarButtons[i].nIcon, size);
+			ToolbarImages.AddIcon(icon);
+			ToolbarImagesHot.AddIcon(ResourceLoader::convertGrayscaleIcon(icon));
+			i++;
 		}
 		ctrlToolbar.SetImageList(ToolbarImages);
 		ctrlToolbar.SetHotImageList(ToolbarImagesHot);
+
 		tbarcreated = true;
+
 	}
 
 	vector<int> openFrames;
@@ -693,7 +688,6 @@ HWND MainFrame::createToolbar() {
 	StringTokenizer<string> t(SETTING(TOOLBAR_ORDER), ',');
 	StringList& l = t.getTokens();
 	
-	int buttonsCount = sizeof(ToolbarButtons) / sizeof(ToolbarButtons[0]);
 	for(StringList::const_iterator k = l.begin(); k != l.end(); ++k) {
 		int i = Util::toInt(*k);		
 		

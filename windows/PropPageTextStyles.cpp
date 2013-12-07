@@ -543,9 +543,6 @@ void PropPageTextStyles::LoadTheme(const string& path, bool silent/* = false*/) 
 		if (silent || MessageBox(CTSTRING(ICONS_IN_THEME), Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
 			xml.stepIn();
 			importData("IconPath", ICON_PATH);
-			//toolbars not exported to avoid absolute local paths in toolbar settings.
-			importData("ToolbarImage", TOOLBARIMAGE);
-			importData("ToolbarHot", TOOLBARHOTIMAGE);
 			xml.resetCurrentChild();
 			xml.stepOut();
 		}
@@ -567,9 +564,7 @@ void PropPageTextStyles::LoadTheme(const string& path, bool silent/* = false*/) 
 }
 LRESULT PropPageTextStyles::onRestoreIcons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	if (MessageBox(CTSTRING(ICONS_RESTORE), Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES) {
-		SettingsManager::getInstance()->set(SettingsManager::TOOLBARIMAGE, "");
 		SettingsManager::getInstance()->set(SettingsManager::ICON_PATH, "");
-		SettingsManager::getInstance()->set(SettingsManager::TOOLBARHOTIMAGE, "");
 	}
 	return 0;
 }
@@ -702,8 +697,6 @@ void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
 		xml.addTag("Icons");
 		xml.stepIn();
 		exportData("IconPath", ICON_PATH);
-		exportData("ToolbarImage", TOOLBARIMAGE);
-		exportData("ToolbarHot", TOOLBARHOTIMAGE);
 		xml.stepOut();
 	}
 	

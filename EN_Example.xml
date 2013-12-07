@@ -1393,7 +1393,7 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="AutoSelect">Auto select based on free space</string>
 	<string name="GetBrowseList">Get/browse file list</string>
 	<string name="SettingsToolbarSize">Toolbar icon size</string>
-	<string name="SettingsToolbarNote">Note! Changing toolbar images or icon size require a client restart to take effect.</string>
+	<string name="SettingsToolbarNote">Note! Changing toolbar icon size require a client restart to take effect.</string>
 	<string name="SettingsWtoolbarSize">Media toolbar icon size</string>
 	<string name="ToggleTbstatus">Toolbar progressbar	Ctrl+5</string>
 	<string name="XFavProfilesReset">%1% favorite hubs have been reset to use the default share profile</string>
