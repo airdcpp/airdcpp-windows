@@ -266,7 +266,7 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 	} else if(stricmp(cmd.c_str(), _T("ignorelist"))==0) {
 		tstring ignorelist = _T("Ignored users:");
 		for(const auto& i: ignoreList)
-			ignorelist += _T(" ") + Text::toT(ClientManager::getInstance()->getNicks(i->getCID())[0]);
+			ignorelist += _T(" ") + WinUtil::getNicks(HintedUser(i, client->getHubUrl()));
 		status = ignorelist;
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
 		WinUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));
@@ -507,7 +507,7 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 			return;
 		}
 
-		if (IgnoreManager::getInstance()->isIgnored(identity.getNick())) {
+		if (IgnoreManager::getInstance()->isIgnored(identity.getNick(), message.text, IgnoreItem::PM)) {
 			//bots can always be ignored
 			if (message.replyTo->getIdentity().isBot())
 				return;
@@ -555,7 +555,7 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 
 void HubFrame::onChatMessage(const ChatMessage& msg) {
 	const auto& identity = msg.from->getIdentity();
-	if(!IgnoreManager::getInstance()->isIgnored(identity.getNick()) || (identity.isOp() && !client->isOp() && !identity.isBot())) {
+	if ((identity.isOp() && !client->isOp() && !identity.isBot()) || !IgnoreManager::getInstance()->isIgnored(identity.getNick(), msg.text, IgnoreItem::MC)) {
 		addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
 		if(client->get(HubSettings::ChatNotify)) {
 			MainFrame::getMainFrame()->onChatMessage(false);
@@ -608,18 +608,10 @@ void HubFrame::execTasks() {
 
 	for(auto& t: tl) {
 		if(t.first == UPDATE_USER) {
-
 			updateUser(static_cast<UserTask&>(*t.second));
-			/*UserTask& u = static_cast<UserTask&>(*t.second);
-			if(IgnoreManager::getInstance()->isIgnored(u.onlineUser->getIdentity().getNick())) {
-				ignoreList.insert(u.onlineUser->getUser());
-			} else if(!IgnoreManager::getInstance()->isIgnored(u.onlineUser->getIdentity().getNick()) && (ignoreList.find(u.onlineUser->getUser()) != ignoreList.end())) {
-				ignoreList.erase(u.onlineUser->getUser());
-			}*/
-			//updateUser(u);
 		} else if(t.first == UPDATE_USER_JOIN) {
 			UserTask& u = static_cast<UserTask&>(*t.second);
-			if(IgnoreManager::getInstance()->isIgnored(u.onlineUser->getIdentity().getNick())) {
+			if(IgnoreManager::getInstance()->isIgnored(u.onlineUser->getIdentity().getNick(), "")) {
 				ignoreList.insert(u.onlineUser->getUser());
 			} else {
 				ignoreList.erase(u.onlineUser->getUser());
@@ -1139,7 +1131,7 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 			if (count == 1) {
 				const OnlineUserPtr ou = ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED));
 				if (client->isOp() || !ou->getIdentity().isOp() || ou->getIdentity().isBot()) {
-					if (!IgnoreManager::getInstance()->isIgnored(ou->getIdentity().getNick())) {
+					if (!IgnoreManager::getInstance()->isIgnored(ou->getIdentity().getNick(), "")) {
 						menu.AppendMenu(MF_STRING, IDC_IGNORE, CTSTRING(IGNORE_USER));
 					} else {
 						menu.AppendMenu(MF_STRING, IDC_UNIGNORE, CTSTRING(UNIGNORE_USER));

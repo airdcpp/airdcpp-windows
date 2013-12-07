@@ -28,6 +28,7 @@
 #include <atlctrlx.h>
 
 #include "ExListViewCtrl.h"
+#include "../client/IgnoreManager.h"
 
 class IgnorePage : public CPropertyPage<IDD_IGNOREPAGE>, public PropPage
 {
@@ -47,7 +48,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_IGNORE_ADD, onIgnoreAdd)
 		COMMAND_ID_HANDLER(IDC_IGNORE_REMOVE, onIgnoreRemove)
 		COMMAND_ID_HANDLER(IDC_IGNORE_CLEAR, onIgnoreClear)
-		COMMAND_CODE_HANDLER(EN_CHANGE, onEditChange)
+		COMMAND_ID_HANDLER(IDC_IGNORE_EDIT, onIgnoreEdit)
 		NOTIFY_HANDLER(IDC_IGNORELIST, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_IGNORELIST, LVN_ITEMCHANGED, onItemchangedDirectories)
 	END_MSG_MAP()
@@ -56,7 +57,7 @@ public:
 	LRESULT onIgnoreAdd(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onIgnoreRemove(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onIgnoreClear(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
-	LRESULT onEditChange(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onIgnoreEdit(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
@@ -76,11 +77,20 @@ public:
 	void write();
 	
 private:
-	static Item items[];
+
+	bool addIgnore(const string& aNick, const string& aText, StringMatch::Method aNickMethod = StringMatch::EXACT,
+		StringMatch::Method aTextMethod = StringMatch::PARTIAL, bool aMainChat = true, bool aPM = true);
+	void removeIgnore(int pos);
+	void clearIgnores() { ignoreItems.clear(); }
+	IgnoreItem getIgnore(int pos) { return ignoreItems[pos]; }
+	void updateIgnore(IgnoreItem& item, int pos) { ignoreItems[pos] = item; }
+
+
 	static TextItem texts[];
 	TCHAR* title;
-	StringSet ignoreList;
 	ExListViewCtrl ignoreListCtrl;
+
+	vector<IgnoreItem> ignoreItems;
 };
 
 #endif // !defined(IGNORE_PAGE_H)

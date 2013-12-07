@@ -191,6 +191,7 @@
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
+#define IDD_IGNOREITEM_DLG              361
 #define IDI_FOLLOW                      363
 #define IDI_USERS                       364
 #define IDI_OPEN_LIST                   365
@@ -622,10 +623,12 @@
 #define IDC_U_MATCH                     1218
 #define IDC_FDNAME                      1218
 #define IDC_AWAY_IDLE_TIME              1218
+#define IDC_NICK_MATCH                  1218
 #define IDC_CLIENT_VERSION              1219
 #define IDC_HIGH_PRIO_FILES             1219
 #define IDC_MAX_UPLOAD_SP               1219
 #define IDC_AUTO_ADD_SOURCES            1219
+#define IDC_TEXT_MATCH                  1219
 #define IDC_CLIENT_TAG                  1220
 #define IDC_REFRESH_DELAY3              1220
 #define IDC_DONT_SHARE_BIGGER_VALUE     1220
@@ -783,6 +786,7 @@
 #define IDC_EXPLAIN                     1285
 #define IDC_FD                          1285
 #define IDC_FDPATH                      1285
+#define IDC_TEXT_MATCH_TYPE             1285
 #define IDC_EDIT3                       1286
 #define IDC_BIND_ADDRESS                1286
 #define IDC_SKIPLIST_PRESET3            1286
@@ -967,6 +971,7 @@
 #define IDC_RELEASE_LINKS               1331
 #define IDC_DECREASE_RAM                1331
 #define IDC_CHECK_SHARED                1331
+#define IDC_IGNORE_MAINCHAT             1331
 #define IDC_ASEARCH                     1332
 #define IDC_REFRESH_VNAME_ON_SHAREPAGE2 1332
 #define IDC_SHOW_JOIN2                  1332
@@ -1380,6 +1385,14 @@
 #define IDC_UPDATE_ICON                 1734
 #define IDC_BUTTON2                     1735
 #define IDC_TMP_REMOVE_ALL              1735
+#define IDC_NICK_MATCH_LABEL            1736
+#define IDC_TEXT_MATCH_LABEL            1737
+#define IDC_NICK_MATCH_TYPE             1738
+#define IDC_NICK_MATCH_TYPE_LABEL       1739
+#define IDC_TEXT_MATCH_TYPE_LABEL       1740
+#define IDC_IGNORE_NOTE                 1741
+#define IDC_CHECK3                      1742
+#define IDC_IGNORE_PM                   1742
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1594,6 +1607,7 @@
 #define IDC_IGNORELIST                  15009
 #define IDD_PROTOCOLPAGE                15009
 #define IDC_IGNORE_USE_REGEXP_OR_WC     15010
+#define IDC_IGNORE_EDIT                 15010
 #define IDC_IGNORELIST_EDIT             15011
 #define IDC_MISC_IGNORE                 15012
 #define IDC_FAV_DL_SPEED                15013
@@ -1786,9 +1800,9 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_3D_CONTROLS                     1
-#define _APS_NEXT_RESOURCE_VALUE        359
+#define _APS_NEXT_RESOURCE_VALUE        362
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1736
+#define _APS_NEXT_CONTROL_VALUE         1743
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

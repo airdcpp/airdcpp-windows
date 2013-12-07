@@ -1,0 +1,101 @@
+/*
+* Copyright (C) 2012-2013 AirDC++ Project
+*
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*
+* This program is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+* GNU General Public License for more details.
+*
+* You should have received a copy of the GNU General Public License
+* along with this program; if not, write to the Free Software
+* Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+*/
+
+#include "stdafx.h"
+#include "Resource.h"
+#include "WinUtil.h"
+#include "IgnoreDlg.h"
+
+#include "../client/IgnoreManager.h"
+#include "../client/ResourceManager.h"
+
+#define ATTACH(id, var) var.Attach(GetDlgItem(id))
+
+IgnoreDlg::IgnoreDlg() : nick(""), text(""), nickMethod(StringMatch::EXACT), textMethod(StringMatch::PARTIAL), MC(true), PM(true) {}
+
+IgnoreDlg::IgnoreDlg(const string& aNickMatch, const string& aTextMatch, StringMatch::Method aNickMethod, StringMatch::Method aTextMethod, bool aMC, bool aPM) :
+nick(aNickMatch), text(aTextMatch), nickMethod(aNickMethod), textMethod(aTextMethod), MC(aMC), PM(aPM)  {}
+
+IgnoreDlg::~IgnoreDlg() { }
+
+LRESULT IgnoreDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+
+	ATTACH(IDC_NICK_MATCH, ctrlNickMatch);
+	ctrlNickMatch.SetWindowText(Text::toT(nick).c_str());
+	ATTACH(IDC_NICK_MATCH_TYPE, ctrlNickMatchType);
+	ctrlNickMatchType.AddString(CTSTRING(PARTIAL_MATCH));
+	ctrlNickMatchType.AddString(CTSTRING(REGEXP));
+	ctrlNickMatchType.AddString(CTSTRING(WILDCARDS));
+	ctrlNickMatchType.AddString(CTSTRING(EXACT_MATCH));
+	ctrlNickMatchType.SetCurSel(nickMethod);
+
+	ATTACH(IDC_TEXT_MATCH, ctrlTextMatch);
+	ctrlTextMatch.SetWindowText(Text::toT(text).c_str());
+	ATTACH(IDC_TEXT_MATCH_TYPE, ctrlTextMatchType);
+	ctrlTextMatchType.AddString(CTSTRING(PARTIAL_MATCH));
+	ctrlTextMatchType.AddString(CTSTRING(REGEXP));
+	ctrlTextMatchType.AddString(CTSTRING(WILDCARDS));
+	ctrlTextMatchType.AddString(CTSTRING(EXACT_MATCH));
+	ctrlTextMatchType.SetCurSel(textMethod);
+
+	ATTACH(IDC_IGNORE_MAINCHAT, ctrlMainchat);
+	ctrlMainchat.SetCheck(MC);
+
+	ATTACH(IDC_IGNORE_PM, ctrlPM);
+	ctrlPM.SetCheck(PM);
+	
+	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
+	::SetWindowText(GetDlgItem(IDC_NICK_MATCH_LABEL), CTSTRING(IGNORE_NICK_MATCH));
+	::SetWindowText(GetDlgItem(IDC_TEXT_MATCH_LABEL), CTSTRING(IGNORE_TEXT_MATCH));
+	::SetWindowText(GetDlgItem(IDC_NICK_MATCH_TYPE_LABEL), CTSTRING(SETTINGS_ST_MATCH_TYPE));
+	::SetWindowText(GetDlgItem(IDC_TEXT_MATCH_TYPE_LABEL), CTSTRING(SETTINGS_ST_MATCH_TYPE));
+	::SetWindowText(GetDlgItem(IDC_IGNORE_NOTE), CTSTRING(IGNORE_HELP));
+	CenterWindow(GetParent());
+	SetWindowText(CTSTRING(SETTINGS_IGNORE));
+	return TRUE;
+}
+
+LRESULT IgnoreDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	if (wID == IDOK) {
+		if (ctrlNickMatch.GetWindowTextLength() == 0 && ctrlTextMatch.GetWindowTextLength() == 0) {
+			MessageBox(CTSTRING(LINE_EMPTY));
+			return 0;
+		}
+		PM = ctrlPM.GetCheck() ? true : false;
+		MC = ctrlMainchat.GetCheck() ? true : false;
+
+		if (!PM && !MC) {
+			MessageBox(CTSTRING(IGNORE_NO_CONTEXT), CTSTRING(SETTINGS_IGNORE), MB_OK | MB_ICONEXCLAMATION);
+			return 0;
+		}
+
+
+		TCHAR buf[512];
+		ctrlNickMatch.GetWindowText(buf, 512);
+		nick = Text::fromT(buf);
+		nickMethod = (StringMatch::Method)ctrlNickMatchType.GetCurSel();
+
+		ctrlTextMatch.GetWindowText(buf, 512);
+		text = Text::fromT(buf);
+		textMethod = (StringMatch::Method)ctrlTextMatchType.GetCurSel();
+
+	}
+	
+	EndDialog(wID);
+	return 0;
+}

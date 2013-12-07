@@ -2000,4 +2000,12 @@ Do you want to remove the auto search item as well?</string>
 	<string name="ChannelNightly">Nightly builds</string>
 	<string name="SystemDefault">System default</string>
 	<string name="CloseMinimizes">Close button minimizes AirDC</string>
+	<string name="IgnoreNickMatch">Nick match pattern</string>
+	<string name="IgnoreTextMatch">Text match pattern</string>
+	<string name="IgnoreHelp">Note: Nick pattern or text pattern can be empty.
+If the nick pattern is empty, the text pattern is used, only incoming message will be matched with text pattern. 
+If both patterns are set the message is ignored only if both matches are found. </string>
+	<string name="MainChat">Main chat</string>
+	<string name="PrivateChat">Private chat</string>
+	<string name="IgnoreNoContext">No context selected, you need to select atleast one of: private chat / main chat</string>
 </resources>
