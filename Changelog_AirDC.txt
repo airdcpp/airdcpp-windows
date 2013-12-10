@@ -4,7 +4,7 @@ Changes:
 
 - Last online time will now show for all offline users in usersframe
 - Reorder readd/remove source rightclick in queueframe, move All at the top
-- Settings profiles change toolbar buttons and order
+- Settings profiles change toolbar buttons and order (old toolbar button order will get reset, sorry for that)
 
 Added:
 

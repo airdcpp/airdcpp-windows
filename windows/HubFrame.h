@@ -196,9 +196,6 @@ public:
 
 	TypedListViewCtrl<OnlineUser, IDC_USERS>& getUserList() { return ctrlUsers; }
 
-	typedef unordered_set<UserPtr, User::Hash> IgnoreMap;
-	static IgnoreMap ignoreList;
-
 	static ResourceManager::Strings columnNames[OnlineUser::COLUMN_LAST];
 private:
 	enum Tasks { UPDATE_USER_JOIN, UPDATE_USER, REMOVE_USER, ADD_SILENT_STATUS_LINE, 

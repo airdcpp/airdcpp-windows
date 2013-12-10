@@ -51,6 +51,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_IGNORE_EDIT, onIgnoreEdit)
 		NOTIFY_HANDLER(IDC_IGNORELIST, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_IGNORELIST, LVN_ITEMCHANGED, onItemchangedDirectories)
+		NOTIFY_HANDLER(IDC_IGNORELIST, NM_DBLCLK, onDoubleClick)
 	END_MSG_MAP()
 
 	LRESULT onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
@@ -59,6 +60,7 @@ public:
 	LRESULT onIgnoreClear(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onIgnoreEdit(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 		NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;

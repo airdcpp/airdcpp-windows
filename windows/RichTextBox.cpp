@@ -1015,7 +1015,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			appendUserItems(menu, true);
 
 			if (client->isOp() || !ou->getIdentity().isOp()) {
-				if(HubFrame::ignoreList.find(ou->getUser()) == HubFrame::ignoreList.end()) {
+				if(!ou->getUser()->isIgnored()) {
 					menu.appendItem(TSTRING(IGNORE_USER), [this] { handleIgnore(); });
 				} else { 
 					menu.appendItem(TSTRING(UNIGNORE_USER), [this] { handleUnignore(); });
@@ -1475,16 +1475,14 @@ LRESULT RichTextBox::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 void RichTextBox::handleIgnore() {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
-		HubFrame::ignoreList.insert(ou->getUser());
-		IgnoreManager::getInstance()->storeIgnore(ou->getIdentity().getNick());
+		IgnoreManager::getInstance()->storeIgnore(ou->getUser());
 	}
 }
 
 void RichTextBox::handleUnignore(){
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
-		HubFrame::ignoreList.erase(ou->getUser());
-		IgnoreManager::getInstance()->removeIgnore(ou->getIdentity().getNick());
+		IgnoreManager::getInstance()->removeIgnore(ou->getUser());
 	}
 }
 

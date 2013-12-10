@@ -44,7 +44,6 @@
 #include "../client/GeoManager.h"
 
 HubFrame::FrameMap HubFrame::frames;
-HubFrame::IgnoreMap HubFrame::ignoreList;
 bool HubFrame::shutdown = false;
 
 int HubFrame::columnSizes[] = { 100, 75, 75, 75, 100, 75, 130, 130, 100, 50, 40, 40, 40, 40, 40, 300 };
@@ -263,15 +262,10 @@ bool HubFrame::checkFrameCommand(tstring& cmd, tstring& param, tstring& /*messag
 				ui->getList();
 			}
 		}
-	} else if(stricmp(cmd.c_str(), _T("ignorelist"))==0) {
-		tstring ignorelist = _T("Ignored users:");
-		for(const auto& i: ignoreList)
-			ignorelist += _T(" ") + WinUtil::getNicks(HintedUser(i, client->getHubUrl()));
-		status = ignorelist;
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
 		WinUtil::openFile(Text::toT(getLogPath(stricmp(param.c_str(), _T("status")) == 0)));
 	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
-		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for the hub tab: /join <hub-ip>, /ts, /showjoins, /favshowjoins, /close, /userlist, /favorite, /pm <user> [message], /getlist <user>, /ignorelist, /removefavorite");
+		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for the hub tab: /join <hub-ip>, /ts, /showjoins, /favshowjoins, /close, /userlist, /favorite, /pm <user> [message], /getlist <user>, /removefavorite");
 	} else if(stricmp(cmd.c_str(), _T("pm")) == 0) {
 		string::size_type j = param.find(_T(' '));
 		if(j != string::npos) {
@@ -507,12 +501,20 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 			return;
 		}
 
-		if (IgnoreManager::getInstance()->isIgnored(identity.getNick(), message.text, IgnoreItem::PM)) {
+		auto* im = IgnoreManager::getInstance();
+
+		if (user->isIgnored() || im->isIgnored(identity.getNick(), message.text, IgnoreItem::PM)) {
 			//bots can always be ignored
+			bool ignored = false;
 			if (message.replyTo->getIdentity().isBot())
-				return;
+				ignored = true;
 
 			if (client->isOp() || !message.replyTo->getIdentity().isOp()) {
+				ignored = true;
+			}
+			if (ignored){
+				if (SETTING(LOG_IGNORED))
+					LogManager::getInstance()->message(STRING(PM_MESSAGE_IGNORED) + "<" + Text::fromT(nick) + "> " + message.text, LogManager::LOG_INFO);
 				return;
 			}
 		}
@@ -555,11 +557,15 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 
 void HubFrame::onChatMessage(const ChatMessage& msg) {
 	const auto& identity = msg.from->getIdentity();
-	if ((identity.isOp() && !client->isOp() && !identity.isBot()) || !IgnoreManager::getInstance()->isIgnored(identity.getNick(), msg.text, IgnoreItem::MC)) {
+	auto* im = IgnoreManager::getInstance();
+	if ((identity.isOp() && !client->isOp() && !identity.isBot()) || !msg.from->getUser()->isIgnored() && !im->isIgnored(identity.getNick(), msg.text, IgnoreItem::MC)) {
 		addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
 		if(client->get(HubSettings::ChatNotify)) {
 			MainFrame::getMainFrame()->onChatMessage(false);
 		}
+	} else {
+		if (SETTING(LOG_IGNORED))
+			LogManager::getInstance()->message(STRING(MC_MESSAGE_IGNORED) + "[" + client->getHubName() + "] <" + identity.getNick() + "> " + msg.text, LogManager::LOG_INFO);
 	}
 }
 
@@ -611,12 +617,6 @@ void HubFrame::execTasks() {
 			updateUser(static_cast<UserTask&>(*t.second));
 		} else if(t.first == UPDATE_USER_JOIN) {
 			UserTask& u = static_cast<UserTask&>(*t.second);
-			if(IgnoreManager::getInstance()->isIgnored(u.onlineUser->getIdentity().getNick(), "")) {
-				ignoreList.insert(u.onlineUser->getUser());
-			} else {
-				ignoreList.erase(u.onlineUser->getUser());
-			}
-
 			if(updateUser(u)) {
 				bool isFavorite = u.onlineUser->getUser()->isFavorite();
 				if (isFavorite && (!SETTING(SOUND_FAVUSER).empty()) && (!SETTING(SOUNDS_DISABLED)))
@@ -1131,7 +1131,7 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 			if (count == 1) {
 				const OnlineUserPtr ou = ctrlUsers.getItemData(ctrlUsers.GetNextItem(-1, LVNI_SELECTED));
 				if (client->isOp() || !ou->getIdentity().isOp() || ou->getIdentity().isBot()) {
-					if (!IgnoreManager::getInstance()->isIgnored(ou->getIdentity().getNick(), "")) {
+					if (!ou->getUser()->isIgnored()) {
 						menu.AppendMenu(MF_STRING, IDC_IGNORE, CTSTRING(IGNORE_USER));
 					} else {
 						menu.AppendMenu(MF_STRING, IDC_UNIGNORE, CTSTRING(UNIGNORE_USER));
@@ -1261,10 +1261,6 @@ void HubFrame::onTab() {
 }
 
 LRESULT HubFrame::onFileReconnect(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	// We want to have it fresh
-	ignoreList.clear();
-
-	
 	client->reconnect();
 	return 0;
 }
@@ -1898,7 +1894,7 @@ LRESULT HubFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/)
 				cd->clrText = SETTING(FAVORITE_COLOR);
 			} else if (UploadManager::getInstance()->hasReservedSlot(ui->getUser())) {
 				cd->clrText = SETTING(RESERVED_SLOT_COLOR);
-			} else if (ignoreList.find(ui->getUser()) != ignoreList.end()) {
+			} else if (ui->getUser()->isIgnored()) {
 				cd->clrText = SETTING(IGNORED_COLOR);
 			} else if(ui->getIdentity().isOp()) {
 				cd->clrText = SETTING(OP_COLOR);
@@ -2030,8 +2026,7 @@ LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BO
 	int i=-1;
 	if(client->isConnected()) {
 		while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			ignoreList.insert(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
-			IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getIdentity().getNick());
+			IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
 		}
 	}
 	return 0;
@@ -2041,8 +2036,7 @@ LRESULT HubFrame::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, 
 	int i=-1;
 	if(client->isConnected()) {
 		while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			ignoreList.erase(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
-			IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getIdentity().getNick());
+			IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
 		}
 	}
 	return 0;

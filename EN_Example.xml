@@ -2008,4 +2008,7 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="MainChat">Main chat</string>
 	<string name="PrivateChat">Private chat</string>
 	<string name="IgnoreNoContext">No context selected, you need to select atleast one of: private chat / main chat</string>
+	<string name="ReportIgnored">Report ignored users sending messages in systemlog</string>
+	<string name="McMessageIgnored">Main chat message from ignored user: </string>
+	<string name="PmMessageIgnored">Private chat message from ignored user: </string>
 </resources>

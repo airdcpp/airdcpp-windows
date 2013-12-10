@@ -121,6 +121,19 @@ LRESULT IgnorePage::onIgnoreClear(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* 
 	return 0;
 }
 
+LRESULT IgnorePage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	NMITEMACTIVATE* item = (NMITEMACTIVATE*)pnmh;
+
+	if (item->iItem >= 0) {
+		PostMessage(WM_COMMAND, IDC_IGNORE_EDIT, 0);
+	}
+	else if (item->iItem == -1) {
+		PostMessage(WM_COMMAND, IDC_IGNORE_ADD, 0);
+	}
+
+	return 0;
+}
+
 bool IgnorePage::addIgnore(const string& aNick, const string& aText, StringMatch::Method aNickMethod, StringMatch::Method aTextMethod, bool aMainChat, bool aPM) {
 	auto i = find_if(ignoreItems.begin(), ignoreItems.end(), [aNick, aText](const IgnoreItem& s) {
 		return ((s.getNickPattern().empty() || compare(s.getNickPattern(), aNick) == 0) && (s.getTextPattern().empty() || compare(s.getTextPattern(), aText) == 0));
