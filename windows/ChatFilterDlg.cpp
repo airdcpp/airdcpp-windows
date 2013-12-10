@@ -19,21 +19,21 @@
 #include "stdafx.h"
 #include "Resource.h"
 #include "WinUtil.h"
-#include "IgnoreDlg.h"
+#include "ChatFilterDlg.h"
 
 #include "../client/IgnoreManager.h"
 #include "../client/ResourceManager.h"
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
-IgnoreDlg::IgnoreDlg() : nick(""), text(""), nickMethod(StringMatch::EXACT), textMethod(StringMatch::PARTIAL), MC(true), PM(true) {}
+ChatFilterDlg::ChatFilterDlg() : nick(""), text(""), nickMethod(StringMatch::EXACT), textMethod(StringMatch::PARTIAL), MC(true), PM(true) {}
 
-IgnoreDlg::IgnoreDlg(const string& aNickMatch, const string& aTextMatch, StringMatch::Method aNickMethod, StringMatch::Method aTextMethod, bool aMC, bool aPM) :
+ChatFilterDlg::ChatFilterDlg(const string& aNickMatch, const string& aTextMatch, StringMatch::Method aNickMethod, StringMatch::Method aTextMethod, bool aMC, bool aPM) :
 nick(aNickMatch), text(aTextMatch), nickMethod(aNickMethod), textMethod(aTextMethod), MC(aMC), PM(aPM)  {}
 
-IgnoreDlg::~IgnoreDlg() { }
+ChatFilterDlg::~ChatFilterDlg() { }
 
-LRESULT IgnoreDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+LRESULT ChatFilterDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 
 	ATTACH(IDC_NICK_MATCH, ctrlNickMatch);
 	ctrlNickMatch.SetWindowText(Text::toT(nick).c_str());
@@ -66,11 +66,11 @@ LRESULT IgnoreDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPara
 	::SetWindowText(GetDlgItem(IDC_TEXT_MATCH_TYPE_LABEL), CTSTRING(SETTINGS_ST_MATCH_TYPE));
 	::SetWindowText(GetDlgItem(IDC_IGNORE_NOTE), CTSTRING(IGNORE_HELP));
 	CenterWindow(GetParent());
-	SetWindowText(CTSTRING(SETTINGS_IGNORE));
+	SetWindowText(CTSTRING(SETTINGS_CHATFILTER));
 	return TRUE;
 }
 
-LRESULT IgnoreDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+LRESULT ChatFilterDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if (wID == IDOK) {
 		if (ctrlNickMatch.GetWindowTextLength() == 0 && ctrlTextMatch.GetWindowTextLength() == 0) {
 			MessageBox(CTSTRING(LINE_EMPTY));
@@ -80,7 +80,7 @@ LRESULT IgnoreDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, 
 		MC = ctrlMainchat.GetCheck() ? true : false;
 
 		if (!PM && !MC) {
-			MessageBox(CTSTRING(IGNORE_NO_CONTEXT), CTSTRING(SETTINGS_IGNORE), MB_OK | MB_ICONEXCLAMATION);
+			MessageBox(CTSTRING(IGNORE_NO_CONTEXT), CTSTRING(SETTINGS_CHATFILTER), MB_OK | MB_ICONEXCLAMATION);
 			return 0;
 		}
 

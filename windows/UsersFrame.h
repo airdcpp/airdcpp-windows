@@ -33,12 +33,13 @@
 #include "../client/FavoriteManager.h"
 #include "../client/UploadManager.h"
 #include "../client/QueueManagerListener.h"
+#include "../client/IgnoreManager.h"
 
 #define STATUS_MAP 10
 
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::USERS, IDC_FAVUSERS>,
 	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
-	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener, private Async<UsersFrame> {
+	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener, private IgnoreManagerListener, private Async<UsersFrame> {
 public:
 	
 	UsersFrame();
@@ -75,6 +76,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_SHOW_FAV, onShow)
 		COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
 		COMMAND_ID_HANDLER(IDC_SHOW_ONLINE, onShow)
+		COMMAND_ID_HANDLER(IDC_FILTER_IGNORED, onShow)
 		CHAIN_MSG_MAP_MEMBER(filter)
 	END_MSG_MAP()
 		
@@ -112,6 +114,7 @@ private:
 		COLUMN_QUEUED,
 		COLUMN_DESCRIPTION,
 		COLUMN_LIMITER,
+		COLUMN_IGNORE,
 		COLUMN_LAST
 	};
 
@@ -167,6 +170,7 @@ private:
 	CButton ctrlShowFav;
 	CButton ctrlShowQueued;
 	CButton ctrlShowOnline;
+	CButton ctrlShowIgnored;
 
 	CToolTipCtrl ctrlTooltips;
 
@@ -180,6 +184,7 @@ private:
 	bool listFav;
 	bool filterQueued;
 	bool filterOnline;
+	bool filterIgnored;
 
 	void updateInfoText(const UserInfo* ui);
 	void updateList();
@@ -195,6 +200,9 @@ private:
 	bool handleClickFavorite(int row);
 	bool handleClickLimiter(int row);
 	bool handleClickDesc(int row);
+
+	void handleIgnore(const UserPtr& aUser);
+	void handleUnignore(const UserPtr& aUser);
 
 	static int columnSizes[];
 	static int columnIndexes[];
@@ -214,6 +222,9 @@ private:
 	void on(UploadManagerListener::SlotsUpdated, const UserPtr& aUser) noexcept;
 
 	void on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept;
+
+	void on(IgnoreManagerListener::IgnoreAdded, const UserPtr&) noexcept;
+	void on(IgnoreManagerListener::IgnoreRemoved, const UserPtr&) noexcept;
 };
 
 #endif // !defined(USERS_FRAME_H)

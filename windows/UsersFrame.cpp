@@ -27,12 +27,12 @@
 #include "../client/ClientManager.h"
 #include "../client/QueueManager.h"
 
-int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION, COLUMN_LIMITER };
-int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200, 70 };
+int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION, COLUMN_LIMITER, COLUMN_IGNORE };
+int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200, 70, 60 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::QUEUED, 
-	ResourceManager::DESCRIPTION, ResourceManager::OVERRIDE_LIMITER };
-static ColumnType columnTypes [] = { COLUMN_IMAGE, COLUMN_IMAGE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT };
+	ResourceManager::DESCRIPTION, ResourceManager::OVERRIDE_LIMITER, ResourceManager::SETTINGS_IGNORE };
+static ColumnType columnTypes [] = { COLUMN_IMAGE, COLUMN_IMAGE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
 
 struct FieldName {
 	string field;
@@ -83,6 +83,7 @@ UsersFrame::UsersFrame() : closed(false), startup(true),
 	listFav(SETTING(USERS_FILTER_FAVORITE)),
 	filterQueued(SETTING(USERS_FILTER_QUEUE)),
 	filterOnline(SETTING(USERS_FILTER_ONLINE)),
+	filterIgnored(SETTING(USERS_FILTER_IGNORE)),
 	filter(COLUMN_LAST, [this] { updateList(); })
 { }
 
@@ -145,6 +146,12 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlShowOnline.SetFont(WinUtil::systemFont);
 	ctrlShowOnline.SetCheck(filterOnline ? BST_CHECKED : BST_UNCHECKED);
 
+	ctrlShowIgnored.Create(ctrlStatus.m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_IGNORED);
+	ctrlShowIgnored.SetWindowText(CTSTRING(IGNORED_USERS));
+	ctrlShowIgnored.SetButtonStyle(BS_AUTOCHECKBOX, false);
+	ctrlShowIgnored.SetFont(WinUtil::systemFont);
+	ctrlShowIgnored.SetCheck(filterIgnored ? BST_CHECKED : BST_UNCHECKED);
+
 	ctrlShowInfoContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
 	ctrlTooltips.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	 
@@ -193,6 +200,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	SettingsManager::getInstance()->addListener(this);
 	UploadManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
+	IgnoreManager::getInstance()->addListener(this);
 
 	CRect rc(SETTING(USERS_LEFT), SETTING(USERS_TOP), SETTING(USERS_RIGHT), SETTING(USERS_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -233,6 +241,14 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		appendUserItems(usersMenu, true, ui ? ui->getUser() : nullptr, ui && !ui->getHubUrl().empty());
 
 		if (ui) {
+			if (!ui->getUser()->isIgnored()) {
+				usersMenu.appendSeparator();
+				usersMenu.appendItem(TSTRING(IGNORE_USER), [=] { handleIgnore(ui->getUser()); });
+			} else {
+				usersMenu.appendSeparator();
+				usersMenu.appendItem(TSTRING(UNIGNORE_USER), [=] { handleUnignore(ui->getUser()); });
+			}
+
 			Bundle::SourceBundleList sourceBundles, badSourceBundles;
 			QueueManager::getInstance()->getSourceInfo(ui->getUser(), sourceBundles, badSourceBundles);
 
@@ -375,6 +391,10 @@ void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		sr.left = sr.right + 8;
 		sr.right = sr.left + ctrlShowOnline.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowOnline.m_hWnd, WinUtil::systemFont) + 24;
 		ctrlShowOnline.MoveWindow(sr);
+
+		sr.left = sr.right + 8;
+		sr.right = sr.left + ctrlShowIgnored.GetWindowTextLength() * WinUtil::getTextWidth(ctrlShowIgnored.m_hWnd, WinUtil::systemFont) + 24;
+		ctrlShowIgnored.MoveWindow(sr);
 		
 		ctrlStatus.GetRect(2, sr);
 		sr.left = sr.right;
@@ -437,6 +457,13 @@ LRESULT UsersFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 			SettingsManager::getInstance()->set(SettingsManager::USERS_FILTER_ONLINE, filterOnline);
 			break;
 		}
+
+		case IDC_FILTER_IGNORED: {
+			filterIgnored = !filterIgnored;
+			updateList();
+			SettingsManager::getInstance()->set(SettingsManager::USERS_FILTER_IGNORE, filterIgnored);
+			break;
+		}
 	}
 	return 0;
 }
@@ -456,6 +483,18 @@ LRESULT UsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 	 }
 	bHandled = FALSE;
   	return 0;
+}
+
+void UsersFrame::handleIgnore(const UserPtr& aUser) {
+	if (aUser){
+		IgnoreManager::getInstance()->storeIgnore(aUser);
+	}
+}
+
+void UsersFrame::handleUnignore(const UserPtr& aUser){
+	if (aUser){
+		IgnoreManager::getInstance()->removeIgnore(aUser);
+	}
 }
 
 bool UsersFrame::handleClickDesc(int row) {
@@ -557,6 +596,7 @@ int UsersFrame::UserInfo::compareItems(const UserInfo* a, const UserInfo* b, int
 	case COLUMN_FAVORITE: return compare(a->isFavorite, b->isFavorite);
 	case COLUMN_SLOT: return compare(a->grantSlot, b->grantSlot);
 	case COLUMN_QUEUED: return compare(a->user->getQueued(), b->user->getQueued());
+	case COLUMN_IGNORE: return compare(a->user->isIgnored(), b->user->isIgnored());
 	default: return Util::DefaultSort(a->columns[col].c_str(), b->columns[col].c_str());
 	}
 }
@@ -684,6 +724,8 @@ bool UsersFrame::show(const UserPtr &u, bool any) const {
 		return false;
 	} else if(filterQueued && u->getQueued() == 0){
 		return false;
+	} else if (filterIgnored && !u->isIgnored()){
+		return false;
 	} else if(listFav && !isFav(u)){
 		return false;
 	}
@@ -763,6 +805,7 @@ void UsersFrame::UserInfo::update(const UserPtr& u) {
 	}
 
 	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());
+	columns[COLUMN_IGNORE] = u->isIgnored() ? TSTRING(YES) : TSTRING(NO);
 }
 
 int UsersFrame::UserInfo::getImage(int col) const {
@@ -805,6 +848,7 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		SettingsManager::getInstance()->removeListener(this);
 		UploadManager::getInstance()->removeListener(this);
 		QueueManager::getInstance()->removeListener(this);
+		IgnoreManager::getInstance()->removeListener(this);
 
 		closed = true;
 		WinUtil::setButtonPressed(IDC_FAVUSERS, false);
@@ -895,5 +939,13 @@ void UsersFrame::on(UploadManagerListener::SlotsUpdated, const UserPtr& aUser) n
 }
 
 void UsersFrame::on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept {
+	callAsync([=] { updateUser(aUser); });
+}
+
+void UsersFrame::on(IgnoreManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept{
+	callAsync([=] { updateUser(aUser); });
+}
+
+void UsersFrame::on(IgnoreManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept{
 	callAsync([=] { updateUser(aUser); });
 }

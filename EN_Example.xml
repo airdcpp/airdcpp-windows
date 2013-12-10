@@ -2011,4 +2011,5 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="ReportIgnored">Report ignored users sending messages in systemlog</string>
 	<string name="McMessageIgnored">Main chat message from ignored user: </string>
 	<string name="PmMessageIgnored">Private chat message from ignored user: </string>
+	<string name="SettingsChatfilter">Spam Filter</string>
 </resources>

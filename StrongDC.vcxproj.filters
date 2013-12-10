@@ -489,9 +489,6 @@
     <ClCompile Include="windows\HubFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\IgnorePage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\ImageDataObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -750,7 +747,10 @@
     <ClCompile Include="windows\TempShare_dlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\IgnoreDlg.cpp">
+    <ClCompile Include="windows\ChatFilterPage.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="windows\ChatFilterDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -843,9 +843,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\HubFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\IgnorePage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\ImageDataObject.h">
@@ -1160,7 +1157,10 @@
     <ClInclude Include="windows\LanguageDownloadDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\IgnoreDlg.h">
+    <ClInclude Include="windows\ChatFilterPage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\ChatFilterDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -1596,7 +1596,7 @@
 #define IDC_BACKGROUND_IMAGE            15001
 #define IDC_RECONNECT_DISCONNECTED      15002
 #define IDC_FAV_NO_PM                   15003
-#define IDD_IGNOREPAGE                  15005
+#define IDD_CHATFILTERPAGE              15005
 #define IDC_IGNORE_ADD                  15006
 #define IDD_PRIOPAGE                    15006
 #define IDD_PRIORITYPAGE                15006
@@ -1761,6 +1761,7 @@
 #define IDC_SHOW_ONLINE                 15134
 #define IDC_DUPLICATE                   15135
 #define IDC_USE_EXCLUDED                15136
+#define IDC_FILTER_IGNORED              15137
 #define IDC_FILTER_QUEUED               15138
 #define IDC_OPEN_LOG_DIR                15139
 #define IDC_FILTER_SHARED               15140

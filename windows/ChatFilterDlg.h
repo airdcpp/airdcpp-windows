@@ -23,16 +23,16 @@
 
 #include <atlcrack.h>
 
-class IgnoreDlg : public CDialogImpl<IgnoreDlg> {
+class ChatFilterDlg : public CDialogImpl<ChatFilterDlg> {
 public:
 
 	enum { IDD = IDD_IGNOREITEM_DLG };
 
-	IgnoreDlg(const string& aNickMatch, const string& aTextMatch, StringMatch::Method aNickMethod, StringMatch::Method aTextMethod, bool aMC, bool aPM);
-	IgnoreDlg();
-	~IgnoreDlg();
+	ChatFilterDlg(const string& aNickMatch, const string& aTextMatch, StringMatch::Method aNickMethod, StringMatch::Method aTextMethod, bool aMC, bool aPM);
+	ChatFilterDlg();
+	~ChatFilterDlg();
 
-	BEGIN_MSG_MAP_EX(IgnoreDlg)
+	BEGIN_MSG_MAP_EX(ChatFilterDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)

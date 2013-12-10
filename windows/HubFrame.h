@@ -33,6 +33,7 @@
 #include "../client/ClientManager.h"
 #include "../client/FastAlloc.h"
 #include "../client/TaskQueue.h"
+#include "../client/IgnoreManager.h"
 
 #include "atlstr.h"
 #include "WinUtil.h"
@@ -44,7 +45,7 @@ struct CompareItems;
 class ChatFrameBase;
 
 class HubFrame : private ClientListener, public CSplitterImpl<HubFrame>, private FavoriteManagerListener,
-	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, public ChatFrameBase
+	public UCHandler<HubFrame>, public UserInfoBaseHandler<HubFrame>, private SettingsManagerListener, private IgnoreManagerListener, public ChatFrameBase
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("HubFrame"), IDR_HUB, 0, COLOR_3DFACE);
@@ -327,6 +328,9 @@ private:
 	void on(AddLine, const Client*, const string&) noexcept;
 	void on(SetIcons, const Client*, int aCountType) noexcept;
 	void on(SetActive, const Client*) noexcept;
+
+	void on(IgnoreManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept;
+	void on(IgnoreManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept;
 
 	void speak(Tasks s, const OnlineUserPtr& u) { tasks.add(static_cast<uint8_t>(s), unique_ptr<Task>(new UserTask(u))); updateUsers = true; }
 	void openLinksInTopic();

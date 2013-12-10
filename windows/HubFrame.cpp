@@ -29,7 +29,6 @@
 
 #include "../client/ColorSettings.h"
 #include "../client/HighlightManager.h"
-#include "../client/IgnoreManager.h"
 #include "../client/DirectoryListingManager.h"
 #include "../client/ChatMessage.h"
 #include "../client/QueueManager.h"
@@ -157,6 +156,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	FavoriteManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
+	IgnoreManager::getInstance()->addListener(this);
 
 	::SetTimer(m_hWnd, 0, 500, 0);
 	return 1;
@@ -503,7 +503,7 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 
 		auto* im = IgnoreManager::getInstance();
 
-		if (user->isIgnored() || im->isIgnored(identity.getNick(), message.text, IgnoreItem::PM)) {
+		if (user->isIgnored() || im->isSpamFiltered(identity.getNick(), message.text, IgnoreItem::PM)) {
 			//bots can always be ignored
 			bool ignored = false;
 			if (message.replyTo->getIdentity().isBot())
@@ -558,7 +558,7 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 void HubFrame::onChatMessage(const ChatMessage& msg) {
 	const auto& identity = msg.from->getIdentity();
 	auto* im = IgnoreManager::getInstance();
-	if ((identity.isOp() && !client->isOp() && !identity.isBot()) || !msg.from->getUser()->isIgnored() && !im->isIgnored(identity.getNick(), msg.text, IgnoreItem::MC)) {
+	if ((identity.isOp() && !client->isOp() && !identity.isBot()) || !msg.from->getUser()->isIgnored() && !im->isSpamFiltered(identity.getNick(), msg.text, IgnoreItem::MC)) {
 		addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
 		if(client->get(HubSettings::ChatNotify)) {
 			MainFrame::getMainFrame()->onChatMessage(false);
@@ -829,6 +829,7 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 
 			SettingsManager::getInstance()->removeListener(this);
 			FavoriteManager::getInstance()->removeListener(this);
+			IgnoreManager::getInstance()->removeListener(this);
 			client->removeListener(this);
 			client->disconnect(true);
 
@@ -1626,6 +1627,14 @@ void HubFrame::on(SetActive, const Client*) noexcept {
 			::ShowWindow(m_hWnd, SW_RESTORE);
 		MDIActivate(m_hWnd);
 	});
+}
+
+void HubFrame::on(IgnoreManagerListener::IgnoreAdded, const UserPtr&) noexcept{
+	callAsync([=] { updateUsers = true; });
+}
+
+void HubFrame::on(IgnoreManagerListener::IgnoreRemoved, const UserPtr&) noexcept{
+	callAsync([=] { updateUsers = true; });
 }
 
 void HubFrame::openLinksInTopic() {

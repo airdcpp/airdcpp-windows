@@ -51,7 +51,7 @@
 #include "FulTabsPage.h"
 #include "DownloadingOptionsPage.h"
 #include "SharingOptionsPage.h"
-#include "IgnorePage.h"
+#include "ChatFilterPage.h"
 #include "Popups.h"
 #include "FulHighlightPage.h"
 #include "SearchPage.h"
@@ -95,7 +95,7 @@ PropertiesDlg::PropertiesDlg(HWND parent, SettingsManager *s, uint16_t initialPa
 	pages[n++] = make_unique<UCPage>(s);
 	pages[n++] = make_unique<EncryptionPage>(s);
 	pages[n++] = make_unique<MiscPage>(s);
-	pages[n++] = make_unique<IgnorePage>(s);
+	pages[n++] = make_unique<ChatFilterPage>(s);
 	pages[n++] = make_unique<SearchPage>(s);
 	pages[n++] = make_unique<SearchTypesPage>(s);
 	pages[n++] = make_unique<ScanPage>(s);
