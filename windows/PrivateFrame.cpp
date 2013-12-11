@@ -230,7 +230,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 				}
 			}
 
-			if (ownChange && ctrlHubSel.GetCurSel() == -1) {
+			if (ownChange && ctrlHubSel.GetCurSel() != -1) {
 				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
 			} else if (ctrlHubSel.GetCurSel() == -1) {
 				//the hub was not found

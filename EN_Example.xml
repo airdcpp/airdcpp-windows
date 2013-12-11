@@ -1298,7 +1298,7 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="KeyInUse">Key already in use</string>
 	<string name="SettingsWsHowto">How to use</string>
 	<string name="SettingsWsClean">Clean search term</string>
-	<string name="Webshortcuts">WebShortCuts</string>
+	<string name="Webshortcuts">Web shortcuts</string>
 	<string name="CountryInformation">Country information</string>
 	<string name="SettingsCountryFormat">Country format</string>
 	<string name="SettingsCountryFormatHelpDesc">Country format help</string>
@@ -1433,7 +1433,7 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="IncomingRefreshQueued">Incoming directories have been queued for refreshing</string>
 	<string name="RefreshQueued">File list refresh has been queued</string>
 	<string name="NoAdditionalMatches">There are no additional matches available</string>
-	<string name="SearchTypes">Search Types</string>
+	<string name="SearchTypes">Search types</string>
 	<string name="ResetToDefaults">Reset to defaults</string>
 	<string name="Predefined">Predefined</string>
 	<string name="InvalidExtension">Invalid extension: %1%</string>
@@ -2011,5 +2011,5 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="ReportIgnored">Report ignored and spam filtered chat messages in system log</string>
 	<string name="McMessageIgnored">Main chat message from ignored user: </string>
 	<string name="PmMessageIgnored">Private chat message from ignored user: </string>
-	<string name="SettingsChatfilter">Spam Filter</string>
+	<string name="SettingsChatfilter">Spam filter</string>
 </resources>
