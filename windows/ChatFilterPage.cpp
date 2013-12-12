@@ -45,7 +45,7 @@ LRESULT ChatFilterPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	ChatFilterListCtrl.InsertColumn(1, CTSTRING(IGNORE_TEXT_MATCH), LVCFMT_LEFT, rc.Width() / 3, 1);
 	ChatFilterListCtrl.InsertColumn(2, CTSTRING(MAIN_CHAT), LVCFMT_LEFT, rc.Width() / 3 / 2, 1);
 	ChatFilterListCtrl.InsertColumn(3, CTSTRING(PRIVATE_CHAT), LVCFMT_LEFT, rc.Width() / 3 / 2, 1);
-	ChatFilterListCtrl.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
+	ChatFilterListCtrl.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP | LVS_EX_CHECKBOXES);
 
 	ChatFilterItems = IgnoreManager::getInstance()->getIgnoreList();
 	for(auto& def: ChatFilterItems) {
@@ -53,16 +53,28 @@ LRESULT ChatFilterPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 		ChatFilterListCtrl.SetItemText(p, 1, Text::toT(def.getTextPattern()).c_str());
 		ChatFilterListCtrl.SetItemText(p, 2, def.matchMainchat ? CTSTRING(YES) : CTSTRING(NO));
 		ChatFilterListCtrl.SetItemText(p, 3, def.matchPM ? CTSTRING(YES) : CTSTRING(NO));
+		ChatFilterListCtrl.SetCheckState(p, def.getEnabled());
 	}
 
+	loading = false;
 	return TRUE;
 }
 
-LRESULT ChatFilterPage::onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/)
-{
+
+LRESULT ChatFilterPage::onItemchanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	if (loading)
+		return 0;
+
+	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
 	bool hasSel = ChatFilterListCtrl.GetSelectedCount() > 0;
 	::EnableWindow(GetDlgItem(IDC_IGNORE_EDIT), hasSel);
 	::EnableWindow(GetDlgItem(IDC_IGNORE_REMOVE), hasSel);
+
+	if (l->iItem != -1 && ((l->uNewState & LVIS_STATEIMAGEMASK) != (l->uOldState & LVIS_STATEIMAGEMASK))) {
+		auto& i = ChatFilterItems[l->iItem];
+		i.setEnabled(ChatFilterListCtrl.GetCheckState(l->iItem) ? true : false);
+	}
+
 	return 0;
 }
 
@@ -75,6 +87,7 @@ LRESULT ChatFilterPage::onChatFilterAdd(WORD /* wNotifyCode */, WORD /*wID*/, HW
 			ChatFilterListCtrl.SetItemText(p, 1, Text::toT(dlg.text).c_str());
 			ChatFilterListCtrl.SetItemText(p, 2, dlg.MC ? CTSTRING(YES) : CTSTRING(NO));
 			ChatFilterListCtrl.SetItemText(p, 3, dlg.PM ? CTSTRING(YES) : CTSTRING(NO));
+			ChatFilterListCtrl.SetCheckState(p, TRUE);
 		} else {
 			WinUtil::showMessageBox(TSTRING(ALREADY_IGNORED), MB_OK);
 		}
@@ -87,9 +100,10 @@ LRESULT ChatFilterPage::onChatFilterEdit(WORD /* wNotifyCode */, WORD /*wID*/, H
 		return 0;
 
 	auto olditem = getChatFilter(sel);
+	bool enable = ChatFilterListCtrl.GetCheckState(sel) ? true : false;
 	ChatFilterDlg dlg(olditem.getNickPattern(), olditem.getTextPattern(), olditem.getNickMethod(), olditem.getTextMethod(), olditem.matchMainchat, olditem.matchPM);
 	if (dlg.DoModal() == IDOK) {
-		auto newitem = IgnoreItem(dlg.nick, dlg.text, dlg.nickMethod, dlg.textMethod, dlg.MC, dlg.PM);
+		auto newitem = ChatFilterItem(dlg.nick, dlg.text, dlg.nickMethod, dlg.textMethod, dlg.MC, dlg.PM, enable);
 		updateChatFilter(newitem, sel);
 		ChatFilterListCtrl.SetItemText(sel, 0, Text::toT(dlg.nick).c_str());
 		ChatFilterListCtrl.SetItemText(sel, 1, Text::toT(dlg.text).c_str());
@@ -135,11 +149,11 @@ LRESULT ChatFilterPage::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 }
 
 bool ChatFilterPage::addChatFilter(const string& aNick, const string& aText, StringMatch::Method aNickMethod, StringMatch::Method aTextMethod, bool aMainChat, bool aPM) {
-	auto i = find_if(ChatFilterItems.begin(), ChatFilterItems.end(), [aNick, aText](const IgnoreItem& s) {
+	auto i = find_if(ChatFilterItems.begin(), ChatFilterItems.end(), [aNick, aText](const ChatFilterItem& s) {
 		return ((s.getNickPattern().empty() || compare(s.getNickPattern(), aNick) == 0) && (s.getTextPattern().empty() || compare(s.getTextPattern(), aText) == 0));
 	});
 	if (i == ChatFilterItems.end()){
-		ChatFilterItems.push_back(IgnoreItem(aNick, aText, aNickMethod, aTextMethod, aMainChat, aPM));
+		ChatFilterItems.push_back(ChatFilterItem(aNick, aText, aNickMethod, aTextMethod, aMainChat, aPM));
 		return true;
 	}
 	return false;

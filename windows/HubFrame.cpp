@@ -484,6 +484,32 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 	}
 }
 
+bool HubFrame::isIgnoredOrFiltered(const ChatMessage& msg, bool PM){
+	const auto& identity = msg.from->getIdentity();
+
+	auto logIgnored = [&]() -> void {
+		if (SETTING(LOG_IGNORED)) {
+			if (PM)
+				LogManager::getInstance()->message(STRING(PM_MESSAGE_IGNORED) + "<" + identity.getNick() + "> " + msg.text, LogManager::LOG_INFO);
+			else
+				LogManager::getInstance()->message(STRING(MC_MESSAGE_IGNORED) + "[" + client->getHubName() + "] <" + identity.getNick() + "> " + msg.text, LogManager::LOG_INFO);
+		}
+	};
+
+	if ((client->isOp() || !identity.isOp() || identity.isBot()) && msg.from->getUser()->isIgnored()) {
+		logIgnored();
+		return true;
+	}
+
+	if (IgnoreManager::getInstance()->isChatFiltered(identity.getNick(), msg.text, PM ? ChatFilterItem::PM : ChatFilterItem::MC)) {
+		logIgnored();
+		return true;
+	}
+
+	return false;
+}
+
+
 void HubFrame::onPrivateMessage(const ChatMessage& message) {
 	bool myPM = message.replyTo->getUser() == ClientManager::getInstance()->getMe();
 	const UserPtr& user = myPM ? message.to->getUser() : message.replyTo->getUser();
@@ -501,23 +527,8 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 			return;
 		}
 
-		auto* im = IgnoreManager::getInstance();
-
-		if (user->isIgnored() || im->isSpamFiltered(identity.getNick(), message.text, IgnoreItem::PM)) {
-			//bots can always be ignored
-			bool ignored = false;
-			if (message.replyTo->getIdentity().isBot())
-				ignored = true;
-
-			if (client->isOp() || !message.replyTo->getIdentity().isOp()) {
-				ignored = true;
-			}
-			if (ignored){
-				if (SETTING(LOG_IGNORED))
-					LogManager::getInstance()->message(STRING(PM_MESSAGE_IGNORED) + "<" + Text::fromT(nick) + "> " + message.text, LogManager::LOG_INFO);
-				return;
-			}
-		}
+		if (isIgnoredOrFiltered(message, true))
+			return;
 	}
 
 	//we can handle the message
@@ -556,16 +567,13 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 }
 
 void HubFrame::onChatMessage(const ChatMessage& msg) {
-	const auto& identity = msg.from->getIdentity();
-	auto* im = IgnoreManager::getInstance();
-	if ((identity.isOp() && !client->isOp() && !identity.isBot()) || !msg.from->getUser()->isIgnored() && !im->isSpamFiltered(identity.getNick(), msg.text, IgnoreItem::MC)) {
-		addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
-		if(client->get(HubSettings::ChatNotify)) {
-			MainFrame::getMainFrame()->onChatMessage(false);
-		}
-	} else {
-		if (SETTING(LOG_IGNORED))
-			LogManager::getInstance()->message(STRING(MC_MESSAGE_IGNORED) + "[" + client->getHubName() + "] <" + identity.getNick() + "> " + msg.text, LogManager::LOG_INFO);
+
+	if (isIgnoredOrFiltered(msg, false))
+		return;
+
+	addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
+	if (client->get(HubSettings::ChatNotify)) {
+		MainFrame::getMainFrame()->onChatMessage(false);
 	}
 }
 

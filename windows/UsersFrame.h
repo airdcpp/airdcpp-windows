@@ -200,9 +200,7 @@ private:
 	bool handleClickFavorite(int row);
 	bool handleClickLimiter(int row);
 	bool handleClickDesc(int row);
-
-	void handleIgnore(const UserPtr& aUser);
-	void handleUnignore(const UserPtr& aUser);
+	bool handleClickIgnore(int row);
 
 	static int columnSizes[];
 	static int columnIndexes[];

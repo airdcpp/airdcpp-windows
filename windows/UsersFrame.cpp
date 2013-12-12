@@ -215,6 +215,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlUsers.addClickHandler(COLUMN_SLOT, bind(&UsersFrame::handleClickSlot, this, placeholders::_1), false);
 	ctrlUsers.addClickHandler(COLUMN_LIMITER, bind(&UsersFrame::handleClickLimiter, this, placeholders::_1), true);
 	ctrlUsers.addClickHandler(COLUMN_DESCRIPTION, bind(&UsersFrame::handleClickDesc, this, placeholders::_1), true);
+	ctrlUsers.addClickHandler(COLUMN_IGNORE, bind(&UsersFrame::handleClickIgnore, this, placeholders::_1), true);
 
 	bHandled = FALSE;
 	return TRUE;
@@ -233,6 +234,8 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		if (ctrlUsers.GetSelectedCount() == 1) {
 			ui = ctrlUsers.getItemData(WinUtil::getFirstSelectedIndex(ctrlUsers));
 		}
+
+		int row = ctrlUsers.GetNextItem(-1, LVNI_SELECTED);
 	
 		OMenu usersMenu;
 		usersMenu.CreatePopupMenu();
@@ -241,12 +244,14 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		appendUserItems(usersMenu, true, ui ? ui->getUser() : nullptr, ui && !ui->getHubUrl().empty());
 
 		if (ui) {
+
 			if (!ui->getUser()->isIgnored()) {
 				usersMenu.appendSeparator();
-				usersMenu.appendItem(TSTRING(IGNORE_USER), [=] { handleIgnore(ui->getUser()); });
-			} else {
+				usersMenu.appendItem(TSTRING(IGNORE_USER), [=] { handleClickIgnore(row); });
+			}
+			else {
 				usersMenu.appendSeparator();
-				usersMenu.appendItem(TSTRING(UNIGNORE_USER), [=] { handleUnignore(ui->getUser()); });
+				usersMenu.appendItem(TSTRING(UNIGNORE_USER), [=] { handleClickIgnore(row); });
 			}
 
 			Bundle::SourceBundleList sourceBundles, badSourceBundles;
@@ -299,7 +304,6 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		ctrlUsers.appendCopyMenu(usersMenu);
 
 		if (ui && ui->isFavorite) {
-			int row = ctrlUsers.GetNextItem(-1, LVNI_SELECTED);
 			usersMenu.appendSeparator();
 			usersMenu.appendItem(TSTRING(OVERRIDE_LIMITER), [=] { handleClickLimiter(row); }, ui->noLimiter ? OMenu::FLAG_CHECKED : 0);
 			usersMenu.appendItem(TSTRING(PROPERTIES), [=] { handleClickDesc(row); });
@@ -340,6 +344,9 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 			auto ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
 			if (!ui->isFavorite && ctrlUsers.findColumn(cd->iSubItem) == COLUMN_LIMITER) {
 				cd->clrText = WinUtil::blendColors(SETTING(TEXT_COLOR), SETTING(BACKGROUND_COLOR));
+				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+			} else if(!ui->isFavorite) { //either this or it needs to be owner drawn
+				cd->clrText = SETTING(TEXT_COLOR);
 				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 			}
 		}
@@ -485,16 +492,15 @@ LRESULT UsersFrame::onItemChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
   	return 0;
 }
 
-void UsersFrame::handleIgnore(const UserPtr& aUser) {
-	if (aUser){
-		IgnoreManager::getInstance()->storeIgnore(aUser);
+bool UsersFrame::handleClickIgnore(int row) {
+	auto ui = ctrlUsers.getItemData(row);
+	if (ui){
+		if (ui->getUser()->isIgnored())
+			IgnoreManager::getInstance()->removeIgnore(ui->getUser());
+		else
+			IgnoreManager::getInstance()->storeIgnore(ui->getUser());
 	}
-}
-
-void UsersFrame::handleUnignore(const UserPtr& aUser){
-	if (aUser){
-		IgnoreManager::getInstance()->removeIgnore(aUser);
-	}
+	return true;
 }
 
 bool UsersFrame::handleClickDesc(int row) {

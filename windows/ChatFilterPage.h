@@ -33,7 +33,7 @@
 class ChatFilterPage : public CPropertyPage<IDD_CHATFILTERPAGE>, public PropPage
 {
 public:
-	ChatFilterPage(SettingsManager *s) : PropPage(s) {
+	ChatFilterPage(SettingsManager *s) : PropPage(s), loading(true) {
 		title = _tcsdup((TSTRING(SETTINGS_ADVANCED) + _T('\\') + TSTRING(SETTINGS_CHATFILTER)).c_str());
 		SetTitle(title);
 		m_psp.dwFlags |= PSP_RTLREADING;
@@ -50,7 +50,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_IGNORE_CLEAR, onChatFilterClear)
 		COMMAND_ID_HANDLER(IDC_IGNORE_EDIT, onChatFilterEdit)
 		NOTIFY_HANDLER(IDC_IGNORELIST, LVN_KEYDOWN, onKeyDown)
-		NOTIFY_HANDLER(IDC_IGNORELIST, LVN_ITEMCHANGED, onItemchangedDirectories)
+		NOTIFY_HANDLER(IDC_IGNORELIST, LVN_ITEMCHANGED, onItemchanged)
 		NOTIFY_HANDLER(IDC_IGNORELIST, NM_DBLCLK, onDoubleClick)
 	END_MSG_MAP()
 
@@ -59,7 +59,7 @@ public:
 	LRESULT onChatFilterRemove(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onChatFilterClear(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onChatFilterEdit(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */);
-	LRESULT onItemchangedDirectories(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
+	LRESULT onItemchanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/);
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
@@ -80,19 +80,21 @@ public:
 	
 private:
 
+	bool loading;
+
 	bool addChatFilter(const string& aNick, const string& aText, StringMatch::Method aNickMethod = StringMatch::EXACT,
 		StringMatch::Method aTextMethod = StringMatch::PARTIAL, bool aMainChat = true, bool aPM = true);
 	void removeChatFilter(int pos);
 	void clearChatFilters() { ChatFilterItems.clear(); }
-	IgnoreItem getChatFilter(int pos) { return ChatFilterItems[pos]; }
-	void updateChatFilter(IgnoreItem& item, int pos) { ChatFilterItems[pos] = item; }
+	ChatFilterItem getChatFilter(int pos) { return ChatFilterItems[pos]; }
+	void updateChatFilter(ChatFilterItem& item, int pos) { ChatFilterItems[pos] = item; }
 
 
 	static TextItem texts[];
 	TCHAR* title;
 	ExListViewCtrl ChatFilterListCtrl;
 
-	vector<IgnoreItem> ChatFilterItems;
+	vector<ChatFilterItem> ChatFilterItems;
 };
 
 #endif // !defined(CHATFILTER_PAGE_H)

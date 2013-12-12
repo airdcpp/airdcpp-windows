@@ -191,7 +191,7 @@
 #define IDD_PASS                        359
 #define IDD_CHANGE_PASS                 360
 #define IDI_SHUTDOWN                    361
-#define IDD_IGNOREITEM_DLG              361
+#define IDD_CHATFILTERITEM_DLG          361
 #define IDI_FOLLOW                      363
 #define IDI_USERS                       364
 #define IDI_OPEN_LIST                   365

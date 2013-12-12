@@ -26,7 +26,7 @@
 class ChatFilterDlg : public CDialogImpl<ChatFilterDlg> {
 public:
 
-	enum { IDD = IDD_IGNOREITEM_DLG };
+	enum { IDD = IDD_CHATFILTERITEM_DLG };
 
 	ChatFilterDlg(const string& aNickMatch, const string& aTextMatch, StringMatch::Method aNickMethod, StringMatch::Method aTextMethod, bool aMC, bool aPM);
 	ChatFilterDlg();
