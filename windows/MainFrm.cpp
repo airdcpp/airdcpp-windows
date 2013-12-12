@@ -855,7 +855,7 @@ void MainFrame::addStatus(const string& aMsg, time_t aTime, uint8_t severity) {
 	if(ctrlStatus.IsWindow()) {
 		tstring line = Text::toT("[" + Util::getTimeStamp(aTime) + "] " + aMsg);
 
-		ctrlStatus.SetText(STATUS_LASTLINES, line.c_str());
+		ctrlStatus.SetText(STATUS_LASTLINES, line.c_str(), SBT_NOTABPARSING);
 		while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
 			lastLinesList.pop_front();
 

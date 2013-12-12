@@ -1362,7 +1362,7 @@ void HubFrame::addStatus(const tstring& aLine, CHARFORMAT2& cf, bool inChat /* =
 		setDirty();
 
 
-	ctrlStatus.SetText(0, sLine);
+	ctrlStatus.SetText(0, sLine, SBT_NOTABPARSING);
 	while(lastLinesList.size() + 1 > MAX_CLIENT_LINES)
 		lastLinesList.pop_front();
 	lastLinesList.push_back(sLine);

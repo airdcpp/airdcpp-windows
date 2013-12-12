@@ -473,7 +473,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 }
 
 void ChatFrameBase::setStatusText(const tstring& aLine) {
-	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str());
+	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str(), SBT_NOTABPARSING);
 }
 
 LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
