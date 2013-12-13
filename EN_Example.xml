@@ -2012,4 +2012,6 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="McMessageIgnored">Main chat message from ignored user: </string>
 	<string name="PmMessageIgnored">Private chat message from ignored user: </string>
 	<string name="SettingsChatfilter">Message filter</string>
+	<string name="McMessageFiltered">Main chat message filtered from user: </string>
+	<string name="PmMessageFiltered">Private chat message filtered from user: </string>
 </resources>

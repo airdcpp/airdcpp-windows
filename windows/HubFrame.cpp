@@ -487,22 +487,26 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 bool HubFrame::isIgnoredOrFiltered(const ChatMessage& msg, bool PM){
 	const auto& identity = msg.from->getIdentity();
 
-	auto logIgnored = [&]() -> void {
+	auto logIgnored = [&](bool filter) -> void {
 		if (SETTING(LOG_IGNORED)) {
-			if (PM)
-				LogManager::getInstance()->message(STRING(PM_MESSAGE_IGNORED) + "<" + identity.getNick() + "> " + msg.text, LogManager::LOG_INFO);
-			else
-				LogManager::getInstance()->message(STRING(MC_MESSAGE_IGNORED) + "[" + client->getHubName() + "] <" + identity.getNick() + "> " + msg.text, LogManager::LOG_INFO);
+			string tmp;
+			if (PM) {
+				tmp = filter ? STRING(PM_MESSAGE_FILTERED) : STRING(PM_MESSAGE_IGNORED);
+			} else {
+				tmp = filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED) + "[" + client->getHubName() + "] ";
+			}
+			tmp += "<" + identity.getNick() + "> " + msg.text;
+			LogManager::getInstance()->message(tmp, LogManager::LOG_INFO);
 		}
 	};
 
 	if ((client->isOp() || !identity.isOp() || identity.isBot()) && msg.from->getUser()->isIgnored()) {
-		logIgnored();
+		logIgnored(false);
 		return true;
 	}
 
 	if (IgnoreManager::getInstance()->isChatFiltered(identity.getNick(), msg.text, PM ? ChatFilterItem::PM : ChatFilterItem::MC)) {
-		logIgnored();
+		logIgnored(true);
 		return true;
 	}
 

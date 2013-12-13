@@ -41,18 +41,20 @@ LRESULT ChatFilterPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 	
 	ChatFilterListCtrl.Attach(GetDlgItem(IDC_IGNORELIST));
 	ChatFilterListCtrl.GetClientRect(rc);
-	ChatFilterListCtrl.InsertColumn(0, CTSTRING(IGNORE_NICK_MATCH), LVCFMT_LEFT, rc.Width() / 3, 1);
-	ChatFilterListCtrl.InsertColumn(1, CTSTRING(IGNORE_TEXT_MATCH), LVCFMT_LEFT, rc.Width() / 3, 1);
-	ChatFilterListCtrl.InsertColumn(2, CTSTRING(MAIN_CHAT), LVCFMT_LEFT, rc.Width() / 3 / 2, 1);
-	ChatFilterListCtrl.InsertColumn(3, CTSTRING(PRIVATE_CHAT), LVCFMT_LEFT, rc.Width() / 3 / 2, 1);
+	ChatFilterListCtrl.InsertColumn(0, _T(""), LVCFMT_LEFT, 17,1);
+	ChatFilterListCtrl.InsertColumn(1, CTSTRING(IGNORE_NICK_MATCH), LVCFMT_LEFT, (rc.Width() - 17) / 3, 1);
+	ChatFilterListCtrl.InsertColumn(2, CTSTRING(IGNORE_TEXT_MATCH), LVCFMT_LEFT, (rc.Width() - 17) / 3, 1);
+	ChatFilterListCtrl.InsertColumn(3, CTSTRING(MAIN_CHAT), LVCFMT_LEFT, (rc.Width() - 17) / 3 / 2, 1);
+	ChatFilterListCtrl.InsertColumn(4, CTSTRING(PRIVATE_CHAT), LVCFMT_LEFT, (rc.Width() - 17) / 3 / 2, 1);
 	ChatFilterListCtrl.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP | LVS_EX_CHECKBOXES);
 
 	ChatFilterItems = IgnoreManager::getInstance()->getIgnoreList();
 	for(auto& def: ChatFilterItems) {
-		int p = ChatFilterListCtrl.insert(ChatFilterListCtrl.GetItemCount(), Text::toT(def.getNickPattern()));
-		ChatFilterListCtrl.SetItemText(p, 1, Text::toT(def.getTextPattern()).c_str());
-		ChatFilterListCtrl.SetItemText(p, 2, def.matchMainchat ? CTSTRING(YES) : CTSTRING(NO));
-		ChatFilterListCtrl.SetItemText(p, 3, def.matchPM ? CTSTRING(YES) : CTSTRING(NO));
+		int p = ChatFilterListCtrl.insert(ChatFilterListCtrl.GetItemCount(), _T(""));
+		ChatFilterListCtrl.SetItemText(p, 1, Text::toT(def.getNickPattern()).c_str());
+		ChatFilterListCtrl.SetItemText(p, 2, Text::toT(def.getTextPattern()).c_str());
+		ChatFilterListCtrl.SetItemText(p, 3, def.matchMainchat ? CTSTRING(YES) : CTSTRING(NO));
+		ChatFilterListCtrl.SetItemText(p, 4, def.matchPM ? CTSTRING(YES) : CTSTRING(NO));
 		ChatFilterListCtrl.SetCheckState(p, def.getEnabled());
 	}
 
@@ -83,10 +85,11 @@ LRESULT ChatFilterPage::onChatFilterAdd(WORD /* wNotifyCode */, WORD /*wID*/, HW
 	if(dlg.DoModal() == IDOK) {
 		auto k = addChatFilter(dlg.nick, dlg.text, dlg.nickMethod, dlg.textMethod, dlg.MC, dlg.PM);
 		if(k) {
-			int p = ChatFilterListCtrl.insert(ChatFilterListCtrl.GetItemCount(), Text::toT(dlg.nick));
-			ChatFilterListCtrl.SetItemText(p, 1, Text::toT(dlg.text).c_str());
-			ChatFilterListCtrl.SetItemText(p, 2, dlg.MC ? CTSTRING(YES) : CTSTRING(NO));
-			ChatFilterListCtrl.SetItemText(p, 3, dlg.PM ? CTSTRING(YES) : CTSTRING(NO));
+			int p = ChatFilterListCtrl.insert(ChatFilterListCtrl.GetItemCount(), _T(""));
+			ChatFilterListCtrl.SetItemText(p, 1, Text::toT(dlg.nick).c_str());
+			ChatFilterListCtrl.SetItemText(p, 2, Text::toT(dlg.text).c_str());
+			ChatFilterListCtrl.SetItemText(p, 3, dlg.MC ? CTSTRING(YES) : CTSTRING(NO));
+			ChatFilterListCtrl.SetItemText(p, 4, dlg.PM ? CTSTRING(YES) : CTSTRING(NO));
 			ChatFilterListCtrl.SetCheckState(p, TRUE);
 		} else {
 			WinUtil::showMessageBox(TSTRING(ALREADY_IGNORED), MB_OK);
@@ -105,10 +108,10 @@ LRESULT ChatFilterPage::onChatFilterEdit(WORD /* wNotifyCode */, WORD /*wID*/, H
 	if (dlg.DoModal() == IDOK) {
 		auto newitem = ChatFilterItem(dlg.nick, dlg.text, dlg.nickMethod, dlg.textMethod, dlg.MC, dlg.PM, enable);
 		updateChatFilter(newitem, sel);
-		ChatFilterListCtrl.SetItemText(sel, 0, Text::toT(dlg.nick).c_str());
-		ChatFilterListCtrl.SetItemText(sel, 1, Text::toT(dlg.text).c_str());
-		ChatFilterListCtrl.SetItemText(sel, 2, dlg.MC ? CTSTRING(YES) : CTSTRING(NO));
-		ChatFilterListCtrl.SetItemText(sel, 3, dlg.PM ? CTSTRING(YES) : CTSTRING(NO));
+		ChatFilterListCtrl.SetItemText(sel, 1, Text::toT(dlg.nick).c_str());
+		ChatFilterListCtrl.SetItemText(sel, 2, Text::toT(dlg.text).c_str());
+		ChatFilterListCtrl.SetItemText(sel, 3, dlg.MC ? CTSTRING(YES) : CTSTRING(NO));
+		ChatFilterListCtrl.SetItemText(sel, 4, dlg.PM ? CTSTRING(YES) : CTSTRING(NO));
 	}
 
 	return 0;
@@ -117,11 +120,7 @@ LRESULT ChatFilterPage::onChatFilterEdit(WORD /* wNotifyCode */, WORD /*wID*/, H
 LRESULT ChatFilterPage::onChatFilterRemove(WORD /* wNotifyCode */, WORD /*wID*/, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 	int i = -1;
 	
-	TCHAR buf[256];
-
 	while((i = ChatFilterListCtrl.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-		ChatFilterListCtrl.GetItemText(i, 0, buf, 256);
-
 		removeChatFilter(i);
 		ChatFilterListCtrl.DeleteItem(i);
 	}
