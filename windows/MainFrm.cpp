@@ -407,9 +407,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	const int i = UserInfoBase::USER_ICON_AWAY * (UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START) * (UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START);
 	awayIconON = ResourceLoader::getUserImages().GetIcon(i);
 	awayIconOFF = ResourceLoader::getUserImages().GetIcon(0);
-	infoIcon = ResourceLoader::loadIcon(IDI_INFO, 16);
-	warningIcon = ResourceLoader::loadIcon(IDI_IWARNING, 16);
-	errorIcon = ResourceLoader::loadIcon(IDI_IERROR, 16);;
 
 	ctrlStatus.SetIcon(STATUS_AWAY, AirUtil::getAway() ? awayIconON : awayIconOFF);
 	ctrlStatus.SetIcon(STATUS_SHARED, ResourceLoader::loadIcon(IDI_SHARED, 16));
@@ -865,19 +862,8 @@ void MainFrame::addStatus(const string& aMsg, time_t aTime, uint8_t severity) {
 			lastLinesList.push_back(line.substr(0, line.find(_T('\r'))));
 		}
 
-		switch(severity) {
-		case LogManager::LOG_INFO:
-			ctrlStatus.SetIcon(STATUS_LASTLINES, infoIcon);
-			break;
-		case LogManager::LOG_WARNING:
-			ctrlStatus.SetIcon(STATUS_LASTLINES, warningIcon);
-			break;
-		case LogManager::LOG_ERROR:
-			ctrlStatus.SetIcon(STATUS_LASTLINES, errorIcon);
-			break;
-		default:
-			break;
-		}
+	ctrlStatus.SetIcon(STATUS_LASTLINES, ResourceLoader::getSeverityIcon(severity));
+
 	}
 }
 

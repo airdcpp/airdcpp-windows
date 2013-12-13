@@ -18,6 +18,7 @@
 
 #include "stdafx.h"
 #include "../client/UserInfoBase.h"
+#include "../client/LogManager.h"
 
 #include "ResourceLoader.h"
 
@@ -33,6 +34,9 @@ CImageList ResourceLoader::flagImages;
 CImageList ResourceLoader::arrowImages;
 CImageList ResourceLoader::filelistTbImages;
 COLORREF ResourceLoader::GrayPalette[256];
+HICON ResourceLoader::iconInfo = NULL;
+HICON ResourceLoader::iconWarning = NULL;
+HICON ResourceLoader::iconError = NULL;
 
 void ResourceLoader::load() {
 
@@ -532,6 +536,26 @@ void ResourceLoader::loadWinampToolbarIcons(CImageList& winampImages) {
 
 void ResourceLoader::loadFlagImages() {
 	flagImages.CreateFromImage(IDB_FLAGS, 25, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED); 
+}
+
+HICON ResourceLoader::getSeverityIcon(uint8_t sev) {
+	switch (sev) {
+		case LogManager::LOG_INFO : 
+			if (!iconInfo)
+				iconInfo = loadIcon(IDI_INFO, 16);
+			return iconInfo;
+		case LogManager::LOG_WARNING:
+			if (!iconWarning)
+				iconWarning = loadIcon(IDI_IWARNING, 16);
+			return iconWarning;
+		case LogManager::LOG_ERROR:
+			if (!iconError)
+				iconError = loadIcon(IDI_IERROR, 16);
+			return iconError;
+		default :
+			break;
+	}
+	return NULL;
 }
 
 //try to keep the icon smoothness but copy it as grayscale.

@@ -73,7 +73,7 @@ public:
 
 	virtual bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson) = 0;
 	virtual bool sendMessage(const tstring& aMessage, string& error_, bool thirdPerson) = 0;
-	virtual void addStatusLine(const tstring& aStatus) = 0;
+	virtual void addStatusLine(const tstring& aStatus, uint8_t sev) = 0;
 	virtual void onTab() { };
 	virtual void UpdateLayout(BOOL bResizeBars = TRUE) = 0;
 protected:
@@ -119,7 +119,7 @@ protected:
 	bool cancelHashing;
 	task_group tasks;
 
-	void setStatusText(const tstring& aLine);
+	void setStatusText(const tstring& aLine, uint8_t severity);
 	CStatusBarCtrl ctrlStatus;
 
 	bool sendFrameMessage(const tstring& aMsg, bool thirdPerson = false);

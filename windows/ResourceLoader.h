@@ -59,6 +59,8 @@ public:
 
 	static CImageList flagImages;
 
+	static HICON getSeverityIcon(uint8_t sev);
+
 	enum {
 		DIR_NORMAL,
 		DIR_INCOMPLETE,
@@ -91,6 +93,9 @@ private:
 	
 	static tstring m_IconPath;
 
+	static HICON iconInfo;
+	static HICON iconWarning;
+	static HICON iconError;
 
 };
 

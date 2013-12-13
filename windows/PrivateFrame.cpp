@@ -98,12 +98,12 @@ LRESULT PrivateFrame::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	return 0;
 }
 	
-void PrivateFrame::addClientLine(const tstring& aLine) {
+void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 	if(!created) {
 		CreateEx(WinUtil::mdiClient);
 		//updateOnlineStatus();
 	}
-	setStatusText(aLine);
+	setStatusText(aLine, severity);
 	if (SETTING(BOLD_PM)) {
 		setDirty();
 	}
@@ -156,13 +156,13 @@ void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUse
 	}
 }
 
-void PrivateFrame::addStatusLine(const tstring& aLine) {
+void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 	tstring status = _T(" *** ") + aLine + _T(" ***");
-	if(SETTING(STATUS_IN_CHAT)) {
+	if (SETTING(STATUS_IN_CHAT)) {
 		addLine(status, WinUtil::m_ChatTextServer);
-	} else {
-		addClientLine(status);
 	}
+	addClientLine(status, severity);
+	
 }
 
 void PrivateFrame::changeClient() {
@@ -205,7 +205,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			updateTabIcon(false);
 
 			if (!online) {
-				addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"));
+				addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"), LogManager::LOG_INFO);
 			}
 		} else {
 			if (nicks.empty())
@@ -213,7 +213,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 
 			setDisconnected(true);
 			updateTabIcon(true);
-			addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"));
+			addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"), LogManager::LOG_INFO);
 			ctrlClient.setClient(nullptr);
 		}
 
@@ -231,17 +231,17 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			}
 
 			if (ownChange && ctrlHubSel.GetCurSel() != -1) {
-				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
+				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_INFO);
 			} else if (ctrlHubSel.GetCurSel() == -1) {
 				//the hub was not found
 				ctrlHubSel.SetCurSel(0);
 				changeClient();
 				if (!online) //the user came online but not in the previous hub
-					addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
+					addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_WARNING);
 				else
-					addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)));
+					addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)), LogManager::LOG_WARNING);
 			} else if (!oldHubPair.first.empty() && oldHubPair.first != hint) {
-				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)));
+				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_WARNING);
 			} else if (!ctrlClient.getClient()) {
 				changeClient();
 			}
@@ -373,12 +373,12 @@ void PrivateFrame::checkClientChanged(const HintedUser& newUser, Client* c, bool
 bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) { 
 	if(stricmp(cmd.c_str(), _T("grant")) == 0) {
 		UploadManager::getInstance()->reserveSlot(HintedUser(replyTo), 600);
-		addClientLine(TSTRING(SLOT_GRANTED));
+		addClientLine(TSTRING(SLOT_GRANTED), LogManager::LOG_INFO);
 	} else if(stricmp(cmd.c_str(), _T("close")) == 0) {
 		PostMessage(WM_CLOSE);
 	} else if((stricmp(cmd.c_str(), _T("favorite")) == 0) || (stricmp(cmd.c_str(), _T("fav")) == 0)) {
 		FavoriteManager::getInstance()->addFavoriteUser(replyTo);
-		addClientLine(TSTRING(FAVORITE_USER_ADDED));
+		addClientLine(TSTRING(FAVORITE_USER_ADDED), LogManager::LOG_INFO);
 	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0) {
 		handleGetList();
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
@@ -458,7 +458,7 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 
 	auto myNick = Text::toT(ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::Nick) : SETTING(NICK));
 	bool notify = ctrlClient.AppendChat(from, myNick, SETTING(TIME_STAMPS) ? Text::toT("[" + Util::getShortTimeString() + "] ") : _T(""), aLine + _T('\n'), cf);
-	addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()));
+	addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogManager::LOG_INFO);
 
 	if(notify)
 		setNotify();

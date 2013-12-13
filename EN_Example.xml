@@ -2014,4 +2014,5 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="SettingsChatfilter">Message filter</string>
 	<string name="McMessageFiltered">Main chat message filtered from user: </string>
 	<string name="PmMessageFiltered">Private chat message filtered from user: </string>
+	<string name="NewTextStyleApplied">New Font &amp; TextStyles Applied, TextMatching colors will apply after this line</string>
 </resources>

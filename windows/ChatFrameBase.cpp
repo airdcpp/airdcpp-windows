@@ -424,7 +424,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 		WinUtil::ShowMessageBox(SettingsManager::NMDC_MAGNET_WARN, CTSTRING(NMDC_MAGNET_WARNING));
 	}
 
-	setStatusText(aPaths.size() > 1 ? TSTRING_F(CREATING_MAGNET_FOR_X, aPaths.size()) : TSTRING_F(CREATING_MAGNET_FOR, Text::toT(aPaths.front())));
+	setStatusText(aPaths.size() > 1 ? TSTRING_F(CREATING_MAGNET_FOR_X, aPaths.size()) : TSTRING_F(CREATING_MAGNET_FOR, Text::toT(aPaths.front())), LogManager::LOG_INFO);
 	tasks.run([=] {
 		int64_t sizeLeft = 0;
 		for(auto& path: aPaths)
@@ -445,11 +445,11 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 						tstring status = TSTRING_F(HASHING_X_LEFT, Text::toT(aFileName) % Text::toT(Util::formatTime(aTimeLeft, true)));
 						if (aPaths.size() > 1) 
 							status += _T(" (") + Text::toLower(TSTRING(FILE)) + _T(" ") + Util::toStringW(pos) + _T("/") + Util::toStringW(aPaths.size()) + _T(")");
-						setStatusText(status);
+						setStatusText(status, LogManager::LOG_INFO);
 					});
 				});
 			} catch (const Exception& e) {
-				callAsync([=] { setStatusText(TSTRING(HASHING_FAILED) + _T(" ") + Text::toT(e.getError())); });
+				callAsync([=] { setStatusText(TSTRING(HASHING_FAILED) + _T(" ") + Text::toT(e.getError()), LogManager::LOG_ERROR); });
 				return;
 			}
 
@@ -464,7 +464,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 
 		callAsync([=] {
 			if (!cancelHashing) {
-				setStatusText(aPaths.size() > 1 ? TSTRING_F(MAGNET_CREATED_FOR_X, aPaths.size()) : TSTRING_F(MAGNET_CREATED_FOR, Text::toT(aPaths.front())));
+				setStatusText(aPaths.size() > 1 ? TSTRING_F(MAGNET_CREATED_FOR_X, aPaths.size()) : TSTRING_F(MAGNET_CREATED_FOR, Text::toT(aPaths.front())), LogManager::LOG_INFO);
 				appendTextLine(ret, true);
 			}
 		});
@@ -472,8 +472,9 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 
 }
 
-void ChatFrameBase::setStatusText(const tstring& aLine) {
+void ChatFrameBase::setStatusText(const tstring& aLine, uint8_t sev) {
 	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str(), SBT_NOTABPARSING);
+	ctrlStatus.SetIcon(0, ResourceLoader::getSeverityIcon(sev));
 }
 
 LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -490,7 +491,7 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	} else if(SETTING(MEDIA_PLAYER) == 4) {
 		cmd = _T("/spotify");
 	} else {
-		addStatusLine(CTSTRING(NO_MEDIA_SPAM));
+		addStatusLine(CTSTRING(NO_MEDIA_SPAM), LogManager::LOG_INFO);
 		return 0;
 	}
 	if(checkCommand(cmd, param, message, status, thirdPerson)){
@@ -498,7 +499,7 @@ LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 			sendFrameMessage(message, thirdPerson);
 		}
 		if(!status.empty()) {
-			addStatusLine(status);
+			addStatusLine(status, LogManager::LOG_INFO);
 		}
 	}
 	return 0;
@@ -510,7 +511,7 @@ bool ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool thirdPerson /*fal
 		if (sendMessage(aMsg, error, thirdPerson)) {
 			return true;
 		} else {
-			addStatusLine(Text::toT(error));
+			addStatusLine(Text::toT(error),  LogManager::LOG_ERROR);
 		}
 	}
 	return false;
@@ -618,7 +619,7 @@ void ChatFrameBase::onEnter() {
 			tstring cmd = s;
 			tstring param;
 			if(SETTING(CLIENT_COMMANDS)) {
-				addStatusLine(_T("Client command: ") + s);
+				addStatusLine(_T("Client command: ") + s, LogManager::LOG_INFO);
 			}
 		
 			if(!checkCommand(cmd, param, message, status, thirdPerson)) {
@@ -642,7 +643,7 @@ void ChatFrameBase::onEnter() {
 	}
 
 	if (!status.empty()) {
-		addStatusLine(status);
+		addStatusLine(status, LogManager::LOG_INFO);
 	}
 
 	if (!message.empty()) {
@@ -861,7 +862,7 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		status = _T("Collecing statistics, please wait... (this may take a few minutes with large databases)");
 		tasks.run([this] { 
 			auto text = Text::toT(HashManager::getInstance()->getDbStats());
-			callAsync([=] { addStatusLine(text); });
+			callAsync([=] { addStatusLine(text, LogManager::LOG_INFO); });
 		});
 	} else if(stricmp(cmd.c_str(), _T("sharestats")) == 0) {
 		status = Text::toT(ShareManager::getInstance()->printStats());

@@ -107,14 +107,14 @@ public:
 	void addLine(const tstring& aLine, CHARFORMAT2& cf);
 	void addLine(const Identity&, const tstring& aLine);
 	void addLine(const Identity&, const tstring& aLine, CHARFORMAT2& cf);
-	void addStatusLine(const tstring& aLine);
+	void addStatusLine(const tstring& aLine, uint8_t severity);
 
 	bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
 	void UpdateLayout(BOOL bResizeBars = TRUE);	
 	void runUserCommand(UserCommand& uc);
 	void readLog();
 	
-	void addClientLine(const tstring& aLine);
+	void addClientLine(const tstring& aLine, uint8_t severity);
 	bool sendMessage(const tstring& msg, string& error_, bool thirdPerson = false);
 
 	struct UserListHandler {

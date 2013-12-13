@@ -397,9 +397,7 @@ private:
 	HICON hShutdownIcon;
 	HICON slotsIcon;
 	HICON slotsFullIcon;
-	HICON infoIcon;
-	HICON warningIcon;
-	HICON errorIcon;
+
 	CContainedWindow statusContainer;
 
 	static bool isShutdownStatus;

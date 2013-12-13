@@ -157,8 +157,8 @@ public:
 	void addLine(const tstring& aLine);
 	void addLine(const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo = true);
 	void addLine(const Identity& i, const tstring& aLine, CHARFORMAT2& cf, bool bUseEmo = true);
-	void addStatusLine(const tstring& aLine) { addStatus(aLine); }
-	void addStatus(const tstring& aLine, CHARFORMAT2& cf = WinUtil::m_ChatTextSystem, bool inChat = true);
+	void addStatusLine(const tstring& aLine, uint8_t sev) { addStatus(aLine, sev); }
+	void addStatus(const tstring& aLine, uint8_t sev, CHARFORMAT2& cf = WinUtil::m_ChatTextSystem, bool inChat = true);
 	bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
 	void onTab();
 	void handleTab(bool reverse);
