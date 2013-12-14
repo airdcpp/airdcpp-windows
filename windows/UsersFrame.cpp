@@ -343,10 +343,10 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 			// dim fields that can't be changed for this user
 			auto ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
 			if (!ui->isFavorite && ctrlUsers.findColumn(cd->iSubItem) == COLUMN_LIMITER) {
-				cd->clrText = WinUtil::blendColors(SETTING(TEXT_COLOR), SETTING(BACKGROUND_COLOR));
+				cd->clrText = WinUtil::blendColors(SETTING(NORMAL_COLOUR), SETTING(BACKGROUND_COLOR));
 				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 			} else if(!ui->isFavorite) { //either this or it needs to be owner drawn
-				cd->clrText = SETTING(TEXT_COLOR);
+				cd->clrText = SETTING(NORMAL_COLOUR);
 				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 			}
 		}

@@ -14,8 +14,9 @@ Added:
 - Use the same icons in pm tab and userlist, ability to state away mode and reg status on tab icon
 - Clear buttons for histories in settings
 - New icons for PM and Mainchat notification in tray and taskbar, add combined icon.
-- Settings for spam filtering mainchat or private messages
-- Option for showing ignored and spam filtered chat messages in systemlog 
+- Settings for message filtering mainchat or private messages
+- Option for showing ignored and message filtered chat messages in systemlog 
+- Severity icons in PM and Hub windows statusbars
 
 Fixed:
 
