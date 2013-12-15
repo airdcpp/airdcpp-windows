@@ -224,9 +224,6 @@ private:
 	tstring redirect;
 	bool timeStamps;
 	static bool shutdown;
-	HICON HubOpIcon; 
-	HICON HubRegIcon; 
-	HICON HubIcon; 
 
 	bool waitingForPW;
 	bool extraSort;
@@ -250,7 +247,7 @@ private:
 	bool showUsers;
 	bool forceClose;
 
-	int countType;
+	Client::CountType countType;
 
 	TStringMap tabParams;
 	bool tabMenuShown;
@@ -328,7 +325,6 @@ private:
 	void on(SearchFlood, const Client*, const string&) noexcept;	
 	void on(HubTopic, const Client*, const string&) noexcept;
 	void on(AddLine, const Client*, const string&) noexcept;
-	void on(SetIcons, const Client*, int aCountType) noexcept;
 	void on(SetActive, const Client*) noexcept;
 
 	void on(IgnoreManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept;

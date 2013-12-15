@@ -138,10 +138,6 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	WinUtil::SetIcon(m_hWnd, IDI_HUB);
 
-	HubOpIcon = ResourceLoader::loadIcon(IDI_HUBOP, 16);
-	HubRegIcon = ResourceLoader::loadIcon(IDI_HUBREG, 16);
-	HubIcon =  ResourceLoader::loadIcon(IDI_HUB, 16);
-
 	if(fhe){
 		//retrieve window position
 		CRect rc(fhe->getLeft(), fhe->getTop(), fhe->getRight(), fhe->getBottom());
@@ -587,6 +583,7 @@ void HubFrame::onDisconnected(const string& aReason) {
 	clearUserList();
 	setDisconnected(true);
 	wentoffline = true;
+	onUpdateTabIcons();
 
 	if ((!SETTING(SOUND_HUBDISCON).empty()) && (!SETTING(SOUNDS_DISABLED)))
 		WinUtil::playSound(Text::toT(SETTING(SOUND_HUBDISCON)));
@@ -600,6 +597,7 @@ void HubFrame::onConnected() {
 	addStatus(TSTRING(CONNECTED), LogManager::LOG_INFO, WinUtil::m_ChatTextServer);
 	wentoffline = false;
 	setDisconnected(false);
+	onUpdateTabIcons();
 
 	tstring text = Text::toT(client->getCipherName());
 	ctrlStatus.SetText(1, text.c_str());
@@ -687,17 +685,24 @@ void HubFrame::onPassword() {
 }
 
 void HubFrame::onUpdateTabIcons() {
+	//Nothing to update, return
+	if (client->getCountType() == countType)
+		return;
+
+	countType = client->getCountType();
+
 	switch(countType) {
 	case Client::COUNT_OP:
-		setIcon(HubOpIcon);
+		setIcon(ResourceLoader::getHubImages().GetIcon(2));
 		break;
 	case Client::COUNT_REGISTERED:
-		setIcon(HubRegIcon);
+		setIcon(ResourceLoader::getHubImages().GetIcon(1));
 		break;
 	case Client::COUNT_NORMAL:
-		setIcon(HubRegIcon);
+		setIcon(ResourceLoader::getHubImages().GetIcon(0));
 		break;
 	default:
+		setIcon(ResourceLoader::getHubImages().GetIcon(wentoffline ? 3 : 0));
 		break;
 	}
 }
@@ -835,9 +840,6 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 				r->setUsers(Util::toString(client->getUserCount()));
 				r->setShared(Util::toString(client->getAvailable()));
 			}
-			DestroyIcon(HubOpIcon);
-			DestroyIcon(HubRegIcon);
-			DestroyIcon(HubIcon);
 
 			SettingsManager::getInstance()->removeListener(this);
 			FavoriteManager::getInstance()->removeListener(this);
@@ -1420,10 +1422,12 @@ void HubFrame::reconnectDisconnected() {
 	}
 }
 
-void HubFrame::on(FavoriteManagerListener::UserAdded, const FavoriteUser& /*aUser*/) noexcept {
+void HubFrame::on(FavoriteManagerListener::UserAdded, const FavoriteUser& /*aUser*/) noexcept{
+	callAsync([=] { updateUsers = true; });
 	resortForFavsFirst();
 }
 void HubFrame::on(FavoriteManagerListener::UserRemoved, const FavoriteUser& /*aUser*/) noexcept {
+	callAsync([=] { updateUsers = true; });
 	resortForFavsFirst();
 }
 
@@ -1490,13 +1494,6 @@ void HubFrame::updateStatusBar() {
 		UpdateLayout();
 }
 
-void HubFrame::on(ClientListener::SetIcons, const Client*, int aCountType) noexcept { 
-	if(countType != aCountType){
-		countType = aCountType;
-		callAsync([=] { onUpdateTabIcons(); });
-	}
-}
-
 void HubFrame::on(Connecting, const Client*) noexcept { 
 	callAsync([=] {
 		if(SETTING(SEARCH_PASSIVE) && client->isActive()) {
@@ -1516,6 +1513,11 @@ void HubFrame::on(UserConnected, const Client* c, const OnlineUserPtr& user) noe
 }
 
 void HubFrame::on(UserUpdated, const Client*, const OnlineUserPtr& user) noexcept {
+	//If its my identity, check if we need to update the tab icon
+	if (user->getUser() == ClientManager::getInstance()->getMe()) {
+		callAsync([=] { onUpdateTabIcons(); });
+	}
+	
 	auto task = new UserTask(user);
 	callAsync([this, task] {
 		tasks.add(UPDATE_USER_JOIN, unique_ptr<Task>(task));
@@ -1524,6 +1526,11 @@ void HubFrame::on(UserUpdated, const Client*, const OnlineUserPtr& user) noexcep
 }
 void HubFrame::on(UsersUpdated, const Client*, const OnlineUserList& aList) noexcept {
 	for(auto& i: aList) {
+		//If its my identity, check if we need to update the tab icon
+		if (i->getUser() == ClientManager::getInstance()->getMe()) {
+			callAsync([=] { onUpdateTabIcons(); });
+		}
+
 		auto task = new UserTask(i);
 		callAsync([this, task] { tasks.add(UPDATE_USER, unique_ptr<Task>(task)); });
 	}

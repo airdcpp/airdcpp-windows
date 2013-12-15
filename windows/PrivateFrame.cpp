@@ -39,7 +39,7 @@ PrivateFrame::FrameMap PrivateFrame::frames;
 
 PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
 	created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0), 
-	ctrlHubSelContainer(WC_COMBOBOX, this, HUB_SEL_MAP),
+	ctrlHubSelContainer(WC_COMBOBOXEX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	UserInfoBaseHandler(false, true)
@@ -53,12 +53,16 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
 	ctrlStatus.Attach(m_hWndStatusBar);
 
-	ctrlHubSel.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST, WS_EX_CLIENTEDGE, IDC_HUB);
-	ctrlHubSelContainer.SubclassWindow(ctrlHubSel.m_hWnd);
-	ctrlHubSel.SetFont(WinUtil::systemFont);
+	RECT r = { 0, 0, 0, 150 };
+	ctrlHubSel.Create(ctrlStatus.m_hWnd, r, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		WS_HSCROLL | WS_VSCROLL | CBS_DROPDOWNLIST , 0, IDC_HUB);
 
+	ctrlHubSel.SetFont(WinUtil::systemFont);
+	ctrlHubSelContainer.SubclassWindow(ctrlHubSel.m_hWnd);
+	ctrlHubSel.SetImageList(ResourceLoader::getHubImages());
+	
 	init(m_hWnd, rcDefault);
+
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	
@@ -223,12 +227,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 				showHubSelection(true);
 			}
 
-			for (const auto& hub : hubs) {
-				auto idx = ctrlHubSel.AddString(Text::toT(hub.second).c_str());
-				if (hub.first == hint) {
-					ctrlHubSel.SetCurSel(idx);
-				}
-			}
+			fillHubSelection();
 
 			if (ownChange && ctrlHubSel.GetCurSel() != -1) {
 				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_INFO);
@@ -255,6 +254,19 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
 }
 
+void PrivateFrame::fillHubSelection() {
+	auto* cm = ClientManager::getInstance();
+	auto idents = cm->getIdentities(cm->getMe());
+
+	for (const auto& hub : hubs) {
+		auto me = idents.find(hub.first);
+		int img = me == idents.end() ? 0 : me->second.isOp() ? 2 : me->second.isRegistered() ? 1 : 0;
+		auto i = ctrlHubSel.AddItem(Text::toT(hub.second).c_str(), img, img, 0);
+		if (hub.first == replyTo.hint) {
+			ctrlHubSel.SetCurSel(i);
+		}
+	}
+}
 void PrivateFrame::showHubSelection(bool show) {
 	ctrlHubSel.ShowWindow(show);
 	ctrlHubSel.EnableWindow(show);
@@ -525,12 +537,12 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
 
 			int desclen = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-			w[STATUS_TEXT] = sr.right - 165 - desclen;
-			w[STATUS_HUBSEL] = w[0] + desclen + 165;
+			w[STATUS_TEXT] = sr.right - 190 - desclen -5;
+			w[STATUS_HUBSEL] = w[0] + desclen + 190;
 
 			sr.top = 1;
 			sr.left = w[STATUS_HUBSEL-1] + desclen + 10;
-			sr.right = sr.left + 150;
+			sr.right = sr.left + 170;
 			ctrlHubSel.MoveWindow(sr);
 
 			ctrlStatus.SetParts(STATUS_LAST, w);

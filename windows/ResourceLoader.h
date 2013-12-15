@@ -50,6 +50,7 @@ public:
 	static CImageList& getFileImages();
 	static CImageList& getArrowImages();
 	static CImageList& getFilelistTbImages();
+	static CImageList& getHubImages();
 	
 	static HICON loadIcon(int aDefault, int size = 0);
 	static HICON convertGrayscaleIcon(HICON hIcon);
@@ -90,6 +91,7 @@ private:
 	static CImageList arrowImages;
 	static CImageList filelistTbImages;
 	static CImageList autoSearchStatuses;
+	static CImageList hubImages;
 	
 	static tstring m_IconPath;
 

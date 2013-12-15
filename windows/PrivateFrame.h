@@ -152,7 +152,10 @@ private:
 	typedef unordered_map<UserPtr, PrivateFrame*, User::Hash> FrameMap;
 	typedef FrameMap::const_iterator FrameIter;
 	static FrameMap frames;
-	CComboBox ctrlHubSel;
+	CComboBoxEx ctrlHubSel;
+	CImageList hubSelImages;
+
+	void fillHubSelection();
 
 	void updateOnlineStatus(bool ownChange = false);
 	StringPairList hubs;

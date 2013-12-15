@@ -33,6 +33,7 @@ CImageList ResourceLoader::userImages;
 CImageList ResourceLoader::flagImages;
 CImageList ResourceLoader::arrowImages;
 CImageList ResourceLoader::filelistTbImages;
+CImageList ResourceLoader::hubImages;
 COLORREF ResourceLoader::GrayPalette[256];
 HICON ResourceLoader::iconInfo = NULL;
 HICON ResourceLoader::iconWarning = NULL;
@@ -220,6 +221,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_HUB:			return _T("Hub.ico");
 		case IDI_HUBREG	:		return _T("HubReg.ico");
 		case IDI_HUBOP:			return _T("HubOp.ico");
+		case IDI_HUBOFF:		return _T("HubOff.ico");
 		case IDI_ANY:			return _T("searchTypes\\Any.ico");
 		case IDI_AUDIO:			return _T("searchTypes\\Audio.ico");
 		case IDI_COMPRESSED:	return _T("searchTypes\\Compressed.ico");
@@ -335,6 +337,17 @@ CImageList& ResourceLoader::getFilelistTbImages() {
 		filelistTbImages.AddIcon(loadIcon(IDI_NEXT, size));
 	}
 	return filelistTbImages;
+}
+CImageList& ResourceLoader::getHubImages() {
+	if (hubImages.IsNull()){
+		const int size = 16;
+		hubImages.Create(size, size, ILC_COLOR32 | ILC_MASK, 0, 3);
+		hubImages.AddIcon(loadIcon(IDI_HUB, size));
+		hubImages.AddIcon(mergeIcons(loadIcon(IDI_HUB, size), loadIcon(IDI_HUBREG, 16), 16));
+		hubImages.AddIcon(mergeIcons(loadIcon(IDI_HUB, size), loadIcon(IDI_HUBOP, 16), 16));
+		hubImages.AddIcon(loadIcon(IDI_HUBOFF, size));
+	}
+	return hubImages;
 }
 
 CImageList& ResourceLoader::getFileImages() {
