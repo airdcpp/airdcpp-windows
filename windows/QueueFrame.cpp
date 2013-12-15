@@ -1158,36 +1158,27 @@ void QueueFrame::moveSelectedDir() {
 }
 
 LRESULT QueueFrame::onRenameDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring cur = Text::toT(curDir);
+	DirItemInfo* dii = (DirItemInfo*) ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
+	if (dii->getBundles().empty())
+		return 0;
 
-	LineDlg virt;
-	virt.title = TSTRING(VIRTUAL_NAME);
-	virt.description = TSTRING(VIRTUAL_NAME_LONG);
-	virt.line = Util::getLastDir(cur);
-	if(virt.DoModal(m_hWnd) == IDOK) {
-		if (virt.line == Util::getLastDir(cur)) {
+	auto b = QueueManager::getInstance()->findBundle(dii->getBundles().front().second->getToken());
+
+	LineDlg dlg;
+	dlg.title = TSTRING(VIRTUAL_NAME);
+	dlg.description = TSTRING(VIRTUAL_NAME_LONG);
+	dlg.line = Text::toT(b->getName());
+	if (dlg.DoModal(m_hWnd) == IDOK) {
+		auto newName = Util::validatePath(Text::fromT(dlg.line), true);
+		if (newName == b->getName()) {
 			return 0;
 		}
 
-		size_t pos = cur.find(Util::getLastDir(cur));
-		string newDir = Text::fromT(cur.substr(0, pos));
-		newDir += Util::validatePath(Text::fromT(virt.line));
-		if (newDir[newDir.length()-1] != PATH_SEPARATOR)
-			newDir += PATH_SEPARATOR;
-
-		DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
-		//BundleList bundles = dii->getBundles();
-		if (dii->getBundles().size() == 1) {
-			BundlePtr b = QueueManager::getInstance()->findBundle(dii->getBundles().front().second->getToken());
-			if (curDir == newDir)
-				return 0;
-
-			auto sourceDir = curDir;
-			MainFrame::getMainFrame()->addThreadedTask([=] {
-				QueueManager::getInstance()->moveBundleDir(sourceDir, newDir, b, true);
-			});
-		}
+		MainFrame::getMainFrame()->addThreadedTask([=] {
+			QueueManager::getInstance()->renameBundle(b, newName);
+		});
 	}
+
 	return 0;
 }
 

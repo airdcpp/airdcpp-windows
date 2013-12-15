@@ -167,12 +167,21 @@ public:
 		}
 
 		//have we created it yet?
-		if (first && hasChildren(ht) && !IsExpanded(ht)) {
+		if (first && hasChildren(ht)) {
+			bool expanded = IsExpanded(ht);
+			if (expanded) {
+				// refresh the content
+				Expand(ht, TVE_COLLAPSE | TVE_COLLAPSERESET);
+			}
+
 			Expand(ht, TVE_EXPAND);
+
 			auto ret = findItem(ht, name, false);
 
-			//leave it as it was...
-			Expand(ht, TVE_COLLAPSE);
+			if (!expanded) {
+				//leave it as it was...
+				Expand(ht, TVE_COLLAPSE);
+			}
 			return ret;
 		}
 

@@ -102,7 +102,11 @@ void DirectoryListingFrame::updateItemCache(const string& aPath) {
 		return;
 	}
 
-	auto iic = make_unique<ItemInfoCache>();
+	auto& iic = itemInfos[aPath];
+	if (!iic) {
+		iic = make_unique<ItemInfoCache>();
+	}
+
 	for (auto& d : curDir->directories) {
 		iic->directories.emplace(d);
 	}
@@ -110,8 +114,6 @@ void DirectoryListingFrame::updateItemCache(const string& aPath) {
 	for (auto& f : curDir->files) {
 		iic->files.emplace(f);
 	}
-
-	itemInfos.emplace(aPath, move(iic));
 
 	//check that this directory exists in all parents
 	if (!aPath.empty()) {
