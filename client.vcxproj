@@ -345,7 +345,6 @@
     <ClInclude Include="client\AutoSearch.h" />
     <ClInclude Include="client\AutoSearchManager.h" />
     <ClInclude Include="client\AutosearchManagerListener.h" />
-    <ClInclude Include="client\BerkeleyDB.h" />
     <ClInclude Include="client\BloomFilter.h" />
     <ClInclude Include="client\BufferedSocket.h" />
     <ClInclude Include="client\BufferedSocketListener.h" />
@@ -400,7 +399,6 @@
     <ClInclude Include="client\GeoIP.h" />
     <ClInclude Include="client\GeoManager.h" />
     <ClInclude Include="client\GetSet.h" />
-    <ClInclude Include="client\HamsterDB.h" />
     <ClInclude Include="client\HashBloom.h" />
     <ClInclude Include="client\HashCalc.h" />
     <ClInclude Include="client\HashedFile.h" />

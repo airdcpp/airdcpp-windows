@@ -763,12 +763,6 @@
     <ClInclude Include="client\LevelDB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="client\HamsterDB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="client\BerkeleyDB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="client\SettingItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
