@@ -73,55 +73,52 @@ void ProtocolBase::write()
 
 LRESULT ProtocolBase::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
+
 	SettingTab::translate((HWND)(*this), texts);
 	SettingTab::read((HWND)(*this), items);
 
-	// Mapper
-	/*MapperCombo.Attach(GetDlgItem(IDC_MAPPER));
-	const auto& setting = SETTING(MAPPER);
-	int sel = 0;
+	tabs.Attach(GetDlgItem(IDC_TAB1));
+	tabs.InsertItem(IPV4, TCIF_TEXT, _T("IPv4"), -1, NULL);
+	tabs.InsertItem(IPV6, TCIF_TEXT, _T("IPv6"), -1, NULL);
 
-	auto mappers = ConnectivityManager::getInstance()->getMappers(false);
-	for(const auto& name: mappers) {
-		int pos = MapperCombo.AddString(Text::toT(name).c_str());
-		//auto pos = mapper->addValue(Text::toT(name));
-		if(!sel && name == setting)
-			sel = pos;
-	}
-
-	MapperCombo.SetCurSel(sel);*/
-
-	ctrlIPv4.Attach(GetDlgItem(IDC_IPV4));
-	ctrlIPv6.Attach(GetDlgItem(IDC_IPV6));
-
+	tabs.SetCurSel(0);
 	showProtocol(false);
 	return TRUE;
 }
 
-LRESULT ProtocolBase::onClickProtocol(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	//hide the current window
-	bool v6 = wID == IDC_IPV6;
-	auto& curWindow = wID == IDC_IPV6 ? ipv4Page : ipv6Page;
-	if (curWindow)
-		curWindow->ShowWindow(SW_HIDE);
+LRESULT ProtocolBase::onProtocolChanged(int /*idCtrl*/, LPNMHDR /* pnmh */, BOOL& /*bHandled*/) {
 
-	CheckDlgButton(!v6 ? IDC_IPV6 : IDC_IPV4, BST_UNCHECKED);
+	switch (tabs.GetCurSel()) {
+	case IPV4:
+		if (ipv6Page)
+			ipv6Page->ShowWindow(SW_HIDE);
 
-	showProtocol(wID == IDC_IPV6);
-	return TRUE;
+		showProtocol(false);
+		break;
+
+	case IPV6:
+		if (ipv4Page)
+			ipv4Page->ShowWindow(SW_HIDE);
+
+		showProtocol(true);
+		break;
+	default:
+		break;
+	}
+	return 0;
 }
 
 void ProtocolBase::showProtocol(bool v6) {
+
 	auto& shownPage = v6 ? ipv6Page : ipv4Page;
 	if (!shownPage) {
 		shownPage.reset(new ProtocolPage(SettingsManager::getInstance(), v6));
-		shownPage->Create(this->m_hWnd);
+		shownPage->Create(tabs.m_hWnd);
+		CRect rc;
+		tabs.GetItemRect(0, rc);
+		shownPage->SetWindowPos(NULL, rc.left, rc.bottom +1, 0, 0, SWP_NOSIZE);
 	}
-
 	shownPage->ShowWindow(SW_SHOW);
-
-	ctrlIPv6.SetState(v6);
-	ctrlIPv4.SetState(!v6);
 }
 
 

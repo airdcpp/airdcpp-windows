@@ -44,6 +44,7 @@
 #define IDC_PUB_LIST_DROPDOWN           130
 #define IDC_SEARCH_PAUSE                130
 #define IDC_HUBLIST                     131
+#define IDC_TAB1                        132
 #define IDC_SERVER                      133
 #define IDC_EXTERNAL_IP                 133
 #define IDC_SERVER4                     133
@@ -1327,7 +1328,6 @@
 #define IDC_AWAY_IDLE_TEXT_END          1694
 #define IDC_AWAY_IDLE_TEXT_BEGIN        1695
 #define IDC_AWAY_MODE                   1696
-#define IDC_TAB1                        1697
 #define IDC_SCROLLBAR1                  1698
 #define IDC_EDIT4                       1699
 #define IDC_SCROLLBAR2                  1699
@@ -1804,7 +1804,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        362
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1743
+#define _APS_NEXT_CONTROL_VALUE         1744
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif
