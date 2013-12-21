@@ -80,7 +80,6 @@ LRESULT ProtocolBase::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 	tabs.Attach(GetDlgItem(IDC_TAB1));
 	tabs.InsertItem(IPV4, TCIF_TEXT, _T("IPv4"), -1, NULL);
 	tabs.InsertItem(IPV6, TCIF_TEXT, _T("IPv6"), -1, NULL);
-
 	tabs.SetCurSel(0);
 	showProtocol(false);
 	return TRUE;
@@ -113,12 +112,14 @@ void ProtocolBase::showProtocol(bool v6) {
 	auto& shownPage = v6 ? ipv6Page : ipv4Page;
 	if (!shownPage) {
 		shownPage.reset(new ProtocolPage(SettingsManager::getInstance(), v6));
-		shownPage->Create(tabs.m_hWnd);
+		shownPage->Create(m_hWnd);
 		CRect rc;
-		tabs.GetItemRect(0, rc);
-		shownPage->SetWindowPos(NULL, rc.left, rc.bottom +1, 0, 0, SWP_NOSIZE);
+		tabs.GetItemRect(0,rc);
+		shownPage->SetWindowPos(HWND_BOTTOM, rc.left, rc.bottom+1, 0, 0, SWP_NOSIZE);
 	}
 	shownPage->ShowWindow(SW_SHOW);
+	//tab control doesn't seem to stay at the bottom of Z-Order 
+	tabs.SetWindowPos(HWND_BOTTOM, 0, 0, 0, 0, SWP_NOSIZE);
 }
 
 
