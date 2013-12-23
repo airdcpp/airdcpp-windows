@@ -124,9 +124,6 @@ void WizardAutoConnectivity::detectConnection() {
 }
 
 void WizardAutoConnectivity::addLogLine(tstring& msg, CHARFORMAT2W& cf /*WinUtil::m_ChatTextGeneral*/) {
-	/// @todo factor out to dwt
-	//log->addTextSteady(Text::toT("{\\urtf1\n") + log->rtfEscape(msg + Text::toT("\r\n")) + Text::toT("}\n"));
-	//log.AppendText(msg);
 	log.AppendChat(Identity(NULL, 0), _T(" -"), Util::emptyStringT, msg, cf, false);
 }
 
@@ -166,7 +163,7 @@ void WizardAutoConnectivity::on(Finished, bool v6, bool failed) noexcept {
 			cf.dwEffects = 0;
 			cf.crTextColor = RGB(3, 93, 35);
 
-			tstring msg = _T("Automatic connectivity detection finished. Click \"Next\" to continue to the next step.");
+			tstring msg = TSTRING(CONN_DETECT_FINISHED);
 			addLogLine(msg, cf);
 
 			/*if (v6State == STATE_FAILED || v4State == STATE_FAILED) {
@@ -184,7 +181,6 @@ void WizardAutoConnectivity::changeControlState(bool enable) {
 	cAutoDetect.EnableWindow(enable ? TRUE : false);
 	cDetectIPv4.EnableWindow(enable ? TRUE : false);
 	cDetectIPv6.EnableWindow(enable ? TRUE : false);
-	//cAutoDetect.EnableWindow(enable ? TRUE : false);
 }
 
 void WizardAutoConnectivity::on(SettingChanged) noexcept {

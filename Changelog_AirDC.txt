@@ -10,15 +10,15 @@ Added:
 - Settings for message filtering mainchat or private messages
 - Option for showing ignored and message filtered chat messages in systemlog 
 - Severity icons in PM and Hub windows statusbars
-- Fix a bug in partial lists causing a newly loaded directory not being selected in some cases
-- Fix a bug with moving file bundles
 
-Changes:
+Changed:
 
 - Last online time will now show for all offline users in usersframe
 - Reorder readd/remove source rightclick in queueframe, move All at the top
 - Settings profiles change toolbar buttons and order (old toolbar button order will get reset, sorry for that)
 - Ignored users rewrite, ignored users are now shown in users window
+- Update the default hublists
+- Sync all database writes to disk (the latest hashed entries won't get lost in case of unexpected shutdown)
 
 Fixed:
 
@@ -29,7 +29,12 @@ Fixed:
 - Fix modify dates for newly added directories
 - Fix a possible freeze related to file lists
 - Fix an infinite connect request loop that may happen in some rare cases
+- Fix an invalid NAT-T support advertised in ADC hubs when there's a disabled IP protocol
 - Prevent system log spam when monitoring detects changes for files that can't be shared
+- Fix a bug in partial lists causing a newly loaded directory not being selected in some cases
+- Fix a bug with moving file bundles
+- Fix a faulty option that prevented /verifydb from fixing corruption
+
 
 Removed:
 

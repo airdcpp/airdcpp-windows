@@ -1840,6 +1840,7 @@ Make sure that the path %3% is accessible and there isn't another instance of %4
 	<string name="ManualConnectivitySetup">Manual connectivity setup</string>
 	<string name="AllowAutoDetectV4">Let AirDC++ determine the best IPv4 connectivity settings</string>
 	<string name="AllowAutoDetectV6">Let AirDC++ determine the best IPv6 connectivity settings</string>
+	<string name="ConnDetectFinished">Automatic connectivity detection finished. Click "Next" to continue to the next step.</string>
 	<string name="ProfileNormalDesc">The client is used in normal private/public hubs for transferring files via internet. Use this profile if unsure.</string>
 	<string name="ProfileRarDesc">The client is used for transferring files that are split in RAR archives (or in other small-sized formats).</string>
 	<string name="ProfileLanDesc">The client is used for transferring files in local network (e.g. LAN parties) or in another closed network (e.g. university network).</string>
