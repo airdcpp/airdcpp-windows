@@ -29,7 +29,7 @@
 PropPage::TextItem OperaColorsPage::texts[] = {
 	{ IDC_ODC_STYLE, ResourceManager::PROGRESSBAR_ODC_STYLE },
 	{ IDC_PROGRESS_OVERRIDE, ResourceManager::SETTINGS_ZDC_PROGRESS_OVERRIDE },
-	{ IDC_PROGRESS_OVERRIDE2, ResourceManager::SETTINGS_ZDC_PROGRESS_OVERRIDE2 },
+	{ IDC_PROGRESS_OVERRIDE2, ResourceManager::SETTINGS_ZDC_PROGRESS_OVERRIDE },
 	{ IDC_SETTINGS_DOWNLOAD_BAR_COLOR, ResourceManager::DOWNLOAD },
 	{ IDC_PROGRESS_TEXT_COLOR_DOWN, ResourceManager::DOWNLOAD },
 	{ IDC_SETTINGS_UPLOAD_BAR_COLOR, ResourceManager::SETCZDC_UPLOAD },
@@ -43,6 +43,8 @@ PropPage::TextItem OperaColorsPage::texts[] = {
 	{ IDC_CZDC_PROGRESS_TEXT, ResourceManager::SETCZDC_PROGRESSBAR_TEXT },
 	{ IDC_SETTINGS_ODC_MENUBAR2, ResourceManager::SETCZDC_PROGRESSBAR_COLORS },
 	{ IDC_TB_PROG_STYLE, ResourceManager::COLOR_FONT },
+	{ IDC_TB_PROGRESS_STYLE, ResourceManager::TOOLBAR_PROGRESS_STYLE },
+
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
@@ -206,11 +208,11 @@ LRESULT OperaColorsPage::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 				dc.SetTextColor(textcolor);
 			}
 
-			dc.DrawText(Text::toT("Sample text").c_str(), 11, rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+			dc.DrawText(CTSTRING(SAMPLE_TEXT), 11, rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 
 			dc.Detach();
 		}
-	setProgressText(_T("Sample Text"));
+		setProgressText(TSTRING(SAMPLE_TEXT));
 	return S_OK;
 }
 void OperaColorsPage::EditTextStyle() {
@@ -224,7 +226,7 @@ void OperaColorsPage::EditTextStyle() {
 	{
 		currentFont = font;
 		textclr = d.GetColor();
-		setProgressText(_T("Sample Text"));
+		setProgressText(TSTRING(SAMPLE_TEXT));
 	}
 }
 

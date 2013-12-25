@@ -26,6 +26,8 @@ PropPage::TextItem UserListColours::texts[] = {
 	{ IDC_CHANGE_COLOR, ResourceManager::SETTINGS_CHANGE },
 	{ IDC_USERLIST, ResourceManager::USERLIST_ICONS },
 	{ IDC_IMAGEBROWSE, ResourceManager::BROWSE },
+	{ IDC_USER_LIST_COLOR_DESC, ResourceManager::USER_LIST },
+	{ IDC_LIST_VIEW_FONT, ResourceManager::FONT },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

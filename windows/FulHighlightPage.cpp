@@ -59,7 +59,7 @@ LRESULT FulHighlightPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	//Initalize listview
 	ctrlStrings.Attach(GetDlgItem(IDC_ITEMS));
 	ctrlStrings.GetClientRect(rc);
-	ctrlStrings.InsertColumn(0, _T("Context"), LVCFMT_LEFT, rc.Width()/3, 1);
+	ctrlStrings.InsertColumn(0, CTSTRING(CONTEXT), LVCFMT_LEFT, rc.Width()/3, 1);
 	ctrlStrings.InsertColumn(1, CTSTRING(HIGHLIGHTLIST_HEADER), LVCFMT_LEFT, rc.Width()/3*2, 1);
 	ctrlStrings.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_INFOTIP);
 

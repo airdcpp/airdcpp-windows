@@ -1394,6 +1394,8 @@
 #define IDC_IGNORE_NOTE                 1741
 #define IDC_CHECK3                      1742
 #define IDC_IGNORE_PM                   1742
+#define IDC_USER_LIST_COLOR_DESC        1744
+#define IDC_TB_PROGRESS_STYLE           1745
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1804,7 +1806,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        362
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1744
+#define _APS_NEXT_CONTROL_VALUE         1746
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

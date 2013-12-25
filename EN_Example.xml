@@ -337,7 +337,6 @@
 	<string name="MinSlots">Min slots</string>
 	<string name="MinimumSearchInterval">Minimum search interval</string>
 	<string name="Minshare">Min share</string>
-	<string name="Minslots">Min slots</string>
 	<string name="Minutes">Minutes</string>
 	<string name="Mode">Mode</string>
 	<string name="MoveDown">Move down</string>
@@ -629,7 +628,6 @@
 	<string name="SettingsSocks5Username">Login</string>
 	<string name="SettingsSortFavusersFirst">Sort favorite users first</string>
 	<string name="SettingsSounds">Sounds</string>
-	<string name="SettingsSpeedsNotAccurate">Note; because of changing download speeds, this is not 100% accurate...</string>
 	<string name="SettingsStatusInChat">View status messages in main chat</string>
 	<string name="SettingsTcpPort">TCP</string>
 	<string name="SettingsTlsPort">TLS/TCP</string>
@@ -659,7 +657,6 @@
 	<string name="SettingsSocketInBuffer">Socket read buffer</string>
 	<string name="SettingsSocketOutBuffer">Socket write buffer</string>
 	<string name="SettingsZdcProgressOverride">Override system colors</string>
-	<string name="SettingsZdcProgressOverride2">Override system colors</string>
 	<string name="Shared">Shared</string>
 	<string name="SharedFiles">Shared files</string>
 	<string name="ShowPopupAway">Display popup in away mode only</string>
@@ -1441,7 +1438,7 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="SearchCurDir">Search within the current directory</string>
 	<string name="UpdatingView">Updating the view...</string>
 	<string name="AdlDlFullList">Do you want to switch to full file list before matching the ADL search?</string>
-	<string name="HighlightContext">Highlight context</string>
+	<string name="Context">Context</string>
 	<string name="SettingsContextFilelist">Highlight for directories in file list (wildcards or $Re: for regex)</string>
 	<string name="ResetExtensionsConfirm">This will delete all defined search types and restore the default ones. Do you want to continue?</string>
 	<string name="NotEnoughSpacePaused">Not enough free space left on the target path %1% (free space: %2% while %3% is needed). Using paused priority.</string>
@@ -1556,7 +1553,6 @@ would you still like to load them?</string>
 	<string name="SetAlternateLimiting">Use alternate limiting from</string>
 	<string name="MaxUploadRate">Maximum upload rate (0 = infinite)</string>
 	<string name="MaxDownloadRate">Maximum download rate (0 = infinite)</string>
-	<string name="AdvancedUploadLimits">Advanced upload limits</string>
 	<string name="SettingsSpeedSlots">Speed &amp; slots</string>
 	<string name="Noon">Noon</string>
 	<string name="Midnight">Midnight</string>
@@ -2016,4 +2012,8 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="McMessageFiltered">Main chat message filtered from user: </string>
 	<string name="PmMessageFiltered">Private chat message filtered from user: </string>
 	<string name="NewTextStyleApplied">New Font &amp; TextStyles Applied, TextMatching colors will apply after this line</string>
+	<string name="UserList">User list</string>
+	<string name="SampleText">Sample text</string>
+	<string name="Font">Font</string>
+	<string name="ToolbarProgressStyle">Toolbar progress bar text styles</string>
 </resources>
