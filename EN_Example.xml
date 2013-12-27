@@ -91,7 +91,7 @@
 	<string name="Description">Description</string>
 	<string name="Destination">Destination</string>
 	<string name="Directory">Directory</string>
-	<string name="Disabled">Disabled</string>
+	<string name="Disabled">disabled</string>
 	<string name="DisconnectAll">Disconnect all users</string>
 	<string name="DisconnectUser">Disconnect user(s)</string>
 	<string name="Disconnected">Disconnected</string>
@@ -337,7 +337,8 @@
 	<string name="MinSlots">Min slots</string>
 	<string name="MinimumSearchInterval">Minimum search interval</string>
 	<string name="Minshare">Min share</string>
-	<string name="Minutes">Minutes</string>
+	<string name="Minslots">Min slots</string>
+	<string name="Minutes">minutes</string>
 	<string name="Mode">Mode</string>
 	<string name="MoveDown">Move down</string>
 	<string name="MoveUp">Move up</string>
@@ -1599,7 +1600,7 @@ would you still like to load them?</string>
 	<string name="SearchingStatus">Searching status</string>
 	<string name="Expiration">Expiration</string>
 	<string name="Expired">Expired</string>
-	<string name="Never">Never</string>
+	<string name="Never">never</string>
 	<string name="Bundles">Bundles</string>
 	<string name="AutoRemove">Auto remove</string>
 	<string name="OnlineNicks">Online nicks</string>
@@ -1738,8 +1739,8 @@ Do you want to use this destination anyway?</string>
 	<string name="ScanResultNote">Detailed scanning results are shown in a separate tab.</string>
 	<string name="XDirectoriesRefreshed">%1% directories have been refreshed</string>
 	<string name="ShowEmoticonButton">Show emoticon button in chat windows</string>
-	<string name="ShowMultilineButton">"Show multiline message button in chat windows</string>
-	<string name="ShowMagnetButton">"Show MAGNET button in chat windows</string>
+	<string name="ShowMultilineButton">Show multiline message button in chat windows</string>
+	<string name="ShowMagnetButton">Show MAGNET button in chat windows</string>
 	<string name="FileListRefreshInitiatedXPaths">File list refresh initiated for %1% directories</string>
 	<string name="CantOpenEmptyFile">A zero-byte file can't be opened</string>
 	<string name="ListAlreadyQueued">The file list is queued already</string>
@@ -1824,8 +1825,8 @@ Make sure that there isn't another instance of %3% using the same settings direc
 
 Make sure that the path %3% is accessible and there isn't another instance of %4% using the same settings directory. Remove the directory in case the error can't be fixed.</string>
 	<string name="MultithreadedRefresh">Multithreaded file list refresh</string>
-	<string name="Always">Always</string>
-	<string name="ManualRefreshes">Manual refreshes only</string>
+	<string name="Always">always</string>
+	<string name="ManualRefreshes">manual refreshes only</string>
 	<string name="DbErrorHint">You can set the database to be verified and repaired from the "Sharing options" tab in Settings (if needed)</string>
 	<string name="SettingsDbRepair">Verify and repair the hash database on next startup (use in case of fatal errors only)</string>
 	<string name="DbXRepaired">%1% has been verified and repaired successfully. Detailed information about the process has been saved in %2%</string>
@@ -1903,8 +1904,8 @@ Do you want to continue?</string>
 	<string name="FileIndexSize">File index size:</string>
 	<string name="HashDataSize">Hash data size:</string>
 	<string name="MonitoringChanges">Real-time monitoring for share changes</string>
-	<string name="AllDirs">All directories</string>
-	<string name="IncomingOnly">Incoming directories only</string>
+	<string name="AllDirs">all directories</string>
+	<string name="IncomingOnly">incoming directories only</string>
 	<string name="XMonitoringAdded">%1% directories have been added for monitoring</string>
 	<string name="XMonitoringRemoved">%1% directories have been removed from monitoring</string>
 	<string name="FailedAddMonitoring">Failed to add the directory %1% for monitoring: %2%</string>
@@ -2016,4 +2017,6 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="SampleText">Sample text</string>
 	<string name="Font">Font</string>
 	<string name="ToolbarProgressStyle">Toolbar progress bar text styles</string>
+	<string name="OwnCertificate">Own certificate</string>
+	<string name="TrustedCertificates">Trusted certificates</string>
 </resources>

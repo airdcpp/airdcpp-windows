@@ -1884,7 +1884,8 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 
 	case CDDS_ITEMPREPAINT:
 		{
-			if(!QueueManager::getInstance()->getBadSources(((QueueItemInfo*)cd->nmcd.lItemlParam)->getQueueItem()).empty()) {
+			auto qi = ((QueueItemInfo*)cd->nmcd.lItemlParam)->getQueueItem();
+			if (qi && !QueueManager::getInstance()->getBadSources(qi).empty()) {
 				cd->clrText = SETTING(ERROR_COLOR);
 				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 			}		
