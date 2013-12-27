@@ -91,7 +91,7 @@
 	<string name="Description">Description</string>
 	<string name="Destination">Destination</string>
 	<string name="Directory">Directory</string>
-	<string name="Disabled">disabled</string>
+	<string name="Disabled">Disabled</string>
 	<string name="DisconnectAll">Disconnect all users</string>
 	<string name="DisconnectUser">Disconnect user(s)</string>
 	<string name="Disconnected">Disconnected</string>
@@ -1466,6 +1466,8 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="SendPmVia">Messages are sent via</string>
 	<string name="MessagesSentThroughRemote">Messages are now sent through the hub %1% (changed by the remote users)</string>
 	<string name="IpUpdateFailed">Failed to update the IP address</string>
+	<string name="FileXAddedForHash">The file %1% (%2%) has been added for hashing</string>
+	<string name="XFilesAddedForHash">%1% files (%2%) from the directory %3% have been added for hashing; they won't be visible in the file list until they have finished hashing</string>
 	<string name="FilesAddedForHash">(%1% of files have been added for hashing; they won't be visible in the file list until they have finished hashing)</string>
 	<string name="BundleAddedForHash">The bundle %1% has been added for hashing (total size to hash: %2%)</string>
 	<string name="HashingFinishedTotal">Hashing finished: %1% files (%2%) in %3% directories have been hashed in %4% (%5%)</string>
@@ -1600,7 +1602,7 @@ would you still like to load them?</string>
 	<string name="SearchingStatus">Searching status</string>
 	<string name="Expiration">Expiration</string>
 	<string name="Expired">Expired</string>
-	<string name="Never">never</string>
+	<string name="Never">Never</string>
 	<string name="Bundles">Bundles</string>
 	<string name="AutoRemove">Auto remove</string>
 	<string name="OnlineNicks">Online nicks</string>
@@ -1825,8 +1827,8 @@ Make sure that there isn't another instance of %3% using the same settings direc
 
 Make sure that the path %3% is accessible and there isn't another instance of %4% using the same settings directory. Remove the directory in case the error can't be fixed.</string>
 	<string name="MultithreadedRefresh">Multithreaded file list refresh</string>
-	<string name="Always">always</string>
-	<string name="ManualRefreshes">manual refreshes only</string>
+	<string name="Always">Always</string>
+	<string name="ManualRefreshes">Manual refreshes only</string>
 	<string name="DbErrorHint">You can set the database to be verified and repaired from the "Sharing options" tab in Settings (if needed)</string>
 	<string name="SettingsDbRepair">Verify and repair the hash database on next startup (use in case of fatal errors only)</string>
 	<string name="DbXRepaired">%1% has been verified and repaired successfully. Detailed information about the process has been saved in %2%</string>
@@ -1904,8 +1906,8 @@ Do you want to continue?</string>
 	<string name="FileIndexSize">File index size:</string>
 	<string name="HashDataSize">Hash data size:</string>
 	<string name="MonitoringChanges">Real-time monitoring for share changes</string>
-	<string name="AllDirs">all directories</string>
-	<string name="IncomingOnly">incoming directories only</string>
+	<string name="AllDirs">All directories</string>
+	<string name="IncomingOnly">Incoming directories only</string>
 	<string name="XMonitoringAdded">%1% directories have been added for monitoring</string>
 	<string name="XMonitoringRemoved">%1% directories have been removed from monitoring</string>
 	<string name="FailedAddMonitoring">Failed to add the directory %1% for monitoring: %2%</string>
@@ -1932,9 +1934,9 @@ Do you want to continue?</string>
 	<string name="SettingsMonitoringSeconds">Min. seconds since the last modification before applying the changes in share</string>
 	<string name="MonitoringOptions">Monitoring options</string>
 	<string name="SettingsDelayMode">Count the last modification time</string>
-	<string name="MonitorDelayDir">on per-directory basis</string>
-	<string name="MonitorDelayVolume">on per-volume basis</string>
-	<string name="MonitorDelayAny">from any modification</string>
+	<string name="MonitorDelayDir">On per-directory basis</string>
+	<string name="MonitorDelayVolume">On per-volume basis</string>
+	<string name="MonitorDelayAny">From any modification</string>
 	<string name="SelectTheme">Select theme</string>
 	<string name="ColorsAndTextStyles">Colors and text styles</string>
 	<string name="RebuildFailedEntriesVerify">There were %1% shared TTHs without a corresponding hash tree entry and %2% invalid tree entries that couldn't be loaded</string>
