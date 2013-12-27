@@ -65,6 +65,9 @@ LRESULT ChatFilterDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	::SetWindowText(GetDlgItem(IDC_NICK_MATCH_TYPE_LABEL), CTSTRING(SETTINGS_ST_MATCH_TYPE));
 	::SetWindowText(GetDlgItem(IDC_TEXT_MATCH_TYPE_LABEL), CTSTRING(SETTINGS_ST_MATCH_TYPE));
 	::SetWindowText(GetDlgItem(IDC_IGNORE_NOTE), CTSTRING(IGNORE_HELP));
+	::SetWindowText(GetDlgItem(IDC_IGNORE_PM), CTSTRING(PRIVATE_CHAT));
+	::SetWindowText(GetDlgItem(IDC_IGNORE_MAINCHAT), CTSTRING(MAIN_CHAT));
+
 	CenterWindow(GetParent());
 	SetWindowText(CTSTRING(SETTINGS_CHATFILTER));
 	return TRUE;

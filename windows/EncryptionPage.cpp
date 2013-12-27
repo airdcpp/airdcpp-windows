@@ -28,6 +28,7 @@ PropPage::TextItem EncryptionPage::texts[] = {
 	{ IDC_CERT_USE_DEFAULT_PATHS, ResourceManager::USE_DEFAULT_CERT_PATHS },
 	{ IDC_PRIV_KEY_LBL, ResourceManager::PRIVATE_KEY_FILE },
 	{ IDC_OWN_CERT_LBL, ResourceManager::OWN_CERTIFICATE_FILE },
+	{ IDC_OWN_CERT, ResourceManager::OWN_CERTIFICATE },
 	{ IDC_GENERATE_CERTS, ResourceManager::GENERATE_CERTIFICATES },
 
 	{ IDC_TRUSTED_PATH_LBL, ResourceManager::TRUSTED_CERTIFICATES_PATH },
@@ -36,6 +37,7 @@ PropPage::TextItem EncryptionPage::texts[] = {
 
 	{ IDC_TRANSFER_ENCRYPTION_LBL, ResourceManager::TRANSFER_ENCRYPTION },
 	{ IDC_TRUSTED_CERT_NOTE, ResourceManager::TRUSTED_CERT_NOTE },
+	{ IDC_TRUSTED_CERTS, ResourceManager::TRUSTED_CERTIFICATES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 
