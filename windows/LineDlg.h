@@ -336,9 +336,6 @@ public:
 	tstring Oldline;
 	tstring Newline;
 	tstring Confirmline;
-	tstring Olddescription;
-	tstring Newdescription;
-	tstring Confirmdescription;
 	tstring title;
 	tstring ok;
 	tstring cancel;
@@ -354,7 +351,7 @@ public:
 		COMMAND_ID_HANDLER(IDCANCEL, OnCloseCmd)
 	END_MSG_MAP()
 	
-	ChngPassDlg() : hideold(false), okexit(true), ok(_T("OK")), cancel(_T("Cancel")) { };
+	ChngPassDlg() : hideold(false), okexit(true), ok(_T("OK")), cancel(TSTRING(CANCEL)) { };
 	
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		if(hideold) {
@@ -391,13 +388,13 @@ public:
 		ctrlConfirmLine.SetWindowText(_T(""));
 
 		ctrlOldDescription.Attach(GetDlgItem(IDC_PSWD_CHNG_OLD));
-		ctrlOldDescription.SetWindowText(Olddescription.c_str());
+		ctrlOldDescription.SetWindowText(CTSTRING(OLD) + ':');
 
 		ctrlNewDescription.Attach(GetDlgItem(IDC_PSWD_CHNG_NEW));
-		ctrlNewDescription.SetWindowText(Newdescription.c_str());
+		ctrlNewDescription.SetWindowText(CTSTRING(NEW) + ':');
 
 		ctrlConfirmDescription.Attach(GetDlgItem(IDC_PSWD_CHNG_CONFIRM_NEW));
-		ctrlConfirmDescription.SetWindowText(Confirmdescription.c_str());
+		ctrlConfirmDescription.SetWindowText(CTSTRING(CONFIRM_NEW) + ':');
 
 		ctrlOK.Attach(GetDlgItem(IDOK));
 		ctrlOK.SetWindowText(ok.c_str());
