@@ -92,13 +92,13 @@ public:
 			bool childSelected = false;
 			if (sel) {
 				childSelected = AirUtil::isSub(((T*)GetItemData(sel))->getPath(), ((T*)pNMTreeView->itemNew.lParam)->getPath());
+				if (childSelected) {
+					//it would be selected anyway but without any notification message
+					SelectItem(pNMTreeView->itemNew.hItem);
+				}
 			}
 
 			Expand(pNMTreeView->itemNew.hItem, (childSelected && parent->getChildrenState((T*)pNMTreeView->itemNew.lParam) == CHILDREN_PART_PENDING) ? TVE_COLLAPSE | TVE_COLLAPSERESET : pNMTreeView->action);
-			if (childSelected) {
-				//it would be selected anyway but without any notification message
-				parent->expandDir(((T*)pNMTreeView->itemNew.lParam), true);
-			}
 		} else if (pNMTreeView->action == TVE_EXPAND && !(pNMTreeView->itemNew.state & TVIS_EXPANDEDONCE)) {
 			T* curDir = (T*)pNMTreeView->itemNew.lParam;
 
@@ -107,7 +107,7 @@ public:
 			if (state == CHILDREN_CREATED || state == CHILDREN_PART_PENDING) {
 				parent->insertTreeItems(curDir, pNMTreeView->itemNew.hItem);
 			} else if (state == CHILDREN_ALL_PENDING) {
-				//items aren't ready, don't change the state and notify the parent
+				//items aren't ready, tell the parent to load them
 				parent->expandDir(curDir, false);
 				bHandled = TRUE;
 				return 1;

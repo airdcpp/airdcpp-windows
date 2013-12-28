@@ -1423,6 +1423,11 @@ void TransferView::onBundleStatus(const BundlePtr& aBundle, bool removed) {
 	speak(UPDATE_BUNDLE, ui);
 }
 
+void TransferView::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept{
+	if (aBundle->getStatus() < Bundle::STATUS_DOWNLOADED)
+		onBundleStatus(aBundle, true); 
+}
+
 void TransferView::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept {
 	auto ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setSize(aBundle->getSize());
