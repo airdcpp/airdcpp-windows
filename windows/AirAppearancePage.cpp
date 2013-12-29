@@ -31,7 +31,7 @@ PropPage::TextItem AirAppearancePage::texts[] = {
 	{ IDC_DUPE_FILELISTS,		ResourceManager::SETTINGS_DUPE_FILELIST	},
 	{ IDC_DUPES,				ResourceManager::SETTINGS_DUPES	},
 	{ IDC_MAX_RESIZE_LINES_STR, ResourceManager::MAX_CHAT_RESIZE_LINES },
-	{ IDC_SETCZDC_PM_LINES,		ResourceManager::MAX_PM_HISTORY_LINES },
+	{ IDC_SET_PM_HISTORY_LINES, ResourceManager::MAX_PM_HISTORY_LINES },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

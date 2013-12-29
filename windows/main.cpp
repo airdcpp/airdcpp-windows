@@ -166,7 +166,7 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 #endif
 
 	sprintf(buf, "Code: %x ( %s )\r\nVersion: %s %s\r\n", 
-		exceptionCode, getExceptionName(exceptionCode).c_str(), shortVersionString, archStr.c_str());
+		exceptionCode, getExceptionName(exceptionCode).c_str(), shortVersionString.c_str(), archStr.c_str());
 
 	f.write(buf, strlen(buf));
 	sprintf(buf, "Build: %s\r\n", 

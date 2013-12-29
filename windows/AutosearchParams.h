@@ -98,7 +98,7 @@ public:
 			auto maxNumber = Util::toInt(Text::fromT(buf));
 
 			if (maxNumber > 0 && curNumber > maxNumber) {
-				MessageBox(_T("The current number can't be bigger than the maximum number!"));
+				MessageBox(CTSTRING(AS_OVER_MAX_NUMBER));
 				return 0;
 			}
 

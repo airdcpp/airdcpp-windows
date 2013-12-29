@@ -138,6 +138,8 @@ private:
 	CButton ctrlProgressDownDrawer;
 	CButton ctrlProgressUpDrawer;
 	CProgressBarCtrl progress;
+	tstring sampleText;
+	int sampleTextLen;
 
 	void EditTextStyle();
 	LOGFONT currentFont;
