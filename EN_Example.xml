@@ -2024,6 +2024,7 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="MaxBundlesRunning">Maximum number of bundles running already</string>
 	<string name="LowestPrioErrBundles">Bundles with lowest priority will start when no other bundles are running</string>
 	<string name="LowestPrioErrFiles">Files with lowest priority will start when no other bundle downloads are running</string>
+	<string name="MaxDlSpeedReached">Wanted total download speed reached</string>
 	<string name="ChangePassword">Change password</string>
 	<string name="PassNoMatch">Passwords did not match</string>
 	<string name="WrongPass">Wrong password</string>
