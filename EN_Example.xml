@@ -479,7 +479,6 @@
 	<string name="SetczdcMagnetUriHandler">Install MAGNET URI handler on startup</string>
 	<string name="SetczdcMinFileSize">And file size is more than</string>
 	<string name="SetczdcPassiveSearch">Always use passive mode for search (use only if you know what this doing!)</string>
-	<string name="SetczdcPmLines">Lines from log on new PM</string>
 	<string name="SetczdcPreview">Preview</string>
 	<string name="SetczdcPrivateSound">Private message sound</string>
 	<string name="SetczdcProgressbarColors">Progressbar colors</string>
@@ -2031,4 +2030,6 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="Old">Old</string>
 	<string name="ConfirmNew">Confirm new</string>
 	<string name="SetupPass">Setup password</string>
+	<string name="AsOverMaxNumber">The current number can't be bigger than the maximum number!</string>
+	<string name="FileNotFound">File not found</string>
 </resources>

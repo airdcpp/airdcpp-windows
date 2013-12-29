@@ -112,6 +112,9 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	PropPage::read((HWND)*this, items);
 	SettingsManager::getInstance()->addListener(this);
 
+	sampleText = TSTRING(SAMPLE_TEXT);
+	sampleTextLen = sampleText.length();
+
 	crProgressDown = SETTING(DOWNLOAD_BAR_COLOR);
 	crProgressUp = SETTING(UPLOAD_BAR_COLOR);
 	crProgressTextDown = SETTING(PROGRESS_TEXT_COLOR_DOWN);
@@ -208,11 +211,11 @@ LRESULT OperaColorsPage::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 				dc.SetTextColor(textcolor);
 			}
 
-			dc.DrawText(CTSTRING(SAMPLE_TEXT), 11, rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+			dc.DrawText(sampleText.c_str(), sampleTextLen, rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 
 			dc.Detach();
 		}
-		setProgressText(TSTRING(SAMPLE_TEXT));
+		setProgressText(sampleText);
 	return S_OK;
 }
 void OperaColorsPage::EditTextStyle() {
@@ -226,7 +229,7 @@ void OperaColorsPage::EditTextStyle() {
 	{
 		currentFont = font;
 		textclr = d.GetColor();
-		setProgressText(TSTRING(SAMPLE_TEXT));
+		setProgressText(sampleText);
 	}
 }
 

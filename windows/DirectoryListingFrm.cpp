@@ -1628,7 +1628,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::File* f, bool openD
 				WinUtil::openFolder(path);
 			}
 		} else {
-			updateStatus(_T("File not found"));
+			updateStatus(TSTRING(FILE_NOT_FOUND));
 		}
 	} catch (const ShareException& e) {
 		updateStatus(Text::toT(e.getError()));
