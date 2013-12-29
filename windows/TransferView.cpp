@@ -217,7 +217,7 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 			transferMenu.appendSeparator();
 			WinUtil::appendBundlePrioMenu(transferMenu, bundles);
 
-			auto usingDisconnect = all_of(bundles.begin(), bundles.end(), [](const BundlePtr& aBundle) { return aBundle->isSet(Bundle::FLAG_AUTODROP); });
+			auto usingDisconnect = all_of(bundles.begin(), bundles.end(), Flags::IsSet(Bundle::FLAG_AUTODROP));
 			transferMenu.appendItem(TSTRING(SETCZDC_DISCONNECTING_ENABLE), [=] { handleSlowDisconnect(); }, usingDisconnect ? OMenu::FLAG_CHECKED : 0);
 
 			transferMenu.appendItem(TSTRING(REMOVE_BUNDLE), [=] { handleRemoveBundle(); });
