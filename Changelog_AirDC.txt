@@ -19,6 +19,7 @@ Changed:
 - Ignored users rewrite, ignored users are now shown in users window
 - Update the default hublists
 - Sync all database writes to disk (the latest hashed entries won't get lost in case of unexpected shutdown)
+- Improved error reporting for downloads
 
 Fixed:
 
@@ -31,9 +32,11 @@ Fixed:
 - Fix an infinite connect request loop that may happen in some rare cases
 - Fix an invalid NAT-T support advertised in ADC hubs when there's a disabled IP protocol
 - Prevent system log spam when monitoring detects changes for files that can't be shared
-- Fix a bug in partial lists causing a newly loaded directory not being selected in some cases
+- Fix bugs in partial lists causing a newly loaded directory not being selected/loaded in some cases
 - Fix a bug with moving file bundles
 - Fix a faulty option that prevented /verifydb from fixing corruption
+- Fix changing the current share profile in own file list after it has been matched with ADL search
+- Fix issues with the lowest priority
 
 
 Removed:

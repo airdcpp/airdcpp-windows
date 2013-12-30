@@ -2193,7 +2193,11 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 	if (dl->getIsOwnList()) {
 		auto token = ShareManager::getInstance()->getProfiles()[selCombo.GetCurSel()]->getToken();
 		dl->setFileName(Util::toString(token));
-		handleReloadPartial(false);
+		if (dl->getPartialList()) {
+			handleReloadPartial(false);
+		} else {
+			dl->addFullListTask(curPath);
+		}
 		SettingsManager::getInstance()->set(SettingsManager::LAST_LIST_PROFILE, token);
 	} else {
 		auto& newHub = hubs[selCombo.GetCurSel()];
