@@ -536,7 +536,7 @@ void SearchFrame::onEnter() {
 
 
 	// perform the search
-	auto newSearch = AdcSearch::getSearch(s, excluded, exactSize2, ftype, mode, extList, AdcSearch::MATCH_FULL_PATH, false);
+	auto newSearch = SearchQuery::getSearch(s, excluded, exactSize2, ftype, mode, extList, SearchQuery::MATCH_FULL_PATH, false);
 	if (newSearch) {
 		WLock l(cs);
 		curSearch.reset(newSearch);
@@ -545,7 +545,7 @@ void SearchFrame::onEnter() {
 		searchStartTime = GET_TICK();
 		// more 5 seconds for transferring results
 		searchEndTime = searchStartTime + SearchManager::getInstance()->search(clients, s, llsize, 
-			(SearchManager::TypeModes)ftype, mode, token, extList, AdcSearch::parseSearchString(excluded), Search::MANUAL, ldate, SearchManager::DATE_NEWER, asch, (void*) this) + 5000;
+			(SearchManager::TypeModes)ftype, mode, token, extList, SearchQuery::parseSearchString(excluded), Search::MANUAL, ldate, SearchManager::DATE_NEWER, asch, (void*) this) + 5000;
 
 		waiting = true;
 		firstResultTime = 0;
@@ -575,7 +575,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 			return;
 		}
 
-		if (curSearch && curSearch->itemType == AdcSearch::TYPE_FILE && aResult->getType() != SearchResult::TYPE_FILE) {
+		if (curSearch && curSearch->itemType == SearchQuery::TYPE_FILE && aResult->getType() != SearchResult::TYPE_FILE) {
 			callAsync([this] { onResultFiltered(); });
 			return;
 		}
@@ -583,7 +583,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		//no further validation, trust that the other client knows what he's sending... unless we are using excludes
 		//if (usingExcludes) {
 			RLock l (cs);
-			if (curSearch && ((usingExcludes && curSearch->isExcluded(aResult->getPath())) || (SETTING(IGNORE_INDIRECT_SR) && curSearch->isIndirectExclude(aResult->getFileName())))) {
+			if (curSearch && ((usingExcludes && curSearch->isExcluded(aResult->getPath())) || (SETTING(IGNORE_INDIRECT_SR) && curSearch->anyIncludeMatches(aResult->getFileName())))) {
 				callAsync([this] { onResultFiltered(); });
 				return;
 			}

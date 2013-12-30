@@ -666,12 +666,12 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 				found = true;
 				break;
 			}
-		} else if(ii->type == ItemInfo::FILE && search->itemType != AdcSearch::TYPE_DIRECTORY) {
+		} else if(ii->type == ItemInfo::FILE && search->itemType != SearchQuery::TYPE_DIRECTORY) {
 			if(search->matchesFileLower(Text::toLower(ii->file->getName()), ii->file->getSize(), ii->file->getRemoteDate())) {
 				found = true;
 				break;
 			}
-		} else if(ii->type == ItemInfo::DIRECTORY && search->itemType != AdcSearch::TYPE_FILE && search->matchesDirectory(ii->dir->getName())) {
+		} else if(ii->type == ItemInfo::DIRECTORY && search->itemType != SearchQuery::TYPE_FILE && search->matchesDirectory(ii->dir->getName())) {
 			if (search->matchesSize(ii->dir->getTotalSize(false))) {
 				found = true;
 				break;
@@ -1537,7 +1537,7 @@ void DirectoryListingFrame::handleViewNFO(bool usingTree) {
 				if (dl->getIsOwnList()) {
 					try {
 						SearchResultList results;
-						auto s = unique_ptr<AdcSearch>(AdcSearch::getSearch(Util::emptyString, Util::emptyString, 0, SearchManager::TYPE_ANY, SearchManager::SIZE_DONTCARE, { ".nfo" }, AdcSearch::MATCH_NAME, false));
+						auto s = unique_ptr<SearchQuery>(SearchQuery::getSearch(Util::emptyString, Util::emptyString, 0, SearchManager::TYPE_ANY, SearchManager::SIZE_DONTCARE, { ".nfo" }, SearchQuery::MATCH_NAME, false));
 						ShareManager::getInstance()->search(results, *s.get(), 10, Util::toInt(dl->getFileName()), ClientManager::getInstance()->getMyCID(), Util::toAdcFile(ii->dir->getPath()));
 
 						if (!results.empty()) {

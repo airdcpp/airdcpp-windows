@@ -29,7 +29,7 @@
 #include "UserInfoBaseHandler.h"
 #include "DownloadBaseHandler.h"
 
-#include "../client/AdcSearch.h"
+#include "../client/SearchQuery.h"
 #include "../client/Client.h"
 #include "../client/CriticalSection.h"
 #include "../client/SearchManager.h"
@@ -373,7 +373,7 @@ private:
 	FilteredList ctrlResults;
 	TypedListViewCtrl<HubInfo, IDC_HUB> ctrlHubs;
 
-	unique_ptr<AdcSearch> curSearch;
+	unique_ptr<SearchQuery> curSearch;
 	StringList wholeTargets;
 	SearchInfo::List pausedResults;
 
