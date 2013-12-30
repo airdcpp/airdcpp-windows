@@ -37,6 +37,7 @@ Fixed:
 - Fix a faulty option that prevented /verifydb from fixing corruption
 - Fix changing the current share profile in own file list after it has been matched with ADL search
 - Fix issues with the lowest priority
+- Update the date of the parent directory when share monitoring changes are applied or bundles are added in share
 
 
 Removed:
