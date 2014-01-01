@@ -719,11 +719,11 @@ tstring RichTextBox::LineFromPos(const POINT& p) const {
 }
 
 void RichTextBox::formatLink(DupeType aDupeType, bool isRelease) {
-	if (SETTING(DUPES_IN_CHAT) && aDupeType == SHARE_DUPE) {
+	if (SETTING(DUPES_IN_CHAT) && aDupeType == DUPE_SHARE) {
 		SetSelectionCharFormat(WinUtil::m_TextStyleDupe);
-	} else if (SETTING(DUPES_IN_CHAT) && aDupeType == QUEUE_DUPE) {
+	} else if (SETTING(DUPES_IN_CHAT) && aDupeType == DUPE_QUEUE) {
 		SetSelectionCharFormat(WinUtil::m_TextStyleQueue);
-	} else if (SETTING(DUPES_IN_CHAT) && aDupeType == FINISHED_DUPE) {
+	} else if (SETTING(DUPES_IN_CHAT) && aDupeType == DUPE_FINISHED) {
 		CHARFORMAT2 newFormat = WinUtil::m_TextStyleQueue;
 		newFormat.crTextColor = WinUtil::getDupeColors(aDupeType).first;
 		SetSelectionCharFormat(newFormat);
@@ -919,30 +919,12 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			}
 		} else if (isRelease) {
 			menu.InsertSeparatorFirst(CTSTRING(RELEASE));
-		} else if (isPath) {
-			menu.InsertSeparatorFirst(CTSTRING(PATH));
-			menu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { handleSearchDir(); });
-			menu.appendItem(TSTRING(ADD_AUTO_SEARCH_DIR), [this] { handleAddAutoSearchDir(); });
-
-			auto path = Text::fromT(selectedWord);
-			if (path.back() != PATH_SEPARATOR) {
-				menu.appendSeparator();
-				menu.appendItem(TSTRING(SEARCH_FILENAME), [this] { handleSearch(); });
-				if (Util::fileExists(path)) {
-					menu.appendItem(TSTRING(DELETE_FILE), [this] { handleDeleteFile(); });
-				} else {
-					menu.appendItem(TSTRING(ADD_AUTO_SEARCH_FILE), [this] { handleAddAutoSearchFile(); });
-				}
-			}
-
-			menu.appendShellMenu({ path });
-			menu.appendSeparator();
-		} else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
+		}  else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
 			menu.InsertSeparatorFirst(CTSTRING(LINK));
 			menu.appendItem(TSTRING(CONNECT), [this] { handleOpenLink(); });
 			menu.appendItem(TSTRING(CONNECT_WITH_PROFILE), [this] { handleConnectWith(); });
 			menu.appendSeparator();
-		} else {
+		} else if (!isPath) {
 			menu.InsertSeparatorFirst(CTSTRING(TEXT));
 		}
 
@@ -972,7 +954,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 						appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), nullptr);
 					}
 
-					if ((!author.empty() && !isMyLink) || dupeType == SHARE_DUPE || dupeType == FINISHED_DUPE)
+					if ((!author.empty() && !isMyLink) || dupeType == DUPE_SHARE || dupeType == DUPE_FINISHED)
 						menu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
 				} else if (isRelease) {
 					//autosearch menus
@@ -1065,6 +1047,25 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	menu.appendItem(TSTRING(SELECT_ALL), [this] { handleEditSelectAll(); });
 	if (allowClear)
 		menu.appendItem(TSTRING(CLEAR_CHAT), [this] { handleEditClearAll(); });
+
+	if (isPath) {
+		menu.InsertSeparatorFirst(CTSTRING(PATH));
+		menu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { handleSearchDir(); });
+		menu.appendItem(TSTRING(ADD_AUTO_SEARCH_DIR), [this] { handleAddAutoSearchDir(); });
+
+		auto path = Text::fromT(selectedWord);
+		if (path.back() != PATH_SEPARATOR) {
+			menu.appendSeparator();
+			menu.appendItem(TSTRING(SEARCH_FILENAME), [this] { handleSearch(); });
+			if (Util::fileExists(path)) {
+				menu.appendItem(TSTRING(DELETE_FILE), [this] { handleDeleteFile(); });
+			} else {
+				menu.appendItem(TSTRING(ADD_AUTO_SEARCH_FILE), [this] { handleAddAutoSearchFile(); });
+			}
+		}
+
+		menu.appendShellMenu({ path });
+	}
 	
 	//flag to indicate pop up menu.
     m_bPopupMenu = true;

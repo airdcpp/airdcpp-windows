@@ -289,9 +289,9 @@ public:
 	}
 
 	bool checkDupe(DupeType aDupe) {
-		if (!filterQueued && (aDupe == QUEUE_DUPE || (filterPartialDupes && aDupe == PARTIAL_QUEUE_DUPE))) {
+		if (!filterQueued && (aDupe == DUPE_QUEUE || (filterPartialDupes && aDupe == DUPE_QUEUE_PARTIAL))) {
 			return false;
-		} else if (!filterShared && (aDupe == SHARE_DUPE || (filterPartialDupes && aDupe == PARTIAL_SHARE_DUPE))) {
+		} else if (!filterShared && (aDupe == DUPE_SHARE || (filterPartialDupes && aDupe == DUPE_SHARE_PARTIAL))) {
 			return false;
 		}
 

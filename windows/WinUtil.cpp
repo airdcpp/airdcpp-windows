@@ -1770,17 +1770,17 @@ void WinUtil::removeBundle(const string& aBundleToken) {
 
 /* Only returns the text color */
 COLORREF WinUtil::getDupeColor(DupeType aType) {
-	if (aType == SHARE_DUPE) {
+	if (aType == DUPE_SHARE) {
 		return SETTING(DUPE_COLOR);
-	} else if (aType == FINISHED_DUPE) {
+	} else if (aType == DUPE_FINISHED) {
 		return blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR));
-	} else if (aType == QUEUE_DUPE) {
+	} else if (aType == DUPE_QUEUE) {
 		return SETTING(QUEUE_COLOR);
-	} else if(aType == PARTIAL_SHARE_DUPE) {
+	} else if(aType == DUPE_SHARE_PARTIAL) {
 		return blendColors(SETTING(DUPE_COLOR), SETTING(BACKGROUND_COLOR));
-	} else if(aType == PARTIAL_QUEUE_DUPE) {
+	} else if(aType == DUPE_QUEUE_PARTIAL) {
 		return blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR));
-	} else if(aType == SHARE_QUEUE_DUPE) {
+	} else if(aType == DUPE_SHARE_QUEUE) {
 		return blendColors(SETTING(QUEUE_COLOR), SETTING(DUPE_COLOR));
 	}
 
@@ -1789,17 +1789,17 @@ COLORREF WinUtil::getDupeColor(DupeType aType) {
 
 /* Text + the background color */
 pair<COLORREF, COLORREF> WinUtil::getDupeColors(DupeType aType) {
-	if (aType == SHARE_DUPE) {
+	if (aType == DUPE_SHARE) {
 		return make_pair(SETTING(DUPE_COLOR), SETTING(TEXT_DUPE_BACK_COLOR));
-	} else if (aType == FINISHED_DUPE) {
+	} else if (aType == DUPE_FINISHED) {
 		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(BACKGROUND_COLOR)), SETTING(TEXT_QUEUE_BACK_COLOR));
-	} else if (aType == QUEUE_DUPE) {
+	} else if (aType == DUPE_QUEUE) {
 		return make_pair(SETTING(QUEUE_COLOR), SETTING(TEXT_QUEUE_BACK_COLOR));
-	} else if(aType == PARTIAL_SHARE_DUPE) {
+	} else if(aType == DUPE_SHARE_PARTIAL) {
 		return make_pair(blendColors(SETTING(DUPE_COLOR), SETTING(TEXT_DUPE_BACK_COLOR)), SETTING(TEXT_DUPE_BACK_COLOR));
-	} else if(aType == PARTIAL_QUEUE_DUPE) {
+	} else if(aType == DUPE_QUEUE_PARTIAL) {
 		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(TEXT_QUEUE_BACK_COLOR)), SETTING(TEXT_QUEUE_BACK_COLOR));
-	} else if(aType == SHARE_QUEUE_DUPE) {
+	} else if(aType == DUPE_SHARE_QUEUE) {
 		return make_pair(blendColors(SETTING(QUEUE_COLOR), SETTING(DUPE_COLOR)), SETTING(TEXT_DUPE_BACK_COLOR));
 	}
 

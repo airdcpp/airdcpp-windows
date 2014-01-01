@@ -1546,15 +1546,6 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 				resultsMenu.appendItem(TSTRING(OPEN), [&] { handleOpenItem(false); });
 			}
 
-			if((ctrlResults.list.GetSelectedCount() == 1) && hasDupes) {
-				StringList localPaths;
-				performAction([&](const SearchInfo* ii) {
-					localPaths = ii->getDupePaths();
-				});
-				resultsMenu.appendShellMenu(localPaths);
-				resultsMenu.appendSeparator();
-			}
-
 			resultsMenu.appendItem(TSTRING(VIEW_NFO), [&] { handleViewNfo(); });
 			resultsMenu.appendItem(TSTRING(MATCH_PARTIAL), [&] { handleMatchPartial(); });
 
@@ -1582,6 +1573,14 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.appendSeparator();
 
 			resultsMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
+
+			if ((ctrlResults.list.GetSelectedCount() == 1) && hasDupes) {
+				StringList localPaths;
+				performAction([&](const SearchInfo* ii) {
+					localPaths = ii->getDupePaths();
+				});
+				resultsMenu.appendShellMenu(localPaths);
+			}
 
 			resultsMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, *pt);
 			return TRUE; 

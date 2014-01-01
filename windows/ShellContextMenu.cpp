@@ -42,16 +42,16 @@ void ShellMenu::appendShellMenu(const StringList& aPaths) {
 	appendSeparator();
 
 	if (aPaths.size() == 1) {
-		paths.emplace_back(createSubMenu(TSTRING(SHELL_MENU), true, true), aPaths.front());
 		appendItem(TSTRING(OPEN_FOLDER), [=] { WinUtil::openFolder(Text::toT(Util::getFilePath(aPaths.front()))); }, OMenu::FLAG_THREADED);
+		paths.emplace_back(createSubMenu(TSTRING(SHELL_MENU), true, true), aPaths.front());
 	} else {
-		auto sh = createSubMenu(TSTRING(SHELL_MENUS));
-		for (auto& i : aPaths)
-			paths.emplace_back(sh->createSubMenu(Text::toT(i)), i);
-
 		auto fo = createSubMenu(TSTRING(OPEN_FOLDER));
 		for (auto& i : aPaths)
 			fo->appendItem(Text::toT(Util::getFilePath(i)), [=] { WinUtil::openFolder(Text::toT(i)); }, OMenu::FLAG_THREADED);
+
+		auto sh = createSubMenu(TSTRING(SHELL_MENUS));
+		for (auto& i : aPaths)
+			paths.emplace_back(sh->createSubMenu(Text::toT(i)), i);
 	}
 }
 

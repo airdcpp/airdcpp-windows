@@ -296,8 +296,8 @@ private:
 		inline const TTHValue& getGroupCond() const { return sr->getTTH(); }
 
 		bool isDupe() const { return dupe != DUPE_NONE; }
-		bool isShareDupe() const { return dupe == SHARE_DUPE || dupe == PARTIAL_SHARE_DUPE; }
-		bool isQueueDupe() const { return dupe == QUEUE_DUPE || dupe == FINISHED_DUPE; }
+		bool isShareDupe() const { return dupe == DUPE_SHARE || dupe == DUPE_SHARE_PARTIAL; }
+		bool isQueueDupe() const { return dupe == DUPE_QUEUE || dupe == DUPE_FINISHED; }
 		StringList getDupePaths() const;
 
 		SearchResultPtr sr;

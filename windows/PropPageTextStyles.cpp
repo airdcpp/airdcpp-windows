@@ -122,13 +122,13 @@ LRESULT PropPageTextStyles::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	SettingsManager::TEXT_URL_BACK_COLOR, SettingsManager::TEXT_URL_FORE_COLOR, 
 	SettingsManager::TEXT_URL_BOLD, SettingsManager::TEXT_URL_ITALIC );
 
-	TextStyles[ TS_SHARE_DUPE ].Init(
-	this, settings, STRING(PROPPAGE_SHARE_DUPE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
+	TextStyles[ TS_DUPE_SHARE ].Init(
+	this, settings, STRING(PROPPAGE_DUPE_SHARE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
 	SettingsManager::TEXT_DUPE_BACK_COLOR, SettingsManager::DUPE_COLOR, 
 	SettingsManager::TEXT_DUPE_BOLD, SettingsManager::TEXT_DUPE_ITALIC );
 
-	TextStyles[ TS_QUEUE_DUPE ].Init(
-	this, settings, STRING(PROPPAGE_QUEUE_DUPE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
+	TextStyles[ TS_DUPE_QUEUE ].Init(
+	this, settings, STRING(PROPPAGE_DUPE_QUEUE_TEXT).c_str(), STRING(PROPPAGE_DUPE_MSG).c_str(),
 	SettingsManager::TEXT_QUEUE_BACK_COLOR, SettingsManager::QUEUE_COLOR, 
 	SettingsManager::TEXT_QUEUE_BOLD, SettingsManager::TEXT_QUEUE_ITALIC );
 
