@@ -25,116 +25,51 @@
 #include "WinUtil.h"
 
 ShellMenu* ShellMenu::curMenu = nullptr;
-LPCONTEXTMENU3 ShellMenu::handler = nullptr;
+unique_ptr<ShellMenu::Handler> ShellMenu::curHandler;
 unsigned ShellMenu::sel_id = 0; 
-std::vector<std::pair<OMenu*, LPCONTEXTMENU3>> ShellMenu::handlers;
+std::vector<std::pair<OMenu*, string>> ShellMenu::paths;
 
 ShellMenu::ShellMenu()
-//handler(0),
-//sel_id(0)
 {
 }
 
-void ShellMenu::appendShellMenu(const StringList& paths) {
+void ShellMenu::appendShellMenu(const StringList& aPaths) {
 	curMenu = this;
-#define check(x) if(!(x)) { return; }
 
-	// get IShellFolder interface of Desktop (root of Shell namespace)
-	IShellFolder* desktop = 0;
-	HRESULT hr = ::SHGetDesktopFolder(&desktop);
-	check(hr == S_OK && desktop);
-
-	// get interface to IMalloc used to free PIDLs
-	LPMALLOC lpMalloc = 0;
-	hr = ::SHGetMalloc(&lpMalloc);
-	check(hr == S_OK && lpMalloc);
-
-#undef check
-#define check(x) if(!(x)) { continue; }
-
-	// stores allocated PIDLs to free them afterwards.
-	typedef std::vector<LPITEMIDLIST> pidls_type;
-	pidls_type pidls;
-
-	// stores paths for which we have managed to get a valid IContextMenu3 interface.
-	typedef std::pair<string, LPCONTEXTMENU3> valid_pair;
-	typedef std::vector<valid_pair> valid_type;
-	valid_type valid;
-
-	for(auto& i: paths) {
-		// ParseDisplayName creates a PIDL from a file system path relative to the IShellFolder interface
-		// but since we use the Desktop as our interface and the Desktop is the namespace root
-		// that means that it's a fully qualified PIDL, which is what we need
-		LPITEMIDLIST pidl = 0;
-		hr = desktop->ParseDisplayName(0, 0, const_cast<LPWSTR>(Text::utf8ToWide(i).c_str()), 0, &pidl, 0);
-		check(hr == S_OK && pidl);
-		pidls.push_back(pidl);
-
-		// get the parent IShellFolder interface of pidl and the relative PIDL
-		IShellFolder* folder = 0;
-		LPCITEMIDLIST pidlItem = 0;
-		hr = ::SHBindToParent(pidl, IID_IShellFolder, reinterpret_cast<LPVOID*>(&folder), &pidlItem);
-		check(hr == S_OK && folder && pidlItem);
-
-		// first we retrieve the normal IContextMenu interface (every object should have it)
-		LPCONTEXTMENU handler1 = 0;
-		hr = folder->GetUIObjectOf(0, 1, &pidlItem, IID_IContextMenu, 0, reinterpret_cast<LPVOID*>(&handler1));
-		folder->Release();
-		check(hr == S_OK && handler1);
-
-		// then try to get the version 3 interface
-		LPCONTEXTMENU3 handler3 = 0;
-		hr = handler1->QueryInterface(IID_IContextMenu3, reinterpret_cast<LPVOID*>(&handler3));
-		handler1->Release();
-		check(hr == S_OK && handler3);
-
-		valid.emplace_back(i, handler3);
-	}
-
-#undef check
-
-	for(auto& i: pidls)
-		lpMalloc->Free(i);
-	lpMalloc->Release();
-
-	desktop->Release();
-
-	if(valid.empty())
+	if (aPaths.empty())
 		return;
 
 	appendSeparator();
 
-	if (valid.size() == 1) {
-		handlers.emplace_back(createSubMenu(TSTRING(SHELL_MENU), true, true), valid[0].second);
-		appendItem(TSTRING(OPEN_FOLDER), [=] { WinUtil::openFolder(Text::toT(Util::getFilePath(valid[0].first))); }, OMenu::FLAG_THREADED);
+	if (aPaths.size() == 1) {
+		paths.emplace_back(createSubMenu(TSTRING(SHELL_MENU), true, true), aPaths.front());
+		appendItem(TSTRING(OPEN_FOLDER), [=] { WinUtil::openFolder(Text::toT(Util::getFilePath(aPaths.front()))); }, OMenu::FLAG_THREADED);
 	} else {
 		auto sh = createSubMenu(TSTRING(SHELL_MENUS));
-		for(auto& i: valid)
-			handlers.emplace_back(sh->createSubMenu(Text::toT(i.first)), i.second);
+		for (auto& i : aPaths)
+			paths.emplace_back(sh->createSubMenu(Text::toT(i)), i);
 
 		auto fo = createSubMenu(TSTRING(OPEN_FOLDER));
-		for (auto& i : valid)
-			fo->appendItem(Text::toT(Util::getFilePath(i.first)), [=] { WinUtil::openFolder(Text::toT(i.first)); }, OMenu::FLAG_THREADED);
+		for (auto& i : aPaths)
+			fo->appendItem(Text::toT(Util::getFilePath(i)), [=] { WinUtil::openFolder(Text::toT(i)); }, OMenu::FLAG_THREADED);
 	}
 }
 
 ShellMenu::~ShellMenu() {
 	curMenu = nullptr;
-	handler = nullptr;
+	curHandler.reset();
 	sel_id = 0;
-	for(auto& i: handlers)
-		i.second->Release();
-	handlers.clear();
+	paths.clear();
 }
 
 void ShellMenu::open(HWND aHWND, unsigned flags, CPoint pt) {
 	BaseType::open(aHWND, flags, pt);
 
-	if(sel_id >= ID_SHELLCONTEXTMENU_MIN && sel_id <= ID_SHELLCONTEXTMENU_MAX && handler) {
+	if(sel_id >= ID_SHELLCONTEXTMENU_MIN && sel_id <= ID_SHELLCONTEXTMENU_MAX && curHandler) {
 		CMINVOKECOMMANDINFO cmi = { sizeof(CMINVOKECOMMANDINFO) };
 		cmi.lpVerb = (LPSTR)MAKEINTRESOURCE(sel_id - ID_SHELLCONTEXTMENU_MIN);
 		cmi.nShow = SW_SHOWNORMAL;
-		handler->InvokeCommand(&cmi);
+		curHandler->getMenu()->InvokeCommand(&cmi);
 	}
 }
 
@@ -174,10 +109,55 @@ LRESULT ShellMenu::handleMeasureItem(UINT uMsg, WPARAM wParam, LPARAM lParam, BO
 
 LRESULT ShellMenu::handleInitMenuPopup(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	HMENU menu = reinterpret_cast<HMENU>(wParam);
-	for(auto& i: handlers) {
+	for(auto& i: paths) {
 		if(i.first->m_hMenu == menu) {
-			handler = i.second;
-			handler->QueryContextMenu(i.first->m_hMenu, 0, ID_SHELLCONTEXTMENU_MIN, ID_SHELLCONTEXTMENU_MAX, CMF_NORMAL | CMF_EXPLORE);
+			// We'll load the menu here because GetUIObjectOf requires disk access
+
+#define check(x) if(!(x)) { i.first->appendItem(TSTRING_F(SHELL_MENU_FAILED, Text::toT(i.second)), nullptr, OMenu::FLAG_DISABLED); break; }
+
+			// get IShellFolder interface of Desktop (root of Shell namespace)
+			IShellFolder* desktop = 0;
+			HRESULT hr = ::SHGetDesktopFolder(&desktop);
+			check(hr == S_OK && desktop);
+
+			// get interface to IMalloc used to free PIDLs
+			LPMALLOC lpMalloc = 0;
+			hr = ::SHGetMalloc(&lpMalloc);
+			check(hr == S_OK && lpMalloc);
+
+			// ParseDisplayName creates a PIDL from a file system path relative to the IShellFolder interface
+			// but since we use the Desktop as our interface and the Desktop is the namespace root
+			// that means that it's a fully qualified PIDL, which is what we need
+			LPITEMIDLIST pidl = 0;
+			hr = desktop->ParseDisplayName(0, 0, const_cast<LPWSTR>(Text::utf8ToWide(i.second).c_str()), 0, &pidl, 0);
+			check(hr == S_OK && pidl);
+
+			// get the parent IShellFolder interface of pidl and the relative PIDL
+			IShellFolder* folder = 0;
+			LPCITEMIDLIST pidlItem = 0;
+			hr = ::SHBindToParent(pidl, IID_IShellFolder, reinterpret_cast<LPVOID*>(&folder), &pidlItem);
+			check(hr == S_OK && folder && pidlItem);
+
+			// first we retrieve the normal IContextMenu interface (every object should have it)
+			LPCONTEXTMENU handler1 = 0;
+			hr = folder->GetUIObjectOf(0, 1, &pidlItem, IID_IContextMenu, 0, reinterpret_cast<LPVOID*>(&handler1));
+			folder->Release();
+			check(hr == S_OK && handler1);
+
+			// then try to get the version 3 interface
+			LPCONTEXTMENU3 handler3 = 0;
+			hr = handler1->QueryInterface(IID_IContextMenu3, reinterpret_cast<LPVOID*>(&handler3));
+			handler1->Release();
+			check(hr == S_OK && handler3);
+
+#undef check
+			lpMalloc->Free(pidl);
+			lpMalloc->Release();
+
+			desktop->Release();
+
+			curHandler = make_unique<Handler>(handler3);
+			handler3->QueryContextMenu(i.first->m_hMenu, 0, ID_SHELLCONTEXTMENU_MIN, ID_SHELLCONTEXTMENU_MAX, CMF_NORMAL | CMF_EXPLORE);
 			break;
 		}
 	}
@@ -187,9 +167,11 @@ LRESULT ShellMenu::handleInitMenuPopup(UINT uMsg, WPARAM wParam, LPARAM lParam, 
 
 LRESULT ShellMenu::handleUnInitMenuPopup(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	HMENU menu = reinterpret_cast<HMENU>(wParam);
-	for (auto& i : handlers) {
-		if (i.first->m_hMenu == menu)
+	for (auto& i : paths) {
+		if (i.first->m_hMenu == menu) {
 			i.first->ClearMenu();
+			break;
+		}
 	}
 
 	return dispatch(uMsg, wParam, lParam, bHandled);
@@ -207,8 +189,8 @@ LRESULT ShellMenu::handleMenuSelect(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 LRESULT ShellMenu::dispatch(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 	LRESULT ret;
-	if(handler) {
-		handler->HandleMenuMsg2(uMsg, wParam, lParam, &ret);
+	if(curHandler) {
+		curHandler->getMenu()->HandleMenuMsg2(uMsg, wParam, lParam, &ret);
 		return TRUE;
 	}
 

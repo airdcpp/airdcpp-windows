@@ -2033,4 +2033,5 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="FileNotFound">File not found</string>
 	<string name="ShellMenu">Shell menu</string>
 	<string name="ShellMenus">Shell menus</string>
+	<string name="ShellMenuFailed">Failed to load the menu for %1%</string>
 </resources>

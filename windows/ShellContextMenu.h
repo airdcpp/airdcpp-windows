@@ -56,9 +56,18 @@ public:
 
 	static LRESULT dispatch(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 private:
-	static std::vector<std::pair<OMenu*, LPCONTEXTMENU3>> handlers;
+	class Handler {
+	public:
+		Handler(LPCONTEXTMENU3 aMenu) : menu(aMenu) { }
+		~Handler() { menu->Release(); }
+		LPCONTEXTMENU3 getMenu() { return menu; }
+	private:
+		LPCONTEXTMENU3 menu;
+	};
 
-	static LPCONTEXTMENU3 handler;
+	static std::vector<std::pair<OMenu*, string>> paths;
+
+	static unique_ptr<Handler> curHandler;
 	static unsigned sel_id;
 };
 
