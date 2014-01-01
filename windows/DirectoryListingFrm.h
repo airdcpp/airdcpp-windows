@@ -343,7 +343,6 @@ private:
 
 	void handleCopyDir();
 	void handleOpenFile();
-	void handleOpenDupeDir(bool usingTree);
 	void handleViewAsText();
 	void handleViewNFO(bool usingTree);
 	void handleGoToDirectory(bool usingTree);

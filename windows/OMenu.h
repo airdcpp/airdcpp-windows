@@ -71,7 +71,7 @@ public:
 	void appendSeparator();
 
 	/* These should be used when submenus are created within a separate function/scope */
-	OMenu* createSubMenu(const tstring& aTitle, bool appendSeparator = false);
+	OMenu* createSubMenu(const tstring& aTitle, bool appendSeparator = false, bool isShellMenu = false);
 	OMenu* getMenu();
 	void appendThis(const tstring& aTitle, bool appendSeparator = false);
 
@@ -95,7 +95,7 @@ public:
 	unsigned appendItem(const tstring& text, const Dispatcher::F& f = Dispatcher::F(), int aFlags = 0);
 	BOOL InsertMenuItem(UINT uItem, BOOL bByPosition, LPMENUITEMINFO lpmii);
 
-	void open(HWND aHWND, unsigned flags = TPM_LEFTALIGN | TPM_RIGHTBUTTON, CPoint pt = GetMessagePos());
+	virtual void open(HWND aHWND, unsigned flags = TPM_LEFTALIGN | TPM_RIGHTBUTTON, CPoint pt = GetMessagePos());
 
 	unsigned getNextID();
 	void addItem(OMenuItem* mi);
@@ -121,7 +121,8 @@ private:
 	}
 
 	OMenu* parent;
-	bool defaultSet;
+	bool defaultSet = false;
+	bool isShellmenu = false;
 };
 
 #define MESSAGE_HANDLER_HWND(msg, func) \

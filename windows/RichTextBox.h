@@ -31,6 +31,8 @@
 #include <boost/algorithm/string.hpp>
 
 #include "../client/ColorSettings.h"
+
+#include "ShellContextMenu.h"
 #include "TypedListViewCtrl.h"
 #include "ImageDataObject.h"
 #include "UCHandler.h"
@@ -63,6 +65,12 @@ public:
 
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
+		MESSAGE_HANDLER(WM_DRAWITEM, ShellMenu::handleDrawItem)
+		MESSAGE_HANDLER(WM_MEASUREITEM, ShellMenu::handleMeasureItem)
+		MESSAGE_HANDLER(WM_MENUCHAR, ShellMenu::dispatch)
+		MESSAGE_HANDLER(WM_INITMENUPOPUP, ShellMenu::handleInitMenuPopup)
+		MESSAGE_HANDLER(WM_UNINITMENUPOPUP, ShellMenu::handleUnInitMenuPopup)
+		MESSAGE_HANDLER(WM_MENUSELECT, ShellMenu::handleMenuSelect)
 
 		COMMAND_ID_HANDLER(IDC_COPY_ACTUAL_LINE, onCopyActualLine)
 		COMMAND_ID_HANDLER(ID_EDIT_COPY, onEditCopy)

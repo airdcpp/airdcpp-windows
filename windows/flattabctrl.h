@@ -29,6 +29,7 @@
 #include "WinUtil.h"
 #include "memdc.h"
 #include "OMenu.h"
+#include "ShellContextMenu.h"
 #include "resource.h"
 
 enum {
@@ -801,6 +802,12 @@ public:
 		MESSAGE_HANDLER(WM_NOTIFYFORMAT, onNotifyFormat)
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
+		MESSAGE_HANDLER(WM_DRAWITEM, ShellMenu::handleDrawItem)
+		MESSAGE_HANDLER(WM_MEASUREITEM, ShellMenu::handleMeasureItem)
+		MESSAGE_HANDLER(WM_MENUCHAR, ShellMenu::dispatch)
+		MESSAGE_HANDLER(WM_INITMENUPOPUP, ShellMenu::handleInitMenuPopup)
+		MESSAGE_HANDLER(WM_UNINITMENUPOPUP, ShellMenu::handleUnInitMenuPopup)
+		MESSAGE_HANDLER(WM_MENUSELECT, ShellMenu::handleMenuSelect)
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 

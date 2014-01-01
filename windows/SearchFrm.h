@@ -156,7 +156,6 @@ public:
 	void handleViewNfo();
 	void handleMatchPartial();
 	void handleSearchDir();
-	void handleOpenFolder();
 
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		removeSelected();
@@ -299,7 +298,7 @@ private:
 		bool isDupe() const { return dupe != DUPE_NONE; }
 		bool isShareDupe() const { return dupe == SHARE_DUPE || dupe == PARTIAL_SHARE_DUPE; }
 		bool isQueueDupe() const { return dupe == QUEUE_DUPE || dupe == FINISHED_DUPE; }
-		//string getHubUrl() { return sr->getHubURL(); }
+		StringList getDupePaths() const;
 
 		SearchResultPtr sr;
 		GETSET(uint8_t, flagIndex, FlagIndex);

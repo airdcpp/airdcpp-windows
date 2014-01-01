@@ -672,6 +672,13 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 	ipText = Text::toT(ip);
 }
 
+StringList SearchFrame::SearchInfo::getDupePaths() const {
+	if (sr->getType() == SearchResult::TYPE_DIRECTORY) {
+		return AirUtil::getDirDupePaths(dupe, sr->getPath());
+	} else {
+		return AirUtil::getDupePaths(dupe, sr->getTTH());
+	}
+}
 
 int SearchFrame::SearchInfo::getImageIndex() const {
 	return sr->getType() == SearchResult::TYPE_FILE ? ResourceLoader::getIconIndex(Text::toT(sr->getPath())) : ResourceLoader::DIR_NORMAL;
@@ -909,25 +916,6 @@ void SearchFrame::handleSearchDir() {
 	if(ctrlResults.list.GetSelectedCount() == 1) {
 		const SearchInfo* si = ctrlResults.list.getSelectedItem();
 		WinUtil::searchAny(Text::toT(AirUtil::getNmdcReleaseDir(si->sr->getPath(), true)));
-	}
-}
-
-void SearchFrame::handleOpenFolder() {
-	if(ctrlResults.list.GetSelectedCount() == 1) {
-		const SearchInfo* si = ctrlResults.list.getSelectedItem();
-		try {
-			tstring path;
-			if(si->sr->getType() == SearchResult::TYPE_DIRECTORY) {
-				path = Text::toT(AirUtil::getDirDupePath(si->getDupe(), si->sr->getPath()));
-			} else {
-				path = Text::toT(AirUtil::getDupePath(si->getDupe(), si->sr->getTTH()));
-			}
-
-			if (!path.empty())
-				WinUtil::openFolder(path);
-		} catch(const ShareException& se) {
-			LogManager::getInstance()->message(se.getError(), LogManager::LOG_ERROR);
-		}
 	}
 }
 
@@ -1540,7 +1528,7 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 					hasDupes = true;
 			}
 
-			OMenu resultsMenu;
+			ShellMenu resultsMenu;
 			SearchInfo::CheckTTH cs = ctrlResults.list.forEachSelectedT(SearchInfo::CheckTTH());
 
 			resultsMenu.CreatePopupMenu();
@@ -1552,15 +1540,18 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 
 			appendDownloadMenu(resultsMenu, hasFiles ? DownloadBaseHandler::TYPE_BOTH : DownloadBaseHandler::TYPE_PRIMARY, hasNmdcDirsOnly, hasFiles ? cs.tth : nullptr, cs.path);
 
-			resultsMenu.appendSeparator();
-
 			if (hasFiles && (!hasDupes || ctrlResults.list.GetSelectedCount() == 1)) {
+				resultsMenu.appendSeparator();
 				resultsMenu.appendItem(TSTRING(VIEW_AS_TEXT), [&] { handleOpenItem(true); });
 				resultsMenu.appendItem(TSTRING(OPEN), [&] { handleOpenItem(false); });
 			}
 
 			if((ctrlResults.list.GetSelectedCount() == 1) && hasDupes) {
-				resultsMenu.appendItem(TSTRING(OPEN_FOLDER), [&] { handleOpenFolder(); });
+				StringList localPaths;
+				performAction([&](const SearchInfo* ii) {
+					localPaths = ii->getDupePaths();
+				});
+				resultsMenu.appendShellMenu(localPaths);
 				resultsMenu.appendSeparator();
 			}
 

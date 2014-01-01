@@ -1277,20 +1277,8 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 		const ItemInfo* ii = ctrlFiles.list.getItemData(ctrlFiles.list.GetNextItem(-1, LVNI_SELECTED));
 
-		CShellContextMenu shellMenu;
-		OMenu& fileMenu(*shellMenu.GetMenu());
-
-		if(SETTING(SHOW_SHELL_MENU) && dl->getIsOwnList() && (ctrlFiles.list.GetSelectedCount() == 1)) {
-			try {
-				StringList localPaths;
-				ii->type == ItemInfo::FILE ? dl->getLocalPaths(ii->file, localPaths) : dl->getLocalPaths(ii->dir, localPaths);
-				if (localPaths.size() == 1 && GetFileAttributes(Text::toT(localPaths.front()).c_str()) != 0xFFFFFFFF) {
-					// Check that the file still exists
-					shellMenu.SetPath(Text::toT(localPaths.front()).c_str());
-				}
-			} catch(...) {
-			}
-		}
+		ShellMenu fileMenu;
+		fileMenu.CreatePopupMenu();
 
 		int i = -1;
 		bool allComplete=true, hasFiles=false;
@@ -1325,15 +1313,8 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 
 		if (hasFiles || !dl->getIsOwnList())
 			fileMenu.appendSeparator();
-		
-		if (dl->getIsOwnList() || (ctrlFiles.list.GetSelectedCount() == 1 && (ii->type == ItemInfo::DIRECTORY && ii->dir->getDupe() != DUPE_NONE))) {
-			fileMenu.appendItem(TSTRING(OPEN_FOLDER), [this] { handleOpenDupeDir(false); });
-			fileMenu.appendSeparator();
-		} else if(ctrlFiles.list.GetSelectedCount() == 1 && !dl->getIsOwnList() && ii->type == ItemInfo::FILE && (ii->file->getDupe() == SHARE_DUPE || ii->file->getDupe() == FINISHED_DUPE)) {
-			fileMenu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
-			fileMenu.appendItem(TSTRING(OPEN_FOLDER), [this] { handleOpenDupeDir(false); });
-			fileMenu.appendSeparator();
-		} else if (hasFiles) {
+
+		if (hasFiles) {
 			fileMenu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
 		}
 
@@ -1344,9 +1325,17 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		if(dl->getIsOwnList() && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
 			fileMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { handleScanShare(false, false); });
 			fileMenu.appendItem(TSTRING(RUN_SFV_CHECK), [this] { handleScanShare(false, true); });
-			fileMenu.appendSeparator();
 		}
 
+		// shell menu
+		if (ctrlFiles.list.GetSelectedCount() == 1 && (dl->getIsOwnList() || (ii->getDupe() != DUPE_NONE && ii->getDupe() != QUEUE_DUPE))) {
+			StringList paths;
+			if (getLocalPaths(paths, false, false)) {
+				fileMenu.appendShellMenu(paths);
+			}
+		}
+
+		fileMenu.appendSeparator();
 		if (!hasFiles)
 			fileMenu.appendItem(TSTRING(VIEW_NFO), [this] { handleViewNFO(false); });
 
@@ -1390,8 +1379,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 		}
 
 		prepareMenu(fileMenu, UserCommand::CONTEXT_FILELIST, ClientManager::getInstance()->getHubUrls(dl->getHintedUser().user->getCID()));
-		//fileMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
-		shellMenu.ShowContextMenu(m_hWnd, *pt);
+		fileMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, *pt);
 		return TRUE; 
 	} if(reinterpret_cast<HWND>(wParam) == ctrlTree && ctrlTree.GetSelectedItem() != NULL) { 
 		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
@@ -1412,7 +1400,7 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			auto dir = ((ItemInfo*)ctrlTree.GetItemData(ht))->dir;
 
 
-			OMenu directoryMenu;
+			ShellMenu directoryMenu;
 			directoryMenu.CreatePopupMenu();
 
 			if (!dl->getIsOwnList()) {
@@ -1435,12 +1423,18 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 				directoryMenu.appendItem(TSTRING(RELOAD), [=] { handleReloadPartial(true); });
 			}
 
-			if (dl->getIsOwnList() || (dir && dl->getPartialList() && dir->getDupe() != DUPE_NONE)) {
-				directoryMenu.appendSeparator();
-				directoryMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenDupeDir(true); });
-				directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(true); });
-				directoryMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { handleScanShare(true, false); });
-				directoryMenu.appendItem(TSTRING(RUN_SFV_CHECK), [this] { handleScanShare(false, true); });
+			if (dl->getIsOwnList() || (dir && dl->getPartialList() && dir->getDupe() != DUPE_NONE && dir->getDupe() !=  QUEUE_DUPE)) {
+				StringList paths;
+				if (getLocalPaths(paths, true, true)) {
+					directoryMenu.appendShellMenu(paths);
+					if (dir->getDupe() != FINISHED_DUPE) {
+						// shared
+						directoryMenu.appendSeparator();
+						directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(true); });
+						directoryMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { handleScanShare(true, false); });
+						directoryMenu.appendItem(TSTRING(RUN_SFV_CHECK), [this] { handleScanShare(false, true); });
+					}
+				}
 			}
 
 			directoryMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
@@ -1541,9 +1535,9 @@ void DirectoryListingFrame::handleViewNFO(bool usingTree) {
 						ShareManager::getInstance()->search(results, *s.get(), 10, Util::toInt(dl->getFileName()), ClientManager::getInstance()->getMyCID(), Util::toAdcFile(ii->dir->getPath()));
 
 						if (!results.empty()) {
-							auto path = Text::toT(ShareManager::getInstance()->getRealPath(results.front()->getTTH()));
-							if (!path.empty())
-								callAsync([=] { TextFrame::openWindow(path, TextFrame::NORMAL); });
+							auto paths = AirUtil::getDupePaths(SHARE_DUPE, results.front()->getTTH());
+							if (!paths.empty())
+								callAsync([=] { TextFrame::openWindow(Text::toT(paths.front()), TextFrame::NORMAL); });
 						} else {
 							updateStatus(Text::toT(ii->dir->getName()) + _T(": ") + TSTRING(NO_NFO_FOUND));
 						}
@@ -1575,32 +1569,12 @@ void DirectoryListingFrame::handleOpenFile() {
 		}
 	});
 }
-
-void DirectoryListingFrame::handleOpenDupeDir(bool usingTree) {
-	handleItemAction(usingTree, [this](const ItemInfo* ii) {
-		if (ii->type == ItemInfo::FILE) {
-			openDupe(ii->file->getParent());
-		} else {
-			openDupe(ii->dir);
-		}
-	});
-}
-
 void DirectoryListingFrame::openDupe(const DirectoryListing::Directory::Ptr& d) {
 	try {
-		tstring path;
-		if (dl->getIsOwnList()) {
-			StringList localPaths;
-			dl->getLocalPaths(d, localPaths);
-			if (!localPaths.empty()) {
-				path = Text::toT(localPaths.front());
-			}
-		} else {
-			path = Text::toT(AirUtil::getDirDupePath(d->getDupe(), d->getPath()));
-		}
-
-		if (!path.empty()) {
-			WinUtil::openFolder(path);
+		StringList paths;
+		dl->getLocalPaths(d, paths);
+		if (!paths.empty()) {
+			WinUtil::openFolder(Text::toT(paths.front()));
 		}
 	} catch (const ShareException& e) {
 		updateStatus(Text::toT(e.getError()));
@@ -1609,18 +1583,11 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::Directory::Ptr& d) 
 
 void DirectoryListingFrame::openDupe(const DirectoryListing::File* f, bool openDir) {
 	try {
-		tstring path;
-		if (dl->getIsOwnList()) {
-			StringList localPaths;
-			dl->getLocalPaths(f, localPaths);
-			if (!localPaths.empty()) {
-				path = Text::toT(localPaths.front());
-			}
-		} else {
-			path = Text::toT(AirUtil::getDupePath(f->getDupe(), f->getTTH()));
-		}
+		StringList paths;
+		dl->getLocalPaths(f, paths);
 
-		if (!path.empty()) {
+		if (!paths.empty()) {
+			auto path = Text::toT(paths.front());
 			if (!openDir) {
 				WinUtil::openFile(path);
 			}

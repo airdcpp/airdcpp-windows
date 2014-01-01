@@ -893,7 +893,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	ScreenToClient(&ptCl); 
 	OnRButtonDown(ptCl);
 
-	OMenu menu;
+	ShellMenu menu;
 	menu.CreatePopupMenu();
 
 	if (copyMenu.m_hMenu != NULL) {
@@ -924,17 +924,19 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			menu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { handleSearchDir(); });
 			menu.appendItem(TSTRING(ADD_AUTO_SEARCH_DIR), [this] { handleAddAutoSearchDir(); });
 
-			if (selectedWord[selectedWord.length()-1] != PATH_SEPARATOR) {
+			auto path = Text::fromT(selectedWord);
+			if (path.back() != PATH_SEPARATOR) {
+				menu.appendSeparator();
 				menu.appendItem(TSTRING(SEARCH_FILENAME), [this] { handleSearch(); });
-				if (Util::fileExists(Text::fromT(selectedWord))) {
-					menu.appendSeparator();
+				if (Util::fileExists(path)) {
 					menu.appendItem(TSTRING(DELETE_FILE), [this] { handleDeleteFile(); });
 				} else {
 					menu.appendItem(TSTRING(ADD_AUTO_SEARCH_FILE), [this] { handleAddAutoSearchFile(); });
-					menu.appendSeparator();
 				}
 			}
-			menu.appendItem(TSTRING(OPEN_FOLDER), [this] { handleOpenFolder(); });
+
+			menu.appendShellMenu({ path });
+			menu.appendSeparator();
 		} else if (!selectedWord.empty() && AirUtil::isHubLink(Text::fromT(selectedWord))) {
 			menu.InsertSeparatorFirst(CTSTRING(LINK));
 			menu.appendItem(TSTRING(CONNECT), [this] { handleOpenLink(); });
@@ -1072,7 +1074,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 }
 
 void RichTextBox::handleSearchDir() {
-	WinUtil::searchAny(selectedWord);
+	WinUtil::searchAny(Text::toT(AirUtil::getReleaseDir(Text::fromT(selectedWord), true)));
 }
 
 void RichTextBox::handleDeleteFile() {
@@ -1186,9 +1188,9 @@ void RichTextBox::handleOpenFile() {
 	auto u = getMagnetSource();
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		if (dupeType > 0) {
-			auto p = AirUtil::getDupePath(dupeType, m.getTTH());
+			auto p = AirUtil::getDupePaths(dupeType, m.getTTH());
 			if (!p.empty())
-				WinUtil::openFile(Text::toT(p));
+				WinUtil::openFile(Text::toT(p.front()));
 		} else {
 			try {
 				QueueManager::getInstance()->addOpenedItem(m.fname, m.fsize, m.getTTH(), u, false);
@@ -1231,7 +1233,7 @@ void RichTextBox::handleRemoveTemp() {
 
 void RichTextBox::handleOpenFolder() {
 	tstring path;
-	try{
+	/*try{
 		if (isRelease) {
 			path = Text::toT(AirUtil::getDirDupePath(dupeType, Text::fromT(selectedWord)));
 		} else if (isPath) {
@@ -1246,7 +1248,7 @@ void RichTextBox::handleOpenFolder() {
 				path = Util::getFilePath(path);
 
 		}
-	} catch(...) {}
+	} catch(...) {}*/
 
 	WinUtil::openFolder(path);
 }

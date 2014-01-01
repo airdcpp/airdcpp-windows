@@ -1,5 +1,5 @@
 /*
-* Copyright (C) 2001-2007 Jacek Sieka, arnetheduck on gmail point com
+* Copyright (C) 2001-2013 Jacek Sieka, arnetheduck on gmail point com
 *
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -16,47 +16,50 @@
 * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
-/*
-* Based on a class by R. Engels
-* http://www.codeproject.com/shell/shellcontextmenu.asp
-*/
+// Based on <http://www.codeproject.com/shell/shellcontextmenu.asp> by R. Engels.
 
-#ifndef DCPLUSPLUS_WIN32_SHELL_CONTEXT_MENU_H
-#define DCPLUSPLUS_WIN32_SHELL_CONTEXT_MENU_H
+#ifndef DCPLUSPLUS_WIN32_SHELL_MENU_H
+#define DCPLUSPLUS_WIN32_SHELL_MENU_H
 
 #include "stdafx.h"
-#include "../client/typedefs.h"
+
 #include "OMenu.h"
 
-class CShellContextMenu
-{
-	static IContextMenu2* g_IContext2;
-	static IContextMenu3* g_IContext3;
-	static WNDPROC OldWndProc;
-
+class ShellMenu : public OMenu {
+	typedef OMenu BaseType;
+	static ShellMenu* curMenu;
 public:
-	CShellContextMenu();
-	~CShellContextMenu();
+	BEGIN_MSG_MAP(ShellMenu)
+		MESSAGE_HANDLER(WM_DRAWITEM, handleDrawItem)
+		MESSAGE_HANDLER(WM_MEASUREITEM, handleMeasureItem)
+		MESSAGE_HANDLER(WM_MENUCHAR, dispatch)
+		MESSAGE_HANDLER(WM_INITMENUPOPUP, handleInitMenuPopup)
+		MESSAGE_HANDLER(WM_UNINITMENUPOPUP, handleUnInitMenuPopup)
+		MESSAGE_HANDLER(WM_MENUSELECT, handleMenuSelect)
+	END_MSG_MAP()
 
-	void SetPath(const tstring& strPath);
-	OMenu* GetMenu();
-	void ShowContextMenu(HWND hWnd, CPoint pt);
+	typedef ShellMenu ThisType;
+	//typedef ShellMenuPtr ObjectType;
 
+	ShellMenu();
+	~ShellMenu();
+
+	void appendShellMenu(const StringList& paths);
+	void open(HWND aHWND, unsigned flags = TPM_LEFTALIGN | TPM_RIGHTBUTTON, CPoint pt = GetMessagePos());
+
+
+	static LRESULT handleDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
+	static LRESULT handleMeasureItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
+	static LRESULT handleInitMenuPopup(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
+	static LRESULT handleUnInitMenuPopup(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
+	static LRESULT handleMenuSelect(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
+
+	static LRESULT dispatch(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 private:
-	bool bInitialized;
-	OMenu* m_Menu;
-	IShellFolder* m_psfFolder;
-	LPITEMIDLIST* m_pidlArray;
+	static std::vector<std::pair<OMenu*, LPCONTEXTMENU3>> handlers;
 
-	void FreePIDLArray(LPITEMIDLIST* pidlArray);
-	// this functions determines which version of IContextMenu is available for those objects(always the highest one)
-	// and returns that interface
-	bool GetContextMenu(LPVOID* ppContextMenu, int& iMenuType);
-
-	void InvokeCommand(LPCONTEXTMENU pContextMenu, UINT idCommand);
-
-	static LRESULT CALLBACK HookWndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+	static LPCONTEXTMENU3 handler;
+	static unsigned sel_id;
 };
 
-
-#endif // !defined(DCPLUSPLUS_WIN32_SHELL_CONTEXT_MENU_H)
+#endif // !defined(DCPLUSPLUS_WIN32_SHELL_MENU_H)

@@ -54,10 +54,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_TOTAL, onRemove)
 		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
-		COMMAND_ID_HANDLER(IDC_OPEN_FILE, onOpenFile)
 		COMMAND_ID_HANDLER(IDC_SFV_CHECH_FOLDER, onCheckFolderSFV)
 		COMMAND_ID_HANDLER(IDC_SFV_CHECH_FILE, onCheckFileSFV)
-		COMMAND_ID_HANDLER(IDC_OPEN_FOLDER, onOpenFolder)
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
 		COMMAND_ID_HANDLER(IDC_GRANTSLOT, onGrant)		
 		COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy);
@@ -110,24 +108,7 @@ public:
 		updateList(FinishedManager::getInstance()->lockList(upload));
 		FinishedManager::getInstance()->unlockList();
 
-		ctxMenu.CreatePopupMenu();
 		copyMenu.CreatePopupMenu();
-		ctxMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
-		ctxMenu.AppendMenu(MF_STRING, IDC_OPEN_FILE, CTSTRING(OPEN));
-		ctxMenu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-		ctxMenu.AppendMenu(MF_STRING, IDC_SFV_CHECH_FOLDER, CTSTRING(SFV_CHECK_FOLDER));
-		ctxMenu.AppendMenu(MF_STRING, IDC_SFV_CHECH_FILE, CTSTRING(SFV_CHECK_FILE));
-		ctxMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT, CTSTRING(GRANT_EXTRA_SLOT));
-		ctxMenu.AppendMenu(MF_STRING, IDC_GETLIST, CTSTRING(GET_FILE_LIST));
-		ctxMenu.AppendMenu(MF_SEPARATOR);
-		ctxMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
-		ctxMenu.AppendMenu(MF_SEPARATOR);
-		ctxMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-		ctxMenu.AppendMenu(MF_STRING, IDC_TOTAL, CTSTRING(REMOVE_ALL));
-		
-		
-		ctxMenu.SetMenuDefaultItem(IDC_OPEN_FILE);
-
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_NICK, CTSTRING(NICK));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_FILENAME, CTSTRING(FILENAME));
 		copyMenu.AppendMenu(MF_STRING, IDC_COPY_SIZE, CTSTRING(SIZE));
@@ -312,25 +293,6 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 		return 0;
 	}
 
-	LRESULT onOpenFile(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		int i;
-		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			FinishedItem *ii = ctrlList.getItemData(i);
-			if(ii != NULL)
-				WinUtil::openFile(Text::toT(ii->getTarget()));
-		}
-		return 0;
-	}
-
-	LRESULT onOpenFolder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		int i;
-		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			FinishedItem *ii = ctrlList.getItemData(i);
-			WinUtil::openFolder(Text::toT(Util::getFilePath(ii->getTarget())));
-		}
-		return 0;
-	}
-
 	LRESULT onCheckFolderSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 		//Todo Select multiple
 		int i;
@@ -368,30 +330,24 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 				WinUtil::getContextMenuPos(ctrlList, pt);
 			}
 
-			bool bShellMenuShown = false;
-			if(SETTING(SHOW_SHELL_MENU) && (ctrlList.GetSelectedCount() == 1)) {
-				tstring path = Text::toT(ctrlList.getItemData(ctrlList.GetSelectedIndex())->getTarget());
-				if(GetFileAttributes(path.c_str()) != 0xFFFFFFFF) { // Check that the file still exists
-					CShellContextMenu shellMenu;
-					shellMenu.SetPath(path);
 
-					CMenu* pShellMenu = shellMenu.GetMenu();
-					pShellMenu->AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
-					pShellMenu->AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
-					pShellMenu->AppendMenu(MF_SEPARATOR);
-					pShellMenu->AppendMenu(MF_POPUP, (UINT)(HMENU)copyMenu, CTSTRING(COPY));
-					pShellMenu->AppendMenu(MF_SEPARATOR);
-					pShellMenu->AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-					pShellMenu->AppendMenu(MF_STRING, IDC_TOTAL, CTSTRING(REMOVE_ALL));
+			ShellMenu shellMenu;
+			shellMenu.CreatePopupMenu();
+			if(ctrlList.GetSelectedCount() == 1) {
+				shellMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
+				shellMenu.AppendMenu(MF_STRING, IDC_SFV_CHECH_FOLDER, CTSTRING(SFV_CHECK_FOLDER));
+				shellMenu.AppendMenu(MF_STRING, IDC_SFV_CHECH_FILE, CTSTRING(SFV_CHECK_FILE));
+				shellMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT, CTSTRING(GRANT_EXTRA_SLOT));
+				shellMenu.AppendMenu(MF_SEPARATOR);
+				shellMenu.AppendMenu(MF_POPUP, (UINT) (HMENU) copyMenu, CTSTRING(COPY));
 
-					shellMenu.ShowContextMenu(m_hWnd, pt);
-					bShellMenuShown = true;
-				}
-			}
+				auto path = ctrlList.getItemData(ctrlList.GetSelectedIndex())->getTarget();
+				shellMenu.appendShellMenu({ path });
+			}			
 
-			if(!bShellMenuShown)
-				ctxMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);			
-
+			shellMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
+			shellMenu.AppendMenu(MF_STRING, IDC_TOTAL, CTSTRING(REMOVE_ALL));
+			shellMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 			return TRUE; 
 		}
 		bHandled = FALSE;
@@ -472,7 +428,6 @@ protected:
 	};
 
 	CStatusBarCtrl ctrlStatus;
-	CMenu ctxMenu;
 	CMenu copyMenu;
 
 	TypedListViewCtrl<FinishedItem, id> ctrlList;

@@ -327,7 +327,7 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	ScreenToClient(&ptCl); 
 	OnRButtonDown(ptCl); 
 
-	OMenu menu;
+	ShellMenu menu;
 	menu.CreatePopupMenu();
 
 	menu.AppendMenu(MF_STRING, ID_EDIT_COPY, CTSTRING(COPY));
@@ -339,15 +339,15 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 			menu.AppendMenu(MF_STRING, IDC_ADD_AUTO_SEARCH_DIR, CTSTRING(ADD_AUTO_SEARCH_DIR));
 			if (selWord[selWord.length()-1] != PATH_SEPARATOR) {
 				menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH_FILENAME));
-				if (Util::fileExists(Text::fromT(selWord))) {
-					menu.AppendMenu(MF_SEPARATOR);
+				auto path = Text::fromT(selWord);
+				if (Util::fileExists(path)) {
+					menu.appendShellMenu({ path });
 					menu.AppendMenu(MF_STRING, IDC_DELETE_FILE, CTSTRING(DELETE_FILE));
 				} else {
 					menu.AppendMenu(MF_STRING, IDC_ADD_AUTO_SEARCH_FILE, CTSTRING(ADD_AUTO_SEARCH_FILE));
 					menu.AppendMenu(MF_SEPARATOR);
 				}
 			}
-			menu.AppendMenu(MF_STRING, IDC_OPEN_FOLDER, CTSTRING(OPEN_FOLDER));
 		/*} else {
 			menu.AppendMenu(MF_STRING, IDC_SEARCH, CTSTRING(SEARCH));
 		}*/
@@ -361,8 +361,7 @@ LRESULT SystemFrame::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	menu.AppendMenu(MF_STRING, ID_EDIT_SELECT_ALL, CTSTRING(SELECT_ALL));
 	menu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR_MESSAGES));
 	
-	menu.TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
-
+	menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 	return 0;
 
 }

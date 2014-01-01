@@ -32,7 +32,7 @@ OMenu::~OMenu() {
 	}
 }
 
-OMenu::OMenu(OMenu* aParent /*nullptr*/) : CMenu(), start(IDC_MENURANGE), parent(aParent), defaultSet(false) { 
+OMenu::OMenu(OMenu* aParent /*nullptr*/) : CMenu(), start(IDC_MENURANGE), parent(aParent) { 
 	if (!parent) {
 		MENUINFO mi = { sizeof(MENUINFO), MIM_STYLE, MNS_NOTIFYBYPOS };
 		::SetMenuInfo(m_hMenu, &mi);
@@ -53,9 +53,10 @@ BOOL OMenu::CreatePopupMenu() {
 	return b;
 }
 
-OMenu* OMenu::createSubMenu(const tstring& aTitle, bool appendSeparator /*false*/) {
+OMenu* OMenu::createSubMenu(const tstring& aTitle, bool appendSeparator /*false*/, bool aIsShellMenu /*false*/) {
 	auto menu = getMenu();
 	menu->appendThis(aTitle, appendSeparator);
+	menu->isShellmenu = aIsShellMenu;
 	return menu;
 }
 
@@ -148,7 +149,7 @@ void OMenu::open(HWND aHWND, unsigned flags /*= TPM_LEFTALIGN | TPM_RIGHTBUTTON*
 void OMenu::disableEmptyMenus() {
 	for (auto& m: subMenuList) {
 		auto itemCount = m->GetMenuItemCount();
-		if (itemCount > 1)
+		if (itemCount > 1 || m->isShellmenu)
 			continue;
 
 		if (itemCount == 1) {
