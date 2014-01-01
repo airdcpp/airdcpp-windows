@@ -78,7 +78,6 @@ tstring WinUtil::tth;
 bool WinUtil::urlDcADCRegistered = false;
 bool WinUtil::urlMagnetRegistered = false;
 bool WinUtil::isAppActive = false;
-DWORD WinUtil::comCtlVersion = 0;
 CHARFORMAT2 WinUtil::m_TextStyleTimestamp;
 CHARFORMAT2 WinUtil::m_ChatTextGeneral;
 CHARFORMAT2 WinUtil::m_TextStyleMyNick;
@@ -515,11 +514,6 @@ void WinUtil::init(HWND hWnd) {
 	if(SETTING(MAGNET_REGISTER)) {
 		registerMagnetHandler();
 		urlMagnetRegistered = true; 
-	}
-
-	DWORD dwMajor = 0, dwMinor = 0;
-	if(SUCCEEDED(ATL::AtlGetCommCtrlVersion(&dwMajor, &dwMinor))) {
-		comCtlVersion = MAKELONG(dwMinor, dwMajor);
 	}
 	
 	hook = SetWindowsHookEx(WH_KEYBOARD, &KeyboardProc, NULL, GetCurrentThreadId());

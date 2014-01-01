@@ -242,7 +242,6 @@ public:
 	static CHARFORMAT2 m_ChatTextPrivate;
 	static CHARFORMAT2 m_ChatTextLog;
 	static bool mutesounds;
-	static DWORD comCtlVersion;
 
 	static double getFontFactor();
 	static bool updated;

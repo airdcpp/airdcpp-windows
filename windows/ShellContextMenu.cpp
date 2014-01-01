@@ -195,7 +195,7 @@ LRESULT ShellMenu::handleUnInitMenuPopup(UINT uMsg, WPARAM wParam, LPARAM lParam
 	return dispatch(uMsg, wParam, lParam, bHandled);
 }
 
-LRESULT ShellMenu::handleMenuSelect(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+LRESULT ShellMenu::handleMenuSelect(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
 	// make sure this isn't a "menu closed" signal
 	if((HIWORD(wParam) == 0xFFFF) && (lParam == 0))
 		return false;
