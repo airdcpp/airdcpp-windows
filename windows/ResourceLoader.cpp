@@ -38,6 +38,11 @@ COLORREF ResourceLoader::GrayPalette[256];
 HICON ResourceLoader::iconInfo = NULL;
 HICON ResourceLoader::iconWarning = NULL;
 HICON ResourceLoader::iconError = NULL;
+HICON ResourceLoader::hubIcon = NULL;
+HICON ResourceLoader::hubOfflineIcon = NULL;
+HICON ResourceLoader::hubOPIcon = NULL;
+HICON ResourceLoader::hubRegIcon = NULL;
+
 
 void ResourceLoader::load() {
 
@@ -55,6 +60,14 @@ void ResourceLoader::unload() {
 	userImages.Destroy();
 	flagImages.Destroy();
 	autoSearchStatuses.Destroy();
+	DestroyIcon(hubIcon);
+	DestroyIcon(hubOPIcon);
+	DestroyIcon(hubRegIcon);
+	DestroyIcon(hubOfflineIcon);
+	DestroyIcon(iconError);
+	DestroyIcon(iconInfo);
+	DestroyIcon(iconWarning);
+
 }
 
 CImageList& ResourceLoader::getUserImages() {
@@ -309,7 +322,7 @@ HICON ResourceLoader::mergeIcons(HICON tmp1, HICON tmp2, int size){
 	CImageList mergelist;
 	mergelist.Merge(tmp, 0, tmp, 1, 0, 0);
 
-	HICON merged = CopyIcon(mergelist.GetIcon(0, ILD_TRANSPARENT));
+	HICON merged = mergelist.GetIcon(0, ILD_TRANSPARENT);
 	tmp.Destroy();
 	mergelist.Destroy();
 	return merged;
@@ -567,6 +580,30 @@ HICON ResourceLoader::getSeverityIcon(uint8_t sev) {
 			return iconError;
 		default :
 			break;
+	}
+	return NULL;
+}
+
+HICON ResourceLoader::getHubTabIcon(int i) {
+	switch (i) {
+	case 0:
+		if (!hubIcon)
+			hubIcon = loadIcon(IDI_HUB, 16);
+		return hubIcon;
+	case 1:
+		if (!hubRegIcon)
+			hubRegIcon = mergeIcons(loadIcon(IDI_HUB, 16), loadIcon(IDI_HUBREG, 16), 16);
+		return hubRegIcon;
+	case 2:
+		if (!hubOPIcon)
+			hubOPIcon = mergeIcons(loadIcon(IDI_HUB, 16), loadIcon(IDI_HUBOP, 16), 16);
+		return hubOPIcon;
+	case 3:
+		if (!hubOfflineIcon)
+			hubOfflineIcon = loadIcon(IDI_HUBOFF, 16);
+		return hubOfflineIcon;
+	default:
+		break;
 	}
 	return NULL;
 }

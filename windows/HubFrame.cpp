@@ -693,13 +693,13 @@ void HubFrame::onUpdateTabIcons() {
 
 void HubFrame::setTabIcons() {
 	if (wentoffline)
-		setIcon(ResourceLoader::getHubImages().GetIcon(3));
+		setIcon(ResourceLoader::getHubTabIcon(3));
 	else if (countType == Client::COUNT_OP)
-		setIcon(ResourceLoader::getHubImages().GetIcon(2));
+		setIcon(ResourceLoader::getHubTabIcon(2));
 	else if (countType == Client::COUNT_REGISTERED)
-		setIcon(ResourceLoader::getHubImages().GetIcon(1));
+		setIcon(ResourceLoader::getHubTabIcon(1));
 	else
-		setIcon(ResourceLoader::getHubImages().GetIcon(0));
+		setIcon(ResourceLoader::getHubTabIcon(0));
 }
 
 void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {

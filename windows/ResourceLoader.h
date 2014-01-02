@@ -61,6 +61,7 @@ public:
 	static CImageList flagImages;
 
 	static HICON getSeverityIcon(uint8_t sev);
+	static HICON getHubTabIcon(int i);
 
 	enum {
 		DIR_NORMAL,
@@ -98,6 +99,11 @@ private:
 	static HICON iconInfo;
 	static HICON iconWarning;
 	static HICON iconError;
+
+	static HICON hubIcon;
+	static HICON hubRegIcon;
+	static HICON hubOPIcon;
+	static HICON hubOfflineIcon;
 
 };
 
