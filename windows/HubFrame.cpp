@@ -583,7 +583,7 @@ void HubFrame::onDisconnected(const string& aReason) {
 	clearUserList();
 	setDisconnected(true);
 	wentoffline = true;
-	onUpdateTabIcons();
+	setTabIcons();
 
 	if ((!SETTING(SOUND_HUBDISCON).empty()) && (!SETTING(SOUNDS_DISABLED)))
 		WinUtil::playSound(Text::toT(SETTING(SOUND_HUBDISCON)));
@@ -597,7 +597,7 @@ void HubFrame::onConnected() {
 	addStatus(TSTRING(CONNECTED), LogManager::LOG_INFO, WinUtil::m_ChatTextServer);
 	wentoffline = false;
 	setDisconnected(false);
-	onUpdateTabIcons();
+	setTabIcons();
 
 	tstring text = Text::toT(client->getCipherName());
 	ctrlStatus.SetText(1, text.c_str());
@@ -685,26 +685,21 @@ void HubFrame::onPassword() {
 }
 
 void HubFrame::onUpdateTabIcons() {
-	//Nothing to update, return
-	if (client->getCountType() == countType)
-		return;
-
-	countType = client->getCountType();
-
-	switch(countType) {
-	case Client::COUNT_OP:
-		setIcon(ResourceLoader::getHubImages().GetIcon(2));
-		break;
-	case Client::COUNT_REGISTERED:
-		setIcon(ResourceLoader::getHubImages().GetIcon(1));
-		break;
-	case Client::COUNT_NORMAL:
-		setIcon(ResourceLoader::getHubImages().GetIcon(0));
-		break;
-	default:
-		setIcon(ResourceLoader::getHubImages().GetIcon(wentoffline ? 3 : 0));
-		break;
+	if (client->getCountType() != countType) {
+		countType = client->getCountType();
+		callAsync([=] { setTabIcons(); });
 	}
+}
+
+void HubFrame::setTabIcons() {
+	if (wentoffline)
+		setIcon(ResourceLoader::getHubImages().GetIcon(3));
+	else if (countType == Client::COUNT_OP)
+		setIcon(ResourceLoader::getHubImages().GetIcon(2));
+	else if (countType == Client::COUNT_REGISTERED)
+		setIcon(ResourceLoader::getHubImages().GetIcon(1));
+	else
+		setIcon(ResourceLoader::getHubImages().GetIcon(0));
 }
 
 void HubFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
@@ -1515,7 +1510,7 @@ void HubFrame::on(UserConnected, const Client* c, const OnlineUserPtr& user) noe
 void HubFrame::on(UserUpdated, const Client*, const OnlineUserPtr& user) noexcept {
 	//If its my identity, check if we need to update the tab icon
 	if (user->getUser() == ClientManager::getInstance()->getMe()) {
-		callAsync([=] { onUpdateTabIcons(); });
+		onUpdateTabIcons(); 
 	}
 	
 	auto task = new UserTask(user);
@@ -1528,7 +1523,7 @@ void HubFrame::on(UsersUpdated, const Client*, const OnlineUserList& aList) noex
 	for(auto& i: aList) {
 		//If its my identity, check if we need to update the tab icon
 		if (i->getUser() == ClientManager::getInstance()->getMe()) {
-			callAsync([=] { onUpdateTabIcons(); });
+			onUpdateTabIcons();
 		}
 
 		auto task = new UserTask(i);

@@ -292,6 +292,7 @@ private:
 	void onPrivateMessage(const ChatMessage& message);
 	void onChatMessage(const ChatMessage& message);
 	void onUpdateTabIcons();
+	void setTabIcons();
 	void onPassword();
 
 	void onConnected();
