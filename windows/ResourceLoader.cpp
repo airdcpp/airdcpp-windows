@@ -35,13 +35,9 @@ CImageList ResourceLoader::arrowImages;
 CImageList ResourceLoader::filelistTbImages;
 CImageList ResourceLoader::hubImages;
 COLORREF ResourceLoader::GrayPalette[256];
-HICON ResourceLoader::iconInfo = NULL;
-HICON ResourceLoader::iconWarning = NULL;
-HICON ResourceLoader::iconError = NULL;
-HICON ResourceLoader::hubIcon = NULL;
-HICON ResourceLoader::hubOfflineIcon = NULL;
-HICON ResourceLoader::hubOPIcon = NULL;
-HICON ResourceLoader::hubRegIcon = NULL;
+CIcon ResourceLoader::iconInfo = NULL;
+CIcon ResourceLoader::iconWarning = NULL;
+CIcon ResourceLoader::iconError = NULL;
 
 
 void ResourceLoader::load() {
@@ -60,14 +56,10 @@ void ResourceLoader::unload() {
 	userImages.Destroy();
 	flagImages.Destroy();
 	autoSearchStatuses.Destroy();
-	DestroyIcon(hubIcon);
-	DestroyIcon(hubOPIcon);
-	DestroyIcon(hubRegIcon);
-	DestroyIcon(hubOfflineIcon);
-	DestroyIcon(iconError);
-	DestroyIcon(iconInfo);
-	DestroyIcon(iconWarning);
-
+	hubImages.Destroy();
+	arrowImages.Destroy();
+	filelistTbImages.Destroy();
+	
 }
 
 CImageList& ResourceLoader::getUserImages() {
@@ -77,8 +69,8 @@ CImageList& ResourceLoader::getUserImages() {
 		const unsigned baseCount = UserInfoBase::USER_ICON_MOD_START;
 		const unsigned modifierCount = UserInfoBase::USER_ICON_LAST - UserInfoBase::USER_ICON_MOD_START;
 
-		HICON bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
-		HICON modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16), loadIcon(IDI_USER_OP, 16), loadIcon(IDI_USER_NOCONNECT, 16)/*, loadIcon(IDI_FAV_USER, 16)*/ };
+		CIcon bases[baseCount] = { loadIcon(IDI_USER_BASE, 16), loadIcon(IDI_USER_AWAY, 16), loadIcon(IDI_USER_BOT, 16) };
+		CIcon modifiers[modifierCount] = { loadIcon(IDI_USER_PASSIVE, 16), loadIcon(IDI_USER_OP, 16), loadIcon(IDI_USER_NOCONNECT, 16)/*, loadIcon(IDI_FAV_USER, 16)*/ };
 
 		for(size_t iBase = 0; iBase < baseCount; ++iBase) {
 			for(size_t i = 0, n = modifierCount * modifierCount; i < n; ++i) {
@@ -101,8 +93,11 @@ CImageList& ResourceLoader::getUserImages() {
 						tmp.ReplaceIcon(0, MergeImages(tmp, 0, icons, i));
 			
 					userImages.AddIcon(tmp.GetIcon(0, ILD_TRANSPARENT));
-				} else 
+					tmp.Destroy();
+				} else {
 					userImages.AddIcon(icons.GetIcon(0, ILD_TRANSPARENT));
+				}
+				icons.Destroy();
 			}
 		}
 	}
@@ -564,7 +559,7 @@ void ResourceLoader::loadFlagImages() {
 	flagImages.CreateFromImage(IDB_FLAGS, 25, 8, CLR_DEFAULT, IMAGE_BITMAP, LR_CREATEDIBSECTION | LR_SHARED); 
 }
 
-HICON ResourceLoader::getSeverityIcon(uint8_t sev) {
+const CIcon& ResourceLoader::getSeverityIcon(uint8_t sev) {
 	switch (sev) {
 		case LogManager::LOG_INFO : 
 			if (!iconInfo)
@@ -581,31 +576,7 @@ HICON ResourceLoader::getSeverityIcon(uint8_t sev) {
 		default :
 			break;
 	}
-	return NULL;
-}
-
-HICON ResourceLoader::getHubTabIcon(int i) {
-	switch (i) {
-	case 0:
-		if (!hubIcon)
-			hubIcon = loadIcon(IDI_HUB, 16);
-		return hubIcon;
-	case 1:
-		if (!hubRegIcon)
-			hubRegIcon = mergeIcons(loadIcon(IDI_HUB, 16), loadIcon(IDI_HUBREG, 16), 16);
-		return hubRegIcon;
-	case 2:
-		if (!hubOPIcon)
-			hubOPIcon = mergeIcons(loadIcon(IDI_HUB, 16), loadIcon(IDI_HUBOP, 16), 16);
-		return hubOPIcon;
-	case 3:
-		if (!hubOfflineIcon)
-			hubOfflineIcon = loadIcon(IDI_HUBOFF, 16);
-		return hubOfflineIcon;
-	default:
-		break;
-	}
-	return NULL;
+	return iconInfo;
 }
 
 //try to keep the icon smoothness but copy it as grayscale.

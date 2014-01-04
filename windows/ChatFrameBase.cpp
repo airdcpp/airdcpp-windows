@@ -84,16 +84,13 @@ void ChatFrameBase::init(HWND m_hWnd, RECT rcDefault) {
 	ctrlClient.SetBackgroundColor(WinUtil::bgColor);
 	//ctrlClient.setClient(aClient);
 
-	expandDown = ResourceLoader::loadIcon(IDI_EXPAND_DOWN, 16);
-	expandUp = ResourceLoader::loadIcon(IDI_EXPAND_UP, 16);
-
 	ctrlTooltips.Create(m_hWnd, rcDefault, NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_BALLOON, WS_EX_TOPMOST);	
 	ctrlTooltips.SetDelayTime(TTDT_AUTOMATIC, 600);
 	ctrlTooltips.Activate(TRUE);
 
 	if(SETTING(SHOW_MULTILINE)){
 		ctrlResize.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_FLAT | BS_ICON | BS_CENTER, 0, IDC_RESIZE);
-		ctrlResize.SetIcon(expandUp);
+		ctrlResize.SetIcon(ResourceLoader::loadIcon(IDI_EXPAND_UP, 16));
 		ctrlResize.SetFont(WinUtil::font);
 		ctrlTooltips.AddTool(ctrlResize.m_hWnd, CTSTRING(MULTILINE_INPUT));
 	}
@@ -364,7 +361,7 @@ void ChatFrameBase::getLineText(tstring& s) {
 
 LRESULT ChatFrameBase::onResize(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
 	resizePressed = !resizePressed;
-	ctrlResize.SetIcon(resizePressed ? expandDown : expandUp);
+	ctrlResize.SetIcon(resizePressed ? ResourceLoader::loadIcon(IDI_EXPAND_DOWN, 16) : ResourceLoader::loadIcon(IDI_EXPAND_UP, 16));
 
 	//resize with the button even if user has set max lines for disabling the function otherwise.
 	const int maxLines = SETTING(MAX_RESIZE_LINES) <= 1 ? 2 : SETTING(MAX_RESIZE_LINES);

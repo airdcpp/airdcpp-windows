@@ -223,7 +223,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	
 	m_hMenu = WinUtil::mainMenu;
 
-	hShutdownIcon = (HICON)::LoadImage(GetModuleHandle(NULL), MAKEINTRESOURCE(IDI_SHUTDOWN), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
+	hShutdownIcon = ResourceLoader::loadIcon(IDI_SHUTDOWN, 16);
 
 	// attach menu
 	m_CmdBar.AttachMenu(m_hMenu);
@@ -1278,11 +1278,8 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 		WaitForSingleObject(stopperThread, 60*1000);
 		CloseHandle(stopperThread);
 		stopperThread = NULL;
-		DestroyIcon(hShutdownIcon); 	
 		DestroyIcon(pmicon.hIcon);
 		DestroyIcon(hubicon.hIcon);
-		DestroyIcon(slotsIcon);
-		DestroyIcon(slotsFullIcon);
 		bHandled = FALSE;
 	}
 

@@ -697,6 +697,8 @@ void WinUtil::uninit() {
 	grantMenu.DestroyMenu();
 	::DeleteObject(OEMFont);
 	::DeleteObject(systemFont);
+	::DeleteObject(progressFont);
+	::DeleteObject(listViewFont);
 
 	UnhookWindowsHookEx(hook);	
 	auto files = File::findFiles(Util::getOpenPath(), "*");
@@ -1204,8 +1206,7 @@ bool WinUtil::parseDBLClick(const tstring& str) {
 
 void WinUtil::SetIcon(HWND hWnd, int aDefault, bool big) {
 	int size = big ? ::GetSystemMetrics(SM_CXICON) : ::GetSystemMetrics(SM_CXSMICON);
-	HICON hIcon = ResourceLoader::loadIcon(aDefault, size);
-	::SendMessage(hWnd, WM_SETICON, big ? ICON_BIG : ICON_SMALL, (LPARAM)hIcon);
+	::SendMessage(hWnd, WM_SETICON, big ? ICON_BIG : ICON_SMALL, (LPARAM)ResourceLoader::loadIcon(aDefault, size));
 }
 
 void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichTextBox* ctrlEdit /*nullptr*/) {

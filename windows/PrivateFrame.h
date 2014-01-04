@@ -153,7 +153,6 @@ private:
 	typedef FrameMap::const_iterator FrameIter;
 	static FrameMap frames;
 	CComboBoxEx ctrlHubSel;
-	CImageList hubSelImages;
 
 	void fillHubSelection();
 
@@ -162,8 +161,6 @@ private:
 	bool online;
 	void changeClient();
 	void showHubSelection(bool show);
-
-	HICON userOffline;
 
 	HintedUser replyTo;
 	const UserPtr& getUser() const { return replyTo.user; }	
@@ -177,6 +174,9 @@ private:
 	tstring nicks;
 	tstring hubNames;
 	ParamMap ucLineParams;
+	
+	CIcon tabIcon;
+	CIcon userOffline;
 
 	void checkClientChanged(const HintedUser& newUser, Client* c, bool ownChange);
 	void updateTabIcon(bool offline);

@@ -388,13 +388,13 @@ public:
 		ctrlConfirmLine.SetWindowText(_T(""));
 
 		ctrlOldDescription.Attach(GetDlgItem(IDC_PSWD_CHNG_OLD));
-		ctrlOldDescription.SetWindowText(CTSTRING(OLD) + ':');
+		ctrlOldDescription.SetWindowText(CTSTRING(OLD));
 
 		ctrlNewDescription.Attach(GetDlgItem(IDC_PSWD_CHNG_NEW));
-		ctrlNewDescription.SetWindowText(CTSTRING(NEW) + ':');
+		ctrlNewDescription.SetWindowText(CTSTRING(NEW));
 
 		ctrlConfirmDescription.Attach(GetDlgItem(IDC_PSWD_CHNG_CONFIRM_NEW));
-		ctrlConfirmDescription.SetWindowText(CTSTRING(CONFIRM_NEW) + ':');
+		ctrlConfirmDescription.SetWindowText(CTSTRING(CONFIRM_NEW));
 
 		ctrlOK.Attach(GetDlgItem(IDOK));
 		ctrlOK.SetWindowText(ok.c_str());

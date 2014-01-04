@@ -418,7 +418,6 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		closed = true;
-		DestroyIcon(userOffline);
 		PostMessage(WM_CLOSE);
 		return 0;
 	} else {
@@ -618,8 +617,8 @@ void PrivateFrame::updateTabIcon(bool offline) {
 	}
 	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(replyTo);
 	if (ou) {
-		HICON icon = ResourceLoader::getUserImages().GetIcon(ou->getImageIndex());
-		setIcon(icon);
+		tabIcon = ResourceLoader::getUserImages().GetIcon(ou->getImageIndex());
+		setIcon(tabIcon);
 	}
 }
 

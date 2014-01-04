@@ -54,14 +54,14 @@ public:
 	
 	static HICON loadIcon(int aDefault, int size = 0);
 	static HICON convertGrayscaleIcon(HICON hIcon);
+
 	static HBITMAP getBitmapFromIcon(long defaultIcon, COLORREF crBgColor, int xSize = 0, int ySize = 0);
 	
 	static tstring getIconPath(const tstring& filename);
 
 	static CImageList flagImages;
 
-	static HICON getSeverityIcon(uint8_t sev);
-	static HICON getHubTabIcon(int i);
+	static const CIcon& getSeverityIcon(uint8_t sev);
 
 	enum {
 		DIR_NORMAL,
@@ -96,14 +96,9 @@ private:
 	
 	static tstring m_IconPath;
 
-	static HICON iconInfo;
-	static HICON iconWarning;
-	static HICON iconError;
-
-	static HICON hubIcon;
-	static HICON hubRegIcon;
-	static HICON hubOPIcon;
-	static HICON hubOfflineIcon;
+	static CIcon iconInfo;
+	static CIcon iconWarning;
+	static CIcon iconError;
 
 };
 

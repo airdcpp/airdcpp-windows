@@ -170,6 +170,7 @@ public:
 		bih.biClrUsed = 32;
 		HBITMAP hBitmap = ::CreateDIBitmap(hDC.m_hDC, &bih, 0, NULL, NULL, DIB_RGB_COLORS);
 		::DeleteObject(::SelectObject(fci->hDC, hBitmap));
+		DeleteObject(hBitmap);
 
 		if (!light) {
 			for (int _x = 0; _x < w; ++_x) {

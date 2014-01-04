@@ -287,6 +287,8 @@ private:
     string sColumsWidth;
     string sColumsVisible;
 
+	CIcon tabIcon;
+
 	void updateStatusBar();
 	void onPrivateMessage(const ChatMessage& message);
 	void onChatMessage(const ChatMessage& message);

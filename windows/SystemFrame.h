@@ -180,12 +180,12 @@ private:
 	void Colorize(const tstring& line, LONG Begin);
 	boost::wregex reg;
 
-	HBITMAP  hbInfo;
-	HBITMAP  hbWarning;
-	HBITMAP  hbError;
+	CBitmap  hbInfo;
+	CBitmap  hbWarning;
+	CBitmap  hbError;
 
-	HICON tabError;
-	HICON tabNormal;
+	CIcon tabError;
+	CIcon tabNormal;
 
 	bool errorNotified;
 	bool lButtonDown;

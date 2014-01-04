@@ -394,9 +394,9 @@ private:
 
 	static bool bShutdown;
 	static uint64_t iCurrentShutdownTime;
-	HICON hShutdownIcon;
-	HICON slotsIcon;
-	HICON slotsFullIcon;
+	CIcon hShutdownIcon;
+	CIcon slotsIcon;
+	CIcon slotsFullIcon;
 
 	CContainedWindow statusContainer;
 
@@ -437,8 +437,8 @@ private:
 	
 	void loadCmdBarImageList(CImageList& images);
 
-	HICON awayIconOFF;
-	HICON awayIconON;
+	CIcon awayIconOFF;
+	CIcon awayIconON;
 
 	HANDLE stopperThread;
 

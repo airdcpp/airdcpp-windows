@@ -75,7 +75,7 @@ void PopupManager::Show(const tstring &aMsg, const tstring &aTitle, int Icon, HI
 	if(PopupImage != SETTING(POPUPFILE) || popuptype != SETTING(POPUP_TYPE)) {
 		PopupImage = SETTING(POPUPFILE);
 		popuptype = SETTING(POPUP_TYPE);
-		hBitmap = (HBITMAP)::LoadImage(NULL, (Text::toT(PopupImage).c_str()), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION);
+		hBitmap = (HBITMAP)::LoadImage(NULL, (Text::toT(PopupImage).c_str()), IMAGE_BITMAP, 0, 0, LR_LOADFROMFILE | LR_CREATEDIBSECTION | LR_SHARED);
 		if(hBitmap != NULL && SETTING(POPUP_TYPE) == CUSTOM) {
 			BITMAP bm;
 			GetObject(hBitmap,sizeof(bm),&bm);

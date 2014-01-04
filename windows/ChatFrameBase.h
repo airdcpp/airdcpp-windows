@@ -89,16 +89,12 @@ protected:
 
 	OMenu emoMenu;
 
-	HICON expandUp;
-	HICON expandDown;
-
 	CEdit ctrlMessage;
 	CButton ctrlEmoticons;
 	CButton ctrlMagnet;
 	CButton ctrlResize;
 	CToolTipCtrl ctrlTooltips;
 	bool resizePressed;
-
 
 	RichTextBox ctrlClient;
 
