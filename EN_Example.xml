@@ -1746,6 +1746,7 @@ Do you want to use this destination anyway?</string>
 	<string name="ListAlreadyQueued">The file list is queued already</string>
 	<string name="FileXQueued">The file %1% has been added in queue (%2%)</string>
 	<string name="AddBundleErrorsOcc">The following error(s) occurred when queueing the bundle %1% from a user %2%: %3%</string>
+	<string name="AddFileError">Failed to queue the file %1% from a user %2%: %3%</string>
 	<string name="XFileCount">%1% (%2% out of %3% bundle files were affected)</string>
 	<string name="XFileNames">%1% (affected file(s): %2%)</string>
 	<string name="FileAlreadyQueued">A file with the same hash exists in a queued directory %1%</string>

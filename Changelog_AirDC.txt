@@ -20,6 +20,7 @@ Changed:
 - Update the default hublists
 - Sync all database writes to disk (the latest hashed entries won't get lost in case of unexpected shutdown)
 - Improved error reporting for downloads
+- List shell menus for all matching local files/directories, use a submenu that is loaded only when accessed
 
 Fixed:
 
@@ -38,6 +39,9 @@ Fixed:
 - Fix changing the current share profile in own file list after it has been matched with ADL search
 - Fix issues with the lowest priority
 - Update the date of the parent directory when share monitoring changes are applied or bundles are added in share
+- Report possible errors also when queueing individual files
+- Fix missing incoming search matching for some directory names
+- Avoid a possible freeze when generating full list
 
 
 Removed:
