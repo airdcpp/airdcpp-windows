@@ -10,6 +10,7 @@ Added:
 - Settings for message filtering mainchat or private messages
 - Option for showing ignored and message filtered chat messages in systemlog 
 - Severity icons in PM and Hub windows statusbars
+- Option to open .nfo files externally
 
 Changed:
 

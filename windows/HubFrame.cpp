@@ -489,7 +489,8 @@ bool HubFrame::isIgnoredOrFiltered(const ChatMessage& msg, bool PM){
 			if (PM) {
 				tmp = filter ? STRING(PM_MESSAGE_FILTERED) : STRING(PM_MESSAGE_IGNORED);
 			} else {
-				tmp = filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED) + "[" + client->getHubName() + "] ";
+				string hub = "[" + (!client->getHubName().empty() ? (client->getHubName().size() > 50 ? (client->getHubName().substr(0, 50) + "...") : client->getHubName()) : client->getHubUrl()) + "] ";
+				tmp = (filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED)) + hub;
 			}
 			tmp += "<" + identity.getNick() + "> " + msg.text;
 			LogManager::getInstance()->message(tmp, LogManager::LOG_INFO);
