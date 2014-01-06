@@ -68,6 +68,8 @@
 #include "../client/version.h"
 #include "../client/SettingHolder.h"
 
+#include <VersionHelpers.h>
+
 MainFrame* MainFrame::anyMF = NULL;
 bool MainFrame::bShutdown = false;
 uint64_t MainFrame::iCurrentShutdownTime = 0;
@@ -426,7 +428,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		m_PictureWindow.Load(Text::toT(currentPic).c_str());
 	}
 
-	if (Util::IsOSVersionOrGreater(6, 2) && WinUtil::isDesktopOs() && WinUtil::isElevated()) {
+	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && WinUtil::isElevated()) {
 		WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING));
 	}
 

@@ -394,8 +394,6 @@ public:
 	
 	static double toBytes(TCHAR* aSize);
 
-	static bool isDesktopOs();
-
 	//static void appendPrioMenu(OMenu& aParent, QueueItemBase* aBase, bool isBundle, function<void (QueueItemBase::Priority aPrio)> prioF, function<void ()> autoPrioF);
 	static void appendBundlePrioMenu(OMenu& aParent, const BundleList& aBundles);
 	static void appendFilePrioMenu(OMenu& aParent, const QueueItemList& aFiles);
