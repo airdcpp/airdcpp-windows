@@ -661,17 +661,12 @@ void DirectoryListingFrame::findSearchHit(bool newDir /*false*/) {
 	// Check file names in list pane
 	while(searchPos < ctrlFiles.list.GetItemCount() && searchPos >= 0) {
 		const ItemInfo* ii = ctrlFiles.list.getItemData(searchPos);
-		if (search->root && ii->type == ItemInfo::FILE) {
-			if (*search->root == ii->file->getTTH()) {
+		if(ii->type == ItemInfo::FILE) {
+			if(search->matchesFile(ii->file->getName(), ii->file->getSize(), ii->file->getRemoteDate(), ii->file->getTTH())) {
 				found = true;
 				break;
 			}
-		} else if(ii->type == ItemInfo::FILE && search->itemType != SearchQuery::TYPE_DIRECTORY) {
-			if(search->matchesFileLower(Text::toLower(ii->file->getName()), ii->file->getSize(), ii->file->getRemoteDate())) {
-				found = true;
-				break;
-			}
-		} else if(ii->type == ItemInfo::DIRECTORY && search->itemType != SearchQuery::TYPE_FILE && search->matchesDirectory(ii->dir->getName())) {
+		} else if(ii->type == ItemInfo::DIRECTORY && search->matchesDirectory(ii->dir->getName())) {
 			if (search->matchesSize(ii->dir->getTotalSize(false))) {
 				found = true;
 				break;
@@ -1532,8 +1527,8 @@ void DirectoryListingFrame::handleViewNFO(bool usingTree) {
 				if (dl->getIsOwnList()) {
 					try {
 						SearchResultList results;
-						auto s = unique_ptr<SearchQuery>(SearchQuery::getSearch(Util::emptyString, Util::emptyString, 0, SearchManager::TYPE_ANY, SearchManager::SIZE_DONTCARE, { ".nfo" }, SearchQuery::MATCH_NAME, false));
-						ShareManager::getInstance()->search(results, *s.get(), 10, Util::toInt(dl->getFileName()), ClientManager::getInstance()->getMyCID(), Util::toAdcFile(ii->dir->getPath()));
+						auto s = unique_ptr<SearchQuery>(SearchQuery::getSearch(Util::emptyString, Util::emptyString, 0, SearchManager::TYPE_ANY, SearchManager::SIZE_DONTCARE, { ".nfo" }, SearchQuery::MATCH_NAME, false, 10));
+						ShareManager::getInstance()->search(results, *s.get(), Util::toInt(dl->getFileName()), ClientManager::getInstance()->getMyCID(), Util::toAdcFile(ii->dir->getPath()));
 
 						if (!results.empty()) {
 							auto paths = AirUtil::getDupePaths(DUPE_SHARE, results.front()->getTTH());

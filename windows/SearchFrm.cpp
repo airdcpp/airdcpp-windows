@@ -583,7 +583,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 		//no further validation, trust that the other client knows what he's sending... unless we are using excludes
 		//if (usingExcludes) {
 			RLock l (cs);
-			if (curSearch && ((usingExcludes && curSearch->isExcluded(aResult->getPath())) || (SETTING(IGNORE_INDIRECT_SR) && curSearch->anyIncludeMatches(aResult->getFileName())))) {
+			if (curSearch && ((usingExcludes && curSearch->isExcluded(aResult->getPath())) || false)) {
 				callAsync([this] { onResultFiltered(); });
 				return;
 			}
@@ -600,7 +600,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 				valid = false;
 			}
 		} else {
-			if (!(curSearch->root ? *curSearch->root == aResult->getTTH() : curSearch->matchesFileLower(Text::toLower(aResult->getPath()), aResult->getSize(), aResult->getDate()))) {
+			if (curSearch->matchesFile(aResult->getPath(), aResult->getSize(), aResult->getDate(), aResult->getTTH())) {
 				valid = false;
 			}
 		}
