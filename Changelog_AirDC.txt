@@ -14,6 +14,7 @@ Added:
 
 Changed:
 
+- Return more relevant search responses: https://bugs.launchpad.net/airdcpp/+bug/1265889 (allows using more general search terms)
 - Last online time will now show for all offline users in usersframe
 - Reorder readd/remove source rightclick in queueframe, move All at the top
 - Settings profiles change toolbar buttons and order (old toolbar button order will get reset, sorry for that)
@@ -22,6 +23,10 @@ Changed:
 - Sync all database writes to disk (the latest hashed entries won't get lost in case of unexpected shutdown)
 - Improved error reporting for downloads
 - List shell menus for all matching local files/directories, use a submenu that is loaded only when accessed
+- Auto search: Show an error message if the picked item fails because of a shared/queued directory dupe
+- Auto search: Clear the last error when an associated bundle finishes
+- Auto search: Ignore the search time limitations when there are missing files
+- Improve statistics (/sharestats and /clientstats)
 
 Fixed:
 
