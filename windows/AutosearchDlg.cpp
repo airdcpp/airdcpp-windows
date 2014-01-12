@@ -312,7 +312,8 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 		str.resize(GetDlgItemText(IDC_AS_SEARCH_STRING, &str[0], ctrlSearch.GetWindowTextLength()+1));
 		searchString = Text::fromT(str);
 
-		if (AutoSearchManager::getInstance()->hasNameDupe(searchString, false, as)) {
+		auto lst = AutoSearchManager::getInstance()->getSearchesByString(searchString, as);
+		if (!lst.empty()) {
 			auto msg = str + _T(": ") + TSTRING(ITEM_NAME_EXISTS) + _T("\r\n\r\n") + TSTRING(AS_ADD_DUPE_CONFIRM);
 			if (!WinUtil::showQuestionBox(msg, MB_ICONQUESTION))
 				return 0;
