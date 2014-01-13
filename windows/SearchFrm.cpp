@@ -827,7 +827,7 @@ void SearchFrame::handleViewNfo() {
 	auto viewNfo = [=](const SearchInfo* si) {
 		if (si->sr->getType() == SearchResult::TYPE_FILE && Util::getFileExt(si->sr->getFileName()) == ".nfo") {
 			try {
-				QueueManager::getInstance()->addOpenedItem(si->sr->getFileName(), si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), true);
+				QueueManager::getInstance()->addOpenedItem(si->sr->getFileName(), si->sr->getSize(), si->sr->getTTH(), si->sr->getUser(), !SETTING(NFO_EXTERNAL));
 			} catch(const Exception&) {
 				// Ignore for now...
 			}

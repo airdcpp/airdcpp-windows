@@ -27,17 +27,6 @@
 //#define MAX_TEXT_LEN 32768
 
 void TextFrame::openWindow(const tstring& aFileName, Type aType) {
-	if (SETTING(NFO_EXTERNAL) && aType == NORMAL && Util::getFileExt(aFileName) == _T(".nfo")) {
-		SHELLEXECUTEINFO sei = { sizeof(sei) };
-		sei.fMask = SEE_MASK_ASYNCOK;
-		sei.nShow = SW_SHOWNORMAL;
-		sei.lpVerb = _T("open");
-		sei.lpFile = aFileName.c_str();
-		if (!ShellExecuteEx(&sei))
-			LogManager::getInstance()->message(STRING(ERROR_OPENING_NFO_EXTERNAL) + Util::translateError(::GetLastError()), LogManager::LOG_ERROR);
-		return;
-	}
-
 	TextFrame* frame = new TextFrame(aFileName, aType);
 	if(SETTING(POPUNDER_TEXT) && aType == NORMAL)
 		WinUtil::hiddenCreateEx(frame);
