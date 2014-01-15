@@ -33,22 +33,28 @@
 #include "../client/Localization.h"
 #include "../client/DirectoryListingManager.h"
 #include "../client/GeoManager.h"
+#include "../client/ScopedFunctor.h"
 
 #include <boost/range/numeric.hpp>
 
 
-int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_HITS, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
-	COLUMN_PATH, COLUMN_SLOTS, COLUMN_CONNECTION, COLUMN_HUB, COLUMN_EXACT_SIZE, COLUMN_IP, COLUMN_TTH, COLUMN_DATE };
-int SearchFrame::columnSizes[] = { 210, 80, 100, 50, 80, 100, 40, 70, 150, 80, 100, 150, 100 };
+int SearchFrame::columnIndexes[] = { COLUMN_FILENAME, COLUMN_RELEVANCY, COLUMN_HITS, COLUMN_USERS, COLUMN_TYPE, COLUMN_SIZE,
+	COLUMN_DATE, COLUMN_PATH, COLUMN_SLOTS, COLUMN_CONNECTION, 
+	COLUMN_HUB, COLUMN_EXACT_SIZE, COLUMN_IP, COLUMN_TTH };
+int SearchFrame::columnSizes[] = { 210, 50, 50, 100, 60, 80, 
+	100, 100, 40, 80, 
+	150, 80, 110, 150 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::FILE,  ResourceManager::HIT_COUNT, ResourceManager::USER, ResourceManager::TYPE, ResourceManager::SIZE,
-	ResourceManager::PATH, ResourceManager::SLOTS, ResourceManager::CONNECTION, 
-	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT, ResourceManager::DATE };
+static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::RELEVANCY, ResourceManager::HIT_COUNT, ResourceManager::USER, ResourceManager::TYPE, ResourceManager::SIZE,
+	ResourceManager::DATE, ResourceManager::PATH, ResourceManager::SLOTS, ResourceManager::CONNECTION,
+	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT };
 
 static SettingsManager::BoolSetting filterSettings [] = { SettingsManager::FILTER_SEARCH_SHARED, SettingsManager::FILTER_SEARCH_QUEUED, SettingsManager::FILTER_SEARCH_INVERSED, SettingsManager::FILTER_SEARCH_TOP, 
 	SettingsManager::FILTER_SEARCH_PARTIAL_DUPES, SettingsManager::FILTER_SEARCH_RESET_CHANGE };
 
-static ColumnType columnTypes [] = { COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT, COLUMN_SIZE, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_SPEED, COLUMN_TEXT, COLUMN_SIZE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TIME };
+static ColumnType columnTypes[] = { COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT, COLUMN_SIZE, 
+	COLUMN_TIME, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_SPEED, 
+	COLUMN_TEXT, COLUMN_SIZE, COLUMN_TEXT, COLUMN_TEXT };
 
 
 SearchFrame::FrameMap SearchFrame::frames;
@@ -280,7 +286,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if(SETTING(SORT_DIRS)) {
 		ctrlResults.list.setSortColumn(COLUMN_FILENAME);
 	} else {
-		ctrlResults.list.setSortColumn(COLUMN_HITS);
+		ctrlResults.list.setSortColumn(COLUMN_RELEVANCY);
 		ctrlResults.list.setAscending(false);
 	}
 
@@ -570,45 +576,43 @@ LRESULT SearchFrame::onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndC
 }
 
 void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) noexcept {
-	if(!aResult->getToken().empty()) {
+	if (!curSearch)
+		return;
+
+	if (!aResult->getToken().empty()) {
+		// ADC
 		if (token != aResult->getToken()) {
 			return;
 		}
-
-		if (curSearch && curSearch->itemType == SearchQuery::TYPE_FILE && aResult->getType() != SearchResult::TYPE_FILE) {
-			callAsync([this] { onResultFiltered(); });
-			return;
-		}
-
-		//no further validation, trust that the other client knows what he's sending... unless we are using excludes
-		//if (usingExcludes) {
-			RLock l (cs);
-			if (curSearch && ((usingExcludes && curSearch->isExcluded(aResult->getPath())) || false)) {
-				callAsync([this] { onResultFiltered(); });
-				return;
-			}
-		//}
 	} else {
-		// Check that this is really a relevant search result...
+		// NMDC
+
+		// exludes
 		RLock l(cs);
-		if (!curSearch)
-			return;
-
-		bool valid = true;
-		if (aResult->getType() == SearchResult::TYPE_DIRECTORY) {
-			if (!curSearch->matchesDirectory(aResult->getPath())) {
-				valid = false;
-			}
-		} else {
-			if (curSearch->matchesFile(aResult->getPath(), aResult->getSize(), aResult->getDate(), aResult->getTTH())) {
-				valid = false;
-			}
-		}
-
-		if (!valid) {
+		if (usingExcludes && curSearch->isExcluded(aResult->getPath())) {
 			callAsync([this] { onResultFiltered(); });
 			return;
 		}
+
+		if (curSearch->root && *curSearch->root != aResult->getTTH()) {
+			callAsync([this] { onResultFiltered(); });
+			return;
+		}
+	}
+
+	if (curSearch->itemType == SearchQuery::TYPE_FILE && aResult->getType() != SearchResult::TYPE_FILE) {
+		callAsync([this] { onResultFiltered(); });
+		return;
+	}
+
+	RLock l(cs);
+
+	// path
+	SearchQuery::Recursion recursion;
+	ScopedFunctor([this] { curSearch->recursion = nullptr; });
+	if (!curSearch->root && !curSearch->root && !curSearch->matchesNmdcPath(aResult->getPath(), recursion)) {
+		callAsync([this] { onResultFiltered(); });
+		return;
 	}
 
 	// Reject results without free slots
@@ -620,7 +624,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 	}
 
 
-	SearchInfo* i = new SearchInfo(aResult);
+	SearchInfo* i = new SearchInfo(aResult, *curSearch.get());
 	callAsync([=] { addSearchResult(i); });
 }
 
@@ -650,7 +654,7 @@ void SearchFrame::on(TimerManagerListener::Second, uint64_t aTick) noexcept {
 	}
 }
 
-SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), collapsed(true), parent(NULL), flagIndex(0), hits(0), dupe(DUPE_NONE) { 
+SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchQuery& aSearch) : sr(aSR) {
 	//check the dupe
 	if(SETTING(DUPE_SEARCH)) {
 		if (sr->getType() == SearchResult::TYPE_DIRECTORY)
@@ -658,6 +662,14 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 		else
 			dupe = AirUtil::checkFileDupe(sr->getTTH());
 	}
+
+	// relevancy
+	//int level = count(aSR->getPath().begin(), aSR->getPath().end(), '\\');
+	//if (aSR->getType() == SearchResult::TYPE_FILE)
+	//	level++;
+
+	// don't count the levels...
+	matchRelevancy = SearchQuery::getRelevancyScores(aSearch, 0, aSR->getType() == SearchResult::TYPE_DIRECTORY, aSR->getFileName());
 
 	//get the ip info
 	string ip = sr->getIP();
@@ -669,7 +681,12 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR) : sr(aSR), colla
 			flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
 		}
 	}
+
 	ipText = Text::toT(ip);
+}
+
+double SearchFrame::SearchInfo::getTotalRelevancy() const {
+	return (hits*0.01)+matchRelevancy;
 }
 
 StringList SearchFrame::SearchInfo::getDupePaths() const {
@@ -695,7 +712,11 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 				return lstrcmpi(a->getText(COLUMN_FILENAME).c_str(), b->getText(COLUMN_FILENAME).c_str());
 			else 
 				return ( a->sr->getType() == SearchResult::TYPE_DIRECTORY ) ? -1 : 1;
-
+		case COLUMN_RELEVANCY:
+			//if (a->getTotalRelevancy() != b->getTotalRelevancy())
+				return compare(a->getTotalRelevancy(), b->getTotalRelevancy());
+			//else
+			//	return compare(a->hits, b->hits);
 		case COLUMN_TYPE: 
 			if(a->sr->getType() == b->sr->getType())
 				return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
@@ -733,6 +754,8 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			} else {
 				return Text::toT(sr->getFileName());
 			}
+		case COLUMN_RELEVANCY:
+			return Util::toStringW(getTotalRelevancy());
 		/*case COLUMN_FILES: 
 			if (sr->getFileCount() >= 0)
 				return TSTRING_F(X_FILES, sr->getFileCount());

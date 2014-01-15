@@ -230,11 +230,13 @@ private:
 	enum {
 		COLUMN_FIRST,
 		COLUMN_FILENAME = COLUMN_FIRST,
+		COLUMN_RELEVANCY,
 		//COLUMN_FILES,
 		COLUMN_HITS,
 		COLUMN_USERS,
 		COLUMN_TYPE,
 		COLUMN_SIZE,
+		COLUMN_DATE,
 		COLUMN_PATH,
 		COLUMN_SLOTS,
 		COLUMN_CONNECTION,
@@ -242,7 +244,6 @@ private:
 		COLUMN_EXACT_SIZE,
 		COLUMN_IP,		
 		COLUMN_TTH,
-		COLUMN_DATE,
 		COLUMN_LAST
 	};
 
@@ -257,19 +258,18 @@ private:
 	public:
 		typedef SearchInfo* Ptr;
 		typedef vector<Ptr> List;
-		typedef List::const_iterator Iter;
 
 		SearchInfo::List subItems;
 
-		SearchInfo(const SearchResultPtr& aSR);
+		SearchInfo(const SearchResultPtr& aSR, const SearchQuery& aSearch);
 		~SearchInfo() {	}
 
 		const UserPtr& getUser() const { return sr->getUser().user; }
 		const string& getHubUrl() const { return sr->getUser().hint; }
 
-		bool collapsed;
-		size_t hits;
-		SearchInfo* parent;
+		bool collapsed = true;
+		size_t hits = 0;
+		SearchInfo* parent = nullptr;
 
 		struct CheckTTH {
 			CheckTTH() : op(true), firstHubs(true), firstPath(true), firstTTH(true) { }
@@ -301,9 +301,14 @@ private:
 		StringList getDupePaths() const;
 
 		SearchResultPtr sr;
-		GETSET(uint8_t, flagIndex, FlagIndex);
-		GETSET(DupeType, dupe, Dupe);
+		IGETSET(uint8_t, flagIndex, FlagIndex, 0);
+		IGETSET(DupeType, dupe, Dupe, DUPE_NONE);
 		GETSET(tstring, ipText, IpText);
+
+		double getTotalRelevancy() const;
+		double getMatchRelevancy() const { return matchRelevancy; }
+	private:
+		double matchRelevancy = 0;
 	};
 	
 	void performAction(std::function<void (const SearchInfo* aInfo)> f, bool oncePerParent=false);
