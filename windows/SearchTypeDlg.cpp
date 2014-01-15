@@ -89,9 +89,7 @@ LRESULT SearchTypeDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 				return 0;
 			}
 
-			TCHAR buf[512];
-			ctrlTypeName.GetWindowText(buf, 512);
-			name = Text::fromT(buf);
+			name = Text::fromT(WinUtil::getEditText(ctrlTypeName));
 
 			try {
 				SearchManager::getInstance()->validateSearchTypeName(name);

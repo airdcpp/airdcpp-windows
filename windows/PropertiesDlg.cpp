@@ -146,6 +146,7 @@ LRESULT PropertiesDlg::onOK(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 }
 
 LRESULT PropertiesDlg::onCancel(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/,BOOL& bHandled) {
+	WinUtil::lastSettingPage = curPage;
 	SettingsManager::getInstance()->Cancel();
 	bHandled = FALSE;
 	return TRUE;

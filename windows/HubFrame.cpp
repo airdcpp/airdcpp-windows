@@ -1197,10 +1197,7 @@ void HubFrame::onTab() {
 	HWND focus = GetFocus();
 	if( (focus == ctrlMessage.m_hWnd) && !WinUtil::isShift() ) 
 	{
-		tstring text;
-		text.resize(ctrlMessage.GetWindowTextLength());
-
-		ctrlMessage.GetWindowText(&text[0], text.size() + 1);
+		tstring text = WinUtil::getEditText(ctrlMessage);
 
 		string::size_type textStart = text.find_last_of(_T(" \n\t"));
 

@@ -510,12 +510,13 @@ public:
 	static void getProfileConflicts(HWND aParent, int aProfile, ProfileSettingItem::List& conflicts);
 
 	static void appendSpeedCombo(CComboBox& aCombo, SettingsManager::StrSetting aSetting);
-
 	static void appendDateUnitCombo(CComboBox& aCombo, int aSel = 1);
 	static time_t parseDate(CEdit& aDate, CComboBox& aCombo);
 
 	static void appendSizeCombos(CComboBox& aUnitCombo, CComboBox& aModeCombo, int aUnitSel = 2, int aModeSel = 1);
 	static int64_t parseSize(CEdit& aSize, CComboBox& aSizeUnit);
+
+	static tstring getEditText(CEdit& edit);
 
 	static void handleTab(HWND aCurFocus, HWND* ctrlHwnds, int hwndCount);
 	static void addFileDownload(const string& aTarget, int64_t aSize, const TTHValue& aTTH, const HintedUser& aUser, time_t aDate, Flags::MaskType aFlags = 0, int8_t prio = -1);

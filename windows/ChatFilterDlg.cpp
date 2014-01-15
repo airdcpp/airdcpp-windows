@@ -87,14 +87,10 @@ LRESULT ChatFilterDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 			return 0;
 		}
 
-
-		TCHAR buf[512];
-		ctrlNickMatch.GetWindowText(buf, 512);
-		nick = Text::fromT(buf);
+		nick = Text::fromT(WinUtil::getEditText(ctrlNickMatch));
 		nickMethod = (StringMatch::Method)ctrlNickMatchType.GetCurSel();
 
-		ctrlTextMatch.GetWindowText(buf, 512);
-		text = Text::fromT(buf);
+		text = Text::fromT(WinUtil::getEditText(ctrlTextMatch));
 		textMethod = (StringMatch::Method)ctrlTextMatchType.GetCurSel();
 
 	}

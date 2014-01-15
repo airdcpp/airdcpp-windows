@@ -2058,6 +2058,14 @@ time_t WinUtil::parseSize(CEdit& ctrlSize, CComboBox& ctrlSizeMode) {
 	return static_cast<int64_t>(lsize);
 }
 
+tstring WinUtil::getEditText(CEdit& edit) {
+	tstring tmp;
+	tmp.resize(edit.GetWindowTextLength());
+	tmp.resize(edit.GetWindowText(&tmp[0], tmp.size() + 1));
+	return tmp;
+}
+
+
 void WinUtil::handleTab(HWND focus, HWND* ctrlHwnds, int hwndCount) {
 	bool shift = isShift();
 

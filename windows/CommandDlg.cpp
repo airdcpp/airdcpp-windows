@@ -120,9 +120,8 @@ LRESULT CommandDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 LRESULT CommandDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	if(wID == IDOK) {
-		TCHAR buf[256];
-		GetDlgItemText(IDC_NAME, buf, sizeof(buf) - 1);
-		name = buf;
+
+		name = WinUtil::getEditText(ctrlName);
 
 		if((type != 0) && ((ctrlName.GetWindowTextLength() == 0) || (ctrlCommand.GetWindowTextLength()== 0))) {
 			MessageBox(_T("Name and command must not be empty"));
@@ -143,8 +142,7 @@ LRESULT CommandDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/,
 			break;
 		case 3:
 			type = (ctrlOnce.GetCheck() == BST_CHECKED) ? UserCommand::TYPE_CHAT_ONCE : UserCommand::TYPE_CHAT;
-			ctrlNick.GetWindowText(buf, sizeof(buf) - 1);
-			to = buf;
+			to = WinUtil::getEditText(ctrlNick);
 			break;
 		}
 	}
@@ -196,13 +194,10 @@ void CommandDlg::updateType() {
 }
 
 void CommandDlg::updateCommand() {
-	static const size_t BUF_LEN = 1024;
-	TCHAR buf[BUF_LEN];
 	if(type == 0) {
 		command.clear();
 	} else {
-		ctrlCommand.GetWindowText(buf, BUF_LEN-1);
-		command = buf;
+		command = WinUtil::getEditText(ctrlCommand);
 	}
 
 	if(type == 1 && UserCommand::adc(Text::fromT(hub)) && !command.empty() && *(command.end() - 1) != '\n')
@@ -210,10 +205,7 @@ void CommandDlg::updateCommand() {
 }
 
 void CommandDlg::updateHub() {
-	static const size_t BUF_LEN = 1024;
-	TCHAR buf[BUF_LEN];
-	ctrlHub.GetWindowText(buf, BUF_LEN-1);
-	hub = buf;
+	hub = WinUtil::getEditText(ctrlHub);
 	updateCommand();
 }
 
