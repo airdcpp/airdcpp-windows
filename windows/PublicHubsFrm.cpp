@@ -484,11 +484,7 @@ void PublicHubsFrame::updateStatus() {
 
 LRESULT PublicHubsFrame::onFilterChar(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(wParam == VK_RETURN) {
-		tstring tmp;
-		tmp.resize(ctrlFilter.GetWindowTextLength());
-		ctrlFilter.GetWindowText(&tmp[0], tmp.size() + 1);
-
-		filter = Text::fromT(tmp);
+		filter = Text::fromT(WinUtil::getEditText(ctrlFilter));
 
 		updateList();
 	} else {

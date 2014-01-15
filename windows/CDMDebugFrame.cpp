@@ -291,9 +291,7 @@ LRESULT CDMDebugFrame::onSetCheckFilter(UINT /*uMsg*/, WPARAM wParam, LPARAM /*l
 	return 0;
 }
 LRESULT CDMDebugFrame::onChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	sFilterIp.resize(ctrlFilterText.GetWindowTextLength());
-
-	ctrlFilterText.GetWindowText(&sFilterIp[0], sFilterIp.size() + 1);
+	sFilterIp = WinUtil::getEditText(ctrlFilterText);
 
 	UpdateLayout();
 	return 0;

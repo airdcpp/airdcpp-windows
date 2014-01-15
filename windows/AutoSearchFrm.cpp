@@ -258,9 +258,7 @@ LRESULT AutoSearchFrame::onAsTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 	if (loading)
 		return 0;
 
-	tstring val(ctrlAsTime.GetWindowTextLength() + 2, _T('\0'));
-	ctrlAsTime.GetWindowText(&val[0], val.size());
-	int value = Util::toInt(Text::fromT(val));
+	int value = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlAsTime)));
 	if (value < 1) {
 		value = 1;
 		ctrlAsTime.SetWindowText(Text::toT(Util::toString(value)).c_str());
@@ -273,9 +271,7 @@ LRESULT AutoSearchFrame::onAsRTime(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	if (loading)
 		return 0;
 
-	tstring val(ctrlAsRTime.GetWindowTextLength() + 2, _T('\0'));
-	ctrlAsRTime.GetWindowText(&val[0], val.size());
-	int value = Util::toInt(Text::fromT(val));
+	int value = Util::toInt(Text::fromT(WinUtil::getEditText(ctrlAsRTime)));
 	if (value < 30) {
 		value = 30;
 		ctrlAsRTime.SetWindowText(Text::toT(Util::toString(value)).c_str());

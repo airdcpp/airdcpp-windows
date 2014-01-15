@@ -2150,8 +2150,8 @@ BEGIN
     LTEXT           "Choose how you will use the client. This will optimize various client options to be most suitable for your usage case.",IDC_PROFILE_INTRO,7,9,305,27
     LTEXT           "The client is mainly used for transferring files in local network (e.g. LAN parties) or in another closed network (e.g. university netwok)",IDC_LAN_DESC,29,180,271,25
     CONTROL         "Disable transfer encryption (reduces resource usage)",IDC_DISABLE_ENCRYPTION,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,29,208,269,10
-    GROUPBOX        "Settings profiles",IDC_USER_PROFILE_BOX,7,41,305,190
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_TABSTOP,28,207,277,25
+    GROUPBOX        "Settings profiles",IDC_USER_PROFILE_BOX,7,41,305,204
 END
 
 IDD_PROTOCOLBASE DIALOGEX 0, 0, 306, 254

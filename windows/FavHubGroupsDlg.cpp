@@ -95,10 +95,9 @@ void FavHubGroupsDlg::addItem(const tstring& name, bool select /*= false*/) {
 
 bool FavHubGroupsDlg::getItem(tstring& name, bool checkSel) {
 	{
-		name.resize(4096);
 		CEdit wnd;
 		wnd.Attach(GetDlgItem(IDC_NAME));
-		name.resize(wnd.GetWindowText(&name[0], name.size()));
+		name = WinUtil::getEditText(wnd);
 		wnd.Detach();
 		if(name.empty()) {
 			MessageBox(_T("You must enter a group name!"), CTSTRING(MANAGE_GROUPS), MB_ICONERROR);

@@ -54,12 +54,8 @@ LRESULT NotepadFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	if(!closed) {
 		SettingsManager::getInstance()->removeListener(this);
 		if(dirty || ctrlPad.GetModify()) {
-			tstring tmp;
-			tmp.resize(ctrlPad.GetWindowTextLength());
-
-			ctrlPad.GetWindowText(&tmp[0], tmp.size() + 1);
 			try {
-				File(Util::getNotepadFile(), File::WRITE, File::CREATE | File::TRUNCATE).write(Text::fromT(tmp));
+				File(Util::getNotepadFile(), File::WRITE, File::CREATE | File::TRUNCATE).write(Text::fromT(WinUtil::getEditText(ctrlPad)));
 			} catch(const FileException&) {
 				// Oops...
 			}

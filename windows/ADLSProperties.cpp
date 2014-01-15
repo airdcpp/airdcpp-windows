@@ -111,19 +111,15 @@ LRESULT ADLSProperties::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 {
 	if(wID == IDOK) {
 		// Update search
-		TCHAR buf[256];
+		search.setPattern(Text::fromT(WinUtil::getEditText(ctrlSearch)));
 
-		ctrlSearch.GetWindowText(buf, 256);
-		search.setPattern(Text::fromT(buf));
-		ctrlComment.GetWindowText(buf, 521);
-		search.adlsComment = Text::fromT(buf);
-		ctrlDestDir.GetWindowText(buf, 256);
-		search.destDir = Text::fromT(buf);
+		search.adlsComment = Text::fromT(WinUtil::getEditText(ctrlComment));
+		search.destDir = Text::fromT(WinUtil::getEditText(ctrlDestDir));
 
-		ctrlMinSize.GetWindowText(buf, 256);
-		search.minFileSize = (_tcslen(buf) == 0 ? -1 : Util::toInt64(Text::fromT(buf)));
-		ctrlMaxSize.GetWindowText(buf, 256);
-		search.maxFileSize = (_tcslen(buf) == 0 ? -1 : Util::toInt64(Text::fromT(buf)));
+		tstring val = WinUtil::getEditText(ctrlMinSize);
+		search.minFileSize = (val.size() == 0 ? -1 : Util::toInt64(Text::fromT(val)));
+		val = WinUtil::getEditText(ctrlMaxSize);
+		search.maxFileSize = (val.size() == 0 ? -1 : Util::toInt64(Text::fromT(val)));
 
 		search.isActive = (ctrlActive.GetCheck() == 1);
 		search.isAutoQueue = (ctrlAutoQueue.GetCheck() == 1);
