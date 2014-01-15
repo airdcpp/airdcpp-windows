@@ -458,8 +458,10 @@ void SearchFrame::onEnter() {
 
 
 	string s = WinUtil::addHistory(ctrlSearchBox, SettingsManager::HISTORY_SEARCH);
-	if (s.empty())
+	if (s.empty() || SearchQuery::parseSearchString(s).empty()) {
+		ctrlStatus.SetText(1, CTSTRING(ENTER_SEARCH_STRING));
 		return;
+	}
 
 	auto llsize = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 	auto ldate = WinUtil::parseDate(ctrlDate, ctrlDateUnit);
@@ -563,7 +565,6 @@ void SearchFrame::onEnter() {
 
 	if(SETTING(CLEAR_SEARCH)) // Only clear if the search was sent
 		ctrlSearch.SetWindowText(_T(""));
-
 }
 
 LRESULT SearchFrame::onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL & bHandled) {
@@ -663,13 +664,11 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchQuer
 			dupe = AirUtil::checkFileDupe(sr->getTTH());
 	}
 
-	// relevancy
-	//int level = count(aSR->getPath().begin(), aSR->getPath().end(), '\\');
-	//if (aSR->getType() == SearchResult::TYPE_FILE)
-	//	level++;
-
-	// don't count the levels...
+	// don't count the levels because they can't be compared with each others...
 	matchRelevancy = SearchQuery::getRelevancyScores(aSearch, 0, aSR->getType() == SearchResult::TYPE_DIRECTORY, aSR->getFileName());
+	if (all_of(aSearch.getLastPositions().begin(), aSearch.getLastPositions().end(), [](size_t pos) { return pos == string::npos; })) {
+		noNameMatches = true;
+	}
 
 	//get the ip info
 	string ip = sr->getIP();
@@ -686,7 +685,10 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchQuer
 }
 
 double SearchFrame::SearchInfo::getTotalRelevancy() const {
-	return (hits*0.01)+matchRelevancy;
+	// there are subdirectories/files that have more matches than the main directory
+	// don't give too much weight for those
+	double hitRelevancy = hits * (noNameMatches ? 0.0001 : 0.01);
+	return hitRelevancy + matchRelevancy;
 }
 
 StringList SearchFrame::SearchInfo::getDupePaths() const {
