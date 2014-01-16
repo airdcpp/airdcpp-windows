@@ -1771,8 +1771,6 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		if(SETTING(GET_USER_COUNTRY) && (ctrlResults.list.findColumn(cd->iSubItem) == COLUMN_IP)) {
 			CRect rc;
 			SearchInfo* si = (SearchInfo*)cd->nmcd.lItemlParam;
-			if (si->hits > 1)
-				return CDRF_DODEFAULT;
 
 			ctrlResults.list.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
