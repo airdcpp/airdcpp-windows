@@ -27,7 +27,7 @@
 
 PropPage::TextItem Popups::texts[] = {
 	{ IDC_POPUPGROUP, ResourceManager::BALLOON_POPUPS },
-	{ IDC_PREVIEW, ResourceManager::SETCZDC_PREVIEW },
+	{ IDC_PREVIEW, ResourceManager::PREVIEW },
 	{ IDC_POPUPTYPE, ResourceManager::POPUP_TYPE },
 	{ IDC_POPUP_TIME_STR, ResourceManager::POPUP_TIME },
 	{ IDC_POPUP_BACKCOLOR, ResourceManager::POPUP_BACK_COLOR },
@@ -36,7 +36,7 @@ PropPage::TextItem Popups::texts[] = {
 	{ IDC_MAX_MSG_LENGTH_STR, ResourceManager::MAX_MSG_LENGTH },
 	{ IDC_POPUP_IMAGE_GP, ResourceManager::POPUP_IMAGE },
 	{ IDC_POPUPBROWSE, ResourceManager::BROWSE },
-	{ IDC_PREVIEW, ResourceManager::PREVIEW_MENU },
+	{ IDC_PREVIEW, ResourceManager::PREVIEW },
 	{ IDC_POPUP_COLORS, ResourceManager::POPUP_COLORS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };

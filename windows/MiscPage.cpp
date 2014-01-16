@@ -31,7 +31,7 @@
 PropPage::TextItem MiscPage::texts[] = {
 	{ IDC_CZDC_WINAMP, ResourceManager::SETCZDC_WINAMP },
 	{ IDC_PLAYER_PATH, ResourceManager::SETCZDC_WINAMP_PATH },
-	{ IDC_WINAMP_BROWSE, ResourceManager::BROWSEW },
+	{ IDC_WINAMP_BROWSE, ResourceManager::BROWSE },
 	{ IDC_OPEN_FIRST, ResourceManager::OPEN_FIRST },
 	{ IDC_FAV_DL, ResourceManager::FAV_DL_SPEED },
 	{ IDC_PASSWD_PROTECT_STATIC, ResourceManager::PASSWD_PROTECT_STATIC },

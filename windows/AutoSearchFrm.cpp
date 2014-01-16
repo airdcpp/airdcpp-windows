@@ -105,12 +105,12 @@ LRESULT AutoSearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPa
 
 	ctrlDown.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_MOVE_DOWN);
-	ctrlDown.SetWindowText(CTSTRING(SETTINGS_BTN_MOVEDOWN ));
+	ctrlDown.SetWindowText(CTSTRING(MOVE_DOWN ));
 	ctrlDown.SetFont(WinUtil::systemFont);
 
 	ctrlUp.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_DISABLED | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		BS_PUSHBUTTON , 0, IDC_MOVE_UP);
-	ctrlUp.SetWindowText(CTSTRING(SETTINGS_BTN_MOVEUP));
+	ctrlUp.SetWindowText(CTSTRING(MOVE_UP));
 	ctrlUp.SetFont(WinUtil::systemFont);
 
 	AutoSearchManager::getInstance()->addListener(this);
@@ -328,8 +328,8 @@ LRESULT AutoSearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lPar
 		asMenu.AppendMenu(MF_STRING, IDC_ADD, CTSTRING(ADD));
 		asMenu.AppendMenu(MF_STRING, IDC_CHANGE, CTSTRING(SETTINGS_CHANGE));
 		asMenu.AppendMenu(MF_STRING, IDC_DUPLICATE, CTSTRING(DUPLICATE));
-		asMenu.AppendMenu(MF_STRING, IDC_MOVE_UP, CTSTRING(SETTINGS_BTN_MOVEUP));
-		asMenu.AppendMenu(MF_STRING, IDC_MOVE_DOWN, CTSTRING(SETTINGS_BTN_MOVEDOWN));
+		asMenu.AppendMenu(MF_STRING, IDC_MOVE_UP, CTSTRING(MOVE_UP));
+		asMenu.AppendMenu(MF_STRING, IDC_MOVE_DOWN, CTSTRING(MOVE_DOWN));
 
 		tstring title;
 		if (ctrlAutoSearch.GetSelectedCount() == 1) {
@@ -694,7 +694,7 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	if (target.empty()) {
 		target = CSTRING(SETTINGS_DOWNLOAD_DIRECTORY);
 	} else if (as->getTargetType() == TargetUtil::TARGET_FAVORITE) {
-		target += " (" + Text::toLower(STRING(SETTINGS_COLOR_FAVORITE)) +  ")";
+		target += " (" + Text::toLower(STRING(FAVORITE)) +  ")";
 	} else if (as->getTargetType() == TargetUtil::TARGET_SHARE) {
 		target += " (" + Text::toLower(STRING(SHARED)) +  ")";
 	}

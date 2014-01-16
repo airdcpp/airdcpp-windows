@@ -25,7 +25,7 @@
 
 int RecentHubsFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_DESCRIPTION, COLUMN_USERS, COLUMN_SHARED, COLUMN_SERVER };
 int RecentHubsFrame::columnSizes[] = { 200, 290, 50, 50, 100 };
-static ResourceManager::Strings columnNames[] = { ResourceManager::HUB_NAME, ResourceManager::DESCRIPTION, 
+static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::DESCRIPTION, 
 ResourceManager::USERS, ResourceManager::SHARED, ResourceManager::HUB_ADDRESS
 };
 

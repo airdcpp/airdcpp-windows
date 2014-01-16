@@ -56,7 +56,7 @@ LRESULT SearchPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	ctrlWebShortcuts.Attach(GetDlgItem(IDC_WEB_SHORTCUTS_LIST));
 	ctrlWebShortcuts.GetClientRect(rc);
 	rc.right -= GetSystemMetrics(SM_CXVSCROLL);
-	ctrlWebShortcuts.InsertColumn(0, CTSTRING(SETTINGS_NAME), LVCFMT_LEFT, rc.Width() / 5, 0);
+	ctrlWebShortcuts.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, rc.Width() / 5, 0);
 	ctrlWebShortcuts.InsertColumn(1, CTSTRING(KEY), LVCFMT_LEFT, rc.Width() / 5, 1);
 	ctrlWebShortcuts.InsertColumn(2, CTSTRING(PROPPAGE_URL), LVCFMT_LEFT, rc.Width() * 3 / 5, 2);
 	ctrlWebShortcuts.InsertColumn(3, CTSTRING(CLEAN), LVCFMT_LEFT, rc.Width() / 5, 3);

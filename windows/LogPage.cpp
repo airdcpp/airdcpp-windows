@@ -29,7 +29,7 @@
 PropPage::TextItem LogPage::texts[] = {
 	{ IDC_SETTINGS_LOGGING,		ResourceManager::SETTINGS_LOGGING },
 	{ IDC_SETTINGS_LOG_DIR,		ResourceManager::DIRECTORY },
-	{ IDC_BROWSE_LOG,			ResourceManager::BROWSE_ACCEL },
+	{ IDC_BROWSE_LOG,			ResourceManager::BROWSE },
 	{ IDC_SETTINGS_FORMAT,		ResourceManager::SETTINGS_FORMAT },
 	{ IDC_SETTINGS_FILE_NAME,	ResourceManager::SETTINGS_FILE_NAME },
 	{ IDC_MISC,					ResourceManager::SETTINGS_MISC },

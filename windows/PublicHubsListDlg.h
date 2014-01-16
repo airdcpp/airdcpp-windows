@@ -66,7 +66,7 @@ public:
 		ctrlList.Attach(GetDlgItem(IDC_LIST_LIST));
 		ctrlList.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 		ctrlList.GetClientRect(rc);
-		ctrlList.InsertColumn(0, CTSTRING(SETTINGS_NAME), LVCFMT_LEFT, rc.Width() - 4, 0);
+		ctrlList.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, rc.Width() - 4, 0);
 		StringList lists(FavoriteManager::getInstance()->getHubLists());
 		for(StringList::const_iterator idx = lists.begin(); idx != lists.end(); ++idx) {
 			ctrlList.insert(ctrlList.GetItemCount(), Text::toT(*idx));

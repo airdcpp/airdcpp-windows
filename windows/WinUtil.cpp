@@ -1523,7 +1523,7 @@ void WinUtil::saveReBarSettings(HWND bar) {
 
 
 void WinUtil::appendPreviewMenu(OMenu& parent, const string& aTarget) {
-	auto previewMenu = parent.createSubMenu(TSTRING(PREVIEW_MENU), true);
+	auto previewMenu = parent.createSubMenu(TSTRING(PREVIEW), true);
 
 	auto lst = FavoriteManager::getInstance()->getPreviewApps();
 	auto ext = Util::getFileExt(aTarget);

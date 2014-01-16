@@ -25,8 +25,8 @@
 WinUtil::TextItem PreviewDlg::texts[] = {
 	{ IDCANCEL, ResourceManager::CANCEL },
 	{ IDC_PREVIEW_BROWSE, ResourceManager::BROWSE },
-	{ IDC_PREVIEW_NAME_TEXT, ResourceManager::PREVIEW_NAME },
-	{ IDC_PREVIEW_APPLICATION_TEXT, ResourceManager::PREVIEW_APPLICATION },
+	{ IDC_PREVIEW_NAME_TEXT, ResourceManager::NAME },
+	{ IDC_PREVIEW_APPLICATION_TEXT, ResourceManager::APPLICATION },
 	{ IDC_PREVIEW_ARGUMENTS_TEXT, ResourceManager::PREVIEW_ARGUMENTS },
 	{ IDC_PREVIEW_EXTENSION_TEXT, ResourceManager::PREVIEW_EXTENSION },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }

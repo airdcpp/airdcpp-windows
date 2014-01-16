@@ -48,7 +48,7 @@ LRESULT SearchTypesPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	ctrlTypes.Attach(GetDlgItem(IDC_MENU_ITEMS));
 	ctrlTypes.GetClientRect(rc);
 
-	ctrlTypes.InsertColumn(0, CTSTRING(SETTINGS_NAME), LVCFMT_LEFT, rc.Width()/4, 0);
+	ctrlTypes.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, rc.Width()/4, 0);
 	ctrlTypes.InsertColumn(1, CTSTRING(SETTINGS_EXTENSIONS), LVCFMT_LEFT, rc.Width()*2 / 4, 1);
 	ctrlTypes.InsertColumn(2, CTSTRING(DEFAULT), LVCFMT_LEFT, rc.Width() / 4, 2);
 	ctrlTypes.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);

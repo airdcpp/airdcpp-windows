@@ -35,8 +35,8 @@ PropPage::TextItem FulHighlightPage::texts[] = {
 	{ IDC_ADD,			 ResourceManager::HIGHLIGHT_ADD				},
 	{ IDC_DELETE,		 ResourceManager::REMOVE					},
 	{ IDC_UPDATE,		 ResourceManager::HIGHLIGHT_CHANGE			},
-	{ IDC_MOVEUP,		 ResourceManager::SETTINGS_BTN_MOVEUP		},
-	{ IDC_MOVEDOWN,		 ResourceManager::SETTINGS_BTN_MOVEDOWN		},
+	{ IDC_MOVEUP,		 ResourceManager::MOVE_UP		},
+	{ IDC_MOVEDOWN,		 ResourceManager::MOVE_DOWN		},
 	{ IDC_USE_HIGHLIGHT, ResourceManager::USE_HIGHLIGHT				},
 	{ IDC_PRESET,		 ResourceManager::PRESET					},
 	{ 0,				 ResourceManager::SETTINGS_AUTO_AWAY		}
@@ -80,8 +80,8 @@ LRESULT FulHighlightPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	presets.CreatePopupMenu();
 	presets.AppendMenu(MF_STRING, IDC_PRESETMENU, CTSTRING(PRESET_ADD_ALL));
 	presets.AppendMenu(MF_SEPARATOR);
-	presets.AppendMenu(MF_STRING, IDC_PRESETMENU, CTSTRING(PRESET_JOINS));
-	presets.AppendMenu(MF_STRING, IDC_PRESETMENU, CTSTRING(PRESET_PARTS));
+	presets.AppendMenu(MF_STRING, IDC_PRESETMENU, CTSTRING(JOINS));
+	presets.AppendMenu(MF_STRING, IDC_PRESETMENU, CTSTRING(PARTS));
 	presets.AppendMenu(MF_STRING, IDC_PRESETMENU, CTSTRING(PRESET_RELEASES));
 
 	MENUINFO inf;

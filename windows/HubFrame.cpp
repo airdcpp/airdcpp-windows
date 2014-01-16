@@ -638,7 +638,7 @@ void HubFrame::execTasks() {
 				}
 
 				if (!u.onlineUser->isHidden() && client->get(HubSettings::ShowJoins) || (client->get(HubSettings::FavShowJoins) && isFavorite)) {
-				 	addLine(_T("*** ") + TSTRING(JOINS) + Text::toT(u.onlineUser->getIdentity().getNick()), WinUtil::m_ChatTextSystem, SETTING(HUB_BOLD_TABS));
+				 	addLine(_T("*** ") + TSTRING(JOINS) + _T(": ") + Text::toT(u.onlineUser->getIdentity().getNick()), WinUtil::m_ChatTextSystem, SETTING(HUB_BOLD_TABS));
 				}	
 			}
 		} else if(t.first == REMOVE_USER) {
@@ -646,7 +646,7 @@ void HubFrame::execTasks() {
 			removeUser(u.onlineUser);
 
 			if (!u.onlineUser->isHidden() && client->get(HubSettings::ShowJoins) || (client->get(HubSettings::FavShowJoins) && u.onlineUser->getUser()->isFavorite())) {
-				addLine(Text::toT("*** " + STRING(PARTS) + " " + u.onlineUser->getIdentity().getNick()), WinUtil::m_ChatTextSystem, SETTING(HUB_BOLD_TABS));
+				addLine(Text::toT("*** " + STRING(PARTS) + ": " + u.onlineUser->getIdentity().getNick()), WinUtil::m_ChatTextSystem, SETTING(HUB_BOLD_TABS));
 			}
 		}
 	}
@@ -1048,7 +1048,7 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 	copyHubMenu.CreatePopupMenu();
 	copyHubMenu.InsertSeparatorFirst(TSTRING(COPY));
-	copyHubMenu.AppendMenu(MF_STRING, IDC_COPY_HUBNAME, CTSTRING(HUB_NAME));
+	copyHubMenu.AppendMenu(MF_STRING, IDC_COPY_HUBNAME, CTSTRING(NAME));
 	copyHubMenu.AppendMenu(MF_STRING, IDC_COPY_HUBADDRESS, CTSTRING(HUB_ADDRESS));
 
 	tabMenu.CreatePopupMenu();
@@ -1134,7 +1134,7 @@ LRESULT HubFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOO
 				menu.AppendMenu(MF_SEPARATOR);
 			}
 		} else {
-			menu.InsertSeparatorFirst(Util::toStringW(count) + _T(" ") + TSTRING(HUB_USERS));
+			menu.InsertSeparatorFirst(TSTRING_F(X_USERS, count));
 		}
 
 		if (!isMe) {
@@ -1465,15 +1465,15 @@ void HubFrame::updateStatusBar() {
 	tstring text[3];
 
 	if(AllUsers != ShownUsers) {
-		text[0] = Util::toStringW(ShownUsers) + _T("/") + Util::toStringW(AllUsers) + _T(" ") + TSTRING(HUB_USERS);
+		text[0] = Util::toStringW(ShownUsers) + _T("/") + Util::toStringW(AllUsers) + _T(" ") + Text::toLower(TSTRING(USERS));
 	} else {
-		text[0] = Util::toStringW(AllUsers) + _T(" ") + TSTRING(HUB_USERS);
+		text[0] = TSTRING_F(X_USERS, AllUsers);
 	}
 	int64_t available = client->getAvailable();
 	text[1] = Util::formatBytesW(available);
 
 	if(AllUsers > 0)
-		text[2] = Util::formatBytesW(available / AllUsers) + _T("/") + TSTRING(USER);
+		text[2] = Util::formatBytesW(available / AllUsers) + _T("/") + Text::toLower(TSTRING(USER));
 
 	bool update = false;
 	for(int i = 0; i < 3; i++) {

@@ -39,8 +39,8 @@ LRESULT AVIPreview::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lPar
 	ctrlCommands.Attach(GetDlgItem(IDC_MENU_ITEMS));
 	ctrlCommands.GetClientRect(rc);
 
-	ctrlCommands.InsertColumn(0, CTSTRING(SETTINGS_NAME), LVCFMT_LEFT, rc.Width()/5, 0);
-	ctrlCommands.InsertColumn(1, CTSTRING(SETTINGS_COMMAND), LVCFMT_LEFT, rc.Width()*2 / 5, 1);
+	ctrlCommands.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, rc.Width()/5, 0);
+	ctrlCommands.InsertColumn(1, CTSTRING(COMMAND), LVCFMT_LEFT, rc.Width()*2 / 5, 1);
 	ctrlCommands.InsertColumn(2, CTSTRING(SETTINGS_ARGUMENT), LVCFMT_LEFT, rc.Width() / 5, 2);
 	ctrlCommands.InsertColumn(3, CTSTRING(SETTINGS_EXTENSIONS), LVCFMT_LEFT, rc.Width() / 5, 3);
 

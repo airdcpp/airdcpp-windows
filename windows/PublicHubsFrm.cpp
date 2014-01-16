@@ -44,7 +44,7 @@ int PublicHubsFrame::columnIndexes[] = {
 int PublicHubsFrame::columnSizes[] = { 200, 290, 50, 100, 100, 100, 100, 100, 100, 100, 100, 100 };
 
 static ResourceManager::Strings columnNames[] = { 
-	ResourceManager::HUB_NAME, 
+	ResourceManager::NAME, 
 	ResourceManager::DESCRIPTION, 
 	ResourceManager::USERS, 
 	ResourceManager::HUB_ADDRESS,

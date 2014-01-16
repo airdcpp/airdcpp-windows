@@ -49,12 +49,12 @@ LRESULT UserListColours::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	n_lsbList.Attach( GetDlgItem(IDC_USERLIST_COLORS) );
 	n_Preview.Attach( GetDlgItem(IDC_PREVIEW) );
 	n_Preview.SetBackgroundColor(SETTING(BACKGROUND_COLOR));
-	n_lsbList.AddString(CTSTRING(SETTINGS_COLOR_NORMAL));
-	n_lsbList.AddString(CTSTRING(SETTINGS_COLOR_FAVORITE));	
+	n_lsbList.AddString(CTSTRING(NORMAL));
+	n_lsbList.AddString(CTSTRING(FAVORITE));	
 	n_lsbList.AddString(CTSTRING(SETTINGS_COLOR_RESERVED));
 	n_lsbList.AddString(CTSTRING(SETTINGS_COLOR_IGNORED));
 	n_lsbList.AddString(CTSTRING(COLOR_OP));
-	n_lsbList.AddString(CTSTRING(COLOR_PASIVE));
+	n_lsbList.AddString(CTSTRING(PASSIVE_USER));
 	n_lsbList.SetCurSel( 0 );
 
 	refreshPreview();
@@ -100,11 +100,11 @@ void UserListColours::refreshPreview() {
 	
 	cf.crTextColor = normalColour;
 	n_Preview.SetSelectionCharFormat(cf);
-	n_Preview.AppendText(TSTRING(SETTINGS_COLOR_NORMAL).c_str());
+	n_Preview.AppendText(TSTRING(NORMAL).c_str());
 
 	cf.crTextColor = favoriteColour;
 	n_Preview.SetSelectionCharFormat(cf);
-	n_Preview.AppendText((_T("\r\n") + TSTRING(SETTINGS_COLOR_FAVORITE)).c_str());
+	n_Preview.AppendText((_T("\r\n") + TSTRING(FAVORITE)).c_str());
 	
 	cf.crTextColor = reservedSlotColour;
 	n_Preview.SetSelectionCharFormat(cf);
@@ -120,7 +120,7 @@ void UserListColours::refreshPreview() {
 
 	cf.crTextColor = pasiveColour;
 	n_Preview.SetSelectionCharFormat(cf);
-	n_Preview.AppendText((_T("\r\n") + TSTRING(COLOR_PASIVE)).c_str());
+	n_Preview.AppendText((_T("\r\n") + TSTRING(PASSIVE_USER)).c_str());
 
 	n_Preview.InvalidateRect( NULL );
 }

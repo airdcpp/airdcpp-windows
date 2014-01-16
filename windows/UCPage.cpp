@@ -48,8 +48,8 @@ LRESULT UCPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlCommands.Attach(GetDlgItem(IDC_MENU_ITEMS));
 	ctrlCommands.GetClientRect(rc);
 
-	ctrlCommands.InsertColumn(0, CTSTRING(SETTINGS_NAME), LVCFMT_LEFT, rc.Width()/4, 0);
-	ctrlCommands.InsertColumn(1, CTSTRING(SETTINGS_COMMAND), LVCFMT_LEFT, rc.Width()*2 / 4, 1);
+	ctrlCommands.InsertColumn(0, CTSTRING(NAME), LVCFMT_LEFT, rc.Width()/4, 0);
+	ctrlCommands.InsertColumn(1, CTSTRING(COMMAND), LVCFMT_LEFT, rc.Width()*2 / 4, 1);
 	ctrlCommands.InsertColumn(2, CTSTRING(HUB), LVCFMT_LEFT, rc.Width() / 4, 2);
 	ctrlCommands.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
 

@@ -768,7 +768,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 				return Util::toStringW(hits) + _T(' ') + TSTRING(USERS);
 			else
 				return WinUtil::getNicks(sr->getUser());*/
-		case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : Util::toStringW(hits + 1) + _T(' ') + TSTRING(USERS);
+		case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : TSTRING_F(X_USERS, hits);
 		case COLUMN_USERS: return WinUtil::getNicks(sr->getUser());
 		case COLUMN_TYPE:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
@@ -1559,9 +1559,9 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			resultsMenu.CreatePopupMenu();
 
 			if(ctrlResults.list.GetSelectedCount() > 1)
-				resultsMenu.InsertSeparatorFirst(Util::toStringW(ctrlResults.list.GetSelectedCount()) + _T(" ") + TSTRING(FILES));
+				resultsMenu.InsertSeparatorFirst(TSTRING_F(X_FILES, ctrlResults.list.GetSelectedCount()));
 			else
-				resultsMenu.InsertSeparatorFirst(Util::toStringW(((SearchInfo*)ctrlResults.list.getSelectedItem())->hits + 1) + _T(" ") + TSTRING(USERS));
+				resultsMenu.InsertSeparatorFirst(TSTRING_F(X_USERS, (((SearchInfo*)ctrlResults.list.getSelectedItem())->hits + 1)));
 
 			appendDownloadMenu(resultsMenu, hasFiles ? DownloadBaseHandler::TYPE_BOTH : DownloadBaseHandler::TYPE_PRIMARY, hasNmdcDirsOnly, hasFiles ? cs.tth : nullptr, cs.path);
 

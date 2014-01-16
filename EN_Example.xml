@@ -14,7 +14,6 @@
 	<string name="AdlsDownload">Download matches</string>
 	<string name="AdlsFullPath">Full path</string>
 	<string name="AdlsProperties">ADL search properties</string>
-	<string name="AdlsSearchString">Search string</string>
 	<string name="AdlsSizeMax">Max filesize</string>
 	<string name="AdlsSizeMin">Min filesize</string>
 	<string name="AdlsType">Search type</string>
@@ -29,6 +28,7 @@
 -- Turn it off in settings =&gt; AirDC++ =&gt; Always use passive mode for search --
 </string>
 	<string name="Any">Any</string>
+	<string name="Application">Application</string>
 	<string name="AtLeast">At least</string>
 	<string name="AtMost">At most</string>
 	<string name="Audio">Audio</string>
@@ -43,7 +43,6 @@
 	<string name="BalloonPopups">Popups</string>
 	<string name="BothUsersOffline">Both users offline</string>
 	<string name="Browse">Browse...</string>
-	<string name="BrowseAccel">Browse...</string>
 	<string name="BrowseFileList">Browse file list</string>
 	<string name="Bumped">Bumped</string>
 	<string name="Cancel">Cancel</string>
@@ -56,7 +55,7 @@
 	<string name="CloseConnection">Close connection</string>
 	<string name="CollapseAll">Collapse all</string>
 	<string name="ColorOp">User is OP</string>
-	<string name="ColorPasive">Passive user</string>
+	<string name="Command">Command</string>
 	<string name="CommandTooLong">Maximum command length exceeded</string>
 	<string name="Comment">Comment</string>
 	<string name="Compressed">Compressed</string>
@@ -148,7 +147,6 @@
 	<string name="FavoriteHubDoesNotExist">This hub is not a favorite hub</string>
 	<string name="FavoriteHubIdentity">Identification (leave blank for defaults)</string>
 	<string name="FavoriteHubProperties">Favorite hub properties</string>
-	<string name="FavoriteHubConnection">Connection</string>
 	<string name="FavoriteHubRemoved">Favorite hub removed</string>
 	<string name="FavoriteHubs">Favorite hubs</string>
 	<string name="FavoriteUserAdded">Favorite user added</string>
@@ -210,10 +208,8 @@
 	<string name="HubListDownloaded">Hub list downloaded...</string>
 	<string name="HubListEdit">Edit the hublist</string>
 	<string name="HubListLoadedFromCache">Hub list loaded from cache...</string>
-	<string name="HubName">Name</string>
 	<string name="HubSegments">Hub / Connections</string>
 	<string name="HubTopic">Hub topic :</string>
-	<string name="HubUsers">Users</string>
 	<string name="HublistCacheCorrupted">Cached hub list is corrupted or unsupported...</string>
 	<string name="HublistDownloadCorrupted">Downloaded hub list is corrupted or unsupported...</string>
 	<string name="Hubs">Hubs</string>
@@ -235,7 +231,6 @@
 	<string name="Items">Items</string>
 	<string name="JoinShowingOff">Join/part showing off</string>
 	<string name="JoinShowingOn">Join/part showing on</string>
-	<string name="Joins">Joins: </string>
 	<string name="Kib">KiB</string>
 	<string name="Kibs">KiB/s</string>
 	<string name="KeepFinishedFiles">Keep finished files in the queue</string>
@@ -257,23 +252,14 @@
 	<string name="LogOff">Log off</string>
 	<string name="Low">Low</string>
 	<string name="Lowest">Lowest</string>
-	<string name="PreviewName">Name:</string>
-	<string name="PreviewApplication">Application:</string>
 	<string name="PreviewArguments">Arguments: (%[file] %[dir] available)</string>
 	<string name="PreviewExtension">Apply to extensions: (avi;mov;divx)</string>
 	<string name="MagnetAsk">Ask for MAGNET action</string>
-	<string name="MagnetDlgFile">Filename:</string>
-	<string name="MagnetDlgHash">File hash:</string>
-	<string name="MagnetDlgNothing">Do nothing</string>
-	<string name="MagnetDlgQueue">Add this file to your download queue</string>
 	<string name="MagnetDlgRemember">Do the same action next time without asking</string>
 	<string name="MagnetDlgSearch">Start a search for this file</string>
-	<string name="MagnetDlgSize">File size:</string>
 	<string name="MagnetDlgTextBad">A MAGNET link was given to AirDC++, but it didn't contain a valid file hash for use on the Direct Connect network.  No action will be taken.</string>
-	<string name="MagnetDlgTextGood">AirDC++ has detected a MAGNET link with a file hash that can be searched for on the Direct Connect network.  What would you like to do?</string>
 	<string name="MagnetDlgTitle">MAGNET Link detected</string>
 	<string name="MagnetHandlerDesc">Download files from the Direct Connect network</string>
-	<string name="MagnetHandlerRoot">AirDC++</string>
 	<string name="MagnetShellDesc">URL:MAGNET URI</string>
 	<string name="ManageGroups">Manage groups</string>
 	<string name="MatchQueue">Match queue</string>
@@ -377,7 +363,6 @@
 	<string name="OpenUserLog">Open user log</string>
 	<string name="OverlappedSlowSegment">Overlapped by faster user</string>
 	<string name="OwnCertificateFile">Own certificate file</string>
-	<string name="Parts">Parts: </string>
 	<string name="PassiveUser">Passive user</string>
 	<string name="Password">Password</string>
 	<string name="Path">Path</string>
@@ -400,10 +385,9 @@
 	<string name="PopupSplash">Splash popup</string>
 	<string name="PopupWindow">Window popup</string>
 	<string name="PopupUploadFinished">Show popup on upload finished</string>
-	<string name="Port">Port: </string>
 	<string name="PowerOff">Power off</string>
 	<string name="PressFollow">Press the follow redirect button to connect to </string>
-	<string name="PreviewMenu">Preview</string>
+	<string name="Preview">Preview</string>
 	<string name="PreviousFolders">Previous folders</string>
 	<string name="Priority">Priority</string>
 	<string name="PrivateKeyFile">Private key file</string>
@@ -479,7 +463,6 @@
 	<string name="SetczdcMagnetUriHandler">Install MAGNET URI handler on startup</string>
 	<string name="SetczdcMinFileSize">And file size is more than</string>
 	<string name="SetczdcPassiveSearch">Always use passive mode for search (use only if you know what this doing!)</string>
-	<string name="SetczdcPreview">Preview</string>
 	<string name="SetczdcPrivateSound">Private message sound</string>
 	<string name="SetczdcProgressbarColors">Progressbar colors</string>
 	<string name="SetczdcProgressbarText">Progressbar text colors</string>
@@ -521,12 +504,9 @@
 	<string name="SettingsBoldOptions">Tab bolding on content change</string>
 	<string name="SettingsClearSearch">Clear search box after each search</string>
 	<string name="SettingsColorAlternate">Search alternate</string>
-	<string name="SettingsColorFavorite">Favorite</string>
 	<string name="SettingsColorIgnored">Ignored</string>
-	<string name="SettingsColorNormal">Normal</string>
 	<string name="SettingsColorReserved">Has reserved slot</string>
 	<string name="SettingsColors">Other colors</string>
-	<string name="SettingsCommand">Command</string>
 	<string name="SettingsCompressTransfers">Enable safe and compressed transfers</string>
 	<string name="SettingsConfigureHubLists">Configure public hub lists</string>
 	<string name="SettingsConfirmDialogOptions">Confirm dialog options</string>
@@ -578,7 +558,6 @@
 	<string name="SettingsMinimizeOnStartup">Minimize at program startup</string>
 	<string name="SettingsMinimizeTray">Minimize to tray</string>
 	<string name="SettingsMouseOver">Mouse over</string>
-	<string name="SettingsName">Name</string>
 	<string name="SettingsNetwork">Connection settings</string>
 	<string name="SettingsNoAwaymsgToBots">Don't send the away message to bots</string>
 	<string name="SettingsNormal">Normal</string>
@@ -757,8 +736,6 @@ Default: %H:%M:%S</string>
 	<string name="UploadedTo"> uploaded to </string>
 	<string name="UseExplorerTheme">Use Explorer theme in listviews and treeviews</string>
 	<string name="User">User</string>
-	<string name="UserCmdCommand">Command</string>
-	<string name="UserCmdContext">Context</string>
 	<string name="UserCmdFilelistMenu">File list Menu</string>
 	<string name="UserCmdHub">Hub IP / DNS (empty = all, 'op' = where operator)</string>
 	<string name="UserCmdHubMenu">Hub menu</string>
@@ -804,7 +781,6 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 	<string name="UserOnlineRunning">Running... (user online)</string>
 	<string name="UserWentOffline">User went offline</string>
 	<string name="UserWentOnline">User went online</string>
-	<string name="Userinfo">Info user</string>
 	<string name="UserlistIcons">Userlist icons</string>
 	<string name="Userlistdblclickaction">Userlist double click action</string>
 	<string name="Users">Users</string>
@@ -859,11 +835,7 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 	<string name="TabInactiveBgNotify">Inactive notification color</string>
 	<string name="FavNoPm">Ignore private messages</string>
 	<string name="HideShare">Hide share in this hub</string>
-	<string name="WinampBack">Back</string>
 	<string name="WinampPlay">Play</string>
-	<string name="WinampPause">Pause</string>
-	<string name="WinampNext">Next</string>
-	<string name="WinampStop">Stop</string>
 	<string name="WinampVolUp">Volume up</string>
 	<string name="WinampVolHalf">Volume 50%</string>
 	<string name="WinampVolDown">Volume down</string>
@@ -928,12 +900,9 @@ Empty = Default string -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 	<string name="NoMediaSpam">Selected player doesn't support media spams</string>
 	<string name="WinampStart">Start Media player</string>
 	<string name="WinampMenu">Winamp</string>
-	<string name="WinampRefresh">Refresh</string>
 	<string name="WinampArtist">Artist</string>
 	<string name="WinampTitle">Title</string>
 	<string name="WinampLength">Length</string>
-	<string name="WinampLocation">Path</string>
-	<string name="Browsew">Browse..</string>
 	<string name="SettingsIgnore">Ignore</string>
 	<string name="AlreadyIgnored">Pattern is already in the list</string>
 	<string name="Clear">Clear</string>
@@ -965,8 +934,6 @@ Empty = Default string -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 	<string name="HighlightActions">Actions</string>
 	<string name="HighlightTextToMatch">Text to match</string>
 	<string name="SettingsStMatchType">Match type</string>
-	<string name="SettingsBtnMoveup">Move up</string>
-	<string name="SettingsBtnMovedown">Move down</string>
 	<string name="SettingsBtnBgcolor">Background color</string>
 	<string name="SettingsSelectSound">Select sound file</string>
 	<string name="SettingsPopup">Display popup</string>
@@ -982,8 +949,8 @@ Empty = Default string -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 	<string name="Strikeout">Strikeout</string>
 	<string name="Preset">Presets</string>
 	<string name="PresetAddAll">Add all</string>
-	<string name="PresetJoins">Joins</string>
-	<string name="PresetParts">Parts</string>
+	<string name="Joins">Joins</string>
+	<string name="Parts">Parts</string>
 	<string name="PresetReleases">Releases</string>
 	<string name="PresetWinampSpam">Winamp spam</string>
 	<string name="SettingsBtnTextcolor">Text color</string>

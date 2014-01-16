@@ -31,7 +31,7 @@ PropPage::TextItem PropPageTextStyles::texts[] = {
 	{ IDC_BACK_COLOR, ResourceManager::SETCZDC_BACK_COLOR },
 	{ IDC_TEXT_COLOR, ResourceManager::SETCZDC_TEXT_COLOR },
 	{ IDC_TEXT_STYLE, ResourceManager::SETCZDC_TEXT_STYLE },
-	{ IDC_CZDC_PREVIEW, ResourceManager::SETCZDC_PREVIEW },
+	{ IDC_CZDC_PREVIEW, ResourceManager::PREVIEW },
 	{ IDC_SELTEXT, ResourceManager::SETTINGS_SELECT_TEXT_FACE },
 	{ IDC_RESET_TAB_COLOR, ResourceManager::SETTINGS_RESET },
 	{ IDC_SELECT_TAB_COLOR, ResourceManager::SETTINGS_SELECT_COLOR },
