@@ -768,7 +768,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 				return Util::toStringW(hits) + _T(' ') + TSTRING(USERS);
 			else
 				return WinUtil::getNicks(sr->getUser());*/
-		case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : TSTRING_F(X_USERS, hits);
+		case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : TSTRING_F(X_USERS, (hits+1));
 		case COLUMN_USERS: return WinUtil::getNicks(sr->getUser());
 		case COLUMN_TYPE:
 			if(sr->getType() == SearchResult::TYPE_FILE) {

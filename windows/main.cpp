@@ -253,54 +253,6 @@ BOOL CALLBACK searchOtherInstance(HWND hWnd, LPARAM lParam) {
 	return TRUE;
 }
 
-static void checkCommonControls() {
-#define PACKVERSION(major,minor) MAKELONG(minor,major)
-
-	HINSTANCE hinstDll;
-	DWORD dwVersion = 0;
-	
-	hinstDll = LoadLibrary(_T("comctl32.dll"));
-	
-	if(hinstDll)
-	{
-		DLLGETVERSIONPROC pDllGetVersion;
-	
-		pDllGetVersion = (DLLGETVERSIONPROC) GetProcAddress(hinstDll, "DllGetVersion");
-		
-		if(pDllGetVersion)
-		{
-			DLLVERSIONINFO dvi;
-			HRESULT hr;
-			
-			memzero(&dvi, sizeof(dvi));
-			dvi.cbSize = sizeof(dvi);
-			
-			hr = (*pDllGetVersion)(&dvi);
-			
-			if(SUCCEEDED(hr))
-			{
-				dwVersion = PACKVERSION(dvi.dwMajorVersion, dvi.dwMinorVersion);
-			}
-		}
-		
-		FreeLibrary(hinstDll);
-	}
-
-	if(dwVersion < PACKVERSION(5,80)) {
-		MessageBox(NULL, _T("Your version of windows common controls is too old for AirDC++ to run correctly, and you will most probably experience problems with the user interface. You should download version 5.80 or higher from the DC++ homepage or from Microsoft directly."), _T("User Interface Warning"), MB_OK);
-	}
-
-    // InitCommonControls() is required on Windows XP if an application
-    // manifest specifies use of ComCtl32.dll version 6 or later to enable
-    // visual styles.  Otherwise, any window creation will fail.
-
-    INITCOMMONCONTROLSEX used = {
-        sizeof(INITCOMMONCONTROLSEX),
-            ICC_WIN95_CLASSES
-    };
-    InitCommonControlsEx(&used);
-}
-
 class CFindDialogMessageFilter : public CMessageFilter
 {
 public:
@@ -314,7 +266,6 @@ public:
 
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
-	checkCommonControls();
 	static unique_ptr<MainFrame> wndMain = nullptr;
 
 	CMessageLoop theLoop;	
@@ -438,6 +389,17 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	WinUtil::runPendingUpdate();
 	return nRet;
 }
+
+// this would need better handling that works with multiple threads... handle the common memory-intensive operations separately for now
+
+/*void no_memory_handler() {
+	tstring msg = _T("AirDC++ ran out of memory and will now quit. To avoid such issues in future, prefer using partial file lists and don't queue too large amount of files.");
+#ifndef _WIN64
+	msg += _T(" If you have a 64 bit operating system, switching to the 64 bit version of AirDC++ is heavily recommended.");
+#endif
+	MessageBox(NULL, msg.c_str(), _T("Out of memory"), MB_OK | MB_ICONERROR);
+	std::exit(1);
+}*/
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	SingleInstance dcapp(_T(INST_NAME));

@@ -51,6 +51,7 @@ Fixed:
 - Fix missing incoming search matching for some directory names
 - Avoid a possible freeze when generating full list
 - Fix missing country flags from some search results
+- Prevent crashes when running out of memory while loading file lists, queueing new bundles or refreshing the share
 
 
 Removed:
