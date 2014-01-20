@@ -35,90 +35,71 @@ class CProgressCtrlEx :  public CWindowImpl< CProgressCtrlEx, CProgressBarCtrl, 
 
 public:
 	CProgressCtrlEx() {
-		dTextAlign = SS_CENTER;
+		dTextFormat = DT_CENTER | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS;
 	}
 	 virtual ~CProgressCtrlEx() {}
 	 
 	 BEGIN_MSG_MAP(CProgressCtrlEx)
-		 MESSAGE_HANDLER(WM_CREATE, OnCreate)
-		 MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
+		 MESSAGE_HANDLER(WM_PAINT, onPaint)
 		 MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBg)
 	END_MSG_MAP()
 	
-	LRESULT OnCreate(UINT Msg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
-		DefWindowProc(Msg, wParam, lParam);
-		CRect rc;
-		GetClientRect(&rc);
-		ctrlText.Create(m_hWnd, rc, NULL, WS_CHILD | WS_VISIBLE | SS_ENDELLIPSIS | SS_CENTERIMAGE | dTextAlign, WS_EX_TRANSPARENT);
-		return 0;
-	}
 	
 	LRESULT OnEraseBg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		return TRUE;
 	}
-
-	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-		HWND hWnd = (HWND)lParam;
-		HDC hDC = (HDC)wParam;
-		if(hWnd == ctrlText.m_hWnd) {
-			::SetBkMode(hDC, TRANSPARENT);
-			::SelectObject(hDC, WinUtil::progressFont);
-			::SetTextColor(hDC, WinUtil::TBprogressTextColor);
-			return (LRESULT)(HBRUSH)::GetStockObject(NULL_BRUSH);
-		}
-		bHandled = FALSE;
-		return FALSE;
+	LRESULT onPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+		CRect rc;
+		GetClientRect(rc);
+		DefWindowProc(uMsg, wParam, lParam);
+		CDC dc = GetDC();
+		dc.SetBkMode(TRANSPARENT);
+		dc.SelectFont(WinUtil::progressFont);
+		dc.SetTextColor(WinUtil::TBprogressTextColor);
+		dc.DrawText(ctrlText.c_str(), _tcslen(ctrlText.c_str()), &rc, dTextFormat);
+		ReleaseDC(dc);
+		return 0;
 	}
-
+	
 	void SetPosWithText(int aPos, const tstring& aText){
-		SetRedraw(FALSE);
-		SetPos(aPos);
 		SetText(aText);
-		SetRedraw(TRUE);
-		Invalidate();
-	}
-	void SetPosWithPercentage(int aPos){
-		SetRedraw(FALSE);
 		SetPos(aPos);
-		showPercentage();
-		SetRedraw(TRUE);
-		Invalidate();
+	}
+
+	void SetPosWithPercentage(int aPos){
+		showPercentage(aPos);
+		SetPos(aPos);;
 	}
 	
 	void SetText(const tstring& text){
-		ctrlText.SetWindowText(text.c_str());
+		ctrlText = text;
 	}
-
-	//SS_LEFT, SS_RIGHT or SS_CENTER
-	void SetTextAlign(DWORD newAlign) {
-		ctrlText.ModifyStyle(dTextAlign, newAlign);
-		dTextAlign = newAlign;
-	}	
 	
 	tstring GetText() {
-		tstring tmp;
-		tmp.resize(ctrlText.GetWindowTextLength());
-		tmp.resize(ctrlText.GetWindowText(&tmp[0], tmp.size()+1));
-		return tmp;
+		return ctrlText;
 	}
 
 	LONG GetTextLen() {
-		return ctrlText.GetWindowTextLength();
+		return ctrlText.size();
+	}
+
+	void SetTextFormat(DWORD newFormat) {
+		dTextFormat = newFormat;
 	}
 
 private:
 
-	void showPercentage(){
+	void showPercentage(int pos){
 		tstring tmp;
-		if(GetPos() > 0 && GetRangeLimit(0) > 0){
-			tmp = Text::toT(Util::toString(((double)(int)GetPos() / (int)GetRangeLimit(0) *100))) + _T("%");
+		if(pos > 0 && GetRangeLimit(0) > 0){
+			tmp = Text::toT(Util::toString(((double)pos / (int)GetRangeLimit(0) *100))) + _T("%");
 		} else 
 			tmp = _T("0%");
-		ctrlText.SetWindowText(tmp.c_str());
+		ctrlText = tmp;
 	}
 
-	CStatic ctrlText;
-	DWORD dTextAlign;
+	DWORD dTextFormat;
+	tstring ctrlText;
 
 };
 
