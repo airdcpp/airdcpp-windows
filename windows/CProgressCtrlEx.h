@@ -48,10 +48,11 @@ public:
 	LRESULT OnEraseBg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 		return TRUE;
 	}
+
 	LRESULT onPaint(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+		DefWindowProc(uMsg, wParam, lParam);
 		CRect rc;
 		GetClientRect(rc);
-		DefWindowProc(uMsg, wParam, lParam);
 		CDC dc = GetDC();
 		dc.SetBkMode(TRANSPARENT);
 		dc.SelectFont(WinUtil::progressFont);

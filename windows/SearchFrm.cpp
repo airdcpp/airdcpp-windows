@@ -1763,7 +1763,9 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		SearchInfo* si = (SearchInfo*)cd->nmcd.lItemlParam;
 		
 		if(SETTING(DUPE_SEARCH)) {
-			cd->clrText = WinUtil::getDupeColor(si->getDupe());
+			auto c = WinUtil::getDupeColors(si->getDupe());
+			cd->clrText = c.first;
+			cd->clrTextBk = c.second;
 		}
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 	}
