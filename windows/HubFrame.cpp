@@ -1293,7 +1293,7 @@ LRESULT HubFrame::onShowUsers(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, B
 
 LRESULT HubFrame::onFollow(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	if(!redirect.empty()) {
-		if(ClientManager::getInstance()->isConnected(Text::fromT(redirect))) {
+		if (ClientManager::getInstance()->hasClient(Text::fromT(redirect))) {
 			addStatus(TSTRING(REDIRECT_ALREADY_CONNECTED), LogManager::LOG_ERROR, WinUtil::m_ChatTextServer);
 			return 0;
 		}
@@ -1409,7 +1409,7 @@ void HubFrame::updateFonts() {
 
 void HubFrame::reconnectDisconnected() {
 	for(auto f: frames | map_values) {
-		if (!(f->client->isConnected())) {
+		if (!f->client->isConnected()) {
 			f->client->disconnect(false); 
 			f->clearUserList();
 			f->client->connect(); 
@@ -1541,7 +1541,7 @@ void HubFrame::on(ClientListener::UserRemoved, const Client*, const OnlineUserPt
 }
 
 void HubFrame::on(Redirect, const Client*, const string& line) noexcept { 
-	if(ClientManager::getInstance()->isConnected(line)) {
+	if(ClientManager::getInstance()->hasClient(line)) {
 		callAsync([=] { 
 			addStatus(TSTRING(REDIRECT_ALREADY_CONNECTED), LogManager::LOG_INFO, WinUtil::m_ChatTextServer);
 		});
@@ -2048,20 +2048,16 @@ void HubFrame::setFonts() {
 
 LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	int i=-1;
-	if(client->isConnected()) {
-		while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
-		}
+	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
 	}
 	return 0;
 }
 
 LRESULT HubFrame::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	int i=-1;
-	if(client->isConnected()) {
-		while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-			IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
-		}
+	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
+		IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
 	}
 	return 0;
 }

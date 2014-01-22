@@ -46,10 +46,10 @@ Fixed:
 - Fix a faulty option that prevented /verifydb from fixing corruption
 - Fix changing the current share profile in own file list after it has been matched with ADL search
 - Fix issues with the lowest priority
-- Update the date of the parent directory when share monitoring changes are applied or bundles are added in share
+- Update the modify date of the parent directory when share monitoring changes are applied or bundles are added in share
 - Report possible errors also when queueing individual files
 - Fix missing incoming search matching for some directory names
-- Avoid a possible freeze when generating full list
+- Make GUI freezes less likely to happen when generating full file list
 - Fix missing country flags from some search results
 - Prevent crashes when running out of memory while loading file lists, queueing new bundles or refreshing the share
 
