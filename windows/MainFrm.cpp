@@ -1424,15 +1424,9 @@ LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 }
 
 LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
-	if (lParam == WM_LBUTTONDBLCLK || lParam == WM_LBUTTONUP) {
-		if(bAppMinimized) {
-			ShowWindow(SW_SHOW);
-			ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
-		} else {
-			ShowWindow(SW_HIDE);
-			ShowWindow(SW_MINIMIZE);
-			//SetForegroundWindow(m_hWnd);
-		}
+	if (bAppMinimized && (lParam == WM_LBUTTONDBLCLK || ((bHasPM || bHasMC || SETTING(SINGLE_CLICK_TRAY)) && lParam == WM_LBUTTONUP))) {
+		ShowWindow(SW_SHOW);
+		ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
 	} else if(lParam == WM_MOUSEMOVE && ((lastMove + 1000) < GET_TICK()) ) {
 		NOTIFYICONDATA nid;
 		ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
@@ -1469,7 +1463,6 @@ void MainFrame::onTrayMenu() {
 
 	trayMenu.AppendMenu(MF_STRING, ID_APP_ABOUT, CTSTRING(MENU_ABOUT));
 	trayMenu.AppendMenu(MF_STRING, ID_APP_EXIT, CTSTRING(MENU_EXIT));
-	trayMenu.SetMenuDefaultItem(IDC_TRAY_SHOW);
 
 	CPoint pt(GetMessagePos());
 	SetForegroundWindow(m_hWnd);

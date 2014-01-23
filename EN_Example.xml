@@ -2012,4 +2012,5 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="ListLoadFailed">Failed to load the file list %1%: %2%</string>
 	<string name="DirRefreshFailed">Failed to refresh the directory %1%: %2%</string>
 	<string name="BundleCreationFailed">Failed to create the bundle %1%: %2%</string>
+	<string name="SingleClickTray">Single click on tray icon to open</string>
 </resources>
