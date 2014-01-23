@@ -96,7 +96,6 @@ void EncryptionPage::fixControls() {
 	BOOL manualPaths = IsDlgButtonChecked(IDC_CERT_USE_DEFAULT_PATHS) != BST_CHECKED;
 	::EnableWindow(GetDlgItem(IDC_PRIV_KEY_LBL),			manualPaths);
 	::EnableWindow(GetDlgItem(IDC_OWN_CERT_LBL),			manualPaths);
-	::EnableWindow(GetDlgItem(IDC_GENERATE_CERTS),			manualPaths);
 	::EnableWindow(GetDlgItem(IDC_TLS_CERTIFICATE_FILE),	manualPaths);
 	::EnableWindow(GetDlgItem(IDC_TLS_PRIVATE_KEY_FILE),	manualPaths);
 	::EnableWindow(GetDlgItem(IDC_BROWSE_PRIVATE_KEY),		manualPaths);
