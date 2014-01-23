@@ -729,6 +729,7 @@ Default: %H:%M:%S</string>
 	<string name="UnignoreUser">Unignore user</string>
 	<string name="Unknown">Unknown</string>
 	<string name="UnknownCommand">Unknown command: </string>
+	<string name="UnknownError">Unknown error</string>
 	<string name="UpdateCheck">Update check</string>
 	<string name="UploadFinishedIdle">Upload finished, idle...</string>
 	<string name="UploadStarting">Upload starting...</string>
