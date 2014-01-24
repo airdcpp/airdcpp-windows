@@ -1506,9 +1506,11 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			if (mainBundle) {
 				readdMenu->appendThis(CTSTRING(READD_SOURCE), true);
 				removeMenu->appendThis(CTSTRING(REMOVE_SOURCE), true);
-				if (!b->getSeqOrder()) {
-					dirMenu.AppendMenu(MF_POPUP, IDC_USE_SEQ_ORDER, CTSTRING(USE_SEQ_ORDER));
-				}
+
+				dirMenu.appendItem(TSTRING(USE_SEQ_ORDER), [=] {
+					auto bundle = b;
+					QueueManager::getInstance()->onUseSeqOrder(bundle);
+				}, b->getSeqOrder() ? OMenu::FLAG_CHECKED : 0 | OMenu::FLAG_THREADED);
 			}
 		}
 		dirMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
@@ -1519,15 +1521,6 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 	bHandled = FALSE;
 	return FALSE; 
-}
-
-LRESULT QueueFrame::onSeqOrder(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
-	if (dii) {
-		BundlePtr b = dii->getBundles().front().second;
-		QueueManager::getInstance()->onUseSeqOrder(b);
-	}
-	return 0;
 }
 
 LRESULT QueueFrame::onRecheck(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
