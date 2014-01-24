@@ -41,7 +41,7 @@ PropPage::TextItem SharePage::texts[] = {
 	{ IDC_REMOVE_PROFILE, ResourceManager::REMOVE_PROFILE },
 	{ IDC_SETTINGS_SHARE_PROFILES, ResourceManager::SHARE_PROFILES },
 	{ IDC_SHARE_PROFILE_NOTE, ResourceManager::SETTINGS_SHARE_PROFILE_NOTE },
-	{ IDC_RENAME_PROFILE, ResourceManager::SETTINGS_RENAME_FOLDER },
+	{ IDC_RENAME_PROFILE, ResourceManager::RENAME },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

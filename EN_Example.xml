@@ -431,6 +431,7 @@
 	<string name="RemoveFromAll">Remove user from queue</string>
 	<string name="RemoveOffline">Remove offline users</string>
 	<string name="RemoveSource">Remove source</string>
+	<string name="Rename">Rename</string>
 	<string name="Report">Report user</string>
 	<string name="ReportAlternates">Show auto search for alternates in system log</string>
 	<string name="Resume">Resume</string>
@@ -585,7 +586,6 @@
 	<string name="SettingsPublicHubList">Public hubs list</string>
 	<string name="SettingsPublicHubListUrl">Public hubs list URL</string>
 	<string name="SettingsQueue">Queue</string>
-	<string name="SettingsRenameFolder">Rename</string>
 	<string name="SettingsRequiresRestart">Note; most of these options require that you restart AirDC++</string>
 	<string name="SettingsReset">Reset</string>
 	<string name="SettingsSbMaxSources">Max sources for match queue</string>
@@ -1299,7 +1299,6 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="PathsFavdirs">Paths (the one with most disk space will be picked, allows time variables)</string>
 	<string name="Paths">Paths</string>
 	<string name="SearchFilename">Search filename</string>
-	<string name="RenameDir">Rename directory</string>
 	<string name="MoveDir">Move directory</string>
 	<string name="MoveRenameFile">Move/Rename file(s)</string>
 	<string name="SettingsCalculatePrioAuto">Calculate bundle priorities automatically</string>
