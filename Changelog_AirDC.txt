@@ -52,6 +52,7 @@ Fixed:
 - Make GUI freezes less likely to happen when generating full file list
 - Fix missing country flags from some search results
 - Prevent crashes when running out of memory while loading file lists, queueing new bundles or refreshing the share
+- Avoid delaying GUI actions while scanning the share for missing files or running multithreaded file list refresh
 
 
 Removed:

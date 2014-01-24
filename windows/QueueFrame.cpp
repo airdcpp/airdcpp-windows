@@ -1388,7 +1388,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		OMenu* readdMenu = dirMenu.getMenu();
 
 		DirItemInfo* dii = (DirItemInfo*)ctrlDirs.GetItemData(ctrlDirs.GetSelectedItem());
-		Bundle::StringBundleList bundles = dii->getBundles();
+		const auto& bundles = dii->getBundles();
 		bool mainBundle = false;
 		BundlePtr b = nullptr;
 		if (!bundles.empty()) {
@@ -1928,7 +1928,7 @@ LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 	while( (i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
 		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
 
-		QueueItem::SourceList sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
+		const auto sources = QueueManager::getInstance()->getSources(ii->getQueueItem());
 		for(const auto& s: sources) {
 			if(!s.getUser().user->isOnline()) {
 				QueueManager::getInstance()->removeFileSource(ii->getTarget(), s.getUser().user, QueueItem::Source::FLAG_REMOVED);
@@ -1943,7 +1943,7 @@ LRESULT QueueFrame::onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
 
 		// re-add all sources
-		QueueItem::SourceList badSources = QueueManager::getInstance()->getBadSources(ii->getQueueItem());
+		const auto badSources = QueueManager::getInstance()->getBadSources(ii->getQueueItem());
 		for(const auto& bs: badSources) {
 			QueueManager::getInstance()->readdQISource(ii->getTarget(), bs.getUser());
 		}
