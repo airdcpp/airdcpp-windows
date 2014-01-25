@@ -1438,7 +1438,7 @@ bool WinUtil::isOnScrollbar(HWND m_hWnd, POINT& pt) {
 void WinUtil::openFile(const tstring& file) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		if (Util::fileExists(Text::fromT(file)))
-			::ShellExecute(NULL, NULL, file.c_str(), NULL, NULL, SW_SHOWNORMAL);
+			::ShellExecute(NULL, NULL, Util::FormatPathT(file).c_str(), NULL, NULL, SW_SHOWNORMAL);
 	});
 }
 
@@ -1447,9 +1447,8 @@ void WinUtil::openFolder(const tstring& file) {
 		return;
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		if(!Util::fileExists(Text::fromT(file)))
-			return;
-		::ShellExecute(NULL, Text::toT("explore").c_str(), Text::toT(Util::FormatPath(Util::getFilePath(Text::fromT(file)))).c_str(), NULL, NULL, SW_SHOWNORMAL);
+		if(Util::fileExists(Text::fromT(file)))
+			::ShellExecute(NULL, Text::toT("explore").c_str(), Util::FormatPathT(Util::getFilePath(file)).c_str(), NULL, NULL, SW_SHOWNORMAL);
 	});
 }
 void WinUtil::FlashWindow() {

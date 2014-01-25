@@ -476,6 +476,7 @@ private:
 
 	// QueueManagerListener
 	void on(QueueManagerListener::Finished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;
+	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
 
 	// DirectoryListingManagerListener
 	void on(DirectoryListingManagerListener::OpenListing, DirectoryListing* aList, const string& aDir, const string& aXML) noexcept;
@@ -493,8 +494,6 @@ private:
 	void on(ScannerManagerListener::ScanFinished, const string& aText, const string& aTitle) noexcept;
 
 	void on(ClientManagerListener::ClientCreated, Client*) noexcept;
-
-	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
 };
 
 #endif // !defined(MAIN_FRM_H)

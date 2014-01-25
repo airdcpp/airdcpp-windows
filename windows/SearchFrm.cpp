@@ -295,6 +295,7 @@ LRESULT SearchFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlResults.list.SetTextColor(WinUtil::textColor);
 	ctrlResults.list.SetFont(WinUtil::systemFont, FALSE);	// use WinUtil::font instead to obey Appearace settings
 	ctrlResults.list.setFlickerFree(WinUtil::bgBrush);
+	ctrlResults.list.addCopyHandler(COLUMN_IP, &ColumnInfo::filterCountry);
 	
 	ctrlHubs.InsertColumn(0, _T("Dummy"), LVCFMT_LEFT, 0, 0);
 	ctrlHubs.SetBkColor(WinUtil::bgColor);
@@ -1816,6 +1817,7 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 	auto filterInfoF = [&](int column) { return Text::fromT(si->getText(column)); };
 	auto filterNumericF = [&](int column) -> double { 
 		switch (column) {
+			case COLUMN_RELEVANCY: return si->getTotalRelevancy();
 			case COLUMN_HITS: return si->hits;
 			case COLUMN_SLOTS: return si->sr->getFreeSlots();
 			case COLUMN_SIZE:
@@ -1854,6 +1856,7 @@ void SearchFrame::updateSearchList(SearchInfo* si) {
 				}
 			}
 		}
+
 		ctrlResults.list.SetRedraw(TRUE);
 	}
 

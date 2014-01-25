@@ -1160,7 +1160,7 @@ void QueueFrame::moveSelectedDir() {
 void QueueFrame::onRenameBundle(BundlePtr b) {
 	LineDlg dlg;
 	dlg.title = TSTRING(RENAME);
-	dlg.description = TSTRING(BUNDLE_FILENAME);
+	dlg.description = TSTRING(NEW_NAME);
 	dlg.line = Text::toT(b->getName());
 	if (dlg.DoModal(m_hWnd) == IDOK) {
 		auto newName = Util::validatePath(Text::fromT(dlg.line), true);
