@@ -3,16 +3,29 @@
 ; You need the ANSI version of the MoreInfo plugin installed in NSIS to be able to compile this script
 ; Its available from http://nsis.sourceforge.net/MoreInfo_plug-in
 
-; Uncomment the above line if you want to build installer for the 64-bit version
-!define X64
-
- !include "Sections.nsh"
- !include "MUI2.nsh"
+!include "MUI2.nsh"
+!include "Sections.nsh"
+!include "x64.nsh"
  
+
+Var VERSION ; will be filled in onInit
+Var TargetArch64 ; target architecture depending on the system and user's choice
+Var OldInstDir ; existing istall dir (in case of reinstall)
+
+!macro GetAirDCVersion
+	; Get the DC++ version and store it in $VERSION
+	GetDllVersionLocal "..\compiled\x64\AirDC.exe" $R0 $R1
+	IntOp $R2 $R0 / 0x00010000
+	IntOp $R3 $R0 & 0x0000FFFF
+	IntOp $R4 $R1 / 0x00010000
+	IntOp $R5 $R1 & 0x0000FFFF
+	StrCpy $VERSION "$R2.$R3"
+!macroend
+
 SetCompressor "lzma"
 
 ; The name of the installer
-Name "AirDC++"
+Name "AirDC++ $VERSION"
 
 ShowInstDetails show
 ShowUninstDetails show
@@ -45,18 +58,7 @@ ShowUninstDetails show
    
    
 ; The file to write
-!ifdef X64
-  OutFile "AirDC_Installer_2.60_r1746_x64.exe"
-!else
-  OutFile "AirDC_Installer_2.60_r1746_x86.exe"
-!endif
-
-; The default installation directory
-!ifdef X64
-  InstallDir "$PROGRAMFILES64\AirDC++"
-!else
-  InstallDir "$PROGRAMFILES\AirDC++"
-!endif
+  OutFile "AirDC_Installer_2.60_r1746.exe"
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
@@ -70,14 +72,6 @@ DirText "Choose a directory to install AirDC++ into. If you upgrade select the s
 
 ; The stuff to install
 Section "AirDC++ (required)" dcpp
-
-!ifdef X64
-  ;Check if we have a valid PROGRAMFILES64 enviroment variable
-  StrCmp $PROGRAMFILES64 $PROGRAMFILES32 0 _64_ok
-  MessageBox MB_YESNO|MB_ICONEXCLAMATION "This installer will try to install the 64-bit version of AirDC++ but this doesn't seem to be 64-bit operating system. Do you want to continue?" IDYES _64_ok
-  Quit
-  _64_ok:
-!endif
 
   ; Set output path to the installation directory.
   SetOutPath $INSTDIR
@@ -127,17 +121,15 @@ Section "AirDC++ (required)" dcpp
   goto no_backup
 
 no_backup:
-  ; Put file there
-  File "popup.bmp"
-  File "dcppboot.xml"
-  !ifdef X64
-	File "..\compiled\x64\AirDC.pdb"
-	File "..\compiled\x64\AirDC.exe"
-  !else
+  ; Put the files there
+  
+  ${If} $TargetArch64 == "1"
+    File "..\compiled\x64\AirDC.pdb"
+    File "..\compiled\x64\AirDC.exe"
+  ${Else}
 	File "..\compiled\Win32\AirDC.pdb"
 	File "..\compiled\Win32\AirDC.exe"
-  !endif
-  
+  ${EndIf}
   ; Uncomment to get DCPP core version from AirDC.exe we just installed and store in $1
   ;Function GetDCPlusPlusVersion
   ;        Exch $0;
@@ -177,29 +169,52 @@ no_backup:
 SectionEnd
 
 ; optional section
-Section "Start Menu Shortcuts"
+Section "Start menu shortcuts"
   CreateDirectory "$SMPROGRAMS\AirDC++"
   CreateShortCut "$SMPROGRAMS\AirDC++\AirDC++.lnk" "$INSTDIR\AirDC.exe" "" "$INSTDIR\AirDC.exe" 0 "" "" "AirDC++ File Sharing Application"
   CreateShortCut "$SMPROGRAMS\AirDC++\Uninstall.lnk" "$INSTDIR\uninstall.exe" "" "$INSTDIR\uninstall.exe" 0
 SectionEnd
 
-Section "Radox Emoticon Pack" 
+Section "Radox Emoticon Pack"
   SetOutPath $INSTDIR
   File /r /x .svn EmoPacks
 SectionEnd
 
-Section "Themes" 
+Section "Themes"
   SetOutPath $INSTDIR
   File /r /x .svn Themes
 SectionEnd
 
-Section "Store settings in your user profile folder" loc
+Section "Store settings in the user profile directory" loc
   ; Change to nonlocal dcppboot if the checkbox left checked
   SetOutPath $INSTDIR
   File /oname=dcppboot.xml "dcppboot.nonlocal.xml" 
 SectionEnd
 
+Section "Install the 32-bit version" arch
+  ; Force to install 32 bit version on an x64 system
+SectionEnd
+
 Function .onSelChange
+  ; Alter default value for $INSTDIR according to the arch selection
+  ; but only if it's the first install and we're on an x64 system
+  ${If} ${RunningX64}
+    SectionGetFlags ${arch} $0
+    IntOp $0 $0 & ${SF_SELECTED}
+    StrCmp $0 ${SF_SELECTED} x86
+    ${If} $OldInstDir == ""
+      StrCpy $INSTDIR "$PROGRAMFILES64\AirDC++"
+    ${EndIf}
+    StrCpy $TargetArch64 "1"
+    goto end
+  x86:
+    ${If} $OldInstDir == ""
+      StrCpy $INSTDIR "$PROGRAMFILES\AirDC++"
+    ${EndIf}
+    StrCpy $TargetArch64 "0"
+  end:
+  ${EndIf}
+  
   ; Do not show the warning on XP or older
   StrCmp $R8 "0" skip
   ; Show the warning only once
@@ -213,6 +228,13 @@ skip:
 FunctionEnd
 
 Function .onInit
+	; Set the system arch as default
+	${If} ${RunningX64}
+		StrCpy $TargetArch64 "1"
+	${Else}
+		StrCpy $TargetArch64 "0"
+	${EndIf}
+
   IfFileExists "$EXEDIR\AirDC.exe" 0 checkos
   StrCpy $INSTDIR $EXEDIR
 checkos:
@@ -235,6 +257,31 @@ end:
   ; Set the program component really required (read only)
   IntOp $0 ${SF_SELECTED} | ${SF_RO}
   SectionSetFlags ${dcpp} $0
+  
+
+	; Require the 32 bit arch option on x86 systems, deselect on x64
+	${If} $TargetArch64 == "0"
+		SectionSetFlags ${arch} $0
+	${Else}
+		SectionGetFlags ${arch} $0
+		IntOp $0 $0 & ${SECTION_OFF}
+		SectionSetFlags ${arch} $0
+	${EndIf}
+
+	; Save existing install dir to be able to compare later
+	StrCpy $OldInstDir $INSTDIR
+	
+	; When there is no install dir (ie when this is the first install), default to
+	; "Program Files/DC++".
+	${If} $INSTDIR == ""
+		${If} $TargetArch64 == "1"
+			StrCpy $INSTDIR "$PROGRAMFILES64\AirDC++"
+		${Else}
+			StrCpy $INSTDIR "$PROGRAMFILES\AirDC++"
+		${EndIf}
+	${EndIf}
+	
+	!insertmacro GetAirDCVersion
 FunctionEnd
 
 Function LaunchLink
