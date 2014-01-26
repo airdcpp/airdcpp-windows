@@ -461,8 +461,8 @@ protected:
 
 	void updateList(const FinishedItemList& fl) {
 		ctrlList.SetRedraw(FALSE);
-		for(FinishedItemList::const_iterator i = fl.begin(); i != fl.end(); ++i) {
-			addEntry(*i);
+		for(const auto& fi: fl) {
+			addEntry(fi);
 		}
 		ctrlList.SetRedraw(TRUE);
 		ctrlList.Invalidate();

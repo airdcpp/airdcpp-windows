@@ -976,7 +976,7 @@ void TransferView::on(DownloadManagerListener::Requesting, const Download* d, bo
 	starting(ui, d);
 	
 	ui->setActual(d->getActual());
-	ui->setSize(d->getSize());
+	ui->setSize(d->getSegmentSize());
 	ui->setStatus(ItemInfo::STATUS_RUNNING);	ui->updateMask &= ~UpdateInfo::MASK_STATUS; // hack to avoid changing item status
 	ui->setStatusString(TSTRING(REQUESTING) + _T(" ") + getFile(d->getType(), Text::toT(Util::getFileName(d->getPath()))) + _T("..."));
 	ui->setBundle(d->getBundle() ? d->getBundle()->getToken() : Util::emptyString);
@@ -1101,7 +1101,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 		ui->setStatus(ItemInfo::STATUS_RUNNING);
 		ui->setActual(d->getActual());
 		ui->setPos(d->getPos());
-		ui->setSize(d->getSize());
+		ui->setSize(d->getSegmentSize());
 		ui->setTimeLeft(d->getSecondsLeft());
 		ui->setBundle(d->getBundle() ? d->getBundle()->getToken() : Util::emptyString);
 		
@@ -1110,7 +1110,7 @@ void TransferView::on(DownloadManagerListener::Tick, const DownloadList& dl) {
 		ui->setType(d->getType());
 
 		tstring pos = Util::formatBytesW(d->getPos());
-		double percent = (double)d->getPos()*100.0/(double)d->getSize();
+		double percent = (double) d->getPos()*100.0 / (double) d->getSegmentSize();
 		tstring elapsed = Util::formatSecondsW((GET_TICK() - d->getStart())/1000);
 
 		tstring statusString;
@@ -1154,7 +1154,7 @@ void TransferView::on(DownloadManagerListener::Failed, const Download* aDownload
 	auto ui = new UpdateInfo(aDownload->getToken(), true, true);
 	ui->setStatus(ItemInfo::STATUS_WAITING);
 	ui->setPos(0);
-	ui->setSize(aDownload->getSize());
+	ui->setSize(aDownload->getSegmentSize());
 	ui->setTarget(Text::toT(aDownload->getPath()));
 	ui->setType(aDownload->getType());
 	ui->setBundle(aDownload->getBundle() ? aDownload->getBundle()->getToken() : Util::emptyString);
@@ -1203,7 +1203,7 @@ void TransferView::on(UploadManagerListener::Starting, const Upload* aUpload) {
 	
 	ui->setStatus(ItemInfo::STATUS_RUNNING);
 	ui->setActual(aUpload->getStartPos() + aUpload->getActual());
-	ui->setSize(aUpload->getType() == Transfer::TYPE_TREE ? aUpload->getSize() : aUpload->getFileSize());
+	ui->setSize(aUpload->getType() == Transfer::TYPE_TREE ? aUpload->getSegmentSize() : aUpload->getFileSize());
 	ui->setRunning(1);
 	ui->setBundle(aUpload->getBundle() ? aUpload->getBundle()->getToken() : Util::emptyString);
 	
@@ -1330,7 +1330,7 @@ void TransferView::on(UploadManagerListener::Tick, const UploadList& ul) {
 		ui->setBundle(u->getBundle() ? u->getBundle()->getToken() : Util::emptyString);
 
 		tstring pos = Util::formatBytesW(ui->pos);
-		double percent = (double)ui->pos*100.0/(double)(u->getType() == Transfer::TYPE_TREE ? u->getSize() : u->getFileSize());
+		double percent = (double) ui->pos*100.0 / (double) (u->getType() == Transfer::TYPE_TREE ? u->getSegmentSize() : u->getFileSize());
 		tstring elapsed = Util::formatSecondsW((GET_TICK() - u->getStart())/1000); 
 		
 		tstring statusString;
