@@ -309,7 +309,7 @@ private:
 		double getMatchRelevancy() const { return matchRelevancy; }
 	private:
 		double matchRelevancy = 0;
-		bool noNameMatches = false;
+		double sourceScoreFactor = 0.01;
 	};
 	
 	void performAction(std::function<void (const SearchInfo* aInfo)> f, bool oncePerParent=false);

@@ -612,7 +612,7 @@ void SearchFrame::on(SearchManagerListener::SR, const SearchResultPtr& aResult) 
 	// path
 	SearchQuery::Recursion recursion;
 	ScopedFunctor([this] { curSearch->recursion = nullptr; });
-	if (!curSearch->root && !curSearch->root && !curSearch->matchesNmdcPath(aResult->getPath(), recursion)) {
+	if (!curSearch->root && !curSearch->matchesNmdcPath(aResult->getPath(), recursion)) {
 		callAsync([this] { onResultFiltered(); });
 		return;
 	}
@@ -667,8 +667,10 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchQuer
 
 	// don't count the levels because they can't be compared with each others...
 	matchRelevancy = SearchQuery::getRelevancyScores(aSearch, 0, aSR->getType() == SearchResult::TYPE_DIRECTORY, aSR->getFileName());
-	if (all_of(aSearch.getLastPositions().begin(), aSearch.getLastPositions().end(), [](size_t pos) { return pos == string::npos; })) {
-		noNameMatches = true;
+	if (aSearch.recursion && aSearch.recursion->isComplete()) {
+		// there are subdirectories/files that have more matches than the main directory
+		// don't give too much weight for those
+		sourceScoreFactor = 0.001;
 	}
 
 	//get the ip info
@@ -686,10 +688,7 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchQuer
 }
 
 double SearchFrame::SearchInfo::getTotalRelevancy() const {
-	// there are subdirectories/files that have more matches than the main directory
-	// don't give too much weight for those
-	double hitRelevancy = hits * (noNameMatches ? 0.0001 : 0.01);
-	return hitRelevancy + matchRelevancy;
+	return (hits * sourceScoreFactor) + matchRelevancy;
 }
 
 StringList SearchFrame::SearchInfo::getDupePaths() const {

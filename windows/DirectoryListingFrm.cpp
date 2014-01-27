@@ -1554,7 +1554,7 @@ void DirectoryListingFrame::handleOpenFile() {
 	handleItemAction(false, [this](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
 			try {
-				if (ii->file->getDupe() == DUPE_FINISHED || ii->file->getDupe() == DUPE_SHARE) {
+				if (dl->getIsOwnList() || ii->file->getDupe() == DUPE_FINISHED || ii->file->getDupe() == DUPE_SHARE) {
 					openDupe(ii->file, false);
 				} else {
 					dl->openFile(ii->file, false);
