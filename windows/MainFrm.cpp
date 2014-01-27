@@ -1427,8 +1427,7 @@ LRESULT MainFrame::onTrayIcon(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 	if (bAppMinimized && (lParam == WM_LBUTTONDBLCLK || ((bHasPM || bHasMC || SETTING(SINGLE_CLICK_TRAY)) && lParam == WM_LBUTTONUP))) {
 		ShowWindow(SW_SHOW);
 		ShowWindow(maximized ? SW_MAXIMIZE : SW_RESTORE);
-	}
-	else if (!bAppMinimized && (lParam == WM_LBUTTONDBLCLK || (SETTING(SINGLE_CLICK_TRAY) && lParam == WM_LBUTTONUP))) {
+	} else if (!bAppMinimized && (lParam == WM_LBUTTONDBLCLK || (SETTING(SINGLE_CLICK_TRAY) && lParam == WM_LBUTTONUP))) {
 		ShowWindow(SW_HIDE);
 		ShowWindow(SW_MINIMIZE);
 	} else if(lParam == WM_MOUSEMOVE && ((lastMove + 1000) < GET_TICK()) ) {
