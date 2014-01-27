@@ -122,6 +122,7 @@ Section "AirDC++ (required)" dcpp
 
 no_backup:
   ; Put the files there
+  File "dcppboot.xml"
   
   ${If} $TargetArch64 == "1"
     File "..\compiled\x64\AirDC.pdb"

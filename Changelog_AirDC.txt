@@ -29,6 +29,7 @@ Changed:
 - Auto search: Ignore the search time limitations when there are missing files
 - Improve statistics (/sharestats and /clientstats)
 - Increase the size of the ADL search properties dialog
+- Use a single installer for 32 and 64 bit version
 
 Fixed:
 
@@ -53,7 +54,7 @@ Fixed:
 - Fix missing country flags from some search results
 - Prevent crashes when running out of memory while loading file lists, queueing new bundles or refreshing the share
 - Avoid delaying GUI actions while scanning the share for missing files or running multithreaded file list refresh
-
+- Fix logging of uploads twice in some cases
 
 Removed:
 
