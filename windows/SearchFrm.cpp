@@ -671,6 +671,9 @@ SearchFrame::SearchInfo::SearchInfo(const SearchResultPtr& aSR, const SearchQuer
 		// there are subdirectories/files that have more matches than the main directory
 		// don't give too much weight for those
 		sourceScoreFactor = 0.001;
+
+		// we don't get the level scores so balance those here
+		matchRelevancy = max(0.0, matchRelevancy-(0.05*aSearch.recursion->recursionLevel));
 	}
 
 	//get the ip info
