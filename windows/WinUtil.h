@@ -166,7 +166,7 @@ static const toolbarButton ToolbarButtons[] = {
 	{ IDC_AWAY, 20, IDI_AWAY, true, ResourceManager::AWAY },
 	//separator
 	{ ID_FILE_SETTINGS, 21, IDI_SETTINGS, false, ResourceManager::MENU_SETTINGS },
-	
+	{ IDC_QUEUE2, 22, IDI_QUEUE, false, ResourceManager::MENU_DOWNLOAD_QUEUE },
 };
 
 

@@ -106,6 +106,7 @@
 #define IDR_PRIVATE_OFF                 242
 #define IDR_HUB_OFF                     243
 #define IDD_WEB_SHORTCUTS               244
+#define IDR_QUEUE2                      245
 #define IDD_OPERACOLORS                 249
 #define IDD_AVIPREVIEW                  250
 #define IDD_SEARCHTYPEPAGE              251
@@ -451,6 +452,8 @@
 #define IDC_SOCKS_RESOLVE               1086
 #define IDC_PROGRESS_BUMPED             1086
 #define IDC_REMOVEALL                   1087
+#define IDC_QUEUE2						1088
+#define IDC_QUEUE_LIST					1089
 #define IDC_SOCKS_SERVER                1090
 #define IDC_SOCKS_PORT                  1091
 #define IDC_SOCKS_USER                  1092

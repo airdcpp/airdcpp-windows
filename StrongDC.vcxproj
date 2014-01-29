@@ -517,6 +517,7 @@
     <ClCompile Include="windows\PopupDlg.cpp" />
     <ClCompile Include="windows\ProtocolPage.cpp" />
     <ClCompile Include="windows\ProxyPage.cpp" />
+    <ClCompile Include="windows\QueueFrame2.cpp" />
     <ClCompile Include="windows\ResourceLoader.cpp" />
     <ClCompile Include="windows\ScanPage.cpp" />
     <ClCompile Include="windows\SearchTypeCombo.cpp" />
@@ -650,6 +651,7 @@
     <ClInclude Include="windows\ListViewArrows.h" />
     <ClInclude Include="windows\ProtocolPage.h" />
     <ClInclude Include="windows\ProxyPage.h" />
+    <ClInclude Include="windows\QueueFrame2.h" />
     <ClInclude Include="windows\ScanPage.h" />
     <ClInclude Include="windows\SearchTypeCombo.h" />
     <ClInclude Include="windows\ShareDirectories.h" />

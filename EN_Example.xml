@@ -2014,6 +2014,7 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="DirRefreshFailed">Failed to refresh the directory %1%: %2%</string>
 	<string name="BundleCreationFailed">Failed to create the bundle %1%: %2%</string>
 	<string name="SingleClickTray">Single click on tray icon to open</string>
+	<string name="Sources">Sources</string>
 	<string name="NewName">New name</string>
 	<string name="SaveFailedX">Failed to save the file %1%: %2%</string>
 	<string name="LoadFailedX">Failed to load the file %1%: %2%</string>
