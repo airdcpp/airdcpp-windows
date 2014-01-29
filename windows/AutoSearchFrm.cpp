@@ -677,7 +677,7 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	lst.push_back(Text::toT(as->getDisplayName()));
 	lst.push_back(Text::toT(SearchManager::isDefaultTypeStr(as->getFileType()) ? SearchManager::getTypeStr(as->getFileType()[0]-'0') : as->getFileType()));
 	lst.push_back(Text::toT(as->getSearchingStatus()));
-	lst.push_back((as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : _T("Unknown")));
+	lst.push_back((as->getLastSearch() > 0 ? formatSearchDate(as->getLastSearch()).c_str() : TSTRING(UNKNOWN)));
 	lst.push_back(Text::toT(AutoSearchManager::getInstance()->getBundleStatuses(as)));
 		
 	if(as->getAction() == 0){
@@ -700,7 +700,7 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	}
 
 	lst.push_back(Text::toT(target));
-	lst.push_back(Text::toT(as->getRemove()? "Yes" : "No"));
+	lst.push_back(as->getRemove()? TSTRING(YES) : TSTRING(NO));
 	lst.push_back(Text::toT(as->getNickPattern()));
 	lst.push_back(Text::toT(as->getLastError()));
 

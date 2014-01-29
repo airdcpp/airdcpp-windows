@@ -12,6 +12,7 @@ Added:
 - Severity icons in PM and Hub windows statusbars
 - Option to open .nfo files externally
 - New column in search tab: Relevancy (used for sorting by default)
+- Configurable update channel (stable/betas)
 
 Changed:
 
