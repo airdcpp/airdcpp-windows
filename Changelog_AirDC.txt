@@ -31,6 +31,7 @@ Changed:
 - Improve statistics (/sharestats and /clientstats)
 - Increase the size of the ADL search properties dialog
 - Use a single installer for 32 and 64 bit version
+- Require double-click for restoring the client from tray by default
 
 Fixed:
 

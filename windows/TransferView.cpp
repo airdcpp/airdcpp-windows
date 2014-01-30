@@ -999,10 +999,6 @@ void TransferView::on(DownloadManagerListener::Starting, const Download* aDownlo
 
 void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bundles, uint64_t /*aTick*/) {
 	for(const auto& b: bundles) {
-		auto running = b->getRunningUsers().size();
-		if (running == 0)
-			continue;
-
 		double ratio = 0;
 		int64_t totalSpeed = 0;
 		bool partial=false, trusted=false, untrusted=false, tthcheck=false, zdownload=false, chunked=false, mcn=false;
@@ -1038,54 +1034,61 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 			}
 		}
 
-		ratio = ratio / running;
+		if(b->getRunning() > 0) {
+			ratio = ratio / b->getRunning();
 
-		ui->setStatus(ItemInfo::STATUS_RUNNING);
-		//ui->setSize(b->getSize());
-		ui->setPos(b->getDownloadedBytes());
-		ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
-		ui->setTimeLeft(b->getSecondsLeft());
-		ui->setSpeed(totalSpeed);
-		ui->setUsers(b->getRunningUsers().size());
-		ui->setRunning(running);
+			ui->setStatus(ItemInfo::STATUS_RUNNING);
+			ui->setSize(b->getSize());
+			ui->setPos(b->getDownloadedBytes());
+			ui->setActual((int64_t)((double)ui->pos * (ratio == 0 ? 1.00 : ratio)));
+			ui->setTimeLeft(b->getSecondsLeft());
+			ui->setSpeed(totalSpeed);
+			ui->setUsers(b->getRunningUsers().size());
+			ui->setRunning(b->getRunning());
 
-		uint64_t time = GET_TICK() - b->getBundleBegin();
-		if(time > 1000) {
-			tstring pos = Text::toT(Util::formatBytes(ui->pos));
-			double percent = (double)ui->pos*100.0/(double)ui->size;
-			dcassert(percent <= 100.00);
-			tstring elapsed = Util::formatSecondsW(time/1000);
-			tstring flag;
+			if(b->getBundleBegin() == 0) {
+				// file is starting
+				b->setBundleBegin(GET_TICK());
+
+				ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
+			} else {
+				uint64_t time = GET_TICK() - b->getBundleBegin();
+				if(time > 1000) {
+					tstring pos = Text::toT(Util::formatBytes(ui->pos));
+					double percent = (double)ui->pos*100.0/(double)ui->size;
+					dcassert(percent <= 100.00);
+					tstring elapsed = Util::formatSecondsW(time/1000);
+					tstring flag;
 					
-			if(partial) {
-				flag += _T("[P]");
-			}
-			if(trusted) {
-				flag += _T("[S]");
-			}
-			if(untrusted) {
-				flag += _T("[U]");
-			}
-			if(tthcheck) {
-				flag += _T("[T]");
-			}
-			if(zdownload) {
-				flag += _T("[Z]");
-			}
-			if(chunked) {
-				flag += _T("[C]");
-			}
-			if(mcn) {
-				flag += _T("[M]");
-			}	
+					if(partial) {
+						flag += _T("[P]");
+					}
+					if(trusted) {
+						flag += _T("[S]");
+					}
+					if(untrusted) {
+						flag += _T("[U]");
+					}
+					if(tthcheck) {
+						flag += _T("[T]");
+					}
+					if(zdownload) {
+						flag += _T("[Z]");
+					}
+					if(chunked) {
+						flag += _T("[C]");
+					}
+					if(mcn) {
+						flag += _T("[M]");
+					}	
 
-			if(!flag.empty()) {
-				flag += _T(" ");
-			}
+					if(!flag.empty()) {
+						flag += _T(" ");
+					}
 
-			ui->setStatusString(flag + TSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
-		} else {
-			ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
+					ui->setStatusString(flag + TSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
+				}
+			}
 		}
 
 		speak(UPDATE_BUNDLE, ui);
