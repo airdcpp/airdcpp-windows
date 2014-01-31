@@ -52,6 +52,8 @@ public:
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
+		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
+		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 
@@ -60,6 +62,8 @@ public:
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
 		ctrlQueue.SetFocus();
@@ -127,6 +131,11 @@ private:
 
 	void onQueueItemRemoved(const QueueItemPtr& aQI);
 	void onQueueItemUpdated(const QueueItemPtr& aQI);
+	void onQueueItemAdded(const QueueItemPtr& aQI);
+
+	void AppendBundleMenu(BundleList& bl, OMenu& bundleMenu);
+	void AppendQiMenu(QueueItemList& ql, OMenu& fileMenu);
+	static tstring handleCopyMagnet(const QueueItemInfo* ii);
 
 	bool closed;
 
@@ -153,6 +162,7 @@ private:
 
 	//QueueItem update listeners
 	void on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool /*finished*/) noexcept;
+	void on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept;
 	void on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) noexcept;
 	void on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept;
 
