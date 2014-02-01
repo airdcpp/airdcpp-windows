@@ -599,15 +599,19 @@ void QueueFrame2::onBundleAdded(const BundlePtr& aBundle) {
 		auto b = itemInfos.emplace(aBundle->getToken(), new QueueItemInfo(aBundle)).first;
 		if (aBundle->isFileBundle()) {
 			ctrlQueue.insertItem(b->second, b->second->getImageIndex());
-			return;
+		} else {
+			ctrlQueue.insertGroupedItem(b->second, false);
 		}
-		ctrlQueue.insertGroupedItem(b->second, false);
-		for (auto& qi : aBundle->getQueueItems()){
-			auto item = new QueueItemInfo(qi);
-			itemInfos.emplace(qi->getTarget(), item);
-			ctrlQueue.insertGroupedItem(item, false);
-		}
+	}
+}
 
+void QueueFrame2::AddBundleQueueItems(const BundlePtr& aBundle) {
+	for (auto& qi : aBundle->getQueueItems()){
+		if (qi->isFinished()/* && !SETTING(KEEP_FINISHED_FILES)*/)
+			continue;
+		auto item = new QueueItemInfo(qi);
+		itemInfos.emplace(qi->getTarget(), item);
+		ctrlQueue.insertGroupedItem(item, true);
 	}
 }
 
@@ -650,8 +654,18 @@ void QueueFrame2::onQueueItemUpdated(const QueueItemPtr& aQI) {
 void QueueFrame2::onQueueItemAdded(const QueueItemPtr& aQI) {
 	auto item = itemInfos.find(aQI->getTarget());
 	if (item == itemInfos.end()) {
-		auto i = itemInfos.emplace(aQI->getTarget(), new QueueItemInfo(aQI)).first;
-		ctrlQueue.insertGroupedItem(i->second, false);
+		//queueItem not found look if we have a parent for it and if its expanded
+		if (aQI->getBundle()){
+			auto parent = itemInfos.find(aQI->getBundle()->getToken());
+			if (parent != itemInfos.end() && !parent->second->collapsed){
+				auto i = itemInfos.emplace(aQI->getTarget(), new QueueItemInfo(aQI)).first;
+				ctrlQueue.insertGroupedItem(i->second, false);
+			}
+		} else { // no bundle, not a file list??
+			auto i = itemInfos.emplace(aQI->getTarget(), new QueueItemInfo(aQI)).first;
+			ctrlQueue.insertItem(i->second, i->second->getImageIndex());
+		}
+
 	}
 }
 

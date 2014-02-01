@@ -765,7 +765,11 @@ private:
 };
 
 // Copyright (C) 2005-2010 Big Muscle, StrongDC++
-template<class T, int ctrlId, class K, class hashFunc, class equalKey, bool GroupUniqueChildren>
+
+#define NO_GROUP_UNIQUE_CHILDREN 0x01
+#define VIRTUAL_CHILDREN 0x02 //parent handles item creation on expanding
+
+template<class T, int ctrlId, class K, class hashFunc, class equalKey, DWORD style>
 class TypedTreeListViewCtrl : public TypedListViewCtrl<T, ctrlId> 
 {
 public:
@@ -773,7 +777,7 @@ public:
 	TypedTreeListViewCtrl() { }
 	~TypedTreeListViewCtrl() { states.Destroy(); }
 
-	typedef TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey, GroupUniqueChildren> thisClass;
+	typedef TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey, style> thisClass;
 	typedef TypedListViewCtrl<T, ctrlId> baseClass;
 	
 	struct ParentPair {
@@ -798,7 +802,12 @@ public:
 		return 0;
 	}
 
-	LRESULT onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+	LRESULT onLButton(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+		if (style & VIRTUAL_CHILDREN){
+			bHandled = FALSE;
+			return SendMessage(GetParent(), uMsg, wParam, lParam);
+		}
+
 		CPoint pt;
 		pt.x = GET_X_LPARAM(lParam);
 		pt.y = GET_Y_LPARAM(lParam);
@@ -913,7 +922,7 @@ public:
 			}
 		};
 
-		if (!GroupUniqueChildren) {
+		if (style & NO_GROUP_UNIQUE_CHILDREN) {
 			if (!pp) {
 				parent = item;
 
@@ -921,7 +930,8 @@ public:
 				parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
 
 				parent->parent = nullptr; // ensure that parent of this item is really NULL
-				insertItem(getSortPos(parent), parent, parent->getImageIndex());
+				pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
+				if(style & VIRTUAL_CHILDREN) updateCollapsedState();
 				return;
 			} else if (pp->children.empty()) {
 				auto oldParent = pp->parent;
@@ -998,7 +1008,7 @@ public:
 				pp->parent->hits--;
 			}
 	
-			if (!GroupUniqueChildren) {
+			if (style & NO_GROUP_UNIQUE_CHILDREN) {
 				if(uniqueParent) {
 					dcassert(!pp->children.empty());
 					if(pp->children.size() == 1) {
@@ -1208,7 +1218,7 @@ private:
 	}
 };
 
-template<class T, int ctrlId, class K, class hashFunc, class equalKey, bool GroupUniqueChildren>
-const vector<T*> TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey, GroupUniqueChildren>::emptyVector;
+template<class T, int ctrlId, class K, class hashFunc, class equalKey, DWORD style>
+const vector<T*> TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey, style>::emptyVector;
 
 #endif // !defined(TYPED_LIST_VIEW_CTRL_H)

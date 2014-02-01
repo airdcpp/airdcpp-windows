@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airdc-git\AirDC.rc
+// Used by N:\projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -452,8 +452,8 @@
 #define IDC_SOCKS_RESOLVE               1086
 #define IDC_PROGRESS_BUMPED             1086
 #define IDC_REMOVEALL                   1087
-#define IDC_QUEUE2						1088
-#define IDC_QUEUE_LIST					1089
+#define IDC_QUEUE2                      1088
+#define IDC_QUEUE_LIST                  1089
 #define IDC_SOCKS_SERVER                1090
 #define IDC_SOCKS_PORT                  1091
 #define IDC_SOCKS_USER                  1092
