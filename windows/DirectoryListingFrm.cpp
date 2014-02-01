@@ -1833,7 +1833,7 @@ LRESULT DirectoryListingFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM /
 
 bool DirectoryListingFrame::ItemInfo::NameSort::operator()(const ItemInfo& a, const ItemInfo& b) const {
 	auto comp = compareItems(&a, &b, DirectoryListingFrame::COLUMN_FILENAME);
-	if (comp == 0 && a.isAdl()) {
+	if (comp == 0 && a.isAdl() && b.isAdl()) {
 		// there can be multiple items with the same name in a single ADL directory... compare the path instead
 		return Util::DefaultSort(Text::toT(a.getPath()).c_str(), Text::toT(b.getPath()).c_str()) > 0;
 	}
@@ -1848,8 +1848,8 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 				case COLUMN_SIZE: return compare(a->dir->getTotalSize(true), b->dir->getTotalSize(true));
 				case COLUMN_DATE: return compare(a->dir->getRemoteDate(), b->dir->getRemoteDate());
 				case COLUMN_FILENAME: {
-						if (a->dir->getType() == DirectoryListing::Directory::TYPE_ADLS && b->dir->getType() != DirectoryListing::Directory::TYPE_ADLS) return false;
-						if (a->dir->getType() != DirectoryListing::Directory::TYPE_ADLS && b->dir->getType() == DirectoryListing::Directory::TYPE_ADLS) return true;
+						if (a->dir->getType() == DirectoryListing::Directory::TYPE_ADLS && b->dir->getType() != DirectoryListing::Directory::TYPE_ADLS) return -1;
+						if (a->dir->getType() != DirectoryListing::Directory::TYPE_ADLS && b->dir->getType() == DirectoryListing::Directory::TYPE_ADLS) return 1;
 						return Util::DefaultSort(a->getNameW().c_str(), b->getNameW().c_str(), true);
 					}
 				default: return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str(), true);
