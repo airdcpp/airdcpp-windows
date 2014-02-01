@@ -57,6 +57,7 @@ Fixed:
 - Prevent crashes when running out of memory while loading file lists, queueing new bundles or refreshing the share
 - Avoid delaying GUI actions while scanning the share for missing files or running multithreaded file list refresh
 - Fix logging of uploads twice in some cases
+- Fix multiple items with the same name not being displayed in ADL search matches
 
 Removed:
 

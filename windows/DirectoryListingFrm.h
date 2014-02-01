@@ -316,9 +316,14 @@ private:
 		DupeType getDupe() const { return type == DIRECTORY ? dir->getDupe() : file->getDupe(); }
 		const string& getName() const { return type == DIRECTORY ? dir->getName() : file->getName(); }
 		string getPath() const { return type == DIRECTORY ? dir->getPath() : file->getPath(); }
+		bool isAdl() const { return type == DIRECTORY ? dir->getAdls() : file->getAdls(); }
 
 		struct NameSort {
 			bool operator()(const ItemInfo& a, const ItemInfo& b) const {
+				if (a.isAdl()) {
+					// there can be multiple items with the same name in a single ADL directory
+					return Util::DefaultSort(Text::toT(a.getPath()).c_str(), Text::toT(b.getPath()).c_str()) > 0;
+				}
 				return compareItems(&a, &b, DirectoryListingFrame::COLUMN_FILENAME) > 0;
 			}
 		};
