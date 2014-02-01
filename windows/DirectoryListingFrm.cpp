@@ -1831,6 +1831,15 @@ LRESULT DirectoryListingFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM /
 	return (LRESULT)WinUtil::bgBrush;
 }
 
+bool DirectoryListingFrame::ItemInfo::NameSort::operator()(const ItemInfo& a, const ItemInfo& b) const {
+	auto comp = compareItems(&a, &b, DirectoryListingFrame::COLUMN_FILENAME);
+	if (comp == 0 && a.isAdl()) {
+		// there can be multiple items with the same name in a single ADL directory... compare the path instead
+		return Util::DefaultSort(Text::toT(a.getPath()).c_str(), Text::toT(b.getPath()).c_str()) > 0;
+	}
+	return comp > 0;
+}
+
 int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemInfo* b, uint8_t col) {
 	if(a->type == DIRECTORY) {
 		if(b->type == DIRECTORY) {
