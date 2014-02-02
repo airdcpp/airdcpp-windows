@@ -58,6 +58,8 @@ Fixed:
 - Avoid delaying GUI actions while scanning the share for missing files or running multithreaded file list refresh
 - Fix logging of uploads twice in some cases
 - Fix multiple items with the same name not being displayed in ADL search matches
+- Fix possible crashes related to recent hubs
+- Fix window updates possibly getting lost when staying in very large hubs
 
 Removed:
 

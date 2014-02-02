@@ -1533,6 +1533,7 @@ void HubFrame::on(UsersUpdated, const Client*, const OnlineUserList& aList) noex
 void HubFrame::on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr& user) noexcept {
 	auto task = new UserTask(user);
 	tasks.add(REMOVE_USER, unique_ptr<Task>(task));
+	updateUsers = true;
 }
 
 void HubFrame::on(Redirect, const Client*, const string& line) noexcept { 
