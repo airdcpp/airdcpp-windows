@@ -1514,10 +1514,8 @@ void HubFrame::on(UserUpdated, const Client*, const OnlineUserPtr& user) noexcep
 	}
 	
 	auto task = new UserTask(user);
-	callAsync([this, task] {
-		tasks.add(UPDATE_USER_JOIN, unique_ptr<Task>(task));
-		updateUsers = true;
-	});
+	tasks.add(UPDATE_USER_JOIN, unique_ptr<Task>(task));
+	updateUsers = true;
 }
 void HubFrame::on(UsersUpdated, const Client*, const OnlineUserList& aList) noexcept {
 	for(auto& i: aList) {
@@ -1527,17 +1525,14 @@ void HubFrame::on(UsersUpdated, const Client*, const OnlineUserList& aList) noex
 		}
 
 		auto task = new UserTask(i);
-		callAsync([this, task] { tasks.add(UPDATE_USER, unique_ptr<Task>(task)); });
+		tasks.add(UPDATE_USER, unique_ptr<Task>(task));
 	}
-	callAsync([this] { updateUsers = true; });
+	updateUsers = true;
 }
 
 void HubFrame::on(ClientListener::UserRemoved, const Client*, const OnlineUserPtr& user) noexcept {
 	auto task = new UserTask(user);
-	callAsync([this, task] {
-		tasks.add(REMOVE_USER, unique_ptr<Task>(task));
-		updateUsers = true;
-	});
+	tasks.add(REMOVE_USER, unique_ptr<Task>(task));
 }
 
 void HubFrame::on(Redirect, const Client*, const string& line) noexcept { 

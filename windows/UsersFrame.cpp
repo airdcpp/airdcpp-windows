@@ -217,9 +217,18 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlUsers.addClickHandler(COLUMN_DESCRIPTION, bind(&UsersFrame::handleClickDesc, this, placeholders::_1), true);
 	ctrlUsers.addClickHandler(COLUMN_IGNORE, bind(&UsersFrame::handleClickIgnore, this, placeholders::_1), true);
 
+	::SetTimer(m_hWnd, 0, 500, 0);
+
 	bHandled = FALSE;
 	return TRUE;
+}
 
+LRESULT UsersFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
+	if (statusDirty) {
+		updateStatus();
+		statusDirty = false;
+	}
+	return 0;
 }
 
 LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -645,7 +654,8 @@ void UsersFrame::addUser(const UserPtr& aUser, const string& aUrl) {
 	} else {
 		updateUser(aUser);
 	}
-	updateStatus();
+
+	statusDirty = true;
 }
 
 void UsersFrame::updateUser(const UserPtr& aUser) {
@@ -675,7 +685,7 @@ void UsersFrame::updateUser(const UserPtr& aUser) {
 		setImages(ui, pos);
 	}
 
-	updateStatus();
+	statusDirty = true;
 }
 
 void UsersFrame::updateList() {
@@ -703,7 +713,8 @@ void UsersFrame::updateList() {
 	}
 	ctrlUsers.SetRedraw(TRUE);
 	ctrlUsers.resort();
-	updateStatus();
+
+	statusDirty = true;
 }
 
 bool UsersFrame::matches(const UserInfo &ui) {
@@ -748,7 +759,7 @@ void UsersFrame::setImages(const UserInfo *ui, int pos/* = -1*/) {
 
 }
 void UsersFrame::updateStatus() {
-	ctrlStatus.SetText(1, (Text::toT(Util::toString(ctrlUsers.GetItemCount()) + " ") + TSTRING(USERS)).c_str());
+	ctrlStatus.SetText(1, TSTRING_F(X_USERS, ctrlUsers.GetItemCount()).c_str());
 }
 
 

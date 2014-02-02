@@ -61,6 +61,8 @@ public:
 		NOTIFY_HANDLER(IDC_USERS, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_USERS, NM_CLICK, ctrlUsers.onClick)
 		NOTIFY_HANDLER(IDC_USERS, NM_CUSTOMDRAW, onCustomDrawList)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
+
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
@@ -80,6 +82,7 @@ public:
 		CHAIN_MSG_MAP_MEMBER(filter)
 	END_MSG_MAP()
 		
+	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onRemove(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
@@ -185,6 +188,8 @@ private:
 	bool filterQueued;
 	bool filterOnline;
 	bool filterIgnored;
+
+	bool statusDirty = true;
 
 	void updateInfoText(const UserInfo* ui);
 	void updateList();
