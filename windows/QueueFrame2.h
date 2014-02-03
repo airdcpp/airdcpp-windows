@@ -82,6 +82,7 @@ private:
 		COLUMN_NAME = COLUMN_FIRST,
 		COLUMN_SIZE,
 		COLUMN_PRIORITY,
+		COLUMN_STATUS,
 		COLUMN_DOWNLOADED,
 		COLUMN_SOURCES,
 		COLUMN_PATH,
@@ -120,6 +121,13 @@ private:
 				return qi->getTarget();
 			}
 		}
+
+		tstring getName() const;
+		tstring getStatusString() const;
+		int getPriority() const;
+		int64_t getDownloadedBytes() const;
+		int64_t getSize() const;
+
 
 		QueueItemInfo* createParent() { return this; }
 

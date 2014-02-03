@@ -33,11 +33,11 @@
 #define FILE_LIST_NAME _T("File Lists")
 #define TEMP_NAME _T("Temp items")
 
-int QueueFrame2::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_DOWNLOADED, COLUMN_SOURCES, COLUMN_PATH};
+int QueueFrame2::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_SOURCES, COLUMN_PATH};
 
-int QueueFrame2::columnSizes[] = { 400, 80, 120, 120, 120, 500 };
+int QueueFrame2::columnSizes[] = { 400, 80, 120, 120, 120, 120, 500 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::DOWNLOADED, ResourceManager::SOURCES, ResourceManager::PATH };
+static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::DOWNLOADED, ResourceManager::SOURCES, ResourceManager::PATH };
 
 LRESULT QueueFrame2::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -753,7 +753,8 @@ void QueueFrame2::on(DownloadManagerListener::BundleTick, const BundleList& tick
 	}
 }
 
-//QueueItemInfo functions
+/*QueueItemInfo functions*/
+
 int QueueFrame2::QueueItemInfo::getImageIndex() const {
 	//should bundles have own icon and sub items the file type image?
 	if (bundle)
@@ -764,67 +765,103 @@ int QueueFrame2::QueueItemInfo::getImageIndex() const {
 }
 
 const tstring QueueFrame2::QueueItemInfo::getText(int col) const {
-	if (bundle){
-		switch (col) {
-		case COLUMN_NAME: return Text::toT(bundle->getName());
-		case COLUMN_SIZE: return (bundle->getSize() == -1) ? TSTRING(UNKNOWN) : Util::formatBytesW(bundle->getSize());
-		case COLUMN_DOWNLOADED:
+
+	switch (col) {
+		case COLUMN_NAME: return getName();
+		case COLUMN_SIZE: return (getSize() != -1) ? Util::formatBytesW(getSize()) : TSTRING(UNKNOWN);
+		case COLUMN_STATUS: return getStatusString();
+		case COLUMN_DOWNLOADED: return (getSize() > 0) ? Util::formatBytesW(getDownloadedBytes()) + _T(" (") + Util::toStringW((double)getDownloadedBytes()*100.0 / (double)getSize()) + _T("%)") : Util::emptyStringT;
+		case COLUMN_PRIORITY: 	
 		{
-			int64_t downloadedBytes = bundle->getDownloadedBytes();
-			return (bundle->getSize() > 0) ? Util::formatBytesW(downloadedBytes) + _T(" (") + Util::toStringW((double)downloadedBytes*100.0 / (double)bundle->getSize()) + _T("%)") : Util::emptyStringT;
-		}
-		case COLUMN_PRIORITY:
-		{
-			tstring priority = Text::toT(AirUtil::getPrioText(bundle->getPriority()));
-			if (bundle->getAutoPriority()) {
+			if (getPriority() == -1)
+				return Util::emptyStringT;
+			tstring priority = Text::toT(AirUtil::getPrioText(getPriority()));
+			if (bundle && bundle->getAutoPriority() || qi && qi->getAutoPriority()) {
 				priority += _T(" (") + TSTRING(AUTO) + _T(")");
 			}
 			return priority;
 		}
-		case COLUMN_SOURCES: return Util::toStringW(bundle->getSources().size()) + _T(" sources");
-		case COLUMN_PATH: return Text::toT(bundle->getTarget());
+		case COLUMN_SOURCES: return bundle ? Util::toStringW(bundle->getSources().size()) + _T(" sources") : qi ?  Util::toStringW(qi->getSources().size()) + _T(" sources") : Util::emptyStringT;
+		case COLUMN_PATH: return bundle ? Text::toT(bundle->getTarget()) : qi ? Text::toT(qi->getTarget()) : Util::emptyStringT;
+		
 		default: return Util::emptyStringT;
-		}
-	} else {
-		switch (col) {
-		case COLUMN_NAME: 
-		{
-			//show files in subdirectories as subdir/file.ext
-			string name = qi->getTarget();
-			if (qi->getBundle())
-				name = name.substr(qi->getBundle()->getTarget().size(), qi->getTarget().size());
-			else
-				name = qi->getTargetFileName();
-			return Text::toT(name);
-		}
-		case COLUMN_SIZE: return (qi->getSize() == -1) ? TSTRING(UNKNOWN) : Util::formatBytesW(qi->getSize());
-		case COLUMN_DOWNLOADED:
-		{
-			int64_t downloadedBytes = qi->getDownloadedBytes();
-			return (qi->getSize() > 0) ? Util::formatBytesW(downloadedBytes) + _T(" (") + Util::toStringW((double)downloadedBytes*100.0 / (double)qi->getSize()) + _T("%)") : Util::emptyStringT;
-		}
-		case COLUMN_PRIORITY:
-		{
-			tstring priority = Text::toT(AirUtil::getPrioText(qi->getPriority()));
-			if (qi->getAutoPriority()) {
-					priority += _T(" (") + TSTRING(AUTO) + _T(")");
-			}
-			return priority;
-		}
-		case COLUMN_SOURCES: return Util::toStringW(qi->getSources().size()) + _T(" sources");
-		case COLUMN_PATH: return Text::toT(qi->getTarget());
-		default: return Util::emptyStringT;
-		}
 	}
+}
 
+tstring QueueFrame2::QueueItemInfo::getName() const {
+	if (bundle)
+		return Text::toT(bundle->getName());
+	else if (qi) {
+		//show files in subdirectories as subdir/file.ext
+		string name = qi->getTarget();
+		if (qi->getBundle())
+			name = name.substr(qi->getBundle()->getTarget().size(), qi->getTarget().size());
+		else
+			name = qi->getTargetFileName();
+		return Text::toT(name);
+	}
+	return Util::emptyStringT;
+}
+
+int64_t QueueFrame2::QueueItemInfo::getSize() const {
+	if (bundle)
+		return bundle->getSize();
+	else if (qi)
+		return qi->getSize();
+	else
+		return -1;
+}
+
+int QueueFrame2::QueueItemInfo::getPriority() const {
+	return  bundle ? bundle->getPriority() : qi ? qi->getPriority() : -1;
+}
+
+tstring QueueFrame2::QueueItemInfo::getStatusString() const {
+	//Yeah, think about these a little more, might be nice to see which bundles are really running...
+	if (bundle) {
+		if (bundle->isPausedPrio()) 
+			return TSTRING(PAUSED);
+	
+		switch (bundle->getStatus()) {
+		case Bundle::STATUS_NEW:
+		case Bundle::STATUS_QUEUED: return /*bundle->getRunning() ? TSTRING(DOWNLOADING) :*/ TSTRING(QUEUED);
+		case Bundle::STATUS_DOWNLOADED:
+		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
+		case Bundle::STATUS_FAILED_MISSING:
+		case Bundle::STATUS_SHARING_FAILED: return _T("Sharing failed");
+		case Bundle::STATUS_FINISHED: return _T("Finished");
+		case Bundle::STATUS_HASHING: return _T("Hashing...");
+		case Bundle::STATUS_HASH_FAILED: return _T("Hash failed");
+		case Bundle::STATUS_HASHED: return TSTRING(HASHING_FINISHED_TOTAL_PLAIN);
+		case Bundle::STATUS_SHARED: return TSTRING(SHARED);
+		default:
+			return Util::emptyStringT;
+		}
+	} else if(qi) {
+		if (qi->isPausedPrio()) 
+			return TSTRING(PAUSED);
+		else if (qi->isFinished())
+			return TSTRING(DOWNLOAD_FINISHED_IDLE);
+		else if (qi->isRunning())
+			return TSTRING(DOWNLOADING);
+		else if (qi->isWaiting())
+			return qi->getBundle() && qi->getBundle()->getRunning() ? TSTRING(WAITING) : TSTRING(QUEUED);
+		else
+			return TSTRING(QUEUED);
+	}
+	return Util::emptyStringT;
+}
+
+int64_t QueueFrame2::QueueItemInfo::getDownloadedBytes() const {
+	return bundle ? bundle->getDownloadedBytes() : qi ? qi->getDownloadedBytes() : 0;
 }
 
 int QueueFrame2::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col) {
-	//switch (col) {
-	//case COLUMN_SIZE: return compare(a->bundle->getSize(), b->bundle->getSize());
-	//case COLUMN_PRIORITY: return compare(static_cast<int>(a->bundle->getPriority()), static_cast<int>(b->bundle->getPriority()));
-	//case COLUMN_DOWNLOADED: return compare(a->bundle->getDownloadedBytes(), b->bundle->getDownloadedBytes());
-	//default: 
+	switch (col) {
+	case COLUMN_SIZE: return compare(a->getSize(), b->getSize());
+	case COLUMN_PRIORITY: return compare(static_cast<int>(a->getPriority()), static_cast<int>(b->getPriority()));
+	case COLUMN_DOWNLOADED: return compare(a->getDownloadedBytes(), b->getDownloadedBytes());
+	default: 
 		return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
-	//}
+	}
 }
