@@ -71,51 +71,7 @@ public:
 		return 0;
 	}
 	
-	/*
-	OK, here's the deal, we insert bundles as parents and assume every bundle (except file bundles) to have sub items, thus the + expand icon.
-	The bundle QueueItems(its sub items) are really created and inserted only at expanding the bundle, 
-	once its expanded we start to collect some garbage when collapsing it to avoid continuous allocations and reallocations. 
-	Notes, Mostly there should be no reason to expand every bundle at least with a big queue, 
-	so this way we avoid creating and updating itemInfos we wont be showing, 
-	with a small queue its more likely for the user to expand and collapse the same items more than once.
-	*/
-
-	LRESULT onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-
-		CPoint pt;
-		pt.x = GET_X_LPARAM(lParam);
-		pt.y = GET_Y_LPARAM(lParam);
-
-		LVHITTESTINFO lvhti;
-		lvhti.pt = pt;
-
-		int pos = ctrlQueue.SubItemHitTest(&lvhti);
-		if (pos != -1) {
-			CRect rect;
-			ctrlQueue.GetItemRect(pos, rect, LVIR_ICON);
-
-			if (pt.x < rect.left) {
-				auto i = ctrlQueue.getItemData(pos);
-				if (i->parent == NULL) {
-					if (i->collapsed) {
-						//insert the children at first expand, collect some garbage.
-						if (ctrlQueue.findChildren(i->bundle->getToken()).empty()) {
-							AddBundleQueueItems(i->bundle);
-							ctrlQueue.resort();
-						} else {
-							ctrlQueue.Expand(i, pos);
-						}
-					} else {
-						ctrlQueue.Collapse(i, pos);
-					}
-				}
-			}
-		}
-
-		bHandled = FALSE;
-		return 0;
-	}
-
+	LRESULT onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE );
 
@@ -156,10 +112,13 @@ private:
 		int16_t hits;
 
 		inline const string& getGroupCond() const { 
-			if (bundle)
+			if (bundle) {
 				return bundle->getToken();
-			else
+			} else if(qi->getBundle()) {
 				return qi->getBundle()->getToken();
+			} else {
+				return qi->getTarget();
+			}
 		}
 
 		QueueItemInfo* createParent() { return this; }

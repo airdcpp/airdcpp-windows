@@ -891,7 +891,7 @@ public:
 		return i != parents.end() ? &((*i).second) : nullptr;
 	}
 
-	void insertGroupedItem(T* item, bool autoExpand) {
+	void insertGroupedItem(T* item, bool autoExpand, bool hasVirtualChildren = false) {
 		T* parent = nullptr;
 		ParentPair* pp = findParentPair(item->getGroupCond());
 
@@ -931,7 +931,7 @@ public:
 
 				parent->parent = nullptr; // ensure that parent of this item is really NULL
 				pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
-				if(style & VIRTUAL_CHILDREN) updateCollapsedState();
+				if (hasVirtualChildren && (style & VIRTUAL_CHILDREN)) updateCollapsedState();
 				return;
 			} else if (pp->children.empty()) {
 				auto oldParent = pp->parent;

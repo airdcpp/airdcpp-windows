@@ -72,6 +72,7 @@ LRESULT QueueFrame2::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		MoveWindow(rc, TRUE);
 
 	{
+		//this currently leaves out file lists and temp downloads
 		auto qm = QueueManager::getInstance();
 		RLock l(qm->getCS());
 		for (const auto& b : qm->getBundles() | map_values)
@@ -142,7 +143,7 @@ LRESULT QueueFrame2::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		ctrlQueue.saveHeaderOrder(SettingsManager::QUEUEFRAME_ORDER,
 			SettingsManager::QUEUEFRAME_WIDTHS, SettingsManager::QUEUEFRAME_VISIBLE);
 	
-		ctrlQueue.DeleteAllItems(); //don't allow list view to delete itemInfos, its too slow...
+		ctrlQueue.DeleteAllItems();
 		for (auto& i : itemInfos)
 			delete i.second;
 
@@ -572,6 +573,51 @@ LRESULT QueueFrame2::onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndC
 	return 0;
 }
 
+/*
+OK, here's the deal, we insert bundles as parents and assume every bundle (except file bundles) to have sub items, thus the + expand icon.
+The bundle QueueItems(its sub items) are really created and inserted only at expanding the bundle,
+once its expanded we start to collect some garbage when collapsing it to avoid continuous allocations and reallocations.
+Notes, Mostly there should be no reason to expand every bundle at least with a big queue,
+so this way we avoid creating and updating itemInfos we wont be showing,
+with a small queue its more likely for the user to expand and collapse the same items more than once.
+*/
+
+LRESULT QueueFrame2::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+
+	CPoint pt;
+	pt.x = GET_X_LPARAM(lParam);
+	pt.y = GET_Y_LPARAM(lParam);
+
+	LVHITTESTINFO lvhti;
+	lvhti.pt = pt;
+
+	int pos = ctrlQueue.SubItemHitTest(&lvhti);
+	if (pos != -1) {
+		CRect rect;
+		ctrlQueue.GetItemRect(pos, rect, LVIR_ICON);
+
+		if (pt.x < rect.left) {
+			auto i = ctrlQueue.getItemData(pos);
+			if ((i->parent == NULL) && i->bundle && !i->bundle->isFileBundle())  {
+				if (i->collapsed) {
+					//insert the children at first expand, collect some garbage.
+					if (ctrlQueue.findChildren(i->bundle->getToken()).empty()) {
+						AddBundleQueueItems(i->bundle);
+						ctrlQueue.resort();
+					} else {
+						ctrlQueue.Expand(i, pos);
+					}
+				} else {
+					ctrlQueue.Collapse(i, pos);
+				}
+			}
+		}
+	}
+
+	bHandled = FALSE;
+	return 0;
+}
+
 tstring QueueFrame2::handleCopyMagnet(const QueueItemInfo* aII) {
 	return Text::toT(WinUtil::makeMagnet(aII->qi->getTTH(), Util::getFileName(aII->qi->getTarget()), aII->qi->getSize()));
 }
@@ -597,11 +643,7 @@ void QueueFrame2::onBundleAdded(const BundlePtr& aBundle) {
 	auto i = itemInfos.find(aBundle->getToken());
 	if (i == itemInfos.end()) {
 		auto b = itemInfos.emplace(aBundle->getToken(), new QueueItemInfo(aBundle)).first;
-		if (aBundle->isFileBundle()) {
-			ctrlQueue.insertItem(b->second, b->second->getImageIndex());
-		} else {
-			ctrlQueue.insertGroupedItem(b->second, false);
-		}
+		ctrlQueue.insertGroupedItem(b->second, false, !aBundle->isFileBundle()); // file bundles wont be having any children.
 	}
 }
 
@@ -619,10 +661,7 @@ void QueueFrame2::AddBundleQueueItems(const BundlePtr& aBundle) {
 void QueueFrame2::onBundleRemoved(const BundlePtr& aBundle) {
 	auto i = itemInfos.find(aBundle->getToken());
 	if (i != itemInfos.end()) {
-		if (aBundle->isFileBundle()) 
-			ctrlQueue.deleteItem(i->second);
-		else
-			ctrlQueue.removeGroupedItem(i->second);
+		ctrlQueue.removeGroupedItem(i->second); //also deletes item info
 		itemInfos.erase(i);
 	}
 }
@@ -630,14 +669,19 @@ void QueueFrame2::onBundleRemoved(const BundlePtr& aBundle) {
 void QueueFrame2::onBundleUpdated(const BundlePtr& aBundle) {
 	auto i = itemInfos.find(aBundle->getToken());
 	if (i != itemInfos.end()) {
-		ctrlQueue.updateItem(i->second);
+		int x = ctrlQueue.findItem(i->second);
+		if (x != -1) {
+			ctrlQueue.updateItem(x);
+			if (aBundle->getQueueItems().empty())  //remove the + icon we have nothing to expand.
+				ctrlQueue.SetItemState(x, INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);
+		}
 	}
 }
 
 void QueueFrame2::onQueueItemRemoved(const QueueItemPtr& aQI) {
 	auto item = itemInfos.find(aQI->getTarget());
 	if (item != itemInfos.end()) {
-		ctrlQueue.removeGroupedItem(item->second);
+		ctrlQueue.removeGroupedItem(item->second); //also deletes item info
 		itemInfos.erase(item);
 	}
 }
@@ -654,18 +698,14 @@ void QueueFrame2::onQueueItemUpdated(const QueueItemPtr& aQI) {
 void QueueFrame2::onQueueItemAdded(const QueueItemPtr& aQI) {
 	auto item = itemInfos.find(aQI->getTarget());
 	if (item == itemInfos.end()) {
-		//queueItem not found look if we have a parent for it and if its expanded
+		//queueItem not found, look if we have a parent for it and if its expanded
 		if (aQI->getBundle()){
 			auto parent = itemInfos.find(aQI->getBundle()->getToken());
-			if (parent != itemInfos.end() && !parent->second->collapsed){
-				auto i = itemInfos.emplace(aQI->getTarget(), new QueueItemInfo(aQI)).first;
-				ctrlQueue.insertGroupedItem(i->second, false);
-			}
-		} else { // no bundle, not a file list??
-			auto i = itemInfos.emplace(aQI->getTarget(), new QueueItemInfo(aQI)).first;
-			ctrlQueue.insertItem(i->second, i->second->getImageIndex());
+			if ((parent == itemInfos.end()) || parent->second->collapsed)
+				return;
 		}
-
+		auto i = itemInfos.emplace(aQI->getTarget(), new QueueItemInfo(aQI)).first;
+		ctrlQueue.insertGroupedItem(i->second, false);
 	}
 }
 
