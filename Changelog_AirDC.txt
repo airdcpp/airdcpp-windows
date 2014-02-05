@@ -4,6 +4,7 @@ Fixed:
 
 - Crash fixes
 - Fix opening of dupe directories from chat
+- Allow .vob files inside sample directories regardless of the other sample extensions
 
 
 2.70
