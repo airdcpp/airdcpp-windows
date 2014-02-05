@@ -1233,25 +1233,24 @@ void RichTextBox::handleRemoveTemp() {
 }
 
 void RichTextBox::handleOpenFolder() {
-	tstring path;
-	/*try{
+	StringList paths;
+	try{
 		if (isRelease) {
-			path = Text::toT(AirUtil::getDirDupePath(dupeType, Text::fromT(selectedWord)));
+			paths = AirUtil::getDirDupePaths(dupeType, Text::fromT(selectedWord));
 		} else if (isPath) {
-			path = Util::getFilePath(selectedWord);
+			paths.push_back(Text::fromT(Util::getFilePath(selectedWord)));
 		} else {
 			Magnet m = Magnet(Text::fromT(selectedWord));
 			if (m.hash.empty())
 				return;
 
-			path = Text::toT(AirUtil::getDupePath(dupeType, m.getTTH()));
-			if (!path.empty())
-				path = Util::getFilePath(path);
+			paths = AirUtil::getDupePaths(dupeType, m.getTTH());
 
 		}
-	} catch(...) {}*/
+	} catch(...) {}
 
-	WinUtil::openFolder(path);
+	if (!paths.empty())
+		WinUtil::openFolder(Text::toT(paths.front()));
 }
 
 void RichTextBox::handleDownload(const string& aTarget, QueueItemBase::Priority p, bool isRelease, TargetUtil::TargetType aTargetType, bool /*isSizeUnknown*/) {

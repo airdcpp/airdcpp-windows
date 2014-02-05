@@ -1,3 +1,11 @@
+2.71
+
+Fixed:
+
+- Crash fixes
+- Fix opening of dupe directories from chat
+
+
 2.70
 
 Added:
