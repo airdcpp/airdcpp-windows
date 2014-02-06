@@ -77,6 +77,9 @@ LRESULT QueueFrame2::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		RLock l(qm->getCS());
 		for (const auto& b : qm->getBundles() | map_values)
 			onBundleAdded(b);
+
+		for (const auto& q : qm->getSmallItems() | map_values)
+			onQueueItemAdded(q);
 	}
 
 	QueueManager::getInstance()->addListener(this);
@@ -775,11 +778,8 @@ const tstring QueueFrame2::QueueItemInfo::getText(int col) const {
 		{
 			if (getPriority() == -1)
 				return Util::emptyStringT;
-			tstring priority = Text::toT(AirUtil::getPrioText(getPriority()));
-			if (bundle && bundle->getAutoPriority() || qi && qi->getAutoPriority()) {
-				priority += _T(" (") + TSTRING(AUTO) + _T(")");
-			}
-			return priority;
+			bool autoPrio = (bundle && bundle->getAutoPriority()) || (qi && qi->getAutoPriority());
+			return Text::toT(AirUtil::getPrioText(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
 		}
 		case COLUMN_SOURCES: return bundle ? Util::toStringW(bundle->getSources().size()) + _T(" sources") : qi ?  Util::toStringW(qi->getSources().size()) + _T(" sources") : Util::emptyStringT;
 		case COLUMN_PATH: return bundle ? Text::toT(bundle->getTarget()) : qi ? Text::toT(qi->getTarget()) : Util::emptyStringT;
@@ -817,14 +817,40 @@ int QueueFrame2::QueueItemInfo::getPriority() const {
 }
 
 tstring QueueFrame2::QueueItemInfo::getStatusString() const {
-	//Yeah, think about these a little more, might be nice to see which bundles are really running...
+	//Yeah, think about these a little more...
 	if (bundle) {
 		if (bundle->isPausedPrio()) 
 			return TSTRING(PAUSED);
 	
 		switch (bundle->getStatus()) {
 		case Bundle::STATUS_NEW:
-		case Bundle::STATUS_QUEUED: return /*bundle->getRunning() ? TSTRING(DOWNLOADING) :*/ TSTRING(QUEUED);
+		case Bundle::STATUS_QUEUED: {
+			int online = 0;
+			Bundle::SourceList sources = QueueManager::getInstance()->getBundleSources(bundle);
+			for (const auto& s : sources) {
+				if (s.user.user->isOnline())
+					online++;
+			}
+
+			auto size = sources.size();
+			if (bundle->getSpeed() > 0) { // Bundle->isRunning() ?
+				return (size == 1) ? TSTRING(USER_ONLINE_RUNNING) : TSTRING_F(USERS_ONLINE, online % size);
+			} else {
+				if (online > 0) {
+					return (size == 1) ? TSTRING(WAITING_USER_ONLINE) : TSTRING_F(WAITING_USERS_ONLINE, online % size);
+				} else {
+					if (size == 0) {
+						return TSTRING(NO_USERS_TO_DOWNLOAD_FROM);
+					} else if (size == 1) {
+						return TSTRING(USER_OFFLINE);
+					}else if (size == 2) {
+						return TSTRING(BOTH_USERS_OFFLINE);
+					} else {
+						return TSTRING_F(ALL_USERS_OFFLINE, size);
+					}
+				}
+			}
+		}
 		case Bundle::STATUS_DOWNLOADED:
 		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
 		case Bundle::STATUS_FAILED_MISSING:
@@ -838,17 +864,40 @@ tstring QueueFrame2::QueueItemInfo::getStatusString() const {
 			return Util::emptyStringT;
 		}
 	} else if(qi) {
+		
 		if (qi->isPausedPrio()) 
 			return TSTRING(PAUSED);
-		else if (qi->isFinished())
+
+		if (qi->isFinished())
 			return TSTRING(DOWNLOAD_FINISHED_IDLE);
-		else if (qi->isRunning())
-			return TSTRING(DOWNLOADING);
-		else if (qi->isWaiting())
-			return TSTRING(WAITING);
-		else
-			return TSTRING(QUEUED);
+
+		int online = 0;
+		QueueItem::SourceList sources = QueueManager::getInstance()->getSources(qi);
+		for (const auto& s : sources) {
+			if (s.getUser().user->isOnline())
+				online++;
+		}
+
+		auto size = sources.size();
+		 if (qi->isWaiting()) {
+			if (online > 0) {
+				return (size == 1) ? TSTRING(WAITING_USER_ONLINE) : TSTRING_F(WAITING_USERS_ONLINE, online % size);
+			} else {
+				if (size == 0) {
+					return TSTRING(NO_USERS_TO_DOWNLOAD_FROM);
+				} else if (size == 1) {
+					return TSTRING(USER_OFFLINE);
+				} else if (size == 2) {
+					return TSTRING(BOTH_USERS_OFFLINE);
+				} else {
+					return TSTRING_F(ALL_USERS_OFFLINE, size);
+				}
+			}
+		} else {
+			return (size == 1) ? TSTRING(USER_ONLINE_RUNNING) : TSTRING_F(USERS_ONLINE, online % size);
+		} 
 	}
+	
 	return Util::emptyStringT;
 }
 
