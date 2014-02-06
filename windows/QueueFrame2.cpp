@@ -169,7 +169,7 @@ LRESULT QueueFrame2::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 			bundles.emplace(qii->bundle->getToken(), qii->bundle);
 		} else {
 			//did we select the bundle to be deleted?
-			if (qii->qi->getBundle() && bundles.find(qii->qi->getBundle()->getToken()) == bundles.end()) {
+			if (!qii->qi->getBundle() || bundles.find(qii->qi->getBundle()->getToken()) == bundles.end()) {
 				queueitems.push_back(qii->qi);
 			}
 		}
@@ -581,7 +581,6 @@ Notes, Mostly there should be no reason to expand every bundle at least with a b
 so this way we avoid creating and updating itemInfos we wont be showing,
 with a small queue its more likely for the user to expand and collapse the same items more than once.
 */
-
 LRESULT QueueFrame2::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
 
 	CPoint pt;
@@ -602,8 +601,10 @@ LRESULT QueueFrame2::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, 
 				if (i->collapsed) {
 					//insert the children at first expand, collect some garbage.
 					if (ctrlQueue.findChildren(i->bundle->getToken()).empty()) {
+						ctrlQueue.SetRedraw(FALSE);
 						AddBundleQueueItems(i->bundle);
 						ctrlQueue.resort();
+						ctrlQueue.SetRedraw(TRUE);
 					} else {
 						ctrlQueue.Expand(i, pos);
 					}
@@ -690,7 +691,7 @@ void QueueFrame2::onQueueItemUpdated(const QueueItemPtr& aQI) {
 	auto item = itemInfos.find(aQI->getTarget());
 	if (item != itemInfos.end()) {
 		auto itemInfo = item->second;
-		if (!itemInfo->parent || (itemInfo->parent && !itemInfo->parent->collapsed)) // no need to update if its collapsed right?
+		if (!itemInfo->parent || !itemInfo->parent->collapsed) // no need to update if its collapsed right?
 			ctrlQueue.updateItem(itemInfo);
 	}
 }
@@ -735,16 +736,16 @@ void QueueFrame2::on(QueueManagerListener::BundleSources, const BundlePtr& aBund
 }
 
 void QueueFrame2::on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool /*finished*/) noexcept{
-	if (!aQI->isSet(QueueItem::FLAG_USER_LIST)) callAsync([=] { onQueueItemRemoved(aQI); });
+	callAsync([=] { onQueueItemRemoved(aQI); });
 }
 void QueueFrame2::on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept{
-	if (!aQI->isSet(QueueItem::FLAG_USER_LIST)) callAsync([=] { onQueueItemAdded(aQI); });
+	callAsync([=] { onQueueItemAdded(aQI); });
 }
 void QueueFrame2::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) noexcept {
-	if (!aQI->isSet(QueueItem::FLAG_USER_LIST)) callAsync([=] { onQueueItemUpdated(aQI); });
+	callAsync([=] { onQueueItemUpdated(aQI); });
 }
 void QueueFrame2::on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept{
-	if (!aQI->isSet(QueueItem::FLAG_USER_LIST)) callAsync([=] { onQueueItemUpdated(aQI); });
+	callAsync([=] { onQueueItemUpdated(aQI); });
 }
 
 void QueueFrame2::on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t /*aTick*/) noexcept{
@@ -756,7 +757,6 @@ void QueueFrame2::on(DownloadManagerListener::BundleTick, const BundleList& tick
 /*QueueItemInfo functions*/
 
 int QueueFrame2::QueueItemInfo::getImageIndex() const {
-	//should bundles have own icon and sub items the file type image?
 	if (bundle)
 		return bundle->isFileBundle() ? ResourceLoader::getIconIndex(Text::toT(bundle->getTarget())) : ResourceLoader::DIR_NORMAL;
 	else 
@@ -845,7 +845,7 @@ tstring QueueFrame2::QueueItemInfo::getStatusString() const {
 		else if (qi->isRunning())
 			return TSTRING(DOWNLOADING);
 		else if (qi->isWaiting())
-			return qi->getBundle() && qi->getBundle()->getRunning() ? TSTRING(WAITING) : TSTRING(QUEUED);
+			return TSTRING(WAITING);
 		else
 			return TSTRING(QUEUED);
 	}
