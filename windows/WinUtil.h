@@ -330,6 +330,12 @@ public:
 		return (sz.cx == 0) ? 0 : (sz.cx + 10);
 	}
 
+	static int getTextWidth(const tstring& str, HDC dc) {
+		SIZE sz = { 0, 0 };
+		::GetTextExtentPoint32(dc, str.c_str(), str.length(), &sz);
+		return (sz.cx == 0) ? 0 : (sz.cx + 10);
+	}
+
 	static int WinUtil::getTextWidth(HWND wnd, HFONT fnt) {
 	HDC dc = ::GetDC(wnd);
 	HGDIOBJ old = ::SelectObject(dc, fnt);
