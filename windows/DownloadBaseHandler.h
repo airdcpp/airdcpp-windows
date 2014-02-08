@@ -55,7 +55,7 @@ public:
 				return;
 		}
 
-		handleDownload(aTarget, WinUtil::isShift() ? QueueItem::HIGHEST : p, isWhole, TargetUtil::TARGET_PATH, isSizeUnknown);
+		handleDownload(aTarget, WinUtil::isShift() ? QueueItemBase::HIGHEST : p, isWhole, TargetUtil::TARGET_PATH, isSizeUnknown);
 	}
 
 	void onDownloadTo(bool useWhole, bool isSizeUnknown) {
@@ -82,7 +82,7 @@ public:
 
 	void onDownloadVirtual(const string& aTarget, bool isFav, bool isWhole, bool isSizeUnknown) {
 		if (isSizeUnknown) {
-			handleDownload(aTarget, QueueItem::DEFAULT, isWhole, isFav ? TargetUtil::TARGET_FAVORITE : TargetUtil::TARGET_SHARE, true);
+			handleDownload(aTarget, QueueItemBase::DEFAULT, isWhole, isFav ? TargetUtil::TARGET_FAVORITE : TargetUtil::TARGET_SHARE, true);
 		} else {
 			auto list = isFav ? FavoriteManager::getInstance()->getFavoriteDirs() : ShareManager::getInstance()->getGroupedDirectories();
 			auto p = find_if(list.begin(), list.end(), CompareFirst<string, StringList>(aTarget));
@@ -150,17 +150,17 @@ public:
 	void appendPriorityMenu(OMenu& aMenu, bool wholeDir, bool isSizeUnknown) {
 		auto priorityMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_WITH_PRIORITY));
 
-		auto addItem = [&] (const tstring& aTitle, QueueItemBase::Priority p) -> void {
+		auto addItem = [&](const tstring& aTitle, QueueItemBase::Priority p) -> void {
 			priorityMenu->appendItem(aTitle.c_str(), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), wholeDir, isSizeUnknown, p); });
 		};
 
-		addItem(CTSTRING(PAUSED_FORCED), QueueItem::PAUSED_FORCE);
-		addItem(CTSTRING(PAUSED), QueueItem::PAUSED);
-		addItem(CTSTRING(LOWEST), QueueItem::LOWEST);
-		addItem(CTSTRING(LOW), QueueItem::LOW);
-		addItem(CTSTRING(NORMAL), QueueItem::NORMAL);
-		addItem(CTSTRING(HIGH), QueueItem::HIGH);
-		addItem(CTSTRING(HIGHEST), QueueItem::HIGHEST);
+		addItem(CTSTRING(PAUSED_FORCED), QueueItemBase::PAUSED_FORCE);
+		addItem(CTSTRING(PAUSED), QueueItemBase::PAUSED);
+		addItem(CTSTRING(LOWEST), QueueItemBase::LOWEST);
+		addItem(CTSTRING(LOW), QueueItemBase::LOW);
+		addItem(CTSTRING(NORMAL), QueueItemBase::NORMAL);
+		addItem(CTSTRING(HIGH), QueueItemBase::HIGH);
+		addItem(CTSTRING(HIGHEST), QueueItemBase::HIGHEST);
 	}
 
 	void appendVirtualItems(OMenu &targetMenu, bool wholeDir, bool isFavDirs, bool isSizeUnknown) {

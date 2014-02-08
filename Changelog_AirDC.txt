@@ -5,7 +5,7 @@ Fixed:
 - Crash fixes
 - Fix opening of dupe directories from chat
 - Allow .vob files inside sample directories regardless of the other sample extensions
-
+- Also migrate notepad to the new settings directory when the location was changed
 
 2.70
 

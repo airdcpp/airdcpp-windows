@@ -1094,7 +1094,7 @@ void DirectoryListingFrame::onListItemAction() {
 		if (ctrlFiles.list.GetSelectedCount() == 1) {
 			const ItemInfo* ii = ctrlFiles.list.getItemData(ctrlFiles.list.GetNextItem(-1, LVNI_SELECTED));
 			if(ii->type == ItemInfo::FILE) {
-				onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItem::HIGHEST : QueueItem::DEFAULT);
+				onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItemBase::HIGHEST : QueueItem::DEFAULT);
 			} else {
 				changeType = CHANGE_LIST;
 				auto ht = ctrlTree.findItem(t, ii->getNameW() + _T("\\"));
@@ -1464,11 +1464,11 @@ void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItemBase:
 	handleItemAction(usingTree, [&](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
 			WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
-				0, WinUtil::isShift() ? QueueItem::HIGHEST : prio);
+				0, WinUtil::isShift() ? QueueItemBase::HIGHEST : prio);
 		} else {
 			tasks.run([=] {
 				DirectoryListingManager::getInstance()->addDirectoryDownload(ii->getPath(), ii->getName(), dl->getHintedUser(),
-					aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, WinUtil::isShift() ? QueueItem::HIGHEST : prio, false);
+					aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, WinUtil::isShift() ? QueueItemBase::HIGHEST : prio, false);
 			});
 		}
 	});

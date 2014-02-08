@@ -32,7 +32,9 @@ LRESULT NotepadFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlPad.SetFont(WinUtil::font);
 	string tmp;
 	try {
-		tmp = File(Util::getNotepadFile(), File::READ, File::OPEN).read();
+		auto path = Util::getNotepadFile();
+		Util::migrate(path);
+		tmp = File(path, File::READ, File::OPEN).read();
 	} catch(const FileException&) {
 		// ...
 	}
