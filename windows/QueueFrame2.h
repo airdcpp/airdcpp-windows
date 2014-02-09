@@ -28,6 +28,7 @@
 #include "TypedListViewCtrl.h"
 
 #include "../client/QueueManager.h"
+#include "../client/TaskQueue.h"
 
 
 class QueueFrame2 : public MDITabChildWindowImpl<QueueFrame2>, public StaticFrame<QueueFrame2, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE2>,
@@ -53,6 +54,7 @@ public:
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, onLButton)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
 		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
@@ -62,6 +64,7 @@ public:
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
+	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -167,6 +170,13 @@ private:
 
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[6];
+
+	TaskQueue tasks;
+
+	void addGuiTask(std::function<void()> f) {
+		tasks.add(0, unique_ptr<AsyncTask>(new AsyncTask(f)));
+	}
+	void executeGuiTasks();
 
 	//bundle update listeners
 	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;

@@ -91,6 +91,8 @@ LRESULT QueueFrame2::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	ctrlStatus.SetParts(6, statusSizes);
 	//updateStatus();
 
+	::SetTimer(m_hWnd, 0, 500, 0);
+
 	WinUtil::SetIcon(m_hWnd, IDI_QUEUE);
 	bHandled = FALSE;
 	return 1;
@@ -783,6 +785,12 @@ LRESULT QueueFrame2::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, 
 	return 0;
 }
 
+LRESULT QueueFrame2::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	executeGuiTasks();
+	bHandled = TRUE;
+	return 0;
+}
+
 tstring QueueFrame2::handleCopyMagnet(const QueueItemInfo* aII) {
 	return Text::toT(WinUtil::makeMagnet(aII->qi->getTTH(), Util::getFileName(aII->qi->getTarget()), aII->qi->getSize()));
 }
@@ -874,47 +882,62 @@ void QueueFrame2::onQueueItemAdded(const QueueItemPtr& aQI) {
 	}
 }
 
+void QueueFrame2::executeGuiTasks() {
+	if (tasks.getTasks().empty())
+		return;
+
+	ctrlQueue.SetRedraw(FALSE);
+	for (;;) {
+		TaskQueue::TaskPair t;
+		if (!tasks.getFront(t))
+			break;
+		static_cast<AsyncTask*>(t.second)->f();
+		tasks.pop_front();
+	}
+	ctrlQueue.SetRedraw(TRUE);
+}
+
 void QueueFrame2::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept {
-	callAsync([=] { onBundleAdded(aBundle); });
+	addGuiTask([=] { onBundleAdded(aBundle); });
 }
 void QueueFrame2::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept{
-	callAsync([=] { onBundleRemoved(aBundle); });
+	addGuiTask([=] { onBundleRemoved(aBundle); });
 }
 void QueueFrame2::on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept{
-	callAsync([=] { onBundleRemoved(aBundle); }); 
+	addGuiTask([=] { onBundleRemoved(aBundle); });
 }
 void QueueFrame2::on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string&) noexcept { 
-	callAsync([=] { onBundleUpdated(aBundle); }); 
+	addGuiTask([=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame2::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept { 
-	callAsync([=] { onBundleUpdated(aBundle); }); 
+	addGuiTask([=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame2::on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept { 
-	callAsync([=] { onBundleUpdated(aBundle); }); 
+	addGuiTask([=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame2::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept { 
-	callAsync([=] { onBundleUpdated(aBundle); }); 
+	addGuiTask([=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame2::on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept { 
-	callAsync([=] { onBundleUpdated(aBundle); }); 
+	addGuiTask([=] { onBundleUpdated(aBundle); });
 }
 
 void QueueFrame2::on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool /*finished*/) noexcept{
-	callAsync([=] { onQueueItemRemoved(aQI); });
+	addGuiTask([=] { onQueueItemRemoved(aQI); });
 }
 void QueueFrame2::on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept{
-	callAsync([=] { onQueueItemAdded(aQI); });
+	addGuiTask([=] { onQueueItemAdded(aQI); });
 }
 void QueueFrame2::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) noexcept {
-	callAsync([=] { onQueueItemUpdated(aQI); });
+	addGuiTask([=] { onQueueItemUpdated(aQI); });
 }
 void QueueFrame2::on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept{
-	callAsync([=] { onQueueItemUpdated(aQI); });
+	addGuiTask([=] { onQueueItemUpdated(aQI); });
 }
 
 void QueueFrame2::on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t /*aTick*/) noexcept{
 	for (auto& b : tickBundles) {
-		callAsync([=] { onBundleUpdated(b); });
+		addGuiTask([=] { onBundleUpdated(b); });
 	}
 }
 
