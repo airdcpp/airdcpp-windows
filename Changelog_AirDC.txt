@@ -6,6 +6,9 @@ Fixed:
 - Fix opening of dupe directories from chat
 - Allow .vob files inside sample directories regardless of the other sample extensions
 - Also migrate notepad to the new settings directory when the location was changed
+- Fix rare cases when renaming directories could have left unnoticed by share monitoring
+- Don't add empty directories in share via monitoring (if enabled)
+
 
 2.70
 
