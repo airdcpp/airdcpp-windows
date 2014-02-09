@@ -1,0 +1,12 @@
+*.sdf
+/vc12
+/compiled
+/packages
+*.user
+*.config
+*.psess
+*.vspx
+*.aps
+/sendrelease.bat
+Thumbs.db
+/ipch

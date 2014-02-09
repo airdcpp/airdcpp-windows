@@ -1,5 +1,9 @@
 2.71
 
+Added:
+
+- Automatically check for updates when the update channel was changed
+
 Fixed:
 
 - Crash fixes
