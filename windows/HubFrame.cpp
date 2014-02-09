@@ -489,7 +489,8 @@ bool HubFrame::isIgnoredOrFiltered(const ChatMessage& msg, bool PM){
 			if (PM) {
 				tmp = filter ? STRING(PM_MESSAGE_FILTERED) : STRING(PM_MESSAGE_IGNORED);
 			} else {
-				string hub = "[" + (!client->getHubName().empty() ? (client->getHubName().size() > 50 ? (client->getHubName().substr(0, 50) + "...") : client->getHubName()) : client->getHubUrl()) + "] ";
+				string hub = "[" + ((client && !client->getHubName().empty()) ? 
+					(client->getHubName().size() > 50 ? (client->getHubName().substr(0, 50) + "...") : client->getHubName()) : client->getHubUrl()) + "] ";
 				tmp = (filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED)) + hub;
 			}
 			tmp += "<" + identity.getNick() + "> " + msg.text;
@@ -497,7 +498,9 @@ bool HubFrame::isIgnoredOrFiltered(const ChatMessage& msg, bool PM){
 		}
 	};
 
-	if ((client->isOp() || !identity.isOp() || identity.isBot()) && msg.from->getUser()->isIgnored()) {
+
+
+	if (msg.from->getUser()->isIgnored() && ((client && client->isOp()) || !identity.isOp() || identity.isBot())) {
 		logIgnored(false);
 		return true;
 	}
