@@ -1272,9 +1272,9 @@ BEGIN
     RTEXT           "Download to",IDC_DL_TO,4,106,49,8
     PUSHBUTTON      "Select directory",IDC_SELECT_DIR,293,103,66,14
     EDITTEXT        IDC_U_MATCH,10,181,214,14,ES_AUTOHSCROLL
-    LTEXT           "Only from users  with nick matching: (wildcards, | separate)",IDC_USER_MATCH_TEXT,8,167,219,8
+    LTEXT           "Only from users  with nick matching: (wildcards, | separate)",IDC_USER_MATCH_TEXT,8,167,239,8
     CONTROL         "Use a custom matcher for search results",IDC_USE_MATCHER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,246,163,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,246,239,10
     LTEXT           "Type",IDC_TYPE,191,263,33,9
     COMBOBOX        IDC_MATCHER_TYPE,191,273,57,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_MATCHER_PATTERN,13,273,172,14,ES_AUTOHSCROLL
@@ -1295,15 +1295,15 @@ BEGIN
     RTEXT           "End time",IDC_END_TIME,279,279,31,8
     LTEXT           "Target type: direct path",IDC_TARGET_TYPE,59,120,280,9
     CONTROL         "Don't dl already queued release directories",IDC_CHECK_QUEUED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,216,235,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,216,239,10
     CONTROL         "Don't dl already shared release directories",IDC_CHECK_SHARED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,228,237,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,228,239,10
     PUSHBUTTON      "Advanced",IDC_ADVANCED,317,134,66,14
     GROUPBOX        "Advanced",IDC_ADVANCED_LABEL,2,154,381,140
     GROUPBOX        "Search times",IDC_SEARCH_TIMES_LABEL,256,163,121,130
     COMBOBOX        IDC_AS_FILETYPE,54,81,80,30,CBS_DROPDOWNLIST | CBS_OWNERDRAWFIXED | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Find matches from the full path instead of the file/directory name",IDC_MATCH_FULL_PATH,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,204,235,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,204,239,10
     CONTROL         "Enable parameters",IDC_USE_PARAMS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,264,63,94,10
     PUSHBUTTON      "Configure...",IDC_CONF_PARAMS,273,74,66,14
     CONTROL         "Require exact match",IDC_EXACT_MATCH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,264,52,104,10
