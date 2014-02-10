@@ -1272,7 +1272,7 @@ BEGIN
     RTEXT           "Download to",IDC_DL_TO,4,106,49,8
     PUSHBUTTON      "Select directory",IDC_SELECT_DIR,293,103,66,14
     EDITTEXT        IDC_U_MATCH,10,181,214,14,ES_AUTOHSCROLL
-    LTEXT           "Only from users  with nick matching: (wildcards, | separate)",IDC_USER_MATCH_TEXT,8,167,239,8
+    LTEXT           "Only from users with nick matching: (wildcards, | separate)",IDC_USER_MATCH_TEXT,8,167,239,8
     CONTROL         "Use a custom matcher for search results",IDC_USE_MATCHER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,9,246,239,10
     LTEXT           "Type",IDC_TYPE,191,263,33,9
