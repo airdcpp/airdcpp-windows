@@ -338,6 +338,8 @@
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h" />
     <ClInclude Include="client\AdcHub.h" />
+    <ClInclude Include="client\Priority.h" />
+    <ClInclude Include="client\PrioritySearchQueue.h" />
     <ClInclude Include="client\SearchQuery.h" />
     <ClInclude Include="client\ADLSearch.h" />
     <ClInclude Include="client\AirUtil.h" />

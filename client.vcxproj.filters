@@ -799,6 +799,12 @@
     <ClInclude Include="client\SearchQuery.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="client\PrioritySearchQueue.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\Priority.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="client\StringDefs.h">
