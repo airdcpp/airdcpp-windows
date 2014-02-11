@@ -3,6 +3,7 @@
 Added:
 
 - Automatically check for updates when the update channel was changed
+- Report errors when generating a file list fails
 
 Fixed:
 

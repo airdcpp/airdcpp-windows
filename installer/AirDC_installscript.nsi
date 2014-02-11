@@ -58,7 +58,7 @@ ShowUninstDetails show
    
    
 ; The file to write
-  OutFile "AirDC_Installer_2.60_r1746.exe"
+  OutFile "AirDC_Installer_2.71.exe"
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)

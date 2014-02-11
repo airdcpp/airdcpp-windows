@@ -10,3 +10,6 @@
 /sendrelease.bat
 Thumbs.db
 /ipch
+*.suo
+*.opensdf
+*.exe
