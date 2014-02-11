@@ -403,6 +403,8 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 
 int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lpstrCmdLine, int nCmdShow) {
 	SingleInstance dcapp(_T(INST_NAME));
+	//std::set_new_handler(no_memory_handler);
+	
 	LPTSTR* argv = __targv;
 	int argc = --__argc;
 	Util::initialize();
