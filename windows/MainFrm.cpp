@@ -46,7 +46,7 @@
 #include "PopupManager.h"
 #include "Wizard.h"
 #include "AutoSearchFrm.h"
-#include "QueueFrame2.h"
+#include "QueueFrame.h"
 
 #include "Winamp.h"
 #include "Players.h"
@@ -1002,7 +1002,6 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		case IDC_RECENTS: RecentHubsFrame::openWindow(); break;
 		case IDC_SYSTEM_LOG: SystemFrame::openWindow(); break;
 		case IDC_AUTOSEARCH: AutoSearchFrame::openWindow(); break;
-		case IDC_QUEUE2: QueueFrame2::openWindow(); break;
 
 	
 		default: dcassert(0); break;

@@ -517,7 +517,7 @@
     <ClCompile Include="windows\PopupDlg.cpp" />
     <ClCompile Include="windows\ProtocolPage.cpp" />
     <ClCompile Include="windows\ProxyPage.cpp" />
-    <ClCompile Include="windows\QueueFrame2.cpp" />
+    <ClCompile Include="windows\QueueFrame.cpp" />
     <ClCompile Include="windows\ResourceLoader.cpp" />
     <ClCompile Include="windows\ScanPage.cpp" />
     <ClCompile Include="windows\SearchTypeCombo.cpp" />
@@ -577,7 +577,6 @@
     <ClCompile Include="windows\PropPage.cpp" />
     <ClCompile Include="windows\PropPageTextStyles.cpp" />
     <ClCompile Include="windows\PublicHubsFrm.cpp" />
-    <ClCompile Include="windows\QueueFrame.cpp" />
     <ClCompile Include="windows\RecentsFrm.cpp" />
     <ClCompile Include="windows\SDCPage.cpp" />
     <ClCompile Include="windows\SearchFrm.cpp" />
@@ -651,7 +650,7 @@
     <ClInclude Include="windows\ListViewArrows.h" />
     <ClInclude Include="windows\ProtocolPage.h" />
     <ClInclude Include="windows\ProxyPage.h" />
-    <ClInclude Include="windows\QueueFrame2.h" />
+    <ClInclude Include="windows\QueueFrame.h" />
     <ClInclude Include="windows\ScanPage.h" />
     <ClInclude Include="windows\SearchTypeCombo.h" />
     <ClInclude Include="windows\ShareDirectories.h" />
@@ -716,7 +715,6 @@
     <ClInclude Include="windows\PropPageTextStyles.h" />
     <ClInclude Include="windows\PublicHubsFrm.h" />
     <ClInclude Include="windows\PublicHubsListDlg.h" />
-    <ClInclude Include="windows\QueueFrame.h" />
     <ClInclude Include="windows\RecentsFrm.h" />
     <ClInclude Include="windows\resource.h" />
     <ClInclude Include="windows\SDCPage.h" />

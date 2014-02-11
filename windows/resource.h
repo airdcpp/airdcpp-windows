@@ -452,7 +452,6 @@
 #define IDC_SOCKS_RESOLVE               1086
 #define IDC_PROGRESS_BUMPED             1086
 #define IDC_REMOVEALL                   1087
-#define IDC_QUEUE2                      1088
 #define IDC_QUEUE_LIST                  1089
 #define IDC_SOCKS_SERVER                1090
 #define IDC_SOCKS_PORT                  1091

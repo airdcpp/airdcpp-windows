@@ -543,9 +543,6 @@
     <ClCompile Include="windows\PublicHubsFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\QueueFrame.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="windows\RecentsFrm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -753,7 +750,7 @@
     <ClCompile Include="windows\ChatFilterDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="windows\QueueFrame2.cpp">
+    <ClCompile Include="windows\QueueFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -912,9 +909,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\PublicHubsListDlg.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="windows\QueueFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\RecentsFrm.h">
@@ -1166,7 +1160,7 @@
     <ClInclude Include="windows\ChatFilterDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\QueueFrame2.h">
+    <ClInclude Include="windows\QueueFrame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
