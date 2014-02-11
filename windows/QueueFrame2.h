@@ -37,7 +37,7 @@ class QueueFrame2 : public MDITabChildWindowImpl<QueueFrame2>, public StaticFram
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame2"), IDR_QUEUE2, 0, COLOR_3DFACE);
 
-	QueueFrame2() : closed(false) {}
+	QueueFrame2() : closed(false), statusDirty(true) {}
 
 	~QueueFrame2() {}
 
@@ -58,6 +58,7 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
 		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
+		COMMAND_ID_HANDLER(IDC_MOVE, onMoveBundle)
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 
@@ -69,6 +70,10 @@ public:
 	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onMoveBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		handleMoveBundle();
+		return 0;
+	}
 
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 
@@ -159,11 +164,12 @@ private:
 	void AppendBundleMenu(BundleList& bl, OMenu& bundleMenu);
 	void AppendQiMenu(QueueItemList& ql, OMenu& fileMenu);
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
+	void handleMoveBundle();
 
 	bool closed;
 
 	/*contains all ItemInfos, bundles mapped with token, queueItems with target, any point for adding Qi tokens??*/
-	std::unordered_map<std::string, QueueItemInfo*> itemInfos;
+	std::unordered_map<std::string*, QueueItemInfo*> itemInfos;
 
 	typedef TypedTreeListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST, string, noCaseStringHash, noCaseStringEq, NO_GROUP_UNIQUE_CHILDREN | VIRTUAL_CHILDREN> ListType;
 	ListType ctrlQueue;
@@ -176,7 +182,10 @@ private:
 	void addGuiTask(std::function<void()> f) {
 		tasks.add(0, unique_ptr<AsyncTask>(new AsyncTask(f)));
 	}
+
 	void executeGuiTasks();
+	void updateStatus();
+	bool statusDirty;
 
 	//bundle update listeners
 	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;

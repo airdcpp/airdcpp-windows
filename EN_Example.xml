@@ -1303,6 +1303,7 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="Paths">Paths</string>
 	<string name="SearchFilename">Search filename</string>
 	<string name="MoveDir">Move directory</string>
+	<string name="MoveBundle">Move bundle(s)</string>
 	<string name="MoveRenameFile">Move/Rename file(s)</string>
 	<string name="SettingsCalculatePrioAuto">Calculate bundle priorities automatically</string>
 	<string name="SettingsAutoprioFiles">Calculate priorities also for individual files</string>

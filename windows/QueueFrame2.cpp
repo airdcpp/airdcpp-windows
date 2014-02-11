@@ -73,7 +73,6 @@ LRESULT QueueFrame2::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		MoveWindow(rc, TRUE);
 
 	{
-		//this currently leaves out file lists and temp downloads
 		auto qm = QueueManager::getInstance();
 		RLock l(qm->getCS());
 		for (const auto& b : qm->getBundles() | map_values)
@@ -89,7 +88,7 @@ LRESULT QueueFrame2::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 	memzero(statusSizes, sizeof(statusSizes));
 	statusSizes[0] = 16;
 	ctrlStatus.SetParts(6, statusSizes);
-	//updateStatus();
+	updateStatus();
 
 	::SetTimer(m_hWnd, 0, 500, 0);
 
@@ -178,7 +177,7 @@ LRESULT QueueFrame2::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 			cd->clrTextBk = WinUtil::bgColor;
 
 			if (colIndex == COLUMN_DOWNLOADED) {
-				if (!SETTING(SHOW_PROGRESS_BARS) || (ii->getSize() == -1)) { // file lists don't have size in queue, don't even start to draw...
+				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || (ii->getSize() == -1)) { // file lists don't have size in queue, don't even start to draw...
 					bHandled = FALSE;
 					return 0;
 				}
@@ -216,9 +215,6 @@ LRESULT QueueFrame2::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 
 				HFONT oldFont = (HFONT)SelectObject(dc, WinUtil::font);
 				SetBkMode(dc, TRANSPARENT);
-
-				// Draw the background and border of the bar	
-				//if (ii->getSize() == 0) ii->size = 1;
 
 				COLORREF oldcol;
 				if (SETTING(PROGRESSBAR_ODC_STYLE)) {
@@ -415,9 +411,9 @@ LRESULT QueueFrame2::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 				queueItems.push_back(qii->qi);
 		}
 
-		if (!bl.empty() && queueItems.empty())
+		if (!bl.empty() && queueItems.empty()) {
 			AppendBundleMenu(bl, menu);
-		else if (bl.empty() && !queueItems.empty())
+		}  else if (bl.empty() && !queueItems.empty())
 			AppendQiMenu(queueItems, menu);
 
 		//common for Qi and Bundle
@@ -442,6 +438,7 @@ void QueueFrame2::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 	} else {
 		bundleMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
 		WinUtil::appendBundlePrioMenu(bundleMenu, bl);
+		bundleMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_BUNDLE));
 	}
 
 	/* Insert sub menus */
@@ -518,11 +515,8 @@ void QueueFrame2::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 
 		bundleMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { WinUtil::openFolder(Text::toT(b->getTarget())); });
 
-		//Todo: move bundles
-		//bundleMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_DIR));
-
+		bundleMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_BUNDLE));
 		bundleMenu.appendItem(TSTRING(RENAME), [=] { onRenameBundle(b); });
-
 		bundleMenu.appendSeparator();
 
 		readdMenu->appendThis(TSTRING(READD_SOURCE), true);
@@ -787,12 +781,83 @@ LRESULT QueueFrame2::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, 
 
 LRESULT QueueFrame2::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	executeGuiTasks();
+	updateStatus();
 	bHandled = TRUE;
 	return 0;
 }
 
 tstring QueueFrame2::handleCopyMagnet(const QueueItemInfo* aII) {
 	return Text::toT(WinUtil::makeMagnet(aII->qi->getTTH(), Util::getFileName(aII->qi->getTarget()), aII->qi->getSize()));
+}
+
+void QueueFrame2::handleMoveBundle() {
+
+	BundleList bundles;
+	int sel = -1;
+	int finishedFiles = 0;
+	int fileBundles = 0;
+	while ((sel = ctrlQueue.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+		QueueItemInfo* qii = (QueueItemInfo*)ctrlQueue.GetItemData(sel);
+		if (qii->bundle) {
+			finishedFiles += qii->bundle->getFinishedFiles().size();
+			if (qii->bundle->isFileBundle())
+				fileBundles++;
+			bundles.push_back(qii->bundle);
+		}
+	}
+
+	int dirBundles = bundles.size() - fileBundles;
+	bool moveFinished = false;
+	tstring curPath, oldPath = Text::toT(Util::getParentDir(bundles.front()->getTarget()));
+
+	if (WinUtil::browseDirectory(curPath, m_hWnd)) {
+		string newDir = Util::validatePath(Text::fromT(curPath));
+		string tmp;
+		if (bundles.size() == 1) {
+			BundlePtr bundle = bundles.front();
+			tmp = STRING_F(CONFIRM_MOVE_DIR_BUNDLE, bundle->getName().c_str() % newDir.c_str());
+			if (!WinUtil::showQuestionBox(Text::toT(tmp), MB_ICONQUESTION)) {
+				return;
+			} else if (finishedFiles > 0) {
+				tmp = STRING_F(CONFIRM_MOVE_DIR_FINISHED_BUNDLE, finishedFiles);
+				if (WinUtil::showQuestionBox(Text::toT(tmp), MB_ICONQUESTION)) {
+					moveFinished = true;
+				}
+			}
+		} else {
+			tmp = STRING_F(CONFIRM_MOVE_DIR_MULTIPLE, dirBundles % fileBundles % newDir.c_str());
+			if (!WinUtil::showQuestionBox(Text::toT(tmp), MB_ICONQUESTION)) {
+				return;
+			}
+			else if (finishedFiles > 0) {
+				tmp = STRING_F(CONFIRM_MOVE_DIR_FINISHED_MULTIPLE, finishedFiles);
+				if (WinUtil::showQuestionBox(Text::toT(tmp), MB_ICONQUESTION)) {
+					moveFinished = true;
+				}
+			}
+		}
+
+		if (curPath == oldPath) {
+			return;
+		}
+
+		StringPairList fileBundles;
+		for (auto& sourceBundle : bundles) {
+			auto sourceDir = sourceBundle->getTarget();
+			if (!sourceBundle->isFileBundle()) {
+				auto targetDir = Util::validatePath(Text::fromT(curPath) + Util::getLastDir(sourceBundle->getTarget()) + PATH_SEPARATOR_STR);
+				MainFrame::getMainFrame()->addThreadedTask([=] {
+					QueueManager::getInstance()->moveBundleDir(sourceDir, targetDir, sourceBundle, moveFinished);
+				});
+			}
+			else {
+				//move queue items
+				fileBundles.emplace_back(sourceDir, AirUtil::convertMovePath(sourceDir, Util::getFilePath(sourceDir), newDir));
+			}
+		}
+
+		QueueManager::getInstance()->moveFiles(fileBundles);
+	}
 }
 
 void QueueFrame2::onRenameBundle(BundlePtr b) {
@@ -813,9 +878,9 @@ void QueueFrame2::onRenameBundle(BundlePtr b) {
 }
 
 void QueueFrame2::onBundleAdded(const BundlePtr& aBundle) {
-	auto i = itemInfos.find(aBundle->getToken());
+	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
 	if (i == itemInfos.end()) {
-		auto b = itemInfos.emplace(aBundle->getToken(), new QueueItemInfo(aBundle)).first;
+		auto b = itemInfos.emplace(const_cast<string*>(&aBundle->getToken()), new QueueItemInfo(aBundle)).first;
 		ctrlQueue.insertGroupedItem(b->second, false, !aBundle->isFileBundle()); // file bundles wont be having any children.
 	}
 }
@@ -825,22 +890,24 @@ void QueueFrame2::AddBundleQueueItems(const BundlePtr& aBundle) {
 		if (qi->isFinished()/* && !SETTING(KEEP_FINISHED_FILES)*/)
 			continue;
 		auto item = new QueueItemInfo(qi);
-		itemInfos.emplace(qi->getTarget(), item);
+		itemInfos.emplace(const_cast<string*>(&qi->getTarget()), item);
 		ctrlQueue.insertGroupedItem(item, true);
 	}
 }
 
-//think of this more, now all queueitems get removed first then the whole bundle.
 void QueueFrame2::onBundleRemoved(const BundlePtr& aBundle) {
-	auto i = itemInfos.find(aBundle->getToken());
+	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
 	if (i != itemInfos.end()) {
+		for (auto& q : aBundle->getQueueItems())
+			onQueueItemRemoved(q);
+
 		ctrlQueue.removeGroupedItem(i->second); //also deletes item info
 		itemInfos.erase(i);
 	}
 }
 
 void QueueFrame2::onBundleUpdated(const BundlePtr& aBundle) {
-	auto i = itemInfos.find(aBundle->getToken());
+	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
 	if (i != itemInfos.end()) {
 		int x = ctrlQueue.findItem(i->second);
 		if (x != -1) {
@@ -852,7 +919,7 @@ void QueueFrame2::onBundleUpdated(const BundlePtr& aBundle) {
 }
 
 void QueueFrame2::onQueueItemRemoved(const QueueItemPtr& aQI) {
-	auto item = itemInfos.find(aQI->getTarget());
+	auto item = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
 	if (item != itemInfos.end()) {
 		ctrlQueue.removeGroupedItem(item->second); //also deletes item info
 		itemInfos.erase(item);
@@ -860,7 +927,7 @@ void QueueFrame2::onQueueItemRemoved(const QueueItemPtr& aQI) {
 }
 
 void QueueFrame2::onQueueItemUpdated(const QueueItemPtr& aQI) {
-	auto item = itemInfos.find(aQI->getTarget());
+	auto item = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
 	if (item != itemInfos.end()) {
 		auto itemInfo = item->second;
 		if (!itemInfo->parent || !itemInfo->parent->collapsed) // no need to update if its collapsed right?
@@ -869,15 +936,15 @@ void QueueFrame2::onQueueItemUpdated(const QueueItemPtr& aQI) {
 }
 
 void QueueFrame2::onQueueItemAdded(const QueueItemPtr& aQI) {
-	auto item = itemInfos.find(aQI->getTarget());
+	auto item = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
 	if (item == itemInfos.end()) {
 		//queueItem not found, look if we have a parent for it and if its expanded
 		if (aQI->getBundle()){
-			auto parent = itemInfos.find(aQI->getBundle()->getToken());
+			auto parent = itemInfos.find(const_cast<string*>(&aQI->getBundle()->getToken()));
 			if ((parent == itemInfos.end()) || parent->second->collapsed)
 				return;
 		}
-		auto i = itemInfos.emplace(aQI->getTarget(), new QueueItemInfo(aQI)).first;
+		auto i = itemInfos.emplace(const_cast<string*>(&aQI->getTarget()), new QueueItemInfo(aQI)).first;
 		ctrlQueue.insertGroupedItem(i->second, false);
 	}
 }
@@ -894,7 +961,41 @@ void QueueFrame2::executeGuiTasks() {
 		static_cast<AsyncTask*>(t.second)->f();
 		tasks.pop_front();
 	}
+	statusDirty = true;
 	ctrlQueue.SetRedraw(TRUE);
+}
+
+void QueueFrame2::updateStatus() {
+	if (ctrlStatus.IsWindow() && statusDirty) {
+		bool u = false;
+		int bundles = 0;
+		auto qm = QueueManager::getInstance();
+		{
+			RLock l(qm->getCS());
+			bundles = qm->getBundles().size();
+		}
+
+		tstring tmp = TSTRING(QUEUED_BUNDLES) + _T(": ") + Util::toStringW(bundles);
+		int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+		if (statusSizes[3] < w) {
+			statusSizes[3] = w;
+			u = true;
+		}
+		ctrlStatus.SetText(4, (tmp).c_str());
+
+		tmp = TSTRING(QUEUE_SIZE) + _T(": ") + Util::formatBytesW(qm->getTotalQueueSize());
+		w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+		if (statusSizes[4] < w) {
+			statusSizes[4] = w;
+			u = true;
+		}
+		ctrlStatus.SetText(5, (tmp).c_str());
+		
+		if (u)
+			UpdateLayout(TRUE);
+
+		statusDirty = false;
+	}
 }
 
 void QueueFrame2::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept {
@@ -903,7 +1004,7 @@ void QueueFrame2::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle
 void QueueFrame2::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept{
 	addGuiTask([=] { onBundleRemoved(aBundle); });
 }
-void QueueFrame2::on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept{
+void QueueFrame2::on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept {
 	addGuiTask([=] { onBundleRemoved(aBundle); });
 }
 void QueueFrame2::on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string&) noexcept { 

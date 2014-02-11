@@ -462,28 +462,13 @@ void WinUtil::init(HWND hWnd) {
 
 	mainMenu.AppendMenu(MF_POPUP, (UINT_PTR)(HMENU)help, CTSTRING(MENU_HELP));
 
-	LOGFONT lf, lf2;
-	::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
-	SettingsManager::getInstance()->setDefault(SettingsManager::TEXT_FONT, Text::fromT(encodeFont(lf)));
-	decodeFont(Text::toT(SETTING(TEXT_FONT)), lf);
-	::GetObject((HFONT)GetStockObject(ANSI_FIXED_FONT), sizeof(lf2), &lf2);
-	
-	lf2.lfHeight = lf.lfHeight;
-	lf2.lfWeight = lf.lfWeight;
-	lf2.lfItalic = lf.lfItalic;
+	setFonts();
 
 	bgBrush = CreateSolidBrush(SETTING(BACKGROUND_COLOR));
 	textColor = SETTING(TEXT_COLOR);
 	bgColor = SETTING(BACKGROUND_COLOR);
-	font = ::CreateFontIndirect(&lf);
-	fontHeight = WinUtil::getTextHeight(mainWnd, font);
-	lf.lfWeight = FW_BOLD;
-	boldFont = ::CreateFontIndirect(&lf);
-	lf.lfHeight *= 5;
-	lf.lfHeight /= 6;
-	tabFont = ::CreateFontIndirect(&lf);
+
 	systemFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
-	
 	OEMFont = (HFONT)::GetStockObject(OEM_FIXED_FONT);
 
 	LOGFONT lf3;
@@ -532,14 +517,10 @@ void WinUtil::init(HWND hWnd) {
 
 void WinUtil::setFonts() {
 		
-	LOGFONT lf, lf2;
+	LOGFONT lf;
 	::GetObject((HFONT)GetStockObject(DEFAULT_GUI_FONT), sizeof(lf), &lf);
+	SettingsManager::getInstance()->setDefault(SettingsManager::TEXT_FONT, Text::fromT(encodeFont(lf)));
 	decodeFont(Text::toT(SETTING(TEXT_FONT)), lf);
-	::GetObject((HFONT)GetStockObject(ANSI_FIXED_FONT), sizeof(lf2), &lf2);
-	
-	lf2.lfHeight = lf.lfHeight;
-	lf2.lfWeight = lf.lfWeight;
-	lf2.lfItalic = lf.lfItalic;
 
 	font = ::CreateFontIndirect(&lf);
 	fontHeight = WinUtil::getTextHeight(mainWnd, font);
@@ -548,9 +529,6 @@ void WinUtil::setFonts() {
 	lf.lfHeight *= 5;
 	lf.lfHeight /= 6;
 	tabFont = ::CreateFontIndirect(&lf);
-	systemFont = (HFONT)::GetStockObject(DEFAULT_GUI_FONT);
-	
-	OEMFont = (HFONT)::GetStockObject(OEM_FIXED_FONT);
 
 }
 void WinUtil::initColors() {
