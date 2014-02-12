@@ -902,9 +902,6 @@ void QueueFrame::AddBundleQueueItems(const BundlePtr& aBundle) {
 void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
 	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
 	if (i != itemInfos.end()) {
-		for (auto& q : aBundle->getQueueItems())
-			onQueueItemRemoved(q);
-
 		ctrlQueue.removeGroupedItem(i->second); //also deletes item info
 		itemInfos.erase(i);
 	}
@@ -1006,6 +1003,11 @@ void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle)
 	addGuiTask([=] { onBundleAdded(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept{
+	/*TODO: Think of something for this, when bundle is removed its possible that the queueitems get removed from the bundle before we loop them in gui thread,
+	so we do it here one by one...*/
+	for (auto& q : aBundle->getQueueItems())
+		addGuiTask([=] { onQueueItemRemoved(q); });
+
 	addGuiTask([=] { onBundleRemoved(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept {
