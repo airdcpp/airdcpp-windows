@@ -1238,7 +1238,7 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			HubFrame::ShutDown();
 
 			SplashWindow::create();
-			(*WinUtil::splash)(STRING(CLOSING_WINDOWS));
+			WinUtil::splash->update(STRING(CLOSING_WINDOWS));
 
 			updateTray(false);
 

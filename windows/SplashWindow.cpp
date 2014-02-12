@@ -110,13 +110,13 @@ void SplashWindow::destroy() {
 	PostMessage(WM_CLOSE, 0, 0);
 }
 
-void SplashWindow::operator()(const string& status) {
+void SplashWindow::update(const string& status) {
 	this->status = Text::toT(status);
 	progress = 0;
 	callAsync([this] { RedrawWindow(); });
 }
 
-void SplashWindow::operator()(float progress) {
+void SplashWindow::update(float progress) {
 	if (this->progress == 0.00 || progress - this->progress >= 0.01) {
 		this->progress = progress;
 		callAsync([this] { RedrawWindow(); });
@@ -137,7 +137,7 @@ LRESULT SplashWindow::onEraseBkgnd(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 void SplashWindow::draw() {
 	// Get some information
 	PAINTSTRUCT ps;
-	HDC dc = BeginPaint(&ps);
+	HDC dc = BeginPaint(&ps); // avoid flickering
 	RECT rc;
 	GetWindowRect(&rc);
 	OffsetRect(&rc, -rc.left, -rc.top);

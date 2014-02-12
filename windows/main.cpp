@@ -202,16 +202,18 @@ LONG __stdcall DCUnhandledExceptionFilter( LPEXCEPTION_POINTERS e )
 	if ((!SETTING(SOUND_EXC).empty()) && (!SETTING(SOUNDS_DISABLED)))
 		WinUtil::playSound(Text::toT(SETTING(SOUND_EXC)));
 
-	NOTIFYICONDATA m_nid;
-	m_nid.cbSize = sizeof(NOTIFYICONDATA);
-	m_nid.hWnd = MainFrame::getMainFrame()->m_hWnd;
-	m_nid.uID = 0;
-	m_nid.uFlags = NIF_INFO;
-	m_nid.uTimeout = 5000;
-	m_nid.dwInfoFlags = NIIF_WARNING;
-	_tcscpy(m_nid.szInfo, _T("exceptioninfo.txt was generated"));
-	_tcscpy(m_nid.szInfoTitle, _T("AirDC++ has crashed"));
-	Shell_NotifyIcon(NIM_MODIFY, &m_nid);
+	if (MainFrame::getMainFrame()) {
+		NOTIFYICONDATA m_nid;
+		m_nid.cbSize = sizeof(NOTIFYICONDATA);
+		m_nid.hWnd = MainFrame::getMainFrame()->m_hWnd;
+		m_nid.uID = 0;
+		m_nid.uFlags = NIF_INFO;
+		m_nid.uTimeout = 5000;
+		m_nid.dwInfoFlags = NIIF_WARNING;
+		_tcscpy(m_nid.szInfo, _T("exceptioninfo.txt was generated"));
+		_tcscpy(m_nid.szInfoTitle, _T("AirDC++ has crashed"));
+		Shell_NotifyIcon(NIM_MODIFY, &m_nid);
+	}
 
 	if(::MessageBox(WinUtil::mainWnd, _T("AirDC++ just encountered a fatal bug and should have written an exceptioninfo.txt the same directory as the executable. You can upload this file at http://www.airdcpp.net to help us find out what happened. Go there now?"), _T("AirDC++ Has Crashed"), MB_YESNO | MB_ICONERROR) == IDYES) {
 		WinUtil::openLink(_T("http://crash.airdcpp.net"));
@@ -266,7 +268,7 @@ public:
 
 static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 {
-	static unique_ptr<MainFrame> wndMain = nullptr;
+	static unique_ptr<MainFrame> wndMain;
 
 	CMessageLoop theLoop;	
 
@@ -277,14 +279,13 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	WinUtil::preInit();
 
 	SplashWindow::create();
-	(*WinUtil::splash)("Starting up");
+	WinUtil::splash->update("Starting up");
 
-	std::future<void> loader;
-	loader = std::async([&] {
+	auto loader = std::async(std::launch::async, [&] {
 		unique_ptr<SetupWizard> wizard = nullptr;
 		try {
 			startup(
-				[&](const string& str) { (*WinUtil::splash)(str); },
+				[&](const string& str) { WinUtil::splash->update(str); },
 				[&](const string& str, bool isQuestion, bool isError) {
 					auto ret = ::MessageBox(WinUtil::splash->m_hWnd, Text::toT(str).c_str(), Text::toT(shortVersionString).c_str(), MB_SETFOREGROUND | (isQuestion ? MB_YESNO : MB_OK) | (isError ? MB_ICONEXCLAMATION : MB_ICONQUESTION));
 					return isQuestion ? ret == IDYES : true;
@@ -292,7 +293,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 				[&]() {
 					Semaphore s;
 					WinUtil::splash->callAsync([&] {
-						wizard.reset(new SetupWizard(true));
+						wizard = make_unique<SetupWizard>(true);
 						if (wizard->DoModal(/*m_hWnd*/) != IDOK) {
 							//the wizard was cancelled
 							wizard.reset(nullptr);
@@ -300,11 +301,12 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 						s.signal();
 					});
 
+					// wait for the wizard to finish
 					s.wait();
 			},
-				[=](float progress) { (*WinUtil::splash)(progress); }
+				[=](float progress) { WinUtil::splash->update(progress); }
 			);
-			(*WinUtil::splash)(STRING(LOADING_GUI));
+			WinUtil::splash->update(STRING(LOADING_GUI));
 		} catch (...) {
 			ExitProcess(1);
 		}
@@ -332,7 +334,6 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			}
 
 			wndMain.reset(new MainFrame);
-			//MainFrame::anyMF = wndMain; created on MainFrame constructor.
 
 			CRect rc = wndMain->rcDefault;
 			if( (SETTING(MAIN_WINDOW_POS_X) != CW_USEDEFAULT) &&
@@ -354,7 +355,7 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 			if(wndMain->CreateEx(NULL, rc, 0, rtl | WS_EX_APPWINDOW | WS_EX_WINDOWEDGE) == NULL) {
 				ATLTRACE(_T("Main window creation failed!\n"));
 				//throw("Main window creation failed");
-				//return 0;
+				return;
 			}
 
 			if(SETTING(MINIMIZE_ON_STARTUP)) {
@@ -369,12 +370,12 @@ static int Run(LPTSTR /*lpstrCmdLine*/ = NULL, int nCmdShow = SW_SHOWDEFAULT)
 	int nRet = theLoop.Run();
 
 	dcassert(WinUtil::splash);
-	loader = std::async([=] {
+	loader = std::async(std::launch::async, [=] {
 		PopupManager::deleteInstance();
 
 		shutdown(
-			[&](const string& str) { (*WinUtil::splash)(str); },
-			[=](float progress) { (*WinUtil::splash)(progress); }
+			[&](const string& str) { WinUtil::splash->update(str); },
+			[=](float progress) { WinUtil::splash->update(progress); }
 		);
 
 		WinUtil::splash->callAsync([=] { PostQuitMessage(0); });
@@ -432,7 +433,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		} else if(_tcscmp(*argv, _T("/update")) == 0) {
 			if(--argc >= 1) {
 				SplashWindow::create();
-				(*WinUtil::splash)("Updating");
+				WinUtil::splash->update("Updating");
 				string sourcePath = Util::getFilePath(Util::getAppName());
 				string installPath = Text::fromT(*++argv); argc--;
 

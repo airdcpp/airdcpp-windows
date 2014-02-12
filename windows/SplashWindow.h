@@ -54,8 +54,8 @@ public:
 	static void create();
 	void destroy();
 
-	void operator()(const string& status);
-	void operator()(float progress);
+	void update(const string& status);
+	void update(float progress);
 private:
 	void draw();
 	void loadImage();
