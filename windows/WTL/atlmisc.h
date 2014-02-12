@@ -1,5 +1,5 @@
-// Windows Template Library - WTL version 8.1
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
@@ -2022,7 +2022,7 @@ public:
 #endif
 
 		// try fixed buffer first (to avoid wasting space in the heap)
-		TCHAR szTemp[256];
+		TCHAR szTemp[256] = { 0 };
 		int nCount =  sizeof(szTemp) / sizeof(szTemp[0]);
 		int nLen = _LoadString(nID, szTemp, nCount);
 		if (nCount - nLen > CHAR_FUDGE)

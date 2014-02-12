@@ -1,5 +1,5 @@
-// Windows Template Library - WTL version 8.1
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
@@ -481,9 +481,16 @@ public:
 		m_ofn.Flags |= OFN_ALLOWMULTISELECT;   // Force multiple selection mode
 
 #ifndef _UNICODE
-		OSVERSIONINFO ovi = { sizeof(ovi) };
+#ifdef _versionhelpers_H_INCLUDED_
+		OSVERSIONINFOEX ovi = { sizeof(OSVERSIONINFOEX) };
+		ovi.dwPlatformId = VER_PLATFORM_WIN32_NT;
+		DWORDLONG const dwlConditionMask = ::VerSetConditionMask(0, VER_PLATFORMID, VER_EQUAL);
+		m_bIsNT = (::VerifyVersionInfo(&ovi, VER_PLATFORMID, dwlConditionMask) != FALSE);
+#else // !_versionhelpers_H_INCLUDED_
+		OSVERSIONINFO ovi = { sizeof(OSVERSIONINFO) };
 		::GetVersionEx(&ovi);
 		m_bIsNT = (ovi.dwPlatformId == VER_PLATFORM_WIN32_NT);
+#endif // _versionhelpers_H_INCLUDED_
 		if (m_bIsNT)
 		{
 			// On NT platforms, GetOpenFileNameA thunks to GetOpenFileNameW and there 
@@ -811,7 +818,7 @@ public:
 					// Get the ID-list and attributes of the file.
 					USES_CONVERSION;
 					int nFileNameLength = (int)(DWORD_PTR)(pChar - pAnchor);
-					TCHAR szFileName[MAX_PATH];
+					TCHAR szFileName[MAX_PATH] = { 0 };
 					SecureHelper::strncpy_x(szFileName, MAX_PATH, pAnchor, nFileNameLength);
 					LPITEMIDLIST pidl = NULL;
 					DWORD dwAttrib = SFGAO_LINK;
@@ -825,7 +832,7 @@ public:
 							if (SUCCEEDED(pFolder->BindToObject(pidl, NULL, IID_IShellLink, (void**)&pLink)))
 							{
 								// Get the shortcut's target path.
-								TCHAR szPath[MAX_PATH];
+								TCHAR szPath[MAX_PATH] = { 0 };
 								if (SUCCEEDED(pLink->GetPath(szPath, MAX_PATH, NULL, 0)))
 								{
 									// If the target path is longer than the shortcut name, then add on the number 

@@ -1,5 +1,5 @@
-// Windows Template Library - WTL version 8.1
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
@@ -58,6 +58,10 @@
   #pragma comment(lib, "comctl32.lib")
 #endif
 
+#if defined(_SYSINFOAPI_H_) || defined(_WTL_USE_VERSION_HELPERS)
+  #include <VersionHelpers.h>
+#endif
+
 #ifndef _WIN32_WCE
   #include "atlres.h"
 #else // CE specific
@@ -75,7 +79,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 // WTL version number
 
-#define _WTL_VER	0x0810
+#define _WTL_VER	0x0900
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -499,10 +503,13 @@ namespace WTL
 // Windows version helper
 inline bool AtlIsOldWindows()
 {
-	OSVERSIONINFO ovi = { 0 };
-	ovi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
+#ifdef _versionhelpers_H_INCLUDED_
+	return !::IsWindowsVersionOrGreater(4, 90, 0);
+#else // !_versionhelpers_H_INCLUDED_
+OSVERSIONINFO ovi = { sizeof(OSVERSIONINFO) };
 	BOOL bRet = ::GetVersionEx(&ovi);
 	return (!bRet || !((ovi.dwMajorVersion >= 5) || (ovi.dwMajorVersion == 4 && ovi.dwMinorVersion >= 90)));
+#endif // _versionhelpers_H_INCLUDED_
 }
 
 // Default GUI font helper - "MS Shell Dlg" stock font
@@ -609,9 +616,13 @@ namespace RunTimeHelper
 
 	inline bool IsVista()
 	{
+#ifdef _versionhelpers_H_INCLUDED_
+		return ::IsWindowsVistaOrGreater();
+#else // !_versionhelpers_H_INCLUDED_
 		OSVERSIONINFO ovi = { sizeof(OSVERSIONINFO) };
 		BOOL bRet = ::GetVersionEx(&ovi);
 		return ((bRet != FALSE) && (ovi.dwMajorVersion >= 6));
+#endif // _versionhelpers_H_INCLUDED_
 	}
 
 	inline bool IsThemeAvailable()
@@ -644,9 +655,13 @@ namespace RunTimeHelper
 
 	inline bool IsWin7()
 	{
+#ifdef _versionhelpers_H_INCLUDED_
+		return ::IsWindows7OrGreater();
+#else // !_versionhelpers_H_INCLUDED_
 		OSVERSIONINFO ovi = { sizeof(OSVERSIONINFO) };
 		BOOL bRet = ::GetVersionEx(&ovi);
 		return ((bRet != FALSE) && (ovi.dwMajorVersion == 6) && (ovi.dwMinorVersion >= 1));
+#endif // _versionhelpers_H_INCLUDED_
 	}
 
 	inline bool IsRibbonUIAvailable()

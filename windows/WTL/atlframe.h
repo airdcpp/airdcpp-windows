@@ -1,5 +1,5 @@
-// Windows Template Library - WTL version 8.1
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
@@ -90,8 +90,7 @@ public:
 					LPCTSTR lpsz = m_wc.lpszClassName;
 					WNDPROC proc = m_wc.lpfnWndProc;
 
-					WNDCLASSEX wc = { 0 };
-					wc.cbSize = sizeof(WNDCLASSEX);
+					WNDCLASSEX wc = { sizeof(WNDCLASSEX) };
 					// try process local class first
 					if(!::GetClassInfoEx(ModuleHelper::GetModuleInstance(), m_lpszOrigName, &wc))
 					{
@@ -562,10 +561,8 @@ public:
 		}
 
 		// Initialize and send the REBARINFO structure
-		REBARINFO rbi = { 0 };
-		rbi.cbSize = sizeof(REBARINFO);
-		rbi.fMask  = 0;
-		if(!::SendMessage(hWndReBar, RB_SETBARINFO, 0, (LPARAM)&rbi))
+		REBARINFO rbi = { sizeof(REBARINFO), 0 };
+		if(::SendMessage(hWndReBar, RB_SETBARINFO, 0, (LPARAM)&rbi) == 0)
 		{
 			ATLTRACE2(atlTraceUI, 0, _T("Failed to initialize rebar.\n"));
 			::DestroyWindow(hWndReBar);
@@ -722,8 +719,7 @@ public:
 #endif // _WIN32_WCE
 	{
 		const int cchMax = 128;   // max text length is 127 for status bars (+1 for null)
-		TCHAR szText[cchMax];
-		szText[0] = 0;
+		TCHAR szText[cchMax] = { 0 };
 		::LoadString(ModuleHelper::GetResourceInstance(), nTextID, szText, cchMax);
 		return CreateSimpleStatusBar(szText, dwStyle, nID);
 	}
@@ -876,8 +872,7 @@ public:
 		else
 		{
 			const int cchBuff = 256;
-			TCHAR szBuff[cchBuff];
-			szBuff[0] = 0;
+			TCHAR szBuff[cchBuff] = { 0 };
 			if(!(wFlags & MF_POPUP))
 			{
 				WORD wID = LOWORD(wParam);
@@ -934,8 +929,7 @@ public:
 		if((idCtrl != 0) && !(pDispInfo->uFlags & TTF_IDISHWND))
 		{
 			const int cchBuff = 256;
-			char szBuff[cchBuff];
-			szBuff[0] = 0;
+			char szBuff[cchBuff] = { 0 };
 			int nRet = ::LoadStringA(ModuleHelper::GetResourceInstance(), idCtrl, szBuff, cchBuff);
 			for(int i = 0; i < nRet; i++)
 			{
@@ -962,8 +956,7 @@ public:
 		if((idCtrl != 0) && !(pDispInfo->uFlags & TTF_IDISHWND))
 		{
 			const int cchBuff = 256;
-			wchar_t szBuff[cchBuff];
-			szBuff[0] = 0;
+			wchar_t szBuff[cchBuff] = { 0 };
 			int nRet = ::LoadStringW(ModuleHelper::GetResourceInstance(), idCtrl, szBuff, cchBuff);
 			for(int i = 0; i < nRet; i++)
 			{
@@ -1162,8 +1155,7 @@ public:
 	HWND CreateEx(HWND hWndParent = NULL, ATL::_U_RECT rect = NULL, DWORD dwStyle = 0, DWORD dwExStyle = 0, LPVOID lpCreateParam = NULL)
 	{
 		const int cchName = 256;
-		TCHAR szWindowName[cchName];
-		szWindowName[0] = 0;
+		TCHAR szWindowName[cchName] = { 0 };
 #ifndef _WIN32_WCE
 		::LoadString(ModuleHelper::GetResourceInstance(), T::GetWndClassInfo().m_uCommonResourceID, szWindowName, cchName);
 		HMENU hMenu = ::LoadMenu(ModuleHelper::GetResourceInstance(), MAKEINTRESOURCE(T::GetWndClassInfo().m_uCommonResourceID));
@@ -1454,8 +1446,7 @@ public:
 	HWND CreateEx(HWND hWndParent = NULL, ATL::_U_RECT rect = NULL, DWORD dwStyle = 0, DWORD dwExStyle = 0, LPVOID lpCreateParam = NULL)
 	{
 		const int cchName = 256;
-		TCHAR szWindowName[cchName];
-		szWindowName[0] = 0;
+		TCHAR szWindowName[cchName] = { 0 };
 		::LoadString(ModuleHelper::GetResourceInstance(), T::GetWndClassInfo().m_uCommonResourceID, szWindowName, cchName);
 		HMENU hMenu = ::LoadMenu(ModuleHelper::GetResourceInstance(), MAKEINTRESOURCE(T::GetWndClassInfo().m_uCommonResourceID));
 
@@ -1732,8 +1723,7 @@ public:
 	HWND CreateEx(HWND hWndParent, ATL::_U_RECT rect = NULL, LPCTSTR lpcstrWindowName = NULL, DWORD dwStyle = 0, DWORD dwExStyle = 0, LPVOID lpCreateParam = NULL)
 	{
 		const int cchName = 256;
-		TCHAR szWindowName[cchName];
-		szWindowName[0] = 0;
+		TCHAR szWindowName[cchName] = { 0 };
 		if(lpcstrWindowName == NULL)
 		{
 			::LoadString(ModuleHelper::GetResourceInstance(), T::GetWndClassInfo().m_uCommonResourceID, szWindowName, cchName);
