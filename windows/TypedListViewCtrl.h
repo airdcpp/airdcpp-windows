@@ -28,6 +28,11 @@
 #include "ListViewArrows.h"
 #include "OMenu.h"
 
+
+#define NO_GROUP_UNIQUE_CHILDREN 0x01
+#define VIRTUAL_CHILDREN 0x02 //parent handles item creation on expanding
+#define LVITEM_GROUPING 0x08 //Items have groups
+
 enum ColumnType{
 	COLUMN_TEXT,
 	COLUMN_SIZE,
@@ -72,15 +77,15 @@ public:
 	CopyF copyF = nullptr;
 };
 
-template<class T, int ctrlId>
-class TypedListViewCtrl : public CWindowImpl<TypedListViewCtrl<T, ctrlId>, CListViewCtrl, CControlWinTraits>,
-	public ListViewArrows<TypedListViewCtrl<T, ctrlId> >
+template<class T, int ctrlId, DWORD style = 0>
+class TypedListViewCtrl : public CWindowImpl<TypedListViewCtrl<T, ctrlId, style>, CListViewCtrl, CControlWinTraits>,
+	public ListViewArrows<TypedListViewCtrl<T, ctrlId, style> >
 {
 public:
 	TypedListViewCtrl() : sortColumn(-1), sortAscending(true), hBrBg(WinUtil::bgBrush), leftMargin(0), noDefaultItemImages(false) { }
 	~TypedListViewCtrl() { for_each(columnList.begin(), columnList.end(), DeleteFunction()); }
 
-	typedef TypedListViewCtrl<T, ctrlId> thisClass;
+	typedef TypedListViewCtrl<T, ctrlId, style> thisClass;
 	typedef CListViewCtrl baseClass;
 	typedef ListViewArrows<thisClass> arrowBase;
 
@@ -101,6 +106,15 @@ public:
 		 if(SETTING(USE_EXPLORER_THEME)) {
 			SetWindowTheme(m_hWnd, L"explorer", NULL);
          }
+
+		 if (style & LVITEM_GROUPING) {
+			 EnableGroupView(TRUE);
+			 LVGROUPMETRICS metrics = { 0 };
+			 metrics.cbSize = sizeof(metrics);
+			 metrics.mask = LVGMF_TEXTCOLOR;
+			 metrics.crHeader = SETTING(TEXT_GENERAL_FORE_COLOR);
+			 SetGroupMetrics(&metrics);
+		 }
 
 		bHandled = FALSE;
 		return 0;
@@ -360,6 +374,32 @@ public:
 	int insertItem(int i, const T* item, int image) {
 		return InsertItem(LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE, i, 
 			LPSTR_TEXTCALLBACK, 0, 0, image, (LPARAM)item);
+	}
+
+	int insertItem(int i, const T* item, int image, int groupIndex) {
+		LV_ITEM lvi;
+		lvi.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE;
+		if (style & LVITEM_GROUPING) {
+			lvi.mask = lvi.mask | LVIF_GROUPID;
+			lvi.iGroupId = groupIndex;
+		}
+		lvi.iItem = i;
+		lvi.iSubItem = 0;
+		lvi.pszText = LPSTR_TEXTCALLBACK;
+		lvi.iImage = image;
+		lvi.lParam = (LPARAM)item;
+		return InsertItem(&lvi);
+	}
+
+	void insertGroup(int id, const tstring& name, DWORD uAlign) {
+		LVGROUP lvg = { 0 };
+		lvg.cbSize = sizeof(lvg);
+		lvg.iGroupId = id;
+		lvg.state = LVGS_NORMAL | LVGS_COLLAPSIBLE;
+		lvg.mask = LVGF_GROUPID | LVGF_HEADER | LVGF_STATE | LVGF_ALIGN;
+		lvg.uAlign = uAlign;
+		lvg.pszHeader = (LPWSTR)name.c_str();
+		InsertGroup(id, &lvg);
 	}
 
 	T* getItemData(int iItem) const { return (T*)GetItemData(iItem); }
@@ -766,11 +806,8 @@ private:
 
 // Copyright (C) 2005-2010 Big Muscle, StrongDC++
 
-#define NO_GROUP_UNIQUE_CHILDREN 0x01
-#define VIRTUAL_CHILDREN 0x02 //parent handles item creation on expanding
-
 template<class T, int ctrlId, class K, class hashFunc, class equalKey, DWORD style>
-class TypedTreeListViewCtrl : public TypedListViewCtrl<T, ctrlId> 
+class TypedTreeListViewCtrl : public TypedListViewCtrl<T, ctrlId, style> 
 {
 public:
 
@@ -778,7 +815,7 @@ public:
 	~TypedTreeListViewCtrl() { states.Destroy(); }
 
 	typedef TypedTreeListViewCtrl<T, ctrlId, K, hashFunc, equalKey, style> thisClass;
-	typedef TypedListViewCtrl<T, ctrlId> baseClass;
+	typedef TypedListViewCtrl<T, ctrlId, style> baseClass;
 	
 	struct ParentPair {
 		T* parent;
@@ -847,13 +884,13 @@ public:
 		SetRedraw(true);
 	}
 
-	void Expand(T* parent, int itemPos) {
+	void Expand(T* parent, int itemPos, int groupIndex = 0) {
 		SetRedraw(false);
 		const auto& children = findChildren(parent->getGroupCond());
 		if(children.size() > (size_t)(uniqueParent ? 1 : 0)) {
 			parent->collapsed = false;
 			for(const auto& c: children)
-				insertChild(c, itemPos + 1);
+				insertChild(c, itemPos + 1, groupIndex);
 
 			SetItemState(itemPos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
 			resort();
@@ -861,9 +898,13 @@ public:
 		SetRedraw(true);
 	}
 
-	void insertChild(const T* item, int idx) {
+	int insertChild(const T* item, int idx, int groupIndex = 0) {
 		LV_ITEM lvi;
 		lvi.mask = LVIF_TEXT | LVIF_PARAM | LVIF_IMAGE | LVIF_INDENT;
+		if (style & LVITEM_GROUPING){
+			lvi.mask = lvi.mask | LVIF_GROUPID;
+			lvi.iGroupId = groupIndex;
+		}
 		lvi.iItem = idx;
 		lvi.iSubItem = 0;
 		lvi.iIndent = 1;
@@ -872,7 +913,7 @@ public:
 		lvi.lParam = (LPARAM)item;
 		lvi.state = 0;
 		lvi.stateMask = 0;
-		InsertItem(&lvi);
+		return InsertItem(&lvi);
 	}
 
 	inline T* findParent(const K& groupCond) const {
@@ -891,7 +932,7 @@ public:
 		return i != parents.end() ? &((*i).second) : nullptr;
 	}
 
-	void insertGroupedItem(T* item, bool autoExpand, bool hasVirtualChildren = false) {
+	void insertGroupedItem(T* item, bool autoExpand, int groupIndex = 0, bool hasVirtualChildren = false) {
 		T* parent = nullptr;
 		ParentPair* pp = findParentPair(item->getGroupCond());
 
@@ -908,7 +949,7 @@ public:
 			}
 			parent->hits++;
 
-			pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
+			pos = insertItem(getSortPos(parent), parent, parent->getImageIndex(), groupIndex);
 		};
 
 		auto updateCollapsedState = [&] {
@@ -930,7 +971,7 @@ public:
 				parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
 
 				parent->parent = nullptr; // ensure that parent of this item is really NULL
-				pos = insertItem(getSortPos(parent), parent, parent->getImageIndex());
+				pos = insertItem(getSortPos(parent), parent, parent->getImageIndex(), groupIndex);
 				if (hasVirtualChildren && (style & VIRTUAL_CHILDREN)) updateCollapsedState();
 				return;
 			} else if (pp->children.empty()) {
@@ -972,7 +1013,7 @@ public:
 
 		if(pos != -1) {
 			if(!parent->collapsed) {
-				insertChild(item, pos + pp->children.size());
+				insertChild(item, pos + pp->children.size(), groupIndex);
 			}
 			updateItem(pos);
 		}
@@ -991,7 +1032,7 @@ public:
 		deleteItem(parent);
 	}
 
-	bool removeGroupedItem(T* item, bool removeFromMemory = true) {
+	bool removeGroupedItem(T* item, bool removeFromMemory = true, int groupIndex = 0) {
 		bool parentExists = true;
 
 		if(!item->parent) {
@@ -1024,7 +1065,7 @@ public:
 
 						parent->parent = nullptr; // ensure that parent of this item is really NULL
 						deleteItem(parent);
-						insertItem(getSortPos(parent), parent, parent->getImageIndex());
+						insertItem(getSortPos(parent), parent, parent->getImageIndex(), groupIndex);
 					}
 				} else if(pp->children.empty()) {
 					SetItemState(findItem(parent), INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);

@@ -40,6 +40,8 @@ int QueueFrame::columnSizes[] = { 450, 70, 100, 130, 200, 80, 500 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::DOWNLOADED, ResourceManager::SOURCES, ResourceManager::PATH };
 
+static ResourceManager::Strings groupNames[] = { ResourceManager::FILE_LISTS, ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES };
+
 LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 
@@ -72,6 +74,11 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	if (!(rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0))
 		MoveWindow(rc, TRUE);
 
+	//add the groups
+	for (uint8_t i = 0; i < GROUP_LAST; ++i) {
+		ctrlQueue.insertGroup(i, TSTRING_I(groupNames[i]), LVGA_HEADER_CENTER);
+	}
+
 	{
 		auto qm = QueueManager::getInstance();
 		RLock l(qm->getCS());
@@ -81,6 +88,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		for (const auto& q : qm->getSmallItems() | map_values)
 			onQueueItemAdded(q);
 	}
+	ctrlQueue.resort();
 
 	QueueManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
@@ -698,7 +706,7 @@ LRESULT QueueFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 						ctrlQueue.resort();
 						ctrlQueue.SetRedraw(TRUE);
 					} else {
-						ctrlQueue.Expand(i, pos);
+						ctrlQueue.Expand(i, pos, i->getGroupID());
 					}
 				} else {
 					ctrlQueue.Collapse(i, pos);
@@ -885,7 +893,7 @@ void QueueFrame::onBundleAdded(const BundlePtr& aBundle) {
 	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
 	if (i == itemInfos.end()) {
 		auto b = itemInfos.emplace(const_cast<string*>(&aBundle->getToken()), new QueueItemInfo(aBundle)).first;
-		ctrlQueue.insertGroupedItem(b->second, false, !aBundle->isFileBundle()); // file bundles wont be having any children.
+		ctrlQueue.insertGroupedItem(b->second, false, b->second->getGroupID(), !aBundle->isFileBundle()); // file bundles wont be having any children.
 	}
 }
 
@@ -895,14 +903,14 @@ void QueueFrame::AddBundleQueueItems(const BundlePtr& aBundle) {
 			continue;
 		auto item = new QueueItemInfo(qi);
 		itemInfos.emplace(const_cast<string*>(&qi->getTarget()), item);
-		ctrlQueue.insertGroupedItem(item, true);
+		ctrlQueue.insertGroupedItem(item, true, item->getGroupID());
 	}
 }
 
 void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
 	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
 	if (i != itemInfos.end()) {
-		ctrlQueue.removeGroupedItem(i->second); //also deletes item info
+		ctrlQueue.removeGroupedItem(i->second, true, i->second->getGroupID()); //also deletes item info
 		itemInfos.erase(i);
 	}
 }
@@ -922,7 +930,7 @@ void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
 void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
 	auto item = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
 	if (item != itemInfos.end()) {
-		ctrlQueue.removeGroupedItem(item->second); //also deletes item info
+		ctrlQueue.removeGroupedItem(item->second, true, item->second->getGroupID()); //also deletes item info
 		itemInfos.erase(item);
 	}
 }
@@ -946,7 +954,7 @@ void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
 				return;
 		}
 		auto i = itemInfos.emplace(const_cast<string*>(&aQI->getTarget()), new QueueItemInfo(aQI)).first;
-		ctrlQueue.insertGroupedItem(i->second, false);
+		ctrlQueue.insertGroupedItem(i->second, false, i->second->getGroupID());
 	}
 }
 
@@ -1072,7 +1080,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			bool autoPrio = (bundle && bundle->getAutoPriority()) || (qi && qi->getAutoPriority());
 			return Text::toT(AirUtil::getPrioText(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
 		}
-		case COLUMN_SOURCES: return bundle ? Util::toStringW(bundle->getSources().size()) + _T(" sources") : qi ?  Util::toStringW(qi->getSources().size()) + _T(" sources") : Util::emptyStringT;
+		case COLUMN_SOURCES: return bundle ? Util::toStringW(bundle->getSources().size()) + _T(" source(s)") : qi ?  Util::toStringW(qi->getSources().size()) + _T(" source(s)") : Util::emptyStringT;
 		case COLUMN_PATH: return bundle ? Text::toT(bundle->getTarget()) : qi ? Text::toT(qi->getTarget()) : Util::emptyStringT;
 		
 		default: return Util::emptyStringT;

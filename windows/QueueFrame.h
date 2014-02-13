@@ -108,6 +108,13 @@ private:
 		COLUMN_LAST
 	};
 
+	enum {
+		GROUP_FILELIST,
+		GROUP_TEMPS,
+		GROUP_BUNDLES,
+		GROUP_LAST
+	};
+
 	/*
 	Currently its treating every QueueItemInfo as a bundle or Qi and information is called directly, we might want to cache the needed infos.
 	*/
@@ -153,6 +160,19 @@ private:
 		const tstring getText(int col) const;
 		static int compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col);
 		int getImageIndex() const;
+
+		int getGroupID() const { 
+			if (bundle)
+				return GROUP_BUNDLES;
+			else if (qi->getBundle())
+				return GROUP_BUNDLES;
+			else if (qi->isSet(QueueItem::FLAG_USER_LIST))
+				return GROUP_FILELIST;
+			else if (qi->isSet(QueueItem::FLAG_OPEN))
+				return GROUP_TEMPS;
+
+			return GROUP_BUNDLES;
+		}
 	};
 
 	static int columnIndexes[COLUMN_LAST];
@@ -180,7 +200,7 @@ private:
 	/*contains all ItemInfos, bundles mapped with token, queueItems with target, any point for adding Qi tokens??*/
 	std::unordered_map<std::string*, QueueItemInfo*> itemInfos;
 
-	typedef TypedTreeListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST, string, noCaseStringHash, noCaseStringEq, NO_GROUP_UNIQUE_CHILDREN | VIRTUAL_CHILDREN> ListType;
+	typedef TypedTreeListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST, string, noCaseStringHash, noCaseStringEq, NO_GROUP_UNIQUE_CHILDREN | VIRTUAL_CHILDREN | LVITEM_GROUPING> ListType;
 	ListType ctrlQueue;
 
 	CStatusBarCtrl ctrlStatus;
