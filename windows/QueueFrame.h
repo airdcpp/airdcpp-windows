@@ -194,6 +194,7 @@ private:
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
 	void handleMoveBundle();
 	void handleRemove();
+	void handleSearchQI(const QueueItemPtr& aQI);
 
 	bool closed;
 

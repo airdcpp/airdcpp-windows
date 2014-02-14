@@ -22,17 +22,11 @@
 #include "QueueFrame.h"
 #include "MainFrm.h"
 #include "PrivateFrame.h"
-#include "Async.h"
 
 #include "../client/AirUtil.h"
-#include "../client/ShareManager.h"
-#include "../client/ClientManager.h"
 #include "../client/DownloadManager.h"
 #include "ResourceLoader.h"
 #include "BarShader.h"
-
-#define FILE_LIST_NAME _T("File Lists")
-#define TEMP_NAME _T("Temp items")
 
 int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_SOURCES, COLUMN_PATH};
 
@@ -589,7 +583,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		/* Submenus end */
 
 		fileMenu.InsertSeparatorFirst(TSTRING(FILE));
-		//fileMenu.AppendMenu(MF_STRING, IDC_SEARCH_ALTERNATES, CTSTRING(SEARCH_FOR_ALTERNATES));
+		fileMenu.appendItem(CTSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchQI(qi)); });
 
 		if (!qi->isSet(QueueItem::FLAG_USER_LIST)) {
 			WinUtil::appendPreviewMenu(fileMenu, qi->getTarget());
@@ -872,6 +866,11 @@ void QueueFrame::handleRemove() {
 	}
 }
 
+void QueueFrame::handleSearchQI(const QueueItemPtr& aQI) {
+	if (aQI)
+		WinUtil::searchHash(aQI->getTTH(), Util::getFileName(aQI->getTarget()), aQI->getSize());
+}
+
 void QueueFrame::onRenameBundle(BundlePtr b) {
 	LineDlg dlg;
 	dlg.title = TSTRING(RENAME);
@@ -892,8 +891,9 @@ void QueueFrame::onRenameBundle(BundlePtr b) {
 void QueueFrame::onBundleAdded(const BundlePtr& aBundle) {
 	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
 	if (i == itemInfos.end()) {
-		auto b = itemInfos.emplace(const_cast<string*>(&aBundle->getToken()), new QueueItemInfo(aBundle)).first;
-		ctrlQueue.insertGroupedItem(b->second, false, b->second->getGroupID(), !aBundle->isFileBundle()); // file bundles wont be having any children.
+		auto item = new QueueItemInfo(aBundle);
+		itemInfos.emplace(const_cast<string*>(&aBundle->getToken()), item);
+		ctrlQueue.insertGroupedItem(item, false, item->getGroupID(), !aBundle->isFileBundle()); // file bundles wont be having any children.
 	}
 }
 
@@ -918,43 +918,43 @@ void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
 void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
 	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
 	if (i != itemInfos.end()) {
-		int x = ctrlQueue.findItem(i->second);
-		if (x != -1) {
-			ctrlQueue.updateItem(x);
+		int pos = ctrlQueue.findItem(i->second);
+		if (pos != -1) {
+			ctrlQueue.updateItem(pos);
 			if (aBundle->getQueueItems().empty())  //remove the + icon we have nothing to expand.
-				ctrlQueue.SetItemState(x, INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);
+				ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);
 		}
 	}
 }
 
 void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
-	auto item = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
-	if (item != itemInfos.end()) {
-		ctrlQueue.removeGroupedItem(item->second, true, item->second->getGroupID()); //also deletes item info
-		itemInfos.erase(item);
+	auto i = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
+	if (i != itemInfos.end()) {
+		ctrlQueue.removeGroupedItem(i->second, true, i->second->getGroupID()); //also deletes item info
+		itemInfos.erase(i);
 	}
 }
 
 void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
-	auto item = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
-	if (item != itemInfos.end()) {
-		auto itemInfo = item->second;
-		if (!itemInfo->parent || !itemInfo->parent->collapsed) // no need to update if its collapsed right?
-			ctrlQueue.updateItem(itemInfo);
+	auto i = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
+	if (i != itemInfos.end()) {
+		if (!i->second->parent || !i->second->parent->collapsed) // no need to update if its collapsed right?
+			ctrlQueue.updateItem(i->second);
 	}
 }
 
 void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
-	auto item = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
-	if (item == itemInfos.end()) {
+	auto i = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
+	if (i == itemInfos.end()) {
 		//queueItem not found, look if we have a parent for it and if its expanded
 		if (aQI->getBundle()){
 			auto parent = itemInfos.find(const_cast<string*>(&aQI->getBundle()->getToken()));
 			if ((parent == itemInfos.end()) || parent->second->collapsed)
 				return;
 		}
-		auto i = itemInfos.emplace(const_cast<string*>(&aQI->getTarget()), new QueueItemInfo(aQI)).first;
-		ctrlQueue.insertGroupedItem(i->second, false, i->second->getGroupID());
+		auto item = new QueueItemInfo(aQI);
+		itemInfos.emplace(const_cast<string*>(&aQI->getTarget()), item);
+		ctrlQueue.insertGroupedItem(item, false, item->getGroupID());
 	}
 }
 
@@ -1063,7 +1063,6 @@ int QueueFrame::QueueItemInfo::getImageIndex() const {
 		return bundle->isFileBundle() ? ResourceLoader::getIconIndex(Text::toT(bundle->getTarget())) : ResourceLoader::DIR_NORMAL;
 	else 
 		return ResourceLoader::getIconIndex(Text::toT(qi->getTarget()));
-
 }
 
 const tstring QueueFrame::QueueItemInfo::getText(int col) const {
@@ -1080,7 +1079,12 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			bool autoPrio = (bundle && bundle->getAutoPriority()) || (qi && qi->getAutoPriority());
 			return Text::toT(AirUtil::getPrioText(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
 		}
-		case COLUMN_SOURCES: return bundle ? Util::toStringW(bundle->getSources().size()) + _T(" source(s)") : qi ?  Util::toStringW(qi->getSources().size()) + _T(" source(s)") : Util::emptyStringT;
+		case COLUMN_SOURCES: //yeah, useless now if we show sources in status column...
+		{
+			RLock l(QueueManager::getInstance()->getCS());
+			int sources = bundle ? bundle->getSources().size() : qi ? qi->getSources().size() : 0;
+			return Util::toStringW(sources) + _T(" source(s)");
+		}
 		case COLUMN_PATH: return bundle ? Text::toT(bundle->getTarget()) : qi ? Text::toT(qi->getTarget()) : Util::emptyStringT;
 		
 		default: return Util::emptyStringT;
@@ -1102,12 +1106,7 @@ tstring QueueFrame::QueueItemInfo::getName() const {
 }
 
 int64_t QueueFrame::QueueItemInfo::getSize() const {
-	if (bundle)
-		return bundle->getSize();
-	else if (qi)
-		return qi->getSize();
-	else
-		return -1;
+	return bundle ? bundle->getSize() : qi ? qi->getSize() : -1;
 }
 
 int QueueFrame::QueueItemInfo::getPriority() const {
