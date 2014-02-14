@@ -583,7 +583,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		/* Submenus end */
 
 		fileMenu.InsertSeparatorFirst(TSTRING(FILE));
-		fileMenu.appendItem(CTSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchQI(qi)); });
+		fileMenu.appendItem(CTSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchQI(qi); });
 
 		if (!qi->isSet(QueueItem::FLAG_USER_LIST)) {
 			WinUtil::appendPreviewMenu(fileMenu, qi->getTarget());
