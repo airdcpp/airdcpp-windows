@@ -75,12 +75,15 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	{
 		auto qm = QueueManager::getInstance();
+
 		RLock l(qm->getCS());
 		for (const auto& b : qm->getBundles() | map_values)
 			onBundleAdded(b);
 
-		for (const auto& q : qm->getSmallItems() | map_values)
-			onQueueItemAdded(q);
+		for (const auto& q : qm->getFileQueue() | map_values) {
+			if (!q->getBundle())
+				onQueueItemAdded(q);
+		}
 	}
 	ctrlQueue.resort();
 
