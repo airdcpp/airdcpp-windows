@@ -456,9 +456,9 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 		bundleMenu.appendSeparator();
 
 		if (b->isFailed()) {
-			bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); });
+			bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
 			if (b->getStatus() == Bundle::STATUS_SHARING_FAILED || b->getStatus() == Bundle::STATUS_FAILED_MISSING) {
-				bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); });
+				bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
 			}
 			bundleMenu.appendSeparator();
 		}
@@ -474,7 +474,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 
 	bundleMenu.appendItem(TSTRING(REMOVE), [=] {
 		handleRemoveBundles(bl, false);
-	}, OMenu::FLAG_THREADED);
+	});
 }
 
 /*QueueItem Menu*/
