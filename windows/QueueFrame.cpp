@@ -456,6 +456,14 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 		bundleMenu.appendItem(TSTRING(RENAME), [=] { onRenameBundle(b); });
 		bundleMenu.appendSeparator();
 
+		if (b->isFailed()) {
+			bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); });
+			if (b->getStatus() == Bundle::STATUS_SHARING_FAILED || b->getStatus() == Bundle::STATUS_FAILED_MISSING) {
+				bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); });
+			}
+			bundleMenu.appendSeparator();
+		}
+
 		readdMenu->appendThis(TSTRING(READD_SOURCE), true);
 		removeMenu->appendThis(TSTRING(REMOVE_SOURCE), true);
 

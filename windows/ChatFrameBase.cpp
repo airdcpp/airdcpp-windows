@@ -807,12 +807,6 @@ bool ChatFrameBase::checkCommand(tstring& cmd, tstring& param, tstring& message,
 		ShareManager::getInstance()->handleChangedFiles();
 	} else if(stricmp(cmd.c_str(), _T("compact")) == 0) {
 		MainFrame::getMainFrame()->addThreadedTask([this] { HashManager::getInstance()->compact(); });
-	} else if(stricmp(cmd.c_str(), _T("allow")) == 0) {
-		if(!param.empty()) {
-			QueueManager::getInstance()->shareBundle(Text::fromT(param));
-		} else {
-			status = _T("Please specify the bundle name!");
-		}
 	} else if(stricmp(cmd.c_str(), _T("setlistdirty")) == 0) {
 		auto profiles = ShareManager::getInstance()->getProfiles();
 		ProfileTokenSet pts;

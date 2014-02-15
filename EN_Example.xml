@@ -1333,7 +1333,6 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="TypeTargetFavorite">Favorite directory (the real path will be picked when matches are found)</string>
 	<string name="TypeTargetShare">Shared directory (the real path will be picked when matches are found)</string>
 	<string name="LocationType">Location type</string>
-	<string name="ForceHashNotification">Refresh the directory after fixing the problem(s) to rescan the bundle (or type "/allow %1%" to force it to be hashed in share if the problem(s) can't be fixed)</string>
 	<string name="LineEmptyOrTooShort">Search string empty or too short! (min. 5 chars allowed)</string>
 	<string name="AutosearchCheckQueued">Don't download directories already in queue</string>
 	<string name="AutosearchCheckShared">Don't download directories already in share</string>
@@ -2021,4 +2020,6 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="TempItems">Temp items</string>
 	<string name="SaveFailedX">Failed to save the file %1%: %2%</string>
 	<string name="LoadFailedX">Failed to load the file %1%: %2%</string>
+	<string name="RetrySharing">Retry sharing</string>
+	<string name="ForceSharing">Force in share</string>
 </resources>
