@@ -745,7 +745,7 @@ void QueueFrame::handleMoveBundles(BundleList bundles) {
 		return;
 	}
 
-	string newDir = Util::validatePath(Text::fromT(targetPath));
+	string newDir = Util::validatePath(Text::fromT(targetPath), true);
 	if (bundles.size() == 1) {
 		if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_MOVE_DIR_BUNDLE, Text::toT(bundles.front()->getName()) % Text::toT(newDir)), MB_ICONQUESTION)) {
 			return;
@@ -755,16 +755,9 @@ void QueueFrame::handleMoveBundles(BundleList bundles) {
 	}
 
 	for (auto& sourceBundle : bundles) {
-		//string targetDir;
-		//if (sourceBundle->isFileBundle())
-
-		//auto sourceDir = sourceBundle->getTarget();
-		//if (!sourceBundle->isFileBundle()) {
-			//auto targetDir = newDir + Util::getLastDir(sourceBundle->getTarget() + PATH_SEPARATOR_STR);
-			MainFrame::getMainFrame()->addThreadedTask([=] {
-				QueueManager::getInstance()->moveBundle(sourceBundle, newDir, true);
-			});
-		//}
+		MainFrame::getMainFrame()->addThreadedTask([=] {
+			QueueManager::getInstance()->moveBundle(sourceBundle, newDir, true);
+		});
 	}
 }
 
@@ -818,7 +811,7 @@ void QueueFrame::onRenameBundle(BundlePtr b) {
 	dlg.description = TSTRING(NEW_NAME);
 	dlg.line = Text::toT(b->getName());
 	if (dlg.DoModal(m_hWnd) == IDOK) {
-		auto newName = Util::validatePath(Text::fromT(dlg.line), true);
+		auto newName = Util::validatePath(Text::fromT(dlg.line), !b->isFileBundle());
 		if (newName == b->getName()) {
 			return;
 		}
