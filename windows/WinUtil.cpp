@@ -1715,21 +1715,13 @@ void WinUtil::searchSite(const WebShortcut* ws, const string& aSearchTerm, bool 
 void WinUtil::removeBundle(const string& aBundleToken) {
 	BundlePtr aBundle = QueueManager::getInstance()->findBundle(aBundleToken);
 	if (aBundle) {
-		int finishedFiles = QueueManager::getInstance()->getFinishedItemCount(aBundle);
-		bool moveFinished = true;
 		if(::MessageBox(0, CTSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(aBundle->getName())), Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
 			return;
-		} else {
-			if (finishedFiles > 0) {
-				if(::MessageBox(mainWnd, CTSTRING_F(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE, finishedFiles), Text::toT(shortVersionString).c_str(), MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) != IDYES) {
-					moveFinished = false;
-				}
-			}
 		}
 
 		MainFrame::getMainFrame()->addThreadedTask([=] {
 			auto b = aBundle;
-			QueueManager::getInstance()->removeBundle(b, false, moveFinished);
+			QueueManager::getInstance()->removeBundle(b, false, false);
 		});
 	}
 }

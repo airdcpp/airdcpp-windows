@@ -321,8 +321,11 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	}
 }
 
-LRESULT QueueFrame::onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	handleRemove();
+LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
+	if (kd->wVKey == VK_DELETE) {
+		//handleRemove();
+	}
 	return 0;
 }
 
@@ -353,9 +356,6 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		}  else if (bl.empty() && !queueItems.empty())
 			AppendQiMenu(queueItems, menu);
 
-		//common for Qi and Bundle
-		menu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-
 		menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
 		return TRUE;
 	}
@@ -370,13 +370,12 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 	OMenu* readdMenu = bundleMenu.getMenu();
 
 	if (bl.size() == 1) {
-		bundleMenu.InsertSeparatorFirst(TSTRING(BUNDLE));
-		WinUtil::appendBundlePrioMenu(bundleMenu, bl);
+		bundleMenu.InsertSeparatorFirst(Text::toT(bl.front()->getName()));
 	} else {
 		bundleMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
-		WinUtil::appendBundlePrioMenu(bundleMenu, bl);
-		bundleMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_BUNDLE));
 	}
+
+	WinUtil::appendBundlePrioMenu(bundleMenu, bl);
 
 	/* Insert sub menus */
 	auto formatUser = [this](Bundle::BundleSource& bs) -> tstring {
@@ -452,7 +451,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 
 		bundleMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { WinUtil::openFolder(Text::toT(b->getTarget())); });
 
-		bundleMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_BUNDLE));
+		bundleMenu.appendItem(TSTRING(MOVE_BUNDLE), [=] { handleMoveBundles(bl); });
 		bundleMenu.appendItem(TSTRING(RENAME), [=] { onRenameBundle(b); });
 		bundleMenu.appendSeparator();
 
@@ -473,6 +472,9 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 		}, b->getSeqOrder() ? OMenu::FLAG_CHECKED : 0 | OMenu::FLAG_THREADED);
 	}
 
+	bundleMenu.appendItem(TSTRING(REMOVE), [=] {
+		handleRemoveBundles(bl, false);
+	}, OMenu::FLAG_THREADED);
 }
 
 /*QueueItem Menu*/
@@ -639,13 +641,14 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 
 		WinUtil::appendFilePrioMenu(fileMenu, ql);
 
-		//Todo: move items
-		//fileMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_RENAME_FILE));
-
 		fileMenu.AppendMenu(MF_SEPARATOR);
 		fileMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
 		fileMenu.AppendMenu(MF_STRING, IDC_READD_ALL, CTSTRING(READD_ALL));
 	}
+
+	fileMenu.appendItem(TSTRING(REMOVE), [=] {
+		handleRemoveFiles(ql);
+	}, OMenu::FLAG_THREADED);
 }
 
 LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -735,140 +738,67 @@ tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
 	return Text::toT(WinUtil::makeMagnet(aII->qi->getTTH(), Util::getFileName(aII->qi->getTarget()), aII->qi->getSize()));
 }
 
-void QueueFrame::handleMoveBundle() {
+void QueueFrame::handleMoveBundles(BundleList bundles) {
+	tstring targetPath = Text::toT(Util::getParentDir(bundles.front()->getTarget()));
 
-	BundleList bundles;
-	int sel = -1;
-	int finishedFiles = 0;
-	int fileBundles = 0;
-	while ((sel = ctrlQueue.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-		QueueItemInfo* qii = (QueueItemInfo*)ctrlQueue.GetItemData(sel);
-		if (qii->bundle) {
-			finishedFiles += qii->bundle->getFinishedFiles().size();
-			if (qii->bundle->isFileBundle())
-				fileBundles++;
-			bundles.push_back(qii->bundle);
-		}
+	if (!WinUtil::browseDirectory(targetPath, m_hWnd)) {
+		return;
 	}
 
-	int dirBundles = bundles.size() - fileBundles;
-	bool moveFinished = false;
-	tstring curPath, oldPath = Text::toT(Util::getParentDir(bundles.front()->getTarget()));
-
-	if (WinUtil::browseDirectory(curPath, m_hWnd)) {
-		string newDir = Util::validatePath(Text::fromT(curPath));
-		string tmp;
-		if (bundles.size() == 1) {
-			BundlePtr bundle = bundles.front();
-			tmp = STRING_F(CONFIRM_MOVE_DIR_BUNDLE, bundle->getName().c_str() % newDir.c_str());
-			if (!WinUtil::showQuestionBox(Text::toT(tmp), MB_ICONQUESTION)) {
-				return;
-			} else if (finishedFiles > 0) {
-				tmp = STRING_F(CONFIRM_MOVE_DIR_FINISHED_BUNDLE, finishedFiles);
-				if (WinUtil::showQuestionBox(Text::toT(tmp), MB_ICONQUESTION)) {
-					moveFinished = true;
-				}
-			}
-		} else {
-			tmp = STRING_F(CONFIRM_MOVE_DIR_MULTIPLE, dirBundles % fileBundles % newDir.c_str());
-			if (!WinUtil::showQuestionBox(Text::toT(tmp), MB_ICONQUESTION)) {
-				return;
-			}
-			else if (finishedFiles > 0) {
-				tmp = STRING_F(CONFIRM_MOVE_DIR_FINISHED_MULTIPLE, finishedFiles);
-				if (WinUtil::showQuestionBox(Text::toT(tmp), MB_ICONQUESTION)) {
-					moveFinished = true;
-				}
-			}
-		}
-
-		if (curPath == oldPath) {
+	string newDir = Util::validatePath(Text::fromT(targetPath));
+	if (bundles.size() == 1) {
+		if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_MOVE_DIR_BUNDLE, Text::toT(bundles.front()->getName()) % Text::toT(newDir)), MB_ICONQUESTION)) {
 			return;
 		}
+	} else if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_MOVE_DIR_MULTIPLE, bundles.size() % Text::toT(newDir)), MB_ICONQUESTION)) {
+		return;
+	}
 
-		StringPairList fileBundles;
-		for (auto& sourceBundle : bundles) {
-			auto sourceDir = sourceBundle->getTarget();
-			if (!sourceBundle->isFileBundle()) {
-				auto targetDir = Util::validatePath(Text::fromT(curPath) + Util::getLastDir(sourceBundle->getTarget()) + PATH_SEPARATOR_STR);
-				MainFrame::getMainFrame()->addThreadedTask([=] {
-					QueueManager::getInstance()->moveBundleDir(sourceDir, targetDir, sourceBundle, moveFinished);
-				});
-			}
-			else {
-				//move queue items
-				fileBundles.emplace_back(sourceDir, AirUtil::convertMovePath(sourceDir, Util::getFilePath(sourceDir), newDir));
-			}
-		}
+	for (auto& sourceBundle : bundles) {
+		//string targetDir;
+		//if (sourceBundle->isFileBundle())
 
-		QueueManager::getInstance()->moveFiles(fileBundles);
+		//auto sourceDir = sourceBundle->getTarget();
+		//if (!sourceBundle->isFileBundle()) {
+			//auto targetDir = newDir + Util::getLastDir(sourceBundle->getTarget() + PATH_SEPARATOR_STR);
+			MainFrame::getMainFrame()->addThreadedTask([=] {
+				QueueManager::getInstance()->moveBundle(sourceBundle, newDir, true);
+			});
+		//}
 	}
 }
 
-void QueueFrame::handleRemove() {
-	map<string, BundlePtr> bundles;
-	QueueItemList queueitems;
-	int sel = -1;
-	int finishedFiles = 0;
-	int fileBundles = 0;
-	while ((sel = ctrlQueue.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-		QueueItemInfo* qii = (QueueItemInfo*)ctrlQueue.GetItemData(sel);
-		if (qii->bundle) {
-			finishedFiles += qii->bundle->getFinishedFiles().size();
-			if (qii->bundle->isFileBundle())
-				fileBundles++;
-			bundles.emplace(qii->bundle->getToken(), qii->bundle);
-		}
-		else {
-			//did we select the bundle to be deleted?
-			if (!qii->qi->getBundle() || bundles.find(qii->qi->getBundle()->getToken()) == bundles.end()) {
-				queueitems.push_back(qii->qi);
-			}
-		}
+void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished) {
+	if (bundles.empty())
+		return;
 
-	}
+	string tmp;
 
-	if (bundles.size() >= 1) {
-		string tmp;
-		int dirBundles = bundles.size() - fileBundles;
-		bool moveFinished = false;
-
-		if (bundles.size() == 1) {
-			BundlePtr bundle = bundles.begin()->second;
-			tmp = STRING_F(CONFIRM_REMOVE_DIR_BUNDLE, bundle->getName().c_str());
-			if (!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, Text::toT(tmp))) {
+	if (bundles.size() == 1) {
+		if (!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(bundles.front()->getName())))) {
+			return;
+		} else if (removeFinished) {
+			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED, Text::toT(bundles.front()->getName())), MB_ICONQUESTION)) {
 				return;
 			}
-			else {
-				if (finishedFiles > 0) {
-					tmp = STRING_F(CONFIRM_REMOVE_DIR_FINISHED_BUNDLE, finishedFiles);
-					if (WinUtil::showQuestionBox(Text::toT(tmp), MB_ICONQUESTION)) {
-						moveFinished = true;
-					}
-				}
-			}
 		}
-		else {
-			tmp = STRING_F(CONFIRM_REMOVE_DIR_MULTIPLE, dirBundles % fileBundles);
-			if (!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, Text::toT(tmp))) {
+	} else {
+		if (!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING_F(CONFIRM_REMOVE_DIR_MULTIPLE, bundles.size()))) {
+			return;
+		} else if (removeFinished) {
+			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE, bundles.size()), MB_ICONQUESTION)) {
 				return;
 			}
-			else {
-				if (finishedFiles > 0) {
-					tmp = STRING_F(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE, finishedFiles);
-					if (WinUtil::showQuestionBox(Text::toT(tmp), MB_ICONQUESTION)) {
-						moveFinished = true;
-					}
-				}
-			}
 		}
-
-		MainFrame::getMainFrame()->addThreadedTask([=] {
-			for (auto b : bundles | map_values)
-				QueueManager::getInstance()->removeBundle(b, false, moveFinished);
-		});
 	}
 
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		for (auto b : bundles)
+			QueueManager::getInstance()->removeBundle(b, false, removeFinished);
+	});
+}
+
+void QueueFrame::handleRemoveFiles(QueueItemList queueitems) {
 	if (queueitems.size() >= 1) {
 		if (WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING(REALLY_REMOVE))) {
 			for (auto& qi : queueitems)

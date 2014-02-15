@@ -56,10 +56,8 @@ public:
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
 		MESSAGE_HANDLER(WM_LBUTTONDOWN, onLButton)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
-		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
 		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
-		COMMAND_ID_HANDLER(IDC_MOVE, onMoveBundle)
 		CHAIN_MSG_MAP(baseClass)
 	END_MSG_MAP()
 
@@ -68,29 +66,17 @@ public:
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
 	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
-	LRESULT onRemove(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
-
-	LRESULT onMoveBundle(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		handleMoveBundle();
-		return 0;
-	}
 
 	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
 		ctrlQueue.SetFocus();
 		return 0;
 	}
 
-	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-		NMLVKEYDOWN* kd = (NMLVKEYDOWN*)pnmh;
-		if (kd->wVKey == VK_DELETE) {
-			handleRemove();
-		}
-		return 0;
-	}
+	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	void UpdateLayout(BOOL bResizeBars = TRUE );
 
@@ -192,8 +178,9 @@ private:
 	void AppendBundleMenu(BundleList& bl, OMenu& bundleMenu);
 	void AppendQiMenu(QueueItemList& ql, OMenu& fileMenu);
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
-	void handleMoveBundle();
-	void handleRemove();
+	void handleMoveBundles(BundleList bl);
+	void handleRemoveBundles(BundleList bl, bool removeFinished);
+	void handleRemoveFiles(QueueItemList ql);
 	void handleSearchQI(const QueueItemPtr& aQI);
 
 	bool closed;
