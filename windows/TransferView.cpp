@@ -1046,48 +1046,44 @@ void TransferView::on(DownloadManagerListener::BundleTick, const BundleList& bun
 			ui->setUsers(b->getRunningUsers().size());
 			ui->setRunning(b->getRunning());
 
-			if(b->getBundleBegin() == 0) {
-				// file is starting
-				b->setBundleBegin(GET_TICK());
-
+			uint64_t timeSinceStarted = GET_TICK() - b->getStart();
+			if (timeSinceStarted < 1000) {
+				// bundle is starting
 				ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
 			} else {
-				uint64_t time = GET_TICK() - b->getBundleBegin();
-				if(time > 1000) {
-					tstring pos = Text::toT(Util::formatBytes(ui->pos));
-					double percent = (double)ui->pos*100.0/(double)ui->size;
-					dcassert(percent <= 100.00);
-					tstring elapsed = Util::formatSecondsW(time/1000);
-					tstring flag;
+				tstring pos = Text::toT(Util::formatBytes(ui->pos));
+				double percent = (double)ui->pos*100.0/(double)ui->size;
+				dcassert(percent <= 100.00);
+				tstring elapsed = Util::formatSecondsW(timeSinceStarted / 1000);
+				tstring flag;
 					
-					if(partial) {
-						flag += _T("[P]");
-					}
-					if(trusted) {
-						flag += _T("[S]");
-					}
-					if(untrusted) {
-						flag += _T("[U]");
-					}
-					if(tthcheck) {
-						flag += _T("[T]");
-					}
-					if(zdownload) {
-						flag += _T("[Z]");
-					}
-					if(chunked) {
-						flag += _T("[C]");
-					}
-					if(mcn) {
-						flag += _T("[M]");
-					}	
-
-					if(!flag.empty()) {
-						flag += _T(" ");
-					}
-
-					ui->setStatusString(flag + TSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
+				if(partial) {
+					flag += _T("[P]");
 				}
+				if(trusted) {
+					flag += _T("[S]");
+				}
+				if(untrusted) {
+					flag += _T("[U]");
+				}
+				if(tthcheck) {
+					flag += _T("[T]");
+				}
+				if(zdownload) {
+					flag += _T("[Z]");
+				}
+				if(chunked) {
+					flag += _T("[C]");
+				}
+				if(mcn) {
+					flag += _T("[M]");
+				}	
+
+				if(!flag.empty()) {
+					flag += _T(" ");
+				}
+
+				ui->setStatusString(flag + TSTRING_F(DOWNLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
 			}
 		}
 
@@ -1269,45 +1265,40 @@ void TransferView::on(UploadManagerListener::BundleTick, const UploadBundleList&
 			}
 			ui->setRunning(b->getRunning());
 
-			if(b->getBundleBegin() == 0) {
-				// file is starting
-				b->setBundleBegin(GET_TICK());
-
-				ui->setStatusString(TSTRING(DOWNLOAD_STARTING));
+			uint64_t timeSinceStarted = GET_TICK() - b->getStart();
+			if (timeSinceStarted < 1000) {
+				ui->setStatusString(TSTRING(UPLOAD_STARTING));
 			} else {
-				uint64_t time = GET_TICK() - b->getBundleBegin();
-				if(time > 1000) {
-					tstring pos = Text::toT(Util::formatBytes(ui->pos));
-					double percent = (double)ui->pos*100.0/(double)ui->size;
-					dcassert(percent <= 100.00);
-					tstring elapsed = Util::formatSecondsW(time/1000);
-					tstring flag;
+				tstring pos = Text::toT(Util::formatBytes(ui->pos));
+				double percent = (double)ui->pos*100.0/(double)ui->size;
+				dcassert(percent <= 100.00);
+				tstring elapsed = Util::formatSecondsW(timeSinceStarted / 1000);
+				tstring flag;
 					
-					if(partial) {
-						flag += _T("[P]");
-					}
-					if(trusted) {
-						flag += _T("[S]");
-					}
-					if(untrusted) {
-						flag += _T("[U]");
-					}
-					if(zupload) {
-						flag += _T("[Z]");
-					}
-					if(chunked) {
-						flag += _T("[C]");
-					}
-					if(mcn) {
-						flag += _T("[M]");
-					}
-
-					if(!flag.empty()) {
-						flag += _T(" ");
-					}
-
-					ui->setStatusString(flag + TSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
+				if(partial) {
+					flag += _T("[P]");
 				}
+				if(trusted) {
+					flag += _T("[S]");
+				}
+				if(untrusted) {
+					flag += _T("[U]");
+				}
+				if(zupload) {
+					flag += _T("[Z]");
+				}
+				if(chunked) {
+					flag += _T("[C]");
+				}
+				if(mcn) {
+					flag += _T("[M]");
+				}
+
+				if(!flag.empty()) {
+					flag += _T(" ");
+				}
+
+				ui->setStatusString(flag + TSTRING_F(UPLOADED_BYTES, pos.c_str() % percent % elapsed.c_str()));
 			}
 		}
 			
@@ -1417,7 +1408,7 @@ void TransferView::onBundleStatus(const BundlePtr& aBundle, bool removed) {
 	} else {
 		ui->setStatusString(TSTRING(WAITING));
 	}
-	aBundle->setBundleBegin(0);
+
 	ui->setUsers(0);
 	ui->setRunning(0);
 	speak(UPDATE_BUNDLE, ui);
