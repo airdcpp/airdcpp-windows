@@ -182,6 +182,7 @@ private:
 	void handleRemoveBundles(BundleList bl, bool removeFinished);
 	void handleRemoveFiles(QueueItemList ql);
 	void handleSearchQI(const QueueItemPtr& aQI);
+	void getSelectedItems(BundleList& bl, QueueItemList& ql);
 
 	bool closed;
 

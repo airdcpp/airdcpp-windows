@@ -324,9 +324,27 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
 	if (kd->wVKey == VK_DELETE) {
-		//handleRemove();
+		BundleList bl;
+		QueueItemList ql;
+		getSelectedItems(bl, ql);
+		if (!bl.empty()) {
+			handleRemoveBundles(bl, false);
+		} else {
+			handleRemoveFiles(ql);
+		}
 	}
 	return 0;
+}
+
+void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql) {
+	int sel = -1;
+	while ((sel = ctrlQueue.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+		QueueItemInfo* qii = (QueueItemInfo*) ctrlQueue.GetItemData(sel);
+		if (qii->bundle)
+			bl.push_back(qii->bundle);
+		else
+			ql.push_back(qii->qi);
+	}
 }
 
 LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
@@ -342,18 +360,11 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		BundleList bl;
 		QueueItemList queueItems;
 
-		int sel = -1;
-		while ((sel = ctrlQueue.GetNextItem(sel, LVNI_SELECTED)) != -1) {
-			QueueItemInfo* qii = (QueueItemInfo*)ctrlQueue.GetItemData(sel);
-			if (qii->bundle)
-				bl.push_back(qii->bundle);
-			else
-				queueItems.push_back(qii->qi);
-		}
+		getSelectedItems(bl, queueItems);
 
-		if (!bl.empty() && queueItems.empty()) {
+		if (!bl.empty()) {
 			AppendBundleMenu(bl, menu);
-		}  else if (bl.empty() && !queueItems.empty())
+		} else if (!queueItems.empty())
 			AppendQiMenu(queueItems, menu);
 
 		menu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
@@ -451,7 +462,6 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 
 		bundleMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { WinUtil::openFolder(Text::toT(b->getTarget())); });
 
-		bundleMenu.appendItem(TSTRING(MOVE_BUNDLE), [=] { handleMoveBundles(bl); });
 		bundleMenu.appendItem(TSTRING(RENAME), [=] { onRenameBundle(b); });
 		bundleMenu.appendSeparator();
 
@@ -472,9 +482,9 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 		}, b->getSeqOrder() ? OMenu::FLAG_CHECKED : 0 | OMenu::FLAG_THREADED);
 	}
 
-	bundleMenu.appendItem(TSTRING(REMOVE), [=] {
-		handleRemoveBundles(bl, false);
-	});
+	bundleMenu.appendItem(TSTRING(MOVE_BUNDLE), [=] { handleMoveBundles(bl); });
+	bundleMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
+	bundleMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
 }
 
 /*QueueItem Menu*/
@@ -767,8 +777,9 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished) {
 
 	string tmp;
 
+	bool allFinished = all_of(bundles.begin(), bundles.end(), [](const BundlePtr& b) { return b->isFinished(); });
 	if (bundles.size() == 1) {
-		if (!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(bundles.front()->getName())))) {
+		if (!allFinished && !WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(bundles.front()->getName())))) {
 			return;
 		} else if (removeFinished) {
 			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED, Text::toT(bundles.front()->getName())), MB_ICONQUESTION)) {
@@ -776,7 +787,7 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished) {
 			}
 		}
 	} else {
-		if (!WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING_F(CONFIRM_REMOVE_DIR_MULTIPLE, bundles.size()))) {
+		if (!allFinished && !WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING_F(CONFIRM_REMOVE_DIR_MULTIPLE, bundles.size()))) {
 			return;
 		} else if (removeFinished) {
 			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE, bundles.size()), MB_ICONQUESTION)) {
