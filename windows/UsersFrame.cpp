@@ -278,14 +278,14 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				if (!sourceBundles.empty()) {
 					for(auto& bs: sourceBundles) {
 						removeMenu->appendItem(formatBundle(bs), [=] {
-							QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user, QueueItem::Source::FLAG_REMOVED); 
+							QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.getUser(), QueueItem::Source::FLAG_REMOVED);
 						}, OMenu::FLAG_THREADED);
 					}
 
 					removeMenu->appendSeparator();
 					removeMenu->appendItem(TSTRING(ALL), [=] {
 						for(auto& bs: sourceBundles) {
-							QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.user.user, QueueItem::Source::FLAG_REMOVED);
+							QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.getUser().user, QueueItem::Source::FLAG_REMOVED);
 						}
 					}, OMenu::FLAG_THREADED);
 				}
@@ -295,14 +295,14 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				if (!badSourceBundles.empty()) {
 					for(auto& bs: badSourceBundles) {
 						readdMenu->appendItem(formatBundle(bs), [=] { 
-							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.user); 
+							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.getUser());
 						}, OMenu::FLAG_THREADED);
 					}
 
 					readdMenu->appendSeparator();
 					readdMenu->appendItem(TSTRING(ALL), [=] {
 						for(auto& bs: badSourceBundles) {
-							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.user);
+							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.getUser());
 						}
 					}, OMenu::FLAG_THREADED);
 				}

@@ -257,7 +257,7 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 					textRect.left += (textRect.right / 2) - (textWidth / 2);
 					::DrawText(dc, ii->getText(colIndex).c_str(), ii->getText(colIndex).length(), textRect, DT_LEFT | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
 
-					rc.right = rc.left + (int)((int64_t)rc.Width() * ii->getDownloadedBytes() / ii->getSize());
+					rc.right = rc.left + (int) ((int64_t) rc.Width() * (ii->getSize() > 0 ? ii->getDownloadedBytes() / ii->getSize() : 0));
 
 					COLORREF a, b;
 					OperaColors::EnlightenFlood(clr, a, b);
@@ -330,7 +330,7 @@ LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 		if (!bl.empty()) {
 			handleRemoveBundles(bl, false);
 		} else {
-			handleRemoveFiles(ql);
+			handleRemoveFiles(ql, false);
 		}
 	}
 	return 0;
@@ -375,6 +375,52 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 	return FALSE;
 }
 
+tstring QueueFrame::formatUser(const Bundle::BundleSource& bs) const {
+	auto& u = bs.getUser();
+	tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(u));
+	// add hub hint to menu
+	bool addHint = !u.hint.empty(), addSpeed = u.user->getSpeed() > 0;
+	nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(bs.files);
+	if (addHint || addSpeed) {
+		nick += _T(", ");
+		if (addSpeed) {
+			nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(u.user->getSpeed()) + _T("/s)");
+		}
+		if (addHint) {
+			if (addSpeed) {
+				nick += _T(", ");
+			}
+			nick += TSTRING(HUB) + _T(": ") + Text::toT(u.hint);
+		}
+	}
+	nick += _T(")");
+	return nick;
+}
+
+template<typename SourceType>
+tstring formatSourceFlags(const SourceType& s) {
+	OrderedStringSet reasons_;
+	if (s.isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
+		reasons_.insert(STRING(FILE_NOT_AVAILABLE));
+	} else if (s.isSet(QueueItem::Source::FLAG_BAD_TREE)) {
+		reasons_.insert(STRING(INVALID_TREE));
+	} else if (s.isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {
+		reasons_.insert(STRING(NO_NEEDED_PART));
+	} else if (s.isSet(QueueItem::Source::FLAG_NO_TTHF)) {
+		reasons_.insert(STRING(SOURCE_TOO_OLD));
+	} else if (s.isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
+		reasons_.insert(STRING(SLOW_USER));
+	} else if (s.isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
+		reasons_.insert(STRING(CERTIFICATE_NOT_TRUSTED));
+	}
+
+	if (!reasons_.empty()) {
+		return _T(" (") + Text::toT(Util::listToString(reasons_)) + _T(")");
+	}
+
+	return Util::emptyStringT;
+}
+
 /*Bundle Menu*/
 void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 	OMenu* removeMenu = bundleMenu.getMenu();
@@ -389,61 +435,38 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 	WinUtil::appendBundlePrioMenu(bundleMenu, bl);
 
 	/* Insert sub menus */
-	auto formatUser = [this](Bundle::BundleSource& bs) -> tstring {
-		auto& u = bs.user;
-		tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(u));
-		// add hub hint to menu
-		bool addHint = !u.hint.empty(), addSpeed = u.user->getSpeed() > 0;
-		nick += _T(" (") + TSTRING(FILES) + _T(": ") + Util::toStringW(bs.files);
-		if (addHint || addSpeed) {
-			nick += _T(", ");
-			if (addSpeed) {
-				nick += TSTRING(SPEED) + _T(": ") + Util::formatBytesW(u.user->getSpeed()) + _T("/s)");
-			}
-			if (addHint) {
-				if (addSpeed) {
-					nick += _T(", ");
-				}
-				nick += TSTRING(HUB) + _T(": ") + Text::toT(u.hint);
-			}
-		}
-		nick += _T(")");
-		return nick;
-	};
-
 	if (bl.size() == 1) {
 		BundlePtr b = bl.front();
+
 		//current sources
-		auto bundleSources = move(QueueManager::getInstance()->getBundleSources(b));
+		auto bundleSources = QueueManager::getInstance()->getBundleSources(b);
 		if (!bundleSources.empty()) {
-			removeMenu->appendItem(TSTRING(ALL), [b] {
-				auto sources = move(QueueManager::getInstance()->getBundleSources(b));
-				for (auto& si : sources)
-					QueueManager::getInstance()->removeBundleSource(b, si.user.user, QueueItem::Source::FLAG_REMOVED);
+			removeMenu->appendItem(TSTRING(ALL), [=] {
+				for (auto& si : bundleSources)
+					QueueManager::getInstance()->removeBundleSource(b, si.getUser().user, QueueItem::Source::FLAG_REMOVED);
 			}, OMenu::FLAG_THREADED);
 			removeMenu->appendSeparator();
 		}
 
 		for (auto& bs : bundleSources) {
-			auto u = bs.user;
+			auto u = bs.getUser();
 			removeMenu->appendItem(formatUser(bs), [=] { QueueManager::getInstance()->removeBundleSource(b, u, QueueItem::Source::FLAG_REMOVED); }, OMenu::FLAG_THREADED);
 		}
 
 		//bad sources
-		auto badBundleSources = move(QueueManager::getInstance()->getBadBundleSources(b));
+		auto badBundleSources = QueueManager::getInstance()->getBadBundleSources(b);
 
 		if (!badBundleSources.empty()) {
 			readdMenu->appendItem(TSTRING(ALL), [=] {
-				auto sources = move(QueueManager::getInstance()->getBadBundleSources(b));
-				for (auto& si : sources)
-					QueueManager::getInstance()->readdBundleSource(b, si.user);
+				for (auto& si : badBundleSources)
+					QueueManager::getInstance()->readdBundleSource(b, si.getUser());
 			}, OMenu::FLAG_THREADED);
 			readdMenu->appendSeparator();
 		}
 
 		for (auto& bs : badBundleSources) {
-			auto u = bs.user;
-			readdMenu->appendItem(formatUser(bs), [=] { QueueManager::getInstance()->readdBundleSource(b, u); }, OMenu::FLAG_THREADED);
+			auto u = bs.getUser();
+			readdMenu->appendItem(formatUser(bs) + formatSourceFlags(bs), [=] { QueueManager::getInstance()->readdBundleSource(b, u); }, OMenu::FLAG_THREADED);
 		}
 		/* Sub menus end */
 
@@ -575,25 +598,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		}
 
 		for (auto& s : badSources) {
-			tstring nick = WinUtil::getNicks(s.getUser());
-			if (s.isSet(QueueItem::Source::FLAG_FILE_NOT_AVAILABLE)) {
-				nick += _T(" (") + TSTRING(FILE_NOT_AVAILABLE) + _T(")");
-			}
-			else if (s.isSet(QueueItem::Source::FLAG_BAD_TREE)) {
-				nick += _T(" (") + TSTRING(INVALID_TREE) + _T(")");
-			}
-			else if (s.isSet(QueueItem::Source::FLAG_NO_NEED_PARTS)) {
-				nick += _T(" (") + TSTRING(NO_NEEDED_PART) + _T(")");
-			}
-			else if (s.isSet(QueueItem::Source::FLAG_NO_TTHF)) {
-				nick += _T(" (") + TSTRING(SOURCE_TOO_OLD) + _T(")");
-			}
-			else if (s.isSet(QueueItem::Source::FLAG_SLOW_SOURCE)) {
-				nick += _T(" (") + TSTRING(SLOW_USER) + _T(")");
-			}
-			else if (s.isSet(QueueItem::Source::FLAG_UNTRUSTED)) {
-				nick += _T(" (") + TSTRING(CERTIFICATE_NOT_TRUSTED) + _T(")");
-			}
+			tstring nick = WinUtil::getNicks(s.getUser()) + formatSourceFlags(s);
 
 			// add hub hint to menu
 			if (!s.getUser().hint.empty())
@@ -656,9 +661,8 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		fileMenu.AppendMenu(MF_STRING, IDC_READD_ALL, CTSTRING(READD_ALL));
 	}
 
-	fileMenu.appendItem(TSTRING(REMOVE), [=] {
-		handleRemoveFiles(ql);
-	}, OMenu::FLAG_THREADED);
+	fileMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveFiles(ql, false); });
+	fileMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveFiles(ql, true); });
 }
 
 LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -802,11 +806,11 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished) {
 	});
 }
 
-void QueueFrame::handleRemoveFiles(QueueItemList queueitems) {
+void QueueFrame::handleRemoveFiles(QueueItemList queueitems, bool removeFinished) {
 	if (queueitems.size() >= 1) {
 		if (WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING(REALLY_REMOVE))) {
 			for (auto& qi : queueitems)
-				QueueManager::getInstance()->removeFile(qi->getTarget());
+				QueueManager::getInstance()->removeFile(qi->getTarget(), removeFinished);
 		}
 	}
 }
@@ -1070,7 +1074,7 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 			int online = 0;
 			Bundle::SourceList sources = QueueManager::getInstance()->getBundleSources(bundle);
 			for (const auto& s : sources) {
-				if (s.user.user->isOnline())
+				if (s.getUser().user->isOnline())
 					online++;
 			}
 

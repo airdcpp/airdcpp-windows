@@ -180,9 +180,10 @@ private:
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
 	void handleMoveBundles(BundleList bl);
 	void handleRemoveBundles(BundleList bl, bool removeFinished);
-	void handleRemoveFiles(QueueItemList ql);
+	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
 	void handleSearchQI(const QueueItemPtr& aQI);
 	void getSelectedItems(BundleList& bl, QueueItemList& ql);
+	tstring formatUser(const Bundle::BundleSource& bs) const;
 
 	bool closed;
 
