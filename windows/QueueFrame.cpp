@@ -71,6 +71,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlQueue.SetTextBkColor(WinUtil::bgColor);
 	ctrlQueue.SetTextColor(WinUtil::textColor);
 	ctrlQueue.setFlickerFree(WinUtil::bgBrush);
+	ctrlQueue.setInsertFunction(bind(&QueueFrame::insertItems, this, placeholders::_1));
 
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if (!(rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0))
@@ -713,39 +714,6 @@ Notes, Mostly there should be no reason to expand every bundle at least with a b
 so this way we avoid creating and updating itemInfos we wont be showing,
 with a small queue its more likely for the user to expand and collapse the same items more than once.
 */
-LRESULT QueueFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
-
-	CPoint pt;
-	pt.x = GET_X_LPARAM(lParam);
-	pt.y = GET_Y_LPARAM(lParam);
-
-	LVHITTESTINFO lvhti;
-	lvhti.pt = pt;
-
-	int pos = ctrlQueue.SubItemHitTest(&lvhti);
-	if (pos != -1) {
-		CRect rect;
-		ctrlQueue.GetItemRect(pos, rect, LVIR_ICON);
-
-		if (pt.x < rect.left) {
-			auto item = ctrlQueue.getItemData(pos);
-			if ((item->parent == NULL) && item->bundle && !item->bundle->isFileBundle())  {
-				if (item->collapsed) {
-					ctrlQueue.SetRedraw(FALSE);
-					//insert the children at first expand, collect some garbage.
-					ExpandItem(item, pos);
-					ctrlQueue.resort();
-					ctrlQueue.SetRedraw(TRUE);
-				} else {
-					ctrlQueue.Collapse(item, pos);
-				}
-			}
-		}
-	}
-
-	bHandled = FALSE;
-	return 0;
-}
 
 LRESULT QueueFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	if (wID == IDC_SHOW_FINISHED)
@@ -772,13 +740,15 @@ void QueueFrame::updateList() {
 		if (!show(parent))
 			continue;
 
+		pp.resetChildren();
 		int pos = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex(), parent->getGroupID());
 		if (!parent->collapsed) {
-			ExpandItem(parent, pos);
+			parent->collapsed = true;
+			ctrlQueue.Expand(parent, pos);
 		} else {
 			int state = parent->bundle && !parent->bundle->isFileBundle() ? 1 : 0;
 			ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(state), LVIS_STATEIMAGEMASK);
-		}	
+		}
 	}
 	ctrlQueue.resort();
 	ctrlQueue.SetRedraw(TRUE);
@@ -890,34 +860,22 @@ void QueueFrame::onBundleAdded(const BundlePtr& aBundle) {
 	}
 }
 
-void QueueFrame::ExpandItem(QueueItemInfo* Qii, int pos) {
-
-	if (!Qii->childrenCreated) {
-		Qii->childrenCreated = true;
-		BundlePtr aBundle = Qii->bundle;
-		auto addItem = [&](QueueItemPtr& qi) {
+void QueueFrame::insertItems(const QueueItemInfo* Qii) {
+	BundlePtr aBundle = Qii->bundle;
+	auto addItem = [&](QueueItemPtr& qi) {
+		auto i = itemInfos.find(const_cast<string*>(&qi->getTarget()));
+		if (i == itemInfos.end()) {
 			auto item = new QueueItemInfo(qi);
-			itemInfos.emplace(const_cast<string*>(&qi->getTarget()), item);
-			ctrlQueue.insertGroupedItem(item, true, item->getGroupID());
-			if (!show(item))
-				ctrlQueue.deleteItem(item);
-		};
-		for_each(aBundle->getQueueItems(), addItem);
-		for_each(aBundle->getFinishedFiles(), addItem);
-		ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
-		Qii->collapsed = false;
-	} else {
-		const auto& children = ctrlQueue.findChildren(Qii->getGroupCond());
-		if (!children.empty()) {
-			ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
-			int idx = pos;
-			for (auto& child : children) {
-				if (show(child))
-					idx = ctrlQueue.insertChild(child, idx + 1, child->getGroupID());
-			}
-			Qii->collapsed = false;
+			i = itemInfos.emplace(const_cast<string*>(&qi->getTarget()), item).first;
 		}
-	}
+
+		auto item = i->second;
+		if (show(item))
+			ctrlQueue.insertGroupedItem(item, false, item->getGroupID());
+	};
+
+	for_each(aBundle->getQueueItems(), addItem);
+	for_each(aBundle->getFinishedFiles(), addItem);
 }
 
 void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
