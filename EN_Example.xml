@@ -2012,6 +2012,7 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="NewName">New name</string>
 	<string name="FileLists">File lists</string>
 	<string name="TempItems">Temp items</string>
+	<string name="ShowFinished">Show finished downloads</string>
 	<string name="SaveFailedX">Failed to save the file %1%: %2%</string>
 	<string name="LoadFailedX">Failed to load the file %1%: %2%</string>
 	<string name="RetrySharing">Retry sharing</string>

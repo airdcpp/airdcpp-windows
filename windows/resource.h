@@ -1138,6 +1138,7 @@
 #define IDC_MATCH_ALL                   1428
 #define IDC_ENCODINGTEXT                1429
 #define IDC_ENCODING                    1430
+#define IDC_SHOW_FINISHED               1431
 #define IDC_UPDATE_VERSION              1445
 #define IDC_UPDATE_VERSION_CURRENT_LBL  1446
 #define IDC_UPDATE_VERSION_LATEST_LBL   1447

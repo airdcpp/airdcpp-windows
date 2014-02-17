@@ -42,6 +42,14 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
 	ctrlStatus.Attach(m_hWndStatusBar);
 
+	ctrlFinished.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_SHOW_FINISHED);
+	ctrlFinished.SetButtonStyle(BS_AUTOCHECKBOX, FALSE);
+	ctrlFinished.SetFont(WinUtil::systemFont, FALSE);
+	ctrlFinished.SetWindowText(CTSTRING(SHOW_FINISHED));
+	ctrlFinished.SetCheck(showFinished ? BST_CHECKED : BST_UNCHECKED);
+
+	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
+
 	ctrlQueue.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
 		WS_HSCROLL | WS_VSCROLL | LVS_REPORT | LVS_SHOWSELALWAYS | LVS_SHAREIMAGELISTS, WS_EX_CLIENTEDGE, IDC_QUEUE_LIST);
 	ctrlQueue.SetExtendedListViewStyle(LVS_EX_LABELTIP | LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER | LVS_EX_INFOTIP);
@@ -85,7 +93,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 				onQueueItemAdded(q);
 		}
 	}
-	ctrlQueue.resort();
+	updateList();
 
 	QueueManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
@@ -112,6 +120,8 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		CRect sr;
 		int w[6];
 		ctrlStatus.GetClientRect(sr);
+
+		statusSizes[1] = ctrlFinished.GetWindowTextLength() * WinUtil::getTextWidth(ctrlFinished.m_hWnd, WinUtil::systemFont) + 20;
 		w[5] = sr.right - 16;
 #define setw(x) w[x] = max(w[x+1] - statusSizes[x], 0)
 		setw(4); setw(3); setw(2); setw(1);
@@ -120,7 +130,8 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 		ctrlStatus.SetParts(6, w);
 
-		ctrlStatus.GetRect(0, sr);
+		ctrlStatus.GetRect(1, sr);
+		ctrlFinished.MoveWindow(sr);
 	}
 	CRect rc = rect;
 	ctrlQueue.MoveWindow(&rc);
@@ -153,10 +164,7 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		ctrlQueue.saveHeaderOrder(SettingsManager::QUEUEFRAME_ORDER,
 			SettingsManager::QUEUEFRAME_WIDTHS, SettingsManager::QUEUEFRAME_VISIBLE);
 	
-		ctrlQueue.DeleteAllItems();
-		for (auto& i : itemInfos)
-			delete i.second;
-
+		ctrlQueue.deleteAllItems();
 		itemInfos.clear();
 
 		bHandled = FALSE;
@@ -718,20 +726,16 @@ LRESULT QueueFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 		ctrlQueue.GetItemRect(pos, rect, LVIR_ICON);
 
 		if (pt.x < rect.left) {
-			auto i = ctrlQueue.getItemData(pos);
-			if ((i->parent == NULL) && i->bundle && !i->bundle->isFileBundle())  {
-				if (i->collapsed) {
+			auto item = ctrlQueue.getItemData(pos);
+			if ((item->parent == NULL) && item->bundle && !item->bundle->isFileBundle())  {
+				if (item->collapsed) {
+					ctrlQueue.SetRedraw(FALSE);
 					//insert the children at first expand, collect some garbage.
-					if (ctrlQueue.findChildren(i->bundle->getToken()).empty()) {
-						ctrlQueue.SetRedraw(FALSE);
-						AddBundleQueueItems(i->bundle);
-						ctrlQueue.resort();
-						ctrlQueue.SetRedraw(TRUE);
-					} else {
-						ctrlQueue.Expand(i, pos, i->getGroupID());
-					}
+					ExpandItem(item, pos);
+					ctrlQueue.resort();
+					ctrlQueue.SetRedraw(TRUE);
 				} else {
-					ctrlQueue.Collapse(i, pos);
+					ctrlQueue.Collapse(item, pos);
 				}
 			}
 		}
@@ -741,11 +745,49 @@ LRESULT QueueFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, B
 	return 0;
 }
 
+LRESULT QueueFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
+	if (wID == IDC_SHOW_FINISHED)
+	{
+		showFinished = !showFinished;
+		updateList();
+	}
+
+	return 0;
+}
+
 LRESULT QueueFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	executeGuiTasks();
 	updateStatus();
 	bHandled = TRUE;
 	return 0;
+}
+
+void QueueFrame::updateList() {
+	ctrlQueue.SetRedraw(FALSE);
+	ctrlQueue.DeleteAllItems();
+	for (auto& pp : ctrlQueue.getParents() | map_values) {
+		auto parent = pp.parent;
+		if (!show(parent))
+			continue;
+
+		int pos = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex(), parent->getGroupID());
+		if (!parent->collapsed) {
+			ExpandItem(parent, pos);
+		} else {
+			int state = parent->bundle && !parent->bundle->isFileBundle() ? 1 : 0;
+			ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(state), LVIS_STATEIMAGEMASK);
+		}	
+	}
+	ctrlQueue.resort();
+	ctrlQueue.SetRedraw(TRUE);
+}
+
+bool QueueFrame::show(const QueueItemInfo* Qii) const {
+	bool isFinished = Qii->bundle ? Qii->bundle->isFinished() : Qii->qi->isFinished();
+	if (!showFinished && isFinished) {
+		return false;
+	}
+	return true;
 }
 
 tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
@@ -846,13 +888,33 @@ void QueueFrame::onBundleAdded(const BundlePtr& aBundle) {
 	}
 }
 
-void QueueFrame::AddBundleQueueItems(const BundlePtr& aBundle) {
-	for (auto& qi : aBundle->getQueueItems()){
-		if (qi->isFinished()/* && !SETTING(KEEP_FINISHED_FILES)*/)
-			continue;
-		auto item = new QueueItemInfo(qi);
-		itemInfos.emplace(const_cast<string*>(&qi->getTarget()), item);
-		ctrlQueue.insertGroupedItem(item, true, item->getGroupID());
+void QueueFrame::ExpandItem(QueueItemInfo* Qii, int pos) {
+
+	if (!Qii->childrenCreated) {
+		Qii->childrenCreated = true;
+		BundlePtr aBundle = Qii->bundle;
+		auto addItem = [&](QueueItemPtr& qi) {
+			auto item = new QueueItemInfo(qi);
+			itemInfos.emplace(const_cast<string*>(&qi->getTarget()), item);
+			ctrlQueue.insertGroupedItem(item, true, item->getGroupID());
+			if (!show(item))
+				ctrlQueue.deleteItem(item);
+		};
+		for_each(aBundle->getQueueItems(), addItem);
+		for_each(aBundle->getFinishedFiles(), addItem);
+		ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
+		Qii->collapsed = false;
+	} else {
+		const auto& children = ctrlQueue.findChildren(Qii->getGroupCond());
+		if (!children.empty()) {
+			ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
+			int idx = pos;
+			for (auto& child : children) {
+				if (show(child))
+					idx = ctrlQueue.insertChild(child, idx + 1, child->getGroupID());
+			}
+			Qii->collapsed = false;
+		}
 	}
 }
 
@@ -867,12 +929,10 @@ void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
 void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
 	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
 	if (i != itemInfos.end()) {
-		int pos = ctrlQueue.findItem(i->second);
-		if (pos != -1) {
-			ctrlQueue.updateItem(pos);
-			if (aBundle->getQueueItems().empty())  //remove the + icon we have nothing to expand.
-				ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(0), LVIS_STATEIMAGEMASK);
-		}
+		if (show(i->second))
+			ctrlQueue.updateItem(i->second);
+		else
+			ctrlQueue.deleteItem(i->second);
 	}
 }
 
@@ -887,8 +947,12 @@ void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
 void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
 	auto i = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
 	if (i != itemInfos.end()) {
-		if (!i->second->parent || !i->second->parent->collapsed) // no need to update if its collapsed right?
-			ctrlQueue.updateItem(i->second);
+		if (!i->second->parent || !i->second->parent->collapsed) { // no need to update if its collapsed right?
+			if (show(i->second))
+				ctrlQueue.updateItem(i->second);
+			else
+				ctrlQueue.deleteItem(i->second);
+		}
 	}
 }
 
@@ -898,7 +962,7 @@ void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
 		//queueItem not found, look if we have a parent for it and if its expanded
 		if (aQI->getBundle()){
 			auto parent = itemInfos.find(const_cast<string*>(&aQI->getBundle()->getToken()));
-			if ((parent == itemInfos.end()) || parent->second->collapsed)
+			if ((parent == itemInfos.end()) || (parent->second->collapsed && !parent->second->childrenCreated))
 				return;
 		}
 		auto item = new QueueItemInfo(aQI);

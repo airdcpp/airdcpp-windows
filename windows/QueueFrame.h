@@ -30,6 +30,7 @@
 #include "../client/QueueManager.h"
 #include "../client/TaskQueue.h"
 
+#define STATUS_MSG_MAP 19
 
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
 	private QueueManagerListener, private DownloadManagerListener, private Async<QueueFrame>
@@ -37,7 +38,7 @@ class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
 
-	QueueFrame() : closed(false), statusDirty(true) {}
+	QueueFrame() : closed(false), statusDirty(true), showFinished(true), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {}
 
 	~QueueFrame() {}
 
@@ -59,6 +60,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
 		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
 		CHAIN_MSG_MAP(baseClass)
+		ALT_MSG_MAP(STATUS_MSG_MAP)
+		COMMAND_ID_HANDLER(IDC_SHOW_FINISHED, onShow)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -70,6 +73,7 @@ public:
 	LRESULT onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 	LRESULT onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled);
+	LRESULT onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
 		ctrlQueue.SetFocus();
@@ -116,8 +120,8 @@ private:
 		Constructors with bundle and QueueItem, even if we might want to change to caching information of the items, 
 		these 2 basic constructors could feed the correct information.
 		*/
-		QueueItemInfo(const BundlePtr& aBundle) : bundle(aBundle), qi(nullptr), collapsed(true), parent(NULL), hits(-1) {}
-		QueueItemInfo(const QueueItemPtr& aQi) : bundle(nullptr), qi(aQi), collapsed(true), parent(NULL), hits(-1) {}
+		QueueItemInfo(const BundlePtr& aBundle) : bundle(aBundle), qi(nullptr), collapsed(true), parent(NULL), hits(-1), childrenCreated(false) {}
+		QueueItemInfo(const QueueItemPtr& aQi) : bundle(nullptr), qi(aQi), collapsed(true), parent(NULL), hits(-1), childrenCreated(false) {}
 		
 		~QueueItemInfo() {
 			dcdebug("itemInfo destructed %s \r\n", bundle ? bundle->getName().c_str() : qi->getTargetFileName().c_str());
@@ -129,6 +133,7 @@ private:
 		QueueItemInfo* parent;
 		bool collapsed;
 		int16_t hits;
+		bool childrenCreated;
 
 		inline const string& getGroupCond() const { 
 			if (bundle) {
@@ -175,7 +180,7 @@ private:
 	void onBundleRemoved(const BundlePtr& aBundle);
 	void onBundleUpdated(const BundlePtr& aBundle);
 
-	void AddBundleQueueItems(const BundlePtr& aBundle);
+	void ExpandItem(QueueItemInfo* Qii, int pos);
 
 	void onQueueItemRemoved(const QueueItemPtr& aQI);
 	void onQueueItemUpdated(const QueueItemPtr& aQI);
@@ -190,8 +195,12 @@ private:
 	void handleSearchQI(const QueueItemPtr& aQI);
 	void getSelectedItems(BundleList& bl, QueueItemList& ql);
 	tstring formatUser(const Bundle::BundleSource& bs) const;
+	
+	void updateList();
+	bool show(const QueueItemInfo* Qii) const;
 
 	bool closed;
+	bool showFinished;
 
 	/*contains all ItemInfos, bundles mapped with token, queueItems with target, any point for adding Qi tokens??*/
 	std::unordered_map<std::string*, QueueItemInfo*> itemInfos;
@@ -201,6 +210,8 @@ private:
 
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[6];
+	CButton ctrlFinished;
+	CContainedWindow ctrlStatusContainer;
 
 	TaskQueue tasks;
 
