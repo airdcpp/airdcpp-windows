@@ -820,6 +820,11 @@ public:
 	struct ParentPair {
 		T* parent;
 		vector<T*> children;
+
+		void resetChildren() {
+			parent->hits = 0;
+			children.clear();
+		}
 	};
 
 	typedef unordered_map<K*, ParentPair, hashFunc, equalKey> ParentMap;
@@ -839,11 +844,11 @@ public:
 		return 0;
 	}
 
-	LRESULT onLButton(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-		if (style & VIRTUAL_CHILDREN){
-			bHandled = FALSE;
-			return SendMessage(GetParent(), uMsg, wParam, lParam);
-		}
+	LRESULT onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+		//if (style & VIRTUAL_CHILDREN){
+		//	bHandled = FALSE;
+		//	return SendMessage(GetParent(), uMsg, wParam, lParam);
+		//}
 
 		CPoint pt;
 		pt.x = GET_X_LPARAM(lParam);
@@ -884,13 +889,27 @@ public:
 		SetRedraw(true);
 	}
 
-	void Expand(T* parent, int itemPos, int groupIndex = 0) {
+	void Expand(T* parent, int itemPos) {
 		SetRedraw(false);
+		
+		if (insertF) {
+			insertF(parent);
+		}
 		const auto& children = findChildren(parent->getGroupCond());
 		if(children.size() > (size_t)(uniqueParent ? 1 : 0)) {
+			LVITEM lvItem;
+			lvItem.iItem = itemPos;
+			lvItem.iSubItem = 0;
+			lvItem.mask = LVIF_GROUPID;
+			GetItem(&lvItem);
+
 			parent->collapsed = false;
-			for(const auto& c: children)
-				insertChild(c, itemPos + 1, groupIndex);
+			for (const auto& c : children){
+				if (filterF && !filterF(c))
+					continue;
+					
+				insertChild(c, itemPos + 1, lvItem.iGroupId);
+			}
 
 			SetItemState(itemPos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
 			resort();
@@ -1210,6 +1229,12 @@ public:
 		}
 		return pred;
 	}
+
+	typedef function < void(T*) > InsertFunction;
+	void setInsertFunction(InsertFunction&& aF) { insertF = move(aF); }
+
+	typedef function < bool(const T*) > FilterFunction;
+	void setFilterFunction(FilterFunction&& aF) { filterF = move(aF); }
 private:
 
    	/** map of all parent items with their associated children */
@@ -1257,6 +1282,9 @@ private:
 
 		return T::compareItems(a, b, col);
 	}
+
+	InsertFunction insertF;
+	FilterFunction filterF;
 };
 
 template<class T, int ctrlId, class K, class hashFunc, class equalKey, DWORD style>

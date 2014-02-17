@@ -71,6 +71,8 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlQueue.SetTextBkColor(WinUtil::bgColor);
 	ctrlQueue.SetTextColor(WinUtil::textColor);
 	ctrlQueue.setFlickerFree(WinUtil::bgBrush);
+	ctrlQueue.setInsertFunction(bind(&QueueFrame::insertItems, this, placeholders::_1));
+	ctrlQueue.setFilterFunction(bind(&QueueFrame::show, this, placeholders::_1));
 
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if (!(rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0))
@@ -704,48 +706,6 @@ LRESULT QueueFrame::onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	return 0;
 }
 
-/*
-OK, here's the deal, we insert bundles as parents and assume every bundle (except file bundles) to have sub items, thus the + expand icon.
-The bundle QueueItems(its sub items) are really created and inserted only at expanding the bundle,
-once its expanded we start to collect some garbage when collapsing it to avoid continuous allocations and reallocations.
-Notes, Mostly there should be no reason to expand every bundle at least with a big queue,
-so this way we avoid creating and updating itemInfos we wont be showing,
-with a small queue its more likely for the user to expand and collapse the same items more than once.
-*/
-LRESULT QueueFrame::onLButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
-
-	CPoint pt;
-	pt.x = GET_X_LPARAM(lParam);
-	pt.y = GET_Y_LPARAM(lParam);
-
-	LVHITTESTINFO lvhti;
-	lvhti.pt = pt;
-
-	int pos = ctrlQueue.SubItemHitTest(&lvhti);
-	if (pos != -1) {
-		CRect rect;
-		ctrlQueue.GetItemRect(pos, rect, LVIR_ICON);
-
-		if (pt.x < rect.left) {
-			auto item = ctrlQueue.getItemData(pos);
-			if ((item->parent == NULL) && item->bundle && !item->bundle->isFileBundle())  {
-				if (item->collapsed) {
-					ctrlQueue.SetRedraw(FALSE);
-					//insert the children at first expand, collect some garbage.
-					ExpandItem(item, pos);
-					ctrlQueue.resort();
-					ctrlQueue.SetRedraw(TRUE);
-				} else {
-					ctrlQueue.Collapse(item, pos);
-				}
-			}
-		}
-	}
-
-	bHandled = FALSE;
-	return 0;
-}
-
 LRESULT QueueFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
 	if (wID == IDC_SHOW_FINISHED)
 	{
@@ -773,11 +733,12 @@ void QueueFrame::updateList() {
 
 		int pos = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex(), parent->getGroupID());
 		if (!parent->collapsed) {
-			ExpandItem(parent, pos);
+			parent->collapsed = true;
+			ctrlQueue.Expand(parent, pos);
 		} else {
 			int state = parent->bundle && !parent->bundle->isFileBundle() ? 1 : 0;
 			ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(state), LVIS_STATEIMAGEMASK);
-		}	
+		}
 	}
 	ctrlQueue.resort();
 	ctrlQueue.SetRedraw(TRUE);
@@ -888,34 +849,31 @@ void QueueFrame::onBundleAdded(const BundlePtr& aBundle) {
 	}
 }
 
-void QueueFrame::ExpandItem(QueueItemInfo* Qii, int pos) {
+/*
+OK, here's the deal, we insert bundles as parents and assume every bundle (except file bundles) to have sub items, thus the + expand icon.
+The bundle QueueItems(its sub items) are really created and inserted only at expanding the bundle,
+once its expanded we start to collect some garbage when collapsing it to avoid continuous allocations and reallocations.
+Notes, Mostly there should be no reason to expand every bundle at least with a big queue,
+so this way we avoid creating and updating itemInfos we wont be showing,
+with a small queue its more likely for the user to expand and collapse the same items more than once.
+*/
+void QueueFrame::insertItems(QueueItemInfo* Qii) {
+	if (Qii->childrenCreated)
+		return;
 
-	if (!Qii->childrenCreated) {
-		Qii->childrenCreated = true;
-		BundlePtr aBundle = Qii->bundle;
-		auto addItem = [&](QueueItemPtr& qi) {
-			auto item = new QueueItemInfo(qi);
-			ctrlQueue.insertGroupedItem(item, true, item->getGroupID());
-			if (!show(item))
-				ctrlQueue.deleteItem(item);
-		};
-		RLock l(QueueManager::getInstance()->getCS());
-		for_each(aBundle->getQueueItems(), addItem);
-		for_each(aBundle->getFinishedFiles(), addItem);
-		ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
-		Qii->collapsed = false;
-	} else {
-		const auto& children = ctrlQueue.findChildren(Qii->getGroupCond());
-		if (!children.empty()) {
-			ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
-			int idx = pos;
-			for (auto& child : children) {
-				if (show(child))
-					idx = ctrlQueue.insertChild(child, idx + 1, child->getGroupID());
-			}
-			Qii->collapsed = false;
+	Qii->childrenCreated = true;
+	BundlePtr aBundle = Qii->bundle;
+	auto addItem = [&](QueueItemPtr& qi) {
+		auto item = findQueueItem(qi);
+		if (!item) {
+			item = new QueueItemInfo(qi);
+			ctrlQueue.insertGroupedItem(item, false, item->getGroupID());
 		}
-	}
+	};
+
+	RLock l(QueueManager::getInstance()->getCS());
+	for_each(aBundle->getQueueItems(), addItem);
+	for_each(aBundle->getFinishedFiles(), addItem);
 }
 QueueFrame::QueueItemInfo* QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
 	if (aQI->getBundle()){
@@ -923,7 +881,7 @@ QueueFrame::QueueItemInfo* QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
 		if (parent) {
 			auto& children = ctrlQueue.findChildren(parent->getGroupCond());
 			for (auto& child : children) {
-				if (child->qi->getTarget() == aQI->getTarget())
+				if (compare(child->qi->getTarget(), aQI->getTarget()) == 0)
 					return child;
 			}
 		}
@@ -967,12 +925,16 @@ void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
 }
 
 void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
+	if (aQI->getBundle()) {
+		auto parent = ctrlQueue.findParent(aQI->getBundle()->getToken());
+		if (!parent || (parent->collapsed && !parent->childrenCreated))
+			return;
+	}
 	auto item = findQueueItem(aQI);
-	if (item && item->parent && (item->parent->collapsed && !item->parent->childrenCreated))
-		return;
-	
-	auto i = new QueueItemInfo(aQI);
-	ctrlQueue.insertGroupedItem(i, false, i->getGroupID());
+	if (!item) {
+		auto i = new QueueItemInfo(aQI);
+		ctrlQueue.insertGroupedItem(i, false, i->getGroupID());
+	}
 }
 
 void QueueFrame::executeGuiTasks() {
