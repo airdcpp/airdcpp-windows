@@ -910,16 +910,20 @@ void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
 void QueueFrame::executeGuiTasks() {
 	if (tasks.getTasks().empty())
 		return;
-
+	bool needResort = false;
 	ctrlQueue.SetRedraw(FALSE);
 	for (;;) {
 		TaskQueue::TaskPair t;
 		if (!tasks.getFront(t))
 			break;
+
+		needResort = t.first == TASK_ADD;
 		static_cast<AsyncTask*>(t.second)->f();
 		tasks.pop_front();
 	}
 	statusDirty = true;
+	if (needResort)
+		ctrlQueue.resort();
 	ctrlQueue.SetRedraw(TRUE);
 }
 
@@ -957,51 +961,54 @@ void QueueFrame::updateStatus() {
 }
 
 void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept {
-	addGuiTask([=] { onBundleAdded(aBundle); });
+	addGuiTask(TASK_ADD, [=] { onBundleAdded(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept{
 	/*TODO: Think of something for this, when bundle is removed its possible that the queueitems get removed from the bundle before we loop them in gui thread,
 	so we do it here one by one...*/
 	for (auto& q : aBundle->getQueueItems())
-		addGuiTask([=] { onQueueItemRemoved(q); });
+		addGuiTask(TASK_REMOVE, [=] { onQueueItemRemoved(q); });
 
-	addGuiTask([=] { onBundleRemoved(aBundle); });
+	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept {
-	addGuiTask([=] { onBundleRemoved(aBundle); });
+	for (auto& q : aBundle->getQueueItems())
+	addGuiTask(TASK_REMOVE, [=] { onQueueItemRemoved(q); });
+
+	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string&) noexcept { 
-	addGuiTask([=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept { 
-	addGuiTask([=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept { 
-	addGuiTask([=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept { 
-	addGuiTask([=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept { 
-	addGuiTask([=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 
 void QueueFrame::on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool /*finished*/) noexcept{
-	addGuiTask([=] { onQueueItemRemoved(aQI); });
+	addGuiTask(TASK_REMOVE, [=] { onQueueItemRemoved(aQI); });
 }
 void QueueFrame::on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept{
-	addGuiTask([=] { onQueueItemAdded(aQI); });
+	addGuiTask(TASK_ADD, [=] { onQueueItemAdded(aQI); });
 }
 void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) noexcept {
-	addGuiTask([=] { onQueueItemUpdated(aQI); });
+	addGuiTask(TASK_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
 void QueueFrame::on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept{
-	addGuiTask([=] { onQueueItemUpdated(aQI); });
+	addGuiTask(TASK_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
 
 void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t /*aTick*/) noexcept{
 	for (auto& b : tickBundles) {
-		addGuiTask([=] { onBundleUpdated(b); });
+		addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(b); });
 	}
 }
 

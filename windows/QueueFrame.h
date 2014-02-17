@@ -101,6 +101,12 @@ private:
 		GROUP_LAST
 	};
 
+	enum {
+		TASK_ADD,
+		TASK_REMOVE,
+		TASK_UPDATE
+	};
+
 	/*
 	Currently its treating every QueueItemInfo as a bundle or Qi and information is called directly, we might want to cache the needed infos.
 	*/
@@ -198,8 +204,8 @@ private:
 
 	TaskQueue tasks;
 
-	void addGuiTask(std::function<void()> f) {
-		tasks.add(0, unique_ptr<AsyncTask>(new AsyncTask(f)));
+	void addGuiTask(uint8_t task, std::function<void()> f) {
+		tasks.add(task, unique_ptr<AsyncTask>(new AsyncTask(f)));
 	}
 
 	void executeGuiTasks();

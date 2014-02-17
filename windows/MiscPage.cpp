@@ -125,6 +125,7 @@ LRESULT MiscPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	}
 	
 	SetDlgItemText(IDC_WINAMP_PATH, Text::toT(SETTING(WINAMP_PATH)).c_str());
+	SetDlgItemText(IDC_PASSWD_BUTTON, CTSTRING(CHANGE_PASSWORD));
 
 
 	// updates
