@@ -198,12 +198,10 @@ private:
 	
 	void updateList();
 	bool show(const QueueItemInfo* Qii) const;
+	QueueItemInfo* findQueueItem(const QueueItemPtr& aQI);
 
 	bool closed;
 	bool showFinished;
-
-	/*contains all ItemInfos, bundles mapped with token, queueItems with target, any point for adding Qi tokens??*/
-	std::unordered_map<std::string*, QueueItemInfo*> itemInfos;
 
 	typedef TypedTreeListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST, string, noCaseStringHash, noCaseStringEq, NO_GROUP_UNIQUE_CHILDREN | VIRTUAL_CHILDREN | LVITEM_GROUPING> ListType;
 	ListType ctrlQueue;

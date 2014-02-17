@@ -165,7 +165,6 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			SettingsManager::QUEUEFRAME_WIDTHS, SettingsManager::QUEUEFRAME_VISIBLE);
 	
 		ctrlQueue.deleteAllItems();
-		itemInfos.clear();
 
 		bHandled = FALSE;
 		return 0;
@@ -882,10 +881,9 @@ void QueueFrame::onRenameBundle(BundlePtr b) {
 }
 
 void QueueFrame::onBundleAdded(const BundlePtr& aBundle) {
-	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
-	if (i == itemInfos.end()) {
+	auto parent = ctrlQueue.findParent(aBundle->getToken());
+	if (!parent) {
 		auto item = new QueueItemInfo(aBundle);
-		itemInfos.emplace(const_cast<string*>(&aBundle->getToken()), item);
 		ctrlQueue.insertGroupedItem(item, false, item->getGroupID(), !aBundle->isFileBundle()); // file bundles wont be having any children.
 	}
 }
@@ -897,11 +895,11 @@ void QueueFrame::ExpandItem(QueueItemInfo* Qii, int pos) {
 		BundlePtr aBundle = Qii->bundle;
 		auto addItem = [&](QueueItemPtr& qi) {
 			auto item = new QueueItemInfo(qi);
-			itemInfos.emplace(const_cast<string*>(&qi->getTarget()), item);
 			ctrlQueue.insertGroupedItem(item, true, item->getGroupID());
 			if (!show(item))
 				ctrlQueue.deleteItem(item);
 		};
+		RLock l(QueueManager::getInstance()->getCS());
 		for_each(aBundle->getQueueItems(), addItem);
 		for_each(aBundle->getFinishedFiles(), addItem);
 		ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(2), LVIS_STATEIMAGEMASK);
@@ -919,58 +917,62 @@ void QueueFrame::ExpandItem(QueueItemInfo* Qii, int pos) {
 		}
 	}
 }
+QueueFrame::QueueItemInfo* QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
+	if (aQI->getBundle()){
+		auto parent = ctrlQueue.findParent(aQI->getBundle()->getToken());
+		if (parent) {
+			auto& children = ctrlQueue.findChildren(parent->getGroupCond());
+			for (auto& child : children) {
+				if (child->qi->getTarget() == aQI->getTarget())
+					return child;
+			}
+		}
+	} 
+	return ctrlQueue.findParent(aQI->getTarget());
+}
 
 void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
-	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
-	if (i != itemInfos.end()) {
-		ctrlQueue.removeGroupedItem(i->second, true, i->second->getGroupID()); //also deletes item info
-		itemInfos.erase(i);
+	auto parent = ctrlQueue.findParent(aBundle->getToken());
+	if (parent) {
+		ctrlQueue.removeGroupedItem(parent, true, parent->getGroupID()); //also deletes item info
 	}
 }
 
 void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
-	auto i = itemInfos.find(const_cast<string*>(&aBundle->getToken()));
-	if (i != itemInfos.end()) {
-		if (show(i->second))
-			ctrlQueue.updateItem(i->second);
+	auto parent = ctrlQueue.findParent(aBundle->getToken());
+	if (parent) {
+		if (show(parent))
+			ctrlQueue.updateItem(parent);
 		else
-			ctrlQueue.deleteItem(i->second);
+			ctrlQueue.deleteItem(parent);
 	}
 }
 
 void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
-	auto i = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
-	if (i != itemInfos.end()) {
-		ctrlQueue.removeGroupedItem(i->second, true, i->second->getGroupID()); //also deletes item info
-		itemInfos.erase(i);
-	}
+	auto item = findQueueItem(aQI);
+	if (item)
+		ctrlQueue.removeGroupedItem(item, true, item->getGroupID()); //also deletes item info
 }
 
 void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
-	auto i = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
-	if (i != itemInfos.end()) {
-		if (!i->second->parent || !i->second->parent->collapsed) { // no need to update if its collapsed right?
-			if (show(i->second))
-				ctrlQueue.updateItem(i->second);
+	auto item = findQueueItem(aQI);
+	if (item) {
+		if (!item->parent || !item->parent->collapsed) { // no need to update if its collapsed right?
+			if (show(item))
+				ctrlQueue.updateItem(item);
 			else
-				ctrlQueue.deleteItem(i->second);
+				ctrlQueue.deleteItem(item);
 		}
 	}
 }
 
 void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
-	auto i = itemInfos.find(const_cast<string*>(&aQI->getTarget()));
-	if (i == itemInfos.end()) {
-		//queueItem not found, look if we have a parent for it and if its expanded
-		if (aQI->getBundle()){
-			auto parent = itemInfos.find(const_cast<string*>(&aQI->getBundle()->getToken()));
-			if ((parent == itemInfos.end()) || (parent->second->collapsed && !parent->second->childrenCreated))
-				return;
-		}
-		auto item = new QueueItemInfo(aQI);
-		itemInfos.emplace(const_cast<string*>(&aQI->getTarget()), item);
-		ctrlQueue.insertGroupedItem(item, false, item->getGroupID());
-	}
+	auto item = findQueueItem(aQI);
+	if (item && item->parent && (item->parent->collapsed && !item->parent->childrenCreated))
+		return;
+	
+	auto i = new QueueItemInfo(aQI);
+	ctrlQueue.insertGroupedItem(i, false, i->getGroupID());
 }
 
 void QueueFrame::executeGuiTasks() {
