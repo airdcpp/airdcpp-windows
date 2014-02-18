@@ -118,8 +118,8 @@ private:
 		Constructors with bundle and QueueItem, even if we might want to change to caching information of the items, 
 		these 2 basic constructors could feed the correct information.
 		*/
-		QueueItemInfo(const BundlePtr& aBundle) : bundle(aBundle), qi(nullptr), collapsed(true), parent(NULL), hits(-1), childrenCreated(false) {}
-		QueueItemInfo(const QueueItemPtr& aQi) : bundle(nullptr), qi(aQi), collapsed(true), parent(NULL), hits(-1), childrenCreated(false) {}
+		QueueItemInfo(const BundlePtr& aBundle) : bundle(aBundle), qi(nullptr), collapsed(true), parent(NULL), hits(-1), childrenCreated(aBundle->isFileBundle()) {}
+		QueueItemInfo(const QueueItemPtr& aQi) : bundle(nullptr), qi(aQi), collapsed(true), parent(NULL), hits(-1), childrenCreated(true) {}
 		
 		~QueueItemInfo() {
 			dcdebug("itemInfo destructed %s \r\n", bundle ? bundle->getName().c_str() : qi->getTargetFileName().c_str());

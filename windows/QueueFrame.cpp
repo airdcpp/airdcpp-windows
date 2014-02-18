@@ -863,6 +863,7 @@ void QueueFrame::insertItems(QueueItemInfo* Qii) {
 
 	Qii->childrenCreated = true;
 	BundlePtr aBundle = Qii->bundle;
+
 	auto addItem = [&](QueueItemPtr& qi) {
 		auto item = findQueueItem(qi);
 		if (!item) {
@@ -871,9 +872,11 @@ void QueueFrame::insertItems(QueueItemInfo* Qii) {
 		}
 	};
 
-	RLock l(QueueManager::getInstance()->getCS());
-	for_each(aBundle->getQueueItems(), addItem);
-	for_each(aBundle->getFinishedFiles(), addItem);
+	if (aBundle && !aBundle->isFileBundle()) {
+		RLock l(QueueManager::getInstance()->getCS());
+		for_each(aBundle->getQueueItems(), addItem);
+		for_each(aBundle->getFinishedFiles(), addItem);
+	}
 }
 QueueFrame::QueueItemInfo* QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
 	if (aQI->getBundle()){
@@ -947,7 +950,7 @@ void QueueFrame::executeGuiTasks() {
 		if (!tasks.getFront(t))
 			break;
 
-		needResort = t.first == TASK_ADD;
+		needResort = (t.first == TASK_ADD);
 		static_cast<AsyncTask*>(t.second)->f();
 		tasks.pop_front();
 	}
@@ -994,17 +997,9 @@ void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle)
 	addGuiTask(TASK_ADD, [=] { onBundleAdded(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept{
-	/*TODO: Think of something for this, when bundle is removed its possible that the queueitems get removed from the bundle before we loop them in gui thread,
-	so we do it here one by one...*/
-	for (auto& q : aBundle->getQueueItems())
-		addGuiTask(TASK_REMOVE, [=] { onQueueItemRemoved(q); });
-
 	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept {
-	for (auto& q : aBundle->getQueueItems())
-	addGuiTask(TASK_REMOVE, [=] { onQueueItemRemoved(q); });
-
 	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string&) noexcept { 
