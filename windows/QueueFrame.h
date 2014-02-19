@@ -38,7 +38,7 @@ class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
 
-	QueueFrame() : closed(false), statusDirty(true), showFinished(true), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {}
+	QueueFrame() : closed(false), statusDirty(true), showFinished(SETTING(QUEUE_SHOW_FINISHED)), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {}
 
 	~QueueFrame() {}
 
@@ -91,15 +91,16 @@ private:
 		COLUMN_PRIORITY,
 		COLUMN_STATUS,
 		COLUMN_DOWNLOADED,
-		COLUMN_SOURCES,
+		COLUMN_TIMELEFT,
+		COLUMN_SPEED,
 		COLUMN_PATH,
 		COLUMN_LAST
 	};
 
 	enum {
-		GROUP_FILELIST,
 		GROUP_TEMPS,
 		GROUP_BUNDLES,
+		GROUP_FILELIST,
 		GROUP_LAST
 	};
 
@@ -148,6 +149,9 @@ private:
 		int getPriority() const;
 		int64_t getDownloadedBytes() const;
 		int64_t getSize() const;
+		int64_t getSpeed() const;
+		uint64_t getSecondsLeft() const;
+		bool isFinished() const;
 
 
 		QueueItemInfo* createParent() { return this; }

@@ -28,13 +28,13 @@
 #include "ResourceLoader.h"
 #include "BarShader.h"
 
-int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_SOURCES, COLUMN_PATH};
+int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_PATH};
 
-int QueueFrame::columnSizes[] = { 450, 70, 100, 130, 200, 80, 500 };
+int QueueFrame::columnSizes[] = { 450, 70, 100, 130, 200, 80, 80, 500 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::DOWNLOADED, ResourceManager::SOURCES, ResourceManager::PATH };
+static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::DOWNLOADED, ResourceManager::TIME_LEFT, ResourceManager::SPEED, ResourceManager::PATH };
 
-static ResourceManager::Strings groupNames[] = { ResourceManager::FILE_LISTS, ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES };
+static ResourceManager::Strings groupNames[] = { ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES, ResourceManager::FILE_LISTS };
 
 LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -60,7 +60,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	WinUtil::splitTokens(columnSizes, SETTING(QUEUEFRAME_WIDTHS), COLUMN_LAST);
 
 	for (uint8_t j = 0; j < COLUMN_LAST; j++) {
-		int fmt = (j == COLUMN_SIZE) ? LVCFMT_RIGHT : (j == COLUMN_DOWNLOADED) ? LVCFMT_CENTER : LVCFMT_LEFT;
+		int fmt = (j == COLUMN_SIZE || j == COLUMN_SPEED || j == COLUMN_TIMELEFT) ? LVCFMT_RIGHT : (j == COLUMN_DOWNLOADED) ? LVCFMT_CENTER : LVCFMT_LEFT;
 		ctrlQueue.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
 	}
 
@@ -711,6 +711,7 @@ LRESULT QueueFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOO
 	{
 		showFinished = !showFinished;
 		updateList();
+		SettingsManager::getInstance()->set(SettingsManager::QUEUE_SHOW_FINISHED, showFinished);
 	}
 
 	return 0;
@@ -745,8 +746,7 @@ void QueueFrame::updateList() {
 }
 
 bool QueueFrame::show(const QueueItemInfo* Qii) const {
-	bool isFinished = Qii->bundle ? Qii->bundle->isFinished() : Qii->qi->isFinished();
-	if (!showFinished && isFinished) {
+	if (!showFinished && Qii->isFinished()) {
 		return false;
 	}
 	return true;
@@ -1051,20 +1051,22 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 	switch (col) {
 		case COLUMN_NAME: return getName();
 		case COLUMN_SIZE: return (getSize() != -1) ? Util::formatBytesW(getSize()) : TSTRING(UNKNOWN);
-		case COLUMN_STATUS: return getStatusString();
-		case COLUMN_DOWNLOADED: return (getSize() > 0) ? Util::formatBytesW(getDownloadedBytes()) + _T(" (") + Util::toStringW((double)getDownloadedBytes()*100.0 / (double)getSize()) + _T("%)") : Util::emptyStringT;
-		case COLUMN_PRIORITY: 	
+		case COLUMN_PRIORITY:
 		{
 			if (getPriority() == -1)
 				return Util::emptyStringT;
 			bool autoPrio = (bundle && bundle->getAutoPriority()) || (qi && qi->getAutoPriority());
 			return Text::toT(AirUtil::getPrioText(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
 		}
-		case COLUMN_SOURCES: //yeah, useless now if we show sources in status column...
-		{
-			RLock l(QueueManager::getInstance()->getCS());
-			int sources = bundle ? bundle->getSources().size() : qi ? qi->getSources().size() : 0;
-			return Util::toStringW(sources) + _T(" source(s)");
+		case COLUMN_STATUS: return getStatusString();
+		case COLUMN_DOWNLOADED: return (getSize() > 0) ? Util::formatBytesW(getDownloadedBytes()) + _T(" (") + Util::toStringW((double)getDownloadedBytes()*100.0 / (double)getSize()) + _T("%)") : Util::emptyStringT;
+		case COLUMN_TIMELEFT: {
+			uint64_t left = getSecondsLeft();
+			return left > 0 ? Util::formatSecondsW(left) : Util::emptyStringT;
+		}
+		case COLUMN_SPEED: {
+			int64_t speed = getSpeed();
+			return speed > 0 ? Util::formatBytesW(speed) + _T("/s") : Util::emptyStringT;
 		}
 		case COLUMN_PATH: return bundle ? Text::toT(bundle->getTarget()) : qi ? Text::toT(qi->getTarget()) : Util::emptyStringT;
 		
@@ -1090,8 +1092,20 @@ int64_t QueueFrame::QueueItemInfo::getSize() const {
 	return bundle ? bundle->getSize() : qi ? qi->getSize() : -1;
 }
 
+int64_t QueueFrame::QueueItemInfo::getSpeed() const {
+	return bundle ? bundle->getSpeed() : qi ? QueueManager::getInstance()->getAverageSpeed(qi) : 0;
+}
+
+uint64_t QueueFrame::QueueItemInfo::getSecondsLeft() const {
+	return bundle ? bundle->getSecondsLeft() : qi ? QueueManager::getInstance()->getSecondsLeft(qi) : 0;
+}
+
 int QueueFrame::QueueItemInfo::getPriority() const {
 	return  bundle ? bundle->getPriority() : qi ? qi->getPriority() : -1;
+}
+ 
+bool QueueFrame::QueueItemInfo::isFinished() const {
+	return bundle ? bundle->isFinished() : QueueManager::getInstance()->isFinished(qi);
 }
 
 tstring QueueFrame::QueueItemInfo::getStatusString() const {
@@ -1146,7 +1160,7 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 		if (qi->isPausedPrio()) 
 			return TSTRING(PAUSED);
 
-		if (qi->isFinished())
+		if (isFinished())
 			return TSTRING(DOWNLOAD_FINISHED_IDLE);
 
 		int online = 0;
@@ -1157,7 +1171,7 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 		}
 
 		auto size = sources.size();
-		 if (qi->isWaiting()) {
+		if (QueueManager::getInstance()->isWaiting(qi)) {
 			if (online > 0) {
 				return (size == 1) ? TSTRING(WAITING_USER_ONLINE) : TSTRING_F(WAITING_USERS_ONLINE, online % size);
 			} else {
@@ -1180,7 +1194,7 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 }
 
 int64_t QueueFrame::QueueItemInfo::getDownloadedBytes() const {
-	return bundle ? bundle->getDownloadedBytes() : qi ? qi->getDownloadedBytes() : 0;
+	return bundle ? bundle->getDownloadedBytes() : qi ? QueueManager::getInstance()->getDownloadedBytes(qi) : 0;
 }
 
 int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col) {
@@ -1188,6 +1202,8 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 	case COLUMN_SIZE: return compare(a->getSize(), b->getSize());
 	case COLUMN_PRIORITY: return compare(static_cast<int>(a->getPriority()), static_cast<int>(b->getPriority()));
 	case COLUMN_DOWNLOADED: return compare(a->getDownloadedBytes(), b->getDownloadedBytes());
+	case COLUMN_TIMELEFT: return compare(a->getSecondsLeft(), b->getSecondsLeft());
+	case COLUMN_SPEED: return compare(a->getSpeed(), b->getSpeed());
 	default: 
 		return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
 	}

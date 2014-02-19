@@ -48,16 +48,16 @@ LRESULT AutoSearchDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*l
 	ctrlUserMatch.SetWindowText(Text::toT(userMatch).c_str());
 
 	ATTACH(IDC_AS_FILETYPE, ctrlFileType);	
-	::SetWindowText(GetDlgItem(IDCANCEL), (TSTRING(CANCEL)).c_str());
-	::SetWindowText(GetDlgItem(IDC_SEARCH_FAKE_DLG_SEARCH_STRING), (TSTRING(SEARCH_STRING)).c_str());
-	::SetWindowText(GetDlgItem(IDC_AS_ACTION_STATIC), (TSTRING(ACTION)).c_str());
-	::SetWindowText(GetDlgItem(IDC_ADD_SRCH_STR_TYPE_STATIC), (TSTRING(FILE_TYPE)).c_str());
-	::SetWindowText(GetDlgItem(IDC_REMOVE_AFTER_COMPLETED), (TSTRING(REMOVE_AFTER_COMPLETED)).c_str());
+	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
+	::SetWindowText(GetDlgItem(IDC_SEARCH_FAKE_DLG_SEARCH_STRING), CTSTRING(SEARCH_STRING));
+	::SetWindowText(GetDlgItem(IDC_AS_ACTION_STATIC), CTSTRING(ACTION));
+	::SetWindowText(GetDlgItem(IDC_ADD_SRCH_STR_TYPE_STATIC), CTSTRING(FILE_TYPE));
+	::SetWindowText(GetDlgItem(IDC_REMOVE_AFTER_COMPLETED), CTSTRING(REMOVE_AFTER_COMPLETED));
 
-	::SetWindowText(GetDlgItem(IDC_DL_TO), TSTRING(DOWNLOAD_TO).c_str());
-	::SetWindowText(GetDlgItem(IDC_SELECT_DIR), TSTRING(SELECT_DIRECTORY).c_str());
+	::SetWindowText(GetDlgItem(IDC_DL_TO), CTSTRING(DOWNLOAD_TO));
+	::SetWindowText(GetDlgItem(IDC_SELECT_DIR), CTSTRING(SELECT_DIRECTORY));
 
-	::SetWindowText(GetDlgItem(IDC_USER_MATCH_TEXT), TSTRING(AS_USER_MATCH).c_str());
+	::SetWindowText(GetDlgItem(IDC_USER_MATCH_TEXT), CTSTRING(AS_USER_MATCH));
 
 	::SetWindowText(GetDlgItem(IDC_USE_MATCHER), CTSTRING(USE_CUSTOM_MATCHER));
 	::SetWindowText(GetDlgItem(IDC_PATTERN), CTSTRING(PATTERN));
