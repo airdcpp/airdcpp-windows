@@ -142,6 +142,7 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if (!closed) {
+		::KillTimer(m_hWnd, 0);
 		QueueManager::getInstance()->removeListener(this);
 		DownloadManager::getInstance()->removeListener(this);
 		closed = true;
@@ -266,7 +267,7 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 					textRect.left += (textRect.right / 2) - (textWidth / 2);
 					::DrawText(dc, ii->getText(colIndex).c_str(), ii->getText(colIndex).length(), textRect, DT_LEFT | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
 
-					rc.right = rc.left + (int) ((int64_t) rc.Width() * (ii->getSize() > 0 ? ii->getDownloadedBytes() / ii->getSize() : 0));
+					rc.right = rc.left + ii->getSize() > 0 ? (rc.Width() * (double)ii->getDownloadedBytes() / (double)ii->getSize()) : 0;
 
 					COLORREF a, b;
 					OperaColors::EnlightenFlood(clr, a, b);
