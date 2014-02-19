@@ -2154,7 +2154,8 @@ void WinUtil::addFileDownload(const string& aTarget, int64_t aSize, const TTHVal
 		try {
 			QueueManager::getInstance()->createFileBundle(aTarget, aSize, aTTH, aUser, aDate, aFlags, (QueueItemBase::Priority)prio);
 		} catch (const Exception& e) {
-			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % Text::fromT(getNicks(aUser)) % e.getError()), LogManager::LOG_ERROR);
+			auto nick = aUser ? Text::fromT(getNicks(aUser)) : STRING(UNKNOWN);
+			LogManager::getInstance()->message(STRING_F(ADD_FILE_ERROR, aTarget % nick % e.getError()), LogManager::LOG_ERROR);
 		}
 	});
 }
