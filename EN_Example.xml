@@ -779,13 +779,13 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 	<string name="UserDescription">User description</string>
 	<string name="UserOffline">User offline</string>
 	<string name="UserOnline">User online</string>
-	<string name="UserOnlineRunning">Running... (user online)</string>
+	<string name="Running">Running...</string>
 	<string name="UserWentOffline">User went offline</string>
 	<string name="UserWentOnline">User went online</string>
 	<string name="UserlistIcons">Userlist icons</string>
 	<string name="Userlistdblclickaction">Userlist double click action</string>
 	<string name="Users">Users</string>
-	<string name="UsersOnline">Running... (%1% of %2% users online)</string>
+	<string name="UsersOnline">%1% of %2% users online</string>
 	<string name="Version">Version</string>
 	<string name="Video">Video</string>
 	<string name="ViewAsText">View as text</string>
@@ -793,8 +793,6 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 	<string name="VirtualNameLong">Name under which the others see the directory</string>
 	<string name="Waiting">Waiting...</string>
 	<string name="WaitingTime">Waiting time</string>
-	<string name="WaitingUserOnline">Waiting (user online)</string>
-	<string name="WaitingUsersOnline">Waiting (%1% of %2% users online)</string>
 	<string name="WhatsThis">What's this?</string>
 	<string name="WhoIs">Whois </string>
 	<string name="WinampHelp">/winamp - Works with 1.x, 2.x, 5.x (no WinAmp 3 support)
@@ -2022,5 +2020,6 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="Finished">Finished</string>
 	<string name="HashFailed">Hash failed</string>
 	<string name="RemoveFavoriteUser">Remove favorite user</string>
+	<string name="TimeAdded">Time added</string>
 	<string name="Moving">Moving</string>
 </resources>

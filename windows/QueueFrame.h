@@ -94,6 +94,8 @@ private:
 		COLUMN_DOWNLOADED,
 		COLUMN_TIMELEFT,
 		COLUMN_SPEED,
+		COLUMN_SOURCES,
+		COLUMN_TIME_ADDED,
 		COLUMN_PATH,
 		COLUMN_LAST
 	};
@@ -152,6 +154,8 @@ private:
 		int64_t getSize() const;
 		int64_t getSpeed() const;
 		uint64_t getSecondsLeft() const;
+		time_t getTimeAdded() const;
+		tstring getSourceString() const;
 		bool isFinished() const;
 
 

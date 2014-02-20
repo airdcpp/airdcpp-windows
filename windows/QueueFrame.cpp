@@ -28,11 +28,12 @@
 #include "ResourceLoader.h"
 #include "BarShader.h"
 
-int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_PATH};
+int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SOURCES, COLUMN_TIME_ADDED, COLUMN_PATH };
 
-int QueueFrame::columnSizes[] = { 450, 70, 100, 130, 200, 80, 80, 500 };
+int QueueFrame::columnSizes[] = { 450, 70, 100, 80, 200, 80, 80, 100, 100, 500 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::DOWNLOADED, ResourceManager::TIME_LEFT, ResourceManager::SPEED, ResourceManager::PATH };
+static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::DOWNLOADED, ResourceManager::TIME_LEFT,
+ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::TIME_ADDED, ResourceManager::PATH };
 
 static ResourceManager::Strings groupNames[] = { ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES, ResourceManager::FILE_LISTS };
 
@@ -80,7 +81,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	//add the groups
 	for (uint8_t i = 0; i < GROUP_LAST; ++i) {
-		ctrlQueue.insertGroup(i, TSTRING_I(groupNames[i]), LVGA_HEADER_CENTER);
+		ctrlQueue.insertGroup(i, TSTRING_I(groupNames[i]), LVGA_HEADER_LEFT);
 	}
 
 	{
@@ -980,15 +981,28 @@ void QueueFrame::executeGuiTasks() {
 void QueueFrame::updateStatus() {
 	if (ctrlStatus.IsWindow() && statusDirty) {
 		bool u = false;
-		int bundles = 0;
+		int queuedBundles = 0;
+		int finishedBundles = 0;
+
 		auto qm = QueueManager::getInstance();
 		{
 			RLock l(qm->getCS());
-			bundles = qm->getBundles().size();
+			for (auto& b : qm->getBundles() | map_values){
+				b->isFinished() ? finishedBundles++ : queuedBundles++;
+			}
+
 		}
 
-		tstring tmp = TSTRING(QUEUED_BUNDLES) + _T(": ") + Util::toStringW(bundles);
+		tstring tmp = TSTRING(FINISHED_BUNDLES) + _T(": ") + Util::toStringW(finishedBundles);
 		int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+		if (statusSizes[2] < w) {
+			statusSizes[2] = w;
+			u = true;
+		}
+		ctrlStatus.SetText(3, (tmp).c_str());
+
+		tmp = TSTRING(QUEUED_BUNDLES) + _T(": ") + Util::toStringW(queuedBundles);
+		w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
 		if (statusSizes[3] < w) {
 			statusSizes[3] = w;
 			u = true;
@@ -1085,6 +1099,9 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			int64_t speed = getSpeed();
 			return speed > 0 ? Util::formatBytesW(speed) + _T("/s") : Util::emptyStringT;
 		}
+		case COLUMN_SOURCES: return getSourceString();
+		case COLUMN_TIME_ADDED: return getTimeAdded() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeAdded())) : Util::emptyStringT;
+
 		case COLUMN_PATH: return bundle ? Text::toT(bundle->getTarget()) : qi ? Text::toT(qi->getTarget()) : Util::emptyStringT;
 		
 		default: return Util::emptyStringT;
@@ -1117,8 +1134,12 @@ uint64_t QueueFrame::QueueItemInfo::getSecondsLeft() const {
 	return bundle ? bundle->getSecondsLeft() : qi ? QueueManager::getInstance()->getSecondsLeft(qi) : 0;
 }
 
+time_t QueueFrame::QueueItemInfo::getTimeAdded() const {
+	return bundle ? bundle->getAdded() : qi ? qi->getAdded() : 0;
+}
+
 int QueueFrame::QueueItemInfo::getPriority() const {
-	return  bundle ? bundle->getPriority() : qi ? qi->getPriority() : -1;
+	return  bundle && !bundle->isFinished() ? bundle->getPriority() : qi && !qi->isSet(QueueItem::FLAG_FINISHED) ? qi->getPriority() : -1;
 }
  
 bool QueueFrame::QueueItemInfo::isFinished() const {
@@ -1134,33 +1155,13 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 		switch (bundle->getStatus()) {
 		case Bundle::STATUS_NEW:
 		case Bundle::STATUS_QUEUED: {
-			int online = 0;
-			Bundle::SourceList sources = QueueManager::getInstance()->getBundleSources(bundle);
-			for (const auto& s : sources) {
-				if (s.getUser().user->isOnline())
-					online++;
-			}
-
-			auto size = sources.size();
 			if (bundle->getSpeed() > 0) { // Bundle->isRunning() ?
-				return (size == 1) ? TSTRING(USER_ONLINE_RUNNING) : TSTRING_F(USERS_ONLINE, online % size);
+				return TSTRING(RUNNING);
 			} else {
-				if (online > 0) {
-					return (size == 1) ? TSTRING(WAITING_USER_ONLINE) : TSTRING_F(WAITING_USERS_ONLINE, online % size);
-				} else {
-					if (size == 0) {
-						return TSTRING(NO_USERS_TO_DOWNLOAD_FROM);
-					} else if (size == 1) {
-						return TSTRING(USER_OFFLINE);
-					}else if (size == 2) {
-						return TSTRING(BOTH_USERS_OFFLINE);
-					} else {
-						return TSTRING_F(ALL_USERS_OFFLINE, size);
-					}
-				}
+				return TSTRING(WAITING);
 			}
 		}
-		case Bundle::STATUS_DOWNLOADED: return TSTRING(MOVING);
+		case Bundle::STATUS_DOWNLOADED: return TSTRING(DOWNLOADED);
 		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
 		case Bundle::STATUS_FAILED_MISSING: return TSTRING(SHARING_FAILED);
 		case Bundle::STATUS_SHARING_FAILED: return TSTRING(SHARING_FAILED);
@@ -1173,42 +1174,52 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 			return Util::emptyStringT;
 		}
 	} else if(qi) {
-		
 		if (qi->isPausedPrio()) 
 			return TSTRING(PAUSED);
-
-		if (isFinished()) {
-			return qi->isSet(QueueItem::FLAG_MOVED) ? TSTRING(FINISHED) : TSTRING(MOVING);
-		}
-
-		int online = 0;
-		QueueItem::SourceList sources = QueueManager::getInstance()->getSources(qi);
+		if (isFinished())
+			return TSTRING(FINISHED);
+		if (QueueManager::getInstance()->isWaiting(qi)) {
+			return TSTRING(WAITING);
+		} else {
+			return TSTRING(RUNNING);
+		} 
+	}
+	return Util::emptyStringT;
+}
+tstring QueueFrame::QueueItemInfo::getSourceString() const {
+	auto size = 0;
+	int online = 0;
+	if (bundle) {
+		Bundle::SourceList sources = QueueManager::getInstance()->getBundleSources(bundle);
+		size = sources.size();
 		for (const auto& s : sources) {
 			if (s.getUser().user->isOnline())
 				online++;
 		}
-
-		auto size = sources.size();
-		if (QueueManager::getInstance()->isWaiting(qi)) {
-			if (online > 0) {
-				return (size == 1) ? TSTRING(WAITING_USER_ONLINE) : TSTRING_F(WAITING_USERS_ONLINE, online % size);
-			} else {
-				if (size == 0) {
-					return TSTRING(NO_USERS_TO_DOWNLOAD_FROM);
-				} else if (size == 1) {
-					return TSTRING(USER_OFFLINE);
-				} else if (size == 2) {
-					return TSTRING(BOTH_USERS_OFFLINE);
-				} else {
-					return TSTRING_F(ALL_USERS_OFFLINE, size);
-				}
-			}
-		} else {
-			return (size == 1) ? TSTRING(USER_ONLINE_RUNNING) : TSTRING_F(USERS_ONLINE, online % size);
-		} 
+	} else {
+		QueueItem::SourceList sources = QueueManager::getInstance()->getSources(qi);
+		size = sources.size();
+		for (const auto& s : sources) {
+			if (s.getUser().user->isOnline())
+				online++;
+		}
 	}
+
+	//return TSTRING_F(USERS_ONLINE, online % size);
 	
-	return Util::emptyStringT;
+	if (online > 0) {
+		return (size == 1) ? TSTRING(USER_ONLINE) : TSTRING_F(USERS_ONLINE, online % size);
+	} else {
+		if (size == 0) {
+			return TSTRING(NO_USERS_TO_DOWNLOAD_FROM);
+		} else if (size == 1) {
+			return TSTRING(USER_OFFLINE);
+		} else if (size == 2) {
+			return TSTRING(BOTH_USERS_OFFLINE);
+		} else {
+			return TSTRING_F(ALL_USERS_OFFLINE, size);
+		}
+	}
 }
 
 int64_t QueueFrame::QueueItemInfo::getDownloadedBytes() const {
