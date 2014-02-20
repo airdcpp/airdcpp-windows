@@ -1161,7 +1161,7 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 				return TSTRING(WAITING);
 			}
 		}
-		case Bundle::STATUS_DOWNLOADED: return TSTRING(DOWNLOADED);
+		case Bundle::STATUS_DOWNLOADED: return TSTRING(MOVING);
 		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
 		case Bundle::STATUS_FAILED_MISSING: return TSTRING(SHARING_FAILED);
 		case Bundle::STATUS_SHARING_FAILED: return TSTRING(SHARING_FAILED);
@@ -1177,7 +1177,7 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 		if (qi->isPausedPrio()) 
 			return TSTRING(PAUSED);
 		if (isFinished())
-			return TSTRING(FINISHED);
+			return qi->isSet(QueueItem::FLAG_MOVED) ? TSTRING(FINISHED) : TSTRING(MOVING);
 		if (QueueManager::getInstance()->isWaiting(qi)) {
 			return TSTRING(WAITING);
 		} else {
