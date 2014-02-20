@@ -346,6 +346,22 @@ LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 	return 0;
 }
 
+LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
+
+	if (l->iItem != -1) {
+		auto ii = (QueueItemInfo*)ctrlQueue.GetItemData(l->iItem);
+		if (!ii->bundle)
+			return 0;
+
+		if (ii->collapsed)
+			ctrlQueue.Expand(ii, l->iItem);
+		else
+			ctrlQueue.Collapse(ii, l->iItem);
+	}
+	return 0;
+}
+
 void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql) {
 	int sel = -1;
 	while ((sel = ctrlQueue.GetNextItem(sel, LVNI_SELECTED)) != -1) {
@@ -951,7 +967,7 @@ void QueueFrame::executeGuiTasks() {
 		if (!tasks.getFront(t))
 			break;
 
-		needResort = (t.first == TASK_ADD);
+		needResort = needResort || (t.first == TASK_ADD);
 		static_cast<AsyncTask*>(t.second)->f();
 		tasks.pop_front();
 	}
@@ -1144,13 +1160,13 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 				}
 			}
 		}
-		case Bundle::STATUS_DOWNLOADED:
+		case Bundle::STATUS_DOWNLOADED: return TSTRING(DOWNLOADED);
 		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
-		case Bundle::STATUS_FAILED_MISSING:
-		case Bundle::STATUS_SHARING_FAILED: return _T("Sharing failed");
-		case Bundle::STATUS_FINISHED: return _T("Finished");
-		case Bundle::STATUS_HASHING: return _T("Hashing...");
-		case Bundle::STATUS_HASH_FAILED: return _T("Hash failed");
+		case Bundle::STATUS_FAILED_MISSING: return TSTRING(SHARING_FAILED);
+		case Bundle::STATUS_SHARING_FAILED: return TSTRING(SHARING_FAILED);
+		case Bundle::STATUS_FINISHED: return TSTRING(FINISHED);
+		case Bundle::STATUS_HASHING: return TSTRING(HASHING);
+		case Bundle::STATUS_HASH_FAILED: return TSTRING(HASH_FAILED);
 		case Bundle::STATUS_HASHED: return TSTRING(HASHING_FINISHED_TOTAL_PLAIN);
 		case Bundle::STATUS_SHARED: return TSTRING(SHARED);
 		default:

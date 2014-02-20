@@ -73,8 +73,8 @@ public:
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::getBrowseList, _1));
 	}
 
-	virtual void handleAddToFavorites() {
-		((T*)this)->getUserList().forEachSelected(&UserInfoBase::addFav);
+	virtual void handleFavorites() {
+		((T*)this)->getUserList().forEachSelected(&UserInfoBase::handleFav);
 	}
 	virtual void handlePrivateMessage() {
 		((T*)this)->getUserList().forEachSelectedT(boost::bind(&UserInfoBase::pm, _1));
@@ -206,7 +206,10 @@ public:
 		}
 
 		if(!traits.favOnly) {
-			menu.appendItem(TSTRING(ADD_TO_FAVORITES), [=] { handleAddToFavorites(); });
+			menu.appendItem(TSTRING(ADD_TO_FAVORITES), [=] { handleFavorites(); });
+			menu.appendSeparator();
+		} else if (!traits.nonFavOnly) {
+			menu.appendItem(TSTRING(REMOVE_FAVORITE_USER), [=] { handleFavorites(); });
 			menu.appendSeparator();
 		}
 		menu.appendItem(TSTRING(REMOVE_FROM_ALL), [=] { handleRemoveAll(); });

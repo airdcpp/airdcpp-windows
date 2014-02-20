@@ -271,9 +271,11 @@ void UserInfoBase::connectFav() {
 	WinUtil::ConnectFav()(getUser(), getHubUrl());
 }
 
-void UserInfoBase::addFav() {
-	if(getUser()) {
+void UserInfoBase::handleFav() {
+	if(getUser() && !getUser()->isFavorite()) {
 		FavoriteManager::getInstance()->addFavoriteUser(HintedUser(getUser(), getHubUrl()));
+	} else if (getUser()) {
+		FavoriteManager::getInstance()->removeFavoriteUser(getUser());
 	}
 }
 void UserInfoBase::grant() {

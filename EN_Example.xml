@@ -2018,4 +2018,8 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="RetrySharing">Retry sharing</string>
 	<string name="ForceSharing">Force in share</string>
 	<string name="RemoveWithFiles">Remove and delete data</string>
+	<string name="SharingFailed">Sharing failed</string>
+	<string name="Finished">Finished</string>
+	<string name="HashFailed">Hash failed</string>
+	<string name="RemoveFavoriteUser">Remove favorite user</string>
 </resources>

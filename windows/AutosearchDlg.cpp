@@ -302,8 +302,8 @@ LRESULT AutoSearchDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl
 	if(wID == IDOK) {
 		TCHAR buf[512];
 		TCHAR bufPath[MAX_PATH];
-		if (ctrlSearch.GetWindowTextLength() == 0) {
-			MessageBox(CTSTRING(LINE_EMPTY));
+		if (ctrlSearch.GetWindowTextLength() <= 5) {
+			MessageBox(CTSTRING(LINE_EMPTY_OR_TOO_SHORT));
 			return 0;
 		}
 		

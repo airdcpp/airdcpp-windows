@@ -421,7 +421,7 @@ LRESULT HubFrame::onDoubleClickUsers(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 		        ctrlUsers.getItemData(item->iItem)->grant();
 		        break;
 		    case 5:
-		        ctrlUsers.getItemData(item->iItem)->addFav();
+		        ctrlUsers.getItemData(item->iItem)->handleFav();
 		        break;
 			case 6:
 				ctrlUsers.getItemData(item->iItem)->browseList();
@@ -1005,7 +1005,7 @@ LRESULT HubFrame::onLButton(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& b
 					    ui->grant();
 					    break;
 					case 6:
-					    ui->addFav();
+					    ui->handleFav();
 					    break;
 				}
 			}

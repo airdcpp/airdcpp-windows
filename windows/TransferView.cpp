@@ -476,7 +476,7 @@ LRESULT TransferView::onDoubleClickTransfers(int /*idCtrl*/, LPNMHDR pnmh, BOOL&
 					i->grant();
 					break;
 				case 4:
-					i->addFav();
+					i->handleFav();
 					break;
 				case 5:
 					i->browseList();
