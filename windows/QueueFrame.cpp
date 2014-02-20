@@ -824,7 +824,7 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished) {
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		for (auto b : bundles)
-			QueueManager::getInstance()->removeBundle(b, false, removeFinished);
+			QueueManager::getInstance()->removeBundle(b, removeFinished);
 	});
 }
 

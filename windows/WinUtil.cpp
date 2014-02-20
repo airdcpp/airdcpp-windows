@@ -1723,7 +1723,7 @@ void WinUtil::removeBundle(const string& aBundleToken) {
 
 		MainFrame::getMainFrame()->addThreadedTask([=] {
 			auto b = aBundle;
-			QueueManager::getInstance()->removeBundle(b, false, false);
+			QueueManager::getInstance()->removeBundle(b, false);
 		});
 	}
 }
