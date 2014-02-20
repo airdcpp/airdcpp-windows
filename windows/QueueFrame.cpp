@@ -28,12 +28,12 @@
 #include "ResourceLoader.h"
 #include "BarShader.h"
 
-int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SOURCES, COLUMN_TIME_ADDED, COLUMN_PATH };
+int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SOURCES, COLUMN_TIME_ADDED, COLUMN_TIME_FINISHED, COLUMN_PATH };
 
-int QueueFrame::columnSizes[] = { 450, 70, 100, 80, 200, 80, 80, 100, 100, 500 };
+int QueueFrame::columnSizes[] = { 450, 70, 100, 80, 200, 80, 80, 100, 100, 100, 500 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::DOWNLOADED, ResourceManager::TIME_LEFT,
-ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::TIME_ADDED, ResourceManager::PATH };
+ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
 
 static ResourceManager::Strings groupNames[] = { ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES, ResourceManager::FILE_LISTS };
 
@@ -1084,7 +1084,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		case COLUMN_SIZE: return (getSize() != -1) ? Util::formatBytesW(getSize()) : TSTRING(UNKNOWN);
 		case COLUMN_PRIORITY:
 		{
-			if (getPriority() == -1)
+			if (isFinished() || getPriority() == -1)
 				return Util::emptyStringT;
 			bool autoPrio = (bundle && bundle->getAutoPriority()) || (qi && qi->getAutoPriority());
 			return Text::toT(AirUtil::getPrioText(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
@@ -1099,9 +1099,9 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			int64_t speed = getSpeed();
 			return speed > 0 ? Util::formatBytesW(speed) + _T("/s") : Util::emptyStringT;
 		}
-		case COLUMN_SOURCES: return getSourceString();
+		case COLUMN_SOURCES: return !isFinished() ? getSourceString() : Util::emptyStringT;
 		case COLUMN_TIME_ADDED: return getTimeAdded() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeAdded())) : Util::emptyStringT;
-
+		case COLUMN_TIME_FINISHED: return isFinished() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeFinished())) : Util::emptyStringT;
 		case COLUMN_PATH: return bundle ? Text::toT(bundle->getTarget()) : qi ? Text::toT(qi->getTarget()) : Util::emptyStringT;
 		
 		default: return Util::emptyStringT;
@@ -1138,8 +1138,12 @@ time_t QueueFrame::QueueItemInfo::getTimeAdded() const {
 	return bundle ? bundle->getAdded() : qi ? qi->getAdded() : 0;
 }
 
+time_t QueueFrame::QueueItemInfo::getTimeFinished() const {
+	return bundle ? bundle->getBundleFinished() : qi ? qi->getFileFinished() : 0;
+}
+
 int QueueFrame::QueueItemInfo::getPriority() const {
-	return  bundle && !bundle->isFinished() ? bundle->getPriority() : qi && !qi->isSet(QueueItem::FLAG_FINISHED) ? qi->getPriority() : -1;
+	return  bundle ? bundle->getPriority() : qi ? qi->getPriority() : -1;
 }
  
 bool QueueFrame::QueueItemInfo::isFinished() const {
