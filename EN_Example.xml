@@ -2022,4 +2022,5 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="Finished">Finished</string>
 	<string name="HashFailed">Hash failed</string>
 	<string name="RemoveFavoriteUser">Remove favorite user</string>
+	<string name="Moving">Moving</string>
 </resources>
