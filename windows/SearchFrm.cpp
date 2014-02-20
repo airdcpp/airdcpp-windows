@@ -889,7 +889,9 @@ void SearchFrame::handleDownload(const string& aTarget, QueueItemBase::Priority 
 					//only pick the last dir, different paths are always needed
 					path = aSR->getType() == SearchResult::TYPE_DIRECTORY ? aSR->getFileName() : Util::getLastDir(aSR->getFilePath());
 				}
-				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), *path, aSR->getUser(), aTarget, aTargetType, isSizeUnknown ? ASK_USER : NO_CHECK, p);
+
+				DirectoryListingManager::getInstance()->addDirectoryDownload(aSR->getFilePath(), *path, aSR->getUser(), aTarget, aTargetType,
+					isSizeUnknown ? ASK_USER : NO_CHECK, p, false, 0, false, false);
 			}
 		};
 
