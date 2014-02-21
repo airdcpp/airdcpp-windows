@@ -26,11 +26,12 @@
 #include "StdAfx.h"
 #include "PropPage.h"
 #include "PropPageTextStyles.h"
+#include "ExListViewCtrl.h"
 
 class OperaColorsPage : public CPropertyPage<IDD_OPERACOLORS>, public PropPage, private SettingsManagerListener
 {
 public:
-	OperaColorsPage(SettingsManager *s) : PropPage(s) {
+	OperaColorsPage(SettingsManager *s) : PropPage(s), loading(true) {
 		title = _tcsdup((TSTRING(SETTINGS_APPEARANCE) + _T('\\') + TSTRING(SETTINGS_TEXT_STYLES) + _T('\\') + TSTRING(SETTINGS_OPERACOLORS)).c_str());
 		SetTitle(title);
 		hloubka = SETTING(PROGRESS_3DDEPTH);
@@ -41,17 +42,15 @@ public:
 
 	BEGIN_MSG_MAP(OperaColorsPage)
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
-		COMMAND_HANDLER(IDC_FLAT, EN_UPDATE, On3DDepth)
+		NOTIFY_HANDLER(IDC_COLOR_LIST, NM_CUSTOMDRAW, onCustomDraw)
+		NOTIFY_HANDLER(IDC_COLOR_LIST, LVN_ITEMCHANGED, onItemchanged)
+		COMMAND_HANDLER(IDC_FLAT, EN_CHANGE, On3DDepth)
 		COMMAND_HANDLER(IDC_PROGRESS_OVERRIDE, BN_CLICKED, onClickedProgressOverride)
 		COMMAND_HANDLER(IDC_PROGRESS_OVERRIDE2, BN_CLICKED, onClickedProgressOverride)
-		COMMAND_HANDLER(IDC_PROGRESS_SEGMENT_SHOW, BN_CLICKED, onClickedProgressOverride)
-		COMMAND_HANDLER(IDC_PROGRESS_BUMPED, BN_CLICKED, onClickedProgressOverride)
-		COMMAND_HANDLER(IDC_SETTINGS_DOWNLOAD_BAR_COLOR, BN_CLICKED, onClickedProgress)
-		COMMAND_HANDLER(IDC_SETTINGS_UPLOAD_BAR_COLOR, BN_CLICKED, onClickedProgress)
-		COMMAND_HANDLER(IDC_SETTINGS_SEGMENT_BAR_COLOR, BN_CLICKED, onClickedProgress)
-		COMMAND_HANDLER(IDC_PROGRESS_TEXT_COLOR_DOWN, BN_CLICKED, onClickedProgressTextDown)
-		COMMAND_HANDLER(IDC_PROGRESS_TEXT_COLOR_UP, BN_CLICKED, onClickedProgressTextUp)
+		COMMAND_HANDLER(IDC_PROGRESS_TEXT_DOWNLOAD, BN_CLICKED, onClickedProgressText)
+		COMMAND_HANDLER(IDC_PROGRESS_TEXT_UPLOAD, BN_CLICKED, onClickedProgressText)
 		COMMAND_HANDLER(IDC_ODC_STYLE, BN_CLICKED, onClickedProgress)
+		COMMAND_HANDLER(IDC_PROGRESS_SELECT_COLOR, BN_CLICKED, onSelectColor)
 		MESSAGE_HANDLER(WM_DRAWITEM, onDrawItem)
 
 		COMMAND_HANDLER(IDC_SETTINGS_ODC_MENUBAR_LEFT, BN_CLICKED, onMenubarClicked)
@@ -70,8 +69,14 @@ public:
 		return S_OK;
 	}
 	LRESULT onClickedProgress(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
-	LRESULT onClickedProgressTextDown(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
-	LRESULT onClickedProgressTextUp(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
+	LRESULT onClickedProgressText(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
+
+	LRESULT onItemchanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
+		updateProgress();
+		return 0;
+	}
+	LRESULT onSelectColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
 	LRESULT onTBProgress(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 		EditTextStyle();
@@ -81,6 +86,8 @@ public:
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
 	LRESULT On3DDepth(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+		if (loading)
+			return 0;
 		TCHAR buf[256];
 		GetDlgItemText(IDC_FLAT, buf, 255);
 		hloubka = Util::toInt(Text::fromT(buf));
@@ -90,20 +97,17 @@ public:
 
 	void updateProgress() {
 		odcStyle = (IsDlgButtonChecked(IDC_ODC_STYLE) != 0);
+		bool itemSelected = ctrlList.GetSelectedCount() > 0;
+		::EnableWindow(::GetDlgItem(m_hWnd, IDC_PROGRESS_SELECT_COLOR), itemSelected);
 
 		bool state = (IsDlgButtonChecked(IDC_PROGRESS_OVERRIDE) != 0);
 		::EnableWindow(::GetDlgItem(m_hWnd, IDC_PROGRESS_OVERRIDE2), state);
-		::EnableWindow(::GetDlgItem(m_hWnd, IDC_SETTINGS_DOWNLOAD_BAR_COLOR), state);
-		::EnableWindow(::GetDlgItem(m_hWnd, IDC_SETTINGS_UPLOAD_BAR_COLOR), state);
 
-		::EnableWindow(::GetDlgItem(m_hWnd, IDC_FLAT),  IsDlgButtonChecked(IDC_ODC_STYLE) != 1);
+		::EnableWindow(::GetDlgItem(m_hWnd, IDC_FLAT), IsDlgButtonChecked(IDC_ODC_STYLE) != 1);
 		state = ((IsDlgButtonChecked(IDC_PROGRESS_OVERRIDE) != 0) && (IsDlgButtonChecked(IDC_PROGRESS_OVERRIDE2) != 0));
-		::EnableWindow(::GetDlgItem(m_hWnd, IDC_PROGRESS_TEXT_COLOR_DOWN), state);
-		::EnableWindow(::GetDlgItem(m_hWnd, IDC_PROGRESS_TEXT_COLOR_UP), state);
-		if(ctrlProgressDownDrawer.m_hWnd > 0)
-			ctrlProgressDownDrawer.Invalidate();
-		if(ctrlProgressUpDrawer.m_hWnd > 0)
-			ctrlProgressUpDrawer.Invalidate();
+		::EnableWindow(::GetDlgItem(m_hWnd, IDC_PROGRESS_TEXT_DOWNLOAD), state);
+		::EnableWindow(::GetDlgItem(m_hWnd, IDC_PROGRESS_TEXT_UPLOAD), state);
+		ctrlList.Invalidate();
 	}
 
 	void updateScreen() {
@@ -115,6 +119,13 @@ public:
 	void write();
 
 private:
+	struct clrs{
+		ResourceManager::Strings name;
+		int setting;
+		COLORREF value;
+	};
+
+
 	friend UINT_PTR CALLBACK MenuBarCommDlgProc(HWND, UINT, WPARAM, LPARAM);
 	friend LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
@@ -122,24 +133,24 @@ private:
 	bool bDoLeft;
 	bool bDoSegment;
 	bool odcStyle;
-	
+	bool loading;
+
 	static Item items[];
 	static TextItem texts[];
+	static clrs colours[];
+	static clrs ODCcolours[];
 
 	typedef CButton CCheckBox;
 
-	COLORREF crProgressDown;
-	COLORREF crProgressUp;
 	COLORREF crProgressTextDown;
 	COLORREF crProgressTextUp;
-	COLORREF crProgressSegment;
 	CCheckBox ctrlProgressOverride1;
 	CCheckBox ctrlProgressOverride2;
-	CButton ctrlProgressDownDrawer;
-	CButton ctrlProgressUpDrawer;
 	CProgressBarCtrl progress;
 	tstring sampleText;
 	int sampleTextLen;
+
+	ExListViewCtrl ctrlList;
 
 	void EditTextStyle();
 	LOGFONT currentFont;
@@ -152,9 +163,8 @@ private:
 		return (BST_CHECKED == IsDlgButtonChecked(id));
 	}
 
-	void BrowseForPic(int DLGITEM);	
 	void setProgressText(const tstring& text);
-
+	void fillColorList();
 
 	COLORREF crMenubarLeft;
 	COLORREF crMenubarRight;

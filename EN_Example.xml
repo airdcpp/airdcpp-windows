@@ -20,7 +20,6 @@
 	<string name="AdlsUnits">Size type</string>
 	<string name="All">All</string>
 	<string name="AllDownloadSlotsTaken">All download slots taken</string>
-	<string name="AllUsersOffline">All %d users offline</string>
 	<string name="AntiPassiveSearch">-- WARNING --
 -- You are in active mode, but have activated passive search. --
 -- Don't use passive search if you have search results without this option --
@@ -41,7 +40,6 @@
 	<string name="AwayModeOn">Away mode on: </string>
 	<string name="B">B</string>
 	<string name="BalloonPopups">Popups</string>
-	<string name="BothUsersOffline">Both users offline</string>
 	<string name="Browse">Browse...</string>
 	<string name="BrowseFileList">Browse file list</string>
 	<string name="Bumped">Bumped</string>
@@ -347,7 +345,6 @@
 	<string name="NoNeededPart">No needed part</string>
 	<string name="NoSlotsAvailable">No slots available</string>
 	<string name="NoUsers">No users</string>
-	<string name="NoUsersToDownloadFrom">No users to download from</string>
 	<string name="None">None</string>
 	<string name="Normal">Normal</string>
 	<string name="NotListening">Not listening for connections - please restart AirDC++</string>
@@ -393,14 +390,11 @@
 	<string name="PrivateKeyFile">Private key file</string>
 	<string name="PrivateMessage">Private message</string>
 	<string name="PrivateMessageFrom">Private message from </string>
-	<string name="ProgressBack">Transfer progressbar - background</string>
-	<string name="ProgressCompress">Transfer progressbar - decompressed part</string>
-	<string name="ProgressDone">Queue progressbar - done chunks</string>
-	<string name="ProgressDownloaded">Queue progressbar - downloaded bytes</string>
-	<string name="ProgressRunning">Queue progressbar - running chunks</string>
-	<string name="ProgressSegment">Transfer progressbar - actual segment</string>
-	<string name="ProgressVerified">Queue progressbar - verified chunks</string>
-	<string name="ProgressbarOdcStyle">Use oDC style of progressbar in transfers</string>
+	<string name="ProgressBackground">Background</string>
+	<string name="ProgressDecompress">Decompressed part</string>
+	<string name="ProgressDoneChunks">Done chunks</string>
+	<string name="ProgressFile">Bundle file / Segment</string>
+	<string name="ProgressOdcStyle">Use oDC style of progressbar</string>
 	<string name="Properties">Properties</string>
 	<string name="PublicHubs">Public hubs</string>
 	<string name="Purge">Purge</string>
@@ -785,7 +779,7 @@ In the parameters, you can use %[xxx] variables and date/time specifiers (%Y, %m
 	<string name="UserlistIcons">Userlist icons</string>
 	<string name="Userlistdblclickaction">Userlist double click action</string>
 	<string name="Users">Users</string>
-	<string name="UsersOnline">%1% of %2% users online</string>
+	<string name="UsersOnline">%1% of %2% online</string>
 	<string name="Version">Version</string>
 	<string name="Video">Video</string>
 	<string name="ViewAsText">View as text</string>
@@ -1320,7 +1314,6 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="LastSearch">Last search</string>
 	<string name="SelectDirectory">Select directory</string>
 	<string name="XIsSameThan">The directory %1% also exists in %2%</string>
-	<string name="HorizontalQueue">Use horizontal splitter in download queue window</string>
 	<string name="TypeTargetPath">Direct path</string>
 	<string name="TypeTargetFavorite">Favorite directory (the real path will be picked when matches are found)</string>
 	<string name="TypeTargetShare">Shared directory (the real path will be picked when matches are found)</string>
@@ -2022,5 +2015,9 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="RemoveFavoriteUser">Remove favorite user</string>
 	<string name="TimeAdded">Time added</string>
 	<string name="TimeFinished">Time finished</string>
+	<string name="StatusFinished">Bundle status finished</string>
+	<string name="StatusShared">Bundle status shared</string>
+	<string name="StatusHashing">Bundle status hashing</string>
+	<string name="StatusFailed">Bundle status sharing failed</string>
 	<string name="Moving">Moving</string>
 </resources>

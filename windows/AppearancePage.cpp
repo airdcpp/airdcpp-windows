@@ -74,7 +74,6 @@ PropPage::ListItem AppearancePage::listItems[] = {
 	{ SettingsManager::USE_EXPLORER_THEME, ResourceManager::USE_EXPLORER_THEME },
 	{ SettingsManager::FORMAT_RELEASE, ResourceManager::FORMAT_RELEASE },
 	{ SettingsManager::SORT_DIRS, ResourceManager::SORT_DIRS },
-	{ SettingsManager::HORIZONTAL_QUEUE, ResourceManager::HORIZONTAL_QUEUE },
 	{ SettingsManager::SHOW_EMOTICON, ResourceManager::SHOW_EMOTICON_BUTTON },
 	{ SettingsManager::SHOW_MAGNET, ResourceManager::SHOW_MAGNET_BUTTON },
 	{ SettingsManager::SHOW_MULTILINE, ResourceManager::SHOW_MULTILINE_BUTTON },

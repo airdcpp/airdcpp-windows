@@ -229,6 +229,7 @@ private:
 	void executeGuiTasks();
 	void updateStatus();
 	bool statusDirty;
+	COLORREF getStatusColor(uint8_t status);
 
 	//bundle update listeners
 	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;

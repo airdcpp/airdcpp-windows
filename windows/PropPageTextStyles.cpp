@@ -50,12 +50,6 @@ PropPageTextStyles::clrs PropPageTextStyles::colours[] = {
 	{ResourceManager::SETTINGS_SELECT_WINDOW_COLOR,	SettingsManager::BACKGROUND_COLOR, 0},
 	{ResourceManager::SETTINGS_COLOR_ALTERNATE,	SettingsManager::SEARCH_ALTERNATE_COLOUR, 0},
 	{ResourceManager::SETCZDC_ERROR_COLOR,	SettingsManager::ERROR_COLOR, 0},
-	{ResourceManager::PROGRESS_BACK,	SettingsManager::PROGRESS_BACK_COLOR, 0},
-	{ResourceManager::PROGRESS_COMPRESS,	SettingsManager::PROGRESS_COMPRESS_COLOR, 0},
-	{ResourceManager::PROGRESS_SEGMENT,	SettingsManager::PROGRESS_SEGMENT_COLOR, 0},
-	{ResourceManager::PROGRESS_RUNNING,	SettingsManager::COLOR_RUNNING, 0},
-	{ResourceManager::PROGRESS_DOWNLOADED,	SettingsManager::COLOR_DOWNLOADED, 0},
-	{ResourceManager::PROGRESS_DONE,	SettingsManager::COLOR_DONE, 0},
 };
 
 PropPage::Item PropPageTextStyles::items[] = {	 
@@ -506,8 +500,6 @@ void PropPageTextStyles::LoadTheme(const string& path, bool silent/* = false*/) 
 		importData("ProgressCompressColor", PROGRESS_COMPRESS_COLOR);
 		importData("ProgressSegmentColor", PROGRESS_SEGMENT_COLOR);
 		importData("ColorDone", COLOR_DONE);
-		importData("ColorDownloaded", COLOR_DOWNLOADED);
-		importData("ColorRunning", COLOR_RUNNING);
 		importData("ReservedSlotColor", RESERVED_SLOT_COLOR);
 		importData("IgnoredColor", IGNORED_COLOR);
 		importData("FavoriteColor", FAVORITE_COLOR);
@@ -654,8 +646,6 @@ void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
 	exportData("ProgressCompressColor", PROGRESS_COMPRESS_COLOR);
 	exportData("ProgressSegmentColor", PROGRESS_SEGMENT_COLOR);
 	exportData("ColorDone", COLOR_DONE);
-	exportData("ColorDownloaded", COLOR_DOWNLOADED);
-	exportData("ColorRunning", COLOR_RUNNING);
 	exportData("ReservedSlotColor", RESERVED_SLOT_COLOR);
 	exportData("IgnoredColor", IGNORED_COLOR);
 	exportData("FavoriteColor", FAVORITE_COLOR);

@@ -450,7 +450,6 @@
 #define IDC_CHANGE                      1084
 #define IDC_BROWSETEMPDIR               1085
 #define IDC_SOCKS_RESOLVE               1086
-#define IDC_PROGRESS_BUMPED             1086
 #define IDC_REMOVEALL                   1087
 #define IDC_QUEUE_LIST                  1089
 #define IDC_SOCKS_SERVER                1090
@@ -475,7 +474,6 @@
 #define IDC_HUB                         1103
 #define IDC_PROGRESS_OVERRIDE2          1103
 #define IDC_SHUTDOWNTIMEOUT             1104
-#define IDC_PROGRESS_SEGMENT_SHOW       1104
 #define IDC_COMMAND_DESCRIPTION         1105
 #define IDC_SETTINGS_ODC_MENUBAR_RIGHT  1105
 #define IDC_APPEARANCE_BOOLEANS         1106
@@ -604,12 +602,10 @@
 #define IDC_SCAN_MISSING                1212
 #define IDC_SETTINGS_ONCE               1212
 #define IDC_OPEN_DOWNLOADS              1213
-#define IDC_SETTINGS_UPLOAD_BAR_COLOR   1214
 #define IDC_PREVIEW_ARGUMENTS           1214
-#define IDC_SETTINGS_DOWNLOAD_BAR_COLOR 1215
 #define IDC_PREVIEW_EXTENSION           1215
+#define IDC_SELECT_COLOR                1215
 #define IDC_AUTOSEGMENT                 1216
-#define IDC_SETTINGS_SEGMENT_BAR_COLOR  1216
 #define IDC_AUTO_SEARCH_ALT             1216
 #define IDC_COPY_TTH                    1217
 #define IDC_DONTBEGIN                   1217
@@ -1069,6 +1065,7 @@
 #define IDC_SPEEDTEST                   1386
 #define IDC_WIZARD_SKIPLIST2            1386
 #define IDC_DISABLE_ENCRYPTION          1386
+#define IDC_PROGRESS_SELECT_COLOR       1387
 #define IDC_MAX_DL_WIZ                  1388
 #define IDC_MAX_DL_SPEED_WIZ            1389
 #define IDC_UPLOAD_SLOTS_WIZ            1390
@@ -1399,6 +1396,7 @@
 #define IDC_IGNORE_PM                   1742
 #define IDC_USER_LIST_COLOR_DESC        1744
 #define IDC_TB_PROGRESS_STYLE           1745
+#define IDC_COLOR_LIST                  1751
 #define IDC_TOOLBAR_ADD                 2200
 #define IDC_HOTBROWSE                   2201
 #define IDC_TOOLBAR_REMOVE              2202
@@ -1538,7 +1536,9 @@
 #define IDC_OPEN_LINK                   10087
 #define IDC_THROTTLE_ENABLE             10093
 #define IDC_PROGRESS_TEXT_COLOR_DOWN    10102
+#define IDC_PROGRESS_TEXT_DOWNLOAD      10102
 #define IDC_PROGRESS_TEXT_COLOR_UP      10103
+#define IDC_PROGRESS_TEXT_UPLOAD        10103
 #define IDC_CZDC_PM_SOUND               10107
 #define IDC_STRONGDC_TRANSFER_LIMITING  10108
 #define IDC_STRONGDC_UP_SPEED           10109
@@ -1809,7 +1809,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        362
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1746
+#define _APS_NEXT_CONTROL_VALUE         1752
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

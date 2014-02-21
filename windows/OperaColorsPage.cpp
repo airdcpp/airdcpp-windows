@@ -27,23 +27,20 @@
 #include "BarShader.h"
 
 PropPage::TextItem OperaColorsPage::texts[] = {
-	{ IDC_ODC_STYLE, ResourceManager::PROGRESSBAR_ODC_STYLE },
+	{ IDC_ODC_STYLE, ResourceManager::PROGRESS_ODC_STYLE },
 	{ IDC_PROGRESS_OVERRIDE, ResourceManager::SETTINGS_ZDC_PROGRESS_OVERRIDE },
 	{ IDC_PROGRESS_OVERRIDE2, ResourceManager::SETTINGS_ZDC_PROGRESS_OVERRIDE },
-	{ IDC_SETTINGS_DOWNLOAD_BAR_COLOR, ResourceManager::DOWNLOAD },
-	{ IDC_PROGRESS_TEXT_COLOR_DOWN, ResourceManager::DOWNLOAD },
-	{ IDC_SETTINGS_UPLOAD_BAR_COLOR, ResourceManager::SETCZDC_UPLOAD },
-	{ IDC_PROGRESS_TEXT_COLOR_UP, ResourceManager::SETCZDC_UPLOAD },
 	{ IDC_SETTINGS_ODC_MENUBAR, ResourceManager::MENUBAR },
 	{ IDC_SETTINGS_ODC_MENUBAR_LEFT, ResourceManager::LEFT_COLOR },
 	{ IDC_SETTINGS_ODC_MENUBAR_RIGHT, ResourceManager::RIGHT_COLOR },
 	{ IDC_SETTINGS_ODC_MENUBAR_USETWO, ResourceManager::TWO_COLORS },
 	{ IDC_SETTINGS_ODC_MENUBAR_BUMPED, ResourceManager::BUMPED },
-	{ IDC_CZDC_PROGRESS_COLOR, ResourceManager::SETCZDC_PROGRESSBAR_COLORS },
-	{ IDC_CZDC_PROGRESS_TEXT, ResourceManager::SETCZDC_PROGRESSBAR_TEXT },
 	{ IDC_SETTINGS_ODC_MENUBAR2, ResourceManager::SETCZDC_PROGRESSBAR_COLORS },
 	{ IDC_TB_PROG_STYLE, ResourceManager::COLOR_FONT },
 	{ IDC_TB_PROGRESS_STYLE, ResourceManager::TOOLBAR_PROGRESS_STYLE },
+	{ IDC_PROGRESS_SELECT_COLOR, ResourceManager::SETTINGS_SELECT_COLOR },
+	{ IDC_PROGRESS_TEXT_DOWNLOAD, ResourceManager::DOWNLOAD },
+	{ IDC_PROGRESS_TEXT_UPLOAD, ResourceManager::SETCZDC_UPLOAD },
 
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
@@ -62,6 +59,26 @@ PropPage::Item OperaColorsPage::items[] = {
 	{ IDC_FLAT, SettingsManager::PROGRESS_3DDEPTH, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
+
+OperaColorsPage::clrs OperaColorsPage::colours[] = {
+	{ ResourceManager::DOWNLOAD, SettingsManager::DOWNLOAD_BAR_COLOR, 0 },
+	{ ResourceManager::SETCZDC_UPLOAD, SettingsManager::UPLOAD_BAR_COLOR, 0 },
+	{ ResourceManager::PROGRESS_BACKGROUND, SettingsManager::PROGRESS_BACK_COLOR, 0 },
+	{ ResourceManager::PROGRESS_DECOMPRESS, SettingsManager::PROGRESS_COMPRESS_COLOR, 0 },
+	{ ResourceManager::PROGRESS_DONE_CHUNKS, SettingsManager::COLOR_DONE, 0 },
+};
+
+OperaColorsPage::clrs OperaColorsPage::ODCcolours[] = {
+	{ ResourceManager::DOWNLOAD, SettingsManager::DOWNLOAD_BAR_COLOR, 0 },
+	{ ResourceManager::SETCZDC_UPLOAD, SettingsManager::UPLOAD_BAR_COLOR, 0 },
+	{ ResourceManager::PROGRESS_FILE, SettingsManager::PROGRESS_SEGMENT_COLOR, 0 },
+	{ ResourceManager::STATUS_FINISHED, SettingsManager::COLOR_STATUS_FINISHED, 0 },
+	{ ResourceManager::STATUS_SHARED, SettingsManager::COLOR_STATUS_SHARED, 0 },
+	{ ResourceManager::STATUS_HASHING, SettingsManager::COLOR_STATUS_HASHING, 0 },
+	{ ResourceManager::STATUS_FAILED, SettingsManager::COLOR_STATUS_FAILED, 0 },
+};
+
+
 
 UINT_PTR CALLBACK MenuBarCommDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
@@ -83,28 +100,15 @@ UINT_PTR CALLBACK MenuBarCommDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM
 			color_g = (color_g < 0) ? 0 : ((color_g > 255) ? 255 : color_g);
 			color_b = (color_b < 0) ? 0 : ((color_b > 255) ? 255 : color_b);
 
-			if (current_page->bDoProgress) {
-				if (current_page->bDoLeft) {
-					current_page->crProgressDown = RGB(color_r, color_g, color_b);
-					current_page->ctrlProgressDownDrawer.Invalidate();
-				} else if (current_page->bDoSegment) {
-					current_page->crProgressSegment = RGB(color_r, color_g, color_b);
-				} else {
-					current_page->crProgressUp = RGB(color_r, color_g, color_b);
-					current_page->ctrlProgressUpDrawer.Invalidate();
-				}
-			} else {
-				if (current_page->bDoLeft)
-					current_page->crMenubarLeft = RGB(color_r, color_g, color_b);
-				else
-					current_page->crMenubarRight = RGB(color_r, color_g, color_b);
-				current_page->ctrlMenubarDrawer.Invalidate();
-			}
+			if (current_page->bDoLeft)
+				current_page->crMenubarLeft = RGB(color_r, color_g, color_b);
+			else
+				current_page->crMenubarRight = RGB(color_r, color_g, color_b);
+			current_page->ctrlMenubarDrawer.Invalidate();
 		}
 	}
 	
 	return (*color_proc)(hWnd, uMsg, wParam, lParam);
-
 }
 LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
@@ -112,16 +116,18 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	PropPage::read((HWND)*this, items);
 	SettingsManager::getInstance()->addListener(this);
 
+	ctrlList.Attach(GetDlgItem(IDC_COLOR_LIST));
+	ctrlList.SetExtendedListViewStyle(LVS_EX_FULLROWSELECT | LVS_EX_DOUBLEBUFFER);
+	CRect rc;
+	ctrlList.GetClientRect(rc);
+	ctrlList.InsertColumn(0, 0, LVCFMT_LEFT, rc.Width() / 2, 0);
+	ctrlList.InsertColumn(1, 0, LVCFMT_LEFT, rc.Width() / 2, 1);
+
 	sampleText = TSTRING(SAMPLE_TEXT);
 	sampleTextLen = sampleText.length();
 
-	crProgressDown = SETTING(DOWNLOAD_BAR_COLOR);
-	crProgressUp = SETTING(UPLOAD_BAR_COLOR);
 	crProgressTextDown = SETTING(PROGRESS_TEXT_COLOR_DOWN);
 	crProgressTextUp = SETTING(PROGRESS_TEXT_COLOR_UP);
-
-	ctrlProgressDownDrawer.Attach(GetDlgItem(IDC_PROGRESS_COLOR_DOWN_SHOW));
-	ctrlProgressUpDrawer.Attach(GetDlgItem(IDC_PROGRESS_COLOR_UP_SHOW));
 
 	setMinMax(IDC_FLAT_SPIN, 1, 5);
 
@@ -130,8 +136,6 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	progress.SetPos(50);
 	WinUtil::decodeFont(Text::toT(SETTING(TB_PROGRESS_FONT)), currentFont );
 	textclr = SETTING(TB_PROGRESS_TEXT_COLOR);
-
-	updateProgress();
 
 	crMenubarLeft = SETTING(MENUBAR_LEFT_COLOR);
 	crMenubarRight = SETTING(MENUBAR_RIGHT_COLOR);
@@ -144,10 +148,20 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	checkBox(IDC_SETTINGS_ODC_MENUBAR_BUMPED, SETTING(MENUBAR_BUMPED));
 	checkBox(IDC_SETTINGS_ODC_MENUBAR_USETWO, SETTING(MENUBAR_TWO_COLORS));
 
+	//load defaults
+	for (int i = 0; i < sizeof(colours) / sizeof(clrs); i++){
+		colours[i].value = SettingsManager::getInstance()->get((SettingsManager::IntSetting)colours[i].setting, true);
+	}
+	for (int i = 0; i < sizeof(ODCcolours) / sizeof(clrs); i++){
+		ODCcolours[i].value = SettingsManager::getInstance()->get((SettingsManager::IntSetting)ODCcolours[i].setting, true);
+	}
+	updateProgress();
+	fillColorList();
+
 	BOOL b;
 	onMenubarClicked(0, IDC_SETTINGS_ODC_MENUBAR_USETWO, 0, b);
 	// Do specialized reading here
-	
+	loading = false;
 	return TRUE;
 }
 
@@ -163,19 +177,87 @@ void OperaColorsPage::write()
 	SettingsManager::getInstance()->set(SettingsManager::MENUBAR_BUMPED, getCheckbox(IDC_SETTINGS_ODC_MENUBAR_BUMPED));
 	SettingsManager::getInstance()->set(SettingsManager::MENUBAR_TWO_COLORS, getCheckbox(IDC_SETTINGS_ODC_MENUBAR_USETWO));
 
-	SettingsManager::getInstance()->set(SettingsManager::DOWNLOAD_BAR_COLOR, (int)crProgressDown);
-	SettingsManager::getInstance()->set(SettingsManager::UPLOAD_BAR_COLOR, (int)crProgressUp);
 	SettingsManager::getInstance()->set(SettingsManager::PROGRESS_TEXT_COLOR_DOWN, (int)crProgressTextDown);
 	SettingsManager::getInstance()->set(SettingsManager::PROGRESS_TEXT_COLOR_UP, (int)crProgressTextUp);
 	
 	SettingsManager::getInstance()->set(SettingsManager::TB_PROGRESS_FONT, Text::fromT(WinUtil::encodeFont(currentFont)));
 	SettingsManager::getInstance()->set(SettingsManager::TB_PROGRESS_TEXT_COLOR, (int)textclr);
 
+	for (int i = 0; i < sizeof(colours) / sizeof(clrs); i++){
+		settings->set((SettingsManager::IntSetting)colours[i].setting, (int)colours[i].value);
+	}
+	for (int i = 0; i < sizeof(ODCcolours) / sizeof(clrs); i++){
+		settings->set((SettingsManager::IntSetting)ODCcolours[i].setting, (int)ODCcolours[i].value);
+	}
+
+
 	WinUtil::progressFont = CreateFontIndirect(&currentFont);
 	WinUtil::TBprogressTextColor = textclr;
 	
 	OperaColors::ClearCache();
 }
+
+LRESULT OperaColorsPage::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	NMLVCUSTOMDRAW* cd = (NMLVCUSTOMDRAW*)pnmh;
+
+	switch (cd->nmcd.dwDrawStage) {
+	case CDDS_PREPAINT:
+		return CDRF_NOTIFYITEMDRAW;
+
+	case CDDS_ITEMPREPAINT:
+		return CDRF_NOTIFYSUBITEMDRAW;
+
+	case CDDS_SUBITEM | CDDS_ITEMPREPAINT:
+	{
+		if (cd->iSubItem != 1)
+			return 0;
+
+		CRect rc;
+		ctrlList.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, &rc);
+		rc.top -= 1;
+
+		CRect real_rc = rc;
+		rc.MoveToXY(0, 0);
+
+		CDC cdc;
+		cdc.CreateCompatibleDC(cd->nmcd.hdc);
+
+		HBITMAP pOldBmp = cdc.SelectBitmap(CreateCompatibleBitmap(cd->nmcd.hdc, real_rc.Width(), real_rc.Height()));
+		HDC& dc = cdc.m_hDC;
+		SetBkMode(dc, TRANSPARENT);
+
+		if (odcStyle) {
+			COLORREF clr = getCheckbox(IDC_PROGRESS_OVERRIDE) ? ODCcolours[(int)cd->nmcd.dwItemSpec].value : GetSysColor(COLOR_HIGHLIGHT);
+			COLORREF a, b;
+			OperaColors::EnlightenFlood(clr, a, b);
+			OperaColors::FloodFill(cdc, rc.left, rc.top, rc.right, rc.bottom, a, b);
+			COLORREF textcolor = getCheckbox(IDC_PROGRESS_OVERRIDE2) ? ((int)cd->nmcd.dwItemSpec != 1  ? crProgressTextDown : crProgressTextUp) : OperaColors::TextFromBackground(clr);
+			::SetTextColor(dc, textcolor);
+			::DrawText(dc, sampleText.c_str(), sampleText.length(), rc, DT_CENTER | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
+		}
+		else {
+			COLORREF clr = getCheckbox(IDC_PROGRESS_OVERRIDE) ? colours[(int)cd->nmcd.dwItemSpec].value : GetSysColor(COLOR_HIGHLIGHT);
+			CBarShader statusBar(rc.bottom - rc.top, rc.right - rc.left, colours[0].value);
+			statusBar.SetFileSize(16);
+			statusBar.FillRange(0, 16, clr);
+			statusBar.Draw(cdc, rc.top, rc.left, hloubka);
+
+			int textcolor = getCheckbox(IDC_PROGRESS_OVERRIDE2) ? ((int)cd->nmcd.dwItemSpec != 1 ? crProgressTextDown : crProgressTextUp) : OperaColors::TextFromBackground(clr);
+			::SetTextColor(dc, textcolor);
+			::DrawText(dc, sampleText.c_str(), sampleText.length(), rc, DT_CENTER | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
+		}
+		BitBlt(cd->nmcd.hdc, real_rc.left, real_rc.top, real_rc.Width(), real_rc.Height(), dc, 0, 0, SRCCOPY);
+		DeleteObject(cdc.SelectBitmap(pOldBmp));
+
+		return CDRF_SKIPDEFAULT;
+	}
+
+
+	default:
+		return CDRF_DODEFAULT;
+	}
+}
+
 
 LRESULT OperaColorsPage::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
 
@@ -193,24 +275,7 @@ LRESULT OperaColorsPage::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 				else
 					dc.FillSolidRect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, crMenubarLeft);
 				dc.SetTextColor(OperaColors::TextFromBackground(crMenubarLeft));
-			} else if (dis->CtlID == IDC_PROGRESS_COLOR_DOWN_SHOW || dis->CtlID == IDC_PROGRESS_COLOR_UP_SHOW) {
-				COLORREF clr = getCheckbox(IDC_PROGRESS_OVERRIDE) ? ((dis->CtlID == IDC_PROGRESS_COLOR_DOWN_SHOW) ? crProgressDown : crProgressUp) : GetSysColor(COLOR_HIGHLIGHT);
-				if(odcStyle) {
-					COLORREF a, b;
-					OperaColors::EnlightenFlood(clr, a, b);
-					OperaColors::FloodFill(dc, rc.left, rc.top, rc.right, rc.bottom, a, b);
-					int textcolor = getCheckbox(IDC_PROGRESS_OVERRIDE2) ? ((dis->CtlID == IDC_PROGRESS_COLOR_DOWN_SHOW) ? crProgressTextDown : crProgressTextUp) : OperaColors::TextFromBackground(clr);
-					dc.SetTextColor(textcolor);
-				} else {
-					CBarShader statusBar(rc.bottom - rc.top, rc.right - rc.left);
-					statusBar.SetFileSize(16);
-					statusBar.FillRange(0, 16, clr);
-					statusBar.Draw(dc, rc.top, rc.left, hloubka);
-				}
-				int textcolor = getCheckbox(IDC_PROGRESS_OVERRIDE2) ? ((dis->CtlID == IDC_PROGRESS_COLOR_DOWN_SHOW) ? crProgressTextDown : crProgressTextUp) : OperaColors::TextFromBackground(clr);
-				dc.SetTextColor(textcolor);
 			}
-
 			dc.DrawText(sampleText.c_str(), sampleTextLen, rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 
 			dc.Detach();
@@ -230,6 +295,20 @@ void OperaColorsPage::EditTextStyle() {
 		currentFont = font;
 		textclr = d.GetColor();
 		setProgressText(sampleText);
+	}
+}
+
+void OperaColorsPage::fillColorList() {
+	ctrlList.DeleteAllItems();
+	if (!odcStyle){
+		for (int i = 0; i < sizeof(colours) / sizeof(clrs); i++){
+			ctrlList.insert(i, Text::toT(ResourceManager::getInstance()->getString(colours[i].name)));
+
+		}
+	} else {
+		for (int i = 0; i < sizeof(ODCcolours) / sizeof(clrs); i++){
+			ctrlList.insert(i, Text::toT(ResourceManager::getInstance()->getString(ODCcolours[i].name)));
+		}
 	}
 }
 
@@ -270,57 +349,34 @@ LRESULT OperaColorsPage::onMenubarClicked(WORD /*wNotifyCode*/, WORD wID, HWND /
 LRESULT OperaColorsPage::onClickedProgress(WORD /* wNotifyCode */, WORD wID, HWND /* hWndCtl */, BOOL& /* bHandled */) {
 	odcStyle = IsDlgButtonChecked(IDC_ODC_STYLE) == 1;
 	updateProgress();
-	if (wID == IDC_SETTINGS_DOWNLOAD_BAR_COLOR) {
-		CColorDialog d(crProgressDown, CC_FULLOPEN, *this);
-		color_proc = d.m_cc.lpfnHook;
-		d.m_cc.lpfnHook = MenuBarCommDlgProc;
-		current_page = this;//d.m_cc.lCustData = (LPARAM)this;
-		bDoProgress = true;
-		bDoLeft = true;
-		bDoSegment = false;
-		COLORREF backup = crProgressDown;
-		if (d.DoModal() == IDOK)
-			crProgressDown = d.GetColor();
-		else
-			crProgressDown = backup;
-		ctrlProgressDownDrawer.Invalidate();
-		//ctrlProgressSegmentDrawer.Invalidate();
-	} else if (wID == IDC_SETTINGS_UPLOAD_BAR_COLOR) {
-		CColorDialog d(crProgressUp, CC_FULLOPEN, *this);
-		color_proc = d.m_cc.lpfnHook;
-		d.m_cc.lpfnHook = MenuBarCommDlgProc;
-		current_page = this;//d.m_cc.lCustData = (LPARAM)this;
-		bDoProgress = true;
-		bDoLeft = false;
-		bDoSegment = false;
-		COLORREF backup = crProgressUp;
-		if (d.DoModal() == IDOK)
-			crProgressUp = d.GetColor();
-		else
-			crProgressUp = backup;
-		ctrlProgressUpDrawer.Invalidate();
-	} else {
-		ctrlProgressDownDrawer.Invalidate();
-		ctrlProgressUpDrawer.Invalidate();
-	}
+
+	if (wID == IDC_ODC_STYLE) //reload color dropdownlist
+		fillColorList();
+
 	return TRUE;
 }
 
-LRESULT OperaColorsPage::onClickedProgressTextDown(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */) {
-	CColorDialog d(crProgressTextDown, 0, *this);
-	if (d.DoModal() == IDOK) {
-		crProgressTextDown = d.GetColor();
+LRESULT OperaColorsPage::onClickedProgressText(WORD /* wNotifyCode */, WORD wID, HWND /* hWndCtl */, BOOL& /* bHandled */) {
+	switch (wID) {
+	case IDC_PROGRESS_TEXT_DOWNLOAD: {
+		CColorDialog d(crProgressTextDown, 0, *this);
+		if (d.DoModal() == IDOK) {
+			crProgressTextDown = d.GetColor();
+			ctrlList.Invalidate();
+		}
+		break;
 	}
-		ctrlProgressDownDrawer.Invalidate();
-	return TRUE;
-}
+	case IDC_PROGRESS_TEXT_UPLOAD: {
+		CColorDialog d(crProgressTextUp, 0, *this);
+		if (d.DoModal() == IDOK) {
+			crProgressTextUp = d.GetColor();
+			ctrlList.Invalidate();
+		}
+		break;
+	}
+	default: break;
+	}
 
-LRESULT OperaColorsPage::onClickedProgressTextUp(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */) {
-	CColorDialog d(crProgressTextUp, 0, *this);
-	if (d.DoModal() == IDOK) {
-		crProgressTextUp = d.GetColor();
-	}
-		ctrlProgressUpDrawer.Invalidate();
 	return TRUE;
 }
 
@@ -348,10 +404,6 @@ void OperaColorsPage::setProgressText(const tstring& text){
 LRESULT OperaColorsPage::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
 	SettingsManager::getInstance()->removeListener(this);
-	if (ctrlProgressDownDrawer.m_hWnd != NULL)	
-		ctrlProgressDownDrawer.Detach();
-	if (ctrlProgressUpDrawer.m_hWnd != NULL)
-		ctrlProgressUpDrawer.Detach();
 	if (ctrlLeftColor.m_hWnd != NULL)
 		ctrlLeftColor.Detach();
 	if (ctrlRightColor.m_hWnd != NULL)
@@ -364,5 +416,26 @@ LRESULT OperaColorsPage::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		ctrlMenubarDrawer.Detach();
 	if (progress.m_hWnd != NULL)	
 		progress.Detach();
+	if (ctrlList.m_hWnd != NULL)
+		ctrlList.Detach();
 	return 1;
+}
+
+LRESULT OperaColorsPage::onSelectColor(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
+	if (ctrlList.GetSelectedCount() > 0) {
+		if (!odcStyle) {
+			CColorDialog d(colours[ctrlList.GetSelectedIndex()].value, 0, *this);
+			if (d.DoModal() == IDOK) {
+				colours[ctrlList.GetSelectedIndex()].value = d.GetColor();
+				ctrlList.Update(ctrlList.GetSelectedIndex());
+			}
+		} else {
+			CColorDialog d(ODCcolours[ctrlList.GetSelectedIndex()].value, 0, *this);
+			if (d.DoModal() == IDOK) {
+				ODCcolours[ctrlList.GetSelectedIndex()].value = d.GetColor();
+				ctrlList.Update(ctrlList.GetSelectedIndex());
+			}
+		}
+	}
+	return S_OK;
 }

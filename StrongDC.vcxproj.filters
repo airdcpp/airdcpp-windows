@@ -1028,9 +1028,6 @@
     <ClInclude Include="windows\TempShare_dlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\CSplitterEx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\SearchTypesPage.h">
       <Filter>Header Files</Filter>
     </ClInclude>

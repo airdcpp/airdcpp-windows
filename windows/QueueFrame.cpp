@@ -30,7 +30,7 @@
 
 int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SOURCES, COLUMN_TIME_ADDED, COLUMN_TIME_FINISHED, COLUMN_PATH };
 
-int QueueFrame::columnSizes[] = { 450, 70, 100, 80, 200, 80, 80, 100, 100, 100, 500 };
+int QueueFrame::columnSizes[] = { 450, 70, 100, 80, 200, 80, 80, 80, 100, 100, 500 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::DOWNLOADED, ResourceManager::TIME_LEFT,
 ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
@@ -201,7 +201,7 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 				// Get the text to draw
 				// Get the color of this bar
 				COLORREF clr = SETTING(PROGRESS_OVERRIDE_COLORS) ? 
-					(ii->parent ? SETTING(PROGRESS_SEGMENT_COLOR) : SETTING(DOWNLOAD_BAR_COLOR)) : GetSysColor(COLOR_HIGHLIGHT);
+					(ii->parent ? SETTING(PROGRESS_SEGMENT_COLOR) : getStatusColor(ii->bundle ? ii->bundle->getStatus() : 1)) : GetSysColor(COLOR_HIGHLIGHT);
 
 				//this is just severely broken, msdn says GetSubItemRect requires a one based index
 				//but it wont work and index 0 gives the rect of the whole item
@@ -290,11 +290,8 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 					// Get the color of this text bar
 					oldcol = ::SetTextColor(dc, SETTING(PROGRESS_OVERRIDE_COLORS2) ? SETTING(PROGRESS_TEXT_COLOR_DOWN) :
 						OperaColors::TextFromBackground(clr));
-
-					rc.left += 6;
-					rc.right -= 2;
-					LONG top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1) / 2 + 1;
-					::ExtTextOut(dc, rc.left, top, ETO_CLIPPED, rc, ii->getText(colIndex).c_str(), ii->getText(colIndex).length(), NULL);
+					
+					::DrawText(dc, ii->getText(colIndex).c_str(), ii->getText(colIndex).length(), rc, DT_CENTER | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
 				}
 				SelectObject(dc, oldFont);
 				::SetTextColor(dc, oldcol);
@@ -1209,21 +1206,7 @@ tstring QueueFrame::QueueItemInfo::getSourceString() const {
 		}
 	}
 
-	//return TSTRING_F(USERS_ONLINE, online % size);
-	
-	if (online > 0) {
-		return (size == 1) ? TSTRING(USER_ONLINE) : TSTRING_F(USERS_ONLINE, online % size);
-	} else {
-		if (size == 0) {
-			return TSTRING(NO_USERS_TO_DOWNLOAD_FROM);
-		} else if (size == 1) {
-			return TSTRING(USER_OFFLINE);
-		} else if (size == 2) {
-			return TSTRING(BOTH_USERS_OFFLINE);
-		} else {
-			return TSTRING_F(ALL_USERS_OFFLINE, size);
-		}
-	}
+	return TSTRING_F(USERS_ONLINE, online % size);
 }
 
 int64_t QueueFrame::QueueItemInfo::getDownloadedBytes() const {
@@ -1239,5 +1222,23 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 	case COLUMN_SPEED: return compare(a->getSpeed(), b->getSpeed());
 	default: 
 		return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
+	}
+}
+
+COLORREF QueueFrame::getStatusColor(uint8_t status) {
+	switch (status) {
+	case Bundle::STATUS_NEW: return SETTING(DOWNLOAD_BAR_COLOR);
+	case Bundle::STATUS_QUEUED: return SETTING(DOWNLOAD_BAR_COLOR);
+	case Bundle::STATUS_DOWNLOADED: return SETTING(DOWNLOAD_BAR_COLOR);;
+	case Bundle::STATUS_MOVED: return SETTING(DOWNLOAD_BAR_COLOR);
+	case Bundle::STATUS_FAILED_MISSING: return SETTING(COLOR_STATUS_FAILED);
+	case Bundle::STATUS_SHARING_FAILED: return SETTING(COLOR_STATUS_FAILED);
+	case Bundle::STATUS_FINISHED: return SETTING(COLOR_STATUS_FINISHED);
+	case Bundle::STATUS_HASHING: return SETTING(COLOR_STATUS_HASHING);
+	case Bundle::STATUS_HASH_FAILED: return SETTING(COLOR_STATUS_FAILED);
+	case Bundle::STATUS_HASHED: return SETTING(COLOR_STATUS_FINISHED);
+	case Bundle::STATUS_SHARED: return SETTING(COLOR_STATUS_SHARED);
+	default:
+		return SETTING(DOWNLOAD_BAR_COLOR);
 	}
 }
