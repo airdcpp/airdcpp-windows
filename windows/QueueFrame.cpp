@@ -1222,7 +1222,7 @@ tstring QueueFrame::QueueItemInfo::getSourceString() const {
 		}
 	}
 
-	return TSTRING_F(USERS_ONLINE, online % size);
+	return size == 0 ? TSTRING(NONE) : TSTRING_F(USERS_ONLINE, online % size);
 }
 
 int64_t QueueFrame::QueueItemInfo::getDownloadedBytes() const {
