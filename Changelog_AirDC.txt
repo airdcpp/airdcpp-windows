@@ -11,7 +11,7 @@ Changed:
 
 Fixed:
 
-- Fix TTH searches
+- Fix TTH search responses
 - Fix share monitoring spam when queuing files to a newly created directory
 - Avoid refreshing the share twice on startup
 - Fix a minor issue with counting the disk usage for queued items
