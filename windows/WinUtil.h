@@ -315,6 +315,8 @@ public:
 
 	static void showPopup(tstring szMsg, tstring szTitle, HICON hIcon, bool force = false);
 	static void showPopup(tstring szMsg, tstring szTitle, DWORD dwInfoFlags = NIIF_INFO, bool force = false);
+	static void drawProgressBar(HDC& drawDC, CRect& rc, COLORREF crl, COLORREF textclr, COLORREF backclr, const tstring& aText, 
+		double size, double done, bool odcStyle, bool colorOverride, int depth, DWORD tAlign = DT_LEFT);
 
 	static int getTextWidth(const tstring& str, HWND hWnd) {
 		HDC dc = ::GetDC(hWnd);

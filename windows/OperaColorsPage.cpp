@@ -66,6 +66,10 @@ OperaColorsPage::clrs OperaColorsPage::colours[] = {
 	{ ResourceManager::PROGRESS_BACKGROUND, SettingsManager::PROGRESS_BACK_COLOR, 0 },
 	{ ResourceManager::PROGRESS_DECOMPRESS, SettingsManager::PROGRESS_COMPRESS_COLOR, 0 },
 	{ ResourceManager::PROGRESS_DONE_CHUNKS, SettingsManager::COLOR_DONE, 0 },
+	{ ResourceManager::STATUS_FINISHED, SettingsManager::COLOR_STATUS_FINISHED, 0 },
+	{ ResourceManager::STATUS_SHARED, SettingsManager::COLOR_STATUS_SHARED, 0 },
+	{ ResourceManager::STATUS_HASHING, SettingsManager::COLOR_STATUS_HASHING, 0 },
+	{ ResourceManager::STATUS_FAILED, SettingsManager::COLOR_STATUS_FAILED, 0 },
 };
 
 OperaColorsPage::clrs OperaColorsPage::ODCcolours[] = {
@@ -77,8 +81,6 @@ OperaColorsPage::clrs OperaColorsPage::ODCcolours[] = {
 	{ ResourceManager::STATUS_HASHING, SettingsManager::COLOR_STATUS_HASHING, 0 },
 	{ ResourceManager::STATUS_FAILED, SettingsManager::COLOR_STATUS_FAILED, 0 },
 };
-
-
 
 UINT_PTR CALLBACK MenuBarCommDlgProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
@@ -214,40 +216,14 @@ LRESULT OperaColorsPage::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 
 		CRect rc;
 		ctrlList.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, &rc);
-		rc.top -= 1;
 
-		CRect real_rc = rc;
-		rc.MoveToXY(0, 0);
+		COLORREF clr = getCheckbox(IDC_PROGRESS_OVERRIDE) ? 
+			(odcStyle ? ODCcolours[(int)cd->nmcd.dwItemSpec].value : colours[(int)cd->nmcd.dwItemSpec].value) : GetSysColor(COLOR_HIGHLIGHT);
+	
+		COLORREF textclr = (int)cd->nmcd.dwItemSpec != 1 ? crProgressTextDown : crProgressTextUp;
 
-		CDC cdc;
-		cdc.CreateCompatibleDC(cd->nmcd.hdc);
-
-		HBITMAP pOldBmp = cdc.SelectBitmap(CreateCompatibleBitmap(cd->nmcd.hdc, real_rc.Width(), real_rc.Height()));
-		HDC& dc = cdc.m_hDC;
-		SetBkMode(dc, TRANSPARENT);
-
-		if (odcStyle) {
-			COLORREF clr = getCheckbox(IDC_PROGRESS_OVERRIDE) ? ODCcolours[(int)cd->nmcd.dwItemSpec].value : GetSysColor(COLOR_HIGHLIGHT);
-			COLORREF a, b;
-			OperaColors::EnlightenFlood(clr, a, b);
-			OperaColors::FloodFill(cdc, rc.left, rc.top, rc.right, rc.bottom, a, b);
-			COLORREF textcolor = getCheckbox(IDC_PROGRESS_OVERRIDE2) ? ((int)cd->nmcd.dwItemSpec != 1  ? crProgressTextDown : crProgressTextUp) : OperaColors::TextFromBackground(clr);
-			::SetTextColor(dc, textcolor);
-			::DrawText(dc, sampleText.c_str(), sampleText.length(), rc, DT_CENTER | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
-		}
-		else {
-			COLORREF clr = getCheckbox(IDC_PROGRESS_OVERRIDE) ? colours[(int)cd->nmcd.dwItemSpec].value : GetSysColor(COLOR_HIGHLIGHT);
-			CBarShader statusBar(rc.bottom - rc.top, rc.right - rc.left, colours[0].value);
-			statusBar.SetFileSize(16);
-			statusBar.FillRange(0, 16, clr);
-			statusBar.Draw(cdc, rc.top, rc.left, hloubka);
-
-			int textcolor = getCheckbox(IDC_PROGRESS_OVERRIDE2) ? ((int)cd->nmcd.dwItemSpec != 1 ? crProgressTextDown : crProgressTextUp) : OperaColors::TextFromBackground(clr);
-			::SetTextColor(dc, textcolor);
-			::DrawText(dc, sampleText.c_str(), sampleText.length(), rc, DT_CENTER | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
-		}
-		BitBlt(cd->nmcd.hdc, real_rc.left, real_rc.top, real_rc.Width(), real_rc.Height(), dc, 0, 0, SRCCOPY);
-		DeleteObject(cdc.SelectBitmap(pOldBmp));
+		WinUtil::drawProgressBar(cd->nmcd.hdc, rc, clr, textclr, colours[0].value, sampleText,
+			16, 16, odcStyle, getCheckbox(IDC_PROGRESS_OVERRIDE2), hloubka, DT_CENTER);
 
 		return CDRF_SKIPDEFAULT;
 	}

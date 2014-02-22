@@ -1714,6 +1714,97 @@ void WinUtil::searchSite(const WebShortcut* ws, const string& aSearchTerm, bool 
 	}
 }
 
+void WinUtil::drawProgressBar(HDC& drawDC, CRect& rc, COLORREF clr, COLORREF textclr, COLORREF backclr, const tstring& aText, 
+	double size, double done, bool odcStyle, bool colorOverride, int depth, DWORD tAlign/*DT_LEFT*/) {
+	// fixes issues with double border
+	rc.top -= 1;
+	// Real rc, the original one.
+	CRect real_rc = rc;
+	// We need to offset the current rc to (0, 0) to paint on the New dc
+	rc.MoveToXY(0, 0);
+
+	CDC cdc;
+	cdc.CreateCompatibleDC(drawDC);
+
+	HBITMAP pOldBmp = cdc.SelectBitmap(CreateCompatibleBitmap(drawDC, real_rc.Width(), real_rc.Height()));
+	HDC& dc = cdc.m_hDC;
+
+	HFONT oldFont = (HFONT)SelectObject(dc, WinUtil::font);
+	SetBkMode(dc, TRANSPARENT);
+
+	COLORREF oldcol;
+	if (odcStyle) {
+		// New style progressbar tweaks the current colors
+		HLSTRIPLE hls_bk = OperaColors::RGB2HLS(bgColor);
+
+		// Create pen (ie outline border of the cell)
+		HPEN penBorder = ::CreatePen(PS_SOLID, 1, OperaColors::blendColors(bgColor, clr, (hls_bk.hlstLightness > 0.75) ? 0.6 : 0.4));
+		HGDIOBJ pOldPen = ::SelectObject(dc, penBorder);
+
+		// Draw the outline (but NOT the background) using pen
+		HBRUSH hBrOldBg = CreateSolidBrush(bgColor);
+		hBrOldBg = (HBRUSH)::SelectObject(dc, hBrOldBg);
+		::Rectangle(dc, rc.left, rc.top, rc.right, rc.bottom);
+		DeleteObject(::SelectObject(dc, hBrOldBg));
+
+		// Set the background color, by slightly changing it
+		HBRUSH hBrDefBg = CreateSolidBrush(OperaColors::blendColors(bgColor, clr, (hls_bk.hlstLightness > 0.75) ? 0.85 : 0.70));
+		HGDIOBJ oldBg = ::SelectObject(dc, hBrDefBg);
+
+		// Draw the outline AND the background using pen+brush
+		::Rectangle(dc, rc.left, rc.top, rc.left + (LONG)(rc.Width() * 1 + 0.5), rc.bottom);
+
+		// Reset pen
+		DeleteObject(::SelectObject(dc, pOldPen));
+		// Reset bg (brush)
+		DeleteObject(::SelectObject(dc, oldBg));
+
+		// Draw the text over the entire item
+		oldcol = ::SetTextColor(dc, colorOverride ? textclr : clr);
+
+		//Want to center the text, DT_CENTER wont work with the changing text colours so center with the drawing rect..
+		CRect textRect = rc;
+		if (tAlign & DT_CENTER) {
+			int textWidth = WinUtil::getTextWidth(aText, dc);
+			textRect.left += (textRect.right / 2) - (textWidth / 2);
+			tAlign &= ~DT_CENTER;
+		} else {
+			textRect.left += 6;
+		}
+		::DrawText(dc, aText.c_str(), aText.length(), textRect, tAlign | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
+
+		rc.right = rc.left + size > 0 ? (rc.Width() * done / size) : 0;
+
+		COLORREF a, b;
+		OperaColors::EnlightenFlood(clr, a, b);
+		OperaColors::FloodFill(cdc, rc.left + 1, rc.top + 1, rc.right, rc.bottom - 1, a, b);
+
+		// Draw the text only over the bar and with correct color
+		::SetTextColor(dc, colorOverride ? textclr :
+			OperaColors::TextFromBackground(clr));
+
+		textRect.right = textRect.left > rc.right ? textRect.left : rc.right;
+		::DrawText(dc, aText.c_str(), aText.length(), textRect, tAlign | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
+	} else {
+		CBarShader statusBar(rc.bottom - rc.top, rc.right - rc.left, backclr, size);
+		statusBar.FillRange(0, done, clr);
+		statusBar.Draw(cdc, rc.top, rc.left, depth);
+
+		// Get the color of this text bar
+		oldcol = ::SetTextColor(dc, colorOverride ? textclr :
+			OperaColors::TextFromBackground(clr));
+
+		::DrawText(dc, aText.c_str(), aText.length(), rc, tAlign | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
+	}
+	SelectObject(dc, oldFont);
+	::SetTextColor(dc, oldcol);
+
+	// New way:
+	BitBlt(drawDC, real_rc.left, real_rc.top, real_rc.Width(), real_rc.Height(), dc, 0, 0, SRCCOPY);
+	DeleteObject(cdc.SelectBitmap(pOldBmp));
+
+}
+
 void WinUtil::removeBundle(const string& aBundleToken) {
 	BundlePtr aBundle = QueueManager::getInstance()->findBundle(aBundleToken);
 	if (aBundle) {
