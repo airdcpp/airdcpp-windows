@@ -206,6 +206,7 @@ private:
 	void handleCheckSFV();
 	void getSelectedItems(BundleList& bl, QueueItemList& ql);
 	tstring formatUser(const Bundle::BundleSource& bs) const;
+	tstring formatUser(const QueueItem::Source& s) const;
 	
 	void updateList();
 	bool show(const QueueItemInfo* Qii) const;
@@ -253,5 +254,39 @@ private:
 
 
 
+	template<typename SourceType>
+	void appendUserMenu(OMenu& aMenu, const vector<SourceType>& aSources) {
+		auto browseMenu = aMenu.createSubMenu(TSTRING(BROWSE_FILE_LIST), true);
+		auto getListMenu = aMenu.createSubMenu(TSTRING(GET_FILE_LIST), true);
+		auto pmMenu = aMenu.createSubMenu(TSTRING(SEND_PRIVATE_MESSAGE), true);
+
+		for (auto& s : aSources) {
+			auto u = s.getUser();
+			auto nick = formatUser(s);
+
+			// get list
+			getListMenu->appendItem(nick, [=] {
+				try {
+					QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW);
+				} catch (const QueueException& e) {
+					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
+				}
+			});
+
+			// browse list
+			browseMenu->appendItem(nick, [=] {
+				try {
+					QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
+				} catch (const QueueException& e) {
+					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
+				}
+			});
+
+			// PM
+			if (s.getUser().user->isOnline()) {
+				pmMenu->appendItem(nick, [=] { PrivateFrame::openWindow(u); });
+			}
+		}
+	}
 };
 #endif // !defined(QUEUE_FRAME_H)

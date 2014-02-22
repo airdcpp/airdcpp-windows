@@ -423,6 +423,15 @@ tstring QueueFrame::formatUser(const Bundle::BundleSource& bs) const {
 	return nick;
 }
 
+tstring QueueFrame::formatUser(const QueueItem::Source& s) const {
+	tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(s.getUser()));
+	// add hub hint to menu
+	if (!s.getUser().hint.empty())
+		nick += _T(" (") + Text::toT(s.getUser().hint) + _T(")");
+
+	return nick;
+}
+
 template<typename SourceType>
 tstring formatSourceFlags(const SourceType& s) {
 	OrderedStringSet reasons_;
@@ -523,8 +532,14 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 			bundleMenu.appendSeparator();
 		}
 
-		readdMenu->appendThis(TSTRING(READD_SOURCE), true);
-		removeMenu->appendThis(TSTRING(REMOVE_SOURCE), true);
+		if (!b->isFinished()) {
+			readdMenu->appendThis(TSTRING(READD_SOURCE), true);
+			removeMenu->appendThis(TSTRING(REMOVE_SOURCE), true);
+
+			bundleMenu.appendSeparator();
+			appendUserMenu<Bundle::BundleSource>(bundleMenu, bundleSources);
+			bundleMenu.appendSeparator();
+		}
 
 		bundleMenu.appendItem(TSTRING(USE_SEQ_ORDER), [=] {
 			auto bundle = b;
@@ -555,18 +570,14 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 	if (ql.size() == 1) {
 		QueueItemPtr qi = ql.front();
 
-		OMenu* pmMenu = fileMenu.getMenu();
-		OMenu* browseMenu = fileMenu.getMenu();
 		OMenu* removeAllMenu = fileMenu.getMenu();
 		OMenu* removeMenu = fileMenu.getMenu();
 		OMenu* readdMenu = fileMenu.getMenu();
-		OMenu* getListMenu = fileMenu.getMenu();
 
 
 		/* Create submenus */
 		//segmentsMenu.CheckMenuItem(qi->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
 
-		bool hasPMItems = false;
 		auto sources = move(QueueManager::getInstance()->getSources(qi));
 
 		//remove all sources from this file
@@ -580,42 +591,13 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		}
 
 		for (auto& s : sources) {
-			tstring nick = WinUtil::escapeMenu(WinUtil::getNicks(s.getUser()));
-			// add hub hint to menu
-			if (!s.getUser().hint.empty())
-				nick += _T(" (") + Text::toT(s.getUser().hint) + _T(")");
 
+			auto nick = formatUser(s);
 			auto u = s.getUser();
-			auto target = qi->getTarget();
-
-			// get list
-			getListMenu->appendItem(nick, [=] {
-				try {
-					QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW);
-				} catch (const QueueException& e) {
-					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
-				}
-			});
-
-			// browse list
-			browseMenu->appendItem(nick, [=] {
-				try {
-					QueueManager::getInstance()->addList(u, QueueItem::FLAG_CLIENT_VIEW | QueueItem::FLAG_PARTIAL_LIST);
-				} catch (const QueueException& e) {
-					ctrlStatus.SetText(1, Text::toT(e.getError()).c_str());
-				}
-			});
-
 			// remove source (this file)
-			removeMenu->appendItem(nick, [=] { QueueManager::getInstance()->removeFileSource(target, u, QueueItem::Source::FLAG_REMOVED); }, OMenu::FLAG_THREADED);
+			removeMenu->appendItem(nick, [=] { QueueManager::getInstance()->removeFileSource(qi->getTarget(), u, QueueItem::Source::FLAG_REMOVED); }, OMenu::FLAG_THREADED);
 			//remove source (all files)
 			removeAllMenu->appendItem(nick, [=]{ QueueManager::getInstance()->removeSource(u, QueueItem::Source::FLAG_REMOVED); }, OMenu::FLAG_THREADED);
-
-			// PM
-			if (s.getUser().user->isOnline()) {
-				pmMenu->appendItem(nick, [=] { PrivateFrame::openWindow(u); });
-				hasPMItems = true;
-			}
 		}
 
 		auto badSources = move(QueueManager::getInstance()->getBadSources(qi));
@@ -652,12 +634,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 
 		WinUtil::appendFilePrioMenu(fileMenu, ql);
 
-		browseMenu->appendThis(TSTRING(BROWSE_FILE_LIST), true);
-		getListMenu->appendThis(TSTRING(GET_FILE_LIST), true);
-		pmMenu->appendThis(TSTRING(SEND_PRIVATE_MESSAGE), true);
-
-		fileMenu.AppendMenu(MF_SEPARATOR);
-
 		ListType::MenuItemList customItems{
 			{ TSTRING(MAGNET_LINK), &handleCopyMagnet }
 		};
@@ -665,19 +641,24 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		ctrlQueue.appendCopyMenu(fileMenu, customItems);
 		WinUtil::appendSearchMenu(fileMenu, Util::getFilePath(qi->getTarget()));
 
-		fileMenu.AppendMenu(MF_SEPARATOR);
+		fileMenu.appendSeparator();
 		
 		//Todo: move items
 		//fileMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_RENAME_FILE));
 
 		fileMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { WinUtil::openFolder(Text::toT(qi->getTarget())); });
-		fileMenu.AppendMenu(MF_SEPARATOR);
 
-		readdMenu->appendThis(TSTRING(READD_SOURCE), true);
-		removeMenu->appendThis(TSTRING(REMOVE_SOURCE), true);
-		removeAllMenu->appendThis(TSTRING(REMOVE_FROM_ALL), true);
+		if (!qi->isFinished()) {
+			fileMenu.appendSeparator();
+			readdMenu->appendThis(TSTRING(READD_SOURCE), true);
+			removeMenu->appendThis(TSTRING(REMOVE_SOURCE), true);
+			removeAllMenu->appendThis(TSTRING(REMOVE_FROM_ALL), true);
+			fileMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
 
-		fileMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
+			fileMenu.appendSeparator();
+			appendUserMenu<QueueItem::Source>(fileMenu, sources);
+		}
+
 		//TODO: rechecker
 		//fileMenu.AppendMenu(MF_SEPARATOR);
 		//fileMenu.AppendMenu(MF_STRING, IDC_RECHECK, CTSTRING(RECHECK_FILE));
