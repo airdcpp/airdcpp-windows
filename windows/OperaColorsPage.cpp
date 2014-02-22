@@ -56,7 +56,6 @@ PropPage::Item OperaColorsPage::items[] = {
 	{ IDC_ODC_STYLE, SettingsManager::PROGRESSBAR_ODC_STYLE, PropPage::T_BOOL },
 	{ IDC_PROGRESS_OVERRIDE, SettingsManager::PROGRESS_OVERRIDE_COLORS, PropPage::T_BOOL },
 	{ IDC_PROGRESS_OVERRIDE2, SettingsManager::PROGRESS_OVERRIDE_COLORS2, PropPage::T_BOOL },
-	{ IDC_FLAT, SettingsManager::PROGRESS_3DDEPTH, PropPage::T_INT },
 	{ 0, 0, PropPage::T_END }
 };
 
@@ -125,13 +124,15 @@ LRESULT OperaColorsPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	ctrlList.InsertColumn(0, 0, LVCFMT_LEFT, rc.Width() / 2, 0);
 	ctrlList.InsertColumn(1, 0, LVCFMT_LEFT, rc.Width() / 2, 1);
 
+	dimmer.Attach(GetDlgItem(IDC_PROGRESS_SLIDER));
+	BarBlend = SETTING(PROGRESS_LIGHTEN);
+	BarDepth = SETTING(PROGRESS_3DDEPTH);
+	ctrlDimmerTxt.Attach(GetDlgItem(IDC_LIGHTEN_TXT));
+
 	sampleText = TSTRING(SAMPLE_TEXT);
-	sampleTextLen = sampleText.length();
 
 	crProgressTextDown = SETTING(PROGRESS_TEXT_COLOR_DOWN);
 	crProgressTextUp = SETTING(PROGRESS_TEXT_COLOR_UP);
-
-	setMinMax(IDC_FLAT_SPIN, 1, 5);
 
 	progress.Attach(GetDlgItem(IDC_PROGRESS1));
 	progress.SetRange(0,100);
@@ -184,6 +185,8 @@ void OperaColorsPage::write()
 	
 	SettingsManager::getInstance()->set(SettingsManager::TB_PROGRESS_FONT, Text::fromT(WinUtil::encodeFont(currentFont)));
 	SettingsManager::getInstance()->set(SettingsManager::TB_PROGRESS_TEXT_COLOR, (int)textclr);
+	SettingsManager::getInstance()->set(SettingsManager::PROGRESS_LIGHTEN, BarBlend);
+	SettingsManager::getInstance()->set(SettingsManager::PROGRESS_3DDEPTH, BarDepth);
 
 	for (int i = 0; i < sizeof(colours) / sizeof(clrs); i++){
 		settings->set((SettingsManager::IntSetting)colours[i].setting, (int)colours[i].value);
@@ -223,7 +226,7 @@ LRESULT OperaColorsPage::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHan
 		COLORREF textclr = (int)cd->nmcd.dwItemSpec != 1 ? crProgressTextDown : crProgressTextUp;
 
 		WinUtil::drawProgressBar(cd->nmcd.hdc, rc, clr, textclr, colours[0].value, sampleText,
-			16, 16, odcStyle, getCheckbox(IDC_PROGRESS_OVERRIDE2), hloubka, DT_CENTER);
+			16, 16, odcStyle, getCheckbox(IDC_PROGRESS_OVERRIDE2), BarDepth, BarBlend, DT_CENTER);
 
 		return CDRF_SKIPDEFAULT;
 	}
@@ -252,7 +255,7 @@ LRESULT OperaColorsPage::onDrawItem(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPa
 					dc.FillSolidRect(rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top, crMenubarLeft);
 				dc.SetTextColor(OperaColors::TextFromBackground(crMenubarLeft));
 			}
-			dc.DrawText(sampleText.c_str(), sampleTextLen, rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
+			dc.DrawText(sampleText.c_str(), sampleText.length(), rc, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
 
 			dc.Detach();
 		}

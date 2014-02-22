@@ -363,20 +363,20 @@ RGBTRIPLE OperaColors::HLS2RGB(double hue, double lightness, double saturation) 
 	return HUE2RGB(lightness - d, lightness + d, hue);
 }
 
-void OperaColors::EnlightenFlood(const COLORREF& clr, COLORREF& a, COLORREF& b) {
+void OperaColors::EnlightenFlood(const COLORREF& clr, COLORREF& a, COLORREF& b, int dimmer) {
 	HLSCOLOR hls_a = ::RGB2HLS(clr);
 	HLSCOLOR hls_b = hls_a;
 	BYTE buf = HLS_L(hls_a);
-	if (buf < 38)
+	if (buf < dimmer)
 		buf = 0;
 	else
-		buf -= 38;
+		buf -= dimmer;
 	a = ::HLS2RGB(HLS(HLS_H(hls_a), buf, HLS_S(hls_a)));
 	buf = HLS_L(hls_b);
-	if (buf > 217)
+	if (buf > (255 - dimmer))
 		buf = 255;
 	else
-		buf += 38;
+		buf += dimmer;
 	b = ::HLS2RGB(HLS(HLS_H(hls_b), buf, HLS_S(hls_b)));
 }
 

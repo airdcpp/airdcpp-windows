@@ -297,7 +297,7 @@ LRESULT TransferView::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled)
 			if (ii->size == 0) ii->size = 1;
 
 			WinUtil::drawProgressBar(cd->nmcd.hdc, rc, clr, textclr, SETTING(PROGRESS_BACK_COLOR), ii->statusString,
-				ii->size, ii->actual, SETTING(PROGRESSBAR_ODC_STYLE), SETTING(PROGRESS_OVERRIDE_COLORS2), SETTING(PROGRESS_3DDEPTH));
+				ii->size, ii->actual, SETTING(PROGRESSBAR_ODC_STYLE), SETTING(PROGRESS_OVERRIDE_COLORS2), SETTING(PROGRESS_3DDEPTH), SETTING(PROGRESS_LIGHTEN));
 
 			//bah crap, if we return CDRF_SKIPDEFAULT windows won't paint the icons
 			//so we have to do it

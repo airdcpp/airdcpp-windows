@@ -1715,7 +1715,7 @@ void WinUtil::searchSite(const WebShortcut* ws, const string& aSearchTerm, bool 
 }
 
 void WinUtil::drawProgressBar(HDC& drawDC, CRect& rc, COLORREF clr, COLORREF textclr, COLORREF backclr, const tstring& aText, 
-	double size, double done, bool odcStyle, bool colorOverride, int depth, DWORD tAlign/*DT_LEFT*/) {
+	double size, double done, bool odcStyle, bool colorOverride, int depth, int lighten, DWORD tAlign/*DT_LEFT*/) {
 	// fixes issues with double border
 	rc.top -= 1;
 	// Real rc, the original one.
@@ -1776,7 +1776,7 @@ void WinUtil::drawProgressBar(HDC& drawDC, CRect& rc, COLORREF clr, COLORREF tex
 		rc.right = rc.left + size > 0 ? (rc.Width() * done / size) : 0;
 
 		COLORREF a, b;
-		OperaColors::EnlightenFlood(clr, a, b);
+		OperaColors::EnlightenFlood(clr, a, b, lighten);
 		OperaColors::FloodFill(cdc, rc.left + 1, rc.top + 1, rc.right, rc.bottom - 1, a, b);
 
 		// Draw the text only over the bar and with correct color

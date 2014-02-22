@@ -226,7 +226,8 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 				}
 
 				WinUtil::drawProgressBar(cd->nmcd.hdc, rc, clr, SETTING(PROGRESS_TEXT_COLOR_DOWN), SETTING(PROGRESS_BACK_COLOR), ii->getText(colIndex),
-					ii->getSize(), ii->getDownloadedBytes(), SETTING(PROGRESSBAR_ODC_STYLE), SETTING(PROGRESS_OVERRIDE_COLORS2), SETTING(PROGRESS_3DDEPTH), DT_CENTER);
+					ii->getSize(), ii->getDownloadedBytes(), SETTING(PROGRESSBAR_ODC_STYLE), SETTING(PROGRESS_OVERRIDE_COLORS2), SETTING(PROGRESS_3DDEPTH),
+					SETTING(PROGRESS_LIGHTEN), DT_CENTER);
 				//bah crap, if we return CDRF_SKIPDEFAULT windows won't paint the icons
 				//so we have to do it
 				if (!SETTING(USE_EXPLORER_THEME) && cd->iSubItem == 0){

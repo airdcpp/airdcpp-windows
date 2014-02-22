@@ -1592,6 +1592,8 @@
 #define IDC_FINDMISSING                 10197
 #define IDC_TRANSFERLIST_DBLCLICK2      10197
 #define IDC_BLOOM_MODE                  10197
+#define IDC_PROGRESS_SLIDER             10198
+#define IDC_LIGHTEN_TXT                 10199
 #define IDC_REFRESH_WINAMP              11011
 #define IDC_WINAMP_LIST                 11012
 #define IDC_POSITION                    11013
@@ -1809,7 +1811,7 @@
 #define _APS_3D_CONTROLS                     1
 #define _APS_NEXT_RESOURCE_VALUE        362
 #define _APS_NEXT_COMMAND_VALUE         32795
-#define _APS_NEXT_CONTROL_VALUE         1752
+#define _APS_NEXT_CONTROL_VALUE         10200
 #define _APS_NEXT_SYMED_VALUE           136
 #endif
 #endif

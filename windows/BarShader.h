@@ -189,7 +189,7 @@ public:
 		}
 		BitBlt(hDC.m_hDC, x1, y1, x2, y2, fci->hDC, 0, 0, SRCCOPY);
 	}
-	static void EnlightenFlood(const COLORREF& clr, COLORREF& a, COLORREF& b);
+	static void EnlightenFlood(const COLORREF& clr, COLORREF& a, COLORREF& b, int dimmer);
 	static COLORREF TextFromBackground(COLORREF bg);
 
 	static void ClearCache(); // A _lot_ easier than to clear certain cache items
