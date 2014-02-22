@@ -212,6 +212,7 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 				COLORREF clr = SETTING(PROGRESS_OVERRIDE_COLORS) ? 
 					(ii->parent ? SETTING(PROGRESS_SEGMENT_COLOR) : getStatusColor(ii->bundle ? ii->bundle->getStatus() : 1)) : GetSysColor(COLOR_HIGHLIGHT);
 
+
 				//this is just severely broken, msdn says GetSubItemRect requires a one based index
 				//but it wont work and index 0 gives the rect of the whole item
 				CRect rc;
@@ -224,91 +225,9 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 					ctrlQueue.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, &rc);
 				}
 
-				// fixes issues with double border
-				rc.top -= 1;
-
-				// Real rc, the original one.
-				CRect real_rc = rc;
-				// We need to offset the current rc to (0, 0) to paint on the New dc
-				rc.MoveToXY(0, 0);
-
-				CDC cdc;
-				cdc.CreateCompatibleDC(cd->nmcd.hdc);
-
-				HBITMAP pOldBmp = cdc.SelectBitmap(CreateCompatibleBitmap(cd->nmcd.hdc, real_rc.Width(), real_rc.Height()));
-				HDC& dc = cdc.m_hDC;
-
-				HFONT oldFont = (HFONT)SelectObject(dc, WinUtil::font);
-				SetBkMode(dc, TRANSPARENT);
-
-				COLORREF oldcol;
-				if (SETTING(PROGRESSBAR_ODC_STYLE)) {
-					// New style progressbar tweaks the current colors
-					HLSTRIPLE hls_bk = OperaColors::RGB2HLS(cd->clrTextBk);
-
-					// Create pen (ie outline border of the cell)
-					HPEN penBorder = ::CreatePen(PS_SOLID, 1, OperaColors::blendColors(cd->clrTextBk, clr, (hls_bk.hlstLightness > 0.75) ? 0.6 : 0.4));
-					HGDIOBJ pOldPen = ::SelectObject(dc, penBorder);
-
-					// Draw the outline (but NOT the background) using pen
-					HBRUSH hBrOldBg = CreateSolidBrush(cd->clrTextBk);
-					hBrOldBg = (HBRUSH)::SelectObject(dc, hBrOldBg);
-					::Rectangle(dc, rc.left, rc.top, rc.right, rc.bottom);
-					DeleteObject(::SelectObject(dc, hBrOldBg));
-
-					// Set the background color, by slightly changing it
-					HBRUSH hBrDefBg = CreateSolidBrush(OperaColors::blendColors(cd->clrTextBk, clr, (hls_bk.hlstLightness > 0.75) ? 0.85 : 0.70));
-					HGDIOBJ oldBg = ::SelectObject(dc, hBrDefBg);
-
-					// Draw the outline AND the background using pen+brush
-					::Rectangle(dc, rc.left, rc.top, rc.left + (LONG)(rc.Width() * 1 + 0.5), rc.bottom);
-
-					// Reset pen
-					DeleteObject(::SelectObject(dc, pOldPen));
-					// Reset bg (brush)
-					DeleteObject(::SelectObject(dc, oldBg));
-
-					// Draw the text over the entire item
-					oldcol = ::SetTextColor(dc, SETTING(PROGRESS_OVERRIDE_COLORS2) ? SETTING(PROGRESS_TEXT_COLOR_DOWN) : clr);
-	
-					//Want to center the text, DT_CENTER wont work with the changing text colours so center with the drawing rect..
-					CRect textRect = rc;
-					int textWidth = WinUtil::getTextWidth(ii->getText(colIndex), dc);
-					textRect.left += (textRect.right / 2) - (textWidth / 2);
-					::DrawText(dc, ii->getText(colIndex).c_str(), ii->getText(colIndex).length(), textRect, DT_LEFT | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
-
-					rc.right = rc.left + ii->getSize() > 0 ? (rc.Width() * (double)ii->getDownloadedBytes() / (double)ii->getSize()) : 0;
-
-					COLORREF a, b;
-					OperaColors::EnlightenFlood(clr, a, b);
-					OperaColors::FloodFill(cdc, rc.left + 1, rc.top + 1, rc.right, rc.bottom - 1, a, b);
-
-					// Draw the text only over the bar and with correct color
-					::SetTextColor(dc, SETTING(PROGRESS_OVERRIDE_COLORS2) ? SETTING(PROGRESS_TEXT_COLOR_DOWN) : 
-						OperaColors::TextFromBackground(clr));
-
-					textRect.right = textRect.left > rc.right ? textRect.left : rc.right;
-					::DrawText(dc, ii->getText(colIndex).c_str(), ii->getText(colIndex).length(), textRect, DT_LEFT | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
-				} else {
-					CBarShader statusBar(rc.bottom - rc.top, rc.right - rc.left, SETTING(PROGRESS_BACK_COLOR), ii->getSize());
-
-					statusBar.FillRange(0, ii->getDownloadedBytes(), clr);
-
-					statusBar.Draw(cdc, rc.top, rc.left, SETTING(PROGRESS_3DDEPTH));
-
-					// Get the color of this text bar
-					oldcol = ::SetTextColor(dc, SETTING(PROGRESS_OVERRIDE_COLORS2) ? SETTING(PROGRESS_TEXT_COLOR_DOWN) :
-						OperaColors::TextFromBackground(clr));
-					
-					::DrawText(dc, ii->getText(colIndex).c_str(), ii->getText(colIndex).length(), rc, DT_CENTER | DT_NOPREFIX | DT_SINGLELINE | DT_VCENTER);
-				}
-				SelectObject(dc, oldFont);
-				::SetTextColor(dc, oldcol);
-
-				// New way:
-				BitBlt(cd->nmcd.hdc, real_rc.left, real_rc.top, real_rc.Width(), real_rc.Height(), dc, 0, 0, SRCCOPY);
-				DeleteObject(cdc.SelectBitmap(pOldBmp));
-				
+				WinUtil::drawProgressBar(cd->nmcd.hdc, rc, clr, SETTING(PROGRESS_TEXT_COLOR_DOWN), SETTING(PROGRESS_BACK_COLOR), ii->getText(colIndex),
+					ii->getSize(), ii->getDownloadedBytes(), SETTING(PROGRESSBAR_ODC_STYLE), SETTING(PROGRESS_OVERRIDE_COLORS2), SETTING(PROGRESS_3DDEPTH),
+					SETTING(PROGRESS_LIGHTEN), DT_CENTER);
 				//bah crap, if we return CDRF_SKIPDEFAULT windows won't paint the icons
 				//so we have to do it
 				if (!SETTING(USE_EXPLORER_THEME) && cd->iSubItem == 0){

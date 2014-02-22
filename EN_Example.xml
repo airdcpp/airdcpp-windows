@@ -2017,5 +2017,7 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="StatusShared">Bundle status shared</string>
 	<string name="StatusHashing">Bundle status hashing</string>
 	<string name="StatusFailed">Bundle status sharing failed</string>
+	<string name="BlendColor">Blend color</string>
+	<string name="BarDepth">3d depth</string>
 	<string name="Moving">Moving</string>
 </resources>

@@ -44,7 +44,6 @@ public:
 		MESSAGE_HANDLER(WM_INITDIALOG, onInitDialog)
 		NOTIFY_HANDLER(IDC_COLOR_LIST, NM_CUSTOMDRAW, onCustomDraw)
 		NOTIFY_HANDLER(IDC_COLOR_LIST, LVN_ITEMCHANGED, onItemchanged)
-		COMMAND_HANDLER(IDC_FLAT, EN_CHANGE, On3DDepth)
 		COMMAND_HANDLER(IDC_PROGRESS_OVERRIDE, BN_CLICKED, onClickedProgressOverride)
 		COMMAND_HANDLER(IDC_PROGRESS_OVERRIDE2, BN_CLICKED, onClickedProgressOverride)
 		COMMAND_HANDLER(IDC_PROGRESS_TEXT_DOWNLOAD, BN_CLICKED, onClickedProgressText)
@@ -52,6 +51,7 @@ public:
 		COMMAND_HANDLER(IDC_ODC_STYLE, BN_CLICKED, onClickedProgress)
 		COMMAND_HANDLER(IDC_PROGRESS_SELECT_COLOR, BN_CLICKED, onSelectColor)
 		MESSAGE_HANDLER(WM_DRAWITEM, onDrawItem)
+		MESSAGE_HANDLER(WM_HSCROLL, onSlider)
 
 		COMMAND_HANDLER(IDC_SETTINGS_ODC_MENUBAR_LEFT, BN_CLICKED, onMenubarClicked)
 		COMMAND_HANDLER(IDC_SETTINGS_ODC_MENUBAR_RIGHT, BN_CLICKED, onMenubarClicked)
@@ -71,6 +71,20 @@ public:
 	LRESULT onClickedProgress(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
 	LRESULT onClickedProgressText(WORD /* wNotifyCode */, WORD /* wID */, HWND /* hWndCtl */, BOOL& /* bHandled */);
 
+	LRESULT onSlider(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+		if (reinterpret_cast<HWND>(lParam) == dimmer.m_hWnd) {
+			if (LOWORD(wParam) == SB_ENDSCROLL) {
+				if (odcStyle)
+					BarBlend = dimmer.GetPos();
+				else
+					BarDepth = dimmer.GetPos();
+				ctrlList.Invalidate();
+			}
+		}
+		bHandled = FALSE;
+		return 0;
+	}
+
 	LRESULT onItemchanged(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /*bHandled*/) {
 		updateProgress();
 		return 0;
@@ -85,15 +99,6 @@ public:
 
 	LRESULT OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
-	LRESULT On3DDepth(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		if (loading)
-			return 0;
-		TCHAR buf[256];
-		GetDlgItemText(IDC_FLAT, buf, 255);
-		hloubka = Util::toInt(Text::fromT(buf));
-		updateProgress();
-		return 0;
-	}
 
 	void updateProgress() {
 		odcStyle = (IsDlgButtonChecked(IDC_ODC_STYLE) != 0);
@@ -102,8 +107,15 @@ public:
 
 		bool state = (IsDlgButtonChecked(IDC_PROGRESS_OVERRIDE) != 0);
 		::EnableWindow(::GetDlgItem(m_hWnd, IDC_PROGRESS_OVERRIDE2), state);
-
-		::EnableWindow(::GetDlgItem(m_hWnd, IDC_FLAT), IsDlgButtonChecked(IDC_ODC_STYLE) != 1);
+		if (odcStyle) {
+			dimmer.SetRange(0, 100);
+			ctrlDimmerTxt.SetWindowText(CTSTRING(BLEND_COLOR));
+			dimmer.SetPos(BarBlend);
+		} else {
+			dimmer.SetRange(1, 5);
+			dimmer.SetPos(BarDepth);
+			ctrlDimmerTxt.SetWindowText(CTSTRING(BAR_DEPTH));
+		}
 		state = ((IsDlgButtonChecked(IDC_PROGRESS_OVERRIDE) != 0) && (IsDlgButtonChecked(IDC_PROGRESS_OVERRIDE2) != 0));
 		::EnableWindow(::GetDlgItem(m_hWnd, IDC_PROGRESS_TEXT_DOWNLOAD), state);
 		::EnableWindow(::GetDlgItem(m_hWnd, IDC_PROGRESS_TEXT_UPLOAD), state);
@@ -148,7 +160,12 @@ private:
 	CCheckBox ctrlProgressOverride2;
 	CProgressBarCtrl progress;
 	tstring sampleText;
-	int sampleTextLen;
+
+	int BarDepth;
+	int BarBlend;
+
+	CTrackBarCtrl dimmer;
+	CStatic ctrlDimmerTxt;
 
 	ExListViewCtrl ctrlList;
 
