@@ -185,6 +185,13 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 		return CDRF_NOTIFYITEMDRAW;
 
 	case CDDS_ITEMPREPAINT:
+		{
+			auto qii = ((QueueItemInfo*) cd->nmcd.lItemlParam);
+			if (qii->bundle && qii->bundle->isFailed()) {
+				cd->clrText = SETTING(ERROR_COLOR);
+				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+			}
+		}
 		return CDRF_NOTIFYSUBITEMDRAW;
 
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT: 
