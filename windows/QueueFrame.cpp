@@ -589,7 +589,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		/* Create submenus */
 		//segmentsMenu.CheckMenuItem(qi->getMaxSegments(), MF_BYPOSITION | MF_CHECKED);
 
-		auto sources = move(QueueManager::getInstance()->getSources(qi));
+		auto sources = QueueManager::getInstance()->getSources(qi);
 
 		//remove all sources from this file
 		if (!sources.empty()) {
@@ -611,7 +611,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 			removeAllMenu->appendItem(nick, [=]{ QueueManager::getInstance()->removeSource(u, QueueItem::Source::FLAG_REMOVED); }, OMenu::FLAG_THREADED);
 		}
 
-		auto badSources = move(QueueManager::getInstance()->getBadSources(qi));
+		auto badSources = QueueManager::getInstance()->getBadSources(qi);
 		if (!badSources.empty()) {
 			readdMenu->appendItem(TSTRING(ALL), [=] {
 				auto sources = QueueManager::getInstance()->getBadSources(qi);
@@ -622,15 +622,8 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		}
 
 		for (auto& s : badSources) {
-			tstring nick = WinUtil::getNicks(s.getUser()) + formatSourceFlags(s);
-
-			// add hub hint to menu
-			if (!s.getUser().hint.empty())
-				nick += _T(" (") + Text::toT(s.getUser().hint) + _T(")");
-
 			auto u = s.getUser();
-			auto target = qi->getTarget();
-			readdMenu->appendItem(nick, [=] { QueueManager::getInstance()->readdQISource(target, u); });
+			readdMenu->appendItem(formatUser(s), [=] { QueueManager::getInstance()->readdQISource(qi->getTarget(), u); });
 		}
 		/* Submenus end */
 
