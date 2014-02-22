@@ -204,6 +204,9 @@ private:
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
 	void handleSearchQI(const QueueItemPtr& aQI);
 	void handleCheckSFV();
+	void handleOpenFile(const QueueItemPtr& aQI);
+	void handleOpenFolder();
+
 	void getSelectedItems(BundleList& bl, QueueItemList& ql);
 	tstring formatUser(const Bundle::BundleSource& bs) const;
 	tstring formatUser(const QueueItem::Source& s) const;

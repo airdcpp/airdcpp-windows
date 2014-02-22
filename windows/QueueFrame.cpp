@@ -471,9 +471,12 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 	//bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
 
 	/* Insert sub menus */
+	BundlePtr b = nullptr;
 	if (bl.size() == 1) {
-		BundlePtr b = bl.front();
+		b = bl.front();
+	}
 
+	if (b) {
 		//current sources
 		auto bundleSources = QueueManager::getInstance()->getBundleSources(b);
 		if (!bundleSources.empty()) {
@@ -519,9 +522,6 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 			WinUtil::searchAny(b->isFileBundle() ? Util::getLastDir(Text::toT(b->getTarget())) : Text::toT(b->getName()));
 		});
 
-		bundleMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { WinUtil::openFolder(Text::toT(b->getTarget())); });
-
-		bundleMenu.appendItem(TSTRING(RENAME), [=] { onRenameBundle(b); });
 		bundleMenu.appendSeparator();
 
 		if (b->isFailed()) {
@@ -539,18 +539,22 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 			bundleMenu.appendSeparator();
 			appendUserMenu<Bundle::BundleSource>(bundleMenu, bundleSources);
 			bundleMenu.appendSeparator();
-		}
 
-		bundleMenu.appendItem(TSTRING(USE_SEQ_ORDER), [=] {
-			auto bundle = b;
-			QueueManager::getInstance()->onUseSeqOrder(bundle);
-		}, b->getSeqOrder() ? OMenu::FLAG_CHECKED : 0 | OMenu::FLAG_THREADED);
+			bundleMenu.appendItem(TSTRING(USE_SEQ_ORDER), [=] {
+				auto bundle = b;
+				QueueManager::getInstance()->onUseSeqOrder(bundle);
+			}, b->getSeqOrder() ? OMenu::FLAG_CHECKED : 0 | OMenu::FLAG_THREADED);
+			bundleMenu.appendSeparator();
+		}
 	}
 
-	bundleMenu.appendSeparator();
+	bundleMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
 	bundleMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(); });
+	if (b)
+		bundleMenu.appendItem(TSTRING(RENAME), [=] { onRenameBundle(b); });
+	bundleMenu.appendItem(TSTRING(MOVE), [=] { handleMoveBundles(bl); });
+
 	bundleMenu.appendSeparator();
-	bundleMenu.appendItem(TSTRING(MOVE_BUNDLE), [=] { handleMoveBundles(bl); });
 	bundleMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
 	bundleMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
 }
@@ -642,11 +646,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		WinUtil::appendSearchMenu(fileMenu, Util::getFilePath(qi->getTarget()));
 
 		fileMenu.appendSeparator();
-		
-		//Todo: move items
-		//fileMenu.AppendMenu(MF_STRING, IDC_MOVE, CTSTRING(MOVE_RENAME_FILE));
-
-		fileMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { WinUtil::openFolder(Text::toT(qi->getTarget())); });
 
 		if (!qi->isFinished()) {
 			fileMenu.appendSeparator();
@@ -657,6 +656,9 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 
 			fileMenu.appendSeparator();
 			appendUserMenu<QueueItem::Source>(fileMenu, sources);
+			fileMenu.appendSeparator();
+		} else {
+			fileMenu.appendItem(TSTRING(OPEN), [=] { handleOpenFile(qi); });
 		}
 
 		//TODO: rechecker
@@ -671,9 +673,10 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		fileMenu.AppendMenu(MF_SEPARATOR);
 		fileMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
 		fileMenu.AppendMenu(MF_STRING, IDC_READD_ALL, CTSTRING(READD_ALL));
+		fileMenu.appendSeparator();
 	}
 
-	fileMenu.appendSeparator();
+	fileMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
 	fileMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(); });
 	fileMenu.appendSeparator();
 
@@ -688,6 +691,16 @@ void QueueFrame::handleCheckSFV() {
 	});
 
 	ShareScannerManager::getInstance()->scan(paths, true);
+}
+
+void QueueFrame::handleOpenFile(const QueueItemPtr& aQI) {
+	WinUtil::openFile(Text::toT(aQI->getTarget()));
+}
+
+void QueueFrame::handleOpenFolder() {
+	ctrlQueue.filteredForEachSelectedT([&](const QueueItemInfo* qii) {
+		WinUtil::openFolder(Text::toT(qii->getTarget()));
+	});
 }
 
 LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {

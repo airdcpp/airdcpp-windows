@@ -324,6 +324,7 @@
 	<string name="Minslots">Min slots</string>
 	<string name="Minutes">minutes</string>
 	<string name="Mode">Mode</string>
+	<string name="Move">Move</string>
 	<string name="MoveDown">Move down</string>
 	<string name="MoveUp">Move up</string>
 	<string name="MynickInChat">My nick in main chat</string>
@@ -1288,9 +1289,6 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="PathsFavdirs">Paths (the one with most disk space will be picked, allows time variables)</string>
 	<string name="Paths">Paths</string>
 	<string name="SearchFilename">Search filename</string>
-	<string name="MoveDir">Move directory</string>
-	<string name="MoveBundle">Move bundle(s)</string>
-	<string name="MoveRenameFile">Move/Rename file(s)</string>
 	<string name="SettingsCalculatePrioAuto">Calculate bundle priorities automatically</string>
 	<string name="SettingsAutoprioFiles">Calculate priorities also for individual files</string>
 	<string name="SettingsCalculateEvery">Calculate priorities every</string>
