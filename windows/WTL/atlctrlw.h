@@ -1,5 +1,5 @@
-// Windows Template Library - WTL version 8.1
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
@@ -535,7 +535,7 @@ public:
 
 			T* pT = static_cast<T*>(this);
 			pT;   // avoid level 4 warning
-			TCHAR szString[pT->_nMaxMenuItemTextLength];
+			TCHAR szString[pT->_nMaxMenuItemTextLength] = { 0 };
 			for(int i = 0; i < nItems; i++)
 			{
 				CMenuItemInfo mii;
@@ -1287,7 +1287,7 @@ public:
 
 			T* pT = static_cast<T*>(this);
 			pT;   // avoid level 4 warning
-			TCHAR szString[pT->_nMaxMenuItemTextLength];
+			TCHAR szString[pT->_nMaxMenuItemTextLength] = { 0 };
 			BOOL bRet = FALSE;
 			for(int i = 0; i < menuPopup.GetMenuItemCount(); i++)
 			{
@@ -1469,7 +1469,7 @@ public:
 			int nCount = ::GetMenuItemCount(menu);
 			int nRetCode = MNC_EXECUTE;
 			BOOL bRet = FALSE;
-			TCHAR szString[pT->_nMaxMenuItemTextLength];
+			TCHAR szString[pT->_nMaxMenuItemTextLength] = { 0 };
 			WORD wMnem = 0;
 			bool bFound = false;
 			for(int i = 0; i < nCount; i++)
@@ -2987,11 +2987,17 @@ public:
 		dc.SelectFont(hFontOld);
 
 		// get Windows version
+#ifndef _versionhelpers_H_INCLUDED_
 		OSVERSIONINFO ovi = { sizeof(OSVERSIONINFO) };
 		::GetVersionEx(&ovi);
+#endif // !_versionhelpers_H_INCLUDED_
 
 		// query keyboard cues mode (Windows 2000 or later)
-		if(ovi.dwMajorVersion >= 5)
+#ifdef _versionhelpers_H_INCLUDED_
+		if(::IsWindowsVersionOrGreater(5, 0, 0))
+#else // !_versionhelpers_H_INCLUDED_
+		if (ovi.dwMajorVersion >= 5)
+#endif // _versionhelpers_H_INCLUDED_
 		{
 #ifndef SPI_GETKEYBOARDCUES
 			const UINT SPI_GETKEYBOARDCUES = 0x100A;
@@ -3004,7 +3010,11 @@ public:
 		}
 
 		// query flat menu mode (Windows XP or later)
-		if((ovi.dwMajorVersion == 5 && ovi.dwMinorVersion >= 1) || (ovi.dwMajorVersion > 5))
+#ifdef _versionhelpers_H_INCLUDED_
+		if(::IsWindowsXPOrGreater())
+#else // !_versionhelpers_H_INCLUDED_
+		if ((ovi.dwMajorVersion == 5 && ovi.dwMinorVersion >= 1) || (ovi.dwMajorVersion > 5))
+#endif // _versionhelpers_H_INCLUDED_
 		{
 #ifndef SPI_GETFLATMENU
 			const UINT SPI_GETFLATMENU = 0x1022;

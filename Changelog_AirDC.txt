@@ -1,3 +1,27 @@
+
+2.72
+
+Added:
+
+- Add CDATA parsing to XML parser (DC++)
+
+Changed:
+
+- Never check open file lists when trying to download directories from (auto) search as the list directory may be outdated
+
+Fixed:
+
+- Fix TTH searches
+- Fix share monitoring spam when queuing files to a newly created directory
+- Avoid refreshing the share twice on startup
+- Fix a minor issue with counting the disk usage for queued items
+- Fix a possible issue with reporting faulty missing NFO files when scanning the share for missing/extra files
+- Remove a faulty error message in a clean installation
+- Fix a possible crash when queueing a magnet link fails
+- Fix renaming of hashed files on monitoring changes
+- Fix a bug with adding missing files for hashing on startup
+
+
 2.71
 
 Added:

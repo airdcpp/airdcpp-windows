@@ -1,5 +1,5 @@
-// Windows Template Library - WTL version 8.1
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
@@ -1937,8 +1937,7 @@ public:
 	HWND Create(HWND hWndParent, UINT nTextID = ATL_IDS_IDLEMESSAGE, DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP, UINT nID = ATL_IDW_STATUS_BAR)
 	{
 		const int cchMax = 128;   // max text length is 127 for status bars (+1 for null)
-		TCHAR szText[cchMax];
-		szText[0] = 0;
+		TCHAR szText[cchMax] = { 0 };
 		::LoadString(ModuleHelper::GetResourceInstance(), nTextID, szText, cchMax);
 		return Create(hWndParent, szText, dwStyle, nID);
 	}
@@ -3089,7 +3088,7 @@ public:
 		LVCompareParam* pParam = NULL;
 		ATLTRY(pParam = new LVCompareParam[nCount]);
 		PFNLVCOMPARE pFunc = NULL;
-		TCHAR pszTemp[pT->m_cchCmpTextMax];
+		TCHAR pszTemp[pT->m_cchCmpTextMax] = { 0 };
 		bool bStrValue = false;
 
 		switch(wType)

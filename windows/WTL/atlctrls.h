@@ -1,5 +1,5 @@
-// Windows Template Library - WTL version 8.1
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
@@ -1805,9 +1805,7 @@ public:
 	{
 		int nMin = 0, nMax = 0;
 		::GetScrollRange(m_hWnd, SB_CTL, &nMin, &nMax);
-		SCROLLINFO info = { 0 };
-		info.cbSize = sizeof(SCROLLINFO);
-		info.fMask = SIF_PAGE;
+		SCROLLINFO info = { sizeof(SCROLLINFO), SIF_PAGE };
 		if(::GetScrollInfo(m_hWnd, SB_CTL, &info))
 			nMax -= ((info.nPage - 1) > 0) ? (info.nPage - 1) : 0;
 
@@ -8336,8 +8334,8 @@ public:
 		REBARINFO rbi = { 0 };
 		rbi.cbSize = sizeof(REBARINFO);
 		rbi.fMask = RBIM_IMAGELIST;
-		if( (BOOL)::SendMessage(m_hWnd, RB_GETBARINFO, 0, (LPARAM)&rbi) == FALSE ) return CImageList();
-		return CImageList(rbi.himl);
+		BOOL bRet = (BOOL)::SendMessage(m_hWnd, RB_GETBARINFO, 0, (LPARAM)&rbi);
+		return CImageList((bRet != FALSE) ? rbi.himl : NULL);
 	}
 
 	BOOL SetImageList(HIMAGELIST hImageList)

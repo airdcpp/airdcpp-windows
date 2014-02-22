@@ -408,12 +408,12 @@ void BundleQueue::moveBundle(BundlePtr& aBundle, const string& newTarget) noexce
 
 void BundleQueue::getDiskInfo(TargetUtil::TargetInfoMap& dirMap, const TargetUtil::VolumeSet& volumes) const noexcept{
 	string tempVol;
-	bool useSingleTempDir = (SETTING(TEMP_DOWNLOAD_DIRECTORY).find("%[targetdrive]") == string::npos);
+	bool useSingleTempDir = !SETTING(DCTMP_STORE_DESTINATION) && SETTING(TEMP_DOWNLOAD_DIRECTORY).find("%[targetdrive]") == string::npos;
 	if (useSingleTempDir) {
 		tempVol = TargetUtil::getMountPath(SETTING(TEMP_DOWNLOAD_DIRECTORY), volumes);
 	}
 
-	for(auto& b: bundles | map_values) {
+	for(const auto& b: bundles | map_values) {
 		string mountPath = TargetUtil::getMountPath(b->getTarget(), volumes);
 		if (!mountPath.empty()) {
 			auto s = dirMap.find(mountPath);
@@ -435,7 +435,7 @@ void BundleQueue::saveQueue(bool force) noexcept {
 			try {
 				b->save();
 			} catch(FileException& e) {
-				LogManager::getInstance()->message("Failed to save the bundle " + b->getName() + ": " + e.getError(), LogManager::LOG_ERROR);
+				LogManager::getInstance()->message(STRING_F(SAVE_FAILED_X, b->getName() % e.getError()), LogManager::LOG_ERROR);
 			}
 		}
 	}

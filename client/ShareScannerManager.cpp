@@ -319,7 +319,7 @@ void ShareScannerManager::scanDir(const string& aPath, ScanInfo& aScan) noexcept
 		}
 
 		if (isDir) {
-			folderList.push_back(Text::toLower(aFileName));
+			folderList.push_back(Text::toLower(aFileName.substr(0, aFileName.length()-1)));
 			return;
 		}
 

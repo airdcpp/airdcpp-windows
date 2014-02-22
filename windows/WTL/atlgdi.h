@@ -1,5 +1,5 @@
-// Windows Template Library - WTL version 8.1
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
@@ -3046,7 +3046,7 @@ public:
 	static CBrushHandle PASCAL GetHalftoneBrush()
 	{
 		HBRUSH halftoneBrush = NULL;
-		WORD grayPattern[8];
+		WORD grayPattern[8] = { 0 };
 		for(int i = 0; i < 8; i++)
 			grayPattern[i] = (WORD)(0x5555 << (i & 1));
 		HBITMAP grayBitmap = CreateBitmap(8, 8, 1, 1, &grayPattern);
@@ -3673,8 +3673,8 @@ public:
 // DIBINFO16 - To avoid color table problems in WinCE we only create this type of Dib
 struct DIBINFO16 // a BITMAPINFO with 2 additional color bitfields
 {
-    BITMAPINFOHEADER    bmiHeader;
-    RGBQUAD             bmiColors[3];
+	BITMAPINFOHEADER bmiHeader;
+	RGBQUAD bmiColors[3];
 
 	DIBINFO16(SIZE size) 
 	{

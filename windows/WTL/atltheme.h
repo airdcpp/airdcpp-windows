@@ -1,5 +1,5 @@
-// Windows Template Library - WTL version 8.1
-// Copyright (C) Microsoft Corporation. All rights reserved.
+// Windows Template Library - WTL version 9.0
+// Copyright (C) Microsoft Corporation, WTL Team. All rights reserved.
 //
 // This file is a part of the Windows Template Library.
 // The use and distribution terms for this software are covered by the
@@ -34,7 +34,7 @@
   #include <vssym32.h>
 #else
   #ifndef TMSCHEMA_H
-  #include <vssym32.h>
+  #include <tmschema.h>
   #endif
 #endif
 

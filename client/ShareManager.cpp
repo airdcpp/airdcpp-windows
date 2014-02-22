@@ -112,13 +112,15 @@ void ShareManager::startup(function<void(const string&)> splashF, function<void(
 
 	setSkipList();
 
+	bool refreshed = false;
 	if(!loadCache(progressF)) {
 		if (splashF)
 			splashF(STRING(REFRESHING_SHARE));
 		refresh(false, TYPE_STARTUP_BLOCKING, progressF);
+		refreshed = true;
 	}
 
-	addAsyncTask([this] {
+	addAsyncTask([=] {
 		rebuildTotalExcludes();
 		monitor.addListener(this);
 
@@ -136,7 +138,7 @@ void ShareManager::startup(function<void(const string&)> splashF, function<void(
 		addMonitoring(monitorPaths);
 		TimerManager::getInstance()->addListener(this);
 
-		if (SETTING(STARTUP_REFRESH))
+		if (SETTING(STARTUP_REFRESH) && !refreshed)
 			refresh(false, TYPE_STARTUP_DELAYED);
 	});
 }
@@ -513,11 +515,11 @@ void ShareManager::on(DirectoryMonitorListener::FileModified, const string& aPat
 }
 
 void ShareManager::Directory::getRenameInfoList(const string& aPath, RenameList& aRename) noexcept {
-	string path = aPath + realName.getNormal() + PATH_SEPARATOR;
 	for (const auto& f: files) {
-		aRename.emplace_back(path + f->name.getNormal(), HashedFile(f->getTTH(), f->getLastWrite(), f->getSize()));
+		aRename.emplace_back(aPath + f->name.getNormal(), HashedFile(f->getTTH(), f->getLastWrite(), f->getSize()));
 	}
 
+	string path = aPath + realName.getNormal() + PATH_SEPARATOR;
 	for (const auto& d: directories) {
 		d->getRenameInfoList(path + realName.getNormal() + PATH_SEPARATOR, aRename);
 	}
@@ -1392,7 +1394,7 @@ struct ShareManager::ShareLoader : public SimpleXMLReader::ThreadedCallBack, pub
 			try {
 				DualString name(fname);
 				HashedFile fi;
-				HashManager::getInstance()->getFileInfo(curDirPathLower + name.getLower(), curDirPath, fi);
+				HashManager::getInstance()->getFileInfo(curDirPathLower + name.getLower(), curDirPath + fname, fi);
 				auto pos = cur->files.insert_sorted(new ShareManager::Directory::File(move(name), cur, fi));
 				ShareManager::updateIndices(*cur, *pos.first, *bloom, addedSize, tthIndexNew);
 			}catch(Exception& e) {
