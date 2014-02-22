@@ -20,13 +20,15 @@
 #include "Resource.h"
 
 #include "QueueFrame.h"
+
+#include "BarShader.h"
 #include "MainFrm.h"
 #include "PrivateFrame.h"
+#include "ResourceLoader.h"
 
 #include "../client/AirUtil.h"
 #include "../client/DownloadManager.h"
-#include "ResourceLoader.h"
-#include "BarShader.h"
+#include "../client/ShareScannerManager.h"
 
 int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SOURCES, COLUMN_TIME_ADDED, COLUMN_TIME_FINISHED, COLUMN_PATH };
 
@@ -457,6 +459,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 	}
 
 	WinUtil::appendBundlePrioMenu(bundleMenu, bl);
+	//bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
 
 	/* Insert sub menus */
 	if (bl.size() == 1) {
@@ -530,6 +533,8 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 	}
 
 	bundleMenu.appendSeparator();
+	bundleMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(); });
+	bundleMenu.appendSeparator();
 	bundleMenu.appendItem(TSTRING(MOVE_BUNDLE), [=] { handleMoveBundles(bl); });
 	bundleMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
 	bundleMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
@@ -546,6 +551,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 		segmentsMenu.AppendMenu(MF_STRING, i, (Util::toStringW(i - 109) + _T(" ") + TSTRING(SEGMENTS)).c_str());
 	*/
 
+	//bool hasFinished = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->isFinished(); });
 	if (ql.size() == 1) {
 		QueueItemPtr qi = ql.front();
 
@@ -687,8 +693,20 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
 	}
 
 	fileMenu.appendSeparator();
+	fileMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(); });
+	fileMenu.appendSeparator();
+
 	fileMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveFiles(ql, false); });
 	fileMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveFiles(ql, true); });
+}
+
+void QueueFrame::handleCheckSFV() {
+	StringList paths;
+	ctrlQueue.filteredForEachSelectedT([&](const QueueItemInfo* qii) {
+		paths.push_back(qii->getTarget());
+	});
+
+	ShareScannerManager::getInstance()->scan(paths, true);
 }
 
 LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -1099,7 +1117,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		case COLUMN_SOURCES: return !isFinished() ? getSourceString() : Util::emptyStringT;
 		case COLUMN_TIME_ADDED: return getTimeAdded() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeAdded())) : Util::emptyStringT;
 		case COLUMN_TIME_FINISHED: return isFinished() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeFinished())) : Util::emptyStringT;
-		case COLUMN_PATH: return bundle ? Text::toT(bundle->getTarget()) : qi ? Text::toT(qi->getTarget()) : Util::emptyStringT;
+		case COLUMN_PATH: return Text::toT(getTarget());
 		
 		default: return Util::emptyStringT;
 	}
@@ -1117,6 +1135,10 @@ tstring QueueFrame::QueueItemInfo::getName() const {
 			return Text::toT(qi->getTargetFileName());
 	}
 	return Util::emptyStringT;
+}
+
+const string& QueueFrame::QueueItemInfo::getTarget() const {
+	return bundle ? bundle->getTarget() : qi->getTarget();
 }
 
 int64_t QueueFrame::QueueItemInfo::getSize() const {

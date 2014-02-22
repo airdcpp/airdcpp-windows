@@ -159,6 +159,7 @@ private:
 		time_t getTimeFinished() const;
 		tstring getSourceString() const;
 		bool isFinished() const;
+		const string& getTarget() const;
 
 
 		QueueItemInfo* createParent() { return this; }
@@ -202,6 +203,7 @@ private:
 	void handleRemoveBundles(BundleList bl, bool removeFinished);
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
 	void handleSearchQI(const QueueItemPtr& aQI);
+	void handleCheckSFV();
 	void getSelectedItems(BundleList& bl, QueueItemList& ql);
 	tstring formatUser(const Bundle::BundleSource& bs) const;
 	
