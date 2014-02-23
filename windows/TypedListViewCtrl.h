@@ -354,6 +354,9 @@ public:
 
 		int sel = -1;
 		while ((sel = GetNextItem(sel, LVNI_SELECTED)) != -1) {
+			if (!sCopy.empty())
+				sCopy += _T("\r\n");
+
 			for (const auto& i : items) {
 				auto colText = i.second(getItemData(sel));
 				if (!colText.empty()) {

@@ -159,6 +159,8 @@ private:
 		time_t getTimeFinished() const;
 		tstring getSourceString() const;
 		bool isFinished() const;
+		bool isTempItem() const;
+		bool isFilelist() const;
 		const string& getTarget() const;
 
 
@@ -206,6 +208,7 @@ private:
 	void handleCheckSFV();
 	void handleOpenFile(const QueueItemPtr& aQI);
 	void handleOpenFolder();
+	void handleSearchDirectory();
 
 	void getSelectedItems(BundleList& bl, QueueItemList& ql);
 	tstring formatUser(const Bundle::BundleSource& bs) const;
