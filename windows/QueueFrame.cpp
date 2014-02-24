@@ -892,9 +892,13 @@ void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
 void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
 	auto parent = ctrlQueue.findParent(aBundle->getToken());
 	if (parent) {
-		if (show(parent))
-			ctrlQueue.updateItem(parent);
-		else
+		if (show(parent)){
+			int i = ctrlQueue.findItem(parent);
+			if (i == -1){
+				i = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex(), parent->getGroupID());
+			}
+			ctrlQueue.updateItem(i);
+		} else
 			ctrlQueue.deleteItem(parent);
 	}
 }
