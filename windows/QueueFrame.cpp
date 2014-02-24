@@ -30,11 +30,11 @@
 #include "../client/DownloadManager.h"
 #include "../client/ShareScannerManager.h"
 
-int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_DOWNLOADED, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SOURCES, COLUMN_TIME_ADDED, COLUMN_TIME_FINISHED, COLUMN_PATH };
+int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SOURCES, COLUMN_TIME_ADDED, COLUMN_TIME_FINISHED, COLUMN_PATH };
 
-int QueueFrame::columnSizes[] = { 450, 70, 100, 80, 200, 80, 80, 80, 100, 100, 500 };
+int QueueFrame::columnSizes[] = { 450, 70, 100, 250, 80, 80, 80, 100, 100, 500 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::DOWNLOADED, ResourceManager::TIME_LEFT,
+static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::TIME_LEFT,
 ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
 
 static ResourceManager::Strings groupNames[] = { ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES, ResourceManager::FILE_LISTS };
@@ -63,7 +63,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	WinUtil::splitTokens(columnSizes, SETTING(QUEUEFRAME_WIDTHS), COLUMN_LAST);
 
 	for (uint8_t j = 0; j < COLUMN_LAST; j++) {
-		int fmt = (j == COLUMN_SIZE || j == COLUMN_SPEED || j == COLUMN_TIMELEFT) ? LVCFMT_RIGHT : (j == COLUMN_DOWNLOADED) ? LVCFMT_CENTER : LVCFMT_LEFT;
+		int fmt = (j == COLUMN_SIZE || j == COLUMN_SPEED || j == COLUMN_TIMELEFT) ? LVCFMT_RIGHT : (j == COLUMN_STATUS) ? LVCFMT_CENTER : LVCFMT_LEFT;
 		ctrlQueue.InsertColumn(j, CTSTRING_I(columnNames[j]), fmt, columnSizes[j], j);
 	}
 
@@ -201,35 +201,29 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			int colIndex = ctrlQueue.findColumn(cd->iSubItem);
 			cd->clrTextBk = WinUtil::bgColor;
 
-			if (colIndex == COLUMN_DOWNLOADED) {
+			if (colIndex == COLUMN_STATUS) {
 				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || (ii->getSize() == -1)) { // file lists don't have size in queue, don't even start to draw...
 					bHandled = FALSE;
 					return 0;
 				}
 
-				// Get the text to draw
-				// Get the color of this bar
 				COLORREF clr = SETTING(PROGRESS_OVERRIDE_COLORS) ? 
 					(ii->parent ? SETTING(PROGRESS_SEGMENT_COLOR) : getStatusColor(ii->bundle ? ii->bundle->getStatus() : 1)) : GetSysColor(COLOR_HIGHLIGHT);
-
 
 				//this is just severely broken, msdn says GetSubItemRect requires a one based index
 				//but it wont work and index 0 gives the rect of the whole item
 				CRect rc;
 				if (cd->iSubItem == 0) {
-					//use LVIR_LABEL to exclude the icon area since we will be painting over that
-					//later
 					ctrlQueue.GetItemRect((int)cd->nmcd.dwItemSpec, &rc, LVIR_LABEL);
-				}
-				else {
+				} else {
 					ctrlQueue.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, &rc);
 				}
 
 				WinUtil::drawProgressBar(cd->nmcd.hdc, rc, clr, SETTING(PROGRESS_TEXT_COLOR_DOWN), SETTING(PROGRESS_BACK_COLOR), ii->getText(colIndex),
 					ii->getSize(), ii->getDownloadedBytes(), SETTING(PROGRESSBAR_ODC_STYLE), SETTING(PROGRESS_OVERRIDE_COLORS2), SETTING(PROGRESS_3DDEPTH),
 					SETTING(PROGRESS_LIGHTEN), DT_CENTER);
-				//bah crap, if we return CDRF_SKIPDEFAULT windows won't paint the icons
-				//so we have to do it
+
+				//bah crap, if we return CDRF_SKIPDEFAULT windows won't paint the icons, so we have to do it
 				if (!SETTING(USE_EXPLORER_THEME) && cd->iSubItem == 0){
 					LVITEM lvItem;
 					lvItem.iItem = cd->nmcd.dwItemSpec;
@@ -1042,7 +1036,6 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			return Text::toT(AirUtil::getPrioText(getPriority())) + (autoPrio ? _T(" (") + TSTRING(AUTO) + _T(")") : Util::emptyStringT);
 		}
 		case COLUMN_STATUS: return getStatusString();
-		case COLUMN_DOWNLOADED: return (getSize() > 0) ? Util::formatBytesW(getDownloadedBytes()) + _T(" (") + Util::toStringW((double)getDownloadedBytes()*100.0 / (double)getSize()) + _T("%)") : Util::emptyStringT;
 		case COLUMN_TIMELEFT: {
 			uint64_t left = getSecondsLeft();
 			return left > 0 ? Util::formatSecondsW(left) : Util::emptyStringT;
@@ -1120,40 +1113,44 @@ bool QueueFrame::QueueItemInfo::isFilelist() const {
 
 tstring QueueFrame::QueueItemInfo::getStatusString() const {
 	//Yeah, think about these a little more...
+	auto getDownloadedString = [=] {
+		return +_T(" ") + ((getSize() > 0) ? Util::formatBytesW(getDownloadedBytes()) + _T(" (") + Util::toStringW((double)getDownloadedBytes()*100.0 / (double)getSize()) + _T("%)") : Util::emptyStringT);
+	};
+
 	if (bundle) {
 		if (bundle->isPausedPrio()) 
-			return TSTRING(PAUSED);
+			return TSTRING(PAUSED) + getDownloadedString();
 	
 		switch (bundle->getStatus()) {
 		case Bundle::STATUS_NEW:
 		case Bundle::STATUS_QUEUED: {
 			if (bundle->getSpeed() > 0) { // Bundle->isRunning() ?
-				return TSTRING(RUNNING);
+				return TSTRING(RUNNING) + getDownloadedString();
 			} else {
-				return TSTRING(WAITING);
+				return TSTRING(WAITING) + getDownloadedString();
 			}
 		}
 		case Bundle::STATUS_DOWNLOADED: return TSTRING(MOVING);
-		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
+		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED) + getDownloadedString();
 		case Bundle::STATUS_FAILED_MISSING: return TSTRING(SHARING_FAILED);
 		case Bundle::STATUS_SHARING_FAILED: return TSTRING(SHARING_FAILED);
-		case Bundle::STATUS_FINISHED: return TSTRING(FINISHED);
+		case Bundle::STATUS_FINISHED: return TSTRING(FINISHED) + getDownloadedString();
 		case Bundle::STATUS_HASHING: return TSTRING(HASHING);
 		case Bundle::STATUS_HASH_FAILED: return TSTRING(HASH_FAILED);
-		case Bundle::STATUS_HASHED: return TSTRING(HASHING_FINISHED_TOTAL_PLAIN);
-		case Bundle::STATUS_SHARED: return TSTRING(SHARED);
+		case Bundle::STATUS_HASHED: return TSTRING(HASHING_FINISHED_TOTAL_PLAIN) + getDownloadedString();
+		case Bundle::STATUS_SHARED: return TSTRING(SHARED) + getDownloadedString();
 		default:
 			return Util::emptyStringT;
 		}
 	} else if(qi) {
 		if (qi->isPausedPrio()) 
-			return TSTRING(PAUSED);
+			return TSTRING(PAUSED) + getDownloadedString();
 		if (isFinished())
-			return qi->isSet(QueueItem::FLAG_MOVED) ? TSTRING(FINISHED) : TSTRING(MOVING);
+			return qi->isSet(QueueItem::FLAG_MOVED) ? TSTRING(FINISHED) + getDownloadedString() : TSTRING(MOVING);
 		if (QueueManager::getInstance()->isWaiting(qi)) {
-			return TSTRING(WAITING);
+			return TSTRING(WAITING) + getDownloadedString() ;
 		} else {
-			return TSTRING(RUNNING);
+			return TSTRING(RUNNING) + getDownloadedString();
 		} 
 	}
 	return Util::emptyStringT;
@@ -1188,7 +1185,6 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 	switch (col) {
 	case COLUMN_SIZE: return compare(a->getSize(), b->getSize());
 	case COLUMN_PRIORITY: return compare(static_cast<int>(a->getPriority()), static_cast<int>(b->getPriority()));
-	case COLUMN_DOWNLOADED: return compare(a->getDownloadedBytes(), b->getDownloadedBytes());
 	case COLUMN_TIMELEFT: return compare(a->getSecondsLeft(), b->getSecondsLeft());
 	case COLUMN_SPEED: return compare(a->getSpeed(), b->getSpeed());
 	default: 
