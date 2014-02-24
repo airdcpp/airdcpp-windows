@@ -125,9 +125,10 @@ private:
 	};
 
 	enum {
-		TREE_DOWNLOADS = 1,
+		TREE_DOWNLOADS,
 		TREE_FINISHED,
-		TREE_QUEUED
+		TREE_QUEUED,
+		TREE_LAST
 	};
 
 	/*

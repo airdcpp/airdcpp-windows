@@ -38,6 +38,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, Resourc
 ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
 
 static ResourceManager::Strings groupNames[] = { ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES, ResourceManager::FILE_LISTS };
+static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED };
 
 LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -83,7 +84,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlQueue.m_hWnd);
-	m_nProportionalPos = 750;
+	m_nProportionalPos = SETTING(QUEUE_SPLITTER_POS);
 
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if (!(rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0))
@@ -124,36 +125,23 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 }
 
 void QueueFrame::FillTree() {
-	TVINSERTSTRUCT tvis = { 0 };
-	tvis.hParent = TVI_ROOT;
-	tvis.hInsertAfter = TVI_LAST;
-	tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-	tvis.item.pszText = (LPWSTR)CTSTRING(SETTINGS_DOWNLOADS);
-	tvis.item.iImage = 0;
-	tvis.item.iSelectedImage = 0;
-	tvis.item.lParam = TREE_DOWNLOADS;
-	HTREEITEM parent = ctrlTree.InsertItem(&tvis);
+	HTREEITEM parent = TVI_ROOT;
+	auto addItem = [=](HTREEITEM& parent, int item, const tstring& name) {
+		TVINSERTSTRUCT tvis = { 0 };
+		tvis.hParent = parent;
+		tvis.hInsertAfter = TVI_LAST;
+		tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+		tvis.item.pszText = (LPWSTR)name.c_str();
+		tvis.item.iImage = item;
+		tvis.item.iSelectedImage = item;
+		tvis.item.lParam = item;
+		item == 0 ? parent = ctrlTree.InsertItem(&tvis) : ctrlTree.InsertItem(&tvis);
+	};
 
-	TVINSERTSTRUCT tvis2 = { 0 };
-	tvis2.hParent = parent;
-	tvis2.hInsertAfter = TVI_LAST;
-	tvis2.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-	tvis2.item.pszText = (LPWSTR)CTSTRING(FINISHED);
-	tvis2.item.iImage = 1;
-	tvis2.item.iSelectedImage = 1;
-	tvis2.item.lParam = TREE_FINISHED;
-	ctrlTree.InsertItem(&tvis2);
+	for (int i = TREE_DOWNLOADS; i < TREE_LAST; ++i) {
+		addItem(parent, i, TSTRING_I(treeNames[i]));
+	}
 
-	TVINSERTSTRUCT tvis3 = { 0 };
-	tvis3.hParent = parent;
-	tvis3.hInsertAfter = TVI_LAST;
-	tvis3.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-	tvis3.item.pszText = (LPWSTR)CTSTRING(QUEUED);
-	tvis3.item.iImage = 2;
-	tvis3.item.iSelectedImage = 2;
-	tvis3.item.lParam = TREE_QUEUED;
-	ctrlTree.InsertItem(&tvis3);
-	
 	ctrlTree.Expand(parent);
 	ctrlTree.SelectItem(parent);
 }
@@ -203,6 +191,7 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			::ScreenToClient(GetParent(), &rc.TopLeft());
 			::ScreenToClient(GetParent(), &rc.BottomRight());
 			//save the position
+			SettingsManager::getInstance()->set(SettingsManager::QUEUE_SPLITTER_POS, m_nProportionalPos);
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_BOTTOM, (rc.bottom > 0 ? rc.bottom : 0));
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_TOP, (rc.top > 0 ? rc.top : 0));
 			SettingsManager::getInstance()->set(SettingsManager::QUEUE_LEFT, (rc.left > 0 ? rc.left : 0));
