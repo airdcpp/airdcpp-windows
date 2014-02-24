@@ -71,6 +71,7 @@
 #define IDC_COPY_BEGIN                  162
 #define IDC_COPY_END                    163
 #define IDC_SPLITTER                    164
+#define IDC_TREE						165
 #define IDD_SHAREPAGE                   205
 #define IDD_AIRAPPEARANCEPAGE           206
 #define IDD_LINE                        207

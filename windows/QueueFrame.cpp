@@ -44,13 +44,6 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	CreateSimpleStatusBar(ATL_IDS_IDLEMESSAGE, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | SBARS_SIZEGRIP);
 	ctrlStatus.Attach(m_hWndStatusBar);
-
-	ctrlFinished.Create(ctrlStatus.m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_SHOW_FINISHED);
-	ctrlFinished.SetButtonStyle(BS_AUTOCHECKBOX, FALSE);
-	ctrlFinished.SetFont(WinUtil::systemFont, FALSE);
-	ctrlFinished.SetWindowText(CTSTRING(SHOW_FINISHED));
-	ctrlFinished.SetCheck(showFinished ? BST_CHECKED : BST_UNCHECKED);
-
 	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 
 	ctrlQueue.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
@@ -77,6 +70,21 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlQueue.setInsertFunction(bind(&QueueFrame::insertItems, this, placeholders::_1));
 	ctrlQueue.setFilterFunction(bind(&QueueFrame::show, this, placeholders::_1));
 
+	ctrlTree.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
+		TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT,
+		WS_EX_CLIENTEDGE, IDC_TREE);
+
+	if (SETTING(USE_EXPLORER_THEME)) {
+		SetWindowTheme(ctrlTree.m_hWnd, L"explorer", NULL);
+	}
+	ctrlTree.SetImageList(ResourceLoader::getQueueTreeImages(), TVSIL_NORMAL);
+	ctrlTree.SetBkColor(WinUtil::bgColor);
+	ctrlTree.SetTextColor(WinUtil::textColor);
+
+	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
+	SetSplitterPanes(ctrlTree.m_hWnd, ctrlQueue.m_hWnd);
+	m_nProportionalPos = 750;
+
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if (!(rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0))
 		MoveWindow(rc, TRUE);
@@ -98,7 +106,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 				onQueueItemAdded(q);
 		}
 	}
-	updateList();
+	FillTree();
 
 	QueueManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
@@ -115,6 +123,41 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	return 1;
 }
 
+void QueueFrame::FillTree() {
+	TVINSERTSTRUCT tvis = { 0 };
+	tvis.hParent = TVI_ROOT;
+	tvis.hInsertAfter = TVI_LAST;
+	tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+	tvis.item.pszText = (LPWSTR)CTSTRING(SETTINGS_DOWNLOADS);
+	tvis.item.iImage = 0;
+	tvis.item.iSelectedImage = 0;
+	tvis.item.lParam = TREE_DOWNLOADS;
+	HTREEITEM parent = ctrlTree.InsertItem(&tvis);
+
+	TVINSERTSTRUCT tvis2 = { 0 };
+	tvis2.hParent = parent;
+	tvis2.hInsertAfter = TVI_LAST;
+	tvis2.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+	tvis2.item.pszText = (LPWSTR)CTSTRING(FINISHED);
+	tvis2.item.iImage = 1;
+	tvis2.item.iSelectedImage = 1;
+	tvis2.item.lParam = TREE_FINISHED;
+	ctrlTree.InsertItem(&tvis2);
+
+	TVINSERTSTRUCT tvis3 = { 0 };
+	tvis3.hParent = parent;
+	tvis3.hInsertAfter = TVI_LAST;
+	tvis3.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+	tvis3.item.pszText = (LPWSTR)CTSTRING(QUEUED);
+	tvis3.item.iImage = 2;
+	tvis3.item.iSelectedImage = 2;
+	tvis3.item.lParam = TREE_QUEUED;
+	ctrlTree.InsertItem(&tvis3);
+	
+	ctrlTree.Expand(parent);
+	ctrlTree.SelectItem(parent);
+}
+
 void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	RECT rect;
 	GetClientRect(&rect);
@@ -126,7 +169,6 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		int w[6];
 		ctrlStatus.GetClientRect(sr);
 
-		statusSizes[1] = ctrlFinished.GetWindowTextLength() * WinUtil::getTextWidth(ctrlFinished.m_hWnd, WinUtil::systemFont) + 20;
 		w[5] = sr.right - 16;
 #define setw(x) w[x] = max(w[x+1] - statusSizes[x], 0)
 		setw(4); setw(3); setw(2); setw(1);
@@ -136,10 +178,10 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		ctrlStatus.SetParts(6, w);
 
 		ctrlStatus.GetRect(1, sr);
-		ctrlFinished.MoveWindow(sr);
 	}
 	CRect rc = rect;
-	ctrlQueue.MoveWindow(&rc);
+	SetSplitterRect(&rect);
+	//ctrlQueue.MoveWindow(&rc);
 }
 
 
@@ -667,17 +709,6 @@ LRESULT QueueFrame::onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCt
 	return 0;
 }
 
-LRESULT QueueFrame::onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
-	if (wID == IDC_SHOW_FINISHED)
-	{
-		showFinished = !showFinished;
-		updateList();
-		SettingsManager::getInstance()->set(SettingsManager::QUEUE_SHOW_FINISHED, showFinished);
-	}
-
-	return 0;
-}
-
 LRESULT QueueFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	executeGuiTasks();
 	updateStatus();
@@ -707,10 +738,16 @@ void QueueFrame::updateList() {
 }
 
 bool QueueFrame::show(const QueueItemInfo* Qii) const {
-	if (!showFinished && Qii->isFinished()) {
-		return false;
+	if (curSel == TREE_DOWNLOADS) {
+		return true;
 	}
-	return true;
+	if ((curSel == TREE_QUEUED) && !Qii->isFinished()) {
+		return true;
+	}
+	if ((curSel == TREE_FINISHED) && Qii->isFinished()) {
+		return true;
+	}
+	return false;
 }
 
 tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
@@ -925,7 +962,7 @@ void QueueFrame::executeGuiTasks() {
 }
 
 void QueueFrame::updateStatus() {
-	if (ctrlStatus.IsWindow() && statusDirty) {
+	if (statusDirty) {
 		bool u = false;
 		int queuedBundles = 0;
 		int finishedBundles = 0;
@@ -938,34 +975,53 @@ void QueueFrame::updateStatus() {
 			}
 
 		}
-
-		tstring tmp = TSTRING(FINISHED_BUNDLES) + _T(": ") + Util::toStringW(finishedBundles);
-		int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-		if (statusSizes[2] < w) {
-			statusSizes[2] = w;
-			u = true;
-		}
-		ctrlStatus.SetText(3, (tmp).c_str());
-
-		tmp = TSTRING(QUEUED_BUNDLES) + _T(": ") + Util::toStringW(queuedBundles);
-		w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-		if (statusSizes[3] < w) {
-			statusSizes[3] = w;
-			u = true;
-		}
-		ctrlStatus.SetText(4, (tmp).c_str());
-
-		tmp = TSTRING(QUEUE_SIZE) + _T(": ") + Util::formatBytesW(qm->getTotalQueueSize());
-		w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-		if (statusSizes[4] < w) {
-			statusSizes[4] = w;
-			u = true;
-		}
-		ctrlStatus.SetText(5, (tmp).c_str());
 		
-		if (u)
-			UpdateLayout(TRUE);
+		HTREEITEM ht = ctrlTree.GetRootItem();
+		while (ht != NULL) {
+			switch (ctrlTree.GetItemData(ht)){
+			case TREE_DOWNLOADS:
+				ctrlTree.SetItemText(ht, (TSTRING(SETTINGS_DOWNLOADS) + _T(" ( ") + (Util::toStringW(finishedBundles + queuedBundles)) + _T(" )")).c_str());
+				ht = ctrlTree.GetChildItem(ht);
+				break;
+			case TREE_FINISHED:
+				ctrlTree.SetItemText(ht, (TSTRING(FINISHED) + _T(" ( ") + (Util::toStringW(finishedBundles)) + _T(" )")).c_str());
+				ht = ctrlTree.GetNextSiblingItem(ht);
+				break;
+			case TREE_QUEUED:
+				ctrlTree.SetItemText(ht, (TSTRING(QUEUED) + _T(" ( ") + (Util::toStringW(queuedBundles)) + _T(" )")).c_str());
+				ht = ctrlTree.GetNextSiblingItem(ht);
+				break;
+			}
+		}
+		
+		if (ctrlStatus.IsWindow()) {
+			tstring tmp = TSTRING(FINISHED_BUNDLES) + _T(": ") + Util::toStringW(finishedBundles);
+			int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+			if (statusSizes[2] < w) {
+				statusSizes[2] = w;
+				u = true;
+			}
+			ctrlStatus.SetText(3, (tmp).c_str());
 
+			tmp = TSTRING(QUEUED_BUNDLES) + _T(": ") + Util::toStringW(queuedBundles);
+			w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+			if (statusSizes[3] < w) {
+				statusSizes[3] = w;
+				u = true;
+			}
+			ctrlStatus.SetText(4, (tmp).c_str());
+
+			tmp = TSTRING(QUEUE_SIZE) + _T(": ") + Util::formatBytesW(qm->getTotalQueueSize());
+			w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+			if (statusSizes[4] < w) {
+				statusSizes[4] = w;
+				u = true;
+			}
+			ctrlStatus.SetText(5, (tmp).c_str());
+
+			if (u)
+				UpdateLayout(TRUE);
+		}
 		statusDirty = false;
 	}
 }

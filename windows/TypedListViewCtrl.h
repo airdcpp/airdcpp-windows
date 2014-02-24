@@ -993,6 +993,9 @@ public:
 				parents.emplace(const_cast<K*>(&parent->getGroupCond()), newPP);
 
 				parent->parent = nullptr; // ensure that parent of this item is really NULL
+				if (filterF && !filterF(parent))
+					return;
+
 				pos = insertItem(getSortPos(parent), parent, parent->getImageIndex(), groupIndex);
 				if (hasVirtualChildren && (style & VIRTUAL_CHILDREN)) updateCollapsedState();
 				return;

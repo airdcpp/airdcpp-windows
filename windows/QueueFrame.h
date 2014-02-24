@@ -33,12 +33,13 @@
 #define STATUS_MSG_MAP 19
 
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
+	public CSplitterImpl<QueueFrame>,
 	private QueueManagerListener, private DownloadManagerListener, private Async<QueueFrame>
 {
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
 
-	QueueFrame() : closed(false), statusDirty(true), showFinished(SETTING(QUEUE_SHOW_FINISHED)), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {}
+	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_DOWNLOADS), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {}
 
 	~QueueFrame() {}
 
@@ -51,6 +52,7 @@ public:
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, NM_CUSTOMDRAW, onCustomDraw)
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, NM_DBLCLK, onDoubleClick)
+		NOTIFY_HANDLER(IDC_TREE, TVN_SELCHANGED, onSelChanged)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
@@ -60,8 +62,8 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
 		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
 		CHAIN_MSG_MAP(baseClass)
+		CHAIN_MSG_MAP(CSplitterImpl<QueueFrame>)
 		ALT_MSG_MAP(STATUS_MSG_MAP)
-		COMMAND_ID_HANDLER(IDC_SHOW_FINISHED, onShow)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -72,7 +74,6 @@ public:
 	LRESULT onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
-	LRESULT onShow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
 	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
 		ctrlQueue.SetFocus();
@@ -80,6 +81,16 @@ public:
 	}
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
+
+	LRESULT onSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /* bHandled */) {
+		NMTREEVIEW* nmtv = (NMTREEVIEW*)pnmh;
+		if (nmtv->itemNew.lParam != -1){
+			curSel = nmtv->itemNew.lParam;
+			updateList();
+		}
+
+		return 0;
+	}
 
 	void UpdateLayout(BOOL bResizeBars = TRUE );
 
@@ -111,6 +122,12 @@ private:
 		TASK_ADD,
 		TASK_REMOVE,
 		TASK_UPDATE
+	};
+
+	enum {
+		TREE_DOWNLOADS = 1,
+		TREE_FINISHED,
+		TREE_QUEUED
 	};
 
 	/*
@@ -218,14 +235,16 @@ private:
 	QueueItemInfo* findQueueItem(const QueueItemPtr& aQI);
 
 	bool closed;
-	bool showFinished;
+	int curSel;
 
 	typedef TypedTreeListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST, string, noCaseStringHash, noCaseStringEq, NO_GROUP_UNIQUE_CHILDREN | VIRTUAL_CHILDREN | LVITEM_GROUPING> ListType;
 	ListType ctrlQueue;
 
+	CTreeViewCtrl ctrlTree;
+	void FillTree();
+
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[6];
-	CButton ctrlFinished;
 	CContainedWindow ctrlStatusContainer;
 
 	TaskQueue tasks;

@@ -34,6 +34,7 @@ CImageList ResourceLoader::flagImages;
 CImageList ResourceLoader::arrowImages;
 CImageList ResourceLoader::filelistTbImages;
 CImageList ResourceLoader::hubImages;
+CImageList ResourceLoader::QueueTreeImages;
 COLORREF ResourceLoader::GrayPalette[256];
 CIcon ResourceLoader::iconInfo = NULL;
 CIcon ResourceLoader::iconWarning = NULL;
@@ -59,6 +60,7 @@ void ResourceLoader::unload() {
 	hubImages.Destroy();
 	arrowImages.Destroy();
 	filelistTbImages.Destroy();
+	QueueTreeImages.Destroy();
 	
 }
 
@@ -323,6 +325,16 @@ HICON ResourceLoader::mergeIcons(HICON tmp1, HICON tmp2, int size){
 	return merged;
 }
 
+CImageList& ResourceLoader::getQueueTreeImages() {
+	if (QueueTreeImages.IsNull()){
+		const int size = 16;
+		QueueTreeImages.Create(size, size, ILC_COLOR32 | ILC_MASK, 0, 3);
+		QueueTreeImages.AddIcon(loadIcon(IDI_DOWNLOAD, size));
+		QueueTreeImages.AddIcon(loadIcon(IDI_FINISHED_DL, size));
+		QueueTreeImages.AddIcon(loadIcon(IDI_QUEUE, size));
+	}
+	return QueueTreeImages;
+}
 
 CImageList& ResourceLoader::getArrowImages() {
 	if(arrowImages.IsNull()){
