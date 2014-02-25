@@ -894,8 +894,12 @@ void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
 	if (parent) {
 		if (show(parent)){
 			int i = ctrlQueue.findItem(parent);
-			if (i == -1){
+			if (i == -1) {
 				i = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex(), parent->getGroupID());
+				if (!aBundle->isFileBundle()){
+					parent->collapsed = true;
+					ctrlQueue.SetItemState(i, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
+				}
 			}
 			ctrlQueue.updateItem(i);
 		} else
@@ -911,13 +915,11 @@ void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
 
 void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
 	auto item = findQueueItem(aQI);
-	if (item) {
-		if (!item->parent || !item->parent->collapsed) { // no need to update if its collapsed right?
-			if (show(item))
-				ctrlQueue.updateItem(item);
-			else
-				ctrlQueue.deleteItem(item);
-		}
+	if (item && (!item->parent || !item->parent->collapsed)) { // no need to update if its collapsed right?
+		if (show(item)) 
+			ctrlQueue.updateItem(item);
+		 else
+			ctrlQueue.deleteItem(item);
 	}
 }
 
@@ -959,6 +961,8 @@ void QueueFrame::updateStatus() {
 		bool u = false;
 		int queuedBundles = 0;
 		int finishedBundles = 0;
+		int queuedItems = 0;
+		int totalItems = 0;
 
 		auto qm = QueueManager::getInstance();
 		{
@@ -967,36 +971,58 @@ void QueueFrame::updateStatus() {
 				b->isFinished() ? finishedBundles++ : queuedBundles++;
 			}
 
+			for (const auto& q : qm->getFileQueue() | map_values) {
+				totalItems++;
+				if (!q->getBundle())
+					queuedItems++;
+			}
+
 		}
 		
 		HTREEITEM ht = ctrlTree.GetRootItem();
 		while (ht != NULL) {
-			switch (ctrlTree.GetItemData(ht)){
+			switch (ctrlTree.GetItemData(ht)) {
 			case TREE_DOWNLOADS:
-				ctrlTree.SetItemText(ht, (TSTRING(SETTINGS_DOWNLOADS) + _T(" ( ") + (Util::toStringW(finishedBundles + queuedBundles)) + _T(" )")).c_str());
+			{
+				int total = finishedBundles + queuedBundles + queuedItems;
+				ctrlTree.SetItemText(ht, (TSTRING(SETTINGS_DOWNLOADS) + _T(" ( ") + Util::toStringW(total) + _T(" )")).c_str());
 				ht = ctrlTree.GetChildItem(ht);
 				break;
+			}
 			case TREE_FINISHED:
+			{
 				ctrlTree.SetItemText(ht, (TSTRING(FINISHED) + _T(" ( ") + (Util::toStringW(finishedBundles)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
+			}
 			case TREE_QUEUED:
-				ctrlTree.SetItemText(ht, (TSTRING(QUEUED) + _T(" ( ") + (Util::toStringW(queuedBundles)) + _T(" )")).c_str());
+			{
+				ctrlTree.SetItemText(ht, (TSTRING(QUEUED) + _T(" ( ") + (Util::toStringW(queuedBundles + queuedItems)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
+			}
 			}
 		}
 		
 		if (ctrlStatus.IsWindow()) {
+
 			tstring tmp = TSTRING(FINISHED_BUNDLES) + _T(": ") + Util::toStringW(finishedBundles);
 			int w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+			if (statusSizes[1] < w) {
+				statusSizes[1] = w;
+				u = true;
+			}
+			ctrlStatus.SetText(2, (tmp).c_str());
+
+			tmp = TSTRING(QUEUED_BUNDLES) + _T(": ") + Util::toStringW(queuedBundles);
+			w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
 			if (statusSizes[2] < w) {
 				statusSizes[2] = w;
 				u = true;
 			}
 			ctrlStatus.SetText(3, (tmp).c_str());
 
-			tmp = TSTRING(QUEUED_BUNDLES) + _T(": ") + Util::toStringW(queuedBundles);
+			tmp = TSTRING_F(TOTAL_FILES, totalItems);
 			w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
 			if (statusSizes[3] < w) {
 				statusSizes[3] = w;
