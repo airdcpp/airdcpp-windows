@@ -232,34 +232,40 @@ LRESULT UsersFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 }
 
 LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
-	if (reinterpret_cast<HWND>(wParam) == ctrlUsers && ctrlUsers.GetSelectedCount() > 0 ) { 
-		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	if (reinterpret_cast<HWND>(wParam) != ctrlUsers || ctrlUsers.GetSelectedCount() <= 0) {
+		bHandled = FALSE;
+		return FALSE;
+	}
 
-		if(pt.x == -1 && pt.y == -1) {
-			WinUtil::getContextMenuPos(ctrlUsers, pt);
-		}
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
-		UserInfo* ui = nullptr;
-		if (ctrlUsers.GetSelectedCount() == 1) {
-			ui = ctrlUsers.getItemData(WinUtil::getFirstSelectedIndex(ctrlUsers));
-		}
+	if(pt.x == -1 && pt.y == -1) {
+		WinUtil::getContextMenuPos(ctrlUsers, pt);
+	}
 
-		int row = ctrlUsers.GetNextItem(-1, LVNI_SELECTED);
+	UserInfo* ui = nullptr;
+	bool isMe = false;
+	if (ctrlUsers.GetSelectedCount() == 1) {
+		ui = ctrlUsers.getItemData(WinUtil::getFirstSelectedIndex(ctrlUsers));
+		isMe = ui->getUser() == ClientManager::getInstance()->getMe();
+	}
+
+	int row = ctrlUsers.GetNextItem(-1, LVNI_SELECTED);
 	
-		OMenu usersMenu;
-		usersMenu.CreatePopupMenu();
+	OMenu usersMenu;
+	usersMenu.CreatePopupMenu();
+	ctrlUsers.appendCopyMenu(usersMenu);
+
+	if (!isMe) {
 		usersMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG, CTSTRING(OPEN_USER_LOG));
-		usersMenu.AppendMenu(MF_SEPARATOR);
+		usersMenu.appendSeparator();
 		appendUserItems(usersMenu, true, ui ? ui->getUser() : nullptr, ui && !ui->getHubUrl().empty());
+		usersMenu.appendSeparator();
 
 		if (ui) {
-
 			if (!ui->getUser()->isIgnored()) {
-				usersMenu.appendSeparator();
 				usersMenu.appendItem(TSTRING(IGNORE_USER), [=] { handleClickIgnore(row); });
-			}
-			else {
-				usersMenu.appendSeparator();
+			} else {
 				usersMenu.appendItem(TSTRING(UNIGNORE_USER), [=] { handleClickIgnore(row); });
 			}
 
@@ -269,14 +275,14 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 			if (!sourceBundles.empty() || !badSourceBundles.empty()) {
 				usersMenu.appendSeparator();
 
-				auto formatBundle = [this] (pair<BundlePtr, Bundle::BundleSource>& bs) -> tstring {
+				auto formatBundle = [this](pair<BundlePtr, Bundle::BundleSource>& bs) -> tstring {
 					return Text::toT(bs.first->getName()) + _T(" (") + Util::toStringW(bs.second.files) + _T(" ") + TSTRING(FILES) + _T(", ") + Util::formatBytesW(bs.second.size) + _T(")");
 				};
 
 				//current sources
 				auto removeMenu = usersMenu.createSubMenu(TSTRING(REMOVE_SOURCE), true);
 				if (!sourceBundles.empty()) {
-					for(auto& bs: sourceBundles) {
+					for (auto& bs : sourceBundles) {
 						removeMenu->appendItem(formatBundle(bs), [=] {
 							QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.getUser(), QueueItem::Source::FLAG_REMOVED);
 						}, OMenu::FLAG_THREADED);
@@ -284,7 +290,7 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 					removeMenu->appendSeparator();
 					removeMenu->appendItem(TSTRING(ALL), [=] {
-						for(auto& bs: sourceBundles) {
+						for (auto& bs : sourceBundles) {
 							QueueManager::getInstance()->removeBundleSource(bs.first, bs.second.getUser().user, QueueItem::Source::FLAG_REMOVED);
 						}
 					}, OMenu::FLAG_THREADED);
@@ -293,42 +299,37 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 				//bad sources
 				auto readdMenu = usersMenu.createSubMenu(TSTRING(READD_SOURCE), true);
 				if (!badSourceBundles.empty()) {
-					for(auto& bs: badSourceBundles) {
-						readdMenu->appendItem(formatBundle(bs), [=] { 
+					for (auto& bs : badSourceBundles) {
+						readdMenu->appendItem(formatBundle(bs), [=] {
 							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.getUser());
 						}, OMenu::FLAG_THREADED);
 					}
 
 					readdMenu->appendSeparator();
 					readdMenu->appendItem(TSTRING(ALL), [=] {
-						for(auto& bs: badSourceBundles) {
+						for (auto& bs : badSourceBundles) {
 							QueueManager::getInstance()->readdBundleSource(bs.first, bs.second.getUser());
 						}
 					}, OMenu::FLAG_THREADED);
 				}
 			}
+
+			if (ui->isFavorite) {
+				usersMenu.appendSeparator();
+				usersMenu.appendItem(TSTRING(OVERRIDE_LIMITER), [=] { handleClickLimiter(row); }, ui->noLimiter ? OMenu::FLAG_CHECKED : 0);
+				usersMenu.appendItem(TSTRING(PROPERTIES), [=] { handleClickDesc(row); });
+
+				usersMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
+			}
 		}
-
-		usersMenu.appendSeparator();
-		ctrlUsers.appendCopyMenu(usersMenu);
-
-		if (ui && ui->isFavorite) {
-			usersMenu.appendSeparator();
-			usersMenu.appendItem(TSTRING(OVERRIDE_LIMITER), [=] { handleClickLimiter(row); }, ui->noLimiter ? OMenu::FLAG_CHECKED : 0);
-			usersMenu.appendItem(TSTRING(PROPERTIES), [=] { handleClickDesc(row); });
-
-			usersMenu.AppendMenu(MF_STRING, IDC_REMOVE, CTSTRING(REMOVE));
-		}
-		
-		if (ui)
-			usersMenu.InsertSeparatorFirst(ui->columns[COLUMN_NICK]);
-		
-		usersMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
-
-		return TRUE; 
 	}
-	bHandled = FALSE;
-	return FALSE; 
+		
+	if (ui)
+		usersMenu.InsertSeparatorFirst(ui->columns[COLUMN_NICK]);
+		
+	usersMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON, pt);
+
+	return TRUE; 
 }
 
 LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
