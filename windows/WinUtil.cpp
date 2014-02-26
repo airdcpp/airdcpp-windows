@@ -714,36 +714,6 @@ int CALLBACK WinUtil::browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LP
 	return 0;
 }
 
-/*bool WinUtil::browseDirectory(tstring& target, HWND owner) {
-	TCHAR buf[UNC_MAX_PATH];
-	BROWSEINFO bi;
-	LPMALLOC ma;
-	
-	memzero(&bi, sizeof(bi));
-	
-	bi.hwndOwner = owner;
-	bi.pszDisplayName = buf;
-	bi.lpszTitle = CTSTRING(CHOOSE_FOLDER);
-	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_USENEWUI;
-	bi.lParam = (LPARAM)target.c_str();
-	bi.lpfn = &browseCallbackProc;
-	LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
-	if(pidl != NULL) {
-		SHGetPathFromIDList(pidl, buf);
-		target = buf;
-		
-		if(target.size() > 0 && target[target.size()-1] != PATH_SEPARATOR)
-			target += PATH_SEPARATOR;
-		
-		if(SHGetMalloc(&ma) != E_FAIL) {
-			ma->Free(pidl);
-			ma->Release();
-		}
-		return true;
-	}
-	return false;
-}*/
-
 bool WinUtil::MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& txt){
 	UINT ret = IDYES;
 	UINT bCheck = SettingsManager::getInstance()->get(i) ? BST_UNCHECKED : BST_CHECKED;
@@ -777,8 +747,8 @@ bool WinUtil::browseList(tstring& target) {
 		{ _T("All Files"), _T("*.*") }
 	};
 
-	tstring file = Text::toT(Util::getListPath());
-	return WinUtil::browseFile(file, false, TSTRING(OPEN_FILE_LIST), 2, types);
+	target = Text::toT(Util::getListPath());
+	return WinUtil::browseFile(target, false, TSTRING(OPEN_FILE_LIST), 2, types);
 }
 
 bool WinUtil::browseImpl(tstring& target, bool isDirectory, bool save /* = true */, const tstring& aTitle /*= Util::emptyStringW*/, int typeCount, const COMDLG_FILTERSPEC* types) {
@@ -809,6 +779,8 @@ bool WinUtil::browseImpl(tstring& target, bool isDirectory, bool save /* = true 
 		check(pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM));
 
 		if (!target.empty()) {
+			target = Text::toT(Util::validatePath(Text::fromT(target)));
+
 			// Set the given directory
 			CComPtr<IShellItem> psiFolder;
 			if (SUCCEEDED(SHCreateItemFromParsingName(target.c_str(), NULL, IID_PPV_ARGS(&psiFolder)))) {
@@ -841,48 +813,13 @@ bool WinUtil::browseImpl(tstring& target, bool isDirectory, bool save /* = true 
 				hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH,
 					&pszFilePath);
 				if (SUCCEEDED(hr)) {
-					target = pszFilePath;
+					target = Text::toT(Util::validatePath(Text::fromT(pszFilePath), isDirectory));
 				}
 				psiResult->Release();
 			}
 		}
 		pfd->Release();
 	}
-
-	//return hr;
-
-
-	/*IFileOpenDialog tmp;
-	//tmp.SetFilter();
-
-
-	TCHAR buf[UNC_MAX_PATH];
-	OPENFILENAME ofn = { 0 };       // common dialog box structure
-	target = Text::toT(Util::validatePath(Text::fromT(target)));
-	_tcscpy(buf, target.c_str());
-	// Initialize OPENFILENAME
-	ofn.lStructSize = OPENFILENAME_SIZE_VERSION_400;
-	ofn.hwndOwner = owner;
-	ofn.lpstrFile = buf;
-	ofn.lpstrFilter = types;
-	ofn.lpstrDefExt = defExt;
-	ofn.nFilterIndex = 1;
-	if (!aTitle.empty()) {
-		ofn.lpstrTitle = aTitle.c_str();
-	}
-
-	if(!initialDir.empty()) {
-		ofn.lpstrInitialDir = initialDir.c_str();
-	}
-	ofn.nMaxFile = sizeof(buf);
-	ofn.Flags = (save ? 0: OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST);
-	
-	// Display the Open dialog box. 
-	if ( (save ? GetSaveFileName(&ofn) : GetOpenFileName(&ofn) ) ==TRUE) {
-		target = ofn.lpstrFile;
-		return true;
-	}
-	return false;*/
 
 	return SUCCEEDED(hr);
 }
