@@ -111,7 +111,7 @@ LRESULT AppearancePage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	GetDlgItemText(IDC_LANGUAGE, buf, MAX_PATH);
 	tstring x = Text::toT(Util::getPath(Util::PATH_RESOURCES));
 
-	if (WinUtil::browseFile(x, false, Util::emptyStringT, 2, types) == IDOK) {
+	if (WinUtil::browseFile(x, m_hWnd, false, Util::emptyStringT, 2, types) == IDOK) {
 		SetDlgItemText(IDC_LANGUAGE, x.c_str());
 	}
 	return 0;

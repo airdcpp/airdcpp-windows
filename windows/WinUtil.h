@@ -369,16 +369,19 @@ public:
 
 	static tstring encodeFont(LOGFONT const& font);
 
-	static bool browseList(tstring& target);
+	static bool browseList(tstring& target, HWND aOwner);
 	
-	static bool browseFile(tstring& target, bool save, 
+	// Use "target" to set the initial director
+	static bool browseFile(tstring& target, HWND owner, bool save,
 		const tstring& aTitle = Util::emptyStringW, int typeCount = -1, const COMDLG_FILTERSPEC* types = nullptr) {
 
-		return browseImpl(target, false, save, aTitle, typeCount, types);
+		return browseImpl(target, owner, false, save, aTitle, typeCount, types);
 	}
 
-	static bool browseDirectory(tstring& target, const tstring& aTitle = Util::emptyStringW) {
-		return browseImpl(target, true, false, aTitle, -1, nullptr);
+	// Use "target" to set the initial director
+	// The returned target is guaranteened to end with path separator
+	static bool browseDirectory(tstring& target, HWND owner, const tstring& aTitle = Util::emptyStringW) {
+		return browseImpl(target, owner, true, false, aTitle, -1, nullptr);
 	}
 
 	// Hash related
@@ -539,10 +542,7 @@ public:
 
 	static void connectHub(const RecentHubEntryPtr& aEntry, ProfileToken aProfile);
 private:
-	static int CALLBACK browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LPARAM pData);
-
-
-	static bool browseImpl(tstring& target, bool isDirectory, bool save, const tstring& aTitle, int typeCount, const COMDLG_FILTERSPEC* types);
+	static bool browseImpl(tstring& target, HWND owner, bool isDirectory, bool save, const tstring& aTitle, int typeCount, const COMDLG_FILTERSPEC* types);
 };
 
 

@@ -1176,7 +1176,7 @@ LRESULT DirectoryListingFrame::onListDiff(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 
 	sMenu.appendItem(TSTRING(BROWSE), [this] { 	
 		tstring file;
-		if (WinUtil::browseList(file)) {
+		if (WinUtil::browseList(file, m_hWnd)) {
 			changeWindowState(false);
 			ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
 			dl->addListDiffTask(Text::fromT(file), false);

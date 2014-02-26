@@ -406,7 +406,7 @@ LRESULT ChatFrameBase::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 		return 0;
 
 	 tstring file;
-	 if (WinUtil::browseFile(file, false, getSendFileTitle()) == IDOK) {
+	 if (WinUtil::browseFile(file, m_hWnd, false, getSendFileTitle()) == IDOK) {
 		 addMagnet({ Text::fromT(file) });
 	 }
 	 return 0;

@@ -122,7 +122,7 @@ void ToolbarPage::BrowseForPic(int DLGITEM) {
 	GetDlgItemText(DLGITEM, buf, MAX_PATH);
 	tstring x = buf;
 
-	if(WinUtil::browseFile(x, false) == IDOK) {
+	if (WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
 		SetDlgItemText(DLGITEM, x.c_str());
 	}
 }

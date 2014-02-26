@@ -167,12 +167,7 @@ void LogPage::write()
 LRESULT LogPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
 	tstring dir = Text::toT(SETTING(LOG_DIRECTORY));
-	if(WinUtil::browseDirectory(dir))
-	{
-		// Adjust path string
-		if(dir.size() > 0 && dir[dir.size() - 1] != '\\')
-			dir += '\\';
-		
+	if (WinUtil::browseDirectory(dir, m_hWnd)) {
 		SetDlgItemText(IDC_LOG_DIRECTORY, dir.c_str());
 	}
 	return 0;

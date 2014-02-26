@@ -65,12 +65,12 @@ public:
 		tstring targetT;
 		if (showDirDialog) {
 			targetT = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
-			if (!WinUtil::browseDirectory(targetT))
+			if (!WinUtil::browseDirectory(targetT, ((T*)this)->m_hWnd))
 				return;
 
 		} else {
 			targetT = Text::toT(SETTING(DOWNLOAD_DIRECTORY) + fileName);
-			if (!WinUtil::browseFile(targetT, true))
+			if (!WinUtil::browseFile(targetT, ((T*)this)->m_hWnd, true))
 				return;
 
 		}

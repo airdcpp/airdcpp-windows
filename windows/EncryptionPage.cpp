@@ -81,7 +81,7 @@ LRESULT EncryptionPage::onBrowsePrivateKey(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	tstring target = Text::toT(SETTING(TLS_PRIVATE_KEY_FILE));
 	CEdit edt(GetDlgItem(IDC_TLS_PRIVATE_KEY_FILE));
 
-	if(WinUtil::browseFile(target, false)) {
+	if (WinUtil::browseFile(target, m_hWnd, false)) {
 		edt.SetWindowText(&target[0]);
 	}
 	return 0;
@@ -106,7 +106,7 @@ LRESULT EncryptionPage::onBrowseCertificate(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	tstring target = Text::toT(SETTING(TLS_CERTIFICATE_FILE));
 	CEdit edt(GetDlgItem(IDC_TLS_CERTIFICATE_FILE));
 
-	if(WinUtil::browseFile(target, false)) {
+	if (WinUtil::browseFile(target, m_hWnd, false)) {
 		edt.SetWindowText(&target[0]);
 	}
 	return 0;
@@ -116,7 +116,7 @@ LRESULT EncryptionPage::onBrowseTrustedPath(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	tstring target = Text::toT(SETTING(TLS_TRUSTED_CERTIFICATES_PATH));
 	CEdit edt(GetDlgItem(IDC_TLS_TRUSTED_CERTIFICATES_PATH));
 
-	if(WinUtil::browseDirectory(target)) {
+	if(WinUtil::browseDirectory(target, m_hWnd)) {
 		edt.SetWindowText(&target[0]);
 	}
 	return 0;

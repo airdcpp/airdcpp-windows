@@ -567,7 +567,7 @@ LRESULT PropPageTextStyles::onRestoreIcons(WORD /*wNotifyCode*/, WORD /*wID*/, H
 }
 LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring x;	
-	if (WinUtil::browseFile(x, false, Util::emptyStringT, 3, types) == IDOK) {
+	if (WinUtil::browseFile(x, m_hWnd, false, Util::emptyStringT, 3, types) == IDOK) {
 		LoadTheme(Text::fromT(x));
 	}
 	return 0;
@@ -714,7 +714,7 @@ void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
 
 LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring x;	
-	if (WinUtil::browseFile(x, true, Util::emptyStringT, 3, types) == IDOK) {
+	if (WinUtil::browseFile(x, m_hWnd, true, Util::emptyStringT, 3, types) == IDOK) {
 		SaveTheme(Text::fromT(x), false);
 	}
 	return 0;

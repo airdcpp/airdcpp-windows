@@ -260,9 +260,9 @@ LRESULT UsersFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		usersMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG, CTSTRING(OPEN_USER_LOG));
 		usersMenu.appendSeparator();
 		appendUserItems(usersMenu, true, ui ? ui->getUser() : nullptr, ui && !ui->getHubUrl().empty());
-		usersMenu.appendSeparator();
 
 		if (ui) {
+			usersMenu.appendSeparator();
 			if (!ui->getUser()->isIgnored()) {
 				usersMenu.appendItem(TSTRING(IGNORE_USER), [=] { handleClickIgnore(row); });
 			} else {

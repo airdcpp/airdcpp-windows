@@ -469,7 +469,7 @@ LRESULT ShareDirectories::onClickedAddDir(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 
 	if (!added) {
 		tstring target;
-		if(WinUtil::browseDirectory(target)) {
+		if (WinUtil::browseDirectory(target, m_hWnd)) {
 			addDirectory(target);
 		}
 	} else if (SETTING(USE_OLD_SHARING_UI)) {

@@ -705,15 +705,6 @@ void WinUtil::decodeFont(const tstring& setting, LOGFONT &dest) {
 	}
 }
 
-int CALLBACK WinUtil::browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LPARAM pData) {
-	switch(uMsg) {
-	case BFFM_INITIALIZED: 
-		SendMessage(hwnd, BFFM_SETSELECTION, TRUE, pData);
-		break;
-	}
-	return 0;
-}
-
 bool WinUtil::MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& txt){
 	UINT ret = IDYES;
 	UINT bCheck = SettingsManager::getInstance()->get(i) ? BST_UNCHECKED : BST_CHECKED;
@@ -741,17 +732,17 @@ bool WinUtil::showQuestionBox(const tstring& aText, int icon, int defaultButton 
 	return ::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : WinUtil::mainWnd, aText.c_str(), Text::toT(shortVersionString).c_str(), MB_YESNO | icon | defaultButton) == IDYES;
 }
 
-bool WinUtil::browseList(tstring& target) {
+bool WinUtil::browseList(tstring& target, HWND aOwner) {
 	const COMDLG_FILTERSPEC types[] = {
 		{ _T("File Lists"), _T("*.xml;*.xml.bz2") },
 		{ _T("All Files"), _T("*.*") }
 	};
 
 	target = Text::toT(Util::getListPath());
-	return WinUtil::browseFile(target, false, TSTRING(OPEN_FILE_LIST), 2, types);
+	return WinUtil::browseFile(target, aOwner, false, TSTRING(OPEN_FILE_LIST), 2, types);
 }
 
-bool WinUtil::browseImpl(tstring& target, bool isDirectory, bool save /* = true */, const tstring& aTitle /*= Util::emptyStringW*/, int typeCount, const COMDLG_FILTERSPEC* types) {
+bool WinUtil::browseImpl(tstring& target, HWND aOwner, bool isDirectory, bool save /* = true */, const tstring& aTitle /*= Util::emptyStringW*/, int typeCount, const COMDLG_FILTERSPEC* types) {
 #define check(x) if(!SUCCEEDED(x)) return false;
 
 	// CoCreate the File Open Dialog object.
@@ -799,7 +790,7 @@ bool WinUtil::browseImpl(tstring& target, bool isDirectory, bool save /* = true 
 			check(pfd->SetTitle(aTitle.c_str()));
 
 		// Show the dialog
-		hr = pfd->Show(NULL);
+		hr = pfd->Show(aOwner);
 		if (SUCCEEDED(hr)) {
 			// Obtain the result once the user clicks 
 			// the 'Open' button.
@@ -807,11 +798,9 @@ bool WinUtil::browseImpl(tstring& target, bool isDirectory, bool save /* = true 
 			IShellItem *psiResult;
 			hr = pfd->GetResult(&psiResult);
 			if (SUCCEEDED(hr)) {
-				// We are just going to print out the 
-				// name of the file for sample sake.
+				// Copy the path
 				PWSTR pszFilePath = NULL;
-				hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH,
-					&pszFilePath);
+				hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 				if (SUCCEEDED(hr)) {
 					target = Text::toT(Util::validatePath(Text::fromT(pszFilePath), isDirectory));
 				}
@@ -822,6 +811,7 @@ bool WinUtil::browseImpl(tstring& target, bool isDirectory, bool save /* = true 
 	}
 
 	return SUCCEEDED(hr);
+#undef check
 }
 
 tstring WinUtil::encodeFont(LOGFONT const& font)
