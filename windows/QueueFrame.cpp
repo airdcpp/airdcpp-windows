@@ -749,7 +749,7 @@ tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
 void QueueFrame::handleMoveBundles(BundleList bundles) {
 	tstring targetPath = Text::toT(Util::getParentDir(bundles.front()->getTarget()));
 
-	if (!WinUtil::browseDirectory(targetPath, m_hWnd)) {
+	if (!WinUtil::browseDirectory(targetPath)) {
 		return;
 	}
 

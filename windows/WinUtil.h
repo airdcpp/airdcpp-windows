@@ -368,9 +368,18 @@ public:
 	}
 
 	static tstring encodeFont(LOGFONT const& font);
+
+	static bool browseList(tstring& target);
 	
-	static bool browseFile(tstring& target, HWND owner = NULL, bool save = true, const tstring& initialDir = Util::emptyStringW, const tstring& aTitle = Util::emptyStringW, const TCHAR* types = NULL, const TCHAR* defExt = NULL);
-	static bool browseDirectory(tstring& target, HWND owner = NULL);
+	static bool browseFile(tstring& target, bool save, 
+		const tstring& aTitle = Util::emptyStringW, int typeCount = -1, const COMDLG_FILTERSPEC* types = nullptr) {
+
+		return browseImpl(target, false, save, aTitle, typeCount, types);
+	}
+
+	static bool browseDirectory(tstring& target, const tstring& aTitle = Util::emptyStringW) {
+		return browseImpl(target, true, false, aTitle, -1, nullptr);
+	}
 
 	// Hash related
 	static void bitziLink(const TTHValue& /*aHash*/);
@@ -532,6 +541,8 @@ public:
 private:
 	static int CALLBACK browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LPARAM pData);
 
+
+	static bool browseImpl(tstring& target, bool isDirectory, bool save, const tstring& aTitle, int typeCount, const COMDLG_FILTERSPEC* types);
 };
 
 

@@ -405,8 +405,13 @@ LRESULT PropPageTextStyles::OnDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /
 	return 1;
 }
 
-static const TCHAR types[] = _T("DC++ Theme Files\0*.dctheme;\0DC++ Settings Files\0*.xml;\0All Files\0*.*\0");
-static const TCHAR defExt[] = _T(".dctheme");
+static const COMDLG_FILTERSPEC types [] = {
+	{ _T("DC++ Theme Files"), _T("*.dctheme") },
+	{ _T("DC++ Settings Files"), _T("*.xml") },
+	{ _T("All Files"), _T("*.*") }
+};
+
+//static const TCHAR defExt[] = _T(".dctheme");
 
 #define importData(x, y) \
 		if(xml.findChild(x)) { SettingsManager::getInstance()->set(SettingsManager::y, xml.getChildData());} \
@@ -561,8 +566,8 @@ LRESULT PropPageTextStyles::onRestoreIcons(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	return 0;
 }
 LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring x = _T("");	
-	if (WinUtil::browseFile(x, m_hWnd, false, x, Util::emptyStringT, types, defExt) == IDOK) {
+	tstring x;	
+	if (WinUtil::browseFile(x, false, Util::emptyStringT, 3, types) == IDOK) {
 		LoadTheme(Text::fromT(x));
 	}
 	return 0;
@@ -708,8 +713,8 @@ void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
 }
 
 LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring x = _T("");	
-	if (WinUtil::browseFile(x, m_hWnd, true, x, Util::emptyStringT, types, defExt) == IDOK) {
+	tstring x;	
+	if (WinUtil::browseFile(x, true, Util::emptyStringT, 3, types) == IDOK) {
 		SaveTheme(Text::fromT(x), false);
 	}
 	return 0;

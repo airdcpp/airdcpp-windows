@@ -145,7 +145,7 @@ LRESULT Popups::onPopupBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	GetDlgItemText(IDC_POPUPFILE, buf, MAX_PATH);
 	tstring x = buf;
 
-	if(WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
+	if(WinUtil::browseFile(x, false) == IDOK) {
 		SetDlgItemText(IDC_POPUPFILE, x.c_str());
 		SettingsManager::getInstance()->set(SettingsManager::POPUPFILE, Text::fromT(x));
 	}

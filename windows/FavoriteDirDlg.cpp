@@ -64,7 +64,7 @@ LRESULT FavoriteDirDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 
 LRESULT FavoriteDirDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring dir = Text::toT(SETTING(TEMP_DOWNLOAD_DIRECTORY));
-	if(WinUtil::browseDirectory(dir, m_hWnd))
+	if(WinUtil::browseDirectory(dir))
 	{
 		// Adjust path string
 		if(dir.size() > 0 && dir[dir.size() - 1] != '\\')

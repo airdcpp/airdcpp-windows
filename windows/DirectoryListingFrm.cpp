@@ -1176,7 +1176,7 @@ LRESULT DirectoryListingFrame::onListDiff(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*
 
 	sMenu.appendItem(TSTRING(BROWSE), [this] { 	
 		tstring file;
-		if (WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), TSTRING(OPEN_FILE_LIST), _T("File Lists\0*.xml.bz2\0All Files\0*.*\0"))) {
+		if (WinUtil::browseList(file)) {
 			changeWindowState(false);
 			ctrlStatus.SetText(0, CTSTRING(MATCHING_FILE_LIST));
 			dl->addListDiffTask(Text::fromT(file), false);

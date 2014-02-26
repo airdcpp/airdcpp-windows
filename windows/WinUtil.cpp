@@ -714,7 +714,7 @@ int CALLBACK WinUtil::browseCallbackProc(HWND hwnd, UINT uMsg, LPARAM /*lp*/, LP
 	return 0;
 }
 
-bool WinUtil::browseDirectory(tstring& target, HWND owner /* = NULL */) {
+/*bool WinUtil::browseDirectory(tstring& target, HWND owner) {
 	TCHAR buf[UNC_MAX_PATH];
 	BROWSEINFO bi;
 	LPMALLOC ma;
@@ -742,7 +742,8 @@ bool WinUtil::browseDirectory(tstring& target, HWND owner /* = NULL */) {
 		return true;
 	}
 	return false;
-}
+}*/
+
 bool WinUtil::MessageBoxConfirm(SettingsManager::BoolSetting i, const tstring& txt){
 	UINT ret = IDYES;
 	UINT bCheck = SettingsManager::getInstance()->get(i) ? BST_UNCHECKED : BST_CHECKED;
@@ -770,7 +771,91 @@ bool WinUtil::showQuestionBox(const tstring& aText, int icon, int defaultButton 
 	return ::MessageBox(WinUtil::splash ? WinUtil::splash->m_hWnd : WinUtil::mainWnd, aText.c_str(), Text::toT(shortVersionString).c_str(), MB_YESNO | icon | defaultButton) == IDYES;
 }
 
-bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* = true */, const tstring& initialDir /* = Util::emptyString */, const tstring& aTitle /*= Util::emptyStringW*/, const TCHAR* types /* = NULL */, const TCHAR* defExt /* = NULL */) {
+bool WinUtil::browseList(tstring& target) {
+	const COMDLG_FILTERSPEC types[] = {
+		{ _T("File Lists"), _T("*.xml;*.xml.bz2") },
+		{ _T("All Files"), _T("*.*") }
+	};
+
+	tstring file = Text::toT(Util::getListPath());
+	return WinUtil::browseFile(file, false, TSTRING(OPEN_FILE_LIST), 2, types);
+}
+
+bool WinUtil::browseImpl(tstring& target, bool isDirectory, bool save /* = true */, const tstring& aTitle /*= Util::emptyStringW*/, int typeCount, const COMDLG_FILTERSPEC* types) {
+#define check(x) if(!SUCCEEDED(x)) return false;
+
+	// CoCreate the File Open Dialog object.
+	IFileDialog *pfd = NULL;
+	HRESULT hr = CoCreateInstance(save ? CLSID_FileSaveDialog : CLSID_FileOpenDialog,
+		NULL,
+		CLSCTX_INPROC_SERVER,
+		IID_PPV_ARGS(&pfd));
+
+	if (SUCCEEDED(hr)) {
+		DWORD dwFlags;
+
+		// Before setting, always get the options first in order 
+		// not to override existing options.
+		check(pfd->GetOptions(&dwFlags));
+
+		if (isDirectory)
+			dwFlags |= FOS_PICKFOLDERS;
+
+		if (save) {
+			dwFlags |= OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
+		}
+
+		// In this case, get shell items only for file system items.
+		check(pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM));
+
+		if (!target.empty()) {
+			// Set the given directory
+			CComPtr<IShellItem> psiFolder;
+			if (SUCCEEDED(SHCreateItemFromParsingName(target.c_str(), NULL, IID_PPV_ARGS(&psiFolder)))) {
+				pfd->SetFolder(psiFolder);
+			}
+
+		}
+
+		// Set the file types to display only. 
+		// Notice that this is a 1-based array.
+
+		if (typeCount > 0)
+			check(pfd->SetFileTypes(typeCount, types));
+
+		if (!aTitle.empty())
+			check(pfd->SetTitle(aTitle.c_str()));
+
+		// Show the dialog
+		hr = pfd->Show(NULL);
+		if (SUCCEEDED(hr)) {
+			// Obtain the result once the user clicks 
+			// the 'Open' button.
+			// The result is an IShellItem object.
+			IShellItem *psiResult;
+			hr = pfd->GetResult(&psiResult);
+			if (SUCCEEDED(hr)) {
+				// We are just going to print out the 
+				// name of the file for sample sake.
+				PWSTR pszFilePath = NULL;
+				hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH,
+					&pszFilePath);
+				if (SUCCEEDED(hr)) {
+					target = pszFilePath;
+				}
+				psiResult->Release();
+			}
+		}
+		pfd->Release();
+	}
+
+	//return hr;
+
+
+	/*IFileOpenDialog tmp;
+	//tmp.SetFilter();
+
+
 	TCHAR buf[UNC_MAX_PATH];
 	OPENFILENAME ofn = { 0 };       // common dialog box structure
 	target = Text::toT(Util::validatePath(Text::fromT(target)));
@@ -797,7 +882,9 @@ bool WinUtil::browseFile(tstring& target, HWND owner /* = NULL */, bool save /* 
 		target = ofn.lpstrFile;
 		return true;
 	}
-	return false;
+	return false;*/
+
+	return SUCCEEDED(hr);
 }
 
 tstring WinUtil::encodeFont(LOGFONT const& font)

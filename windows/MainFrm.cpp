@@ -1322,8 +1322,8 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 }
 
 void MainFrame::getMagnetForFile() {
-	tstring file;
-	if(WinUtil::browseFile(file, m_hWnd, false, lastTTHdir) == IDOK) {
+	tstring file = lastTTHdir;
+	if(WinUtil::browseFile(file, false) == IDOK) {
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_GRAYED);
 
 		auto path = Text::fromT(file);
@@ -1400,10 +1400,8 @@ LRESULT MainFrame::onOpenOwnList(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 }
 
 LRESULT MainFrame::onOpenFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	const TCHAR types[] = _T("File Lists\0*.DcLst;*.xml.bz2\0All Files\0*.*\0");
-
 	tstring file;
-	if (WinUtil::browseFile(file, m_hWnd, false, Text::toT(Util::getListPath()), TSTRING(OPEN_FILE_LIST), types)) {
+	if (WinUtil::browseList(file)) {
 		UserPtr u = DirectoryListing::getUserFromFilename(Text::fromT(file));
 		if(u) {
 			addThreadedTask([=] { DirectoryListingManager::getInstance()->openFileList(HintedUser(u, Util::emptyString), Text::fromT(file)); });
