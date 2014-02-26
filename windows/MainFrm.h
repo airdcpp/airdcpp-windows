@@ -424,7 +424,6 @@ private:
 	uint64_t lastUpdate;
 	int64_t lastUp;
 	int64_t lastDown;
-	tstring lastTTHdir;
 
 	bool oldshutdown;
 

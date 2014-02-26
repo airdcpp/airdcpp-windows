@@ -762,10 +762,6 @@ bool WinUtil::browseImpl(tstring& target, HWND aOwner, bool isDirectory, bool sa
 		if (isDirectory)
 			dwFlags |= FOS_PICKFOLDERS;
 
-		if (save) {
-			dwFlags |= OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST;
-		}
-
 		// In this case, get shell items only for file system items.
 		check(pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM));
 
@@ -774,10 +770,14 @@ bool WinUtil::browseImpl(tstring& target, HWND aOwner, bool isDirectory, bool sa
 
 			// Set the given directory
 			CComPtr<IShellItem> psiFolder;
-			if (SUCCEEDED(SHCreateItemFromParsingName(target.c_str(), NULL, IID_PPV_ARGS(&psiFolder)))) {
+			if (SUCCEEDED(SHCreateItemFromParsingName(Util::getFilePath(target).c_str(), NULL, IID_PPV_ARGS(&psiFolder)))) {
 				pfd->SetFolder(psiFolder);
 			}
 
+			auto fileName = Util::getFileName(target);
+			if (!fileName.empty() && save) {
+				pfd->SetFileName(fileName.c_str());
+			}
 		}
 
 		// Set the file types to display only. 

@@ -371,7 +371,7 @@ public:
 
 	static bool browseList(tstring& target, HWND aOwner);
 	
-	// Use "target" to set the initial director
+	// Use "target" to set the initial directory (or file path to set the default filename too)
 	static bool browseFile(tstring& target, HWND owner, bool save,
 		const tstring& aTitle = Util::emptyStringW, int typeCount = -1, const COMDLG_FILTERSPEC* types = nullptr) {
 

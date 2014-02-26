@@ -101,7 +101,8 @@ LRESULT Sounds::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, B
 	item.cchTextMax = 255;
 	item.pszText = buf;
 	if(ctrlSounds.GetSelectedItem(&item)) {
-	tstring x = _T("");	
+
+	tstring x;	
 	if (WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
 			ctrlSounds.SetItemText(item.iItem, 1, x.c_str());
 		}

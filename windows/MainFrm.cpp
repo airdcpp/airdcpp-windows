@@ -83,7 +83,7 @@ bool MainFrame::isShutdownStatus = false;
 
 MainFrame::MainFrame() : trayMessage(0), maximized(false), lastUpload(-1), lastUpdate(0), 
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
-closing(false), awaybyminimize(false), missedAutoConnect(false), lastTTHdir(Util::emptyStringT), tabsontop(false),
+closing(false), awaybyminimize(false), missedAutoConnect(false), tabsontop(false),
 bTrayIcon(false), bAppMinimized(false), bHasPM(false), bHasMC(false), hashProgress(false), trayUID(0), fMenuShutdown(false),
 statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
 
@@ -1322,7 +1322,7 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 }
 
 void MainFrame::getMagnetForFile() {
-	tstring file = lastTTHdir;
+	tstring file;
 	if (WinUtil::browseFile(file, m_hWnd, false) == IDOK) {
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_GRAYED);
 
