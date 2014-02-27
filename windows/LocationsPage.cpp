@@ -25,6 +25,7 @@
 #include "../client/FavoriteManager.h"
 #include "../client/AirUtil.h"
 
+#include "BrowseDlg.h"
 #include "Resource.h"
 #include "LocationsPage.h"
 #include "WinUtil.h"
@@ -273,18 +274,24 @@ bool LocationsPage::removeFavoriteDir(const string& vName) {
 
 LRESULT LocationsPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	tstring dir = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
-	if (WinUtil::browseDirectory(dir, m_hWnd)) {
-		SetDlgItemText(IDC_DOWNLOADDIR, dir.c_str());
+	tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
+
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, true, false);
+	dlg.setPath(target);
+	if (dlg.show(target)) {
+		SetDlgItemText(IDC_DOWNLOADDIR, target.c_str());
 	}
 	return 0;
 }
 
 LRESULT LocationsPage::onClickedBrowseTempDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	tstring dir = Text::toT(SETTING(TEMP_DOWNLOAD_DIRECTORY));
-	if (WinUtil::browseDirectory(dir, m_hWnd)) {
-		SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, dir.c_str());
+	tstring target = Text::toT(SETTING(TEMP_DOWNLOAD_DIRECTORY));
+
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, true, false);
+	dlg.setPath(target);
+	if (dlg.show(target)) {
+		SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, target.c_str());
 	}
 	return 0;
 }

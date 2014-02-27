@@ -20,6 +20,7 @@
 
 #include "Resource.h"
 
+#include "BrowseDlg.h"
 #include "Sounds.h"
 #include "WinUtil.h"
 
@@ -100,13 +101,16 @@ LRESULT Sounds::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, B
 	item.mask = LVIF_TEXT;
 	item.cchTextMax = 255;
 	item.pszText = buf;
-	if(ctrlSounds.GetSelectedItem(&item)) {
+	if (ctrlSounds.GetSelectedItem(&item)) {
+		tstring x = item.pszText;
 
-	tstring x;	
-	if (WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
+		BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+		dlg.setPath(x, true);
+		if (dlg.show(x)) {
 			ctrlSounds.SetItemText(item.iItem, 1, x.c_str());
 		}
 	}
+
 	return 0;
 }
 

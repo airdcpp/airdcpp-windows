@@ -21,6 +21,7 @@
 #include "../client/StringTokenizer.h"
 #include "../client/Util.h"
 
+#include "BrowseDlg.h"
 #include "Resource.h"
 #include "ToolbarPage.h"
 #include "WinUtil.h"
@@ -122,7 +123,9 @@ void ToolbarPage::BrowseForPic(int DLGITEM) {
 	GetDlgItemText(DLGITEM, buf, MAX_PATH);
 	tstring x = buf;
 
-	if (WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+	dlg.setPath(x, true);
+	if (dlg.show(x)) {
 		SetDlgItemText(DLGITEM, x.c_str());
 	}
 }

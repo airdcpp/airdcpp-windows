@@ -20,6 +20,7 @@
 #include "../client/SimpleXML.h"
 #include "../client/version.h"
 
+#include "BrowseDlg.h"
 #include "Resource.h"
 #include "PropPageTextStyles.h"
 #include "WinUtil.h"
@@ -566,8 +567,11 @@ LRESULT PropPageTextStyles::onRestoreIcons(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	return 0;
 }
 LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring x;	
-	if (WinUtil::browseFile(x, m_hWnd, false, Util::emptyStringT, 3, types) == IDOK) {
+	tstring x;
+
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+	dlg.setTypes(3, types);
+	if (dlg.show(x)) {
 		LoadTheme(Text::fromT(x));
 	}
 	return 0;
@@ -713,8 +717,11 @@ void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
 }
 
 LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring x;	
-	if (WinUtil::browseFile(x, m_hWnd, true, Util::emptyStringT, 3, types) == IDOK) {
+	tstring x;
+
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, true);
+	dlg.setTypes(3, types);
+	if (dlg.show(x)) {
 		SaveTheme(Text::fromT(x), false);
 	}
 	return 0;

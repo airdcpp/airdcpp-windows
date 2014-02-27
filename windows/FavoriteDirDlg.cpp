@@ -20,6 +20,7 @@
 #include "Resource.h"
 #include "WinUtil.h"
 #include "FavoriteDirDlg.h"
+#include "BrowseDlg.h"
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))
 
@@ -63,8 +64,11 @@ LRESULT FavoriteDirDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 }
 
 LRESULT FavoriteDirDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	tstring dir = Text::toT(SETTING(TEMP_DOWNLOAD_DIRECTORY));
-	if (WinUtil::browseDirectory(dir, m_hWnd)) {
+	tstring dir = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
+
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERAL, true, false);
+	dlg.setPath(dir);
+	if (dlg.show(dir)) {
 		SetDlgItemText(IDC_FAVDIR_EDIT, dir.c_str());
 	}
 	return 0;

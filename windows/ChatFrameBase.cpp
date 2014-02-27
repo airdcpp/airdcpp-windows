@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include "../client/stdinc.h"
 #include "ChatFrameBase.h"
+#include "BrowseDlg.h"
 #include "WinUtil.h"
 #include "EmoticonsDlg.h"
 #include "EmoticonsManager.h"
@@ -405,11 +406,14 @@ LRESULT ChatFrameBase::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	if (!getClient())
 		return 0;
 
-	 tstring file;
-	 if (WinUtil::browseFile(file, m_hWnd, false, getSendFileTitle()) == IDOK) {
-		 addMagnet({ Text::fromT(file) });
-	 }
-	 return 0;
+	tstring file;
+
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERAL, false, false);
+	if (dlg.show(file)) {
+		addMagnet({ Text::fromT(file) });
+	}
+
+	return 0;
  }
 
 void ChatFrameBase::addMagnet(const StringList& aPaths) {

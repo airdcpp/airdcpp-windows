@@ -21,6 +21,7 @@
 
 #include "Resource.h"
 
+#include "BrowseDlg.h"
 #include "Popups.h"
 #include "WinUtil.h"
 #include "MainFrm.h"
@@ -145,7 +146,9 @@ LRESULT Popups::onPopupBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	GetDlgItemText(IDC_POPUPFILE, buf, MAX_PATH);
 	tstring x = buf;
 
-	if (WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+	dlg.setPath(x, true);
+	if (dlg.show(x)) {
 		SetDlgItemText(IDC_POPUPFILE, x.c_str());
 		SettingsManager::getInstance()->set(SettingsManager::POPUPFILE, Text::fromT(x));
 	}

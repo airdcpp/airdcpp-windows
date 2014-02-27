@@ -27,6 +27,7 @@
 #include "../client/TargetUtil.h"
 #include "../client/Util.h"
 
+#include "BrowseDlg.h"
 #include "WinUtil.h"
 
 template<class T>
@@ -60,23 +61,22 @@ public:
 
 	void onDownloadTo(bool useWhole, bool isSizeUnknown) {
 		string fileName;
-		bool showDirDialog = useWhole || ((T*)this)->showDirDialog(fileName);
+		bool dirDlg = useWhole || ((T*)this)->showDirDialog(fileName);
 
 		tstring targetT;
-		if (showDirDialog) {
-			targetT = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
-			if (!WinUtil::browseDirectory(targetT, ((T*)this)->m_hWnd))
-				return;
 
-		} else {
-			targetT = Text::toT(SETTING(DOWNLOAD_DIRECTORY) + fileName);
-			if (!WinUtil::browseFile(targetT, ((T*)this)->m_hWnd, true))
-				return;
-
+		BrowseDlg dlg(((T*)this)->m_hWnd, BrowseDlg::TYPE_GENERAL, dirDlg, true);
+		dlg.setPath(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
+		dlg.setTitle(TSTRING(DOWNLOAD_TO));
+		if (!dirDlg) {
+			dlg.setFileName(Text::toT(fileName));
 		}
 
+		if (!dlg.show(targetT))
+			return;
+
 		auto target = Text::fromT(targetT);
-		SettingsManager::getInstance()->addToHistory(showDirDialog ? target : Util::getFilePath(target), SettingsManager::HISTORY_DIR);
+		SettingsManager::getInstance()->addToHistory(dirDlg ? target : Util::getFilePath(target), SettingsManager::HISTORY_DIR);
 		onDownload(target, useWhole, isSizeUnknown, QueueItemBase::DEFAULT);
 	}
 

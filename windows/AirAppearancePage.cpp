@@ -20,6 +20,7 @@
 #include "Resource.h"
 #include "AirAppearancePage.h"
 
+#include "BrowseDlg.h"
 #include "WinUtil.h"
 #include "PropertiesDlg.h"
 
@@ -69,8 +70,11 @@ void AirAppearancePage::BrowseForPic(int DLGITEM) {
 
 	GetDlgItemText(DLGITEM, buf, MAX_PATH);
 	tstring x = buf;
+	
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+	dlg.setPath(x, true);
 
-	if (WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
+	if (dlg.show(x)) {
 		SetDlgItemText(DLGITEM, x.c_str());
 	}
 }

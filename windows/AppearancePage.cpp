@@ -22,6 +22,7 @@
 #include "AppearancePage.h"
 #include "WinUtil.h"
 #include "PropertiesDlg.h"
+#include "BrowseDlg.h"
 
 PropPage::TextItem AppearancePage::texts[] = {
 	{ IDC_SETTINGS_APPEARANCE_OPTIONS, ResourceManager::SETTINGS_OPTIONS },
@@ -103,7 +104,7 @@ LRESULT AppearancePage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 
 LRESULT AppearancePage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	TCHAR buf[MAX_PATH];
-	const COMDLG_FILTERSPEC types[] = {
+	const BrowseDlg::ExtensionList types[] = {
 		{ _T("Language Files"), _T("*.xml") },
 		{ _T("All Files"), _T("*.*") }
 	};
@@ -111,7 +112,11 @@ LRESULT AppearancePage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	GetDlgItemText(IDC_LANGUAGE, buf, MAX_PATH);
 	tstring x = Text::toT(Util::getPath(Util::PATH_RESOURCES));
 
-	if (WinUtil::browseFile(x, m_hWnd, false, Util::emptyStringT, 2, types) == IDOK) {
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+	dlg.setPath(x, true);
+	dlg.setTypes(2, types);
+
+	if (dlg.show(x)) {
 		SetDlgItemText(IDC_LANGUAGE, x.c_str());
 	}
 	return 0;

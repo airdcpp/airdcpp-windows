@@ -21,6 +21,7 @@
 #include "../client/LogManager.h"
 #include "../client/File.h"
 
+#include "BrowseDlg.h"
 #include "Resource.h"
 #include "LogPage.h"
 #include "WinUtil.h"
@@ -166,9 +167,12 @@ void LogPage::write()
 
 LRESULT LogPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/)
 {
-	tstring dir = Text::toT(SETTING(LOG_DIRECTORY));
-	if (WinUtil::browseDirectory(dir, m_hWnd)) {
-		SetDlgItemText(IDC_LOG_DIRECTORY, dir.c_str());
+	tstring target = Text::toT(SETTING(LOG_DIRECTORY));
+
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, true, false);
+	dlg.setPath(target);
+	if (dlg.show(target)) {
+		SetDlgItemText(IDC_LOG_DIRECTORY, target.c_str());
 	}
 	return 0;
 }

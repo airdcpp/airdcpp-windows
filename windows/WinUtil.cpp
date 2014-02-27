@@ -47,6 +47,7 @@
 
 #include "HubFrame.h"
 #include "BarShader.h"
+#include "BrowseDlg.h"
 #include "ExMessageBox.h"
 
 boost::wregex WinUtil::pathReg;
@@ -733,85 +734,27 @@ bool WinUtil::showQuestionBox(const tstring& aText, int icon, int defaultButton 
 }
 
 bool WinUtil::browseList(tstring& target, HWND aOwner) {
-	const COMDLG_FILTERSPEC types[] = {
+	const BrowseDlg::ExtensionList types[] = {
 		{ _T("File Lists"), _T("*.xml;*.xml.bz2") },
 		{ _T("All Files"), _T("*.*") }
 	};
 
-	target = Text::toT(Util::getListPath());
-	return WinUtil::browseFile(target, aOwner, false, TSTRING(OPEN_FILE_LIST), 2, types);
+	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_FILELIST, false, false);
+	dlg.setTitle(TSTRING(OPEN_FILE_LIST));
+	dlg.setPath(Text::toT(Util::getListPath()));
+	dlg.setTypes(2, types);
+	return dlg.show(target);
 }
 
-bool WinUtil::browseImpl(tstring& target, HWND aOwner, bool isDirectory, bool save /* = true */, const tstring& aTitle /*= Util::emptyStringW*/, int typeCount, const COMDLG_FILTERSPEC* types) {
-#define check(x) if(!SUCCEEDED(x)) return false;
+bool WinUtil::browseApplication(tstring& target, HWND aOwner) {
+	const BrowseDlg::ExtensionList types[] = {
+		{ _T("Programs"), _T("*.exe") }
+	};
 
-	// CoCreate the File Open Dialog object.
-	IFileDialog *pfd = NULL;
-	HRESULT hr = CoCreateInstance(save ? CLSID_FileSaveDialog : CLSID_FileOpenDialog,
-		NULL,
-		CLSCTX_INPROC_SERVER,
-		IID_PPV_ARGS(&pfd));
-
-	if (SUCCEEDED(hr)) {
-		DWORD dwFlags;
-
-		// Before setting, always get the options first in order 
-		// not to override existing options.
-		check(pfd->GetOptions(&dwFlags));
-
-		if (isDirectory)
-			dwFlags |= FOS_PICKFOLDERS;
-
-		// In this case, get shell items only for file system items.
-		check(pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM));
-
-		if (!target.empty()) {
-			target = Text::toT(Util::validatePath(Text::fromT(target)));
-
-			// Set the given directory
-			CComPtr<IShellItem> psiFolder;
-			if (SUCCEEDED(SHCreateItemFromParsingName(Util::getFilePath(target).c_str(), NULL, IID_PPV_ARGS(&psiFolder)))) {
-				pfd->SetFolder(psiFolder);
-			}
-
-			auto fileName = Util::getFileName(target);
-			if (!fileName.empty()) {
-				pfd->SetFileName(fileName.c_str());
-			}
-		}
-
-		// Set the file types to display only. 
-		// Notice that this is a 1-based array.
-
-		if (typeCount > 0)
-			check(pfd->SetFileTypes(typeCount, types));
-
-		if (!aTitle.empty())
-			check(pfd->SetTitle(aTitle.c_str()));
-
-		// Show the dialog
-		hr = pfd->Show(aOwner);
-		if (SUCCEEDED(hr)) {
-			// Obtain the result once the user clicks 
-			// the 'Open' button.
-			// The result is an IShellItem object.
-			IShellItem *psiResult;
-			hr = pfd->GetResult(&psiResult);
-			if (SUCCEEDED(hr)) {
-				// Copy the path
-				PWSTR pszFilePath = NULL;
-				hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
-				if (SUCCEEDED(hr)) {
-					target = Text::toT(Util::validatePath(Text::fromT(pszFilePath), isDirectory));
-				}
-				psiResult->Release();
-			}
-		}
-		pfd->Release();
-	}
-
-	return SUCCEEDED(hr);
-#undef check
+	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_APP, false, false);
+	dlg.setPath(target, true);
+	dlg.setTypes(1, types);
+	return dlg.show(target);
 }
 
 tstring WinUtil::encodeFont(LOGFONT const& font)

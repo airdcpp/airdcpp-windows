@@ -22,6 +22,7 @@
 #include "../client/ClientManager.h"
 #include "../client/FavoriteManager.h"
 
+#include "BrowseDlg.h"
 #include "Resource.h"
 #include "ShareDirectories.h"
 #include "WinUtil.h"
@@ -469,7 +470,9 @@ LRESULT ShareDirectories::onClickedAddDir(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 
 	if (!added) {
 		tstring target;
-		if (WinUtil::browseDirectory(target, m_hWnd)) {
+
+		BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERAL, true, false);
+		if (dlg.show(target)) {
 			addDirectory(target);
 		}
 	} else if (SETTING(USE_OLD_SHARING_UI)) {

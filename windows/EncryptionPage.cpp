@@ -23,6 +23,7 @@
 #include "Resource.h"
 #include "EncryptionPage.h"
 #include "WinUtil.h"
+#include "BrowseDlg.h"
 
 PropPage::TextItem EncryptionPage::texts[] = {
 	{ IDC_CERT_USE_DEFAULT_PATHS, ResourceManager::USE_DEFAULT_CERT_PATHS },
@@ -81,7 +82,9 @@ LRESULT EncryptionPage::onBrowsePrivateKey(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	tstring target = Text::toT(SETTING(TLS_PRIVATE_KEY_FILE));
 	CEdit edt(GetDlgItem(IDC_TLS_PRIVATE_KEY_FILE));
 
-	if (WinUtil::browseFile(target, m_hWnd, false)) {
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_NO_RECENT, false, false);
+	dlg.setPath(target, true);
+	if (dlg.show(target)) {
 		edt.SetWindowText(&target[0]);
 	}
 	return 0;
@@ -106,9 +109,12 @@ LRESULT EncryptionPage::onBrowseCertificate(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	tstring target = Text::toT(SETTING(TLS_CERTIFICATE_FILE));
 	CEdit edt(GetDlgItem(IDC_TLS_CERTIFICATE_FILE));
 
-	if (WinUtil::browseFile(target, m_hWnd, false)) {
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_NO_RECENT, false, false);
+	dlg.setPath(target, true);
+	if (dlg.show(target)) {
 		edt.SetWindowText(&target[0]);
 	}
+
 	return 0;
 }
 
@@ -116,7 +122,9 @@ LRESULT EncryptionPage::onBrowseTrustedPath(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	tstring target = Text::toT(SETTING(TLS_TRUSTED_CERTIFICATES_PATH));
 	CEdit edt(GetDlgItem(IDC_TLS_TRUSTED_CERTIFICATES_PATH));
 
-	if(WinUtil::browseDirectory(target, m_hWnd)) {
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_NO_RECENT, true, false);
+	dlg.setPath(target, true);
+	if (dlg.show(target)) {
 		edt.SetWindowText(&target[0]);
 	}
 	return 0;

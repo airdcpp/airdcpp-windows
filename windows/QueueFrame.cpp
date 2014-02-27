@@ -22,6 +22,7 @@
 #include "QueueFrame.h"
 
 #include "BarShader.h"
+#include "BrowseDlg.h"
 #include "MainFrm.h"
 #include "PrivateFrame.h"
 #include "ResourceLoader.h"
@@ -749,7 +750,9 @@ tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
 void QueueFrame::handleMoveBundles(BundleList bundles) {
 	tstring targetPath = Text::toT(Util::getParentDir(bundles.front()->getTarget()));
 
-	if (!WinUtil::browseDirectory(targetPath, m_hWnd)) {
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERAL, true, true);
+	dlg.setPath(targetPath);
+	if (!dlg.show(targetPath)) {
 		return;
 	}
 

@@ -47,6 +47,7 @@
 #include "Wizard.h"
 #include "AutoSearchFrm.h"
 #include "QueueFrame.h"
+#include "BrowseDlg.h"
 
 #include "Winamp.h"
 #include "Players.h"
@@ -1323,7 +1324,9 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 
 void MainFrame::getMagnetForFile() {
 	tstring file;
-	if (WinUtil::browseFile(file, m_hWnd, false) == IDOK) {
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERAL, false, false);
+
+	if (dlg.show(file)) {
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_GRAYED);
 
 		auto path = Text::fromT(file);

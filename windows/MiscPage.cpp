@@ -214,9 +214,10 @@ LRESULT MiscPage::onBrowsew(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/
 	GetDlgItemText(IDC_WINAMP_PATH, buf, MAX_PATH);
 	tstring x = buf;
 
-	if (WinUtil::browseFile(x, m_hWnd, false) == IDOK) {
+	if (WinUtil::browseApplication(x, m_hWnd)) {
 		SetDlgItemText(IDC_WINAMP_PATH, x.c_str());
 	}
+
 	return 0;
 }
 

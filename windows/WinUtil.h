@@ -370,19 +370,7 @@ public:
 	static tstring encodeFont(LOGFONT const& font);
 
 	static bool browseList(tstring& target, HWND aOwner);
-	
-	// Use "target" to set the initial directory (or file path to set the default filename too)
-	static bool browseFile(tstring& target, HWND owner, bool save,
-		const tstring& aTitle = Util::emptyStringW, int typeCount = -1, const COMDLG_FILTERSPEC* types = nullptr) {
-
-		return browseImpl(target, owner, false, save, aTitle, typeCount, types);
-	}
-
-	// Use "target" to set the initial director
-	// The returned target is guaranteened to end with path separator
-	static bool browseDirectory(tstring& target, HWND owner, const tstring& aTitle = Util::emptyStringW) {
-		return browseImpl(target, owner, true, false, aTitle, -1, nullptr);
-	}
+	static bool browseApplication(tstring& target, HWND aOwner);
 
 	// Hash related
 	static void bitziLink(const TTHValue& /*aHash*/);
@@ -541,8 +529,6 @@ public:
 	//static void addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags = 0, bool addBad = true);
 
 	static void connectHub(const RecentHubEntryPtr& aEntry, ProfileToken aProfile);
-private:
-	static bool browseImpl(tstring& target, HWND owner, bool isDirectory, bool save, const tstring& aTitle, int typeCount, const COMDLG_FILTERSPEC* types);
 };
 
 

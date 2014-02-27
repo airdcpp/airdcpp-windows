@@ -753,6 +753,9 @@
     <ClCompile Include="windows\QueueFrame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="windows\BrowseDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="windows\AboutDlg.h">
@@ -1158,6 +1161,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="windows\QueueFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="windows\BrowseDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
