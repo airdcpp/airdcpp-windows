@@ -1324,7 +1324,7 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 
 void MainFrame::getMagnetForFile() {
 	tstring file;
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERAL, false, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, false, false);
 
 	if (dlg.show(file)) {
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_GRAYED);

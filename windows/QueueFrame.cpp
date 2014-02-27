@@ -750,7 +750,7 @@ tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
 void QueueFrame::handleMoveBundles(BundleList bundles) {
 	tstring targetPath = Text::toT(Util::getParentDir(bundles.front()->getTarget()));
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERAL, true, true);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, true, true);
 	dlg.setPath(targetPath);
 	if (!dlg.show(targetPath)) {
 		return;

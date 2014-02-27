@@ -31,7 +31,7 @@ const GUID BrowseDlg::browseGuids[TYPE_LAST] = {
 #define checkinit() if(!initialized) return false;
 #define check(x) if(!SUCCEEDED(x)) return false;
 
-BrowseDlg::BrowseDlg(HWND hwnd, Type aType, bool aIsDirectory, bool save) : m_hwnd(hwnd), isDirectory(aIsDirectory) {
+BrowseDlg::BrowseDlg(HWND hwnd, RecentType aType, bool aIsDirectory, bool save) : m_hwnd(hwnd), isDirectory(aIsDirectory) {
 	// CoCreate the File Open Dialog object.
 	HRESULT hr = CoCreateInstance(save && !aIsDirectory ? CLSID_FileSaveDialog : CLSID_FileOpenDialog,
 		NULL,
@@ -47,9 +47,9 @@ BrowseDlg::BrowseDlg(HWND hwnd, Type aType, bool aIsDirectory, bool save) : m_hw
 			if (isDirectory)
 				dwFlags |= FOS_PICKFOLDERS;
 
-			if (aType == TYPE_NO_RECENT) {
+			if (aType == TYPE_NOSAVE) {
 				dwFlags |= FOS_DONTADDTORECENT;
-			} else if (aType != TYPE_GENERAL) {
+			} else if (aType != TYPE_GENERIC) {
 				pfd->SetClientGuid(browseGuids[aType]);
 			}
 

@@ -29,9 +29,9 @@
 class BrowseDlg {
 public:
 	typedef COMDLG_FILTERSPEC ExtensionList;
-	enum Type {
-		TYPE_NO_RECENT,
-		TYPE_GENERAL,
+	enum RecentType {
+		TYPE_NOSAVE,
+		TYPE_GENERIC,
 		TYPE_SETTINGS_RESOURCES,
 		TYPE_FILELIST,
 		TYPE_APP,
@@ -40,7 +40,7 @@ public:
 	static const GUID browseGuids[TYPE_LAST];
 
 
-	BrowseDlg(HWND hwnd, Type aType, bool aIsDirectory, bool save);
+	BrowseDlg(HWND hwnd, RecentType aType, bool aIsDirectory, bool save);
 	~BrowseDlg();
 
 	bool show(tstring& target);

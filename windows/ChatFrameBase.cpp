@@ -408,7 +408,7 @@ LRESULT ChatFrameBase::onAddMagnet(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 	tstring file;
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERAL, false, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, false, false);
 	if (dlg.show(file)) {
 		addMagnet({ Text::fromT(file) });
 	}

@@ -735,8 +735,8 @@ bool WinUtil::showQuestionBox(const tstring& aText, int icon, int defaultButton 
 
 bool WinUtil::browseList(tstring& target, HWND aOwner) {
 	const BrowseDlg::ExtensionList types[] = {
-		{ _T("File Lists"), _T("*.xml;*.xml.bz2") },
-		{ _T("All Files"), _T("*.*") }
+		{ CTSTRING(FILE_LISTS), _T("*.xml;*.xml.bz2") },
+		{ CTSTRING(ALL_FILES), _T("*.*") }
 	};
 
 	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_FILELIST, false, false);
@@ -748,7 +748,7 @@ bool WinUtil::browseList(tstring& target, HWND aOwner) {
 
 bool WinUtil::browseApplication(tstring& target, HWND aOwner) {
 	const BrowseDlg::ExtensionList types[] = {
-		{ _T("Programs"), _T("*.exe") }
+		{ CTSTRING(APPLICATION), _T("*.exe") }
 	};
 
 	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_APP, false, false);

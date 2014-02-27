@@ -66,7 +66,7 @@ LRESULT FavoriteDirDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 LRESULT FavoriteDirDlg::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring dir = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERAL, true, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, true, false);
 	dlg.setPath(dir);
 	if (dlg.show(dir)) {
 		SetDlgItemText(IDC_FAVDIR_EDIT, dir.c_str());
