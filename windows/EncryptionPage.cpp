@@ -82,7 +82,7 @@ LRESULT EncryptionPage::onBrowsePrivateKey(WORD /*wNotifyCode*/, WORD /*wID*/, H
 	tstring target = Text::toT(SETTING(TLS_PRIVATE_KEY_FILE));
 	CEdit edt(GetDlgItem(IDC_TLS_PRIVATE_KEY_FILE));
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_NOSAVE, false, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_NOSAVE, BrowseDlg::DIALOG_SELECT_FILE);
 	dlg.setPath(target, true);
 	if (dlg.show(target)) {
 		edt.SetWindowText(&target[0]);
@@ -109,7 +109,7 @@ LRESULT EncryptionPage::onBrowseCertificate(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	tstring target = Text::toT(SETTING(TLS_CERTIFICATE_FILE));
 	CEdit edt(GetDlgItem(IDC_TLS_CERTIFICATE_FILE));
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_NOSAVE, false, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_NOSAVE, BrowseDlg::DIALOG_SELECT_FILE);
 	dlg.setPath(target, true);
 	if (dlg.show(target)) {
 		edt.SetWindowText(&target[0]);
@@ -122,7 +122,7 @@ LRESULT EncryptionPage::onBrowseTrustedPath(WORD /*wNotifyCode*/, WORD /*wID*/, 
 	tstring target = Text::toT(SETTING(TLS_TRUSTED_CERTIFICATES_PATH));
 	CEdit edt(GetDlgItem(IDC_TLS_TRUSTED_CERTIFICATES_PATH));
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_NOSAVE, true, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_NOSAVE, BrowseDlg::DIALOG_SELECT_FOLDER);
 	dlg.setPath(target, true);
 	if (dlg.show(target)) {
 		edt.SetWindowText(&target[0]);

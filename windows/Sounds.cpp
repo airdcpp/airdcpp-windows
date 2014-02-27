@@ -104,7 +104,7 @@ LRESULT Sounds::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, B
 	if (ctrlSounds.GetSelectedItem(&item)) {
 		tstring x = item.pszText;
 
-		BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+		BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_SELECT_FILE);
 		dlg.setPath(x, true);
 		if (dlg.show(x)) {
 			ctrlSounds.SetItemText(item.iItem, 1, x.c_str());

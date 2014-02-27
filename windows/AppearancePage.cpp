@@ -112,9 +112,10 @@ LRESULT AppearancePage::onBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWnd
 	GetDlgItemText(IDC_LANGUAGE, buf, MAX_PATH);
 	tstring x = Text::toT(Util::getPath(Util::PATH_RESOURCES));
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_SELECT_FILE);
 	dlg.setPath(x, true);
 	dlg.setTypes(2, types);
+	dlg.setOkLabel(TSTRING(SELECT));
 
 	if (dlg.show(x)) {
 		SetDlgItemText(IDC_LANGUAGE, x.c_str());

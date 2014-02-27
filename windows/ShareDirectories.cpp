@@ -471,7 +471,7 @@ LRESULT ShareDirectories::onClickedAddDir(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 	if (!added) {
 		tstring target;
 
-		BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, true, false);
+		BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, BrowseDlg::DIALOG_SELECT_FOLDER);
 		if (dlg.show(target)) {
 			addDirectory(target);
 		}

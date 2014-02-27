@@ -444,6 +444,7 @@
 	<string name="Seconds">Seconds</string>
 	<string name="Segment">Segment</string>
 	<string name="Segments">Segments</string>
+	<string name="Select">Select</string>
 	<string name="SelectAll">Select all</string>
 	<string name="SelectUserList">Select user in list</string>
 	<string name="SendPrivateMessage">Send private message</string>

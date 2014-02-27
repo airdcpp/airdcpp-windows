@@ -569,7 +569,7 @@ LRESULT PropPageTextStyles::onRestoreIcons(WORD /*wNotifyCode*/, WORD /*wID*/, H
 LRESULT PropPageTextStyles::onImport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring x;
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_OPEN_FILE);
 	dlg.setTypes(3, types);
 	if (dlg.show(x)) {
 		LoadTheme(Text::fromT(x));
@@ -719,7 +719,7 @@ void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
 LRESULT PropPageTextStyles::onExport(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring x;
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, true);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_SAVE_FILE);
 	dlg.setTypes(3, types);
 	if (dlg.show(x)) {
 		SaveTheme(Text::fromT(x), false);

@@ -65,7 +65,7 @@ public:
 
 		tstring targetT;
 
-		BrowseDlg dlg(((T*)this)->m_hWnd, BrowseDlg::TYPE_GENERIC, dirDlg, true);
+		BrowseDlg dlg(((T*)this)->m_hWnd, BrowseDlg::TYPE_GENERIC, dirDlg ? BrowseDlg::DIALOG_SELECT_FOLDER : BrowseDlg::DIALOG_SAVE_FILE);
 		dlg.setPath(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
 		dlg.setTitle(TSTRING(DOWNLOAD_TO));
 		if (!dirDlg) {

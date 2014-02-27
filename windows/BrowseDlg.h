@@ -37,10 +37,18 @@ public:
 		TYPE_APP,
 		TYPE_LAST
 	};
+
+	enum DialogType {
+		DIALOG_OPEN_FILE,
+		DIALOG_SAVE_FILE,
+		DIALOG_SELECT_FILE,
+		DIALOG_SELECT_FOLDER
+	};
+
 	static const GUID browseGuids[TYPE_LAST];
 
 
-	BrowseDlg(HWND hwnd, RecentType aType, bool aIsDirectory, bool save);
+	BrowseDlg(HWND hwnd, RecentType aRecentType, DialogType aDlgType);
 	~BrowseDlg();
 
 	bool show(tstring& target);
@@ -53,7 +61,7 @@ public:
 	bool setTypes(int typeCount, const COMDLG_FILTERSPEC* types);
 	bool setTypeIndex(int aIndex);
 private:
-	bool isDirectory = false;
+	DialogType type;
 	bool initialized = false;
 
 	HWND m_hwnd = nullptr;

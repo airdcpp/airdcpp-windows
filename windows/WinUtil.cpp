@@ -739,7 +739,7 @@ bool WinUtil::browseList(tstring& target, HWND aOwner) {
 		{ CTSTRING(ALL_FILES), _T("*.*") }
 	};
 
-	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_FILELIST, false, false);
+	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_FILELIST, BrowseDlg::DIALOG_OPEN_FILE);
 	dlg.setTitle(TSTRING(OPEN_FILE_LIST));
 	dlg.setPath(Text::toT(Util::getListPath()));
 	dlg.setTypes(2, types);
@@ -751,7 +751,7 @@ bool WinUtil::browseApplication(tstring& target, HWND aOwner) {
 		{ CTSTRING(APPLICATION), _T("*.exe") }
 	};
 
-	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_APP, false, false);
+	BrowseDlg dlg(aOwner, BrowseDlg::TYPE_APP, BrowseDlg::DIALOG_SELECT_FILE);
 	dlg.setPath(target, true);
 	dlg.setTypes(1, types);
 	return dlg.show(target);

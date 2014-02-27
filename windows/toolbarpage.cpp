@@ -123,7 +123,7 @@ void ToolbarPage::BrowseForPic(int DLGITEM) {
 	GetDlgItemText(DLGITEM, buf, MAX_PATH);
 	tstring x = buf;
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_SELECT_FILE);
 	dlg.setPath(x, true);
 	if (dlg.show(x)) {
 		SetDlgItemText(DLGITEM, x.c_str());

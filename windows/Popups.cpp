@@ -146,7 +146,7 @@ LRESULT Popups::onPopupBrowse(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl
 	GetDlgItemText(IDC_POPUPFILE, buf, MAX_PATH);
 	tstring x = buf;
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, false, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_SELECT_FILE);
 	dlg.setPath(x, true);
 	if (dlg.show(x)) {
 		SetDlgItemText(IDC_POPUPFILE, x.c_str());

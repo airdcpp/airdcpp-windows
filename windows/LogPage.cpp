@@ -169,7 +169,7 @@ LRESULT LogPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 {
 	tstring target = Text::toT(SETTING(LOG_DIRECTORY));
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, true, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_SELECT_FOLDER);
 	dlg.setPath(target);
 	if (dlg.show(target)) {
 		SetDlgItemText(IDC_LOG_DIRECTORY, target.c_str());

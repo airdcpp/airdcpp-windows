@@ -276,7 +276,7 @@ LRESULT LocationsPage::onClickedBrowseDir(WORD /*wNotifyCode*/, WORD /*wID*/, HW
 {
 	tstring target = Text::toT(SETTING(DOWNLOAD_DIRECTORY));
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, true, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_SELECT_FOLDER);
 	dlg.setPath(target);
 	if (dlg.show(target)) {
 		SetDlgItemText(IDC_DOWNLOADDIR, target.c_str());
@@ -288,7 +288,7 @@ LRESULT LocationsPage::onClickedBrowseTempDir(WORD /*wNotifyCode*/, WORD /*wID*/
 {
 	tstring target = Text::toT(SETTING(TEMP_DOWNLOAD_DIRECTORY));
 
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, true, false);
+	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_SETTINGS_RESOURCES, BrowseDlg::DIALOG_SELECT_FOLDER);
 	dlg.setPath(target);
 	if (dlg.show(target)) {
 		SetDlgItemText(IDC_TEMP_DOWNLOAD_DIRECTORY, target.c_str());

@@ -31,9 +31,9 @@ const GUID BrowseDlg::browseGuids[TYPE_LAST] = {
 #define checkinit() if(!initialized) return false;
 #define check(x) if(!SUCCEEDED(x)) return false;
 
-BrowseDlg::BrowseDlg(HWND hwnd, RecentType aType, bool aIsDirectory, bool save) : m_hwnd(hwnd), isDirectory(aIsDirectory) {
+BrowseDlg::BrowseDlg(HWND hwnd, RecentType aRecentType, DialogType aDlgType) : m_hwnd(hwnd), type(aDlgType) {
 	// CoCreate the File Open Dialog object.
-	HRESULT hr = CoCreateInstance(save && !aIsDirectory ? CLSID_FileSaveDialog : CLSID_FileOpenDialog,
+	HRESULT hr = CoCreateInstance(type == DIALOG_SAVE_FILE ? CLSID_FileSaveDialog : CLSID_FileOpenDialog,
 		NULL,
 		CLSCTX_INPROC_SERVER,
 		IID_PPV_ARGS(&pfd));
@@ -44,18 +44,23 @@ BrowseDlg::BrowseDlg(HWND hwnd, RecentType aType, bool aIsDirectory, bool save) 
 		// Before setting, always get the options first in order 
 		// not to override existing options.
 		if (SUCCEEDED(pfd->GetOptions(&dwFlags))) {
-			if (isDirectory)
+			if (type == DIALOG_SELECT_FILE)
 				dwFlags |= FOS_PICKFOLDERS;
 
-			if (aType == TYPE_NOSAVE) {
+			if (aRecentType == TYPE_NOSAVE) {
 				dwFlags |= FOS_DONTADDTORECENT;
-			} else if (aType != TYPE_GENERIC) {
-				pfd->SetClientGuid(browseGuids[aType]);
+			} else if (aRecentType != TYPE_GENERIC) {
+				pfd->SetClientGuid(browseGuids[aRecentType]);
 			}
 
 			// In this case, get shell items only for file system items.
-			if (SUCCEEDED(pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM)))
+			if (SUCCEEDED(pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM))) {
 				initialized = true;
+
+				if (aDlgType == DIALOG_SELECT_FILE) {
+					setOkLabel(TSTRING(SELECT));
+				}
+			}
 		}
 	}
 
@@ -136,7 +141,7 @@ bool BrowseDlg::show(tstring& target) {
 			PWSTR pszFilePath = NULL;
 			hr = psiResult->GetDisplayName(SIGDN_FILESYSPATH, &pszFilePath);
 			if (SUCCEEDED(hr)) {
-				target = Text::toT(Util::validatePath(Text::fromT(pszFilePath), isDirectory));
+				target = Text::toT(Util::validatePath(Text::fromT(pszFilePath), type == DIALOG_SELECT_FOLDER));
 			}
 			psiResult->Release();
 		}
