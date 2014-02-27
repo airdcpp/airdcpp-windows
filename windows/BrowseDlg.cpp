@@ -44,7 +44,7 @@ BrowseDlg::BrowseDlg(HWND hwnd, RecentType aRecentType, DialogType aDlgType) : m
 		// Before setting, always get the options first in order 
 		// not to override existing options.
 		if (SUCCEEDED(pfd->GetOptions(&dwFlags))) {
-			if (type == DIALOG_SELECT_FILE)
+			if (type == DIALOG_SELECT_FOLDER)
 				dwFlags |= FOS_PICKFOLDERS;
 
 			if (aRecentType == TYPE_NOSAVE) {
