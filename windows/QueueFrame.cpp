@@ -820,7 +820,7 @@ void QueueFrame::onRenameBundle(BundlePtr b) {
 	dlg.description = TSTRING(NEW_NAME);
 	dlg.line = Text::toT(b->getName());
 	if (dlg.DoModal(m_hWnd) == IDOK) {
-		auto newName = Util::validatePath(Text::fromT(dlg.line), !b->isFileBundle());
+		auto newName = Util::validatePath(Text::fromT(dlg.line), false);
 		if (newName == b->getName()) {
 			return;
 		}

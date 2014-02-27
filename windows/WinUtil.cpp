@@ -775,7 +775,7 @@ bool WinUtil::browseImpl(tstring& target, HWND aOwner, bool isDirectory, bool sa
 			}
 
 			auto fileName = Util::getFileName(target);
-			if (!fileName.empty() && save) {
+			if (!fileName.empty()) {
 				pfd->SetFileName(fileName.c_str());
 			}
 		}
