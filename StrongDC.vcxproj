@@ -680,7 +680,6 @@
     <ClInclude Include="windows\FavHubProperties.h" />
     <ClInclude Include="windows\LocationsPage.h" />
     <ClInclude Include="windows\FavoritesFrm.h" />
-    <ClInclude Include="windows\FinishedFrame.h" />
     <ClInclude Include="windows\FinishedFrameBase.h" />
     <ClInclude Include="windows\FinishedULFrame.h" />
     <ClInclude Include="windows\FlatTabCtrl.h" />

@@ -524,7 +524,6 @@ void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.AddIcon(loadIcon(IDI_FAVORITEHUBS, 16));
 	images.AddIcon(loadIcon(IDI_USERS, 16));
 	images.AddIcon(loadIcon(IDI_QUEUE, 16));
-	images.AddIcon(loadIcon(IDI_FINISHED_DL, 16));
 	images.AddIcon(loadIcon(IDI_UPLOAD_QUEUE, 16));
 	images.AddIcon(loadIcon(IDI_FINISHED_UL, 16));
 	images.AddIcon(loadIcon(IDI_SEARCH, 16));

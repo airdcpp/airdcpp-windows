@@ -243,7 +243,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(IDC_FAVORITES);
 	m_CmdBar.m_arrCommand.Add(IDC_FAVUSERS);
 	m_CmdBar.m_arrCommand.Add(IDC_QUEUE);
-	m_CmdBar.m_arrCommand.Add(IDC_FINISHED);
 	m_CmdBar.m_arrCommand.Add(IDC_UPLOAD_QUEUE);
 	m_CmdBar.m_arrCommand.Add(IDC_FINISHED_UL);
 	m_CmdBar.m_arrCommand.Add(ID_FILE_SEARCH);
@@ -361,7 +360,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	if(SETTING(OPEN_FAVORITE_HUBS)) PostMessage(WM_COMMAND, IDC_FAVORITES);
 	if(SETTING(OPEN_FAVORITE_USERS)) PostMessage(WM_COMMAND, IDC_FAVUSERS);
 	if(SETTING(OPEN_QUEUE)) PostMessage(WM_COMMAND, IDC_QUEUE);
-	if(SETTING(OPEN_FINISHED_DOWNLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED);
 	if(SETTING(OPEN_WAITING_USERS)) PostMessage(WM_COMMAND, IDC_UPLOAD_QUEUE);
 	if(SETTING(OPEN_FINISHED_UPLOADS)) PostMessage(WM_COMMAND, IDC_FINISHED_UL);
 	if(SETTING(OPEN_SEARCH_SPY)) PostMessage(WM_COMMAND, IDC_SEARCH_SPY);
@@ -996,7 +994,6 @@ LRESULT MainFrame::onOpenWindows(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*
 		case IDC_QUEUE: QueueFrame::openWindow(); break;
 		case IDC_SEARCH_SPY: SpyFrame::openWindow(); break;
 		case IDC_FILE_ADL_SEARCH: ADLSearchFrame::openWindow(); break;
-		case IDC_FINISHED: FinishedFrame::openWindow(); break;
 		case IDC_FINISHED_UL: FinishedULFrame::openWindow(); break;
 		case IDC_UPLOAD_QUEUE: UploadQueueFrame::openWindow(); break;
 		case IDC_CDMDEBUG_WINDOW: CDMDebugFrame::openWindow(); break;

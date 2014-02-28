@@ -815,9 +815,6 @@
     <ClInclude Include="windows\FavoritesFrm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="windows\FinishedFrame.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="windows\FinishedFrameBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
