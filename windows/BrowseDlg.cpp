@@ -39,6 +39,8 @@ BrowseDlg::BrowseDlg(HWND hwnd, RecentType aRecentType, DialogType aDlgType) : m
 		IID_PPV_ARGS(&pfd));
 
 	if (SUCCEEDED(hr)) {
+		initialized = true;
+
 		DWORD dwFlags;
 
 		// Before setting, always get the options first in order 
@@ -54,13 +56,11 @@ BrowseDlg::BrowseDlg(HWND hwnd, RecentType aRecentType, DialogType aDlgType) : m
 			}
 
 			// In this case, get shell items only for file system items.
-			if (SUCCEEDED(pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM))) {
-				initialized = true;
+			pfd->SetOptions(dwFlags | FOS_FORCEFILESYSTEM);
+		}
 
-				if (aDlgType == DIALOG_SELECT_FILE) {
-					setOkLabel(TSTRING(SELECT));
-				}
-			}
+		if (aDlgType == DIALOG_SELECT_FILE) {
+			setOkLabel(TSTRING(SELECT));
 		}
 	}
 
