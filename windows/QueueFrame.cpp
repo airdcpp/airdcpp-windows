@@ -31,12 +31,14 @@
 #include "../client/DownloadManager.h"
 #include "../client/ShareScannerManager.h"
 
-int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_TIMELEFT, COLUMN_SPEED, COLUMN_SOURCES, COLUMN_TIME_ADDED, COLUMN_TIME_FINISHED, COLUMN_PATH };
+int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_TIMELEFT, 
+	COLUMN_SPEED, COLUMN_SOURCES, COLUMN_DOWNLOADED, COLUMN_TIME_ADDED, COLUMN_TIME_FINISHED, COLUMN_PATH };
 
-int QueueFrame::columnSizes[] = { 450, 70, 100, 250, 80, 80, 80, 100, 100, 500 };
+int QueueFrame::columnSizes[] = { 450, 70, 100, 250, 80, 
+	80, 80, 80, 100, 100, 500 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::TIME_LEFT,
-ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
+	ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::DOWNLOADED, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
 
 static ResourceManager::Strings groupNames[] = { ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES, ResourceManager::FILE_LISTS };
 static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED };
@@ -219,9 +221,14 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	case CDDS_ITEMPREPAINT:
 		{
 			auto qii = ((QueueItemInfo*) cd->nmcd.lItemlParam);
-			if (qii->bundle && qii->bundle->isFailed()) {
-				cd->clrText = SETTING(ERROR_COLOR);
-				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+			if (qii->bundle) {
+				if (qii->bundle->isFailed()) {
+					cd->clrText = SETTING(ERROR_COLOR);
+					return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+				} else if (qii->bundle->getStatus() == Bundle::STATUS_SHARED) {
+					cd->clrText = WinUtil::blendColors(SETTING(NORMAL_COLOUR), SETTING(BACKGROUND_COLOR));
+					return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
+				}
 			}
 		}
 		return CDRF_NOTIFYSUBITEMDRAW;
@@ -234,7 +241,7 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			cd->clrTextBk = WinUtil::bgColor;
 
 			if (colIndex == COLUMN_STATUS) {
-				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || (ii->getSize() == -1)) { // file lists don't have size in queue, don't even start to draw...
+				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || ii->getSize() == -1 || (ii->bundle && ii->bundle->isFailed())) { // file lists don't have size in queue, don't even start to draw...
 					bHandled = FALSE;
 					return 0;
 				}
@@ -1123,10 +1130,10 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			return speed > 0 ? Util::formatBytesW(speed) + _T("/s") : Util::emptyStringT;
 		}
 		case COLUMN_SOURCES: return !isFinished() ? getSourceString() : Util::emptyStringT;
+		case COLUMN_DOWNLOADED: return Util::formatBytesW(getDownloadedBytes());
 		case COLUMN_TIME_ADDED: return getTimeAdded() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeAdded())) : Util::emptyStringT;
 		case COLUMN_TIME_FINISHED: return isFinished() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeFinished())) : Util::emptyStringT;
 		case COLUMN_PATH: return Text::toT(getTarget());
-		
 		default: return Util::emptyStringT;
 	}
 }
@@ -1189,46 +1196,46 @@ bool QueueFrame::QueueItemInfo::isFilelist() const {
 	return qi->isSet(QueueItem::FLAG_USER_LIST);
 }
 
+double QueueFrame::QueueItemInfo::getPercentage() const {
+	return getSize() > 0 ? (double) getDownloadedBytes()*100.0 / (double) getSize() : 0;
+}
+
 tstring QueueFrame::QueueItemInfo::getStatusString() const {
 	//Yeah, think about these a little more...
-	auto getDownloadedString = [=] {
-		return +_T(" ") + ((getSize() > 0) ? Util::formatBytesW(getDownloadedBytes()) + _T(" (") + Util::toStringW((double)getDownloadedBytes()*100.0 / (double)getSize()) + _T("%)") : Util::emptyStringT);
-	};
-
 	if (bundle) {
 		if (bundle->isPausedPrio()) 
-			return TSTRING(PAUSED) + getDownloadedString();
+			return TSTRING_F(PAUSED_PCT, getPercentage());
 	
 		switch (bundle->getStatus()) {
 		case Bundle::STATUS_NEW:
 		case Bundle::STATUS_QUEUED: {
 			if (bundle->getSpeed() > 0) { // Bundle->isRunning() ?
-				return TSTRING(RUNNING) + getDownloadedString();
+				return TSTRING_F(RUNNING_PCT, getPercentage());
 			} else {
-				return TSTRING(WAITING) + getDownloadedString();
+				return TSTRING_F(WAITING_PCT, getPercentage());
 			}
 		}
 		case Bundle::STATUS_DOWNLOADED: return TSTRING(MOVING);
-		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED) + getDownloadedString();
-		case Bundle::STATUS_FAILED_MISSING: return TSTRING(SHARING_FAILED);
-		case Bundle::STATUS_SHARING_FAILED: return TSTRING(SHARING_FAILED);
-		case Bundle::STATUS_FINISHED: return TSTRING(FINISHED) + getDownloadedString();
+		case Bundle::STATUS_MOVED: return TSTRING(DOWNLOADED);
+		case Bundle::STATUS_FAILED_MISSING:
+		case Bundle::STATUS_SHARING_FAILED: return Text::toT(bundle->getLastError());
+		case Bundle::STATUS_FINISHED: return TSTRING(FINISHED);
 		case Bundle::STATUS_HASHING: return TSTRING(HASHING);
 		case Bundle::STATUS_HASH_FAILED: return TSTRING(HASH_FAILED);
-		case Bundle::STATUS_HASHED: return TSTRING(HASHING_FINISHED_TOTAL_PLAIN) + getDownloadedString();
-		case Bundle::STATUS_SHARED: return TSTRING(SHARED) + getDownloadedString();
+		case Bundle::STATUS_HASHED: return TSTRING(HASHING_FINISHED);
+		case Bundle::STATUS_SHARED: return TSTRING(SHARED);
 		default:
 			return Util::emptyStringT;
 		}
 	} else if(qi) {
 		if (qi->isPausedPrio()) 
-			return TSTRING(PAUSED) + getDownloadedString();
+			return TSTRING_F(PAUSED_PCT, getPercentage());
 		if (isFinished())
-			return qi->isSet(QueueItem::FLAG_MOVED) ? TSTRING(FINISHED) + getDownloadedString() : TSTRING(MOVING);
+			return qi->isSet(QueueItem::FLAG_MOVED) ? TSTRING(FINISHED) : TSTRING(MOVING);
 		if (QueueManager::getInstance()->isWaiting(qi)) {
-			return TSTRING(WAITING) + getDownloadedString() ;
+			return TSTRING_F(WAITING_PCT, getPercentage());
 		} else {
-			return TSTRING(RUNNING) + getDownloadedString();
+			return TSTRING_F(RUNNING_PCT, getPercentage());
 		} 
 	}
 	return Util::emptyStringT;
@@ -1260,11 +1267,31 @@ int64_t QueueFrame::QueueItemInfo::getDownloadedBytes() const {
 }
 
 int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col) {
+	// TODO: lots of things to fix
+
 	switch (col) {
+	case COLUMN_NAME: {
+		auto textA = a->getName();
+		auto textB = b->getName();
+		if (!a->bundle) {
+			auto hasSubA = textA.find(PATH_SEPARATOR) != tstring::npos;
+			auto hasSubB = textB.find(PATH_SEPARATOR) != tstring::npos;
+			if (hasSubA && !hasSubB) return -1;
+			if (!hasSubA && hasSubB) return 1;
+		}
+		return Util::DefaultSort(textA.c_str(), textB.c_str());
+	}
 	case COLUMN_SIZE: return compare(a->getSize(), b->getSize());
-	case COLUMN_PRIORITY: return compare(static_cast<int>(a->getPriority()), static_cast<int>(b->getPriority()));
+	case COLUMN_PRIORITY: {
+		auto aFinished = a->isFinished();
+		auto bFinished = b->isFinished();
+		if (aFinished && !bFinished) return -1;
+		if (!aFinished && bFinished) return 1;
+		return compare(static_cast<int>(a->getPriority()), static_cast<int>(b->getPriority()));
+	}
 	case COLUMN_TIMELEFT: return compare(a->getSecondsLeft(), b->getSecondsLeft());
 	case COLUMN_SPEED: return compare(a->getSpeed(), b->getSpeed());
+	case COLUMN_DOWNLOADED: return compare(a->getDownloadedBytes(), b->getDownloadedBytes());
 	default: 
 		return Util::DefaultSort(a->getText(col).c_str(), b->getText(col).c_str());
 	}
@@ -1276,11 +1303,11 @@ COLORREF QueueFrame::getStatusColor(uint8_t status) {
 	case Bundle::STATUS_QUEUED: return SETTING(DOWNLOAD_BAR_COLOR);
 	case Bundle::STATUS_DOWNLOADED: return SETTING(DOWNLOAD_BAR_COLOR);;
 	case Bundle::STATUS_MOVED: return SETTING(DOWNLOAD_BAR_COLOR);
-	case Bundle::STATUS_FAILED_MISSING: return SETTING(COLOR_STATUS_FAILED);
-	case Bundle::STATUS_SHARING_FAILED: return SETTING(COLOR_STATUS_FAILED);
+	//case Bundle::STATUS_FAILED_MISSING: return SETTING(COLOR_STATUS_FAILED);
+	//case Bundle::STATUS_SHARING_FAILED: return SETTING(COLOR_STATUS_FAILED);
 	case Bundle::STATUS_FINISHED: return SETTING(COLOR_STATUS_FINISHED);
 	case Bundle::STATUS_HASHING: return SETTING(COLOR_STATUS_HASHING);
-	case Bundle::STATUS_HASH_FAILED: return SETTING(COLOR_STATUS_FAILED);
+	//case Bundle::STATUS_HASH_FAILED: return SETTING(COLOR_STATUS_FAILED);
 	case Bundle::STATUS_HASHED: return SETTING(COLOR_STATUS_FINISHED);
 	case Bundle::STATUS_SHARED: return SETTING(COLOR_STATUS_SHARED);
 	default:

@@ -105,6 +105,7 @@ private:
 		COLUMN_TIMELEFT,
 		COLUMN_SPEED,
 		COLUMN_SOURCES,
+		COLUMN_DOWNLOADED,
 		COLUMN_TIME_ADDED,
 		COLUMN_TIME_FINISHED,
 		COLUMN_PATH,
@@ -179,6 +180,7 @@ private:
 		bool isTempItem() const;
 		bool isFilelist() const;
 		const string& getTarget() const;
+		double getPercentage() const;
 
 
 		QueueItemInfo* createParent() { return this; }

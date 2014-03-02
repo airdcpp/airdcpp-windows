@@ -450,7 +450,7 @@ void ChatFrameBase::addMagnet(const StringList& aPaths) {
 					});
 				});
 			} catch (const Exception& e) {
-				callAsync([=] { setStatusText(TSTRING(HASHING_FAILED) + _T(" ") + Text::toT(e.getError()), LogManager::LOG_ERROR); });
+				callAsync([=] { setStatusText(TSTRING_F(HASHING_FAILED_X, Text::toT(e.getError())), LogManager::LOG_ERROR); });
 				return;
 			}
 
