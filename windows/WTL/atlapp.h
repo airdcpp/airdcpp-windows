@@ -58,7 +58,7 @@
   #pragma comment(lib, "comctl32.lib")
 #endif
 
-#if defined(_SYSINFOAPI_H_) || defined(_WTL_USE_VERSION_HELPERS)
+#if defined(_SYSINFOAPI_H_) && defined(NOT_BUILD_WINDOWS_DEPRECATE)
   #include <VersionHelpers.h>
 #endif
 
@@ -220,7 +220,7 @@ inline int WINAPI lstrlenA(LPCSTR lpszString)
   {
 	if(lpstrDest == NULL || lpstrSrc == NULL || nLength <= 0)
 		return NULL;
-	int nLen = min(lstrlen(lpstrSrc), nLength - 1);
+	int nLen = __min(lstrlen(lpstrSrc), nLength - 1);
 	LPTSTR lpstrRet = (LPTSTR)memcpy(lpstrDest, lpstrSrc, nLen * sizeof(TCHAR));
 	lpstrDest[nLen] = 0;
 	return lpstrRet;
@@ -239,7 +239,7 @@ inline int WINAPI lstrlenA(LPCSTR lpszString)
   {
 	if(lpstrDest == NULL || lpstrSrc == NULL || nLength <= 0)
 		return NULL;
-	int nLen = min(lstrlenA(lpstrSrc), nLength - 1);
+	int nLen = __min(lstrlenA(lpstrSrc), nLength - 1);
 	LPSTR lpstrRet = (LPSTR)memcpy(lpstrDest, lpstrSrc, nLen * sizeof(char));
 	lpstrDest[nLen] = 0;
 	return lpstrRet;
@@ -602,6 +602,10 @@ inline BOOL AtlInitCommonControls(DWORD dwFlags)
   #define NONCLIENTMETRICS_V1_SIZE   _SIZEOF_STRUCT(NONCLIENTMETRICS, lfMessageFont)
 #endif // !defined(_WIN32_WCE) && (WINVER >= 0x0600) && !defined(NONCLIENTMETRICS_V1_SIZE)
 
+#if !defined(_WIN32_WCE) && (_WIN32_WINNT >= 0x0501) && !defined(TTTOOLINFO_V2_SIZE)
+  #define TTTOOLINFO_V2_SIZE   _SIZEOF_STRUCT(TTTOOLINFO, lParam)
+#endif // !defined(_WIN32_WCE) && (_WIN32_WINNT >= 0x0501) && !defined(TTTOOLINFO_V2_SIZE)
+
 #endif // !_WTL_NO_RUNTIME_STRUCT_SIZE
 
 namespace RunTimeHelper
@@ -746,6 +750,16 @@ namespace RunTimeHelper
 #endif // !defined(_WTL_NO_RUNTIME_STRUCT_SIZE) && (WINVER >= 0x0600)
 		return nSize;
 	}
+
+	inline int SizeOf_TOOLINFO()
+	{
+		int nSize = sizeof(TOOLINFO);
+#if !defined(_WTL_NO_RUNTIME_STRUCT_SIZE) && (_WIN32_WINNT >= 0x0501)
+		if(!IsVista())
+			nSize = TTTOOLINFO_V2_SIZE;
+#endif // !defined(_WTL_NO_RUNTIME_STRUCT_SIZE) && (_WIN32_WINNT >= 0x0501)
+		return nSize;
+	}
 #endif // !_WIN32_WCE
 };
 
@@ -843,7 +857,7 @@ namespace SecureHelper
 		}
 		else if(cchCount == _TRUNCATE)
 		{
-			cchCount = min(cchDest - 1, size_t(lstrlenA(lpstrSrc)));
+			cchCount = __min(cchDest - 1, size_t(lstrlenA(lpstrSrc)));
 			nRet = STRUNCATE;
 		}
 		else if(cchDest <= cchCount)
@@ -870,7 +884,7 @@ namespace SecureHelper
 		}
 		else if(cchCount == _TRUNCATE)
 		{
-			cchCount = min(cchDest - 1, size_t(lstrlenW(lpstrSrc)));
+			cchCount = __min(cchDest - 1, size_t(lstrlenW(lpstrSrc)));
 			nRet = STRUNCATE;
 		}
 		else if(cchDest <= cchCount)
@@ -1908,6 +1922,7 @@ public:
 		return ERROR_SUCCESS;
 	}
 
+#ifndef _WIN32_WCE
 	LONG QueryQWORDValue(LPCTSTR pszValueName, ULONGLONG& qwValue)
 	{
 		ATLASSERT(m_hKey != NULL);
@@ -1922,6 +1937,7 @@ public:
 
 		return ERROR_SUCCESS;
 	}
+#endif
 
 	LONG QueryStringValue(LPCTSTR pszValueName, LPTSTR pszValue, ULONG* pnChars)
 	{

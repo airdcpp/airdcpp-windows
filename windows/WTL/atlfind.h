@@ -971,7 +971,7 @@ public:
 			else
 			{
 				// won't wraparound backwards
-				ft.chrg.cpMin = max(ft.chrg.cpMin, 0);
+				ft.chrg.cpMin = __max(ft.chrg.cpMin, 0);
 			}
 		}
 

@@ -47,7 +47,7 @@
 // CEditCommands<T>
 // CScrollBarT<TBase> - CScrollBar
 //
-// CImageList
+// CImageListT<t_bManaged> - CImageList, CImageListManaged
 // CListViewCtrlT<TBase> - CListViewCtrl
 // CTreeViewCtrlT<TBase> - CTreeViewCtrl
 // CTreeItemT<TBase> - CTreeItem
@@ -1847,28 +1847,41 @@ typedef CScrollBarT<ATL::CWindow>   CScrollBar;
 ///////////////////////////////////////////////////////////////////////////////
 // CImageList
 
-class CImageList
+// forward declarations
+template <bool t_bManaged> class CImageListT;
+typedef CImageListT<false>   CImageList;
+typedef CImageListT<true>    CImageListManaged;
+
+
+template <bool t_bManaged>
+class CImageListT
 {
 public:
+// Data members
 	HIMAGELIST m_hImageList;
 
-// Constructor
-	CImageList(HIMAGELIST hImageList = NULL) : m_hImageList(hImageList)
+// Constructor/destructor/operators
+	CImageListT(HIMAGELIST hImageList = NULL) : m_hImageList(hImageList)
 	{ }
 
-// Operators, etc.
-	CImageList& operator =(HIMAGELIST hImageList)
+	~CImageListT()
 	{
-		m_hImageList = hImageList;
-		return *this;
+		if(t_bManaged && (m_hImageList != NULL))
+			Destroy();
 	}
 
-	operator HIMAGELIST() const { return m_hImageList; }
+	CImageListT<t_bManaged>& operator =(HIMAGELIST hImageList)
+	{
+		Attach(hImageList);
+		return *this;
+	}
 
 	void Attach(HIMAGELIST hImageList)
 	{
 		ATLASSERT(m_hImageList == NULL);
 		ATLASSERT(hImageList != NULL);
+		if(t_bManaged && (m_hImageList != NULL) && (m_hImageList != hImageList))
+			ImageList_Destroy(m_hImageList);
 		m_hImageList = hImageList;
 	}
 
@@ -1878,6 +1891,8 @@ public:
 		m_hImageList = NULL;
 		return hImageList;
 	}
+
+	operator HIMAGELIST() const { return m_hImageList; }
 
 	bool IsNull() const { return (m_hImageList == NULL); }
 
@@ -2215,7 +2230,7 @@ public:
 	{
 		ATLASSERT(::IsWindow(hWnd));
 		memset(this, 0, sizeof(TOOLINFO));
-		cbSize = sizeof(TOOLINFO);
+		cbSize = RunTimeHelper::SizeOf_TOOLINFO();
 		uFlags = nFlags;
 		if(nIDTool == 0)
 		{
@@ -2475,7 +2490,7 @@ public:
 		ATLASSERT(lpToolInfo != NULL);
 
 		TTHITTESTINFO hti = { 0 };
-		hti.ti.cbSize = sizeof(TOOLINFO);
+		hti.ti.cbSize = RunTimeHelper::SizeOf_TOOLINFO();
 		hti.hwnd = hWnd;
 		hti.pt.x = pt.x;
 		hti.pt.y = pt.y;
@@ -3770,7 +3785,7 @@ public:
 		return InsertColumn(nItem, &lvc);
 	}
 
-	int AddItem(int nItem, int nSubItem, LPCTSTR strItem, int nImageIndex = -1)
+	int AddItem(int nItem, int nSubItem, LPCTSTR strItem, int nImageIndex = -3)
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
 		LVITEM lvItem = { 0 };
@@ -3778,7 +3793,7 @@ public:
 		lvItem.iItem = nItem;
 		lvItem.iSubItem = nSubItem;
 		lvItem.pszText = (LPTSTR)strItem;
-		if(nImageIndex != -1)
+		if(nImageIndex != -3)
 		{
 			lvItem.mask |= LVIF_IMAGE;
 			lvItem.iImage = nImageIndex;
@@ -5879,10 +5894,20 @@ public:
 		return (BOOL)::SendMessage(m_hWnd, TB_DELETEBUTTON, nIndex, 0L);
 	}
 
-	UINT CommandToIndex(UINT nID) const
+	BOOL InsertSeparator(int nIndex, int cxWidth = 8)
+	{
+		return InsertButton(nIndex, 0, BTNS_SEP, 0, cxWidth, (INT_PTR)0, 0);
+	}
+
+	BOOL AddSeparator(int cxWidth = 8)
+	{
+		return AddButton(0, BTNS_SEP, 0, cxWidth, (INT_PTR)0, 0);
+	}
+
+	int CommandToIndex(UINT nID) const
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
-		return (UINT)::SendMessage(m_hWnd, TB_COMMANDTOINDEX, nID, 0L);
+		return (int)::SendMessage(m_hWnd, TB_COMMANDTOINDEX, nID, 0L);
 	}
 
 #ifndef _WIN32_WCE
@@ -6332,17 +6357,24 @@ public:
 	}
 
 #ifndef _WIN32_WCE
-	CToolTipCtrl GetTooltips() const
+	CToolTipCtrl GetToolTips() const
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
 		return CToolTipCtrl((HWND)::SendMessage(m_hWnd, TCM_GETTOOLTIPS, 0, 0L));
 	}
 
-	void SetTooltips(HWND hWndToolTip)
+	// this method is deprecated, please use GetToolTips
+	CToolTipCtrl GetTooltips() const { return GetToolTips(); }
+
+	void SetToolTips(HWND hWndToolTip)
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
 		::SendMessage(m_hWnd, TCM_SETTOOLTIPS, (WPARAM)hWndToolTip, 0L);
 	}
+
+	// this method is deprecated, please use SetToolTips
+	void SetTooltips(HWND hWndToolTip) { SetToolTips(hWndToolTip); }
+
 #endif // !_WIN32_WCE
 
 	int GetCurFocus() const
@@ -6584,10 +6616,10 @@ public:
 		return (int)::SendMessage(m_hWnd, TBM_GETSELSTART, 0, 0L);
 	}
 
-	void SetSelStart(int nMin)
+	void SetSelStart(int nMin, BOOL bRedraw = TRUE)
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
-		::SendMessage(m_hWnd, TBM_SETSELSTART, 0, (LPARAM)nMin);
+		::SendMessage(m_hWnd, TBM_SETSELSTART, bRedraw, (LPARAM)nMin);
 	}
 
 	int GetSelEnd() const
@@ -6596,10 +6628,10 @@ public:
 		return (int)::SendMessage(m_hWnd, TBM_GETSELEND, 0, 0L);
 	}
 
-	void SetSelEnd(int nMax)
+	void SetSelEnd(int nMax, BOOL bRedraw = TRUE)
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
-		::SendMessage(m_hWnd, TBM_SETSELEND, 0, (LPARAM)nMax);
+		::SendMessage(m_hWnd, TBM_SETSELEND, bRedraw, (LPARAM)nMax);
 	}
 
 	void GetSelection(int& nMin, int& nMax) const
@@ -6608,10 +6640,10 @@ public:
 		nMax = GetSelEnd();
 	}
 
-	void SetSelection(int nMin, int nMax)
+	void SetSelection(int nMin, int nMax, BOOL bRedraw = TRUE)
 	{
-		SetSelStart(nMin);
-		SetSelEnd(nMax);
+		SetSelStart(nMin, FALSE);
+		SetSelEnd(nMax, bRedraw);
 	}
 
 	void GetChannelRect(LPRECT lprc) const
@@ -7214,12 +7246,10 @@ typedef CAnimateCtrlT<ATL::CWindow>   CAnimateCtrl;
 
 #ifndef _WIN32_WCE
 
-#ifdef _UNICODE
-#if (_RICHEDIT_VER == 0x0100)
-#undef RICHEDIT_CLASS
-#define RICHEDIT_CLASS	L"RICHEDIT"
-#endif // (_RICHEDIT_VER == 0x0100)
-#endif // _UNICODE
+#if defined(_UNICODE) && (_RICHEDIT_VER == 0x0100)
+  #undef RICHEDIT_CLASS
+  #define RICHEDIT_CLASS	L"RICHEDIT"
+#endif
 
 template <class TBase>
 class CRichEditCtrlT : public TBase

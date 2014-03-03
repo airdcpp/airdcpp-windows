@@ -51,7 +51,7 @@
 #define POPUP_UID 19000
 
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
-		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame, false>,
+		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame>,
 		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
 		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener, private ClientManagerListener,
 		private AutoSearchManagerListener
@@ -86,7 +86,7 @@ public:
 		UIUpdateToolBar();
 		return FALSE;
 	}
-	typedef CSplitterImpl<MainFrame, false> splitterBase;
+	typedef CSplitterImpl<MainFrame> splitterBase;
 	BEGIN_MSG_MAP(MainFrame)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
