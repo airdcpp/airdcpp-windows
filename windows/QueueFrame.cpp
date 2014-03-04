@@ -305,7 +305,7 @@ LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 	return 0;
 }
 
-LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMITEMACTIVATE* l = (NMITEMACTIVATE*)pnmh;
 
 	if (l->iItem != -1) {
@@ -318,6 +318,7 @@ LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 		else
 			ctrlQueue.Collapse(ii, l->iItem);
 	}
+	bHandled = FALSE;
 	return 0;
 }
 
@@ -722,16 +723,19 @@ void QueueFrame::updateList() {
 			continue;
 
 		int pos = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex(), parent->getGroupID());
-		if (!parent->collapsed) {
-			parent->collapsed = true;
-			ctrlQueue.Expand(parent, pos);
-		} else {
-			int state = parent->bundle && !parent->bundle->isFileBundle() ? 1 : 0;
-			ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(state), LVIS_STATEIMAGEMASK);
-		}
+		updateCollapsedState(parent, pos);
 	}
 	ctrlQueue.resort();
 	ctrlQueue.SetRedraw(TRUE);
+}
+void QueueFrame::updateCollapsedState(QueueItemInfo* aQii, int pos) {
+	if (aQii->parent == NULL && !aQii->collapsed && !aQii->bundle->isFileBundle()) {
+		aQii->collapsed = true;
+		ctrlQueue.Expand(aQii, pos);
+	} else {
+		int state = aQii->bundle && !aQii->bundle->isFileBundle() ? 1 : 0;
+		ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(state), LVIS_STATEIMAGEMASK);
+	}
 }
 
 bool QueueFrame::show(const QueueItemInfo* Qii) const {
@@ -902,18 +906,22 @@ void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
 void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
 	auto parent = ctrlQueue.findParent(aBundle->getToken());
 	if (parent) {
-		if (show(parent)){
-			int i = ctrlQueue.findItem(parent);
+		int i = ctrlQueue.findItem(parent);
+		if (show(parent)) {
 			if (i == -1) {
 				i = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex(), parent->getGroupID());
-				if (!aBundle->isFileBundle()){
-					parent->collapsed = true;
-					ctrlQueue.SetItemState(i, INDEXTOSTATEIMAGEMASK(1), LVIS_STATEIMAGEMASK);
-				}
+				updateCollapsedState(parent, i);
+			} else {
+				ctrlQueue.updateItem(i);
 			}
-			ctrlQueue.updateItem(i);
-		} else
-			ctrlQueue.deleteItem(parent);
+		} else {
+			if (!parent->collapsed) { // we are erasing the parent, so make sure we erase the children too.
+				auto& children = ctrlQueue.findChildren(parent->getGroupCond());
+				for (const auto& c : children)
+					ctrlQueue.deleteItem(c);
+			}
+			ctrlQueue.DeleteItem(i);
+		}
 	}
 }
 
@@ -926,6 +934,7 @@ void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
 void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
 	auto item = findQueueItem(aQI);
 	if (item && (!item->parent || !item->parent->collapsed)) { // no need to update if its collapsed right?
+		//we don't keep queueitems without bundle as finished, so no need to check filtering here.
 		if (show(item)) 
 			ctrlQueue.updateItem(item);
 		 else

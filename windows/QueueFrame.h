@@ -236,6 +236,7 @@ private:
 	void updateList();
 	bool show(const QueueItemInfo* Qii) const;
 	QueueItemInfo* findQueueItem(const QueueItemPtr& aQI);
+	void updateCollapsedState(QueueItemInfo* aQii, int pos);
 
 	bool closed;
 	int curSel;
