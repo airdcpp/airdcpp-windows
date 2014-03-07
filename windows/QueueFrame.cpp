@@ -225,9 +225,6 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 				if (qii->bundle->isFailed()) {
 					cd->clrText = SETTING(ERROR_COLOR);
 					return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
-				} else if (qii->bundle->getStatus() == Bundle::STATUS_SHARED) {
-					cd->clrText = WinUtil::blendColors(SETTING(NORMAL_COLOUR), SETTING(BACKGROUND_COLOR));
-					return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 				}
 			}
 		}

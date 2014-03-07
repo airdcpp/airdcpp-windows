@@ -166,6 +166,8 @@ public:
 		// Set new position and update if requested
 		bool bRet = (m_xySplitterPos != xyPos);
 		m_xySplitterPos = xyPos;
+		//Set the splitterPosNew to be the same as splitter pos, its left -1 initially.
+		m_xySplitterPosNew = xyPos;
 
 		if(m_bUpdateProportionalPos)
 		{
@@ -257,7 +259,7 @@ public:
 	void SetSplitterDefaultPos(int xyPos = -1)
 	{
 		m_xySplitterDefPos = xyPos;
-		m_bProportionalDefPos = false;
+		m_bProportionalDefPos = true; //shouldn't this be true as in setting by percentage?
 	}
 
 	void SetSplitterDefaultPosPct(int nPct)
