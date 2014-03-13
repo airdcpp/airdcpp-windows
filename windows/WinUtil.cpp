@@ -2235,6 +2235,30 @@ bool WinUtil::checkClientPassword() {
 	return true;
 }
 
+tstring WinUtil::formatFolderName(const tstring& aName, int files, int folders) {
+	tstring name = aName;
+
+	bool hasFileInfo = files > 0;
+	bool hasFolderInfo = folders > 0;
+	if (hasFileInfo || hasFolderInfo)
+		name += _T(" (");
+
+	if (hasFolderInfo) {
+		name += TSTRING_F(X_FOLDERS, folders);
+	}
+
+	if (hasFileInfo) {
+		if (hasFolderInfo)
+			name += _T(", ");
+		name += TSTRING_F(X_FILES, files);
+	}
+
+	if (hasFileInfo || hasFolderInfo)
+		name += _T(")");
+
+	return name;
+}
+
 /*void WinUtil::addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags 0, bool addBad true) {
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		for (auto& bfi: aFiles)

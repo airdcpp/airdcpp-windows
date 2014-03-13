@@ -528,6 +528,7 @@ public:
 	//static void addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags = 0, bool addBad = true);
 
 	static void connectHub(const RecentHubEntryPtr& aEntry, ProfileToken aProfile);
+	static tstring formatFolderName(const tstring& aName, int fileCount, int folderCount);
 };
 
 

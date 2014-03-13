@@ -753,12 +753,15 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 
 const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 	switch(col) {
-		case COLUMN_FILENAME:
-			if(sr->getType() == SearchResult::TYPE_FILE) {
-				return Text::toT(Util::getFileName(sr->getPath()));
-			} else {
-				return Text::toT(sr->getFileName());
+	case COLUMN_FILENAME:
+		{
+			auto name = Text::toT(sr->getFileName());
+			if (sr->getType() != SearchResult::TYPE_FILE) {
+				name = WinUtil::formatFolderName(name, sr->getFileCount(), sr->getFolderCount());
 			}
+
+			return name;
+		}
 		case COLUMN_RELEVANCY:
 			return Util::toStringW(getTotalRelevancy());
 		/*case COLUMN_FILES: 
@@ -775,7 +778,7 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 		case COLUMN_USERS: return WinUtil::getNicks(sr->getUser());
 		case COLUMN_TYPE:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
-				tstring type = Text::toT(Util::getFileExt(Text::fromT(getText(COLUMN_FILENAME))));
+				tstring type = Text::toT(Util::getFileExt(sr->getPath()));
 				if(!type.empty() && type[0] == _T('.'))
 					type.erase(0, 1);
 				return type;

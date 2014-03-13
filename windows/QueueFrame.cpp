@@ -1145,9 +1145,15 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 }
 
 tstring QueueFrame::QueueItemInfo::getName() const {
-	if (bundle)
-		return Text::toT(bundle->getName());
-	else if (qi) {
+	if (bundle) {
+		auto name = Text::toT(bundle->getName());
+		if (!bundle->isFileBundle()) {
+			RLock l(QueueManager::getInstance()->getCS());
+			name = WinUtil::formatFolderName(name, bundle->getQueueItems().size() + bundle->getFinishedFiles().size(), bundle->getBundleDirs().size());
+		}
+
+		return name;
+	} else if (qi) {
 		//show files in subdirectories as subdir/file.ext
 		string path = qi->getTarget();
 		if (qi->getBundle())

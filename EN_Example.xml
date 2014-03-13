@@ -1148,6 +1148,7 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</string>
 	<string name="Bundle">Bundle</string>
 	<string name="XBundles">%1% bundles</string>
 	<string name="XFiles">%1% files</string>
+	<string name="XFolders">%1% folders</string>
 	<string name="RemoveBundle">Remove bundle from queue</string>
 	<string name="BundleRemoved">Bundle removed</string>
 	<string name="PartialSharing">Enable partial bundle/file sharing</string>
