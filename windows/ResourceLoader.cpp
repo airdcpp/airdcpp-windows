@@ -332,6 +332,7 @@ CImageList& ResourceLoader::getQueueTreeImages() {
 		QueueTreeImages.AddIcon(loadIcon(IDI_DOWNLOAD, size));
 		QueueTreeImages.AddIcon(loadIcon(IDI_FINISHED_DL, size));
 		QueueTreeImages.AddIcon(loadIcon(IDI_QUEUE, size));
+		QueueTreeImages.AddIcon(loadIcon(IDI_QUEUED_ERROR, size));
 	}
 	return QueueTreeImages;
 }
