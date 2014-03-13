@@ -41,7 +41,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, Resourc
 	ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::DOWNLOADED, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
 
 static ResourceManager::Strings groupNames[] = { ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES, ResourceManager::FILE_LISTS };
-static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED };
+static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED };
 
 LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -745,6 +745,9 @@ bool QueueFrame::show(const QueueItemInfo* Qii) const {
 	if ((curSel == TREE_FINISHED) && Qii->isFinished()) {
 		return true;
 	}
+	if ((curSel == TREE_FAILED) && Qii->isFailed()) {
+		return true;
+	}
 	return false;
 }
 
@@ -977,6 +980,7 @@ void QueueFrame::updateStatus() {
 		bool u = false;
 		int queuedBundles = 0;
 		int finishedBundles = 0;
+		int failedBundles = 0;
 		int queuedItems = 0;
 		int totalItems = 0;
 
@@ -985,6 +989,7 @@ void QueueFrame::updateStatus() {
 			RLock l(qm->getCS());
 			for (auto& b : qm->getBundles() | map_values){
 				b->isFinished() ? finishedBundles++ : queuedBundles++;
+				if (b->isFailed()) failedBundles++;
 			}
 
 			for (const auto& q : qm->getFileQueue() | map_values) {
@@ -1014,6 +1019,12 @@ void QueueFrame::updateStatus() {
 			case TREE_QUEUED:
 			{
 				ctrlTree.SetItemText(ht, (TSTRING(QUEUED) + _T(" ( ") + (Util::toStringW(queuedBundles + queuedItems)) + _T(" )")).c_str());
+				ht = ctrlTree.GetNextSiblingItem(ht);
+				break;
+			}
+			case TREE_FAILED:
+			{
+				ctrlTree.SetItemText(ht, (TSTRING(FAILED) + _T(" ( ") + (Util::toStringW(failedBundles)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			}
@@ -1201,6 +1212,11 @@ bool QueueFrame::QueueItemInfo::isFilelist() const {
 		return false;
 	return qi->isSet(QueueItem::FLAG_USER_LIST);
 }
+
+bool QueueFrame::QueueItemInfo::isFailed() const {
+	return bundle ? bundle->isFailed() : qi->getBundle() ? qi->getBundle()->isFailed() : false;
+}
+
 
 double QueueFrame::QueueItemInfo::getPercentage() const {
 	return getSize() > 0 ? (double) getDownloadedBytes()*100.0 / (double) getSize() : 0;

@@ -129,6 +129,7 @@ private:
 		TREE_DOWNLOADS,
 		TREE_FINISHED,
 		TREE_QUEUED,
+		TREE_FAILED,
 		TREE_LAST
 	};
 
@@ -179,6 +180,7 @@ private:
 		bool isFinished() const;
 		bool isTempItem() const;
 		bool isFilelist() const;
+		bool isFailed() const;
 		const string& getTarget() const;
 		double getPercentage() const;
 
