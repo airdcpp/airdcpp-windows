@@ -764,16 +764,6 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 		}
 		case COLUMN_RELEVANCY:
 			return Util::toStringW(getTotalRelevancy());
-		/*case COLUMN_FILES: 
-			if (sr->getFileCount() >= 0)
-				return TSTRING_F(X_FILES, sr->getFileCount());
-			else
-				return Util::emptyStringW;*/
-		/*case COLUMN_USERS:
-			if (hits > 1)
-				return Util::toStringW(hits) + _T(' ') + TSTRING(USERS);
-			else
-				return WinUtil::getNicks(sr->getUser());*/
 		case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : TSTRING_F(X_USERS, (hits+1));
 		case COLUMN_USERS: return WinUtil::getNicks(sr->getUser());
 		case COLUMN_TYPE:

@@ -150,7 +150,7 @@ public:
 	    
 		tvs.hParent = aParent;
 		tvs.hInsertAfter = TVI_FIRST;
-    		InsertItem( &tvs ) ;
+    	InsertItem(&tvs) ;
 	}
 
 	HTREEITEM findItem(HTREEITEM ht, const tstring& name, bool first = true) {

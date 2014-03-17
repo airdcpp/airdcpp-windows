@@ -1160,7 +1160,7 @@ tstring QueueFrame::QueueItemInfo::getName() const {
 		auto name = Text::toT(bundle->getName());
 		if (!bundle->isFileBundle()) {
 			RLock l(QueueManager::getInstance()->getCS());
-			name = WinUtil::formatFolderName(name, bundle->getQueueItems().size() + bundle->getFinishedFiles().size(), bundle->getBundleDirs().size());
+			name = WinUtil::formatFolderName(name, bundle->getQueueItems().size() + bundle->getFinishedFiles().size(), bundle->getBundleDirs().size()-1);
 		}
 
 		return name;
