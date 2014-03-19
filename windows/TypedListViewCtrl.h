@@ -580,7 +580,7 @@ public:
 	}
 	
 	LRESULT onHeaderMenu(UINT /*msg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
-		ColumnInfo * ci = columnList[wParam];
+		auto ci = columnList[wParam];
 		ci->visible = ! ci->visible;
 
 		SetRedraw(FALSE);
@@ -723,7 +723,7 @@ public:
 		return distance(columnIndexes.begin(), i); 
 	}	
 
-	typedef vector< ColumnInfo* > ColumnList;
+	typedef vector<ColumnInfo*> ColumnList;
 	ColumnList& getColumnList() { return columnList; }
 	bool noDefaultItemImages;
 private:
