@@ -86,6 +86,7 @@ public:
 		NMTREEVIEW* nmtv = (NMTREEVIEW*)pnmh;
 		if (nmtv->itemNew.lParam != -1){
 			curSel = nmtv->itemNew.lParam;
+			curItem = nmtv->itemNew.hItem;
 			updateList();
 		}
 
@@ -132,6 +133,7 @@ private:
 		TREE_FAILED,
 		TREE_PAUSED,
 		TREE_FILELIST,
+		TREE_LOCATION,
 		TREE_LAST
 	};
 
@@ -266,6 +268,32 @@ private:
 	void updateStatus();
 	bool statusDirty;
 	COLORREF getStatusColor(uint8_t status);
+
+	void addLocationItem(const BundlePtr aBundle);
+	void removeLocationItem(const BundlePtr aBundle);
+
+	HTREEITEM addTreeItem(const HTREEITEM& parent, int item, const tstring& name, HTREEITEM insertAfter = TVI_LAST) {
+		TVINSERTSTRUCT tvis = { 0 };
+		tvis.hParent = parent;
+		tvis.hInsertAfter = insertAfter;
+		tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
+		tvis.item.pszText = (LPWSTR)name.c_str();
+		tvis.item.iImage = item;
+		tvis.item.iSelectedImage = item;
+		tvis.item.lParam = item;
+		return ctrlTree.InsertItem(&tvis);
+	}
+
+	struct treeLocationItem {
+		treeLocationItem(HTREEITEM aItem) : item(aItem), bundles(1) {};
+		int bundles;
+		HTREEITEM item;
+	};
+
+	std::unordered_map<string, treeLocationItem*, noCaseStringHash, noCaseStringEq> locations;
+	HTREEITEM treeParent;
+	HTREEITEM locationParent;
+	HTREEITEM curItem;
 
 	//bundle update listeners
 	void on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept;

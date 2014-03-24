@@ -2025,5 +2025,6 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="Moving">Moving</string>
 	<string name="BundlesRemoveExit">Remove finished bundles on exit</string>
 	<string name="Failed">Failed</string>
+	<string name="Locations">Locations</string>
 	<string name="AllFiles">All files</string>
 </resources>

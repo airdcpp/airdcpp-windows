@@ -335,7 +335,8 @@ CImageList& ResourceLoader::getQueueTreeImages() {
 		QueueTreeImages.AddIcon(loadIcon(IDI_QUEUE, size));
 		QueueTreeImages.AddIcon(loadIcon(IDI_QUEUED_ERROR, size));
 		QueueTreeImages.AddIcon(loadIcon(IDI_PAUSED, size));
-		QueueTreeImages.AddIcon(loadIcon(IDI_OPEN_LIST, size));
+		QueueTreeImages.AddIcon(loadIcon(IDI_OPEN_LIST, size)); 
+		QueueTreeImages.AddIcon(getFileImages().GetIcon(DIR_NORMAL));
 	}
 	return QueueTreeImages;
 }

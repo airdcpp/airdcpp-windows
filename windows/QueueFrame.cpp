@@ -41,7 +41,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, Resourc
 	ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::DOWNLOADED, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
 
 static ResourceManager::Strings groupNames[] = { ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES, ResourceManager::FILE_LISTS };
-static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED, ResourceManager::PAUSED, ResourceManager::FILE_LISTS };
+static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED, ResourceManager::PAUSED, ResourceManager::FILE_LISTS, ResourceManager::LOCATIONS };
 
 LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -98,6 +98,8 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		ctrlQueue.insertGroup(i, TSTRING_I(groupNames[i]), LVGA_HEADER_LEFT);
 	}
 
+	FillTree();
+
 	{
 		auto qm = QueueManager::getInstance();
 
@@ -110,7 +112,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 				onQueueItemAdded(q);
 		}
 	}
-	FillTree();
+	ctrlTree.SelectItem(treeParent);
 
 	QueueManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
@@ -128,25 +130,18 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 }
 
 void QueueFrame::FillTree() {
-	HTREEITEM parent = TVI_ROOT;
-	auto addItem = [=](HTREEITEM& parent, int item, const tstring& name) {
-		TVINSERTSTRUCT tvis = { 0 };
-		tvis.hParent = parent;
-		tvis.hInsertAfter = TVI_LAST;
-		tvis.item.mask = TVIF_TEXT | TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_PARAM;
-		tvis.item.pszText = (LPWSTR)name.c_str();
-		tvis.item.iImage = item;
-		tvis.item.iSelectedImage = item;
-		tvis.item.lParam = item;
-		item == 0 ? parent = ctrlTree.InsertItem(&tvis) : ctrlTree.InsertItem(&tvis);
-	};
+	treeParent = TVI_ROOT;
+	HTREEITEM ht;
 
-	for (int i = TREE_DOWNLOADS; i < TREE_LAST; ++i) {
-		addItem(parent, i, TSTRING_I(treeNames[i]));
+	int i = TREE_DOWNLOADS;
+	treeParent = addTreeItem(treeParent, i, TSTRING_I(treeNames[i]));
+	for (i = i++; i < TREE_LAST; ++i) {
+		ht = addTreeItem(treeParent, i, TSTRING_I(treeNames[i]));
+		if (i == TREE_LOCATION)
+			locationParent = ht;
 	}
-
-	ctrlTree.Expand(parent);
-	ctrlTree.SelectItem(parent);
+	
+	ctrlTree.Expand(treeParent);
 }
 
 void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
@@ -750,10 +745,18 @@ bool QueueFrame::show(const QueueItemInfo* Qii) const {
 		return Qii->isFailed() && !Qii->isFilelist();
 	case TREE_FILELIST:
 		return Qii->isFilelist();
+	case TREE_LOCATION: {
+			if (Qii->bundle && curItem != locationParent){
+			//do it this way so we can have counts after the name
+				auto i = locations.find(Util::getParentDir(Qii->bundle->getTarget()));
+			if (i != locations.end())
+				return curItem == i->second->item;
+		}
+		return !Qii->isFilelist() && !Qii->isTempItem();
+	}
 	default:
 		return false;
 	}
-	return false;
 }
 
 tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
@@ -764,7 +767,7 @@ tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
 }
 
 void QueueFrame::handleMoveBundles(BundleList bundles) {
-	tstring targetPath = Text::toT(Util::getParentDir(bundles.front()->getTarget()));
+	tstring targetPath = Text::toT(Util::getLastDir(bundles.front()->getTarget()));
 
 	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, BrowseDlg::DIALOG_SELECT_FOLDER);
 	dlg.setPath(targetPath);
@@ -855,6 +858,7 @@ void QueueFrame::onBundleAdded(const BundlePtr& aBundle) {
 	if (!parent) {
 		auto item = new QueueItemInfo(aBundle);
 		ctrlQueue.insertGroupedItem(item, false, item->getGroupID(), !aBundle->isFileBundle()); // file bundles wont be having any children.
+		addLocationItem(aBundle);
 	}
 }
 
@@ -905,6 +909,7 @@ void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
 	auto parent = ctrlQueue.findParent(aBundle->getToken());
 	if (parent) {
 		ctrlQueue.removeGroupedItem(parent, true, parent->getGroupID()); //also deletes item info
+		removeLocationItem(aBundle);
 	}
 }
 
@@ -1018,7 +1023,7 @@ void QueueFrame::updateStatus() {
 			switch (ctrlTree.GetItemData(ht)) {
 			case TREE_DOWNLOADS:
 			{
-				int total = finishedBundles + queuedBundles + queuedItems;
+				int total = finishedBundles + queuedBundles + queuedItems - filelistItems;
 				ctrlTree.SetItemText(ht, (TSTRING(SETTINGS_DOWNLOADS) + _T(" ( ") + Util::toStringW(total) + _T(" )")).c_str());
 				ht = ctrlTree.GetChildItem(ht);
 				break;
@@ -1053,6 +1058,14 @@ void QueueFrame::updateStatus() {
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			}
+			case TREE_LOCATION:
+			{
+				int total = finishedBundles + queuedBundles;
+				ctrlTree.SetItemText(ht, (TSTRING(LOCATIONS) + _T(" ( ") + (Util::toStringW(total)) + _T(" )")).c_str());
+				ht = ctrlTree.GetNextSiblingItem(ht);
+				break;
+			}
+
 			default: break;
 			}
 		}
@@ -1095,6 +1108,36 @@ void QueueFrame::updateStatus() {
 				UpdateLayout(TRUE);
 		}
 		statusDirty = false;
+	}
+}
+
+void QueueFrame::addLocationItem(const BundlePtr aBundle) {
+	string parent = Util::getParentDir(aBundle->getTarget());
+
+	auto i = locations.find(parent);
+	if (i == locations.end()){
+		HTREEITEM ht = addTreeItem(locationParent, TREE_LOCATION, Text::toT(parent) + _T(" ( 1 )"), TVI_SORT);
+		locations.emplace(parent, new treeLocationItem(ht));
+	} else {
+		i->second->bundles++;
+		ctrlTree.SetItemText(i->second->item, Text::toT(parent + " ( " + Util::toString(i->second->bundles) + " )").c_str());
+	}
+}
+
+void QueueFrame::removeLocationItem(const BundlePtr aBundle) {
+	string parent = Util::getParentDir(aBundle->getTarget());
+
+	auto i = locations.find(parent);
+	if (i != locations.end()){
+		auto litem = i->second;
+		auto hits = --litem->bundles;
+		if (hits == 0){
+			ctrlTree.DeleteItem(litem->item);
+			locations.erase(i);
+			delete litem;
+		} else
+			ctrlTree.SetItemText(i->second->item, Text::toT(parent + " ( " + Util::toString(hits) + " )").c_str());
+
 	}
 }
 
@@ -1234,7 +1277,7 @@ bool QueueFrame::QueueItemInfo::isFinished() const {
 }
 
 bool QueueFrame::QueueItemInfo::isPaused() const {
-	return bundle ? bundle->isPausedPrio() : qi ? qi->isPausedPrio() : false;
+	return bundle ? bundle->isPausedPrio() : qi->getBundle() ? qi->getBundle()->isPausedPrio() : qi->isPausedPrio();
 }
 
 bool QueueFrame::QueueItemInfo::isTempItem() const {
