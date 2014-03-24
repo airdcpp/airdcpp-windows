@@ -130,6 +130,8 @@ private:
 		TREE_FINISHED,
 		TREE_QUEUED,
 		TREE_FAILED,
+		TREE_PAUSED,
+		TREE_FILELIST,
 		TREE_LAST
 	};
 
@@ -181,6 +183,7 @@ private:
 		bool isTempItem() const;
 		bool isFilelist() const;
 		bool isFailed() const;
+		bool isPaused() const;
 		const string& getTarget() const;
 		double getPercentage() const;
 

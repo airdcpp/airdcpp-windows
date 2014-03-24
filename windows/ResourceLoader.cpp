@@ -288,6 +288,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDR_EMOTICON:		return _T("Emoticon.ico");
 		case IDI_MAGNET:		return _T("Magnet.ico");
 		case IDI_SEND_FILE:		return _T("send_file.ico");
+		case IDI_PAUSED:		return _T("paused.ico");
 
 		case IDI_UP:            return _T("BrowserBar\\Up.ico");
 		case IDI_NEXT:			return _T("BrowserBar\\NextResult.ico");
@@ -333,6 +334,8 @@ CImageList& ResourceLoader::getQueueTreeImages() {
 		QueueTreeImages.AddIcon(loadIcon(IDI_FINISHED_DL, size));
 		QueueTreeImages.AddIcon(loadIcon(IDI_QUEUE, size));
 		QueueTreeImages.AddIcon(loadIcon(IDI_QUEUED_ERROR, size));
+		QueueTreeImages.AddIcon(loadIcon(IDI_PAUSED, size));
+		QueueTreeImages.AddIcon(loadIcon(IDI_OPEN_LIST, size));
 	}
 	return QueueTreeImages;
 }

@@ -41,7 +41,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, Resourc
 	ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::DOWNLOADED, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
 
 static ResourceManager::Strings groupNames[] = { ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES, ResourceManager::FILE_LISTS };
-static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED };
+static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED, ResourceManager::PAUSED, ResourceManager::FILE_LISTS };
 
 LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -736,17 +736,22 @@ void QueueFrame::updateCollapsedState(QueueItemInfo* aQii, int pos) {
 }
 
 bool QueueFrame::show(const QueueItemInfo* Qii) const {
-	if (curSel == TREE_DOWNLOADS) {
-		return true;
-	}
-	if ((curSel == TREE_QUEUED) && !Qii->isFinished()) {
-		return true;
-	}
-	if ((curSel == TREE_FINISHED) && Qii->isFinished()) {
-		return true;
-	}
-	if ((curSel == TREE_FAILED) && Qii->isFailed()) {
-		return true;
+	switch (curSel)
+	{
+	case TREE_DOWNLOADS:
+		return !Qii->isFilelist();
+	case TREE_QUEUED:
+		return !Qii->isFinished() && !Qii->isFilelist();
+	case TREE_FINISHED:
+		return Qii->isFinished() && !Qii->isFilelist();
+	case TREE_PAUSED:
+		return Qii->isPaused() && !Qii->isFilelist();
+	case TREE_FAILED:
+		return Qii->isFailed() && !Qii->isFilelist();
+	case TREE_FILELIST:
+		return Qii->isFilelist();
+	default:
+		return false;
 	}
 	return false;
 }
@@ -982,7 +987,9 @@ void QueueFrame::updateStatus() {
 		int finishedBundles = 0;
 		int failedBundles = 0;
 		int queuedItems = 0;
+		int filelistItems = 0;
 		int totalItems = 0;
+		int pausedItems = 0;
 
 		auto qm = QueueManager::getInstance();
 		{
@@ -990,12 +997,18 @@ void QueueFrame::updateStatus() {
 			for (auto& b : qm->getBundles() | map_values){
 				b->isFinished() ? finishedBundles++ : queuedBundles++;
 				if (b->isFailed()) failedBundles++;
+				if (b->isPausedPrio()) pausedItems++;
 			}
 
 			for (const auto& q : qm->getFileQueue() | map_values) {
 				totalItems++;
-				if (!q->getBundle())
+				if (!q->getBundle()){
 					queuedItems++;
+					if (q->isSet(QueueItem::FLAG_USER_LIST))
+						filelistItems++;
+					else
+						pausedItems++;
+				}
 			}
 
 		}
@@ -1028,6 +1041,19 @@ void QueueFrame::updateStatus() {
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			}
+			case TREE_PAUSED:
+			{
+				ctrlTree.SetItemText(ht, (TSTRING(PAUSED) + _T(" ( ") + (Util::toStringW(pausedItems)) + _T(" )")).c_str());
+				ht = ctrlTree.GetNextSiblingItem(ht);
+				break;
+			}
+			case TREE_FILELIST:
+			{
+				ctrlTree.SetItemText(ht, (TSTRING(FILE_LISTS) + _T(" ( ") + (Util::toStringW(filelistItems)) + _T(" )")).c_str());
+				ht = ctrlTree.GetNextSiblingItem(ht);
+				break;
+			}
+			default: break;
 			}
 		}
 		
@@ -1205,6 +1231,10 @@ int QueueFrame::QueueItemInfo::getPriority() const {
  
 bool QueueFrame::QueueItemInfo::isFinished() const {
 	return bundle ? bundle->isFinished() : QueueManager::getInstance()->isFinished(qi);
+}
+
+bool QueueFrame::QueueItemInfo::isPaused() const {
+	return bundle ? bundle->isPausedPrio() : qi ? qi->isPausedPrio() : false;
 }
 
 bool QueueFrame::QueueItemInfo::isTempItem() const {
