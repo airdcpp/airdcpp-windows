@@ -1112,7 +1112,7 @@ void QueueFrame::updateStatus() {
 }
 
 void QueueFrame::addLocationItem(const BundlePtr aBundle) {
-	string parent = Util::getParentDir(aBundle->getTarget());
+	string parent = aBundle->isFileBundle() ? Util::getFilePath(aBundle->getTarget()) : Util::getParentDir(aBundle->getTarget());
 
 	auto i = locations.find(parent);
 	if (i == locations.end()){
@@ -1125,7 +1125,7 @@ void QueueFrame::addLocationItem(const BundlePtr aBundle) {
 }
 
 void QueueFrame::removeLocationItem(const BundlePtr aBundle) {
-	string parent = Util::getParentDir(aBundle->getTarget());
+	string parent = aBundle->isFileBundle() ? Util::getFilePath(aBundle->getTarget()) : Util::getParentDir(aBundle->getTarget());
 
 	auto i = locations.find(parent);
 	if (i != locations.end()){
