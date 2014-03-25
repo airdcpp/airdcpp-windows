@@ -897,7 +897,7 @@ QueueFrame::QueueItemInfo* QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
 		if (parent) {
 			auto& children = ctrlQueue.findChildren(parent->getGroupCond());
 			for (auto& child : children) {
-				if (compare(child->qi->getTarget(), aQI->getTarget()) == 0)
+				if (child->qi == aQI)
 					return child;
 			}
 		}
