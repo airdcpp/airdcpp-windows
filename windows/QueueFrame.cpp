@@ -750,7 +750,7 @@ bool QueueFrame::show(const QueueItemInfo* Qii) const {
 			//do it this way so we can have counts after the name
 				auto i = locations.find(Util::getParentDir(Qii->bundle->getTarget()));
 			if (i != locations.end())
-				return curItem == i->second->item;
+				return curItem == (&i->second)->item;
 		}
 		return !Qii->isFilelist() && !Qii->isTempItem();
 	}
@@ -1117,10 +1117,10 @@ void QueueFrame::addLocationItem(const BundlePtr aBundle) {
 	auto i = locations.find(parent);
 	if (i == locations.end()){
 		HTREEITEM ht = addTreeItem(locationParent, TREE_LOCATION, Text::toT(parent) + _T(" ( 1 )"), TVI_SORT);
-		locations.emplace(parent, new treeLocationItem(ht));
+		locations.emplace(parent, treeLocationItem(ht));
 	} else {
-		i->second->bundles++;
-		ctrlTree.SetItemText(i->second->item, Text::toT(parent + " ( " + Util::toString(i->second->bundles) + " )").c_str());
+		(&i->second)->bundles++;
+		ctrlTree.SetItemText((&i->second)->item, Text::toT(parent + " ( " + Util::toString((&i->second)->bundles) + " )").c_str());
 	}
 }
 
@@ -1129,14 +1129,13 @@ void QueueFrame::removeLocationItem(const BundlePtr aBundle) {
 
 	auto i = locations.find(parent);
 	if (i != locations.end()){
-		auto litem = i->second;
+		auto litem = &i->second;
 		auto hits = --litem->bundles;
 		if (hits == 0){
 			ctrlTree.DeleteItem(litem->item);
 			locations.erase(i);
-			delete litem;
 		} else
-			ctrlTree.SetItemText(i->second->item, Text::toT(parent + " ( " + Util::toString(hits) + " )").c_str());
+			ctrlTree.SetItemText((&i->second)->item, Text::toT(parent + " ( " + Util::toString(hits) + " )").c_str());
 
 	}
 }

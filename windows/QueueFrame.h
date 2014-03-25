@@ -290,7 +290,7 @@ private:
 		HTREEITEM item;
 	};
 
-	std::unordered_map<string, treeLocationItem*, noCaseStringHash, noCaseStringEq> locations;
+	std::unordered_map<string, treeLocationItem, noCaseStringHash, noCaseStringEq> locations;
 	HTREEITEM treeParent;
 	HTREEITEM locationParent;
 	HTREEITEM curItem;
