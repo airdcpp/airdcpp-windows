@@ -101,6 +101,7 @@ private:
 		COLUMN_FIRST,
 		COLUMN_NAME = COLUMN_FIRST,
 		COLUMN_SIZE,
+		COLUMN_TYPE,
 		COLUMN_PRIORITY,
 		COLUMN_STATUS,
 		COLUMN_TIMELEFT,
@@ -166,6 +167,7 @@ private:
 		}
 
 		tstring getName() const;
+		tstring getType() const;
 		tstring getStatusString() const;
 		int getPriority() const;
 		int64_t getDownloadedBytes() const;

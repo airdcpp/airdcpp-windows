@@ -1872,6 +1872,13 @@ int DirectoryListingFrame::ItemInfo::compareItems(const ItemInfo* a, const ItemI
 
 const tstring DirectoryListingFrame::ItemInfo::getText(uint8_t col) const {
 	switch(col) {
+		case COLUMN_FILENAME: return name;
+		case COLUMN_TYPE:
+			if (type == FILE) {
+				return WinUtil::formatFileType(file->getName());
+			} else {
+				return Util::emptyStringT;
+			}
 		case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSizeW(dir->getTotalSize(true)) : Util::formatExactSizeW(file->getSize());
 		case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytesW(dir->getTotalSize(true)) : Util::formatBytesW(file->getSize());
 		case COLUMN_DATE: return Util::getDateTimeW(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());
@@ -1884,14 +1891,11 @@ const string DirectoryListingFrame::ItemInfo::getTextNormal(uint8_t col) const {
 	case COLUMN_FILENAME: return type == DIRECTORY ? dir->getName() : file->getName();
 	case COLUMN_TYPE:
 		if (type == FILE) {
-			auto type = Util::getFileExt(file->getName());
-			if (type.size() > 0 && type[0] == '.')
-				type.erase(0, 1);
-			return type;
+			return Text::fromT(WinUtil::formatFileType(file->getName()));
 		} else {
 			return Util::emptyString;
 		}
-	case COLUMN_TTH: return (type == FILE && !SettingsManager::lanMode) ? file->getTTH().toBase32() : Util::emptyString;
+	case COLUMN_TTH: return type == FILE ? file->getTTH().toBase32() : Util::emptyString;
 	case COLUMN_EXACTSIZE: return type == DIRECTORY ? Util::formatExactSize(dir->getTotalSize(true)) : Util::formatExactSize(file->getSize());
 	case COLUMN_SIZE: return  type == DIRECTORY ? Util::formatBytes(dir->getTotalSize(true)) : Util::formatBytes(file->getSize());
 	case COLUMN_DATE: return Util::getDateTime(type == DIRECTORY ? dir->getRemoteDate() : file->getRemoteDate());

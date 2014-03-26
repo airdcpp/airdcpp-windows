@@ -31,13 +31,13 @@
 #include "../client/DownloadManager.h"
 #include "../client/ShareScannerManager.h"
 
-int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_TIMELEFT, 
+int QueueFrame::columnIndexes[] = { COLUMN_NAME, COLUMN_SIZE, COLUMN_TYPE, COLUMN_PRIORITY, COLUMN_STATUS, COLUMN_TIMELEFT, 
 	COLUMN_SPEED, COLUMN_SOURCES, COLUMN_DOWNLOADED, COLUMN_TIME_ADDED, COLUMN_TIME_FINISHED, COLUMN_PATH };
 
-int QueueFrame::columnSizes[] = { 450, 70, 100, 250, 80, 
+int QueueFrame::columnSizes[] = { 450, 70, 70, 100, 250, 80, 
 	80, 80, 80, 100, 100, 500 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::TIME_LEFT,
+static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::TYPE_CONTENT, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::TIME_LEFT,
 	ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::DOWNLOADED, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
 
 static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED, ResourceManager::PAUSED, ResourceManager::FILE_LISTS, ResourceManager::TEMP_ITEMS, ResourceManager::LOCATIONS };
@@ -743,11 +743,11 @@ bool QueueFrame::show(const QueueItemInfo* Qii) const {
 	case TREE_TEMP:
 		return Qii->isTempItem();
 	case TREE_LOCATION: {
-			if (Qii->bundle && curItem != locationParent){
+		if (Qii->bundle && curItem != locationParent){
 			//do it this way so we can have counts after the name
-				auto i = locations.find(Util::getParentDir(Qii->bundle->getTarget()));
+			auto i = locations.find(Qii->bundle->isFileBundle() ? Util::getFilePath(Qii->bundle->getTarget()) : Util::getParentDir(Qii->bundle->getTarget()));
 			if (i != locations.end())
-				return curItem == (&i->second)->item;
+				return curItem == i->second.item;
 		}
 		return !isTempOrFilelist;
 	}
@@ -1116,8 +1116,8 @@ void QueueFrame::addLocationItem(const BundlePtr aBundle) {
 		HTREEITEM ht = addTreeItem(locationParent, TREE_LOCATION, Text::toT(parent) + _T(" ( 1 )"), TVI_SORT);
 		locations.emplace(parent, treeLocationItem(ht));
 	} else {
-		(&i->second)->bundles++;
-		ctrlTree.SetItemText((&i->second)->item, Text::toT(parent + " ( " + Util::toString((&i->second)->bundles) + " )").c_str());
+		i->second.bundles++;
+		ctrlTree.SetItemText(i->second.item, Text::toT(parent + " ( " + Util::toString(i->second.bundles) + " )").c_str());
 	}
 }
 
@@ -1132,7 +1132,7 @@ void QueueFrame::removeLocationItem(const BundlePtr aBundle) {
 			ctrlTree.DeleteItem(litem->item);
 			locations.erase(i);
 		} else
-			ctrlTree.SetItemText((&i->second)->item, Text::toT(parent + " ( " + Util::toString(hits) + " )").c_str());
+			ctrlTree.SetItemText(i->second.item, Text::toT(parent + " ( " + Util::toString(hits) + " )").c_str());
 
 	}
 }
@@ -1195,6 +1195,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 	switch (col) {
 		case COLUMN_NAME: return getName();
 		case COLUMN_SIZE: return (getSize() != -1) ? Util::formatBytesW(getSize()) : TSTRING(UNKNOWN);
+		case COLUMN_TYPE: return getType();
 		case COLUMN_PRIORITY:
 		{
 			if (isFinished() || getPriority() == -1)
@@ -1220,15 +1221,24 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 	}
 }
 
+tstring QueueFrame::QueueItemInfo::getType() const {
+	if (bundle) {
+		if (bundle->isFileBundle()) {
+			return WinUtil::formatFileType(bundle->getTarget());
+		} else {
+			RLock l(QueueManager::getInstance()->getCS());
+			return WinUtil::formatFolderContent(bundle->getQueueItems().size() + bundle->getFinishedFiles().size(), bundle->getBundleDirs().size() - 1);
+		}
+	} else if (isFilelist()) {
+		return TSTRING(FILE_LIST);
+	} else {
+		return WinUtil::formatFileType(qi->getTarget());
+	}
+}
+
 tstring QueueFrame::QueueItemInfo::getName() const {
 	if (bundle) {
-		auto name = Text::toT(bundle->getName());
-		if (!bundle->isFileBundle()) {
-			RLock l(QueueManager::getInstance()->getCS());
-			name = WinUtil::formatFolderName(name, bundle->getQueueItems().size() + bundle->getFinishedFiles().size(), bundle->getBundleDirs().size()-1);
-		}
-
-		return name;
+		return Text::toT(bundle->getName());
 	} else if (qi) {
 		//show files in subdirectories as subdir/file.ext
 		string path = qi->getTarget();
@@ -1368,6 +1378,12 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 
 	switch (col) {
 	case COLUMN_NAME: {
+		if (a->bundle && b->bundle) {
+			if (a->bundle->isFileBundle() != b->bundle->isFileBundle()) {
+				return a->bundle->isFileBundle();
+			}
+		}
+
 		auto textA = a->getName();
 		auto textB = b->getName();
 		if (!a->bundle) {
@@ -1376,9 +1392,29 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 			if (hasSubA && !hasSubB) return -1;
 			if (!hasSubA && hasSubB) return 1;
 		}
+
 		return Util::DefaultSort(textA.c_str(), textB.c_str());
 	}
 	case COLUMN_SIZE: return compare(a->getSize(), b->getSize());
+	case COLUMN_TYPE: {
+		if (a->bundle && b->bundle) {
+			if (a->bundle->isFileBundle() != b->bundle->isFileBundle()) {
+				return a->bundle->isFileBundle();
+			} else if (!a->bundle->isFileBundle()) {
+				RLock l(QueueManager::getInstance()->getCS());
+				auto dirsA = a->bundle->getBundleDirs().size() - 1;
+				auto dirsB = a->bundle->getBundleDirs().size() - 1;
+				if (dirsA != dirsB) {
+					return dirsA < dirsB ? 1 : -1;
+				}
+
+				auto filesA = a->bundle->getQueueItems().size() + a->bundle->getFinishedFiles().size();
+				auto filesB = b->bundle->getQueueItems().size() + b->bundle->getFinishedFiles().size();
+
+				return filesA < filesB ? 1 : -1;
+			}
+		}
+	}
 	case COLUMN_PRIORITY: {
 		auto aFinished = a->isFinished();
 		auto bFinished = b->isFinished();
