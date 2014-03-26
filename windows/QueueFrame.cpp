@@ -1379,9 +1379,8 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 	switch (col) {
 	case COLUMN_NAME: {
 		if (a->bundle && b->bundle) {
-			if (a->bundle->isFileBundle() != b->bundle->isFileBundle()) {
-				return a->bundle->isFileBundle();
-			}
+			if (a->bundle->isFileBundle() && !b->bundle->isFileBundle()) return 1;
+			if (!a->bundle->isFileBundle() && b->bundle->isFileBundle()) return -1;
 		}
 
 		auto textA = a->getName();
