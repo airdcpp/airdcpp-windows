@@ -40,8 +40,7 @@ int QueueFrame::columnSizes[] = { 450, 70, 100, 250, 80,
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::TIME_LEFT,
 	ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::DOWNLOADED, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
 
-static ResourceManager::Strings groupNames[] = { ResourceManager::TEMP_ITEMS, ResourceManager::BUNDLES, ResourceManager::FILE_LISTS };
-static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED, ResourceManager::PAUSED, ResourceManager::FILE_LISTS, ResourceManager::LOCATIONS };
+static ResourceManager::Strings treeNames[] = { ResourceManager::SETTINGS_DOWNLOADS, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED, ResourceManager::PAUSED, ResourceManager::FILE_LISTS, ResourceManager::TEMP_ITEMS, ResourceManager::LOCATIONS };
 
 LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -93,10 +92,6 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	if (!(rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0))
 		MoveWindow(rc, TRUE);
 
-	//add the groups
-	for (uint8_t i = 0; i < GROUP_LAST; ++i) {
-		ctrlQueue.insertGroup(i, TSTRING_I(groupNames[i]), LVGA_HEADER_LEFT);
-	}
 
 	FillTree();
 
@@ -714,10 +709,9 @@ void QueueFrame::updateList() {
 		if (!show(parent))
 			continue;
 
-		int pos = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex(), parent->getGroupID());
+		int pos = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex());
 		updateCollapsedState(parent, pos);
 	}
-	ctrlQueue.resort();
 	ctrlQueue.SetRedraw(TRUE);
 }
 void QueueFrame::updateCollapsedState(QueueItemInfo* aQii, int pos) {
@@ -731,20 +725,23 @@ void QueueFrame::updateCollapsedState(QueueItemInfo* aQii, int pos) {
 }
 
 bool QueueFrame::show(const QueueItemInfo* Qii) const {
+	bool isTempOrFilelist = Qii->isFilelist() || Qii->isTempItem();
 	switch (curSel)
 	{
 	case TREE_DOWNLOADS:
-		return !Qii->isFilelist();
+		return !isTempOrFilelist;
 	case TREE_QUEUED:
-		return !Qii->isFinished() && !Qii->isFilelist();
+		return !Qii->isFinished() && !isTempOrFilelist;
 	case TREE_FINISHED:
-		return Qii->isFinished() && !Qii->isFilelist();
+		return Qii->isFinished() && !isTempOrFilelist;
 	case TREE_PAUSED:
-		return Qii->isPaused() && !Qii->isFilelist();
+		return Qii->isPaused() && !isTempOrFilelist;
 	case TREE_FAILED:
-		return Qii->isFailed() && !Qii->isFilelist();
+		return Qii->isFailed() && !isTempOrFilelist;
 	case TREE_FILELIST:
 		return Qii->isFilelist();
+	case TREE_TEMP:
+		return Qii->isTempItem();
 	case TREE_LOCATION: {
 			if (Qii->bundle && curItem != locationParent){
 			//do it this way so we can have counts after the name
@@ -752,7 +749,7 @@ bool QueueFrame::show(const QueueItemInfo* Qii) const {
 			if (i != locations.end())
 				return curItem == (&i->second)->item;
 		}
-		return !Qii->isFilelist() && !Qii->isTempItem();
+		return !isTempOrFilelist;
 	}
 	default:
 		return false;
@@ -857,7 +854,7 @@ void QueueFrame::onBundleAdded(const BundlePtr& aBundle) {
 	auto parent = ctrlQueue.findParent(aBundle->getToken());
 	if (!parent) {
 		auto item = new QueueItemInfo(aBundle);
-		ctrlQueue.insertGroupedItem(item, false, item->getGroupID(), !aBundle->isFileBundle()); // file bundles wont be having any children.
+		ctrlQueue.insertGroupedItem(item, false, 0, !aBundle->isFileBundle()); // file bundles wont be having any children.
 		addLocationItem(aBundle);
 	}
 }
@@ -881,7 +878,7 @@ void QueueFrame::insertItems(QueueItemInfo* Qii) {
 		auto item = findQueueItem(qi);
 		if (!item) {
 			item = new QueueItemInfo(qi);
-			ctrlQueue.insertGroupedItem(item, false, item->getGroupID());
+			ctrlQueue.insertGroupedItem(item, false);
 		}
 	};
 
@@ -908,7 +905,7 @@ QueueFrame::QueueItemInfo* QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
 void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
 	auto parent = ctrlQueue.findParent(aBundle->getToken());
 	if (parent) {
-		ctrlQueue.removeGroupedItem(parent, true, parent->getGroupID()); //also deletes item info
+		ctrlQueue.removeGroupedItem(parent, true); //also deletes item info
 		removeLocationItem(aBundle);
 	}
 }
@@ -919,7 +916,7 @@ void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
 		int i = ctrlQueue.findItem(parent);
 		if (show(parent)) {
 			if (i == -1) {
-				i = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex(), parent->getGroupID());
+				i = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex());
 				updateCollapsedState(parent, i);
 			} else {
 				ctrlQueue.updateItem(i);
@@ -938,7 +935,7 @@ void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
 void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
 	auto item = findQueueItem(aQI);
 	if (item)
-		ctrlQueue.removeGroupedItem(item, true, item->getGroupID()); //also deletes item info
+		ctrlQueue.removeGroupedItem(item, true); //also deletes item info
 }
 
 void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
@@ -961,27 +958,23 @@ void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
 	auto item = findQueueItem(aQI);
 	if (!item) {
 		auto i = new QueueItemInfo(aQI);
-		ctrlQueue.insertGroupedItem(i, false, i->getGroupID());
+		ctrlQueue.insertGroupedItem(i, false);
 	}
 }
 
 void QueueFrame::executeGuiTasks() {
 	if (tasks.getTasks().empty())
 		return;
-	bool needResort = false;
 	ctrlQueue.SetRedraw(FALSE);
 	for (;;) {
 		TaskQueue::TaskPair t;
 		if (!tasks.getFront(t))
 			break;
 
-		needResort = needResort || (t.first == TASK_ADD);
 		static_cast<AsyncTask*>(t.second)->f();
 		tasks.pop_front();
 	}
 	statusDirty = true;
-	if (needResort)
-		ctrlQueue.resort();
 	ctrlQueue.SetRedraw(TRUE);
 }
 
@@ -1011,8 +1004,6 @@ void QueueFrame::updateStatus() {
 					queuedItems++;
 					if (q->isSet(QueueItem::FLAG_USER_LIST))
 						filelistItems++;
-					else
-						pausedItems++;
 				}
 			}
 
@@ -1055,6 +1046,12 @@ void QueueFrame::updateStatus() {
 			case TREE_FILELIST:
 			{
 				ctrlTree.SetItemText(ht, (TSTRING(FILE_LISTS) + _T(" ( ") + (Util::toStringW(filelistItems)) + _T(" )")).c_str());
+				ht = ctrlTree.GetNextSiblingItem(ht);
+				break;
+			}
+			case TREE_TEMP:
+			{
+				ctrlTree.SetItemText(ht, (TSTRING(TEMP_ITEMS) + _T(" ( ") + (Util::toStringW(queuedItems-filelistItems)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			}
