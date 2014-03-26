@@ -723,10 +723,19 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 			//else
 			//	return compare(a->hits, b->hits);
 		case COLUMN_TYPE: 
-			if(a->sr->getType() == b->sr->getType())
+			if (a->sr->getType() == b->sr->getType()) {
+				if (a->sr->getType() == SearchResult::TYPE_DIRECTORY) {
+					if (a->sr->getFolderCount() != b->sr->getFolderCount()) {
+						return a->sr->getFolderCount() < b->sr->getFolderCount() ? 1 : -1;
+					}
+
+					return a->sr->getFileCount() < b->sr->getFileCount() ? 1 : -1;
+				}
+
 				return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
-			else
+			} else {
 				return(a->sr->getType() == SearchResult::TYPE_DIRECTORY) ? -1 : 1;
+			}
 		/*case COLUMN_FILES: 
 			if(a->sr->getType() == b->sr->getType())
 				return compare(a->sr->getFileCount(), b->sr->getFileCount());
