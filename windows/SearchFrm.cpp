@@ -45,7 +45,7 @@ int SearchFrame::columnSizes[] = { 210, 50, 50, 100, 60, 80,
 	100, 100, 40, 80, 
 	150, 80, 110, 150 };
 
-static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::RELEVANCY, ResourceManager::HIT_COUNT, ResourceManager::USER, ResourceManager::TYPE, ResourceManager::SIZE,
+static ResourceManager::Strings columnNames[] = { ResourceManager::FILE, ResourceManager::RELEVANCY, ResourceManager::HIT_COUNT, ResourceManager::USER, ResourceManager::TYPE_CONTENT, ResourceManager::SIZE,
 	ResourceManager::DATE, ResourceManager::PATH, ResourceManager::SLOTS, ResourceManager::CONNECTION,
 	ResourceManager::HUB, ResourceManager::EXACT_SIZE, ResourceManager::IP_BARE, ResourceManager::TTH_ROOT };
 
@@ -723,10 +723,19 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 			//else
 			//	return compare(a->hits, b->hits);
 		case COLUMN_TYPE: 
-			if(a->sr->getType() == b->sr->getType())
+			if (a->sr->getType() == b->sr->getType()) {
+				if (a->sr->getType() == SearchResult::TYPE_DIRECTORY) {
+					if (a->sr->getFolderCount() != b->sr->getFolderCount()) {
+						return a->sr->getFolderCount() < b->sr->getFolderCount() ? 1 : -1;
+					}
+
+					return a->sr->getFileCount() < b->sr->getFileCount() ? 1 : -1;
+				}
+
 				return lstrcmpi(a->getText(COLUMN_TYPE).c_str(), b->getText(COLUMN_TYPE).c_str());
-			else
+			} else {
 				return(a->sr->getType() == SearchResult::TYPE_DIRECTORY) ? -1 : 1;
+			}
 		/*case COLUMN_FILES: 
 			if(a->sr->getType() == b->sr->getType())
 				return compare(a->sr->getFileCount(), b->sr->getFileCount());
@@ -753,27 +762,15 @@ int SearchFrame::SearchInfo::compareItems(const SearchInfo* a, const SearchInfo*
 
 const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 	switch(col) {
-	case COLUMN_FILENAME:
-		{
-			auto name = Text::toT(sr->getFileName());
-			if (sr->getType() != SearchResult::TYPE_FILE) {
-				name = WinUtil::formatFolderName(name, sr->getFileCount(), sr->getFolderCount());
-			}
-
-			return name;
-		}
-		case COLUMN_RELEVANCY:
-			return Util::toStringW(getTotalRelevancy());
+		case COLUMN_FILENAME: return Text::toT(sr->getFileName());
+		case COLUMN_RELEVANCY: return Util::toStringW(getTotalRelevancy());
 		case COLUMN_HITS: return hits == 0 ? Util::emptyStringT : TSTRING_F(X_USERS, (hits+1));
 		case COLUMN_USERS: return WinUtil::getNicks(sr->getUser());
 		case COLUMN_TYPE:
 			if(sr->getType() == SearchResult::TYPE_FILE) {
-				tstring type = Text::toT(Util::getFileExt(sr->getPath()));
-				if(!type.empty() && type[0] == _T('.'))
-					type.erase(0, 1);
-				return type;
+				return WinUtil::formatFileType(sr->getPath());
 			} else {
-				return TSTRING(DIRECTORY);
+				return WinUtil::formatFolderContent(sr->getFileCount(), sr->getFolderCount());
 			}
 		case COLUMN_SIZE: 
 			if(sr->getType() == SearchResult::TYPE_FILE) {
@@ -781,30 +778,12 @@ const tstring SearchFrame::SearchInfo::getText(uint8_t col) const {
 			} else {
 				return sr->getSize() > 0 ? Util::formatBytesW(sr->getSize()) : Util::emptyStringT;
 			}				
-		case COLUMN_PATH:
-			if(sr->getType() == SearchResult::TYPE_FILE) {
-				return Text::toT(Util::toAdcFile(sr->getFilePath()));
-			} else {
-				return Text::toT(Util::toAdcFile(sr->getPath()));
-			}
+		case COLUMN_PATH: return Text::toT(Util::toAdcFile(sr->getFilePath()));
 		case COLUMN_SLOTS: return Text::toT(sr->getSlotString());
-		case COLUMN_CONNECTION:
-			/*if (hits > 1) {
-				//auto p = ctrlResults.list.
-			} else {*/
-			return sr->isNMDC() ? Text::toT(sr->getConnectionStr()) : Util::formatConnectionSpeedW(sr->getConnectionInt());
-			//}
-		case COLUMN_HUB: 
-			/*if (hits > 1)
-				return Util::emptyStringW;
-			else*/
-				return WinUtil::getHubNames(sr->getUser());
+		case COLUMN_CONNECTION: return sr->isNMDC() ? Text::toT(sr->getConnectionStr()) : Util::formatConnectionSpeedW(sr->getConnectionInt());
+		case COLUMN_HUB: return WinUtil::getHubNames(sr->getUser());
 		case COLUMN_EXACT_SIZE: return sr->getSize() > 0 ? Util::formatExactSizeW(sr->getSize()) : Util::emptyStringT;
-		case COLUMN_IP: 
-			/*if (hits > 1)
-				return Util::emptyStringW;
-			else*/
-				return ipText;
+		case COLUMN_IP: return ipText;
 		case COLUMN_TTH: return (sr->getType() == SearchResult::TYPE_FILE && !SettingsManager::lanMode) ? Text::toT(sr->getTTH().toBase32()) : Util::emptyStringT;
 		case COLUMN_DATE: return Util::getDateTimeW(sr->getDate());
 		default: return Util::emptyStringT;

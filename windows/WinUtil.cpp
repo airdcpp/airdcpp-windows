@@ -2235,13 +2235,13 @@ bool WinUtil::checkClientPassword() {
 	return true;
 }
 
-tstring WinUtil::formatFolderName(const tstring& aName, int files, int folders) {
-	tstring name = aName;
+tstring WinUtil::formatFolderContent(int files, int folders) {
+	tstring name;
 
 	bool hasFileInfo = files > 0;
 	bool hasFolderInfo = folders > 0;
-	if (hasFileInfo || hasFolderInfo)
-		name += _T(" (");
+	//if (hasFileInfo || hasFolderInfo)
+	//	name += _T(" (");
 
 	if (hasFolderInfo) {
 		name += TSTRING_F(X_FOLDERS, folders);
@@ -2253,10 +2253,17 @@ tstring WinUtil::formatFolderName(const tstring& aName, int files, int folders) 
 		name += TSTRING_F(X_FILES, files);
 	}
 
-	if (hasFileInfo || hasFolderInfo)
-		name += _T(")");
+	//if (hasFileInfo || hasFolderInfo)
+	//	name += _T(")");
 
 	return name;
+}
+
+tstring WinUtil::formatFileType(const string& aFileName) {
+	auto type = Util::getFileExt(aFileName);
+	if (type.size() > 0 && type[0] == '.')
+		type.erase(0, 1);
+	return Text::toT(type);
 }
 
 /*void WinUtil::addFileDownloads(BundleFileList& aFiles, const HintedUser& aUser, Flags::MaskType aFlags 0, bool addBad true) {

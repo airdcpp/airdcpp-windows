@@ -39,7 +39,7 @@ class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
 
-	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_DOWNLOADS), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {}
+	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_BUNDLES), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {}
 
 	~QueueFrame() {}
 
@@ -101,6 +101,7 @@ private:
 		COLUMN_FIRST,
 		COLUMN_NAME = COLUMN_FIRST,
 		COLUMN_SIZE,
+		COLUMN_TYPE,
 		COLUMN_PRIORITY,
 		COLUMN_STATUS,
 		COLUMN_TIMELEFT,
@@ -114,26 +115,21 @@ private:
 	};
 
 	enum {
-		GROUP_TEMPS,
-		GROUP_BUNDLES,
-		GROUP_FILELIST,
-		GROUP_LAST
-	};
-
-	enum {
 		TASK_ADD,
 		TASK_REMOVE,
 		TASK_UPDATE
 	};
 
 	enum {
-		TREE_DOWNLOADS,
+		TREE_FIRST,
+		TREE_BUNDLES = TREE_FIRST,
 		TREE_FINISHED,
 		TREE_QUEUED,
 		TREE_FAILED,
 		TREE_PAUSED,
-		TREE_FILELIST,
 		TREE_LOCATION,
+		TREE_FILELIST,
+		TREE_TEMP,
 		TREE_LAST
 	};
 
@@ -172,6 +168,7 @@ private:
 		}
 
 		tstring getName() const;
+		tstring getType() const;
 		tstring getStatusString() const;
 		int getPriority() const;
 		int64_t getDownloadedBytes() const;
@@ -196,18 +193,6 @@ private:
 		static int compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col);
 		int getImageIndex() const;
 
-		int getGroupID() const { 
-			if (bundle)
-				return GROUP_BUNDLES;
-			else if (qi->getBundle())
-				return GROUP_BUNDLES;
-			else if (qi->isSet(QueueItem::FLAG_USER_LIST))
-				return GROUP_FILELIST;
-			else if (qi->isSet(QueueItem::FLAG_OPEN))
-				return GROUP_TEMPS;
-
-			return GROUP_BUNDLES;
-		}
 	};
 
 	static int columnIndexes[COLUMN_LAST];
@@ -248,7 +233,7 @@ private:
 	bool closed;
 	int curSel;
 
-	typedef TypedTreeListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST, string, noCaseStringHash, noCaseStringEq, NO_GROUP_UNIQUE_CHILDREN | VIRTUAL_CHILDREN | LVITEM_GROUPING> ListType;
+	typedef TypedTreeListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST, string, noCaseStringHash, noCaseStringEq, NO_GROUP_UNIQUE_CHILDREN | VIRTUAL_CHILDREN> ListType;
 	ListType ctrlQueue;
 
 	CTreeViewCtrl ctrlTree;
@@ -290,8 +275,8 @@ private:
 		HTREEITEM item;
 	};
 
-	std::unordered_map<string, treeLocationItem*, noCaseStringHash, noCaseStringEq> locations;
-	HTREEITEM treeParent;
+	std::unordered_map<string, treeLocationItem, noCaseStringHash, noCaseStringEq> locations;
+	HTREEITEM bundleParent;
 	HTREEITEM locationParent;
 	HTREEITEM curItem;
 
