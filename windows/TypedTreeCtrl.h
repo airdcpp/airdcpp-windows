@@ -25,21 +25,32 @@
 
 #include "stdafx.h"
 
-enum ChildrenState {
-	NO_CHILDREN,
-	CHILDREN_CREATED,
-	CHILDREN_ALL_PENDING,
-	CHILDREN_PART_PENDING,
-	CHILDREN_LOADING
+template<class T>
+class TypedTreeCtrl : public CTreeViewCtrl {
+public:
+	bool IsExpanded(HTREEITEM hItem) {
+		TVITEM tvItem;
+		tvItem.hItem = hItem;
+		tvItem.mask = TVIF_HANDLE | TVIF_STATE;
+		return (GetItem(&tvItem) && (tvItem.state & TVIS_EXPANDED));
+	}
 };
 
 template<class PT, class T>
-class TypedTreeCtrl : public CTreeViewCtrl
+class TypedVirtualTreeCtrl : public TypedTreeCtrl<T>
 {
 
 public:
-	TypedTreeCtrl(PT* aParent) : parent(aParent)  { }
-	~TypedTreeCtrl() {  }
+	enum ChildrenState {
+		NO_CHILDREN,
+		CHILDREN_CREATED,
+		CHILDREN_ALL_PENDING,
+		CHILDREN_PART_PENDING,
+		CHILDREN_LOADING
+	};
+
+	TypedVirtualTreeCtrl(PT* aParent) : parent(aParent) {}
+	~TypedVirtualTreeCtrl() {}
 
 	/*BEGIN_MSG_MAP(thisClass)
 		NOTIFY(TVN_GETINFOTIP, OnGetChildInfo)
@@ -186,13 +197,6 @@ public:
 		}
 
 		return nullptr;
-	}
-
-	bool IsExpanded(HTREEITEM hItem) {
-		TVITEM tvItem;
-		tvItem.hItem = hItem;
-		tvItem.mask = TVIF_HANDLE | TVIF_STATE;
-		return (GetItem(&tvItem) && (tvItem.state & TVIS_EXPANDED));
 	}
 
 	void updateItemImage(const T* item) { 

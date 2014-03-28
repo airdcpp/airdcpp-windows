@@ -358,7 +358,7 @@ private:
 	deque<string> history;
 	size_t historyIndex;
 	
-	typedef TypedTreeCtrl<DirectoryListingFrame, ItemInfo> TreeType;
+	typedef TypedVirtualTreeCtrl<DirectoryListingFrame, ItemInfo> TreeType;
 	friend class TreeType;
 	TreeType ctrlTree;
 
@@ -393,17 +393,12 @@ private:
 
 	ParamMap ucLineParams;
 
-	typedef unordered_map<UserPtr, DirectoryListingFrame*, User::Hash> UserMap;
-	typedef UserMap::const_iterator UserIter;
-
 	static int columnIndexes[COLUMN_LAST];
 	static int columnSizes[COLUMN_LAST];
 
-	typedef map< HWND , DirectoryListingFrame* > FrameMap;
-	typedef pair< HWND , DirectoryListingFrame* > FramePair;
-	typedef FrameMap::iterator FrameIter;
-
+	typedef map<HWND, DirectoryListingFrame*> FrameMap;
 	static FrameMap frames;
+
 	void DisableWindow(bool redraw = true);
 	void EnableWindow(bool redraw = true);
 
@@ -463,7 +458,7 @@ private:
 	void updateItemCache(const string& aPath);
 protected:
 	/* TypedTreeViewCtrl */
-	ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* d) const;
+	TreeType::ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* d) const;
 	int getIconIndex(const ItemInfo* d) const;
 	void expandDir(ItemInfo* d, bool /*collapsing*/);
 	void insertTreeItems(const ItemInfo* d, HTREEITEM aParent);

@@ -518,18 +518,18 @@ void DirectoryListingFrame::convertToFull() {
 	}
 }
 
-ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* ii) const {
+DirectoryListingFrame::TreeType::ChildrenState DirectoryListingFrame::getChildrenState(const ItemInfo* ii) const {
 	auto d = ii->dir;
 	if (!d->directories.empty())
-		return !d->isComplete() ? ChildrenState::CHILDREN_PART_PENDING : ChildrenState::CHILDREN_CREATED;
+		return !d->isComplete() ? TreeType::ChildrenState::CHILDREN_PART_PENDING : TreeType::ChildrenState::CHILDREN_CREATED;
 
 	if (d->getType() == DirectoryListing::Directory::TYPE_INCOMPLETE_CHILD)
-		return ChildrenState::CHILDREN_ALL_PENDING;
+		return TreeType::ChildrenState::CHILDREN_ALL_PENDING;
 
 	//if (d->getLoading() && d->getType() == )
 	//	return ChildrenState::CHILDREN_LOADING;
 
-	return ChildrenState::NO_CHILDREN;
+	return TreeType::ChildrenState::NO_CHILDREN;
 }
 
 void DirectoryListingFrame::expandDir(ItemInfo* ii, bool collapsing) {
