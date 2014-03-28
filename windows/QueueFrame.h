@@ -39,7 +39,7 @@ class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
 
-	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_DOWNLOADS), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {}
+	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_BUNDLES), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {}
 
 	~QueueFrame() {}
 
@@ -121,14 +121,15 @@ private:
 	};
 
 	enum {
-		TREE_DOWNLOADS,
+		TREE_FIRST,
+		TREE_BUNDLES = TREE_FIRST,
 		TREE_FINISHED,
 		TREE_QUEUED,
 		TREE_FAILED,
 		TREE_PAUSED,
+		TREE_LOCATION,
 		TREE_FILELIST,
 		TREE_TEMP,
-		TREE_LOCATION,
 		TREE_LAST
 	};
 
@@ -275,7 +276,7 @@ private:
 	};
 
 	std::unordered_map<string, treeLocationItem, noCaseStringHash, noCaseStringEq> locations;
-	HTREEITEM treeParent;
+	HTREEITEM bundleParent;
 	HTREEITEM locationParent;
 	HTREEITEM curItem;
 
