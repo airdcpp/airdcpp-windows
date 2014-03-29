@@ -880,7 +880,7 @@ void QueueFrame::onBundleAdded(const BundlePtr& aBundle) {
 	if (!parent) {
 		auto item = new QueueItemInfo(aBundle);
 		ctrlQueue.insertGroupedItem(item, false, 0, !aBundle->isFileBundle()); // file bundles wont be having any children.
-		addLocationItem(aBundle);
+		addLocationItem(getBundleParent(aBundle));
 	}
 }
 
@@ -927,11 +927,11 @@ QueueFrame::QueueItemInfo* QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
 	return ctrlQueue.findParent(aQI->getTarget());
 }
 
-void QueueFrame::onBundleRemoved(const BundlePtr& aBundle) {
+void QueueFrame::onBundleRemoved(const BundlePtr& aBundle, const string& aPath) {
 	auto parent = ctrlQueue.findParent(aBundle->getToken());
 	if (parent) {
 		ctrlQueue.removeGroupedItem(parent, true); //also deletes item info
-		removeLocationItem(aBundle);
+		removeLocationItem(aPath);
 	}
 }
 
@@ -1117,43 +1117,44 @@ void QueueFrame::updateStatus() {
 	}
 }
 
-void QueueFrame::addLocationItem(const BundlePtr aBundle) {
-	string parent = aBundle->isFileBundle() ? Util::getFilePath(aBundle->getTarget()) : Util::getParentDir(aBundle->getTarget());
-
-	auto i = locations.find(parent);
+void QueueFrame::addLocationItem(const string& aPath) {
+	auto i = locations.find(aPath);
 	if (i == locations.end()){
-		HTREEITEM ht = addTreeItem(locationParent, TREE_LOCATION, Text::toT(parent) + _T(" ( 1 )"), TVI_SORT);
-		locations.emplace(parent, treeLocationItem(ht));
+		HTREEITEM ht = addTreeItem(locationParent, TREE_LOCATION, Text::toT(aPath) + _T(" ( 1 )"), TVI_SORT);
+		locations.emplace(aPath, treeLocationItem(ht));
 	} else {
 		i->second.bundles++;
-		ctrlTree.SetItemText(i->second.item, Text::toT(parent + " ( " + Util::toString(i->second.bundles) + " )").c_str());
+		ctrlTree.SetItemText(i->second.item, Text::toT(aPath + " ( " + Util::toString(i->second.bundles) + " )").c_str());
 	}
 }
 
-void QueueFrame::removeLocationItem(const BundlePtr aBundle) {
-	string parent = aBundle->isFileBundle() ? Util::getFilePath(aBundle->getTarget()) : Util::getParentDir(aBundle->getTarget());
-
-	auto i = locations.find(parent);
+void QueueFrame::removeLocationItem(const string& aPath) {
+	auto i = locations.find(aPath);
 	if (i != locations.end()){
 		auto litem = &i->second;
 		auto hits = --litem->bundles;
 		if (hits == 0){
 			ctrlTree.DeleteItem(litem->item);
 			locations.erase(i);
-		} else
-			ctrlTree.SetItemText(i->second.item, Text::toT(parent + " ( " + Util::toString(hits) + " )").c_str());
-
+		} else {
+			ctrlTree.SetItemText(i->second.item, Text::toT(aPath + " ( " + Util::toString(hits) + " )").c_str());
+		}
 	}
+}
+
+string QueueFrame::getBundleParent(const BundlePtr aBundle) {
+	return aBundle->isFileBundle() ? Util::getFilePath(aBundle->getTarget()) : Util::getParentDir(aBundle->getTarget());
 }
 
 void QueueFrame::on(QueueManagerListener::BundleAdded, const BundlePtr& aBundle) noexcept {
 	addGuiTask(TASK_ADD, [=] { onBundleAdded(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept{
-	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle); });
+	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle, getBundleParent(aBundle)); });
 }
 void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle) noexcept {
-	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle); });
+	string path = getBundleParent(aBundle);
+	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle, path); });
 }
 void QueueFrame::on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string&) noexcept { 
 	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });

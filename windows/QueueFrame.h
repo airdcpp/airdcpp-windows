@@ -200,7 +200,7 @@ private:
 
 	void onRenameBundle(BundlePtr b);
 	void onBundleAdded(const BundlePtr& aBundle);
-	void onBundleRemoved(const BundlePtr& aBundle);
+	void onBundleRemoved(const BundlePtr& aBundle, const string& aPath);
 	void onBundleUpdated(const BundlePtr& aBundle);
 
 	void insertItems(QueueItemInfo* Qii);
@@ -254,8 +254,9 @@ private:
 	bool statusDirty;
 	COLORREF getStatusColor(uint8_t status);
 
-	void addLocationItem(const BundlePtr aBundle);
-	void removeLocationItem(const BundlePtr aBundle);
+	void addLocationItem(const string& aPath);
+	void removeLocationItem(const string& aPath);
+	string getBundleParent(const BundlePtr aBundle);
 
 	HTREEITEM addTreeItem(const HTREEITEM& parent, int item, const tstring& name, HTREEITEM insertAfter = TVI_LAST) {
 		TVINSERTSTRUCT tvis = { 0 };
