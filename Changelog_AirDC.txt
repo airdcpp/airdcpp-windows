@@ -1,3 +1,22 @@
+2.80
+
+Added:
+
+- Show the number of contained files and folders for directory search results (ADC)
+- Use a Vista-style browsing dialog with folders
+- Remember various previous locations with browsing dialogs
+
+Changed:
+
+- Hide various menu items when clicking on own user in the users tab
+
+Fixed:
+
+- Detect the connect mode of other users correctly after connecting to a hub
+- Fix performance issues when queueing huge bundles and there are lots of files matching the download skiplist
+- Fix handling of individual blocked versions in the the version file
+- Fix a bug that may have left folder deletions unnoticed by the share monitoring in some rare cases
+
 
 2.72
 
