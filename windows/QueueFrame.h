@@ -221,7 +221,7 @@ private:
 	void handleOpenFolder();
 	void handleSearchDirectory();
 
-	void getSelectedItems(BundleList& bl, QueueItemList& ql);
+	void getSelectedItems(BundleList& bl, QueueItemList& ql, DWORD aFlag = LVNI_SELECTED);
 	tstring formatUser(const Bundle::BundleSource& bs) const;
 	tstring formatUser(const QueueItem::Source& s) const;
 	

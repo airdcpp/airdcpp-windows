@@ -313,9 +313,9 @@ LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 	return 0;
 }
 
-void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql) {
+void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql, DWORD aFlag/* = LVNI_SELECTED*/) {
 	int sel = -1;
-	while ((sel = ctrlQueue.GetNextItem(sel, LVNI_SELECTED)) != -1) {
+	while ((sel = ctrlQueue.GetNextItem(sel, aFlag)) != -1) {
 		QueueItemInfo* qii = (QueueItemInfo*) ctrlQueue.GetItemData(sel);
 		if (qii->bundle)
 			bl.push_back(qii->bundle);
@@ -325,19 +325,40 @@ void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql) {
 }
 
 LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
+	bool listviewMenu = false;
+	bool treeMenu = false;
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 
 	if (reinterpret_cast<HWND>(wParam) == ctrlQueue && ctrlQueue.GetSelectedCount() > 0) {
-		POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 		if (pt.x == -1 && pt.y == -1) {
 			WinUtil::getContextMenuPos(ctrlQueue, pt);
 		}
+		listviewMenu = true;
+	}
 
+	if (reinterpret_cast<HWND>(wParam) == ctrlTree) {
+		if (pt.x == -1 && pt.y == -1) {
+			WinUtil::getContextMenuPos(ctrlTree, pt);
+		}
+		// Select the item we right-clicked on
+		UINT a = 0;
+		ctrlTree.ScreenToClient(&pt);
+		HTREEITEM ht = ctrlTree.HitTest(pt, &a);
+		if (ht) {
+			if (ht != ctrlTree.GetSelectedItem())
+				ctrlTree.SelectItem(ht);
+			ctrlTree.ClientToScreen(&pt);
+			treeMenu = true;
+		}
+	}
+
+	if (treeMenu || listviewMenu) {
 		OMenu menu;
 		menu.CreatePopupMenu();
 		BundleList bl;
 		QueueItemList queueItems;
 
-		getSelectedItems(bl, queueItems);
+		getSelectedItems(bl, queueItems, treeMenu ? LVNI_ALL : LVNI_SELECTED);
 
 		if (!bl.empty()) {
 			AppendBundleMenu(bl, menu);
