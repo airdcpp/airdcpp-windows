@@ -211,12 +211,14 @@ private:
 
 	void AppendBundleMenu(BundleList& bl, OMenu& bundleMenu);
 	void AppendQiMenu(QueueItemList& ql, OMenu& fileMenu);
+	void AppendTreeMenu(BundleList& bl, QueueItemList& queueItems, OMenu& bundleMenu);
+
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
 	void handleMoveBundles(BundleList bl);
 	void handleRemoveBundles(BundleList bl, bool removeFinished);
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
 	void handleSearchQI(const QueueItemPtr& aQI);
-	void handleCheckSFV();
+	void handleCheckSFV(bool treeMenu);
 	void handleOpenFile(const QueueItemPtr& aQI);
 	void handleOpenFolder();
 	void handleSearchDirectory();
