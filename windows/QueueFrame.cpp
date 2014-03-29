@@ -78,6 +78,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		WS_EX_CLIENTEDGE, IDC_TREE);
 
 	if (SETTING(USE_EXPLORER_THEME)) {
+		ctrlTree.SetExtendedStyle(TVS_EX_FADEINOUTEXPANDOS | TVS_EX_DOUBLEBUFFER, TVS_EX_FADEINOUTEXPANDOS | TVS_EX_DOUBLEBUFFER);
 		SetWindowTheme(ctrlTree.m_hWnd, L"explorer", NULL);
 	}
 	ctrlTree.SetImageList(ResourceLoader::getQueueTreeImages(), TVSIL_NORMAL);
