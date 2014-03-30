@@ -240,6 +240,9 @@ public:
 	void handleDownload(const string& aTarget, QueueItemBase::Priority p, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown);
 	bool showDirDialog(string& fileName);
 private:
+	void appendTreeContextMenu(CPoint& pt, DirectoryListing::Directory::Ptr& aDir);
+	void appendListContextMenu(CPoint& pt);
+
 	bool checkCommonKey(int key);
 	task_group tasks;
 	bool allowPopup() const;
