@@ -1363,8 +1363,8 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 			fileMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(false); });
 		}
 		if (dl->getIsOwnList() && !(ii->type == ItemInfo::DIRECTORY && ii->dir->getAdls())) {
-			fileMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { handleScanShare(false, false); });
-			fileMenu.appendItem(TSTRING(RUN_SFV_CHECK), [this] { handleScanShare(false, true); });
+			fileMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { handleScanShare(false); });
+			fileMenu.appendItem(TSTRING(RUN_SFV_CHECK), [this] { handleCheckSfv(false); });
 		}
 
 		// shell menu
@@ -1427,8 +1427,8 @@ LRESULT DirectoryListingFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARA
 						// shared
 						directoryMenu.appendSeparator();
 						directoryMenu.appendItem(TSTRING(REFRESH_IN_SHARE), [this] { handleRefreshShare(true); });
-						directoryMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { handleScanShare(true, false); });
-						directoryMenu.appendItem(TSTRING(RUN_SFV_CHECK), [this] { handleScanShare(false, true); });
+						directoryMenu.appendItem(TSTRING(SCAN_FOLDER_MISSING), [this] { handleScanShare(true); });
+						directoryMenu.appendItem(TSTRING(RUN_SFV_CHECK), [this] { handleCheckSfv(true); });
 					}
 				}
 			}
@@ -1643,13 +1643,21 @@ void DirectoryListingFrame::handleRefreshShare(bool usingTree) {
 	}
 }
 
-void DirectoryListingFrame::handleScanShare(bool usingTree, bool isSfvCheck) {
+void DirectoryListingFrame::handleScanShare(bool usingTree) {
 	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
 
 	StringList scanList;
 	if (getLocalPaths(scanList, usingTree, false)) {
-		//ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
-		ShareScannerManager::getInstance()->scan(scanList, isSfvCheck);
+		ShareScannerManager::getInstance()->scanShare(scanList);
+	}
+}
+
+void DirectoryListingFrame::handleCheckSfv(bool usingTree) {
+	ctrlStatus.SetText(0, CTSTRING(SEE_SYSLOG_FOR_RESULTS));
+
+	StringList scanList;
+	if (getLocalPaths(scanList, usingTree, false)) {
+		ShareScannerManager::getInstance()->checkSfv(scanList);
 	}
 }
 

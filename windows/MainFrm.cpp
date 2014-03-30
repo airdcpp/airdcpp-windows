@@ -1418,7 +1418,7 @@ LRESULT MainFrame::onRefreshFileList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*
 }
 
 LRESULT MainFrame::onScanMissing(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	addThreadedTask([] { ShareScannerManager::getInstance()->scan(); });
+	addThreadedTask([] { ShareScannerManager::getInstance()->scanShare(); });
 	return 0;
 }
 

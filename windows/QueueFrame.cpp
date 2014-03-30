@@ -698,7 +698,7 @@ void QueueFrame::handleCheckSFV(bool treeMenu) {
 			paths.push_back(qii->getTarget());
 	}
 
-	ShareScannerManager::getInstance()->scan(paths, true);
+	ShareScannerManager::getInstance()->checkSfv(paths);
 }
 
 void QueueFrame::handleOpenFile(const QueueItemPtr& aQI) {

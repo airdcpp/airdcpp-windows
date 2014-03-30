@@ -54,8 +54,6 @@ public:
 		COMMAND_ID_HANDLER(IDC_REMOVE, onRemove)
 		COMMAND_ID_HANDLER(IDC_TOTAL, onRemove)
 		COMMAND_ID_HANDLER(IDC_VIEW_AS_TEXT, onViewAsText)
-		COMMAND_ID_HANDLER(IDC_SFV_CHECH_FOLDER, onCheckFolderSFV)
-		COMMAND_ID_HANDLER(IDC_SFV_CHECH_FILE, onCheckFileSFV)
 		COMMAND_ID_HANDLER(IDC_GETLIST, onGetList)
 		COMMAND_ID_HANDLER(IDC_GRANTSLOT, onGrant)		
 		COMMAND_ID_HANDLER(IDC_COPY_NICK, onCopy);
@@ -293,34 +291,6 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 		return 0;
 	}
 
-	LRESULT onCheckFolderSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		//Todo Select multiple
-		int i;
-		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			FinishedItem *ii = ctrlList.getItemData(i);
-			if(ii != NULL) {
-				StringList paths;
-				paths.push_back(Util::getFilePath(ii->getTarget()));
-				ShareScannerManager::getInstance()->scan(paths, true);
-			}
-		}
-		return 0;
-	}
-
-	LRESULT onCheckFileSFV(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-		//Todo so we can select multiple files at once.
-		int i;
-		if((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
-			FinishedItem *ii = ctrlList.getItemData(i);
-			if(ii != NULL){
-				StringList files;
-				files.push_back(ii->getTarget());
-				ShareScannerManager::getInstance()->scan(files, true);
-				}
-			}
-		return 0;
-	}
-
 
 	LRESULT onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled) {
 		if (reinterpret_cast<HWND>(wParam) == ctrlList && ctrlList.GetSelectedCount() > 0) { 
@@ -335,8 +305,6 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 			shellMenu.CreatePopupMenu();
 			if(ctrlList.GetSelectedCount() == 1) {
 				shellMenu.AppendMenu(MF_STRING, IDC_VIEW_AS_TEXT, CTSTRING(VIEW_AS_TEXT));
-				shellMenu.AppendMenu(MF_STRING, IDC_SFV_CHECH_FOLDER, CTSTRING(SFV_CHECK_FOLDER));
-				shellMenu.AppendMenu(MF_STRING, IDC_SFV_CHECH_FILE, CTSTRING(SFV_CHECK_FILE));
 				shellMenu.AppendMenu(MF_STRING, IDC_GRANTSLOT, CTSTRING(GRANT_EXTRA_SLOT));
 				shellMenu.AppendMenu(MF_SEPARATOR);
 				shellMenu.AppendMenu(MF_POPUP, (UINT) (HMENU) copyMenu, CTSTRING(COPY));

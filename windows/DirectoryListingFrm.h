@@ -338,7 +338,8 @@ private:
 	static tstring handleCopyDirectory(const ItemInfo* ii);
 
 	void handleRefreshShare(bool usingTree);
-	void handleScanShare(bool usingTree, bool isSfvCheck);
+	void handleScanShare(bool usingTree);
+	void handleCheckSfv(bool usingTree);
 
 	void handleCopyDir();
 	void handleOpenFile();
