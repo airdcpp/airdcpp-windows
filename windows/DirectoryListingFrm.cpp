@@ -388,7 +388,7 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	rebar.MaximizeBand(1);
 	rebar.LockBands(true);
 
-	ctrlTree.EnableWindow(FALSE);
+	changeWindowState(false);
 	
 	SettingsManager::getInstance()->addListener(this);
 
@@ -1468,7 +1468,7 @@ void DirectoryListingFrame::handleItemAction(bool usingTree, std::function<void 
 void DirectoryListingFrame::handleDownload(const string& aTarget, QueueItemBase::Priority prio, bool usingTree, TargetUtil::TargetType aTargetType, bool isSizeUnknown) {
 	handleItemAction(usingTree, [&](const ItemInfo* ii) {
 		if (ii->type == ItemInfo::FILE) {
-			WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : Text::fromT(ii->getText(COLUMN_FILENAME))), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
+			WinUtil::addFileDownload(aTarget + (aTarget[aTarget.length() - 1] != PATH_SEPARATOR ? Util::emptyString : ii->getName()), ii->file->getSize(), ii->file->getTTH(), dl->getHintedUser(), ii->file->getRemoteDate(),
 				0, WinUtil::isShift() ? QueueItemBase::HIGHEST : prio);
 		} else {
 			tasks.run([=] {

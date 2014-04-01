@@ -950,7 +950,7 @@ LRESULT RichTextBox::onContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 					if (client && ShareManager::getInstance()->isTempShared(pmUser ? pmUser->getCID().toBase32() : Util::emptyString, m.getTTH())) {
 						/* show an option to remove the item */
 						menu.appendItem(TSTRING(STOP_SHARING), [this] { handleRemoveTemp(); });
-					} else if (!author.empty() && !isMyLink) {
+					} else if (!isMyLink) {
 						appendDownloadMenu(menu, DownloadBaseHandler::TYPE_PRIMARY, false, m.getTTH(), nullptr);
 					}
 

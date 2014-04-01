@@ -1147,7 +1147,6 @@ void WinUtil::SetIcon(HWND hWnd, int aDefault, bool big) {
 
 void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichTextBox* ctrlEdit /*nullptr*/) {
 	if (strnicmp(aUrl.c_str(), _T("magnet:?"), 8) == 0) {
-		//LogManager::getInstance()->message(STRING(MAGNET_DLG_TITLE) + ": " + Text::fromT(aUrl), LogManager::LOG_INFO);
 		Magnet m = Magnet(Text::fromT(aUrl));
 		if(!m.hash.empty() && Encoder::isBase32(m.hash.c_str())){
 			auto sel = SETTING(MAGNET_ACTION);
@@ -1172,6 +1171,9 @@ void WinUtil::parseMagnetUri(const tstring& aUrl, const HintedUser& aUser, RichT
 				//taskdlg.SetExpandedInformationText(_T("More information"));
 				taskdlg.SetMainIcon(IDI_MAGNET);
 				taskdlg.SetVerificationText(CTSTRING(MAGNET_DLG_REMEMBER));
+
+				//if (!aUser.user)
+				//	taskdlg.EnableButton(0, FALSE);
 
                 taskdlg.DoModal(mainWnd, &sel, 0, &remember);
 				if (sel == IDCANCEL) {
