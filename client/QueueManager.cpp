@@ -597,8 +597,6 @@ BundlePtr QueueManager::createDirectoryBundle(const string& aTarget, const Hinte
 
 	int existingFiles = 0, smallDupes=0;
 
-	vector<BundleFileInfo*> allowedFiles;
-
 	//check the files
 	for (auto i = aFiles.begin(); i != aFiles.end(); ) {
 		try {

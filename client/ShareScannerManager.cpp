@@ -39,7 +39,7 @@ atomic_flag ShareScannerManager::scanning = ATOMIC_FLAG_INIT;
 atomic_flag ShareScannerManager::scanning;
 #endif
 
-ShareScannerManager::ShareScannerManager() : stop(false) {
+ShareScannerManager::ShareScannerManager() : stop(false), tasks(false) {
 	// case sensitive
 	releaseReg.assign(AirUtil::getReleaseRegBasic());
 	simpleReleaseReg.assign("(([A-Z0-9]\\S{3,})-([A-Za-z0-9_]{2,}))");
@@ -70,170 +70,178 @@ ShareScannerManager::~ShareScannerManager() {
 	join();
 }
 
-int ShareScannerManager::scan(const StringList& paths, bool sfv /*false*/) noexcept {
-	stop = false;
-	//initiate the thread always here for now.
-	if(scanning.test_and_set()){
+void ShareScannerManager::scanShare(const StringList& paths) noexcept{
+	if (scanning.test_and_set()) {
 		LogManager::getInstance()->message(STRING(SCAN_RUNNING), LogManager::LOG_INFO);
-		return 1;
+		return;
 	}
-	isCheckSFV = false;
-	isDirScan = false;
 
-	if(sfv) {
-		isCheckSFV = true;
-		rootPaths = paths;
-	} else if(!paths.empty())  {
-		isDirScan = true;
-		rootPaths = paths;
-	} else {
-		ShareManager::getInstance()->getParentPaths(rootPaths);
-	}
+	tasks.addTask([=] { runShareScan(paths); });
 
 	start();
-	
 
-	if(sfv) {
-		LogManager::getInstance()->message(STRING(CRC_STARTED), LogManager::LOG_INFO);
-		crcOk = 0;
-		crcInvalid = 0;
-		checkFailed = 0;
-	} else {
-		LogManager::getInstance()->message(STRING(SCAN_STARTED), LogManager::LOG_INFO);
+	LogManager::getInstance()->message(STRING(SCAN_STARTED), LogManager::LOG_INFO);
+}
+
+void ShareScannerManager::checkSfv(const StringList& paths) noexcept{
+	if (scanning.test_and_set()) {
+		LogManager::getInstance()->message(STRING(SCAN_RUNNING), LogManager::LOG_INFO);
+		return;
 	}
-	return 0;
+
+	tasks.addTask([=] { runSfvCheck(paths); });
+
+	start();
+
+	LogManager::getInstance()->message(STRING(CRC_STARTED), LogManager::LOG_INFO);
 }
 
 void ShareScannerManager::Stop() {
 	stop = true;
 }
 
-int ShareScannerManager::run() {
-	if (isCheckSFV) {
+void ShareScannerManager::runSfvCheck(const StringList& rootPaths) {
+	scanFolderSize = 0;
+	crcOk = 0;
+	crcInvalid = 0;
+	checkFailed = 0;
 
-		/* Get the total size and dirs */
-		scanFolderSize = 0;
-		SFVScanList sfvDirPaths;
-		StringList sfvFilePaths;
-		for(auto& path: rootPaths) {
-			if(path[path.size() -1] == PATH_SEPARATOR) {
-				prepareSFVScanDir(path, sfvDirPaths);
-			} else {
-				prepareSFVScanFile(path, sfvFilePaths);
-			}
+	/* Get the total size and dirs */
+	SFVScanList sfvDirPaths;
+	StringList sfvFilePaths;
+	for (auto& path : rootPaths) {
+		if (path.back() == PATH_SEPARATOR) {
+			prepareSFVScanDir(path, sfvDirPaths);
+		} else {
+			prepareSFVScanFile(path, sfvFilePaths);
 		}
+	}
 
-		/* Scan root files */
-		if (!sfvFilePaths.empty()) {
-			DirSFVReader sfv(Util::getFilePath(rootPaths.front()));
-			for(auto& path: sfvFilePaths) {
-				if (stop)
-					break;
-
-				checkFileSFV(path, sfv, false);
-			}
-		}
-
-		/* Scan all directories */
-		for(auto& i: sfvDirPaths) {
+	/* Scan root files */
+	if (!sfvFilePaths.empty()) {
+		DirSFVReader sfv(Util::getFilePath(rootPaths.front()));
+		for (auto& path : sfvFilePaths) {
 			if (stop)
 				break;
 
-			File::forEachFile(i.first, "*", [&](const string& aFileName, bool isDir, int64_t /*aSize*/) {
-				if (stop || isDir)
-					return;
-
-				checkFileSFV(Text::toLower(aFileName), i.second, true);
-			});
+			checkFileSFV(path, sfv, false);
 		}
-
-
-		/* Report */
-		if (stop) {
-			LogManager::getInstance()->message(STRING(CRC_STOPPED), LogManager::LOG_INFO);
-		} else {
-			LogManager::getInstance()->message(STRING_F(CRC_FINISHED, crcOk % crcInvalid % checkFailed), LogManager::LOG_INFO);
-		}
-	} else {
-		/* Scan for missing files */
-		QueueManager::getInstance()->getUnfinishedPaths(bundleDirs);
-		sort(bundleDirs.begin(), bundleDirs.end());
-
-		ScanInfoList scanners;
-		for(auto& dir: rootPaths) {
-			if (!matchSkipList(Util::getLastDir(dir)) && !std::binary_search(bundleDirs.begin(), bundleDirs.end(), dir))
-				scanners.emplace_back(dir, ScanInfo::TYPE_COLLECT_LOG, true);
-		}
-
-		try {
-			TaskScheduler s;
-			parallel_for_each(scanners.begin(), scanners.end(), [&](ScanInfo& s) {
-				if (!s.rootPath.empty()) {
-					// TODO: FIX LINUX
-					FileFindIter i(s.rootPath.substr(0, s.rootPath.length() - 1), Util::emptyString, false);
-					if (!i->isHidden()) {
-						scanDir(s.rootPath, s);
-						if (SETTING(CHECK_DUPES) && isDirScan)
-							findDupes(s.rootPath, s);
-
-						find(s.rootPath, Text::toLower(s.rootPath), s);
-					}
-				}
-			});
-		} catch (std::exception& e) {
-			LogManager::getInstance()->message("Scanning the share failed: " + string(e.what()), LogManager::LOG_INFO);
-		}
-
-		if(!stop) {
-			//merge the results
-			ScanInfo total(Util::emptyString, ScanInfo::TYPE_COLLECT_LOG, true);
-			for(auto& s: scanners) {
-				s.merge(total);
-			}
-
-			ScanType scanType = isDirScan ? TYPE_PARTIAL : TYPE_FULL;
-			string report;
-			if (scanType == TYPE_FULL) {
-				report = CSTRING(SCAN_SHARE_FINISHED);
-			} else if (scanType == TYPE_PARTIAL) {
-				report = CSTRING(SCAN_FOLDER_FINISHED);
-			}
-
-			if (!total.scanMessage.empty()) {
-				report += " ";
-				report += CSTRING(SCAN_PROBLEMS_FOUND);
-				report += ":  ";
-				report += total.getResults();
-				report += ". " + STRING(SCAN_RESULT_NOTE);
-
-				if (SETTING(LOG_SHARE_SCANS)) {
-					auto path = Util::validatePath(Util::formatTime(SETTING(LOG_DIRECTORY) + SETTING(LOG_SHARE_SCAN_PATH), time(nullptr)));
-					File::ensureDirectory(path);
-
-					File f(path, File::WRITE, File::OPEN | File::CREATE);
-					f.setEndPos(0);
-					f.write(total.scanMessage);
-				}
-
-				char buf[255];
-				time_t time = GET_TIME();
-				tm* _tm = localtime(&time);
-				strftime(buf, 254, "%c", _tm);
-
-				fire(ScannerManagerListener::ScanFinished(), total.scanMessage, STRING_F(SCANNING_RESULTS_ON, string(buf)));
-			} else {
-				report += ", ";
-				report += CSTRING(SCAN_NO_PROBLEMS);
-			}
-
-			LogManager::getInstance()->message(report, LogManager::LOG_INFO);
-		}
-		bundleDirs.clear();
-		dupeDirs.clear();
 	}
+
+	/* Scan all directories */
+	for (auto& i : sfvDirPaths) {
+		if (stop)
+			break;
+
+		File::forEachFile(i.first, "*", [&](const string& aFileName, bool isDir, int64_t /*aSize*/) {
+			if (stop || isDir)
+				return;
+
+			checkFileSFV(Text::toLower(aFileName), i.second, true);
+		});
+	}
+
+
+	/* Report */
+	if (stop) {
+		LogManager::getInstance()->message(STRING(CRC_STOPPED), LogManager::LOG_INFO);
+	} else {
+		LogManager::getInstance()->message(STRING_F(CRC_FINISHED, crcOk % crcInvalid % checkFailed), LogManager::LOG_INFO);
+	}
+}
+
+void ShareScannerManager::runShareScan(const StringList& aPaths) {
+	ScanType scanType = TYPE_PARTIAL;
+	auto rootPaths = aPaths;
+
+	if (rootPaths.empty()) {
+		ShareManager::getInstance()->getParentPaths(rootPaths);
+		scanType = TYPE_FULL;
+	}
+
+	/* Scan for missing files */
+	QueueManager::getInstance()->getUnfinishedPaths(bundleDirs);
+	sort(bundleDirs.begin(), bundleDirs.end());
+
+	ScanInfoList scanners;
+	for (auto& dir : rootPaths) {
+		if (!matchSkipList(Util::getLastDir(dir)) && !std::binary_search(bundleDirs.begin(), bundleDirs.end(), dir))
+			scanners.emplace_back(dir, ScanInfo::TYPE_COLLECT_LOG, true);
+	}
+
+	try {
+		TaskScheduler s;
+		parallel_for_each(scanners.begin(), scanners.end(), [&](ScanInfo& s) {
+			if (!s.rootPath.empty()) {
+				// TODO: FIX LINUX
+				FileFindIter i(s.rootPath.substr(0, s.rootPath.length() - 1), Util::emptyString, false);
+				if (!i->isHidden()) {
+					scanDir(s.rootPath, s);
+					if (SETTING(CHECK_DUPES) && scanType == TYPE_PARTIAL)
+						findDupes(s.rootPath, s);
+
+					find(s.rootPath, Text::toLower(s.rootPath), s);
+				}
+			}
+		});
+	} catch (std::exception& e) {
+		LogManager::getInstance()->message("Scanning the share failed: " + string(e.what()), LogManager::LOG_INFO);
+	}
+
+	if (!stop) {
+		//merge the results
+		ScanInfo total(Util::emptyString, ScanInfo::TYPE_COLLECT_LOG, true);
+		for (auto& s : scanners) {
+			s.merge(total);
+		}
+
+		string report;
+		if (scanType == TYPE_FULL) {
+			report = CSTRING(SCAN_SHARE_FINISHED);
+		} else if (scanType == TYPE_PARTIAL) {
+			report = CSTRING(SCAN_FOLDER_FINISHED);
+		}
+
+		if (!total.scanMessage.empty()) {
+			report += " ";
+			report += CSTRING(SCAN_PROBLEMS_FOUND);
+			report += ":  ";
+			report += total.getResults();
+			report += ". " + STRING(SCAN_RESULT_NOTE);
+
+			if (SETTING(LOG_SHARE_SCANS)) {
+				auto path = Util::validatePath(Util::formatTime(SETTING(LOG_DIRECTORY) + SETTING(LOG_SHARE_SCAN_PATH), time(nullptr)));
+				File::ensureDirectory(path);
+
+				File f(path, File::WRITE, File::OPEN | File::CREATE);
+				f.setEndPos(0);
+				f.write(total.scanMessage);
+			}
+
+			char buf[255];
+			time_t time = GET_TIME();
+			tm* _tm = localtime(&time);
+			strftime(buf, 254, "%c", _tm);
+
+			fire(ScannerManagerListener::ScanFinished(), total.scanMessage, STRING_F(SCANNING_RESULTS_ON, string(buf)));
+		} else {
+			report += ", ";
+			report += CSTRING(SCAN_NO_PROBLEMS);
+		}
+
+		LogManager::getInstance()->message(report, LogManager::LOG_INFO);
+	}
+
+	bundleDirs.clear();
+	dupeDirs.clear();
+}
+
+int ShareScannerManager::run() {
+	stop = false;
+	while (tasks.dispatch())
+		//...
 	
 	scanning.clear();
-	rootPaths.clear();
 	return 0;
 }
 
@@ -545,7 +553,7 @@ void ShareScannerManager::scanDir(const string& aPath, ScanInfo& aScan) noexcept
 
 		AirUtil::listRegexSubtract(fileList, extraRegs[extrasType]);
 		if (!fileList.empty()) {
-			reportMessage(CSTRING_F(EXTRA_FILES_RLSDIR_X, aPath % Util::toString(", ", fileList)), aScan);
+			reportMessage(STRING_F(EXTRA_FILES_RLSDIR_X, aPath % Util::toString(", ", fileList)), aScan);
 			if (!extrasInFolder)
 				aScan.extrasFound++;
 		}
@@ -591,6 +599,7 @@ void ShareScannerManager::checkFileSFV(const string& aFileName, DirSFVReader& sf
 	uint64_t checkEnd = 0;
 
 	if(sfv.hasFile(aFileName)) {
+		// Perform the check
 		bool crcMatch = false;
 		try {
 			checkStart = GET_TICK();
@@ -598,34 +607,33 @@ void ShareScannerManager::checkFileSFV(const string& aFileName, DirSFVReader& sf
 			checkEnd = GET_TICK();
 		} catch(const FileException& ) {
 			// Couldn't read the file to get the CRC(!!!)
-			LogManager::getInstance()->message(STRING(CRC_FILE_ERROR) + sfv.getPath() + aFileName, LogManager::LOG_ERROR);
+			LogManager::getInstance()->message(STRING_F(CRC_FILE_ERROR, (sfv.getPath() + aFileName)), LogManager::LOG_ERROR);
 		}
 
+		// Update the resultd
 		int64_t size = File::getSize(sfv.getPath() + aFileName);
 		int64_t speed = 0;
 		if(checkEnd > checkStart) {
 			speed = size * 1000LL / (checkEnd - checkStart);
 		}
 
-		string message;
-
 		if(crcMatch) {
-			message = STRING(CRC_OK);
 			crcOk++;
 		} else {
-			message = STRING(CRC_FAILED);
 			crcInvalid++;
 		}
 
-		message += sfv.getPath() + aFileName + " (" + Util::formatBytes(speed) + "/s)";
-
 		scanFolderSize = scanFolderSize - size;
-		message += ", " + STRING(CRC_REMAINING) + Util::formatBytes(scanFolderSize);
-		LogManager::getInstance()->message(message, (crcMatch ? LogManager::LOG_INFO : LogManager::LOG_ERROR));
 
+		// Report
+		LogManager::getInstance()->message(STRING_F(CRC_FILE_DONE, 
+			(crcMatch ? STRING(CRC_OK) : STRING(CRC_FAILED)) % 
+			(sfv.getPath() + aFileName) % 
+			Util::formatBytes(speed) % 
+			Util::formatBytes(scanFolderSize)), (crcMatch ? LogManager::LOG_INFO : LogManager::LOG_ERROR));
 
 	} else if (!isDirScan || regex_match(aFileName, rarMp3Reg)) {
-		LogManager::getInstance()->message(STRING(NO_CRC32) + " " + sfv.getPath() + aFileName, LogManager::LOG_WARNING);
+		LogManager::getInstance()->message(STRING_F(CRC_NO_SFV, (sfv.getPath() + aFileName)), LogManager::LOG_WARNING);
 		checkFailed++;
 	}
 }

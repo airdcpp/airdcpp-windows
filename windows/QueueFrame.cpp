@@ -436,7 +436,7 @@ tstring formatSourceFlags(const SourceType& s) {
 }
 void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu) {
 	if (!bl.empty()) {
-		bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
+		//bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
 		bool hasFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
 
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
@@ -447,7 +447,7 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 		aMenu.appendItem(TSTRING(MOVE), [=] { handleMoveBundles(bl); });
 		aMenu.appendSeparator();
 		aMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
-		if (!filesOnly)
+		if (hasFinished)
 			aMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
 	}
 	else if (!ql.empty()) {
@@ -474,8 +474,8 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 	ListType::MenuItemList customItems;
 	ctrlQueue.appendCopyMenu(bundleMenu, customItems);
 	
-	//bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
-	bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
+	bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
+	//bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
 
 	/* Insert sub menus */
 	BundlePtr b = nullptr;
@@ -561,7 +561,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 
 	bundleMenu.appendSeparator();
 	bundleMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
-	if (!filesOnly)
+	if (hasFinished)
 		bundleMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
 }
 
@@ -702,7 +702,7 @@ void QueueFrame::handleCheckSFV(bool treeMenu) {
 			paths.push_back(qii->getTarget());
 	}
 
-	ShareScannerManager::getInstance()->scan(paths, true);
+	ShareScannerManager::getInstance()->checkSfv(paths);
 }
 
 void QueueFrame::handleOpenFile(const QueueItemPtr& aQI) {
