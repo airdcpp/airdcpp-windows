@@ -198,8 +198,12 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 
 		ctrlQueue.saveHeaderOrder(SettingsManager::QUEUEFRAME_ORDER,
 			SettingsManager::QUEUEFRAME_WIDTHS, SettingsManager::QUEUEFRAME_VISIBLE);
-	
+		
+		ctrlQueue.SetRedraw(FALSE);
 		ctrlQueue.deleteAllItems();
+		ctrlQueue.SetRedraw(TRUE);
+
+		ctrlTree.DeleteAllItems();
 
 		bHandled = FALSE;
 		return 0;
@@ -694,7 +698,7 @@ void QueueFrame::handleCheckSFV(bool treeMenu) {
 	int i = -1;
 	while ((i = ctrlQueue.GetNextItem(i, treeMenu ? LVNI_ALL : LVNI_SELECTED)) != -1) {
 		const QueueItemInfo* qii = ctrlQueue.getItemData(i);
-		if (!qii->isTempItem() && qii->isFinished())
+		if (!qii->isTempItem() && qii->isFinished() && (!treeMenu || qii->bundle))
 			paths.push_back(qii->getTarget());
 	}
 
