@@ -40,7 +40,7 @@ int QueueFrame::columnSizes[] = { 450, 70, 70, 100, 250, 80,
 static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, ResourceManager::SIZE, ResourceManager::TYPE_CONTENT, ResourceManager::PRIORITY, ResourceManager::STATUS, ResourceManager::TIME_LEFT,
 	ResourceManager::SPEED, ResourceManager::SOURCES, ResourceManager::DOWNLOADED, ResourceManager::TIME_ADDED, ResourceManager::TIME_FINISHED, ResourceManager::PATH };
 
-static ResourceManager::Strings treeNames[] = { ResourceManager::BUNDLES, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED, ResourceManager::PAUSED, ResourceManager::LOCATIONS, ResourceManager::FILE_LISTS, ResourceManager::TEMP_ITEMS };
+static ResourceManager::Strings treeNames[] = { ResourceManager::BUNDLES, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED, ResourceManager::PAUSED, ResourceManager::AUTO_SEARCH, ResourceManager::LOCATIONS, ResourceManager::FILE_LISTS, ResourceManager::TEMP_ITEMS };
 
 LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
@@ -801,6 +801,11 @@ bool QueueFrame::show(const QueueItemInfo* Qii) const {
 		return Qii->isFilelist();
 	case TREE_TEMP:
 		return Qii->isTempItem();
+	case TREE_AUTOSEARCH: {
+		BundlePtr b = Qii->bundle ? Qii->bundle : Qii->qi->getBundle();
+		return b && b->getAddedByAutoSearch();
+		break;
+	}
 	case TREE_LOCATION: {
 		if (Qii->bundle && curItem != locationParent){
 			//do it this way so we can have counts after the name
@@ -1047,6 +1052,7 @@ void QueueFrame::updateStatus() {
 		int filelistItems = 0;
 		int totalItems = 0;
 		int pausedItems = 0;
+		int autosearchAdded = 0;
 
 		auto qm = QueueManager::getInstance();
 		{
@@ -1055,6 +1061,7 @@ void QueueFrame::updateStatus() {
 				b->isFinished() ? finishedBundles++ : queuedBundles++;
 				if (b->isFailed()) failedBundles++;
 				if (b->isPausedPrio()) pausedItems++;
+				if (b->getAddedByAutoSearch()) autosearchAdded++;
 			}
 
 			for (const auto& q : qm->getFileQueue() | map_values) {
@@ -1089,6 +1096,10 @@ void QueueFrame::updateStatus() {
 				break;
 			case TREE_PAUSED:
 				ctrlTree.SetItemText(ht, (TSTRING(PAUSED) + _T(" ( ") + (Util::toStringW(pausedItems)) + _T(" )")).c_str());
+				ht = ctrlTree.GetNextSiblingItem(ht);
+				break;
+			case TREE_AUTOSEARCH:
+				ctrlTree.SetItemText(ht, (TSTRING(AUTO_SEARCH) + _T(" ( ") + (Util::toStringW(autosearchAdded)) + _T(" )")).c_str());
 				ht = ctrlTree.GetNextSiblingItem(ht);
 				break;
 			case TREE_LOCATION:
