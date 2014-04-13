@@ -193,6 +193,17 @@ public:
 			m_ofn.hwndOwner = hWndParent;
 
 		ATLASSERT(m_hWnd == NULL);
+
+#if (_ATL_VER >= 0x0800)
+		// Allocate the thunk structure here, where we can fail gracefully.
+		BOOL bRetTh = m_thunk.Init(NULL, NULL);
+		if(bRetTh == FALSE)
+		{
+			::SetLastError(ERROR_OUTOFMEMORY);
+			return -1;
+		}
+#endif // (_ATL_VER >= 0x0800)
+
 		ModuleHelper::AddCreateWndData(&m_thunk.cd, (ATL::CDialogImplBase*)this);
 
 		BOOL bRet;
@@ -1696,6 +1707,17 @@ public:
 			m_cf.hwndOwner = hWndParent;
 
 		ATLASSERT(m_hWnd == NULL);
+
+#if (_ATL_VER >= 0x0800)
+		// Allocate the thunk structure here, where we can fail gracefully.
+		BOOL bRetTh = m_thunk.Init(NULL, NULL);
+		if(bRetTh == FALSE)
+		{
+			::SetLastError(ERROR_OUTOFMEMORY);
+			return -1;
+		}
+#endif // (_ATL_VER >= 0x0800)
+
 		ModuleHelper::AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
 
 		BOOL bRet = ::ChooseFont(&m_cf);
@@ -2019,6 +2041,17 @@ public:
 			m_cc.hwndOwner = hWndParent;
 
 		ATLASSERT(m_hWnd == NULL);
+
+#if (_ATL_VER >= 0x0800)
+		// Allocate the thunk structure here, where we can fail gracefully.
+		BOOL bRetTh = m_thunk.Init(NULL, NULL);
+		if(bRetTh == FALSE)
+		{
+			::SetLastError(ERROR_OUTOFMEMORY);
+			return -1;
+		}
+#endif // (_ATL_VER >= 0x0800)
+
 		ModuleHelper::AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
 
 		BOOL bRet = ::ChooseColor(&m_cc);
@@ -2070,11 +2103,17 @@ public:
 			ATLASSERT(pT != NULL);
 			ATLASSERT(::IsWindow(pT->m_hWnd));
 		}
+		else
+		{
+			ATLASSERT(FALSE);
+			return 0;
+		}
 
 		// pass to the message map
-		LRESULT lRes;
+		LRESULT lRes = 0;
 		if(pT->ProcessWindowMessage(pT->m_hWnd, uMsg, wParam, lParam, lRes, 0) == FALSE)
 			return 0;
+
 		return lRes;
 	}
 
@@ -2242,6 +2281,17 @@ public:
 			m_pd.hwndOwner = hWndParent;
 
 		ATLASSERT(m_hWnd == NULL);
+
+#if (_ATL_VER >= 0x0800)
+		// Allocate the thunk structure here, where we can fail gracefully.
+		BOOL bRetTh = m_thunk.Init(NULL, NULL);
+		if(bRetTh == FALSE)
+		{
+			::SetLastError(ERROR_OUTOFMEMORY);
+			return -1;
+		}
+#endif // (_ATL_VER >= 0x0800)
+
 		ModuleHelper::AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
 
 		BOOL bRet = ::PrintDlg(&m_pd);
@@ -2741,9 +2791,7 @@ public:
 
 	SIZE GetPaperSize() const
 	{
-		SIZE size;
-		size.cx = m_psd.ptPaperSize.x;
-		size.cy = m_psd.ptPaperSize.y;
+		SIZE size = { m_psd.ptPaperSize.x, m_psd.ptPaperSize.y };
 		return size;
 	}
 
@@ -2767,6 +2815,17 @@ public:
 			m_psd.hwndOwner = hWndParent;
 
 		ATLASSERT(m_hWnd == NULL);
+
+#if (_ATL_VER >= 0x0800)
+		// Allocate the thunk structure here, where we can fail gracefully.
+		BOOL bRetTh = m_thunk.Init(NULL, NULL);
+		if(bRetTh == FALSE)
+		{
+			::SetLastError(ERROR_OUTOFMEMORY);
+			return -1;
+		}
+#endif // (_ATL_VER >= 0x0800)
+
 		ModuleHelper::AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
 
 		BOOL bRet = ::PageSetupDlg(&m_psd);
@@ -2893,6 +2952,17 @@ public:
 			SecureHelper::strncpy_x(m_szReplaceWith, _countof(m_szReplaceWith), lpszReplaceWith, _TRUNCATE);
 
 		ATLASSERT(m_hWnd == NULL);
+
+#if (_ATL_VER >= 0x0800)
+		// Allocate the thunk structure here, where we can fail gracefully.
+		BOOL bRet = m_thunk.Init(NULL, NULL);
+		if(bRet == FALSE)
+		{
+			::SetLastError(ERROR_OUTOFMEMORY);
+			return NULL;
+		}
+#endif // (_ATL_VER >= 0x0800)
+
 		ModuleHelper::AddCreateWndData(&m_thunk.cd, (CCommonDialogImplBase*)this);
 
 		HWND hWnd = NULL;
@@ -3301,7 +3371,8 @@ public:
 		ATLASSERT(IsValid());
 
 		// DWORD align data
-		m_pPtr = (LPBYTE)(DWORD_PTR)((DWORD)(DWORD_PTR)(m_pPtr + 3) & (~3));
+		const DWORD_PTR dwDwordAlignBits = sizeof(DWORD) - 1;
+		m_pPtr = (LPBYTE)(((DWORD_PTR)m_pPtr + dwDwordAlignBits) & (~dwDwordAlignBits));
 
 		if (IsTemplateEx())
 		{
@@ -3567,7 +3638,7 @@ public:
 		if(!m_Template.IsValid())
 			CreateTemplate();
 
-#if (_ATL_VER >= 0x0700)
+#if (_ATL_VER >= 0x0800)
 		// Allocate the thunk structure here, where we can fail gracefully.
 		BOOL bRet = m_thunk.Init(NULL, NULL);
 		if(bRet == FALSE)
@@ -3575,7 +3646,7 @@ public:
 			::SetLastError(ERROR_OUTOFMEMORY);
 			return -1;
 		}
-#endif // (_ATL_VER >= 0x0700)
+#endif // (_ATL_VER >= 0x0800)
 
 		ModuleHelper::AddCreateWndData(&m_thunk.cd, (ATL::CDialogImplBaseT< TBase >*)pT);
 
@@ -3594,7 +3665,7 @@ public:
 		if(!m_Template.IsValid())
 			CreateTemplate();
 
-#if (_ATL_VER >= 0x0700)
+#if (_ATL_VER >= 0x0800)
 		// Allocate the thunk structure here, where we can fail gracefully.
 		BOOL bRet = m_thunk.Init(NULL, NULL);
 		if(bRet == FALSE) 
@@ -3602,7 +3673,7 @@ public:
 			::SetLastError(ERROR_OUTOFMEMORY);
 			return NULL;
 		}
-#endif // (_ATL_VER >= 0x0700)
+#endif // (_ATL_VER >= 0x0800)
 
 		ModuleHelper::AddCreateWndData(&m_thunk.cd, (ATL::CDialogImplBaseT< TBase >*)pT);
 
@@ -4023,6 +4094,17 @@ public:
 		m_psh.nPages = m_arrPages.GetSize();
 
 		T* pT = static_cast<T*>(this);
+
+#if (_ATL_VER >= 0x0800)
+		// Allocate the thunk structure here, where we can fail gracefully.
+		BOOL bRet = pT->m_thunk.Init(NULL, NULL);
+		if(bRet == FALSE)
+		{
+			::SetLastError(ERROR_OUTOFMEMORY);
+			return NULL;
+		}
+#endif // (_ATL_VER >= 0x0800)
+
 		ModuleHelper::AddCreateWndData(&pT->m_thunk.cd, pT);
 
 		HWND hWnd = (HWND)::PropertySheet(&m_psh);
@@ -4044,6 +4126,17 @@ public:
 		m_psh.nPages = m_arrPages.GetSize();
 
 		T* pT = static_cast<T*>(this);
+
+#if (_ATL_VER >= 0x0800)
+		// Allocate the thunk structure here, where we can fail gracefully.
+		BOOL bRet = pT->m_thunk.Init(NULL, NULL);
+		if(bRet == FALSE)
+		{
+			::SetLastError(ERROR_OUTOFMEMORY);
+			return -1;
+		}
+#endif // (_ATL_VER >= 0x0800)
+
 		ModuleHelper::AddCreateWndData(&pT->m_thunk.cd, pT);
 
 		INT_PTR nRet = ::PropertySheet(&m_psh);
@@ -5031,23 +5124,11 @@ public:
 										(LPWSTR)(((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem) + 1) :
 										(LPWSTR)(pItem + 1);
 								// Get control rect.
-								RECT rect;
-								rect.left = 
-									bDialogEx ? 
-										((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->x : 
-										pItem->x;
-								rect.top = 
-									bDialogEx ? 
-										((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->y : 
-										pItem->y;
-								rect.right = rect.left + 
-									(bDialogEx ? 
-										((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->cx : 
-										pItem->cx);
-								rect.bottom = rect.top + 
-									(bDialogEx ? 
-										((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->cy : 
-										pItem->cy);
+								RECT rect = { 0 };
+								rect.left = bDialogEx ? ((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->x : pItem->x;
+								rect.top = bDialogEx ? ((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->y : pItem->y;
+								rect.right = rect.left + (bDialogEx ? ((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->cx : pItem->cx);
+								rect.bottom = rect.top + (bDialogEx ? ((ATL::_DialogSplitHelper::DLGITEMTEMPLATEEX*)pItem)->cy : pItem->cy);
 
 								// Convert from dialog units to screen units
 								MapDialogRect(&rect);
@@ -6229,7 +6310,7 @@ public:
 			break;
 		}
 
-		return (HRESULT)bRet;
+		return (bRet != FALSE) ? S_OK : S_FALSE;
 	}
 
 // Overrideables - notification handlers

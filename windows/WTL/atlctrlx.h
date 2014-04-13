@@ -260,7 +260,7 @@ public:
 		// draw 3D border if required
 		if((m_dwExtendedStyle & (BMPBTN_AUTO3D_SINGLE | BMPBTN_AUTO3D_DOUBLE)) != 0)
 		{
-			RECT rect;
+			RECT rect = { 0 };
 			GetClientRect(&rect);
 
 			if(m_fPressed == 1)
@@ -2594,7 +2594,7 @@ public:
 #if (_WIN32_IE >= 0x0400)
 		RECT& rc = lpNMCustomDraw->rc;
 #else // !(_WIN32_IE >= 0x0400)
-		RECT rc;
+		RECT rc = { 0 };
 		m_tb.GetItemRect(0, &rc);
 #endif // !(_WIN32_IE >= 0x0400)
 
@@ -2689,7 +2689,7 @@ public:
 			TBBUTTON tbbtn = { 0 };
 			tbbtn.idCommand = pT->m_nCloseBtnID;
 			tbbtn.fsState = TBSTATE_ENABLED;
-			tbbtn.fsStyle = TBSTYLE_BUTTON;
+			tbbtn.fsStyle = BTNS_BUTTON;
 			m_tb.AddButtons(1, &tbbtn);
 
 			m_tb.SetBitmapSize(m_cxImageTB, m_cyImageTB);
@@ -3255,7 +3255,7 @@ public:
 			dcMem.CreateCompatibleDC(dc.m_hDC);
 			m_bmSort[i].CreateCompatibleBitmap(dc.m_hDC, m_cxSortImage, m_cySortImage);
 			HBITMAP hbmOld = dcMem.SelectBitmap(m_bmSort[i]);
-			RECT rc = {0,0,m_cxSortImage, m_cySortImage};
+			RECT rc = { 0, 0, m_cxSortImage, m_cySortImage };
 			pT->DrawSortBitmap(dcMem.m_hDC, i, &rc);
 			dcMem.SelectBitmap(hbmOld);
 			dcMem.DeleteDC();
@@ -4755,7 +4755,7 @@ public:
 
 	void UpdateLayout()
 	{
-		RECT rect;
+		RECT rect = { 0 };
 		GetClientRect(&rect);
 
 		int cyOffset = 0;

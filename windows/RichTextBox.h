@@ -41,10 +41,6 @@
 #include "DownloadBaseHandler.h"
 #include "UserInfoBaseHandler.h"
 
-#ifndef MSFTEDIT_CLASS
-#define MSFTEDIT_CLASS L"RICHEDIT50W";
-#endif
-
 class UserInfo;
 
 class RichTextBox : public CRichEditCtrl, public CMessageMap, public UCHandler<RichTextBox>, public DownloadBaseHandler<RichTextBox>, public UserInfoBaseHandler<RichTextBox>, public UserInfoBase

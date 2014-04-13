@@ -166,8 +166,6 @@ public:
 		// Set new position and update if requested
 		bool bRet = (m_xySplitterPos != xyPos);
 		m_xySplitterPos = xyPos;
-		//Set the splitterPosNew to be the same as splitter pos, its left -1 initially.
-		m_xySplitterPosNew = xyPos;
 
 		if(m_bUpdateProportionalPos)
 		{
@@ -259,7 +257,7 @@ public:
 	void SetSplitterDefaultPos(int xyPos = -1)
 	{
 		m_xySplitterDefPos = xyPos;
-		m_bProportionalDefPos = true; //shouldn't this be true as in setting by percentage?
+		m_bProportionalDefPos = false;
 	}
 
 	void SetSplitterDefaultPosPct(int nPct)
@@ -434,6 +432,7 @@ public:
 		pT->ClientToScreen(&pt);
 		::SetCursorPos(pt.x, pt.y);
 
+		m_xySplitterPosNew = m_xySplitterPos;
 		pT->SetCapture();
 		m_hWndFocusSave = pT->SetFocus();
 		::SetCursor(m_hCursor);
@@ -443,7 +442,6 @@ public:
 			m_cxyDragOffset = x - m_rcSplitter.left - m_xySplitterPos;
 		else
 			m_cxyDragOffset = y - m_rcSplitter.top - m_xySplitterPos;
-		m_xySplitterPosNew = m_xySplitterPos;
 	}
 
 	void SetOrientation(bool bVertical, bool bUpdate = true)
@@ -475,7 +473,7 @@ public:
 		{
 			dc.FillRect(&rect, COLOR_3DFACE);
 
-#if !defined(_ATL_NO_MSIMG) || (_WIN32_WCE >= 420)
+#if (!defined(_WIN32_WCE) && !defined(_ATL_NO_MSIMG)) || (_WIN32_WCE >= 420)
 			if((m_dwExtendedStyle & SPLIT_GRADIENTBAR) != 0)
 			{
 				RECT rect2 = rect;
@@ -486,7 +484,7 @@ public:
 
 				dc.GradientFillRect(rect2, ::GetSysColor(COLOR_3DFACE), ::GetSysColor(COLOR_3DSHADOW), m_bVertical);
 			}
-#endif // !defined(_ATL_NO_MSIMG) || (_WIN32_WCE >= 420)
+#endif // (!defined(_WIN32_WCE) && !defined(_ATL_NO_MSIMG)) || (_WIN32_WCE >= 420)
 
 			// draw 3D edge if needed
 			T* pT = static_cast<T*>(this);
@@ -629,6 +627,7 @@ public:
 		int yPos = GET_Y_LPARAM(lParam);
 		if((::GetCapture() != pT->m_hWnd) && IsOverSplitterBar(xPos, yPos))
 		{
+			m_xySplitterPosNew = m_xySplitterPos;
 			pT->SetCapture();
 			m_hWndFocusSave = pT->SetFocus();
 			::SetCursor(m_hCursor);
@@ -638,7 +637,6 @@ public:
 				m_cxyDragOffset = xPos - m_rcSplitter.left - m_xySplitterPos;
 			else
 				m_cxyDragOffset = yPos - m_rcSplitter.top - m_xySplitterPos;
-			m_xySplitterPosNew = m_xySplitterPos;
 		}
 		else if((::GetCapture() == pT->m_hWnd) && !IsOverSplitterBar(xPos, yPos))
 		{

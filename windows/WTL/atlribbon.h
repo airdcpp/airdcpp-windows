@@ -183,9 +183,10 @@ public:
 	BOOL UISetText(int nID, UINT uIdResource, BOOL bForceUpdate = FALSE)
 	{
 		CTempBuffer<WCHAR> sText(RIBBONUI_MAX_TEXT);
-		return AtlLoadString(uIdResource, sText, RIBBONUI_MAX_TEXT) ? 
-			UISetText(nID, sText, bForceUpdate) :
-			E_FAIL;
+		int nRet = AtlLoadString(uIdResource, sText, RIBBONUI_MAX_TEXT);
+		if(nRet > 0)
+			UISetText(nID, sText, bForceUpdate);
+		return (nRet > 0) ? TRUE : FALSE;
 	}
 
 	LPCTSTR UIGetText(int nID)
@@ -198,7 +199,9 @@ public:
 		{
 			static WCHAR sText[RIBBONUI_MAX_TEXT] = { 0 };
 			wcscpy_s(sText, sUI);
-			*wcschr(sText, L'\t') = L' ';
+			WCHAR* pch = wcschr(sText, L'\t');
+			if (pch != NULL)
+				*pch = L' ';
 			return sText;
 		}
 		else
@@ -473,9 +476,9 @@ private:
 	{
 		if (SUCCEEDED(pStore->GetValue(UI_PKEY_FontProperties_Size, &propvar)))
 		{
-			DECIMAL decSize;
+			DECIMAL decSize = { 0 };
 			UIPropertyToDecimal(UI_PKEY_FontProperties_Size, propvar, &decSize);
-			DOUBLE dSize;
+			DOUBLE dSize = 0;
 			VarR8FromDec(&decSize, &dSize);
 			if (dSize > 0)
 			{
@@ -519,7 +522,7 @@ private:
 	template <DWORD t_dwMask, REFPROPERTYKEY key>
 	void Getk_Color(IPropertyStore* pStore)
 	{
-		UINT32 color;
+		UINT32 color = 0;
 		if (SUCCEEDED(pStore->GetValue(key, &propvar)))
 		{
 			UIPropertyToUInt32(key, propvar, &color);
@@ -1014,7 +1017,7 @@ public:
 				ATL::CComQIPtr<IUICollection> pIUICategory(ppropvarCurrentValue->punkVal);
 				ATLASSERT(pIUICategory.p);
 				hr = pIUICategory->Clear();
-				for (UINT i = t_items; i < t_items + t_categories; i++)
+				for (UINT i = t_items; i < (t_items + t_categories); i++)
 				{
 					if FAILED(hr = pIUICategory->Add(m_apItems[i]))
 						break;
@@ -1951,12 +1954,12 @@ public:
 
 	HRESULT QueryValue(REFPROPERTYKEY key, LONG* plVal)
 	{
-		return GetWndRibbon().OnRibbonQuerySpinnerValue(GetID(), key, plVal);
+		return GetWndRibbon().OnRibbonQuerySpinnerValue(GetID(), key, plVal) ? S_OK : S_FALSE;
 	}
 
 	HRESULT QueryValue(REFPROPERTYKEY key, DOUBLE* pdVal)
 	{
-		return GetWndRibbon().OnRibbonQueryFloatSpinnerValue(GetID(), key, pdVal);
+		return GetWndRibbon().OnRibbonQueryFloatSpinnerValue(GetID(), key, pdVal) ? S_OK : S_FALSE;
 	}
 
 	HRESULT OnGetValue(REFPROPERTYKEY key, PROPVARIANT* ppv)

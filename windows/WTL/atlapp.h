@@ -58,7 +58,7 @@
   #pragma comment(lib, "comctl32.lib")
 #endif
 
-#if defined(_SYSINFOAPI_H_) && defined(NOT_BUILD_WINDOWS_DEPRECATE)
+#if defined(_SYSINFOAPI_H_) && defined(NOT_BUILD_WINDOWS_DEPRECATE) && (_WIN32_WINNT >= 0x0501)
   #include <VersionHelpers.h>
 #endif
 
@@ -304,6 +304,22 @@ static CWndClassInfo& GetWndClassInfo() \
 ///////////////////////////////////////////////////////////////////////////////
 // Global support for using original VC++ 6.0 headers with WTL
 
+#if (_MSC_VER < 1300) && !defined(_WIN32_WCE)
+  #ifndef REG_QWORD
+    #define REG_QWORD	11
+  #endif
+
+  #ifndef BS_PUSHBOX
+    #define BS_PUSHBOX	0x0000000AL
+  #endif
+
+  struct __declspec(uuid("000214e6-0000-0000-c000-000000000046")) IShellFolder;
+  struct __declspec(uuid("000214f9-0000-0000-c000-000000000046")) IShellLinkW;
+  struct __declspec(uuid("000214ee-0000-0000-c000-000000000046")) IShellLinkA;
+
+  #pragma warning(disable: 4201)   // nameless struct/union
+#endif // (_MSC_VER < 1300) && !defined(_WIN32_WCE)
+
 #ifndef _ATL_NO_OLD_HEADERS_WIN64
 #if !defined(_WIN64) && (_ATL_VER < 0x0700)
 
@@ -411,6 +427,60 @@ static CWndClassInfo& GetWndClassInfo() \
 
 #endif // !defined(_WIN64) && (_ATL_VER < 0x0700)
 #endif // !_ATL_NO_OLD_HEADERS_WIN64
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Global support for using original VC++ 7.x headers with WTL
+
+#if (_MSC_VER >= 1300) && (_MSC_VER < 1400)
+
+  #ifndef BS_PUSHBOX
+    #define BS_PUSHBOX	0x0000000AL
+  #endif
+
+  #pragma warning(disable: 4244)   // conversion from 'type1' to 'type2', possible loss of data
+
+#endif // (_MSC_VER >= 1300) && (_MSC_VER < 1400)
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Global support for old SDK headers
+
+#ifndef BTNS_BUTTON
+  #define BTNS_BUTTON	TBSTYLE_BUTTON
+#endif
+
+#ifndef BTNS_SEP
+  #define BTNS_SEP	TBSTYLE_SEP
+#endif
+
+#ifndef BTNS_CHECK
+  #define BTNS_CHECK	TBSTYLE_CHECK
+#endif
+
+#ifndef BTNS_GROUP
+  #define BTNS_GROUP	TBSTYLE_GROUP
+#endif
+
+#ifndef BTNS_CHECKGROUP
+  #define BTNS_CHECKGROUP	TBSTYLE_CHECKGROUP
+#endif
+
+#if (_WIN32_IE >= 0x0300)
+  #ifndef BTNS_DROPDOWN
+    #define BTNS_DROPDOWN	TBSTYLE_DROPDOWN
+  #endif
+#endif
+
+#if (_WIN32_IE >= 0x0400)
+  #ifndef BTNS_AUTOSIZE
+    #define BTNS_AUTOSIZE	TBSTYLE_AUTOSIZE
+  #endif
+
+  #ifndef BTNS_NOPREFIX
+    #define BTNS_NOPREFIX	TBSTYLE_NOPREFIX
+  #endif
+#endif
 
 
 ///////////////////////////////////////////////////////////////////////////////
