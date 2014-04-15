@@ -9,6 +9,8 @@ Added:
 Changed:
 
 - Hide various menu items when clicking on own user in the users tab
+- Increase the validity period of generated encryption certificates
+- Strip whitespaces from hub address fields
 
 Fixed:
 
@@ -16,6 +18,7 @@ Fixed:
 - Fix performance issues when queueing huge bundles and there are lots of files matching the download skiplist
 - Fix handling of individual blocked versions in the the version file
 - Fix a bug that may have left folder deletions unnoticed by the share monitoring in some rare cases
+- Use the existing bundle path when queuing items from auto search (when possible)
 
 
 2.72
