@@ -29,25 +29,24 @@
 //#include <vld.h>
 #endif
 
-#include "../client/DCPlusPlus.h"
+#include "ExtendedTrace.h"
+#include "MainFrm.h"
+#include "PopupManager.h"
+#include "Resource.h"
+#include "ResourceLoader.h"
+#include "ShellExecAsUser.h"
 #include "SingleInstance.h"
+#include "SplashWindow.h"
 #include "WinUtil.h"
+#include "Wizard.h"
 
-#include "../client/MerkleTree.h"
+#include "../client/DCPlusPlus.h"
 #include "../client/MappingManager.h"
+#include "../client/MerkleTree.h"
 #include "../client/UpdateManager.h"
 #include "../client/Updater.h"
 #include "../client/version.h"
 
-#include "SplashWindow.h"
-#include "ShellExecAsUser.h"
-#include "Resource.h"
-#include "ExtendedTrace.h"
-#include "ResourceLoader.h"
-#include "MainFrm.h"
-#include "PopupManager.h"
-#include "LineDlg.h"
-#include "Wizard.h"
 #include <delayimp.h>
 #include <future>
 
@@ -561,7 +560,7 @@ int WINAPI _tWinMain(HINSTANCE hInstance, HINSTANCE /*hPrevInstance*/, LPTSTR lp
 		dcdebug("Failed reading exe\n");
 	}	
 
-	HINSTANCE hInstRich = ::LoadLibrary(_T("MSFTEDIT.DLL"));
+	HINSTANCE hInstRich = ::LoadLibrary(RichTextBox::GetLibraryName());
 
 	int nRet = Run(lpstrCmdLine, nCmdShow);
  

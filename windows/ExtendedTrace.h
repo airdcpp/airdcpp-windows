@@ -21,6 +21,8 @@
 #include <windows.h>
 #include <tchar.h>
 
+#include "../client/File.h"
+
 #pragma comment( lib, "dbghelp.lib" )
 
 #define EXTENDEDTRACEINITIALIZE( IniSymbolPath )	InitSymInfo( IniSymbolPath )

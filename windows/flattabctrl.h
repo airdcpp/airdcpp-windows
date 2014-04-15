@@ -16,12 +16,8 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(FLAT_TAB_CTRL_H)
+#ifndef FLAT_TAB_CTRL_H
 #define FLAT_TAB_CTRL_H
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
 
 #include "../client/SettingsManager.h"
 #include "../client/ResourceManager.h"

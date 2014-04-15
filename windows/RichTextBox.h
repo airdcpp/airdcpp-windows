@@ -159,7 +159,7 @@ public:
 	size_t	RegExpMatch(ColorSettings* cs, CHARFORMAT2 &cf, const tstring &line, long &lineIndex);
 	void	CheckAction(ColorSettings* cs, const tstring& line);
 	void Subclass() {
-		ccw.SubclassWindow(this->CRichEditCtrl::m_hWnd);
+		ccw.SubclassWindow(m_hWnd);
 		// We wanna control the scrolling...
 	}
 

@@ -17,12 +17,8 @@
 */
 
 
-#if !defined(QUEUE_FRAME2_H)
-#define QUEUE_FRAME2_H
-
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
+#ifndef QUEUE_FRAME_H
+#define QUEUE_FRAME_H
 
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"

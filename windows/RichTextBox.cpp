@@ -49,7 +49,7 @@ EmoticonsManager* emoticonsManager = NULL;
 #define MAX_EMOTICONS 48
 UINT RichTextBox::WM_FINDREPLACE = RegisterWindowMessage(FINDMSGSTRING);
 
-RichTextBox::RichTextBox() : UserInfoBaseHandler(true, true), ccw(_T("edit"), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), pmUser(nullptr), formatLinks(false),
+RichTextBox::RichTextBox() : UserInfoBaseHandler(true, true), ccw(const_cast<LPTSTR>(GetWndClassName()), this), client(NULL), m_bPopupMenu(false), autoScrollToEnd(true), findBufferSize(100), pmUser(nullptr), formatLinks(false),
 	formatPaths(false), formatReleases(false), allowClear(false) {
 	if(emoticonsManager == NULL) {
 		emoticonsManager = new EmoticonsManager();
