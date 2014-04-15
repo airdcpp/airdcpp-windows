@@ -16,12 +16,17 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(WIN_UTIL_H)
+#ifndef WIN_UTIL_H
 #define WIN_UTIL_H
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
+
+#include "resource.h"
+
+#include "OMenu.h"
+#include "SplashWindow.h"
 
 #include "../client/Util.h"
 #include "../client/SettingsManager.h"
@@ -32,12 +37,6 @@
 #include "../client/TargetUtil.h"
 #include "../client/AirUtil.h"
 #include "../client/SettingItem.h"
-
-#include "LineDlg.h"
-#include "SplashWindow.h"
-
-#include "resource.h"
-#include "OMenu.h"
 
 /* Work around DBTYPE name conflict with Berkeley DB */
 #define DBTYPE MS_DBTYPE
@@ -201,7 +200,7 @@ public:
 	static boost::wregex chatLinkReg;
 	static boost::wregex chatReleaseReg;
 
-	static PassDlg* passDlg;
+	static bool hasPassDlg;
 	static HBRUSH bgBrush;
 	static COLORREF textColor;
 	static COLORREF bgColor;
@@ -509,6 +508,7 @@ public:
 
 	static HWND findDialog;
 	static LRESULT onUserFieldChar(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	static LRESULT onAddressFieldChar(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled);
 	static bool onConnSpeedChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/);
 	static void setUserFieldLimits(HWND hWnd);
 

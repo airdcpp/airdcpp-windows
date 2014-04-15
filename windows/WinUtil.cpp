@@ -54,7 +54,7 @@ boost::wregex WinUtil::pathReg;
 boost::wregex WinUtil::chatLinkReg;
 boost::wregex WinUtil::chatReleaseReg;
 
-PassDlg* WinUtil::passDlg = nullptr;
+bool WinUtil::hasPassDlg = false;
 SplashWindow* WinUtil::splash = nullptr;
 HBRUSH WinUtil::bgBrush = NULL;
 COLORREF WinUtil::textColor = 0;
@@ -2120,7 +2120,11 @@ void WinUtil::setUserFieldLimits(HWND hWnd) {
 	tmp.Detach();
 }
 
-LRESULT WinUtil::onUserFieldChar(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& /*bHandled*/) {
+LRESULT WinUtil::onAddressFieldChar(WORD wNotifyCode, WORD wID, HWND hWndCtl, BOOL& bHandled) {
+	return onUserFieldChar(wNotifyCode, wID, hWndCtl, bHandled);
+}
+
+LRESULT WinUtil::onUserFieldChar(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, BOOL& bHandled) {
 	TCHAR buf[1024];
 
 	::GetWindowText(hWndCtl, buf, 1024);
@@ -2151,7 +2155,8 @@ LRESULT WinUtil::onUserFieldChar(WORD /*wNotifyCode*/, WORD wID, HWND hWndCtl, B
 		tmp.Detach();
 	}
 
-	return TRUE;
+	bHandled = FALSE;
+	return FALSE;
 }
 
 void WinUtil::getProfileConflicts(HWND aParent, int aProfile, ProfileSettingItem::List& conflicts) {
@@ -2218,17 +2223,17 @@ void WinUtil::connectHub(const RecentHubEntryPtr& aEntry, ProfileToken aProfile)
 }
 
 bool WinUtil::checkClientPassword() {
-	if(passDlg)
+	if (hasPassDlg)
 		return false;
 
-	passDlg = new PassDlg;
-	ScopedFunctor([] { delete passDlg; passDlg = nullptr; });
+	auto passDlg = PassDlg();
+	ScopedFunctor([] { hasPassDlg = false; });
 
-	passDlg->description = TSTRING(PASSWORD_DESC);
-	passDlg->title = TSTRING(PASSWORD_TITLE);
-	passDlg->ok = TSTRING(UNLOCK);
-	if(passDlg->DoModal(NULL) == IDOK) {
-		if (passDlg->line != Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
+	passDlg.description = TSTRING(PASSWORD_DESC);
+	passDlg.title = TSTRING(PASSWORD_TITLE);
+	passDlg.ok = TSTRING(UNLOCK);
+	if(passDlg.DoModal(NULL) == IDOK) {
+		if (passDlg.line != Text::toT(Util::base64_decode(SETTING(PASSWORD)))) {
 			MessageBox(mainWnd, CTSTRING(INVALID_PASSWORD), Text::toT(shortVersionString).c_str(), MB_OK | MB_ICONERROR);
 			return false;
 		}

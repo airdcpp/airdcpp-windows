@@ -23,6 +23,8 @@
 
 #include <atlcrack.h>
 
+#include "../client/StringMatch.h"
+
 class ChatFilterDlg : public CDialogImpl<ChatFilterDlg> {
 public:
 

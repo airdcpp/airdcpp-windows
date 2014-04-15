@@ -16,14 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#if !defined(LINE_DLG_H)
+#ifndef LINE_DLG_H
 #define LINE_DLG_H
 
-#if _MSC_VER > 1000
-#pragma once
-#endif // _MSC_VER > 1000
-
 #include "resource.h"
+#include "WinUtil.h"
 
 #include "../client/ShareManager.h"
 #include "../client/AirUtil.h"
@@ -108,6 +105,7 @@ public:
 	BEGIN_MSG_MAP(ConnectDlg)
 		MESSAGE_HANDLER(WM_INITDIALOG, OnInitDialog)
 		MESSAGE_HANDLER(WM_SETFOCUS, onFocus)
+		COMMAND_HANDLER(IDC_LINE, EN_CHANGE, WinUtil::onAddressFieldChar)
 		COMMAND_HANDLER(IDC_LINE, EN_CHANGE, OnTextChanged)
 		COMMAND_ID_HANDLER(IDC_HIDE_SHARE, onClickedHideShare)
 		COMMAND_ID_HANDLER(IDOK, OnCloseCmd)
