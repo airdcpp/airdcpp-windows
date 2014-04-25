@@ -62,9 +62,8 @@ PropPage::Item OperaColorsPage::items[] = {
 OperaColorsPage::clrs OperaColorsPage::colours[] = {
 	{ ResourceManager::DOWNLOAD, SettingsManager::DOWNLOAD_BAR_COLOR, 0 },
 	{ ResourceManager::SETCZDC_UPLOAD, SettingsManager::UPLOAD_BAR_COLOR, 0 },
-	{ ResourceManager::PROGRESS_BACKGROUND, SettingsManager::PROGRESS_BACK_COLOR, 0 },
-	{ ResourceManager::PROGRESS_DECOMPRESS, SettingsManager::PROGRESS_COMPRESS_COLOR, 0 },
-	{ ResourceManager::PROGRESS_DONE_CHUNKS, SettingsManager::COLOR_DONE, 0 },
+	{ ResourceManager::BACKGROUND, SettingsManager::PROGRESS_BACK_COLOR, 0 },
+	{ ResourceManager::DONE_CHUNKS, SettingsManager::COLOR_DONE, 0 },
 	{ ResourceManager::FINISHED, SettingsManager::COLOR_STATUS_FINISHED, 0 },
 	{ ResourceManager::SHARED, SettingsManager::COLOR_STATUS_SHARED, 0 },
 };
@@ -72,7 +71,7 @@ OperaColorsPage::clrs OperaColorsPage::colours[] = {
 OperaColorsPage::clrs OperaColorsPage::ODCcolours[] = {
 	{ ResourceManager::DOWNLOAD, SettingsManager::DOWNLOAD_BAR_COLOR, 0 },
 	{ ResourceManager::SETCZDC_UPLOAD, SettingsManager::UPLOAD_BAR_COLOR, 0 },
-	{ ResourceManager::PROGRESS_FILE, SettingsManager::PROGRESS_SEGMENT_COLOR, 0 },
+	{ ResourceManager::FILE_SEGMENT, SettingsManager::PROGRESS_SEGMENT_COLOR, 0 },
 	{ ResourceManager::FINISHED, SettingsManager::COLOR_STATUS_FINISHED, 0 },
 	{ ResourceManager::SHARED, SettingsManager::COLOR_STATUS_SHARED, 0 },
 };

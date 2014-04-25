@@ -503,7 +503,6 @@ void PropPageTextStyles::LoadTheme(const string& path, bool silent/* = false*/) 
 		importData("TextNormItalic", TEXT_NORM_ITALIC);
 		importData("SearchAlternateColour", SEARCH_ALTERNATE_COLOUR);
 		importData("ProgressBackColor", PROGRESS_BACK_COLOR);
-		importData("ProgressCompressColor", PROGRESS_COMPRESS_COLOR);
 		importData("ProgressSegmentColor", PROGRESS_SEGMENT_COLOR);
 		importData("ColorDone", COLOR_DONE);
 		importData("ReservedSlotColor", RESERVED_SLOT_COLOR);
@@ -652,7 +651,6 @@ void PropPageTextStyles::SaveTheme(const string& path, bool backup) {
 	exportData("TextNormItalic", TEXT_NORM_ITALIC);
 	exportData("SearchAlternateColour", SEARCH_ALTERNATE_COLOUR);
 	exportData("ProgressBackColor", PROGRESS_BACK_COLOR);
-	exportData("ProgressCompressColor", PROGRESS_COMPRESS_COLOR);
 	exportData("ProgressSegmentColor", PROGRESS_SEGMENT_COLOR);
 	exportData("ColorDone", COLOR_DONE);
 	exportData("ReservedSlotColor", RESERVED_SLOT_COLOR);

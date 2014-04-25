@@ -391,10 +391,9 @@
 	<string name="PrivateKeyFile">Private key file</string>
 	<string name="PrivateMessage">Private message</string>
 	<string name="PrivateMessageFrom">Private message from </string>
-	<string name="ProgressBackground">Background</string>
-	<string name="ProgressDecompress">Decompressed part</string>
-	<string name="ProgressDoneChunks">Done chunks</string>
-	<string name="ProgressFile">Bundle file / Segment</string>
+	<string name="Background">Background</string>
+	<string name="DoneChunks">Done chunks</string>
+	<string name="FileSegment">Bundle file / Segment</string>
 	<string name="ProgressOdcStyle">Use oDC style of progressbar</string>
 	<string name="Properties">Properties</string>
 	<string name="PublicHubs">Public hubs</string>
