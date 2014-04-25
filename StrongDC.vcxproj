@@ -840,6 +840,7 @@
     <Image Include="res\message_overlay.ico" />
     <Image Include="res\next.ico" />
     <Image Include="res\overlay.ico" />
+    <Image Include="res\paused.ico" />
     <Image Include="res\previous.ico" />
     <Image Include="res\reload.ico" />
     <Image Include="res\searchTypes\Any.ico" />

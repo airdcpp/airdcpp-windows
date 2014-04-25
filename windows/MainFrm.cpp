@@ -1133,13 +1133,6 @@ LRESULT MainFrame::onOpen(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 LRESULT MainFrame::onSize(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled)
 {
 	if(wParam == SIZE_MINIMIZED) {
-		/*maybe make this an option? with large amount of ram this is kinda obsolete,
-		will look good in taskmanager ram usage tho :) */
-		if(SETTING(DECREASE_RAM)) {
-			if(!SetProcessWorkingSetSize(GetCurrentProcess(), (SIZE_T)-1, (SIZE_T)-1))
-				LogManager::getInstance()->message("Minimize Process WorkingSet Failed: "+ Util::translateError(GetLastError()), LogManager::LOG_WARNING);
-		}
-
 		if(SETTING(AUTO_AWAY) && (bAppMinimized == false) ) {
 			
 			if(AirUtil::getAwayMode() < AWAY_MANUAL) {

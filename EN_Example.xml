@@ -653,8 +653,8 @@
 	<string name="SocksFailed">The socks server failed establish a connection</string>
 	<string name="SocksNeedsAuth">The socks server requires authentication</string>
 	<string name="SocksSetupError">Failed to set up the socks server for UDP relay (check socks address and port)</string>
-	<string name="SoundDownloadBegins">Download begins</string>
-	<string name="SoundDownloadFinished">Download finished</string>
+	<string name="DownloadBegins">Download begins</string>
+	<string name="DownloadFinished">Download finished</string>
 	<string name="SoundException">Unhandled exception</string>
 	<string name="SoundSourceAdded">Alternate source added</string>
 	<string name="SoundTthInvalid">File is corrupted</string>
@@ -1074,7 +1074,6 @@ Empty = Default string -&gt; +me playing: %[title] &lt;Media Player Classic&gt;<
 	<string name="CheckDiskCounts">Check disk counts</string>
 	<string name="SettingsScanOptions">Scanning options for missing/extra files</string>
 	<string name="SortDirs">Sort directories first in search window</string>
-	<string name="DecreaseRam">Decrease RAM workingset size on minimize</string>
 	<string name="RunSfvCheck">Perform SFV check</string>
 	<string name="CrcFailed">CRC mismatch</string>
 	<string name="CrcOk">CRC OK</string>
@@ -1740,7 +1739,6 @@ You may also notice other unexcepted behaviour, so it is heavily recommended tha
 	<string name="AcceptFailoversFav">Accept failover addresses from the hub</string>
 	<string name="AcceptFailoversGlobal">Accept failover addresses from favorite hubs</string>
 	<string name="InvalidTthSearch">Invalid input value for TTH search</string>
-	<string name="DbCacheSize">Database cache size</string>
 	<string name="RemoveSourceFrom">Remove the source from</string>
 	<string name="WholeQueue">Whole queue</string>
 	<string name="Month">Month</string>
@@ -2014,10 +2012,6 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="RemoveFavoriteUser">Remove favorite user</string>
 	<string name="TimeAdded">Time added</string>
 	<string name="TimeFinished">Time finished</string>
-	<string name="StatusFinished">Bundle status finished</string>
-	<string name="StatusShared">Bundle status shared</string>
-	<string name="StatusHashing">Bundle status hashing</string>
-	<string name="StatusFailed">Bundle status sharing failed</string>
 	<string name="BlendColor">Blend color</string>
 	<string name="BarDepth">3d depth</string>
 	<string name="Moving">Moving</string>

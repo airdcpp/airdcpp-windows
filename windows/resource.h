@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by N:\projects\airgit\AirDC.rc
+// Used by C:\Projects\airdc-git\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -71,7 +71,7 @@
 #define IDC_COPY_BEGIN                  162
 #define IDC_COPY_END                    163
 #define IDC_SPLITTER                    164
-#define IDC_TREE						165
+#define IDC_TREE                        165
 #define IDD_SHAREPAGE                   205
 #define IDD_AIRAPPEARANCEPAGE           206
 #define IDD_LINE                        207
@@ -173,7 +173,7 @@
 #define IDD_CONNECT                     338
 #define IDD_DIALOG2                     339
 #define IDD_COMBO                       339
-#define IDI_PAUSED		                340
+#define IDI_PAUSED                      340
 #define IDD_SEARCHTYPESPAGE             342
 #define IDD_SEARCHTYPE_DLG              343
 #define IDR_EMOTICON                    345

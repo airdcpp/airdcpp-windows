@@ -1391,5 +1391,8 @@
     <Image Include="res\message_overlay.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\paused.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

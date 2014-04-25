@@ -41,8 +41,8 @@ PropPage::Item Sounds::items[] = {
 };
 
 Sounds::snds Sounds::sounds[] = {
-	{ ResourceManager::SOUND_DOWNLOAD_BEGINS,	SettingsManager::BEGINFILE, ""},
-	{ ResourceManager::SOUND_DOWNLOAD_FINISHED,	SettingsManager::FINISHFILE, ""},
+	{ ResourceManager::DOWNLOAD_BEGINS,	SettingsManager::BEGINFILE, ""},
+	{ ResourceManager::DOWNLOAD_FINISHED,	SettingsManager::FINISHFILE, ""},
 	{ ResourceManager::SOUND_SOURCE_ADDED,	SettingsManager::SOURCEFILE, ""},
 	{ ResourceManager::SOUND_UPLOAD_FINISHED,	SettingsManager::UPLOADFILE, ""},
 	{ ResourceManager::SETCZDC_PRIVATE_SOUND,	SettingsManager::BEEPFILE, ""},
