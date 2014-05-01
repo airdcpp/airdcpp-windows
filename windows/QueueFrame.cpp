@@ -359,7 +359,7 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 	}
 
 	if (treeMenu || listviewMenu) {
-		OMenu menu;
+		ShellMenu menu;
 		menu.CreatePopupMenu();
 		BundleList bl;
 		QueueItemList queueItems;
@@ -445,7 +445,6 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 		WinUtil::appendBundlePrioMenu(aMenu, bl);
 		if (hasFinished)
 			aMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(true); });
-		aMenu.appendItem(TSTRING(MOVE), [=] { handleMoveBundles(bl); });
 		aMenu.appendSeparator();
 		aMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
 		if (!filesOnly || hasFinished)
@@ -461,7 +460,7 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 }
 
 /*Bundle Menu*/
-void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
+void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 	OMenu* removeMenu = bundleMenu.getMenu();
 	OMenu* readdMenu = bundleMenu.getMenu();
 
@@ -528,17 +527,16 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 		WinUtil::appendSearchMenu(bundleMenu, b->getName());
 		bundleMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [this] { handleSearchDirectory(); });
 
-		bundleMenu.appendSeparator();
-
 		if (b->isFailed()) {
+			bundleMenu.appendSeparator();
 			bundleMenu.appendItem(TSTRING(RETRY_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, false); }, OMenu::FLAG_THREADED);
 			if (b->getStatus() == Bundle::STATUS_SHARING_FAILED || b->getStatus() == Bundle::STATUS_FAILED_MISSING) {
 				bundleMenu.appendItem(TSTRING(FORCE_SHARING), [=] { QueueManager::getInstance()->shareBundle(b, true); }, OMenu::FLAG_THREADED);
 			}
-			bundleMenu.appendSeparator();
 		}
 
 		if (!b->isFinished()) {
+			bundleMenu.appendSeparator();
 			readdMenu->appendThis(TSTRING(READD_SOURCE), true);
 			removeMenu->appendThis(TSTRING(REMOVE_SOURCE), true);
 
@@ -550,14 +548,16 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 				auto bundle = b;
 				QueueManager::getInstance()->onUseSeqOrder(bundle);
 			}, b->getSeqOrder() ? OMenu::FLAG_CHECKED : 0 | OMenu::FLAG_THREADED);
-			bundleMenu.appendSeparator();
 		}
+
+		bundleMenu.appendShellMenu({ b->getTarget() });
 	}
 	
-	bundleMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
 	bundleMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(false); });
-	if (b)
+	bundleMenu.appendSeparator();
+	if (b) {
 		bundleMenu.appendItem(TSTRING(RENAME), [=] { onRenameBundle(b); });
+	}
 	bundleMenu.appendItem(TSTRING(MOVE), [=] { handleMoveBundles(bl); });
 
 	bundleMenu.appendSeparator();
@@ -567,7 +567,7 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, OMenu& bundleMenu) {
 }
 
 /*QueueItem Menu*/
-void QueueFrame::AppendQiMenu(QueueItemList& ql, OMenu& fileMenu) {
+void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 
 	/* Do we need to control segment counts??
 	OMenu segmentsMenu;

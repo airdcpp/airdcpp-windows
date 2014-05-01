@@ -206,8 +206,8 @@ private:
 	void onQueueItemUpdated(const QueueItemPtr& aQI);
 	void onQueueItemAdded(const QueueItemPtr& aQI);
 
-	void AppendBundleMenu(BundleList& bl, OMenu& bundleMenu);
-	void AppendQiMenu(QueueItemList& ql, OMenu& fileMenu);
+	void AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu);
+	void AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu);
 	void AppendTreeMenu(BundleList& bl, QueueItemList& queueItems, OMenu& bundleMenu);
 
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
