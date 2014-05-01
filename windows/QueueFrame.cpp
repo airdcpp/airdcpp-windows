@@ -549,12 +549,10 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 				QueueManager::getInstance()->onUseSeqOrder(bundle);
 			}, b->getSeqOrder() ? OMenu::FLAG_CHECKED : 0 | OMenu::FLAG_THREADED);
 		}
-
-		bundleMenu.appendShellMenu({ b->getTarget() });
 	}
 	
-	bundleMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(false); });
 	bundleMenu.appendSeparator();
+	bundleMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(false); });
 	if (b) {
 		bundleMenu.appendItem(TSTRING(RENAME), [=] { onRenameBundle(b); });
 	}
@@ -564,6 +562,9 @@ void QueueFrame::AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu) {
 	bundleMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
 	if (!filesOnly || hasFinished)
 		bundleMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
+
+	if (b)
+		bundleMenu.appendShellMenu({ b->getTarget() });
 }
 
 /*QueueItem Menu*/
@@ -588,9 +589,13 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 	};
 	ctrlQueue.appendCopyMenu(fileMenu, customItems);
 
-	if (ql.size() == 1) {
-		QueueItemPtr qi = ql.front();
+	QueueItemPtr qi = nullptr;
 
+	if (ql.size() == 1) {
+		qi = ql.front();
+	}
+
+	if (qi) {
 		OMenu* removeAllMenu = fileMenu.getMenu();
 		OMenu* removeMenu = fileMenu.getMenu();
 		OMenu* readdMenu = fileMenu.getMenu();
@@ -692,6 +697,10 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 	fileMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveFiles(ql, false); });
 	if (hasFinished)
 		fileMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveFiles(ql, true); });
+
+	if (qi && !qi->isSet(QueueItem::FLAG_USER_LIST)) {
+		fileMenu.appendShellMenu({ qi->getTarget() });
+	}
 }
 
 void QueueFrame::handleCheckSFV(bool treeMenu) {
