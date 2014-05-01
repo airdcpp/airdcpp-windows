@@ -8,9 +8,11 @@ Added:
 
 Changed:
 
+- Rewrite Download queue window to more torrent like view
 - Hide various menu items when clicking on own user in the users tab
 - Increase the validity period of generated encryption certificates
 - Strip whitespaces from hub address fields
+- Better settings for changing progress bar colors 
 
 Fixed:
 
@@ -20,6 +22,9 @@ Fixed:
 - Fix a bug that may have left folder deletions unnoticed by the share monitoring in some rare cases
 - Use the existing bundle path when queuing items from auto search (when possible)
 
+Removed:
+
+-Finished downloads window ( Finished downloads are now shown in new Queue window )
 
 2.72
 
