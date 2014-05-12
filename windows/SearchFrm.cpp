@@ -1564,7 +1564,8 @@ LRESULT SearchFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, 
 			});
 
 			SearchInfoList::MenuItemList customItems {
-				{ TSTRING(MAGNET_LINK), &handleCopyMagnet }
+				{ TSTRING(MAGNET_LINK), &handleCopyMagnet },
+				{ TSTRING(DIRECTORY), &handleCopyDirectory }
 			};
 
 			ctrlResults.list.appendCopyMenu(resultsMenu, customItems);
@@ -1725,6 +1726,10 @@ tstring SearchFrame::handleCopyMagnet(const SearchInfo* si) {
 	} else {
 		return Text::toT("Directories don't have Magnet links");
 	}
+}
+
+tstring SearchFrame::handleCopyDirectory(const SearchInfo* si) {
+	return Text::toT(AirUtil::getReleaseDir(si->sr->getPath(), true));
 }
 
 LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {

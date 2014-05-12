@@ -315,6 +315,7 @@ private:
 	void performAction(std::function<void (const SearchInfo* aInfo)> f, bool oncePerParent=false);
 
 	static tstring handleCopyMagnet(const SearchInfo* si);
+	static tstring handleCopyDirectory(const SearchInfo* si);
 
 	struct HubInfo : public FastAlloc<HubInfo> {
 		HubInfo(const tstring& aUrl, const tstring& aName, bool aOp) : url(aUrl),
