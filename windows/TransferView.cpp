@@ -215,7 +215,6 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 
 		if (!bundles.empty()) {
 			transferMenu.appendSeparator();
-			WinUtil::appendBundlePrioMenu(transferMenu, bundles);
 
 			auto usingDisconnect = all_of(bundles.begin(), bundles.end(), Flags::IsSet(Bundle::FLAG_AUTODROP));
 			transferMenu.appendItem(TSTRING(SETCZDC_DISCONNECTING_ENABLE), [=] { handleSlowDisconnect(); }, usingDisconnect ? OMenu::FLAG_CHECKED : 0);
@@ -629,9 +628,6 @@ void TransferView::ItemInfo::update(const UpdateInfo& ui) {
 	if(ui.updateMask & UpdateInfo::MASK_USER) {
 		user = ui.user;
 	}
-	if(ui.updateMask & UpdateInfo::MASK_PRIORITY) {
-		prio = ui.prio;
-	}
 }
 
 void TransferView::updateItem(int ii, uint32_t updateMask) {
@@ -669,9 +665,6 @@ void TransferView::updateItem(int ii, uint32_t updateMask) {
 	}
 	if(updateMask & UpdateInfo::MASK_USER) {
 		ctrlTransfers.updateItem(ii, COLUMN_USER);
-	}
-	if(updateMask & UpdateInfo::MASK_PRIORITY) {
-		ctrlTransfers.updateItem(ii, COLUMN_FILE);
 	}
 }
 
@@ -779,7 +772,6 @@ TransferView::ItemInfo* TransferView::ItemInfo::createParent() {
 		if (b) {
 			ii->target = Text::toT(b->getTarget());
 			ii->size = b->getSize();
-			ii->prio = b->getPriority();
 		}
 	} else {
 		auto b = UploadManager::getInstance()->findBundle(bundle);
@@ -834,16 +826,11 @@ const tstring TransferView::ItemInfo::getText(uint8_t col) const {
 			return (status == STATUS_RUNNING) ? (Util::formatBytesW(speed) + _T("/s")) : Util::emptyStringT;
 		case COLUMN_FILE:
 			if (isBundle) {
-				tstring ret;
-				if (!target.empty() && target[target.size() -1] == '\\') {
-					ret = Util::getLastDir(target); //directory bundle
-				} else {
-					ret = Util::getFileName(target); //file bundle
+				if (!target.empty() && target.back() == PATH_SEPARATOR) {
+					return Util::getLastDir(target); //directory bundle
 				}
 
-				if (download)
-					ret += _T(" (") + Text::toT(AirUtil::getPrioText(prio)) + _T(")");
-				return ret;
+				return Util::getFileName(target); //file bundle
 			}
 			return getFile(type, Util::getFileName(target));
 		case COLUMN_SIZE: return Util::formatBytesW(size); 
@@ -1344,7 +1331,6 @@ void TransferView::on(QueueManagerListener::BundleStatusChanged, const BundlePtr
 void TransferView::onBundleName(const BundlePtr& aBundle) {
 	auto ui = new UpdateInfo(aBundle->getToken(), true);
 	ui->setTarget(Text::toT(aBundle->getTarget()));
-	ui->setPriority(aBundle->getPriority());
 	speak(UPDATE_BUNDLE, ui);
 }
 

@@ -144,35 +144,32 @@ private:
 			
 		};
 		
-		ItemInfo(const HintedUser& u, const string aToken, bool aDownload, bool aBundle = false) : user(u), download(aDownload), transferFailed(false),
-			status(STATUS_WAITING), pos(0), size(0), actual(0), speed(0), timeLeft(0), totalSpeed(0)/*ttlf*/, ip(Util::emptyStringT), target(Util::emptyStringT),
-			flagIndex(0), collapsed(true), parent(NULL), hits(-1), statusString(Util::emptyStringT), running(0), token(aToken), isBundle(aBundle), bundle(Util::emptyString),
-			users(0), prio(Bundle::NORMAL) { }
+		ItemInfo(const HintedUser& u, const string aToken, bool aDownload, bool aBundle = false) : user(u), download(aDownload),
+			token(aToken), isBundle(aBundle) { }
 
-		bool isBundle;
-		bool download;
-		bool transferFailed;
-		bool collapsed;
+		bool isBundle = false;
+		bool download = true;
+		bool transferFailed = false;
+		bool collapsed = true;
 		
-		uint8_t flagIndex;
-		int16_t running;
-		int16_t hits;
-		int16_t users;
+		uint8_t flagIndex = 0;
+		int16_t running = 0;
+		int16_t hits = -1;
+		int16_t users = 0;
 
-		ItemInfo* parent;
+		ItemInfo* parent = nullptr;
 		HintedUser user;
 		string token;
 		string bundle;
-		Status status;
+		Status status = STATUS_WAITING;
 		Transfer::Type type;
-		QueueItemBase::Priority prio;
 		
-		int64_t pos;
-		int64_t size;
-		int64_t actual;
-		int64_t speed;
-		int64_t timeLeft;
-		int64_t totalSpeed;
+		int64_t pos = 0;
+		int64_t size = 0;
+		int64_t actual = 0;
+		int64_t speed = 0;
+		int64_t timeLeft = 0;
+		int64_t totalSpeed = 0;
 		
 		tstring ip;
 		tstring statusString;
@@ -214,8 +211,7 @@ private:
 			MASK_TOTALSPEED		= 0x800,
 			MASK_BUNDLE         = 0x1000,
 			MASK_USERS          = 0x2000,
-			MASK_USER           = 0x4000,
-			MASK_PRIORITY       = 0x8000
+			MASK_USER           = 0x4000
 		};
 
 		bool operator==(const ItemInfo& ii) const {
@@ -264,8 +260,6 @@ private:
 		void setUsers(const int16_t aUsers) { users = aUsers; updateMask |= MASK_USERS; }
 		int16_t users;
 		void setUser(const HintedUser& aUser) { user = aUser; updateMask |= MASK_USER; }
-		QueueItemBase::Priority prio;
-		void setPriority(QueueItemBase::Priority aPrio) { prio = aPrio; updateMask |= MASK_PRIORITY; }
 		HintedUser user;
 	};
 
