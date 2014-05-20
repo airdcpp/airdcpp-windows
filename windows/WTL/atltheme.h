@@ -34,12 +34,12 @@
   #include <vssym32.h>
 #else
   #ifndef TMSCHEMA_H
-  #include <tmschema.h>
+    #include <tmschema.h>
   #endif
 #endif
 
 #ifndef _UXTHEME_H_
-#include <uxtheme.h>
+  #include <uxtheme.h>
 #endif
 #pragma comment(lib, "uxtheme.lib")
 

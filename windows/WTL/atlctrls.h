@@ -1246,10 +1246,18 @@ public:
 		return (DWORD)::SendMessage(m_hWnd, EM_GETMARGINS, 0, 0L);
 	}
 
-	void SetMargins(UINT nLeft, UINT nRight)
+	void GetMargins(UINT& nLeft, UINT& nRight) const
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
-		::SendMessage(m_hWnd, EM_SETMARGINS, EC_LEFTMARGIN|EC_RIGHTMARGIN, MAKELONG(nLeft, nRight));
+		DWORD dwRet = (DWORD)::SendMessage(m_hWnd, EM_GETMARGINS, 0, 0L);
+		nLeft = LOWORD(dwRet);
+		nRight = HIWORD(dwRet);
+	}
+
+	void SetMargins(UINT nLeft, UINT nRight, WORD wFlags = EC_LEFTMARGIN | EC_RIGHTMARGIN)
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		::SendMessage(m_hWnd, EM_SETMARGINS, wFlags, MAKELONG(nLeft, nRight));
 	}
 
 	UINT GetLimitText() const
@@ -7625,6 +7633,13 @@ public:
 		return (int)::SendMessage(m_hWnd, EM_GETFIRSTVISIBLELINE, 0, 0L);
 	}
 
+	int GetTextRange(TEXTRANGE* pTextRange) const
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		return (int)::SendMessage(m_hWnd, EM_GETTEXTRANGE, 0, (LPARAM)pTextRange);
+	}
+
+#if (_RICHEDIT_VER < 0x0200)
 	EDITWORDBREAKPROCEX GetWordBreakProcEx() const
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
@@ -7636,12 +7651,7 @@ public:
 		ATLASSERT(::IsWindow(m_hWnd));
 		return (EDITWORDBREAKPROCEX)::SendMessage(m_hWnd, EM_SETWORDBREAKPROCEX, 0, (LPARAM)pfnEditWordBreakProcEx);
 	}
-
-	int GetTextRange(TEXTRANGE* pTextRange) const
-	{
-		ATLASSERT(::IsWindow(m_hWnd));
-		return (int)::SendMessage(m_hWnd, EM_GETTEXTRANGE, 0, (LPARAM)pTextRange);
-	}
+#endif // (_RICHEDIT_VER < 0x0200)
 
 #if (_RICHEDIT_VER >= 0x0200)
 	int GetTextRange(LONG nStartChar, LONG nEndChar, LPTSTR lpstrText) const
@@ -7654,7 +7664,6 @@ public:
 		return (int)::SendMessage(m_hWnd, EM_GETTEXTRANGE, 0, (LPARAM)&tr);
 	}
 #else // !(_RICHEDIT_VER >= 0x0200)
-
 	int GetTextRange(LONG nStartChar, LONG nEndChar, LPSTR lpstrText) const
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
@@ -7812,6 +7821,18 @@ public:
 		gtle.flags = dwFlags;
 		return (int)::SendMessage(m_hWnd, EM_GETTEXTLENGTHEX, (WPARAM)&gtle, 0L);
 	}
+
+	EDITWORDBREAKPROC GetWordBreakProc() const
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		return (EDITWORDBREAKPROC)::SendMessage(m_hWnd, EM_GETWORDBREAKPROC, 0, 0L);
+	}
+
+	void SetWordBreakProc(EDITWORDBREAKPROC ewbprc)
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		::SendMessage(m_hWnd, EM_SETWORDBREAKPROC, 0, (LPARAM)ewbprc);
+	}
 #endif // (_RICHEDIT_VER >= 0x0200)
 
 #if (_RICHEDIT_VER >= 0x0300)
@@ -7883,6 +7904,12 @@ public:
 	{
 		ATLASSERT(::IsWindow(m_hWnd));
 		return (BOOL)::SendMessage(m_hWnd, EM_SETZOOM, 0, 0L);
+	}
+
+	void SetMargins(UINT nLeft, UINT nRight, WORD wFlags = EC_LEFTMARGIN | EC_RIGHTMARGIN)
+	{
+		ATLASSERT(::IsWindow(m_hWnd));
+		::SendMessage(m_hWnd, EM_SETMARGINS, wFlags, MAKELONG(nLeft, nRight));
 	}
 #endif // (_RICHEDIT_VER >= 0x0300)
 

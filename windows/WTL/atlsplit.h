@@ -534,10 +534,8 @@ public:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 	{
-		m_hCursor = ::LoadCursor(NULL, m_bVertical ? IDC_SIZEWE : IDC_SIZENS);
-
 		T* pT = static_cast<T*>(this);
-		pT->GetSystemSettings(false);
+		pT->Init();
 
 		bHandled = FALSE;
 		return 1;
@@ -799,6 +797,14 @@ public:
 	}
 
 // Implementation - internal helpers
+	void Init()
+	{
+		m_hCursor = ::LoadCursor(NULL, m_bVertical ? IDC_SIZEWE : IDC_SIZENS);
+
+		T* pT = static_cast<T*>(this);
+		pT->GetSystemSettings(false);
+	}
+
 	void UpdateSplitterLayout()
 	{
 		if((m_nSinglePane == SPLIT_PANE_NONE) && (m_xySplitterPos == -1))
@@ -1057,6 +1063,25 @@ public:
 
 	CSplitterWindowImpl(bool bVertical = true) : CSplitterImpl< T >(bVertical)
 	{ }
+
+	BOOL SubclassWindow(HWND hWnd)
+	{
+#if (_MSC_VER >= 1300)
+		BOOL bRet = ATL::CWindowImpl< T, TBase, TWinTraits >::SubclassWindow(hWnd);
+#else // !(_MSC_VER >= 1300)
+		typedef ATL::CWindowImpl< T, TBase, TWinTraits >   _baseClass;
+		BOOL bRet = _baseClass::SubclassWindow(hWnd);
+#endif // !(_MSC_VER >= 1300)
+		if(bRet != FALSE)
+		{
+			T* pT = static_cast<T*>(this);
+			pT->Init();
+
+			SetSplitterRect();
+		}
+
+		return bRet;
+	}
 
 	BEGIN_MSG_MAP(CSplitterWindowImpl)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)

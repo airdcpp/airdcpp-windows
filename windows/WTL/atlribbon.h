@@ -35,8 +35,8 @@
 #endif
 
 #if (_ATL_VER < 0x0700)
-	#include <shlwapi.h>
-	#pragma comment(lib, "shlwapi.lib")
+  #include <shlwapi.h>
+  #pragma comment(lib, "shlwapi.lib")
 #endif
 
 #include <atlmisc.h>    // for RecentDocumentList classes
@@ -45,9 +45,10 @@
 #include <atlctrlw.h>   // for CCommandBarCtrl
 
 #if !defined(_WTL_USE_CSTRING) && !defined(__ATLSTR_H__)
-  #pragma warning(disable : 4530)   // unwind semantics not enabled
+  #pragma warning(push)
+  #pragma warning(disable: 4530)   // unwind semantics not enabled
   #include <string>
-  #pragma warning(default : 4530)
+  #pragma warning(pop)
 #endif
 
 #include <dwmapi.h>
@@ -813,6 +814,10 @@ public:
 
 // ItemProperty class: ribbon callback for each item in a collection
 //
+
+#pragma warning(push)
+#pragma warning(disable: 4512)   // assignment operator could not be generated
+
 template <class TCollection>
 class ItemProperty : public IUISimplePropertySet
 {
@@ -853,6 +858,8 @@ public:
 		}
 	}
 };
+
+#pragma warning(pop)
 
 
 // CollectionImplBase: base class for all RibbonUI collections
@@ -3016,13 +3023,14 @@ template <class T>
 __declspec(selectany) T* CRibbonImpl<T>::pWndRibbon;
 
 // Control map element
-#pragma warning (disable : 4510 610) // missing default constructor
+#pragma warning(push)
+#pragma warning(disable: 4510 610 4512)   // missing default constructor, can't be instatiated, assignment operator could not be generated
 typedef struct
 {
 	UINT uID;
 	ICtrl& ctrl;
 } _ribbonCtrl;
-#pragma warning (default : 4510 610) // missing default constructor
+#pragma warning(pop)
 
 }; // namespace RibbonUI
 

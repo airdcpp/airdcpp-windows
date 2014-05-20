@@ -316,8 +316,6 @@ static CWndClassInfo& GetWndClassInfo() \
   struct __declspec(uuid("000214e6-0000-0000-c000-000000000046")) IShellFolder;
   struct __declspec(uuid("000214f9-0000-0000-c000-000000000046")) IShellLinkW;
   struct __declspec(uuid("000214ee-0000-0000-c000-000000000046")) IShellLinkA;
-
-  #pragma warning(disable: 4201)   // nameless struct/union
 #endif // (_MSC_VER < 1300) && !defined(_WIN32_WCE)
 
 #ifndef _ATL_NO_OLD_HEADERS_WIN64
@@ -1041,9 +1039,10 @@ namespace SecureHelper
 		return _vstprintf_s(lpstrBuff, cchBuff, lpstrFormat, args);
 #else
 		cchBuff;   // Avoid unused argument warning
-#pragma warning(disable: 4996)
+  #pragma warning(push)
+  #pragma warning(disable: 4996)
 		return _vstprintf(lpstrBuff, lpstrFormat, args);
-#pragma warning(default: 4996)
+  #pragma warning(pop)
 #endif
 	}
 
@@ -1160,6 +1159,39 @@ namespace MinCrtHelper
 #endif // _ATL_MIN_CRT
 	}
 }; // namespace MinCrtHelper
+
+
+///////////////////////////////////////////////////////////////////////////////
+// GenericWndClass - generic window class usable for subclassing
+
+// Use in dialog templates to specify a placeholder to be subclassed
+// Specify as a custom control with class name WTL_GenericWindow
+// Call Rregister() before creating dialog (for example, in WinMain)
+namespace GenericWndClass
+{
+	inline LPCTSTR GetName()
+	{
+		return _T("WTL_GenericWindow");
+	}
+
+	inline ATOM Register()
+	{
+		WNDCLASSEX wc = { sizeof(WNDCLASSEX) };
+		wc.lpfnWndProc = ::DefWindowProc;
+		wc.hInstance = ModuleHelper::GetModuleInstance();
+		wc.hCursor = ::LoadCursor(NULL, IDC_ARROW);
+		wc.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+		wc.lpszClassName = GetName();
+		ATOM atom = ::RegisterClassEx(&wc);
+		ATLASSERT(atom != 0);
+		return atom;
+	}
+
+	inline BOOL Unregister()   // only needed for DLLs or tmp use
+	{
+		return ::UnregisterClass(GetName(), ModuleHelper::GetModuleInstance());
+	}
+}; // namespace GenericWndClass
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1411,6 +1443,7 @@ using ATL::CTempBuffer;
   #endif
 #endif
 
+#pragma warning(push)
 #pragma warning(disable: 4284)   // warning for operator ->
 
 template<typename T, int t_nFixedBytes = 128>
@@ -1465,7 +1498,7 @@ private:
 	BYTE m_abFixedBuffer[t_nFixedBytes];
 };
 
-#pragma warning(default: 4284)
+#pragma warning(pop)
 
 #endif // !(_ATL_VER >= 0x0700)
 

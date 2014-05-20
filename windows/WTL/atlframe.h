@@ -2091,6 +2091,9 @@ public:
 	};
 
 	// instance data
+#pragma warning(push)
+#pragma warning(disable: 4201)   // nameless unions are part of C++
+
 	struct _AtlUpdateUIData
 	{
 		WORD m_wState;
@@ -2108,6 +2111,8 @@ public:
 		bool operator ==(const _AtlUpdateUIData& e) const
 		{ return (m_wState == e.m_wState && m_lpData == e.m_lpData); }
 	};
+
+#pragma warning(pop)
 
 	ATL::CSimpleArray<_AtlUpdateUIElement> m_UIElements;   // elements data
 	const _AtlUpdateUIMap* m_pUIMap;                       // static UI data

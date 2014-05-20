@@ -24,7 +24,7 @@
 
 #if !((_WIN32_WINNT >= 0x0400) || (_WIN32_WINDOWS > 0x0400)) && !defined(_WIN32_WCE)
   #include <zmouse.h>
-#endif // !((_WIN32_WINNT >= 0x0400) || (_WIN32_WINDOWS > 0x0400)) && !defined(_WIN32_WCE)
+#endif
 
 #ifndef GET_WHEEL_DELTA_WPARAM
   #define GET_WHEEL_DELTA_WPARAM(wParam)  ((short)HIWORD(wParam))
@@ -468,7 +468,9 @@ public:
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 	{
-		GetSystemSettings();
+		T* pT = static_cast<T*>(this);
+		pT->GetSystemSettings();
+
 		bHandled = FALSE;
 		return 1;
 	}
@@ -557,43 +559,7 @@ public:
 		T* pT = static_cast<T*>(this);
 		ATLASSERT(::IsWindow(pT->m_hWnd));
 
-		m_sizeClient.cx = GET_X_LPARAM(lParam);
-		m_sizeClient.cy = GET_Y_LPARAM(lParam);
-
-		// block: set horizontal scroll bar
-		{
-			SCROLLINFO si = { sizeof(SCROLLINFO) };
-			si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
-			si.nMin = 0;
-			si.nMax = m_sizeAll.cx - 1;
-			if((m_dwExtendedStyle & SCRL_DISABLENOSCROLLH) != 0)
-				si.fMask |= SIF_DISABLENOSCROLL;
-			si.nPage = m_sizeClient.cx;
-			si.nPos = m_ptOffset.x;
-			pT->SetScrollInfo(SB_HORZ, &si, TRUE);
-		}
-
-		// block: set vertical scroll bar
-		{
-			SCROLLINFO si = { sizeof(SCROLLINFO) };
-			si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
-			si.nMin = 0;
-			si.nMax = m_sizeAll.cy - 1;
-			if((m_dwExtendedStyle & SCRL_DISABLENOSCROLLV) != 0)
-				si.fMask |= SIF_DISABLENOSCROLL;
-			si.nPage = m_sizeClient.cy;
-			si.nPos = m_ptOffset.y;
-			pT->SetScrollInfo(SB_VERT, &si, TRUE);
-		}
-
-		int x = m_ptOffset.x;
-		int y = m_ptOffset.y;
-		if(pT->AdjustScrollOffset(x, y))
-		{
-			// Children will be moved in SetScrollOffset, if needed
-			pT->ScrollWindowEx(m_ptOffset.x - x, m_ptOffset.y - y, (m_uScrollFlags & ~SCRL_SCROLLCHILDREN));
-			SetScrollOffset(x, y, FALSE);
-		}
+		pT->DoSize(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 
 		bHandled = FALSE;
 		return 1;
@@ -701,6 +667,49 @@ public:
 	}
 
 // Implementation
+	void DoSize(int cx, int cy)
+	{
+		m_sizeClient.cx = cx;
+		m_sizeClient.cy = cy;
+
+		T* pT = static_cast<T*>(this);
+
+		// block: set horizontal scroll bar
+		{
+			SCROLLINFO si = { sizeof(SCROLLINFO) };
+			si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+			si.nMin = 0;
+			si.nMax = m_sizeAll.cx - 1;
+			if((m_dwExtendedStyle & SCRL_DISABLENOSCROLLH) != 0)
+				si.fMask |= SIF_DISABLENOSCROLL;
+			si.nPage = m_sizeClient.cx;
+			si.nPos = m_ptOffset.x;
+			pT->SetScrollInfo(SB_HORZ, &si, TRUE);
+		}
+
+		// block: set vertical scroll bar
+		{
+			SCROLLINFO si = { sizeof(SCROLLINFO) };
+			si.fMask = SIF_PAGE | SIF_RANGE | SIF_POS;
+			si.nMin = 0;
+			si.nMax = m_sizeAll.cy - 1;
+			if((m_dwExtendedStyle & SCRL_DISABLENOSCROLLV) != 0)
+				si.fMask |= SIF_DISABLENOSCROLL;
+			si.nPage = m_sizeClient.cy;
+			si.nPos = m_ptOffset.y;
+			pT->SetScrollInfo(SB_VERT, &si, TRUE);
+		}
+
+		int x = m_ptOffset.x;
+		int y = m_ptOffset.y;
+		if(pT->AdjustScrollOffset(x, y))
+		{
+			// Children will be moved in SetScrollOffset, if needed
+			pT->ScrollWindowEx(m_ptOffset.x - x, m_ptOffset.y - y, (m_uScrollFlags & ~SCRL_SCROLLCHILDREN));
+			SetScrollOffset(x, y, FALSE);
+		}
+	}
+
 	void DoScroll(int nType, int nScrollCode, int& cxyOffset, int cxySizeAll, int cxySizePage, int cxySizeLine)
 	{
 		T* pT = static_cast<T*>(this);
@@ -898,6 +907,27 @@ template <class T, class TBase = ATL::CWindow, class TWinTraits = ATL::CControlW
 class ATL_NO_VTABLE CScrollWindowImpl : public ATL::CWindowImpl<T, TBase, TWinTraits>, public CScrollImpl< T >
 {
 public:
+	BOOL SubclassWindow(HWND hWnd)
+	{
+#if (_MSC_VER >= 1300)
+		BOOL bRet = ATL::CWindowImpl< T, TBase, TWinTraits >::SubclassWindow(hWnd);
+#else // !(_MSC_VER >= 1300)
+/		typedef ATL::CWindowImpl< T, TBase, TWinTraits >   _baseClass;
+		BOOL bRet = _baseClass::SubclassWindow(hWnd);
+#endif // !(_MSC_VER >= 1300)
+		if(bRet != FALSE)
+		{
+			T* pT = static_cast<T*>(this);
+			pT->GetSystemSettings();
+
+			RECT rect = { 0 };
+			GetClientRect(&rect);
+			pT->DoSize(rect.right, rect.bottom);
+		}
+
+		return bRet;
+	}
+
 	BEGIN_MSG_MAP(CScrollWindowImpl)
 		MESSAGE_HANDLER(WM_VSCROLL, CScrollImpl< T >::OnVScroll)
 		MESSAGE_HANDLER(WM_HSCROLL, CScrollImpl< T >::OnHScroll)
@@ -1176,6 +1206,27 @@ template <class T, class TBase = ATL::CWindow, class TWinTraits = ATL::CControlW
 class ATL_NO_VTABLE CMapScrollWindowImpl : public ATL::CWindowImpl< T, TBase, TWinTraits >, public CMapScrollImpl< T >
 {
 public:
+	BOOL SubclassWindow(HWND hWnd)
+	{
+#if (_MSC_VER >= 1300)
+		BOOL bRet = ATL::CWindowImpl< T, TBase, TWinTraits >::SubclassWindow(hWnd);
+#else // !(_MSC_VER >= 1300)
+/		typedef ATL::CWindowImpl< T, TBase, TWinTraits >   _baseClass;
+		BOOL bRet = _baseClass::SubclassWindow(hWnd);
+#endif // !(_MSC_VER >= 1300)
+		if(bRet != FALSE)
+		{
+			T* pT = static_cast<T*>(this);
+			pT->GetSystemSettings();
+
+			RECT rect = { 0 };
+			GetClientRect(&rect);
+			pT->DoSize(rect.right, rect.bottom);
+		}
+
+		return bRet;
+	}
+
 	BEGIN_MSG_MAP(CMapScrollWindowImpl)
 		MESSAGE_HANDLER(WM_VSCROLL, CScrollImpl< T >::OnVScroll)
 		MESSAGE_HANDLER(WM_HSCROLL, CScrollImpl< T >::OnHScroll)
@@ -1888,6 +1939,27 @@ template <class T, class TBase = ATL::CWindow, class TWinTraits = ATL::CControlW
 class ATL_NO_VTABLE CZoomScrollWindowImpl : public ATL::CWindowImpl< T, TBase, TWinTraits >, public CZoomScrollImpl< T >
 {
 public:
+	BOOL SubclassWindow(HWND hWnd)
+	{
+#if (_MSC_VER >= 1300)
+		BOOL bRet = ATL::CWindowImpl< T, TBase, TWinTraits >::SubclassWindow(hWnd);
+#else // !(_MSC_VER >= 1300)
+/		typedef ATL::CWindowImpl< T, TBase, TWinTraits >   _baseClass;
+		BOOL bRet = _baseClass::SubclassWindow(hWnd);
+#endif // !(_MSC_VER >= 1300)
+		if(bRet != FALSE)
+		{
+			T* pT = static_cast<T*>(this);
+			pT->GetSystemSettings();
+
+			RECT rect = { 0 };
+			GetClientRect(&rect);
+			pT->DoSize(rect.right, rect.bottom);
+		}
+
+		return bRet;
+	}
+
 	BEGIN_MSG_MAP(CZoomScrollWindowImpl)
 		MESSAGE_HANDLER(WM_SETCURSOR, CZoomScrollImpl< T >::OnSetCursor)
 		MESSAGE_HANDLER(WM_VSCROLL, CScrollImpl< T >::OnVScroll)
@@ -1989,7 +2061,6 @@ public:
 	BEGIN_MSG_MAP(CScrollContainerImpl)
 		MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
 		MESSAGE_HANDLER(WM_ERASEBKGND, OnEraseBackground)
-		MESSAGE_HANDLER(WM_SIZE, OnSize)
 		CHAIN_MSG_MAP(_baseClass)
 		FORWARD_NOTIFICATIONS()
 	ALT_MSG_MAP(1)
@@ -2009,18 +2080,15 @@ public:
 		return 1;   // no background needed
 	}
 
-	LRESULT OnSize(UINT uMsg, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/)
+// Overrides for CScrollWindowImpl
+	void DoSize(int cx, int cy)
 	{
-		BOOL bTmp = TRUE;
-		LRESULT lRet = _baseClass::OnSize(uMsg, wParam, lParam, bTmp);
+		_baseClass::DoSize(cx, cy);
 
 		T* pT = static_cast<T*>(this);
 		pT->UpdateLayout();
-
-		return lRet;
 	}
 
-// Overrides for CScrollWindowImpl
 	void DoPaint(CDCHandle dc)
 	{
 		if(!m_bAutoSizeClient || m_wndClient.m_hWnd == NULL)
