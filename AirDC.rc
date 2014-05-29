@@ -1985,30 +1985,30 @@ BEGIN
     LTEXT           "Grant minislot automatically for the following file extensions (separate extensions with '|', wildcards allowed):",IDC_ST_MINISLOTS_EXT,13,266,283,18
 END
 
-IDD_AUTOSEARCH_PARAMS DIALOGEX 0, 0, 255, 251
+IDD_AUTOSEARCH_PARAMS DIALOGEX 0, 0, 267, 251
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Parameters"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,144,230,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,198,230,50,14
-    LTEXT           "Current number",IDC_CUR_NUMBER_LBL,53,50,159,8
-    LTEXT           "Last number to search for (0 = disabled)",IDC_MAX_NUMBER_LBL,53,80,174,8
+    PUSHBUTTON      "Cancel",IDCANCEL,210,230,50,14
+    LTEXT           "Current number",IDC_CUR_NUMBER_LBL,53,50,197,8
+    LTEXT           "Last number to search for (0 = disabled)",IDC_MAX_NUMBER_LBL,53,80,207,8
     EDITTEXT        IDC_CUR_NUMBER,12,47,36,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_CUR_NUMBER_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,36,47,11,14
     EDITTEXT        IDC_MAX_NUMBER,12,77,36,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_MAX_NUMBER_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,36,77,11,14
-    LTEXT           "Minimum length",IDC_NUMBER_LEN_LBL,52,121,56,8
+    LTEXT           "Minimum length",IDC_NUMBER_LEN_LBL,52,121,132,8
     EDITTEXT        IDC_NUMBER_LEN,12,118,36,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_NUMBER_LEN_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,36,118,11,14
-    PUSHBUTTON      "Insert in the search string",IDC_INSERT_NUMBER,63,159,123,14
-    LTEXT           "If the number string is shorter than this value, the length will be filled by adding zeroes in front of the current number",IDC_AS_NUMLEN_HELP,12,135,224,23
-    LTEXT           "The next number to search for",IDC_AS_CURNUMBER_HELP2,13,62,225,9
-    LTEXT           "The search item will expire after a bundle with this number has been downloaded",IDC_AS_MAXNUMBER_HELP,12,92,225,16
-    GROUPBOX        "Incrementing numbers",IDC_INCR_PARAMETERS,7,7,241,171
-    LTEXT           "In addition to incrementing numbers, you may also insert time variables in the search string. Note that the parameters can also be used in the custom matcher.",IDC_AS_TIMEVAR_HELP,7,183,220,26
-    LTEXT           "Available time variables",IDC_TIMEVAR_LINK,7,214,91,12
-    LTEXT           "The number will be incremented only after the previous bundle has finished downloading, only one bundle can be queued at time. ",IDC_INCR_NUM_DESC,12,22,228,16
+    PUSHBUTTON      "Insert in the search string",IDC_INSERT_NUMBER,63,161,123,14
+    LTEXT           "If the number string is shorter than this value, the length will be filled by adding zeroes in front of the current number",IDC_AS_NUMLEN_HELP,12,135,248,23
+    LTEXT           "The next number to search for",IDC_AS_CURNUMBER_HELP2,13,62,247,9
+    LTEXT           "The search item will expire after a bundle with this number has been downloaded",IDC_AS_MAXNUMBER_HELP,12,92,248,16
+    GROUPBOX        "Incrementing numbers",IDC_INCR_PARAMETERS,7,7,253,171
+    LTEXT           "In addition to incrementing numbers, you may also insert time variables in the search string. Note that the parameters can also be used in the custom matcher.",IDC_AS_TIMEVAR_HELP,7,183,246,26
+    LTEXT           "Available time variables",IDC_TIMEVAR_LINK,7,214,241,12
+    LTEXT           "The number will be incremented only after the previous bundle has finished downloading, only one bundle can be queued at time. ",IDC_INCR_NUM_DESC,10,20,249,24
 END
 
 IDD_SCANNING_OPTIONS DIALOGEX 0, 0, 309, 310
@@ -2306,7 +2306,7 @@ BEGIN
     IDD_AUTOSEARCH_PARAMS, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 248
+        RIGHTMARGIN, 260
         TOPMARGIN, 7
         BOTTOMMARGIN, 244
     END
