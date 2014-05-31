@@ -34,16 +34,6 @@ class ListFilter : boost::noncopyable {
 	typedef std::function<string (size_t)> InfoFunction;
 	typedef std::function<double(size_t)> NumericFunction;
 
-	enum FilterMode {
-		EQUAL,
-		GREATER_EQUAL,
-		LESS_EQUAL,
-		GREATER,
-		LESS,
-		NOT_EQUAL,
-		LAST
-	};
-
 	struct Preparation {
 		Preparation(const StringMatch& aMatch) : matcher(aMatch) { }
 
@@ -110,15 +100,29 @@ private:
 
 	size_t getMethod() const;
 	size_t getColumn() const;
+	string getText() const;
 	
 	const size_t colCount;
 	const UpdateFunction updateFunction;
 
 	StringMatch matcher;
+
+	// Hide matching items
 	bool inverse;
+
+	// Filtering mode was typed into filtering expression
 	bool usingTypedMethod;
 
+	enum FilterMode {
+		EQUAL,
+		GREATER_EQUAL,
+		LESS_EQUAL,
+		GREATER,
+		LESS,
+		NOT_EQUAL,
+		LAST
+	};
+
 	FilterMode mode;
-	string getText() const;
 };
 #endif

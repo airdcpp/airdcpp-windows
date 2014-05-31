@@ -69,7 +69,6 @@ public:
 		MESSAGE_HANDLER(WM_NOTIFYFORMAT, onNotifyFormat)
 		MESSAGE_HANDLER_HWND(WM_MEASUREITEM, OMenu::onMeasureItem)
 		MESSAGE_HANDLER_HWND(WM_DRAWITEM, OMenu::onDrawItem)
-		//COMMAND_RANGE_HANDLER(IDC_PRIORITY_PAUSED, IDC_PRIORITY_HIGHEST, onPriority)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 	END_MSG_MAP()
@@ -327,7 +326,6 @@ private:
 	void on(QueueManagerListener::BundleRemoved, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept;
 	void on(QueueManagerListener::BundleTarget, const BundlePtr& aBundle) noexcept { onBundleName(aBundle); }
-	void on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept { onBundleName(aBundle); }
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
