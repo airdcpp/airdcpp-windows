@@ -1172,12 +1172,12 @@ Empty = Default String -&gt; /me playing on Spotify: %[title] %[link]</string>
 	<string name="XMissingDisks">%1% folders with disks missing</string>
 	<string name="ExtraFilesSampledirX">Extra files in sample folder: %1%</string>
 	<string name="ExtraFilesRlsdirX">The following extra files have been found from a release folder %1%: %2%</string>
-	<string name="ConfirmRemoveDirMultiple">Are you sure want to remove %1% bundles?</string>
-	<string name="ConfirmRemoveDirBundle">Are you sure want to remove the bundle %1%?</string>
-	<string name="ConfirmRemoveDirFinishedMultiple">Are you sure want to remove %1% bundles and all their finished files?</string>
-	<string name="ConfirmRemoveDirFinished">Are you sure want to remove the bundle %1% and its finished files?</string>
-	<string name="ConfirmMoveDirMultiple">Are you sure want to move %1% bundles to %2%?</string>
-	<string name="ConfirmMoveDirBundle">Are you sure want to move the bundle %1% to %2%?</string>
+	<string name="ConfirmRemoveDirMultiple">Are you sure you want to remove %1% bundles?</string>
+	<string name="ConfirmRemoveDirBundle">Are you sure you want to remove the bundle %1%?</string>
+	<string name="ConfirmRemoveDirFinishedMultiple">Are you sure you want to remove %1% bundles and all their finished files?</string>
+	<string name="ConfirmRemoveDirFinished">Are you sure you want to remove the bundle %1% and its finished files?</string>
+	<string name="ConfirmMoveDirMultiple">Are you sure you want to move %1% bundles to %2%?</string>
+	<string name="ConfirmMoveDirBundle">Are you sure you want to move the bundle %1% to %2%?</string>
 	<string name="MatchAdl">ADL search</string>
 	<string name="MatchingAdl">Matching file list with ADL search, this might take a while if the list is large...</string>
 	<string name="LogHashing">Show each hashed file in system log</string>
@@ -1330,7 +1330,7 @@ Clean search term means a title will be attempted to pick from the string. e.g "
 	<string name="FileListRefreshInitiatedVpath">File list refresh initiated for the virtual directory "%1%"</string>
 	<string name="FileListRefreshInitiatedIncoming">File list refresh initiated for the incoming directories</string>
 	<string name="DeleteFile">Delete file</string>
-	<string name="DeleteFileConfirm">Are you sure want to delete the file %1%?</string>
+	<string name="DeleteFileConfirm">Are you sure you want to delete the file %1%?</string>
 	<string name="AddAutoSearchFile">Add file to auto search</string>
 	<string name="AddAutoSearchDir">Add directory to auto search</string>
 	<string name="NoFilesWereLoaded">No files were loaded for %1%</string>
@@ -2019,14 +2019,14 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="Locations">Locations</string>
 	<string name="AllFiles">All files</string>
 	<string name="TypeContent">Type/Content</string>
-	<string name="AsEndOfList">Autosearch: End of list reached. Recheck Items, next search after %d minutes</string>
-	<string name="AsIncDesc">The number will be incremented only after the previous bundle has finished downloading, only one bundle can be queued at time. </string>
+	<string name="AsEndOfList">Auto search: End of list reached. Recheck Items, next search after %d minutes.</string>
+	<string name="AsIncDesc">The number will be incremented only after the previous bundle has finished downloading, only one bundle can be queued at time.</string>
 	<string name="CurrentNumber">Current number</string>
 	<string name="LastNumberToSearch">Last number to search for (0 = disabled)</string>
-	<string name="AsMaxNumberHelp">The search item will expire after a bundle with this number has been downloaded</string>
+	<string name="AsMaxNumberHelp">The search item will expire after a bundle with this number has been downloaded.</string>
 	<string name="MinimumLen">Minimum length</string>
-	<string name="AsNumLenHelp">If the number string is shorter than this value, the length will be filled by adding zeroes in front of the current number</string>
-	<string name="InsertInSearchstring">Insert in the search string"</string>
+	<string name="AsNumLenHelp">If the number string is shorter than this value, the length will be filled by adding zeroes in front of the current number.</string>
+	<string name="InsertInSearchstring">Insert in the search string</string>
 	<string name="AsTimevarHelp">In addition to incrementing numbers, you may also insert time variables in the search string. Note that the parameters can also be used in the custom matcher."</string>
 	<string name="AsTimevarAvailable">Available time variables</string>
 </resources>

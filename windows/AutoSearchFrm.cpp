@@ -715,11 +715,11 @@ void AutoSearchFrame::addEntry(const AutoSearchPtr as, int pos) {
 	ctrlAutoSearch.SetCheckState(i, b);
 }
 
-int AutoSearchFrame::findItem(ProfileToken aToken) {
+int AutoSearchFrame::findItem(const AutoSearchPtr& aAutoSearch) {
 	auto itemCount = ctrlAutoSearch.GetItemCount();
 	for(int pos = 0; pos < itemCount; ++pos) {
 		auto as = (AutoSearch*)ctrlAutoSearch.GetItemData(pos);
-		if(aToken == as->getToken()) {
+		if (aAutoSearch == as) {
 			return pos;
 		}
 	}
@@ -728,7 +728,7 @@ int AutoSearchFrame::findItem(ProfileToken aToken) {
 }
 
 void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
-	int pos = findItem(as->getToken());
+	int pos = findItem(as);
 	if (pos >= 0) {
 		ctrlAutoSearch.SetCheckState(pos, as->getEnabled());
 
@@ -745,7 +745,7 @@ void AutoSearchFrame::updateItem(const AutoSearchPtr as) {
 }
 
 void AutoSearchFrame::removeItem(const AutoSearchPtr as) {
-	int pos = findItem(as->getToken());
+	int pos = findItem(as);
 	if (pos >= 0) {
 		ctrlAutoSearch.DeleteItem(pos);
 	}

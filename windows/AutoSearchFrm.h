@@ -122,7 +122,7 @@ private:
 	void updateItem(const AutoSearchPtr as);
 	tstring formatSearchDate(const time_t aTime);
 
-	int findItem(ProfileToken aToken);
+	int findItem(const AutoSearchPtr& aToken);
 	void removeItem(const AutoSearchPtr as);
 
 	CButton ctrlAdd, ctrlRemove, ctrlChange, ctrlDown, ctrlUp, ctrlDuplicate;
