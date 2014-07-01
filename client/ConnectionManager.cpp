@@ -33,28 +33,29 @@
 namespace dcpp {
 
 	string TokenManager::getToken() noexcept {
-	Lock l(cs);
+	FastLock l(cs);
 	string token = Util::toString(Util::rand());
 	tokens.insert(token);
 	return token;
 }
 
 bool TokenManager::addToken(const string& aToken) noexcept {
-	Lock l(cs);
-	if (tokens.find(aToken) == tokens.end()) {
-		tokens.insert(aToken);
-		return true;
-	}
-	return false;
+	FastLock l(cs);
+	const auto res = tokens.insert(aToken);
+	return res.second;
 }
 
 void TokenManager::removeToken(const string& aToken) noexcept {
-	Lock l(cs);
+	FastLock l(cs);
+#ifdef _DEBUG
 	auto p = tokens.find(aToken);
 	if (p != tokens.end())
 		tokens.erase(p);
 	else
 		dcassert(0);
+#else
+	tokens.erase(p);
+#endif
 }
 
 ConnectionManager::ConnectionManager() : floodCounter(0), shuttingDown(false) {
