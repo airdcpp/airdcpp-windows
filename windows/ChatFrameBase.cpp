@@ -521,10 +521,17 @@ bool ChatFrameBase::sendFrameMessage(const tstring& aMsg, bool thirdPerson /*fal
 void ChatFrameBase::appendTextLine(const tstring& aText, bool addSpace) {
 	tstring s;
 	getLineText(s);
-	if (addSpace && s.length() > 0 && !isspace(s.back()))
-		s += _T(" ");
+	int start, end;
+	ctrlMessage.GetSel(start, end);
+	tstring startSpace, endSpace = _T("");
+	if (addSpace && s.length() > 0){
+		if (start > 0 && !isspace(s[start - 1]))
+			startSpace = _T(" ");
+		if (start != s.length() && !isspace(s[start]))
+			endSpace = _T(" ");
+	}
 
-	ctrlMessage.SetWindowText((s + aText).c_str());
+	ctrlMessage.InsertText(start, (startSpace + aText + endSpace).c_str());
 	ctrlMessage.SetFocus();
 	ctrlMessage.SetSel( ctrlMessage.GetWindowTextLength(), ctrlMessage.GetWindowTextLength() );
 }
@@ -539,7 +546,7 @@ LRESULT ChatFrameBase::onEmoticons(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWnd
 	ctrlEmoticons.GetWindowRect(dlg.pos);
 	dlg.DoModal(hWndCtl);
 	if (!dlg.result.empty()) {
-		appendTextLine(dlg.result, false);
+		appendTextLine(dlg.result, true);
 	}
 	return 0;
 }
