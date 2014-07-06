@@ -5,6 +5,7 @@ Added:
 - Show the number of contained files and folders for directory search results (ADC)
 - Use a Vista-style browsing dialog with folders
 - Remember various previous locations with browsing dialogs
+- Allow copying directory names from the search tab again
 
 Changed:
 
@@ -12,7 +13,8 @@ Changed:
 - Hide various menu items when clicking on own user in the users tab
 - Increase the validity period of generated encryption certificates
 - Strip whitespaces from hub address fields
-- Better settings for changing progress bar colors 
+- Better settings for changing progress bar colors
+- Insert emoticons button will insert emoticons in the cursor position
 
 Fixed:
 
@@ -24,7 +26,7 @@ Fixed:
 
 Removed:
 
--Finished downloads window ( Finished downloads are now shown in new Queue window )
+- Finished downloads window ( Finished downloads are now shown in new Queue window )
 
 2.72
 
