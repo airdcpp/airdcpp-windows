@@ -215,6 +215,13 @@ void DirectoryListingFrame::onLoadingFinished(int64_t aStart, const string& aDir
 		});
 	}
 
+	if (changeType == CHANGE_LIST) {
+		ctrlFiles.list.SetFocus();
+	} else {
+		ctrlTree.SetFocus();
+	}
+	changeType = CHANGE_LAST;
+
 	dl->setWaiting(false);
 }
 
@@ -626,13 +633,6 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 		selectItem(d->getPath());
 	}
 
-	if (changeType == CHANGE_LIST) {
-		ctrlFiles.list.SetFocus();
-	} else {
-		ctrlTree.SetFocus();
-	}
-
-	changeType = CHANGE_LAST;
 	ctrlTree.SetRedraw(TRUE);
 }
 
@@ -842,12 +842,11 @@ void DirectoryListingFrame::EnableWindow(bool redraw){
 		TranslateMessage(&uMsg);
 		DispatchMessage(&uMsg);
 	}*/
-
 	windowState = STATE_ENABLED;
 	ctrlFiles.SetWindowLongPtr(GWL_STYLE, ctrlFiles.list.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
 	ctrlTree.SetWindowLongPtr(GWL_STYLE, ctrlTree.GetWindowLongPtr(GWL_STYLE) & ~ WS_DISABLED);
 	//SetWindowLongPtr(GWL_STYLE, GetWindowLongPtr(GWL_STYLE) & ~WS_DISABLED);
-
+	//ctrlTree.SetFocus();
 	if (redraw) {
 		ctrlFiles.list.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 		ctrlTree.RedrawWindow(NULL, NULL, RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
