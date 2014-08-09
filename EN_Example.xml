@@ -300,7 +300,7 @@
 	<string name="MenuOpenFileList">Open file list...	Ctrl+L</string>
 	<string name="MenuOpenMatchAll">Match downloaded lists</string>
 	<string name="MenuPublicHubs">Public hubs	Ctrl+P</string>
-	<string name="MenuQuickConnect">Quick connect ...	Ctrl+Q</string>
+	<string name="MenuQuickConnect">Quick connect...	Ctrl+Q</string>
 	<string name="MenuReconnect">Reconnect	Ctrl+R</string>
 	<string name="MenuRefreshFileList">Refresh file list	Ctrl+E</string>
 	<string name="MenuRestoreAll">Restore all</string>

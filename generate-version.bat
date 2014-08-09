@@ -3,7 +3,7 @@ set file=%1client\version.inc
 set tmpfile=%1client\version.inc.tmp
 
 call git update-index --assume-unchanged %1client\StringDefs.cpp
-call git update-index --assume-unchanged %1client\EN_Example.xml
+call git update-index --assume-unchanged %1EN_Example.xml
 
 for /F "tokens=*" %%a in ('git describe --abbrev"="4  --dirty"="-d') do echo #define GIT_TAG "%%a" >> %tmpfile%
 
@@ -26,5 +26,5 @@ goto :end
 	
 :end
 call git update-index --no-assume-unchanged %1client\StringDefs.cpp
-call git update-index --no-assume-unchanged %1client\EN_Example.xml
+call git update-index --no-assume-unchanged %1EN_Example.xml
 ECHO Y | DEL %tmpfile%
