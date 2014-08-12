@@ -35,11 +35,14 @@ class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
 
-	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_BUNDLES), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {}
+	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_BUNDLES), curDirectory(nullptr), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {
+		iBack.reset(new QueueItemInfo(_T(".."), nullptr));
+	}
 
 	~QueueFrame() {}
 
 	typedef MDITabChildWindowImpl<QueueFrame> baseClass;
+	
 
 	BEGIN_MSG_MAP(QueueFrame)
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_GETDISPINFO, ctrlQueue.onGetDispInfo)
@@ -83,7 +86,7 @@ public:
 		if (nmtv->itemNew.lParam != -1){
 			curSel = nmtv->itemNew.lParam;
 			curItem = nmtv->itemNew.hItem;
-			updateList();
+			reloadList();
 		}
 
 		return 0;
@@ -130,39 +133,35 @@ private:
 		TREE_LAST
 	};
 
-	/*
-	Currently its treating every QueueItemInfo as a bundle or Qi and information is called directly, we might want to cache the needed infos.
-	*/
-	class QueueItemInfo : public FastAlloc<QueueItemInfo>, boost::noncopyable {
+	typedef boost::intrusive_ptr<QueueItemInfo> QueueItemInfoPtr;
+	class QueueItemInfo : public intrusive_ptr_base<QueueItemInfo>, boost::noncopyable {
 	public:
-		/*
-		Constructors with bundle and QueueItem, even if we might want to change to caching information of the items, 
-		these 2 basic constructors could feed the correct information.
-		*/
-		QueueItemInfo(const BundlePtr& aBundle) : bundle(aBundle), qi(nullptr), collapsed(true), parent(NULL), hits(-1), childrenCreated(aBundle->isFileBundle()) {}
-		QueueItemInfo(const QueueItemPtr& aQi) : bundle(nullptr), qi(aQi), collapsed(true), parent(NULL), hits(-1), childrenCreated(true) {}
+
+		QueueItemInfo(const BundlePtr& aBundle) : 
+			bundle(aBundle), qi(nullptr), parent(NULL), isDirectory(false), childrenCreated(aBundle->isFileBundle()), target(Util::emptyString), size(-1) {}
+		QueueItemInfo(const QueueItemPtr& aQi, QueueItemInfo* aParent) :
+			bundle(nullptr), qi(aQi), parent(aParent), isDirectory(false), childrenCreated(true), target(Util::emptyString), size(-1) {}
+		QueueItemInfo(const tstring& aName, QueueItemInfo* aParent, const string& aTarget = Util::emptyString) : 
+			bundle(nullptr), qi(nullptr), parent(aParent), name(aName), isDirectory(true), childrenCreated(false), size(-1), target(aTarget) {}
 		
 		~QueueItemInfo() {
-			dcdebug("itemInfo destructed %s \r\n", bundle ? bundle->getName().c_str() : qi->getTargetFileName().c_str());
+			children.clear();
+			dcdebug("itemInfo destructed %s \r\n", bundle ? bundle->getName().c_str() : qi ? qi->getTargetFileName().c_str() : Text::fromT(name).c_str());
 		}
 
 		BundlePtr bundle;
 		QueueItemPtr qi;
 
-		QueueItemInfo* parent;
-		bool collapsed;
-		int16_t hits;
-		bool childrenCreated;
+		GETSET(QueueItemInfo*, parent, Parent);
+		unordered_map<string, QueueItemInfoPtr, noCaseStringHash, noCaseStringEq> children;
+		
+		//for subdirectory items
+		tstring name;
+		int64_t size;
+		string target;
 
-		inline const string& getGroupCond() const { 
-			if (bundle) {
-				return bundle->getToken();
-			} else if(qi->getBundle()) {
-				return qi->getBundle()->getToken();
-			} else {
-				return qi->getTarget();
-			}
-		}
+		bool isDirectory;
+		bool childrenCreated;
 
 		tstring getName() const;
 		tstring getType() const;
@@ -183,14 +182,15 @@ private:
 		const string& getTarget() const;
 		double getPercentage() const;
 
-
-		QueueItemInfo* createParent() { return this; }
-
 		const tstring getText(int col) const;
 		static int compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col);
 		int getImageIndex() const;
 
+		QueueItemInfoPtr addChild(const QueueItemPtr& aQI);
+		void updateSubDirectory();
+
 	};
+
 
 	static int columnIndexes[COLUMN_LAST];
 	static int columnSizes[COLUMN_LAST];
@@ -200,7 +200,7 @@ private:
 	void onBundleRemoved(const BundlePtr& aBundle, const string& aPath);
 	void onBundleUpdated(const BundlePtr& aBundle);
 
-	void insertItems(QueueItemInfo* Qii);
+	void insertItems(QueueItemInfoPtr Qii);
 
 	void onQueueItemRemoved(const QueueItemPtr& aQI);
 	void onQueueItemUpdated(const QueueItemPtr& aQI);
@@ -224,16 +224,19 @@ private:
 	tstring formatUser(const Bundle::BundleSource& bs) const;
 	tstring formatUser(const QueueItem::Source& s) const;
 	
-	void updateList();
-	bool show(const QueueItemInfo* Qii) const;
-	QueueItemInfo* findQueueItem(const QueueItemPtr& aQI);
-	void updateCollapsedState(QueueItemInfo* aQii, int pos);
+	void reloadList();
+	bool show(const QueueItemInfoPtr& Qii) const;
+
+	QueueItemInfoPtr findQueueItem(const QueueItemPtr& aQI);
 
 	bool closed;
 	int curSel;
 
-	typedef TypedTreeListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST, string, noCaseStringHash, noCaseStringEq, NO_GROUP_UNIQUE_CHILDREN | VIRTUAL_CHILDREN> ListType;
+	typedef TypedListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST> ListType;
 	ListType ctrlQueue;
+
+	/*map of parent items (bundles and queue items without bundle)*/
+	unordered_map<string, QueueItemInfoPtr> parents;
 
 	CTreeViewCtrl ctrlTree;
 	void FillTree();
@@ -241,6 +244,11 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[6];
 	CContainedWindow ctrlStatusContainer;
+
+	QueueItemInfo* curDirectory; // currently selected Directory
+	static QueueItemInfoPtr iBack; // dummy item for step back;
+
+	QueueItemInfoPtr findParent(const string& aKey);
 
 	TaskQueue tasks;
 

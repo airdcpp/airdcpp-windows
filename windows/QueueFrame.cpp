@@ -43,6 +43,8 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, Resourc
 
 static ResourceManager::Strings treeNames[] = { ResourceManager::BUNDLES, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED, ResourceManager::PAUSED, ResourceManager::AUTO_SEARCH, ResourceManager::LOCATIONS, ResourceManager::FILE_LISTS, ResourceManager::TEMP_ITEMS };
 
+QueueFrame::QueueItemInfoPtr QueueFrame::iBack;
+
 LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled)
 {
 
@@ -71,8 +73,8 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlQueue.SetTextBkColor(WinUtil::bgColor);
 	ctrlQueue.SetTextColor(WinUtil::textColor);
 	ctrlQueue.setFlickerFree(WinUtil::bgBrush);
-	ctrlQueue.setInsertFunction(bind(&QueueFrame::insertItems, this, placeholders::_1));
-	ctrlQueue.setFilterFunction(bind(&QueueFrame::show, this, placeholders::_1));
+	//ctrlQueue.setInsertFunction(bind(&QueueFrame::insertItems, this, placeholders::_1));
+	//ctrlQueue.setFilterFunction(bind(&QueueFrame::show, this, placeholders::_1));
 
 	ctrlTree.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
 		TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT,
@@ -201,10 +203,11 @@ LRESULT QueueFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			SettingsManager::QUEUEFRAME_WIDTHS, SettingsManager::QUEUEFRAME_VISIBLE);
 		
 		ctrlQueue.SetRedraw(FALSE);
-		ctrlQueue.deleteAllItems();
+		ctrlQueue.DeleteAllItems();
 		ctrlQueue.SetRedraw(TRUE);
 
 		ctrlTree.DeleteAllItems();
+		parents.clear();
 
 		bHandled = FALSE;
 		return 0;
@@ -238,13 +241,13 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			cd->clrTextBk = WinUtil::bgColor;
 
 			if (colIndex == COLUMN_STATUS) {
-				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || ii->getSize() == -1 || (ii->bundle && ii->bundle->isFailed())) { // file lists don't have size in queue, don't even start to draw...
+				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || ii->isDirectory || ii->getSize() == -1 || (ii->bundle && ii->bundle->isFailed())) { // file lists don't have size in queue, don't even start to draw...
 					bHandled = FALSE;
 					return 0;
 				}
 
 				COLORREF clr = SETTING(PROGRESS_OVERRIDE_COLORS) ? 
-					(ii->parent ? SETTING(PROGRESS_SEGMENT_COLOR) : getStatusColor(ii->bundle ? ii->bundle->getStatus() : 1)) : GetSysColor(COLOR_HIGHLIGHT);
+					(ii->getParent() ? SETTING(PROGRESS_SEGMENT_COLOR) : getStatusColor(ii->bundle ? ii->bundle->getStatus() : 1)) : GetSysColor(COLOR_HIGHLIGHT);
 
 				//this is just severely broken, msdn says GetSubItemRect requires a one based index
 				//but it wont work and index 0 gives the rect of the whole item
@@ -307,13 +310,24 @@ LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 
 	if (l->iItem != -1) {
 		auto ii = (QueueItemInfo*)ctrlQueue.GetItemData(l->iItem);
-		if (!ii->bundle)
+		if (!ii || ii != iBack && !ii->bundle && !ii->isDirectory)
 			return 0;
 
-		if (ii->collapsed)
-			ctrlQueue.Expand(ii, l->iItem);
-		else
-			ctrlQueue.Collapse(ii, l->iItem);
+		auto item = ii;
+		if (ii == iBack){
+			if (curDirectory->bundle){
+				
+				reloadList();
+				return 0;
+			} else
+				item = curDirectory->getParent();
+		}
+
+		ctrlQueue.SetRedraw(FALSE);
+		ctrlQueue.DeleteAllItems();
+		curDirectory = item;
+		insertItems(item);
+		ctrlQueue.SetRedraw(TRUE);
 	}
 	bHandled = FALSE;
 	return 0;
@@ -322,10 +336,10 @@ LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql, DWORD aFlag/* = LVNI_SELECTED*/) {
 	int sel = -1;
 	while ((sel = ctrlQueue.GetNextItem(sel, aFlag)) != -1) {
-		QueueItemInfo* qii = (QueueItemInfo*) ctrlQueue.GetItemData(sel);
+		QueueItemInfo* qii = (QueueItemInfo*)ctrlQueue.GetItemData(sel);
 		if (qii->bundle)
 			bl.push_back(qii->bundle);
-		else
+		else if ( qii->qi )
 			ql.push_back(qii->qi);
 	}
 }
@@ -707,7 +721,7 @@ void QueueFrame::handleCheckSFV(bool treeMenu) {
 	StringList paths;
 	int i = -1;
 	while ((i = ctrlQueue.GetNextItem(i, treeMenu ? LVNI_ALL : LVNI_SELECTED)) != -1) {
-		const QueueItemInfo* qii = ctrlQueue.getItemData(i);
+		const QueueItemInfoPtr qii = ctrlQueue.getItemData(i);
 		if (!qii->isTempItem() && qii->isFinished() && (!treeMenu || qii->bundle))
 			paths.push_back(qii->getTarget());
 	}
@@ -720,14 +734,14 @@ void QueueFrame::handleOpenFile(const QueueItemPtr& aQI) {
 }
 
 void QueueFrame::handleOpenFolder() {
-	ctrlQueue.filteredForEachSelectedT([&](const QueueItemInfo* qii) {
+	ctrlQueue.forEachSelectedT([&](const QueueItemInfoPtr qii) {
 		if (!qii->isTempItem())
 			WinUtil::openFolder(Text::toT(qii->getTarget()));
 	});
 }
 
 void QueueFrame::handleSearchDirectory() {
-	ctrlQueue.filteredForEachSelectedT([&](const QueueItemInfo* qii) {
+	ctrlQueue.forEachSelectedT([&](const QueueItemInfoPtr qii) {
 		if (qii->bundle)
 			WinUtil::searchAny(qii->bundle->isFileBundle() ? Util::getLastDir(Text::toT(qii->bundle->getTarget())) : Text::toT(qii->bundle->getName()));
 	});
@@ -736,7 +750,7 @@ void QueueFrame::handleSearchDirectory() {
 LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
 	while ((i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
+		const QueueItemInfoPtr ii = ctrlQueue.getItemData(i);
 
 		const auto sources = QueueManager::getInstance()->getSources(ii->qi);
 		for (const auto& s : sources) {
@@ -750,7 +764,7 @@ LRESULT QueueFrame::onRemoveOffline(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*h
 LRESULT QueueFrame::onReaddAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	int i = -1;
 	while ((i = ctrlQueue.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		const QueueItemInfo* ii = ctrlQueue.getItemData(i);
+		const QueueItemInfoPtr ii = ctrlQueue.getItemData(i);
 		if (ii->bundle)
 			continue;
 
@@ -770,30 +784,24 @@ LRESULT QueueFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	return 0;
 }
 
-void QueueFrame::updateList() {
+void QueueFrame::reloadList() {
+	curDirectory = nullptr;
 	ctrlQueue.SetRedraw(FALSE);
 	ctrlQueue.DeleteAllItems();
-	for (auto& pp : ctrlQueue.getParents() | map_values) {
-		auto parent = pp.parent;
-		if (!show(parent))
+	for (auto& p : parents | map_values) {
+		if (!show(p))
 			continue;
 
-		int pos = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex());
-		updateCollapsedState(parent, pos);
+		ctrlQueue.insertItem(ctrlQueue.getSortPos(p.get()), p.get(), p->getImageIndex());
 	}
 	ctrlQueue.SetRedraw(TRUE);
 }
-void QueueFrame::updateCollapsedState(QueueItemInfo* aQii, int pos) {
-	if (aQii->parent == NULL && !aQii->collapsed && !aQii->bundle->isFileBundle()) {
-		aQii->collapsed = true;
-		ctrlQueue.Expand(aQii, pos);
-	} else {
-		int state = aQii->bundle && !aQii->bundle->isFileBundle() ? 1 : 0;
-		ctrlQueue.SetItemState(pos, INDEXTOSTATEIMAGEMASK(state), LVIS_STATEIMAGEMASK);
-	}
-}
 
-bool QueueFrame::show(const QueueItemInfo* Qii) const {
+bool QueueFrame::show(const QueueItemInfoPtr& Qii) const {
+	//we are browsing inside a bundle already, no case for new bundles to be inserted.
+	if (Qii->bundle && curDirectory)
+		return false;
+
 	bool isTempOrFilelist = Qii->isFilelist() || Qii->isTempItem();
 	switch (curSel)
 	{
@@ -814,7 +822,6 @@ bool QueueFrame::show(const QueueItemInfo* Qii) const {
 	case TREE_AUTOSEARCH: {
 		BundlePtr b = Qii->bundle ? Qii->bundle : Qii->qi->getBundle();
 		return b && b->getAddedByAutoSearch();
-		break;
 	}
 	case TREE_LOCATION: {
 		if (Qii->bundle && curItem != locationParent){
@@ -925,82 +932,81 @@ void QueueFrame::onRenameBundle(BundlePtr b) {
 }
 
 void QueueFrame::onBundleAdded(const BundlePtr& aBundle) {
-	auto parent = ctrlQueue.findParent(aBundle->getToken());
-	if (!parent) {
-		auto item = new QueueItemInfo(aBundle);
-		ctrlQueue.insertGroupedItem(item, false, 0, !aBundle->isFileBundle()); // file bundles wont be having any children.
+	auto p = findParent(aBundle->getToken());
+	if (!p) {
+		QueueItemInfoPtr item = new QueueItemInfo(aBundle);
+		parents.emplace(aBundle->getToken(), item);
+		if (show(item))
+			ctrlQueue.insertItem(item.get(), item->getImageIndex()); 
 		addLocationItem(getBundleParent(aBundle));
 	}
 }
 
-/*
-OK, here's the deal, we insert bundles as parents and assume every bundle (except file bundles) to have sub items, thus the + expand icon.
-The bundle QueueItems(its sub items) are really created and inserted only at expanding the bundle,
-once its expanded we start to collect some garbage when collapsing it to avoid continuous allocations and reallocations.
-Notes, Mostly there should be no reason to expand every bundle at least with a big queue,
-so this way we avoid creating and updating itemInfos we wont be showing,
-with a small queue its more likely for the user to expand and collapse the same items more than once.
-*/
-void QueueFrame::insertItems(QueueItemInfo* Qii) {
-	if (Qii->childrenCreated)
-		return;
+void QueueFrame::insertItems(QueueItemInfoPtr Qii) {
 
-	Qii->childrenCreated = true;
 	BundlePtr aBundle = Qii->bundle;
 
-	auto addItem = [&](QueueItemPtr& qi) {
-		auto item = findQueueItem(qi);
-		if (!item) {
-			item = new QueueItemInfo(qi);
-			ctrlQueue.insertGroupedItem(item, false);
-		}
-	};
+	ctrlQueue.insertItem(0, iBack.get(), iBack->getImageIndex());
 
-	if (aBundle && !aBundle->isFileBundle()) {
+	if (aBundle && !aBundle->isFileBundle() && !Qii->childrenCreated) {
+		Qii->childrenCreated = true;
 		RLock l(QueueManager::getInstance()->getCS());
-		for_each(aBundle->getQueueItems(), addItem);
-		for_each(aBundle->getFinishedFiles(), addItem);
+		for_each(aBundle->getQueueItems(), [&](QueueItemPtr& qi) { Qii->addChild(qi); });
+		for_each(aBundle->getFinishedFiles(), [&](QueueItemPtr& qi) { Qii->addChild(qi); });
 	}
-}
-QueueFrame::QueueItemInfo* QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
-	if (aQI->getBundle()){
-		auto parent = ctrlQueue.findParent(aQI->getBundle()->getToken());
-		if (parent) {
-			auto& children = ctrlQueue.findChildren(parent->getGroupCond());
-			for (auto& child : children) {
-				if (child->qi == aQI)
-					return child;
+
+	if (Qii->isDirectory || (aBundle && !aBundle->isFileBundle())) {
+		for (auto item : Qii->children | map_values) {
+			if (show(item)) {
+				if (item->isDirectory)
+					item->updateSubDirectory();
+
+				ctrlQueue.insertItem(item.get(), item->getImageIndex());
 			}
 		}
-	} 
-	return ctrlQueue.findParent(aQI->getTarget());
+	}
+}
+
+QueueFrame::QueueItemInfoPtr QueueFrame::findParent(const string& aKey) {
+	auto i = parents.find(aKey);
+	if (i != parents.end())
+		return i->second;
+
+	return nullptr;
+}
+
+QueueFrame::QueueItemInfoPtr QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
+	auto parent = findParent(aQI->getBundle() ? aQI->getBundle()->getToken() : aQI->getTarget());
+	if (parent && aQI->getBundle()) {
+		auto i = parent->children.find(aQI->getTarget());
+		if (i != parent->children.end())
+			return i->second;
+		
+		return nullptr;
+	}
+	return parent;
 }
 
 void QueueFrame::onBundleRemoved(const BundlePtr& aBundle, const string& aPath) {
-	auto parent = ctrlQueue.findParent(aBundle->getToken());
-	if (parent) {
-		ctrlQueue.removeGroupedItem(parent, true); //also deletes item info
+	auto i = parents.find(aBundle->getToken());;
+	if (i != parents.end()) {
+		ctrlQueue.deleteItem(i->second.get());
 		removeLocationItem(aPath);
+		parents.erase(i);
 	}
 }
 
 void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
-	auto parent = ctrlQueue.findParent(aBundle->getToken());
+	auto parent = findParent(aBundle->getToken());
 	if (parent) {
-		int i = ctrlQueue.findItem(parent);
+		int i = ctrlQueue.findItem(parent.get());
 		if (show(parent)) {
 			if (i == -1) {
-				i = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent), parent, parent->getImageIndex());
-				updateCollapsedState(parent, i);
+				i = ctrlQueue.insertItem(ctrlQueue.getSortPos(parent.get()), parent.get(), parent->getImageIndex());
 			} else {
 				ctrlQueue.updateItem(i);
 			}
-		} else {
-			if (!parent->collapsed) { // we are erasing the parent, so make sure we erase the children too.
-				auto& children = ctrlQueue.findChildren(parent->getGroupCond());
-				for (const auto& c : children)
-					ctrlQueue.deleteItem(c);
-			}
+		} else if(i != -1) {
 			ctrlQueue.DeleteItem(i);
 		}
 	}
@@ -1008,31 +1014,50 @@ void QueueFrame::onBundleUpdated(const BundlePtr& aBundle) {
 
 void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
 	auto item = findQueueItem(aQI);
-	if (item)
-		ctrlQueue.removeGroupedItem(item, true); //also deletes item info
+	if (item){
+		if (item->getParent())
+			item->getParent()->children.erase(item->getTarget());
+		if (item->getParent() == curDirectory)
+			ctrlQueue.deleteItem(item.get());
+	}
 }
 
 void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
 	auto item = findQueueItem(aQI);
-	if (item && (!item->parent || !item->parent->collapsed)) { // no need to update if its collapsed right?
-		//we don't keep queueitems without bundle as finished, so no need to check filtering here.
+	if (!item)
+		return;
+
+	if (item->getParent() == curDirectory) {
 		if (show(item)) 
-			ctrlQueue.updateItem(item);
+			ctrlQueue.updateItem(item.get());
 		 else
-			ctrlQueue.deleteItem(item);
+			 ctrlQueue.deleteItem(item.get());
+	}else if (item->getParent() && curDirectory) {
+		if (AirUtil::isSub(item->getParent()->getTarget(), curDirectory->getTarget())) {
+			item->getParent()->updateSubDirectory();
+			ctrlQueue.updateItem(item.get());
+		}
 	}
 }
 
 void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
-	if (aQI->getBundle()) {
-		auto parent = ctrlQueue.findParent(aQI->getBundle()->getToken());
-		if (!parent || (parent->collapsed && !parent->childrenCreated))
+	if (aQI->getBundle() && !aQI->getBundle()->isFileBundle()) {
+		auto parent = findParent(aQI->getBundle()->getToken());
+		if (!parent || !parent->childrenCreated || !show(parent))
 			return;
-	}
-	auto item = findQueueItem(aQI);
-	if (!item) {
-		auto i = new QueueItemInfo(aQI);
-		ctrlQueue.insertGroupedItem(i, false);
+
+		auto item = parent->addChild(aQI);
+		if (curDirectory == item)
+			ctrlQueue.insertItem(item.get(), item->getImageIndex());
+
+	} else {
+		auto item = findParent(aQI->getTarget());
+		if (!item) {
+			item = new QueueItemInfo(aQI, nullptr);
+			parents.emplace(aQI->getTarget(), item);
+			if (show(item))
+				ctrlQueue.insertItem(item.get(), item->getImageIndex());
+		}
 	}
 }
 
@@ -1251,8 +1276,48 @@ void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickB
 int QueueFrame::QueueItemInfo::getImageIndex() const {
 	if (bundle)
 		return bundle->isFileBundle() ? ResourceLoader::getIconIndex(Text::toT(bundle->getTarget())) : ResourceLoader::DIR_NORMAL;
-	else 
+	else if (qi)
 		return ResourceLoader::getIconIndex(Text::toT(qi->getTarget()));
+	else if (isDirectory)
+		return ResourceLoader::DIR_NORMAL;
+	else
+		return -1;
+}
+
+QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::addChild(const QueueItemPtr& aQI) {
+	int i = 0;
+	int j = 0;
+
+	string itemTarget = getTarget();
+	if (itemTarget[itemTarget.length() - 1] != PATH_SEPARATOR)
+		itemTarget += PATH_SEPARATOR;
+	
+	string tmp = aQI->getTarget().substr(itemTarget.size());
+
+	QueueItemInfoPtr dir(this);
+	while ((i = tmp.find(PATH_SEPARATOR, j)) != string::npos) {
+		string curPath = itemTarget + tmp.substr(0, i + 1);
+		auto d = dir->children.find(curPath);
+		if (d == dir->children.end()) {
+			dir = new QueueItemInfo(Text::toT(Util::getLastDir(curPath)), dir.get(), curPath);
+			dir->getParent()->children.emplace(curPath, dir);
+		} else {
+			dir = d->second;
+		}
+		j = i + 1;
+	}
+
+	QueueItemInfoPtr item = new QueueItemInfo(aQI, dir.get());
+	item->getParent()->size += aQI->getSize();
+	dir->children.emplace(aQI->getTarget(), item);
+
+	return item;
+}
+
+void QueueFrame::QueueItemInfo::updateSubDirectory() {
+	int64_t newSize = 0;
+	for_each(children | map_values, [&](const QueueItemInfoPtr& ii) { newSize += ii->getSize(); });
+	size = newSize;
 }
 
 const tstring QueueFrame::QueueItemInfo::getText(int col) const {
@@ -1277,7 +1342,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			int64_t speed = getSpeed();
 			return speed > 0 ? Util::formatBytesW(speed) + _T("/s") : Util::emptyStringT;
 		}
-		case COLUMN_SOURCES: return !isFinished() ? getSourceString() : Util::emptyStringT;
+		case COLUMN_SOURCES: return !isFinished() && !isDirectory ? getSourceString() : Util::emptyStringT;
 		case COLUMN_DOWNLOADED: return Util::formatBytesW(getDownloadedBytes());
 		case COLUMN_TIME_ADDED: return getTimeAdded() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeAdded())) : Util::emptyStringT;
 		case COLUMN_TIME_FINISHED: return isFinished() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeFinished())) : Util::emptyStringT;
@@ -1296,31 +1361,27 @@ tstring QueueFrame::QueueItemInfo::getType() const {
 		}
 	} else if (isFilelist()) {
 		return TSTRING(FILE_LIST);
-	} else {
+	} else if (qi) {
 		return WinUtil::formatFileType(qi->getTarget());
-	}
+	} else
+		return Util::emptyStringT;
 }
 
 tstring QueueFrame::QueueItemInfo::getName() const {
 	if (bundle) {
 		return Text::toT(bundle->getName());
 	} else if (qi) {
-		//show files in subdirectories as subdir/file.ext
-		string path = qi->getTarget();
-		if (qi->getBundle())
-			return Text::toT(path.substr(qi->getBundle()->getTarget().size(), qi->getTarget().size()));
-		else
-			return Text::toT(qi->getTargetFileName());
+		return Text::toT(qi->getTargetFileName());
 	}
-	return Util::emptyStringT;
+	return name;
 }
 
 const string& QueueFrame::QueueItemInfo::getTarget() const {
-	return bundle ? bundle->getTarget() : qi->getTarget();
+	return bundle ? bundle->getTarget() : qi ? qi->getTarget() : target;
 }
 
 int64_t QueueFrame::QueueItemInfo::getSize() const {
-	return bundle ? bundle->getSize() : qi ? qi->getSize() : -1;
+	return bundle ? bundle->getSize() : qi ? qi->getSize() : size;
 }
 
 int64_t QueueFrame::QueueItemInfo::getSpeed() const {
@@ -1344,27 +1405,27 @@ int QueueFrame::QueueItemInfo::getPriority() const {
 }
  
 bool QueueFrame::QueueItemInfo::isFinished() const {
-	return bundle ? bundle->isFinished() : QueueManager::getInstance()->isFinished(qi);
+	return bundle ? bundle->isFinished() : qi && QueueManager::getInstance()->isFinished(qi);
 }
 
 bool QueueFrame::QueueItemInfo::isPaused() const {
-	return bundle ? bundle->isPausedPrio() : qi->getBundle() ? qi->getBundle()->isPausedPrio() : qi->isPausedPrio();
+	return bundle ? bundle->isPausedPrio() : qi && qi->getBundle() ? qi->getBundle()->isPausedPrio() : qi && qi->isPausedPrio();
 }
 
 bool QueueFrame::QueueItemInfo::isTempItem() const {
 	if (bundle)
 		return false;
-	return !qi->getBundle();
+	return qi && !qi->getBundle();
 }
 
 bool QueueFrame::QueueItemInfo::isFilelist() const {
 	if (bundle)
 		return false;
-	return qi->isSet(QueueItem::FLAG_USER_LIST);
+	return qi && qi->isSet(QueueItem::FLAG_USER_LIST);
 }
 
 bool QueueFrame::QueueItemInfo::isFailed() const {
-	return bundle ? bundle->isFailed() : qi->getBundle() ? qi->getBundle()->isFailed() : false;
+	return bundle ? bundle->isFailed() : qi && qi->getBundle() ? qi->getBundle()->isFailed() : false;
 }
 
 
@@ -1422,7 +1483,7 @@ tstring QueueFrame::QueueItemInfo::getSourceString() const {
 			if (s.getUser().user->isOnline())
 				online++;
 		}
-	} else {
+	} else if(qi) {
 		QueueItem::SourceList sources = QueueManager::getInstance()->getSources(qi);
 		size = sources.size();
 		for (const auto& s : sources) {
@@ -1441,8 +1502,12 @@ int64_t QueueFrame::QueueItemInfo::getDownloadedBytes() const {
 int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col) {
 	// TODO: lots of things to fix
 
+	if (a == iBack) return -1;
+	if (b == iBack) return 1;
+
 	switch (col) {
 	case COLUMN_NAME: {
+
 		if (a->bundle && b->bundle) {
 			if (a->bundle->isFileBundle() && !b->bundle->isFileBundle()) return 1;
 			if (!a->bundle->isFileBundle() && b->bundle->isFileBundle()) return -1;
@@ -1451,10 +1516,8 @@ int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueI
 		auto textA = a->getName();
 		auto textB = b->getName();
 		if (!a->bundle) {
-			auto hasSubA = textA.find(PATH_SEPARATOR) != tstring::npos;
-			auto hasSubB = textB.find(PATH_SEPARATOR) != tstring::npos;
-			if (hasSubA && !hasSubB) return -1;
-			if (!hasSubA && hasSubB) return 1;
+			if (a->isDirectory && !b->isDirectory) return -1;
+			if (!a->isDirectory && b->isDirectory) return 1;
 		}
 
 		return Util::DefaultSort(textA.c_str(), textB.c_str());
