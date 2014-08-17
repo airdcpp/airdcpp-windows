@@ -1419,7 +1419,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 		case COLUMN_SOURCES: return !isFinished() && !isDirectory ? getSourceString() : Util::emptyStringT;
 		case COLUMN_DOWNLOADED: return Util::formatBytesW(getDownloadedBytes());
 		case COLUMN_TIME_ADDED: return getTimeAdded() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeAdded())) : Util::emptyStringT;
-		case COLUMN_TIME_FINISHED: return isFinished() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeFinished())) : Util::emptyStringT;
+		case COLUMN_TIME_FINISHED: return isFinished() && getTimeFinished() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeFinished())) : Util::emptyStringT;
 		case COLUMN_PATH: return Text::toT(getTarget());
 		default: return Util::emptyStringT;
 	}
