@@ -152,16 +152,16 @@ private:
 		BundlePtr bundle;
 		QueueItemPtr qi;
 
+		//for subdirectory items
+		tstring name;
+		string target;
+
 		GETSET(QueueItemInfo*, parent, Parent);
 		IGETSET(int64_t, finshedbytes, FinishedBytes, 0);
 		IGETSET(int64_t, totalsize, TotalSize, -1);
 
 		unordered_map<string, QueueItemInfoPtr, noCaseStringHash, noCaseStringEq> children;
 		
-		//for subdirectory items
-		tstring name;
-		string target;
-
 		bool isDirectory;
 		bool childrenCreated;
 
@@ -241,9 +241,6 @@ private:
 	typedef TypedListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST> ListType;
 	ListType ctrlQueue;
 
-	/*map of parent items (bundles and queue items without bundle)*/
-	unordered_map<string, QueueItemInfoPtr> parents;
-
 	CTreeViewCtrl ctrlTree;
 	void FillTree();
 
@@ -251,8 +248,11 @@ private:
 	int statusSizes[6];
 	CContainedWindow ctrlStatusContainer;
 
-	QueueItemInfo* curDirectory; // currently selected Directory
-	static QueueItemInfoPtr iBack; // dummy item for step back;
+	/*map of parent items (bundles and queue items without bundle)*/
+	unordered_map<string, QueueItemInfoPtr> parents;
+
+	QueueItemInfo* curDirectory; // currently viewed Directory
+	static QueueItemInfoPtr iBack; // dummy item for step back ( Directory .. );
 
 	QueueItemInfoPtr findParent(const string& aKey);
 
