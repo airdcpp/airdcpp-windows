@@ -962,12 +962,10 @@ void QueueFrame::insertItems(QueueItemInfoPtr Qii) {
 
 	if (Qii->isDirectory || (aBundle && !aBundle->isFileBundle())) {
 		for (auto item : Qii->children | map_values) {
-			if (show(item)) {
-				if (item->isDirectory)
-					item->updateSubDirectories();
-
+			if (item->isDirectory)
+				item->updateSubDirectories();
+			if (show(item))
 				ctrlQueue.insertItem(item.get(), item->getImageIndex());
-			}
 		}
 	}
 }
@@ -1375,8 +1373,13 @@ void QueueFrame::updateParentDirectories(QueueItemInfoPtr Qii) {
 	if (AirUtil::isSub(Qii->getParent()->getTarget(), curDirectory->getTarget())) {
 		auto cur = Qii;
 		while ((cur = cur->getParent()) && !cur->bundle && cur != curDirectory) {
-			if (cur->getParent() == curDirectory) //update the directory that is currently in view
-				ctrlQueue.updateItem(cur.get());
+			//update the directory that is currently in view
+			if (cur->getParent() == curDirectory) {
+				if (show(cur))
+					ctrlQueue.updateItem(cur.get());
+				else
+					ctrlQueue.deleteItem(cur.get());
+			}
 
 			int64_t newSize = 0;
 			int64_t newDownloadedBytes = 0;
@@ -1395,7 +1398,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 
 	switch (col) {
 		case COLUMN_NAME: return getName();
-		case COLUMN_SIZE: return (getSize() != -1) ? Util::formatBytesW(getSize()) : TSTRING(UNKNOWN);
+		case COLUMN_SIZE: return (getSize() != -1) ? Util::formatBytesW(getSize()) : Util::emptyStringT;
 		case COLUMN_TYPE: return getType();
 		case COLUMN_PRIORITY:
 		{
@@ -1476,7 +1479,9 @@ int QueueFrame::QueueItemInfo::getPriority() const {
 }
  
 bool QueueFrame::QueueItemInfo::isFinished() const {
-	return bundle ? bundle->isFinished() : qi && QueueManager::getInstance()->isFinished(qi);
+	return bundle ? bundle->isFinished() : 
+		qi ? QueueManager::getInstance()->isFinished(qi) :
+		isDirectory && getTotalSize() == getFinishedBytes();
 }
 
 bool QueueFrame::QueueItemInfo::isPaused() const {
@@ -1541,8 +1546,11 @@ tstring QueueFrame::QueueItemInfo::getStatusString() const {
 		} else {
 			return TSTRING_F(RUNNING_PCT, getPercentage());
 		} 
-	} else if ( isDirectory )
+	} else if (isDirectory && getTotalSize() != -1) {
+		if (getFinishedBytes() > 0 && getTotalSize() == getFinishedBytes())
+			return TSTRING(FINISHED);
 		return Text::toT(str(boost::format("%.01f%%") % getPercentage()));
+	}
 
 	return Util::emptyStringT;
 }
