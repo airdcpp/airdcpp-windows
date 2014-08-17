@@ -138,11 +138,11 @@ private:
 	public:
 
 		QueueItemInfo(const BundlePtr& aBundle) : 
-			bundle(aBundle), qi(nullptr), parent(NULL), isDirectory(false), childrenCreated(aBundle->isFileBundle()), target(Util::emptyString), size(-1) {}
+			bundle(aBundle), qi(nullptr), parent(NULL), isDirectory(false), childrenCreated(aBundle->isFileBundle()), target(Util::emptyString) {}
 		QueueItemInfo(const QueueItemPtr& aQi, QueueItemInfo* aParent) :
-			bundle(nullptr), qi(aQi), parent(aParent), isDirectory(false), childrenCreated(true), target(Util::emptyString), size(-1) {}
+			bundle(nullptr), qi(aQi), parent(aParent), isDirectory(false), childrenCreated(true), target(Util::emptyString) {}
 		QueueItemInfo(const tstring& aName, QueueItemInfo* aParent, const string& aTarget = Util::emptyString) : 
-			bundle(nullptr), qi(nullptr), parent(aParent), name(aName), isDirectory(true), childrenCreated(false), size(-1), target(aTarget) {}
+			bundle(nullptr), qi(nullptr), parent(aParent), name(aName), isDirectory(true), childrenCreated(false), target(aTarget) {}
 		
 		~QueueItemInfo() {
 			children.clear();
@@ -153,11 +153,13 @@ private:
 		QueueItemPtr qi;
 
 		GETSET(QueueItemInfo*, parent, Parent);
+		IGETSET(int64_t, finshedbytes, FinishedBytes, 0);
+		IGETSET(int64_t, totalsize, TotalSize, -1);
+
 		unordered_map<string, QueueItemInfoPtr, noCaseStringHash, noCaseStringEq> children;
 		
 		//for subdirectory items
 		tstring name;
-		int64_t size;
 		string target;
 
 		bool isDirectory;
@@ -187,7 +189,10 @@ private:
 		int getImageIndex() const;
 
 		QueueItemInfoPtr addChild(const QueueItemPtr& aQI);
-		void updateSubDirectory();
+		void updateSubDirectories();
+		QueueItemInfoPtr findChild(const string& aKey);
+		void getChildQueueItems(QueueItemList& ret);
+
 
 	};
 
@@ -201,6 +206,7 @@ private:
 	void onBundleUpdated(const BundlePtr& aBundle);
 
 	void insertItems(QueueItemInfoPtr Qii);
+	void updateParentDirectories(QueueItemInfoPtr Qii);
 
 	void onQueueItemRemoved(const QueueItemPtr& aQI);
 	void onQueueItemUpdated(const QueueItemPtr& aQI);
