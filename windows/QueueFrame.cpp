@@ -290,7 +290,7 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	}
 }
 
-LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
 	if (kd->wVKey == VK_DELETE) {
 		BundleList bl;
@@ -305,6 +305,7 @@ LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 	}
 	else if (kd->wVKey == VK_LEFT && WinUtil::isCtrl()) { //isShift or isCtrl ?
 		handleItemClick(iBack);
+		bHandled = TRUE;
 	}
 	else if (kd->wVKey == VK_RETURN || (kd->wVKey == VK_RIGHT && WinUtil::isCtrl())) {
 		if (ctrlQueue.GetSelectedCount() > 1)
@@ -316,6 +317,7 @@ LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 			auto ii = (QueueItemInfo*)ctrlQueue.GetItemData(sel);
 			handleItemClick(ii);
 		}
+		bHandled = TRUE;
 	}
 
 	return 0;
