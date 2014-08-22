@@ -361,7 +361,7 @@ void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql, QueueItemIn
 			bl.push_back(qii->bundle);
 		else if (qii->qi) {
 			ql.push_back(qii->qi);
-		} else if (qii->isDirectory) {
+		} else if (qii->isDirectory && qii != iBack) {
 			dirs.push_back(qii);
 			qii->getChildQueueItems(ql);
 		}
