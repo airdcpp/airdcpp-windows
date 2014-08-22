@@ -295,13 +295,29 @@ LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/) 
 	if (kd->wVKey == VK_DELETE) {
 		BundleList bl;
 		QueueItemList ql;
-		getSelectedItems(bl, ql);
+		QueueItemInfoList dirs;
+		getSelectedItems(bl, ql, dirs);
 		if (!bl.empty()) {
 			handleRemoveBundles(bl, false);
 		} else {
 			handleRemoveFiles(ql, false);
 		}
 	}
+	else if (kd->wVKey == VK_LEFT && WinUtil::isCtrl()) { //isShift or isCtrl ?
+		handleItemClick(iBack);
+	}
+	else if (kd->wVKey == VK_RETURN || (kd->wVKey == VK_RIGHT && WinUtil::isCtrl())) {
+		if (ctrlQueue.GetSelectedCount() > 1)
+			return 0;
+
+		int sel = -1;
+		sel = ctrlQueue.GetNextItem(sel, LVNI_SELECTED);
+		if (sel != -1) {
+			auto ii = (QueueItemInfo*)ctrlQueue.GetItemData(sel);
+			handleItemClick(ii);
+		}
+	}
+
 	return 0;
 }
 
@@ -310,30 +326,34 @@ LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 
 	if (l->iItem != -1) {
 		auto ii = (QueueItemInfo*)ctrlQueue.GetItemData(l->iItem);
-		if (!ii || ii != iBack && !ii->bundle && !ii->isDirectory)
-			return 0;
-
-		auto item = ii;
-		if (ii == iBack){
-			if (curDirectory->bundle){
-				
-				reloadList();
-				return 0;
-			} else
-				item = curDirectory->getParent();
-		}
-
-		ctrlQueue.SetRedraw(FALSE);
-		ctrlQueue.DeleteAllItems();
-		curDirectory = item;
-		insertItems(item);
-		ctrlQueue.SetRedraw(TRUE);
+		handleItemClick(ii);
 	}
+
 	bHandled = FALSE;
 	return 0;
 }
 
-void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql, DWORD aFlag/* = LVNI_SELECTED*/) {
+void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII) {
+	if (!aII || aII != iBack && !aII->bundle && !aII->isDirectory || (aII == iBack && !curDirectory))
+		return;
+
+	auto item = aII;
+	if (aII == iBack){
+		if (curDirectory->bundle){
+			reloadList();
+			return;
+		} else
+			item = curDirectory->getParent();
+	}
+
+	ctrlQueue.SetRedraw(FALSE);
+	ctrlQueue.DeleteAllItems();
+	curDirectory = item.get();
+	insertItems(item);
+	ctrlQueue.SetRedraw(TRUE);
+}
+
+void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql, QueueItemInfoList& dirs, DWORD aFlag/* = LVNI_SELECTED*/) {
 	int sel = -1;
 	while ((sel = ctrlQueue.GetNextItem(sel, aFlag)) != -1) {
 		QueueItemInfo* qii = (QueueItemInfo*)ctrlQueue.GetItemData(sel);
@@ -342,6 +362,7 @@ void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql, DWORD aFlag
 		else if (qii->qi) {
 			ql.push_back(qii->qi);
 		} else if (qii->isDirectory) {
+			dirs.push_back(qii);
 			qii->getChildQueueItems(ql);
 		}
 	}
@@ -380,13 +401,16 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 		menu.CreatePopupMenu();
 		BundleList bl;
 		QueueItemList queueItems;
+		QueueItemInfoList dirs;
 
-		getSelectedItems(bl, queueItems, treeMenu ? LVNI_ALL : LVNI_SELECTED);
+		getSelectedItems(bl, queueItems, dirs, treeMenu ? LVNI_ALL : LVNI_SELECTED);
 		if (treeMenu) {
 			AppendTreeMenu(bl, queueItems, menu);
 		} else {
-			if (!bl.empty()) 
+			if (!bl.empty())
 				AppendBundleMenu(bl, menu);
+			else if (!dirs.empty())
+				AppendDirectoryMenu(dirs, queueItems, menu);
 			else if (!queueItems.empty())
 				AppendQiMenu(queueItems, menu);
 		}
@@ -396,6 +420,37 @@ LRESULT QueueFrame::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, B
 
 	bHandled = FALSE;
 	return FALSE;
+}
+
+void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql, ShellMenu& dirMenu) {
+	bool hasFinished = any_of(dirs.begin(), dirs.end(), [](const QueueItemInfoPtr& d) { return d->getFinishedBytes() > 0; });
+	bool hasBundleItems = any_of(ql.begin(), ql.end(), [](const QueueItemPtr& q) { return q->getBundle(); });
+	
+	if (hasBundleItems)
+		WinUtil::appendFilePrioMenu(dirMenu, ql);
+
+	dirMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
+
+	dirMenu.AppendMenu(MF_SEPARATOR);
+	dirMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
+	dirMenu.AppendMenu(MF_STRING, IDC_READD_ALL, CTSTRING(READD_ALL));
+	dirMenu.appendSeparator();
+
+	dirMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
+	if (hasBundleItems) {
+		dirMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(false); });
+	}
+	dirMenu.appendSeparator();
+
+	dirMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveFiles(ql, false); });
+
+	//remove created files and directories (only the ones associated with the current bundle in queue, not sure if we should just delete the existing directory and all files recursively regardless if its items from current bundle?)
+	if (hasFinished) 
+		dirMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveFiles(ql, true); for_each(dirs, [&](QueueItemInfoPtr dir) { dir->deleteSubdirs(); }); });
+
+	if (dirs.size() == 1) {
+		dirMenu.appendShellMenu({ dirs.front()->target });
+	}
 }
 
 tstring QueueFrame::formatUser(const Bundle::BundleSource& bs) const {
@@ -804,6 +859,8 @@ bool QueueFrame::show(const QueueItemInfoPtr& Qii) const {
 	//we are browsing inside a bundle already, no case for new bundles to be inserted.
 	if (Qii->bundle && curDirectory)
 		return false;
+	if (Qii->isDirectory && Qii->children.empty()) //don't show empty directories
+		return false;
 
 	bool isTempOrFilelist = Qii->isFilelist() || Qii->isTempItem();
 	switch (curSel)
@@ -1016,13 +1073,19 @@ void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
 	if (!item)
 		return;
 
-	if (item->getParent())
+	if (!item->getParent()){ //temp or file list
+		ctrlQueue.deleteItem(item.get());
+		parents.erase(aQI->getTarget());
+	}
+
+	if (item->getParent()){
 		item->getParent()->children.erase(item->getTarget());
+	}
 	if (item->getParent() == curDirectory)
 		ctrlQueue.deleteItem(item.get());
 
 	updateParentDirectories(item);
-	
+
 }
 
 void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
@@ -1374,14 +1437,6 @@ void QueueFrame::updateParentDirectories(QueueItemInfoPtr Qii) {
 	if (AirUtil::isSub(Qii->getParent()->getTarget(), curDirectory->getTarget())) {
 		auto cur = Qii;
 		while ((cur = cur->getParent()) && !cur->bundle && cur != curDirectory) {
-			//update the directory that is currently inside view
-			if (cur->getParent() == curDirectory) {
-				if (show(cur))
-					ctrlQueue.updateItem(cur.get());
-				else
-					ctrlQueue.deleteItem(cur.get());
-			}
-
 			int64_t newSize = 0;
 			int64_t newDownloadedBytes = 0;
 			for (auto ii : cur->children | map_values) {
@@ -1390,6 +1445,18 @@ void QueueFrame::updateParentDirectories(QueueItemInfoPtr Qii) {
 			}
 			cur->setTotalSize(newSize);
 			cur->setFinishedBytes(newDownloadedBytes);
+
+			//remove empty directories
+			if (cur->children.empty())
+				cur->getParent()->children.erase(cur->target);
+
+			//update the directory that is currently inside view
+			if (cur->getParent() == curDirectory) {
+				if (show(cur))
+					ctrlQueue.updateItem(cur.get());
+				else
+					ctrlQueue.deleteItem(cur.get());
+			}
 		}
 	}
 }
@@ -1492,7 +1559,7 @@ bool QueueFrame::QueueItemInfo::isPaused() const {
 bool QueueFrame::QueueItemInfo::isTempItem() const {
 	if (bundle)
 		return false;
-	return qi && !qi->getBundle();
+	return qi && !qi->getBundle() && !qi->isSet(QueueItem::FLAG_USER_LIST);
 }
 
 bool QueueFrame::QueueItemInfo::isFilelist() const {
@@ -1579,6 +1646,11 @@ tstring QueueFrame::QueueItemInfo::getSourceString() const {
 
 int64_t QueueFrame::QueueItemInfo::getDownloadedBytes() const {
 	return bundle ? bundle->getDownloadedBytes() : qi ? QueueManager::getInstance()->getDownloadedBytes(qi) : getFinishedBytes();
+}
+
+void QueueFrame::QueueItemInfo::deleteSubdirs() {
+	for_each(children | map_values, [&](QueueItemInfoPtr d) { if (d->isDirectory) { d->deleteSubdirs(); } });
+	File::removeDirectory(target);
 }
 
 int QueueFrame::QueueItemInfo::compareItems(const QueueItemInfo* a, const QueueItemInfo* b, int col) {

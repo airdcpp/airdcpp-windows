@@ -192,6 +192,7 @@ private:
 		void updateSubDirectories();
 		QueueItemInfoPtr findChild(const string& aKey);
 		void getChildQueueItems(QueueItemList& ret);
+		void deleteSubdirs();
 
 
 	};
@@ -199,6 +200,8 @@ private:
 
 	static int columnIndexes[COLUMN_LAST];
 	static int columnSizes[COLUMN_LAST];
+
+	typedef vector<QueueItemInfoPtr> QueueItemInfoList;
 
 	void onRenameBundle(BundlePtr b);
 	void onBundleAdded(const BundlePtr& aBundle);
@@ -215,6 +218,7 @@ private:
 	void AppendBundleMenu(BundleList& bl, ShellMenu& bundleMenu);
 	void AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu);
 	void AppendTreeMenu(BundleList& bl, QueueItemList& queueItems, OMenu& bundleMenu);
+	void AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql, ShellMenu& dirMenu);
 
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
 	void handleMoveBundles(BundleList bl);
@@ -225,8 +229,9 @@ private:
 	void handleOpenFile(const QueueItemPtr& aQI);
 	void handleOpenFolder();
 	void handleSearchDirectory();
+	void handleItemClick(const QueueItemInfoPtr& aII);
 
-	void getSelectedItems(BundleList& bl, QueueItemList& ql, DWORD aFlag = LVNI_SELECTED);
+	void getSelectedItems(BundleList& bl, QueueItemList& ql, QueueItemInfoList& dirs, DWORD aFlag = LVNI_SELECTED);
 	tstring formatUser(const Bundle::BundleSource& bs) const;
 	tstring formatUser(const QueueItem::Source& s) const;
 	
