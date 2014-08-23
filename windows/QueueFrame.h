@@ -222,7 +222,7 @@ private:
 
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
 	void handleMoveBundles(BundleList bl);
-	void handleRemoveBundles(BundleList bl, bool removeFinished);
+	void handleRemoveBundles(BundleList bl, bool removeFinished, bool finishedOnly = false);
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
 	void handleSearchQI(const QueueItemPtr& aQI);
 	void handleCheckSFV(bool treeMenu);

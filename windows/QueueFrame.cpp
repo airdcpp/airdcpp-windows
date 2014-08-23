@@ -512,7 +512,7 @@ tstring formatSourceFlags(const SourceType& s) {
 void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu) {
 	if (!bl.empty()) {
 		bool filesOnly = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFileBundle(); });
-		bool hasFinished = all_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
+		bool hasFinished = any_of(bl.begin(), bl.end(), [](const BundlePtr& b) { return b->isFinished(); });
 
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_BUNDLES, bl.size()));
 
@@ -521,8 +521,11 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 			aMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(true); });
 		aMenu.appendSeparator();
 		aMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
-		if (!filesOnly || hasFinished)
+		if (!filesOnly && hasFinished) {
 			aMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
+			aMenu.appendSeparator();
+			aMenu.appendItem(TSTRING(REMOVE_FINISHED), [=] { handleRemoveBundles(bl, false, true); });
+		}
 	}
 	else if (!ql.empty()) {
 		aMenu.InsertSeparatorFirst(CTSTRING_F(X_FILES, ql.size()));
@@ -931,14 +934,14 @@ void QueueFrame::handleMoveBundles(BundleList bundles) {
 	}
 }
 
-void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished) {
+void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bool finishedOnly) {
 	if (bundles.empty())
 		return;
 
 	string tmp;
 
 	bool allFinished = all_of(bundles.begin(), bundles.end(), [](const BundlePtr& b) { return b->isFinished(); });
-	if (bundles.size() == 1) {
+	if (bundles.size() == 1 && !finishedOnly) {
 		if (removeFinished) {
 			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED, Text::toT(bundles.front()->getName())), MB_ICONQUESTION)) {
 				return;
@@ -946,7 +949,7 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished) {
 		} else if (!allFinished && !WinUtil::MessageBoxConfirm(SettingsManager::CONFIRM_QUEUE_REMOVAL, TSTRING_F(CONFIRM_REMOVE_DIR_BUNDLE, Text::toT(bundles.front()->getName())))) {
 			return;
 		}
-	} else {
+	} else if(!finishedOnly) {
 		if (removeFinished) {
 			if (!WinUtil::showQuestionBox(TSTRING_F(CONFIRM_REMOVE_DIR_FINISHED_MULTIPLE, bundles.size()), MB_ICONQUESTION)) {
 				return;
@@ -957,8 +960,10 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished) {
 	}
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		for (auto b : bundles)
-			QueueManager::getInstance()->removeBundle(b, removeFinished);
+		for (auto b : bundles) {
+			if (!finishedOnly || b->isFinished())
+				QueueManager::getInstance()->removeBundle(b, removeFinished);
+		}
 	});
 }
 
@@ -1039,7 +1044,7 @@ QueueFrame::QueueItemInfoPtr QueueFrame::findParent(const string& aKey) {
 
 QueueFrame::QueueItemInfoPtr QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
 	auto parent = findParent(aQI->getBundle() ? aQI->getBundle()->getToken() : aQI->getTarget());
-	if (parent && aQI->getBundle()) {
+	if (parent && aQI->getBundle() && !aQI->getBundle()->isFileBundle()) {
 		return parent->findChild(aQI->getTarget());
 	}
 	return parent;
