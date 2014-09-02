@@ -1083,6 +1083,7 @@ void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
 	if (!item->getParent()){ //temp or file list
 		ctrlQueue.deleteItem(item.get());
 		parents.erase(aQI->getTarget());
+		return;
 	}
 
 	if (item->getParent()){

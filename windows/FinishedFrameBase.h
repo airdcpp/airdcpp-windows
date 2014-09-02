@@ -103,7 +103,7 @@ public:
 
 		SettingsManager::getInstance()->addListener(this);
 		FinishedManager::getInstance()->addListener(this);
-		updateList(FinishedManager::getInstance()->lockList(upload));
+		updateList(FinishedManager::getInstance()->lockList());
 		FinishedManager::getInstance()->unlockList();
 
 		copyMenu.CreatePopupMenu();
@@ -253,7 +253,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 				int i = -1;
 				while((i = ctrlList.GetNextItem(-1, LVNI_SELECTED)) != -1) {
 					FinishedItem *ii = ctrlList.getItemData(i);
-					FinishedManager::getInstance()->remove(ii, upload);
+					FinishedManager::getInstance()->remove(ii);
 					ctrlList.DeleteItem(i);
 					
 					totalBytes -= ii->getSize();
@@ -265,7 +265,7 @@ LRESULT onCopy(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandle
 				break;
 			}
 		case IDC_TOTAL:
-			FinishedManager::getInstance()->removeAll(upload);
+			FinishedManager::getInstance()->removeAll();
 			
 			ctrlList.DeleteAllItems();
 
