@@ -885,7 +885,7 @@ bool QueueFrame::show(const QueueItemInfoPtr& Qii) const {
 	case TREE_TEMP:
 		return Qii->isTempItem();
 	case TREE_AUTOSEARCH: {
-		BundlePtr b = Qii->bundle ? Qii->bundle : Qii->qi->getBundle();
+		BundlePtr b = Qii->bundle ? Qii->bundle : Qii->qi ? Qii->qi->getBundle() : nullptr;
 		return b && b->getAddedByAutoSearch();
 	}
 	case TREE_LOCATION: {
