@@ -32,7 +32,6 @@
 #include "NotepadFrame.h"
 #include "QueueFrame.h"
 #include "SpyFrame.h"
-#include "FinishedFrame.h"
 #include "ADLSearchFrame.h"
 #include "FinishedULFrame.h"
 #include "TextFrame.h"

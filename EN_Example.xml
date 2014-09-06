@@ -2029,4 +2029,5 @@ If both patterns are set the message is ignored only if both matches are found. 
 	<string name="InsertInSearchstring">Insert in the search string</string>
 	<string name="AsTimevarHelp">In addition to incrementing numbers, you may also insert time variables in the search string. Note that the parameters can also be used in the custom matcher.</string>
 	<string name="AsTimevarAvailable">Available time variables</string>
+	<string name="RemoveFinished">Remove finished bundles</string>
 </resources>
