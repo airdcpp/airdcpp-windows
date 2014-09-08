@@ -1279,11 +1279,6 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 	return 0;
 }
 
-LRESULT MainFrame::onSwitchWindow(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	ctrlTab.SwitchWindow(wID - IDC_SWITCH_WINDOW_1);
-	return 0;
-}
-
 LRESULT MainFrame::onSetFont(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	HubFrame::updateFonts();
 	ctrlTab.redraw();

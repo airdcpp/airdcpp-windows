@@ -877,7 +877,7 @@ bool QueueFrame::show(const QueueItemInfoPtr& Qii) const {
 	case TREE_FINISHED:
 		return Qii->isFinished() && !isTempOrFilelist;
 	case TREE_PAUSED:
-		return Qii->isPaused() && !isTempOrFilelist;
+		return !Qii->bundle || Qii->isPaused() && !isTempOrFilelist;
 	case TREE_FAILED:
 		return Qii->isFailed() && !isTempOrFilelist;
 	case TREE_FILELIST:

@@ -65,7 +65,6 @@ public:
 		viewOrder.push_back(hWnd);
 		nextTab = --viewOrder.end();
 		active = i;
-		update();
 		calcRows(false);
 		Invalidate();
 	}
@@ -92,7 +91,6 @@ public:
 		if(!viewOrder.empty())
 			--nextTab;
 
-		update();
 		calcRows(false);
 		Invalidate();
 	}
@@ -350,18 +348,6 @@ public:
 		}
 		
 	}
-	void SwitchWindow(int aWindow){
-		auto i = tabs.begin();
-
-		//find the right tab
-		for(int j = 0; i != tabs.end() && j < aWindow; ++i, ++j);
-
-		//check that there actually is enough tabs =)
-		if(i != tabs.end()){
-			setActive((*i)->hWnd);
-			::SetWindowPos((*i)->hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-		}
-	}
 
 	int getTabHeight() { return height; }
 	int getHeight() { return (getRows() * getTabHeight())+1; }
@@ -532,16 +518,6 @@ public:
 		Invalidate();
 	}
 
-	void update(){
-		auto i = tabs.begin();
-		int j = 1;
-		for(; i != tabs.end(); ++i, ++j){
-			if(j <= 10)
-				(*i)->wCode = j % 10;
-			else
-				(*i)->wCode = -1;
-		}
-	}
 
 private:
 	class TabInfo {
@@ -551,7 +527,7 @@ private:
 		typedef typename List::iterator ListIter;
 
 		TabInfo(HWND aWnd, HICON icon) : hWnd(aWnd), len(0), xpos(0), row(0), 
-			dirty(false), hIcon(icon), disconnected(false), notification(false), wCode(-1),
+			dirty(false), hIcon(icon), disconnected(false), notification(false),
 			MAX_LENGTH(SETTING(TAB_SIZE)){ 
 			memset(&size, 0, sizeof(size));
 			memset(&boldSize, 0, sizeof(boldSize));
@@ -567,7 +543,6 @@ private:
 		int xpos;
 		int row;
 		bool dirty;
-		int wCode;
 		
 		//this is used for pm where user is offline too
 		bool disconnected;
@@ -607,7 +582,7 @@ private:
 		}
 
 		int getWidth() {
-			return ( ( dirty && !SETTING(BLEND_TABS) ) ? boldSize.cx : size.cx) + ((wCode == -1) ? FT_EXTRA_SPACE -7: FT_EXTRA_SPACE) - (SETTING(TAB_SHOW_ICONS) ? 0 : 16);
+			return ( ( dirty && !SETTING(BLEND_TABS) ) ? boldSize.cx : size.cx) + (FT_EXTRA_SPACE -7) - (SETTING(TAB_SHOW_ICONS) ? 0 : 16);
 			
 		}
 	};
@@ -636,7 +611,6 @@ private:
 
 		tabs.insert(i, moving);
 				
-		update();
 		calcRows(false);
 		Invalidate();
 	}
@@ -741,13 +715,6 @@ private:
 		}
 		
 		int spacing = SETTING(TAB_SHOW_ICONS) ? 20 : 2;
-		if(tab->wCode != -1){
-			HFONT f = dc.SelectFont(WinUtil::tabFont);
-			dc.TextOut(pos + spacing, ypos +3, Util::toStringW(tab->wCode).c_str(), 1);
-			dc.SelectFont(f);
-
-			spacing += WinUtil::getTextWidth(m_hWnd, WinUtil::tabFont) + 2;
-		}
 
 		if( tab->dirty && !SETTING(BLEND_TABS) ) {
 			HFONT f = dc.SelectFont(WinUtil::boldFont);

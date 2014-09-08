@@ -52,6 +52,7 @@ public:
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_KEYDOWN, onKeyDown)
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_TREE, TVN_SELCHANGED, onSelChanged)
+		NOTIFY_HANDLER(IDC_TREE, NM_CLICK, onTreeItemClick)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
@@ -88,6 +89,23 @@ public:
 			curItem = nmtv->itemNew.hItem;
 			reloadList();
 		}
+
+		return 0;
+	}
+
+	LRESULT onTreeItemClick(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /* bHandled */) {
+		//Reload the list view when clicking on the tree item currently selected after browsing bundle content
+		DWORD dwPos = GetMessagePos();
+		POINT pt;
+		pt.x = GET_X_LPARAM(dwPos);
+		pt.y = GET_Y_LPARAM(dwPos);
+
+		ScreenToClient(&pt);
+
+		UINT uFlags;
+		HTREEITEM ht = ctrlTree.HitTest(pt, &uFlags);
+		if (ht && ht == curItem && curDirectory != nullptr)
+			reloadList();
 
 		return 0;
 	}

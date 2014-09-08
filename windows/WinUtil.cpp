@@ -339,12 +339,11 @@ bool WinUtil::getVersionInfo(OSVERSIONINFOEX& ver) {
 
 static LRESULT CALLBACK KeyboardProc(int code, WPARAM wParam, LPARAM lParam) {
 	if(code == HC_ACTION) {
-		if(wParam == VK_CONTROL && LOWORD(lParam) == 1) {
-			if(lParam & 0x80000000) {
-				WinUtil::tabCtrl->endSwitch();
-			} else {
-				WinUtil::tabCtrl->startSwitch();
-			}
+		if (WinUtil::isAlt() && (lParam & 0x80000000) && LOWORD(lParam) == 1) {
+			if (wParam == VK_LEFT)
+					WinUtil::tabCtrl->SwitchTo(false);
+				else if (wParam == VK_RIGHT)
+					WinUtil::tabCtrl->SwitchTo(true);
 		}
 	}
 	return CallNextHookEx(WinUtil::hook, code, wParam, lParam);
