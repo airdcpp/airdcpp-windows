@@ -303,11 +303,11 @@ LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			handleRemoveFiles(ql, false);
 		}
 	}
-	else if (kd->wVKey == VK_LEFT && WinUtil::isCtrl()) { //isShift or isCtrl ?
+	else if (kd->wVKey == VK_BACK) {
 		handleItemClick(iBack);
 		bHandled = TRUE;
 	}
-	else if (kd->wVKey == VK_RETURN || (kd->wVKey == VK_RIGHT && WinUtil::isCtrl())) {
+	else if (kd->wVKey == VK_RETURN) {
 		if (ctrlQueue.GetSelectedCount() > 1)
 			return 0;
 
@@ -523,8 +523,10 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 		aMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
 		if (!filesOnly && hasFinished) {
 			aMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
-			aMenu.appendSeparator();
-			aMenu.appendItem(TSTRING(REMOVE_FINISHED), [=] { handleRemoveBundles(bl, false, true); });
+			if (curSel != TREE_FAILED) {
+				aMenu.appendSeparator();
+				aMenu.appendItem(TSTRING(REMOVE_FINISHED), [=] { handleRemoveBundles(bl, false, true); });
+			}
 		}
 	}
 	else if (!ql.empty()) {
@@ -879,7 +881,7 @@ bool QueueFrame::show(const QueueItemInfoPtr& Qii) const {
 	case TREE_PAUSED:
 		return !Qii->bundle || Qii->isPaused() && !isTempOrFilelist;
 	case TREE_FAILED:
-		return Qii->isFailed() && !isTempOrFilelist;
+		return !Qii->bundle || Qii->isFailed() && !isTempOrFilelist;
 	case TREE_FILELIST:
 		return Qii->isFilelist();
 	case TREE_TEMP:
@@ -961,7 +963,7 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bo
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
 		for (auto b : bundles) {
-			if (!finishedOnly || b->isFinished())
+			if (!finishedOnly || b->isFinished() && !b->isFailed())
 				QueueManager::getInstance()->removeBundle(b, removeFinished);
 		}
 	});
