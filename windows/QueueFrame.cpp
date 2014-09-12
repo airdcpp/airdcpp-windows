@@ -289,10 +289,30 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 		return CDRF_DODEFAULT;
 	}
 }
+void QueueFrame::handleTab() {
+	HWND focus = GetFocus();
+	if (focus == ctrlQueue.m_hWnd)
+		ctrlTree.SetFocus();
+	else if (focus == ctrlTree.m_hWnd)
+		ctrlQueue.SetFocus();
+}
 
-LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+LRESULT QueueFrame::onKeyDownTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
+	NMTVKEYDOWN* kd = (NMTVKEYDOWN*)pnmh;
+	if (kd->wVKey == VK_TAB) {
+		handleTab();
+		bHandled = TRUE;
+		return 1;
+	}
+	return 0;
+}
+
+LRESULT QueueFrame::onKeyDownList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMLVKEYDOWN* kd = (NMLVKEYDOWN*) pnmh;
-	if (kd->wVKey == VK_DELETE) {
+	if (kd->wVKey == VK_TAB) {
+		handleTab();
+		bHandled = TRUE;
+	} else if (kd->wVKey == VK_DELETE) {
 		BundleList bl;
 		QueueItemList ql;
 		QueueItemInfoList dirs;
@@ -302,6 +322,7 @@ LRESULT QueueFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 		} else {
 			handleRemoveFiles(ql, false);
 		}
+		bHandled = TRUE;
 	}
 	else if (kd->wVKey == VK_BACK) {
 		handleItemClick(iBack);

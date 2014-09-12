@@ -49,10 +49,11 @@ public:
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_COLUMNCLICK, ctrlQueue.onColumnClick)
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_GETINFOTIP, ctrlQueue.onInfoTip)
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, NM_CUSTOMDRAW, onCustomDraw)
-		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_KEYDOWN, onKeyDown)
+		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_KEYDOWN, onKeyDownList)
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, NM_DBLCLK, onDoubleClick)
 		NOTIFY_HANDLER(IDC_TREE, TVN_SELCHANGED, onSelChanged)
 		NOTIFY_HANDLER(IDC_TREE, NM_CLICK, onTreeItemClick)
+		NOTIFY_HANDLER(IDC_TREE, TVN_KEYDOWN, onKeyDownTree)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
@@ -80,7 +81,8 @@ public:
 		return 0;
 	}
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
-	LRESULT onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
+	LRESULT onKeyDownList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
+	LRESULT onKeyDownTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 
 	LRESULT onSelChanged(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /* bHandled */) {
 		NMTREEVIEW* nmtv = (NMTREEVIEW*)pnmh;
@@ -248,6 +250,7 @@ private:
 	void handleOpenFolder();
 	void handleSearchDirectory();
 	void handleItemClick(const QueueItemInfoPtr& aII);
+	void handleTab();
 
 	void getSelectedItems(BundleList& bl, QueueItemList& ql, QueueItemInfoList& dirs, DWORD aFlag = LVNI_SELECTED);
 	tstring formatUser(const Bundle::BundleSource& bs) const;
@@ -255,6 +258,7 @@ private:
 	
 	void reloadList();
 	bool show(const QueueItemInfoPtr& Qii) const;
+
 
 	QueueItemInfoPtr findQueueItem(const QueueItemPtr& aQI);
 
