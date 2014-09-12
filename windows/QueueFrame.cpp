@@ -293,8 +293,12 @@ void QueueFrame::handleTab() {
 	HWND focus = GetFocus();
 	if (focus == ctrlQueue.m_hWnd)
 		ctrlTree.SetFocus();
-	else if (focus == ctrlTree.m_hWnd)
+	else if (focus == ctrlTree.m_hWnd) {
 		ctrlQueue.SetFocus();
+		if (ctrlQueue.GetSelectedCount() == 0)
+			ctrlQueue.SelectItem(0);
+	}
+		
 }
 
 LRESULT QueueFrame::onKeyDownTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
