@@ -339,13 +339,16 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII) {
 	if (!aII || aII != iBack && !aII->bundle && !aII->isDirectory || (aII == iBack && !curDirectory))
 		return;
 
+	auto sel = curDirectory;
 	auto item = aII;
 	if (aII == iBack){
 		if (curDirectory->bundle){
 			reloadList();
+			ctrlQueue.selectItem(sel);
 			return;
-		} else
+		} else {
 			item = curDirectory->getParent();
+		}
 	}
 
 	ctrlQueue.SetRedraw(FALSE);
@@ -353,6 +356,8 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII) {
 	curDirectory = item.get();
 	insertItems(item);
 	ctrlQueue.SetRedraw(TRUE);
+	if (sel)
+		ctrlQueue.selectItem(sel);
 }
 
 void QueueFrame::getSelectedItems(BundleList& bl, QueueItemList& ql, QueueItemInfoList& dirs, DWORD aFlag/* = LVNI_SELECTED*/) {

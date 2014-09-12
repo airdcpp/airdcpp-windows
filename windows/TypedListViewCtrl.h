@@ -460,6 +460,7 @@ public:
 	void updateItem(int i, int col) { SetItemText(i, col, LPSTR_TEXTCALLBACK); }
 	void updateItem(const T* item) { int i = findItem(item); if(i != -1) updateItem(i); }
 	void deleteItem(const T* item) { int i = findItem(item); if(i != -1) DeleteItem(i); }
+	void selectItem(const T* item) { int i = findItem(item); if (i != -1) SelectItem(i); }
 
 	int getSortPos(const T* a) const {
 		int high = GetItemCount();
