@@ -174,6 +174,7 @@
 #define IDD_DIALOG2                     339
 #define IDD_COMBO                       339
 #define IDI_PAUSED                      340
+#define IDI_STEPBACK                    341
 #define IDD_SEARCHTYPESPAGE             342
 #define IDD_SEARCHTYPE_DLG              343
 #define IDR_EMOTICON                    345

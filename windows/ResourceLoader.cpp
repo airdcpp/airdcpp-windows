@@ -289,6 +289,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_MAGNET:		return _T("Magnet.ico");
 		case IDI_SEND_FILE:		return _T("send_file.ico");
 		case IDI_PAUSED:		return _T("paused.ico");
+		case IDI_STEPBACK:		return _T("Stepback.ico");
 
 		case IDI_UP:            return _T("BrowserBar\\Up.ico");
 		case IDI_NEXT:			return _T("BrowserBar\\NextResult.ico");
@@ -384,6 +385,7 @@ CImageList& ResourceLoader::getFileImages() {
 		fileImages.AddIcon(loadIcon(IDI_FOLDER, 16)); fileImageCount++;
 		fileImages.AddIcon(loadIcon(IDI_FOLDER_INC, 16)); fileImageCount++;
 		fileImages.AddIcon(loadIcon(IDI_FOLDER, 16)); fileImageCount++;
+		fileImages.AddIcon(loadIcon(IDI_STEPBACK, 16)); fileImageCount++;
 		fileImages.AddIcon(loadIcon(IDI_FILE, 16)); fileImageCount++;
 
 		if(SETTING(USE_SYSTEM_ICONS)) {

@@ -68,6 +68,7 @@ public:
 		DIR_NORMAL,
 		DIR_INCOMPLETE,
 		DIR_LOADING,
+		DIR_STEPBACK,
 		FILE
 	};
 

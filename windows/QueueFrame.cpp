@@ -361,7 +361,13 @@ LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 }
 
 void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII) {
-	if (!aII || aII != iBack && !aII->bundle && !aII->isDirectory || (aII == iBack && !curDirectory))
+
+	if (aII->qi) {
+		if(aII->qi->isFinished()) handleOpenFile(aII->qi);
+		return;
+	}
+
+	if (!aII || !aII->bundle && !aII->isDirectory || (aII == iBack && !curDirectory))
 		return;
 
 	auto sel = curDirectory;
@@ -371,7 +377,8 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII) {
 			reloadList();
 			ctrlQueue.selectItem(sel);
 			return;
-		} else {
+		}
+		else {
 			item = curDirectory->getParent();
 		}
 	}
@@ -775,7 +782,7 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 			fileMenu.appendSeparator();
 		}
 		else if (hasBundleItems) {
-			fileMenu.appendItem(TSTRING(OPEN), [=] { handleOpenFile(qi); });
+			fileMenu.appendItem(TSTRING(OPEN), [=] { handleOpenFile(qi); }, OMenu::FLAG_DEFAULT);
 		}
 		else {
 			fileMenu.appendSeparator();
@@ -1384,9 +1391,11 @@ int QueueFrame::QueueItemInfo::getImageIndex() const {
 		return bundle->isFileBundle() ? ResourceLoader::getIconIndex(Text::toT(bundle->getTarget())) : ResourceLoader::DIR_NORMAL;
 	else if (qi)
 		return ResourceLoader::getIconIndex(Text::toT(qi->getTarget()));
-	else if (isDirectory)
+	else if (isDirectory) {
+		if (!parent)
+			return ResourceLoader::DIR_STEPBACK;
 		return ResourceLoader::DIR_NORMAL;
-	else
+	} else
 		return -1;
 }
 
