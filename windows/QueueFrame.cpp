@@ -361,9 +361,10 @@ LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 }
 
 void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII) {
-
-	if (aII->qi) {
-		if(aII->qi->isFinished()) handleOpenFile(aII->qi);
+	
+	if (aII->qi || aII->bundle && aII->bundle->isFileBundle()) {
+		if (aII->isFinished()) 
+			WinUtil::openFile(Text::toT(aII->getTarget()));
 		return;
 	}
 
