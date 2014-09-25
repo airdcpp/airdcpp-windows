@@ -1152,10 +1152,15 @@ void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
 }
 
 void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
-	if (aQI->getBundle() && !aQI->getBundle()->isFileBundle()) {
+	if (aQI->getBundle()) {
 		auto parent = findParent(aQI->getBundle()->getToken());
 		if (!parent || !parent->childrenCreated || !show(parent))
 			return;
+
+		if (parent && aQI->getBundle()->isFileBundle()) {
+			ctrlQueue.updateItem(parent.get());
+			return;
+		}
 
 		auto item = parent->addChild(aQI);
 		if (curDirectory == item->getParent()) {
