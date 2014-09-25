@@ -917,9 +917,9 @@ bool QueueFrame::show(const QueueItemInfoPtr& Qii) const {
 	case TREE_FINISHED:
 		return Qii->isFinished() && !isTempOrFilelist;
 	case TREE_PAUSED:
-		return !Qii->bundle || Qii->isPaused() && !isTempOrFilelist;
+		return Qii->isPaused() && !isTempOrFilelist;
 	case TREE_FAILED:
-		return !Qii->bundle || Qii->isFailed() && !isTempOrFilelist;
+		return Qii->isFailed() && !isTempOrFilelist;
 	case TREE_FILELIST:
 		return Qii->isFilelist();
 	case TREE_TEMP:
@@ -1393,7 +1393,7 @@ int QueueFrame::QueueItemInfo::getImageIndex() const {
 	else if (qi)
 		return ResourceLoader::getIconIndex(Text::toT(qi->getTarget()));
 	else if (isDirectory) {
-		if (!parent)
+		if (!parent && this == iBack)
 			return ResourceLoader::DIR_STEPBACK;
 		return ResourceLoader::DIR_NORMAL;
 	} else
@@ -1603,7 +1603,7 @@ bool QueueFrame::QueueItemInfo::isFinished() const {
 }
 
 bool QueueFrame::QueueItemInfo::isPaused() const {
-	return bundle ? bundle->isPausedPrio() : qi && qi->getBundle() ? qi->getBundle()->isPausedPrio() : qi && qi->isPausedPrio();
+	return bundle ? bundle->isPausedPrio() : qi && qi->getBundle() ? qi->getBundle()->isPausedPrio() : qi ? qi->isPausedPrio() : isDirectory;
 }
 
 bool QueueFrame::QueueItemInfo::isTempItem() const {
@@ -1619,7 +1619,7 @@ bool QueueFrame::QueueItemInfo::isFilelist() const {
 }
 
 bool QueueFrame::QueueItemInfo::isFailed() const {
-	return bundle ? bundle->isFailed() : qi && qi->getBundle() ? qi->getBundle()->isFailed() : false;
+	return bundle ? bundle->isFailed() : qi && qi->getBundle() ? qi->getBundle()->isFailed() : isDirectory;
 }
 
 
