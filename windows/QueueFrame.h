@@ -244,7 +244,7 @@ private:
 	void handleMoveBundles(BundleList bl);
 	void handleRemoveBundles(BundleList bl, bool removeFinished, bool finishedOnly = false);
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);
-	void handleSearchQI(const QueueItemPtr& aQI);
+	void handleSearchQI(const QueueItemPtr& aQI, bool byName);
 	void handleCheckSFV(bool treeMenu);
 	void handleOpenFile(const QueueItemPtr& aQI);
 	void handleOpenFolder();

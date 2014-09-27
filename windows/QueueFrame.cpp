@@ -470,13 +470,18 @@ void QueueFrame::AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql,
 		WinUtil::appendFilePrioMenu(dirMenu, ql);
 
 	dirMenu.InsertSeparatorFirst(TSTRING(DIRECTORY));
+	ctrlQueue.appendCopyMenu(dirMenu);
+	dirMenu.AppendMenu(MF_SEPARATOR);
+
+	dirMenu.appendItem(TSTRING(SEARCH), [this] { handleSearchDirectory(); });
+	if (dirs.size() == 1)
+		WinUtil::appendSearchMenu(dirMenu, Text::fromT(dirs.front()->name));
 
 	dirMenu.AppendMenu(MF_SEPARATOR);
 	dirMenu.AppendMenu(MF_STRING, IDC_REMOVE_OFFLINE, CTSTRING(REMOVE_OFFLINE));
 	dirMenu.AppendMenu(MF_STRING, IDC_READD_ALL, CTSTRING(READD_ALL));
 	dirMenu.appendSeparator();
 
-	dirMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
 	if (hasBundleItems) {
 		dirMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(false); });
 	}
@@ -763,7 +768,8 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 
 		fileMenu.InsertSeparatorFirst(TSTRING(FILE));
 		if (!qi->isSet(QueueItem::FLAG_USER_LIST)) {
-			fileMenu.appendItem(CTSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchQI(qi); });
+			fileMenu.appendItem(CTSTRING(SEARCH), [=] { handleSearchQI(qi, true); });
+			fileMenu.appendItem(CTSTRING(SEARCH_FOR_ALTERNATES), [=] { handleSearchQI(qi, false); });
 			WinUtil::appendPreviewMenu(fileMenu, qi->getTarget());
 		}
 
@@ -807,7 +813,6 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 	}
 
 	if (hasBundleItems) {
-		fileMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
 		fileMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(false); });
 		fileMenu.appendSeparator();
 	}
@@ -848,6 +853,8 @@ void QueueFrame::handleSearchDirectory() {
 	ctrlQueue.forEachSelectedT([&](const QueueItemInfoPtr qii) {
 		if (qii->bundle)
 			WinUtil::searchAny(qii->bundle->isFileBundle() ? Util::getLastDir(Text::toT(qii->bundle->getTarget())) : Text::toT(qii->bundle->getName()));
+		else if ( qii->isDirectory && qii != iBack)
+			WinUtil::searchAny(qii->name);
 	});
 }
 
@@ -1017,9 +1024,13 @@ void QueueFrame::handleRemoveFiles(QueueItemList queueitems, bool removeFinished
 	}
 }
 
-void QueueFrame::handleSearchQI(const QueueItemPtr& aQI) {
-	if (aQI)
-		WinUtil::searchHash(aQI->getTTH(), Util::getFileName(aQI->getTarget()), aQI->getSize());
+void QueueFrame::handleSearchQI(const QueueItemPtr& aQI, bool byName) {
+	if (aQI) {
+		if (byName)
+			WinUtil::searchAny(Text::toT(Util::getFileName(aQI->getTarget())));
+		else
+			WinUtil::searchHash(aQI->getTTH(), Util::getFileName(aQI->getTarget()), aQI->getSize());
+	}
 }
 
 void QueueFrame::onRenameBundle(BundlePtr b) {
