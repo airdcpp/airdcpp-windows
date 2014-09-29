@@ -1166,10 +1166,10 @@ void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
 void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
 	if (aQI->getBundle()) {
 		auto parent = findParent(aQI->getBundle()->getToken());
-		if (!parent || !parent->childrenCreated || !show(parent))
+		if (!parent || !parent->childrenCreated)
 			return;
 
-		if (parent && aQI->getBundle()->isFileBundle()) {
+		if (parent && aQI->getBundle()->isFileBundle() && show(parent)) {
 			ctrlQueue.updateItem(parent.get());
 			return;
 		}
@@ -1177,11 +1177,11 @@ void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
 		auto item = parent->addChild(aQI);
 		if (curDirectory == item->getParent()) {
 			ctrlQueue.insertItem(item.get(), item->getImageIndex());
-		} 
+		}
 
 		updateParentDirectories(item);
 
-	} else { // File bundle, File list or a Temp item
+	} else { // File list or a Temp item
 		auto item = findParent(aQI->getTarget());
 		if (!item) {
 			item = new QueueItemInfo(aQI, nullptr);
@@ -1519,9 +1519,13 @@ void QueueFrame::updateParentDirectories(QueueItemInfoPtr Qii) {
 
 			//update the directory that is currently inside view
 			if (cur->getParent() == curDirectory) {
-				if (show(cur))
-					ctrlQueue.updateItem(cur.get());
-				else
+				if (show(cur)) {
+					int i = ctrlQueue.findItem(cur.get());
+					if (i != -1)
+						ctrlQueue.updateItem(i);
+					else
+						ctrlQueue.insertItem(cur.get(), cur->getImageIndex());
+				} else
 					ctrlQueue.deleteItem(cur.get());
 			}
 		}
