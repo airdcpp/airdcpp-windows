@@ -920,22 +920,22 @@ bool QueueFrame::show(const QueueItemInfoPtr& Qii) const {
 	{
 	case TREE_BUNDLES:
 		return !isTempOrFilelist;
+	// TREE_QUEUED and TREE_FINISHED are the only ones that hide/show items INSIDE a Bundle.
 	case TREE_QUEUED:
 		return !Qii->isFinished() && !isTempOrFilelist;
 	case TREE_FINISHED:
 		return Qii->isFinished() && !isTempOrFilelist;
 	case TREE_PAUSED:
-		return Qii->isPaused() && !isTempOrFilelist;
+		return (!Qii->bundle || Qii->bundle->isPausedPrio()) && !isTempOrFilelist;
 	case TREE_FAILED:
-		return Qii->isFailed() && !isTempOrFilelist;
+		return (!Qii->bundle || Qii->bundle->isFailed()) && !isTempOrFilelist;
 	case TREE_FILELIST:
 		return Qii->isFilelist();
 	case TREE_TEMP:
 		return Qii->isTempItem();
-	case TREE_AUTOSEARCH: {
-		BundlePtr b = Qii->bundle ? Qii->bundle : Qii->qi ? Qii->qi->getBundle() : nullptr;
-		return b && b->getAddedByAutoSearch();
-	}
+	case TREE_AUTOSEARCH: 
+		return (!Qii->bundle || Qii->bundle->getAddedByAutoSearch()) && !isTempOrFilelist;
+
 	case TREE_LOCATION: {
 		if (Qii->bundle && curItem != locationParent){
 			//do it this way so we can have counts after the name
@@ -1623,10 +1623,6 @@ bool QueueFrame::QueueItemInfo::isFinished() const {
 		isDirectory && getTotalSize() == getFinishedBytes();
 }
 
-bool QueueFrame::QueueItemInfo::isPaused() const {
-	return bundle ? bundle->isPausedPrio() : qi && qi->getBundle() ? qi->getBundle()->isPausedPrio() : qi ? qi->isPausedPrio() : isDirectory;
-}
-
 bool QueueFrame::QueueItemInfo::isTempItem() const {
 	if (bundle)
 		return false;
@@ -1638,11 +1634,6 @@ bool QueueFrame::QueueItemInfo::isFilelist() const {
 		return false;
 	return qi && qi->isSet(QueueItem::FLAG_USER_LIST);
 }
-
-bool QueueFrame::QueueItemInfo::isFailed() const {
-	return bundle ? bundle->isFailed() : qi && qi->getBundle() ? qi->getBundle()->isFailed() : isDirectory;
-}
-
 
 double QueueFrame::QueueItemInfo::getPercentage() const {
 	return getSize() > 0 ? (double) getDownloadedBytes()*100.0 / (double) getSize() : 0;

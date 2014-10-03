@@ -572,7 +572,7 @@ LRESULT ChatFrameBase::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam
 		}
 		emoMenu.CreatePopupMenu();
 		menuItems = 0;
-		emoMenu.InsertSeparatorFirst(_T("Emoticons Pack"));
+		emoMenu.InsertSeparatorFirst(TSTRING(EMOTICONS_PACK));
 		emoMenu.AppendMenu(MF_STRING, IDC_EMOMENU, _T("Disabled"));
 		if (SETTING(EMOTICONS_FILE)=="Disabled") emoMenu.CheckMenuItem( IDC_EMOMENU, MF_BYCOMMAND | MF_CHECKED );
 		// nacteme seznam emoticon packu (vsechny *.xml v adresari EmoPacks)
