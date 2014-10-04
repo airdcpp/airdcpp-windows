@@ -2,9 +2,6 @@
 set file=%1client\version.inc
 set tmpfile=%1client\version.inc.tmp
 
-call git update-index --assume-unchanged %1client\StringDefs.cpp
-call git update-index --assume-unchanged %1EN_Example.xml
-
 for /F "tokens=*" %%a in ('git describe --abbrev"="4  --dirty"="-d') do echo #define GIT_TAG "%%a" >> %tmpfile%
 
 for /F "tokens=*" %%a in ('git rev-list HEAD --count') do echo #define GIT_COMMIT_COUNT %%a >> %tmpfile%
@@ -25,6 +22,4 @@ goto :end
 goto :end
 	
 :end
-call git update-index --no-assume-unchanged %1client\StringDefs.cpp
-call git update-index --no-assume-unchanged %1EN_Example.xml
 ECHO Y | DEL %tmpfile%
