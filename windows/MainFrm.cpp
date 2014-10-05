@@ -199,6 +199,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	UpdateManager::getInstance()->addListener(this);
 	ShareScannerManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
+	ConnectionManager::getInstance()->addListener(this);
 
 	WinUtil::init(m_hWnd);
 	ResourceLoader::load();
@@ -1228,6 +1229,12 @@ LRESULT MainFrame::OnClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 			
 			HubFrame::ShutDown();
 
+			{
+				Lock l(ccpmMutex);
+				ccpms.clear();
+			}
+			ConnectionManager::getInstance()->disconnect();
+
 			SplashWindow::create();
 			WinUtil::splash->update(STRING(CLOSING_WINDOWS));
 
@@ -2016,6 +2023,7 @@ void MainFrame::TestWrite( bool downloads, bool incomplete, bool AppPath) {
 
 
 LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	ConnectionManager::getInstance()->removeListener(this);
 	LogManager::getInstance()->removeListener(this);
 	QueueManager::getInstance()->removeListener(this);
 	TimerManager::getInstance()->removeListener(this);
@@ -2147,4 +2155,66 @@ void MainFrame::updateTooltipRect() {
 		ctrlStatus.GetRect(i, sr);
 		ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, i+POPUP_UID, sr);
 	}
+}
+
+UserConnection* MainFrame::getPMConn(const UserPtr& user, UserConnectionListener* listener) {
+	Lock l(ccpmMutex);
+	auto i = ccpms.find(user);
+	if (i != ccpms.end()) {
+		auto uc = i->second;
+		ccpms.erase(i);
+		uc->addListener(listener);
+		uc->removeListener(this);
+		return uc;
+	}
+	return nullptr;
+}
+
+void MainFrame::on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept {
+	if(cqi->getConnType() == CONNECTION_TYPE_PM) {
+
+		// C-C PMs are not supported outside of PM windows.
+		if(!SETTING(POPUP_PMS)) {
+			uc->disconnect(true);
+			return;
+		}
+
+		// until a message is received, no need to open a PM window.
+		Lock l(ccpmMutex);
+		ccpms[cqi->getUser()] = uc;
+		uc->addListener(this);
+	}
+}
+
+void MainFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept {
+	if(cqi->getConnType() == CONNECTION_TYPE_PM) {
+		Lock l(ccpmMutex);
+		ccpms.erase(cqi->getUser());
+	}
+}
+
+void MainFrame::on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessage& message) noexcept {
+	auto user = uc->getHintedUser();
+	callAsync([this, message, user] {
+		auto text = message.format();
+		auto opened = PrivateFrame::isOpen(user) || PrivateFrame::gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), &message.from->getClient());
+
+		// remove our listener as the PM window now handles the conn.
+		{
+			Lock l(ccpmMutex);
+			auto i = ccpms.find(user);
+			if(i != ccpms.end()) {
+				auto uc = i->second;
+				uc->removeListener(this);
+				if(!opened) {
+					uc->disconnect(true);
+				}
+				ccpms.erase(i);
+			}
+		}
+
+		if(opened) {
+			onChatMessage(true);
+		}
+	});
 }

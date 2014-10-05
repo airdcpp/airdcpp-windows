@@ -805,6 +805,9 @@
     <ClInclude Include="client\ShareManagerListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="client\ConnectionType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="client\StringDefs.h">
