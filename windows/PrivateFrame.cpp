@@ -32,6 +32,7 @@
 #include "../client/FavoriteManager.h"
 #include "../client/StringTokenizer.h"
 #include "../client/ResourceManager.h"
+#include "../client/Adchub.h"
 
 #include <boost/range/algorithm/for_each.hpp>
 
@@ -72,6 +73,11 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
+	ConnectionManager::getInstance()->addListener(this);
+	{
+		Lock l(mutex);
+		conn = MainFrame::getMainFrame()->getPMConn(replyTo.user, this);
+	}
 
 	readLog();
 
@@ -105,7 +111,6 @@ LRESULT PrivateFrame::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 	if(!created) {
 		CreateEx(WinUtil::mdiClient);
-		//updateOnlineStatus();
 	}
 	setStatusText(aLine, severity);
 	if (SETTING(BOLD_PM)) {
@@ -159,6 +164,44 @@ void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUse
 		callAsync([this] { updateTabIcon(false); });
 	}
 }
+void PrivateFrame::on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept{
+	if (cqi->getConnType() == CONNECTION_TYPE_PM && cqi->getUser() == replyTo.user) {
+		{
+			Lock l(mutex);
+			if (conn) {
+				conn->removeListener(this);
+			}
+			conn = uc;
+			conn->addListener(this);
+		}
+		callAsync([this] {
+			updateOnlineStatus(true);
+			addStatusLine(_T("A direct encrypted channel has been established"), LogManager::LOG_INFO);
+		});
+	}
+}
+
+void PrivateFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept{
+	if (cqi->getConnType() == CONNECTION_TYPE_PM && cqi->getUser() == replyTo.user) {
+		{
+			Lock l(mutex);
+			conn = nullptr;
+		}
+		callAsync([this] {
+			updateOnlineStatus(true);
+			addStatusLine(_T("The direct encrypted channel has been disconnected"), LogManager::LOG_INFO);
+		});
+	}
+}
+
+void PrivateFrame::on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessage& message) noexcept{
+	auto user = uc->getHintedUser();
+	callAsync([this, message, user] {
+		auto text = message.format();
+		gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), &message.from->getClient());
+	});
+}
+
 
 void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 	tstring status = _T(" *** ") + aLine + _T(" ***");
@@ -225,10 +268,11 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		}
 
 		//ADC related changes
-		if (hubsInfoNew.second && !replyTo.user->isNMDC() && !hubs.empty()) {
+		if (!ccReady() && hubsInfoNew.second && !replyTo.user->isNMDC() && !hubs.empty()) {
 			if (!(ctrlHubSel.GetStyle() & WS_VISIBLE)) {
 				showHubSelection(true);
-			}
+			} else if (ctrlHubSel.GetStyle() & WS_DISABLED)
+				ctrlHubSel.EnableWindow(TRUE);
 
 			fillHubSelection();
 
@@ -247,6 +291,9 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			} else if (!ctrlClient.getClient()) {
 				changeClient();
 			}
+		}
+		else if (ccReady()) {
+			ctrlHubSel.EnableWindow(FALSE);
 		} else {
 			showHubSelection(false);
 		}
@@ -277,7 +324,7 @@ void PrivateFrame::showHubSelection(bool show) {
 	UpdateLayout();
 }
 
-void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const UserPtr& replyTo, const tstring& aMessage, Client* c) {
+bool PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const UserPtr& replyTo, const tstring& aMessage, Client* c) {
 	PrivateFrame* p = nullptr;
 	bool myPM = replyTo == ClientManager::getInstance()->getMe();
 	const UserPtr& user = myPM ? to : replyTo;
@@ -286,7 +333,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 
 	auto i = frames.find(user);
 	if(i == frames.end()) {
-		if(frames.size() > 200) return;
+		if(frames.size() > 200) return false;
 
 		p = new PrivateFrame(hintedUser, c);
 		frames[user] = p;
@@ -350,6 +397,7 @@ void PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 		}
 		i->second->addLine(from, aMessage);
 	}
+	return true;
 }
 
 void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Client* c) {
@@ -360,7 +408,6 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 		p = new PrivateFrame(replyTo, c);
 		frames[replyTo] = p;
 		p->CreateEx(WinUtil::mdiClient);
-		//p->updateOnlineStatus();
 	} else {
 		p = i->second;
 		p->checkClientChanged(replyTo, c, true);
@@ -398,6 +445,9 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 		handleGetList();
 	} else if(stricmp(cmd.c_str(), _T("log")) == 0) {
 		WinUtil::openFile(Text::toT(getLogPath()));
+	}
+	else if (Util::stricmp(cmd.c_str(), _T("direct")) == 0 || Util::stricmp(cmd.c_str(), _T("encrypted")) == 0) {
+		startCC();
 	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
 		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for private message tabs: /getlist, /grant, /favorite");
 	} else {
@@ -409,7 +459,18 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 
 bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
 	if(replyTo.user->isOnline()) {
-		return ClientManager::getInstance()->privateMessage(replyTo, Text::fromT(msg), error_, thirdPerson);
+
+		auto msg8 = Text::fromT(msg);
+
+		{
+			Lock l(mutex);
+			if (conn) {
+				conn->pm(msg8, thirdPerson);
+				return true;
+			}
+		}
+
+		return ClientManager::getInstance()->privateMessage(replyTo, msg8, error_, thirdPerson);
 	}
 	error_ = STRING(USER_OFFLINE);
 	return false;
@@ -420,6 +481,16 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		LogManager::getInstance()->removePmCache(replyTo.user);
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
+		{
+			Lock l(mutex);
+			if (conn) {
+				conn->removeListener(this);
+				conn->disconnect(true);
+			}
+		}
+
+		ConnectionManager::getInstance()->removeListener(this);
+
 		closed = true;
 		PostMessage(WM_CLOSE);
 		return 0;
@@ -432,6 +503,52 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		return 0;
 	}
 }
+
+void PrivateFrame::startCC(bool silent) {
+	if (ccReady()) {
+		if (!silent) { addStatusLine(_T("A direct encrypted channel is already available"), LogManager::LOG_INFO); }
+		return;
+	}
+
+	{
+		RLock l(ClientManager::getInstance()->getCS());
+		auto ou = ClientManager::getInstance()->findOnlineUser(replyTo);
+		if (!ou) {
+			if (!silent) { addStatusLine(_T("User offline"), LogManager::LOG_ERROR); }
+			return;
+		}
+
+		tstring err = ou->getUser()->isNMDC() ? _T("A secure ADC hub is required; this feature is not supported on NMDC hubs") :
+			!ou->getClient().isSecure() ? _T("The connection to the ADC hub used to initiate the channel must be encrypted") :
+			!ou->getIdentity().supports(AdcHub::CCPM_FEATURE) ? _T("The user does not support the CCPM ADC extension") : _T("");
+		if (!err.empty()) {
+			if (!silent) { addStatusLine(_T("Cannot start the direct encrypted channel: ") + err, LogManager::LOG_ERROR); }
+			return;
+		}
+	}
+
+	if (!silent) { addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO); }
+	string error = Util::emptyString;
+	bool protocolError = false;
+	string token = ConnectionManager::getInstance()->tokens.getToken(CONNECTION_TYPE_PM);
+	ClientManager::getInstance()->connect(replyTo.user, token, true, error, replyTo.hint, protocolError, CONNECTION_TYPE_PM);
+}
+
+void PrivateFrame::closeCC(bool silent) {
+	if (ccReady()) {
+		if (!silent) { addStatusLine(_T("Disconnecting the direct encrypted channel..."),LogManager::LOG_INFO); }
+		ConnectionManager::getInstance()->disconnect(replyTo.user, CONNECTION_TYPE_PM);
+	}
+	else {
+		if (!silent) { addStatusLine(_T("No direct encrypted channel available"), LogManager::LOG_INFO); }
+	}
+}
+
+bool PrivateFrame::ccReady() const {
+	Lock l(mutex);
+	return conn;
+}
+
 
 void PrivateFrame::addLine(const tstring& aLine, CHARFORMAT2& cf) {
 	Identity i = Identity(NULL, 0);

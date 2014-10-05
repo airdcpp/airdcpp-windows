@@ -670,13 +670,19 @@ void TransferView::updateItem(int ii, uint32_t updateMask) {
 }
 
 void TransferView::on(ConnectionManagerListener::UserUpdated, const ConnectionQueueItem* aCqi) noexcept {
-	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
+	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
+		return;
+
+	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD);
 	ui->setUser(aCqi->getHintedUser());
 	speak(UPDATE_ITEM, ui);
 }
 
 void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueItem* aCqi) {
-	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
+	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
+		return;
+
+	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD);
 	if(ui->download) {
 		string aTarget, bundleToken; int64_t aSize; int aFlags;
 		if(QueueManager::getInstance()->getQueueInfo(aCqi->getHintedUser(), aTarget, aSize, aFlags, bundleToken)) {
@@ -701,7 +707,10 @@ void TransferView::on(ConnectionManagerListener::Added, const ConnectionQueueIte
 }
 
 void TransferView::on(ConnectionManagerListener::Forced, const ConnectionQueueItem* aCqi) noexcept {
-	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload(), false);
+	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
+		return;
+
+	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD, false);
 	ui->setStatusString(TSTRING(CONNECTING_FORCED));
 	speak(UPDATE_ITEM, ui);
 }
@@ -729,11 +738,17 @@ void TransferView::onUpdateFileInfo(const HintedUser& aUser, const string& aToke
 }
 
 void TransferView::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* aCqi) {
-	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getToken(), aCqi->getDownload()));
+	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
+		return;
+
+	speak(REMOVE_ITEM, new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD));
 }
 
 void TransferView::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* aCqi, const string& aReason) {
-	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getDownload());
+	if (aCqi->getConnType() == CONNECTION_TYPE_PM)
+		return;
+
+	auto ui = new UpdateInfo(aCqi->getToken(), aCqi->getConnType() == CONNECTION_TYPE_DOWNLOAD);
 	if(aCqi->getUser()->isSet(User::OLD_CLIENT)) {
 		ui->setStatusString(TSTRING(SOURCE_TOO_OLD));
 	} else {

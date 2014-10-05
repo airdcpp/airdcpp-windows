@@ -25,6 +25,8 @@
 
 #include "../client/User.h"
 #include "../client/ClientManagerListener.h"
+#include "../client/ConnectionManagerListener.h"
+#include "../client/UserConnectionListener.h"
 #include "../client/DelayedEvents.h"
 #include "../client/UserInfoBase.h"
 
@@ -35,10 +37,10 @@
 #define HUB_SEL_MAP 9
 
 class PrivateFrame : public UserInfoBaseHandler<PrivateFrame>, public UserInfoBase,
-	private ClientManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
+	private ClientManagerListener, private ConnectionManagerListener, private UserConnectionListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
-	static void gotMessage(const Identity& from, const UserPtr& to, const UserPtr& replyTo, const tstring& aMessage, Client* c);
+	static bool gotMessage(const Identity& from, const UserPtr& to, const UserPtr& replyTo, const tstring& aMessage, Client* c);
 	static void openWindow(const HintedUser& replyTo, const tstring& aMessage = Util::emptyStringT, Client* c = NULL);
 	static bool isOpen(const UserPtr& u) { return frames.find(u) != frames.end(); }
 	static void closeAll();
@@ -178,6 +180,13 @@ private:
 	CIcon tabIcon;
 	CIcon userOffline;
 
+	mutable CriticalSection mutex;
+	UserConnection* conn;
+
+	void startCC(bool silent = false);
+	void closeCC(bool silent = false);
+	bool ccReady() const;
+
 	void checkClientChanged(const HintedUser& newUser, Client* c, bool ownChange);
 	void updateTabIcon(bool offline);
 	TStringList prevCommands;
@@ -188,6 +197,13 @@ private:
 	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
 	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
 	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
+
+	// ConnectionManagerListener
+	virtual void on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept;
+	virtual void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept;
+
+	// UserConnectionListener
+	virtual void on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessage& message) noexcept;
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
