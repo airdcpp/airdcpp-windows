@@ -73,8 +73,6 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlQueue.SetTextBkColor(WinUtil::bgColor);
 	ctrlQueue.SetTextColor(WinUtil::textColor);
 	ctrlQueue.setFlickerFree(WinUtil::bgBrush);
-	//ctrlQueue.setInsertFunction(bind(&QueueFrame::insertItems, this, placeholders::_1));
-	//ctrlQueue.setFilterFunction(bind(&QueueFrame::show, this, placeholders::_1));
 
 	ctrlTree.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS |
 		TVS_HASBUTTONS | TVS_LINESATROOT | TVS_HASLINES | TVS_SHOWSELALWAYS | TVS_DISABLEDRAGDROP | TVS_TRACKSELECT,
@@ -1400,6 +1398,10 @@ void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickB
 	for (auto& b : tickBundles) {
 		addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(b); });
 	}
+}
+
+void QueueFrame::on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { 
+	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 
 /*QueueItemInfo functions*/
