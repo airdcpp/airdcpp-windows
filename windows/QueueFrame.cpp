@@ -239,7 +239,7 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			cd->clrTextBk = WinUtil::bgColor;
 
 			if (colIndex == COLUMN_STATUS) {
-				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || ii->getSize() == -1 || (ii->bundle && ii->bundle->isFailed())) { // file lists don't have size in queue, don't even start to draw...
+				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || ii && (ii->getSize() <= 0 || (ii->bundle && ii->bundle->isFailed()))) { // file lists don't have size in queue, don't even start to draw...
 					bHandled = FALSE;
 					return 0;
 				}
@@ -1103,8 +1103,8 @@ QueueFrame::QueueItemInfoPtr QueueFrame::findQueueItem(const QueueItemPtr& aQI) 
 void QueueFrame::onBundleRemoved(const BundlePtr& aBundle, const string& aPath) {
 	auto i = parents.find(aBundle->getToken());;
 	if (i != parents.end()) {
-		ctrlQueue.deleteItem(i->second.get());
 		removeLocationItem(aPath);
+		ctrlQueue.deleteItem(i->second.get());
 		parents.erase(i);
 	}
 }
@@ -1596,7 +1596,7 @@ const string& QueueFrame::QueueItemInfo::getTarget() const {
 }
 
 int64_t QueueFrame::QueueItemInfo::getSize() const {
-	return bundle ? bundle->getSize() : qi ? qi->getSize() : getTotalSize();
+	return bundle ? bundle->getSize() : qi ? qi->getSize() : isDirectory ? getTotalSize() : -1;
 }
 
 int64_t QueueFrame::QueueItemInfo::getSpeed() const {
