@@ -237,7 +237,7 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 
 			int colIndex = ctrlQueue.findColumn(cd->iSubItem);
 			cd->clrTextBk = WinUtil::bgColor;
-
+			dcassert(ii);
 			if (colIndex == COLUMN_STATUS) {
 				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || ii && (ii->getSize() <= 0 || (ii->bundle && ii->bundle->isFailed()))) { // file lists don't have size in queue, don't even start to draw...
 					bHandled = FALSE;
@@ -562,13 +562,11 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 			aMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(true); });
 		aMenu.appendSeparator();
 		aMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
-		if (hasFinished) {
-			if (!filesOnly)
-				aMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
-			if (curSel != TREE_FAILED) {
-				aMenu.appendSeparator();
-				aMenu.appendItem(TSTRING(REMOVE_FINISHED), [=] { handleRemoveBundles(bl, false, true); });
-			}
+		if (!filesOnly)
+			aMenu.appendItem(TSTRING(REMOVE_WITH_FILES), [=] { handleRemoveBundles(bl, true); });
+		if (hasFinished && (curSel != TREE_FAILED)) {
+			aMenu.appendSeparator();
+			aMenu.appendItem(TSTRING(REMOVE_FINISHED), [=] { handleRemoveBundles(bl, false, true); });
 		}
 	}
 	else if (!ql.empty()) {
