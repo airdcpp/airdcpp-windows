@@ -240,6 +240,8 @@ private:
 	void AppendDirectoryMenu(QueueItemInfoList& dirs, QueueItemList& ql, ShellMenu& dirMenu);
 
 	static tstring handleCopyMagnet(const QueueItemInfo* ii);
+	static tstring handleCopyTTH(const QueueItemInfo* ii);
+
 	void handleMoveBundles(BundleList bl);
 	void handleRemoveBundles(BundleList bl, bool removeFinished, bool finishedOnly = false);
 	void handleRemoveFiles(QueueItemList ql, bool removeFinished);

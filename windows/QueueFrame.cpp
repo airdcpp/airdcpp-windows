@@ -704,7 +704,8 @@ void QueueFrame::AppendQiMenu(QueueItemList& ql, ShellMenu& fileMenu) {
 
 
 	ListType::MenuItemList customItems{
-		{ TSTRING(MAGNET_LINK), &handleCopyMagnet }
+		{ TSTRING(MAGNET_LINK), &handleCopyMagnet },
+		{ _T("TTH"), &handleCopyTTH }
 	};
 	ctrlQueue.appendCopyMenu(fileMenu, customItems);
 
@@ -949,6 +950,12 @@ bool QueueFrame::show(const QueueItemInfoPtr& Qii) const {
 tstring QueueFrame::handleCopyMagnet(const QueueItemInfo* aII) {
 	if (aII->qi && !aII->isFilelist())
 		return Text::toT(WinUtil::makeMagnet(aII->qi->getTTH(), Util::getFileName(aII->qi->getTarget()), aII->qi->getSize()));
+
+	return Util::emptyStringT;
+}
+tstring QueueFrame::handleCopyTTH(const QueueItemInfo* aII) {
+	if (aII->qi && !aII->isFilelist())
+		return Text::toT(aII->qi->getTTH().toBase32());
 
 	return Util::emptyStringT;
 }
@@ -1555,7 +1562,7 @@ const tstring QueueFrame::QueueItemInfo::getText(int col) const {
 			int64_t speed = getSpeed();
 			return speed > 0 ? Util::formatBytesW(speed) + _T("/s") : Util::emptyStringT;
 		}
-		case COLUMN_SOURCES: return !isFinished() && !isDirectory ? getSourceString() : Util::emptyStringT;
+		case COLUMN_SOURCES: return /*!isFinished() && */!isDirectory ? getSourceString() : Util::emptyStringT;
 		case COLUMN_DOWNLOADED: return Util::formatBytesW(getDownloadedBytes());
 		case COLUMN_TIME_ADDED: return getTimeAdded() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeAdded())) : Util::emptyStringT;
 		case COLUMN_TIME_FINISHED: return isFinished() && getTimeFinished() > 0 ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", getTimeFinished())) : Util::emptyStringT;
@@ -1688,6 +1695,9 @@ tstring QueueFrame::QueueItemInfo::getSourceString() const {
 	auto size = 0;
 	int online = 0;
 	if (bundle) {
+		if (bundle->isFinished())
+			return Util::emptyStringT;
+
 		Bundle::SourceList sources = QueueManager::getInstance()->getBundleSources(bundle);
 		size = sources.size();
 		for (const auto& s : sources) {
@@ -1695,6 +1705,9 @@ tstring QueueFrame::QueueItemInfo::getSourceString() const {
 				online++;
 		}
 	} else if(qi) {
+		if (qi->isFinished())
+			return Text::toT(qi->getLastSource());
+
 		QueueItem::SourceList sources = QueueManager::getInstance()->getSources(qi);
 		size = sources.size();
 		for (const auto& s : sources) {
