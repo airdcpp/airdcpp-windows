@@ -1394,5 +1394,8 @@
     <Image Include="res\paused.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\Stepback.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

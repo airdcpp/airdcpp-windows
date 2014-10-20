@@ -862,6 +862,7 @@
     <Image Include="res\Slots.ico" />
     <Image Include="res\SlotsFull.ico" />
     <Image Include="res\splash.png" />
+    <Image Include="res\Stepback.ico" />
     <Image Include="res\text.ico" />
     <Image Include="res\ToolbarImages\LogDir.ico" />
     <Image Include="res\TotalDown.ico" />
