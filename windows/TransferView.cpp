@@ -188,8 +188,9 @@ LRESULT TransferView::onContextMenu(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam,
 				setDefaultItem(transferMenu);
 				if(ii->download)
 					transferMenu.appendItem(TSTRING(REMOVE_BUNDLE_SOURCE), [=] { handleRemoveBundleSource(); });
+				transferMenu.appendSeparator();
 			}
-			transferMenu.appendSeparator();
+			
 			transferMenu.appendItem(TSTRING(OPEN_FOLDER), [=] { handleOpenFolder(); });
 			ctrlTransfers.appendCopyMenu(transferMenu);
 			transferMenu.appendItem(TSTRING(SEARCH_DIRECTORY), [=] { handleSearchDir(); });

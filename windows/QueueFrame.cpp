@@ -560,6 +560,16 @@ void QueueFrame::AppendTreeMenu(BundleList& bl, QueueItemList& ql, OMenu& aMenu)
 		WinUtil::appendBundlePrioMenu(aMenu, bl);
 		if (hasFinished)
 			aMenu.appendItem(TSTRING(RUN_SFV_CHECK), [=] { handleCheckSFV(true); });
+
+		if (curSel == TREE_FAILED) {
+			aMenu.appendItem(TSTRING(RETRY_SHARING), [=] {
+				for_each(bl, [&](BundlePtr b) { QueueManager::getInstance()->shareBundle(b, false); });
+			}, OMenu::FLAG_THREADED);
+			aMenu.appendItem(TSTRING(FORCE_SHARING), [=] { 
+				for_each(bl, [&](BundlePtr b) { QueueManager::getInstance()->shareBundle(b, true); }); 
+			}, OMenu::FLAG_THREADED);
+
+		}
 		aMenu.appendSeparator();
 		aMenu.appendItem(TSTRING(REMOVE), [=] { handleRemoveBundles(bl, false); });
 		if (!filesOnly)

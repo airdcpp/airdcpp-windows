@@ -1740,15 +1740,17 @@ tstring DirectoryListingFrame::handleCopyMagnet(const ItemInfo* ii) {
 }
 
 tstring DirectoryListingFrame::handleCopyPath(const ItemInfo* ii) {
+	tstring ret = _T(" ");
 	if (ii->type == ItemInfo::FILE) {
-		return Text::toT(Util::toAdcFile(ii->file->getPath()));
+		ret += Text::toT(Util::toAdcFile(ii->file->getPath()));
 	} else {
 		if (ii->dir->getAdls() && ii->dir->getParent()->getParent()) { // not root
-			return Text::toT(Util::toAdcFile(((DirectoryListing::AdlDirectory*)ii->dir.get())->getFullPath()));
+			ret += Text::toT(Util::toAdcFile(((DirectoryListing::AdlDirectory*)ii->dir.get())->getFullPath()));
 		} else {
-			return Text::toT(Util::toAdcFile(ii->dir->getPath()));
+			ret += Text::toT(Util::toAdcFile(ii->dir->getPath()));
 		}
 	}
+	return ret;
 }
 
 tstring DirectoryListingFrame::handleCopyDirectory(const ItemInfo* ii) {
