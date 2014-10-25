@@ -1322,6 +1322,8 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 		}
 	}
 
+	bool isDupeOrOwnlist = (ctrlFiles.list.GetSelectedCount() == 1) && (dl->getIsOwnList() || (ii->getDupe() != DUPE_NONE && ii->getDupe() != DUPE_QUEUE));
+
 	if (!dl->getIsOwnList()) {
 		// download menu
 		optional<TTHValue> tth;
@@ -1336,7 +1338,7 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 			path = ii->dir->getPath();
 		}
 
-		appendDownloadMenu(fileMenu, DownloadBaseHandler::TYPE_PRIMARY, !allComplete, tth, path);
+		appendDownloadMenu(fileMenu, DownloadBaseHandler::TYPE_PRIMARY, !allComplete, tth, path, true, !isDupeOrOwnlist);
 	}
 
 	if (hasFiles)
@@ -1346,7 +1348,7 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 		fileMenu.appendSeparator();
 
 	if (hasFiles) {
-		fileMenu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); });
+		fileMenu.appendItem(TSTRING(OPEN), [this] { handleOpenFile(); }, isDupeOrOwnlist ? OMenu::FLAG_DEFAULT : 0);
 	}
 
 	if (!hasFiles)
@@ -1404,7 +1406,7 @@ void DirectoryListingFrame::appendListContextMenu(CPoint& pt) {
 	}
 
 	// shell menu
-	if (ctrlFiles.list.GetSelectedCount() == 1 && (dl->getIsOwnList() || (ii->getDupe() != DUPE_NONE && ii->getDupe() != DUPE_QUEUE))) {
+	if (isDupeOrOwnlist) {
 		StringList paths;
 		if (getLocalPaths(paths, false, false)) {
 			fileMenu.appendShellMenu(paths);

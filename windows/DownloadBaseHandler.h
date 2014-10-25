@@ -101,8 +101,10 @@ public:
 
 
 	/* Menu creation */
-	void appendDownloadMenu(OMenu& aMenu, Type aType, bool isSizeUnknown, const optional<TTHValue>& aTTH, const optional<string>& aPath, bool appendPrioMenu = true) {
-		aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { onDownload(SETTING(DOWNLOAD_DIRECTORY), aType == TYPE_SECONDARY, isSizeUnknown, QueueItemBase::DEFAULT); }, OMenu::FLAG_DEFAULT);
+	void appendDownloadMenu(OMenu& aMenu, Type aType, bool isSizeUnknown, const optional<TTHValue>& aTTH, 
+		const optional<string>& aPath, bool appendPrioMenu = true, bool addDefault = true) {
+		aMenu.appendItem(CTSTRING(DOWNLOAD), [=] { 
+			onDownload(SETTING(DOWNLOAD_DIRECTORY), aType == TYPE_SECONDARY, isSizeUnknown, QueueItemBase::DEFAULT); }, addDefault ? OMenu::FLAG_DEFAULT : 0);
 
 		auto targetMenu = aMenu.createSubMenu(TSTRING(DOWNLOAD_TO), true);
 		appendDownloadTo(*targetMenu, aType == TYPE_SECONDARY, isSizeUnknown, aTTH, aPath);
