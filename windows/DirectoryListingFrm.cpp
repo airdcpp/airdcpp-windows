@@ -1093,7 +1093,15 @@ void DirectoryListingFrame::onListItemAction() {
 		if (ctrlFiles.list.GetSelectedCount() == 1) {
 			const ItemInfo* ii = ctrlFiles.list.getItemData(ctrlFiles.list.GetNextItem(-1, LVNI_SELECTED));
 			if(ii->type == ItemInfo::FILE) {
-				onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItemBase::HIGHEST : QueueItem::DEFAULT);
+				// if we already have it there's no reason to download, try to open instead.
+				if (dl->getIsOwnList() || ii->file->getDupe() == DUPE_FINISHED || ii->file->getDupe() == DUPE_SHARE) {
+					try {
+						openDupe(ii->file, false);
+					} catch (const Exception& e) {
+						updateStatus(Text::toT(e.getError()));
+					}
+				} else
+					onDownload(SETTING(DOWNLOAD_DIRECTORY), false, false, WinUtil::isShift() ? QueueItemBase::HIGHEST : QueueItem::DEFAULT);
 			} else {
 				changeType = CHANGE_LIST;
 				auto ht = ctrlTree.findItem(t, ii->getNameW() + _T("\\"));

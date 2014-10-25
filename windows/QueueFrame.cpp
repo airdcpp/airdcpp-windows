@@ -1021,10 +1021,10 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bo
 	}
 
 	MainFrame::getMainFrame()->addThreadedTask([=] {
-		for (auto b : bundles) {
+		parallel_for_each(bundles.begin(), bundles.end(), [&](BundlePtr b) {
 			if (!finishedOnly || b->isFinished() && !b->isFailed())
 				QueueManager::getInstance()->removeBundle(b, removeFinished);
-		}
+		});
 	});
 }
 
