@@ -27,6 +27,18 @@
 #include "../client/TaskQueue.h"
 
 #define STATUS_MSG_MAP 19
+#define PATH_MSG_MAP 9
+
+struct tButton {
+	int id, image;
+	ResourceManager::Strings tooltip;
+};
+
+static const tButton TBButtons[] = {
+	{ IDC_BACK, 2, ResourceManager::BACK },
+	{ IDC_FORWARD, 1, ResourceManager::FORWARD },
+	{ IDC_UP, 0, ResourceManager::LEVEL_UP },
+};
 
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
 	public CSplitterImpl<QueueFrame>,
@@ -35,7 +47,8 @@ class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
 
-	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_BUNDLES), curDirectory(nullptr), ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {
+	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_BUNDLES), curDirectory(nullptr), historyIndex(1),
+		ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP), pathContainer(WC_COMBOBOX, this, PATH_MSG_MAP) {
 		iBack.reset(new QueueItemInfo(_T(".."), nullptr));
 	}
 
@@ -62,9 +75,15 @@ public:
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
 		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
+		
+		COMMAND_ID_HANDLER(IDC_BACK, onTBButton)
+		COMMAND_ID_HANDLER(IDC_FORWARD, onTBButton)
+		COMMAND_ID_HANDLER(IDC_UP, onTBButton)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<QueueFrame>)
 		ALT_MSG_MAP(STATUS_MSG_MAP)
+		ALT_MSG_MAP(PATH_MSG_MAP)
+			COMMAND_CODE_HANDLER(CBN_SELCHANGE, onPathChange)
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -111,6 +130,11 @@ public:
 
 		return 0;
 	}
+
+	LRESULT onTBButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+
+	LRESULT onPathChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
+
 
 	void UpdateLayout(BOOL bResizeBars = TRUE );
 
@@ -250,8 +274,13 @@ private:
 	void handleOpenFile(const QueueItemPtr& aQI);
 	void handleOpenFolder();
 	void handleSearchDirectory();
-	void handleItemClick(const QueueItemInfoPtr& aII);
+	void handleItemClick(const QueueItemInfoPtr& aII, bool byHistory = false);
 	void handleTab();
+
+	void addHistory(const string& aPath);
+	void updateHistoryCombo();
+	const QueueItemInfoPtr findItemByPath(const string& aPath);
+	void handleHistoryClick(const string& aPath, bool byHistory);
 
 	void getSelectedItems(BundleList& bl, QueueItemList& ql, QueueItemInfoList& dirs, DWORD aFlag = LVNI_SELECTED);
 	tstring formatUser(const Bundle::BundleSource& bs) const;
@@ -275,6 +304,13 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[6];
 	CContainedWindow ctrlStatusContainer;
+	CContainedWindow pathContainer;
+	
+	CToolBarCtrl ctrlToolbar;
+	CComboBox ctrlPath;
+
+	deque<string> history;
+	size_t historyIndex;
 
 	/*map of parent items (bundles and queue items without bundle)*/
 	unordered_map<string, QueueItemInfoPtr> parents;
@@ -377,5 +413,8 @@ private:
 			}
 		}
 	}
+
+	void addCmdBarButtons();
+
 };
 #endif // !defined(QUEUE_FRAME_H)

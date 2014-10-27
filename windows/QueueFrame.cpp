@@ -86,6 +86,24 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlTree.SetBkColor(WinUtil::bgColor);
 	ctrlTree.SetTextColor(WinUtil::textColor);
 
+	//path field
+	ctrlPath.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
+		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
+	ctrlPath.SetFont(WinUtil::systemFont);
+	pathContainer.SubclassWindow(ctrlPath.m_hWnd);
+
+	//Create a toolbar
+	ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
+	ctrlToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
+	ctrlToolbar.SetImageList(ResourceLoader::getArrowImages());
+	ctrlToolbar.SetButtonStructSize();
+	addCmdBarButtons();
+	ctrlToolbar.AutoSize();
+
+	CreateSimpleReBar(WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | RBS_VARHEIGHT | RBS_AUTOSIZE | CCS_NODIVIDER);
+	AddSimpleReBarBand(ctrlToolbar.m_hWnd, NULL, FALSE, NULL, TRUE);
+	AddSimpleReBarBand(ctrlPath.m_hWnd, NULL, FALSE, 200, FALSE);
+
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlQueue.m_hWnd);
 	m_nProportionalPos = SETTING(QUEUE_SPLITTER_POS);
@@ -93,7 +111,6 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	CRect rc(SETTING(QUEUE_LEFT), SETTING(QUEUE_TOP), SETTING(QUEUE_RIGHT), SETTING(QUEUE_BOTTOM));
 	if (!(rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0))
 		MoveWindow(rc, TRUE);
-
 
 	FillTree();
 
@@ -121,6 +138,8 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	::SetTimer(m_hWnd, 0, 500, 0);
 
+	history.emplace_back("/");
+	callAsync([this] { updateHistoryCombo(); });
 	WinUtil::SetIcon(m_hWnd, IDI_QUEUE);
 	bHandled = FALSE;
 	return 1;
@@ -143,6 +162,26 @@ void QueueFrame::FillTree() {
 	}
 	
 	ctrlTree.Expand(bundleParent);
+}
+
+void QueueFrame::addCmdBarButtons() {
+	TBBUTTON nTB;
+	memzero(&nTB, sizeof(TBBUTTON));
+
+	int buttonsCount = sizeof(TBButtons) / sizeof(TBButtons[0]);
+	for (int i = 0; i < buttonsCount; i++){
+		//if (i == 5 || i == 1) {
+			//nTB.fsStyle = TBSTYLE_SEP;
+			//ctrlToolbar.AddButtons(1, &nTB);
+		//}
+
+		nTB.iBitmap = TBButtons[i].image;
+		nTB.idCommand = TBButtons[i].id;
+		nTB.fsState = TBSTATE_ENABLED;
+		nTB.fsStyle = TBSTYLE_AUTOSIZE;
+		nTB.iString = ctrlToolbar.AddStrings(CTSTRING_I((ResourceManager::Strings)TBButtons[i].tooltip));
+		ctrlToolbar.AddButtons(1, &nTB);
+	}
 }
 
 void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
@@ -299,6 +338,43 @@ void QueueFrame::handleTab() {
 		
 }
 
+LRESULT QueueFrame::onTBButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	switch (wID)
+	{
+	case IDC_BACK:
+		if (history.size() > 1 && historyIndex > 1) {
+			historyIndex--;
+			handleHistoryClick(history[historyIndex - 1], true);
+		}
+		break;
+	case IDC_FORWARD: 
+		if (history.size() > 1 && historyIndex < history.size()) {
+			historyIndex++;
+			handleHistoryClick(history[historyIndex - 1], true);
+		}
+		break;
+	case IDC_UP:
+		handleItemClick(iBack);
+		break;
+	default:
+		break;
+	}
+	return 0;
+}
+void QueueFrame::handleHistoryClick(const string& aPath, bool byHistory) {
+	if (aPath == "//"){
+		reloadList();
+	} else {
+		handleItemClick(findItemByPath(aPath), byHistory);
+	}
+}
+
+LRESULT QueueFrame::onPathChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
+	handleHistoryClick(history[ctrlPath.GetCurSel()], false);
+	bHandled = FALSE;
+	return 0;
+}
+
 LRESULT QueueFrame::onKeyDownTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	NMTVKEYDOWN* kd = (NMTVKEYDOWN*)pnmh;
 	if (kd->wVKey == VK_TAB) {
@@ -327,7 +403,7 @@ LRESULT QueueFrame::onKeyDownList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 		bHandled = TRUE;
 	}
 	else if (kd->wVKey == VK_BACK) {
-		handleItemClick(iBack);
+		handleItemClick(iBack, true);
 		bHandled = TRUE;
 	}
 	else if (kd->wVKey == VK_RETURN) {
@@ -358,7 +434,9 @@ LRESULT QueueFrame::onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) 
 	return 0;
 }
 
-void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII) {
+void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII, bool byHistory/*false*/) {
+	if (!aII) 
+		return;
 	
 	if (aII->qi || aII->bundle && aII->bundle->isFileBundle()) {
 		if (aII->isFinished()) 
@@ -366,7 +444,7 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII) {
 		return;
 	}
 
-	if (!aII || !aII->bundle && !aII->isDirectory || (aII == iBack && !curDirectory))
+	if (!aII->bundle && !aII->isDirectory || (aII == iBack && !curDirectory))
 		return;
 
 	auto sel = curDirectory;
@@ -376,10 +454,16 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII) {
 			reloadList();
 			ctrlQueue.selectItem(sel);
 			return;
-		}
-		else {
+		} else {
 			item = curDirectory->getParent();
 		}
+	} 
+
+	if (!byHistory) {
+		addHistory(item->getTarget());
+		updateHistoryCombo();
+	} else {
+		ctrlPath.SetCurSel(historyIndex - 1);
 	}
 
 	ctrlQueue.SetRedraw(FALSE);
@@ -903,6 +987,7 @@ LRESULT QueueFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 }
 
 void QueueFrame::reloadList() {
+	historyIndex = 1;
 	curDirectory = nullptr;
 	ctrlQueue.SetRedraw(FALSE);
 	ctrlQueue.DeleteAllItems();
@@ -913,6 +998,7 @@ void QueueFrame::reloadList() {
 		ctrlQueue.insertItem(ctrlQueue.getSortPos(p.get()), p.get(), p->getImageIndex());
 	}
 	ctrlQueue.SetRedraw(TRUE);
+	updateHistoryCombo();
 }
 
 bool QueueFrame::show(const QueueItemInfoPtr& Qii) const {
@@ -1104,6 +1190,19 @@ QueueFrame::QueueItemInfoPtr QueueFrame::findParent(const string& aKey) {
 	if (i != parents.end())
 		return i->second;
 
+	return nullptr;
+}
+
+const QueueFrame::QueueItemInfoPtr QueueFrame::findItemByPath(const string& aPath) {
+	for (auto b : parents | map_values){
+		if (b->bundle && !b->bundle->isFileBundle()) {
+			if (aPath == b->bundle->getTarget())
+				return b;
+			else if (AirUtil::isSub(aPath, b->bundle->getTarget())) {
+				return b->findChild(aPath);
+			}
+		}
+	}
 	return nullptr;
 }
 
@@ -1366,6 +1465,22 @@ void QueueFrame::removeLocationItem(const string& aPath) {
 	}
 }
 
+void QueueFrame::addHistory(const string& aPath) {
+	history.erase(history.begin() + historyIndex, history.end());
+	while (history.size() > 25)
+		history.pop_front();
+	history.emplace_back(aPath);
+	historyIndex = history.size();
+}
+
+void QueueFrame::updateHistoryCombo() {
+	ctrlPath.ResetContent();
+	for (auto& i : history) {
+		ctrlPath.AddString(Text::toT(i).c_str());
+	}
+	ctrlPath.SetCurSel(historyIndex - 1);
+}
+
 string QueueFrame::getBundleParent(const BundlePtr aBundle) {
 	return aBundle->isFileBundle() ? Util::getFilePath(aBundle->getTarget()) : Util::getParentDir(aBundle->getTarget());
 }
@@ -1462,6 +1577,9 @@ QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& 
 		j = i + 1;
 	}
 
+	if (aKey[aKey.length() - 1] == PATH_SEPARATOR) //its a Directory
+		return dir;
+
 	auto ret = dir->children.find(aKey);
 	if (ret != dir->children.end())
 		return ret->second;
@@ -1531,8 +1649,9 @@ void QueueFrame::updateParentDirectories(QueueItemInfoPtr Qii) {
 			cur->setFinishedBytes(newDownloadedBytes);
 
 			//remove empty directories
-			if (cur->children.empty())
+			if (cur->children.empty()){
 				cur->getParent()->children.erase(cur->target);
+			}
 
 			//update the directory that is currently inside view
 			if (cur->getParent() == curDirectory) {
