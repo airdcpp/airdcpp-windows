@@ -1,7 +1,7 @@
 /* crypto/pqueue/pqueue.h */
-/*
+/* 
  * DTLS implementation written by Nagendra Modadugu
- * (nagendra@cs.stanford.edu) for the OpenSSL project 2005.
+ * (nagendra@cs.stanford.edu) for the OpenSSL project 2005.  
  */
 /* ====================================================================
  * Copyright (c) 1999-2005 The OpenSSL Project.  All rights reserved.
@@ -11,7 +11,7 @@
  * are met:
  *
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ *    notice, this list of conditions and the following disclaimer. 
  *
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in
@@ -64,6 +64,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef  __cplusplus
+extern "C" {
+#endif
 typedef struct _pqueue *pqueue;
 
 typedef struct _pitem
@@ -91,4 +94,7 @@ pitem *pqueue_next(piterator *iter);
 void   pqueue_print(pqueue pq);
 int    pqueue_size(pqueue pq);
 
+#ifdef  __cplusplus
+}
+#endif
 #endif /* ! HEADER_PQUEUE_H */
