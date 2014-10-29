@@ -630,6 +630,7 @@
     <ClInclude Include="windows\AutoSearchFrm.h" />
     <ClInclude Include="windows\AutosearchParams.h" />
     <ClInclude Include="windows\BrowseDlg.h" />
+    <ClInclude Include="windows\BrowserBar.h" />
     <ClInclude Include="windows\ChatCommands.h" />
     <ClInclude Include="windows\CProgressCtrlEx.h" />
     <ClInclude Include="windows\DirectoryListingDlg.h" />

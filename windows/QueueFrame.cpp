@@ -86,23 +86,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlTree.SetBkColor(WinUtil::bgColor);
 	ctrlTree.SetTextColor(WinUtil::textColor);
 
-	//path field
-	ctrlPath.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN |
-		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
-	ctrlPath.SetFont(WinUtil::systemFont);
-	pathContainer.SubclassWindow(ctrlPath.m_hWnd);
-
-	//Create a toolbar
-	ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
-	ctrlToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
-	ctrlToolbar.SetImageList(ResourceLoader::getArrowImages());
-	ctrlToolbar.SetButtonStructSize();
-	addCmdBarButtons();
-	ctrlToolbar.AutoSize();
-
-	CreateSimpleReBar(WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | RBS_VARHEIGHT | RBS_AUTOSIZE | CCS_NODIVIDER);
-	AddSimpleReBarBand(ctrlToolbar.m_hWnd, NULL, FALSE, NULL, TRUE);
-	AddSimpleReBarBand(ctrlPath.m_hWnd, NULL, FALSE, 200, FALSE);
+	browserBar.Init();
 
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlQueue.m_hWnd);
@@ -113,6 +97,9 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 		MoveWindow(rc, TRUE);
 
 	FillTree();
+
+	//Select item results in TVN_SELCHANGED, which reloads the queue list so do it before adding the bundles to avoid double filtering
+	ctrlTree.SelectItem(bundleParent);
 
 	{
 		auto qm = QueueManager::getInstance();
@@ -126,7 +113,6 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 				onQueueItemAdded(q);
 		}
 	}
-	ctrlTree.SelectItem(bundleParent);
 
 	QueueManager::getInstance()->addListener(this);
 	DownloadManager::getInstance()->addListener(this);
@@ -138,8 +124,6 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	::SetTimer(m_hWnd, 0, 500, 0);
 
-	history.emplace_back("/");
-	callAsync([this] { updateHistoryCombo(); });
 	WinUtil::SetIcon(m_hWnd, IDI_QUEUE);
 	bHandled = FALSE;
 	return 1;
@@ -162,26 +146,6 @@ void QueueFrame::FillTree() {
 	}
 	
 	ctrlTree.Expand(bundleParent);
-}
-
-void QueueFrame::addCmdBarButtons() {
-	TBBUTTON nTB;
-	memzero(&nTB, sizeof(TBBUTTON));
-
-	int buttonsCount = sizeof(TBButtons) / sizeof(TBButtons[0]);
-	for (int i = 0; i < buttonsCount; i++){
-		//if (i == 5 || i == 1) {
-			//nTB.fsStyle = TBSTYLE_SEP;
-			//ctrlToolbar.AddButtons(1, &nTB);
-		//}
-
-		nTB.iBitmap = TBButtons[i].image;
-		nTB.idCommand = TBButtons[i].id;
-		nTB.fsState = TBSTATE_ENABLED;
-		nTB.fsStyle = TBSTYLE_AUTOSIZE;
-		nTB.iString = ctrlToolbar.AddStrings(CTSTRING_I((ResourceManager::Strings)TBButtons[i].tooltip));
-		ctrlToolbar.AddButtons(1, &nTB);
-	}
 }
 
 void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
@@ -338,41 +302,12 @@ void QueueFrame::handleTab() {
 		
 }
 
-LRESULT QueueFrame::onTBButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	switch (wID)
-	{
-	case IDC_BACK:
-		if (history.size() > 1 && historyIndex > 1) {
-			historyIndex--;
-			handleHistoryClick(history[historyIndex - 1], true);
-		}
-		break;
-	case IDC_FORWARD: 
-		if (history.size() > 1 && historyIndex < history.size()) {
-			historyIndex++;
-			handleHistoryClick(history[historyIndex - 1], true);
-		}
-		break;
-	case IDC_UP:
-		handleItemClick(iBack);
-		break;
-	default:
-		break;
-	}
-	return 0;
-}
 void QueueFrame::handleHistoryClick(const string& aPath, bool byHistory) {
-	if (aPath == "//"){
-		reloadList();
+	if (aPath == "/"){
+		reloadList(byHistory);
 	} else {
 		handleItemClick(findItemByPath(aPath), byHistory);
 	}
-}
-
-LRESULT QueueFrame::onPathChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
-	handleHistoryClick(history[ctrlPath.GetCurSel()], false);
-	bHandled = FALSE;
-	return 0;
 }
 
 LRESULT QueueFrame::onKeyDownTree(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
@@ -451,7 +386,7 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII, bool byHistory/*fa
 	auto item = aII;
 	if (aII == iBack){
 		if (curDirectory->bundle){
-			reloadList();
+			reloadList(byHistory);
 			ctrlQueue.selectItem(sel);
 			return;
 		} else {
@@ -460,10 +395,9 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII, bool byHistory/*fa
 	} 
 
 	if (!byHistory) {
-		addHistory(item->getTarget());
-		updateHistoryCombo();
+		browserBar.addHistory(item->getTarget());
 	} else {
-		ctrlPath.SetCurSel(historyIndex - 1);
+		browserBar.setCurSel();
 	}
 
 	ctrlQueue.SetRedraw(FALSE);
@@ -986,8 +920,11 @@ LRESULT QueueFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	return 0;
 }
 
-void QueueFrame::reloadList() {
-	historyIndex = 1;
+void QueueFrame::reloadList(bool byHistory/*false*/) {
+	
+	if(!byHistory) 
+		browserBar.addHistory("/");
+
 	curDirectory = nullptr;
 	ctrlQueue.SetRedraw(FALSE);
 	ctrlQueue.DeleteAllItems();
@@ -998,7 +935,6 @@ void QueueFrame::reloadList() {
 		ctrlQueue.insertItem(ctrlQueue.getSortPos(p.get()), p.get(), p->getImageIndex());
 	}
 	ctrlQueue.SetRedraw(TRUE);
-	updateHistoryCombo();
 }
 
 bool QueueFrame::show(const QueueItemInfoPtr& Qii) const {
@@ -1463,22 +1399,6 @@ void QueueFrame::removeLocationItem(const string& aPath) {
 			ctrlTree.SetItemText(i->second.item, Text::toT(aPath + " ( " + Util::toString(hits) + " )").c_str());
 		}
 	}
-}
-
-void QueueFrame::addHistory(const string& aPath) {
-	history.erase(history.begin() + historyIndex, history.end());
-	while (history.size() > 25)
-		history.pop_front();
-	history.emplace_back(aPath);
-	historyIndex = history.size();
-}
-
-void QueueFrame::updateHistoryCombo() {
-	ctrlPath.ResetContent();
-	for (auto& i : history) {
-		ctrlPath.AddString(Text::toT(i).c_str());
-	}
-	ctrlPath.SetCurSel(historyIndex - 1);
 }
 
 string QueueFrame::getBundleParent(const BundlePtr aBundle) {

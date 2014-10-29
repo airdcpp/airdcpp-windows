@@ -22,12 +22,12 @@
 
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
+#include "BrowserBar.h"
 
 #include "../client/QueueManager.h"
 #include "../client/TaskQueue.h"
 
 #define STATUS_MSG_MAP 19
-#define PATH_MSG_MAP 9
 
 struct tButton {
 	int id, image;
@@ -47,8 +47,9 @@ class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
 
-	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_BUNDLES), curDirectory(nullptr), historyIndex(1),
-		ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP), pathContainer(WC_COMBOBOX, this, PATH_MSG_MAP) {
+	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_BUNDLES), curDirectory(nullptr),
+		browserBar(this, [this](const string& a, bool b) { handleHistoryClick(a, b); }, [this] { handleItemClick(iBack); }),
+		ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {
 		iBack.reset(new QueueItemInfo(_T(".."), nullptr));
 	}
 
@@ -75,15 +76,13 @@ public:
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
 		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
-		
-		COMMAND_ID_HANDLER(IDC_BACK, onTBButton)
-		COMMAND_ID_HANDLER(IDC_FORWARD, onTBButton)
-		COMMAND_ID_HANDLER(IDC_UP, onTBButton)
+		CHAIN_MSG_MAP_MEMBER(browserBar)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<QueueFrame>)
 		ALT_MSG_MAP(STATUS_MSG_MAP)
-		ALT_MSG_MAP(PATH_MSG_MAP)
-			COMMAND_CODE_HANDLER(CBN_SELCHANGE, onPathChange)
+		ALT_MSG_MAP(HISTORY_MSG_MAP)
+		CHAIN_MSG_MAP_ALT_MEMBER(browserBar, HISTORY_MSG_MAP)
+		
 	END_MSG_MAP()
 
 	LRESULT OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
@@ -130,11 +129,6 @@ public:
 
 		return 0;
 	}
-
-	LRESULT onTBButton(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-
-	LRESULT onPathChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
-
 
 	void UpdateLayout(BOOL bResizeBars = TRUE );
 
@@ -277,8 +271,6 @@ private:
 	void handleItemClick(const QueueItemInfoPtr& aII, bool byHistory = false);
 	void handleTab();
 
-	void addHistory(const string& aPath);
-	void updateHistoryCombo();
 	const QueueItemInfoPtr findItemByPath(const string& aPath);
 	void handleHistoryClick(const string& aPath, bool byHistory);
 
@@ -286,9 +278,8 @@ private:
 	tstring formatUser(const Bundle::BundleSource& bs) const;
 	tstring formatUser(const QueueItem::Source& s) const;
 	
-	void reloadList();
+	void reloadList(bool ByHistory = false);
 	bool show(const QueueItemInfoPtr& Qii) const;
-
 
 	QueueItemInfoPtr findQueueItem(const QueueItemPtr& aQI);
 
@@ -304,13 +295,8 @@ private:
 	CStatusBarCtrl ctrlStatus;
 	int statusSizes[6];
 	CContainedWindow ctrlStatusContainer;
-	CContainedWindow pathContainer;
 	
-	CToolBarCtrl ctrlToolbar;
-	CComboBox ctrlPath;
-
-	deque<string> history;
-	size_t historyIndex;
+	BrowserBar<QueueFrame> browserBar;
 
 	/*map of parent items (bundles and queue items without bundle)*/
 	unordered_map<string, QueueItemInfoPtr> parents;
@@ -413,8 +399,6 @@ private:
 			}
 		}
 	}
-
-	void addCmdBarButtons();
 
 };
 #endif // !defined(QUEUE_FRAME_H)
