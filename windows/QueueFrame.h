@@ -29,17 +29,6 @@
 
 #define STATUS_MSG_MAP 19
 
-struct tButton {
-	int id, image;
-	ResourceManager::Strings tooltip;
-};
-
-static const tButton TBButtons[] = {
-	{ IDC_BACK, 2, ResourceManager::BACK },
-	{ IDC_FORWARD, 1, ResourceManager::FORWARD },
-	{ IDC_UP, 0, ResourceManager::LEVEL_UP },
-};
-
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
 	public CSplitterImpl<QueueFrame>,
 	private QueueManagerListener, private DownloadManagerListener, private Async<QueueFrame>
@@ -115,16 +104,19 @@ public:
 
 	LRESULT onTreeItemClick(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& /* bHandled */) {
 		//Reload the list view when clicking on the tree item currently selected after browsing bundle content
-		DWORD dwPos = GetMessagePos();
+		if (!curDirectory)
+			return 0;
+
+		DWORD dwPos = ::GetMessagePos();
 		POINT pt;
 		pt.x = GET_X_LPARAM(dwPos);
 		pt.y = GET_Y_LPARAM(dwPos);
 
-		ScreenToClient(&pt);
+		ctrlTree.ScreenToClient(&pt);
 
 		UINT uFlags;
 		HTREEITEM ht = ctrlTree.HitTest(pt, &uFlags);
-		if (ht && ht == curItem && curDirectory != nullptr)
+		if (ht && ht == curItem)
 			reloadList();
 
 		return 0;

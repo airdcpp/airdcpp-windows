@@ -32,6 +32,7 @@
 #include "UserInfoBaseHandler.h"
 #include "DownloadBaseHandler.h"
 #include "TypedTreeCtrl.h"
+#include "BrowserBar.h"
 
 #include "Async.h"
 
@@ -41,7 +42,6 @@
 #include "../client/DirectoryListingListener.h"
 #include "../client/TargetUtil.h"
 
-#define PATH_MESSAGE_MAP 9
 #define CONTROL_MESSAGE_MAP 10
 #define COMBO_SEL_MAP 11
 
@@ -49,7 +49,6 @@ struct cmdBarButton {
 	int id, image;
 	ResourceManager::Strings tooltip;
 };
-
 
 static const cmdBarButton cmdBarButtons[] = {
 	{IDC_RELOAD_DIR, 0, ResourceManager::RELOAD},
@@ -139,10 +138,6 @@ public:
 			COMMAND_ID_HANDLER(IDC_NEXT, onNext)
 			COMMAND_ID_HANDLER(IDC_PREV, onPrev)
 
-			COMMAND_ID_HANDLER(IDC_UP, onUp)
-			COMMAND_ID_HANDLER(IDC_FORWARD, onForward)
-			COMMAND_ID_HANDLER(IDC_BACK, onBack)
-
 			COMMAND_ID_HANDLER(IDC_RELOAD, onReloadList)
 			COMMAND_ID_HANDLER(IDC_RELOAD_DIR, onReloadDir)
 			COMMAND_ID_HANDLER(IDC_MATCH_QUEUE, onMatchQueue)
@@ -152,6 +147,7 @@ public:
 
 			MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 			MESSAGE_HANDLER(WM_TIMER, onTimer)
+			CHAIN_MSG_MAP_MEMBER(browserBar)
 		}
 
 		CHAIN_COMMANDS(ucBase)
@@ -159,8 +155,8 @@ public:
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<DirectoryListingFrame>)
 		//CHAIN_MSG_MAP_MEMBER(ctrlFiles)
-	ALT_MSG_MAP(PATH_MESSAGE_MAP)
-		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onSelChange)
+	ALT_MSG_MAP(HISTORY_MSG_MAP)
+		CHAIN_MSG_MAP_ALT_MEMBER(browserBar, HISTORY_MSG_MAP)
 	ALT_MSG_MAP(CONTROL_MESSAGE_MAP)
 		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_XBUTTONUP, onXButtonUp)
@@ -213,11 +209,6 @@ public:
 	LRESULT onNext(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPrev(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 
-	LRESULT onUp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onForward(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onBack(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
-	LRESULT onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled);
-
 	LRESULT onMatchQueue(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onListDiff(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
 
@@ -246,7 +237,6 @@ private:
 	bool checkCommonKey(int key);
 	task_group tasks;
 	bool allowPopup() const;
-	void updateHistoryCombo();
 	bool getLocalPaths(StringList& paths_, bool usingTree, bool dirsOnly);
 	void openDupe(const DirectoryListing::Directory::Ptr& d);
 	void openDupe(const DirectoryListing::File* f, bool openDir);
@@ -283,10 +273,8 @@ private:
 
 	void updateStatus();
 	void initStatus();
-	void addHistory(const string& name);
 	void up();
-	void back();
-	void forward();
+	void handleHistoryClick(const string& aPath, bool byHistory);
 
 	class ItemInfo : public FastAlloc<ItemInfo> {
 	public:
@@ -355,13 +343,9 @@ private:
 
 	void handleReloadPartial(bool dirOnly);
 
-	CContainedWindow pathContainer;
 	CContainedWindow treeContainer;
 	CContainedWindow listContainer;
 
-	deque<string> history;
-	size_t historyIndex;
-	
 	typedef TypedVirtualTreeCtrl<DirectoryListingFrame, ItemInfo> TreeType;
 	friend class TreeType;
 	TreeType ctrlTree;
@@ -375,11 +359,9 @@ private:
 	HTREEITEM treeRoot;
 	
 	CToolBarCtrl ctrlToolbar;
-	CToolBarCtrl arrowBar;
-	CComboBox ctrlPath;
-
 	void addCmdBarButtons();
-	void addarrowBarButtons();
+
+	BrowserBar<DirectoryListingFrame> browserBar;
 
 	//string currentDir;
 	tstring error;

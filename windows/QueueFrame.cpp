@@ -396,8 +396,6 @@ void QueueFrame::handleItemClick(const QueueItemInfoPtr& aII, bool byHistory/*fa
 
 	if (!byHistory) {
 		browserBar.addHistory(item->getTarget());
-	} else {
-		browserBar.setCurSel();
 	}
 
 	ctrlQueue.SetRedraw(FALSE);

@@ -22,6 +22,17 @@
 #include "stdafx.h"
 #define HISTORY_MSG_MAP 9
 
+struct tButton {
+	int id, image;
+	ResourceManager::Strings tooltip;
+};
+
+static const tButton TBButtons[] = {
+	{ IDC_BACK, 2, ResourceManager::BACK },
+	{ IDC_FORWARD, 1, ResourceManager::FORWARD },
+	{ IDC_UP, 0, ResourceManager::LEVEL_UP },
+};
+
 template<class ParentT>
 class BrowserBar : boost::noncopyable {
 	typedef std::function<void(const string&, bool)> HandleHistoryFunction;
@@ -30,7 +41,7 @@ class BrowserBar : boost::noncopyable {
 public:
 	BrowserBar(ParentT* aParent, HandleHistoryFunction aHistoryF, HandleUPFuntion aHandleUP) : 
 		ParentW(aParent), handleHistory(aHistoryF), handleUP(aHandleUP), historyIndex(1),
-		pathContainer(WC_COMBOBOX, aParent, HISTORY_MSG_MAP) {}
+		pathContainer(WC_COMBOBOX, this, HISTORY_MSG_MAP) {}
 	virtual ~BrowserBar() {}
 
 	BEGIN_MSG_MAP(BrowserBar)
@@ -66,17 +77,10 @@ public:
 		switch (wID)
 		{
 		case IDC_BACK:
-			if (history.size() > 1 && historyIndex > 1) {
-				historyIndex--;
-				handleHistory(history[historyIndex - 1], true);
-			}
+			back();
 			break;
 		case IDC_FORWARD:
-
-			if (history.size() > 1 && historyIndex < history.size()) {
-				historyIndex++;
-				handleHistory(history[historyIndex - 1], true);
-			}
+			forward();
 			break;
 		case IDC_UP:
 			handleUP();
@@ -130,9 +134,39 @@ public:
 		ctrlPath.SetCurSel(historyIndex - 1);
 	}
 
+	string getCurSel() {
+		if (historyIndex >= history.size())
+			return Util::emptyString;
+
+		return history[historyIndex];
+
+	}
+
+	void back() {
+		if (history.size() > 1 && historyIndex > 1) {
+			historyIndex--;
+			handleHistory(history[historyIndex - 1], true);
+			setCurSel();
+		}
+	}
+
+	void forward() {
+		if (history.size() > 1 && historyIndex < history.size()) {
+			historyIndex++;
+			handleHistory(history[historyIndex - 1], true);
+			setCurSel();
+		}
+	}
+
 	void clearHistory() {
 		history.clear();
 		historyIndex = 1;
+	}
+	void changeWindowState(bool enable) {
+		ctrlToolbar.EnableButton(IDC_UP, enable);
+		ctrlToolbar.EnableButton(IDC_FORWARD, enable);
+		ctrlToolbar.EnableButton(IDC_BACK, enable);
+		ctrlPath.EnableWindow(enable);
 	}
 
 private:

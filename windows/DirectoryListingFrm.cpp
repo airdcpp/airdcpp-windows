@@ -81,8 +81,9 @@ bool DirectoryListingFrame::allowPopup() const {
 }
 
 DirectoryListingFrame::DirectoryListingFrame(DirectoryListing* aList) :
-	pathContainer(WC_COMBOBOX, this, PATH_MESSAGE_MAP), treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
-	listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP), historyIndex(1),
+	treeContainer(WC_TREEVIEW, this, CONTROL_MESSAGE_MAP),
+	listContainer(WC_LISTVIEW, this, CONTROL_MESSAGE_MAP),
+	browserBar(this, [this](const string& a, bool b) { handleHistoryClick(a, b); }, [this] { up(); }),
 		treeRoot(nullptr), skipHits(0), files(0), updating(false), dl(aList), 
 		UserInfoBaseHandler(true, false), changeType(CHANGE_LIST), windowState(STATE_ENABLED), 
 		ctrlTree(this), statusDirty(false), selComboContainer(WC_COMBOBOX, this, COMBO_SEL_MAP), 
@@ -354,6 +355,23 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlFiles.m_hWnd);
 	m_nProportionalPos = 2500;
+
+	browserBar.Init();
+	//Cmd bar
+	ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
+	ctrlToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
+	ctrlToolbar.SetImageList(ResourceLoader::getFilelistTbImages());
+	ctrlToolbar.SetButtonStructSize();
+	addCmdBarButtons();
+	ctrlToolbar.AutoSize();
+
+	AddSimpleReBarBand(ctrlToolbar.m_hWnd, NULL, FALSE, NULL, TRUE);
+
+	//maximize the path field.
+	CReBarCtrl rebar = m_hWndToolBar;
+	rebar.MaximizeBand(1);
+	rebar.LockBands(true);
+
 	createRoot();
 	
 	memzero(statusSizes, sizeof(statusSizes));
@@ -362,38 +380,6 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	statusSizes[STATUS_HUB] = 150 + desclen;
 
 	ctrlStatus.SetParts(STATUS_LAST, statusSizes);
-
-	//arrow buttons
-	arrowBar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
-	arrowBar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
-	arrowBar.SetImageList(ResourceLoader::getArrowImages());
-	arrowBar.SetButtonStructSize();
-	addarrowBarButtons();
-	arrowBar.AutoSize();
-
-	//path field
-	ctrlPath.Create(m_hWnd, rcDefault, NULL, WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | 
-		WS_VSCROLL | CBS_DROPDOWN | CBS_AUTOHSCROLL, 0);
-	ctrlPath.SetFont(WinUtil::systemFont);
-	pathContainer.SubclassWindow(ctrlPath.m_hWnd);
-
-	//Cmd bar
-	ctrlToolbar.Create(m_hWnd, NULL, NULL, ATL_SIMPLE_CMDBAR_PANE_STYLE | TBSTYLE_FLAT | TBSTYLE_TRANSPARENT | TBSTYLE_TOOLTIPS | TBSTYLE_LIST, 0, ATL_IDW_TOOLBAR);
-	ctrlToolbar.SetExtendedStyle(TBSTYLE_EX_MIXEDBUTTONS | TBSTYLE_EX_DRAWDDARROWS);
-	ctrlToolbar.SetImageList(ResourceLoader::getFilelistTbImages());
-	ctrlToolbar.SetButtonStructSize();
-	addCmdBarButtons();
-	ctrlToolbar.AutoSize();
-	
-	CreateSimpleReBar(WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS | RBS_VARHEIGHT | RBS_AUTOSIZE | CCS_NODIVIDER);
-	AddSimpleReBarBand(arrowBar.m_hWnd, NULL, FALSE, NULL, TRUE);
-	AddSimpleReBarBand(ctrlPath.m_hWnd, NULL, FALSE, 300);
-	AddSimpleReBarBand(ctrlToolbar.m_hWnd, NULL, FALSE, NULL, TRUE);
-	
-	//maximize the path field.
-	CReBarCtrl rebar = m_hWndToolBar;
-	rebar.MaximizeBand(1);
-	rebar.LockBands(true);
 
 	changeWindowState(false);
 	
@@ -411,38 +397,8 @@ LRESULT DirectoryListingFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM
 	if (!dl->getIsOwnList())
 		ClientManager::getInstance()->addListener(this);
 
-	callAsync([this] { updateHistoryCombo(); updateSelCombo(true); });
+	callAsync([this] { browserBar.updateHistoryCombo(); updateSelCombo(true); });
 	return 1;
-}
-void DirectoryListingFrame::addarrowBarButtons() {
-	
-	TBBUTTON nTB;
-	memzero(&nTB, sizeof(TBBUTTON));
-	
-	nTB.iBitmap = 2;
-	nTB.idCommand = IDC_BACK;
-	nTB.fsState = TBSTATE_ENABLED;
-	nTB.fsStyle = BTNS_BUTTON | TBSTYLE_AUTOSIZE;
-	nTB.iString = arrowBar.AddStrings(CTSTRING(BACK));
-	arrowBar.AddButtons(1, &nTB);
-
-	nTB.iBitmap = 1;
-	nTB.idCommand = IDC_FORWARD;
-	nTB.fsState = TBSTATE_ENABLED;
-	nTB.fsStyle = BTNS_BUTTON | TBSTYLE_AUTOSIZE;
-	nTB.iString = arrowBar.AddStrings(CTSTRING(FORWARD));
-	arrowBar.AddButtons(1, &nTB);
-
-	nTB.fsStyle = TBSTYLE_SEP;
-	arrowBar.AddButtons(1, &nTB);
-
-	nTB.iBitmap = 0;
-	nTB.idCommand = IDC_UP;
-	nTB.fsState = TBSTATE_ENABLED;
-	nTB.fsStyle = BTNS_BUTTON | TBSTYLE_AUTOSIZE;
-	nTB.iString = arrowBar.AddStrings(CTSTRING(LEVEL_UP));
-	arrowBar.AddButtons(1, &nTB);
-
 }
 
 void DirectoryListingFrame::addCmdBarButtons() {
@@ -490,10 +446,8 @@ void DirectoryListingFrame::changeWindowState(bool enable, bool redraw) {
 	ctrlToolbar.EnableButton(IDC_NEXT, enable && dl->curSearch ? TRUE : FALSE);
 	ctrlToolbar.EnableButton(IDC_PREV, enable && dl->curSearch ? TRUE : FALSE);
 	ctrlToolbar.EnableButton(IDC_FILELIST_DIFF, enable && dl->getPartialList() && !dl->getIsOwnList() ? false : enable);
-	arrowBar.EnableButton(IDC_UP, enable);
-	arrowBar.EnableButton(IDC_FORWARD, enable);
-	arrowBar.EnableButton(IDC_BACK, enable);
-	ctrlPath.EnableWindow(enable);
+	
+	browserBar.changeWindowState(enable);
 	ctrlFiles.changeFilterState(enable);
 	selCombo.EnableWindow(enable);
 
@@ -569,7 +523,8 @@ void DirectoryListingFrame::createRoot() {
 //	const auto icon = getIconIndex(dl->getRoot());
 	const auto icon = ResourceLoader::DIR_NORMAL;
 	treeRoot = ctrlTree.InsertItem(TVIF_IMAGE | TVIF_SELECTEDIMAGE | TVIF_TEXT | TVIF_PARAM, Text::toT(dl->getNick(true)).c_str(), icon, icon, 0, 0, (LPARAM)root.get(), NULL, NULL);
-	history.push_back(dl->getRoot()->getPath());
+	//history.push_back(dl->getRoot()->getPath());
+	browserBar.addHistory(dl->getRoot()->getPath());
 	dcassert(treeRoot); 
 }
 
@@ -580,12 +535,11 @@ void DirectoryListingFrame::refreshTree(const string& aLoadedDir, bool aReloadLi
 		ctrlTree.DeleteAllItems();
 		ctrlFiles.list.DeleteAllItems();
 		if (dl->getIsOwnList()) {
-			history.clear();
-			historyIndex = 1;
+			browserBar.clearHistory();
 		}
 
 		createRoot();
-		updateHistoryCombo();
+		//browserBar.updateHistoryCombo();
 	}
 
 	//check the root children state
@@ -890,9 +844,7 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 		auto ii = (ItemInfo*)p->itemNew.lParam;
 		if (curPath != ii->dir->getPath()) {
 			if (changeType != CHANGE_HISTORY)
-				addHistory(ii->dir->getPath());
-
-			updateHistoryCombo();
+				browserBar.addHistory(ii->dir->getPath());
 		}
 
 		if (curPath != ii->dir->getPath()) {
@@ -903,26 +855,10 @@ LRESULT DirectoryListingFrame::onSelChangedDirectories(int /*idCtrl*/, LPNMHDR p
 	return 0;
 }
 
-void DirectoryListingFrame::updateHistoryCombo() {
-	ctrlPath.ResetContent();
-	for (auto& i : history) {
-		ctrlPath.AddString(Text::toT(Util::toAdcFile(i)).c_str());
-	}
-	ctrlPath.SetCurSel(historyIndex - 1);
-}
-
 LRESULT DirectoryListingFrame::onClickTree(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {
 	changeType = CHANGE_TREE_SINGLE;
 	bHandled = FALSE;
 	return 0;
-}
-
-void DirectoryListingFrame::addHistory(const string& name) {
-	history.erase(history.begin() + historyIndex, history.end());
-	while(history.size() > 25)
-		history.pop_front();
-	history.push_back(name);
-	historyIndex = history.size();
 }
 
 void DirectoryListingFrame::on(DirectoryListingListener::RemovedQueue, const string& aDir) noexcept {
@@ -1008,8 +944,9 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& 
 
 	optional<string> selectedName;
 	if (changeType == CHANGE_HISTORY) {
-		if (historyIndex < history.size() && (!d->getParent() || Util::getNmdcParentDir(history[historyIndex]) == d->getPath())) {
-			selectedName = Util::getLastDir(history[historyIndex]);
+		auto historyPath = browserBar.getCurSel();
+		if (!historyPath.empty() && (!d->getParent() || Util::getNmdcParentDir(historyPath) == d->getPath())) {
+			selectedName = Util::getLastDir(historyPath);
 		}
 
 		changeType = CHANGE_LIST; //reset
@@ -1060,20 +997,12 @@ void DirectoryListingFrame::up() {
 	ctrlTree.SelectItem(t);
 }
 
-void DirectoryListingFrame::back() {
-	if(history.size() > 1 && historyIndex > 1) {
-		changeType = CHANGE_HISTORY;
-		historyIndex--;
-		selectItem(history[historyIndex-1]);
-	}
-}
 
-void DirectoryListingFrame::forward() {
-	if(history.size() > 1 && historyIndex < history.size()) {
+
+void DirectoryListingFrame::handleHistoryClick(const string& aPath, bool byHistory) {
+	if(byHistory) 
 		changeType = CHANGE_HISTORY;
-		historyIndex++;
-		selectItem(history[historyIndex-1]);
-	}
+	selectItem(aPath);
 }
 
 LRESULT DirectoryListingFrame::onDoubleClickDirs(int /*idCtrl*/, LPNMHDR /*pnmh*/, BOOL& bHandled) {
@@ -1121,10 +1050,11 @@ LRESULT DirectoryListingFrame::onKeyDown(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHa
 		up();
 	} else if(kd->wVKey == VK_TAB) {
 		onTab();
-	} else if(kd->wVKey == VK_LEFT && WinUtil::isAlt()) {
-		back();
+/* alt + left is used for switching tabs, maybe think of another combo for tabs since its used in explorer for back forward
+} else if(kd->wVKey == VK_LEFT && WinUtil::isAlt()) {
+		browserBar.back();
 	} else if(kd->wVKey == VK_RIGHT && WinUtil::isAlt()) {
-		forward();
+		browserBar.forward();*/
 	} else if(kd->wVKey == VK_RETURN) {
 		onListItemAction();
 	} else if (checkCommonKey(kd->wVKey)) {
@@ -1773,10 +1703,10 @@ tstring DirectoryListingFrame::handleCopyDirectory(const ItemInfo* ii) {
 
 LRESULT DirectoryListingFrame::onXButtonUp(UINT /*uMsg*/, WPARAM wParam, LPARAM /* lParam */, BOOL& /* bHandled */) {
 	if(GET_XBUTTON_WPARAM(wParam) & XBUTTON1) {
-		back();
+		browserBar.back();
 		return TRUE;
 	} else if(GET_XBUTTON_WPARAM(wParam) & XBUTTON2) {
-		forward();
+		browserBar.forward();
 		return TRUE;
 	}
 
@@ -2166,28 +2096,6 @@ LRESULT DirectoryListingFrame::onCustomDrawTree(int /*idCtrl*/, LPNMHDR pnmh, BO
 		return CDRF_DODEFAULT;
 	}
 }
-
-LRESULT DirectoryListingFrame::onUp(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	up();
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onForward(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	forward();
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onBack(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	back();
-	return 0;
-}
-
-LRESULT DirectoryListingFrame::onSelChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
-	selectItem(history[ctrlPath.GetCurSel()]);
-	bHandled= FALSE;
-	return 0;
-}
-
 
 void DirectoryListingFrame::onComboSelChanged(bool manual) {
 	if (dl->getIsOwnList()) {
