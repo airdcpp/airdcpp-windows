@@ -41,7 +41,7 @@ class BrowserBar : boost::noncopyable {
 public:
 	BrowserBar(ParentT* aParent, HandleHistoryFunction aHistoryF, HandleUPFuntion aHandleUP) : 
 		ParentW(aParent), handleHistory(aHistoryF), handleUP(aHandleUP), historyIndex(1),
-		pathContainer(WC_COMBOBOX, this, HISTORY_MSG_MAP) {}
+		pathContainer(WC_COMBOBOX, aParent, HISTORY_MSG_MAP) {}
 	virtual ~BrowserBar() {}
 
 	BEGIN_MSG_MAP(BrowserBar)
