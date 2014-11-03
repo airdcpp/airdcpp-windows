@@ -346,7 +346,7 @@ LRESULT ChatFrameBase::onChar(UINT uMsg, WPARAM wParam, LPARAM /*lParam*/, BOOL&
 			if(lineCount >= SETTING(MAX_RESIZE_LINES) && newLineCount >= SETTING(MAX_RESIZE_LINES)) {
 				lineCount = newLineCount;
 			} else {
-				lineCount = newLineCount;
+				lineCount = newLineCount > 1 ? newLineCount : 1;
 				UpdateLayout(FALSE);
 			}
 		}

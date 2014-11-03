@@ -427,10 +427,6 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		m_PictureWindow.Load(Text::toT(currentPic).c_str());
 	}
 
-	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && WinUtil::isElevated()) {
-		WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING));
-	}
-
 	if(SETTING(TESTWRITE)) {
 		TestWrite(true, true, Util::usingLocalMode());
 	}
@@ -442,6 +438,10 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 			addThreadedTask([=] { FavoriteManager::getInstance()->autoConnect(); });
 		else
 			missedAutoConnect = true;
+	}
+
+	if (Util::IsOSVersionOrGreater(6, 2) && !IsWindowsServer() && WinUtil::isElevated()) {
+		callAsync([=] { WinUtil::ShowMessageBox(SettingsManager::WARN_ELEVATED, TSTRING(ELEVATED_WARNING)); });
 	}
 
 	// We want to pass this one on to the splitter...hope it get's there...

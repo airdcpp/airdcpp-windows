@@ -225,11 +225,10 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 	case CDDS_ITEMPREPAINT:
 		{
 			auto qii = ((QueueItemInfo*) cd->nmcd.lItemlParam);
-			if (qii->bundle) {
-				if (qii->bundle->isFailed()) {
-					cd->clrText = SETTING(ERROR_COLOR);
-					return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
-				}
+			dcassert(qii);
+			if (qii && qii->bundle && qii->bundle->isFailed()) {
+				cd->clrText = SETTING(ERROR_COLOR);
+				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 			}
 		}
 		return CDRF_NOTIFYSUBITEMDRAW;
@@ -242,7 +241,7 @@ LRESULT QueueFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled) {
 			cd->clrTextBk = WinUtil::bgColor;
 			dcassert(ii);
 			if (colIndex == COLUMN_STATUS) {
-				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || ii && (ii->getSize() <= 0 || (ii->bundle && ii->bundle->isFailed()))) { // file lists don't have size in queue, don't even start to draw...
+				if (!SETTING(SHOW_PROGRESS_BARS) || !SETTING(SHOW_QUEUE_BARS) || !ii || (ii->getSize() <= 0 || (ii->bundle && ii->bundle->isFailed()))) { // file lists don't have size in queue, don't even start to draw...
 					bHandled = FALSE;
 					return 0;
 				}
@@ -1019,8 +1018,6 @@ void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bo
 	if (bundles.empty())
 		return;
 
-	string tmp;
-
 	bool allFinished = all_of(bundles.begin(), bundles.end(), [](const BundlePtr& b) { return b->isFinished(); });
 	if (bundles.size() == 1 && !finishedOnly) {
 		if (removeFinished) {
@@ -1488,8 +1485,7 @@ QueueFrame::QueueItemInfoPtr QueueFrame::QueueItemInfo::findChild(const string& 
 
 	QueueItemInfoPtr dir = this;
 	while ((i = tmp.find(PATH_SEPARATOR, j)) != string::npos) {
-		string curPath = itemTarget + tmp.substr(0, i + 1);
-		auto d = dir->children.find(curPath);
+		auto d = dir->children.find(itemTarget + tmp.substr(0, i + 1));
 		if (d != dir->children.end())
 			dir = d->second;
 		j = i + 1;
