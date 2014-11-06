@@ -87,6 +87,10 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlTree.SetTextColor(WinUtil::textColor);
 
 	browserBar.Init();
+	//maximize the path field.
+	CReBarCtrl rebar = m_hWndToolBar;
+	rebar.MaximizeBand(1);
+	rebar.LockBands(true);
 
 	SetSplitterExtendedStyle(SPLIT_PROPORTIONAL);
 	SetSplitterPanes(ctrlTree.m_hWnd, ctrlQueue.m_hWnd);
