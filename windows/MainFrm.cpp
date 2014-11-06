@@ -85,7 +85,7 @@ MainFrame::MainFrame() : CSplitterImpl(false), trayMessage(0), maximized(false),
 lastUp(0), lastDown(0), oldshutdown(false), stopperThread(NULL),
 closing(false), awaybyminimize(false), missedAutoConnect(false), tabsontop(false),
 bTrayIcon(false), bAppMinimized(false), bHasPM(false), bHasMC(false), hashProgress(false), trayUID(0), fMenuShutdown(false),
-statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP)
+statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), settingsWindowOpen(false)
 
 
 { 
@@ -454,27 +454,29 @@ LRESULT MainFrame::onTaskbarButton(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lP
 		return 0;
 
 	taskbarList.Release();
-	taskbarList.CoCreateInstance(CLSID_TaskbarList);
-	taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);
+	HRESULT hRes = taskbarList.CoCreateInstance(CLSID_TaskbarList);
+	if (hRes == S_OK && taskbarList) {
+		taskbarList->SetOverlayIcon(m_hWnd, NULL, NULL);
 
-	THUMBBUTTON buttons[2];
-	buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
-	buttons[0].iId = IDC_OPEN_DOWNLOADS;
-	buttons[0].hIcon = ResourceLoader::loadIcon(IDI_OPEN_DOWNLOADS, 16);
-	wcscpy(buttons[0].szTip, CWSTRING(MENU_OPEN_DOWNLOADS_DIR));
-	buttons[0].dwFlags = THBF_ENABLED;
+		THUMBBUTTON buttons[2];
+		buttons[0].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
+		buttons[0].iId = IDC_OPEN_DOWNLOADS;
+		buttons[0].hIcon = ResourceLoader::loadIcon(IDI_OPEN_DOWNLOADS, 16);
+		wcscpy(buttons[0].szTip, CWSTRING(MENU_OPEN_DOWNLOADS_DIR));
+		buttons[0].dwFlags = THBF_ENABLED;
 
-	buttons[1].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
-	buttons[1].iId = ID_FILE_SETTINGS;
-	buttons[1].hIcon = ResourceLoader::loadIcon(IDI_SETTINGS, 16);
-	wcscpy(buttons[1].szTip, CWSTRING(SETTINGS));
-	buttons[1].dwFlags = THBF_ENABLED;
+		buttons[1].dwMask = THB_ICON | THB_TOOLTIP | THB_FLAGS;
+		buttons[1].iId = ID_FILE_SETTINGS;
+		buttons[1].hIcon = ResourceLoader::loadIcon(IDI_SETTINGS, 16);
+		wcscpy(buttons[1].szTip, CWSTRING(SETTINGS));
+		buttons[1].dwFlags = THBF_ENABLED;
 
-	taskbarList->ThumbBarAddButtons(m_hWnd, sizeof(buttons)/sizeof(THUMBBUTTON), buttons);
+		taskbarList->ThumbBarAddButtons(m_hWnd, sizeof(buttons) / sizeof(THUMBBUTTON), buttons);
 
-	for(int i = 0; i < sizeof(buttons)/sizeof(THUMBBUTTON); ++i)
-		DestroyIcon(buttons[i].hIcon);
+		for (int i = 0; i < sizeof(buttons) / sizeof(THUMBBUTTON); ++i)
+			DestroyIcon(buttons[i].hIcon);
 
+	}
 	return 0;
 }
 
@@ -1012,11 +1014,14 @@ LRESULT MainFrame::OnFileSettings(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWn
 }
 
 void MainFrame::openSettings(uint16_t initialPage /*0*/) {
+	if (settingsWindowOpen)
+		return;
 	// TODO: use move captures instead when those are available
 	auto holder = make_shared<SettingHolder>([this](const string& e) { showPortsError(e); });
 	auto dlg = make_shared<PropertiesDlg>(m_hWnd, SettingsManager::getInstance(), initialPage);
 
 	bool lastSortFavUsersFirst = SETTING(SORT_FAVUSERS_FIRST);
+	settingsWindowOpen = true;
 
 	if(dlg->DoModal(m_hWnd) == IDOK) 
 	{
@@ -1065,6 +1070,7 @@ void MainFrame::openSettings(uint16_t initialPage /*0*/) {
 			UpdateLayout();
 		}
 	}
+	settingsWindowOpen = false;
 }
 
 LRESULT MainFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {

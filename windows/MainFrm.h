@@ -440,6 +440,7 @@ private:
 	HANDLE stopperThread;
 
 	bool missedAutoConnect;
+	bool settingsWindowOpen;
 	HWND createToolbar();
 	HWND createWinampToolbar();
 	void updateTray(bool add = true);
