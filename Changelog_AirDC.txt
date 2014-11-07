@@ -1,3 +1,24 @@
+2.90
+
+Changed:
+- Add space in front of Path when copying Path from Filelist window
+- Continue with QueueWindow changes, sub directories / bundle content now browseable
+- Allow stop sharing a temp shared file from offline PM window
+- Update Openssl
+- Handle open file as default menu item for finished queue items, own filelist and dupe files
+
+Fixed:
+- Potential freezes when removing bundles with files
+- Max hub usercommand limitations, prevents malicious hubs from flooding with usercommands (DC++)
+- Fix auto search item user matcher
+- Fix a crash with share scanner
+- Prevent opening multiple settings windows from task bar
+- Several other crashes
+- Fix Get TTH for file
+
+Removed:
+- Tab numbers 0 - 9 ALT + num to switch tab, using ALT + left/right now
+
 2.80
 
 Added:

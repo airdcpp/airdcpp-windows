@@ -1314,31 +1314,33 @@ LRESULT MainFrame::onLink(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL
 
 void MainFrame::getMagnetForFile() {
 	tstring file;
-	BrowseDlg dlg(m_hWnd, BrowseDlg::TYPE_GENERIC, BrowseDlg::DIALOG_SELECT_FILE);
+	BrowseDlg dlg(WinUtil::mainWnd, BrowseDlg::TYPE_GENERIC, BrowseDlg::DIALOG_SELECT_FILE);
 
 	if (dlg.show(file)) {
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_GRAYED);
+		addThreadedTask([=]{
+			auto path = Text::fromT(file);
+			TTHValue tth;
+			try {
+				auto size = File::getSize(path);
+				auto sizeLeft = size;
+				HashManager::getInstance()->getFileTTH(path, size, false, tth, sizeLeft, closing);
+				if (closing)
+					return;
 
-		auto path = Text::fromT(file);
-		TTHValue tth;
-		try {
-			auto size = File::getSize(path);
-			auto sizeLeft = size;
-			HashManager::getInstance()->getFileTTH(path, size, false, tth, sizeLeft, closing);
-			if (closing)
-				return;
+				string magnetlink = WinUtil::makeMagnet(tth, Util::getFileName(path), size);
 
-			string magnetlink = WinUtil::makeMagnet(tth, Util::getFileName(path), size);
-
-			CInputBox ibox(m_hWnd);
-			ibox.DoModal(_T("Tiger Tree Hash"), file.c_str(), Text::toT(tth.toBase32()).c_str(), Text::toT(magnetlink).c_str());
-		} catch(...) { }
+				CInputBox ibox(m_hWnd);
+				ibox.DoModal(_T("Tiger Tree Hash"), file.c_str(), Text::toT(tth.toBase32()).c_str(), Text::toT(magnetlink).c_str());
+			}
+			catch (...) {}
+		});
 		WinUtil::mainMenu.EnableMenuItem(ID_GET_TTH, MF_ENABLED);
 	}
 }
 
 LRESULT MainFrame::onGetTTH(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	addThreadedTask([this] { getMagnetForFile(); });
+	getMagnetForFile();
 	return 0;
 }
 
