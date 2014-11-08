@@ -28,6 +28,7 @@
 PropPage::ListItem ScanPage::listItems[] = {
 	{ SettingsManager::CHECK_MISSING, ResourceManager::CHECK_MISSING },
 	{ SettingsManager::CHECK_SFV, ResourceManager::CHECK_SFV },
+	{ SettingsManager::CHECK_INVALID_SFV, ResourceManager::CHECK_INVALID_SFV },
 	{ SettingsManager::CHECK_NFO, ResourceManager::CHECK_NFO },
 	{ SettingsManager::CHECK_MP3_DIR, ResourceManager::CHECK_MP3_DIR },
 	{ SettingsManager::CHECK_EXTRA_SFV_NFO, ResourceManager::CHECK_EXTRA_SFV_NFO },
