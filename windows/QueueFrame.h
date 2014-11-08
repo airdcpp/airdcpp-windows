@@ -22,12 +22,14 @@
 
 #include "FlatTabCtrl.h"
 #include "TypedListViewCtrl.h"
+#include "FilteredListViewCtrl.h"
 #include "BrowserBar.h"
 
 #include "../client/QueueManager.h"
 #include "../client/TaskQueue.h"
 
 #define STATUS_MSG_MAP 19
+//#define CONTROL_MSG_MAP 22
 
 class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<QueueFrame, ResourceManager::DOWNLOAD_QUEUE, IDC_QUEUE>,
 	public CSplitterImpl<QueueFrame>,
@@ -36,21 +38,16 @@ class QueueFrame : public MDITabChildWindowImpl<QueueFrame>, public StaticFrame<
 public:
 	DECLARE_FRAME_WND_CLASS_EX(_T("QueueFrame"), IDR_QUEUE2, 0, COLOR_3DFACE);
 
-	QueueFrame() : closed(false), statusDirty(true), curSel(TREE_BUNDLES), curDirectory(nullptr),
-		browserBar(this, [this](const string& a, bool b) { handleHistoryClick(a, b); }, [this] { handleItemClick(iBack); }),
-		ctrlStatusContainer(WC_BUTTON, this, STATUS_MSG_MAP) {
-		iBack.reset(new QueueItemInfo(_T(".."), nullptr));
-	}
+	QueueFrame();
 
 	~QueueFrame() {}
 
 	typedef MDITabChildWindowImpl<QueueFrame> baseClass;
-	
 
 	BEGIN_MSG_MAP(QueueFrame)
-		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_GETDISPINFO, ctrlQueue.onGetDispInfo)
-		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_COLUMNCLICK, ctrlQueue.onColumnClick)
-		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_GETINFOTIP, ctrlQueue.onInfoTip)
+		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_GETDISPINFO, ctrlQueue.list.onGetDispInfo)
+		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_COLUMNCLICK, ctrlQueue.list.onColumnClick)
+		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_GETINFOTIP, ctrlQueue.list.onInfoTip)
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, NM_CUSTOMDRAW, onCustomDraw)
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, LVN_KEYDOWN, onKeyDownList)
 		NOTIFY_HANDLER(IDC_QUEUE_LIST, NM_DBLCLK, onDoubleClick)
@@ -59,15 +56,17 @@ public:
 		NOTIFY_HANDLER(IDC_TREE, TVN_KEYDOWN, onKeyDownTree)
 		MESSAGE_HANDLER(WM_CREATE, OnCreate)
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
-		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_SPEAKER, onSpeaker)
 		MESSAGE_HANDLER(WM_SETFOCUS, onSetFocus)
+		MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		COMMAND_ID_HANDLER(IDC_REMOVE_OFFLINE, onRemoveOffline)
 		COMMAND_ID_HANDLER(IDC_READD_ALL, onReaddAll)
 		CHAIN_MSG_MAP_MEMBER(browserBar)
 		CHAIN_MSG_MAP(baseClass)
 		CHAIN_MSG_MAP(CSplitterImpl<QueueFrame>)
+		//ALT_MSG_MAP(CONTROL_MSG_MAP)
+			//MESSAGE_HANDLER(WM_CONTEXTMENU, onContextMenu)
 		ALT_MSG_MAP(STATUS_MSG_MAP)
 		ALT_MSG_MAP(HISTORY_MSG_MAP)
 		CHAIN_MSG_MAP_ALT_MEMBER(browserBar, HISTORY_MSG_MAP)
@@ -84,7 +83,7 @@ public:
 	LRESULT onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& bHandled);
 
 	LRESULT onSetFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /* bHandled */) {
-		ctrlQueue.SetFocus();
+		ctrlQueue.list.SetFocus();
 		return 0;
 	}
 	LRESULT onDoubleClick(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled*/);
@@ -123,6 +122,9 @@ public:
 	}
 
 	void UpdateLayout(BOOL bResizeBars = TRUE );
+	void createColumns();
+	size_t getTotalListItemCount() { return curDirectory ? curDirectory->children.size() : parents.size(); }
+	void filterList();
 
 private:
 	class QueueItemInfo;
@@ -271,15 +273,19 @@ private:
 	tstring formatUser(const QueueItem::Source& s) const;
 	
 	void reloadList(bool ByHistory = false);
-	bool show(const QueueItemInfoPtr& Qii) const;
+	bool show(QueueItemInfoPtr& Qii);
 
 	QueueItemInfoPtr findQueueItem(const QueueItemPtr& aQI);
 
 	bool closed;
 	int curSel;
 
-	typedef TypedListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST> ListType;
+	typedef TypedListViewCtrl<QueueItemInfo, IDC_QUEUE_LIST> ListBaseType;
+	typedef FilteredListViewCtrl <ListBaseType, QueueFrame, IDC_QUEUE_LIST, FLV_HAS_OPTIONS> ListType;
+	friend class ListType;
 	ListType ctrlQueue;
+
+	//CContainedWindow listContainer;
 
 	CTreeViewCtrl ctrlTree;
 	void FillTree();
@@ -391,6 +397,5 @@ private:
 			}
 		}
 	}
-
 };
 #endif // !defined(QUEUE_FRAME_H)

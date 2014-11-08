@@ -30,8 +30,13 @@
 
 #define KEY_MESSAGE_MAP 7
 
-template<class ContainerT, class ParentT, int ctrlId>
-class FilteredListViewCtrl : public CWindowImpl<FilteredListViewCtrl<ContainerT, ParentT, ctrlId>>  {
+#define FLV_HAS_CHECKBOXES 0x01
+#define FLV_HAS_OPTIONS 0x02 
+#define FLV_HAS_DUPE_OPTIONS 0x04 
+#define FLV_DEFAULT FLV_HAS_CHECKBOXES | FLV_HAS_OPTIONS | FLV_HAS_DUPE_OPTIONS
+
+template<class ContainerT, class ParentT, int ctrlId, DWORD style = FLV_DEFAULT>
+class FilteredListViewCtrl : public CWindowImpl<FilteredListViewCtrl<ContainerT, ParentT, ctrlId, style>>  {
 
 public:
 	enum Settings {
@@ -44,7 +49,7 @@ public:
 		SETTING_LAST
 	};
 
-	typedef FilteredListViewCtrl<ContainerT, ParentT, ctrlId> thisClass;
+	typedef FilteredListViewCtrl<ContainerT, ParentT, ctrlId, style> thisClass;
 	BEGIN_MSG_MAP(thisClass)
 		MESSAGE_HANDLER(WM_CREATE, onCreate)
 		MESSAGE_HANDLER(WM_SIZE, onSize)
@@ -53,10 +58,13 @@ public:
 		MESSAGE_HANDLER(WM_CTLCOLORSTATIC, onCtlColor)
 		MESSAGE_HANDLER(WM_EXITMENULOOP, onExitMenuLoop)
 		MESSAGE_HANDLER(WM_ERASEBKGND, onEraseBackground)
-
-		COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
-		COMMAND_ID_HANDLER(IDC_FILTER_SHARED, onShow)
-		COMMAND_ID_HANDLER(IDC_FILTER_OPTIONS, onClickOptions)
+		if (style & FLV_HAS_CHECKBOXES) {
+			COMMAND_ID_HANDLER(IDC_FILTER_QUEUED, onShow)
+			COMMAND_ID_HANDLER(IDC_FILTER_SHARED, onShow)
+		}
+		if (style & FLV_HAS_OPTIONS) {
+			COMMAND_ID_HANDLER(IDC_FILTER_OPTIONS, onClickOptions)
+		}
 		CHAIN_MSG_MAP_MEMBER(filter)
 		FORWARD_NOTIFICATIONS()
 		ALT_MSG_MAP(KEY_MESSAGE_MAP)
@@ -89,29 +97,33 @@ public:
 		filter.addFilterBox(m_hWnd);
 		filter.addColumnBox(m_hWnd, list.getColumnList(), initialColumn, parent->m_hWnd);
 		filter.addMethodBox(m_hWnd);
+		if (style & FLV_HAS_CHECKBOXES) {
+			ctrlQueued.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_QUEUED);
+			ctrlQueued.SetWindowText(CTSTRING(QUEUED));
+			ctrlQueued.SetButtonStyle(BS_AUTOCHECKBOX, false);
+			ctrlQueued.SetFont(WinUtil::systemFont);
+			ctrlQueued.SetCheck(filterQueued ? BST_CHECKED : BST_UNCHECKED);
 
-		ctrlQueued.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_QUEUED);
-		ctrlQueued.SetWindowText(CTSTRING(QUEUED));
-		ctrlQueued.SetButtonStyle(BS_AUTOCHECKBOX, false);
-		ctrlQueued.SetFont(WinUtil::systemFont);
-		ctrlQueued.SetCheck(filterQueued ? BST_CHECKED : BST_UNCHECKED);
+			ctrlShared.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_SHARED);
+			ctrlShared.SetWindowText(CTSTRING(SHARED));
+			ctrlShared.SetButtonStyle(BS_AUTOCHECKBOX, false);
+			ctrlShared.SetFont(WinUtil::systemFont);
+			ctrlShared.SetCheck(filterShared ? BST_CHECKED : BST_UNCHECKED);
+			
+			queuedContainer.SubclassWindow(ctrlQueued.m_hWnd);
+			sharedContainer.SubclassWindow(ctrlShared.m_hWnd);
 
-		ctrlShared.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN, NULL, IDC_FILTER_SHARED);
-		ctrlShared.SetWindowText(CTSTRING(SHARED));
-		ctrlShared.SetButtonStyle(BS_AUTOCHECKBOX, false);
-		ctrlShared.SetFont(WinUtil::systemFont);
-		ctrlShared.SetCheck(filterShared ? BST_CHECKED : BST_UNCHECKED);
-
-		ctrlOptions.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_PUSHBUTTON, NULL, IDC_FILTER_OPTIONS);
-		ctrlOptions.SetWindowText(CTSTRING(OPTIONS_DOTS));
-		ctrlOptions.SetFont(WinUtil::systemFont);
+		}
+		if (style & FLV_HAS_OPTIONS) {
+			ctrlOptions.Create(m_hWnd, rcDefault, _T("+/-"), WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | BS_PUSHBUTTON, NULL, IDC_FILTER_OPTIONS);
+			ctrlOptions.SetWindowText(CTSTRING(OPTIONS_DOTS));
+			ctrlOptions.SetFont(WinUtil::systemFont);
+			optionsContainer.SubclassWindow(ctrlOptions.m_hWnd);
+		}
 
 		filterContainer.SubclassWindow(filter.getFilterBox().m_hWnd);
 		filterMethodContainer.SubclassWindow(filter.getFilterMethodBox().m_hWnd);
 		filterColumnContainer.SubclassWindow(filter.getFilterColumnBox().m_hWnd);
-		queuedContainer.SubclassWindow(ctrlQueued.m_hWnd);
-		sharedContainer.SubclassWindow(ctrlShared.m_hWnd);
-		optionsContainer.SubclassWindow(ctrlOptions.m_hWnd);
 
 		bHandled = FALSE;
 		return 0;
@@ -144,11 +156,13 @@ public:
 			SettingsManager::getInstance()->set(settings[SETTING_RESET_CHANGE], resetOnChange);
 		}, resetOnChange ? OMenu::FLAG_CHECKED : 0);
 
-		optionMenu.appendItem(TSTRING(PARTIAL_DUPES_EQUAL), [this] {
-			filterPartialDupes = !filterPartialDupes;
-			SettingsManager::getInstance()->set(settings[SETTING_PARTIAL_DUPES], filterPartialDupes);
-			updateF();
-		}, filterPartialDupes ? OMenu::FLAG_CHECKED : 0);
+		if (style & FLV_HAS_DUPE_OPTIONS) {
+			optionMenu.appendItem(TSTRING(PARTIAL_DUPES_EQUAL), [this] {
+				filterPartialDupes = !filterPartialDupes;
+				SettingsManager::getInstance()->set(settings[SETTING_PARTIAL_DUPES], filterPartialDupes);
+				updateF();
+			}, filterPartialDupes ? OMenu::FLAG_CHECKED : 0);
+		}
 
 		optionMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_RIGHTBUTTON | TPM_VERPOSANIMATION, pt);
 		return 0;
@@ -214,9 +228,12 @@ public:
 
 	void UpdateLayout(BOOL /*bResizeBars*/ = TRUE) {
 		const int lMargin = 4;
-		const int sharedWidth = WinUtil::getTextWidth(TSTRING(SHARED), ctrlShared.m_hWnd) + 20;
-		const int queuedWidth = WinUtil::getTextWidth(TSTRING(QUEUED), ctrlQueued.m_hWnd) + 20;
-		const int optionsWidth = WinUtil::getTextWidth(TSTRING(SETTINGS_OPTIONS), ctrlOptions.m_hWnd) + 20;
+		const int sharedWidth = (style & FLV_HAS_CHECKBOXES) ?
+			WinUtil::getTextWidth(TSTRING(SHARED), ctrlShared.m_hWnd) + 20 : 0;
+		const int queuedWidth = (style & FLV_HAS_CHECKBOXES) ?
+			WinUtil::getTextWidth(TSTRING(QUEUED), ctrlQueued.m_hWnd) + 20 : 0;
+		const int optionsWidth = (style & FLV_HAS_OPTIONS) ?
+			WinUtil::getTextWidth(TSTRING(SETTINGS_OPTIONS), ctrlOptions.m_hWnd) + 20 : 0;
 
 		RECT rect;
 		GetClientRect(&rect);
@@ -248,17 +265,20 @@ public:
 		rc.right = rc.right + 120;
 		filter.getFilterMethodBox().MoveWindow(rc);
 
-		rc.left = rc.right + lMargin;
-		rc.right = rc.left + queuedWidth;
-		ctrlQueued.MoveWindow(rc);
+		if (style & FLV_HAS_CHECKBOXES) {
+			rc.left = rc.right + lMargin;
+			rc.right = rc.left + queuedWidth;
+			ctrlQueued.MoveWindow(rc);
 
-		rc.left = rc.right + lMargin;
-		rc.right = rc.left + sharedWidth;
-		ctrlShared.MoveWindow(rc);
-
-		rc.left = rc.right + lMargin;
-		rc.right = rc.left + optionsWidth;
-		ctrlOptions.MoveWindow(rc);
+			rc.left = rc.right + lMargin;
+			rc.right = rc.left + sharedWidth;
+			ctrlShared.MoveWindow(rc);
+		}
+		if (style & FLV_HAS_OPTIONS) {
+			rc.left = rc.right + lMargin;
+			rc.right = rc.left + optionsWidth;
+			ctrlOptions.MoveWindow(rc);
+		}
 
 		ShowScrollBar(SB_BOTH, FALSE);
 	}
