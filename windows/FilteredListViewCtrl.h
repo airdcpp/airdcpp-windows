@@ -156,7 +156,7 @@ public:
 		}, onTop ? OMenu::FLAG_CHECKED : 0);
 
 		//ugly hack!
-		optionMenu.appendItem(settings[SETTING_RESET_CHANGE] == SettingsManager::FILTER_FL_RESET_CHANGE ? TSTRING(RESET_FOLDER_CHANGE) : TSTRING(RESET_NEW_SEARCH), [this] {
+		optionMenu.appendItem(settings[SETTING_RESET_CHANGE] == SettingsManager::FILTER_SEARCH_RESET_CHANGE ? TSTRING(RESET_NEW_SEARCH) : TSTRING(RESET_FOLDER_CHANGE), [this] {
 			resetOnChange = !resetOnChange;
 			SettingsManager::getInstance()->set(settings[SETTING_RESET_CHANGE], resetOnChange);
 		}, resetOnChange ? OMenu::FLAG_CHECKED : 0);
