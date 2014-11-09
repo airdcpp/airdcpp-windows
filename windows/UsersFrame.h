@@ -118,6 +118,10 @@ private:
 		COLUMN_DESCRIPTION,
 		COLUMN_LIMITER,
 		COLUMN_IGNORE,
+		COLUMN_SHARED,
+		COLUMN_TAG,
+		COLUMN_IP4,
+		COLUMN_IP6,
 		COLUMN_LAST
 	};
 
@@ -152,10 +156,23 @@ private:
 
 		void update(const UserPtr& u);
 
+		struct userData {
+			string Nicks;
+			string Hubs;
+			string Shared;
+			string Tag;
+			string ip4;
+			string ip6;
+			string lastSeen;
+		};
+
+		userData getUserInfo(const UserPtr& user, string& hint);
+
 		tstring columns[COLUMN_LAST];
 
 		const UserPtr& getUser() const { return user; }
 		GETSET(string, hubUrl, HubUrl);
+		IGETSET(int64_t, shareSize, ShareSize, 0); //save the Highest share size for comparing
 		UserPtr user;
 
 		bool noLimiter;

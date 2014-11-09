@@ -188,6 +188,9 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
 		if (hubNames.empty())
 			hubNames = TSTRING(OFFLINE);
+
+		setDisconnected(true);
+		updateTabIcon(true);
 	} else {
 		auto oldSel = ctrlHubSel.GetStyle() & WS_VISIBLE ? ctrlHubSel.GetCurSel() : 0;
 		StringPair oldHubPair;

@@ -26,13 +26,15 @@
 
 #include "../client/ClientManager.h"
 #include "../client/QueueManager.h"
+#include "../client/GeoManager.h"
+#include "../client/Localization.h"
 
-int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION, COLUMN_LIMITER, COLUMN_IGNORE };
-int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200, 70, 60 };
+int UsersFrame::columnIndexes[] = { COLUMN_FAVORITE, COLUMN_SLOT, COLUMN_NICK, COLUMN_HUB, COLUMN_SEEN, COLUMN_QUEUED, COLUMN_DESCRIPTION, COLUMN_LIMITER, COLUMN_IGNORE, COLUMN_SHARED, COLUMN_TAG, COLUMN_IP4, COLUMN_IP6 };
+int UsersFrame::columnSizes[] = { 60, 90, 200, 300, 150, 100, 200, 70, 60,80, 250, 120, 120 };
 
 static ResourceManager::Strings columnNames[] = { ResourceManager::FAVORITE, ResourceManager::AUTO_GRANT_SLOT, ResourceManager::NICK, ResourceManager::LAST_HUB, ResourceManager::LAST_SEEN, ResourceManager::QUEUED, 
-	ResourceManager::DESCRIPTION, ResourceManager::OVERRIDE_LIMITER, ResourceManager::SETTINGS_IGNORE };
-static ColumnType columnTypes [] = { COLUMN_IMAGE, COLUMN_IMAGE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
+	ResourceManager::DESCRIPTION, ResourceManager::OVERRIDE_LIMITER, ResourceManager::SETTINGS_IGNORE, ResourceManager::SHARED, ResourceManager::TAG, ResourceManager::IP_V4, ResourceManager::IP_V6 };
+static ColumnType columnTypes [] = { COLUMN_IMAGE, COLUMN_IMAGE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_NUMERIC_OTHER, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT };
 
 struct FieldName {
 	string field;
@@ -174,6 +176,9 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	ctrlUsers.setColumnOrderArray(COLUMN_LAST, columnIndexes);
 	ctrlUsers.setVisible(SETTING(USERS_FRAME_VISIBLE));
 	ctrlUsers.setSortColumn(COLUMN_NICK);
+
+	ctrlUsers.addCopyHandler(COLUMN_IP4, &ColumnInfo::filterCountry);
+	ctrlUsers.addCopyHandler(COLUMN_IP6, &ColumnInfo::filterCountry);
 
 	filter.addFilterBox(ctrlStatus.m_hWnd);
 	filter.addColumnBox(ctrlStatus.m_hWnd, ctrlUsers.getColumnList());
@@ -349,23 +354,57 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 			return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 		}
 		
-		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
+		case CDDS_SUBITEM | CDDS_ITEMPREPAINT: 
+		{
 			// dim fields that can't be changed for this user
 			auto ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
 			if (!ui->isFavorite && ctrlUsers.findColumn(cd->iSubItem) == COLUMN_LIMITER) {
 				cd->clrText = WinUtil::blendColors(SETTING(NORMAL_COLOUR), SETTING(BACKGROUND_COLOR));
 				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
-			} else if(!ui->isFavorite) { //either this or it needs to be owner drawn
+			}
+			else if (SETTING(GET_USER_COUNTRY) && (ctrlUsers.findColumn(cd->iSubItem) == COLUMN_IP4 || ctrlUsers.findColumn(cd->iSubItem) == COLUMN_IP6)) {
+				CRect rc;
+				ctrlUsers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
+
+				SetTextColor(cd->nmcd.hdc, cd->clrText);
+				DrawThemeBackground(GetWindowTheme(ctrlUsers.m_hWnd), cd->nmcd.hdc, LVP_LISTITEM, 3, &rc, &rc);
+
+				TCHAR buf[256];
+				ctrlUsers.GetItemText((int)cd->nmcd.dwItemSpec, cd->iSubItem, buf, 255);
+				buf[255] = 0;
+				if (_tcslen(buf) > 0) {
+					rc.left += 2;
+					LONG top = rc.top + (rc.Height() - 15) / 2;
+					if ((top - rc.top) < 2)
+						top = rc.top + 1;
+
+					POINT p = { rc.left, top };
+
+					string ip = Text::fromT(ui->getText(cd->iSubItem));
+					uint8_t flagIndex = 0;
+					if (!ip.empty()) {
+						// Only attempt to grab a country mapping if we actually have an IP address
+						string tmpCountry = GeoManager::getInstance()->getCountry(ip);
+						if (!tmpCountry.empty()) {
+							flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
+						}
+					}
+
+					ResourceLoader::flagImages.Draw(cd->nmcd.hdc, flagIndex, p, LVSIL_SMALL);
+					top = rc.top + (rc.Height() - WinUtil::getTextHeight(cd->nmcd.hdc) - 1) / 2;
+					::ExtTextOut(cd->nmcd.hdc, rc.left + 30, top + 1, ETO_CLIPPED, rc, buf, _tcslen(buf), NULL);
+					return CDRF_SKIPDEFAULT;
+				}
+			}
+			else if (!ui->isFavorite) { //either this or it needs to be owner drawn
 				cd->clrText = SETTING(NORMAL_COLOUR);
 				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 			}
 		}
-
 		default:
 			return CDRF_DODEFAULT;
 	}
 }
-
 
 void UsersFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	RECT rect;
@@ -613,6 +652,7 @@ int UsersFrame::UserInfo::compareItems(const UserInfo* a, const UserInfo* b, int
 	case COLUMN_SLOT: return compare(a->grantSlot, b->grantSlot);
 	case COLUMN_QUEUED: return compare(a->user->getQueued(), b->user->getQueued());
 	case COLUMN_IGNORE: return compare(a->user->isIgnored(), b->user->isIgnored());
+	case COLUMN_SHARED: return compare(a->getShareSize(), b->getShareSize()); //Highest share size is saved for comparing
 	default: return Util::DefaultSort(a->columns[col].c_str(), b->columns[col].c_str());
 	}
 }
@@ -771,59 +811,120 @@ UsersFrame::UserInfo::UserInfo(const UserPtr& u, const string& aUrl, bool update
 
 void UsersFrame::UserInfo::update(const UserPtr& u) {
 	auto fu = !u->isSet(User::FAVORITE) ? nullptr : FavoriteManager::getInstance()->getFavoriteUser(u);
-	if(fu) {
+	if (fu) {
 		isFavorite = true;
 		noLimiter = fu->isSet(FavoriteUser::FLAG_SUPERUSER);
 		grantSlot = fu->isSet(FavoriteUser::FLAG_GRANTSLOT);
-		
-		if (fu->getUrl().empty())
-			fu->setUrl(hubUrl);
 
+		if (fu->getUrl().empty()) fu->setUrl(hubUrl);
 		setHubUrl(fu->getUrl());
+	} else {
+		noLimiter = false;
+		isFavorite = false;
+		grantSlot = hasReservedSlot();
+	}
 
-		//gets nicks and hubnames and updates the hint url
-		string url = getHubUrl();
-		auto ui = move(ClientManager::getInstance()->getNickHubPair(u, url));
-		setHubUrl(url);
+	//gets nicks and hubnames and updates the hint url
+	string url = getHubUrl();
+	auto ui = move(getUserInfo(u, url));
+	setHubUrl(url);
 
-		columns[COLUMN_NICK] = u->isOnline() ? Text::toT(ui.first) : fu->getNick().empty() ? Text::toT(ui.first) : Text::toT(fu->getNick());
-		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.second) : Text::toT(fu->getUrl()); 
+	if (fu) {
+		columns[COLUMN_NICK] = u->isOnline() ? Text::toT(ui.Nicks) : fu->getNick().empty() ? Text::toT(ui.Nicks) : Text::toT(fu->getNick());
+		columns[COLUMN_HUB] = u->isOnline() ? Text::toT(ui.Hubs) : Text::toT(fu->getUrl()); 
 		columns[COLUMN_SEEN] = u->isOnline() ? TSTRING(ONLINE) : fu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", fu->getLastSeen())) : TSTRING(UNKNOWN);
 		columns[COLUMN_DESCRIPTION] = Text::toT(fu->getDescription());
 		columns[COLUMN_LIMITER] = noLimiter ? TSTRING(YES) : TSTRING(NO);
-	} else if (u->isOnline()) {
-		noLimiter = false;
-		isFavorite = false;
-		grantSlot = hasReservedSlot();
-		
-		//gets nicks and hubnames and updates the hint url
-		string url = getHubUrl();
-		auto ui = move(ClientManager::getInstance()->getNickHubPair(u, url));
-		setHubUrl(url);
-
-		columns[COLUMN_NICK] = Text::toT(ui.first);
-		columns[COLUMN_HUB] = Text::toT(ui.second);
-		columns[COLUMN_SEEN] = TSTRING(ONLINE);
+	} else {
+		columns[COLUMN_NICK] = Text::toT(ui.Nicks);
+		columns[COLUMN_HUB] = Text::toT(ui.Hubs);
+		columns[COLUMN_SEEN] = Text::toT(ui.lastSeen);
 		columns[COLUMN_DESCRIPTION] = Util::emptyStringT;
 		columns[COLUMN_LIMITER] = _T("-");
-	} else { //user is offline
-		noLimiter = false;
-		isFavorite = false;
-		grantSlot = hasReservedSlot();
+	}
 
-		auto ofu = ClientManager::getInstance()->getOfflineUser(u->getCID());
-		if (ofu) {
-			setHubUrl(ofu->getUrl());
-			columns[COLUMN_NICK] = Text::toT(ofu->getNick());
-			columns[COLUMN_HUB] = Text::toT(ofu->getUrl());
-			columns[COLUMN_SEEN] = ofu->getLastSeen() ? Text::toT(Util::formatTime("%Y-%m-%d %H:%M", ofu->getLastSeen())) : TSTRING(UNKNOWN);;
-			columns[COLUMN_DESCRIPTION] = Util::emptyStringT;
-			columns[COLUMN_LIMITER] = _T("-");
+	columns[COLUMN_SHARED] = Text::toT(ui.Shared);
+	columns[COLUMN_TAG] = Text::toT(ui.Tag);
+	columns[COLUMN_IP4] = Text::toT(ui.ip4);
+	columns[COLUMN_IP6] = Text::toT(ui.ip6);
+	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());
+	columns[COLUMN_IGNORE] = u->isIgnored() ? TSTRING(YES) : TSTRING(NO);
+}
+
+
+UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& user, string& hint) {
+	OnlineUserList ouList;
+	string nick = Util::emptyString;
+	string hubs = Util::emptyString;
+	string shared = Util::emptyString;
+	string tag = Util::emptyString;
+	string ip4 = Util::emptyString;
+	string ip6 = Util::emptyString;
+	string seen = STRING(ONLINE);
+
+	if(user->isOnline()) {
+		RLock l(ClientManager::getInstance()->getCS());
+		auto hinted = ClientManager::getInstance()->getUsers(HintedUser(user, hint), ouList);
+		if (!ouList.empty() && !hinted) { //set the hint to match the first nick
+			auto i = ouList.begin();
+			hinted = *i;
+			ouList.erase(i);
+			hint = hinted->getHubUrl();
+		}
+
+		hubs = hinted ? OnlineUser::HubName()(hinted)+" " : Util::emptyString;
+		if (!ouList.empty())
+			hubs += Util::listToStringT<OnlineUserList, OnlineUser::HubName>(ouList, hinted ? true : false, hinted ? false : true);
+
+		//add share sizes
+		auto ouList2 = ouList;
+		//well this is kind of stupid but, save the highest share size for comparing...
+		setShareSize(hinted ? hinted->getIdentity().getBytesShared() : 0);
+		shared = hinted ? Util::formatBytes(hinted->getIdentity().getBytesShared()) + " " : Util::emptyString;
+		ouList2.erase(unique(ouList2.begin(), ouList2.end(), [](const OnlineUserPtr& a, const OnlineUserPtr& b) { return compare(a->getIdentity().getBytesShared(), b->getIdentity().getBytesShared()) == 0; }), ouList2.end());
+		ouList2.erase(remove_if(ouList2.begin(), ouList2.end(), [&](const OnlineUserPtr& a) { return compare(a->getIdentity().getBytesShared(), hinted->getIdentity().getBytesShared()) == 0; }), ouList2.end());
+		if (!ouList2.empty()) {
+			shared += "(";
+			for (auto x : ouList2) {
+				if (x->getIdentity().getBytesShared() > getShareSize())
+					setShareSize(x->getIdentity().getBytesShared());
+				shared += Util::formatBytes(x->getIdentity().getBytesShared()) + ", ";
+			}
+
+			shared.pop_back();
+			shared[shared.length() - 1] = ')';
+		}
+
+		ouList.erase(unique(ouList.begin(), ouList.end(), [](const OnlineUserPtr& a, const OnlineUserPtr& b) { return compare(OnlineUser::Nick()(a), OnlineUser::Nick()(b)) == 0; }), ouList.end());
+		if (hinted) {
+			//erase users with the hinted nick
+			auto p = equal_range(ouList.begin(), ouList.end(), hinted, OnlineUser::NickSort());
+			ouList.erase(p.first, p.second);
+		}
+
+		nick = hinted ? OnlineUser::Nick()(hinted)+" " : Util::emptyString;
+		if (!ouList.empty())
+			nick += Util::listToStringT<OnlineUserList, OnlineUser::Nick>(ouList, hinted ? true : false, hinted ? false : true);
+
+		if (hinted) {
+			ip4 = hinted->getIdentity().getIp4();
+			ip6 = hinted->getIdentity().getIp6();
+			tag = hinted->getIdentity().getTag();
 		}
 	}
 
-	columns[COLUMN_QUEUED] = Util::formatBytesW(u->getQueued());
-	columns[COLUMN_IGNORE] = u->isIgnored() ? TSTRING(YES) : TSTRING(NO);
+	if (nick.empty()) {
+		//offline
+		auto ofu = ClientManager::getInstance()->getOfflineUser(user->getCID());
+		if (ofu) {
+			nick = ofu->getNick();
+			hubs = ofu->getUrl();
+			seen = ofu->getLastSeen() ? Util::formatTime("%Y-%m-%d %H:%M", ofu->getLastSeen()) : STRING(UNKNOWN);
+			hint = ofu->getUrl();
+		}
+	}
+
+	return{ nick, hubs, shared, tag, ip4, ip6, seen };
 }
 
 int UsersFrame::UserInfo::getImage(int col) const {
