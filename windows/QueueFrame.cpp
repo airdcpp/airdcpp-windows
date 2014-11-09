@@ -970,6 +970,7 @@ void QueueFrame::filterList() {
 			ctrlQueue.list.insertItem(ctrlQueue.list.getSortPos(p.get()), p.get(), p->getImageIndex());
 		}
 	} else {
+		ctrlQueue.list.insertItem(0, iBack.get(), iBack->getImageIndex());
 		for (auto& p : curDirectory->children | map_values) {
 			if (!show(p))
 				continue;
