@@ -71,7 +71,8 @@ public:
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 	END_MSG_MAP();
 
-	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings, int aInitialColumn) : onTop(true), resetOnChange(true), filterPartialDupes(false), filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
+	FilteredListViewCtrl(ParentT* aParent, size_t colCount, std::function<void ()> aUpdateF, SettingsManager::BoolSetting* aSettings, int aInitialColumn) : 
+		onTop(true), resetOnChange(true), filterPartialDupes(false), filterShared(true), filterQueued(true), updateF(aUpdateF), parent(aParent), settings(aSettings),
 		filter(colCount, [this] { onUpdate(); }), columnCount(colCount), initialColumn(aInitialColumn),
 		filterMethodContainer(WC_COMBOBOX, this, KEY_MESSAGE_MAP),
 		filterContainer(WC_EDIT, this, KEY_MESSAGE_MAP),
@@ -80,10 +81,14 @@ public:
 		sharedContainer(WC_EDIT, this, KEY_MESSAGE_MAP),
 		optionsContainer(WC_COMBOBOX, this, KEY_MESSAGE_MAP)
 	{
-		filterShared = SettingsManager::getInstance()->get(settings[SETTING_SHARED]);
-		filterQueued = SettingsManager::getInstance()->get(settings[SETTING_QUEUED]);
+		if (style & FLV_HAS_CHECKBOXES) {
+			filterShared = SettingsManager::getInstance()->get(settings[SETTING_SHARED]);
+			filterQueued = SettingsManager::getInstance()->get(settings[SETTING_QUEUED]);
+		}
+		if (style & FLV_HAS_DUPE_OPTIONS) {
+			filterPartialDupes = SettingsManager::getInstance()->get(settings[SETTING_PARTIAL_DUPES]);
+		}
 		onTop = SettingsManager::getInstance()->get(settings[SETTING_TOP]);
-		filterPartialDupes = SettingsManager::getInstance()->get(settings[SETTING_PARTIAL_DUPES]);
 		resetOnChange = SettingsManager::getInstance()->get(settings[SETTING_RESET_CHANGE]);
 		filter.setInverse(SettingsManager::getInstance()->get(settings[SETTING_INVERSED]));
 	}

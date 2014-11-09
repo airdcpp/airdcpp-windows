@@ -43,7 +43,7 @@ static ResourceManager::Strings columnNames[] = { ResourceManager::NAME, Resourc
 
 static ResourceManager::Strings treeNames[] = { ResourceManager::BUNDLES, ResourceManager::FINISHED, ResourceManager::QUEUED, ResourceManager::FAILED, ResourceManager::PAUSED, ResourceManager::AUTO_SEARCH, ResourceManager::LOCATIONS, ResourceManager::FILE_LISTS, ResourceManager::TEMP_ITEMS };
 
-static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::FILTER_FL_SHARED, SettingsManager::FILTER_FL_QUEUED, SettingsManager::FILTER_FL_INVERSED, SettingsManager::FILTER_FL_TOP, SettingsManager::FILTER_FL_PARTIAL_DUPES, SettingsManager::FILTER_FL_RESET_CHANGE };
+static SettingsManager::BoolSetting filterSettings[] = { SettingsManager::BOOL_LAST, SettingsManager::BOOL_LAST, SettingsManager::FILTER_QUEUE_INVERSED, SettingsManager::FILTER_QUEUE_TOP, SettingsManager::BOOL_LAST, SettingsManager::FILTER_QUEUE_RESET_CHANGE };
 
 static ColumnType columnTypes[] = { COLUMN_TEXT, COLUMN_SIZE, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TEXT, COLUMN_TIME, COLUMN_SPEED, COLUMN_TEXT, COLUMN_SIZE, COLUMN_TIME, COLUMN_TIME, COLUMN_TEXT };
 
