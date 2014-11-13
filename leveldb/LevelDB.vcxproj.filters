@@ -132,6 +132,9 @@
     <ClCompile Include="util\status.cc">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="db\dumpfile.cc">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="db\builder.h">
@@ -297,6 +300,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="port\win\unistd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="include\leveldb\dumpfile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
