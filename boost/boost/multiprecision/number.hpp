@@ -578,7 +578,7 @@ private:
       eval_convert_to(result, m_backend);
    }
    template <class B2, expression_template_option ET>
-   void convert_to_imp(number<B2, ET>* result)const
+   typename enable_if_c<detail::is_explicitly_convertible<Backend, B2>::value>::type convert_to_imp(number<B2, ET>* result)const
    {
       result->assign(*this);
    }
@@ -598,7 +598,7 @@ public:
    // Use in boolean context, and explicit conversion operators:
    //
 #ifndef BOOST_NO_CXX11_EXPLICIT_CONVERSION_OPERATORS
-#  if defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ < 7)
+#  if (defined(__GNUC__) && (__GNUC__ == 4) && (__GNUC_MINOR__ < 7)) || (defined(BOOST_INTEL) && (BOOST_INTEL <= 1500))
    //
    // Horrible workaround for gcc-4.6.x which always prefers the template
    // operator bool() rather than the non-template operator when converting to
@@ -1382,9 +1382,13 @@ private:
       do_multiplies(e.left(), typename left_type::tag_type());
       do_multiplies(e.right(), typename right_type::tag_type());
    }
-
+   //
+   // This rearrangement is disabled for integer types, the test on sizeof(Exp) is simply to make
+   // the disable_if dependent on the template argument (the size of 1 can never occur in practice).
+   //
    template <class Exp>
-   void do_multiplies(const Exp& e, const detail::divides&)
+   typename boost::disable_if_c<boost::multiprecision::number_category<self_type>::value == boost::multiprecision::number_kind_integer || sizeof(Exp) == 1>::type 
+      do_multiplies(const Exp& e, const detail::divides&)
    {
       typedef typename Exp::left_type left_type;
       typedef typename Exp::right_type right_type;
@@ -1399,8 +1403,13 @@ private:
       eval_multiply(m_backend, canonical_value(e.left().value()));
       eval_multiply(m_backend, canonical_value(e.right().value()));
    }
+   //
+   // This rearrangement is disabled for integer types, the test on sizeof(Exp) is simply to make
+   // the disable_if dependent on the template argument (the size of 1 can never occur in practice).
+   //
    template <class Exp>
-   void do_multiplies(const Exp& e, const detail::divide_immediates&)
+   typename boost::disable_if_c<boost::multiprecision::number_category<self_type>::value == boost::multiprecision::number_kind_integer || sizeof(Exp) == 1>::type
+      do_multiplies(const Exp& e, const detail::divide_immediates&)
    {
       using default_ops::eval_multiply;
       using default_ops::eval_divide;
@@ -1429,34 +1438,51 @@ private:
       do_divide(e.left(), typename left_type::tag_type());
       m_backend.negate();
    }
-
+   //
+   // This rearrangement is disabled for integer types, the test on sizeof(Exp) is simply to make
+   // the disable_if dependent on the template argument (the size of 1 can never occur in practice).
+   //
    template <class Exp>
-   void do_divide(const Exp& e, const detail::multiplies&)
+   typename boost::disable_if_c<boost::multiprecision::number_category<self_type>::value == boost::multiprecision::number_kind_integer || sizeof(Exp) == 1>::type
+      do_divide(const Exp& e, const detail::multiplies&)
    {
       typedef typename Exp::left_type left_type;
       typedef typename Exp::right_type right_type;
       do_divide(e.left(), typename left_type::tag_type());
       do_divide(e.right(), typename right_type::tag_type());
    }
-
+   //
+   // This rearrangement is disabled for integer types, the test on sizeof(Exp) is simply to make
+   // the disable_if dependent on the template argument (the size of 1 can never occur in practice).
+   //
    template <class Exp>
-   void do_divide(const Exp& e, const detail::divides&)
+   typename boost::disable_if_c<boost::multiprecision::number_category<self_type>::value == boost::multiprecision::number_kind_integer || sizeof(Exp) == 1>::type
+      do_divide(const Exp& e, const detail::divides&)
    {
       typedef typename Exp::left_type left_type;
       typedef typename Exp::right_type right_type;
       do_divide(e.left(), typename left_type::tag_type());
       do_multiplies(e.right(), typename right_type::tag_type());
    }
-
+   //
+   // This rearrangement is disabled for integer types, the test on sizeof(Exp) is simply to make
+   // the disable_if dependent on the template argument (the size of 1 can never occur in practice).
+   //
    template <class Exp>
-   void do_divides(const Exp& e, const detail::multiply_immediates&)
+   typename boost::disable_if_c<boost::multiprecision::number_category<self_type>::value == boost::multiprecision::number_kind_integer || sizeof(Exp) == 1>::type
+      do_divides(const Exp& e, const detail::multiply_immediates&)
    {
       using default_ops::eval_divide;
       eval_divide(m_backend, canonical_value(e.left().value()));
       eval_divide(m_backend, canonical_value(e.right().value()));
    }
+   //
+   // This rearrangement is disabled for integer types, the test on sizeof(Exp) is simply to make
+   // the disable_if dependent on the template argument (the size of 1 can never occur in practice).
+   //
    template <class Exp>
-   void do_divides(const Exp& e, const detail::divide_immediates&)
+   typename boost::disable_if_c<boost::multiprecision::number_category<self_type>::value == boost::multiprecision::number_kind_integer || sizeof(Exp) == 1>::type
+      do_divides(const Exp& e, const detail::divide_immediates&)
    {
       using default_ops::eval_multiply;
       using default_ops::eval_divide;
@@ -1782,6 +1808,17 @@ template <class T, multiprecision::expression_template_option ExpressionTemplate
 inline multiprecision::number<T, ExpressionTemplates> denominator(const rational<multiprecision::number<T, ExpressionTemplates> >& a)
 {
    return a.denominator();
+}
+
+namespace multiprecision
+{
+
+template <class I>
+struct component_type<boost::rational<I> >
+{
+   typedef I type;
+};
+
 }
 
 #ifdef BOOST_MSVC

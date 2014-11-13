@@ -962,7 +962,7 @@ inline void eval_trunc(T& result, const T& a)
 {
    BOOST_STATIC_ASSERT_MSG(number_category<T>::value == number_kind_floating_point, "The trunc function is only valid for floating point types.");
    int c = eval_fpclassify(a);
-   if(c == FP_NAN || c == FP_INFINITE)
+   if(c == (int)FP_NAN || c == (int)FP_INFINITE)
    {
       result = boost::math::policies::raise_rounding_error("boost::multiprecision::trunc<%1%>(%1%)", 0, number<T>(a), number<T>(a), boost::math::policies::policy<>()).backend();
       return;
@@ -979,7 +979,7 @@ inline void eval_round(T& result, const T& a)
    BOOST_STATIC_ASSERT_MSG(number_category<T>::value == number_kind_floating_point, "The round function is only valid for floating point types.");
    typedef typename boost::multiprecision::detail::canonical<float, T>::type fp_type;
    int c = eval_fpclassify(a);
-   if(c == FP_NAN || c == FP_INFINITE)
+   if((c == (int)FP_NAN) || (c == (int)FP_INFINITE))
    {
       result = boost::math::policies::raise_rounding_error("boost::multiprecision::round<%1%>(%1%)", 0, number<T>(a), number<T>(a), boost::math::policies::policy<>()).backend();
       return;
@@ -1202,6 +1202,32 @@ template <class T>
 typename enable_if_c<sizeof(T) == 0>::type eval_ldexp();
 template <class T>
 typename enable_if_c<sizeof(T) == 0>::type eval_frexp();
+
+//
+// eval_logb and eval_scalbn simply assume base 2 and forward to
+// eval_ldexp and eval_frexp:
+//
+template <class B>
+inline typename B::exponent_type eval_ilogb(const B& val)
+{
+   BOOST_STATIC_ASSERT_MSG(!std::numeric_limits<number<B> >::is_specialized || (std::numeric_limits<number<B> >::radix == 2), "The default implementation of ilogb requires a base 2 number type");
+   typename B::exponent_type e;
+   B result;
+   eval_frexp(result, val, &e);
+   return e - 1;
+}
+template <class B>
+inline void eval_logb(B& result, const B& val)
+{
+   typedef typename boost::mpl::if_c<boost::is_same<boost::intmax_t, long>::value, long long, boost::intmax_t>::type max_t;
+   result = static_cast<max_t>(eval_ilogb(val));
+}
+template <class B, class A>
+inline void eval_scalbn(B& result, const B& val, A e)
+{
+   BOOST_STATIC_ASSERT_MSG(!std::numeric_limits<number<B> >::is_specialized || (std::numeric_limits<number<B> >::radix == 2), "The default implementation of scalbn requires a base 2 number type");
+   eval_ldexp(result, val, static_cast<typename B::exponent_type>(e));
+}
 //
 // These functions are implemented in separate files, but expanded inline here,
 // DO NOT CHANGE THE ORDER OF THESE INCLUDES:
@@ -1233,7 +1259,7 @@ template <class Backend, multiprecision::expression_template_option ExpressionTe
 inline bool isfinite BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::number<Backend, ExpressionTemplates>& arg)
 {
    int v = (fpclassify)(arg);
-   return (v != FP_INFINITE) && (v != FP_NAN);
+   return (v != (int)FP_INFINITE) && (v != (int)FP_NAN);
 }
 template <class tag, class A1, class A2, class A3, class A4>
 inline bool isfinite BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::detail::expression<tag, A1, A2, A3, A4>& arg)
@@ -1244,7 +1270,7 @@ inline bool isfinite BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::deta
 template <class Backend, multiprecision::expression_template_option ExpressionTemplates>
 inline bool isnan BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::number<Backend, ExpressionTemplates>& arg)
 {
-   return (fpclassify)(arg) == FP_NAN;
+   return (fpclassify)(arg) == (int)FP_NAN;
 }
 template <class tag, class A1, class A2, class A3, class A4>
 inline bool isnan BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::detail::expression<tag, A1, A2, A3, A4>& arg)
@@ -1255,7 +1281,7 @@ inline bool isnan BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::detail:
 template <class Backend, multiprecision::expression_template_option ExpressionTemplates>
 inline bool isinf BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::number<Backend, ExpressionTemplates>& arg)
 {
-   return (fpclassify)(arg) == FP_INFINITE;
+   return (fpclassify)(arg) == (int)FP_INFINITE;
 }
 template <class tag, class A1, class A2, class A3, class A4>
 inline bool isinf BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::detail::expression<tag, A1, A2, A3, A4>& arg)
@@ -1266,7 +1292,7 @@ inline bool isinf BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::detail:
 template <class Backend, multiprecision::expression_template_option ExpressionTemplates>
 inline bool isnormal BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::number<Backend, ExpressionTemplates>& arg)
 {
-   return (fpclassify)(arg) == FP_NORMAL;
+   return (fpclassify)(arg) == (int)FP_NORMAL;
 }
 template <class tag, class A1, class A2, class A3, class A4>
 inline bool isnormal BOOST_PREVENT_MACRO_SUBSTITUTION(const multiprecision::detail::expression<tag, A1, A2, A3, A4>& arg)
@@ -2007,8 +2033,10 @@ UNARY_OP_FUNCTOR(cosh, number_kind_floating_point)
 UNARY_OP_FUNCTOR(sinh, number_kind_floating_point)
 UNARY_OP_FUNCTOR(tanh, number_kind_floating_point)
 
-HETERO_BINARY_OP_FUNCTOR(ldexp, int, number_kind_floating_point)
-HETERO_BINARY_OP_FUNCTOR(frexp, int*, number_kind_floating_point)
+HETERO_BINARY_OP_FUNCTOR(ldexp, short, number_kind_floating_point)
+HETERO_BINARY_OP_FUNCTOR(frexp, short*, number_kind_floating_point)
+HETERO_BINARY_OP_FUNCTOR_B(ldexp, int, number_kind_floating_point)
+HETERO_BINARY_OP_FUNCTOR_B(frexp, int*, number_kind_floating_point)
 HETERO_BINARY_OP_FUNCTOR_B(ldexp, long, number_kind_floating_point)
 HETERO_BINARY_OP_FUNCTOR_B(frexp, long*, number_kind_floating_point)
 HETERO_BINARY_OP_FUNCTOR_B(ldexp, long long, number_kind_floating_point)
@@ -2016,6 +2044,12 @@ HETERO_BINARY_OP_FUNCTOR_B(frexp, long long*, number_kind_floating_point)
 BINARY_OP_FUNCTOR(pow, number_kind_floating_point)
 BINARY_OP_FUNCTOR(fmod, number_kind_floating_point)
 BINARY_OP_FUNCTOR(atan2, number_kind_floating_point)
+
+UNARY_OP_FUNCTOR(logb, number_kind_floating_point)
+HETERO_BINARY_OP_FUNCTOR(scalbn, short, number_kind_floating_point)
+HETERO_BINARY_OP_FUNCTOR_B(scalbn, int, number_kind_floating_point)
+HETERO_BINARY_OP_FUNCTOR_B(scalbn, long, number_kind_floating_point)
+HETERO_BINARY_OP_FUNCTOR_B(scalbn, long long, number_kind_floating_point)
 
 //
 // Integer functions:
@@ -2026,6 +2060,26 @@ HETERO_BINARY_OP_FUNCTOR_B(pow, unsigned, number_kind_integer)
 
 #undef BINARY_OP_FUNCTOR
 #undef UNARY_OP_FUNCTOR
+
+//
+// ilogb:
+//
+template <class Backend, multiprecision::expression_template_option ExpressionTemplates>
+inline typename enable_if_c<number_category<Backend>::value == number_kind_floating_point, typename Backend::exponent_type>::type 
+   ilogb(const multiprecision::number<Backend, ExpressionTemplates>& val)
+{
+   using default_ops::eval_ilogb;
+   return eval_ilogb(val.backend());
+}
+
+template <class tag, class A1, class A2, class A3, class A4>
+inline typename enable_if_c<number_category<detail::expression<tag, A1, A2, A3, A4> >::value == number_kind_floating_point, typename multiprecision::detail::expression<tag, A1, A2, A3, A4>::result_type::backend_type::exponent_type>::type
+ilogb(const detail::expression<tag, A1, A2, A3, A4>& val)
+{
+   using default_ops::eval_ilogb;
+   typename multiprecision::detail::expression<tag, A1, A2, A3, A4>::result_type arg(val);
+   return eval_ilogb(arg.backend());
+}
 
 } //namespace multiprecision
 

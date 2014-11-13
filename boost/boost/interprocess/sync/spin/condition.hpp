@@ -11,6 +11,10 @@
 #ifndef BOOST_INTERPROCESS_DETAIL_SPIN_CONDITION_HPP
 #define BOOST_INTERPROCESS_DETAIL_SPIN_CONDITION_HPP
 
+#if defined(_MSC_VER)
+#  pragma once
+#endif
+
 #include <boost/interprocess/detail/config_begin.hpp>
 #include <boost/interprocess/detail/workaround.hpp>
 #include <boost/interprocess/sync/spin/mutex.hpp>
@@ -20,7 +24,7 @@
 #include <boost/interprocess/exceptions.hpp>
 #include <boost/interprocess/detail/os_thread_functions.hpp>
 #include <boost/interprocess/sync/spin/wait.hpp>
-#include <boost/move/move.hpp>
+#include <boost/move/utility_core.hpp>
 #include <boost/cstdint.hpp>
 
 namespace boost {
@@ -41,24 +45,26 @@ class spin_condition
    template <typename L>
    bool timed_wait(L& lock, const boost::posix_time::ptime &abs_time)
    {
+      if (!lock)
+         throw lock_exception();
+      //Handle infinity absolute time here to avoid complications in do_timed_wait
       if(abs_time == boost::posix_time::pos_infin){
          this->wait(lock);
          return true;
       }
-      if (!lock)
-         throw lock_exception();
       return this->do_timed_wait(abs_time, *lock.mutex());
    }
 
    template <typename L, typename Pr>
    bool timed_wait(L& lock, const boost::posix_time::ptime &abs_time, Pr pred)
    {
+      if (!lock)
+         throw lock_exception();
+      //Handle infinity absolute time here to avoid complications in do_timed_wait
       if(abs_time == boost::posix_time::pos_infin){
          this->wait(lock, pred);
          return true;
       }
-      if (!lock)
-         throw lock_exception();
       while (!pred()){
          if (!this->do_timed_wait(abs_time, *lock.mutex()))
             return pred();
@@ -112,7 +118,9 @@ inline spin_condition::spin_condition()
 
 inline spin_condition::~spin_condition()
 {
-   //Trivial destructor
+   //Notify all waiting threads
+   //to allow POSIX semantics on condition destruction
+   this->notify_all();
 }
 
 inline void spin_condition::notify_one()

@@ -19,6 +19,7 @@
 #include <boost/geometry/core/access.hpp>
 #include <boost/geometry/core/radian_access.hpp>
 
+#include <boost/geometry/algorithms/detail/course.hpp>
 
 #include <boost/geometry/strategies/distance.hpp>
 #include <boost/geometry/strategies/concepts/distance_concept.hpp>
@@ -117,10 +118,10 @@ public :
 
         return_type d2 = m_strategy.apply(sp2, p);
 
-        return_type crs_AD = course(sp1, p);
-        return_type crs_AB = course(sp1, sp2);
+        return_type crs_AD = geometry::detail::course<return_type>(sp1, p);
+        return_type crs_AB = geometry::detail::course<return_type>(sp1, sp2);
         return_type crs_BA = crs_AB - geometry::math::pi<return_type>();
-        return_type crs_BD = course(sp2, p);
+        return_type crs_BD = geometry::detail::course<return_type>(sp2, p);
         return_type d_crs1 = crs_AD - crs_AB;
         return_type d_crs2 = crs_BD - crs_BA;
 
@@ -165,24 +166,6 @@ public :
 private :
 
     Strategy m_strategy;
-
-    /// Calculate course (bearing) between two points. Might be moved to a "course formula" ...
-    template <typename Point1, typename Point2>
-    inline typename return_type<Point1, Point2>::type
-    course(Point1 const& p1, Point2 const& p2) const
-    {
-        typedef typename return_type<Point1, Point2>::type return_type;
-
-        // http://williams.best.vwh.net/avform.htm#Crs
-        return_type dlon = get_as_radian<0>(p2) - get_as_radian<0>(p1);
-        return_type cos_p2lat = cos(get_as_radian<1>(p2));
-
-        // "An alternative formula, not requiring the pre-computation of d"
-        return atan2(sin(dlon) * cos_p2lat,
-            cos(get_as_radian<1>(p1)) * sin(get_as_radian<1>(p2))
-            - sin(get_as_radian<1>(p1)) * cos_p2lat * cos(dlon));
-    }
-
 };
 
 
@@ -250,16 +233,6 @@ public :
 };
 
 
-template
-<
-    typename CalculationType,
-    typename Strategy
->
-struct strategy_point_point<cross_track<CalculationType, Strategy> >
-{
-    typedef Strategy type;
-};
-
 
 
 /*
@@ -294,7 +267,7 @@ struct default_strategy
 template <typename Point, typename PointOfSegment, typename Strategy>
 struct default_strategy
     <
-        segment_tag, Point, PointOfSegment,
+        point_tag, segment_tag, Point, PointOfSegment,
         spherical_equatorial_tag, spherical_equatorial_tag,
         Strategy
     >
@@ -307,7 +280,7 @@ struct default_strategy
                     boost::is_void<Strategy>,
                     typename default_strategy
                         <
-                            point_tag, Point, PointOfSegment,
+                            point_tag, point_tag, Point, PointOfSegment,
                             spherical_equatorial_tag, spherical_equatorial_tag
                         >::type,
                     Strategy
@@ -315,6 +288,22 @@ struct default_strategy
         > type;
 };
 
+
+template <typename PointOfSegment, typename Point, typename Strategy>
+struct default_strategy
+    <
+        segment_tag, point_tag, PointOfSegment, Point,
+        spherical_equatorial_tag, spherical_equatorial_tag,
+        Strategy
+    >
+{
+    typedef typename default_strategy
+        <
+            point_tag, segment_tag, Point, PointOfSegment,
+            spherical_equatorial_tag, spherical_equatorial_tag,
+            Strategy
+        >::type type;
+};
 
 
 } // namespace services

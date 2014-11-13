@@ -11,6 +11,10 @@
 #ifndef BOOST_INTERPROCESS_FILE_MAPPING_HPP
 #define BOOST_INTERPROCESS_FILE_MAPPING_HPP
 
+#if defined(_MSC_VER)
+#  pragma once
+#endif
+
 #include <boost/interprocess/detail/config_begin.hpp>
 #include <boost/interprocess/detail/workaround.hpp>
 
@@ -19,7 +23,7 @@
 #include <boost/interprocess/detail/utilities.hpp>
 #include <boost/interprocess/creation_tags.hpp>
 #include <boost/interprocess/detail/os_file_functions.hpp>
-#include <boost/move/move.hpp>
+#include <boost/move/utility_core.hpp>
 #include <string>    //std::string
 
 //!\file
@@ -32,9 +36,9 @@ namespace interprocess {
 //!create mapped regions from the mapped files
 class file_mapping
 {
-   /// @cond
+   #if !defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
    BOOST_MOVABLE_BUT_NOT_COPYABLE(file_mapping)
-   /// @endcond
+   #endif   //#ifndef BOOST_INTERPROCESS_DOXYGEN_INVOKED
 
    public:
    //!Constructs an empty file mapping.
@@ -91,14 +95,14 @@ class file_mapping
    //!being used other processes and no deletion permission was shared.
    static bool remove(const char *filename);
 
-   /// @cond
+   #if !defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
    private:
    //!Closes a previously opened file mapping. Never throws.
    void priv_close();
    file_handle_t  m_handle;
    mode_t         m_mode;
    std::string    m_filename;
-   /// @endcond
+   #endif   //#ifndef BOOST_INTERPROCESS_DOXYGEN_INVOKED
 };
 
 inline file_mapping::file_mapping()
@@ -150,7 +154,7 @@ inline file_mapping::file_mapping
 inline bool file_mapping::remove(const char *filename)
 {  return ipcdetail::delete_file(filename);  }
 
-///@cond
+#if !defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
 
 inline void file_mapping::priv_close()
 {
@@ -159,8 +163,6 @@ inline void file_mapping::priv_close()
       m_handle = ipcdetail::invalid_file();
    }
 }
-
-///@endcond
 
 //!A class that stores the name of a file
 //!and tries to remove it in its destructor
@@ -177,6 +179,8 @@ class remove_file_on_destroy
    ~remove_file_on_destroy()
    {  ipcdetail::delete_file(m_name);  }
 };
+
+#endif   //#ifndef BOOST_INTERPROCESS_DOXYGEN_INVOKED
 
 }  //namespace interprocess {
 }  //namespace boost {

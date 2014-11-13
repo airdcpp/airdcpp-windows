@@ -3,7 +3,7 @@
 // R-tree implementation
 //
 // Copyright (c) 2008 Federico J. Fernandez.
-// Copyright (c) 2011-2013 Adam Wulkiewicz, Lodz, Poland.
+// Copyright (c) 2011-2014 Adam Wulkiewicz, Lodz, Poland.
 //
 // Use, modification and distribution is subject to the Boost Software License,
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -12,13 +12,30 @@
 #ifndef BOOST_GEOMETRY_INDEX_RTREE_HPP
 #define BOOST_GEOMETRY_INDEX_RTREE_HPP
 
+// STD
 #include <algorithm>
 
+// Boost
 #include <boost/tuple/tuple.hpp>
 #include <boost/move/move.hpp>
 
-#include <boost/geometry/geometry.hpp>
+// Boost.Geometry
+#include <boost/geometry/algorithms/detail/comparable_distance/interface.hpp>
+#include <boost/geometry/algorithms/centroid.hpp>
+#include <boost/geometry/algorithms/covered_by.hpp>
+#include <boost/geometry/algorithms/disjoint.hpp>
+#include <boost/geometry/algorithms/equals.hpp>
+#include <boost/geometry/algorithms/intersects.hpp>
+#include <boost/geometry/algorithms/overlaps.hpp>
+#include <boost/geometry/algorithms/touches.hpp>
+#include <boost/geometry/algorithms/within.hpp>
 
+#include <boost/geometry/geometries/point.hpp>
+#include <boost/geometry/geometries/box.hpp>
+
+#include <boost/geometry/strategies/strategies.hpp>
+
+// Boost.Geometry.Index
 #include <boost/geometry/index/detail/config_begin.hpp>
 
 #include <boost/geometry/index/detail/assert.hpp>
@@ -101,8 +118,8 @@ Predefined algorithms with run-time parameters are:
 \par IndexableGetter
 The object of IndexableGetter type translates from Value to Indexable each time r-tree requires it. Which means that this
 operation is done for each Value access. Therefore the IndexableGetter should return the Indexable by
-const reference instead of a value. Default one can translate all types adapted to Point
-or Box concepts (called Indexables). It also handles <tt>std::pair<Indexable, T></tt> and
+const reference instead of a value. Default one can translate all types adapted to Point, Box or Segment
+concepts (called Indexables). It also handles <tt>std::pair<Indexable, T></tt> and
 <tt>boost::tuple<Indexable, ...></tt>. For example, if <tt>std::pair<Box, int></tt> is stored in the
 container, the default IndexableGetter translates from <tt>std::pair<Box, int> const&</tt> to <tt>Box const&</tt>.
 
@@ -573,9 +590,9 @@ public:
     }
 
     /*!
-    \brief Insert a range of values to the index.
+    \brief Insert a value created using convertible object or a range of values to the index.
 
-    \param rng      The range of values.
+    \param conv_or_rng      An object of type convertible to value_type or a range of values.
 
     \par Throws
     \li If Value copy constructor or copy assignment throws.
@@ -587,17 +604,15 @@ public:
     elements must not be inserted or removed. Other operations are allowed however
     some of them may return invalid data.
     */
-    template <typename Range>
-    inline void insert(Range const& rng)
+    template <typename ConvertibleOrRange>
+    inline void insert(ConvertibleOrRange const& conv_or_rng)
     {
-        BOOST_MPL_ASSERT_MSG((detail::is_range<Range>::value), PASSED_OBJECT_IS_NOT_A_RANGE, (Range));
+        typedef boost::mpl::bool_
+            <
+                boost::is_convertible<ConvertibleOrRange, value_type>::value
+            > is_conv_t;
 
-        if ( !m_members.root )
-            this->raw_create();
-
-        typedef typename boost::range_const_iterator<Range>::type It;
-        for ( It it = boost::const_begin(rng); it != boost::const_end(rng) ; ++it )
-            this->raw_insert(*it);
+        this->insert_dispatch(conv_or_rng, is_conv_t());
     }
 
     /*!
@@ -658,13 +673,13 @@ public:
     }
 
     /*!
-    \brief Remove a range of values from the container.
+    \brief Remove value corresponding to an object convertible to it or a range of values from the container.
 
     In contrast to the \c std::set or <tt>std::map erase()</tt> method
     it removes values equal to these passed as a range. Furthermore, this method removes only
     one value for each one passed in the range, not all equal values.
 
-    \param rng      The range of values.
+    \param conv_or_rng      The object of type convertible to value_type or a range of values.
 
     \return         The number of removed values.
 
@@ -678,16 +693,15 @@ public:
     elements must not be inserted or removed. Other operations are allowed however
     some of them may return invalid data.
     */
-    template <typename Range>
-    inline size_type remove(Range const& rng)
+    template <typename ConvertibleOrRange>
+    inline size_type remove(ConvertibleOrRange const& conv_or_rng)
     {
-        BOOST_MPL_ASSERT_MSG((detail::is_range<Range>::value), PASSED_OBJECT_IS_NOT_A_RANGE, (Range));
+        typedef boost::mpl::bool_
+            <
+                boost::is_convertible<ConvertibleOrRange, value_type>::value
+            > is_conv_t;
 
-        size_type result = 0;
-        typedef typename boost::range_const_iterator<Range>::type It;
-        for ( It it = boost::const_begin(rng); it != boost::const_end(rng) ; ++it )
-            result += this->raw_remove(*it);
-        return result;
+        return this->remove_dispatch(conv_or_rng, is_conv_t());
     }
 
     /*!
@@ -1074,10 +1088,35 @@ public:
     template <typename ValueOrIndexable>
     size_type count(ValueOrIndexable const& vori) const
     {
+        enum { as_val = 0, as_ind, dont_know };
+        typedef boost::mpl::int_
+            <
+                boost::is_same<ValueOrIndexable, value_type>::value ?
+                    as_val :
+                    boost::is_same<ValueOrIndexable, indexable_type>::value ?
+                        as_ind :
+                        boost::is_convertible<ValueOrIndexable, indexable_type>::value ?
+                            as_ind :
+                            boost::is_convertible<ValueOrIndexable, value_type>::value ?
+                                as_val :
+                                dont_know
+            > variant;
+
+        BOOST_MPL_ASSERT_MSG((variant::value != dont_know),
+                             PASSED_OBJECT_NOT_CONVERTIBLE_TO_VALUE_NOR_INDEXABLE_TYPE,
+                             (ValueOrIndexable));
+
+        typedef typename boost::mpl::if_c
+            <
+                variant::value == as_val,
+                value_type,
+                indexable_type
+            >::type value_or_indexable;
+
         if ( !m_members.root )
             return 0;
 
-        detail::rtree::visitors::count<ValueOrIndexable, value_type, options_type, translator_type, box_type, allocators_type>
+        detail::rtree::visitors::count<value_or_indexable, value_type, options_type, translator_type, box_type, allocators_type>
             count_v(vori, m_members.translator());
 
         detail::rtree::apply_visitor(count_v, *m_members.root);
@@ -1332,6 +1371,86 @@ private:
     }
 
     /*!
+    \brief Insert a value corresponding to convertible object into the index.
+
+    \param val_conv    The object convertible to value.
+
+    \par Exception-safety
+    basic
+    */
+    template <typename ValueConvertible>
+    inline void insert_dispatch(ValueConvertible const& val_conv,
+                                boost::mpl::bool_<true> const& /*is_convertible*/)
+    {
+        if ( !m_members.root )
+            this->raw_create();
+
+        this->raw_insert(val_conv);
+    }
+
+    /*!
+    \brief Insert a range of values into the index.
+
+    \param rng    The range of values.
+
+    \par Exception-safety
+    basic
+    */
+    template <typename Range>
+    inline void insert_dispatch(Range const& rng,
+                                boost::mpl::bool_<false> const& /*is_convertible*/)
+    {
+        BOOST_MPL_ASSERT_MSG((detail::is_range<Range>::value),
+                             PASSED_OBJECT_IS_NOT_CONVERTIBLE_TO_VALUE_NOR_A_RANGE,
+                             (Range));
+
+        if ( !m_members.root )
+            this->raw_create();
+
+        typedef typename boost::range_const_iterator<Range>::type It;
+        for ( It it = boost::const_begin(rng); it != boost::const_end(rng) ; ++it )
+            this->raw_insert(*it);
+    }
+
+    /*!
+    \brief Remove a value corresponding to convertible object from the index.
+
+    \param val_conv    The object convertible to value.
+
+    \par Exception-safety
+    basic
+    */
+    template <typename ValueConvertible>
+    inline size_type remove_dispatch(ValueConvertible const& val_conv,
+                                     boost::mpl::bool_<true> const& /*is_convertible*/)
+    {
+        return this->raw_remove(val_conv);
+    }
+
+    /*!
+    \brief Remove a range of values from the index.
+
+    \param rng    The range of values which will be removed from the container.
+
+    \par Exception-safety
+    basic
+    */
+    template <typename Range>
+    inline size_type remove_dispatch(Range const& rng,
+                                     boost::mpl::bool_<false> const& /*is_convertible*/)
+    {
+        BOOST_MPL_ASSERT_MSG((detail::is_range<Range>::value),
+                             PASSED_OBJECT_IS_NOT_CONVERTIBLE_TO_VALUE_NOR_A_RANGE,
+                             (Range));
+
+        size_type result = 0;
+        typedef typename boost::range_const_iterator<Range>::type It;
+        for ( It it = boost::const_begin(rng); it != boost::const_end(rng) ; ++it )
+            result += this->raw_remove(*it);
+        return result;
+    }
+
+    /*!
     \brief Return values meeting predicates.
 
     \par Exception-safety
@@ -1439,7 +1558,8 @@ It calls <tt>rtree::insert(value_type const&)</tt>.
 \param v    The value which will be stored in the index.
 */
 template <typename Value, typename Parameters, typename IndexableGetter, typename EqualTo, typename Allocator>
-inline void insert(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree, Value const& v)
+inline void insert(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree,
+                   Value const& v)
 {
     tree.insert(v);
 }
@@ -1455,26 +1575,30 @@ It calls <tt>rtree::insert(Iterator, Iterator)</tt>.
 \param first    The beginning of the range of values.
 \param last     The end of the range of values.
 */
-template<typename Value, typename Parameters, typename IndexableGetter, typename EqualTo, typename Allocator, typename Iterator>
-inline void insert(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree, Iterator first, Iterator last)
+template<typename Value, typename Parameters, typename IndexableGetter, typename EqualTo, typename Allocator,
+         typename Iterator>
+inline void insert(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree,
+                   Iterator first, Iterator last)
 {
     tree.insert(first, last);
 }
 
 /*!
-\brief Insert a range of values to the index.
+\brief Insert a value created using convertible object or a range of values to the index.
 
-It calls <tt>rtree::insert(Range const&)</tt>.
+It calls <tt>rtree::insert(ConvertibleOrRange const&)</tt>.
 
 \ingroup rtree_functions
 
-\param tree     The spatial index.
-\param rng      The range of values.
+\param tree             The spatial index.
+\param conv_or_rng      The object of type convertible to value_type or a range of values.
 */
-template<typename Value, typename Parameters, typename IndexableGetter, typename EqualTo, typename Allocator, typename Range>
-inline void insert(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree, Range const& rng)
+template<typename Value, typename Parameters, typename IndexableGetter, typename EqualTo, typename Allocator,
+         typename ConvertibleOrRange>
+inline void insert(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree,
+                   ConvertibleOrRange const& conv_or_rng)
 {
-    tree.insert(rng);
+    tree.insert(conv_or_rng);
 }
 
 /*!
@@ -1494,7 +1618,8 @@ It calls <tt>rtree::remove(value_type const&)</tt>.
 */
 template <typename Value, typename Parameters, typename IndexableGetter, typename EqualTo, typename Allocator>
 inline typename rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator>::size_type
-remove(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree, Value const& v)
+remove(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree,
+       Value const& v)
 {
     return tree.remove(v);
 }
@@ -1517,34 +1642,39 @@ It calls <tt>rtree::remove(Iterator, Iterator)</tt>.
 
 \return         The number of removed values.
 */
-template<typename Value, typename Parameters, typename IndexableGetter, typename EqualTo, typename Allocator, typename Iterator>
+template<typename Value, typename Parameters, typename IndexableGetter, typename EqualTo, typename Allocator,
+         typename Iterator>
 inline typename rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator>::size_type
-remove(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree, Iterator first, Iterator last)
+remove(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree,
+       Iterator first, Iterator last)
 {
     return tree.remove(first, last);
 }
 
 /*!
-\brief Remove a range of values from the container.
+\brief Remove a value corresponding to an object convertible to it or a range of values from the container.
 
-Remove a range of values from the container. In contrast to the \c std::set or <tt>std::map erase()</tt> method
+Remove a value corresponding to an object convertible to it or a range of values from the container.
+In contrast to the \c std::set or <tt>std::map erase()</tt> method
 it removes values equal to these passed as a range. Furthermore this method removes only
 one value for each one passed in the range, not all equal values.
 
-It calls <tt>rtree::remove(Range const&)</tt>.
+It calls <tt>rtree::remove(ConvertibleOrRange const&)</tt>.
 
 \ingroup rtree_functions
 
-\param tree     The spatial index.
-\param rng      The range of values.
+\param tree                 The spatial index.
+\param conv_or_rng      The object of type convertible to value_type or the range of values.
 
 \return         The number of removed values.
 */
-template<typename Value, typename Parameters, typename IndexableGetter, typename EqualTo, typename Allocator, typename Range>
+template<typename Value, typename Parameters, typename IndexableGetter, typename EqualTo, typename Allocator,
+         typename ConvertibleOrRange>
 inline typename rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator>::size_type
-remove(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree, Range const& rng)
+remove(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> & tree,
+       ConvertibleOrRange const& conv_or_rng)
 {
-    return tree.remove(rng);
+    return tree.remove(conv_or_rng);
 }
 
 /*!
@@ -1780,6 +1910,9 @@ inline void swap(rtree<Value, Parameters, IndexableGetter, EqualTo, Allocator> &
 }
 
 }}} // namespace boost::geometry::index
+
+// TODO: don't include the implementation at the end of the file
+#include <boost/geometry/algorithms/detail/comparable_distance/implementation.hpp>
 
 #include <boost/geometry/index/detail/config_end.hpp>
 

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////
 //
-// (C) Copyright Ion Gaztanaga  2007-2013
+// (C) Copyright Ion Gaztanaga  2007-2014
 //
 // Distributed under the Boost Software License, Version 1.0.
 //    (See accompanying file LICENSE_1_0.txt or copy at
@@ -12,12 +12,16 @@
 #ifndef BOOST_INTRUSIVE_SPLAY_SET_HPP
 #define BOOST_INTRUSIVE_SPLAY_SET_HPP
 
+#if defined(_MSC_VER)
+#  pragma once
+#endif
+
 #include <boost/intrusive/detail/config_begin.hpp>
 #include <boost/intrusive/intrusive_fwd.hpp>
 #include <boost/intrusive/splaytree.hpp>
 #include <boost/intrusive/detail/mpl.hpp>
-#include <boost/move/move.hpp>
-#include <iterator>
+#include <boost/move/utility_core.hpp>
+#include <boost/static_assert.hpp>
 
 namespace boost {
 namespace intrusive {
@@ -36,15 +40,15 @@ namespace intrusive {
 #if defined(BOOST_INTRUSIVE_DOXYGEN_INVOKED)
 template<class T, class ...Options>
 #else
-template<class ValueTraits, class Compare, class SizeType, bool ConstantTimeSize>
+template<class ValueTraits, class Compare, class SizeType, bool ConstantTimeSize, typename HeaderHolder>
 #endif
 class splay_set_impl
 #ifndef BOOST_INTRUSIVE_DOXYGEN_INVOKED
-   : public splaytree_impl<ValueTraits, Compare, SizeType, ConstantTimeSize>
+   : public splaytree_impl<ValueTraits, Compare, SizeType, ConstantTimeSize, HeaderHolder>
 #endif
 {
    /// @cond
-   typedef splaytree_impl<ValueTraits, Compare, SizeType, ConstantTimeSize> tree_type;
+   typedef splaytree_impl<ValueTraits, Compare, SizeType, ConstantTimeSize, HeaderHolder> tree_type;
    BOOST_MOVABLE_BUT_NOT_COPYABLE(splay_set_impl)
 
    typedef tree_type implementation_defined;
@@ -247,12 +251,18 @@ class splay_set_impl
    template<class Disposer>
    void clear_and_dispose(Disposer disposer);
 
-   //! @copydoc ::boost::intrusive::splaytree::count(const_reference)
-   size_type count(const_reference value);
+   #endif   //   #ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
+
+   //! @copydoc ::boost::intrusive::splaytree::count(const_reference)const
+   size_type count(const_reference value) const
+   {  return static_cast<size_type>(this->tree_type::find(value) != this->tree_type::cend()); }
 
    //! @copydoc ::boost::intrusive::splaytree::count(const KeyType&,KeyValueCompare)const
    template<class KeyType, class KeyValueCompare>
-   size_type count(const KeyType& key, KeyValueCompare comp);
+   size_type count(const KeyType& key, KeyValueCompare comp) const
+   {  return static_cast<size_type>(this->tree_type::find(key, comp) != this->tree_type::cend()); }
+
+   #ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
    //! @copydoc ::boost::intrusive::splaytree::count(const_reference)const
    size_type count(const_reference value) const;
@@ -261,13 +271,6 @@ class splay_set_impl
    template<class KeyType, class KeyValueCompare>
    size_type count(const KeyType& key, KeyValueCompare comp) const;
 
-   //! @copydoc ::boost::intrusive::splaytree::count_dont_splay(const_reference)const
-   size_type count_dont_splay(const_reference value) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::count_dont_splay(const KeyType&,KeyValueCompare)const
-   template<class KeyType, class KeyValueCompare>
-   size_type count_dont_splay(const KeyType& key, KeyValueCompare comp) const;
-   
    //! @copydoc ::boost::intrusive::splaytree::lower_bound(const_reference)
    iterator lower_bound(const_reference value);
    
@@ -281,13 +284,6 @@ class splay_set_impl
    //! @copydoc ::boost::intrusive::splaytree::lower_bound(const KeyType&,KeyValueCompare)const
    template<class KeyType, class KeyValueCompare>
    const_iterator lower_bound(const KeyType& key, KeyValueCompare comp) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::lower_bound_dont_splay(const_reference)const
-   const_iterator lower_bound_dont_splay(const_reference value) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::lower_bound_dont_splay(const KeyType&,KeyValueCompare)const
-   template<class KeyType, class KeyValueCompare>
-   const_iterator lower_bound_dont_splay(const KeyType& key, KeyValueCompare comp) const;
 
    //! @copydoc ::boost::intrusive::splaytree::upper_bound(const_reference)
    iterator upper_bound(const_reference value);
@@ -303,13 +299,6 @@ class splay_set_impl
    template<class KeyType, class KeyValueCompare>
    const_iterator upper_bound(const KeyType& key, KeyValueCompare comp) const;
 
-   //! @copydoc ::boost::intrusive::splaytree::upper_bound_dont_splay(const_reference)const
-   const_iterator upper_bound_dont_splay(const_reference value) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::upper_bound_dont_splay(const KeyType&,KeyValueCompare)const
-   template<class KeyType, class KeyValueCompare>
-   const_iterator upper_bound_dont_splay(const KeyType& key, KeyValueCompare comp) const;
-
    //! @copydoc ::boost::intrusive::splaytree::find(const_reference)
    iterator find(const_reference value);
 
@@ -324,37 +313,29 @@ class splay_set_impl
    template<class KeyType, class KeyValueCompare>
    const_iterator find(const KeyType& key, KeyValueCompare comp) const;
 
-   //! @copydoc ::boost::intrusive::splaytree::find_dont_splay(const_reference)const
-   const_iterator find_dont_splay(const_reference value) const;
+   #endif   //   #ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
-   //! @copydoc ::boost::intrusive::splaytree::find_dont_splay(const KeyType&,KeyValueCompare)const
+   //! @copydoc ::boost::intrusive::rbtree::equal_range(const_reference)
+   std::pair<iterator,iterator> equal_range(const_reference value)
+   {  return this->tree_type::lower_bound_range(value); }
+
+   //! @copydoc ::boost::intrusive::rbtree::equal_range(const KeyType&,KeyValueCompare)
    template<class KeyType, class KeyValueCompare>
-   const_iterator find_dont_splay(const KeyType& key, KeyValueCompare comp) const;
+   std::pair<iterator,iterator> equal_range(const KeyType& key, KeyValueCompare comp)
+   {  return this->tree_type::lower_bound_range(key, comp); }
 
-   //! @copydoc ::boost::intrusive::splaytree::equal_range(const_reference)
-   std::pair<iterator,iterator> equal_range(const_reference value);
-
-   //! @copydoc ::boost::intrusive::splaytree::equal_range(const KeyType&,KeyValueCompare)
-   template<class KeyType, class KeyValueCompare>
-   std::pair<iterator,iterator> equal_range(const KeyType& key, KeyValueCompare comp);
-
-   //! @copydoc ::boost::intrusive::splaytree::equal_range(const_reference)const
+   //! @copydoc ::boost::intrusive::rbtree::equal_range(const_reference)const
    std::pair<const_iterator, const_iterator>
-      equal_range(const_reference value) const;
+      equal_range(const_reference value) const
+   {  return this->tree_type::lower_bound_range(value); }
 
-   //! @copydoc ::boost::intrusive::splaytree::equal_range(const KeyType&,KeyValueCompare)const
+   //! @copydoc ::boost::intrusive::rbtree::equal_range(const KeyType&,KeyValueCompare)const
    template<class KeyType, class KeyValueCompare>
    std::pair<const_iterator, const_iterator>
-      equal_range(const KeyType& key, KeyValueCompare comp) const;
+      equal_range(const KeyType& key, KeyValueCompare comp) const
+   {  return this->tree_type::lower_bound_range(key, comp); }
 
-   //! @copydoc ::boost::intrusive::splaytree::equal_range_dont_splay(const_reference)const
-   std::pair<const_iterator, const_iterator>
-      equal_range_dont_splay(const_reference value) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::equal_range_dont_splay(const KeyType&,KeyValueCompare)const
-   template<class KeyType, class KeyValueCompare>
-   std::pair<const_iterator, const_iterator>
-      equal_range_dont_splay(const KeyType& key, KeyValueCompare comp) const;
+   #ifdef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
    //! @copydoc ::boost::intrusive::splaytree::bounded_range(const_reference,const_reference,bool,bool)
    std::pair<iterator,iterator> bounded_range
@@ -372,15 +353,6 @@ class splay_set_impl
    //! @copydoc ::boost::intrusive::splaytree::bounded_range(const KeyType&,const KeyType&,KeyValueCompare,bool,bool)const
    template<class KeyType, class KeyValueCompare>
    std::pair<const_iterator, const_iterator> bounded_range
-      (const KeyType& lower_key, const KeyType& upper_key, KeyValueCompare comp, bool left_closed, bool right_closed) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::bounded_range_dont_splay(const_reference,const_reference,bool,bool)const
-   std::pair<const_iterator, const_iterator> bounded_range_dont_splay
-      (const_reference lower_value, const_reference upper_value, bool left_closed, bool right_closed) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::bounded_range_dont_splay(const KeyType&,const KeyType&,KeyValueCompare,bool,bool)const
-   template<class KeyType, class KeyValueCompare>
-   std::pair<const_iterator, const_iterator> bounded_range_dont_splay
       (const KeyType& lower_key, const KeyType& upper_key, KeyValueCompare comp, bool left_closed, bool right_closed) const;
 
    //! @copydoc ::boost::intrusive::splaytree::s_iterator_to(reference)
@@ -450,7 +422,8 @@ void swap(splay_set_impl<T, Options...> &x, splay_set_impl<T, Options...> &y);
 template<class T, class ...Options>
 #else
 template<class T, class O1 = void, class O2 = void
-                , class O3 = void, class O4 = void>
+                , class O3 = void, class O4 = void
+                , class O5 = void>
 #endif
 struct make_splay_set
 {
@@ -458,7 +431,7 @@ struct make_splay_set
    typedef typename pack_options
       < splaytree_defaults,
       #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-      O1, O2, O3, O4
+      O1, O2, O3, O4, O5
       #else
       Options...
       #endif
@@ -466,12 +439,15 @@ struct make_splay_set
 
    typedef typename detail::get_value_traits
       <T, typename packed_options::proto_value_traits>::type value_traits;
+   typedef typename detail::get_header_holder_type
+      < value_traits, typename packed_options::header_holder_type >::type header_holder_type;
 
    typedef splay_set_impl
          < value_traits
          , typename packed_options::compare
          , typename packed_options::size_type
          , packed_options::constant_time_size
+         , header_holder_type
          > implementation_defined;
    /// @endcond
    typedef implementation_defined type;
@@ -479,14 +455,14 @@ struct make_splay_set
 
 #ifndef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-template<class T, class O1, class O2, class O3, class O4>
+template<class T, class O1, class O2, class O3, class O4, class O5>
 #else
 template<class T, class ...Options>
 #endif
 class splay_set
    :  public make_splay_set<T,
    #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-   O1, O2, O3, O4
+   O1, O2, O3, O4, O5
    #else
    Options...
    #endif
@@ -495,7 +471,7 @@ class splay_set
    typedef typename make_splay_set
       <T,
       #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-      O1, O2, O3, O4
+      O1, O2, O3, O4, O5
       #else
       Options...
       #endif
@@ -559,15 +535,15 @@ class splay_set
 #if defined(BOOST_INTRUSIVE_DOXYGEN_INVOKED)
 template<class T, class ...Options>
 #else
-template<class ValueTraits, class Compare, class SizeType, bool ConstantTimeSize>
+template<class ValueTraits, class Compare, class SizeType, bool ConstantTimeSize, typename HeaderHolder>
 #endif
 class splay_multiset_impl
 #ifndef BOOST_INTRUSIVE_DOXYGEN_INVOKED
-   : public splaytree_impl<ValueTraits, Compare, SizeType, ConstantTimeSize>
+   : public splaytree_impl<ValueTraits, Compare, SizeType, ConstantTimeSize, HeaderHolder>
 #endif
 {
    /// @cond
-   typedef splaytree_impl<ValueTraits, Compare, SizeType, ConstantTimeSize> tree_type;
+   typedef splaytree_impl<ValueTraits, Compare, SizeType, ConstantTimeSize, HeaderHolder> tree_type;
 
    BOOST_MOVABLE_BUT_NOT_COPYABLE(splay_multiset_impl)
    typedef tree_type implementation_defined;
@@ -760,20 +736,6 @@ class splay_multiset_impl
    template<class KeyType, class KeyValueCompare>
    size_type count(const KeyType& key, KeyValueCompare comp);
 
-   //! @copydoc ::boost::intrusive::splaytree::count(const_reference)const
-   size_type count(const_reference value) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::count(const KeyType&,KeyValueCompare)const
-   template<class KeyType, class KeyValueCompare>
-   size_type count(const KeyType& key, KeyValueCompare comp) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::count_dont_splay(const_reference)const
-   size_type count_dont_splay(const_reference value) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::count_dont_splay(const KeyType&,KeyValueCompare)const
-   template<class KeyType, class KeyValueCompare>
-   size_type count_dont_splay(const KeyType& key, KeyValueCompare comp) const;
-   
    //! @copydoc ::boost::intrusive::splaytree::lower_bound(const_reference)
    iterator lower_bound(const_reference value);
    
@@ -787,13 +749,6 @@ class splay_multiset_impl
    //! @copydoc ::boost::intrusive::splaytree::lower_bound(const KeyType&,KeyValueCompare)const
    template<class KeyType, class KeyValueCompare>
    const_iterator lower_bound(const KeyType& key, KeyValueCompare comp) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::lower_bound_dont_splay(const_reference)const
-   const_iterator lower_bound_dont_splay(const_reference value) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::lower_bound_dont_splay(const KeyType&,KeyValueCompare)const
-   template<class KeyType, class KeyValueCompare>
-   const_iterator lower_bound_dont_splay(const KeyType& key, KeyValueCompare comp) const;
 
    //! @copydoc ::boost::intrusive::splaytree::upper_bound(const_reference)
    iterator upper_bound(const_reference value);
@@ -809,13 +764,6 @@ class splay_multiset_impl
    template<class KeyType, class KeyValueCompare>
    const_iterator upper_bound(const KeyType& key, KeyValueCompare comp) const;
 
-   //! @copydoc ::boost::intrusive::splaytree::upper_bound_dont_splay(const_reference)const
-   const_iterator upper_bound_dont_splay(const_reference value) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::upper_bound_dont_splay(const KeyType&,KeyValueCompare)const
-   template<class KeyType, class KeyValueCompare>
-   const_iterator upper_bound_dont_splay(const KeyType& key, KeyValueCompare comp) const;
-
    //! @copydoc ::boost::intrusive::splaytree::find(const_reference)
    iterator find(const_reference value);
 
@@ -829,13 +777,6 @@ class splay_multiset_impl
    //! @copydoc ::boost::intrusive::splaytree::find(const KeyType&,KeyValueCompare)const
    template<class KeyType, class KeyValueCompare>
    const_iterator find(const KeyType& key, KeyValueCompare comp) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::find_dont_splay(const_reference)const
-   const_iterator find_dont_splay(const_reference value) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::find_dont_splay(const KeyType&,KeyValueCompare)const
-   template<class KeyType, class KeyValueCompare>
-   const_iterator find_dont_splay(const KeyType& key, KeyValueCompare comp) const;
 
    //! @copydoc ::boost::intrusive::splaytree::equal_range(const_reference)
    std::pair<iterator,iterator> equal_range(const_reference value);
@@ -853,15 +794,6 @@ class splay_multiset_impl
    std::pair<const_iterator, const_iterator>
       equal_range(const KeyType& key, KeyValueCompare comp) const;
 
-   //! @copydoc ::boost::intrusive::splaytree::equal_range_dont_splay(const_reference)const
-   std::pair<const_iterator, const_iterator>
-      equal_range_dont_splay(const_reference value) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::equal_range_dont_splay(const KeyType&,KeyValueCompare)const
-   template<class KeyType, class KeyValueCompare>
-   std::pair<const_iterator, const_iterator>
-      equal_range_dont_splay(const KeyType& key, KeyValueCompare comp) const;
-
    //! @copydoc ::boost::intrusive::splaytree::bounded_range(const_reference,const_reference,bool,bool)
    std::pair<iterator,iterator> bounded_range
       (const_reference lower_value, const_reference upper_value, bool left_closed, bool right_closed);
@@ -878,15 +810,6 @@ class splay_multiset_impl
    //! @copydoc ::boost::intrusive::splaytree::bounded_range(const KeyType&,const KeyType&,KeyValueCompare,bool,bool)const
    template<class KeyType, class KeyValueCompare>
    std::pair<const_iterator, const_iterator> bounded_range
-      (const KeyType& lower_key, const KeyType& upper_key, KeyValueCompare comp, bool left_closed, bool right_closed) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::bounded_range_dont_splay(const_reference,const_reference,bool,bool)const
-   std::pair<const_iterator, const_iterator> bounded_range_dont_splay
-      (const_reference lower_value, const_reference upper_value, bool left_closed, bool right_closed) const;
-
-   //! @copydoc ::boost::intrusive::splaytree::bounded_range_dont_splay(const KeyType&,const KeyType&,KeyValueCompare,bool,bool)const
-   template<class KeyType, class KeyValueCompare>
-   std::pair<const_iterator, const_iterator> bounded_range_dont_splay
       (const KeyType& lower_key, const KeyType& upper_key, KeyValueCompare comp, bool left_closed, bool right_closed) const;
 
    //! @copydoc ::boost::intrusive::splaytree::s_iterator_to(reference)
@@ -956,7 +879,8 @@ void swap(splay_multiset_impl<T, Options...> &x, splay_multiset_impl<T, Options.
 template<class T, class ...Options>
 #else
 template<class T, class O1 = void, class O2 = void
-                , class O3 = void, class O4 = void>
+                , class O3 = void, class O4 = void
+                , class O5 = void>
 #endif
 struct make_splay_multiset
 {
@@ -964,7 +888,7 @@ struct make_splay_multiset
    typedef typename pack_options
       < splaytree_defaults,
       #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-      O1, O2, O3, O4
+      O1, O2, O3, O4, O5
       #else
       Options...
       #endif
@@ -972,12 +896,15 @@ struct make_splay_multiset
 
    typedef typename detail::get_value_traits
       <T, typename packed_options::proto_value_traits>::type value_traits;
+   typedef typename detail::get_header_holder_type
+      < value_traits, typename packed_options::header_holder_type >::type header_holder_type;
 
    typedef splay_multiset_impl
          < value_traits
          , typename packed_options::compare
          , typename packed_options::size_type
          , packed_options::constant_time_size
+         , header_holder_type
          > implementation_defined;
    /// @endcond
    typedef implementation_defined type;
@@ -986,14 +913,14 @@ struct make_splay_multiset
 #ifndef BOOST_INTRUSIVE_DOXYGEN_INVOKED
 
 #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-template<class T, class O1, class O2, class O3, class O4>
+template<class T, class O1, class O2, class O3, class O4, class O5>
 #else
 template<class T, class ...Options>
 #endif
 class splay_multiset
    :  public make_splay_multiset<T,
       #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-      O1, O2, O3, O4
+      O1, O2, O3, O4, O5
       #else
       Options...
       #endif
@@ -1001,7 +928,7 @@ class splay_multiset
 {
    typedef typename make_splay_multiset<T,
       #if !defined(BOOST_INTRUSIVE_VARIADIC_TEMPLATES)
-      O1, O2, O3, O4
+      O1, O2, O3, O4, O5
       #else
       Options...
       #endif

@@ -1,6 +1,6 @@
 // Boost.Container varray
 //
-// Copyright (c) 2012-2013 Adam Wulkiewicz, Lodz, Poland.
+// Copyright (c) 2012-2014 Adam Wulkiewicz, Lodz, Poland.
 // Copyright (c) 2011-2013 Andrew Hundt.
 //
 // Use, modification and distribution is subject to the Boost Software License,
@@ -178,7 +178,7 @@ class varray
 
     BOOST_COPYABLE_AND_MOVABLE(varray)
 
-#ifdef BOOST_NO_RVALUE_REFERENCES
+#ifdef BOOST_NO_CXX11_RVALUE_REFERENCES
 public:
     template <std::size_t C>
     varray & operator=(varray<Value, C> & sv)
@@ -363,12 +363,7 @@ public:
     //! @par Complexity
     //!   Linear O(N).
     template <std::size_t C>
-// TEMPORARY WORKAROUND
-#if defined(BOOST_NO_RVALUE_REFERENCES)
-    varray & operator=(::boost::rv< varray<value_type, C> > const& other)
-#else
-    varray & operator=(varray<value_type, C> const& other)
-#endif
+    varray & operator=(BOOST_COPY_ASSIGN_REF_2_TEMPL_ARGS(varray, value_type, C) other)
     {
         this->assign(other.begin(), other.end());                                     // may throw
 
@@ -1411,7 +1406,7 @@ public:
     //!
     //! @par Complexity
     //!   Constant O(1).
-    const_reverse_iterator rbegin() const { return reverse_iterator(this->end()); }
+    const_reverse_iterator rbegin() const { return const_reverse_iterator(this->end()); }
 
     //! @brief Returns const reverse iterator to the first element of the reversed container.
     //!
@@ -1423,7 +1418,7 @@ public:
     //!
     //! @par Complexity
     //!   Constant O(1).
-    const_reverse_iterator crbegin() const { return reverse_iterator(this->end()); }
+    const_reverse_iterator crbegin() const { return const_reverse_iterator(this->end()); }
 
     //! @brief Returns reverse iterator to the one after the last element of the reversed container.
     //!
@@ -1447,7 +1442,7 @@ public:
     //!
     //! @par Complexity
     //!   Constant O(1).
-    const_reverse_iterator rend() const { return reverse_iterator(this->begin()); }
+    const_reverse_iterator rend() const { return const_reverse_iterator(this->begin()); }
 
     //! @brief Returns const reverse iterator to the one after the last element of the reversed container.
     //!
@@ -1459,7 +1454,7 @@ public:
     //!
     //! @par Complexity
     //!   Constant O(1).
-    const_reverse_iterator crend() const { return reverse_iterator(this->begin()); }
+    const_reverse_iterator crend() const { return const_reverse_iterator(this->begin()); }
 
     //! @brief Returns container's capacity.
     //!
@@ -1951,7 +1946,6 @@ public:
     void insert(iterator, Iterator first, Iterator last)
     {
         // TODO - add MPL_ASSERT, check if Iterator is really an iterator
-        typedef typename boost::iterator_traversal<Iterator>::type traversal;
         errh::check_capacity(*this, std::distance(first, last));                    // may throw
     }
 
@@ -1975,7 +1969,6 @@ public:
     void assign(Iterator first, Iterator last)
     {
         // TODO - add MPL_ASSERT, check if Iterator is really an iterator
-        typedef typename boost::iterator_traversal<Iterator>::type traversal;
         errh::check_capacity(*this, std::distance(first, last));                    // may throw
     }
 

@@ -11,7 +11,7 @@
 #ifndef BOOST_INTERPROCESS_MEM_ALGO_DETAIL_SIMPLE_SEQ_FIT_IMPL_HPP
 #define BOOST_INTERPROCESS_MEM_ALGO_DETAIL_SIMPLE_SEQ_FIT_IMPL_HPP
 
-#if (defined _MSC_VER) && (_MSC_VER >= 1200)
+#if defined(_MSC_VER)
 #  pragma once
 #endif
 
@@ -80,12 +80,11 @@ class simple_seq_fit_impl
 
    private:
    class block_ctrl;
+   friend class block_ctrl;
+
    typedef typename boost::intrusive::
       pointer_traits<VoidPointer>::template
          rebind_pointer<block_ctrl>::type                   block_ctrl_ptr;
-
-   class block_ctrl;
-   friend class block_ctrl;
 
    //!Block control structure
    class block_ctrl
@@ -142,7 +141,7 @@ class simple_seq_fit_impl
    //!Allocates bytes, returns 0 if there is not more memory
    void* allocate             (size_type nbytes);
 
-   /// @cond
+   #if !defined(BOOST_INTERPROCESS_DOXYGEN_INVOKED)
 
    //!Multiple element allocation, same size
    void allocate_many(size_type elem_bytes, size_type num_elements, multiallocation_chain &chain)
@@ -165,7 +164,7 @@ class simple_seq_fit_impl
    //!Multiple element deallocation
    void deallocate_many(multiallocation_chain &chain);
 
-   /// @endcond
+   #endif   //#ifndef BOOST_INTERPROCESS_DOXYGEN_INVOKED
 
    //!Deallocates previously allocated bytes
    void   deallocate          (void *addr);
@@ -281,7 +280,7 @@ class simple_seq_fit_impl
    void priv_mark_new_allocated_block(block_ctrl *block);
 
    public:
-	static const size_type Alignment      = ::boost::alignment_of< ::boost::detail::max_align>::value;
+   static const size_type Alignment      = ::boost::alignment_of< ::boost::detail::max_align>::value;
    private:
    static const size_type BlockCtrlBytes = ipcdetail::ct_rounded_size<sizeof(block_ctrl), Alignment>::value;
    static const size_type BlockCtrlUnits = BlockCtrlBytes/Alignment;

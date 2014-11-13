@@ -2,6 +2,7 @@
 //
 // Copyright (c) 2012-2013 Adam Wulkiewicz, Lodz, Poland.
 // Copyright (c) 2011-2013 Andrew Hundt.
+// Copyright (c) 2013-2014 Ion Gaztanaga
 //
 // Use, modification and distribution is subject to the Boost Software License,
 // Version 1.0. (See accompanying file LICENSE_1_0.txt or copy at
@@ -20,6 +21,8 @@
 #include <boost/aligned_storage.hpp>
 
 namespace boost { namespace container {
+
+#ifndef BOOST_CONTAINER_DOXYGEN_INVOKED
 
 namespace container_detail {
 
@@ -61,45 +64,45 @@ class static_storage_allocator
 
 }  //namespace container_detail {
 
-/**
- * @defgroup static_vector_non_member static_vector non-member functions
- */
+#endif   //#ifndef BOOST_CONTAINER_DOXYGEN_INVOKED
 
-/**
- * @brief A variable-size array container with fixed capacity.
- *
- * static_vector is a sequence container like boost::container::vector with contiguous storage that can
- * change in size, along with the static allocation, low overhead, and fixed capacity of boost::array.
- *
- * A static_vector is a sequence that supports random access to elements, constant time insertion and
- * removal of elements at the end, and linear time insertion and removal of elements at the beginning or 
- * in the middle. The number of elements in a static_vector may vary dynamically up to a fixed capacity
- * because elements are stored within the object itself similarly to an array. However, objects are 
- * initialized as they are inserted into static_vector unlike C arrays or std::array which must construct
- * all elements on instantiation. The behavior of static_vector enables the use of statically allocated
- * elements in cases with complex object lifetime requirements that would otherwise not be trivially 
- * possible.
- *
- * @par Error Handling
- *  Insertion beyond the capacity result in throwing std::bad_alloc() if exceptions are enabled or
- *  calling throw_bad_alloc() if not enabled.
- *
- *  std::out_of_range is thrown if out of bound access is performed in `at()` if exceptions are
- *  enabled, throw_out_of_range() if not enabled.
- *
- * @tparam Value    The type of element that will be stored.
- * @tparam Capacity The maximum number of elements static_vector can store, fixed at compile time.
- */
+//!
+//!@brief A variable-size array container with fixed capacity.
+//!
+//!static_vector is a sequence container like boost::container::vector with contiguous storage that can
+//!change in size, along with the static allocation, low overhead, and fixed capacity of boost::array.
+//!
+//!A static_vector is a sequence that supports random access to elements, constant time insertion and
+//!removal of elements at the end, and linear time insertion and removal of elements at the beginning or
+//!in the middle. The number of elements in a static_vector may vary dynamically up to a fixed capacity
+//!because elements are stored within the object itself similarly to an array. However, objects are
+//!initialized as they are inserted into static_vector unlike C arrays or std::array which must construct
+//!all elements on instantiation. The behavior of static_vector enables the use of statically allocated
+//!elements in cases with complex object lifetime requirements that would otherwise not be trivially
+//!possible.
+//!
+//!@par Error Handling
+//! Insertion beyond the capacity result in throwing std::bad_alloc() if exceptions are enabled or
+//! calling throw_bad_alloc() if not enabled.
+//!
+//! std::out_of_range is thrown if out of bound access is performed in <code>at()</code> if exceptions are
+//! enabled, throw_out_of_range() if not enabled.
+//!
+//!@tparam Value    The type of element that will be stored.
+//!@tparam Capacity The maximum number of elements static_vector can store, fixed at compile time.
 template <typename Value, std::size_t Capacity>
 class static_vector
     : public vector<Value, container_detail::static_storage_allocator<Value, Capacity> >
 {
-    typedef vector<Value, container_detail::static_storage_allocator<Value, Capacity> > base_t;
+   #ifndef BOOST_CONTAINER_DOXYGEN_INVOKED
+   typedef vector<Value, container_detail::static_storage_allocator<Value, Capacity> > base_t;
 
-    BOOST_COPYABLE_AND_MOVABLE(static_vector)
+   BOOST_COPYABLE_AND_MOVABLE(static_vector)
 
    template<class U, std::size_t OtherCapacity>
    friend class static_vector;
+
+   #endif   //#ifndef BOOST_CONTAINER_DOXYGEN_INVOKED
 
 public:
     //! @brief The type of elements stored in the container.
@@ -143,7 +146,7 @@ public:
     //! @param count    The number of values which will be contained in the container.
     //!
     //! @par Throws
-    //!   If Value's default constructor throws.
+    //!   If Value's value initialization throws.
     //!
     //! @par Complexity
     //!   Linear O(N).
@@ -153,12 +156,12 @@ public:
 
     //! @pre <tt>count <= capacity()</tt>
     //!
-    //! @brief Constructs a static_vector containing count value initialized values.
+    //! @brief Constructs a static_vector containing count default initialized values.
     //!
     //! @param count    The number of values which will be contained in the container.
     //!
     //! @par Throws
-    //!   If Value's default constructor throws.
+    //!   If Value's default initialization throws.
     //!
     //! @par Complexity
     //!   Linear O(N).
@@ -204,6 +207,24 @@ public:
         : base_t(first, last)
     {}
 
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    //! @pre
+    //!  @li <tt>distance(il.begin(), il.end()) <= capacity()</tt>
+    //!
+    //! @brief Constructs a static_vector containing copy of a range <tt>[il.begin(), il.end())</tt>.
+    //!
+    //! @param il       std::initializer_list with values to initialize vector.
+    //!
+    //! @par Throws
+    //!   If Value's constructor taking a dereferenced std::initializer_list throws.
+    //!
+    //! @par Complexity
+    //!   Linear O(N).
+    static_vector(std::initializer_list<value_type> il)
+        : base_t(il)
+    {}
+#endif
+
     //! @brief Constructs a copy of other static_vector.
     //!
     //! @param other    The static_vector which content will be copied to this one.
@@ -229,45 +250,9 @@ public:
     //! @par Complexity
     //!   Linear O(N).
     template <std::size_t C>
-    static_vector(static_vector<value_type, C> const& other) : base_t(other) {}
-
-    //! @brief Copy assigns Values stored in the other static_vector to this one.
-    //!
-    //! @param other    The static_vector which content will be copied to this one.
-    //!
-    //! @par Throws
-    //!   If Value's copy constructor or copy assignment throws.
-    //!
-    //! @par Complexity
-    //! Linear O(N).
-    static_vector & operator=(BOOST_COPY_ASSIGN_REF(static_vector) other)
-    {
-        base_t::operator=(static_cast<base_t const&>(other));
-        return *this;
-    }
-
-    //! @pre <tt>other.size() <= capacity()</tt>
-    //!
-    //! @brief Copy assigns Values stored in the other static_vector to this one.
-    //!
-    //! @param other    The static_vector which content will be copied to this one.
-    //!
-    //! @par Throws
-    //!   If Value's copy constructor or copy assignment throws.
-    //!
-    //! @par Complexity
-    //!   Linear O(N).
-    template <std::size_t C>
-// TEMPORARY WORKAROUND
-#if defined(BOOST_NO_RVALUE_REFERENCES)
-    static_vector & operator=(::boost::rv< static_vector<value_type, C> > const& other)
-#else
-    static_vector & operator=(static_vector<value_type, C> const& other)
-#endif
-    {
-        base_t::operator=(static_cast<static_vector<value_type, C> const&>(other));
-        return *this;
-    }
+    static_vector(static_vector<value_type, C> const& other)
+        : base_t(other)
+    {}
 
     //! @brief Move constructor. Moves Values stored in the other static_vector to this one.
     //!
@@ -300,6 +285,54 @@ public:
         : base_t(boost::move(static_cast<typename static_vector<value_type, C>::base_t&>(other)))
     {}
 
+    //! @brief Copy assigns Values stored in the other static_vector to this one.
+    //!
+    //! @param other    The static_vector which content will be copied to this one.
+    //!
+    //! @par Throws
+    //!   If Value's copy constructor or copy assignment throws.
+    //!
+    //! @par Complexity
+    //! Linear O(N).
+    static_vector & operator=(BOOST_COPY_ASSIGN_REF(static_vector) other)
+    {
+        return static_cast<static_vector&>(base_t::operator=(static_cast<base_t const&>(other)));
+    }
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    //! @brief Copy assigns Values stored in std::initializer_list to *this.
+    //!
+    //! @param il    The std::initializer_list which content will be copied to this one.
+    //!
+    //! @par Throws
+    //!   If Value's copy constructor or copy assignment throws.
+    //!
+    //! @par Complexity
+    //! Linear O(N).
+    static_vector & operator=(std::initializer_list<value_type> il)
+    {
+        return static_cast<static_vector&>(base_t::operator=(il));
+    }
+#endif
+
+    //! @pre <tt>other.size() <= capacity()</tt>
+    //!
+    //! @brief Copy assigns Values stored in the other static_vector to this one.
+    //!
+    //! @param other    The static_vector which content will be copied to this one.
+    //!
+    //! @par Throws
+    //!   If Value's copy constructor or copy assignment throws.
+    //!
+    //! @par Complexity
+    //!   Linear O(N).
+    template <std::size_t C>
+    static_vector & operator=(static_vector<value_type, C> const& other)
+    {
+        return static_cast<static_vector&>(base_t::operator=
+            (static_cast<typename static_vector<value_type, C>::base_t const&>(other)));
+    }
+
     //! @brief Move assignment. Moves Values stored in the other static_vector to this one.
     //!
     //! @param other    The static_vector which content will be moved to this one.
@@ -312,8 +345,7 @@ public:
     //!   Linear O(N).
     static_vector & operator=(BOOST_RV_REF(static_vector) other)
     {
-        base_t::operator=(boost::move(static_cast<base_t&>(other)));
-        return *this;
+        return static_cast<static_vector&>(base_t::operator=(boost::move(static_cast<base_t&>(other))));
     }
 
     //! @pre <tt>other.size() <= capacity()</tt>
@@ -331,8 +363,8 @@ public:
     template <std::size_t C>
     static_vector & operator=(BOOST_RV_REF_BEG static_vector<value_type, C> BOOST_RV_REF_END other)
     {
-        base_t::operator=(boost::move(static_cast<typename static_vector<value_type, C>::base_t&>(other)));
-        return *this;
+        return static_cast<static_vector&>(base_t::operator=
+         (boost::move(static_cast<typename static_vector<value_type, C>::base_t&>(other))));
     }
 
 #ifdef BOOST_CONTAINER_DOXYGEN_INVOKED
@@ -381,7 +413,7 @@ public:
     //! @param count    The number of elements which will be stored in the container.
     //!
     //! @par Throws
-    //!   If Value's default constructor throws.
+    //!   If Value's value initialization throws.
     //!
     //! @par Complexity
     //!   Linear O(N).
@@ -395,7 +427,7 @@ public:
     //! @param count    The number of elements which will be stored in the container.
     //!
     //! @par Throws
-    //!   If Value's default constructor throws.
+    //!   If Value's default initialization throws.
     //!
     //! @par Complexity
     //!   Linear O(N).
@@ -470,13 +502,13 @@ public:
     void pop_back();
 
     //! @pre
-    //!  @li \c position must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>.
+    //!  @li \c p must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>.
     //!  @li <tt>size() < capacity()</tt>
     //!
-    //! @brief Inserts a copy of element at position.
+    //! @brief Inserts a copy of element at p.
     //!
-    //! @param position    The position at which the new value will be inserted.
-    //! @param value       The value used to copy construct the new element.
+    //! @param p     The position at which the new value will be inserted.
+    //! @param value The value used to copy construct the new element.
     //!
     //! @par Throws
     //!   @li If Value's copy constructor or copy assignment throws
@@ -484,33 +516,33 @@ public:
     //!
     //! @par Complexity
     //!   Constant or linear.
-    iterator insert(iterator position, value_type const& value);
+    iterator insert(const_iterator p, value_type const& value);
 
     //! @pre
-    //!  @li \c position must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>.
+    //!  @li \c p must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>.
     //!  @li <tt>size() < capacity()</tt>
     //!
-    //! @brief Inserts a move-constructed element at position.
+    //! @brief Inserts a move-constructed element at p.
     //!
-    //! @param position    The position at which the new value will be inserted.
-    //! @param value       The value used to move construct the new element.
+    //! @param p     The position at which the new value will be inserted.
+    //! @param value The value used to move construct the new element.
     //!
     //! @par Throws
     //!   If Value's move constructor or move assignment throws.
     //!
     //! @par Complexity
     //!   Constant or linear.
-    iterator insert(iterator position, BOOST_RV_REF(value_type) value);
+    iterator insert(const_iterator p, BOOST_RV_REF(value_type) value);
 
     //! @pre
-    //!  @li \c position must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>.
+    //!  @li \c p must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>.
     //!  @li <tt>size() + count <= capacity()</tt>
     //!
-    //! @brief Inserts a count copies of value at position.
+    //! @brief Inserts a count copies of value at p.
     //!
-    //! @param position    The position at which new elements will be inserted.
-    //! @param count       The number of new elements which will be inserted.
-    //! @param value       The value used to copy construct new elements.
+    //! @param p     The position at which new elements will be inserted.
+    //! @param count The number of new elements which will be inserted.
+    //! @param value The value used to copy construct new elements.
     //!
     //! @par Throws
     //!   @li If Value's copy constructor or copy assignment throws.
@@ -518,18 +550,18 @@ public:
     //!
     //! @par Complexity
     //!   Linear O(N).
-    iterator insert(iterator position, size_type count, value_type const& value);
+    iterator insert(const_iterator p, size_type count, value_type const& value);
 
     //! @pre
-    //!  @li \c position must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>.
+    //!  @li \c p must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>.
     //!  @li <tt>distance(first, last) <= capacity()</tt>
     //!  @li \c Iterator must meet the \c ForwardTraversalIterator concept.
     //!
-    //! @brief Inserts a copy of a range <tt>[first, last)</tt> at position.
+    //! @brief Inserts a copy of a range <tt>[first, last)</tt> at p.
     //!
-    //! @param position    The position at which new elements will be inserted.
-    //! @param first       The iterator to the first element of a range used to construct new elements.
-    //! @param last        The iterator to the one after the last element of a range used to construct new elements.
+    //! @param p     The position at which new elements will be inserted.
+    //! @param first The iterator to the first element of a range used to construct new elements.
+    //! @param last  The iterator to the one after the last element of a range used to construct new elements.
     //!
     //! @par Throws
     //!   @li If Value's constructor and assignment taking a dereferenced \c Iterator.
@@ -538,20 +570,38 @@ public:
     //! @par Complexity
     //!   Linear O(N).
     template <typename Iterator>
-    iterator insert(iterator position, Iterator first, Iterator last);
+    iterator insert(const_iterator p, Iterator first, Iterator last);
 
-    //! @pre \c position must be a valid iterator of \c *this in range <tt>[begin(), end())</tt>
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    //! @pre
+    //!  @li \c p must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>.
+    //!  @li <tt>distance(il.begin(), il.end()) <= capacity()</tt>
     //!
-    //! @brief Erases Value from position.
+    //! @brief Inserts a copy of a range <tt>[il.begin(), il.end())</tt> at p.
     //!
-    //! @param position    The position of the element which will be erased from the container.
+    //! @param p     The position at which new elements will be inserted.
+    //! @param il    The std::initializer_list which contains elements that will be inserted.
+    //!
+    //! @par Throws
+    //!   @li If Value's constructor and assignment taking a dereferenced std::initializer_list iterator.
+    //!
+    //! @par Complexity
+    //!   Linear O(N).
+    iterator insert(const_iterator p, std::initializer_list<value_type> il);
+#endif
+
+    //! @pre \c p must be a valid iterator of \c *this in range <tt>[begin(), end())</tt>
+    //!
+    //! @brief Erases Value from p.
+    //!
+    //! @param p    The position of the element which will be erased from the container.
     //!
     //! @par Throws
     //!   If Value's move assignment throws.
     //!
     //! @par Complexity
     //!   Linear O(N).
-    iterator erase(iterator position);
+    iterator erase(const_iterator p);
 
     //! @pre
     //!  @li \c first and \c last must define a valid range
@@ -567,7 +617,7 @@ public:
     //!
     //! @par Complexity
     //!   Linear O(N).
-    iterator erase(iterator first, iterator last);
+    iterator erase(const_iterator first, const_iterator last);
 
     //! @pre <tt>distance(first, last) <= capacity()</tt>
     //!
@@ -583,6 +633,21 @@ public:
     //!   Linear O(N).
     template <typename Iterator>
     void assign(Iterator first, Iterator last);
+
+#if !defined(BOOST_NO_CXX11_HDR_INITIALIZER_LIST)
+    //! @pre <tt>distance(il.begin(), il.end()) <= capacity()</tt>
+    //!
+    //! @brief Assigns a range <tt>[il.begin(), il.end())</tt> of Values to this container.
+    //!
+    //! @param first       std::initializer_list with values used to construct new content of this container.
+    //!
+    //! @par Throws
+    //!   If Value's copy constructor or copy assignment throws,
+    //!
+    //! @par Complexity
+    //!   Linear O(N).
+    void assign(std::initializer_list<value_type> il);
+#endif
 
     //! @pre <tt>count <= capacity()</tt>
     //!
@@ -614,14 +679,14 @@ public:
     void emplace_back(Args &&...args);
 
     //! @pre
-    //!  @li \c position must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>
+    //!  @li \c p must be a valid iterator of \c *this in range <tt>[begin(), end()]</tt>
     //!  @li <tt>size() < capacity()</tt>
     //!
     //! @brief Inserts a Value constructed with
-    //!   \c std::forward<Args>(args)... before position
+    //!   \c std::forward<Args>(args)... before p
     //!
-    //! @param position The position at which new elements will be inserted.
-    //! @param args     The arguments of the constructor of the new element.
+    //! @param p     The position at which new elements will be inserted.
+    //! @param args  The arguments of the constructor of the new element.
     //!
     //! @par Throws
     //!   If in-place constructor throws or if Value's move constructor or move assignment throws.
@@ -629,7 +694,7 @@ public:
     //! @par Complexity
     //!   Constant or linear.
     template<class ...Args>
-    iterator emplace(iterator position, Args &&...args);
+    iterator emplace(const_iterator p, Args &&...args);
 
     //! @brief Removes all elements from the container.
     //!
