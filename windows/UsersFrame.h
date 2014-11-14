@@ -173,6 +173,7 @@ private:
 		const UserPtr& getUser() const { return user; }
 		GETSET(string, hubUrl, HubUrl);
 		IGETSET(int64_t, shareSize, ShareSize, 0); //save the Highest share size for comparing
+		IGETSET(string, ip, Ip, Util::emptyString); //save IP for drawing country flag / country code
 		UserPtr user;
 
 		bool noLimiter;

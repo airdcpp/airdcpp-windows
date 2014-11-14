@@ -358,11 +358,15 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 		{
 			// dim fields that can't be changed for this user
 			auto ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
+			if (!ui)
+				return CDRF_DODEFAULT;
+			
+			if (!ui->isFavorite) //either this or it needs to be owner drawn
+				cd->clrText = SETTING(NORMAL_COLOUR);
+
 			if (!ui->isFavorite && ctrlUsers.findColumn(cd->iSubItem) == COLUMN_LIMITER) {
 				cd->clrText = WinUtil::blendColors(SETTING(NORMAL_COLOUR), SETTING(BACKGROUND_COLOR));
-				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
-			}
-			else if (SETTING(GET_USER_COUNTRY) && (ctrlUsers.findColumn(cd->iSubItem) == COLUMN_IP4 || ctrlUsers.findColumn(cd->iSubItem) == COLUMN_IP6)) {
+			} else if (SETTING(GET_USER_COUNTRY) && (ctrlUsers.findColumn(cd->iSubItem) == COLUMN_IP4 || ctrlUsers.findColumn(cd->iSubItem) == COLUMN_IP6)) {
 				CRect rc;
 				ctrlUsers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
@@ -380,11 +384,11 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 
 					POINT p = { rc.left, top };
 
-					string ip = Text::fromT(ui->getText(cd->iSubItem));
+					const string& ip = ui->getIp();
 					uint8_t flagIndex = 0;
 					if (!ip.empty()) {
 						// Only attempt to grab a country mapping if we actually have an IP address
-						string tmpCountry = GeoManager::getInstance()->getCountry(ip);
+						const string& tmpCountry = GeoManager::getInstance()->getCountry(ip);
 						if (!tmpCountry.empty()) {
 							flagIndex = Localization::getFlagIndexByCode(tmpCountry.c_str());
 						}
@@ -396,10 +400,7 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 					return CDRF_SKIPDEFAULT;
 				}
 			}
-			else if (!ui->isFavorite) { //either this or it needs to be owner drawn
-				cd->clrText = SETTING(NORMAL_COLOUR);
-				return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
-			}
+			return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 		}
 		default:
 			return CDRF_DODEFAULT;
@@ -880,6 +881,7 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 		auto ouList2 = ouList;
 		//well this is kind of stupid but, save the highest share size for comparing...
 		setShareSize(hinted ? hinted->getIdentity().getBytesShared() : 0);
+
 		shared = hinted ? Util::formatBytes(hinted->getIdentity().getBytesShared()) + " " : Util::emptyString;
 		ouList2.erase(unique(ouList2.begin(), ouList2.end(), [](const OnlineUserPtr& a, const OnlineUserPtr& b) { return compare(a->getIdentity().getBytesShared(), b->getIdentity().getBytesShared()) == 0; }), ouList2.end());
 		ouList2.erase(remove_if(ouList2.begin(), ouList2.end(), [&](const OnlineUserPtr& a) { return compare(a->getIdentity().getBytesShared(), hinted->getIdentity().getBytesShared()) == 0; }), ouList2.end());
@@ -907,9 +909,18 @@ UsersFrame::UserInfo::userData UsersFrame::UserInfo::getUserInfo(const UserPtr& 
 			nick += Util::listToStringT<OnlineUserList, OnlineUser::Nick>(ouList, hinted ? true : false, hinted ? false : true);
 
 		if (hinted) {
+			setIp(hinted->getIdentity().getIp());
 			ip4 = hinted->getIdentity().getIp4();
 			ip6 = hinted->getIdentity().getIp6();
 			tag = hinted->getIdentity().getTag();
+
+			const string& country = hinted->getIdentity().getCountry();
+			if (!country.empty()) {
+				if(!ip4.empty())
+					ip4 = country + " (" + ip4 + ")";
+				if (!ip6.empty())
+					ip6 = country + " (" + ip6 + ")";
+			}
 		}
 	}
 
