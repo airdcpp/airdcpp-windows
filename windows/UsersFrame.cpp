@@ -360,13 +360,18 @@ LRESULT UsersFrame::onCustomDrawList(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHand
 			auto ui = reinterpret_cast<UserInfo*>(cd->nmcd.lItemlParam);
 			if (!ui)
 				return CDRF_DODEFAULT;
-			
-			if (!ui->isFavorite) //either this or it needs to be owner drawn
+
+			//either this or it needs to be owner drawn
+			if (!listFav && ui->isFavorite)
+				cd->clrText = SETTING(FAVORITE_COLOR);
+			else 
 				cd->clrText = SETTING(NORMAL_COLOUR);
 
-			if (!ui->isFavorite && ctrlUsers.findColumn(cd->iSubItem) == COLUMN_LIMITER) {
+			int colIndex = ctrlUsers.findColumn(cd->iSubItem);
+			if (!ui->isFavorite && colIndex == COLUMN_LIMITER) {
 				cd->clrText = WinUtil::blendColors(SETTING(NORMAL_COLOUR), SETTING(BACKGROUND_COLOR));
-			} else if (SETTING(GET_USER_COUNTRY) && (ctrlUsers.findColumn(cd->iSubItem) == COLUMN_IP4 || ctrlUsers.findColumn(cd->iSubItem) == COLUMN_IP6)) {
+			}
+			else if (SETTING(GET_USER_COUNTRY) && (colIndex == COLUMN_IP4 || colIndex == COLUMN_IP6)) {
 				CRect rc;
 				ctrlUsers.GetSubItemRect((int)cd->nmcd.dwItemSpec, cd->iSubItem, LVIR_BOUNDS, rc);
 
