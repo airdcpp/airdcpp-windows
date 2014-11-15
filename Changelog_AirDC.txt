@@ -1,5 +1,9 @@
 2.90
 
+Added:
+- Share scanner check invalid sfv files
+- System log option to suppress CRC OK when performing sfv check 
+
 Changed:
 - Add space in front of Path when copying Path from Filelist window
 - Continue with QueueWindow changes, sub directories / bundle content now browseable
