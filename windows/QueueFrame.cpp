@@ -1275,8 +1275,9 @@ void QueueFrame::onQueueItemAdded(const QueueItemPtr& aQI) {
 		if (!parent || !parent->childrenCreated)
 			return;
 
-		if (parent && aQI->getBundle()->isFileBundle() && show(parent)) {
-			ctrlQueue.list.updateItem(parent.get());
+		if (aQI->getBundle()->isFileBundle()) {
+			if(show(parent))
+				ctrlQueue.list.updateItem(parent.get());
 			return;
 		}
 
