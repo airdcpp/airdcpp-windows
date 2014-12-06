@@ -3,6 +3,8 @@
 Added:
 - Share scanner check invalid sfv files
 - System log option to suppress CRC OK when performing sfv check 
+- Show Shared,IP,Tag in users window
+- File menu item to open settings directory
 
 Changed:
 - Add space in front of Path when copying Path from Filelist window
@@ -19,6 +21,7 @@ Fixed:
 - Prevent opening multiple settings windows from task bar
 - Several other crashes
 - Fix Get TTH for file
+- Crash opening Hidden profile file list from hub tab menu
 
 Removed:
 - Tab numbers 0 - 9 ALT + num to switch tab, using ALT + left/right now
