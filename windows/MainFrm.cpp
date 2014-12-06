@@ -97,13 +97,19 @@ statusContainer(STATUSCLASSNAME, this, STATUS_MESSAGE_MAP), settingsWindowOpen(f
 	anyMF = this;
 }
 
-LRESULT MainFrame::onOpenDownloads(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::openFile(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
-	return 0;
-}
-
-LRESULT MainFrame::onOpenLogDir(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
-	WinUtil::openFolder(Text::toT(SETTING(LOG_DIRECTORY)));
+LRESULT MainFrame::onOpenDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
+	switch (wID) {
+	case IDC_OPEN_LOG_DIR:
+		WinUtil::openFolder(Text::toT(SETTING(LOG_DIRECTORY)));
+		break;
+	case IDC_OPEN_CONFIG_DIR:
+		WinUtil::openFolder(Text::toT(Util::getPath(Util::PATH_USER_CONFIG)));
+		break;
+	case IDC_OPEN_DOWNLOADS:
+		WinUtil::openFile(Text::toT(SETTING(DOWNLOAD_DIRECTORY)));
+		break;
+	default: break;
+	}
 	return 0;
 }
 
@@ -267,6 +273,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	m_CmdBar.m_arrCommand.Add(ID_APP_ABOUT);
 	m_CmdBar.m_arrCommand.Add(ID_WIZARD);
 	m_CmdBar.m_arrCommand.Add(IDC_OPEN_LOG_DIR);
+	m_CmdBar.m_arrCommand.Add(IDC_OPEN_CONFIG_DIR);
 
 	// use Vista-styled menus on Vista/Win7
 	m_CmdBar._AddVistaBitmapsFromImageList(0, m_CmdBar.m_arrCommand.GetSize());

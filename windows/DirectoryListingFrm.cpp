@@ -961,6 +961,9 @@ void DirectoryListingFrame::updateItems(const DirectoryListing::Directory::Ptr& 
 }
 
 void DirectoryListingFrame::changeDir(const ItemInfo* ii, ReloadMode aReload /*RELOAD_NONE*/) {
+	if (!ii)
+		return;
+
 	auto d = ii->dir;
 	if (aReload == RELOAD_NONE)
 		updateItems(d);
@@ -1544,7 +1547,7 @@ void DirectoryListingFrame::openDupe(const DirectoryListing::File* f, bool openD
 
 void DirectoryListingFrame::handleReloadPartial(bool dirOnly) {
 	handleItemAction(true, [=](const ItemInfo* ii) {
-		if (!ii->dir->getAdls())
+		if (ii && !ii->dir->getAdls())
 			changeDir(ii, dirOnly ? RELOAD_DIR : RELOAD_ALL);
 	});
 }
@@ -2106,7 +2109,8 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 		} else {
 			dl->addFullListTask(curPath);
 		}
-		SettingsManager::getInstance()->set(SettingsManager::LAST_LIST_PROFILE, token);
+		if(token != SP_HIDDEN) //Don't save the hidden profile as last opened
+			SettingsManager::getInstance()->set(SettingsManager::LAST_LIST_PROFILE, token);
 	} else {
 		auto& newHub = hubs[selCombo.GetCurSel()];
 		if (manual) {
@@ -2139,12 +2143,13 @@ void DirectoryListingFrame::updateSelCombo(bool init) {
 		}
 
 		for (const auto& p : profiles) {
-			if (p->getToken() != SP_HIDDEN) {
+			//Hidden profile list can be opened from the hub tab anyway, so why not list it in profiles, doesn't make much sense to open tho.
+			//if (p->getToken() != SP_HIDDEN) { 
 				auto idx = selCombo.AddString(Text::toT(p->getPlainName()).c_str());
 				if (p->getToken() == Util::toInt(dl->getFileName())) {
 					selCombo.SetCurSel(idx);
 				}
-			}
+			//}
 		}
 
 		if (selCombo.GetCurSel() == -1) {

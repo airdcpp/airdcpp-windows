@@ -558,6 +558,7 @@ void ResourceLoader::loadCmdBarImageList(CImageList& images){
 	images.AddIcon(loadIcon(IDR_MAINFRAME, 16));
 	images.AddIcon(loadIcon(IDI_WIZARD, 16));
 	images.AddIcon(loadIcon(IDI_LOGDIR, 16));
+	images.AddIcon(loadIcon(IDI_SETTINGS, 16));
 }
 
 void ResourceLoader::loadWinampToolbarIcons(CImageList& winampImages) {
