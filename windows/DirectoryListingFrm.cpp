@@ -2109,6 +2109,8 @@ void DirectoryListingFrame::onComboSelChanged(bool manual) {
 		} else {
 			dl->addFullListTask(curPath);
 		}
+
+		SettingsManager::getInstance()->set(SettingsManager::LAST_LIST_PROFILE, token);
 	} else {
 		auto& newHub = hubs[selCombo.GetCurSel()];
 		if (manual) {
