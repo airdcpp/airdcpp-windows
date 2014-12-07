@@ -207,8 +207,12 @@ public:
 			while((i = address.find(' ')) != string::npos)
 				address.erase(i, 1);
 
-			auto profiles = ShareManager::getInstance()->getProfiles();
-			curProfile = profiles[ctrlProfile.GetCurSel()]->getToken();
+			if (hideShare) {
+				curProfile = SP_HIDDEN;
+			} else {
+				auto profiles = ShareManager::getInstance()->getProfiles();
+				curProfile = profiles[ctrlProfile.GetCurSel()]->getToken();
+			}
 		}
 		EndDialog(wID);
 		return 0;

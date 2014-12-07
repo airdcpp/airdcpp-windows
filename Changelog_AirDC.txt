@@ -12,6 +12,7 @@ Changed:
 - Allow stop sharing a temp shared file from offline PM window
 - Update Openssl
 - Handle open file as default menu item for finished queue items, own filelist and dupe files
+- Don't allowing own list from the hub context menu if the share has been hidden
 
 Fixed:
 - Potential freezes when removing bundles with files
@@ -21,7 +22,7 @@ Fixed:
 - Prevent opening multiple settings windows from task bar
 - Several other crashes
 - Fix Get TTH for file
-- Crash opening Hidden profile file list from hub tab menu
+- Fix hide share when using quick connect
 
 Removed:
 - Tab numbers 0 - 9 ALT + num to switch tab, using ALT + left/right now

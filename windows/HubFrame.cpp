@@ -1076,7 +1076,9 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 
 	auto p = ShareManager::getInstance()->getShareProfile(client->getShareProfile());
 
-	tabMenu.AppendMenu(MF_STRING, IDC_BROWSE_OWN_LIST, CTSTRING_F(OPEN_HUB_FILELIST, Text::toT(p->getPlainName())));
+	tabMenu.appendItem(CTSTRING_F(OPEN_HUB_FILELIST, Text::toT(p->getPlainName())), [this] { 
+		handleOpenOwnList(); 
+	}, p->getToken() == SP_HIDDEN ? OMenu::FLAG_DISABLED : 0);
 	tabMenu.AppendMenu(MF_POPUP, (UINT)(HMENU)copyHubMenu, CTSTRING(COPY));
 	prepareMenu(tabMenu, ::UserCommand::CONTEXT_HUB, client->getHubUrl());
 	tabMenu.AppendMenu(MF_SEPARATOR);
@@ -1087,13 +1089,12 @@ LRESULT HubFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lPar
 	else
 		tabMenu.EnableMenuItem((UINT)(HMENU)copyHubMenu, MF_ENABLED);
 	
-	tabMenu.TrackPopupMenu(TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt.x, pt.y, m_hWnd);
+	tabMenu.open(m_hWnd, TPM_LEFTALIGN | TPM_BOTTOMALIGN | TPM_RIGHTBUTTON, pt);
 	return TRUE;
 }
 
-LRESULT HubFrame::onOpenMyList(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
+void HubFrame::handleOpenOwnList(){
 	DirectoryListingManager::getInstance()->openOwnList(client->getShareProfile());
-	return 0;
 }
 
 LRESULT HubFrame::onSetNotify(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/){
