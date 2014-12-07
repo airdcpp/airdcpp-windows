@@ -23,6 +23,7 @@ Fixed:
 - Several other crashes
 - Fix Get TTH for file
 - Fix hide share when using quick connect
+- Fix a possible crash when refreshing the share and own filelist is open
 
 Removed:
 - Tab numbers 0 - 9 ALT + num to switch tab, using ALT + left/right now
