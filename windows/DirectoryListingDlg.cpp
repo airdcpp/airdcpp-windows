@@ -51,7 +51,7 @@ LRESULT DirectoryListingDlg::OnInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPAR
 
 	ATTACH(IDC_SIZE_MODE, ctrlSizeMode);
 	ATTACH(IDC_SIZE_UNIT, ctrlSizeUnit);
-	WinUtil::appendSizeCombos(ctrlSizeMode, ctrlSizeUnit);
+	WinUtil::appendSizeCombos(ctrlSizeUnit, ctrlSizeMode);
 
 	::SetWindowText(GetDlgItem(IDCANCEL), CTSTRING(CANCEL));
 	::SetWindowText(GetDlgItem(IDC_DL_SEARCH_DESC), CTSTRING(SEARCH_STRING));
@@ -86,7 +86,7 @@ LRESULT DirectoryListingDlg::OnCloseCmd(WORD /*wNotifyCode*/, WORD wID, HWND /*h
 			return 0;
 		}
 
-		sizeMode = ctrlSizeMode.GetCurSel()-1;
+		sizeMode = ctrlSizeMode.GetCurSel();
 		searchStr = WinUtil::addHistory(ctrlSearch, SettingsManager::HISTORY_SEARCH);
 		size = WinUtil::parseSize(ctrlSize, ctrlSizeUnit);
 		useCurDir = IsDlgButtonChecked(IDC_USE_CUR_DIR) == BST_CHECKED;

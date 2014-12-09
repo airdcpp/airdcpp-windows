@@ -1,3 +1,10 @@
+x.xx
+
+Fixed:
+
+- Respect the size limits when searching in file lists
+
+
 2.90
 
 Added:
@@ -12,7 +19,7 @@ Changed:
 - Allow stop sharing a temp shared file from offline PM window
 - Update Openssl
 - Handle open file as default menu item for finished queue items, own filelist and dupe files
-- Don't allowing own list from the hub context menu if the share has been hidden
+- Don't allow opening own list from the hub context menu if the share has been hidden
 
 Fixed:
 - Potential freezes when removing bundles with files

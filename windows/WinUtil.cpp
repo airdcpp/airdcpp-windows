@@ -2060,7 +2060,7 @@ void WinUtil::appendSizeCombos(CComboBox& aUnitCombo, CComboBox& aModeCombo, int
 	aModeCombo.SetCurSel(aModeSel);
 }
 
-time_t WinUtil::parseSize(CEdit& ctrlSize, CComboBox& ctrlSizeMode) {
+int64_t WinUtil::parseSize(CEdit& ctrlSize, CComboBox& ctrlSizeMode) {
 	tstring size(ctrlSize.GetWindowTextLength() + 1, _T('\0'));
 	ctrlSize.GetWindowText(&size[0], size.size());
 	size.resize(size.size() - 1);
