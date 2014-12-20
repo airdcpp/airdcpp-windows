@@ -177,6 +177,7 @@
 #define IDI_STEPBACK                    341
 #define IDD_SEARCHTYPESPAGE             342
 #define IDD_SEARCHTYPE_DLG              343
+#define IDI_SECURE						344
 #define IDR_EMOTICON                    345
 #define IDD_DIALOG3                     345
 #define IDD_LIMITPAGE                   345

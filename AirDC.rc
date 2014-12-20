@@ -2549,6 +2549,7 @@ IDI_FIND                ICON                    "res\\Find.ico"
 IDI_RELOAD              ICON                    "res\\reload.ico"
 IDI_PAUSED              ICON                    "res\\paused.ico"
 IDI_STEPBACK            ICON                    "res\\Stepback.ico"
+IDI_SECURE				ICON                    "res\\Secure.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 

@@ -43,6 +43,7 @@ PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(repl
 	ctrlHubSelContainer(WC_COMBOBOXEX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
+	ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG_MAP),
 	UserInfoBaseHandler(false, true)
 {
 	ctrlClient.setClient(c);
@@ -63,12 +64,19 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlHubSel.SetImageList(ResourceLoader::getHubImages());
 	
 	init(m_hWnd, rcDefault);
+	
+	CToolInfo ti_tool(TTF_SUBCLASS, ctrlStatus.m_hWnd, STATUS_CC + POPUP_UID, 0, LPSTR_TEXTCALLBACK);
+	ctrlTooltips.AddTool(&ti_tool);
 
 	ctrlClientContainer.SubclassWindow(ctrlClient.m_hWnd);
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
+	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 	
 	bool userBot = replyTo.user && replyTo.user->isSet(User::BOT);
 	userOffline = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
+	iCCReady = ResourceLoader::loadIcon(IDI_SECURE, 16);
+	iStartCC = ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_SECURE, 16));
+
 	created = true;
 
 	ClientManager::getInstance()->addListener(this);
@@ -117,6 +125,30 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 		setDirty();
 	}
 }
+
+LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
+	CRect rect;
+	ctrlStatus.GetRect(STATUS_CC, rect);
+	if (PtInRect(&rect, pt)) {
+		if (ccReady())
+			closeCC();
+		else
+			startCC();
+	}
+	bHandled = TRUE;
+	return 0;
+}
+
+LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
+	pDispInfo->szText[0] = 0;
+	if (idCtrl == STATUS_CC + POPUP_UID) {
+		pDispInfo->lpszText = ccReady() ? _T("Disconnect direct encrypted channel") : _T("Start direct encrypted channel");
+	}
+	return 0;
+}
+
 
 LRESULT PrivateFrame::OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/) {
 	LPMSG pMsg = (LPMSG)lParam;
@@ -515,13 +547,15 @@ void PrivateFrame::startCC(bool silent) {
 	}
 
 	{
+		tstring err;
 		RLock l(ClientManager::getInstance()->getCS());
-		auto ou = ClientManager::getInstance()->findOnlineUser(replyTo);
+		auto ou = ClientManager::getInstance()->getCCPMuser(replyTo, err);
 		if (!ou) {
-			if (!silent) { addStatusLine(_T("User offline"), LogManager::LOG_ERROR); }
+			if (!silent) { addStatusLine(err, LogManager::LOG_ERROR); }
 			return;
 		}
-
+		
+		/*
 		tstring err = ou->getUser()->isNMDC() ? _T("A secure ADC hub is required; this feature is not supported on NMDC hubs") :
 			!ou->getClient().isSecure() ? _T("The connection to the ADC hub used to initiate the channel must be encrypted") :
 			!ou->getIdentity().supports(AdcHub::CCPM_FEATURE) ? _T("The user does not support the CCPM ADC extension") : _T("");
@@ -529,6 +563,7 @@ void PrivateFrame::startCC(bool silent) {
 			if (!silent) { addStatusLine(_T("Cannot start the direct encrypted channel: ") + err, LogManager::LOG_ERROR); }
 			return;
 		}
+		*/
 	}
 
 	if (!silent) { addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO); }
@@ -656,6 +691,13 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	UpdateBarsPosition(rect, bResizeBars);
 
 	if(ctrlStatus.IsWindow()) {
+		
+		auto setToolRect = [&] {
+			CRect r;
+			ctrlStatus.GetRect(STATUS_CC, r);
+			ctrlTooltips.SetToolRect(ctrlStatus.m_hWnd, STATUS_CC + POPUP_UID, r);
+		};
+
 		CRect sr;
 		ctrlStatus.GetClientRect(sr);
 
@@ -665,8 +707,9 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
 
 			int desclen = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-			w[STATUS_TEXT] = sr.right - 190 - desclen -5;
-			w[STATUS_HUBSEL] = w[0] + desclen + 190;
+			w[STATUS_TEXT] = sr.right - 190 - desclen - 30;
+			w[STATUS_CC] = w[STATUS_TEXT] +22;
+			w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + 190;
 
 			sr.top = 1;
 			sr.left = w[STATUS_HUBSEL-1] + desclen + 10;
@@ -674,6 +717,9 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 			ctrlHubSel.MoveWindow(sr);
 
 			ctrlStatus.SetParts(STATUS_LAST, w);
+
+			ctrlStatus.SetIcon(STATUS_CC, iStartCC);
+			setToolRect();
 		}
 		else if (ccReady()){
 			int w[STATUS_LAST];
@@ -682,10 +728,14 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
 
 			int desclen = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-			w[STATUS_TEXT] = sr.right - desclen - 10;
-			w[STATUS_HUBSEL] = w[0] + desclen +2;
+			w[STATUS_TEXT] = sr.right - desclen - 30;
+			w[STATUS_CC] = w[STATUS_TEXT] + 22;
+			w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + 2;
 			ctrlStatus.SetParts(STATUS_LAST, w);
-			
+
+			ctrlStatus.SetIcon(STATUS_CC, iCCReady);
+			setToolRect();
+
 		} else {
 			int w[1];
 			w[0] = sr.right - 16;

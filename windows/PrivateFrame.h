@@ -35,6 +35,7 @@
 #include "UCHandler.h"
 
 #define HUB_SEL_MAP 9
+#define STATUS_MSG_MAP 19
 
 class PrivateFrame : public UserInfoBaseHandler<PrivateFrame>, public UserInfoBase,
 	private ClientManagerListener, private ConnectionManagerListener, private UserConnectionListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
@@ -64,6 +65,7 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_FORWARDMSG, OnRelayMsg)
+		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_USER_HISTORY, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_UNGRANTSLOT, onGrantSlot)
@@ -82,6 +84,9 @@ public:
 		MESSAGE_HANDLER(WM_DROPFILES, onDropFiles)
 	ALT_MSG_MAP(HUB_SEL_MAP)
 		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onHubChanged)
+	ALT_MSG_MAP(STATUS_MSG_MAP)
+	NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
+		MESSAGE_HANDLER(WM_LBUTTONUP, onStatusBarClick)
 	END_MSG_MAP()
 
 	LRESULT onHubChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -91,6 +96,8 @@ public:
 	LRESULT onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/);
+	LRESULT onStatusBarClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 
 	LRESULT OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 
@@ -141,6 +148,7 @@ public:
 private:
 	enum {
 		STATUS_TEXT,
+		STATUS_CC,
 		STATUS_HUBSEL,
 		STATUS_LAST
 	};
@@ -171,6 +179,7 @@ private:
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
 	CContainedWindow ctrlHubSelContainer;
+	CContainedWindow ctrlStatusContainer;
 
 	bool closed;
 	tstring nicks;
@@ -179,6 +188,9 @@ private:
 	
 	CIcon tabIcon;
 	CIcon userOffline;
+	CIcon iCCReady;
+	CIcon iStartCC;
+
 
 	mutable CriticalSection mutex;
 	UserConnection* conn;

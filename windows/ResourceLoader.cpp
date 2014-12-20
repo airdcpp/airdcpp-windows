@@ -290,6 +290,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_SEND_FILE:		return _T("send_file.ico");
 		case IDI_PAUSED:		return _T("paused.ico");
 		case IDI_STEPBACK:		return _T("Stepback.ico");
+		case IDI_SECURE:		return _T("Secure.ico");
 
 		case IDI_UP:            return _T("BrowserBar\\Up.ico");
 		case IDI_NEXT:			return _T("BrowserBar\\NextResult.ico");
