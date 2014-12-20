@@ -237,7 +237,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 	} else {
 		auto oldSel = ctrlHubSel.GetStyle() & WS_VISIBLE ? ctrlHubSel.GetCurSel() : 0;
 		StringPair oldHubPair;
-		if (!hubs.empty())
+		if (!hubs.empty() && oldSel != -1)
 			oldHubPair = hubs[oldSel]; // cache the old hub name
 
 		hubs = ClientManager::getInstance()->getHubs(cid);
@@ -293,7 +293,8 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			}
 		}
 		else if (ccReady()) {
-			ctrlHubSel.EnableWindow(FALSE);
+			fillHubSelection();
+			showHubSelection(false);
 		} else {
 			showHubSelection(false);
 		}
@@ -448,6 +449,9 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 	}
 	else if (Util::stricmp(cmd.c_str(), _T("direct")) == 0 || Util::stricmp(cmd.c_str(), _T("encrypted")) == 0) {
 		startCC();
+	}
+	else if (Util::stricmp(cmd.c_str(), _T("disconnect")) == 0) {
+		closeCC();
 	} else if(stricmp(cmd.c_str(), _T("help")) == 0) {
 		status = _T("*** ") + ChatFrameBase::commands + _T("Additional commands for private message tabs: /getlist, /grant, /favorite");
 	} else {
@@ -531,7 +535,12 @@ void PrivateFrame::startCC(bool silent) {
 	string error = Util::emptyString;
 	bool protocolError = false;
 	string token = ConnectionManager::getInstance()->tokens.getToken(CONNECTION_TYPE_PM);
-	ClientManager::getInstance()->connect(replyTo.user, token, true, error, replyTo.hint, protocolError, CONNECTION_TYPE_PM);
+	bool connected = ClientManager::getInstance()->connect(replyTo.user, token, true, error, replyTo.hint, protocolError, CONNECTION_TYPE_PM);
+	if (!connected)
+	{
+		addStatusLine(_T("Direct encrypted channel could not be established, ") + Text::toT(error), LogManager::LOG_ERROR);
+	}
+
 }
 
 void PrivateFrame::closeCC(bool silent) {
@@ -665,6 +674,18 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 			ctrlHubSel.MoveWindow(sr);
 
 			ctrlStatus.SetParts(STATUS_LAST, w);
+		}
+		else if (ccReady()){
+			int w[STATUS_LAST];
+			tstring tmp = _T(" ") + TSTRING(SEND_PM_VIA);
+			tmp += _T(": Direct encrypted channel");
+			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
+
+			int desclen = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
+			w[STATUS_TEXT] = sr.right - desclen - 10;
+			w[STATUS_HUBSEL] = w[0] + desclen +2;
+			ctrlStatus.SetParts(STATUS_LAST, w);
+			
 		} else {
 			int w[1];
 			w[0] = sr.right - 16;
