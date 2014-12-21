@@ -277,9 +277,8 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		if (hubNames.empty())
 			hubNames = TSTRING(OFFLINE);
 		
-		if(!ccReady())
-			setDisconnected(true);
 
+		setDisconnected(true);
 		showHubSelection(false);
 		updateTabIcon(true);
 	} else {
@@ -302,7 +301,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			setDisconnected(false);
 			updateTabIcon(false);
 
-			if (!online && !ccReady()) {
+			if (!online) {
 				addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"), LogManager::LOG_INFO);
 			}
 		}
@@ -311,11 +310,8 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 				nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
 
 			updateTabIcon(true);
-
-			if (!ccReady()){
-				setDisconnected(true);
-				addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"), LogManager::LOG_INFO);
-			}
+			setDisconnected(true);
+			addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"), LogManager::LOG_INFO);
 			ctrlClient.setClient(nullptr);
 		}
 
@@ -515,19 +511,19 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 }
 
 bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
-	
-	auto msg8 = Text::fromT(msg);
 
-	{
-		Lock l(mutex);
-		if (conn) {
-			conn->pm(msg8, thirdPerson);
-			return true;
+	if (replyTo.user->isOnline()) {
+		auto msg8 = Text::fromT(msg);
+
+		{
+			Lock l(mutex);
+			if (conn) {
+				conn->pm(msg8, thirdPerson);
+				return true;
+			}
 		}
-	}
-
-	if (replyTo.user->isOnline()) 
 		return ClientManager::getInstance()->privateMessage(replyTo, msg8, error_, thirdPerson);
+	}
 
 	error_ = STRING(USER_OFFLINE);
 	return false;

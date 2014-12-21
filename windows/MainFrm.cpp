@@ -2209,6 +2209,7 @@ void MainFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueItem
 }
 
 void MainFrame::on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessage& message) noexcept {
+	
 	auto user = uc->getHintedUser();
 	callAsync([this, message, user] {
 		auto text = message.format();
