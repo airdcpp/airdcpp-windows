@@ -306,8 +306,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			if (!online) {
 				addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"), LogManager::LOG_INFO);
 			}
-		}
-		else {
+		} else {
 			if (nicks.empty())
 				nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
 
@@ -321,8 +320,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		if (!ccReady() && hubsInfoNew.second && !replyTo.user->isNMDC() && !hubs.empty()) {
 			if (!(ctrlHubSel.GetStyle() & WS_VISIBLE)) {
 				showHubSelection(true);
-			} else if (ctrlHubSel.GetStyle() & WS_DISABLED)
-				ctrlHubSel.EnableWindow(TRUE);
+			}
 
 			fillHubSelection();
 
@@ -711,20 +709,19 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		if (ctrlHubSel.GetStyle() & WS_VISIBLE) {
 			int w[STATUS_LAST];
 			tstring tmp = _T(" ") + TSTRING(SEND_PM_VIA);
-			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
 
 			int desclen = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
 			w[STATUS_TEXT] = sr.right - 190 - desclen - 30;
 			w[STATUS_CC] = w[STATUS_TEXT] +22;
 			w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + 190;
+			ctrlStatus.SetParts(STATUS_LAST, w);
 
 			sr.top = 1;
 			sr.left = w[STATUS_HUBSEL-1] + desclen + 10;
 			sr.right = sr.left + 170;
 			ctrlHubSel.MoveWindow(sr);
 
-			ctrlStatus.SetParts(STATUS_LAST, w);
-
+			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
 			ctrlStatus.SetIcon(STATUS_CC, iStartCC);
 			setToolRect();
 		}
@@ -732,7 +729,6 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 			int w[STATUS_LAST];
 			tstring tmp = _T(" ") + TSTRING(SEND_PM_VIA);
 			tmp += _T(": Direct encrypted channel");
-			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
 
 			int desclen = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
 			w[STATUS_TEXT] = sr.right - desclen - 30;
@@ -740,6 +736,7 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 			w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + 2;
 			ctrlStatus.SetParts(STATUS_LAST, w);
 
+			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
 			ctrlStatus.SetIcon(STATUS_CC, iCCReady);
 			setToolRect();
 
