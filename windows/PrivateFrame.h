@@ -213,6 +213,7 @@ private:
 	// ConnectionManagerListener
 	virtual void on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept;
 	virtual void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept;
+	virtual void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* cqi, const string& aReason) noexcept;
 
 	// UserConnectionListener
 	virtual void on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessage& message) noexcept;

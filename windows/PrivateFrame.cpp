@@ -207,21 +207,34 @@ void PrivateFrame::on(ConnectionManagerListener::Connected, const ConnectionQueu
 			conn->addListener(this);
 		}
 		callAsync([this] {
-			updateOnlineStatus(true);
+			updateOnlineStatus();
 			addStatusLine(_T("A direct encrypted channel has been established"), LogManager::LOG_INFO);
 		});
 	}
 }
 
 void PrivateFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept{
-	if (cqi->getConnType() == CONNECTION_TYPE_PM && cqi->getUser() == replyTo.user) {
+	if (cqi->getConnType() == CONNECTION_TYPE_PM && cqi->getUser() == replyTo.user && ccReady()) {
 		{
 			Lock l(mutex);
 			conn = nullptr;
 		}
 		callAsync([this] {
-			updateOnlineStatus(true);
 			addStatusLine(_T("The direct encrypted channel has been disconnected"), LogManager::LOG_INFO);
+			updateOnlineStatus();
+		});
+	}
+}
+
+void PrivateFrame::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* cqi, const string& aReason) noexcept{
+	if (cqi->getConnType() == CONNECTION_TYPE_PM && cqi->getUser() == replyTo.user) {
+		{
+			Lock l(mutex);
+			conn = nullptr;
+		}
+		callAsync([this, aReason] {
+			addStatusLine(_T("Failed to establish direct encrypted channel: ") + Text::toT(aReason), LogManager::LOG_INFO);
+			updateOnlineStatus();
 		});
 	}
 }
@@ -263,8 +276,11 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
 		if (hubNames.empty())
 			hubNames = TSTRING(OFFLINE);
+		
+		if(!ccReady())
+			setDisconnected(true);
 
-		setDisconnected(true);
+		showHubSelection(false);
 		updateTabIcon(true);
 	} else {
 		auto oldSel = ctrlHubSel.GetStyle() & WS_VISIBLE ? ctrlHubSel.GetCurSel() : 0;
@@ -286,16 +302,20 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			setDisconnected(false);
 			updateTabIcon(false);
 
-			if (!online) {
+			if (!online && !ccReady()) {
 				addStatusLine(TSTRING(USER_WENT_ONLINE) + _T(" [") + nicks + _T(" - ") + hubNames + _T("]"), LogManager::LOG_INFO);
 			}
-		} else {
+		}
+		else {
 			if (nicks.empty())
 				nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
 
-			setDisconnected(true);
 			updateTabIcon(true);
-			addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"), LogManager::LOG_INFO);
+
+			if (!ccReady()){
+				setDisconnected(true);
+				addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"), LogManager::LOG_INFO);
+			}
 			ctrlClient.setClient(nullptr);
 		}
 
@@ -326,7 +346,8 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		}
 		else if (ccReady()) {
 			fillHubSelection();
-			showHubSelection(false);
+			if(ctrlHubSel.GetStyle() & WS_VISIBLE)
+				showHubSelection(false);
 		} else {
 			showHubSelection(false);
 		}
@@ -494,20 +515,20 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 }
 
 bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
-	if(replyTo.user->isOnline()) {
+	
+	auto msg8 = Text::fromT(msg);
 
-		auto msg8 = Text::fromT(msg);
-
-		{
-			Lock l(mutex);
-			if (conn) {
-				conn->pm(msg8, thirdPerson);
-				return true;
-			}
+	{
+		Lock l(mutex);
+		if (conn) {
+			conn->pm(msg8, thirdPerson);
+			return true;
 		}
-
-		return ClientManager::getInstance()->privateMessage(replyTo, msg8, error_, thirdPerson);
 	}
+
+	if (replyTo.user->isOnline()) 
+		return ClientManager::getInstance()->privateMessage(replyTo, msg8, error_, thirdPerson);
+
 	error_ = STRING(USER_OFFLINE);
 	return false;
 }
@@ -547,33 +568,21 @@ void PrivateFrame::startCC(bool silent) {
 	}
 
 	{
-		tstring err;
+		tstring _err;
 		RLock l(ClientManager::getInstance()->getCS());
-		auto ou = ClientManager::getInstance()->getCCPMuser(replyTo, err);
+		auto ou = ClientManager::getInstance()->getCCPMuser(replyTo, _err);
 		if (!ou) {
-			if (!silent) { addStatusLine(err, LogManager::LOG_ERROR); }
+			if (!silent) { addStatusLine(_err, LogManager::LOG_ERROR); }
 			return;
 		}
-		
-		/*
-		tstring err = ou->getUser()->isNMDC() ? _T("A secure ADC hub is required; this feature is not supported on NMDC hubs") :
-			!ou->getClient().isSecure() ? _T("The connection to the ADC hub used to initiate the channel must be encrypted") :
-			!ou->getIdentity().supports(AdcHub::CCPM_FEATURE) ? _T("The user does not support the CCPM ADC extension") : _T("");
-		if (!err.empty()) {
-			if (!silent) { addStatusLine(_T("Cannot start the direct encrypted channel: ") + err, LogManager::LOG_ERROR); }
-			return;
-		}
-		*/
 	}
 
 	if (!silent) { addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO); }
-	string error = Util::emptyString;
-	bool protocolError = false;
-	string token = ConnectionManager::getInstance()->tokens.getToken(CONNECTION_TYPE_PM);
-	bool connected = ClientManager::getInstance()->connect(replyTo.user, token, true, error, replyTo.hint, protocolError, CONNECTION_TYPE_PM);
-	if (!connected)
+	string _error = Util::emptyString;
+	ConnectionManager::getInstance()->getPMConnection(replyTo.user, replyTo.hint, _error);
+	if (!_error.empty())
 	{
-		addStatusLine(_T("Direct encrypted channel could not be established, ") + Text::toT(error), LogManager::LOG_ERROR);
+		addStatusLine(_T("Direct encrypted channel could not be established: ") + Text::toT(_error), LogManager::LOG_ERROR);
 	}
 
 }
