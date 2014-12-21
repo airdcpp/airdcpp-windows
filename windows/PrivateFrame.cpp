@@ -186,6 +186,8 @@ void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aU
 
 void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept {
 	if(aUser == replyTo.user) {
+		if (wentOffline && ccReady())
+			closeCC();
 		ctrlClient.setClient(nullptr);
 		addSpeakerTask(wentOffline ? false : true);
 	}
