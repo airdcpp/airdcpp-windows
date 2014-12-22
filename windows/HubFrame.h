@@ -166,8 +166,6 @@ public:
 		shutdown = true;
 	}
 
-	bool isIgnoredOrFiltered(const ChatMessage& msg, bool PM);
-
 	static void openWindow(const tstring& server);
 	static void resortUsers();	
 	static void closeDisconnected();

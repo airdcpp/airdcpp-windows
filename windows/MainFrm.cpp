@@ -2213,7 +2213,14 @@ void MainFrame::on(UserConnectionListener::PrivateMessage, UserConnection* uc, c
 	auto user = uc->getHintedUser();
 	callAsync([this, message, user] {
 		auto text = message.format();
-		auto opened = PrivateFrame::isOpen(user) || PrivateFrame::gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), &message.from->getClient());
+		auto hasFrame = PrivateFrame::isOpen(user);
+		bool ignored = false;
+		if (!hasFrame) {
+			if (IgnoreManager::getInstance()->isIgnoredOrFiltered(message, &message.from->getClient(), true))
+				ignored = true;
+		}
+
+		auto opened = !ignored && (hasFrame || PrivateFrame::gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), &message.from->getClient()));
 
 		// remove our listener as the PM window now handles the conn.
 		{

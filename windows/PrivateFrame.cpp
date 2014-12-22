@@ -144,7 +144,7 @@ LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/)
 	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
 	pDispInfo->szText[0] = 0;
 	if (idCtrl == STATUS_CC + POPUP_UID) {
-		pDispInfo->lpszText = ccReady() ? _T("Disconnect direct encrypted channel") : _T("Start direct encrypted channel");
+		pDispInfo->lpszText = ccReady() ? _T("Disconnect the direct encrypted channel") : _T("Start a direct encrypted channel");
 	}
 	return 0;
 }
@@ -223,7 +223,7 @@ void PrivateFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueI
 		}
 		callAsync([this] {
 			addStatusLine(_T("The direct encrypted channel has been disconnected"), LogManager::LOG_INFO);
-			updateOnlineStatus();
+			updateOnlineStatus(true);
 		});
 	}
 }
@@ -236,16 +236,16 @@ void PrivateFrame::on(ConnectionManagerListener::Failed, const ConnectionQueueIt
 		}
 		callAsync([this, aReason] {
 			addStatusLine(_T("Failed to establish direct encrypted channel: ") + Text::toT(aReason), LogManager::LOG_INFO);
-			updateOnlineStatus();
+			updateOnlineStatus(true);
 		});
 	}
 }
 
 void PrivateFrame::on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessage& message) noexcept{
-	auto user = uc->getHintedUser();
-	callAsync([this, message, user] {
+	callAsync([this, message] {
 		auto text = message.format();
 		gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), &message.from->getClient());
+		MainFrame::getMainFrame()->onChatMessage(true);
 	});
 }
 

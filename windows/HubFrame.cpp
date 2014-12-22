@@ -480,40 +480,6 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 	}
 }
 
-bool HubFrame::isIgnoredOrFiltered(const ChatMessage& msg, bool PM){
-	const auto& identity = msg.from->getIdentity();
-
-	auto logIgnored = [&](bool filter) -> void {
-		if (SETTING(LOG_IGNORED)) {
-			string tmp;
-			if (PM) {
-				tmp = filter ? STRING(PM_MESSAGE_FILTERED) : STRING(PM_MESSAGE_IGNORED);
-			} else {
-				string hub = "[" + ((client && !client->getHubName().empty()) ? 
-					(client->getHubName().size() > 50 ? (client->getHubName().substr(0, 50) + "...") : client->getHubName()) : client->getHubUrl()) + "] ";
-				tmp = (filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED)) + hub;
-			}
-			tmp += "<" + identity.getNick() + "> " + msg.text;
-			LogManager::getInstance()->message(tmp, LogManager::LOG_INFO);
-		}
-	};
-
-
-
-	if (msg.from->getUser()->isIgnored() && ((client && client->isOp()) || !identity.isOp() || identity.isBot())) {
-		logIgnored(false);
-		return true;
-	}
-
-	if (IgnoreManager::getInstance()->isChatFiltered(identity.getNick(), msg.text, PM ? ChatFilterItem::PM : ChatFilterItem::MC)) {
-		logIgnored(true);
-		return true;
-	}
-
-	return false;
-}
-
-
 void HubFrame::onPrivateMessage(const ChatMessage& message) {
 	bool myPM = message.replyTo->getUser() == ClientManager::getInstance()->getMe();
 	const UserPtr& user = myPM ? message.to->getUser() : message.replyTo->getUser();
@@ -531,7 +497,7 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 			return;
 		}
 
-		if (isIgnoredOrFiltered(message, true))
+		if (IgnoreManager::getInstance()->isIgnoredOrFiltered(message, client, true))
 			return;
 	}
 
@@ -572,7 +538,7 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 
 void HubFrame::onChatMessage(const ChatMessage& msg) {
 
-	if (isIgnoredOrFiltered(msg, false))
+	if (IgnoreManager::getInstance()->isIgnoredOrFiltered(msg, client, false))
 		return;
 
 	addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
