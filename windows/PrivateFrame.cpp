@@ -39,7 +39,7 @@
 PrivateFrame::FrameMap PrivateFrame::frames;
 
 PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
-created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0), failedCCPMattempts(0),
+created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0), failedCCPMattempts(0), CCPMattempts(0),
 lastCCPMconnect(0),
 	ctrlHubSelContainer(WC_COMBOBOXEX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
@@ -210,6 +210,7 @@ void PrivateFrame::on(ConnectionManagerListener::Connected, const ConnectionQueu
 			conn = uc;
 			conn->addListener(this);
 		}
+		CCPMattempts = 0;
 		lastCCPMconnect = GET_TICK();
 		callAsync([this] {
 			updateOnlineStatus();
@@ -226,6 +227,7 @@ void PrivateFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueI
 		}
 		callAsync([this] {
 			addStatusLine(_T("The direct encrypted channel has been disconnected"), LogManager::LOG_INFO);
+			
 			//If the connection lasted more than 30 seconds count it as success.
 			if (lastCCPMconnect > 0 && (lastCCPMconnect + 30 * 1000) < GET_TICK()) 
 				failedCCPMattempts = 0;
@@ -236,21 +238,6 @@ void PrivateFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueI
 		});
 	}
 }
-
-void PrivateFrame::on(ConnectionManagerListener::Failed, const ConnectionQueueItem* cqi, const string& aReason) noexcept{
-	if (cqi->getConnType() == CONNECTION_TYPE_PM && cqi->getUser() == replyTo.user) {
-		{
-			Lock l(mutex);
-			conn = nullptr;
-		}
-		callAsync([this, aReason] {
-			addStatusLine(_T("Failed to establish direct encrypted channel: ") + Text::toT(aReason), LogManager::LOG_INFO);
-			failedCCPMattempts++;
-			updateOnlineStatus(true);
-		});
-	}
-}
-
 void PrivateFrame::on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessage& message) noexcept{
 	callAsync([this, message] {
 		auto text = message.format();
@@ -359,15 +346,17 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		}
 
 		online = hubsInfoNew.second;
-		checkAllwaysCCPM(); //TODO: timer task so it wont attempt again right away when failing...
+		checkAllwaysCCPM();
 	}
 
 	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
 }
 
+/*This is ugly by counting the attempts, need a better way of managing failing CCPM connections*/
 void PrivateFrame::checkAllwaysCCPM() {
 	//StartCC will look for any hubs that we could use for CCPM, it doesn't need to be the one we use now.
-	if (online && !replyTo.user->isNMDC() && SETTING(ALWAYS_CCPM) && !ccReady() && failedCCPMattempts <= 3) {
+	if (online && !replyTo.user->isNMDC() && !replyTo.user->isSet(User::BOT) 
+		&& SETTING(ALWAYS_CCPM) && !ccReady() && failedCCPMattempts <= 3 && CCPMattempts <= 3) {
 		startCC(false);
 	}
 }
@@ -397,76 +386,63 @@ bool PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 	PrivateFrame* p = nullptr;
 	bool myPM = replyTo == ClientManager::getInstance()->getMe();
 	const UserPtr& user = myPM ? to : replyTo;
+	bool newWindow = false;
 	
 	auto hintedUser = HintedUser(user, c->getHubUrl());
-
 	auto i = frames.find(user);
 	if(i == frames.end()) {
 		if(frames.size() > 200) return false;
 
 		p = new PrivateFrame(hintedUser, c);
 		frames[user] = p;
-		
-		p->addLine(from, aMessage);
-
-		if(AirUtil::getAway()) {
-			if(!(SETTING(NO_AWAYMSG_TO_BOTS) && user->isSet(User::BOT))) 
-			{
-				ParamMap params;
-				from.getParams(params, "user", false);
-
-				string error;
-				p->sendMessage(Text::toT(AirUtil::getAwayMessage(p->getAwayMessage(), params)), error);
-			}
-		}
-
-		if(SETTING(FLASH_WINDOW_ON_NEW_PM)) {
-			WinUtil::FlashWindow();
-		}
-
-		if(SETTING(POPUP_NEW_PM)) {
-			if(SETTING(PM_PREVIEW)) {
-				tstring message = aMessage.substr(0, 250);
-				WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
-			} else {
-				WinUtil::showPopup(WinUtil::getNicks(hintedUser) + _T(" - ") + p->hubNames, TSTRING(PRIVATE_MESSAGE));
-			}
-		}
-
-		if((SETTING(PRIVATE_MESSAGE_BEEP) || SETTING(PRIVATE_MESSAGE_BEEP_OPEN)) && (!SETTING(SOUNDS_DISABLED))) {
-			if (SETTING(BEEPFILE).empty()) {
-				MessageBeep(MB_OK);
-			} else {
-				WinUtil::playSound(Text::toT(SETTING(BEEPFILE)));
-			}
-		}
+		newWindow = true;
 	} else {
-		if(!myPM) {
-			i->second->checkClientChanged(HintedUser(user, c->getHubUrl()), c, false);
-			if(SETTING(FLASH_WINDOW_ON_PM) && !SETTING(FLASH_WINDOW_ON_NEW_PM)) {
-				WinUtil::FlashWindow();
-			}
-
-			if(SETTING(POPUP_PM)) {
-				if(SETTING(PM_PREVIEW)) {
-					tstring message = aMessage.substr(0, 250);
-					WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
-				} else {
-					WinUtil::showPopup(WinUtil::getNicks(hintedUser) + _T(" - ") + i->second->hubNames, TSTRING(PRIVATE_MESSAGE));
-				}
-			}
-
-			if((SETTING(PRIVATE_MESSAGE_BEEP)) && (!SETTING(SOUNDS_DISABLED))) {
-				if (SETTING(BEEPFILE).empty()) {
-					MessageBeep(MB_OK);
-				} else {
-					WinUtil::playSound(Text::toT(SETTING(BEEPFILE)));
-				}
-			}
-		}
-		i->second->addLine(from, aMessage);
+		p = i->second;
 	}
+
+	p->addLine(from, aMessage);
+
+	if (!myPM) {
+		if (!newWindow)
+			p->checkClientChanged(hintedUser, c, false);
+		p->handleNotifications(newWindow, aMessage, from);
+	}
+
 	return true;
+}
+
+void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from) {
+
+	if (newWindow && AirUtil::getAway() && (!(SETTING(NO_AWAYMSG_TO_BOTS) && replyTo.user->isSet(User::BOT))))
+		{
+			ParamMap params;
+			from.getParams(params, "user", false);
+
+			string error;
+			sendMessage(Text::toT(AirUtil::getAwayMessage(getAwayMessage(), params)), error);
+		}
+
+	if ((SETTING(FLASH_WINDOW_ON_PM) && !SETTING(FLASH_WINDOW_ON_NEW_PM)) || 
+		(newWindow && SETTING(FLASH_WINDOW_ON_NEW_PM))) {
+		WinUtil::FlashWindow();
+	}
+
+	if ((newWindow && SETTING(POPUP_NEW_PM)) || SETTING(POPUP_PM)) {
+		if (SETTING(PM_PREVIEW)) {
+			tstring message = aMessage.substr(0, 250);
+			WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
+		} else {
+			WinUtil::showPopup(WinUtil::getNicks(replyTo) + _T(" - ") + hubNames, TSTRING(PRIVATE_MESSAGE));
+		}
+	}
+
+	if ((SETTING(PRIVATE_MESSAGE_BEEP) || (newWindow && SETTING(PRIVATE_MESSAGE_BEEP_OPEN))) && (!SETTING(SOUNDS_DISABLED))) {
+		if (SETTING(BEEPFILE).empty()) {
+			MessageBeep(MB_OK);
+		} else {
+			WinUtil::playSound(Text::toT(SETTING(BEEPFILE)));
+		}
+	}
 }
 
 void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Client* c) {
@@ -594,15 +570,21 @@ void PrivateFrame::startCC(bool silent) {
 	}
 
 	string _error = Util::emptyString;
-	if (ConnectionManager::getInstance()->getPMConnection(replyTo.user, replyTo.hint, _error)){
-		if (!silent) { addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO); }
-	}
+	bool protocolError;
+	auto token = ConnectionManager::getInstance()->tokens.getToken(CONNECTION_TYPE_PM);
+	bool connected = ClientManager::getInstance()->connect(replyTo.user, token, true, _error, replyTo.hint, protocolError, CONNECTION_TYPE_PM);
 
-	if (!_error.empty())
+	if (!silent) { addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO); }
+	
+	if (!connected)
 	{
-		failedCCPMattempts++;
+		if (protocolError)
+			failedCCPMattempts = 3;
+		else
+			failedCCPMattempts++;
 		addStatusLine(_T("Direct encrypted channel could not be established: ") + Text::toT(_error), LogManager::LOG_ERROR);
-	}
+	} else
+		CCPMattempts++;
 
 }
 

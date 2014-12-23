@@ -159,6 +159,7 @@ private:
 	bool nmdcUser;
 	bool created;
 
+	int CCPMattempts;
 	int failedCCPMattempts;
 	uint64_t lastCCPMconnect;
 
@@ -217,7 +218,6 @@ private:
 	// ConnectionManagerListener
 	virtual void on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept;
 	virtual void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept;
-	virtual void on(ConnectionManagerListener::Failed, const ConnectionQueueItem* cqi, const string& aReason) noexcept;
 
 	// UserConnectionListener
 	virtual void on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessage& message) noexcept;
@@ -228,6 +228,7 @@ private:
 	void runSpeakerTask();
 
 	void checkAllwaysCCPM();
+	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
 
 	DelayedEvents<CID> delayEvents;
 };
