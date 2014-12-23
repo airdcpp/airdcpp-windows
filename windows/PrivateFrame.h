@@ -158,6 +158,10 @@ private:
 	
 	bool nmdcUser;
 	bool created;
+
+	int failedCCPMattempts;
+	uint64_t lastCCPMconnect;
+
 	string getLogPath() const;
 	typedef unordered_map<UserPtr, PrivateFrame*, User::Hash> FrameMap;
 	typedef FrameMap::const_iterator FrameIter;
@@ -222,6 +226,8 @@ private:
 
 	void addSpeakerTask(bool addDelay);
 	void runSpeakerTask();
+
+	void checkAllwaysCCPM();
 
 	DelayedEvents<CID> delayEvents;
 };

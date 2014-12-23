@@ -39,7 +39,8 @@
 PrivateFrame::FrameMap PrivateFrame::frames;
 
 PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
-	created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0), 
+created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0), failedCCPMattempts(0),
+lastCCPMconnect(0),
 	ctrlHubSelContainer(WC_COMBOBOXEX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
@@ -82,6 +83,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 	ConnectionManager::getInstance()->addListener(this);
+
 	{
 		Lock l(mutex);
 		conn = MainFrame::getMainFrame()->getPMConn(replyTo.user, this);
@@ -187,7 +189,7 @@ void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aU
 void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept {
 	if(aUser == replyTo.user) {
 		if (wentOffline && ccReady())
-			closeCC(true);
+			callAsync([this] { closeCC(true); });
 		ctrlClient.setClient(nullptr);
 		addSpeakerTask(wentOffline ? false : true);
 	}
@@ -208,6 +210,7 @@ void PrivateFrame::on(ConnectionManagerListener::Connected, const ConnectionQueu
 			conn = uc;
 			conn->addListener(this);
 		}
+		lastCCPMconnect = GET_TICK();
 		callAsync([this] {
 			updateOnlineStatus();
 			addStatusLine(_T("A direct encrypted channel has been established"), LogManager::LOG_INFO);
@@ -223,6 +226,12 @@ void PrivateFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueI
 		}
 		callAsync([this] {
 			addStatusLine(_T("The direct encrypted channel has been disconnected"), LogManager::LOG_INFO);
+			//If the connection lasted more than 30 seconds count it as success.
+			if (lastCCPMconnect > 0 && (lastCCPMconnect + 30 * 1000) < GET_TICK()) 
+				failedCCPMattempts = 0;
+			else
+				failedCCPMattempts++;
+
 			updateOnlineStatus(true);
 		});
 	}
@@ -236,6 +245,7 @@ void PrivateFrame::on(ConnectionManagerListener::Failed, const ConnectionQueueIt
 		}
 		callAsync([this, aReason] {
 			addStatusLine(_T("Failed to establish direct encrypted channel: ") + Text::toT(aReason), LogManager::LOG_INFO);
+			failedCCPMattempts++;
 			updateOnlineStatus(true);
 		});
 	}
@@ -349,10 +359,19 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		}
 
 		online = hubsInfoNew.second;
+		checkAllwaysCCPM(); //TODO: timer task so it wont attempt again right away when failing...
 	}
 
 	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
 }
+
+void PrivateFrame::checkAllwaysCCPM() {
+	//StartCC will look for any hubs that we could use for CCPM, it doesn't need to be the one we use now.
+	if (online && !replyTo.user->isNMDC() && SETTING(ALWAYS_CCPM) && !ccReady() && failedCCPMattempts <= 3) {
+		startCC(false);
+	}
+}
+
 
 void PrivateFrame::fillHubSelection() {
 	auto* cm = ClientManager::getInstance();
@@ -569,15 +588,19 @@ void PrivateFrame::startCC(bool silent) {
 		auto ou = ClientManager::getInstance()->getCCPMuser(replyTo, _err);
 		if (!ou) {
 			if (!silent) { addStatusLine(_err, LogManager::LOG_ERROR); }
+			failedCCPMattempts = 3; // User does not support CCPM, no more auto connect.
 			return;
 		}
 	}
 
-	if (!silent) { addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO); }
 	string _error = Util::emptyString;
-	ConnectionManager::getInstance()->getPMConnection(replyTo.user, replyTo.hint, _error);
+	if (ConnectionManager::getInstance()->getPMConnection(replyTo.user, replyTo.hint, _error)){
+		if (!silent) { addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO); }
+	}
+
 	if (!_error.empty())
 	{
+		failedCCPMattempts++;
 		addStatusLine(_T("Direct encrypted channel could not be established: ") + Text::toT(_error), LogManager::LOG_ERROR);
 	}
 
