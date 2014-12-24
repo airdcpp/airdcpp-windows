@@ -234,6 +234,7 @@ void PrivateFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueI
 			else
 				failedCCPMattempts++;
 
+			lastCCPMconnect = 0;
 			updateOnlineStatus(true);
 		});
 	}
@@ -355,8 +356,8 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 /*This is ugly by counting the attempts, need a better way of managing failing CCPM connections*/
 void PrivateFrame::checkAllwaysCCPM() {
 	//StartCC will look for any hubs that we could use for CCPM, it doesn't need to be the one we use now.
-	if (online && !replyTo.user->isNMDC() && !replyTo.user->isSet(User::BOT) 
-		&& SETTING(ALWAYS_CCPM) && !ccReady() && failedCCPMattempts <= 3 && CCPMattempts <= 3) {
+	if (online && SETTING(ALWAYS_CCPM) && !replyTo.user->isNMDC() && !replyTo.user->isSet(User::BOT)
+		&& !ccReady() && failedCCPMattempts <= 3 && CCPMattempts <= 3) {
 		startCC(false);
 	}
 }
@@ -564,7 +565,7 @@ void PrivateFrame::startCC(bool silent) {
 		auto ou = ClientManager::getInstance()->getCCPMuser(replyTo, _err);
 		if (!ou) {
 			if (!silent) { addStatusLine(_err, LogManager::LOG_ERROR); }
-			failedCCPMattempts = 3; // User does not support CCPM, no more auto connect.
+			failedCCPMattempts = 4; // User does not support CCPM, no more auto connect.
 			return;
 		}
 	}
@@ -579,7 +580,7 @@ void PrivateFrame::startCC(bool silent) {
 	if (!connected)
 	{
 		if (protocolError)
-			failedCCPMattempts = 3;
+			failedCCPMattempts = 4;
 		else
 			failedCCPMattempts++;
 		addStatusLine(_T("Direct encrypted channel could not be established: ") + Text::toT(_error), LogManager::LOG_ERROR);
