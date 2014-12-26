@@ -503,7 +503,6 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 
 	//we can handle the message
 	bool ignore = false, window = false;
-	auto text = message.format();
 
 	if(identity.isHub()) {
 		if(SETTING(IGNORE_HUB_PMS) && !hasFrame) {
@@ -522,17 +521,14 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 	}
 
 	if(ignore) {
-		addStatus(TSTRING(IGNORED_MESSAGE) + _T(" ") + Text::toT(text), LogManager::LOG_INFO, WinUtil::m_ChatTextSystem, false);
+		addStatus(TSTRING(IGNORED_MESSAGE) + _T(" ") + Text::toT(message.format()), LogManager::LOG_INFO, WinUtil::m_ChatTextSystem, false);
 	} else {
 		if (window) {
-			PrivateFrame::gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), client);
+			PrivateFrame::gotMessage(message, client);
 		} else {
-			addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + nick + _T(": ") + Text::toT(text), WinUtil::m_ChatTextPrivate);
+			addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + nick + _T(": ") + Text::toT(message.format()), WinUtil::m_ChatTextPrivate);
 		}
 
-		if (!identity.isHub() && !identity.isBot()) {
-			MainFrame::getMainFrame()->onChatMessage(true);
-		}
 	}
 }
 

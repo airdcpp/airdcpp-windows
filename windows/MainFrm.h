@@ -35,8 +35,7 @@
 #include "../client/DirectoryListingManagerListener.h"
 #include "../client/UpdateManagerListener.h"
 #include "../client/ShareScannerManager.h"
-#include "../client/UserConnectionListener.h"
-#include "../client/ConnectionManagerListener.h"
+#include "../client/MessageManager.h"
 
 #include "PopupManager.h"
 #include "Dispatchers.h"
@@ -54,9 +53,9 @@
 
 class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFrame>,
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame>,
-		private TimerManagerListener, private QueueManagerListener, private UserConnectionListener, private ConnectionManagerListener, public Async<MainFrame>,
+		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
 		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener, private ClientManagerListener,
-		private AutoSearchManagerListener
+		private AutoSearchManagerListener, private MessageManagerListener
 {
 public:
 	MainFrame();
@@ -346,7 +345,7 @@ public:
 	void showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& aTitle = Util::emptyStringT);
 	void onChatMessage(bool pm);
 
-	UserConnection* getPMConn(const UserPtr& user, UserConnectionListener* listener);
+	
 private:
 	void updateStatus(TStringList* aItems);
 	void addStatus(const string& aMsg, time_t aTime, uint8_t severity);
@@ -451,9 +450,6 @@ private:
 	void updateTooltipRect();
 	void checkAwayIdle();
 
-	unordered_map<UserPtr, UserConnection*, User::Hash> ccpms;
-	CriticalSection ccpmMutex;
-
 	enum {
 		STATUS_LASTLINES,
 		STATUS_AWAY,
@@ -479,12 +475,8 @@ private:
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
 
-	// ConnectionManagerListener
-	void on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept;
-	void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept;
-
-	// UserConnectionListener
-	virtual void on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessage& message) noexcept;
+	// MessageManagerListener
+	virtual void on(MessageManagerListener::PrivateMessage, const ChatMessage& aMessage ) noexcept;
 
 	// QueueManagerListener
 	void on(QueueManagerListener::Finished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;

@@ -311,6 +311,9 @@
     <ClCompile Include="client\SearchQuery.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\MessageManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -806,6 +809,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\ConnectionType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\MessageManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\MessageManagerListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

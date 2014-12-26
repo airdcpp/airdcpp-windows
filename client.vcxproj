@@ -231,6 +231,7 @@
   <ItemGroup>
     <ClCompile Include="client\AdcCommand.cpp" />
     <ClCompile Include="client\AdcHub.cpp" />
+    <ClCompile Include="client\MessageManager.cpp" />
     <ClCompile Include="client\SearchQuery.cpp" />
     <ClCompile Include="client\ADLSearch.cpp" />
     <ClCompile Include="client\AirUtil.cpp" />
@@ -339,6 +340,8 @@
     <ClInclude Include="client\AdcCommand.h" />
     <ClInclude Include="client\AdcHub.h" />
     <ClInclude Include="client\ConnectionType.h" />
+    <ClInclude Include="client\MessageManager.h" />
+    <ClInclude Include="client\MessageManagerListener.h" />
     <ClInclude Include="client\PrioritySearchQueue.h" />
     <ClInclude Include="client\SearchQuery.h" />
     <ClInclude Include="client\ADLSearch.h" />

@@ -33,6 +33,7 @@
 #include "../client/StringTokenizer.h"
 #include "../client/ResourceManager.h"
 #include "../client/Adchub.h"
+#include "../client/MessageManager.h"
 
 #include <boost/range/algorithm/for_each.hpp>
 
@@ -40,7 +41,7 @@ PrivateFrame::FrameMap PrivateFrame::frames;
 
 PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
 created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0), failedCCPMattempts(0), CCPMattempts(0),
-lastCCPMconnect(0),
+lastCCPMconnect(0), allowAutoCCPM(true),
 	ctrlHubSelContainer(WC_COMBOBOXEX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
@@ -83,11 +84,6 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 	ConnectionManager::getInstance()->addListener(this);
-
-	{
-		Lock l(mutex);
-		conn = MainFrame::getMainFrame()->getPMConn(replyTo.user, this);
-	}
 
 	readLog();
 
@@ -202,15 +198,8 @@ void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUse
 }
 void PrivateFrame::on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept{
 	if (cqi->getConnType() == CONNECTION_TYPE_PM && cqi->getUser() == replyTo.user) {
-		{
-			Lock l(mutex);
-			if (conn) {
-				conn->removeListener(this);
-			}
-			conn = uc;
-			conn->addListener(this);
-		}
 		CCPMattempts = 0;
+		allowAutoCCPM = true;
 		lastCCPMconnect = GET_TICK();
 		callAsync([this] {
 			updateOnlineStatus();
@@ -221,10 +210,6 @@ void PrivateFrame::on(ConnectionManagerListener::Connected, const ConnectionQueu
 
 void PrivateFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept{
 	if (cqi->getConnType() == CONNECTION_TYPE_PM && cqi->getUser() == replyTo.user && ccReady()) {
-		{
-			Lock l(mutex);
-			conn = nullptr;
-		}
 		callAsync([this] {
 			addStatusLine(_T("The direct encrypted channel has been disconnected"), LogManager::LOG_INFO);
 			
@@ -239,14 +224,6 @@ void PrivateFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueI
 		});
 	}
 }
-void PrivateFrame::on(UserConnectionListener::PrivateMessage, UserConnection* uc, const ChatMessage& message) noexcept{
-	callAsync([this, message] {
-		auto text = message.format();
-		gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), &message.from->getClient());
-		MainFrame::getMainFrame()->onChatMessage(true);
-	});
-}
-
 
 void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 	tstring status = _T(" *** ") + aLine + _T(" ***");
@@ -357,7 +334,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 void PrivateFrame::checkAllwaysCCPM() {
 	//StartCC will look for any hubs that we could use for CCPM, it doesn't need to be the one we use now.
 	if (online && SETTING(ALWAYS_CCPM) && !replyTo.user->isNMDC() && !replyTo.user->isSet(User::BOT)
-		&& !ccReady() && failedCCPMattempts <= 3 && CCPMattempts <= 3) {
+		&& allowAutoCCPM && !ccReady()) {
 		startCC(false);
 	}
 }
@@ -383,16 +360,18 @@ void PrivateFrame::showHubSelection(bool show) {
 	UpdateLayout();
 }
 
-bool PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const UserPtr& replyTo, const tstring& aMessage, Client* c) {
+bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
 	PrivateFrame* p = nullptr;
-	bool myPM = replyTo == ClientManager::getInstance()->getMe();
-	const UserPtr& user = myPM ? to : replyTo;
+	bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();
+	const UserPtr& user = myPM ? aMessage.to->getUser() : aMessage.replyTo->getUser();
 	bool newWindow = false;
 	
 	auto hintedUser = HintedUser(user, c->getHubUrl());
 	auto i = frames.find(user);
 	if(i == frames.end()) {
 		if(frames.size() > 200) return false;
+		if (!myPM && MessageManager::getInstance()->isIgnoredOrFiltered(aMessage, c, true))
+			return false;
 
 		p = new PrivateFrame(hintedUser, c);
 		frames[user] = p;
@@ -400,19 +379,22 @@ bool PrivateFrame::gotMessage(const Identity& from, const UserPtr& to, const Use
 	} else {
 		p = i->second;
 	}
+	auto text = Text::toT(aMessage.format());
 
-	p->addLine(from, aMessage);
+	p->addLine(aMessage.from->getIdentity(), text);
 
 	if (!myPM) {
 		if (!newWindow)
 			p->checkClientChanged(hintedUser, c, false);
-		p->handleNotifications(newWindow, aMessage, from);
+		p->handleNotifications(newWindow, text, aMessage.from->getIdentity());
 	}
 
 	return true;
 }
 
 void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from) {
+	if(!replyTo.user->isSet(User::BOT))
+		MainFrame::getMainFrame()->onChatMessage(true);
 
 	if (newWindow && AirUtil::getAway() && (!(SETTING(NO_AWAYMSG_TO_BOTS) && replyTo.user->isSet(User::BOT))))
 		{
@@ -509,18 +491,8 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
 
 	if (replyTo.user->isOnline()) {
-		auto msg8 = Text::fromT(msg);
-
-		{
-			Lock l(mutex);
-			if (conn) {
-				conn->pm(msg8, thirdPerson);
-				return true;
-			}
-		}
-		return ClientManager::getInstance()->privateMessage(replyTo, msg8, error_, thirdPerson);
+		return MessageManager::getInstance()->sendPrivateMessage(replyTo, msg, error_, thirdPerson);
 	}
-
 	error_ = STRING(USER_OFFLINE);
 	return false;
 }
@@ -530,13 +502,7 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		LogManager::getInstance()->removePmCache(replyTo.user);
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
-		{
-			Lock l(mutex);
-			if (conn) {
-				conn->removeListener(this);
-				conn->disconnect(true);
-			}
-		}
+		MessageManager::getInstance()->DisconnectCCPM(replyTo);
 
 		ConnectionManager::getInstance()->removeListener(this);
 
@@ -558,35 +524,18 @@ void PrivateFrame::startCC(bool silent) {
 		if (!silent) { addStatusLine(_T("A direct encrypted channel is already available"), LogManager::LOG_INFO); }
 		return;
 	}
-
-	{
-		tstring _err;
-		RLock l(ClientManager::getInstance()->getCS());
-		auto ou = ClientManager::getInstance()->getCCPMuser(replyTo, _err);
-		if (!ou) {
-			if (!silent) { addStatusLine(_err, LogManager::LOG_ERROR); }
-			failedCCPMattempts = 4; // User does not support CCPM, no more auto connect.
-			return;
-		}
+	string _err;
+	if (MessageManager::getInstance()->StartCCPM(replyTo, _err, allowAutoCCPM)) {
+		if (!silent)
+			addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO);
+	} else {
+		if (failedCCPMattempts++ > 2)
+			allowAutoCCPM = false;
+		if (!silent) 
+			addStatusLine(Text::toT(_err), LogManager::LOG_ERROR);
 	}
-
-	string _error = Util::emptyString;
-	bool protocolError;
-	auto token = ConnectionManager::getInstance()->tokens.getToken(CONNECTION_TYPE_PM);
-	bool connected = ClientManager::getInstance()->connect(replyTo.user, token, true, _error, replyTo.hint, protocolError, CONNECTION_TYPE_PM);
-
-	if (!silent) { addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO); }
-	
-	if (!connected)
-	{
-		if (protocolError)
-			failedCCPMattempts = 4;
-		else
-			failedCCPMattempts++;
-		addStatusLine(_T("Direct encrypted channel could not be established: ") + Text::toT(_error), LogManager::LOG_ERROR);
-	} else
-		CCPMattempts++;
-
+	if (CCPMattempts++ > 2)
+		allowAutoCCPM = false;
 }
 
 void PrivateFrame::closeCC(bool silent) {
@@ -600,8 +549,7 @@ void PrivateFrame::closeCC(bool silent) {
 }
 
 bool PrivateFrame::ccReady() const {
-	Lock l(mutex);
-	return conn;
+	return MessageManager::getInstance()->hasCCPMConn(replyTo);
 }
 
 
