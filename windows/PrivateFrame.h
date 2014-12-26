@@ -25,9 +25,9 @@
 
 #include "../client/User.h"
 #include "../client/ClientManagerListener.h"
-#include "../client/ConnectionManagerListener.h"
 #include "../client/DelayedEvents.h"
 #include "../client/UserInfoBase.h"
+#include "../client/MessageManager.h"
 
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
@@ -37,7 +37,7 @@
 #define STATUS_MSG_MAP 19
 
 class PrivateFrame : public UserInfoBaseHandler<PrivateFrame>, public UserInfoBase,
-	private ClientManagerListener, private ConnectionManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
+	private ClientManagerListener, private MessageManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
 	static bool gotMessage(const ChatMessage& aMessage , Client* c);
@@ -158,10 +158,8 @@ private:
 	bool nmdcUser;
 	bool created;
 
-	int CCPMattempts;
-	int failedCCPMattempts;
-	uint64_t lastCCPMconnect;
 	bool allowAutoCCPM;
+	int ccpmAttempts;
 
 	string getLogPath() const;
 	typedef unordered_map<UserPtr, PrivateFrame*, User::Hash> FrameMap;
@@ -211,16 +209,13 @@ private:
 	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
 	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
 
-	// ConnectionManagerListener
-	virtual void on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept;
-	virtual void on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept;
-
+	virtual void on(MessageManagerListener::StatusMessage, const UserPtr& aUser, const tstring& aMessage, uint8_t sev) noexcept;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void addSpeakerTask(bool addDelay);
 	void runSpeakerTask();
 
-	void checkAllwaysCCPM();
+	void checkAlwaysCCPM();
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
 
 	DelayedEvents<CID> delayEvents;

@@ -33,15 +33,13 @@
 #include "../client/StringTokenizer.h"
 #include "../client/ResourceManager.h"
 #include "../client/Adchub.h"
-#include "../client/MessageManager.h"
 
 #include <boost/range/algorithm/for_each.hpp>
 
 PrivateFrame::FrameMap PrivateFrame::frames;
 
 PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
-created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0), failedCCPMattempts(0), CCPMattempts(0),
-lastCCPMconnect(0), allowAutoCCPM(true),
+created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0), allowAutoCCPM(true), ccpmAttempts(0),
 	ctrlHubSelContainer(WC_COMBOBOXEX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
@@ -83,7 +81,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
-	ConnectionManager::getInstance()->addListener(this);
+	MessageManager::getInstance()->addListener(this);
 
 	readLog();
 
@@ -196,31 +194,12 @@ void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUse
 		callAsync([this] { updateTabIcon(false); });
 	}
 }
-void PrivateFrame::on(ConnectionManagerListener::Connected, const ConnectionQueueItem* cqi, UserConnection* uc) noexcept{
-	if (cqi->getConnType() == CONNECTION_TYPE_PM && cqi->getUser() == replyTo.user) {
-		CCPMattempts = 0;
-		allowAutoCCPM = true;
-		lastCCPMconnect = GET_TICK();
-		callAsync([this] {
+
+void PrivateFrame::on(MessageManagerListener::StatusMessage, const UserPtr& aUser, const tstring& aMessage, uint8_t sev) noexcept{
+	if (aUser == replyTo.user) {
+		callAsync([this, aMessage, sev] {
 			updateOnlineStatus();
-			addStatusLine(_T("A direct encrypted channel has been established"), LogManager::LOG_INFO);
-		});
-	}
-}
-
-void PrivateFrame::on(ConnectionManagerListener::Removed, const ConnectionQueueItem* cqi) noexcept{
-	if (cqi->getConnType() == CONNECTION_TYPE_PM && cqi->getUser() == replyTo.user && ccReady()) {
-		callAsync([this] {
-			addStatusLine(_T("The direct encrypted channel has been disconnected"), LogManager::LOG_INFO);
-			
-			//If the connection lasted more than 30 seconds count it as success.
-			if (lastCCPMconnect > 0 && (lastCCPMconnect + 30 * 1000) < GET_TICK()) 
-				failedCCPMattempts = 0;
-			else
-				failedCCPMattempts++;
-
-			lastCCPMconnect = 0;
-			updateOnlineStatus(true);
+			addStatusLine(aMessage, sev);
 		});
 	}
 }
@@ -324,18 +303,24 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		}
 
 		online = hubsInfoNew.second;
-		checkAllwaysCCPM();
+		checkAlwaysCCPM();
 	}
 
 	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
 }
 
-/*This is ugly by counting the attempts, need a better way of managing failing CCPM connections*/
-void PrivateFrame::checkAllwaysCCPM() {
-	//StartCC will look for any hubs that we could use for CCPM, it doesn't need to be the one we use now.
-	if (online && SETTING(ALWAYS_CCPM) && !replyTo.user->isNMDC() && !replyTo.user->isSet(User::BOT)
-		&& allowAutoCCPM && !ccReady()) {
+/*This is ugly by counting the attempts here, need a better way of managing failing CCPM connections*/
+void PrivateFrame::checkAlwaysCCPM() {
+	if (!online || !SETTING(ALWAYS_CCPM) || replyTo.user->isNMDC() || replyTo.user->isSet(User::BOT))
+		return;
+
+	bool hasCC = ccReady();
+	if (allowAutoCCPM && !hasCC) {
 		startCC(false);
+		allowAutoCCPM = allowAutoCCPM && ccpmAttempts++ < 3;
+	}else if (hasCC){
+		ccpmAttempts = 0;
+		allowAutoCCPM = true;
 	}
 }
 
@@ -502,9 +487,8 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		LogManager::getInstance()->removePmCache(replyTo.user);
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
+		MessageManager::getInstance()->removeListener(this);
 		MessageManager::getInstance()->DisconnectCCPM(replyTo);
-
-		ConnectionManager::getInstance()->removeListener(this);
 
 		closed = true;
 		PostMessage(WM_CLOSE);
@@ -529,13 +513,10 @@ void PrivateFrame::startCC(bool silent) {
 		if (!silent)
 			addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO);
 	} else {
-		if (failedCCPMattempts++ > 2)
-			allowAutoCCPM = false;
 		if (!silent) 
 			addStatusLine(Text::toT(_err), LogManager::LOG_ERROR);
 	}
-	if (CCPMattempts++ > 2)
-		allowAutoCCPM = false;
+
 }
 
 void PrivateFrame::closeCC(bool silent) {
