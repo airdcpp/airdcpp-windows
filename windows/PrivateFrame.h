@@ -158,9 +158,6 @@ private:
 	bool nmdcUser;
 	bool created;
 
-	bool allowAutoCCPM;
-	int ccpmAttempts;
-
 	string getLogPath() const;
 	typedef unordered_map<UserPtr, PrivateFrame*, User::Hash> FrameMap;
 	typedef FrameMap::const_iterator FrameIter;
@@ -193,6 +190,12 @@ private:
 	CIcon userOffline;
 	CIcon iCCReady;
 	CIcon iStartCC;
+	CIcon iNoCCPM;
+
+	bool userSupportsCCPM;
+	tstring lastCCPMError;
+	bool allowAutoCCPM;
+	int ccpmAttempts;
 
 	void startCC(bool silent = false);
 	void closeCC(bool silent = false);
@@ -217,6 +220,7 @@ private:
 
 	void checkAlwaysCCPM();
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
+	void updateStatusBar();
 
 	DelayedEvents<CID> delayEvents;
 };

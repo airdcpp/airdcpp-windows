@@ -74,8 +74,12 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	
 	bool userBot = replyTo.user && replyTo.user->isSet(User::BOT);
 	userOffline = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
+
+	userSupportsCCPM = ClientManager::getInstance()->getSupportsCCPM(replyTo.user, lastCCPMError);
+
 	iCCReady = ResourceLoader::loadIcon(IDI_SECURE, 16);
 	iStartCC = ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_SECURE, 16));
+	iNoCCPM = ResourceLoader::mergeIcons(iStartCC, ResourceLoader::loadIcon(IDI_USER_NOCONNECT, 16), 16); //Temp, Todo: find own icon for this!
 
 	created = true;
 
@@ -123,6 +127,9 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 }
 
 LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
+	if (replyTo.user->isNMDC())
+		return 0;
+	
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
 	CRect rect;
 	ctrlStatus.GetRect(STATUS_CC, rect);
@@ -137,10 +144,15 @@ LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 
 LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
+	if (replyTo.user->isNMDC())
+		return 0;
+	
 	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
 	pDispInfo->szText[0] = 0;
 	if (idCtrl == STATUS_CC + POPUP_UID) {
-		pDispInfo->lpszText = ccReady() ? _T("Disconnect the direct encrypted channel") : _T("Start a direct encrypted channel");
+	
+		pDispInfo->lpszText = !userSupportsCCPM ? const_cast<TCHAR*>(lastCCPMError.c_str()):
+			ccReady() ? (LPWSTR)CTSTRING(DISCONNECT_CCPM) : (LPWSTR)CTSTRING(START_CCPM);
 	}
 	return 0;
 }
@@ -176,14 +188,17 @@ LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool) noexcept {
 	if(aUser.getUser() == replyTo.user) {
+		userSupportsCCPM = aUser.supportsCCPM(lastCCPMError);
 		addSpeakerTask(true); //delay this to possible show more nicks & hubs in the connect message :]
 	}
 }
 
 void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept {
 	if(aUser == replyTo.user) {
-		if (wentOffline && ccReady())
+		if (wentOffline && ccReady()) {
 			callAsync([this] { closeCC(true); });
+		}
+		userSupportsCCPM = ClientManager::getInstance()->getSupportsCCPM(aUser, lastCCPMError);
 		ctrlClient.setClient(nullptr);
 		addSpeakerTask(wentOffline ? false : true);
 	}
@@ -302,6 +317,8 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			showHubSelection(false);
 		}
 
+		updateStatusBar();
+
 		online = hubsInfoNew.second;
 		checkAlwaysCCPM();
 	}
@@ -311,7 +328,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 
 /*This is ugly by counting the attempts here, need a better way of managing failing CCPM connections*/
 void PrivateFrame::checkAlwaysCCPM() {
-	if (!online || !SETTING(ALWAYS_CCPM) || replyTo.user->isNMDC() || replyTo.user->isSet(User::BOT))
+	if (!online || !SETTING(ALWAYS_CCPM) || !userSupportsCCPM || replyTo.user->isNMDC() || replyTo.user->isSet(User::BOT))
 		return;
 
 	bool hasCC = ccReady();
@@ -342,7 +359,8 @@ void PrivateFrame::showHubSelection(bool show) {
 	ctrlHubSel.ShowWindow(show);
 	ctrlHubSel.EnableWindow(show);
 
-	UpdateLayout();
+	//updateStatusBar();
+	//UpdateLayout();
 }
 
 bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
@@ -511,7 +529,7 @@ void PrivateFrame::startCC(bool silent) {
 	string _err;
 	if (MessageManager::getInstance()->StartCCPM(replyTo, _err, allowAutoCCPM)) {
 		if (!silent)
-			addStatusLine(_T("Establishing a direct encrypted channel..."), LogManager::LOG_INFO);
+			addStatusLine(TSTRING(CCPM_ESTABLISHING), LogManager::LOG_INFO);
 	} else {
 		if (!silent) 
 			addStatusLine(Text::toT(_err), LogManager::LOG_ERROR);
@@ -521,7 +539,7 @@ void PrivateFrame::startCC(bool silent) {
 
 void PrivateFrame::closeCC(bool silent) {
 	if (ccReady()) {
-		if (!silent) { addStatusLine(_T("Disconnecting the direct encrypted channel..."),LogManager::LOG_INFO); }
+		if (!silent) { addStatusLine(TSTRING(CCPM_DISCONNECTING),LogManager::LOG_INFO); }
 		ConnectionManager::getInstance()->disconnect(replyTo.user, CONNECTION_TYPE_PM);
 	}
 	else {
@@ -624,6 +642,21 @@ void PrivateFrame::runUserCommand(UserCommand& uc) {
 	ClientManager::getInstance()->userCommand(replyTo, uc, ucParams, true);
 }
 
+void PrivateFrame::updateStatusBar() {
+	tstring tmp = Util::emptyStringT;
+	if(ctrlHubSel.GetStyle() & WS_VISIBLE) {
+		tmp = _T(" ") + TSTRING(SEND_PM_VIA);
+		ctrlStatus.SetIcon(STATUS_CC, userSupportsCCPM ? iStartCC : iNoCCPM);
+	} else if(ccReady()){
+		tmp = _T(" ") + TSTRING(SEND_PM_VIA) +_T(": ") + TSTRING(DIRECT_ENCRYPTED_CHANNEL);
+		ctrlStatus.SetIcon(STATUS_CC, iCCReady);
+	} else {
+		ctrlStatus.SetIcon(STATUS_CC, NULL);
+	}
+
+	ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
+}
+
 void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 	RECT rect;
 	GetClientRect(&rect);
@@ -641,45 +674,26 @@ void PrivateFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		CRect sr;
 		ctrlStatus.GetClientRect(sr);
 
-		if (ctrlHubSel.GetStyle() & WS_VISIBLE) {
-			int w[STATUS_LAST];
-			tstring tmp = _T(" ") + TSTRING(SEND_PM_VIA);
+		int w[STATUS_LAST];
+		int desclen = WinUtil::getTextWidth(TSTRING(SEND_PM_VIA), ctrlStatus.m_hWnd) +2;
+		int desclen2 = WinUtil::getTextWidth(TSTRING(DIRECT_ENCRYPTED_CHANNEL), ctrlStatus.m_hWnd) +2;
 
-			int desclen = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-			w[STATUS_TEXT] = sr.right - 190 - desclen - 30;
-			w[STATUS_CC] = w[STATUS_TEXT] +22;
-			w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + 190;
-			ctrlStatus.SetParts(STATUS_LAST, w);
+		if (desclen2 < 190) //Make sure the HubSel Combo will fit too.
+			desclen2 = 190;
 
+		w[STATUS_TEXT] = sr.right - desclen - desclen2 - 30;
+		w[STATUS_CC] = w[STATUS_TEXT] + 22;
+		w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + desclen2 +8;
+		ctrlStatus.SetParts(STATUS_LAST, w);
+		setToolRect();
+
+		if (ctrlHubSel.IsWindow()){
 			sr.top = 1;
-			sr.left = w[STATUS_HUBSEL-1] + desclen + 10;
+			sr.left = w[STATUS_HUBSEL - 1] + desclen + 10;
 			sr.right = sr.left + 170;
 			ctrlHubSel.MoveWindow(sr);
-
-			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
-			ctrlStatus.SetIcon(STATUS_CC, iStartCC);
-			setToolRect();
 		}
-		else if (ccReady()){
-			int w[STATUS_LAST];
-			tstring tmp = _T(" ") + TSTRING(SEND_PM_VIA);
-			tmp += _T(": Direct encrypted channel");
-
-			int desclen = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-			w[STATUS_TEXT] = sr.right - desclen - 30;
-			w[STATUS_CC] = w[STATUS_TEXT] + 22;
-			w[STATUS_HUBSEL] = w[STATUS_CC] + desclen + 2;
-			ctrlStatus.SetParts(STATUS_LAST, w);
-
-			ctrlStatus.SetText(STATUS_HUBSEL, tmp.c_str());
-			ctrlStatus.SetIcon(STATUS_CC, iCCReady);
-			setToolRect();
-
-		} else {
-			int w[1];
-			w[0] = sr.right - 16;
-			ctrlStatus.SetParts(1, w);
-		}
+		updateStatusBar();
 	}
 	
 	int h = WinUtil::fontHeight + 4;
