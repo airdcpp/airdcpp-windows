@@ -224,7 +224,7 @@ void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUse
 void PrivateFrame::on(MessageManagerListener::StatusMessage, const UserPtr& aUser, const string& aMessage, uint8_t sev) noexcept{
 	if (aUser == replyTo.user) {
 		callAsync([this, aMessage, sev] {
-			updateOnlineStatus();
+			updateOnlineStatus(true);
 			addStatusLine(Text::toT(aMessage), sev);
 		});
 	}
@@ -328,11 +328,10 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			showHubSelection(false);
 		}
 
-		updateStatusBar();
-
 		online = hubsInfoNew.second;
 		checkAlwaysCCPM();
 	}
+	updateStatusBar();
 
 	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
 }
