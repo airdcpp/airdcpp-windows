@@ -75,7 +75,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	bool userBot = replyTo.user && replyTo.user->isSet(User::BOT);
 	userOffline = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
 
-	string _err;
+	string _err = Util::emptyString;;
 	userSupportsCCPM = ClientManager::getInstance()->getSupportsCCPM(replyTo.user, _err);
 	lastCCPMError = Text::toT(_err);
 
@@ -190,9 +190,6 @@ LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool) noexcept {
 	if(aUser.getUser() == replyTo.user) {
-		string _err;
-		userSupportsCCPM = aUser.supportsCCPM(_err);
-		lastCCPMError = Text::toT(_err);
 		addSpeakerTask(true); //delay this to possible show more nicks & hubs in the connect message :]
 	}
 }
@@ -202,7 +199,7 @@ void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aU
 		if (wentOffline && ccReady()) {
 			callAsync([this] { closeCC(true); });
 		}
-		string _err;
+		string _err = Util::emptyString;;
 		userSupportsCCPM = ClientManager::getInstance()->getSupportsCCPM(aUser, _err);
 		lastCCPMError = Text::toT(_err);
 		ctrlClient.setClient(nullptr);
@@ -212,6 +209,14 @@ void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aU
 
 void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
 	if (aUser.getUser() == replyTo.user) {
+
+		//Check if the user connected in a new hub that supports CCPM
+		if (!userSupportsCCPM){
+			string _err = Util::emptyString;
+			userSupportsCCPM = aUser.supportsCCPM(_err);
+			lastCCPMError = Text::toT(_err);
+		}
+
 		callAsync([this] { updateTabIcon(false); });
 	}
 }
