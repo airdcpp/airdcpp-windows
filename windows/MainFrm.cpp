@@ -70,6 +70,7 @@
 #include "../client/SettingHolder.h"
 
 #include <VersionHelpers.h>
+#include <dbt.h>
 
 MainFrame* MainFrame::anyMF = NULL;
 bool MainFrame::bShutdown = false;
@@ -110,6 +111,38 @@ LRESULT MainFrame::onOpenDir(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, B
 		break;
 	default: break;
 	}
+	return 0;
+}
+
+// http://msdn.microsoft.com/en-us/library/windows/desktop/aa363215%28v=vs.85%29.aspx
+char FirstDriveFromMask(ULONG unitmask)
+{
+	char i;
+
+	for (i = 0; i < 26; ++i)
+	{
+		if (unitmask & 0x1)
+			break;
+		unitmask = unitmask >> 1;
+	}
+
+	return(i + 'A');
+}
+
+
+LRESULT MainFrame::onDeviceChanged(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& /*bHandled*/) {
+	if (wParam == DBT_DEVICEREMOVECOMPLETE) {
+		// Notify share monitoring about removed volumes as it 
+		// would happily continue monitoring it otherwise (but no changes are detected after
+		// the volume has been readded) ...
+		PDEV_BROADCAST_HDR lpdb = (PDEV_BROADCAST_HDR)lParam;
+		if (lpdb->dbch_devicetype == DBT_DEVTYP_VOLUME) {
+			PDEV_BROADCAST_VOLUME lpdbv = (PDEV_BROADCAST_VOLUME)lpdb;
+			auto drive = string(1, FirstDriveFromMask(lpdbv->dbcv_unitmask));
+			ShareManager::getInstance()->deviceRemoved(drive + ":\\");
+		}
+	}
+
 	return 0;
 }
 

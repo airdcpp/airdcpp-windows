@@ -1,8 +1,14 @@
 x.xx
 
+Added:
+
+- Detect when volume has been removed and fail respective monitored paths
+- Attempt to restore share monitoring for failed paths once per minute
+
 Fixed:
 
 - Respect the size limits when searching in file lists
+- Fix the dupe check during share scan
 
 
 2.90
