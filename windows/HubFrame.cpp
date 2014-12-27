@@ -516,7 +516,7 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 		} else if(SETTING(POPUP_BOT_PMS) || hasFrame) {
 			window = true;
 		}
-	} else if(SETTING(POPUP_PMS) || hasFrame || myPM) {
+	} else if(hasFrame || myPM) {
 		window = true;
 	}
 

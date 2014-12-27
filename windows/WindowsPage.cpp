@@ -45,7 +45,6 @@ WindowsPage::ListItem WindowsPage::listItems[] = {
 };
 
 WindowsPage::ListItem WindowsPage::optionItems[] = {
-	{ SettingsManager::POPUP_PMS, ResourceManager::SETTINGS_POPUP_PMS },
 	{ SettingsManager::POPUP_HUB_PMS, ResourceManager::SETTINGS_POPUP_HUB_PMS },
 	{ SettingsManager::POPUP_BOT_PMS, ResourceManager::SETTINGS_POPUP_BOT_PMS },
 	{ SettingsManager::POPUNDER_FILELIST, ResourceManager::SETTINGS_POPUNDER_FULL_LIST },
