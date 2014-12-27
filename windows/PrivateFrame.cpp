@@ -75,7 +75,9 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	bool userBot = replyTo.user && replyTo.user->isSet(User::BOT);
 	userOffline = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
 
-	userSupportsCCPM = ClientManager::getInstance()->getSupportsCCPM(replyTo.user, lastCCPMError);
+	string _err;
+	userSupportsCCPM = ClientManager::getInstance()->getSupportsCCPM(replyTo.user, _err);
+	lastCCPMError = Text::toT(_err);
 
 	iCCReady = ResourceLoader::loadIcon(IDI_SECURE, 16);
 	iStartCC = ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_SECURE, 16));
@@ -188,7 +190,9 @@ LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 
 void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool) noexcept {
 	if(aUser.getUser() == replyTo.user) {
-		userSupportsCCPM = aUser.supportsCCPM(lastCCPMError);
+		string _err;
+		userSupportsCCPM = aUser.supportsCCPM(_err);
+		lastCCPMError = Text::toT(_err);
 		addSpeakerTask(true); //delay this to possible show more nicks & hubs in the connect message :]
 	}
 }
@@ -198,7 +202,9 @@ void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aU
 		if (wentOffline && ccReady()) {
 			callAsync([this] { closeCC(true); });
 		}
-		userSupportsCCPM = ClientManager::getInstance()->getSupportsCCPM(aUser, lastCCPMError);
+		string _err;
+		userSupportsCCPM = ClientManager::getInstance()->getSupportsCCPM(aUser, _err);
+		lastCCPMError = Text::toT(_err);
 		ctrlClient.setClient(nullptr);
 		addSpeakerTask(wentOffline ? false : true);
 	}
@@ -210,11 +216,11 @@ void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUse
 	}
 }
 
-void PrivateFrame::on(MessageManagerListener::StatusMessage, const UserPtr& aUser, const tstring& aMessage, uint8_t sev) noexcept{
+void PrivateFrame::on(MessageManagerListener::StatusMessage, const UserPtr& aUser, const string& aMessage, uint8_t sev) noexcept{
 	if (aUser == replyTo.user) {
 		callAsync([this, aMessage, sev] {
 			updateOnlineStatus();
-			addStatusLine(aMessage, sev);
+			addStatusLine(Text::toT(aMessage), sev);
 		});
 	}
 }

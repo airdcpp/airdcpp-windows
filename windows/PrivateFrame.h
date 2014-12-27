@@ -212,7 +212,7 @@ private:
 	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
 	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
 
-	virtual void on(MessageManagerListener::StatusMessage, const UserPtr& aUser, const tstring& aMessage, uint8_t sev) noexcept;
+	virtual void on(MessageManagerListener::StatusMessage, const UserPtr& aUser, const string& aMessage, uint8_t sev) noexcept;
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void addSpeakerTask(bool addDelay);
