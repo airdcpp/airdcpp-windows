@@ -129,7 +129,7 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 }
 
 LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
-	if (replyTo.user->isNMDC())
+	if (!replyTo.user->isOnline() || replyTo.user->isNMDC())
 		return 0;
 	
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
@@ -319,8 +319,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			} else if (!ctrlClient.getClient()) {
 				changeClient();
 			}
-		}
-		else if (ccReady()) {
+		} else if (ccReady()) {
 			fillHubSelection();
 			if(ctrlHubSel.GetStyle() & WS_VISIBLE)
 				showHubSelection(false);
@@ -540,9 +539,8 @@ void PrivateFrame::startCC(bool silent) {
 	if (MessageManager::getInstance()->StartCCPM(replyTo, _err, allowAutoCCPM)) {
 		if (!silent)
 			addStatusLine(TSTRING(CCPM_ESTABLISHING), LogManager::LOG_INFO);
-	} else {
-		if (!silent) 
-			addStatusLine(Text::toT(_err), LogManager::LOG_ERROR);
+	}else if (!silent && !_err.empty()) {
+		addStatusLine(Text::toT(_err), LogManager::LOG_ERROR);
 	}
 
 }

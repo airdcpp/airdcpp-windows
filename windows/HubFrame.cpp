@@ -484,51 +484,12 @@ void HubFrame::onPrivateMessage(const ChatMessage& message) {
 	bool myPM = message.replyTo->getUser() == ClientManager::getInstance()->getMe();
 	const UserPtr& user = myPM ? message.to->getUser() : message.replyTo->getUser();
 	const auto& identity = message.replyTo->getIdentity();
-	tstring nick = Text::toT(identity.getNick());
 	bool hasFrame = PrivateFrame::isOpen(user);
 
-	//check ignores
-	if (!hasFrame) {
-		// don't be that restrictive with the fav hub option
-		if (client->getFavNoPM() && (client->isOp() || !message.replyTo->getIdentity().isOp()) && !message.replyTo->getIdentity().isBot() && !message.replyTo->getUser()->isFavorite()) {
-			string tmp;
-			if (!myPM)
-				client->privateMessage(message.replyTo, "Private messages sent via this hub are ignored", tmp);
-			return;
-		}
-
-		if (IgnoreManager::getInstance()->isIgnoredOrFiltered(message, client, true))
-			return;
-	}
-
-	//we can handle the message
-	bool ignore = false, window = false;
-
-	if(identity.isHub()) {
-		if(SETTING(IGNORE_HUB_PMS) && !hasFrame) {
-			ignore = true;
-		} else if(SETTING(POPUP_HUB_PMS) || hasFrame) {
-			window = true;
-		}
-	} else if(identity.isBot()) {
-		if(SETTING(IGNORE_BOT_PMS) && !hasFrame) {
-			ignore = true;
-		} else if(SETTING(POPUP_BOT_PMS) || hasFrame) {
-			window = true;
-		}
+	if (!hasFrame && (identity.isBot() && !SETTING(POPUP_BOT_PMS)) || (identity.isHub() && !SETTING(POPUP_HUB_PMS))) {
+		addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + Text::toT(identity.getNick()) +_T(": ") + Text::toT(message.format()), WinUtil::m_ChatTextPrivate);
 	} else {
-		window = true;
-	}
-
-	if(ignore) {
-		addStatus(TSTRING(IGNORED_MESSAGE) + _T(" ") + Text::toT(message.format()), LogManager::LOG_INFO, WinUtil::m_ChatTextSystem, false);
-	} else {
-		if (window) {
-			PrivateFrame::gotMessage(message, client);
-		} else {
-			addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + nick + _T(": ") + Text::toT(message.format()), WinUtil::m_ChatTextPrivate);
-		}
-
+		PrivateFrame::gotMessage(message, client);
 	}
 }
 
