@@ -1203,7 +1203,7 @@ const QueueFrame::QueueItemInfoPtr QueueFrame::findItemByPath(const string& aPat
 QueueFrame::QueueItemInfoPtr QueueFrame::findQueueItem(const QueueItemPtr& aQI) {
 	auto parent = findParent(aQI->getBundle() ? aQI->getBundle()->getToken() : aQI->getTarget());
 	if (parent && aQI->getBundle() && !aQI->getBundle()->isFileBundle()) {
-		return parent->findChild(aQI->getTarget());
+		return parent->childrenCreated ? parent->findChild(aQI->getTarget()) : nullptr;
 	}
 	return parent;
 }
@@ -1255,6 +1255,9 @@ void QueueFrame::onQueueItemRemoved(const QueueItemPtr& aQI) {
 }
 
 void QueueFrame::onQueueItemUpdated(const QueueItemPtr& aQI) {
+	if (aQI->getBundle() && !aQI->getBundle()->isFileBundle() && !curDirectory) //Nothing to update, not worth looking for the item.
+		return;
+	
 	auto item = findQueueItem(aQI);
 	if (!item)
 		return;
@@ -1309,9 +1312,9 @@ void QueueFrame::executeGuiTasks() {
 			break;
 
 		static_cast<AsyncTask*>(t.second)->f();
+		statusDirty = statusDirty || t.first < TASK_BUNDLE_UPDATE;
 		tasks.pop_front();
 	}
-	statusDirty = true;
 	ctrlQueue.list.SetRedraw(TRUE);
 }
 
@@ -1475,19 +1478,19 @@ void QueueFrame::on(QueueManagerListener::BundleMoved, const BundlePtr& aBundle)
 	addGuiTask(TASK_REMOVE, [=] { onBundleRemoved(aBundle, path); });
 }
 void QueueFrame::on(QueueManagerListener::BundleMerged, const BundlePtr& aBundle, const string&) noexcept { 
-	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_BUNDLE_STATUS, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) noexcept { 
-	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept { 
-	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept { 
-	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_BUNDLE_STATUS, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleSources, const BundlePtr& aBundle) noexcept { 
-	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 
 void QueueFrame::on(QueueManagerListener::Removed, const QueueItemPtr& aQI, bool /*finished*/) noexcept{
@@ -1497,20 +1500,20 @@ void QueueFrame::on(QueueManagerListener::Added, QueueItemPtr& aQI) noexcept{
 	addGuiTask(TASK_ADD, [=] { onQueueItemAdded(aQI); });
 }
 void QueueFrame::on(QueueManagerListener::SourcesUpdated, const QueueItemPtr& aQI) noexcept {
-	addGuiTask(TASK_UPDATE, [=] { onQueueItemUpdated(aQI); });
+	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
 void QueueFrame::on(QueueManagerListener::StatusUpdated, const QueueItemPtr& aQI) noexcept{
-	addGuiTask(TASK_UPDATE, [=] { onQueueItemUpdated(aQI); });
+	addGuiTask(TASK_QI_UPDATE, [=] { onQueueItemUpdated(aQI); });
 }
 
 void QueueFrame::on(DownloadManagerListener::BundleTick, const BundleList& tickBundles, uint64_t /*aTick*/) noexcept{
 	for (auto& b : tickBundles) {
-		addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(b); });
+		addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(b); });
 	}
 }
 
 void QueueFrame::on(DownloadManagerListener::BundleWaiting, const BundlePtr aBundle) noexcept { 
-	addGuiTask(TASK_UPDATE, [=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_BUNDLE_STATUS, [=] { onBundleUpdated(aBundle); });
 }
 
 /*QueueItemInfo functions*/

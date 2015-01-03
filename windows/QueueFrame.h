@@ -148,7 +148,9 @@ private:
 	enum {
 		TASK_ADD,
 		TASK_REMOVE,
-		TASK_UPDATE
+		TASK_BUNDLE_STATUS,
+		TASK_BUNDLE_UPDATE,
+		TASK_QI_UPDATE
 	};
 
 	enum {
