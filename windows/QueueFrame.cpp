@@ -180,9 +180,9 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 		int w[5];
 		ctrlStatus.GetClientRect(sr);
 
-		w[5] = sr.right - 16;
+		w[4] = sr.right - 16;
 #define setw(x) w[x] = max(w[x+1] - statusSizes[x], 0)
-		setw(4); setw(3); setw(2); setw(1);
+		setw(3); setw(2); setw(1);
 
 		w[0] = 16;
 
@@ -1330,26 +1330,26 @@ void QueueFrame::updateStatus() {
 		int pausedItems = 0;
 		int autosearchAdded = 0;
 
-		auto qm = QueueManager::getInstance();
-		{
-			RLock l(qm->getCS());
-			for (auto& b : qm->getBundles() | map_values){
+		for (auto ii : parents | map_values) {
+			if (ii->bundle) {
+				BundlePtr b = ii->bundle;
 				b->isFinished() ? finishedBundles++ : queuedBundles++;
 				if (b->isFailed()) failedBundles++;
 				if (b->isPausedPrio()) pausedItems++;
 				if (b->getAddedByAutoSearch()) autosearchAdded++;
+			} else {
+				queuedItems++;
+				if (ii->qi && ii->qi->isSet(QueueItem::FLAG_USER_LIST))
+					filelistItems++;
 			}
-
-			for (const auto& q : qm->getFileQueue() | map_values) {
-				totalItems++;
-				if (!q->getBundle()){
-					queuedItems++;
-					if (q->isSet(QueueItem::FLAG_USER_LIST))
-						filelistItems++;
-				}
-			}
-
 		}
+
+		auto qm = QueueManager::getInstance();
+		{
+			RLock l(qm->getCS());
+			totalItems = qm->getFileQueue().size();
+		}
+
 		ctrlTree.SetRedraw(FALSE);
 		HTREEITEM ht = bundleParent;
 		while (ht != NULL) {
@@ -1476,7 +1476,7 @@ void QueueFrame::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) 
 	addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept { 
-	addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_BUNDLE_STATUS, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept { 
 	addGuiTask(TASK_BUNDLE_STATUS, [=] { onBundleUpdated(aBundle); });
