@@ -668,24 +668,24 @@ void ChatFrameBase::onEnter() {
 }
 
 static TCHAR *msgs[] = { _T("\r\n-- I'm a happy AirDC++ user. You could be happy too.\r\n"),
-_T("\r\n-- Is it Superman? No, its AirDC++\r\n"),
-_T("\r\n-- My files are burning in my computer...Download are way too fast\r\n"),
-_T("\r\n-- STOP!! My client is too fast, slow down with the writings\r\n"),
-_T("\r\n-- We are always behind the corner waiting to grab your nuts..i mean files\r\n"),
-_T("\r\n-- Knock, knock....We are here to take your files again, we needed backup files too\r\n"),
+_T("\r\n-- Is it Superman? No, it's AirDC++!\r\n"),
+_T("\r\n-- My files are burning in my computer...download are way too fast!\r\n"),
+_T("\r\n-- STOP!! My client is too fast, slow down with the writings!\r\n"),
+_T("\r\n-- We are always behind the corner waiting to grab your nuts...I mean files!\r\n"),
+_T("\r\n-- Knock, knock...we are here to take your files again, we needed backup files too!\r\n"),
 _T("\r\n-- Why bother searching when AirDC++ can take care of everything?\r\n"),
-_T("\r\n-- The only way to stop me to getting your files is closing the DC++\r\n"),
+_T("\r\n-- The only way to stop me from getting your files is to close DC++!\r\n"),
 _T("\r\n-- We love your files soo much, so we try to get them over and over again...\r\n"),
-_T("\r\n-- Let us thru the waiting line, we download faster than the lightning\r\n"),
+_T("\r\n-- Let us thru the waiting line, we download faster than the lightning!\r\n"),
 _T("\r\n-- Sometimes we download so fast that we accidently get the whole person on the other side...\r\n"),
-_T("\r\n-- Holy crap, my download speed is sooooo fast that it made a hole in the harddrive\r\n"),
-_T("\r\n-- Once you got access to it, dont let it go...\r\n"),
-_T("\r\n-- Do you feel the wind? Its the download that goes too fast..\r\n"),
-_T("\r\n-- No matter what, no matter where, it's always home if AirDC++ is there\r\n"),
-_T("\r\n-- Knock, knock...We are leaving back the trousers we accidently downloaded...\r\n"),
-_T("\r\n-- Are you blind? you already downloaded that movie 4 times already\r\n"),
-_T("\r\n-- My client has been in jail twice, has  yours?\r\n"),
-_T("\r\n-- Keep your downloads close, but keep your uploads even closer\r\n")
+_T("\r\n-- Holy crap, my download speed is sooooo fast that it made a hole in the hard drive!\r\n"),
+_T("\r\n-- Once you got access to it, don't let it go...\r\n"),
+_T("\r\n-- Do you feel the wind? It's the download that goes too fast...\r\n"),
+_T("\r\n-- No matter what, no matter where, it's always home if AirDC++ is there!\r\n"),
+_T("\r\n-- Knock, knock...we are leaving back the trousers we accidently downloaded...\r\n"),
+_T("\r\n-- Are you blind? You have downloaded that movie 4 times already!\r\n"),
+_T("\r\n-- My client has been in jail twice, has yours?\r\n"),
+_T("\r\n-- Keep your downloads close, but keep your uploads even closer!\r\n")
 
 
 };

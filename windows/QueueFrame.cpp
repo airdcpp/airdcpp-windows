@@ -125,7 +125,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	memzero(statusSizes, sizeof(statusSizes));
 	statusSizes[0] = 16;
-	ctrlStatus.SetParts(6, statusSizes);
+	ctrlStatus.SetParts(5, statusSizes);
 	updateStatus();
 
 	::SetTimer(m_hWnd, 0, 500, 0);
@@ -177,16 +177,16 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 	if (ctrlStatus.IsWindow()) {
 		CRect sr;
-		int w[6];
+		int w[5];
 		ctrlStatus.GetClientRect(sr);
 
-		w[5] = sr.right - 16;
+		w[4] = sr.right - 16;
 #define setw(x) w[x] = max(w[x+1] - statusSizes[x], 0)
-		setw(4); setw(3); setw(2); setw(1);
+		setw(3); setw(2); setw(1);
 
 		w[0] = 16;
 
-		ctrlStatus.SetParts(6, w);
+		ctrlStatus.SetParts(5, w);
 
 		ctrlStatus.GetRect(1, sr);
 	}
@@ -1330,26 +1330,26 @@ void QueueFrame::updateStatus() {
 		int pausedItems = 0;
 		int autosearchAdded = 0;
 
-		auto qm = QueueManager::getInstance();
-		{
-			RLock l(qm->getCS());
-			for (auto& b : qm->getBundles() | map_values){
+		for (auto ii : parents | map_values) {
+			if (ii->bundle) {
+				BundlePtr b = ii->bundle;
 				b->isFinished() ? finishedBundles++ : queuedBundles++;
 				if (b->isFailed()) failedBundles++;
 				if (b->isPausedPrio()) pausedItems++;
 				if (b->getAddedByAutoSearch()) autosearchAdded++;
+			} else {
+				queuedItems++;
+				if (ii->qi && ii->qi->isSet(QueueItem::FLAG_USER_LIST))
+					filelistItems++;
 			}
-
-			for (const auto& q : qm->getFileQueue() | map_values) {
-				totalItems++;
-				if (!q->getBundle()){
-					queuedItems++;
-					if (q->isSet(QueueItem::FLAG_USER_LIST))
-						filelistItems++;
-				}
-			}
-
 		}
+
+		auto qm = QueueManager::getInstance();
+		{
+			RLock l(qm->getCS());
+			totalItems = qm->getFileQueue().size();
+		}
+
 		ctrlTree.SetRedraw(FALSE);
 		HTREEITEM ht = bundleParent;
 		while (ht != NULL) {
@@ -1423,14 +1423,6 @@ void QueueFrame::updateStatus() {
 			}
 			ctrlStatus.SetText(4, (tmp).c_str());
 
-			tmp = TSTRING(QUEUE_SIZE) + _T(": ") + Util::formatBytesW(qm->getTotalQueueSize());
-			w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-			if (statusSizes[4] < w) {
-				statusSizes[4] = w;
-				u = true;
-			}
-			ctrlStatus.SetText(5, (tmp).c_str());
-
 			if (u)
 				UpdateLayout(TRUE);
 		}
@@ -1484,7 +1476,7 @@ void QueueFrame::on(QueueManagerListener::BundleSize, const BundlePtr& aBundle) 
 	addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundlePriority, const BundlePtr& aBundle) noexcept { 
-	addGuiTask(TASK_BUNDLE_UPDATE, [=] { onBundleUpdated(aBundle); });
+	addGuiTask(TASK_BUNDLE_STATUS, [=] { onBundleUpdated(aBundle); });
 }
 void QueueFrame::on(QueueManagerListener::BundleStatusChanged, const BundlePtr& aBundle) noexcept { 
 	addGuiTask(TASK_BUNDLE_STATUS, [=] { onBundleUpdated(aBundle); });
