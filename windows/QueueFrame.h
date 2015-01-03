@@ -293,7 +293,7 @@ private:
 	void FillTree();
 
 	CStatusBarCtrl ctrlStatus;
-	int statusSizes[6];
+	int statusSizes[5];
 	CContainedWindow ctrlStatusContainer;
 	
 	BrowserBar<QueueFrame> browserBar;

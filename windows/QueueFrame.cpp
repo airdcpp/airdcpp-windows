@@ -125,7 +125,7 @@ LRESULT QueueFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 
 	memzero(statusSizes, sizeof(statusSizes));
 	statusSizes[0] = 16;
-	ctrlStatus.SetParts(6, statusSizes);
+	ctrlStatus.SetParts(5, statusSizes);
 	updateStatus();
 
 	::SetTimer(m_hWnd, 0, 500, 0);
@@ -177,7 +177,7 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 	if (ctrlStatus.IsWindow()) {
 		CRect sr;
-		int w[6];
+		int w[5];
 		ctrlStatus.GetClientRect(sr);
 
 		w[5] = sr.right - 16;
@@ -186,7 +186,7 @@ void QueueFrame::UpdateLayout(BOOL bResizeBars /* = TRUE */) {
 
 		w[0] = 16;
 
-		ctrlStatus.SetParts(6, w);
+		ctrlStatus.SetParts(5, w);
 
 		ctrlStatus.GetRect(1, sr);
 	}
@@ -1422,14 +1422,6 @@ void QueueFrame::updateStatus() {
 				u = true;
 			}
 			ctrlStatus.SetText(4, (tmp).c_str());
-
-			tmp = TSTRING(QUEUE_SIZE) + _T(": ") + Util::formatBytesW(qm->getTotalQueueSize());
-			w = WinUtil::getTextWidth(tmp, ctrlStatus.m_hWnd);
-			if (statusSizes[4] < w) {
-				statusSizes[4] = w;
-				u = true;
-			}
-			ctrlStatus.SetText(5, (tmp).c_str());
 
 			if (u)
 				UpdateLayout(TRUE);
