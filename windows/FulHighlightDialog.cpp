@@ -86,6 +86,7 @@ LRESULT FulHighlightDialog::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARA
 	ctrlContext.AddString(CTSTRING(CONTEXT_CHAT));
 	ctrlContext.AddString(CTSTRING(CONTEXT_NICKLIST));
 	ctrlContext.AddString(CTSTRING(CONTEXT_FILELIST));
+	ctrlContext.AddString(CTSTRING(CONTEXT_SEARCH));
 
 	CenterWindow(WinUtil::mainWnd);
 	SetWindowText(CTSTRING(HIGHLIGHT_DIALOG_TITLE));
@@ -172,26 +173,48 @@ void FulHighlightDialog::fix() {
 		::EnableWindow(GetDlgItem(IDC_MATCH_COL_TEXT),					1);
 		::EnableWindow(GetDlgItem(IDC_MATCH_COLUMN),					1);
 
-	} else if(ctrlContext.GetCurSel() == HighlightManager::CONTEXT_FILELIST) {
+	}
+	else if (ctrlContext.GetCurSel() == HighlightManager::CONTEXT_FILELIST) {
 		BOOL use = 0;
-		::EnableWindow(GetDlgItem(IDC_UNDERLINE),					use);
-		::EnableWindow(GetDlgItem(IDC_ITALIC),					use);
-		::EnableWindow(GetDlgItem(IDC_BOLD),					use);
-		::EnableWindow(GetDlgItem(IDC_WHOLEWORD),					use);
-		::EnableWindow(GetDlgItem(IDC_WHOLELINE),					use);
-		::EnableWindow(GetDlgItem(IDC_POPUP),					use);
-		::EnableWindow(GetDlgItem(IDC_HAS_BG_COLOR),					1);
-		::EnableWindow(GetDlgItem(IDC_MATCHTYPE),					use);
-		::EnableWindow(GetDlgItem(IDC_SOUND),					use);
-		::EnableWindow(GetDlgItem(IDC_STRIKEOUT),					use);
-		::EnableWindow(GetDlgItem(IDC_MATCH_COL_TEXT),					use);
-		::EnableWindow(GetDlgItem(IDC_MATCH_COLUMN),					use);
-		::EnableWindow(GetDlgItem(IDC_TABCOLOR),					use);
+		::EnableWindow(GetDlgItem(IDC_UNDERLINE), use);
+		::EnableWindow(GetDlgItem(IDC_ITALIC), use);
+		::EnableWindow(GetDlgItem(IDC_BOLD), use);
+		::EnableWindow(GetDlgItem(IDC_WHOLEWORD), use);
+		::EnableWindow(GetDlgItem(IDC_WHOLELINE), use);
+		::EnableWindow(GetDlgItem(IDC_POPUP), use);
+		::EnableWindow(GetDlgItem(IDC_HAS_BG_COLOR), 1);
+		::EnableWindow(GetDlgItem(IDC_MATCHTYPE), use);
+		::EnableWindow(GetDlgItem(IDC_SOUND), use);
+		::EnableWindow(GetDlgItem(IDC_STRIKEOUT), use);
+		::EnableWindow(GetDlgItem(IDC_MATCH_COL_TEXT), use);
+		::EnableWindow(GetDlgItem(IDC_MATCH_COLUMN), use);
+		::EnableWindow(GetDlgItem(IDC_TABCOLOR), use);
 		BOOL t;
 		onClickedBox(0, IDC_HAS_BG_COLOR, NULL, t);
 		onClickedBox(0, IDC_HAS_FG_COLOR, NULL, t);
 
 		ctrlText.SetWindowText(CTSTRING(SETTINGS_CONTEXT_FILELIST));
+	}
+	else if (ctrlContext.GetCurSel() == HighlightManager::CONTEXT_SEARCH) {
+		BOOL use = 0;
+		::EnableWindow(GetDlgItem(IDC_UNDERLINE), use);
+		::EnableWindow(GetDlgItem(IDC_ITALIC), use);
+		::EnableWindow(GetDlgItem(IDC_BOLD), use);
+		::EnableWindow(GetDlgItem(IDC_WHOLEWORD), use);
+		::EnableWindow(GetDlgItem(IDC_WHOLELINE), use);
+		::EnableWindow(GetDlgItem(IDC_POPUP), use);
+		::EnableWindow(GetDlgItem(IDC_HAS_BG_COLOR), 1);
+		::EnableWindow(GetDlgItem(IDC_MATCHTYPE), use);
+		::EnableWindow(GetDlgItem(IDC_SOUND), use);
+		::EnableWindow(GetDlgItem(IDC_STRIKEOUT), use);
+		::EnableWindow(GetDlgItem(IDC_MATCH_COL_TEXT), use);
+		::EnableWindow(GetDlgItem(IDC_MATCH_COLUMN), use);
+		::EnableWindow(GetDlgItem(IDC_TABCOLOR), use);
+		BOOL t;
+		onClickedBox(0, IDC_HAS_BG_COLOR, NULL, t);
+		onClickedBox(0, IDC_HAS_FG_COLOR, NULL, t);
+
+		ctrlText.SetWindowText(CTSTRING(SETTINGS_CONTEXT_SEARCH));
 	} else {
 		BOOL use = 1;
 		::EnableWindow(GetDlgItem(IDC_UNDERLINE),					use);
