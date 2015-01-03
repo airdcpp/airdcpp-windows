@@ -92,15 +92,19 @@ protected:
 	ColorList highlights;
 
 	CMenu presets;
-	string getContextString(int i) {
-		if(i == 0)  
-			return "Chat";  
-		else if(i == 1) 
-			return "NickList";
-		else if (i == 2)
-			return "FileList";
-
-		return "";
+	string getContextString(uint8_t i) {
+		switch (i) {
+		case(HighlightManager::CONTEXT_CHAT) :
+				return STRING(CONTEXT_CHAT);
+		case(HighlightManager::CONTEXT_NICKLIST) :
+				return STRING(CONTEXT_NICKLIST);
+		case(HighlightManager::CONTEXT_FILELIST) :
+				return STRING(CONTEXT_FILELIST);
+		case(HighlightManager::CONTEXT_SEARCH) :
+				return STRING(CONTEXT_SEARCH);
+		default:
+			return Util::emptyString;
+		}
 	}
 
 	TCHAR* title;

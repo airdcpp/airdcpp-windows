@@ -34,6 +34,8 @@
 #include "../client/DirectoryListingManager.h"
 #include "../client/GeoManager.h"
 #include "../client/ScopedFunctor.h"
+#include "../client/HighlightManager.h"
+#include "../client/WildCards.h"
 
 #include <boost/range/numeric.hpp>
 
@@ -1749,6 +1751,35 @@ LRESULT SearchFrame::onCustomDraw(int /*idCtrl*/, LPNMHDR pnmh, BOOL& /*bHandled
 			cd->clrText = c.first;
 			cd->clrTextBk = c.second;
 		}
+		//has dupe color = no matching
+		if (SETTING(USE_HIGHLIGHT) && !si->isDupe()) {
+
+			ColorList *cList = HighlightManager::getInstance()->getList();
+			for (ColorIter i = cList->begin(); i != cList->end(); ++i) {
+				ColorSettings* cs = &(*i);
+				if (cs->getContext() == HighlightManager::CONTEXT_SEARCH) {
+					if (cs->usingRegexp()) {
+						try {
+							//have to have $Re:
+							if (boost::regex_search(si->sr->getFileName().begin(), si->sr->getFileName().end(), cs->regexp)) {
+								if (cs->getHasFgColor()) { cd->clrText = cs->getFgColor(); }
+								if (cs->getHasBgColor()) { cd->clrTextBk = cs->getBgColor(); }
+								break;
+							}
+						}
+						catch (...) {}
+					}
+					else {
+						if (Wildcard::patternMatch(Text::utf8ToAcp(si->sr->getFileName()), Text::utf8ToAcp(Text::fromT(cs->getMatch())), '|')){
+							if (cs->getHasFgColor()) { cd->clrText = cs->getFgColor(); }
+							if (cs->getHasBgColor()) { cd->clrTextBk = cs->getBgColor(); }
+							break;
+						}
+					}
+				}
+			}
+		}
+
 		return CDRF_NEWFONT | CDRF_NOTIFYSUBITEMDRAW;
 	}
 	case CDDS_SUBITEM | CDDS_ITEMPREPAINT: {
