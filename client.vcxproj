@@ -232,6 +232,7 @@
     <ClCompile Include="client\AdcCommand.cpp" />
     <ClCompile Include="client\AdcHub.cpp" />
     <ClCompile Include="client\MessageManager.cpp" />
+    <ClCompile Include="client\PrivateChat.cpp" />
     <ClCompile Include="client\SearchQuery.cpp" />
     <ClCompile Include="client\ADLSearch.cpp" />
     <ClCompile Include="client\AirUtil.cpp" />
@@ -343,6 +344,8 @@
     <ClInclude Include="client\MessageManager.h" />
     <ClInclude Include="client\MessageManagerListener.h" />
     <ClInclude Include="client\PrioritySearchQueue.h" />
+    <ClInclude Include="client\PrivateChat.h" />
+    <ClInclude Include="client\PrivateChatListener.h" />
     <ClInclude Include="client\SearchQuery.h" />
     <ClInclude Include="client\ADLSearch.h" />
     <ClInclude Include="client\AirUtil.h" />

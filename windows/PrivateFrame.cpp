@@ -36,16 +36,52 @@
 
 #include <boost/range/algorithm/for_each.hpp>
 
-PrivateFrame::FrameMap PrivateFrame::frames;
+void PrivateFrame::closeAll(){
+	MessageManager::getInstance()->closeAll(false);
+}
 
-PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) : replyTo(replyTo_),
-created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0), allowAutoCCPM(true), ccpmAttempts(0),
+void PrivateFrame::closeAllOffline() {
+	MessageManager::getInstance()->closeAll(true);
+}
+
+bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
+	bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();
+	const UserPtr& user = myPM ? aMessage.to->getUser() : aMessage.replyTo->getUser();
+
+	auto hintedUser = HintedUser(user, c->getHubUrl());
+	PrivateFrame* p = new PrivateFrame(hintedUser, c);
+	auto text = Text::toT(aMessage.format());
+	p->addLine(aMessage.from->getIdentity(), text);
+
+	if (!myPM) {
+		p->handleNotifications(true, text, aMessage.from->getIdentity());
+	}
+	return true;
+}
+
+void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Client* c) {
+	if (!MessageManager::getInstance()->hasWindow(replyTo.user)) {
+		PrivateFrame* p = new PrivateFrame(replyTo, c);
+		p->CreateEx(WinUtil::mdiClient);
+		p->sendFrameMessage(msg);
+	}
+	else {
+		auto chat = MessageManager::getInstance()->getChat(replyTo);
+		chat->Activate(replyTo, Text::fromT(msg), c);
+	}
+
+}
+
+
+PrivateFrame::PrivateFrame(const HintedUser& replyTo_, Client* c) :
+created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosition(0),
 	ctrlHubSelContainer(WC_COMBOBOXEX, this, HUB_SEL_MAP),
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG_MAP),
 	UserInfoBaseHandler(false, true)
 {
+	chat = MessageManager::getInstance()->getChat(replyTo_);
 	ctrlClient.setClient(c);
 	ctrlClient.setPmUser(replyTo_.user);
 }
@@ -72,12 +108,8 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	ctrlMessageContainer.SubclassWindow(ctrlMessage.m_hWnd);
 	ctrlStatusContainer.SubclassWindow(ctrlStatus.m_hWnd);
 	
-	bool userBot = replyTo.user && replyTo.user->isSet(User::BOT);
+	bool userBot = getUser() && getUser()->isSet(User::BOT);
 	userOffline = userBot ? ResourceLoader::loadIcon(IDI_BOT_OFF) : ResourceLoader::loadIcon(IDR_PRIVATE_OFF);
-
-	string _err = Util::emptyString;;
-	userSupportsCCPM = ClientManager::getInstance()->getSupportsCCPM(replyTo.user, _err);
-	lastCCPMError = Text::toT(_err);
 
 	iCCReady = ResourceLoader::loadIcon(IDI_SECURE, 16);
 	iStartCC = ResourceLoader::convertGrayscaleIcon(ResourceLoader::loadIcon(IDI_SECURE, 16));
@@ -87,13 +119,14 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
-	MessageManager::getInstance()->addListener(this);
+	chat->addListener(this);
 
 	readLog();
 
 	WinUtil::SetIcon(m_hWnd, userBot ? IDI_BOT : IDR_PRIVATE);
 
 	//add the updateonlinestatus in the wnd message queue so the frame and tab can finish creating first.
+	chat->checkAlwaysCCPM();
 	runSpeakerTask();
 
 	bHandled = FALSE;
@@ -129,7 +162,7 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 }
 
 LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& bHandled) {
-	if (!replyTo.user->isOnline() || replyTo.user->isNMDC())
+	if (!getUser()->isOnline() || getUser()->isNMDC())
 		return 0;
 	
 	POINT pt = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
@@ -146,14 +179,14 @@ LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 }
 
 LRESULT PrivateFrame::onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/) {
-	if (replyTo.user->isNMDC())
+	if (getUser()->isNMDC())
 		return 0;
 	
 	LPNMTTDISPINFO pDispInfo = (LPNMTTDISPINFO)pnmh;
 	pDispInfo->szText[0] = 0;
 	if (idCtrl == STATUS_CC + POPUP_UID) {
-	
-		pDispInfo->lpszText = !userSupportsCCPM ? const_cast<TCHAR*>(lastCCPMError.c_str()):
+		lastCCPMError = Text::toT(chat->getLastCCPMError());
+		pDispInfo->lpszText = !chat->getSupportsCCPM() ? const_cast<TCHAR*>(lastCCPMError.c_str()):
 			ccReady() ? (LPWSTR)CTSTRING(DISCONNECT_CCPM) : (LPWSTR)CTSTRING(START_CCPM);
 	}
 	return 0;
@@ -169,7 +202,7 @@ LRESULT PrivateFrame::OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 
 void PrivateFrame::addSpeakerTask(bool addDelay) {
 	if (addDelay)
-		delayEvents.addEvent(replyTo.user->getCID(), [this] { runSpeakerTask(); }, 1000);
+		delayEvents.addEvent(getUser()->getCID(), [this] { runSpeakerTask(); }, 1000);
 	else
 		runSpeakerTask();
 }
@@ -188,48 +221,6 @@ LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hW
 	return 0;
 }
 
-void PrivateFrame::on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool) noexcept {
-	if(aUser.getUser() == replyTo.user) {
-		addSpeakerTask(true); //delay this to possible show more nicks & hubs in the connect message :]
-	}
-}
-
-void PrivateFrame::on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept {
-	if(aUser == replyTo.user) {
-		if (wentOffline && ccReady()) {
-			callAsync([this] { closeCC(true); });
-		}
-		string _err = Util::emptyString;;
-		userSupportsCCPM = ClientManager::getInstance()->getSupportsCCPM(aUser, _err);
-		lastCCPMError = Text::toT(_err);
-		ctrlClient.setClient(nullptr);
-		addSpeakerTask(wentOffline ? false : true);
-	}
-}
-
-void PrivateFrame::on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept {
-	if (aUser.getUser() == replyTo.user) {
-
-		//Check if the user connected in a new hub that supports CCPM
-		if (!userSupportsCCPM){
-			string _err = Util::emptyString;
-			userSupportsCCPM = aUser.supportsCCPM(_err);
-			lastCCPMError = Text::toT(_err);
-		}
-
-		callAsync([this] { updateTabIcon(false); });
-	}
-}
-
-void PrivateFrame::on(MessageManagerListener::StatusMessage, const UserPtr& aUser, const string& aMessage, uint8_t sev) noexcept{
-	if (aUser == replyTo.user) {
-		callAsync([this, aMessage, sev] {
-			addStatusLine(Text::toT(aMessage), sev);
-			updateOnlineStatus(true);
-		});
-	}
-}
-
 void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 	tstring status = _T(" *** ") + aLine + _T(" ***");
 	if (SETTING(STATUS_IN_CHAT)) {
@@ -240,13 +231,13 @@ void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 }
 
 void PrivateFrame::changeClient() {
-	replyTo.hint = hubs[ctrlHubSel.GetCurSel()].first;
-	ctrlClient.setClient(ClientManager::getInstance()->getClient(replyTo.hint));
+	chat->replyTo.hint = hubs[ctrlHubSel.GetCurSel()].first;
+	ctrlClient.setClient(ClientManager::getInstance()->getClient(chat->replyTo.hint));
 }
 
 void PrivateFrame::updateOnlineStatus(bool ownChange) {
-	const CID& cid = replyTo.user->getCID();
-	const string& hint = replyTo.hint;
+	const CID& cid = chat->replyTo.user->getCID();
+	const string& hint = chat->replyTo.hint;
 
 	dcassert(!hint.empty());
 
@@ -255,11 +246,11 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 	if (!hubsInfoNew.second && !online) {
 		//nothing to update... probably a delayed event or we are opening the tab for the first time
 		if (nicks.empty())
-			nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
+			nicks = WinUtil::getNicks(HintedUser(chat->replyTo, hint));
 		if (hubNames.empty())
 			hubNames = TSTRING(OFFLINE);
 		
-
+		ctrlClient.setClient(nullptr);
 		setDisconnected(true);
 		showHubSelection(false);
 		updateTabIcon(true);
@@ -278,8 +269,8 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		if (hubsInfoNew.second) {
 			//the user is online
 
-			hubNames = WinUtil::getHubNames(replyTo);
-			nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
+			hubNames = WinUtil::getHubNames(chat->replyTo);
+			nicks = WinUtil::getNicks(HintedUser(chat->replyTo, hint));
 			setDisconnected(false);
 			updateTabIcon(false);
 
@@ -288,16 +279,16 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			}
 		} else {
 			if (nicks.empty())
-				nicks = WinUtil::getNicks(HintedUser(replyTo, hint));
+				nicks = WinUtil::getNicks(HintedUser(chat->replyTo, hint));
 
 			updateTabIcon(true);
 			setDisconnected(true);
-			addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"), LogManager::LOG_INFO);
 			ctrlClient.setClient(nullptr);
+			addStatusLine(TSTRING(USER_WENT_OFFLINE) + _T(" [") + hubNames + _T("]"), LogManager::LOG_INFO);
 		}
 
 		//ADC related changes
-		if (!ccReady() && hubsInfoNew.second && !replyTo.user->isNMDC() && !hubs.empty()) {
+		if (!ccReady() && hubsInfoNew.second && !getUser()->isNMDC() && !hubs.empty()) {
 			if (!(ctrlHubSel.GetStyle() & WS_VISIBLE)) {
 				showHubSelection(true);
 			}
@@ -321,6 +312,12 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			}
 		} else if (ccReady()) {
 			fillHubSelection();
+			//Must be a better way to detect hub changes than using the Combobox.
+			if (ctrlHubSel.GetCurSel() == -1) {
+				//the hub was not found
+				ctrlHubSel.SetCurSel(0);
+				changeClient();
+			}
 			if(ctrlHubSel.GetStyle() & WS_VISIBLE)
 				showHubSelection(false);
 		} else {
@@ -328,28 +325,11 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		}
 
 		online = hubsInfoNew.second;
-		checkAlwaysCCPM();
 	}
 	updateStatusBar();
 
 	SetWindowText((nicks + _T(" - ") + hubNames).c_str());
 }
-
-/*This is ugly by counting the attempts here, need a better way of managing failing CCPM connections*/
-void PrivateFrame::checkAlwaysCCPM() {
-	if (!online || !SETTING(ALWAYS_CCPM) || !userSupportsCCPM || replyTo.user->isNMDC() || replyTo.user->isSet(User::BOT))
-		return;
-
-	bool hasCC = ccReady();
-	if (allowAutoCCPM && !hasCC) {
-		startCC(false);
-		allowAutoCCPM = allowAutoCCPM && ccpmAttempts++ < 3;
-	}else if (hasCC){
-		ccpmAttempts = 0;
-		allowAutoCCPM = true;
-	}
-}
-
 
 void PrivateFrame::fillHubSelection() {
 	auto* cm = ClientManager::getInstance();
@@ -359,7 +339,7 @@ void PrivateFrame::fillHubSelection() {
 		auto me = idents.find(hub.first);
 		int img = me == idents.end() ? 0 : me->second.isOp() ? 2 : me->second.isRegistered() ? 1 : 0;
 		auto i = ctrlHubSel.AddItem(Text::toT(hub.second).c_str(), img, img, 0);
-		if (hub.first == replyTo.hint) {
+		if (hub.first == getHubUrl()) {
 			ctrlHubSel.SetCurSel(i);
 		}
 	}
@@ -367,48 +347,13 @@ void PrivateFrame::fillHubSelection() {
 void PrivateFrame::showHubSelection(bool show) {
 	ctrlHubSel.ShowWindow(show);
 	ctrlHubSel.EnableWindow(show);
-
-	//updateStatusBar();
-	//UpdateLayout();
-}
-
-bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
-	PrivateFrame* p = nullptr;
-	bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();
-	const UserPtr& user = myPM ? aMessage.to->getUser() : aMessage.replyTo->getUser();
-	bool newWindow = false;
-	
-	auto hintedUser = HintedUser(user, c->getHubUrl());
-	auto i = frames.find(user);
-	if(i == frames.end()) {
-		if(frames.size() > 200) return false;
-		if (!myPM && MessageManager::getInstance()->isIgnoredOrFiltered(aMessage, c, true))
-			return false;
-
-		p = new PrivateFrame(hintedUser, c);
-		frames[user] = p;
-		newWindow = true;
-	} else {
-		p = i->second;
-	}
-	auto text = Text::toT(aMessage.format());
-
-	p->addLine(aMessage.from->getIdentity(), text);
-
-	if (!myPM) {
-		if (!newWindow)
-			p->checkClientChanged(hintedUser, c, false);
-		p->handleNotifications(newWindow, text, aMessage.from->getIdentity());
-	}
-
-	return true;
 }
 
 void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from) {
-	if(!replyTo.user->isSet(User::BOT))
+	if (!getUser()->isSet(User::BOT))
 		MainFrame::getMainFrame()->onChatMessage(true);
 
-	if (newWindow && AirUtil::getAway() && (!(SETTING(NO_AWAYMSG_TO_BOTS) && replyTo.user->isSet(User::BOT))))
+	if (newWindow && AirUtil::getAway() && (!(SETTING(NO_AWAYMSG_TO_BOTS) && getUser()->isSet(User::BOT))))
 		{
 			ParamMap params;
 			from.getParams(params, "user", false);
@@ -427,7 +372,7 @@ void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, 
 			tstring message = aMessage.substr(0, 250);
 			WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 		} else {
-			WinUtil::showPopup(WinUtil::getNicks(replyTo) + _T(" - ") + hubNames, TSTRING(PRIVATE_MESSAGE));
+			WinUtil::showPopup(WinUtil::getNicks(chat->replyTo) + _T(" - ") + hubNames, TSTRING(PRIVATE_MESSAGE));
 		}
 	}
 
@@ -440,33 +385,14 @@ void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, 
 	}
 }
 
-void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Client* c) {
-	PrivateFrame* p = nullptr;
-	auto i = frames.find(replyTo);
-	if(i == frames.end()) {
-		if(frames.size() > 200) return;
-		p = new PrivateFrame(replyTo, c);
-		frames[replyTo] = p;
-		p->CreateEx(WinUtil::mdiClient);
-	} else {
-		p = i->second;
-		p->checkClientChanged(replyTo, c, true);
-
-		if(::IsIconic(p->m_hWnd))
-			::ShowWindow(p->m_hWnd, SW_RESTORE);
-		p->MDIActivate(p->m_hWnd);
-	}
-
-	p->sendFrameMessage(msg);
-}
 /*
  update the re used frame to the correct hub, 
  so it doesnt appear offline while user is sending us messages with another hub :P
 */
 void PrivateFrame::checkClientChanged(const HintedUser& newUser, Client* c, bool ownChange) {
 
-	if(!replyTo.user->isNMDC() && replyTo.hint != newUser.hint) {
-		replyTo.hint = newUser.hint;
+	if(!getUser()->isNMDC() && getHubUrl() != newUser.hint) {
+		chat->replyTo.hint = newUser.hint;
 		ctrlClient.setClient(c);
 		updateOnlineStatus(ownChange);
 	}
@@ -474,12 +400,12 @@ void PrivateFrame::checkClientChanged(const HintedUser& newUser, Client* c, bool
 
 bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) { 
 	if(stricmp(cmd.c_str(), _T("grant")) == 0) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(replyTo), 600);
+		UploadManager::getInstance()->reserveSlot(HintedUser(chat->replyTo), 600);
 		addClientLine(TSTRING(SLOT_GRANTED), LogManager::LOG_INFO);
 	} else if(stricmp(cmd.c_str(), _T("close")) == 0) {
 		PostMessage(WM_CLOSE);
 	} else if((stricmp(cmd.c_str(), _T("favorite")) == 0) || (stricmp(cmd.c_str(), _T("fav")) == 0)) {
-		FavoriteManager::getInstance()->addFavoriteUser(replyTo);
+		FavoriteManager::getInstance()->addFavoriteUser(chat->replyTo);
 		addClientLine(TSTRING(FAVORITE_USER_ADDED), LogManager::LOG_INFO);
 	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0) {
 		handleGetList();
@@ -502,8 +428,8 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 
 bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
 
-	if (replyTo.user->isOnline()) {
-		return MessageManager::getInstance()->sendPrivateMessage(replyTo, msg, error_, thirdPerson);
+	if (getUser()->isOnline()) {
+		return chat->sendPrivateMessage(chat->replyTo, Text::fromT(msg), error_, thirdPerson);
 	}
 	error_ = STRING(USER_OFFLINE);
 	return false;
@@ -511,54 +437,35 @@ bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPer
 
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
-		LogManager::getInstance()->removePmCache(replyTo.user);
+		LogManager::getInstance()->removePmCache(getUser());
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
-		MessageManager::getInstance()->removeListener(this);
-		MessageManager::getInstance()->DisconnectCCPM(replyTo);
+		chat->removeListener(this);
+		MessageManager::getInstance()->closeWindow(getUser());
 
 		closed = true;
 		PostMessage(WM_CLOSE);
 		return 0;
 	} else {
-		auto i = frames.find(replyTo);
-		if(i != frames.end())
-			frames.erase(i);
-
 		bHandled = FALSE;
 		return 0;
 	}
 }
 
-void PrivateFrame::startCC(bool silent) {
-	if (ccReady()) {
-		if (!silent) { addStatusLine(_T("A direct encrypted channel is already available"), LogManager::LOG_INFO); }
-		return;
-	}
-	string _err;
-	if (MessageManager::getInstance()->StartCCPM(replyTo, _err, allowAutoCCPM)) {
-		if (!silent)
-			addStatusLine(TSTRING(CCPM_ESTABLISHING), LogManager::LOG_INFO);
-	}else if (!silent && !_err.empty()) {
-		addStatusLine(Text::toT(_err), LogManager::LOG_ERROR);
-	}
-
+void PrivateFrame::startCC() {
+	chat->StartCC();
 }
 
 void PrivateFrame::closeCC(bool silent) {
 	if (ccReady()) {
 		if (!silent) { addStatusLine(TSTRING(CCPM_DISCONNECTING),LogManager::LOG_INFO); }
-		ConnectionManager::getInstance()->disconnect(replyTo.user, CONNECTION_TYPE_PM);
-	}
-	else {
-		if (!silent) { addStatusLine(_T("No direct encrypted channel available"), LogManager::LOG_INFO); }
+		ConnectionManager::getInstance()->disconnect(getUser(), CONNECTION_TYPE_PM);
 	}
 }
 
 bool PrivateFrame::ccReady() const {
-	return MessageManager::getInstance()->hasCCPMConn(replyTo);
+	return chat->getUc() ? true : false;
 }
-
 
 void PrivateFrame::addLine(const tstring& aLine, CHARFORMAT2& cf) {
 	Identity i = Identity(NULL, 0);
@@ -570,12 +477,11 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine) {
 }
 
 void PrivateFrame::fillLogParams(ParamMap& params) const {
-	const CID& cid = replyTo.user->getCID();
-	const string& hint = replyTo.hint;
+	const CID& cid = getUser()->getCID();;
 	params["hubNI"] = [&] { return Text::fromT(hubNames); };
-	params["hubURL"] = [&] { return hint; };
+	params["hubURL"] = [&] { return getHubUrl(); };
 	params["userCID"] = [&cid] { return cid.toBase32(); };
-	params["userNI"] = [&] { return ClientManager::getInstance()->getNick(replyTo.user, hint); };
+	params["userNI"] = [&] { return ClientManager::getInstance()->getNick(getUser(), getHubUrl()); };
 	params["myCID"] = [] { return ClientManager::getInstance()->getMe()->getCID().toBase32(); };
 }
 
@@ -594,7 +500,7 @@ void PrivateFrame::addLine(const Identity& from, const tstring& aLine, CHARFORMA
 		ParamMap params;
 		params["message"] = [&aLine] { return Text::fromT(aLine); };
 		fillLogParams(params);
-		LogManager::getInstance()->log(replyTo.user, params);
+		LogManager::getInstance()->log(getUser(), params);
 	}
 
 	auto myNick = Text::toT(ctrlClient.getClient() ? ctrlClient.getClient()->get(HubSettings::Nick) : SETTING(NICK));
@@ -620,7 +526,7 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 	OMenu tabMenu;
 	tabMenu.CreatePopupMenu();	
 
-	tabMenu.InsertSeparatorFirst(Text::toT(ClientManager::getInstance()->getNick(replyTo.user, replyTo.hint, true)));
+	tabMenu.InsertSeparatorFirst(Text::toT(ClientManager::getInstance()->getNick(getUser(), getHubUrl(), true)));
 	if(SETTING(LOG_PRIVATE_CHAT)) {
 		tabMenu.AppendMenu(MF_STRING, IDC_OPEN_USER_LOG,  CTSTRING(OPEN_USER_LOG));
 		tabMenu.AppendMenu(MF_SEPARATOR);
@@ -628,9 +534,9 @@ LRESULT PrivateFrame::onTabContextMenu(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 		tabMenu.AppendMenu(MF_SEPARATOR);
 	}
 	tabMenu.AppendMenu(MF_STRING, ID_EDIT_CLEAR_ALL, CTSTRING(CLEAR_CHAT));
-	appendUserItems(tabMenu, true, replyTo.user);
+	appendUserItems(tabMenu, true, getUser());
 
-	prepareMenu(tabMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(replyTo.user->getCID()));
+	prepareMenu(tabMenu, UserCommand::CONTEXT_USER, ClientManager::getInstance()->getHubUrls(getUser()->getCID()));
 	if(!(tabMenu.GetMenuState(tabMenu.GetMenuItemCount()-1, MF_BYPOSITION) & MF_SEPARATOR)) {	
 		tabMenu.AppendMenu(MF_SEPARATOR);
 	}
@@ -647,14 +553,14 @@ void PrivateFrame::runUserCommand(UserCommand& uc) {
 
 	auto ucParams = ucLineParams;
 
-	ClientManager::getInstance()->userCommand(replyTo, uc, ucParams, true);
+	ClientManager::getInstance()->userCommand(chat->replyTo, uc, ucParams, true);
 }
 
 void PrivateFrame::updateStatusBar() {
 	tstring tmp = Util::emptyStringT;
 	if(ctrlHubSel.GetStyle() & WS_VISIBLE) {
 		tmp = _T(" ") + TSTRING(SEND_PM_VIA);
-		ctrlStatus.SetIcon(STATUS_CC, userSupportsCCPM ? iStartCC : iNoCCPM);
+		ctrlStatus.SetIcon(STATUS_CC, chat->getSupportsCCPM() ? iStartCC : iNoCCPM);
 	} else if(ccReady()){
 		tmp = _T(" ") + TSTRING(SEND_PM_VIA) +_T(": ") + TSTRING(DIRECT_ENCRYPTED_CHANNEL);
 		ctrlStatus.SetIcon(STATUS_CC, iCCReady);
@@ -767,7 +673,7 @@ void PrivateFrame::updateTabIcon(bool offline) {
 		setIcon(userOffline);
 		return;
 	}
-	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(replyTo);
+	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->replyTo);
 	if (ou) {
 		tabIcon = ResourceLoader::getUserImages().GetIcon(ou->getImageIndex());
 		setIcon(tabIcon);
@@ -777,7 +683,7 @@ void PrivateFrame::updateTabIcon(bool offline) {
 string PrivateFrame::getLogPath() const {
 	ParamMap params;
 	fillLogParams(params);
-	return LogManager::getInstance()->getPath(replyTo.user, params);
+	return LogManager::getInstance()->getPath(getUser(), params);
 }
 
 void PrivateFrame::readLog() {
@@ -810,17 +716,6 @@ void PrivateFrame::readLog() {
 	}
 }
 
-void PrivateFrame::closeAll(){
-	for(auto f: frames | map_values)
-		f->PostMessage(WM_CLOSE, 0, 0);
-}
-
-void PrivateFrame::closeAllOffline() {
-	for(auto& fp: frames) {
-		if(!fp.first->isOnline())
-			fp.second->PostMessage(WM_CLOSE, 0, 0);
-	}
-}
 
 LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {	
 	string file = getLogPath();
@@ -831,11 +726,6 @@ LRESULT PrivateFrame::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndC
 	}	
 
 	return 0;
-}
-
-void PrivateFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept {
-	ctrlClient.SetBackgroundColor(WinUtil::bgColor);
-	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
 
 LRESULT PrivateFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
@@ -864,4 +754,53 @@ LRESULT PrivateFrame::onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 		ctrlMessage.SetFocus();
 	}
 	return 0;
+}
+
+void PrivateFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept{
+	ctrlClient.SetBackgroundColor(WinUtil::bgColor);
+	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
+}
+
+void PrivateFrame::on(PrivateChatListener::UserUpdated, bool wentOffline) noexcept{
+	addSpeakerTask(wentOffline ? false : true);
+}
+
+void PrivateFrame::on(PrivateChatListener::CCPMStatusChanged, const string& aMessage) noexcept{
+	callAsync([this, aMessage] {
+		addStatusLine(Text::toT(aMessage), LogManager::LOG_INFO);
+		updateOnlineStatus(true);
+	});
+}
+
+void PrivateFrame::on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept{
+	callAsync([this, aMessage, sev] {
+		addStatusLine(Text::toT(aMessage), sev);
+	});
+}
+
+void PrivateFrame::on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept{
+	callAsync([this, aMessage] {
+		bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();
+		const UserPtr& user = myPM ? aMessage.to->getUser() : aMessage.replyTo->getUser();
+
+		auto text = Text::toT(aMessage.format());
+		addLine(aMessage.from->getIdentity(), text);
+
+		if (!myPM) {
+			auto hintedUser = HintedUser(user, aMessage.from->getHubUrl());
+			handleNotifications(false, text, aMessage.from->getIdentity());
+			checkClientChanged(hintedUser, &aMessage.from->getClient(), false);
+		}
+
+	});
+}
+
+void PrivateFrame::on(PrivateChatListener::Activate, const HintedUser& aUser, const string& msg, Client* c) noexcept{
+	callAsync([this, aUser, msg, c] {
+		checkClientChanged(aUser, c, true);
+		if (::IsIconic(m_hWnd))
+			::ShowWindow(m_hWnd, SW_RESTORE);
+		MDIActivate(m_hWnd);
+		sendFrameMessage(Text::toT(msg));
+	});
 }

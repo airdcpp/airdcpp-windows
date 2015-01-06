@@ -28,6 +28,7 @@
 #include "../client/DelayedEvents.h"
 #include "../client/UserInfoBase.h"
 #include "../client/MessageManager.h"
+#include "../client/PrivateChatListener.h"
 
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
@@ -37,12 +38,11 @@
 #define STATUS_MSG_MAP 19
 
 class PrivateFrame : public UserInfoBaseHandler<PrivateFrame>, public UserInfoBase,
-	private ClientManagerListener, private MessageManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
+	private ClientManagerListener, private PrivateChatListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
 	static bool gotMessage(const ChatMessage& aMessage , Client* c);
 	static void openWindow(const HintedUser& replyTo, const tstring& aMessage = Util::emptyStringT, Client* c = NULL);
-	static bool isOpen(const UserPtr& u) { return frames.find(u) != frames.end(); }
 	static void closeAll();
 	static void closeAllOffline();
 
@@ -155,14 +155,13 @@ private:
 
 	PrivateFrame(const HintedUser& replyTo_, Client* c);
 	~PrivateFrame() { }
+
+	PrivateChat* chat;
 	
 	bool nmdcUser;
 	bool created;
 
 	string getLogPath() const;
-	typedef unordered_map<UserPtr, PrivateFrame*, User::Hash> FrameMap;
-	typedef FrameMap::const_iterator FrameIter;
-	static FrameMap frames;
 	CComboBoxEx ctrlHubSel;
 
 	void fillHubSelection();
@@ -173,9 +172,9 @@ private:
 	void changeClient();
 	void showHubSelection(bool show);
 
-	HintedUser replyTo;
-	const UserPtr& getUser() const { return replyTo.user; }	
-	const string& getHubUrl() const { return replyTo.hint; }	
+
+	const UserPtr& getUser() const { return chat->replyTo.user; }
+	const string& getHubUrl() const { return chat->replyTo.hint; }
 	
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
@@ -193,12 +192,9 @@ private:
 	CIcon iStartCC;
 	CIcon iNoCCPM;
 
-	bool userSupportsCCPM;
 	tstring lastCCPMError;
-	bool allowAutoCCPM;
-	int ccpmAttempts;
 
-	void startCC(bool silent = false);
+	void startCC();
 	void closeCC(bool silent = false);
 	bool ccReady() const;
 
@@ -208,18 +204,21 @@ private:
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;
 	
-	// ClientManagerListener
-	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
-	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
-	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
+	virtual void on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept;
+	virtual void on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept;
+	virtual void on(PrivateChatListener::Activate, const HintedUser& aUser, const string& msg, Client* c) noexcept;
+	virtual void on(PrivateChatListener::UserUpdated, bool wentOffline) noexcept;
+	virtual void on(PrivateChatListener::CCPMStatusChanged, const string& aMessage) noexcept;
+	virtual void on(PrivateChatListener::Close) noexcept {
+		PostMessage(WM_CLOSE);
+	}
 
-	virtual void on(MessageManagerListener::StatusMessage, const UserPtr& aUser, const string& aMessage, uint8_t sev) noexcept;
+
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void addSpeakerTask(bool addDelay);
 	void runSpeakerTask();
 
-	void checkAlwaysCCPM();
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
 	void updateStatusBar();
 

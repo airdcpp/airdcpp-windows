@@ -480,19 +480,6 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 	}
 }
 
-void HubFrame::onPrivateMessage(const ChatMessage& message) {
-	bool myPM = message.replyTo->getUser() == ClientManager::getInstance()->getMe();
-	const UserPtr& user = myPM ? message.to->getUser() : message.replyTo->getUser();
-	const auto& identity = message.replyTo->getIdentity();
-	bool hasFrame = PrivateFrame::isOpen(user);
-
-	if (!hasFrame && (identity.isBot() && !SETTING(POPUP_BOT_PMS)) || (identity.isHub() && !SETTING(POPUP_HUB_PMS))) {
-		addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + Text::toT(identity.getNick()) +_T(": ") + Text::toT(message.format()), WinUtil::m_ChatTextPrivate);
-	} else {
-		PrivateFrame::gotMessage(message, client);
-	}
-}
-
 void HubFrame::onChatMessage(const ChatMessage& msg) {
 
 	if (IgnoreManager::getInstance()->isIgnoredOrFiltered(msg, client, false))
@@ -1527,13 +1514,10 @@ void HubFrame::on(HubUpdated, const Client*) noexcept {
 	});
 }
 void HubFrame::on(Message, const Client*, const ChatMessage& message) noexcept {
-	callAsync([=] {
-		if(message.to && message.replyTo) {
-			onPrivateMessage(message);
-		} else {
-			onChatMessage(message);
-		}
-	});
+	if (message.to && message.replyTo) 
+		MessageManager::getInstance()->onPrivateMessage(message);
+	else
+		callAsync([=] { onChatMessage(message); });
 }	
 
 void HubFrame::on(StatusMessage, const Client*, const string& line, int statusFlags) {

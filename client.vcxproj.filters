@@ -314,6 +314,9 @@
     <ClCompile Include="client\MessageManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="client\PrivateChat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h">
@@ -815,6 +818,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\MessageManagerListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\PrivateChat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\PrivateChatListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
