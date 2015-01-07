@@ -25,7 +25,6 @@
 
 #include "../client/User.h"
 #include "../client/ClientManagerListener.h"
-#include "../client/DelayedEvents.h"
 #include "../client/UserInfoBase.h"
 #include "../client/MessageManager.h"
 #include "../client/PrivateChatListener.h"
@@ -216,7 +215,6 @@ private:
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void addSpeakerTask(bool addDelay);
 	void runSpeakerTask();
 
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);

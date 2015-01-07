@@ -200,13 +200,6 @@ LRESULT PrivateFrame::OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	return 0;
 }
 
-void PrivateFrame::addSpeakerTask(bool addDelay) {
-	if (addDelay)
-		delayEvents.addEvent(getUser()->getCID(), [this] { runSpeakerTask(); }, 1000);
-	else
-		runSpeakerTask();
-}
-
 void PrivateFrame::runSpeakerTask() {
 	callAsync([this] { updateOnlineStatus(); });
 }
@@ -464,7 +457,7 @@ void PrivateFrame::closeCC(bool silent) {
 }
 
 bool PrivateFrame::ccReady() const {
-	return chat->getUc() ? true : false;
+	return chat->ccReady();
 }
 
 void PrivateFrame::addLine(const tstring& aLine, CHARFORMAT2& cf) {
@@ -762,7 +755,7 @@ void PrivateFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 }
 
 void PrivateFrame::on(PrivateChatListener::UserUpdated, bool wentOffline) noexcept{
-	addSpeakerTask(wentOffline ? false : true);
+	runSpeakerTask();
 }
 
 void PrivateFrame::on(PrivateChatListener::CCPMStatusChanged, const string& aMessage) noexcept{
