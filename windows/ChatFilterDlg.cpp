@@ -21,7 +21,7 @@
 #include "WinUtil.h"
 #include "ChatFilterDlg.h"
 
-#include "../client/IgnoreManager.h"
+#include "../client/MessageManager.h"
 #include "../client/ResourceManager.h"
 
 #define ATTACH(id, var) var.Attach(GetDlgItem(id))

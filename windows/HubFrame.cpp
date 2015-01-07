@@ -152,7 +152,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	FavoriteManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
-	IgnoreManager::getInstance()->addListener(this);
+	MessageManager::getInstance()->addListener(this);
 
 	::SetTimer(m_hWnd, 0, 500, 0);
 	return 1;
@@ -482,7 +482,7 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 
 void HubFrame::onChatMessage(const ChatMessage& msg) {
 
-	if (IgnoreManager::getInstance()->isIgnoredOrFiltered(msg, client, false))
+	if (MessageManager::getInstance()->isIgnoredOrFiltered(msg, client, false))
 		return;
 
 	addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
@@ -754,7 +754,7 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 
 			SettingsManager::getInstance()->removeListener(this);
 			FavoriteManager::getInstance()->removeListener(this);
-			IgnoreManager::getInstance()->removeListener(this);
+			MessageManager::getInstance()->removeListener(this);
 			client->removeListener(this);
 			client->disconnect(true);
 
@@ -1551,11 +1551,11 @@ void HubFrame::on(SetActive, const Client*) noexcept {
 	});
 }
 
-void HubFrame::on(IgnoreManagerListener::IgnoreAdded, const UserPtr&) noexcept{
+void HubFrame::on(MessageManagerListener::IgnoreAdded, const UserPtr&) noexcept{
 	callAsync([=] { updateUsers = true; });
 }
 
-void HubFrame::on(IgnoreManagerListener::IgnoreRemoved, const UserPtr&) noexcept{
+void HubFrame::on(MessageManagerListener::IgnoreRemoved, const UserPtr&) noexcept{
 	callAsync([=] { updateUsers = true; });
 }
 
@@ -1956,7 +1956,7 @@ void HubFrame::setFonts() {
 LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	int i=-1;
 	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+		MessageManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
 	}
 	return 0;
 }
@@ -1964,7 +1964,7 @@ LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BO
 LRESULT HubFrame::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	int i=-1;
 	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+		MessageManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
 	}
 	return 0;
 }
