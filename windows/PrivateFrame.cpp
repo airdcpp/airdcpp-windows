@@ -48,6 +48,12 @@ bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
 	bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();
 	const UserPtr& user = myPM ? aMessage.to->getUser() : aMessage.replyTo->getUser();
 
+	if (MessageManager::getInstance()->hasWindow(user)) {
+		auto p = MessageManager::getInstance()->getChat(HintedUser(user, c->getHubUrl()));
+		p->Message(aMessage);
+		return true;
+	}
+
 	auto hintedUser = HintedUser(user, c->getHubUrl());
 	PrivateFrame* p = new PrivateFrame(hintedUser, c);
 	auto text = Text::toT(aMessage.format());
