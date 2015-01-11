@@ -73,7 +73,7 @@ void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Cli
 	}
 	else {
 		auto chat = MessageManager::getInstance()->getChat(replyTo);
-		chat->Activate(replyTo, Text::fromT(msg), c);
+		chat->Activate(Text::fromT(msg), c);
 	}
 
 }
@@ -133,7 +133,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	//add the updateonlinestatus in the wnd message queue so the frame and tab can finish creating first.
 	chat->checkAlwaysCCPM();
-	runSpeakerTask();
+	callAsync([this] { updateOnlineStatus(); });
 
 	bHandled = FALSE;
 	return 1;
@@ -206,14 +206,8 @@ LRESULT PrivateFrame::OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	return 0;
 }
 
-void PrivateFrame::runSpeakerTask() {
-	callAsync([this] { updateOnlineStatus(); });
-}
-
 LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
-	auto hp = hubs[ctrlHubSel.GetCurSel()];
 	changeClient();
-
 	updateOnlineStatus(true);
 
 	bHandled = FALSE;
@@ -230,22 +224,20 @@ void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 }
 
 void PrivateFrame::changeClient() {
-	chat->replyTo.hint = hubs[ctrlHubSel.GetCurSel()].first;
-	ctrlClient.setClient(ClientManager::getInstance()->getClient(chat->replyTo.hint));
+	chat->setHubUrl(hubs[ctrlHubSel.GetCurSel()].first);
+	ctrlClient.setClient(chat->getClient());
 }
 
 void PrivateFrame::updateOnlineStatus(bool ownChange) {
-	const CID& cid = chat->replyTo.user->getCID();
-	const string& hint = chat->replyTo.hint;
-
-	dcassert(!hint.empty());
+	const CID& cid = getUser()->getCID();
 
 	//get the hub and online status
 	auto hubsInfoNew = move(WinUtil::getHubNames(cid));
-	if (!hubsInfoNew.second && !online) {
+	bool UserOnline = hubsInfoNew.second;
+	if (!UserOnline && !online) {
 		//nothing to update... probably a delayed event or we are opening the tab for the first time
 		if (nicks.empty())
-			nicks = WinUtil::getNicks(HintedUser(chat->replyTo, hint));
+			nicks = WinUtil::getNicks(chat->getHintedUser());
 		if (hubNames.empty())
 			hubNames = TSTRING(OFFLINE);
 		
@@ -265,11 +257,10 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		}
 
 		//General things
-		if (hubsInfoNew.second) {
+		if (UserOnline) {
 			//the user is online
-
-			hubNames = WinUtil::getHubNames(chat->replyTo);
-			nicks = WinUtil::getNicks(HintedUser(chat->replyTo, hint));
+			hubNames = WinUtil::getHubNames(chat->getHintedUser());
+			nicks = WinUtil::getNicks(chat->getHintedUser());
 			setDisconnected(false);
 			updateTabIcon(false);
 
@@ -278,7 +269,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			}
 		} else {
 			if (nicks.empty())
-				nicks = WinUtil::getNicks(HintedUser(chat->replyTo, hint));
+				nicks = WinUtil::getNicks(chat->getHintedUser());
 
 			updateTabIcon(true);
 			setDisconnected(true);
@@ -287,7 +278,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 		}
 
 		//ADC related changes
-		if (!ccReady() && hubsInfoNew.second && !getUser()->isNMDC() && !hubs.empty()) {
+		if (!ccReady() && UserOnline && !getUser()->isNMDC() && !hubs.empty()) {
 			if (!(ctrlHubSel.GetStyle() & WS_VISIBLE)) {
 				showHubSelection(true);
 			}
@@ -304,7 +295,8 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 					addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_WARNING);
 				else
 					addStatusLine(CTSTRING_F(USER_OFFLINE_PM_CHANGE, Text::toT(oldHubPair.second) % Text::toT(hubs[0].second)), LogManager::LOG_WARNING);
-			} else if (!oldHubPair.first.empty() && oldHubPair.first != hint) {
+			}
+			else if (!oldHubPair.first.empty() && oldHubPair.first != getHubUrl()) {
 				addStatusLine(CTSTRING_F(MESSAGES_SENT_THROUGH_REMOTE, Text::toT(hubs[ctrlHubSel.GetCurSel()].second)), LogManager::LOG_WARNING);
 			} else if (!ctrlClient.getClient()) {
 				changeClient();
@@ -323,7 +315,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			showHubSelection(false);
 		}
 
-		online = hubsInfoNew.second;
+		online = UserOnline;
 	}
 	updateStatusBar();
 
@@ -371,7 +363,7 @@ void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, 
 			tstring message = aMessage.substr(0, 250);
 			WinUtil::showPopup(message.c_str(), CTSTRING(PRIVATE_MESSAGE));
 		} else {
-			WinUtil::showPopup(WinUtil::getNicks(chat->replyTo) + _T(" - ") + hubNames, TSTRING(PRIVATE_MESSAGE));
+			WinUtil::showPopup(WinUtil::getNicks(chat->getHintedUser()) + _T(" - ") + hubNames, TSTRING(PRIVATE_MESSAGE));
 		}
 	}
 
@@ -388,10 +380,10 @@ void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, 
  update the re used frame to the correct hub, 
  so it doesnt appear offline while user is sending us messages with another hub :P
 */
-void PrivateFrame::checkClientChanged(const HintedUser& newUser, Client* c, bool ownChange) {
+void PrivateFrame::checkClientChanged(Client* c, bool ownChange) {
 
-	if(!getUser()->isNMDC() && getHubUrl() != newUser.hint) {
-		chat->replyTo.hint = newUser.hint;
+	if(!getUser()->isNMDC() && getHubUrl() != c->getHubUrl()) {
+		chat->setHubUrl(c->getHubUrl());
 		ctrlClient.setClient(c);
 		updateOnlineStatus(ownChange);
 	}
@@ -399,12 +391,12 @@ void PrivateFrame::checkClientChanged(const HintedUser& newUser, Client* c, bool
 
 bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& /*message*/, tstring& status, bool& /*thirdPerson*/) { 
 	if(stricmp(cmd.c_str(), _T("grant")) == 0) {
-		UploadManager::getInstance()->reserveSlot(HintedUser(chat->replyTo), 600);
+		UploadManager::getInstance()->reserveSlot(HintedUser(chat->getHintedUser()), 600);
 		addClientLine(TSTRING(SLOT_GRANTED), LogManager::LOG_INFO);
 	} else if(stricmp(cmd.c_str(), _T("close")) == 0) {
 		PostMessage(WM_CLOSE);
 	} else if((stricmp(cmd.c_str(), _T("favorite")) == 0) || (stricmp(cmd.c_str(), _T("fav")) == 0)) {
-		FavoriteManager::getInstance()->addFavoriteUser(chat->replyTo);
+		FavoriteManager::getInstance()->addFavoriteUser(chat->getHintedUser());
 		addClientLine(TSTRING(FAVORITE_USER_ADDED), LogManager::LOG_INFO);
 	} else if(stricmp(cmd.c_str(), _T("getlist")) == 0) {
 		handleGetList();
@@ -428,7 +420,7 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
 
 	if (getUser()->isOnline()) {
-		return chat->sendPrivateMessage(chat->replyTo, Text::fromT(msg), error_, thirdPerson);
+		return chat->sendPrivateMessage(chat->getHintedUser(), Text::fromT(msg), error_, thirdPerson);
 	}
 	error_ = STRING(USER_OFFLINE);
 	return false;
@@ -552,7 +544,7 @@ void PrivateFrame::runUserCommand(UserCommand& uc) {
 
 	auto ucParams = ucLineParams;
 
-	ClientManager::getInstance()->userCommand(chat->replyTo, uc, ucParams, true);
+	ClientManager::getInstance()->userCommand(chat->getHintedUser(), uc, ucParams, true);
 }
 
 void PrivateFrame::updateStatusBar() {
@@ -672,7 +664,7 @@ void PrivateFrame::updateTabIcon(bool offline) {
 		setIcon(userOffline);
 		return;
 	}
-	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->replyTo);
+	OnlineUserPtr ou = ClientManager::getInstance()->findOnlineUser(chat->getHintedUser());
 	if (ou) {
 		tabIcon = ResourceLoader::getUserImages().GetIcon(ou->getImageIndex());
 		setIcon(tabIcon);
@@ -760,8 +752,8 @@ void PrivateFrame::on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcep
 	RedrawWindow(NULL, NULL, RDW_ERASE | RDW_INVALIDATE | RDW_UPDATENOW | RDW_ALLCHILDREN);
 }
 
-void PrivateFrame::on(PrivateChatListener::UserUpdated, bool wentOffline) noexcept{
-	runSpeakerTask();
+void PrivateFrame::on(PrivateChatListener::UserUpdated) noexcept{
+	callAsync([this] { updateOnlineStatus(); });
 }
 
 void PrivateFrame::on(PrivateChatListener::CCPMStatusChanged, const string& aMessage) noexcept{
@@ -780,23 +772,21 @@ void PrivateFrame::on(PrivateChatListener::StatusMessage, const string& aMessage
 void PrivateFrame::on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept{
 	callAsync([this, aMessage] {
 		bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();
-		const UserPtr& user = myPM ? aMessage.to->getUser() : aMessage.replyTo->getUser();
 
 		auto text = Text::toT(aMessage.format());
 		addLine(aMessage.from->getIdentity(), text);
 
 		if (!myPM) {
-			auto hintedUser = HintedUser(user, aMessage.from->getHubUrl());
 			handleNotifications(false, text, aMessage.from->getIdentity());
-			checkClientChanged(hintedUser, &aMessage.from->getClient(), false);
+			checkClientChanged(&aMessage.from->getClient(), false);
 		}
 
 	});
 }
 
-void PrivateFrame::on(PrivateChatListener::Activate, const HintedUser& aUser, const string& msg, Client* c) noexcept{
-	callAsync([this, aUser, msg, c] {
-		checkClientChanged(aUser, c, true);
+void PrivateFrame::on(PrivateChatListener::Activate, const string& msg, Client* c) noexcept{
+	callAsync([this, msg, c] {
+		checkClientChanged(c, true);
 		if (::IsIconic(m_hWnd))
 			::ShowWindow(m_hWnd, SW_RESTORE);
 		MDIActivate(m_hWnd);

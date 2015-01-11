@@ -172,8 +172,8 @@ private:
 	void showHubSelection(bool show);
 
 
-	const UserPtr& getUser() const { return chat->replyTo.user; }
-	const string& getHubUrl() const { return chat->replyTo.hint; }
+	const UserPtr& getUser() const { return chat->getUser(); }
+	const string& getHubUrl() const { return chat->getHubUrl(); }
 	
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
@@ -197,7 +197,7 @@ private:
 	void closeCC(bool silent = false);
 	bool ccReady() const;
 
-	void checkClientChanged(const HintedUser& newUser, Client* c, bool ownChange);
+	void checkClientChanged(Client* c, bool ownChange);
 	void updateTabIcon(bool offline);
 	TStringList prevCommands;
 	tstring currentCommand;
@@ -205,17 +205,13 @@ private:
 	
 	virtual void on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept;
 	virtual void on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept;
-	virtual void on(PrivateChatListener::Activate, const HintedUser& aUser, const string& msg, Client* c) noexcept;
-	virtual void on(PrivateChatListener::UserUpdated, bool wentOffline) noexcept;
+	virtual void on(PrivateChatListener::Activate, const string& msg, Client* c) noexcept;
+	virtual void on(PrivateChatListener::UserUpdated) noexcept;
 	virtual void on(PrivateChatListener::CCPMStatusChanged, const string& aMessage) noexcept;
 	virtual void on(PrivateChatListener::Close) noexcept {
 		PostMessage(WM_CLOSE);
 	}
-
-
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
-
-	void runSpeakerTask();
 
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
 	void updateStatusBar();
