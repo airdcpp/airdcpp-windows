@@ -36,21 +36,13 @@
 
 #include <boost/range/algorithm/for_each.hpp>
 
-void PrivateFrame::closeAll(){
-	MessageManager::getInstance()->closeAll(false);
-}
-
-void PrivateFrame::closeAllOffline() {
-	MessageManager::getInstance()->closeAll(true);
-}
-
 bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
 	bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();
 	const UserPtr& user = myPM ? aMessage.to->getUser() : aMessage.replyTo->getUser();
 
-	if (MessageManager::getInstance()->hasWindow(user)) {
-		auto p = MessageManager::getInstance()->getChat(HintedUser(user, c->getHubUrl()));
-		p->Message(aMessage);
+	auto chat = MessageManager::getInstance()->getChat(user);
+	if (chat) {
+		chat->Message(aMessage);
 		return true;
 	}
 
@@ -66,16 +58,15 @@ bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
 }
 
 void PrivateFrame::openWindow(const HintedUser& replyTo, const tstring& msg, Client* c) {
-	if (!MessageManager::getInstance()->hasWindow(replyTo.user)) {
+	auto chat = MessageManager::getInstance()->getChat(replyTo.user);
+	
+	if (chat) {
+		chat->Activate(Text::fromT(msg), c);
+	} else {
 		PrivateFrame* p = new PrivateFrame(replyTo, c);
 		p->CreateEx(WinUtil::mdiClient);
 		p->sendFrameMessage(msg);
 	}
-	else {
-		auto chat = MessageManager::getInstance()->getChat(replyTo);
-		chat->Activate(Text::fromT(msg), c);
-	}
-
 }
 
 
@@ -87,7 +78,7 @@ created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosi
 	ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG_MAP),
 	UserInfoBaseHandler(false, true)
 {
-	chat = MessageManager::getInstance()->getChat(replyTo_);
+	chat = MessageManager::getInstance()->addChat(replyTo_);
 	ctrlClient.setClient(c);
 	ctrlClient.setPmUser(replyTo_.user);
 }
@@ -178,7 +169,7 @@ LRESULT PrivateFrame::onStatusBarClick(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM 
 		if (ccReady())
 			closeCC();
 		else
-			startCC();
+			chat->StartCC();
 	}
 	bHandled = TRUE;
 	return 0;
@@ -404,7 +395,7 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 		WinUtil::openFile(Text::toT(getLogPath()));
 	}
 	else if (Util::stricmp(cmd.c_str(), _T("direct")) == 0 || Util::stricmp(cmd.c_str(), _T("encrypted")) == 0) {
-		startCC();
+		chat->StartCC();
 	}
 	else if (Util::stricmp(cmd.c_str(), _T("disconnect")) == 0) {
 		closeCC();
@@ -432,7 +423,7 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		chat->removeListener(this);
-		MessageManager::getInstance()->closeWindow(getUser());
+		MessageManager::getInstance()->removeChat(getUser());
 
 		closed = true;
 		PostMessage(WM_CLOSE);
@@ -441,10 +432,6 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 		bHandled = FALSE;
 		return 0;
 	}
-}
-
-void PrivateFrame::startCC() {
-	chat->StartCC();
 }
 
 void PrivateFrame::closeCC(bool silent) {

@@ -42,12 +42,6 @@ class PrivateFrame : public UserInfoBaseHandler<PrivateFrame>, public UserInfoBa
 public:
 	static bool gotMessage(const ChatMessage& aMessage , Client* c);
 	static void openWindow(const HintedUser& replyTo, const tstring& aMessage = Util::emptyStringT, Client* c = NULL);
-	static void closeAll();
-	static void closeAllOffline();
-
-	enum {
-		USER_UPDATED
-	};
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("PrivateFrame"), IDR_PRIVATE, 0, COLOR_3DFACE);
 
@@ -193,7 +187,6 @@ private:
 
 	tstring lastCCPMError;
 
-	void startCC();
 	void closeCC(bool silent = false);
 	bool ccReady() const;
 
@@ -216,7 +209,6 @@ private:
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
 	void updateStatusBar();
 
-	DelayedEvents<CID> delayEvents;
 };
 
 #endif // !defined(PRIVATE_FRAME_H)
