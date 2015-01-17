@@ -1212,7 +1212,10 @@ void QueueFrame::onBundleRemoved(const BundlePtr& aBundle, const string& aPath) 
 	auto i = parents.find(aBundle->getToken());;
 	if (i != parents.end()) {
 		removeLocationItem(aPath);
-		ctrlQueue.list.deleteItem(i->second.get());
+		if (curDirectory && AirUtil::isParentOrExact(aBundle->getTarget(), curDirectory->getTarget()))
+			ctrlQueue.list.DeleteAllItems();
+		else
+			ctrlQueue.list.deleteItem(i->second.get());
 		parents.erase(i);
 	}
 }
