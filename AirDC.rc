@@ -339,7 +339,7 @@ FONT 8, "Tahoma", 400, 0, 0xEE
 BEGIN
 END
 
-IDD_ENCRYPTIONPAGE DIALOGEX 0, 0, 303, 242
+IDD_ENCRYPTIONPAGE DIALOGEX 0, 0, 304, 268
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_DISABLED | WS_CAPTION
 EXSTYLE WS_EX_STATICEDGE
 CAPTION "Dialog"
@@ -355,17 +355,14 @@ BEGIN
     PUSHBUTTON      "...",IDC_BROWSE_PRIVATE_KEY,263,30,21,14
     PUSHBUTTON      "...",IDC_BROWSE_CERTIFICATE,263,47,21,14
     PUSHBUTTON      "...",IDC_BROWSE_TRUSTED_PATH,264,134,20,14
-    CONTROL         "Allow TLS connections to clients without trusted certificate",IDC_ALLOW_UNTRUSTED_CLIENTS,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,13,168,270,10,WS_EX_RIGHT
-    CONTROL         "Allow TLS connections to hubs without trusted certificate",IDC_ALLOW_UNTRUSTED_HUBS,
-                    "Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,12,154,271,10,WS_EX_RIGHT
-    COMBOBOX        IDC_TRANSFER_ENCRYPTION,157,196,134,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    RTEXT           "Transfer encryption",IDC_TRANSFER_ENCRYPTION_LBL,51,199,99,8,0,WS_EX_TRANSPARENT
-    GROUPBOX        "Trusted certificates",IDC_TRUSTED_CERTS,3,100,288,85
+    COMBOBOX        IDC_TRANSFER_ENCRYPTION,157,167,134,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    RTEXT           "Transfer encryption",IDC_TRANSFER_ENCRYPTION_LBL,51,170,99,8,0,WS_EX_TRANSPARENT
+    GROUPBOX        "Trusted certificates",IDC_TRUSTED_CERTS,3,100,288,58
     GROUPBOX        "Own certificate",IDC_OWN_CERT,3,5,287,82
     CONTROL         "Store in the the default location",IDC_CERT_USE_DEFAULT_PATHS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,18,175,10
     LTEXT           "WARNING: Don't change the trusted certificate settings unless you know what you are doing",IDC_TRUSTED_CERT_NOTE,9,113,273,20,0,WS_EX_TRANSPARENT
+    CONTROL         "",IDC_ENCRYPTION_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | LVS_NOCOLUMNHEADER | WS_BORDER | WS_TABSTOP,6,193,285,57
 END
 
 IDD_DOWNLOADPAGE DIALOGEX 0, 0, 298, 318
@@ -588,7 +585,7 @@ BEGIN
 
     IDD_ENCRYPTIONPAGE, DIALOG
     BEGIN
-        RIGHTMARGIN, 299
+        BOTTOMMARGIN, 266
     END
 
     IDD_DOWNLOADPAGE, DIALOG
@@ -2549,7 +2546,7 @@ IDI_FIND                ICON                    "res\\Find.ico"
 IDI_RELOAD              ICON                    "res\\reload.ico"
 IDI_PAUSED              ICON                    "res\\paused.ico"
 IDI_STEPBACK            ICON                    "res\\Stepback.ico"
-IDI_SECURE				ICON                    "res\\Secure.ico"
+IDI_SECURE              ICON                    "res\\Secure.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 

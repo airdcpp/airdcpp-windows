@@ -60,7 +60,6 @@ AdvancedPage::ListItem AdvancedPage::listItems[] = {
 	{ SettingsManager::NMDC_MAGNET_WARN, ResourceManager::SETTINGS_NMDC_MAGNET_WARNING },
 	{ SettingsManager::ACCEPT_FAILOVERS, ResourceManager::ACCEPT_FAILOVERS_GLOBAL },
 	{ SettingsManager::NFO_EXTERNAL, ResourceManager::OPEN_NFO_EXTERNAL },
-	{ SettingsManager::ALWAYS_CCPM, ResourceManager::ALWAYS_CCPM },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
 };
 

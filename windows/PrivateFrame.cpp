@@ -23,7 +23,6 @@
 #include "WinUtil.h"
 #include "MainFrm.h"
 
-
 #include "../client/Client.h"
 #include "../client/ClientManager.h"
 #include "../client/Util.h"
@@ -33,8 +32,6 @@
 #include "../client/StringTokenizer.h"
 #include "../client/ResourceManager.h"
 #include "../client/Adchub.h"
-
-#include <boost/range/algorithm/for_each.hpp>
 
 bool PrivateFrame::gotMessage(const ChatMessage& aMessage, Client* c) {
 	bool myPM = aMessage.replyTo->getUser() == ClientManager::getInstance()->getMe();

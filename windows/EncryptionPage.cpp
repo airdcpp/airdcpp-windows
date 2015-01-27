@@ -33,9 +33,6 @@ PropPage::TextItem EncryptionPage::texts[] = {
 	{ IDC_GENERATE_CERTS, ResourceManager::GENERATE_CERTIFICATES },
 
 	{ IDC_TRUSTED_PATH_LBL, ResourceManager::TRUSTED_CERTIFICATES_PATH },
-	{ IDC_ALLOW_UNTRUSTED_HUBS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_HUBS },
-	{ IDC_ALLOW_UNTRUSTED_CLIENTS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_CLIENTS },
-
 	{ IDC_TRANSFER_ENCRYPTION_LBL, ResourceManager::TRANSFER_ENCRYPTION },
 	{ IDC_TRUSTED_CERT_NOTE, ResourceManager::TRUSTED_CERT_NOTE },
 	{ IDC_TRUSTED_CERTS, ResourceManager::TRUSTED_CERTIFICATES },
@@ -48,10 +45,16 @@ PropPage::Item EncryptionPage::items[] = {
 	{ IDC_TLS_PRIVATE_KEY_FILE, SettingsManager::TLS_PRIVATE_KEY_FILE, PropPage::T_STR },
 
 	{ IDC_TLS_TRUSTED_CERTIFICATES_PATH, SettingsManager::TLS_TRUSTED_CERTIFICATES_PATH, PropPage::T_STR },
-	{ IDC_ALLOW_UNTRUSTED_HUBS, SettingsManager::ALLOW_UNTRUSTED_HUBS, PropPage::T_BOOL },
-	{ IDC_ALLOW_UNTRUSTED_CLIENTS, SettingsManager::ALLOW_UNTRUSTED_CLIENTS, PropPage::T_BOOL },
 	{ 0, 0, PropPage::T_END }
 };
+
+EncryptionPage::ListItem EncryptionPage::listItems[] = {
+	{ SettingsManager::ALLOW_UNTRUSTED_HUBS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_HUBS },
+	{ SettingsManager::ALLOW_UNTRUSTED_CLIENTS, ResourceManager::SETTINGS_ALLOW_UNTRUSTED_CLIENTS },
+	{ SettingsManager::ALWAYS_CCPM, ResourceManager::ALWAYS_CCPM },
+	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
+};
+
 
 LRESULT EncryptionPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/)
 {
@@ -59,6 +62,7 @@ LRESULT EncryptionPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 
 	// Do specialized reading here
 	PropPage::read((HWND)*this, items);
+	PropPage::read((HWND)*this, items, listItems, GetDlgItem(IDC_ENCRYPTION_LIST));
 
 	ctrlTransferEncryption.Attach(GetDlgItem(IDC_TRANSFER_ENCRYPTION));
 	ctrlTransferEncryption.AddString(CTSTRING(DISABLED));
@@ -72,6 +76,7 @@ LRESULT EncryptionPage::onInitDialog(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*
 
 void EncryptionPage::write() {
 	PropPage::write((HWND)*this, items);
+	PropPage::write((HWND)*this, items, listItems, GetDlgItem(IDC_ENCRYPTION_LIST));
 
 	SettingsManager::getInstance()->set(SettingsManager::TLS_MODE, ctrlTransferEncryption.GetCurSel());
 	CryptoManager::setCertPaths();
