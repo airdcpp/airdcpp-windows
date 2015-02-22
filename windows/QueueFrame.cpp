@@ -1070,11 +1070,11 @@ void QueueFrame::handleMoveBundles(BundleList bundles) {
 		return;
 	}
 
-	for (auto& sourceBundle : bundles) {
-		MainFrame::getMainFrame()->addThreadedTask([=] {
+
+	MainFrame::getMainFrame()->addThreadedTask([=] {
+		for (auto& sourceBundle : bundles) 
 			QueueManager::getInstance()->moveBundle(sourceBundle, newDir, true);
-		});
-	}
+	});
 }
 
 void QueueFrame::handleRemoveBundles(BundleList bundles, bool removeFinished, bool finishedOnly) {

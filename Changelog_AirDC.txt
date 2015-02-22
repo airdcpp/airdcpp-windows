@@ -1,14 +1,21 @@
-x.xx
+2.91
 
 Added:
 
 - Detect when volume has been removed and fail respective monitored paths
 - Attempt to restore share monitoring for failed paths once per minute
+- Highlight context for search
 
 Fixed:
 
 - Respect the size limits when searching in file lists
 - Fix the dupe check during share scan
+- Fix crash in Queue window
+- Fix a NMDC exploit: http://te-home.net/?id=54&title=Second+largest+exploit+in+NMDC+history
+- Fix possible deadlock in QueueManager
+
+Changed:
+- Reload queue list when clicking on a tree item
 
 
 2.90
