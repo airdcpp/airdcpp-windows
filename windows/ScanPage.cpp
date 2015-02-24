@@ -36,7 +36,7 @@ PropPage::ListItem ScanPage::listItems[] = {
 	{ SettingsManager::CHECK_DUPES, ResourceManager::CHECK_DUPES },
 	{ SettingsManager::CHECK_EMPTY_DIRS, ResourceManager::CHECK_EMPTY_DIRS },
 	{ SettingsManager::CHECK_EMPTY_RELEASES, ResourceManager::CHECK_EMPTY_RELEASES },
-	{ SettingsManager::CHECK_USE_SKIPLIST, ResourceManager::CHECK_USE_SKIPLIST },
+	{ SettingsManager::CHECK_USE_SKIPLIST, ResourceManager::CHECK_IGNORE_SHARE_EXCLUDE },
 	{ SettingsManager::CHECK_IGNORE_ZERO_BYTE, ResourceManager::CHECK_IGNORE_ZERO_BYTE },
 	{ SettingsManager::CHECK_DISK_COUNTS, ResourceManager::CHECK_DISK_COUNTS },
 	{ 0, ResourceManager::SETTINGS_AUTO_AWAY }
