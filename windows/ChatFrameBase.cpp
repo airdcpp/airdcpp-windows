@@ -478,6 +478,12 @@ void ChatFrameBase::setStatusText(const tstring& aLine, uint8_t sev) {
 	ctrlStatus.SetIcon(0, ResourceLoader::getSeverityIcon(sev));
 }
 
+void ChatFrameBase::setStatusText(const tstring& aLine, const CIcon& aIcon) {
+	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str(), SBT_NOTABPARSING);
+	ctrlStatus.SetIcon(0, aIcon);
+}
+
+
 LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring cmd, param, message, status;
 	bool thirdPerson=false;

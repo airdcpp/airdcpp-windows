@@ -64,10 +64,12 @@ public:
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
 		COMMAND_ID_HANDLER(IDC_PUBLIC_MESSAGE, onPublicMessage)
+		COMMAND_CODE_HANDLER(EN_CHANGE, onEditChange)
 		CHAIN_MSG_MAP(chatBase)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 	ALT_MSG_MAP(EDIT_MESSAGE_MAP)
+		MESSAGE_HANDLER(WM_SETFOCUS, onFocusMsg)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 		MESSAGE_HANDLER(WM_KEYDOWN, onChar)
 		MESSAGE_HANDLER(WM_KEYUP, onChar)
@@ -90,6 +92,24 @@ public:
 	LRESULT onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onStatusBarClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
+		if (hWndCtl == ctrlMessage.m_hWnd) {
+			if (!isTyping) {
+				if (ctrlMessage.GetWindowTextLength() > 0) {
+					isTyping = true;
+					sendTyping(false);
+				}
+			}
+			else if (isTyping) {
+				if (ctrlMessage.GetWindowTextLength() == 0) {
+					isTyping = false;
+					sendTyping(true);
+				}
+			}
+		}
+		bHandled = FALSE;
+		return 0;
+	}
 
 	LRESULT OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 
@@ -102,6 +122,7 @@ public:
 
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onFocusMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
 
 	void fillLogParams(ParamMap& params) const;
@@ -190,6 +211,11 @@ private:
 	void closeCC(bool silent = false);
 	bool ccReady() const;
 
+	bool hasUnSeenMessages;
+	bool isTyping;
+	void sendSeen();
+	void updatePMInfo(uint8_t aType);
+
 	void checkClientChanged(Client* c, bool ownChange);
 	void updateTabIcon(bool offline);
 	TStringList prevCommands;
@@ -200,15 +226,17 @@ private:
 	virtual void on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept;
 	virtual void on(PrivateChatListener::Activate, const string& msg, Client* c) noexcept;
 	virtual void on(PrivateChatListener::UserUpdated) noexcept;
+	virtual void on(PrivateChatListener::PMStatus, uint8_t aType) noexcept;
 	virtual void on(PrivateChatListener::CCPMStatusChanged, const string& aMessage) noexcept;
 	virtual void on(PrivateChatListener::Close) noexcept {
 		PostMessage(WM_CLOSE);
 	}
+
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
 	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
 	void updateStatusBar();
-
+	void sendTyping(bool off);
 };
 
 #endif // !defined(PRIVATE_FRAME_H)

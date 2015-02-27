@@ -117,6 +117,8 @@ protected:
 	task_group tasks;
 
 	void setStatusText(const tstring& aLine, uint8_t severity);
+	void setStatusText(const tstring& aLine, const CIcon& aIcon);
+
 	CStatusBarCtrl ctrlStatus;
 
 	bool sendFrameMessage(const tstring& aMsg, bool thirdPerson = false);
