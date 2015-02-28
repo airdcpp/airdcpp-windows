@@ -94,7 +94,6 @@ public:
 	LRESULT onStatusBarClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
 		if (hWndCtl == ctrlMessage.m_hWnd) {
-			sendSeen();
 			if (!isTyping) {
 				if (ctrlMessage.GetWindowTextLength() > 0) {
 					isTyping = true;

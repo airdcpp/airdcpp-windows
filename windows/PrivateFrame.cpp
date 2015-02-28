@@ -173,7 +173,10 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 
 	switch (aType) {
 	case PrivateChat::MSG_SEEN:
-		addStatus(_T("*** Message seen ***"), ResourceLoader::loadIcon(IDI_ONLINE, 16));
+		if (!userTyping)
+			addStatus(_T("*** Message seen ***"), ResourceLoader::loadIcon(IDI_ONLINE, 16));
+		else
+			lastStatus = { _T("*** Message seen ***"), ResourceLoader::loadIcon(IDI_ONLINE, 16) };
 		break;
 	case PrivateChat::TYPING_ON:
 		//setStatusText to prevent saving lastStatus
