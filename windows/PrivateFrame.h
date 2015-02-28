@@ -213,8 +213,12 @@ private:
 
 	bool hasUnSeenMessages;
 	bool isTyping;
+	bool userTyping;
 	void sendSeen();
 	void updatePMInfo(uint8_t aType);
+	void addStatus(const tstring& aLine, const CIcon& aIcon);
+
+	pair<tstring, CIcon> lastStatus;
 
 	void checkClientChanged(Client* c, bool ownChange);
 	void updateTabIcon(bool offline);

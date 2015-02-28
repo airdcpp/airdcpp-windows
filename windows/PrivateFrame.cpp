@@ -73,7 +73,7 @@ created(false), closed(false), online(replyTo_.user->isOnline()), curCommandPosi
 	ctrlMessageContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlClientContainer(WC_EDIT, this, EDIT_MESSAGE_MAP),
 	ctrlStatusContainer(STATUSCLASSNAME, this, STATUS_MSG_MAP),
-	UserInfoBaseHandler(false, true), hasUnSeenMessages(false), isTyping(false)
+	UserInfoBaseHandler(false, true), hasUnSeenMessages(false), isTyping(false), userTyping(false)
 {
 	chat = MessageManager::getInstance()->addChat(replyTo_);
 	ctrlClient.setClient(c);
@@ -142,7 +142,6 @@ LRESULT PrivateFrame::onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BO
 
 LRESULT PrivateFrame::onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/) {
 	ctrlMessage.SetFocus();
-	sendSeen();
 	return 0;
 }
 
@@ -156,30 +155,38 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 	if(!created) {
 		CreateEx(WinUtil::mdiClient);
 	}
-	setStatusText(aLine, severity);
+	addStatus(aLine, ResourceLoader::getSeverityIcon(severity));
 	if (SETTING(BOLD_PM)) {
 		setDirty();
 	}
+}
+
+void PrivateFrame::addStatus(const tstring& aLine, const CIcon& aIcon) {
+	lastStatus = { aLine, aIcon };
+	setStatusText(aLine, aIcon);
 }
 
 void PrivateFrame::updatePMInfo(uint8_t aType) {
 	if (!created) {
 		CreateEx(WinUtil::mdiClient);
 	}
-	tstring status;
 
 	switch (aType) {
 	case PrivateChat::MSG_SEEN:
-		status = _T("*** Message seen ***");
-		setStatusText(status, ResourceLoader::loadIcon(IDI_ONLINE, 16));
+		addStatus(_T("*** Message seen ***"), ResourceLoader::loadIcon(IDI_ONLINE, 16));
 		break;
 	case PrivateChat::TYPING_ON:
-		status = _T("*** The user is typing...***");
-		setStatusText(status, ResourceLoader::loadIcon(IDR_TRAY_PM, 16));
+		//setStatusText to prevent saving lastStatus
+		userTyping = true;
+		setStatusText(_T("*** The user is typing...***"), ResourceLoader::loadIcon(IDR_TRAY_PM, 16));
 		break;
-	case PrivateChat::TYPING_OFF: //Seen for now, figure out something nice for this.
-		status = _T("*** Message seen ***");
-		setStatusText(status, ResourceLoader::loadIcon(IDI_ONLINE, 16));
+	case PrivateChat::TYPING_OFF:
+		//Restore the previous status
+		userTyping = false;
+		if (lastStatus.first.empty())
+			addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogManager::LOG_INFO);
+		else
+			addStatus(lastStatus.first, lastStatus.second);
 		break;
 	}
 
@@ -363,6 +370,8 @@ void PrivateFrame::showHubSelection(bool show) {
 
 void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from) {
 	hasUnSeenMessages = true;
+	userTyping = false;
+	addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogManager::LOG_INFO);
 	
 	if (!getUser()->isSet(User::BOT))
 		MainFrame::getMainFrame()->onChatMessage(true);
@@ -813,9 +822,10 @@ void PrivateFrame::on(PrivateChatListener::PrivateMessage, const ChatMessage& aM
 		addLine(aMessage.from->getIdentity(), text);
 
 		if (!myPM) {
-
 			handleNotifications(false, text, aMessage.from->getIdentity());
 			checkClientChanged(&aMessage.from->getClient(), false);
+		} else if (!userTyping) {
+			addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogManager::LOG_INFO);
 		}
 
 	});
