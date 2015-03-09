@@ -455,7 +455,7 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
 
 	if (getUser()->isOnline()) {
-		isTyping = false;
+		callAsync([=] { isTyping = false; });
 		return chat->sendPrivateMessage(chat->getHintedUser(), Text::fromT(msg), error_, thirdPerson);
 	}
 	error_ = STRING(USER_OFFLINE);
