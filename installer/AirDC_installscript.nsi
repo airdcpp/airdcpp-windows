@@ -1,7 +1,8 @@
 ; Install script for AirDC++
 ; This script is based on the DC++ install script, (c) 2001-2010 Jacek Sieka
-; You need the ANSI version of the MoreInfo plugin installed in NSIS to be able to compile this script
-; Its available from http://nsis.sourceforge.net/MoreInfo_plug-in
+; The following NSIS plugins are required for compiling this script:
+; http://nsis.sourceforge.net/MoreInfo_plug-in (ANSI)
+; http://nsis.sourceforge.net/ShellExecAsUser_plug-in
 
 !include "MUI2.nsh"
 !include "Sections.nsh"
@@ -58,7 +59,7 @@ ShowUninstDetails show
    
    
 ; The file to write
-  OutFile "AirDC_Installer_2.80b.exe"
+  OutFile "AirDC_Installer_2.91.exe"
 
 ; Registry key to check for directory (so if you install again, it will 
 ; overwrite the old one automatically)
@@ -68,7 +69,7 @@ InstallDirRegKey HKLM SOFTWARE\AirDC++ "Install_Dir"
 ; The text to prompt the user to enter a directory
 ComponentText "Welcome to the AirDC++ installer."
 ; The text to prompt the user to enter a directory
-DirText "Choose a directory to install AirDC++ into. If you upgrade select the same directory where your old version resides and your existing settings will be imported."
+DirText "Choose a directory to install AirDC++ into. If you are upgrading from an older version, select the same directory where your old version resides and your existing settings will be imported."
 
 ; The stuff to install
 Section "AirDC++ (required)" dcpp
@@ -216,15 +217,13 @@ Function .onSelChange
   end:
   ${EndIf}
   
-  ; Do not show the warning on XP or older
-  StrCmp $R8 "0" skip
   ; Show the warning only once
   StrCmp $R9 "1" skip
   SectionGetFlags ${loc} $0
   IntOp $0 $0 & ${SF_SELECTED}
   StrCmp $0 ${SF_SELECTED} skip
     StrCpy $R9 "1"
-    MessageBox MB_OK|MB_ICONEXCLAMATION "If you want to keep your settings in the program directory using Windows Vista or later make sure that you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to abnormal behaviour like loss of settings or downloads!"
+    MessageBox MB_OK|MB_ICONEXCLAMATION "If you want to keep your settings in the program directory, make sure that you DO NOT install AirDC++ to the 'Program files' folder!!! This can lead to abnormal behaviour like loss of settings or downloads!"
 skip:
 FunctionEnd
 
@@ -355,7 +354,7 @@ Section "un.Uninstall"
   ; remove directories used.
   RMDir "$SMPROGRAMS\AirDC++"
   ;IfFileExists "$INSTDIR\Settings\*.xml" 0 check_if_empty
-  MessageBox MB_YESNO|MB_ICONQUESTION "Also remove queue, themes and all settings?" IDNO end_uninstall
+  MessageBox MB_YESNO|MB_ICONQUESTION "Do you also want to remove queue, themes and all settings?" IDNO end_uninstall
 
   ; delete settings directory
   RMDir /r $INSTDIR\Settings

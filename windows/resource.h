@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by N:\projects\airgit\AirDC.rc
+// Used by C:\Projects\airgit\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
@@ -408,7 +408,6 @@
 #define IDC_SETTINGS_BTN_TARGETDRIVE    1050
 #define IDC_BUFFERSIZE                  1051
 #define IDC_LANGUAGE                    1052
-#define IDC_DB_CACHE_SIZE               1052
 #define IDC_BROWSE                      1053
 #define IDC_COPY_USER_ALL               1054
 #define IDC_THANKS                      1055
