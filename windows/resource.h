@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by C:\Projects\airgit\AirDC.rc
+// Used by C:\Projects\airdc-git\AirDC.rc
 //
 #define IDOK2                           3
 #define IDCANCEL2                       3
