@@ -24,7 +24,6 @@
 #endif // _MSC_VER > 1000
 
 #include "../client/User.h"
-#include "../client/ClientManagerListener.h"
 #include "../client/UserInfoBase.h"
 #include "../client/MessageManager.h"
 #include "../client/PrivateChatListener.h"
@@ -37,7 +36,7 @@
 #define STATUS_MSG_MAP 19
 
 class PrivateFrame : public UserInfoBaseHandler<PrivateFrame>, public UserInfoBase,
-	private ClientManagerListener, private PrivateChatListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
+private PrivateChatListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
 	static bool gotMessage(const ChatMessage& aMessage , Client* c);
@@ -57,6 +56,7 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_FORWARDMSG, OnRelayMsg)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
 		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_USER_HISTORY, onOpenUserLog)
@@ -92,24 +92,8 @@ public:
 	LRESULT onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/);
 	LRESULT onStatusBarClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
-	LRESULT onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
-		if (hWndCtl == ctrlMessage.m_hWnd) {
-			if (!isTyping) {
-				if (ctrlMessage.GetWindowTextLength() > 0) {
-					isTyping = true;
-					sendTyping(false);
-				}
-			}
-			else if (isTyping) {
-				if (ctrlMessage.GetWindowTextLength() == 0) {
-					isTyping = false;
-					sendTyping(true);
-				}
-			}
-		}
-		bHandled = FALSE;
-		return 0;
-	}
+	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL & bHandled);
 
 	LRESULT OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 
@@ -215,6 +199,7 @@ private:
 	bool isTyping;
 	bool userTyping;
 	void sendSeen();
+	void checkTyping();
 	void updatePMInfo(uint8_t aType);
 	void addStatus(const tstring& aLine, const CIcon& aIcon);
 

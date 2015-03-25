@@ -111,7 +111,6 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 
 	created = true;
 
-	ClientManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
 	chat->addListener(this);
 
@@ -122,6 +121,7 @@ LRESULT PrivateFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam
 	//add the updateonlinestatus in the wnd message queue so the frame and tab can finish creating first.
 	chat->checkAlwaysCCPM();
 	callAsync([this] { updateOnlineStatus(); });
+	::SetTimer(m_hWnd, 0, 1000, 0);
 
 	bHandled = FALSE;
 	return 1;
@@ -237,6 +237,20 @@ LRESULT PrivateFrame::OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam
 	return 0;
 }
 
+LRESULT PrivateFrame::onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL& bHandled) {
+	if (hWndCtl == ctrlMessage.m_hWnd) {
+		sendSeen();
+	}
+	bHandled = FALSE;
+	return 0;
+}
+
+LRESULT PrivateFrame::onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
+	checkTyping();
+	bHandled = TRUE;
+	return 0;
+}
+
 LRESULT PrivateFrame::onHubChanged(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& bHandled) {
 	changeClient();
 	updateOnlineStatus(true);
@@ -257,6 +271,17 @@ void PrivateFrame::addStatusLine(const tstring& aLine, uint8_t severity) {
 void PrivateFrame::changeClient() {
 	chat->setHubUrl(hubs[ctrlHubSel.GetCurSel()].first);
 	ctrlClient.setClient(chat->getClient());
+}
+
+void PrivateFrame::checkTyping(){
+	if (!isTyping && ctrlMessage.GetWindowTextLength() > 0) {
+		isTyping = true;
+		sendTyping(false);
+	}
+	else if (isTyping && ctrlMessage.GetWindowTextLength() == 0) {
+		isTyping = false;
+		sendTyping(true);
+	}
 }
 
 void PrivateFrame::updateOnlineStatus(bool ownChange) {
@@ -332,7 +357,7 @@ void PrivateFrame::updateOnlineStatus(bool ownChange) {
 			} else if (!ctrlClient.getClient()) {
 				changeClient();
 			}
-		} else if (ccReady()) {
+		} else if (ccReady() && UserOnline) {
 			fillHubSelection();
 			//Must be a better way to detect hub changes than using the Combobox.
 			if (ctrlHubSel.GetCurSel() == -1) {
@@ -373,7 +398,6 @@ void PrivateFrame::showHubSelection(bool show) {
 
 void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from) {
 	hasUnSeenMessages = true;
-	userTyping = false;
 	addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogManager::LOG_INFO);
 	
 	if (!getUser()->isSet(User::BOT))
@@ -455,7 +479,6 @@ bool PrivateFrame::checkFrameCommand(tstring& cmd, tstring& /*param*/, tstring& 
 bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPerson) {
 
 	if (getUser()->isOnline()) {
-		callAsync([=] { isTyping = false; });
 		return chat->sendPrivateMessage(chat->getHintedUser(), Text::fromT(msg), error_, thirdPerson);
 	}
 	error_ = STRING(USER_OFFLINE);
@@ -465,7 +488,6 @@ bool PrivateFrame::sendMessage(const tstring& msg, string& error_, bool thirdPer
 LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled) {
 	if(!closed) {
 		LogManager::getInstance()->removePmCache(getUser());
-		ClientManager::getInstance()->removeListener(this);
 		SettingsManager::getInstance()->removeListener(this);
 		chat->removeListener(this);
 		MessageManager::getInstance()->removeChat(getUser());
@@ -482,7 +504,7 @@ LRESULT PrivateFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*
 void PrivateFrame::closeCC(bool silent) {
 	if (ccReady()) {
 		if (!silent) { addStatusLine(TSTRING(CCPM_DISCONNECTING),LogManager::LOG_INFO); }
-		ConnectionManager::getInstance()->disconnect(getUser(), CONNECTION_TYPE_PM);
+		chat->Disconnect(true);
 	}
 }
 
@@ -741,13 +763,13 @@ void PrivateFrame::readLog() {
 
 void PrivateFrame::sendSeen() {
 	if (hasUnSeenMessages)
-		chat->addPMInfo(PrivateChat::MSG_SEEN);
+		chat->sendPMInfo(PrivateChat::MSG_SEEN);
 
 	hasUnSeenMessages = false;
 }
 
 void PrivateFrame::sendTyping(bool off) {
-	chat->addPMInfo(off ? PrivateChat::TYPING_OFF : PrivateChat::TYPING_ON);
+	chat->sendPMInfo(off ? PrivateChat::TYPING_OFF : PrivateChat::TYPING_ON);
 }
 
 
