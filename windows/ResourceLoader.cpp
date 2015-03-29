@@ -291,6 +291,8 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_PAUSED:		return _T("paused.ico");
 		case IDI_STEPBACK:		return _T("Stepback.ico");
 		case IDI_SECURE:		return _T("Secure.ico");
+		case IDI_TYPING:		return _T("Typing.ico");
+		case IDI_SEEN:			return _T("Seen.ico");
 
 		case IDI_UP:            return _T("BrowserBar\\Up.ico");
 		case IDI_NEXT:			return _T("BrowserBar\\NextResult.ico");
@@ -310,6 +312,7 @@ tstring ResourceLoader::getIconName(int aDefault) {
 		case IDI_COLLECTING:	return _T("AutoSearch\\Collecting.ico");
 		case IDI_POSTSEARCH:	return _T("AutoSearch\\PostSearch.ico");
 		case IDI_EXPIRED:		return _T("AutoSearch\\Expired.ico");
+
 		default: return Util::emptyStringT;
 	}
 }

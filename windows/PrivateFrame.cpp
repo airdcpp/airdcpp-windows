@@ -155,7 +155,7 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 	if(!created) {
 		CreateEx(WinUtil::mdiClient);
 	}
-	addStatus(aLine, ResourceLoader::getSeverityIcon(severity));
+	addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine, ResourceLoader::getSeverityIcon(severity));
 	if (SETTING(BOLD_PM)) {
 		setDirty();
 	}
@@ -163,7 +163,8 @@ void PrivateFrame::addClientLine(const tstring& aLine, uint8_t severity) {
 
 void PrivateFrame::addStatus(const tstring& aLine, const CIcon& aIcon) {
 	lastStatus = { aLine, aIcon };
-	setStatusText(aLine, aIcon);
+	ctrlStatus.SetText(0, aLine.c_str(), SBT_NOTABPARSING);
+	ctrlStatus.SetIcon(0, aIcon);
 }
 
 void PrivateFrame::updatePMInfo(uint8_t aType) {
@@ -174,22 +175,19 @@ void PrivateFrame::updatePMInfo(uint8_t aType) {
 	switch (aType) {
 	case PrivateChat::MSG_SEEN:
 		if (!userTyping)
-			addStatus(_T("*** Message seen ***"), ResourceLoader::loadIcon(IDI_ONLINE, 16));
+			addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("*** Message seen ***"), ResourceLoader::loadIcon(IDI_SEEN, 16));
 		else
-			lastStatus = { _T("*** Message seen ***"), ResourceLoader::loadIcon(IDI_ONLINE, 16) };
+			lastStatus = { _T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("*** Message seen ***"), ResourceLoader::loadIcon(IDI_SEEN, 16) };
 		break;
 	case PrivateChat::TYPING_ON:
 		//setStatusText to prevent saving lastStatus
 		userTyping = true;
-		setStatusText(_T("*** The user is typing...***"), ResourceLoader::loadIcon(IDR_TRAY_PM, 16));
+		setStatusText(_T("*** The user is typing...***"), ResourceLoader::loadIcon(IDI_TYPING, 16));
 		break;
 	case PrivateChat::TYPING_OFF:
 		//Restore the previous status
 		userTyping = false;
-		if (lastStatus.first.empty())
-			addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogManager::LOG_INFO);
-		else
-			addStatus(lastStatus.first, lastStatus.second);
+		addStatus(lastStatus.first, lastStatus.second);
 		break;
 	}
 
@@ -398,7 +396,7 @@ void PrivateFrame::showHubSelection(bool show) {
 
 void PrivateFrame::handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from) {
 	hasUnSeenMessages = true;
-	addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogManager::LOG_INFO);
+	addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("Last message received"), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
 	
 	if (!getUser()->isSet(User::BOT))
 		MainFrame::getMainFrame()->onChatMessage(true);
@@ -851,7 +849,7 @@ void PrivateFrame::on(PrivateChatListener::PrivateMessage, const ChatMessage& aM
 			handleNotifications(false, text, aMessage.from->getIdentity());
 			checkClientChanged(&aMessage.from->getClient(), false);
 		} else if (!userTyping) {
-			addClientLine(TSTRING(LAST_CHANGE) + _T(" ") + Text::toT(Util::getTimeString()), LogManager::LOG_INFO);
+			addStatus(_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + _T("Last message sent"), ResourceLoader::getSeverityIcon(LogManager::LOG_INFO));
 		}
 
 	});

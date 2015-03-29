@@ -300,6 +300,8 @@
 #define IDI_POSTSEARCH                  462
 #define IDI_EXPIRED                     463
 #define IDI_HUBOFF                      464
+#define IDI_TYPING						465
+#define IDI_SEEN						466
 #define IDI_SLOTS                       480
 #define IDI_SLOTSFULL                   481
 #define IDI_TOTAL_UP                    482

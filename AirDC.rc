@@ -2547,6 +2547,8 @@ IDI_RELOAD              ICON                    "res\\reload.ico"
 IDI_PAUSED              ICON                    "res\\paused.ico"
 IDI_STEPBACK            ICON                    "res\\Stepback.ico"
 IDI_SECURE              ICON                    "res\\Secure.ico"
+IDI_TYPING				ICON                    "res\\Typing.ico"
+IDI_SEEN				ICON                    "res\\Seen.ico"
 #endif    // Finnish (Finland) resources
 /////////////////////////////////////////////////////////////////////////////
 
