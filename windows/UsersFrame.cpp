@@ -205,7 +205,7 @@ LRESULT UsersFrame::onCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	SettingsManager::getInstance()->addListener(this);
 	UploadManager::getInstance()->addListener(this);
 	QueueManager::getInstance()->addListener(this);
-	IgnoreManager::getInstance()->addListener(this);
+	MessageManager::getInstance()->addListener(this);
 
 	CRect rc(SETTING(USERS_LEFT), SETTING(USERS_TOP), SETTING(USERS_RIGHT), SETTING(USERS_BOTTOM));
 	if(! (rc.top == 0 && rc.bottom == 0 && rc.left == 0 && rc.right == 0) )
@@ -551,9 +551,9 @@ bool UsersFrame::handleClickIgnore(int row) {
 	auto ui = ctrlUsers.getItemData(row);
 	if (ui){
 		if (ui->getUser()->isIgnored())
-			IgnoreManager::getInstance()->removeIgnore(ui->getUser());
+			MessageManager::getInstance()->removeIgnore(ui->getUser());
 		else
-			IgnoreManager::getInstance()->storeIgnore(ui->getUser());
+			MessageManager::getInstance()->storeIgnore(ui->getUser());
 	}
 	return true;
 }
@@ -983,7 +983,7 @@ LRESULT UsersFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 		SettingsManager::getInstance()->removeListener(this);
 		UploadManager::getInstance()->removeListener(this);
 		QueueManager::getInstance()->removeListener(this);
-		IgnoreManager::getInstance()->removeListener(this);
+		MessageManager::getInstance()->removeListener(this);
 
 		closed = true;
 		WinUtil::setButtonPressed(IDC_FAVUSERS, false);
@@ -1078,10 +1078,10 @@ void UsersFrame::on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUs
 	callAsync([=] { updateUser(aUser); });
 }
 
-void UsersFrame::on(IgnoreManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept{
+void UsersFrame::on(MessageManagerListener::IgnoreAdded, const UserPtr& aUser) noexcept{
 	callAsync([=] { updateUser(aUser); });
 }
 
-void UsersFrame::on(IgnoreManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept{
+void UsersFrame::on(MessageManagerListener::IgnoreRemoved, const UserPtr& aUser) noexcept{
 	callAsync([=] { updateUser(aUser); });
 }

@@ -24,29 +24,23 @@
 #endif // _MSC_VER > 1000
 
 #include "../client/User.h"
-#include "../client/ClientManagerListener.h"
-#include "../client/DelayedEvents.h"
 #include "../client/UserInfoBase.h"
+#include "../client/MessageManager.h"
+#include "../client/PrivateChatListener.h"
 
 #include "UserInfoBaseHandler.h"
 #include "ChatFrameBase.h"
 #include "UCHandler.h"
 
 #define HUB_SEL_MAP 9
+#define STATUS_MSG_MAP 19
 
 class PrivateFrame : public UserInfoBaseHandler<PrivateFrame>, public UserInfoBase,
-	private ClientManagerListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
+private PrivateChatListener, public UCHandler<PrivateFrame>, private SettingsManagerListener, public ChatFrameBase
 {
 public:
-	static void gotMessage(const Identity& from, const UserPtr& to, const UserPtr& replyTo, const tstring& aMessage, Client* c);
+	static bool gotMessage(const ChatMessage& aMessage , Client* c);
 	static void openWindow(const HintedUser& replyTo, const tstring& aMessage = Util::emptyStringT, Client* c = NULL);
-	static bool isOpen(const UserPtr& u) { return frames.find(u) != frames.end(); }
-	static void closeAll();
-	static void closeAllOffline();
-
-	enum {
-		USER_UPDATED
-	};
 
 	DECLARE_FRAME_WND_CLASS_EX(_T("PrivateFrame"), IDR_PRIVATE, 0, COLOR_3DFACE);
 
@@ -62,16 +56,20 @@ public:
 		MESSAGE_HANDLER(WM_CLOSE, onClose)
 		MESSAGE_HANDLER(FTM_CONTEXTMENU, onTabContextMenu)
 		MESSAGE_HANDLER(WM_FORWARDMSG, OnRelayMsg)
+		MESSAGE_HANDLER(WM_TIMER, onTimer)
+		NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
 		COMMAND_ID_HANDLER(IDC_OPEN_USER_LOG, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_USER_HISTORY, onOpenUserLog)
 		COMMAND_ID_HANDLER(IDC_UNGRANTSLOT, onGrantSlot)
 		COMMAND_ID_HANDLER(IDC_CLOSE_WINDOW, onCloseWindow)
 		COMMAND_ID_HANDLER(ID_EDIT_CLEAR_ALL, onEditClearAll)
 		COMMAND_ID_HANDLER(IDC_PUBLIC_MESSAGE, onPublicMessage)
+		COMMAND_CODE_HANDLER(EN_CHANGE, onEditChange)
 		CHAIN_MSG_MAP(chatBase)
 		CHAIN_COMMANDS(ucBase)
 		CHAIN_COMMANDS(uibBase)
 	ALT_MSG_MAP(EDIT_MESSAGE_MAP)
+		MESSAGE_HANDLER(WM_SETFOCUS, onFocusMsg)
 		MESSAGE_HANDLER(WM_CHAR, onChar)
 		MESSAGE_HANDLER(WM_KEYDOWN, onChar)
 		MESSAGE_HANDLER(WM_KEYUP, onChar)
@@ -80,6 +78,9 @@ public:
 		MESSAGE_HANDLER(WM_DROPFILES, onDropFiles)
 	ALT_MSG_MAP(HUB_SEL_MAP)
 		COMMAND_CODE_HANDLER(CBN_SELCHANGE, onHubChanged)
+	ALT_MSG_MAP(STATUS_MSG_MAP)
+	NOTIFY_CODE_HANDLER(TTN_GETDISPINFO, onGetToolTip)
+		MESSAGE_HANDLER(WM_LBUTTONUP, onStatusBarClick)
 	END_MSG_MAP()
 
 	LRESULT onHubChanged(WORD wNotifyCode, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
@@ -89,6 +90,10 @@ public:
 	LRESULT onEditClearAll(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
 	LRESULT onPublicMessage(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/);
+	LRESULT onGetToolTip(int idCtrl, LPNMHDR pnmh, BOOL& /*bHandled*/);
+	LRESULT onStatusBarClick(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
+	LRESULT onTimer(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onEditChange(WORD /*wNotifyCode*/, WORD /*wID*/, HWND hWndCtl, BOOL & bHandled);
 
 	LRESULT OnRelayMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM lParam, BOOL& /*bHandled*/);
 
@@ -101,12 +106,14 @@ public:
 
 	LRESULT onCtlColor(UINT /*uMsg*/, WPARAM wParam, LPARAM lParam, BOOL& bHandled);
 	LRESULT onFocus(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& /*bHandled*/);
+	LRESULT onFocusMsg(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, BOOL& bHandled);
 
 
 	void fillLogParams(ParamMap& params) const;
 	void addLine(const tstring& aLine, CHARFORMAT2& cf);
 	void addLine(const Identity&, const tstring& aLine);
 	void addLine(const Identity&, const tstring& aLine, CHARFORMAT2& cf);
+	void addPrivateLine(const tstring& aLine, CHARFORMAT2& cf) { addLine(aLine, cf); }
 	void addStatusLine(const tstring& aLine, uint8_t severity);
 
 	bool checkFrameCommand(tstring& cmd, tstring& param, tstring& message, tstring& status, bool& thirdPerson);
@@ -139,19 +146,20 @@ public:
 private:
 	enum {
 		STATUS_TEXT,
+		STATUS_CC,
 		STATUS_HUBSEL,
 		STATUS_LAST
 	};
 
 	PrivateFrame(const HintedUser& replyTo_, Client* c);
 	~PrivateFrame() { }
+
+	PrivateChat* chat;
 	
 	bool nmdcUser;
 	bool created;
+
 	string getLogPath() const;
-	typedef unordered_map<UserPtr, PrivateFrame*, User::Hash> FrameMap;
-	typedef FrameMap::const_iterator FrameIter;
-	static FrameMap frames;
 	CComboBoxEx ctrlHubSel;
 
 	void fillHubSelection();
@@ -162,13 +170,14 @@ private:
 	void changeClient();
 	void showHubSelection(bool show);
 
-	HintedUser replyTo;
-	const UserPtr& getUser() const { return replyTo.user; }	
-	const string& getHubUrl() const { return replyTo.hint; }	
+
+	const UserPtr& getUser() const { return chat->getUser(); }
+	const string& getHubUrl() const { return chat->getHubUrl(); }
 	
 	CContainedWindow ctrlMessageContainer;
 	CContainedWindow ctrlClientContainer;
 	CContainedWindow ctrlHubSelContainer;
+	CContainedWindow ctrlStatusContainer;
 
 	bool closed;
 	tstring nicks;
@@ -177,24 +186,46 @@ private:
 	
 	CIcon tabIcon;
 	CIcon userOffline;
+	CIcon iCCReady;
+	CIcon iStartCC;
+	CIcon iNoCCPM;
 
-	void checkClientChanged(const HintedUser& newUser, Client* c, bool ownChange);
+	tstring lastCCPMError;
+
+	void closeCC(bool silent = false);
+	bool ccReady() const;
+
+	bool hasUnSeenMessages;
+	bool isTyping;
+	bool userTyping;
+	void sendSeen();
+	void checkTyping();
+	void updatePMInfo(uint8_t aType);
+	void addStatus(const tstring& aLine, const CIcon& aIcon);
+
+	pair<tstring, CIcon> lastStatus;
+
+	void checkClientChanged(Client* c, bool ownChange);
 	void updateTabIcon(bool offline);
 	TStringList prevCommands;
 	tstring currentCommand;
 	TStringList::size_type curCommandPosition;
 	
-	// ClientManagerListener
-	void on(ClientManagerListener::UserConnected, const OnlineUser& aUser, bool wasOffline) noexcept;
-	void on(ClientManagerListener::UserDisconnected, const UserPtr& aUser, bool wentOffline) noexcept;
-	void on(ClientManagerListener::UserUpdated, const OnlineUser& aUser) noexcept;
+	virtual void on(PrivateChatListener::StatusMessage, const string& aMessage, uint8_t sev) noexcept;
+	virtual void on(PrivateChatListener::PrivateMessage, const ChatMessage& aMessage) noexcept;
+	virtual void on(PrivateChatListener::Activate, const string& msg, Client* c) noexcept;
+	virtual void on(PrivateChatListener::UserUpdated) noexcept;
+	virtual void on(PrivateChatListener::PMStatus, uint8_t aType) noexcept;
+	virtual void on(PrivateChatListener::CCPMStatusChanged, const string& aMessage) noexcept;
+	virtual void on(PrivateChatListener::Close) noexcept {
+		PostMessage(WM_CLOSE);
+	}
 
 	void on(SettingsManagerListener::Save, SimpleXML& /*xml*/) noexcept;
 
-	void addSpeakerTask(bool addDelay);
-	void runSpeakerTask();
-
-	DelayedEvents<CID> delayEvents;
+	void handleNotifications(bool newWindow, const tstring& aMessage, const Identity& from);
+	void updateStatusBar();
+	void sendTyping(bool off);
 };
 
 #endif // !defined(PRIVATE_FRAME_H)

@@ -238,6 +238,7 @@ LRESULT MainFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/,
 	UpdateManager::getInstance()->addListener(this);
 	ShareScannerManager::getInstance()->addListener(this);
 	ClientManager::getInstance()->addListener(this);
+	MessageManager::getInstance()->addListener(this);
 
 	WinUtil::init(m_hWnd);
 	ResourceLoader::load();
@@ -1757,11 +1758,11 @@ LRESULT MainFrame::OnViewTransferView(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /
 
 LRESULT MainFrame::onCloseWindows(WORD , WORD wID, HWND , BOOL& ) {
 	switch(wID) {
-	case IDC_CLOSE_DISCONNECTED:		HubFrame::closeDisconnected();		break;
-	case IDC_CLOSE_ALL_PM:				PrivateFrame::closeAll();			break;
-	case IDC_CLOSE_ALL_OFFLINE_PM:		PrivateFrame::closeAllOffline();	break;
-	case IDC_CLOSE_ALL_DIR_LIST:		DirectoryListingFrame::closeAll();	break;
-	case IDC_CLOSE_ALL_SEARCH_FRAME:	SearchFrame::closeAll();			break;
+	case IDC_CLOSE_DISCONNECTED:		HubFrame::closeDisconnected();							break;
+	case IDC_CLOSE_ALL_PM:				MessageManager::getInstance()->closeAll(false);			break;
+	case IDC_CLOSE_ALL_OFFLINE_PM:		MessageManager::getInstance()->closeAll(true);			break;
+	case IDC_CLOSE_ALL_DIR_LIST:		DirectoryListingFrame::closeAll();						break;
+	case IDC_CLOSE_ALL_SEARCH_FRAME:	SearchFrame::closeAll();								break;
 	}
 	return 0;
 }
@@ -1921,6 +1922,11 @@ void MainFrame::on(ClientManagerListener::ClientCreated, Client* c) noexcept {
 	callAsync([=] { HubFrame::openWindow(url); });
 }
 
+void MainFrame::on(MessageManagerListener::PrivateMessage, const ChatMessage& aMessage) noexcept{
+	callAsync([=] { PrivateFrame::gotMessage(aMessage, &aMessage.from->getClient()); });
+}
+
+
 LRESULT MainFrame::onActivateApp(UINT /*uMsg*/, WPARAM wParam, LPARAM /*lParam*/, BOOL& bHandled) {
 	bHandled = FALSE;
 	if (!PopupManager::getInstance()->getCreating()) {
@@ -2071,6 +2077,7 @@ LRESULT MainFrame::onDestroy(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/
 	UpdateManager::getInstance()->removeListener(this);
 	ShareScannerManager::getInstance()->removeListener(this);
 	ClientManager::getInstance()->removeListener(this);
+	MessageManager::getInstance()->removeListener(this);
 
 	//if(bTrayIcon) {
 		updateTray(false);

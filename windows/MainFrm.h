@@ -35,6 +35,7 @@
 #include "../client/DirectoryListingManagerListener.h"
 #include "../client/UpdateManagerListener.h"
 #include "../client/ShareScannerManager.h"
+#include "../client/MessageManager.h"
 
 #include "PopupManager.h"
 #include "Dispatchers.h"
@@ -54,7 +55,7 @@ class MainFrame : public CMDIFrameWindowImpl<MainFrame>, public CUpdateUI<MainFr
 		public CMessageFilter, public CIdleHandler, public CSplitterImpl<MainFrame>,
 		private TimerManagerListener, private QueueManagerListener, public Async<MainFrame>,
 		private LogManagerListener, private DirectoryListingManagerListener, private UpdateManagerListener, private ScannerManagerListener, private ClientManagerListener,
-		private AutoSearchManagerListener
+		private AutoSearchManagerListener, private MessageManagerListener
 {
 public:
 	MainFrame();
@@ -345,6 +346,8 @@ public:
 	/* Displays a message box that will also display correctly with the splash */
 	void showMessageBox(const tstring& aMsg, UINT aFlags, const tstring& aTitle = Util::emptyStringT);
 	void onChatMessage(bool pm);
+
+	
 private:
 	void updateStatus(TStringList* aItems);
 	void addStatus(const string& aMsg, time_t aTime, uint8_t severity);
@@ -473,6 +476,9 @@ private:
 
 	// TimerManagerListener
 	void on(TimerManagerListener::Second, uint64_t aTick) noexcept;
+
+	// MessageManagerListener
+	virtual void on(MessageManagerListener::PrivateMessage, const ChatMessage& aMessage ) noexcept;
 
 	// QueueManagerListener
 	void on(QueueManagerListener::Finished, const QueueItemPtr& qi, const string& dir, const HintedUser& aUser, int64_t aSpeed) noexcept;

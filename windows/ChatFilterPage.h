@@ -28,7 +28,7 @@
 #include <atlctrlx.h>
 
 #include "ExListViewCtrl.h"
-#include "../client/IgnoreManager.h"
+#include "../client/MessageManager.h"
 
 class ChatFilterPage : public CPropertyPage<IDD_CHATFILTERPAGE>, public PropPage
 {

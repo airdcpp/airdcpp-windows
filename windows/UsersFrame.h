@@ -33,13 +33,13 @@
 #include "../client/FavoriteManager.h"
 #include "../client/UploadManager.h"
 #include "../client/QueueManagerListener.h"
-#include "../client/IgnoreManager.h"
+#include "../client/MessageManager.h"
 
 #define STATUS_MAP 10
 
 class UsersFrame : public MDITabChildWindowImpl<UsersFrame>, public StaticFrame<UsersFrame, ResourceManager::USERS, IDC_FAVUSERS>,
 	public CSplitterImpl<UsersFrame>, private FavoriteManagerListener, private ClientManagerListener, public UserInfoBaseHandler<UsersFrame>, 
-	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener, private IgnoreManagerListener, private Async<UsersFrame> {
+	private SettingsManagerListener, private UploadManagerListener, private QueueManagerListener, private MessageManagerListener, private Async<UsersFrame> {
 public:
 	
 	UsersFrame();
@@ -244,8 +244,8 @@ private:
 
 	void on(QueueManagerListener::SourceFilesUpdated, const UserPtr& aUser) noexcept;
 
-	void on(IgnoreManagerListener::IgnoreAdded, const UserPtr&) noexcept;
-	void on(IgnoreManagerListener::IgnoreRemoved, const UserPtr&) noexcept;
+	void on(MessageManagerListener::IgnoreAdded, const UserPtr&) noexcept;
+	void on(MessageManagerListener::IgnoreRemoved, const UserPtr&) noexcept;
 };
 
 #endif // !defined(USERS_FRAME_H)

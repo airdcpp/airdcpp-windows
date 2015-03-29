@@ -177,6 +177,7 @@
 #define IDI_STEPBACK                    341
 #define IDD_SEARCHTYPESPAGE             342
 #define IDD_SEARCHTYPE_DLG              343
+#define IDI_SECURE                      344
 #define IDR_EMOTICON                    345
 #define IDD_DIALOG3                     345
 #define IDD_LIMITPAGE                   345
@@ -299,6 +300,8 @@
 #define IDI_POSTSEARCH                  462
 #define IDI_EXPIRED                     463
 #define IDI_HUBOFF                      464
+#define IDI_TYPING						465
+#define IDI_SEEN						466
 #define IDI_SLOTS                       480
 #define IDI_SLOTSFULL                   481
 #define IDI_TOTAL_UP                    482
@@ -1001,6 +1004,7 @@
 #define IDC_SYSTEM_LIST2                1347
 #define IDC_MISC_OPTIONS                1347
 #define IDC_LIST1                       1348
+#define IDC_ENCRYPTION_LIST             1348
 #define IDC_CONNECTION2                 1349
 #define IDC_RAR                         1350
 #define IDC_PRIVATE_HUB                 1351

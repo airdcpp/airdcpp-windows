@@ -478,6 +478,12 @@ void ChatFrameBase::setStatusText(const tstring& aLine, uint8_t sev) {
 	ctrlStatus.SetIcon(0, ResourceLoader::getSeverityIcon(sev));
 }
 
+void ChatFrameBase::setStatusText(const tstring& aLine, const CIcon& aIcon) {
+	ctrlStatus.SetText(0, (_T("[") + Text::toT(Util::getShortTimeString()) + _T("] ") + aLine).c_str(), SBT_NOTABPARSING);
+	ctrlStatus.SetIcon(0, aIcon);
+}
+
+
 LRESULT ChatFrameBase::onWinampSpam(WORD /*wNotifyCode*/, WORD /*wID*/, HWND /*hWndCtl*/, BOOL& /*bHandled*/) {
 	tstring cmd, param, message, status;
 	bool thirdPerson=false;
@@ -604,6 +610,7 @@ void ChatFrameBase::onEnter() {
 	tstring message;
 	tstring status;
 	bool thirdPerson = false;
+	bool isCommand = false;
 
 	if(resizePressed && !WinUtil::isShift()) { //Shift + Enter to send
 		ctrlMessage.AppendText(_T("\r\n"));
@@ -629,14 +636,14 @@ void ChatFrameBase::onEnter() {
 			if(SETTING(CLIENT_COMMANDS)) {
 				addStatusLine(_T("Client command: ") + s, LogManager::LOG_INFO);
 			}
-		
-			if(!checkCommand(cmd, param, message, status, thirdPerson)) {
+			isCommand = checkCommand(cmd, param, message, status, thirdPerson);
+			if(!isCommand) {
 				if (SETTING(SEND_UNKNOWN_COMMANDS)) {
 					message = s;
 				} else {
 					status = TSTRING(UNKNOWN_COMMAND) + _T(" ") + cmd;
 				}
-			}
+			} 
 		} else {
 			if(SETTING(SERVER_COMMANDS)) {
 				if(s[0] == '!' || s[0] == '+' || s[0] == '-')
@@ -650,8 +657,12 @@ void ChatFrameBase::onEnter() {
 		return;
 	}
 
+	//If status in chat is disabled the command result as status message wont display, so add it as private line.
 	if (!status.empty()) {
-		addStatusLine(status, LogManager::LOG_INFO);
+		if (isCommand)
+			addPrivateLine(status, WinUtil::m_ChatTextPrivate);
+		else
+			addStatusLine(status, LogManager::LOG_INFO);
 	}
 
 	if (!message.empty()) {

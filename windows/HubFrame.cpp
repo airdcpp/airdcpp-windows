@@ -152,7 +152,7 @@ LRESULT HubFrame::OnCreate(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, 
 
 	FavoriteManager::getInstance()->addListener(this);
 	SettingsManager::getInstance()->addListener(this);
-	IgnoreManager::getInstance()->addListener(this);
+	MessageManager::getInstance()->addListener(this);
 
 	::SetTimer(m_hWnd, 0, 500, 0);
 	return 1;
@@ -480,99 +480,9 @@ void HubFrame::removeUser(const OnlineUserPtr& aUser) {
 	}
 }
 
-bool HubFrame::isIgnoredOrFiltered(const ChatMessage& msg, bool PM){
-	const auto& identity = msg.from->getIdentity();
-
-	auto logIgnored = [&](bool filter) -> void {
-		if (SETTING(LOG_IGNORED)) {
-			string tmp;
-			if (PM) {
-				tmp = filter ? STRING(PM_MESSAGE_FILTERED) : STRING(PM_MESSAGE_IGNORED);
-			} else {
-				string hub = "[" + ((client && !client->getHubName().empty()) ? 
-					(client->getHubName().size() > 50 ? (client->getHubName().substr(0, 50) + "...") : client->getHubName()) : client->getHubUrl()) + "] ";
-				tmp = (filter ? STRING(MC_MESSAGE_FILTERED) : STRING(MC_MESSAGE_IGNORED)) + hub;
-			}
-			tmp += "<" + identity.getNick() + "> " + msg.text;
-			LogManager::getInstance()->message(tmp, LogManager::LOG_INFO);
-		}
-	};
-
-
-
-	if (msg.from->getUser()->isIgnored() && ((client && client->isOp()) || !identity.isOp() || identity.isBot())) {
-		logIgnored(false);
-		return true;
-	}
-
-	if (IgnoreManager::getInstance()->isChatFiltered(identity.getNick(), msg.text, PM ? ChatFilterItem::PM : ChatFilterItem::MC)) {
-		logIgnored(true);
-		return true;
-	}
-
-	return false;
-}
-
-
-void HubFrame::onPrivateMessage(const ChatMessage& message) {
-	bool myPM = message.replyTo->getUser() == ClientManager::getInstance()->getMe();
-	const UserPtr& user = myPM ? message.to->getUser() : message.replyTo->getUser();
-	const auto& identity = message.replyTo->getIdentity();
-	tstring nick = Text::toT(identity.getNick());
-	bool hasFrame = PrivateFrame::isOpen(user);
-
-	//check ignores
-	if (!hasFrame) {
-		// don't be that restrictive with the fav hub option
-		if (client->getFavNoPM() && (client->isOp() || !message.replyTo->getIdentity().isOp()) && !message.replyTo->getIdentity().isBot() && !message.replyTo->getUser()->isFavorite()) {
-			string tmp;
-			if (!myPM)
-				client->privateMessage(message.replyTo, "Private messages sent via this hub are ignored", tmp);
-			return;
-		}
-
-		if (isIgnoredOrFiltered(message, true))
-			return;
-	}
-
-	//we can handle the message
-	bool ignore = false, window = false;
-	auto text = message.format();
-
-	if(identity.isHub()) {
-		if(SETTING(IGNORE_HUB_PMS) && !hasFrame) {
-			ignore = true;
-		} else if(SETTING(POPUP_HUB_PMS) || hasFrame) {
-			window = true;
-		}
-	} else if(identity.isBot()) {
-		if(SETTING(IGNORE_BOT_PMS) && !hasFrame) {
-			ignore = true;
-		} else if(SETTING(POPUP_BOT_PMS) || hasFrame) {
-			window = true;
-		}
-	} else if(SETTING(POPUP_PMS) || hasFrame || myPM) {
-		window = true;
-	}
-
-	if(ignore) {
-		addStatus(TSTRING(IGNORED_MESSAGE) + _T(" ") + Text::toT(text), LogManager::LOG_INFO, WinUtil::m_ChatTextSystem, false);
-	} else {
-		if (window) {
-			PrivateFrame::gotMessage(message.from->getIdentity(), message.to->getUser(), message.replyTo->getUser(), Text::toT(text), client);
-		} else {
-			addLine(TSTRING(PRIVATE_MESSAGE_FROM) + _T(" ") + nick + _T(": ") + Text::toT(text), WinUtil::m_ChatTextPrivate);
-		}
-
-		if (!identity.isHub() && !identity.isBot()) {
-			MainFrame::getMainFrame()->onChatMessage(true);
-		}
-	}
-}
-
 void HubFrame::onChatMessage(const ChatMessage& msg) {
 
-	if (isIgnoredOrFiltered(msg, false))
+	if (MessageManager::getInstance()->isIgnoredOrFiltered(msg, client, false))
 		return;
 
 	addLine(msg.from->getIdentity(), Text::toT(msg.format()), WinUtil::m_ChatTextGeneral);
@@ -844,7 +754,7 @@ LRESULT HubFrame::onClose(UINT /*uMsg*/, WPARAM /*wParam*/, LPARAM /*lParam*/, B
 
 			SettingsManager::getInstance()->removeListener(this);
 			FavoriteManager::getInstance()->removeListener(this);
-			IgnoreManager::getInstance()->removeListener(this);
+			MessageManager::getInstance()->removeListener(this);
 			client->removeListener(this);
 			client->disconnect(true);
 
@@ -1604,13 +1514,10 @@ void HubFrame::on(HubUpdated, const Client*) noexcept {
 	});
 }
 void HubFrame::on(Message, const Client*, const ChatMessage& message) noexcept {
-	callAsync([=] {
-		if(message.to && message.replyTo) {
-			onPrivateMessage(message);
-		} else {
-			onChatMessage(message);
-		}
-	});
+	if (message.to && message.replyTo) 
+		MessageManager::getInstance()->onPrivateMessage(message);
+	else
+		callAsync([=] { onChatMessage(message); });
 }	
 
 void HubFrame::on(StatusMessage, const Client*, const string& line, int statusFlags) {
@@ -1644,11 +1551,11 @@ void HubFrame::on(SetActive, const Client*) noexcept {
 	});
 }
 
-void HubFrame::on(IgnoreManagerListener::IgnoreAdded, const UserPtr&) noexcept{
+void HubFrame::on(MessageManagerListener::IgnoreAdded, const UserPtr&) noexcept{
 	callAsync([=] { updateUsers = true; });
 }
 
-void HubFrame::on(IgnoreManagerListener::IgnoreRemoved, const UserPtr&) noexcept{
+void HubFrame::on(MessageManagerListener::IgnoreRemoved, const UserPtr&) noexcept{
 	callAsync([=] { updateUsers = true; });
 }
 
@@ -2049,7 +1956,7 @@ void HubFrame::setFonts() {
 LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	int i=-1;
 	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		IgnoreManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+		MessageManager::getInstance()->storeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
 	}
 	return 0;
 }
@@ -2057,7 +1964,7 @@ LRESULT HubFrame::onIgnore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BO
 LRESULT HubFrame::onUnignore(UINT /*uMsg*/, WPARAM /*wParam*/, HWND /*lParam*/, BOOL& /*bHandled*/) {
 	int i=-1;
 	while( (i = ctrlUsers.GetNextItem(i, LVNI_SELECTED)) != -1) {
-		IgnoreManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
+		MessageManager::getInstance()->removeIgnore(((OnlineUser*)ctrlUsers.getItemData(i))->getUser());
 	}
 	return 0;
 }

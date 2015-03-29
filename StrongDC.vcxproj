@@ -854,6 +854,7 @@
     <Image Include="res\searchTypes\Pic.ico" />
     <Image Include="res\searchTypes\tth.ico" />
     <Image Include="res\searchTypes\Video.ico" />
+    <Image Include="res\Secure.ico" />
     <Image Include="res\send_file.ico" />
     <Image Include="res\SettingsTree\Hashing.ico" />
     <Image Include="res\SettingsTree\Limiter.ico" />

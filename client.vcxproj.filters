@@ -287,9 +287,6 @@
     <ClCompile Include="client\DirectoryMonitor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="client\IgnoreManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="client\HighlightManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -309,6 +306,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="client\SearchQuery.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\MessageManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="client\PrivateChat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -772,9 +775,6 @@
     <ClInclude Include="client\DirectoryMonitorListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="client\IgnoreManager.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="client\HighlightManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -803,6 +803,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="client\ShareManagerListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\ConnectionType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\MessageManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\MessageManagerListener.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\PrivateChat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="client\PrivateChatListener.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

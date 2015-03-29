@@ -20,7 +20,7 @@
 #include "../client/AutoSearchManager.h"
 #include "../client/FavoriteManager.h"
 #include "../client/HighlightManager.h"
-#include "../client/IgnoreManager.h"
+#include "../client/MessageManager.h"
 #include "../client/Magnet.h"
 #include "../client/UploadManager.h"
 #include "../client/QueueManager.h"
@@ -1477,14 +1477,14 @@ LRESULT RichTextBox::onOpenUserLog(WORD /*wNotifyCode*/, WORD wID, HWND /*hWndCt
 void RichTextBox::handleIgnore() {
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
-		IgnoreManager::getInstance()->storeIgnore(ou->getUser());
+		MessageManager::getInstance()->storeIgnore(ou->getUser());
 	}
 }
 
 void RichTextBox::handleUnignore(){
 	OnlineUserPtr ou = client->findUser(Text::fromT(selectedUser));
 	if(ou){
-		IgnoreManager::getInstance()->removeIgnore(ou->getUser());
+		MessageManager::getInstance()->removeIgnore(ou->getUser());
 	}
 }
 

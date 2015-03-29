@@ -231,6 +231,8 @@
   <ItemGroup>
     <ClCompile Include="client\AdcCommand.cpp" />
     <ClCompile Include="client\AdcHub.cpp" />
+    <ClCompile Include="client\MessageManager.cpp" />
+    <ClCompile Include="client\PrivateChat.cpp" />
     <ClCompile Include="client\SearchQuery.cpp" />
     <ClCompile Include="client\ADLSearch.cpp" />
     <ClCompile Include="client\AirUtil.cpp" />
@@ -271,7 +273,6 @@
     <ClCompile Include="client\HttpDownload.cpp" />
     <ClCompile Include="client\HubEntry.cpp" />
     <ClCompile Include="client\HubSettings.cpp" />
-    <ClCompile Include="client\IgnoreManager.cpp" />
     <ClCompile Include="client\LevelDB.cpp" />
     <ClCompile Include="client\Localization.cpp" />
     <ClCompile Include="client\LogManager.cpp" />
@@ -338,7 +339,12 @@
   <ItemGroup>
     <ClInclude Include="client\AdcCommand.h" />
     <ClInclude Include="client\AdcHub.h" />
+    <ClInclude Include="client\ConnectionType.h" />
+    <ClInclude Include="client\MessageManager.h" />
+    <ClInclude Include="client\MessageManagerListener.h" />
     <ClInclude Include="client\PrioritySearchQueue.h" />
+    <ClInclude Include="client\PrivateChat.h" />
+    <ClInclude Include="client\PrivateChatListener.h" />
     <ClInclude Include="client\SearchQuery.h" />
     <ClInclude Include="client\ADLSearch.h" />
     <ClInclude Include="client\AirUtil.h" />
@@ -412,7 +418,6 @@
     <ClInclude Include="client\HttpDownload.h" />
     <ClInclude Include="client\HubEntry.h" />
     <ClInclude Include="client\HubSettings.h" />
-    <ClInclude Include="client\IgnoreManager.h" />
     <ClInclude Include="client\LevelDB.h" />
     <ClInclude Include="client\Localization.h" />
     <ClInclude Include="client\LogManager.h" />
