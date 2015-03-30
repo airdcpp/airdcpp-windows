@@ -1,3 +1,13 @@
+x.xx
+
+Fixed:
+
+- Fix an issue with the remaining hashing bytes when reading of files being hashed fails
+- Retry hashing of failed bundles correctly
+- The installer will count the required disk space correctly
+- Don't use old language files when the settings directory location has been changed 
+
+
 2.91
 
 Added:
